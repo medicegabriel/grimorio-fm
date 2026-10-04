@@ -1,0 +1,240 @@
+diff --git a/.audit/lote11-base/afty-invocacoes.js b/src/systems/afty/afty-invocacoes.js
+index f34497f..660c572 100644
+--- a/.audit/lote11-base/afty-invocacoes.js
++++ b/src/systems/afty/afty-invocacoes.js
+@@ -2466,0 +2467,4 @@ function efeitosHabilidade(inv, dono) {
++  // Na Quimera do Mecânicas, só o PV concedido pelo dono entra após a fusão.
++  // Tipo e Características continuam dentro do PV das componentes.
++  acc.pvDoDono = 0;
++  acc.fontesPvDoDono = [];
+@@ -2540,0 +2545,4 @@ function efeitosHabilidade(inv, dono) {
++    if (e.canal === "pv" && !alvo && doDono.includes(e)) {
++      acc.pvDoDono += valor;
++      acc.fontesPvDoDono.push({ nome, canal: "pv", valor });
++    }
+@@ -3346 +3354,3 @@ export function resolveInvocacao(invCru, dono = {}) {
+-  const pv = (pvFixo ?? Math.floor((pvInvocacao(invEf, dono, atributoPv) + efe.pv + caract.pv) * pvMult)) + pvSobrecarga;
++  const pvAposFusao = pvFixo != null && inv?.pvDoDonoAposFusao ? efe.pvDoDono : 0;
++  const arredondamentoPvFusao = pvAposFusao ? Math.floor(pvAposFusao) - pvAposFusao : 0;
++  const pv = (pvFixo ?? Math.floor((pvInvocacao(invEf, dono, atributoPv) + efe.pv + caract.pv) * pvMult)) + Math.floor(pvAposFusao) + pvSobrecarga;
+@@ -3438,0 +3449,2 @@ export function resolveInvocacao(invCru, dono = {}) {
++      ...(inv?.pvDoDonoAposFusao ? parcelasDoCanal(efe.fontesPvDoDono, "pv") : []),
++      ...(arredondamentoPvFusao ? [{ label: "Arredondamento", valor: arredondamentoPvFusao }] : []),
+@@ -4543 +4555,2 @@ export function resolveQuimera(quimera, invocacoes = [], dono = {}, base = null)
+- *                o grau pelo rank (PV-02). Os PVs são os dos cartões
++ *                o grau pelo rank (PV-02). O PV do dono sai das componentes e
++ *                entra uma vez após a fusão (autor, 2026-10-03)
+@@ -4578 +4591,7 @@ function resolveQuimeraMecanicas(quimera, invocacoes = [], dono = {}, base = nul
+-  const resolvidasBase = Array.isArray(base) ? base : resolveInvocacoesList(fichas, dono).lista;
++  // Recalcula os cartões sem bônus aditivos de PV do dono, mantendo o passe
++  // de fontes, o tipo, as Características e os outros efeitos da invocação.
++  const efeitos = Array.isArray(dono.efeitos) ? dono.efeitos : [];
++  const semPvDoDono = efeitos.filter((e) => e?.canal !== "pv");
++  const resolvidasBase = semPvDoDono.length !== efeitos.length
++    ? resolveInvocacoesList(fichas, { ...dono, efeitos: semPvDoDono }).lista
++    : (Array.isArray(base) ? base : resolveInvocacoesList(fichas, dono).lista);
+@@ -4624,0 +4644 @@ function resolveQuimeraMecanicas(quimera, invocacoes = [], dono = {}, base = nul
++    pvDoDonoAposFusao: true,
+diff --git a/.audit/lote11-base/usar-encontro-afty.js b/src/systems/afty/encontros/usar-encontro-afty.js
+index 09e61a9..5d6e8b2 100644
+--- a/.audit/lote11-base/usar-encontro-afty.js
++++ b/src/systems/afty/encontros/usar-encontro-afty.js
+@@ -13,0 +14 @@ import {
++import { juntarFundamentosPerdidos, sincronizarFundamentosNaBiblioteca } from "./fundamento-biblioteca";
+@@ -236,2 +237,2 @@ const HANDLERS = {
+-     biblioteca não é tocada daqui (ver docs/a-fazer.md). A ficha nova troca a
+-     chave do cache do derive, e o próximo derive já lê o registro. */
++     biblioteca recebe a perda pelo efeito de sincronização abaixo. A ficha
++     nova troca a chave do cache, e o próximo derive já lê o registro. */
+@@ -241,4 +242,5 @@ const HANDLERS = {
+-      if (c.id !== id || !c.ficha || !registro?.invocacaoId) return c;
+-      const antes = Array.isArray(c.ficha.fundamentosPerdidos) ? c.ficha.fundamentosPerdidos : [];
+-      if (antes.some((r) => r?.invocacaoId === registro.invocacaoId)) return c;
+-      return { ...c, ficha: { ...c.ficha, fundamentosPerdidos: [...antes, registro] } };
++      if (c.id !== id || !c.ficha || typeof registro?.invocacaoId !== "string" || !registro.invocacaoId) return c;
++      const antes = c.ficha.fundamentosPerdidos;
++      const fundamentosPerdidos = juntarFundamentosPerdidos(antes, [registro]);
++      if (fundamentosPerdidos === antes) return c;
++      return { ...c, ficha: { ...c.ficha, fundamentosPerdidos } };
+@@ -247,0 +250,5 @@ const HANDLERS = {
++  RESULTADO_FUNDAMENTOS_BIBLIOTECA: (s, { falhas }) => (
++    JSON.stringify(s.fundamentosSemGravar ?? []) === JSON.stringify(falhas)
++      ? s : { ...s, fundamentosSemGravar: falhas }
++  ),
++
+@@ -381 +388 @@ export const redutorDeEncontro = (state, acao) => {
+-export default function useEncontroAfty(encontroId, gerenciador) {
++export default function useEncontroAfty(encontroId, gerenciador, onAtualizarBiblioteca) {
+@@ -386,0 +394 @@ export default function useEncontroAfty(encontroId, gerenciador) {
++  const atualizarEncontro = gerenciador.atualizar;
+@@ -388,2 +396,2 @@ export default function useEncontroAfty(encontroId, gerenciador) {
+-    gerenciador.atualizar(encontroId, (prev) => redutorDeEncontro(prev, acao));
+-  }, [gerenciador, encontroId]);
++    atualizarEncontro(encontroId, (prev) => redutorDeEncontro(prev, acao));
++  }, [atualizarEncontro, encontroId]);
+@@ -443,0 +452,20 @@ export default function useEncontroAfty(encontroId, gerenciador) {
++  // A assinatura depende só das perdas, não de PV, turnos ou log. Ao reabrir
++  // um Encontro antigo, suas perdas também são levadas à biblioteca.
++  const perdasDaBiblioteca = JSON.stringify((encontro?.combatentes ?? [])
++    .filter((c) => c.ficha?.fundamentosPerdidos?.length)
++    .map((c) => ({
++      criaturaId: c.criaturaId, nome: c.nome,
++      ficha: { id: c.ficha.id, name: c.ficha.name, rulesVersion: c.ficha.rulesVersion,
++        fundamentosPerdidos: c.ficha.fundamentosPerdidos },
++    })));
++  const falhasDaBiblioteca = JSON.stringify(encontro?.fundamentosSemGravar ?? []);
++  const sincronizarFundamentos = useCallback(() => {
++    const resultado = sincronizarFundamentosNaBiblioteca(JSON.parse(perdasDaBiblioteca));
++    const bibliotecas = new Map(resultado.gravadas.map(({ sistema, biblioteca }) => [sistema, biblioteca]));
++    for (const [sistema, biblioteca] of bibliotecas) onAtualizarBiblioteca?.(sistema, biblioteca);
++    if (JSON.stringify(resultado.falhas) !== falhasDaBiblioteca) {
++      despachar({ tipo: "RESULTADO_FUNDAMENTOS_BIBLIOTECA", falhas: resultado.falhas });
++    }
++  }, [perdasDaBiblioteca, falhasDaBiblioteca, onAtualizarBiblioteca, despachar]);
++  useEffect(() => { sincronizarFundamentos(); }, [sincronizarFundamentos]);
++
+@@ -444,0 +473 @@ export default function useEncontroAfty(encontroId, gerenciador) {
++    sincronizarFundamentos,
+@@ -479 +508 @@ export default function useEncontroAfty(encontroId, gerenciador) {
+-  }), [despachar, encontro, derivados]);
++  }), [despachar, encontro, derivados, sincronizarFundamentos]);
+diff --git a/.audit/lote11-base/AftyEncontro.jsx b/src/systems/afty/encontros/AftyEncontro.jsx
+index fdb4163..633fa8c 100644
+--- a/.audit/lote11-base/AftyEncontro.jsx
++++ b/src/systems/afty/encontros/AftyEncontro.jsx
+@@ -831,2 +831,2 @@ const POR_STATUS = {
+-export default function AftyEncontro({ encontroId, gerenciador, criaturas = [], pastas = [], onVoltar, onDuplicar, sistema }) {
+-  const { encontro, derivado, acoes } = useEncontroAfty(encontroId, gerenciador);
++export default function AftyEncontro({ encontroId, gerenciador, criaturas = [], pastas = [], onVoltar, onDuplicar, sistema, onAtualizarBiblioteca }) {
++  const { encontro, derivado, acoes } = useEncontroAfty(encontroId, gerenciador, onAtualizarBiblioteca);
+@@ -847,0 +848,9 @@ export default function AftyEncontro({ encontroId, gerenciador, criaturas = [],
++      {encontro.fundamentosSemGravar?.length > 0 && (
++        <div role="status" className="mx-4 mt-4 flex flex-wrap items-center gap-2 rounded-lg border border-amber-700/50 bg-amber-950/30 p-3 text-sm text-amber-300">
++          <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
++          <span className="min-w-0 flex-1">
++            Perda do Fundamento Pendente na Biblioteca: {encontro.fundamentosSemGravar.map((f) => f.nome + " (" + f.motivo + ")").join(", ")}
++          </span>
++          <button type="button" className="afty-botao" onClick={acoes.sincronizarFundamentos}>Tentar Novamente</button>
++        </div>
++      )}
+diff --git a/.audit/lote11-base/App.jsx b/src/App.jsx
+index 04da55f..a291c63 100644
+--- a/.audit/lote11-base/App.jsx
++++ b/src/App.jsx
+@@ -62,0 +63,28 @@ export default function App() {
++  // A biblioteca relida pelo Encontro também atualiza esta aba inteira.
++  // Atualizar só o dono faria o hook regravar as demais fichas desatualizadas.
++  const fichasDaRota = storageDaRota.creatures;
++  const criarDaRota = storageDaRota.create;
++  const atualizarDaRota = storageDaRota.update;
++  const removerDaRota = storageDaRota.removeMany;
++  const ordenarDaRota = storageDaRota.reorderCreatures;
++  const atualizarBibliotecaDoEncontro = useCallback((sistema, biblioteca) => {
++    if (sistema !== sistemaDaRota) return;
++    const ids = biblioteca.map((c) => c.id);
++    const idsAtuais = new Set(ids);
++    const anteriores = new Map(fichasDaRota.map((c) => [c.id, c]));
++    const removidas = fichasDaRota.filter((c) => !idsAtuais.has(c.id)).map((c) => c.id);
++    if (removidas.length) removerDaRota(removidas);
++    for (const ficha of biblioteca) {
++      // Mesma migração de leitura do hook, sem mudar identificadores.
++      const atual = { ...ficha, folderId: ficha.folderId ?? null,
++        rulesVersion: ficha.rulesVersion ?? sistema, isBuiltIn: false };
++      let anterior = anteriores.get(ficha.id);
++      if (anterior && JSON.stringify(anterior) === JSON.stringify(atual)) continue;
++      if (!anterior) anterior = criarDaRota(atual);
++      // Campo removido em outra aba também precisa sair desta cópia.
++      const apagados = Object.fromEntries(Object.keys(anterior)
++        .filter((k) => !Object.hasOwn(atual, k)).map((k) => [k, undefined]));
++      atualizarDaRota(ficha.id, { ...apagados, ...atual });
++    }
++    ordenarDaRota(ids);
++  }, [sistemaDaRota, fichasDaRota, criarDaRota, atualizarDaRota, removerDaRota, ordenarDaRota]);
+@@ -436,0 +465 @@ export default function App() {
++            onAtualizarBiblioteca={atualizarBibliotecaDoEncontro}
+diff --git a/.audit/lote11-base/AftyCreatureBuilder.jsx b/src/systems/afty/AftyCreatureBuilder.jsx
+index 10259da..32e2f33 100644
+--- a/.audit/lote11-base/AftyCreatureBuilder.jsx
++++ b/src/systems/afty/AftyCreatureBuilder.jsx
+@@ -21 +21 @@ import { contadoresOrigemDeAddon, valorContadorOrigem, clampContadorOrigem } fro
+-import { PainelDeFontes, ValorComFontes } from "./ui/fontes";
++import { PainelDeFontes, ValorComFontes, NumeroComFontes } from "./ui/fontes";
+@@ -18860 +18860,3 @@ function QuimeraCard({ quimera, res, fichas, onPatch, onRemove }) {
+-                <StatMini label="Pontos de Vida" value={r.pv} />
++                <StatMini label="Pontos de Vida" value={(
++                  <NumeroComFontes valor={r.pv} partes={r.fontes?.pv ?? []} total={r.pv} formatar={false} titulo="Pontos de Vida da Quimera" />
++                )} />
+diff --git a/.audit/lote11-base/AbaInvocacoes.jsx b/src/systems/afty/ficha/abas/AbaInvocacoes.jsx
+index 411bd2c..effe24c 100644
+--- a/.audit/lote11-base/AbaInvocacoes.jsx
++++ b/src/systems/afty/ficha/abas/AbaInvocacoes.jsx
+@@ -966,0 +967 @@ function FichaDoShikigami({ inv, estado, rolar, acoes, aoTemar, fusao = null, he
++            partes={fusao ? fontes.pv : null}
+diff --git a/.audit/lote11-base/a-fazer.md b/docs/a-fazer.md
+index 6816e38..849f34f 100644
+--- a/.audit/lote11-base/a-fazer.md
++++ b/docs/a-fazer.md
+@@ -36,11 +35,0 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
+-### Quimera do Mecânicas: Invocações Resistentes entra de novo depois da fusão?
+-**Onde:** `src/systems/afty/afty-invocacoes.js` (`resolveQuimeraMecanicas`)
+-**Situação:** o *Mecânicas* diz "Efeitos como Visionário, Invocações Resistentes e afins são
+-aplicados após a criação da Quimera". O PV da fórmula ("Shikigami Base + 1/3 dos PVs dos outros")
+-sai dos cartões das componentes, que já trazem o PV da Invocações Resistentes. Hoje o PV da
+-Quimera é esse número, sem somar a Resistentes outra vez, e o Visionário entra normalmente (ele dá
+-vagas, e não PV).
+-**Precisa:** o autor dizer se a Resistentes (e afins de PV) (1) fica como está, só dentro dos
+-cartões, ou (2) sai dos cartões e entra uma vez sobre o PV da Quimera.
+-**Anotado:** 2026-10-01, na Etapa 9 da atualização de Controlador e Invocações
+-
+@@ -1166,20 +1154,0 @@ prontas. É mudança visível de número, e a decisão é sua.
+-### Quimera do Mecânicas: as Ações e Características de Visionário das componentes entram
+-**Onde:** `src/systems/afty/afty-invocacoes.js` (`resolveQuimeraMecanicas`)
+-**Situação:** o *Mecânicas* diz que a Quimera "não recebe as Ações ou Características provindas de
+-efeitos como Visionário dos Shikigamis componentes". A ficha não marca de onde veio cada Ação ou
+-Característica (a vaga do Visionário é um número, e não um item), então a Quimera recebe todas as
+-da principal e as escolhas, sem saber quais ocuparam vaga de Visionário.
+-**Precisa:** marcar na ficha da invocação os itens que usam vaga concedida, ou o autor dizer que a
+-mesa confere isso à mão.
+-**Anotado:** 2026-10-01, na Etapa 9 da atualização de Controlador e Invocações
+-
+-### Morte do Fundamento no Encontro não chega à criatura da biblioteca
+-**Onde:** `src/systems/afty/encontros/usar-encontro-afty.js` (`REGISTRAR_FUNDAMENTO_PERDIDO`)
+-**Situação:** a perda da Técnica Inata (DA-07) é gravada na ficha. Na Ficha Final ela vai para a
+-criatura (`creature.fundamentosPerdidos`). No Encontro, o combatente guarda uma CÓPIA da ficha, e a
+-gravação vai para essa cópia, que vale para o resto do Encontro. A criatura da biblioteca não sabe
+-da morte, e abrir a Ficha dela depois mostra a Técnica inteira.
+-**Precisa:** um caminho do Encontro para a biblioteca (o mesmo que um dia levar PV, PE ou estado
+-de volta), ou um aviso no fim do Encontro com as perdas a copiar.
+-**Anotado:** 2026-10-01, na Etapa 8 da atualização de Controlador e Invocações
+-
+diff --git a/.audit/lote11-base/afty-invocacoes.md b/docs/afty-invocacoes.md
+index 393e404..c42f976 100644
+--- a/.audit/lote11-base/afty-invocacoes.md
++++ b/docs/afty-invocacoes.md
+@@ -146,0 +147,12 @@ por `regrasDoTipo`, a sessão pelo campo `regras` da resolvida.
++**Morte do Fundamento no Encontro (autor, 2026-10-03):** a perda continua na cópia do
++combatente e também é gravada na criatura salva. `sincronizarFundamentosNaBiblioteca`
++(em `encontros/fundamento-biblioteca.js`) escolhe a biblioteca pelo `rulesVersion` da
++ficha, procura o `criaturaId`, relê a versão atual e une os registros por `invocacaoId`.
++Não copia a ficha antiga do Encontro por cima de edições posteriores. Duas cópias da mesma
++criatura levam a perda à mesma original. Abrir um Encontro antigo também sincroniza perdas
++já gravadas na cópia. Ficha removida não é recriada. Vínculo inválido, biblioteca inválida
++ou falha de gravação mostram aviso em âmbar com AlertTriangle e Tentar Novamente, mantendo
++a perda no Encontro até ser possível gravá-la. Vale em /Afty e /Player, inclusive no
++Encontro misto. O App atualiza toda a biblioteca aberta na mesma aba com essa leitura
++atual, preservando também edições, inclusões, exclusões e ordem das outras fichas.
++
+@@ -164,0 +177,13 @@ Todo composto tem linha própria em `sessao.invocacoes`, e a linha guarda quem e
++**Quimera do Mecânicas (autor, 2026-10-03):** Invocações Resistentes e os outros bônus
++aditivos do dono no canal `pv` saem das componentes usadas na conta da fusão e entram uma
++vez no resultado. Os cartões individuais continuam com esses bônus. O recálculo mantém o
++passe de fontes, o PV do tipo e o das Características, e a aplicação final usa o Motor com
++a condição, a mira e o grau da Quimera. A parcela recebe o nome da fonte no hover, acessível
++por mouse e toque no criador e na Ficha. Frações arredondam para baixo, com a parcela de
++arredondamento. A Quimera antiga do addon conserva soma dos cartões menos 10.
++
++**Visionário das componentes (autor, 2026-10-03):** a mesa identifica e desconsidera à mão
++as Ações e Características que ocupam vagas de Visionário ou efeitos semelhantes e não
++podem ser herdadas pela Quimera. Não há marcação de origem por item nem filtro automático.
++O Visionário do dono continua concedendo vagas à Quimera pronta. Vale nos dois sistemas.
++

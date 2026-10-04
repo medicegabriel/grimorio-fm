@@ -118,7 +118,9 @@ export const sistemaDaFicha = (ficha) => normalizaSistema(ficha?.rulesVersion);
  * Nasceu em 2026-09-12, de um erro em produção. Uma ficha do Afty importada no
  * Grimório público abria no painel de combate da 2.5.2, que lê `treinamentos`
  * como LISTA enquanto aqui ele é MAPA, e estourava em
- * `collectAutomationEntities`. Ver docs/a-fazer.md.
+ * `collectAutomationEntities`. Desde 2026-10-03 a porta vale nas três rotas, e
+ * o /Afty e o /Player também se recusam um ao outro. Ver o bloco "A FRONTEIRA
+ * ENTRE OS DOIS LIVROS" em src/App.jsx.
  */
 export const sistemaGravado = (ficha) =>
   SISTEMA_IDS.includes(ficha?.rulesVersion) ? ficha.rulesVersion : null;
@@ -954,6 +956,28 @@ export const DIVERGENCIAS = [
     fonte: "Na ficha de Player o Pool é diferente: Feitiços não se acumulam Auxiliares com Passivos. Porém se acumulam com Itens e Invocações e etc. Então: NÃO SE ACUMULAM (Feitiços Passivos; Feitiços Auxiliares; Novo Estilo das Sombras; Técnicas Marciais) SE ACUMULAM COM OS ACIMAS E ENTRE SI (Ações Invocações, Caracteristicas Invocações; Habilidades Únicas de Itens). Primeiro Efeito não se acumula com outros itens. Mas se acumula com Segundo Efeito. (autor, 2026-09-11)",
     afty: "um pool só: Habilidade Única, Feitiços, Estilo, Funcionamento Básico e Invocação disputam entre si, e vale o maior",
     player: "grupos separados: Feitiços, Estilo e Funcionamento Básico disputam entre si, a Habilidade Única disputa só com a de outro item, e os grupos somam",
+    ativa: true,
+  },
+  {
+    /* A arma que acerta pelo Ataque Amaldiçoado já usava o Atributo de Técnica
+       no ACERTO (o próprio Ataque Amaldiçoado lê o `tecnicaAttr`), e o dano
+       seguia o atributo da arma: Força, Destreza ou o maior pela Fineza. Na
+       criatura o dano passa a ler o mesmo atributo do acerto.
+
+       ⚠ O ATRIBUTO SAI DA LINHA DO ATAQUE AMALDIÇOADO, e não do `tecnicaAttr`
+       lido de novo: acerto e dano não podem ter dois donos para a mesma escolha.
+
+       ⚠ QUEM VENCE QUANDO DUAS REGRAS TROCAM O ATRIBUTO DA MESMA ARMA: o
+       atributo próprio da arma criada (`atributoAtaque`) primeiro, depois as
+       Técnicas de Combate, e só então o Acerto Amaldiçoado. As Técnicas já
+       trocam o acerto por cima do Ataque Amaldiçoado, e o dano segue a mesma
+       ordem para os dois lados da linha usarem o mesmo atributo. */
+    id: "danoDoAcertoAmaldicoado",
+    tipo: "regra",
+    onde: "afty-pericias.js, resolveDano, o atributo de cada arma",
+    fonte: "Isso é somente na Ficha de Criatura. Quando uma arma usa o Acerto Amaldiçoado, ela também usa o Atributo de Técnica para o Dano. (autor, 2026-10-02)",
+    afty: "a arma no Acerto Amaldiçoado usa o Atributo de Técnica no dano",
+    player: "o dano segue o atributo da arma (Força, Destreza ou o maior pela Fineza)",
     ativa: true,
   },
 ];

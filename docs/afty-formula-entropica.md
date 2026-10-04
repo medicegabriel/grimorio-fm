@@ -106,10 +106,10 @@ Duas observações de tela, anotadas no `docs/a-fazer.md`:
 
 - **Com o contador de falhas ligado, a Atenção sobe junto**, porque ela sai da Percepção e o bônus
   vale em toda perícia (decisão 18). Não mexi.
-- **No telefone as linhas com contador espremem o nome.** Os números de mesa já saem da linha
-  fechada abaixo de 560 px, mas as marcas das linhas (a origem, a Especialização, o Nível) deviam
-  sumir no telefone pelo `hidden sm:inline-flex` e não somem, porque o `display` do `.afty-chip` no
-  CSS da Ficha vence o `hidden` do Tailwind. É anterior a este pacote e vale para toda ficha.
+- **No telefone as linhas com contador espremiam o nome.** Resolvido em 2026-10-03: abaixo de
+  560 px de linha, as marcas (a origem, a Especialização, o Nível) saem da linha fechada e aparecem
+  na aberta, junto dos números de mesa. Ver "As marcas da linha em linha estreita" em
+  `docs/afty-ficha-final.md`.
 
 ## O que a Fase 1 entregou
 

@@ -117,7 +117,7 @@ export const limitePoolUsado = (mapa = {}) =>
  * avisava errado em toda ficha de Restringido (limite 30 nos físicos) e em toda
  * ficha com Incremento de Atributo. Sem o mapa, cai no 20 padrão.
  */
-export function resumoAtributos(creature, limitesEfetivos = null, perdas = null) {
+export function resumoAtributos(creature, limitesEfetivos = null, perdas = null, extras = 0) {
   const metodo = creature?.attrMethod || "pontos";
   const attrs = creature?.attributes || {};
   const nivel = creature?.attrNivel || {};
@@ -127,7 +127,13 @@ export function resumoAtributos(creature, limitesEfetivos = null, perdas = null)
   const patamar = creature?.core?.patamar || "comum";
   const limiteDe = (k) => limitesEfetivos?.[k] ?? ATTR_LIMITE_PADRAO;
 
-  const nivelTotal = nivelPontosTotal(nd, patamar);
+  /* Os pontos que o Motor dá por cima dos de nível (canal `pontosAtributo`, o
+     Aumento de Atributo do Espinho). Vêm de FORA pela mesma razão do limite: só
+     o `deriveAfty` conhece o Motor (`derived.pontosAtributoExtra`). Eles caem no
+     MESMO pool, porque são distribuídos do mesmo jeito. */
+  const pontosNivel = nivelPontosTotal(nd, patamar);
+  const pontosExtras = Math.max(0, Math.trunc(Number(extras) || 0));
+  const nivelTotal = pontosNivel + pontosExtras;
   const nivelUsado = nivelPontosUsados(nivel);
   const gasto = pointBuyGasto(attrs);
   const warnings = [];
@@ -166,6 +172,8 @@ export function resumoAtributos(creature, limitesEfetivos = null, perdas = null)
   return {
     metodo,
     nivelTotal, nivelUsado,
+    // As duas parcelas do `nivelTotal`, para o hover do pool.
+    pontosNivel, pontosExtras,
     pointBuyGasto: gasto, pointBuyTotal: POINT_BUY_TOTAL,
     warnings,
   };

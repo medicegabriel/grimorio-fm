@@ -64,6 +64,18 @@ molde, sempre. **Nunca escreva uma chave sem sufixo:** ela vaza uma ficha de um 
 
 ---
 
+## PROGRESSÃO DE FEITIÇOS DO JOGADOR
+
+O orçamento próprio de Feitiços usa `totalFeiticosJogador` (divergência
+`progressaoDeFeiticos`). O jogador começa com dois Feitiços. A regra padrão soma
+`piso(n / 2)`, pelos níveis pares. Com Conjuração Aprimorada soma `n - 1`, um
+Feitiço por subida de nível a partir do nível 2. Nos dois casos, os níveis 10 e 20
+concedem um Feitiço adicional cada.
+
+O autor confirmou `n - 1` em 2026-10-03. Um Conjurador começa com dois Feitiços
+no nível 1 e chega a 33 no nível 30. A função devolve `total` e `partes` para
+mostrar a origem do orçamento.
+
 ## MULTICLASSE DO JOGADOR
 
 A divergência ativa terceiraClasse permite até **3 Especializações** na Ficha de Player.
@@ -135,6 +147,18 @@ treino de arma e escudo juntava todas as classes. Agora o `treinamentosEquipamen
 - O Golpes Potentes (*"arma com a qual você seja treinado"*) mira o escopo `treinada`, então ele não
   pega nessa Espada Longa.
 - Na criatura o treino continua juntando o catálogo das classes (autor: *"O catálogo das classes"*).
+
+## O DANO DA ARMA NO ACERTO AMALDIÇOADO
+
+Desde 2026-10-02 (divergência `danoDoAcertoAmaldicoado`). Autor: *"Isso é somente na Ficha de
+Criatura. Quando uma arma usa o Acerto Amaldiçoado, ela também usa o Atributo de Técnica para o
+Dano."* Nos dois sistemas a arma no Acerto Amaldiçoado acerta pelo Atributo de Técnica. O dano é
+que se separa:
+
+- **Criatura:** o dano usa o mesmo atributo do acerto, lido da linha do Ataque Amaldiçoado.
+- **Jogador:** o dano segue o atributo da arma (Força, Destreza ou o maior pela Fineza).
+- Nos dois, a ordem de quem troca o atributo é: o atributo próprio da arma criada, depois as
+  Técnicas de Combate, e só então o Acerto Amaldiçoado.
 
 ## TREINOS ESPECIAIS DO JOGADOR
 
@@ -272,9 +296,9 @@ proposital: escreva o novo valor esperado dos DOIS lados, nunca só do que você
 
 Valem em todo chat, e são as que mais se quebram.
 
-1. **PRESERVE O GRIMÓRIO 2.5.2.** Evite mudar `src/components/` e mantenha o comportamento
-   público. O `Dashboard.jsx` já recebe opções do Player sem alterar os padrões da 2.5.2.
-   A regra definitiva para essas exceções continua pendente em `a-fazer.md`.
+1. **PRESERVE O GRIMÓRIO 2.5.2.** `src/components/` é somente-leitura, salvo as exceções listadas
+   em `AGENTS.md`. Exceção nova só entra com o autor consultado antes, numa das três formas de lá,
+   e entra na lista no mesmo dia.
 2. **O autor faz os commits.** Nunca rode `git commit` nem `git push`.
 3. **Pare e pergunte quando tiver dúvida de regra.** Ele prefere responder a receber suposição.
 4. **Texto de regra vem VERBATIM do livro.** Não parafraseie, não resuma, não invente.

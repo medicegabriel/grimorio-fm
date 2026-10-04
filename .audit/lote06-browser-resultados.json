@@ -1,0 +1,78 @@
+[
+  {
+    "rota": "afty",
+    "largura": 1440,
+    "esperado": {
+      "cd": 24,
+      "iniciativa": 6,
+      "cdDelta": 2,
+      "iniciativaDelta": 2
+    },
+    "fontes": {
+      "cd": "Espada Curta (Canalizadora)\n+2",
+      "iniciativa": "Espada Curta (Otimizada)\n+2"
+    },
+    "dimensoes": {
+      "viewport": 1440,
+      "largura": 1425
+    },
+    "erros": []
+  },
+  {
+    "rota": "afty",
+    "largura": 390,
+    "esperado": {
+      "cd": 24,
+      "iniciativa": 6,
+      "cdDelta": 2,
+      "iniciativaDelta": 2
+    },
+    "fontes": {
+      "cd": "Espada Curta (Canalizadora)\n+2",
+      "iniciativa": "Espada Curta (Otimizada)\n+2"
+    },
+    "dimensoes": {
+      "viewport": 390,
+      "largura": 390
+    },
+    "erros": []
+  },
+  {
+    "rota": "player",
+    "largura": 1440,
+    "esperado": {
+      "cd": 27,
+      "iniciativa": 4,
+      "cdDelta": 2,
+      "iniciativaDelta": 2
+    },
+    "fontes": {
+      "cd": "Espada Curta (Canalizadora)\n+2",
+      "iniciativa": "Espada Curta (Otimizada)\n+2"
+    },
+    "dimensoes": {
+      "viewport": 1440,
+      "largura": 1425
+    },
+    "erros": []
+  },
+  {
+    "rota": "player",
+    "largura": 390,
+    "esperado": {
+      "cd": 27,
+      "iniciativa": 4,
+      "cdDelta": 2,
+      "iniciativaDelta": 2
+    },
+    "fontes": {
+      "cd": "Espada Curta (Canalizadora)\n+2",
+      "iniciativa": "Espada Curta (Otimizada)\n+2"
+    },
+    "dimensoes": {
+      "viewport": 390,
+      "largura": 390
+    },
+    "erros": []
+  }
+]

@@ -35,6 +35,7 @@
 import { evalNumber as evalNumberDsl } from "./afty-dsl";
 import {
   AFTY_RESISTENCIAS, TAMANHO_BASE, tamanhoPorDegraus, funcionamentosDaFicha,
+  MELHORIA_NIVEL_INICIAL, LENDARIA_NIVEL_INICIAL,
 } from "./afty-schema";
 import {
   ATTR_KEYS, ATTR_LABEL, ATTR_LIMITE_PADRAO, ATTR_LIMITE_MAX, ATTR_LIMITE_ABSOLUTO,
@@ -71,7 +72,7 @@ import {
 import { resolveEspecializacoes, AFTY_ESPECIALIZACOES, treinamentosDasEspecializacoes, getEspecializacao, especializacaoMae } from "./afty-especializacoes";
 import {
   resolveHabilidades, efeitosInvocacaoControlador, getHabilidade, OPCAO_ESCOLHA_NOME, USOS_RECARGAS,
-  avaliarAcessoHabilidade,
+  avaliarAcessoHabilidade, contaOrcamentoHabilidades,
   resolveMarcadoresInvocacao, resolveControleInvocacoes,
   AFTY_HABILIDADES,
   resolveArmasDedicadas, efeitosArmasDedicadas, resolveEmpolgacao,
@@ -83,7 +84,7 @@ import {
   avaliarAcessoTalento, efeitosDeTalentosConfigurados,
 } from "./afty-talentos";
 import {
-  resolveAltoNivel, getMelhoriaSuperior, getHabilidadeLendaria, getHabilidadeApice,
+  resolveAltoNivel, comVagasDeCanal, getMelhoriaSuperior, getHabilidadeLendaria, getHabilidadeApice,
 } from "./afty-alto-nivel";
 import {
   resolveInvocacoesList, resolveHordasList, resolveQuimerasList, efeitosDeInvocacao, efeitosInvocacaoEscritos,
@@ -119,12 +120,13 @@ import { resolveDefesasDano, sanearDefesasDano } from "./afty-defesas-dano";
 import { resolveCondicoes, marcaMovimentoNasLinhas } from "./afty-condicoes";
 import { AFTY_ATAQUES } from "./afty-pericias-catalogo";
 import { resolveCatarse } from "./afty-catarse";
+import { resolveEspinho, marcasDoEspinho, ESPINHO_TIPOS_ITEM } from "./afty-espinho";
 import { resolveCarteira } from "./afty-carteira";
 import { atributosDosAddons } from "./afty-addons-atributos";
 import { resolveCura } from "./afty-cura";
 import { comFormulasDeDano } from "./afty-dano";
 import {
-  problemasDeAddon, marcasDeclaradas, primitivasDaCriatura, liberacoesDaCriatura, precosDeCatarse,
+  problemasDeAddon, marcasDeclaradas, primitivasDaCriatura, liberacoesDaCriatura, precosDeCatarse, espinhoDaFicha,
   nivelDaFicha, aptidoesConcedidasPorAddon, substituicaoEnergiaReversaPorAddon,
   estadosCombateDeAddon, epocaAddons,
 } from "./afty-addons";
@@ -143,6 +145,7 @@ import {
   aplicarEfeitos, resolverExclusivos, carimbarGrupoExclusivo, valorCanal, furaTetoEm, efeitosDaTecnica, efeitosDosBuffsNativos, efeitosDosPassivos,
   efeitosDaSessao, EFEITO_CANAIS,
   ehAtributoPermanente, ehAtributoTemporario, ehEstagio2, ehPreContexto, ehPosAptidao, efeitoUsaDadosDanoFinal,
+  separarEfeitosDeBancada,
   mesclarEfeitos, detalhesDoCanal, detalhesDoCanalEscopos, custoEmPe, normalizarAlvoEfeito,
 } from "./afty-efeitos";
 import { resolveGerais, contadorHabilidades, GERAL_BY_ID } from "./afty-gerais";
@@ -286,12 +289,12 @@ export function deriveAfty(creature, opcoes = {}) {
   /* A TÉCNICA INATA E O FUNDAMENTO (DA-07, 2026-09-30). Com o Fundamento morto, a
      Técnica Inata fica BLOQUEADA de verdade: os efeitos do Funcionamento e das
      Passivas saem do Motor, e cada Feitiço sai marcado como indisponível. Nada é
-     apagado da ficha. Com o Fundamento só fora de campo, a mesa marca os
-     Feitiços e o resto continua (ver docs/a-fazer.md). */
+     apagado da ficha. Fora de campo, a mesa bloqueia também o Funcionamento e
+     as Passivas (decisão do autor, 2026-10-03). O criador não tem esse estado. */
   const tecnicaInata = estadoDaTecnicaInata(creature, opcoes.invocacoes ?? null);
   // O Funcionamento principal sai como "tecnica", os outros como "funcionamento:<id>".
   const daTecnicaInata = (e) => /^(funcionamento|feitico):|^tecnica$/.test(String(e?.origem ?? ""));
-  const semTecnicaPerdida = (lista) => (tecnicaInata.perdida ? lista.filter((e) => !daTecnicaInata(e)) : lista);
+  const semTecnicaBloqueada = (lista) => (tecnicaInata.bloqueada ? lista.filter((e) => !daTecnicaInata(e)) : lista);
   const origensDiretasDaAdaptacao = new Set(origensDiretasDasAdaptacoes(creature, opcoes.adaptacoes));
   const aplicarDiretoDaAdaptacao = (efeito) => {
     if (!efeito?.quando || !origensDiretasDaAdaptacao.has(efeito.origem)) return efeito;
@@ -525,6 +528,10 @@ export function deriveAfty(creature, opcoes = {}) {
   //     arma treinada (não desce o grau de cálculo).
   //   • Manejo Especial (Combatente 6°): um encantamento CONCEDIDO a toda arma
   //     equipada, também sem custo de grau.
+  /* O catálogo do Espinho sai AQUI, e não junto do resolver lá embaixo, porque
+     os itens que ele marca viram Grau Especial, e o equipamento é o primeiro
+     passo do derive. Sem o pacote a configuração é vazia e nada é marcado. */
+  const configEspinho = espinhoDaFicha(creature);
   const equip = resolveEquipamentos(creature, bt, {
     vagasEncantamento: vagasEncantamentoDeTreino(creature),
     encantamentosExtras: encantamentosDeManejoEspecial(creature),
@@ -535,6 +542,9 @@ export function deriveAfty(creature, opcoes = {}) {
        Benção do Grão Mestre da Forja. Sem a liberação, o que está gravado na
        ficha continua lá e deixa de contar. */
     liberacoes,
+    /* Os itens marcados pelo Espinho (uid → aprimorado): viram Grau Especial, e
+       o aprimorado ganha a Habilidade Única do Espinho. Ver afty-espinho.js. */
+    espinho: marcasDoEspinho(creature, configEspinho),
   });
 
   // Limite EFETIVO por atributo = limite base (20 / poderes) + Desenvolvimento, teto 30.
@@ -672,6 +682,18 @@ export function deriveAfty(creature, opcoes = {}) {
      que ela emite é vaga de orçamento, e vaga é lida antes de os stats
      existirem. Ver `resolveCatarse`. */
   const catarse = resolveCatarse(creature, { precos: precosDeCatarse(creature) });
+  /* ESPINHO (Addon, 2026-09-30). Irmão da Catarse, e resolvido no mesmo ponto
+     pelo mesmo motivo: o que ele emite é vaga de orçamento. O teto de cada item
+     é DSL (`bt`, `bt / 2`) e por isso lê o contexto do montante, que já tem o
+     BT e o ND. O inventário vai junto só para dar nome ao item marcado e achar
+     o que sumiu. Ver `resolveEspinho`. */
+  const espinho = resolveEspinho(creature, {
+    config: configEspinho,
+    avaliar: (expr) => evalNumberDsl(expr, ctxMontante, 0),
+    inventario: (equip.entradas ?? [])
+      .filter((x) => ESPINHO_TIPOS_ITEM.includes(x.tipo))
+      .map((x) => ({ uid: x.uid, nome: x.def?.nome ?? x.refId, tipo: x.tipo })),
+  });
   /* ⚠ O VISLUMBRE CELESTE É DE GRAÇA e não tem entrada de catálogo: quem tem o
      pacote tem os olhos. Por isso o portão é a primitiva, e ele é lido aqui em
      cima, antes do montante: a Compreensão do Jujutsu emite `pontosAptidao`, que
@@ -692,7 +714,12 @@ export function deriveAfty(creature, opcoes = {}) {
   });
   const efeitosAgulha = efeitosOlhosAgulha(olhosAgulha);
 
-  const efeitosMontante = [
+  /* ⚠ O QUE LÊ A BANCADA DESCE AO ESTÁGIO PRINCIPAL (autor, 2026-10-03). O
+     `ctxMontante` não tem Simulação de Combate, e um `quando: "em_combate"` aqui
+     valia zero com "Em Combate" ligado ou não: a Atenção do Instinto Sanguinário
+     nunca somou. A regra vale para a lista inteira, e quem desce entra no
+     `efeitosTodos` lá embaixo, UMA vez. Ver `separarEfeitosDeBancada`. */
+  const { montante: efeitosMontante, bancada: efeitosMontanteDeBancada } = separarEfeitosDeBancada([
       ...efeitosDeTreino(creature, opcoes.treinosAtivos),
       // Treino Especial entra ao lado da Linha de Treinamento porque é a mesma
       // família (Interlúdio) e emite a mesma classe de coisa: VAGA de orçamento,
@@ -713,6 +740,10 @@ export function deriveAfty(creature, opcoes = {}) {
          ⚠ E NENHUMA LINHA LEVA `exclusivo`: acumular com Técnica é a regra que
          o autor pediu. Ver o cabeçalho de afty-catarse.js. */
       ...catarse.efeitos,
+      /* ⚠ O ESPINHO ENTRA NO MONTANTE pela mesma razão da Catarse: vaga de
+         Talento, de Especialização e de Alto Nível fecha antes de os stats
+         existirem. Sem `exclusivo` em linha nenhuma: acumular é a regra. */
+      ...espinho.efeitos,
       /* Só a Compreensão do Jujutsu, que é VAGA e por isso é montante. Os dois
          blocos de benefício leem `cl` e um estado de combate, e nenhum dos dois
          existe ainda aqui: eles entram no bolo comum, mais abaixo. */
@@ -727,7 +758,7 @@ export function deriveAfty(creature, opcoes = {}) {
          Habilidades" é a regra que o autor pediu. Ver
          afty-modificacoes-corporais.js. */
       ...efeitosDeModificacoesCorporais(creature),
-  ];
+  ], ctxMontante);
   const efMontante = resolverExclusivos(aplicarEfeitos(efeitosMontante, ctxMontante));
   // Os canais que precisam ser lidos ANTES do contexto principal: dois
   // alimentam resolveNiveisAptidao (nível de aptidão é variável do DSL) e um
@@ -741,10 +772,10 @@ export function deriveAfty(creature, opcoes = {}) {
   /* ⚠ No jogador o nível de Classe é que dá a vaga, 1 a partir do SEGUNDO de
      cada uma. O canal continua somando por cima nos dois: ele é como o Talento
      Natural e os Addons dão vaga, e nada disso passa pela Habilidade Geral. */
-  const vagasHabilidade = valorCanal(efMontante, "vagasHabilidade")
-    + (ehJogador("vagasPorNivelDeClasse")
-      ? vagasDeHabilidadePorClasse(especializacoes.escolhidas)
-      : 0);
+  const vagasHabilidadePorClasse = ehJogador("vagasPorNivelDeClasse")
+    ? vagasDeHabilidadePorClasse(especializacoes.escolhidas)
+    : 0;
+  const vagasHabilidade = valorCanal(efMontante, "vagasHabilidade") + vagasHabilidadePorClasse;
   // Vaga EXCLUSIVA de Talento (autor, 2026-08-03): o Talento Natural do Inato
   // dava vaga COMUM, e assim uma característica que o livro escreve como "um
   // Talento à escolha" pagava Habilidade de Especialização qualquer.
@@ -777,13 +808,18 @@ export function deriveAfty(creature, opcoes = {}) {
   const origemId = creature?.core?.origem?.id ?? null;
   // Mais de uma quando o Gêmeo copia uma origem em Verdadeiras Origens.
   const origensQuali = origensQualificadas(creature);
+  /* Os Talentos que chegam sem gastar vaga: os da sessão (Concessão do Mestre) e
+     os que o Espinho concede pelo nome (o Determinado a Viver Adicional). O
+     caminho é o mesmo, e a semântica também: não gasta vaga e não cobra
+     pré-requisito. A diferença é só a fonte, e a do Espinho é FICHA. */
+  const talentosConcedidos = [...(concedido.talentos ?? []), ...espinho.talentosConcedidos];
   const talentosPre = resolveTalentos(creature, {
     nd, maestria: bt, attrEff: attrBase, origemId, origensQualificadas: origensQuali,
     claId: creature?.core?.origem?.cla ?? null,
     especializacoes: especializacoes.escolhidas, aptidoes: aptidoesIds,
     feiticos: creature?.feiticos,
     limitesAtributo: limitesAtributoBase,
-    concedidos: concedido.talentos,
+    concedidos: talentosConcedidos,
   });
   /* ============================================================ */
   /* UM TALENTO QUE CONCEDE VAGA DE TALENTO                        */
@@ -857,6 +893,25 @@ export function deriveAfty(creature, opcoes = {}) {
     vagasMelhoria: valorCanal(efMontante, "vagasMelhoria"),
     vagasLendaria: valorCanal(efMontante, "vagasLendaria"),
   });
+  /* ⚠ A VAGA DE ALTO NÍVEL COMPRADA CEDO É ALMA GASTA SEM USO, e o card avisa.
+     A compra abre a vaga (regra da Catarse), mas a Melhoria continua pedindo o
+     Nível 21, e na criatura também a Habilidade Geral. O aviso sai daqui, e não
+     do afty-espinho, porque só o derive sabe o nível e o portão. Ele lê o CANAL
+     do item, e não o id, para valer a qualquer item de pacote que abra a vaga. */
+  const avisosEspinho = [...espinho.avisos];
+  for (const trilha of [
+    { canal: "vagasMelhoria", nivel: MELHORIA_NIVEL_INICIAL, chave: "melhorias", geral: "Melhoria Superior" },
+    { canal: "vagasLendaria", nivel: LENDARIA_NIVEL_INICIAL, chave: "lendarias", geral: "Habilidade Lendária" },
+  ]) {
+    for (const item of espinho.itens) {
+      if (item.qtd <= 0 || !item.efeitos.some((e) => e.canal === trilha.canal)) continue;
+      if (nd < trilha.nivel) {
+        avisosEspinho.push(`${item.nome}: requer ${rotuloDoNivel(sistema)} ${trilha.nivel}.`);
+      } else if (!ehJogador("altoNivelSemGeral") && !gerais.destravado?.[trilha.chave]) {
+        avisosEspinho.push(`${item.nome}: requer a Habilidade Geral ${trilha.geral}.`);
+      }
+    }
+  }
 
   // Nível por especialização para o DSL: real (trava pré-requisito) e de
   // escalonamento (real + metade da outra classe, o que os efeitos escalam).
@@ -1022,6 +1077,10 @@ export function deriveAfty(creature, opcoes = {}) {
 
   const bloodfeast = resolveBloodfeast(creature, { bt, nd, modCon: modBase.constituicao, sessao: estadoBloodfeast, aptidoes: aptidoesIds });
   const efeitosTodos = carimbarGrupoExclusivo([
+    /* Os do montante que leem a bancada (a Atenção em combate do Instinto
+       Sanguinário, e qualquer origem, Treino ou texto livre com estado de
+       combate). Saíram da lista de lá, então entram só aqui. */
+    ...efeitosMontanteDeBancada,
     ...efeitosBloodfeast(bloodfeast, Object.keys(TIPOS_DANO)),
     ...efeitosAgulha,
     // Os dois blocos do Vislumbre Celeste. O `quando` de cada um lê o estado
@@ -1050,12 +1109,12 @@ export function deriveAfty(creature, opcoes = {}) {
     // Funcionamento Básico da técnica: os únicos efeitos ESCRITOS pelo jogador,
     // porque a técnica é única no mundo e nenhum catálogo a cobre. Entram no
     // mesmo bolo, e os filtros de estágio abaixo roteiam pelo canal.
-    ...semTecnicaPerdida(efeitosDaTecnica(creature)),
+    ...semTecnicaBloqueada(efeitosDaTecnica(creature)),
     ...efeitosDosBuffsNativos(),
     ...efeitosArmasTransformaveis(armasTransformaveis(creature, catalogoDoTipo("arma", creature), bt)),
     // Passivos / Características criados pelo jogador usam o mesmo Motor, mas
     // entram na família exclusiva própria dos Feitiços Passivos.
-    ...semTecnicaPerdida(efeitosDosPassivos(creature)),
+    ...semTecnicaBloqueada(efeitosDosPassivos(creature)),
     // Buffs de MESA, escritos na Ficha Final durante o jogo. Mesmo shape do
     // Funcionamento Básico, e por isso entram na mesma linha. Só existem quando
     // a Ficha injeta `buffsSessao`: o criador nunca os vê.
@@ -1577,16 +1636,43 @@ export function deriveAfty(creature, opcoes = {}) {
      (Ficha e Encontro, `opcoes.invocacoes`); no criador é `null`. Lê o Controle
      Sintonizado (+1 em acerto e dano por invocação em campo) e o Concentrar Poder
      (só com uma em campo). A Quimera conta 1 (decisão do autor). */
+  /* Hoste Amaldiçoada (autor, 2026-10-03): o par conta como uma nos dois
+     limites. Só agrupamos duas Hostes com vínculo recíproco e ambas em campo.
+     Quando uma sai, a outra volta a ocupar a vaga por seu próprio id. */
+  const hordasDaMesa = (Array.isArray(creature?.hordas) ? creature.hordas : [])
+    .filter((h) => !(h?.hoste && h.parId && h.id > h.parId
+      && contaInvocacoesEmCampo(opcoes.invocacoes, [`horda:${h.id}`]) > 0
+      && (creature.hordas ?? []).some((par) => par?.id === h.parId
+        && par.hoste && par.parId === h.id
+        && contaInvocacoesEmCampo(opcoes.invocacoes, [`horda:${par.id}`]) > 0)));
+  const idsHordasDaMesa = hordasDaMesa.map((h) => `horda:${h?.id}`);
+  const hordasEmCampo = opcoes.invocacoes
+    ? contaInvocacoesEmCampo(opcoes.invocacoes, idsHordasDaMesa) : null;
   const idsDaMesa = [
     ...(Array.isArray(creature?.invocacoes) ? creature.invocacoes : []).map((i) => i?.id),
     ...(Array.isArray(creature?.quimeras) ? creature.quimeras : []).map((q) => `quimera:${q?.id}`),
     /* As Hordas e os Corpos de Múltiplos Núcleos contam como UMA invocação em
        campo cada (2026-10-01, Etapa 9). O Mecha não entra: as duas Marionetes
        dele seguem ativas, e é assim que ele conta como duas. */
-    ...(Array.isArray(creature?.hordas) ? creature.hordas : []).map((h) => `horda:${h?.id}`),
+    ...idsHordasDaMesa,
     ...(Array.isArray(creature?.multiplosNucleos) ? creature.multiplosNucleos : []).map((g) => `nucleos:${g?.id}`),
   ].filter(Boolean);
   const invocacoesEmCampo = opcoes.invocacoes ? contaInvocacoesEmCampo(opcoes.invocacoes, idsDaMesa) : null;
+
+  /* O PACOTE DA CLASSE INICIAL e o TR que ele dá, só no jogador. Montados AQUI,
+     antes do contexto do Motor, e não junto do `resolveTestes` lá embaixo: o
+     "Caso já seja" da Força Imparável e da Resiliência Melhorada lê o
+     `prof_tr_*`, e o TR que a Classe treina é "já treinado" (autor,
+     2026-10-03). Nenhum dos dois depende de stat, só das Especializações e dos
+     campos da ficha, então subir não abre laço. */
+  const pacoteInicial = ehJogador("pacoteDaClasseInicial")
+    ? pacoteInicialDaFicha(especializacoes.escolhidas)
+    : undefined;
+  /* O TR que a Classe inicial deu, com a faixa, e o Teste de Resistência Mestre
+     por cima (2026-09-23). */
+  const trDaClasse = ehJogador("pacoteDaClasseInicial")
+    ? resistenciasDaClasse(pacoteInicial, creature, { comMestre: ehJogador("trMestreDoJogador") })
+    : undefined;
 
   const montarCtx = (attrs, mods) => buildCriaturaDslContext({
     nd, bt, escalaAtaque, grauRank: grau.rank, patamar, tipo, almaAtual: almaAtualDsl, invocacoesEmCampo,
@@ -1596,6 +1682,7 @@ export function deriveAfty(creature, opcoes = {}) {
     attrEff: attrs, mods, modTecnica: mods[tecnicaAttr] ?? 0, tecnicaAttr,
     aptidao: aptidao.efetivo, nivelEspec, periciasProf: creature?.pericias,
     resistenciasProf: creature?.resistenciasProf, combate,
+    faixasTrDaClasse: trDaClasse?.faixas,
     aptidaoOpcoes: semEnergia ? {} : creature?.aptidaoOpcoes,
     rdEscudoBase: equip.rdEscudoBase,
     fontesTreinoEscudo: treinoEscudo.fontes,
@@ -1719,7 +1806,7 @@ export function deriveAfty(creature, opcoes = {}) {
     especializacoes: especializacoes.escolhidas, aptidoes: aptidoesIds,
     feiticos: creature?.feiticos,
     limitesAtributo: limitesAtributoBase,
-    concedidos: concedido.talentos,
+    concedidos: talentosConcedidos,
   });
 
   // Estágio 1b: atributo TEMPORÁRIO, por cima do permanente. Resulta no
@@ -2074,6 +2161,8 @@ export function deriveAfty(creature, opcoes = {}) {
           ...entrada.fa,
           habilidadeEfeitos: entrada.fa.habilidadeEfeitos.map(reavaliarUnica),
           segundaHabilidadeEfeitos: entrada.fa.segundaHabilidadeEfeitos.map(reavaliarUnica),
+          // A do Aprimoramento do Espinho, pelo mesmo motivo.
+          espinhoHabilidadeEfeitos: (entrada.fa.espinhoHabilidadeEfeitos ?? []).map(reavaliarUnica),
         },
       };
     }),
@@ -2377,6 +2466,7 @@ export function deriveAfty(creature, opcoes = {}) {
      dobro do nível não precisa do Feitiço calculado.
 
      Só na Ficha de Jogador. Ver a divergência `passivaCustaPeMaximo`. */
+  // A reserva continua com a Técnica perdida ou fora de campo (autor, 2026-10-03).
   const passivasNoPeBrutas = peMaximoDasPassivas(creature?.feiticos, sistema);
   /* ⚠ DUAS PORTAS PARA A MESMA ISENÇÃO, juntadas no pull de 2026-09-21. Elas
      nasceram em paralelo e fazem a mesma coisa: o `regrasAfty` de Addon ou de
@@ -2836,22 +2926,10 @@ export function deriveAfty(creature, opcoes = {}) {
        diferença entre "este sistema não tem pacote de Classe" e "tem, e está
        vazio porque a ficha não escolheu Classe nenhuma". O `resolveTestes`
        distingue as duas com `!== undefined`. */
-    ...(ehJogador("pacoteDaClasseInicial")
-      ? (() => {
-        /* ⚠ `periciaAtributo` NÃO VIAJA MAIS para cá desde 2026-08-31: o
-           orçamento do jogador passou a usar o maior mod entre INT e SAB, como
-           o da criatura. Ver a nota em `resolveTestes`. */
-        const pacoteInicial = pacoteInicialDaFicha(especializacoes.escolhidas);
-        return {
-          pacoteInicial,
-          /* O TR que a Classe inicial deu, com a faixa, e o Teste de
-             Resistência Mestre por cima (2026-09-23). */
-          trDaClasse: resistenciasDaClasse(pacoteInicial, creature, {
-            comMestre: ehJogador("trMestreDoJogador"),
-          }),
-        };
-      })()
-      : {}),
+    /* ⚠ `periciaAtributo` NÃO VIAJA MAIS para cá desde 2026-08-31: o orçamento
+       do jogador passou a usar o maior mod entre INT e SAB, como o da criatura.
+       Ver a nota em `resolveTestes`. Os dois saem de antes do `montarCtx`. */
+    ...(ehJogador("pacoteDaClasseInicial") ? { pacoteInicial, trDaClasse } : {}),
     escalaCD: cdTipo, escalaDefesa: defTipo,
     divisorCD, divisorDefesa,
     bonusVagas: canal("vagasPericia"),
@@ -3036,6 +3114,8 @@ export function deriveAfty(creature, opcoes = {}) {
     alcanceCorpo: tamanho.espacoAlcance,
     alcanceMult: combate.invencivelSobOSol
       || combate.postura === "ceu" || combate.postura2 === "ceu" ? 2 : 1,
+    // O Bônus em Ataque Permutativo que perde Margem, aplicado arma a arma.
+    permutasDeMargem: auxiliaresAtivos.permutasDeMargem,
   });
   dano = {
     ...dano,
@@ -3330,7 +3410,7 @@ export function deriveAfty(creature, opcoes = {}) {
        marca com `escopo: "invocacao"`. As quatro fontes acima são catálogo, e
        até aqui nada escrito à mão alcançava um shikigami. Ver
        `efeitosInvocacaoEscritos` em afty-invocacoes.js. */
-    ...semTecnicaPerdida(efeitosInvocacaoEscritos(creature)),
+    ...semTecnicaBloqueada(efeitosInvocacaoEscritos(creature)),
   ];
   // MARCADORES: uma Habilidade que vale só para ALGUMAS invocações (Concentrar
   // Poder, as 4 Melhorias, Fantoche Supremo, Companheiro, Econômicas) entra por
@@ -3406,7 +3486,7 @@ export function deriveAfty(creature, opcoes = {}) {
     /* As armas em que o dono é treinado: o requisito da Forma de Arma da invocação
        (Adicionais: "o invocador ser Treinado na arma escolhida", 2026-09-30). */
     armasTreinadas: ARMAS.filter((a) => armaTreinadaPor(a, treinamentosEquipamento.armas)).map((a) => a.id),
-    resistenciasDePassiva: [...new Set(semTecnicaPerdida(efeitosDosPassivos(creature))
+    resistenciasDePassiva: [...new Set(semTecnicaBloqueada(efeitosDosPassivos(creature))
       .filter((e) => e.canal === "resistenciaDano" && e.alvo)
       .map((e) => e.alvo))],
     /* Os números do dono que os tipos especiais leem (2026-09-30, Etapa 8): o
@@ -3435,12 +3515,16 @@ export function deriveAfty(creature, opcoes = {}) {
   };
   const invocacoes = {
     ...resolveInvocacoesList(creature?.invocacoes, donoInvoc), controle,
+    emCampo: invocacoesEmCampo,
     // Os dois níveis de Controlador, com nomes distintos (DA-13, 2026-09-30).
     nivelControladorReal, nivelEscalonamentoControlador,
     // A Hoste Amaldiçoada, para o criador oferecer o par de hordas (Etapa 9).
     hosteAmaldicoada: donoInvoc.hosteAmaldicoada,
   };
-  const hordas = resolveHordasList(creature?.hordas, creature?.invocacoes, donoInvoc);
+  const hordas = {
+    ...resolveHordasList(creature?.hordas, creature?.invocacoes, donoInvoc),
+    emCampo: hordasEmCampo,
+  };
   const quimeras = resolveQuimerasList(creature?.quimeras, creature?.invocacoes, donoInvoc);
   /* Os Corpos de Múltiplos Núcleos e o Mecha (2026-10-01, Etapa 9). O Mecha é da
      SESSÃO (a linha `mecha`), e só existe com a mesa. */
@@ -3495,6 +3579,8 @@ export function deriveAfty(creature, opcoes = {}) {
     totalAptidao: semEnergia
       ? [{ label: "Sem energia amaldiçoada", valor: 0 }]
       : [...partesAptidaoND, ...doMotor("pontosAptidao")],
+    // Só o Motor: os pontos de nível moram no `resumoAtributos`, que é da aba.
+    pontosAtributoExtra: doMotor("pontosAtributo"),
     // A Penalidade de Armadura item por item, mais o Motor. Ver o bloco dela.
     penalidadeDestreza: partesPenalidade,
     hp: [
@@ -3843,11 +3929,34 @@ export function deriveAfty(creature, opcoes = {}) {
     feiticos: creature?.feiticos,
     limitesAtributo: limitesAtributoBase,
   };
+  /* ⚠ OS QUATRO ORÇAMENTOS DE ESCOLHA FECHAM DE NOVO AQUI, com o agregado
+     FINAL (autor, 2026-10-02: *"Vagas de Talento em Feitiço não está
+     funcionando"*). `vagasHabilidade`, `vagasTalento`, `vagasMelhoria` e
+     `vagasLendaria` eram lidos só do montante, lá em cima, porque o orçamento
+     fecha antes dos efeitos. Feitiço Passivo, Funcionamento Básico, Buff de Mesa
+     e Habilidade Única entram depois, no bolo comum: a vaga aparecia no hover do
+     efeito ("1 de 1 ativos") e o contador não mexia. É o mesmo defeito do Talento
+     que dava vaga de Talento, consertado em 2026-09-02 por um passe à parte.
+
+     Refechar no fim é seguro porque as vagas só CONTAM: nenhuma escolha sai ou
+     entra por causa delas, e o primeiro fechamento não alimenta nada além dos
+     contadores. O agregado já traz o montante e o Talento, então o valor final
+     SUBSTITUI o de cima, e não soma nele. */
   const habilidadesFinal = {
     ...habilidades,
+    ...contaOrcamentoHabilidades({
+      gastosHabilidade: habilidades.gastosHabilidade,
+      talentos: habilidades.talentosGastos,
+      comum: canal("vagasHabilidade") + vagasHabilidadePorClasse,
+      exclusivasTalento: canal("vagasTalento"),
+    }),
     inacessiveis: (habilidades.escolhidas ?? [])
       .filter((id) => !avaliarAcessoHabilidade(getHabilidade(id), ctxRequisitos).ok),
   };
+  const altoNivelFinal = comVagasDeCanal(altoNivel, {
+    vagasMelhoria: canal("vagasMelhoria"),
+    vagasLendaria: canal("vagasLendaria"),
+  });
   /* O Talento já recebia `attrEff` e `aptidoes` na chamada, e ficava cego só
      para os três de treino. Reavaliar os dois pelo mesmo ctx evita a pergunta
      "qual dos dois estava certo" na próxima vez. */
@@ -3883,6 +3992,13 @@ export function deriveAfty(creature, opcoes = {}) {
     // O extrato da Loja de Catarse: saldo, gasto, compras e as vagas que elas
     // abriram. A tela lê daqui, e os efeitos já entraram no Motor lá em cima.
     catarse,
+    /* O extrato do Espinho: Almas, cada item com quantidade e teto, os
+       Equipamentos marcados e os avisos (os de nível entram aqui, e não no
+       resolver). Os efeitos já entraram no Motor lá em cima. */
+    espinho: { ...espinho, avisos: avisosEspinho },
+    /* Os Pontos de Atributo que o Motor dá por cima dos pontos de nível (canal
+       `pontosAtributo`, Espinho). A aba de Atributos soma no pool dela. */
+    pontosAtributoExtra: canal("pontosAtributo"),
     // O extrato da Carteira: XP, dinheiro e Interlúdios anotados, o que saiu e
     // os totais. A aba lê daqui, e o `alimentaFocos` diz se os Interlúdios dela
     // são o orçamento de Focos da aba Interlúdios.
@@ -3902,6 +4018,11 @@ export function deriveAfty(creature, opcoes = {}) {
     /* O que os Addons desta criatura DESTRAVAM. Vazio é o caso normal. Ao
        contrário das `primitivas`, isto MUDA REGRA. Ver `LIBERACOES`. */
     liberacoes,
+    /* A base da Defesa, para a trava do Feitiço Permutativo que perde Defesa:
+       "caso a sua Defesa caia para um valor menor que a base (10 + Mod. de
+       Destreza), o Feitiço não pode ser usado". O atributo é o que a Defesa de
+       fato usa, então o `defesaAtributo` vale aqui também (ASSUNÇÃO). */
+    defesaBase: 10 + modDefesa,
     // metadados / valores não sobrescrevíveis
     calc,                 // valores calculados (antes do override)
     isOverridden,
@@ -4005,7 +4126,7 @@ export function deriveAfty(creature, opcoes = {}) {
        para cinco tipos de requisito. Ver o bloco "REQUISITOS REAVALIADOS". */
     habilidades: habilidadesFinal,  // { escolhidas, total, gastos, restante, excedeu, inacessiveis, niveisPorEspec }
     talentos: talentosFinal,        // { escolhidas, gastos, inacessiveis } — gasto já somado em habilidades.gastos
-    altoNivel,            // { ativo, melhorias, lendarias, escolhas, apiceId } — orçamentos próprios
+    altoNivel: altoNivelFinal, // { ativo, melhorias, lendarias, escolhas, apiceId } — orçamentos próprios
     imitacao,
     invocacoes,           // { lista, total, custoTotal, temWarnings }
     hordas,               // { lista, total, custoTotal } (líder + membros escalados)

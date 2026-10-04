@@ -1,0 +1,480 @@
+[
+  {
+    "width": 1440,
+    "saved": {
+      "list": [
+        {
+          "name": "Golpe com Punho",
+          "type": "comum",
+          "attackType": "acerto",
+          "toHit": 44,
+          "toHitBase": 44,
+          "cd": 43,
+          "cdBase": 43,
+          "trType": "fortitude",
+          "range": "3 Metros",
+          "area": "-",
+          "rangeType": "cac",
+          "rangeLocked": false,
+          "areaLocked": true,
+          "trades": {
+            "sacrifDadosAcerto": 0,
+            "sacrifDadosCD": 0,
+            "sacrifAcertoDados": 0,
+            "sacrifCdDados": 0
+          },
+          "damage": {
+            "type": "impacto",
+            "narrativeType": "padrao",
+            "isNarrativePhysical": false,
+            "damageIsLocked": false,
+            "damageIsCalculated": true,
+            "numDice": 8,
+            "numDiceBase": 8,
+            "dieSize": 12,
+            "mod": 63,
+            "roll": "8d12+63",
+            "average": 115
+          },
+          "condition": {
+            "tier": "nenhuma",
+            "name": "",
+            "nameKey": "",
+            "payment": "pe"
+          },
+          "cost": 0,
+          "description": "",
+          "finalTextManual": "",
+          "finalTextStale": false,
+          "calc": {
+            "nd": 20,
+            "patamar": "calamidade",
+            "difficulty": "intermediario"
+          },
+          "id": "act-mrmd1dcp"
+        },
+        {
+          "name": "Lâmina do Extermínio (Espíritos Amaldiçoados)",
+          "type": "comum",
+          "attackType": "acerto",
+          "toHit": 44,
+          "toHitBase": 44,
+          "cd": 43,
+          "cdBase": 43,
+          "trType": "fortitude",
+          "range": "3 metros",
+          "area": "-",
+          "rangeType": "cac",
+          "rangeLocked": false,
+          "areaLocked": true,
+          "trades": {
+            "sacrifDadosAcerto": 0,
+            "sacrifDadosCD": 0,
+            "sacrifAcertoDados": 0,
+            "sacrifCdDados": 0
+          },
+          "damage": {
+            "type": "energia reversa",
+            "narrativeType": "padrao",
+            "isNarrativePhysical": false,
+            "damageIsLocked": false,
+            "damageIsCalculated": true,
+            "numDice": 8,
+            "numDiceBase": 8,
+            "dieSize": 12,
+            "mod": 63,
+            "roll": "8d12+63",
+            "average": 115
+          },
+          "condition": {
+            "tier": "nenhuma",
+            "name": "",
+            "nameKey": "",
+            "payment": "pe"
+          },
+          "cost": 0,
+          "description": "",
+          "finalTextManual": "",
+          "finalTextStale": false,
+          "calc": {
+            "nd": 20,
+            "patamar": "calamidade",
+            "difficulty": "intermediario"
+          },
+          "id": "act-mrmd1ygn"
+        },
+        {
+          "name": "Lâmina do Extermínio",
+          "type": "comum",
+          "attackType": "acerto",
+          "toHit": 44,
+          "toHitBase": 44,
+          "cd": 43,
+          "cdBase": 43,
+          "trType": "fortitude",
+          "range": "Corpo-a-Corpo",
+          "area": "-",
+          "rangeType": "cac",
+          "rangeLocked": true,
+          "areaLocked": true,
+          "trades": {
+            "sacrifDadosAcerto": 0,
+            "sacrifDadosCD": 0,
+            "sacrifAcertoDados": 0,
+            "sacrifCdDados": 0
+          },
+          "damage": {
+            "type": "cortante",
+            "narrativeType": "padrao",
+            "isNarrativePhysical": false,
+            "damageIsLocked": false,
+            "damageIsCalculated": true,
+            "numDice": 8,
+            "numDiceBase": 8,
+            "dieSize": 12,
+            "mod": 63,
+            "roll": "8d12+63",
+            "average": 115
+          },
+          "condition": {
+            "tier": "nenhuma",
+            "name": "",
+            "nameKey": "",
+            "payment": "pe"
+          },
+          "cost": 0,
+          "description": "",
+          "finalTextManual": "",
+          "finalTextStale": false,
+          "calc": {
+            "nd": 20,
+            "patamar": "calamidade",
+            "difficulty": "intermediario"
+          },
+          "id": "act-mrmd2br5"
+        },
+        {
+          "name": "Forçar Adaptação",
+          "type": "bonus",
+          "attackType": "suporte",
+          "toHit": 44,
+          "toHitBase": 44,
+          "cd": 43,
+          "cdBase": 43,
+          "trType": "fortitude",
+          "range": "48 Metros",
+          "area": "-",
+          "rangeType": "distancia",
+          "rangeLocked": true,
+          "areaLocked": true,
+          "trades": {
+            "sacrifDadosAcerto": 0,
+            "sacrifDadosCD": 0,
+            "sacrifAcertoDados": 0,
+            "sacrifCdDados": 0
+          },
+          "damage": {
+            "type": "cortante",
+            "narrativeType": "padrao",
+            "isNarrativePhysical": false,
+            "damageIsLocked": false,
+            "damageIsCalculated": true,
+            "numDice": 8,
+            "numDiceBase": 8,
+            "dieSize": 10,
+            "mod": 51,
+            "roll": "",
+            "average": 0
+          },
+          "condition": {
+            "tier": "nenhuma",
+            "name": "",
+            "nameKey": "",
+            "payment": "pe"
+          },
+          "cost": 0,
+          "description": "Caso seja afetado por quatro ou mais vezes pela mesma habilidade ou conceito de feitiço, Mahoraga pode utilizar desta ação em seu turno para acelerar seu processo de adaptação, diminuindo em 1 rodada o tempo para se adaptar completamente.",
+          "finalTextManual": "",
+          "finalTextStale": false,
+          "calc": {
+            "nd": 20,
+            "patamar": "calamidade",
+            "difficulty": "intermediario"
+          },
+          "id": "act-mrmd3e1s"
+        },
+        {
+          "name": "Modelo Verificacao Publico",
+          "damage": {
+            "type": "cortante",
+            "isNarrativePhysical": false,
+            "damageIsLocked": true,
+            "damageIsCalculated": false,
+            "numDice": 0,
+            "dieSize": 8,
+            "mod": 0,
+            "narrativeType": "padrao",
+            "numDiceBase": 0
+          },
+          "condition": null,
+          "trades": null,
+          "finalTextManual": "",
+          "automation": null,
+          "id": "act-mut6wmdp-zc52",
+          "range": "48 Metros",
+          "area": "-",
+          "calc": {
+            "nd": 20,
+            "patamar": "calamidade",
+            "difficulty": "intermediario"
+          },
+          "toHitBase": 44,
+          "cdBase": 43,
+          "toHit": 44,
+          "cd": 43
+        }
+      ]
+    },
+    "modelApplied": true,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "saved": {
+      "list": [
+        {
+          "name": "Golpe com Punho",
+          "type": "comum",
+          "attackType": "acerto",
+          "toHit": 44,
+          "toHitBase": 44,
+          "cd": 43,
+          "cdBase": 43,
+          "trType": "fortitude",
+          "range": "3 Metros",
+          "area": "-",
+          "rangeType": "cac",
+          "rangeLocked": false,
+          "areaLocked": true,
+          "trades": {
+            "sacrifDadosAcerto": 0,
+            "sacrifDadosCD": 0,
+            "sacrifAcertoDados": 0,
+            "sacrifCdDados": 0
+          },
+          "damage": {
+            "type": "impacto",
+            "narrativeType": "padrao",
+            "isNarrativePhysical": false,
+            "damageIsLocked": false,
+            "damageIsCalculated": true,
+            "numDice": 8,
+            "numDiceBase": 8,
+            "dieSize": 12,
+            "mod": 63,
+            "roll": "8d12+63",
+            "average": 115
+          },
+          "condition": {
+            "tier": "nenhuma",
+            "name": "",
+            "nameKey": "",
+            "payment": "pe"
+          },
+          "cost": 0,
+          "description": "",
+          "finalTextManual": "",
+          "finalTextStale": false,
+          "calc": {
+            "nd": 20,
+            "patamar": "calamidade",
+            "difficulty": "intermediario"
+          },
+          "id": "act-mrmd1dcp"
+        },
+        {
+          "name": "Lâmina do Extermínio (Espíritos Amaldiçoados)",
+          "type": "comum",
+          "attackType": "acerto",
+          "toHit": 44,
+          "toHitBase": 44,
+          "cd": 43,
+          "cdBase": 43,
+          "trType": "fortitude",
+          "range": "3 metros",
+          "area": "-",
+          "rangeType": "cac",
+          "rangeLocked": false,
+          "areaLocked": true,
+          "trades": {
+            "sacrifDadosAcerto": 0,
+            "sacrifDadosCD": 0,
+            "sacrifAcertoDados": 0,
+            "sacrifCdDados": 0
+          },
+          "damage": {
+            "type": "energia reversa",
+            "narrativeType": "padrao",
+            "isNarrativePhysical": false,
+            "damageIsLocked": false,
+            "damageIsCalculated": true,
+            "numDice": 8,
+            "numDiceBase": 8,
+            "dieSize": 12,
+            "mod": 63,
+            "roll": "8d12+63",
+            "average": 115
+          },
+          "condition": {
+            "tier": "nenhuma",
+            "name": "",
+            "nameKey": "",
+            "payment": "pe"
+          },
+          "cost": 0,
+          "description": "",
+          "finalTextManual": "",
+          "finalTextStale": false,
+          "calc": {
+            "nd": 20,
+            "patamar": "calamidade",
+            "difficulty": "intermediario"
+          },
+          "id": "act-mrmd1ygn"
+        },
+        {
+          "name": "Lâmina do Extermínio",
+          "type": "comum",
+          "attackType": "acerto",
+          "toHit": 44,
+          "toHitBase": 44,
+          "cd": 43,
+          "cdBase": 43,
+          "trType": "fortitude",
+          "range": "Corpo-a-Corpo",
+          "area": "-",
+          "rangeType": "cac",
+          "rangeLocked": true,
+          "areaLocked": true,
+          "trades": {
+            "sacrifDadosAcerto": 0,
+            "sacrifDadosCD": 0,
+            "sacrifAcertoDados": 0,
+            "sacrifCdDados": 0
+          },
+          "damage": {
+            "type": "cortante",
+            "narrativeType": "padrao",
+            "isNarrativePhysical": false,
+            "damageIsLocked": false,
+            "damageIsCalculated": true,
+            "numDice": 8,
+            "numDiceBase": 8,
+            "dieSize": 12,
+            "mod": 63,
+            "roll": "8d12+63",
+            "average": 115
+          },
+          "condition": {
+            "tier": "nenhuma",
+            "name": "",
+            "nameKey": "",
+            "payment": "pe"
+          },
+          "cost": 0,
+          "description": "",
+          "finalTextManual": "",
+          "finalTextStale": false,
+          "calc": {
+            "nd": 20,
+            "patamar": "calamidade",
+            "difficulty": "intermediario"
+          },
+          "id": "act-mrmd2br5"
+        },
+        {
+          "name": "Forçar Adaptação",
+          "type": "bonus",
+          "attackType": "suporte",
+          "toHit": 44,
+          "toHitBase": 44,
+          "cd": 43,
+          "cdBase": 43,
+          "trType": "fortitude",
+          "range": "48 Metros",
+          "area": "-",
+          "rangeType": "distancia",
+          "rangeLocked": true,
+          "areaLocked": true,
+          "trades": {
+            "sacrifDadosAcerto": 0,
+            "sacrifDadosCD": 0,
+            "sacrifAcertoDados": 0,
+            "sacrifCdDados": 0
+          },
+          "damage": {
+            "type": "cortante",
+            "narrativeType": "padrao",
+            "isNarrativePhysical": false,
+            "damageIsLocked": false,
+            "damageIsCalculated": true,
+            "numDice": 8,
+            "numDiceBase": 8,
+            "dieSize": 10,
+            "mod": 51,
+            "roll": "",
+            "average": 0
+          },
+          "condition": {
+            "tier": "nenhuma",
+            "name": "",
+            "nameKey": "",
+            "payment": "pe"
+          },
+          "cost": 0,
+          "description": "Caso seja afetado por quatro ou mais vezes pela mesma habilidade ou conceito de feitiço, Mahoraga pode utilizar desta ação em seu turno para acelerar seu processo de adaptação, diminuindo em 1 rodada o tempo para se adaptar completamente.",
+          "finalTextManual": "",
+          "finalTextStale": false,
+          "calc": {
+            "nd": 20,
+            "patamar": "calamidade",
+            "difficulty": "intermediario"
+          },
+          "id": "act-mrmd3e1s"
+        },
+        {
+          "name": "Modelo Verificacao Publico",
+          "damage": {
+            "type": "cortante",
+            "isNarrativePhysical": false,
+            "damageIsLocked": true,
+            "damageIsCalculated": false,
+            "numDice": 0,
+            "dieSize": 8,
+            "mod": 0,
+            "narrativeType": "padrao",
+            "numDiceBase": 0
+          },
+          "condition": null,
+          "trades": null,
+          "finalTextManual": "",
+          "automation": null,
+          "id": "act-mut6wog9-n5mo",
+          "range": "48 Metros",
+          "area": "-",
+          "calc": {
+            "nd": 20,
+            "patamar": "calamidade",
+            "difficulty": "intermediario"
+          },
+          "toHitBase": 44,
+          "cdBase": 43,
+          "toHit": 44,
+          "cd": 43
+        }
+      ]
+    },
+    "modelApplied": true,
+    "errors": []
+  }
+]

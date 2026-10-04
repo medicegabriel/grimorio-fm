@@ -37,7 +37,7 @@ import { semAcento } from "./ficha-conteudo";
 const SEP = " · ";
 
 /** O balde de quem não tem casa própria. */
-const OUTROS = { id: "outros", label: "Outros" };
+export const OUTROS = { id: "outros", label: "Outros" };
 
 /**
  * A ORDEM DAS SUB-ABAS, pedida pelo autor em 2026-09-17: *"Técnica |

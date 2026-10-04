@@ -1,0 +1,239 @@
+[
+  {
+    "fase": "depois-telefone",
+    "rota": "afty",
+    "largura": 390,
+    "cabecalho": {
+      "x": 0,
+      "y": 0,
+      "largura": 390,
+      "altura": 150,
+      "voltar": {
+        "x": 16,
+        "y": 14,
+        "largura": 83.21875,
+        "altura": 32
+      },
+      "titulo": {
+        "x": 44,
+        "y": 56,
+        "largura": 168.78125,
+        "altura": 28
+      },
+      "estilo": {
+        "fontFamily": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+        "fontSize": "18px",
+        "fontWeight": "700",
+        "color": "rgb(255, 255, 255)",
+        "letterSpacing": "normal",
+        "marginTop": "0px",
+        "marginBottom": "0px",
+        "lineHeight": "28px"
+      }
+    },
+    "abas": [
+      {
+        "aba": "Identidade",
+        "largura": 390,
+        "viewport": 390
+      },
+      {
+        "aba": "Informações",
+        "largura": 390,
+        "viewport": 390
+      },
+      {
+        "aba": "Perícias",
+        "largura": 390,
+        "viewport": 390
+      },
+      {
+        "aba": "Habilidades",
+        "largura": 390,
+        "viewport": 390,
+        "perfil": {
+          "cabecalho": {
+            "x": 17,
+            "y": 405.046875,
+            "largura": 356,
+            "altura": 89
+          },
+          "titulo": {
+            "x": 33,
+            "y": 417.046875,
+            "largura": 144.375,
+            "altura": 20
+          },
+          "seletor": {
+            "x": 141.8125,
+            "y": 445.046875,
+            "largura": 160,
+            "altura": 36
+          }
+        }
+      },
+      {
+        "aba": "Especializações",
+        "largura": 390,
+        "viewport": 390
+      },
+      {
+        "aba": "Aptidões",
+        "largura": 390,
+        "viewport": 390
+      },
+      {
+        "aba": "Invocações",
+        "largura": 390,
+        "viewport": 390
+      },
+      {
+        "aba": "Equipamentos",
+        "largura": 390,
+        "viewport": 390
+      },
+      {
+        "aba": "Interlúdios",
+        "largura": 390,
+        "viewport": 390
+      },
+      {
+        "aba": "Cálculos",
+        "largura": 390,
+        "viewport": 390
+      },
+      {
+        "aba": "Votos",
+        "largura": 390,
+        "viewport": 390
+      },
+      {
+        "aba": "Addons",
+        "largura": 390,
+        "viewport": 390
+      },
+      {
+        "aba": "Resistências",
+        "largura": 390,
+        "viewport": 390
+      }
+    ],
+    "erros": []
+  },
+  {
+    "fase": "depois-telefone",
+    "rota": "player",
+    "largura": 390,
+    "cabecalho": {
+      "x": 0,
+      "y": 0,
+      "largura": 390,
+      "altura": 150,
+      "voltar": {
+        "x": 16,
+        "y": 14,
+        "largura": 83.21875,
+        "altura": 32
+      },
+      "titulo": {
+        "x": 44,
+        "y": 56,
+        "largura": 155.171875,
+        "altura": 28
+      },
+      "estilo": {
+        "fontFamily": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+        "fontSize": "18px",
+        "fontWeight": "700",
+        "color": "rgb(255, 255, 255)",
+        "letterSpacing": "normal",
+        "marginTop": "0px",
+        "marginBottom": "0px",
+        "lineHeight": "28px"
+      }
+    },
+    "abas": [
+      {
+        "aba": "Identidade",
+        "largura": 390,
+        "viewport": 390
+      },
+      {
+        "aba": "Perícias",
+        "largura": 390,
+        "viewport": 390
+      },
+      {
+        "aba": "Habilidades",
+        "largura": 390,
+        "viewport": 390,
+        "perfil": {
+          "cabecalho": {
+            "x": 17,
+            "y": 405.046875,
+            "largura": 356,
+            "altura": 89
+          },
+          "titulo": {
+            "x": 33,
+            "y": 417.046875,
+            "largura": 144.375,
+            "altura": 20
+          },
+          "seletor": {
+            "x": 141.8125,
+            "y": 445.046875,
+            "largura": 160,
+            "altura": 36
+          }
+        }
+      },
+      {
+        "aba": "Especializações",
+        "largura": 390,
+        "viewport": 390
+      },
+      {
+        "aba": "Aptidões",
+        "largura": 390,
+        "viewport": 390
+      },
+      {
+        "aba": "Invocações",
+        "largura": 390,
+        "viewport": 390
+      },
+      {
+        "aba": "Equipamentos",
+        "largura": 390,
+        "viewport": 390
+      },
+      {
+        "aba": "Interlúdios",
+        "largura": 390,
+        "viewport": 390
+      },
+      {
+        "aba": "Cálculos",
+        "largura": 390,
+        "viewport": 390
+      },
+      {
+        "aba": "Votos",
+        "largura": 390,
+        "viewport": 390
+      },
+      {
+        "aba": "Addons",
+        "largura": 390,
+        "viewport": 390
+      },
+      {
+        "aba": "Resistências",
+        "largura": 390,
+        "viewport": 390
+      }
+    ],
+    "erros": []
+  }
+]

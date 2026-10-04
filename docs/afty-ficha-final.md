@@ -38,7 +38,7 @@ Buffs.
 | O que | Travado em |
 |---|---|
 | Habilidades na aba Ações | **D7**: nenhum catálogo tem metadado de ação, custo ou usos |
-| ✅ Descanso curto e longo | **D3** respondida em 2026-09-23: um botão só, que devolve tudo |
+| ✅ Descanso curto e longo | **D3** respondida em 2026-09-23: um botão só, que devolve os recursos. Marionetes: uma escolhida recebe o reparo completo (2026-10-03) |
 | ✅ Condições com mecânica | **D6** respondida em 2026-09-21: ver `docs/afty-condicoes.md` |
 | RD abatendo dano sozinha | **D9**: decisão do autor |
 | Trilho lateral de Buffs | **D10**: preferência do autor |
@@ -294,9 +294,12 @@ para receber mecânica no dia em que o autor mandar as regras (pergunta D6).
 
 Um contador de **rodada** com o botão "Próxima rodada" decrementa toda duração e avisa o que
 expirou. **"Descanso"** zera os `usos` das linhas de cura e o que mais for por descanso. O sistema
-tem descanso curto e longo, e o botão continua um só e devolve tudo, por decisão do autor (D3,
-2026-09-23: *"Manter um botão só"*). Os contadores de usos das Habilidades guardam a recarga do
-livro só como dado (seção 27).
+tem descanso curto e longo, e o botão continua um só e devolve os recursos, por decisão do autor
+(D3, 2026-09-23: *"Manter um botão só"*). Para Marionetes, o descanso repara uma não destruída,
+escolhida na janela de Descanso, e zera suas quedas. As demais conservam PV, quedas, retorno e
+estado (autor, 2026-10-03). A Ficha e o painel de combatente no Encontro usam a mesma escolha.
+Descansar Todos pede uma Marionete por combatente com reparo disponível. Os contadores de usos
+das Habilidades guardam a recarga do livro só como dado (seção 27).
 
 ---
 
@@ -1038,6 +1041,19 @@ qualquer `display: none` que não esteja atrás desse atributo.
 O painel de rolagens passa a ocupar a largura toda no celular: encolhido no canto ele
 ficava com duas palavras por linha.
 
+### As marcas da linha em linha estreita (2026-10-03)
+
+Abaixo de **560px de linha** (`@container itemficha`, em ficha.css), as marcas da linha
+fechada (a origem, a Especialização, o Nível, a categoria da Aptidão) **saem dela e aparecem
+dentro da linha aberta**, na mesma faixa dos números de mesa. Nada fica escondido de vez:
+quem quer a marca abre a linha (autor, 2026-10-03).
+
+A pergunta vai à **linha**, e não à janela, porque a aba também é desenhada no painel do
+Encontro. Até essa data as marcas tinham `hidden sm:inline-flex`, que nunca escondeu nada: o
+`display` do `.afty-chip`, escrito fora de camada, vence o `hidden` do Tailwind. Em 390px, as
+Habilidades do Combatente com marca e contador de usos ficavam com o nome em **0px**. O
+`asserts/t-ficha-linhas.mjs` reprova qualquer `.afty-chip` com `hidden` do Tailwind.
+
 ### Impressão
 
 **O que imprime é o que está na tela.** A aba aberta imprime, as outras três não
@@ -1716,3 +1732,10 @@ o Autossuficiente e o Pagar.
   completa do Lento. O Sanguinário mostra Leve ou Médio no próprio contador.
 
 Asserts em `asserts/t-combatente-automacoes.mjs`.
+
+
+## Alcance nas linhas de Dano (2026-10-03)
+
+O alcance de cada arma e do Ataque Básico abre seu painel de fontes pelo hover, toque ou teclado. `alcance.partes` vem do `alcanceDe` em `afty-pericias.js`, e `LinhaDano` em `abas/AbaAcoes.jsx` usa `NumeroComFontes`. O painel mostra a base, Estendida quando houver, cada fonte do Motor e o multiplicador. Auxiliares suplantados continuam visíveis, riscados.
+
+Nos dois sistemas, Alcance Corpo a Corpo do Auxiliar, Ataque Circular e Articulações Extensas somam em armas corpo a corpo e Ataque Básico. O Auxiliar de Distância soma nos alcances curto e longo de armas de distância e arremesso. O Circular requer a manobra ligada com Empolgação pelo menos 5. Articulações Extensas soma 1,5 m pela versão 2.1.1 do addon Maldição Era de Ouro. Esses bônus não alteram o Espaço/Alcance do Tamanho nem o alcance de Feitiços.

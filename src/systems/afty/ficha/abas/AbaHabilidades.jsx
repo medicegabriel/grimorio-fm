@@ -70,7 +70,7 @@ function CartaoTecnica({ titulo, texto }) {
   );
 }
 
-export default function AbaHabilidades({ funcionamentos = [], itens, abertos, onAberto, favoritos, onFavorito, destaque, contadorUsos = null }) {
+export default function AbaHabilidades({ funcionamentos = [], itens, abertos, onAberto, favoritos, onFavorito, destaque, contadorUsos = null, espinho = null }) {
   const [termo, setTermo] = useState("");
   const [efeitoFiltro, setEfeitoFiltro] = useState("todos");
   const filtrados = useMemo(() => filtraHabilidades(itens, efeitoFiltro, termo), [itens, efeitoFiltro, termo]);
@@ -88,6 +88,11 @@ export default function AbaHabilidades({ funcionamentos = [], itens, abertos, on
         <FiltroDeHabilidades rotulo="Filtrar as habilidades" efeito={efeitoFiltro} onEfeito={setEfeitoFiltro}
           termo={termo} onTermo={setTermo} visiveis={filtrados.length} total={itens.length} />
       </div>
+
+      {/* O Espinho (Addon), como nó pronto: quem decide se ele existe e quem grava
+          é a tela dona (a Ficha grava, o Encontro só mostra). Não passa pelo
+          filtro, porque não é habilidade, é o contador das Almas. */}
+      {espinho}
 
       {/* Um cartão por Funcionamento Básico, o principal primeiro. O adicional
           leva o nome que o jogador deu, e o principal leva o rótulo do sistema:

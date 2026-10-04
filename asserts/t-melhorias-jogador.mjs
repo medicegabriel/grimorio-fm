@@ -157,6 +157,23 @@ t("e quem tinha volta a ter", jogLiberado.altoNivel.lendarias.escolhidas, [VE]);
 t("com o limite 6", jogLiberado.aptidao.limite.dom, 6);
 t("um Addon que libera outra coisa não a devolve", d("player", { len: [VE], addons: [OUTRA] }).altoNivel.lendarias.escolhidas, []);
 
+/* SOMA confirmada pelo autor em 2026-10-03, inclusive no jogador liberado. */
+for (const sistema of ["afty", "player"]) {
+  const c = ficha(sistema, { len: [VE], addons: sistema === "player" ? [LIBERA] : [] });
+  c.core.tecnicaEfeitos = [{ canal: "limiteAptidao", alvo: "dom", expr: "1", nome: "Outra Fonte de Limite" }];
+  ADD.aplicarAddons(c.addons);
+  const com = deriveAfty(c);
+  const sem = deriveAfty({ ...c, habilidadesLendarias: [] });
+  t(sistema + ": outra fonte sozinha leva o limite a 6", sem.aptidao.limite.dom, 6);
+  t(sistema + ": Versatilidade Extrema soma com outra fonte e chega a 7", com.aptidao.limite.dom, 7);
+  t(sistema + ": o limite nao concede niveis", com.aptidao.efetivo.dom, sem.aptidao.efetivo.dom);
+  t(sistema + ": o bonus fica so na trilha escolhida",
+    [com.aptidao.limite.au, com.aptidao.limite.cl, com.aptidao.limite.bar, com.aptidao.limite.er], [5, 5, 5, 5]);
+  t(sistema + ": o Motor nomeia a fonte da Lendaria",
+    com.efeitos.detalhes.some((e) => e.canal === "limiteAptidao" && e.alvo === "dom" && e.nome === "Versatilidade Extrema" && e.valor === 1), true);
+}
+ADD.limparAddons();
+
 /* As outras Lendárias não são tocadas. */
 const outraLendaria = AN.HABILIDADES_LENDARIAS.find((l) => l.id !== VE && !(l.requisitos ?? []).length);
 t("uma Lendária vizinha segue na lista do jogador", jogSem.altoNivel.catalogo.lendarias.some((l) => l.id === outraLendaria.id), true);

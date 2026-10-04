@@ -1,0 +1,118 @@
+[
+  {
+    "rota": "afty",
+    "largura": 1440,
+    "articulacoes": [
+      "Tamanho1,5m",
+      "Articulações Extensas+1,5m"
+    ],
+    "corpo": [
+      "Tamanho1,5m",
+      "Articulações Extensas+1,5m",
+      "Auxiliar Corpo+4,5m"
+    ],
+    "distancia": [
+      "Alcance da Arma30m / 60m",
+      "Auxiliar Distância+9m"
+    ],
+    "circular": [
+      "Tamanho1,5m",
+      "Manobras Finalizadoras+3m",
+      "Articulações Extensas+1,5m",
+      "Auxiliar Corpo+4,5m"
+    ],
+    "dimensoes": {
+      "viewport": 1440,
+      "largura": 1425,
+      "corpo": 1425
+    },
+    "erros": []
+  },
+  {
+    "rota": "afty",
+    "largura": 390,
+    "articulacoes": [
+      "Tamanho1,5m",
+      "Articulações Extensas+1,5m"
+    ],
+    "corpo": [
+      "Tamanho1,5m",
+      "Articulações Extensas+1,5m",
+      "Auxiliar Corpo+4,5m"
+    ],
+    "distancia": [
+      "Alcance da Arma30m / 60m",
+      "Auxiliar Distância+9m"
+    ],
+    "circular": [
+      "Tamanho1,5m",
+      "Manobras Finalizadoras+3m",
+      "Articulações Extensas+1,5m",
+      "Auxiliar Corpo+4,5m"
+    ],
+    "dimensoes": {
+      "viewport": 390,
+      "largura": 390,
+      "corpo": 390
+    },
+    "erros": []
+  },
+  {
+    "rota": "player",
+    "largura": 1440,
+    "articulacoes": [
+      "Tamanho1,5m",
+      "Articulações Extensas+1,5m"
+    ],
+    "corpo": [
+      "Tamanho1,5m",
+      "Articulações Extensas+1,5m",
+      "Auxiliar Corpo+4,5m"
+    ],
+    "distancia": [
+      "Alcance da Arma30m / 60m",
+      "Auxiliar Distância+9m"
+    ],
+    "circular": [
+      "Tamanho1,5m",
+      "Manobras Finalizadoras+3m",
+      "Articulações Extensas+1,5m",
+      "Auxiliar Corpo+4,5m"
+    ],
+    "dimensoes": {
+      "viewport": 1440,
+      "largura": 1425,
+      "corpo": 1425
+    },
+    "erros": []
+  },
+  {
+    "rota": "player",
+    "largura": 390,
+    "articulacoes": [
+      "Tamanho1,5m",
+      "Articulações Extensas+1,5m"
+    ],
+    "corpo": [
+      "Tamanho1,5m",
+      "Articulações Extensas+1,5m",
+      "Auxiliar Corpo+4,5m"
+    ],
+    "distancia": [
+      "Alcance da Arma30m / 60m",
+      "Auxiliar Distância+9m"
+    ],
+    "circular": [
+      "Tamanho1,5m",
+      "Manobras Finalizadoras+3m",
+      "Articulações Extensas+1,5m",
+      "Auxiliar Corpo+4,5m"
+    ],
+    "dimensoes": {
+      "viewport": 390,
+      "largura": 390,
+      "corpo": 390
+    },
+    "erros": []
+  }
+]

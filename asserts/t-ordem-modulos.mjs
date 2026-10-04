@@ -62,6 +62,10 @@ const FOLHAS = [
      de progressão, e o afty-addons é importado por meio sistema. Um import novo
      aqui dentro deixaria de ser uma seta de mão única e viraria ciclo. */
   ["afty-carteira.js", "a aba entra cedo no builder E o afty-addons o importa"],
+  /* ⚠ ENTROU EM 2026-09-30, pelos mesmos DOIS motivos da Carteira: o card do
+     Espinho entra cedo no builder, e o `afty-addons.js` o importa para sanear o
+     catálogo do pacote em `espinhoDaFicha`. */
+  ["afty-espinho.js", "o card entra cedo no builder E o afty-addons o importa"],
   /* ⚠ ENTROU EM 2026-09-09, quando a criação de armas passou a ler a escada de
      Níveis de Dano em vez de espelhá-la. Ele já era folha e agora é folha
      CARREGADA: o `afty-criacao-armas` depende dele e o `afty-equipamentos`

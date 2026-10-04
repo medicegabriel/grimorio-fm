@@ -281,17 +281,27 @@ export function mesclaFichaAfty(existente) {
       && !Array.isArray(existente.periciaAtributoManual))
       ? existente.periciaAtributoManual
       : {},
+    // A mesma troca no TR e no ataque (2026-10-02), com a mesma guarda.
+    trAtributoManual: (existente.trAtributoManual && typeof existente.trAtributoManual === "object"
+      && !Array.isArray(existente.trAtributoManual))
+      ? existente.trAtributoManual
+      : {},
+    ataqueAtributoManual: (existente.ataqueAtributoManual && typeof existente.ataqueAtributoManual === "object"
+      && !Array.isArray(existente.ataqueAtributoManual))
+      ? existente.ataqueAtributoManual
+      : {},
   };
 }
 
 /**
  * O nome com que uma ficha PODE ser gravada.
  *
- * ⚠ ISTO NÃO É COSMÉTICO. O importador da 2.5.2 (`parseImportText`, em
- * `src/components/io-utils.js`) reprova qualquer criatura com `name` vazio, e
- * ele LANÇA em vez de pular: uma ficha sem nome derruba o arquivo de import
- * inteiro, levando junto todas as outras que vieram no mesmo pacote. Uma ficha
- * gravada sem nome sai do app e não volta.
+ * ⚠ NASCEU DE UM ERRO DE IMPORTAÇÃO (2026-09-05). O importador da 2.5.2
+ * (`parseImportText`, em `src/components/io-utils.js`) LANÇAVA quando achava uma
+ * criatura com `name` vazio, e uma ficha sem nome derrubava o arquivo de import
+ * inteiro. Desde 2026-10-03 ele dá o mesmo "Sem nome" em vez de lançar (o autor
+ * escolheu o nome de reserva), então as duas pontas dizem a mesma palavra, e o
+ * `asserts/t-nome-ficha.mjs` acusa se uma delas mudar sozinha.
  *
  * ⚠ MORA AQUI, E NÃO DENTRO DO `handleSave`, para o assert poder medir a mesma
  * função que o criador usa. A regra escrita em dois lugares é a regra que
@@ -424,8 +434,12 @@ export function createBlankAfty() {
     // Mestre. Ver `resistenciasDaClasse` em afty-especializacoes.js.
     trDaClasse: [],
     trSegundo: null,
+    // O atributo do TR e do ataque trocado à mão (2026-10-02), irmãos do
+    // `periciaAtributoManual`. Ver `atributosDeTRManuais` em afty-pericias.js.
+    trAtributoManual: {},      // { [trValue]: chave }
     ataquesProf: {},           // { corpo: true, distancia: true }
     ataqueFineza: false,       // arma com o traço Fineza: corpo a corpo pode usar Destreza
+    ataqueAtributoManual: {},  // { [ataqueId]: chave }, vale no acerto e no dano
 
     // Armas Dedicadas (Lutador 2°). Ids do catálogo de armas, até 3. A escolha
     // é marcada na linha de dano da arma, não num pool dentro da habilidade.
@@ -459,6 +473,14 @@ export function createBlankAfty() {
     // orçamento de Focos com a liberação `carteiraFocos`.
     // Ver ./afty-carteira.js.
     carteira: { entradas: [], gastos: [] },
+
+    // ---------- ESPINHO ----------
+    // As Almas e o que elas compraram (autor, 2026-09-30). É FICHA, como a
+    // Catarse: Almas Totais é um número digitado, e a compra é permanente.
+    // Forma: { almas: number, outros: number, compras: { [itemId]: qtd },
+    //          equipamentos: [{ uid, aprimorado }] }. O catálogo vem do Addon,
+    // e o card só aparece com o Addon que o permite. Ver ./afty-espinho.js.
+    espinho: { almas: 0, outros: 0, compras: {}, equipamentos: [] },
 
     // Técnicas de Combate (Conjurador 2°). As armas são ids do catálogo e o
     // atributo é uma escolha única, compartilhada pelas duas. O estado de

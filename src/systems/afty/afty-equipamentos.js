@@ -34,7 +34,7 @@ import {
   avisosDoFeiticoVinculado, estadoUsosFeitico, linhasDaReceitaUnica, saneiaReceitaUnica, usosDoFeiticoVinculado,
 } from "./afty-criacao-equipamentos-encantamento";
 import { ITEM_TALISMA_APICE } from "./afty-talisma-apice";
-import { AFTY_PERICIAS } from "./afty-pericias-catalogo";
+import { AFTY_PERICIAS, ALVO_QUATRO_MANOBRAS } from "./afty-pericias-catalogo";
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
 import { ESCADA_DANO, nivelDoDado } from "./afty-niveis-dano";
 import { evalNumber, normalizarVariavel, validateExpression } from "./afty-dsl";
@@ -1352,6 +1352,9 @@ export const estadoDaUnica = (uid) => `unica_${uid}`;
 /** O mesmo, para a segunda Habilidade Única do Addon. Um interruptor por Habilidade. */
 export const estadoDaSegundaUnica = (uid) => `unica2_${uid}`;
 
+/** O mesmo, para a Habilidade Única que o Aprimoramento do Espinho abre. */
+export const estadoDaUnicaEspinho = (uid) => `unica3_${uid}`;
+
 /**
  * A Segunda Habilidade Única está PREENCHIDA: tem texto ou uma linha do Motor
  * com expressão. Cada item preenchido custa um Slot de Feitiço (autor,
@@ -1389,7 +1392,9 @@ function dslEquipCtxBase(creature, bt) {
      usaCargas    -> gasta Cargas de Encantamento (número de cargas = BT).
      exclusivoCom -> ids que não podem coexistir na mesma arma.
      preReq       -> texto do [Pré-Requisito: ...] verbatim, quando há.
-     requisitos   -> forma estruturada do pré-requisito, quando dá para checar. */
+     requisitos   -> forma estruturada do pré-requisito, quando dá para checar.
+     naoAcumula   -> o bônus do PORTADOR entra uma vez só, por mais armas com
+                     ele que estejam empunhadas. O que mira o item segue por arma. */
 
 export const ENCANTAMENTOS_ARMA = [
   { id: "enc_arma_afiada", nome: "Afiada",
@@ -1402,9 +1407,17 @@ export const ENCANTAMENTOS_ARMA = [
     descricao: "A ferramenta amaldiçoada é capaz de guardar energia e deixar a sua disposição. Durante um descanso longo você pode armazenar até 5 PE na arma, não gastando estes pontos de energia pois armazenou eles durante um longo período. Você pode, desde que esteja empunhando a arma, recuperar os cinco pontos de energia armazenados nela. Só é possível recuperar energia amaldiçoada de uma arma armazenadora por vez." },
   { id: "enc_arma_balanceada", nome: "Balanceada",
     descricao: "Uma ferramenta perfeitamente balanceada para permitir uma mobilidade maior. Enquanto empunhar a arma você recebe um bônus de +2 em testes de manobras.",
-    efeitos: [{ canal: "bonusManobra", expr: "2" }] },
+    /* Só as quatro Manobras, e dos dois lados: "testes de manobras" pega também
+       o de resistir (autor, 2026-09-29). Duas armas Balanceadas empunhadas dão
+       +2, e não +4, por isso o `naoAcumula`. */
+    naoAcumula: true,
+    efeitos: [
+      { canal: "bonusManobra", alvo: ALVO_QUATRO_MANOBRAS, expr: "2" },
+      { canal: "resistirManobra", alvo: ALVO_QUATRO_MANOBRAS, expr: "2" },
+    ] },
   { id: "enc_arma_canalizadora", nome: "Canalizadora",
     descricao: "A ferramenta amaldiçoada serve como uma forma de canalizar a sua energia amaldiçoada. Enquanto empunhar a arma, a sua CD Amaldiçoada aumenta em 2.",
+    naoAcumula: true,
     efeitos: [{ canal: "cd", expr: "2" }] },
   { id: "enc_arma_cano_alongado", nome: "Cano Alongado",
     descricao: "Enquanto modificando e encantando a arma, você estende o cano dela. A arma tem o seu alcance aumentado em 1/4 do total em metros.",
@@ -1448,6 +1461,7 @@ export const ENCANTAMENTOS_ARMA = [
     requisitos: [{ tipo: "categoriaArma", categorias: ["corpo"] }] },
   { id: "enc_arma_otimizada", nome: "Otimizada",
     descricao: "Uma arma cujo saque foi otimizado, para ser mais ágil e rápido. Sacar uma arma Otimizada é uma Ação Livre e, enquanto empunhar a arma, o portador recebe +2 em testes de Iniciativa.",
+    naoAcumula: true,
     efeitos: [{ canal: "iniciativa", expr: "2" }] },
   { id: "enc_arma_penetrante", nome: "Penetrante",
     descricao: "Uma ferramenta preparada para penetrar através de resistências. Todo ataque com uma ferramenta penetrante ignora redução de dano em um valor igual ao bônus de treinamento do portador.",
@@ -1619,7 +1633,8 @@ export const ENCANTAMENTOS_UNIFORME = [
     descricao: "Seu uniforme é feito de materiais únicos, propícios para resistir a altas e baixas temperaturas. Você recebe 5 de RD contra dano Queimante e Congelante." },
   { id: "enc_unif_marcial", nome: "Marcial",
     descricao: "Pensado e projetado perfeitamente para artes marciais. Um uniforme marcial concede um bônus de +2 em testes para realizar manobras.",
-    efeitos: [{ canal: "bonusManobra", expr: "2" }] },
+    // "Para realizar": só o lado de executar, e só as quatro Manobras.
+    efeitos: [{ canal: "bonusManobra", alvo: ALVO_QUATRO_MANOBRAS, expr: "2" }] },
   { id: "enc_unif_material_pesado", nome: "Material Pesado",
     descricao: "Este uniforme possui mais camadas de tecido, pedaços de metal ou uma capa embutida nele. Este uniforme concede +2 em TRs de Fortitude.",
     preReq: "O uniforme precisa possuir revestimento médio ou robusto",
@@ -2308,7 +2323,7 @@ export function itensEquipados(creature) {
  * cargas (= BT) e a habilidade única. `bt` é o bônus de treinamento do
  * portador, de onde saem as cargas.
  */
-export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLivres = 0) {
+export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLivres = 0, espinho = null) {
   const fa = entrada?.fa;
   if (!fa || !FA_TIPOS_EQUIP.includes(entrada?.tipo)) return null;
 
@@ -2425,6 +2440,8 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
         valor,
         origem: x.enc.nome,
         fonte: "encantamento",
+        // A chave do "uma vez só", que o `resolveEquipamentos` confere entre armas.
+        ...(x.enc.naoAcumula && !ef.alvoItem ? { naoAcumula: `${x.id}|${ef.canal}|${ef.alvo ?? ""}` } : {}),
       });
     }
   }
@@ -2445,6 +2462,14 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
      deixam de ser emitidas. */
   const temSegundaUnica = temHabUnica && ctxBase?.[CHAVE_SEGUNDA_UNICA] === true;
   const segundaHabilidadeEfeitos = resolverLinhasUnica(fa.segundaHabilidadeEfeitos, ctx, contextoDsl);
+  /* A DO ESPINHO (Addon, 2026-09-30). O Aprimoramento dá ao item marcado "um
+     Efeito de Grau Especial adicional", e ela é um espaço PRÓPRIO, separado da
+     Segunda da Benção: as duas podem existir no mesmo item, e esta não custa Slot
+     de Feitiço. Disputa na família `habilidadeUnica`, como a primeira (autor, por
+     pergunta). As linhas gravadas continuam resolvidas sem o Aprimoramento, e só
+     deixam de ser emitidas. */
+  const temUnicaEspinho = temHabUnica && espinho?.aprimorado === true;
+  const espinhoHabilidadeEfeitos = resolverLinhasUnica(fa.espinhoHabilidadeEfeitos, ctx, contextoDsl);
   // Penalidade DESTE item já com o Polido / Ajustado descontados. A redução
   // nunca inverte o sinal: reduzir -1 em 2 dá 0, e não +1.
   const penalidadeBase = def?.penalidade ?? 0;
@@ -2484,6 +2509,12 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
     temSegundaUnica,
     segundaHabilidadeUnica: fa.segundaHabilidadeUnica ?? "",
     segundaHabilidadeEfeitos,
+    // Marcado pelo Espinho (o grau Especial veio dele) e o espaço da Habilidade
+    // Única que o Aprimoramento abre.
+    doEspinho: !!espinho,
+    temUnicaEspinho,
+    espinhoHabilidadeUnica: fa.espinhoHabilidadeUnica ?? "",
+    espinhoHabilidadeEfeitos,
     // O tipo escolhido na Sintonizada, já saneado. Ver `tiposDaSintonizada`.
     sintonizadaTipo: tipoDaSintonizada(fa.sintonizadaTipo),
     efeitos,             // efeitos de encantamento, prontos para o Motor
@@ -2522,6 +2553,9 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
   // da Forja são lidas aqui.
   const liberacoes = Array.isArray(opcoes.liberacoes) ? opcoes.liberacoes : [];
   const acessoriosLiberados = liberacoes.includes("acessoriosUnicos");
+  /* Os itens marcados pelo Espinho: `Map(uid → aprimorado)`. Chega pronto do
+     derive, que é quem sabe se o pacote existe. Ver `marcasDoEspinho`. */
+  const marcasEspinho = opcoes.espinho instanceof Map ? opcoes.espinho : new Map();
   // O Revestimento e o Escudo criados só contam com a liberação do tipo deles.
   const criadoVale = (def) => !def?.criado || liberacoes.includes(LIBERACAO_DO_CRIADO[def.criado]);
   const entradas = [];
@@ -2594,6 +2628,7 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
   // é UMA, concedida a todas as armas de uma vez, então "enquanto empunhar a
   // arma, sua CD aumenta em 2" não triplica por manejar três armas. O que mira
   // o ITEM (dano, crítico, acerto daquela arma) entra por arma, normalmente.
+  // O encantamento comprado com `naoAcumula` usa o mesmo conjunto.
   const globaisConcedidos = new Set();
 
   // Contexto da DSL dos efeitos de Ferramenta (Motor de Automação).
@@ -2639,12 +2674,15 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
      ativa ganha um interruptor na bancada. Um lugar só para as quatro (duas da
      Ferramenta, duas do Acessório Único), porque a regra de emissão é a mesma e
      só a família e o interruptor mudam. */
+  /* A do Espinho tem interruptor e rótulo próprios, mas disputa na família da
+     PRIMEIRA (`familia`), que é o que vai no `exclusivo`. */
   const UNICA_POR_FAMILIA = {
     habilidadeUnica:        { estado: estadoDaUnica,        rotulo: "Habilidade Única" },
     segundaHabilidadeUnica: { estado: estadoDaSegundaUnica, rotulo: "Segunda Habilidade Única" },
+    habilidadeUnicaEspinho: { estado: estadoDaUnicaEspinho, rotulo: "Habilidade Única do Espinho", familia: "habilidadeUnica" },
   };
-  const emitirUnica = (linhas, uid, nomeItem, familia) => {
-    const { estado, rotulo } = UNICA_POR_FAMILIA[familia];
+  const emitirUnica = (linhas, uid, nomeItem, chave) => {
+    const { estado, rotulo, familia = chave } = UNICA_POR_FAMILIA[chave];
     const nome = `${nomeItem} (${rotulo})`;
     let temAtiva = false;
     for (const ex of linhas ?? []) {
@@ -2699,7 +2737,14 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
 
     // Ferramenta Amaldiçoada da entrada (se houver e o tipo permitir). As vagas
     // livres são por ARMA do catálogo, a mesma chave que a Arma Dedicada usa.
-    const fa = resolveFerramenta(e, def, bt, ctxBase, vagasEncantamento[def.id] ?? 0);
+    /* ⚠ O MARCADO PELO ESPINHO É GRAU ESPECIAL POR DERIVAÇÃO, e não por escrita:
+       o `fa.grau` gravado fica como estava, e desmarcar devolve o grau antigo. Um
+       item sem Ferramenta nenhuma vira uma, já no Especial. */
+    const marcaEspinho = marcasEspinho.has(e.uid) && FA_TIPOS_EQUIP.includes(e?.tipo)
+      ? { aprimorado: marcasEspinho.get(e.uid) === true }
+      : null;
+    const entradaFa = marcaEspinho ? { ...e, fa: { ...(e?.fa ?? {}), grau: "especial" } } : e;
+    const fa = resolveFerramenta(entradaFa, def, bt, ctxBase, vagasEncantamento[def.id] ?? 0, marcaEspinho);
     /* O Feitiço da Técnica Inata (Criação de Equipamentos, fase 4): *"podendo ser
        conjurado uma quantidade de vezes igual a metade do seu BT"*. Resolvido
        aqui, e não no `resolveFerramenta`, porque ele precisa dos Feitiços da
@@ -2830,6 +2875,8 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
         // A segunda só existe com a liberação (Addon Benção do Grão Mestre da
         // Forja), e disputa noutra família: não soma com Feitiço.
         if (fa.temSegundaUnica) emitirUnica(fa.segundaHabilidadeEfeitos, e.uid, def.nome, "segundaHabilidadeUnica");
+        // A do Aprimoramento do Espinho: família da primeira, sem Slot de Feitiço.
+        if (fa.temUnicaEspinho) emitirUnica(fa.espinhoHabilidadeEfeitos, e.uid, def.nome, "habilidadeUnicaEspinho");
       }
       // Acessório Único: as duas Habilidades dele, na mesma regra da Ferramenta.
       // Sem a liberação ele continua no inventário, ocupando espaço, e não dá nada.
@@ -2843,6 +2890,14 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
       // expressão lê `grau`, `custo` e `penalidade`, que são do item e não
       // existem no contexto da criatura.
       for (const ex of fa?.efeitos ?? []) {
+        /* O encantamento que não acumula (Balanceada) entra uma vez só, venha de
+           quantas armas vier. O conjunto é o mesmo do Manejo Especial, com a
+           mesma chave, então o comprado numa arma e o concedido noutra também
+           não somam. */
+        if (ex.naoAcumula) {
+          if (globaisConcedidos.has(ex.naoAcumula)) continue;
+          globaisConcedidos.add(ex.naoAcumula);
+        }
         efeitosEncantamento.push({
           canal: ex.canal,
           ...(ex.alvo ? { alvo: ex.alvo } : {}),

@@ -1,7 +1,7 @@
 import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { ArmasTransformaveis } from "../ui/armas-transformaveis";
 import {
-  ChevronLeft, Pencil, AlertTriangle, Moon, ChevronRight, Search, Heart, Zap, Sparkles, Palette,
+  ChevronLeft, Pencil, AlertTriangle, ChevronRight, Search, Heart, Zap, Sparkles, Palette,
   Rows2, Rows3, Lock, Crosshair,
 } from "lucide-react";
 
@@ -48,6 +48,7 @@ import {
   carregarTema, salvarTemaGlobal, cssDasVars, cssDoUsuario, temCssLivre,
   carregarDensidade, salvarDensidade, normalizaTema, escopoDaInvocacao, SEM_CSS,
 } from "./ficha-tema";
+import BotaoDeDescanso from "./BotaoDeDescanso";
 import PainelDeRolagens from "./PainelDeRolagens";
 import BuscaGlobal from "./BuscaGlobal";
 import PainelDeAparencia from "./PainelDeAparencia";
@@ -70,6 +71,7 @@ import { sistemaDaFicha, ehPlayer, regraDo, rotuloDoNivel } from "../afty-sistem
 import { getEspecializacao } from "../afty-especializacoes";
 import { cofreTrancado, comTextoAberto, lerAberto } from "../afty-cofre";
 import PainelDoCofre from "../ui/PainelDoCofre";
+import EspinhoCard from "../ui/EspinhoCard";
 
 /**
  * ============================================================
@@ -118,7 +120,8 @@ function Chip({ children, tom, title }) {
 /* ============================================================ */
 
 export default function AftyFicha({
-  creature, onVoltar, onEditar, onSalvarTema, onSalvarInvocacoes, onSalvarFundamentosPerdidos,
+  creature, onVoltar, onEditar, onSalvarTema, onSalvarInvocacoes, onSalvarEspinho,
+  onSalvarFundamentosPerdidos,
 }) {
   const alvoId = creature?.id ?? null;
 
@@ -155,6 +158,11 @@ export default function AftyFicha({
   const [abertos, setAbertos] = useState(() => new Set());
   const [destaque, setDestaque] = useState(null);
   const [tema, setTema] = useState(() => carregarTema(ficha, alvoId));
+  /* O ESPINHO VIVO (Addon, 2026-09-30). Almas Totais e Outros mudam durante a
+     sessão e são FICHA, e não sessão (decisão do autor): gravam na criatura, com
+     o mesmo atraso de 600 ms do tema. O card lê daqui, e não do `creature`, para
+     o número mudar na hora e não um passo depois da gravação. */
+  const [espinhoVivo, setEspinhoVivo] = useState(() => ficha.espinho ?? null);
   const [aparenciaAberta, setAparenciaAberta] = useState(false);
   const [cofrePainel, setCofrePainel] = useState(false);
   /* Qual Shikigami está com o editor de aparência aberto. ⚠ É o ID e não o
@@ -319,6 +327,27 @@ export default function AftyFicha({
     const t = setTimeout(() => { temaGravado.current = tema; onSalvarTema?.(tema); }, 600);
     return () => clearTimeout(t);
   }, [tema, onSalvarTema]);
+
+  /* ⚠ O GRAVADOR VAI POR REFERÊNCIA, e não na lista do efeito: o App o recria a
+     cada render, e cada gravação faz o App renderizar de novo. Na lista, isso
+     regravaria a mesma coisa em laço. E a edição que ainda não gravou é gravada
+     ao sair da Ficha, senão voltar ao criador antes de 600 ms a perderia. */
+  const salvarEspinhoRef = useRef(onSalvarEspinho);
+  useEffect(() => { salvarEspinhoRef.current = onSalvarEspinho; });
+  const espinhoPendente = useRef(null);
+  const primeiroEspinho = useRef(true);
+  useEffect(() => {
+    if (primeiroEspinho.current) { primeiroEspinho.current = false; return undefined; }
+    espinhoPendente.current = espinhoVivo;
+    const t = setTimeout(() => {
+      salvarEspinhoRef.current?.(espinhoVivo);
+      espinhoPendente.current = null;
+    }, 600);
+    return () => clearTimeout(t);
+  }, [espinhoVivo]);
+  useEffect(() => () => {
+    if (espinhoPendente.current !== null) salvarEspinhoRef.current?.(espinhoPendente.current);
+  }, []);
 
   // O cabeçalho encolhe ao rolar. ⚠ Só faz diferença em tela BAIXA: a regra de
   // esconder a fileira de stats mora numa media query de altura, no ficha.css.
@@ -684,6 +713,9 @@ export default function AftyFicha({
         onFavorito={alternaFavorito}
         destaque={destaque}
         contadorUsos={contadorUsos}
+        espinho={derived.primitivas?.includes("espinho") && derived.espinho?.ativo ? (
+          <EspinhoCard compacto extrato={derived.espinho} estado={espinhoVivo} onPatch={setEspinhoVivo} />
+        ) : null}
       />
     ),
     pericias: () => <AbaPericias derived={derived} rolar={rolar} destaque={destaque} />,
@@ -901,15 +933,11 @@ export default function AftyFicha({
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
-              <button
-                type="button"
-                className="afty-botao"
-                onClick={() => atualiza((s) => descansar(s, derived))}
-                title="Descanso: devolve os recursos e zera a rodada"
-                aria-label="Descanso"
-              >
-                <Moon className="w-4 h-4" />
-              </button>
+              <BotaoDeDescanso
+                sessao={sessao}
+                derived={derived}
+                onDescansar={(marioneteId) => atualiza((s) => descansar(s, derived, { marioneteId }))}
+              />
               <button type="button" className="afty-botao" onClick={onEditar} title="Editar no criador">
                 <Pencil className="w-4 h-4" />
                 <span className="hidden sm:inline">Editar</span>

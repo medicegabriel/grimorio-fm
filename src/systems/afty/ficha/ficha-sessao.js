@@ -1235,19 +1235,26 @@ export function defineVitalInvocacao(sessao, invId, qual, valor, max, regras = n
   return comInvocacao(sessao, invId, transicaoDeQueda(r, atual, pv, teto, jaCaida) ?? { pvAtual: pv });
 }
 
+/** Marionetes danificadas que podem receber o reparo completo do descanso. */
+export function marionetesParaReparo(sessao, derived) {
+  const mesa = separaMecha(sessao);
+  return (derived?.invocacoes?.lista ?? []).filter((inv) => {
+    if ((inv.regras?.familia ?? inv.familia) !== "marionete") return false;
+    const e = estadoDaInvocacao(mesa, inv.id);
+    return !e.terminal && (e.quedas > 0 || e.pvAtual != null && e.pvAtual < inv.pv
+      || e.estado === "quebrada" || e.estado === "recolhida");
+  });
+}
+
 /**
- * O descanso enche as invocações junto do dono.
- *
- * ⚠ O BOTÃO DE DESCANSO É UM SÓ E DEVOLVE TUDO (decisão D3 do autor, 2026-09-23),
- * então ele vale como descanso longo: a volta pela metade some, os exorcismos da
- * Técnica zeram, e quem caiu (dissipada, quebrada, recolhida, desativada) volta
- * a poder entrar, cheia. A Marionete também enche e zera as quedas, como fazia
- * antes desta etapa: o reparo de UMA Marionete por descanso longo do Mecânicas
- * espera decisão (ver docs/a-fazer.md).
- *
- * Quem estava em campo CONTINUA em campo. Morte permanente não volta.
+ * O descanso devolve os recursos do dono e das outras invocações.
+ * A Marionete escolhida é reparada completamente, com as quedas zeradas
+ * (autor, 2026-10-03). As demais conservam PV, quedas, retorno e estado.
+ * Quem estava em campo continua em campo. Morte permanente não volta.
  */
-function descansaInvocacoes(invocacoes) {
+function descansaInvocacoes(invocacoes, derived, marioneteId) {
+  const marionetes = new Set((derived?.invocacoes?.lista ?? [])
+    .filter((inv) => (inv.regras?.familia ?? inv.familia) === "marionete").map((inv) => inv.id));
   const out = {};
   for (const [id, e] of Object.entries(invocacoes || {})) {
     /* A Horda, a Quimera e o Mecha se DESFAZEM no descanso (2026-10-01, Etapa
@@ -1258,11 +1265,14 @@ function descansaInvocacoes(invocacoes) {
     }
     const estado = ESTADO_VALIDO.has(e?.estado) ? e.estado : estadoLegado(e);
     const terminal = ESTADOS_TERMINAIS.has(estado);
+    const preservar = marionetes.has(id) && (terminal || id !== marioneteId);
+    const linha = linhaDaInvocacao({ invocacoes }, id);
     out[id] = comBooleanos({
       ...e,
-      estado: terminal || estado === "ativa" ? estado : "fora",
-      pvAtual: null, almaAtual: null, pvTempFontes: {}, auxilios: {},
-      retorno: null, quedas: 0, exorcismos: 0, bloqueadaAteFimDaCena: false,
+      estado: preservar || terminal || estado === "ativa" ? estado : "fora",
+      pvAtual: preservar ? linha.pvAtual : null, almaAtual: null, pvTempFontes: {}, auxilios: {},
+      retorno: preservar ? linha.retorno : null, quedas: preservar ? linha.quedas : 0,
+      exorcismos: 0, bloqueadaAteFimDaCena: false,
       auras: {}, forma: null, emTarefa: false,
       opcoesDeEntrada: {}, entradasDesdeDescanso: 0,
       rodadasAtiva: 0, manutencaoPendente: false,
@@ -2176,8 +2186,10 @@ export function iniciaCombate(sessao, derived = null) {
  * quem não conseguiu calcular a ficha, e nesse caso não mexer é a única resposta
  * honesta: não dá para reencher até um máximo que ninguém sabe qual é.
  */
-export function descansar(sessao, derived) {
+export function descansar(sessao, derived, { marioneteId = null } = {}) {
   if (!derived) return sessao;
+  // O Mecha devolve o PV atual às componentes antes de reparar só a escolhida.
+  const mesa = separaMecha(sessao);
   return {
     ...sessao,
     energiaEmVida: derived?.bloodfeast?.tem ? 3 : 0,
@@ -2199,9 +2211,8 @@ export function descansar(sessao, derived) {
     guardaGolpes: 0,
     guardaEncerrada: false,
     usos: {},
-    // As invocações enchem junto. Era a pendência que segurava o PV delas fora
-    // da sessão: sem descanso, ninguém zerava aqueles números.
-    invocacoes: descansaInvocacoes(sessao.invocacoes),
+    // Só a Marionete escolhida recebe o reparo completo. As outras não enchem.
+    invocacoes: descansaInvocacoes(mesa.invocacoes, derived, marioneteId),
     // A Reserva para Invocação volta com o descanso (2026-09-30).
     reservaInvocacao: { usada: false, modo: null, restantes: 0 },
     // A cena acaba no descanso: a Quimera da cena e os líderes de Horda dissipada.

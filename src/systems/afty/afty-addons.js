@@ -56,7 +56,10 @@
  */
 
 import { validarBloodfeast } from "./afty-bloodfeast";
-import { normalizarMarca } from "./afty-dsl";
+import { normalizarMarca, validateExpression } from "./afty-dsl";
+/* O catálogo do Espinho vem do pacote e é saneado pelo verbo. O `afty-espinho.js`
+   é FOLHA, então este import é de mão única. Ver `espinhoDaFicha`. */
+import { normalizarItemEspinho, ESPINHO_TIPOS } from "./afty-espinho";
 // Sem risco de ciclo: `afty-sistema.js` não importa nada.
 import { sistemaDaFicha, regraDo, palavrasDoSistema } from "./afty-sistema";
 /* A tabela de progressão da Carteira. O `afty-carteira.js` é FOLHA, então este
@@ -510,6 +513,16 @@ export const PRIMITIVAS = [
     rotulo: "Características Amaldiçoadas",
     nota: "Aba de escolha do pool de Características Amaldiçoadas (Anatomia Amaldiçoada: 1 no 1° nível, +1 a cada 5 níveis). O catálogo em si vem do addon, pela família caracteristicasAmaldicoadas",
   },
+  /* ⚠ NASCEU EM 2026-09-30, com o Addon Espinho. É primitiva pela mesma razão da
+     Loja de Catarse: o que ela acrescenta é uma LOJA na ficha, e loja é verbo. O
+     catálogo (itens, custo, teto, canal) vem do pacote, no campo `espinho`, e as
+     compras rendem pelo Motor com ou sem este `permite`: ele só decide quem
+     enxerga o card e o canal `pontosAtributo` no seletor. Ver afty-espinho.js. */
+  {
+    id: "espinho",
+    rotulo: "Espinho",
+    nota: "Card das Almas na aba Habilidades do criador e da Ficha Final: Almas Totais e Restantes, e as compras do catálogo do pacote, que ACUMULAM com tudo",
+  },
 ];
 
 const PRIMITIVA_IDS = new Set(PRIMITIVAS.map((p) => p.id));
@@ -826,6 +839,48 @@ export function precosDeCatarse(creature) {
 }
 
 /**
+ * O catálogo do Espinho, unido de todos os addons da criatura.
+ *
+ * ⚠ É DADO DE PACOTE, pela mesma razão do `precosDeCatarse`: o módulo do
+ * Espinho é o verbo, e esta função entrega o substantivo.
+ *
+ * Duas regras de união. Item com o MESMO id em dois pacotes: vale o do primeiro
+ * instalado, porque são o mesmo item e somar os dois abriria o dobro de teto. E o
+ * `multiplicadorTeto` (Addon Alter): vale o MAIOR declarado, porque dois Alter
+ * não são dois aumentos de 50%.
+ *
+ * ⚠ O `concedeTalento` resolve LOCAL PRIMEIRO, igual às referências de família:
+ * o id que o próprio pacote acrescenta ganha o namespace dele, e o resto fica
+ * como está (id do livro, ou já qualificado).
+ */
+export function espinhoDaFicha(creature) {
+  const lista = Array.isArray(creature?.addons) ? creature.addons : [];
+  const itens = [];
+  const vistos = new Set();
+  let multiplicadorTeto = null;
+  for (const pacote of lista) {
+    const cfg = pacote?.espinho;
+    if (!cfg || typeof cfg !== "object") continue;
+    const m = Number(cfg.multiplicadorTeto);
+    if (Number.isFinite(m) && m > 0) multiplicadorTeto = Math.max(multiplicadorTeto ?? 0, m);
+    const talentosDoPacote = new Set(
+      (pacote?.acrescenta?.talentos ?? []).map((t) => String(t?.id ?? "").trim()),
+    );
+    for (const bruto of Array.isArray(cfg.itens) ? cfg.itens : []) {
+      const item = normalizarItemEspinho(bruto);
+      if (!item || vistos.has(item.id)) continue;
+      vistos.add(item.id);
+      if (item.concedeTalento && !item.concedeTalento.includes(SEPARADOR)
+        && talentosDoPacote.has(item.concedeTalento) && pacote.id) {
+        item.concedeTalento = `${pacote.id}${SEPARADOR}${item.concedeTalento}`;
+      }
+      itens.push(item);
+    }
+  }
+  return { itens, multiplicadorTeto: multiplicadorTeto ?? 1 };
+}
+
+/**
  * As primitivas que os addons DESTA criatura pedem.
  *
  * ⚠ Sai da criatura, e não do mundo aplicado: num Encontro misto o mundo é a
@@ -1045,6 +1100,10 @@ export function normalizarPacote(cru) {
        dentro de `acrescenta`, porque ela não é uma entrada de catálogo: é
        configuração do pacote, como `permite` e `libera`. Ver `precosDeCatarse`. */
     catarse: (p.catarse && typeof p.catarse === "object") ? clonar(p.catarse) : null,
+    /* O catálogo do Espinho (itens, custo, teto) e o multiplicador de teto do
+       Alter. Campo PRÓPRIO pela mesma razão da Catarse: é configuração do
+       pacote, e não entrada de catálogo. Ver `espinhoDaFicha`. */
+    espinho: (p.espinho && typeof p.espinho === "object" && !Array.isArray(p.espinho)) ? clonar(p.espinho) : null,
     /* Campo legado de um Voto pronto. A aba nativa pode converter e copiar o
        molde mesmo sem `permite: ["pacto"]`. O nome do campo fica estável para
        addons e fichas existentes. Ver `afty-votos.js`. */
@@ -1546,6 +1605,62 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     }
   }
 
+  /* O catálogo do Espinho (2026-09-30). O motor aproveita o que der de uma ficha
+     já salva, mas a instalação é o portão duro: item sem id, custo negativo,
+     tipo desconhecido e teto que não compila não entram. */
+  if (p.espinho) {
+    const cfg = p.espinho;
+    const itensCru = cfg.itens;
+    if (itensCru !== undefined && !Array.isArray(itensCru)) problemas.push('Espinho: "itens" precisa ser uma lista.');
+    if (cfg.multiplicadorTeto != null && !(Number(cfg.multiplicadorTeto) > 0)) {
+      problemas.push('Espinho: "multiplicadorTeto" precisa ser um número maior que zero.');
+    }
+    const talentosDoPacote = new Set((p.acrescenta.talentos ?? []).map((t) => String(t?.id ?? "").trim()));
+    const expressaoOk = (onde, campo, expr) => {
+      const v = validateExpression(String(expr));
+      if (!v.ok) problemas.push(`${onde}: "${campo}" inválido (${v.error}).`);
+    };
+    const vistosEsp = new Set();
+    let nEquip = 0;
+    let nAprimora = 0;
+    const lista = Array.isArray(itensCru) ? itensCru : [];
+    for (const [i, bruto] of lista.entries()) {
+      const onde = `Espinho, item #${i + 1}`;
+      const id = String(bruto?.id ?? "").trim();
+      if (!id || !ID_ENTRADA_OK.test(id)) { problemas.push(`${onde}: id inválido.`); continue; }
+      if (vistosEsp.has(id)) problemas.push(`${onde}: id repetido ("${id}").`);
+      vistosEsp.add(id);
+      if (!String(bruto.nome ?? "").trim()) problemas.push(`${onde}: falta o campo "nome".`);
+      if (bruto.tipo != null && !ESPINHO_TIPOS.includes(bruto.tipo)) {
+        problemas.push(`${onde}: tipo desconhecido ("${bruto.tipo}"). Existem: ${ESPINHO_TIPOS.join(", ")}.`);
+      }
+      const custo = Number(bruto.custo);
+      if (!Number.isInteger(custo) || custo < 0) problemas.push(`${onde}: "custo" precisa ser um inteiro a partir de zero.`);
+      if (bruto.teto != null && String(bruto.teto).trim()) expressaoOk(onde, "teto", bruto.teto);
+      const item = normalizarItemEspinho(bruto);
+      if (item.tipo === "equipamento") nEquip += 1;
+      if (item.tipo === "aprimoramento") nAprimora += 1;
+      if (item.tipo === "talento") {
+        const alvo = item.concedeTalento;
+        if (!alvo) problemas.push(`${onde}: falta o campo "concedeTalento".`);
+        else if (!talentosDoPacote.has(alvo) && !alvo.includes(SEPARADOR) && !alvo.startsWith("tal_")) {
+          problemas.push(`${onde}: Talento inexistente "${alvo}".`);
+        }
+      }
+      for (const [j, e] of (Array.isArray(bruto.efeitos) ? bruto.efeitos : []).entries()) {
+        if (!e || !String(e.canal ?? "").trim()) problemas.push(`${onde}, efeito #${j + 1}: falta o campo "canal".`);
+        else if (e.expr != null) expressaoOk(`${onde}, efeito #${j + 1}`, "expr", e.expr);
+      }
+      if (item.tipo === "efeitos" && item.efeitos.length === 0) problemas.push(`${onde}: item sem "efeitos".`);
+    }
+    if (nEquip > 1) problemas.push('Espinho: só pode haver um item do tipo "equipamento".');
+    if (nAprimora > 1) problemas.push('Espinho: só pode haver um item do tipo "aprimoramento".');
+    if (nAprimora && !nEquip) problemas.push('Espinho: o item "aprimoramento" precisa do item "equipamento".');
+    if (lista.length === 0 && cfg.multiplicadorTeto == null) {
+      problemas.push('Espinho: o campo precisa de "itens" ou de "multiplicadorTeto".');
+    }
+  }
+
   const familias = Object.keys(p.acrescenta);
   /* ⚠ ACRESCENTAR DEIXOU DE SER OBRIGATÓRIO em 2026-08-21. Um pacote que só
      DESTRAVA (`libera`) ou só MOSTRA (`permite`) é legítimo e não traz conteúdo
@@ -1569,8 +1684,11 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     && p.contadoresOrigem.length === 0
     && !p.votoAutomatico
     && Object.keys(normalizarRegrasAfty(p.regrasAfty)).length === 0
+    /* O Alter traz só o multiplicador de teto do Espinho, e é pacote de pleno
+       direito: ele muda regra na ficha de quem tem o Espinho. */
+    && !p.espinho
   ) {
-    problemas.push("O pacote não acrescenta, não substitui, não libera, não permite, não concede ou libera Aptidão e não traz Funcionamento Básico, Feitiço, Estado de Combate, Contador de Origem, Voto automático ou Regra Afty.");
+    problemas.push("O pacote não acrescenta, não substitui, não libera, não permite, não concede ou libera Aptidão e não traz Funcionamento Básico, Feitiço, Estado de Combate, Contador de Origem, Voto automático, Regra Afty ou Espinho.");
   }
 
   const vistos = new Set();

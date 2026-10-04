@@ -7401,6 +7401,41 @@ export function maxVezesHabilidade(id, ctx = {}) {
   return Math.max(1, Math.trunc(Number(def.maxVezes) || 1));
 }
 
+/**
+ * A conta do orçamento que Habilidade de Especialização e Talento dividem, com
+ * as duas pilhas (ver o cabeçalho de `resolveHabilidades`).
+ *
+ * ⚠ SAIU DE DENTRO DO `resolveHabilidades` EM 2026-10-02 porque o derive passou
+ * a fechá-la DUAS vezes. A primeira, aqui, enxerga só as vagas do montante e do
+ * Talento. A segunda, no fim do derive, enxerga o agregado inteiro: um Feitiço
+ * Passivo com Vagas de Talento ficava no hover e fora do contador. Uma função
+ * só para as duas é o que impede as duas contas de divergirem.
+ */
+export function contaOrcamentoHabilidades({
+  gastosHabilidade = 0, talentos = 0, comum = 0, exclusivasTalento = 0,
+} = {}) {
+  const pilhaComum = Math.max(0, Math.trunc(Number(comum) || 0));
+  const pilhaTalento = Math.max(0, Math.trunc(Number(exclusivasTalento) || 0));
+  const gastosTalento = Math.max(0, Math.trunc(Number(talentos) || 0));
+  // Talento gasta a exclusiva primeiro, e o resto cai no comum.
+  const talentosNoExclusivo = Math.min(gastosTalento, pilhaTalento);
+  const gastosNoComum = gastosHabilidade + (gastosTalento - talentosNoExclusivo);
+  const total = pilhaComum + pilhaTalento;
+  const gastos = gastosHabilidade + gastosTalento;
+  return {
+    total,
+    comum: pilhaComum,
+    exclusivasTalento: pilhaTalento,
+    exclusivasUsadas: talentosNoExclusivo,
+    gastos,
+    gastosNoComum,
+    restante: total - gastos,
+    // O excesso é medido no COMUM: vaga exclusiva de Talento sobrando não
+    // libera Habilidade de Especialização nenhuma.
+    excedeu: gastosNoComum > pilhaComum,
+  };
+}
+
 export function resolveHabilidades(
   creature,
   escolhidasEspec,
@@ -7502,11 +7537,6 @@ export function resolveHabilidades(
   // pegar esta habilidade uma quantidade de vezes igual ao seu bônus de
   // treinamento" são N escolhas de habilidade, e não uma escolha que rende N.
   const gastosHabilidade = selecionadas.length + escolhas.vagasExtras + pegasExtras;
-  // Talento gasta a exclusiva primeiro, e o resto cai no comum.
-  const talentosNoExclusivo = Math.min(talentos, exclusivasTalento);
-  const gastosNoComum = gastosHabilidade + (talentos - talentosNoExclusivo);
-  const total = comum + exclusivasTalento;
-  const gastos = gastosHabilidade + talentos;
   const niveisPorEfeito = { ...niveisPorEspec };
   /* ⚠ A HERDEIRA RESPONDE TAMBÉM PELO NOME DA MÃE, como no `nivelEspec` do
      derive (2026-09-28). Os tetos do Restringido (Caçador de Feiticeiros, Corpo
@@ -7532,16 +7562,10 @@ export function resolveHabilidades(
     maxVezes: Object.fromEntries(escolhidas.map((id) => [id, maxVezesHabilidade(id, ctxVezes)])),
     escolhas,               // { porHab, mapa, vagasExtras }
     talentosGastos,
-    total,
-    comum,
-    exclusivasTalento,
-    exclusivasUsadas: talentosNoExclusivo,
-    gastos,
-    gastosNoComum,
-    restante: total - gastos,
-    // O excesso é medido no COMUM: vaga exclusiva de Talento sobrando não
-    // libera Habilidade de Especialização nenhuma.
-    excedeu: gastosNoComum > comum,
+    // O que as Habilidades gastam sem os Talentos, para o derive refechar a
+    // conta com as vagas finais. Ver `contaOrcamentoHabilidades`.
+    gastosHabilidade,
+    ...contaOrcamentoHabilidades({ gastosHabilidade, talentos, comum, exclusivasTalento }),
     inacessiveis,
     niveisPorEspec,
     niveisPorEfeito,

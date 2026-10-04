@@ -86,7 +86,7 @@ import { combateDslVars, COMBATE_VARS } from "./afty-combate";
 // é este arquivo que junta os efeitos de origem, não aquele. Ver coletarEfeitosOrigem.
 import {
   getOrigem, getCla, resolveEscolhasOrigem, ORIGEM_ESCOLHA_EFEITOS, OPCAO_ORIGEM_NOME,
-  opcoesEscolhidasDaOrigem,
+  opcoesEscolhidasDaOrigem, anatomiasEscolhidas,
 } from "./afty-origens";
 /* O Nível efetivo, que pode vir do XP da Carteira. O afty-addons só importa
    folhas (afty-dsl, afty-sistema e afty-carteira), entao a seta e segura. */
@@ -255,8 +255,10 @@ export const EFEITO_CANAIS = [
   /* ⚠ O ALVO CRESCEU EM 2026-09-15: além das quatro Manobras (Agarrar,
      Derrubar, Desarmar e Empurrar), o canal aceita os outros testes nomeados do
      livro que ganham bônus próprio (Concentração, Fintar, Provocar e o Teste de
-     Morte). Ver AFTY_MANOBRAS em afty-pericias.js, que é de onde a lista sai. */
-  { id: "bonusManobra",  label: "Manobra ou Teste",      alvo: "manobra", nota: "as quatro Manobras e os testes nomeados (Concentração, Fintar, Provocar, Teste de Morte). Sem alvo vale para todos" },
+     Morte). Ver AFTY_MANOBRAS em afty-pericias.js, que é de onde a lista sai.
+     Por isso o sem alvo pega os oito, e o texto que diz "manobras" mira
+     `manobra:todas` (2026-09-29), o escopo que só as quatro atendem. */
+  { id: "bonusManobra",  label: "Manobra ou Teste",      alvo: "manobra", nota: "as quatro Manobras e os testes nomeados (Concentração, Fintar, Provocar, Teste de Morte). Sem alvo vale para todos, e `manobra:todas` só para as quatro Manobras" },
   { id: "resistirManobra", label: "Resistir a Manobra",  alvo: "manobra", nota: "só as quatro Manobras têm o lado de resistir" },
   { id: "distanciaEmpurrao", label: "Empurrão",          nota: "em metros, por cima do 1,5 padrão" },
   { id: "danoBonus",     label: "Dano",                  alvo: "fonteDano", nota: "soma no Dano TOTAL da linha, e daí escorre para o dano fixo. Alvo `basico` ou o id da arma, e sem alvo vale para todas" },
@@ -291,6 +293,13 @@ export const EFEITO_CANAIS = [
      igual ao `dadosDano`, e ele DOBRA no crítico em que aparece (autor): o valor
      1 rola 2 dados. */
   { id: "dadosCritico",  label: "Dados de Dano no Crítico", alvo: "fonteDano", nota: "dado ADICIONAL que só entra em acerto crítico, do tamanho do maior dado da linha. Dobra no crítico, como os outros dados" },
+  /* ⚠ NÃO SOMA (2026-10-02, Estilo Massivo: "Quando rolar um 1 ou 2 em um dado
+     na rolagem de dano [...] você pode rolar novamente esse dado, ficando com o
+     novo resultado"). O valor é o MAIOR resultado que rola de novo, e entre
+     fontes vale o maior: duas regras de "1 ou 2" não viram "até 4". Não mexe em
+     número nenhum da linha. Quem rola é o `rolarDano` da Ficha, automático por
+     decisão do autor, uma vez por dado e em todos os dados da linha. */
+  { id: "rerrolaDano",   label: "Rolar de Novo no Dano", alvo: "fonteDano", nota: "o maior resultado de dado que rola de novo, uma vez, ficando o novo (2 = rola de novo 1 e 2). Vale em todo dado da rolagem da linha. Não soma: entre fontes vale o maior" },
   /* ⚠ O IRMÃO DO `dadosTR` PARA A JOGADA DE ATAQUE (2026-09-15, Manobra de
      Ajuste: "você pode adicionar seu dado de empolgação na rolagem de acerto e
      no dano"). Somar a média no `bonusAcerto` dava número certo e rolagem
@@ -411,6 +420,12 @@ export const EFEITO_CANAIS = [
   // nomeia a trilha e é concessão direta.
   { id: "pontosAptidao",  label: "Nível de Aptidão (à escolha)", nota: "orçamento LIVRE de níveis: cada ponto sobe 1 nível na trilha que o jogador quiser. O irmão direcionado é o canal Nível de Aptidão, que nomeia a trilha" },
   { id: "focos",          label: "Focos de Interlúdio" },
+  /* ⚠ NASCEU EM 2026-09-30, com o Addon Espinho ("Recebe 1 Ponto de Atributo
+     adicional"). É ORÇAMENTO, irmão dos pontos de nível da aba de Atributos: cada
+     ponto é distribuído pelo jogador ali, e respeita o limite do atributo. O
+     irmão direcionado é o canal `atributo`, que nomeia o atributo. Escondido no
+     seletor atrás da primitiva `espinho`. */
+  { id: "pontosAtributo", label: "Pontos de Atributo",   nota: "orçamento LIVRE: cada ponto sobe 1 no atributo que o jogador escolher na aba de Atributos, dentro do limite. O irmão direcionado é o canal Atributo" },
   { id: "pontosPreparo",  label: "Pontos de Preparo",    nota: "recurso do Combatente (Artes do Combate). Zero sem a habilidade, então o Preview só mostra quem tem" },
   /* A casca de Preparo (2026-09-23). A Postura do Céu dá "2 pontos de preparo
      temporários no começo de todo turno", e isso somava 2 no MÁXIMO, que é outra
@@ -672,7 +687,7 @@ const GRUPOS_DE_CANAL = [
   ]],
   ["Ataque e Dano", [
     "cd", "bonusAcerto", "acertoArma", "ataquesExtras", "danoBonus", "nivelDano", "dadosDano", "dadosNomeados",
-    "dadosCritico", "dadosAtaque", "margemCritico", "ignoraRD", "ignoraTodaRD", "ignoraImunidade", "removeResistencia", "propMarcial", "finezaAtaque",
+    "dadosCritico", "rerrolaDano", "dadosAtaque", "margemCritico", "ignoraRD", "ignoraTodaRD", "ignoraImunidade", "removeResistencia", "propMarcial", "finezaAtaque",
     "semAtributoDano", "alcanceArma",
   ]],
   // Atributo, limite e nível de trilha: o que a criatura É, em número próprio.
@@ -696,7 +711,7 @@ const GRUPOS_DE_CANAL = [
     "vagasCaracteristicaAmaldicoada",
     "reduzNivelAptidao",
     "vagasMelhoria", "vagasLendaria",
-    "pontosAptidao", "focos", "espacosCarga",
+    "pontosAptidao", "pontosAtributo", "focos", "espacosCarga",
   ]],
   ["Empolgação", ["empolgacaoMaxima", "empolgacaoInicial"]],
   // ⚠ Grupo próprio desde 2026-08-26. Os seis mexem em coisas que só existem
@@ -970,6 +985,20 @@ export function buildCriaturaDslContext(base = {}) {
   // opção olha o que a ficha marcou e decide entre conceder 1 ou 2.
   for (const [id, p] of Object.entries(base.resistenciasProf || {})) {
     ctx[`prof_tr_${id}`] = p === "mestre" ? 2 : p === "treinado" ? 1 : 0;
+  }
+  /* ⚠ NO JOGADOR O TR TAMBÉM VEM DA CLASSE (autor, 2026-10-03), e isso não é
+     marcação: o pacote da Classe inicial dá a faixa sem a pessoa marcar nada.
+     Sem esta soma, um Restringido 8 que escolhia a Força Imparável na Fortitude
+     (treinada pela Classe) ficava Treinado, e o livro dá Mestre. O mesmo valia
+     para a Resiliência Melhorada.
+
+     Vale a MAIOR entre a marcação e a faixa da Classe, a mesma regra do TR
+     resolvido. Não fecha laço com o "Caso já seja": a faixa da Classe não sai
+     de efeito nenhum, então a condição continua sem enxergar a si mesma. Na
+     criatura o campo nem chega (não há pacote de Classe), e nada muda lá. */
+  for (const [id, faixa] of Object.entries(base.faixasTrDaClasse || {})) {
+    const daClasse = Math.min(2, Math.max(0, Math.trunc(Number(faixa) || 0)));
+    ctx[`prof_tr_${id}`] = Math.max(ctx[`prof_tr_${id}`] ?? 0, daClasse);
   }
 
   // Escolha de uma APTIDÃO, como booleana: `opt_<aptidao>_<valor>`. Hoje só a
@@ -1428,9 +1457,7 @@ export function coletarEfeitosOrigem(creature, escolhas = null, gatilhosAtivos =
   const origemId = creature?.core?.origem?.id;
   if (!origemId) return [];
   const claId = creature?.core?.origem?.cla;
-  const anatomias = getOrigem(origemId)?.caracteristicas?.some((c) => c.poolAnatomia)
-    ? (creature?.core?.origem?.anatomias || [])
-    : [];
+  const anatomias = anatomiasEscolhidas(creature);
   const mapa = escolhas?.mapa || resolveEscolhasOrigem(creature, nivelDaFicha(creature)).mapa;
   const opcoesEscolhidas = Object.values(mapa).flat();
   const opcoesInteiras = opcoesEscolhidasDaOrigem(creature, { mapa });
@@ -1789,6 +1816,89 @@ export const CANAIS_POS_APTIDAO = [
      continha. */
   "custoPE",
 ];
+/**
+ * Canais que o deriveAfty lê DIRETO do montante, antes de os stats existirem: as
+ * vagas de orçamento, os pontos de Aptidão e os quatro do pré-contexto. Um
+ * efeito destes canais fica no montante mesmo que leia a bancada, porque fora
+ * dele chegaria com o orçamento já fechado. Ver `separarEfeitosDeBancada`.
+ */
+export const CANAIS_LIDOS_NO_MONTANTE = [
+  "pontosAptidao", "vagasHabilidade", "vagasTalento", "vagasMelhoria", "vagasLendaria",
+  ...CANAIS_PRE_CONTEXTO,
+];
+
+/* Os nomes que uma expressão lê, normalizados como o tokenizer do DSL os
+   normaliza. Texto entre aspas sai antes (é argumento de `contar`, e não
+   variável), e o nome seguido de parêntese é função. */
+const PALAVRAS_DSL = new Set(["e", "ou", "nao", "verdadeiro", "falso"]);
+/* ⚠ PREGUIÇOSO, e não no topo do módulo: `afty-combate` e este arquivo se
+   importam em ciclo, e conforme a ordem de entrada o `COMBATE_VARS` ainda não
+   existe quando este módulo avalia. O `t-dsl` pegou com um ReferenceError. */
+let varsDaBancada = null;
+const ehVarDaBancada = (nome) => (varsDaBancada ??= new Set(COMBATE_VARS)).has(nome);
+function nomesLidosPor(src) {
+  const semTexto = String(src ?? "").replace(/"[^"]*"|'[^']*'/g, " ");
+  const out = [];
+  for (const m of semTexto.matchAll(/([a-zA-Z_À-ſ][a-zA-Z0-9_À-ſ]*)\s*(\()?/g)) {
+    if (m[2]) continue;
+    const nome = normalizarMarca(m[1]);
+    if (!PALAVRAS_DSL.has(nome)) out.push(nome);
+  }
+  return out;
+}
+
+/**
+ * O efeito lê ESTADO DA BANCADA (a Simulação de Combate) no `quando` ou na
+ * `expr`?
+ *
+ * Bancada é o que o `combateDslVars` produz: o catálogo (`COMBATE_VARS`, de
+ * `em_combate` aos estados das Habilidades) e os estados que nascem da ficha
+ * (Habilidade Única, Estilo, Addon), que o contexto reduzido nem declara. Por
+ * isso a segunda pergunta é "o contexto reduzido conhece o nome?": o que ele não
+ * conhece só existe no estágio principal.
+ */
+export function efeitoLeBancada(e, ctxReduzido = {}) {
+  const extra = e?.contextoDsl && typeof e.contextoDsl === "object" ? e.contextoDsl : {};
+  for (const texto of [e?.quando, e?.expr]) {
+    for (const nome of nomesLidosPor(texto)) {
+      if (ehVarDaBancada(nome)) return true;
+      if (!(nome in ctxReduzido) && !(nome in extra)) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Separa a lista do MONTANTE em duas: o que fica nele e o que desce ao estágio
+ * principal.
+ *
+ * ⚠ O MONTANTE NÃO TEM BANCADA (autor, 2026-10-03). Ele roda com o contexto
+ * reduzido, antes de o `resolveCombate` existir, e ali `em_combate` vale zero com
+ * "Em Combate" ligado ou não. A Atenção do Instinto Sanguinário (*"enquanto em
+ * uma cena de combate, você também adiciona seu bônus de treinamento na sua
+ * Atenção"*) caía calada desde sempre, e com ela qualquer
+ * efeito de origem, clã, Anatomia, Treino, Voto, Modificação Corporal, Catarse ou
+ * Espinho cujo `quando` ou `expr` lesse a bancada. O autor escolheu a regra para
+ * o montante inteiro, e não só para a origem.
+ *
+ * Quem lê a bancada desce ao `efeitosTodos`, onde o contexto inteiro existe e os
+ * filtros de estágio roteiam pelo canal. Quem não lê fica: origem concede VAGA, e
+ * vaga fecha antes dos stats. Cada efeito vai para UMA lista só, então nada é
+ * aplicado duas vezes (o `efMontante` é mesclado inteiro no agregado final).
+ *
+ * Os canais lidos cedo (`CANAIS_LIDOS_NO_MONTANTE`) nunca descem, mesmo lendo a
+ * bancada: fora do montante eles chegariam com o orçamento já fechado.
+ */
+export function separarEfeitosDeBancada(efeitos, ctxReduzido = {}) {
+  const montante = [];
+  const bancada = [];
+  for (const e of Array.isArray(efeitos) ? efeitos : []) {
+    const desce = !CANAIS_LIDOS_NO_MONTANTE.includes(e?.canal) && efeitoLeBancada(e, ctxReduzido);
+    (desce ? bancada : montante).push(e);
+  }
+  return { montante, bancada };
+}
+
 export const ehPreContexto = (e) =>
   CANAIS_PRE_CONTEXTO.includes(e?.canal) && !efeitoUsaDadosDanoFinal(e);
 export const ehPosAptidao = (e) =>

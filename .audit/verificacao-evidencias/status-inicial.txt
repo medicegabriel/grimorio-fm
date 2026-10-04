@@ -1,0 +1,574 @@
+ M AGENTS.md
+ M CLAUDE.md
+ M addons/flugel.json
+ M addons/maldicao-era-de-ouro.json
+ M asserts/LEIA.md
+ M asserts/t-estados-organiza.mjs
+ M asserts/t-estrela-zenin.mjs
+ M asserts/t-flugel.mjs
+ M asserts/t-invocacao-estados.mjs
+ M asserts/t-invocacao-tipos-especiais.mjs
+ M asserts/t-invocacao-tipos.mjs
+ M asserts/t-invocacoes-mesa.mjs
+ M asserts/t-invocacoes-motor.mjs
+ M asserts/t-maldicao-era-de-ouro.mjs
+ M asserts/t-maldicao.mjs
+ M asserts/t-melhorias-jogador.mjs
+ M asserts/t-nome-ficha.mjs
+ M asserts/t-ordem-modulos.mjs
+ M asserts/t-primitivas.mjs
+ M asserts/t-sistema.mjs
+ M asserts/t-suporte-revisao.mjs
+ M asserts/t-yna.mjs
+ M docs/a-fazer.md
+ M docs/afty-addons.md
+ M docs/afty-equipamentos.md
+ M docs/afty-ficha-final.md
+ M docs/afty-formula-entropica.md
+ M docs/afty-invocacoes.md
+ M docs/afty-motor-referencia-estrutural.md
+ M docs/afty-player.md
+ M docs/afty-status.md
+ M docs/automacao-dsl.md
+ M src/App.jsx
+ M src/components/PdfFab.jsx
+ M src/components/PdfViewerModal.jsx
+ M src/components/io-utils.js
+ M src/systems/afty/AftyCreatureBuilder.jsx
+ M src/systems/afty/afty-addons.js
+ M src/systems/afty/afty-alto-nivel.js
+ M src/systems/afty/afty-anatomias.js
+ M src/systems/afty/afty-aptidoes.js
+ M src/systems/afty/afty-atributos.js
+ M src/systems/afty/afty-combate-conjurador.js
+ M src/systems/afty/afty-derive.js
+ M src/systems/afty/afty-efeitos-conteudo.js
+ M src/systems/afty/afty-efeitos.js
+ M src/systems/afty/afty-equipamentos.js
+ M src/systems/afty/afty-feiticos.js
+ M src/systems/afty/afty-habilidades.js
+ M src/systems/afty/afty-invocacoes-tipos.js
+ M src/systems/afty/afty-invocacoes.js
+ M src/systems/afty/afty-origens.js
+ M src/systems/afty/afty-pericias-catalogo.js
+ M src/systems/afty/afty-pericias.js
+ M src/systems/afty/afty-schema.js
+ M src/systems/afty/afty-sistema.js
+ M src/systems/afty/afty-talentos.js
+ M src/systems/afty/encontros/AftyEncontro.jsx
+ M src/systems/afty/encontros/PainelDeCombatente.jsx
+ M src/systems/afty/encontros/usar-encontro-afty.js
+ M src/systems/afty/ficha/AftyFicha.jsx
+ M src/systems/afty/ficha/ItemDeFicha.jsx
+ M src/systems/afty/ficha/PainelDeRolagens.jsx
+ M src/systems/afty/ficha/abas/AbaAcoes.jsx
+ M src/systems/afty/ficha/abas/AbaBuffs.jsx
+ M src/systems/afty/ficha/abas/AbaHabilidades.jsx
+ M src/systems/afty/ficha/abas/AbaInvocacoes.jsx
+ M src/systems/afty/ficha/ficha-buffs.js
+ M src/systems/afty/ficha/ficha-conteudo.js
+ M src/systems/afty/ficha/ficha-estados.js
+ M src/systems/afty/ficha/ficha-rolagem.js
+ M src/systems/afty/ficha/ficha-sessao.js
+ M src/systems/afty/ficha/ficha-tema.js
+ M src/systems/afty/ficha/ficha.css
+ M src/systems/afty/ui/fontes.jsx
+ M src/systems/afty/ui/primitivos.jsx
+?? .audit/lote02-barras.mjs
+?? .audit/lote02-base/AftyCreatureBuilder.jsx
+?? .audit/lote02-base/a-fazer.md
+?? .audit/lote02-base/afty-equipamentos.md
+?? .audit/lote02-base/afty-invocacoes.md
+?? .audit/lote02-base/afty-status.md
+?? .audit/lote02-base/automacao-dsl.md
+?? .audit/lote02-base/primitivos.jsx
+?? .audit/lote02-documentar.mjs
+?? .audit/lote02-editar.mjs
+?? .audit/lote02-formulas.json
+?? .audit/lote02-formulas.mjs
+?? .audit/lote02-isolar-cache.mjs
+?? .audit/lote02-layout-antes-telefone.json
+?? .audit/lote02-layout-antes.json
+?? .audit/lote02-layout-depois-telefone.json
+?? .audit/lote02-layout-depois.json
+?? .audit/lote02-layout-telefone.mjs
+?? .audit/lote02-layout.mjs
+?? .audit/lote02-reler-fila.mjs
+?? .audit/lote02-revisao-final.mjs
+?? .audit/lote02-revisar-fila.mjs
+?? .audit/lote02-servidor-antes.mjs
+?? .audit/lote02-servidor-depois.mjs
+?? .audit/lote02-shots/afty-acao-invocacao-invalida.png
+?? .audit/lote02-shots/afty-acao-invocacao-valida.png
+?? .audit/lote02-shots/afty-caracteristica-invocacao-invalida.png
+?? .audit/lote02-shots/afty-caracteristica-invocacao-valida.png
+?? .audit/lote02-shots/afty-habilidade-unica-invalida.png
+?? .audit/lote02-shots/afty-habilidade-unica-valida.png
+?? .audit/lote02-shots/afty-quando-tecnica-invalida.png
+?? .audit/lote02-shots/afty-quando-tecnica-valida.png
+?? .audit/lote02-shots/antes-afty-1440-habilidades.png
+?? .audit/lote02-shots/antes-afty-1440-identidade.png
+?? .audit/lote02-shots/antes-afty-1440-perfil.png
+?? .audit/lote02-shots/antes-afty-390-habilidades.png
+?? .audit/lote02-shots/antes-afty-390-identidade.png
+?? .audit/lote02-shots/antes-afty-390-perfil.png
+?? .audit/lote02-shots/antes-player-1440-habilidades.png
+?? .audit/lote02-shots/antes-player-1440-identidade.png
+?? .audit/lote02-shots/antes-player-1440-perfil.png
+?? .audit/lote02-shots/antes-player-390-habilidades.png
+?? .audit/lote02-shots/antes-player-390-identidade.png
+?? .audit/lote02-shots/antes-player-390-perfil.png
+?? .audit/lote02-shots/antes-telefone-afty-390-habilidades.png
+?? .audit/lote02-shots/antes-telefone-afty-390-identidade.png
+?? .audit/lote02-shots/antes-telefone-afty-390-perfil.png
+?? .audit/lote02-shots/antes-telefone-player-390-habilidades.png
+?? .audit/lote02-shots/antes-telefone-player-390-identidade.png
+?? .audit/lote02-shots/antes-telefone-player-390-perfil.png
+?? .audit/lote02-shots/depois-afty-1440-habilidades.png
+?? .audit/lote02-shots/depois-afty-1440-identidade.png
+?? .audit/lote02-shots/depois-afty-1440-perfil.png
+?? .audit/lote02-shots/depois-afty-390-habilidades.png
+?? .audit/lote02-shots/depois-afty-390-identidade.png
+?? .audit/lote02-shots/depois-afty-390-perfil.png
+?? .audit/lote02-shots/depois-player-1440-habilidades.png
+?? .audit/lote02-shots/depois-player-1440-identidade.png
+?? .audit/lote02-shots/depois-player-1440-perfil.png
+?? .audit/lote02-shots/depois-player-390-habilidades.png
+?? .audit/lote02-shots/depois-player-390-identidade.png
+?? .audit/lote02-shots/depois-player-390-perfil.png
+?? .audit/lote02-shots/depois-telefone-afty-390-habilidades.png
+?? .audit/lote02-shots/depois-telefone-afty-390-identidade.png
+?? .audit/lote02-shots/depois-telefone-afty-390-perfil.png
+?? .audit/lote02-shots/depois-telefone-player-390-habilidades.png
+?? .audit/lote02-shots/depois-telefone-player-390-identidade.png
+?? .audit/lote02-shots/depois-telefone-player-390-perfil.png
+?? .audit/lote02-shots/player-acao-invocacao-invalida.png
+?? .audit/lote02-shots/player-acao-invocacao-valida.png
+?? .audit/lote02-shots/player-caracteristica-invocacao-invalida.png
+?? .audit/lote02-shots/player-caracteristica-invocacao-valida.png
+?? .audit/lote02-shots/player-habilidade-unica-invalida.png
+?? .audit/lote02-shots/player-habilidade-unica-valida.png
+?? .audit/lote02-shots/player-quando-tecnica-invalida.png
+?? .audit/lote02-shots/player-quando-tecnica-valida.png
+?? .audit/lote02-telefone.mjs
+?? .audit/lote02-vite-antes/deps/@dnd-kit_core.js
+?? .audit/lote02-vite-antes/deps/@dnd-kit_sortable.js
+?? .audit/lote02-vite-antes/deps/@dnd-kit_sortable.js.map
+?? .audit/lote02-vite-antes/deps/@dnd-kit_utilities.js
+?? .audit/lote02-vite-antes/deps/@dnd-kit_utilities.js.map
+?? .audit/lote02-vite-antes/deps/@vercel_analytics_react.js
+?? .audit/lote02-vite-antes/deps/@vercel_analytics_react.js.map
+?? .audit/lote02-vite-antes/deps/_metadata.json
+?? .audit/lote02-vite-antes/deps/core.esm-BbP4Ajr9.js
+?? .audit/lote02-vite-antes/deps/core.esm-BbP4Ajr9.js.map
+?? .audit/lote02-vite-antes/deps/lucide-react.js
+?? .audit/lote02-vite-antes/deps/lucide-react.js.map
+?? .audit/lote02-vite-antes/deps/package.json
+?? .audit/lote02-vite-antes/deps/react-BH0yRK75.js
+?? .audit/lote02-vite-antes/deps/react-BH0yRK75.js.map
+?? .audit/lote02-vite-antes/deps/react-dom-DXEfW_lE.js
+?? .audit/lote02-vite-antes/deps/react-dom-DXEfW_lE.js.map
+?? .audit/lote02-vite-antes/deps/react-dom.js
+?? .audit/lote02-vite-antes/deps/react-dom_client.js
+?? .audit/lote02-vite-antes/deps/react-dom_client.js.map
+?? .audit/lote02-vite-antes/deps/react.js
+?? .audit/lote02-vite-antes/deps/react_jsx-dev-runtime.js
+?? .audit/lote02-vite-antes/deps/react_jsx-dev-runtime.js.map
+?? .audit/lote02-vite-antes/deps/react_jsx-runtime.js
+?? .audit/lote02-vite-antes/deps/react_jsx-runtime.js.map
+?? .audit/lote02-vite-depois/deps/@dnd-kit_core.js
+?? .audit/lote02-vite-depois/deps/@dnd-kit_sortable.js
+?? .audit/lote02-vite-depois/deps/@dnd-kit_sortable.js.map
+?? .audit/lote02-vite-depois/deps/@dnd-kit_utilities.js
+?? .audit/lote02-vite-depois/deps/@dnd-kit_utilities.js.map
+?? .audit/lote02-vite-depois/deps/@vercel_analytics_react.js
+?? .audit/lote02-vite-depois/deps/@vercel_analytics_react.js.map
+?? .audit/lote02-vite-depois/deps/_metadata.json
+?? .audit/lote02-vite-depois/deps/core.esm-BbP4Ajr9.js
+?? .audit/lote02-vite-depois/deps/core.esm-BbP4Ajr9.js.map
+?? .audit/lote02-vite-depois/deps/lucide-react.js
+?? .audit/lote02-vite-depois/deps/lucide-react.js.map
+?? .audit/lote02-vite-depois/deps/package.json
+?? .audit/lote02-vite-depois/deps/react-BH0yRK75.js
+?? .audit/lote02-vite-depois/deps/react-BH0yRK75.js.map
+?? .audit/lote02-vite-depois/deps/react-dom-DXEfW_lE.js
+?? .audit/lote02-vite-depois/deps/react-dom-DXEfW_lE.js.map
+?? .audit/lote02-vite-depois/deps/react-dom.js
+?? .audit/lote02-vite-depois/deps/react-dom_client.js
+?? .audit/lote02-vite-depois/deps/react-dom_client.js.map
+?? .audit/lote02-vite-depois/deps/react.js
+?? .audit/lote02-vite-depois/deps/react_jsx-dev-runtime.js
+?? .audit/lote02-vite-depois/deps/react_jsx-dev-runtime.js.map
+?? .audit/lote02-vite-depois/deps/react_jsx-runtime.js
+?? .audit/lote02-vite-depois/deps/react_jsx-runtime.js.map
+?? .audit/lote03-browser.mjs
+?? .audit/lote03-flugel-medida.mjs
+?? .audit/lote03-instinto-medida.mjs
+?? .audit/lote03-largura.mjs
+?? .audit/lote03-largura2.mjs
+?? .audit/lote03-shots/afty-1440-atencao-em-combate.png
+?? .audit/lote03-shots/afty-1440-defesa-akutame.png
+?? .audit/lote03-shots/afty-1440-fortitude.png
+?? .audit/lote03-shots/afty-390-atencao-em-combate.png
+?? .audit/lote03-shots/afty-390-buffs-vazia.png
+?? .audit/lote03-shots/afty-390-defesa-akutame.png
+?? .audit/lote03-shots/afty-390-fortitude.png
+?? .audit/lote03-shots/player-1440-atencao-em-combate.png
+?? .audit/lote03-shots/player-1440-defesa-akutame.png
+?? .audit/lote03-shots/player-1440-fortitude.png
+?? .audit/lote03-shots/player-390-atencao-em-combate.png
+?? .audit/lote03-shots/player-390-defesa-akutame.png
+?? .audit/lote03-shots/player-390-fortitude.png
+?? .audit/lote03-tr-achado.mjs
+?? .audit/lote03-tr-linha.mjs
+?? .audit/lote03-tr-medida.mjs
+?? .audit/lote04-ajustar-rolagem.mjs
+?? .audit/lote04-asserts-final.txt
+?? .audit/lote04-base/AbaAcoes.jsx
+?? .audit/lote04-base/LEIA.md
+?? .audit/lote04-base/a-fazer.md
+?? .audit/lote04-base/afty-combate-conjurador.js
+?? .audit/lote04-base/afty-efeitos-conteudo.js
+?? .audit/lote04-base/afty-ficha-final.md
+?? .audit/lote04-base/afty-pericias.js
+?? .audit/lote04-base/afty-status.md
+?? .audit/lote04-base/automacao-dsl.md
+?? .audit/lote04-base/fontes.jsx
+?? .audit/lote04-base/maldicao-era-de-ouro.json
+?? .audit/lote04-base/t-maldicao-era-de-ouro.mjs
+?? .audit/lote04-browser-inspecao.mjs
+?? .audit/lote04-browser-resultados.json
+?? .audit/lote04-browser.mjs
+?? .audit/lote04-corrigir-jsx.mjs
+?? .audit/lote04-corrigir-toque.mjs
+?? .audit/lote04-documentar.mjs
+?? .audit/lote04-editar.mjs
+?? .audit/lote04-finalizar-fontes.mjs
+?? .audit/lote04-fontes-multiplicador.mjs
+?? .audit/lote04-preparar-toque.mjs
+?? .audit/lote04-registro-final.mjs
+?? .audit/lote04-revisao.mjs
+?? .audit/lote04-shots/afty-1440-articulacoes.png
+?? .audit/lote04-shots/afty-1440-auxiliar-corpo.png
+?? .audit/lote04-shots/afty-1440-auxiliar-distancia.png
+?? .audit/lote04-shots/afty-1440-caracteristica.png
+?? .audit/lote04-shots/afty-1440-circular.png
+?? .audit/lote04-shots/afty-390-articulacoes.png
+?? .audit/lote04-shots/afty-390-auxiliar-corpo.png
+?? .audit/lote04-shots/afty-390-auxiliar-distancia.png
+?? .audit/lote04-shots/afty-390-caracteristica.png
+?? .audit/lote04-shots/afty-390-circular.png
+?? .audit/lote04-shots/inspecao-buffs.png
+?? .audit/lote04-shots/player-1440-articulacoes.png
+?? .audit/lote04-shots/player-1440-auxiliar-corpo.png
+?? .audit/lote04-shots/player-1440-auxiliar-distancia.png
+?? .audit/lote04-shots/player-1440-caracteristica.png
+?? .audit/lote04-shots/player-1440-circular.png
+?? .audit/lote04-shots/player-390-articulacoes.png
+?? .audit/lote04-shots/player-390-auxiliar-corpo.png
+?? .audit/lote04-shots/player-390-auxiliar-distancia.png
+?? .audit/lote04-shots/player-390-caracteristica.png
+?? .audit/lote04-shots/player-390-circular.png
+?? .audit/lote04-shots/toque-inspecao.png
+?? .audit/lote04-toque-inspecao.mjs
+?? .audit/lote05-browser.mjs
+?? .audit/lote05-diag.mjs
+?? .audit/lote05-shots/afty-1440-corpo-bio.png
+?? .audit/lote05-shots/afty-1440-corpo-boneco.png
+?? .audit/lote05-shots/afty-390-corpo-bio.png
+?? .audit/lote05-shots/afty-390-corpo-boneco.png
+?? .audit/lote05-shots/diag.png
+?? .audit/lote05-shots/player-1440-corpo-bio.png
+?? .audit/lote05-shots/player-1440-corpo-boneco.png
+?? .audit/lote05-shots/player-390-corpo-bio.png
+?? .audit/lote05-shots/player-390-corpo-boneco.png
+?? .audit/lote06-asserts-completo.txt
+?? .audit/lote06-asserts-final.txt
+?? .audit/lote06-base/asserts/t-balanceada.mjs
+?? .audit/lote06-base/asserts/t-suporte-revisao.mjs
+?? .audit/lote06-base/docs/a-fazer.md
+?? .audit/lote06-base/docs/afty-equipamentos.md
+?? .audit/lote06-base/docs/afty-player.md
+?? .audit/lote06-base/docs/afty-status.md
+?? .audit/lote06-base/src/systems/afty/afty-efeitos-conteudo.js
+?? .audit/lote06-base/src/systems/afty/afty-equipamentos.js
+?? .audit/lote06-base/src/systems/afty/afty-feiticos.js
+?? .audit/lote06-browser-complemento-resultados.json
+?? .audit/lote06-browser-complemento.mjs
+?? .audit/lote06-browser-resultados.json
+?? .audit/lote06-browser-toque.mjs
+?? .audit/lote06-browser.mjs
+?? .audit/lote06-documentar-encantamentos.mjs
+?? .audit/lote06-documentar-restante.mjs
+?? .audit/lote06-editar-asserts.mjs
+?? .audit/lote06-editar-encantamentos.mjs
+?? .audit/lote06-editar-suporte-assert.mjs
+?? .audit/lote06-editar-suporte.mjs
+?? .audit/lote06-registrar.mjs
+?? .audit/lote06-registro-final.mjs
+?? .audit/lote06-revisao-final.mjs
+?? .audit/lote06-revisar.mjs
+?? .audit/lote06-shots/afty-1440-cd.png
+?? .audit/lote06-shots/afty-1440-iniciativa.png
+?? .audit/lote06-shots/afty-1440-suporte.png
+?? .audit/lote06-shots/afty-390-cd.png
+?? .audit/lote06-shots/afty-390-iniciativa.png
+?? .audit/lote06-shots/afty-390-suporte-falha.png
+?? .audit/lote06-shots/afty-390-suporte.png
+?? .audit/lote06-shots/player-1440-cd.png
+?? .audit/lote06-shots/player-1440-conjurador-1.png
+?? .audit/lote06-shots/player-1440-conjurador-30.png
+?? .audit/lote06-shots/player-1440-iniciativa.png
+?? .audit/lote06-shots/player-1440-suporte.png
+?? .audit/lote06-shots/player-390-cd.png
+?? .audit/lote06-shots/player-390-conjurador-1.png
+?? .audit/lote06-shots/player-390-conjurador-30.png
+?? .audit/lote06-shots/player-390-iniciativa.png
+?? .audit/lote06-shots/player-390-suporte.png
+?? .audit/lote07-asserts-base.txt
+?? .audit/lote07-asserts-final.txt
+?? .audit/lote07-base/AbaInvocacoes.jsx
+?? .audit/lote07-base/a-fazer.md
+?? .audit/lote07-base/afty-derive.js
+?? .audit/lote07-base/afty-invocacoes.js
+?? .audit/lote07-base/afty-invocacoes.md
+?? .audit/lote07-base/afty-status.md
+?? .audit/lote07-base/ficha-sessao.js
+?? .audit/lote07-base/t-invocacao-tipos-especiais.mjs
+?? .audit/lote07-base/t-invocacoes-mesa.mjs
+?? .audit/lote07-browser-resultados.json
+?? .audit/lote07-browser.mjs
+?? .audit/lote07-diff-final.txt
+?? .audit/lote07-documentar.mjs
+?? .audit/lote07-editar-asserts.mjs
+?? .audit/lote07-editar.mjs
+?? .audit/lote07-revisao-final.mjs
+?? .audit/lote07-shots/afty-1440-horda-metade.png
+?? .audit/lote07-shots/afty-1440-hoste.png
+?? .audit/lote07-shots/afty-1440-mecha.png
+?? .audit/lote07-shots/afty-390-horda-metade.png
+?? .audit/lote07-shots/afty-390-hoste.png
+?? .audit/lote07-shots/afty-390-mecha.png
+?? .audit/lote07-shots/player-1440-horda-metade.png
+?? .audit/lote07-shots/player-1440-hoste.png
+?? .audit/lote07-shots/player-1440-mecha.png
+?? .audit/lote07-shots/player-390-horda-metade.png
+?? .audit/lote07-shots/player-390-hoste.png
+?? .audit/lote07-shots/player-390-mecha.png
+?? .audit/lote08-browser.mjs
+?? .audit/lote08-encontro.mjs
+?? .audit/lote08-resultado.json
+?? .audit/lote08-shots/afty-1440-lista.png
+?? .audit/lote08-shots/afty-1440-recusa.png
+?? .audit/lote08-shots/afty-390-lista.png
+?? .audit/lote08-shots/afty-390-recusa.png
+?? .audit/lote08-shots/encontro-afty.png
+?? .audit/lote08-shots/encontro-player.png
+?? .audit/lote08-shots/player-1440-lista.png
+?? .audit/lote08-shots/player-1440-recusa.png
+?? .audit/lote08-shots/player-390-lista.png
+?? .audit/lote08-shots/player-390-recusa.png
+?? .audit/lote08-shots/raiz-1440-lista.png
+?? .audit/lote08-shots/raiz-1440-recusa.png
+?? .audit/lote08-shots/raiz-390-lista.png
+?? .audit/lote08-shots/raiz-390-recusa.png
+?? .audit/lote08-shots/uso-afty-legado.png
+?? .audit/lote08-shots/uso-afty-modelos.png
+?? .audit/lote08-shots/uso-player-legado.png
+?? .audit/lote08-shots/uso-player-modelos.png
+?? .audit/lote09-ajustar-browser.mjs
+?? .audit/lote09-ajustar-documentacao.mjs
+?? .audit/lote09-ajustar-registro.mjs
+?? .audit/lote09-assert-coletivo.mjs
+?? .audit/lote09-assert-pe.mjs
+?? .audit/lote09-aviso.mjs
+?? .audit/lote09-base/AbaAcoes.jsx
+?? .audit/lote09-base/AbaInvocacoes.jsx
+?? .audit/lote09-base/AftyEncontro.jsx
+?? .audit/lote09-base/AftyFicha.jsx
+?? .audit/lote09-base/PainelDeCombatente.jsx
+?? .audit/lote09-base/afty-derive.js
+?? .audit/lote09-base/afty-ficha-final.md
+?? .audit/lote09-base/afty-invocacoes.js
+?? .audit/lote09-base/afty-invocacoes.md
+?? .audit/lote09-base/ficha-sessao.js
+?? .audit/lote09-base/t-invocacao-estados.mjs
+?? .audit/lote09-base/t-invocacao-tipos-especiais.mjs
+?? .audit/lote09-base/usar-encontro-afty.js
+?? .audit/lote09-browser-resultados.json
+?? .audit/lote09-browser.mjs
+?? .audit/lote09-concluir-codigo.mjs
+?? .audit/lote09-descanso-browser.json
+?? .audit/lote09-descanso-browser.mjs
+?? .audit/lote09-descanso-todos.mjs
+?? .audit/lote09-diff-final.txt
+?? .audit/lote09-documentar-final.mjs
+?? .audit/lote09-documentar-restante.mjs
+?? .audit/lote09-documentar.mjs
+?? .audit/lote09-editar.mjs
+?? .audit/lote09-fila-concluida.json
+?? .audit/lote09-registrar.mjs
+?? .audit/lote09-revisar-final.mjs
+?? .audit/lote09-sessao-concluida.md
+?? .audit/lote09-sessao.md
+?? .audit/lote09-shots/afty-1440-em-campo-fontes.png
+?? .audit/lote09-shots/afty-1440-encontro-escolha.png
+?? .audit/lote09-shots/afty-1440-feiticos-bloqueados.png
+?? .audit/lote09-shots/afty-1440-ficha-escolha.png
+?? .audit/lote09-shots/afty-1440-fora.png
+?? .audit/lote09-shots/afty-1440-todos-escolha.png
+?? .audit/lote09-shots/afty-390-em-campo-fontes.png
+?? .audit/lote09-shots/afty-390-encontro-escolha.png
+?? .audit/lote09-shots/afty-390-feiticos-bloqueados.png
+?? .audit/lote09-shots/afty-390-ficha-escolha.png
+?? .audit/lote09-shots/afty-390-fora.png
+?? .audit/lote09-shots/afty-390-todos-escolha.png
+?? .audit/lote09-shots/player-1440-em-campo-fontes.png
+?? .audit/lote09-shots/player-1440-encontro-escolha.png
+?? .audit/lote09-shots/player-1440-feiticos-bloqueados.png
+?? .audit/lote09-shots/player-1440-ficha-escolha.png
+?? .audit/lote09-shots/player-1440-fora.png
+?? .audit/lote09-shots/player-1440-todos-escolha.png
+?? .audit/lote09-shots/player-390-em-campo-fontes.png
+?? .audit/lote09-shots/player-390-encontro-escolha.png
+?? .audit/lote09-shots/player-390-feiticos-bloqueados.png
+?? .audit/lote09-shots/player-390-ficha-escolha.png
+?? .audit/lote09-shots/player-390-fora.png
+?? .audit/lote09-shots/player-390-todos-escolha.png
+?? .audit/lote10-base/a-fazer.md
+?? .audit/lote10-base/afty-efeitos-conteudo.js
+?? .audit/lote10-base/afty-invocacoes-tipos.js
+?? .audit/lote10-base/afty-invocacoes.md
+?? .audit/lote10-base/afty-status.md
+?? .audit/lote10-base/t-estrela-zenin.mjs
+?? .audit/lote10-base/t-invocacao-tipos-especiais.mjs
+?? .audit/lote10-base/t-invocacao-tipos.mjs
+?? .audit/lote10-base/t-maldicao.mjs
+?? .audit/lote10-base/t-melhorias-jogador.mjs
+?? .audit/lote10-browser-resultados.json
+?? .audit/lote10-browser.mjs
+?? .audit/lote10-diff-final.txt
+?? .audit/lote10-fila-removida.json
+?? .audit/lote10-shots/afty-1440-criador-filtros.png
+?? .audit/lote10-shots/afty-1440-criador-perfil.png
+?? .audit/lote10-shots/afty-1440-ficha-shikigami.png
+?? .audit/lote10-shots/afty-1440-ficha-tecnica.png
+?? .audit/lote10-shots/afty-390-criador-filtros.png
+?? .audit/lote10-shots/afty-390-criador-perfil.png
+?? .audit/lote10-shots/afty-390-ficha-shikigami.png
+?? .audit/lote10-shots/afty-390-ficha-tecnica.png
+?? .audit/lote10-shots/player-1440-criador-filtros.png
+?? .audit/lote10-shots/player-1440-criador-perfil.png
+?? .audit/lote10-shots/player-1440-ficha-shikigami.png
+?? .audit/lote10-shots/player-1440-ficha-tecnica.png
+?? .audit/lote10-shots/player-390-criador-filtros.png
+?? .audit/lote10-shots/player-390-criador-perfil.png
+?? .audit/lote10-shots/player-390-ficha-shikigami.png
+?? .audit/lote10-shots/player-390-ficha-tecnica.png
+?? .audit/lote11-base/AbaInvocacoes.jsx
+?? .audit/lote11-base/AftyCreatureBuilder.jsx
+?? .audit/lote11-base/AftyEncontro.jsx
+?? .audit/lote11-base/App.jsx
+?? .audit/lote11-base/a-fazer.md
+?? .audit/lote11-base/afty-invocacoes.js
+?? .audit/lote11-base/afty-invocacoes.md
+?? .audit/lote11-base/afty-status.md
+?? .audit/lote11-base/usar-encontro-afty.js
+?? .audit/lote11-browser-resultados.json
+?? .audit/lote11-browser.mjs
+?? .audit/lote11-diff-final.txt
+?? .audit/lote11-misto-resultados.json
+?? .audit/lote11-misto.mjs
+?? .audit/lote11-sessao.md
+?? .audit/lote11-shots/afty-1440-biblioteca-outra-rota.png
+?? .audit/lote11-shots/afty-1440-misto.png
+?? .audit/lote11-shots/afty-1440-morte-encontro.png
+?? .audit/lote11-shots/afty-1440-perda-biblioteca.png
+?? .audit/lote11-shots/afty-1440-quimera-fontes-criador.png
+?? .audit/lote11-shots/afty-1440-quimera-fontes-ficha.png
+?? .audit/lote11-shots/afty-390-biblioteca-outra-rota.png
+?? .audit/lote11-shots/afty-390-falha-real.png
+?? .audit/lote11-shots/afty-390-misto.png
+?? .audit/lote11-shots/afty-390-morte-encontro.png
+?? .audit/lote11-shots/afty-390-perda-biblioteca.png
+?? .audit/lote11-shots/afty-390-quimera-fontes-criador.png
+?? .audit/lote11-shots/afty-390-quimera-fontes-ficha.png
+?? .audit/lote11-shots/player-1440-biblioteca-outra-rota.png
+?? .audit/lote11-shots/player-1440-misto.png
+?? .audit/lote11-shots/player-1440-morte-encontro.png
+?? .audit/lote11-shots/player-1440-perda-biblioteca.png
+?? .audit/lote11-shots/player-1440-quimera-fontes-criador.png
+?? .audit/lote11-shots/player-1440-quimera-fontes-ficha.png
+?? .audit/lote11-shots/player-390-biblioteca-outra-rota.png
+?? .audit/lote11-shots/player-390-falha-real.png
+?? .audit/lote11-shots/player-390-misto.png
+?? .audit/lote11-shots/player-390-morte-encontro.png
+?? .audit/lote11-shots/player-390-perda-biblioteca.png
+?? .audit/lote11-shots/player-390-quimera-fontes-criador.png
+?? .audit/lote11-shots/player-390-quimera-fontes-ficha.png
+?? .audit/verificacao-executar.mjs
+?? addons/aberracao-humanizada.json
+?? addons/alter.json
+?? addons/espinho.json
+?? asserts/t-aberracao-humanizada.mjs
+?? asserts/t-alcance-corpo-a-corpo.mjs
+?? asserts/t-balanceada.mjs
+?? asserts/t-criador-namespaces.mjs
+?? asserts/t-dano-acerto-amaldicoado.mjs
+?? asserts/t-descanso-marionetes.mjs
+?? asserts/t-espinho.mjs
+?? asserts/t-estilo-massivo.mjs
+?? asserts/t-feiticos-permutativos.mjs
+?? asserts/t-ficha-linhas.mjs
+?? asserts/t-fundamento-bloqueio.mjs
+?? asserts/t-montante-bancada.mjs
+?? asserts/t-quimera-fundamento-biblioteca.mjs
+?? asserts/t-teste-atributo.mjs
+?? asserts/t-tr-caso-ja-seja-classe.mjs
+?? asserts/t-vagas-agregado-final.mjs
+?? docs/afty-aberracao-humanizada.md
+?? docs/afty-espinho.md
+?? docs/afty-feiticos-permutativos.md
+?? public/alter-lucielos-olhos-ciano.png
+?? src/systems/afty/afty-espinho.js
+?? src/systems/afty/encontros/fundamento-biblioteca.js
+?? src/systems/afty/ficha/BotaoDeDescanso.jsx
+?? src/systems/afty/ui/EspinhoCard.jsx
+?? src/systems/afty/ui/espinho.css
+?? themes/alter-lucielos-com-tema.json
+?? themes/alter-lucielos-escuro-celular-acoes.png
+?? themes/alter-lucielos-escuro-celular-habilidades.png
+?? themes/alter-lucielos-escuro-celular-pericias.png
+?? themes/alter-lucielos-escuro-celular-vista-acoes.png
+?? themes/alter-lucielos-escuro-celular-vista-habilidades.png
+?? themes/alter-lucielos-escuro-celular-vista-pericias.png
+?? themes/alter-lucielos-escuro-desktop-acoes.png
+?? themes/alter-lucielos-escuro-desktop-habilidades.png
+?? themes/alter-lucielos-escuro-desktop-pericias.png
+?? themes/alter-lucielos-escuro-desktop.png
+?? themes/alter-lucielos-escuro-habilidades.png
+?? themes/alter-lucielos-escuro-impressao.png
+?? themes/alter-lucielos-escuro-mobile.png
+?? themes/alter-lucielos-imagem-desktop-acoes.png
+?? themes/alter-lucielos-imagem-desktop-habilidades.png
+?? themes/alter-lucielos-imagem-desktop-pericias.png
+?? themes/alter-lucielos-imagem-impressao.png
+?? themes/alter-lucielos-imagem-mobile-acoes.png
+?? themes/alter-lucielos-imagem-mobile-habilidades-rolagem.png
+?? themes/alter-lucielos-imagem-mobile-habilidades.png
+?? themes/alter-lucielos-imagem-mobile-pericias.png
+?? themes/alter-lucielos-imagem-small-acoes.png
+?? themes/alter-lucielos-preview-desktop.png
+?? themes/alter-lucielos-preview-mobile.png
+?? themes/alter-lucielos-preview-pericias.png
+?? themes/alter-lucielos-profundo-acoes.png
+?? themes/alter-lucielos-profundo-habilidades.png
+?? themes/alter-lucielos-profundo-mobile.png
+?? themes/alter-lucielos-profundo-pericias.png
+?? themes/alter-lucielos-review-appearance.png
+?? themes/alter-lucielos-review-critical.png
+?? themes/alter-lucielos-review-final-1280.png
+?? themes/alter-lucielos-review-final-desktop.png
+?? themes/alter-lucielos-review-final-mobile.png
+?? themes/alter-lucielos-review-final-print.png
+?? themes/alter-lucielos.css

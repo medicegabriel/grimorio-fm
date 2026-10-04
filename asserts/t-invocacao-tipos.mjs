@@ -42,11 +42,11 @@ t("a tabela de regras fecha sem erro", TIPOS.validarRegrasPorTipo(), []);
 t("o validador do catalogo de invocacoes continua zerado", INV.validarCatalogoInvocacoes(), []);
 t("o catalogo de tipos tem os cinco, na ordem da tela",
   INV.AFTY_INV_TIPOS.map((x) => x.value), CINCO);
-t("os rotulos de tela (os dois primeiros como o autor os deixou em 2026-09-02)",
+t("os rotulos de tela confirmados pelo autor em 2026-10-03",
   INV.AFTY_INV_TIPOS.map((x) => x.label),
-  ["Invocação", "Invocação de Técnica", "Maldição", "Marionete", "Corpo Amaldiçoado"]);
+  ["Shikigami", "Shikigami de Técnica", "Maldição", "Marionete", "Corpo Amaldiçoado"]);
 t("os rotulos curtos do filtro da lista",
-  INV.AFTY_INV_TIPOS.map((x) => x.curto), ["Invocação", "Técnica", "Maldição", "Marionete", "Corpo"]);
+  INV.AFTY_INV_TIPOS.map((x) => x.curto), ["Shikigami", "Técnica", "Maldição", "Marionete", "Corpo"]);
 
 /* ============================================================ */
 /* 2. A MATRIZ (ordem: Shikigami, Técnica, Maldição, Marionete, Corpo) */
@@ -106,7 +106,7 @@ const resolvida = (tipoMecanico, extra = {}) => {
 /* E-10: o resolvido devolvia o valor CRU, e a ficha com "dispositivo" chegava à
    tela com esse tipo enquanto o rótulo dizia "Invocação". */
 t("o resolvido devolve o tipo normalizado (E-10)", resolvida("dispositivo").tipoMecanico, "shikigami");
-t("e o rotulo bate com ele", resolvida("dispositivo").tipoLabel, "Invocação");
+t("e o rotulo bate com ele", resolvida("dispositivo").tipoLabel, "Shikigami");
 t("a ficha com dispositivo ganha o aviso de tipo antigo",
   resolvida("dispositivo").warnings.includes("Tipo antigo Dispositivo lido como Invocação."), true);
 t("e nenhum dos cinco tipos atuais ganha esse aviso",

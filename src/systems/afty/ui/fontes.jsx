@@ -459,7 +459,7 @@ function NumeroInterativo({ lista, texto, total, ancora, className, titulo, onRo
         onPointerUp={seguraTermina}
         onPointerLeave={() => { seguraTermina(); if (temHover()) fechar(); }}
         onPointerEnter={() => { if (lista.length && temHover()) abrir(); }}
-        onFocus={() => { if (lista.length) abrir(); }}
+        onFocus={(e) => { if (lista.length && (temHover() || e.currentTarget.matches(":focus-visible"))) abrir(); }}
         onBlur={fechar}
         onContextMenu={(e) => { if (onRolar && lista.length) e.preventDefault(); }}
         aria-expanded={lista.length ? aberto : undefined}

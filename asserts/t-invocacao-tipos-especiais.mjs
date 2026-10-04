@@ -15,7 +15,7 @@
       Presença do Controlador, sem cura por Energia Reversa, e a Autonomia paga no
       início do combate.
    4. TÉCNICA: o Fundamento, a Técnica Inata bloqueada de verdade quando ele morre
-      (e só os Feitiços quando ele está fora de campo), e a Iniciativa própria.
+      ou está fora de campo na mesa, e a Iniciativa própria.
    5. O ENCONTRO: o cache do derive do combatente enxerga o estado das invocações
       (E-13), e a morte do Fundamento vai para a ficha do combatente. */
 import { register } from "node:module";
@@ -111,8 +111,22 @@ t("o boneco e imune a Envenenado e a venenos nao amaldicoados",
 t("e se repara pelo Alfaiate, em descanso longo, CD 30 no Segundo",
   [boneco.reparo.vias, boneco.reparo.cd, boneco.reparo.quando], [["Ofício (Alfaiate)"], 30, "Descanso Longo"]);
 const bio = (refeicao, extra = {}, dono = {}) => corpo("quarto", { natureza: "biologico", refeicao, ...extra }, dono);
-t("o biologico se repara por Cura Aprimorada ou Medicina, sem CD de Oficio",
-  (({ vias, cd }) => [vias, cd])(bio("").reparo), [["Cura Aprimorada", "Medicina"], null]);
+t("o biologico se repara por Cura Aprimorada ou Medicina, sem Oficio como via",
+  (({ vias, oficio }) => [vias, oficio])(bio("").reparo), [["Cura Aprimorada", "Medicina"], ""]);
+/* A CD do biologico pela coluna do Farmaceutico (decisao do autor, 2026-10-03):
+   o Mecanicas manda seguir a tabela "em ambos os casos", e Medicina nao e
+   Oficio. Custo 4 da 35, e nao os 30 do Canalizador do Shikigami. */
+t("e a CD pela coluna do Farmaceutico, do Quarto ao Especial",
+  ["quarto", "terceiro", "segundo", "primeiro", "especial"].map((g) => corpo(g, { natureza: "biologico" }).reparo.cd),
+  [15, 20, 25, 35, 35]);
+const reparoBio = corpo("segundo", { natureza: "biologico" }).reparo;
+t("o hover da CD diz a coluna e o Custo",
+  reparoBio.partesCd.map((p) => [p.label, p.valor]), [["Criação de Itens · Farmacêutico (Custo 3)", 25]]);
+t("e a parcela fecha com a CD", reparoBio.partesCd.reduce((n, p) => n + p.valor, 0), reparoBio.cd);
+t("o boneco tambem leva a parcela, pela coluna do Alfaiate",
+  boneco.reparo.partesCd.map((p) => p.label), ["Criação de Itens · Alfaiate (Custo 3)"]);
+t("sem natureza, sem CD e sem parcela",
+  (({ cd, partesCd, falta }) => [cd, partesCd, falta])(corpo("quarto", { natureza: "" }).reparo), [null, [], true]);
 t("as refeicoes sao as do Livro, sem a Energetica",
   I.REFEICOES_DE_CORPO.map((r) => r.value), ["leve", "nutritiva", "picante", "reforcada", "refrescante", "revigorante"]);
 const semRefeicao = bio("");
@@ -237,7 +251,7 @@ t("o Fundamento so existe na Tecnica",
   [true, false]);
 const tec = res(nova("tecnica", "terceiro", { atributos: { forca: 10, destreza: 14, constituicao: 10, inteligencia: 10, sabedoria: 10, presenca: 10 } }));
 t("a Tecnica tem Iniciativa: Destreza e os bonus de todos os testes (o grau dela)",
-  [tec.iniciativa.bonus, tec.iniciativa.partes.map((p) => p.label)], [2 + 2, ["Destreza", "Invocação de Técnica"]]);
+  [tec.iniciativa.bonus, tec.iniciativa.partes.map((p) => p.label)], [2 + 2, ["Destreza", "Shikigami de Técnica"]]);
 t("quem nao tem turno proprio nao rola Iniciativa", res(nova("shikigami")).iniciativa, null);
 
 const tecnicaInata = (fichaInv, mesa, registros = []) => I.estadoDaTecnicaInata(
@@ -281,9 +295,9 @@ t("e a perda gravada faz o mesmo sem mesa",
   [viva.defesa - perdida.defesa, viva.rdGeral - perdida.rdGeral], [2, 3]);
 t("nada e apagado: os Feiticos seguem na lista, marcados",
   perdida.feiticos.lista.map((f) => [f.id, f.bloqueado]), [["p1", "Fundamento Perdido"], ["a1", "Fundamento Perdido"]]);
-t("fora de campo, os Feiticos ficam marcados e os numeros nao mudam",
+t("fora de campo, os Feiticos ficam marcados e Funcionamento e Passivas param",
   [semMesa.feiticos.lista.map((f) => f.bloqueado), semMesa.defesa === viva.defesa, semMesa.rdGeral === viva.rdGeral],
-  [["Fundamento Fora de Campo", "Fundamento Fora de Campo"], true, true]);
+  [["Fundamento Fora de Campo", "Fundamento Fora de Campo"], false, false]);
 t("com o Fundamento em campo, nada e marcado",
   D.deriveAfty(fichaTec(), { invocacoes: { F: { estado: "ativa" } } }).feiticos.lista.some((f) => f.bloqueado), false);
 t("o derive expoe o estado, com a perda a gravar", morta.tecnicaInata.aRegistrar, { invocacaoId: "F", nome: "Divino" });

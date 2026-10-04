@@ -1,0 +1,266 @@
+diff --git a/.audit/lote10-base/afty-invocacoes-tipos.js b/src/systems/afty/afty-invocacoes-tipos.js
+index ab24775..ae624bd 100644
+--- a/.audit/lote10-base/afty-invocacoes-tipos.js
++++ b/src/systems/afty/afty-invocacoes-tipos.js
+@@ -18,8 +18,8 @@
+  * derrubou o app em 2026-09-02. A lista de folhas está em asserts/t-ordem-modulos.mjs.
+  *
+  * ⚠ OS `value` NÃO MUDAM. `shikigami`, `tecnica` e `maldicao` estão gravados em
+- * toda ficha salva e viram variável de DSL. Os rótulos de tela também ficam como
+- * o autor os deixou em 2026-09-02 ("Invocação", "Invocação de Técnica").
++ * toda ficha salva e viram variável de DSL. Os rótulos voltam a "Shikigami" e
++ * "Shikigami de Técnica", com curto "Técnica" (autor, 2026-10-03).
+  *
+  * Campos (o Shikigami escreve o padrão de cada um):
+  *   label, curto        rótulo do chip e rótulo curto do filtro da lista
+@@ -57,7 +57,7 @@
+  */
+ export const REGRAS_POR_TIPO = {
+   shikigami: {
+-    label: "Invocação", curto: "Invocação", familia: "shikigami",
++    label: "Shikigami", curto: "Shikigami", familia: "shikigami",
+     verbo: "invocar", intermediario: "Talismã", retirada: "dissipar / exorcizar",
+     dissipavel: true, talisma: true, cura: { comum: true, er: true }, alma: "pv",
+     custoBase: "grau", grauFixo: false, visionario: true, horda: true,
+@@ -72,7 +72,7 @@ export const REGRAS_POR_TIPO = {
+      Mecânicas dá a ele turno próprio, sem Autonomia, e a morte no 2º exorcismo. */
+   tecnica: {
+     herda: "shikigami",
+-    label: "Invocação de Técnica", curto: "Técnica",
++    label: "Shikigami de Técnica", curto: "Técnica",
+     intermediario: null, talisma: false,
+     autonomia: false, terminal: "morta",
+     imunidade: "passivaDeTecnica", turnoProprio: true,
+diff --git a/.audit/lote10-base/afty-efeitos-conteudo.js b/src/systems/afty/afty-efeitos-conteudo.js
+index 0115ae7..2f1a14b 100644
+--- a/.audit/lote10-base/afty-efeitos-conteudo.js
++++ b/src/systems/afty/afty-efeitos-conteudo.js
+@@ -2240,11 +2240,9 @@ export const LENDARIA_EFEITOS_ALVO = {
+   ],
+ 
+   // "você pode aumentar o limite de um Nível de Aptidão para 6."
+-  // O canal é SOMA, e não "passa a valer 6": é a convenção do `limiteAptidao`
+-  // desde que ele nasceu (duas fontes na mesma trilha levam o teto a 7). Numa
+-  // trilha em que nada mais mexeu, +1 sobre o 5 padrão dá exatamente os 6 do
+-  // texto. ⚠ A CONFIRMAR com o autor se, empilhada com outra fonte de limite,
+-  // ela deve parar no 6 em vez de somar.
++  // SOMA confirmada pelo autor em 2026-10-03: +1 sobre o 5 padrão dá 6, e
++  // outra fonte de +1 na mesma trilha leva o teto a 7. Vale nos dois sistemas,
++  // respeitando o `perdidoNoJogador` e o Addon que pode devolver a Lendária.
+   //
+   // Sozinho o limite não dá nível nenhum: quem preenche o 6° é o orçamento, e a
+   // trilha só aceita alocação até o limite dela (ver resolveNiveisAptidao).
+diff --git a/.audit/lote10-base/t-invocacao-tipos.mjs b/asserts/t-invocacao-tipos.mjs
+index 51cfac9..12a8684 100644
+--- a/.audit/lote10-base/t-invocacao-tipos.mjs
++++ b/asserts/t-invocacao-tipos.mjs
+@@ -42,11 +42,11 @@ t("a tabela de regras fecha sem erro", TIPOS.validarRegrasPorTipo(), []);
+ t("o validador do catalogo de invocacoes continua zerado", INV.validarCatalogoInvocacoes(), []);
+ t("o catalogo de tipos tem os cinco, na ordem da tela",
+   INV.AFTY_INV_TIPOS.map((x) => x.value), CINCO);
+-t("os rotulos de tela (os dois primeiros como o autor os deixou em 2026-09-02)",
++t("os rotulos de tela confirmados pelo autor em 2026-10-03",
+   INV.AFTY_INV_TIPOS.map((x) => x.label),
+-  ["Invocação", "Invocação de Técnica", "Maldição", "Marionete", "Corpo Amaldiçoado"]);
++  ["Shikigami", "Shikigami de Técnica", "Maldição", "Marionete", "Corpo Amaldiçoado"]);
+ t("os rotulos curtos do filtro da lista",
+-  INV.AFTY_INV_TIPOS.map((x) => x.curto), ["Invocação", "Técnica", "Maldição", "Marionete", "Corpo"]);
++  INV.AFTY_INV_TIPOS.map((x) => x.curto), ["Shikigami", "Técnica", "Maldição", "Marionete", "Corpo"]);
+ 
+ /* ============================================================ */
+ /* 2. A MATRIZ (ordem: Shikigami, Técnica, Maldição, Marionete, Corpo) */
+@@ -106,7 +106,7 @@ const resolvida = (tipoMecanico, extra = {}) => {
+ /* E-10: o resolvido devolvia o valor CRU, e a ficha com "dispositivo" chegava à
+    tela com esse tipo enquanto o rótulo dizia "Invocação". */
+ t("o resolvido devolve o tipo normalizado (E-10)", resolvida("dispositivo").tipoMecanico, "shikigami");
+-t("e o rotulo bate com ele", resolvida("dispositivo").tipoLabel, "Invocação");
++t("e o rotulo bate com ele", resolvida("dispositivo").tipoLabel, "Shikigami");
+ t("a ficha com dispositivo ganha o aviso de tipo antigo",
+   resolvida("dispositivo").warnings.includes("Tipo antigo Dispositivo lido como Invocação."), true);
+ t("e nenhum dos cinco tipos atuais ganha esse aviso",
+diff --git a/.audit/lote10-base/t-maldicao.mjs b/asserts/t-maldicao.mjs
+index f4feeb8..24115f0 100644
+--- a/.audit/lote10-base/t-maldicao.mjs
++++ b/asserts/t-maldicao.mjs
+@@ -33,7 +33,7 @@ const t = (nome, real, esp) => {
+    2.5.2): Marionete e Corpo entraram depois da Maldição. */
+ t("o catalogo tem os cinco tipos, Maldicao na mesma posicao",
+   INV.AFTY_INV_TIPOS.map((x) => [x.value, x.label]),
+-  [["shikigami", "Invocação"], ["tecnica", "Invocação de Técnica"], ["maldicao", "Maldição"],
++  [["shikigami", "Shikigami"], ["tecnica", "Shikigami de Técnica"], ["maldicao", "Maldição"],
+     ["marionete", "Marionete"], ["corpo", "Corpo Amaldiçoado"]]);
+ /* ⚠ A MALDIÇÃO DEIXOU DE SER "UMA INVOCAÇÃO NORMAL" em 2026-09-30. Até ali ela
+    tinha o Talismã e a dissipação do Shikigami. O Mecânicas diz que ela "não pode
+diff --git a/.audit/lote10-base/t-invocacao-tipos-especiais.mjs b/asserts/t-invocacao-tipos-especiais.mjs
+index 901aafb..b9a5138 100644
+--- a/.audit/lote10-base/t-invocacao-tipos-especiais.mjs
++++ b/asserts/t-invocacao-tipos-especiais.mjs
+@@ -251,7 +251,7 @@ t("o Fundamento so existe na Tecnica",
+   [true, false]);
+ const tec = res(nova("tecnica", "terceiro", { atributos: { forca: 10, destreza: 14, constituicao: 10, inteligencia: 10, sabedoria: 10, presenca: 10 } }));
+ t("a Tecnica tem Iniciativa: Destreza e os bonus de todos os testes (o grau dela)",
+-  [tec.iniciativa.bonus, tec.iniciativa.partes.map((p) => p.label)], [2 + 2, ["Destreza", "Invocação de Técnica"]]);
++  [tec.iniciativa.bonus, tec.iniciativa.partes.map((p) => p.label)], [2 + 2, ["Destreza", "Shikigami de Técnica"]]);
+ t("quem nao tem turno proprio nao rola Iniciativa", res(nova("shikigami")).iniciativa, null);
+ 
+ const tecnicaInata = (fichaInv, mesa, registros = []) => I.estadoDaTecnicaInata(
+diff --git a/.audit/lote10-base/t-estrela-zenin.mjs b/asserts/t-estrela-zenin.mjs
+index edcffb9..ab674ae 100644
+--- a/.audit/lote10-base/t-estrela-zenin.mjs
++++ b/asserts/t-estrela-zenin.mjs
+@@ -42,6 +42,27 @@ const t = (nome, real, esperado) => {
+ 
+ const CLA = "estrela-zenin:cla_estrela_zenin";
+ 
++/* Clã Zenin nativo: distribuição livre confirmada pelo autor em 2026-10-03. */
++A.aplicarAddons([]);
++t("Zenin nativo: 3 pontos livres, no maximo 2 por atributo",
++  O.getCla("cla_zenin").caracteristicas.find((c) => c.id === "bonus_atributo").bonus,
++  { distribuir: 3, maxPorAtributo: 2 });
++const ATRIBUTOS_ZENIN = ["forca", "destreza", "constituicao", "inteligencia", "sabedoria", "presenca"];
++for (const sistema of ["afty", "player"]) {
++  for (const [i, atributo] of ATRIBUTOS_ZENIN.entries()) {
++    const outro = ATRIBUTOS_ZENIN[(i + 1) % ATRIBUTOS_ZENIN.length];
++    const c = createBlankAfty();
++    c.rulesVersion = sistema;
++    c.attributes = Object.fromEntries(ATRIBUTOS_ZENIN.map((k) => [k, 10]));
++    c.core.origem = { id: "herdado", cla: "cla_zenin", bonusAtributos: { [atributo]: 2, [outro]: 1 } };
++    const antes = JSON.stringify(c);
++    const dd = deriveAfty(c);
++    t(sistema + ": Zenin aceita " + atributo + " e " + outro,
++      [dd.attrEff[atributo], dd.attrEff[outro]], [12, 11]);
++    t(sistema + ": a ficha salva com " + atributo + " continua intacta", JSON.stringify(c), antes);
++  }
++}
++
+ const PACOTE = {
+   id: "estrela-zenin",
+   nome: "Estrela dos Zenin",
+diff --git a/.audit/lote10-base/t-melhorias-jogador.mjs b/asserts/t-melhorias-jogador.mjs
+index f11299b..3135c2a 100644
+--- a/.audit/lote10-base/t-melhorias-jogador.mjs
++++ b/asserts/t-melhorias-jogador.mjs
+@@ -157,6 +157,23 @@ t("e quem tinha volta a ter", jogLiberado.altoNivel.lendarias.escolhidas, [VE]);
+ t("com o limite 6", jogLiberado.aptidao.limite.dom, 6);
+ t("um Addon que libera outra coisa não a devolve", d("player", { len: [VE], addons: [OUTRA] }).altoNivel.lendarias.escolhidas, []);
+ 
++/* SOMA confirmada pelo autor em 2026-10-03, inclusive no jogador liberado. */
++for (const sistema of ["afty", "player"]) {
++  const c = ficha(sistema, { len: [VE], addons: sistema === "player" ? [LIBERA] : [] });
++  c.core.tecnicaEfeitos = [{ canal: "limiteAptidao", alvo: "dom", expr: "1", nome: "Outra Fonte de Limite" }];
++  ADD.aplicarAddons(c.addons);
++  const com = deriveAfty(c);
++  const sem = deriveAfty({ ...c, habilidadesLendarias: [] });
++  t(sistema + ": outra fonte sozinha leva o limite a 6", sem.aptidao.limite.dom, 6);
++  t(sistema + ": Versatilidade Extrema soma com outra fonte e chega a 7", com.aptidao.limite.dom, 7);
++  t(sistema + ": o limite nao concede niveis", com.aptidao.efetivo.dom, sem.aptidao.efetivo.dom);
++  t(sistema + ": o bonus fica so na trilha escolhida",
++    [com.aptidao.limite.au, com.aptidao.limite.cl, com.aptidao.limite.bar, com.aptidao.limite.er], [5, 5, 5, 5]);
++  t(sistema + ": o Motor nomeia a fonte da Lendaria",
++    com.efeitos.detalhes.some((e) => e.canal === "limiteAptidao" && e.alvo === "dom" && e.nome === "Versatilidade Extrema" && e.valor === 1), true);
++}
++ADD.limparAddons();
++
+ /* As outras Lendárias não são tocadas. */
+ const outraLendaria = AN.HABILIDADES_LENDARIAS.find((l) => l.id !== VE && !(l.requisitos ?? []).length);
+ t("uma Lendária vizinha segue na lista do jogador", jogSem.altoNivel.catalogo.lendarias.some((l) => l.id === outraLendaria.id), true);
+diff --git a/.audit/lote10-base/a-fazer.md b/docs/a-fazer.md
+index 94c0ef0..dd72db0 100644
+--- a/.audit/lote10-base/a-fazer.md
++++ b/docs/a-fazer.md
+@@ -65,20 +65,6 @@ Ficou assim para não escolher sozinho.
+ (3) não repara nenhuma e a ficha ganha um botão "Reparar" com limite de uma por descanso.
+ **Anotado:** 2026-09-30, na Etapa 3 da atualização de Controlador e Invocações
+ 
+-### O chip do Shikigami volta a dizer "Shikigami"?
+-**Onde:** `src/systems/afty/afty-invocacoes-tipos.js` (`label` e `curto` de `shikigami` e `tecnica`)
+-**Situação:** em 2026-09-02 o autor renomeou os chips para "Invocação" e "Invocação de Técnica",
+-porque o tipo não mudava nada. Desde 2026-09-30 os tipos têm regra própria, e as decisões do
+-projeto falam em "Shikigami" e "Shikigami de Técnica", ao lado de Marionete, Corpo Amaldiçoado e
+-Maldição. Com cinco tipos, "Invocação" passa a nomear um tipo e também o conjunto inteiro. Os
+-rótulos ficaram como estavam, porque trocar seria escolher sozinho.
+-**Precisa:** o autor dizer se os rótulos de tela voltam a "Shikigami" e "Shikigami de Técnica"
+-(só o `label` e o `curto`, sem tocar no `value` gravado nas fichas), ou ficam como estão.
+-**Anotado:** 2026-09-30, na Etapa 2 da atualização de Controlador e Invocações
+-
+-
+-Coisas paradas esperando decisão de regra. Nada aqui deve ser resolvido por suposição.
+-
+ ### The Crimsom Queen: definir Catalisadora
+ **Onde:** `addons/the-crimsom-queen.json`, Yearning Mircalla
+ **Situação:** addon implementado, propriedade Catalisadora preservada no texto da arma. PDF e catálogo nativo não trazem seu efeito numérico.
+@@ -593,18 +579,6 @@ trilha volta a 5. Mas é compra PERMANENTE dentro de uma janela TEMPORÁRIA, e n
+ a ser aparada no limite PERMANENTE, e é uma linha) ou se comprar ali é legítimo.
+ **Anotado:** 2026-08-12, ao integrar o commit 985bb79 com o trabalho local
+ 
+-### ASSUNÇÃO: o limite da Versatilidade Extrema SOMA ou para no 6
+-**Onde:** `src/systems/afty/afty-efeitos-conteudo.js` (`LENDARIA_EFEITOS_ALVO`)
+-**Situação:** a Lendária diz "você pode aumentar o limite de um Nível de Aptidão **para 6**", que é
+-um número absoluto. O canal `limiteAptidao` é SOMA desde que nasceu, e a soma é a convenção do
+-sistema (duas fontes na mesma trilha levam o teto a 7, como está escrito na sessão de 2026-07-29).
+-Numa trilha em que nada mais mexeu as duas leituras dão o mesmo 6, e elas só divergem se outra
+-fonte de limite cair na MESMA trilha: somando dá 7, absoluto para em 6.
+-**Precisa:** o autor confirmar a soma ou pedir o teto absoluto. É uma linha.
+-**Anotado:** 2026-08-12, na entrada da Versatilidade Extrema
+-**Nota:** desde 2026-09-17 a Versatilidade Extrema não existe na Ficha de Jogador (divergência
+-`perdidoNoJogador`), então a dúvida vale só para a criatura e para um jogador cujo Addon a devolva.
+-
+ ### ASSUNÇÃO: em que ORDEM o Ritual e a Liberação Máxima se compõem
+ **Onde:** `src/systems/afty/afty-feiticos.js` (`calcularFeiticoDano` e `calcularFeiticoCurativo`)
+ **Situação:** os dois suplementos mexem nos mesmos números e **nenhum dos dois textos fala do
+@@ -1307,13 +1281,6 @@ pelo campo `especial` da arma, que é um id de `ARMA_ESPECIAIS` e arma custom n
+ 
+ ---
+ 
+-### Clã Zenin ficou com bônus de atributo livre
+-**Onde:** `src/systems/afty/afty-origens.js`
+-**Situação:** Gojo, Inumaki e Kamo têm `entre` com um par de atributos. O Zenin ficou livre entre
+-os 6, e não se sabe se foi decisão ou esquecimento.
+-**Precisa:** o autor dizer se o Zenin é restrito também e, se for, quais dois atributos.
+-**Anotado:** 2026-07-29, migrado de `afty-status.md` em 2026-08-09
+-
+ ---
+ 
+ ## Migração pendente deste próprio arquivo
+diff --git a/.audit/lote10-base/afty-invocacoes.md b/docs/afty-invocacoes.md
+index 7f9d6ad..b0e403e 100644
+--- a/.audit/lote10-base/afty-invocacoes.md
++++ b/docs/afty-invocacoes.md
+@@ -79,6 +79,7 @@ Controlador e Invocações").
+ |---|---|
+ | **Sistemas** | Vale na criatura (`/Afty`) e no jogador (`/Player`), com as regras compartilhadas. Diferença real vai para `DIVERGENCIAS` (`afty-sistema.js`) |
+ | **Tipos** | Os tipos separados do *Mecânicas*: **Marionete, Corpo Amaldiçoado, Maldição Domada, Shikigami**, e o **Shikigami de Técnica** como subtipo do Shikigami. Eles diferem de verdade em cura, alma, custo, ativação, dissipação, destruição, exorcismo, evolução e reparo |
++| **Rótulos de Tela** (2026-10-03) | Shikigami e Shikigami de Técnica nos dois sistemas. Nos filtros, os curtos são Shikigami e Técnica. Os valores gravados shikigami e tecnica permanecem iguais |
+ | **Maldição Domada** | Regras do *Mecânicas* inteiras: grau fixo, não dissipa, sem talismã, ficha adaptada, PV ×1,5, atributos, treinos, masterizações, resistências e imunidades mantidos, Aptidão vira Característica e gasta PE do Controlador, sem cura por ER, exorcizada a 0 PV, sem custo base de ativação, sem Visionário. Maldições já salvas mudam de regra, sem corromper nem apagar dado |
+ | **Shikigami de Técnica** | Regras do *Mecânicas*. Dissipação normal segue a regra comum. O 1º exorcismo antes do descanso longo vira dissipação. O 2º mata, e o Fundamento e a Técnica Inata são perdidos. Dissipação e exorcismo são contadores separados. O antigo "Retorno Completo" sai |
+ | **`tipo_shikigami`** | Fica só como compatibilidade **LEGACY** de leitura (o sentido de hoje, que também liga na Maldição). Código oficial novo usa sinais específicos para Shikigami puro, Técnica, Maldição, Marionete e Corpo |
+@@ -116,7 +117,7 @@ Controlador e Invocações").
+   - o Nível de Aptidão é metade do modificador de Presença do Controlador, para baixo, mínimo 0.
+ - **Aura:** não vale na própria invocação, salvo regra específica. Duas auras iguais não acumulam (vale a maior), e auras de efeitos diferentes convivem.
+ - **Concedidas por regra:** "Trocar Núcleo" e as Ações e Características herdadas não ocupam vaga nem aumentam custo.
+-- **Fundamento:** é marca explícita (`fundamento`), e nem toda Invocação de Técnica é Fundamento.
++- **Fundamento:** é marca explícita (`fundamento`), e nem todo Shikigami de Técnica é Fundamento.
+ - **Ações com Custo:** o limite por grau segue 1, 1, 2, 2, 3.
+ - **Quimera em campo:** conta como 1 no limite.
+ - **Antes de codificar:**
+diff --git a/.audit/lote10-base/afty-status.md b/docs/afty-status.md
+index 3a36e49..188db95 100644
+--- a/.audit/lote10-base/afty-status.md
++++ b/docs/afty-status.md
+@@ -15878,3 +15878,16 @@ Pedido do autor: um Addon chamado "Yna" com a Origem Kitsune, a Linhagem Clã Ge
+ **Verificado ao vivo:** servidor próprio na porta 5199, Chrome em contextos temporários sem ocultar barras de rolagem, /afty e /player a 1440 e 390 px. Entrar com o Fundamento sobe Defesa de 22 para 24 e RD de 10 para 13 na criatura, e Defesa de 15 para 17 e RD de 0 para 3 no jogador. Sair reverte esses números e mostra o aviso. O Feitiço Raio fica sem rolagem nem Ritual fora de campo e recupera ambos em campo. O hover da Defesa mostra a fonte Técnica quando disponível. O PE segue 40 na criatura e 48 no jogador nos dois estados, aguardando a decisão 2. Sem erro de página ou console, nem rolagem horizontal. Capturas, roteiro e relatório em `.audit/lote09-*`.
+ 
+ **Achado e não mexido:** as decisões 2 e 3 continuam pendentes. `peMaximoDasPassivas` e `descansaInvocacoes` não foram alterados. Mudanças preexistentes e trabalho paralelo preservados. Nenhum U+2014 introduzido nas linhas deste lote. Sem commit ou push.
++
++
++## SESSÃO DE 2026-10-03: LOTE 10, ZENIN, VERSATILIDADE EXTREMA E RÓTULOS DE INVOCAÇÃO
++
++**Decisões do autor:** o Clã Zenin mantém 3 pontos livres entre os seis atributos, com máximo de 2 no mesmo atributo. Versatilidade Extrema continua somando +1 ao limite da trilha escolhida, podendo chegar a 7 com outra fonte de +1. Os rótulos voltam a Shikigami e Shikigami de Técnica, com curtos Shikigami e Técnica. Vale nos dois sistemas, preservada a indisponibilidade da Lendária no jogador sem o Addon que a devolva.
++
++**O que mudou:** o cla_zenin de afty-origens.js permanece com o bônus confirmado. Em LENDARIA_EFEITOS_ALVO de afty-efeitos-conteudo.js, a expressão da Versatilidade Extrema continua 1 e o comentário registra a soma confirmada. Em REGRAS_POR_TIPO de afty-invocacoes-tipos.js, só os rótulos do Shikigami e da Técnica mudaram, com o comentário alinhado à decisão. Os valores gravados nas fichas permanecem shikigami e tecnica. As três entradas saíram de docs/a-fazer.md e o guia docs/afty-invocacoes.md registra os nomes completos e curtos.
++
++**Asserts:** linha de base com 147 arquivos e 8047 asserts, todos passando, incluindo o antigo vermelho da Livre já resolvido por outro lote. t-estrela-zenin.mjs passou de 15 para 40: configuração 3/2 livre, cada um dos seis atributos recebendo 2 pontos com outro recebendo 1, nos dois sistemas, e ficha salva preservada. t-melhorias-jogador.mjs passou de 47 para 57: fonte isolada no limite 6, soma no limite 7, nível não concedido pelo limite, somente a trilha escolhida afetada e nome da fonte no Motor, inclusive no jogador com Addon. As expectativas dos rótulos foram atualizadas em t-invocacao-tipos.mjs (76), t-invocacao-tipos-especiais.mjs (89) e t-maldicao.mjs (28). Suíte final: 149 arquivos e 8168 asserts, todos passando. Dos 121 asserts adicionais, 35 são deste lote e 86 do trabalho paralelo. t-ordem-modulos.mjs passa com 34 na suíte, ESLint da área Afty limpo e build passando. Nenhum import mudou.
++
++**Verificado ao vivo:** servidor próprio em 5200, Chrome em contextos temporários sem ocultar barras de rolagem, /afty e /player a 1440 e 390 px. Fichas já gravadas com tipos shikigami e tecnica abrem com os chips Shikigami e Shikigami de Técnica. O Perfil do criador oferece os mesmos nomes, e os filtros mostram Shikigami e Técnica, inclusive na lista recolhida do telefone. A ficha Zenin com Inteligência +2 e Presença +1 conserva atributos 12 e 11, e a Versatilidade Extrema com outra fonte conserva o limite 7. Os valores de tipo e a distribuição salvos continuam intactos. Sem erro de página ou console, nem rolagem horizontal nas telas medidas. Capturas, roteiro e relatório em .audit/lote10-*.
++
++**Achado e não mexido:** nenhuma pendência deste lote. O build continua avisando sobre o tamanho do pacote principal. Trabalho paralelo, fichas reais e mudanças preexistentes preservados. Nenhum U+2014 introduzido nas linhas deste lote. Sem commit ou push.

@@ -1,0 +1,1231 @@
+import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { ArmasTransformaveis } from "../ui/armas-transformaveis";
+import {
+  ChevronLeft, Pencil, AlertTriangle, Moon, ChevronRight, Search, Heart, Zap, Sparkles, Palette,
+  Rows2, Rows3, Lock, Crosshair,
+} from "lucide-react";
+
+import "./ficha.css";
+import { mesclaFichaAfty, AFTY_TIPOS, AFTY_PATAMARES, funcionamentosDaFicha } from "../afty-schema";
+import { deriveAfty } from "../afty-derive";
+// A Herança criada pela mesa (2026-10-01, Etapa 11). O derive já carregou o módulo.
+import { criaHeranca } from "../afty-invocacoes";
+import { preparaAtivacaoComCustoVida } from "../afty-feiticos";
+import { aplicarAddons, addonsDaCriatura } from "../afty-addons";
+import { NumeroComFontes } from "../ui/fontes";
+import { numeroBr } from "../ui/formato";
+import { Vital } from "../ui/vital";
+import { Guarda } from "../ui/guarda";
+import { PainelTita } from "../ui/tita";
+import {
+  carregarSessao, salvarSessao, aparaSessao,
+  aplicaDano, aplicaCura, aplicaPerdaDeVida, pagaCustoVida, proximaRodada, descansar, registraRolagem,
+  aplicaDanoNaAlma, curaAlma, defineAlma,
+  peTempTotal, gastaPe, pvTempTotal,
+  entradaDaGuarda, sofreGolpeNaGuarda, desfazGolpeNaGuarda, encerraGuarda, defineCondicoes,
+  alteraEstadoCombate, aplicaPatchCombate, consomeEstadoCombate, registraFeiticoDano,
+  alteraTreinoAtivo,
+  configuraRitual, usosRitualista,
+  ritualEmAndamento,
+  iniciaRitualComum, iniciaRitualSemTeste, iniciaRitualEstendido,
+  concluiPreparacaoRitual, cancelaRitual, finalizaRitual, encerraRitual, desativaRitual,
+  concedeNaSessao, removeConcessao,
+  estadoDaInvocacao, alternaAuxilioInvocacao,
+  aplicaCuraInvocacao, defineVitalInvocacao, invocacaoDaMesa,
+  entradaDaInvocacao, invocaNaMesa, saiDeCampo, recolheInvocacao, reconstroiInvocacao,
+  alternaAuraInvocacao, defineEmTarefa, defineFormaInvocacao,
+  alternaOpcaoDeEntrada, ativaReservaInvocacao, pagaManutencaoCorpo,
+  aplicaDanoNaMesa, formaMecha, separaMecha, trocaNucleo, mechaPermitido, emCombateNaSessao,
+  estadoTita, aplicaDanoTitaCabeca, aplicaCuraTitaCabeca, defineVitalTitaCabeca,
+  aplicaDanoTitaMembro, aplicaCuraTitaMembro, defineVitalTitaMembro,
+  preparoDe, preparoTempDe, alteraPreparo, definePreparo,
+  usosGastosDe, marcaUso,
+} from "./ficha-sessao";
+import { rolarTeste, rolarDano } from "./ficha-rolagem";
+import PrimitivasDeAddon from "../ui/PrimitivasDeAddon";
+import { conteudoDaFicha, equipamentosDaFicha, alvosDeBusca } from "./ficha-conteudo";
+import {
+  carregarTema, salvarTemaGlobal, cssDasVars, cssDoUsuario, temCssLivre,
+  carregarDensidade, salvarDensidade, normalizaTema, escopoDaInvocacao, SEM_CSS,
+} from "./ficha-tema";
+import PainelDeRolagens from "./PainelDeRolagens";
+import BuscaGlobal from "./BuscaGlobal";
+import PainelDeAparencia from "./PainelDeAparencia";
+import PainelBloodfeast, { ConjuracaoBloodfeast } from "./PainelBloodfeast";
+import AbaAcoes from "./abas/AbaAcoes";
+import PainelDeAdaptacao from "./PainelDeAdaptacao";
+import PainelDoVislumbre from "./PainelDoVislumbre";
+import PainelOlhosAgulha from "./PainelOlhosAgulha";
+import PainelDoGolpeEspecial from "./PainelDoGolpeEspecial";
+import PainelManipulacaoCeu from "./PainelManipulacaoCeu";
+import AbaPericias from "./abas/AbaPericias";
+import AbaHabilidades from "./abas/AbaHabilidades";
+import AbaBuffs from "./abas/AbaBuffs";
+import AbaEquipamentos from "./abas/AbaEquipamentos";
+import AbaInvocacoes from "./abas/AbaInvocacoes";
+import { deltaDosEstados, saldoDoAgora } from "./ficha-buffs";
+// O padrão global de tema é POR SISTEMA: "quero todas as minhas fichas assim"
+// dito no Grimório Afty não pode repintar as fichas de jogador. Ver afty-sistema.js.
+import { sistemaDaFicha, ehPlayer, regraDo, rotuloDoNivel } from "../afty-sistema";
+import { getEspecializacao } from "../afty-especializacoes";
+import { cofreTrancado, comTextoAberto, lerAberto } from "../afty-cofre";
+import PainelDoCofre from "../ui/PainelDoCofre";
+import EspinhoCard from "../ui/EspinhoCard";
+
+/**
+ * ============================================================
+ * FICHA FINAL — a criatura já montada, aberta para USO
+ * ============================================================
+ * Plano completo em `docs/afty-ficha-final.md`.
+ *
+ * O criador CALCULA, a Ficha OPERA. Aqui não se troca Habilidade nem atributo:
+ * o botão Editar leva para o criador, que continua sendo o dono das escolhas.
+ *
+ * Desenho (autor, 2026-08-05): **vitais fixos no topo, abas embaixo**. O que se
+ * olha o tempo todo (PV, PE, Alma, Defesa, CD, RD) nunca sai da tela, e o corpo
+ * troca por aba. 75% do uso é desktop e 25% é toque, então nada pode depender só
+ * de hover: ver o `NumeroComFontes`.
+ *
+ * ⚠ A Ficha é pintada por VARIÁVEL CSS (`ficha.css`), e não por classe de cor do
+ * Tailwind. É isso que torna o CSS personalizado possível. Tailwind aqui só
+ * resolve LAYOUT.
+ * ============================================================
+ */
+
+const TABS = [
+  { id: "acoes", label: "Ações" },
+  { id: "habilidades", label: "Habilidades" },
+  { id: "pericias", label: "Perícias" },
+  { id: "equipamentos", label: "Equipamentos" },
+  { id: "invocacoes", label: "Invocações" },
+  { id: "buffs", label: "Buffs" },
+];
+
+const rotuloDe = (lista, valor) => lista.find((x) => x.value === valor)?.label ?? valor;
+
+/* ============================================================ */
+/* Peças do cabeçalho                                            */
+/* ============================================================ */
+
+function Chip({ children, tom, title }) {
+  return (
+    <span className="afty-chip" data-afty-tom={tom} title={title}>
+      {children}
+    </span>
+  );
+}
+
+
+/* ============================================================ */
+
+export default function AftyFicha({
+  creature, onVoltar, onEditar, onSalvarTema, onSalvarInvocacoes, onSalvarEspinho,
+  onSalvarFundamentosPerdidos,
+}) {
+  const alvoId = creature?.id ?? null;
+
+  /* ⚠ O TEXTO DESTRANCADO ENTRA AQUI, NA MONTAGEM DA FICHA DE TELA, e em lugar
+     nenhum mais. `cofreAberto` sai da memória de módulo do `afty-cofre.js`, que
+     morre ao recarregar a página: nada disso encosta em `creature`, no
+     `localStorage` nem em qualquer coisa que seja gravada. A ficha continua
+     trancada, e o que muda é só o que esta aba desenha.
+
+     ⚠ Por isso ele entra ANTES do `mesclaFichaAfty` e não depois: tudo abaixo
+     lê `ficha`, do derive às abas, e um segundo caminho para o texto seria um
+     segundo lugar para alguém esquecer de aplicar. */
+  const [cofreAberto, setCofreAberto] = useState(() => lerAberto(creature?.id));
+  const ficha = useMemo(
+    () => mesclaFichaAfty(cofreAberto ? comTextoAberto(creature, cofreAberto) : creature),
+    [creature, cofreAberto],
+  );
+
+  // ⚠ A sessão nasce com os recursos CHEIOS, e para isso precisa dos máximos,
+  // que só existem depois de derivar. O derive da montagem roda sem
+  // `almaAtual` (alma íntegra), que é exatamente o estado de uma ficha que
+  // nunca entrou em jogo. O clamp de leitura abaixo acerta o resto.
+  const [sessaoBruta, setSessaoBruta] = useState(() => carregarSessao(alvoId, deriveAfty(ficha)));
+  const [tab, setTab] = useState("acoes");
+  const [compacto, setCompacto] = useState(false);
+  // Vantagem e desvantagem, e se o histórico está aberto. Os dois são de TELA, e
+  // não de jogo: quem recarrega a página quer o painel do jeito padrão, e não
+  // uma desvantagem esquecida na sessão de ontem.
+  const [modo, setModo] = useState("normal");
+  const [logAberto, setLogAberto] = useState(false);
+  const [buscaAberta, setBuscaAberta] = useState(false);
+  // Quais itens estão abertos, e para onde a busca navegou. Os dois são de TELA:
+  // reabrir a ficha amanhã com trinta parágrafos abertos não ajuda ninguém.
+  const [abertos, setAbertos] = useState(() => new Set());
+  const [destaque, setDestaque] = useState(null);
+  const [tema, setTema] = useState(() => carregarTema(ficha, alvoId));
+  /* O ESPINHO VIVO (Addon, 2026-09-30). Almas Totais e Outros mudam durante a
+     sessão e são FICHA, e não sessão (decisão do autor): gravam na criatura, com
+     o mesmo atraso de 600 ms do tema. O card lê daqui, e não do `creature`, para
+     o número mudar na hora e não um passo depois da gravação. */
+  const [espinhoVivo, setEspinhoVivo] = useState(() => ficha.espinho ?? null);
+  const [aparenciaAberta, setAparenciaAberta] = useState(false);
+  const [cofrePainel, setCofrePainel] = useState(false);
+  /* Qual Shikigami está com o editor de aparência aberto. ⚠ É o ID e não o
+     objeto: a invocação é reconstruída a cada derive, e guardar o objeto
+     deixaria o painel editando uma cópia velha. */
+  const [temandoInvocacao, setTemandoInvocacao] = useState(null);
+  /* O tema em edição, `{ id, tema }`. Ver o bloco do debounce mais abaixo. */
+  const [rascunhoInv, setRascunhoInv] = useState(null);
+  // ⚠ A densidade é gravada NA HORA, e não por debounce como o tema: ela muda por
+  // clique num interruptor de duas posições, e não por arrastar um seletor de cor.
+  const [densidade, setDensidade] = useState(carregarDensidade);
+  const trocaDensidade = useCallback(() => {
+    setDensidade((d) => {
+      const proxima = d === "compacta" ? "confortavel" : "compacta";
+      salvarDensidade(proxima);
+      return proxima;
+    });
+  }, []);
+
+  // ⚠ O `combate` que a Ficha deriva é o DA SESSÃO, e não o da ficha: o da ficha
+  // é a bancada de balanceamento do criador, e misturar os dois faria cada
+  // sessão de jogo destruir o cenário montado para dosar a mão. Ver
+  // `ficha-sessao.js`.
+  /* ⚠ AS OPÇÕES DO DERIVE MORAM AQUI, e não dentro do memo do `derived`, porque
+     elas têm DOIS leitores: a ficha da tela e cada derive de comparação que o
+     `deltaDosEstados` roda para descobrir o que um estado ligado está fazendo.
+
+     Ter duas listas foi um bug real, e caro de enxergar (2026-08-28): o delta
+     derivava sem `guarda`, sem `concedido` e sem os três de Ritual, e então a
+     diferença entre as duas LISTAS DE OPÇÃO era creditada ao estado que estava
+     sendo medido. Numa criatura Calamidade toda linha ligada exibia "Defesa +5",
+     que é a Guarda Inabalável, e a Postura da Devastação, que não dá Defesa
+     nenhuma, aparecia dando +5. Uma lista só, e a diferença cancela sozinha. */
+  const opcoesDerive = useMemo(
+    () => ({
+      bloodfeast: sessaoBruta.bloodfeast,
+      vidaAtual: sessaoBruta.hpAtual,
+      almaAtual: sessaoBruta.almaAtual,
+      ultimoFeiticoDanoId: sessaoBruta.ultimoFeiticoDanoId,
+      rituais: sessaoBruta.rituais,
+      usosRitualista: usosRitualista(sessaoBruta),
+      ritualAtual: ritualEmAndamento(sessaoBruta),
+      /* O que o mestre concedeu no meio da luta (Addons 8.3). Entra pelo
+         `opcoes`, e não pela criatura mesclada abaixo, porque não é escolha
+         de ficha: é ganho de combate, de graça, e morre com a sessão. */
+      concedido: sessaoBruta.concedido,
+      /* O Ciclo de Adaptação também é estado de mesa. Viaja na mesma lista
+         única para o derivado principal e para os deltas dos estados. */
+      adaptacoes: sessaoBruta.adaptacoes,
+      treinosAtivos: sessaoBruta.treinosAtivos,
+      /* A Guarda Inabalável CORRENTE. Vai pelo `opcoes` como a concessão e
+         pelo mesmo motivo: é estado de mesa. O derive precisa dela porque o
+         bônus soma na Defesa e nos cinco TRs, e resolver a Guarda fora dele
+         obrigaria a derivar duas vezes. Ver `entradaDaGuarda`. */
+      guarda: entradaDaGuarda(sessaoBruta),
+      /* O ESTADO DE MESA DAS INVOCAÇÕES (em campo, auxílios ligados). Está aqui
+         dentro, e não fora, porque um Shikigami em campo pode estar dando
+         Defesa, Acerto ou RD ao dono, e isso é número do derive. Entrar por
+         fora repetiria o erro do `guarda`: a lista de opção que falta é
+         creditada, calada, ao estado que estiver sendo medido. */
+      invocacoes: sessaoBruta.invocacoes,
+      /* AS CONDIÇÕES DA SESSÃO (2026-09-21). Mexem em Defesa, TR, perícia,
+         acerto, movimento e RD, então são número do derive, e entram na MESMA
+         lista de opções pelo motivo de sempre: um derive de comparação sem elas
+         creditaria o -10 do Paralisado a cada estado ligado. */
+      condicoes: sessaoBruta.condicoes,
+    }),
+    [sessaoBruta],
+  );
+
+  const derived = useMemo(
+    () => {
+      /* ⚠ OS ADDONS DA FICHA ENTRAM ANTES DA DERIVAÇÃO, e no MESMO memo. Sem
+         isto, abrir uma criatura que usa addon mostraria as habilidades dela
+         como ids órfãos, porque o catálogo estaria só com o raw. É a mesma
+         ordem do criador. Ver docs/afty-addons.md. */
+      aplicarAddons(ficha?.addons ?? []);
+      return deriveAfty(
+        { ...ficha, combate: sessaoBruta.combate, buffsSessao: sessaoBruta.buffs },
+        opcoesDerive,
+      );
+    },
+    [ficha, sessaoBruta, opcoesDerive],
+  );
+
+  /* A MORTE DO FUNDAMENTO VAI PARA A FICHA (DA-07, 2026-09-30). A mesa sabe
+     primeiro (o estado "morta" do Shikigami de Técnica marcado como Fundamento),
+     e é esta gravação que faz a perda sobreviver ao descanso e à sessão nova.
+     Nada é apagado: a Técnica e os Feitiços continuam, e o derive os marca como
+     indisponíveis. A lista é reescrita inteira pelo mesmo motivo do tema das
+     invocações (o `update` faz merge de chave de primeiro nível). */
+  const idPerdido = derived?.tecnicaInata?.aRegistrar?.invocacaoId ?? null;
+  const nomePerdido = derived?.tecnicaInata?.aRegistrar?.nome ?? "";
+  const perdidosGravados = ficha.fundamentosPerdidos;
+  useEffect(() => {
+    if (!idPerdido || !onSalvarFundamentosPerdidos) return;
+    const anteriores = (Array.isArray(perdidosGravados) ? perdidosGravados : [])
+      .filter((r) => r?.invocacaoId !== idPerdido);
+    onSalvarFundamentosPerdidos([
+      ...anteriores,
+      { invocacaoId: idPerdido, nome: nomePerdido, em: new Date().toISOString() },
+    ]);
+  }, [idPerdido, nomePerdido, perdidosGravados, onSalvarFundamentosPerdidos]);
+
+  /* Os addons que ESTA ficha carrega, para a marca do cabeçalho. Sai da própria
+     criatura (a cópia congelada), e não da biblioteca da máquina: a marca tem de
+     valer também para quem recebeu a ficha de fora e não instalou nada. */
+  const addonsDaFicha = useMemo(() => addonsDaCriatura(ficha), [ficha]);
+
+  /* A Classe INICIAL e a lista inteira, para o chip do cabeçalho no jogador.
+     `escolhidas[0]` é a inicial em todo o resto do sistema (o `classeNome` de
+     afty-especializacoes.js e as linhas de PV por classe usam o mesmo índice),
+     então ela é lida do mesmo jeito aqui em vez de por uma regra nova.
+
+     ⚠ O nome sai do CATÁLOGO, e não de um mapa escrito aqui: uma Classe vinda
+     de Addon tem nome, e um mapa à mão mostraria o id cru dela. */
+  const [classeInicial, classesComNivel] = useMemo(() => {
+    const lista = derived?.especializacoes?.escolhidas ?? [];
+    if (lista.length === 0) return [null, null];
+    const nomeDe = (e) => getEspecializacao(e.id)?.nome ?? e.id;
+    return [
+      nomeDe(lista[0]),
+      lista.map((e) => `${nomeDe(e)} ${e.nivel}`).join(" · "),
+    ];
+  }, [derived]);
+
+  // ⚠ O clamp é de LEITURA, e não um efeito que reescreve o estado. O teto muda
+  // por fora (editar a ficha no criador sobe ou desce o PV máximo, e a Alma o
+  // MULTIPLICA), e aparar num efeito seria uma renderização em cascata para
+  // chegar no mesmo número que dá para calcular de primeira.
+  const sessao = useMemo(() => aparaSessao(sessaoBruta, derived), [sessaoBruta, derived]);
+
+  // Todo escritor passa por aqui, e o valor entra JÁ aparado nos dois sentidos:
+  // a função recebe a sessão válida e o resultado dela é aparado de novo.
+  const atualiza = useCallback((fn) => {
+    setSessaoBruta((s) => aparaSessao(fn(aparaSessao(s, derived)), derived));
+  }, [derived]);
+
+  // Persistência por debounce, igual ao rascunho do criador. Sem botão Salvar:
+  // sessão não é rascunho, é fato.
+  const primeiraGravacao = useRef(true);
+  useEffect(() => {
+    if (primeiraGravacao.current) { primeiraGravacao.current = false; return undefined; }
+    const t = setTimeout(() => salvarSessao(alvoId, sessao), 600);
+    return () => clearTimeout(t);
+  }, [alvoId, sessao]);
+
+  // ⚠ O tema é gravado NA CRIATURA, e não em chave própria como a sessão: ele
+  // precisa viajar no export para a ficha chegar bonita na mão dos outros
+  // (autor, 2026-08-05). O `update` do armazenamento faz MERGE, então um Salvar
+  // do criador que não conhece o campo `aparencia` preserva o que já está lá.
+  /* ⚠ GRAVA SÓ O TEMA QUE MUDOU (2026-10-01, E-14). A guarda era "pula a primeira
+     vez", e o efeito depende do `onSalvarTema`, que o App recria a cada render.
+     Gravar a criatura re-renderiza o App (o `isSaving` do armazenamento volta a
+     falso 300ms depois), o callback novo disparava o efeito outra vez, e a Ficha
+     aberta regravava a criatura inteira a cada segundo, para sempre, com um
+     derive completo a cada volta. A comparação com o último tema gravado corta o
+     laço sem depender da identidade do callback. */
+  const temaGravado = useRef(tema);
+  useEffect(() => {
+    if (tema === temaGravado.current) return undefined;
+    const t = setTimeout(() => { temaGravado.current = tema; onSalvarTema?.(tema); }, 600);
+    return () => clearTimeout(t);
+  }, [tema, onSalvarTema]);
+
+  /* ⚠ O GRAVADOR VAI POR REFERÊNCIA, e não na lista do efeito: o App o recria a
+     cada render, e cada gravação faz o App renderizar de novo. Na lista, isso
+     regravaria a mesma coisa em laço. E a edição que ainda não gravou é gravada
+     ao sair da Ficha, senão voltar ao criador antes de 600 ms a perderia. */
+  const salvarEspinhoRef = useRef(onSalvarEspinho);
+  useEffect(() => { salvarEspinhoRef.current = onSalvarEspinho; });
+  const espinhoPendente = useRef(null);
+  const primeiroEspinho = useRef(true);
+  useEffect(() => {
+    if (primeiroEspinho.current) { primeiroEspinho.current = false; return undefined; }
+    espinhoPendente.current = espinhoVivo;
+    const t = setTimeout(() => {
+      salvarEspinhoRef.current?.(espinhoVivo);
+      espinhoPendente.current = null;
+    }, 600);
+    return () => clearTimeout(t);
+  }, [espinhoVivo]);
+  useEffect(() => () => {
+    if (espinhoPendente.current !== null) salvarEspinhoRef.current?.(espinhoPendente.current);
+  }, []);
+
+  // O cabeçalho encolhe ao rolar. ⚠ Só faz diferença em tela BAIXA: a regra de
+  // esconder a fileira de stats mora numa media query de altura, no ficha.css.
+  // Esconder num monitor grande seria trocar carga cognitiva por rolagem.
+  useEffect(() => {
+    const aoRolar = () => setCompacto(window.scrollY > 96);
+    window.addEventListener("scroll", aoRolar, { passive: true });
+    return () => window.removeEventListener("scroll", aoRolar);
+  }, []);
+
+  // Teclado. ⚠ Nada dispara enquanto o foco está num campo: os vitais e os
+  // filtros são campos de texto, e digitar "1" no PV não pode trocar de aba.
+  useEffect(() => {
+    const aoTeclar = (e) => {
+      const alvo = e.target;
+      const digitando = alvo?.isContentEditable
+        || ["INPUT", "TEXTAREA", "SELECT"].includes(alvo?.tagName);
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setBuscaAberta(true);
+        return;
+      }
+      if (digitando || e.ctrlKey || e.metaKey || e.altKey) return;
+      const n = Number(e.key);
+      if (n >= 1 && n <= TABS.length) setTab(TABS[n - 1].id);
+    };
+    window.addEventListener("keydown", aoTeclar);
+    return () => window.removeEventListener("keydown", aoTeclar);
+  }, []);
+
+  const setVital = useCallback((chave, valor) => {
+    atualiza((s) => ({ ...s, [chave]: Math.max(0, Math.trunc(valor) || 0) }));
+  }, [atualiza]);
+
+  /* OS SHIKIGAMIS NA MESA (2026-08-31). Um objeto só de escritores, porque a aba
+     precisa dos seis e passá-los como seis props faria a assinatura dela crescer
+     a cada verbo novo. Todos passam pelo `atualiza`, que apara nos dois
+     sentidos, igual aos vitais do dono. */
+  const acoesDeInvocacao = useMemo(() => {
+    /* ⚠ `invocacaoDaMesa` e não `invocacoes.lista`: a Quimera mora em
+       `derived.quimeras`, e procurar só na lista das invocações dava máximo zero
+       para ela. As REGRAS DO TIPO viajam junto (2026-09-30): é por elas que cada
+       tipo cai do seu jeito a 0 PV. */
+    const daMesa = (id) => invocacaoDaMesa(derived, id);
+    return {
+      /* ENTRAR EM CAMPO (2026-09-30): calcula o custo, recusa o que o PE não
+         cobre, desconta do PE do dono e registra a entrada. Ver `entradaDaInvocacao`. */
+      entrar: (id) => atualiza((s) => invocaNaMesa(s, derived, id)),
+      sair: (id) => atualiza((s) => saiDeCampo(s, id)),
+      recolher: (id) => atualiza((s) => recolheInvocacao(s, id)),
+      reconstruir: (id) => atualiza((s) => reconstroiInvocacao(s, id, daMesa(id)?.pv ?? 0)),
+      auxilio: (id, acaoId, ligado) => atualiza((s) => alternaAuxilioInvocacao(s, id, acaoId, ligado)),
+      // As Intrínsecas e Auras na mesa (2026-09-30): o dono na Aura, a Forma, a tarefa.
+      aura: (id, caracId, ligado) => atualiza((s) => alternaAuraInvocacao(s, id, caracId, ligado)),
+      forma: (id, forma) => atualiza((s) => defineFormaInvocacao(s, id, forma)),
+      tarefa: (id, emTarefa) => atualiza((s) => defineEmTarefa(s, id, emTarefa)),
+      // As opções do Controlador na entrada e a Reserva para Invocação (2026-09-30).
+      opcaoEntrada: (id, opcaoId, ligado) => atualiza((s) => alternaOpcaoDeEntrada(s, id, opcaoId, ligado)),
+      reserva: (modo) => atualiza((s) => ativaReservaInvocacao(s, modo)),
+      // A manutenção do Corpo Amaldiçoado depois de CL rodadas (2026-09-30, Etapa 8).
+      manter: (id) => atualiza((s) => pagaManutencaoCorpo(s, id, daMesa(id)?.duracao?.manutencao ?? 0)),
+      /* O dano passa pelo roteador da mesa (2026-10-01, Etapa 9): a Horda, a
+         Quimera e o Mecha caem do jeito deles, e o resto pela regra do tipo. */
+      dano: (id, quanto) => atualiza((s) => aplicaDanoNaMesa(s, derived, id, quanto)),
+      // Os compostos de mesa: o Mecha (formar e separar) e o núcleo ativo.
+      formarMecha: (a, b) => atualiza((s) => formaMecha(s, derived, a, b)),
+      separarMecha: () => atualiza((s) => separaMecha(s)),
+      trocarNucleo: (id) => atualiza((s) => trocaNucleo(s, derived, id)),
+      cura: (id, quanto, pvMax) => atualiza((s) => aplicaCuraInvocacao(s, id, quanto, pvMax, daMesa(id)?.regras)),
+      vital: (id, qual, valor) => atualiza((s) => defineVitalInvocacao(
+        s, id, qual, valor,
+        qual === "alma" ? (daMesa(id)?.almaMax ?? 0) : (daMesa(id)?.pv ?? 0),
+        daMesa(id)?.regras,
+      )),
+      /* A HERANÇA PELA MESA (Mecânicas: "no próximo Descanso Curto ou Longo, você
+         pode criar uma Herança"): a sombra exorcizada vira uma entrada na ficha da
+         herdeira, gravada na criatura. As escolhas se fazem no criador. */
+      criarHeranca: (origemId, herdeiraId) => {
+        const lista = ficha.invocacoes ?? [];
+        const origem = lista.find((i) => i.id === origemId);
+        if (!origem || !onSalvarInvocacoes) return;
+        const nova = criaHeranca(origem, daMesa(origemId));
+        onSalvarInvocacoes(lista.map((i) => (i.id === herdeiraId ? { ...i, herancas: [...(i.herancas ?? []), nova] } : i)));
+      },
+    };
+  }, [atualiza, derived, ficha.invocacoes, onSalvarInvocacoes]);
+
+  /* O tema de UM Shikigami. Ele mora DENTRO da invocação, em `inv.aparencia`,
+     pela mesma razão de o tema da ficha morar na criatura (autor, 2026-08-05:
+     *"quero mandar minha ficha bonitinha para os outros"*): assim ele viaja no
+     export e no import de graça.
+
+     ⚠ ESCREVE A LISTA INTEIRA, e não um campo solto, porque `storage.update`
+     faz merge de chave de PRIMEIRO nível: mandar `{ invocacoes }` pela metade
+     apagaria as outras invocações. */
+  const invocacaoTemada = useMemo(() => (temandoInvocacao
+    ? (ficha.invocacoes ?? []).find((i) => i.id === temandoInvocacao) ?? null
+    : null), [temandoInvocacao, ficha.invocacoes]);
+
+  /* Grava o tema de um Shikigami DENTRO da invocação, reescrevendo a lista.
+     ⚠ A LISTA INTEIRA, e não um campo solto, porque `storage.update` faz merge
+     de chave de primeiro nível: mandar meia lista apagaria as outras. */
+  const gravarAparenciaDaInvocacao = useCallback((id, aparencia) => {
+    const lista = (ficha.invocacoes ?? []).map((i) => (i.id === id ? { ...i, aparencia } : i));
+    onSalvarInvocacoes?.(lista);
+  }, [ficha.invocacoes, onSalvarInvocacoes]);
+
+  /* ⚠ O RASCUNHO EXISTE POR CAUSA DA GRAVAÇÃO. Sem ele, cada tecla digitada no
+     CSS de um Shikigami reescrevia a lista INTEIRA de criaturas no
+     localStorage: medido em 29 gravações para 28 teclas, na revisão de
+     2026-08-31. É o mesmo desenho do tema da ficha, que debounce em 600ms desde
+     2026-08-05, e a mesma razão: escrever é caro e digitar é rápido.
+
+     ⚠ E É ELE QUE A TELA PINTA, não o que está gravado. Com a prévia saindo do
+     disco, o CSS do Shikigami só apareceria 600ms depois de cada tecla, que é
+     exatamente a sensação que o debounce existe para evitar. */
+  const temaDaInvocacaoAberta = temandoInvocacao === rascunhoInv?.id
+    ? rascunhoInv.tema
+    : normalizaTema(invocacaoTemada?.aparencia);
+
+  /* ⚠ O primeiro disparo NÃO grava: ele é a abertura do painel, e gravar ali
+     carimbaria um tema normalizado em quem nunca teve nenhum. Depois dele, grava
+     só o rascunho que MUDOU desde a última gravação daquela invocação (E-14,
+     2026-10-01): o `gravarAparenciaDaInvocacao` muda a cada render do App, e a
+     guarda de "pula a primeira" sozinha regravava a lista inteira a cada segundo
+     com o painel aberto. Mesma correção do tema da ficha, logo acima. */
+  const rascunhoGravado = useRef(null);
+  useEffect(() => {
+    if (!rascunhoInv) { rascunhoGravado.current = null; return undefined; }
+    if (rascunhoGravado.current?.id !== rascunhoInv.id) {
+      rascunhoGravado.current = { id: rascunhoInv.id, tema: rascunhoInv.tema };
+      return undefined;
+    }
+    if (rascunhoGravado.current.tema === rascunhoInv.tema) return undefined;
+    const t = setTimeout(() => {
+      rascunhoGravado.current = { id: rascunhoInv.id, tema: rascunhoInv.tema };
+      gravarAparenciaDaInvocacao(rascunhoInv.id, rascunhoInv.tema);
+    }, 600);
+    return () => clearTimeout(t);
+  }, [rascunhoInv, gravarAparenciaDaInvocacao]);
+
+  // Tudo que a criatura escolheu, dos seis catálogos, num formato só. É o que a
+  // aba Habilidades exibe e o que a busca varre.
+  const itens = useMemo(() => conteudoDaFicha(ficha, derived), [ficha, derived]);
+  // ⚠ O inventário é uma lista SEPARADA, e não parte do `itens`: aquela é "o que
+  // a criatura sabe fazer" e esta é "o que ela carrega". Junta-las faria a aba
+  // Habilidades mostrar espada no meio de Habilidade.
+  const equipamentos = useMemo(() => equipamentosDaFicha(derived), [derived]);
+  const alvos = useMemo(() => alvosDeBusca(derived), [derived]);
+  // A busca global varre as DUAS listas, e cada resultado sabe para qual aba ir.
+  const itensBuscaveis = useMemo(() => [...itens, ...equipamentos], [itens, equipamentos]);
+
+  const alternaItem = useCallback((chave) => {
+    setAbertos((s) => {
+      const proximo = new Set(s);
+      if (proximo.has(chave)) proximo.delete(chave); else proximo.add(chave);
+      return proximo;
+    });
+  }, []);
+
+  const alternaFavorito = useCallback((chave) => {
+    atualiza((s) => ({
+      ...s,
+      favoritos: s.favoritos.includes(chave)
+        ? s.favoritos.filter((f) => f !== chave)
+        : [...s.favoritos, chave],
+    }));
+  }, [atualiza]);
+
+  // A busca navega: troca de aba, abre o item e rola até ele.
+  const irPara = useCallback((r) => {
+    setTab(r.aba);
+    if (r.aba === "habilidades" || r.aba === "equipamentos") {
+      setAbertos((s) => new Set(s).add(r.chave));
+    }
+    setDestaque(r.chave);
+  }, []);
+
+  /* Rola e registra. DEVOLVE a rolagem, porque quem chamou às vezes precisa do
+     resultado: a linha de dano usa o crítico do Acerto para dobrar os dados do
+     Dano seguinte. O modo (vantagem, desvantagem) vale só para o d20. */
+  const rolar = useCallback((desc) => {
+    const ativacao = preparaAtivacaoComCustoVida(desc, sessao.hpAtual);
+    const custoVida = ativacao.custo;
+    if (custoVida.config && !custoVida.disponivel) return null;
+    const descResolvida = ativacao.desc;
+    const r = descResolvida.tipo === "dano"
+      ? rolarDano(descResolvida)
+      : rolarTeste({ ...descResolvida, modo });
+    atualiza((s) => {
+      let proxima = registraRolagem(s, r);
+      if (custoVida.pago > 0) proxima = pagaCustoVida(proxima, custoVida.pago).sessao;
+      if (desc.consomeEstado) proxima = consomeEstadoCombate(proxima, desc.consomeEstado);
+      if (desc.feiticoDanoId) proxima = registraFeiticoDano(proxima, desc.feiticoDanoId);
+      if (desc.testaRitualId) {
+        proxima = iniciaRitualComum(
+          proxima,
+          desc.testaRitualId,
+          r.sucesso === true,
+          !!desc.consomeRitualistaId,
+        );
+      }
+      if (desc.finalizaRitualId) {
+        proxima = finalizaRitual(proxima, desc.finalizaRitualId);
+      }
+      return proxima;
+    });
+    return r;
+  }, [atualiza, modo, sessao.hpAtual]);
+
+  /* A perda de vida do Sangramento: rola o dado da faixa, põe no histórico e
+     desconta do PV, sem passar pela casca (ver `aplicaPerdaDeVida`). */
+  const sangrar = useCallback((condicao) => {
+    const faixa = condicao?.sangramento;
+    if (!faixa) return;
+    const r = rolarDano({ rotulo: "Sangramento", detalhe: "Perda de Vida", dados: faixa.dados, faces: faixa.faces });
+    atualiza((s) => aplicaPerdaDeVida(registraRolagem(s, r), r.total));
+  }, [atualiza]);
+
+  const alteraEstado = useCallback((estado, valor) => {
+    atualiza((s) => alteraEstadoCombate(s, estado, valor));
+  }, [atualiza]);
+
+  /* `id` é o gancho estável do tema (`[data-afty-stat="defesa"]`), e por isso
+     ele NÃO é derivado do rótulo: renomear "RD Espec." na tela não pode quebrar
+     o CSS de quem já escreveu o dele. */
+  const stats = useMemo(() => [
+    { id: "defesa", k: "Defesa", v: derived.defesa, p: "defesa" },
+    { id: "cd", k: "CD", v: derived.cd, p: "cd" },
+    { id: "rd-geral", k: "RD Geral", v: derived.rdGeral, p: "rdGeral" },
+    ...(derived.rdEspecifico > 0 ? [{ id: "rd-especifica", k: "RD Espec.", v: derived.rdEspecifico, p: "rdEspecifico" }] : []),
+    ...(derived.rdAlma > 0 ? [{ id: "rd-alma", k: "RD a Alma", v: derived.rdAlma, p: "rdAlma" }] : []),
+    ...(derived.rdFisico > 0 ? [{ id: "rd-fisica", k: "RD Física", v: derived.rdFisico, p: "rdFisico" }] : []),
+    { id: "movimento", k: "Movimento", v: `${numeroBr(derived.movimento)}m`, p: "movimento" },
+    { id: "iniciativa", k: "Iniciativa", v: derived.iniciativa, p: "iniciativa", sinal: true },
+    { id: "atencao", k: "Atenção", v: derived.atencao, p: "atencao" },
+    { id: "maestria", k: "Maestria", v: derived.maestria, sinal: true },
+    /* O Preparo saiu daqui em 2026-09-23: virou barra própria junto dos vitais,
+       com o corrente e o máximo, porque é recurso que se gasta na mesa. */
+  ], [derived]);
+
+  /* ⚠ O delta roda um `deriveAfty` por estado LIGADO, e por isso ele mora num
+     `useMemo` amarrado à ficha e à sessão: sem isso ele recalcularia a cada
+     tecla digitada no campo de PV. A lista some inteira fora de combate.
+
+     NÚMEROS DE 2026-09-22, medidos fora da tela e em velocidade de produção: um
+     `deriveAfty` custa 3,4ms, e o delta com vinte estados ligados custa 61ms. O
+     comentário antigo daqui dizia 7ms com três ou quatro ligados, de quando o
+     derive custava 1,75ms.
+
+     ⚠ E SÓ RODA NA ABA BUFFS, que é a única que lê o resultado (junto do
+     `saldoAgora` logo abaixo). Antes eles ficavam soltos no corpo do componente
+     e rodavam em qualquer aba: na aba Ações eram N+1 derives inteiros jogados
+     fora a cada mudança de sessão. O `tab` na dependência é o que segura isso,
+     e a conta volta assim que a aba abre. */
+  const naAbaBuffs = tab === "buffs";
+  /* ⚠ A ABA PINTA PRIMEIRO, A CONTA VEM DEPOIS. O `useDeferredValue` segura o
+     sinal por um render: na troca para Buffs a aba aparece com o delta ainda em
+     `null` (a faixa Agora mostra "Calculando"), e só então a rajada de derives
+     roda e a tela se completa.
+
+     Sem isto, os N+1 derives rodavam DENTRO do render que monta a aba, e a troca
+     de aba congelava. Com vinte estados ligados eram 1 a 2 segundos no `dev`.
+
+     As DUAS condições entram no teste de propósito: ao SAIR da aba, `naAbaBuffs`
+     cai na hora e evita uma última rajada inútil, que o valor diferido sozinho
+     ainda dispararia. */
+  const buffsPronta = useDeferredValue(naAbaBuffs);
+
+  const deltaPorEstado = useMemo(
+    () => (!(naAbaBuffs && buffsPronta) ? null : deltaDosEstados(
+      ficha, sessao.combate,
+      /* ⚠ AS MESMAS OPÇÕES DA FICHA, inteiras, e não uma seleção escrita à mão:
+         cada derive de comparação tem de sair do mesmo estado de mesa que o
+         `derived` acima, senão a diferença entre as opções vira bônus fantasma
+         em toda linha ligada. O `buffs` viaja junto porque ele não é opção do
+         derive, e sim a lista que entra NA CRIATURA como `buffsSessao`. */
+      { ...opcoesDerive, buffs: sessao.buffs },
+      derived,
+    )),
+    [naAbaBuffs, buffsPronta, ficha, sessao.combate, sessao.buffs, opcoesDerive, derived],
+  );
+
+  /* O SALDO da faixa "Agora" da aba Buffs: tudo que a aba liga, contra a ficha
+     sem nada disso. Um derive a mais, com as MESMAS opções do delta logo acima,
+     pelo mesmo motivo: opção esquecida vira número fantasma no saldo. Mesma
+     porteira de aba do delta, pelo mesmo motivo. */
+  const saldoAgora = useMemo(
+    () => (!(naAbaBuffs && buffsPronta)
+      ? null
+      : saldoDoAgora(ficha, sessao.combate, { ...opcoesDerive, buffs: sessao.buffs }, derived)),
+    [naAbaBuffs, buffsPronta, ficha, sessao.combate, sessao.buffs, opcoesDerive, derived],
+  );
+
+  const itensDoRapido = useMemo(
+    () => sessao.favoritos.map((c) => itens.find((i) => i.chave === c)).filter(Boolean),
+    [sessao.favoritos, itens],
+  );
+
+  /* O contador de usos das habilidades, igual no Rápido e na aba Habilidades.
+
+     ⚠ MEMOIZADO porque desce até o `ItemDeFicha`, que é `React.memo` e só
+     funciona com props estáveis. Um objeto literal aqui renderizava TODA linha
+     a cada clique, abrir e fechar card inclusive, e o ganho do memo sumia sem
+     aviso. Abrir card mexe em `abertos`, e não na `sessao`, então com estas
+     deps só uma mudança de sessão (PV, uso gasto) redesenha as linhas. */
+  const contadorUsos = useMemo(() => ({
+    gastosDe: (chave) => usosGastosDe(sessao, chave),
+    onUso: (usos, delta) => atualiza((s) => marcaUso(s, usos, delta)),
+  }), [sessao, atualiza]);
+  /* Estava sendo chamado direto dentro do JSX da aba Habilidades, então refazia
+     a varredura a cada render da Ficha. Só depende da ficha. */
+  const funcionamentos = useMemo(() => funcionamentosDaFicha(ficha), [ficha]);
+
+  const corpo = {
+    acoes: () => (
+      <AbaAcoes
+        bloodfeast={<PainelBloodfeast derived={derived} sessao={sessao} onSessao={atualiza} />}
+        conjuracaoBloodfeast={(f) => <ConjuracaoBloodfeast f={f} derived={derived} sessao={sessao} onSessao={atualiza} />}
+        derived={derived}
+        adaptacao={<PainelDeAdaptacao derived={derived} onSessao={atualiza} />}
+        vislumbre={<PainelDoVislumbre derived={derived} sessao={sessao} onSessao={atualiza} />}
+        olhosAgulha={<PainelOlhosAgulha derived={derived} sessao={sessao} onSessao={atualiza} />}
+        manipulacaoCeu={<PainelManipulacaoCeu derived={derived} onEstado={alteraEstado} />}
+        armasTransformaveis={<ArmasTransformaveis derived={derived} sessao={sessao} onSessao={atualiza} />}
+        golpeEspecial={<PainelDoGolpeEspecial derived={derived} sessao={sessao} onSessao={atualiza} />}
+        rolar={rolar}
+        destaque={destaque}
+        rapido={itensDoRapido}
+        abertos={abertos}
+        onAberto={alternaItem}
+        onFavorito={alternaFavorito}
+        onRitual={(feiticoId, proxima) => atualiza((s) => configuraRitual(s, feiticoId, proxima))}
+        onDesativarRitual={(feiticoId) => atualiza((s) => desativaRitual(s, feiticoId))}
+        onIniciarRitualEstendido={(feiticoId, usaRitualista) => (
+          atualiza((s) => iniciaRitualEstendido(s, feiticoId, usaRitualista))
+        )}
+        onIniciarRitualSemTeste={(feiticoId, usaRitualista) => (
+          atualiza((s) => iniciaRitualSemTeste(s, feiticoId, usaRitualista))
+        )}
+        onConcluirPreparacaoRitual={(feiticoId) => (
+          atualiza((s) => concluiPreparacaoRitual(s, feiticoId))
+        )}
+        onCancelarRitual={(feiticoId) => atualiza((s) => cancelaRitual(s, feiticoId))}
+        onFinalizarRitual={(feiticoId) => atualiza((s) => finalizaRitual(s, feiticoId))}
+        onEncerrarRitual={(feiticoId) => atualiza((s) => encerraRitual(s, feiticoId))}
+        onImbuir={(estadoId, feiticoId) => alteraEstado({ id: estadoId }, feiticoId)}
+        gatilhosTreino={derived.gatilhosTreino}
+        onGatilhoTreino={(id, valor) => atualiza((s) => alteraTreinoAtivo(s, id, valor))}
+        contadorUsos={contadorUsos}
+      />
+    ),
+    habilidades: () => (
+      <AbaHabilidades
+        // Os 3 nativos (Aliados, Alma, Comidas) saíram desta lista em
+        // 2026-09-13: eles agora têm cartão próprio na aba Buffs, junto dos
+        // controles que os alimentam (ver AbaBuffs.jsx, CartaoNativo).
+        funcionamentos={funcionamentos}
+        itens={itens}
+        abertos={abertos}
+        onAberto={alternaItem}
+        favoritos={sessao.favoritos}
+        onFavorito={alternaFavorito}
+        destaque={destaque}
+        contadorUsos={contadorUsos}
+        espinho={derived.primitivas?.includes("espinho") && derived.espinho?.ativo ? (
+          <EspinhoCard compacto extrato={derived.espinho} estado={espinhoVivo} onPatch={setEspinhoVivo} />
+        ) : null}
+      />
+    ),
+    pericias: () => <AbaPericias derived={derived} rolar={rolar} destaque={destaque} />,
+    equipamentos: () => (
+      <AbaEquipamentos
+        derived={derived}
+        itens={equipamentos}
+        abertos={abertos}
+        onAberto={alternaItem}
+        favoritos={sessao.favoritos}
+        onFavorito={alternaFavorito}
+        destaque={destaque}
+      />
+    ),
+    invocacoes: () => (
+      <AbaInvocacoes
+        derived={derived}
+        rolar={rolar}
+        destaque={destaque}
+        estadoDe={(id) => estadoDaInvocacao(sessao, id)}
+        entradaDe={(inv) => entradaDaInvocacao(sessao, inv)}
+        mechaDe={(a, b) => mechaPermitido(sessao, derived, a, b)}
+        emCombate={emCombateNaSessao(sessao)}
+        reserva={sessao.reservaInvocacao}
+        acoes={acoesDeInvocacao}
+        aoTemar={setTemandoInvocacao}
+        temaEmEdicao={rascunhoInv}
+      />
+    ),
+    buffs: () => (
+      <AbaBuffs
+        derived={derived}
+        sessao={sessao}
+        deltaPorEstado={deltaPorEstado}
+        onPatchCombate={(parcial) => atualiza((s) => aplicaPatchCombate(s, parcial))}
+        onEstado={alteraEstado}
+        onBuffs={(buffs) => atualiza((s) => ({ ...s, buffs }))}
+        /* ⚠ PASSA PELO `defineCondicoes`, e não escreve o campo cru: oito
+           condições derrubam a Guarda Inabalável, e escrever direto deixaria o
+           chefe com a Guarda de pé debaixo de um Atordoado. */
+        onCondicoes={(condicoes) => atualiza((s) => defineCondicoes(s, condicoes))}
+        /* O Nível de Exaustão é da SESSÃO e de todo mundo: seis Lendárias e a
+           Expansão de Domínio dão exaustão em texto e não tinham onde marcar. */
+        onExaustao={(exaustao) => atualiza((s) => ({ ...s, exaustao: Math.max(0, Math.trunc(exaustao) || 0) }))}
+        onConceder={(familia, id) => atualiza((s) => concedeNaSessao(s, familia, id))}
+        onRemoverConcessao={(uid) => atualiza((s) => removeConcessao(s, uid))}
+        onSangrar={sangrar}
+        saldoAgora={saldoAgora}
+      />
+    ),
+  };
+
+  /* Memoizados porque só dependem do tema, e o tema quase nunca muda: sem isto
+     as duas folhas eram remontadas em string a cada render da Ficha, inclusive
+     ao abrir um card ou cruzar o limiar da rolagem. */
+  const varsCss = useMemo(() => (SEM_CSS ? "" : cssDasVars(tema)), [tema]);
+  const usuarioCss = useMemo(() => (SEM_CSS ? "" : cssDoUsuario(tema)), [tema]);
+
+  return (
+    /* As primitivas de Addon que ESTA criatura enxerga. Sem provedor, ninguém
+       enxerga nada, que é o certo para quem só usa o raw. Ver
+       `ui/usar-primitiva.js`. */
+    <PrimitivasDeAddon primitivas={derived.primitivas}>
+    <>
+    <div className="afty-ficha" id="afty-ficha" data-afty-densidade={densidade}>
+      {/* ⚠ A ORDEM É A REGRA. Os dois blocos são CSS sem camada e de mesma
+          especificidade, então quem vem depois vence: o CSS livre sobrepõe o
+          formulário, que é o que se espera da ferramenta mais avançada das
+          duas. E os dois vencem as utilidades do Tailwind, que vivem em
+          `@layer`. */}
+      {varsCss && <style>{varsCss}</style>}
+      {usuarioCss && <style>{usuarioCss}</style>}
+
+      <header className="afty-cabecalho" data-afty-compacto={compacto ? "sim" : "nao"}>
+        <div className="max-w-7xl mx-auto px-3 sm:px-4">
+          <div
+            className="afty-cabecalho-conteudo"
+            data-afty-com-retrato={ficha.portraitUrl ? "sim" : "nao"}
+          >
+            <div className="afty-cabecalho-principal min-w-0">
+          {/* ---------- identidade ----------
+              ⚠ `flex-wrap` e a fileira de controles em LINHA PRÓPRIA no celular.
+              São sete botões mais o contador de rodada, e com alvo de toque de
+              44px eles somam mais de 300px: ao lado do nome, numa tela de 360,
+              esmagavam o nome da criatura até três letras. */}
+          <div className="flex flex-wrap items-center gap-2 py-2">
+            <button type="button" className="afty-botao" onClick={onVoltar} aria-label="Voltar">
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <div className="min-w-0 flex-1">
+              <div className="afty-nome text-sm sm:text-base font-bold truncate">
+                {ficha.name || "Sem nome"}
+              </div>
+              <div className="flex flex-wrap items-center gap-1 mt-0.5">
+                {/* ⚠ O JOGADOR MOSTRA A CLASSE, A CRIATURA MOSTRA O TIPO, e a
+                    diferença não é gosto: `afty-derive.js` diz em voz alta que
+                    "NO JOGADOR NÃO HÁ TIPO", e o campo saiu do formulário do
+                    jogador junto com o `pvPePorEspecializacao` em 2026-08-30.
+                    Este chip ficou para trás e seguia imprimindo o padrão do
+                    schema, então um Conjurador de nível 3 aparecia como
+                    "Combatente" na tela de jogo (autor, 2026-09-08).
+
+                    ⚠ A confusão era pior do que parece: "Combatente" é NOME DE
+                    TIPO e NOME DE CLASSE ao mesmo tempo, então o chip errado
+                    era indistinguível do certo.
+
+                    A classe é a INICIAL (`escolhidas[0]`), que é a mesma
+                    convenção do `classeNome` em afty-especializacoes.js e das
+                    linhas de PV por classe. Num multiclasse o `title` abre a
+                    lista inteira com os níveis. */}
+                {ehPlayer(ficha.rulesVersion)
+                  ? classeInicial && (
+                    <Chip tom="destaque" title={classesComNivel}>{classeInicial}</Chip>
+                  )
+                  : <Chip tom="destaque">{rotuloDe(AFTY_TIPOS, ficha.core.tipo)}</Chip>}
+                {/* ⚠ O PATAMAR NÃO EXISTE NO JOGADOR (divergência
+                    `patamarDoJogador`), e este chip seguia imprimindo o "Comum"
+                    do schema. Autor, 2026-09-10: *"tire a tag Comum na ficha de
+                    Jogador"*. É o "esconder o campo não esconde o valor" outra
+                    vez: o Preview perdeu o chip em agosto e este ficou. */}
+                {regraDo(sistemaDaFicha(ficha), "patamarDoJogador") !== "player" && (
+                  <Chip>{rotuloDe(AFTY_PATAMARES, ficha.core.patamar)}</Chip>
+                )}
+                <Chip>{rotuloDoNivel(sistemaDaFicha(ficha))} {derived.nd}</Chip>
+                <Chip title={`Grau do Feiticeiro, que vem do ${rotuloDoNivel(sistemaDaFicha(ficha))}`}>
+                  {derived.grauFeiticeiro.label}
+                </Chip>
+                {/* Só quando saiu de Médio: um chip "Médio" em toda ficha é
+                    ruído, porque é o padrão de quase todas. */}
+                {derived.tamanhoDegraus !== 0 && (
+                  <Chip title="Mexe em Atletismo e Furtividade">
+                    {derived.tamanhoLabel} · {String(derived.tamanhoEspacoAlcance).replace(".", ",")}m
+                  </Chip>
+                )}
+                {derived.carga?.sobrecarregado && (
+                  <Chip tom="aviso" title={`${derived.carga.cargaLimite} espaços de limite`}>
+                    <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+                    Sobrecarregado
+                  </Chip>
+                )}
+                {/* ⚠ A MARCA DE "NÃO RAW". Não é advertência moral, é
+                    informação: quem recebe esta ficha precisa saber que ela não
+                    é o livro puro ANTES de comparar com a mesa dele. O `title`
+                    nomeia os addons, que é onde explicação de item vive. Ver a
+                    seção 7 de docs/afty-addons.md. */}
+                {addonsDaFicha.length > 0 && (
+                  <Chip
+                    tom="destaque"
+                    title={addonsDaFicha.map((a) => `${a.nome} ${a.versao}`).join("\n")}
+                  >
+                    {addonsDaFicha.length === 1
+                      ? addonsDaFicha[0].nome
+                      : `${addonsDaFicha.length} Addons`}
+                  </Chip>
+                )}
+              </div>
+            </div>
+            <div className="afty-controles flex items-center justify-end gap-1.5 w-full order-last sm:w-auto sm:order-none sm:flex-shrink-0">
+              <button
+                type="button"
+                className="afty-botao"
+                onClick={trocaDensidade}
+                title={densidade === "compacta" ? "Densidade compacta" : "Densidade confortável"}
+                aria-label="Trocar a densidade da ficha"
+                aria-pressed={densidade === "compacta"}
+              >
+                {densidade === "compacta"
+                  ? <Rows3 className="w-4 h-4" />
+                  : <Rows2 className="w-4 h-4" />}
+              </button>
+              <button
+                type="button"
+                className="afty-botao"
+                onClick={() => setAparenciaAberta(true)}
+                title="Aparência da ficha"
+                aria-label="Aparência da ficha"
+              >
+                <Palette className="w-4 h-4" />
+              </button>
+              {/* ⚠ O CADEADO SÓ APARECE EM FICHA TRANCADA, e não para quem
+                  instalou o addon: quem lê esta ficha pode não ter addon nenhum
+                  e ainda assim precisa da porta para digitar a senha. O portão
+                  aqui é o ESTADO da ficha, e não o `permite`. */}
+              {cofreTrancado(ficha) && (
+                <button
+                  type="button"
+                  className="afty-botao"
+                  data-afty-tom={cofreAberto ? undefined : "aviso"}
+                  onClick={() => setCofrePainel(true)}
+                  title={cofreAberto ? "Cofre aberto nesta aba" : "Texto protegido por senha"}
+                  aria-label="Cofre de texto"
+                >
+                  <Lock className="w-4 h-4" />
+                </button>
+              )}
+              <button
+                type="button"
+                className="afty-botao"
+                onClick={() => setBuscaAberta(true)}
+                title="Buscar na ficha (Ctrl+K)"
+                aria-label="Buscar na ficha"
+              >
+                <Search className="w-4 h-4" />
+              </button>
+              {/* ⚠ Era "R 3", com o rótulo só no `title`. Abreviação que precisa
+                  de hover para ser entendida não existe no celular, e a palavra
+                  inteira cabe. */}
+              <span className="afty-chip">Rodada {sessao.rodada}</span>
+              <button
+                type="button"
+                className="afty-botao"
+                onClick={() => atualiza((s) => proximaRodada(s, derived).sessao)}
+                title="Próxima rodada"
+                aria-label="Próxima rodada"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                className="afty-botao"
+                onClick={() => atualiza((s) => descansar(s, derived))}
+                title="Descanso: devolve os recursos e zera a rodada"
+                aria-label="Descanso"
+              >
+                <Moon className="w-4 h-4" />
+              </button>
+              <button type="button" className="afty-botao" onClick={onEditar} title="Editar no criador">
+                <Pencil className="w-4 h-4" />
+                <span className="hidden sm:inline">Editar</span>
+              </button>
+            </div>
+          </div>
+
+          {/* ---------- vitais ---------- */}
+          <div className={`grid grid-cols-1 gap-2 pb-2 ${derived.pontosPreparo > 0 ? "md:grid-cols-2 xl:grid-cols-4" : "md:grid-cols-3"}`}>
+            <Vital
+              tipo="pv" icone={Heart} rotulo="Vida"
+              atual={sessao.hpAtual} max={derived.hp} temp={pvTempTotal(sessao)}
+              partes={derived.partes?.hp}
+              onSet={(v) => setVital("hpAtual", v)}
+              /* ⚠ No PV o delta NEGATIVO é dano, e dano come o PV temporário
+                 primeiro. Subtrair direto pularia a casca. */
+              onDelta={(n) => atualiza((s) => (n < 0 ? aplicaDano(s, -n) : aplicaCura(s, n, derived.hp)))}
+            />
+            {!derived.bloodfeast?.tem && <Vital
+              tipo="pe" icone={Zap} rotulo={derived.recursoLabel}
+              atual={sessao.peAtual} max={derived.pe} temp={peTempTotal(sessao)}
+              rotuloTemp={`${derived.recursoLabel} Temporário`}
+              partes={derived.partes?.pe}
+              onSet={(v) => setVital("peAtual", v)}
+              /* ⚠ Delta NEGATIVO é GASTO, e gasto come a casca primeiro, igual ao
+                 dano no PV. Subtrair direto pularia o PE temporário e o jogador
+                 pagaria duas vezes: uma na casca que não some e outra no PE. */
+              onDelta={(n) => atualiza((s) => (
+                n < 0 ? gastaPe(s, -n) : { ...s, peAtual: Math.max(0, s.peAtual + n) }
+              ))}
+            />}
+            <Vital
+              tipo="alma" icone={Sparkles} rotulo="Alma"
+              atual={sessao.almaAtual} max={derived.almaMax}
+              /* ⚠ Os dois passam pelos verbos de `ficha-sessao.js`, e não por um
+                 `setVital` que escreveria só a Alma. No jogador o delta NEGATIVO
+                 é Dano na Alma, e ele desce o PV corrente junto: escrever o campo
+                 direto aqui era o que deixava a Vida intacta. Ver
+                 `aplicaDanoNaAlma`. */
+              onSet={(v) => atualiza((s) => defineAlma(s, v, derived))}
+              onDelta={(n) => atualiza((s) => (n < 0
+                ? aplicaDanoNaAlma(s, -n, derived)
+                : curaAlma(s, n, derived)))}
+            />
+            {/* PONTOS DE PREPARO (Combatente), desde 2026-09-23. Era um número
+                fixo entre os stats, sem o corrente: a mesa gastava e recuperava
+                de cabeça. Só existe para quem tem as Artes do Combate. */}
+            {derived.pontosPreparo > 0 && (
+              <Vital
+                tipo="preparo" icone={Crosshair} rotulo="Preparo"
+                atual={preparoDe(sessao, derived.pontosPreparo)} max={derived.pontosPreparo}
+                temp={preparoTempDe(sessao)} rotuloTemp="Preparo Temporário"
+                partes={derived.partes?.pontosPreparo}
+                onSet={(v) => atualiza((s) => definePreparo(s, v, derived.pontosPreparo))}
+                onDelta={(n) => atualiza((s) => alteraPreparo(s, n, derived.pontosPreparo))}
+              />
+            )}
+          </div>
+
+          {/* ---------- Guarda Inabalável ----------
+              Some inteira fora do Calamidade e do Beyond, que é a maioria das
+              criaturas. Fica entre os vitais e as defesas porque a casca dela
+              está na barra de PV logo acima, e o bônus já está somado na Defesa
+              logo abaixo: no meio, ela liga as duas. */}
+          <Guarda
+            guarda={derived.guarda}
+            partes={derived.partes?.guardaAtual}
+            onGolpe={() => atualiza((s) => sofreGolpeNaGuarda(s, derived))}
+            onDesfazGolpe={() => atualiza(desfazGolpeNaGuarda)}
+            onRaioNegro={() => atualiza(encerraGuarda)}
+          />
+
+          {/* ---------- Titã ----------
+              Some fora de quem ligou o card no criador (primitiva `titaColosso`,
+              ver `AftyCreatureBuilder.jsx`). */}
+          <PainelTita
+            titaColosso={derived.titaColosso}
+            estado={estadoTita(sessao)}
+            onDanoCabeca={(n) => atualiza((s) => aplicaDanoTitaCabeca(s, n, derived.titaColosso?.cabecaMax))}
+            onCuraCabeca={(n) => atualiza((s) => aplicaCuraTitaCabeca(s, n, derived.titaColosso?.cabecaMax))}
+            onSetCabeca={(v) => atualiza((s) => defineVitalTitaCabeca(s, v, derived.titaColosso?.cabecaMax))}
+            onDanoMembro={(i, n) => atualiza((s) => aplicaDanoTitaMembro(s, i, n, derived.titaColosso?.membroMax))}
+            onCuraMembro={(i, n) => atualiza((s) => aplicaCuraTitaMembro(s, i, n, derived.titaColosso?.membroMax))}
+            onSetMembro={(i, v) => atualiza((s) => defineVitalTitaMembro(s, i, v, derived.titaColosso?.membroMax))}
+          />
+
+          {/* ---------- defesas ----------
+              ⚠ GRADE de células iguais, e não `flex-wrap`. Com o wrap cada
+              caixa ficava do tamanho do próprio texto ("CD" minúscula ao lado
+              de "Res. Parcial" larga, rótulo que saiu em 2026-09-21) e a
+              fileira virava uma serra. O autor apontou em 2026-08-05.
+
+              ⚠ E as COLUNAS moram no `.afty-stats` do `ficha.css`, não aqui.
+              Eram `grid-cols-N` por breakpoint, e como a fileira tem de 8 a 12
+              células conforme a criatura, a que sobrava abria uma segunda
+              fileira e esticava o cabeçalho e o retrato junto. */}
+          <div className="afty-stats pb-2">
+            {stats.map((s) => (
+              <span key={s.id} className="afty-stat" data-afty-stat={s.id}>
+                <span className="afty-stat-rotulo" title={s.k}>{s.k}</span>
+                <NumeroComFontes
+                  valor={s.v}
+                  partes={s.p ? derived.partes?.[s.p] : null}
+                  total={s.v}
+                  formatar={!!s.sinal}
+                  className="afty-stat-valor"
+                />
+              </span>
+            ))}
+          </div>
+            </div>
+
+            {ficha.portraitUrl && (
+              <div className="afty-retrato-painel" aria-hidden="true">
+                <img
+                  src={ficha.portraitUrl}
+                  alt=""
+                  className="afty-retrato"
+                  style={{ objectPosition: `${ficha.portraitFocus?.x ?? 50}% ${ficha.portraitFocus?.y ?? 50}%` }}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* ---------- abas ---------- */}
+          <div className="afty-abas" role="tablist" aria-label="Seções da ficha">
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                role="tab"
+                id={`afty-aba-${t.id}`}
+                data-afty-aba={t.id}
+                aria-selected={tab === t.id}
+                aria-controls="afty-painel"
+                className="afty-aba"
+                onClick={() => setTab(t.id)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </header>
+
+      <div
+        className="afty-ficha-corpo"
+        data-afty-imagem-encaixe={tema.imagem.encaixe || "cover"}
+      >
+        <main
+          id="afty-painel"
+          role="tabpanel"
+          aria-labelledby={`afty-aba-${tab}`}
+          className="max-w-7xl mx-auto px-3 sm:px-4 py-4"
+        >
+          {/* ⚠ LINHA MORTA E MARCADA (decisão 4 do autor, 2026-08-20). A ficha
+              SEMPRE abre: o que o mundo não tem aparece aqui, marcado, e não
+              soma nada. Vem antes do corpo porque é a única coisa da tela que
+              pede ação, e some sozinho quando não há nada. Ver
+              docs/afty-addons.md seção 9. */}
+          {(derived.addonProblemas?.length ?? 0) > 0 && (
+            <div className="afty-card mb-4 p-3 space-y-2">
+              {derived.addonProblemas.map((m) => (
+                <div key={`${m.familia}:${m.id}`}>
+                  <p className="text-[11px] flex items-start gap-1" style={{ color: "var(--afty-aviso)" }}>
+                    <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-px" aria-hidden="true" />
+                    <span>{m.motivo}</span>
+                  </p>
+                  <p className="afty-rotulo text-[11px] pl-4">{m.saida}</p>
+                </div>
+              ))}
+            </div>
+          )}
+          {(corpo[tab] ?? corpo.acoes)()}
+          {/* O painel de rolagens é fixo no canto e cobre o fim do conteúdo.
+              Este respiro impede que a última linha da aba fique embaixo dele.
+              ⚠ Ele cresceu em 2026-08-06: o painel subiu para não cobrir o botão
+              dos Livros, e o respiro tem que cobrir a soma dos dois. */}
+          <div className="afty-respiro h-48" aria-hidden="true" />
+        </main>
+      </div>
+
+      <PainelDeRolagens
+        log={sessao.log}
+        modo={modo}
+        onModo={setModo}
+        aberto={logAberto}
+        onAberto={setLogAberto}
+        onLimpar={() => atualiza((s) => ({ ...s, log: [] }))}
+      />
+
+      {buscaAberta && (
+        <BuscaGlobal
+          onFechar={() => setBuscaAberta(false)}
+          itens={itensBuscaveis}
+          alvos={alvos}
+          onIr={irPara}
+        />
+      )}
+
+      {aparenciaAberta && (
+        <PainelDeAparencia
+          tema={tema}
+          onTema={setTema}
+          onFechar={() => setAparenciaAberta(false)}
+          onGlobal={() => salvarTemaGlobal(tema, sistemaDaFicha(ficha))}
+        />
+      )}
+
+      {/* O Cofre na tela de JOGO abre só para LER, e a leitura dura o que a aba
+          durar. Quem quiser voltar a editar o texto faz isso no criador, que é
+          onde `destrancarDeVez` mora. */}
+      {cofrePainel && (
+        <div className="afty-cofre-veu" role="dialog" aria-label="Cofre de texto">
+          <div className="afty-cofre-caixa">
+            <div className="flex items-center gap-2 mb-2">
+              <Lock className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+              <h2 className="afty-card-titulo flex-1" data-afty-linha>Cofre de Texto</h2>
+              <button type="button" className="afty-botao px-2 py-1" onClick={() => setCofrePainel(false)}>
+                Fechar
+              </button>
+            </div>
+            <PainelDoCofre
+              creature={creature}
+              modo="ficha"
+              onAberto={(nova) => setCofreAberto(nova ? lerAberto(creature?.id) : null)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* ⚠ O TEMA DE UM SHIKIGAMI usa o MESMO painel do tema da ficha, e não uma
+          cópia menor: o autor pediu "um CSS Personalizado próprio", e um editor
+          capado seria um segundo lugar para manter em dia. O que muda é só o
+          `onGlobal`, que sai: "quero todas as minhas fichas assim" não quer
+          dizer nada quando o alvo é um shikigami. */}
+      {temandoInvocacao && (
+        <PainelDeAparencia
+          titulo={`Aparência · ${invocacaoTemada?.nome || "Shikigami"}`}
+          /* O prompt para a IA precisa saber que o alvo é o cartão de UMA
+             invocação, e não a ficha: o escopo é outro e a raiz também. */
+          escopo={escopoDaInvocacao(temandoInvocacao)}
+          nome={invocacaoTemada?.nome || null}
+          tema={temaDaInvocacaoAberta}
+          onTema={(t) => setRascunhoInv({ id: temandoInvocacao, tema: t })}
+          /* ⚠ FECHAR DESCARREGA na hora, e não espera o debounce: quem fecha o
+             painel e sai da ficha no mesmo segundo não pode perder o que
+             escreveu. Gravar duas vezes o mesmo valor não custa nada. */
+          onFechar={() => {
+            if (rascunhoInv?.id === temandoInvocacao) {
+              gravarAparenciaDaInvocacao(rascunhoInv.id, rascunhoInv.tema);
+            }
+            setRascunhoInv(null);
+            setTemandoInvocacao(null);
+          }}
+        />
+      )}
+    </div>
+
+    {/* ⚠ O BOTE SALVA-VIDAS, e ele mora FORA da raiz da Ficha de propósito. Com
+        `@scope` o CSS do usuário não alcança nada daqui, e o estilo é EMBUTIDO,
+        que vence qualquer folha sem `!important`. Só aparece para quem tem CSS
+        livre ligado: um botão permanente seria sujeira para os 99% que nunca
+        vão abrir o editor. A saída final, essa sim à prova de tudo, é o
+        `?semcss=1` na URL. */}
+    {!SEM_CSS && tema.ligado && temCssLivre(tema) && (
+      <button
+        type="button"
+        onClick={() => setTema({ ...tema, ligado: false })}
+        title="Desligar o CSS personalizado"
+        aria-label="Desligar o CSS personalizado"
+        style={{
+          position: "fixed", left: 8, bottom: 8, zIndex: 2147483647,
+          width: 28, height: 28, display: "flex",
+          alignItems: "center", justifyContent: "center",
+          borderRadius: 9999, cursor: "pointer",
+          border: "1px solid rgba(148,163,184,0.5)",
+          background: "rgba(15,23,42,0.92)", color: "#e2e8f0",
+          font: "700 13px/1 ui-monospace, monospace",
+        }}
+      >
+        ×
+      </button>
+    )}
+    </>
+    </PrimitivasDeAddon>
+  );
+}

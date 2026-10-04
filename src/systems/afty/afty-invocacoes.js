@@ -757,6 +757,9 @@ export function custoInvocacao(inv, gratis = 0, gratisCaract = 0) {
  * ⚠ O CUSTO BASE É DO TIPO (decisão do autor, Mecânicas): Marionete, Corpo e
  * Maldição não têm custo base de ativação (`regras.custoBase: 0`). As Ações e
  * Características além da cota continuam custando, e são pagas na entrada.
+ * O Corpo também: o livro diz dele só "não possuem custo de ativação", sem falar
+ * das extras, e o autor confirmou em 2026-10-03 que ele paga como a Marionete.
+ * A cota isenta (a quantidade base do grau) foi confirmada no mesmo dia.
  *
  * Devolve `{ base, baseLabel, itens, nItens, poupadoGratis, total }`:
  *   base           o custo do grau, ou zero pelo tipo
@@ -2300,37 +2303,48 @@ export const OFICIOS_DE_MARIONETE = Object.keys(CD_DE_CRIACAO_POR_OFICIO);
  * O reparo do Desmembramento (ou a reconstrução da Marionete), pelo tipo. O Custo
  * vem do grau, igual nos três tipos do Mecânicas: "Custo 1 = Grau 4, Custo 2 =
  * Grau 3, Custo 3 = Grau 2, Custo 4 = Grau 1 e Especial". A CD sai da tabela de
- * Criação de Itens quando o reparo é por um Ofício dela, e fica `null` quando não
- * é (Medicina e Cura Aprimorada não estão na tabela, ver docs/a-fazer.md).
+ * Criação de Itens, pela coluna do Ofício do reparo, e fica `null` só quando
+ * falta escolher o material.
+ *
+ * ⚠ O Corpo biológico não se repara por Ofício ("através de Cura Aprimorada ou
+ * pela perícia Medicina"), mas o Mecânicas manda a CD seguir a mesma tabela "em
+ * ambos os casos". A coluna é a do Farmacêutico, o Ofício médico da tabela
+ * (decisão do autor, 2026-10-03). O `oficio` dele fica vazio, porque nenhum
+ * Ofício é via de reparo: a coluna aparece só na parcela do hover.
  *
  * Devolve `null` para quem não se repara (a Maldição), ou
- * `{ vias: [rótulos], oficio, custo, cd, quando }`.
+ * `{ vias: [rótulos], oficio, custo, cd, partesCd, quando, falta }`, com
+ * `partesCd` sendo a parcela do hover da CD (a coluna e o Custo que a escolheram).
  */
 export function reparoDaInvocacao(inv) {
   const r = regrasDoTipo(inv);
   if (!r.reparo) return null;
   const custo = CUSTO_DE_FORMA_POR_GRAU[grauMeta(inv?.grau).value] ?? 1;
-  const cdDo = (oficio) => CD_DE_CRIACAO_POR_OFICIO[oficio]?.[custo - 1] ?? null;
+  const cdDo = (coluna) => {
+    const cd = coluna ? CD_DE_CRIACAO_POR_OFICIO[coluna]?.[custo - 1] ?? null : null;
+    const partesCd = cd == null ? [] : [{ label: `Criação de Itens · ${coluna} (Custo ${custo})`, valor: cd, texto: String(cd) }];
+    return { cd, partesCd };
+  };
   if (r.reparo === "material") {
     const oficio = OFICIOS_DE_MARIONETE.includes(inv?.oficio) ? inv.oficio : "";
     return {
-      vias: oficio ? [`Ofício (${oficio})`] : [], oficio, custo, cd: oficio ? cdDo(oficio) : null,
+      vias: oficio ? [`Ofício (${oficio})`] : [], oficio, custo, ...cdDo(oficio),
       quando: "Ação Comum", falta: !oficio,
     };
   }
   if (r.reparo === "natureza") {
     const natureza = naturezaDoCorpo(inv);
     if (natureza === "boneco") {
-      return { vias: ["Ofício (Alfaiate)"], oficio: "Alfaiate", custo, cd: cdDo("Alfaiate"), quando: "Descanso Longo", falta: false };
+      return { vias: ["Ofício (Alfaiate)"], oficio: "Alfaiate", custo, ...cdDo("Alfaiate"), quando: "Descanso Longo", falta: false };
     }
     if (natureza === "biologico") {
-      return { vias: ["Cura Aprimorada", "Medicina"], oficio: "", custo, cd: null, quando: "Descanso Longo", falta: false };
+      return { vias: ["Cura Aprimorada", "Medicina"], oficio: "", custo, ...cdDo("Farmacêutico"), quando: "Descanso Longo", falta: false };
     }
-    return { vias: [], oficio: "", custo, cd: null, quando: "Descanso Longo", falta: true };
+    return { vias: [], oficio: "", custo, ...cdDo(""), quando: "Descanso Longo", falta: true };
   }
   // Shikigami (e a Técnica, que herda): "Cura Aprimorada ou do Ofício de Canalizador".
   return {
-    vias: ["Cura Aprimorada", "Ofício (Canalizador)"], oficio: "Canalizador", custo, cd: cdDo("Canalizador"),
+    vias: ["Cura Aprimorada", "Ofício (Canalizador)"], oficio: "Canalizador", custo, ...cdDo("Canalizador"),
     quando: "Descanso Longo", falta: false,
   };
 }
@@ -2348,8 +2362,9 @@ export function reparoDaInvocacao(inv) {
  *                `creature.fundamentosPerdidos` (nada é apagado, e a Técnica e os
  *                Feitiços continuam lá, marcados como indisponíveis). Antes da
  *                gravação, a mesa já mostra a perda pelo estado "morta".
- *   foraDeCampo  há mesa, e o Fundamento não está em campo. Só a mesa sabe disso,
- *                e o criador nunca vê.
+ *   foraDeCampo  há mesa, e o Fundamento não está em campo. Bloqueia Feitiços,
+ *                Funcionamento e Passivas enquanto ele estiver fora. Só a mesa
+ *                sabe disso, e o criador nunca vê (autor, 2026-10-03).
  *
  * `aRegistrar` diz à Ficha que a morte aconteceu e ainda não foi gravada.
  */
@@ -2449,6 +2464,10 @@ function iniciativaDaInvocacao(inv, regras, efe) {
 function efeitosHabilidade(inv, dono) {
   const acc = Object.fromEntries(EFEITO_CANAIS.map((c) => [c, 0]));
   acc.detalhes = []; // { nome (fonte), canal, valor } por efeito aplicado
+  // Na Quimera do Mecânicas, só o PV concedido pelo dono entra após a fusão.
+  // Tipo e Características continuam dentro do PV das componentes.
+  acc.pvDoDono = 0;
+  acc.fontesPvDoDono = [];
   // ⚠ Canal que não existe some CALADO se ninguém olhar: o `continue` abaixo
   // descartava o efeito inteiro sem deixar rastro, e um erro de digitação num
   // nome de canal viraria uma habilidade que simplesmente não faz nada. Vira
@@ -2523,6 +2542,10 @@ function efeitosHabilidade(inv, dono) {
       continue;
     }
     somaNoAcumulador(acc, e.canal, alvo, valor, nome);
+    if (e.canal === "pv" && !alvo && doDono.includes(e)) {
+      acc.pvDoDono += valor;
+      acc.fontesPvDoDono.push({ nome, canal: "pv", valor });
+    }
   }
   return acc;
 }
@@ -3328,7 +3351,9 @@ export function resolveInvocacao(invCru, dono = {}) {
   /* A Resistência Sobrecarregada aumenta o PV MÁXIMO enquanto ela está em campo
      (decisão do autor, 2026-09-30), e não é PV temporário. Fora de campo, some. */
   const pvSobrecarga = aux.sessao.emCampo ? aux.sessao.sobrecargaPv : 0;
-  const pv = (pvFixo ?? Math.floor((pvInvocacao(invEf, dono, atributoPv) + efe.pv + caract.pv) * pvMult)) + pvSobrecarga;
+  const pvAposFusao = pvFixo != null && inv?.pvDoDonoAposFusao ? efe.pvDoDono : 0;
+  const arredondamentoPvFusao = pvAposFusao ? Math.floor(pvAposFusao) - pvAposFusao : 0;
+  const pv = (pvFixo ?? Math.floor((pvInvocacao(invEf, dono, atributoPv) + efe.pv + caract.pv) * pvMult)) + Math.floor(pvAposFusao) + pvSobrecarga;
   const defesa = defesaInvocacao(invEf, dono, atributoCombate) + efe.defesa + aux.proprio.defesa;
   const deslocamento = deslocamentoInvocacao() + efe.deslocamento;
   /* Alado e Nadador (2026-09-30): o deslocamento novo parte do de caminhada
@@ -3421,6 +3446,8 @@ export function resolveInvocacao(invCru, dono = {}) {
       // A fonte que venceu, por último: o multiplicador age sobre a soma acima.
       ...(pvMultVencedor ? [{ label: pvMultVencedor.nome, texto: `× ${pvMult}` }] : []),
     ]),
+      ...(inv?.pvDoDonoAposFusao ? parcelasDoCanal(efe.fontesPvDoDono, "pv") : []),
+      ...(arredondamentoPvFusao ? [{ label: "Arredondamento", valor: arredondamentoPvFusao }] : []),
       ...(pvSobrecarga ? [{ label: "Resistência Sobrecarregada", valor: pvSobrecarga }] : []),
     ],
     defesa: [
@@ -4154,8 +4181,8 @@ function ajusteHordaAcao(base, escala) {
  * A MESA (2026-10-01, Etapa 9): a horda tem linha própria na sessão
  * (`horda:<id>`). Os membros ativos (`membrosAtivos`) mudam as escalas, e a
  * marca `pvMaxMetade` corta o PV máximo da horda nova cujo líder liderou outra
- * dissipada no mesmo combate. O PV máximo NÃO cai com os membros perdidos (ver a
- * pergunta em docs/a-fazer.md).
+ * dissipada no mesmo combate. O PV máximo NÃO cai com os membros perdidos
+ * (confirmado pelo autor em 2026-10-03).
  */
 export function resolveHorda(horda, invocacoes = [], dono = {}, base = null) {
   const fichas = Array.isArray(invocacoes) ? invocacoes : [];
@@ -4525,7 +4552,8 @@ export function resolveQuimera(quimera, invocacoes = [], dono = {}, base = null)
  *   atributos    o maior de cada; treinos e masterizações: a união
  *   PV           "Shikigami Base + 1/3 dos PVs dos outros Shikigamis - (Grau da
  *                Invocação * Shikigamis adicionais)", com a principal como base e
- *                o grau pelo rank (PV-02). Os PVs são os dos cartões
+ *                o grau pelo rank (PV-02). O PV do dono sai das componentes e
+ *                entra uma vez após a fusão (autor, 2026-10-03)
  *   bônus        +1 Ataque, CD e Perícias, -1 Defesa, TR e RD, por componente
  *   Ações/Caract.todas as da principal e até duas de cada adicional (`escolhas`),
  *                que entram como vagas concedidas, sem custo
@@ -4560,7 +4588,13 @@ function resolveQuimeraMecanicas(quimera, invocacoes = [], dono = {}, base = nul
     if (regrasDoTipo(c).familia !== "shikigami") warnings.push(`${c.nome || "Componente"}: Quimera só funde Shikigamis.`);
   }
 
-  const resolvidasBase = Array.isArray(base) ? base : resolveInvocacoesList(fichas, dono).lista;
+  // Recalcula os cartões sem bônus aditivos de PV do dono, mantendo o passe
+  // de fontes, o tipo, as Características e os outros efeitos da invocação.
+  const efeitos = Array.isArray(dono.efeitos) ? dono.efeitos : [];
+  const semPvDoDono = efeitos.filter((e) => e?.canal !== "pv");
+  const resolvidasBase = semPvDoDono.length !== efeitos.length
+    ? resolveInvocacoesList(fichas, { ...dono, efeitos: semPvDoDono }).lista
+    : (Array.isArray(base) ? base : resolveInvocacoesList(fichas, dono).lista);
   const pvDe = (id) => resolvidasBase.find((r) => r.id === id)?.pv ?? 0;
   const grauQ = componentes.reduce((m, c) => (grauMeta(c.grau).rank > grauMeta(m).rank ? c.grau : m), principal.grau);
   const rankQ = grauMeta(grauQ).rank;
@@ -4607,6 +4641,7 @@ function resolveQuimeraMecanicas(quimera, invocacoes = [], dono = {}, base = nul
     marcadorFontes: { ...(principal.marcadorFontes || {}), [QUIMERA_MARCADOR]: componentes.map((f) => f.id) },
     // CALCULADOS e nunca salvos: vivem só nesta cópia.
     pvFixo,
+    pvDoDonoAposFusao: true,
     pvFixoPartes: [
       { label: `${principal.nome || "Principal"} (Base)`, valor: pvBase },
       ...(terco ? [{ label: "Um Terço dos Outros", valor: terco }] : []),

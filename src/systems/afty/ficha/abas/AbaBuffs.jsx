@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Plus, Minus, X, Search, Dices, Check, ChevronDown, ChevronRight } from "lucide-react";
+import { Plus, Minus, X, Search, Dices, Check, ChevronDown, ChevronRight, AlertTriangle } from "lucide-react";
 
 import { estadoVisivel } from "../../afty-combate";
 import { ESTADO_APICE, RODADAS_APICE } from "../../afty-talisma-apice";
@@ -193,6 +193,13 @@ function LinhaEstado({ estado, valor, delta, opcoes, onValor, derived, bloqueado
      Ver `organizaEstados`. */
   const rotulo = estado.rotulo ?? estado.label;
   const custoPE = typeof estado.custoPE === "function" ? estado.custoPE(valor) : estado.custoPE;
+  /* ⚠ A TRAVA DO FEITIÇO PERMUTATIVO (autor, 2026-10-02): "o Feitiço não pode ser
+     usado". Desligado, ela impede de ligar. Ligado, o número caiu depois (uma
+     condição) e o Feitiço segue ligado, com o motivo à mostra. Mesma leitura do
+     `max(derived)`, pelo estado inteiro (interruptor) ou pela opção (vaga). */
+  const travaDe = (alvo, ligado) => (typeof alvo?.bloqueio === "function" ? alvo.bloqueio(derived, ligado) : null);
+  const trava = estado.tipo === "bool" ? travaDe(estado, !!valor) : travaDe(escolhida, true);
+  const travaDaOpcao = (o) => (valor === o.id ? null : travaDe(o, false));
   return (
     <div className="afty-estado-linha px-2.5 py-1.5 flex items-center gap-2 flex-wrap">
       <span className="flex-1 min-w-0 text-[12px] font-semibold truncate" title={estado.title || estado.label}>
@@ -234,6 +241,14 @@ function LinhaEstado({ estado, valor, delta, opcoes, onValor, derived, bloqueado
       {estado.id === ESTADO_APICE && !!valor && (
         <span className="afty-delta" data-afty-tom="nota">Rodada {derived?.combate?.talismaApiceRodadas || 1} de {RODADAS_APICE}</span>
       )}
+      {trava && (
+        <span className="afty-estado-delta">
+          <span className="afty-delta" data-afty-tom="aviso">
+            <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+            {trava}
+          </span>
+        </span>
+      )}
 
       {/* ⚠ A COLUNA DE CONTROLE TEM LARGURA RESERVADA, e é o que tira o
           serrilhado da direita: um `bool` entrega um botão, uma `faixa` entrega
@@ -248,11 +263,11 @@ function LinhaEstado({ estado, valor, delta, opcoes, onValor, derived, bloqueado
             className="afty-botao"
             data-afty-tom={valor ? "destaque" : undefined}
             aria-pressed={!!valor}
-            disabled={bloqueado && !valor}
-            title={bloqueado && !valor ? "Já usada nesta rodada" : undefined}
+            disabled={(bloqueado || !!trava) && !valor}
+            title={valor ? undefined : trava || (bloqueado ? "Já usada nesta rodada" : undefined)}
             onClick={() => onValor(estado, !valor)}
           >
-            {valor ? "Ativa" : bloqueado ? "Usada" : "Inativa"}
+            {valor ? "Ativa" : trava ? "Travada" : bloqueado ? "Usada" : "Inativa"}
           </button>
         ) : estado.tipo === "multi" ? (
           <span className="flex items-center gap-1 flex-wrap justify-end">
@@ -297,7 +312,8 @@ function LinhaEstado({ estado, valor, delta, opcoes, onValor, derived, bloqueado
                 className="afty-botao"
                 data-afty-tom={valor === o.id ? "destaque" : undefined}
                 aria-pressed={valor === o.id}
-                title={o.title}
+                disabled={!!travaDaOpcao(o)}
+                title={travaDaOpcao(o) || o.title}
                 onClick={() => onValor(estado, valor === o.id ? null : o.id)}
               >
                 {o.label}
@@ -337,7 +353,8 @@ function LinhaEstado({ estado, valor, delta, opcoes, onValor, derived, bloqueado
               className="afty-botao"
               data-afty-tom={valor === o.id ? "destaque" : undefined}
               aria-pressed={valor === o.id}
-              title={o.title}
+              disabled={!!travaDaOpcao(o)}
+              title={travaDaOpcao(o) || o.title}
               onClick={() => {
                 onValor(estado, valor === o.id ? null : o.id);
                 setOpcoesAbertas(false);

@@ -1470,6 +1470,22 @@ export function caracteristicasEfetivas(creature) {
 }
 
 /**
+ * Os ids das Características de Anatomia que VALEM para esta ficha: as
+ * escolhidas, e só quando a origem declara `poolAnatomia` (o Feto Amaldiçoado,
+ * a Kitsune da Yna, a Aberração Humanizada). Quem troca de origem fica com os
+ * ids gravados e eles não valem nada.
+ *
+ * ⚠ DOIS LEITORES, um filtro: o Motor (`coletarEfeitosOrigem`) soma o número, e
+ * a Ficha Final (`conteudoDaFicha`) mostra a linha. Se cada um filtrasse do seu
+ * jeito, a Ficha podia mostrar uma Anatomia que o Motor não soma.
+ */
+export function anatomiasEscolhidas(creature) {
+  return getOrigem(creature?.core?.origem?.id)?.caracteristicas?.some((c) => c.poolAnatomia)
+    ? (creature?.core?.origem?.anatomias || [])
+    : [];
+}
+
+/**
  * Os interruptores de sessão que a ORIGEM declara: o mesmo `gatilhoSessao` da
  * Linha de Treinamento, só que numa característica de origem ou de clã.
  *
@@ -1983,6 +1999,17 @@ export function validarCatalogoOrigens() {
     }
     for (const k of Object.keys(o.limiteAtributo || {})) {
       if (!attrValidos.has(k)) problemas.push(`${o.nome}: atributo inválido em limiteAtributo (${k})`);
+    }
+    if (o.qualificaTalentosDeOrigem != null) {
+      if (!Array.isArray(o.qualificaTalentosDeOrigem)) {
+        problemas.push(`${o.nome}: qualificaTalentosDeOrigem deve ser uma lista`);
+      } else {
+        for (const id of o.qualificaTalentosDeOrigem) {
+          if (!ORIGENS_BASE.some((base) => base.id === id)) {
+            problemas.push(`${o.nome}: origem de Talento inexistente no livro (${id})`);
+          }
+        }
+      }
     }
     if (o.variacaoDe != null) {
       if (!ORIGENS_BASE.some((b) => b.id === o.variacaoDe)) {

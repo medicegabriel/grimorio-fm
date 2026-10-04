@@ -25,7 +25,8 @@ import { getHabilidadeGeral } from "../afty-gerais";
 import { getMelhoriaSuperior, getHabilidadeLendaria, getHabilidadeApice } from "../afty-alto-nivel";
 import { sistemaDaFicha } from "../afty-sistema";
 import { getEspecializacao } from "../afty-especializacoes";
-import { caracteristicasEfetivas, getOrigem, getCla } from "../afty-origens";
+import { caracteristicasEfetivas, getOrigem, getCla, anatomiasEscolhidas } from "../afty-origens";
+import { getAnatomia } from "../afty-anatomias";
 import { AFTY_ATTRS } from "../afty-schema";
 import { TIPOS_DANO } from "../afty-equipamentos";
 import { NIVEL_LABEL } from "../afty-feiticos";
@@ -170,6 +171,27 @@ export function conteudoDaFicha(creature, derived) {
   const origem = getOrigem(creature?.core?.origem?.id);
   const cla = getCla(creature?.core?.origem?.cla);
   const mapaOrigem = derived?.origem?.mapa ?? {};
+  /* AS ANATOMIAS ESCOLHIDAS (2026-10-03). Uma linha por Anatomia, logo abaixo da
+     característica que abre o pool (o Físico Amaldiçoado, a Herança de Inari).
+     Até aqui o Motor somava o número delas e a Ficha não dizia que existiam.
+
+     O filtro é o MESMO do Motor (`anatomiasEscolhidas`), então a Ficha nunca
+     mostra uma Anatomia que o Motor não soma. O texto é o do livro
+     (`textoLivro`), e não o resumo que o criador usa (autor, 2026-10-03).
+
+     Sem contador e sem número de mesa: nenhuma Anatomia declara `usos` ou
+     `resultados`, e o derive não registra a chave `anatomia:`. */
+  const anatomias = anatomiasEscolhidas(creature)
+    .map((id) => getAnatomia(id))
+    .filter(Boolean)
+    .map((a) => item({
+      id: a.id,
+      chave: `anatomia:${a.id}`,
+      nome: a.nome,
+      texto: a.textoLivro ?? a.descricao ?? "",
+      grupo: "origem",
+      tags: ["Anatomia"],
+    }));
   for (const c of caracteristicasEfetivas(creature)) {
     itens.push(item({
       id: c.id,
@@ -193,7 +215,12 @@ export function conteudoDaFicha(creature, derived) {
          entra. */
       aviso: c.parcial ?? null,
     }));
+    // `splice` esvazia a lista, e a linha de baixo não as repete.
+    if (c.poolAnatomia) itens.push(...anatomias.splice(0));
   }
+  /* Se a característica do pool não estiver entre as efetivas, as Anatomias
+     fecham o grupo em vez de sumir: o Motor as soma do mesmo jeito. */
+  itens.push(...anatomias);
 
   /* ---------- Habilidades de Especialização ---------- */
   const mapaHab = derived?.habilidades?.escolhas?.mapa ?? {};
@@ -364,7 +391,11 @@ export function conteudoDaFicha(creature, derived) {
       texto: a.descricao ?? "",
       grupo: "aptidao",
       tags: [
-        getCategoriaAptidao(a.categoria)?.nome,
+        /* O nome CURTO da categoria (autor, 2026-10-03: "Especiais", e não
+           "Aptidões Especiais"). A categoria não tem `nome`: até esta data a
+           linha lia `.nome`, recebia `undefined`, e o `filter(Boolean)` jogava a
+           marca fora sem erro nenhum nas 85 Aptidões. */
+        getCategoriaAptidao(a.categoria)?.tab,
         /* A concedida diz de ONDE veio. A do Addon leva o nome do item que a
            dá (2026-09-12): escrever "Origem" nela seria dizer que ela nunca
            some, e ela some ao desequipar o item. */

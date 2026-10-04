@@ -107,10 +107,17 @@ export function rolarTeste(
 export function rolarDano(
   {
     rotulo, detalhe, dados, faces, grupos, fixo = 0, blocos = 1,
-    critico = false, modoDano = null, explosiva = false, tom = "dano",
+    critico = false, modoDano = null, explosiva = false, tom = "dano", rerrola = null,
   },
   rng = Math.random,
 ) {
+  /* ⚠ ROLAR DE NOVO OS DADOS BAIXOS (`rerrola`, 2026-10-02, Estilo Massivo). Vem
+     pronto da linha de dano, `{ ate, fonte }`. Todo dado da rolagem que cair em
+     `ate` ou menos rola de novo UMA vez, e fica o novo mesmo que seja menor:
+     "ficando com o novo resultado". Automático e em todos os dados da linha,
+     decisões do autor. O registro guarda o par para o painel riscar o velho. */
+  const ateRerrola = Math.max(0, Math.trunc(Number(rerrola?.ate) || 0));
+  const rerrolados = [];
   const fixoInt = Math.trunc(Number(fixo) || 0);
   const multBlocos = Math.max(1, Math.trunc(blocos) || 1);
   const modo = modoDano ?? (critico ? "critico" : "normal");
@@ -140,7 +147,12 @@ export function rolarDano(
   for (const g of lista) {
     const criticoAtivo = ["critico", "raio_negro"].includes(modo);
     const multDados = criticoAtivo && grupoMultiplicavel(g) ? 2 : 1;
-    const dadosGrupo = rolarDados(g.dados * multDados, g.faces, rng);
+    const dadosGrupo = rolarDados(g.dados * multDados, g.faces, rng).map((n, i) => {
+      if (n > ateRerrola) return n;
+      const novo = umDado(g.faces, rng);
+      rerrolados.push({ indice: rolados.length + i, de: n, para: novo });
+      return novo;
+    });
     rolados.push(...dadosGrupo);
     const somaDados = dadosGrupo.reduce((s, n) => s + n, 0);
     /* ⚠ SÓ OS DADOS CRITÁVEIS vão para o 1,5x do Raio Negro (autor, 2026-09-15).
@@ -166,7 +178,10 @@ export function rolarDano(
     rotulo,
     detalhe: detalhe ?? null,
     formula: explosiva ? formulaBase.replace(/d(\d+)/g, "d$1!") : formulaBase,
+    // Os dados que ficaram, já com os rolados de novo no lugar dos velhos.
     dados: rolados,
+    rerrolados,
+    rerrolaFonte: rerrolados.length ? (rerrola?.fonte ?? null) : null,
     // O `faces` do registro é o do PRIMEIRO grupo. Ele só serve ao painel para
     // rotular a rolagem, e a fórmula acima é quem conta a história inteira.
     faces: lista[0]?.faces ?? faces,

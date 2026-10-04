@@ -1,0 +1,328 @@
+/* Alter Lucielos: grafite profundo, violeta e ciano intenso.
+   Cores guiadas pelas duas imagens enviadas pelo usuario. */
+
+:scope#afty-ficha,
+#afty-ficha#afty-ficha {
+  --afty-fundo: #0B0A10;
+  --afty-fundo-brilho: radial-gradient(75% 55% at 84% -8%, rgb(97 28 145 / 0.2), transparent 72%), radial-gradient(80% 65% at 4% 68%, rgb(0 115 155 / 0.1), transparent 75%);
+  --afty-card: #19171F;
+  --afty-poco: #111016;
+  --afty-borda: #37323F;
+  --afty-borda-forte: #665C70;
+  --afty-texto: #F2F1F4;
+  --afty-texto-suave: #BDB9C3;
+  --afty-texto-fraco: #9D97A5;
+  --afty-destaque: #16C5E8;
+  --afty-destaque-texto: #EDFCFF;
+  --afty-destaque-fundo: #103542;
+  --afty-pv: #DA4C89;
+  --afty-pe: #16C5E8;
+  --afty-pvtemp: #9F3E72;
+  --afty-petemp: #EDFCFF;
+  --afty-alma: #9B4BD2;
+  --afty-cura: #0BB99F;
+  --afty-aviso: #BA4BCC;
+  --afty-veu: rgb(5 9 14 / 0.78);
+  --afty-raio: 10px;
+  --afty-raio-peq: 6px;
+  --afty-sombra: 0 12px 28px rgb(0 0 0 / 0.2);
+  --afty-fonte-titulo: Georgia, "Times New Roman", serif;
+  background-color: var(--afty-fundo);
+  color: var(--afty-texto);
+  color-scheme: dark;
+  scrollbar-color: #665C70 #111016;
+}
+
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) ::selection {
+  background: #12627A;
+  color: #F5FDFF;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) :focus-visible {
+  outline: 3px solid #18CBEF;
+  outline-offset: 3px;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho {
+  background-color: #111016;
+  background-image: linear-gradient(110deg, rgb(44 25 59 / 0.7), transparent 58%, rgb(23 64 76 / 0.18));
+  border-bottom-color: #4B3B5A;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho::after {
+  background: linear-gradient(90deg, transparent 3%, #8735C2 42%, #16C5E8 68%, transparent 97%);
+  opacity: 0.65;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-nome {
+  letter-spacing: 0.025em;
+  text-shadow: 0 1px 0 #08070C;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-retrato-painel {
+  border-color: #5D526A;
+  box-shadow: 0 0 0 1px #26212D, 0 12px 30px rgb(0 0 0 / 0.38);
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-retrato-painel::after {
+  background: linear-gradient(180deg, transparent 55%, rgb(11 10 16 / 0.82));
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-chip {
+  background: #211E29;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-chip[data-afty-tom="destaque"] {
+  background: #103542;
+  border-color: #149EBB;
+  color: #E9FAFE;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital {
+  padding-inline: 0.55rem;
+  background: linear-gradient(145deg, #201D28, #15131C);
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital .afty-base {
+  gap: 0.3rem;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-rotulo {
+  letter-spacing: 0.045em;
+  color: #D8D4DC;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-numero:focus {
+  outline: 3px solid #18CBEF;
+  outline-offset: 2px;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-trilho {
+  background: #09080D;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-barra {
+  background: var(--afty-vital-cor);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--afty-vital-cor) 30%, transparent);
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-stat,
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-atributo {
+  background: #1A1821;
+  border-color: #443D4E;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-stat-rotulo,
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-atributo-rotulo {
+  color: #B8B2C1;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-atributo-mod {
+  background: #372047;
+  color: #C279EC;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-aba {
+  border-radius: 6px 6px 0 0;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-aba:hover:not([aria-selected="true"]) {
+  background: #2B2534;
+  color: #F3EFF7;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-aba[aria-selected="true"] {
+  background: #103542;
+  border-bottom-color: #16C5E8;
+  color: #E9FAFE;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-subaba[aria-selected="true"] {
+  background: #103542;
+  border-color: #149EBB;
+  color: #E9FAFE;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-card {
+  background: linear-gradient(155deg, #1E1B26, #17151E 65%);
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-card-titulo {
+  color: #AD64DC;
+  letter-spacing: 0.11em;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-linha {
+  background: #131119;
+  border-color: #37313F;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-linha:hover {
+  background: #26212F;
+  border-color: #685A78;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-linha[data-afty-destacada="sim"] {
+  background: #23192E;
+  border-color: #149EBB;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-botao:hover:not(:disabled) {
+  background: #302936;
+  color: #F3EFF7;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-botao[data-afty-tom="destaque"] {
+  background: #103542;
+  border-color: #149EBB;
+  color: #E9FAFE;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-botao[data-afty-tom="destaque"]:hover:not(:disabled) {
+  background: #135468;
+  border-color: #16C5E8;
+  color: #F3FDFF;
+}
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-espinho {
+  --espinho-texto-fraco: #B9A7C7;
+}
+@media (min-width: 1200px) and (max-width: 1399px) {
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital { padding-inline: 0.375rem; }
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital .afty-base { gap: 0.18rem; }
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-rotulo {
+    font-size: 0.625rem;
+    letter-spacing: 0.025em;
+  }
+}
+@media print {
+  :scope#afty-ficha,
+  #afty-ficha#afty-ficha {
+    --afty-fundo: #ffffff;
+    --afty-fundo-brilho: none;
+    --afty-card: #ffffff;
+    --afty-poco: #ffffff;
+    --afty-borda: #b8b5c2;
+    --afty-borda-forte: #827e90;
+    --afty-texto: #23212d;
+    --afty-texto-suave: #464251;
+    --afty-texto-fraco: #5c5767;
+    --afty-destaque: #603b78;
+    --afty-destaque-texto: #56366c;
+    --afty-destaque-fundo: transparent;
+    --afty-pv: #744969;
+    --afty-pe: #16566c;
+    --afty-pvtemp: #6e557d;
+    --afty-petemp: #28637a;
+    --afty-alma: #694485;
+    --afty-cura: #31636a;
+    --afty-aviso: #6e557d;
+    --afty-sombra: none;
+    --afty-imagem: none;
+    background: #ffffff;
+    color: #23212d;
+    color-scheme: light;
+  }
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho,
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-card,
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital,
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-stat,
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-atributo,
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-linha,
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-chip {
+    background: #ffffff;
+    background-image: none;
+    box-shadow: none;
+  }
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-card-titulo,
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-atributo-mod {
+    color: #56366c;
+  }
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-atributo-mod,
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-trilho {
+    background: #ffffff;
+  }
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-barra {
+    background: var(--afty-vital-cor);
+    box-shadow: none;
+  }
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-retrato-painel { box-shadow: none; }
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-retrato-painel::after { background: none; }
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-espinho {
+    --espinho-aviso: #6e557d;
+    --espinho-texto-fraco: #5a5662;
+  }
+}
+
+/* Duas colunas no celular deixam as abas acessiveis sem um cabecalho gigante. */
+@media (max-width: 600px) {
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho-principal > .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.375rem;
+  }
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital {
+    min-width: 0;
+    padding: 0.4rem 0.45rem;
+  }
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital .afty-base {
+    flex-wrap: wrap;
+    column-gap: 0.18rem;
+    row-gap: 0.1rem;
+  }
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-rotulo {
+    flex: 1 0 calc(100% - 1.4rem);
+    font-size: 0.625rem;
+  }
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-numero {
+    width: 3.25rem;
+    font-size: 1.25rem;
+    text-align: left;
+  }
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-max {
+    font-size: 0.625rem;
+  }
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-trilho {
+    margin-top: 0.3rem;
+  }
+}
+
+@media print {
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-rotulo,
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-stat-rotulo,
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-atributo-rotulo {
+    color: #464251;
+  }
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-chip[data-afty-tom="destaque"] {
+    background: #ffffff;
+    border-color: #603b78;
+    color: #56366c;
+  }
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-guarda {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 340px) {
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-numero {
+    width: 2.6rem;
+    font-size: 1rem;
+  }
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-max {
+    font-size: 0.5625rem;
+  }
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital .afty-base {
+    column-gap: 0.1rem;
+  }
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-stat-rotulo {
+    letter-spacing: 0.02em;
+  }
+}
+
+@media (max-width: 600px) {
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho[data-afty-compacto="sim"] .afty-stats {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-item-lista button > span.truncate,
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-linha > span.truncate {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+  }
+}
+
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital[data-afty-vital="preparo"] {
+  --afty-vital-cor: #8A8294;
+}
+@media print {
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital[data-afty-vital="preparo"] {
+    --afty-vital-cor: #5c5767;
+  }
+}
+
+@media print {
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-linha:hover,
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-linha[data-afty-destacada="sim"] {
+    background: #ffffff;
+    color: #23212d;
+  }
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) :focus-visible {
+    outline: none;
+  }
+}

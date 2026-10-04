@@ -41,6 +41,9 @@ import { habilidadeOcularAgulha } from "./afty-olhos-agulha";
 // Só o RÓTULO do atributo, para o aviso da divisão não sair em snake_case.
 // afty-atributos.js importa só o schema, que não importa nada: seta segura.
 import { ATTR_LABEL } from "./afty-atributos";
+// Só o NOME da perícia, para a Permuta dizer o que perde. O catálogo é módulo
+// FOLHA (t-ordem-modulos.mjs), então a seta não fecha ciclo.
+import { PERICIA_NOME } from "./afty-pericias-catalogo";
 import { grauMeta } from "./afty-invocacoes";
 import {
   detalhesDoCanalEscopos, resolverEfeitosDanoFinal, valorCanalEscopos,
@@ -334,10 +337,9 @@ const nivelMaxFeiticoDoContexto = (ctx = {}) =>
  * os pares dentro dessa faixa (`piso(n / 2)`), e com a Conjuração Aprimorada são
  * todos eles (`n - 1`).
  *
- * ⚠ ASSUNÇÃO ANOTADA: a leitura alternativa é que "todo nível" inclua o 1°, e aí
- * um Conjurador de 1° nível teria TRÊS Feitiços. Ela foi descartada porque
- * contradiz "por padrão, inicia com dois Feitiços" na mesma página. As duas
- * leituras só divergem a partir do 3° nível. Anotada em docs/a-fazer.md.
+ * Autor, 2026-10-03: confirmado `n - 1` na Ficha de Player. O 1° nível mantém
+ * os dois Feitiços iniciais, e cada subida de nível concede um novo. Os marcos
+ * do 10 e do 20 continuam somando.
  *
  * ⚠ Os marcos do 10 e do 20 valem nas DUAS, porque a Conjuração Aprimorada troca
  * só a cadência ("ao invés de apenas nos níveis pares") e não fala dos marcos.
@@ -2883,6 +2885,171 @@ export function valorDuradoura(valorTabela, nivel, rodadas, passo = 1) {
   return Math.floor(Number((bruto / p).toFixed(6))) * p;
 }
 
+/* ============================================================ */
+/* FEITIÇOS PERMUTATIVOS                                         */
+/* ============================================================ */
+/**
+ * A antiga Fase C2 ("Enfraquecedores"), parada desde 2026-07-23 à espera do
+ * texto, que chegou em 2026-10-02. Verbatim e as dez decisões do autor em
+ * docs/afty-feiticos-permutativos.md.
+ *
+ * O Feitiço Auxiliar enfraquece um aspecto para melhorar o PRÓPRIO efeito. Cada
+ * efeito tem no máximo UMA troca, e é por isso que a ficha guarda só quanto ele
+ * perde (`permuta.reducao`) e, na Rolagem, qual perícia (`permuta.pericia`). O
+ * aspecto perdido sai desta tabela, nunca da ficha.
+ *
+ *   perde          o aspecto sacrificado (ver PERMUTA_ASPECTOS)
+ *   passo          quanto se perde por degrau ("para cada -2")
+ *   ganha          quanto o efeito ganha por degrau
+ *   tetoPorNivel   a perda máxima é este fator vezes o nível do EFEITO
+ *   tetoPeloBonus  a perda máxima é o bônus original do Feitiço
+ *
+ * ⚠ CADA TROCA NO SEU TETO (autor). O teto geral do texto ("um máximo igual ao
+ *   bônus original") vale só na Perícia, a única sem teto próprio. O exemplo do
+ *   livro (-4 Atletismo num +2) segue sendo erro, decisão de 2026-07-23, e apara
+ *   em -2.
+ * ⚠ MARGEM E ACERTO SÃO SIMÉTRICOS (autor): a Margem perde Acerto e o Bônus em
+ *   Ataque perde Margem. O Bônus em Ataque perder Acerto não existe porque cada
+ *   efeito só tem a troca daqui ("mas não de um Feitiço de aumento de acerto").
+ * ⚠ A TROCA FICA FORA DO POOL, o ganho E o prejuízo (autor): "Permutativo sempre
+ *   soma". Quem separa as duas partes é o tradutor da Ficha, em
+ *   afty-combate-conjurador.js, e é para ele que o resultado devolve
+ *   `valorSemPermuta`.
+ */
+export const PERMUTAS_AUX = Object.freeze({
+  rolagem:       { perde: "pericia", passo: 2, ganha: 1, tetoPeloBonus: true },
+  rd:            { perde: "defesa",  passo: 2, ganha: 1, tetoPorNivel: 2 },
+  defesa:        { perde: "rd",      passo: 2, ganha: 1, tetoPorNivel: 2 },
+  margemCritico: { perde: "acerto",  passo: 3, ganha: 1, tetoPorNivel: 3 },
+  ataque:        { perde: "margem",  passo: 1, ganha: 3, tetoPorNivel: 1 },
+});
+
+/** O aspecto perdido. `label` nomeia o campo, `curto` acompanha o número. */
+export const PERMUTA_ASPECTOS = Object.freeze({
+  pericia: { label: "Perícia",           curto: "Perícia" },
+  defesa:  { label: "Defesa",            curto: "Defesa" },
+  rd:      { label: "RD Geral",          curto: "RD Geral" },
+  acerto:  { label: "Acerto",            curto: "Acerto" },
+  margem:  { label: "Margem de Crítico", curto: "Margem" },
+});
+
+/* A MARGEM NASCE NO NÍVEL 2 DA TABELA, e o texto a abre pela troca: "é possível
+   receber margem de ameaça como um Feitiço de nível 1, podendo ser reduzida para
+   nível 0 caso seja por apenas um ataque". A célula aberta vale 0 e só a troca a
+   enche. Só na Imediata, a coluna em que a Margem nasce (ASSUNÇÃO, anotada em
+   docs/a-fazer.md). O Nível 0 exige o Um Único Evento e conta como Nível 1 no
+   teto (autor, 2026-10-02): com 3 × 0 ele não poderia perder nada. */
+export const PERMUTA_ABRE_CELULA = Object.freeze({
+  margemCritico: {
+    0: { duracao: "imediata", nivelTeto: 1, exigeEvento: true },
+    1: { duracao: "imediata", nivelTeto: 1 },
+  },
+});
+
+/** A troca que um efeito aceita, ou null. */
+export const permutaDoEfeito = (efeito) => PERMUTAS_AUX[efeito] ?? null;
+
+/** A célula vazia que a Permuta abre naquele nível e duração, ou null. */
+export function celulaAbertaPelaPermuta(efeito, nivel, duracao) {
+  const ab = PERMUTA_ABRE_CELULA[efeito]?.[nivel];
+  return ab && ab.duracao === duracao ? ab : null;
+}
+
+/** Durações em que o efeito existe no nível, contando a célula que a Permuta abre. */
+export function duracoesDoEfeitoAux(efeito, nivel) {
+  const linha = AUX_TABELAS[efeito]?.[nivel];
+  return AUX_DURACOES.map((d) => d.value)
+    .filter((d) => linha?.[d] != null || celulaAbertaPelaPermuta(efeito, nivel, d));
+}
+
+/** O que a troca perde, por nome: a perícia pelo catálogo, o resto pelo aspecto. */
+export function nomeDaPerda(perde, pericia) {
+  if (perde === "pericia") return PERICIA_NOME[pericia] ?? pericia ?? PERMUTA_ASPECTOS.pericia.curto;
+  return PERMUTA_ASPECTOS[perde]?.curto ?? perde;
+}
+
+/** A perda máxima, já em múltiplo do passo: ponto que não vira ganho não se cobra. */
+export function tetoDaPermuta(efeito, nivelTeto, bonusOriginal) {
+  const regra = PERMUTAS_AUX[efeito];
+  if (!regra) return 0;
+  const n = nivelTeto === "max" ? 6 : Math.max(0, Math.trunc(Number(nivelTeto) || 0));
+  const bruto = regra.tetoPeloBonus
+    ? Math.max(0, Math.trunc(Number(bonusOriginal) || 0))
+    : regra.tetoPorNivel * n;
+  return Math.floor(bruto / regra.passo) * regra.passo;
+}
+
+/* QUEM AUMENTA CADA ASPECTO num Múltiplos Efeitos. Sacrificar o que outro efeito
+   do MESMO Feitiço aumenta é impossível (autor, 2026-10-02): é a lógica do "não
+   de um Feitiço de aumento de acerto" do texto, estendida aos outros pares. A
+   Rolagem de Toda Rolagem conta no Acerto porque o tradutor a soma também nas
+   jogadas de ataque. */
+const AUMENTA_ASPECTO = {
+  defesa:  (en) => en.efeito === "defesa",
+  rd:      (en) => en.efeito === "rd",
+  acerto:  (en) => en.efeito === "ataque" || (en.efeito === "rolagem" && !en.alvoAuxPericia),
+  margem:  (en) => en.efeito === "margemCritico",
+  pericia: (en, pericia) => en.efeito === "rolagem" && (!en.alvoAuxPericia || en.alvoAuxPericia === pericia),
+};
+
+/** Motivo da troca travada num Múltiplos Efeitos, ou null. A tela mostra o cadeado com ele. */
+export function permutaBloqueadaMult(entries, entry) {
+  const regra = PERMUTAS_AUX[entry?.efeito];
+  if (!regra) return null;
+  const aumenta = AUMENTA_ASPECTO[regra.perde];
+  const outro = (Array.isArray(entries) ? entries : []).find((en) => en && en !== entry
+    && (en.id == null || en.id !== entry.id) && aumenta(en, entry.permuta?.pericia));
+  return outro ? `${PERMUTA_ASPECTOS[regra.perde].label} já sobe em outro efeito deste Feitiço` : null;
+}
+
+// O motivo de toda célula de texto (Esquiva Garantida, Garantido, Crítico
+// Garantido): não há número para somar o ganho.
+const PERMUTA_SEM_NUMERO = "Resultado especial não tem número";
+
+/**
+ * A troca de UM efeito, por último e com taxa fixa (autor, 2026-10-02): depois do
+ * Um Único Evento, da Duradoura, da divisão entre alvos e da Liberação, e ela
+ * nunca dobra nem divide. Com vários alvos, cada um paga e ganha a troca inteira
+ * ("quem recebe paga").
+ *
+ * Devolve o objeto sempre que o efeito aceita troca, com `reducao` 0 quando não há
+ * troca: a tela precisa do teto e do bloqueio para montar o controle antes da
+ * primeira perda. Efeito sem troca devolve null.
+ */
+function resolverPermuta(efeitoKey, e, { nivelTeto, bonusOriginal, bloqueio, avisos, notas }) {
+  const regra = PERMUTAS_AUX[efeitoKey];
+  if (!regra) return null;
+  const pedida = Math.max(0, Math.trunc(Number(e.permuta?.reducao) || 0));
+  const pericia = regra.perde === "pericia" ? (e.permuta?.pericia || null) : null;
+  // O motivo é frase inteira porque serve a dois lugares: o título do cadeado na
+  // sub-aba Trocas e o aviso da barra, que só lhe acrescenta "Permuta sem efeito".
+  let motivo = bloqueio || e.permutaBloqueio || null;
+  if (!motivo && regra.perde === "pericia") {
+    if (!e.alvoAuxPericia) motivo = "Escolha a perícia do Feitiço";
+    else if (pericia && pericia === e.alvoAuxPericia) motivo = "A perícia perdida é a do próprio Feitiço";
+  }
+  const teto = motivo ? 0 : tetoDaPermuta(efeitoKey, nivelTeto, bonusOriginal);
+  const base = {
+    perde: regra.perde, pericia, passo: regra.passo, ganhaPorPasso: regra.ganha,
+    teto, bloqueio: motivo, reducao: 0, ganho: 0,
+  };
+  if (pedida <= 0) return base;
+  if (motivo) { avisos.push(`Permuta sem efeito. ${motivo}.`); return base; }
+  if (regra.perde === "pericia" && !pericia) { avisos.push("Permuta sem efeito. Falta a perícia perdida."); return base; }
+  let reducao = Math.floor(pedida / regra.passo) * regra.passo;
+  const nome = nomeDaPerda(regra.perde, pericia);
+  if (reducao > teto) {
+    avisos.push(teto > 0
+      ? `A Permuta pede -${pedida} ${nome} e o teto é -${teto}.`
+      : "Permuta sem efeito. O teto neste nível é zero.");
+    reducao = teto;
+  }
+  if (reducao <= 0) return base;
+  const ganho = (reducao / regra.passo) * regra.ganha;
+  notas.push(`Permuta: -${reducao} ${nome}, +${ganho} no efeito.`);
+  return { ...base, reducao, ganho };
+}
+
 // ---------------------------------------------------------------
 // MOTOR — Feitiço Auxiliar.
 //
@@ -2941,10 +3108,12 @@ export function resolverColunaAux(efeito, nivel, duracaoSpell) {
   return { col: alt, semRounds: true };
 }
 
-// O efeito tem coluna (própria ou por descida) na duração do Feitiço?
+// O efeito tem coluna (própria ou por descida) na duração do Feitiço? A célula
+// que a Permuta abre (Margem nos Níveis 0 e 1) também conta: o efeito entra, e o
+// motor avisa enquanto a troca não estiver feita.
 export function temColunaAux(efeito, nivel, duracaoSpell) {
   const { col } = resolverColunaAux(efeito, nivel, duracaoSpell);
-  return AUX_TABELAS[efeito]?.[nivel]?.[col] != null;
+  return AUX_TABELAS[efeito]?.[nivel]?.[col] != null || !!celulaAbertaPelaPermuta(efeito, nivel, col);
 }
 
 // Menor ação que um efeito ACEITA ser conjurado. A maioria só sobe a partir do
@@ -3229,30 +3398,44 @@ export function calcularEfeitoAux(e, ctx = {}) {
     avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeiticoDoContexto(ctx)}.`);
   }
 
-  const raw = AUX_TABELAS[efeitoKey]?.[nivel]?.[duracao];
-  if (raw == null) {
-    avisos.push(`${meta.label} não existe em ${NIVEL_LABEL[nivel]} / ${duracao}.`);
-    return out;
-  }
-  out.disponivel = true;
-
-  // Célula especial (string): passa direto, sem cálculo numérico. As especiais
-  // que valem POR UM ATAQUE só aparecem com "Somente Um Ataque" marcado; sem a
-  // marca elas viram o número da faixa e caem no cálculo normal (autor).
   // Ação efetiva.
   const acao = resolverAcaoAux(efeitoKey, duracao, e.acao);
 
   // Evento único: a marca do Feitiço, ou a Reação de Defesa e RD, que o livro
   // já descreve como "por um golpe". Não pode ser Concentrado (autor), e é este
-  // flag que a concentração consulta.
+  // flag que a concentração consulta. Sai ANTES da tabela porque a célula que a
+  // Permuta abre no Nível 0 depende dele.
   const umGolpe = aplicaUmGolpe(efeitoKey, nivel, duracao, acao, !!e.umGolpe);
-  out.umGolpe = umGolpe;
 
+  let raw = AUX_TABELAS[efeitoKey]?.[nivel]?.[duracao];
+  // A célula vazia que a Permuta abre (Margem nos Níveis 0 e 1) vale 0, e só a
+  // troca a enche. Sem a troca o efeito segue não existindo, com o aviso do porquê.
+  const abertura = raw == null ? celulaAbertaPelaPermuta(efeitoKey, nivel, duracao) : null;
+  if (raw == null && !abertura) {
+    avisos.push(`${meta.label} não existe em ${NIVEL_LABEL[nivel]} / ${duracao}.`);
+    return out;
+  }
+  if (abertura?.exigeEvento && !umGolpe) {
+    avisos.push(`${meta.label} de ${NIVEL_LABEL[nivel]} só existe pela Permuta, com Um Único Evento.`);
+    return out;
+  }
+  if (abertura) raw = 0;
+  out.disponivel = true;
+  out.umGolpe = umGolpe;
+  // O nível que mede o teto da troca: o do efeito, salvo a célula aberta, que
+  // conta como Nível 1 (autor).
+  const permutaCtx = { nivelTeto: abertura?.nivelTeto ?? nivel, avisos, notas };
+
+  // Célula especial (string): passa direto, sem cálculo numérico. As especiais
+  // que valem POR UM ATAQUE só aparecem com "Somente Um Ataque" marcado; sem a
+  // marca elas viram o número da faixa e caem no cálculo normal (autor).
   // Célula numérica que vira ESPECIAL no evento único (Margem de Crítico nv5).
   const especialGolpe = umGolpe ? especialComUmGolpe(efeitoKey, nivel, duracao) : null;
   if (especialGolpe) {
     out.especial = especialGolpe;
     out.alvos = 1;
+    const p = resolverPermuta(efeitoKey, e, { ...permutaCtx, bloqueio: PERMUTA_SEM_NUMERO });
+    if (p) out.permuta = p;
     aplicarConcentracao(e, out, notas, nNum);
     return out;
   }
@@ -3266,6 +3449,8 @@ export function calcularEfeitoAux(e, ctx = {}) {
       // alvos sem dividir o valor (autor).
       out.especial = raw;
       out.alvos = 1;
+      const p = resolverPermuta(efeitoKey, e, { ...permutaCtx, bloqueio: PERMUTA_SEM_NUMERO });
+      if (p) out.permuta = p;
       aplicarConcentracao(e, out, notas, nNum);
       return out;
     }
@@ -3343,8 +3528,10 @@ export function calcularEfeitoAux(e, ctx = {}) {
     }
   }
 
-  // Ajustes específicos de ação/variante por efeito.
-  valor = ajusteAcaoAux(efeitoKey, valor, { acao, nivel: nNum, duracao, umGolpe, notas });
+  // Ajustes específicos de ação/variante por efeito. A célula aberta pela
+  // Permuta vale 0 e não tem o que ajustar, e o "margem dobrada" do evento único
+  // apareceria nas notas de um zero.
+  if (!abertura) valor = ajusteAcaoAux(efeitoKey, valor, { acao, nivel: nNum, duracao, umGolpe, notas });
 
   // Tipos de dano extras (RD e Negação de RD): reduzem o valor.
   if (meta.multiTipo) {
@@ -3377,6 +3564,11 @@ export function calcularEfeitoAux(e, ctx = {}) {
   // "valor do bônus", que é o número que cada alvo recebe. Dividi-la junto
   // faria a mesma Liberação valer menos em cada alvo quanto mais alvos houver,
   // e o texto não diz isso. ASSUNÇÃO, anotada em docs/a-fazer.md.
+  //
+  // ⚠ O BÔNUS ORIGINAL DA PERMUTA É LIDO AQUI, antes da Liberação: ela é
+  // declarada na mesa, e o teto da troca de Perícia lido depois dela mudaria
+  // entre o criador e a Ficha (ASSUNÇÃO, em docs/a-fazer.md).
+  const bonusOriginal = valor;
   const nLib = e.liberacao?.nivel;
   const bumpLib = estimuloBonus(e.liberacao, nLib, efeitoKey, spellDur)
     + explosaoValor(e.liberacao, nLib, efeitoKey, spellDur);
@@ -3393,6 +3585,19 @@ export function calcularEfeitoAux(e, ctx = {}) {
     notas.push(`Liberação Máxima: ${negativo ? "−" : "+"}${bumpLib} no valor.`);
   }
   out.alvos = alvosBase;
+  // A Permuta, por último e com taxa fixa. `valorSemPermuta` é o que disputa o
+  // pool na Ficha, e o ganho soma por fora dele (autor, 2026-10-02).
+  const permuta = resolverPermuta(efeitoKey, e, { ...permutaCtx, bonusOriginal });
+  if (permuta) {
+    out.permuta = permuta;
+    out.valorSemPermuta = valor;
+    valor += permuta.ganho;
+  }
+  if (abertura && !(permuta?.ganho > 0)) {
+    out.disponivel = false;
+    avisos.push(`${meta.label} de ${NIVEL_LABEL[nivel]} só existe pela Permuta.`);
+    return out;
+  }
   out.valor = valor;
   aplicarConcentracao(e, out, notas, nNum);
   /* A divisão do pool de pontos, no fim: ela precisa do valor JÁ dividido entre
@@ -3446,6 +3651,8 @@ export function calcularFeiticoAuxiliar(feitico, ctx = {}) {
       // A divisão de pontos do Aumento de Atributo mora no próprio Feitiço
       // quando ele tem um efeito só. Ver `dividirAtributos`.
       atributosAux: f.atributosAux, alvoAuxAtributo: f.alvoAuxAtributo,
+      // Permutativo e a perícia da Rolagem, também no próprio Feitiço.
+      permuta: f.permuta, alvoAuxPericia: f.alvoAuxPericia,
     };
     const r = somarRodadas(calcularEfeitoAux(e, ctx));
     r.multiplos = false;
@@ -3514,6 +3721,11 @@ export function calcularFeiticoAuxiliar(feitico, ctx = {}) {
       duracaoSpell, liberacao: lib,
       // A divisão de pontos é POR EFEITO, e viaja junto para o `calcularEfeitoAux`.
       atributosAux: en.atributosAux, alvoAuxAtributo: en.alvoAuxAtributo,
+      // A troca também é por efeito, com o teto pelo nível DELE (autor,
+      // 2026-10-02), e trava quando outro efeito do Feitiço aumenta o que ela
+      // sacrifica. Ver `permutaBloqueadaMult`.
+      permuta: en.permuta, alvoAuxPericia: en.alvoAuxPericia,
+      permutaBloqueio: permutaBloqueadaMult(entries, en),
     };
     const r = somarRodadas(calcularEfeitoAux(e, ctx));
     r.id = en.id;
@@ -3918,6 +4130,8 @@ export function createBlankFeitico() {
     efeitoAux: "defesa",       // ver AUX_EFEITOS
     alvoAuxAtributo: "forca",  // destino do Aumento de Atributo
     alvoAuxTR: "reflexos",     // destino do Bônus em Teste de Resistência
+    alvoAuxPericia: null,      // Bônus em Rolagem: uma perícia, ou null = Toda Rolagem
+    permuta: null,             // Permutativo: { reducao, pericia }, ver PERMUTAS_AUX
     duracaoAux: "imediata",    // imediata | duradoura | sustentada
     rodadasDur: 1,             // rodadas da Duradoura (dentro da faixa do nível)
     alvosAux: 1,               // alvos afetados (divide o bônus se > 1; 1 se Próprio)
@@ -3966,6 +4180,8 @@ export function createBlankAuxEffect(nivel = 1) {
     duracao: "imediata",
     alvoAuxAtributo: "forca",
     alvoAuxTR: "reflexos",
+    alvoAuxPericia: null,
+    permuta: null,
     acao: "padrao",
     umGolpe: false,
     tiposDanoExtra: 0,
@@ -4022,6 +4238,21 @@ export function formatAuxValor(calc) {
   const sinal = calc.valor > 0 ? "+" : "";
   const num = String(calc.valor).replace(".", ",");
   return `${sinal}${num}${calc.unidade ? ` ${calc.unidade}` : ""}`;
+}
+
+/**
+ * O que o Feitiço PERDE pela Permuta, em texto de linha ("4 Atletismo"). No
+ * Múltiplos Efeitos sai um pedaço por efeito com troca, na ordem deles. Mora aqui,
+ * ao lado do `formatAuxValor`, pelo mesmo motivo: o criador e a Ficha mostram o
+ * mesmo texto, e duas cópias divergiriam na primeira errata.
+ */
+export function textoDasPermutas(calc) {
+  const subs = calc?.multiplos ? (calc.efeitos || []) : [calc];
+  const partes = subs
+    .map((s) => s?.permuta)
+    .filter((p) => p?.reducao > 0)
+    .map((p) => `${p.reducao} ${nomeDaPerda(p.perde, p.pericia)}`);
+  return partes.length ? partes.join(", ") : null;
 }
 
 /** O calculador daquele tipo de Feitiço, ou null quando o tipo não computa. */
@@ -4318,6 +4549,8 @@ function propriedadesResumoFeitico(f, calc, valor, valorLabel) {
     { id: "ignoraTodaRD", nome: "RD", valor: calc?.ignoraTodaRD ? "Ignorada" : null },
     { id: "ignoraImunidade", nome: "Imunidade", valor: calc?.ignoraImunidade ? "Ignorada" : null },
     { id: "valor", nome: valorLabel, valor: valor },
+    // O preço do Permutativo, lido do cálculo (o valor acima já traz o ganho).
+    { id: "permuta", nome: "Perde", valor: textoDasPermutas(calc) },
     // ⚠ No CURATIVO a lista de condições é o que ele REMOVE, e não o que ele
     // aplica (autor, 2026-08-09). Só o rótulo muda, mas "Condições: Atordoado"
     // numa cura se lê como se ela atordoasse o alvo.

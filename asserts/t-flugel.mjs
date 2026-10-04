@@ -127,6 +127,38 @@ for (const [nd, esperado] of [[4, 1], [10, 2], [20, 3], [30, 4]]) {
     esperado);
 }
 
+/* ---------- Metade do BT apara para baixo (autor, 2026-10-03, versão 1.1.1) ----------
+   O `metade` da DSL é `a / 2` sem aparar, e as quatro linhas do pacote que
+   escreviam `metade(bt)` davam meio ponto com BT ímpar: Defesa 18,5 e Acerto
+   4,5 no Clã Akutame, Limite +2,5 na Quebra de Limites e Iniciativa +1,5 na
+   Dupla Empenhada, todos no ND 5 (BT 3). Todo arredondamento do Afty é para
+   baixo, então as quatro viraram `piso(bt / 2)`. O ND 5 é o primeiro de BT 3. */
+t("o ND 5 tem BT 3", maestria(5), 3);
+const bt3Akutame = createBlankAfty();
+bt3Akutame.core.nd = 5;
+bt3Akutame.core.origem = { ...akutame.core.origem };
+const bt3SemCla = createBlankAfty();
+bt3SemCla.core.nd = 5;
+bt3SemCla.core.origem = { id: "herdado" };
+const dBt3 = deriveAfty(bt3Akutame);
+const dBt3Sem = deriveAfty(bt3SemCla);
+t("BT 3: o Clã Akutame soma 1 de Defesa, e não 1,5", dBt3.defesa - dBt3Sem.defesa, 1);
+t("BT 3: e o hover da Defesa mostra o 1", dBt3.partes.defesa.filter((p) => p.label === "Clã Akutame").map((p) => p.valor), [1]);
+t("BT 3: o Clã Akutame soma 1 de Acerto em todo ataque",
+  dBt3.testes.ataques.map((a, i) => a.bonus - dBt3Sem.testes.ataques[i].bonus), dBt3.testes.ataques.map(() => 1));
+const bt3Treino = createBlankAfty();
+bt3Treino.core.nd = 5;
+for (const attr of Object.keys(bt3Treino.attributes)) bt3Treino.attributes[attr] = 10;
+bt3Treino.treinamentos = { [NAO_CONGENITO]: 4 };
+bt3Treino.treinamentoAlvos = { [NAO_CONGENITO]: { atributo: "sabedoria", pericia: "atletismo" } };
+t("BT 3: a Quebra de Limites sobe o limite em 1, e não 1,5",
+  valorCanal(deriveAfty(bt3Treino).efeitos, "limiteAtributo", "sabedoria"), 1 + 1);
+const bt3Dupla = createBlankAfty();
+bt3Dupla.core.nd = 5;
+bt3Dupla.treinamentos = { [CONJUGE]: 4 };
+t("BT 3: a Dupla Empenhada soma 1 de Iniciativa, e não 1,5",
+  deriveAfty(bt3Dupla, { treinosAtivos: { conjuge: true } }).iniciativa - deriveAfty(bt3Dupla).iniciativa, 1);
+
 /* ---------- Bônus do Cônjuge na 1ª etapa (autor, 2026-09-01) ----------
    *"faça com que eu posso colocar o Valor da Pericia do Conjuge."* O número é
    DIGITADO, como a Iniciativa do Irmão nos Gêmeos, e SUBSTITUI a linha inteira
@@ -180,7 +212,7 @@ t("a substituição não vaza para outra perícia",
    treina a perícia, ao contrário do Não Congênito) e o Completo é só texto. */
 const BENCAO = "flugel:treino_bencao_adaptacao";
 const linhaBencao = TR.getTreinamento(BENCAO);
-t("o pacote subiu para 1.1.0", pacote.versao, "1.1.0");
+t("o pacote subiu para 1.1.1", pacote.versao, "1.1.1");
 t("Benção da Adaptação instalada", linhaBencao?.nome, "Treinamento de Benção da Adaptação");
 
 const reqsBencao = TR.requisitosDaEtapa(linhaBencao.etapas[0].requisito);

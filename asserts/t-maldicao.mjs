@@ -33,7 +33,7 @@ const t = (nome, real, esp) => {
    2.5.2): Marionete e Corpo entraram depois da Maldição. */
 t("o catalogo tem os cinco tipos, Maldicao na mesma posicao",
   INV.AFTY_INV_TIPOS.map((x) => [x.value, x.label]),
-  [["shikigami", "Invocação"], ["tecnica", "Invocação de Técnica"], ["maldicao", "Maldição"],
+  [["shikigami", "Shikigami"], ["tecnica", "Shikigami de Técnica"], ["maldicao", "Maldição"],
     ["marionete", "Marionete"], ["corpo", "Corpo Amaldiçoado"]]);
 /* ⚠ A MALDIÇÃO DEIXOU DE SER "UMA INVOCAÇÃO NORMAL" em 2026-09-30. Até ali ela
    tinha o Talismã e a dissipação do Shikigami. O Mecânicas diz que ela "não pode

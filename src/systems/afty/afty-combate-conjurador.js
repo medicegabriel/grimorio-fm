@@ -18,7 +18,7 @@ import {
  *
  *   Conjurador  "utilizar Inteligência ou Sabedoria nas jogadas de ataque e dano"
  *   Controlador "utilizar Presença ou Sabedoria nas jogadas de ataque e dano"
- *   Suporte     "utilizar Inteligência ou Sabedoria nas jogadas de ataque e dano"
+ *   Suporte     "utilizar Presença ou Sabedoria nas jogadas de ataque e dano"
  *
  * Quem tem as duas (multiclasse) soma os pares, e é por isso que a lista sai
  * calculada em vez de constante: cravar três atributos daria Inteligência a um
@@ -28,7 +28,14 @@ import {
  * `sup_tecnicas_de_combate` estava no catálogo, no nível certo e com o texto
  * certo, e não ligava em nada. Registrar o id aqui é tudo que ela precisava,
  * porque o resolvedor, o seletor de armas e a troca de atributo por arma já
- * eram genéricos. O par dela é o mesmo do Conjurador.
+ * eram genéricos.
+ *
+ * ⚠ E ENTROU COM O PAR ERRADO (corrigido em 2026-10-02). Foi registrada com
+ * Inteligência ou Sabedoria, que é o texto do Conjurador, e o livro dá ao
+ * Suporte Presença ou Sabedoria (Livro de Regras, p. 105, o mesmo texto do
+ * catálogo). O sintoma, relatado pelo autor: a Inteligência gravada pela do
+ * Conjurador continuava valendo depois de trocar para a do Suporte, porque
+ * cabia no par errado e não caía no primeiro do texto.
  */
 export const TECNICAS_COMBATE_ID = "cnj_tecnicas_de_combate";
 export const TECNICAS_COMBATE_ID_CTR = "ctr_tecnicas_de_combate";
@@ -41,8 +48,23 @@ export const TECNICAS_COMBATE_IDS = [
 const TECNICAS_ATRIBUTOS = {
   [TECNICAS_COMBATE_ID]: ["inteligencia", "sabedoria"],
   [TECNICAS_COMBATE_ID_CTR]: ["presenca", "sabedoria"],
-  [TECNICAS_COMBATE_ID_SUP]: ["inteligencia", "sabedoria"],
+  [TECNICAS_COMBATE_ID_SUP]: ["presenca", "sabedoria"],
 };
+
+/* Os atributos que um conjunto de Técnicas de Combate libera, somados sem
+   repetir. Ordem estável: a do texto de cada habilidade, na ordem em que elas
+   aparecem em TECNICAS_COMBATE_IDS. O card de uma habilidade que não foi
+   escolhida pede só o par dela por aqui, para a tela não montar a lista de novo. */
+export function atributosDasTecnicas(ids = []) {
+  const permitidos = [];
+  for (const id of TECNICAS_COMBATE_IDS) {
+    if (!lista(ids).includes(id)) continue;
+    for (const attr of TECNICAS_ATRIBUTOS[id]) {
+      if (!permitidos.includes(attr)) permitidos.push(attr);
+    }
+  }
+  return permitidos;
+}
 export const COMBATE_AMALDICOADO_ID = "cnj_combate_amaldicoado";
 export const IMBUIR_TECNICA_ID = "cnj_imbuir_com_tecnica";
 export const ESGRIMISTA_JUJUTSU_ID = "cnj_esgrimista_jujutsu";
@@ -80,12 +102,7 @@ export function resolveTecnicasCombate(creature, armasCatalogo = [], habilidades
     armas.push(id);
     if (armas.length === 2) break;
   }
-  /* Ordem estável e sem repetição: a do texto de cada habilidade, na ordem em
-     que as habilidades aparecem em TECNICAS_COMBATE_IDS. */
-  const permitidos = [];
-  for (const id of fontes) for (const attr of TECNICAS_ATRIBUTOS[id]) {
-    if (!permitidos.includes(attr)) permitidos.push(attr);
-  }
+  const permitidos = atributosDasTecnicas(fontes);
   const escolhido = creature?.tecnicasCombate?.atributo;
   return {
     ativa,
@@ -96,7 +113,8 @@ export function resolveTecnicasCombate(creature, armasCatalogo = [], habilidades
        divergiria na primeira errata, que é a lição do `fontes.jsx`. */
     atributosOk: permitidos,
     /* Guardado fora da lista permitida cai no primeiro do texto: é o caso de
-       quem tinha a do Conjurador com Inteligência e trocou de especialização. */
+       quem tinha a do Conjurador com Inteligência e trocou para a do Suporte ou
+       a do Controlador. */
     atributo: permitidos.includes(escolhido) ? escolhido : (permitidos[0] ?? "inteligencia"),
     max: 2,
   };
@@ -197,9 +215,73 @@ function efeitosDoFeiticoLigado(f, ctx = {}) {
    no card do Feitiço. */
 const feiticoUtilizavel = (f, ctx) => efeitosDoFeiticoLigado(f, ctx).subs.some((s) => s?.disponivel);
 
+/* ============================================================ */
+/* FEITIÇOS PERMUTATIVOS NA FICHA                                */
+/* ============================================================ */
+/**
+ * As trocas de um Feitiço ligável, uma por efeito que de fato perde algo. Saem
+ * do MESMO cálculo que o tradutor lê, então a trava e o número não discordam.
+ * Regras e decisões em docs/afty-feiticos-permutativos.md.
+ */
+export function trocasDoFeitico(f, ctx = {}) {
+  if (f?.tipo !== "auxiliar") return [];
+  return efeitosDoFeiticoLigado(f, ctx).subs
+    .map((s) => (s?.disponivel && s.permuta?.reducao > 0 && s.permuta?.ganho > 0 ? s.permuta : null))
+    .filter(Boolean);
+}
+
+// Quanto da margem de uma arma ainda pode ser perdido: o crítico dela abaixo de 20.
+const margemAPerder = (entrada) => 20 - (Number(entrada?.margemCritico) || 20);
+
+/**
+ * "O Feitiço não pode ser usado" (texto), lido do derive. Devolve o motivo, ou
+ * null quando pode.
+ *
+ * ⚠ TRAVA AO LIGAR (autor, 2026-10-02). Desligado, a conta PREVÊ o desconto da
+ * troca sobre o número de agora. Ligado, o número já traz o desconto, e o motivo
+ * vira aviso: o Feitiço segue ligado quando o número caiu depois, por uma
+ * condição.
+ *   Defesa  não fica abaixo da base (10 + o atributo da Defesa)
+ *   RD      a RD Geral não fica abaixo de zero ("RD Geral a perder")
+ *   Margem  alguma arma tem margem a perder, porque a troca vale só nelas
+ */
+export function travaDaPermuta(trocas, derived, { ligado = false, feiticoId = null } = {}) {
+  for (const p of lista(trocas)) {
+    if (p.perde === "defesa") {
+      const defesa = Number(derived?.defesa);
+      const base = Number(derived?.defesaBase);
+      if (Number.isFinite(defesa) && Number.isFinite(base) && (ligado ? defesa : defesa - p.reducao) < base) {
+        return "Defesa Abaixo da Base";
+      }
+    }
+    if (p.perde === "rd") {
+      const rd = Number(derived?.rdGeral);
+      if (Number.isFinite(rd) && (ligado ? rd : rd - p.reducao) < 0) return "Sem RD Geral a Perder";
+    }
+    if (p.perde === "margem") {
+      const entradas = lista(derived?.dano?.entradas);
+      const serve = ligado
+        ? entradas.some((e) => lista(e.permutasMargem).some((m) => m.feiticoId === feiticoId))
+        : entradas.some((e) => margemAPerder(e) >= p.reducao);
+      if (!serve) return "Sem Margem a Perder";
+    }
+  }
+  return null;
+}
+
+/* O controle que liga o Feitiço pergunta à trava, no padrão do `max(derived)` que
+   a `LinhaEstado` já lê. Feitiço sem troca não ganha a função. */
+const comTrava = (f, ctx, alvo) => {
+  const trocas = trocasDoFeitico(f, ctx);
+  return trocas.length
+    ? { ...alvo, bloqueio: (derived, ligado) => travaDaPermuta(trocas, derived, { ligado, feiticoId: f.id }) }
+    : alvo;
+};
+
 export function estadosCombateConjurador({ habilidades, tecnicas, armas = [], feiticos = [], nd } = {}) {
   const estados = [];
   const utilizavel = (f) => feiticoUtilizavel(f, { nd, habilidades });
+  const opcaoDoFeitico = (f) => comTrava(f, { nd, habilidades }, { id: f.id, label: f.nome || "Feitiço Sem Nome" });
   const armasTecnicas = new Set(tecnicas?.armas ?? []);
   const opcoesArma = lista(armas)
     .filter((a) => armasTecnicas.has(a.id))
@@ -216,7 +298,7 @@ export function estadosCombateConjurador({ habilidades, tecnicas, armas = [], fe
 
   const opcoesAuxBonus = lista(feiticos)
     .filter((f) => auxiliarBonus(f) && utilizavel(f))
-    .map((f) => ({ id: f.id, label: f.nome || "Feitiço Sem Nome" }));
+    .map(opcaoDoFeitico);
   if (tem(habilidades, ESGRIMISTA_JUJUTSU_ID) && opcoesAuxBonus.length > 0) {
     estados.push({
       id: ESTADO_ESGRIMISTA,
@@ -230,7 +312,7 @@ export function estadosCombateConjurador({ habilidades, tecnicas, armas = [], fe
   // A Transformação Sustentada disputa as mesmas vagas: sustentar é sustentar.
   const opcoesSustentadas = lista(feiticos)
     .filter((f) => (auxiliarSustentado(f) || transformacaoSustentada(f)) && utilizavel(f))
-    .map((f) => ({ id: f.id, label: f.nome || "Feitiço Sem Nome" }));
+    .map(opcaoDoFeitico);
   const maxSustentados = temAlguma(habilidades, SUSTENTACAO_MESTRE_IDS)
     ? 3
     : temAlguma(habilidades, SUSTENTACAO_AVANCADA_IDS) ? 2 : 1;
@@ -251,13 +333,13 @@ export function estadosCombateConjurador({ habilidades, tecnicas, armas = [], fe
     const ligavel = (f?.tipo === "auxiliar" && !auxiliarSustentado(f))
       || (ehTransformacao(f) && !transformacaoSustentada(f));
     if (!ligavel || !f.id || !utilizavel(f)) continue;
-    estados.push({
+    estados.push(comTrava(f, { nd, habilidades }, {
       id: estadoLigadoDoFeitico(f.id),
       label: f.nome || "Feitiço Sem Nome",
       tipo: "bool",
       feiticoId: f.id,
       dono: DONO_FEITICOS,
-    });
+    }));
   }
   return estados;
 }
@@ -348,24 +430,94 @@ function efeitosDeAtributo(sub, config, nome) {
   ]);
 }
 
+/**
+ * A linha da troca de um Permutativo, SEM `exclusivo` (autor, 2026-10-02):
+ * "Permutativo sempre soma", com bônus e com penalidade, e nunca disputa o pool
+ * de Feitiços. O nome leva "(Permuta)" para o hover separar o preço do bônus.
+ */
+function efeitoDaPermuta(canal, valor, nome, alvo = null) {
+  if (!Number.isFinite(Number(valor)) || Number(valor) === 0) return [];
+  return [{
+    canal,
+    expr: String(Number(valor)),
+    ...(alvo ? { alvo } : {}),
+    origem: `feiticoAuxiliar:${nome}`,
+    nome: `${nome} (Permuta)`,
+    duracao: "temporaria",
+  }];
+}
+
+/* O ganho no canal do efeito e o prejuízo no canal do aspecto perdido. O Bônus em
+   Ataque que perde Margem não vai por canal: ele vale só nas armas com margem a
+   perder (autor), então viaja por linha, como os dados do Auxiliar, e quem o
+   aplica é o `resolveDano`. */
+function trocaDoAuxiliar(sub, config, nome) {
+  const p = sub?.permuta;
+  if (!(p?.ganho > 0) || !(p?.reducao > 0)) return { efeitos: [], margem: [] };
+  switch (sub.efeito) {
+    case "rolagem": return {
+      efeitos: [
+        ...efeitoDaPermuta("bonusPericia", p.ganho, nome, config?.alvoAuxPericia),
+        ...efeitoDaPermuta("bonusPericia", -p.reducao, nome, p.pericia),
+      ],
+      margem: [],
+    };
+    case "rd": return {
+      efeitos: [...efeitoDaPermuta("rdGeral", p.ganho, nome), ...efeitoDaPermuta("defesa", -p.reducao, nome)],
+      margem: [],
+    };
+    case "defesa": return {
+      efeitos: [...efeitoDaPermuta("defesa", p.ganho, nome), ...efeitoDaPermuta("rdGeral", -p.reducao, nome)],
+      margem: [],
+    };
+    case "margemCritico": return {
+      efeitos: [...efeitoDaPermuta("margemCritico", p.ganho, nome), ...efeitoDaPermuta("bonusAcerto", -p.reducao, nome)],
+      margem: [],
+    };
+    case "ataque": return {
+      efeitos: [],
+      margem: [{ nome: `${nome} (Permuta)`, margem: p.reducao, acerto: p.ganho }],
+    };
+    default: return { efeitos: [], margem: [] };
+  }
+}
+
+/* ⚠ A TABELA E A TROCA SAEM SEPARADAS. O `valor` do cálculo já traz o ganho do
+   Permutativo, e só a parte da tabela (`valorSemPermuta`) disputa o pool. */
 function efeitosDeAuxiliarResolvido(sub, config, nome) {
-  if (!sub?.disponivel || sub.especial) return { efeitos: [], dados: [] };
-  const valor = Number(sub.valor) || 0;
+  if (!sub?.disponivel || sub.especial) return { efeitos: [], dados: [], margem: [] };
+  const troca = trocaDoAuxiliar(sub, config, nome);
+  const valor = Number(sub.permuta?.ganho > 0 ? sub.valorSemPermuta : sub.valor) || 0;
+  const tabela = efeitosDaTabelaDoAuxiliar(sub, config, nome, valor);
+  return { efeitos: [...tabela.efeitos, ...troca.efeitos], dados: tabela.dados, margem: troca.margem };
+}
+
+function efeitosDaTabelaDoAuxiliar(sub, config, nome, valor) {
   const resistencia = config?.alvoAuxTR || "reflexos";
   switch (sub.efeito) {
     case "defesa": return { efeitos: efeitoNumerico("defesa", valor, nome), dados: [] };
     case "rd": return { efeitos: efeitoNumerico("rdGeral", valor, nome), dados: [] };
     case "atributo": return { efeitos: efeitosDeAtributo(sub, config, nome), dados: [] };
     case "tr": return { efeitos: efeitoNumerico("bonusTR", valor, nome, resistencia), dados: [] };
+    /* Numa perícia só quando o Feitiço a escolhe (2026-10-02, pela Permuta de
+       Perícia). Sem perícia segue Toda Rolagem: perícia, TR e ataque. */
     case "rolagem": return {
-      efeitos: [
-        ...efeitoNumerico("bonusPericia", valor, nome),
-        ...efeitoNumerico("bonusTR", valor, nome),
-        ...efeitoNumerico("bonusAcerto", valor, nome),
-      ],
+      efeitos: config?.alvoAuxPericia
+        ? efeitoNumerico("bonusPericia", valor, nome, config.alvoAuxPericia)
+        : [
+          ...efeitoNumerico("bonusPericia", valor, nome),
+          ...efeitoNumerico("bonusTR", valor, nome),
+          ...efeitoNumerico("bonusAcerto", valor, nome),
+        ],
       dados: [],
     };
     case "movimento": return { efeitos: efeitoNumerico("movimento", valor, nome), dados: [] };
+    case "alcanceCaC": return {
+      efeitos: efeitoNumerico("alcanceArma", valor, nome, "cat:corpo|basico"), dados: [],
+    };
+    case "alcanceDistancia": return {
+      efeitos: efeitoNumerico("alcanceArma", valor, nome, "cat:distancia|cat:arremesso"), dados: [],
+    };
     case "danoDurante":
     case "danoApos": return {
       efeitos: [],
@@ -401,6 +553,9 @@ export function resolveAuxiliaresAtivos(creature, combate, estados, ctx = {}) {
   const efeitos = [];
   const dados = [];
   const ativos = [];
+  // A troca do Bônus em Ataque que perde Margem, que o `resolveDano` aplica arma a
+  // arma. O id do Feitiço vai junto para a trava saber se ele pegou em alguma.
+  const permutasDeMargem = [];
   for (const id of ids) {
     const f = feiticos.find((x) => x.id === id);
     if (!f) continue;
@@ -411,6 +566,7 @@ export function resolveAuxiliaresAtivos(creature, combate, estados, ctx = {}) {
       const resolvido = efeitosDeAuxiliarResolvido(sub, configDe(sub), nome);
       efeitos.push(...resolvido.efeitos);
       dados.push(...resolvido.dados);
+      for (const m of lista(resolvido.margem)) permutasDeMargem.push({ ...m, feiticoId: id });
     }
     // O Auxiliar chama a sustentação de `upkeepPE`, e a Transformação de `sustentacaoPE`.
     const upkeep = calc.upkeepPE ?? calc.sustentacaoPE ?? 0;
@@ -423,7 +579,7 @@ export function resolveAuxiliaresAtivos(creature, combate, estados, ctx = {}) {
         : 0,
     });
   }
-  return { ativos, efeitos, dados };
+  return { ativos, efeitos, dados, permutasDeMargem };
 }
 
 export function aplicarImbuicaoNoDano(dano, creature, combate, habilidades, feiticosResumo) {

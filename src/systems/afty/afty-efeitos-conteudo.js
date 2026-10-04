@@ -452,14 +452,17 @@ export const HABILIDADE_EFEITOS = {
   //     numa faixa, igual ao `abates`. E o recorte é corpo a corpo, porque o
   //     golpe é um giro dentro do alcance corpo a corpo: `basico` mais
   //     `cat:corpo`, as mesmas duas linhas da Brutalidade Sanguinária. O
-  //     aumento de 3 metros no alcance ainda não entra: o canal `alcanceArma`
-  //     existe desde 2026-09-23, e ligá-lo aqui está em docs/a-fazer.md.
+  //     aumento de 3 metros no alcance usa os mesmos alvos, nos dois sistemas
+  //     (autor, 2026-10-03), e só dura enquanto a manobra está ligada.
   //   • Golpe Certeiro: "Sua próxima jogada de ataque automaticamente tem o seu
   //     resultado tratado como 10 acima do resultado original."
   //   • Quebra Crânio: "Seu próximo ataque causa 2d10 de dano adicional. O alvo
   //     desta manobra deve realizar um teste de resistência de Fortitude com CD
   //     aumentada em 5." Dado NOMEADO: canal `dadosNomeados`, alvo d10.
   lut_manobras_finalizadoras: [
+    { canal: "alcanceArma", alvo: "basico|cat:corpo",
+      quando: "manobra_finalizadora_circular && empolgacao >= 5",
+      expr: "3", duracao: "temporaria" },
     { canal: "danoBonus", alvo: "basico",
       quando: "manobra_finalizadora_circular && empolgacao >= 5",
       expr: "5 * max(1, circular_alvos)", duracao: "temporaria" },
@@ -1380,11 +1383,11 @@ export const HABILIDADE_EFEITOS = {
   // soma seu modificador de atributo escolhido para CD de especialização em toda
   // cura que realizar."
   // Dobrar é DELTA de mais uma vez o valor base (o mesmo desenho da Cobertura
-  // Avançada sobre o Cobrir-se). O Afty tem uma CD só, a Amaldiçoada, então o
-  // "atributo escolhido para CD" é o `mod_tecnica`.
+  // Avançada sobre o Cobrir-se). A CD de especialização do Suporte usa Presença
+  // ou Sabedoria: `mod_pre_ou_sab` na cura também (autor, 2026-10-03, nos dois).
   sup_suporte_absoluto: [
     { canal: "curaUsos", alvo: "cura_suporte_em_combate", expr: "mod_pre_ou_sab" },
-    { canal: "curaFixa", expr: "mod_tecnica" },
+    { canal: "curaFixa", expr: "mod_pre_ou_sab" },
   ],
 
   // "o seu Bônus de Treinamento é adicionado ao número de usos da sua cura."
@@ -1604,7 +1607,10 @@ export const ESCOLHA_EFEITOS = {
   // esteja usando em duas mãos ou que possua a propriedade pesada, você pode
   // rolar novamente [...] Além disso, você recebe +1 em rolagens de dano com a
   // arma, aumentando em +1 nos níveis 4, 8, 12 e 16."
-  // A rolagem repetida é escolha do jogador, por dado, e fica de mesa.
+  /* A ROLAGEM REPETIDA entrou em 2026-10-02, pelo canal `rerrolaDano`. Era de
+     mesa ("escolha por dado"), e o autor a quis AUTOMÁTICA: rolar de novo um 1
+     ou um 2 nunca piora a média a partir do d4. Vale em todo dado da linha, e
+     não só no da arma, porque o texto diz "um dado na rolagem de dano". */
   /* ⚠ UMA LINHA, COM O ALVO "OU" (2026-09-23). Eram duas, uma em `prop:duas_maos`
      e outra em `prop:pesada`, e as dez armas que são as duas coisas (Espada
      Grande, Machado Grande, Martelo Grande, Alabarda...) recebiam o bônus DUAS
@@ -1615,6 +1621,7 @@ export const ESCOLHA_EFEITOS = {
   cmb_estilo_massivo: [
     { canal: "danoBonus", alvo: "empunho:duas_maos|prop:pesada",
       expr: `1 + (${NIVEL_ESTILO} >= 4) + (${NIVEL_ESTILO} >= 8) + (${NIVEL_ESTILO} >= 12) + (${NIVEL_ESTILO} >= 16)` },
+    { canal: "rerrolaDano", alvo: "empunho:duas_maos|prop:pesada", expr: "2" },
   ],
 
   /* "Enquanto estiver lutando com duas armas, você pode adicionar o seu bônus de
@@ -2233,11 +2240,9 @@ export const LENDARIA_EFEITOS_ALVO = {
   ],
 
   // "você pode aumentar o limite de um Nível de Aptidão para 6."
-  // O canal é SOMA, e não "passa a valer 6": é a convenção do `limiteAptidao`
-  // desde que ele nasceu (duas fontes na mesma trilha levam o teto a 7). Numa
-  // trilha em que nada mais mexeu, +1 sobre o 5 padrão dá exatamente os 6 do
-  // texto. ⚠ A CONFIRMAR com o autor se, empilhada com outra fonte de limite,
-  // ela deve parar no 6 em vez de somar.
+  // SOMA confirmada pelo autor em 2026-10-03: +1 sobre o 5 padrão dá 6, e
+  // outra fonte de +1 na mesma trilha leva o teto a 7. Vale nos dois sistemas,
+  // respeitando o `perdidoNoJogador` e o Addon que pode devolver a Lendária.
   //
   // Sozinho o limite não dá nível nenhum: quem preenche o 6° é o orçamento, e a
   // trilha só aceita alocação até o limite dela (ver resolveNiveisAptidao).

@@ -1,0 +1,1232 @@
+import React, { useMemo, useState } from "react";
+import { AlertTriangle, ChevronDown, ChevronRight } from "lucide-react";
+
+import { DicaDeTexto, NumeroComFontes } from "../../ui/fontes";
+import { sinalDe } from "../../ui/formato";
+import { curaNoGasto, rotuloBloco } from "../../afty-cura";
+import { tituloCustoFeitico, TIPO_FEITICO_LABEL } from "../../afty-feiticos";
+import { IconeDeTipo } from "../../ui/feitico-tipo";
+import { RITUAL_MELHORIAS } from "../../afty-rituais";
+import { facesDe } from "../ficha-rolagem";
+import { useDestaque } from "../usar-destaque";
+import ItemDeFicha from "../ItemDeFicha";
+import TextoRico from "../../ui/TextoRico";
+
+/**
+ * ============================================================
+ * ABA AÇÕES — o que a criatura faz no turno dela
+ * ============================================================
+ * Tudo aqui já vem RESOLVIDO do `deriveAfty`, e a aba não recalcula nada (é a
+ * convenção do projeto inteiro). Quatro grupos, cada um sumindo por completo
+ * quando não se aplica.
+ *
+ * ⚠ AS HABILIDADES NÃO ENTRAM AQUI, e não é esquecimento: nenhum catálogo do
+ * Afty tem metadado de ação. As 413 Habilidades de Especialização, os 52
+ * Talentos e as 85 Aptidões têm `id`, `nome`, `descricao` e `requisitos`, e nada
+ * dizendo se são ação, ação bônus ou reação, nem custo, nem usos. Montar uma
+ * lista de ações a partir delas exigiria inventar essa classificação. Elas vão
+ * ganhar aba própria, com o texto verbatim e busca. Ver a pergunta D7 em
+ * `docs/afty-ficha-final.md`.
+ * ============================================================
+ */
+
+function Secao({ titulo, controles = null, children }) {
+  return (
+    <section className="afty-card p-3">
+      <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+        <h2 className="afty-card-titulo" data-afty-linha>{titulo}</h2>
+        {controles}
+      </div>
+      <div className="space-y-1">{children}</div>
+    </section>
+  );
+}
+
+/**
+ * Uma linha de dano, com DOIS números que rolam: o Acerto e o Dano.
+ *
+ * ⚠ O crítico do Acerto AMARRA no Dano seguinte. Rolar o Acerto e tirar dentro
+ * da margem acende a marca na linha, e o próximo Dano sai com os dados dobrados
+ * (autor, 2026-08-05: o crítico dobra os dados rolados, e o fixo entra uma vez).
+ * É o fluxo da mesa: acerta, vê que foi crítico, rola o dano. Sem a amarração, o
+ * jogador teria que lembrar de marcar o crítico à mão no meio dos dois cliques.
+ *
+ * A marca é CONSUMIDA pelo Dano. Ela some depois de usada, senão o próximo golpe
+ * herdaria um crítico que não é dele.
+ */
+function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir, modoDano }) {
+  const raiz = useDestaque(destacado);
+  const feiticoImbuido = e.imbuir?.escolhido ?? null;
+  const condicoesImbuidas = feiticoImbuido?.propriedades?.find((p) => p.id === "condicoes")?.valor;
+  const cdImbuida = feiticoImbuido?.propriedades?.find((p) => p.id === "cd")?.valor;
+  const modoVisual = modoDano !== "normal" ? modoDano : critico ? "critico" : "normal";
+  /* ⚠ O MODO NORMAL TAMBÉM MOSTRA A FÓRMULA SOMADA (autor, 2026-09-16: "Pq fica o
+     +1d8 +1d10 +5d8 ao lado do Dano e não no dano?"). Ele mostrava o `texto` do
+     golpe e um chip para cada grupo que chegou depois (Aura Elemental, Canalizar,
+     Sintonizada, Auxiliares), enquanto o clique e o total do hover já rolavam
+     tudo junto. Os chips ainda duplicaram dado duas vezes (o `1d4` do degrau e o
+     `1d6` do Ajuste). De onde cada dado veio é o hover que diz. */
+  const danoExibido = modoVisual === "critico"
+    ? e.formulaCritico
+    : modoVisual === "raio_negro" ? e.formulaRaioNegro : (e.formulaNormal ?? e.texto);
+  const rolarModo = (modoDano) => {
+    rolar({ tipo: "dano", rotulo: e.nome, grupos: e.gruposDano, modoDano, rerrola: e.rerrola });
+    if (critico) onCritico(false);
+  };
+  return (
+    <div
+      ref={raiz}
+      id={`afty-item-dano:${e.id}`}
+      className="afty-linha px-2.5 py-2"
+      data-afty-destacada={e.fonte === "basico" ? "sim" : "nao"}
+      data-afty-alvo={destacado ? "sim" : undefined}
+    >
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="flex-1 min-w-0 text-[12px] font-semibold truncate" title={e.nome}>
+          {e.nome}
+        </span>
+        {e.ignoraRD > 0 && <span className="afty-rotulo text-[10px] whitespace-nowrap">Ignora RD {e.ignoraRD}</span>}
+        {e.ignoraTodaRD && <span className="afty-rotulo text-[10px]">Ignora Toda RD</span>}
+        {e.ignoraImunidade && <span className="afty-rotulo text-[10px]">Ignora Imunidade</span>}
+        {e.removeResistencia && <span className="afty-rotulo text-[10px] whitespace-nowrap">Remove Resistência</span>}
+        {e.margemCritico != null && (
+          <span className="afty-rotulo text-[10px] whitespace-nowrap" title="Margem de Crítico">
+            Crít. {e.margemCritico}
+          </span>
+        )}
+        {e.alcance && <span className="afty-rotulo text-[10px] whitespace-nowrap">{e.alcance.texto}</span>}
+        {e.tipoDanoLabel && <span className="afty-chip">{e.tipoDanoLabel}</span>}
+        {critico && <span className="afty-chip" data-afty-tom="destaque">Crítico</span>}
+        {e.acerto != null && (
+          <span className="afty-rotulo text-[10px] whitespace-nowrap" title={e.acertoAtaque}>
+            Acerto{" "}
+            <NumeroComFontes
+              /* Com dado somado à jogada (Manobra de Ajuste), a linha mostra a
+                 rolagem inteira: "+56 + 1d6". Ver `dadosAtaque`. */
+              valor={e.acertoTexto ?? e.acerto}
+              formatar={!e.acertoTexto}
+              partes={e.partesAcerto}
+              total={e.acertoTexto ?? sinalDe(e.acerto)}
+              className="afty-valor text-[11px]"
+              ancora="direita"
+              onRolar={() => {
+                const r = rolar({
+                  tipo: "teste",
+                  rotulo: `${e.nome} · Acerto`,
+                  bonus: e.acerto,
+                  dados: e.acertoDados,
+                  margem: e.margemCritico,
+                });
+                onCritico(r.critico);
+              }}
+            />
+          </span>
+        )}
+        <NumeroComFontes
+          valor={danoExibido}
+          /* As pilhas Critável, Não Critável e Fixo (autor, 2026-09-15). O rodapé
+             é a rolagem inteira do modo que o botão vai rolar. */
+          partes={e.hoverDano?.partes ?? e.partes}
+          total={modoVisual === "normal" ? (e.hoverDano?.total ?? e.totalFontes ?? e.total) : danoExibido}
+          formatar={false}
+          className="afty-valor text-[13px] whitespace-nowrap"
+          ancora="direita"
+          onRolar={() => {
+            rolarModo(modoVisual);
+          }}
+        />
+        {/* Com rolagem, os dados do Feitiço imbuído já estão na fórmula, e o chip
+            só diz QUAL é. Um "+3d6" aqui leria como dado a mais. */}
+        {feiticoImbuido && (
+          <span
+            className="afty-chip"
+            data-afty-tom="destaque"
+            title={[feiticoImbuido.conjuracaoTexto, feiticoImbuido.descricao].filter(Boolean).join("\n\n")}
+          >
+            {feiticoImbuido.rolagens?.length
+              ? (feiticoImbuido.nome || "Feitiço Sem Nome")
+              : `+${feiticoImbuido.valor || feiticoImbuido.nome || "Efeito"}`}
+          </span>
+        )}
+        {condicoesImbuidas && cdImbuida && (
+          <span className="afty-chip" title={condicoesImbuidas}>TR CD {cdImbuida}</span>
+        )}
+        {e.golpeComAura && (
+          <span className="afty-chip" title={e.golpeComAura.nome}>TR CD {e.golpeComAura.cd}</span>
+        )}
+      </div>
+      {e.imbuir && (
+        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+          <span className="afty-rotulo text-[10px]">Imbuir</span>
+          <select
+            className="afty-campo bg-transparent outline-none text-[11px]"
+            value={feiticoImbuido?.id ?? ""}
+            onChange={(evento) => onImbuir?.(e.imbuir.estadoId, evento.target.value || null)}
+            aria-label={`Imbuir técnica em ${e.nome}`}
+          >
+            <option value="">Nenhum</option>
+            {e.imbuir.opcoes.map((opcao) => (
+              <option key={opcao.id} value={opcao.id}>{opcao.label}</option>
+            ))}
+          </select>
+          <span className="afty-valor text-[11px]" data-afty-tom="custo">
+            +{e.imbuir.custoAdicional} PE
+          </span>
+        </div>
+      )}
+      {e.propriedades?.length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-1.5">
+          {e.propriedades.map((p) => (
+            <span key={p.id} className="afty-chip" data-afty-tom={p.concedida ? "destaque" : undefined}>
+              {p.rotulo}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Uma linha de cura. Mostra o que UM ponto compra (autor, 2026-08-03).
+ *
+ * ⚠ A linha que escala por ponto ganha um CONTADOR, porque rolar exige saber
+ * quantos pontos foram gastos. A conta segue a regra: os dados multiplicam pelo
+ * gasto e o valor fixo entra UMA vez, porque o texto diz "ao TOTAL de cura".
+ */
+function LinhaCura({ l, rolar, destacado }) {
+  const [blocos, setBlocos] = useState(1);
+  const teto = l.unidade ? Math.max(1, l.blocos) : 1;
+  const blocosUsados = Math.min(blocos, teto);
+  const estado = curaNoGasto(l, blocosUsados);
+  const faces = facesDe(l.dado);
+  const raiz = useDestaque(destacado);
+  return (
+    <div
+      ref={raiz}
+      id={`afty-item-cura:${l.id}`}
+      className="afty-linha px-2.5 py-2 flex items-center gap-2 flex-wrap"
+      data-afty-alvo={destacado ? "sim" : undefined}
+    >
+      <span className="flex-1 min-w-0 text-[12px] font-semibold truncate" title={l.nome}>
+        {l.nome}
+        {l.qtd ? <span className="afty-rotulo"> ×{l.qtd}</span> : null}
+      </span>
+      <span className="afty-rotulo text-[10px] whitespace-nowrap">{l.alcance}</span>
+      {l.espelhaNome && (
+        <span className="afty-rotulo text-[10px] whitespace-nowrap" title={`Rola a mesma coisa que ${l.espelhaNome}`}>
+          {l.espelhaNome}
+        </span>
+      )}
+      {l.usos != null && (
+        <span className="afty-rotulo text-[10px] whitespace-nowrap" title="Usos por descanso">
+          Usos <span className="afty-valor text-[11px]">{l.usos}</span>
+        </span>
+      )}
+      {l.unidade && (
+        <span className="flex items-center gap-1 flex-shrink-0">
+          <button
+            type="button"
+            className="afty-passo"
+            onClick={() => setBlocos(Math.max(1, blocosUsados - 1))}
+            aria-label={`Gastar ${rotuloBloco(l.unidade)} a menos`}
+          >−</button>
+          <span
+            className="afty-chip"
+            data-afty-tom="destaque"
+            title={`Até ${estado.pontosMaximos} ${l.unidade.rotulo}`}
+          >
+            {estado.pontos} {l.unidade.rotulo}
+          </span>
+          <button
+            type="button"
+            className="afty-passo"
+            onClick={() => setBlocos(Math.min(teto, blocosUsados + 1))}
+            aria-label={`Gastar ${rotuloBloco(l.unidade)} a mais`}
+          >+</button>
+        </span>
+      )}
+      <NumeroComFontes
+        valor={estado.texto}
+        partes={estado.partes}
+        total={estado.texto}
+        formatar={false}
+        className="afty-valor text-[13px] whitespace-nowrap"
+        ancora="direita"
+        onRolar={() => rolar({
+          tipo: "dano", tom: "cura",
+          rotulo: l.nome,
+          detalhe: l.unidade ? `${estado.pontos} ${l.unidade.rotulo}` : null,
+          dados: l.dados, faces, fixo: estado.fixo, blocos: estado.blocos,
+        })}
+      />
+    </div>
+  );
+}
+
+/**
+ * Um Feitiço.
+ *
+ * ⚠ O NÚMERO ROLA, desde 2026-08-06. Ele era texto morto porque o
+ * `resumoFeiticos` só devolvia o `valor` já formatado ("8d6", "3× 4d8"), e a
+ * Ficha não vai parsear string: o `rolagensDoFeitico` passou a entregar
+ * `{ dados, faces }` do mesmo lugar de onde sai a notação.
+ *
+ * ⚠ São VÁRIAS rolagens quando o Feitiço tem várias de verdade: o dano contínuo
+ * tem o golpe inicial e o por rodada, e os dois são rolados em momentos
+ * diferentes da mesma luta. `vezes` (disparos, golpes) NÃO multiplica os dados,
+ * porque cada disparo é uma rolagem com acerto próprio: ele vira um contador ao
+ * lado, e cada clique rola um.
+ */
+const ACAO_RITUAL_LABEL = {
+  comum: "Ação Comum",
+  completa: "Ação Completa",
+  ritual: "Ritual Estendido",
+};
+
+function ControlesRitual({
+  f, rolar, onRitual, onDesativarRitual, onIniciarRitualEstendido, onIniciarRitualSemTeste,
+  onConcluirPreparacaoRitual, onCancelarRitual, onFinalizarRitual, onEncerrarRitual,
+}) {
+  const ritual = f.ritual;
+  if (!ritual || ritual.proibido) return null;
+  const patchRitual = (parcial) => onRitual?.(f.id, (atual) => ({ ...atual, ...parcial }));
+  const mudaMelhoria = (id, delta) => onRitual?.(f.id, (atual) => {
+    const melhorias = atual.melhorias && typeof atual.melhorias === "object" ? atual.melhorias : {};
+    const def = RITUAL_MELHORIAS.find((m) => m.id === id);
+    const valor = Math.max(0, Math.min(def?.max ?? 1, (melhorias[id] || 0) + delta));
+    return { ...atual, melhorias: { ...melhorias, [id]: valor } };
+  });
+  const consomeNoTeste = ritual.extraRitualista ? f.id : null;
+  const configuracaoTravada = ritual.configuracaoTravada || ritual.bloqueado;
+  const status = ritual.podeResolver ? "Pronto"
+    : ritual.etapa === "falhou" ? "Falha"
+      : ritual.etapa === "preparando" ? "Preparando"
+        : ritual.etapa === "resolvido" ? "Resolvido"
+          : ritual.bloqueado ? "Indisponível"
+            : null;
+  const podeDesarmarRitualista = ritual.quantidade <= ritual.limiteBase;
+
+  return (
+    <details className="w-full mt-1.5">
+      <summary className="cursor-pointer text-[10px] font-semibold">
+        Ritual
+        {ritual.ativo && (
+          <span className="afty-rotulo ml-2">
+            {ritual.quantidade}/{ritual.limite} · {ACAO_RITUAL_LABEL[ritual.acaoFinal] ?? ritual.acaoFinal}
+          </span>
+        )}
+        {status && <span className="afty-chip ml-2">{status}</span>}
+      </summary>
+      <div className="mt-2 pl-2 border-l space-y-2" style={{ borderColor: "var(--afty-borda)" }}>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <button
+            type="button"
+            className="afty-chip"
+            data-afty-tom={ritual.ativo ? "destaque" : undefined}
+            aria-pressed={ritual.ativo}
+            disabled={ritual.forcado || ritual.bloqueado}
+            onClick={() => (
+              ritual.ativo
+                ? onDesativarRitual?.(f.id)
+                : patchRitual({ ativo: true })
+            )}
+          >
+            {ritual.ativo ? "Desativar" : "Ativar"}
+          </button>
+          {ritual.ativo && ritual.temRitualista && (
+            <button
+              type="button"
+              className="afty-chip"
+              data-afty-tom={ritual.extraRitualista ? "destaque" : undefined}
+              aria-pressed={ritual.extraRitualista}
+              disabled={
+                configuracaoTravada
+                || (!ritual.extraRitualista && ritual.usosRitualista >= ritual.limiteRitualista)
+                || (ritual.extraRitualista && !podeDesarmarRitualista)
+              }
+              onClick={() => patchRitual({ extraRitualista: !ritual.extraRitualista })}
+              title="Ritualista"
+            >
+              Ritualista {ritual.usosRitualista}/{ritual.limiteRitualista}
+            </button>
+          )}
+          {ritual.ativo && ritual.permiteInteligencia && ritual.exigeTeste && (
+            <>
+              <button
+                type="button"
+                className="afty-chip"
+                data-afty-tom={ritual.atributoRitual === "destreza" ? "destaque" : undefined}
+                aria-pressed={ritual.atributoRitual === "destreza"}
+                disabled={configuracaoTravada}
+                onClick={() => patchRitual({ atributoRitual: "destreza" })}
+              >Destreza</button>
+              <button
+                type="button"
+                className="afty-chip"
+                data-afty-tom={ritual.atributoRitual === "inteligencia" ? "destaque" : undefined}
+                aria-pressed={ritual.atributoRitual === "inteligencia"}
+                disabled={configuracaoTravada}
+                onClick={() => patchRitual({ atributoRitual: "inteligencia" })}
+              >Inteligência</button>
+            </>
+          )}
+          {ritual.ativo && ritual.teste && (
+            <span className="afty-rotulo text-[10px] whitespace-nowrap">
+              Prestidigitação{" "}
+              <NumeroComFontes
+                valor={ritual.teste.bonus}
+                partes={ritual.teste.partes}
+                total={sinalDe(ritual.teste.bonus)}
+                className="afty-valor text-[11px]"
+                ancora="direita"
+                titulo={`CD ${ritual.teste.cd}`}
+                onRolar={!ritual.podeIniciar ? undefined : () => rolar({
+                  tipo: "teste",
+                  rotulo: `${f.nome || "Feitiço Sem Nome"} · Ritual`,
+                  detalhe: `CD ${ritual.teste.cd}`,
+                  bonus: ritual.teste.bonus,
+                  cd: ritual.teste.cd,
+                  testaRitualId: f.id,
+                  consomeRitualistaId: consomeNoTeste,
+                })}
+              />
+              <span className="ml-1">CD {ritual.teste.cd}</span>
+            </span>
+          )}
+          {ritual.ativo && ritual.estendido && !ritual.emAndamento && (
+            <button
+              type="button"
+              className="afty-chip"
+              disabled={!ritual.podeIniciar}
+              onClick={() => onIniciarRitualEstendido?.(f.id, ritual.extraRitualista)}
+            >
+              Iniciar
+            </button>
+          )}
+          {ritual.ativo && !ritual.exigeTeste && !ritual.estendido && !ritual.emAndamento && (
+            <button
+              type="button"
+              className="afty-chip"
+              disabled={!ritual.podeIniciar}
+              onClick={() => onIniciarRitualSemTeste?.(f.id, ritual.extraRitualista)}
+            >
+              Usar
+            </button>
+          )}
+          {ritual.ativo && ritual.etapa === "falhou" && (
+            <>
+              <button type="button" className="afty-chip" onClick={() => onCancelarRitual?.(f.id)}>
+                Cancelar
+              </button>
+              <button type="button" className="afty-chip" onClick={() => onConcluirPreparacaoRitual?.(f.id)}>
+                Finalizar
+              </button>
+            </>
+          )}
+          {ritual.ativo && ritual.etapa === "preparando" && (
+            <>
+              <button type="button" className="afty-chip" onClick={() => onConcluirPreparacaoRitual?.(f.id)}>
+                Finalizar
+              </button>
+              <button type="button" className="afty-chip" onClick={() => onCancelarRitual?.(f.id)}>
+                Interromper
+              </button>
+            </>
+          )}
+          {ritual.ativo && ritual.etapa === "pronto" && (
+            <button type="button" className="afty-chip" onClick={() => onCancelarRitual?.(f.id)}>
+              Cancelar
+            </button>
+          )}
+          {ritual.ativo && ritual.podeResolver && f.rolagens?.length === 0 && (
+            <button type="button" className="afty-chip" onClick={() => onFinalizarRitual?.(f.id)}>
+              Conjurar
+            </button>
+          )}
+          {ritual.ativo && ritual.resolvido && (
+            <button type="button" className="afty-chip" onClick={() => onEncerrarRitual?.(f.id)}>
+              Encerrar
+            </button>
+          )}
+        </div>
+        {ritual.ativo && (
+          <div className="grid gap-1">
+            {RITUAL_MELHORIAS.filter((melhoria) => (
+              ritual.melhoriasDisponiveis?.includes(melhoria.id)
+              || (ritual.melhorias?.[melhoria.id] || 0) > 0
+            )).map((melhoria) => {
+              const valor = ritual.melhorias?.[melhoria.id] || 0;
+              return (
+                <div key={melhoria.id} className="flex items-center gap-1.5">
+                  <span className="flex-1 min-w-0 text-[10px] truncate" title={melhoria.descricao}>
+                    {melhoria.nome}
+                  </span>
+                  <button
+                    type="button"
+                    className="afty-passo"
+                    disabled={valor <= 0 || configuracaoTravada}
+                    onClick={() => mudaMelhoria(melhoria.id, -1)}
+                    aria-label={`Remover ${melhoria.nome}`}
+                  >−</button>
+                  <span className="afty-chip">{valor}</span>
+                  <button
+                    type="button"
+                    className="afty-passo"
+                    disabled={
+                      configuracaoTravada
+                      || valor >= melhoria.max
+                      || ritual.quantidade >= ritual.limite
+                    }
+                    onClick={() => mudaMelhoria(melhoria.id, 1)}
+                    aria-label={`Adicionar ${melhoria.nome}`}
+                  >+</button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </details>
+  );
+}
+
+function LinhaFeitico({
+  f: base, rolar, destacado, comLiberacao, conjuracaoBloodfeast,
+  onRitual, onDesativarRitual, onIniciarRitualEstendido, onIniciarRitualSemTeste,
+  onConcluirPreparacaoRitual, onCancelarRitual, onFinalizarRitual, onEncerrarRitual,
+}) {
+  /* LIBERAÇÃO MÁXIMA declarada AGORA. Local e não persistida, pelo mesmo motivo
+     do crítico pendente: é a decisão de uma conjuração só, e guardá-la faria a
+     ficha reabrir amanhã com a técnica sobrecarregada de ontem.
+
+     ⚠ O Feitiço EXIBIDO passa a ser o liberado assim que há melhoria escolhida.
+     Quem recalcula é o motor (`derived.feiticos.comLiberacao`), nunca esta tela,
+     e a versão que volta já vem com o teste de Ritual aplicado por cima. */
+  const [melhorias, setMelhorias] = useState([]);
+  const menu = base.liberacao;
+  const liberado = useMemo(
+    () => ((melhorias.length > 0 && comLiberacao) ? comLiberacao(base.id, melhorias) : null),
+    [base.id, melhorias, comLiberacao],
+  );
+  const f = liberado ?? base;
+  /* A TÉCNICA INATA BLOQUEADA (DA-07, 2026-09-30): o Feitiço continua na lista, com
+     o motivo à vista e sem rolagem nem Ritual. Nada é apagado. O motivo vem da
+     base, porque a versão liberada é recalculada pelo motor sem ele. */
+  const bloqueado = base.bloqueado || null;
+  const cheioLiberacao = menu ? melhorias.length >= menu.max : false;
+  const alternarMelhoria = (id) => setMelhorias((atual) => (
+    atual.includes(id) ? atual.filter((x) => x !== id)
+      : atual.length >= (menu?.max ?? 2) ? atual
+      : [...atual, id]
+  ));
+
+  const raiz = useDestaque(destacado);
+  const rolagens = f.rolagens ?? [];
+  const propriedades = f.propriedades ?? [];
+  const propriedadesFixas = propriedades.filter((propriedade) => propriedade.id !== "valor");
+  const propriedadeValor = propriedades.find((propriedade) => propriedade.id === "valor");
+  const descricaoTemRotulo = /^\s*efeito\s*:/i.test(f.descricao || "");
+  const titulo = [f.conjuracaoTexto, f.descricao].filter(Boolean).join("\n\n")
+    || f.nome
+    || "Feitiço Sem Nome";
+  const rolarFeitico = (r, indice) => rolar({
+    tipo: "dano", tom: r.tom,
+    rotulo: f.nome || "Feitiço Sem Nome",
+    detalhe: rolagens.length > 1 || r.vezes > 1 ? r.rotulo : f.nivelLabel,
+    dados: r.dados, faces: r.faces, fixo: r.fixo || 0,
+    explosiva: !!r.explosiva,
+    custoVidaAtivacao: indice === 0 ? f.custoVidaAtivacao : null,
+    consomeEstado: indice === 0 ? f.consomeEstado : null,
+    feiticoDanoId: indice === 0 && f.tipo === "dano" ? f.id : null,
+    finalizaRitualId: indice === 0 && f.ritual?.ativo && f.ritual?.podeResolver
+      ? f.id
+      : null,
+  });
+  return (
+    <details
+      ref={raiz}
+      id={`afty-item-feitico:${f.id}`}
+      className="afty-linha afty-feitico"
+      data-afty-alvo={destacado ? "sim" : undefined}
+      data-afty-bloqueado={bloqueado ? "sim" : undefined}
+    >
+      {/* ⚠ A LINHA FECHADA PASSOU A INFORMAR, em 2026-09-07. Ela mostrava SÓ o
+          nome, centralizado, numa faixa de 1373px: o nível, o custo e o
+          triângulo de aviso ficavam escondidos por
+          `.afty-feitico:not([open]) .afty-feitico-meta { display: none }` e
+          apareciam só depois de abrir.
+
+          Isso é o avesso do que a mesa precisa. Doze Feitiços fechados eram doze
+          nomes soltos, e descobrir qual causa 22d10 exigia abrir os doze, um por
+          um. O relato do autor sobre a Ficha ("dificuldades de obter as
+          informações") é esta linha.
+
+          Agora a linha fechada carrega, da esquerda para a direita: o ícone do
+          TIPO, o nome, o nível, o VALOR e o custo. O que muda ao abrir é o
+          detalhe, e não a identidade. */}
+      <summary className="afty-feitico-topo" title={titulo}>
+        <ChevronRight className="afty-feitico-seta" aria-hidden="true" />
+        <span className="afty-feitico-tipo" title={TIPO_FEITICO_LABEL[f.tipo] ?? ""}>
+          <IconeDeTipo tipo={f.tipo} className="w-3.5 h-3.5" />
+        </span>
+        <span className="afty-feitico-nome">
+          {f.nome || "Feitiço Sem Nome"}
+        </span>
+        <span className="afty-feitico-nivel">{f.nivelLabel}</span>
+        {f.variacao && (
+          <span className="afty-chip afty-feitico-var" title="Variação de liberação">Var.</span>
+        )}
+        {bloqueado && (
+          <span className="afty-chip" data-afty-tom="aviso" title="Técnica Inata indisponível">
+            <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+            {bloqueado}
+          </span>
+        )}
+        {f.avisos.length > 0 && (
+          <AlertTriangle
+            className="afty-feitico-alerta w-3.5 h-3.5 flex-shrink-0"
+            style={{ color: "var(--afty-aviso)" }}
+            aria-hidden="true"
+            title={f.avisos.join("\n")}
+          />
+        )}
+        {/* ⚠ O VALOR E O CUSTO VÃO PARA A DIREITA, e não colados no nome. São os
+            dois números que se comparam ENTRE Feitiços, e comparar coluna exige
+            que eles comecem no mesmo x em toda linha. Presos ao nome, cada um
+            começava onde o nome do vizinho terminava. */}
+        <span className="afty-feitico-numeros">
+          {f.valor && (
+            <span className="afty-feitico-valor" title={`${f.valorLabel}: ${f.valor}`}>{f.valor}</span>
+          )}
+          {f.custoPETexto ? (
+            <span className="afty-feitico-custo" title="Custo definido pela regra do Feitiço">{f.custoPETexto}</span>
+          ) : f.custoPE != null && (
+            <span className="afty-feitico-custo" title={tituloCustoFeitico(f)}>{f.custoPE} PE</span>
+          )}
+        </span>
+      </summary>
+      <div className="afty-feitico-corpo">
+        {/* ---------- 1. O QUE ELE ROLA ----------
+            ⚠ A ROLAGEM ERA A ÚLTIMA LINHA de uma `<dl>` plana, com o mesmo peso
+            de "Duração: Instantânea". Ela é a única coisa CLICÁVEL do cartão e é
+            a razão de abrir o Feitiço no meio da luta, então sobe para o topo e
+            ganha caixa própria, no mesmo espírito da tira de stats da Invocação.
+
+            ⚠ Quando não há dado a rolar (um Auxiliar de Defesa, uma
+            Invisibilidade), o VALOR ocupa o mesmo lugar com o mesmo peso: a
+            pergunta "o que este Feitiço entrega" tem de ter uma resposta no
+            mesmo lugar em todo tipo. */}
+        {(rolagens.length > 0 || propriedadeValor) && (
+          <div className="afty-feitico-saida">
+            {rolagens.length === 0 && propriedadeValor && (
+              <div className="afty-feitico-saida-item">
+                <span className="afty-feitico-saida-rotulo">{propriedadeValor.nome}</span>
+                <span className="afty-valor afty-feitico-saida-num">{propriedadeValor.valor}</span>
+              </div>
+            )}
+            {rolagens.map((r, indice) => (
+              <div key={`${r.rotulo}:${indice}`} className="afty-feitico-saida-item">
+                <span className="afty-feitico-saida-rotulo">
+                  {rolagens.length > 1 ? r.rotulo : (propriedadeValor?.nome || f.valorLabel)}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <NumeroComFontes
+                    valor={`${r.dados}d${r.faces}${r.explosiva ? "!" : ""}${r.fixo ? `${r.fixo > 0 ? "+" : ""}${r.fixo}` : ""}`}
+                    partes={r.partes}
+                    total={`${r.dados}d${r.faces}${r.explosiva ? "!" : ""}${r.fixo ? `${r.fixo > 0 ? "+" : ""}${r.fixo}` : ""}`}
+                    formatar={false}
+                    className="afty-valor afty-feitico-saida-num whitespace-nowrap"
+                    titulo={r.rotulo}
+                    onRolar={bloqueado
+                      || (f.ritual?.ativo && !f.ritual?.podeRolarFeitico)
+                      || (indice === 0 && f.custoVidaAtivacao && !f.custoVidaDisponivel)
+                      ? undefined
+                      : () => rolarFeitico(r, indice)}
+                  />
+                  {r.vezes > 1 && (
+                    <span className="afty-chip" title={`${r.vezes} ${r.rotulo}s`}>×{r.vezes}</span>
+                  )}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ---------- 2. O QUE SE CONSULTA ----------
+            ⚠ ERA UMA PROPRIEDADE POR LINHA, numa coluna de 1373px: seis linhas
+            empilhadas usando 200px de largura e deixando 85% do cartão vazio.
+            Agora é uma grade `auto-fill`, que é a mesma escolha da tira de stats
+            da Invocação, e pelo mesmo motivo: nunca colunas fixas, porque o
+            cartão tem dois donos (a Ficha e o painel de Encontros) com larguras
+            bem diferentes. Seis propriedades viram duas filas em 1440px e seguem
+            empilhando no telefone. */}
+        {conjuracaoBloodfeast?.(f)}
+        {(propriedadesFixas.length > 0 || f.custoVidaAtivacao) && (
+          <dl className="afty-feitico-propriedades">
+            {propriedadesFixas.map((propriedade) => (
+              <div key={propriedade.id} className="afty-feitico-propriedade" data-afty-propriedade={propriedade.id}>
+                <dt>{propriedade.nome}</dt>
+                <dd>{propriedade.valor}</dd>
+              </div>
+            ))}
+            {f.custoVidaAtivacao && (
+              <div className="afty-feitico-propriedade" data-afty-propriedade="custoVida">
+                <dt>Custo de Vida</dt>
+                <dd className="flex items-center gap-1.5">
+                  <span className="afty-valor">{f.custoVidaAtual} PV</span>
+                  {!f.custoVidaDisponivel && (
+                    <AlertTriangle className="w-3.5 h-3.5" aria-label="Vida insuficiente" title="Vida insuficiente" />
+                  )}
+                </dd>
+              </div>
+            )}
+          </dl>
+        )}
+        {/* ⚠ `TextoRico`, e não texto puro (2026-09-07). O campo virou o mesmo
+            editor com marcação do Funcionamento Básico, e deixar a leitura em
+            `<p>` faria `**negrito**` e as tabelas aparecerem como caracteres na
+            tela de jogo. O rótulo "Efeito:" fica FORA do bloco rico: ele é do
+            leitor, não do texto, e enfiá-lo dentro do primeiro parágrafo do
+            `TextoRico` obrigaria a concatenar marcação na string do jogador. */}
+        {f.descricao && (
+          <div className="afty-feitico-efeito">
+            {!descricaoTemRotulo && <strong>Efeito: </strong>}
+            <TextoRico texto={f.descricao} />
+          </div>
+        )}
+        {/* LIBERAÇÃO MÁXIMA. Só aparece em Feitiço que a alcança (Nível 3 ao 5,
+            Dano, Auxiliar ou Curativo, do ND 9 em diante).
+
+            ⚠ Fica ACIMA dos controles de Ritual porque os dois convivem no
+            mesmo uso: a Liberação é o que SAI, o Ritual é COMO se conjura, e a
+            ordem na tela segue a da mesa.
+
+            ⚠ É um `<details>` com a MESMA gramática do Ritual (mesmo resumo com
+            contador, mesma barra à esquerda no corpo). São dois controles
+            irmãos, no mesmo cartão, e duas aparências diferentes fariam o
+            jogador achar que são coisas de natureza diferente.
+
+            ⚠ ABERTO por padrão só quando há melhoria ligada: fechado ele é uma
+            linha discreta em quem não usa a mecânica, e quem já declarou vê o
+            que declarou sem precisar abrir. */}
+        {menu && (
+          <details className="w-full mt-1.5" open={melhorias.length > 0}>
+            <summary className="cursor-pointer text-[10px] font-semibold">
+              Liberação Máxima
+              <span className="afty-rotulo ml-2">
+                {melhorias.length}/{menu.max} · {menu.custoPE} PE
+              </span>
+            </summary>
+            <div className="mt-2 pl-2 border-l space-y-1.5" style={{ borderColor: "var(--afty-borda)" }}>
+              {menu.categorias.map((c) => (
+                <div key={c.value} className="afty-liberacao-grupo">
+                  <span className="afty-liberacao-categoria">{c.label}</span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {c.melhorias.map((m) => {
+                      const ligada = melhorias.includes(m.id);
+                      return (
+                        /* A REGRA VERBATIM no hover, e não no `title` nativo
+                           (autor, 2026-08-10): "por ser suplemento, fica difícil
+                           acessar". O `title` demora um segundo para nascer,
+                           some ao mexer o mouse e não existe no teclado nem no
+                           dedo. Ver `DicaDeTexto`. */
+                        <DicaDeTexto key={m.id} titulo={m.nome} texto={m.descricao} nota={m.nota}>
+                          <button
+                            type="button"
+                            className="afty-chip"
+                            data-afty-tom={ligada ? "destaque" : undefined}
+                            disabled={!ligada && cheioLiberacao}
+                            aria-pressed={ligada}
+                            onClick={() => alternarMelhoria(m.id)}
+                          >
+                            {m.nome}
+                          </button>
+                        </DicaDeTexto>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </details>
+        )}
+        {!bloqueado && <ControlesRitual
+          f={f}
+          rolar={rolar}
+          onRitual={onRitual}
+          onDesativarRitual={onDesativarRitual}
+          onIniciarRitualEstendido={onIniciarRitualEstendido}
+          onIniciarRitualSemTeste={onIniciarRitualSemTeste}
+          onConcluirPreparacaoRitual={onConcluirPreparacaoRitual}
+          onCancelarRitual={onCancelarRitual}
+          onFinalizarRitual={onFinalizarRitual}
+          onEncerrarRitual={onEncerrarRitual}
+        />}
+      </div>
+    </details>
+  );
+}
+
+
+/**
+ * TÉCNICAS DE BARREIRA e CONFLITO DE DOMÍNIO, a linha de cima da seção.
+ *
+ * ⚠ Os dois são da CRIATURA, e não de uma expansão: a parede se ergue sem
+ * expansão nenhuma, e quem confronta é o feiticeiro. Por isso ficam fora do
+ * laço das expansões, e aparecem mesmo para quem ainda não escreveu uma.
+ *
+ * O Conflito é a única coisa aqui que ROLA, e a rolagem é 1d10 mais o bônus.
+ *
+ * ⚠ TODO NÚMERO LEVA RÓTULO desde 2026-09-11. O máximo de paredes saía como
+ * "até 6", e na mesma linha o "6" podia ser qualquer coisa.
+ */
+function LinhaBarreiraConflito({ info, rolar }) {
+  const b = info?.barreira;
+  const c = info?.conflito;
+  const mostraParede = !!b?.tem;
+  const mostraConflito = (info?.domNivel ?? 0) > 0;
+  if (!mostraParede && !mostraConflito) return null;
+  return (
+    <div className="afty-linha afty-dominio-cabeca">
+      <span className="afty-dominio-nome">
+        <span className="truncate">{mostraParede ? "Parede de Barreira" : "Conflito de Domínio"}</span>
+      </span>
+      <span className="afty-dominio-numeros">
+        {mostraParede && (
+          <>
+            <span className="afty-dominio-numero">
+              <NumeroComFontes
+                valor={`${b.pvParede} PV`}
+                partes={b.partesPvParede}
+                total={b.pvParede}
+                formatar={false}
+                className="afty-valor"
+                ancora="direita"
+                titulo="Pontos de vida de cada parede"
+              />
+            </span>
+            {b.rdParede > 0 && (
+              <span className="afty-dominio-numero">
+                <span className="afty-valor">{b.rdParede}</span> RD
+              </span>
+            )}
+            <span className="afty-dominio-numero">
+              <span className="afty-valor">{b.maxParedes}</span> {b.maxParedes === 1 ? "Parede" : "Paredes"}
+            </span>
+            {/* A Cortina vale 3 paredes, e só aparece para quem tem a aptidão. */}
+            {b.temCortina && (
+              <span className="afty-dominio-numero">
+                Cortina{" "}
+                <NumeroComFontes
+                  valor={`${b.pvCortina} PV`}
+                  partes={b.partesPvCortina}
+                  total={b.pvCortina}
+                  formatar={false}
+                  className="afty-valor"
+                  ancora="direita"
+                  titulo="Pontos de vida da cortina"
+                />
+              </span>
+            )}
+          </>
+        )}
+        {mostraConflito && (
+          <span className="afty-dominio-numero">
+            {mostraParede ? "Conflito " : ""}
+            <NumeroComFontes
+              valor={`1d${c.faces}+${c.bonus}`}
+              partes={c.partes}
+              total={c.bonus}
+              formatar={false}
+              className="afty-valor"
+              ancora="direita"
+              onRolar={() => rolar({
+                tipo: "dano", rotulo: "Conflito de Domínio",
+                dados: c.dados, faces: c.faces, fixo: c.bonus,
+              })}
+            />
+          </span>
+        )}
+      </span>
+    </div>
+  );
+}
+
+/**
+ * UM DOMÍNIO.
+ *
+ * A Expansão de Domínio é uma AÇÃO de combate, com custo em PE e duração em
+ * rodadas, e por isso ela mora aqui e não numa aba própria: o jogador procura
+ * por ela no mesmo lugar onde procura o resto do que faz no turno.
+ *
+ * ⚠ A LINHA INFORMA, e o corpo só acrescenta (2026-09-11). Área, duração, PV do
+ * domo e custo ficam na linha, com rótulo, e continuam visíveis com ela aberta:
+ * repeti-los no corpo era o defeito da prosa antiga. O corpo vem do
+ * `corpoDoDominio`, em estrutura, na ordem do que interessa na mesa: a
+ * execução, os efeitos DESTA expansão, a aparência, e por último os efeitos de
+ * toda expansão.
+ */
+function LinhaDominio({ d, ativo, destacado, partesPvDomo }) {
+  const [aberto, setAberto] = useState(false);
+  const raiz = useDestaque(destacado);
+  const estrutura = d.versao === "sem_barreiras" ? "Totem" : "Domo";
+  const corpo = d.corpo ?? { execucao: "", proprios: [], base: [], aparencia: "" };
+  return (
+    <div
+      ref={raiz}
+      id={`afty-item-dominio:${d.id}`}
+      className="afty-linha"
+      data-afty-destacada={ativo ? "sim" : "nao"}
+      data-afty-alvo={destacado ? "sim" : undefined}
+    >
+      <div className="afty-dominio-cabeca">
+        <button
+          type="button"
+          className="afty-dominio-nome"
+          onClick={() => setAberto((x) => !x)}
+          aria-expanded={aberto}
+        >
+          {aberto
+            ? <ChevronDown className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
+            : <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />}
+          <span className="truncate">{d.nome || "Domínio Sem Nome"}</span>
+        </button>
+        {ativo && <span className="afty-chip" data-afty-tom="destaque">Ativo</span>}
+        <span className="afty-dominio-numeros">
+          <span className="afty-dominio-numero">
+            Área <span className="afty-valor">{d.area}</span>
+          </span>
+          <span className="afty-dominio-numero">
+            <span className="afty-valor">{d.duracao}</span> {d.duracao === 1 ? "Rodada" : "Rodadas"}
+          </span>
+          <span className="afty-dominio-numero">
+            {estrutura}{" "}
+            <NumeroComFontes
+              valor={`${d.pvBarreira} PV`}
+              partes={partesPvDomo}
+              total={d.pvBarreira}
+              formatar={false}
+              className="afty-valor"
+              ancora="direita"
+              titulo={`Pontos de vida do ${estrutura.toLowerCase()}`}
+            />
+          </span>
+          {d.custo != null && (
+            <span className="afty-dominio-numero">
+              <NumeroComFontes
+                valor={`${d.custo} PE`}
+                partes={d.partesCusto}
+                total={d.custo}
+                formatar={false}
+                className="afty-valor afty-valor-pe"
+                ancora="direita"
+                titulo="Custo da expansão"
+              />
+            </span>
+          )}
+        </span>
+      </div>
+      {aberto && (
+        <div className="afty-dominio-corpo">
+          {corpo.execucao && (
+            <dl className="afty-feitico-propriedades">
+              <div className="afty-feitico-propriedade">
+                <dt>Execução</dt>
+                <dd>{corpo.execucao}</dd>
+              </div>
+            </dl>
+          )}
+          {corpo.proprios.length > 0 && (
+            <ul className="afty-dominio-efeitos">
+              {corpo.proprios.map((e) => (
+                <li key={e.id}>
+                  <div className="afty-dominio-efeito-cabeca">
+                    <span className="afty-dominio-efeito-titulo">{e.titulo}</span>
+                    {/* Sem nome próprio o título JÁ é a categoria, e repeti-la
+                        ao lado seria "Efeito Especial Efeito Especial". */}
+                    {e.categoria && e.categoria !== e.titulo && (
+                      <span className="afty-dominio-efeito-categoria">{e.categoria}</span>
+                    )}
+                  </div>
+                  {e.texto && <p className="afty-texto afty-dominio-efeito-texto">{e.texto}</p>}
+                </li>
+              ))}
+            </ul>
+          )}
+          {corpo.aparencia && (
+            <>
+              <div className="afty-dominio-secao">Aparência</div>
+              <p className="afty-texto afty-dominio-efeito-texto">{corpo.aparencia}</p>
+            </>
+          )}
+          {corpo.base.length > 0 && (
+            <>
+              <div className="afty-dominio-secao">Toda Expansão</div>
+              <dl className="afty-dominio-base">
+                {corpo.base.map((b) => (
+                  <div key={b.titulo} className="afty-dominio-base-item">
+                    <dt>{b.titulo}</dt>
+                    <dd className="afty-texto">{b.texto}</dd>
+                  </div>
+                ))}
+              </dl>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LinhaManobra({ m, rolar, destacado }) {
+  const raiz = useDestaque(destacado);
+  return (
+    <div
+      ref={raiz}
+      id={`afty-item-manobra:${m.id}`}
+      className="afty-linha px-2.5 py-2 flex items-center gap-2 flex-wrap"
+      data-afty-alvo={destacado ? "sim" : undefined}
+    >
+      <span className="flex-1 min-w-0 text-[12px] font-semibold truncate">{m.nome}</span>
+      {m.periciaUsada && (
+        <span className="afty-rotulo text-[10px] whitespace-nowrap">{m.periciaUsada}</span>
+      )}
+      {/* ⚠ SÓ MANOBRA TEM DOIS LADOS. Concentração, Fintar, Provocar e o Teste
+          de Morte entraram no mesmo card em 2026-09-15 e têm um número só, então
+          a palavra "Executar" sai junto com o lado que não existe. */}
+      <span className="afty-rotulo text-[10px] whitespace-nowrap">
+        {m.resistir != null ? "Executar " : ""}
+        <NumeroComFontes
+          valor={m.executar}
+          partes={m.partesExecutar}
+          total={sinalDe(m.executar)}
+          className="afty-valor text-[11px]"
+          ancora="direita"
+          onRolar={() => rolar({
+            tipo: "teste",
+            rotulo: m.resistir != null ? `${m.nome} · Executar` : m.nome,
+            bonus: m.executar,
+          })}
+        />
+      </span>
+      {m.resistir != null && (
+        <span className="afty-rotulo text-[10px] whitespace-nowrap">
+          Resistir{" "}
+          <NumeroComFontes
+            valor={m.resistir}
+            partes={m.partesResistir}
+            total={sinalDe(m.resistir)}
+            className="afty-valor text-[11px]"
+            ancora="direita"
+            onRolar={() => rolar({ tipo: "teste", rotulo: `${m.nome} · Resistir`, bonus: m.resistir })}
+          />
+        </span>
+      )}
+    </div>
+  );
+}
+
+export default function AbaAcoes({
+  derived, rolar, destaque, rapido = [], abertos, onAberto, onFavorito, onRitual,
+  onDesativarRitual,
+  onIniciarRitualEstendido, onIniciarRitualSemTeste, onConcluirPreparacaoRitual,
+  onCancelarRitual, onFinalizarRitual, onEncerrarRitual,
+  onImbuir,
+  adaptacao = null,
+  /* ⚠ NÓ PRONTO, e não os dados da arma. Mesma forma do `adaptacao` logo acima,
+     e pelo mesmo motivo: o painel mexe na SESSÃO, e a sessão é de quem monta a
+     aba (a Ficha e o painel de Encontros têm `onSessao` diferentes). Assim a
+     aba não precisa saber que sessão existe.
+
+     ⚠ ELE MUDOU DE LUGAR EM 2026-09-07, a pedido do autor: *"o local aonde está
+     o controle da Azamaru é meio ruim. Deixe em Ações"*. Morava no cabeçalho,
+     encostado nos vitais e na Guarda, e ali disputava espaço com PV e PE sendo
+     que o que ele faz é AÇÃO de combate. */
+  armasTransformaveis = null,
+  /* ⚠ NÓ PRONTO, pela mesma razão dos dois de cima. O Vislumbre Celeste veio
+     parar aqui a pedido do autor (2026-09-09): *"para eu não precisar ir para
+     Buffs o tempo inteiro"*. Descobrir os olhos é Ação Livre, e a Fadiga corre
+     por turno: as duas coisas se fazem no meio da rodada. */
+  bloodfeast = null, conjuracaoBloodfeast = null,
+  vislumbre = null,
+  olhosAgulha = null,
+  manipulacaoCeu = null,
+  /* ⚠ NÓ PRONTO também: o montador do Golpe Especial (2026-09-24) paga PE e
+     cobra o dano do Sacrifício, e isso é sessão. */
+  golpeEspecial = null,
+  gatilhosTreino = [], onGatilhoTreino = null,
+  // O contador de usos das habilidades fixadas no Rápido. Ver `ItemDeFicha`.
+  contadorUsos = null,
+}) {
+  const dano = derived.dano?.entradas ?? [];
+  const cura = derived.cura?.linhas ?? [];
+  const feiticos = (derived.feiticos?.lista ?? []).filter((f) => f.tipo !== "passivo");
+  const dominios = derived.dominios?.lista ?? [];
+  const dominioAtivo = derived.dominios?.ativoId ?? null;
+  const manobras = derived.testes?.manobras ?? [];
+  const temRaioNegro = (derived.aptidoesEscolhidas ?? []).includes("raio_negro");
+  const [modoDano, setModoDano] = useState("normal");
+  const modoDanoAtivo = modoDano === "raio_negro" && !temRaioNegro ? "normal" : modoDano;
+  // Crítico pendente por linha de dano. Local e não persistido: é um estado de
+  // meio segundo entre o Acerto e o Dano, e guardá-lo faria a ficha reabrir
+  // amanhã com um crítico de hoje engatilhado.
+  const [criticos, setCriticos] = useState({});
+
+  return (
+    <div className="space-y-3">
+      {adaptacao}
+      {/* Antes do Rápido: os olhos mudam o custo em PE de tudo que vem abaixo. */}
+      {bloodfeast}
+      {vislumbre}
+      {olhosAgulha}
+      {manipulacaoCeu}
+      {/* Antes do Rápido e do Dano: reunir ou dividir é a primeira decisão da
+          rodada, e ela muda a linha de dano que aparece logo abaixo. */}
+      {armasTransformaveis}
+      {/* Logo antes do Dano: as propriedades marcadas mudam as linhas dele. */}
+      {golpeEspecial}
+      {gatilhosTreino.length > 0 && (
+        <div className="afty-card flex items-center gap-2 p-2">
+          {gatilhosTreino.map((gatilho) => (
+            <button
+              key={gatilho.id}
+              type="button"
+              className="afty-botao text-[10px]"
+              data-afty-tom={gatilho.ativo ? "destaque" : undefined}
+              aria-pressed={gatilho.ativo}
+              onClick={() => onGatilhoTreino?.(gatilho.id, !gatilho.ativo)}
+              title={`Aplicar efeitos condicionais de ${gatilho.label}`}
+            >
+              {gatilho.label}
+            </button>
+          ))}
+        </div>
+      )}
+      {/* ⚠ O RÁPIDO vem primeiro, antes até do Dano. Uma ficha de ND 40 tem 40
+          habilidades e o jogador usa seis, e são essas seis que ele quer ver ao
+          abrir a ficha. Some inteiro para quem não fixou nada. */}
+      {rapido.length > 0 && (
+        <Secao titulo="Rápido">
+          {rapido.map((i) => (
+            <ItemDeFicha
+              key={i.chave}
+              item={i}
+              aberto={abertos.has(i.chave)}
+              onAberto={onAberto}
+              favorito
+              onFavorito={onFavorito}
+              destacado={destaque === i.chave}
+              contadorUsos={contadorUsos}
+            />
+          ))}
+        </Secao>
+      )}
+
+      {dano.length > 0 && (
+        <Secao
+          titulo="Dano"
+          controles={(
+            <>
+              {derived.ataquesExtras > 0 && (
+                <span className="afty-chip" title="Ataques Extras adicionais nesta rodada">
+                  Ataques Extras <NumeroComFontes
+                    valor={derived.ataquesExtras}
+                    partes={derived.partes?.ataquesExtras}
+                  />
+                </span>
+              )}
+              <button
+                type="button"
+                className="afty-botao text-[10px]"
+                data-afty-tom={modoDanoAtivo === "critico" ? "destaque" : undefined}
+                aria-pressed={modoDanoAtivo === "critico"}
+                onClick={() => setModoDano(modoDanoAtivo === "critico" ? "normal" : "critico")}
+              >
+                Crítico
+              </button>
+              {temRaioNegro && (
+                <button
+                  type="button"
+                  className="afty-botao text-[10px]"
+                  data-afty-tom={modoDanoAtivo === "raio_negro" ? "destaque" : undefined}
+                  aria-pressed={modoDanoAtivo === "raio_negro"}
+                  onClick={() => setModoDano(modoDanoAtivo === "raio_negro" ? "normal" : "raio_negro")}
+                >
+                  Raio Negro
+                </button>
+              )}
+            </>
+          )}
+        >
+          {dano.map((e) => (
+            <LinhaDano
+              key={e.id}
+              e={e}
+              rolar={rolar}
+              critico={!!criticos[e.id]}
+              onCritico={(v) => setCriticos((c) => ({ ...c, [e.id]: v }))}
+              destacado={destaque === `dano:${e.id}`}
+              onImbuir={onImbuir}
+              modoDano={modoDanoAtivo}
+            />
+          ))}
+        </Secao>
+      )}
+
+      {cura.length > 0 && (
+        <Secao titulo="Cura">
+          {cura.map((l) => (
+            <LinhaCura key={l.id} l={l} rolar={rolar} destacado={destaque === `cura:${l.id}`} />
+          ))}
+        </Secao>
+      )}
+
+      {feiticos.length > 0 && (
+        <Secao titulo="Feitiços">
+          {feiticos.map((f) => (
+            <LinhaFeitico
+              conjuracaoBloodfeast={conjuracaoBloodfeast}
+              key={f.id}
+              f={f}
+              rolar={rolar}
+              destacado={destaque === `feitico:${f.id}`}
+              onRitual={onRitual}
+              onDesativarRitual={onDesativarRitual}
+              onIniciarRitualEstendido={onIniciarRitualEstendido}
+              onIniciarRitualSemTeste={onIniciarRitualSemTeste}
+              onConcluirPreparacaoRitual={onConcluirPreparacaoRitual}
+              onCancelarRitual={onCancelarRitual}
+              onFinalizarRitual={onFinalizarRitual}
+              onEncerrarRitual={onEncerrarRitual}
+              comLiberacao={derived.feiticos?.comLiberacao}
+            />
+          ))}
+        </Secao>
+      )}
+
+      {(dominios.length > 0 || derived.dominios?.barreira?.tem || (derived.dominios?.domNivel ?? 0) > 0) && (
+        <Secao titulo="Expansão de Domínio">
+          <LinhaBarreiraConflito info={derived.dominios} rolar={rolar} />
+          {dominios.map((d) => (
+            <LinhaDominio
+              key={d.id}
+              d={d}
+              ativo={d.id === dominioAtivo}
+              partesPvDomo={derived.dominios?.barreira?.partesPvDomo}
+              destacado={destaque === `dominio:${d.id}`}
+            />
+          ))}
+        </Secao>
+      )}
+
+      {manobras.length > 0 && (
+        <Secao titulo="Outros">
+          {manobras.map((m) => (
+            <LinhaManobra key={m.id} m={m} rolar={rolar} destacado={destaque === `manobra:${m.id}`} />
+          ))}
+        </Secao>
+      )}
+    </div>
+  );
+}

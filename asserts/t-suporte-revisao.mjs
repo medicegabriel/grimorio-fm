@@ -140,9 +140,14 @@ if (semMestre == null || comMestre == null) {
 /* ============================================================ */
 /* 4. TÉCNICAS DE COMBATE                                        */
 /* ============================================================ */
-/* Livro, Suporte: "escolher duas armas quaisquer para se tornar treinado, caso
-   não tenha, e para poder utilizar Inteligência ou Sabedoria nas jogadas de
-   ataque e dano enquanto as manejando." O par é o mesmo do Conjurador. */
+/* Livro, Suporte (Livro de Regras, p. 105): "escolher duas armas quaisquer para
+   se tornar treinado, caso não seja, e para poder utilizar Presença ou Sabedoria
+   nas jogadas de ataque e dano enquanto as manejando."
+
+   ⚠ ATÉ 2026-10-02 ESTE BLOCO PRENDIA O PAR ERRADO. Ele citava o texto do
+   Conjurador (Inteligência ou Sabedoria) e cobrava esse par, e o assert ficava
+   verde em cima do erro. O autor viu na tela: a Inteligência gravada pela do
+   Conjurador continuava valendo depois de trocar para a do Suporte. */
 const armasCat = [{ id: "espada_curta" }, { id: "adaga" }, { id: "cajado" }];
 const cru = { tecnicasCombate: { armas: ["espada_curta", "adaga"], atributo: "inteligencia" } };
 const tec = (habs) => CC.resolveTecnicasCombate(cru, armasCat, habs);
@@ -153,8 +158,20 @@ t("o Suporte liga a habilidade", tec(["sup_tecnicas_de_combate"]).ativa, true);
 t("e escolhe DUAS armas, nunca três",
   [tec(["sup_tecnicas_de_combate"]).armas, tec(["sup_tecnicas_de_combate"]).max],
   [["espada_curta", "adaga"], 2]);
-t("o par do Suporte é Inteligência ou Sabedoria",
-  tec(["sup_tecnicas_de_combate"]).atributosOk, ["inteligencia", "sabedoria"]);
+t("o par do Suporte é Presença ou Sabedoria",
+  tec(["sup_tecnicas_de_combate"]).atributosOk, ["presenca", "sabedoria"]);
+/* O caso relatado: a Inteligência gravada pela do Conjurador não vale no
+   Suporte, e cai no primeiro do texto dele. */
+t("a Inteligência gravada pelo Conjurador cai em Presença no Suporte",
+  tec(["sup_tecnicas_de_combate"]).atributo, "presenca");
+t("e volta a valer quando a do Conjurador é religada",
+  tec(["cnj_tecnicas_de_combate"]).atributo, "inteligencia");
+t("o par de cada card sai do motor, um por habilidade",
+  [CC.atributosDasTecnicas(["cnj_tecnicas_de_combate"]),
+    CC.atributosDasTecnicas(["ctr_tecnicas_de_combate"]),
+    CC.atributosDasTecnicas(["sup_tecnicas_de_combate"]),
+    CC.atributosDasTecnicas([])],
+  [["inteligencia", "sabedoria"], ["presenca", "sabedoria"], ["presenca", "sabedoria"], []]);
 
 /* ⚠ O OUTRO LADO, de novo: as duas que já existiam não podem ter mudado. */
 t("o Conjurador continua com Inteligência ou Sabedoria",
@@ -162,9 +179,12 @@ t("o Conjurador continua com Inteligência ou Sabedoria",
 t("o Controlador continua com Presença ou Sabedoria",
   tec(["ctr_tecnicas_de_combate"]).atributosOk, ["presenca", "sabedoria"]);
 /* Multiclasse soma os pares sem repetir, na ordem do texto de cada uma. */
-t("Suporte com Controlador soma os dois pares, sem repetir Sabedoria",
+t("Suporte com Conjurador soma os dois pares, sem repetir Sabedoria",
+  tec(["cnj_tecnicas_de_combate", "sup_tecnicas_de_combate"]).atributosOk,
+  ["inteligencia", "sabedoria", "presenca"]);
+t("Suporte com Controlador fica no mesmo par, porque é o mesmo texto",
   tec(["ctr_tecnicas_de_combate", "sup_tecnicas_de_combate"]).atributosOk,
-  ["presenca", "sabedoria", "inteligencia"]);
+  ["presenca", "sabedoria"]);
 
 /* ============================================================ */
 /* 5. E NÃO VAZA PARA O QUE A HABILIDADE NÃO COBRE               */
@@ -186,7 +206,7 @@ t("id de arma que não existe no catálogo é descartado",
    valer calado. */
 const fora = { tecnicasCombate: { armas: ["adaga"], atributo: "forca" } };
 t("atributo fora do par permitido cai no primeiro do texto",
-  CC.resolveTecnicasCombate(fora, armasCat, ["sup_tecnicas_de_combate"]).atributo, "inteligencia");
+  CC.resolveTecnicasCombate(fora, armasCat, ["sup_tecnicas_de_combate"]).atributo, "presenca");
 
 /* ============================================================ */
 /* 6. TÁTICAS DEFENSIVAS, SÓ A METADE DE QUEM TEM A HABILIDADE   */
@@ -261,6 +281,27 @@ const semHab = (() => {
   return deriveAfty(c);
 })();
 t("escolha gravada sem a habilidade não vale", resistentes(semHab), []);
+
+/* 7. SUPORTE ABSOLUTO, ATRIBUTO DA CD DE ESPECIALIZAÇÃO.
+   Autor, 2026-10-03: Presença ou Sabedoria nos dois sistemas. A Técnica em
+   Inteligência tem modificador diferente para expor a regressão no número. */
+for (const sistema of ["afty", "player"]) {
+  for (const [presenca, sabedoria, esperado] of [[18, 14, 4], [12, 16, 3]]) {
+    const c = createBlankAfty();
+    c.rulesVersion = sistema;
+    c.core.nd = 20; c.core.nivel = 20; c.core.tecnicaAttr = "inteligencia";
+    c.especializacoes = [{ id: "suporte", nivel: 20 }];
+    c.habilidades = ["sup_suporte_em_combate", "sup_suporte_absoluto"];
+    c.attrMethod = "fixos";
+    c.attributes = { forca: 10, destreza: 10, constituicao: 10, inteligencia: 20, presenca, sabedoria };
+    const d = deriveAfty(c);
+    const cura = d.cura.linhas.find((l) => l.id === "cura_suporte_em_combate");
+    const tag = `[${sistema}] PRE ${presenca}, SAB ${sabedoria}`;
+    t(`${tag}: Técnica em Inteligência tem modificador diferente`, d.modTecnica, 5);
+    t(`${tag}: Suporte Absoluto soma Presença ou Sabedoria com fonte única`,
+      cura?.partesFixas.filter((p) => p.label === "Suporte Absoluto").map((p) => p.valor), [esperado]);
+  }
+}
 
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 process.exitCode = bad.length ? 1 : 0;

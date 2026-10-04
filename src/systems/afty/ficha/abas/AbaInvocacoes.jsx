@@ -419,7 +419,7 @@ function MesaDaInvocacao({ inv, estado, acoes }) {
  * As regras do TIPO que a mesa consulta e que não são número de stat: as
  * imunidades (Marionete, Corpo boneco), o Dano Psíquico que vai ao invocador, a
  * refeição do Corpo Biológico e o reparo do Desmembramento, com o Custo e a CD da
- * tabela de Criação de Itens. O título é o próprio tipo.
+ * tabela de Criação de Itens (a coluna e o Custo no hover). O título é o próprio tipo.
  */
 function RegrasDoTipo({ inv }) {
   const imunes = inv.imunidades ?? [];
@@ -470,7 +470,15 @@ function RegrasDoTipo({ inv }) {
               <span className="afty-rotulo text-[10px]">{reparo.vias.join(" ou ")}</span>
             )}
             <span className="afty-rotulo text-[10px] whitespace-nowrap">Custo {reparo.custo}</span>
-            {reparo.cd != null && <span className="afty-valor text-[12px] whitespace-nowrap">CD {reparo.cd}</span>}
+            {reparo.cd != null && (
+              <NumeroComFontes
+                valor={`CD ${reparo.cd}`}
+                partes={reparo.partesCd}
+                total={reparo.cd}
+                formatar={false}
+                className="afty-valor text-[12px] whitespace-nowrap"
+              />
+            )}
           </div>
         )}
       </div>
@@ -956,6 +964,7 @@ function FichaDoShikigami({ inv, estado, rolar, acoes, aoTemar, fusao = null, he
             rotulo="Vida"
             atual={pvAtual}
             max={inv.pv}
+            partes={fusao ? fontes.pv : null}
             temp={pvTemp}
             onSet={(v) => acoes.vital(inv.id, "pv", v)}
             onDelta={(v) => (v < 0
@@ -1309,7 +1318,7 @@ function Horda({ h, rolar, estado = null, entrada = null, acoes = null }) {
     <div className="afty-linha px-2.5 py-1.5 space-y-1">
       <div className="flex items-center gap-2 flex-wrap">
         <span className="flex-1 min-w-0 text-[12px] font-semibold truncate">{rotulo}</span>
-        {h.hoste && <span className="afty-chip" title="Conta como uma no limite de hordas com o par">Hoste</span>}
+        {h.hoste && <span className="afty-chip" title="Conta como uma nos limites de Hordas e Invocações com o par">Hoste</span>}
         {acoes && h.valido && (emCampo ? (
           <button
             type="button"
@@ -1519,18 +1528,10 @@ export default function AbaInvocacoes({ derived, rolar, destaque, estadoDe, entr
     .filter(Boolean)
     .join("\n");
 
-  /* Quem ocupa vaga em campo é decidido pelo ESTADO (2026-09-30): a Marionete
-     quebrada ainda conta até ser recolhida, e o Corpo desativado não conta. */
-  const emCampo = [
-    ...invocacoes.map((i) => i.id),
-    ...[...fusaoDe.keys()],
-    ...gruposNucleos.map((g) => g.mesaId),
-    ...hordas.map((h) => h.mesaId),
-  ].filter((id) => estadoDe(id).contaNoCampo).length;
-  /* As Hordas em campo contra o limite delas: o par da Hoste conta como uma. */
-  const hordasEmCampo = hordas.filter((h) => estadoDe(h.mesaId).estado === "ativa");
-  const nHordasEmCampo = hordasEmCampo.filter((h) => !(h.hoste && h.parId
-    && hordasEmCampo.some((o) => o.id === h.parId) && h.id > h.parId)).length;
+  /* A mesma contagem que o Motor lê: o par da Hoste ocupa uma vaga nos dois
+     limites (autor, 2026-10-03). O estado ainda decide quem está em campo. */
+  const emCampo = derived.invocacoes?.emCampo ?? 0;
+  const nHordasEmCampo = derived.hordas?.emCampo ?? 0;
   /* O Mecha a formar: os pares de Marionetes ativas que a regra aceita. */
   const marionetesAtivas = invocacoes.filter((i) => i.regras?.familia === "marionete"
     && estadoDe(i.id).estado === "ativa" && !estadoDe(i.id).emComposto);
@@ -1561,6 +1562,13 @@ export default function AbaInvocacoes({ derived, rolar, destaque, estadoDe, entr
   return (
     <div className="space-y-3" ref={raiz}>
       {cssDosShikigamis && <style>{cssDosShikigamis}</style>}
+
+      {derived.tecnicaInata?.bloqueada && (
+        <div className="afty-card p-3 flex items-center gap-2 text-[12px]" style={{ color: "var(--afty-aviso)" }} role="status">
+          <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
+          <span>Técnica Inata Indisponível: {derived.tecnicaInata.motivo}</span>
+        </div>
+      )}
 
       {/* ---------- roster do Controlador ---------- */}
       {/* Números de COMBATE: sem eles a mesa decide de cabeça quantas invocações

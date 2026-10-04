@@ -1,0 +1,11 @@
+import{readFile,writeFile}from'node:fs/promises';import{spawnSync}from'node:child_process';
+const git=(args)=>spawnSync('git',args,{encoding:'utf8',maxBuffer:40e6}).stdout;
+const initial=await readFile('.audit/verificacao-evidencias/diff-inicial.patch','utf8');const current=git(['diff','--ignore-cr-at-eol','-U0']);const t=JSON.parse(await readFile('.audit/verificacao-evidencias/travessoes.json','utf8'));
+const fila=await readFile('docs/a-fazer.md','utf8');const headers=[...fila.matchAll(/^### (.+)$/gm)].map(m=>m[1].trim());const counts=new Map();headers.forEach(h=>counts.set(h,(counts.get(h)||0)+1));const dup=[...counts].filter(([,n])=>n>1);
+const inv=await readFile('src/systems/afty/afty-invocacoes.js','utf8');const oldInv=git(['show','HEAD:src/systems/afty/afty-invocacoes.js']);
+const char=String.fromCodePoint(0x2014);const stats=s=>({occurrences:s.split(char).length-1,lines:s.split(/\r?\n/).filter(l=>l.includes(char)).length});const textWithChar=s=>s.split(/\r?\n/).map((l,i)=>({line:i+1,text:l.replaceAll(char,'[U+2014]')})).filter(x=>x.text.includes('[U+2014]'));
+const derivedHead=git(['show','HEAD:src/systems/afty/afty-derive.js']);const misplaced=textWithChar(derivedHead).filter(l=>l.text.includes('orçamentos próprios'));
+const unt=[];for(const file of t.untracked.filter(x=>x.count)){const text=await readFile(file.file,'utf8');unt.push({file:file.file,...stats(text),lines:textWithChar(text)});}
+const nav=JSON.parse(await readFile('.audit/verificacao-evidencias/publico-navegacao.json','utf8'));const uiSummary=nav.map(({width,expectedName,basePresent,baseOpened,basesBody,encounterBody,buttons,errors})=>({width,expectedName,basePresent,baseOpened,baseCountText:basesBody.match(/Criaturas Base\n\d+/)?.[0],encounterBody,buttons,errors}));
+const result={trackedDiffUnchanged:initial.trim()===current.trim(),status:git(['status','-sb']).split(/\r?\n/)[0],mainOrigin:git(['rev-list','--left-right','--count','main...origin/main']).trim(),duplicateHeadings:dup,invocacoes:{HEAD:stats(oldInv),current:stats(inv)},headAddedComment:misplaced,untrackedChars:unt,publicNavigation:uiSummary};
+await writeFile('.audit/verificacao-evidencias/fechamento.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2));

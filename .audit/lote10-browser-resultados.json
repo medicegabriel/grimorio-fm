@@ -1,0 +1,130 @@
+[
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "limite": 7,
+    "atributos": [
+      12,
+      11
+    ],
+    "tipos": [
+      [
+        "shikigami",
+        "Shikigami"
+      ],
+      [
+        "tecnica",
+        "Shikigami de Técnica"
+      ]
+    ],
+    "larguraFicha": {
+      "janela": 1440,
+      "pagina": 1425
+    },
+    "larguraCriador": {
+      "janela": 1440,
+      "pagina": 1425
+    },
+    "curtos": [
+      "Shikigami",
+      "Técnica"
+    ],
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "limite": 7,
+    "atributos": [
+      12,
+      11
+    ],
+    "tipos": [
+      [
+        "shikigami",
+        "Shikigami"
+      ],
+      [
+        "tecnica",
+        "Shikigami de Técnica"
+      ]
+    ],
+    "larguraFicha": {
+      "janela": 390,
+      "pagina": 390
+    },
+    "larguraCriador": {
+      "janela": 390,
+      "pagina": 390
+    },
+    "curtos": [
+      "Shikigami",
+      "Técnica"
+    ],
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "limite": 7,
+    "atributos": [
+      12,
+      11
+    ],
+    "tipos": [
+      [
+        "shikigami",
+        "Shikigami"
+      ],
+      [
+        "tecnica",
+        "Shikigami de Técnica"
+      ]
+    ],
+    "larguraFicha": {
+      "janela": 1440,
+      "pagina": 1425
+    },
+    "larguraCriador": {
+      "janela": 1440,
+      "pagina": 1425
+    },
+    "curtos": [
+      "Shikigami",
+      "Técnica"
+    ],
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "limite": 7,
+    "atributos": [
+      12,
+      11
+    ],
+    "tipos": [
+      [
+        "shikigami",
+        "Shikigami"
+      ],
+      [
+        "tecnica",
+        "Shikigami de Técnica"
+      ]
+    ],
+    "larguraFicha": {
+      "janela": 390,
+      "pagina": 390
+    },
+    "larguraCriador": {
+      "janela": 390,
+      "pagina": 390
+    },
+    "curtos": [
+      "Shikigami",
+      "Técnica"
+    ],
+    "erros": []
+  }
+]

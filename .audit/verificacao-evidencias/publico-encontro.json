@@ -1,0 +1,621 @@
+[
+  {
+    "width": 1440,
+    "body": "Sair\nNovo Encontro\nRODADA 1 · 1 EM COMBATE\nReforços\nNova Rodada\nPróximo Turno\nEncerrar\nRODADA 1\n1 / 1\n49\n⚡\nVerificacao Publico\nINIMIGO\n3696/3696\nReset\nVerificacao Publico\nCALAMIDADE\nND 20\n•\nGrau especial\n•\nBT +6\nPONTOS DE VIDA\n3696\n/ 3696\nENERGIA AMALDIÇOADA\n60\n/ 60\nGUARDA INABALÁVEL\n54\n/ 54\nINTEGRIDADE DA ALMA\nESTÁVEL\n3696\n/ 3696\nESTATÍSTICAS DE COMBATE\nDEFESA\n44\nATENÇÃO\n49\nACERTO\n+44\nCD\n43\nINICIATIVA\n+30\nDESLOCAMENTO\n36m\nRD GERAL\n20\nIrred. 15\nIGNORAR RD\n15\nVIDA TEMP/ATQ\n10\nCONF. DOMÍNIO\n1d10 + 10\nTESTES DE RESISTÊNCIA\nASTÚCIA\n+27\nFORTITUDE\n+38\nREFLEXOS\n+38\nVONTADE\n+27\nINTEGRIDADE\n+38\nATRIBUTOS BASE\nFOR\n32\n+11\nDES\n32\n+11\nCON\n32\n+11\nINT\n10\n+0\nSAB\n10\n+0\nPRE\n21\n+5\nNÍVEIS DE APTIDÃO\nAU\n4\nAura\nCL\n4\nControle e Leitura\nBAR\n0\nBarreira\nDOM\n0\nDomínio\nER\n5\nEnergia Reversa\nPERÍCIAS\nAtletismo +35\nAcrobacia +35\nPrestidigitação +35\nIntimidação +29\nIntuição +24\nPercepção +24\nInvestigação +24\nHistória +24\nFeitiçaria +24\nOcultismo +24\nRECURSOS\nRESISTÊNCIA PARCIAL\n6 / 6\nRESISTÊNCIA TOTAL\n4 / 4\nHABILIDADES ATIVÁVEIS\n1\nRegeneração\nUsar: Regenerar\n(4 PE)\nCONDIÇÕES ATIVAS\n0\nNenhuma condição ativa\n— Condição —\nAbalado\nCaido\nDesarmar\nDesorientado\nDesprevenido\nEmpurrar\nSangramento fraco\nSofrendo\nAgarrado\nAmedrontado\nCondenado\nConfuso\nEnfeiticado\nEngasgando\nEnjoado\nEnredado\nEnvenenado\nLento\nSangramento medio\nSurdo\nAterrorizado\nCego\nExposto\nFragilizado\nImovel\nInvisivel\nSangramento forte\nSurpreso\nAtordoado\nDesmembramento\nInconsciente\nParalisado\nSangramento extremo\n✦ Outra / Personalizada\nFraca\nMédia\nForte\nExtrema\nAdicionar\nMODIFICADORES\n0\nNenhum modificador ativo\nForça\nDestreza\nConstituição\nInteligência\nSabedoria\nPresença\nDefesa\nAcerto\nCD\nAtenção\nIniciativa\nDeslocamento\nRD Geral\nRD Irredutível\nGuarda Inabalável (máx)\nPV Máximo\nPE Máximo\nVida Temp. por Ataque\nTR Astúcia\nTR Fortitude\nTR Reflexos\nTR Vontade\nTR Integridade\nSomar (±)\nDefinir (=)\nSoma\nMaior vence\nÚnico\nRodadas\nAté remover\nCombate inteiro\nAdicionar\nAUTOMAÇÕES PROGRAMADAS\n1\nIMUNIDADES / RESISTÊNCIAS\nVenenos Mundanos\nIMUNE\nEnergia Reversa\nVULNER.\nAÇÕES (4)\n5C\n3R\n2B\n1M\n1Rç\nAÇÃO COMUM\nGolpe com Punho\nAÇÃO COMUM\nLâmina do Extermínio (Espíritos Amaldiçoados)\nAÇÃO COMUM\nLâmina do Extermínio\nAÇÃO BÔNUS\nForçar Adaptação\nCARACTERÍSTICAS PERSONALIZADAS (15)\nGERAL\nImaterialidade\nGERAL\nImunidades Espirituais\nGERAL\nRegeneração\nGERAL\nPontos Fracos\nAPTIDAO\nCanalizar Golpe - Calamidade\nESPECIAL\nCorpo de Shikigami\nESPECIAL\nGolpe Finalizador\nESPECIAL\nAdaptação Defensiva\nESPECIAL\nAdaptação Ofensiva\nESPECIAL\nBurlar Defesas\nESPECIAL\nAdaptação Condicional\nESPECIAL\nAdaptar-se ao Ápice\nESPECIAL\nAdaptar-se ao Feitiço\nESPECIAL\nAdaptação\nESPECIAL\nAdaptação Geral\nCARACTERÍSTICAS (11)\nDOTES GERAIS (6)\nTREINAMENTOS (2)\nNOTAS DO NARRADOR\n\nO Shikigami Supremo",
+    "inputs": [
+      {
+        "placeholder": "0",
+        "value": ""
+      },
+      {
+        "placeholder": "0",
+        "value": ""
+      },
+      {
+        "placeholder": "0",
+        "value": ""
+      },
+      {
+        "placeholder": "0",
+        "value": ""
+      },
+      {
+        "placeholder": "Rdds",
+        "value": "1"
+      },
+      {
+        "placeholder": "Nome (ex.: Expansão de Domínio)",
+        "value": ""
+      },
+      {
+        "placeholder": "",
+        "value": "2"
+      }
+    ],
+    "buttons": [
+      {
+        "text": "Sair",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "Novo Encontro",
+        "title": "",
+        "aria": "Renomear encontro"
+      },
+      {
+        "text": "Reforços",
+        "title": "",
+        "aria": "Adicionar reforço mid-combat"
+      },
+      {
+        "text": "Nova Rodada",
+        "title": "Força início de nova rodada (reaplica Guarda Inabalável em todos)",
+        "aria": null
+      },
+      {
+        "text": "Próximo Turno",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "Encerrar",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "49\n⚡\nVerificacao Publico\nINIMIGO\n3696/3696",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Remover Verificacao Publico"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Alternar abatido"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Alternar oculto"
+      },
+      {
+        "text": "",
+        "title": "Ajustes de combate",
+        "aria": "Ajustes de combate"
+      },
+      {
+        "text": "Reset",
+        "title": "",
+        "aria": "Resetar combate"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Reduzir Pontos de Vida"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Aumentar Pontos de Vida"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Reduzir Energia Amaldiçoada"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Aumentar Energia Amaldiçoada"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Reduzir Guarda Inabalável"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Aumentar Guarda Inabalável"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Reduzir Alma"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Recuperar Alma"
+      },
+      {
+        "text": "ATRIBUTOS BASE",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Recuperar Resistência Parcial"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Gastar Resistência Parcial"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Recuperar Resistência Total"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Gastar Resistência Total"
+      },
+      {
+        "text": "HABILIDADES ATIVÁVEIS\n1",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "Usar: Regenerar\n(4 PE)",
+        "title": "Usar",
+        "aria": null
+      },
+      {
+        "text": "Adicionar",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "Adicionar",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "AUTOMAÇÕES PROGRAMADAS\n1",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "AÇÕES (4)\n5C\n3R\n2B\n1M\n1Rç",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "AÇÃO COMUM\nGolpe com Punho",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "AÇÃO COMUM\nLâmina do Extermínio (Espíritos Amaldiçoados)",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "AÇÃO COMUM\nLâmina do Extermínio",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "AÇÃO BÔNUS\nForçar Adaptação",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "CARACTERÍSTICAS PERSONALIZADAS (15)",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "GERAL\nImaterialidade",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "GERAL\nImunidades Espirituais",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "GERAL\nRegeneração",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "GERAL\nPontos Fracos",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "APTIDAO\nCanalizar Golpe - Calamidade",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "ESPECIAL\nCorpo de Shikigami",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "ESPECIAL\nGolpe Finalizador",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "ESPECIAL\nAdaptação Defensiva",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "ESPECIAL\nAdaptação Ofensiva",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "ESPECIAL\nBurlar Defesas",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "ESPECIAL\nAdaptação Condicional",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "ESPECIAL\nAdaptar-se ao Ápice",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "ESPECIAL\nAdaptar-se ao Feitiço",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "ESPECIAL\nAdaptação",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "ESPECIAL\nAdaptação Geral",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "CARACTERÍSTICAS (11)",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "DOTES GERAIS (6)",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "TREINAMENTOS (2)",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Abrir documentos"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "width": 390,
+    "body": "Sair\nNovo Encontro\nRODADA 1 · 1 EM COMBATE\nIniciativa\nReforços\nNova Rodada\nPróximo Turno\nEncerrar\nReset\nVerificacao Publico\nCALAMIDADE\nND 20\n•\nGrau especial\n•\nBT +6\nPONTOS DE VIDA\n3696\n/ 3696\nENERGIA AMALDIÇOADA\n60\n/ 60\nGUARDA INABALÁVEL\n54\n/ 54\nINTEGRIDADE DA ALMA\nESTÁVEL\n3696\n/ 3696\nESTATÍSTICAS DE COMBATE\nDEFESA\n44\nATENÇÃO\n49\nACERTO\n+44\nCD\n43\nINICIATIVA\n+30\nDESLOCAMENTO\n36m\nRD GERAL\n20\nIrred. 15\nIGNORAR RD\n15\nVIDA TEMP/ATQ\n10\nCONF. DOMÍNIO\n1d10 + 10\nTESTES DE RESISTÊNCIA\nASTÚCIA\n+27\nFORTITUDE\n+38\nREFLEXOS\n+38\nVONTADE\n+27\nINTEGRIDADE\n+38\nATRIBUTOS BASE\nFOR\n32\n+11\nDES\n32\n+11\nCON\n32\n+11\nINT\n10\n+0\nSAB\n10\n+0\nPRE\n21\n+5\nNÍVEIS DE APTIDÃO\nAU\n4\nAura\nCL\n4\nControle e Leitura\nBAR\n0\nBarreira\nDOM\n0\nDomínio\nER\n5\nEnergia Reversa\nPERÍCIAS\nAtletismo +35\nAcrobacia +35\nPrestidigitação +35\nIntimidação +29\nIntuição +24\nPercepção +24\nInvestigação +24\nHistória +24\nFeitiçaria +24\nOcultismo +24\nRECURSOS\nRESISTÊNCIA PARCIAL\n6 / 6\nRESISTÊNCIA TOTAL\n4 / 4\nHABILIDADES ATIVÁVEIS\n1\nRegeneração\nUsar: Regenerar\n(4 PE)\nCONDIÇÕES ATIVAS\n0\nNenhuma condição ativa\n— Condição —\nAbalado\nCaido\nDesarmar\nDesorientado\nDesprevenido\nEmpurrar\nSangramento fraco\nSofrendo\nAgarrado\nAmedrontado\nCondenado\nConfuso\nEnfeiticado\nEngasgando\nEnjoado\nEnredado\nEnvenenado\nLento\nSangramento medio\nSurdo\nAterrorizado\nCego\nExposto\nFragilizado\nImovel\nInvisivel\nSangramento forte\nSurpreso\nAtordoado\nDesmembramento\nInconsciente\nParalisado\nSangramento extremo\n✦ Outra / Personalizada\nFraca\nMédia\nForte\nExtrema\nAdicionar\nMODIFICADORES\n0\nNenhum modificador ativo\nForça\nDestreza\nConstituição\nInteligência\nSabedoria\nPresença\nDefesa\nAcerto\nCD\nAtenção\nIniciativa\nDeslocamento\nRD Geral\nRD Irredutível\nGuarda Inabalável (máx)\nPV Máximo\nPE Máximo\nVida Temp. por Ataque\nTR Astúcia\nTR Fortitude\nTR Reflexos\nTR Vontade\nTR Integridade\nSomar (±)\nDefinir (=)\nSoma\nMaior vence\nÚnico\nRodadas\nAté remover\nCombate inteiro\nAdicionar\nAUTOMAÇÕES PROGRAMADAS\n1\nIMUNIDADES / RESISTÊNCIAS\nVenenos Mundanos\nIMUNE\nEnergia Reversa\nVULNER.\nAÇÕES (4)\n5C\n3R\n2B\n1M\n1Rç\nAÇÃO COMUM\nGolpe com Punho\nAÇÃO COMUM\nLâmina do Extermínio (Espíritos Amaldiçoados)\nAÇÃO COMUM\nLâmina do Extermínio\nAÇÃO BÔNUS\nForçar Adaptação\nCARACTERÍSTICAS PERSONALIZADAS (15)\nGERAL\nImaterialidade\nGERAL\nImunidades Espirituais\nGERAL\nRegeneração\nGERAL\nPontos Fracos\nAPTIDAO\nCanalizar Golpe - Calamidade\nESPECIAL\nCorpo de Shikigami\nESPECIAL\nGolpe Finalizador\nESPECIAL\nAdaptação Defensiva\nESPECIAL\nAdaptação Ofensiva\nESPECIAL\nBurlar Defesas\nESPECIAL\nAdaptação Condicional\nESPECIAL\nAdaptar-se ao Ápice\nESPECIAL\nAdaptar-se ao Feitiço\nESPECIAL\nAdaptação\nESPECIAL\nAdaptação Geral\nCARACTERÍSTICAS (11)\nDOTES GERAIS (6)\nTREINAMENTOS (2)\nNOTAS DO NARRADOR\n\nO Shikigami Supremo",
+    "inputs": [
+      {
+        "placeholder": "0",
+        "value": ""
+      },
+      {
+        "placeholder": "0",
+        "value": ""
+      },
+      {
+        "placeholder": "0",
+        "value": ""
+      },
+      {
+        "placeholder": "0",
+        "value": ""
+      },
+      {
+        "placeholder": "Rdds",
+        "value": "1"
+      },
+      {
+        "placeholder": "Nome (ex.: Expansão de Domínio)",
+        "value": ""
+      },
+      {
+        "placeholder": "",
+        "value": "2"
+      }
+    ],
+    "buttons": [
+      {
+        "text": "Sair",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "Novo Encontro",
+        "title": "",
+        "aria": "Renomear encontro"
+      },
+      {
+        "text": "Iniciativa",
+        "title": "",
+        "aria": "Alternar lista de iniciativa"
+      },
+      {
+        "text": "Reforços",
+        "title": "",
+        "aria": "Adicionar reforço mid-combat"
+      },
+      {
+        "text": "Nova Rodada",
+        "title": "Força início de nova rodada (reaplica Guarda Inabalável em todos)",
+        "aria": null
+      },
+      {
+        "text": "Próximo Turno",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "Encerrar",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Alternar abatido"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Alternar oculto"
+      },
+      {
+        "text": "",
+        "title": "Ajustes de combate",
+        "aria": "Ajustes de combate"
+      },
+      {
+        "text": "Reset",
+        "title": "",
+        "aria": "Resetar combate"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Reduzir Pontos de Vida"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Aumentar Pontos de Vida"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Reduzir Energia Amaldiçoada"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Aumentar Energia Amaldiçoada"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Reduzir Guarda Inabalável"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Aumentar Guarda Inabalável"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Reduzir Alma"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Recuperar Alma"
+      },
+      {
+        "text": "ATRIBUTOS BASE",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Recuperar Resistência Parcial"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Gastar Resistência Parcial"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Recuperar Resistência Total"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Gastar Resistência Total"
+      },
+      {
+        "text": "HABILIDADES ATIVÁVEIS\n1",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "Usar: Regenerar\n(4 PE)",
+        "title": "Usar",
+        "aria": null
+      },
+      {
+        "text": "Adicionar",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "Adicionar",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "AUTOMAÇÕES PROGRAMADAS\n1",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "AÇÕES (4)\n5C\n3R\n2B\n1M\n1Rç",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "AÇÃO COMUM\nGolpe com Punho",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "AÇÃO COMUM\nLâmina do Extermínio (Espíritos Amaldiçoados)",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "AÇÃO COMUM\nLâmina do Extermínio",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "AÇÃO BÔNUS\nForçar Adaptação",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "CARACTERÍSTICAS PERSONALIZADAS (15)",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "GERAL\nImaterialidade",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "GERAL\nImunidades Espirituais",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "GERAL\nRegeneração",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "GERAL\nPontos Fracos",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "APTIDAO\nCanalizar Golpe - Calamidade",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "ESPECIAL\nCorpo de Shikigami",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "ESPECIAL\nGolpe Finalizador",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "ESPECIAL\nAdaptação Defensiva",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "ESPECIAL\nAdaptação Ofensiva",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "ESPECIAL\nBurlar Defesas",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "ESPECIAL\nAdaptação Condicional",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "ESPECIAL\nAdaptar-se ao Ápice",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "ESPECIAL\nAdaptar-se ao Feitiço",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "ESPECIAL\nAdaptação",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "ESPECIAL\nAdaptação Geral",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "CARACTERÍSTICAS (11)",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "DOTES GERAIS (6)",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "TREINAMENTOS (2)",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Abrir documentos"
+      }
+    ],
+    "errors": []
+  }
+]

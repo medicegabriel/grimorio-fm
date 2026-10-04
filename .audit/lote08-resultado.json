@@ -1,0 +1,132 @@
+{
+  "raiz-1440": {
+    "erros": [],
+    "avisoApareceu": true,
+    "recusadas": [
+      "Lote 08 Criatura\nGrimório Afty",
+      "Lote 08 Personagem\nFicha de Player"
+    ],
+    "avisoTexto": "Fichas de Outro Grimório 2 fichas não entraram, porque pertencem a outro livro: Lote 08 Criatura Grimório Afty Lote 08 Personagem Ficha de Player As outras 3 fichas do arquivo entraram normalmente. Importe cada uma no grimório em que foi criada. Entendi",
+    "avisoLarguraOk": true,
+    "mensagemDoImport": [
+      "5 criatura(s) importada(s) com sucesso."
+    ],
+    "inventario": [
+      "Lote 08 Da 2.5.2 [2.5.2]",
+      "Lote 08 Sem Marca [2.5.2]",
+      "Sem nome [2.5.2]"
+    ],
+    "criaturasBase": 1
+  },
+  "raiz-390": {
+    "erros": [],
+    "avisoApareceu": true,
+    "recusadas": [
+      "Lote 08 Criatura\nGrimório Afty",
+      "Lote 08 Personagem\nFicha de Player"
+    ],
+    "avisoTexto": "Fichas de Outro Grimório 2 fichas não entraram, porque pertencem a outro livro: Lote 08 Criatura Grimório Afty Lote 08 Personagem Ficha de Player As outras 3 fichas do arquivo entraram normalmente. Importe cada uma no grimório em que foi criada. Entendi",
+    "avisoLarguraOk": true,
+    "mensagemDoImport": [
+      "5 criatura(s) importada(s) com sucesso."
+    ],
+    "inventario": [
+      "Lote 08 Da 2.5.2 [2.5.2]",
+      "Lote 08 Sem Marca [2.5.2]",
+      "Sem nome [2.5.2]"
+    ],
+    "criaturasBase": 2
+  },
+  "afty-1440": {
+    "erros": [],
+    "avisoApareceu": true,
+    "recusadas": [
+      "Lote 08 Da 2.5.2\nGrimório 2.5.2",
+      "Lote 08 Sem Marca\nGrimório 2.5.2",
+      "Lote 08 Personagem\nFicha de Player"
+    ],
+    "avisoTexto": "Fichas de Outro Grimório 3 fichas não entraram, porque pertencem a outro livro: Lote 08 Da 2.5.2 Grimório 2.5.2 Lote 08 Sem Marca Grimório 2.5.2 Lote 08 Personagem Ficha de Player As outras 2 fichas do arquivo entraram normalmente. Importe cada uma no grimório em que foi criada. Entendi",
+    "avisoLarguraOk": true,
+    "mensagemDoImport": [
+      "5 criatura(s) importada(s) com sucesso."
+    ],
+    "inventario": [
+      "Lote 08 Criatura [afty]",
+      "Sem nome [afty]"
+    ],
+    "criaturasBase": 0
+  },
+  "afty-390": {
+    "erros": [],
+    "avisoApareceu": true,
+    "recusadas": [
+      "Lote 08 Da 2.5.2\nGrimório 2.5.2",
+      "Lote 08 Sem Marca\nGrimório 2.5.2",
+      "Lote 08 Personagem\nFicha de Player"
+    ],
+    "avisoTexto": "Fichas de Outro Grimório 3 fichas não entraram, porque pertencem a outro livro: Lote 08 Da 2.5.2 Grimório 2.5.2 Lote 08 Sem Marca Grimório 2.5.2 Lote 08 Personagem Ficha de Player As outras 2 fichas do arquivo entraram normalmente. Importe cada uma no grimório em que foi criada. Entendi",
+    "avisoLarguraOk": true,
+    "mensagemDoImport": [
+      "5 criatura(s) importada(s) com sucesso."
+    ],
+    "inventario": [
+      "Lote 08 Criatura [afty]",
+      "Sem nome [afty]"
+    ],
+    "criaturasBase": 0
+  },
+  "player-1440": {
+    "erros": [],
+    "avisoApareceu": true,
+    "recusadas": [
+      "Lote 08 Da 2.5.2\nGrimório 2.5.2",
+      "Lote 08 Sem Marca\nGrimório 2.5.2",
+      "Lote 08 Criatura\nGrimório Afty"
+    ],
+    "avisoTexto": "Fichas de Outro Grimório 3 fichas não entraram, porque pertencem a outro livro: Lote 08 Da 2.5.2 Grimório 2.5.2 Lote 08 Sem Marca Grimório 2.5.2 Lote 08 Criatura Grimório Afty As outras 2 fichas do arquivo entraram normalmente. Importe cada uma no grimório em que foi criada. Entendi",
+    "avisoLarguraOk": true,
+    "mensagemDoImport": [
+      "5 personagens importados com sucesso."
+    ],
+    "inventario": [
+      "Lote 08 Personagem [player]",
+      "Sem nome [player]"
+    ],
+    "criaturasBase": 0
+  },
+  "player-390": {
+    "erros": [],
+    "avisoApareceu": true,
+    "recusadas": [
+      "Lote 08 Da 2.5.2\nGrimório 2.5.2",
+      "Lote 08 Sem Marca\nGrimório 2.5.2",
+      "Lote 08 Criatura\nGrimório Afty"
+    ],
+    "avisoTexto": "Fichas de Outro Grimório 3 fichas não entraram, porque pertencem a outro livro: Lote 08 Da 2.5.2 Grimório 2.5.2 Lote 08 Sem Marca Grimório 2.5.2 Lote 08 Criatura Grimório Afty As outras 2 fichas do arquivo entraram normalmente. Importe cada uma no grimório em que foi criada. Entendi",
+    "avisoLarguraOk": true,
+    "mensagemDoImport": [
+      "5 personagens importados com sucesso."
+    ],
+    "inventario": [
+      "Lote 08 Personagem [player]",
+      "Sem nome [player]"
+    ],
+    "criaturasBase": 0
+  },
+  "uso-afty": {
+    "erros": [],
+    "legadoAbreNoPainel252": true,
+    "legadoAbreNaFichaAfty": false,
+    "daRotaAbreNaFichaAfty": true,
+    "modelosOferecemLegado": true,
+    "modelosOferecemDaRota": false
+  },
+  "uso-player": {
+    "erros": [],
+    "legadoAbreNoPainel252": true,
+    "legadoAbreNaFichaAfty": false,
+    "daRotaAbreNaFichaAfty": true,
+    "modelosOferecemLegado": true,
+    "modelosOferecemDaRota": false
+  }
+}

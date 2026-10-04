@@ -79,13 +79,22 @@ Controlador e Invocações").
 |---|---|
 | **Sistemas** | Vale na criatura (`/Afty`) e no jogador (`/Player`), com as regras compartilhadas. Diferença real vai para `DIVERGENCIAS` (`afty-sistema.js`) |
 | **Tipos** | Os tipos separados do *Mecânicas*: **Marionete, Corpo Amaldiçoado, Maldição Domada, Shikigami**, e o **Shikigami de Técnica** como subtipo do Shikigami. Eles diferem de verdade em cura, alma, custo, ativação, dissipação, destruição, exorcismo, evolução e reparo |
+| **Rótulos de Tela** (2026-10-03) | Shikigami e Shikigami de Técnica nos dois sistemas. Nos filtros, os curtos são Shikigami e Técnica. Os valores gravados shikigami e tecnica permanecem iguais |
 | **Maldição Domada** | Regras do *Mecânicas* inteiras: grau fixo, não dissipa, sem talismã, ficha adaptada, PV ×1,5, atributos, treinos, masterizações, resistências e imunidades mantidos, Aptidão vira Característica e gasta PE do Controlador, sem cura por ER, exorcizada a 0 PV, sem custo base de ativação, sem Visionário. Maldições já salvas mudam de regra, sem corromper nem apagar dado |
 | **Shikigami de Técnica** | Regras do *Mecânicas*. Dissipação normal segue a regra comum. O 1º exorcismo antes do descanso longo vira dissipação. O 2º mata, e o Fundamento e a Técnica Inata são perdidos. Dissipação e exorcismo são contadores separados. O antigo "Retorno Completo" sai |
 | **`tipo_shikigami`** | Fica só como compatibilidade **LEGACY** de leitura (o sentido de hoje, que também liga na Maldição). Código oficial novo usa sinais específicos para Shikigami puro, Técnica, Maldição, Marionete e Corpo |
 | **Quimera** | `regra: "addon" \| "mecanicas"`. Quimera salva sem o campo continua `addon` (LEGACY), e nada é convertido em silêncio. Quimera nova nasce `mecanicas`, a regra oficial |
 | **Perda da Técnica Inata** | A morte do Shikigami de Técnica marcado como **Fundamento** bloqueia a Técnica Inata de verdade, gravado na ficha e refletido na sessão. Nada é apagado: a Técnica fica marcada como indisponível |
+| **Fundamento fora de campo** (2026-10-03) | Na mesa, bloqueia toda a Técnica Inata: Feitiços, Funcionamento e Passivas. Voltar ao campo restaura os efeitos. O criador não considera o estado de campo |
+| **Reserva de PE da Passiva** (2026-10-03) | No jogador, continua ocupando PE Máximo com a Técnica perdida ou com o Fundamento fora de campo. A criatura segue sem esse custo |
+| **Marionete no descanso** (2026-10-03) | O botão de Descanso repara completamente uma Marionete não destruída, escolhida na Ficha ou no Encontro, e zera suas quedas. As demais conservam PV, quedas, retorno e estado. Descansar Todos pede uma escolha por combatente que tenha Marionete a reparar |
 | **Estado terminal** | Nenhuma ficha é apagada sozinha (exorcizada, destruída, morta). Ela fica com o estado, para histórico, Herança, componentes e restauração futura. Remover é ação manual |
 | **PE ao invocar** | Na Ficha e no Encontro, entrar em campo desconta o PE do Controlador, já com Econômicas, Autonomia, Reserva, Ápice, extras e o custo do tipo. A mesa calcula, mostra, recusa o impossível, desconta e registra a entrada. O Criador só calcula |
+| **Cota base sem PE** (2026-10-03) | A quantidade base do grau (`INV_ACOES_CARACT_BASE`: 2 no Quarto e no Terceiro, 3 no Segundo e no Primeiro, 4 no Especial) não custa PE. Só as Ações e Características além dela custam, em `detalheCustoInvocacao` |
+| **Corpo paga as extras** (2026-10-03) | O Corpo Amaldiçoado segue a Marionete: base zero, e as Ações e Características além da cota pagas na entrada. O livro diz dele só "não possuem custo de ativação", sem falar das extras |
+| **Horda, PV e queda** (2026-10-03) | O PV máximo fica ao perder membros. Só as escalas caem, sem cascata. A 0 PV a horda acaba, e líder e membros restantes caem pela regra do próprio tipo. O exorcismo exige excedente superior ao máximo da horda |
+| **Hoste Amaldiçoada** (2026-10-03) | O par conta como uma tanto no limite de Hordas quanto no de Invocações em campo. As duas precisam estar em campo, marcadas como Hoste e apontar uma para a outra |
+| **Mecha, maior PV** (2026-10-03) | A maior é escolhida pelo PV máximo. O Mecha leva o PV atual dela e o atual da menor como PV temporário. Separar devolve esses dois números. A 0 PV a principal quebra e o Mecha se desfaz, com as regras de Marionete |
 | **Dados extras** | Característica comum continua sem poder criar dado extra (Livro). Só as autorizadas por fonte podem, numa lista fechada: Dano Durante o Ataque, Corrida Perfurante e Aura de Dano Durante o Ataque |
 | **TR Treinada e TR Mestre** | Pelo *Adicionais*: Treinada sem trava de grau, e Mestre só num TR em que a invocação já é treinada. As travas de 2026-09-03 saem |
 | **Herança das Sombras** | A do *Mecânicas*, persistente e empilhável: Nível de Dano, bônus escolhido, resistência ou imunidade, Ação, Característica, treinos, atributo, e a Herança passa adiante quando a herdeira morre. Substitui a regra do exemplo, e addons próprios de Herança continuam funcionando |
@@ -104,14 +113,14 @@ Controlador e Invocações").
 - **Cobertura de reação:** 4 PE com grau mínimo Terceiro, e 6 PE com grau mínimo Segundo.
 - **Alado e Nadador:** o deslocamento novo parte do de caminhada.
 - **Forma de Arma e de Armadura:** Custo 1 no Quarto, 2 no Terceiro, 3 no Segundo, 4 no Primeiro e no Especial.
-- **Marionete:** o reparo completo zera as quedas, e o dano excedente ainda pode destruí-la.
+- **Marionete:** o reparo completo zera as quedas, e o dano excedente ainda pode destruí-la. No Descanso, só a escolhida recebe esse reparo (autor, 2026-10-03). O Mecha se separa antes da escolha e devolve às componentes seus PV atuais.
 - **Corpo:** núcleo quebrado é destruição permanente, sem apagar a ficha.
 - **Maldição:**
   - Ações e Características extras com custo são cobradas na entrada, junto da ativação ou do início do combate;
   - o Nível de Aptidão é metade do modificador de Presença do Controlador, para baixo, mínimo 0.
 - **Aura:** não vale na própria invocação, salvo regra específica. Duas auras iguais não acumulam (vale a maior), e auras de efeitos diferentes convivem.
 - **Concedidas por regra:** "Trocar Núcleo" e as Ações e Características herdadas não ocupam vaga nem aumentam custo.
-- **Fundamento:** é marca explícita (`fundamento`), e nem toda Invocação de Técnica é Fundamento.
+- **Fundamento:** é marca explícita (`fundamento`), e nem todo Shikigami de Técnica é Fundamento.
 - **Ações com Custo:** o limite por grau segue 1, 1, 2, 2, 3.
 - **Quimera em campo:** conta como 1 no limite.
 - **Antes de codificar:**
@@ -131,9 +140,21 @@ por `regrasDoTipo`, a sessão pelo campo `regras` da resolvida.
 | Tipo | Campos da ficha | O que o motor faz |
 |---|---|---|
 | Marionete | `oficio` | Sem Integridade (`temAlma: false`), imune a dano na alma, Envenenado e venenos comuns, Vontade e Astúcia com o número do invocador (`doInvocador`), sem cura nenhuma (`curaPermitida`), reparo pelo Ofício com Custo pelo grau e CD da tabela de Criação de Itens, aviso no Grau Especial abaixo do nível 17 real |
-| Corpo | `natureza`, `refeicao`, `refeicaoTrs` | Boneco imune a Envenenado e reparado pelo Alfaiate. Biológico com a refeição de Cozinheiro (grau e BT do dono): Leve, Picante, Reforçada e Nutritiva como efeito de canal. Duração de CL rodadas (`duracao`), contada pela sessão (`rodadasAtiva`), com a manutenção de 1 ou 2 PE (`pagaManutencaoCorpo`) e a saída de campo sem ela |
+| Corpo | `natureza`, `refeicao`, `refeicaoTrs` | Boneco imune a Envenenado e reparado pelo Alfaiate. Biológico reparado por Cura Aprimorada ou Medicina, com a CD da coluna do Farmacêutico na tabela de Criação de Itens (decisão do autor, 2026-10-03). A CD de todo reparo leva a coluna e o Custo no hover (`partesCd`). Biológico com a refeição de Cozinheiro (grau e BT do dono): Leve, Picante, Reforçada e Nutritiva como efeito de canal. Duração de CL rodadas (`duracao`), contada pela sessão (`rodadasAtiva`), com a manutenção de 1 ou 2 PE (`pagaManutencaoCorpo`) e a saída de campo sem ela |
 | Maldição Domada | (nenhum) | Sem os efeitos de orçamento do dono (Visionário, Ápice), ficha adaptada (sem avisos de point-buy, cota de perícia, vaga de TR e Ofício, sem trava de grau), Nível de Aptidão pela Presença do Controlador, sem cura por ER, Autonomia no início do combate |
-| Shikigami de Técnica | `fundamento` | Iniciativa própria. O Fundamento morto bloqueia a Técnica Inata (`estadoDaTecnicaInata`): os efeitos do Funcionamento e das Passivas saem do Motor, e os Feitiços ficam marcados (`bloqueado`). A perda é gravada em `creature.fundamentosPerdidos`. Fora de campo, só os Feitiços ficam marcados |
+| Shikigami de Técnica | `fundamento` | Iniciativa própria. O Fundamento morto bloqueia a Técnica Inata (`estadoDaTecnicaInata`): os efeitos do Funcionamento e das Passivas saem do Motor, e os Feitiços ficam marcados (`bloqueado`). A perda é gravada em `creature.fundamentosPerdidos`. Fora de campo na mesa, Feitiços, Funcionamento e Passivas ficam bloqueados também, até o Fundamento voltar. O criador não usa o estado de campo (autor, 2026-10-03) |
+
+**Morte do Fundamento no Encontro (autor, 2026-10-03):** a perda continua na cópia do
+combatente e também é gravada na criatura salva. `sincronizarFundamentosNaBiblioteca`
+(em `encontros/fundamento-biblioteca.js`) escolhe a biblioteca pelo `rulesVersion` da
+ficha, procura o `criaturaId`, relê a versão atual e une os registros por `invocacaoId`.
+Não copia a ficha antiga do Encontro por cima de edições posteriores. Duas cópias da mesma
+criatura levam a perda à mesma original. Abrir um Encontro antigo também sincroniza perdas
+já gravadas na cópia. Ficha removida não é recriada. Vínculo inválido, biblioteca inválida
+ou falha de gravação mostram aviso em âmbar com AlertTriangle e Tentar Novamente, mantendo
+a perda no Encontro até ser possível gravá-la. Vale em /Afty e /Player, inclusive no
+Encontro misto. O App atualiza toda a biblioteca aberta na mesma aba com essa leitura
+atual, preservando também edições, inclusões, exclusões e ordem das outras fichas.
 
 A Autonomia de quem já está em campo quando o combate começa é cobrada no `iniciaCombate` (e na
 Ficha, na saída da rodada 0), pela regra do *Mecânicas* de que começar o combate em campo conta
@@ -148,13 +169,32 @@ Todo composto tem linha própria em `sessao.invocacoes`, e a linha guarda quem e
 
 | Composto | Onde mora | Linha de mesa | Conta em campo |
 |---|---|---|---|
-| Horda | `creature.hordas` (`hoste`, `parId`, `liderHorda`) | `horda:<id>` (`membrosAtivos`, `pvMaxMetade`) | 1 (o par da Hoste, 1 no limite de hordas) |
+| Horda | `creature.hordas` (`hoste`, `parId`, `liderHorda`) | `horda:<id>` (`membrosAtivos`, `pvMaxMetade`) | 1 (o par da Hoste, 1 nos dois limites) |
 | Quimera | `creature.quimeras` (`regra`, `escolhas`) | `quimera:<id>` | 1 |
 | Corpo de Múltiplos Núcleos | `creature.multiplosNucleos` (`nucleoIds`) | `nucleos:<id>` (`nucleoAtivo`) | 1 |
 | Mecha | só a sessão | `mecha` (`maiorId`, `menorId`, `menorQuebrada`) | 2 (as duas Marionetes seguem ativas) |
 
+**Quimera do Mecânicas (autor, 2026-10-03):** Invocações Resistentes e os outros bônus
+aditivos do dono no canal `pv` saem das componentes usadas na conta da fusão e entram uma
+vez no resultado. Os cartões individuais continuam com esses bônus. O recálculo mantém o
+passe de fontes, o PV do tipo e o das Características, e a aplicação final usa o Motor com
+a condição, a mira e o grau da Quimera. A parcela recebe o nome da fonte no hover, acessível
+por mouse e toque no criador e na Ficha. Frações arredondam para baixo, com a parcela de
+arredondamento. A Quimera antiga do addon conserva soma dos cartões menos 10.
+
+**Visionário das componentes (autor, 2026-10-03):** a mesa identifica e desconsidera à mão
+as Ações e Características que ocupam vagas de Visionário ou efeitos semelhantes e não
+podem ser herdadas pela Quimera. Não há marcação de origem por item nem filtro automático.
+O Visionário do dono continua concedendo vagas à Quimera pronta. Vale nos dois sistemas.
+
 A Horda, a Quimera e o Mecha se desfazem no descanso. O início do combate abre a cena nova: a
 Quimera da cena, os líderes de Horda dissipada e as componentes bloqueadas voltam.
+
+A contagem do par da Hoste sai do `deriveAfty`, antes dos efeitos que leem
+`invocacoes_em_campo`. A aba da mesa lê os mesmos totais em `invocacoes.emCampo`
+e `hordas.emCampo`. Um par ocupa uma vaga também para Controle Sintonizado e
+Concentrar Poder. Só uma horda do par em campo continua ocupando uma vaga.
+Vínculo incompleto ou sem volta conta cada horda separadamente.
 
 ### A Herança das Sombras persistente (Etapa 10, 2026-10-01)
 
@@ -249,6 +289,11 @@ característica). Isso entra na MESMA passada de efeitos ainda pendente de Aptid
    próprio da invocação**: as vars da INVOCAÇÃO usam nomes explícitos (`forca`, `mod_destreza`,
    `pv_max`, `grau`...) e as do DONO entram como `nd`, `bt`, `nivel_controlador`, para uma expressão
    distinguir os dois sem ambiguidade. Zero edição em `src/components/`.
+
+   Os campos de Modificador de Ação e Característica conferem sintaxe e nomes pelo
+   `vocabularioInvocacao` do contexto daquela invocação. Um nome exclusivo da criatura ou
+   digitado errado fica vermelho, enquanto atributos, grau, tipo, marcadores, `nd` e `bt`
+   do dono e as constantes `sempre` e `nunca` continuam válidos.
 
 ---
 
@@ -1448,7 +1493,8 @@ Modificador) e recebia os efeitos das Habilidades de Controlador e dos Addons. A
 como ela ganha um: *"Faça igual Feitiços Passivas para Caracteristica."* A Passiva é o Feitiço cujo
 corpo é o Motor, e a **Livre virou a Característica cujo corpo é o Motor**.
 
-- **Custa como Característica.** Ocupa uma vaga do orçamento e soma 1 PE no custo, sem regra nova.
+- **Custa como Característica.** Ocupa uma vaga do orçamento e soma 1 PE no custo quando passa da
+  cota base do grau, sem regra nova.
 - **Mesmo efeito não acumula, vale a maior** (autor). Entre Características, uma delas pelo Motor,
   com o critério do pool das Passivas: disputa por canal, alvo e sinal, bônus fica com o maior e
   penalidade com a pior. Onde o efeito tem par num subtipo, a disputa atravessa os dois: PV contra

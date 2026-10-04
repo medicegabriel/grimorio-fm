@@ -1,0 +1,15 @@
+import { readFileSync, writeFileSync } from 'node:fs';
+let texto = readFileSync('.audit/lote04-browser.mjs', 'utf8');
+texto = texto.replace("for (const rota of ['afty', 'player']) for (const largura of [1440, 390])", "for (const rota of ['afty']) for (const largura of [390])");
+const inicio = texto.indexOf('  await acao();\n');
+const fim = texto.indexOf('  await context.close();', inicio);
+texto = texto.slice(0, inicio) + `  await acao();
+  const b = linha('basico').getByRole('button', { name: '3m', exact: true });
+  await page.evaluate(() => { window.eventosAlcance = []; for (const tipo of ['pointerdown', 'focusin', 'click']) document.addEventListener(tipo, e => { if (e.target.textContent === '3m') window.eventosAlcance.push({ tipo, expandido: e.target.getAttribute('aria-expanded'), focusVisible: e.target.matches(':focus-visible'), hover: matchMedia('(hover: hover)').matches }); }, true); });
+  await b.tap();
+  console.log('APÓS TOQUE', await b.getAttribute('aria-expanded'), await page.evaluate(() => window.eventosAlcance), await page.locator('.afty-fontes-flutuante').count());
+  await b.tap();
+  console.log('APÓS SEGUNDO TOQUE', await b.getAttribute('aria-expanded'), await page.locator('.afty-fontes-flutuante').allTextContents());
+  await page.screenshot({ path: '.audit/lote04-shots/toque-inspecao.png' });
+` + texto.slice(fim);
+writeFileSync('.audit/lote04-toque-inspecao.mjs', texto, 'utf8');

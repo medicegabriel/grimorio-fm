@@ -1,0 +1,11 @@
+{
+  "id": "alter",
+  "nome": "Alter",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Aumenta em 50% a quantidade que pode ser comprada de cada item do Espinho. A Habilidade de Especialização, que teria teto igual ao BT, passa a ter BT × 1,5, arredondado para baixo. Os itens sem teto continuam sem teto. Só faz efeito junto do Addon Espinho.",
+  "espinho": {
+    "multiplicadorTeto": 1.5
+  }
+}

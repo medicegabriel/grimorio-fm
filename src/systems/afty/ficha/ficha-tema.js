@@ -801,6 +801,14 @@ export const CONTRATO_DE_CLASSES = [
   { grupo: "Invocação", seletor: ".afty-inv-fileira", oque: "a fileira de cartões de cima. FICA FORA do escopo de um shikigami" },
   { grupo: "Invocação", seletor: ".afty-inv-cartao", oque: "cada cartão da fileira. Também fora do escopo de um shikigami" },
 
+  /* ---------- Espinho (Addon) ---------- */
+  { grupo: "Espinho", seletor: ".afty-espinho", oque: "o card das Almas, na aba Habilidades. Tem paleta PRÓPRIA nos tokens --espinho-* (troque-os aqui), e não lê os --afty-*" },
+  { grupo: "Espinho", seletor: ".afty-espinho-casca", oque: "a caixa do card, que recorta o brilho de dentro" },
+  { grupo: "Espinho", seletor: ".afty-espinho-titulo", oque: "o título vazado" },
+  { grupo: "Espinho", seletor: ".afty-espinho-cristal", oque: "o cristal das Almas Restantes" },
+  { grupo: "Espinho", seletor: ".afty-espinho-marca", oque: "cada compra listada" },
+  { grupo: "Espinho", seletor: ".afty-espinho-rachadura", oque: "as rachaduras que escapam da borda" },
+
   /* ---------- controles ---------- */
   { grupo: "Controles", seletor: ".afty-botao", oque: "todo botão de texto" },
   { grupo: "Controles", seletor: ".afty-passo", oque: "os botões de menos e mais" },

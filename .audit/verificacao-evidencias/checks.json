@@ -1,0 +1,26 @@
+[
+  {
+    "name": "suite",
+    "status": 0
+  },
+  {
+    "name": "filtro",
+    "status": 0
+  },
+  {
+    "name": "imitacao",
+    "status": 0
+  },
+  {
+    "name": "ordem",
+    "status": 0
+  },
+  {
+    "name": "eslint",
+    "status": 0
+  },
+  {
+    "name": "build",
+    "status": 0
+  }
+]

@@ -1,0 +1,504 @@
+[
+  {
+    "route": "afty",
+    "width": 1440,
+    "creator": [
+      "Principal (Base)+39",
+      "Um Terço dos Outros+13",
+      "Grau × Adicionais−2",
+      "Invocações Resistentes+20"
+    ],
+    "creatorFocus": {
+      "active": "<button type=\"button\" aria-expanded=\"true\" title=\"Pontos de Vida da Quimera\" class=\"cursor-help text-left \">70</button>",
+      "panels": [
+        {
+          "text": "Base do Tipo (Combatente)+66Constituição × ND+0Total66",
+          "visible": false
+        },
+        {
+          "text": "Base do Tipo (Combatente)+40Total40",
+          "visible": false
+        },
+        {
+          "text": "Base+10Nível ÷ 1,25+8Destreza+0Maestria+4Total22",
+          "visible": false
+        },
+        {
+          "text": "Base+10Nível ÷ 1,75+5Mod. da Técnica (Inteligência)+0Maestria+4Total19",
+          "visible": false
+        },
+        {
+          "text": "Base do Tipo (Combatente)+10Total10",
+          "visible": false
+        },
+        {
+          "text": "Base do Tipo (Combatente)+0Total0",
+          "visible": false
+        },
+        {
+          "text": "Base+9Maior de Força e Destreza × 1,5+0Total9m",
+          "visible": false
+        },
+        {
+          "text": "BaseMédioTotalMédio · 1,5m",
+          "visible": false
+        },
+        {
+          "text": "Maestria ÷ 2+2Destreza+0Total+2",
+          "visible": false
+        },
+        {
+          "text": "Base+10Percepção+5Total15",
+          "visible": false
+        },
+        {
+          "text": "ND 10+4Total+4",
+          "visible": false
+        },
+        {
+          "text": "Força+0Nível ÷ 1,5+6Total+6",
+          "visible": false
+        },
+        {
+          "text": "Dano Total20Nível × 2+20Força × 1+0Critável1d8Dados Base1d8Fixo+16Dano Fixo+16Total1d8 + 16",
+          "visible": false
+        },
+        {
+          "text": "Destreza+0Nível ÷ 1,25+8Total8",
+          "visible": false
+        },
+        {
+          "text": "Constituição+0Nível ÷ 1,25+8Total8",
+          "visible": false
+        },
+        {
+          "text": "Sabedoria+0Nível ÷ 1,75+5Total5",
+          "visible": false
+        },
+        {
+          "text": "Inteligência+0Nível ÷ 1,75+5Total5",
+          "visible": false
+        },
+        {
+          "text": "Constituição+0Nível ÷ 1,5+6Total6",
+          "visible": false
+        },
+        {
+          "text": "Força+0Nível ÷ 1,5+6Total6",
+          "visible": false
+        },
+        {
+          "text": "Destreza+0Nível ÷ 1,5+6Total6",
+          "visible": false
+        },
+        {
+          "text": "Inteligência+0Nível ÷ 1,5+6Maestria+4Total10",
+          "visible": false
+        },
+        {
+          "text": "Terceiro Grau (Base)+25Constituição+4Nível de Desafio+10Invocações Resistentes+20Total59",
+          "visible": false
+        },
+        {
+          "text": "Terceiro Grau (Base)+12Destreza−1Maestria+4Total15",
+          "visible": false
+        },
+        {
+          "text": "Base+9Total9",
+          "visible": false
+        },
+        {
+          "text": "Terceiro Grau (Base)+4Total4",
+          "visible": false
+        },
+        {
+          "text": "Terceiro Grau (Base)+2Adicionais do Grau+2Total4",
+          "visible": false
+        },
+        {
+          "text": "Principal (Base)\n+39\nUm Terço dos Outros\n+13\nGrau × Adicionais\n−2\nInvocações Resistentes\n+20\nTOTAL\n70",
+          "visible": true
+        }
+      ]
+    },
+    "encounter": [
+      "Base+10",
+      "Nível ÷ 1,25+8",
+      "Destreza+0",
+      "Maestria+4"
+    ],
+    "errors": []
+  },
+  {
+    "route": "afty",
+    "width": 390,
+    "creator": [
+      "Principal (Base)+39",
+      "Um Terço dos Outros+13",
+      "Grau × Adicionais−2",
+      "Invocações Resistentes+20"
+    ],
+    "creatorFocus": {
+      "active": "<button type=\"button\" aria-expanded=\"true\" title=\"Pontos de Vida da Quimera\" class=\"cursor-help text-left \">70</button>",
+      "panels": [
+        {
+          "text": "Base do Tipo (Combatente)+66Constituição × ND+0Total66",
+          "visible": false
+        },
+        {
+          "text": "Base do Tipo (Combatente)+40Total40",
+          "visible": false
+        },
+        {
+          "text": "Base+10Nível ÷ 1,25+8Destreza+0Maestria+4Total22",
+          "visible": false
+        },
+        {
+          "text": "Base+10Nível ÷ 1,75+5Mod. da Técnica (Inteligência)+0Maestria+4Total19",
+          "visible": false
+        },
+        {
+          "text": "Base do Tipo (Combatente)+10Total10",
+          "visible": false
+        },
+        {
+          "text": "Base do Tipo (Combatente)+0Total0",
+          "visible": false
+        },
+        {
+          "text": "Base+9Maior de Força e Destreza × 1,5+0Total9m",
+          "visible": false
+        },
+        {
+          "text": "BaseMédioTotalMédio · 1,5m",
+          "visible": false
+        },
+        {
+          "text": "Maestria ÷ 2+2Destreza+0Total+2",
+          "visible": false
+        },
+        {
+          "text": "Base+10Percepção+5Total15",
+          "visible": false
+        },
+        {
+          "text": "ND 10+4Total+4",
+          "visible": false
+        },
+        {
+          "text": "Força+0Nível ÷ 1,5+6Total+6",
+          "visible": false
+        },
+        {
+          "text": "Dano Total20Nível × 2+20Força × 1+0Critável1d8Dados Base1d8Fixo+16Dano Fixo+16Total1d8 + 16",
+          "visible": false
+        },
+        {
+          "text": "Destreza+0Nível ÷ 1,25+8Total8",
+          "visible": false
+        },
+        {
+          "text": "Constituição+0Nível ÷ 1,25+8Total8",
+          "visible": false
+        },
+        {
+          "text": "Sabedoria+0Nível ÷ 1,75+5Total5",
+          "visible": false
+        },
+        {
+          "text": "Inteligência+0Nível ÷ 1,75+5Total5",
+          "visible": false
+        },
+        {
+          "text": "Constituição+0Nível ÷ 1,5+6Total6",
+          "visible": false
+        },
+        {
+          "text": "Força+0Nível ÷ 1,5+6Total6",
+          "visible": false
+        },
+        {
+          "text": "Destreza+0Nível ÷ 1,5+6Total6",
+          "visible": false
+        },
+        {
+          "text": "Inteligência+0Nível ÷ 1,5+6Maestria+4Total10",
+          "visible": false
+        },
+        {
+          "text": "Terceiro Grau (Base)+25Constituição+4Nível de Desafio+10Invocações Resistentes+20Total59",
+          "visible": false
+        },
+        {
+          "text": "Terceiro Grau (Base)+12Destreza−1Maestria+4Total15",
+          "visible": false
+        },
+        {
+          "text": "Base+9Total9",
+          "visible": false
+        },
+        {
+          "text": "Terceiro Grau (Base)+4Total4",
+          "visible": false
+        },
+        {
+          "text": "Terceiro Grau (Base)+2Adicionais do Grau+2Total4",
+          "visible": false
+        },
+        {
+          "text": "Principal (Base)\n+39\nUm Terço dos Outros\n+13\nGrau × Adicionais\n−2\nInvocações Resistentes\n+20\nTOTAL\n70",
+          "visible": true
+        }
+      ]
+    },
+    "encounter": [
+      "Base+10",
+      "Nível ÷ 1,25+8",
+      "Destreza+0",
+      "Maestria+4"
+    ],
+    "errors": []
+  },
+  {
+    "route": "player",
+    "width": 1440,
+    "creator": [
+      "Principal (Base)+39",
+      "Um Terço dos Outros+13",
+      "Grau × Adicionais−2",
+      "Invocações Resistentes+20"
+    ],
+    "creatorFocus": {
+      "active": "<button type=\"button\" aria-expanded=\"true\" title=\"Pontos de Vida da Quimera\" class=\"cursor-help text-left \">70</button>",
+      "panels": [
+        {
+          "text": "Controlador 10 (inicial)+55Constituição × Nível+0Total55",
+          "visible": false
+        },
+        {
+          "text": "Controlador 10 (inicial)+50Total50",
+          "visible": false
+        },
+        {
+          "text": "Base+10Metade do Nível+5Destreza+0Total15",
+          "visible": false
+        },
+        {
+          "text": "Base+10Metade do Nível+5Mod. da Técnica (Inteligência)+0Maestria+4Total19",
+          "visible": false
+        },
+        {
+          "text": "Base+9Total9m",
+          "visible": false
+        },
+        {
+          "text": "BaseMédioTotalMédio · 1,5m",
+          "visible": false
+        },
+        {
+          "text": "Destreza+0Total+0",
+          "visible": false
+        },
+        {
+          "text": "Base+10Percepção+5Total15",
+          "visible": false
+        },
+        {
+          "text": "Nível 10+4Total+4",
+          "visible": false
+        },
+        {
+          "text": "Força+0Metade do Nível+5Maestria (Ataque Desarmado)+4Total+9",
+          "visible": false
+        },
+        {
+          "text": "Critável1d8Golpe Desarmado1d8Fixo+0Força+0Total1d8",
+          "visible": false
+        },
+        {
+          "text": "Destreza+0Metade do Nível+5Total5",
+          "visible": false
+        },
+        {
+          "text": "Constituição+0Metade do Nível+5Total5",
+          "visible": false
+        },
+        {
+          "text": "Sabedoria+0Metade do Nível+5Total5",
+          "visible": false
+        },
+        {
+          "text": "Inteligência+0Metade do Nível+5Total5",
+          "visible": false
+        },
+        {
+          "text": "Constituição+0Metade do Nível+5Total5",
+          "visible": false
+        },
+        {
+          "text": "Força+0Metade do Nível+5Total5",
+          "visible": false
+        },
+        {
+          "text": "Destreza+0Metade do Nível+5Total5",
+          "visible": false
+        },
+        {
+          "text": "Inteligência+0Metade do Nível+5Maestria+4Total9",
+          "visible": false
+        },
+        {
+          "text": "Terceiro Grau (Base)+25Constituição+4Nível de Desafio+10Invocações Resistentes+20Total59",
+          "visible": false
+        },
+        {
+          "text": "Terceiro Grau (Base)+12Destreza−1Maestria+4Total15",
+          "visible": false
+        },
+        {
+          "text": "Base+9Total9",
+          "visible": false
+        },
+        {
+          "text": "Terceiro Grau (Base)+4Total4",
+          "visible": false
+        },
+        {
+          "text": "Terceiro Grau (Base)+2Adicionais do Grau+2Total4",
+          "visible": false
+        },
+        {
+          "text": "Principal (Base)\n+39\nUm Terço dos Outros\n+13\nGrau × Adicionais\n−2\nInvocações Resistentes\n+20\nTOTAL\n70",
+          "visible": true
+        }
+      ]
+    },
+    "encounter": [
+      "Base+10",
+      "Metade do Nível+5",
+      "Destreza+0"
+    ],
+    "errors": []
+  },
+  {
+    "route": "player",
+    "width": 390,
+    "creator": [
+      "Principal (Base)+39",
+      "Um Terço dos Outros+13",
+      "Grau × Adicionais−2",
+      "Invocações Resistentes+20"
+    ],
+    "creatorFocus": {
+      "active": "<button type=\"button\" aria-expanded=\"true\" title=\"Pontos de Vida da Quimera\" class=\"cursor-help text-left \">70</button>",
+      "panels": [
+        {
+          "text": "Controlador 10 (inicial)+55Constituição × Nível+0Total55",
+          "visible": false
+        },
+        {
+          "text": "Controlador 10 (inicial)+50Total50",
+          "visible": false
+        },
+        {
+          "text": "Base+10Metade do Nível+5Destreza+0Total15",
+          "visible": false
+        },
+        {
+          "text": "Base+10Metade do Nível+5Mod. da Técnica (Inteligência)+0Maestria+4Total19",
+          "visible": false
+        },
+        {
+          "text": "Base+9Total9m",
+          "visible": false
+        },
+        {
+          "text": "BaseMédioTotalMédio · 1,5m",
+          "visible": false
+        },
+        {
+          "text": "Destreza+0Total+0",
+          "visible": false
+        },
+        {
+          "text": "Base+10Percepção+5Total15",
+          "visible": false
+        },
+        {
+          "text": "Nível 10+4Total+4",
+          "visible": false
+        },
+        {
+          "text": "Força+0Metade do Nível+5Maestria (Ataque Desarmado)+4Total+9",
+          "visible": false
+        },
+        {
+          "text": "Critável1d8Golpe Desarmado1d8Fixo+0Força+0Total1d8",
+          "visible": false
+        },
+        {
+          "text": "Destreza+0Metade do Nível+5Total5",
+          "visible": false
+        },
+        {
+          "text": "Constituição+0Metade do Nível+5Total5",
+          "visible": false
+        },
+        {
+          "text": "Sabedoria+0Metade do Nível+5Total5",
+          "visible": false
+        },
+        {
+          "text": "Inteligência+0Metade do Nível+5Total5",
+          "visible": false
+        },
+        {
+          "text": "Constituição+0Metade do Nível+5Total5",
+          "visible": false
+        },
+        {
+          "text": "Força+0Metade do Nível+5Total5",
+          "visible": false
+        },
+        {
+          "text": "Destreza+0Metade do Nível+5Total5",
+          "visible": false
+        },
+        {
+          "text": "Inteligência+0Metade do Nível+5Maestria+4Total9",
+          "visible": false
+        },
+        {
+          "text": "Terceiro Grau (Base)+25Constituição+4Nível de Desafio+10Invocações Resistentes+20Total59",
+          "visible": false
+        },
+        {
+          "text": "Terceiro Grau (Base)+12Destreza−1Maestria+4Total15",
+          "visible": false
+        },
+        {
+          "text": "Base+9Total9",
+          "visible": false
+        },
+        {
+          "text": "Terceiro Grau (Base)+4Total4",
+          "visible": false
+        },
+        {
+          "text": "Terceiro Grau (Base)+2Adicionais do Grau+2Total4",
+          "visible": false
+        },
+        {
+          "text": "Principal (Base)\n+39\nUm Terço dos Outros\n+13\nGrau × Adicionais\n−2\nInvocações Resistentes\n+20\nTOTAL\n70",
+          "visible": true
+        }
+      ]
+    },
+    "encounter": [
+      "Base+10",
+      "Metade do Nível+5",
+      "Destreza+0"
+    ],
+    "errors": []
+  }
+]

@@ -1,0 +1,501 @@
+{
+  "added": [
+    {
+      "file": "src/systems/afty/afty-derive.js",
+      "line": 4129,
+      "text": "    altoNivel: altoNivelFinal, // { ativo, melhorias, lendarias, escolhas, apiceId } [U+2014] orçamentos próprios"
+    }
+  ],
+  "counts": [
+    {
+      "file": "AGENTS.md",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "CLAUDE.md",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "addons/flugel.json",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "addons/maldicao-era-de-ouro.json",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "asserts/LEIA.md",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "asserts/t-estados-organiza.mjs",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "asserts/t-estrela-zenin.mjs",
+      "head": 1,
+      "current": 1
+    },
+    {
+      "file": "asserts/t-flugel.mjs",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "asserts/t-invocacao-estados.mjs",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "asserts/t-invocacao-tipos-especiais.mjs",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "asserts/t-invocacao-tipos.mjs",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "asserts/t-invocacoes-mesa.mjs",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "asserts/t-invocacoes-motor.mjs",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "asserts/t-maldicao-era-de-ouro.mjs",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "asserts/t-maldicao.mjs",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "asserts/t-melhorias-jogador.mjs",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "asserts/t-nome-ficha.mjs",
+      "head": 1,
+      "current": 1
+    },
+    {
+      "file": "asserts/t-ordem-modulos.mjs",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "asserts/t-primitivas.mjs",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "asserts/t-sistema.mjs",
+      "head": 1,
+      "current": 1
+    },
+    {
+      "file": "asserts/t-suporte-revisao.mjs",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "asserts/t-yna.mjs",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "docs/a-fazer.md",
+      "head": 7,
+      "current": 7
+    },
+    {
+      "file": "docs/afty-addons.md",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "docs/afty-equipamentos.md",
+      "head": 5,
+      "current": 5
+    },
+    {
+      "file": "docs/afty-ficha-final.md",
+      "head": 3,
+      "current": 3
+    },
+    {
+      "file": "docs/afty-formula-entropica.md",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "docs/afty-invocacoes.md",
+      "head": 21,
+      "current": 21
+    },
+    {
+      "file": "docs/afty-motor-referencia-estrutural.md",
+      "head": 38,
+      "current": 37
+    },
+    {
+      "file": "docs/afty-player.md",
+      "head": 1,
+      "current": 1
+    },
+    {
+      "file": "docs/afty-status.md",
+      "head": 63,
+      "current": 63
+    },
+    {
+      "file": "docs/automacao-dsl.md",
+      "head": 40,
+      "current": 40
+    },
+    {
+      "file": "src/App.jsx",
+      "head": 4,
+      "current": 4
+    },
+    {
+      "file": "src/components/PdfFab.jsx",
+      "head": 1,
+      "current": 1
+    },
+    {
+      "file": "src/components/PdfViewerModal.jsx",
+      "head": 2,
+      "current": 2
+    },
+    {
+      "file": "src/components/io-utils.js",
+      "head": 5,
+      "current": 5
+    },
+    {
+      "file": "src/systems/afty/AftyCreatureBuilder.jsx",
+      "head": 24,
+      "current": 24
+    },
+    {
+      "file": "src/systems/afty/afty-addons.js",
+      "head": 2,
+      "current": 2
+    },
+    {
+      "file": "src/systems/afty/afty-alto-nivel.js",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "src/systems/afty/afty-anatomias.js",
+      "head": 2,
+      "current": 0
+    },
+    {
+      "file": "src/systems/afty/afty-aptidoes.js",
+      "head": 4,
+      "current": 4
+    },
+    {
+      "file": "src/systems/afty/afty-atributos.js",
+      "head": 2,
+      "current": 2
+    },
+    {
+      "file": "src/systems/afty/afty-combate-conjurador.js",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "src/systems/afty/afty-derive.js",
+      "head": 18,
+      "current": 18
+    },
+    {
+      "file": "src/systems/afty/afty-efeitos-conteudo.js",
+      "head": 15,
+      "current": 15
+    },
+    {
+      "file": "src/systems/afty/afty-efeitos.js",
+      "head": 18,
+      "current": 18
+    },
+    {
+      "file": "src/systems/afty/afty-equipamentos.js",
+      "head": 7,
+      "current": 7
+    },
+    {
+      "file": "src/systems/afty/afty-feiticos.js",
+      "head": 24,
+      "current": 24
+    },
+    {
+      "file": "src/systems/afty/afty-habilidades.js",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "src/systems/afty/afty-invocacoes-tipos.js",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "src/systems/afty/afty-invocacoes.js",
+      "head": 17,
+      "current": 17
+    },
+    {
+      "file": "src/systems/afty/afty-origens.js",
+      "head": 8,
+      "current": 8
+    },
+    {
+      "file": "src/systems/afty/afty-pericias-catalogo.js",
+      "head": 2,
+      "current": 2
+    },
+    {
+      "file": "src/systems/afty/afty-pericias.js",
+      "head": 9,
+      "current": 9
+    },
+    {
+      "file": "src/systems/afty/afty-schema.js",
+      "head": 16,
+      "current": 16
+    },
+    {
+      "file": "src/systems/afty/afty-sistema.js",
+      "head": 1,
+      "current": 1
+    },
+    {
+      "file": "src/systems/afty/afty-talentos.js",
+      "head": 0,
+      "current": 0
+    },
+    {
+      "file": "src/systems/afty/encontros/AftyEncontro.jsx",
+      "head": 2,
+      "current": 2
+    },
+    {
+      "file": "src/systems/afty/encontros/PainelDeCombatente.jsx",
+      "head": 4,
+      "current": 4
+    },
+    {
+      "file": "src/systems/afty/encontros/usar-encontro-afty.js",
+      "head": 2,
+      "current": 2
+    },
+    {
+      "file": "src/systems/afty/ficha/AftyFicha.jsx",
+      "head": 1,
+      "current": 1
+    },
+    {
+      "file": "src/systems/afty/ficha/ItemDeFicha.jsx",
+      "head": 1,
+      "current": 1
+    },
+    {
+      "file": "src/systems/afty/ficha/PainelDeRolagens.jsx",
+      "head": 1,
+      "current": 1
+    },
+    {
+      "file": "src/systems/afty/ficha/abas/AbaAcoes.jsx",
+      "head": 1,
+      "current": 1
+    },
+    {
+      "file": "src/systems/afty/ficha/abas/AbaBuffs.jsx",
+      "head": 2,
+      "current": 2
+    },
+    {
+      "file": "src/systems/afty/ficha/abas/AbaHabilidades.jsx",
+      "head": 2,
+      "current": 2
+    },
+    {
+      "file": "src/systems/afty/ficha/abas/AbaInvocacoes.jsx",
+      "head": 1,
+      "current": 1
+    },
+    {
+      "file": "src/systems/afty/ficha/ficha-buffs.js",
+      "head": 2,
+      "current": 2
+    },
+    {
+      "file": "src/systems/afty/ficha/ficha-conteudo.js",
+      "head": 1,
+      "current": 1
+    },
+    {
+      "file": "src/systems/afty/ficha/ficha-estados.js",
+      "head": 1,
+      "current": 1
+    },
+    {
+      "file": "src/systems/afty/ficha/ficha-rolagem.js",
+      "head": 1,
+      "current": 1
+    },
+    {
+      "file": "src/systems/afty/ficha/ficha-sessao.js",
+      "head": 3,
+      "current": 3
+    },
+    {
+      "file": "src/systems/afty/ficha/ficha-tema.js",
+      "head": 1,
+      "current": 1
+    },
+    {
+      "file": "src/systems/afty/ficha/ficha.css",
+      "head": 13,
+      "current": 13
+    },
+    {
+      "file": "src/systems/afty/ui/fontes.jsx",
+      "head": 5,
+      "current": 5
+    },
+    {
+      "file": "src/systems/afty/ui/primitivos.jsx",
+      "head": 2,
+      "current": 2
+    }
+  ],
+  "untracked": [
+    {
+      "file": "addons/aberracao-humanizada.json",
+      "count": 0
+    },
+    {
+      "file": "addons/alter.json",
+      "count": 0
+    },
+    {
+      "file": "addons/espinho.json",
+      "count": 0
+    },
+    {
+      "file": "asserts/t-aberracao-humanizada.mjs",
+      "count": 0
+    },
+    {
+      "file": "asserts/t-alcance-corpo-a-corpo.mjs",
+      "count": 0
+    },
+    {
+      "file": "asserts/t-balanceada.mjs",
+      "count": 0
+    },
+    {
+      "file": "asserts/t-criador-namespaces.mjs",
+      "count": 0
+    },
+    {
+      "file": "asserts/t-dano-acerto-amaldicoado.mjs",
+      "count": 0
+    },
+    {
+      "file": "asserts/t-descanso-marionetes.mjs",
+      "count": 0
+    },
+    {
+      "file": "asserts/t-espinho.mjs",
+      "count": 0
+    },
+    {
+      "file": "asserts/t-estilo-massivo.mjs",
+      "count": 1
+    },
+    {
+      "file": "asserts/t-feiticos-permutativos.mjs",
+      "count": 0
+    },
+    {
+      "file": "asserts/t-ficha-linhas.mjs",
+      "count": 0
+    },
+    {
+      "file": "asserts/t-fundamento-bloqueio.mjs",
+      "count": 0
+    },
+    {
+      "file": "asserts/t-montante-bancada.mjs",
+      "count": 0
+    },
+    {
+      "file": "asserts/t-quimera-fundamento-biblioteca.mjs",
+      "count": 0
+    },
+    {
+      "file": "asserts/t-teste-atributo.mjs",
+      "count": 1
+    },
+    {
+      "file": "asserts/t-tr-caso-ja-seja-classe.mjs",
+      "count": 0
+    },
+    {
+      "file": "asserts/t-vagas-agregado-final.mjs",
+      "count": 1
+    },
+    {
+      "file": "docs/afty-aberracao-humanizada.md",
+      "count": 0
+    },
+    {
+      "file": "docs/afty-espinho.md",
+      "count": 0
+    },
+    {
+      "file": "docs/afty-feiticos-permutativos.md",
+      "count": 1
+    },
+    {
+      "file": "src/systems/afty/afty-espinho.js",
+      "count": 0
+    },
+    {
+      "file": "src/systems/afty/encontros/fundamento-biblioteca.js",
+      "count": 0
+    },
+    {
+      "file": "src/systems/afty/ficha/BotaoDeDescanso.jsx",
+      "count": 0
+    },
+    {
+      "file": "src/systems/afty/ui/EspinhoCard.jsx",
+      "count": 0
+    },
+    {
+      "file": "src/systems/afty/ui/espinho.css",
+      "count": 0
+    }
+  ]
+}

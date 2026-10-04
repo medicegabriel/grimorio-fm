@@ -286,6 +286,12 @@ export const ehPericiaOficio = (id) =>
    `atr:destreza`, e não id de perícia: `ehPericiaOficio` responde falso para
    ele. Hoje só o `bonusPericia` o lê. Ver `escoposDe` em afty-pericias.js. */
 export const ALVO_TODOS_OFICIOS = "oficio:todos";
+/* Alvo de Motor que atinge SÓ as quatro Manobras (Agarrar, Derrubar, Desarmar e
+   Empurrar), e não os testes nomeados que dividem o card com elas (2026-09-29).
+   Sem alvo, `bonusManobra` vale para os oito, e era assim que a Balanceada e o
+   Marcial davam +2 em Concentração, Fintar, Provocar e Teste de Morte. Mesmo
+   desenho do `oficio:todos`: é escopo, lido pelos dois canais de manobra. */
+export const ALVO_QUATRO_MANOBRAS = "manobra:todas";
 const rankDe = (prof) => RANK_PROF[prof] ?? 0;
 const rotuloFaixa = (nivel) => (nivel === "mestre" ? "Mestre" : "Treinado");
 

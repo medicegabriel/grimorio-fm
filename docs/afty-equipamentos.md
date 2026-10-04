@@ -376,11 +376,11 @@ A DSL do item ganhou `custo` e `penalidade`, além do `grau` que já tinha.
 
 | Encantamento | Onde | Como |
 |---|---|---|
-| Balanceada | arma | `bonusManobra` 2, nas quatro |
-| Canalizadora | arma | `cd` 2 |
+| Balanceada | arma | `bonusManobra` e `resistirManobra` 2, alvo `manobra:todas`. Não acumula entre armas (`naoAcumula`) |
+| Canalizadora | arma | `cd` 2. Não acumula entre armas (`naoAcumula`) |
 | Certeira | arma | `margemCritico` 1, nesta arma |
 | Cruel | arma | `danoBonus` 3, nesta arma |
-| Otimizada | arma | `iniciativa` 2 |
+| Otimizada | arma | `iniciativa` 2. Não acumula entre armas (`naoAcumula`) |
 | Penetrante | arma | `ignoraRD` = BT, nesta arma |
 | Poderosa | arma | `danoBonus` 2, nesta arma |
 | Potente | arma | `dadosDano` 1, nesta arma |
@@ -390,7 +390,7 @@ A DSL do item ganhou `custo` e `penalidade`, além do `grau` que já tinha.
 | Ajustado | uniforme | `penalidadeEquip` 1, mais Furtividade 2 se a penalidade base for zero |
 | Blindado | uniforme | `defesa` 2 |
 | Furtivo | uniforme | `bonusPericia` furtividade = custo do uniforme |
-| Marcial | uniforme | `bonusManobra` 2 |
+| Marcial | uniforme | `bonusManobra` 2, alvo `manobra:todas`. Só executar |
 | Material Pesado | uniforme | `bonusTR` fortitude 2 |
 | Propulsor | uniforme | `movimento` 3 |
 
@@ -489,6 +489,10 @@ cabeçalho. A **Habilidade Única** (só no Especial) tem a textarea de narrativ
 Amaldiçoadas · Referência** (recolhido) traz as tabelas, criação, identificação, o catálogo completo
 dos encantamentos e o exemplo Nuvem Brincalhona. Os efeitos ligados aparecem no card **Efeito do
 Equipado**.
+
+O `MotorEfeitosEditor` valida também os nomes das variáveis pelo vocabulário do seletor.
+Esse vocabulário junta o contexto final da criatura ao do item, então `grau` continua sendo
+o grau da própria Ferramenta. Um nome desconhecido deixa o campo vermelho e mostra o motivo.
 
 ---
 

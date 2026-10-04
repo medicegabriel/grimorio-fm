@@ -31,6 +31,8 @@ Uma SPA Vite+React (`grimorio-fm`). A rota decide o sistema:
 O 2.5.2 (`/`) é read-only por decisão do projeto: NUNCA editar `src/components/fm-*` ou
 `src/data/enciclopedia-digital-*.json` para corrigir uma regra — correções de regra do livro dentro
 do Afty são feitas por Addon com `substitui`, nunca no raw.
+As poucas exceções aceitas em `src/components/` (parâmetro opcional com o padrão de hoje, leitura
+de campo que a 2.5.2 não tem, ou mudança que o autor pediu) estão listadas em `AGENTS.md`.
 
 ---
 
@@ -89,10 +91,14 @@ variável DSL `alma_atual`), `opcoes.concedido` (concessão de sessão do Mestre
 
 Estágios (ordem importa, cada canal só existe a partir do estágio dele):
 1. **Pré-contexto** — atributos base, ND, patamar, `nivelAptidao` direcionado.
-2. **MONTANTE** — Treinamentos (`afty-treinamentos.js`). SEM contexto de combate: `quando` é
-   descartado pela "passagem direta" de `paraCanal` (só `gatilhoSessao`/`quandoProf` funcionam
-   aqui). Habilidades/Talentos/Aptidões AINDA NÃO existem neste estágio (`contar()` e `tem_*`
-   devolvem 0).
+2. **MONTANTE**: Treinamentos (`afty-treinamentos.js`), origem, clã, Anatomia, Gerais, Catarse,
+   Espinho, Votos e Modificações Corporais. SEM contexto de combate. Desde 2026-10-03 o efeito
+   cujo `quando` ou `expr` lê a bancada DESCE ao estágio principal (`separarEfeitosDeBancada`,
+   afty-efeitos.js), salvo os canais lidos cedo (`CANAIS_LIDOS_NO_MONTANTE`: vagas, pontos de
+   Aptidão e os do pré-contexto). Treinamento continua sem `quando` de verdade: a "passagem
+   direta" de `paraCanal` o descarta antes (só `gatilhoSessao`/`quandoProf` funcionam), então nele
+   a regra só alcança a `expr`. Habilidades/Talentos/Aptidões AINDA NÃO existem neste estágio
+   (`contar()` e `tem_*` devolvem 0).
 3. Resolução de Habilidades/Talentos/Aptidões/Especializações.
 4. **Motor de Automação** — `efeitosDaTecnica(creature)` (afty-efeitos.js) coleta
    `funcionamentosComNativos(creature)` (principal + adicionais do jogador + addon + **os 3
@@ -274,8 +280,9 @@ porte, com aviso a cada uso — nunca silenciosamente.
   Especial do Combatente moram em `sessao.golpeEspecial` (2026-09-24).
 - Os canais de proficiência (`proficienciaTR`, `proficienciaPericia`) SOMAM as concessões: duas de
   Treinado viram Mestre. Um "caso já seja" que precise comparar com as outras fontes não cabe neles
-  nem no `prof_tr_*` (que só lê a marcação à mão). Para TR existe o `proficienciaTRCasoJa`, lido
-  efeito a efeito pelo `resolveTestes` (2026-09-26).
+  nem no `prof_tr_*` (que lê a marcação à mão e, no jogador, a faixa da Classe desde 2026-10-03, mas
+  não as concessões do Motor). Para TR existe o `proficienciaTRCasoJa`, lido efeito a efeito pelo
+  `resolveTestes` (2026-09-26).
 - Uso por descanso de Habilidade é o campo `usos: { expr, recarga }` do catálogo, e não estado de
   bancada: o derive monta o máximo (`usosHabilidades`) e a sessão guarda os gastos em
   `usos["hab:<id>"]`, que o Descansar zera (2026-09-24).

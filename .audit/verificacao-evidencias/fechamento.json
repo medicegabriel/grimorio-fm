@@ -1,0 +1,103 @@
+{
+  "trackedDiffUnchanged": true,
+  "status": "## main...origin/main",
+  "mainOrigin": "0\t0",
+  "duplicateHeadings": [],
+  "invocacoes": {
+    "HEAD": {
+      "occurrences": 17,
+      "lines": 17
+    },
+    "current": {
+      "occurrences": 17,
+      "lines": 17
+    }
+  },
+  "headAddedComment": [
+    {
+      "line": 4008,
+      "text": "    altoNivel,            // { ativo, melhorias, lendarias, escolhas, apiceId } [U+2014] orçamentos próprios"
+    }
+  ],
+  "untrackedChars": [
+    {
+      "file": "asserts/t-estilo-massivo.mjs",
+      "occurrences": 1,
+      "lines": [
+        {
+          "line": 2,
+          "text": " * ESTILO MASSIVO, A ROLAGEM REPETIDA [U+2014] 2026-10-02"
+        }
+      ]
+    },
+    {
+      "file": "asserts/t-teste-atributo.mjs",
+      "occurrences": 1,
+      "lines": [
+        {
+          "line": 2,
+          "text": " * O ATRIBUTO DO TESTE DE RESISTÊNCIA E DA JOGADA DE ATAQUE, TROCADO À MÃO [U+2014] 2026-10-02"
+        }
+      ]
+    },
+    {
+      "file": "asserts/t-vagas-agregado-final.mjs",
+      "occurrences": 1,
+      "lines": [
+        {
+          "line": 2,
+          "text": " * AS VAGAS DE ESCOLHA FECHAM NO AGREGADO FINAL [U+2014] 2026-10-02"
+        }
+      ]
+    },
+    {
+      "file": "docs/afty-feiticos-permutativos.md",
+      "occurrences": 1,
+      "lines": [
+        {
+          "line": 37,
+          "text": "  a RD [U+2014] caso você não possua RD Geral a perder, o Feitiço não pode ser usado. A RD"
+        }
+      ]
+    }
+  ],
+  "publicNavigation": [
+    {
+      "width": 1440,
+      "expectedName": "Divino General Imoral da Espada de Oito Cabos Divergentes Mahoraga",
+      "basePresent": 1,
+      "baseOpened": true,
+      "baseCountText": "Criaturas Base\n165",
+      "encounterBody": "Encontros\n0 TOTAL\nGrimório\nNovo Encontro\nUso de Memória: 84KB / 10.0MB\n1%\nTodas\n0\nSem Pasta\n0\nPASTAS\nNOVA\nNenhuma pasta criada ainda.\nTodos os Encontros\n0 ENCONTRO(S)\nSelecionar em Massa\nNenhum encontro ainda\n\nCrie um encontro para gerenciar iniciativa e combater múltiplas criaturas simultaneamente.\n\nCriar primeiro encontro",
+      "buttons": [
+        " Grimório",
+        " Novo Encontro",
+        "Todas0",
+        "Sem Pasta0",
+        " Nova",
+        "",
+        "Selecionar em Massa",
+        " Criar primeiro encontro",
+        ""
+      ],
+      "errors": []
+    },
+    {
+      "width": 390,
+      "expectedName": "Divino General Imoral da Espada de Oito Cabos Divergentes Mahoraga",
+      "basePresent": 1,
+      "baseOpened": true,
+      "encounterBody": "Encontros\nGrimório\nNovo Encontro\nUso de Memória: 84KB / 10.0MB\n1%\nTodos os Encontros\n0 ENCONTRO(S)\nNenhum encontro ainda\n\nCrie um encontro para gerenciar iniciativa e combater múltiplas criaturas simultaneamente.\n\nCriar primeiro encontro",
+      "buttons": [
+        "",
+        " Grimório",
+        " Novo Encontro",
+        "",
+        "Selecionar em Massa",
+        " Criar primeiro encontro",
+        ""
+      ],
+      "errors": []
+    }
+  ]
+}

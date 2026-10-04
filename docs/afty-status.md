@@ -1,5 +1,168 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-10-02 (parte 4): VAGAS DE ESCOLHA VINDAS DE FEITIÇO NÃO CONTAVAM
+
+Relato do autor, com a captura de um Feitiço Passivo com "Vagas de Talento 1, sempre, Permanente"
+e o "+1" aceso: *"Vagas de Talento em Feitiço não está funcionando"*.
+
+**A causa**: `vagasHabilidade`, `vagasTalento`, `vagasMelhoria` e `vagasLendaria` eram lidos só do
+`efMontante`, porque o orçamento fecha antes dos efeitos. Feitiço Passivo, Funcionamento Básico,
+Buff de Mesa e Habilidade Única entram depois, no bolo comum: o efeito aparecia ativo e o contador
+não mexia. Mesmo defeito do Talento que dava vaga de Talento (2026-09-02), que ganhou um passe à
+parte. Os outros canais de orçamento (`vagasFeitico`, `vagasPericia`, `vagasAptidao`, `focos`...)
+já liam o agregado final.
+
+**O conserto**: o derive refecha os quatro no fim, com o agregado final, que já traz o montante e
+o Talento. O valor final SUBSTITUI o de cima, não soma. É seguro porque as vagas só contam: nenhuma
+escolha entra ou sai por causa delas, e o primeiro fechamento não alimenta nada além dos contadores.
+A conta saiu para funções únicas, usadas nos dois fechamentos: `contaOrcamentoHabilidades`
+(afty-habilidades.js) e `comVagasDeCanal` (afty-alto-nivel.js). Vaga de Alto Nível continua sem
+destravar a trilha. Vale nos dois sistemas.
+
+**Verificação**: `t-vagas-agregado-final.mjs` (24 asserts), que acusa 19 falhas com a leitura antiga.
+Ele prende também que o contador É o agregado (a vaga da origem não conta duas vezes). Suíte com o
+vermelho conhecido de sempre (`t-invocacoes-motor`, 84 ok e 1 falha), ESLint e build limpos. No
+criador, /Player e /Afty: o contador de Talento vai de `+0 / 2` para `+0 / 3` com o Passivo.
+
+## SESSÃO DE 2026-10-02 (parte 3): ESTILO MASSIVO, A ROLAGEM REPETIDA
+
+Pedido do autor: *"Em Reportorio do Especialista > Estilo Massivo. Faça a programação do Estilo
+Massivo"*. O +1 de dano já estava no Motor desde 2026-09-23. Faltava a outra metade, *"Quando rolar
+um 1 ou 2 em um dado na rolagem de dano [...] você pode rolar novamente esse dado, ficando com o
+novo resultado"*, que estava classificada como de mesa ("escolha por dado").
+
+**Três decisões do autor**, por pergunta: **automática** (todo 1 e 2 rola de novo uma vez, sem
+perguntar, porque rolar de novo nunca piora a média a partir do d4), em **todos os dados da linha**
+(e não só no da arma: "um dado na rolagem de dano") e nos **dois sistemas**.
+
+- **Canal novo `rerrolaDano`** (grupo Ataque e Dano), alvo de fonte de dano. ⚠ **Não soma**: o valor
+  é o maior resultado que rola de novo (2 = "1 ou 2"), e entre fontes vale o MAIOR, senão duas
+  regras de "1 ou 2" virariam "até 4". Não mexe em número nenhum da linha.
+- **Conteúdo**: o `cmb_estilo_massivo` ganhou a segunda linha, no mesmo alvo do bônus
+  (`empunho:duas_maos|prop:pesada`). Medido pelo Repertório e pelo Adepto de Combate. A Imitação
+  concede o próprio Repertório com o Estilo escolhido, então passa pelo mesmo mapa (não medido).
+- **Linha de dano**: o `monta` do `resolveDano` põe `rerrola: { ate, fonte }` (ou `null`), lido pelos
+  detalhes do canal para pegar o maior e o nome de quem deu.
+- **Rolador** (`rolarDano` em `ficha-rolagem.js`): recebe `rerrola`, rola de novo uma vez todo dado
+  em `ate` ou menos e fica o novo mesmo que seja menor. No crítico os dados dobram antes. O registro
+  ganhou `rerrolados` (`{ indice, de, para }`) e `rerrolaFonte`. A aba Ações passa a marca da linha,
+  e o histórico desenha o dado velho riscado antes do novo, com a fonte no `title`. Vale no
+  Encontro, que usa a mesma aba.
+- **Verificação**: `t-estilo-massivo.mjs` (37 asserts), conferido quebrando o rolador e a marca numa
+  cópia (12 e 14 falhas). Suíte com o vermelho conhecido de sempre (`t-invocacoes-motor`, 84 ok e 1
+  falha), ESLint e build limpos. No navegador, Ficha Final no /Player e no /Afty, 1440px e 390px,
+  com sorteio viciado: a Espada Grande mostra o 1 riscado e o novo, a Espada Curta não rola de
+  novo, e o 1 que volta 1 fica. Zero erro de console e zero rolagem horizontal.
+- **Achado, não mexido**: o dado riscado usa o estilo do d20 descartado da vantagem, e um "1"
+  riscado em 10px se parece com "±".
+
+## SESSÃO DE 2026-10-02 (parte 2): ATRIBUTO TROCÁVEL NO TR E NA JOGADA DE ATAQUE
+
+Pedido do autor: *"Assim como em Pericias, faça que Testes de Resistência e Testes de Ataque eu
+possa clicar no atributo e mudar ele"*, para o Grimório Afty e a Ficha de Player. Vale nos dois
+sistemas, sem divergência.
+
+- **Campos novos**: `trAtributoManual` e `ataqueAtributoManual`, `{ [id]: chave }`, irmãos do
+  `periciaAtributoManual`. Lidos por `atributosDeTRManuais` e `atributosDeAtaqueManuais`
+  (`afty-pericias.js`) direto no `resolveTestes`, e não pelo `ctx`: não há outra fonte de troca
+  para compor, e assim a segunda chamada do `resolveTestes` (Fluxo Invencível) também enxerga.
+- **Decisão do autor: a troca do ataque vale no ACERTO E NO DANO**, como o canal `ataqueAtributo`.
+  A linha de Ataque leva `atributoManual`, e o `resolveDano` a lê no `atributoDe` (básico e armas
+  pelo tipo corpo ou distância) e para de aplicar a Fineza concedida por escopo por cima. Arma com
+  atributo próprio e Técnicas de Combate continuam vencendo, porque são da arma.
+- **Duas decisões minhas**, que não saem do pedido:
+  - O PADRÃO do ataque é o que a linha daria sem a troca (Fineza e canal incluídos), e não o do
+    livro. Comparado com o livro, escolher Força num Corpo a Corpo com Fineza seria tomado por
+    volta ao padrão e apagado, e a linha seguiria em Destreza. No TR o padrão é o do catálogo.
+  - Id desconhecido CAI no saneamento, ao contrário da perícia: TR e ataque não têm linha
+    personalizada nem de Addon.
+- **Tela**: o mesmo botão de três letras e o mesmo painel de seis chips da perícia, que viraram
+  `AtributoDoTeste` e `PainelAtributoDoTeste`. Um estado de painel aberto só, com prefixo `tr:` e
+  `atq:`. Medido no navegador: a coluna do número fica nos mesmos pixels antes e depois.
+- **Achado de fora, não consertado**: na perícia, o `setPericiaAtributo` compara com o padrão do
+  LIVRO, então com um Treinamento que troca o atributo (só existe no Flugel) não dá para escolher o
+  atributo do livro de volta: a escolha apaga a entrada e a linha volta ao do Treinamento.
+- **Verificação**: `t-teste-atributo.mjs` (60 asserts). Suíte com o vermelho conhecido de sempre
+  (`t-invocacoes-motor`, 84 ok e 1 falha), ESLint e build limpos. No navegador, /Player e /Afty em
+  1440px e 390px: troca, roxo, volta ao padrão apagando, Preview com o dano novo, zero erro de
+  console e zero rolagem horizontal.
+
+## SESSÃO DE 2026-10-02: FEITIÇOS PERMUTATIVOS (A ANTIGA FASE C2)
+
+O autor mandou o texto dos Feitiços Permutativos, a antiga Fase C2 ("Enfraquecedores") dos
+Auxiliares, parada desde 2026-07-23 à espera dele, e pediu plano com perguntas antes do código.
+Dez decisões em três rodadas, gravadas com o verbatim em `docs/afty-feiticos-permutativos.md`. Vale
+nos dois sistemas, sem divergência.
+
+- **Motor** (`afty-feiticos.js`, bloco FEITIÇOS PERMUTATIVOS): `PERMUTAS_AUX` é dado, com uma troca
+  por efeito (Rolagem numa perícia perde outra perícia, RD perde Defesa, Defesa perde RD Geral,
+  Margem perde Acerto, Bônus em Ataque perde Margem). A ficha guarda só `permuta: { reducao,
+  pericia }`. A troca entra no FIM do `calcularEfeitoAux`, com taxa fixa, e o resultado devolve
+  `permuta` (teto, bloqueio, redução aplicada e ganho) e `valorSemPermuta`. A Margem nos Níveis 0 e
+  1 abre pela troca (`PERMUTA_ABRE_CELULA`). No Múltiplos Efeitos o teto é pelo nível do efeito, e
+  `permutaBloqueadaMult` trava sacrificar o que outro efeito do Feitiço aumenta.
+- **O Bônus em Rolagem ganhou alvo** (`alvoAuxPericia`): sem ele segue Toda Rolagem (perícia, TR e
+  ataque), com ele soma só na perícia. Era o pré-requisito da troca de perícia.
+- **Ficha** (`afty-combate-conjurador.js`): a parte da tabela segue no pool, e ganho e prejuízo
+  saem em linhas SEM `exclusivo`, nomeadas "Nome (Permuta)". O Bônus em Ataque que perde Margem
+  viaja por linha (`permutasDeMargem`), e o `resolveDano` só o aplica na arma com margem a perder.
+  `travaDaPermuta` dá o motivo do "não pode ser usado" (Defesa Abaixo da Base, Sem RD Geral a
+  Perder, Sem Margem a Perder), e o estado do Feitiço ganha `bloqueio(derived, ligado)`, lido pela
+  `LinhaEstado` da aba Buffs no interruptor e nas opções das vagas. O derive passou a expor
+  `defesaBase`.
+- **Criador**: seletor Perícia na Rolagem (nos dois modos), sub-aba Trocas no Auxiliar com
+  contador por passo (o `ContadorCompacto` ganhou `passo`) e cadeado com motivo, tile Perde e hover
+  tabela mais Permuta na barra, e aviso de trava lido da ficha de agora. O `auxDuracoesDisponiveis`
+  passou a ser o `duracoesDoEfeitoAux` do motor. A Ficha mostra "Perde" na linha do Feitiço
+  (`textoDasPermutas`).
+- **Verificação**: `t-feiticos-permutativos.mjs` (100 asserts), e uma varredura de 36.720
+  combinações de efeito único e 459 de Múltiplos contra o motor anterior sem nenhuma diferença
+  inesperada (só o aviso novo da Margem nos Níveis 0 e 1). Suíte com o vermelho conhecido de sempre
+  (`t-invocacoes-motor`, 84 ok e 1 falha), ESLint e build limpos. No app, no /Player: criador,
+  Ficha (Buffs e Ações) e Encontro, também em 390px.
+- **Achado de fora, não consertado**: em 390px a aba Habilidades do criador vaza 28px pelo
+  cabeçalho do card Perfil Amaldiçoado (o seletor de Atributo da Técnica). É anterior a esta sessão,
+  e ficou anotado em `docs/a-fazer.md`.
+- Assunções para o autor confirmar em `docs/a-fazer.md`, seção "Feitiços Permutativos".
+
+## SESSÃO DE 2026-10-02: TÉCNICAS DE COMBATE DO SUPORTE E O DANO DO ACERTO AMALDIÇOADO
+
+Relato do autor: ligou a Técnicas de Combate do Conjurador, o atributo foi para Inteligência, e
+depois de trocar para a do Suporte (e até com as duas desligadas) continuou em Inteligência.
+
+- **O par do Suporte estava errado no motor.** O registro de 2026-09-29 deu ao Suporte Inteligência
+  ou Sabedoria, que é o texto do Conjurador. O livro (Livro de Regras, p. 105) e o catálogo dizem
+  Presença ou Sabedoria. A Inteligência gravada pela do Conjurador cabia no par errado e seguia
+  valendo. Corrigido em `TECNICAS_ATRIBUTOS`, nos dois sistemas (decisão do autor). O assert de
+  `t-suporte-revisao.mjs` prendia o par errado e foi corrigido junto.
+- **O card mostrava Inteligência com tudo desligado.** Sem nenhuma Técnicas ativa o derivado volta
+  vazio, e o card caía num par cravado com Inteligência marcada. O motor já voltava a arma para
+  Força. Agora o card não escolhido mostra o par DELE, travado e sem marca (decisão do autor), pela
+  função nova `atributosDasTecnicas`, para a tela não montar a lista de novo.
+- **Divergência nova `danoDoAcertoAmaldicoado`** (pedido do autor no mesmo relato): na criatura, a
+  arma no Acerto Amaldiçoado usa o Atributo de Técnica no dano, lido da linha do Ataque Amaldiçoado.
+  No jogador nada muda. As Técnicas de Combate seguem vencendo, como já venciam no acerto. Preso em
+  `t-dano-acerto-amaldicoado.mjs`, e as duas listas de `t-sistema.mjs` atualizadas.
+
+## SESSÃO DE 2026-10-02: O ESTILO DO ADEPTO DE COMBATE NÃO TINHA INTERRUPTOR
+
+Relato do autor, na Ficha de Player: *"No Talento Adepto de Combate eu selecionei Estilo Duelista e
+não está funcionando. Eu possuo Faixas e jogo baseado em Ataque Desarmado."*
+
+- **O Motor estava certo.** Com `duelando` ligado, o Ataque Básico das Faixas recebe o Estilo pelo
+  ND (nível 10: +2 no acerto e +4 no dano). O que faltava era o interruptor: a aba Buffs e o card
+  Simulação de Combate liam o `requerEscolha` só em `habilidades.escolhas.mapa`, e a escolha do
+  Talento mora em `talentos.escolhas.mapa`. O mesmo valia para o Estilo Duplo.
+- **Conserto nos dois sistemas** (`linhasDeEstado` em ficha-buffs.js e `SimulacaoCombateCard`): as
+  opções de Talento entram junto. Quem tem a opção SÓ pelo Talento recebe `dono: OUTROS` (decisão do
+  autor), em vez de abrir uma sub-aba de Combatente numa ficha que não é Combatente.
+- Preso em `t-estados-organiza.mjs`, seção 8.
+- **Pull antes:** 5 commits do remoto integrados com a árvore suja, dez conflitos de "os dois
+  acrescentaram" resolvidos mantendo os dois lados. O de lógica foi `abasAptidao`: a Anatomia do
+  Bloodfeast (remoto) e a lista adicional por origem (local) agora convivem. `t-primitivas` passou
+  a 24 (espinho, bloodfeast e heranca). Backup no stash "antes do pull 2026-10-02 (adepto duelista)".
+  Asserts com o vermelho conhecido de sempre (`t-invocacoes-motor`), ESLint e build limpos.
+
 ## SESSÕES DE 2026-09-30 E 2026-10-01: PROJETO DE CONTROLADOR E INVOCAÇÕES (ETAPAS 0 A 12)
 
 O autor mandou duas fontes novas, *Mecânicas para Invocações 2.5.2* e *Adicionais para
@@ -334,6 +497,60 @@ A suíte completa encontrou a falha já registrada de custo da Característica L
 em `t-invocacoes-motor.mjs`. `src/components/` permaneceu sem alterações.
 A conferência visual no navegador ficou pendente.
 
+## SESSÃO DE 2026-09-30: OS ADDONS ESPINHO E ALTER
+
+Pedido do autor, para um personagem: *"Preciso de um contador de ALMAS. Aonde mostra minhas Almas
+Totais e Restantes. Você pode gastar ALMAS para comprar efeitos mecânicos na ficha"*, mais um Addon
+"Alter" que aumenta em 50% a quantidade comprável, e um visual *"VERMELHO PULSANTE"*, *"rasgando a
+realidade ou o proprio site"*. Guia completo em `docs/afty-espinho.md`.
+
+- **O verbo é uma loja de catálogo fixo** (`afty-espinho.js`, folha), irmã da Loja de Catarse: cada
+  item do pacote tem custo, teto em DSL e linhas do Motor por unidade. Treze itens em
+  `addons/espinho.json`, mais o Outros. O Alter (`addons/alter.json`) é só `multiplicadorTeto: 1.5`.
+- **Decisões do autor** (perguntas com opções, e um protótipo com três variações em
+  `../prototipos/espinho/`): vale nos dois sistemas; Almas Totais digitadas; compra no Criador, e a
+  Ficha edita Almas Totais e Outros; visual A (Rasgo) na intensidade do protótipo, rasgando só a borda
+  do card; Perícias é vaga no orçamento; Equipamento é item do inventário MARCADO no card; a
+  Habilidade Única do Aprimoramento disputa como a primeira; o Outros é a última linha da lista.
+- **Três verbos novos no motor.** O canal `pontosAtributo` (orçamento, somado no pool dos pontos de
+  nível pelo `resumoAtributos`, escondido no seletor atrás da primitiva). O Talento concedido pela
+  FICHA (entra no `concedidos` do `resolveTalentos`, junto dos da sessão) com a flag `soConcedido`,
+  que tira o Talento do seletor. E o item marcado: Grau Especial por derivação no
+  `resolveEquipamentos`, com um terceiro espaço de Habilidade Única (`fa.espinhoHabilidade*`) emitido
+  na família `habilidadeUnica` e fora do custo de Slot de Feitiço da Benção.
+- **Decisão minha:** o teto com o Alter é `floor(expressão × 1,5)` com um piso só (BT 3 dá 2
+  Lendárias, e não 1). Passar do teto ou das Almas avisa e nunca remove.
+- **A Ficha grava as Almas com atraso de 600 ms**, como o tema, e o gravador vai por referência: o App
+  o recria a cada render, e na lista de dependências ele regravaria em laço.
+- ⚠ **Rolagem lateral achada e consertada no navegador:** o rasgo a 16 px da borda, com o card da
+  Ficha a 12 px da tela, empurrava o documento para 394 px a 390. A caixa dos SVGs agora escapa no
+  máximo 8 px e tem `overflow: hidden`. O Criador a 390 px já tinha 418 px sem o Espinho (as abas).
+- Assert novo `asserts/t-espinho.mjs`, 109 casos. `t-primitivas` foi a 22 primitivas e
+  `t-ordem-modulos` ganhou a folha nova. Suíte: 123 de 124, com o vermelho conhecido de sempre.
+
+## SESSÃO DE 2026-09-29: BALANCEADA E MARCIAL SÓ NAS QUATRO MANOBRAS
+
+Pedido do autor: *"Verifique para mim a Propriedade de Arma 'Balanceada', ela está super errada."*
+
+- **O defeito:** a Balanceada (arma) e o Marcial (uniforme) escreviam `bonusManobra` +2 SEM alvo.
+  Desde que o card virou "Outros" (2026-09-15) o sem alvo vale para oito linhas, e os dois davam +2
+  em Concentração, Fintar, Provocar e no Teste de Morte, que é d20 puro. Pegava os dois sistemas.
+- **Alvo novo `manobra:todas`** (`ALVO_QUATRO_MANOBRAS`, no catálogo de perícias, que é folha), no
+  molde do `oficio:todos`: é escopo, e só as linhas com `resistir` (as quatro Manobras) respondem
+  por ele. Os dois canais, `bonusManobra` e `resistirManobra`, passaram a ler por escopo. O seletor
+  de alvo oferece "As Quatro Manobras" logo depois delas. O sem alvo continua valendo para os oito.
+- **Decisões do autor** (pergunta com opções):
+  1. Vale nos dois sistemas, para a Balanceada e o Marcial.
+  2. **A Balanceada NÃO acumula**: duas armas Balanceadas empunhadas dão +2, e não +4. Campo novo
+     `naoAcumula` no encantamento. O efeito do portador entra uma vez só, pelo mesmo conjunto do
+     Manejo Especial e com a mesma chave, então a comprada numa arma e a concedida noutra também não
+     somam. O que mira o item segue por arma.
+  3. **"testes de manobras" da Balanceada pega executar E resistir.** O Marcial diz "para realizar
+     manobras" e fica só no executar.
+- Assert novo `asserts/t-balanceada.mjs`, 38 casos nos dois sistemas.
+- ⚠ Ficou uma pergunta em `docs/a-fazer.md`: Canalizadora (+2 CD) e Otimizada (+2 Iniciativa)
+  também são bônus do portador e ainda somam por arma no caminho comprado.
+
 ## SESSÃO DE 2026-09-29: HOVER DO DANO E SALDO DO SOMENTE CONDIÇÃO
 
 Pedido do autor: *"Preciso passar o mouse em cima do dano e aparecer o Hover das Fontes. Além
@@ -408,8 +625,8 @@ fontes.
 **Automação segura, ligada:** Técnicas de Combate do Suporte caiu no mesmo buraco
 que o Controlador já tinha tido, e a correção foi a mesma, registrar o id. O
 resolvedor, o seletor de duas armas e a troca de atributo por arma já eram
-genéricos, e a tela já testava contra a lista. O par do Suporte é Inteligência ou
-Sabedoria, igual ao do Conjurador. A troca vale SÓ nas duas armas escolhidas,
+genéricos, e a tela já testava contra a lista. O par do Suporte foi registrado como Inteligência
+ou Sabedoria, e estava errado: o livro dá Presença ou Sabedoria (corrigido em 2026-10-02). A troca vale SÓ nas duas armas escolhidas,
 porque a leitura acontece dentro do laço das armas: não alcança Feitiço, Ataque
 Básico nem as outras armas do inventário.
 
@@ -15539,3 +15756,166 @@ Pedido do autor: um Addon chamado "Yna" com a Origem Kitsune, a Linhagem Clã Ge
 **Asserts:** `t-yna.mjs` (novo, 107), nos dois sistemas. Suíte: 121 arquivos, só o vermelho conhecido. `npx eslint src/systems/afty` limpo e `npm run build` passando.
 
 **Verificado ao vivo** (`/player` e `/afty`, 1440 px, console limpo): o botão Forma de Raposa na aba Ações ao lado do Cônjuge, ligando e levando o cabeçalho a "Pequeno · 1,5m"; a aba Habilidades com as sete características e "Caudas: 6" num nível 13 com um marco; o card de Origem com a Linhagem Getsurin, o pool de Anatomia em 2 de 3 e o contador "Caudas por Marco"; e o interruptor na bancada de Simulação de Combate. O Encontro não foi aberto: ele desenha a mesma `AbaAcoes` a partir do mesmo `gatilhosTreino`.
+
+
+## SESSÃO DE 2026-10-03: LOTE 02, CRIADOR, FÓRMULA E CABEÇALHO
+
+**Decisões do autor:** opção A para os dois sistemas. No telefone, o Atributo da Técnica desce para baixo do título do Perfil Amaldiçoado, preservando o rótulo inteiro.
+
+**O que mudou:** em `AftyCreatureBuilder.jsx`, `useDslConhecidas` centraliza o conjunto memoizado de nomes dos três editores. `MotorEfeitosEditor` e `ExprField` passam esse conjunto ao validador. `TecnicaMotorEditor` mantém a conferência de expressão e condição. A Habilidade Única usa o contexto da criatura mais o do item, e o Modificador continua no namespace da invocação. `PerfilAmaldicoadoCard` ativa a nova opção `headerEmpilhadoNoTelefone` do `Card`, cujo padrão mantém os outros cartões. O `h1` do criador neutraliza margem, família, tamanho, peso, cor e espaçamento globais com utilidades importantes, incluindo a altura de linha do tamanho escolhido. Quatro entradas resolvidas saíram da fila e os guias de DSL, equipamento e invocação foram atualizados.
+
+**Asserts:** linha de base com 142 arquivos, só `t-invocacoes-motor.mjs` vermelho. `t-criador-namespaces.mjs` novo, 26 asserts nos dois sistemas, cobre nomes inválidos, condições, o grau próprio da Ferramenta e a fronteira do namespace da invocação. A suíte final tem 144 arquivos, incluindo `t-ficha-linhas.mjs` do trabalho paralelo, e mantém somente o mesmo vermelho. `t-ordem-modulos.mjs` passa com 34 asserts. Lint da área Afty limpo e build passando.
+
+**Verificado ao vivo:** servidor próprio em 5174, Chromium sem ocultar barras de rolagem. Nas duas rotas, `forca_errada + 1` deixa vermelho o campo da Habilidade Única, a condição da Técnica e os Modificadores de Ação e Característica. `grau + piso(bt / 2)` volta a mostrar 8 na Ferramenta Especial. A fórmula da invocação com grau, modificador de Força, ND, BT, tipo e constantes mostra +33 nos dois modificadores. Sem erro de página.
+
+**Verificado ao vivo, leiaute:** em telefone emulado de 390 px, nas rotas /afty e /player, a largura da aba Habilidades cai de 418 para 390 px, e todas as demais abas, inclusive Outros, medem 390 px. A janela de desktop em 390 px também passa, com 375 px úteis devido à barra vertical e sem vazamento. Em 1440 px, o card Perfil mantém largura, altura, seletor e alinhamento horizontal. O cabeçalho do criador passa de 229,89 para 128 px em 1440 e de 218 para 150 px em 390, nos dois sistemas. Voltar passa de (18, 66,69) para (18, 15,75) no desktop e permanece em (16, 14) no telefone, inteiro. A redução inclui a correção da tipografia além da margem. Medidas, capturas e roteiros locais em `.audit/lote02-*`.
+
+**Achado e não mexido:** permanece a pergunta de regra do assert `t-invocacoes-motor.mjs`. O build também informa o tamanho do pacote principal. Sem commit ou push.
+
+## SESSÃO DE 2026-10-03: LOTE 01, FICHA FINAL, O QUE A LINHA MOSTRA
+
+**Decisões do autor:** a marca da Aptidão usa o nome curto da categoria (`tab`: "Especiais", "Aura"). A linha da Anatomia mostra o texto do livro, num campo novo do catálogo, e o criador segue com o resumo. Em linha estreita as marcas saem da linha fechada e voltam na aberta, junto dos números de mesa. O filtro das Anatomias foi extraído para ser um só no Motor e na Ficha, com licença do autor para tocar `afty-efeitos.js` (Lote 03) e `afty-origens.js` (Lote 10). Tudo vale para os dois sistemas.
+
+**O que mudou:** em `ficha/ficha-conteudo.js`, `conteudoDaFicha` lê `getCategoriaAptidao(...).tab`. Lia `.nome`, que a categoria não tem, e a marca sumia calada nas 85 Aptidões. A mesma função monta uma linha `anatomia:<id>` por Anatomia escolhida, logo abaixo da característica que declara `poolAnatomia`, com a marca "Anatomia" e o `textoLivro`. Sem contador nem número de mesa, porque nenhuma Anatomia declara `usos` ou `resultados`. `afty-anatomias.js` ganhou `textoLivro` nas 15 entradas, transcrito do Livro de Regras 2.5.2 (p. 35 e 36), e o `descricao` (o resumo do criador) ficou igual. `anatomiasEscolhidas` nasceu em `afty-origens.js`, e o `coletarEfeitosOrigem` passou a chamá-la no lugar das três linhas do filtro. Em `ficha/ItemDeFicha.jsx` as marcas trocaram `hidden sm:inline-flex` pela classe `afty-marca-fechada`, e a faixa `afty-mesa-aberta` passou a trazer as marcas antes dos números. Em `ficha/ficha.css`, a regra `@container itemficha (max-width: 560px)` esconde `.afty-marca-fechada`. Três entradas saíram do `docs/a-fazer.md`. Guias: `docs/afty-ficha-final.md` (seção nova "As marcas da linha em linha estreita") e `docs/afty-formula-entropica.md`.
+
+**Asserts:** linha de base com 142 arquivos e só `t-invocacoes-motor.mjs` vermelho. `t-ficha-linhas.mjs` novo, 45 asserts nos dois sistemas: a marca curta nas sete categorias, as Anatomias no Feto, na Kitsune e na Aberração Humanizada, a origem sem pool sem linha e sem número no Motor, a busca, e a trava contra `.afty-chip` com `hidden` do Tailwind. Rodado contra os três arquivos da Ficha do HEAD, 26 dos 45 ficam vermelhos. Suíte final com 144 arquivos (o outro novo é do Lote 02) e o mesmo único vermelho. `t-ordem-modulos.mjs` passa com 34. ESLint da área Afty limpo e build passando.
+
+**Verificado ao vivo:** servidor próprio em 5181, Chrome sem esconder barras de rolagem, fichas semeadas pelo `localStorage` (Feto com duas Anatomias e três Aptidões, Kitsune com duas Anatomias, Combatente com três Habilidades de contador). Na Ficha, em /afty e /player: em 1440 px a linha tem 1375 px, as marcas seguem nela e a faixa de dentro fica escondida. Em 390 px a linha tem 340 px, nenhuma marca fica na linha fechada, todo nome aparece inteiro e a linha aberta mostra as marcas. No Encontro (/afty), a linha tem 1020 px em 1440, 714 px em 1024 e 332 px em 390, com o mesmo comportamento. Sem rolagem horizontal e sem erro de página. Com as marcas forçadas na linha fechada (o comportamento antigo, simulado por estilo injetado), os nomes do Combatente em 390 px ficavam com 0 px. Depois, 91, 59 e 54 px.
+
+**Achado e não mexido:** o comentário do campo `anatomias` em `afty-schema.js` ainda diz "só o Feto Híbrido", e hoje a Kitsune e a Aberração Humanizada também usam o pool. A linha "Bônus em Atributo" do Feto na Ficha mostra "Recebe 3 pontos para distribuir...", e não o texto do livro ("aumenta o valor de um atributo em 2 pontos e o de outro em 1 ponto"). Sem commit ou push.
+
+
+## SESSÃO DE 2026-10-03: LOTE 04, O ALCANCE CORPO A CORPO
+
+**Decisões do autor:** opção A nas três perguntas. Alcance Corpo a Corpo do Auxiliar, Ataque Circular e Articulações Extensas seguem a mesma regra: armas corpo a corpo e Ataque Básico, nos dois sistemas. Articulações Extensas não altera o campo Espaço/Alcance por Tamanho. Feitiços ficam fora desses bônus.
+
+**O que mudou:** `efeitosDaTabelaDoAuxiliar`, chamado por `efeitosDeAuxiliarResolvido` em `afty-combate-conjurador.js`, traduz `alcanceCaC` e `alcanceDistancia` para `alcanceArma`, com alvos `cat:corpo|basico` e `cat:distancia|cat:arremesso`. `lut_manobras_finalizadoras` em `afty-efeitos-conteudo.js` emite +3 m temporários com Circular e Empolgação pelo menos 5. `ca_articulacoes_extensas` no addon Maldição Era de Ouro troca Mesa por +1,5 m no Motor, com o nome da característica. O pacote passa de 2.1.0 para 2.1.1, com 10 características no Motor e 8 de Mesa.
+
+**O que mudou, fontes:** o Ataque Básico já lia `alcanceArma`. `alcanceDe` em `afty-pericias.js` passa a devolver as partes do alcance, com nomes das fontes e Auxiliares suplantados. Foi necessário tocar também `ficha/abas/AbaAcoes.jsx`, anunciado ao autor antes, para ligar `NumeroComFontes` nesse valor. Em `ui/fontes.jsx`, o foco de toque deixa a abertura para o clique, enquanto hover e foco visível de teclado continuam abrindo. Isso corrige o primeiro toque, que antes abria pelo foco e fechava pelo clique. O multiplicador agora leva o nome de Postura do Céu ou Invencível sob o Sol no painel. Duas entradas saíram da fila, e somente Articulações Extensas saiu da entrada composta da Maldição. Referências atualizadas em `automacao-dsl.md`, `afty-ficha-final.md` e `asserts/LEIA.md`.
+
+**Asserts:** linha de base com 144 arquivos e somente o vermelho conhecido `t-invocacoes-motor.mjs`, na expectativa de custo da Livre. `t-alcance-corpo-a-corpo.mjs` novo, 97 asserts, cobre os dois sistemas, as três fontes, as durações Duradoura e Sustentada dos Auxiliares, liga/desliga, exclusões, nome no hover, pool, combinação e soma antes do dobro do Céu. `t-maldicao-era-de-ouro.mjs` passa com 123. Suíte final com 145 arquivos e somente o mesmo vermelho. `t-combatente-automacoes.mjs` (73), `t-auxiliar-ligado.mjs` (26) e `t-ordem-modulos.mjs` (34) passam. ESLint da área Afty limpo e build passando.
+
+**Verificado ao vivo:** servidor próprio em 5184, Chrome em contexto temporário sem ocultar barras de rolagem, em /afty e /player a 1440 e 390 px. Ficha de Maldição com Articulações Extensas: Ataque Básico e Espada Curta em 3 m, com a fonte no hover. Auxiliares ligados pela aba Buffs levam os dois a 7,5 m, Arco Longo a 39/69 m e Azagaia a 21/33 m. Circular ligado pela aba Buffs leva os dois ataques corpo a corpo a 10,5 m, com as três fontes no painel, e desligá-lo retorna a 7,5 m. Desligar os Auxiliares retorna a 3 m e 30/60 m. A característica aparece na aba Habilidades com o texto do livro. No telefone emulado, o primeiro toque abre o painel e o segundo fecha, e Tab com Shift+Tab confirma a abertura por teclado. Sem rolagem horizontal, erro de página ou erro de console. Capturas, relatório e roteiro em `.audit/lote04-*`.
+
+**Achado e não mexido:** permanece a pergunta do custo da Livre no assert de Invocações. Os seis itens restantes da Maldição e a exclusão dos alcances no Estímulo de Saída continuam na fila. O build informa o tamanho do pacote principal. Sem commit ou push.
+
+
+## SESSÃO DE 2026-10-03: LOTE 03, MOTOR, TRÊS NÚMEROS ERRADOS
+
+**Decisões do autor:** as quatro recomendações, numa rodada só. O conserto da bancada vale para os dois sistemas e para o montante INTEIRO (origem, clã, Anatomia, Treinos, Votos, Modificações Corporais, Catarse e Espinho), com os canais lidos cedo ficando no montante. A Força Imparável e a Resiliência Melhorada dão Mestre no TR que a Classe já treina, no jogador. O pacote Flugel teve as quatro metades do BT trocadas e subiu para 1.1.1.
+
+**O que mudou, Atenção em combate:** `separarEfeitosDeBancada` e `efeitoLeBancada` (novos, `afty-efeitos.js`) separam a lista do montante. O efeito cujo `quando` ou `expr` lê um nome da bancada (`COMBATE_VARS`) ou um nome que o contexto reduzido nem declara (estado de Addon, de Habilidade Única, de Estilo) desce ao `efeitosTodos`, e o resto fica. `CANAIS_LIDOS_NO_MONTANTE` (vagas, pontos de Aptidão e os quatro do pré-contexto) nunca desce. No `deriveAfty`, a lista do montante passa pela separação e o que desceu entra no topo do `efeitosTodos`, uma vez só. O catálogo não mudou: o `quando: "em_combate"` do Instinto ficou como estava. O conjunto da bancada é montado preguiçoso porque `afty-combate` e `afty-efeitos` se importam em ciclo. No topo do módulo ele deu ReferenceError no `t-dsl`, e o `t-ordem-modulos` não pegou.
+
+**O que mudou, TR da Classe:** `buildCriaturaDslContext` ganhou `faixasTrDaClasse`, e o `prof_tr_*` vale a maior entre a marcação à mão e a faixa da Classe. No `deriveAfty`, o `pacoteInicial` e o `trDaClasse` subiram para antes do `montarCtx` (não dependem de stat) e o `resolveTestes` lê os mesmos. Na criatura o campo não chega, e não há linha nova em `DIVERGENCIAS`: o caminho já é a divergência `pacoteDaClasseInicial`. As duas entradas seguem `semCredito`.
+
+**O que mudou, Flugel:** `addons/flugel.json` de 1.1.0 para 1.1.1, com `piso(bt / 2)` no lugar de `metade(bt)` no Talento Akutame (Acerto e Defesa), na Quebra de Limites do Treino não Congênito e na Dupla Empenhada. Com BT 3 eram Defesa 18,5, Acerto 4,5, Limite +2,5 e Iniciativa +1,5. A ficha que já tem o pacote só muda ao apertar Atualizar na biblioteca. Guias atualizados: `afty-motor-referencia-estrutural.md`, `automacao-dsl.md`, `afty-addons.md` e `asserts/LEIA.md`. As três entradas saíram do `a-fazer.md`.
+
+**Asserts:** linha de base com 144 arquivos e só o vermelho conhecido `t-invocacoes-motor.mjs`. Novos: `t-montante-bancada.mjs` (37: o Feto de ND 5 nos dois sistemas, Atenção 12 fora e 15 em combate, hover com o nome da Anatomia, uma linha só, a separação caso a caso e um Voto Mecânico "em combate") e `t-tr-caso-ja-seja-classe.mjs` (22: Restringido 8 e Combatente 8 no jogador, o segundo TR do nível 9, orçamento parado e criatura intocada). `t-yna.mjs` ganhou o caso da Kitsune (113) e `t-flugel.mjs` o de BT 3 (70). Suíte final com 147 arquivos (um deles, `t-alcance-corpo-a-corpo.mjs`, é do Lote 04) e só o mesmo vermelho. `t-ordem-modulos.mjs` (34) passa, ESLint da área Afty limpo e build passando.
+
+**Verificado ao vivo:** servidor próprio em 5173, Chrome sem ocultar barras, /afty e /player a 1440 e 390 px. Feto de ND 5 com o Instinto: Atenção 12, e "Em Combate" ligado na aba Buffs leva a 15, com Base, Percepção e Instinto Sanguinário +3 no hover. Restringido 8 com a Força Imparável na Fortitude e na Vontade: Fortitude Mestre no jogador, Treinada na criatura sem marcação. Clã Akutame no ND 5: Defesa 18 na criatura e 13 no jogador, com Clã Akutame +1 no hover. Sem erro de página ou de console, e sem rolagem horizontal nas abas Ações e Perícias. Roteiro e capturas em `.audit/lote03-*`.
+
+**Achado e não mexido:** na aba Buffs, em 390 px, a linha "Refeições Consumidas" (estado nativo de Comidas) não quebra e a página rola na horizontal até 632 px, até numa ficha vazia. `AbaBuffs.jsx` e `ficha.css` têm mudança não commitada de outra sessão, então só relato. No jogador, o TR marcado à mão ainda conta como "já treinado" nas duas entradas (Fortitude à mão mais Resiliência dá Mestre, e o `semFonte` some): virou entrada no `a-fazer.md`. O Treinamento continua sem `quando` (o `paraCanal` o descarta), então nele a regra nova só alcança a `expr`. Nenhum pacote tem Treino com `quando` hoje. Sem commit ou push.
+
+
+## SESSÃO DE 2026-10-03: LOTE 06, ENCANTAMENTOS, SUPORTE E FEITIÇOS DO JOGADOR
+
+**Decisões do autor:** opção A nas três perguntas. Canalizadora e Otimizada seguem a Balanceada nos dois sistemas, criatura e jogador. Suporte Absoluto usa `mod_pre_ou_sab` nos dois. Na Ficha de Player, Conjuração Aprimorada mantém `n - 1`: dois Feitiços iniciais no nível 1, um por subida de nível a partir do 2 e os adicionais dos níveis 10 e 20.
+
+**O que mudou:** em `ENCANTAMENTOS_ARMA` de `afty-equipamentos.js`, Canalizadora e Otimizada ganharam `naoAcumula: true`. Duas armas com a mesma propriedade aplicam +2, inclusive quando uma foi comprada e a outra recebeu a propriedade pelo Manejo Especial. A fonte entra uma vez no hover. Em `sup_suporte_absoluto` de `afty-efeitos-conteudo.js`, a expressão do canal `curaFixa` passou de `mod_tecnica` para `mod_pre_ou_sab`, com o comentário corrigido. A progressão de `totalFeiticosJogador` não mudou, e o comentário agora registra a confirmação do autor. As três entradas saíram de `docs/a-fazer.md`. Guias atualizados: `docs/afty-equipamentos.md` e `docs/afty-player.md`.
+
+**Asserts:** linha de base com 147 arquivos e somente o vermelho conhecido `t-invocacoes-motor.mjs`, na expectativa de custo da Livre. `t-balanceada.mjs` passou de 38 para 52 asserts, com os dois sistemas, duas armas compradas, a fonte única no hover e a combinação com Manejo Especial. Os 14 casos novos falharam contra o código anterior e passam com os dois campos. `t-suporte-revisao.mjs` passou de 41 para 49, medindo Presença maior e Sabedoria maior, com a Técnica em Inteligência +5 nos dois sistemas. Os quatro casos da fonte reproduziram o erro anterior e passam com a nova expressão. `t-sistema.mjs` passa com 460, incluindo a progressão de Feitiços confirmada. Suíte final: 147 arquivos, 8004 asserts, todos passaram. O vermelho da Livre foi resolvido pelo Lote 05 em paralelo. `t-ordem-modulos.mjs` (34) passa na suíte, ESLint da área Afty limpo e build passando. Nenhum import mudou neste lote.
+
+**Verificado ao vivo:** servidor próprio na porta 5186, Chrome em contexto temporário sem ocultar barras de rolagem, /afty e /player a 1440 e 390 px. Duas armas com os dois encantamentos dão +2 de CD e +2 de Iniciativa, com somente uma fonte de cada no hover. Suporte Absoluto soma +4 com Presença 18 e Sabedoria 14, mesmo com a Técnica em Inteligência 20 (+5). No telefone, o toque longo abre as fontes da cura. No criador do jogador, o orçamento do Conjurador mostra 0 / 2 no nível 1 e 0 / 33 no nível 30, nas duas larguras. Sem erro de página ou de console, e sem rolagem horizontal na aba Ações da ficha. Capturas, relatórios e roteiros em `.audit/lote06-*`.
+
+**Achado e não mexido:** nenhuma pendência deste lote. A separação entre CD de Especialização e CD Amaldiçoada continua adiada e permanece na fila. Uma execução intermediária da suíte pegou `soma is not defined` no assert de tipos especiais enquanto o Lote 05 o editava, e o arquivo corrigido pelo outro chat passa com 89 asserts. O build informa o tamanho do pacote principal. Sem commit ou push.
+
+## SESSÃO DE 2026-10-03: LOTE 05, INVOCAÇÕES, CUSTO E REPARO
+
+**Decisões do autor:** as três numa rodada só, todas pela opção recomendada. (1) A cota base vale: a quantidade base do grau (`INV_ACOES_CARACT_BASE`: 2 no Quarto e no Terceiro, 3 no Segundo e no Primeiro, 4 no Especial) não custa PE, e só as Ações e Características além dela custam. (2) O Corpo Amaldiçoado paga as extras na ativação, como a Marionete, que é como já estava. (3) A CD de reparo do Corpo biológico (Cura Aprimorada ou Medicina) sai da coluna do Farmacêutico na tabela de Criação de Itens: Custo 1 a 4 dá CD 15, 20, 25 e 35. Valem nos dois sistemas, pela regra compartilhada das Invocações.
+
+**O que mudou:** o custo não mudou de número. O `detalheCustoInvocacao` (`afty-invocacoes.js`) só ganhou no comentário as duas confirmações. O `reparoDaInvocacao` passou a dar CD ao biológico pela coluna do Farmacêutico (o `oficio` dele segue vazio, porque nenhum Ofício é via de reparo) e devolve `partesCd`, a parcela do hover com a coluna e o Custo, em todo reparo que tem CD. Na Ficha, o `RegrasDoTipo` de `AbaInvocacoes.jsx` mostra a CD com `NumeroComFontes`, então Shikigami, Marionete e Corpo boneco também ganharam o hover. As três entradas saíram do `a-fazer.md`. O guia `afty-invocacoes.md` ganhou duas linhas na tabela de decisões (cota e Corpo), a CD do biológico na linha do Corpo e a cota na Livre com Motor.
+
+**Asserts:** linha de base com 147 arquivos e 1 vermelho, `t-invocacoes-motor.mjs` ("a Livre com Motor custa 1 PE"). Ele passou a cobrar a cota (84 para 88): a Livre dentro da cota de Terceiro Grau custa 0, a segunda também, e a terceira custa 1. A frase "como toda Característica" saiu do caso e do cabeçalho. `t-invocacao-tipos-especiais.mjs` cobrava "biológico sem CD de Ofício" e agora cobra a CD 15, 20, 25, 35 e 35 do Quarto ao Especial, a parcela do hover fechando com a CD, a parcela do boneco pela coluna do Alfaiate e o Corpo sem natureza sem CD nem parcela (84 para 89). Pela leitura do código anterior (`cd: null` no biológico, sem `partesCd`), os casos novos do reparo falhariam nele. Suíte depois: 147 arquivos, 8004 asserts, todos verdes. ESLint da área Afty limpo, `t-ordem-modulos.mjs` (34) passa sem import mudado, build passando.
+
+**Verificado ao vivo:** servidor próprio na porta 5191, Chrome sem ocultar barras, /afty e /player a 1440 e 390 px. Controlador 20 com dois Corpos de Segundo Grau: o biológico mostra "Cura Aprimorada ou Medicina, Custo 3, CD 25" e o hover "Criação de Itens · Farmacêutico (Custo 3)" 25 com Total 25. O boneco mostra CD 30 com a parcela do Alfaiate. Painel dentro da tela, sem rolagem horizontal, sem erro de página ou de console. Roteiro e capturas em `.audit/lote05-*`.
+
+**Achado e não mexido:** o comentário antigo do `custoInvocacao` (o bloco da QUANTIDADE BASE) e outros 16 pontos do `afty-invocacoes.js` têm o travessão Unicode, de sessões anteriores. O `t-invocacao-tipos-especiais.mjs` não estava na lista de arquivos do lote, mas era o assert que cobrava a regra antiga do biológico, então mudou junto. Sem commit ou push.
+
+
+## SESSÃO DE 2026-10-03: LOTE 07, INVOCAÇÕES EM MESA, HORDA, HOSTE E MECHA
+
+**Decisões do autor:** A, B e A, numa rodada só. Horda mantém o PV máximo quando perde membros e a queda a 0 PV como estava. Hoste Amaldiçoada conta uma nos dois limites, de Hordas e de Invocações em campo. No Mecha, a maior é escolhida pelo PV máximo, levando o PV atual dela e o atual da menor como casca. A principal quebra a 0 PV e o Mecha se desfaz. Aplicadas aos dois sistemas, conforme o escopo compartilhado do lote.
+
+**O que mudou:** em `deriveAfty` (`afty-derive.js`), `idsDaMesa` agrupa o par da Hoste quando ambas estão em campo, marcadas e com vínculo recíproco. Quando uma sai, a outra ocupa sua própria vaga. A mesma contagem chega ao Motor (Controle Sintonizado e Concentrar Poder) e à aba por `invocacoes.emCampo` e `hordas.emCampo`. `AbaInvocacoes.jsx` usa esses totais e atualiza o texto do chip Hoste. `resolveHorda` só teve o comentário da dúvida trocado pela confirmação. `aplicaDanoHorda`, `mechaPermitido`, `formaMecha` e `aplicaDanoMecha` mantêm os números e as transições confirmados. As três entradas saíram de `a-fazer.md`, e o guia `afty-invocacoes.md` registra as decisões e a contagem compartilhada.
+
+**Asserts:** linha de base com 147 arquivos e 8004 asserts, todos verdes. O vermelho antigo da Livre já foi resolvido pelo Lote 05 antes desta execução. `t-invocacoes-mesa.mjs` passou de 86 para 120, com 34 casos novos nos dois sistemas: par, cada horda isolada, saída de uma, nenhuma em campo, invocação adicional, dois pares, hordas comuns, vínculo incompleto, marca ausente, sessão antiga, linha órfã, ordem da lista, Controle Sintonizado com fonte nomeada e Concentrar Poder ligando e desligando. Antes da implementação, os casos do Motor reproduziram Sintonizado +2 em vez de +1 e Concentrar Poder desligado em vez de +10. Suíte final com 147 arquivos e 8038 asserts, todos passaram, incluindo os tipos especiais e os compostos. `t-ordem-modulos.mjs` passa com 34. ESLint da área Afty limpo e build passando. Nenhum import do app mudou.
+
+**Verificado ao vivo:** servidor próprio na porta 5197, Chrome em contextos temporários sem ocultar barras de rolagem, /afty e /player a 1440 e 390 px. Entrar a primeira Hoste mostra Em Campo 1 / 3 e Hordas 1 / 1. Entrar a segunda conserva ambos os totais. A Horda com 82 PV perde um de dois membros em 41 PV, mantém máximo 82 e não perde outro no dano seguinte. A 0 PV acaba, e o par restante continua contando uma vaga. Retirar a última zera os dois totais. Mecha com Alfa (máximo 39, atual 3) e Beta (atual 7): Alfa segue principal, Mecha nasce com 3 PV e casca 7. Dano 10 quebra ambas e desfaz o Mecha. Sem erro de página ou console, nem rolagem horizontal. Capturas, roteiro e relatório em `.audit/lote07-*`.
+
+**Achado e não mexido:** nenhuma pendência deste lote. O build continua informando o tamanho do pacote principal. Mudanças preexistentes e o trabalho paralelo em `src/App.jsx` foram preservados. Nenhum U+2014 foi introduzido nas linhas deste lote. Sem commit ou push.
+
+## SESSÃO DE 2026-10-03: LOTE 08, FRONTEIRAS ENTRE OS LIVROS
+
+**Decisões do autor:** cinco, em duas rodadas. A porta de import fecha em tudo ("Fechar Tudo"): cada rota importa só ficha do próprio livro, e o `/Afty` também recusa personagem e o `/Player` recusa criatura. As Criaturas Base saem do `/Afty`. Ficha sem nome entra como "Sem nome" ("Nome de Reserva"), com o OK explícito para editar `src/components/io-utils.js`. As exceções em `src/components/` são aceitas e a fronteira vira regra escrita, com a janela flutuante do PDF ficando e entrando na lista. Na segunda rodada, depois de achar as fichas da 2.5.2 que já moram no privado e a biblioteca de Modelos oferecendo ficha do Afty: porta de uso e Modelos também.
+
+**O que mudou:** em `src/App.jsx`, o `storage` perdeu o ternário e passa o `importarSoDoLivro` nas três rotas, com o mesmo `ehDestaRota` (`sistemaGravado(ficha) === sistemaDaRota`). Ficha sem `rulesVersion` conta como 2.5.2 também no privado. O `goToTracker` virou `abrirFicha` e substituiu o `goToAftyFicha`: a ficha decide a tela nas três rotas, e a da 2.5.2 que já morava no privado abre no painel da 2.5.2. O `criaturasDoLivro` filtra pelo motor (`!!sistemaGravado(c) === aftyMode`), então o Encontro do Afty segue misturando criatura e personagem e deixa de oferecer ficha da 2.5.2. A biblioteca de Modelos recebe `fichasDa252` nas três rotas (no privado ela estourava no `normalizeDraft` da 2.5.2 com `treinamentos.map is not a function`). `showSystemView={!aftyMode}`. Em `src/components/io-utils.js`, o `parseImportText` dá "Sem nome" ao nome vazio, só de espaços, ausente ou que não é texto, e segue lançando para entrada que nem é objeto. A regra da fronteira mora em `AGENTS.md` (as três formas e a lista das sete exceções), e o `CLAUDE.md`, o `afty-player.md` e o `afty-motor-referencia-estrutural.md` apontam para lá. Os comentários do `nomeParaGravar` (`afty-schema.js`) e do `handleSave` (`AftyCreatureBuilder.jsx`) diziam que o importador lança, e o do `sistemaGravado` (`afty-sistema.js`) apontava para a entrada apagada: os três foram corrigidos. As três entradas saíram de `a-fazer.md`.
+
+**Asserts:** linha de base com 147 arquivos e 8004 asserts, todos verdes (o vermelho da Livre já não estava lá). `t-nome-ficha.mjs` prendia o comportamento antigo em três linhas ("rejeitada" e "pacote inteiro rejeitado") e foi reescrito para o contrato novo: passou de 16 para 25, com os nomes que chegam do outro lado, a mesma palavra nas duas cópias da regra, nome de verdade sem aparar e as quatro entradas que ainda derrubam o pacote. Suíte final com 147 arquivos e 8047 asserts, todos verdes (os outros 34 são do `t-invocacoes-mesa.mjs`, do Lote 07). ESLint limpo em `src/systems/afty`, `src/App.jsx` e `io-utils.js`, e build passando. Nenhum import mudou.
+
+**Verificado ao vivo:** servidor próprio na porta 5180, Chrome sem ocultar barras, import real pelo modal do Dashboard nas três rotas a 1440 e 390 px, com um pacote de cinco: uma ficha da 2.5.2, uma da 2.5.2 sem `rulesVersion`, uma criatura, um personagem e uma sem nome do livro da rota. No `/` entram as três da 2.5.2 (a sem nome como "Sem nome") e o aviso recusa a criatura e o personagem. No `/afty` entram a criatura e "Sem nome", e o aviso recusa as duas da 2.5.2 (rotuladas "Grimório 2.5.2") e o personagem. No `/player`, o espelho. As Criaturas Base aparecem só no `/`. No privado, uma ficha da 2.5.2 plantada direto no storage abre no painel da 2.5.2 e a da rota abre na Ficha do Afty. Os Encontros oferecem a da rota e a do outro lado, e não a da 2.5.2. O "Aplicar em Fichas" dos Modelos oferece só a da 2.5.2. Sem erro de página nem rolagem horizontal. Roteiros, capturas e relatório em `.audit/lote08-*`.
+
+**Achado e não mexido:** a mensagem do modal de import da 2.5.2 conta o que o parser leu, e não o que entrou ("5 criatura(s) importada(s) com sucesso" quando 2 entraram). O aviso do `App.jsx` diz o número certo por cima. Está em `a-fazer.md` como pergunta, porque o conserto é em `src/components/`. E o lápis das Criaturas Base no `/Afty`, até hoje, clonava a criatura com o `rulesVersion` da rota quando ela não tinha o campo (86 das 165): se o autor editou alguma lá, o clone é uma ficha da 2.5.2 marcada como Afty, e nenhuma porta a reconhece. Só o autor sabe se existe. A mudança preexistente em `src/App.jsx` (o `onSalvarEspinho`) e o código do PDF ficaram como estavam. Nenhum U+2014 introduzido. Sem commit ou push.
+
+
+## SESSÃO DE 2026-10-03: LOTE 09, FUNDAMENTO E TÉCNICA INATA (PARCIAL)
+
+**Decisões do autor:** opção B na primeira pergunta: com o Fundamento fora de campo, a Técnica Inata inteira para, incluindo Funcionamento e Passivas. Aplicada aos dois sistemas pelo escopo compartilhado da revisão de Invocações. As três perguntas foram feitas juntas no começo, com o escopo de criatura e jogador solicitado. Ainda não chegaram as respostas sobre a reserva de PE Máximo da Passiva e o reparo de Marionetes no descanso. Esses dois comportamentos seguem como estavam e as duas entradas continuam na fila.
+
+**O que mudou:** em `deriveAfty` (`afty-derive.js`), `semTecnicaBloqueada` filtra as fontes da Técnica quando `tecnicaInata.bloqueada`, incluindo os efeitos escritos para invocações e a lista de resistências concedidas por Passiva. `estadoDaTecnicaInata` mantém a distinção entre perda persistente e bloqueio de campo, com o comentário atualizado. `AbaInvocacoes.jsx` mostra o aviso de Técnica Inata Indisponível em âmbar, com AlertTriangle. A lista de Feitiços já bloqueia rolagem e Ritual pelo mesmo estado. Voltar ao campo restaura os efeitos. O criador não usa o estado de campo e nada é apagado. A primeira entrada saiu da fila, a segunda explicita a dúvida de reserva nos dois estados e o guia `afty-invocacoes.md` descreve o bloqueio confirmado.
+
+**Asserts:** base de 147 arquivos e 8047 asserts, todos passaram. O vermelho antigo da Livre já estava resolvido por outro lote. `t-fundamento-bloqueio.mjs` novo, 32 asserts nos dois sistemas, cobre criador, entrada e saída de campo, Funcionamento adicional, Passiva no dono e noutra invocação, fontes, buffs preservados, perda persistente e sessão antiga. O caso antigo de fora de campo em `t-invocacao-tipos-especiais.mjs` foi atualizado, e o arquivo passa com 89. Suíte final: 148 arquivos e 8079 asserts, todos passaram. ESLint da área Afty limpo, build passando e `t-ordem-modulos.mjs` com 34. Nenhum import do app mudou.
+
+**Verificado ao vivo:** servidor próprio na porta 5199, Chrome em contextos temporários sem ocultar barras de rolagem, /afty e /player a 1440 e 390 px. Entrar com o Fundamento sobe Defesa de 22 para 24 e RD de 10 para 13 na criatura, e Defesa de 15 para 17 e RD de 0 para 3 no jogador. Sair reverte esses números e mostra o aviso. O Feitiço Raio fica sem rolagem nem Ritual fora de campo e recupera ambos em campo. O hover da Defesa mostra a fonte Técnica quando disponível. O PE segue 40 na criatura e 48 no jogador nos dois estados, aguardando a decisão 2. Sem erro de página ou console, nem rolagem horizontal. Capturas, roteiro e relatório em `.audit/lote09-*`.
+
+**Achado e não mexido:** as decisões 2 e 3 continuam pendentes. `peMaximoDasPassivas` e `descansaInvocacoes` não foram alterados. Mudanças preexistentes e trabalho paralelo preservados. Nenhum U+2014 introduzido nas linhas deste lote. Sem commit ou push.
+
+
+## SESSÃO DE 2026-10-03: LOTE 10, ZENIN, VERSATILIDADE EXTREMA E RÓTULOS DE INVOCAÇÃO
+
+**Decisões do autor:** o Clã Zenin mantém 3 pontos livres entre os seis atributos, com máximo de 2 no mesmo atributo. Versatilidade Extrema continua somando +1 ao limite da trilha escolhida, podendo chegar a 7 com outra fonte de +1. Os rótulos voltam a Shikigami e Shikigami de Técnica, com curtos Shikigami e Técnica. Vale nos dois sistemas, preservada a indisponibilidade da Lendária no jogador sem o Addon que a devolva.
+
+**O que mudou:** o cla_zenin de afty-origens.js permanece com o bônus confirmado. Em LENDARIA_EFEITOS_ALVO de afty-efeitos-conteudo.js, a expressão da Versatilidade Extrema continua 1 e o comentário registra a soma confirmada. Em REGRAS_POR_TIPO de afty-invocacoes-tipos.js, só os rótulos do Shikigami e da Técnica mudaram, com o comentário alinhado à decisão. Os valores gravados nas fichas permanecem shikigami e tecnica. As três entradas saíram de docs/a-fazer.md e o guia docs/afty-invocacoes.md registra os nomes completos e curtos.
+
+**Asserts:** linha de base com 147 arquivos e 8047 asserts, todos passando, incluindo o antigo vermelho da Livre já resolvido por outro lote. t-estrela-zenin.mjs passou de 15 para 40: configuração 3/2 livre, cada um dos seis atributos recebendo 2 pontos com outro recebendo 1, nos dois sistemas, e ficha salva preservada. t-melhorias-jogador.mjs passou de 47 para 57: fonte isolada no limite 6, soma no limite 7, nível não concedido pelo limite, somente a trilha escolhida afetada e nome da fonte no Motor, inclusive no jogador com Addon. As expectativas dos rótulos foram atualizadas em t-invocacao-tipos.mjs (76), t-invocacao-tipos-especiais.mjs (89) e t-maldicao.mjs (28). Suíte final: 149 arquivos e 8168 asserts, todos passando. Dos 121 asserts adicionais, 35 são deste lote e 86 do trabalho paralelo. t-ordem-modulos.mjs passa com 34 na suíte, ESLint da área Afty limpo e build passando. Nenhum import mudou.
+
+**Verificado ao vivo:** servidor próprio em 5200, Chrome em contextos temporários sem ocultar barras de rolagem, /afty e /player a 1440 e 390 px. Fichas já gravadas com tipos shikigami e tecnica abrem com os chips Shikigami e Shikigami de Técnica. O Perfil do criador oferece os mesmos nomes, e os filtros mostram Shikigami e Técnica, inclusive na lista recolhida do telefone. A ficha Zenin com Inteligência +2 e Presença +1 conserva atributos 12 e 11, e a Versatilidade Extrema com outra fonte conserva o limite 7. Os valores de tipo e a distribuição salvos continuam intactos. Sem erro de página ou console, nem rolagem horizontal nas telas medidas. Capturas, roteiro e relatório em .audit/lote10-*.
+
+**Achado e não mexido:** nenhuma pendência deste lote. O build continua avisando sobre o tamanho do pacote principal. Trabalho paralelo, fichas reais e mudanças preexistentes preservados. Nenhum U+2014 introduzido nas linhas deste lote. Sem commit ou push.
+
+
+## SESSÃO DE 2026-10-03: LOTE 09 CONCLUÍDO, FUNDAMENTO, PE MÁXIMO E DESCANSO
+
+**Decisões do autor:** B, A e B. Com o Fundamento fora de campo, a Técnica Inata inteira para na mesa, incluindo Feitiços, Funcionamento e Passivas. No jogador, as Passivas seguem reservando PE Máximo tanto com a Técnica perdida quanto fora de campo. O descanso repara uma Marionete não destruída, escolhida nesse momento. O bloqueio de campo e o reparo valem nos dois sistemas, conforme o escopo compartilhado do lote. Esta sessão conclui as decisões 2 e 3 que estavam pendentes no registro parcial anterior.
+
+**O que mudou:** em deriveAfty (afty-derive.js), semTecnicaBloqueada filtra as fontes da Técnica pelo estado bloqueada, inclusive efeitos escritos para invocações e resistências de Passiva. estadoDaTecnicaInata (afty-invocacoes.js) mantém a distinção entre perda persistente e bloqueio de campo. AbaInvocacoes.jsx mostra o aviso em âmbar com AlertTriangle, e os Feitiços deixam de oferecer rolagem e Ritual enquanto bloqueados. peMaximoDasPassivas conserva o cálculo confirmado, com comentário e cobertura da reserva e sua fonte. Em ficha-sessao.js, marionetesParaReparo lista as não destruídas que precisam de reparo. descansar e descansaInvocacoes recebem marioneteId: só a escolhida enche e zera quedas, e as demais conservam PV, quedas, retorno e estado. O Mecha se separa antes para devolver os PV atuais das componentes. BotaoDeDescanso.jsx integra a escolha na Ficha, no painel do combatente e em Descansar Todos, com uma escolha por dono. Cancelar ou fechar não descansa. As duas entradas restantes saíram da fila, e afty-invocacoes.md e afty-ficha-final.md descrevem a regra final.
+
+**Asserts:** base original de 147 arquivos e 8047 asserts, todos verdes. A continuação começou com 148 arquivos e 8079, também verdes. t-fundamento-bloqueio.mjs passou de 32 para 40 com reserva igual em campo, fora de campo e na perda, custo só no jogador e parcelas nomeadas fechando com o total. t-descanso-marionetes.mjs novo tem 50 casos nos dois sistemas: seleção, escolhida ativa, recolhida e quebrada, preservação das outras, destruída, sessão antiga, escolha inválida, descanso sem derivados, imutabilidade, expiração de efeitos de cena, separação do Mecha e escolha individual no descanso coletivo. O caso de descanso de t-invocacao-estados.mjs foi adaptado à escolha explícita e passa com 67. t-invocacao-compostos.mjs (73), t-invocacao-tipos-especiais.mjs (89) e t-ordem-modulos.mjs (34) passam. Suíte final: 149 arquivos e 8172 asserts, todos passaram. Dos 125 adicionais à base original, 90 são deste lote e 35 do Lote 10 paralelo. ESLint da área Afty limpo e build passando.
+
+**Verificado ao vivo:** servidor próprio na porta 5199, Chrome em contextos temporários sem ocultar barras, /afty e /player a 1440 e 390 px. O Fundamento em campo restaura Defesa, RD, fonte Técnica, rolagem e Ritual; fora de campo retira os efeitos e mostra o aviso, mantendo PE Máximo 40 na criatura e 48 no jogador. A escolha do descanso foi exercitada nas duas larguras, na Ficha, no Encontro ativo e em Descansar Todos: só aparecem as Marionetes danificadas e não destruídas, confirmar exige uma escolha, Cancelar e Escape preservam a sessão, e só a escolhida recupera PV e quedas. O descanso coletivo foi testado com criatura e jogador juntos, usando a regra de cada ficha. Sem erro de página ou console, nem rolagem horizontal. Capturas, roteiros e relatórios em .audit/lote09-*.
+
+**Achado e não mexido:** nenhuma pendência deste lote. O build conserva o aviso de tamanho do pacote principal. O trabalho paralelo e as alterações preexistentes foram preservados. Nenhum U+2014 introduzido nas linhas deste lote. Sem commit ou push.
+
+
+## SESSÃO DE 2026-10-03: LOTE 11, QUIMERA E FUNDAMENTO NA BIBLIOTECA
+
+**Decisões do autor:** Invocações Resistentes e afins de PV saem das componentes usadas na fórmula e entram uma vez após a fusão. A mesa confere à mão as Ações e Características das vagas de Visionário das componentes. A morte do Fundamento no Encontro chega à original salva, inclusive quando há várias cópias com o mesmo vínculo. As mudanças valem para criatura e jogador. A primeira resposta foi B para o PV. Na rodada reformulada, B para a conferência manual, A para a persistência e A para os dois sistemas.
+
+**O que mudou:** resolveQuimeraMecanicas (afty-invocacoes.js) recalcula as componentes sem os bônus aditivos do dono no canal pv, mantendo tipo, Características e o segundo passe de fontes, e resolveInvocacao aplica o bônus final com condições, mira e grau da Quimera. A parcela tem o nome da fonte e o arredondamento é para baixo. Os cartões individuais e a fórmula antiga do addon, soma dos cartões menos 10, mantêm seu comportamento. O PV da Quimera tem fontes por mouse e toque no criador e na Ficha. Visionário permanece sem marcação por item e sem filtro automático, conforme a decisão.
+
+**O que mudou no Encontro:** REGISTRAR_FUNDAMENTO_PERDIDO continua puro e grava na cópia. O efeito chama sincronizarFundamentosNaBiblioteca (encontros/fundamento-biblioteca.js), que relê a biblioteca escolhida pelo rulesVersion da ficha, verifica criaturaId e une perdas por invocacaoId. Preserva as edições atuais e sincroniza perdas antigas ao reabrir o Encontro. Não recria ficha removida nem grava sobre biblioteca inválida, identificador duplicado ou vínculo de outro sistema. Falha real aparece em âmbar com AlertTriangle e Tentar Novamente. App.jsx atualiza a biblioteca inteira desta aba com a leitura atual, preservando também outras fichas editadas, campos removidos, inclusões, exclusões e ordem. Sem alteração em src/components/.
+
+**Asserts:** linha de base de 149 arquivos e 8172 asserts, todos verdes. t-quimera-fundamento-biblioteca.mjs novo tem 99: PV após a fusão nos dois sistemas, cartões individuais, características e tipo preservados, condições, mira, grau, segundo passe de fontes, frações e parcelas nomeadas, fórmula antiga, Visionário, imutabilidade, bibliotecas isoladas, edições posteriores, cópias, idempotência, falhas e nova tentativa. Suíte final: 150 arquivos e 8271 asserts, todos passaram. t-invocacao-compostos.mjs (73), t-quimera.mjs (75) e t-ordem-modulos.mjs (34) passam. ESLint limpo em src/systems/afty e src/App.jsx, build passando.
+
+**Verificado ao vivo:** servidor próprio em 5201, Chrome em contextos temporários sem ocultar barras, /afty e /player a 1440 e 390 px. A Quimera mostra PV 70, com parcelas 39, 13, -2 e Invocações Resistentes +20, por mouse e toque no criador e na Ficha. A morte no segundo exorcismo aparece na original na mesma aba. Nome, nível, Técnica, campos posteriores, outra ficha editada, campo excluído, inclusão e exclusão posteriores são preservados. No telefone, falha de armazenamento mostra o aviso e Tentar Novamente grava após desbloquear. Encontro antigo misto com identificador igual nas duas bibliotecas grava no livro de cada ficha e abrir a outra rota mostra a perda. Duas novas rodadas não regravam a biblioteca. Sem erro de página ou console, nem rolagem horizontal. Roteiros, capturas, relatórios e diff do lote em .audit/lote11-*.
+
+**Achado e não mexido:** nenhuma pendência deste lote. A conferência manual do Visionário é a decisão final. O build conserva o aviso de tamanho do pacote principal. Trabalho paralelo, mudanças preexistentes e fichas reais preservados. Nenhum U+2014 introduzido nas linhas deste lote. Sem commit ou push.

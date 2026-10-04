@@ -13,10 +13,12 @@ estilo de escrita e nas regras de colaboração. O que mais pega está repetido 
 - **Não faça commits nem push.** O autor cuida dessa etapa. O deploy é o push para `main`, que a
   Vercel publica.
 - O repositório tem mais de um colaborador. Rode `git fetch` e adiante o `main` antes de editar.
-- **`src/components/` e `src/data/enciclopedia-digital-*.json` são somente-leitura.** É o Grimório
-  2.5.2, o livro oficial. Correção de regra do livro dentro do Afty é feita por Addon com
-  `substitui`, nunca no raw. O `Dashboard.jsx` já recebe algumas props do Player, e a fronteira
-  definitiva dessas exceções continua em `docs/a-fazer.md`.
+- **`src/components/` e `src/data/enciclopedia-digital-*.json` são somente-leitura, salvo as
+  exceções listadas em `AGENTS.md`.** É o Grimório 2.5.2, o livro oficial. Correção de regra do
+  livro dentro do Afty é feita por Addon com `substitui`, nunca no raw. Exceção nova só com o autor
+  consultado antes, numa das três formas de lá (parâmetro opcional com o padrão de hoje decidido no
+  `App.jsx`, leitura de campo que ficha da 2.5.2 não tem, ou mudança que o autor pediu para as três
+  rotas), e ela entra na lista no mesmo dia.
 - Pendência nova vai para `docs/a-fazer.md`, nunca só num `// TODO` no código. Ao resolver, apague
   a entrada e registre o que foi feito em `docs/afty-status.md` ou no guia da área.
 - Arredondamento no Afty é sempre para baixo (`Math.floor`), salvo quando o texto do livro manda
@@ -160,9 +162,12 @@ personagem, ou só para um.** Quando o comportamento precisa divergir entre os d
 um `if` solto no meio do cálculo. O `asserts/t-sistema.mjs` falha no dia em que
 a lista muda sem aviso.
 
-As duas portas de fronteira entre os livros ficam no `src/App.jsx`: a de ENTRADA (o importador do
-Grimório público recusa ficha de outro livro, e avisa o que recusou) e a de USO (quem já entrou
-abre na tela do livro dela). Nenhuma das duas mexeu em `src/components/`.
+As portas de fronteira entre os livros ficam no `src/App.jsx` e valem nas três rotas desde
+2026-10-03: a de ENTRADA (o importador de cada rota recusa ficha de outro livro, inclusive `/Afty`
+contra `/Player`, e avisa o que recusou) e a de USO (quem já entrou abre na tela do livro dela, e
+as listas dos Encontros e da biblioteca de Modelos são filtradas pelo motor). As Criaturas Base,
+que são o compêndio da 2.5.2, só aparecem no Grimório público. Nenhuma das portas mexeu em
+`src/components/`.
 
 ### O pipeline: `deriveAfty(creature, opcoes)`
 
@@ -295,7 +300,7 @@ abaixo é só o que não segue essa regra, ou o que se lê antes de tudo.
 
 | Arquivo | Responsabilidade |
 |---|---|
-| `src/App.jsx` | rotas, as duas portas entre os livros |
+| `src/App.jsx` | rotas, as portas entre os livros |
 | `afty-derive.js` | o pipeline inteiro, `deriveAfty` |
 | `afty-schema.js` | fábrica de ficha em branco. FOLHA, zero imports |
 | `afty-efeitos.js` | canais, `efeitosDaTecnica`, pools exclusivos |

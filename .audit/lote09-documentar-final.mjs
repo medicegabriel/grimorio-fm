@@ -1,0 +1,38 @@
+import fs from 'node:fs';
+function trocar(p,de,para){let s=fs.readFileSync(p,'utf8');if(!s.includes(de))throw Error('Trecho ausente: '+p+' '+de.slice(0,60));fs.writeFileSync(p,s.replace(de,para));}
+const fila='docs/a-fazer.md';
+let f=fs.readFileSync(fila,'utf8');
+const removidas=[];
+for(const titulo of ['Técnica Inata perdida: a Passiva continua ocupando PE Máximo?','O descanso repara todas as Marionetes, ou uma só?']){
+ const inicio=f.indexOf('### '+titulo);if(inicio<0)throw Error('Entrada ausente: '+titulo);
+ const proxima=f.indexOf('\n### ',inicio+4);const fim=proxima<0?f.length:proxima+1;
+ removidas.push(f.slice(inicio,fim));f=f.slice(0,inicio)+f.slice(fim);
+}
+fs.writeFileSync(fila,f);fs.writeFileSync('.audit/lote09-fila-concluida.json',JSON.stringify(removidas,null,2));
+const inv='docs/afty-invocacoes.md';
+trocar(inv,'| **Perda da Técnica Inata** | A morte do Shikigami de Técnica marcado como **Fundamento** bloqueia a Técnica Inata de verdade, gravado na ficha e refletido na sessão. Nada é apagado: a Técnica fica marcada como indisponível |',
+'| **Perda da Técnica Inata** | A morte do Shikigami de Técnica marcado como **Fundamento** bloqueia a Técnica Inata de verdade, gravado na ficha e refletido na sessão. Nada é apagado: a Técnica fica marcada como indisponível |\n| **Fundamento fora de campo** (2026-10-03) | Na mesa, bloqueia toda a Técnica Inata: Feitiços, Funcionamento e Passivas. Voltar ao campo restaura os efeitos. O criador não considera o estado de campo |\n| **Reserva de PE da Passiva** (2026-10-03) | No jogador, continua ocupando PE Máximo com a Técnica perdida ou com o Fundamento fora de campo. A criatura segue sem esse custo |\n| **Marionete no descanso** (2026-10-03) | O botão de Descanso repara completamente uma Marionete não destruída, escolhida na Ficha ou no Encontro, e zera suas quedas. As demais conservam PV, quedas, retorno e estado. Descansar Todos pede uma escolha por combatente que tenha Marionete a reparar |');
+trocar(inv,'- **Marionete:** o reparo completo zera as quedas, e o dano excedente ainda pode destruí-la.',
+'- **Marionete:** o reparo completo zera as quedas, e o dano excedente ainda pode destruí-la. No Descanso, só a escolhida recebe esse reparo (autor, 2026-10-03). O Mecha se separa antes da escolha e devolve às componentes seus PV atuais.');
+const ficha='docs/afty-ficha-final.md';fs.copyFileSync(ficha,'.audit/lote09-base/afty-ficha-final.md');
+trocar(ficha,'| ✅ Descanso curto e longo | **D3** respondida em 2026-09-23: um botão só, que devolve tudo |',
+'| ✅ Descanso curto e longo | **D3** respondida em 2026-09-23: um botão só, que devolve os recursos. Marionetes: uma escolhida recebe o reparo completo (2026-10-03) |');
+trocar(ficha,'tem descanso curto e longo, e o botão continua um só e devolve tudo, por decisão do autor (D3,\n2026-09-23: *"Manter um botão só"*). Os contadores de usos das Habilidades guardam a recarga do\nlivro só como dado (seção 27).',
+' tem descanso curto e longo, e o botão continua um só e devolve os recursos, por decisão do autor\n(D3, 2026-09-23: *"Manter um botão só"*). Para Marionetes, o descanso repara uma não destruída,\nescolhida na janela de Descanso, e zera suas quedas. As demais conservam PV, quedas, retorno e\nestado (autor, 2026-10-03). A Ficha e o painel de combatente no Encontro usam a mesma escolha.\nDescansar Todos pede uma Marionete por combatente com reparo disponível. Os contadores de usos\ndas Habilidades guardam a recarga do livro só como dado (seção 27).'.trimStart());
+const status='docs/afty-status.md';const atual=fs.readFileSync(status,'utf8');
+if(atual.includes('LOTE 09 CONCLUÍDO, FUNDAMENTO, PE MÁXIMO E DESCANSO'))throw Error('Já registrado');
+const sessao=`\n\n## SESSÃO DE 2026-10-03: LOTE 09 CONCLUÍDO, FUNDAMENTO, PE MÁXIMO E DESCANSO
+
+**Decisões do autor:** B, A e B. Com o Fundamento fora de campo, a Técnica Inata inteira para na mesa, incluindo Feitiços, Funcionamento e Passivas. No jogador, as Passivas seguem reservando PE Máximo tanto com a Técnica perdida quanto fora de campo. O descanso repara uma Marionete não destruída, escolhida nesse momento. O bloqueio de campo e o reparo valem nos dois sistemas, conforme o escopo compartilhado do lote. Esta sessão conclui as decisões 2 e 3 que estavam pendentes no registro parcial anterior.
+
+**O que mudou:** em deriveAfty (afty-derive.js), semTecnicaBloqueada filtra as fontes da Técnica pelo estado bloqueada, inclusive efeitos escritos para invocações e resistências de Passiva. estadoDaTecnicaInata (afty-invocacoes.js) mantém a distinção entre perda persistente e bloqueio de campo. AbaInvocacoes.jsx mostra o aviso em âmbar com AlertTriangle, e os Feitiços deixam de oferecer rolagem e Ritual enquanto bloqueados. peMaximoDasPassivas conserva o cálculo confirmado, com comentário e cobertura da reserva e sua fonte. Em ficha-sessao.js, marionetesParaReparo lista as não destruídas que precisam de reparo. descansar e descansaInvocacoes recebem marioneteId: só a escolhida enche e zera quedas, e as demais conservam PV, quedas, retorno e estado. O Mecha se separa antes para devolver os PV atuais das componentes. BotaoDeDescanso.jsx integra a escolha na Ficha, no painel do combatente e em Descansar Todos, com uma escolha por dono. Cancelar ou fechar não descansa. As duas entradas restantes saíram da fila, e afty-invocacoes.md e afty-ficha-final.md descrevem a regra final.
+
+**Asserts:** base original de 147 arquivos e 8047 asserts, todos verdes. A continuação começou com 148 arquivos e 8079, também verdes. t-fundamento-bloqueio.mjs passou de 32 para 40 com reserva igual em campo, fora de campo e na perda, custo só no jogador e parcelas nomeadas fechando com o total. t-descanso-marionetes.mjs novo tem 50 casos nos dois sistemas: seleção, escolhida ativa, recolhida e quebrada, preservação das outras, destruída, sessão antiga, escolha inválida, descanso sem derivados, imutabilidade, expiração de efeitos de cena, separação do Mecha e escolha individual no descanso coletivo. O caso de descanso de t-invocacao-estados.mjs foi adaptado à escolha explícita e passa com 67. t-invocacao-compostos.mjs (73), t-invocacao-tipos-especiais.mjs (89) e t-ordem-modulos.mjs (34) passam. Suíte final: 149 arquivos e 8172 asserts, todos passaram. Dos 125 adicionais à base original, 90 são deste lote e 35 do Lote 10 paralelo. ESLint da área Afty limpo e build passando.
+
+**Verificado ao vivo:** servidor próprio na porta 5199, Chrome em contextos temporários sem ocultar barras, /afty e /player a 1440 e 390 px. O Fundamento em campo restaura Defesa, RD, fonte Técnica, rolagem e Ritual; fora de campo retira os efeitos e mostra o aviso, mantendo PE Máximo 40 na criatura e 48 no jogador. A escolha do descanso foi exercitada nas duas larguras, na Ficha, no Encontro ativo e em Descansar Todos: só aparecem as Marionetes danificadas e não destruídas, confirmar exige uma escolha, Cancelar e Escape preservam a sessão, e só a escolhida recupera PV e quedas. O descanso coletivo foi testado com criatura e jogador juntos, usando a regra de cada ficha. Sem erro de página ou console, nem rolagem horizontal. Capturas, roteiros e relatórios em .audit/lote09-*.
+
+**Achado e não mexido:** nenhuma pendência deste lote. O build conserva o aviso de tamanho do pacote principal. O trabalho paralelo e as alterações preexistentes foram preservados. Nenhum U+2014 introduzido nas linhas deste lote. Sem commit ou push.
+`;
+if(sessao.includes(String.fromCharCode(0x2014)))throw Error('Caractere proibido');
+fs.appendFileSync(status,sessao);fs.writeFileSync('.audit/lote09-sessao-concluida.md',sessao);
+console.log('Fila, guias e sessão final atualizados.');

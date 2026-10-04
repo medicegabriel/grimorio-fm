@@ -745,6 +745,33 @@ function resolveEscolhas(itens, escolhasBrutas, opcoesPorItem = {}) {
   return { porItem, mapa };
 }
 
+/* O total de uma trilha: a vaga de canal soma na QUANTIDADE, e o portão continua
+   sendo o `destravado` (ver a nota do `melVagasCanal`, abaixo). Função própria
+   porque a conta roda duas vezes, aqui e em `comVagasDeCanal`. */
+const totalDaTrilha = (destravado, vagasND, vagasCanal) => (destravado ? vagasND + vagasCanal : 0);
+
+/**
+ * Refecha as duas trilhas com as vagas de canal do agregado FINAL (2026-10-02).
+ *
+ * ⚠ O `resolveAltoNivel` roda cedo, com as vagas do montante, porque o derive
+ * precisa das escolhas antes dos efeitos. Uma vaga escrita num Feitiço Passivo,
+ * num Funcionamento Básico ou num Buff de Mesa só existe no agregado final, e
+ * ficava no hover e fora do contador. As vagas só CONTAM (não decidem o que a
+ * ficha tem), então refechar no fim não muda escolha nenhuma.
+ */
+export function comVagasDeCanal(altoNivel, { vagasMelhoria = 0, vagasLendaria = 0 } = {}) {
+  const fecha = (trilha, vagas) => {
+    const vagasCanal = Math.max(0, Math.trunc(Number(vagas) || 0));
+    const total = totalDaTrilha(trilha.destravado, trilha.vagasND, vagasCanal);
+    return { ...trilha, vagasCanal, total, restante: total - trilha.gastos, excedeu: trilha.gastos > total };
+  };
+  return {
+    ...altoNivel,
+    melhorias: fecha(altoNivel.melhorias, vagasMelhoria),
+    lendarias: fecha(altoNivel.lendarias, vagasLendaria),
+  };
+}
+
 /**
  * Resolve o bloco de Alto Nível da ficha.
  *
@@ -813,7 +840,7 @@ export function resolveAltoNivel(creature, ctx = {}) {
      outra pergunta. Somar a vaga por fora do portão faria uma compra de loja
      valer mais do que a Habilidade Geral que o livro exige. */
   const melVagasCanal = Math.max(0, Math.trunc(Number(ctx.vagasMelhoria) || 0));
-  const melTotal = destravado.melhorias ? melVagasND + melVagasCanal : 0;
+  const melTotal = totalDaTrilha(destravado.melhorias, melVagasND, melVagasCanal);
 
   /* ---- Habilidades Lendárias (uma vez cada) ---- */
   const vistos = new Set();
@@ -839,7 +866,7 @@ export function resolveAltoNivel(creature, ctx = {}) {
   const lenVagasND = totalHabilidadesLendarias(nd);
   // Mesma regra da Melhoria acima: soma na quantidade, e não no portão.
   const lenVagasCanal = Math.max(0, Math.trunc(Number(ctx.vagasLendaria) || 0));
-  const lenTotal = destravado.lendarias ? lenVagasND + lenVagasCanal : 0;
+  const lenTotal = totalDaTrilha(destravado.lendarias, lenVagasND, lenVagasCanal);
 
   const ctxReq = { nd, niveisPorEspec: ctx.niveisPorEspec, habilidades: ctx.habilidades };
   const inacessiveis = lendariasEscolhidas.filter(

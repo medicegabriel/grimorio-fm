@@ -65,15 +65,21 @@ export const parseImportText = (text) => {
   const importedFolderIds = new Set(rawFolders.map((f) => f?.id).filter(Boolean));
 
   const valid = creaturesData.map((c) => {
-    if (!c || !c.name || typeof c.name !== "string") {
+    if (!c || typeof c !== "object" || Array.isArray(c)) {
       throw new Error(`Criatura inválida: ${JSON.stringify(c)}`);
     }
+    // Ficha sem nome entra como "Sem nome" em vez de derrubar o pacote inteiro
+    // (autor, 2026-10-03). É a mesma regra do `nomeParaGravar` do Afty, escrita
+    // aqui porque a 2.5.2 não importa nada de lá. Conserta as fichas antigas
+    // exportadas com `name: ""`. O que nem é objeto continua derrubando.
+    const name = typeof c.name === "string" && c.name.trim() ? c.name : "Sem nome";
     const hasBuiltInId = typeof c.id === "string" && c.id.includes("builtin_");
     const safeId = !c.id || hasBuiltInId
       ? `imported_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 9)}`
       : c.id;
     return {
       ...c,
+      name,
       id: safeId,
       isBuiltIn: false,
       folderId: c.folderId && importedFolderIds.has(c.folderId) ? c.folderId : null,

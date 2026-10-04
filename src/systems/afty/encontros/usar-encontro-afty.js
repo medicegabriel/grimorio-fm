@@ -11,6 +11,7 @@ import {
   ordenarPorIniciativa, rolarTodasIniciativas, definirIniciativa, rolarIniciativa,
   proximoTurno, validarInicio, podeTransicionar, entradaDeLog, LOG_TIPOS, LOG_MAX,
 } from "./afty-encontro";
+import { juntarFundamentosPerdidos, sincronizarFundamentosNaBiblioteca } from "./fundamento-biblioteca";
 
 /**
  * ============================================================
@@ -233,17 +234,23 @@ const HANDLERS = {
 
   /* A MORTE DO FUNDAMENTO (DA-07, 2026-09-30): a perda da Técnica Inata é gravada
      na ficha DESTE combatente, que é a cópia que o Encontro guarda. A criatura da
-     biblioteca não é tocada daqui (ver docs/a-fazer.md). A ficha nova troca a
-     chave do cache do derive, e o próximo derive já lê o registro. */
+     biblioteca recebe a perda pelo efeito de sincronização abaixo. A ficha
+     nova troca a chave do cache, e o próximo derive já lê o registro. */
   REGISTRAR_FUNDAMENTO_PERDIDO: (s, { id, registro }) => ({
     ...s,
     combatentes: s.combatentes.map((c) => {
-      if (c.id !== id || !c.ficha || !registro?.invocacaoId) return c;
-      const antes = Array.isArray(c.ficha.fundamentosPerdidos) ? c.ficha.fundamentosPerdidos : [];
-      if (antes.some((r) => r?.invocacaoId === registro.invocacaoId)) return c;
-      return { ...c, ficha: { ...c.ficha, fundamentosPerdidos: [...antes, registro] } };
+      if (c.id !== id || !c.ficha || typeof registro?.invocacaoId !== "string" || !registro.invocacaoId) return c;
+      const antes = c.ficha.fundamentosPerdidos;
+      const fundamentosPerdidos = juntarFundamentosPerdidos(antes, [registro]);
+      if (fundamentosPerdidos === antes) return c;
+      return { ...c, ficha: { ...c.ficha, fundamentosPerdidos } };
     }),
   }),
+
+  RESULTADO_FUNDAMENTOS_BIBLIOTECA: (s, { falhas }) => (
+    JSON.stringify(s.fundamentosSemGravar ?? []) === JSON.stringify(falhas)
+      ? s : { ...s, fundamentosSemGravar: falhas }
+  ),
 
   COMECAR: (s, { derivados = {} } = {}) => {
     if (!podeTransicionar(s.status, ENCONTRO_STATUS.ATIVO)) return s;
@@ -352,10 +359,10 @@ const HANDLERS = {
   // ou seja, ZERA o PV e o PE. Uma ficha que o `derivarCombatente` não conseguiu
   // calcular já mostra "não pôde ser calculada" no painel, e o Descansar Todos
   // passava por cima disso apagando os recursos dela, sem desfazer.
-  DESCANSAR_TODOS: (s, { derivados }) => ({
+  DESCANSAR_TODOS: (s, { derivados, marionetes = {} }) => ({
     ...s,
     combatentes: s.combatentes.map((c) => (
-      (c.sessao && derivados[c.id]) ? { ...c, sessao: descansar(c.sessao, derivados[c.id]) } : c
+      (c.sessao && derivados[c.id]) ? { ...c, sessao: descansar(c.sessao, derivados[c.id], { marioneteId: marionetes[c.id] }) } : c
     )),
   }),
 
@@ -378,15 +385,16 @@ export const redutorDeEncontro = (state, acao) => {
   return h(state, acao);
 };
 
-export default function useEncontroAfty(encontroId, gerenciador) {
+export default function useEncontroAfty(encontroId, gerenciador, onAtualizarBiblioteca) {
   const encontro = useMemo(
     () => gerenciador.encontros.find((e) => e.id === encontroId) ?? null,
     [gerenciador.encontros, encontroId],
   );
 
+  const atualizarEncontro = gerenciador.atualizar;
   const despachar = useCallback((acao) => {
-    gerenciador.atualizar(encontroId, (prev) => redutorDeEncontro(prev, acao));
-  }, [gerenciador, encontroId]);
+    atualizarEncontro(encontroId, (prev) => redutorDeEncontro(prev, acao));
+  }, [atualizarEncontro, encontroId]);
 
   /* Um `deriveAfty` por combatente com ficha, e o mapa vale para a lista de
      iniciativa (PV máximo na barra), para o painel e para o resumo final.
@@ -441,7 +449,28 @@ export default function useEncontroAfty(encontroId, gerenciador) {
     }
   }, [fundamentosAGravar, despachar]);
 
+  // A assinatura depende só das perdas, não de PV, turnos ou log. Ao reabrir
+  // um Encontro antigo, suas perdas também são levadas à biblioteca.
+  const perdasDaBiblioteca = JSON.stringify((encontro?.combatentes ?? [])
+    .filter((c) => c.ficha?.fundamentosPerdidos?.length)
+    .map((c) => ({
+      criaturaId: c.criaturaId, nome: c.nome,
+      ficha: { id: c.ficha.id, name: c.ficha.name, rulesVersion: c.ficha.rulesVersion,
+        fundamentosPerdidos: c.ficha.fundamentosPerdidos },
+    })));
+  const falhasDaBiblioteca = JSON.stringify(encontro?.fundamentosSemGravar ?? []);
+  const sincronizarFundamentos = useCallback(() => {
+    const resultado = sincronizarFundamentosNaBiblioteca(JSON.parse(perdasDaBiblioteca));
+    const bibliotecas = new Map(resultado.gravadas.map(({ sistema, biblioteca }) => [sistema, biblioteca]));
+    for (const [sistema, biblioteca] of bibliotecas) onAtualizarBiblioteca?.(sistema, biblioteca);
+    if (JSON.stringify(resultado.falhas) !== falhasDaBiblioteca) {
+      despachar({ tipo: "RESULTADO_FUNDAMENTOS_BIBLIOTECA", falhas: resultado.falhas });
+    }
+  }, [perdasDaBiblioteca, falhasDaBiblioteca, onAtualizarBiblioteca, despachar]);
+  useEffect(() => { sincronizarFundamentos(); }, [sincronizarFundamentos]);
+
   const acoes = useMemo(() => ({
+    sincronizarFundamentos,
     renomear: (nome) => despachar({ tipo: "RENOMEAR", nome }),
     adicionar: (creature, opcoes = {}) => despachar({
       tipo: "ADICIONAR", creature,
@@ -464,7 +493,7 @@ export default function useEncontroAfty(encontroId, gerenciador) {
     encerrar: () => despachar({ tipo: "ENCERRAR" }),
     reabrir: () => despachar({ tipo: "REABRIR" }),
     levantarTodos: () => despachar({ tipo: "LEVANTAR_TODOS" }),
-    descansarTodos: () => despachar({ tipo: "DESCANSAR_TODOS", derivados }),
+    descansarTodos: (marionetes = {}) => despachar({ tipo: "DESCANSAR_TODOS", derivados, marionetes }),
     registrar: (tipoLog, mensagem, combatenteId = null) =>
       despachar({ tipo: "REGISTRAR", tipoLog, mensagem, combatenteId }),
     /* Escrita da sessão de um combatente. O `fn` recebe a sessão APARADA e o
@@ -476,7 +505,7 @@ export default function useEncontroAfty(encontroId, gerenciador) {
       const antes = aparaSessao(alvo.sessao, d);
       despachar({ tipo: "PATCH_SESSAO", id, sessao: aparaSessao(fn(antes), d) });
     },
-  }), [despachar, encontro, derivados]);
+  }), [despachar, encontro, derivados, sincronizarFundamentos]);
 
   const derivado = useMemo(() => {
     if (!encontro) return null;

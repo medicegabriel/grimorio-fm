@@ -1,0 +1,560 @@
+[
+  {
+    "production": true,
+    "route": "",
+    "width": 1440,
+    "errors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "bodyLength": 253,
+    "widthPage": 1440
+  },
+  {
+    "production": true,
+    "route": "",
+    "width": 390,
+    "errors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "bodyLength": 113,
+    "widthPage": 390
+  },
+  {
+    "production": true,
+    "route": "afty",
+    "width": 1440,
+    "errors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "bodyLength": 234,
+    "widthPage": 1440
+  },
+  {
+    "production": true,
+    "route": "afty",
+    "width": 390,
+    "errors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "bodyLength": 113,
+    "widthPage": 390
+  },
+  {
+    "production": true,
+    "route": "player",
+    "width": 1440,
+    "errors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "bodyLength": 239,
+    "widthPage": 1440
+  },
+  {
+    "production": true,
+    "route": "player",
+    "width": 390,
+    "errors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "bodyLength": 116,
+    "widthPage": 390
+  },
+  {
+    "route": "afty",
+    "width": 1440,
+    "anatomyText": "",
+    "marks": [
+      "flex"
+    ],
+    "open": "Anatomia",
+    "sources": [
+      "Base+10",
+      "Nível ÷ 1,25+4",
+      "Destreza+0",
+      "Maestria+3"
+    ],
+    "keyboardSources": [
+      "Base+10",
+      "Nível ÷ 1,25+4",
+      "Destreza+0",
+      "Maestria+3"
+    ],
+    "encounterMarks": [
+      "flex"
+    ],
+    "encounterSources": [
+      "Base+10",
+      "Nível ÷ 1,25+4",
+      "Destreza+0",
+      "Maestria+3"
+    ],
+    "measures": [
+      {
+        "label": "ficha:Ações",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "ficha:Habilidades",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "ficha:Perícias",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "ficha:Equipamentos",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "ficha:Invocações",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "ficha:Buffs",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "encontro",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "criador:Identidade",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "criador:Informações",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "criador:Perícias",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "criador:Habilidades",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "criador:Especializações",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "criador:Aptidões",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "criador:Invocações",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "criador:Equipamentos",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "criador:Interlúdios",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      }
+    ],
+    "errors": []
+  },
+  {
+    "route": "afty",
+    "width": 390,
+    "anatomyText": "",
+    "marks": [
+      "none"
+    ],
+    "open": "Anatomia",
+    "sources": [
+      "Base+10",
+      "Nível ÷ 1,25+4",
+      "Destreza+0",
+      "Maestria+3"
+    ],
+    "keyboardSources": [
+      "Base+10",
+      "Nível ÷ 1,25+4",
+      "Destreza+0",
+      "Maestria+3"
+    ],
+    "encounterMarks": [
+      "none"
+    ],
+    "encounterSources": [
+      "Base+10",
+      "Nível ÷ 1,25+4",
+      "Destreza+0",
+      "Maestria+3"
+    ],
+    "measures": [
+      {
+        "label": "ficha:Ações",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "ficha:Habilidades",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "ficha:Perícias",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "ficha:Equipamentos",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "ficha:Invocações",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "ficha:Buffs",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "encontro",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "criador:Identidade",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "criador:Informações",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "criador:Perícias",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "criador:Habilidades",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "criador:Especializações",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "criador:Aptidões",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "criador:Invocações",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "criador:Equipamentos",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "criador:Interlúdios",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      }
+    ],
+    "errors": []
+  },
+  {
+    "route": "player",
+    "width": 1440,
+    "anatomyText": "",
+    "marks": [
+      "flex"
+    ],
+    "open": "Anatomia",
+    "sources": [
+      "Base+10",
+      "Metade do Nível+2",
+      "Destreza+0"
+    ],
+    "keyboardSources": [
+      "Base+10",
+      "Metade do Nível+2",
+      "Destreza+0"
+    ],
+    "encounterMarks": [
+      "flex"
+    ],
+    "encounterSources": [
+      "Base+10",
+      "Metade do Nível+2",
+      "Destreza+0"
+    ],
+    "measures": [
+      {
+        "label": "ficha:Ações",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "ficha:Habilidades",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "ficha:Perícias",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "ficha:Equipamentos",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "ficha:Invocações",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "ficha:Buffs",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "encontro",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "criador:Identidade",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "criador:Perícias",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "criador:Habilidades",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "criador:Especializações",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "criador:Aptidões",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "criador:Invocações",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "criador:Equipamentos",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      },
+      {
+        "label": "criador:Interlúdios",
+        "client": 1425,
+        "scroll": 1425,
+        "viewport": 1440
+      }
+    ],
+    "errors": []
+  },
+  {
+    "route": "player",
+    "width": 390,
+    "anatomyText": "",
+    "marks": [
+      "none"
+    ],
+    "open": "Anatomia",
+    "sources": [
+      "Base+10",
+      "Metade do Nível+2",
+      "Destreza+0"
+    ],
+    "keyboardSources": [
+      "Base+10",
+      "Metade do Nível+2",
+      "Destreza+0"
+    ],
+    "encounterMarks": [
+      "none"
+    ],
+    "encounterSources": [
+      "Base+10",
+      "Metade do Nível+2",
+      "Destreza+0"
+    ],
+    "measures": [
+      {
+        "label": "ficha:Ações",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "ficha:Habilidades",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "ficha:Perícias",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "ficha:Equipamentos",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "ficha:Invocações",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "ficha:Buffs",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "encontro",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "criador:Identidade",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "criador:Perícias",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "criador:Habilidades",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "criador:Especializações",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "criador:Aptidões",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "criador:Invocações",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "criador:Equipamentos",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      },
+      {
+        "label": "criador:Interlúdios",
+        "client": 390,
+        "scroll": 390,
+        "viewport": 390
+      }
+    ],
+    "errors": []
+  }
+]

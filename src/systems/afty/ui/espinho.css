@@ -1,0 +1,728 @@
+/**
+ * ============================================================
+ * ESPINHO: o card vermelho que rasga a borda
+ * ============================================================
+ * Autor, 2026-09-30: *"Precisa ser VERMELHO PULSANTE como na imagem enviada.
+ * Quase como se estivesse rasgando a realidade ou o proprio site"*, *"proximo
+ * de uma Pedra Filosofal corrompida"*, *"vibe Stranger Things"*. Escolhida a
+ * variação A (Rasgo) do protótipo em prototipos/espinho/, na intensidade dele.
+ *
+ * ⚠ O CARD TEM PALETA PRÓPRIA, e não lê os tokens `--afty-*` da Ficha: ele
+ * precisa parecer diferente do resto do site em QUALQUER tema, e é o mesmo
+ * componente no criador (Tailwind) e na Ficha (tokens). Os tokens dele são
+ * `--espinho-*`, declarados na raiz do card, e um tema do usuário pode trocá-los
+ * pela classe `.afty-espinho`, que está no contrato de ficha-tema.js.
+ *
+ * ⚠ AS RACHADURAS MORAM FORA DA CASCA. A casca tem `overflow: hidden` para
+ * recortar o brilho de dentro, e as rachaduras são irmãs dela, por isso escapam
+ * alguns pixels da borda. A máscara de cada uma apaga a ponta que entra no card
+ * antes de cobrir texto. Não dê `overflow: hidden` à raiz.
+ *
+ * ⚠ ANIMAÇÃO SÓ EM `transform` E `opacity`, e sempre num elemento próprio: a
+ * lentidão da Ficha é PINTURA (ver a memória de lentidão), e um `box-shadow` ou
+ * `filter` animado repintaria o card inteiro a cada quadro. O brilho existe
+ * pintado uma vez, e o que pulsa é a opacidade dele.
+ *
+ * ⚠ O `src/index.css` dá estilo a todo `h2` fora de camada. O título é um `h2`,
+ * e por isso esta folha reescreve TODAS as propriedades que aquela regra toca
+ * (margem, tamanho, peso, cor, fonte, espaçamento). A classe vence o elemento.
+ */
+
+.afty-espinho {
+  --espinho-fundo: #0a0305;
+  --espinho-poco: #14050a;
+  --espinho-borda: #5c0a14;
+  --espinho-brasa: #ff3344;
+  --espinho-rosa: #ff9a9a;
+  --espinho-texto: #fde8e8;
+  --espinho-texto-suave: #c99a9e;
+  --espinho-texto-fraco: #8a5a60;
+  --espinho-aviso: #fbbf24;
+  --espinho-raio: 12px;
+  --espinho-batida: 1.8s;
+
+  position: relative;
+  isolation: isolate;
+  color: var(--espinho-texto);
+  font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+  animation: afty-espinho-glitch 9s steps(1, end) infinite;
+}
+
+/* ---------- a casca e o que bate dentro dela ---------- */
+.afty-espinho-casca {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--espinho-raio);
+  border: 1px solid var(--espinho-borda);
+  background:
+    radial-gradient(140% 90% at 85% -20%, #3a0610 0%, transparent 55%),
+    radial-gradient(120% 120% at 0% 110%, #2a040b 0%, transparent 60%),
+    var(--espinho-fundo);
+  padding: 16px 18px 18px;
+}
+/* O núcleo carmim atrás do cristal, em batimento lub-dub. */
+.afty-espinho-casca::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  width: 520px;
+  height: 520px;
+  right: -200px;
+  top: -260px;
+  background: radial-gradient(closest-side, #ff1a2e66, #b0001533 45%, transparent 72%);
+  animation: afty-espinho-batimento var(--espinho-batida) ease-in-out infinite;
+  pointer-events: none;
+}
+/* Linhas de varredura, que só aparecem no glitch. */
+.afty-espinho-casca::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: repeating-linear-gradient(0deg, #ff335522 0 1px, transparent 1px 3px);
+  opacity: 0;
+  animation: afty-espinho-varredura 9s steps(1, end) infinite;
+  pointer-events: none;
+}
+/* O halo da borda, pintado uma vez, e o que pulsa é a opacidade. */
+.afty-espinho-halo {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: var(--espinho-raio);
+  box-shadow:
+    0 0 0 1px #ff203866,
+    0 0 18px 2px #ff10284d,
+    0 0 42px 6px #a0001426;
+  animation: afty-espinho-batimento-halo var(--espinho-batida) ease-in-out infinite;
+  pointer-events: none;
+}
+/* Grão de pedra, estático. */
+.afty-espinho-grao {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.09;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 .2  0 0 0 0 .25  0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.afty-espinho-conteudo {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- o cabeçalho ---------- */
+.afty-espinho-topo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.afty-espinho-titulo-bloco {
+  flex: 1;
+  min-width: 0;
+}
+.afty-espinho-titulo {
+  position: relative;
+  display: inline-block;
+  margin: 0;
+  font-family: Georgia, "Times New Roman", "Liberation Serif", serif;
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: transparent;
+  -webkit-text-stroke: 1.2px var(--espinho-brasa);
+  /* O brilho segue o CONTORNO: `text-shadow` encheria a letra por dentro e
+     mataria o vazado do logo. */
+  filter: drop-shadow(0 0 3px #ff1a2e) drop-shadow(0 0 10px #b3001b);
+}
+/* A duplicata que se desloca no glitch (o deslocamento cromático). */
+.afty-espinho-titulo::before {
+  content: attr(data-texto);
+  position: absolute;
+  inset: 0;
+  -webkit-text-stroke: 1.2px var(--espinho-rosa);
+  opacity: 0;
+  animation: afty-espinho-glitch-sombra 9s steps(1, end) infinite;
+}
+/* A barra do logo, abaixo das letras do meio. */
+.afty-espinho-titulo::after {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 16%;
+  bottom: -7px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--espinho-brasa) 18%, var(--espinho-brasa) 82%, transparent);
+  box-shadow: 0 0 8px #ff1a2e;
+}
+
+/* ---------- o cristal (a pedra filosofal) ---------- */
+.afty-espinho-pedra {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.afty-espinho-cristal-caixa {
+  position: relative;
+  width: 70px;
+  height: 86px;
+}
+.afty-espinho-cristal-caixa::before {
+  content: "";
+  position: absolute;
+  inset: -26px;
+  z-index: -1;
+  background: radial-gradient(closest-side, #ff2a3fcc, #ff00221f 60%, transparent 75%);
+  animation: afty-espinho-batimento var(--espinho-batida) ease-in-out infinite;
+}
+.afty-espinho-cristal {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(50% 0, 90% 22%, 100% 60%, 50% 100%, 0 60%, 10% 22%);
+  background: #6d0010;
+}
+.afty-espinho-cristal i {
+  position: absolute;
+  inset: 0;
+}
+.afty-espinho-cristal .f1 { clip-path: polygon(50% 0, 90% 22%, 50% 36%, 10% 22%); background: linear-gradient(160deg, #ffb1b1, #ff3344 70%); }
+.afty-espinho-cristal .f2 { clip-path: polygon(10% 22%, 50% 36%, 50% 100%, 0 60%); background: linear-gradient(200deg, #e0142b, #7d0014 80%); }
+.afty-espinho-cristal .f3 { clip-path: polygon(90% 22%, 100% 60%, 50% 100%, 50% 36%); background: linear-gradient(160deg, #a3001a, #3b0009 85%); }
+.afty-espinho-cristal .f4 { clip-path: polygon(50% 36%, 70% 58%, 50% 100%, 30% 58%); background: linear-gradient(180deg, #ff5566aa, #5a000d00); }
+/* As almas girando dentro da pedra. */
+.afty-espinho-cristal .alma {
+  inset: -40%;
+  background: conic-gradient(from 0deg, transparent 0 12%, #ff667766 20%, transparent 30%, #fff1f133 44%, transparent 55%, #ff223377 72%, transparent 84%);
+  mix-blend-mode: screen;
+  opacity: 0.8;
+  animation: afty-espinho-girar 7s linear infinite;
+}
+.afty-espinho-cristal .brilho {
+  clip-path: polygon(30% 12%, 44% 6%, 26% 40%, 18% 36%);
+  background: #fff1f1cc;
+  animation: afty-espinho-cintila 5.5s ease-in-out infinite;
+}
+.afty-espinho-cristal-num {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding-top: 10px;
+}
+.afty-espinho-num {
+  font-family: ui-monospace, Consolas, monospace;
+  font-weight: 800;
+  font-size: 20px;
+  line-height: 1;
+  color: #fff5f5;
+  text-shadow: 0 1px 2px #2a0006, 0 0 10px #ff4d5e;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+.afty-espinho-rotulo {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--espinho-texto-suave);
+  white-space: nowrap;
+}
+
+/* ---------- a faixa das Almas ---------- */
+.afty-espinho-almas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  align-items: flex-end;
+  margin-top: 14px;
+}
+.afty-espinho-campo {
+  display: grid;
+  gap: 4px;
+}
+.afty-espinho-campo > span:first-child,
+.afty-espinho-grupo-rotulo {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--espinho-texto-fraco);
+}
+.afty-espinho-input {
+  width: 76px;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--espinho-texto);
+  background: var(--espinho-poco);
+  border: 1px solid var(--espinho-borda);
+  border-radius: 8px;
+  padding: 5px 8px;
+  outline: none;
+}
+.afty-espinho-input:focus {
+  border-color: var(--espinho-brasa);
+  box-shadow: 0 0 0 1px var(--espinho-brasa), 0 0 12px #ff1a2e55;
+}
+.afty-espinho-input:disabled { opacity: 0.6; }
+.afty-espinho-input--qtd {
+  width: 44px;
+  padding: 2px 4px;
+  font-size: 13px;
+  text-align: center;
+}
+.afty-espinho-valor {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 6px 0;
+  color: var(--espinho-texto);
+}
+.afty-espinho-valor[data-excedeu="true"] { color: var(--espinho-aviso); }
+
+/* ---------- as compras ---------- */
+.afty-espinho-fenda {
+  height: 1px;
+  margin: 14px 0 10px;
+  background: linear-gradient(90deg, transparent, #ff203880 20%, #ff9a9a 50%, #ff203880 80%, transparent);
+  box-shadow: 0 0 8px #ff1a2e88;
+}
+.afty-espinho-lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 4px 14px;
+}
+.afty-espinho-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px 6px 10px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #ffffff05, transparent);
+}
+.afty-espinho-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--espinho-borda);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.afty-espinho-item[data-tem="true"]::before {
+  background: var(--espinho-brasa);
+  box-shadow: 0 0 8px var(--espinho-brasa);
+}
+.afty-espinho-item:hover { background: linear-gradient(90deg, #ff1a2e14, transparent); }
+.afty-espinho-item[data-morta="true"] .afty-espinho-nome { text-decoration: line-through; opacity: 0.7; }
+.afty-espinho-nome {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--espinho-texto);
+  cursor: help;
+}
+.afty-espinho-custo {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
+  color: var(--espinho-texto-suave);
+  white-space: nowrap;
+}
+.afty-espinho-alma-ico {
+  width: 7px;
+  height: 7px;
+  transform: rotate(45deg);
+  background: var(--espinho-brasa);
+  box-shadow: 0 0 6px #ff1a2e;
+  flex-shrink: 0;
+}
+.afty-espinho-passo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.afty-espinho-passo button,
+.afty-espinho-mini {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  font-family: inherit;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--espinho-rosa);
+  background: var(--espinho-poco);
+  border: 1px solid var(--espinho-borda);
+  cursor: pointer;
+}
+.afty-espinho-passo button {
+  width: 24px;
+  height: 24px;
+  font-size: 15px;
+  border-radius: 6px;
+}
+.afty-espinho-passo button:hover:not(:disabled),
+.afty-espinho-mini:hover:not(:disabled) {
+  border-color: var(--espinho-brasa);
+  color: #fff;
+  box-shadow: 0 0 10px #ff1a2e66;
+}
+.afty-espinho-passo button:disabled,
+.afty-espinho-mini:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.afty-espinho-passo button:focus-visible,
+.afty-espinho-mini:focus-visible,
+.afty-espinho-chave:focus-visible,
+.afty-espinho-x:focus-visible {
+  outline: 2px solid var(--espinho-brasa);
+  outline-offset: 1px;
+}
+.afty-espinho-qtd {
+  min-width: 44px;
+  text-align: center;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--espinho-texto);
+}
+.afty-espinho-qtd small {
+  font-size: inherit;
+  color: var(--espinho-texto-fraco);
+  font-weight: 600;
+}
+.afty-espinho-qtd[data-excedeu="true"] { color: var(--espinho-aviso); }
+
+/* ---------- os Equipamentos marcados ---------- */
+.afty-espinho-equip {
+  display: grid;
+  gap: 6px;
+}
+.afty-espinho-equip-linha {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #ff20381f;
+  background: #ff1a2e0a;
+}
+.afty-espinho-equip-linha[data-morta="true"] .afty-espinho-nome { text-decoration: line-through; opacity: 0.7; }
+.afty-espinho-tipo {
+  font-size: 11px;
+  color: var(--espinho-texto-fraco);
+  margin-left: 6px;
+}
+.afty-espinho-chave {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--espinho-texto-suave);
+  background: none;
+  border: 0;
+  padding: 0;
+}
+.afty-espinho-chave i {
+  position: relative;
+  width: 28px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--espinho-poco);
+  border: 1px solid var(--espinho-borda);
+  transition: background 0.2s;
+}
+.afty-espinho-chave i::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--espinho-texto-fraco);
+  transition: transform 0.2s, background 0.2s;
+}
+.afty-espinho-chave[aria-pressed="true"] { color: var(--espinho-texto); }
+.afty-espinho-chave[aria-pressed="true"] i { background: #5a0010; border-color: var(--espinho-brasa); }
+.afty-espinho-chave[aria-pressed="true"] i::after {
+  transform: translateX(12px);
+  background: #fff;
+  box-shadow: 0 0 8px var(--espinho-brasa);
+}
+.afty-espinho-x {
+  background: none;
+  border: 0;
+  color: var(--espinho-texto-fraco);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 4px;
+}
+.afty-espinho-x:hover { color: var(--espinho-brasa); }
+.afty-espinho-select {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--espinho-texto);
+  background: var(--espinho-poco);
+  border: 1px dashed var(--espinho-borda);
+  border-radius: 8px;
+  padding: 6px 8px;
+  max-width: 100%;
+}
+.afty-espinho-select:disabled { opacity: 0.5; }
+.afty-espinho-equip-rodape {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+.afty-espinho-equip-custos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 12px;
+  color: var(--espinho-texto-suave);
+}
+
+/* ---------- os avisos (âmbar, como no resto do app) ---------- */
+.afty-espinho-avisos {
+  display: grid;
+  gap: 4px;
+  margin-top: 12px;
+}
+.afty-espinho-aviso {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  font-size: 12px;
+  color: var(--espinho-aviso);
+}
+.afty-espinho-aviso svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ---------- a versão compacta (Ficha Final) ---------- */
+.afty-espinho--compacto .afty-espinho-casca { padding: 12px 14px 14px; }
+.afty-espinho--compacto .afty-espinho-titulo { font-size: 22px; }
+.afty-espinho--compacto .afty-espinho-cristal-caixa { width: 48px; height: 60px; }
+.afty-espinho--compacto .afty-espinho-cristal-num { padding-top: 6px; }
+.afty-espinho--compacto .afty-espinho-num { font-size: 14px; }
+.afty-espinho--compacto .afty-espinho-almas { margin-top: 10px; }
+.afty-espinho-comprado {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+/* Rótulo curto com a quantidade. Raio pequeno, e não cápsula. */
+.afty-espinho-marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--espinho-texto);
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid #ff203840;
+  background: #ff1a2e12;
+}
+.afty-espinho-marca b {
+  font-family: ui-monospace, Consolas, monospace;
+  color: var(--espinho-rosa);
+}
+.afty-espinho-mini {
+  width: 18px;
+  height: 18px;
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+/* ============================================================
+   AS RACHADURAS E O RASGO (fora da casca, escapam da borda)
+   ============================================================ */
+/* ⚠ `overflow: hidden` NO SVG, e não `visible`. A caixa de cada rachadura já
+   mora fora do card (os `-8px`), e é ela que escapa da borda. Com `visible`, o
+   traço que passa da caixa entrava na área ROLÁVEL da página e, no celular,
+   empurrava a Ficha 4 px para o lado (medido a 390 px). O brilho borrado não
+   conta, porque borrão é tinta e não caixa. */
+.afty-espinho-rachadura {
+  position: absolute;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 2;
+}
+.afty-espinho-rachadura .aura { stroke: #ff1a2e; stroke-width: 5; opacity: 0.5; filter: blur(2.5px); fill: none; }
+.afty-espinho-rachadura .veio { stroke: #ff2a3c; stroke-width: 2; fill: none; stroke-linejoin: bevel; }
+.afty-espinho-rachadura .ramo { stroke: #ff2a3c; stroke-width: 1.1; fill: none; opacity: 0.85; }
+.afty-espinho-rachadura .alma-do-veio { stroke: #ffe1e1; stroke-width: 0.7; fill: none; stroke-linejoin: bevel; }
+.afty-espinho-rachadura g { animation: afty-espinho-faisca 4.3s linear infinite; }
+/* A máscara apaga a ponta que entra no card: a rachadura nasce FORA e morre
+   antes de cobrir texto. */
+.afty-espinho-rachadura--no {
+  left: -7px; top: -7px; width: 210px; height: 88px;
+  -webkit-mask-image: linear-gradient(155deg, #000 55%, transparent 92%);
+  mask-image: linear-gradient(155deg, #000 55%, transparent 92%);
+}
+.afty-espinho-rachadura--ne {
+  right: -8px; top: -8px; width: 120px; height: 64px;
+  -webkit-mask-image: linear-gradient(215deg, #000 45%, transparent 90%);
+  mask-image: linear-gradient(215deg, #000 45%, transparent 90%);
+}
+.afty-espinho-rachadura--ne g { animation-delay: -1.7s; }
+.afty-espinho-rachadura--so {
+  left: 28px; bottom: -8px; width: 120px; height: 46px;
+  -webkit-mask-image: linear-gradient(0deg, #000 40%, transparent 95%);
+  mask-image: linear-gradient(0deg, #000 40%, transparent 95%);
+}
+.afty-espinho-rachadura--so g { animation-delay: -3.1s; }
+.afty-espinho-rachadura--se {
+  right: -8px; bottom: -8px; width: 150px; height: 58px;
+  -webkit-mask-image: linear-gradient(330deg, #000 40%, transparent 90%);
+  mask-image: linear-gradient(330deg, #000 40%, transparent 90%);
+}
+.afty-espinho-rachadura--se g { animation-delay: -0.6s; }
+.afty-espinho--compacto .afty-espinho-rachadura--no { width: 160px; height: 67px; }
+.afty-espinho--compacto .afty-espinho-rachadura--se { width: 110px; height: 43px; }
+
+/* O RASGO: uma fenda aberta na borda direita, com a luz do outro lado. Entra
+   no máximo 22 px, que é menos que o recuo dos botões das linhas (26 px). */
+/* ⚠ A CAIXA TEM 32 px E FICA A 8 px DA BORDA, e o desenho é que cruza a borda.
+   Com 40 px a 16 px, os 11 px vazios à direita do rasgo passavam da tela no
+   celular (o card da Ficha fica a 12 px dela) e criavam rolagem lateral. */
+.afty-espinho-rasgo {
+  position: absolute;
+  right: -8px;
+  top: 46%;
+  width: 32px;
+  height: 150px;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 2;
+}
+.afty-espinho-rasgo .luz { animation: afty-espinho-batimento-rasgo var(--espinho-batida) ease-in-out infinite; }
+.afty-espinho--compacto .afty-espinho-rasgo { top: 22%; height: 110px; }
+
+/* ============================================================
+   ANIMAÇÕES: só transform e opacity
+   ============================================================ */
+@keyframes afty-espinho-batimento {
+  0% { opacity: 0.35; transform: scale(1); }
+  7% { opacity: 1; transform: scale(1.05); }
+  14% { opacity: 0.55; transform: scale(1.01); }
+  22% { opacity: 0.9; transform: scale(1.04); }
+  40%, 100% { opacity: 0.35; transform: scale(1); }
+}
+@keyframes afty-espinho-batimento-halo {
+  0% { opacity: 0.35; }
+  7% { opacity: 1; }
+  14% { opacity: 0.5; }
+  22% { opacity: 0.85; }
+  40%, 100% { opacity: 0.35; }
+}
+@keyframes afty-espinho-batimento-rasgo {
+  0% { opacity: 0.55; }
+  7% { opacity: 1; }
+  14% { opacity: 0.7; }
+  22% { opacity: 0.95; }
+  40%, 100% { opacity: 0.55; }
+}
+@keyframes afty-espinho-faisca {
+  0%, 44%, 100% { opacity: 0.9; }
+  46% { opacity: 0.25; }
+  48% { opacity: 1; }
+  51% { opacity: 0.45; }
+  54% { opacity: 1; }
+  80% { opacity: 0.75; }
+}
+@keyframes afty-espinho-cintila {
+  0%, 70%, 100% { opacity: 0.2; }
+  80% { opacity: 1; }
+  88% { opacity: 0.35; }
+}
+@keyframes afty-espinho-glitch {
+  0%, 100% { transform: none; }
+  94% { transform: translate(-3px, 0) skewX(-5deg); }
+  94.6% { transform: translate(4px, -1px) skewX(3deg); }
+  95.2% { transform: translate(-1px, 1px); }
+  95.8% { transform: none; }
+}
+@keyframes afty-espinho-glitch-sombra {
+  0%, 100% { opacity: 0; transform: none; }
+  94% { opacity: 0.9; transform: translate(5px, -2px); }
+  94.6% { opacity: 0.9; transform: translate(-5px, 1px); }
+  95.2% { opacity: 0.6; transform: translate(2px, 0); }
+  95.8% { opacity: 0; transform: none; }
+}
+@keyframes afty-espinho-varredura {
+  0%, 100% { opacity: 0; }
+  94% { opacity: 1; }
+  95.8% { opacity: 0; }
+}
+@keyframes afty-espinho-girar {
+  to { transform: rotate(360deg); }
+}
+
+/* Movimento reduzido: tudo parado. */
+@media (prefers-reduced-motion: reduce) {
+  .afty-espinho,
+  .afty-espinho *,
+  .afty-espinho *::before,
+  .afty-espinho *::after {
+    animation: none !important;
+  }
+}
+
+/* Impressão: preto no branco, sem brilho, sem rachadura. */
+@media print {
+  .afty-espinho {
+    --espinho-fundo: #fff;
+    --espinho-poco: #fff;
+    --espinho-borda: #000;
+    --espinho-texto: #000;
+    --espinho-texto-suave: #333;
+    --espinho-texto-fraco: #555;
+    --espinho-rosa: #000;
+    --espinho-brasa: #000;
+    color: #000;
+    animation: none;
+  }
+  .afty-espinho-casca { background: #fff; }
+  .afty-espinho-casca::before,
+  .afty-espinho-casca::after,
+  .afty-espinho-halo,
+  .afty-espinho-grao,
+  .afty-espinho-cristal-caixa::before,
+  .afty-espinho-rachadura,
+  .afty-espinho-rasgo {
+    display: none;
+  }
+  .afty-espinho-titulo {
+    color: #000;
+    -webkit-text-stroke: 0;
+    filter: none;
+  }
+  .afty-espinho-titulo::after { background: #000; box-shadow: none; }
+  .afty-espinho-num { color: #fff; text-shadow: none; }
+}

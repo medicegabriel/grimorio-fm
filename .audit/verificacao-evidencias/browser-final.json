@@ -1,0 +1,220 @@
+[
+  {
+    "production": "",
+    "failures": [
+      {
+        "url": "http://127.0.0.1:5274/_vercel/insights/script.js",
+        "status": 404
+      }
+    ]
+  },
+  {
+    "production": "afty",
+    "failures": [
+      {
+        "url": "http://127.0.0.1:5274/_vercel/insights/script.js",
+        "status": 404
+      }
+    ]
+  },
+  {
+    "production": "player",
+    "failures": [
+      {
+        "url": "http://127.0.0.1:5274/_vercel/insights/script.js",
+        "status": 404
+      }
+    ]
+  },
+  {
+    "buffs": "afty",
+    "controls": [
+      {
+        "text": "Em Combate",
+        "title": "",
+        "aria": null
+      }
+    ],
+    "body": "Verificacao Largura\nCombatente\nComum\nND 5\nTerceiro Grau\nRodada 0\nVIDA\n/ 36\n−\n+\nENERGIA\n/ 20\n−\n+\nALMA\n/ 100\n−\n+\nDEFESA\n17\nCD\n15\nRD GERAL\n5\nMOVIMENTO\n9m\nINICIATIVA\n+4\nATENÇÃO\n15\nMAESTRIA\n+3\nAções\nHabilidades\nPerícias\nEquipamentos\nInvocações\nBuffs\nAGORA\nEm Combate\nATENÇÃO\n+3\nCONDIÇÕES\nEXAUSTÃO\n0\nAdicionar Condição\nESTADOS\n20\nInterlúdio\n2\nOutros\n2\nRefeições consumidas\nEnergética\nLeve\nNutritiva\nPicante\nReforçada\nRefrescante\nRevigorante\nFerreiro\nArma melhorada\nEscudo melhorado\nBUFFS DE MESA\nNovo Buff\nDES\nNOR\nVAN",
+    "dimensions": {
+      "viewport": 632,
+      "client": 390,
+      "scroll": 632,
+      "offenders": []
+    }
+  },
+  {
+    "buffs": "player",
+    "controls": [
+      {
+        "text": "Em Combate",
+        "title": "",
+        "aria": null
+      }
+    ],
+    "body": "Verificacao Largura\nNível 5\nTerceiro Grau\nRodada 0\nVIDA\n/ 0\n−\n+\nENERGIA\n/ 0\n−\n+\nALMA\n/ 0\n−\n+\nDEFESA\n12\nCD\n15\nRD GERAL\n0\nMOVIMENTO\n9m\nINICIATIVA\n+3\nATENÇÃO\n15\nMAESTRIA\n+3\nAções\nHabilidades\nPerícias\nEquipamentos\nInvocações\nBuffs\nAGORA\nEm Combate\nATENÇÃO\n+3\nCONDIÇÕES\nEXAUSTÃO\n0\nAdicionar Condição\nESTADOS\n20\nInterlúdio\n2\nOutros\n2\nRefeições consumidas\nEnergética\nLeve\nNutritiva\nPicante\nReforçada\nRefrescante\nRevigorante\nFerreiro\nArma melhorada\nEscudo melhorado\nBUFFS DE MESA\nNovo Buff\nDES\nNOR\nVAN",
+    "dimensions": {
+      "viewport": 632,
+      "client": 390,
+      "scroll": 632,
+      "offenders": []
+    }
+  },
+  {
+    "public": 1440,
+    "buttons": [
+      {
+        "text": "Encontros",
+        "title": "Encontros",
+        "aria": null
+      },
+      {
+        "text": "Modelos",
+        "title": "Biblioteca de Modelos",
+        "aria": null
+      },
+      {
+        "text": "Importar",
+        "title": "Importar",
+        "aria": null
+      },
+      {
+        "text": "Exportar",
+        "title": "Exportar criaturas da visualização atual",
+        "aria": null
+      },
+      {
+        "text": "Nova Criatura",
+        "title": "Criar nova criatura",
+        "aria": null
+      },
+      {
+        "text": "Todas\n1",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "Sem Pasta\n1",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "NOVA",
+        "title": "",
+        "aria": "Nova pasta"
+      },
+      {
+        "text": "Criaturas Base\n165",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "Selecionar tudo",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "",
+        "title": "Filtros avançados",
+        "aria": "Filtros avançados"
+      },
+      {
+        "text": "Selecionar",
+        "title": "Ativar seleção em massa",
+        "aria": null
+      },
+      {
+        "text": "Verificacao Publico\nDica: Shift + Clique para selecionar um intervalo\nCALAMIDADE\nND 20\nHP 3696\nPE 60\nDef 44",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Menu de ações"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Abrir documentos"
+      }
+    ],
+    "ficha": {
+      "title": "Voltar\nNova Rodada\nReset\nVerificacao Publico\nCALAMIDADE\nND 20\n•\nGrau especial\n•\nBT +6\nPONTOS DE VIDA\n3696\n/ 3696\nENERGIA AMALDIÇOADA\n60\n/ 60\nGUARDA INABALÁVEL\n54\n/ 54\nINTEGRIDADE DA ALMA\nESTÁVEL\n3696\n/ 3696\nESTATÍSTICAS DE COMBATE\nDEFESA\n44\nATENÇÃO\n49\nACERTO\n+44\nCD\n43\nINICIATIVA\n+30\nDESLOCAMENTO\n36m\nRD GERAL\n20\nIrred. 15\nIGNORAR RD\n15\nVIDA TEMP/ATQ\n10\nCONF. DOMÍNIO\n1d10 + 10\nTESTES DE RESISTÊNCIA\nASTÚCIA\n+27\nFORTITUDE\n+38\nREFLEXOS\n+38\nVONTADE\n+27\nINTEGRIDADE\n+38\nATRIBUTOS BASE\nFOR\n32\n+11\nDES\n32\n+11\nCON\n32\n+11\nINT\n10\n+0\nSAB\n10\n+0\nPRE\n21\n+5\nNÍVEIS DE APTIDÃO\nAU\n4\nAura\nCL\n4\nControle e Leitura\nBAR\n0\nBarreira\nDOM\n0\nDomínio\nER\n5\nEnergia Reversa\nPERÍCIAS\nAtletismo +35\nAcrobacia +35\nPrestidigitação +35\nIntimidação +29\nIntuição +24\nPercepção +24\nInvestigação +24\nHistória +24\nFeitiçaria +24\nOcultismo +24\nRECURSOS\nRESISTÊNCIA PARCIAL\n6 / 6\nRESISTÊNCIA TOTAL\n4 / 4\nHABILIDADES ATIVÁVEIS\n1\nRegeneração\nUsar: Regenerar\n(4 PE)\nCONDIÇÕES ATIVAS\n0\nNenhuma condição ativa\n— Condição —\nAbalado\nCaido\nDesarmar\nDesorientado\nDesprevenido\nEmpurrar\nSangramento fraco\nSofrendo\nAgarrado\nAmedrontado\nCondenado\nConfuso\nEnfeiticado\nEngasgando\nEnjoado\nEnredado\nEnvenenado\nLento\nSangramento medio\nSurdo\nAterrorizado\nCego\nExposto\nFragilizado\nImovel\nInvisivel\nSangramento forte\nSurpreso\nAtordoado\nDesmembramento\nInconsciente\nParalisado\nSangramento extremo\n✦ Outra / Personalizada\nFraca\nMédia\nForte\nExtrema\nAdicionar\nMODIFICADORES\n0\nNenhum modificador ativo\nForça\nDestreza\nConstituição\nInteligência\nSabedoria\nPresença\nDefesa\nAcerto\nCD\nAtenção\nIniciativa\nDeslocamento\nRD Geral\nRD Irredutível\nGuarda Inabalável (máx)\nPV Máximo\nPE Máximo\nVida Temp. por Ataque\nTR Astúcia\nTR Fortitude\nTR Reflexos\nTR Vontade\nTR Integridade\nSomar (±)\nDefinir (=)\nSoma\nMaior vence\nÚnico\nRodadas\nAté remover\nCombate inteiro\nAdicionar\nAUTOMAÇÕES PROGRAMADAS\n1\nIMUNIDADES / RESISTÊNCIAS\nVenenos Mundanos\nIMUNE\nEnergia Reversa\nVULNER.\nAÇÕES (4)\n5C\n3R\n2B\n1M\n1Rç\nAÇÃO COMUM\nGolpe com Punho\nAÇÃO COMUM\nLâmina do Extermínio (Espíritos Amaldiçoados)\nAÇÃO COMUM\nLâmina do Extermínio\nAÇÃO BÔNUS\nForçar Adaptação\nCARACTERÍSTICAS PERSONALIZADAS (15)\nGERAL\nImaterialidade\nGERAL\nImunidades Espirituais\nGERAL\nRegeneração\nGERAL\nPontos Fracos\nAPTIDAO\nCanalizar Golpe - Calamidade\nESPECIAL\nCorpo de Shikigami\nESPECIAL\nGolpe Finalizador\nESPECIAL\nAdaptação Defensiva\nESPECIAL\nAdaptação Ofensiva\nESPECIAL\nBurlar Defesas\nESPECIAL\nAdaptação Condicional\nESPECIAL\nAdaptar-se ao Ápice\nESPECIAL\nAdaptar-se ao Feitiço\nESPECIAL\nAdaptação\nESPECIAL\nAdaptação Geral\nCARACTERÍSTICAS (11)\nDOTES GERAIS (6)\nTREINAMENTOS (2)\nNOTAS DO NARRADOR\n\nO Shikigami Supremo",
+      "tracker": true
+    },
+    "models": "Aplicar em Fichas\n\n1 modelo(s) serão adicionados às fichas escolhidas. Ações e Expansões são reescaladas para o ND/Patamar de cada ficha.\n\nModelo Verificacao Publico\nSelecionar todas\nPular os que a ficha já tem\nVerificacao Publico\nCALAMIDADE · ND 20\nCancelar\nAplicar em ficha(s)",
+    "errors": []
+  },
+  {
+    "public": 390,
+    "buttons": [
+      {
+        "text": "",
+        "title": "",
+        "aria": "Abrir menu de pastas"
+      },
+      {
+        "text": "",
+        "title": "Encontros",
+        "aria": null
+      },
+      {
+        "text": "",
+        "title": "Biblioteca de Modelos",
+        "aria": null
+      },
+      {
+        "text": "",
+        "title": "Importar",
+        "aria": null
+      },
+      {
+        "text": "",
+        "title": "Exportar criaturas da visualização atual",
+        "aria": null
+      },
+      {
+        "text": "",
+        "title": "Criar nova criatura",
+        "aria": null
+      },
+      {
+        "text": "Selecionar tudo",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "",
+        "title": "Filtros avançados",
+        "aria": "Filtros avançados"
+      },
+      {
+        "text": "",
+        "title": "Ativar seleção em massa",
+        "aria": null
+      },
+      {
+        "text": "Verificacao Publico\nDica: Shift + Clique para selecionar um intervalo\nCALAMIDADE\nND 20\nHP 3696\nPE 60\nDef 44",
+        "title": "",
+        "aria": null
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Menu de ações"
+      },
+      {
+        "text": "",
+        "title": "",
+        "aria": "Abrir documentos"
+      }
+    ],
+    "ficha": {
+      "title": "Voltar\nNova Rodada\nReset\nVerificacao Publico\nCALAMIDADE\nND 20\n•\nGrau especial\n•\nBT +6\nPONTOS DE VIDA\n3696\n/ 3696\nENERGIA AMALDIÇOADA\n60\n/ 60\nGUARDA INABALÁVEL\n54\n/ 54\nINTEGRIDADE DA ALMA\nESTÁVEL\n3696\n/ 3696\nESTATÍSTICAS DE COMBATE\nDEFESA\n44\nATENÇÃO\n49\nACERTO\n+44\nCD\n43\nINICIATIVA\n+30\nDESLOCAMENTO\n36m\nRD GERAL\n20\nIrred. 15\nIGNORAR RD\n15\nVIDA TEMP/ATQ\n10\nCONF. DOMÍNIO\n1d10 + 10\nTESTES DE RESISTÊNCIA\nASTÚCIA\n+27\nFORTITUDE\n+38\nREFLEXOS\n+38\nVONTADE\n+27\nINTEGRIDADE\n+38\nATRIBUTOS BASE\nFOR\n32\n+11\nDES\n32\n+11\nCON\n32\n+11\nINT\n10\n+0\nSAB\n10\n+0\nPRE\n21\n+5\nNÍVEIS DE APTIDÃO\nAU\n4\nAura\nCL\n4\nControle e Leitura\nBAR\n0\nBarreira\nDOM\n0\nDomínio\nER\n5\nEnergia Reversa\nPERÍCIAS\nAtletismo +35\nAcrobacia +35\nPrestidigitação +35\nIntimidação +29\nIntuição +24\nPercepção +24\nInvestigação +24\nHistória +24\nFeitiçaria +24\nOcultismo +24\nRECURSOS\nRESISTÊNCIA PARCIAL\n6 / 6\nRESISTÊNCIA TOTAL\n4 / 4\nHABILIDADES ATIVÁVEIS\n1\nRegeneração\nUsar: Regenerar\n(4 PE)\nCONDIÇÕES ATIVAS\n0\nNenhuma condição ativa\n— Condição —\nAbalado\nCaido\nDesarmar\nDesorientado\nDesprevenido\nEmpurrar\nSangramento fraco\nSofrendo\nAgarrado\nAmedrontado\nCondenado\nConfuso\nEnfeiticado\nEngasgando\nEnjoado\nEnredado\nEnvenenado\nLento\nSangramento medio\nSurdo\nAterrorizado\nCego\nExposto\nFragilizado\nImovel\nInvisivel\nSangramento forte\nSurpreso\nAtordoado\nDesmembramento\nInconsciente\nParalisado\nSangramento extremo\n✦ Outra / Personalizada\nFraca\nMédia\nForte\nExtrema\nAdicionar\nMODIFICADORES\n0\nNenhum modificador ativo\nForça\nDestreza\nConstituição\nInteligência\nSabedoria\nPresença\nDefesa\nAcerto\nCD\nAtenção\nIniciativa\nDeslocamento\nRD Geral\nRD Irredutível\nGuarda Inabalável (máx)\nPV Máximo\nPE Máximo\nVida Temp. por Ataque\nTR Astúcia\nTR Fortitude\nTR Reflexos\nTR Vontade\nTR Integridade\nSomar (±)\nDefinir (=)\nSoma\nMaior vence\nÚnico\nRodadas\nAté remover\nCombate inteiro\nAdicionar\nAUTOMAÇÕES PROGRAMADAS\n1\nIMUNIDADES / RESISTÊNCIAS\nVenenos Mundanos\nIMUNE\nEnergia Reversa\nVULNER.\nAÇÕES (4)\n5C\n3R\n2B\n1M\n1Rç\nAÇÃO COMUM\nGolpe com Punho\nAÇÃO COMUM\nLâmina do Extermínio (Espíritos Amaldiçoados)\nAÇÃO COMUM\nLâmina do Extermínio\nAÇÃO BÔNUS\nForçar Adaptação\nCARACTERÍSTICAS PERSONALIZADAS (15)\nGERAL\nImaterialidade\nGERAL\nImunidades Espirituais\nGERAL\nRegeneração\nGERAL\nPontos Fracos\nAPTIDAO\nCanalizar Golpe - Calamidade\nESPECIAL\nCorpo de Shikigami\nESPECIAL\nGolpe Finalizador\nESPECIAL\nAdaptação Defensiva\nESPECIAL\nAdaptação Ofensiva\nESPECIAL\nBurlar Defesas\nESPECIAL\nAdaptação Condicional\nESPECIAL\nAdaptar-se ao Ápice\nESPECIAL\nAdaptar-se ao Feitiço\nESPECIAL\nAdaptação\nESPECIAL\nAdaptação Geral\nCARACTERÍSTICAS (11)\nDOTES GERAIS (6)\nTREINAMENTOS (2)\nNOTAS DO NARRADOR\n\nO Shikigami Supremo",
+      "tracker": true
+    },
+    "models": "Aplicar em Fichas\n\n1 modelo(s) serão adicionados às fichas escolhidas. Ações e Expansões são reescaladas para o ND/Patamar de cada ficha.\n\nModelo Verificacao Publico\nSelecionar todas\nPular os que a ficha já tem\nVerificacao Publico\nCALAMIDADE · ND 20\nCancelar\nAplicar em ficha(s)",
+    "errors": []
+  }
+]

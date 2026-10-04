@@ -1,0 +1,454 @@
+diff --git a/.audit/lote09-base/afty-derive.js b/src/systems/afty/afty-derive.js
+index 6e9e442..82df257 100644
+--- a/.audit/lote09-base/afty-derive.js
++++ b/src/systems/afty/afty-derive.js
+@@ -289,12 +289,12 @@ export function deriveAfty(creature, opcoes = {}) {
+   /* A TÉCNICA INATA E O FUNDAMENTO (DA-07, 2026-09-30). Com o Fundamento morto, a
+      Técnica Inata fica BLOQUEADA de verdade: os efeitos do Funcionamento e das
+      Passivas saem do Motor, e cada Feitiço sai marcado como indisponível. Nada é
+-     apagado da ficha. Com o Fundamento só fora de campo, a mesa marca os
+-     Feitiços e o resto continua (ver docs/a-fazer.md). */
++     apagado da ficha. Fora de campo, a mesa bloqueia também o Funcionamento e
++     as Passivas (decisão do autor, 2026-10-03). O criador não tem esse estado. */
+   const tecnicaInata = estadoDaTecnicaInata(creature, opcoes.invocacoes ?? null);
+   // O Funcionamento principal sai como "tecnica", os outros como "funcionamento:<id>".
+   const daTecnicaInata = (e) => /^(funcionamento|feitico):|^tecnica$/.test(String(e?.origem ?? ""));
+-  const semTecnicaPerdida = (lista) => (tecnicaInata.perdida ? lista.filter((e) => !daTecnicaInata(e)) : lista);
++  const semTecnicaBloqueada = (lista) => (tecnicaInata.bloqueada ? lista.filter((e) => !daTecnicaInata(e)) : lista);
+   const origensDiretasDaAdaptacao = new Set(origensDiretasDasAdaptacoes(creature, opcoes.adaptacoes));
+   const aplicarDiretoDaAdaptacao = (efeito) => {
+     if (!efeito?.quando || !origensDiretasDaAdaptacao.has(efeito.origem)) return efeito;
+@@ -1109,12 +1109,12 @@ export function deriveAfty(creature, opcoes = {}) {
+     // Funcionamento Básico da técnica: os únicos efeitos ESCRITOS pelo jogador,
+     // porque a técnica é única no mundo e nenhum catálogo a cobre. Entram no
+     // mesmo bolo, e os filtros de estágio abaixo roteiam pelo canal.
+-    ...semTecnicaPerdida(efeitosDaTecnica(creature)),
++    ...semTecnicaBloqueada(efeitosDaTecnica(creature)),
+     ...efeitosDosBuffsNativos(),
+     ...efeitosArmasTransformaveis(armasTransformaveis(creature, catalogoDoTipo("arma", creature), bt)),
+     // Passivos / Características criados pelo jogador usam o mesmo Motor, mas
+     // entram na família exclusiva própria dos Feitiços Passivos.
+-    ...semTecnicaPerdida(efeitosDosPassivos(creature)),
++    ...semTecnicaBloqueada(efeitosDosPassivos(creature)),
+     // Buffs de MESA, escritos na Ficha Final durante o jogo. Mesmo shape do
+     // Funcionamento Básico, e por isso entram na mesma linha. Só existem quando
+     // a Ficha injeta `buffsSessao`: o criador nunca os vê.
+@@ -2466,6 +2466,7 @@ export function deriveAfty(creature, opcoes = {}) {
+      dobro do nível não precisa do Feitiço calculado.
+ 
+      Só na Ficha de Jogador. Ver a divergência `passivaCustaPeMaximo`. */
++  // A reserva continua com a Técnica perdida ou fora de campo (autor, 2026-10-03).
+   const passivasNoPeBrutas = peMaximoDasPassivas(creature?.feiticos, sistema);
+   /* ⚠ DUAS PORTAS PARA A MESMA ISENÇÃO, juntadas no pull de 2026-09-21. Elas
+      nasceram em paralelo e fazem a mesma coisa: o `regrasAfty` de Addon ou de
+@@ -3409,7 +3410,7 @@ export function deriveAfty(creature, opcoes = {}) {
+        marca com `escopo: "invocacao"`. As quatro fontes acima são catálogo, e
+        até aqui nada escrito à mão alcançava um shikigami. Ver
+        `efeitosInvocacaoEscritos` em afty-invocacoes.js. */
+-    ...semTecnicaPerdida(efeitosInvocacaoEscritos(creature)),
++    ...semTecnicaBloqueada(efeitosInvocacaoEscritos(creature)),
+   ];
+   // MARCADORES: uma Habilidade que vale só para ALGUMAS invocações (Concentrar
+   // Poder, as 4 Melhorias, Fantoche Supremo, Companheiro, Econômicas) entra por
+@@ -3485,7 +3486,7 @@ export function deriveAfty(creature, opcoes = {}) {
+     /* As armas em que o dono é treinado: o requisito da Forma de Arma da invocação
+        (Adicionais: "o invocador ser Treinado na arma escolhida", 2026-09-30). */
+     armasTreinadas: ARMAS.filter((a) => armaTreinadaPor(a, treinamentosEquipamento.armas)).map((a) => a.id),
+-    resistenciasDePassiva: [...new Set(semTecnicaPerdida(efeitosDosPassivos(creature))
++    resistenciasDePassiva: [...new Set(semTecnicaBloqueada(efeitosDosPassivos(creature))
+       .filter((e) => e.canal === "resistenciaDano" && e.alvo)
+       .map((e) => e.alvo))],
+     /* Os números do dono que os tipos especiais leem (2026-09-30, Etapa 8): o
+diff --git a/.audit/lote09-base/afty-invocacoes.js b/src/systems/afty/afty-invocacoes.js
+index 3e41402..f34497f 100644
+--- a/.audit/lote09-base/afty-invocacoes.js
++++ b/src/systems/afty/afty-invocacoes.js
+@@ -2362,8 +2362,9 @@ export function reparoDaInvocacao(inv) {
+  *                `creature.fundamentosPerdidos` (nada é apagado, e a Técnica e os
+  *                Feitiços continuam lá, marcados como indisponíveis). Antes da
+  *                gravação, a mesa já mostra a perda pelo estado "morta".
+- *   foraDeCampo  há mesa, e o Fundamento não está em campo. Só a mesa sabe disso,
+- *                e o criador nunca vê.
++ *   foraDeCampo  há mesa, e o Fundamento não está em campo. Bloqueia Feitiços,
++ *                Funcionamento e Passivas enquanto ele estiver fora. Só a mesa
++ *                sabe disso, e o criador nunca vê (autor, 2026-10-03).
+  *
+  * `aRegistrar` diz à Ficha que a morte aconteceu e ainda não foi gravada.
+  */
+diff --git a/.audit/lote09-base/ficha-sessao.js b/src/systems/afty/ficha/ficha-sessao.js
+index 4e21e80..9113be6 100644
+--- a/.audit/lote09-base/ficha-sessao.js
++++ b/src/systems/afty/ficha/ficha-sessao.js
+@@ -1235,19 +1235,26 @@ export function defineVitalInvocacao(sessao, invId, qual, valor, max, regras = n
+   return comInvocacao(sessao, invId, transicaoDeQueda(r, atual, pv, teto, jaCaida) ?? { pvAtual: pv });
+ }
+ 
++/** Marionetes danificadas que podem receber o reparo completo do descanso. */
++export function marionetesParaReparo(sessao, derived) {
++  const mesa = separaMecha(sessao);
++  return (derived?.invocacoes?.lista ?? []).filter((inv) => {
++    if ((inv.regras?.familia ?? inv.familia) !== "marionete") return false;
++    const e = estadoDaInvocacao(mesa, inv.id);
++    return !e.terminal && (e.quedas > 0 || e.pvAtual != null && e.pvAtual < inv.pv
++      || e.estado === "quebrada" || e.estado === "recolhida");
++  });
++}
++
+ /**
+- * O descanso enche as invocações junto do dono.
+- *
+- * ⚠ O BOTÃO DE DESCANSO É UM SÓ E DEVOLVE TUDO (decisão D3 do autor, 2026-09-23),
+- * então ele vale como descanso longo: a volta pela metade some, os exorcismos da
+- * Técnica zeram, e quem caiu (dissipada, quebrada, recolhida, desativada) volta
+- * a poder entrar, cheia. A Marionete também enche e zera as quedas, como fazia
+- * antes desta etapa: o reparo de UMA Marionete por descanso longo do Mecânicas
+- * espera decisão (ver docs/a-fazer.md).
+- *
+- * Quem estava em campo CONTINUA em campo. Morte permanente não volta.
++ * O descanso devolve os recursos do dono e das outras invocações.
++ * A Marionete escolhida é reparada completamente, com as quedas zeradas
++ * (autor, 2026-10-03). As demais conservam PV, quedas, retorno e estado.
++ * Quem estava em campo continua em campo. Morte permanente não volta.
+  */
+-function descansaInvocacoes(invocacoes) {
++function descansaInvocacoes(invocacoes, derived, marioneteId) {
++  const marionetes = new Set((derived?.invocacoes?.lista ?? [])
++    .filter((inv) => (inv.regras?.familia ?? inv.familia) === "marionete").map((inv) => inv.id));
+   const out = {};
+   for (const [id, e] of Object.entries(invocacoes || {})) {
+     /* A Horda, a Quimera e o Mecha se DESFAZEM no descanso (2026-10-01, Etapa
+@@ -1258,11 +1265,14 @@ function descansaInvocacoes(invocacoes) {
+     }
+     const estado = ESTADO_VALIDO.has(e?.estado) ? e.estado : estadoLegado(e);
+     const terminal = ESTADOS_TERMINAIS.has(estado);
++    const preservar = marionetes.has(id) && (terminal || id !== marioneteId);
++    const linha = linhaDaInvocacao({ invocacoes }, id);
+     out[id] = comBooleanos({
+       ...e,
+-      estado: terminal || estado === "ativa" ? estado : "fora",
+-      pvAtual: null, almaAtual: null, pvTempFontes: {}, auxilios: {},
+-      retorno: null, quedas: 0, exorcismos: 0, bloqueadaAteFimDaCena: false,
++      estado: preservar || terminal || estado === "ativa" ? estado : "fora",
++      pvAtual: preservar ? linha.pvAtual : null, almaAtual: null, pvTempFontes: {}, auxilios: {},
++      retorno: preservar ? linha.retorno : null, quedas: preservar ? linha.quedas : 0,
++      exorcismos: 0, bloqueadaAteFimDaCena: false,
+       auras: {}, forma: null, emTarefa: false,
+       opcoesDeEntrada: {}, entradasDesdeDescanso: 0,
+       rodadasAtiva: 0, manutencaoPendente: false,
+@@ -2176,8 +2186,10 @@ export function iniciaCombate(sessao, derived = null) {
+  * quem não conseguiu calcular a ficha, e nesse caso não mexer é a única resposta
+  * honesta: não dá para reencher até um máximo que ninguém sabe qual é.
+  */
+-export function descansar(sessao, derived) {
++export function descansar(sessao, derived, { marioneteId = null } = {}) {
+   if (!derived) return sessao;
++  // O Mecha devolve o PV atual às componentes antes de reparar só a escolhida.
++  const mesa = separaMecha(sessao);
+   return {
+     ...sessao,
+     energiaEmVida: derived?.bloodfeast?.tem ? 3 : 0,
+@@ -2199,9 +2211,8 @@ export function descansar(sessao, derived) {
+     guardaGolpes: 0,
+     guardaEncerrada: false,
+     usos: {},
+-    // As invocações enchem junto. Era a pendência que segurava o PV delas fora
+-    // da sessão: sem descanso, ninguém zerava aqueles números.
+-    invocacoes: descansaInvocacoes(sessao.invocacoes),
++    // Só a Marionete escolhida recebe o reparo completo. As outras não enchem.
++    invocacoes: descansaInvocacoes(mesa.invocacoes, derived, marioneteId),
+     // A Reserva para Invocação volta com o descanso (2026-09-30).
+     reservaInvocacao: { usada: false, modo: null, restantes: 0 },
+     // A cena acaba no descanso: a Quimera da cena e os líderes de Horda dissipada.
+diff --git a/.audit/lote09-base/AbaInvocacoes.jsx b/src/systems/afty/ficha/abas/AbaInvocacoes.jsx
+index e7914fa..411bd2c 100644
+--- a/.audit/lote09-base/AbaInvocacoes.jsx
++++ b/src/systems/afty/ficha/abas/AbaInvocacoes.jsx
+@@ -1562,6 +1562,13 @@ export default function AbaInvocacoes({ derived, rolar, destaque, estadoDe, entr
+     <div className="space-y-3" ref={raiz}>
+       {cssDosShikigamis && <style>{cssDosShikigamis}</style>}
+ 
++      {derived.tecnicaInata?.bloqueada && (
++        <div className="afty-card p-3 flex items-center gap-2 text-[12px]" style={{ color: "var(--afty-aviso)" }} role="status">
++          <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
++          <span>Técnica Inata Indisponível: {derived.tecnicaInata.motivo}</span>
++        </div>
++      )}
++
+       {/* ---------- roster do Controlador ---------- */}
+       {/* Números de COMBATE: sem eles a mesa decide de cabeça quantas invocações
+           pode manter. O "Em Campo" é o único que conta o que está ligado AGORA,
+diff --git a/.audit/lote09-base/AftyFicha.jsx b/src/systems/afty/ficha/AftyFicha.jsx
+index bf90875..5bfd5d5 100644
+--- a/.audit/lote09-base/AftyFicha.jsx
++++ b/src/systems/afty/ficha/AftyFicha.jsx
+@@ -1,7 +1,7 @@
+ import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+ import { ArmasTransformaveis } from "../ui/armas-transformaveis";
+ import {
+-  ChevronLeft, Pencil, AlertTriangle, Moon, ChevronRight, Search, Heart, Zap, Sparkles, Palette,
++  ChevronLeft, Pencil, AlertTriangle, ChevronRight, Search, Heart, Zap, Sparkles, Palette,
+   Rows2, Rows3, Lock, Crosshair,
+ } from "lucide-react";
+ 
+@@ -48,6 +48,7 @@ import {
+   carregarTema, salvarTemaGlobal, cssDasVars, cssDoUsuario, temCssLivre,
+   carregarDensidade, salvarDensidade, normalizaTema, escopoDaInvocacao, SEM_CSS,
+ } from "./ficha-tema";
++import BotaoDeDescanso from "./BotaoDeDescanso";
+ import PainelDeRolagens from "./PainelDeRolagens";
+ import BuscaGlobal from "./BuscaGlobal";
+ import PainelDeAparencia from "./PainelDeAparencia";
+@@ -932,15 +933,11 @@ export default function AftyFicha({
+               >
+                 <ChevronRight className="w-4 h-4" />
+               </button>
+-              <button
+-                type="button"
+-                className="afty-botao"
+-                onClick={() => atualiza((s) => descansar(s, derived))}
+-                title="Descanso: devolve os recursos e zera a rodada"
+-                aria-label="Descanso"
+-              >
+-                <Moon className="w-4 h-4" />
+-              </button>
++              <BotaoDeDescanso
++                sessao={sessao}
++                derived={derived}
++                onDescansar={(marioneteId) => atualiza((s) => descansar(s, derived, { marioneteId }))}
++              />
+               <button type="button" className="afty-botao" onClick={onEditar} title="Editar no criador">
+                 <Pencil className="w-4 h-4" />
+                 <span className="hidden sm:inline">Editar</span>
+diff --git a/.audit/lote09-base/PainelDeCombatente.jsx b/src/systems/afty/encontros/PainelDeCombatente.jsx
+index d45e80d..07f230d 100644
+--- a/.audit/lote09-base/PainelDeCombatente.jsx
++++ b/src/systems/afty/encontros/PainelDeCombatente.jsx
+@@ -1,6 +1,6 @@
+ import React, { useCallback, useMemo, useState } from "react";
+ import { ArmasTransformaveis } from "../ui/armas-transformaveis";
+-import { Heart, Zap, Sparkles, Skull, EyeOff, Moon, Swords, Shield, BookOpen, Backpack, Wand2, AlertTriangle, Crosshair } from "lucide-react";
++import { Heart, Zap, Sparkles, Skull, EyeOff, Swords, Shield, BookOpen, Backpack, Wand2, AlertTriangle, Crosshair } from "lucide-react";
+ 
+ import { funcionamentosDaFicha } from "../afty-schema";
+ import { sistemaDaFicha, palavrasDoSistema } from "../afty-sistema";
+@@ -27,6 +27,7 @@ import { rolarTeste, rolarDano, textoDaRolagem } from "../ficha/ficha-rolagem";
+ import { deltaDosEstados, saldoDoAgora } from "../ficha/ficha-buffs";
+ import { opcoesDoCombatente } from "./usar-encontro-afty";
+ import { conteudoDaFicha, equipamentosDaFicha } from "../ficha/ficha-conteudo";
++import BotaoDeDescanso from "../ficha/BotaoDeDescanso";
+ import PainelBloodfeast, { ConjuracaoBloodfeast } from "../ficha/PainelBloodfeast";
+ import AbaAcoes from "../ficha/abas/AbaAcoes";
+ import PainelDeAdaptacao from "../ficha/PainelDeAdaptacao";
+@@ -282,14 +283,12 @@ export default function PainelDeCombatente({
+           >
+             <EyeOff className="w-3.5 h-3.5" /> Oculto
+           </button>
+-          <button
+-            type="button"
+-            className="afty-botao"
+-            onClick={() => onSessao((s) => descansar(s, derived))}
+-            title="Recursos cheios, usos zerados e durações limpas"
+-          >
+-            <Moon className="w-3.5 h-3.5" /> Descansar
+-          </button>
++          <BotaoDeDescanso
++            sessao={sessao}
++            derived={derived}
++            rotulo="Descansar"
++            onDescansar={(marioneteId) => onSessao((s) => descansar(s, derived, { marioneteId }))}
++          />
+         </div>
+ 
+         {/* ⚠ LINHA MORTA E MARCADA, a mesma da Ficha e do criador (decisão 4 do
+diff --git a/.audit/lote09-base/AftyEncontro.jsx b/src/systems/afty/encontros/AftyEncontro.jsx
+index 162e699..fdb4163 100644
+--- a/.audit/lote09-base/AftyEncontro.jsx
++++ b/src/systems/afty/encontros/AftyEncontro.jsx
+@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
+ import { createPortal } from "react-dom";
+ import {
+   ArrowLeft, Plus, X, Dices, Play, Pause, SkipForward, Clock, Users, UserPlus,
+-  Search, Swords, Trophy, Skull, EyeOff, Copy, Edit3, Moon, AlertTriangle,
++  Search, Swords, Trophy, Skull, EyeOff, Copy, Edit3, AlertTriangle,
+ } from "lucide-react";
+ 
+ import "../ficha/ficha.css";
+@@ -15,6 +15,7 @@ import { nivelDaFicha } from "../afty-addons";
+ /* Patamar e rótulo do nível saem da FICHA de cada linha: a lista mistura
+    criaturas e personagens, e a rota aqui é sempre a do mestre. */
+ import { sistemaDaFicha, regraDo, rotuloDoNivel, palavrasDoSistema } from "../afty-sistema";
++import BotaoDeDescanso from "../ficha/BotaoDeDescanso";
+ import PainelDeCombatente from "./PainelDeCombatente";
+ import useEncontroAfty from "./usar-encontro-afty";
+ import { ENCONTRO_STATUS, LADO, LADO_ROTULO, LOG_TIPOS } from "./afty-encontro";
+@@ -746,9 +747,11 @@ function Finalizado({ encontro, derivado, acoes, onVoltar, onDuplicar }) {
+           </button>
+           {/* Descansar e Levantar existem para rodar o MESMO encontro de novo,
+               sem duplicar: é o caso de repetir uma luta que não funcionou. */}
+-          <button type="button" className="afty-botao" onClick={acoes.descansarTodos} title="Recursos cheios em todos">
+-            <Moon className="w-4 h-4" /> Descansar Todos
+-          </button>
++          <BotaoDeDescanso
++            rotulo="Descansar Todos"
++            combatentes={encontro.combatentes.map((c) => ({ ...c, derived: derivado.derivados[c.id] }))}
++            onDescansar={acoes.descansarTodos}
++          />
+           <button type="button" className="afty-botao" onClick={acoes.levantarTodos} title="Tira a marca de abatido de todos">
+             <Skull className="w-4 h-4" /> Levantar Todos
+           </button>
+diff --git a/.audit/lote09-base/usar-encontro-afty.js b/src/systems/afty/encontros/usar-encontro-afty.js
+index 1534200..09e61a9 100644
+--- a/.audit/lote09-base/usar-encontro-afty.js
++++ b/src/systems/afty/encontros/usar-encontro-afty.js
+@@ -352,10 +352,10 @@ const HANDLERS = {
+   // ou seja, ZERA o PV e o PE. Uma ficha que o `derivarCombatente` não conseguiu
+   // calcular já mostra "não pôde ser calculada" no painel, e o Descansar Todos
+   // passava por cima disso apagando os recursos dela, sem desfazer.
+-  DESCANSAR_TODOS: (s, { derivados }) => ({
++  DESCANSAR_TODOS: (s, { derivados, marionetes = {} }) => ({
+     ...s,
+     combatentes: s.combatentes.map((c) => (
+-      (c.sessao && derivados[c.id]) ? { ...c, sessao: descansar(c.sessao, derivados[c.id]) } : c
++      (c.sessao && derivados[c.id]) ? { ...c, sessao: descansar(c.sessao, derivados[c.id], { marioneteId: marionetes[c.id] }) } : c
+     )),
+   }),
+ 
+@@ -464,7 +464,7 @@ export default function useEncontroAfty(encontroId, gerenciador) {
+     encerrar: () => despachar({ tipo: "ENCERRAR" }),
+     reabrir: () => despachar({ tipo: "REABRIR" }),
+     levantarTodos: () => despachar({ tipo: "LEVANTAR_TODOS" }),
+-    descansarTodos: () => despachar({ tipo: "DESCANSAR_TODOS", derivados }),
++    descansarTodos: (marionetes = {}) => despachar({ tipo: "DESCANSAR_TODOS", derivados, marionetes }),
+     registrar: (tipoLog, mensagem, combatenteId = null) =>
+       despachar({ tipo: "REGISTRAR", tipoLog, mensagem, combatenteId }),
+     /* Escrita da sessão de um combatente. O `fn` recebe a sessão APARADA e o
+diff --git a/.audit/lote09-base/t-invocacao-estados.mjs b/asserts/t-invocacao-estados.mjs
+index 79eeccf..8ccffeb 100644
+--- a/.audit/lote09-base/t-invocacao-estados.mjs
++++ b/asserts/t-invocacao-estados.mjs
+@@ -198,14 +198,14 @@ const varias = {
+     e: { estado: "guardada", pvAtual: 7 },
+   },
+ };
+-const desc = SES.descansar(varias, { hp: 10, pe: 10 });
++const desc = SES.descansar(varias, { hp: 10, pe: 10, invocacoes: { lista: [{ id: "d", regras: regras("marionete") }] } }, { marioneteId: "d" });
+ const est = (id) => SES.estadoDaInvocacao(desc, id);
+ t("o descanso devolve quem caiu ao Fora de Campo, cheio",
+   ["a", "d", "e"].map((id) => [est(id).estado, est(id).pvAtual, est(id).retorno]),
+   [["fora", null, null], ["fora", null, null], ["fora", null, null]]);
+ t("quem estava em campo continua", est("b").estado, "ativa");
+ t("a morte permanente continua", est("c").estado, "exorcizada");
+-t("as quedas da Marionete zeram (o botao de descanso devolve tudo)", est("d").quedas, 0);
++t("as quedas da Marionete escolhida zeram com o reparo completo", est("d").quedas, 0);
+ 
+ /* ============================================================ */
+ /* 5. COMPATIBILIDADE E PONTA A PONTA                            */
+diff --git a/.audit/lote09-base/t-invocacao-tipos-especiais.mjs b/asserts/t-invocacao-tipos-especiais.mjs
+index 82cef29..b9a5138 100644
+--- a/.audit/lote09-base/t-invocacao-tipos-especiais.mjs
++++ b/asserts/t-invocacao-tipos-especiais.mjs
+@@ -15,7 +15,7 @@
+       Presença do Controlador, sem cura por Energia Reversa, e a Autonomia paga no
+       início do combate.
+    4. TÉCNICA: o Fundamento, a Técnica Inata bloqueada de verdade quando ele morre
+-      (e só os Feitiços quando ele está fora de campo), e a Iniciativa própria.
++      ou está fora de campo na mesa, e a Iniciativa própria.
+    5. O ENCONTRO: o cache do derive do combatente enxerga o estado das invocações
+       (E-13), e a morte do Fundamento vai para a ficha do combatente. */
+ import { register } from "node:module";
+@@ -251,7 +251,7 @@ t("o Fundamento so existe na Tecnica",
+   [true, false]);
+ const tec = res(nova("tecnica", "terceiro", { atributos: { forca: 10, destreza: 14, constituicao: 10, inteligencia: 10, sabedoria: 10, presenca: 10 } }));
+ t("a Tecnica tem Iniciativa: Destreza e os bonus de todos os testes (o grau dela)",
+-  [tec.iniciativa.bonus, tec.iniciativa.partes.map((p) => p.label)], [2 + 2, ["Destreza", "Invocação de Técnica"]]);
++  [tec.iniciativa.bonus, tec.iniciativa.partes.map((p) => p.label)], [2 + 2, ["Destreza", "Shikigami de Técnica"]]);
+ t("quem nao tem turno proprio nao rola Iniciativa", res(nova("shikigami")).iniciativa, null);
+ 
+ const tecnicaInata = (fichaInv, mesa, registros = []) => I.estadoDaTecnicaInata(
+@@ -295,9 +295,9 @@ t("e a perda gravada faz o mesmo sem mesa",
+   [viva.defesa - perdida.defesa, viva.rdGeral - perdida.rdGeral], [2, 3]);
+ t("nada e apagado: os Feiticos seguem na lista, marcados",
+   perdida.feiticos.lista.map((f) => [f.id, f.bloqueado]), [["p1", "Fundamento Perdido"], ["a1", "Fundamento Perdido"]]);
+-t("fora de campo, os Feiticos ficam marcados e os numeros nao mudam",
++t("fora de campo, os Feiticos ficam marcados e Funcionamento e Passivas param",
+   [semMesa.feiticos.lista.map((f) => f.bloqueado), semMesa.defesa === viva.defesa, semMesa.rdGeral === viva.rdGeral],
+-  [["Fundamento Fora de Campo", "Fundamento Fora de Campo"], true, true]);
++  [["Fundamento Fora de Campo", "Fundamento Fora de Campo"], false, false]);
+ t("com o Fundamento em campo, nada e marcado",
+   D.deriveAfty(fichaTec(), { invocacoes: { F: { estado: "ativa" } } }).feiticos.lista.some((f) => f.bloqueado), false);
+ t("o derive expoe o estado, com a perda a gravar", morta.tecnicaInata.aRegistrar, { invocacaoId: "F", nome: "Divino" });
+diff --git a/.audit/lote09-base/afty-invocacoes.md b/docs/afty-invocacoes.md
+index 258b992..393e404 100644
+--- a/.audit/lote09-base/afty-invocacoes.md
++++ b/docs/afty-invocacoes.md
+@@ -79,11 +79,15 @@ Controlador e Invocações").
+ |---|---|
+ | **Sistemas** | Vale na criatura (`/Afty`) e no jogador (`/Player`), com as regras compartilhadas. Diferença real vai para `DIVERGENCIAS` (`afty-sistema.js`) |
+ | **Tipos** | Os tipos separados do *Mecânicas*: **Marionete, Corpo Amaldiçoado, Maldição Domada, Shikigami**, e o **Shikigami de Técnica** como subtipo do Shikigami. Eles diferem de verdade em cura, alma, custo, ativação, dissipação, destruição, exorcismo, evolução e reparo |
++| **Rótulos de Tela** (2026-10-03) | Shikigami e Shikigami de Técnica nos dois sistemas. Nos filtros, os curtos são Shikigami e Técnica. Os valores gravados shikigami e tecnica permanecem iguais |
+ | **Maldição Domada** | Regras do *Mecânicas* inteiras: grau fixo, não dissipa, sem talismã, ficha adaptada, PV ×1,5, atributos, treinos, masterizações, resistências e imunidades mantidos, Aptidão vira Característica e gasta PE do Controlador, sem cura por ER, exorcizada a 0 PV, sem custo base de ativação, sem Visionário. Maldições já salvas mudam de regra, sem corromper nem apagar dado |
+ | **Shikigami de Técnica** | Regras do *Mecânicas*. Dissipação normal segue a regra comum. O 1º exorcismo antes do descanso longo vira dissipação. O 2º mata, e o Fundamento e a Técnica Inata são perdidos. Dissipação e exorcismo são contadores separados. O antigo "Retorno Completo" sai |
+ | **`tipo_shikigami`** | Fica só como compatibilidade **LEGACY** de leitura (o sentido de hoje, que também liga na Maldição). Código oficial novo usa sinais específicos para Shikigami puro, Técnica, Maldição, Marionete e Corpo |
+ | **Quimera** | `regra: "addon" \| "mecanicas"`. Quimera salva sem o campo continua `addon` (LEGACY), e nada é convertido em silêncio. Quimera nova nasce `mecanicas`, a regra oficial |
+ | **Perda da Técnica Inata** | A morte do Shikigami de Técnica marcado como **Fundamento** bloqueia a Técnica Inata de verdade, gravado na ficha e refletido na sessão. Nada é apagado: a Técnica fica marcada como indisponível |
++| **Fundamento fora de campo** (2026-10-03) | Na mesa, bloqueia toda a Técnica Inata: Feitiços, Funcionamento e Passivas. Voltar ao campo restaura os efeitos. O criador não considera o estado de campo |
++| **Reserva de PE da Passiva** (2026-10-03) | No jogador, continua ocupando PE Máximo com a Técnica perdida ou com o Fundamento fora de campo. A criatura segue sem esse custo |
++| **Marionete no descanso** (2026-10-03) | O botão de Descanso repara completamente uma Marionete não destruída, escolhida na Ficha ou no Encontro, e zera suas quedas. As demais conservam PV, quedas, retorno e estado. Descansar Todos pede uma escolha por combatente que tenha Marionete a reparar |
+ | **Estado terminal** | Nenhuma ficha é apagada sozinha (exorcizada, destruída, morta). Ela fica com o estado, para histórico, Herança, componentes e restauração futura. Remover é ação manual |
+ | **PE ao invocar** | Na Ficha e no Encontro, entrar em campo desconta o PE do Controlador, já com Econômicas, Autonomia, Reserva, Ápice, extras e o custo do tipo. A mesa calcula, mostra, recusa o impossível, desconta e registra a entrada. O Criador só calcula |
+ | **Cota base sem PE** (2026-10-03) | A quantidade base do grau (`INV_ACOES_CARACT_BASE`: 2 no Quarto e no Terceiro, 3 no Segundo e no Primeiro, 4 no Especial) não custa PE. Só as Ações e Características além dela custam, em `detalheCustoInvocacao` |
+@@ -109,14 +113,14 @@ Controlador e Invocações").
+ - **Cobertura de reação:** 4 PE com grau mínimo Terceiro, e 6 PE com grau mínimo Segundo.
+ - **Alado e Nadador:** o deslocamento novo parte do de caminhada.
+ - **Forma de Arma e de Armadura:** Custo 1 no Quarto, 2 no Terceiro, 3 no Segundo, 4 no Primeiro e no Especial.
+-- **Marionete:** o reparo completo zera as quedas, e o dano excedente ainda pode destruí-la.
++- **Marionete:** o reparo completo zera as quedas, e o dano excedente ainda pode destruí-la. No Descanso, só a escolhida recebe esse reparo (autor, 2026-10-03). O Mecha se separa antes da escolha e devolve às componentes seus PV atuais.
+ - **Corpo:** núcleo quebrado é destruição permanente, sem apagar a ficha.
+ - **Maldição:**
+   - Ações e Características extras com custo são cobradas na entrada, junto da ativação ou do início do combate;
+   - o Nível de Aptidão é metade do modificador de Presença do Controlador, para baixo, mínimo 0.
+ - **Aura:** não vale na própria invocação, salvo regra específica. Duas auras iguais não acumulam (vale a maior), e auras de efeitos diferentes convivem.
+ - **Concedidas por regra:** "Trocar Núcleo" e as Ações e Características herdadas não ocupam vaga nem aumentam custo.
+-- **Fundamento:** é marca explícita (`fundamento`), e nem toda Invocação de Técnica é Fundamento.
++- **Fundamento:** é marca explícita (`fundamento`), e nem todo Shikigami de Técnica é Fundamento.
+ - **Ações com Custo:** o limite por grau segue 1, 1, 2, 2, 3.
+ - **Quimera em campo:** conta como 1 no limite.
+ - **Antes de codificar:**
+@@ -138,7 +142,7 @@ por `regrasDoTipo`, a sessão pelo campo `regras` da resolvida.
+ | Marionete | `oficio` | Sem Integridade (`temAlma: false`), imune a dano na alma, Envenenado e venenos comuns, Vontade e Astúcia com o número do invocador (`doInvocador`), sem cura nenhuma (`curaPermitida`), reparo pelo Ofício com Custo pelo grau e CD da tabela de Criação de Itens, aviso no Grau Especial abaixo do nível 17 real |
+ | Corpo | `natureza`, `refeicao`, `refeicaoTrs` | Boneco imune a Envenenado e reparado pelo Alfaiate. Biológico reparado por Cura Aprimorada ou Medicina, com a CD da coluna do Farmacêutico na tabela de Criação de Itens (decisão do autor, 2026-10-03). A CD de todo reparo leva a coluna e o Custo no hover (`partesCd`). Biológico com a refeição de Cozinheiro (grau e BT do dono): Leve, Picante, Reforçada e Nutritiva como efeito de canal. Duração de CL rodadas (`duracao`), contada pela sessão (`rodadasAtiva`), com a manutenção de 1 ou 2 PE (`pagaManutencaoCorpo`) e a saída de campo sem ela |
+ | Maldição Domada | (nenhum) | Sem os efeitos de orçamento do dono (Visionário, Ápice), ficha adaptada (sem avisos de point-buy, cota de perícia, vaga de TR e Ofício, sem trava de grau), Nível de Aptidão pela Presença do Controlador, sem cura por ER, Autonomia no início do combate |
+-| Shikigami de Técnica | `fundamento` | Iniciativa própria. O Fundamento morto bloqueia a Técnica Inata (`estadoDaTecnicaInata`): os efeitos do Funcionamento e das Passivas saem do Motor, e os Feitiços ficam marcados (`bloqueado`). A perda é gravada em `creature.fundamentosPerdidos`. Fora de campo, só os Feitiços ficam marcados |
++| Shikigami de Técnica | `fundamento` | Iniciativa própria. O Fundamento morto bloqueia a Técnica Inata (`estadoDaTecnicaInata`): os efeitos do Funcionamento e das Passivas saem do Motor, e os Feitiços ficam marcados (`bloqueado`). A perda é gravada em `creature.fundamentosPerdidos`. Fora de campo na mesa, Feitiços, Funcionamento e Passivas ficam bloqueados também, até o Fundamento voltar. O criador não usa o estado de campo (autor, 2026-10-03) |
+ 
+ A Autonomia de quem já está em campo quando o combate começa é cobrada no `iniciaCombate` (e na
+ Ficha, na saída da rodada 0), pela regra do *Mecânicas* de que começar o combate em campo conta
+diff --git a/.audit/lote09-base/afty-ficha-final.md b/docs/afty-ficha-final.md
+index 9e4c624..c8eec44 100644
+--- a/.audit/lote09-base/afty-ficha-final.md
++++ b/docs/afty-ficha-final.md
+@@ -38,7 +38,7 @@ Buffs.
+ | O que | Travado em |
+ |---|---|
+ | Habilidades na aba Ações | **D7**: nenhum catálogo tem metadado de ação, custo ou usos |
+-| ✅ Descanso curto e longo | **D3** respondida em 2026-09-23: um botão só, que devolve tudo |
++| ✅ Descanso curto e longo | **D3** respondida em 2026-09-23: um botão só, que devolve os recursos. Marionetes: uma escolhida recebe o reparo completo (2026-10-03) |
+ | ✅ Condições com mecânica | **D6** respondida em 2026-09-21: ver `docs/afty-condicoes.md` |
+ | RD abatendo dano sozinha | **D9**: decisão do autor |
+ | Trilho lateral de Buffs | **D10**: preferência do autor |
+@@ -294,9 +294,12 @@ para receber mecânica no dia em que o autor mandar as regras (pergunta D6).
+ 
+ Um contador de **rodada** com o botão "Próxima rodada" decrementa toda duração e avisa o que
+ expirou. **"Descanso"** zera os `usos` das linhas de cura e o que mais for por descanso. O sistema
+-tem descanso curto e longo, e o botão continua um só e devolve tudo, por decisão do autor (D3,
+-2026-09-23: *"Manter um botão só"*). Os contadores de usos das Habilidades guardam a recarga do
+-livro só como dado (seção 27).
++tem descanso curto e longo, e o botão continua um só e devolve os recursos, por decisão do autor
++(D3, 2026-09-23: *"Manter um botão só"*). Para Marionetes, o descanso repara uma não destruída,
++escolhida na janela de Descanso, e zera suas quedas. As demais conservam PV, quedas, retorno e
++estado (autor, 2026-10-03). A Ficha e o painel de combatente no Encontro usam a mesma escolha.
++Descansar Todos pede uma Marionete por combatente com reparo disponível. Os contadores de usos
++das Habilidades guardam a recarga do livro só como dado (seção 27).
+ 
+ ---
+ 
