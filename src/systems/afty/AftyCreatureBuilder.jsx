@@ -135,7 +135,7 @@ import { periciasParaInvocacao, DANO_ADICIONAL_ARMA } from "./afty-pericias";
 import {
   EQUIP_TIPOS, CUSTOS, ARMA_CATEGORIAS, ARMA_GRUPOS, TIPOS_DANO, tiposDeDanoDaCategoria, ARMAS,
   ITEM_CATEGORIAS, catalogoDoTipo, novaEntradaEquip,
-  getEquipamento,
+  getEquipamento, podeEscolherAtaqueDaArma,
   orcamentoDoGrau, espacosDoEquipamento, custoDoEquipamento,
   getPropriedade, getEspecial, grupoLabel,
   ARMA_PROPRIEDADES, ARMA_DADOS, ARMA_DADOS_PROP, ARMA_CRITICOS, novaArmaCustom, rotuloPropriedade,
@@ -13613,11 +13613,8 @@ function LinhaCarregada({
   const ataqueFisico = def?.categoria === "distancia" || def?.categoria === "arremesso"
     ? "distancia"
     : "corpo";
-  // ⚠ Pugilato (Faixas, Manoplas, Soco Inglês) NÃO escolhe jogada de ataque:
-  // essas três não têm linha própria, elas são o Ataque Básico, e o básico
-  // rola sempre o Corpo a Corpo. O seletor aparecia e gravava o campo sem
-  // mudar número nenhum, que é pior do que não ter seletor.
-  const escolheAtaque = tipo === "arma" && def?.grupo !== "pugilato";
+  // Pugilato criado pela Criação de Equipamentos escolhe o acerto do Básico.
+  const escolheAtaque = tipo === "arma" && podeEscolherAtaqueDaArma(def);
   /* O manejo de uma arma versátil ("o `/` da tabela"). Só decide número onde o
      dado da arma entra na conta, que é a ficha de jogador. */
   const escolheManejo = tipo === "arma" && sistemaJogador

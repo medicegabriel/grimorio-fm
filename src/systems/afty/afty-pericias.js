@@ -737,7 +737,7 @@ function linhaDeDanoJogador({
  *
  * ctx = { nd, patamar, mods, aptidaoCL, efeitos, efeitosLinhaDano,
  *         contextoDsl, armas, grauBasico, acertoGrauBasico, fontesAcertoBasico,
- *         escoposBasicoExtra, finezaBasico, ataques }.
+ *         escoposBasicoExtra, finezaBasico, ataqueIdBasico, ataques }.
  * `armas` = [{ id, nome, grauArma, acertoGrau, alcance, propriedades, fineza,
  * distancia }], montado pelo deriveAfty a partir dos equipamentos.
  *
@@ -1222,15 +1222,14 @@ export function resolveDano(creature, ctx = {}) {
   // equipado, quando existe um. É por esse id que o encantamento com `alvoItem`
   // (Potente, Poderosa, Penetrante) chega no golpe: sem ele o efeito era gravado
   // com o alvo do item, ninguém escutava, e o encantamento ainda descia o grau.
+  const ataqueIdBasico = ctx.ataqueIdBasico === "amaldicoado" ? "amaldicoado" : "corpo";
   const escoposBasico = [
     ...escoposDaArma(null),
     ...(Array.isArray(ctx.escoposBasicoExtra) ? ctx.escoposBasicoExtra : []),
-    // O Ataque Básico rola sempre Corpo a Corpo, então responde pelo tipo de
-    // ataque dele como toda arma responde pelo seu. Ver `escoposDaArma`.
-    "atq:corpo",
-    // O golpe desarmado é sempre Impacto, então também participa das regras que
-    // exigem ao mesmo tempo um ataque corpo a corpo e um tipo de dano.
-    "atq_tipo:corpo:im",
+    // Responde pela jogada escolhida no item que define o Básico.
+    `atq:${ataqueIdBasico}`,
+    // O golpe desarmado é Impacto, junto do tipo de jogada escolhido.
+    `atq_tipo:${ataqueIdBasico}:im`,
   ];
   // Fineza no golpe básico vem de duas portas: o canal (Corpo Treinado, "você
   // pode escolher usar tanto Força quanto Destreza") e a propriedade do item de
@@ -1256,7 +1255,7 @@ export function resolveDano(creature, ctx = {}) {
       /* O Ataque Básico usa a Manopla ou Faixa equipada, e a proficiência dela é
          a que vale. Sem item de pugilato, `treinadaBasico` é falso e o golpe
          desarmado não soma BT no jogador. */
-      ...acertoDe("corpo", Math.max(0, Math.trunc(Number(ctx.acertoGrauBasico) || 0)),
+      ...acertoDe(ataqueIdBasico, Math.max(0, Math.trunc(Number(ctx.acertoGrauBasico) || 0)),
         escoposBasico, ctx.fontesAcertoBasico ?? [], null,
         armaDecide ? !!ctx.treinadaBasico : null,
         /* Ataque desarmado não é arma ("ataques desarmados não são armas"), e o

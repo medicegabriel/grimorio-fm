@@ -2270,6 +2270,12 @@ export function novaEntradaEquip(tipo, refId, def = null) {
   };
 }
 
+/** Armas de Pugilato só escolhem acerto quando criadas pela receita do guia. */
+export function podeEscolherAtaqueDaArma(def) {
+  // A receita identifica a Criação de Equipamentos e continua na arma sem o addon.
+  return !!def && (def.grupo !== "pugilato" || !!(def.custom && def.niveis));
+}
+
 /** Jogada de ataque usada por uma arma desta entrada do inventário.
     Fichas antigas e valores inválidos mantêm o ataque físico da categoria. */
 export function ataqueDaArma(entrada, def) {

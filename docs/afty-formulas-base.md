@@ -12,6 +12,17 @@ FLOOR, `INT`=parte inteira, `MAIOR(intervalo;k)`=k-ésimo maior, `VERDADEIRO`=TR
 
 ## Correções estruturais ao que estava assumido
 
+### Acerto Amaldiçoado no Pugilato criado (2026-10-03)
+
+Faixas e Manoplas criadas pela receita `niveis` da Criação de Equipamentos podem
+escolher `ataqueId: "amaldicoado"` na entrada do inventário. O item equipado que
+define o Ataque Básico fornece essa escolha junto dos seus encantamentos e grau.
+A linha usa a jogada Amaldiçoada já resolvida, com seu atributo, escala, Maestria
+e fontes, sem duplicar o Bônus de Treinamento. O dano desarmado mantém sua fórmula.
+Os escopos `atq:*` e `atq_tipo:*:im` acompanham a jogada escolhida. Sem receita,
+sem item equipado ou com escolha inválida, o básico continua Corpo a Corpo.
+A receita permanece válida depois de remover o addon, como as demais contas da arma.
+
 ### Expressão de Raio Negro para bot de dados (2026-09-30)
 
 `formulaModoDano` em `src/systems/afty/afty-dano.js` escreve os dados critáveis

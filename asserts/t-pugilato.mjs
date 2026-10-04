@@ -12,7 +12,7 @@ register(
 const R = new URL("../src/systems/afty/", import.meta.url).href;
 const { deriveAfty } = await import(R + "afty-derive.js");
 const { createBlankAfty } = await import(R + "afty-schema.js");
-const { ARMAS } = await import(R + "afty-equipamentos.js");
+const { ARMAS, podeEscolherAtaqueDaArma, saneiaArmaCustom } = await import(R + "afty-equipamentos.js");
 
 let ok = 0;
 const bad = [];
@@ -280,6 +280,48 @@ t("o basico rola sempre Corpo a Corpo",
   "Corpo a Corpo");
 t("ficha suja nao derruba o derive",
   typeof deriveAfty({ equipamentos: { itens: "nao-e-lista" } }), "object");
+
+/* Criação de Equipamentos: o item criado pode escolher o acerto do Básico. */
+for (const sistema of ["afty", "player"]) {
+  for (const nome of ["Faixas Criadas", "Manoplas Criadas"]) {
+    const arma = {
+      id: "armc_pugilato", nome, categoria: "corpo", classe: "simples",
+      custo: 2, grupo: "pugilato", dano: { tipo: "im" }, props: {},
+      niveis: { desarmado: true },
+    };
+    const c = cria([it(arma.id, fa("primeiro", ["enc_arma_precisa"]), { ataqueId: "amaldicoado" })]);
+    c.rulesVersion = sistema;
+    c.armasCustom = [arma];
+    c.core.tecnicaAttr = "inteligencia";
+    c.attributes.inteligencia = 18;
+    c.pericias = { ataques: ["corpo"] };
+    const d = deriveAfty(c);
+    const b = d.dano.entradas.find((e) => e.id === "basico");
+    const amaldicoado = d.testes.ataques.find((a) => a.id === "amaldicoado");
+    const prefixo = `${sistema}, ${nome}`;
+    t(`${prefixo}: seletor liberado`, podeEscolherAtaqueDaArma(saneiaArmaCustom(arma)), true);
+    t(`${prefixo}: usa acerto Amaldicoado`, b.acertoAtaque, amaldicoado.nome);
+    t(`${prefixo}: total usa a jogada e o encantamento sem duplicar BT`,
+      // Jogador soma Precisa (+2) e Gosto pela Luta (+3), criatura grau (+3) e Precisa (+2).
+      b.acerto, amaldicoado.bonus + 5);
+    t(`${prefixo}: hover soma o total`, b.partesAcerto.reduce((s, p) => s + (p.valor ?? 0), 0), b.acerto);
+    t(`${prefixo}: continua uma linha`, d.dano.entradas.map((e) => e.id), ["basico"]);
+    c.equipamentos.itens[0].ataqueId = "corpo";
+    const fisico = basico(c);
+    t(`${prefixo}: alternar preserva dano`, b.formulaNormal, fisico.formulaNormal);
+    t(`${prefixo}: alternar volta ao Corpo a Corpo`, fisico.acertoAtaque, "Corpo a Corpo");
+    c.equipamentos.itens[0].ataqueId = "amaldicoado";
+    c.equipamentos.itens.push(it("arm_manoplas", fa("especial")));
+    t(`${prefixo}: so o item vencedor fornece a escolha`, basico(c).acertoAtaque, "Corpo a Corpo");
+    c.equipamentos.itens = [it(arma.id, null, { ataqueId: "amaldicoado", equipado: false })];
+    t(`${prefixo}: guardado nao muda a jogada`, basico(c).acertoAtaque, "Corpo a Corpo");
+    c.equipamentos.itens[0].equipado = true;
+    t(`${prefixo}: sem Ferramenta pode escolher`, basico(c).acertoAtaque, amaldicoado.nome);
+    delete c.armasCustom[0].niveis;
+    t(`${prefixo}: sem receita mantem a regra anterior`, basico(c).acertoAtaque, "Corpo a Corpo");
+  }
+}
+t("Faixas de catalogo continuam sem seletor", podeEscolherAtaqueDaArma(ARMAS.find((a) => a.id === "arm_faixas")), false);
 
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 

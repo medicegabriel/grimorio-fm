@@ -94,7 +94,7 @@ import {
 import { armasTransformaveis, efeitosArmasTransformaveis } from "./afty-armas-transformaveis";
 import {
   resolveEquipamentos, resolveCarga, grauFeiticeiro, alcanceDaArma, propriedadesDaArma,
-  armaTreinadaPor, ARMAS,
+  armaTreinadaPor, ARMAS, podeEscolherAtaqueDaArma,
   podeSerArmaDedicada, grauDoRank, efeitosEspeciaisDeArma, catalogoDoTipo,
   TIPOS_DANO, CATEGORIAS_DANO, tiposDeDanoDaCategoria, itensEquipados, ehFaixas,
   SINTONIZADA_ID, ESTADO_SINTONIZADA, aplicarSintonizadaNoDano,
@@ -1066,6 +1066,9 @@ export function deriveAfty(creature, opcoes = {}) {
   // Fineza do item que define o golpe (Soco Inglês). A propriedade estava na
   // tabela e não chegava em lugar nenhum: o básico só olhava o canal.
   const finezaBasico = !!pugilato?.def?.props?.fineza;
+  // Só o item que define o Básico fornece a escolha, como os encantamentos.
+  const ataqueIdBasico = podeEscolherAtaqueDaArma(pugilato?.def)
+    && pugilato?.ataqueId === "amaldicoado" ? "amaldicoado" : "corpo";
   /* As linhas de dano que carregam a Sintonizada. Mesmo recorte do Destruidora:
      a arma equipada que não é pugilato vira linha própria, e do pugilato só vale
      o item que DEFINE o Ataque Básico. Ver `aplicarSintonizadaNoDano`. */
@@ -3069,7 +3072,7 @@ export function deriveAfty(creature, opcoes = {}) {
        `proficienciaPorArma`): a criatura treina pelo tipo de ataque. */
     treinadaBasico: true,
     efeitos: ef, armas: armasParaDano, grauBasico, acertoGrauBasico,
-    fontesAcertoBasico, escoposBasicoExtra, finezaBasico,
+    fontesAcertoBasico, escoposBasicoExtra, finezaBasico, ataqueIdBasico,
     propriedadesBasico, criticoExtraDadosBasico,
     /* ⚠ O DADO DO GOLPE DESARMADO DA FICHA DE JOGADOR (autor, 2026-08-31):
        "Golpe Desarmado segue o cálculo de Lutador ou Arma Natural." Sem nenhum

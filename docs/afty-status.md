@@ -1,5 +1,76 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-10-04 (parte 2): MAIN ATUALIZADA E COMMIT PREPARADO
+
+Atualização autorizada pelo autor: `main` avançou por fast-forward de `354d575`
+até `a0cefc2`, incorporando os quatro commits remotos sem criar commit novo.
+As mudanças locais foram guardadas com `git stash --include-untracked` antes
+da atualização, e reaplicadas depois. O backup foi mantido no stash
+`1ecf455158038d99b337547f750f2a1841c16bec`.
+
+Quatro conflitos resolvidos: no derive, ficaram `ARMAS` e
+`podeEscolherAtaqueDaArma` no import. O histórico preservou as sessões dos dois
+lados. A fila usou a versão atual do remoto com a exceção de Pugilato criado,
+sem restaurar pendências já encerradas pela equipe. AGENTS.md preservou as
+diretrizes locais e o registro de exceções existentes recebido do remoto.
+
+Validação após integração: ESLint e Vite build passaram. Suíte completa com
+151 arquivos e 8.334 asserts, todos passando, incluindo os 105 de Pugilato e
+os 88 de invocações do Motor. A falha antiga de invocações foi corrigida pelos
+commits remotos. No navegador, a Faixa criada alternou o Acerto Básico de +6
+para +10, com o dano mantido em `1d8 + 16`.
+
+Preparação padrão: Acerto Amaldiçoado e registros da integração no index.
+Alterações anteriores de cofre, feitiços, Milenar, Reencarnação e exports
+preservadas fora desse conjunto. Sem conflitos restantes, sem alteração local
+em `src/components/`, sem U+2014 novo e sem whitespace inválido no diff.
+Nenhum `git commit` ou `git push` executado.
+
+## SESSÃO DE 2026-10-04: CONFERÊNCIA DO REMOTO ANTES DO COMMIT
+
+Consulta ao GitHub confirmou `main` em `a0cefc2`, sem novidade desde a consulta
+anterior. O HEAD local continua em `354d575`, quatro commits atrás e nenhum
+commit exclusivo à frente. Simulação de junção em arquivos temporários, com
+quebras de linha normalizadas, encontrou conflitos em `AGENTS.md`,
+`docs/a-fazer.md`, `docs/afty-status.md` e `src/systems/afty/afty-derive.js`.
+No derive, a sobreposição é no import de equipamentos: preservar `ARMAS` do
+remoto e `podeEscolherAtaqueDaArma` da correção local. Os outros arquivos
+modificados juntam automaticamente. Arquivos locais não rastreados não têm
+colisão de caminho no remoto. Não há conflitos já instalados no checkout nem
+alterações locais em `src/components/`.
+
+Recomendação: integrar as atualizações, resolver as quatro sobreposições e
+validar o resultado antes do commit humano. Há mudanças de outras demandas no
+workspace, além da correção de Pugilato. Não houve merge, commit ou push nesta
+conferência, nem nova execução da suíte, pois nenhum código foi alterado.
+
+## SESSÃO DE 2026-10-03: ACERTO AMALDIÇOADO NO PUGILATO CRIADO
+
+O autor liberou Acerto Amaldiçoado para armas de Pugilato (Faixas e Manoplas)
+feitas pela Criação de Equipamentos. `podeEscolherAtaqueDaArma` identifica a
+arma custom com receita `niveis` e abre o seletor do inventário. O `deriveAfty`
+leva a escolha somente do item que define o Ataque Básico até `resolveDano`.
+A jogada e seus escopos passam a acompanhar a escolha, com as fontes do acerto
+e sem duplicar BT. O dano desarmado mantém sua fórmula. Armas do catálogo,
+Pugilato sem receita e itens guardados seguem com a regra anterior.
+
+Asserts de regressão em `t-pugilato.mjs` cobrem criatura e jogador, Faixas e
+Manoplas criadas, alternância, hover, encantamento, item vencedor e mochila.
+A dúvida geral de Ataque Básico sem arma criada continua na fila, com a
+exceção pedida nesta sessão já resolvida.
+
+Validação: ESLint do Afty e Vite build passaram. Os 105 asserts de Pugilato
+passaram, e a suíte completa passou em 123 de 124 arquivos. A falha restante
+é a já registrada em `t-invocacoes-motor.mjs` (Característica Livre com Motor,
+custo esperado 1 PE e obtido 0). No navegador, a Faixa criada alternou o acerto
+do Básico de +6 para +10, preservando `1d8 + 16` de dano. Diff da correção sem
+whitespace inválido, sem texto novo com U+2014 e sem mudanças em `src/components/`.
+
+Remoto consultado: `origin/main` está em `a0cefc2`, quatro commits à frente
+do HEAD local `354d575`. Há sobreposição de arquivos com as mudanças remotas.
+Nenhuma integração, commit ou push foi realizado. Alterações locais anteriores
+em AGENTS.md, cofre, feitiços, addons e exports foram preservadas.
+
 ## SESSÃO DE 2026-10-02 (parte 4): VAGAS DE ESCOLHA VINDAS DE FEITIÇO NÃO CONTAVAM
 
 Relato do autor, com a captura de um Feitiço Passivo com "Vagas de Talento 1, sempre, Permanente"

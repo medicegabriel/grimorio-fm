@@ -390,7 +390,7 @@ vírgula ("Medicina, Prestidigitação") em vez de "ou".
 `pericias:` daquela Classe.
 **Anotado:** 2026-08-31, ao aplicar o parse que o autor deu para o Combatente
 
-### O Ataque Básico pode rolar como Ataque Amaldiçoado?
+### O Ataque Básico sem arma criada pode rolar como Ataque Amaldiçoado?
 
 **Onde:** `src/systems/afty/afty-pericias.js` (`resolveDano`, a linha `basico`)
 **Situação:** toda entrada de arma do inventário escolhe entre a jogada física da categoria e o
@@ -398,7 +398,8 @@ Ataque Amaldiçoado (`ataqueId`, 2026-08-18). As três de pugilato (Faixas, Mano
 têm linha própria, elas são o Ataque Básico, e o básico rola sempre Corpo a Corpo. O seletor aparecia
 nas três e gravava o campo sem mudar número nenhum, e por isso ele foi **escondido** nelas em
 2026-08-20. Esconder um controle que mentia não decidiu a regra.
-**Precisa:** decidir se um golpe desarmado (ou com Faixas) pode usar a jogada de Ataque Amaldiçoado.
+**Nota (2026-10-03):** Pugilato criado pela receita do Addon Criação de Equipamentos pode escolher Acerto Amaldiçoado no item que define o Ataque Básico. Implementação registrada em `afty-status.md`.
+**Precisa:** decidir se um golpe desarmado sem esse item criado (ou com Faixas do catálogo) pode usar a jogada de Ataque Amaldiçoado.
 Se puder, o controle não volta para o card do item: o Ataque Básico existe sem item nenhum, então a
 escolha mora na linha do golpe, na aba de Perícias e Testes.
 **Anotado:** 2026-08-20, ao consertar os quatro buracos das Faixas
