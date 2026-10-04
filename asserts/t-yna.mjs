@@ -124,6 +124,21 @@ for (const sistema of ["afty", "player"]) {
   const dInstinto = deriveAfty(ficha({ nd: 5, sistema, anatomias: ["instinto_sanguinario"] }));
   t(`${S} a Anatomia escolhida soma de verdade (Instinto Sanguinário na Iniciativa)`,
     detalhes(dInstinto, (x) => x.canal === "iniciativa" && x.nome === "Instinto Sanguinário").map((x) => x.valor), [maestria(5)]);
+  /* ⚠ A ATENÇÃO EM COMBATE (2026-10-03). Efeito de origem roda no montante, que
+     não tem bancada, e o `quando: "em_combate"` valia zero sempre. A linha que
+     lê a bancada desce ao estágio principal: agora ela liga com "Em Combate". */
+  const fichaEmCombate = (o) => {
+    const c = ficha(o);
+    c.combate = { ...c.combate, ativo: true };
+    return c;
+  };
+  const dInstintoCombate = deriveAfty(fichaEmCombate({ nd: 5, sistema, anatomias: ["instinto_sanguinario"] }));
+  const dSemAnatomiaCombate = deriveAfty(fichaEmCombate({ nd: 5, sistema }));
+  t(`${S} fora de combate, a Anatomia não mexe na Atenção`,
+    dInstinto.atencao - deriveAfty(ficha({ nd: 5, sistema })).atencao, 0);
+  t(`${S} em combate, a Atenção sobe o BT`, dInstintoCombate.atencao - dSemAnatomiaCombate.atencao, maestria(5));
+  t(`${S} e o hover da Atenção mostra o Instinto Sanguinário`,
+    dInstintoCombate.partes.atencao.filter((p) => p.label === "Instinto Sanguinário").map((p) => p.valor), [maestria(5)]);
 
   /* ---------- Forma de Raposa: interruptor de sessão ---------- */
   const dForaSessao = deriveAfty(ficha({ nd: 5, sistema }));

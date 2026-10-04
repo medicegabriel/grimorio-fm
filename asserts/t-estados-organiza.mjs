@@ -332,5 +332,52 @@ const semDono = linhasDaFicha.filter((e) => !e.dono && !e.requerEstado
   && !e.requerAptidao && !e.requerTalento && !e.requerHabilidade && !e.requerEscolha);
 t("toda fonte de estadosExtras carimba a divisão dela", semDono.map((e) => e.id), []);
 
+/* ============================================================ */
+/* 8. O ESTILO QUE VEM PELO TALENTO TEM INTERRUPTOR (2026-10-02) */
+/* ============================================================ */
+/* O Adepto de Combate empresta os Estilos do Combatente com o MESMO id de
+   opção, e a escolha mora em `talentos.escolhas`, não em `habilidades.escolhas`.
+   A aba só lia a segunda, e um Lutador de Faixas com o Estilo do Duelista pelo
+   Talento não tinha o "Duelando": o Motor somava com o interruptor ligado, e
+   ninguém conseguia ligá-lo. */
+const { linhasDeEstado } = await import(R + "ficha/ficha-buffs.js");
+const adepto = (estilo, classe = "lutador") => {
+  const c = createBlankAfty();
+  c.rulesVersion = "player";
+  c.core = { ...c.core, nd: 10, tipo: "combatente", patamar: "comum" };
+  c.especializacoes = [{ id: classe, nivel: 10 }];
+  c.talentos = ["tal_adepto_de_combate"];
+  c.escolhasTalento = { tal_adepto_de_combate: [estilo] };
+  c.equipamentos = { itens: [{ id: "e1", tipo: "arma", refId: "arm_faixas", qtd: 1, equipado: true }] };
+  return c;
+};
+const linhaDe = (ficha, id) => linhasDeEstado(deriveAfty(ficha)).find((e) => e.id === id);
+t("Duelista pelo Talento: o Duelando aparece",
+  !!linhaDe(adepto("cmb_estilo_do_duelista"), "duelando"), true);
+t("Duplo pelo Talento: o Lutando com Duas Armas aparece",
+  !!linhaDe(adepto("cmb_estilo_duplo"), "lutandoComDuasArmas"), true);
+t("sem o Estilo, nada de Duelando",
+  !!linhaDe(adepto("cmb_estilo_duplo"), "duelando"), false);
+t("só pelo Talento, o Duelando mora em Outros",
+  donoDoEstado(linhaDe(adepto("cmb_estilo_do_duelista"), "duelando")).id, "outros");
+{
+  const combatente = adepto("cmb_estilo_do_duelista", "combatente");
+  combatente.talentos = [];
+  combatente.escolhasTalento = {};
+  combatente.escolhasHabilidade = { cmb_repertorio_do_especialista: ["cmb_estilo_do_duelista"] };
+  t("pela classe, o Duelando segue na sub-aba do Combatente",
+    donoDoEstado(linhaDe(combatente, "duelando")).id, "combatente");
+}
+{
+  const ligado = adepto("cmb_estilo_do_duelista");
+  ligado.combate = { ativo: true, duelando: true };
+  const basico = (f) => deriveAfty(f).dano.entradas.find((x) => x.id === "basico");
+  const desligado = adepto("cmb_estilo_do_duelista");
+  /* Nível 10 pelo ND: +2 no acerto ("1, mais 1 no 8") e +4 no dano ("2, mais 1
+     no 4 e no 8"), no Ataque Básico das Faixas. */
+  t("e ligado ele soma no Ataque Básico das Faixas",
+    [basico(ligado).acerto - basico(desligado).acerto, basico(ligado).fixo - basico(desligado).fixo], [2, 4]);
+}
+
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 process.exitCode = bad.length ? 1 : 0;

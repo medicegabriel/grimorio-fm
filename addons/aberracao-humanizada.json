@@ -1,0 +1,75 @@
+{
+  "id": "aberracao-humanizada",
+  "nome": "Aberração Humanizada",
+  "versao": "1.1.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Origem Aberração Humanizada. Possui limite natural 30 em todos os atributos, recebe as características Bônus em Atributo, Herança Maldita e Físico Amaldiçoado do Feto Amaldiçoado Híbrido, e Natureza Amaldiçoada da Maldição. Pode escolher Aptidões de Maldição e também mantém os Níveis e as Aptidões de Energia Reversa. Também libera os Talentos de Origem do Feto Amaldiçoado Híbrido, respeitando os requisitos de nível.",
+  "acrescenta": {
+    "origens": [
+      {
+        "id": "aberracao_humanizada",
+        "nome": "Aberração Humanizada",
+        "bonusAtributos": {},
+        "limiteAtributo": {
+          "forca": 30,
+          "destreza": 30,
+          "constituicao": 30,
+          "inteligencia": 30,
+          "sabedoria": 30,
+          "presenca": 30
+        },
+        "categoriasAptidaoAdicionais": [
+          "maldicao"
+        ],
+        "caracteristicas": [
+          {
+            "id": "bonus_atributo",
+            "nome": "Bônus em Atributo",
+            "descricao": "Recebe 3 pontos para distribuir entre seus atributos, com um máximo de 2 pontos no mesmo atributo.",
+            "bonus": {
+              "distribuir": 3,
+              "maxPorAtributo": 2
+            }
+          },
+          {
+            "id": "heranca_maldita",
+            "nome": "Herança Maldita",
+            "descricao": "Como um híbrido entre humano e maldição, você carrega uma herança amaldiçoada. Toda cura que você receber provinda de energia reversa é reduzida pela metade. Caso obtenha uma habilidade de energia reversa de cura, você pode a utilizar tratando a energia reversa como energia amaldiçoada, curando-se o valor completo. Ao invés de 1 ponto de energia reversa, você gasta diretamente 2 pontos de energia amaldiçoada.",
+            "mesa": true
+          },
+          {
+            "id": "fisico_amaldicoado",
+            "nome": "Físico Amaldiçoado",
+            "descricao": "Sendo meio maldição, o seu físico é único, desenvolvendo um corpo com propriedades especiais. Você recebe uma Característica de Anatomia. A cada 5 níveis, seu corpo desenvolve mais, dando-o outra característica de anatomia.",
+            "poolAnatomia": {
+              "base": 1,
+              "porNivel": 5
+            }
+          },
+          {
+            "id": "natureza_amaldicoada",
+            "nome": "Natureza Amaldiçoada",
+            "descricao": "Com uma natureza que deriva da própria energia, você já surgiu mais familiarizado com ela e consegue atingir novos patamares mais facilmente. Você recebe uma aptidão amaldiçoada a sua escolha, e outra no 10° e 15° nível, as quais você deve atender os requisitos. Além disso, você recebe 1 ponto de energia amaldiçoada adicional por nível."
+          }
+        ],
+        "efeitos": [
+          {
+            "canal": "vagasAptidao",
+            "expr": "1 + (nd >= 10) + (nd >= 15)",
+            "nome": "Natureza Amaldiçoada"
+          },
+          {
+            "canal": "pe",
+            "expr": "nd",
+            "nome": "Natureza Amaldiçoada"
+          }
+        ],
+        "especializacaoExclusivaId": null,
+        "qualificaTalentosDeOrigem": [
+          "feto_amaldicoado_hibrido"
+        ]
+      }
+    ]
+  }
+}

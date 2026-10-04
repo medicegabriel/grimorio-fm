@@ -18,8 +18,8 @@
  * derrubou o app em 2026-09-02. A lista de folhas está em asserts/t-ordem-modulos.mjs.
  *
  * ⚠ OS `value` NÃO MUDAM. `shikigami`, `tecnica` e `maldicao` estão gravados em
- * toda ficha salva e viram variável de DSL. Os rótulos de tela também ficam como
- * o autor os deixou em 2026-09-02 ("Invocação", "Invocação de Técnica").
+ * toda ficha salva e viram variável de DSL. Os rótulos voltam a "Shikigami" e
+ * "Shikigami de Técnica", com curto "Técnica" (autor, 2026-10-03).
  *
  * Campos (o Shikigami escreve o padrão de cada um):
  *   label, curto        rótulo do chip e rótulo curto do filtro da lista
@@ -57,7 +57,7 @@
  */
 export const REGRAS_POR_TIPO = {
   shikigami: {
-    label: "Invocação", curto: "Invocação", familia: "shikigami",
+    label: "Shikigami", curto: "Shikigami", familia: "shikigami",
     verbo: "invocar", intermediario: "Talismã", retirada: "dissipar / exorcizar",
     dissipavel: true, talisma: true, cura: { comum: true, er: true }, alma: "pv",
     custoBase: "grau", grauFixo: false, visionario: true, horda: true,
@@ -72,7 +72,7 @@ export const REGRAS_POR_TIPO = {
      Mecânicas dá a ele turno próprio, sem Autonomia, e a morte no 2º exorcismo. */
   tecnica: {
     herda: "shikigami",
-    label: "Invocação de Técnica", curto: "Técnica",
+    label: "Shikigami de Técnica", curto: "Técnica",
     intermediario: null, talisma: false,
     autonomia: false, terminal: "morta",
     imunidade: "passivaDeTecnica", turnoProprio: true,

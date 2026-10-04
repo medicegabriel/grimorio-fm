@@ -1,0 +1,120 @@
+{
+  "temp": "C:\\Users\\gabri\\AppData\\Local\\Temp\\verificacao-lotes-blgt5A",
+  "results": [
+    {
+      "name": "01-conteudo",
+      "file": "src/systems/afty/ficha/ficha-conteudo.js",
+      "test": "t-ficha-linhas",
+      "status": 1,
+      "summary": [
+        "23 FALHA(S) de 45:"
+      ]
+    },
+    {
+      "name": "01-item",
+      "file": "src/systems/afty/ficha/ItemDeFicha.jsx",
+      "test": "t-ficha-linhas",
+      "status": 1,
+      "summary": [
+        "2 FALHA(S) de 45:"
+      ]
+    },
+    {
+      "name": "01-css",
+      "file": "src/systems/afty/ficha/ficha.css",
+      "test": "t-ficha-linhas",
+      "status": 1,
+      "summary": [
+        "1 FALHA(S) de 45:"
+      ]
+    },
+    {
+      "name": "02-editor",
+      "file": "src/systems/afty/AftyCreatureBuilder.jsx",
+      "test": "t-criador-namespaces",
+      "status": 0,
+      "summary": [
+        "TODOS OS 26 ASSERTS PASSARAM"
+      ]
+    },
+    {
+      "name": "03-derive-montante",
+      "file": "src/systems/afty/afty-derive.js",
+      "test": "t-montante-bancada",
+      "status": 1,
+      "summary": [
+        "FALHAS (10):"
+      ]
+    },
+    {
+      "name": "03-derive-tr",
+      "file": "src/systems/afty/afty-derive.js",
+      "test": "t-tr-caso-ja-seja-classe",
+      "status": 1,
+      "summary": [
+        "FALHAS (8):"
+      ]
+    },
+    {
+      "name": "03-efeitos",
+      "file": "src/systems/afty/afty-efeitos.js",
+      "test": "t-montante-bancada",
+      "status": 1,
+      "summary": [
+        "SyntaxError: The requested module './afty-efeitos' does not provide an export named 'separarEfeitosDeBancada'\r"
+      ]
+    },
+    {
+      "name": "03-flugel",
+      "file": "addons/flugel.json",
+      "test": "t-flugel",
+      "status": 1,
+      "summary": []
+    },
+    {
+      "name": "04-auxiliar",
+      "file": "src/systems/afty/afty-combate-conjurador.js",
+      "test": "t-alcance-corpo-a-corpo",
+      "status": 1,
+      "summary": [
+        "FALHAS (32):"
+      ]
+    },
+    {
+      "name": "04-conteudo",
+      "file": "src/systems/afty/afty-efeitos-conteudo.js",
+      "test": "t-alcance-corpo-a-corpo",
+      "status": 1,
+      "summary": [
+        "FALHAS (12):"
+      ]
+    },
+    {
+      "name": "04-maldicao",
+      "file": "addons/maldicao-era-de-ouro.json",
+      "test": "t-alcance-corpo-a-corpo",
+      "status": 1,
+      "summary": [
+        "FALHAS (19):"
+      ]
+    },
+    {
+      "name": "04-pericias",
+      "file": "src/systems/afty/afty-pericias.js",
+      "test": "t-alcance-corpo-a-corpo",
+      "status": 1,
+      "summary": [
+        "TypeError: Cannot read properties of undefined (reading 'filter')\r"
+      ]
+    },
+    {
+      "name": "04-fontes",
+      "file": "src/systems/afty/ui/fontes.jsx",
+      "test": "t-alcance-corpo-a-corpo",
+      "status": 0,
+      "summary": [
+        "TODOS OS 97 ASSERTS PASSARAM"
+      ]
+    }
+  ]
+}

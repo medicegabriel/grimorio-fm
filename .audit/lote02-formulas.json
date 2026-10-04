@@ -1,0 +1,66 @@
+[
+  {
+    "rota": "afty",
+    "campo": "habilidade-unica",
+    "invalida": "forca_errada + 1",
+    "erro": "Variável desconhecida: forca_errada",
+    "valida": "grau + piso(bt / 2)",
+    "resultado": "= 8"
+  },
+  {
+    "rota": "afty",
+    "campo": "quando-tecnica",
+    "invalida": "forca_errada + 1",
+    "erro": "Condição: Variável desconhecida: forca_errada",
+    "valida": "sempre",
+    "resultado": "enquanto"
+  },
+  {
+    "rota": "afty",
+    "campo": "acao-invocacao",
+    "invalida": "forca_errada + 1",
+    "erro": "Variável desconhecida: forca_errada",
+    "valida": "grau + mod_forca + nd + bt + tipo_shikigami_puro + sempre + nunca",
+    "resultado": "MODIFICADOR\nDano\nNíveis de Dano\nAcerto\nDano +33"
+  },
+  {
+    "rota": "afty",
+    "campo": "caracteristica-invocacao",
+    "invalida": "forca_errada + 1",
+    "erro": "Variável desconhecida: forca_errada",
+    "valida": "grau + mod_forca + nd + bt + tipo_shikigami_puro + sempre + nunca",
+    "resultado": "MODIFICADOR\nValor\nValor +33"
+  },
+  {
+    "rota": "player",
+    "campo": "habilidade-unica",
+    "invalida": "forca_errada + 1",
+    "erro": "Variável desconhecida: forca_errada",
+    "valida": "grau + piso(bt / 2)",
+    "resultado": "= 8"
+  },
+  {
+    "rota": "player",
+    "campo": "quando-tecnica",
+    "invalida": "forca_errada + 1",
+    "erro": "Condição: Variável desconhecida: forca_errada",
+    "valida": "sempre",
+    "resultado": "enquanto"
+  },
+  {
+    "rota": "player",
+    "campo": "acao-invocacao",
+    "invalida": "forca_errada + 1",
+    "erro": "Variável desconhecida: forca_errada",
+    "valida": "grau + mod_forca + nd + bt + tipo_shikigami_puro + sempre + nunca",
+    "resultado": "MODIFICADOR\nDano\nNíveis de Dano\nAcerto\nDano +33"
+  },
+  {
+    "rota": "player",
+    "campo": "caracteristica-invocacao",
+    "invalida": "forca_errada + 1",
+    "erro": "Variável desconhecida: forca_errada",
+    "valida": "grau + mod_forca + nd + bt + tipo_shikigami_puro + sempre + nunca",
+    "resultado": "MODIFICADOR\nValor\nValor +33"
+  }
+]

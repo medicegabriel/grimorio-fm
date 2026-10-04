@@ -1,0 +1,278 @@
+diff --git a/.audit/lote07-base/afty-derive.js b/src/systems/afty/afty-derive.js
+index 0eb455e..6e9e442 100644
+--- a/.audit/lote07-base/afty-derive.js
++++ b/src/systems/afty/afty-derive.js
+@@ -1636,13 +1636,25 @@ export function deriveAfty(creature, opcoes = {}) {
+      (Ficha e Encontro, `opcoes.invocacoes`); no criador é `null`. Lê o Controle
+      Sintonizado (+1 em acerto e dano por invocação em campo) e o Concentrar Poder
+      (só com uma em campo). A Quimera conta 1 (decisão do autor). */
++  /* Hoste Amaldiçoada (autor, 2026-10-03): o par conta como uma nos dois
++     limites. Só agrupamos duas Hostes com vínculo recíproco e ambas em campo.
++     Quando uma sai, a outra volta a ocupar a vaga por seu próprio id. */
++  const hordasDaMesa = (Array.isArray(creature?.hordas) ? creature.hordas : [])
++    .filter((h) => !(h?.hoste && h.parId && h.id > h.parId
++      && contaInvocacoesEmCampo(opcoes.invocacoes, [`horda:${h.id}`]) > 0
++      && (creature.hordas ?? []).some((par) => par?.id === h.parId
++        && par.hoste && par.parId === h.id
++        && contaInvocacoesEmCampo(opcoes.invocacoes, [`horda:${par.id}`]) > 0)));
++  const idsHordasDaMesa = hordasDaMesa.map((h) => `horda:${h?.id}`);
++  const hordasEmCampo = opcoes.invocacoes
++    ? contaInvocacoesEmCampo(opcoes.invocacoes, idsHordasDaMesa) : null;
+   const idsDaMesa = [
+     ...(Array.isArray(creature?.invocacoes) ? creature.invocacoes : []).map((i) => i?.id),
+     ...(Array.isArray(creature?.quimeras) ? creature.quimeras : []).map((q) => `quimera:${q?.id}`),
+     /* As Hordas e os Corpos de Múltiplos Núcleos contam como UMA invocação em
+        campo cada (2026-10-01, Etapa 9). O Mecha não entra: as duas Marionetes
+        dele seguem ativas, e é assim que ele conta como duas. */
+-    ...(Array.isArray(creature?.hordas) ? creature.hordas : []).map((h) => `horda:${h?.id}`),
++    ...idsHordasDaMesa,
+     ...(Array.isArray(creature?.multiplosNucleos) ? creature.multiplosNucleos : []).map((g) => `nucleos:${g?.id}`),
+   ].filter(Boolean);
+   const invocacoesEmCampo = opcoes.invocacoes ? contaInvocacoesEmCampo(opcoes.invocacoes, idsDaMesa) : null;
+@@ -3502,12 +3514,16 @@ export function deriveAfty(creature, opcoes = {}) {
+   };
+   const invocacoes = {
+     ...resolveInvocacoesList(creature?.invocacoes, donoInvoc), controle,
++    emCampo: invocacoesEmCampo,
+     // Os dois níveis de Controlador, com nomes distintos (DA-13, 2026-09-30).
+     nivelControladorReal, nivelEscalonamentoControlador,
+     // A Hoste Amaldiçoada, para o criador oferecer o par de hordas (Etapa 9).
+     hosteAmaldicoada: donoInvoc.hosteAmaldicoada,
+   };
+-  const hordas = resolveHordasList(creature?.hordas, creature?.invocacoes, donoInvoc);
++  const hordas = {
++    ...resolveHordasList(creature?.hordas, creature?.invocacoes, donoInvoc),
++    emCampo: hordasEmCampo,
++  };
+   const quimeras = resolveQuimerasList(creature?.quimeras, creature?.invocacoes, donoInvoc);
+   /* Os Corpos de Múltiplos Núcleos e o Mecha (2026-10-01, Etapa 9). O Mecha é da
+      SESSÃO (a linha `mecha`), e só existe com a mesa. */
+diff --git a/.audit/lote07-base/afty-invocacoes.js b/src/systems/afty/afty-invocacoes.js
+index 0dbef5e..3e41402 100644
+--- a/.audit/lote07-base/afty-invocacoes.js
++++ b/src/systems/afty/afty-invocacoes.js
+@@ -4168,8 +4168,8 @@ function ajusteHordaAcao(base, escala) {
+  * A MESA (2026-10-01, Etapa 9): a horda tem linha própria na sessão
+  * (`horda:<id>`). Os membros ativos (`membrosAtivos`) mudam as escalas, e a
+  * marca `pvMaxMetade` corta o PV máximo da horda nova cujo líder liderou outra
+- * dissipada no mesmo combate. O PV máximo NÃO cai com os membros perdidos (ver a
+- * pergunta em docs/a-fazer.md).
++ * dissipada no mesmo combate. O PV máximo NÃO cai com os membros perdidos
++ * (confirmado pelo autor em 2026-10-03).
+  */
+ export function resolveHorda(horda, invocacoes = [], dono = {}, base = null) {
+   const fichas = Array.isArray(invocacoes) ? invocacoes : [];
+diff --git a/.audit/lote07-base/AbaInvocacoes.jsx b/src/systems/afty/ficha/abas/AbaInvocacoes.jsx
+index de6bced..e7914fa 100644
+--- a/.audit/lote07-base/AbaInvocacoes.jsx
++++ b/src/systems/afty/ficha/abas/AbaInvocacoes.jsx
+@@ -1317,7 +1317,7 @@ function Horda({ h, rolar, estado = null, entrada = null, acoes = null }) {
+     <div className="afty-linha px-2.5 py-1.5 space-y-1">
+       <div className="flex items-center gap-2 flex-wrap">
+         <span className="flex-1 min-w-0 text-[12px] font-semibold truncate">{rotulo}</span>
+-        {h.hoste && <span className="afty-chip" title="Conta como uma no limite de hordas com o par">Hoste</span>}
++        {h.hoste && <span className="afty-chip" title="Conta como uma nos limites de Hordas e Invocações com o par">Hoste</span>}
+         {acoes && h.valido && (emCampo ? (
+           <button
+             type="button"
+@@ -1527,18 +1527,10 @@ export default function AbaInvocacoes({ derived, rolar, destaque, estadoDe, entr
+     .filter(Boolean)
+     .join("\n");
+ 
+-  /* Quem ocupa vaga em campo é decidido pelo ESTADO (2026-09-30): a Marionete
+-     quebrada ainda conta até ser recolhida, e o Corpo desativado não conta. */
+-  const emCampo = [
+-    ...invocacoes.map((i) => i.id),
+-    ...[...fusaoDe.keys()],
+-    ...gruposNucleos.map((g) => g.mesaId),
+-    ...hordas.map((h) => h.mesaId),
+-  ].filter((id) => estadoDe(id).contaNoCampo).length;
+-  /* As Hordas em campo contra o limite delas: o par da Hoste conta como uma. */
+-  const hordasEmCampo = hordas.filter((h) => estadoDe(h.mesaId).estado === "ativa");
+-  const nHordasEmCampo = hordasEmCampo.filter((h) => !(h.hoste && h.parId
+-    && hordasEmCampo.some((o) => o.id === h.parId) && h.id > h.parId)).length;
++  /* A mesma contagem que o Motor lê: o par da Hoste ocupa uma vaga nos dois
++     limites (autor, 2026-10-03). O estado ainda decide quem está em campo. */
++  const emCampo = derived.invocacoes?.emCampo ?? 0;
++  const nHordasEmCampo = derived.hordas?.emCampo ?? 0;
+   /* O Mecha a formar: os pares de Marionetes ativas que a regra aceita. */
+   const marionetesAtivas = invocacoes.filter((i) => i.regras?.familia === "marionete"
+     && estadoDe(i.id).estado === "ativa" && !estadoDe(i.id).emComposto);
+diff --git a/.audit/lote07-base/t-invocacoes-mesa.mjs b/asserts/t-invocacoes-mesa.mjs
+index 02b0839..49bd465 100644
+--- a/.audit/lote07-base/t-invocacoes-mesa.mjs
++++ b/asserts/t-invocacoes-mesa.mjs
+@@ -29,6 +29,8 @@ const { deriveAfty } = await import(R + "afty-derive.js");
+ const { createBlankAfty } = await import(R + "afty-schema.js");
+ const INV = await import(R + "afty-invocacoes.js");
+ const SES = await import(R + "ficha/ficha-sessao.js");
++const { aplicarAddons } = await import(R + "afty-addons.js");
++aplicarAddons([]);
+ 
+ let ok = 0;
+ const bad = [];
+@@ -485,5 +487,58 @@ t("a ficha do dono segue emitindo o preset resolvido",
+ t("e o bloco dela ainda abre no #afty-ficha",
+   TEMA.cssDasVars({ presetId: "padrao", vars: {} }).startsWith("#afty-ficha {"), true);
+ 
++/* ============================================================ */
++/* 14. Hoste: o par ocupa uma vaga nos dois limites (2026-10-03) */
++/* ============================================================ */
++for (const sistema of ["afty", "player"]) {
++  const hoste = ficha();
++  hoste.rulesVersion = sistema;
++  hoste.core.nivel = 10;
++  hoste.habilidades = ["ctr_apogeu", "ctr_hoste_amaldicoada"];
++  hoste.escolhasHabilidade = { ctr_apogeu: ["ctr_controle_disperso"] };
++  hoste.invocacoes = ["L1", "L2", "L3", "L4", "SOLTA"].map((id) => ({
++    ...INV.createBlankInvocacao("segundo"), id, nome: id,
++  }));
++  hoste.hordas = [
++    { ...INV.createBlankHorda(), id: "a", liderId: "L1", hoste: true, parId: "b" },
++    { ...INV.createBlankHorda(), id: "b", liderId: "L2", hoste: true, parId: "a" },
++    { ...INV.createBlankHorda(), id: "c", liderId: "L3", hoste: true, parId: "d" },
++    { ...INV.createBlankHorda(), id: "d", liderId: "L4", hoste: true, parId: "c" },
++  ];
++  const mesa = (invocacoes, c = hoste) => deriveAfty(c, { invocacoes });
++  const conta = (d) => [d.invocacoes.emCampo, d.hordas.emCampo];
++  const parAtivo = { "horda:a": { estado: "ativa" }, "horda:b": { estado: "ativa" } };
++  const cheio = mesa(parAtivo);
++  t(sistema + ": o par da Hoste conta uma nos dois limites", conta(cheio), [1, 1]);
++  t(sistema + ": uma horda isolada conta uma", conta(mesa({ "horda:a": { estado: "ativa" } })), [1, 1]);
++  t(sistema + ": a outra isolada tambem conta uma", conta(mesa({ "horda:b": { estado: "ativa" } })), [1, 1]);
++  t(sistema + ": o par fora conta zero", conta(mesa({})), [0, 0]);
++  t(sistema + ": sair uma do par conserva uma vaga", conta(mesa({ ...parAtivo, "horda:a": { estado: "fora" } })), [1, 1]);
++  t(sistema + ": par mais uma invocacao solta conta duas", conta(mesa({ ...parAtivo, SOLTA: { estado: "ativa" } })), [2, 1]);
++  t(sistema + ": dois pares contam duas", conta(mesa({ ...parAtivo, "horda:c": { estado: "ativa" }, "horda:d": { estado: "ativa" } })), [2, 2]);
++  const semHoste = { ...hoste, hordas: hoste.hordas.map((h) => ({ ...h, hoste: false })) };
++  t(sistema + ": hordas comuns continuam contando duas", conta(mesa(parAtivo, semHoste)), [2, 2]);
++  const semVolta = { ...hoste, hordas: hoste.hordas.map((h) => h.id === "a" ? { ...h, parId: "c" } : h) };
++  t(sistema + ": par sem vinculo reciproco conta separado", conta(mesa(parAtivo, semVolta)), [2, 2]);
++  const semMarca = { ...hoste, hordas: hoste.hordas.map((h) => h.id === "a" ? { ...h, hoste: false } : h) };
++  t(sistema + ": as duas precisam ter a marca Hoste", conta(mesa(parAtivo, semMarca)), [2, 2]);
++  t(sistema + ": sessao antiga emCampo conta o par uma vez", conta(mesa({ "horda:a": { emCampo: true }, "horda:b": { emCampo: true } })), [1, 1]);
++  t(sistema + ": horda orfa nao aumenta a conta", conta(mesa({ ...parAtivo, "horda:orfa": { estado: "ativa" } })), [1, 1]);
++  t(sistema + ": reordenar a lista nao muda a conta", conta(mesa(parAtivo, { ...hoste, hordas: [...hoste.hordas].reverse() })), [1, 1]);
++  const sint = { ...hoste, escolhasHabilidade: { ctr_apogeu: ["ctr_controle_sintonizado"] } };
++  const acerto = (d) => d.testes.ataques.find((x) => x.id === "corpo").bonus;
++  t(sistema + ": Controle Sintonizado recebe uma pelo Motor", acerto(mesa(parAtivo, sint)) - acerto(mesa({}, sint)), 1);
++  t(sistema + ": a fonte continua nomeando Controle Sintonizado",
++    JSON.stringify(mesa(parAtivo, sint).testes.ataques.find((x) => x.id === "corpo")).includes("Controle Sintonizado"), true);
++  const conc = { ...hoste, habilidades: [...hoste.habilidades, "ctr_concentrar_poder"],
++    escolhasHabilidade: { ctr_apogeu: ["ctr_controle_concentrado"] },
++    invocacoes: hoste.invocacoes.map((i) => i.id === "L1" ? { ...i, marcadores: { concentrar_poder: true } } : i) };
++  const pvLider = (d) => d.invocacoes.lista.find((i) => i.id === "L1").pv;
++  const semMarcaConc = { ...conc, invocacoes: hoste.invocacoes };
++  const bonusConc = pvLider(deriveAfty(conc)) - pvLider(deriveAfty(semMarcaConc));
++  t(sistema + ": Concentrar Poder liga com apenas o par da Hoste", pvLider(mesa(parAtivo, conc)) - pvLider(mesa(parAtivo, semMarcaConc)), bonusConc);
++  t(sistema + ": Concentrar Poder desliga com uma solta adicional", pvLider(mesa({ ...parAtivo, SOLTA: { estado: "ativa" } }, conc)) - pvLider(mesa(parAtivo, semMarcaConc)), 0);
++}
++
+ console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
+ process.exitCode = bad.length ? 1 : 0;
+diff --git a/.audit/lote07-base/a-fazer.md b/docs/a-fazer.md
+index bc7bacf..e08720a 100644
+--- a/.audit/lote07-base/a-fazer.md
++++ b/docs/a-fazer.md
+@@ -33,28 +33,6 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
+ ---
+ 
+ ## PERGUNTAS AO AUTOR
+-### Horda: o PV máximo cai junto com os membros perdidos? E o que acontece a 0 PV?
+-**Onde:** `src/systems/afty/afty-invocacoes.js` (`resolveHorda`) e `ficha/ficha-sessao.js` (`aplicaDanoHorda`)
+-**Situação:** o Livro diz que na metade da vida a horda "perde metade dos seus membros [...]
+-diminuindo todos os efeitos baseados no número de membros". O PV máximo também é "baseado nos
+-membros" (metade do PV de cada um), e o texto não diz se ele cai. Cair faz a horda recalcular a
+-metade e perder membros de novo em cascata. Hoje o máximo FICA, e só as escalas (dano, cura, RD,
+-tamanho, prejuízo) caem. O texto também não diz o que acontece a 0 PV. Hoje a horda acaba, e o
+-líder e os membros que sobraram caem pela regra do tipo de cada um (exorcizados com o excedente
+-acima do máximo da horda).
+-**Precisa:** o autor dizer (1) se o PV máximo cai com os membros perdidos, e (2) se a queda a 0
+-fica como está.
+-**Anotado:** 2026-10-01, na Etapa 9 da atualização de Controlador e Invocações
+-
+-### Hoste Amaldiçoada: o par de hordas conta como uma também no limite em campo?
+-**Onde:** `src/systems/afty/afty-derive.js` (`idsDaMesa`) e `ficha/abas/AbaInvocacoes.jsx`
+-**Situação:** a Hoste diz que as duas hordas "contam como apenas uma para o seu limite de hordas
+-em campo". O Livro diz que cada horda "é contabilizada como uma Invocação" no limite de
+-Invocações em campo. Hoje o par conta UMA no limite de hordas e DUAS no de Invocações, pela
+-leitura literal dos dois textos.
+-**Precisa:** o autor dizer se o par conta como uma também no limite de Invocações em campo.
+-**Anotado:** 2026-10-01, na Etapa 9 da atualização de Controlador e Invocações
+-
+ ### Quimera do Mecânicas: Invocações Resistentes entra de novo depois da fusão?
+ **Onde:** `src/systems/afty/afty-invocacoes.js` (`resolveQuimeraMecanicas`)
+ **Situação:** o *Mecânicas* diz "Efeitos como Visionário, Invocações Resistentes e afins são
+@@ -66,15 +44,6 @@ vagas, e não PV).
+ cartões, ou (2) sai dos cartões e entra uma vez sobre o PV da Quimera.
+ **Anotado:** 2026-10-01, na Etapa 9 da atualização de Controlador e Invocações
+ 
+-### Mecha: "maior PV" é o máximo ou o atual? E a 0 PV?
+-**Onde:** `src/systems/afty/ficha/ficha-sessao.js` (`mechaPermitido`, `formaMecha`, `aplicaDanoMecha`)
+-**Situação:** "O PV de um Mecha é igual a maior PV de seus componentes com o menor PV sendo
+-utilizada como PV Temporário". Hoje a maior é a de maior PV MÁXIMO, o Mecha leva o PV ATUAL dela,
+-e a casca é o PV atual da menor (o Separar devolve esses dois números). A 0 PV, "todas as regras
+-de Marionete são aplicadas": a maior quebra e o Mecha se desfaz.
+-**Precisa:** o autor confirmar a leitura, ou dizer se "maior PV" é o PV atual.
+-**Anotado:** 2026-10-01, na Etapa 9 da atualização de Controlador e Invocações
+-
+ ### Fundamento fora de campo: bloqueia só os Feitiços, ou a Técnica Inata inteira?
+ **Onde:** `src/systems/afty/afty-derive.js` (`tecnicaInata`, `semTecnicaPerdida`) e
+ `afty-invocacoes.js` (`estadoDaTecnicaInata`)
+diff --git a/.audit/lote07-base/afty-status.md b/docs/afty-status.md
+index d640752..f09ae58 100644
+--- a/.audit/lote07-base/afty-status.md
++++ b/docs/afty-status.md
+@@ -15840,3 +15840,16 @@ Pedido do autor: um Addon chamado "Yna" com a Origem Kitsune, a Linhagem Clã Ge
+ **Verificado ao vivo:** servidor próprio na porta 5191, Chrome sem ocultar barras, /afty e /player a 1440 e 390 px. Controlador 20 com dois Corpos de Segundo Grau: o biológico mostra "Cura Aprimorada ou Medicina, Custo 3, CD 25" e o hover "Criação de Itens · Farmacêutico (Custo 3)" 25 com Total 25. O boneco mostra CD 30 com a parcela do Alfaiate. Painel dentro da tela, sem rolagem horizontal, sem erro de página ou de console. Roteiro e capturas em `.audit/lote05-*`.
+ 
+ **Achado e não mexido:** o comentário antigo do `custoInvocacao` (o bloco da QUANTIDADE BASE) e outros 16 pontos do `afty-invocacoes.js` têm o travessão Unicode, de sessões anteriores. O `t-invocacao-tipos-especiais.mjs` não estava na lista de arquivos do lote, mas era o assert que cobrava a regra antiga do biológico, então mudou junto. Sem commit ou push.
++
++
++## SESSÃO DE 2026-10-03: LOTE 07, INVOCAÇÕES EM MESA, HORDA, HOSTE E MECHA
++
++**Decisões do autor:** A, B e A, numa rodada só. Horda mantém o PV máximo quando perde membros e a queda a 0 PV como estava. Hoste Amaldiçoada conta uma nos dois limites, de Hordas e de Invocações em campo. No Mecha, a maior é escolhida pelo PV máximo, levando o PV atual dela e o atual da menor como casca. A principal quebra a 0 PV e o Mecha se desfaz. Aplicadas aos dois sistemas, conforme o escopo compartilhado do lote.
++
++**O que mudou:** em `deriveAfty` (`afty-derive.js`), `idsDaMesa` agrupa o par da Hoste quando ambas estão em campo, marcadas e com vínculo recíproco. Quando uma sai, a outra ocupa sua própria vaga. A mesma contagem chega ao Motor (Controle Sintonizado e Concentrar Poder) e à aba por `invocacoes.emCampo` e `hordas.emCampo`. `AbaInvocacoes.jsx` usa esses totais e atualiza o texto do chip Hoste. `resolveHorda` só teve o comentário da dúvida trocado pela confirmação. `aplicaDanoHorda`, `mechaPermitido`, `formaMecha` e `aplicaDanoMecha` mantêm os números e as transições confirmados. As três entradas saíram de `a-fazer.md`, e o guia `afty-invocacoes.md` registra as decisões e a contagem compartilhada.
++
++**Asserts:** linha de base com 147 arquivos e 8004 asserts, todos verdes. O vermelho antigo da Livre já foi resolvido pelo Lote 05 antes desta execução. `t-invocacoes-mesa.mjs` passou de 86 para 120, com 34 casos novos nos dois sistemas: par, cada horda isolada, saída de uma, nenhuma em campo, invocação adicional, dois pares, hordas comuns, vínculo incompleto, marca ausente, sessão antiga, linha órfã, ordem da lista, Controle Sintonizado com fonte nomeada e Concentrar Poder ligando e desligando. Antes da implementação, os casos do Motor reproduziram Sintonizado +2 em vez de +1 e Concentrar Poder desligado em vez de +10. Suíte final com 147 arquivos e 8038 asserts, todos passaram, incluindo os tipos especiais e os compostos. `t-ordem-modulos.mjs` passa com 34. ESLint da área Afty limpo e build passando. Nenhum import do app mudou.
++
++**Verificado ao vivo:** servidor próprio na porta 5197, Chrome em contextos temporários sem ocultar barras de rolagem, /afty e /player a 1440 e 390 px. Entrar a primeira Hoste mostra Em Campo 1 / 3 e Hordas 1 / 1. Entrar a segunda conserva ambos os totais. A Horda com 82 PV perde um de dois membros em 41 PV, mantém máximo 82 e não perde outro no dano seguinte. A 0 PV acaba, e o par restante continua contando uma vaga. Retirar a última zera os dois totais. Mecha com Alfa (máximo 39, atual 3) e Beta (atual 7): Alfa segue principal, Mecha nasce com 3 PV e casca 7. Dano 10 quebra ambas e desfaz o Mecha. Sem erro de página ou console, nem rolagem horizontal. Capturas, roteiro e relatório em `.audit/lote07-*`.
++
++**Achado e não mexido:** nenhuma pendência deste lote. O build continua informando o tamanho do pacote principal. Mudanças preexistentes e o trabalho paralelo em `src/App.jsx` foram preservados. Nenhum U+2014 foi introduzido nas linhas deste lote. Sem commit ou push.
+diff --git a/.audit/lote07-base/afty-invocacoes.md b/docs/afty-invocacoes.md
+index 570339a..258b992 100644
+--- a/.audit/lote07-base/afty-invocacoes.md
++++ b/docs/afty-invocacoes.md
+@@ -88,6 +88,9 @@ Controlador e Invocações").
+ | **PE ao invocar** | Na Ficha e no Encontro, entrar em campo desconta o PE do Controlador, já com Econômicas, Autonomia, Reserva, Ápice, extras e o custo do tipo. A mesa calcula, mostra, recusa o impossível, desconta e registra a entrada. O Criador só calcula |
+ | **Cota base sem PE** (2026-10-03) | A quantidade base do grau (`INV_ACOES_CARACT_BASE`: 2 no Quarto e no Terceiro, 3 no Segundo e no Primeiro, 4 no Especial) não custa PE. Só as Ações e Características além dela custam, em `detalheCustoInvocacao` |
+ | **Corpo paga as extras** (2026-10-03) | O Corpo Amaldiçoado segue a Marionete: base zero, e as Ações e Características além da cota pagas na entrada. O livro diz dele só "não possuem custo de ativação", sem falar das extras |
++| **Horda, PV e queda** (2026-10-03) | O PV máximo fica ao perder membros. Só as escalas caem, sem cascata. A 0 PV a horda acaba, e líder e membros restantes caem pela regra do próprio tipo. O exorcismo exige excedente superior ao máximo da horda |
++| **Hoste Amaldiçoada** (2026-10-03) | O par conta como uma tanto no limite de Hordas quanto no de Invocações em campo. As duas precisam estar em campo, marcadas como Hoste e apontar uma para a outra |
++| **Mecha, maior PV** (2026-10-03) | A maior é escolhida pelo PV máximo. O Mecha leva o PV atual dela e o atual da menor como PV temporário. Separar devolve esses dois números. A 0 PV a principal quebra e o Mecha se desfaz, com as regras de Marionete |
+ | **Dados extras** | Característica comum continua sem poder criar dado extra (Livro). Só as autorizadas por fonte podem, numa lista fechada: Dano Durante o Ataque, Corrida Perfurante e Aura de Dano Durante o Ataque |
+ | **TR Treinada e TR Mestre** | Pelo *Adicionais*: Treinada sem trava de grau, e Mestre só num TR em que a invocação já é treinada. As travas de 2026-09-03 saem |
+ | **Herança das Sombras** | A do *Mecânicas*, persistente e empilhável: Nível de Dano, bônus escolhido, resistência ou imunidade, Ação, Característica, treinos, atributo, e a Herança passa adiante quando a herdeira morre. Substitui a regra do exemplo, e addons próprios de Herança continuam funcionando |
+@@ -150,7 +153,7 @@ Todo composto tem linha própria em `sessao.invocacoes`, e a linha guarda quem e
+ 
+ | Composto | Onde mora | Linha de mesa | Conta em campo |
+ |---|---|---|---|
+-| Horda | `creature.hordas` (`hoste`, `parId`, `liderHorda`) | `horda:<id>` (`membrosAtivos`, `pvMaxMetade`) | 1 (o par da Hoste, 1 no limite de hordas) |
++| Horda | `creature.hordas` (`hoste`, `parId`, `liderHorda`) | `horda:<id>` (`membrosAtivos`, `pvMaxMetade`) | 1 (o par da Hoste, 1 nos dois limites) |
+ | Quimera | `creature.quimeras` (`regra`, `escolhas`) | `quimera:<id>` | 1 |
+ | Corpo de Múltiplos Núcleos | `creature.multiplosNucleos` (`nucleoIds`) | `nucleos:<id>` (`nucleoAtivo`) | 1 |
+ | Mecha | só a sessão | `mecha` (`maiorId`, `menorId`, `menorQuebrada`) | 2 (as duas Marionetes seguem ativas) |
+@@ -158,6 +161,12 @@ Todo composto tem linha própria em `sessao.invocacoes`, e a linha guarda quem e
+ A Horda, a Quimera e o Mecha se desfazem no descanso. O início do combate abre a cena nova: a
+ Quimera da cena, os líderes de Horda dissipada e as componentes bloqueadas voltam.
+ 
++A contagem do par da Hoste sai do `deriveAfty`, antes dos efeitos que leem
++`invocacoes_em_campo`. A aba da mesa lê os mesmos totais em `invocacoes.emCampo`
++e `hordas.emCampo`. Um par ocupa uma vaga também para Controle Sintonizado e
++Concentrar Poder. Só uma horda do par em campo continua ocupando uma vaga.
++Vínculo incompleto ou sem volta conta cada horda separadamente.
++
+ ### A Herança das Sombras persistente (Etapa 10, 2026-10-01)
+ 
+ `inv.herancas[]`, uma entrada por sombra, criada por `criaHeranca(origem, resolvida)`:

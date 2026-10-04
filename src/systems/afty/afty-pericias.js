@@ -37,7 +37,7 @@
 
 // As duas listas cruas vêm de um módulo FOLHA para não fechar ciclo com
 // afty-origens.js, que as lê durante a própria inicialização. Ver o cabeçalho de lá.
-import { AFTY_PERICIAS, AFTY_ATAQUES, ehPericiaOficio, ALVO_TODOS_OFICIOS } from "./afty-pericias-catalogo";
+import { AFTY_PERICIAS, AFTY_ATAQUES, ehPericiaOficio, ALVO_TODOS_OFICIOS, ALVO_QUATRO_MANOBRAS } from "./afty-pericias-catalogo";
 export { AFTY_PERICIAS, AFTY_ATAQUES };
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
 import {
@@ -131,6 +131,27 @@ export function atributosDePericiaManuais(creature) {
   return out;
 }
 
+/* O MESMO ESCAPE HATCH NO TESTE DE RESISTÊNCIA E NA JOGADA DE ATAQUE (autor,
+   2026-10-02: *"Assim como em Pericias, faça que Testes de Resistência e Testes
+   de Ataque eu possa clicar no atributo e mudar ele"*). Campos
+   `trAtributoManual` e `ataqueAtributoManual`, no formato do das perícias.
+
+   ⚠ AQUI O ID DESCONHECIDO CAI, ao contrário do das perícias. As cinco linhas de
+   TR e as três de ataque são fixas no livro: não existe TR personalizado nem
+   Addon que traga ataque novo, então não há escolha de linha ausente a guardar. */
+const atributosManuaisFechados = (bruto, ids) => {
+  if (!bruto || typeof bruto !== "object" || Array.isArray(bruto)) return {};
+  const out = {};
+  for (const id of ids) {
+    if (ATTR_KEYS.has(bruto[id])) out[id] = bruto[id];
+  }
+  return out;
+};
+export const atributosDeTRManuais = (creature) =>
+  atributosManuaisFechados(creature?.trAtributoManual, AFTY_RESISTENCIAS.map((r) => r.value));
+export const atributosDeAtaqueManuais = (creature) =>
+  atributosManuaisFechados(creature?.ataqueAtributoManual, AFTY_ATAQUES.map((a) => a.id));
+
 export function novaPericiaPersonalizada() {
   const token = globalThis.crypto?.randomUUID?.().replaceAll("-", "_")
     ?? `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 9)}`;
@@ -204,7 +225,7 @@ const OFICIO_TALENTO_TEMPESTADE = "oficio__9002";
    FOLHA, porque o requisito de treino (`avaliarRequisitoDeTreino`) precisa dele e
    é lido por Habilidades, Talentos e Aptidões: importar ESTE arquivo em qualquer
    um dos três fecharia o ciclo que a separação do catálogo existe para evitar. */
-export { ehPericiaOficio, ALVO_TODOS_OFICIOS };
+export { ehPericiaOficio, ALVO_TODOS_OFICIOS, ALVO_QUATRO_MANOBRAS };
 
 /**
  * Os Ofícios escolhidos numa linha de Ofício.
@@ -459,6 +480,8 @@ export const EMPURRAO_BASE = 1.5;
  *
  * ⚠ O canal `bonusManobra` aceita TODOS eles como alvo, e é por ele que o item
  * ("+2 em testes para manter a concentração") e a habilidade chegam no número.
+ * Sem alvo ele vale para os oito. O que fala em "manobras" mira
+ * `ALVO_QUATRO_MANOBRAS`, que só as linhas com `resistir` atendem.
  */
 export const AFTY_MANOBRAS = [
   { id: "agarrar",  nome: "Agarrar",  pericia: "atletismo", resistir: true },
@@ -714,7 +737,7 @@ function linhaDeDanoJogador({
  *
  * ctx = { nd, patamar, mods, aptidaoCL, efeitos, efeitosLinhaDano,
  *         contextoDsl, armas, grauBasico, acertoGrauBasico, fontesAcertoBasico,
- *         escoposBasicoExtra, finezaBasico, ataques }.
+ *         escoposBasicoExtra, finezaBasico, ataqueIdBasico, ataques }.
  * `armas` = [{ id, nome, grauArma, acertoGrau, alcance, propriedades, fineza,
  * distancia }], montado pelo deriveAfty a partir dos equipamentos.
  *
@@ -781,29 +804,53 @@ export function resolveDano(creature, ctx = {}) {
      Técnicas de Combate não passam por aqui, porque trocam por conta própria. */
   const trocasDeAtaque = AFTY_ATTRS.map((x) => x.key)
     .filter((k) => (ef ? valorCanal(ef, "ataqueAtributo", k) : 0) > 0);
+  /* ⚠ A TROCA MANUAL DO ATAQUE VALE NO DANO (autor, 2026-10-02, "Acerto e
+     Dano"), e vence a Fineza e o canal, como no acerto. Quem a decide é a linha
+     de Ataque do `resolveTestes`, que já chega pronta no `ctx.ataques`. As armas
+     com atributo próprio e as Técnicas de Combate não passam por aqui. */
+  const trocaManualDoAtaque = (id) => {
+    const atq = (Array.isArray(ctx.ataques) ? ctx.ataques : []).find((x) => x.id === id);
+    return atq?.atributoManual ? atq.atributo : null;
+  };
   const atributoDe = ({ distancia, fineza }) => {
+    const manual = trocaManualDoAtaque(distancia ? "distancia" : "corpo");
+    if (manual) return manual;
     const base = distancia
       ? "destreza"
       : (fineza && modDe("destreza") > modDe("forca") ? "destreza" : "forca");
     return trocasDeAtaque.reduce((m, k) => (modDe(k) > modDe(m) ? k : m), base);
   };
 
-  /* `extra` é o canal `alcanceArma` da linha (2026-09-23): metros a mais que uma
+  /* O canal `alcanceArma` da linha (2026-09-23) traz os metros a mais que uma
      regra dá ("Seu alcance em ataques com armas corpo a corpo aumenta em 1,5
      metros"). Na arma corpo a corpo ele soma ao alcance dela; na de distância,
      aos dois alcances. Entra ANTES do multiplicador, porque a Postura do Céu
      dobra "o alcance dos seus ataques", e o bônus já faz parte desse alcance. */
-  const alcanceDe = (alcance, bonusCorpo = 0, extra = 0) => {
+  const alcanceDe = (alcance, bonusCorpo = 0, escopos = []) => {
     const mult = Math.max(1, Number(ctx.alcanceMult) || 1);
-    const mais = Math.max(0, Number(extra) || 0);
+    const mais = Math.max(0, canal("alcanceArma", escopos));
     const br = (n) => String(n).replace(".", ",");
+    const baseCorpo = Math.max(0, Number(ctx.alcanceCorpo) || 0);
+    const bonus = Math.max(0, Number(bonusCorpo) || 0);
+    const partes = [
+      { label: alcance ? "Alcance da Arma" : "Tamanho",
+        texto: alcance ? `${br(alcance.curto)}m / ${br(alcance.longo)}m` : `${br(baseCorpo)}m` },
+      ...(bonus ? [{ label: "Estendida", valor: bonus, texto: `+${br(bonus)}m` }] : []),
+      ...fontesDe("alcanceArma", escopos).map((p) => ({
+        ...p, texto: `${p.valor >= 0 ? "+" : ""}${br(p.valor)}m`,
+      })),
+      ...(mult > 1 ? [{
+        label: ctx.contextoDsl?.invencivel_sob_osol ? "Invencível sob o Sol" : "Postura do Céu",
+        texto: `×${br(mult)}`,
+      }] : []),
+    ];
     if (alcance) {
       const curto = (alcance.curto + mais) * mult;
       const longo = (alcance.longo + mais) * mult;
-      return { curto, longo, texto: `${br(curto)}m / ${br(longo)}m` };
+      return { curto, longo, texto: `${br(curto)}m / ${br(longo)}m`, partes };
     }
-    const metros = (Math.max(0, Number(ctx.alcanceCorpo) || 0) + Math.max(0, Number(bonusCorpo) || 0) + mais) * mult;
-    return metros ? { curto: metros, longo: metros, texto: `${br(metros)}m` } : null;
+    const metros = (baseCorpo + bonus + mais) * mult;
+    return metros ? { curto: metros, longo: metros, texto: `${br(metros)}m`, partes } : null;
   };
 
   const facesDaPropriedade = (propriedades, id) => {
@@ -913,6 +960,15 @@ export function resolveDano(creature, ctx = {}) {
     });
     linha.ignoraTodaRD = canal("ignoraTodaRD", escopos) > 0;
     linha.ignoraImunidade = canal("ignoraImunidade", escopos) > 0;
+    /* O ROLAR DE NOVO (canal `rerrolaDano`, 2026-10-02, Estilo Massivo). Lido
+       pelos detalhes e não pelo `canal`, porque entre fontes vale o MAIOR e não
+       a soma. A linha só leva a marca, com o nome de quem a deu: quem rola é o
+       `rolarDano` da Ficha. */
+    const rerrolagem = (ef ? detalhesDoCanalEscopos(ef, "rerrolaDano", escopos) : [])
+      .map((d) => ({ ate: Math.trunc(Number(d.valor) || 0), fonte: d.nome ?? null }))
+      .filter((d) => d.ate > 0)
+      .reduce((m, d) => (!m || d.ate > m.ate ? d : m), null);
+    linha.rerrola = rerrolagem;
     // Dado extra não é número, então entra no detalhamento como texto.
     for (const d of detalhesDados) {
       linha.partes.push({ label: d.nome, texto: `+${d.valor}${linha.dado}` });
@@ -1120,6 +1176,7 @@ export function resolveDano(creature, ctx = {}) {
        atributo por conta própria, e a troca da Fineza por cima daria dois donos
        para a mesma parcela. */
     const finezaConcedida = !atributoForcado
+      && !atq.atributoManual
       && !!atq.atributoFineza
       && canal("finezaAtaque", escopos) > 0
       && modDe(atq.atributoFineza) > modDe(atq.atributo);
@@ -1165,15 +1222,14 @@ export function resolveDano(creature, ctx = {}) {
   // equipado, quando existe um. É por esse id que o encantamento com `alvoItem`
   // (Potente, Poderosa, Penetrante) chega no golpe: sem ele o efeito era gravado
   // com o alvo do item, ninguém escutava, e o encantamento ainda descia o grau.
+  const ataqueIdBasico = ctx.ataqueIdBasico === "amaldicoado" ? "amaldicoado" : "corpo";
   const escoposBasico = [
     ...escoposDaArma(null),
     ...(Array.isArray(ctx.escoposBasicoExtra) ? ctx.escoposBasicoExtra : []),
-    // O Ataque Básico rola sempre Corpo a Corpo, então responde pelo tipo de
-    // ataque dele como toda arma responde pelo seu. Ver `escoposDaArma`.
-    "atq:corpo",
-    // O golpe desarmado é sempre Impacto, então também participa das regras que
-    // exigem ao mesmo tempo um ataque corpo a corpo e um tipo de dano.
-    "atq_tipo:corpo:im",
+    // Responde pela jogada escolhida no item que define o Básico.
+    `atq:${ataqueIdBasico}`,
+    // O golpe desarmado é Impacto, junto do tipo de jogada escolhido.
+    `atq_tipo:${ataqueIdBasico}:im`,
   ];
   // Fineza no golpe básico vem de duas portas: o canal (Corpo Treinado, "você
   // pode escolher usar tanto Força quanto Destreza") e a propriedade do item de
@@ -1184,7 +1240,7 @@ export function resolveDano(creature, ctx = {}) {
   const entradas = [
     // Desarmado não tem margem de crítico listada em lugar nenhum: é 20.
     aplicaCriticoDaArma({ id: "basico", nome: "Ataque Básico", fonte: "basico",
-      alcance: alcanceDe(null, 0, canal("alcanceArma", escoposBasico)),
+      alcance: alcanceDe(null, 0, escoposBasico),
       propriedades: ctx.propriedadesBasico ?? [],
       /* ⚠ O DADO DO DESARMADO CHEGA PRONTO do deriveAfty (`ctx.dadoBasico`), e
          não é decidido aqui: ele sai do Corpo Treinado, das Armas Naturais, do
@@ -1199,7 +1255,7 @@ export function resolveDano(creature, ctx = {}) {
       /* O Ataque Básico usa a Manopla ou Faixa equipada, e a proficiência dela é
          a que vale. Sem item de pugilato, `treinadaBasico` é falso e o golpe
          desarmado não soma BT no jogador. */
-      ...acertoDe("corpo", Math.max(0, Math.trunc(Number(ctx.acertoGrauBasico) || 0)),
+      ...acertoDe(ataqueIdBasico, Math.max(0, Math.trunc(Number(ctx.acertoGrauBasico) || 0)),
         escoposBasico, ctx.fontesAcertoBasico ?? [], null,
         armaDecide ? !!ctx.treinadaBasico : null,
         /* Ataque desarmado não é arma ("ataques desarmados não são armas"), e o
@@ -1226,12 +1282,22 @@ export function resolveDano(creature, ctx = {}) {
        propriedade Fineza (Bastão, Nunchaku Pesado) para de ficar com Destreza no
        acerto e Força no dano. */
     const atributoDaArma = AFTY_ATTRS.some((x) => x.key === a.atributoAtaque) ? a.atributoAtaque : null;
+    /* Na criatura, a arma no Acerto Amaldiçoado leva o Atributo de Técnica ao
+       dano (divergência `danoDoAcertoAmaldicoado`, autor, 2026-10-02). Ele sai
+       da linha do Ataque Amaldiçoado, que é quem já o usa no acerto, para os
+       dois lados da linha terem um dono só. Fica atrás das Técnicas de Combate,
+       que trocam o acerto por cima dele. */
+    const atributoAmaldicoado = a.ataqueId === "amaldicoado"
+      && regraDo(ctx.sistema, "danoDoAcertoAmaldicoado") === "afty"
+      ? (ataques.find((x) => x.id === "amaldicoado")?.atributo ?? null)
+      : null;
     const atributo = atributoDaArma ?? (usaTecnicas
       ? atributoTecnicas
-      : atributoDe({ ...a, fineza: a.fineza || canal("finezaAtaque", escopos) > 0 }));
+      : atributoAmaldicoado
+        ?? atributoDe({ ...a, fineza: a.fineza || canal("finezaAtaque", escopos) > 0 }));
     const linhaArma = {
       id: a.id, nome: a.nome, fonte: "arma",
-      alcance: alcanceDe(a.alcance, a.alcanceBonusCorpo, canal("alcanceArma", escopos)), propriedades,
+      alcance: alcanceDe(a.alcance, a.alcanceBonusCorpo, escopos), propriedades,
       grupo: a.grupo ?? null, categoria: a.categoria ?? null, tipoDano: a.tipoDano ?? null,
       dedicada,
       elegivelDedicada: !!a.elegivelDedicada,
@@ -1239,7 +1305,8 @@ export function resolveDano(creature, ctx = {}) {
          (uma mão ou duas, nas versáteis). Só o jogador o usa. */
       ...monta(escopos, atributo, a.grauArma, a.critico ?? 20, a.dadoArma ?? null, "Dano da Arma", a.usarDadoArma),
       // A ficha escolhe entre o ataque físico da categoria e o Ataque
-      // Amaldiçoado. O atributo do dano continua vindo da arma.
+      // Amaldiçoado. No jogador o atributo do dano continua vindo da arma, e
+      // na criatura o Amaldiçoado o troca pelo de Técnica (ver acima).
       ...acertoDe(a.ataqueId ?? (a.distancia ? "distancia" : "corpo"),
         Math.max(0, Math.trunc(Number(a.acertoGrau) || 0)), escopos, a.fontesAcerto ?? [],
         atributoDaArma ?? (usaTecnicas ? atributoTecnicas : null),
@@ -1247,7 +1314,35 @@ export function resolveDano(creature, ctx = {}) {
     };
     entradas.push(aplicaCriticoDaArma(linhaArma, propriedades, a.criticoExtraDados));
   }
+  for (const entrada of entradas) aplicarPermutasDeMargem(entrada, ctx.permutasDeMargem);
   return { entradas };
+}
+
+/**
+ * O Bônus em Ataque que perde Margem (Feitiço Permutativo), arma a arma.
+ *
+ * ⚠ SÓ NA ARMA COM MARGEM A PERDER (autor, 2026-10-02): "se você não possui
+ * margem de crítico para perder, você não pode utilizar um Feitiço que perde
+ * margem de crítico". A troca entra INTEIRA onde cabe e não entra nada onde não
+ * cabe, nem o Acerto nem a Margem. Duas trocas descem uma depois da outra, e a
+ * segunda só cabe no que a primeira deixou. `permutasMargem` fica na linha para a
+ * trava do interruptor saber se o Feitiço pegou em alguma arma.
+ */
+function aplicarPermutasDeMargem(entrada, permutas) {
+  for (const p of Array.isArray(permutas) ? permutas : []) {
+    const margem = Math.max(0, Math.trunc(Number(p?.margem) || 0));
+    const acerto = Math.trunc(Number(p?.acerto) || 0);
+    if (!margem || entrada.acerto == null || !Number.isFinite(entrada.margemCritico)) continue;
+    if (entrada.margemCritico + margem > 20) continue;
+    entrada.margemCritico += margem;
+    entrada.acerto += acerto;
+    entrada.partesAcerto = [...(entrada.partesAcerto ?? []), { label: p.nome, valor: acerto }];
+    entrada.permutasMargem = [...(entrada.permutasMargem ?? []), p];
+    if (entrada.acertoTexto) {
+      const dados = (entrada.acertoDados ?? []).map((d) => `${d.qtd}d${d.faces}`).join(" + ");
+      entrada.acertoTexto = `${entrada.acerto >= 0 ? "+" : "−"}${Math.abs(entrada.acerto)} + ${dados}`;
+    }
+  }
 }
 
 /**
@@ -1574,7 +1669,12 @@ export function resolveTestes(creature, ctx = {}) {
   // No jogador o TR não gasta vaga. Ver a nota do `gastos`, no fim da função.
   const trForaDoCaixa = regraDo(ctx.sistema, "trForaDoOrcamento") === "player";
 
-  const resistencias = AFTY_RESISTENCIAS.map((r) => {
+  /* O atributo trocado à mão (2026-10-02), lido aqui e não pelo `ctx` porque o
+     TR não tem outra fonte de troca para compor com ela. A troca arrasta o
+     escopo `atr:` do Motor junto, como na perícia. */
+  const trManual = atributosDeTRManuais(creature);
+  const resistencias = AFTY_RESISTENCIAS.map((doLivro) => {
+    const r = { ...doLivro, atributo: trManual[doLivro.value] ?? doLivro.atributo, atributoPadrao: doLivro.atributo };
     // Mesma anatomia das perícias: a faixa ESCOLHIDA é a que gasta vaga, e a
     // resolvida ainda soma o que foi concedido de fora (Teste de Resistência
     // Mestre e afins). Sem os dois campos a UI trataria todo TR treinado como
@@ -1684,6 +1784,13 @@ export function resolveTestes(creature, ctx = {}) {
     return fonte ? `${rotuloAttr(attr)} (${fonte})` : rotuloAttr(attr);
   };
 
+  /* ⚠ A TROCA MANUAL VENCE A FINEZA E O CANAL `ataqueAtributo` (2026-10-02),
+     pela mesma razão da perícia: é a única que alguém escolheu. E por isso o
+     PADRÃO de um ataque não é o do livro, e sim o que a linha daria sem a troca.
+     Com Fineza e Destreza maior, o Corpo a Corpo já é Destreza, e escolher Força
+     ali tem de GRAVAR Força: comparado com o livro, a escolha seria tomada por
+     volta ao padrão e apagada, e a linha seguiria em Destreza. */
+  const ataqueManual = atributosDeAtaqueManuais(creature);
   const ataques = AFTY_ATAQUES.map((a) => {
     const treinado = a.sempreTreinado || (!armaDecide && !!atqBruta[a.id]);
     /* Fineza libera o atributo alternativo do ataque, e aqui ela vem SÓ da
@@ -1697,12 +1804,18 @@ export function resolveTestes(creature, ctx = {}) {
        o lê agora é o `acertoDe` do resolveDano, uma linha por arma. */
     const liberado = a.atributoFineza && fineza;
     const semTroca = liberado && modDe(a.atributoFineza) > modDe(a.atributo) ? a.atributoFineza : a.atributo;
-    const attr = a.id === "amaldicoado"
+    const atributoPadrao = a.id === "amaldicoado"
       ? (ctx.tecnicaAttr || "inteligencia")
       : comTrocaDeAtaque(semTroca);
+    const attr = ataqueManual[a.id] ?? atributoPadrao;
     return {
       ...a,
       atributo: attr,
+      atributoPadrao,
+      /* O `resolveDano` lê esta marca: com ela, o dano das armas deste tipo usa o
+         mesmo atributo (autor, 2026-10-02, "Acerto e Dano") e a Fineza
+         concedida por escopo não troca o acerto por cima. */
+      atributoManual: !!ataqueManual[a.id],
       treinado,
       bonus: modDe(attr) + escalaFixa + (treinado ? bt : 0) + bonusDeEfeito("bonusAcerto", a.id),
       /* Os dados extras viajam ao lado do bônus, igual ao TR: o bônus soma
@@ -1710,7 +1823,7 @@ export function resolveTestes(creature, ctx = {}) {
       dadosExtras: dadosNoAtaque,
       textoBonus: comDados(modDe(attr) + escalaFixa + (treinado ? bt : 0) + bonusDeEfeito("bonusAcerto", a.id)),
       partes: [
-        { label: a.id === "amaldicoado" ? rotuloAttr(attr) : rotuloDoAtaque(attr, semTroca), valor: modDe(attr) },
+        { label: a.id === "amaldicoado" || ataqueManual[a.id] ? rotuloAttr(attr) : rotuloDoAtaque(attr, semTroca), valor: modDe(attr) },
         { label: ESCALA_ROTULO.fixa, valor: escalaFixa },
         ...(treinado ? [{ label: "Maestria", valor: bt }] : []),
         ...partesDeEfeito("bonusAcerto", a.id),
@@ -1730,6 +1843,15 @@ export function resolveTestes(creature, ctx = {}) {
   const nomePericia = (id) => catalogoPericias.find((p) => p.id === id)?.nome ?? id;
 
   const nomeDaMelhor = () => (acrobacia > atletismo ? nomePericia("acrobacia") : nomePericia("atletismo"));
+  /* Cada linha responde pelo próprio id, e as quatro Manobras também por
+     `manobra:todas` (2026-09-29). É o alvo da Balanceada e do Marcial, que
+     falam em "testes de manobras" e não podiam vazar para Concentração, Fintar,
+     Provocar e Teste de Morte, que é o que o efeito sem alvo faz. */
+  const escoposManobra = (m) => [m.id, ...(m.resistir ? [ALVO_QUATRO_MANOBRAS] : [])];
+  const bonusManobraDe = (canal, m) => (ef ? valorCanalEscopos(ef, canal, escoposManobra(m)) : 0);
+  const partesManobraDe = (canal, m) =>
+    (ef ? detalhesDoCanalEscopos(ef, canal, escoposManobra(m), true) : [])
+      .map((d) => ({ label: d.nome, valor: d.valor, ...(d.suplantado ? { suplantado: true } : {}) }));
   const manobras = AFTY_MANOBRAS.map((m) => {
     /* A base de cada linha, e o nome dela para o hover. Ver AFTY_MANOBRAS: a
        manobra sai de perícia, a Concentração sai de um Teste de Resistência e o
@@ -1741,19 +1863,19 @@ export function resolveTestes(creature, ctx = {}) {
     return {
       ...m,
       // Executar a manobra, ou fazer o teste.
-      executar: baseExec + bonusDeEfeito("bonusManobra", m.id),
+      executar: baseExec + bonusManobraDe("bonusManobra", m),
       periciaUsada: rotuloExec,
       partesExecutar: [
         ...(rotuloExec ? [{ label: rotuloExec, valor: baseExec }] : []),
-        ...partesDeEfeito("bonusManobra", m.id),
+        ...partesManobraDe("bonusManobra", m),
       ],
       /* Resistir a ela: quem resiste sempre escolhe entre as duas. Só as quatro
          Manobras têm o outro lado, e por isso as demais devolvem `null` em vez
          de um número que ninguém rola. */
-      resistir: m.resistir ? melhorDasDuas + bonusDeEfeito("resistirManobra", m.id) : null,
+      resistir: m.resistir ? melhorDasDuas + bonusManobraDe("resistirManobra", m) : null,
       partesResistir: m.resistir ? [
         { label: nomeDaMelhor(), valor: melhorDasDuas },
-        ...partesDeEfeito("resistirManobra", m.id),
+        ...partesManobraDe("resistirManobra", m),
       ] : null,
       // Só o Empurrar tem distância. "+1,5m para cada 5 pontos" fica na mesa:
       // depende da margem da rolagem.

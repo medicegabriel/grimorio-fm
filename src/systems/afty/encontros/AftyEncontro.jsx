@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   ArrowLeft, Plus, X, Dices, Play, Pause, SkipForward, Clock, Users, UserPlus,
-  Search, Swords, Trophy, Skull, EyeOff, Copy, Edit3, Moon, AlertTriangle,
+  Search, Swords, Trophy, Skull, EyeOff, Copy, Edit3, AlertTriangle,
 } from "lucide-react";
 
 import "../ficha/ficha.css";
@@ -15,6 +15,7 @@ import { nivelDaFicha } from "../afty-addons";
 /* Patamar e rótulo do nível saem da FICHA de cada linha: a lista mistura
    criaturas e personagens, e a rota aqui é sempre a do mestre. */
 import { sistemaDaFicha, regraDo, rotuloDoNivel, palavrasDoSistema } from "../afty-sistema";
+import BotaoDeDescanso from "../ficha/BotaoDeDescanso";
 import PainelDeCombatente from "./PainelDeCombatente";
 import useEncontroAfty from "./usar-encontro-afty";
 import { ENCONTRO_STATUS, LADO, LADO_ROTULO, LOG_TIPOS } from "./afty-encontro";
@@ -746,9 +747,11 @@ function Finalizado({ encontro, derivado, acoes, onVoltar, onDuplicar }) {
           </button>
           {/* Descansar e Levantar existem para rodar o MESMO encontro de novo,
               sem duplicar: é o caso de repetir uma luta que não funcionou. */}
-          <button type="button" className="afty-botao" onClick={acoes.descansarTodos} title="Recursos cheios em todos">
-            <Moon className="w-4 h-4" /> Descansar Todos
-          </button>
+          <BotaoDeDescanso
+            rotulo="Descansar Todos"
+            combatentes={encontro.combatentes.map((c) => ({ ...c, derived: derivado.derivados[c.id] }))}
+            onDescansar={acoes.descansarTodos}
+          />
           <button type="button" className="afty-botao" onClick={acoes.levantarTodos} title="Tira a marca de abatido de todos">
             <Skull className="w-4 h-4" /> Levantar Todos
           </button>
@@ -825,8 +828,8 @@ const POR_STATUS = {
   [ENCONTRO_STATUS.FINALIZADO]: Finalizado,
 };
 
-export default function AftyEncontro({ encontroId, gerenciador, criaturas = [], pastas = [], onVoltar, onDuplicar, sistema }) {
-  const { encontro, derivado, acoes } = useEncontroAfty(encontroId, gerenciador);
+export default function AftyEncontro({ encontroId, gerenciador, criaturas = [], pastas = [], onVoltar, onDuplicar, sistema, onAtualizarBiblioteca }) {
+  const { encontro, derivado, acoes } = useEncontroAfty(encontroId, gerenciador, onAtualizarBiblioteca);
 
   if (!encontro) {
     return (
@@ -842,6 +845,15 @@ export default function AftyEncontro({ encontroId, gerenciador, criaturas = [], 
   const Tela = POR_STATUS[encontro.status] ?? Planejando;
   return (
     <div className="afty-ficha min-h-screen">
+      {encontro.fundamentosSemGravar?.length > 0 && (
+        <div role="status" className="mx-4 mt-4 flex flex-wrap items-center gap-2 rounded-lg border border-amber-700/50 bg-amber-950/30 p-3 text-sm text-amber-300">
+          <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span className="min-w-0 flex-1">
+            Perda do Fundamento Pendente na Biblioteca: {encontro.fundamentosSemGravar.map((f) => f.nome + " (" + f.motivo + ")").join(", ")}
+          </span>
+          <button type="button" className="afty-botao" onClick={acoes.sincronizarFundamentos}>Tentar Novamente</button>
+        </div>
+      )}
       <Tela
         encontro={encontro}
         derivado={derivado}

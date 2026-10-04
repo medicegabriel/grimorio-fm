@@ -1,0 +1,16 @@
+import { readFileSync, writeFileSync } from 'node:fs';
+const guia = 'docs/afty-invocacoes.md';
+let texto = readFileSync(guia, 'utf8');
+const antes = 'Fora de campo, só os Feitiços ficam marcados';
+if (!texto.includes(antes)) throw new Error('Trecho da Técnica ausente');
+texto = texto.replace(antes, 'Fora de campo na mesa, Feitiços, Funcionamento e Passivas ficam bloqueados também, até o Fundamento voltar. O criador não usa o estado de campo (autor, 2026-10-03)');
+writeFileSync(guia, texto);
+const fila = 'docs/a-fazer.md';
+texto = readFileSync(fila, 'utf8');
+const inicio = texto.indexOf('### Fundamento fora de campo: bloqueia só os Feitiços, ou a Técnica Inata inteira?');
+if (inicio < 0) throw new Error('Entrada da fila ausente');
+const fim = texto.indexOf('\n### ', inicio + 4);
+if (fim < 0) throw new Error('Próxima entrada ausente');
+texto = texto.slice(0, inicio) + texto.slice(fim + 1);
+writeFileSync(fila, texto);
+console.log('Guia atualizado e somente a primeira pendência removida.');

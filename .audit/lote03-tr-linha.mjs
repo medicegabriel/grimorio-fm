@@ -1,0 +1,17 @@
+import { register } from "node:module";
+register("data:text/javascript,export async function resolve(s,c,n){try{return await n(s,c)}catch(e){if(s.startsWith(\".\")&&!s.endsWith(\".js\"))return n(s+\".js\",c);throw e}}", import.meta.url);
+const R = new URL("../src/systems/afty/", import.meta.url).href;
+const { deriveAfty } = await import(R + "afty-derive.js");
+const { createBlankAfty } = await import(R + "afty-schema.js");
+const { detalhesDoCanal } = await import(R + "afty-efeitos.js");
+const f = createBlankAfty(); f.rulesVersion = "player";
+f.core = { ...f.core, nd: 8, tipo: "misto", patamar: "comum", origem: { id: "restringido" } };
+f.especializacoes = [{ id: "restringido", nivel: 8 }];
+f.habilidades = ["res_forca_imparavel"];
+f.escolhasHabilidade = { res_forca_imparavel: ["res_imparavel_fortitude", "res_imparavel_vontade"] };
+const d = deriveAfty(f);
+const { partes, ...resto } = d.testes.resistencias.find((r) => r.value === "fortitude");
+console.log(JSON.stringify(resto));
+console.log(JSON.stringify(partes));
+console.log(JSON.stringify(detalhesDoCanal(d.efeitos, "proficienciaTR", "fortitude")));
+console.log(JSON.stringify(d.testes.orcamento));

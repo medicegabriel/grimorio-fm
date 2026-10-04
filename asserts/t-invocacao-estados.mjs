@@ -198,14 +198,14 @@ const varias = {
     e: { estado: "guardada", pvAtual: 7 },
   },
 };
-const desc = SES.descansar(varias, { hp: 10, pe: 10 });
+const desc = SES.descansar(varias, { hp: 10, pe: 10, invocacoes: { lista: [{ id: "d", regras: regras("marionete") }] } }, { marioneteId: "d" });
 const est = (id) => SES.estadoDaInvocacao(desc, id);
 t("o descanso devolve quem caiu ao Fora de Campo, cheio",
   ["a", "d", "e"].map((id) => [est(id).estado, est(id).pvAtual, est(id).retorno]),
   [["fora", null, null], ["fora", null, null], ["fora", null, null]]);
 t("quem estava em campo continua", est("b").estado, "ativa");
 t("a morte permanente continua", est("c").estado, "exorcizada");
-t("as quedas da Marionete zeram (o botao de descanso devolve tudo)", est("d").quedas, 0);
+t("as quedas da Marionete escolhida zeram com o reparo completo", est("d").quedas, 0);
 
 /* ============================================================ */
 /* 5. COMPATIBILIDADE E PONTA A PONTA                            */

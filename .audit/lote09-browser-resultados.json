@@ -1,0 +1,146 @@
+[
+  {
+    "rota": "afty",
+    "largura": 1440,
+    "esperado": {
+      "fora": {
+        "defesa": 22,
+        "rd": 10,
+        "pe": 40
+      },
+      "campo": {
+        "defesa": 24,
+        "rd": 13,
+        "pe": 40
+      }
+    },
+    "fora": {
+      "defesa": "DEFESA 22",
+      "rd": "RD GERAL 10",
+      "pe": "/ 40"
+    },
+    "campo": {
+      "defesa": "DEFESA 24",
+      "rd": "RD GERAL 13",
+      "pe": "/ 40"
+    },
+    "voltou": {
+      "defesa": "DEFESA 22",
+      "rd": "RD GERAL 10",
+      "pe": "/ 40"
+    },
+    "dim": {
+      "viewport": 1440,
+      "largura": 1425
+    },
+    "erros": []
+  },
+  {
+    "rota": "afty",
+    "largura": 390,
+    "esperado": {
+      "fora": {
+        "defesa": 22,
+        "rd": 10,
+        "pe": 40
+      },
+      "campo": {
+        "defesa": 24,
+        "rd": 13,
+        "pe": 40
+      }
+    },
+    "fora": {
+      "defesa": "DEFESA 22",
+      "rd": "RD GERAL 10",
+      "pe": "/ 40"
+    },
+    "campo": {
+      "defesa": "DEFESA 24",
+      "rd": "RD GERAL 13",
+      "pe": "/ 40"
+    },
+    "voltou": {
+      "defesa": "DEFESA 22",
+      "rd": "RD GERAL 10",
+      "pe": "/ 40"
+    },
+    "dim": {
+      "viewport": 390,
+      "largura": 390
+    },
+    "erros": []
+  },
+  {
+    "rota": "player",
+    "largura": 1440,
+    "esperado": {
+      "fora": {
+        "defesa": 15,
+        "rd": 0,
+        "pe": 48
+      },
+      "campo": {
+        "defesa": 17,
+        "rd": 3,
+        "pe": 48
+      }
+    },
+    "fora": {
+      "defesa": "DEFESA 15",
+      "rd": "RD GERAL 0",
+      "pe": "/ 48"
+    },
+    "campo": {
+      "defesa": "DEFESA 17",
+      "rd": "RD GERAL 3",
+      "pe": "/ 48"
+    },
+    "voltou": {
+      "defesa": "DEFESA 15",
+      "rd": "RD GERAL 0",
+      "pe": "/ 48"
+    },
+    "dim": {
+      "viewport": 1440,
+      "largura": 1425
+    },
+    "erros": []
+  },
+  {
+    "rota": "player",
+    "largura": 390,
+    "esperado": {
+      "fora": {
+        "defesa": 15,
+        "rd": 0,
+        "pe": 48
+      },
+      "campo": {
+        "defesa": 17,
+        "rd": 3,
+        "pe": 48
+      }
+    },
+    "fora": {
+      "defesa": "DEFESA 15",
+      "rd": "RD GERAL 0",
+      "pe": "/ 48"
+    },
+    "campo": {
+      "defesa": "DEFESA 17",
+      "rd": "RD GERAL 3",
+      "pe": "/ 48"
+    },
+    "voltou": {
+      "defesa": "DEFESA 15",
+      "rd": "RD GERAL 0",
+      "pe": "/ 48"
+    },
+    "dim": {
+      "viewport": 390,
+      "largura": 390
+    },
+    "erros": []
+  }
+]

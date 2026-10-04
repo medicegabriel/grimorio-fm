@@ -1,0 +1,544 @@
+import React, { useCallback, useMemo, useState } from "react";
+import { ArmasTransformaveis } from "../ui/armas-transformaveis";
+import { Heart, Zap, Sparkles, Skull, EyeOff, Moon, Swords, Shield, BookOpen, Backpack, Wand2, AlertTriangle, Crosshair } from "lucide-react";
+
+import { funcionamentosDaFicha } from "../afty-schema";
+import { sistemaDaFicha, palavrasDoSistema } from "../afty-sistema";
+import { NumeroComFontes } from "../ui/fontes";
+import { numeroBr } from "../ui/formato";
+import { Vital } from "../ui/vital";
+import { Guarda } from "../ui/guarda";
+import {
+  aplicaDano, aplicaCura, aplicaPerdaDeVida, descansar, registraRolagem,
+  aplicaDanoNaAlma, curaAlma, defineAlma,
+  concedeNaSessao, removeConcessao, peTempTotal, gastaPe, pvTempTotal,
+  sofreGolpeNaGuarda, desfazGolpeNaGuarda, encerraGuarda, defineCondicoes,
+  estadoDaInvocacao, alternaAuxilioInvocacao,
+  aplicaCuraInvocacao, defineVitalInvocacao, invocacaoDaMesa,
+  entradaDaInvocacao, invocaNaMesa, saiDeCampo, recolheInvocacao, reconstroiInvocacao,
+  alternaAuraInvocacao, defineEmTarefa, defineFormaInvocacao,
+  alternaOpcaoDeEntrada, ativaReservaInvocacao, pagaManutencaoCorpo,
+  aplicaDanoNaMesa, formaMecha, separaMecha, trocaNucleo, mechaPermitido, emCombateNaSessao,
+  preparoDe, preparoTempDe, alteraPreparo, definePreparo,
+  alteraTreinoAtivo, alteraEstadoCombate, aplicaPatchCombate,
+  usosGastosDe, marcaUso,
+} from "../ficha/ficha-sessao";
+import { rolarTeste, rolarDano, textoDaRolagem } from "../ficha/ficha-rolagem";
+import { deltaDosEstados, saldoDoAgora } from "../ficha/ficha-buffs";
+import { opcoesDoCombatente } from "./usar-encontro-afty";
+import { conteudoDaFicha, equipamentosDaFicha } from "../ficha/ficha-conteudo";
+import PainelBloodfeast, { ConjuracaoBloodfeast } from "../ficha/PainelBloodfeast";
+import AbaAcoes from "../ficha/abas/AbaAcoes";
+import PainelDeAdaptacao from "../ficha/PainelDeAdaptacao";
+import PainelOlhosAgulha from "../ficha/PainelOlhosAgulha";
+import PainelDoGolpeEspecial from "../ficha/PainelDoGolpeEspecial";
+import PainelManipulacaoCeu from "../ficha/PainelManipulacaoCeu";
+import AbaBuffs from "../ficha/abas/AbaBuffs";
+import AbaPericias from "../ficha/abas/AbaPericias";
+import AbaHabilidades from "../ficha/abas/AbaHabilidades";
+import AbaEquipamentos from "../ficha/abas/AbaEquipamentos";
+import AbaInvocacoes from "../ficha/abas/AbaInvocacoes";
+import PrimitivasDeAddon from "../ui/PrimitivasDeAddon";
+import EspinhoCard from "../ui/EspinhoCard";
+
+/**
+ * ============================================================
+ * PAINEL DO COMBATENTE — a ficha de combate dentro do encontro
+ * ============================================================
+ * O equivalente do `CombatantPanel` da 2.5.2, e ele **reusa as abas da Ficha
+ * Final**: Ações, Perícias e Buffs são exatamente os mesmos componentes.
+ *
+ * Isso é possível porque o estado de combate de um combatente É uma sessão do
+ * Afty (ver `afty-encontro.js`), que é o mesmo objeto que a Ficha manipula. O
+ * mestre e o jogador leem a mesma tela, com os mesmos números e os mesmos
+ * hovers de fonte.
+ *
+ * ⚠ O QUE NÃO É REUSADO é o cabeçalho: a Ficha tem tema do usuário, retrato,
+ * busca global e histórico de rolagens, e nada disso cabe numa coluna dividida
+ * com a lista de iniciativa. Os vitais aqui são uma versão enxuta do `Vital`
+ * dela, com as mesmas classes `afty-vital-*` para o CSS personalizado continuar
+ * valendo.
+ *
+ * ⚠ O DANO ENTRA CRU, sem abater RD, pela mesma decisão da Ficha: o Afty tem RD
+ * Geral, Específica, Física e a da Alma, e qual delas vale depende do TIPO do
+ * dano que chegou. Abater a errada é pior que não abater nenhuma, então as RDs
+ * ficam à vista na fileira de números e o mestre desconta.
+ * ============================================================
+ */
+
+/* ⚠ HABILIDADES E EQUIPAMENTOS entraram em 2026-08-08, a pedido do autor:
+   *"preciso conseguir ver o que meus Feitiços e derivados fazem, sem precisar ir
+   na aba de Edição para saber."* Com Ações, Perícias e Buffs só, o mestre tinha
+   os NÚMEROS da criatura e nenhum dos TEXTOS — e ler o que uma Aptidão faz
+   exigia sair do encontro e abrir o criador.
+
+   ⚠ INVOCAÇÕES entrou em 2026-08-16, e a falta dela era grave: o encontro é
+   exatamente onde um Controlador usa a especialização inteira, e o painel não
+   tinha como rolar o ataque de um shikigami nem ver o PV dele. Agora são as
+   MESMAS SEIS abas da Ficha Final. */
+const ABAS = [
+  { id: "acoes", rotulo: "Ações", icone: Swords },
+  { id: "habilidades", rotulo: "Habilidades", icone: BookOpen },
+  { id: "pericias", rotulo: "Perícias", icone: Shield },
+  { id: "equipamentos", rotulo: "Equipamentos", icone: Backpack },
+  { id: "invocacoes", rotulo: "Invocações", icone: Sparkles },
+  { id: "buffs", rotulo: "Buffs", icone: Wand2 },
+];
+
+
+/* Dano e cura rápidos: um campo, dois botões. É o gesto mais repetido de uma
+   luta inteira, e mandá-lo pelo campo do PV obrigaria a lembrar do sinal. */
+function DanoRapido({ onDano, onCura }) {
+  const [valor, setValor] = useState("");
+  const numero = Math.max(0, Math.trunc(Number(valor) || 0));
+  const dispara = (fn) => {
+    if (!numero) return;
+    fn(numero);
+    setValor("");
+  };
+  return (
+    <div className="afty-linha px-2.5 py-2 flex items-center gap-2">
+      <input
+        type="text"
+        inputMode="numeric"
+        value={valor}
+        onChange={(e) => setValor(e.target.value.replace(/[^\d]/g, ""))}
+        onKeyDown={(e) => { if (e.key === "Enter") dispara(onDano); }}
+        placeholder="0"
+        aria-label="Quantidade de dano ou cura"
+        className="afty-campo bg-transparent outline-none w-20 text-center"
+        style={{ border: "1px solid var(--afty-borda)", borderRadius: "var(--afty-raio-peq)" }}
+      />
+      <button type="button" className="afty-botao" onClick={() => dispara(onDano)} disabled={!numero}>
+        Dano
+      </button>
+      <button type="button" className="afty-botao" onClick={() => dispara(onCura)} disabled={!numero}>
+        Cura
+      </button>
+      <span className="afty-rotulo text-[10px] flex-1 text-right">
+        O dano entra cru, sem abater RD
+      </span>
+    </div>
+  );
+}
+
+export default function PainelDeCombatente({
+  combatente, derived, sessao, onSessao, onFlag, ativo, alvosBloodfeast = [], onAlvoBloodfeast = null,
+}) {
+  const [aba, setAba] = useState("acoes");
+  const [abertos, setAbertos] = useState(() => new Set());
+  const [destaque, setDestaque] = useState(null);
+
+  const alternaItem = useCallback((chave) => {
+    setDestaque(null);
+    setAbertos((s) => {
+      const n = new Set(s);
+      if (n.has(chave)) n.delete(chave); else n.add(chave);
+      return n;
+    });
+  }, []);
+
+  /* Rola e registra no log DA SESSÃO daquele combatente. Devolve a rolagem,
+     porque a linha de dano usa o crítico do Acerto para dobrar os dados. */
+  const rolar = useCallback((desc) => {
+    const r = desc.tipo === "dano" ? rolarDano(desc) : rolarTeste(desc);
+    onSessao((s) => registraRolagem(s, r));
+    return r;
+  }, [onSessao]);
+
+  /* Os escritores de invocação, os mesmos seis da Ficha Final. ⚠ Passam pelo
+     `onSessao` como todo o resto do painel, então o mestre abate o PV de um
+     shikigami em campo sem sair do encontro. */
+  const acoesDeInvocacao = useMemo(() => {
+    // A Quimera entra pelo mesmo id da Ficha Final. Ver `invocacaoDaMesa`.
+    const pvDe = (id) => invocacaoDaMesa(derived, id)?.pv ?? 0;
+    const almaDe = (id) => invocacaoDaMesa(derived, id)?.almaMax ?? 0;
+    // As regras do tipo, que decidem como cada um cai a 0 PV (2026-09-30).
+    const regrasDe = (id) => invocacaoDaMesa(derived, id)?.regras;
+    return {
+      // Entrar em campo desconta o PE do combatente, igual à Ficha Final.
+      entrar: (id) => onSessao((s) => invocaNaMesa(s, derived, id)),
+      sair: (id) => onSessao((s) => saiDeCampo(s, id)),
+      recolher: (id) => onSessao((s) => recolheInvocacao(s, id)),
+      reconstruir: (id) => onSessao((s) => reconstroiInvocacao(s, id, pvDe(id))),
+      auxilio: (id, acaoId, on) => onSessao((s) => alternaAuxilioInvocacao(s, id, acaoId, on)),
+      aura: (id, caracId, on) => onSessao((s) => alternaAuraInvocacao(s, id, caracId, on)),
+      forma: (id, forma) => onSessao((s) => defineFormaInvocacao(s, id, forma)),
+      tarefa: (id, on) => onSessao((s) => defineEmTarefa(s, id, on)),
+      opcaoEntrada: (id, opcaoId, on) => onSessao((s) => alternaOpcaoDeEntrada(s, id, opcaoId, on)),
+      reserva: (modo) => onSessao((s) => ativaReservaInvocacao(s, modo)),
+      manter: (id) => onSessao((s) => pagaManutencaoCorpo(
+        s, id, invocacaoDaMesa(derived, id)?.duracao?.manutencao ?? 0,
+      )),
+      // O roteador da mesa: Horda, Quimera e Mecha caem do jeito deles (Etapa 9).
+      dano: (id, n) => onSessao((s) => aplicaDanoNaMesa(s, derived, id, n)),
+      formarMecha: (a, b) => onSessao((s) => formaMecha(s, derived, a, b)),
+      separarMecha: () => onSessao((s) => separaMecha(s)),
+      trocarNucleo: (id) => onSessao((s) => trocaNucleo(s, derived, id)),
+      cura: (id, n, max) => onSessao((s) => aplicaCuraInvocacao(s, id, n, max, regrasDe(id))),
+      vital: (id, qual, v) => onSessao((s) => defineVitalInvocacao(
+        s, id, qual, v, qual === "alma" ? almaDe(id) : pvDe(id), regrasDe(id),
+      )),
+    };
+  }, [onSessao, derived]);
+
+  /* Os textos do livro e o inventário, montados como a Ficha monta. ⚠ Ficam
+     ANTES do retorno antecipado lá embaixo, porque hook não pode ser
+     condicional — daí os guardas de `null` aqui dentro. */
+  const itens = useMemo(
+    () => (combatente.ficha && derived ? conteudoDaFicha(combatente.ficha, derived) : []),
+    [combatente.ficha, derived],
+  );
+  const equipamentos = useMemo(() => (derived ? equipamentosDaFicha(derived) : []), [derived]);
+
+  /* ⚠ Mesmo `useMemo` da Ficha, e pelo mesmo motivo: o delta roda um
+     `deriveAfty` por estado LIGADO, e sem a memória ele recalcularia a cada
+     tecla digitada num campo de PV. */
+  const deltaPorEstado = useMemo(
+    () => (combatente.ficha
+      ? deltaDosEstados(
+        combatente.ficha, sessao?.combate,
+        /* ⚠ AS OPÇÕES INTEIRAS DO COMBATENTE, as mesmas do `derived` (2026-09-22).
+           Até aqui só a Alma e as condições vinham, e a diferença entre as duas
+           listas saía carimbada como bônus de cada estado ligado: a Guarda de
+           um Calamidade, a concessão do mestre e os interruptores de Treino. É
+           o bug de 2026-08-28 anotado no `deltaDosEstados`. */
+        { ...opcoesDoCombatente(sessao), buffs: sessao?.buffs },
+        derived,
+      )
+      : {}),
+    [combatente.ficha, sessao, derived],
+  );
+  /* O saldo da faixa "Agora", com as mesmas opções do delta acima. */
+  const saldoAgora = useMemo(
+    () => (combatente.ficha
+      ? saldoDoAgora(
+        combatente.ficha, sessao?.combate,
+        { ...opcoesDoCombatente(sessao), buffs: sessao?.buffs },
+        derived,
+      )
+      : []),
+    [combatente.ficha, sessao, derived],
+  );
+
+  // Jogador: nada de ficha, nada de painel. A ficha dele está na mão dele.
+  if (!combatente.ficha || !sessao || !derived) {
+    // O Encontro mistura os dois sistemas: a palavra sai da FICHA do combatente.
+    const pal = palavrasDoSistema(sistemaDaFicha(combatente.ficha));
+    return (
+      <section className="afty-card p-8 text-center">
+        <div className="afty-rotulo text-[12px]">
+          {combatente.ficha
+            ? `${pal.g("Este", "Esta")} ${pal.nome} não pôde ser ${pal.g("calculado", "calculada")}. A ficha ${pal.g("dele", "dela")} pode ser de uma versão anterior.`
+            : "Combatente de jogador. A ficha dele está com o jogador, e aqui só entram nome e iniciativa."}
+        </div>
+      </section>
+    );
+  }
+
+  const stats = [
+    { k: "Defesa", v: derived.defesa, p: "defesa" },
+    { k: "CD", v: derived.cd, p: "cd" },
+    { k: "RD", v: derived.rdGeral, p: "rdGeral" },
+    ...(derived.rdEspecifico > 0 ? [{ k: "RD Espec.", v: derived.rdEspecifico, p: "rdEspecifico" }] : []),
+    ...(derived.rdAlma > 0 ? [{ k: "RD Alma", v: derived.rdAlma, p: "rdAlma" }] : []),
+    { k: "Mov.", v: `${numeroBr(derived.movimento)}m`, p: "movimento" },
+    { k: "Atenção", v: derived.atencao, p: "atencao" },
+  ];
+
+  const ultima = sessao.log?.[0] ?? null;
+
+  return (
+    /* ⚠ UM PROVEDOR POR COMBATENTE, e não um no topo do Encontro: o mundo dos
+       Addons é a UNIÃO de todas as fichas, mas o que cada criatura ENXERGA na
+       tela sai da ficha dela. Sem isto, um combatente com addon emprestaria o
+       card de concessão para o combatente raw ao lado. */
+    <PrimitivasDeAddon primitivas={derived.primitivas}>
+    <div className="space-y-3">
+      {/* ---------- cabeçalho do combatente ---------- */}
+      <section className="afty-card p-3 space-y-3">
+        <div className="flex items-center gap-2 flex-wrap">
+          <h2 className="afty-card-titulo flex-1 min-w-0 truncate">
+            {combatente.nome}
+          </h2>
+          {ativo && <span className="afty-chip" data-afty-tom="destaque">Turno</span>}
+          <button
+            type="button"
+            className="afty-botao"
+            data-afty-tom={combatente.flags.abatido ? "aviso" : undefined}
+            aria-pressed={combatente.flags.abatido}
+            onClick={() => onFlag("abatido", !combatente.flags.abatido)}
+            title="Sai da ordem de iniciativa"
+          >
+            <Skull className="w-3.5 h-3.5" /> Abatido
+          </button>
+          <button
+            type="button"
+            className="afty-botao"
+            data-afty-tom={combatente.flags.oculto ? "destaque" : undefined}
+            aria-pressed={combatente.flags.oculto}
+            onClick={() => onFlag("oculto", !combatente.flags.oculto)}
+            title="Sai da ordem sem estar abatido (emboscada, fora de cena)"
+          >
+            <EyeOff className="w-3.5 h-3.5" /> Oculto
+          </button>
+          <button
+            type="button"
+            className="afty-botao"
+            onClick={() => onSessao((s) => descansar(s, derived))}
+            title="Recursos cheios, usos zerados e durações limpas"
+          >
+            <Moon className="w-3.5 h-3.5" /> Descansar
+          </button>
+        </div>
+
+        {/* ⚠ LINHA MORTA E MARCADA, a mesma da Ficha e do criador (decisão 4 do
+            autor). Faltava aqui, e sem ela o mestre abria um encontro com uma
+            criatura de addon órfão e via os números ERRADOS sem sintoma nenhum,
+            que é justamente o que a decisão existe para impedir. Vem ANTES dos
+            vitais porque é a única coisa do painel que pede ação, e some sozinha
+            quando não há nada. */}
+        {(derived.addonProblemas?.length ?? 0) > 0 && (
+          <div className="afty-card p-2 space-y-1">
+            {derived.addonProblemas.map((m) => (
+              <p
+                key={`${m.familia}:${m.id}`}
+                className="text-[11px] flex items-start gap-1"
+                style={{ color: "var(--afty-aviso)" }}
+                title={m.saida}
+              >
+                <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-px" aria-hidden="true" />
+                <span>{m.motivo}</span>
+              </p>
+            ))}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <Vital
+            tipo="pv" icone={Heart} rotulo="PV"
+            atual={sessao.hpAtual} max={derived.hp} temp={pvTempTotal(sessao)}
+            onSet={(v) => onSessao((s) => ({ ...s, hpAtual: v }))}
+            onDelta={(d) => onSessao((s) => ({ ...s, hpAtual: s.hpAtual + d }))}
+          />
+          {!derived.bloodfeast?.tem && <Vital
+            tipo="pe" icone={Zap} rotulo={derived.recursoLabel}
+            atual={sessao.peAtual} max={derived.pe} temp={peTempTotal(sessao)}
+            rotuloTemp={`${derived.recursoLabel} Temporário`}
+            onSet={(v) => onSessao((s) => ({ ...s, peAtual: v }))}
+            /* ⚠ Delta NEGATIVO é GASTO, e gasto come a casca primeiro, igual ao
+               dano no PV. É a mesma regra da Ficha, e as duas telas mexem na
+               MESMA sessão: divergir aqui faria o mestre e o jogador chegarem a
+               PVs diferentes na mesma criatura. */
+            onDelta={(d) => onSessao((s) => (
+              d < 0 ? gastaPe(s, -d) : { ...s, peAtual: s.peAtual + d }
+            ))}
+          />}
+          <Vital
+            tipo="alma" icone={Sparkles} rotulo="Alma"
+            atual={sessao.almaAtual} max={derived.almaMax}
+            /* ⚠ Pelos mesmos verbos da Ficha, e pelo mesmo motivo do PE logo
+               acima: as duas telas mexem na MESMA sessão, e o Dano na Alma de um
+               jogador desce o PV corrente junto. Divergir aqui faria o mestre e o
+               jogador chegarem a Vidas diferentes na mesma ficha. */
+            onSet={(v) => onSessao((s) => defineAlma(s, v, derived))}
+            onDelta={(d) => onSessao((s) => (d < 0
+              ? aplicaDanoNaAlma(s, -d, derived)
+              : curaAlma(s, d, derived)))}
+          />
+          {/* Pontos de Preparo (Combatente), pelos mesmos verbos da Ficha: as
+              duas telas mexem na MESMA sessão. */}
+          {derived.pontosPreparo > 0 && (
+            <Vital
+              tipo="preparo" icone={Crosshair} rotulo="Preparo"
+              atual={preparoDe(sessao, derived.pontosPreparo)} max={derived.pontosPreparo}
+              temp={preparoTempDe(sessao)} rotuloTemp="Preparo Temporário"
+              onSet={(v) => onSessao((s) => definePreparo(s, v, derived.pontosPreparo))}
+              onDelta={(d) => onSessao((s) => alteraPreparo(s, d, derived.pontosPreparo))}
+            />
+          )}
+          <DanoRapido
+            onDano={(n) => onSessao((s) => aplicaDano(s, n))}
+            onCura={(n) => onSessao((s) => aplicaCura(s, n, derived.hp))}
+          />
+        </div>
+
+        {/* Guarda Inabalável, do Calamidade e do Beyond. É AQUI que ela mais
+            trabalha: quem conta os golpes que o chefe sofre é o mestre, e ele
+            está nesta tela. Some inteira para os outros patamares. */}
+        <Guarda
+          guarda={derived.guarda}
+          onGolpe={() => onSessao((s) => sofreGolpeNaGuarda(s, derived))}
+          onDesfazGolpe={() => onSessao(desfazGolpeNaGuarda)}
+          onRaioNegro={() => onSessao(encerraGuarda)}
+        />
+
+        {/* Mesma célula de tamanho fixo da Ficha (`afty-stat`), e não uma
+            fileira `flex-wrap`: com caixas do tamanho do próprio texto, "CD"
+            minúscula ao lado de "Res. Parcial" larga (rótulo que saiu em
+            2026-09-21) fazia a fileira virar uma serra. O autor apontou isso
+            na Ficha em 2026-08-05.
+
+            ⚠ As colunas vêm do `.afty-stats` do `ficha.css`, que este painel já
+            importa. Aqui a coluna é estreita e muda de largura com o painel de
+            iniciativa ao lado, então contar colunas por breakpoint errava mais
+            ainda do que na Ficha. */}
+        <div className="afty-stats">
+          {stats.map((s) => (
+            <span key={s.k} className="afty-stat" data-afty-stat={s.p ?? s.k}>
+              <span className="afty-stat-rotulo" title={s.k}>{s.k}</span>
+              <NumeroComFontes
+                valor={s.v}
+                partes={s.p ? derived.partes?.[s.p] : null}
+                total={s.v}
+                formatar={false}
+                className="afty-stat-valor"
+              />
+            </span>
+          ))}
+        </div>
+
+        {ultima && (
+          <div className="afty-linha px-2.5 py-1.5 flex items-center gap-2">
+            <span className="afty-rotulo text-[10px] flex-shrink-0">Última rolagem</span>
+            <span className="flex-1 min-w-0 truncate text-[12px]">{ultima.rotulo}</span>
+            <span className="afty-valor text-[13px]">{textoDaRolagem(ultima)}</span>
+          </div>
+        )}
+      </section>
+
+      {/* ---------- abas ---------- */}
+      {/* A barra de abas É a da Ficha (`afty-abas` / `afty-aba`), e não uma
+          fileira de botões: o painel do combatente é a mesma ferramenta, e duas
+          gramáticas de aba na mesma sessão de jogo confundem quem alterna entre
+          a tela do mestre e a do jogador. */}
+      <div className="afty-abas afty-encontro-abas" role="tablist" aria-label="Seções do combatente">
+        {ABAS.map((a) => {
+          const Icone = a.icone;
+          return (
+            <button
+              key={a.id}
+              type="button"
+              role="tab"
+              className="afty-aba flex items-center gap-1.5"
+              aria-selected={aba === a.id}
+              onClick={() => setAba(a.id)}
+            >
+              <Icone className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
+              {a.rotulo}
+            </button>
+          );
+        })}
+      </div>
+
+      {aba === "acoes" && (
+        <AbaAcoes
+        bloodfeast={<PainelBloodfeast derived={derived} sessao={sessao} onSessao={onSessao} alvos={alvosBloodfeast} onAlvo={onAlvoBloodfeast} />}
+        conjuracaoBloodfeast={(f) => <ConjuracaoBloodfeast f={f} derived={derived} sessao={sessao} onSessao={onSessao} />}
+          derived={derived}
+          adaptacao={<PainelDeAdaptacao derived={derived} onSessao={onSessao} />}
+          olhosAgulha={<PainelOlhosAgulha derived={derived} sessao={sessao} onSessao={onSessao} />}
+          manipulacaoCeu={<PainelManipulacaoCeu derived={derived} onEstado={(estado, valor) => onSessao((s) => alteraEstadoCombate(s, estado, valor))} />}
+          armasTransformaveis={<ArmasTransformaveis derived={derived} sessao={sessao} onSessao={onSessao} />}
+          golpeEspecial={<PainelDoGolpeEspecial derived={derived} sessao={sessao} onSessao={onSessao} />}
+          gatilhosTreino={derived.gatilhosTreino}
+          onGatilhoTreino={(id, v) => onSessao((s) => alteraTreinoAtivo(s, id, v))}
+          rolar={rolar}
+          destaque={destaque}
+          rapido={[]}
+          abertos={abertos}
+          onAberto={alternaItem}
+          onFavorito={() => {}}
+        />
+      )}
+      {aba === "habilidades" && (
+        <AbaHabilidades
+          // Nativos (Aliados, Alma, Comidas) saíram daqui em 2026-09-13 — ver
+          // o mesmo comentário em AftyFicha.jsx. Aparecem na aba Buffs.
+          funcionamentos={funcionamentosDaFicha(combatente.ficha)}
+          itens={itens}
+          abertos={abertos}
+          onAberto={alternaItem}
+          favoritos={[]}
+          onFavorito={() => {}}
+          destaque={destaque}
+          contadorUsos={{
+            gastosDe: (chave) => usosGastosDe(sessao, chave),
+            onUso: (usos, delta) => onSessao((s) => marcaUso(s, usos, delta)),
+          }}
+          // Só leitura: o combatente guarda uma cópia da ficha, e gravar as Almas
+          // nela não chegaria à ficha de verdade.
+          espinho={derived.primitivas?.includes("espinho") && derived.espinho?.ativo ? (
+            <EspinhoCard compacto extrato={derived.espinho} estado={combatente.ficha?.espinho} />
+          ) : null}
+        />
+      )}
+      {aba === "pericias" && (
+        <AbaPericias derived={derived} rolar={rolar} destaque={destaque} />
+      )}
+      {aba === "equipamentos" && (
+        <AbaEquipamentos
+          derived={derived}
+          itens={equipamentos}
+          abertos={abertos}
+          onAberto={alternaItem}
+          favoritos={[]}
+          onFavorito={() => {}}
+          destaque={destaque}
+        />
+      )}
+      {aba === "invocacoes" && (
+        /* ⚠ `estadoDe` e `acoes` são OBRIGATÓRIOS desde 2026-08-31: a aba deixou
+           de ser um mostrador e virou a mesa do Controlador, com barra de vida,
+           Integridade e os bônus ligáveis. Sem eles ela quebra ao renderizar, e
+           foi assim que esta chamada ficou por um instante.
+
+           ⚠ NÃO passa `aoTemar`: o combatente guarda uma CÓPIA congelada da
+           ficha, e o editor de aparência grava na criatura. Sem o gancho, o
+           botão de paleta some sozinho, em vez de virar um clique que não faz
+           nada. */
+        <AbaInvocacoes
+          derived={derived}
+          rolar={rolar}
+          destaque={destaque}
+          estadoDe={(id) => estadoDaInvocacao(sessao, id)}
+          entradaDe={(inv) => entradaDaInvocacao(sessao, inv)}
+          mechaDe={(a, b) => mechaPermitido(sessao, derived, a, b)}
+          emCombate={emCombateNaSessao(sessao)}
+          reserva={sessao.reservaInvocacao}
+          acoes={acoesDeInvocacao}
+        />
+      )}
+      {aba === "buffs" && (
+        <AbaBuffs
+          derived={derived}
+          sessao={sessao}
+          deltaPorEstado={deltaPorEstado}
+          onPatchCombate={(parcial) => onSessao((s) => aplicaPatchCombate(s, parcial))}
+          onEstado={(estado, valor) => onSessao((s) => alteraEstadoCombate(s, estado, valor))}
+          onExaustao={(valor) => onSessao((s) => ({
+            ...s, exaustao: Math.max(0, Math.trunc(Number(valor) || 0)),
+          }))}
+          onBuffs={(buffs) => onSessao((s) => ({ ...s, buffs }))}
+          /* Mesmo caminho da Ficha: oito condições derrubam a Guarda, e as
+             duas telas mexem na MESMA sessão. Ver `defineCondicoes`. */
+          onCondicoes={(condicoes) => onSessao((s) => defineCondicoes(s, condicoes))}
+          /* Concessão do mestre (Addons 8.3). Os mesmos dois escritores da
+             Ficha Final, porque a aba é o MESMO componente: "nos dois lugares"
+             custou passar duas props. */
+          onConceder={(familia, id) => onSessao((s) => concedeNaSessao(s, familia, id))}
+          onRemoverConcessao={(uid) => onSessao((s) => removeConcessao(s, uid))}
+          /* O Sangramento rola e desconta igual à Ficha Final. */
+          onSangrar={(condicao) => {
+            const faixa = condicao?.sangramento;
+            if (!faixa) return;
+            const r = rolarDano({ rotulo: "Sangramento", detalhe: "Perda de Vida", dados: faixa.dados, faces: faixa.faces });
+            onSessao((s) => aplicaPerdaDeVida(registraRolagem(s, r), r.total));
+          }}
+          saldoAgora={saldoAgora}
+        />
+      )}
+    </div>
+    </PrimitivasDeAddon>
+  );
+}

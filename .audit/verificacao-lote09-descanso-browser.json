@@ -1,0 +1,122 @@
+[
+  {
+    "rota": "afty",
+    "largura": 1440,
+    "modo": "ficha",
+    "cancelamento": true,
+    "escolha": "B",
+    "demaisPreservadas": true,
+    "sistemaDaFicha": true,
+    "erros": []
+  },
+  {
+    "rota": "afty",
+    "largura": 1440,
+    "modo": "encontro",
+    "cancelamento": true,
+    "escolha": "B",
+    "demaisPreservadas": true,
+    "sistemaDaFicha": true,
+    "erros": []
+  },
+  {
+    "rota": "afty",
+    "largura": 1440,
+    "modo": "todos",
+    "cancelamento": true,
+    "escolha": "B",
+    "demaisPreservadas": true,
+    "sistemaDaFicha": true,
+    "erros": []
+  },
+  {
+    "rota": "afty",
+    "largura": 390,
+    "modo": "ficha",
+    "cancelamento": true,
+    "escolha": "B",
+    "demaisPreservadas": true,
+    "sistemaDaFicha": true,
+    "erros": []
+  },
+  {
+    "rota": "afty",
+    "largura": 390,
+    "modo": "encontro",
+    "cancelamento": true,
+    "escolha": "B",
+    "demaisPreservadas": true,
+    "sistemaDaFicha": true,
+    "erros": []
+  },
+  {
+    "rota": "afty",
+    "largura": 390,
+    "modo": "todos",
+    "cancelamento": true,
+    "escolha": "B",
+    "demaisPreservadas": true,
+    "sistemaDaFicha": true,
+    "erros": []
+  },
+  {
+    "rota": "player",
+    "largura": 1440,
+    "modo": "ficha",
+    "cancelamento": true,
+    "escolha": "B",
+    "demaisPreservadas": true,
+    "sistemaDaFicha": true,
+    "erros": []
+  },
+  {
+    "rota": "player",
+    "largura": 1440,
+    "modo": "encontro",
+    "cancelamento": true,
+    "escolha": "B",
+    "demaisPreservadas": true,
+    "sistemaDaFicha": true,
+    "erros": []
+  },
+  {
+    "rota": "player",
+    "largura": 1440,
+    "modo": "todos",
+    "cancelamento": true,
+    "escolha": "B",
+    "demaisPreservadas": true,
+    "sistemaDaFicha": true,
+    "erros": []
+  },
+  {
+    "rota": "player",
+    "largura": 390,
+    "modo": "ficha",
+    "cancelamento": true,
+    "escolha": "B",
+    "demaisPreservadas": true,
+    "sistemaDaFicha": true,
+    "erros": []
+  },
+  {
+    "rota": "player",
+    "largura": 390,
+    "modo": "encontro",
+    "cancelamento": true,
+    "escolha": "B",
+    "demaisPreservadas": true,
+    "sistemaDaFicha": true,
+    "erros": []
+  },
+  {
+    "rota": "player",
+    "largura": 390,
+    "modo": "todos",
+    "cancelamento": true,
+    "escolha": "B",
+    "demaisPreservadas": true,
+    "sistemaDaFicha": true,
+    "erros": []
+  }
+]

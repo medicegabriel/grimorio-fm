@@ -174,6 +174,13 @@ perfeita: a caixa ficava **verde**, o `evalNumber` estourava e o efeito morria c
 vocabulário do seletor `{ }` é o conjunto de nomes conhecidos, e um nome errado fica vermelho na
 hora, com o motivo escrito embaixo.
 
+O criador compartilha `useDslConhecidas` entre `TecnicaMotorEditor`, `MotorEfeitosEditor` e
+`ExprField`. Expressão e condição usam os nomes do mesmo vocabulário mostrado no seletor.
+Chamadas como `contar("eco")` ficam fora do conjunto de variáveis. Na Habilidade Única, o
+contexto do item complementa o da criatura. Nos modificadores de Ação e Característica,
+`vocabularioInvocacao` preserva o namespace da invocação, inclusive seus atributos, grau,
+tipo e marcadores, além de `nd` e `bt` do dono e das constantes `sempre` e `nunca`.
+
 ### `escala_ataque`, a parcela de nível da Jogada de Ataque (2026-09-23, só no Afty)
 
 Vale `piso(nd / 1.5)` na criatura e `piso(nd / 2)` no jogador. É a mesma conta do `escalaFixa` de
@@ -220,6 +227,17 @@ o Céu fica 78/138. O texto da linha usa vírgula ("1,5m").
 Clientes: Extensão do Corpo e Sincronia Perfeita (`cat:corpo`, 1,5 cada) e o Longo do Golpe Especial
 (`cat:corpo` 1,5 e `cat:distancia|cat:arremesso` 9). O Ataque Básico não é arma e não recebe os três.
 Quem lê é o `alcanceDe` do `resolveDano` (`afty-pericias.js`).
+
+Desde 2026-10-03, por decisão do autor nos dois sistemas, Alcance Corpo a Corpo do Auxiliar,
+Ataque Circular (Manobras Finalizadoras do Lutador) e Articulações Extensas (Maldição Era de Ouro)
+miram `basico|cat:corpo`. Não alteram Feitiços nem o Espaço/Alcance derivado do Tamanho.
+O Circular soma 3 m somente com a manobra ligada e Empolgação pelo menos 5. Articulações Extensas
+soma 1,5 m permanente. Alcance a Distância do Auxiliar mira `cat:distancia|cat:arremesso`.
+
+O tradutor `efeitosDaTabelaDoAuxiliar` em `afty-combate-conjurador.js` emite as linhas de alcance
+e mantém o pool exclusivo dos Auxiliares. O `alcanceDe` já lê o canal no Ataque Básico e agora
+devolve `alcance.partes`, com base, Estendida, nomes das fontes do Motor (incluindo suplantados)
+e multiplicador. A Ficha usa essas partes no hover do alcance, por `NumeroComFontes`.
 
 ### O escopo `treinada` (2026-09-23)
 
@@ -273,8 +291,10 @@ mestre [...] Caso já fosse mestre, recebe +2"*.
 - Ele é fonte para o aviso de TR marcado à mão (`semFonte`), mesmo quando virou número.
 
 ⚠ **O `proficienciaTR` comum SOMA as concessões** (duas de Treinado dão Mestre), e o `prof_tr_*` do
-DSL só lê a marcação à mão. Por isso o "caso já seja" de TR não coube numa expressão com
-`prof_tr_*`: ele não enxergaria o TR que vem da Classe.
+DSL lê a marcação à mão e, no jogador, a faixa da Classe (desde 2026-10-03, a maior das duas), mas
+não as concessões do Motor. Por isso o "caso já seja" de TR que soma no teste não coube numa
+expressão com `prof_tr_*`. A Força Imparável e a Resiliência Melhorada seguem nele (`1 +
+(prof_tr_<tr> >= 1)`, com `semCredito`) e passaram a enxergar o TR da Classe no jogador.
 
 ## A LINHA PODE CAIR NA INVOCAÇÃO (`escopo`, 2026-09-15)
 

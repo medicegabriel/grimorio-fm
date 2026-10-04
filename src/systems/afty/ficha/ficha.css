@@ -1185,10 +1185,17 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
    dentro da linha aberta: medido em 390px, "Bônus dos Aliados: 2" e o contador
    espremiam o nome até ele sumir. A pergunta vai à própria LINHA (`@container`),
    e não à janela, porque a aba mora também no painel do Encontro. O limiar vai
-   em pixel: `rem` numa consulta de container resolve contra a raiz de 18px. */
+   em pixel: `rem` numa consulta de container resolve contra a raiz de 18px.
+
+   AS MARCAS DA LINHA (a origem, a Especialização, o Nível) seguem o mesmo
+   caminho desde 2026-10-03 (autor: saem da fechada e voltam na aberta). Antes
+   elas tinham `hidden sm:inline-flex`, que nunca escondeu nada: o `display` do
+   `.afty-chip` lá em cima, fora de camada, vence o `hidden` do Tailwind. Esta
+   regra vence o `.afty-chip` porque tem o mesmo peso e vem depois. */
 .afty-mesa-aberta { display: none; }
 @container itemficha (max-width: 560px) {
-  .afty-mesa-fechada { display: none; }
+  .afty-mesa-fechada,
+  .afty-marca-fechada { display: none; }
   .afty-mesa-aberta { display: flex; }
 }
 
@@ -1301,6 +1308,15 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 .afty-delta[data-afty-tom="nota"] {
   font-weight: 500;
   color: var(--afty-texto-suave);
+}
+
+/* O motivo de uma trava ("Defesa Abaixo da Base", do Feitiço Permutativo). Texto
+   com o ícone, na mesma régua, e não cápsula: são três ou quatro palavras. */
+.afty-delta[data-afty-tom="aviso"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--afty-aviso);
 }
 
 /* ============================================================ */

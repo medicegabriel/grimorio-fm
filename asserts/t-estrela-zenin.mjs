@@ -42,6 +42,27 @@ const t = (nome, real, esperado) => {
 
 const CLA = "estrela-zenin:cla_estrela_zenin";
 
+/* Clã Zenin nativo: distribuição livre confirmada pelo autor em 2026-10-03. */
+A.aplicarAddons([]);
+t("Zenin nativo: 3 pontos livres, no maximo 2 por atributo",
+  O.getCla("cla_zenin").caracteristicas.find((c) => c.id === "bonus_atributo").bonus,
+  { distribuir: 3, maxPorAtributo: 2 });
+const ATRIBUTOS_ZENIN = ["forca", "destreza", "constituicao", "inteligencia", "sabedoria", "presenca"];
+for (const sistema of ["afty", "player"]) {
+  for (const [i, atributo] of ATRIBUTOS_ZENIN.entries()) {
+    const outro = ATRIBUTOS_ZENIN[(i + 1) % ATRIBUTOS_ZENIN.length];
+    const c = createBlankAfty();
+    c.rulesVersion = sistema;
+    c.attributes = Object.fromEntries(ATRIBUTOS_ZENIN.map((k) => [k, 10]));
+    c.core.origem = { id: "herdado", cla: "cla_zenin", bonusAtributos: { [atributo]: 2, [outro]: 1 } };
+    const antes = JSON.stringify(c);
+    const dd = deriveAfty(c);
+    t(sistema + ": Zenin aceita " + atributo + " e " + outro,
+      [dd.attrEff[atributo], dd.attrEff[outro]], [12, 11]);
+    t(sistema + ": a ficha salva com " + atributo + " continua intacta", JSON.stringify(c), antes);
+  }
+}
+
 const PACOTE = {
   id: "estrela-zenin",
   nome: "Estrela dos Zenin",

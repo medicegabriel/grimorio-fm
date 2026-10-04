@@ -855,6 +855,17 @@ Quatro pegadinhas, todas pagas com bug:
 
 Opcionais na origem: `clasRotulo` (o nome do seletor, padrão "Clã") e `clasArtigo` (padrão "um").
 
+### O campo `espinho` e a primitiva `espinho` (2026-09-30)
+
+Uma loja de catálogo FIXO na ficha, paga em Almas: cada item tem custo, teto de compras (DSL) e o que
+rende por unidade (linhas do Motor, um Talento concedido, ou um item do inventário marcado como Grau
+Especial). O verbo mora em `afty-espinho.js` e o catálogo no campo `espinho.itens` do pacote, lido por
+`espinhoDaFicha`. O campo `espinho.multiplicadorTeto` (o Addon Alter) multiplica todo teto, com um piso
+só no fim, e sozinho já faz o pacote válido. As compras rendem com ou sem o `permite`: a primitiva
+`espinho` só decide quem vê o card (aba Habilidades do criador e da Ficha Final) e o canal novo
+`pontosAtributo` no seletor. Guia completo em `docs/afty-espinho.md`, pacotes em `addons/espinho.json`
+e `addons/alter.json`.
+
 ### O campo `incompativeis` (2026-09-14)
 
 Ids de pacotes que **não ligam na mesma ficha** que este. Nasceu com a Criação de Equipamentos, que o
@@ -1828,11 +1839,12 @@ Os efeitos moram no `efeitos` da origem (ou do clã) e apontam para o id:
 ```
 
 ⚠ **Por que interruptor, e não estado de combate.** Efeito de origem roda no MONTANTE, antes de a
-bancada existir, então um `quando` que cite estado de combate avalia zero e cai calado (o mesmo
-defeito que deixa a Atenção do Instinto Sanguinário sempre de fora, anotado em `a-fazer.md`). O
-interruptor não passa pelo `quando`: `coletarEfeitosOrigem` recebe o `treinosAtivos` e tira o efeito
-desligado antes do Motor, pela mesma porta do `efeitosDeTreino`. E vale fora de combate, que é o que
-uma forma usada para farejar precisa. Decisão do autor.
+bancada existir. Até 2026-10-03 um `quando` que citasse estado de combate avaliava zero ali e caía
+calado (era o defeito da Atenção do Instinto Sanguinário). Hoje esse efeito desce ao estágio
+principal (`separarEfeitosDeBancada`) e funciona, mas a Forma de Raposa segue no interruptor por
+decisão do autor: ele não passa pelo `quando` (`coletarEfeitosOrigem` recebe o `treinosAtivos` e
+tira o efeito desligado antes do Motor, pela mesma porta do `efeitosDeTreino`) e vale fora de
+combate, que é o que uma forma usada para farejar precisa.
 
 `gatilhosDeOrigem` (afty-origens.js) lê `caracteristicasEfetivas`, então o do clã só existe com o
 clã escolhido. O derive junta os dois em `gatilhosTreino`, sem duplicar id, e as três telas que
@@ -1925,7 +1937,8 @@ uma linha repetível "uma vez para cada TR, exceto Integridade". As três servem
 ```
 
 O "caso já fosse treinado" do mesmo treino é o canal `proficienciaTRCasoJa`, descrito em
-`docs/automacao-dsl.md`: ele conta o TR que vem da Classe, o que o `prof_tr_*` não faz.
+`docs/automacao-dsl.md`: ele conta o TR que vem da Classe e o do Motor, e o `prof_tr_*` conta só a
+marcação à mão e, no jogador, a Classe (desde 2026-10-03).
 
 ⚠ **Achado no caminho: a linha repetível de um addon que sumiu não virava linha morta.** O
 `idsDaFicha` da família lia `Number(progresso)`, e numa linha repetível o progresso é a LISTA de
@@ -2085,6 +2098,14 @@ cada multiplicador aparece no detalhamento do atributo afetado.
 
 Pacotes de referência: `addons/restricao-celestial-santo-da-espada.json` e
 `addons/regras-grimorio.json`.
+
+## Categoria adicional de Aptidão por Origem
+
+Uma origem de addon pode declarar `categoriasAptidaoAdicionais`, lista de ids de categorias a mostrar além das abas normais. O motor lê essa lista da origem escolhida pela criatura e insere as categorias antes de Especiais, sem modificar suas trilhas. A Aberração Humanizada usa `["maldicao"]` para manter Energia Reversa e abrir Maldição ao mesmo tempo. Veja `addons/aberracao-humanizada.json` e `docs/afty-aberracao-humanizada.md`.
+
+A Maldição do livro e suas variações seguem trocando Energia Reversa por Maldição pela origem estrutural. O campo adicional não faz a origem herdar requisitos ou restrições da Maldição.
+
+Uma origem de addon também pode declarar `qualificaTalentosDeOrigem` com ids de origens do livro. Esse campo abre apenas Talentos do grupo Origem com pré-requisito da origem indicada. Não muda a origem estrutural nem libera Linhas de Treinamento ou Especializações. A Aberração Humanizada usa `["feto_amaldicoado_hibrido"]`.
 
 ## The Crimsom Queen (2026-10-01)
 

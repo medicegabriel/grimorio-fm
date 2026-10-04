@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { ArmasTransformaveis } from "../ui/armas-transformaveis";
-import { Heart, Zap, Sparkles, Skull, EyeOff, Moon, Swords, Shield, BookOpen, Backpack, Wand2, AlertTriangle, Crosshair } from "lucide-react";
+import { Heart, Zap, Sparkles, Skull, EyeOff, Swords, Shield, BookOpen, Backpack, Wand2, AlertTriangle, Crosshair } from "lucide-react";
 
 import { funcionamentosDaFicha } from "../afty-schema";
 import { sistemaDaFicha, palavrasDoSistema } from "../afty-sistema";
@@ -27,6 +27,7 @@ import { rolarTeste, rolarDano, textoDaRolagem } from "../ficha/ficha-rolagem";
 import { deltaDosEstados, saldoDoAgora } from "../ficha/ficha-buffs";
 import { opcoesDoCombatente } from "./usar-encontro-afty";
 import { conteudoDaFicha, equipamentosDaFicha } from "../ficha/ficha-conteudo";
+import BotaoDeDescanso from "../ficha/BotaoDeDescanso";
 import PainelBloodfeast, { ConjuracaoBloodfeast } from "../ficha/PainelBloodfeast";
 import AbaAcoes from "../ficha/abas/AbaAcoes";
 import PainelDeAdaptacao from "../ficha/PainelDeAdaptacao";
@@ -39,6 +40,7 @@ import AbaHabilidades from "../ficha/abas/AbaHabilidades";
 import AbaEquipamentos from "../ficha/abas/AbaEquipamentos";
 import AbaInvocacoes from "../ficha/abas/AbaInvocacoes";
 import PrimitivasDeAddon from "../ui/PrimitivasDeAddon";
+import EspinhoCard from "../ui/EspinhoCard";
 
 /**
  * ============================================================
@@ -281,14 +283,12 @@ export default function PainelDeCombatente({
           >
             <EyeOff className="w-3.5 h-3.5" /> Oculto
           </button>
-          <button
-            type="button"
-            className="afty-botao"
-            onClick={() => onSessao((s) => descansar(s, derived))}
-            title="Recursos cheios, usos zerados e durações limpas"
-          >
-            <Moon className="w-3.5 h-3.5" /> Descansar
-          </button>
+          <BotaoDeDescanso
+            sessao={sessao}
+            derived={derived}
+            rotulo="Descansar"
+            onDescansar={(marioneteId) => onSessao((s) => descansar(s, derived, { marioneteId }))}
+          />
         </div>
 
         {/* ⚠ LINHA MORTA E MARCADA, a mesma da Ficha e do criador (decisão 4 do
@@ -465,6 +465,11 @@ export default function PainelDeCombatente({
             gastosDe: (chave) => usosGastosDe(sessao, chave),
             onUso: (usos, delta) => onSessao((s) => marcaUso(s, usos, delta)),
           }}
+          // Só leitura: o combatente guarda uma cópia da ficha, e gravar as Almas
+          // nela não chegaria à ficha de verdade.
+          espinho={derived.primitivas?.includes("espinho") && derived.espinho?.ativo ? (
+            <EspinhoCard compacto extrato={derived.espinho} estado={combatente.ficha?.espinho} />
+          ) : null}
         />
       )}
       {aba === "pericias" && (

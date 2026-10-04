@@ -1,0 +1,198 @@
+[
+  {
+    "rota": "afty",
+    "largura": 1440,
+    "esperado": {
+      "pvHorda": 82,
+      "pvAlfa": 39,
+      "limiteCampo": 3,
+      "limiteHordas": 1
+    },
+    "estados": [
+      [
+        "Em Campo 0 / 3",
+        "Hordas 0 / 1"
+      ],
+      [
+        "Em Campo 1 / 3",
+        "Hordas 1 / 1"
+      ],
+      [
+        "Em Campo 1 / 3",
+        "Hordas 1 / 1"
+      ],
+      [
+        "Em Campo 1 / 3",
+        "Hordas 1 / 1"
+      ],
+      [
+        "Em Campo 0 / 3",
+        "Hordas 0 / 1"
+      ]
+    ],
+    "mecha": {
+      "maior": "Alfa",
+      "atual": 3,
+      "casca": {
+        "Mecha · Marionete Menor": 7
+      }
+    },
+    "queda": [
+      "quebrada",
+      "quebrada",
+      "fora"
+    ],
+    "dim": {
+      "viewport": 1440,
+      "largura": 1425
+    },
+    "erros": []
+  },
+  {
+    "rota": "afty",
+    "largura": 390,
+    "esperado": {
+      "pvHorda": 82,
+      "pvAlfa": 39,
+      "limiteCampo": 3,
+      "limiteHordas": 1
+    },
+    "estados": [
+      [
+        "Em Campo 0 / 3",
+        "Hordas 0 / 1"
+      ],
+      [
+        "Em Campo 1 / 3",
+        "Hordas 1 / 1"
+      ],
+      [
+        "Em Campo 1 / 3",
+        "Hordas 1 / 1"
+      ],
+      [
+        "Em Campo 1 / 3",
+        "Hordas 1 / 1"
+      ],
+      [
+        "Em Campo 0 / 3",
+        "Hordas 0 / 1"
+      ]
+    ],
+    "mecha": {
+      "maior": "Alfa",
+      "atual": 3,
+      "casca": {
+        "Mecha · Marionete Menor": 7
+      }
+    },
+    "queda": [
+      "quebrada",
+      "quebrada",
+      "fora"
+    ],
+    "dim": {
+      "viewport": 390,
+      "largura": 390
+    },
+    "erros": []
+  },
+  {
+    "rota": "player",
+    "largura": 1440,
+    "esperado": {
+      "pvHorda": 82,
+      "pvAlfa": 39,
+      "limiteCampo": 3,
+      "limiteHordas": 1
+    },
+    "estados": [
+      [
+        "Em Campo 0 / 3",
+        "Hordas 0 / 1"
+      ],
+      [
+        "Em Campo 1 / 3",
+        "Hordas 1 / 1"
+      ],
+      [
+        "Em Campo 1 / 3",
+        "Hordas 1 / 1"
+      ],
+      [
+        "Em Campo 1 / 3",
+        "Hordas 1 / 1"
+      ],
+      [
+        "Em Campo 0 / 3",
+        "Hordas 0 / 1"
+      ]
+    ],
+    "mecha": {
+      "maior": "Alfa",
+      "atual": 3,
+      "casca": {
+        "Mecha · Marionete Menor": 7
+      }
+    },
+    "queda": [
+      "quebrada",
+      "quebrada",
+      "fora"
+    ],
+    "dim": {
+      "viewport": 1440,
+      "largura": 1425
+    },
+    "erros": []
+  },
+  {
+    "rota": "player",
+    "largura": 390,
+    "esperado": {
+      "pvHorda": 82,
+      "pvAlfa": 39,
+      "limiteCampo": 3,
+      "limiteHordas": 1
+    },
+    "estados": [
+      [
+        "Em Campo 0 / 3",
+        "Hordas 0 / 1"
+      ],
+      [
+        "Em Campo 1 / 3",
+        "Hordas 1 / 1"
+      ],
+      [
+        "Em Campo 1 / 3",
+        "Hordas 1 / 1"
+      ],
+      [
+        "Em Campo 1 / 3",
+        "Hordas 1 / 1"
+      ],
+      [
+        "Em Campo 0 / 3",
+        "Hordas 0 / 1"
+      ]
+    ],
+    "mecha": {
+      "maior": "Alfa",
+      "atual": 3,
+      "casca": {
+        "Mecha · Marionete Menor": 7
+      }
+    },
+    "queda": [
+      "quebrada",
+      "quebrada",
+      "fora"
+    ],
+    "dim": {
+      "viewport": 390,
+      "largura": 390
+    },
+    "erros": []
+  }
+]

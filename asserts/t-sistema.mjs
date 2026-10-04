@@ -182,6 +182,10 @@ t("as divergencias de REGRA ligadas",
       tem uma classe só, então o clone dos derives não sente: quem mede é
       `t-combatente-revisao.mjs`. */
    "treinoDaClasseInicial",
+   /* O dano da arma no Acerto Amaldiçoado (2026-10-02). A ficha abaixo não põe
+      arma no Amaldiçoado, então o clone dos derives não sente: quem mede é
+      `t-dano-acerto-amaldicoado.mjs`. */
+   "danoDoAcertoAmaldicoado",
    /* O Desenvolvimento Inesperado do Derivado no jogador (2026-10-01). A ficha
       abaixo não é Derivado, então o clone dos derives não sente: quem mede é
       `t-desenvolvimento-inesperado.mjs`. */
@@ -452,7 +456,7 @@ t("a ficha de player continua player depois de derivada",
    e a lista existe para que ligar uma seja um passo com nome. */
 t("as divergencias conhecidas estao na lista",
   S.DIVERGENCIAS.map((d) => d.id).sort(),
-  ["abasIdentidade", "altoNivelSemGeral", "aptidaoApos20", "basesAutomaticas", "danoPorArma",
+  ["abasIdentidade", "altoNivelSemGeral", "aptidaoApos20", "basesAutomaticas", "danoDoAcertoAmaldicoado", "danoPorArma",
    "defesaUniforme", "desenvolvimentoNoNivel", "escalaDosTestes", "focosLivres", "guardaInabalavel",
    "conteudoSoPorAddon", "habilidadesGerais", "inventarioSimplificado", "melhoriasSuperioresDoJogador",
    "pacoteDaClasseInicial", "perdidoNoJogador",

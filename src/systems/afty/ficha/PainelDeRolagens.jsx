@@ -25,6 +25,9 @@ import { MODOS, textoDaRolagem } from "./ficha-rolagem";
 
 function Rolagem({ r, destaque }) {
   const marca = r.raioNegro ? "critico" : r.critico ? "critico" : r.pifia ? "pifia" : undefined;
+  /* O dado rolado de novo (Estilo Massivo) aparece como o par: o velho riscado
+     e o novo logo depois. Registro antigo não tem o campo. */
+  const velhoEm = new Map((Array.isArray(r.rerrolados) ? r.rerrolados : []).map((x) => [x.indice, x.de]));
   return (
     <div className="afty-rolagem px-2.5 py-1.5" data-afty-marca={marca} data-afty-nova={destaque ? "sim" : undefined}>
       <div className="flex items-baseline gap-2">
@@ -49,13 +52,19 @@ function Rolagem({ r, destaque }) {
             que é o mesmo vocabulário do perdedor do pool exclusivo. */}
         <span className="flex items-center gap-1 flex-wrap justify-end">
           {(r.tipo === "teste" ? r.d20 : r.dados).map((n, i) => (
-            <span
-              key={i}
-              className="afty-dado"
-              data-afty-descartado={r.tipo === "teste" && r.descartado === i ? "sim" : undefined}
-            >
-              {n}
-            </span>
+            <React.Fragment key={i}>
+              {velhoEm.has(i) && (
+                <span className="afty-dado" data-afty-descartado="sim" title={r.rerrolaFonte ?? undefined}>
+                  {velhoEm.get(i)}
+                </span>
+              )}
+              <span
+                className="afty-dado"
+                data-afty-descartado={r.tipo === "teste" && r.descartado === i ? "sim" : undefined}
+              >
+                {n}
+              </span>
+            </React.Fragment>
           ))}
           <span className="afty-rotulo text-[10px] whitespace-nowrap">{textoDaRolagem(r)}</span>
         </span>

@@ -1,0 +1,40 @@
+336
+INTERLÚDIOS
+Cenas de Interlúdio fazem parte de uma longa história: são as pausas entre uma missão 
+e outra, servindo como um tempo para respirar, se recuperar, preparar e treinar para 
+evoluir ou adaptar. Ocorrendo após o final de uma missão, ato ou sequência, é um 
+tempo dedicado a dar possibilidade de crescimento para o grupo de personagens.
+Durante uma cena de interlúdio, um personagem pode escolher dois focos para o seu 
+tempo, o que confere resultados diferentes, explorados mais abaixo. Normalmente um 
+interlúdio durará aproximadamente uma semana e, caso tenha uma duração maior 
+do que o comum, os personagens podem ser capazes de escolher mais focos para o seu 
+tempo, a escolha do Mestre.
+ADAPTAÇÃO
+O foco em Adaptação significa se dedicar em transformar suas habilidades e 
+capacidades atuais em algo novo, adaptando-se para novas situações ou vontades. 
+Entretanto, não é muito fácil simplesmente mudar o que você conhece.
+Ao escolher a opção de Adaptação, um personagem pode trocar uma quantidade de 
+habilidades de especialização por outras. Essa quantidade é igual a metade do nível do 
+personagem e as habilidades devem ser trocadas por outras da mesma especialização, 
+isso significa que você, por exemplo, só pode trocar uma habilidade de lutador por 
+outra habilidade diferente de lutador.
+CRIAÇÃO DE ITENS
+O foco de Criação de Itens significa dedicar uma parcela do seu tempo ao uso das 
+suas ferramentas e proficiências para confeccionar novos itens e equipamentos 
+úteis. Como especificado no Capítulo 5, em "Kits de Ferramentas", certos tipos de 
+Itens possuem uma limitação de quantos podem ser criados por Interlúdio, como os 
+Acessórios, limitados a 1 por Interlúdio do nível 1 ao 9.
+Ao escolher a opção de Criação de Itens, realize uma quantidade de testes de perícia 
+igual a 1 + seu Bônus de Treinamento, escolhendo uma perícia de Ofício para cada um. 
+De acordo com o resultado, comparado à tabela abaixo, você escolhe qual item será 
+criado com cada teste, respeitando também o tipo.
+Alquimia, Canalizador, Ferreiro Entalhador, Farmacêutico Alfaiate
+Custo 1 CD 15 CD 15 CD 15 
+Custo 2 CD 20 CD 20 CD 20
+Custo 3 CD 25 CD 25 CD 30
+Custo 4 CD 30 CD 35 CD 40
+Por exemplo, caso tenha feito um teste de Ofício (Alfaiate) e conseguido um resultado 
+de 18, você poderia criar um Acessório custo 1. Entretanto, caso prefira, você pode optar 
+por deixar de criar um item com um teste e, em troca, receber vantagem na próxima 
+rolagem do mesmo Ofício, melhorando suas chances de criar um item de custo maior 
+em outras tentativas.

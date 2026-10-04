@@ -1882,12 +1882,12 @@ export function validarCatalogoAptidoes() {
 /**
  * Abas de Aptidões Amaldiçoadas, na ordem (decisão do autor, 2026-07-16).
  *
- *   normal:         Aura · Controle e Leitura · Barreira · Domínio · Energia Reversa · Gerais
- *   origem Maldição: Aura · Controle e Leitura · Barreira · Domínio · Maldição · Gerais
+ *   normal:         Aura · Controle e Leitura · Barreira · Domínio · Energia Reversa · Especiais
+ *   origem Maldição: Aura · Controle e Leitura · Barreira · Domínio · Maldição · Especiais
  *
- * Maldição OCUPA O LUGAR de Energia Reversa, não se soma a ela: uma
- * maldição não usa energia reversa (é o que a destrói). Por isso as
- * duas nunca aparecem juntas, e Gerais fica sempre no fim.
+ * A Maldição do livro troca Energia Reversa pela categoria Maldição. Origens
+ * com categoriasAptidaoAdicionais podem abrir Maldição sem perder Energia
+ * Reversa. Especiais fica no fim.
  */
 export function abasAptidao(creature) {
   const sangue = (creature?.addons ?? []).some((p) => p.permite?.includes("bloodfeast"));
@@ -1899,8 +1899,9 @@ export function abasAptidao(creature) {
     ? [...APTIDAO_CATEGORIAS.filter((c) => c.id !== "maldicao"),
       { ...CAT_BY_ID.maldicao, tab: "Anatomia", aptidoesPermitidas: AFTY_APTIDOES.filter((a) => a.subcategoria === "mal_anatomia").map((a) => a.id) }]
     : APTIDAO_CATEGORIAS;
-  return categorias
-    // Maldição nunca entra pela ordem natural: só pela troca abaixo.
+  const abas = categorias
+    // Maldição entra pela troca abaixo, pela Anatomia do Bloodfeast ou pela
+    // lista adicional da origem.
     .filter((c) => c.id !== "maldicao" || (sangue && !ehMaldicao))
     .map((c) => {
       if (c.id !== "energia_reversa") return c;
@@ -1913,4 +1914,15 @@ export function abasAptidao(creature) {
       }
       return ehMaldicao ? CAT_BY_ID.maldicao : c;
     });
+
+  // Uma origem pode abrir outra categoria sem perder Energia Reversa.
+  // O campo pertence à origem escolhida, não ao pacote inteiro: outras fichas
+  // do mesmo encontro continuam com as abas normais.
+  const adicionais = getOrigem(creature?.core?.origem?.id)?.categoriasAptidaoAdicionais;
+  for (const id of Array.isArray(adicionais) ? adicionais : []) {
+    if (!CAT_BY_ID[id] || abas.some((c) => c.id === id)) continue;
+    const posicaoEspeciais = abas.findIndex((c) => c.id === "especiais");
+    abas.splice(posicaoEspeciais < 0 ? abas.length : posicaoEspeciais, 0, CAT_BY_ID[id]);
+  }
+  return abas;
 }

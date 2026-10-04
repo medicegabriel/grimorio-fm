@@ -118,7 +118,9 @@ export const sistemaDaFicha = (ficha) => normalizaSistema(ficha?.rulesVersion);
  * Nasceu em 2026-09-12, de um erro em produção. Uma ficha do Afty importada no
  * Grimório público abria no painel de combate da 2.5.2, que lê `treinamentos`
  * como LISTA enquanto aqui ele é MAPA, e estourava em
- * `collectAutomationEntities`. Ver docs/a-fazer.md.
+ * `collectAutomationEntities`. Desde 2026-10-03 a porta vale nas três rotas, e
+ * o /Afty e o /Player também se recusam um ao outro. Ver o bloco "A FRONTEIRA
+ * ENTRE OS DOIS LIVROS" em src/App.jsx.
  */
 export const sistemaGravado = (ficha) =>
   SISTEMA_IDS.includes(ficha?.rulesVersion) ? ficha.rulesVersion : null;
@@ -973,6 +975,28 @@ export const DIVERGENCIAS = [
     fonte: "A cada quatro níveis, recebe um ponto de atributo adicional e aumenta em 1 o limite do atributo escolhido. (Derivado) + \"Somar no Pontos de Nível\", com o limite num quadro só de limite (autor, 2026-10-01)",
     afty: "cada ponto sobe +1 no valor e +1 no limite do mesmo atributo, num quadro próprio",
     player: "o ponto entra livre nos Pontos de Nível, e o quadro dá só +1 de limite por escolha",
+    ativa: true,
+  },
+  {
+    /* A arma que acerta pelo Ataque Amaldiçoado já usava o Atributo de Técnica
+       no ACERTO (o próprio Ataque Amaldiçoado lê o `tecnicaAttr`), e o dano
+       seguia o atributo da arma: Força, Destreza ou o maior pela Fineza. Na
+       criatura o dano passa a ler o mesmo atributo do acerto.
+
+       ⚠ O ATRIBUTO SAI DA LINHA DO ATAQUE AMALDIÇOADO, e não do `tecnicaAttr`
+       lido de novo: acerto e dano não podem ter dois donos para a mesma escolha.
+
+       ⚠ QUEM VENCE QUANDO DUAS REGRAS TROCAM O ATRIBUTO DA MESMA ARMA: o
+       atributo próprio da arma criada (`atributoAtaque`) primeiro, depois as
+       Técnicas de Combate, e só então o Acerto Amaldiçoado. As Técnicas já
+       trocam o acerto por cima do Ataque Amaldiçoado, e o dano segue a mesma
+       ordem para os dois lados da linha usarem o mesmo atributo. */
+    id: "danoDoAcertoAmaldicoado",
+    tipo: "regra",
+    onde: "afty-pericias.js, resolveDano, o atributo de cada arma",
+    fonte: "Isso é somente na Ficha de Criatura. Quando uma arma usa o Acerto Amaldiçoado, ela também usa o Atributo de Técnica para o Dano. (autor, 2026-10-02)",
+    afty: "a arma no Acerto Amaldiçoado usa o Atributo de Técnica no dano",
+    player: "o dano segue o atributo da arma (Força, Destreza ou o maior pela Fineza)",
     ativa: true,
   },
 ];

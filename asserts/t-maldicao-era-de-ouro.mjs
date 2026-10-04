@@ -352,10 +352,12 @@ t("nenhuma entrada fica muda: ou tem efeito, ou e Mesa",
   entradas.filter((c) => !(c.efeitos?.length > 0) && !c.mesa).map((c) => c.id), []);
 t("nenhuma entrada e as duas coisas ao mesmo tempo (Mesa e efeito se excluem)",
   entradas.filter((c) => c.efeitos?.length > 0 && c.mesa).map((c) => c.id), []);
-t("as nove com numero no Motor",
+t("as dez com numero no Motor",
   entradas.filter((c) => c.efeitos?.length > 0).map((c) => c.id.slice(NS.length)),
-  ["ca_bracos_extras", "ca_carapaca_mutante", "ca_corpo_especializado", "ca_olhos_adicionais", "ca_instinto_sanguinario",
+  ["ca_articulacoes_extensas", "ca_bracos_extras", "ca_carapaca_mutante", "ca_corpo_especializado", "ca_olhos_adicionais", "ca_instinto_sanguinario",
     "ca_olhos_sombrios", "ca_pernas_extras", "ca_desenvolvimento_fisico", "ca_desenvolvimento_mental"]);
+t("as oito de Mesa continuam declaradas", entradas.filter((c) => c.mesa).length, 8);
+
 t("as tres que so cobrem um pedaco dizem qual pedaco nao entra (parcial)",
   entradas.filter((c) => c.parcial).map((c) => c.id.slice(NS.length)),
   ["ca_bracos_extras", "ca_olhos_sombrios", "ca_pernas_extras"]);

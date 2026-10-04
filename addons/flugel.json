@@ -1,7 +1,7 @@
 {
   "id": "flugel",
   "nome": "Flugel",
-  "versao": "1.1.0",
+  "versao": "1.1.1",
   "autor": "Afty",
   "paraRaw": "afty",
   "acrescenta": {
@@ -363,11 +363,11 @@
           },
           {
             "canal": "bonusAcerto",
-            "expr": "metade(bt)"
+            "expr": "piso(bt / 2)"
           },
           {
             "canal": "defesa",
-            "expr": "metade(bt)"
+            "expr": "piso(bt / 2)"
           }
         ]
       }
@@ -497,7 +497,7 @@
             {
               "canal": "limiteAtributo",
               "alvo": "escolha:atributo",
-              "expr": "metade(bt)"
+              "expr": "piso(bt / 2)"
             }
           ]
         }
@@ -605,7 +605,7 @@
           "efeitos": [
             {
               "canal": "iniciativa",
-              "expr": "metade(bt)",
+              "expr": "piso(bt / 2)",
               "gatilhoSessao": "conjuge"
             }
           ]

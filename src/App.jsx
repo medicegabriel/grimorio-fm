@@ -60,6 +60,34 @@ export default function App() {
   const storageDaRota = useCreatureStorage(
     aftyMode ? { namespace: sistemaDaRota, defaultRulesVersion: sistemaDaRota } : undefined
   );
+  // A biblioteca relida pelo Encontro também atualiza esta aba inteira.
+  // Atualizar só o dono faria o hook regravar as demais fichas desatualizadas.
+  const fichasDaRota = storageDaRota.creatures;
+  const criarDaRota = storageDaRota.create;
+  const atualizarDaRota = storageDaRota.update;
+  const removerDaRota = storageDaRota.removeMany;
+  const ordenarDaRota = storageDaRota.reorderCreatures;
+  const atualizarBibliotecaDoEncontro = useCallback((sistema, biblioteca) => {
+    if (sistema !== sistemaDaRota) return;
+    const ids = biblioteca.map((c) => c.id);
+    const idsAtuais = new Set(ids);
+    const anteriores = new Map(fichasDaRota.map((c) => [c.id, c]));
+    const removidas = fichasDaRota.filter((c) => !idsAtuais.has(c.id)).map((c) => c.id);
+    if (removidas.length) removerDaRota(removidas);
+    for (const ficha of biblioteca) {
+      // Mesma migração de leitura do hook, sem mudar identificadores.
+      const atual = { ...ficha, folderId: ficha.folderId ?? null,
+        rulesVersion: ficha.rulesVersion ?? sistema, isBuiltIn: false };
+      let anterior = anteriores.get(ficha.id);
+      if (anterior && JSON.stringify(anterior) === JSON.stringify(atual)) continue;
+      if (!anterior) anterior = criarDaRota(atual);
+      // Campo removido em outra aba também precisa sair desta cópia.
+      const apagados = Object.fromEntries(Object.keys(anterior)
+        .filter((k) => !Object.hasOwn(atual, k)).map((k) => [k, undefined]));
+      atualizarDaRota(ficha.id, { ...apagados, ...atual });
+    }
+    ordenarDaRota(ids);
+  }, [sistemaDaRota, fichasDaRota, criarDaRota, atualizarDaRota, removerDaRota, ordenarDaRota]);
   const encounterManager = useEncounterManager(aftyMode ? sistemaDaRota : "");
   // ⚠ Gerenciador PRÓPRIO do Afty, e não o de cima com namespace: o combatente
   // do Afty guarda `ficha` e `sessao`, e o da 2.5.2 guarda `snapshot` e
@@ -93,18 +121,32 @@ export default function App() {
      que estouravam no mesmo coletor pelo `useEncounter.js`.
 
      ⚠ NADA DE `src/components/` MUDOU, e é de propósito: o envoltório troca só
-     o `importMany` do objeto devolvido pelo hook, e a lista filtrada é prop. */
+     o `importMany` do objeto devolvido pelo hook, e a lista filtrada é prop.
+
+     ⚠ DESDE 2026-10-03 AS PORTAS VALEM NAS TRÊS ROTAS. Em 09-12 o autor fechou
+     só a do Grimório público, e o caminho espelho seguia aberto: uma ficha da
+     2.5.2 importada no /Afty entrava, o `sistemaDaFicha` caía no padrão e o
+     `deriveAfty` rodava a régua do Afty sobre ela, com números plausíveis e
+     errados (as 28 da enciclopédia 0.3 saíam todas com Defesa 37). O autor
+     escolheu "Fechar Tudo": cada rota importa só ficha do próprio livro, e por
+     isso o /Afty também recusa personagem e o /Player recusa criatura. A porta
+     de uso fechou junto: ficha da 2.5.2 que já morava no privado abre no
+     painel da 2.5.2 e sai dos Encontros do Afty. E as Criaturas Base saíram do
+     /Afty, porque o clique nelas abria a Ficha do Afty sobre o compêndio da
+     2.5.2 e o lápis as clonava para o inventário do Afty. */
 
   /* A ficha pertence ao inventário DESTA rota? Fora do Afty a rota é a 2.5.2,
-     e `sistemaGravado` devolve null justamente para as fichas dela. */
+     e `sistemaGravado` devolve null justamente para as fichas dela. No /Afty e
+     no /Player a resposta é a marca exata, então criatura e personagem também
+     se recusam um ao outro. */
   const ehDestaRota = useCallback(
     (ficha) => sistemaGravado(ficha) === sistemaDaRota,
     [sistemaDaRota],
   );
 
-  /* O importador do Grimório público, com a porta. Recusa as estrangeiras,
-     importa o resto e AVISA o que ficou de fora. Recusa calada seria pior que
-     o erro que isto conserta: a ficha sumiria sem explicação. */
+  /* O importador das três rotas, com a porta. Recusa as estrangeiras, importa
+     o resto e AVISA o que ficou de fora. Recusa calada seria pior que o erro
+     que isto conserta: a ficha sumiria sem explicação. */
   const importarSoDoLivro = useCallback((payload, opts) => {
     const lista = Array.isArray(payload) ? payload : (payload?.creatures ?? []);
     const recusadas = lista.filter((c) => !ehDestaRota(c));
@@ -112,8 +154,8 @@ export default function App() {
 
     const aceitas = lista.filter(ehDestaRota);
     /* ⚠ O RÓTULO SAI DO `sistemaGravado`, E NÃO DO `getSistema` DIRETO. O
-       `getSistema` cai no padrão "afty" para quem não conhece, e no dia em que
-       esta porta for ligada também no ambiente privado uma ficha da 2.5.2
+       `getSistema` cai no padrão "afty" para quem não conhece, e no ambiente
+       privado (onde esta porta vale desde 2026-10-03) uma ficha da 2.5.2
        recusada apareceria no aviso como "Grimório Afty", errado e calado. */
     const livroDe = (c) => {
       const id = sistemaGravado(c);
@@ -133,27 +175,39 @@ export default function App() {
     return { ...r, skipped: (r?.skipped ?? 0) + recusadas.length };
   }, [storageDaRota, ehDestaRota]);
 
-  /* O envoltório. No ambiente privado o hook passa inteiro: a porta que o autor
-     pediu é a do Grimório público. O caminho inverso (ficha da 2.5.2 importada
-     dentro do /Afty) está anotado em docs/a-fazer.md como pergunta.
+  /* O envoltório, igual nas três rotas desde 2026-10-03. Até ali o ambiente
+     privado recebia o hook inteiro, e era essa a porta espelho.
 
      ⚠ O `useMemo` AQUI NÃO SEGURA IDENTIDADE, e está escrito para não enganar
      quem ler: o `useCreatureStorage` devolve um literal novo a cada render, e
      por isso `storageDaRota` muda sempre e o memo sempre recalcula. Ele existe
-     porque sem ele o ternário faz o `react-hooks/exhaustive-deps` apontar cinco
-     `useCallback` abaixo. Nada piora em relação ao que já era. */
+     porque sem ele o objeto literal faz o `react-hooks/exhaustive-deps` apontar
+     cinco `useCallback` abaixo. Nada piora em relação ao que já era. */
   const storage = useMemo(
-    () => (aftyMode ? storageDaRota : { ...storageDaRota, importMany: importarSoDoLivro }),
-    [aftyMode, storageDaRota, importarSoDoLivro],
+    () => ({ ...storageDaRota, importMany: importarSoDoLivro }),
+    [storageDaRota, importarSoDoLivro],
   );
 
-  /* A lista que as telas da 2.5.2 podem tocar. O Dashboard segue recebendo a
-     lista INTEIRA, porque a ficha estrangeira precisa aparecer para ser aberta,
-     exportada ou apagada. Quem recebe esta é quem roda motor da 2.5.2 em cima
-     da ficha: os encontros e a biblioteca de modelos. */
+  /* A lista que os ENCONTROS da rota podem tocar, filtrada pelo MOTOR e não
+     pela rota. O Dashboard segue recebendo a lista INTEIRA, porque a ficha
+     estrangeira precisa aparecer para ser aberta, exportada ou apagada.
+
+     ⚠ NO PRIVADO É POR MOTOR, E NÃO POR `ehDestaRota`. O Encontro do Afty mistura
+     criatura e personagem de propósito (afty-sistema.js), então uma criatura
+     que entrou no /Player por import antigo continua podendo lutar ali. Quem
+     sai é só a ficha da 2.5.2, que o `deriveAfty` leria com a régua errada. */
   const criaturasDoLivro = useMemo(
-    () => (aftyMode ? storageDaRota.creatures : storageDaRota.creatures.filter(ehDestaRota)),
-    [aftyMode, storageDaRota.creatures, ehDestaRota],
+    () => storageDaRota.creatures.filter((c) => !!sistemaGravado(c) === aftyMode),
+    [aftyMode, storageDaRota.creatures],
+  );
+
+  /* A biblioteca de modelos é da 2.5.2 nas TRÊS rotas: o `applyTemplatesToCreatures`
+     roda o `normalizeDraft` da 2.5.2, que estoura numa ficha do Afty
+     (`treinamentos.map is not a function`, medido em 2026-10-03). No privado a
+     lista é só a ficha da 2.5.2 que entrou antes da porta, e quase sempre vazia. */
+  const fichasDa252 = useMemo(
+    () => storageDaRota.creatures.filter((c) => !sistemaGravado(c)),
+    [storageDaRota.creatures],
   );
 
   // Esc fecha o aviso, como nos outros modais da casa.
@@ -169,7 +223,21 @@ export default function App() {
     setView({ name: "dashboard", creatureId: null, encounterId: null });
   }, []);
 
-  const goToTracker = useCallback((id) => {
+  /* O clique no card, nas três rotas. A ficha do Afty abre na FICHA FINAL (a
+     criatura já montada, aberta para USO, desde 2026-08-05), e a da 2.5.2 no
+     painel de combate dela. O lápis continua indo para o criador.
+
+     ⚠ A FICHA DECIDE A TELA, E NÃO A ROTA. Uma ficha do Afty que entrou no
+     Grimório público por importação antiga abre na Ficha dela, e não no painel
+     da 2.5.2: o painel roda motor de outro livro e estourava. E desde
+     2026-10-03 vale o espelho: a ficha da 2.5.2 que já morava no /Afty abre no
+     painel da 2.5.2, e não na Ficha do Afty. Ver o bloco da fronteira.
+
+     O ramo do compêndio só é alcançado no Grimório público. As Criaturas Base
+     saíram do /Afty e do /Player, e é bom que sigam fora: o `cloneFromBuiltIn`
+     marca com o `rulesVersion` da rota a criatura que não tem o campo (86 das
+     165), e o clone nasceria uma ficha da 2.5.2 com marca de Afty. */
+  const abrirFicha = useCallback((id) => {
     if (isBuiltInId(id)) {
       const builtIn = getCompendiumById(id);
       if (!builtIn) return;
@@ -177,9 +245,6 @@ export default function App() {
       setView({ name: "tracker", creatureId: clone.id });
       return;
     }
-    /* ⚠ A FICHA DECIDE A TELA. Uma ficha do Afty que entrou aqui por importação
-       antiga abre na Ficha dela, e não no painel da 2.5.2: o painel roda motor
-       de outro livro e estourava. Ver o bloco da fronteira lá em cima. */
     const ficha = storage.creatures.find((c) => c.id === id);
     if (sistemaGravado(ficha)) {
       setView({ name: "aftyFicha", creatureId: id });
@@ -198,13 +263,6 @@ export default function App() {
     }
     setView({ name: "builder", creatureId: id });
   }, [storage]);
-
-  // A FICHA FINAL do Afty: a criatura já montada, aberta para USO. É o que o
-  // clique no card abre em /Afty desde 2026-08-05 (o lápis continua indo para o
-  // criador). Só existe em aftyMode, então o caminho da 2.5.2 não muda.
-  const goToAftyFicha = useCallback((id) => {
-    setView({ name: "aftyFicha", creatureId: id });
-  }, []);
 
   const goToEncounter = useCallback((id) => {
     setView({ name: "encounter", encounterId: id });
@@ -321,14 +379,19 @@ export default function App() {
            props é passada, e o Grimório 2.5.2 fica igual ao que sempre foi.
 
            Autor, 2026-09-09: no /Player o cabeçalho diz "Jogador" e as
-           Criaturas Base saem, porque elas são o compêndio da 2.5.2. */
+           Criaturas Base saem, porque elas são o compêndio da 2.5.2.
+
+           Autor, 2026-10-03: as Criaturas Base saem do /Afty também. Lá o
+           clique rodava a Ficha do Afty sobre uma criatura da 2.5.2, e o lápis
+           a clonava para o inventário do Afty. É a porta espelho, e fecha aqui
+           pela mesma prop, sem tocar em `src/components/`. */
         titulo={sistemaDaRota === "player" ? "Jogador" : undefined}
-        showSystemView={sistemaDaRota !== "player"}
+        showSystemView={!aftyMode}
         // A lista do /Player é de PERSONAGENS (autor, 2026-09-10: "Uma prop
         // opcional"). Sem a prop, o Dashboard fala de criatura como sempre.
         vocab={sistemaDaRota === "player" ? vocabularioDoDashboard("player") : undefined}
         encounters={aftyMode ? encontrosAfty.encontros : encounterManager.encounters}
-        onOpenCreature={aftyMode ? goToAftyFicha : goToTracker}
+        onOpenCreature={abrirFicha}
         onEditCreature={goToBuilder}
         onCreateNew={() => goToBuilder(null)}
         onGoToEncounters={goToEncounters}
@@ -365,6 +428,7 @@ export default function App() {
              deles reescreve a LISTA inteira. O `update` faz merge de chave de
              primeiro nível, e mandar meia lista apagaria as outras. */
           onSalvarInvocacoes={(invocacoes) => storage.update(activeCreature.id, { invocacoes })}
+          onSalvarEspinho={(espinho) => storage.update(activeCreature.id, { espinho })}
           /* A morte do Fundamento (DA-07): a perda da Técnica Inata fica na ficha. */
           onSalvarFundamentosPerdidos={(fundamentosPerdidos) => storage.update(activeCreature.id, { fundamentosPerdidos })}
         />
@@ -398,6 +462,7 @@ export default function App() {
           <AftyEncontro
             encontroId={view.encounterId}
             gerenciador={encontrosAfty}
+            onAtualizarBiblioteca={atualizarBibliotecaDoEncontro}
             criaturas={criaturasDoLivro}
             pastas={storage.folders}
             // A lista do Encontro fala a língua do grimório ABERTO (criatura ou
@@ -454,8 +519,9 @@ export default function App() {
     templates: () => (
       <TemplateLibrary
         onBack={goToDashboard}
-        // Modelo da 2.5.2 aplicado numa ficha do Afty a destroçaria calada.
-        creatures={criaturasDoLivro}
+        // Modelo da 2.5.2 aplicado numa ficha do Afty estoura no `normalizeDraft`.
+        // Nas três rotas a biblioteca só vê ficha da 2.5.2 (`fichasDa252`).
+        creatures={fichasDa252}
         creatureFolders={storage.folders}
         onUpdateCreature={storage.update}
       />

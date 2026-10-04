@@ -1,0 +1,42 @@
+[
+  {
+    "rota": "afty",
+    "largura": 1440,
+    "idsIguaisIsolados": true,
+    "perdasNosDoisSistemas": true,
+    "outraBibliotecaAbertaComPerda": true,
+    "edicaoPosteriorPreservada": true,
+    "regravacoesAoMudarRodada": 0,
+    "erros": []
+  },
+  {
+    "rota": "afty",
+    "largura": 390,
+    "idsIguaisIsolados": true,
+    "perdasNosDoisSistemas": true,
+    "outraBibliotecaAbertaComPerda": true,
+    "edicaoPosteriorPreservada": true,
+    "regravacoesAoMudarRodada": 0,
+    "erros": []
+  },
+  {
+    "rota": "player",
+    "largura": 1440,
+    "idsIguaisIsolados": true,
+    "perdasNosDoisSistemas": true,
+    "outraBibliotecaAbertaComPerda": true,
+    "edicaoPosteriorPreservada": true,
+    "regravacoesAoMudarRodada": 0,
+    "erros": []
+  },
+  {
+    "rota": "player",
+    "largura": 390,
+    "idsIguaisIsolados": true,
+    "perdasNosDoisSistemas": true,
+    "outraBibliotecaAbertaComPerda": true,
+    "edicaoPosteriorPreservada": true,
+    "regravacoesAoMudarRodada": 0,
+    "erros": []
+  }
+]

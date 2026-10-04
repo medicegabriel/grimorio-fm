@@ -1,0 +1,137 @@
+{
+  "id": "espinho",
+  "nome": "Espinho",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Um contador de Almas (Totais e Restantes) e o que elas compram. Cada compra abre uma vaga ou dá um ganho na ficha, e nada disso é Feitiço: acumula com Feitiços, Equipamentos e todo o resto. O card fica na aba Habilidades do Criador e da Ficha Final. A vaga comprada é escolhida na aba de sempre (Talento em Talentos, Perícia em Perícias), e o Equipamento é um item do inventário marcado no card, que vira Grau Especial. O teto de cada item escala com o Bônus de Treinamento, e o Addon Alter aumenta esse teto em 50%.",
+  "permite": ["espinho"],
+  "espinho": {
+    "itens": [
+      {
+        "id": "especializacao",
+        "nome": "Habilidade de Especialização",
+        "descricao": "Concede uma Habilidade de Especialização adicional.",
+        "custo": 6,
+        "teto": "bt",
+        "grupo": 1,
+        "efeitos": [{ "canal": "vagasHabilidade", "expr": "1" }]
+      },
+      {
+        "id": "talento",
+        "nome": "Talento",
+        "descricao": "Concede um Talento adicional.",
+        "custo": 4,
+        "teto": "bt",
+        "grupo": 1,
+        "efeitos": [{ "canal": "vagasTalento", "expr": "1" }]
+      },
+      {
+        "id": "aptidao",
+        "nome": "Aptidão Amaldiçoada",
+        "descricao": "Concede uma Aptidão Amaldiçoada adicional.",
+        "custo": 6,
+        "teto": "bt",
+        "grupo": 1,
+        "efeitos": [{ "canal": "vagasAptidao", "expr": "1" }]
+      },
+      {
+        "id": "nivel_aptidao",
+        "nome": "Nível de Aptidão",
+        "descricao": "Concede um Nível de Aptidão adicional.",
+        "custo": 6,
+        "teto": "2",
+        "grupo": 1,
+        "efeitos": [{ "canal": "pontosAptidao", "expr": "1" }]
+      },
+      {
+        "id": "treinamento",
+        "nome": "Treinamento",
+        "descricao": "Concede um Foco de Interlúdio adicional.",
+        "custo": 2,
+        "teto": "2 * bt",
+        "grupo": 1,
+        "efeitos": [{ "canal": "focos", "expr": "1" }]
+      },
+      {
+        "id": "lendaria",
+        "nome": "Habilidade Lendária",
+        "descricao": "Concede uma Habilidade Lendária adicional.",
+        "custo": 6,
+        "teto": "bt / 2",
+        "grupo": 1,
+        "efeitos": [{ "canal": "vagasLendaria", "expr": "1" }]
+      },
+      {
+        "id": "melhoria",
+        "nome": "Melhoria Superior",
+        "descricao": "Concede uma Melhoria Superior adicional.",
+        "custo": 4,
+        "teto": "bt / 2",
+        "grupo": 1,
+        "efeitos": [{ "canal": "vagasMelhoria", "expr": "1" }]
+      },
+      {
+        "id": "alma",
+        "nome": "Aumento de Alma",
+        "descricao": "Recebe 10 Pontos de Alma/Integridade adicionais.",
+        "custo": 6,
+        "teto": "bt",
+        "grupo": 2,
+        "efeitos": [{ "canal": "almaMax", "expr": "10" }]
+      },
+      {
+        "id": "atributo",
+        "nome": "Aumento de Atributo",
+        "descricao": "Recebe 1 Ponto de Atributo adicional.",
+        "custo": 4,
+        "teto": "bt",
+        "grupo": 2,
+        "efeitos": [{ "canal": "pontosAtributo", "expr": "1" }]
+      },
+      {
+        "id": "determinado",
+        "nome": "Determinado a Viver",
+        "descricao": "Recebe um Talento chamado Determinado a Viver - Adicional, que contém os mesmos efeitos do Determinado a Viver clássico. É só mais uma fonte de usar o mesmo.",
+        "custo": 15,
+        "teto": "1",
+        "grupo": 2,
+        "tipo": "talento",
+        "concedeTalento": "tal_determinado_a_viver_adicional"
+      },
+      {
+        "id": "pericia",
+        "nome": "Perícias",
+        "descricao": "Se torna Treinado em uma Perícia.",
+        "custo": 3,
+        "grupo": 2,
+        "efeitos": [{ "canal": "vagasPericia", "expr": "1" }]
+      },
+      {
+        "id": "aprimoramento",
+        "nome": "Aprimoramento de Equipamento",
+        "descricao": "Faz com que um Equipamento conseguido pelo Espinho receba um Efeito de Grau Especial adicional. Máximo de 1 por equipamento.",
+        "custo": 10,
+        "tipo": "aprimoramento"
+      },
+      {
+        "id": "equipamento",
+        "nome": "Equipamento",
+        "descricao": "Recebe um Equipamento de Grau Especial.",
+        "custo": 10,
+        "tipo": "equipamento"
+      }
+    ]
+  },
+  "acrescenta": {
+    "talentos": [
+      {
+        "id": "tal_determinado_a_viver_adicional",
+        "nome": "Determinado a Viver - Adicional",
+        "grupo": "geral",
+        "soConcedido": true,
+        "descricao": "Mesmo de frente a perigos e ameaças sem limites, você mantém sua vontade de viver e seguir em frente. Uma vez por dia, na primeira vez que fosse para os testes de morte, você pode escolher ficar com 1 de vida ao invés disso. Todo teste de morte que você realiza, a partir do segundo, possui vantagem."
+      }
+    ]
+  }
+}

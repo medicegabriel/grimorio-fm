@@ -1,0 +1,32 @@
+import { readFileSync } from "node:fs";
+import { register } from "node:module";
+register("data:text/javascript,export async function resolve(s,c,n){try{return await n(s,c)}catch(e){if(s.startsWith(\".\")&&!s.endsWith(\".js\"))return n(s+\".js\",c);throw e}}", import.meta.url);
+const R = new URL("../src/systems/afty/", import.meta.url).href;
+const { deriveAfty, maestria } = await import(R + "afty-derive.js");
+const { createBlankAfty } = await import(R + "afty-schema.js");
+const A = await import(R + "afty-addons.js");
+const { valorCanal } = await import(R + "afty-efeitos.js");
+const FLUGEL = JSON.parse(readFileSync(new URL("../addons/flugel.json", import.meta.url), "utf8"));
+A.aplicarAddons([A.normalizarPacote(FLUGEL)]);
+const bts = {}; for (let nd = 1; nd <= 30; nd++) (bts[maestria(nd)] ??= []).push(nd);
+console.log("BT por ND", JSON.stringify(bts));
+for (const sis of [undefined, "player"]) {
+const nd = bts[3][0];
+const ak = createBlankAfty(); ak.core.nd = nd; if (sis) ak.rulesVersion = sis;
+ak.core.origem = { id: "herdado", cla: "flugel:cla_akutame", escolhas: { akutame_mestre: ["akutame_mestre_atletismo"] } };
+const da = deriveAfty(ak);
+const semCla = deriveAfty({ ...ak, core: { ...ak.core, origem: { id: "herdado" } } });
+console.log(sis ?? "criatura", "ND", nd, "BT", maestria(nd));
+console.log(" Akutame defesa", da.defesa, "sem", semCla.defesa, "parte", JSON.stringify(da.partes.defesa.filter(p=>/Akutame/.test(p.label))));
+console.log(" Akutame acerto", da.testes.ataques.map(a=>a.bonus), "sem", semCla.testes.ataques.map(a=>a.bonus), JSON.stringify(da.testes.ataques[0].partes.filter(p=>/Akutame/.test(p.label))));
+const tr = createBlankAfty(); tr.core.nd = nd; if (sis) tr.rulesVersion = sis;
+for (const k of Object.keys(tr.attributes)) tr.attributes[k] = 10;
+tr.treinamentos = { "flugel:treino_atributo_nao_congenito": 4 };
+tr.treinamentoAlvos = { "flugel:treino_atributo_nao_congenito": { atributo: "sabedoria", pericia: "atletismo" } };
+const dt = deriveAfty(tr);
+console.log(" limiteAtributo canal", valorCanal(dt.efeitos, "limiteAtributo", "sabedoria"), "attrLimite", JSON.stringify(dt.attrLimite ?? dt.limitesAtributo ?? null));
+const cj = createBlankAfty(); cj.core.nd = nd; if (sis) cj.rulesVersion = sis;
+cj.treinamentos = { "flugel:treino_conjuge": 4 };
+const on = deriveAfty(cj, { treinosAtivos: { conjuge: true } }), off = deriveAfty(cj);
+console.log(" iniciativa", off.iniciativa, "->", on.iniciativa);
+}

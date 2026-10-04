@@ -975,16 +975,22 @@ export const talentosDoGrupo = (grupoId) => AFTY_TALENTOS.filter((t) => t.grupo 
  * fique vazio some junto, como já acontecia.
  */
 export function gruposDeTalento(creature = null) {
+  /* ⚠ TALENTO `soConcedido` NÃO SE ESCOLHE (2026-09-30): ele só entra na ficha
+     concedido pelo nome, que é o caso do Determinado a Viver Adicional do
+     Espinho. No seletor ele pagaria uma vaga comum pelo que o Espinho vende. O já
+     escolhido (ficha antiga, import) continua aparecendo para poder ser tirado. */
+  const escolhidos = Array.isArray(creature?.talentos) ? creature.talentos : [];
+  const escolhivel = (t) => !t.soConcedido || escolhidos.includes(t.id);
   return TALENTO_GRUPOS
     .map((g) => ({
       ...g,
-      talentos: creature
+      talentos: (creature
         ? filtraForaDoJogador(
           talentosDoGrupo(g.id),
           creature,
           Array.isArray(creature?.talentos) ? creature.talentos : null,
         )
-        : talentosDoGrupo(g.id),
+        : talentosDoGrupo(g.id)).filter(escolhivel),
     }))
     .filter((g) => g.talentos.length > 0);
 }
@@ -1044,7 +1050,13 @@ export function avaliarRequisitoTalento(requisito, ctx = {}) {
     // justamente aqui que "todos os fins" cobra: os Talentos de Origem
     // exclusivos daquela origem. `origemId` continua valendo como o caso de um.
     const tem = ctx.origensQualificadas ?? (ctx.origemId ? [ctx.origemId] : []);
-    return { ok: tem.includes(requisito.id), verificavel: true, label: `Origem ${alvo.nome}` };
+    // Algumas origens de addon liberam Talentos de Origem de outra origem
+    // sem herdar suas Linhas de Treinamento ou Especializações.
+    const adicionais = BY_ID[ctx.talentoEmAvaliacao]?.grupo === "origem"
+      ? getOrigem(ctx.origemId)?.qualificaTalentosDeOrigem
+      : null;
+    const liberado = Array.isArray(adicionais) && adicionais.includes(requisito.id);
+    return { ok: tem.includes(requisito.id) || liberado, verificavel: true, label: `Origem ${alvo.nome}` };
   }
   /* ⚠ `cla` entrou em 2026-08-31, com a Estrela dos Zenin. Os Talentos de Origem
      dela pertencem a UM CLÃ do Herdado, e não ao Herdado inteiro: por `origem`

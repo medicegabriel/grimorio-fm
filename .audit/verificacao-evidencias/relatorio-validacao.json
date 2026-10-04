@@ -1,0 +1,20 @@
+{
+  "chars": 43377,
+  "lines": 482,
+  "links": 43,
+  "missingLinks": [],
+  "charOccurrences": 0,
+  "ownChars": [],
+  "models": [
+    {
+      "width": 1440,
+      "modelApplied": true,
+      "errors": []
+    },
+    {
+      "width": 390,
+      "modelApplied": true,
+      "errors": []
+    }
+  ]
+}

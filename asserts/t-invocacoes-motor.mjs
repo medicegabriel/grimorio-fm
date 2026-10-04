@@ -5,9 +5,9 @@
      *"Faça igual Feitiços Passivas para Caracteristica."*
 
    A Passiva é o Feitiço cujo corpo é o Motor, e a Livre virou a Característica
-   cujo corpo é o Motor. Ela continua ocupando vaga e custando 1 PE como toda
-   Característica. Três decisões do autor na mesma conversa, e cada uma tem
-   bloco próprio aqui:
+   cujo corpo é o Motor. Ela continua ocupando vaga e, além da cota base do
+   grau, custando 1 PE como toda Característica. Três decisões do autor na
+   mesma conversa, e cada uma tem bloco próprio aqui:
 
      1. duas Características com o mesmo efeito, uma delas pelo Motor, NÃO
         acumulam: vale a maior (a Habilidade de Controlador soma por cima);
@@ -86,7 +86,14 @@ t("Defesa sobe 3", rDef.defesa - r0.defesa, 3);
 t("as parcelas da Defesa fecham com o número", soma(rDef.fontes.defesa), rDef.defesa);
 t("a parcela leva o nome da Característica",
   rDef.fontes.defesa.some((p) => p.label === "Casca" && p.valor === 3), true);
-t("a Livre com Motor custa 1 PE, como toda Característica", rDef.custo - r0.custo, 1);
+/* A COTA BASE do grau não custa PE (decisão do autor, 2026-10-03): o Terceiro
+   Grau tem 2, então a Livre entra de graça, e só a Característica além da cota
+   paga o 1 PE. */
+t("a cota base do Terceiro Grau é 2", INV.INV_ACOES_CARACT_BASE.terceiro, 2);
+t("a Livre com Motor dentro da cota base não custa PE", rDef.custo - r0.custo, 0);
+const tresLivres = ["A", "B", "C"].map((n) => livre(n, [{ canal: "defesa", expr: "1" }]));
+t("a segunda ainda cabe na cota", res(invocacao("terceiro", tresLivres.slice(0, 2))).custo - r0.custo, 0);
+t("a terceira, além da cota, custa 1 PE", res(invocacao("terceiro", tresLivres)).custo - r0.custo, 1);
 t("e ocupa uma vaga do orçamento", rDef.orcamento.usados - r0.orcamento.usados, 1);
 t("a linha volta resolvida para o editor",
   { valor: rDef.caracteristicas[0].efeitos[0].valor, ativo: rDef.caracteristicas[0].efeitos[0].ativo },

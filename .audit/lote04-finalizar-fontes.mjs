@@ -1,0 +1,12 @@
+import { readFileSync, writeFileSync } from 'node:fs';
+const arquivo = '.audit/lote04-browser.mjs';
+let texto = readFileSync(arquivo, 'utf8');
+texto = texto.replace('path: `.audit/lote04-shots/${rota}-${largura}-${nomeArquivo}.png`, fullPage: true', 'path: `.audit/lote04-shots/${rota}-${largura}-${nomeArquivo}.png`');
+texto = texto.replace('   await page.mouse.move(0, 0);', '   if (largura === 390) await botao.tap(); else await page.mouse.move(0, 0);');
+texto = texto.replaceAll("await row.getByRole('button', { name: 'Inativa', exact: true }).click();", "await row.getByRole('button', { name: 'Inativa', exact: true }).press('Enter');");
+texto = texto.replaceAll("await row.getByRole('button', { name: 'Ativa', exact: true }).click();", "await row.getByRole('button', { name: 'Ativa', exact: true }).press('Enter');");
+writeFileSync(arquivo, texto, 'utf8');
+const status = 'docs/afty-status.md';
+const atual = readFileSync(status, 'utf8');
+if (!atual.includes('`t-alcance-corpo-a-corpo.mjs` novo, 91 asserts,')) throw new Error('Trecho da sessão ausente');
+writeFileSync(status, atual.replace('`t-alcance-corpo-a-corpo.mjs` novo, 91 asserts,', '`t-alcance-corpo-a-corpo.mjs` novo, 97 asserts,'), 'utf8');

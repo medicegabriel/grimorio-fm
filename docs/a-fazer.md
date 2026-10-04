@@ -33,143 +33,6 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 ---
 
 ## PERGUNTAS AO AUTOR
-### Horda: o PV máximo cai junto com os membros perdidos? E o que acontece a 0 PV?
-**Onde:** `src/systems/afty/afty-invocacoes.js` (`resolveHorda`) e `ficha/ficha-sessao.js` (`aplicaDanoHorda`)
-**Situação:** o Livro diz que na metade da vida a horda "perde metade dos seus membros [...]
-diminuindo todos os efeitos baseados no número de membros". O PV máximo também é "baseado nos
-membros" (metade do PV de cada um), e o texto não diz se ele cai. Cair faz a horda recalcular a
-metade e perder membros de novo em cascata. Hoje o máximo FICA, e só as escalas (dano, cura, RD,
-tamanho, prejuízo) caem. O texto também não diz o que acontece a 0 PV. Hoje a horda acaba, e o
-líder e os membros que sobraram caem pela regra do tipo de cada um (exorcizados com o excedente
-acima do máximo da horda).
-**Precisa:** o autor dizer (1) se o PV máximo cai com os membros perdidos, e (2) se a queda a 0
-fica como está.
-**Anotado:** 2026-10-01, na Etapa 9 da atualização de Controlador e Invocações
-
-### Hoste Amaldiçoada: o par de hordas conta como uma também no limite em campo?
-**Onde:** `src/systems/afty/afty-derive.js` (`idsDaMesa`) e `ficha/abas/AbaInvocacoes.jsx`
-**Situação:** a Hoste diz que as duas hordas "contam como apenas uma para o seu limite de hordas
-em campo". O Livro diz que cada horda "é contabilizada como uma Invocação" no limite de
-Invocações em campo. Hoje o par conta UMA no limite de hordas e DUAS no de Invocações, pela
-leitura literal dos dois textos.
-**Precisa:** o autor dizer se o par conta como uma também no limite de Invocações em campo.
-**Anotado:** 2026-10-01, na Etapa 9 da atualização de Controlador e Invocações
-
-### Quimera do Mecânicas: Invocações Resistentes entra de novo depois da fusão?
-**Onde:** `src/systems/afty/afty-invocacoes.js` (`resolveQuimeraMecanicas`)
-**Situação:** o *Mecânicas* diz "Efeitos como Visionário, Invocações Resistentes e afins são
-aplicados após a criação da Quimera". O PV da fórmula ("Shikigami Base + 1/3 dos PVs dos outros")
-sai dos cartões das componentes, que já trazem o PV da Invocações Resistentes. Hoje o PV da
-Quimera é esse número, sem somar a Resistentes outra vez, e o Visionário entra normalmente (ele dá
-vagas, e não PV).
-**Precisa:** o autor dizer se a Resistentes (e afins de PV) (1) fica como está, só dentro dos
-cartões, ou (2) sai dos cartões e entra uma vez sobre o PV da Quimera.
-**Anotado:** 2026-10-01, na Etapa 9 da atualização de Controlador e Invocações
-
-### Mecha: "maior PV" é o máximo ou o atual? E a 0 PV?
-**Onde:** `src/systems/afty/ficha/ficha-sessao.js` (`mechaPermitido`, `formaMecha`, `aplicaDanoMecha`)
-**Situação:** "O PV de um Mecha é igual a maior PV de seus componentes com o menor PV sendo
-utilizada como PV Temporário". Hoje a maior é a de maior PV MÁXIMO, o Mecha leva o PV ATUAL dela,
-e a casca é o PV atual da menor (o Separar devolve esses dois números). A 0 PV, "todas as regras
-de Marionete são aplicadas": a maior quebra e o Mecha se desfaz.
-**Precisa:** o autor confirmar a leitura, ou dizer se "maior PV" é o PV atual.
-**Anotado:** 2026-10-01, na Etapa 9 da atualização de Controlador e Invocações
-
-### Fundamento fora de campo: bloqueia só os Feitiços, ou a Técnica Inata inteira?
-**Onde:** `src/systems/afty/afty-derive.js` (`tecnicaInata`, `semTecnicaPerdida`) e
-`afty-invocacoes.js` (`estadoDaTecnicaInata`)
-**Situação:** o *Mecânicas* diz *"Para utilizar sua Técnica Inata, o feiticeiro deve manter esse
-shikigami invocado"*. A DA-07 decidiu a MORTE do Fundamento (bloqueio real, gravado na ficha), e
-não fala do Fundamento só fora de campo. Hoje, com mesa e o Fundamento fora de campo, os Feitiços
-saem marcados "Fundamento Fora de Campo" (sem rolagem nem Ritual), e os efeitos do Funcionamento e
-das Passivas continuam no Motor. Com ele morto, os três saem. "Utilizar" cobre o Feitiço sem
-dúvida, e o efeito passivo ficou de fora para não escolher sozinho.
-**Precisa:** o autor dizer se, fora de campo, (1) só os Feitiços param, como hoje, ou (2) a Técnica
-inteira para, Funcionamento e Passivas inclusive, como na morte. A (2) muda número da ficha toda
-vez que o Fundamento sai de campo, e só na mesa (o criador nunca vê).
-**Anotado:** 2026-10-01, na Etapa 8 da atualização de Controlador e Invocações
-
-### Técnica Inata perdida: a Passiva continua ocupando PE Máximo?
-**Onde:** `src/systems/afty/afty-derive.js` (`peMaximoDasPassivas`)
-**Situação:** no jogador, cada Feitiço Passivo encolhe o PE Máximo (divergência
-`passivaCustaPeMaximo`). Com o Fundamento morto, os efeitos das Passivas saem do Motor, mas o
-custo no PE Máximo continua, porque a DA-07 manda não apagar nada e não diz se a Passiva parada
-ainda reserva energia.
-**Precisa:** o autor dizer se a Passiva da Técnica perdida (1) segue reservando o PE Máximo, como
-hoje, ou (2) deixa de reservar enquanto a Técnica estiver perdida.
-**Anotado:** 2026-10-01, na Etapa 8 da atualização de Controlador e Invocações
-
-### Corpo Biológico: qual CD de reparo por Medicina ou Cura Aprimorada?
-**Onde:** `src/systems/afty/afty-invocacoes.js` (`reparoDaInvocacao`)
-**Situação:** o *Mecânicas* manda o Corpo biológico se reparar *"através de Cura Aprimorada ou pela
-perícia Medicina"* e diz *"Em ambos os casos, segue-se as regras abaixo para definir a CD"*, com o
-Custo pelo grau. A CD por Custo do Livro é a tabela de Criação de Itens, que só tem colunas de
-Ofício (Alquimia, Canalizador e Ferreiro; Entalhador e Farmacêutico; Alfaiate). Medicina não é
-Ofício. Hoje a Ficha mostra o Custo e não mostra CD para o biológico.
-**Precisa:** o autor dizer a coluna (ou a tabela) da CD do biológico. É só exibição: nenhuma conta
-depende dela.
-**Anotado:** 2026-10-01, na Etapa 8 da atualização de Controlador e Invocações
-
-### Corpo Amaldiçoado: as Ações e Características extras custam PE?
-**Onde:** `src/systems/afty/afty-invocacoes.js` (`detalheCustoInvocacao`)
-**Situação:** o *Mecânicas* diz da Marionete *"não possuem custo base de ativação, mas efeitos como
-'Autonomia' ou aumento de características devem ser pagos no ato da ativação"*, e da Maldição algo
-parecido. Do Corpo diz só *"não possuem custo de ativação, no entanto, eles duram uma quantidade de
-rodadas em combate igual ao seu CL"*, sem falar das extras. Hoje o Corpo segue a Marionete: o base
-é zero e as Ações e Características além da cota custam, pagas na entrada. Ficou assim para não
-escolher sozinho.
-**Precisa:** o autor dizer se o Corpo (1) paga as extras na ativação, como a Marionete, ou (2) não
-paga nada na ativação, e o custo dele é só a manutenção por rodada depois do CL.
-**Anotado:** 2026-09-30, na Etapa 4 da atualização de Controlador e Invocações
-
-### O descanso repara todas as Marionetes, ou uma só?
-**Onde:** `src/systems/afty/ficha/ficha-sessao.js` (`descansaInvocacoes`)
-**Situação:** o *Mecânicas* diz *"Você repara completamente uma Marionete não destruída em um
-Descanso Longo ou todas as suas Marionetes não destruídas em um interlúdio"*. A Ficha tem UM
-botão de descanso, que devolve tudo (a D3, decidida em 2026-09-23). Hoje o botão enche todas as
-invocações, Marionete inclusive, e zera as quedas dela, que é o que ele fazia antes dos estados.
-Ficou assim para não escolher sozinho.
-**Precisa:** o autor dizer se o descanso (1) segue reparando todas, (2) repara uma escolhida, ou
-(3) não repara nenhuma e a ficha ganha um botão "Reparar" com limite de uma por descanso.
-**Anotado:** 2026-09-30, na Etapa 3 da atualização de Controlador e Invocações
-
-### O chip do Shikigami volta a dizer "Shikigami"?
-**Onde:** `src/systems/afty/afty-invocacoes-tipos.js` (`label` e `curto` de `shikigami` e `tecnica`)
-**Situação:** em 2026-09-02 o autor renomeou os chips para "Invocação" e "Invocação de Técnica",
-porque o tipo não mudava nada. Desde 2026-09-30 os tipos têm regra própria, e as decisões do
-projeto falam em "Shikigami" e "Shikigami de Técnica", ao lado de Marionete, Corpo Amaldiçoado e
-Maldição. Com cinco tipos, "Invocação" passa a nomear um tipo e também o conjunto inteiro. Os
-rótulos ficaram como estavam, porque trocar seria escolher sozinho.
-**Precisa:** o autor dizer se os rótulos de tela voltam a "Shikigami" e "Shikigami de Técnica"
-(só o `label` e o `curto`, sem tocar no `value` gravado nas fichas), ou ficam como estão.
-**Anotado:** 2026-09-30, na Etapa 2 da atualização de Controlador e Invocações
-
-
-Coisas paradas esperando decisão de regra. Nada aqui deve ser resolvido por suposição.
-
-### Suporte Absoluto soma o atributo da Técnica, e o livro pede o da CD de especialização
-
-**Onde:** `src/systems/afty/afty-efeitos-conteudo.js` (`sup_suporte_absoluto`)
-
-**Situação:** o texto do nível 20 diz *"você soma seu modificador de atributo escolhido para CD de
-especialização em toda cura que realizar"*, e as Características do Suporte definem esse atributo:
-*"Um Suporte pode escolher entre Presença ou Sabedoria como atributos para calcular a CD das suas
-habilidades de especialização"*. A implementação soma `mod_tecnica`, com o comentário justificando
-que *"o Afty tem uma CD só, a Amaldiçoada"*.
-
-O ponto é que isso mistura o VALOR da CD com o ATRIBUTO dela. O livro define o atributo por
-especialização, independente de quantas CDs o motor rastreia, e a própria classe já usa
-`mod_pre_ou_sab` na cura do Suporte em Combate, que vem da mesma frase do livro. Hoje o mesmo
-conceito está resolvido de dois jeitos dentro da mesma especialização.
-
-Na prática só diverge para quem escolheu um atributo de Técnica que não seja Presença nem Sabedoria,
-e aí a cura do nível 20 sai maior ou menor que a do livro.
-
-**Precisa:** o autor dizer se o Suporte Absoluto passa a somar `mod_pre_ou_sab`. É uma expressão. A
-decisão encosta na entrada "A CD de Especialização e a CD Amaldiçoada são duas no livro", e pode ser
-resolvida junto com ela ou antes dela.
-**Anotado:** 2026-09-29, na auditoria do Suporte contra o livro
-
 ### The Crimsom Queen: definir Catalisadora
 **Onde:** `addons/the-crimsom-queen.json`, Yearning Mircalla
 **Situação:** addon implementado, propriedade Catalisadora preservada no texto da arma. PDF e catálogo nativo não trazem seu efeito numérico.
@@ -193,25 +56,18 @@ resolvida junto com ela ou antes dela.
 **Precisa:** o autor (ou Dr. Xeno, por ele) responder as perguntas de cada fase ANTES de ela começar. Elas vão por pergunta com opções, em lotes por fase.
 **Anotado:** 2026-09-28, no planejamento do Addon
 
-### PERGUNTA AO AUTOR: as marcas das linhas da Ficha deviam sumir no telefone?
-**Onde:** `src/systems/afty/ficha/ItemDeFicha.jsx` (as marcas têm `hidden sm:inline-flex`) e `src/systems/afty/ficha/ficha.css` (`.afty-chip`)
-**Situação:** o código declara que as marcas da linha (a origem, a Especialização, o Nível) somem abaixo de 640 px, mas elas aparecem: o `display` do `.afty-chip` no CSS da Ficha, fora de camada, vence o `hidden` do Tailwind (a mesma regra do `index.css`). Em 390 px, uma linha com marca e contador de usos espreme o nome até sobrar "A." (medido com a Restrição Intelectual em 2026-09-28, e vale igual para as linhas do Combatente com contador). Os números de mesa novos já saem da linha fechada abaixo de 560 px (`@container itemficha`).
-**Precisa:** o autor decidir se as marcas somem no telefone, como o código pretendia, ou se ficam e o nome ganha espaço de outro jeito (por exemplo, a linha quebrar em duas). Não mexido, porque muda o telefone de toda ficha.
-**Anotado:** 2026-09-28, na verificação de tela da Fórmula de Combate Entrópica
-
 ### Maldição - Era de Ouro: o que ainda é só texto, e o que vale mais largo que o livro
 **Onde:** `addons/maldicao-era-de-ouro.json` (`acrescenta.caracteristicasAmaldicoadas` e o Tipo De Medo) e `src/systems/afty/afty-efeitos.js` (os canais)
-**Situação:** das 18 do pool, 9 têm número no Motor e 9 se declaram `mesa` (a marca "Mesa" na tela, e um assert em `asserts/t-maldicao-era-de-ouro.mjs` cobra que nenhuma fique muda). As de mesa ficam assim por falta de mecanismo, e cada uma pede uma decisão de desenho antes de virar número. Nenhuma foi suposta.
-1. **Articulações Extensas** (*"o alcance dos seus ataques corpo a corpo aumenta em 1,5 metros"*). Não existe canal de alcance: o "Espaço/alcance" da criatura sai do Tamanho. Proposta: um canal `alcanceCorpoACorpo` (metros), somado ao alcance mostrado no Tamanho e na linha do Ataque. Falta o autor dizer se o alcance do Ataque Básico, o das armas e o dos Feitiços corpo a corpo somam todos.
-2. **Capacidade de Voo e de Nado** (*"transformar seu deslocamento de caminhada em deslocamento de voo"*, uma vez por rodada, ação livre). O `movimento` é um número só. Proposta: um estado de bancada "Voando" e "Nadando" que apenas rotula o deslocamento já calculado, sem canal novo. Falta o autor dizer se voo e nado têm cálculo próprio (multiplicador, teto) ou se vale o número da caminhada, como o texto diz.
-3. **Braços Extras, o "+2 em Atletismo se tiver pelo menos duas mãos livres"**. Não há estado de mãos livres. Proposta: um interruptor de mesa "Mãos Livres" na aba de Estados (`gatilhoSessao`) que liga o +2. Falta confirmar se um interruptor serve para um bônus que depende do inventário.
-4. **Alma Maldita** (dano na alma pela metade, anulado no 15°, 2/3/4/5 usos por dia). O `rdAlma` é RD fixa, e o texto é uma fração mais usos por descanso. Proposta: um contador de usos por descanso (a peça que a `curaUsos` já usa) mais a marca Mesa para a metade. Falta o autor dizer se o Afty tem "usos por dia" genérico para característica de origem.
-5. **Guia Espiritual** (*"recebe um aliado seguindo as regras da página 348"*). O Afty tem o teto de aliados por Grau (`limiteDeAliados`). Falta o autor dizer se o Guia é UM ALIADO A MAIS que o teto, ou só o direito de ter um dentro dele.
-6. **Anatomia Incompreensível, Devorador de Energia, Energia Tóxica e Presença Nefasta** são reações e testes de mesa (chance de 1 em 1d4, 1 PE temporário cumulativo, perda de vida igual ao modificador de Constituição, teste de Vontade contra a CD Amaldiçoada). O Motor não modela reação. Ficam em Mesa até o autor pedir uma "Ação de Reação" nativa na Ficha.
-7. **Tipo De Medo, "Resquícios de Emoções"** (*"reduzir o pré-requisito de nível de UM grupo de aptidões em 1"*). O canal `reduzNivelAptidao` não tem alvo por grupo, então o pacote aplica em TODOS os grupos, mais largo que o livro e nunca mais estreito. Proposta: um `alvo` de grupo no canal (Aura, Controle e Leitura, Barreira, Domínio, Maldição, Especiais), com a escolha do grupo no card da Origem, e o `avaliarRequisitoAptidao` lendo o desconto do grupo da aptidão. Falta o autor dizer se a escolha do grupo é fixa ou se pode ser trocada.
+**Situação:** das 18 do pool, 10 têm número no Motor e 8 se declaram `mesa` (a marca "Mesa" na tela, e um assert em `asserts/t-maldicao-era-de-ouro.mjs` cobra que nenhuma fique muda). As de mesa ficam assim por falta de mecanismo, e cada uma pede uma decisão de desenho antes de virar número. Nenhuma foi suposta.
+1. **Capacidade de Voo e de Nado** (*"transformar seu deslocamento de caminhada em deslocamento de voo"*, uma vez por rodada, ação livre). O `movimento` é um número só. Proposta: um estado de bancada "Voando" e "Nadando" que apenas rotula o deslocamento já calculado, sem canal novo. Falta o autor dizer se voo e nado têm cálculo próprio (multiplicador, teto) ou se vale o número da caminhada, como o texto diz.
+2. **Braços Extras, o "+2 em Atletismo se tiver pelo menos duas mãos livres"**. Não há estado de mãos livres. Proposta: um interruptor de mesa "Mãos Livres" na aba de Estados (`gatilhoSessao`) que liga o +2. Falta confirmar se um interruptor serve para um bônus que depende do inventário.
+3. **Alma Maldita** (dano na alma pela metade, anulado no 15°, 2/3/4/5 usos por dia). O `rdAlma` é RD fixa, e o texto é uma fração mais usos por descanso. Proposta: um contador de usos por descanso (a peça que a `curaUsos` já usa) mais a marca Mesa para a metade. Falta o autor dizer se o Afty tem "usos por dia" genérico para característica de origem.
+4. **Guia Espiritual** (*"recebe um aliado seguindo as regras da página 348"*). O Afty tem o teto de aliados por Grau (`limiteDeAliados`). Falta o autor dizer se o Guia é UM ALIADO A MAIS que o teto, ou só o direito de ter um dentro dele.
+5. **Anatomia Incompreensível, Devorador de Energia, Energia Tóxica e Presença Nefasta** são reações e testes de mesa (chance de 1 em 1d4, 1 PE temporário cumulativo, perda de vida igual ao modificador de Constituição, teste de Vontade contra a CD Amaldiçoada). O Motor não modela reação. Ficam em Mesa até o autor pedir uma "Ação de Reação" nativa na Ficha.
+6. **Tipo De Medo, "Resquícios de Emoções"** (*"reduzir o pré-requisito de nível de UM grupo de aptidões em 1"*). O canal `reduzNivelAptidao` não tem alvo por grupo, então o pacote aplica em TODOS os grupos, mais largo que o livro e nunca mais estreito. Proposta: um `alvo` de grupo no canal (Aura, Controle e Leitura, Barreira, Domínio, Maldição, Especiais), com a escolha do grupo no card da Origem, e o `avaliarRequisitoAptidao` lendo o desconto do grupo da aptidão. Falta o autor dizer se a escolha do grupo é fixa ou se pode ser trocada.
 **Precisa:** a decisão do autor em cada item, e só então o canal ou o estado correspondente.
 **Anotado:** 2026-09-23, ao fazer as Características Amaldiçoadas com escolha mexerem no número
-**Nota:** dois mecanismos citados aqui existem desde 2026-09-23 e 24. O canal `alcanceArma` (item 1: ele soma na linha de dano por escopo, `cat:corpo` para armas corpo a corpo, e a pergunta de quais linhas somam continua) e o contador de usos de Habilidade (item 4: campo `usos` no catálogo de Habilidades, com a linha na Ficha e o Descansar zerando, ver `docs/automacao-dsl.md`). Levar o contador para Característica de Origem é a mesma peça num catálogo novo.
+**Nota:** o contador de usos existe desde 2026-09-24 (campo `usos`, com a linha na Ficha e o Descansar zerando, ver `docs/automacao-dsl.md`) e aceita Característica de Origem desde 2026-09-28. Alma Maldita (item 3) continua aguardando a decisão sobre usos por dia e a redução fracionária de dano na alma. Articulações Extensas foi automatizada na versão 2.1.1 do pacote, em 2026-10-03, e saiu desta fila.
 
 ### A CD de Especialização e a CD Amaldiçoada são duas no livro
 **Onde:** `src/systems/afty/afty-derive.js` (a `cd` única) e o canal `cd`
@@ -227,6 +83,20 @@ O conserto NÃO foi feito porque o comentário logo acima da regra diz que acomp
 Vale notar que o custo só aparece em ficha COM imagem de tema: sem ela a camada é `background-image: none` e não pesa.
 **Precisa:** o autor dizer se a imagem de ambiente pode ficar presa à tela (mais barata, e some a faixa preta de graça) ou se ela tem de continuar acompanhando a altura da aba.
 **Anotado:** 2026-09-22, na entrega de performance da Ficha Final
+
+### Feitiços Permutativos: leituras para confirmar
+**Onde:** `src/systems/afty/afty-feiticos.js` (bloco FEITIÇOS PERMUTATIVOS), `afty-combate-conjurador.js` (`travaDaPermuta`) e `asserts/t-feiticos-permutativos.mjs`
+**Situação:** os Permutativos foram entregues em 2026-10-02 com as dez decisões do autor (em `docs/afty-feiticos-permutativos.md`). Sobraram pontos que o texto não fecha, e cada um saiu pela leitura abaixo. Os três primeiros são dado do motor, e trocar é editar uma linha e o assert.
+1. **Margem só pela troca no Nível 1 existe só na Imediata** (`PERMUTA_ABRE_CELULA`), a coluna em que a Margem nasce na tabela. Duradoura e Sustentada seguem sem Margem nos Níveis 0 e 1.
+2. **O bônus original (teto da Perícia) é lido antes da Liberação Máxima**, que é de mesa, para o teto não mudar entre o criador e a Ficha.
+3. **O Bônus em Rolagem ganhou alvo de perícia**, e sem ele segue Toda Rolagem (perícia, TR e ataque, como antes). A troca de perícia só abre com uma perícia escolhida.
+4. **A base da Defesa é 10 + o atributo que a Defesa usa**, então o Músculos Desenvolvidos (Força no lugar da Destreza) também muda a base.
+5. **"RD Geral a perder" é RD Geral menos a redução não ficar abaixo de zero** ("o mesmo se aplica para a RD").
+6. **Margem a perder numa arma é o crítico dela estar pelo menos a redução abaixo de 20** (uma arma 19-20 tem 1 de margem). A troca é tudo ou nada por arma.
+7. **A RD ganha vai para a RD Geral**, o mesmo canal que a RD do Feitiço já usa, e por isso cobre todos os tipos dele ("A RD recebida é aplicada para todos os tipos de RD do Feitiço").
+8. **Transformação e Passivo não recebem Permutativo**, porque o texto fala só do Auxiliar.
+**Precisa:** confirmação do autor, ou a leitura certa de cada item.
+**Anotado:** 2026-10-02, na entrega dos Feitiços Permutativos
 
 ### Condições: leituras para confirmar
 **Onde:** `src/systems/afty/afty-condicoes.js` (`CONDICAO_EFEITOS`) e `asserts/t-condicoes-efeitos.mjs`
@@ -266,25 +136,6 @@ criatura, nem se cada subida vale +1 Nível de Dano lá.
 **Precisa:** o autor dizer se a criatura ganha as duas escadas como Nível de Dano. Se sim, emitir as
 linhas `(escada)` e acrescentá-las a `ESCADAS_DESARMADO_NO_MOTOR`, para o jogador não contar duas vezes.
 **Anotado:** 2026-09-16, ao implementar os Ataques Desarmados.
-
-### A cota base de Ações e Características isenta de PE deixou um assert vermelho
-
-**Onde:** `src/systems/afty/afty-invocacoes.js` (`custoInvocacao`), `asserts/t-invocacoes-motor.mjs`
-
-**Situação:** uma mudança de 2026-09-14, ainda não commitada, fez a QUANTIDADE BASE do grau
-(`INV_ACOES_CARACT_BASE`: 2 no Quarto e no Terceiro, 3 no Segundo e no Primeiro, 4 no Especial)
-deixar de custar PE, com a justificativa escrita no código de que é o texto verbatim do livro e de
-que o cálculo antigo cobrava a ficha inteira e só abatia os grátis de Habilidade por cima.
-
-O assert `t-invocacoes-motor.mjs` ainda cobra a regra ANTIGA na linha *"a Livre com Motor custa 1
-PE, como toda Característica"*, que era verdade quando toda Característica custava. Com a cota base
-isenta, a primeira Característica de uma invocação de Terceiro Grau passa a custar zero, e o assert
-falha. Ele é a única falha da suíte hoje (86 de 87 arquivos passam).
-
-**Precisa:** o autor confirmar a regra nova. Se ela vale, o assert muda para cobrar a cota (as duas
-primeiras de graça, a terceira custando), e a frase daquele bloco sai. Se não vale, o `+ base` do
-`custoInvocacao` é que sai.
-**Anotado:** 2026-09-15, ao sincronizar o repositório antes de abrir a Técnica para o shikigami
 
 ### Poder da Trindade: recuperação diária e encerramento do estado
 
@@ -439,49 +290,6 @@ falou só de Feitiço e Habilidade.
 **Anotado:** 2026-09-10, na varredura dos restos de "criatura" no /Player
 **Nota:** reescrita em 2026-09-16, quando a metade do Treino Especial foi feita.
 
-### Os 64px de margem morta do cabeçalho do criador, agora sem bloqueio
-
-**Onde:** `src/systems/afty/AftyCreatureBuilder.jsx` (o `<h1>` do cabeçalho)
-
-**Situação:** o `src/index.css` é global, fica FORA de qualquer `@layer` e traz
-`h1 { font-size: 56px; margin: 32px 0 }`. No Tailwind 4 as utilidades vivem dentro de
-`@layer utilities`, e regra sem camada vence regra em camada por mais específica que a
-segunda seja. Resultado: o `text-lg sm:text-xl` escrito no `<h1>` do cabeçalho do criador
-**nunca valeu**, e a barra carrega 64px de margem morta acima de 1024px (40px abaixo).
-Medido em 2026-09-02: o cabeçalho tem 230px em 1440 e 259px em 390, e cairia para 166px e
-219px com a margem zerada.
-
-Isso custa altura em TODA aba do criador, e mais ainda agora que a aba de Invocações tem
-uma barra de resultado grudada logo abaixo do cabeçalho.
-
-O conserto é uma classe (`my-0!`, com a exclamação, que sobe a declaração acima da camada).
-Ele foi escrito, testado e desfeito em 2026-09-02, e **o motivo de ter sido desfeito morreu em
-2026-09-09**: o selo fixo do ambiente privado, que ficava em `position: fixed; top: 8; left: 8` e
-passava a cobrir o botão **Voltar**, foi removido a pedido do autor. Medido depois da remoção, o
-Voltar sai inteiro nas duas rotas, em `x=16, y=14` a 390px e `x=18, y=67` a 1440px.
-
-⚠ **Esta entrada era uma pergunta com três opções, e virou uma tarefa.** Não há mais nada a decidir:
-é aplicar o `my-0!` e conferir as duas larguras. Ficou aqui porque ninguém pediu os 64px de volta, e
-mudança de altura em toda aba do criador é visível o bastante para ser escolha do autor e não efeito
-colateral de outra tarefa.
-
-**Precisa:** aplicar `my-0!` no `<h1>` do cabeçalho do criador e medir `/Afty` e `/Player` em 1440px
-e 390px. Varrer junto as outras seis declarações do `index.css` para esse `h1` (ver a lição abaixo).
-
-**Nota:** a mesma armadilha de camada vale para `h2`, e ela era MAIOR do que esta linha dizia.
-O `m-0!` do `Card` em `ui/primitivos.jsx` tinha neutralizado só a MARGEM. O `font-size: 24px`, o
-`font-weight: 500`, a cor e o `letter-spacing` continuavam vencendo, e o `text-sm` escrito no `h2`
-valia zero: medido em 2026-09-05, todo título de card do criador saía com o dobro do tamanho
-pretendido. Consertado na mesma data com `text-sm! font-semibold! text-white! leading-5!
-tracking-normal!`.
-
-⚠ A lição, para o `h1` desta entrada e para `p` e `code`: **neutralizar uma propriedade não
-neutraliza a regra.** O index.css declara sete coisas de uma vez, e conferir só a que incomodava
-naquele dia deixa as outras seis de pé. Vale varrer se aparecer qualquer coisa que "não obedece".
-
-**Anotado:** 2026-09-02, na reestruturação da aba de Invocações
-**Nota:** reescrita em 2026-09-09, quando o selo saiu e a pergunta das três opções deixou de existir.
-
 ### PERGUNTA AO AUTOR: o desempate entre Imunidade e Vulnerabilidade
 **Onde:** `src/systems/afty/afty-defesas-dano.js`, `asserts/t-defesas-dano.mjs`
 **Situação:** a aba de Resistências (então chamada Defesas) nasceu em 2026-09-02 e resolve as quatro
@@ -501,93 +309,20 @@ a um tipo e vulnerabilidade ao tipo OPOSTO, que são tipos diferentes.
 que tem de mudar.
 **Anotado:** 2026-09-02, ao criar a aba de Defesas
 
-### O Atributo da Técnica estoura a largura em 390px
-**Onde:** `src/systems/afty/AftyCreatureBuilder.jsx`, o cabeçalho do `PerfilAmaldicoadoCard`
-**Situação:** a aba Habilidades é a ÚNICA do criador com rolagem horizontal em 390px, nos dois
-sistemas. O culpado é o controle "Atributo da Técnica" no cabeçalho do card: um bloco
-`ml-auto flex-shrink-0` de 269px (rótulo mais um `<select>` de `w-40`) numa tela de 390px, que
-estoura em 28px.
+### PERGUNTA AO AUTOR: o modal de import diz "N importadas" contando as recusadas
+**Onde:** `src/components/Dashboard.jsx` (`ImportModal`, o `applyResult`, e o `handleImportResult`)
+**Situação:** a mensagem de sucesso do modal de import conta o que o `parseImportText` leu, e não o
+que entrou. Desde 2026-10-03 a porta de entrada vale nas três rotas, e um pacote com uma ficha de
+cada livro importado no `/Afty` mostra "5 criatura(s) importada(s) com sucesso" quando só 2
+entraram. O aviso "Fichas de Outro Grimório" do `App.jsx` abre por cima e diz o número certo, mas
+ao fechá-lo a mensagem errada continua no modal. No Grimório público isso acontece desde
+2026-09-12, com a primeira porta.
 
-⚠ **Não veio do merge de 2026-09-05.** Conferido: o bloco é byte a byte idêntico em `40ad1fc` e
-depois da junção com o trabalho do GoliasK. Ele é anterior aos dois, do redesenho de 2026-08-03.
-
-Achado ao varrer as cinco abas nas duas rotas e nas duas larguras, depois de puxar o trabalho do
-colaborador.
-
-**Precisa:** decidir o desenho em telefone. As saídas óbvias são deixar o controle QUEBRAR para a
-linha de baixo abaixo de um limiar (tirando o `flex-shrink-0` e deixando o `ml-auto` só no desktop),
-ou encolher o `<select>` de `w-40` para `w-28` no telefone. A primeira preserva o rótulo inteiro, a
-segunda preserva a linha única.
-**Anotado:** 2026-09-05, ao verificar o merge com o trabalho do GoliasK
-
-### PERGUNTA AO AUTOR: a porta do ambiente PRIVADO ficou aberta (o caminho espelho)
-**Onde:** `src/App.jsx`, bloco "A FRONTEIRA ENTRE OS DOIS LIVROS" (o `useMemo` do `storage`)
-**Situação:** em 2026-09-12 um usuário do Grimório público mandou este erro:
-
-```
-TypeError: (e ?? []) is not iterable
-  em collectAutomationEntities <- CombatantPanel <- CombatTracker
-```
-
-Era uma ficha do Grimório Afty morando no inventário da 2.5.2, aberta no painel de combate da 2.5.2.
-O campo `treinamentos` é LISTA num livro e MAPA no outro, e o `?? []` do coletor só cobre nulo.
-Consertado no mesmo dia com duas portas, e as duas no `App.jsx`: o importador do Grimório público
-recusa ficha de outro livro e avisa, e o clique e o lápis passaram a escolher a tela pelo
-`rulesVersion` da ficha em vez de pela rota. Os encontros e a biblioteca de modelos da 2.5.2
-passaram a receber a lista filtrada.
-
-⚠ **O QUE FICOU ABERTO É O CAMINHO INVERSO.** Importar uma ficha da **2.5.2 dentro do `/Afty` ou do
-`/Player`** continua entrando. Ela não estoura, e é justamente isso que a torna pior: o `rulesVersion`
-"2.5.2" não é um id conhecido, então o `sistemaDaFicha` cai no padrão e o `deriveAfty` roda régua do
-Afty sobre uma ficha da 2.5.2, com números plausíveis e trocados. O autor escolheu em 2026-09-12
-fechar só a porta do Grimório público, que era a do erro relatado, e esta entrada existe para o
-espelho não envelhecer calado.
-
-**Ligada a ela:** a porta entre `/Afty` e `/Player`. Hoje uma ficha de personagem entra no inventário
-do mestre e vice-versa. As fichas são isoladas por storage, então isso só acontece por
-export e import, e pode muito bem ser o jeito que o autor usa para mover uma ficha de lado.
-
-**Precisa:** o autor escolher.
-1. Fechar a porta do privado também, com a mesma regra (`sistemaGravado(ficha) === sistemaDaRota`).
-   É trocar o `aftyMode ? storageDaRota : {...}` por um envoltório sem ternário. Fecha o espelho e
-   fecha `/Afty` contra `/Player` junto.
-2. Fechar só contra a 2.5.2, e deixar `/Afty` e `/Player` trocarem ficha por import. Exige separar as
-   duas comparações.
-3. Não mexer. O privado é rota escondida, e quem importa lá sabe o que está fazendo.
-**Anotado:** 2026-09-12, ao consertar o erro de produção
-
-### PERGUNTA AO AUTOR: uma ficha sem nome derruba o PACOTE de import inteiro
-**Onde:** `src/components/io-utils.js` (`parseImportText`, a linha do `throw`)
-**Situação:** o `parseImportText` reprova criatura com `name` vazio e **LANÇA em vez de pular**:
-
-```js
-if (!c || !c.name || typeof c.name !== "string") {
-  throw new Error(`Criatura inválida: ${JSON.stringify(c)}`);
-}
-```
-
-Uma ficha sem nome no meio de um arquivo derruba a importação inteira, levando junto todas as outras
-que vieram no mesmo pacote. Quem exporta cinco fichas e tem uma sem nome perde as cinco, e a mensagem
-de erro é o JSON cru daquela ficha, que não diz qual das cinco é nem o que fazer.
-
-⚠ **A ORIGEM já está consertada** (2026-09-05): o criador do Afty passou a gravar "Sem nome" quando o
-campo está vazio, então ficha NOVA não cai mais nisso. O que sobra é (a) as fichas antigas que já
-foram exportadas com `name: ""`, e (b) a fragilidade de um pacote inteiro morrer por causa de uma
-entrada.
-
-⚠ **O arquivo é da 2.5.2, e a regra número 1 diz que `src/components/` é somente-leitura.** Por isso
-isto é pergunta e não conserto. O import não tem nenhum ponto de entrada do lado do Afty: o `throw`
-acontece dentro do `parseImportText`, antes de qualquer código que o Afty controle.
-
-**Precisa:** o autor escolher uma das três.
-1. Deixar o importador dar um nome de reserva em vez de lançar (é a mesma regra do
-   `nomeParaGravar` do Afty). Uma linha, e conserta as fichas antigas também. Exige tocar em
-   `src/components/`.
-2. Deixar o importador PULAR a entrada inválida e avisar quantas pulou, em vez de derrubar o pacote.
-   Mais robusto e mais invasivo, e também em `src/components/`.
-3. Não mexer. Ficha antiga sem nome continua exigindo edição do JSON à mão antes de importar.
-
-**Anotado:** 2026-09-05, ao investigar o "Criatura inválida" que o autor recebeu
+O número certo já existe: o `importMany` devolve `imported` e `skipped`, e o `handleImportResult`
+do Dashboard só não o repassa para o modal.
+**Precisa:** o autor dizer se o modal passa a contar o que entrou. A mudança é em `src/components/`
+e vale para a 2.5.2 também, então entra pela forma 3 da lista do `AGENTS.md` (pedido do autor).
+**Anotado:** 2026-10-03, ao medir a porta de entrada nas três rotas
 
 ### PERGUNTA AO AUTOR: a RD Específica pode ser aposentada?
 **Onde:** `src/systems/afty/afty-derive.js` (`rdEspecifico`), `AftyTabDefesas.jsx`, o Preview e a
@@ -655,62 +390,7 @@ vírgula ("Medicina, Prestidigitação") em vez de "ou".
 `pericias:` daquela Classe.
 **Anotado:** 2026-08-31, ao aplicar o parse que o autor deu para o Combatente
 
-### ASSUNÇÃO: a Conjuração Aprimorada concede Feitiço no 1° nível também?
-
-**Onde:** `src/systems/afty/afty-feiticos.js` (`totalFeiticosJogador`)
-**Situação:** o livro diz *"inicia com dois Feitiços"* e *"obtém novos Feitiços conforme sobe de
-nível, recebendo um novo Feitiço em todo nível par"*, e a Conjuração Aprimorada troca isso por
-*"todo nível, ao invés de apenas nos níveis pares"*.
-
-Foi implementado como **quem concede é o nível que se SOBE**: o 1° nível nunca concede (é onde os
-dois iniciais já estão), então a cadência padrão vale `piso(n / 2)` e a da Conjuração Aprimorada vale
-`n − 1`. A leitura alternativa é que "todo nível" inclua o 1°, e aí um Conjurador de 1° nível teria
-**três** Feitiços.
-
-A escolhida foi a primeira porque a outra contradiz "por padrão, inicia com dois Feitiços" na mesma
-página. As duas só divergem a partir do **3° nível**, e no 30° a distância é de 1 Feitiço (33 contra
-34).
-**Precisa:** o autor confirmar. É um `n - 1` contra um `n`, numa linha só.
-**Anotado:** 2026-08-31, ao ligar a progressão de Feitiços do jogador
-
-### Um arquivo do grimório 2.5.2 está modificado na árvore de trabalho
-
-**Onde:** `src/components/Dashboard.jsx`
-**Situação:** a regra número 1 diz que `src/components/` é somente-leitura. O arquivo ganhou, numa
-sessão anterior, a lógica que esconde Patamar, HP, PE e Defesa no card de uma ficha de jogador, com
-comentário justificando e comparação pela string crua (`creature.rulesVersion === "player"`) para não
-fazer a 2.5.2 depender do Afty.
-
-A justificativa tem pé: o `/Player` reusa o dashboard da 2.5.2 para listar as fichas, então não havia
-outro lugar. Mas a exceção não foi decidida por ninguém, e a regra segue escrita como absoluta em
-quatro documentos.
-**Precisa:** o autor decidir entre três saídas. Aceitar a exceção e anotá-la na regra (o card do
-dashboard é a fronteira, e ela é só de leitura de campo). Copiar o `CreatureCard` para
-`src/systems/afty/` como o resto do Afty faz. Ou dar ao `/Player` uma listagem própria.
-**Anotado:** 2026-08-31, ao conferir a regra ao fim da sessão
-**Nota:** a mudança foi COMMITADA em `ae3a08f` (Ficha Player #001), então a árvore de trabalho está
-limpa e o `git diff` não acusa mais nada. A exceção continua de pé, só que agora no histórico: a
-verificação de fim de sessão deixou de conseguir enxergá-la. (2026-08-31)
-
-**Nota:** e agora são DUAS. Em 2026-09-09 o autor pediu que o `/Player` dissesse "Jogador" no lugar
-de "Grimório" e perdesse a seção "Criaturas Base", e as duas moram nesse arquivo. Ele foi consultado
-antes, escolheu **duas props opcionais** (`titulo` e `showSystemView`, com o padrão igual ao de hoje)
-e recusou forkar o `Dashboard` e o `FolderSidebar` para o Afty, por 1876 linhas duplicadas para
-mudar uma string e um booleano.
-
-Isso não resolve a entrada, ele decidiu um CASO e não a regra. O que mudou é que a segunda exceção
-tem forma diferente da primeira e é mais fácil de defender: a primeira lê `creature.rulesVersion`
-dentro do componente, e a segunda só acrescenta parâmetro com padrão, deixando quem decide no
-`src/App.jsx`. Se a saída escolhida um dia for "aceitar a exceção e anotá-la na regra", é essa
-segunda forma que vale a pena virar a fronteira escrita. (2026-09-09)
-
-**Nota:** e agora são TRÊS. Em 2026-09-10 o autor achou "Editar Criatura" no /Player, pediu a
-varredura dos restos de criatura, e escolheu **"Uma prop opcional"** para a lista de fichas: o
-`Dashboard` ganhou `vocab`, com `VOCAB_PADRAO` igual ao texto de sempre, e o `src/App.jsx` passa o
-vocabulário do jogador (`vocabularioDoDashboard`, em `afty-sistema.js`) só no /Player. É a mesma
-forma da segunda exceção: parâmetro com padrão, e quem decide é o `App.jsx`. (2026-09-10)
-
-### O Ataque Básico pode rolar como Ataque Amaldiçoado?
+### O Ataque Básico sem arma criada pode rolar como Ataque Amaldiçoado?
 
 **Onde:** `src/systems/afty/afty-pericias.js` (`resolveDano`, a linha `basico`)
 **Situação:** toda entrada de arma do inventário escolhe entre a jogada física da categoria e o
@@ -718,7 +398,8 @@ Ataque Amaldiçoado (`ataqueId`, 2026-08-18). As três de pugilato (Faixas, Mano
 têm linha própria, elas são o Ataque Básico, e o básico rola sempre Corpo a Corpo. O seletor aparecia
 nas três e gravava o campo sem mudar número nenhum, e por isso ele foi **escondido** nelas em
 2026-08-20. Esconder um controle que mentia não decidiu a regra.
-**Precisa:** decidir se um golpe desarmado (ou com Faixas) pode usar a jogada de Ataque Amaldiçoado.
+**Nota (2026-10-03):** Pugilato criado pela receita do Addon Criação de Equipamentos pode escolher Acerto Amaldiçoado no item que define o Ataque Básico. Implementação registrada em `afty-status.md`.
+**Precisa:** decidir se um golpe desarmado sem esse item criado (ou com Faixas do catálogo) pode usar a jogada de Ataque Amaldiçoado.
 Se puder, o controle não volta para o card do item: o Ataque Básico existe sem item nenhum, então a
 escolha mora na linha do golpe, na aba de Perícias e Testes.
 **Anotado:** 2026-08-20, ao consertar os quatro buracos das Faixas
@@ -738,18 +419,6 @@ sozinha na lista do Gêmeo, sem ninguém decidir. É o mesmo envelhecimento cala
 **Precisa:** o autor dizer se a regra é "o Gêmeo pode copiar do Sem Técnica" (e aí está certo como
 está) ou "o Gêmeo pode copiar estas duas" (e aí a liberação tem de nomeá-las).
 **Anotado:** 2026-08-21, ao implementar a segunda liberação
-
-### BUG: a categoria da Aptidão nunca aparece na Ficha Final
-
-**Onde:** `src/systems/afty/ficha/ficha-conteudo.js` (a tag do grupo `aptidao`)
-**Situação:** a linha monta a tag com `getCategoriaAptidao(a.categoria)?.nome`, e a categoria não tem
-campo `nome`: ela tem `label` ("Aptidões Especiais") e `tab` ("Especiais"). O `?.` devolve
-`undefined`, o `filter(Boolean)` o joga fora, e **as 85 Aptidões aparecem na Ficha sem a categoria
-delas**, sem erro nenhum no caminho. É a mesma família do efeito descartado calado.
-**Precisa:** trocar `.nome` por `.tab` (a tag é curta, e "Especiais" cabe melhor que "Aptidões
-Especiais") ou por `.label`. É uma palavra, mas MUDA A APARÊNCIA de toda a lista de Aptidões da
-Ficha, e por isso não foi feito junto: não foi pedido.
-**Anotado:** 2026-08-28, de passagem, ao pôr os números do Domínio Simples na mesma linha de tags
 
 ### Coleta de Talismãs concede shikigami e a aba de Invocações não sabe
 
@@ -878,18 +547,6 @@ trilha volta a 5. Mas é compra PERMANENTE dentro de uma janela TEMPORÁRIA, e n
 **Precisa:** o autor dizer se o limite temporário deve valer só para concessão (aí a alocação passa
 a ser aparada no limite PERMANENTE, e é uma linha) ou se comprar ali é legítimo.
 **Anotado:** 2026-08-12, ao integrar o commit 985bb79 com o trabalho local
-
-### ASSUNÇÃO: o limite da Versatilidade Extrema SOMA ou para no 6
-**Onde:** `src/systems/afty/afty-efeitos-conteudo.js` (`LENDARIA_EFEITOS_ALVO`)
-**Situação:** a Lendária diz "você pode aumentar o limite de um Nível de Aptidão **para 6**", que é
-um número absoluto. O canal `limiteAptidao` é SOMA desde que nasceu, e a soma é a convenção do
-sistema (duas fontes na mesma trilha levam o teto a 7, como está escrito na sessão de 2026-07-29).
-Numa trilha em que nada mais mexeu as duas leituras dão o mesmo 6, e elas só divergem se outra
-fonte de limite cair na MESMA trilha: somando dá 7, absoluto para em 6.
-**Precisa:** o autor confirmar a soma ou pedir o teto absoluto. É uma linha.
-**Anotado:** 2026-08-12, na entrada da Versatilidade Extrema
-**Nota:** desde 2026-09-17 a Versatilidade Extrema não existe na Ficha de Jogador (divergência
-`perdidoNoJogador`), então a dúvida vale só para a criatura e para um jogador cujo Addon a devolva.
 
 ### ASSUNÇÃO: em que ORDEM o Ritual e a Liberação Máxima se compõem
 **Onde:** `src/systems/afty/afty-feiticos.js` (`calcularFeiticoDano` e `calcularFeiticoCurativo`)
@@ -1208,18 +865,6 @@ seletor, e pediu que ficasse escrito que não foram implementados:
 
 ## AFTY — Feitiços
 
-### O Alcance do Auxiliar liga e não soma nada
-**Onde:** `src/systems/afty/afty-combate-conjurador.js` (`efeitosDeAuxiliarResolvido`)
-**Situação:** os efeitos **Alcance Corpo a Corpo** e **Alcance a Distância** calculam o valor
-(4,5 m e 9 m no Nível 3, por exemplo), aparecem para ligar na aba Buffs e entram como ativos, mas o
-tradutor de efeito não tem caso para eles: o número é descartado sem aviso. Achado na varredura de
-2026-09-10, que também provou que isto é assim desde que a ativação nasceu (18/08).
-**Precisa:** um canal de alcance da criatura. O `alcanceDe` do `resolveDano` já soma
-`alcanceBonusCorpo` e multiplica por `alcanceMult`, e o Longo do Golpe Especial pede a mesma peça
-(ver a entrada dele nas perguntas). Com o canal decidido, é um `case` cada.
-**Anotado:** 2026-09-10, ao dar interruptor aos Feitiços Auxiliares
-**Nota:** o canal existe desde 2026-09-23: `alcanceArma` (metros a mais na linha de dano, por escopo de arma, nos dois alcances da arma de distância e antes do dobro do Céu). Ver `docs/automacao-dsl.md`. Falta decidir em que linhas o Alcance do Auxiliar entra (armas `cat:corpo`, Ataque Básico, Feitiços) e escrever o `case`.
-
 ### A Transformação não escolhe o alvo de Atributo e de TR
 **Onde:** `src/systems/afty/afty-combate-conjurador.js` (`TRANSF_SEM_ALVO`) e o
 `TransformacaoEditor` em `AftyCreatureBuilder.jsx`
@@ -1440,35 +1085,17 @@ transcrever uma habilidade que fale de Guarda saber que o cano já está lá.
 
 ## AFTY — outros
 
-### BUG: a Atenção em combate do Instinto Sanguinário nunca soma
-**Onde:** `src/systems/afty/afty-efeitos-conteudo.js` (`ANATOMIA_EFEITOS.instinto_sanguinario`) e `src/systems/afty/afty-derive.js` (o `ctxMontante`)
-**Situação:** a Anatomia do Feto Amaldiçoado diz *"soma o bônus de treinamento na Iniciativa; em combate, também na Atenção"*, e a segunda linha é `{ canal: "atencao", quando: "em_combate" }`. Efeito de origem, de clã e de Anatomia roda no MONTANTE, com o contexto reduzido, e ali `em_combate` não existe: o `quando` avalia zero e a linha cai calada, com "Em Combate" ligado ou não. Medido em 2026-09-29 num Feto de ND 5: a Iniciativa ganha o +3, a Atenção fica igual. Vale para a Kitsune da Yna também, que escolhe do mesmo pool. Qualquer efeito de origem com `quando` apontando para estado de bancada tem o mesmo defeito.
-**Precisa:** levar os efeitos de origem cujo `quando` cita estado de combate para o estágio principal, onde o contexto inteiro existe. É a opção "Estado de Combate" que o autor NÃO escolheu para a Forma de Raposa (ela ficou no interruptor de sessão), então o conserto continua valendo por si.
-**Anotado:** 2026-09-29, ao medir por onde a Forma de Raposa podia ligar
-
 ### Lapidação Prateada: alcance e área de Feitiço e de Aptidão não têm canal
 **Onde:** `addons/yna.json` (Clã Getsurin) e `src/systems/afty/afty-feiticos.js` (a calculadora de alcance e área)
-**Situação:** *"o alcance/área de qualquer feitiço ou aptidão aumenta em 4,5m/3m respectivamente"* ficou no texto, por decisão do autor em 2026-09-29 ("Só Texto por Ora"). O +1 Nível de Aptidão da mesma característica está no Motor. O alcance e a área do Feitiço saem da calculadora de criação (`ALCANCE_POR_NIVEL` mais as trocas), e o Alcance do Auxiliar já é descartado pelo tradutor pela mesma falta.
+**Situação:** *"o alcance/área de qualquer feitiço ou aptidão aumenta em 4,5m/3m respectivamente"* ficou no texto, por decisão do autor em 2026-09-29 ("Só Texto por Ora"). O +1 Nível de Aptidão da mesma característica está no Motor. O alcance e a área do Feitiço saem da calculadora de criação (`ALCANCE_POR_NIVEL` mais as trocas). O Alcance do Auxiliar usa `alcanceArma` nas linhas de armas e do Ataque Básico desde 2026-10-03, sem alterar o alcance dos Feitiços.
 **Precisa:** dois canais (alcance e área) somados ao Feitiço já calculado, e o autor dizer quais Aptidões "de alcance ou área" entram (Domínio Simples, Expansão de Domínio, Cortina) antes de ligar a metade da Aptidão.
 **Anotado:** 2026-09-29
 
-### O Completo do Treino Cônjuge do Flugel soma meio ponto de Iniciativa
-**Onde:** `addons/flugel.json` (`treino_conjuge`, `completo.efeitos`)
-**Situação:** a Dupla Empenhada escreve `metade(bt)`, e o `metade` do DSL não apara. Com BT ímpar (3, 5, 7) a Iniciativa ganha 1,5, 2,5, 3,5, e o `canal("iniciativa")` soma sem aparar. Todo arredondamento do Afty é para baixo. O Treino de Cônjuge da Yna nasceu com `piso(bt / 2)` por isso.
-**Precisa:** trocar para `piso(bt / 2)` no JSON do Flugel e subir a versão. Não mexido porque é pacote de outra pessoa, e a ficha dele só muda quando ele apertar Atualizar na biblioteca.
-**Anotado:** 2026-09-29, pelo assert da Yna
-
-### As Anatomias escolhidas não aparecem na Ficha Final
-**Onde:** `src/systems/afty/ficha/ficha-conteudo.js`
-**Situação:** o criador deixa escolher as Características de Anatomia (Feto Amaldiçoado e, desde 2026-09-29, a Kitsune da Yna), o Motor soma o número delas, e a aba Habilidades da Ficha lista só as características da origem e do clã. Quem joga não vê que tem Olhos Sombrios ou Instinto Sanguinário. Vale para o Feto do livro, não é do pacote.
-**Precisa:** uma linha por Anatomia escolhida no grupo Origem, com o texto do catálogo `ANATOMIAS`.
-**Anotado:** 2026-09-29, na verificação de tela da Yna
-
-### No jogador, a Força Imparável e a Resiliência Melhorada não enxergam o TR da Classe
-**Onde:** `src/systems/afty/afty-efeitos-conteudo.js` (`res_imparavel_*` e `tal_resiliencia_*`) e `afty-efeitos.js` (as variáveis `prof_tr_*`)
-**Situação:** as duas decidem entre Treinado e Mestre por um "caso já seja" (a Força Imparável, do Restringido: *"mestre em outro no qual já seja treinado"*, e o Talento Resiliência Melhorada: *"você se torna treinado nele ou, caso já seja treinado, se torna mestre"*) com a fórmula `1 + (prof_tr_<tr> >= 1)`, e o `prof_tr_*` só lê a MARCAÇÃO À MÃO. No jogador o TR vem do pacote da Classe, que não é marcação: um Restringido 8 que escolhe a Força Imparável na Fortitude (treinada pela Classe) continua Treinado, e o livro dá Mestre. Na criatura está certo, porque lá o TR é marcado na aba. Achado em 2026-09-26, ao fazer o Treino de Testes de Resistência, e não mexido por ser de outra classe e de um Talento.
-**Precisa:** o autor confirmar. O conserto provável é o `prof_tr_*` do jogador passar a contar a faixa da Classe (o `trDaClasse`), e ele pega as duas entradas de uma vez.
-**Anotado:** 2026-09-26
+### No jogador, o TR marcado à mão ainda conta como "já treinado" na Força Imparável e na Resiliência Melhorada
+**Onde:** `src/systems/afty/afty-efeitos.js` (as variáveis `prof_tr_*`, no `buildCriaturaDslContext`)
+**Situação:** desde 2026-10-03 o `prof_tr_*` do jogador lê a maior entre a marcação à mão e a faixa da Classe, e com isso as duas enxergam o TR da Classe. A marcação à mão continua contando, e no jogador o livro diz que TR "NÃO PODE SER ESCOLHIDO DE FORMA LIVRE". Medido: Combatente 8 com Reflexos pela Classe, Fortitude marcada à mão e a Resiliência Melhorada na Fortitude dá Mestre, e o aviso `semFonte` some, porque o Mestre concedido cobre a marcação. O `proficienciaTRCasoJa` (Treino de Testes de Resistência) já ignora a marcação à mão no jogador pela divergência `trForaDoOrcamento`. Na criatura a marcação é a fonte de verdade e está certo.
+**Precisa:** o autor dizer se o `prof_tr_*` do jogador passa a ignorar a marcação à mão, como o `proficienciaTRCasoJa`. Seria ler a mesma divergência, sem linha nova em `DIVERGENCIAS`.
+**Anotado:** 2026-10-03, ao fechar o TR da Classe (Lote 03)
 
 ### O contador de usos cobre só o Combatente
 **Onde:** `src/systems/afty/afty-habilidades.js` (o campo `usos` de cada Habilidade)
@@ -1476,12 +1103,6 @@ transcrever uma habilidade que fale de Guarda saber que o cano já está lá.
 **Precisa:** o autor dizer quais entram, e se "por cena" zera no começo de cada combate.
 **Anotado:** 2026-09-24, ao fazer o contador do Combatente
 **Nota:** desde 2026-09-28 existem as recargas `cena` e `rodada` (`USOS_RECARGAS`), devolvidas pela sessão na cena nova (o `iniciaCombate` e a saída da rodada 0, a mesma porta do Autossuficiente) e na virada da rodada, e o `usos` vale também em característica de origem, Talento e opção de escolha (`mesa` no derive). Nasceu com a Fórmula de Combate Entrópica. Ligar uma das candidatas "por cena" acima agora é só declarar `recarga: "cena"`, falta o autor escolher quais.
-
-### O Ataque Circular do Lutador pode ganhar os 3 metros de alcance
-**Onde:** `src/systems/afty/afty-efeitos-conteudo.js` (`lut_manobras_finalizadoras`)
-**Situação:** *"Durante esta manobra, seu alcance corpo a corpo aumenta em 3 metros"*. O comentário da entrada dizia que não havia canal, e desde 2026-09-23 há: `alcanceArma`, que o Combatente usa na Extensão do Corpo, na Sincronia Perfeita e no Longo do Golpe Especial. O dano do Circular já mira `basico` e `cat:corpo`, e o alcance seriam as mesmas duas linhas com `expr: "3"` e o mesmo `quando`. Não foi mexido porque a rodada era do Combatente, e o autor pediu para não alterar outra classe sem necessidade.
-**Precisa:** o autor confirmar. São duas linhas de efeito e um assert.
-**Anotado:** 2026-09-24, ao abrir o canal de alcance
 
 ### O painel de Encontros mostra só a RD Geral
 **Onde:** `src/systems/afty/encontros/PainelDeCombatente.jsx` (o ladrilho `{ k: "RD", v: derived.rdGeral }`)
@@ -1504,18 +1125,6 @@ rerrolagem de Fortuna e sua quantidade de usos, a reação da Lua, os TRs de Dra
 e o reset de pilhas ao trocar o alvo da Devastação. Aplicar a mesma passagem na Ficha e no
 Encontro, sem condicionar pela rota.
 **Anotado:** 2026-09-12, ao automatizar Invencível sob o Sol
-
-### Dois campos de expressão aprovam nome de variável que não existe
-**Onde:** `src/systems/afty/AftyCreatureBuilder.jsx` (`MotorEfeitosEditor`, o da Habilidade Única, e
-`ExprField`, o Modificador de Ação e Característica de Invocação)
-**Situação:** os dois chamam `validateExpression(expr)` sem o segundo argumento, então só a SINTAXE
-é conferida. Nome errado é sintaxe perfeita: a caixa fica verde, o `evalNumber` estoura e o valor cai
-no fallback 0. É o engano que o `TecnicaMotorEditor` consertou em 2026-08-31 (ver
-`docs/automacao-dsl.md`), e estes dois ficaram para trás.
-**Precisa:** passar o conjunto de nomes do vocabulário, como o `TecnicaMotorEditor` monta o
-`conhecidas`. No `ExprField` o vocabulário já chega pronto (`grupos`), e no `MotorEfeitosEditor` ele
-é montado ali dentro (`dslGrupos`). Conserto sem pergunta de regra, e vale para os dois sistemas.
-**Anotado:** 2026-09-10, na varredura de onde o Motor aparece para o jogador
 
 ### O filtro de patamar do Dashboard não lista Beyond
 **Onde:** `src/components/Dashboard.jsx` (o `<select>` de patamar, dentro do painel de filtros)
@@ -1543,26 +1152,6 @@ prontas. É mudança visível de número, e a decisão é sua.
 **Precisa:** o autor dizer se liga. Se sim, é somar `derived.invocacoes.espacosIntermediarios` ao
 `espacosUsados` antes do `resolveCarga`, no `deriveAfty`.
 **Anotado:** 2026-08-16, ao dar tela ao tipo mecânico da Invocação
-
-### Quimera do Mecânicas: as Ações e Características de Visionário das componentes entram
-**Onde:** `src/systems/afty/afty-invocacoes.js` (`resolveQuimeraMecanicas`)
-**Situação:** o *Mecânicas* diz que a Quimera "não recebe as Ações ou Características provindas de
-efeitos como Visionário dos Shikigamis componentes". A ficha não marca de onde veio cada Ação ou
-Característica (a vaga do Visionário é um número, e não um item), então a Quimera recebe todas as
-da principal e as escolhas, sem saber quais ocuparam vaga de Visionário.
-**Precisa:** marcar na ficha da invocação os itens que usam vaga concedida, ou o autor dizer que a
-mesa confere isso à mão.
-**Anotado:** 2026-10-01, na Etapa 9 da atualização de Controlador e Invocações
-
-### Morte do Fundamento no Encontro não chega à criatura da biblioteca
-**Onde:** `src/systems/afty/encontros/usar-encontro-afty.js` (`REGISTRAR_FUNDAMENTO_PERDIDO`)
-**Situação:** a perda da Técnica Inata (DA-07) é gravada na ficha. Na Ficha Final ela vai para a
-criatura (`creature.fundamentosPerdidos`). No Encontro, o combatente guarda uma CÓPIA da ficha, e a
-gravação vai para essa cópia, que vale para o resto do Encontro. A criatura da biblioteca não sabe
-da morte, e abrir a Ficha dela depois mostra a Técnica inteira.
-**Precisa:** um caminho do Encontro para a biblioteca (o mesmo que um dia levar PV, PE ou estado
-de volta), ou um aviso no fim do Encontro com as perdas a copiar.
-**Anotado:** 2026-10-01, na Etapa 8 da atualização de Controlador e Invocações
 
 ### Forma de Arma: a invocação ainda não vira arma no arsenal do dono
 **Onde:** `src/systems/afty/afty-derive.js` (lista de armas do dono), `ficha/abas/AbaInvocacoes.jsx`
@@ -1641,13 +1230,6 @@ pelo campo `especial` da arma, que é um id de `ARMA_ESPECIAIS` e arma custom n�
 
 ---
 
-### Clã Zenin ficou com bônus de atributo livre
-**Onde:** `src/systems/afty/afty-origens.js`
-**Situação:** Gojo, Inumaki e Kamo têm `entre` com um par de atributos. O Zenin ficou livre entre
-os 6, e não se sabe se foi decisão ou esquecimento.
-**Precisa:** o autor dizer se o Zenin é restrito também e, se for, quais dois atributos.
-**Anotado:** 2026-07-29, migrado de `afty-status.md` em 2026-08-09
-
 ---
 
 ## Migração pendente deste próprio arquivo
@@ -1660,3 +1242,9 @@ autor pediu padronização daqui para frente, não migração automática do his
 
 **Precisa:** o autor dizer se quer a migração completa. Se sim, é uma passada só, de preferência
 logo depois de um commit, para o diff ficar isolado.
+
+### Reposição Sanguínea na Aberração Humanizada
+
+**Situação:** o addon Aberração Humanizada libera os Talentos de Origem do Feto Amaldiçoado Híbrido a partir do nível 6. Reposição Sanguínea melhora Vigor Maldito, mas essa característica não faz parte da Aberração Humanizada.
+
+**Precisa:** decisão do autor sobre conceder Vigor Maldito, adaptar Reposição Sanguínea a outra cura da origem ou manter o Talento selecionável sem efeito próprio.

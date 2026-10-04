@@ -2,6 +2,7 @@ import { deriveAfty } from "../afty-derive";
 import { COMBATE_ESTADOS, estadoVisivel } from "../afty-combate";
 import { expandeHerdadas } from "../afty-habilidades";
 import { sinalDe, numeroBr } from "../ui/formato";
+import { OUTROS } from "./ficha-estados";
 
 /**
  * ============================================================
@@ -132,7 +133,18 @@ export function linhasDeEstado(derived) {
   );
   const talentos = derived.talentos?.escolhidas ?? [];
   const aptidoes = derived.aptidoesEscolhidas ?? [];
-  const opcoesEscolhidas = Object.values(derived.habilidades?.escolhas?.mapa ?? {}).flat();
+  /* ⚠ E AS OPÇÕES DOS TALENTOS (2026-10-02). O Adepto de Combate empresta o pool
+     de Estilos do Combatente com o MESMO id de opção, e o "Duelando" do Estilo
+     do Duelista sumia para quem o pegou pelo Talento: o Motor somava o bônus com
+     o interruptor ligado, e a tela não tinha o interruptor. */
+  const opcoesDeHabilidade = Object.values(derived.habilidades?.escolhas?.mapa ?? {}).flat();
+  const opcoesDeTalento = Object.values(derived.talentos?.escolhas?.mapa ?? {}).flat();
+  const opcoesEscolhidas = [...opcoesDeHabilidade, ...opcoesDeTalento];
+  /* Quem tem a opção só pelo Talento mora em Outros, com os outros estados de
+     Talento, e não na sub-aba de uma Especialização que a ficha não tem. */
+  const soPeloTalento = (e) => !!e.requerEscolha
+    && !opcoesDeHabilidade.includes(e.requerEscolha)
+    && opcoesDeTalento.includes(e.requerEscolha);
   const comLista = (req) => (Array.isArray(req) ? req : [req]);
   const temHabilidade = (req) => comLista(req).some((id) => escolhidas.includes(id));
   const opcoesDe = (e) => {
@@ -155,7 +167,7 @@ export function linhasDeEstado(derived) {
         : e.requerAptidao ? aptidoes.includes(e.requerAptidao)
         : temHabilidade(e.requerHabilidade);
       return temDono && (!["opcao", "dominio"].includes(e.tipo) || opcoesDe(e).length > 0);
-    }),
+    }).map((e) => (soPeloTalento(e) ? { ...e, dono: OUTROS } : e)),
     /* Estados que vêm da FICHA, e não do catálogo: as Habilidades Únicas de item
        marcadas como ativas, a IMBUIÇÃO das Técnicas de Estilo e os de ADDON.
 

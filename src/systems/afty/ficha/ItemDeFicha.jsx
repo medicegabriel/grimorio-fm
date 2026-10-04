@@ -97,9 +97,15 @@ function ItemDeFicha({ item, aberto, onAberto, favorito, onFavorito, destacado, 
         )}
         {/* ⚠ O `data-afty-tag` é o que dá LARGURA FIXA às marcas que são
             número. "Nível 1" e "Nível 20" têm textos de tamanhos diferentes, e
-            sem isso a coluna da direita serrilhava. Ver o `marca()`. */}
+            sem isso a coluna da direita serrilhava. Ver o `marca()`.
+
+            Em linha estreita as marcas saem daqui e aparecem na linha aberta,
+            junto dos números de mesa (autor, 2026-10-03). Era `hidden
+            sm:inline-flex`, que nunca escondeu nada: o `display` do
+            `.afty-chip`, fora de camada, vencia o `hidden`. Ver
+            `.afty-marca-fechada` em ficha.css. */}
         {item.tags.map((t) => (
-          <span key={t.label} className="afty-chip hidden sm:inline-flex" data-afty-tag={t.tipo ?? undefined}>
+          <span key={t.label} className="afty-chip afty-marca-fechada" data-afty-tag={t.tipo ?? undefined}>
             {t.label}
           </span>
         ))}
@@ -126,9 +132,12 @@ function ItemDeFicha({ item, aberto, onAberto, favorito, onFavorito, destacado, 
 
       {aberto && (
         <div className="px-2 pb-2 pl-8">
-          {(item.numeros ?? []).length > 0 && (
+          {(item.tags.length > 0 || (item.numeros ?? []).length > 0) && (
             <div className="afty-mesa-aberta flex flex-wrap gap-1.5 mb-1.5">
-              {item.numeros.map((n) => <span key={n} className="afty-chip">{n}</span>)}
+              {item.tags.map((t) => (
+                <span key={`marca:${t.label}`} className="afty-chip" data-afty-tag={t.tipo ?? undefined}>{t.label}</span>
+              ))}
+              {(item.numeros ?? []).map((n) => <span key={`mesa:${n}`} className="afty-chip">{n}</span>)}
             </div>
           )}
           {item.texto && <p className="afty-texto">{item.texto}</p>}

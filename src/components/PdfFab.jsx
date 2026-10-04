@@ -5,7 +5,8 @@
 // clicar num PDF abre o PdfViewerModal embutido.
 // ============================================================
 // Global: montado no fragment raiz do App, aparece em todas as telas.
-// z-40 fica abaixo dos modais (z-[100]), então o modal cobre o FAB.
+// z-40 fica abaixo dos modais (z-[100]), então o modal cobre o FAB. A janela
+// do PDF fica acima de tudo (z-[120]), ver PdfViewerModal.
 // ============================================================
 
 import { useState } from "react";
@@ -16,12 +17,14 @@ import PdfViewerModal from "./PdfViewerModal";
 export default function PdfFab() {
   const [open, setOpen] = useState(false);
   const [activeDoc, setActiveDoc] = useState(null);
+  const [minimized, setMinimized] = useState(false);
 
   // Sem documentos configurados → nada a mostrar.
   if (!PDF_DOCS.length) return null;
 
   const handlePick = (docItem) => {
     setActiveDoc(docItem);
+    setMinimized(false); // escolher o PDF de novo restaura a janela minimizada
     setOpen(false); // recolhe a pilha ao abrir o PDF
   };
 
@@ -57,7 +60,12 @@ export default function PdfFab() {
         </button>
       </div>
 
-      <PdfViewerModal doc={activeDoc} onClose={() => setActiveDoc(null)} />
+      <PdfViewerModal
+        doc={activeDoc}
+        minimized={minimized}
+        onToggleMinimize={() => setMinimized((v) => !v)}
+        onClose={() => setActiveDoc(null)}
+      />
     </>
   );
 }

@@ -1,0 +1,114 @@
+[
+  {
+    "rota": "afty",
+    "largura": 1440,
+    "esperado": {
+      "modTecnica": 5,
+      "cura": "6d10+8",
+      "fonte": [
+        4
+      ]
+    },
+    "painel": [
+      "Suporte em Combate6d10",
+      "Suporte Absoluto+4",
+      "Suporte em Combate+4"
+    ],
+    "dimensoes": {
+      "viewport": 1440,
+      "largura": 1425
+    },
+    "progressao": [],
+    "erros": []
+  },
+  {
+    "rota": "afty",
+    "largura": 390,
+    "esperado": {
+      "modTecnica": 5,
+      "cura": "6d10+8",
+      "fonte": [
+        4
+      ]
+    },
+    "painel": [
+      "Suporte em Combate6d10",
+      "Suporte Absoluto+4",
+      "Suporte em Combate+4"
+    ],
+    "dimensoes": {
+      "viewport": 390,
+      "largura": 390
+    },
+    "progressao": [],
+    "erros": []
+  },
+  {
+    "rota": "player",
+    "largura": 1440,
+    "esperado": {
+      "modTecnica": 5,
+      "cura": "6d10+14",
+      "fonte": [
+        4
+      ]
+    },
+    "painel": [
+      "Suporte em Combate6d10",
+      "Suporte em Combate+4",
+      "Medicina Infalível+6",
+      "Suporte Absoluto+4"
+    ],
+    "dimensoes": {
+      "viewport": 1440,
+      "largura": 1425
+    },
+    "progressao": [
+      {
+        "nivel": 1,
+        "total": 2,
+        "texto": "0 / 2\n+0 / 1\nFEITIÇOS"
+      },
+      {
+        "nivel": 30,
+        "total": 33,
+        "texto": "0 / 33\n+0 / 1\nFEITIÇOS"
+      }
+    ],
+    "erros": []
+  },
+  {
+    "rota": "player",
+    "largura": 390,
+    "esperado": {
+      "modTecnica": 5,
+      "cura": "6d10+14",
+      "fonte": [
+        4
+      ]
+    },
+    "painel": [
+      "Suporte em Combate6d10",
+      "Suporte em Combate+4",
+      "Medicina Infalível+6",
+      "Suporte Absoluto+4"
+    ],
+    "dimensoes": {
+      "viewport": 390,
+      "largura": 390
+    },
+    "progressao": [
+      {
+        "nivel": 1,
+        "total": 2,
+        "texto": "0 / 2\n+0 / 1\nFEITIÇOS"
+      },
+      {
+        "nivel": 30,
+        "total": 33,
+        "texto": "0 / 33\n+0 / 1\nFEITIÇOS"
+      }
+    ],
+    "erros": []
+  }
+]
