@@ -1,5 +1,188 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-10-04: NOVO ESTILO DAS SOMBRAS PELA EXPANSÃO
+
+O autor mandou a *Expansão do Novo Estilo das Sombras (F&M 2.5)* e, depois do projeto técnico,
+autorizou a implementação com nove decisões. Elas estão em `docs/afty-estilo-sombras.md`, o guia novo
+da área, e revogam duas decisões antigas: a de 2026-08-10 (cada efeito era uma Técnica, e a
+combinação se montava na mesa) e a de 2026-08-07 (a Técnica gastava o contador de Habilidades).
+
+- **Etapa 0:** `main` em dia com o remoto. Linha de base: 151 arquivos e 8344 asserts, todos verdes.
+  ESLint de `src/systems/afty` zerado, build limpo.
+- **Etapa 1:** guia `docs/afty-estilo-sombras.md` com as decisões, as leituras do PDF que o autor
+  fechou e a divergência de fonte da origem Sem Técnica. As seis leituras que ficaram de fora viraram
+  NOVA DECISÃO NECESSÁRIA em `a-fazer.md` (Margem no Nível 4, "Usa Reação", recarga do Contra-Ataque,
+  troca da Durabilidade, o "Especificar" do Bônus de Acerto e o BAR 5 contra TR de alvo único).
+- **Etapa 2 (modelo de dados e progressão):**
+  - catálogo FOLHA novo `afty-estilo-sombras-catalogo.js` (na lista do `t-ordem-modulos`): a regra
+    explícita de cada Técnica (`regra: "legacy" | "expansao"`, ausente é legacy) e a progressão
+    `tecnicasDaProgressao` (2 no 4, +1 em 7, 10, 13, 16 e 19, para no 19 porque o texto para);
+  - `afty-estilo-sombras.js`: a Técnica da Expansão é um pacote (`createBlankTecnicaEstilo`,
+    `normalizaTecnicaEstilo`, `tecnicasDaFicha`), com as compras de efeito, as modificações de
+    Aptidão e os Pré-Requisitos por `uid`. O `estilosDaFicha` passou a pular a Técnica nova, porque
+    a Modificação dela tem o mesmo `tipo` do recipiente antigo e seria explodida;
+  - derive: `estilo.progressao` (total, partes, usadas, excedeu). A Técnica da Expansão não gasta o
+    contador de Habilidades. A `vagasEstilo` soma na progressão, e o que sobrar dela segue para as
+    legacy, que continuam no contador como antes (DA-05). Ficha sem Técnica nova: número igual;
+  - **⚠ risco achado e fechado:** os quatro escritores do criador regravam a lista a partir do
+    `estilosDaFicha`. Agora juntam de volta as Técnicas da Expansão (`tecnicasCruasDaExpansao`),
+    senão editar uma antiga apagaria as novas;
+  - ficha em branco com `estiloFuncionamento: { texto, durabilidadeTrilha }`;
+  - **E-05:** o `t-novo-estilo-sombras.mjs` testava o Dançarino das Lâminas. Virou
+    `t-dancarino-estilo.mjs` (intacto), e o nome passou a testar o Estilo (35 asserts);
+  - suíte: 152 arquivos e 8381 asserts, todos verdes. As suítes do Estilo legacy passam iguais.
+- **Etapa 3 (catálogo de efeitos e métricas):**
+  - `EFEITOS_ESTILO` no catálogo: os 11 efeitos da Expansão com texto verbatim, custo, repetição
+    POR EFEITO (`soma`, `aliados` ou `unica`), teto, escolha ("Especificar"), canal, a trilha que o
+    efeito lê para o Pré-Requisito e o `aceitaBonusPreRequisito` (falso só no Ataque com Gatilho).
+    O Bônus de CD guarda a nota da decisão do autor (soma na CD, e a frase "jogadas de ataque" é erro
+    de cópia). A escolha do Bônus de Acerto é o tipo de ataque, marcada como provisória;
+  - `resolveTecnicaExpansao`: o limite de efeitos (DOM + `imbuicoesEstilo` + Exaustão, com partes), os
+    efeitos usados pelo custo, as linhas do usuário (uma por efeito e escolha, com a contagem dentro) e
+    os números dos aliados (a 2ª compra estende e nunca soma no usuário), mais os Ataques com Gatilho;
+  - a Técnica liga pela `estilo_tecnica_<id>`: o seletor "Técnica Atual" é um estado `opcao` dentro
+    do interruptor do Domínio (DA-04, uma por vez);
+  - **E-03 corrigido**: o interruptor do Domínio existe sem Técnica para quem tem a Aptidão.
+    Contraprova: no HEAD o Sem Técnica de Nível 4 tem o Domínio e `estados: []`;
+  - derive: `numeros` e `aliadosCalculados` por Técnica, sem piso (o Deslocamento é 4,5 m);
+  - assert novo `t-estilo-sombras-metricas.mjs` (43). Suíte: 153 arquivos, 8424 asserts, todos verdes.
+- **Etapa 4 (validação, DA-07):**
+  - `validarTecnica` devolve `{ nivel, codigo, texto, uid? }` em três níveis. ERRO: efeitos acima do
+    limite, teto de compras, escolha pendente, efeito desconhecido, e o Especial escrevendo
+    `vagasEstilo` ou `imbuicoesEstilo` (lidos antes da emissão, a linha morreria calada). AVISO: o
+    Efeito Especial, que depende do Narrador. INFO: o gatilho da borda;
+  - ERRO deixa a Técnica INTEIRA mecanicamente inválida (`mecanicamenteValida: false`), sem tocar nos
+    dados. A progressão estourada é ERRO do Estilo e invalida todas, porque escolher quais valeriam
+    seria arbitrário;
+  - nenhum dos 103 canais do Motor cria invocação, Transformação ou consumível, então essas
+    restrições do Efeito Especial valem por construção e ficam como aviso de aprovação;
+  - **⚠ a `vagasEstilo` passou a ser lida ANTES da emissão** (para saber se a progressão estourou),
+    num passe próprio com o contexto pós-Aptidão mais as `esc_*`. O laço que publica as `esc_*`
+    virou `varsDeEspecializacao` (afty-efeitos.js), um dono só. O orçamento `legacy` usa o mesmo
+    número: o `t-especialista-estilo` (vaga por `esc_conjurador` nos níveis 4, 7, 8 e 20) passa igual;
+  - **E-01 corrigido**: o `validarConteudoEstilos` e o validador novo `validarCatalogoEstilo` rodam no
+    `t-novo-estilo-sombras`;
+  - assert novo `t-estilo-sombras-validacao.mjs` (34). Suíte: 154 arquivos, 8460 asserts, todos verdes.
+- **Etapa 5 (modificações de Aptidão):**
+  - `MODIFICACOES_APTIDAO` no catálogo: as 16 modificações da Expansão (7 de Aura, 6 de Controle e
+    Leitura, 2 de Energia Reversa e a Cortina), texto verbatim. A Técnica guarda só
+    `{ aptidaoId, modId }`, e o número sai da Aptidão do dia. Cada uma ocupa 1 vaga;
+  - Bônus Numérico de AU e de CL: `teto(au / 2)` e `teto(cl / 2)` em cada canal numérico da Aptidão,
+    com a condição da linha dela e multiplicado por a própria linha estar valendo (`!= 0`), senão o
+    Cobrir-se daria PV Temporário sem ser usado. A 2ª compra vai aos aliados;
+  - validação: Aptidão ausente, de Domínio (a categoria inteira, "não podem ser aplicadas no Domínio
+    Simples"), Aptidão que não serve para a modificação, bônus numérico em Aptidão sem número, e a
+    Energia Reversa ofensiva sem ER. A Cortina não escreve canal de área, então o raio não muda;
+  - o Punho Divergente ganha a CD + CL como número de mesa da Técnica, sem tocar na Aptidão global;
+  - o derive entrega as Aptidões, a categoria, os efeitos (`APTIDAO_EFEITOS`, pelo import que já
+    existia de `afty-efeitos`) e o nome. O Estilo segue sem importar o catálogo de Aptidões (ciclo);
+  - assert novo `t-estilo-sombras-aptidoes.mjs` (30). Suíte: 155 arquivos, 8490 asserts, todos verdes.
+- **Etapa 6 (efeitos derivados e aliados):** coberta nas Etapas 3 e 5. O que soma no usuário vai
+  para o Motor com a porta do Domínio e da Técnica ativa, e o que é dos aliados é número de mesa na
+  ficha do usuário (`aliadosCalculados`), nunca somado em outra ficha.
+- **Etapa 7 (Pré-Requisito, Contra-Ataque, crítico, Exaustão):**
+  - Pré-Requisito: `DIFICULDADES_PREREQ` (Fácil +1 a Impossível +4) sobe o Nível de Aptidão
+    considerado SÓ no efeito apontado (`alvoUid`), na expressão daquele efeito: `teto((au + 2) / 2)`.
+    A Aptidão real, a vaga e os outros efeitos não mudam. No Ataque com Gatilho e no Contra-Ataque é
+    ERRO, e em efeito que escala por BT é AVISO (não há Aptidão para aumentar);
+  - **NOVA DECISÃO NECESSÁRIA** (7ª da lista em `a-fazer.md`): dois Pré-Requisitos no mesmo efeito.
+    Hoje somam, com aviso;
+  - Contra-Ataque: 1 vaga cada, até o Nível de BAR (ERRO acima, e sem Barreira), com o degrau do BAR
+    (1-2 metade, 3-4 anula, 5 anula e rebate) e o texto da Reflexos no BAR 5 (sem custo, decisão
+    pendente). Com Contra-Ataque a Técnica marca `removeReacao`;
+  - crítico: `CRITICO_MODS` (Aumentar a CD, Mais um Alvo, Aumentar ou Mudar a Condição), 1 vaga cada,
+    a CD sobe pelo BAR, sempre AVISO (a tabela de crítico das armas não existe), e Extrema é ERRO;
+  - Exaustão: `exaustaoGerada` por Técnica, para a sessão somar ao fechar o Domínio (Etapa 9);
+  - INFO nova: a regra de acúmulo do Feitiço Auxiliar em instância única não vale no Estilo (e o
+    Estilo não tem esse campo, então ela vale por construção);
+  - assert novo `t-estilo-sombras-requisitos.mjs` (43). Suíte: 156 arquivos, 8533 asserts, todos
+    verdes.
+- **Etapa 8 (interface do criador):**
+  - arquivo novo `AftyEstiloSombras.jsx`, fora do criador gigante e sem import de volta para ele: o
+    editor de Motor e o texto longo chegam por `componentes`. Importa só o `afty-estilo-sombras`, o
+    catálogo (folha) e os controles de tela;
+  - o card mostra o resumo (Técnicas X / Y com as parcelas, DOM, AU, CL, BAR, BT e o raio), o
+    Funcionamento Básico do Estilo com a "Durabilidade pela Aptidão", e uma Técnica por card: tipo
+    (Modificação ou Especial), nome, descrição, gatilho (borda mais o específico), "Efeitos X / Y" com
+    as parcelas, o seletor de efeitos com escolha, as compras agrupadas com ×n, as modificações de
+    Aptidão filtradas pelas que a ficha tem (Domínio fora), Pré-Requisitos, Exaustão, Contra-Ataques
+    até o BAR (o degrau no hover), as modificações de crítico, "Usa Reação", o Efeito Especial com o
+    editor de Motor, os números calculados e o painel de validação (ERRO vermelho, AVISO âmbar, INFO no
+    hover). O selo "Inválida" marca a Técnica sem efeito;
+  - **o modelo anterior:** as Técnicas `legacy` aparecem em "Modelo Anterior" com "Converter para o
+    Novo Sistema" e "Remover", e a Especial antiga segue editável. Os chips que criavam Técnica de
+    tabela saíram, porque a estrutura oficial é a da Expansão. O contador de Habilidades só aparece no
+    cabeçalho enquanto houver Técnica antiga, que é quem ainda o gasta;
+  - escritores `estiloApi` no criador: as Técnicas da Expansão são editadas CRUAS (a lista antiga não
+    é normalizada por quem não a tocou), e a conversão (`converterTecnicaLegacy`) guarda a Técnica
+    antiga inteira em `legado`;
+  - conferido no navegador, nos dois sistemas: Modificação criada pela tela, "Efeitos 3 / 3" com Defesa
+    +2 e Dano +4, o quarto efeito dando "Efeitos 4 / 3", o ERRO e "Inválida", a Exaustão 1 devolvendo
+    "4 / 4" sem erro, e a conversão levando a Técnica antiga para "Técnicas 2 / 3" com `legado` gravado.
+    Console limpo.
+- **Etapa 9 (sessão, Ficha Final e Encontro):**
+  - o interruptor voltou a se chamar **"Domínio Simples"**, com a **"Técnica Atual"** logo abaixo (DA-04:
+    "Domínio Simples ativo, Técnica atual: X"). A Técnica inválida aparece marcada e não liga nada;
+  - **Exaustão no fechamento (DA-08)**: o interruptor carrega `exaustaoPorTecnica` (montado pelo
+    `resolveEstilos`), e a sessão soma ao FECHAR o Domínio, uma vez por fechamento, nunca ao ligar,
+    imbuir ou trocar. O registro fica em `combate.estiloUltimoFechamento`. Na Ficha e no Encontro
+    pela mesma função (`alteraEstadoCombate`). O fim do combate não fecha o Domínio sozinho, e o
+    contador de Exaustão aceita ajuste à mão;
+  - **NOVA DECISÃO NECESSÁRIA** (8ª): com a troca no meio, o que soma ao fechar. Hoje as Técnicas
+    usadas naquela ativação, uma vez cada (só a do fechamento deixaria fugir da Exaustão trocando);
+  - derive: `estilo.dominioAtivo`, `tecnicaAtiva` e `reacaoIndisponivel` (só em combate), e o
+    contador dos Ataques com Gatilho por rodada em `mesa["estilo:<id>"]`. O Contra-Ataque aparece
+    como quantidade, sem contador, até a decisão da recarga;
+  - Ficha Final: linha do "Funcionamento Básico do Estilo" (com a Durabilidade), linha por Técnica com
+    tipo, "Ativa", Exaustão, "Reação Indisponível", os números do usuário e dos aliados, o contador de
+    gatilhos e as modificações e Pré-Requisitos como opções. A linha do Domínio Simples ganha "Ativo"
+    e "Técnica: X";
+  - conferido no navegador, na Ficha e no Encontro do /Player: Defesa de 14 para 16 com o Saque Bato,
+    de volta a 14 na troca, Exaustão de 0 para 1 ao fechar, a linha da Técnica com "Usos 2/2" e a do
+    Domínio com "Ativo" e "Técnica: Saque Bato". Console limpo;
+  - assert novo `t-estilo-sombras-sessao.mjs` (36). Suíte: 157 arquivos, 8569 asserts, todos verdes.
+- **Etapa 10 (migração LEGACY e Addons):**
+  - nenhuma migração escrita: a Técnica sem `regra: "expansao"` é LEGACY na leitura, em todos os
+    formatos gravados (tabela com e sem `tipo`, Especial com `custoImbuicao`, o recipiente
+    `modificacao`). Os números dela foram MEDIDOS no 8bc4b82 e no código novo com as mesmas fichas, e
+    batem nos dois sistemas (Defesa, Acerto, Iniciativa, contador de Habilidades, vagas, estados);
+  - a conversão segue manual (`converterTecnicaLegacy`), com o original em `legado`;
+  - Addon: `estilos[]` sem `regra` segue LEGACY (Lime Neds intacto). Com `regra: "expansao"` vira
+    Técnica da Expansão (`<pacote>:<id>`, `deAddon`, `pacote`), entra na progressão, no seletor e na
+    validação, e aparece só para leitura no criador. O `validarPacote` confere `tipo`, as compras
+    (uid único e efeito do catálogo) e as linhas do Especial;
+  - docs: seção "Técnicas antigas (LEGACY)" e "Técnicas de pacote" no guia, a tabela de validação com
+    todos os códigos, e a regra do pacote em `docs/afty-addons.md`;
+  - assert novo `t-estilo-sombras-migracao.mjs` (91). Ele quebra no código anterior (o catálogo não
+    existe lá), e a parte LEGACY foi medida lá. Suíte: 158 arquivos, 8660 asserts, todos verdes.
+- **Etapa 11 (contraprova dos erros confirmados, contra uma cópia do 8bc4b82):**
+  - E-01: nenhum assert chamava `validarConteudoEstilos`. Agora o `t-novo-estilo-sombras` chama ele e
+    o `validarCatalogoEstilo`, e os dois pegam conteúdo quebrado (entrada ruim injetada: 3 e 13
+    problemas);
+  - E-02: o Ataque com Gatilho não tinha número. No código anterior a `mesa` não tem nada do Estilo, e
+    agora a Técnica da Expansão com 2 compras dá `mesa["estilo:<id>"]` com 2 usos por rodada. A linha
+    LEGACY de gatilho segue só texto, como antes (DA-05);
+  - E-03: o Sem Técnica de Nível 4 sem Técnica tinha `estados: []`, e agora tem o `estilo_ativo`;
+  - E-04: a ficha em branco não tinha `estiloFuncionamento` e a Ficha Final não tinha o item. Agora tem
+    os dois;
+  - E-05: o `t-novo-estilo-sombras` antigo citava o Dançarino seis vezes. Ele virou
+    `t-dancarino-estilo`, intacto, e o nome passou a testar o Novo Estilo;
+  - E-06: as expressões de `TECNICAS_TABELA` não tinham assert. O `t-estilo-sombras-migracao` fixa os
+    números finais delas (Defesa, Acerto, Dano) medidos no commit anterior;
+  - as seis suítes novas quebram no código anterior (o catálogo não existe lá). `t-ordem-modulos`,
+    `t-filtro-habilidades` e `t-imitacao` verdes.
+- **Etapa 12 (documentação):** a tabela de validação do guia com todos os códigos, as variáveis
+  `estilo_ativo`, `estilo_tecnica_<id>` e `estilo_<id>` em `automacao-dsl.md`, o catálogo na lista de
+  folhas de `afty-motor-referencia-estrutural.md`, a regra das Técnicas de pacote em `afty-addons.md`
+  e o Lime Neds marcado como `legacy` em `afty-lime-neds.md`.
+
+**Resumo da sessão.** A Técnica de Estilo virou pacote (Modificação ou Especial), com progressão
+própria, limite de efeitos por DOM e Exaustão, modificações de Aptidão por referência,
+Pré-Requisito, Contra-Ataque, crítico e validação em três níveis. A sessão liga o Domínio, escolhe a
+Técnica Atual e soma a Exaustão ao fechar, na Ficha e no Encontro. Toda Técnica antiga segue
+calculando igual, e a conversão é um botão. Ficaram para o autor as oito perguntas da NOVA DECISÃO
+NECESSÁRIA em `a-fazer.md`. Suíte final: 158 arquivos, 8660 asserts, todos verdes.
+
 ## SESSÃO DE 2026-10-01: DESENVOLVIMENTO INESPERADO DO DERIVADO NO JOGADOR
 
 Relato do autor: o jogador Derivado não recebia o ponto de atributo do Desenvolvimento Inesperado,

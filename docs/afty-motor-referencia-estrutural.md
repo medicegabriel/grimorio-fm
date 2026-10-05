@@ -66,6 +66,7 @@ sintaticamente (grep no próprio texto do arquivo por linhas `import`) e comport
 | `afty-sistema.js` | `regraDo()` é lido de dentro dos catálogos |
 | `afty-invocacoes-tipos.js` | as regras por tipo de invocação, os estados de mesa e a contagem em campo: o resolvedor, o derive e a sessão de mesa leem, e a sessão não pode importar o resolvedor (2026-09-30) |
 | `afty-invocacoes-caracteristicas.js` | o catálogo de Características de Invocação: o resolvedor e a família de addon o leem (2026-09-30) |
+| `afty-estilo-sombras-catalogo.js` | o catálogo da Expansão do Novo Estilo das Sombras (regra, progressão, efeitos, modificações de Aptidão): o resolvedor do Estilo, o validador de pacote em `afty-addons.js` e a Ficha Final o leem (2026-10-04) |
 
 **Regra prática:** antes de adicionar `import` no topo de qualquer um destes arquivos, rode
 `node asserts/t-ordem-modulos.mjs`. Se precisar mesmo de um dado externo dentro de uma dessas

@@ -148,6 +148,7 @@ import {
   ehAtributoPermanente, ehAtributoTemporario, ehEstagio2, ehPreContexto, ehPosAptidao, efeitoUsaDadosDanoFinal,
   separarEfeitosDeBancada,
   mesclarEfeitos, detalhesDoCanal, detalhesDoCanalEscopos, custoEmPe, normalizarAlvoEfeito,
+  varsDeEspecializacao, APTIDAO_EFEITOS,
 } from "./afty-efeitos";
 import { resolveGerais, contadorHabilidades, GERAL_BY_ID } from "./afty-gerais";
 import { resolveImitacao, concessaoImitada, efeitoDaImitacao } from "./afty-imitacao";
@@ -1336,6 +1337,20 @@ export function deriveAfty(creature, opcoes = {}) {
   // ⚠ Os efeitos saem daqui com a quantidade imbuída como VARIÁVEL do DSL, e por
   // isso não dependem do `resolveCombate` lá embaixo: a linha é estática e o
   // valor só é lido quando as expressões rodam, com o contexto já montado.
+  /* ⚠ A VAGA EXCLUSIVA DE ESTILO É LIDA AQUI, ANTES DA EMISSÃO (2026-10-04).
+     As Técnicas da Expansão têm progressão própria, e a `vagasEstilo` soma
+     nela. Técnica além da progressão não pode dar benefício nenhum (DA-07), e
+     para saber isso ANTES de emitir os efeitos o total precisa estar fechado
+     aqui, e não no orçamento lá embaixo, onde o canal era lido até hoje.
+
+     O contexto é o do passe pós-Aptidão mais o nível por especialização: o
+     Especialista em Estilo escreve a vaga com `esc_conjurador`, e no contexto do
+     montante as `esc_*` valem zero. O orçamento das Técnicas `legacy` usa este
+     MESMO número, para as duas regras nunca contarem a vaga de jeitos diferentes. */
+  const efVagasEstilo = resolverExclusivos(aplicarEfeitos(
+    [...efeitosMontante, ...efeitosTodos].filter((e) => e?.canal === "vagasEstilo"),
+    { ...ctxComAptidao, ...varsDeEspecializacao(nivelEspec) },
+  ));
   const estiloCtx = {
     // A MÃE, e não a origem gravada: o Liberto (variação de Addon) tem o Estilo
     // porque é um Sem Técnica. Ver `origemMae`.
@@ -1349,6 +1364,21 @@ export function deriveAfty(creature, opcoes = {}) {
     // pré-contexto porque a régua é lida aqui, antes do contexto principal
     // existir. Ver `CANAIS_PRE_CONTEXTO` em afty-efeitos.js.
     imbuicoesExtras: valorCanal(efPosAptidao, "imbuicoesEstilo"),
+    // As parcelas do mesmo canal, para o hover do limite de efeitos de cada
+    // Técnica da Expansão.
+    partesImbuicao: detalhesDoCanal(efPosAptidao, "imbuicoesEstilo").map((x) => ({ label: x.nome, valor: x.valor })),
+    // O interruptor do Domínio existe sem Técnica nenhuma para quem tem a
+    // Aptidão (2026-10-04, E-03).
+    temDominioSimples: aptidoesIds.includes(DOMINIO_SIMPLES_APTIDAO),
+    vagasEstilo: valorCanal(efVagasEstilo, "vagasEstilo"),
+    partesVagasEstilo: detalhesDoCanal(efVagasEstilo, "vagasEstilo").map((x) => ({ label: x.nome, valor: x.valor })),
+    // As Aptidões da ficha, para as modificações de Aptidão das Técnicas da
+    // Expansão. A Técnica guarda só a referência, e o catálogo responde aqui.
+    aptidoesPossuidas: aptidoesIds,
+    categoriaDaAptidao: (id) => getAptidao(id)?.categoria ?? null,
+    efeitosDaAptidao: (id) => APTIDAO_EFEITOS[id] ?? getAptidao(id)?.efeitos ?? [],
+    nomeDaAptidao: (id) => getAptidao(id)?.nome ?? id,
+    niveis: aptidao.efetivo ?? {},
   };
   const estilo = resolveEstilos(creature, estiloCtx);
   const efeitosEstilo = efeitosDoEstilo(creature, estiloCtx);
@@ -2120,7 +2150,34 @@ export function deriveAfty(creature, opcoes = {}) {
      Chaves: `origem:<id>`, `talento:<id>`, `especializacao:<id>` e
      `opcao:<paiId>:<opcaoId>`, as mesmas do `item()` da Ficha. */
   const valorDeMesa = (expr) => Math.floor(evalNumberDsl(String(expr), ctxTecnica, 0));
+  /* As Técnicas da Expansão com os números prontos para a tela: o que soma no
+     usuário e o que estende aos aliados. ⚠ SEM o `Math.floor` do `valorDeMesa`:
+     o Deslocamento Adicional é 4,5 m, e piso o faria virar 4. As expressões do
+     catálogo já arredondam onde a regra manda. */
+  const valorExato = (expr) => evalNumberDsl(String(expr), ctxTecnica, 0);
+  for (const t of estilo.tecnicas ?? []) {
+    t.numeros = t.pessoais.map((p) => ({
+      efeitoId: p.efeitoId, nome: p.nome, canal: p.canal, valor: valorExato(p.expr),
+    }));
+    t.aliadosCalculados = t.aliados.map((a) => ({
+      efeitoId: a.efeitoId, rotulo: a.rotulo, valor: valorExato(a.expr),
+    }));
+    // Números de mesa das modificações (a CD do Punho Divergente).
+    t.mesaCalculada = (t.mesa ?? []).map((m) => ({
+      efeitoId: m.efeitoId, rotulo: m.rotulo, valor: valorExato(m.expr),
+    }));
+  }
   const mesa = {};
+  /* O contador dos Ataques com Gatilho de cada Técnica da Expansão: "um ataque
+     por rodada", então a recarga é a rodada. A chave é a do item da Ficha
+     (`estilo:<id>`). A Técnica inválida não ganha contador (DA-07). */
+  for (const t of estilo.tecnicas ?? []) {
+    if (!t.mecanicamenteValida || !(t.ataquesComGatilho > 0)) continue;
+    mesa[`estilo:${t.id}`] = {
+      usos: { max: t.ataquesComGatilho, recarga: "rodada", chave: `rodada:estilo:${t.id}` },
+      resultados: [],
+    };
+  }
   const registraMesa = (chave, entrada, { semUsos = false } = {}) => {
     const u = semUsos ? null : entrada?.usos;
     const recarga = USOS_RECARGAS.includes(u?.recarga) ? u.recarga : "descanso";
@@ -2582,21 +2639,36 @@ export function deriveAfty(creature, opcoes = {}) {
   // Achado em 2026-08-20 pelos asserts de ficha suja, e é anterior a eles.
   const feiticosLista = Array.isArray(creature?.feiticos) ? creature.feiticos : [];
   const feiticosGastos = feiticosLista.filter((f) => !f.variacaoDe).length;
-  // ⚠ A Técnica de Estilo gasta o MESMO caixa que o Feitiço (autor,
+  // ⚠ A Técnica de Estilo LEGACY gasta o MESMO caixa que o Feitiço (autor,
   // 2026-08-07): "Consome o Contador de Habilidades. E Talentos e coisas do
   // gênero que aumentam isso... só aumentam o contador de habilidades para
   // Estilos." Para efeito de orçamento ela É um Feitiço, inclusive na vaga
-  // exclusiva do canal `vagasFeitico`.
+  // exclusiva do canal `vagasFeitico`. A regra de 2026-08-07 foi revogada em
+  // 2026-10-04 (DA-03) e vale só para as Técnicas `legacy`, que seguem
+  // calculando como antes (DA-05). `estilo.gastos` conta só elas.
   //
   // As duas listas não convivem numa ficha bem montada (o Estilo é do Sem
   // Técnica, que não tem Feitiço), mas somar é mais honesto que escolher uma:
   // quem trocou de origem vê o excesso em vez de o excesso sumir calado.
   const criacoesGastas = feiticosGastos + estilo.gastos;
+  /* ⚠ AS TÉCNICAS DA EXPANSÃO TÊM PROGRESSÃO PRÓPRIA (autor, 2026-10-04, DA-03):
+     2 no Nível 4 e +1 em 7, 10, 13, 16 e 19, sem gastar Habilidade, Talento nem
+     slot genérico. A vaga exclusiva `vagasEstilo` ("Técnica de Estilo
+     adicional" no texto de todo concessor dela) soma em cima da progressão.
+
+     ⚠ A VAGA EXCLUSIVA É UMA SÓ PARA AS DUAS REGRAS. As Técnicas da Expansão a
+     usam primeiro, porque ela é a única pilha que alcança as duas. O que
+     sobrar dela segue para as `legacy` exatamente como antes: uma ficha sem
+     Técnica da Expansão vê o mesmo número de sempre, byte a byte. */
+  // A progressão e a vaga exclusiva já saem fechadas do `resolveEstilos`, que
+  // precisa delas ANTES de emitir os efeitos (ver o `estiloCtx`).
+  //
   // Vaga EXCLUSIVA de Técnica de Estilo (autor, 2026-08-22). Mais estreita que
   // a de Feitiço, então ela é gasta PRIMEIRO: quem tem as duas usaria a de
   // Estilo numa Técnica de Estilo de qualquer jeito, e deixar a mais larga para
-  // o final é o que faz o Feitiço ainda caber nela.
-  const vagasEstilo = canal("vagasEstilo");
+  // o final é o que faz o Feitiço ainda caber nela. Daqui para baixo é só o
+  // que as Técnicas da Expansão deixaram.
+  const vagasEstilo = estilo.vagasEstiloSobra;
   const estilosNoExclusivo = Math.min(estilo.gastos, vagasEstilo);
   const estiloForaDoExclusivo = estilo.gastos - estilosNoExclusivo;
   // ⚠ O contador comum pode ser MULTIPLICADO pela origem. Só os Gêmeos têm
@@ -2652,7 +2724,8 @@ export function deriveAfty(creature, opcoes = {}) {
 
      ⚠ O SEM TÉCNICA NÃO ENTRA NESTA TRAVA. Ele TEM energia amaldiçoada, só não
      tem técnica, e o que ocupa o lugar dos Feitiços dele é o Estilo das Sombras.
-     Quem decide o número dele é a regra de Estilo, que o autor vai mandar. */
+     O número dele é a progressão própria das Técnicas da Expansão (2026-10-04,
+     `estilo.progressao` logo acima), igual nos dois sistemas. */
   const feiticoTemCaixaProprio = ehJogador("progressaoDeFeiticos") && !semEnergia;
   /* ⚠ A SEGUNDA HABILIDADE ÚNICA PREENCHIDA CUSTA UM SLOT DE FEITIÇO (autor,
      2026-09-16, Addon Benção do Grão Mestre da Forja): "Eu perco um Slot de

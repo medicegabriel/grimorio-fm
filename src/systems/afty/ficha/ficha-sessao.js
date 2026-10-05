@@ -33,6 +33,7 @@ import { AFTY_TAMANHOS } from "../afty-schema";
 import { normalizaAdaptacoes, avancarAdaptacoesNaRodada } from "../afty-adaptacao";
 import { avancaArmasTransformaveis } from "../afty-armas-transformaveis";
 import { ESTADO_APICE, RODADAS_APICE } from "../afty-talisma-apice";
+import { ESTADO_ESTILO_ATIVO, ESTADO_TECNICA_ATIVA } from "../afty-estilo-sombras";
 import {
   PROPRIEDADES_GOLPE, vezesDaPropriedade, marcasDoGolpe, custoDoGolpe, normalizaGolpeEspecial,
 } from "../afty-golpe-especial";
@@ -2393,6 +2394,10 @@ export function alteraEstadoCombate(sessao, estado, valor) {
     return { ...sessao, combate: { ...combate, [ESTADO_APICE]: valor,
       talismaApiceRodadas: combate[ESTADO_APICE] ? Math.max(1, inteiro(combate.talismaApiceRodadas, 1)) : 1 } };
   }
+  // O Domínio Simples do Novo Estilo e a Técnica imbuída nele (DA-04, DA-08).
+  if (estado.id === ESTADO_ESTILO_ATIVO || estado.id === ESTADO_TECNICA_ATIVA) {
+    return alteraDominioDoEstilo(sessao, combate, estado, valor);
+  }
   if (ativando && estado.umaVezPorRodada && estadoUsadoNestaRodada(sessao, estado.id)) {
     return sessao;
   }
@@ -2408,6 +2413,68 @@ export function alteraEstadoCombate(sessao, estado, valor) {
       ? { ...(sessao.usos || {}), [chaveUsoEstado(estado.id)]: sessao.rodada }
       : sessao.usos,
   };
+}
+
+/**
+ * O Domínio Simples do Novo Estilo das Sombras na sessão (Expansão, 2026-10-04).
+ *
+ *   • DA-04: uma Técnica imbuída por vez. Trocar só muda qual pacote está no ar,
+ *     e a troca é manual (a sessão não sabe quando o turno do usuário começa).
+ *   • DA-08: a Exaustão entra quando o Domínio FECHA, uma vez por fechamento.
+ *     Nunca ao ligar nem ao trocar. O interruptor traz `exaustaoPorTecnica`
+ *     (montado pelo `resolveEstilos`), então a sessão não precisa do derive.
+ *
+ * ⚠ O QUE SOMA AO FECHAR são as Técnicas usadas naquela ativação, cada uma uma
+ * vez (`estiloUsadas`). Somar só a ativa no fechamento deixaria trocar para uma
+ * Técnica sem Exaustão antes de fechar. A leitura é NOVA DECISÃO NECESSÁRIA
+ * (`a-fazer.md`): o texto fala em "a Técnica" no singular.
+ *
+ * O registro do último fechamento fica dentro do `combate`, que atravessa a
+ * normalização da sessão intacto. O fim do combate não fecha o Domínio sozinho:
+ * quem fecha é o interruptor, e o contador de Exaustão aceita ajuste à mão.
+ */
+function alteraDominioDoEstilo(sessao, combate, estado, valor) {
+  const usadas = Array.isArray(combate.estiloUsadas) ? combate.estiloUsadas : [];
+  if (estado.id === ESTADO_TECNICA_ATIVA) {
+    const tecnica = valor || null;
+    const noAr = !!combate[ESTADO_ESTILO_ATIVO];
+    return {
+      ...sessao,
+      combate: {
+        ...combate,
+        [ESTADO_TECNICA_ATIVA]: tecnica,
+        estiloUsadas: noAr && tecnica && !usadas.includes(tecnica) ? [...usadas, tecnica] : usadas,
+      },
+    };
+  }
+  const ligando = !!valor && !combate[ESTADO_ESTILO_ATIVO];
+  const fechando = !valor && !!combate[ESTADO_ESTILO_ATIVO];
+  if (ligando) {
+    const atual = combate[ESTADO_TECNICA_ATIVA];
+    return {
+      ...sessao,
+      combate: { ...combate, [ESTADO_ESTILO_ATIVO]: true, estiloUsadas: atual ? [atual] : [] },
+    };
+  }
+  if (fechando) {
+    const ids = [...new Set([...usadas, combate[ESTADO_TECNICA_ATIVA]].filter(Boolean))];
+    const mapa = estado.exaustaoPorTecnica && typeof estado.exaustaoPorTecnica === "object"
+      ? estado.exaustaoPorTecnica : {};
+    const pontos = ids.reduce((s, id) => s + Math.max(0, inteiro(mapa[id], 0)), 0);
+    return {
+      ...sessao,
+      exaustao: Math.max(0, inteiro(sessao.exaustao, 0)) + pontos,
+      combate: {
+        ...combate,
+        [ESTADO_ESTILO_ATIVO]: false,
+        estiloUsadas: [],
+        estiloUltimoFechamento: { rodada: sessao.rodada ?? 0, tecnicas: ids, exaustao: pontos },
+      },
+    };
+  }
+  // Ligar o que já está ligado, ou desligar o que já está desligado: nada muda,
+  // e a Exaustão não entra de novo.
+  return sessao;
 }
 
 /** A mudança de combate encerra o Ápice e cobra a Exaustão da rodada aberta. */

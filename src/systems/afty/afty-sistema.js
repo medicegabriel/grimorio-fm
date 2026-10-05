@@ -701,11 +701,10 @@ export const DIVERGENCIAS = [
        tinha onde cair, porque o contador único tinha apagado os níveis pares. Ela
        é `automatica`, então todo Conjurador a tem a partir do 1° nível.
 
-       ⚠ O ESTILO DAS SOMBRAS NÃO ENTRA AQUI. O autor confirmou que ele também
-       volta ao livro e que os dois são separados, mas o cálculo dele vem em
-       mensagem própria. Até lá o Estilo segue no contador comum, e é por isso
-       que esta divergência fala só de Feitiço: uma entrada que prometesse os
-       dois estaria mentindo sobre metade. */
+       ⚠ O ESTILO DAS SOMBRAS NÃO ENTRA AQUI. O cálculo dele chegou em 2026-10-04
+       (Expansão, DA-03): progressão própria das Técnicas, 2 no Nível 4 e +1 em
+       7, 10, 13, 16 e 19, IGUAL nos dois sistemas. Por isso não é divergência:
+       ver `tecnicasDaProgressao` em afty-estilo-sombras-catalogo.js. */
     id: "progressaoDeFeiticos",
     tipo: "regra",
     onde: "afty-feiticos.js, totalFeiticosJogador, e afty-derive.js, orcamentoHabilidades",

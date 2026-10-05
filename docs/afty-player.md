@@ -193,8 +193,7 @@ atributo escolhido."*
 
 ## O QUE FALTA, EM ORDEM DE UTILIDADE
 
-`inventarioSimplificado` é a única divergência declarada com `ativa: false`. O Estilo das
-Sombras ainda espera o cálculo do autor antes de virar uma nova divergência. As demais perguntas
+`inventarioSimplificado` é a única divergência declarada com `ativa: false`. As demais perguntas
 continuam registradas em `a-fazer.md`.
 
 ### 1. `inventarioSimplificado` — o inventário inteiro volta
@@ -204,16 +203,13 @@ continuam registradas em `a-fazer.md`.
 
 O catálogo está inteiro em `afty-equipamentos.js`. É a divergência pendente que mais muda a tela.
 
-### 2. `estiloDasSombras`: a progressão de Técnica de Estilo do livro
+### 2. O Estilo das Sombras: resolvido em 2026-10-04, sem divergência
 
-Os Feitiços do jogador voltaram à progressão do livro em 2026-08-31, com orçamento **próprio**
-(divergência `progressaoDeFeiticos`). O autor confirmou na mesma mensagem que **o Estilo também
-volta, e que os dois são separados**, e disse que mandaria o cálculo dele em seguida.
-
-Até chegar, o Estilo segue no contador comum. Quando chegar, o encaixe já está pronto: o
-`orcamentoHabilidades` do motor virou uma escada de quatro pilhas, da mais estreita para a mais
-larga, e o Estilo precisa da sua entre `vagasEstilo` e `vagasFeitico`, do mesmo jeito que o Feitiço
-ganhou a dele.
+O cálculo chegou com a *Expansão do Novo Estilo das Sombras*: as Técnicas da Expansão têm progressão
+**própria** (2 no Nível 4 e +1 em 7, 10, 13, 16 e 19), que não gasta o contador de Habilidades, e é
+**igual nos dois sistemas**. Por isso não virou divergência. A vaga exclusiva `vagasEstilo` soma em
+cima da progressão, e o que sobrar dela segue para as Técnicas `legacy`, que continuam no contador
+comum como antes. Ver `docs/afty-estilo-sombras.md`.
 
 ⚠ **O Sem Técnica ficou de fora da trava de energia amaldiçoada de propósito.** Ele TEM energia, só
 não tem técnica, então o portão *"todo usuário de energia amaldiçoada"* que zera o Feitiço do

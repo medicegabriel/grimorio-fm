@@ -50,6 +50,13 @@ Onde se usa:
   bônus. Não há variável pública nova para acerto. A ativação é manual na bancada e na ficha.
 - `em_combate` — 1 enquanto a bancada ou a sessão está em combate.
 - `dominio_ativo` — 1 quando a sessão selecionou uma Expansão de Domínio válida.
+- `estilo_ativo`: 1 com o Domínio Simples do Novo Estilo das Sombras no ar. O rótulo voltou a ser
+  "Domínio Simples" em 2026-10-04, e o id não mudou.
+- `estilo_tecnica` (2026-10-04) é estado de opção, a "Técnica Atual": gera `estilo_tecnica_<id>`,
+  que vale 1 para a Técnica da Expansão imbuída. As linhas dela ligam com
+  `estilo_ativo && estilo_tecnica_<id>`, e a Técnica inválida não liga nada.
+- `estilo_<id>`: a quantidade imbuída de uma Técnica LEGACY (faixa). O remendo de custo do Estilo
+  Liberado lê `estilo_acerto`. Guia em `docs/afty-estilo-sombras.md`.
 - Os demais ids de `COMBATE_ESTADOS` viram identificadores normalizados pelo mesmo caminho. Estados
   de opção também geram uma variável para cada opção.
 - Um estado `multi` gera a CONTAGEM de selecionados no nome dele mais uma booleana por opção

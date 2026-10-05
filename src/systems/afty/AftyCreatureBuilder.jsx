@@ -18,7 +18,7 @@ import {
 import { contadoresOrigemDeAddon, valorContadorOrigem, clampContadorOrigem } from "./afty-contadores-origem";
 // Primitivos compartilhados com a Ficha Final. Eram locais deste arquivo até
 // 2026-08-05, e saíram porque duas cópias divergiriam na primeira errata.
-import { PainelDeFontes, ValorComFontes, NumeroComFontes } from "./ui/fontes";
+import { PainelDeFontes, ValorComFontes, NumeroComFontes, DicaDeTexto } from "./ui/fontes";
 import TabDefesas from "./AftyTabDefesas";
 import TabCatarse from "./AftyTabCatarse";
 import TabCarteira from "./AftyTabCarteira";
@@ -74,7 +74,7 @@ import {
 } from "./afty-treinos-especiais";
 import {
   APTIDAO_TRILHAS, APTIDAO_NIVEL_MAX,
-  aptidoesDaCategoria, subgruposDaCategoria, abasAptidao, avaliarRequisitoAptidao,
+  aptidoesDaCategoria, subgruposDaCategoria, abasAptidao, avaliarRequisitoAptidao, getAptidao,
 } from "./afty-aptidoes";
 import {
   especializacoesDisponiveis, getEspecializacao, normalizeEspecializacoes, tipoObrigatorio,
@@ -170,9 +170,11 @@ import {
 import { IconeDeTipo } from "./ui/feitico-tipo";
 import ListaLateral from "./ui/ListaLateral";
 import {
-  createBlankEstiloEspecial, estilosDaFicha, TECNICAS_TABELA, TEXTO_EFEITO_ESPECIAL,
-  mostraCardEstilo,
+  estilosDaFicha,
+  mostraCardEstilo, tecnicasCruasDaExpansao, createBlankTecnicaEstilo, converterTecnicaLegacy,
 } from "./afty-estilo-sombras";
+import { REGRA_EXPANSAO, regraDaTecnica } from "./afty-estilo-sombras-catalogo";
+import NovoEstiloSombrasCard from "./AftyEstiloSombras";
 import { vocabularioDsl, vocabularioInvocacao, DSL_FUNCOES } from "./afty-dsl-vocabulario";
 import { TECNICAS_COMBATE_IDS, atributosDasTecnicas, trocasDoFeitico, travaDaPermuta } from "./afty-combate-conjurador";
 import BancadaDeArma from "./ui/BancadaDeArma";
@@ -667,15 +669,10 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
   // ficava preso na tela. Normalizar aqui migra a ficha na primeira edição, e
   // a operação é idempotente para quem já está no shape novo.
   const estilosArr = (d) => estilosDaFicha(d);
-  // As de tabela têm id fixo (o id do efeito no catálogo), e por isso conhecer a
-  // mesma duas vezes é impossível: o botão só alterna.
-  const toggleEstiloTabela = (id) =>
-    setDraft((d) => {
-      const atuais = estilosArr(d);
-      return atuais.some((e) => e.id === id)
-        ? { ...d, estilosSombra: atuais.filter((e) => e.id !== id) }
-        : { ...d, estilosSombra: [...atuais, { id, tipo: "tabela" }] };
-    });
+  /* ⚠ A `estilosDaFicha` devolve só as Técnicas LEGACY (2026-10-04). Toda
+     escrita da lista antiga junta de volta as da Expansão, cruas, senão editar
+     uma Técnica antiga apagaria as novas. */
+  const regravaEstilos = (d, legado) => [...legado, ...tecnicasCruasDaExpansao(d)];
   // Funcionamentos Básicos ADICIONAIS (autor, 2026-08-12). Moram em `core`, ao
   // lado do principal, e por isso passam pelo `patchCore` como todo o resto do
   // Perfil Amaldiçoado.
@@ -700,15 +697,40 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       },
     }));
 
-  const addEstiloEspecial = () =>
-    setDraft((d) => ({ ...d, estilosSombra: [...estilosArr(d), createBlankEstiloEspecial()] }));
   const removeEstilo = (id) =>
-    setDraft((d) => ({ ...d, estilosSombra: estilosArr(d).filter((e) => e.id !== id) }));
+    setDraft((d) => ({ ...d, estilosSombra: regravaEstilos(d, estilosArr(d).filter((e) => e.id !== id)) }));
   const patchEstilo = (id, partial) =>
     setDraft((d) => ({
       ...d,
-      estilosSombra: estilosArr(d).map((e) => (e.id === id ? { ...e, ...partial } : e)),
+      estilosSombra: regravaEstilos(d, estilosArr(d).map((e) => (e.id === id ? { ...e, ...partial } : e))),
     }));
+  /* As Técnicas da Expansão (2026-10-04) mexem só nas entradas `expansao`, CRUAS:
+     a lista antiga fica intacta, sem normalizar nada que a pessoa não tocou. A
+     conversão é o único caminho de uma `legacy` para a Expansão, e é manual. */
+  const cruas = (d) => (Array.isArray(d.estilosSombra) ? d.estilosSombra : []);
+  const daExpansao = (e, id) => e && e.id === id && regraDaTecnica(e) === REGRA_EXPANSAO;
+  const estiloApi = {
+    addTecnica: (tipo) => setDraft((d) => ({ ...d, estilosSombra: [...cruas(d), createBlankTecnicaEstilo(tipo)] })),
+    patchTecnica: (id, mudanca) => setDraft((d) => ({
+      ...d,
+      estilosSombra: cruas(d).map((e) => (daExpansao(e, id)
+        ? (typeof mudanca === "function" ? mudanca(e) : { ...e, ...mudanca })
+        : e)),
+    })),
+    removeTecnica: (id) => setDraft((d) => ({ ...d, estilosSombra: cruas(d).filter((e) => !daExpansao(e, id)) })),
+    converter: (id) => setDraft((d) => {
+      const antiga = estilosArr(d).find((e) => e.id === id);
+      if (!antiga) return d;
+      return {
+        ...d,
+        estilosSombra: regravaEstilos(d, estilosArr(d).filter((e) => e.id !== id)).concat(converterTecnicaLegacy(antiga)),
+      };
+    }),
+    patchFuncionamento: (partial) => setDraft((d) => ({
+      ...d,
+      estiloFuncionamento: { texto: "", durabilidadeTrilha: null, ...(d.estiloFuncionamento ?? {}), ...partial },
+    })),
+  };
 
   /* Devolve o id da cópia, pela mesma razão do `addFeitico`: a fileira precisa
      selecionar o que nasceu. O id sai de fora do updater para ele seguir puro. */
@@ -1668,7 +1690,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
               removerPericia={removerPericia}
             />
           )}
-{tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} patch={patch} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} addFeitico={addFeitico} updateFeitico={updateFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} setTreinoEscolhaFeiticos={setTreinoEscolhaFeiticos} toggleEstiloTabela={toggleEstiloTabela} addEstiloEspecial={addEstiloEspecial} removeEstilo={removeEstilo} patchEstilo={patchEstilo} addFuncionamento={addFuncionamento} removeFuncionamento={removeFuncionamento} patchFuncionamento={patchFuncionamento} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} patchEspinho={patchEspinho} sistema={sistema} />}
+{tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} patch={patch} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} addFeitico={addFeitico} updateFeitico={updateFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} setTreinoEscolhaFeiticos={setTreinoEscolhaFeiticos} removeEstilo={removeEstilo} patchEstilo={patchEstilo} addFuncionamento={addFuncionamento} removeFuncionamento={removeFuncionamento} patchFuncionamento={patchFuncionamento} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} patchEspinho={patchEspinho} sistema={sistema} estiloApi={estiloApi} />}
           {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} setHabilidadeVezes={setHabilidadeVezes} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} patchTecnicasCombate={patchTecnicasCombate} patchTalentosConfig={patchTalentosConfig} />}
           {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} setAptidaoVezes={setAptidaoVezes} setAptidaoOpcaoRepetida={setAptidaoOpcaoRepetida} />}
           {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} addQuimera={addQuimera} removeQuimera={removeQuimera} patchQuimera={patchQuimera} addNucleos={addNucleos} removeNucleos={removeNucleos} patchNucleos={patchNucleos} />}
@@ -3135,7 +3157,7 @@ function DominioCard({ derived, addDominio, removeDominio, patchDominio, setDomi
   );
 }
 
-function TabHabilidades({ draft, derived, patch, patchCore, toggleArmaDedicada, addFeitico, updateFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico, setTreinoEscolhaFeiticos, toggleEstiloTabela, addEstiloEspecial, removeEstilo, patchEstilo, addFuncionamento, removeFuncionamento, patchFuncionamento, setGeralVezes, addDominio, removeDominio, patchDominio, setDominioAtivo, patchEspinho, sistema }) {
+function TabHabilidades({ draft, derived, patch, patchCore, toggleArmaDedicada, addFeitico, updateFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico, setTreinoEscolhaFeiticos, removeEstilo, patchEstilo, addFuncionamento, removeFuncionamento, patchFuncionamento, setGeralVezes, addDominio, removeDominio, patchDominio, setDominioAtivo, patchEspinho, sistema, estiloApi }) {
   const dominio = (
     <DominioCard
       derived={derived}
@@ -3183,10 +3205,9 @@ function TabHabilidades({ draft, derived, patch, patchCore, toggleArmaDedicada, 
     <EstiloSombrasCard
       draft={draft}
       derived={derived}
-      toggleEstiloTabela={toggleEstiloTabela}
-      addEstiloEspecial={addEstiloEspecial}
       removeEstilo={removeEstilo}
       patchEstilo={patchEstilo}
+      estiloApi={estiloApi}
     />
   ) : null;
   /* Os Feitiços, pela MESMA razão e com a mesma forma do Estilo acima: quem
@@ -3489,49 +3510,33 @@ function HabilidadeGeralCard({ item, vezes, max, acesso, onSetVezes }) {
 
 /* Uma Técnica de Estilo de tabela. Mesma anatomia do HabilidadeGeralCard:
    alternador, nome e o texto verbatim no corpo recolhível. */
-function TecnicaTabelaLinha({ def, escolhida, onToggle }) {
-  const [open, setOpen] = useState(false);
-
+/* Uma Técnica de tabela do MODELO ANTERIOR (regra `legacy`, 2026-08-10). Ela
+   segue calculando como antes, e as duas ações são as que a DA-05 pede:
+   converter à mão para a Expansão, ou remover. Criar Técnica nova neste modelo
+   não existe mais: a estrutura oficial é a da Expansão. */
+function TecnicaLegadoLinha({ linha, onConverter, onRemover }) {
   return (
-    <div className={`rounded-lg border transition-colors ${
-      escolhida ? "border-purple-700 bg-purple-950/30" : "border-slate-800 bg-slate-950/40"
-    }`}>
-      <div className="flex items-center gap-2.5 px-2.5 h-8">
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-pressed={escolhida}
-          aria-label={`${escolhida ? "Remover" : "Escolher"} ${def.nome}`}
-          title={escolhida ? "Remover" : "Escolher"}
-          className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
-            escolhida
-              ? "bg-purple-700 border-purple-600 text-white"
-              : "border-slate-600 text-slate-500 hover:border-purple-600 hover:text-purple-300"
-          }`}
-        >
-          {escolhida ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          aria-expanded={open}
-          className="flex-1 min-w-0 flex items-center gap-x-2 text-left overflow-hidden"
-        >
-          <span className="text-[12px] font-semibold truncate text-slate-100">{def.nome}</span>
-        </button>
-
-        <ChevronDown
-          className={`w-3.5 h-3.5 text-slate-600 flex-shrink-0 transition-transform ${open ? "" : "-rotate-90"}`}
-          aria-hidden="true"
-        />
-      </div>
-
-      {open && (
-        <div className="px-2.5 pb-2.5 pl-[38px]">
-          <p className="text-[11px] text-slate-400 leading-relaxed whitespace-pre-line">{def.descricao}</p>
-        </div>
-      )}
+    <div className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950/40 px-2.5 h-9">
+      <DicaDeTexto titulo={linha.nome} texto={linha.descricao}>
+        <span className="flex-1 min-w-0 text-[12px] font-semibold truncate text-slate-200 cursor-help">{linha.nome}</span>
+      </DicaDeTexto>
+      {linha.vezes > 0 && <span className="text-[10px] font-mono text-slate-500">Imbuída {linha.vezes}×</span>}
+      <span className="flex-1" />
+      <button
+        type="button"
+        onClick={onConverter}
+        className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded border border-purple-700 text-purple-200 hover:bg-purple-800/40"
+      >
+        <RefreshCw className="w-3 h-3" /> Converter para o Novo Sistema
+      </button>
+      <button
+        type="button"
+        onClick={onRemover}
+        className="inline-flex items-center justify-center w-7 h-7 rounded text-slate-500 hover:text-red-400 hover:bg-red-950/40 transition-colors"
+        aria-label={`Remover ${linha.nome}`}
+      >
+        <Trash2 className="w-3.5 h-3.5" />
+      </button>
     </div>
   );
 }
@@ -3589,70 +3594,67 @@ function EstiloEspecialCard({ linha, efeitosMotor, fontesDano, pericias, dslGrup
   );
 }
 
-function EstiloSombrasCard({ draft, derived, toggleEstiloTabela, addEstiloEspecial, removeEstilo, patchEstilo }) {
+/* O card do Estilo (Expansão, 2026-10-04). O corpo mora em `AftyEstiloSombras.jsx`,
+   e este invólucro entrega o que só existe aqui dentro: o editor de Motor, o
+   texto longo e a lista das Técnicas do MODELO ANTERIOR (`legacy`), que seguem
+   calculando como antes até a pessoa converter à mão. */
+function EstiloSombrasCard({ draft, derived, removeEstilo, patchEstilo, estiloApi }) {
   const info = derived.estilo;
   const fontesDano = fontesDanoDaFicha(draft, derived);
-  const conhecidas = new Set(info.conhecidas.map((t) => t.id));
-  const especiais = info.conhecidas.filter((t) => t.tipo === "especial");
   const dslGrupos = useDslGrupos(derived);
+  const motorProps = { pericias: derived.testes?.pericias, fontesDano, dslGrupos };
+  const aptidoesDaFicha = (derived.aptidoesEscolhidas ?? []).map((id) => ({
+    id, nome: getAptidao(id)?.nome ?? id, categoria: getAptidao(id)?.categoria ?? null,
+  }));
+  const antigas = info.conhecidas ?? [];
 
-  return (
-    <Card title="Estilo das Sombras" headerRight={<ContadorHabilidades derived={derived} />}>
-      {!info.disponivel ? (
-        <div className="text-center py-8 border border-dashed border-slate-700 rounded-lg text-sm text-slate-400">
-          <Lock className="w-4 h-4 mx-auto mb-2 text-slate-600" aria-hidden="true" />
-          O Novo Estilo da Sombra destrava no Nível {info.ndMinimo}.
-        </div>
-      ) : (
-        <>
-          {info.avisos.map((a) => (
-            <p key={a} className="text-[11px] text-amber-400 flex items-start gap-1 mb-2">
-              <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-px" aria-hidden="true" />
-              <span>{a}</span>
-            </p>
-          ))}
-
-          <div className="space-y-1">
-            {TECNICAS_TABELA.map((def) => (
-              <TecnicaTabelaLinha
-                key={def.id}
-                def={def}
-                escolhida={conhecidas.has(def.id)}
-                onToggle={() => toggleEstiloTabela(def.id)}
-              />
-            ))}
-          </div>
-
-          {especiais.length > 0 && (
-            <div className="space-y-3 mt-3">
-              {especiais.map((t) => (
-                <EstiloEspecialCard
-                  key={t.id}
-                  linha={t}
-                  efeitosMotor={derived.estiloEfeitos?.[t.id] ?? []}
-                  fontesDano={fontesDano}
-                  pericias={derived.testes?.pericias}
-                  dslGrupos={dslGrupos}
-                  onPatch={(partial) => patchEstilo(t.id, partial)}
-                  onRemove={() => removeEstilo(t.id)}
-                />
-              ))}
-            </div>
-          )}
-
-          <div className="flex flex-wrap gap-2 mt-3">
+  const legado = antigas.length ? (
+    <div className="space-y-2">
+      {antigas.map((t) => (t.tipo === "especial" ? (
+        <div key={t.id} className="space-y-1.5">
+          <EstiloEspecialCard
+            linha={t}
+            efeitosMotor={derived.estiloEfeitos?.[t.id] ?? []}
+            fontesDano={fontesDano}
+            pericias={derived.testes?.pericias}
+            dslGrupos={dslGrupos}
+            onPatch={(partial) => patchEstilo(t.id, partial)}
+            onRemove={() => removeEstilo(t.id)}
+          />
+          {/* A Técnica de pacote de Addon não é da ficha: não se converte (DA-06). */}
+          {!t.deAddon && (
             <button
               type="button"
-              onClick={addEstiloEspecial}
-              title={TEXTO_EFEITO_ESPECIAL}
-              className="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded border border-purple-700 bg-purple-800/40 text-purple-200 hover:bg-purple-700/50 transition-colors"
+              onClick={() => estiloApi.converter(t.id)}
+              className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded border border-purple-700 text-purple-200 hover:bg-purple-800/40"
             >
-              <Plus className="w-3 h-3" /> Técnica de Estilo Especial
+              <RefreshCw className="w-3 h-3" /> Converter para o Novo Sistema
             </button>
-          </div>
-        </>
-      )}
-    </Card>
+          )}
+        </div>
+      ) : (
+        <TecnicaLegadoLinha
+          key={t.id}
+          linha={t}
+          onConverter={() => estiloApi.converter(t.id)}
+          onRemover={() => removeEstilo(t.id)}
+        />
+      )))}
+    </div>
+  ) : null;
+
+  return (
+    <NovoEstiloSombrasCard
+      draft={draft}
+      derived={derived}
+      estiloApi={estiloApi}
+      componentes={{ MotorEditor: TecnicaMotorEditor, TextoLongo }}
+      motorProps={motorProps}
+      aptidoesDaFicha={aptidoesDaFicha}
+      legado={legado}
+      // As Técnicas antigas seguem no contador de Habilidades (DA-05).
+      cabecalho={antigas.length ? <ContadorHabilidades derived={derived} /> : null}
+    />
   );
 }
 

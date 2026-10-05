@@ -1025,12 +1025,25 @@ export function buildCriaturaDslContext(base = {}) {
   // Nível por especialização. `nivel_lutador` é o REAL (o que trava
   // pré-requisito) e `esc_lutador` é o de ESCALONAMENTO (real + metade da
   // outra classe), que é o que os efeitos que escalam devem usar.
-  for (const [espId, n] of Object.entries(nivelEspec)) {
-    ctx[`nivel_${normalizarVariavel(espId)}`] = n?.real ?? 0;
-    ctx[`esc_${normalizarVariavel(espId)}`] = n?.escalonamento ?? n?.real ?? 0;
-  }
+  Object.assign(ctx, varsDeEspecializacao(nivelEspec));
 
   return ctx;
+}
+
+/**
+ * As variáveis `nivel_<esp>` e `esc_<esp>` de um mapa `{ [espId]: { real,
+ * escalonamento } }`. Exportada (2026-10-04) porque o Novo Estilo das Sombras
+ * avalia o canal `vagasEstilo` antes de o contexto principal existir, e o
+ * Especialista em Estilo o escreve com `esc_conjurador`. Um dono só para a
+ * regra de nome, em vez de uma cópia do laço.
+ */
+export function varsDeEspecializacao(nivelEspec = {}) {
+  const out = {};
+  for (const [espId, n] of Object.entries(nivelEspec || {})) {
+    out[`nivel_${normalizarVariavel(espId)}`] = n?.real ?? 0;
+    out[`esc_${normalizarVariavel(espId)}`] = n?.escalonamento ?? n?.real ?? 0;
+  }
+  return out;
 }
 
 /* ============================================================ */

@@ -31,7 +31,9 @@ Infraestrutura genérica adicionada, sem conteúdo da Lime no código do motor:
 
 - `atributos`: `bonusBase`, `limiteFixo` e `nome` por atributo.
 - `estilos`: técnicas próprias do pacote, `maxImbuicoes`, `custoImbuicao`,
-  `efeitos`, `resultados`, `adendo` e `aviso`.
+  `efeitos`, `resultados`, `adendo` e `aviso`. Desde a Expansão do Novo Estilo
+  das Sombras (2026-10-04) elas seguem `legacy`: o pacote não declara `regra`,
+  e nada foi convertido (DA-06, `docs/afty-estilo-sombras.md`).
 - `porImbuicao` multiplica um efeito ou resultado pela quantidade imbuída.
 - `acumulaComEstilo` permite ao efeito de addon somar ao Estilo comum.
 - `expiraNaRodada` remove estados temporários na virada da rodada e no descanso.

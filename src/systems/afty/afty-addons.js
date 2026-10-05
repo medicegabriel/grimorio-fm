@@ -57,6 +57,10 @@
 
 import { validarBloodfeast } from "./afty-bloodfeast";
 import { normalizarMarca, validateExpression } from "./afty-dsl";
+// Folha (zero imports): o formato da Técnica de Estilo da Expansão nos pacotes.
+import {
+  REGRA_EXPANSAO, TIPO_MODIFICACAO, TIPO_ESPECIAL, getEfeitoEstilo,
+} from "./afty-estilo-sombras-catalogo";
 /* O catálogo do Espinho vem do pacote e é saneado pelo verbo. O `afty-espinho.js`
    é FOLHA, então este import é de mão única. Ver `espinhoDaFicha`. */
 import { normalizarItemEspinho, ESPINHO_TIPOS } from "./afty-espinho";
@@ -1476,6 +1480,31 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
       continue;
     }
     estilosVistos.add(t.id);
+    /* A Técnica de pacote que declara a Expansão (DA-06, 2026-10-04) tem outro
+       formato: as compras de efeito (`{ uid, efeitoId }`) e o Motor dentro do
+       `especial.linhas`. Ela é conferida pelo formato dela, e o resto do laço é
+       só da `legacy`. */
+    if (t.regra === REGRA_EXPANSAO) {
+      if (![TIPO_MODIFICACAO, TIPO_ESPECIAL].includes(t.tipo ?? TIPO_MODIFICACAO)) {
+        problemas.push(`${t.nome}: tipo de Técnica desconhecido.`);
+      }
+      const efeitos = t.efeitos ?? [];
+      if (!Array.isArray(efeitos)) problemas.push(`${t.nome}: efeitos precisa ser uma lista.`);
+      const uids = new Set();
+      for (const e of Array.isArray(efeitos) ? efeitos : []) {
+        if (!e || !String(e.uid ?? "").trim() || uids.has(e.uid) || !getEfeitoEstilo(e.efeitoId)) {
+          problemas.push(`${t.nome}: compra de efeito inválida ou repetida em efeitos.`);
+          continue;
+        }
+        uids.add(e.uid);
+      }
+      for (const e of t.especial?.linhas ?? []) {
+        if (!e || !String(e.expr ?? "").trim() || !String(e.canal ?? "").trim()) {
+          problemas.push(`${t.nome}: linha inválida no Efeito Especial.`);
+        }
+      }
+      continue;
+    }
     for (const campo of ["maxImbuicoes", "custoImbuicao"]) {
       if (t[campo] != null && (!Number.isInteger(t[campo]) || t[campo] < 1 || t[campo] > 99)) {
         problemas.push(`${t.nome}: ${campo} inválido.`);

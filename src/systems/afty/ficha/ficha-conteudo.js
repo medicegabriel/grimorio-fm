@@ -32,6 +32,13 @@ import { TIPOS_DANO } from "../afty-equipamentos";
 import { NIVEL_LABEL } from "../afty-feiticos";
 import { DOMINIO_SIMPLES_APTIDAO } from "../afty-dominio-simples";
 import { numeroBr } from "../ui/formato";
+import {
+  getModificacaoAptidao, DIFICULDADES_PREREQ, CRITICO_MODS,
+} from "../afty-estilo-sombras-catalogo";
+
+/** O nome curto da trilha escolhida para a Durabilidade do Domínio Simples. */
+const TRILHA_ROTULO = { au: "Aura", cl: "Controle e Leitura", bar: "Barreira", er: "Energia Reversa", dom: "Domínio" };
+const sinalBr = (v) => (v > 0 ? `+${numeroBr(v)}` : numeroBr(v));
 
 /**
  * O rótulo de cada tipo de equipamento. Tipo que não estiver aqui vira uma
@@ -309,6 +316,68 @@ export function conteudoDaFicha(creature, derived) {
           : null),
       }));
     }
+
+    /* ---- A Expansão (2026-10-04) ----
+       O Funcionamento Básico do Estilo é só texto (sem bônus numérico por
+       construção), e cada Técnica sai com os números já calculados pelo derive.
+       Nada da estrutura interna (uids, regra) aparece na tela. */
+    const func = creature?.estiloFuncionamento;
+    if (String(func?.texto ?? "").trim()) {
+      itens.push(item({
+        id: "estilo_funcionamento",
+        chave: "estilo:funcionamento",
+        nome: "Funcionamento Básico do Estilo",
+        texto: func.texto,
+        grupo: "estilo",
+        tags: [func.durabilidadeTrilha ? `Durabilidade: ${TRILHA_ROTULO[func.durabilidadeTrilha] ?? func.durabilidadeTrilha}` : null]
+          .filter(Boolean),
+      }));
+    }
+    for (const t of estilo.tecnicas ?? []) {
+      const ativa = estilo.tecnicaAtiva === t.id;
+      const primeiroErro = (t.validacao ?? []).find((v) => v.nivel === "erro")?.texto
+        ?? (estilo.validacao ?? []).find((v) => v.nivel === "erro")?.texto;
+      itens.push(item({
+        id: t.id,
+        chave: `estilo:${t.id}`,
+        nome: t.nome || "Técnica Sem Nome",
+        texto: [t.descricao, t.especial?.texto, t.gatilho?.texto ? `Gatilho: ${t.gatilho.texto}` : null]
+          .filter((x) => String(x ?? "").trim()).join("\n\n"),
+        grupo: "estilo",
+        tags: [
+          t.tipo === "especial" ? "Especial" : "Modificação",
+          ativa ? "Ativa" : null,
+          t.exaustaoGerada ? `Exaustão ${t.exaustaoGerada}` : null,
+          ativa && t.removeReacao ? "Reação Indisponível" : null,
+        ].filter(Boolean),
+        numeros: [
+          ...(t.numeros ?? []).map((n) => `${n.nome}: ${sinalBr(n.valor)}`),
+          ...(t.aliadosCalculados ?? []).map((a) => `${a.rotulo}: ${sinalBr(a.valor)}`),
+          ...(t.mesaCalculada ?? []).map((m) => `${m.rotulo}: ${numeroBr(m.valor)}`),
+          t.contra ? `Contra-Ataques: ${t.contra.quantidade}` : null,
+        ],
+        usos: usosDeMesa(`estilo:${t.id}`),
+        opcoes: [
+          ...(t.modificacoes ?? []).map((g) => {
+            const mod = getModificacaoAptidao(g.modId);
+            return {
+              id: g.chave,
+              nome: `${mod?.nome ?? g.modId} (${g.nomeAptidao})${g.n > 1 ? ` ×${g.n}` : ""}`,
+              descricao: mod?.descricao ?? null,
+            };
+          }),
+          ...(t.requisitos ?? []).map((r) => {
+            const d = DIFICULDADES_PREREQ.find((x) => x.value === r.dificuldade);
+            return { id: r.uid, nome: `Pré-Requisito ${d?.label ?? r.dificuldade} (+${d?.bonus ?? 0})`, descricao: r.texto || null };
+          }),
+          ...(t.contra ? [{ id: "contra", nome: `Contra-Ataque (BAR ${t.contra.bar})`, descricao: t.contra.degrau?.texto ?? null }] : []),
+          ...(t.criticoMods ?? []).map((c) => ({
+            id: `critico:${c.id}`, nome: c.nome, descricao: CRITICO_MODS.find((x) => x.id === c.id)?.descricao ?? null,
+          })),
+        ],
+        aviso: t.mecanicamenteValida ? null : (primeiroErro ?? "Técnica inválida"),
+      }));
+    }
   }
 
   /* ---------- Talentos ---------- */
@@ -423,6 +492,12 @@ export function conteudoDaFicha(creature, derived) {
             derived.dominioSimples.sustenta
               ? `Sustentar ${derived.dominioSimples.custoSustentarTotal} PE`
               : null,
+            /* O que está no ar (DA-04): "Domínio Simples ativo, Técnica atual: X". */
+            derived?.estilo?.dominioAtivo ? "Ativo" : null,
+            derived?.estilo?.tecnicaAtiva
+              ? `Técnica: ${(derived.estilo.tecnicas ?? []).find((t) => t.id === derived.estilo.tecnicaAtiva)?.nome || "Técnica Sem Nome"}`
+              : null,
+            derived?.estilo?.reacaoIndisponivel ? "Reação Indisponível" : null,
           ]
           : []),
       ].filter(Boolean),

@@ -33,6 +33,54 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 ---
 
 ## PERGUNTAS AO AUTOR
+### Novo Estilo das Sombras: leituras da Expansão que a DA-09 manda perguntar
+**Onde:** `docs/afty-estilo-sombras.md`, `src/systems/afty/afty-estilo-sombras.js` e o catálogo do Estilo
+**Situação:** o autor adotou a *Expansão do Novo Estilo das Sombras (F&M 2.5)* em 2026-10-04 e decidiu as
+leituras principais. Estas oito ficaram fora das decisões e são interpretação de regra, então cada
+uma é **NOVA DECISÃO NECESSÁRIA**. Enquanto não houver resposta, o ponto fica como texto na ficha.
+
+1. **Margem Crítica no Nível 4.** Fonte: *"recebe um bônus igual a -1 na margem crítica no nível 5,
+   no nível 13 sua margem crítica é reduzida em -2"*. Problema: o Estilo começa no Nível 4, e o texto
+   não diz o que o efeito dá antes do 5. Alternativas: (a) nada até o 5; (b) -1 desde o 4. Impacto:
+   uma Técnica de Nível 4 com Margem. Hoje: (a), sem número no Nível 4.
+2. **"Usa Reação".** Fonte: *"Caso seja um estilo que utilize sua reação ao invés de usar metade do
+   seu BT, você utiliza seu BT inteiro durante a reação."* Problema: não diz o que fica valendo fora
+   da reação. Alternativas: (a) a Técnica inteira só vale na Reação, com BT inteiro; (b) os efeitos
+   de metade do BT viram BT inteiro só no instante da Reação, e fora dela seguem metade. Impacto: o
+   número de toda Técnica marcada. Hoje: a marca é guardada e aparece na ficha, sem mudar número.
+3. **Recarga do Contra-Ataque.** Fonte: *"você deve definir a quantidade de contra ataques que serão
+   usados"*. Problema: não diz se a quantidade é por rodada ou por Domínio aberto. Alternativas:
+   (a) por rodada; (b) por Domínio aberto. Impacto: o contador da Ficha e do Encontro. Hoje: a
+   quantidade aparece na ficha, sem contador, até a resposta.
+4. **Troca da Durabilidade no Funcionamento Básico.** Fonte: *"você pode trocar a aptidão de Domínio
+   (Durabilidade) para o Estilo da sua esgrima"*. Problema: no Livro a Durabilidade do Domínio
+   Simples é o Nível de BAR + 1, e não Domínio, e o Afty não calcula a Durabilidade. Alternativas:
+   (a) a Durabilidade passa a ser a Aptidão escolhida + 1 no lugar do BAR; (b) outra fórmula do
+   autor. Impacto: só a Durabilidade. Hoje: a escolha é guardada e mostrada, sem número.
+5. **Bônus de Acerto "(ESPECIFICAR)".** Problema: o texto não diz o que se especifica. Alternativas:
+   (a) o tipo de ataque (corpo a corpo, à distância, amaldiçoado); (b) uma arma; (c) as duas formas.
+   Impacto: o alvo do bônus. Hoje: (a), a única que o canal `bonusAcerto` já sabe, com a escolha
+   marcada como provisória até a resposta.
+6. **BAR 5 contra TR de alvo único.** Fonte: *"Você também no nível 5 de BAR, caso seja alvo de uma
+   TR (Fortitude ou Reflexos) de alvo único, você pode utilizar sua rolagem de Reflexos contra a CD
+   do ataque"*. Problema: não diz se isso vem junto do Contra-Ataque ou se é uma modificação à parte,
+   que ocupa vaga. Alternativas: (a) vem com o Contra-Ataque no BAR 5, sem vaga; (b) modificação
+   própria de 1 vaga. Impacto: o orçamento da Técnica. Hoje: texto na ficha do Contra-Ataque no BAR 5,
+   sem custo nem automação.
+7. **Dois Pré-Requisitos no mesmo efeito.** Fonte: *"consideram que sua Aptidão para um dos efeitos é
+   aumentada em 1, 2, 3 ou 4"*. Problema: o texto não diz se dois Pré-Requisitos podem apontar para o
+   mesmo efeito, nem se somam. Alternativas: (a) somam; (b) vale o maior; (c) um por efeito.
+   Impacto: o bônus de Aptidão considerado. Hoje: (a), com aviso na Técnica até a resposta.
+8. **Exaustão quando a Técnica foi trocada no meio.** Fonte: *"Pontos de Exaustão são recebidos no
+   momento em que o Domínio Simples é fechado"* e a decisão do autor (DA-08: "Se a Técnica utilizada
+   possui exaustao: 2, ao fechar o Domínio: +2"). Problema: com a troca do começo do turno (DA-04),
+   mais de uma Técnica pode ser usada na mesma ativação. Alternativas: (a) somam as Técnicas usadas,
+   cada uma uma vez; (b) só a ativa no fechamento; (c) a maior delas. Impacto: a Exaustão de quem
+   troca. Hoje: (a), porque (b) deixaria trocar para uma Técnica sem Exaustão antes de fechar.
+
+**Precisa:** o autor responder cada item. Cada resposta é uma linha do catálogo ou da sessão.
+**Anotado:** 2026-10-04, na implementação da Expansão do Novo Estilo das Sombras
+
 ### The Crimsom Queen: definir Catalisadora
 **Onde:** `addons/the-crimsom-queen.json`, Yearning Mircalla
 **Situação:** addon implementado, propriedade Catalisadora preservada no texto da arma. PDF e catálogo nativo não trazem seu efeito numérico.

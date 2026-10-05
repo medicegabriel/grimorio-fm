@@ -87,6 +87,9 @@ const FOLHAS = [
   // Entrou em 2026-09-30: o catálogo de Características de Invocação, lido pelo
   // afty-invocacoes, pelo afty-habilidades (família de addon) e pelo criador.
   ["afty-invocacoes-caracteristicas.js", "o afty-habilidades o importa, e ele está no ciclo"],
+  // Entrou em 2026-10-04: o catálogo do Novo Estilo das Sombras (Expansão), lido
+  // pelo afty-estilo-sombras, pelo derive e pelo criador.
+  ["afty-estilo-sombras-catalogo.js", "o afty-estilo-sombras o importa, e o criador importa os dois no topo"],
   ["afty-schema.js", "todo mundo cria ficha em branco"],
   ["afty-dsl.js", "o avaliador não pode depender de conteúdo"],
   ["afty-sistema.js", "regraDo() é lido de dentro dos catálogos"],

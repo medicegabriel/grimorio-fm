@@ -562,6 +562,37 @@ Duas coisas mudaram junto, e as duas são consequência e não escolha:
 ⚠ **Desinstalar o addon não destrói a ficha.** A Técnica de Estilo gravada continua lá e some só da
 CONTA, que é a convenção do projeto para acesso perdido. Volta sozinha se o addon voltar.
 
+#### Técnicas de Estilo do pacote, `legacy` e `expansao` (2026-10-04)
+
+O campo `estilos[]` traz Técnicas de Estilo prontas, que valem para toda ficha com o pacote e NÃO
+são copiadas para `creature.estilosSombra`. Desde a Expansão do Novo Estilo das Sombras cada entrada
+declara a regra em que foi escrita (DA-06):
+
+| `regra` | Como é lida | Campos |
+|---|---|---|
+| ausente ou `"legacy"` | modelo de imbuição: faixa própria na bancada e 1 do contador de Habilidades | `maxImbuicoes`, `custoImbuicao`, `efeitos` (linhas de Motor), `resultados`, `porImbuicao`, `acumulaComEstilo`, `adendo`, `aviso` |
+| `"expansao"` | Técnica-pacote da Expansão: progressão própria, escolhida em "Técnica Atual" | `tipo` (`modificacao` ou `especial`), `efeitos` (compras `{ uid, efeitoId, escolha? }` do catálogo), `aptidoes`, `requisitos`, `exaustao`, `especial: { texto, linhas }`, `critico`, `contraAtaque`, `usaReacao` |
+
+- Nenhum pacote muda de regra sozinho. O Lime Neds não declara nada e segue `legacy`.
+- O id final é `<pacote>:<id>`, como nas famílias, e é ele que o seletor "Técnica Atual" grava na
+  sessão. ⚠ `estilos` não é família registrada: o `aptidaoId` de uma modificação NÃO ganha o
+  prefixo, e a Aptidão do próprio pacote precisa ser citada já com ele.
+- O validador do pacote confere a FORMA: `tipo`, as compras (uid único e `efeitoId` do catálogo) e
+  as linhas do Especial. O resto (limite de efeitos, Aptidão possuída, escolha pendente) depende da
+  ficha, e quem decide é a validação da Técnica no derive (DA-07): a Técnica de pacote inválida
+  aparece marcada e não dá nada.
+- No criador ela aparece só para leitura, com o nome do pacote.
+
+```json
+"estilos": [
+  { "id": "muralha", "nome": "Muralha", "regra": "expansao", "tipo": "modificacao",
+    "efeitos": [{ "uid": "a", "efeitoId": "defesa" }, { "uid": "b", "efeitoId": "dano" }] }
+]
+```
+
+O guia da Expansão é `docs/afty-estilo-sombras.md`, e o `asserts/t-estilo-sombras-migracao.mjs`
+cobre os dois caminhos.
+
 #### ⚠ A QUARTA TRAVA, e a lição que ela repetiu
 
 O motor liberou, os 54 asserts passaram, e **o card continuou sem aparecer**. O autor instalou o

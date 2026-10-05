@@ -568,7 +568,14 @@ export function createBlankAfty() {
     // combate (`combate.estilo_*`), porque é combinação de mesa e troca durante
     // a luta. Duas formas: { id, tipo: "tabela" } e
     // { id, tipo: "especial", nome, descricao, efeitos }.
+    // ⚠ Desde 2026-10-04 isso é a regra `legacy`. A Técnica da Expansão grava
+    // `regra: "expansao"` e é um pacote com os efeitos dentro, com progressão
+    // própria fora do contador. As duas regras convivem nesta lista.
     estilosSombra: [],
+    // Funcionamento Básico do Novo Estilo das Sombras (Expansão, 2026-10-04).
+    // Só texto e a Aptidão escolhida para a Durabilidade: sem Motor, e por isso
+    // sem bônus numérico por construção.
+    estiloFuncionamento: { texto: "", durabilidadeTrilha: null },
     // Habilidades Gerais: qualquer origem pode pegar, e gastam o MESMO
     // contador dos Feitiços (dobro da Maestria + patamar, ver afty-gerais.js).
     // Lista COM repetição, igual a melhoriasSuperiores: cada entrada é uma pega.
