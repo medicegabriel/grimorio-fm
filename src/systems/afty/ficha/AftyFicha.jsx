@@ -54,6 +54,7 @@ import BuscaGlobal from "./BuscaGlobal";
 import PainelDeAparencia from "./PainelDeAparencia";
 import PainelBloodfeast, { ConjuracaoBloodfeast } from "./PainelBloodfeast";
 import AbaAcoes from "./abas/AbaAcoes";
+import PainelDharma from "./PainelDharma";
 import PainelDeAdaptacao from "./PainelDeAdaptacao";
 import PainelDoVislumbre from "./PainelDoVislumbre";
 import PainelOlhosAgulha from "./PainelOlhosAgulha";
@@ -212,6 +213,7 @@ export default function AftyFicha({
       /* O Ciclo de Adaptação também é estado de mesa. Viaja na mesma lista
          única para o derivado principal e para os deltas dos estados. */
       adaptacoes: sessaoBruta.adaptacoes,
+      dharma: sessaoBruta.dharma,
       treinosAtivos: sessaoBruta.treinosAtivos,
       /* A Guarda Inabalável CORRENTE. Vai pelo `opcoes` como a concessão e
          pelo mesmo motivo: é estado de mesa. O derive precisa dela porque o
@@ -663,6 +665,7 @@ export default function AftyFicha({
   const funcionamentos = useMemo(() => funcionamentosDaFicha(ficha), [ficha]);
 
   const corpo = {
+    roda: () => <PainelDharma derived={derived} sessao={sessao} onSessao={atualiza} />,
     acoes: () => (
       <AbaAcoes
         bloodfeast={<PainelBloodfeast derived={derived} sessao={sessao} onSessao={atualiza} />}
@@ -1064,7 +1067,7 @@ export default function AftyFicha({
 
           {/* ---------- abas ---------- */}
           <div className="afty-abas" role="tablist" aria-label="Seções da ficha">
-            {TABS.map((t) => (
+            {[...TABS, ...(derived.dharma?.ativo ? [{ id: "roda", label: "Roda" }] : [])].map((t) => (
               <button
                 key={t.id}
                 type="button"

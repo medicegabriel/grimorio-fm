@@ -429,3 +429,24 @@ Fortitude CD 10 mais quatro vezes nível. Regeneração abaixo da metade: 2d8 ma
 Constituição. Poder do Sangue usa metade do BT abaixo da metade dos PV, BT inteiro
 abaixo de um quarto. Mircalla manifestada cura floor(nível/2)d10 por evento de
 dano de técnica confirmado, independente de Hemofagia 7d8.
+
+## Grande Roda do Dharma (2026-10-07)
+
+Cura de Geral ao passar de cinco para seis giros:
+`min(danoAcumulado, max(0, ND * ModCon))`, limitada ainda aos PV máximos.
+Exemplo confirmado: ND 30 e ModCon 10, teto 300. O sexto giro não se repete
+nem cura novamente na rodada seguinte. O dano acumulado é separado por fonte.
+
+Defesa: RD de `BT` a partir de dois giros, cura de `2 * BT` ao
+encerrar cada turno com dano registrado, uma vez por tipo no turno. A partir
+do sexto giro, cada exposição registrada cura `3 * BT`, mesmo com dano zero.
+O botão de dano registra o evento, sem subtrair novamente os PV da barra.
+Ataque acrescenta `2 * BT` ao acerto desde o segundo giro. Os sextos giros
+de Ataque e Existência somam `2 + 2` dados contra o mesmo alvo selecionado.
+
+Acúmulo confirmado pelo autor em 2026-10-07: Geral e Defesa somam suas RDs
+quando o ataque pertence ao fenômeno selecionado e ao tipo de dano adaptado.
+A fórmula final confirmada é `2 * BT + BT`, somando `3 * BT`.
+Geral concede dobro do BT e Defesa concede BT, desde o segundo giro.
+Com BT 6, soma 18 RD. Com BT 8, soma 24 RD. Esses valores substituem
+os do texto original, preservado em `docs/grande-roda-dharma-regras.md`.

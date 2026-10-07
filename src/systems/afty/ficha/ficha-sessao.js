@@ -40,6 +40,7 @@ import {
 
 import { rolarDano } from "./ficha-rolagem";
 import { normalizaBloodfeast, pagaVidaBloodfeast, rodadaBloodfeast } from "../afty-bloodfeast";
+import { normalizaDharma, avancarRodadaDharma } from "../afty-dharma";
 
 const CHAVE_BASE = "fm_ficha_sessao_afty_v1";
 const LOG_MAX = 50;
@@ -169,6 +170,7 @@ export function sessaoEmBranco(derived = null) {
     // vaga nenhuma e morre junto com a sessão. Ver `afty-concessao.js`.
     concedido: [],
     adaptacoes: {},
+    dharma: normalizaDharma(),
     // Interruptores manuais de efeitos condicionais abertos por Treinamentos.
     treinosAtivos: {},
     usos: {},
@@ -253,6 +255,7 @@ export function normalizaSessao(bruta, derived = null) {
     // Id órfão SOBREVIVE de propósito, e vira linha morta na tela.
     concedido: normalizaConcedido(bruta.concedido),
     adaptacoes: normalizaAdaptacoes(bruta.adaptacoes),
+    dharma: normalizaDharma(bruta.dharma),
     treinosAtivos: bruta.treinosAtivos && typeof bruta.treinosAtivos === "object"
       ? Object.fromEntries(Object.entries(bruta.treinosAtivos).map(([id, ativo]) => [id, !!ativo]))
       : {},
@@ -2088,7 +2091,8 @@ export function proximaRodada(sessao, derived = null) {
     aplicaPeTemporario(comCena, derived?.peTemporario?.rodada ?? []),
     derived,
   );
-  const comAdaptacao = avancarAdaptacoesNaRodada(comGuarda, derived, comGuarda.rodada);
+  const comDharma = sessao.rodada > 0 ? avancarRodadaDharma(comGuarda, derived) : comGuarda;
+  const comAdaptacao = avancarAdaptacoesNaRodada(comDharma, derived, comDharma.rodada);
   const comArmas = avancaArmasTransformaveis(comAdaptacao, sessao.rodada === 0);
   // A casca de Preparo da Postura do Céu topa no começo de cada rodada.
   const comPreparo = topaPreparoTemp(comArmas, derived);
@@ -2193,6 +2197,7 @@ export function descansar(sessao, derived, { marioneteId = null } = {}) {
   const mesa = separaMecha(sessao);
   return {
     ...sessao,
+    dharma: normalizaDharma(),
     energiaEmVida: derived?.bloodfeast?.tem ? 3 : 0,
     bloodfeast: { ...normalizaBloodfeast(), sanidade: normalizaBloodfeast(sessao.bloodfeast).sanidade, bleed: normalizaBloodfeast(sessao.bloodfeast).bleed },
     hpAtual: Math.max(0, derived?.hp ?? 0),

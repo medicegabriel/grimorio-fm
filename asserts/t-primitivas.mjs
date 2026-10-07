@@ -51,9 +51,9 @@ const t = (nome, real, esp) => {
 /* A 22ª é o `espinho` (2026-09-30): o card das Almas, medido em `t-espinho.mjs`. */
 /* E a `heranca` (2026-10-01): a sub-aba de Heranças das Sombras do Mecânicas, medida
    em `t-invocacao-heranca.mjs`. A `bloodfeast` (2026-10-01) é do addon The Crimsom Queen. */
-t("sao 24 primitivas", AD.PRIMITIVAS.length, 24);
+t("sao 25 primitivas", AD.PRIMITIVAS.length, 25);
 t("ids esperados", AD.PRIMITIVAS.map((p) => p.id).sort(),
-  ["adaptacao", "armaTransformavel", "armasPorNivel", "ataqueAtributo", "bloodfeast", "caracteristicasAmaldicoadas", "carteira", "catarse", "cofre", "concessao", "contar", "criacaoArmas", "encantamentoGuia", "espinho", "heranca", "hpAtributo", "modificacoesCorporais", "olhosDeAgulha", "pacto", "pvEPassivas", "quimera", "requisitoAptidao", "titaColosso", "vislumbreCeleste"]);
+  ["adaptacao", "armaTransformavel", "armasPorNivel", "ataqueAtributo", "bloodfeast", "caracteristicasAmaldicoadas", "carteira", "catarse", "cofre", "concessao", "contar", "criacaoArmas", "encantamentoGuia", "espinho", "heranca", "hpAtributo", "modificacoesCorporais", "olhosDeAgulha", "pacto", "pvEPassivas", "quimera", "requisitoAptidao", "rodaDharma", "titaColosso", "vislumbreCeleste"]);
 t("toda primitiva tem rotulo", AD.PRIMITIVAS.every((p) => !!p.rotulo), true);
 t("SEM_PRIMITIVAS e vazio", AD.SEM_PRIMITIVAS, []);
 

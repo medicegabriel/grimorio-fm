@@ -1,5 +1,99 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-10-07: DHARMA, MAIN ATUALIZADA E COMMIT PREPARADO
+
+Preparação solicitada pelo autor. Consulta e fetch confirmaram main remota
+em `697a05b29cd91ec843e51483775485669460006e`, três commits além do HEAD local.
+Backup de todas as mudanças, incluindo arquivos novos, preservado no stash
+`9d26d53a08ba13a6f00c6a71afed977ebaf54a89` (backup antes de preparar Dharma).
+Main avançou por fast-forward de `7a4a62f` para `697a05b`, sem criar commit.
+
+Reaplicação do backup: único conflito em `docs/afty-status.md`, com registros
+acrescentados pelos dois lados. Ambos foram preservados. Addons, derive,
+sessão e os demais guias mesclaram automaticamente. Não houve colisão de
+caminho de arquivos novos. HEAD e origin/main agora coincidem.
+
+Index preparado com 16 arquivos exclusivamente do Dharma: pacote, motor,
+painel, integração na Ficha e no Encontro, asserts e documentação. Alterações
+de cofre e feitiços, pacotes Milenar e Reencarnação, asserts de Reencarnação,
+exports e a página temporária de teste permanecem fora desse conjunto.
+
+Validação após integração: ESLint e Vite build passaram, suíte completa com
+160 arquivos e 8.749 asserts, todos passaram. Os 71 asserts de Dharma também
+passaram em uma cópia isolada do index, sem as outras demandas locais.
+No navegador, ficha exclusiva de teste com BT 8 conserva Geral RD 16,
+Defesa RD 8 e o fenômeno recebido selecionado. Console sem erro.
+Diff do index sem whitespace inválido, U+2014 novo ou conflitos restantes,
+e sem alterações em `src/components/`. Backup mantido. Nenhum git commit
+ou git push executado. Título sugerido: feat(afty): adiciona Grande Roda do Dharma.
+
+Reconsulta solicitada pelo autor na mesma data: main remota permanece em
+`697a05b`, igual ao HEAD local. Os mesmos 16 arquivos seguem no index,
+sem conflitos, whitespace inválido ou alterações em `src/components/`.
+Comandos de PowerShell preparados para nova consulta, verificação da base,
+commit humano do index e push. As outras demandas permanecem fora do index.
+Não houve alteração de código nem necessidade de repetir os testes acima.
+
+## SESSÃO DE 2026-10-07: GRANDE RODA DO DHARMA, CONTINUAÇÃO E VALIDAÇÃO
+
+O autor reenviou o texto e pediu continuar o addon correspondente caso já
+existisse trabalho. Encontrados no checkout o pacote separado
+`addons/grande-roda-dharma.json`, o motor `afty-dharma.js`, o painel
+`ficha/PainelDharma.jsx`, a integração com Ficha e Encontro e os asserts.
+O Ciclo de Adaptação anterior permanece independente. O texto integral enviado
+coincide com `docs/grande-roda-dharma-regras.md`.
+
+O registro anterior de leitura inicial estava desatualizado em relação ao
+código local. Nesta continuação, a implementação existente foi preservada.
+Perguntas de limite, acúmulo de dados e registro dos gatilhos foram enviadas
+e depois respondidas pelo autor. As decisões finais e a correção numérica
+estão registradas abaixo. A entrada correspondente saiu de `docs/a-fazer.md`.
+
+Validação: ESLint do Afty e Vite build passaram. Os 57 asserts de Dharma
+passaram, incluindo casos com `deriveAfty`. A suíte completa passou com
+152 arquivos e 8.391 asserts. O build informa Node 22.11 abaixo da versão
+recomendada e tamanho do pacote principal, sem falhar.
+No navegador, ficha exclusiva de teste: aba Roda, cadastro de Fogo, marco
+do segundo giro, bloqueio do terceiro e liberação na rodada seguinte conferidos.
+A adaptação sobreviveu ao recarregamento. Fichas reais não foram editadas.
+
+Consulta remota: main em `697a05b29cd91ec843e51483775485669460006e`,
+HEAD local em `7a4a62ff07c6167853c45773f6b1b68255fde99d`, três commits atrás.
+Há sobreposição remota em addons, derive, sessão e documentação, a conferir
+na integração antes do commit humano. Não houve integração, commit ou push.
+Diff sem whitespace inválido e sem alterações em `src/components/`.
+Mudanças anteriores em cofre, feitiços, Milenar, Reencarnação e exports preservadas.
+Na etapa inicial, somente status e pendências foram alterados. Após as
+respostas, o motor, os resultados da tela, os asserts e os guias foram ajustados.
+
+### Respostas do autor e fechamento das três decisões
+
+O autor confirmou dois giros por fenômeno, os dois sextos giros de Ataque
+e Existência somando +4 dados e o botão Girar para o narrador registrar
+os gatilhos. Também confirmou que Geral e Defesa acumulam RD quando ambas
+cobrem o ataque. Esses comportamentos já estavam implementados e foram
+mantidos. As três dúvidas anteriores foram encerradas, com os guias atualizados.
+
+A confirmação final definiu RD Geral = dobro do BT e RD de Defesa = BT,
+ambas desde o segundo giro. Quando as duas cobrem o ataque, somam três vezes
+o BT: 18 com BT 6 e 24 com BT 8. `efeitosDharma` e `resultadosDharma` foram
+ajustados juntos. Geral usa o dobro do BT também no caminho separado de Alma.
+As curas continuam com suas fórmulas originais.
+
+`t-dharma.mjs` cobre o marco 2 antes das imunidades, BT 6 e 8, soma real no
+derive, Defesa isolada sem fenômeno selecionado, Geral isolada num tipo sem
+adaptação, caminho de Alma e os valores exibidos na tela. O texto original
+permanece integral no guia da regra, com as decisões posteriores em seção
+separada. Não há dúvidas de Dharma restantes na fila.
+
+Validação final após a correção: ESLint e Vite build passaram. Dharma tem
+71 asserts, e a suíte completa passou com 152 arquivos e 8.405 asserts.
+Na ficha de teste ND 30, BT 8, o painel mostra Geral RD 16 e Defesa RD 8
+no marco 2, com o fenômeno Fogo selecionado. Nenhum erro de console.
+Captura em `C:/Users/marcu/.codex/visualizations/2026/10/07/01a116f2-2dc3-7092-b4e5-b6bbcad48c0a/dharma-rd-final.png`.
+Diff sem whitespace inválido, sem U+2014 novo, sem conflitos instalados e
+sem alterações em `src/components/`. O remoto permanece no mesmo hash
+consultado acima. Nenhuma integração, commit ou push foi executado.
 ## SESSÃO DE 2026-10-04: NOVO ESTILO DAS SOMBRAS PELA EXPANSÃO
 
 O autor mandou a *Expansão do Novo Estilo das Sombras (F&M 2.5)* e, depois do projeto técnico,

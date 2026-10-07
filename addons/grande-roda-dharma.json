@@ -1,0 +1,12 @@
+{
+  "id": "grande-roda-dharma",
+  "nome": "Grande Roda do Dharma",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "descricao": "Um grande leme flutuando sobre a cabeça de Mahoraga enquanto consciente. Sendo indestrutível, não pode ser removida ou destruída exceto pela morte do mesmo.",
+  "paraRaw": "afty",
+  "permite": [
+    "rodaDharma"
+  ],
+  "acrescenta": {}
+}

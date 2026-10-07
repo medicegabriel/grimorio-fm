@@ -30,6 +30,7 @@ import { conteudoDaFicha, equipamentosDaFicha } from "../ficha/ficha-conteudo";
 import BotaoDeDescanso from "../ficha/BotaoDeDescanso";
 import PainelBloodfeast, { ConjuracaoBloodfeast } from "../ficha/PainelBloodfeast";
 import AbaAcoes from "../ficha/abas/AbaAcoes";
+import PainelDharma from "../ficha/PainelDharma";
 import PainelDeAdaptacao from "../ficha/PainelDeAdaptacao";
 import PainelOlhosAgulha from "../ficha/PainelOlhosAgulha";
 import PainelDoGolpeEspecial from "../ficha/PainelDoGolpeEspecial";
@@ -412,7 +413,7 @@ export default function PainelDeCombatente({
           gramáticas de aba na mesma sessão de jogo confundem quem alterna entre
           a tela do mestre e a do jogador. */}
       <div className="afty-abas afty-encontro-abas" role="tablist" aria-label="Seções do combatente">
-        {ABAS.map((a) => {
+        {[...ABAS, ...(derived.dharma?.ativo ? [{ id: "roda", rotulo: "Roda", icone: Sparkles }] : [])].map((a) => {
           const Icone = a.icone;
           return (
             <button
@@ -430,6 +431,7 @@ export default function PainelDeCombatente({
         })}
       </div>
 
+      {aba === "roda" && <PainelDharma derived={derived} sessao={sessao} onSessao={onSessao} />}
       {aba === "acoes" && (
         <AbaAcoes
         bloodfeast={<PainelBloodfeast derived={derived} sessao={sessao} onSessao={onSessao} alvos={alvosBloodfeast} onAlvo={onAlvoBloodfeast} />}

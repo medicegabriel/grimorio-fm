@@ -2145,3 +2145,52 @@ Primitiva `bloodfeast`, total do registro agora 23 (a `heranca` entrou no mesmo 
 ativar na criatura, escolher passivas e Anatomia em Habilidades e adicionar os
 modelos desejados. Controles de sessão disponíveis em Ações na Ficha e no Encontro.
 Decisões e limites detalhados em `afty-crimsom-queen.md`.
+
+## Grande Roda do Dharma (2026-10-07)
+
+Pacote importável `addons/grande-roda-dharma.json`, com a primitiva `rodaDharma`.
+O registro possui 25 primitivas nesta revisão. Gate por `creature.rulesVersion`
+igual a `afty` e pela cópia do addon na própria criatura. A roda anterior
+(`adaptacao`) permanece independente. O conteúdo original está preservado em
+`docs/grande-roda-dharma-regras.md`.
+
+A aba Roda aparece na Ficha Final e no painel do Encontro. Cada entrada possui
+tipo, fenômeno ou alvo, seis giros, limite independente de dois giros por rodada,
+dano acumulado e notas. O narrador registra os gatilhos pelo botão Girar.
+Fogo e gelo têm dois giros cada, decisão expressa do autor em 2026-10-07.
+Na continuação da mesma sessão, o autor confirmou o limite por fenômeno,
+o registro dos gatilhos pelo narrador e o acúmulo dos dois sextos giros
+de Ataque e Existência (+4 dados). Também confirmou o acúmulo das RDs
+de Geral e Defesa quando ambas cobrem o ataque recebido. Na confirmação
+final, Geral concede dobro do BT e Defesa concede BT, totalizando três vezes
+o BT. Com BT 6, são 18 RD. Essa decisão substitui os valores do texto original.
+Entradas duplicadas no mesmo tipo são recusadas. Defesa usa o tipo de dano
+do catálogo e não aceita Alma ou Energia Reversa. Existência progride contra
+um alvo de cada vez, conservando os giros anteriores ao trocar de alvo.
+
+O seletor Alvo dos ataques aplica os bônus de Ataque e Existência somente
+contra esse alvo. Os dois sextos giros acumulam quatro dados. O seletor
+Fenômeno recebido agora delimita a RD e a imunidade da Adaptação Geral.
+Deve ficar em Nenhum quando o dano não vier daquele fenômeno. Defesa usa
+os canais por tipo de dano, e sua RD acumula com a Geral. A imunidade substitui
+a resistência da própria roda na tabela, evitando conflito artificial.
+
+Registrar dano anota o dano efetivo já descontado na barra, sem descontá-lo
+outra vez. Geral guarda a soma até o sexto giro e cura automaticamente até
+ND vezes modificador de Constituição. A anotação direta permite corrigir o
+total antes do sexto giro. Defesa agenda a cura de dois BT por tipo no botão
+Encerrar turno, sem repetir por múltiplos danos no mesmo turno. No sexto giro,
+Receber exposição cura três BT, inclusive com dano zero devido à imunidade.
+Em confronto conta rodadas consecutivas de Existência e gera um giro a cada
+seis. Desmarcar ou trocar o alvo interrompe essa sequência.
+
+Estado em `sessao.dharma`, normalizado e persistido com a sessão. Encerrar cena
+limpa apenas esta roda, sem devolver os PV já curados. Descansar também limpa.
+As anulações narrativas (condições, domínio, barreiras, proteções naturais e
+Características ou Talentos) aparecem como resultados e possuem campo de
+notas. O narrador aplica essas anulações e a proibição de cura no alvo, pois
+a ficha não identifica automaticamente a origem narrativa de cada efeito
+recebido nem modifica outras fichas a partir de um nome livre.
+
+Motor: `src/systems/afty/afty-dharma.js`. Tela compartilhada:
+`src/systems/afty/ficha/PainelDharma.jsx`. Cobertura em `asserts/t-dharma.mjs`.

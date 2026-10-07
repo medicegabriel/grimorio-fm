@@ -374,3 +374,30 @@ carga de Hardblood por evento. Melhorias compartilham teto BT e saldo disponíve
 `bloodfeastBase` preserva rolagens/CD antes de melhorias, impedindo acumulação
 entre conjurações. A arma optativa aceita atributoAtaque e usarDadoArma,
 resolvidos por linha de dano, sem mudar a política global do sistema.
+
+## Grande Roda do Dharma (2026-10-07)
+
+A primitiva optativa `rodaDharma` usa `opcoes.dharma` no derive, sem criar
+variáveis DSL nem alterar o Ciclo de Adaptação existente. `efeitosDharma`
+emite os canais nativos com fonte nomeada por adaptação e alvo.
+
+- Ataque, contra o alvo selecionado: giro 2, `bonusAcerto = 2 * bt` e
+  `ignoraTodaRD`. Giro 4, `removeResistencia`. Giro 6, `ignoraImunidade` e
+  `dadosDano = 2`.
+- Existência no giro 6, contra o mesmo alvo: mais `dadosDano = 2`.
+- Defesa por tipo: giro 2, `rdTipo = bt`. Giro 4,
+  `resistenciaDano`. Giro 6, `imunidadeDano` substitui a resistência da roda.
+- Geral, somente no fenômeno recebido selecionado: giro 2, `rdGeral = 2 * bt`
+  e `rdAlma = 2 * bt`, cobrindo os caminhos separados do motor. Giro 6,
+  `imunidadeDano` nos tipos conhecidos, restrita por essa seleção de contexto.
+
+As fontes não usam exclusividade: Geral e Defesa somam suas RDs, e Ataque e
+Existência somam quatro dados. Seletores sem alvo não concedem efeitos globais.
+Sem addon ou fora de `rulesVersion: afty`, estado salvo fica inerte.
+Curas, contadores e anotações pertencem à sessão, não ao avaliador DSL.
+
+Confirmações do autor em 2026-10-07: dois giros por fenômeno por rodada,
+registro dos gatilhos pelo narrador, +4 dados de Ataque e Existência e
+acúmulo das RDs de Geral e Defesa. A confirmação final definiu Geral
+como dobro do BT e Defesa como BT. Somam `3 * bt`, ou 18 com BT 6.
+Essa decisão substitui os valores de RD do texto original preservado.

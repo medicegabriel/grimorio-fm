@@ -170,6 +170,7 @@ import {
   resolveTecnicasCombate, estadosCombateConjurador, efeitosCombateAmaldicoado,
   resolveAuxiliaresAtivos, aplicarImbuicaoNoDano, dadosAuxiliaresNaLinha,
 } from "./afty-combate-conjurador";
+import { efeitosDharma, temDharma } from "./afty-dharma";
 
 export const mod = (attr) => Math.floor(((attr ?? 10) - 10) / 2);
 
@@ -1138,6 +1139,7 @@ export function deriveAfty(creature, opcoes = {}) {
        estágio 2 comum. */
     ...condicoes.efeitos,
     ...efeitosDasAdaptacoes(creature, opcoes.adaptacoes),
+    ...efeitosDharma(creature, opcoes.dharma),
     // Habilidade Única da Ferramenta equipada, a primeira das cinco fontes do
     // pool exclusivo a chegar no Motor. Já vem com o valor resolvido no contexto
     // do item (a expressão dela lê `grau`) e com `exclusivo` carimbado.
@@ -4088,6 +4090,7 @@ export function deriveAfty(creature, opcoes = {}) {
     // são o orçamento de Focos da aba Interlúdios.
     carteira,
     adaptacoes: resumoAdaptacoes(creature, opcoes.adaptacoes),
+    dharma: { ativo: temDharma(creature) },
     /* Os da ORIGEM entram na mesma lista (2026-09-29, Forma de Raposa): as três
        telas que desenham o interruptor leem só daqui, e o estado é o mesmo
        `treinosAtivos`. O nome ficou "Treino" por isso, e não por ser só dele.

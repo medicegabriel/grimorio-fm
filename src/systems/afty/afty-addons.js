@@ -341,6 +341,11 @@ export const PRIMITIVAS = [
     nota: "O canal que TROCA a Força ou a Destreza no acerto e no dano dos ataques corpo a corpo e à distância",
   },
   {
+    id: "rodaDharma",
+    rotulo: "Grande Roda do Dharma",
+    nota: "Adaptações individuais do inimigo por fenômeno e alvo",
+  },
+  {
     id: "adaptacao",
     rotulo: "Ciclo de Adaptação",
     nota: "Progressão de sessão com giro manual, avanço por rodada e marcos configuráveis",
