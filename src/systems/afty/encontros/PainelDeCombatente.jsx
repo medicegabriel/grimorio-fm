@@ -29,6 +29,8 @@ import { opcoesDoCombatente } from "./usar-encontro-afty";
 import { conteudoDaFicha, equipamentosDaFicha } from "../ficha/ficha-conteudo";
 import BotaoDeDescanso from "../ficha/BotaoDeDescanso";
 import PainelBloodfeast, { ConjuracaoBloodfeast } from "../ficha/PainelBloodfeast";
+import ControleTecnicaMaxima from "../ficha/ControleTecnicaMaxima";
+import ControleExpansao, { PainelExaustaoTecnica } from "../ficha/ControleExpansao";
 import AbaAcoes from "../ficha/abas/AbaAcoes";
 import PainelDharma from "../ficha/PainelDharma";
 import PainelDeAdaptacao from "../ficha/PainelDeAdaptacao";
@@ -436,6 +438,9 @@ export default function PainelDeCombatente({
         <AbaAcoes
         bloodfeast={<PainelBloodfeast derived={derived} sessao={sessao} onSessao={onSessao} alvos={alvosBloodfeast} onAlvo={onAlvoBloodfeast} />}
         conjuracaoBloodfeast={(f) => <ConjuracaoBloodfeast f={f} derived={derived} sessao={sessao} onSessao={onSessao} />}
+        controleTecnicaMaxima={(f) => <ControleTecnicaMaxima f={f} sessao={sessao} onSessao={onSessao} />}
+        controleExpansao={(d) => <ControleExpansao d={d} sessao={sessao} onSessao={onSessao} rolar={rolar} feiticaria={derived.testes?.pericias?.find((p) => p.id === "feiticaria")?.bonus ?? null} />}
+        exaustaoTecnica={<PainelExaustaoTecnica sessao={sessao} onSessao={onSessao} />}
           derived={derived}
           adaptacao={<PainelDeAdaptacao derived={derived} onSessao={onSessao} />}
           olhosAgulha={<PainelOlhosAgulha derived={derived} sessao={sessao} onSessao={onSessao} />}
@@ -516,7 +521,7 @@ export default function PainelDeCombatente({
           sessao={sessao}
           deltaPorEstado={deltaPorEstado}
           onPatchCombate={(parcial) => onSessao((s) => aplicaPatchCombate(s, parcial))}
-          onEstado={(estado, valor) => onSessao((s) => alteraEstadoCombate(s, estado, valor))}
+          onEstado={(estado, valor) => onSessao((s) => alteraEstadoCombate(s, estado, valor, derived))}
           onExaustao={(valor) => onSessao((s) => ({
             ...s, exaustao: Math.max(0, Math.trunc(Number(valor) || 0)),
           }))}

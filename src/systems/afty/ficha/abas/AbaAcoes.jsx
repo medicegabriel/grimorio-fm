@@ -501,7 +501,7 @@ function ControlesRitual({
 }
 
 function LinhaFeitico({
-  f: base, rolar, destacado, comLiberacao, conjuracaoBloodfeast,
+  f: base, rolar, destacado, comLiberacao, conjuracaoBloodfeast, controleTecnicaMaxima,
   onRitual, onDesativarRitual, onIniciarRitualEstendido, onIniciarRitualSemTeste,
   onConcluirPreparacaoRitual, onCancelarRitual, onFinalizarRitual, onEncerrarRitual,
 }) {
@@ -648,6 +648,8 @@ function LinhaFeitico({
                     className="afty-valor afty-feitico-saida-num whitespace-nowrap"
                     titulo={r.rotulo}
                     onRolar={bloqueado
+                      // A Técnica Máxima inválida fica sem uso (DA-07): salva e sem rolagem.
+                      || f.tecnicaMaxima?.valida === false
                       || (f.ritual?.ativo && !f.ritual?.podeRolarFeitico)
                       || (indice === 0 && f.custoVidaAtivacao && !f.custoVidaDisponivel)
                       ? undefined
@@ -670,6 +672,8 @@ function LinhaFeitico({
             cartão tem dois donos (a Ficha e o painel de Encontros) com larguras
             bem diferentes. Seis propriedades viram duas filas em 1440px e seguem
             empilhando no telefone. */}
+        {/* A Técnica Máxima (2026-10-08): recarga e Usar, da sessão. */}
+        {f.tecnicaMaxima && controleTecnicaMaxima?.(f)}
         {conjuracaoBloodfeast?.(f)}
         {(propriedadesFixas.length > 0 || f.custoVidaAtivacao) && (
           <dl className="afty-feitico-propriedades">
@@ -876,11 +880,16 @@ function LinhaBarreiraConflito({ info, rolar }) {
  * execução, os efeitos DESTA expansão, a aparência, e por último os efeitos de
  * toda expansão.
  */
-function LinhaDominio({ d, ativo, destacado, partesPvDomo }) {
+function LinhaDominio({ d, ativo, fase = null, destacado, partesPvDomo, controle = null }) {
   const [aberto, setAberto] = useState(false);
   const raiz = useDestaque(destacado);
   const estrutura = d.versao === "sem_barreiras" ? "Totem" : "Domo";
   const corpo = d.corpo ?? { execucao: "", proprios: [], base: [], aparencia: "" };
+  /* A Sem Barreiras oficial não tem domo (DA-11): `temDomo` falso, e a linha
+     mostra o alcance do Acerto Garantido no lugar do PV. A LEGACY segue com o
+     Totem. Linha antiga sem o campo continua com a estrutura. */
+  const comDomo = d.temDomo ?? true;
+  const ROTULO_FASE = { ativa: "Aberta", confronto: "Confronto", estendido: "Confronto Estendido", contestando: "Contestando" };
   return (
     <div
       ref={raiz}
@@ -901,7 +910,11 @@ function LinhaDominio({ d, ativo, destacado, partesPvDomo }) {
             : <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />}
           <span className="truncate">{d.nome || "Domínio Sem Nome"}</span>
         </button>
-        {ativo && <span className="afty-chip" data-afty-tom="destaque">Ativo</span>}
+        {/* Com a sessão, o chip diz a FASE da Expansão aberta. Sem ela (o criador),
+            fica o Ativo de antes, que é a escolhida. */}
+        {fase
+          ? <span className="afty-chip" data-afty-tom="destaque">{ROTULO_FASE[fase] ?? "Aberta"}</span>
+          : ativo && !controle && <span className="afty-chip" data-afty-tom="destaque">Ativo</span>}
         <span className="afty-dominio-numeros">
           <span className="afty-dominio-numero">
             Área <span className="afty-valor">{d.area}</span>
@@ -909,18 +922,24 @@ function LinhaDominio({ d, ativo, destacado, partesPvDomo }) {
           <span className="afty-dominio-numero">
             <span className="afty-valor">{d.duracao}</span> {d.duracao === 1 ? "Rodada" : "Rodadas"}
           </span>
-          <span className="afty-dominio-numero">
-            {estrutura}{" "}
-            <NumeroComFontes
-              valor={`${d.pvBarreira} PV`}
-              partes={partesPvDomo}
-              total={d.pvBarreira}
-              formatar={false}
-              className="afty-valor"
-              ancora="direita"
-              titulo={`Pontos de vida do ${estrutura.toLowerCase()}`}
-            />
-          </span>
+          {comDomo ? (
+            <span className="afty-dominio-numero">
+              {estrutura}{" "}
+              <NumeroComFontes
+                valor={`${d.pvBarreira} PV`}
+                partes={partesPvDomo}
+                total={d.pvBarreira}
+                formatar={false}
+                className="afty-valor"
+                ancora="direita"
+                titulo={`Pontos de vida do ${estrutura.toLowerCase()}`}
+              />
+            </span>
+          ) : (
+            <span className="afty-dominio-numero">
+              Alcance do Acerto <span className="afty-valor">Superior</span>
+            </span>
+          )}
           {d.custo != null && (
             <span className="afty-dominio-numero">
               <NumeroComFontes
@@ -936,13 +955,20 @@ function LinhaDominio({ d, ativo, destacado, partesPvDomo }) {
           )}
         </span>
       </div>
+      {/* Os controles de mesa (Abrir, fases, domo, Encerrar) ficam fora do corpo
+          recolhível: abrir a Expansão é a ação do turno, e não pode ficar
+          escondida atrás de um clique. */}
+      {controle}
       {aberto && (
         <div className="afty-dominio-corpo">
           {corpo.execucao && (
             <dl className="afty-feitico-propriedades">
               <div className="afty-feitico-propriedade">
                 <dt>Execução</dt>
-                <dd>{corpo.execucao}</dd>
+                <dd>
+                  {corpo.execucao}
+                  {corpo.requisitosExecucao ? ` · ${corpo.requisitosExecucao}` : ""}
+                </dd>
               </div>
             </dl>
           )}
@@ -1058,6 +1084,13 @@ export default function AbaAcoes({
      Buffs o tempo inteiro"*. Descobrir os olhos é Ação Livre, e a Fadiga corre
      por turno: as duas coisas se fazem no meio da rodada. */
   bloodfeast = null, conjuracaoBloodfeast = null,
+  // A Técnica Máxima: função que monta o controle de recarga de uma linha.
+  controleTecnicaMaxima = null,
+  /* A Expansão de Domínio (Etapa 10): função que monta o controle de mesa de
+     uma linha, e o nó pronto da Exaustão de Técnica. Mesma forma da Técnica
+     Máxima: quem tem a sessão é quem monta a aba. */
+  controleExpansao = null,
+  exaustaoTecnica = null,
   vislumbre = null,
   olhosAgulha = null,
   manipulacaoCeu = null,
@@ -1073,6 +1106,7 @@ export default function AbaAcoes({
   const feiticos = (derived.feiticos?.lista ?? []).filter((f) => f.tipo !== "passivo");
   const dominios = derived.dominios?.lista ?? [];
   const dominioAtivo = derived.dominios?.ativoId ?? null;
+  const dominioAberto = derived.dominios?.aberta ?? null;
   const manobras = derived.testes?.manobras ?? [];
   const temRaioNegro = (derived.aptidoesEscolhidas ?? []).includes("raio_negro");
   const [modoDano, setModoDano] = useState("normal");
@@ -1191,11 +1225,14 @@ export default function AbaAcoes({
         </Secao>
       )}
 
+      {/* A Exaustão de Técnica vem antes dos Feitiços, que ela trava (DA-16). */}
+      {exaustaoTecnica}
       {feiticos.length > 0 && (
         <Secao titulo="Feitiços">
           {feiticos.map((f) => (
             <LinhaFeitico
               conjuracaoBloodfeast={conjuracaoBloodfeast}
+              controleTecnicaMaxima={controleTecnicaMaxima}
               key={f.id}
               f={f}
               rolar={rolar}
@@ -1222,8 +1259,10 @@ export default function AbaAcoes({
               key={d.id}
               d={d}
               ativo={d.id === dominioAtivo}
+              fase={dominioAberto?.id === d.id ? dominioAberto.fase : null}
               partesPvDomo={derived.dominios?.barreira?.partesPvDomo}
               destacado={destaque === `dominio:${d.id}`}
+              controle={controleExpansao?.(d) ?? null}
             />
           ))}
         </Secao>

@@ -70,8 +70,9 @@ import { organizaEstados } from "../ficha-estados";
 const MAX_OPCOES_ABERTAS = 3;
 
 /* NÍVEL DE EXAUSTÃO. Contador da sessão, e de todo mundo: seis Habilidades
-   Lendárias e a Expansão de Domínio dizem "você recebe um ponto de exaustão"
-   desde sempre, e a ficha não tinha onde marcar. Ele nasceu com a Fadiga Mental
+   Lendárias dizem "você recebe um ponto de exaustão" desde sempre, e a ficha não
+   tinha onde marcar. ⚠ A Expansão de Domínio NÃO dá Nível de Exaustão, e sim
+   Exaustão de Técnica, outro contador (E-16, 2026-10-08). Ele nasceu com a Fadiga Mental
    do Vislumbre Celeste (autor, 2026-09-09: "a ficha conta as duas"), e não fica
    atrás de primitiva nenhuma porque não é do addon.
 

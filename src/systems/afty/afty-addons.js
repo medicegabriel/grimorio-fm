@@ -1187,18 +1187,43 @@ export function feiticosDeAddon(creature, nivelMax = 5) {
   return modelos;
 }
 
-/** Modelos ainda não copiados e cópias cuja versão ficou para trás. */
-export function modelosPendentesDeAddon(creature, nivelMax = 5, feiticosAtuais = []) {
+/**
+ * Modelos ainda não copiados e cópias cuja versão ficou para trás.
+ *
+ * ⚠ O MODELO DE TÉCNICA MÁXIMA (DA-02, 2026-10-08). Addon não concede Técnica
+ * Máxima só por gravar `nivel: "max"`:
+ *   • o modelo NOVO só aparece com vaga livre de Técnica Máxima
+ *     (`vagasTecnicaMaxima`, da Aptidão ou de concessão explícita de Addon), e a
+ *     cópia nasce OFICIAL (`regraTecnicaMaxima: "oficial"`);
+ *   • a cópia que JÁ EXISTE fica no regime em que está. A atualização carrega o
+ *     `regraTecnicaMaxima` dela, ou a falta dele: a LEGACY (Oda, Honnō-ji e as
+ *     fichas de antes) continua LEGACY, sem conversão calada.
+ * `tecnicasMaximasLivres` nulo é quem chama sem saber das vagas (o validador e os
+ * testes de antes): o modelo novo aparece como antes, sem marca nenhuma. O
+ * criador sempre passa o número.
+ */
+export function modelosPendentesDeAddon(creature, nivelMax = 5, feiticosAtuais = [], { tecnicasMaximasLivres = null } = {}) {
   const atuais = new Map(
     (Array.isArray(feiticosAtuais) ? feiticosAtuais : [])
       .filter((feitico) => feitico && !feitico.variacaoDe)
       .map((feitico) => [feitico.id, feitico]),
   );
+  const sabeVagas = tecnicasMaximasLivres != null;
   return feiticosDeAddon(creature, nivelMax).flatMap((modelo) => {
     const atual = atuais.get(modelo.id);
-    if (!atual) return [{ ...modelo, situacaoModelo: "novo" }];
+    const ehMax = modelo.nivel === "max";
+    if (!atual) {
+      if (!ehMax || !sabeVagas) return [{ ...modelo, situacaoModelo: "novo" }];
+      if (tecnicasMaximasLivres <= 0) return [];
+      return [{ ...modelo, regraTecnicaMaxima: "oficial", situacaoModelo: "novo" }];
+    }
     if (String(atual.addonVersao ?? "") !== String(modelo.addonVersao ?? "")) {
-      return [{ ...modelo, situacaoModelo: "desatualizado" }];
+      const { regraTecnicaMaxima: _semRegime, ...semRegime } = modelo;
+      return [{
+        ...semRegime,
+        ...(atual.regraTecnicaMaxima ? { regraTecnicaMaxima: atual.regraTecnicaMaxima } : {}),
+        situacaoModelo: "desatualizado",
+      }];
     }
     return [];
   });

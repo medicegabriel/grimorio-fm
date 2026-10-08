@@ -1,5 +1,5 @@
 import {
-  calcularFeiticoAuxiliar, calcularFeiticoTransformacao, defaultAcaoMult, resolverAcaoAux,
+  calcularFeitico, defaultAcaoMult, resolverAcaoAux,
 } from "./afty-feiticos";
 
 /**
@@ -189,7 +189,8 @@ const TRANSF_SEM_ALVO = new Set(["atributo", "tr"]);
  */
 function efeitosDoFeiticoLigado(f, ctx = {}) {
   if (ehTransformacao(f)) {
-    const calc = calcularFeiticoTransformacao(f, ctx);
+    // Pela porta única (2026-10-08): a Técnica Máxima sai na escala dela.
+    const calc = calcularFeitico(f, ctx);
     const subs = (calc.efeitos || []).map((e) => ({
       efeito: e.efeito,
       disponivel: !!e.disponivel && !TRANSF_SEM_ALVO.has(e.efeito),
@@ -200,7 +201,7 @@ function efeitosDoFeiticoLigado(f, ctx = {}) {
     }));
     return { calc, subs, configDe: () => f };
   }
-  const calc = calcularFeiticoAuxiliar(f, ctx);
+  const calc = calcularFeitico(f, ctx);
   return {
     calc,
     subs: calc.multiplos ? calc.efeitos : [calc],

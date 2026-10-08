@@ -57,7 +57,7 @@ import { regrasAftyDaCriatura } from "./afty-regras-addon";
 import { efeitosDeModificacoesCorporais } from "./afty-modificacoes-corporais";
 import { resolveTita } from "./afty-tita";
 import { efeitosDeTreinoEspecial } from "./afty-treinos-especiais";
-import { resolveNiveisAptidao, trilhasDaCriatura, getAptidao, AFTY_APTIDOES } from "./afty-aptidoes";
+import { resolveNiveisAptidao, trilhasDaCriatura, getAptidao, AFTY_APTIDOES, avaliarRequisitoAptidao } from "./afty-aptidoes";
 // A contagem de invocações em campo (2026-09-30). Módulo FOLHA, sem ciclo.
 import { contaInvocacoesEmCampo } from "./afty-invocacoes-tipos";
 import { resolveCaracteristicasAmaldicoadas } from "./afty-caracteristicas-amaldicoadas";
@@ -69,6 +69,8 @@ import {
   corpoDoDominio, pvDaParede, pvCortina, rdDaParede, maxParedes, conflitoDeDominio,
   PAREDES_BASE, PAREDES_NA_CORTINA, PAREDES_NO_DOMO,
   DOMINIO_CUSTO_BASE, CUSTO_ACERTO_GARANTIDO, rotuloVersao,
+  ehDominioLegacy, temDomo, acertoGarantidoValido, validarDominio, exaustaoTecnicaDaVersao,
+  expansaoDominioNoAr, amplificacaoDeTecnica, resumoAcertoGarantido, contestacaoDoDominio, faseDoDominio,
 } from "./afty-dominios";
 import { resolveEspecializacoes, AFTY_ESPECIALIZACOES, treinamentosDasEspecializacoes, getEspecializacao, especializacaoMae } from "./afty-especializacoes";
 import {
@@ -105,6 +107,7 @@ import {
   nivelMaxFeitico, resumoDeUmFeitico, resumoFeiticos, overridesShikigami,
   totalFeiticosJogador, CONJURACAO_APRIMORADA_ID,
   tiposFeiticoPermitidos, mostraCardFeiticos, peMaximoDasPassivas,
+  ehTecnicaMaximaOficial, resolveTecnicasMaximas, recargaDaTecnicaMaxima, CONDICOES_CATALOGO,
 } from "./afty-feiticos";
 // O dado do golpe desarmado da ficha de jogador. Na criatura nada disto roda.
 import { dadoDesarmado } from "./afty-niveis-dano";
@@ -148,7 +151,7 @@ import {
   ehAtributoPermanente, ehAtributoTemporario, ehEstagio2, ehPreContexto, ehPosAptidao, efeitoUsaDadosDanoFinal,
   separarEfeitosDeBancada,
   mesclarEfeitos, detalhesDoCanal, detalhesDoCanalEscopos, custoEmPe, normalizarAlvoEfeito,
-  varsDeEspecializacao, APTIDAO_EFEITOS,
+  varsDeEspecializacao, APTIDAO_EFEITOS, canalPermitidoEmExpansao,
 } from "./afty-efeitos";
 import { resolveGerais, contadorHabilidades, GERAL_BY_ID } from "./afty-gerais";
 import { resolveImitacao, concessaoImitada, efeitoDaImitacao } from "./afty-imitacao";
@@ -298,6 +301,27 @@ export function deriveAfty(creature, opcoes = {}) {
   // O Funcionamento principal sai como "tecnica", os outros como "funcionamento:<id>".
   const daTecnicaInata = (e) => /^(funcionamento|feitico):|^tecnica$/.test(String(e?.origem ?? ""));
   const semTecnicaBloqueada = (lista) => (tecnicaInata.bloqueada ? lista.filter((e) => !daTecnicaInata(e)) : lista);
+  /* A EXAUSTÃO DE TÉCNICA da Expansão (DA-16, 2026-10-08) é TRAVA, e não aviso.
+     Enquanto ela corre, cada Feitiço sai marcado indisponível (a Técnica Máxima
+     junto), e os efeitos dos Feitiços saem do Motor: os Passivos e os
+     Auxiliares ligados. Aptidões, armas, ações básicas e Habilidades seguem.
+
+     ⚠ O FUNCIONAMENTO BÁSICO FICA. A DA-16 manda suprimir "passivos da Técnica
+     quando identificáveis", e se o Funcionamento conta como um é NOVA DECISÃO
+     NECESSÁRIA (`a-fazer.md`). Mesmo caminho da Técnica Inata acima, com outro
+     motivo na tela. */
+  const exaustaoTecnica = (() => {
+    const restantes = Math.max(0, Math.trunc(Number(opcoes.exaustaoTecnica?.restantes) || 0));
+    if (!restantes) return null;
+    return {
+      restantes,
+      total: Math.max(restantes, Math.trunc(Number(opcoes.exaustaoTecnica?.total) || 0)),
+      fonte: String(opcoes.exaustaoTecnica?.fonte ?? ""),
+      motivo: `Técnica Inutilizável · ${restantes} ${restantes === 1 ? "Rodada" : "Rodadas"}`,
+    };
+  })();
+  const doFeitico = (e) => /^(feitico|feiticoAuxiliar):/.test(String(e?.origem ?? ""));
+  const semFeiticoExausto = (lista) => (exaustaoTecnica ? lista.filter((e) => !doFeitico(e)) : lista);
   const origensDiretasDaAdaptacao = new Set(origensDiretasDasAdaptacoes(creature, opcoes.adaptacoes));
   const aplicarDiretoDaAdaptacao = (efeito) => {
     if (!efeito?.quando || !origensDiretasDaAdaptacao.has(efeito.origem)) return efeito;
@@ -663,6 +687,7 @@ export function deriveAfty(creature, opcoes = {}) {
   const escalaAtaque = ehJogador("escalaDosTestes") ? Math.floor(nd / 2) : Math.floor(nd / 1.5);
   const ctxMontante = buildCriaturaDslContext({
     nd, bt, escalaAtaque, grauRank: grau.rank, patamar, tipo, almaAtual: almaAtualDsl,
+    nivelFeiticoMax: nivelMaxFeitico(nd, nivelConjurador),
     origemContadoresVars,
     irmaoMorto: !!creature?.core?.origem?.irmaoMorto,
     iniciativaIrmao: creature?.core?.origem?.iniciativaIrmao,
@@ -1127,7 +1152,7 @@ export function deriveAfty(creature, opcoes = {}) {
     ...efeitosArmasTransformaveis(armasTransformaveis(creature, catalogoDoTipo("arma", creature), bt)),
     // Passivos / Características criados pelo jogador usam o mesmo Motor, mas
     // entram na família exclusiva própria dos Feitiços Passivos.
-    ...semTecnicaBloqueada(efeitosDosPassivos(creature)),
+    ...semFeiticoExausto(semTecnicaBloqueada(efeitosDosPassivos(creature))),
     // Buffs de MESA, escritos na Ficha Final durante o jogo. Mesmo shape do
     // Funcionamento Básico, e por isso entram na mesma linha. Só existem quando
     // a Ficha injeta `buffsSessao`: o criador nunca os vê.
@@ -1327,10 +1352,17 @@ export function deriveAfty(creature, opcoes = {}) {
   const efeitosDominio = semEnergia ? [] : efeitosDoDominio(creature, {
     dom: aptidao.efetivo?.dom ?? 0,
     aptidoesEscolhidas: aptidoesIds,
+    // O Motor opcional do Efeito Especial só escreve nos canais permitidos (DA-20).
+    canalPermitido: canalPermitidoEmExpansao,
   });
   const beneficiosRitualDominio = semEnergia
     ? {}
     : beneficiosRitualDoDominio(creature, aptidoesIds);
+  // A Amplificação de Técnica para os Especiais de dano (2026-10-08, E-10).
+  const amplificacaoDominio = semEnergia ? null : amplificacaoDeTecnica(creature, {
+    dom: aptidao.efetivo?.dom ?? 0,
+    aptidoesEscolhidas: aptidoesIds,
+  });
   // ---------- Novo Estilo da Sombra (Sem Técnica) ----------
   // Entra na mesma SEGUNDA lista do Domínio, e pelo mesmo motivo: as vagas de
   // imbuição no Domínio Simples são o Nível de Aptidão em Domínio, que só existe
@@ -1422,27 +1454,66 @@ export function deriveAfty(creature, opcoes = {}) {
     const bonusArea = canalDominio("areaDominio");
     const bonusPvParede = canalDominio("pvParede");
     const bonusEfeitos = canalDominio("efeitosDominio");
+    /* ⚠ 2026-10-08 (Técnica Máxima e Expansão de Domínio). O Acerto Garantido só
+       vale com a Aptidão e nunca na Incompleta (DA-14), a Sem Barreiras custa 25
+       sempre e a oficial não tem domo nem número de área (DA-11), o custo passa
+       pelo canal `custoPE` com escopo `dominio` (E-08), e a validação (DA-17)
+       segura a abertura da Expansão com ERRO. */
+    const temAcertoGarantido = aptidoesIds.includes("acerto_garantido");
+    const tetoEfeitos = maxEfeitos(domNivel, bonusEfeitos);
+    // As Condições que existem de verdade, para o Efeito Ambiental. Só as três
+    // forças que a tabela de Expansão libera.
+    const condicoesValidas = {
+      fraca: [...(CONDICOES_CATALOGO.fraca ?? [])],
+      media: [...(CONDICOES_CATALOGO.media ?? [])],
+      forte: [...(CONDICOES_CATALOGO.forte ?? [])],
+    };
+    // Os nomes dos Feitiços, para o Acerto Garantido que aponta para eles.
+    const nomesFeiticos = Object.fromEntries((Array.isArray(creature?.feiticos) ? creature.feiticos : [])
+      .filter((f) => f?.id)
+      .map((f) => [f.id, f.nome?.trim() || "Feitiço Sem Nome"]));
     const lista = listaDominios(creature).map((d) => {
       const versao = resolveVersaoDominio(d, aptidoesIds);
-      const comAG = !!d.acertoGarantido?.ativo;
+      const legacy = ehDominioLegacy(d);
+      const comAG = acertoGarantidoValido(d, versao, temAcertoGarantido);
+      const custoBase = custoDominio(versao, comAG);
+      const custo = custoEmPe(custoBase, efPosAptidao, "dominio");
+      const domo = temDomo(versao, legacy);
+      const validacao = validarDominio(d, {
+        dom: domNivel, versao, maxEfeitos: tetoEfeitos, temAcertoGarantido, condicoesValidas,
+        nomesFeiticos, canalPermitido: canalPermitidoEmExpansao,
+      });
       return {
         ...d,
         versao,
-        custo: custoDominio(versao, comAG),
+        legacy,
+        custo: custo.valor,
+        custoBase,
         duracao: duracaoDominio(domNivel, versao),
-        area: areaDominio(versao, bt, false, bonusArea),
-        pvBarreira: pvBarreira(barNivel, nd, paredesResistentes, bonusPvParede),
+        area: areaDominio(versao, bt, false, bonusArea, { legacy }),
+        temDomo: domo,
+        pvBarreira: domo ? pvBarreira(barNivel, nd, paredesResistentes, bonusPvParede) : null,
+        acertoGarantidoValido: comAG,
+        // O Acerto Garantido estruturado, pronto para a Ficha (Etapa 8). `null` quando não vale.
+        acertoGarantidoResumo: resumoAcertoGarantido(d, versao, temAcertoGarantido, { nomesFeiticos }),
+        exaustaoTecnica: exaustaoTecnicaDaVersao(versao, comAG),
+        // A Contestação desta Expansão: meia área e o dano por rodada na barreira do outro.
+        contestacao: contestacaoDoDominio(versao, { dom: domNivel, bt, bonusArea }),
+        validacao,
+        valida: !validacao.some((v) => v.nivel === "erro"),
         vagasUsadas: vagasUsadas(d.efeitos),
         /* ⚠ ERA `texto`, um parágrafo pronto, até 2026-09-11. As duas telas
            passaram a desenhar estrutura, e o parágrafo repetia em prosa a
            área, a duração e o PV dos campos logo acima. O corpo não carrega
            número nenhum: quem desenha número lê os campos. */
-        corpo: corpoDoDominio(d, { dom: domNivel, versao }),
+        corpo: corpoDoDominio(d, { dom: domNivel, versao, temAcertoGarantido, nomesFeiticos }),
         /* O custo tem duas parcelas quando o Acerto Garantido está ligado, e
-           o hover precisa dizer qual é qual. */
+           o hover precisa dizer qual é qual. Depois vêm as do `custoPE`, com o
+           sinal da conta: a redução tira, o aumento (Condenado) soma. */
         partesCusto: [
           { label: `Expansão ${rotuloVersao(versao)}`, valor: DOMINIO_CUSTO_BASE[versao] ?? 0 },
-          ...(comAG ? [{ label: "Acerto Garantido", valor: CUSTO_ACERTO_GARANTIDO }] : []),
+          ...(custoBase > (DOMINIO_CUSTO_BASE[versao] ?? 0) ? [{ label: "Acerto Garantido", valor: CUSTO_ACERTO_GARANTIDO }] : []),
+          ...custo.partes.map((p) => ({ label: p.label, valor: -p.valor })),
         ],
       };
     });
@@ -1496,11 +1567,17 @@ export function deriveAfty(creature, opcoes = {}) {
     const conflitoBase = conflitoDeDominio({
       dom: domNivel, nd, bonus: canalDominio("conflitoDominio"),
     });
+    /* ⚠ O +2 DA EXPANSÃO JÁ ATIVA (2026-10-08, E-13). É um dos efeitos de abrir
+       ("Um aumento de +2 em testes de Confronto de Domínio") e era só texto. Vale
+       com a Expansão no ar, que é quem recebe o confronto de outro domínio. */
+    const expansaoNoAr = expansaoDominioNoAr(creature, aptidoesIds);
     const conflito = {
       ...conflitoBase,
+      bonus: conflitoBase.bonus + (expansaoNoAr ? 2 : 0),
       partes: [
         ...conflitoBase.partes,
         ...detalhesDoCanal(efPosAptidao, "conflitoDominio").map((x) => ({ label: x.nome, valor: x.valor })),
+        ...(expansaoNoAr ? [{ label: "Expansão Ativa", valor: 2 }] : []),
       ],
     };
     return {
@@ -1510,7 +1587,16 @@ export function deriveAfty(creature, opcoes = {}) {
       temAcertoGarantido: aptidoesIds.includes("acerto_garantido"),
       maxEfeitos: maxEfeitos(domNivel, bonusEfeitos),
       ativoId: dominioEmUso(creature, aptidoesIds)?.id ?? null,
+      /* A Expansão ABERTA na sessão, com a fase (Etapa 10). Difere do `ativoId`,
+         que é a ESCOLHIDA e existe fora de combate também: com uma Expansão só,
+         ela é sempre a escolhida, aberta ou não. */
+      aberta: (() => {
+        const fase = faseDoDominio(creature);
+        const d = fase ? dominioEmUso(creature, aptidoesIds) : null;
+        return d ? { id: d.id, fase } : null;
+      })(),
       beneficiosRitualAtivos: beneficiosRitualDominio,
+      amplificacaoTecnica: amplificacaoDominio,
       barreira,
       conflito,
       lista,
@@ -1621,6 +1707,9 @@ export function deriveAfty(creature, opcoes = {}) {
   });
   const auxiliaresAtivos = resolveAuxiliaresAtivos(creature, combate, estadosConjurador, {
     nd,
+    // O acesso inteiro, para a Técnica Máxima ligada sair na escala dela
+    // (2026-10-08). Sem o nível de Conjurador o Adiantar Evolução ficaria de fora.
+    nivelConjurador,
     habilidades: habilidades.efetivas,
   });
   const aurasDesabilitadas = new Set(aptidoesAuraDesabilitadas(
@@ -1637,7 +1726,7 @@ export function deriveAfty(creature, opcoes = {}) {
   const efeitosAtivos = carimbarGrupoExclusivo([
     ...efeitosComDominio.filter((e) => !aurasDesabilitadas.has(e.origem)),
     ...efeitosCombateAmaldicoado(tecnicasCombate, combate, habilidades.efetivas, bt),
-    ...auxiliaresAtivos.efeitos,
+    ...semFeiticoExausto(auxiliaresAtivos.efeitos),
   ], poolEmGrupos);
   // Expressões que leem `dados_dano_final` só podem ser avaliadas quando cada
   // linha de dano já sabe quantos dados vai rolar. Elas não entram no agregado
@@ -1719,6 +1808,7 @@ export function deriveAfty(creature, opcoes = {}) {
 
   const montarCtx = (attrs, mods) => buildCriaturaDslContext({
     nd, bt, escalaAtaque, grauRank: grau.rank, patamar, tipo, almaAtual: almaAtualDsl, invocacoesEmCampo,
+    nivelFeiticoMax: nivelMaxFeitico(nd, nivelConjurador),
     origemContadoresVars,
     irmaoMorto: !!creature?.core?.origem?.irmaoMorto,
     iniciativaIrmao: creature?.core?.origem?.iniciativaIrmao,
@@ -1903,9 +1993,19 @@ export function deriveAfty(creature, opcoes = {}) {
   // os vencedores somados, então a disputa que sobra aqui é só a do estágio 2. E
   // ela não precisa do `aplicado` dos estágios anteriores: `atributo` é o único
   // canal que roda antes daqui, e o filtro `ehEstagio2` justamente o exclui.
+  /* ⚠ O `custoPE` TAMBÉM ENTRA AQUI (2026-10-08). Ele é canal do passe
+     pós-Aptidão desde 2026-09-09 (o Domínio Simples lê o custo lá), e por isso o
+     `ehEstagio2` o tira deste agregado. Só que o FEITIÇO e o custo das Aptidões
+     leem ESTE agregado, e ficaram sem redução nenhuma desde aquela data: uma
+     linha `custoPE` de Funcionamento, de condição ou da Expansão de Domínio
+     ("Reduz o custo de seus Feitiços dentro da expansão igual ao Nível de DOM")
+     não chegava a eles. A da Expansão nem era avaliada, porque ela mora na lista
+     do Domínio, que nenhum passe pós-Aptidão lê. O montante já está no agregado
+     pelo `efMontante`, então somar só os ativos não conta nada duas vezes. */
   const efSemCrescimento = resolverExclusivos(mesclarEfeitos(
     efMontanteSemAtributo, efPreContexto, efAttrPerm, efAttrTemp,
     aplicarEfeitos(efeitosAtivos.filter(ehEstagio2), montarCtx(attrEff, modByAttr)),
+    aplicarEfeitos(efeitosAtivos.filter((e) => e?.canal === "custoPE" && !efeitoUsaDadosDanoFinal(e)), montarCtx(attrEff, modByAttr)),
   ));
 
   // Crescimento Corporal é a única Aptidão que pode aparecer duas vezes e cada
@@ -2628,6 +2728,10 @@ export function deriveAfty(creature, opcoes = {}) {
      atributo + BT + outros". */
   const cdEscala = valoresDoJogador ? metadeDoNivel : cdTipo;
   const cd = 10 + cdEscala + (modTecnica + bt) + equip.cdBonus + canal("cd");
+  /* A CD dos FEITIÇOS: a CD Amaldiçoada mais o canal `cdFeitico` (2026-10-08,
+     DA-13), que é onde a Amplificação de Técnica da Expansão escreve. A CD de
+     Aptidão e de Habilidade continua sendo a `cd`. */
+  const cdFeitico = cd + canal("cdFeitico");
 
   // ---------- Aba Habilidades: Feitiços + Habilidades Gerais ----------
   // Contador ÚNICO para os dois (autor, 2026-07-26): dobro da Maestria, +2 no
@@ -2640,7 +2744,11 @@ export function deriveAfty(creature, opcoes = {}) {
   // arquivo, e `deriveAfty(null)` morria aqui em vez de devolver a ficha vazia.
   // Achado em 2026-08-20 pelos asserts de ficha suja, e é anterior a eles.
   const feiticosLista = Array.isArray(creature?.feiticos) ? creature.feiticos : [];
-  const feiticosGastos = feiticosLista.filter((f) => !f.variacaoDe).length;
+  /* ⚠ A TÉCNICA MÁXIMA OFICIAL NÃO GASTA VAGA DE FEITIÇO (autor, 2026-10-08): ela
+     tem a vaga exclusiva `vagasTecnicaMaxima`, contada em `tecnicasMaximas` lá
+     embaixo. A LEGACY (gravada antes, sem a marca) segue no orçamento comum,
+     como sempre gastou (DA-02). */
+  const feiticosGastos = feiticosLista.filter((f) => !f.variacaoDe && !ehTecnicaMaximaOficial(f)).length;
   // ⚠ A Técnica de Estilo LEGACY gasta o MESMO caixa que o Feitiço (autor,
   // 2026-08-07): "Consome o Contador de Habilidades. E Talentos e coisas do
   // gênero que aumentam isso... só aumentam o contador de habilidades para
@@ -2834,7 +2942,7 @@ export function deriveAfty(creature, opcoes = {}) {
   const ctxFeiticos = {
     nd,
     nivelConjurador,
-    cdBase: cd,
+    cdBase: cdFeitico,
     modTecnica,
     efeitos: ef,
     efeitosLinhaDano,
@@ -2850,6 +2958,7 @@ export function deriveAfty(creature, opcoes = {}) {
     ritualAtual: opcoes.ritualAtual ?? null,
     rituaisSemTeste: opcoes.rituaisSemTeste ?? {},
     beneficiosRitualDominio,
+    amplificacaoDominio,
     passivasSemCustoPeMaximo,
     temEnergiaReversa: aptidoesIds.includes("energia_reversa"),
     invocacoes: Array.isArray(creature?.invocacoes) ? creature.invocacoes : [],
@@ -2870,7 +2979,7 @@ export function deriveAfty(creature, opcoes = {}) {
     nivelMax: nivelMaxFeitico(nd, nivelConjurador),
     nivelConjurador,
     gastos: feiticosGastos,
-    cdBase: cd,
+    cdBase: cdFeitico,
     /* Os tipos que esta criatura pode criar, e se o card aparece. Vazio quer
        dizer "não cria nenhum": é o Restringido e o Sem Técnica sem o Addon.
        Pela MÃE, então a variação do Sem Técnica também não cria. */
@@ -3118,11 +3227,54 @@ export function deriveAfty(creature, opcoes = {}) {
   };
   /* A Técnica Inata bloqueada (DA-07): cada Feitiço continua na lista, marcado
      com o motivo, e a tela o desenha indisponível. Nada é apagado. */
-  const marcaBloqueio = (f) => (tecnicaInata.bloqueada ? { ...f, bloqueado: tecnicaInata.motivo } : f);
+  const marcaBloqueio = (f) => (tecnicaInata.bloqueada ? { ...f, bloqueado: tecnicaInata.motivo }
+    : exaustaoTecnica ? { ...f, bloqueado: exaustaoTecnica.motivo } : f);
+  /* A TÉCNICA MÁXIMA (autor, 2026-10-08). A vaga EXCLUSIVA (`vagasTecnicaMaxima`,
+     1 pela Aptidão) contra as Técnicas Máximas oficiais, e a validação de cada
+     uma: vaga, natureza permitida e os requisitos da Aptidão (Mestre em
+     Feitiçaria e acesso ao Nível 4, DA-09). Fica AQUI, depois dos Testes, porque
+     o Mestre em Feitiçaria só existe depois deles. A escala de cada uma não
+     depende disto: o `calcularFeitico` a tira do acesso. */
+  const aptidaoTecnicaMaxima = getAptidao("tecnica_maxima");
+  const ctxRequisitoTecnicaMaxima = {
+    nivelFeiticoMax: feiticos.nivelMax,
+    periciaProf: Object.fromEntries((testes.pericias ?? []).map((p) => [p.id, p.prof ?? null])),
+  };
+  const tecnicasMaximas = resolveTecnicasMaximas(feiticosLista, {
+    vagas: canal("vagasTecnicaMaxima"),
+    partesVagas: detalhesDoCanal(ef, "vagasTecnicaMaxima").map((x) => ({ label: x.nome, valor: x.valor })),
+    acesso: feiticos.nivelMax,
+    temAptidao: aptidoesIds.includes("tecnica_maxima"),
+    requisitosFalhos: (aptidaoTecnicaMaxima?.requisitos ?? [])
+      .map((r) => avaliarRequisitoAptidao(r, ctxRequisitoTecnicaMaxima))
+      .filter((r) => r.verificavel && !r.ok)
+      .map((r) => r.label),
+  });
+  /* A RECARGA (DA-05): 6 − piso(BT / 2), mais o canal `recargaTecnicaMaxima`
+     (o Manual de Técnica tira 1), com piso 0. Igual para toda Técnica Máxima da
+     ficha, oficial ou LEGACY: a recarga é regra da Aptidão, e não da escala. */
+  const recargaTecnicaMaxima = recargaDaTecnicaMaxima(bt, canal("recargaTecnicaMaxima"));
+  const partesRecargaTecnicaMaxima = [
+    { label: "6 Menos Metade do Bônus de Treinamento", valor: 6 - Math.floor(bt / 2) },
+    ...detalhesDoCanal(ef, "recargaTecnicaMaxima").map((x) => ({ label: x.nome, valor: x.valor })),
+  ];
+  const marcaTecnicaMaxima = (f) => {
+    if (!tecnicasMaximas.porId[f.id]) return f;
+    const info = {
+      ...tecnicasMaximas.porId[f.id],
+      ...(f.tecnicaMaxima ?? {}),
+      recarga: recargaTecnicaMaxima,
+      partesRecarga: partesRecargaTecnicaMaxima,
+    };
+    // Erro e aviso da Técnica Máxima entram no triângulo de avisos da linha.
+    const textos = (info.validacao ?? []).map((v) => v.texto);
+    return { ...f, tecnicaMaxima: info, avisos: [...(f.avisos ?? []), ...textos] };
+  };
   feiticos = {
     ...feiticos,
     tecnicaInata,
-    lista: (feiticos.lista ?? []).map(comTesteDeRitual).map(marcaBloqueio),
+    tecnicasMaximas,
+    lista: (feiticos.lista ?? []).map(comTesteDeRitual).map(marcaBloqueio).map(marcaTecnicaMaxima),
     /* ⚠ FUNÇÃO, e não valor. A Liberação Máxima é escolhida na HORA DA
        CONJURAÇÃO, então ela não tem como estar na lista pré-calculada: o jogador
        declara as melhorias na mesa e a Ficha pede a versão liberada daquele
@@ -4151,6 +4303,8 @@ export function deriveAfty(creature, opcoes = {}) {
     // escreve de onde a Aptidão veio, e "Origem" seria mentira para elas.
     aptidoesConcedidasAddon,
     dominios: resumoDominios,
+    // A Exaustão de Técnica corrente (DA-16), para o aviso da Ficha. `null` sem ela.
+    exaustaoTecnica,
     /* Proficiência RESOLVIDA (a escolhida na ficha mais a concedida pelo Motor).
        É o que os requisitos de treino conferem, e desde 2026-09-01 eles valem
        para Habilidades e Talentos também, e não só para as Aptidões.

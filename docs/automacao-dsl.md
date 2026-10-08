@@ -401,3 +401,24 @@ registro dos gatilhos pelo narrador, +4 dados de Ataque e Existência e
 acúmulo das RDs de Geral e Defesa. A confirmação final definiu Geral
 como dobro do BT e Defesa como BT. Somam `3 * bt`, ou 18 com BT 6.
 Essa decisão substitui os valores de RD do texto original preservado.
+
+## Técnica Máxima e Expansão de Domínio (2026-10-08)
+
+Guia da área: `docs/afty-tecnica-maxima-dominio.md`.
+
+- Variável `nivel_feitico_max`: o nível de Feitiço que a ficha já acessa (0 a 5), o mesmo
+  `nivelMaxFeitico` que decide a escala da Técnica Máxima. O Talento Manual de Técnica usa
+  `quando: "nivel_feitico_max >= 5"`.
+- Canal `vagasTecnicaMaxima` (Orçamentos): vagas EXCLUSIVAS de Técnica Máxima. A Aptidão
+  `tecnica_maxima` dá 1. É por ele que um Addon concede uma Técnica Máxima: o modelo `nivel: "max"`
+  sozinho não concede nada.
+- Canal `recargaTecnicaMaxima` (Vitalidade e Recursos): soma à recarga em rodadas. Negativo
+  reduz (o Manual de Técnica escreve `-1`). A recarga nunca fica abaixo de 0.
+- Canal `cdFeitico` (Ataque e Dano): CD só dos Feitiços. O `cd` continua sendo a CD única
+  (Feitiços e Aptidões). É onde a Amplificação de Técnica da Expansão escreve (DA-13).
+- O `custoPE` ganhou o escopo `dominio` no custo da Expansão. Uma linha só de `feitico` não
+  alcança a Expansão, e uma sem alvo (o Condenado) alcança.
+- O Efeito Especial de uma Expansão pode trazer linhas de Motor (`efeitos[].motor`), com a
+  mesma forma `{ canal, expr, alvo? }`, ligadas só com a Expansão no ar. Ficam de fora os
+  canais de Orçamentos, de Barreira e Domínio, e `nivelAptidao` e `limiteAptidao`
+  (`canalPermitidoEmExpansao`).

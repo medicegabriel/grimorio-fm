@@ -340,13 +340,14 @@ const LIGADOS_FORA_DOS_MAPAS = new Set([
 ]);
 
 t("o catalogo tem 52 Talentos", AFTY_TALENTOS.length, 52);
-t("18 ligados por TALENTO_EFEITOS", AFTY_TALENTOS.filter(ligadoPorEfeito).length, 18);
+// O 19º é o Manual de Técnica (2026-10-08): a recarga da Técnica Máxima passou a existir.
+t("19 ligados por TALENTO_EFEITOS", AFTY_TALENTOS.filter(ligadoPorEfeito).length, 19);
 t("e 9 SO pela escolha aninhada",
   AFTY_TALENTOS.filter((x) => !ligadoPorEfeito(x) && ligadoPorEscolha(x)).length, 9);
 t("4 usam um resolvedor proprio fora dos mapas", LIGADOS_FORA_DOS_MAPAS.size, 4);
-t("31 Talentos tem ao menos uma parte programada",
+t("32 Talentos tem ao menos uma parte programada",
   AFTY_TALENTOS.filter((x) => ligadoPorEfeito(x) || ligadoPorEscolha(x) || LIGADOS_FORA_DOS_MAPAS.has(x.id)).length,
-  31);
+  32);
 
 /* ⚠ ALMA LIVRE NÃO TEM EFEITO E ESTÁ LIGADA. Ela chega ao Motor por uma porta
    própria no deriveAfty (ela concede o DIREITO de escolher uma habilidade de

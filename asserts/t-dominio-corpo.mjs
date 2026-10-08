@@ -97,15 +97,28 @@ t("o efeito de tabela traz a frase resolvida",
 /* ⚠ Sem enchimento. A prosa escrevia "(efeito a descrever)", e na lista o
    título sozinho já diz que o efeito existe. */
 t("o Especial sem descricao fica sem texto", corpo.proprios[2].texto, "");
-t("a execucao e a de toda expansao", corpo.execucao, "Duas Ações Comuns");
+/* ⚠ "Ação Comum" desde 2026-10-08 (DA-10). Era "Duas Ações Comuns", texto que veio
+   da tela da 2.5.2, e o Livro diz "ação comum, duas mãos livres e capacidade de
+   fala". */
+t("a execucao e a de toda expansao", [corpo.execucao, corpo.requisitosExecucao], ["Ação Comum", "Duas Mãos Livres e Capacidade de Fala"]);
 t("a aparencia sai aparada", corpo.aparencia, "Um campo de flores.");
 
 /* ============================================================ */
 /* 3. O ACERTO GARANTIDO                                         */
 /* ============================================================ */
 
+/* ⚠ O Acerto Garantido só existe com a Aptidão (2026-10-08): o `ativo` do JSON
+   não basta. Sem ela ele some do corpo e do custo, e os dados ficam. */
 const semAG = linha;
-const comAG = dominios({ efeitos, acertoGarantido: { ativo: true, escopo: "o soco" } }).lista[0];
+const comAG = dominios({ efeitos, acertoGarantido: { ativo: true, escopo: "o soco" }, extras: ["acerto_garantido"] }).lista[0];
+const semAptidao = dominios({ efeitos, acertoGarantido: { ativo: true, escopo: "o soco" } }).lista[0];
+t("sem a Aptidão o Acerto Garantido não vale", [semAptidao.acertoGarantidoValido, semAptidao.corpo.proprios.some((e) => e.titulo === "Acerto Garantido"), semAptidao.custo], [false, false, 20]);
+/* ⚠ Desde a Etapa 8 (2026-10-08) a linha derivada traz o Acerto Garantido lido
+   no formato estruturado. O antigo continua no MODO ANTERIOR: `tipo` nulo, o
+   escopo intocado, e a frase dele também como `descricao`. */
+t("e o dado do JSON fica",
+  [semAptidao.acertoGarantido.ativo, semAptidao.acertoGarantido.escopo, semAptidao.acertoGarantido.tipo, semAptidao.acertoGarantido.descricao],
+  [true, "o soco", null, "o soco"]);
 t("sem Acerto Garantido ele nao e efeito", semAG.corpo.proprios.some((e) => e.titulo === "Acerto Garantido"), false);
 const ag = comAG.corpo.proprios.at(-1);
 t("com ele, e o ultimo efeito proprio", ag.titulo, "Acerto Garantido");
@@ -114,7 +127,7 @@ t("e o texto e o mesmo que a prosa tinha",
   ag.texto.startsWith("Enquanto dentro do seu domínio, o soco se torna garantido: ele é aplicado no início de cada turno"),
   true);
 t("sem escopo, a frase generica",
-  dominios({ acertoGarantido: { ativo: true, escopo: "" } }).lista[0].corpo.proprios.at(-1).texto
+  dominios({ acertoGarantido: { ativo: true, escopo: "" }, extras: ["acerto_garantido"] }).lista[0].corpo.proprios.at(-1).texto
     .startsWith("Enquanto dentro do seu domínio, você escolhe antecipadamente um efeito"),
   true);
 
@@ -134,6 +147,8 @@ const semBarreiras = dominios({
   versao: "sem_barreiras", nd: 20, extras: ["expansao_de_dominio_sem_barreiras"],
 }).lista[0];
 t("a ficha de Sem Barreiras resolve como tal", semBarreiras.versao, "sem_barreiras");
+/* ⚠ A ficha desta cobaia não tem `regra`, então ela é LEGACY (DA-11): segue com o
+   Totem, e por isso sem o item do domo. A oficial está logo abaixo. */
 t("e ela NAO ganha o item do domo, porque tem Totem",
   semBarreiras.corpo.base.map((b) => b.titulo), DOM.DOMINIO_EFEITOS_BASE.map((b) => b.titulo));
 

@@ -2039,6 +2039,14 @@ export const TALENTO_EFEITOS = {
     { canal: "vagasFeitico", expr: "1 + (nd >= 5) + (nd >= 10) + (nd >= 15) + (nd >= 20)" },
   ],
 
+  // Manual de Técnica: "Caso você já possua acesso a Feitiços de Nível 5, o tempo
+  // de recarga da sua Técnica Máxima é reduzido em 1 rodada." Estava só no texto
+  // até 2026-10-08, porque a recarga não existia. A primeira metade (o Feitiço
+  // acima do acesso, com custo +50%) continua sendo regra escrita.
+  tal_manual_de_tecnica: [
+    { canal: "recargaTecnicaMaxima", expr: "-1", quando: "nivel_feitico_max >= 5" },
+  ],
+
   // "Você recebe um bônus de +5 em sua Atenção."
   tal_atencao_infalivel: [
     { canal: "atencao", expr: "5" },
@@ -2934,6 +2942,15 @@ export const APTIDAO_EFEITOS = {
   // Motor. Entram junto com a passada dos Feitiços.
   reversao_de_tecnica: [
     { canal: "vagasFeitico", expr: "1" },
+  ],
+
+  // Técnica Máxima: "você recebe um novo Feitiço". ⚠ Estava SEM EFEITO até
+  // 2026-10-08, então a Aptidão não concedia nada. A vaga é EXCLUSIVA de Técnica
+  // Máxima (autor, 2026-10-08): ela não serve a Feitiço comum, e a Técnica
+  // Máxima oficial não gasta a vaga de Feitiço nem o contador comum. A escala, o
+  // custo de 25 e a recarga moram em afty-feiticos.js.
+  tecnica_maxima: [
+    { canal: "vagasTecnicaMaxima", expr: "1" },
   ],
 
   /* ========== APTIDÕES DE MALDIÇÃO (2026-08-01) ========== */

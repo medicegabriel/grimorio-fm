@@ -88,7 +88,8 @@ Função pura e síncrona em `afty-derive.js` (3000+ linhas). Recebe a ficha cru
 números derivados (`hp`, `pe`, `defesa`, `testes.{pericias,resistencias,ataques}`, `dano.entradas`,
 `combate`, etc.). Chamada em 8 pontos (builder, Ficha Final, Encontro, ...). `opcoes` carrega o que
 só existe em JOGO e não na criação: `opcoes.almaAtual` (Integridade da Alma corrente, vira a
-variável DSL `alma_atual`), `opcoes.concedido` (concessão de sessão do Mestre).
+variável DSL `alma_atual`), `opcoes.concedido` (concessão de sessão do Mestre),
+`opcoes.exaustaoTecnica` (a Exaustão de Técnica da Expansão, que trava os Feitiços).
 
 Estágios (ordem importa, cada canal só existe a partir do estágio dele):
 1. **Pré-contexto** — atributos base, ND, patamar, `nivelAptidao` direcionado.
@@ -289,3 +290,14 @@ porte, com aviso a cada uso — nunca silenciosamente.
   `usos["hab:<id>"]`, que o Descansar zera (2026-09-24).
 - Uma "categoria (sem tabela no livro)" precisa aparecer com esse texto na label E gerar aviso
   toda vez que for usada — nunca silenciosa.
+- O `custoPE` mora no passe pós-Aptidão (`CANAIS_POS_APTIDAO`), e o Feitiço lê o agregado final.
+  Até 2026-10-08 o agregado final só recebia o canal pelo estágio 2, e as linhas do estágio
+  principal (a redução de um Funcionamento, o −DOM da Expansão no ar) sumiam caladas. O conserto
+  está no `efSemCrescimento` de afty-derive.js, e o `t-tecnica-maxima-custo` o prende.
+- Trava de técnica entra pelo DERIVE, nunca pela tela: a Técnica Inata bloqueada e a Exaustão de
+  Técnica (`opcoes.exaustaoTecnica`, 2026-10-08) marcam cada Feitiço com `bloqueado` e tiram do
+  Motor as linhas de `origem` `feitico:` e `feiticoAuxiliar:`. A Ficha e o Encontro já leem o
+  `bloqueado`.
+- A Expansão aberta mora no `combate` da sessão (`dominioAtivo` mais `dominioFase`), e o
+  portão de todo benefício dela é `expansaoDominioNoAr` (afty-dominios.js): fase diferente de
+  `ativa` não liga nada. `derived.dominios.ativoId` é a ESCOLHIDA, e `aberta` é a que está no ar.

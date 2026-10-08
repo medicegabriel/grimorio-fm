@@ -29,20 +29,28 @@
  *    garantido, mas não levanta barreiras, tendo um alcance superior".
  *
  * ------------------------------------------------------------
- * ⚠ O QUE NÃO TEM FONTE NO AFTY (herdado da 2.5.2, a confirmar)
+ * ⚠ O GUIA DE CRIAÇÃO CHEGOU (2026-10-08), e confirma quase tudo
  * ------------------------------------------------------------
- * O "Guia de Criação de Expansões de Domínio" que as aptidões citam NUNCA foi
- * enviado para o lado do Afty. Então estes números são os da 2.5.2 e estão aqui
- * como ponto de partida, não como regra confirmada:
+ * Até 2026-10-08 este cabeçalho dizia que o "Guia de Criação de Expansões de
+ * Domínio" nunca tinha sido enviado, e que as tabelas eram as da 2.5.2 sem
+ * confirmação. O Livro 2.5.2 em Markdown traz o Guia inteiro, e a conferência
+ * linha a linha deu:
  *
- *  1. As TABELAS de efeito inteiras (DOMINIO_EFEITOS), com os valores por DOM.
- *  2. O limite de efeitos por DOM (1 no 1-2, 2 no 3-4, 3 no 5).
- *  3. Fortalecer: custa 2 vagas e multiplica as grandezas por 1,5.
- *  4. O teto de DOM 3 numa expansão Incompleta.
- *  5. Os 5 efeitos base de toda expansão.
- *  6. A Modificação Completa (inversão de resistência e mudança de tamanho).
+ *  1. As onze TABELAS de efeito batem número a número com o Livro.
+ *  2. O limite de efeitos por DOM (1 no 1-2, 2 no 3-4, 3 no 5) é do Livro.
+ *  3. Fortalecer é do Livro ("aplique metade do efeito como um bônus adicional"),
+ *     e passou a somar `piso(base / 2)` por fortalecimento (DA-12), sem o
+ *     `Math.round` de antes.
+ *  4. O teto de DOM 3 da Incompleta é do Livro.
+ *  5. Os efeitos base são do Livro, e a execução é "ação comum" (DA-10), e não as
+ *     "Duas Ações Comuns" que a tela da 2.5.2 escrevia.
+ *  6. A Sem Barreiras NÃO tem domo, Totem nem a área de `9 m × BT` no Livro
+ *     (DA-11): a ficha LEGACY que os tinha segue com eles, e a oficial não.
  *
- * ⚠ E UM NÚMERO EM QUE AFTY E 2.5.2 JÁ DIVERGEM, ver `pvBarreira` abaixo.
+ * As decisões do autor de 2026-10-08 estão em docs/afty-tecnica-maxima-dominio.md.
+ *
+ * ⚠ ESTE MÓDULO NÃO IMPORTA NADA, e deve continuar assim. O que ele precisa de
+ * outro catálogo (as Condições, os tipos de dano) chega por parâmetro do derive.
  * ============================================================
  */
 
@@ -67,6 +75,136 @@ export const rotuloVersao = (key) => VERSAO_BY_KEY[key]?.label ?? "";
 
 /** A aptidão que destrava o Acerto Garantido, que é opcional e some sem ela. */
 export const APTIDAO_ACERTO_GARANTIDO = "acerto_garantido";
+
+/* ⚠ DOIS REGIMES DE EXPANSÃO (DA-11, 2026-10-08). A Expansão gravada antes desta
+   data não tem `regra` e segue LEGACY só no que a Sem Barreiras tinha de herança
+   da 2.5.2 (área de 9 m × BT e o Totem de 12 paredes). A nova nasce com
+   `regra: "oficial"`, e trocar a versão no editor também a marca. Todo o resto
+   (custo, Acerto Garantido, Fortalecer, RD por tipo) vale igual para as duas:
+   é correção de regra, não regime. */
+export const REGRA_DOMINIO_OFICIAL = "oficial";
+export const ehDominioLegacy = (dominio) => dominio?.regra !== REGRA_DOMINIO_OFICIAL;
+
+/**
+ * O Acerto Garantido que VALE nesta Expansão:
+ *   • só com a Aptidão `acerto_garantido` (o JSON antigo com `ativo` não basta);
+ *   • nunca na Incompleta (DA-14);
+ *   • na Completa, quando a pessoa o liga;
+ *   • na Sem Barreiras, sempre: ele é inerente à versão.
+ */
+export function acertoGarantidoValido(dominio, versao, temAptidao) {
+  if (!temAptidao) return false;
+  if (versao === "sem_barreiras") return true;
+  if (versao === "completa") return !!dominio?.acertoGarantido?.ativo;
+  return false;
+}
+
+/* ------------------------------------------------------------ */
+/* ACERTO GARANTIDO ESTRUTURADO (Etapa 8, 2026-10-08)            */
+/* ------------------------------------------------------------ */
+/**
+ * O Livro (Guia de Criação, "Acerto Garantido"): "é apenas um efeito, no qual é
+ * especificado antecipadamente". Pode ser um grupo de Feitiços ("Apenas Feitiços
+ * nível 5"), ataques armados ou desarmados, condições garantidas ("como
+ * Paralisia ou Atordoamento, mas não Desmembramento"), "desde informações até um
+ * voto geral obrigatório". O não letal troca o golpe pela Abertura de 0,2
+ * Segundos.
+ *
+ * Forma gravada: `{ ativo, tipo, escopo, referencias, letalidade, descricao }`.
+ *   • `escopo`: o grupo em texto ("Apenas Feitiços copiados");
+ *   • `referencias`: ids de Feitiço (tipo `feiticos`) ou nomes de Condição
+ *     (tipo `condicao`);
+ *   • `letalidade`: `letal` ou `nao_letal`.
+ *
+ * ⚠ A FORMA ANTIGA ERA `{ ativo, escopo }`, com o escopo em frase livre ("O que
+ * se torna garantido"). Sem `tipo` gravado ela continua no MODO ANTERIOR
+ * (`tipo: null`): a frase vira a `descricao`, e a Ficha a escreve como sempre
+ * escreveu. O `escopo` gravado fica intocado no JSON. Ela só vira estruturada
+ * quando a pessoa escolhe um tipo no editor.
+ */
+export const AG_TIPOS = [
+  { value: "feiticos", label: "Grupo de Feitiços", letalidade: "letal" },
+  { value: "ataque_armado", label: "Ataque Armado", letalidade: "letal" },
+  { value: "ataque_desarmado", label: "Ataque Desarmado", letalidade: "letal" },
+  { value: "condicao", label: "Condição", letalidade: "letal" },
+  { value: "informacao", label: "Informação", letalidade: "nao_letal" },
+  { value: "voto", label: "Voto", letalidade: "nao_letal" },
+  { value: "outro", label: "Outro", letalidade: "letal" },
+];
+const AG_TIPO_BY_VALUE = Object.fromEntries(AG_TIPOS.map((t) => [t.value, t]));
+export const rotuloTipoAcerto = (tipo) => AG_TIPO_BY_VALUE[tipo]?.label ?? "Outro";
+export const AG_LETALIDADES = [
+  { value: "letal", label: "Letal" },
+  { value: "nao_letal", label: "Não Letal" },
+];
+// "mas não Desmembramento": a única condição que o Acerto Garantido não causa.
+export const AG_CONDICAO_PROIBIDA = "Desmembramento";
+
+export function normalizaAcertoGarantido(ag) {
+  const a = ag && typeof ag === "object" ? ag : {};
+  const legado = a.tipo == null;
+  const escopo = typeof a.escopo === "string" ? a.escopo : "";
+  return {
+    ...a,
+    ativo: !!a.ativo,
+    tipo: AG_TIPO_BY_VALUE[a.tipo] ? a.tipo : legado ? null : "outro",
+    escopo,
+    referencias: Array.isArray(a.referencias) ? a.referencias.filter((x) => typeof x === "string" && x) : [],
+    letalidade: a.letalidade === "nao_letal" ? "nao_letal" : "letal",
+    descricao: typeof a.descricao === "string" ? a.descricao : legado ? escopo : "",
+  };
+}
+
+/** O patch de troca de tipo: a letalidade segue a sugestão do tipo novo, e as
+    referências do tipo velho (ids de Feitiço, nomes de Condição) saem. */
+export function patchTipoAcerto(ag, tipo) {
+  const atual = normalizaAcertoGarantido(ag);
+  return {
+    ...atual,
+    tipo,
+    letalidade: AG_TIPO_BY_VALUE[tipo]?.letalidade ?? atual.letalidade,
+    referencias: tipo === atual.tipo ? atual.referencias : [],
+  };
+}
+
+/**
+ * O Acerto Garantido que vale, pronto para tela: `null` quando não vale.
+ * `nomesFeiticos` é o mapa id → nome da ficha, que chega do derive.
+ */
+export function resumoAcertoGarantido(dominio, versao, temAptidao, { nomesFeiticos = {} } = {}) {
+  if (!acertoGarantidoValido(dominio, versao, temAptidao)) return null;
+  const ag = normalizaAcertoGarantido(dominio?.acertoGarantido);
+  const referencias = ag.tipo === "feiticos"
+    ? ag.referencias.map((id) => ({ id, nome: nomesFeiticos[id] ?? null }))
+    : ag.referencias.map((nome) => ({ id: nome, nome }));
+  return {
+    tipo: ag.tipo,
+    legado: ag.tipo == null,
+    rotuloTipo: rotuloTipoAcerto(ag.tipo),
+    escopo: ag.escopo.trim(),
+    referencias,
+    letal: ag.letalidade !== "nao_letal",
+    descricao: ag.descricao.trim(),
+    // Só o não letal ganha a Abertura de 0,2 Segundos (Livro).
+    abertura: ag.letalidade === "nao_letal",
+  };
+}
+
+/**
+ * EXAUSTÃO DE TÉCNICA, em rodadas de técnica inutilizável depois que a Expansão
+ * é desmanchada (Livro): Incompleta 1, Completa 2, Completa com Acerto Garantido
+ * 4, Sem Barreiras 5. `comAcertoGarantido` é o Acerto Garantido que VALE.
+ */
+export function exaustaoTecnicaDaVersao(versao, comAcertoGarantido = false) {
+  if (versao === "incompleta") return 1;
+  if (versao === "completa") return comAcertoGarantido ? 4 : 2;
+  if (versao === "sem_barreiras") return 5;
+  return 0;
+}
+
+/** A versão tem domo? A Sem Barreiras oficial não (DA-11), a LEGACY tinha Totem. */
+export const temDomo = (versao, legacy = false) =>
+  versao === "incompleta" || versao === "completa" || (versao === "sem_barreiras" && legacy);
 
 /** As versões que a criatura REALMENTE tem, pelas aptidões escolhidas. */
 export function versoesDisponiveis(aptidoesEscolhidas = []) {
@@ -93,8 +231,16 @@ export function resolveVersao(dominio, aptidoesEscolhidas = []) {
 export const DOMINIO_CUSTO_BASE = { incompleta: 15, completa: 20, sem_barreiras: 20 };
 export const CUSTO_ACERTO_GARANTIDO = 5;
 
+/**
+ * O custo-base da Expansão, antes do canal `custoPE`.
+ *
+ * ⚠ A SEM BARREIRAS CUSTA 25 SEMPRE (2026-10-08): "possui os mesmos efeitos e
+ * custo de uma expansão completa com acerto garantido". Até aqui ela custava 20
+ * quando a pessoa não ligava o Acerto Garantido, e ele é inerente à versão.
+ */
 export const custoDominio = (versao, comAcertoGarantido = false) =>
-  (DOMINIO_CUSTO_BASE[versao] ?? 0) + (comAcertoGarantido ? CUSTO_ACERTO_GARANTIDO : 0);
+  (DOMINIO_CUSTO_BASE[versao] ?? 0)
+  + (comAcertoGarantido || versao === "sem_barreiras" ? CUSTO_ACERTO_GARANTIDO : 0);
 
 /** Incompleta: 1 + DOM. Completa e Sem Barreiras: 3 + DOM. */
 export const duracaoDominio = (dom = 0, versao) =>
@@ -118,21 +264,55 @@ const metros = (n) => `${num(n)} metros`;
  * O piso é ZERO e não negativo: um efeito de mesa que encolha a expansão além do
  * tamanho dela não a vira do avesso.
  */
-export function areaDominioMetros(versao, bt = 2, dobraArea = false, bonus = 0) {
+export function areaDominioMetros(versao, bt = 2, dobraArea = false, bonus = 0, { legacy = true } = {}) {
   const b = Math.max(1, Math.trunc(Number(bt) || 1));
   const extra = Number(bonus) || 0;
   let base = 0;
   if (versao === "incompleta") base = 4.5 * b;
   else if (versao === "completa") base = 9;
-  else if (versao === "sem_barreiras") base = 9 * b * (dobraArea ? 2 : 1);
-  else return null;
+  /* ⚠ A SEM BARREIRAS OFICIAL NÃO TEM NÚMERO (DA-11, 2026-10-08). O Livro diz só
+     "alcance superior para o acerto garantido", e o `9 m × BT` era herança da
+     2.5.2. A LEGACY segue com ele. A oficial devolve `null`, que a tela escreve
+     como "Definida pela Mesa". */
+  else if (versao === "sem_barreiras") {
+    if (!legacy) return null;
+    base = 9 * b * (dobraArea ? 2 : 1);
+  } else return null;
   return Math.max(0, base + extra);
 }
 
+/** O texto da área da Sem Barreiras oficial, que não tem número (DA-11). */
+export const AREA_DEFINIDA_PELA_MESA = "Definida pela Mesa";
+
 /** O mesmo, já escrito ("13,5 metros"). Versão desconhecida devolve texto vazio. */
-export function areaDominio(versao, bt = 2, dobraArea = false, bonus = 0) {
-  const m = areaDominioMetros(versao, bt, dobraArea, bonus);
-  return m == null ? "" : metros(m);
+export function areaDominio(versao, bt = 2, dobraArea = false, bonus = 0, opcoes = {}) {
+  const m = areaDominioMetros(versao, bt, dobraArea, bonus, opcoes);
+  if (m == null) return versao === "sem_barreiras" ? AREA_DEFINIDA_PELA_MESA : "";
+  return metros(m);
+}
+
+/**
+ * A CONTESTAÇÃO DE DOMÍNIO (Livro, Regras sobre Domínios), em números:
+ *   • "uma área equivalente à metade do padrão da sua expansão";
+ *   • "no começo de toda rodada, você causa dano na barreira da expansão igual ao
+ *     seu Nível de Aptidão em Domínio multiplicado por 25 se for Incompleta ou 50
+ *     se for Completa";
+ *   • com a barreira em 75% passa uma pessoa, em 50% qualquer uma.
+ * Só a Incompleta e a Completa contestam. A Sem Barreiras devolve `null`.
+ * A aplicação no domo do outro é manual (DA-19): a sessão não conhece o outro.
+ */
+export function contestacaoDoDominio(versao, { dom = 0, bt = 2, bonusArea = 0 } = {}) {
+  if (versao !== "incompleta" && versao !== "completa") return null;
+  const m = areaDominioMetros(versao, bt, false, bonusArea);
+  const d = Math.max(0, Math.trunc(Number(dom) || 0));
+  return {
+    area: m == null ? "" : metros(m / 2),
+    danoPorRodada: d * (versao === "incompleta" ? 25 : 50),
+    patamares: [
+      { fracao: 0.75, texto: "Passa Uma Pessoa" },
+      { fracao: 0.5, texto: "Passa Qualquer Um" },
+    ],
+  };
 }
 
 /* ------------------------------------------------------------ */
@@ -280,22 +460,61 @@ export function maxEfeitos(dom = 0, bonus = 0) {
   return Math.max(0, base + (Math.trunc(Number(bonus)) || 0));
 }
 
-/** ⚠ SEM FONTE NO AFTY. Herdado da 2.5.2: a Incompleta não passa de DOM 3. */
+/** Livro: "Uma Expansão de Domínio Incompleta não pode receber benefícios acima
+    do nível de aptidão 3". */
 export function domEfetivo(dom = 0, versao) {
   const d = Math.max(0, Math.min(5, Math.trunc(Number(dom) || 0)));
   return versao === "incompleta" ? Math.min(d, 3) : d;
 }
 
-/** ⚠ SEM FONTE NO AFTY. Fortalecer custa 2 vagas e escala as grandezas por 1,5. */
-export const custoEmVagas = (efeito) => (efeito?.fortalecido ? 2 : 1);
+/**
+ * FORTALECER (Livro, e DA-12 de 2026-10-08): "fortalecê-lo quando receberia um
+ * novo, ao invés de criar outro... aplique metade do efeito como um bônus
+ * adicional ao efeito escolhido".
+ *
+ *   • cada fortalecimento ocupa 1 vaga a mais, e pode repetir com outra vaga;
+ *   • cada um soma `piso(base / 2)` do valor BASE da tabela, sem composição:
+ *     base 5 fica 7 com um e 9 com dois, e nunca 5 × 1,5 × 1,5;
+ *   • metro anda na grade de 1,5 m, então a metade de 3 m é 1,5 m.
+ *
+ * ⚠ ERA UM BOOLEANO até 2026-10-08 (`fortalecido`), que custava 2 vagas e
+ * multiplicava por 1,5 com `Math.round` (Defesa 3 virava 5). A ficha antiga com
+ * `fortalecido: true` é lida como UM fortalecimento, e o valor passa a ser o do
+ * Livro (Defesa 3 vira 4).
+ */
+/* Teto de segurança do número gravado, e não regra do Livro: quem trava de verdade
+   é o limite de efeitos (cada fortalecimento gasta uma vaga). Um JSON com 99 não
+   vira um efeito cinquenta vezes maior. */
+export const MAX_FORTALECIMENTOS = 4;
+export function fortalecimentosDe(efeito) {
+  const n = Math.trunc(Number(efeito?.fortalecimentos));
+  if (Number.isFinite(n) && n > 0) return Math.min(n, MAX_FORTALECIMENTOS);
+  return efeito?.fortalecido ? 1 : 0;
+}
+export const custoEmVagas = (efeito) => 1 + fortalecimentosDe(efeito);
 export const vagasUsadas = (efeitos = []) => efeitos.reduce((n, e) => n + custoEmVagas(e), 0);
 
-const F = (n, fortalecido) => (fortalecido ? Math.round(n * 1.5) : n);
+// A grandeza com `n` fortalecimentos: base + n × piso(base / 2).
+const F = (base, n) => base + Math.max(0, Math.trunc(Number(n) || 0)) * Math.floor(base / 2);
+// O mesmo em metros, na grade de 1,5 m.
+const FM = (base, n) => base + Math.max(0, Math.trunc(Number(n) || 0)) * (Math.floor(base / 2 / 1.5) * 1.5);
 const plural = (n, um, varios) => (n === 1 ? um : varios);
 
+/**
+ * O EFEITO AMBIENTAL DE CONDIÇÕES pela Gerência de Dano por Condições do Livro
+ * (2026-10-08): cada condição custa dados do orçamento do DOM. A Extrema não
+ * existe aqui: a tabela de Expansão libera só Fracas, Médias e Fortes.
+ */
+export const CUSTO_CONDICAO_AMBIENTAL = { fraca: 1, media: 3, forte: 5 };
+// Por DOM efetivo: 1 só Fracas, 2 até Médias, 3 em diante até Fortes.
+export const CONDICAO_AMBIENTAL_FORCAS = [["fraca"], ["fraca", "media"], ["fraca", "media", "forte"]];
+
 /* ============================================================ */
-/* TABELAS DE EFEITO (⚠ TODAS herdadas da 2.5.2, sem fonte Afty) */
+/* TABELAS DE EFEITO, conferidas com o Livro                     */
 /* ============================================================ */
+/* ⚠ ATÉ 2026-10-08 ESTE CABEÇALHO DIZIA "herdadas da 2.5.2, sem fonte Afty"
+   (E-18). O Guia de Criação de Expansão do Livro existe, e as onze tabelas batem
+   com ele linha a linha (ver `docs/afty-tecnica-maxima-dominio.md`). */
 /* Cada tipo tem `resolve(idx, fortalecido)` e devolve:
      valor  — a grandeza curta, que a UI mostra ao lado do seletor
      frase  — a frase inteira, que entra no Texto Final
@@ -330,7 +549,9 @@ export const DOMINIO_EFEITOS = {
           return {
             valor: `+${n} de CD`,
             frase: `Todos os seus Feitiços têm a CD para resistir aumentada em ${n}.`,
-            motor: [{ canal: "cd", expr: String(n) }],
+            /* ⚠ `cdFeitico`, e não `cd` (DA-13, 2026-10-08): o Livro fala dos
+               Feitiços, e o `cd` subia junto a CD de Aptidão e de Habilidade. */
+            motor: [{ canal: "cdFeitico", expr: String(n) }],
           };
         },
       },
@@ -396,10 +617,11 @@ export const DOMINIO_EFEITOS = {
           return {
             valor,
             frase: `Você recebe ${valor} (escolhidos na criação).`,
-            // ⚠ Entra como RD GERAL enquanto RD por tipo não existir. O autor
-            // sinalizou em 2026-07-30 que quer trocar a RD Específica por uma RD
-            // por tipo de dano, e quando isso existir esta linha muda de canal.
-            motor: [{ canal: "rdGeral", expr: String(rd) }],
+            /* ⚠ RD POR TIPO desde 2026-10-08. Até aqui ela entrava como RD GERAL
+               (todo tipo de dano), à espera do canal `rdTipo`, que já existia. A
+               linha sai por TIPO ESCOLHIDO no `efeitosDoDominio`, até `tiposMax`.
+               O Fortalecer sobe a RD, e não a quantidade de tipos. */
+            motorRdTipo: rd,
             tiposMax: tipos,
           };
         },
@@ -458,8 +680,14 @@ export const DOMINIO_EFEITOS = {
       },
       condicoes: {
         label: "Condições",
+        /* A Gerência de Dano por Condições do Livro: cada condição CUSTA dados
+           (Fraca 1, Média 3, Forte 5), e o DOM dá o orçamento e as forças. A
+           Extrema nunca entra por aqui. "Você não pode adicionar esta aptidão
+           mais do que uma vez" (ver `validarDominio`). */
+        unico: true,
         resolve: (i, f) => {
           const dados = F([2, 4, 6, 8, 12][i], f);
+          const forcas = CONDICAO_AMBIENTAL_FORCAS[Math.min(i, CONDICAO_AMBIENTAL_FORCAS.length - 1)];
           const faixas = [
             "fracas",
             "fracas ou médias",
@@ -470,15 +698,16 @@ export const DOMINIO_EFEITOS = {
           return {
             valor: `condições ${faixas} (${dados} dados)`,
             frase: `Toda criatura hostil faz um TR no começo do turno, e em uma falha recebe uma condição (${faixas}). São ${dados} dados para distribuir, e as condições duram 1 rodada.`,
+            dadosCondicao: dados,
+            forcasCondicao: forcas,
           };
         },
       },
       lentidao: {
         label: "Lentidão",
         resolve: (i, f) => {
-          // Os valores base já são múltiplos de 1,5, então o ×1,5 do Fortalecer
-          // não precisa de arredondamento (ao contrário dos outros efeitos).
-          const m = [3, 6, 9, 12, 18][i] * (f ? 1.5 : 1);
+          // O Fortalecer anda na grade de 1,5 m: a metade de 3 m é 1,5 m.
+          const m = FM([3, 6, 9, 12, 18][i], f);
           return {
             valor: `reduz ${num(m)} m`,
             frase: `Toda criatura hostil no domínio tem o movimento reduzido em ${num(m)} m, e fica incapaz de se mover se chegar a 0.`,
@@ -507,7 +736,9 @@ export const tiposDaCategoria = (categoria) => {
 export const categoriaLivre = (categoria) => !!DOMINIO_EFEITOS[categoria]?.livre;
 
 /**
- * ⚠ SEM FONTE NO AFTY. Herdados da 2.5.2, e só texto: nenhum entra no Motor.
+ * Os efeitos de TODA expansão aberta, do Livro ("ao abrir uma expansão de
+ * domínio, você recebe os seguintes efeitos"). Aqui mora só o TEXTO: os que
+ * viram número entram no Motor por `efeitosDoDominio` e pelo pré-contexto.
  *
  * Cada um tem TÍTULO separado do corpo porque o texto final é renderizado em
  * bullets de "Título. corpo", com o título em destaque. Sem a separação o bullet
@@ -547,11 +778,9 @@ export function efeitosDeAptidaoDoDominio(
   creature,
   { aptidoesEscolhidas = [], niveisAptidao = {} } = {},
 ) {
-  const combate = creature?.combate;
-  if (!combate?.ativo || !combate?.dominioAtivo) return [];
-
+  // Só com a Expansão VALENDO: em Confronto ela ainda não está completa (DA-15).
+  if (!expansaoDominioNoAr(creature, aptidoesEscolhidas)) return [];
   const ativo = dominioEmUso(creature, aptidoesEscolhidas);
-  if (!ativo) return [];
 
   const nome = `${ativo.nome || "Expansão de Domínio"}: Níveis de Aptidão`;
   return ["au", "cl", "er"].flatMap((alvo) => {
@@ -578,8 +807,13 @@ const defDoTipo = (efeito) => DOMINIO_EFEITOS[efeito?.categoria]?.tipos?.[efeito
 const resolvido = (efeito, dom, versao) => {
   const t = defDoTipo(efeito);
   if (!t) return null;
-  return t.resolve(Math.max(0, domEfetivo(dom, versao) - 1), !!efeito.fortalecido);
+  return t.resolve(Math.max(0, domEfetivo(dom, versao) - 1), fortalecimentosDe(efeito));
 };
+
+/** A resolução inteira de um efeito (valor, frase, teto de tipos, orçamento de
+    Condições), para o editor. `null` no Efeito Especial e no desconhecido. */
+export const resolucaoDoEfeito = (efeito, dom, versao) =>
+  (categoriaLivre(efeito?.categoria) ? null : resolvido(efeito, dom, versao));
 
 /** Grandeza curta do efeito. Vazia no Efeito Especial, que não tem tabela. */
 export function valorDoEfeito(efeito, dom, versao) {
@@ -607,12 +841,16 @@ export function novoEfeitoDominio(categoria = "amp_tecnica") {
     tipo: categoriaLivre(categoria) ? "" : Object.keys(DOMINIO_EFEITOS[categoria].tipos)[0],
     nome: "",
     descricao: "",
-    fortalecido: false,
+    // Quantas vezes o efeito foi fortalecido (DA-12). Ver `fortalecimentosDe`.
+    fortalecimentos: 0,
     // Escolhas que a tabela não captura:
     //  atributos — os dois físicos do "Aumento de Atributo"
-    //  rdTipos   — os tipos de dano protegidos pela "Redução de Dano"
+    //  rdTipos:    os tipos de dano protegidos pela "Redução de Dano" (lista
+    //              de ids de tipo desde 2026-10-08, era texto livre)
+    //  condicoes:  as condições do Efeito Ambiental, `{ nome, forca }`
     atributos: [],
-    rdTipos: "",
+    rdTipos: [],
+    condicoes: [],
   };
 }
 
@@ -627,12 +865,36 @@ export function novoDominio(versao = "") {
   seq += 1;
   return {
     id: `dom_${Date.now().toString(36)}_${seq}`,
+    // Toda Expansão criada desde 2026-10-08 nasce oficial (DA-11).
+    regra: REGRA_DOMINIO_OFICIAL,
     nome: "",
     versao,
     aparencia: "",
     efeitos: [],
     beneficiosRitual: normalizaBeneficiosRitual(null),
-    acertoGarantido: { ativo: false, escopo: "" },
+    // O tipo mais comum do Livro ("Feitiços específicos") é o padrão da nova.
+    acertoGarantido: { ativo: false, tipo: "feiticos", escopo: "", referencias: [], letalidade: "letal", descricao: "" },
+  };
+}
+
+/** Um efeito gravado, lido no formato de hoje sem perder o que ele guardava. */
+function normalizaEfeito(e = {}) {
+  const base = DOMINIO_EFEITOS[e.categoria] ? novoEfeitoDominio(e.categoria) : novoEfeitoDominio();
+  return {
+    ...base,
+    ...e,
+    fortalecimentos: fortalecimentosDe(e),
+    atributos: Array.isArray(e.atributos) ? e.atributos : [],
+    /* ⚠ O TEXTO LIVRE DE ANTES fica em `rdTiposTexto`, e a RD por tipo só sai
+       com a lista preenchida (2026-10-08). Apagar o texto perderia o que a
+       pessoa tinha escrito. */
+    rdTipos: Array.isArray(e.rdTipos) ? e.rdTipos.filter((x) => typeof x === "string" && x) : [],
+    rdTiposTexto: typeof e.rdTipos === "string" ? e.rdTipos : String(e.rdTiposTexto ?? ""),
+    condicoes: Array.isArray(e.condicoes)
+      ? e.condicoes.filter((c) => c && typeof c.nome === "string" && c.nome && typeof c.forca === "string")
+      : [],
+    // O Motor opcional do Efeito Especial (DA-20): linhas `{ canal, expr, alvo? }`.
+    motor: Array.isArray(e.motor) ? e.motor.filter((m) => m && typeof m.canal === "string") : [],
   };
 }
 
@@ -640,11 +902,13 @@ export function normalizeDominio(d = {}) {
   return {
     ...novoDominio(),
     ...d,
-    efeitos: Array.isArray(d.efeitos)
-      ? d.efeitos.map((e) => ({ ...novoEfeitoDominio(e.categoria), ...e }))
-      : [],
+    /* ⚠ O REGIME NÃO VEM DO `novoDominio` (DA-11): uma Expansão gravada antes de
+       2026-10-08 não tem `regra`, e herdar o "oficial" da fábrica apagaria a
+       diferença calada. */
+    regra: d.regra === REGRA_DOMINIO_OFICIAL ? REGRA_DOMINIO_OFICIAL : null,
+    efeitos: Array.isArray(d.efeitos) ? d.efeitos.map(normalizaEfeito) : [],
     beneficiosRitual: normalizaBeneficiosRitual(d.beneficiosRitual),
-    acertoGarantido: { ativo: false, escopo: "", ...(d.acertoGarantido ?? {}) },
+    acertoGarantido: normalizaAcertoGarantido(d.acertoGarantido),
   };
 }
 
@@ -670,12 +934,42 @@ export function dominioEmUso(creature, aptidoesEscolhidas = []) {
   return ativo ?? null;
 }
 
+/* ------------------------------------------------------------ */
+/* FASES DA EXPANSÃO NO AR (2026-10-08)                          */
+/* ------------------------------------------------------------ */
+/**
+ * A Expansão aberta passa por fases, guardadas na sessão em
+ * `combate.dominioFase`, separadas do id em `combate.dominioAtivo`:
+ *
+ *   • `ativa`: completa e valendo, com tudo (efeitos base, efeitos e Acerto
+ *     Garantido);
+ *   • `confronto`: ainda não completa, e o Livro manda: "Você não receberá
+ *     esses efeitos caso esteja num Confronto de Domínio" (DA-15);
+ *   • `estendido`: Confronto Estendido, as duas manifestadas e NADA valendo até
+ *     um lado vencer (DA-15);
+ *   • `contestando`: o contestador recebe só as regras da Contestação, e nenhum
+ *     benefício da própria Expansão (DA-15).
+ *
+ * ⚠ SESSÃO ANTIGA, SEM FASE, VALE `ativa`: era o único estado que existia, e
+ * regravar a sessão de ninguém é a regra.
+ */
+export const FASES_DOMINIO = ["ativa", "confronto", "estendido", "contestando"];
+
+export function faseDoDominio(creature) {
+  const c = creature?.combate;
+  if (!c?.ativo || !c?.dominioAtivo) return null;
+  return FASES_DOMINIO.includes(c.dominioFase) ? c.dominioFase : "ativa";
+}
+
+/** A Expansão está no ar E valendo? É o portão de todo benefício dela. */
+export function expansaoDominioNoAr(creature, aptidoesEscolhidas = []) {
+  return faseDoDominio(creature) === "ativa" && !!dominioEmUso(creature, aptidoesEscolhidas);
+}
+
 /** Benefícios gratuitos de Ritual da expansão que está realmente em uso. */
 export function beneficiosRitualDoDominio(creature, aptidoesEscolhidas = []) {
-  const combate = creature?.combate;
-  if (!combate?.ativo || !combate?.dominioAtivo) return normalizaBeneficiosRitual(null);
+  if (!expansaoDominioNoAr(creature, aptidoesEscolhidas)) return normalizaBeneficiosRitual(null);
   const ativo = dominioEmUso(creature, aptidoesEscolhidas);
-  if (!ativo) return normalizaBeneficiosRitual(null);
   return normalizaBeneficiosRitual(ativo.beneficiosRitual);
 }
 
@@ -693,8 +987,18 @@ export function beneficiosRitualDoDominio(creature, aptidoesEscolhidas = []) {
    próprios do resumo e a tela os desenha de lá, então o descompasso entre o
    número da linha e o número da prosa deixa de existir por construção. */
 
-/** A execução da Expansão de Domínio, igual em toda versão. */
-export const DOMINIO_EXECUCAO = "Duas Ações Comuns";
+/** A execução da Expansão de Domínio, igual em toda versão. ⚠ Era "Duas Ações
+    Comuns" até 2026-10-08, texto que veio da tela da 2.5.2. O Livro: "Todos os
+    domínios são utilizados como ação comum, necessitam de duas mãos livres e
+    capacidade de fala" (DA-10). */
+export const DOMINIO_EXECUCAO = "Ação Comum";
+export const DOMINIO_REQUISITOS_EXECUCAO = "Duas Mãos Livres e Capacidade de Fala";
+
+/* A Sem Barreiras oficial não tem domo nem número de área (DA-11). O que o Livro
+   dá é isto, e é o que a Ficha mostra no lugar do domo. */
+const ALCANCE_SEM_BARREIRAS =
+  "Superior, definido pela mesa. O Acerto Garantido pode até superar as barreiras de " +
+  "outras expansões de domínio, atacando-as por fora.";
 
 /* ⚠ Verbatim do texto que a 2.5.2 escrevia no parágrafo do domo. Ele virou item
    da lista "Toda Expansão" em vez de sumir junto com a prosa, porque é REGRA e
@@ -703,16 +1007,58 @@ const DOMO_INTERIOR =
   "Caso a expansão seja atacada pelo seu interior, ela é resistente a todos os tipos de dano. " +
   "A resistência do interior de domínios não pode ser ignorada.";
 
-function textoAcertoGarantido(ag) {
-  const escopo = ag.escopo?.trim();
-  const alvo = escopo
-    ? `Enquanto dentro do seu domínio, ${escopo} se torna garantido`
-    : "Enquanto dentro do seu domínio, você escolhe antecipadamente um efeito (uma técnica, ataque ou condição) para se tornar garantido";
-  return (
-    `${alvo}: ele é aplicado no início de cada turno contra todos os alvos legíveis dentro do ` +
-    "alcance, uma vez por rodada para cada um. Jogadas de ataque sempre acertam e Testes de " +
-    "Resistência sempre falham, e qualquer condição causada por ele dura 1 rodada."
-  );
+const FRASE_APLICACAO_AG =
+  "Ele é aplicado no início de cada turno contra todos os alvos legíveis dentro do " +
+  "alcance, uma vez por rodada para cada um.";
+const FRASE_ACERTA_AG =
+  "Jogadas de ataque sempre acertam e Testes de Resistência sempre falham, a não ser que " +
+  "algum efeito aumente o sucesso.";
+const FRASE_CONDICAO_AG =
+  "As condições causadas por ele duram 1 rodada. Quem passa 2 rodadas no total com uma " +
+  "condição de Incapacitação recupera uma ação e metade da ação de movimento por rodada.";
+// Livro: "força você a fazer um teste de feitiçaria contra a atenção de todos".
+export const FRASE_ABERTURA_02 =
+  "Faça um teste de Feitiçaria contra a Atenção de todos. No sucesso, eles não podem " +
+  "realizar reações contra a expansão, nem mesmo os Golpes de Oportunidade ao expandir.";
+
+/* O que se torna garantido, em frase, por tipo. */
+function alvoDoAcerto(r) {
+  const nomes = r.referencias.map((x) => x.nome).filter(Boolean).join(", ");
+  const comEscopo = (base) => (r.escopo ? `${base} (${r.escopo})` : base);
+  switch (r.tipo) {
+    case "feiticos": return [r.escopo, nomes].filter(Boolean).join(": ") || "um grupo de Feitiços";
+    case "ataque_armado": return comEscopo("ataques armados");
+    case "ataque_desarmado": return comEscopo("ataques desarmados");
+    case "condicao": return nomes || "uma condição";
+    default: return r.descricao || r.escopo;
+  }
+}
+
+/**
+ * O texto do Acerto Garantido no corpo da Expansão.
+ *
+ * ⚠ O MODO ANTERIOR (`legado`) escreve exatamente o que a Ficha sempre escreveu,
+ * frase por frase. É o que impede uma Expansão antiga de mudar de texto só por
+ * a ficha ser aberta depois de 2026-10-08.
+ */
+function textoAcertoGarantido(r) {
+  if (r.legado) {
+    const alvo = r.descricao
+      ? `Enquanto dentro do seu domínio, ${r.descricao} se torna garantido`
+      : "Enquanto dentro do seu domínio, você escolhe antecipadamente um efeito (uma técnica, ataque ou condição) para se tornar garantido";
+    return (
+      `${alvo}: ele é aplicado no início de cada turno contra todos os alvos legíveis dentro do ` +
+      "alcance, uma vez por rodada para cada um. Jogadas de ataque sempre acertam e Testes de " +
+      "Resistência sempre falham, e qualquer condição causada por ele dura 1 rodada."
+    );
+  }
+  const alvo = String(alvoDoAcerto(r) ?? "").replace(/[.\s]+$/, "");
+  const partes = [`Garantido dentro do seu domínio: ${alvo || "o efeito escolhido"}.`, FRASE_APLICACAO_AG];
+  if (["feiticos", "ataque_armado", "ataque_desarmado", "condicao"].includes(r.tipo)) partes.push(FRASE_ACERTA_AG);
+  if (r.tipo === "condicao") partes.push(FRASE_CONDICAO_AG);
+  // A descrição livre dos tipos estruturados vem depois da regra, como nota da pessoa.
+  if (r.descricao && !["informacao", "voto", "outro"].includes(r.tipo)) partes.push(r.descricao);
+  return partes.join(" ");
 }
 
 /** Um efeito escolhido, como item: título, categoria e o texto dele. */
@@ -747,22 +1093,34 @@ function itemDoEfeito(efeito, dom, versao) {
  * ⚠ Os efeitos base continuam saindo prontos, e isso é decisão do autor
  * (2026-07-30): na 2.5.2 eles ficavam só no formulário.
  */
-export function corpoDoDominio(dominio, { dom = 0, versao } = {}) {
+export function corpoDoDominio(dominio, { dom = 0, versao, temAcertoGarantido = true, nomesFeiticos = {} } = {}) {
   const d = normalizeDominio(dominio);
   const v = versao || d.versao;
-  const vazio = { execucao: DOMINIO_EXECUCAO, proprios: [], base: [], aparencia: "" };
+  const legacy = ehDominioLegacy(d);
+  const vazio = {
+    execucao: DOMINIO_EXECUCAO, requisitosExecucao: DOMINIO_REQUISITOS_EXECUCAO,
+    proprios: [], base: [], aparencia: "",
+  };
   if (!v) return vazio;
   const proprios = d.efeitos.map((e) => itemDoEfeito(e, dom, v)).filter(Boolean);
-  if (d.acertoGarantido?.ativo) {
+  // Só o Acerto Garantido que VALE (Aptidão, versão): o JSON antigo com `ativo`
+  // numa Incompleta ou sem a Aptidão não aparece como efeito (2026-10-08).
+  const ag = resumoAcertoGarantido(d, v, temAcertoGarantido, { nomesFeiticos });
+  if (ag) {
     proprios.push({
       id: "acerto_garantido",
       titulo: "Acerto Garantido",
-      categoria: d.acertoGarantido.escopo?.trim() || "",
-      texto: textoAcertoGarantido(d.acertoGarantido),
+      // O modo anterior mostrava a frase do escopo como categoria, e continua.
+      categoria: ag.legado ? ag.descricao : `${ag.rotuloTipo}${ag.letal ? "" : " · Não Letal"}`,
+      texto: textoAcertoGarantido(ag),
     });
+    if (ag.abertura) {
+      proprios.push({ id: "abertura_02", titulo: "Abertura de 0,2 Segundos", categoria: "", texto: FRASE_ABERTURA_02 });
+    }
   }
   const base = DOMINIO_EFEITOS_BASE.map((b) => ({ titulo: b.titulo, texto: b.texto }));
-  if (v !== "sem_barreiras") base.push({ titulo: "Domo", texto: DOMO_INTERIOR });
+  if (temDomo(v, legacy) && v !== "sem_barreiras") base.push({ titulo: "Domo", texto: DOMO_INTERIOR });
+  if (v === "sem_barreiras" && !legacy) base.push({ titulo: "Alcance do Acerto Garantido", texto: ALCANCE_SEM_BARREIRAS });
   return { ...vazio, proprios, base, aparencia: d.aparencia?.trim() ?? "" };
 }
 
@@ -778,9 +1136,11 @@ export function corpoDoDominio(dominio, { dom = 0, versao } = {}) {
  * ⚠ Só o domínio marcado como ATIVO na ficha entra. Uma criatura pode ter várias
  * expansões escritas, e expandir é uma de cada vez.
  */
-export function efeitosDoDominio(creature, { dom = 0, aptidoesEscolhidas = [] } = {}) {
+export function efeitosDoDominio(creature, { dom = 0, aptidoesEscolhidas = [], canalPermitido = null } = {}) {
+  /* ⚠ A FASE (2026-10-08): o `quando: "dominio_ativo"` das linhas lê só o id
+     da bancada, e ligaria tudo durante um Confronto. O portão é este (DA-15). */
+  if (!expansaoDominioNoAr(creature, aptidoesEscolhidas)) return [];
   const ativo = dominioEmUso(creature, aptidoesEscolhidas);
-  if (!ativo) return [];
   const versao = resolveVersao(ativo, aptidoesEscolhidas);
   if (!versao) return [];
 
@@ -799,6 +1159,17 @@ export function efeitosDoDominio(creature, { dom = 0, aptidoesEscolhidas = [] } 
   out.push({ ...marca("custoPE", "dom", nomeBase), alvo: "feitico" });
 
   for (const efeito of ativo.efeitos) {
+    /* O Efeito Especial entra pelas linhas de Motor que a pessoa escreveu (DA-20),
+       só nos canais que o derive permite. Sem a função, nada entra. */
+    if (categoriaLivre(efeito.categoria)) {
+      if (typeof canalPermitido !== "function") continue;
+      const nome = `${ativo.nome || "Expansão de Domínio"}: ${efeito.nome?.trim() || "Efeito Especial"}`;
+      for (const m of efeito.motor ?? []) {
+        if (!canalPermitido(m.canal) || !String(m.expr ?? "").trim()) continue;
+        out.push({ ...marca(m.canal, String(m.expr), nome), ...(m.alvo ? { alvo: m.alvo } : {}) });
+      }
+      continue;
+    }
     const r = resolvido(efeito, dom, versao);
     if (!r) continue;
     const nome = `${ativo.nome || "Expansão de Domínio"}: ${rotuloDoEfeito(efeito)}`;
@@ -810,6 +1181,167 @@ export function efeitosDoDominio(creature, { dom = 0, aptidoesEscolhidas = [] } 
     if (r.motorAtributo) {
       const alvos = (Array.isArray(efeito.atributos) ? efeito.atributos.filter(Boolean) : []).slice(0, 2);
       for (const alvo of alvos) out.push({ ...marca("atributo", String(r.motorAtributo), nome), alvo });
+    }
+    /* A RD Corporal sai por TIPO ESCOLHIDO (2026-10-08), até o teto do DOM. O
+       texto livre antigo (`rdTiposTexto`) não vira número: sem a lista, a RD
+       fica fora, e o `validarDominio` avisa. */
+    if (r.motorRdTipo) {
+      const tipos = [...new Set(efeito.rdTipos ?? [])].slice(0, r.tiposMax);
+      for (const alvo of tipos) out.push({ ...marca("rdTipo", String(r.motorRdTipo), nome), alvo });
+    }
+  }
+  return out;
+}
+
+/**
+ * A AMPLIFICAÇÃO DE TÉCNICA da Expansão no ar, em números, para os Especiais de
+ * dano (Golpeador e Dano na Alma) (2026-10-08, E-10).
+ *
+ * ⚠ POR QUE NÃO PELO ALVO `feitico` DO MOTOR. O Feitiço de Dano já lê essas
+ * linhas por escopo, numa avaliação por linha que só ele faz (o Foco Amaldiçoado
+ * escreve no mesmo alvo com `dados_dano_final`). Ensinar o Golpeador a ler o
+ * alvo genérico mudaria também aquele número. A Expansão diz "todos os seus
+ * Feitiços", então ela chega aos Especiais por aqui, explícita, e só ela.
+ */
+export function amplificacaoDeTecnica(creature, { dom = 0, aptidoesEscolhidas = [] } = {}) {
+  if (!expansaoDominioNoAr(creature, aptidoesEscolhidas)) return null;
+  const ativo = dominioEmUso(creature, aptidoesEscolhidas);
+  const versao = resolveVersao(ativo, aptidoesEscolhidas);
+  let dados = 0, fixo = 0, ignoraRD = 0, removeResistencia = false;
+  for (const efeito of ativo.efeitos) {
+    if (efeito.categoria !== "amp_tecnica") continue;
+    for (const m of resolvido(efeito, dom, versao)?.motor ?? []) {
+      if (m.alvo !== "feitico") continue;
+      const valor = Math.trunc(Number(m.expr) || 0);
+      if (m.canal === "dadosDano") dados += valor;
+      else if (m.canal === "danoBonus") fixo += valor;
+      else if (m.canal === "ignoraRD") ignoraRD += valor;
+      else if (m.canal === "removeResistencia") removeResistencia = removeResistencia || valor > 0;
+    }
+  }
+  if (!dados && !fixo && !ignoraRD && !removeResistencia) return null;
+  return {
+    nome: `${ativo.nome || "Expansão de Domínio"}: Amplificação de Técnica`,
+    dados, fixo, ignoraRD, removeResistencia,
+  };
+}
+
+/* ------------------------------------------------------------ */
+/* VALIDAÇÃO DE UMA EXPANSÃO (DA-17, 2026-10-08)                 */
+/* ------------------------------------------------------------ */
+/* A chave MECÂNICA de um efeito, para achar a duplicata IDÊNTICA. Dois efeitos da
+   mesma categoria são legítimos quando forem diferentes (Livro: "É possível
+   colocar mais de um efeito do mesmo tipo, mas eles devem ainda ser
+   diferentes"). Idêntico é: mesma categoria, mesmo tipo e as mesmas escolhas. */
+function chaveMecanica(e) {
+  if (categoriaLivre(e.categoria)) {
+    return `${e.categoria}|${String(e.nome ?? "").trim()}|${String(e.descricao ?? "").trim()}`;
+  }
+  const ordenado = (lista) => [...(lista ?? [])].map(String).sort().join(",");
+  const conds = (e.condicoes ?? []).map((c) => `${c.forca}:${c.nome}`);
+  return `${e.categoria}|${e.tipo}|${ordenado(e.atributos)}|${ordenado(e.rdTipos)}|${ordenado(conds)}`;
+}
+
+/**
+ * A validação de uma Expansão, em três níveis. ERRO deixa a Expansão sem abrir,
+ * com os dados preservados (DA-17). AVISO e INFO não travam.
+ *
+ * `ctx`: `{ dom, versao, maxEfeitos, temAcertoGarantido, versaoGravada,
+ * condicoesValidas }`. `condicoesValidas` é o mapa força → nomes do catálogo
+ * real (`CONDICOES_CATALOGO`), que chega do derive porque este módulo não
+ * importa nada. Pelo mesmo motivo chegam `nomesFeiticos` (id → nome, para o
+ * Acerto Garantido de Feitiços) e `canalPermitido` (o filtro de canais do Motor
+ * do Efeito Especial).
+ */
+export function validarDominio(dominio, {
+  dom = 0, versao, maxEfeitos = 0, temAcertoGarantido = false, condicoesValidas = null,
+  nomesFeiticos = null, canalPermitido = null,
+} = {}) {
+  const d = normalizeDominio(dominio);
+  const v = versao || d.versao;
+  const out = [];
+  const erro = (codigo, texto) => out.push({ nivel: "erro", codigo, texto });
+  const aviso = (codigo, texto) => out.push({ nivel: "aviso", codigo, texto });
+
+  if (!v) erro("versao", "Nenhuma versão de Expansão disponível.");
+  else if (d.versao && d.versao !== v) aviso("versao", `${rotuloVersao(d.versao)} indisponível, usando ${rotuloVersao(v)}.`);
+
+  const usadas = vagasUsadas(d.efeitos);
+  if (usadas > maxEfeitos) erro("limite", `Efeitos de Expansão: ${usadas} de ${maxEfeitos}.`);
+
+  const vistas = new Set();
+  let condicoes = 0;
+  for (const e of d.efeitos) {
+    const chave = chaveMecanica(e);
+    if (vistas.has(chave)) erro("duplicata", `${rotuloDoEfeito(e)} repetido.`);
+    vistas.add(chave);
+    if (categoriaLivre(e.categoria)) {
+      aviso("especial", `${e.nome?.trim() || "Efeito Especial"}: requer aprovação do Narrador.`);
+      if (fortalecimentosDe(e)) aviso("fortalecer", `${e.nome?.trim() || "Efeito Especial"}: o fortalecimento é decidido pela mesa.`);
+      continue;
+    }
+    const r = resolvido(e, dom, v);
+    if (!r) { erro("efeito", `Efeito desconhecido: ${e.categoria}.`); continue; }
+    if (e.categoria === "amp_corporal" && e.tipo === "atributo") {
+      const atributos = new Set((e.atributos ?? []).filter(Boolean));
+      if (atributos.size < 2) erro("atributos", "Aumento de Atributo: escolha dois atributos físicos distintos.");
+    }
+    if (r.motorRdTipo != null) {
+      const tipos = new Set(e.rdTipos ?? []);
+      if (tipos.size > r.tiposMax) erro("rdTipos", `Redução de Dano: ${tipos.size} tipos de ${r.tiposMax}.`);
+      else if (tipos.size === 0) aviso("rdTipos", "Redução de Dano: escolha os tipos de dano.");
+    }
+    if (r.dadosCondicao != null) {
+      condicoes += 1;
+      const gasto = (e.condicoes ?? []).reduce((s, c) => s + (CUSTO_CONDICAO_AMBIENTAL[c.forca] ?? 0), 0);
+      if (gasto > r.dadosCondicao) erro("condicoesDados", `Condições: ${gasto} dados de ${r.dadosCondicao}.`);
+      for (const c of e.condicoes ?? []) {
+        if (!r.forcasCondicao.includes(c.forca)) erro("condicaoForca", `${c.nome}: condição ${c.forca === "extrema" ? "Extrema" : "forte demais"} para este Domínio.`);
+        else if (condicoesValidas && !(condicoesValidas[c.forca] ?? []).includes(c.nome)) erro("condicaoNome", `${c.nome}: condição desconhecida.`);
+      }
+      if ((e.condicoes ?? []).length === 0) aviso("condicoes", "Condições: escolha as condições.");
+    }
+  }
+  if (condicoes > 1) erro("condicoesRepetidas", "O Efeito Ambiental de Condições só entra uma vez.");
+
+  if (d.acertoGarantido?.ativo && v === "incompleta") {
+    aviso("acertoIncompleta", "Acerto Garantido indisponível na Expansão Incompleta.");
+  } else if ((d.acertoGarantido?.ativo || v === "sem_barreiras") && !temAcertoGarantido) {
+    aviso("acertoAptidao", "Acerto Garantido indisponível sem a Aptidão.");
+  }
+
+  /* O ACERTO GARANTIDO ESTRUTURADO (Etapa 8). Só o que vale é conferido: o
+     desligado ou sem Aptidão não pesa na abertura. */
+  const ag = resumoAcertoGarantido(d, v, temAcertoGarantido, { nomesFeiticos: nomesFeiticos ?? {} });
+  if (ag && !ag.legado) {
+    if (ag.tipo === "condicao") {
+      if (ag.referencias.some((x) => x.nome === AG_CONDICAO_PROIBIDA)) {
+        erro("acertoDesmembramento", "Acerto Garantido: Desmembramento não pode ser garantido.");
+      }
+      if (ag.referencias.length === 0) aviso("acertoCondicao", "Acerto Garantido: escolha a condição.");
+    }
+    if (ag.tipo === "feiticos") {
+      if (!ag.escopo && ag.referencias.length === 0) aviso("acertoFeiticos", "Acerto Garantido: escolha o grupo de Feitiços.");
+      if (nomesFeiticos && ag.referencias.some((x) => x.nome == null)) {
+        aviso("acertoFeiticoSumiu", "Acerto Garantido: um Feitiço escolhido não existe mais na ficha.");
+      }
+    }
+    // DA-20: a modalidade livre vale com o Narrador, como o Efeito Especial.
+    if (["informacao", "voto", "outro"].includes(ag.tipo)) {
+      if (!ag.descricao) aviso("acertoDescricao", "Acerto Garantido: descreva o efeito.");
+      if (ag.tipo === "outro") aviso("acertoLivre", "Acerto Garantido Livre: requer aprovação do Narrador.");
+    }
+  }
+
+  /* O MOTOR OPCIONAL DO EFEITO ESPECIAL (DA-20). Canal desconhecido ou fora da
+     lista permitida não entra no Motor: a linha fica gravada e a tela avisa. */
+  if (typeof canalPermitido === "function") {
+    for (const e of d.efeitos) {
+      if (!categoriaLivre(e.categoria)) continue;
+      for (const m of e.motor ?? []) {
+        if (!canalPermitido(m.canal)) aviso("motorCanal", `${e.nome?.trim() || "Efeito Especial"}: o canal ${m.canal || "vazio"} não vale numa Expansão.`);
+        else if (!String(m.expr ?? "").trim()) aviso("motorExpr", `${e.nome?.trim() || "Efeito Especial"}: linha do Motor sem expressão.`);
+      }
     }
   }
   return out;
@@ -828,10 +1360,11 @@ export function validarCatalogoDominios() {
       if (typeof t.resolve !== "function") { erros.push(`${catId}.${tipoId} sem resolve`); continue; }
       // As tabelas têm cinco degraus (DOM 1 a 5), e um buraco viraria NaN calado.
       for (let i = 0; i < 5; i++) {
-        for (const f of [false, true]) {
+        // Zero, um e dois fortalecimentos (DA-12).
+        for (const f of [0, 1, 2]) {
           const r = t.resolve(i, f);
-          if (!r?.valor || !r?.frase) erros.push(`${catId}.${tipoId} no DOM ${i + 1}${f ? " fortalecido" : ""} sem valor ou frase`);
-          if (/NaN|undefined/.test(`${r?.valor}${r?.frase}`)) erros.push(`${catId}.${tipoId} no DOM ${i + 1}${f ? " fortalecido" : ""} produz NaN`);
+          if (!r?.valor || !r?.frase) erros.push(`${catId}.${tipoId} no DOM ${i + 1}${f ? ` com ${f} fortalecimento(s)` : ""} sem valor ou frase`);
+          if (/NaN|undefined/.test(`${r?.valor}${r?.frase}`)) erros.push(`${catId}.${tipoId} no DOM ${i + 1}${f ? ` com ${f} fortalecimento(s)` : ""} produz NaN`);
         }
       }
     }

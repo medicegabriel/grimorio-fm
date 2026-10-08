@@ -148,6 +148,10 @@ export const EFEITO_CANAIS = [
   { id: "pe",            label: "PE",                    nota: "pilha ÚNICA: Ponto de Energia e Ponto de Estamina (o nome do Restringido) são o mesmo recurso" },
   { id: "defesa",        label: "Defesa" },
   { id: "cd",            label: "CD" },
+  /* ⚠ SÓ A CD DOS FEITIÇOS (2026-10-08, DA-13). A CD Amaldiçoada é uma só para
+     Feitiço e Aptidão, e o `cd` sobe as duas. A Amplificação de Técnica da
+     Expansão de Domínio fala dos Feitiços, então ela escreve aqui. */
+  { id: "cdFeitico",     label: "CD de Feitiço",       nota: "soma só na CD dos Feitiços. A CD de Aptidão e de Habilidade não muda" },
   { id: "rdGeral",       label: "RD Geral" },
   { id: "rdEspecifico",  label: "RD Específica" },
   { id: "rdFisico",      label: "RD Física" },
@@ -380,6 +384,14 @@ export const EFEITO_CANAIS = [
   // Bate com o que ele já dissera em 2026-08-07 ("só aumentam o contador de
   // habilidades para Estilos").
   { id: "vagasEstilo",    label: "Vagas de Estilo",      nota: "vaga EXCLUSIVA de Técnica de Estilo. Não serve para Feitiço nem para Habilidade Geral" },
+  /* ⚠ A MAIS ESTREITA DE TODAS (autor, 2026-10-08). Só a Técnica Máxima OFICIAL
+     ocupa esta vaga, e ela não gasta vaga de Feitiço nem o contador comum. É a
+     concessão EXPLÍCITA que a decisão DA-02 pede: um Addon novo não ganha
+     Técnica Máxima só por usar `nivel: "max"`, ele escreve neste canal. */
+  // A recarga da Técnica Máxima, em rodadas, por cima de `6 − piso(BT / 2)`.
+  // NEGATIVO reduz (Manual de Técnica, 2026-10-08). O piso é 0.
+  { id: "recargaTecnicaMaxima", label: "Recarga da Técnica Máxima", nota: "rodadas somadas à recarga da Técnica Máxima, que é 6 menos metade do Bônus de Treinamento. Negativo reduz, e a recarga nunca passa abaixo de 0" },
+  { id: "vagasTecnicaMaxima", label: "Vagas de Técnica Máxima", nota: "quantas Técnicas Máximas oficiais a ficha pode ter. A Aptidão Técnica Máxima dá 1. Não serve para Feitiço comum" },
   // "Vagas de" no rótulo para o canal cair junto dos irmãos numa busca por
   // "vaga". O que ele dá é QUANTAS Aptidões Amaldiçoadas a criatura pode ter.
   { id: "vagasAptidao",   label: "Vagas de Aptidão",     nota: "quantas Aptidões Amaldiçoadas a ficha pode ter. Sem fonte nenhuma o orçamento é ZERO: o ND não concede" },
@@ -670,6 +682,7 @@ export const chaveExclusiva = (canal, alvo, valor = 1, grupo = GRUPO_POOL_UNICO)
 const GRUPOS_DE_CANAL = [
   ["Vitalidade e Recursos", [
     "hp", "hpMult", "pvTemporario", "pe", "passivaSemCusto", "peTemporario", "almaMax", "pontosPreparo", "preparoTemporario", "custoPE",
+    "recargaTecnicaMaxima",
   ]],
   // ⚠ Grupo PRÓPRIO desde 2026-08-03. Os três de Regeneração viviam soltos em
   // "Vitalidade e Recursos", entre PV e Pontos de Preparo, e lá o leitor não
@@ -686,7 +699,7 @@ const GRUPOS_DE_CANAL = [
     "guardaBonus", "guardaVida",
   ]],
   ["Ataque e Dano", [
-    "cd", "bonusAcerto", "acertoArma", "ataquesExtras", "danoBonus", "nivelDano", "dadosDano", "dadosNomeados",
+    "cd", "cdFeitico", "bonusAcerto", "acertoArma", "ataquesExtras", "danoBonus", "nivelDano", "dadosDano", "dadosNomeados",
     "dadosCritico", "rerrolaDano", "dadosAtaque", "margemCritico", "ignoraRD", "ignoraTodaRD", "ignoraImunidade", "removeResistencia", "propMarcial", "finezaAtaque",
     "semAtributoDano", "alcanceArma",
   ]],
@@ -707,7 +720,7 @@ const GRUPOS_DE_CANAL = [
   // ele é orçamento, irmão das vagas. `pontosAptidao` veio junto pelo mesmo
   // motivo, ele é orçamento de nível de aptidão.
   ["Orçamentos", [
-    "vagasPericia", "vagasHabilidade", "vagasFeitico", "vagasEstilo", "vagasTalento", "vagasAptidao",
+    "vagasPericia", "vagasHabilidade", "vagasFeitico", "vagasEstilo", "vagasTecnicaMaxima", "vagasTalento", "vagasAptidao",
     "vagasCaracteristicaAmaldicoada",
     "reduzNivelAptidao",
     "vagasMelhoria", "vagasLendaria",
@@ -743,6 +756,18 @@ export const EFEITO_CANAL_GRUPOS = (() => {
 /** Canais que ficaram fora dos grupos nomeados. Vazio = catálogo em ordem. */
 export const canaisSemGrupo = () =>
   (EFEITO_CANAL_GRUPOS.find((g) => g.label === "Outros")?.itens ?? []).map((c) => c.id);
+
+/* O MOTOR DO EFEITO ESPECIAL DE UMA EXPANSÃO (DA-20, 2026-10-08): só canal
+   conhecido, e fora de três famílias.
+     • Orçamentos: vaga não se ganha por ter uma Expansão no ar;
+     • Barreira e Domínio: a Expansão não reescreve a si mesma;
+     • nível e limite de Aptidão: o DOM é quem decide os números da Expansão, e
+       ela não pode subir o próprio DOM. */
+const CANAIS_FORA_DA_EXPANSAO = new Set([
+  ...GRUPOS_DE_CANAL.filter(([label]) => label === "Orçamentos" || label === "Barreira e Domínio").flatMap(([, ids]) => ids),
+  "nivelAptidao", "limiteAptidao",
+]);
+export const canalPermitidoEmExpansao = (id) => !!CANAL_BY_ID[id] && !CANAIS_FORA_DA_EXPANSAO.has(id);
 
 /* ============================================================ */
 /* CONTEXTO DE VARIÁVEIS                                         */
@@ -851,6 +876,11 @@ export function buildCriaturaDslContext(base = {}) {
        seu bônus de ataque" era montado com a régua da criatura também no jogador.
        O padrão é a da criatura, que é o que o contexto sempre supôs. */
     escala_ataque: base.escalaAtaque ?? Math.floor((base.nd ?? 1) / 1.5),
+    /* O maior Nível de Feitiço que a ficha acessa (`nivelMaxFeitico`, 0 a 5).
+       Nasceu em 2026-10-08 para o Manual de Técnica ("Caso você já possua
+       acesso a Feitiços de Nível 5, o tempo de recarga da sua Técnica Máxima é
+       reduzido em 1 rodada"). Vem do derive, porque este módulo não lê Feitiço. */
+    nivel_feitico_max: base.nivelFeiticoMax ?? 0,
     // Qual repetição está sendo avaliada, para as entradas repetíveis cujo
     // valor muda por pega ("aumenta em 20. Você pode pegar mais duas vezes,
     // aumentando em 15 ao invés de 20"). O `aplicarEfeitos` sobrescreve com o

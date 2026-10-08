@@ -67,6 +67,8 @@ const opcoesDoCombatente = (sessao) => (!sessao ? {} : {
   /* As CONDIÇÕES da sessão (2026-09-21): Paralisado, Envenenado e as
      outras mexem em Defesa, TR e acerto desta mesma derivação. */
   condicoes: sessao.condicoes,
+  // A Exaustão de Técnica da Expansão (DA-16), a mesma trava da Ficha.
+  exaustaoTecnica: sessao.exaustaoTecnica,
 });
 
 const derivarCombatente = (c) => {

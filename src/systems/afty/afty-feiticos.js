@@ -48,7 +48,7 @@ import { grauMeta } from "./afty-invocacoes";
 import {
   detalhesDoCanalEscopos, resolverEfeitosDanoFinal, valorCanalEscopos,
 } from "./afty-efeitos";
-import { bonusRitual, resolveRitual } from "./afty-rituais";
+import { bonusRitual, resolveRitual, RITUAL_MELHORIA_BY_ID } from "./afty-rituais";
 // Só a leitura de QUEM tem direito a marcar Feitiço para redução de custo por
 // Treino (afty-treinamentos.js não importa nada daqui, então a seta é segura
 // — ver t-ordem-modulos.mjs). A escolha em si mora na ficha (`creature.
@@ -207,6 +207,166 @@ export const NIVEL_LABEL = {
 // ---------------------------------------------------------------
 export const FEITICO_CUSTO_PE = { 0: 0, 1: 2, 2: 5, 3: 8, 4: 12, 5: 20, max: 25 };
 
+/* ============================================================ */
+/* TÉCNICA MÁXIMA (autor, 2026-10-08)                            */
+/* ============================================================ */
+/* Aptidão Técnica Máxima: "você recebe um novo Feitiço o qual, caso você possua
+   acesso apenas aos de Nível 4, utiliza os valores de Nível 5 para sua criação
+   e, quando receber acesso ao Nível 5, sua Técnica Máxima passa a seguir os
+   valores próprios de uma. Uma Técnica Máxima custa 25 PE e, após ser usada,
+   você deve esperar uma quantidade de rodadas igual a 6 – metade do seu Bônus
+   de Treinamento para poder utilizá-la novamente."
+
+   ⚠ A IDENTIDADE É `nivel: "max"` (DA-01), que já era a convenção de todo o
+   código (rótulo, custo de 25, ordem 6 na lista). O `tipo` continua sendo a
+   NATUREZA verdadeira do Feitiço, então todo calculador e todo leitor de `tipo`
+   seguem funcionando sem caso especial.
+
+   ⚠ A ESCALA É DERIVADA, nunca gravada: a mesma Técnica Máxima usa a tabela de
+   Nível 5 enquanto o acesso para no 4, e a tabela `max` quando ele chega ao 5.
+   Quem calcula é `calcularFeitico`, mais abaixo.
+
+   ⚠ DOIS REGIMES (DA-02). A Técnica Máxima gravada antes de 2026-10-08 (Addons,
+   o pacote da Oda, o Honnō-ji) não tem `regraTecnicaMaxima` e segue LEGACY:
+   calcula na tabela `max` e gasta o orçamento comum, como sempre. A OFICIAL
+   nasce com `regraTecnicaMaxima: "oficial"`, exige a vaga `vagasTecnicaMaxima`
+   e não gasta vaga de Feitiço. Nada converte sozinho. */
+export const NIVEL_TECNICA_MAXIMA = "max";
+export const REGRA_TM_OFICIAL = "oficial";
+
+export const ehTecnicaMaxima = (f) => f?.nivel === NIVEL_TECNICA_MAXIMA;
+export const ehTecnicaMaximaOficial = (f) =>
+  ehTecnicaMaxima(f) && f?.regraTecnicaMaxima === REGRA_TM_OFICIAL;
+export const ehTecnicaMaximaLegacy = (f) => ehTecnicaMaxima(f) && !ehTecnicaMaximaOficial(f);
+
+/**
+ * O Feitiço calculado É uma Técnica Máxima? Para as regras de IDENTIDADE
+ * (DA-03), as que dizem "caso seja uma Técnica Máxima": elas valem na tabela
+ * `max` e também na escala de Nível 5, onde o `nivel` que o calculador recebe é
+ * 5 e quem conta a verdade é o `ctx.tecnicaMaxima` do `calcularFeitico`.
+ */
+export const identidadeTecnicaMaxima = (nivel, ctx = {}) =>
+  nivel === NIVEL_TECNICA_MAXIMA || !!ctx?.tecnicaMaxima?.identidade;
+
+/**
+ * As naturezas que uma Técnica Máxima oficial pode ter (DA-04). A natureza É o
+ * par `tipo` / `especialSubtipo` do Feitiço, e esta lista só diz quais pares
+ * valem. O Personalizado é opção MANUAL, com aprovação do Narrador.
+ *
+ * Fora daqui, e de propósito: o Passivo (sem uso nem recarga, e sem linha `max`
+ * nas tabelas) e a Criação de Itens (o Livro não dá linha de Técnica Máxima).
+ */
+export const NATUREZAS_TECNICA_MAXIMA = [
+  { value: "dano",           label: "Dano",           tipo: "dano" },
+  { value: "auxiliar",       label: "Auxiliar",       tipo: "auxiliar" },
+  { value: "curativo",       label: "Curativo",       tipo: "curativo" },
+  { value: "golpeador",      label: "Golpeador",      tipo: "especial", especialSubtipo: "golpeador" },
+  { value: "danoAlma",       label: "Dano na Alma",   tipo: "especial", especialSubtipo: "danoAlma" },
+  { value: "shikigami",      label: "Shikigami",      tipo: "especial", especialSubtipo: "shikigami" },
+  { value: "transformacao",  label: "Transformação",  tipo: "especial", especialSubtipo: "transformacao" },
+  { value: "invisibilidade", label: "Invisibilidade", tipo: "especial", especialSubtipo: "invisibilidade" },
+  { value: "personalizado",  label: "Personalizado",  tipo: "personalizado", manual: true },
+];
+
+/** A natureza de um Feitiço, ou `null` quando ela não pode ser Técnica Máxima. */
+export function naturezaDaTecnicaMaxima(f) {
+  if (!f) return null;
+  return NATUREZAS_TECNICA_MAXIMA.find((n) => n.tipo === f.tipo
+    && (n.tipo !== "especial" || n.especialSubtipo === (f.especialSubtipo || "golpeador"))) ?? null;
+}
+
+/** O nome da natureza que a Técnica Máxima não aceita, para o erro na tela. */
+function rotuloDaNaturezaProibida(f) {
+  if (f?.tipo === "especial") {
+    return ESPECIAL_SUBTIPOS.find((s) => s.value === (f.especialSubtipo || "golpeador"))?.label ?? "Especial";
+  }
+  return TIPO_FEITICO_LABEL[f?.tipo] ?? "Este tipo";
+}
+
+/**
+ * A escala de criação (DA-03): `5` enquanto o acesso normal para no Nível 4, e
+ * `"max"` com acesso ao Nível 5. O acesso é o `nivelMaxFeitico` da ficha.
+ */
+export const escalaDaTecnicaMaxima = (acesso) =>
+  (Math.trunc(Number(acesso) || 0) >= 5 ? NIVEL_TECNICA_MAXIMA : 5);
+
+/**
+ * A recarga em rodadas: `6 − piso(BT / 2)`, com mínimo 0 (DA-05). "Metade"
+ * arredonda para baixo pela regra geral do Livro. `extra` é o canal
+ * `recargaTecnicaMaxima`, negativo para reduzir (Manual de Técnica).
+ */
+export function recargaDaTecnicaMaxima(bt, extra = 0) {
+  const b = Math.max(0, Math.trunc(Number(bt) || 0));
+  return Math.max(0, 6 - Math.floor(b / 2) + (Math.trunc(Number(extra) || 0)));
+}
+
+/**
+ * As Técnicas Máximas da ficha: a contagem das OFICIAIS contra a vaga exclusiva
+ * e a validação de cada uma. As LEGACY entram só como marca (`legacy: true`),
+ * porque elas seguem no orçamento comum e na tabela `max`, como sempre.
+ *
+ * `requisitosFalhos` são os rótulos dos requisitos da Aptidão que a ficha não
+ * cumpre, já avaliados pelo chamador. Eles só travam quando a vaga vem da
+ * própria Aptidão (`temAptidao`).
+ *
+ * Validação, no padrão de três níveis da casa: ERRO deixa a Técnica Máxima
+ * inválida (salva, sem uso), AVISO e INFO não travam.
+ */
+export function resolveTecnicasMaximas(feiticos, {
+  vagas = 0, partesVagas = [], acesso = 0, temAptidao = false, requisitosFalhos = [],
+} = {}) {
+  const lista = Array.isArray(feiticos) ? feiticos : [];
+  const total = Math.max(0, Math.trunc(Number(vagas) || 0));
+  const oficiais = lista.filter((f) => ehTecnicaMaximaOficial(f) && !f.variacaoDe);
+  const escala = escalaDaTecnicaMaxima(acesso);
+  const porId = {};
+  oficiais.forEach((f, i) => {
+    const validacao = [];
+    if (i >= total) {
+      validacao.push({
+        nivel: "erro",
+        codigo: "vaga",
+        texto: total > 0 ? `Técnicas Máximas: ${oficiais.length} de ${total}.` : "Sem Vaga de Técnica Máxima.",
+      });
+    }
+    const natureza = naturezaDaTecnicaMaxima(f);
+    if (!natureza) {
+      validacao.push({ nivel: "erro", codigo: "natureza", texto: `${rotuloDaNaturezaProibida(f)} não pode ser Técnica Máxima.` });
+    } else if (natureza.manual) {
+      validacao.push({ nivel: "aviso", codigo: "manual", texto: "Requer aprovação do Narrador." });
+    }
+    if (temAptidao) {
+      for (const r of requisitosFalhos) {
+        validacao.push({ nivel: "erro", codigo: "requisito", texto: `Requisito da Técnica Máxima: ${r}.` });
+      }
+    }
+    porId[f.id] = {
+      oficial: true,
+      legacy: false,
+      escala,
+      natureza: natureza?.value ?? null,
+      validacao,
+      valida: !validacao.some((v) => v.nivel === "erro"),
+    };
+  });
+  for (const f of lista) {
+    if (!ehTecnicaMaximaLegacy(f) || f.variacaoDe) continue;
+    porId[f.id] = {
+      oficial: false, legacy: true, escala: NIVEL_TECNICA_MAXIMA,
+      natureza: naturezaDaTecnicaMaxima(f)?.value ?? null, validacao: [], valida: true,
+    };
+  }
+  return {
+    total,
+    partes: partesVagas,
+    usadas: oficiais.length,
+    excedeu: oficiais.length > total,
+    livres: Math.max(0, total - oficiais.length),
+    escala,
+    porId,
+  };
+}
+
 /* ---------------------------------------------------------------
    O QUE UMA PASSIVA COBRA DO PE MÁXIMO (só na Ficha de Jogador)
 
@@ -300,6 +460,13 @@ export function nivelMaxFeitico(nd, nivelConjurador = 0) {
 
 const nivelMaxFeiticoDoContexto = (ctx = {}) =>
   nivelMaxFeitico(ctx.nd, ctx.nivelConjurador);
+
+/* O PORTÃO DE ACESSO dos calculadores. ⚠ A Técnica Máxima não passa por ele
+   (2026-10-08): a LEGACY (`"max"`) nunca passou, e a oficial chega aqui já
+   escalada pelo `calcularFeitico`, com `ctx.tecnicaMaxima`. O Nível 5 dela com
+   acesso só ao 4 não é "acima do acesso", é a regra da Aptidão. */
+const foraDoAcesso = (nivel, ctx = {}) =>
+  ctx.nd != null && nivel !== "max" && !ctx.tecnicaMaxima && nivel > nivelMaxFeiticoDoContexto(ctx);
 
 // ---------------------------------------------------------------
 // ORÇAMENTO: na CRIATURA os Feitiços não têm contador próprio.
@@ -922,7 +1089,7 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   }
 
   // Acesso: o nível do Feitiço não pode passar do máximo da faixa de ND.
-  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeiticoDoContexto(ctx)) {
+  if (foraDoAcesso(nivel, ctx)) {
     avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeiticoDoContexto(ctx)}.`);
   }
 
@@ -1647,7 +1814,7 @@ export function calcularFeiticoCurativo(feitico, ctx = {}) {
   const lib = resolveLiberacao(f, ctx);
 
   // Acesso: o nível do Feitiço não pode passar do máximo da faixa de ND.
-  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeiticoDoContexto(ctx)) {
+  if (foraDoAcesso(nivel, ctx)) {
     avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeiticoDoContexto(ctx)}.`);
   }
 
@@ -1922,12 +2089,55 @@ function saldoUnicoVariante(f, ctx, cfg) {
 // ---------------------------------------------------------------
 // MOTOR — Feitiço Golpeador (dano adicional num ataque).
 // ---------------------------------------------------------------
+/**
+ * A EXPANSÃO DE DOMÍNIO NOS ESPECIAIS DE DANO (2026-10-08, E-10 e E-11). Dois
+ * presentes da Expansão no ar, que até aqui só o Feitiço de Dano recebia:
+ *
+ *   • a Amplificação de Técnica (`ctx.amplificacaoDominio`, ver
+ *     `amplificacaoDeTecnica` em afty-dominios.js): dados e dano fixo;
+ *   • o benefício de Ritual da categoria Especiais
+ *     (`ctx.beneficiosRitualDominio.especial`): só os números diretos (Aumento de
+ *     Dano, de Precisão e de Dificuldade). O resto da melhoria fica na linha como
+ *     regra de mesa.
+ *
+ * `metade` é o Dano na Alma: "todo aumento de dano ou alcance que não provenha
+ * diretamente da sua criação é cortado pela metade". Piso, pela regra geral.
+ */
+function presentesDoDominio(ctx, nivel, { metade = false } = {}) {
+  const amp = ctx?.amplificacaoDominio ?? null;
+  const idRitual = ctx?.beneficiosRitualDominio?.especial;
+  const melhoria = idRitual ? RITUAL_MELHORIA_BY_ID[idRitual] ?? null : null;
+  const ritual = melhoria ? bonusRitual({ melhorias: { [melhoria.id]: 1 } }, nivel) : null;
+  const corta = (x) => (metade ? Math.floor(x / 2) : x);
+  const partesDano = [];
+  const dados = corta(amp?.dados ?? 0);
+  let fixo = 0;
+  if (amp?.fixo) {
+    fixo += corta(amp.fixo);
+    partesDano.push({ label: amp.nome, valor: corta(amp.fixo) });
+  }
+  if (ritual?.dano) {
+    fixo += corta(ritual.dano);
+    partesDano.push({ label: `Ritual da Expansão: ${melhoria.nome}`, valor: corta(ritual.dano) });
+  }
+  return {
+    dados,
+    fixo,
+    partesDano,
+    acerto: ritual?.acerto ?? 0,
+    cd: ritual?.cd ?? 0,
+    ignoraRD: amp?.ignoraRD ?? 0,
+    removeResistencia: !!amp?.removeResistencia,
+    ritual: melhoria,
+  };
+}
+
 export function calcularFeiticoGolpeador(feitico, ctx = {}) {
   const avisos = [];
   const f = feitico || {};
   const nivel = f.nivel ?? 1;
   const nNum = nivel === "max" ? 6 : nivel;
-  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeiticoDoContexto(ctx)) {
+  if (foraDoAcesso(nivel, ctx)) {
     avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeiticoDoContexto(ctx)}.`);
   }
   const linha = GOLPEADOR[nivel];
@@ -1945,22 +2155,28 @@ export function calcularFeiticoGolpeador(feitico, ctx = {}) {
   const r = saldoUnicoVariante(f, ctx, {
     nivel, nNum, poolBase, resolucao: "ataque", alcanceBase: null, permiteAlcance: false, avisos,
   });
-  let dados = r.dados;
+  /* A Expansão no ar (E-10, E-11). Os dados entram no dano adicional e, com
+     vários golpes, são divididos junto com ele, como o resto do dano adicional. */
+  const dominio = presentesDoDominio(ctx, nivel);
+  let dados = r.dados + dominio.dados;
 
   // Múltiplos golpes (a partir do Nv3). Divide o dano adicional entre golpes.
   const maxGolpes = maxGolpesGolpeador(nivel);
   const golpesPedidos = Math.max(1, f.golpesGolpeador | 0 || 1);
   const golpes = Math.min(golpesPedidos, maxGolpes);
   if (golpesPedidos > maxGolpes) avisos.push(`Máximo de ${maxGolpes} golpe(s) no ${NIVEL_LABEL[nivel]}.`);
-  const penalidadePorGolpe = nivel === "max" ? 2 : 3;
+  /* "caso seja uma Técnica Máxima, o prejuízo é reduzido para -2": regra de
+     IDENTIDADE (DA-03), então vale também na escala de Nível 5. */
+  const penalidadePorGolpe = identidadeTecnicaMaxima(nivel, ctx) ? 2 : 3;
   let danoTexto;
   let golpesInfo = null;
   if (golpes > 1) {
     const porGolpe = Math.max(1, Math.floor(dados / golpes));
-    golpesInfo = { golpes, porGolpe, penalidadePorGolpe, concentradoTotal: dados };
-    danoTexto = `${golpes}× ${notacaoDano(porGolpe, tipoDado)}`;
+    const bonusPorGolpe = Math.floor(dominio.fixo / golpes);
+    golpesInfo = { golpes, porGolpe, penalidadePorGolpe, concentradoTotal: dados, bonusPorGolpe };
+    danoTexto = `${golpes}× ${notacaoDanoComBonus(porGolpe, tipoDado, bonusPorGolpe)}`;
   } else {
-    danoTexto = notacaoDano(dados, tipoDado);
+    danoTexto = notacaoDanoComBonus(dados, tipoDado, dominio.fixo);
   }
 
   const custoPE = custoPadrao(nivel);
@@ -1973,11 +2189,16 @@ export function calcularFeiticoGolpeador(feitico, ctx = {}) {
     media: golpes > 1 ? null : mediaDano(dados, tipoDado),
     alcanceTexto,
     custoPE,
-    cd: r.cd,
-    acertoDelta: r.acertoDelta,
+    cd: r.cd == null ? r.cd : r.cd + dominio.cd,
+    acertoDelta: r.acertoDelta + dominio.acerto,
     empurraoMetros: r.empurraoMetros,
     faltamDados: r.faltamDados,
     golpes: golpesInfo,
+    bonusDano: dominio.fixo,
+    partesDano: dominio.partesDano,
+    ignoraRD: dominio.ignoraRD,
+    removeResistencia: dominio.removeResistencia,
+    ritualDominio: dominio.ritual?.nome ?? null,
     avisos,
     detalhes: { aposAtaque: "Dano Após Ataque, não multiplica em crítico. Aplica os efeitos de um golpe desarmado ou de arma." },
   };
@@ -2051,7 +2272,7 @@ export function calcularFeiticoDanoAlma(feitico, ctx = {}) {
   const f = feitico || {};
   const nivel = f.nivel ?? 1;
   const nNum = nivel === "max" ? 6 : nivel;
-  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeiticoDoContexto(ctx)) {
+  if (foraDoAcesso(nivel, ctx)) {
     avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeiticoDoContexto(ctx)}.`);
   }
   const linha = DANO_ALMA[nivel];
@@ -2074,18 +2295,24 @@ export function calcularFeiticoDanoAlma(feitico, ctx = {}) {
     fontesPool: [{ label: FEITICO_ACOES.find((a) => a.value === acao)?.label ?? "Conjuração", dados: dadosAcao }],
   });
 
+  // A Expansão no ar, com o dano de fora cortado pela metade (E-10, E-11).
+  const dominio = presentesDoDominio(ctx, nivel, { metade: true });
+  const dadosFinais = r.dados + dominio.dados;
   const custoPE = custoPadrao(nivel);
   return {
     nivel,
-    dados: r.dados,
+    dados: dadosFinais,
     tipoDado,
-    dano: notacaoDano(r.dados, tipoDado),
-    media: mediaDano(r.dados, tipoDado),
+    dano: notacaoDanoComBonus(dadosFinais, tipoDado, dominio.fixo),
+    media: mediaDano(dadosFinais, tipoDado) + dominio.fixo,
     resolucao,
     alcance: r.alcanceFinal,
     custoPE,
-    cd: r.cd,
-    acertoDelta: r.acertoDelta,
+    cd: r.cd == null ? r.cd : r.cd + dominio.cd,
+    acertoDelta: r.acertoDelta + dominio.acerto,
+    bonusDano: dominio.fixo,
+    partesDano: dominio.partesDano,
+    ritualDominio: dominio.ritual?.nome ?? null,
     empurraoMetros: r.empurraoMetros,
     faltamDados: r.faltamDados,
     dadosDaCriacao: r.dadosDaCriacao,
@@ -2107,7 +2334,7 @@ export function calcularFeiticoInvisibilidade(feitico, ctx = {}) {
   const avisos = [];
   const f = feitico || {};
   const nivel = f.nivel ?? 1;
-  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeiticoDoContexto(ctx)) {
+  if (foraDoAcesso(nivel, ctx)) {
     avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeiticoDoContexto(ctx)}.`);
   }
   if (nivel === 0 && !f.tecnicaInvisibilidade) {
@@ -2155,7 +2382,7 @@ export function calcularFeiticoShikigami(feitico, ctx = {}) {
   const avisos = [];
   const f = feitico || {};
   const nivel = f.nivel ?? 1;
-  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeiticoDoContexto(ctx)) {
+  if (foraDoAcesso(nivel, ctx)) {
     avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeiticoDoContexto(ctx)}.`);
   }
   const linha = SHIKIGAMI_TABELA[nivel] || SHIKIGAMI_TABELA[1];
@@ -2200,7 +2427,10 @@ export function calcularFeiticoShikigami(feitico, ctx = {}) {
     "Depois de conjurado não é um Feitiço: sem Explosão Encadeada nem Técnica Potente.",
     "Sem Liberação Máxima e sem Ritual. O grau só sobe subindo o nível do Feitiço.",
   ];
-  if (nivel === "max") {
+  /* A recarga depois de dissipar é regra de IDENTIDADE (DA-03). O `inicioRecarga`
+     é o que a sessão lê para segurar a contagem até o shikigami sair de campo. */
+  const ehTecnicaMaxima = identidadeTecnicaMaxima(nivel, ctx);
+  if (ehTecnicaMaxima) {
     notas.push("Sendo Técnica Máxima, a recarga só começa a contar depois que o shikigami é dissipado.");
   }
 
@@ -2220,6 +2450,7 @@ export function calcularFeiticoShikigami(feitico, ctx = {}) {
     opcoes,
     avisos,
     notas,
+    ...(ehTecnicaMaxima ? { inicioRecarga: "aoDissipar" } : {}),
   };
 }
 
@@ -2239,7 +2470,7 @@ export function calcularFeiticoItens(feitico, ctx = {}) {
   const avisos = [];
   const f = feitico || {};
   const nivel = f.nivel ?? 1;
-  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeiticoDoContexto(ctx)) {
+  if (foraDoAcesso(nivel, ctx)) {
     avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeiticoDoContexto(ctx)}.`);
   }
   if (nivel === "max" || nivel < 1) {
@@ -2356,7 +2587,7 @@ export function calcularFeiticoTransformacao(feitico, ctx = {}) {
   const f = feitico || {};
   const nivel = f.nivel ?? 1;
   const nNum = nivel === "max" ? 6 : nivel;
-  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeiticoDoContexto(ctx)) {
+  if (foraDoAcesso(nivel, ctx)) {
     avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeiticoDoContexto(ctx)}.`);
   }
   const base = TRANSFORMACAO_BASE[nivel];
@@ -2431,8 +2662,10 @@ export function calcularFeiticoTransformacao(feitico, ctx = {}) {
     // avisando que nada acontece. Sem exaustão, sem nota.
     notaExaustao = exaustaoFim > 0 ? `${exaustaoFim} de exaustão quando acabar.` : "";
   } else if (duracao === "cena") {
-    exaustaoFim = nivel === "max" ? 5 : Math.max(1, Math.ceil(nNum / 2));
-    notaExaustao = nivel === "max"
+    // "Caso seja uma Técnica Máxima, você recebe 5 acúmulos": IDENTIDADE (DA-03).
+    const ehTecnicaMaxima = identidadeTecnicaMaxima(nivel, ctx);
+    exaustaoFim = ehTecnicaMaxima ? 5 : Math.max(1, Math.ceil(nNum / 2));
+    notaExaustao = ehTecnicaMaxima
       ? "5 acúmulos de exaustão no fim do combate."
       : `${exaustaoFim} de exaustão no fim da cena, junto do custo em PE.`;
   } else {
@@ -2485,7 +2718,8 @@ export function overridesShikigami(feiticos = [], ctx = {}) {
        pela metade e a ficha da invocação cobrava o cheio. Dois números para a
        mesma coisa, e o próprio texto do Shikigami diz que ele RECEBE Manipulação
        Perfeita. */
-    const calc = aplicaReducoesCustoFeitico(f, calcularFeiticoShikigami(f, ctx), ctx);
+    // Pela porta única: a Técnica Máxima de Shikigami sai na escala dela.
+    const calc = aplicaReducoesCustoFeitico(f, calcularFeitico(f, ctx), ctx);
     const fonte = f.nome?.trim() || "Feitiço de Shikigami";
     /* ⚠ DOIS Feitiços apontando para a MESMA invocação: o último vencia calado,
        e a ficha mostrava o grau e o custo de um deles sem dizer que o outro
@@ -3394,7 +3628,7 @@ export function calcularEfeitoAux(e, ctx = {}) {
   if (!meta) { avisos.push(`Efeito auxiliar desconhecido: ${efeitoKey}.`); return out; }
 
   // Acesso: o nível não pode passar do máximo da faixa de ND.
-  if (ctx.nd != null && nivel !== "max" && nivel > nivelMaxFeiticoDoContexto(ctx)) {
+  if (foraDoAcesso(nivel, ctx)) {
     avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeiticoDoContexto(ctx)}.`);
   }
 
@@ -3430,7 +3664,11 @@ export function calcularEfeitoAux(e, ctx = {}) {
   // que valem POR UM ATAQUE só aparecem com "Somente Um Ataque" marcado; sem a
   // marca elas viram o número da faixa e caem no cálculo normal (autor).
   // Célula numérica que vira ESPECIAL no evento único (Margem de Crítico nv5).
-  const especialGolpe = umGolpe ? especialComUmGolpe(efeitoKey, nivel, duracao) : null;
+  /* "caso seja uma Técnica Máxima, o crítico é garantido para os próximos 3
+     golpes" (Margem de Crítico) é regra de IDENTIDADE (DA-03): a Técnica Máxima
+     oficial na escala 5 lê a célula `max` aqui, e só aqui. */
+  const nivelDoEspecial = e.identidadeTecnicaMaxima ? NIVEL_TECNICA_MAXIMA : nivel;
+  const especialGolpe = umGolpe ? especialComUmGolpe(efeitoKey, nivelDoEspecial, duracao) : null;
   if (especialGolpe) {
     out.especial = especialGolpe;
     out.alvos = 1;
@@ -3653,6 +3891,8 @@ export function calcularFeiticoAuxiliar(feitico, ctx = {}) {
       atributosAux: f.atributosAux, alvoAuxAtributo: f.alvoAuxAtributo,
       // Permutativo e a perícia da Rolagem, também no próprio Feitiço.
       permuta: f.permuta, alvoAuxPericia: f.alvoAuxPericia,
+      // A Técnica Máxima oficial na escala 5 (DA-03). Ver `calcularEfeitoAux`.
+      identidadeTecnicaMaxima: !!ctx.tecnicaMaxima?.identidade,
     };
     const r = somarRodadas(calcularEfeitoAux(e, ctx));
     r.multiplos = false;
@@ -3769,7 +4009,11 @@ export function calcularFeiticoAuxiliar(feitico, ctx = {}) {
     alvos: alvosSpell + concExtraAlvos, propria, alvosTravados,
     umGolpe: eventoUnico, grupoEvento: grupoEventoAux(entries),
     upkeepPE: duracaoSpell === "sustentada" ? upkeepSustentar(nivel) : 0,
-    custoPE: custoPadrao(nBase),
+    /* ⚠ `nivel`, e NÃO `nBase` (2026-10-08), pelo mesmo motivo do efeito único
+       lá em cima (conserto de 2026-09-07, que pegou só aquele caminho): o
+       `nBase` colapsa a Técnica Máxima em 5, e o Múltiplos Efeitos cobrava 20 PE
+       por uma Técnica Máxima que custa 25. */
+    custoPE: custoPadrao(nivel),
     // ---- Liberação Máxima ----
     liberacao: lib,
     rodadasSemUpkeep: duracaoSpell === "sustentada" ? (rodadasSemUpkeep(lib, nBase) || null) : null,
@@ -4169,6 +4413,24 @@ export function createBlankFeitico() {
   };
 }
 
+/**
+ * O RASCUNHO QUE NINGUÉM PREENCHEU: igual ao Feitiço em branco, salvo o id, o
+ * Tipo e o Tipo de Especial, que são os cliques de navegação. Serve à porta da
+ * Expansão de Domínio em Feitiços → Especial (DA-18, 2026-10-08): o Feitiço
+ * aberto só para chegar nela some, em vez de virar registro fantasma gastando
+ * vaga. Qualquer campo mexido o mantém.
+ */
+const CAMPOS_DE_NAVEGACAO = new Set(["id", "tipo", "especialSubtipo"]);
+export function feiticoEmBranco(f) {
+  if (!f || typeof f !== "object") return false;
+  const vazio = createBlankFeitico();
+  for (const k of new Set([...Object.keys(vazio), ...Object.keys(f)])) {
+    if (CAMPOS_DE_NAVEGACAO.has(k)) continue;
+    if (JSON.stringify(f[k] ?? null) !== JSON.stringify(vazio[k] ?? null)) return false;
+  }
+  return true;
+}
+
 // Fábrica de um efeito auxiliar dentro de Múltiplos Efeitos.
 let _auxSeq = 0;
 export function createBlankAuxEffect(nivel = 1) {
@@ -4265,6 +4527,100 @@ function calculadorDe(tipo) {
   // "passivo" ganhou calculador em 2026-09-12 — ver calcularFeiticoPassivo.
   if (tipo === "passivo") return calcularFeiticoPassivo;
   return null;
+}
+
+/**
+ * A PORTA ÚNICA de cálculo de um Feitiço (2026-10-08, Técnica Máxima).
+ *
+ * Para todo Feitiço comum ela é o calculador do tipo, sem mudar nada. Para a
+ * Técnica Máxima OFICIAL ela faz três coisas, e é o único lugar que as faz:
+ *
+ *   1. resolve a ESCALA pelo acesso da ficha (`escalaDaTecnicaMaxima`): Nível 5
+ *      enquanto o acesso para no 4, `"max"` com acesso ao 5 (DA-03);
+ *   2. entrega ao calculador uma CÓPIA com `nivel` igual à escala, mais
+ *      `ctx.tecnicaMaxima`, que é por onde as regras de IDENTIDADE ("caso seja
+ *      uma Técnica Máxima") continuam valendo na escala 5;
+ *   3. fixa o custo-base em 25 PE nas duas escalas. As reduções e os aumentos
+ *      genéricos entram depois, no `aplicaReducoesCustoFeitico` (DA-06).
+ *
+ * ⚠ A LEGACY (`"max"` sem a marca) passa direto, na tabela `max`, como sempre
+ * calculou (DA-02).
+ *
+ * ⚠ TODO CHAMADOR PASSA POR AQUI: a linha da Ficha, a Liberação, o Shikigami da
+ * aba Invocações, os Sustentados da bancada e o card do criador. Um caminho que
+ * chamasse o calculador cru mostraria a Técnica Máxima na tabela errada.
+ */
+export function calcularFeitico(f, ctx = {}) {
+  const calcular = calculadorDe(f?.tipo);
+  if (!calcular) return null;
+  if (!ehTecnicaMaximaOficial(f)) return calcular(f, ctx);
+  const escala = escalaDaTecnicaMaxima(nivelMaxFeiticoDoContexto(ctx));
+  const tecnicaMaxima = { identidade: true, oficial: true, escala };
+  const calc = calcular(escala === NIVEL_TECNICA_MAXIMA ? f : { ...f, nivel: escala }, { ...ctx, tecnicaMaxima });
+  if (!calc) return calc;
+  const custo = FEITICO_CUSTO_PE[NIVEL_TECNICA_MAXIMA];
+  return {
+    ...calc,
+    ...(calc.custoPE != null ? { custoPE: custo, custoPEBase: custo } : {}),
+    // A invocação do Shikigami, para a sessão soltar a recarga quando ela sair de campo.
+    tecnicaMaxima: { ...tecnicaMaxima, inicioRecarga: calc.inicioRecarga ?? "aoUsar", invocacaoId: calc.invocacaoId ?? null },
+  };
+}
+
+/** Os dois itens extras do seletor "Tipo de Especial" (DA-18). Não são subtipos. */
+export const OPCAO_TECNICA_MAXIMA = "__tecnicaMaxima";
+export const OPCAO_EXPANSAO_DOMINIO = "__expansaoDominio";
+
+/**
+ * O patch que faz de um Feitiço uma Técnica Máxima oficial. A natureza que ele
+ * já tem fica, quando é permitida. A que não é (Criação de Itens, Passivo) cai
+ * na primeira natureza Especial, porque é de Especial que a pessoa veio.
+ */
+export function patchParaTecnicaMaxima(f) {
+  const atual = naturezaDaTecnicaMaxima(f);
+  const natureza = atual ?? NATUREZAS_TECNICA_MAXIMA.find((n) => n.tipo === "especial");
+  return {
+    nivel: NIVEL_TECNICA_MAXIMA,
+    regraTecnicaMaxima: REGRA_TM_OFICIAL,
+    tipo: natureza.tipo,
+    ...(natureza.especialSubtipo ? { especialSubtipo: natureza.especialSubtipo } : {}),
+  };
+}
+
+/** O patch que devolve a Técnica Máxima a Feitiço comum, no maior nível acessível. */
+export function patchSemTecnicaMaxima(f, nivelMax = 1) {
+  const teto = Math.max(f?.tipo === "curativo" ? 1 : 0, Math.min(5, Math.trunc(Number(nivelMax) || 0)));
+  return { nivel: teto, regraTecnicaMaxima: null };
+}
+
+/** As opções extras do Tipo de Especial, com o cadeado quando não dá. */
+export function opcoesExtrasDeEspecial({ tecnicasMaximas, jaEhTecnicaMaxima = false, temExpansao = false }) {
+  const livres = tecnicasMaximas?.livres ?? 0;
+  const total = tecnicasMaximas?.total ?? 0;
+  const tm = {
+    value: OPCAO_TECNICA_MAXIMA,
+    label: "Técnica Máxima",
+    lockTitle: total > 0 ? "Vaga de Técnica Máxima Ocupada" : "Requer a Aptidão Técnica Máxima",
+  };
+  const expansao = {
+    value: OPCAO_EXPANSAO_DOMINIO,
+    label: "Expansão de Domínio",
+    lockTitle: "Requer uma Aptidão de Expansão de Domínio",
+  };
+  return {
+    opcoes: [tm, expansao],
+    bloqueadas: [
+      ...(!jaEhTecnicaMaxima && livres <= 0 ? [OPCAO_TECNICA_MAXIMA] : []),
+      ...(!temExpansao ? [OPCAO_EXPANSAO_DOMINIO] : []),
+    ],
+  };
+}
+
+/** A cópia escalada de um Feitiço, para os editores lerem os tetos da escala. */
+export function feiticoNaEscala(f, ctx = {}) {
+  if (!ehTecnicaMaximaOficial(f)) return f;
+  const escala = escalaDaTecnicaMaxima(nivelMaxFeiticoDoContexto(ctx));
+  return escala === NIVEL_TECNICA_MAXIMA ? f : { ...f, nivel: escala };
 }
 
 /**
@@ -4367,9 +4723,10 @@ export function rolagensDoFeitico(f, calc) {
     // Shikigami) não devolvem `dados`, então já caíram fora lá em cima.
     if (calc.golpes) {
       const g = calc.golpes;
-      return [{ rotulo: "Golpe", dados: g.porGolpe, faces, tom: "dano", vezes: g.golpes }];
+      return [{ rotulo: "Golpe", dados: g.porGolpe, faces, fixo: g.bonusPorGolpe || 0, tom: "dano", vezes: g.golpes }];
     }
-    return [{ rotulo: "Dano", dados, faces, tom: "dano", vezes: 1 }];
+    // O fixo é o da Expansão no ar (2026-10-08). Sem ela, zero, como sempre.
+    return [{ rotulo: "Dano", dados, faces, fixo: calc.bonusDano || 0, partes: calc.partesDano || [], tom: "dano", vezes: 1 }];
   }
 
   return [];
@@ -4644,6 +5001,15 @@ function infoLiberacao(f, ctx) {
    Conjuração em Ritual e a Liberação Máxima se encontraram: o Ritual precisa da
    lista inteira e a Liberação precisa refazer UM Feitiço com as melhorias
    declaradas na mesa, e as duas têm que sair exatamente do mesmo lugar. */
+/* A melhoria de Ritual que a Expansão no ar dá a um Auxiliar ou Especial. */
+function propriedadeRitualDoDominio(f, ctx) {
+  const categoria = f.tipo === "especial" ? "especial" : f.tipo;
+  if (categoria !== "auxiliar" && categoria !== "especial") return [];
+  if (f.tipo === "especial" && f.especialSubtipo === "shikigami") return [];
+  const melhoria = RITUAL_MELHORIA_BY_ID[ctx?.beneficiosRitualDominio?.[categoria]];
+  return melhoria ? [{ id: "ritualDominio", nome: "Ritual da Expansão", valor: melhoria.nome }] : [];
+}
+
 function linhaDoFeitico(f, ctx, creature) {
   {
     // As reduções de custo olham o repertório INTEIRO da criatura, então a
@@ -4664,7 +5030,7 @@ function linhaDoFeitico(f, ctx, creature) {
     const ritualBloqueado = ritualEmOutroFeitico;
     const dispensaTesteRitual = ctx.rituaisSemTeste === true
       || ctx.rituaisSemTeste?.[f.id] === true;
-    const calculoBase = calculadorDe(f.tipo)?.(f, {
+    const calculoBase = calcularFeitico(f, {
       ...ctx,
       ritual: configRitual,
       ritualistaExtra,
@@ -4738,8 +5104,25 @@ function linhaDoFeitico(f, ctx, creature) {
       conjuracaoTexto: f.conjuracaoTexto || "",
       // O rótulo do valor muda com o tipo, e o Preview o usa como `title`.
       valorLabel,
-      propriedades: calc ? propriedadesResumoFeitico(f, calc, valor, valorLabel) : [],
+      /* ⚠ O RITUAL DA EXPANSÃO NOS AUXILIARES E ESPECIAIS (2026-10-08, E-11): a
+         Expansão no ar dá um benefício de Ritual por categoria, e só o Dano e a
+         Cura tinham onde recebê-lo. Golpeador e Dano na Alma aplicam os números
+         (ver `presentesDoDominio`), e o resto fica na linha como regra de mesa.
+         O Shikigami não recebe: "É impossível fazer Liberação Máxima e Rituais
+         em Feitiços de Shikigami". */
+      propriedades: calc ? [
+        ...propriedadesResumoFeitico(f, calc, valor, valorLabel),
+        ...propriedadeRitualDoDominio(f, ctx),
+      ] : [],
       variacao: !!f.variacaoDe,
+      /* A Técnica Máxima (2026-10-08): a escala do cálculo e quando a recarga
+         começa. A validação e a vaga entram no derive, depois dos Testes. */
+      tecnicaMaxima: calc?.tecnicaMaxima ?? (ehTecnicaMaxima(f)
+        ? {
+          identidade: true, oficial: false, legacy: true, escala: NIVEL_TECNICA_MAXIMA,
+          inicioRecarga: calc?.inicioRecarga ?? "aoUsar", invocacaoId: calc?.invocacaoId ?? null,
+        }
+        : null),
       // O menu de Liberação Máxima deste Feitiço: o que dá para escolher na
       // hora da conjuração. `null` quando ele não alcança a mecânica.
       liberacao: infoLiberacao(f, ctx),

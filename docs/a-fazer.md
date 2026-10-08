@@ -33,6 +33,66 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 ---
 
 ## PERGUNTAS AO AUTOR
+### Técnica Máxima e Expansão de Domínio: NOVA DECISÃO NECESSÁRIA
+**Onde:** `docs/afty-tecnica-maxima-dominio.md`, `src/systems/afty/afty-dominios.js`, `afty-feiticos.js`
+**Situação:** as decisões de 2026-10-08 cobriram o projeto, e a implementação achou estes pontos que
+nenhuma delas responde. Cada um está implementado na leitura mais conservadora, marcada abaixo, e
+nada mais depende deles para funcionar.
+
+1. **Área da Sem Barreiras oficial.**
+   - Fonte: Livro, Expansão sem Barreiras ("mesmos efeitos e custo de uma expansão completa com
+     acerto garantido, mas não levanta barreiras, tendo um alcance superior para o acerto garantido").
+   - Problema: a DA-11 tirou o `9 m × BT` e o Totem, e falou do alcance do Acerto Garantido. A área da
+     própria Expansão ficou sem número.
+   - Alternativas: (a) "Definida pela Mesa", sem número (**implementado**); (b) 9 m, como a
+     Completa, lendo "mesmos efeitos"; (c) outro número do autor.
+   - Impacto: a linha da Ficha e do criador da Sem Barreiras oficial.
+2. **Golpeador de vários golpes dentro da Expansão.**
+   - Fonte: Golpeador ("dividindo o dano adicional entre golpes") e Amplificação de Técnica ("o
+     aumento de dano é aplicado em todos os Feitiços").
+   - Problema: o dano fixo da Amplificação e do Ritual pode ser dividido entre os golpes, como o
+     dano adicional, ou valer em cada golpe.
+   - Alternativas: (a) dividido entre os golpes, com piso (**implementado**); (b) em cada golpe.
+   - Impacto: o fixo de cada golpe do Golpeador com a Expansão no ar.
+3. **Fortalecer a Redução de Dano Corporal.**
+   - Fonte: Guia ("aplique metade do efeito como um bônus adicional") e DA-12 ("só fortalecer
+     grandezas objetivamente numéricas previstas pela regra").
+   - Problema: a linha tem dois números, a RD e a quantidade de tipos.
+   - Alternativas: (a) só a RD (**implementado**, o que o código antigo também fazia); (b) a RD e
+     metade dos tipos.
+   - Impacto: a RD Corporal fortalecida.
+4. **Quantas condições cabem num Acerto Garantido de Condição.**
+   - Fonte: Guia, Acerto Garantido ("é apenas um efeito... desde que seja apenas uma" e "escolher
+     causar condições garantidas, como Paralisia ou Atordoamento, mas não Desmembramento").
+   - Problema: "um efeito só" pode ser uma condição só, ou um pacote de condições que chega junto.
+   - Alternativas: (a) várias, sem trava, com o Desmembramento proibido (**implementado**); (b) uma
+     condição só, com ERRO acima disso; (c) um AVISO acima de uma.
+   - Impacto: o editor do Acerto Garantido e a validação da Expansão.
+5. **Abrir uma Expansão durante a Exaustão de Técnica.**
+   - Fonte: Livro ("deixa a técnica inutilizável") e DA-16 ("Não bloqueia Aptidões").
+   - Problema: a Expansão é uma Aptidão, mas ela imbui a técnica na barreira.
+   - Alternativas: (a) abre normalmente, lendo a DA-16 ao pé da letra (**implementado**); (b) a
+     Exaustão trava a abertura.
+   - Impacto: o botão Abrir da Ficha e o seletor da Aba Buffs.
+6. **O Funcionamento Básico durante a Exaustão de Técnica.**
+   - Fonte: DA-16 ("suprime passivos da Técnica quando identificáveis").
+   - Problema: o Funcionamento Básico é o núcleo da técnica, e não é Feitiço. Não está claro se ele é
+     um "passivo da Técnica".
+   - Alternativas: (a) continua valendo, só os Feitiços (Passivos e Auxiliares ligados) saem
+     (**implementado**); (b) sai do Motor junto, como na Técnica Inata bloqueada.
+   - Impacto: os números da ficha durante a Exaustão.
+7. **O fim do combate com a Expansão aberta.**
+   - Fonte: Livro ("A exaustão só é aplicada após o domínio ser desmanchado, seja a força ou por
+     realmente ter tido o seu efeito finalizado"). O Livro não fala do fim do combate.
+   - Problema: a bancada zera os estados fora de combate, e a Expansão aberta precisa fechar de
+     algum jeito.
+   - Alternativas: (a) fecha e cobra a Exaustão de Técnica (**implementado**); (b) fecha sem cobrar;
+     (c) fica aberta, sem efeito, até alguém fechar.
+   - Impacto: a Exaustão de Técnica que sobra depois da luta.
+
+**Precisa:** o autor responder cada item.
+**Anotado:** 2026-10-08, na implementação da Técnica Máxima e da Expansão de Domínio
+
 ### Novo Estilo das Sombras: leituras da Expansão que a DA-09 manda perguntar
 **Onde:** `docs/afty-estilo-sombras.md`, `src/systems/afty/afty-estilo-sombras.js` e o catálogo do Estilo
 **Situação:** o autor adotou a *Expansão do Novo Estilo das Sombras (F&M 2.5)* em 2026-10-04 e decidiu as
@@ -788,8 +848,9 @@ alguém jogar um Especialista em Estilo acima do ND 20.
 ### PERGUNTA AO AUTOR: o que um Nível de Exaustão FAZ
 **Onde:** `src/systems/afty/ficha/ficha-sessao.js` (`exaustao`), `afty-condicoes.js`
 **Situação:** o contador de Nível de Exaustão nasceu em 2026-09-09, com o Vislumbre Celeste, e é da
-sessão de todo mundo: seis Habilidades Lendárias e a Expansão de Domínio dizem *"você recebe um ponto
-de exaustão"* desde sempre e não tinham onde marcar. O que falta é o EFEITO: "Exausto" existe como
+sessão de todo mundo: seis Habilidades Lendárias dizem *"você recebe um ponto de exaustão"* desde
+sempre e não tinham onde marcar. A Expansão de Domínio NÃO entra aqui: ela dá Exaustão de Técnica,
+que é outra coisa e já tem contador próprio (`exaustaoTecnica`, 2026-10-08). O que falta é o EFEITO: "Exausto" existe como
 nome de condição na lista da 2.5.2, e o `CONDICAO_TEXTOS` do Afty está vazio esperando o autor. Hoje
 o contador conta e mostra, e a penalidade é de mesa.
 **Precisa:** o texto do que cada nível impõe, e se há teto. Com ele, o contador vira canal.

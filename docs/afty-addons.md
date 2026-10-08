@@ -475,9 +475,27 @@ O criador expõe todos esses campos do `personalizado`. Cada entrada de `rolagen
 quantidade, faces, valor fixo, repetições e tom de Dano ou Cura. Assim uma regra particular pode manter
 rolagens separadas para o impacto inicial e para um dano recorrente.
 
-Um modelo com `nivel: "max"` conserva as tabelas e o custo próprios de Técnica Máxima. Como a progressão
-normal de Feitiços para no Nível 5, o modelo passa a ser oferecido quando a criatura alcança esse teto.
-O Addon não abre a criação comum de outras Técnicas Máximas.
+Um modelo com `nivel: "max"` é uma Técnica Máxima. Como a progressão normal de Feitiços para no
+Nível 5, o modelo passa a ser oferecido quando a criatura alcança esse teto.
+
+⚠ **DESDE 2026-10-08 O MODELO NÃO CONCEDE A TÉCNICA MÁXIMA (DA-02).** Ver
+`docs/afty-tecnica-maxima-dominio.md`.
+
+- O modelo novo só aparece com vaga livre de Técnica Máxima, e a cópia nasce OFICIAL
+  (`regraTecnicaMaxima: "oficial"`): escala derivada, 25 PE, recarga, vaga exclusiva.
+- A vaga vem da Aptidão `tecnica_maxima` ou do próprio Addon, pelo canal `vagasTecnicaMaxima` num
+  efeito de qualquer entrada do pacote (Habilidade, Talento, Aptidão). É assim que um pacote concede
+  uma Técnica Máxima de verdade:
+
+```json
+"efeitos": [{ "canal": "vagasTecnicaMaxima", "expr": "1" }]
+```
+
+- A cópia gravada ANTES (Oda, Honnō-ji e as fichas de antes) continua LEGACY: calcula e gasta o
+  orçamento comum como sempre. A atualização de versão carrega o regime da cópia, e um
+  `regraTecnicaMaxima` escrito no pacote não converte a cópia antiga.
+- `recargaTecnicaMaxima` mexe na recarga, e a variável `nivel_feitico_max` lê o acesso a
+  Feitiço, para condicionar efeito ao Nível 5 (o Manual de Técnica faz isso).
 
 Um modelo pode declarar um custo especial pago na ativação:
 

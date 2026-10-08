@@ -1117,9 +1117,12 @@ export const AFTY_APTIDOES = [
       "valores próprios de uma.\n\n" +
       "Uma Técnica Máxima custa 25 PE e, após ser usada, você deve esperar uma quantidade de " +
       "rodadas igual a 6 – metade do seu Bônus de Treinamento para poder utilizá-la novamente.",
+    /* ⚠ A "Capacidade de Conjurar Feitiços Nível 4" era `nota` até 2026-10-08,
+       e não travava nada. Virou requisito de verdade (DA-09), lido do MESMO
+       cálculo de acesso que a aba de Feitiços usa (`nivelMaxFeitico`). */
     requisitos: [
       { tipo: "pericia", pericia: "feiticaria", nivel: "mestre" },
-      { tipo: "nota", label: "Capacidade de Conjurar Feitiços Nível 4" },
+      { tipo: "nivelFeitico", valor: 4 },
     ],
   },
 
@@ -1764,6 +1767,15 @@ export function avaliarRequisitoAptidao(requisito, ctx = {}) {
         : {}),
     };
   }
+  /* "Capacidade de Conjurar Feitiços Nível N" (2026-10-08, Técnica Máxima). O
+     número vem do chamador (`ctx.nivelFeiticoMax`, o `nivelMaxFeitico` da
+     ficha), porque este módulo não lê Feitiço. Sem ele o requisito não é
+     verificável e não trava, a mesma convenção do requisito de treino. */
+  if (requisito.tipo === "nivelFeitico") {
+    const label = `Conjurar Feitiços Nível ${requisito.valor}`;
+    if (ctx.nivelFeiticoMax == null) return { ok: true, verificavel: false, label };
+    return { ok: Number(ctx.nivelFeiticoMax) >= requisito.valor, verificavel: true, label };
+  }
   if (requisito.tipo === "atributo") {
     const atual = ctx.attrEff?.[requisito.attr] ?? 0;
     return {
@@ -1851,6 +1863,9 @@ export function validarCatalogoAptidoes() {
       }
       if (r.tipo === "origem" && !getOrigem(r.id)) {
         erros.push(`${a.id}: requisito aponta para origem inexistente "${r.id}"`);
+      }
+      if (r.tipo === "nivelFeitico" && !(Number.isInteger(r.valor) && r.valor >= 0 && r.valor <= 5)) {
+        erros.push(`${a.id}: requisito de nível de Feitiço inválido "${r.valor}"`);
       }
       // Perícia, Ofício e Teste de Resistência: o id existe no catálogo?
       const erroTreino = conferirRequisitoDeTreino(r);

@@ -4,7 +4,7 @@ import {
   Dumbbell, GraduationCap, BookOpen, Check, ArrowRight, Lock, Plus, X, Zap, GripVertical,
   Copy, ArrowUp, ArrowDown, Heart, Shield, Footprints, AlertTriangle, Star, Swords,
   Trash2, Image as ImageIcon, Eye, Crosshair, RotateCcw, RefreshCw, Pencil, Table, Braces, ListChecks,
-  Sword, Shirt, Gem, Hammer, ScrollText, Ghost, Pill, CircleDashed,
+  Sword, Shirt, Gem, Hammer, ScrollText, Ghost, Pill, CircleDashed, Globe,
 } from "lucide-react";
 
 import { FieldLabel, TextInput, TextArea, Select, NumberInput, StatField, ExpandableText } from "../../components/builder-controls";
@@ -100,12 +100,7 @@ import {
   EFEITO_CANAL_GRUPOS, VAR_DADOS_DANO_FINAL, VAR_NIVEL_FEITICO,
   efeitoUsaDadosDanoFinal, getCanal,
 } from "./afty-efeitos";
-import {
-  DOMINIO_CATEGORIAS, tiposDaCategoria, categoriaLivre, valorDoEfeito,
-  novoEfeitoDominio, novoDominio, versoesDisponiveis, ATRIBUTOS_FISICOS,
-  DOMINIO_RITUAL_CATEGORIAS, rotuloDoEfeito,
-} from "./afty-dominios";
-import { RITUAL_MELHORIAS } from "./afty-rituais";
+import { novoDominio, versoesDisponiveis, rotuloVersao } from "./afty-dominios";
 import { CARACTERISTICAS_INVOCACAO } from "./afty-invocacoes-caracteristicas";
 import { COMBATE_ESTADOS, estadoVisivel } from "./afty-combate";
 import { condicoesPorForca, descreveCondicao, listaComE, CONDICAO_EFEITOS, SANGRAMENTO_FAIXAS, faixaDeSangramento } from "./afty-condicoes";
@@ -149,24 +144,28 @@ import {
 import { evalNumber as evalNumberDsl, validateExpression } from "./afty-dsl";
 import { deriveAfty } from "./afty-derive";
 import {
-  createBlankFeitico, calcularFeiticoDano, ALCANCE_POR_NIVEL, AREA_POR_NIVEL, taxasTroca,
+  createBlankFeitico, ALCANCE_POR_NIVEL, AREA_POR_NIVEL, taxasTroca,
   opcoesSemDadoFeitico, patchSubtipoDano,
-  calcularFeiticoCurativo, CURA_ACOES, CURA_REMOCAO,
-  calcularFeiticoEspecial, ESPECIAL_SUBTIPOS, maxGolpesGolpeador, ITEM_CUSTO_MAX,
+  CURA_ACOES, CURA_REMOCAO,
+  ESPECIAL_SUBTIPOS, maxGolpesGolpeador, ITEM_CUSTO_MAX,
   TRANSF_DURACOES, TRANSF_ACOES,
   NIVEL_LABEL, FEITICO_ACOES, FORMAS_AREA, DANO_SUBTIPOS, REQUISITO_DIFICULDADE,
   CONDICAO_FORCAS, CONDICOES_CATALOGO, CONDICAO_FORCAS_POR_NIVEL,
   SANGRAMENTO, notacaoDano,
-  calcularFeiticoAuxiliar, AUX_EFEITOS, AUX_DURACOES, faixaRodadasDuradoura,
+  AUX_EFEITOS, AUX_DURACOES, faixaRodadasDuradoura,
   atributosDoAuxiliar,
   createBlankAuxEffect, efeitosDisponiveisMult, primeiroEfeitoLivre,
   resultaEspecialAux, ofereceUmGolpe, aplicaUmGolpe, podeEventoUnico,
   formatAuxValor, aplicaReducoesCustoFeitico, tituloCustoFeitico,
-  calcularFeiticoPersonalizado, TIPOS_FEITICO, TIPO_FEITICO_LABEL, TIPO_FEITICO_CURTO,
+  TIPOS_FEITICO, TIPO_FEITICO_LABEL, TIPO_FEITICO_CURTO,
   TODOS_TIPOS_FEITICO, tiposFeiticoDaLinha, peMaximoDasPassivas,
-  calcularFeiticoPassivo, PASSIVO_EFEITOS, categoriaDoPassivo,
+  PASSIVO_EFEITOS, categoriaDoPassivo,
   duracoesDoEfeitoAux, permutaDoEfeito, PERMUTA_ASPECTOS, nomeDaPerda, textoDasPermutas,
+  calcularFeitico, feiticoNaEscala, ehTecnicaMaxima, ehTecnicaMaximaOficial,
+  opcoesExtrasDeEspecial, patchParaTecnicaMaxima, OPCAO_TECNICA_MAXIMA, OPCAO_EXPANSAO_DOMINIO, feiticoEmBranco,
 } from "./afty-feiticos";
+import { TecnicaMaximaPainel } from "./AftyTecnicaMaxima";
+import { DominioEditor, ResumoDominios } from "./AftyDominioEditor";
 import { IconeDeTipo } from "./ui/feitico-tipo";
 import ListaLateral from "./ui/ListaLateral";
 import {
@@ -741,7 +740,13 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       const i = lista.findIndex((f) => f.id === id);
       if (i < 0) return d;
       const orig = lista[i];
-      const copia = { ...orig, id: novoId, nome: orig.nome ? `${orig.nome} (cópia)` : "" };
+      const copia = {
+        ...orig, id: novoId, nome: orig.nome ? `${orig.nome} (cópia)` : "",
+        /* ⚠ A CÓPIA DE UMA TÉCNICA MÁXIMA É CONTEÚDO NOVO (DA-02, 2026-10-08): ela
+           nasce OFICIAL, e precisa da vaga. Copiar uma LEGACY não perpetua a
+           exceção do modelo anterior. */
+        ...(orig.nivel === "max" ? { regraTecnicaMaxima: "oficial" } : {}),
+      };
       const next = [...lista];
       next.splice(i + 1, 0, copia);
       return { ...d, feiticos: next };
@@ -1294,8 +1299,13 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
   // Expansões de Domínio. Uma criatura pode ter várias escritas, e só uma no ar:
   // por isso `dominioAtivoId` é campo próprio, e não uma flag por domínio.
   const domArr = (d) => (Array.isArray(d.dominios) ? d.dominios : []);
-  const addDominio = (versao) =>
-    setDraft((d) => ({ ...d, dominios: [...domArr(d), novoDominio(versao)] }));
+  /* Devolve o id, para o editor em Feitiços → Especial já abrir a Expansão nova.
+     O objeto nasce FORA do `setDraft`, pela mesma razão do `addFeitico`. */
+  const addDominio = (versao) => {
+    const criado = novoDominio(versao);
+    setDraft((d) => ({ ...d, dominios: [...domArr(d), criado] }));
+    return criado.id;
+  };
   const removeDominio = (id) =>
     setDraft((d) => ({
       ...d,
@@ -2766,136 +2776,11 @@ function CuraCard({ derived }) {
 /* ============================================================ */
 /* EXPANSÃO DE DOMÍNIO                                          */
 /* ============================================================ */
-/* Portado do construtor da 2.5.2 (sections/actions/DomainForm.jsx), a pedido do
-   autor. O card SÓ APARECE para quem tem a aptidão Expansão de Domínio
-   Incompleta, que é a porta de entrada das três versões.
-
-   O que a criatura ganha em número sai pelo Motor, e não daqui: este card é o
-   editor, e a bancada de Simulação de Combate é quem liga a expansão. Por isso o
-   card mostra o resultado (área, duração, PV do domo e custo) em células, com a
-   origem de cada número no hover.
-
-   ⚠ O BLOCO DE TEXTO PRONTO SAIU EM 2026-09-11 (autor: *"Ficou muito feio a
-   Expansão de Domínio [...] E no Criador de Fichas"*). Ele repetia, em prosa,
-   tudo o que o editor logo acima já mostrava: os números, a aparência, os
-   efeitos, e os cinco efeitos base, que ainda apareciam uma segunda vez num
-   <details> ensinando a regra. Quem lê o corpo pronto é a Ficha Final. */
-/* Um efeito de expansão, RECOLHÍVEL como na 2.5.2. Recolhido, a linha mostra só
-   o resumo (nome ou rótulo, o selo ×1,5 e a grandeza), que é o que serve para
-   varrer com o olho. O formulário abre sob demanda. */
-function EfeitoDominioLinha({ efeito, valor, podeFortalecer, onPatch, onRemove }) {
-  const [aberto, setAberto] = useState(false);
-  const livre = categoriaLivre(efeito.categoria);
-  const tipos = tiposDaCategoria(efeito.categoria);
-  const ehAtributo = efeito.categoria === "amp_corporal" && efeito.tipo === "atributo";
-  const ehRd = efeito.categoria === "amp_corporal" && efeito.tipo === "rd";
-  const resumo = efeito.nome?.trim() || rotuloDoEfeito(efeito);
-  const trocaAtributo = (i, v) => {
-    const atuais = [...(efeito.atributos ?? [])];
-    atuais[i] = v;
-    onPatch({ atributos: atuais });
-  };
-  return (
-    <div className="rounded border border-slate-800 bg-slate-950/50">
-      <div className="flex items-center gap-2 p-2">
-        <button
-          type="button"
-          onClick={() => setAberto((o) => !o)}
-          aria-expanded={aberto}
-          className="flex-1 flex items-center gap-1.5 text-left min-w-0 text-slate-300 hover:text-white"
-        >
-          <ChevronDown className={`w-3.5 h-3.5 flex-shrink-0 transition-transform ${aberto ? "" : "-rotate-90"}`} />
-          <span className="text-xs font-semibold truncate shrink-0 max-w-full">{resumo}</span>
-          {efeito.fortalecido && <span className="text-[9px] text-purple-300 font-bold flex-shrink-0">×1,5</span>}
-          {/* ⚠ O NOME TEM PISO, e quem cede é o valor (2026-09-11). Os dois tinham
-              o mesmo `truncate`, e em 390px saía "Amplificação de T..." para caber
-              um valor que o corpo aberto mostra de novo. Abaixo de `sm` o valor
-              some da linha fechada, e acima dele encolhe antes do nome. */}
-          {!aberto && valor && <span className="hidden sm:block min-w-0 text-[10px] text-slate-500 font-mono truncate">· {valor}</span>}
-        </button>
-        <button
-          type="button"
-          onClick={onRemove}
-          className="text-slate-600 hover:text-red-400 transition-colors flex-shrink-0"
-          aria-label="Remover efeito"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
-      </div>
-
-      {aberto && (
-        <div className="px-2.5 pb-2.5 space-y-2">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <div>
-              <FieldLabel>Categoria</FieldLabel>
-              <Select
-                value={efeito.categoria}
-                onChange={(v) => onPatch({ categoria: v, tipo: categoriaLivre(v) ? "" : tiposDaCategoria(v)[0]?.value ?? "" })}
-                options={DOMINIO_CATEGORIAS}
-              />
-            </div>
-            {!livre && (
-              <div>
-                <FieldLabel>Tipo</FieldLabel>
-                <Select value={efeito.tipo} onChange={(v) => onPatch({ tipo: v })} options={tipos} />
-              </div>
-            )}
-          </div>
-
-          {valor && (
-            <div className="font-mono text-[11px] text-purple-200 bg-purple-950/30 border border-purple-900/40 rounded px-2 py-1">
-              {valor}
-            </div>
-          )}
-
-          <div className="flex flex-wrap items-center gap-2">
-            <BoolChip
-              ativo={!!efeito.fortalecido}
-              onToggle={() => onPatch({ fortalecido: !efeito.fortalecido })}
-              bloqueado={!efeito.fortalecido && !podeFortalecer}
-              lockTitle="Fortalecer custa uma segunda vaga de efeito, e não há folga"
-            >
-              Fortalecido
-            </BoolChip>
-            {ehRd && (
-              <div className="flex-1 min-w-[160px]">
-                <TextInput value={efeito.rdTipos ?? ""} onChange={(v) => onPatch({ rdTipos: v })} placeholder="Tipos de dano protegidos" />
-              </div>
-            )}
-          </div>
-
-          {ehAtributo && (
-            <div className="grid grid-cols-2 gap-2">
-              {[0, 1].map((i) => (
-                <Select
-                  key={i}
-                  value={efeito.atributos?.[i] ?? ""}
-                  onChange={(v) => trocaAtributo(i, v)}
-                  options={[{ value: "", label: "escolher..." }, ...ATRIBUTOS_FISICOS]}
-                />
-              ))}
-            </div>
-          )}
-
-          <div>
-            <FieldLabel>Nome</FieldLabel>
-            <TextInput value={efeito.nome ?? ""} onChange={(v) => onPatch({ nome: v })} placeholder={rotuloDoEfeito(efeito)} />
-          </div>
-          <div>
-            <FieldLabel>Descrição</FieldLabel>
-            <TextArea
-              value={efeito.descricao ?? ""}
-              onChange={(v) => onPatch({ descricao: v })}
-              rows={2}
-              placeholder={livre ? "Descreva o efeito" : "Reescreve a frase padrão"}
-            />
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
+/* ⚠ O EDITOR SAIU DAQUI EM 2026-10-08 (DA-18). Ele mora em
+   `AftyDominioEditor.jsx` e abre em Feitiços → Especial → Tipo de Especial →
+   Expansão de Domínio, que é o único lugar onde a Expansão se edita. Esta aba
+   mostra só o resumo (`ResumoDominios`), com o atalho Editar em Feitiços.
+   A Barreira e o Domínio Simples ficam aqui, porque não são Expansão. */
 /**
  * TÉCNICAS DE BARREIRA: os números da PAREDE.
  *
@@ -2987,186 +2872,21 @@ function DominioSimplesCard({ derived }) {
   );
 }
 
-function DominioCard({ derived, addDominio, removeDominio, patchDominio, setDominioAtivo }) {
-  const info = derived.dominios;
-  const versoes = versoesDisponiveis(derived.aptidoesEscolhidas ?? []);
-  if (!versoes.length) return null;
-
-  return (
-    <Card
-      title="Expansão de Domínio"
-      headerRight={
-        <span className="flex items-center gap-3 text-[11px] font-mono tabular-nums text-slate-400">
-          <span>DOM {info.domNivel} · {info.maxEfeitos} {info.maxEfeitos === 1 ? "efeito" : "efeitos"}</span>
-          {/* O CONFLITO é da CRIATURA e não de cada expansão, então mora no
-              cabeçalho. Ele existe desde que haja Nível de Aptidão em Domínio. */}
-          <span className="relative group cursor-help text-slate-300">
-            Conflito 1d{info.conflito.faces}+{info.conflito.bonus}
-            <PainelDeFontes partes={info.conflito.partes} total={info.conflito.bonus} />
-          </span>
-        </span>
-      }
-    >
-      <div className="space-y-3">
-        {info.lista.map((d) => {
-          const excedeu = d.vagasUsadas > info.maxEfeitos;
-          const patch = (partial) => patchDominio(d.id, partial);
-          const patchEfeito = (efId, partial) =>
-            patch({ efeitos: d.efeitos.map((e) => (e.id === efId ? { ...e, ...partial } : e)) });
-          return (
-            <div key={d.id} className="rounded-lg border border-purple-900/50 bg-purple-950/10 p-3 space-y-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="flex-1 min-w-[160px]">
-                  <TextInput value={d.nome} onChange={(v) => patch({ nome: v })} placeholder="Nome da expansão" />
-                </div>
-                <div className="min-w-[150px]">
-                  <Select value={d.versao} onChange={(v) => patch({ versao: v })} options={versoes} />
-                </div>
-                <BoolChip ativo={info.ativoId === d.id} onToggle={() => setDominioAtivo(info.ativoId === d.id ? null : d.id)}>
-                  {info.ativoId === d.id ? "Ativa" : "Inativa"}
-                </BoolChip>
-                <button
-                  type="button"
-                  onClick={() => removeDominio(d.id)}
-                  className="inline-flex items-center justify-center w-7 h-7 rounded text-slate-500 hover:text-red-400 hover:bg-red-950/40 transition-colors flex-shrink-0"
-                  aria-label="Remover expansão"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              {/* ⚠ CÉLULAS, E NÃO UMA LINHA MONO (2026-09-11). Mesmo desenho do
-                  Domínio Simples logo acima, com o `group` em cada célula para
-                  os hovers não acenderem juntos. A execução saiu daqui: ela é a
-                  mesma em toda expansão e a Ficha a mostra no corpo. */}
-              <div className="grid gap-2 grid-cols-2 sm:grid-cols-4">
-                {[
-                  { k: "Área", v: d.area },
-                  { k: "Duração", v: `${d.duracao} ${d.duracao === 1 ? "Rodada" : "Rodadas"}` },
-                  {
-                    k: d.versao === "sem_barreiras" ? "Totem" : "Domo",
-                    v: `${d.pvBarreira} PV`,
-                    partes: info.barreira?.partesPvDomo,
-                  },
-                  { k: "Custo", v: `${d.custo} PE`, partes: d.partesCusto },
-                ].map((l) => (
-                  <div key={l.k} className="relative group rounded-lg border border-slate-800 bg-slate-900/60 p-2.5 text-center">
-                    <div className="text-[10px] uppercase tracking-wider text-slate-500">{l.k}</div>
-                    <div className={`font-mono text-lg font-bold tabular-nums text-white ${l.partes?.length ? "cursor-help" : ""}`}>{l.v}</div>
-                    {l.partes?.length > 0 && <PainelDeFontes partes={l.partes} total={l.v} />}
-                  </div>
-                ))}
-              </div>
-
-              <div>
-                <FieldLabel>Aparência</FieldLabel>
-                <TextArea value={d.aparencia} onChange={(v) => patch({ aparencia: v })} rows={2} placeholder="Como a expansão se manifesta" />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-                {DOMINIO_RITUAL_CATEGORIAS.map((categoria) => (
-                  <div key={categoria.key}>
-                    <FieldLabel>{`Ritual: ${categoria.label}`}</FieldLabel>
-                    <Select
-                      value={d.beneficiosRitual?.[categoria.key] ?? ""}
-                      onChange={(valor) => patch({
-                        beneficiosRitual: { ...d.beneficiosRitual, [categoria.key]: valor },
-                      })}
-                      options={[
-                        { value: "", label: "Escolher" },
-                        ...RITUAL_MELHORIAS.map((melhoria) => ({ value: melhoria.id, label: melhoria.nome })),
-                      ]}
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <div className="bg-slate-900/60 border border-slate-800 rounded p-3 space-y-2.5">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                    Efeitos de Expansão{" "}
-                    <span className={`font-mono ${excedeu ? "text-rose-300" : "text-slate-300"}`}>{d.vagasUsadas}/{info.maxEfeitos}</span>
-                  </span>
-                  <button
-                    type="button"
-                    disabled={d.vagasUsadas >= info.maxEfeitos}
-                    onClick={() => patch({ efeitos: [...d.efeitos, novoEfeitoDominio()] })}
-                    title={d.vagasUsadas >= info.maxEfeitos ? "Limite de efeitos atingido para este Nível de Domínio" : undefined}
-                    className={`flex items-center gap-1 text-[11px] ${
-                      d.vagasUsadas >= info.maxEfeitos
-                        ? "text-slate-600 cursor-not-allowed"
-                        : "text-purple-300 hover:text-purple-200"
-                    }`}
-                  >
-                    <Plus className="w-3 h-3" /> Adicionar Efeito
-                  </button>
-                </div>
-                {d.versao === "incompleta" && (
-                  <div className="flex items-center gap-1.5 text-[11px] text-amber-400/90">
-                    <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
-                    Incompleta: efeitos limitados ao nível de aptidão 3.
-                  </div>
-                )}
-                {d.efeitos.length === 0 && (
-                  <p className="text-xs text-slate-600 italic">Nenhum efeito de expansão adicionado.</p>
-                )}
-                {d.efeitos.map((ef) => (
-                  <EfeitoDominioLinha
-                    key={ef.id}
-                    efeito={ef}
-                    valor={valorDoEfeito(ef, info.domNivel, d.versao)}
-                    podeFortalecer={d.vagasUsadas < info.maxEfeitos}
-                    onPatch={(partial) => patchEfeito(ef.id, partial)}
-                    onRemove={() => patch({ efeitos: d.efeitos.filter((e) => e.id !== ef.id) })}
-                  />
-                ))}
-              </div>
-
-              {info.temAcertoGarantido && (
-                <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-800">
-                  <BoolChip
-                    ativo={!!d.acertoGarantido?.ativo}
-                    onToggle={() => patch({ acertoGarantido: { ...d.acertoGarantido, ativo: !d.acertoGarantido?.ativo } })}
-                  >
-                    Acerto Garantido
-                  </BoolChip>
-                  {d.acertoGarantido?.ativo && (
-                    <div className="flex-1 min-w-[160px]">
-                      <TextInput
-                        value={d.acertoGarantido?.escopo ?? ""}
-                        onChange={(v) => patch({ acertoGarantido: { ...d.acertoGarantido, escopo: v } })}
-                        placeholder="O que se torna garantido"
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
-
-        <button
-          type="button"
-          onClick={() => addDominio(versoes[versoes.length - 1].value)}
-          className="flex items-center gap-1 text-[11px] text-purple-300 hover:text-purple-200"
-        >
-          <Plus className="w-3 h-3" /> Nova expansão
-        </button>
-      </div>
-    </Card>
-  );
-}
-
 function TabHabilidades({ draft, derived, patch, patchCore, toggleArmaDedicada, addFeitico, updateFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico, setTreinoEscolhaFeiticos, removeEstilo, patchEstilo, addFuncionamento, removeFuncionamento, patchFuncionamento, setGeralVezes, addDominio, removeDominio, patchDominio, setDominioAtivo, patchEspinho, sistema, estiloApi }) {
-  const dominio = (
-    <DominioCard
-      derived={derived}
-      addDominio={addDominio}
-      removeDominio={removeDominio}
-      patchDominio={patchDominio}
-      setDominioAtivo={setDominioAtivo}
-    />
-  );
+  /* A EXPANSÃO SE EDITA SÓ EM FEITIÇOS → ESPECIAL (DA-18). Aqui fica o resumo, e
+     o atalho Editar em Feitiços sobe o pedido para o card de Feitiços: `foco`
+     leva um contador para o mesmo id poder ser pedido duas vezes seguidas. */
+  const [focoDominio, setFocoDominio] = useState(null);
+  const refFeiticos = useRef(null);
+  const versoesDominio = versoesDisponiveis(derived.aptidoesEscolhidas ?? []);
+  const temDominios = (derived.dominios?.lista ?? []).length > 0;
+  const editarDominio = (id) => {
+    setFocoDominio((f) => ({ id, n: (f?.n ?? 0) + 1 }));
+    refFeiticos.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+  };
+  const dominio = versoesDominio.length > 0 || temDominios
+    ? <ResumoDominios info={derived.dominios} onEditar={editarDominio} />
+    : null;
   const barreira = <BarreiraCard derived={derived} />;
   const dominioSimples = <DominioSimplesCard derived={derived} />;
   // A MÃE decide o leiaute: a variação do Sem Técnica monta a aba dele. Ver
@@ -3238,18 +2958,27 @@ function TabHabilidades({ draft, derived, patch, patchCore, toggleArmaDedicada, 
       onPatch={patchEspinho}
     />
   ) : null;
-  const feiticosCard = derived.feiticos?.mostraCard ? (
-    <FeiticosCard
-      draft={draft}
-      derived={derived}
-      addFeitico={addFeitico}
-      updateFeitico={updateFeitico}
-      removeFeitico={removeFeitico}
-      patchFeitico={patchFeitico}
-      duplicarFeitico={duplicarFeitico}
-      setReducoesCustoFeitico={setReducoesCustoFeitico}
-      setTreinoEscolhaFeiticos={setTreinoEscolhaFeiticos}
-    />
+  /* ⚠ A EXPANSÃO TAMBÉM ABRE O CARD (2026-10-08). Quem tem a Aptidão e nenhum
+     acesso a Feitiço ainda precisa de um lugar para editá-la, e o lugar é este:
+     o card entra no modo `soExpansoes`, sem criar Feitiço. */
+  const soExpansoes = !derived.feiticos?.mostraCard && (versoesDominio.length > 0 || temDominios);
+  const feiticosCard = derived.feiticos?.mostraCard || soExpansoes ? (
+    <div ref={refFeiticos} className="scroll-mt-24">
+      <FeiticosCard
+        draft={draft}
+        derived={derived}
+        addFeitico={addFeitico}
+        updateFeitico={updateFeitico}
+        removeFeitico={removeFeitico}
+        patchFeitico={patchFeitico}
+        duplicarFeitico={duplicarFeitico}
+        setReducoesCustoFeitico={setReducoesCustoFeitico}
+        setTreinoEscolhaFeiticos={setTreinoEscolhaFeiticos}
+        soExpansoes={soExpansoes}
+        dominioApi={{ addDominio, removeDominio, patchDominio, setDominioAtivo, versoes: versoesDominio }}
+        focoDominio={focoDominio}
+      />
+    </div>
   ) : null;
   if (origem === "sem_tecnica") {
     return (
@@ -5116,8 +4845,36 @@ function FeiticoLinha({ feitico, resumo, selecionado }) {
   );
 }
 
+/* A Expansão de Domínio na lista lateral dos Feitiços (DA-18, 2026-10-08). Mesmo
+   desenho da `FeiticoLinha`, com a versão no lugar do nível. */
+const PREFIXO_ITEM_DOMINIO = "dominio:";
+const TIPOS_DANO_DA_EXPANSAO = Object.entries(TIPOS_DANO).map(([id, label]) => ({ id, label }));
+
+function ExpansaoLinha({ dominio: d, ativa, selecionado }) {
+  return (
+    <>
+      <span className="flex items-center gap-1.5 min-w-0">
+        <span className={selecionado ? "text-purple-300" : "text-slate-500"}>
+          <Globe className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
+        </span>
+        <span className={`flex-1 min-w-0 truncate text-[12px] font-semibold ${d.nome ? "text-white" : "text-slate-500"}`}>
+          {d.nome || "Domínio Sem Nome"}
+        </span>
+        {!d.valida && (
+          <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" aria-label="Expansão inválida" />
+        )}
+      </span>
+      <span className="flex items-baseline gap-2 mt-0.5 pl-5 min-w-0 font-mono text-[10px] tabular-nums text-slate-400">
+        <span className="flex-shrink-0 text-slate-500">{rotuloVersao(d.versao) || "Expansão de Domínio"}</span>
+        <span className="flex-shrink-0 text-purple-300">{d.custo} PE</span>
+        {ativa && <span className="min-w-0 truncate font-bold text-slate-200">Ativa</span>}
+      </span>
+    </>
+  );
+}
+
 /* Card dos Feitiços: orçamento no cabeçalho, fileira de miniaturas e UM editor. */
-function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico, setTreinoEscolhaFeiticos }) {
+function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico, setTreinoEscolhaFeiticos, soExpansoes = false, dominioApi = null, focoDominio = null }) {
   const lista = Array.isArray(draft.feiticos) ? draft.feiticos : [];
   const feiticosBase = lista.filter((feitico) => !feitico.variacaoDe);
   /* Os tipos que esta criatura pode criar. Vem do MOTOR, e não de uma pergunta
@@ -5129,7 +4886,7 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
      acesso (trocou de origem, ou desinstalou o addon). Aí o card existe para
      LER E REMOVER, e não para criar, senão o buraco que ele tapa viraria um
      atalho para Feitiço de graça. */
-  const tiposPermitidos = derived.feiticos?.tiposPermitidos ?? TODOS_TIPOS_FEITICO;
+  const tiposPermitidos = soExpansoes ? [] : derived.feiticos?.tiposPermitidos ?? TODOS_TIPOS_FEITICO;
   const podeCriar = tiposPermitidos.length > 0;
   const dslGrupos = useDslGrupos(derived);
   const { nivelMax } = derived.feiticos;
@@ -5141,7 +4898,10 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
     ? draft.reducoesCustoFeitico
     : { dominancia: null, manipulacao: [] };
   const idsBase = new Set(feiticosBase.map((feitico) => feitico.id));
-  const modelosAddon = modelosPendentesDeAddon(draft, nivelMax, feiticosBase);
+  // O modelo de Técnica Máxima só com vaga livre, e a cópia nasce oficial (DA-02).
+  const modelosAddon = modelosPendentesDeAddon(draft, nivelMax, feiticosBase, {
+    tecnicasMaximasLivres: derived.feiticos?.tecnicasMaximas?.livres ?? 0,
+  });
   const dominancia = idsBase.has(reducoes.dominancia) ? reducoes.dominancia : null;
   const manipulacao = Array.isArray(reducoes.manipulacao)
     ? [...new Set(reducoes.manipulacao)].filter((id) => idsBase.has(id)).slice(0, limiteManipulacao)
@@ -5192,6 +4952,7 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
     habilidades: derived.habilidades?.escolhidas ?? [],
     bonusTreinamento: derived.maestria,
     beneficiosRitualDominio: derived.dominios?.beneficiosRitualAtivos ?? {},
+    amplificacaoDominio: derived.dominios?.amplificacaoTecnica ?? null,
     reducoesCustoFeitico: reducoes,
     passivasIsentas: !!derived.passivasIsentas,
     linhasEscolhaFeiticos,
@@ -5218,7 +4979,7 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
   const dadosDanoPorFeitico = Object.fromEntries(
     lista
       .filter((f) => f.tipo === "dano")
-      .map((f) => [f.id, calcularFeiticoDano(f, ctx).dadosDanoFinal]),
+      .map((f) => [f.id, calcularFeitico(f, ctx)?.dadosDanoFinal]),
   );
   const nivelPorFeitico = Object.fromEntries(
     lista.filter((f) => f.tipo === "dano").map((f) => [f.id, f.nivel === "max" ? 6 : f.nivel]),
@@ -5246,7 +5007,38 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
      de treze reordenaria os índices e o editor passaria a mostrar outro Feitiço
      sem ninguém pedir. É a mesma escolha da aba de Invocações. */
   const [escolhidoId, setEscolhidoId] = useState(null);
-  const escolhido = lista.find((f) => f.id === escolhidoId) ?? lista[0] ?? null;
+  /* ⚠ A EXPANSÃO DE DOMÍNIO ENTRA NA MESMA LISTA (DA-18, 2026-10-08), como item
+     de Especial com id `dominio:<id>`. Ela continua em `creature.dominios`: o
+     prefixo é só da tela, e nunca chega a `feiticos[]`. */
+  const dominios = derived.dominios?.lista ?? [];
+  const idDaExpansao = (id) => `${PREFIXO_ITEM_DOMINIO}${id}`;
+  const dominioEscolhido = typeof escolhidoId === "string" && escolhidoId.startsWith(PREFIXO_ITEM_DOMINIO)
+    ? dominios.find((d) => idDaExpansao(d.id) === escolhidoId) ?? null
+    : null;
+  const escolhido = dominioEscolhido ? null : lista.find((f) => f.id === escolhidoId) ?? lista[0] ?? null;
+  const dominioAberto = dominioEscolhido ?? (escolhido ? null : dominios[0] ?? null);
+  /* O atalho Editar em Feitiços da aba Habilidades chega aqui. Ajuste de estado
+     durante o render, e não efeito: o pedido é um contador, então o mesmo id
+     pedido duas vezes seguidas ainda abre. */
+  const [focoVisto, setFocoVisto] = useState(focoDominio?.n ?? 0);
+  if (focoDominio && focoDominio.n !== focoVisto) {
+    setFocoVisto(focoDominio.n);
+    setEscolhidoId(idDaExpansao(focoDominio.id));
+  }
+  const versoesDominio = dominioApi?.versoes ?? [];
+  const temExpansao = versoesDominio.length > 0;
+  const novaExpansao = () => {
+    if (!dominioApi || !temExpansao) return;
+    setEscolhidoId(idDaExpansao(dominioApi.addDominio(versoesDominio[versoesDominio.length - 1].value)));
+  };
+  /* A PORTA do Tipo de Especial: abre a primeira Expansão, ou cria uma. O
+     Feitiço aberto só para chegar aqui, ainda em branco, sai junto. */
+  const abrirExpansao = (atual) => {
+    if (!dominioApi || !temExpansao) return;
+    if (atual && feiticoEmBranco(atual)) removeFeitico(atual.id);
+    if (dominios[0]) setEscolhidoId(idDaExpansao(dominios[0].id));
+    else novaExpansao();
+  };
   const resumoDe = (id) => (derived.feiticos.lista ?? []).find((r) => r.id === id);
   /* "O Feitiço não pode ser usado" (Permutativo), lido da ficha de AGORA. É a
      mesma trava do interruptor da Ficha, e aqui vira aviso no card. Ligado na
@@ -5277,7 +5069,7 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
   };
 
   return (
-    <Card title="Feitiços" headerRight={<ContadorHabilidades derived={derived} proprio />}>
+    <Card title="Feitiços" headerRight={soExpansoes ? null : <ContadorHabilidades derived={derived} proprio />}>
       {/* ⚠ O excesso do caixa próprio tem aviso PRÓPRIO, e não o do contador
           comum: no jogador o Feitiço não transborda para lá, então o `excedeu`
           fica falso e a pessoa passaria do orçamento sem nada na tela. */}
@@ -5286,7 +5078,7 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
           Você tem mais Feitiços do que recebeu. Remova um ou suba de nível.
         </p>
       )}
-      {modelosAddon.length > 0 && (
+      {modelosAddon.length > 0 && podeCriar && (
         <div className="mb-3 space-y-1.5 border-b border-slate-800 pb-3">
           <FieldLabel>Modelos do Addon</FieldLabel>
           <div className="flex flex-wrap gap-1.5">
@@ -5380,16 +5172,29 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
         </div>
       )}
 
-      {lista.length === 0 ? (
+      {lista.length === 0 && dominios.length === 0 ? (
         <div className="text-center py-8 border border-dashed border-slate-700 rounded-lg">
-          <p className="text-sm text-slate-400">Nenhum Feitiço criado ainda.</p>
-          <button
-            type="button"
-            onClick={() => novoFeitico()}
-            className="mt-3 inline-flex items-center justify-center gap-1.5 text-[12px] font-semibold px-3 py-2 rounded-lg border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500"
-          >
-            <Plus className="w-4 h-4" /> Criar Feitiço
-          </button>
+          <p className="text-sm text-slate-400">{soExpansoes ? "Nenhuma Expansão criada ainda." : "Nenhum Feitiço criado ainda."}</p>
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+            {podeCriar && (
+              <button
+                type="button"
+                onClick={() => novoFeitico()}
+                className="inline-flex items-center justify-center gap-1.5 text-[12px] font-semibold px-3 py-2 rounded-lg border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500"
+              >
+                <Plus className="w-4 h-4" /> Criar Feitiço
+              </button>
+            )}
+            {temExpansao && (
+              <button
+                type="button"
+                onClick={novaExpansao}
+                className="inline-flex items-center justify-center gap-1.5 text-[12px] font-semibold px-3 py-2 rounded-lg border border-purple-800/60 text-purple-200 hover:text-white hover:border-purple-600 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500"
+              >
+                <Plus className="w-4 h-4" /> Criar Expansão de Domínio
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         /* ===== 0. A LISTA LATERAL (2026-09-16) =====
@@ -5397,23 +5202,37 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
            `ui/ListaLateral.jsx`. O nível da ordem é numérico: a Técnica Máxima
            vale 6, um acima do Nível 5. */
         <ListaLateral
-          itens={lista.map((f) => ({
-            id: f.id,
-            nome: f.nome || "Sem nome",
-            tipo: f.tipo,
-            nivel: f.nivel === "max" ? 6 : Number(f.nivel) || 0,
-            feitico: f,
-          }))}
+          itens={[
+            ...lista.map((f) => ({
+              id: f.id,
+              nome: f.nome || "Sem nome",
+              // A Técnica Máxima mora em Especial na tela (DA-18), qualquer que seja
+              // a natureza dela.
+              tipo: ehTecnicaMaxima(f) ? "especial" : f.tipo,
+              nivel: f.nivel === "max" ? 6 : Number(f.nivel) || 0,
+              feitico: f,
+            })),
+            // A Expansão vem depois de tudo na ordem por Nível: ela não tem nível.
+            ...dominios.map((d) => ({
+              id: idDaExpansao(d.id),
+              nome: d.nome || "Domínio Sem Nome",
+              tipo: "especial",
+              nivel: 7,
+              dominio: d,
+            })),
+          ]}
           tipos={TIPOS_FEITICO_DA_LISTA}
           IconeTipo={IconeDeTipo}
           rotuloNivel="Nível"
-          selecionadoId={escolhido?.id ?? null}
+          selecionadoId={dominioAberto ? idDaExpansao(dominioAberto.id) : escolhido?.id ?? null}
           onSelecionar={setEscolhidoId}
-          renderItem={(item, selecionado) => (
-            <FeiticoLinha feitico={item.feitico} resumo={resumoDe(item.id)} selecionado={selecionado} />
+          renderItem={(item, selecionado) => (item.dominio
+            // "Ativa" só diz algo quando há mais de uma: a única é sempre a escolhida.
+            ? <ExpansaoLinha dominio={item.dominio} ativa={dominios.length > 1 && derived.dominios?.ativoId === item.dominio.id} selecionado={selecionado} />
+            : <FeiticoLinha feitico={item.feitico} resumo={resumoDe(item.id)} selecionado={selecionado} />
           )}
-          onNova={podeCriar ? () => novoFeitico() : null}
-          rotuloNovo="Novo Feitiço"
+          onNova={podeCriar ? () => novoFeitico() : temExpansao ? novaExpansao : null}
+          rotuloNovo={podeCriar ? "Novo Feitiço" : "Nova Expansão"}
           rotuloBusca="Buscar Feitiço"
           rotuloVazio="Nenhum Feitiço encontrado"
         >
@@ -5423,6 +5242,8 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
               feitico={escolhido}
               ctx={ctx}
               nivelMax={nivelMax}
+              resumo={resumoDe(escolhido.id)}
+              tecnicasMaximas={derived.feiticos.tecnicasMaximas}
               tiposPermitidos={tiposPermitidos}
               efeitosPassivo={efeitosPassivoComPreview(escolhido)}
               fontesDano={fontesDano}
@@ -5432,6 +5253,35 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
               onPatch={(partial) => patchFeitico(escolhido.id, partial)}
               onRemove={() => removeFeitico(escolhido.id)}
               onDuplicate={() => duplicar(escolhido.id)}
+              temExpansao={temExpansao}
+              onAbrirExpansao={() => abrirExpansao(escolhido)}
+            />
+          )}
+          {dominioAberto && dominioApi && (
+            <DominioEditor
+              key={dominioAberto.id}
+              linha={dominioAberto}
+              info={derived.dominios}
+              versoes={versoesDominio}
+              tiposDano={TIPOS_DANO_DA_EXPANSAO}
+              condicoesCatalogo={CONDICOES_CATALOGO}
+              feiticos={lista.map((f) => ({ id: f.id, nome: f.nome || "Sem nome" }))}
+              renderMotor={(motor, onMotor) => (
+                <MotorEfeitosEditor
+                  efeitos={motor}
+                  onChange={onMotor}
+                  rotulo="Efeito no Motor (opcional)"
+                  comModo={false}
+                  pericias={derived.testes?.pericias}
+                  fontesDano={fontesDano}
+                  dslContexto={derived.contextoDsl}
+                  dslExtras={derived.combate?.estadosExtras}
+                />
+              )}
+              onPatch={(partial) => dominioApi.patchDominio(dominioAberto.id, partial)}
+              onRemove={() => dominioApi.removeDominio(dominioAberto.id)}
+              onAtivo={dominioApi.setDominioAtivo}
+              onNova={temExpansao ? novaExpansao : null}
             />
           )}
         </ListaLateral>
@@ -5750,7 +5600,7 @@ function subAbasDoFeitico(f) {
  * leitura e o campo que o edita ficava logo abaixo, dentro do corpo aberto: dois
  * lugares para o mesmo dado. Mesma correção que a Invocação levou.
  */
-function FeiticoCard({ feitico, ctx, nivelMax, tiposPermitidos, efeitosPassivo, fontesDano, dslGrupos, invocacoes, travaDeUso, onPatch, onRemove, onDuplicate }) {
+function FeiticoCard({ feitico, ctx, nivelMax, resumo, tecnicasMaximas, tiposPermitidos, efeitosPassivo, fontesDano, dslGrupos, invocacoes, travaDeUso, onPatch, onRemove, onDuplicate, temExpansao = false, onAbrirExpansao = null }) {
   const [confirmDel, setConfirmDel] = useState(false);
   const [subtab, setSubtab] = useState("base");
   const ocular = habilidadeOcularAgulha(feitico);
@@ -5762,13 +5612,12 @@ function FeiticoCard({ feitico, ctx, nivelMax, tiposPermitidos, efeitosPassivo, 
       <button type="button" onClick={onRemove} className="text-rose-300" aria-label={`Remover ${ocular.nome}`}>Remover</button>
     </div>
   );
-  const calculoBase = feitico.tipo === "dano" ? calcularFeiticoDano(feitico, ctx)
-    : feitico.tipo === "auxiliar" ? calcularFeiticoAuxiliar(feitico, ctx)
-      : feitico.tipo === "curativo" ? calcularFeiticoCurativo(feitico, ctx)
-        : feitico.tipo === "especial" ? calcularFeiticoEspecial(feitico, ctx)
-          : feitico.tipo === "personalizado" ? calcularFeiticoPersonalizado(feitico, ctx)
-            : feitico.tipo === "passivo" ? calcularFeiticoPassivo(feitico, ctx)
-              : null;
+  /* ⚠ PELA PORTA ÚNICA desde 2026-10-08: a Técnica Máxima oficial sai na escala
+     dela (Nível 5 ou `max`) e com o custo de 25, igual à Ficha. Os editores
+     recebem a cópia escalada, para os tetos (acerto, CD, golpes) saírem na
+     escala certa. */
+  const calculoBase = calcularFeitico(feitico, ctx);
+  const feiticoEscala = feiticoNaEscala(feitico, ctx);
   const calc = aplicaReducoesCustoFeitico(feitico, calculoBase, ctx);
   // Agrega avisos do Feitiço e dos sub-efeitos (Múltiplos Efeitos), para a barra
   // não mentir o número.
@@ -5800,8 +5649,8 @@ function FeiticoCard({ feitico, ctx, nivelMax, tiposPermitidos, efeitosPassivo, 
   /* As opções que deixariam o Feitiço sem dado, travadas (autor, 2026-09-29).
      Calculadas aqui uma vez só, porque o Nível mora na Identidade e o resto
      no editor. Só o Dano e o Dano na Alma têm dado a perder pela Conjuração. */
-  const semDado = opcoesSemDadoFeitico(feitico);
-  const propsEditor = { feitico, calc, onPatch, aba: abaAtiva, semDado };
+  const semDado = opcoesSemDadoFeitico(feiticoEscala);
+  const propsEditor = { feitico: feiticoEscala, calc, onPatch, aba: abaAtiva, semDado };
 
   return (
     <div className="rounded-lg border border-slate-800 bg-slate-950/40">
@@ -5843,6 +5692,19 @@ function FeiticoCard({ feitico, ctx, nivelMax, tiposPermitidos, efeitosPassivo, 
             a decisão que TROCA O EDITOR INTEIRO: a primeira que se toma e a
             última que se percebe. O ícone é o mesmo que a miniatura e a Ficha
             usam, então o tipo passa a ser reconhecível sem ler. */}
+        {/* A TÉCNICA MÁXIMA (2026-10-08): o painel dela, e a oficial troca os chips
+            de Tipo e o Nível pela Natureza e pela escala derivada. A LEGACY segue
+            editável como sempre foi. */}
+        {ehTecnicaMaxima(feitico) && (
+          <TecnicaMaximaPainel
+            feitico={feitico}
+            resumo={resumo}
+            tecnicasMaximas={tecnicasMaximas}
+            nivelMax={nivelMax}
+            onPatch={onPatch}
+          />
+        )}
+        {!ehTecnicaMaximaOficial(feitico) && (
         <div className="flex flex-wrap gap-1.5" role="group" aria-label="Tipo do Feitiço">
           {tiposDaLinha.map((t) => {
             const on = t.value === feitico.tipo;
@@ -5864,16 +5726,19 @@ function FeiticoCard({ feitico, ctx, nivelMax, tiposPermitidos, efeitosPassivo, 
             );
           })}
         </div>
+        )}
 
         {/* Os botões já são os números do nível, então não levam rótulo em cima:
             é a mesma escolha dos chips de Grau da Invocação. */}
-        <NivelFeiticoPicker
-          value={feitico.nivel}
-          onChange={(n) => onPatch(patchNivelFeitico(feitico, n))}
-          nivelMax={nivelMax}
-          nivelMin={feitico.tipo === "curativo" ? 1 : 0}
-          niveisSemDado={semDado.niveis}
-        />
+        {!ehTecnicaMaximaOficial(feitico) && (
+          <NivelFeiticoPicker
+            value={feitico.nivel}
+            onChange={(n) => onPatch(patchNivelFeitico(feitico, n))}
+            nivelMax={nivelMax}
+            nivelMin={feitico.tipo === "curativo" ? 1 : 0}
+            niveisSemDado={semDado.niveis}
+          />
+        )}
       </div>
 
       <div className="px-3 pb-3">
@@ -5919,7 +5784,7 @@ function FeiticoCard({ feitico, ctx, nivelMax, tiposPermitidos, efeitosPassivo, 
           ) : feitico.tipo === "curativo" ? (
             <FeiticoCurativoEditor {...propsEditor} />
           ) : feitico.tipo === "especial" ? (
-            <FeiticoEspecialEditor {...propsEditor} ctx={ctx} />
+            <FeiticoEspecialEditor {...propsEditor} ctx={ctx} tecnicasMaximas={tecnicasMaximas} ehTecnicaMaximaOficial={ehTecnicaMaximaOficial(feitico)} temExpansao={temExpansao} onAbrirExpansao={onAbrirExpansao} />
           ) : feitico.tipo === "passivo" ? (
             <FeiticoPassivoEditor
               feitico={feitico}
@@ -6774,21 +6639,36 @@ function NotasDaCura({ calc }) {
    dano de alvo único). Nos outros quatro `subAbasDoFeitico` devolve uma aba só,
    e a tira de abas nem chega a nascer.
    --------------------------------------------------------------- */
-function FeiticoEspecialEditor({ feitico, calc, ctx, onPatch, aba, semDado }) {
+function FeiticoEspecialEditor({ feitico, calc, ctx, onPatch, aba, semDado, tecnicasMaximas = null, ehTecnicaMaximaOficial: ocultarSubtipos = false, temExpansao = false, onAbrirExpansao = null }) {
   const f = feitico;
   const sub = f.especialSubtipo || "golpeador";
   const props = { feitico: f, calc, onPatch, aba, semDado };
+  /* ⚠ OS DOIS ITENS NOVOS DO TIPO DE ESPECIAL (DA-18, 2026-10-08) não são
+     subtipos: a Técnica Máxima converte ESTE Feitiço (a natureza fica no
+     `tipo`), e a Expansão de Domínio é uma porta para `creature.dominios`, sem
+     gravar nada aqui. A Técnica Máxima oficial não mostra esta fileira: a
+     Natureza dela mora no painel, e é o que impede Especial → Técnica Máxima
+     → Especial → Técnica Máxima. */
+  const extras = opcoesExtrasDeEspecial({ tecnicasMaximas, temExpansao: temExpansao && !!onAbrirExpansao });
+  const escolherSubtipo = (v) => {
+    if (v === OPCAO_TECNICA_MAXIMA) return onPatch(patchParaTecnicaMaxima(f));
+    if (v === OPCAO_EXPANSAO_DOMINIO) return onAbrirExpansao?.();
+    return onPatch({ especialSubtipo: v });
+  };
   return (
     <div className="space-y-3">
       {/* O subtipo só aparece na Base: repeti-lo nas outras abas gastaria uma
           fila de chips por aba sem nunca ser o que se veio mexer ali. */}
-      {aba === "base" && (
+      {/* ⚠ A IDENTIDADE VEM POR PROP, e não do `f`: o editor recebe a cópia ESCALADA,
+          que na escala 5 tem `nivel: 5` e já não parece Técnica Máxima. */}
+      {aba === "base" && !ocultarSubtipos && (
         <div>
           <FieldLabel>Tipo de Especial</FieldLabel>
           <OptionChips
             value={sub}
-            onChange={(v) => onPatch({ especialSubtipo: v })}
-            options={ESPECIAL_SUBTIPOS.map((s) => ({ value: s.value, label: s.label }))}
+            onChange={escolherSubtipo}
+            options={[...ESPECIAL_SUBTIPOS.map((s) => ({ value: s.value, label: s.label })), ...extras.opcoes]}
+            disabledValues={extras.bloqueadas}
           />
         </div>
       )}
@@ -6874,7 +6754,9 @@ function GolpeadorEditor({ feitico, calc, onPatch, aba }) {
           />
         </div>
         {maxGolpes > 1 && (
-          <div title="Cada golpe extra divide o dano adicional e tira 3 do acerto">
+          /* O prejuízo vem do CÁLCULO (2026-10-08): a Técnica Máxima tira 2, e o
+             editor recebe a cópia escalada, que na escala 5 não sabe disso. */
+          <div title={`Cada golpe extra divide o dano adicional e tira ${calc?.golpes?.penalidadePorGolpe ?? 3} do acerto`}>
             <FieldLabel>Golpes</FieldLabel>
             <NivelSegmentos value={golpes} min={1} max={maxGolpes} onChange={(v) => onPatch({ golpesGolpeador: v })} />
           </div>
@@ -12242,6 +12124,9 @@ function TabAptidoes({
     // Quanto o pré-requisito de NÍVEL desce (canal `reduzNivelAptidao`). Zero
     // em toda ficha sem um Addon que o emita.
     reduzNivelAptidao: derived.reduzNivelAptidao,
+    // O maior Nível de Feitiço acessível, para o requisito `nivelFeitico` da
+    // Técnica Máxima (2026-10-08). Mesmo número da aba de Feitiços.
+    nivelFeiticoMax: derived.feiticos?.nivelMax ?? null,
   };
 
   const [catTab, setCatTab] = useState("aura");
@@ -12632,6 +12517,8 @@ function SecaoRecolhivel({ titulo, resumo, defaultOpen = false, children }) {
 function MotorEfeitosEditor({
   efeitos, onChange, pericias, fontesDano, dslContexto, dslExtras,
   rotulo = "Motor de Automação (efeitos enquanto equipada)",
+  // O Efeito Especial da Expansão vale enquanto ela está no ar: não há Ativa nem Passiva.
+  comModo = true,
 }) {
   // A Habilidade Única lê o contexto normal da criatura mais as variáveis do
   // próprio item. `grau`, por exemplo, é o grau REAL da Ferramenta, não o grau
@@ -12705,12 +12592,14 @@ function MotorEfeitosEditor({
                   : <p className="text-[10px] text-rose-400 mt-0.5">{chk.error}</p>
               )}
             </div>
-            <BoolChip
-              ativo={ef.modo === "ativa"}
-              onToggle={() => patch(i, { modo: ef.modo === "ativa" ? "passiva" : "ativa" })}
-            >
-              {ef.modo === "ativa" ? "Ativa" : "Passiva"}
-            </BoolChip>
+            {comModo ? (
+              <BoolChip
+                ativo={ef.modo === "ativa"}
+                onToggle={() => patch(i, { modo: ef.modo === "ativa" ? "passiva" : "ativa" })}
+              >
+                {ef.modo === "ativa" ? "Ativa" : "Passiva"}
+              </BoolChip>
+            ) : <span aria-hidden="true" />}
             <button
               type="button"
               onClick={() => remove(i)}

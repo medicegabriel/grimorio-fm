@@ -53,6 +53,8 @@ import PainelDeRolagens from "./PainelDeRolagens";
 import BuscaGlobal from "./BuscaGlobal";
 import PainelDeAparencia from "./PainelDeAparencia";
 import PainelBloodfeast, { ConjuracaoBloodfeast } from "./PainelBloodfeast";
+import ControleTecnicaMaxima from "./ControleTecnicaMaxima";
+import ControleExpansao, { PainelExaustaoTecnica } from "./ControleExpansao";
 import AbaAcoes from "./abas/AbaAcoes";
 import PainelDharma from "./PainelDharma";
 import PainelDeAdaptacao from "./PainelDeAdaptacao";
@@ -231,6 +233,10 @@ export default function AftyFicha({
          lista de opções pelo motivo de sempre: um derive de comparação sem elas
          creditaria o -10 do Paralisado a cada estado ligado. */
       condicoes: sessaoBruta.condicoes,
+      /* A EXAUSTÃO DE TÉCNICA (DA-16, 2026-10-08) é trava de derive: os Feitiços
+         saem marcados indisponíveis e os efeitos ativos e passivos dos Feitiços
+         saem do Motor. Mesma porta das condições, pelo mesmo motivo. */
+      exaustaoTecnica: sessaoBruta.exaustaoTecnica,
     }),
     [sessaoBruta],
   );
@@ -569,9 +575,10 @@ export default function AftyFicha({
     atualiza((s) => aplicaPerdaDeVida(registraRolagem(s, r), r.total));
   }, [atualiza]);
 
+  // O derive vai junto para o seletor da Expansão pagar o PE e cobrar a Exaustão (Etapa 9).
   const alteraEstado = useCallback((estado, valor) => {
-    atualiza((s) => alteraEstadoCombate(s, estado, valor));
-  }, [atualiza]);
+    atualiza((s) => alteraEstadoCombate(s, estado, valor, derived));
+  }, [atualiza, derived]);
 
   /* `id` é o gancho estável do tema (`[data-afty-stat="defesa"]`), e por isso
      ele NÃO é derivado do rótulo: renomear "RD Espec." na tela não pode quebrar
@@ -670,6 +677,9 @@ export default function AftyFicha({
       <AbaAcoes
         bloodfeast={<PainelBloodfeast derived={derived} sessao={sessao} onSessao={atualiza} />}
         conjuracaoBloodfeast={(f) => <ConjuracaoBloodfeast f={f} derived={derived} sessao={sessao} onSessao={atualiza} />}
+        controleTecnicaMaxima={(f) => <ControleTecnicaMaxima f={f} sessao={sessao} onSessao={atualiza} />}
+        controleExpansao={(d) => <ControleExpansao d={d} sessao={sessao} onSessao={atualiza} rolar={rolar} feiticaria={derived.testes?.pericias?.find((p) => p.id === "feiticaria")?.bonus ?? null} />}
+        exaustaoTecnica={<PainelExaustaoTecnica sessao={sessao} onSessao={atualiza} />}
         derived={derived}
         adaptacao={<PainelDeAdaptacao derived={derived} onSessao={atualiza} />}
         vislumbre={<PainelDoVislumbre derived={derived} sessao={sessao} onSessao={atualiza} />}
@@ -760,8 +770,9 @@ export default function AftyFicha({
            condições derrubam a Guarda Inabalável, e escrever direto deixaria o
            chefe com a Guarda de pé debaixo de um Atordoado. */
         onCondicoes={(condicoes) => atualiza((s) => defineCondicoes(s, condicoes))}
-        /* O Nível de Exaustão é da SESSÃO e de todo mundo: seis Lendárias e a
-           Expansão de Domínio dão exaustão em texto e não tinham onde marcar. */
+        /* O Nível de Exaustão é da SESSÃO e de todo mundo: seis Lendárias dão
+           exaustão em texto e não tinham onde marcar. ⚠ A Expansão de Domínio dá
+           OUTRA coisa, a Exaustão de Técnica (`exaustaoTecnica`, E-16). */
         onExaustao={(exaustao) => atualiza((s) => ({ ...s, exaustao: Math.max(0, Math.trunc(exaustao) || 0) }))}
         onConceder={(familia, id) => atualiza((s) => concedeNaSessao(s, familia, id))}
         onRemoverConcessao={(uid) => atualiza((s) => removeConcessao(s, uid))}

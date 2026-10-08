@@ -41,6 +41,8 @@ import {
 import { rolarDano } from "./ficha-rolagem";
 import { normalizaBloodfeast, pagaVidaBloodfeast, rodadaBloodfeast } from "../afty-bloodfeast";
 import { normalizaDharma, avancarRodadaDharma } from "../afty-dharma";
+// As fases da Expansão no ar (2026-10-08). Módulo FOLHA, sem ciclo.
+import { FASES_DOMINIO } from "../afty-dominios";
 
 const CHAVE_BASE = "fm_ficha_sessao_afty_v1";
 const LOG_MAX = 50;
@@ -115,15 +117,20 @@ export function sessaoEmBranco(derived = null) {
     guardaEncerrada: false,
     /* NÍVEL DE EXAUSTÃO (2026-09-09). Nasceu com o Vislumbre Celeste, cuja
        Fadiga Mental vira Exaustão ao encher, mas NÃO é dele: seis Habilidades
-       Lendárias e a Expansão de Domínio dizem "você recebe um ponto de
-       exaustão" desde sempre, e a ficha não tinha onde marcar. Por isso ele fica
-       aqui, na sessão de todo mundo, e não atrás de primitiva nenhuma.
+       Lendárias dizem "você recebe um ponto de exaustão" desde sempre, e a
+       ficha não tinha onde marcar. Por isso ele fica aqui, na sessão de todo
+       mundo, e não atrás de primitiva nenhuma.
+
+       ⚠ NÃO É A EXAUSTÃO DE TÉCNICA da Expansão de Domínio (E-16, 2026-10-08).
+       Aquela é rodadas de técnica inutilizável, e mora em `exaustaoTecnica`.
 
        ⚠ O QUE UM NÍVEL FAZ AINDA NÃO TEM FONTE NO AFTY. "Exausto" existe como
        nome de condição na lista da 2.5.2 e o `CONDICAO_TEXTOS` daqui está vazio,
        esperando o autor. Até lá o contador CONTA e MOSTRA, e a penalidade é de
        mesa. Está em docs/a-fazer.md. */
     exaustao: 0,
+    // A Exaustão de Técnica da Expansão (DA-16). Ver `encerraExpansao`.
+    exaustaoTecnica: null,
     combate: {},
     condicoes: [],
     buffs: [],
@@ -174,6 +181,8 @@ export function sessaoEmBranco(derived = null) {
     // Interruptores manuais de efeitos condicionais abertos por Treinamentos.
     treinosAtivos: {},
     usos: {},
+    // A recarga das Técnicas Máximas, por id do Feitiço (2026-10-08).
+    recargas: {},
     ultimoFeiticoDanoId: null,
     rituais: {},
     ritualAtual: null,
@@ -236,6 +245,7 @@ export function normalizaSessao(bruta, derived = null) {
     pvTempFontes: normalizaPvTemp(bruta.pvTempFontes, bruta.pvTempAtual),
     // Sessão gravada antes de 2026-09-09 não tem o campo, e zero é o certo.
     exaustao: Math.max(0, Math.trunc(Number(bruta.exaustao) || 0)),
+    exaustaoTecnica: normalizaExaustaoTecnica(bruta.exaustaoTecnica),
     peTempFontes: normalizaPeTemp(bruta.peTempFontes),
     ...almaLida(bruta, base, derived),
     rodada: Math.max(0, inteiro(bruta.rodada, 0)),
@@ -243,6 +253,7 @@ export function normalizaSessao(bruta, derived = null) {
     guardaEncerrada: !!bruta.guardaEncerrada,
     combate: bruta.combate && typeof bruta.combate === "object" ? bruta.combate : {},
     usos: bruta.usos && typeof bruta.usos === "object" ? bruta.usos : {},
+    recargas: normalizaRecargas(bruta.recargas),
     ultimoFeiticoDanoId: typeof bruta.ultimoFeiticoDanoId === "string"
       ? bruta.ultimoFeiticoDanoId
       : null,
@@ -772,12 +783,13 @@ export function saiDeCampo(sessao, invId) {
     if (emCombateNaSessao(sessao)) return sessao;
     return comInvocacao(sessao, invId, COMPOSTO_DESFEITO);
   }
-  return comInvocacao(sessao, invId, {
+  // O Shikigami de Técnica Máxima dissipado solta a recarga dela (2026-10-08).
+  return soltaRecargasDaInvocacao(comInvocacao(sessao, invId, {
     estado: "guardada", auxilios: {}, pvTempFontes: {}, auras: {}, forma: null, autonomia: false, sobrecargaPv: 0,
     rodadasAtiva: 0, manutencaoPendente: false,
     // A Quimera (e o grupo de núcleos) guardados soltam as componentes.
     componentes: [],
-  });
+  }), invId);
 }
 
 /** O combate está correndo: a rodada saiu do zero ou o Encontro o abriu. */
@@ -2068,13 +2080,17 @@ export function proximaRodada(sessao, derived = null) {
      `descansar`: quem não conseguiu calcular a ficha não sabe quanto entregar. */
   /* Os contadores "uma vez por rodada" voltam na virada (prefixo `rodada:` na
      chave, 2026-09-28). Ver `mesa` em afty-derive.js. */
-  const base = {
+  /* A Exaustão de Técnica desce, e a Expansão no ar perde uma rodada da duração
+     (Etapa 9). Ver `avancaExpansaoNaRodada`. */
+  const base = avancaExpansaoNaRodada({
     ...devolveUsos(sessao, (k) => k.startsWith("rodada:")),
+    // A recarga da Técnica Máxima desce uma rodada (DA-08). Ver `avancaRecargas`.
+    recargas: avancaRecargas(sessao),
     rodada: sessao.rodada + 1,
     combate: expirarEstadosDaRodada(sessao.combate, derived),
     buffs: sessao.buffs.map(desce).filter(Boolean),
     condicoes: sessao.condicoes.map(desce).filter(Boolean),
-  };
+  });
   /* ⚠ SAIR DA RODADA 0 É COMEÇAR A CENA, e por isso a casca de `combate` entra
      junto aqui. A Ficha não tem botão de "iniciar combate": o que ela tem é o
      contador de rodada, que o Descansar zera. Sem esta linha, os 4 PE do Treino
@@ -2207,16 +2223,20 @@ export function descansar(sessao, derived, { marioneteId = null } = {}) {
     peTempFontes: {},
     exaustao: Math.max(0, inteiro(sessao.exaustao, 0))
       + (sessao.combate?.invencivelPendenteExaustao ? 1 : 0),
+    // A Expansão no ar fecha sem Exaustão: o descanso devolve tudo.
     combate: expirarEstadosDaRodada(semApice({
-      ...(sessao.combate ?? {}), invencivelSobOSol: false,
+      ...(encerraExpansao(sessao, "descanso").combate ?? {}), invencivelSobOSol: false,
       invencivelRodadas: 0, invencivelPendenteExaustao: false,
     }), derived, { descanso: true }),
+    exaustaoTecnica: null,
     rodada: 0,
     // A Guarda volta a zero com a rodada: fora de combate não há guarda erguida,
     // e o próximo `iniciaCombate` (ou a saída da rodada 0) a reergue cheia.
     guardaGolpes: 0,
     guardaEncerrada: false,
     usos: {},
+    // A recarga da Técnica Máxima zera no descanso (DA-08).
+    recargas: {},
     // Só a Marionete escolhida recebe o reparo completo. As outras não enchem.
     invocacoes: descansaInvocacoes(mesa.invocacoes, derived, marioneteId),
     // A Reserva para Invocação volta com o descanso (2026-09-30).
@@ -2261,6 +2281,315 @@ export function marcaUso(sessao, usos, delta) {
   const depois = Math.max(0, Math.min(max, Math.min(max, antes) + inteiro(delta, 0)));
   if (depois === antes) return sessao;
   return { ...sessao, usos: { ...(sessao.usos || {}), [usos.chave]: depois } };
+}
+
+/* ============================================================ */
+/* RECARGA DA TÉCNICA MÁXIMA (autor, 2026-10-08)                 */
+/* ============================================================ */
+/* "após ser usada, você deve esperar uma quantidade de rodadas igual a 6 –
+   metade do seu Bônus de Treinamento para poder utilizá-la novamente."
+
+   A sessão guarda, por id do Feitiço, quantas rodadas FALTAM. O total vem da
+   linha pronta do derive (`tecnicaMaxima.recarga`), que é o único lugar que
+   conhece o BT e o Manual de Técnica.
+
+   ⚠ O SHIKIGAMI ESPERA A DISSIPAÇÃO (DA-03, regra de identidade): "O tempo de
+   recarga da sua Técnica Máxima, caso seja de Criação de Shikigami, passa a ser
+   contabilizado após ele ser dissipado." A recarga fica `aguardando: "dissipar"`
+   e só começa quando a invocação ligada sai de campo depois de ter estado nele
+   (`vistoEmCampo`). Sem isso, usar a Técnica antes de pôr o shikigami em campo
+   soltaria a recarga na virada seguinte. Há também o botão manual.
+
+   ⚠ O FIM DO COMBATE NÃO ZERA (DA-08): ela desce pelas rodadas da sessão, aceita
+   ajuste à mão e zera no descanso. */
+function normalizaRecargas(bruto) {
+  const out = {};
+  if (!bruto || typeof bruto !== "object") return out;
+  for (const [id, r] of Object.entries(bruto)) {
+    if (!r || typeof r !== "object") continue;
+    const restantes = Math.max(0, inteiro(r.restantes, 0));
+    const aguardando = r.aguardando === "dissipar" ? "dissipar" : null;
+    if (!restantes && !aguardando) continue;
+    out[id] = {
+      restantes,
+      aguardando,
+      invocacaoId: typeof r.invocacaoId === "string" ? r.invocacaoId : null,
+      vistoEmCampo: !!r.vistoEmCampo,
+      total: Math.max(restantes, inteiro(r.total, restantes)),
+    };
+  }
+  return out;
+}
+
+/** A recarga corrente de uma Técnica Máxima, ou `null` quando ela está livre. */
+export const recargaDe = (sessao, id) => normalizaRecargas(sessao?.recargas)[id] ?? null;
+
+/**
+ * O que a Ficha precisa saber para o botão Usar: se dá, e por que não dá.
+ * `linha` é a linha pronta do Feitiço (`derived.feiticos.lista`). A ordem dos
+ * motivos é a ordem em que a mesa os resolveria: a regra, a trava, a recarga e
+ * por último o PE.
+ */
+export function situacaoDaTecnicaMaxima(sessao, linha) {
+  const tm = linha?.tecnicaMaxima;
+  if (!tm) return null;
+  const recarga = recargaDe(sessao, linha.id);
+  const custo = Math.max(0, inteiro(linha.custoPE, 0));
+  const peDisponivel = Math.max(0, inteiro(sessao?.peAtual, 0)) + peTempTotal(sessao);
+  let motivo = null;
+  if (tm.valida === false) motivo = "Indisponível";
+  else if (linha.bloqueado) motivo = linha.bloqueado;
+  else if (recarga?.aguardando) motivo = "Aguarda Dissipar";
+  else if (recarga?.restantes > 0) motivo = `Recarga ${recarga.restantes}`;
+  else if (peDisponivel < custo) motivo = "PE Insuficiente";
+  return { disponivel: !motivo, motivo, recarga, custo, total: Math.max(0, inteiro(tm.recarga, 0)) };
+}
+
+/**
+ * Usar a Técnica Máxima (DA-08): confere a disponibilidade, o requisito e o PE,
+ * gasta o custo final pelo `gastaPe` (casca primeiro, como todo gasto) e abre a
+ * recarga. A rolagem continua sendo a da linha, que a Ficha oferece como sempre.
+ * Sem condição de uso, nada muda.
+ */
+export function usaTecnicaMaxima(sessao, linha) {
+  const s = situacaoDaTecnicaMaxima(sessao, linha);
+  if (!s?.disponivel) return sessao;
+  const pago = s.custo > 0 ? gastaPe(sessao, s.custo) : sessao;
+  if (!s.total) return pago;
+  const invocacaoId = linha.tecnicaMaxima.invocacaoId ?? null;
+  const aguarda = linha.tecnicaMaxima.inicioRecarga === "aoDissipar";
+  const entrada = aguarda
+    ? {
+      restantes: 0, aguardando: "dissipar", invocacaoId, total: s.total,
+      vistoEmCampo: !!invocacaoId && estadoDaInvocacao(pago, invocacaoId).estado === "ativa",
+    }
+    : { restantes: s.total, aguardando: null, invocacaoId: null, total: s.total, vistoEmCampo: false };
+  return { ...pago, recargas: { ...normalizaRecargas(pago.recargas), [linha.id]: entrada } };
+}
+
+/** O botão manual do Shikigami: a invocação se foi, a recarga começa agora. */
+export function iniciaRecargaPendente(sessao, id) {
+  const r = recargaDe(sessao, id);
+  if (!r?.aguardando) return sessao;
+  return {
+    ...sessao,
+    recargas: { ...normalizaRecargas(sessao.recargas), [id]: { ...r, aguardando: null, restantes: r.total } },
+  };
+}
+
+/** Ajuste à mão das rodadas que faltam (nunca abaixo de zero). */
+export function ajustaRecarga(sessao, id, delta) {
+  const recargas = normalizaRecargas(sessao?.recargas);
+  const atual = recargas[id] ?? { restantes: 0, aguardando: null, invocacaoId: null, total: 0, vistoEmCampo: false };
+  const restantes = Math.max(0, atual.restantes + inteiro(delta, 0));
+  const proximo = { ...recargas, [id]: { ...atual, restantes, total: Math.max(atual.total, restantes) } };
+  return { ...sessao, recargas: normalizaRecargas(proximo) };
+}
+
+/* A invocação saiu de campo: toda recarga que esperava por ela começa. */
+function soltaRecargasDaInvocacao(sessao, invId) {
+  const recargas = normalizaRecargas(sessao?.recargas);
+  let mudou = false;
+  for (const [id, r] of Object.entries(recargas)) {
+    if (r.aguardando && r.invocacaoId === invId) {
+      recargas[id] = { ...r, aguardando: null, restantes: r.total };
+      mudou = true;
+    }
+  }
+  return mudou ? { ...sessao, recargas } : sessao;
+}
+
+/* A virada da rodada: a pendente vê se o shikigami esteve e saiu de campo, e a
+   corrente desce um. A que zera some. */
+function avancaRecargas(sessao) {
+  const out = {};
+  for (const [id, r] of Object.entries(normalizaRecargas(sessao?.recargas))) {
+    let atual = r;
+    if (atual.aguardando && atual.invocacaoId) {
+      const emCampo = estadoDaInvocacao(sessao, atual.invocacaoId).estado === "ativa";
+      if (emCampo) atual = { ...atual, vistoEmCampo: true };
+      else if (atual.vistoEmCampo) atual = { ...atual, aguardando: null, restantes: atual.total };
+    }
+    if (atual.aguardando) { out[id] = atual; continue; }
+    const restantes = atual.restantes - 1;
+    if (restantes > 0) out[id] = { ...atual, restantes };
+  }
+  return out;
+}
+
+/* ============================================================ */
+/* A EXPANSÃO DE DOMÍNIO NA SESSÃO (Etapa 9, 2026-10-08)          */
+/* ============================================================ */
+/**
+ * A Expansão aberta mora no `combate` da sessão, que é o que o derive lê:
+ *   • `dominioAtivo`: o id (o booleano antigo continua valendo, ver
+ *     `resolveCombate`);
+ *   • `dominioFase`: `ativa`, `confronto`, `estendido` ou `contestando`
+ *     (DA-15). Sem fase, vale `ativa`;
+ *   • `dominioRodadas`: as rodadas que faltam da duração;
+ *   • `dominioPvDomo` e `dominioPvDomoMax`: o domo, quando a versão tem;
+ *   • `dominioExaustao`: a Exaustão de Técnica que o fechamento vai cobrar,
+ *     fixada na abertura (a versão e o Acerto Garantido daquela hora);
+ *   • `dominioNome`: o nome, para o registro do fechamento.
+ *
+ * A EXAUSTÃO DE TÉCNICA (DA-16) é outro contador, `sessao.exaustaoTecnica`
+ * `{ restantes, total, fonte }`, e NÃO é o Nível de Exaustão (`sessao.exaustao`).
+ * Livro: 1 rodada na Incompleta, 2 na Completa, 4 na Completa com Acerto
+ * Garantido e 5 na Sem Barreiras, "só aplicada após o domínio ser desmanchado".
+ * Ela desce na virada da rodada, aceita ajuste à mão e zera no descanso.
+ */
+const CHAVES_DA_EXPANSAO = [
+  "dominioFase", "dominioRodadas", "dominioPvDomo", "dominioPvDomoMax", "dominioExaustao", "dominioNome",
+];
+
+export function normalizaExaustaoTecnica(bruto) {
+  const restantes = Math.max(0, inteiro(bruto?.restantes, 0));
+  if (!restantes) return null;
+  return {
+    restantes,
+    total: Math.max(restantes, inteiro(bruto?.total, restantes)),
+    fonte: typeof bruto?.fonte === "string" ? bruto.fonte : "",
+  };
+}
+export const exaustaoTecnicaDe = (sessao) => normalizaExaustaoTecnica(sessao?.exaustaoTecnica);
+
+/** A Expansão aberta na sessão, lida, ou `null`. */
+export function expansaoNaSessao(sessao) {
+  const c = sessao?.combate ?? {};
+  if (!c.dominioAtivo) return null;
+  const opcional = (v) => (v == null ? null : Math.max(0, inteiro(v, 0)));
+  return {
+    id: typeof c.dominioAtivo === "string" ? c.dominioAtivo : null,
+    fase: FASES_DOMINIO.includes(c.dominioFase) ? c.dominioFase : "ativa",
+    rodadas: opcional(c.dominioRodadas),
+    pvDomo: opcional(c.dominioPvDomo),
+    pvDomoMax: opcional(c.dominioPvDomoMax),
+    exaustao: Math.max(0, inteiro(c.dominioExaustao, 0)),
+    nome: typeof c.dominioNome === "string" ? c.dominioNome : "",
+  };
+}
+
+/**
+ * Se a Expansão desta linha pode abrir agora, e por que não. `linha` é a linha
+ * pronta do derive (`derived.dominios.lista`). Ordem dos motivos: o que já está
+ * no ar, a mesa, a regra e por último o PE.
+ *
+ * ⚠ A EXAUSTÃO DE TÉCNICA NÃO TRAVA A ABERTURA. A DA-16 diz que ela não bloqueia
+ * Aptidões, e a Expansão é uma. A leitura é NOVA DECISÃO NECESSÁRIA
+ * (`a-fazer.md`).
+ */
+export function situacaoDaExpansao(sessao, linha) {
+  if (!linha) return null;
+  const aberta = expansaoNaSessao(sessao);
+  const custo = Math.max(0, inteiro(linha.custo, 0));
+  const pe = Math.max(0, inteiro(sessao?.peAtual, 0)) + peTempTotal(sessao);
+  let motivo = null;
+  if (aberta) motivo = aberta.id === linha.id ? "Expansão Aberta" : "Outra Expansão Aberta";
+  else if (!sessao?.combate?.ativo) motivo = "Fora de Combate";
+  else if (linha.valida === false) motivo = "Expansão Inválida";
+  else if (pe < custo) motivo = "PE Insuficiente";
+  return { podeAbrir: !motivo, motivo, custo, aberta: aberta && aberta.id === linha.id ? aberta : null };
+}
+
+/**
+ * ABRIR (Ação Comum, DA-10): paga o PE pelo `gastaPe`, entra na fase `ativa` e
+ * guarda a duração, o domo e a Exaustão que o fechamento vai cobrar. Sem
+ * condição de abrir, nada muda (DA-17: ERRO não abre).
+ */
+export function abreExpansao(sessao, linha) {
+  const s = situacaoDaExpansao(sessao, linha);
+  if (!s?.podeAbrir) return sessao;
+  const pago = s.custo > 0 ? gastaPe(sessao, s.custo) : sessao;
+  const pvDomo = linha.temDomo ? Math.max(0, inteiro(linha.pvBarreira, 0)) : null;
+  return {
+    ...pago,
+    combate: {
+      ...(pago.combate ?? {}),
+      dominioAtivo: linha.id,
+      dominioFase: "ativa",
+      dominioRodadas: Math.max(1, inteiro(linha.duracao, 1)),
+      dominioPvDomo: pvDomo,
+      dominioPvDomoMax: pvDomo,
+      dominioExaustao: Math.max(0, inteiro(linha.exaustaoTecnica, 0)),
+      dominioNome: linha.nome || "Expansão de Domínio",
+    },
+  };
+}
+
+/** Troca de fase (Confronto, Estendido, Contestando, ou de volta a Ativa). */
+export function defineFaseDaExpansao(sessao, fase) {
+  if (!expansaoNaSessao(sessao) || !FASES_DOMINIO.includes(fase)) return sessao;
+  return { ...sessao, combate: { ...sessao.combate, dominioFase: fase } };
+}
+
+/**
+ * FECHAR. `motivo` decide a Exaustão de Técnica:
+ *   • `interrompida`: o Golpe de Oportunidade derrubou a abertura (DA-15). O PE
+ *     fica gasto e não há Exaustão, porque a Expansão nem chegou a abrir;
+ *   • `descanso`: o descanso devolve tudo, a Exaustão junto;
+ *   • os outros (`encerrada`, `duracao`, `domo`, `perdeu`, `fimDoCombate`):
+ *     o domínio foi desmanchado, e a Exaustão começa agora.
+ * A Exaustão nova não soma com a que já corre: fica a maior.
+ */
+export function encerraExpansao(sessao, motivo = "encerrada", linha = null) {
+  const aberta = expansaoNaSessao(sessao);
+  if (!aberta) return sessao;
+  const combate = { ...(sessao.combate ?? {}), dominioAtivo: null };
+  for (const k of CHAVES_DA_EXPANSAO) delete combate[k];
+  const cobra = motivo !== "interrompida" && motivo !== "descanso";
+  const pontos = cobra ? (aberta.exaustao || Math.max(0, inteiro(linha?.exaustaoTecnica, 0))) : 0;
+  combate.dominioUltimoFechamento = { rodada: sessao.rodada ?? 0, motivo, exaustao: pontos, nome: aberta.nome };
+  const atual = exaustaoTecnicaDe(sessao);
+  const exaustaoTecnica = pontos > (atual?.restantes ?? 0)
+    ? { restantes: pontos, total: pontos, fonte: aberta.nome || "Expansão de Domínio" }
+    : atual;
+  return { ...sessao, combate, exaustaoTecnica };
+}
+
+/** O domo perde (ou recupera, com negativo) PV. A zero, ele cai e a Expansão fecha. */
+export function danoNoDomo(sessao, bruto) {
+  const aberta = expansaoNaSessao(sessao);
+  if (aberta?.pvDomo == null) return sessao;
+  return defineDomo(sessao, aberta.pvDomo - inteiro(bruto, 0));
+}
+
+/** O PV do domo à mão, entre 0 e o máximo da abertura. */
+export function defineDomo(sessao, valor) {
+  const aberta = expansaoNaSessao(sessao);
+  if (aberta?.pvDomo == null) return sessao;
+  const teto = aberta.pvDomoMax ?? aberta.pvDomo;
+  const pv = Math.max(0, Math.min(teto, inteiro(valor, aberta.pvDomo)));
+  const com = { ...sessao, combate: { ...sessao.combate, dominioPvDomo: pv } };
+  return pv === 0 ? encerraExpansao(com, "domo") : com;
+}
+
+/** Ajuste à mão das rodadas que faltam da Expansão. A zero, ela fecha. */
+export function ajustaRodadasDaExpansao(sessao, delta) {
+  const aberta = expansaoNaSessao(sessao);
+  if (!aberta || aberta.rodadas == null) return sessao;
+  const rodadas = Math.max(0, aberta.rodadas + inteiro(delta, 0));
+  const com = { ...sessao, combate: { ...sessao.combate, dominioRodadas: rodadas } };
+  return rodadas === 0 ? encerraExpansao(com, "duracao") : com;
+}
+
+/** Ajuste à mão da Exaustão de Técnica. "Curar" (a Lendária de Energia Reversa) é zerar. */
+export function ajustaExaustaoTecnica(sessao, delta) {
+  const atual = exaustaoTecnicaDe(sessao) ?? { restantes: 0, total: 0, fonte: "" };
+  const restantes = Math.max(0, atual.restantes + inteiro(delta, 0));
+  return { ...sessao, exaustaoTecnica: normalizaExaustaoTecnica({ ...atual, restantes, total: Math.max(atual.total, restantes) }) };
+}
+export const curaExaustaoTecnica = (sessao) => ({ ...sessao, exaustaoTecnica: null });
+
+/* A virada da rodada: a Exaustão que já corria desce um, e DEPOIS a Expansão no
+   ar perde uma rodada. A que zera fecha, e a Exaustão dela começa cheia, sem
+   perder a primeira rodada na mesma virada. */
+function avancaExpansaoNaRodada(sessao) {
+  const exaustao = exaustaoTecnicaDe(sessao);
+  const desceu = exaustao && exaustao.restantes > 1 ? { ...exaustao, restantes: exaustao.restantes - 1 } : null;
+  const s = { ...sessao, exaustaoTecnica: desceu };
+  const aberta = expansaoNaSessao(s);
+  if (!aberta || aberta.rodadas == null) return s;
+  return ajustaRodadasDaExpansao(s, -1);
 }
 
 /**
@@ -2376,8 +2705,20 @@ export function estadoUsadoNestaRodada(sessao, id) {
  * uma vez por rodada. Desligar continua permitido, mas não libera uma segunda
  * ativação na mesma rodada.
  */
-export function alteraEstadoCombate(sessao, estado, valor) {
+export function alteraEstadoCombate(sessao, estado, valor, derived = null) {
   if (!estado?.id) return sessao;
+  /* O SELETOR DA EXPANSÃO NA ABA BUFFS passa pelas mesmas funções da linha da
+     Expansão (Etapa 9): abrir paga o PE, fechar cobra a Exaustão de Técnica.
+     Sem o derive (quem chama sem ele não sabe o custo), fica o comportamento
+     antigo de só gravar o id. */
+  if (estado.id === "dominioAtivo" && derived?.dominios?.lista) {
+    const linhaDe = (id) => derived.dominios.lista.find((d) => d.id === id) ?? null;
+    const aberta = expansaoNaSessao(sessao);
+    if (!valor) return aberta ? encerraExpansao(sessao, "encerrada", linhaDe(aberta.id)) : sessao;
+    if (aberta?.id === valor) return sessao;
+    const fechada = aberta ? encerraExpansao(sessao, "encerrada", linhaDe(aberta.id)) : sessao;
+    return abreExpansao(fechada, linhaDe(valor));
+  }
   const combate = sessao?.combate && typeof sessao.combate === "object" ? sessao.combate : {};
   const ativando = !!valor && !combate[estado.id];
   if (estado.id === "invencivelSobOSol") {
@@ -2484,6 +2825,10 @@ function alteraDominioDoEstilo(sessao, combate, estado, valor) {
 
 /** A mudança de combate encerra o Ápice e cobra a Exaustão da rodada aberta. */
 export function aplicaPatchCombate(sessao, parcial) {
+  /* O fim do combate desmancha a Expansão no ar, com a Exaustão de Técnica de
+     sempre (Etapa 9): fora de combate a bancada zera o estado, e deixá-la
+     "aberta" esconderia a Exaustão que ela deve. */
+  if (parcial?.ativo === false && expansaoNaSessao(sessao)) sessao = encerraExpansao(sessao, "fimDoCombate");
   const combate = { ...(sessao?.combate ?? {}), ...parcial };
   if (parcial?.ativo !== false) return { ...sessao, combate };
   return {
