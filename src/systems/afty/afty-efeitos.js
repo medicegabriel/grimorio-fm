@@ -165,6 +165,7 @@ export const EFEITO_CANAIS = [
   { id: "resistenciaDano", label: "Resistência a Dano",  alvo: "tipoDano", nota: "sinalizador" },
   { id: "vulnerabilidadeDano", label: "Vulnerabilidade a Dano", alvo: "tipoDano", nota: "sinalizador" },
   { id: "movimento",     label: "Movimento",             nota: "em metros, aceita 1,5" },
+  { id: "voo",           label: "Deslocamento de Voo",   nota: "em metros, aceita 1,5. Zero é não voar. As condições e o multiplicador de movimento valem nele, e Caído o zera" },
   { id: "movimentoMult", label: "Multiplicador de Movimento", nota: "multiplica o movimento final. A Expansão de Domínio usa 2" },
   { id: "atencao",       label: "Atenção" },
   { id: "iniciativa",    label: "Iniciativa" },
@@ -713,7 +714,7 @@ const GRUPOS_DE_CANAL = [
     "proficienciaTRCasoJa", "margemCriticoTR",
   ]],
   ["Manobras", ["bonusManobra", "resistirManobra", "distanciaEmpurrao"]],
-  ["Movimento e Percepção", ["movimento", "movimentoMult", "iniciativa", "atencao", "tamanho"]],
+  ["Movimento e Percepção", ["movimento", "voo", "movimentoMult", "iniciativa", "atencao", "tamanho"]],
   // Tudo que é "quantos X você pode ter". ⚠ `espacosCarga` estava em Movimento
   // (2026-07-29) porque sobrecarga derruba o deslocamento. Era consequência, não
   // categoria, e o autor pegou: o canal sobe o LIMITE de espaços de item, então

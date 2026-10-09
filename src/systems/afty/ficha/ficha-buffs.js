@@ -272,6 +272,7 @@ const SALDO_STATS = [
   { chave: "rdFisico", rotulo: "RD Física", final: true },
   { chave: "rdAlma", rotulo: "RD a Alma", final: true },
   { chave: "movimento", rotulo: "Movimento", metros: true, final: true },
+  { chave: "voo", rotulo: "Voo", metros: true, final: true },
   { chave: "iniciativa", rotulo: "Iniciativa" },
   { chave: "atencao", rotulo: "Atenção", final: true },
   { chave: "ataquesExtras", rotulo: "Ataques Extras" },

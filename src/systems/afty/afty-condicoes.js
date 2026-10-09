@@ -143,7 +143,9 @@ export const CONDICAO_TEXTOS = {
  *              `pericia:<id>`, `ataque:<id>` e `manobra:<id>`. O `*` vale para
  *              todos os ids daquele tipo e é expandido antes da disputa.
  *   inclui     as condições que esta aplica junto.
- *   movimento  `metade`, `menos` (metros), `teto` (metros) ou `zero`.
+ *   movimento  `metade`, `menos` (metros), `teto` (metros) ou `zero`. `vooZero`
+ *              zera o Deslocamento de Voo (Caído: "Um personagem caído que esteja
+ *              voando imediatamente perde seu deslocamento de voo").
  *   rdZero     Fragilizado: toda RD vai a zero e a resistência é anulada.
  *   custoPE    quanto o custo em PE de TODO gasto sobe (Condenado).
  *   falha      TRs em que a criatura falha automaticamente.
@@ -160,7 +162,7 @@ export const CONDICAO_TEXTOS = {
  */
 export const CONDICAO_EFEITOS = {
   "Abalado":      { mods: [["ataque:*", -1], ["pericia:*", -1]] },
-  "Caído":        { mods: [["ataque:corpo", -3], ["defesa", -3]], movimento: { teto: 4.5 } },
+  "Caído":        { mods: [["ataque:corpo", -3], ["defesa", -3]], movimento: { teto: 4.5, vooZero: true } },
   "Desprevenido": { mods: [["defesa", -3], ["tr:reflexos", -3]] },
   "Sangramento":  { perdaVida: true },
   "Sofrendo":     { mods: [["manobra:concentracao", -5]], movimento: { menos: 3 } },
@@ -306,9 +308,11 @@ const ROTULO_FIXO = {
  */
 const pisoDoQuadrado = (m) => Math.max(0, Math.floor(m / 1.5 + 1e-9) * 1.5);
 
-/** O que cada regra de movimento faz com o valor de entrada. */
-function movimentoDaRegra(regra, base) {
-  if (regra.zero) return 0;
+/** O que cada regra de movimento faz com o valor de entrada. `voo` é o
+    Deslocamento de Voo, que passa pelas mesmas regras (Lento: "Toda forma de
+    movimento") e que o Caído zera. */
+function movimentoDaRegra(regra, base, { voo = false } = {}) {
+  if (regra.zero || (voo && regra.vooZero)) return 0;
   if (regra.metade) return pisoDoQuadrado(base / 2);
   if (regra.menos != null) return Math.max(0, base - regra.menos);
   if (regra.teto != null) return Math.min(base, regra.teto);
@@ -342,7 +346,7 @@ function expandeInclusoes(nome, vistos = new Set()) {
  *   ativas      uma entrada por condição marcada, com o que ela faz e se perdeu
  *   efeitos     as linhas VENCEDORAS, prontas para o Motor
  *   suplantados as perdedoras, no formato de `detalhes`, para o hover riscar
- *   movimento   `(base) => { valor, partes, fonte }`
+ *   movimento   `(base, { voo }) => { valor, partes, fonte }`
  *   fragilizado o nome de quem zerou a RD, ou `null`
  *   falhas      `{ [trId]: [nomes] }`, os TRs de falha automática
  */
@@ -455,9 +459,9 @@ export function resolveCondicoes(lista, alvos = {}) {
   const regrasMov = fontes
     .filter((f) => CONDICAO_EFEITOS[f.nome]?.movimento)
     .map((f) => ({ fonte: f, regra: CONDICAO_EFEITOS[f.nome].movimento }));
-  const movimento = (base) => {
+  const movimento = (base, { voo = false } = {}) => {
     if (!regrasMov.length) return { valor: base, partes: [], fonte: null };
-    const candidatos = regrasMov.map((r) => ({ ...r, valor: movimentoDaRegra(r.regra, base) }));
+    const candidatos = regrasMov.map((r) => ({ ...r, valor: movimentoDaRegra(r.regra, base, { voo }) }));
     const vencedor = candidatos.reduce((a, b) => (b.valor < a.valor ? b : a));
     const partes = candidatos
       .filter((c) => c.valor !== base)

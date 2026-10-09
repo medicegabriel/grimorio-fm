@@ -591,6 +591,8 @@ export default function AftyFicha({
     ...(derived.rdAlma > 0 ? [{ id: "rd-alma", k: "RD a Alma", v: derived.rdAlma, p: "rdAlma" }] : []),
     ...(derived.rdFisico > 0 ? [{ id: "rd-fisica", k: "RD Física", v: derived.rdFisico, p: "rdFisico" }] : []),
     { id: "movimento", k: "Movimento", v: `${numeroBr(derived.movimento)}m`, p: "movimento" },
+    // O Voo só aparece para quem voa (canal `voo`, 2026-10-09).
+    ...(derived.voo > 0 ? [{ id: "voo", k: "Voo", v: `${numeroBr(derived.voo)}m`, p: "voo" }] : []),
     { id: "iniciativa", k: "Iniciativa", v: derived.iniciativa, p: "iniciativa", sinal: true },
     { id: "atencao", k: "Atenção", v: derived.atencao, p: "atencao" },
     { id: "maestria", k: "Maestria", v: derived.maestria, sinal: true },

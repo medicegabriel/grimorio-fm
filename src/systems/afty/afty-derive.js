@@ -2683,6 +2683,19 @@ export function deriveAfty(creature, opcoes = {}) {
   const movimentoCondicao = condicoes.movimento(movimentoSemCondicao);
   const movimento = movimentoCondicao.valor;
 
+  // ---------- Deslocamento de Voo (2026-10-09) ----------
+  /* Só existe com fonte (canal `voo`, aberto com a origem Herdeiro Celeste):
+     zero é não voar, e a Ficha esconde a linha. Passa pelo mesmo multiplicador e
+     pelas mesmas condições do movimento (Lento: "Toda forma de movimento"), e o
+     Caído o zera ("Um personagem caído que esteja voando imediatamente perde
+     seu deslocamento de voo"). O multiplicador valer no voo é leitura de "Seu
+     movimento dobra", registrada em `a-fazer.md`. */
+  const vooBase = Math.max(0, canal("voo"));
+  const vooCondicao = vooBase > 0
+    ? condicoes.movimento(vooBase * movimentoMult, { voo: true })
+    : { valor: 0, partes: [], fonte: null };
+  const voo = vooCondicao.valor;
+
   // ---------- RD Geral ----------
   /* ⚠ A BASE zera no jogador, e só ela. Autor, 2026-08-30: "Começa em 0. E é
      recebida por Itens, Especializações, Aptidões e outras fontes." O bônus de
@@ -3968,6 +3981,16 @@ export function deriveAfty(creature, opcoes = {}) {
       // Por último, porque transforma o valor final. Ver `movimentoCondicao`.
       ...movimentoCondicao.partes,
     ],
+    // O voo, com as mesmas três camadas do movimento: fontes, multiplicador e condição.
+    voo: vooBase > 0 ? [
+      ...doMotor("voo"),
+      ...doMotor("movimentoMult").map((fonte) => ({
+        ...fonte,
+        valor: undefined,
+        texto: `× ${fonte.valor}`,
+      })),
+      ...vooCondicao.partes,
+    ] : [],
     iniciativa: [
       ...(valoresDoJogador ? [] : [{ label: "Maestria ÷ 2", valor: INT(bt / 2) }]),
       { label: "Destreza", valor: modDes },
@@ -4213,6 +4236,8 @@ export function deriveAfty(creature, opcoes = {}) {
 
   return {
     ...stats,
+    // O Deslocamento de Voo, em metros. Zero é não voar (2026-10-09).
+    voo,
     /* LINHA MORTA: o que a ficha cita e o mundo não tem. Lista vazia é o caso
        normal. Quem mostra é a Ficha e o criador, e ela nunca impede nada de
        abrir (decisão 4 do autor). Ver afty-addons.js. */

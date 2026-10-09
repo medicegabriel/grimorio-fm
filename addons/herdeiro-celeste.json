@@ -1,0 +1,39 @@
+{
+  "id": "herdeiro-celeste",
+  "nome": "Herdeiro Celeste",
+  "versao": "1.0.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Nova Origem: o Herdeiro Celeste. Acima do plano humano, os Deuses decidiram criar um pequeno, e graças às suas bênçãos o pequeno garoto vaga em busca de ajudar aqueles que não conseguem se proteger. Bônus em Atributo (3 pontos, até 2 no mesmo atributo), Filho Abençoado (RD geral igual ao Bônus de Treinamento) e Passos Celeste (Deslocamento de Voo de 1,5 metro vezes o Bônus de Treinamento, pelo canal `voo`). Vale nos dois sistemas. Precisa do app com o canal `voo` (2026-10-09).",
+  "acrescenta": {
+    "origens": [
+      {
+        "id": "herdeiro_celeste",
+        "nome": "Herdeiro Celeste",
+        "bonusAtributos": {},
+        "efeitos": [
+          { "canal": "rdGeral", "expr": "bt", "nome": "Filho Abençoado" },
+          { "canal": "voo", "expr": "1.5 * bt", "nome": "Passos Celeste" }
+        ],
+        "caracteristicas": [
+          {
+            "id": "herdeiro_bonus_atributo",
+            "nome": "Bônus em Atributo",
+            "descricao": "Recebe 3 pontos para distribuir entre seus atributos, com um máximo de 2 pontos no mesmo atributo.",
+            "bonus": { "distribuir": 3, "maxPorAtributo": 2 }
+          },
+          {
+            "id": "herdeiro_filho_abencoado",
+            "nome": "Filho Abençoado",
+            "descricao": "Graças à sua mãe e aos seus entes divinos, o pequeno recebe Redução de Dano geral igual ao seu Bônus de Treinamento."
+          },
+          {
+            "id": "herdeiro_passos_celeste",
+            "nome": "Passos Celeste",
+            "descricao": "Sua mãe o ensinou a andar sem tocar no chão. Quando ela vinha visitá-lo, eles andavam sobre as nuvens observando as estrelas. Recebe Deslocamento de Voo igual a 1,5 metro vezes o seu Bônus de Treinamento."
+          }
+        ]
+      }
+    ]
+  }
+}

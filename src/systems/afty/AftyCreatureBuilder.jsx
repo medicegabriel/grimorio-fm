@@ -19475,6 +19475,8 @@ function AftyPreview({ draft, derived }) {
     // escudo saiu daqui em 2026-08-01 e virou RD Geral.
     ...(derived.rdFisico > 0 ? [{ k: "RD Física", v: derived.rdFisico, p: "rdFisico" }] : []),
     { k: "Movimento", v: `${derived.movimento}m`, p: "movimento" },
+    // O Voo só aparece para quem voa (canal `voo`, 2026-10-09).
+    ...(derived.voo > 0 ? [{ k: "Voo", v: `${String(derived.voo).replace(".", ",")}m`, p: "voo" }] : []),
     {
       k: "Tamanho",
       v: `${derived.tamanhoLabel} · ${String(derived.tamanhoEspacoAlcance).replace(".", ",")}m`,

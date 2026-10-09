@@ -218,7 +218,7 @@ Nenhuma migração escrita: tudo é leitura, e nenhum dado antigo é apagado.
 ## Pontos ainda abertos
 
 As ambiguidades novas vão para `docs/a-fazer.md`, no formato NOVA DECISÃO NECESSÁRIA, com o título
-"Técnica Máxima e Expansão de Domínio". Hoje são sete:
+"Técnica Máxima e Expansão de Domínio". Hoje são oito:
 
 1. a área da Sem Barreiras oficial;
 2. o fixo do Golpeador de vários golpes;
@@ -226,6 +226,7 @@ As ambiguidades novas vão para `docs/a-fazer.md`, no formato NOVA DECISÃO NECE
 4. quantas condições cabem num Acerto Garantido de Condição;
 5. abrir uma Expansão durante a Exaustão de Técnica;
 6. o Funcionamento Básico durante a Exaustão;
-7. o fim do combate com a Expansão aberta.
+7. o fim do combate com a Expansão aberta;
+8. o dobro de movimento da Expansão no Deslocamento de Voo (canal `voo`, 2026-10-09).
 
 Cada um está implementado na leitura mais conservadora, marcada lá.

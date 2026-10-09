@@ -422,3 +422,14 @@ Guia da área: `docs/afty-tecnica-maxima-dominio.md`.
   mesma forma `{ canal, expr, alvo? }`, ligadas só com a Expansão no ar. Ficam de fora os
   canais de Orçamentos, de Barreira e Domínio, e `nivelAptidao` e `limiteAptidao`
   (`canalPermitidoEmExpansao`).
+
+## Deslocamento de Voo (2026-10-09)
+
+- Canal `voo` (Movimento e Percepção), em metros, aceita 1,5. Zero é não voar, e a Ficha e o
+  Preview só mostram a linha Voo quando há fonte. Nasceu com o addon Herdeiro Celeste
+  (`addons/herdeiro-celeste.json`, Passos Celeste: `1.5 * bt`).
+- O voo passa pelo `movimentoMult` e pelas condições do movimento (Lento e Enredado pela
+  metade, Sofrendo -3, Imóvel zero), e o Caído o zera (regra `vooZero` em
+  `CONDICAO_EFEITOS`). O hover (`partes.voo`) mostra as três camadas, como o do movimento.
+- O multiplicador valer no voo é leitura de "Seu movimento dobra" da Expansão, registrada em
+  `docs/a-fazer.md`.

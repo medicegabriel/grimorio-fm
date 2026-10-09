@@ -89,6 +89,13 @@ nada mais depende deles para funcionar.
    - Alternativas: (a) fecha e cobra a Exaustão de Técnica (**implementado**); (b) fecha sem cobrar;
      (c) fica aberta, sem efeito, até alguém fechar.
    - Impacto: a Exaustão de Técnica que sobra depois da luta.
+8. **O dobro de movimento da Expansão vale no voo?** (anotado em 2026-10-09, com o canal `voo`)
+   - Fonte: Expansão ("Seu movimento dobra dentro da sua própria expansão") e Lento ("Toda forma de
+     movimento do personagem", que mostra que "movimento" no Livro cobre o voo).
+   - Problema: o texto da Expansão fala de "movimento", e o voo é um Deslocamento à parte.
+   - Alternativas: (a) dobra o voo também, pelo mesmo `movimentoMult` (**implementado**); (b) dobra
+     só a caminhada.
+   - Impacto: o voo do Herdeiro Celeste (e de qualquer fonte de `voo`) com a Expansão no ar.
 
 **Precisa:** o autor responder cada item.
 **Anotado:** 2026-10-08, na implementação da Técnica Máxima e da Expansão de Domínio
