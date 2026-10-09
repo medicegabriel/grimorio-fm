@@ -433,3 +433,15 @@ Guia da área: `docs/afty-tecnica-maxima-dominio.md`.
   `CONDICAO_EFEITOS`). O hover (`partes.voo`) mostra as três camadas, como o do movimento.
 - O multiplicador valer no voo é leitura de "Seu movimento dobra" da Expansão, registrada em
   `docs/a-fazer.md`.
+
+## A arma escolhida pela origem e o treino na arma (2026-10-09)
+
+- Canal `treinoArmaCasoJa` (Ataque e Dano, alvo de arma): a arma passa a somar o Bônus de
+  Treinamento, e se ela já somava, o valor da expressão entra no Acerto e no Dano dela. O derive o
+  converte em treino (jogador) ou em `acertoArma` e `danoBonus` com o nome da fonte, antes do dano.
+- Alvo `@<id>` em efeito de origem: vira a arma que a ficha marcou em `armasDaOrigem[<id>]`
+  (declarada por `armaEscolhida` numa característica ou opção). Sem arma marcada, a linha sai.
+- Exemplo, o Grão Mestre em Arma do Não-Feiticeiro:
+  `{ "canal": "treinoArmaCasoJa", "alvo": "@arma_masterizada", "expr": "piso(bt / 2)" }`.
+- Os campos de origem que não são canal (`semEnergia`, `nivelMaximo`, `tetoNivelFeitico`,
+  `concedeHabilidades`) estão em `docs/afty-addons.md`.

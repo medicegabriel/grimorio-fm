@@ -47,6 +47,7 @@ import {
   origensQualificadas,
   origemEstrutural,
   origemMae,
+  nivelMaximoDaOrigem,
 } from "./afty-origens";
 // A descrição de cada anatomia agora aparece na própria linha selecionável, em
 // vez de repetida numa lista embaixo: o `getAnatomia` deixou de ser preciso aqui.
@@ -825,6 +826,16 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
   // Armas Dedicadas (Lutador 2°). O teto é aplicado na LEITURA
   // (resolveArmasDedicadas), então aqui é só ligar e desligar: a ficha guarda a
   // lista inteira e tirar a arma da mochila não apaga a escolha.
+  /* A arma que a ORIGEM manda escolher (2026-10-09, a Arma Masterizada): um id
+     por escolha, e marcar a mesma de novo desmarca. */
+  const setArmaDaOrigem = (escolhaId, armaId) =>
+    setDraft((d) => {
+      const atual = d.armasDaOrigem && typeof d.armasDaOrigem === "object" ? d.armasDaOrigem : {};
+      const proximo = { ...atual };
+      if (!armaId || atual[escolhaId] === armaId) delete proximo[escolhaId];
+      else proximo[escolhaId] = armaId;
+      return { ...d, armasDaOrigem: proximo };
+    });
   const toggleArmaDedicada = (id) =>
     setDraft((d) => {
       const lista = Array.isArray(d.armasDedicadas) ? d.armasDedicadas : [];
@@ -1700,7 +1711,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
               removerPericia={removerPericia}
             />
           )}
-{tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} patch={patch} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} addFeitico={addFeitico} updateFeitico={updateFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} setTreinoEscolhaFeiticos={setTreinoEscolhaFeiticos} removeEstilo={removeEstilo} patchEstilo={patchEstilo} addFuncionamento={addFuncionamento} removeFuncionamento={removeFuncionamento} patchFuncionamento={patchFuncionamento} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} patchEspinho={patchEspinho} sistema={sistema} estiloApi={estiloApi} />}
+{tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} patch={patch} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} setArmaDaOrigem={setArmaDaOrigem} addFeitico={addFeitico} updateFeitico={updateFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} setTreinoEscolhaFeiticos={setTreinoEscolhaFeiticos} removeEstilo={removeEstilo} patchEstilo={patchEstilo} addFuncionamento={addFuncionamento} removeFuncionamento={removeFuncionamento} patchFuncionamento={patchFuncionamento} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} patchEspinho={patchEspinho} sistema={sistema} estiloApi={estiloApi} />}
           {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} setHabilidadeVezes={setHabilidadeVezes} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} patchTecnicasCombate={patchTecnicasCombate} patchTalentosConfig={patchTalentosConfig} />}
           {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} setAptidaoVezes={setAptidaoVezes} setAptidaoOpcaoRepetida={setAptidaoOpcaoRepetida} />}
           {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} addQuimera={addQuimera} removeQuimera={removeQuimera} patchQuimera={patchQuimera} addNucleos={addNucleos} removeNucleos={removeNucleos} patchNucleos={patchNucleos} />}
@@ -2560,9 +2571,12 @@ function TesteLinha({
    Desarmado, Faixas, Manoplas e o Corpo Treinado, e mais uma para cada arma
    equipada. Todas usam a MESMA conta: o dano listado na tabela da arma não
    entra, e dela vêm só o Alcance e as Propriedades. */
-function DanoCard({ derived, toggleArmaDedicada }) {
+function DanoCard({ derived, toggleArmaDedicada, setArmaDaOrigem }) {
   const entradas = derived.dano?.entradas ?? [];
   const ded = derived.dedicadas ?? { ativa: false, escolhidas: [], max: 3, restante: 3 };
+  // As armas que a origem manda escolher (a Arma Masterizada). Some sem nenhuma.
+  const armasDaOrigem = derived.armasDaOrigem ?? [];
+  const opcoesDeArma = entradas.filter((e) => e.fonte === "arma").map((e) => ({ value: e.id, label: e.nome }));
 
   return (
     <Card
@@ -2576,6 +2590,20 @@ function DanoCard({ derived, toggleArmaDedicada }) {
         </span>
       ) : null}
     >
+      {armasDaOrigem.length > 0 && setArmaDaOrigem && (
+        <div className="mb-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {armasDaOrigem.map((x) => (
+            <div key={x.id}>
+              <FieldLabel>{x.nome}</FieldLabel>
+              <Select
+                value={x.armaId ?? ""}
+                onChange={(v) => setArmaDaOrigem(x.id, v || null)}
+                options={[{ value: "", label: opcoesDeArma.length ? "Escolher" : "Nenhuma Arma Equipada" }, ...opcoesDeArma]}
+              />
+            </div>
+          ))}
+        </div>
+      )}
       <div className="space-y-1">
         {entradas.map((e) => (
           <div
@@ -2872,7 +2900,7 @@ function DominioSimplesCard({ derived }) {
   );
 }
 
-function TabHabilidades({ draft, derived, patch, patchCore, toggleArmaDedicada, addFeitico, updateFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico, setTreinoEscolhaFeiticos, removeEstilo, patchEstilo, addFuncionamento, removeFuncionamento, patchFuncionamento, setGeralVezes, addDominio, removeDominio, patchDominio, setDominioAtivo, patchEspinho, sistema, estiloApi }) {
+function TabHabilidades({ draft, derived, patch, patchCore, toggleArmaDedicada, setArmaDaOrigem, addFeitico, updateFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico, setTreinoEscolhaFeiticos, removeEstilo, patchEstilo, addFuncionamento, removeFuncionamento, patchFuncionamento, setGeralVezes, addDominio, removeDominio, patchDominio, setDominioAtivo, patchEspinho, sistema, estiloApi }) {
   /* A EXPANSÃO SE EDITA SÓ EM FEITIÇOS → ESPECIAL (DA-18). Aqui fica o resumo, e
      o atalho Editar em Feitiços sobe o pedido para o card de Feitiços: `foco`
      leva um contador para o mesmo id poder ser pedido duas vezes seguidas. */
@@ -2891,7 +2919,11 @@ function TabHabilidades({ draft, derived, patch, patchCore, toggleArmaDedicada, 
   const dominioSimples = <DominioSimplesCard derived={derived} />;
   // A MÃE decide o leiaute: a variação do Sem Técnica monta a aba dele. Ver
   // `origemMae`.
-  const origem = origemMae(draft.core.origem?.id);
+  /* ⚠ A ORIGEM SEM ENERGIA AMALDIÇOADA (2026-10-09, `semEnergia`) monta a aba como
+     a do Restringido: sem Perfil Amaldiçoado, porque não há técnica. O card
+     pendente das Habilidades Marciais só aparece no Restringido do livro. */
+  const origemDoLivro = origemMae(draft.core.origem?.id);
+  const origem = derived.origemSemEnergia ? "restringido" : origemDoLivro;
   /* ⚠ A ficha de jogador não tem Habilidades Gerais (autor, 2026-08-30). Some
      AQUI, e não nos três lugares que compõem `{gerais}` por origem: uma variável
      nula é o único ponto em que a regra cabe uma vez só. O derive já resolve as
@@ -2901,7 +2933,7 @@ function TabHabilidades({ draft, derived, patch, patchCore, toggleArmaDedicada, 
     ? null
     : <HabilidadesGeraisCard derived={derived} setGeralVezes={setGeralVezes} />;
   // O Dano vale para toda origem: até quem não tem Feitiço ataca.
-  const dano = <DanoCard derived={derived} toggleArmaDedicada={toggleArmaDedicada} />;
+  const dano = <DanoCard derived={derived} toggleArmaDedicada={toggleArmaDedicada} setArmaDaOrigem={setArmaDaOrigem} />;
   // A Cura some sozinha para quem não tem fonte nenhuma, então ela acompanha o
   // Dano em toda origem: um Restringido cura com Ainda de Pé e um Combatente com
   // Revigorar, sem nada de energia amaldiçoada no meio.
@@ -3000,7 +3032,7 @@ function TabHabilidades({ draft, derived, patch, patchCore, toggleArmaDedicada, 
   if (origem === "restringido") {
     return (
       <>
-        <SubsistemaPendente titulo="Habilidades Marciais" origem="Restringido" />
+        {origemDoLivro === "restringido" && <SubsistemaPendente titulo="Habilidades Marciais" origem="Restringido" />}
         {vislumbre}
         {olhosAgulha}
         {espinho}
@@ -9113,7 +9145,10 @@ function ValoresBasicosCard({ draft, derived, patch, patchCore, sistema }) {
                 value={draft.core.nd}
                 onChange={(v) => patchCore({ nd: v })}
                 min={tetoDeNivel ? 1 : 3}
-                {...(tetoDeNivel ? { max: 30 } : {})}
+                /* O teto da origem (2026-10-09, `nivelMaximo`): o Não-Feiticeiro para no 10. */
+                {...(tetoDeNivel || nivelMaximoDaOrigem(draft)
+                  ? { max: Math.min(tetoDeNivel ? 30 : Infinity, nivelMaximoDaOrigem(draft) ?? Infinity) }
+                  : {})}
               />
             )}
           </div>

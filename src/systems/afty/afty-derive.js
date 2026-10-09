@@ -46,6 +46,8 @@ import {
   limiteAtributoDaOrigem, resolveLimitePoolOrigem, origensQualificadas,
   fatorSlotsHabilidade, aptidoesConcedidasPelaOrigem, caracteristicasEfetivas,
   atributosDePericiaDaOrigem, origemMae, ehVariacaoDoRestringido, gatilhosDeOrigem,
+  habilidadesConcedidasPelaOrigem, armasEscolhidasDaOrigem, origemSemEnergia,
+  nivelMaximoDaOrigem, tetoNivelFeiticoDaOrigem,
 } from "./afty-origens";
 import {
   efeitosDeTreino, vagasEncantamentoDeTreino, atributosDePericiaDeTreino, gatilhosDeTreino,
@@ -409,9 +411,13 @@ export function deriveAfty(creature, opcoes = {}) {
 
      ⚠ LÊ A MÃE DA CLASSE (2026-09-28): a herdeira do Restringido, que a
      variação da origem traz, também é sem energia. Ver `especializacaoMae`. */
-  const semEnergia = ehJogador("pvPePorEspecializacao")
+  /* ⚠ E A ORIGEM PODE DIZER (2026-10-09, `semEnergia`). O Não-Feiticeiro das
+     Regras Opcionais não tem Energia Amaldiçoada com classe nenhuma (Lutador,
+     Suporte ou Combatente), e usa Estamina. Ver `origemSemEnergia`. */
+  const semEnergiaDaOrigem = origemSemEnergia(creature);
+  const semEnergia = semEnergiaDaOrigem || (ehJogador("pvPePorEspecializacao")
     ? (creature?.especializacoes ?? []).some((e) => especializacaoMae(e?.id) === "restringido")
-    : tipo === "restringido";
+    : tipo === "restringido");
   // Nome do recurso na UI. O número é o mesmo dos outros Tipos.
   const recursoLabel = semEnergia ? "Estamina" : "Energia";
   /* ⚠ O JOGADOR NÃO TEM PATAMAR (autor, 2026-08-31: "Não existe PATAMAR para
@@ -451,13 +457,31 @@ export function deriveAfty(creature, opcoes = {}) {
      os catálogos, que leem a ficha direto, continuavam no campo cru. Um leitor
      só para a regra, e o derive é mais um cliente dele. */
   const ndBruto = nivelDaFicha(creature);
-  const nd = ehJogador("tetoDeNivel") ? Math.min(30, ndBruto) : ndBruto;
+  /* O TETO DA ORIGEM (2026-10-09, `nivelMaximo`): "um Não-Feiticeiro não pode
+     elevar seu nível acima do nível 10". Entra no mesmo `nd` que todo o resto
+     lê, pela mesma razão do teto de 30 do jogador. */
+  const tetoDaOrigem = nivelMaximoDaOrigem(creature);
+  const ndSemOrigem = ehJogador("tetoDeNivel") ? Math.min(30, ndBruto) : ndBruto;
+  const nd = tetoDaOrigem ? Math.min(tetoDaOrigem, ndSemOrigem) : ndSemOrigem;
+  /* As Habilidades que a origem CONCEDE (`concedeHabilidades`, 2026-10-09): entram
+     pela mesma porta da concessão de sessão, sem gastar vaga e sem pedir a
+     classe. A Percepção do Invisível dá o Perceber o Ar do Restringido. */
+  for (const id of habilidadesConcedidasPelaOrigem(creature, nd)) {
+    if (!(creature?.habilidades ?? []).includes(id) && !concedido.habilidades.includes(id)) concedido.habilidades.push(id);
+  }
   // Especializações precisam existir antes das Aptidões e dos Feitiços: as
   // Bases automáticas dependem do nível da classe, duas Bases do Suporte
   // concedem Aptidões e Adiantar a Evolução antecipa o acesso de Conjurador.
   const especializacoes = resolveEspecializacoes(creature);
   const nivelConjurador = especializacoes.escolhidas
     .find((e) => e.id === "conjurador")?.nivel ?? 0;
+  /* O TETO DE NÍVEL DE FEITIÇO da origem (2026-10-09, `tetoNivelFeitico`): o
+     Não-Feiticeiro só adquire até o Nível 2 do Estilo e do Fundamento Marcial,
+     que no Afty são os Feitiços Passivo e Personalizado do Estilo Marcial. */
+  const tetoFeiticoOrigem = tetoNivelFeiticoDaOrigem(creature);
+  const acessoFeitico = tetoFeiticoOrigem == null
+    ? nivelMaxFeitico(nd, nivelConjurador)
+    : Math.min(tetoFeiticoOrigem, nivelMaxFeitico(nd, nivelConjurador));
   const habilidadesConcedidas = habilidadesConcedidasPelasEspecializacoes(especializacoes.escolhidas, sistema);
   /* ⚠ ORIGEM ESTRUTURAL, e não a gravada. O Gêmeo que copiou da Maldição em
      Verdadeiras Origens perde a trilha de Energia Reversa como uma Maldição de
@@ -687,7 +711,7 @@ export function deriveAfty(creature, opcoes = {}) {
   const escalaAtaque = ehJogador("escalaDosTestes") ? Math.floor(nd / 2) : Math.floor(nd / 1.5);
   const ctxMontante = buildCriaturaDslContext({
     nd, bt, escalaAtaque, grauRank: grau.rank, patamar, tipo, almaAtual: almaAtualDsl,
-    nivelFeiticoMax: nivelMaxFeitico(nd, nivelConjurador),
+    nivelFeiticoMax: acessoFeitico,
     origemContadoresVars,
     irmaoMorto: !!creature?.core?.origem?.irmaoMorto,
     iniciativaIrmao: creature?.core?.origem?.iniciativaIrmao,
@@ -745,7 +769,7 @@ export function deriveAfty(creature, opcoes = {}) {
   });
   const olhosAgulha = resolveOlhosAgulha(creature, {
     tem: primitivasDaCriatura(creature).includes("olhosDeAgulha"),
-    bt, nivelMax: nivelMaxFeitico(nd, nivelConjurador),
+    bt, nivelMax: acessoFeitico,
   });
   const efeitosAgulha = efeitosOlhosAgulha(olhosAgulha);
 
@@ -1617,7 +1641,7 @@ export function deriveAfty(creature, opcoes = {}) {
     cl: aptidao.efetivo?.cl ?? 0,
   });
   // O teto de faixa escrito como expressão ("bt") é lido no contexto do montante.
-  const estadosAddon = estadosCombateDeAddon(creature, nivelMaxFeitico(nd, nivelConjurador), {
+  const estadosAddon = estadosCombateDeAddon(creature, acessoFeitico, {
     avaliar: (expr) => evalNumberDsl(expr, ctxComAptidao, 0),
   });
   const estadosVislumbre = estadosDoVislumbre({ tem: temVislumbre });
@@ -1808,7 +1832,7 @@ export function deriveAfty(creature, opcoes = {}) {
 
   const montarCtx = (attrs, mods) => buildCriaturaDslContext({
     nd, bt, escalaAtaque, grauRank: grau.rank, patamar, tipo, almaAtual: almaAtualDsl, invocacoesEmCampo,
-    nivelFeiticoMax: nivelMaxFeitico(nd, nivelConjurador),
+    nivelFeiticoMax: acessoFeitico,
     origemContadoresVars,
     irmaoMorto: !!creature?.core?.origem?.irmaoMorto,
     iniciativaIrmao: creature?.core?.origem?.iniciativaIrmao,
@@ -2309,6 +2333,19 @@ export function deriveAfty(creature, opcoes = {}) {
   };
   opcoesDeMesa(habilidades.escolhas?.mapa, getHabilidade);
   opcoesDeMesa(talentos.escolhas?.mapa, getTalento);
+  /* As OPÇÕES das escolhas aninhadas de ORIGEM (2026-10-09): a chave é a mesma
+     `opcao:<escolhaId>:<opcaoId>`, com o id da escolha no lugar do pai, porque
+     uma característica de origem pode ter várias (`escolhas`). É o contador do
+     ARMA!!! do Não-Feiticeiro ("uma vez por combate"). */
+  for (const c of caracteristicasEfetivas(creature)) {
+    for (const esc of [c.escolha, ...(c.escolhas ?? [])]) {
+      if (!esc?.id) continue;
+      for (const oid of escolhasOrigem.mapa?.[esc.id] ?? []) {
+        const o = (esc.opcoes ?? []).find((x) => x?.id === oid);
+        if (o) registraMesa(`opcao:${esc.id}:${oid}`, o);
+      }
+    }
+  }
   // A Habilidade Unica da Ferramenta precisa mostrar o mesmo valor que entra no
   // Motor. O equipamento e carregado antes de os atributos fecharem, mas a
   // expressao permanece viva e e reavaliada aqui com o contexto FINAL. As
@@ -2989,16 +3026,18 @@ export function deriveAfty(creature, opcoes = {}) {
      exatamente a quarta trava do Estilo das Sombras. Ver `mostraCardFeiticos`. */
   const feiticosLiberados = liberacoes.includes("feiticosRestritos");
   let feiticos = {
-    nivelMax: nivelMaxFeitico(nd, nivelConjurador),
+    nivelMax: acessoFeitico,
     nivelConjurador,
     gastos: feiticosGastos,
     cdBase: cdFeitico,
     /* Os tipos que esta criatura pode criar, e se o card aparece. Vazio quer
        dizer "não cria nenhum": é o Restringido e o Sem Técnica sem o Addon.
        Pela MÃE, então a variação do Sem Técnica também não cria. */
-    tiposPermitidos: tiposFeiticoPermitidos(origemMae(core?.origem?.id ?? null), feiticosLiberados),
+    /* A origem sem Energia Amaldiçoada (2026-10-09) não conjura, como o
+       Restringido: só o Addon com `feiticosRestritos` abre os dois tipos dele. */
+    tiposPermitidos: tiposFeiticoPermitidos(semEnergiaDaOrigem ? "restringido" : origemMae(core?.origem?.id ?? null), feiticosLiberados),
     liberado: feiticosLiberados,
-    mostraCard: mostraCardFeiticos(origemMae(core?.origem?.id ?? null), {
+    mostraCard: mostraCardFeiticos(semEnergiaDaOrigem ? "restringido" : origemMae(core?.origem?.id ?? null), {
       liberado: feiticosLiberados,
       temFeiticos: feiticosLista.length > 0,
     }),
@@ -3309,6 +3348,38 @@ export function deriveAfty(creature, opcoes = {}) {
   // Faixas e Manoplas não viram linha própria: são o Ataque Básico (grupo
   // "pugilato"). O Nível de Aptidão em Controle e Leitura entra na conta, daí
   // depender do `aptidao` já resolvido lá em cima.
+  /* O TREINO NA ARMA "CASO JÁ SEJA" (canal `treinoArmaCasoJa`, 2026-10-09, o
+     Grão Mestre em Arma): a arma alvo passa a somar o Bônus de Treinamento, e se
+     ela já somava, o valor da linha entra no Acerto e no Dano dela. O canal não
+     soma sozinho: aqui ele vira treino (no jogador) ou linhas comuns de
+     `acertoArma` e `danoBonus`, com o nome da fonte, antes do dano.
+     Na criatura o treino é pelo TIPO de ataque: tipo treinado já soma o BT, e
+     tipo sem treino ganha o BT como Acerto daquela arma. */
+  const armasDoDano = (() => {
+    if (!(ef?.detalhes ?? []).some((x) => x.canal === "treinoArmaCasoJa")) return { armas: armasParaDano, efeitos: [] };
+    // Por arma: as linhas com o id dela e as sem alvo (que valem para todas).
+    const porArma = (id) => detalhesDoCanal(ef, "treinoArmaCasoJa", id);
+    const extras = [];
+    const armas = armasParaDano.map((a) => {
+      const minhas = porArma(a.id);
+      if (!minhas.length) return a;
+      const ataqueId = a.ataqueId ?? (a.distancia ? "distancia" : "corpo");
+      const tipoTreinado = !!testes.ataques?.find((x) => x.id === ataqueId)?.treinado;
+      const jaSoma = ehJogador("proficienciaPorArma") ? (!!a.treinada || tipoTreinado) : tipoTreinado;
+      if (!jaSoma) {
+        if (ehJogador("proficienciaPorArma")) return { ...a, treinada: true };
+        extras.push({ canal: "acertoArma", alvo: a.id, expr: String(bt), origem: "treinoArma", nome: `${minhas[0].nome} (Treino)` });
+        return a;
+      }
+      for (const m of minhas) {
+        extras.push({ canal: "acertoArma", alvo: a.id, expr: String(m.valor), origem: "treinoArma", nome: m.nome });
+        extras.push({ canal: "danoBonus", alvo: a.id, expr: String(m.valor), origem: "treinoArma", nome: m.nome });
+      }
+      return a;
+    });
+    return { armas, efeitos: extras };
+  })();
+  if (armasDoDano.efeitos.length) ef = mesclarEfeitos(ef, aplicarEfeitos(armasDoDano.efeitos, montarCtx(attrEff, modByAttr)));
   let dano = resolveDano(creature, {
     nd, patamar, mods: modByAttr, aptidaoCL: aptidao.efetivo.cl,
     sistema,
@@ -3319,7 +3390,7 @@ export function deriveAfty(creature, opcoes = {}) {
        Lutador. Só a ficha de jogador lê este campo (divergência
        `proficienciaPorArma`): a criatura treina pelo tipo de ataque. */
     treinadaBasico: true,
-    efeitos: ef, armas: armasParaDano, grauBasico, acertoGrauBasico,
+    efeitos: ef, armas: armasDoDano.armas, grauBasico, acertoGrauBasico,
     fontesAcertoBasico, escoposBasicoExtra, finezaBasico, ataqueIdBasico,
     propriedadesBasico, criticoExtraDadosBasico,
     /* ⚠ O DADO DO GOLPE DESARMADO DA FICHA DE JOGADOR (autor, 2026-08-31):
@@ -4365,6 +4436,14 @@ export function deriveAfty(creature, opcoes = {}) {
     auxiliaresAtivos,
     cura,                 // { linhas: [{ id, nome, grupo, alcance, texto, fixo, usos, unidade, partes }] }
     dedicadas,            // Armas Dedicadas: { ativa, escolhidas, elegiveis, max, restante }
+    /* As armas que a ORIGEM manda escolher (2026-10-09, a Arma Masterizada do
+       Não-Feiticeiro): `[{ id, nome, armaId }]`, com `armaId` nulo quando a marcada
+       saiu da ficha. O card de Dano do criador desenha o seletor. */
+    armasDaOrigem: armasEscolhidasDaOrigem(creature).map((x) => ({
+      ...x, armaId: armasParaDano.some((a) => a.id === x.armaId) ? x.armaId : null,
+    })),
+    // A origem tira a Energia Amaldiçoada (`semEnergia`): o criador monta a aba como a do Restringido.
+    origemSemEnergia: semEnergiaDaOrigem,
     empolgacao,           // Lutador: { ativa, aprimorada, inicial, max, tabela }
     combate: combateExibicao, // simulação: estado já aparado nos tetos da ficha, e com o custo em PE reduzido
     manipulacaoCeu,

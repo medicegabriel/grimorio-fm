@@ -2212,3 +2212,50 @@ recebido nem modifica outras fichas a partir de um nome livre.
 
 Motor: `src/systems/afty/afty-dharma.js`. Tela compartilhada:
 `src/systems/afty/ficha/PainelDharma.jsx`. Cobertura em `asserts/t-dharma.mjs`.
+
+## Não-Feiticeiro e Herdeiro Celeste: o que a origem passou a dizer (2026-10-09)
+
+Dois pacotes de origem pediram verbos novos. Todos são genéricos, valem nos dois sistemas e moram
+na entrada da origem, na característica ou na opção de escolha aninhada.
+
+**Herdeiro Celeste** (`addons/herdeiro-celeste.json`) pediu o canal `voo` (Deslocamento de Voo, em
+metros). Ele passa pelo `movimentoMult` e pelas condições do movimento, e o Caído o zera. A Ficha e
+o Preview só mostram a linha Voo quando ela passa de zero.
+
+**Não-Feiticeiro** (`addons/nao-feiticeiro.json`, Regras Opcionais do Livro Básico) pediu cinco:
+
+| Campo | Onde | O que faz |
+|---|---|---|
+| `semEnergia: true` | origem | a ficha não tem Energia Amaldiçoada com QUALQUER classe: Estamina, nenhuma trilha de Aptidão (`trilhasDaCriatura` vazia), nenhuma Aptidão valendo e nenhum Feitiço próprio. A aba Habilidades monta como a do Restringido. Até aqui só a classe Restringido (jogador) e o Tipo Restringido (criatura) diziam isso |
+| `nivelMaximo: 10` | origem | o `nd` que todo o derive lê trava no número, e o campo de Nível do criador também |
+| `tetoNivelFeitico: 2` | origem | o acesso a Feitiço não passa do número, em todos os leitores (`acessoFeitico` no derive) |
+| `concedeHabilidades: [{ id, ndMin }]` | característica ou opção | concede a Habilidade pela porta da concessão de sessão: não gasta vaga e não pede a classe dela |
+| `armaEscolhida: { id, nome }` | característica ou opção | abre o seletor "Nome" no card de Dano do criador, que grava `armasDaOrigem[id]`. Os efeitos da origem miram a arma por `alvo: "@<id>"`, e sem arma marcada a linha sai |
+
+E um canal: `treinoArmaCasoJa` (Ataque e Dano, alvo de arma). A arma alvo passa a somar o Bônus de
+Treinamento, e se já somava, o valor da expressão entra no Acerto e no Dano dela. O derive o
+converte em treino (jogador) ou em linhas comuns de `acertoArma` e `danoBonus` com o nome da fonte,
+antes do dano. Na criatura o treino é pelo tipo de ataque.
+
+```json
+{ "id": "nf_a1_grao_mestre", "nome": "Grão Mestre em Arma",
+  "armaEscolhida": { "id": "arma_masterizada", "nome": "Arma Masterizada" },
+  "efeitos": [{ "canal": "treinoArmaCasoJa", "alvo": "@arma_masterizada", "expr": "piso(bt / 2)" }] }
+```
+
+Duas coisas mudaram para todo pacote de origem:
+
+- **O contador em opção de escolha de origem** (`usos` na opção). Até aqui só a opção de Habilidade
+  e de Talento ganhava contador. A chave é `opcao:<escolhaId>:<opcaoId>`, e a opção com contador
+  vira linha própria na Ficha, logo abaixo da característica.
+- **A opção escolhida numa característica com `escolhas` (plural) aparece na Ficha.** O
+  `opcoesEscolhidas` só lia a `escolha` única, e a escolhida no plural (as Artimanhas, o Caminho até
+  o Fim do Liberto) não aparecia em lugar nenhum da tela de jogo.
+
+⚠ O Estilo e o Fundamento Marcial do Restringido não existem no Afty. O pacote usa a liberação
+`feiticosRestritos` (a mesma do addon Estilo Marcial) com o `tetoNivelFeitico: 2`. O que segue de
+mesa, e está em `docs/a-fazer.md`: os pré-requisitos do ARMA!!! (só a escolha do nível 5 e do 10 o
+oferecem), a Artimanha repetida em duas escolhas, o Arsenal do Restringido e as Habilidades de
+Especialização com Energia Amaldiçoada na narrativa.
+
+Asserts: `t-nao-feiticeiro.mjs` e `t-herdeiro-celeste.mjs`.

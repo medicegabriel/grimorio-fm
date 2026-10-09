@@ -56,7 +56,7 @@
  */
 
 import { registrarFamilia, remendarLista, substituicaoEnergiaReversaPorAddon } from "./afty-addons";
-import { getOrigem, origemEstrutural } from "./afty-origens";
+import { getOrigem, origemEstrutural, origemSemEnergia } from "./afty-origens";
 // Só o VALIDADOR usa. afty-efeitos-conteudo.js não importa nada, então a seta
 // para lá é segura (afty-efeitos.js, esse sim, importaria de volta e faria ciclo).
 import { APTIDAO_EFEITOS } from "./afty-efeitos-conteudo";
@@ -1670,6 +1670,8 @@ export const trilhasDaOrigem = (origemId) => {
  * continue sendo Gêmeos (autor, 2026-08-29). Ver `origemEstrutural`.
  */
 export const trilhasDaCriatura = (creature) => {
+  // Origem sem Energia Amaldiçoada (o Não-Feiticeiro, 2026-10-09): trilha nenhuma.
+  if (origemSemEnergia(creature)) return [];
   const trilhas = trilhasDaOrigem(origemEstrutural(creature));
   return substituicaoEnergiaReversaPorAddon(creature)
     ? trilhas.filter((t) => t.key !== "er")

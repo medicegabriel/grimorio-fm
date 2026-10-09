@@ -199,7 +199,19 @@ export function conteudoDaFicha(creature, derived) {
       grupo: "origem",
       tags: ["Anatomia"],
     }));
+  /* ⚠ AS ESCOLHAS NO PLURAL (`escolhas`, 2026-10-09). O `opcoesEscolhidas` lê só a
+     `escolha` única, e a opção escolhida numa característica com várias (as
+     Artimanhas do Não-Feiticeiro, o Caminho até o Fim do Liberto) não aparecia
+     em lugar nenhum da Ficha. Ela entra na lista da característica, e a que tem
+     contador ou número de mesa vira linha própria logo abaixo, como a opção de
+     Habilidade. A chave é `opcao:<escolhaId>:<opcaoId>`. */
+  const escolhidasDoPlural = (c) => (c.escolhas ?? []).flatMap((esc) =>
+    (Array.isArray(mapaOrigem[esc.id]) ? mapaOrigem[esc.id] : [])
+      .map((oid) => ({ esc, o: (esc.opcoes ?? []).find((x) => x?.id === oid) }))
+      .filter((x) => x.o));
   for (const c of caracteristicasEfetivas(creature)) {
+    const plural = escolhidasDoPlural(c);
+    const promovidaNaOrigem = ({ esc, o }) => !!mesa[`opcao:${esc.id}:${o.id}`];
     itens.push(item({
       id: c.id,
       chave: `origem:${c.id}`,
@@ -209,7 +221,11 @@ export function conteudoDaFicha(creature, derived) {
       tags: [origem?.nome, cla?.nome].filter(Boolean),
       numeros: numerosDeMesa(`origem:${c.id}`),
       usos: usosDeMesa(`origem:${c.id}`),
-      opcoes: opcoesEscolhidas(c, mapaOrigem),
+      opcoes: [
+        ...opcoesEscolhidas(c, mapaOrigem),
+        ...plural.filter((x) => !promovidaNaOrigem(x))
+          .map(({ o }) => ({ id: o.id, nome: o.nome, descricao: o.descricao ?? null })),
+      ],
       /* ⚠ `mesa` NÃO VIRA MAIS AVISO NA FICHA (autor, 2026-09-08: *"Remova os
          'Resolve na mesa'. Isso é bem feio. Pode tirar de forma geral"*). O
          campo continua no catálogo e continua verdadeiro, e o chip "Mesa" do
@@ -222,6 +238,19 @@ export function conteudoDaFicha(creature, derived) {
          entra. */
       aviso: c.parcial ?? null,
     }));
+    for (const x of plural.filter(promovidaNaOrigem)) {
+      const chave = `opcao:${x.esc.id}:${x.o.id}`;
+      itens.push(item({
+        id: x.o.id,
+        chave,
+        nome: x.o.nome,
+        texto: x.o.descricao ?? "",
+        grupo: "origem",
+        tags: [x.esc.label ?? c.nome],
+        numeros: numerosDeMesa(chave),
+        usos: usosDeMesa(chave),
+      }));
+    }
     // `splice` esvazia a lista, e a linha de baixo não as repete.
     if (c.poolAnatomia) itens.push(...anatomias.splice(0));
   }

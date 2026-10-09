@@ -1557,6 +1557,63 @@ export function aptidoesConcedidasPelaOrigem(creature, nd = 1) {
   return out;
 }
 
+/* ------------------------------------------------------------ */
+/* NÃO-FEITICEIRO E O QUE A ORIGEM DE ADDON PASSOU A DIZER        */
+/* (Regras Opcionais do Livro, 2026-10-09)                        */
+/* ------------------------------------------------------------ */
+/**
+ * HABILIDADES CONCEDIDAS pela origem: `concedeHabilidades: [{ id, ndMin }]` numa
+ * característica ou numa OPÇÃO de escolha aninhada (a Artimanha Percepção do
+ * Invisível dá o Perceber o Ar). Entram como concessão: não gastam vaga e não
+ * pedem a classe da Habilidade, que é o que "você ganha a Habilidade" diz.
+ */
+export function habilidadesConcedidasPelaOrigem(creature, nd = 1) {
+  const nivel = Math.max(1, Math.trunc(Number(nd) || 1));
+  const out = [];
+  const fontes = [...caracteristicasEfetivas(creature), ...opcoesEscolhidasDaOrigem(creature)];
+  for (const f of fontes) {
+    for (const h of f?.concedeHabilidades ?? []) {
+      const id = typeof h === "string" ? h : h?.id;
+      if (!id || nivel < (h?.ndMin ?? 1) || out.includes(id)) continue;
+      out.push(id);
+    }
+  }
+  return out;
+}
+
+/**
+ * As ARMAS ESCOLHIDAS que a origem declara (`armaEscolhida: { id, nome }` numa
+ * característica ou opção), com a arma que a ficha marcou em `armasDaOrigem`. Os
+ * efeitos da origem miram a arma por `@<id>` (ver `coletarEfeitosOrigem`). A
+ * Arma Masterizada do Não-Feiticeiro é a primeira.
+ */
+export function armasEscolhidasDaOrigem(creature) {
+  const marcadas = creature?.armasDaOrigem && typeof creature.armasDaOrigem === "object" ? creature.armasDaOrigem : {};
+  const out = [];
+  const fontes = [...caracteristicasEfetivas(creature), ...opcoesEscolhidasDaOrigem(creature)];
+  for (const f of fontes) {
+    const a = f?.armaEscolhida;
+    if (!a?.id || out.some((x) => x.id === a.id)) continue;
+    out.push({ id: a.id, nome: a.nome || a.id, armaId: typeof marcadas[a.id] === "string" ? marcadas[a.id] : null });
+  }
+  return out;
+}
+
+/** A origem diz que a ficha NÃO TEM Energia Amaldiçoada (`semEnergia`), seja qual for a classe. */
+export const origemSemEnergia = (creature) => !!getOrigem(creature?.core?.origem?.id)?.semEnergia;
+
+/** O nível máximo que a origem permite (`nivelMaximo`), ou `null`. */
+export function nivelMaximoDaOrigem(creature) {
+  const n = Math.trunc(Number(getOrigem(creature?.core?.origem?.id)?.nivelMaximo));
+  return Number.isFinite(n) && n >= 1 ? n : null;
+}
+
+/** O teto de nível de Feitiço que a origem impõe (`tetoNivelFeitico`), ou `null`. */
+export function tetoNivelFeiticoDaOrigem(creature) {
+  const n = Math.trunc(Number(getOrigem(creature?.core?.origem?.id)?.tetoNivelFeitico));
+  return Number.isFinite(n) && n >= 0 && n <= 5 ? n : null;
+}
+
 /**
  * A caracteristica que o Gemeo COPIOU em Verdadeiras Origens, como uma
  * caracteristica de verdade. Lista de zero ou um, para o chamador so espalhar.
@@ -1968,6 +2025,22 @@ export function validarCatalogoOrigens() {
   const opcoesVistas = new Set();
   const attrValidos = new Set(AFTY_ATTRS.map((a) => a.key));
 
+  // A concessão de Habilidade e a arma escolhida, em característica ou opção (2026-10-09).
+  const checarExtras = (dono, x) => {
+    if (x.concedeHabilidades != null) {
+      if (!Array.isArray(x.concedeHabilidades)) problemas.push(`${dono}: concedeHabilidades deve ser uma lista`);
+      else {
+        for (const h of x.concedeHabilidades) {
+          const id = typeof h === "string" ? h : h?.id;
+          if (!id) problemas.push(`${dono}: concedeHabilidades com entrada sem id`);
+        }
+      }
+    }
+    if (x.armaEscolhida != null && !(typeof x.armaEscolhida?.id === "string" && x.armaEscolhida.id.trim())) {
+      problemas.push(`${dono}: armaEscolhida sem id`);
+    }
+  };
+
   const checarCaracteristicas = (dono, lista) => {
     for (const c of lista || []) {
       if (!c.id) problemas.push(`${dono}: característica sem id`);
@@ -1979,6 +2052,7 @@ export function validarCatalogoOrigens() {
       for (const k of c.alocacao?.entre || []) {
         if (!attrValidos.has(k)) problemas.push(`${dono}/${c.id}: atributo inválido na alocação (${k})`);
       }
+      checarExtras(`${dono}/${c.id}`, c);
       for (const esc of [c.escolha, ...(c.escolhas || [])]) {
         if (!esc) continue;
         if (!esc.id) problemas.push(`${dono}/${c.id}: escolha sem id`);
@@ -1987,6 +2061,7 @@ export function validarCatalogoOrigens() {
           if (opcoesVistas.has(o.id)) problemas.push(`opção duplicada: ${o.id}`);
           opcoesVistas.add(o.id);
           if (!o.nome?.trim()) problemas.push(`${dono}/${esc.id}: opção ${o.id} sem nome`);
+          checarExtras(`${dono}/${esc.id}/${o.id}`, o);
         }
       }
     }
@@ -2019,6 +2094,16 @@ export function validarCatalogoOrigens() {
       } else if (!VARIACOES_ACEITAS.includes(o.variacaoDe)) {
         problemas.push(`${o.nome}: variacaoDe ainda não aceita ${o.variacaoDe}, só ${VARIACOES_ACEITAS.join(", ")}`);
       }
+    }
+    // Os três campos do Não-Feiticeiro (2026-10-09).
+    if (o.semEnergia != null && typeof o.semEnergia !== "boolean") problemas.push(`${o.nome}: semEnergia deve ser verdadeiro ou falso`);
+    if (o.nivelMaximo != null) {
+      const n = Number(o.nivelMaximo);
+      if (!Number.isInteger(n) || n < 1 || n > 30) problemas.push(`${o.nome}: nivelMaximo deve ser um inteiro de 1 a 30`);
+    }
+    if (o.tetoNivelFeitico != null) {
+      const n = Number(o.tetoNivelFeitico);
+      if (!Number.isInteger(n) || n < 0 || n > 5) problemas.push(`${o.nome}: tetoNivelFeitico deve ser um inteiro de 0 a 5`);
     }
     checarCaracteristicas(o.nome, o.caracteristicas);
   }

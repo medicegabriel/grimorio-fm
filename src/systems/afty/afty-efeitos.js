@@ -257,6 +257,7 @@ export const EFEITO_CANAIS = [
   // que resolve antes do Motor e chega como `acertoGrau`: a semântica é a
   // mesma, só o caminho é outro.
   { id: "acertoArma",    label: "Acerto (nesta Arma)",   alvo: "fonteDano", nota: "só quando manejando aquela fonte. Alvo `basico` ou o id da arma, e aceita os escopos (`arma`, `grupo:espada`, `prop:pesada`). Sem alvo vale para todas as linhas" },
+  { id: "treinoArmaCasoJa", label: "Treino na Arma (Caso Já Seja)", alvo: "fonteDano", nota: "a arma alvo passa a somar o Bônus de Treinamento. Se ela já somava, o valor da expressão entra no Acerto e no Dano dela. Alvo é o id de uma arma" },
   /* ⚠ O ALVO CRESCEU EM 2026-09-15: além das quatro Manobras (Agarrar,
      Derrubar, Desarmar e Empurrar), o canal aceita os outros testes nomeados do
      livro que ganham bônus próprio (Concentração, Fintar, Provocar e o Teste de
@@ -700,7 +701,7 @@ const GRUPOS_DE_CANAL = [
     "guardaBonus", "guardaVida",
   ]],
   ["Ataque e Dano", [
-    "cd", "cdFeitico", "bonusAcerto", "acertoArma", "ataquesExtras", "danoBonus", "nivelDano", "dadosDano", "dadosNomeados",
+    "cd", "cdFeitico", "bonusAcerto", "acertoArma", "treinoArmaCasoJa", "ataquesExtras", "danoBonus", "nivelDano", "dadosDano", "dadosNomeados",
     "dadosCritico", "rerrolaDano", "dadosAtaque", "margemCritico", "ignoraRD", "ignoraTodaRD", "ignoraImunidade", "removeResistencia", "propMarcial", "finezaAtaque",
     "semAtributoDano", "alcanceArma",
   ]],
@@ -1525,7 +1526,15 @@ export function coletarEfeitosOrigem(creature, escolhas = null, gatilhosAtivos =
       origem: opcao.id,
       nome: efeito.nome ?? opcao.nome ?? opcao.id,
     }))),
-  ].filter((e) => !e.gatilhoSessao || !!gatilhosAtivos?.[e.gatilhoSessao]);
+  ].filter((e) => !e.gatilhoSessao || !!gatilhosAtivos?.[e.gatilhoSessao])
+    /* A ARMA ESCOLHIDA PELA ORIGEM (2026-10-09): o alvo `@<id>` vira a arma que
+       a ficha marcou em `armasDaOrigem` (a Arma Masterizada do Não-Feiticeiro).
+       Sem arma marcada a linha sai: não há em quem cair. */
+    .flatMap((e) => {
+      if (typeof e.alvo !== "string" || !e.alvo.startsWith("@")) return [e];
+      const arma = creature?.armasDaOrigem?.[e.alvo.slice(1)];
+      return typeof arma === "string" && arma ? [{ ...e, alvo: arma }] : [];
+    });
 }
 
 /**

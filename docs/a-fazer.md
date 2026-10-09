@@ -33,6 +33,27 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 ---
 
 ## PERGUNTAS AO AUTOR
+### Não-Feiticeiro (Regras Opcionais): o que segue de mesa
+**Onde:** `addons/nao-feiticeiro.json`, `src/systems/afty/afty-origens.js` (escolhas de origem)
+**Situação:** o pacote saiu com os números e as travas que o motor já sabe dizer (sem energia,
+nível 10, Feitiço até o Nível 2, Arma Masterizada, Perceber o Ar, os dois contadores). Ficaram de
+mesa, escritos na descrição de cada item:
+1. **Pré-requisitos do ARMA!!!** ("Nível 5, Grão Mestre em Arma e Armas Escolhidas"). Opção de
+   escolha de origem não tem `requisitos`. Hoje só as escolhas do nível 5 e do 10 o oferecem, e o
+   Grão Mestre e o Armas Escolhidas não são conferidos.
+2. **A mesma Artimanha em duas escolhas.** Só o Conhecimento Inatural "pode ser pego várias vezes",
+   e nada impede repetir as outras entre as três escolhas.
+3. **Planejamentos Assíduos** pede o Arsenal do Restringido, que não existe no Afty.
+4. **Habilidades de Especialização com Energia Amaldiçoada na narrativa** ("como Precisão
+   Definitiva") não são vetadas: não há lista delas, e a leitura é da mesa.
+5. **"não pode mudá-los ao elevar seu nível"** (o Estilo e o Fundamento Marcial) não é travado.
+6. **Conhecimento Inatural** dá um Nível de Aptidão "caso você se torne um Feiticeiro", e a regra
+   das Artimanhas diz "Caso você mude de origem, você perde todas as suas artimanhas". O texto
+   parece se contradizer, e é PERGUNTA AO AUTOR: o nível vem antes de perder a Artimanha, ou não vem?
+**Precisa:** o autor dizer se algum destes vira trava (o 1 e o 2 pedem `requisitos` e exclusividade
+em opção de escolha de origem, um verbo novo) e responder o 6.
+**Anotado:** 2026-10-09, ao fazer o addon Não-Feiticeiro
+
 ### Técnica Máxima e Expansão de Domínio: NOVA DECISÃO NECESSÁRIA
 **Onde:** `docs/afty-tecnica-maxima-dominio.md`, `src/systems/afty/afty-dominios.js`, `afty-feiticos.js`
 **Situação:** as decisões de 2026-10-08 cobriram o projeto, e a implementação achou estes pontos que
