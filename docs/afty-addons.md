@@ -2258,4 +2258,17 @@ mesa, e está em `docs/a-fazer.md`: os pré-requisitos do ARMA!!! (só a escolha
 oferecem), a Artimanha repetida em duas escolhas, o Arsenal do Restringido e as Habilidades de
 Especialização com Energia Amaldiçoada na narrativa.
 
-Asserts: `t-nao-feiticeiro.mjs` e `t-herdeiro-celeste.mjs`.
+**O Espírito Indomável do Ser Humano** (`addons/espirito-indomavel.json`), a Linha de Treinamento exclusiva
+do Não-Feiticeiro, mora em pacote SEPARADO a pedido do autor e pediu mais dois verbos:
+
+| Campo | Onde | O que faz |
+|---|---|---|
+| `concedeTalentos: [id]` | etapa ou Completo de Linha de Treinamento | concede o Talento pela porta da concessão, sem vaga. O pré-requisito dele continua valendo do jeito de sempre: o derive confere com a ficha fechada e marca o Talento como inacessível, sem tirá-lo ("ainda tendo que cumprir os pré-requisitos") |
+| `requerTreinoCompleto: "<linhaId>"` | escolha aninhada de origem | a escolha só abre com a Linha completa (as 4 etapas). É a Artimanha a mais do Não-Feiticeiro 1.1.0 |
+
+⚠ **Referência entre pacotes usa o id já qualificado.** O `soDaOrigem` do treino cita
+`nao-feiticeiro:nao_feiticeiro`, e o `requerTreinoCompleto` da origem cita
+`espirito-indomavel:espirito_indomavel`. Um id com o separador não ganha prefixo de novo, e sem o
+outro pacote instalado a referência fica inerte (a linha some, a escolha não abre).
+
+Asserts: `t-nao-feiticeiro.mjs`, `t-espirito-indomavel.mjs` e `t-herdeiro-celeste.mjs`.

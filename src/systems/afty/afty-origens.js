@@ -1844,12 +1844,28 @@ export function escolhasDaOrigem(creature) {
  * Guarda escolhas, nunca resultados, e não remove excedente: reporta em
  * `excedeu`, que é o padrão do projeto.
  */
+/**
+ * A Linha de Treinamento está COMPLETA na ficha? Lida do progresso gravado, e não
+ * de `afty-treinamentos.js`, que já importa este módulo (o import ao contrário
+ * fecharia um ciclo). Não-repetível guarda um número, repetível uma lista de
+ * `{ alvo, progresso }`, e completa é qualquer uma com as 4 etapas.
+ */
+const ETAPAS_DA_LINHA = 4;
+export function treinoCompletoNaFicha(creature, linhaId) {
+  const v = creature?.treinamentos?.[linhaId];
+  if (Array.isArray(v)) return v.some((it) => Math.floor(Number(it?.progresso) || 0) >= ETAPAS_DA_LINHA);
+  return Math.floor(Number(v) || 0) >= ETAPAS_DA_LINHA;
+}
+
 export function resolveEscolhasOrigem(creature, nd = 1) {
   const porEscolha = {};
   const mapa = {};
   const guardadas = creature?.core?.origem?.escolhas || {};
   for (const esc of escolhasDaOrigem(creature)) {
     if (esc.ndMin != null && nd < esc.ndMin) continue;
+    /* A escolha que só abre com um TREINO COMPLETO (`requerTreinoCompleto`,
+       2026-10-09): a Artimanha a mais do Espírito Indomável do Não-Feiticeiro. */
+    if (esc.requerTreinoCompleto && !treinoCompletoNaFicha(creature, esc.requerTreinoCompleto)) continue;
     const custoDe = Object.fromEntries(esc.opcoes.map((o) => [o.id, o.custo ?? 1]));
     const brutas = Array.isArray(guardadas[esc.id]) ? guardadas[esc.id] : [];
     const vistos = new Set();
@@ -2057,6 +2073,9 @@ export function validarCatalogoOrigens() {
         if (!esc) continue;
         if (!esc.id) problemas.push(`${dono}/${c.id}: escolha sem id`);
         if (!esc.opcoes?.length) problemas.push(`${dono}/${c.id}: escolha "${esc.id}" sem opções`);
+        if (esc.requerTreinoCompleto != null && !(typeof esc.requerTreinoCompleto === "string" && esc.requerTreinoCompleto.trim())) {
+          problemas.push(`${dono}/${c.id}: escolha "${esc.id}" com requerTreinoCompleto vazio`);
+        }
         for (const o of esc.opcoes || []) {
           if (opcoesVistas.has(o.id)) problemas.push(`opção duplicada: ${o.id}`);
           opcoesVistas.add(o.id);

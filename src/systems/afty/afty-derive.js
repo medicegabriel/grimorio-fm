@@ -51,7 +51,7 @@ import {
 } from "./afty-origens";
 import {
   efeitosDeTreino, vagasEncantamentoDeTreino, atributosDePericiaDeTreino, gatilhosDeTreino,
-  efeitosInvocacaoDeTreino, linhasComEscolhaFeiticos,
+  efeitosInvocacaoDeTreino, linhasComEscolhaFeiticos, talentosDeTreino,
 } from "./afty-treinamentos";
 import { efeitosDeVotos, regrasAftyDeVotosAtivos, votosDaFicha } from "./afty-votos";
 import { resolveBloodfeast, temBloodfeast, efeitosBloodfeast, efeitosPoderDoSangue, comArmaBloodfeast, aprimoraLinhaBloodfeast } from "./afty-bloodfeast";
@@ -288,6 +288,8 @@ export function deriveAfty(creature, opcoes = {}) {
   const concessoesComImitacao = [...(opcoes.concedido ?? []), ...concessaoImitada(imitacao)];
   const concedido = agrupaConcedido(opcoes.concedido);
   if (temBloodfeast(creature) && !concedido.talentos.includes("tal_robustez_aprimorada")) concedido.talentos.push("tal_robustez_aprimorada");
+  // Os Talentos que uma etapa de treino concede (2026-10-09). Ver `talentosDeTreino`.
+  for (const id of talentosDeTreino(creature)) if (!concedido.talentos.includes(id)) concedido.talentos.push(id);
   for (const c of concessaoImitada(imitacao)) {
     if (!(creature?.habilidades ?? []).includes(c.id) && !concedido.habilidades.includes(c.id)) {
       concedido.habilidades.push(c.id);

@@ -1,0 +1,51 @@
+{
+  "id": "espirito-indomavel",
+  "nome": "O Espírito Indomável do Ser Humano",
+  "versao": "1.0.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Linha de Treinamento exclusiva do Não-Feiticeiro. +4 de vida máxima, treinado em Vontade, +3 nos acertos corpo a corpo e o Talento Determinado a Viver (os pré-requisitos dele continuam valendo). Completo, abre mais uma escolha de Artimanha na origem. Precisa do addon Não-Feiticeiro 1.1.0 instalado na mesma ficha, e do app com `concedeTalentos` em etapa de treino e `requerTreinoCompleto` em escolha de origem (2026-10-09).",
+  "acrescenta": {
+    "treinamentos": [
+      {
+        "id": "espirito_indomavel",
+        "nome": "O Espírito Indomável do Ser Humano",
+        "resumo": "Em meio a seres que desafiam as leis do mundo, distorcem a realidade ao seu bel prazer, exercendo sua autoridade ante aos meros mortais, você se levanta e se opõe. Você não é abençoado em nenhum quesito, e a única coisa que te diferencia dos outros que não se opõem é seu espírito, um espírito que não pode ser quebrado, dobrado ou apagado.\n\nSe levantando para encarar o maldito, o feiticeiro ou o restrito, contra todas as adversidades, você vai contra o próprio destino, seguindo em frente, se fortificando e afiando suas armas.\n\nTreinamento exclusivo de Não-Feiticeiros.",
+        "soDaOrigem": ["nao-feiticeiro:nao_feiticeiro"],
+        "etapas": [
+          {
+            "n": 1,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Recebe +4 de vida máxima.",
+            "efeitos": [{ "canal": "hp", "expr": "4" }]
+          },
+          {
+            "n": 2,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Se torna treinado em Vontade.",
+            "efeitos": [{ "canal": "proficienciaTR", "alvo": "vontade", "expr": "1" }]
+          },
+          {
+            "n": 3,
+            "focos": 2,
+            "requisito": null,
+            "beneficio": "Recebe +3 em seus acertos corpo a corpo.",
+            "efeitos": [{ "canal": "bonusAcerto", "alvo": "corpo", "expr": "3" }]
+          },
+          {
+            "n": 4,
+            "focos": 3,
+            "requisito": null,
+            "beneficio": "Recebe o talento Determinado a Viver, ainda tendo que cumprir os pré-requisitos.",
+            "concedeTalentos": ["tal_determinado_a_viver"]
+          }
+        ],
+        "completo": {
+          "beneficio": "Alcançando o ápice que um ser humano comum pode alcançar, caminhando entre feiticeiros e maldições, a vontade indomável do ser humano supera até a maior das adversidades. Você recebe mais 1 artimanha."
+        }
+      }
+    ]
+  }
+}

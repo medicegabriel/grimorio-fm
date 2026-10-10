@@ -940,6 +940,31 @@ export function efeitosDeTreino(creature, gatilhosAtivos = null) {
 }
 
 /**
+ * Os TALENTOS que as Linhas de Treinamento concedem (`concedeTalentos` numa etapa
+ * ou no Completo, 2026-10-09: "Recebe o talento Determinado a Viver"). Entram
+ * como concessão, sem gastar vaga. O pré-requisito do Talento continua valendo do
+ * jeito de sempre: o derive o confere com a ficha fechada e reporta o que falta
+ * em `talentos.inacessiveis`, sem tirar nada.
+ */
+export function talentosDeTreino(creature) {
+  const origemId = origemEstrutural(creature);
+  const qualificadas = origensQualificadas(creature);
+  const prog = normalizeTreinamentos(creature?.treinamentos);
+  const out = [];
+  const add = (lista) => {
+    for (const id of lista || []) if (typeof id === "string" && id && !out.includes(id)) out.push(id);
+  };
+  for (const [id, val] of Object.entries(prog)) {
+    const linha = BY_ID[id];
+    if (!linha || !treinoDisponivel(linha, origemId, qualificadas)) continue;
+    const p = Array.isArray(val) ? Math.max(0, ...val.map((it) => clampProg(it.progresso))) : clampProg(val);
+    for (const et of linha.etapas) if (et.n <= p) add(et.concedeTalentos);
+    if (p >= ETAPAS_POR_LINHA) add(linha.completo?.concedeTalentos);
+  }
+  return out;
+}
+
+/**
  * Efeitos que uma Linha de Treinamento aplica nas INVOCAÇÕES do dono, e não na
  * própria criatura (2026-09-14). Espelha `efeitosDeTreino`, mas lê o campo
  * `efeitosInvocacao` de cada etapa/completo em vez de `efeitos`, e não passa

@@ -16334,3 +16334,17 @@ Pedido do autor: um Addon chamado "Yna" com a Origem Kitsune, a Linhagem Clã Ge
 **Verificado ao vivo:** `/Player` com um Não-Feiticeiro Lutador de nível 10. Ficha: Estamina, as Artimanhas escolhidas na característica, o ARMA!!! e a Vontade Indomável com contador, o Perceber o Ar na sub-aba do Restringido. Criador: a aba Habilidades só com Feitiços e Dano, o seletor Arma Masterizada levando a Adaga a Acerto +14 e Dano 1d12 + 4 com Crítico 17 (fontes nomeadas no hover), Feitiço novo só Passivo ou Personalizado com os níveis 3 a 5 travados, e o Nível parado em 10. Console limpo, e a ficha de teste apagada.
 
 **Achado e não mexido:** em `a-fazer.md`, "Não-Feiticeiro (Regras Opcionais): o que segue de mesa": os pré-requisitos do ARMA!!!, a Artimanha repetida, o Arsenal do Restringido, as Habilidades com Energia na narrativa, o Estilo que não muda ao subir de nível, e a PERGUNTA sobre o Conhecimento Inatural contra a perda das Artimanhas. A Origem Civil e o Nível 0 ficaram fora, por escolha do autor. Nenhum U+2014 novo, `src/components/` intocado. Sem commit ou push.
+
+## SESSÃO DE 2026-10-09: TREINO "O ESPÍRITO INDOMÁVEL DO SER HUMANO" (ADDON)
+
+**Pedido do autor:** uma Linha de Treinamento exclusiva do Não-Feiticeiro, em pacote separado (escolha do autor). Etapas: +4 de vida máxima (1 foco), treinado em Vontade (1), +3 nos acertos corpo a corpo (2), o Talento Determinado a Viver "ainda tendo que cumprir os pré-requisitos" (3). Completo: mais uma Artimanha.
+
+**O que mudou no motor:** dois verbos genéricos. `concedeTalentos` em etapa ou Completo de treino (`talentosDeTreino` em afty-treinamentos.js, pela porta da concessão, sem vaga; o pré-requisito é conferido com a ficha fechada e o Talento sai inacessível, sem ser tirado). `requerTreinoCompleto` em escolha aninhada de origem (`treinoCompletoNaFicha` em afty-origens.js, lido do progresso gravado, porque o import de afty-treinamentos fecharia um ciclo): a escolha só abre com as 4 etapas.
+
+**Os addons:** `addons/espirito-indomavel.json` novo, com `soDaOrigem` citando `nao-feiticeiro:nao_feiticeiro` (id já qualificado, que não ganha prefixo de novo). `addons/nao-feiticeiro.json` subiu para 1.1.0 com a quarta escolha, "Artimanha · Espírito Indomável", com as sete Artimanhas e `requerTreinoCompleto` citando `espirito-indomavel:espirito_indomavel`. Sem o outro pacote, as referências ficam inertes.
+
+**Asserts:** `t-espirito-indomavel.mjs` novo, com 30. Suíte final: 173 arquivos e 9467 asserts, todos passaram. ESLint em `src/systems/afty`, `t-ordem-modulos` (36) e build limpos.
+
+**Verificado ao vivo:** `/Player` com um Não-Feiticeiro Lutador de nível 10, Constituição 16 e o treino completo: o Determinado a Viver na Ficha, o treino na aba Interlúdios, e a quarta escolha de Artimanha no card da Origem. Console limpo, e a ficha de teste apagada.
+
+**Achado e não mexido:** nada novo. Nenhum U+2014 novo, `src/components/` intocado. Sem commit ou push.

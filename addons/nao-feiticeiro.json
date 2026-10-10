@@ -1,10 +1,10 @@
 {
   "id": "nao-feiticeiro",
   "nome": "Não-Feiticeiro",
-  "versao": "1.0.0",
+  "versao": "1.1.0",
   "autor": "Templas",
   "paraRaw": "afty",
-  "descricao": "Regra Opcional do Livro Básico: o Não-Feiticeiro, o civil que nunca despertou e ainda assim luta contra as Maldições. Origem sem Energia Amaldiçoada com qualquer classe (Estamina, nenhuma Aptidão, nenhuma técnica), só as Especializações Combatente, Lutador e Suporte, nível máximo 10. Bônus em Atributo (+2 num Mental e +1 num Físico), as Artimanhas nos níveis 1, 5 e 10 e a Vontade Indomável com contador. O Estilo Marcial e o Fundamento Marcial do Restringido são os Feitiços Passivo e Personalizado, abertos por este pacote (a mesma liberação do addon Estilo Marcial), até o Nível 2. A Arma Masterizada é escolhida no card de Dano. Precisa do app com os campos de origem `semEnergia`, `nivelMaximo`, `tetoNivelFeitico`, `concedeHabilidades` e `armaEscolhida` (2026-10-09).",
+  "descricao": "Regra Opcional do Livro Básico: o Não-Feiticeiro, o civil que nunca despertou e ainda assim luta contra as Maldições. Origem sem Energia Amaldiçoada com qualquer classe (Estamina, nenhuma Aptidão, nenhuma técnica), só as Especializações Combatente, Lutador e Suporte, nível máximo 10. Bônus em Atributo (+2 num Mental e +1 num Físico), as Artimanhas nos níveis 1, 5 e 10 (mais uma com o treino O Espírito Indomável do Ser Humano completo, do addon de mesmo nome) e a Vontade Indomável com contador. O Estilo Marcial e o Fundamento Marcial do Restringido são os Feitiços Passivo e Personalizado, abertos por este pacote (a mesma liberação do addon Estilo Marcial), até o Nível 2. A Arma Masterizada é escolhida no card de Dano. Precisa do app com os campos de origem `semEnergia`, `nivelMaximo`, `tetoNivelFeitico`, `concedeHabilidades` e `armaEscolhida` (2026-10-09).",
   "libera": ["feiticosRestritos"],
   "acrescenta": {
     "origens": [
@@ -168,6 +168,60 @@
                   },
                   {
                     "id": "nf_a10_percepcao",
+                    "nome": "Percepção do Invisível",
+                    "descricao": "Você é capaz de perceber o que não existe. Você ganha a Habilidade de Especialização Perceber o Ar e pode ver Maldições sem lentes ou óculos. [Pré-Requisito: Nível 10]",
+                    "concedeHabilidades": [{ "id": "res_perceber_o_ar", "ndMin": 10 }]
+                  }
+                ]
+              },
+              {
+                "id": "nf_artimanha_treino",
+                "label": "Artimanha · Espírito Indomável",
+                "vagas": 1,
+                "requerTreinoCompleto": "espirito-indomavel:espirito_indomavel",
+                "opcoes": [
+                  {
+                    "id": "nf_at_grao_mestre",
+                    "nome": "Grão Mestre em Arma",
+                    "descricao": "Você é um grão-mestre em uma arma, algo que até mesmo os Feiticeiros têm dificuldade em ser. Em troca da falta de energia e do físico, você se masterizou. Escolha uma Arma de qualquer custo. Esta arma é considerada sua Arma Masterizada. Você aplica o bônus de treinamento nela se antes não aplicava. Caso você já aplicasse, ao invés disso aplique metade do seu bônus de treinamento no dano e no acerto.",
+                    "armaEscolhida": { "id": "arma_masterizada", "nome": "Arma Masterizada" },
+                    "efeitos": [
+                      { "canal": "treinoArmaCasoJa", "alvo": "@arma_masterizada", "expr": "piso(bt / 2)", "nome": "Grão Mestre em Arma" }
+                    ]
+                  },
+                  {
+                    "id": "nf_at_arma",
+                    "nome": "ARMA!!!",
+                    "descricao": "Você tem um vício descomunal na sua Arma Masterizada. É como se você fosse incapaz de viver sem elas. Sua Arma Masterizada tem sua margem de acerto crítico reduzida em 1 e tem seu nível de dano aumentado em +3. Uma vez por combate, você pode escolher, gastando 5 de PE, garantir um ataque crítico, como se você tivesse tirado 20. [Pré-Requisito: Nível 5, Grão Mestre em Arma e Armas Escolhidas]",
+                    "armaEscolhida": { "id": "arma_masterizada", "nome": "Arma Masterizada" },
+                    "efeitos": [
+                      { "canal": "margemCritico", "alvo": "@arma_masterizada", "expr": "1", "nome": "ARMA!!!" },
+                      { "canal": "nivelDano", "alvo": "@arma_masterizada", "expr": "3", "nome": "ARMA!!!" }
+                    ],
+                    "usos": { "expr": "1", "recarga": "cena" }
+                  },
+                  {
+                    "id": "nf_at_planejamentos",
+                    "nome": "Planejamentos Assíduos",
+                    "descricao": "Você planeja antes de realizar suas missões, tendo equipamentos preparados. Recebe o Arsenal do Restringido, porém, com apenas um equipamento que evolui, ao invés do normal. [O Arsenal do Restringido ainda não existe no Afty: resolva na mesa.]"
+                  },
+                  {
+                    "id": "nf_at_conhecimento",
+                    "nome": "Conhecimento Inatural",
+                    "descricao": "Você estudou o Jujutsu, mesmo que você seja incapaz de controlá-lo. Caso você se torne um Feiticeiro, ganhe 1 Nível de Aptidão. Essa Artimanha pode ser pega várias vezes."
+                  },
+                  {
+                    "id": "nf_at_equipamentos",
+                    "nome": "Equipamentos Refinados",
+                    "descricao": "Você refina seus equipamentos até onde não der mais, buscando deixar eles prístinos para o combate contra as Maldições. Ao melhorar um item em um Descanso Curto ou Longo com o Kit de Ferreiro, enquanto você empunhá-lo, adicione metade do bônus de treinamento no Dano, caso seja uma arma, ou na RD, caso seja um Escudo. [A melhoria do item é de mesa.]"
+                  },
+                  {
+                    "id": "nf_at_mente_astuta",
+                    "nome": "Mente Astuta",
+                    "descricao": "Com uma mente astuta, você consegue perceber ações antes que elas sequer sejam realizadas. Você agora pode utilizar Ler Intenções como ação livre e sempre passa no teste."
+                  },
+                  {
+                    "id": "nf_at_percepcao",
                     "nome": "Percepção do Invisível",
                     "descricao": "Você é capaz de perceber o que não existe. Você ganha a Habilidade de Especialização Perceber o Ar e pode ver Maldições sem lentes ou óculos. [Pré-Requisito: Nível 10]",
                     "concedeHabilidades": [{ "id": "res_perceber_o_ar", "ndMin": 10 }]
