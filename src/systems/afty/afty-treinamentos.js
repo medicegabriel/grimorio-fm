@@ -697,12 +697,20 @@ function paraCanal(ef, alvoInstancia, alvos = {}, ficha = {}) {
     const exprDeAlvo = typeof ef.expr === "string" && ef.expr.startsWith("escolha:")
       ? alvos[ef.expr.slice("escolha:".length)]
       : null;
+    /* ⚠ O `quando` e a `duracao` PASSAM (2026-10-11). Eles caíam aqui, calados,
+       e uma etapa "enquanto em Postura da Terra" (Treino de Firmeza do pacote
+       Stark) valeria sempre. Nenhum treino anterior os escrevia. O `quando` que
+       lê a bancada desce para o estágio principal pelo `separarEfeitosDeBancada`. */
+    const condicao = {
+      ...(typeof ef.quando === "string" && ef.quando.trim() ? { quando: ef.quando.trim() } : {}),
+      ...(ef.duracao === "temporaria" ? { duracao: "temporaria" } : {}),
+    };
     if (typeof ef.expr === "string" && ef.expr.startsWith("escolha:")) {
       const n = Number(exprDeAlvo);
       if (!Number.isFinite(n) || n === 0) return null;
-      return { canal: ef.canal, expr: String(Math.trunc(n)), ...(alvo ? { alvo } : {}) };
+      return { canal: ef.canal, expr: String(Math.trunc(n)), ...(alvo ? { alvo } : {}), ...condicao };
     }
-    return { canal: ef.canal, expr: String(ef.expr ?? "0"), ...(alvo ? { alvo } : {}) };
+    return { canal: ef.canal, expr: String(ef.expr ?? "0"), ...(alvo ? { alvo } : {}), ...condicao };
   }
   const valor = Number(ef?.valor) || 0;
   if (!valor) return null;
@@ -1154,6 +1162,34 @@ export function vagasEncantamentoDeTreino(creature) {
     }
   }
   return out;
+}
+
+/**
+ * Vagas LIVRES de encantamento no ESCUDO equipado, vindas das etapas de treino
+ * já feitas (`vagaEncantamentoEscudo: n` numa etapa ou no Completo).
+ *
+ * Nasceu com o Treino de Escudo do pacote Stark (2026-10-11): *"Você recebe +1
+ * encantameto adicional em seu escudo"*. É a irmã da `vagaEncantamento` do
+ * Completo, que mira a arma da instância: aqui não há instância, e a vaga vai
+ * para todo escudo que for Ferramenta Amaldiçoada. Livre = não desce o grau de
+ * cálculo, igual à da arma.
+ */
+export function vagasEncantamentoEscudoDeTreino(creature) {
+  const origemId = origemEstrutural(creature);
+  const qualificadas = origensQualificadas(creature);
+  const prog = normalizeTreinamentos(creature?.treinamentos);
+  let total = 0;
+  for (const [id, val] of Object.entries(prog)) {
+    const linha = BY_ID[id];
+    if (!linha || !treinoDisponivel(linha, origemId, qualificadas)) continue;
+    const instancias = linha.repetivel && Array.isArray(val) ? val : [{ progresso: Number(val) || 0 }];
+    for (const inst of instancias) {
+      const p = clampProg(inst.progresso);
+      for (const et of linha.etapas) if (et.n <= p) total += Math.max(0, Math.trunc(Number(et.vagaEncantamentoEscudo) || 0));
+      if (p >= ETAPAS_POR_LINHA) total += Math.max(0, Math.trunc(Number(linha.completo?.vagaEncantamentoEscudo) || 0));
+    }
+  }
+  return total;
 }
 
 /** Custo em Focos de uma linha até um dado progresso (0..4). */

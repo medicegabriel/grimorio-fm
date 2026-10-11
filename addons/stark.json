@@ -1,0 +1,1738 @@
+{
+  "id": "stark",
+  "nome": "Stark",
+  "versao": "1.0.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Estilo das Sombras: Arte do Herói, homebrew de Kami/shadowz664 baseada no Stark de Sōsō no Frieren. Traz a origem Legado do Guerreiro, o Voto Próprio Permanente O Covarde, as cinco Técnicas de Estilo da Arte do Herói, o Voto pronto Maldição - Instinto Corrompido e três treinos (Treino de Escudo, Treino de Firmeza e Treinamento Corporal). O Legado é uma variação do Sem Técnica: o Estilo destrava no Nível 1 com 2 Técnicas (3 no Nível 4, e depois a progressão normal), e o Domínio Simples não vem no Nível 4 nem pode ser escolhido na aba de Aptidões, só pelo marcador Aprendeu o Domínio Simples no card da Origem. As Técnicas são à escolha, marcadas no card do Estilo, e cada uma confere o próprio pré-requisito. O Covarde entra sozinho na vaga de Voto, e o estado O Covarde da Simulação de Combate aplica o PE Máximo de 60% (Apavorado) ou de 140% (Superou o Medo). O Instinto Corrompido é copiado na aba Votos com um botão. O teste de Vontade, as condições e os efeitos por Nível de Aptidão das Técnicas ficam de mesa. Vale nos dois sistemas e precisa do app de 2026-10-11 ou mais novo.",
+  "estadosCombate": [
+    {
+      "id": "covarde",
+      "label": "O Covarde",
+      "tipo": "opcao",
+      "title": "Voto O Covarde",
+      "opcoes": [
+        {
+          "id": "apavorado",
+          "label": "Apavorado"
+        },
+        {
+          "id": "superou",
+          "label": "Superou o Medo"
+        }
+      ]
+    }
+  ],
+  "votoAutomatico": {
+    "id": "o_covarde",
+    "nome": "O Covarde",
+    "narrativa": "Depois de ter tantas pequenas lutas contra seu mestre e nunca vencer, sua noção sobre a própria força se distorceu, você se considera muito mais fraco que os demais, instintivamente você se impôs uma restrição que faz o medo lhe dominar até que você finalmente consiga entender… que você é mais forte que o oponente a sua frente.",
+    "maleficio": {
+      "texto": "Sempre que você se deparar com um inimigo cuja ND não seja abaixo de 5 níveis em relação a você, você deverá realizar um teste de Vontade, com a seguinte CD: Capanga 10+ND, Comum 15+ND, Desafio 20+ND, Calamidade 25+ND.\n\nA critério do mestre, se for um inimigo que possua fama e você tenha ouvido falar sobre, como por exemplo Ryomen Sukuna, a CD do teste aumenta em 5 ou 10 se for uma Calamidade.\n\nNo início de seus turnos, você repete esse teste, recebendo um bônus de +2 para cada vez que tenha falhado nele. Se o inimigo fizer algo que vá contra o que você acreditava sobre ele, como lhe dar um ataque e não lhe causar dano pela sua RD, não acertar um ataque que você não tenha feito nada, entre outros, você passa a receber +5 em seu teste de Vontade para resistir a esse efeito.\n\nAté que você suceda nesse teste, você recebe os seguintes malefícios:\n• Você recebe as condições Aterrorizado e Amedrontado contra o alvo. Essas condições não podem ser removidas por Aura Anuladora ou similares.\n• Você tem sua energia máxima reduzida para 60% de seu total (0,6x).\n• Você recebe desvantagem em testes de ataque contra o alvo.",
+      "efeitos": [
+        {
+          "canal": "peMult",
+          "expr": "0.6",
+          "quando": "stark_covarde_apavorado",
+          "duracao": "temporaria"
+        }
+      ]
+    },
+    "beneficio": {
+      "texto": "Porém, ao se deparar com um inimigo que seja 5 níveis abaixo (10 para desafio e calamidade) ou que você tenha sucedido em seu teste, você não o teme e passa a lutar com toda sua força, recebendo os seguintes benefícios:\n• Você não pode ser afetado pelas condições Abalado, Amedrontado e Aterrorizado se forem causadas pelo inimigo que você superou. Além de perder as condições auto-impostas.\n• Você tem sua energia máxima aumentada para 140% (1,4x), recuperando a diferença entre o máximo anterior e o novo.\n• O custo de energia ou Preparo envolvendo habilidades e aptidões que você possua um Estilo da Nova Sombra relacionado é reduzido em 1 PE/PP, sem afetar seus efeitos e com mínimo de 1 ponto.\n\nEm caso de múltiplos inimigos ao mesmo tempo, considera a CD do inimigo com maior ND presente na cena, com ela sendo aumentada em 2 para cada inimigo que encaixe no malefício do voto. Nesses casos você só recebe os benefícios ao passar na CD, mesmo que tenha um inimigo cuja ND seja 5 abaixo de seu nível.",
+      "efeitos": [
+        {
+          "canal": "peMult",
+          "expr": "1.4",
+          "quando": "stark_covarde_superou",
+          "duracao": "temporaria"
+        }
+      ]
+    }
+  },
+  "pactoPadrao": {
+    "nome": "Maldição - Instinto Corrompido",
+    "descricao": "Sua compreensão da Energia Amaldiçoada é profundamente corrompida. Você é incapaz de manipulá-la com precisão, tornando inviável qualquer forma refinada de controle. Em vez disso, seu estilo de combate é guiado quase inteiramente por instinto, como o de uma criatura bestial que luta movida apenas por seus impulsos e pela força bruta de sua maldição.\n\nAinda assim, os poucos ensinamentos deixados por seu mestre foram levados ao extremo. Incapaz de dominar técnicas complexas, você aperfeiçoou seu próprio corpo até o limite, extraindo o máximo de cada fundamento que aprendeu.",
+    "maleficios": [
+      {
+        "id": "instinto_maleficio_pe",
+        "texto": "Recebe -2 PE por nível.",
+        "efeitos": [
+          {
+            "canal": "pe",
+            "expr": "-2 * nd"
+          }
+        ]
+      },
+      {
+        "id": "instinto_maleficio_intelecto",
+        "texto": "Sofre Desvantagem em Testes de Intelecto.",
+        "efeitos": []
+      },
+      {
+        "id": "instinto_maleficio_cl",
+        "texto": "Não pode aprender Aptidões de CL.",
+        "efeitos": [
+          {
+            "canal": "limiteAptidao",
+            "alvo": "cl",
+            "expr": "-5"
+          }
+        ]
+      },
+      {
+        "id": "instinto_maleficio_int",
+        "texto": "Sua Inteligência é limitada a 6.",
+        "efeitos": [
+          {
+            "canal": "limiteAtributo",
+            "alvo": "inteligencia",
+            "expr": "-14"
+          }
+        ]
+      }
+    ],
+    "beneficios": [
+      {
+        "id": "instinto_beneficio_hp",
+        "texto": "Recebe +6 HP por nível.",
+        "efeitos": [
+          {
+            "canal": "hp",
+            "expr": "6 * nd"
+          }
+        ]
+      },
+      {
+        "id": "instinto_beneficio_aura",
+        "texto": "Enquanto estiver com seu Domínio Simples ativo, sua presença torna-se monstruosa, a RD concedida pela aptidão Aura Reforçada é dobrada (recebendo RD Física igual a 4 vezes o Nível de Aptidão em Aura).",
+        "efeitos": [
+          {
+            "canal": "rdFisico",
+            "expr": "dobro(au)",
+            "quando": "estilo_ativo && tem_aura_reforcada",
+            "duracao": "temporaria"
+          },
+          {
+            "canal": "rdGeral",
+            "expr": "dobro(au)",
+            "quando": "estilo_ativo && aura_excessiva",
+            "duracao": "temporaria"
+          }
+        ]
+      }
+    ]
+  },
+  "estilos": [
+    {
+      "id": "reforco_corporal",
+      "nome": "Reforço Corporal",
+      "regra": "expansao",
+      "tipo": "especial",
+      "escolhivel": true,
+      "requer": [
+        {
+          "tipo": "aptidao",
+          "id": "aura_reforcada"
+        }
+      ],
+      "descricao": "Técnica de Estilo de Aptidão. Mesmo sem um controle afinado de Energia Amaldiçoada sua própria energia amaldiçoada reage de forma instintiva a Ataques, de forma muito além do convencional, como se sua energia estivesse em perfeita sintonia com seu corpo. Desta forma ao ativar seu Domínio Simples ele tem sua área de efeito diminuída para 1,5m, mas a RD recebida pela Aura recebida se torna igual a 2 + o dobro do seu nível de Aura que não pode ser ignorado além de poder pegar as Aptidões de acordo com o seu Nível de Domínio.",
+      "especial": {
+        "texto": "Aptidão de Aura 2: Como parte de sua energia e incapaz de sua energia a utilizar seu Domínio Simples, sua energia reage de maneira natural focando na área do dano, focalizando de forma quase instantânea e precisa, impedindo a entrada de golpes de maneira profunda, fazendo que o primeiro ataque que receber durante sua rodada tenha o dobro da RD.\n\nAptidão de Aura 3 e Aura Excessiva: Sua energia é capaz de blindar seu corpo de maneira interna fazendo com que além de sua pele todo seu corpo pareça excessivamente resistente a golpes, ao Amplificar sua Aura, sua RD aumente em um valor igual ao seu BM.\n\nAptidão de Aura 4 e Aura Impenetrável: Fortalecer sua Aura se torna tão natural como suas próprias técnicas, além de sobrepor a energia de golpes pela grande massa de energia que o cobre. Desta forma ao ativar seu Domínio Simples suas Aptidões de Aura presentes são ativadas cobrindo os custos sem o gasto de ações considerando com Sustentado, além que ao ser alvo de manobras pode realizar um teste de Fortitude + Aptidão em Aura para resistir pela firmeza de seu corpo.\n\nAptidão de Aura 5 e Casulo de Energia: Seu domínio simples em si se torna uma grande massa de energia que sobrepõe seu corpo desta forma ele se auto armazena impedindo o gasto desnecessário de Energia, fazendo que em seu primeiro turno cubra o dobro do custo das auras, para se manter ativo até que seu Domínio Simples seja desativado.",
+        "linhas": [
+          {
+            "canal": "rdFisico",
+            "expr": "2",
+            "nome": "Reforço Corporal"
+          },
+          {
+            "canal": "rdGeral",
+            "expr": "bt",
+            "quando": "au >= 3 && aura_excessiva",
+            "nome": "Reforço Corporal (Aura 3)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mente_inabalavel",
+      "nome": "Arte do Herói - Mente Inabalável",
+      "regra": "expansao",
+      "tipo": "especial",
+      "escolhivel": true,
+      "requer": [
+        {
+          "tipo": "aptidao",
+          "id": "aura_anuladora"
+        }
+      ],
+      "descricao": "Técnica de Estilo de Especialização. Seu corpo parece ser coberto por uma grande quantidade de energia que aparenta expulsar qualquer coisa que o tente afetar, parecendo criar uma pequena película protetora ao redor de seu corpo. Uma quantidade de vezes igual ao seu bônus de treinamento, caso você fosse sofrer uma condição, você pode pagar uma quantidade variável de energia para ignorá-la, a depender do nível da condição. Esta aptidão não pode anular manobras e efeitos físicos, como a ação Agarrar ou Ferimentos Complexos. Anular uma condição fraca custa 2PE, anular uma média custa 4PE, uma forte custa 6PE e uma extrema custa 10PE. Você recupera esses usos em um descanso longo. Ao utilizar Aura Anuladora seu corpo assimila a energia residual da técnica exposta recebendo PVT igual a 5 × Nível da condição.",
+      "especial": {
+        "texto": "Aptidão de Aura 2: Se torna (3 + BM) × Nível da Condição o cálculo para PVT.\n\nAptidão de Aura 3: Alternativamente pode utilizar sua reação na Aura Anuladora para não gastar uma carga da Aura Anuladora, expulsando a energia de forma consciente.\n\nAptidão de Aura 4: Ao utilizar Aura Anuladora sem receber uma condição seu corpo começa a expelir qualquer energia ao redor reduzindo o dano da próxima técnica igual a sua Aptidão de Aura × 5.\n\nAptidão de Aura 5: Seu Domínio Simples ganha propriedades anuladoras anulando condições fracas automaticamente e diminuindo o custo das superiores em um nível.",
+        "linhas": []
+      },
+      "usos": {
+        "expr": "bt",
+        "recarga": "descanso"
+      }
+    },
+    {
+      "id": "impacto_trovejante",
+      "nome": "Arte do Herói - Impacto Trovejante",
+      "regra": "expansao",
+      "tipo": "especial",
+      "escolhivel": true,
+      "requer": [
+        {
+          "tipo": "habilidade",
+          "id": "cmb_artes_do_combate"
+        }
+      ],
+      "descricao": "Técnica de Estilo de Especialização. Requer o Golpe Descendente. Erguendo sua arma acima de sua cabeça, concentrando seus músculos e segurando-a com toda a sua força, você então a desce com o máximo de velocidade possível enquanto a envolve de energia, atingindo de forma concentrada no local e causando uma considerável destruição. Ao usar a habilidade “Golpe Descendente”, você se foca totalmente em manter sua energia poderosa ao invés de ganhar defesa ganhando RD igual a sua Aptidão em Aura.",
+      "especial": {
+        "texto": "Aptidão de Aura 2: A quantidade de RD aumenta igual ao seu BT.\n\nAptidão de Aura 3: Seu Golpe cria um gigantesco raio de luz com a explosão de sua Energia Amaldiçoada, fazendo com que a criatura acertada se sinta levemente desnorteada e perdendo o foco, ganhando Desvantagem em seu próximo acerto desde que não tenha o Stark como Alvo, causando dano Radiante.\n\nAptidão de Aura 4: O ataque começa a afetar uma área igual a 1,5m × Aptidão de Aura em metros ao redor do usuário desde que ultrapasse a defesa das criaturas.\n\nAptidão de Aura 5: A energia residual do Golpe parece continuar mantendo seu corpo em atividade, podendo uma vez por rodada ganhar PVT igual a sua Aptidão de Aura × 5.",
+        "linhas": [
+          {
+            "canal": "rdGeral",
+            "expr": "au + (au >= 2) * bt",
+            "quando": "arte_golpe_descendente",
+            "nome": "Impacto Trovejante"
+          },
+          {
+            "canal": "defesa",
+            "expr": "-max(1, piso(mod_sabedoria / 2))",
+            "quando": "arte_golpe_descendente",
+            "nome": "Impacto Trovejante"
+          }
+        ]
+      }
+    },
+    {
+      "id": "tempo_para_um_covarde",
+      "nome": "Arte do Herói - Tempo para um Covarde",
+      "regra": "expansao",
+      "tipo": "especial",
+      "escolhivel": true,
+      "requer": [
+        {
+          "tipo": "habilidade",
+          "id": "cmb_revigorar"
+        }
+      ],
+      "descricao": "Técnica de Estilo de Especialização. Diante a exaustão seu corpo aparenta sempre se manter intacto, como se um estado de exaustão, fosse um acontecimento diário, e ao focar em se recuperar ficar mais ciente de seu ambiente e concentrado desde que seu domínio simples esteja ativo. Uma quantidade de vezes igual ao seu bônus de treinamento você pode usar sua ação bônus para se curar em um valor igual a BM d10 + o dobro do seu modificador de Constituição, aumentando em um dado a cada 4 níveis. Você recupera todos os usos em um descanso longo ou metade em um descanso curto.",
+      "especial": {
+        "texto": "Domínio 2: Ao utilizar Revigorar, pode gastar 1PE para realizar uma ação de pulo igual ao seu deslocamento sem causar ataques de oportunidade.\n\nDomínio 3: Ganha cargas adicionais igual a BM/2.\n\nDomínio 4: Pode utilizar no início de seu turno Revigorar como ação livre uma vez por Rodada.\n\nDomínio 5: Ao utilizar revigorar envia uma energia às criaturas ao seu redor liberando rapidamente energia amaldiçoada empurrando todos 4,5m, caso esteja agarrado terá que realizar um teste de Fortitude contra o atletismo da criatura para o empurrar.",
+        "linhas": []
+      },
+      "usos": {
+        "expr": "bt + (dom >= 3) * piso(bt / 2)",
+        "recarga": "descanso"
+      }
+    },
+    {
+      "id": "cobertura_da_vanguarda",
+      "nome": "Arte do Herói - Cobertura da Vanguarda",
+      "regra": "expansao",
+      "tipo": "especial",
+      "escolhivel": true,
+      "requer": [
+        {
+          "tipo": "habilidade",
+          "id": "cmb_estilo_do_interceptador"
+        }
+      ],
+      "descricao": "Técnica de Estilo de Especialização. Quando você percebe que um de seus amigos vai ser atingido por um ataque, não importa o medo que você sinta, você opta por ignorar a sua própria proteção para interceptar o golpe e proteger seu aliado. A distância que você pode usar o Estilo do Interceptador se torna igual ao seu movimento + alcance da sua arma, com você se deslocando até o aliado como parte da reação, esse movimento não provoca ataques de Oportunidade. Caso esteja apavorado por conta de seu voto, você pode se aproximar em direção do aliado mesmo que a fonte de seu medo esteja no caminho.",
+      "especial": {
+        "texto": "Domínio 2: Ao invés de Reduzir o dano do aliado, você passa a interceptar o ataque, se tornando o novo alvo dele, recebendo RD igual a fornecida pelo Estilo. Você passa a ficar entre o aliado e o inimigo, se ambos estiverem adjacentes, o aliado fica atrás de você, sem provocar ataque de oportunidade.\n\nDomínio 3: Uma vez por rodada, caso não tenha usado sua reação para interceptar um ataque ou se proteger contra algum ataque (como pela aptidão cobrir-se), você pode gastar 3 PE para usar o Estilo como uma ação livre em vez de reação.\n\nDomínio 4: Caso o inimigo tenha realizado múltiplos ataques contra o mesmo aliado que você protegeu, contra o segundo ataque que fosse afetá-lo você passa a poder realizar um ataque contra o ataque de seu inimigo. Caso você supere o acerto do inimigo, você anula o ataque, se tirar um valor abaixo ou igual você recebe o ataque normalmente.\n\nDomínio 5: Você também pode realizar a interceptação contra o 3° ataque.",
+        "linhas": []
+      }
+    }
+  ],
+  "acrescenta": {
+    "origens": [
+      {
+        "id": "legado_do_guerreiro",
+        "nome": "Legado do Guerreiro",
+        "variacaoDe": "sem_tecnica",
+        "restricoes": [
+          "Sem técnica e sem acesso a Feitiços.",
+          "Não pode ter a especialização Especialista em Técnicas."
+        ],
+        "especializacoesVetadas": [
+          "conjurador"
+        ],
+        "estiloNdMinimo": 1,
+        "aptidoesVetadas": [
+          "dominio_simples"
+        ],
+        "bonusAtributos": {},
+        "efeitos": [
+          {
+            "canal": "vagasHabilidade",
+            "expr": "(nd >= 6) + (nd >= 15) + (nd >= 19)",
+            "nome": "Compensar Covardia"
+          },
+          {
+            "canal": "vagasTalento",
+            "expr": "(nd >= 19)",
+            "nome": "Compensar Covardia"
+          },
+          {
+            "canal": "vagasEstilo",
+            "expr": "2 * (nd < 4) + (nd >= 4)",
+            "nome": "Novo Estilo das Sombras"
+          }
+        ],
+        "caracteristicas": [
+          {
+            "id": "bonus_atributo",
+            "nome": "Aumento de Atributo",
+            "descricao": "Aquele que leva adiante o Legado do Guerreiro recebe 3 pontos de atributo adicionais e 1 ponto em um atributo físico a sua escolha, com um máximo de 3 pontos em um mesmo atributo.",
+            "bonus": {
+              "distribuir": 3,
+              "maxPorAtributo": 3
+            },
+            "alocacao": {
+              "id": "legado_fisico",
+              "quantidade": 1,
+              "valor": 1,
+              "entre": [
+                "forca",
+                "destreza",
+                "constituicao"
+              ]
+            }
+          },
+          {
+            "id": "corpo_treinado",
+            "nome": "Corpo Treinado",
+            "descricao": "Seu corpo foi treinado e aprimorado para além do convencional para que você fosse capaz de sequer aguentar a utilização das técnicas ensinadas a você. Escolha um atributo físico, seu limite natural no atributo escolhido aumenta para 26. Alternativamente, você pode escolher dois atributos físicos distintos para ter seu limite natural aumentado para 24.",
+            "escolhas": [
+              {
+                "id": "legado_corpo_treinado",
+                "label": "Corpo Treinado",
+                "vagas": 1,
+                "ndMin": 1,
+                "opcoes": [
+                  {
+                    "id": "legado_corpo_forca",
+                    "nome": "Força até 26",
+                    "descricao": "Seu limite natural de Força aumenta para 26.",
+                    "efeitos": [
+                      {
+                        "canal": "limiteAtributo",
+                        "alvo": "forca",
+                        "expr": "6",
+                        "nome": "Corpo Treinado"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_corpo_destreza",
+                    "nome": "Destreza até 26",
+                    "descricao": "Seu limite natural de Destreza aumenta para 26.",
+                    "efeitos": [
+                      {
+                        "canal": "limiteAtributo",
+                        "alvo": "destreza",
+                        "expr": "6",
+                        "nome": "Corpo Treinado"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_corpo_constituicao",
+                    "nome": "Constituição até 26",
+                    "descricao": "Seu limite natural de Constituição aumenta para 26.",
+                    "efeitos": [
+                      {
+                        "canal": "limiteAtributo",
+                        "alvo": "constituicao",
+                        "expr": "6",
+                        "nome": "Corpo Treinado"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_corpo_forca_destreza",
+                    "nome": "Força e Destreza até 24",
+                    "descricao": "Seu limite natural de Força e de Destreza aumenta para 24.",
+                    "efeitos": [
+                      {
+                        "canal": "limiteAtributo",
+                        "alvo": "forca",
+                        "expr": "4",
+                        "nome": "Corpo Treinado"
+                      },
+                      {
+                        "canal": "limiteAtributo",
+                        "alvo": "destreza",
+                        "expr": "4",
+                        "nome": "Corpo Treinado"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_corpo_forca_constituicao",
+                    "nome": "Força e Constituição até 24",
+                    "descricao": "Seu limite natural de Força e de Constituição aumenta para 24.",
+                    "efeitos": [
+                      {
+                        "canal": "limiteAtributo",
+                        "alvo": "forca",
+                        "expr": "4",
+                        "nome": "Corpo Treinado"
+                      },
+                      {
+                        "canal": "limiteAtributo",
+                        "alvo": "constituicao",
+                        "expr": "4",
+                        "nome": "Corpo Treinado"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_corpo_destreza_constituicao",
+                    "nome": "Destreza e Constituição até 24",
+                    "descricao": "Seu limite natural de Destreza e de Constituição aumenta para 24.",
+                    "efeitos": [
+                      {
+                        "canal": "limiteAtributo",
+                        "alvo": "destreza",
+                        "expr": "4",
+                        "nome": "Corpo Treinado"
+                      },
+                      {
+                        "canal": "limiteAtributo",
+                        "alvo": "constituicao",
+                        "expr": "4",
+                        "nome": "Corpo Treinado"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "compensar_covardia",
+            "nome": "Compensar Covardia",
+            "descricao": "Apesar de você ser um covarde, você precisava treinar e melhorar para ser capaz de proteger aqueles que são fracos, se dedicando para aprimorar seus conhecimentos.",
+            "niveis": [
+              {
+                "nd": 1,
+                "texto": "recebe um talento ou aptidão amaldiçoada, a sua escolha."
+              },
+              {
+                "nd": 3,
+                "texto": "recebe um bônus de +1 em 2 perícias e em um tipo de jogada de ataque ou TR a sua escolha."
+              },
+              {
+                "nd": 6,
+                "texto": "recebe uma habilidade de especialização adicional."
+              },
+              {
+                "nd": 10,
+                "texto": "recebe um talento ou aptidão amaldiçoada, a sua escolha."
+              },
+              {
+                "nd": 13,
+                "texto": "recebe um bônus de +2 em 2 perícias a sua escolha e +1 em um tipo de jogada de ataque ou TR a sua escolha."
+              },
+              {
+                "nd": 15,
+                "texto": "recebe uma habilidade de especialização adicional."
+              },
+              {
+                "nd": 17,
+                "texto": "recebe um bônus de +3 em 2 perícias a sua escolha e +2 em um tipo de jogada de ataque ou TR a sua escolha."
+              },
+              {
+                "nd": 19,
+                "texto": "recebe uma habilidade de especialização e um talento adicional."
+              }
+            ],
+            "escolhas": [
+              {
+                "id": "legado_n1",
+                "label": "Nível 1",
+                "vagas": 1,
+                "ndMin": 1,
+                "opcoes": [
+                  {
+                    "id": "legado_n1_talento",
+                    "nome": "Talento",
+                    "descricao": "Você recebe um Talento adicional.",
+                    "efeitos": [
+                      {
+                        "canal": "vagasTalento",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Talento)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n1_aptidao",
+                    "nome": "Aptidão Amaldiçoada",
+                    "descricao": "Você recebe uma Aptidão Amaldiçoada adicional.",
+                    "efeitos": [
+                      {
+                        "canal": "vagasAptidao",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Aptidão Amaldiçoada)"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "legado_n3_pericias",
+                "label": "Nível 3 · Perícias",
+                "vagas": 2,
+                "ndMin": 3,
+                "opcoes": [
+                  {
+                    "id": "legado_n3_per_acrobacia",
+                    "nome": "Acrobacia",
+                    "descricao": "Você recebe +1 em testes de Acrobacia.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "acrobacia",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Acrobacia)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n3_per_atletismo",
+                    "nome": "Atletismo",
+                    "descricao": "Você recebe +1 em testes de Atletismo.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "atletismo",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Atletismo)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n3_per_enganacao",
+                    "nome": "Enganação",
+                    "descricao": "Você recebe +1 em testes de Enganação.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "enganacao",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Enganação)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n3_per_feiticaria",
+                    "nome": "Feitiçaria",
+                    "descricao": "Você recebe +1 em testes de Feitiçaria.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "feiticaria",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Feitiçaria)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n3_per_furtividade",
+                    "nome": "Furtividade",
+                    "descricao": "Você recebe +1 em testes de Furtividade.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "furtividade",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Furtividade)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n3_per_historia",
+                    "nome": "História",
+                    "descricao": "Você recebe +1 em testes de História.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "historia",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (História)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n3_per_intimidacao",
+                    "nome": "Intimidação",
+                    "descricao": "Você recebe +1 em testes de Intimidação.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "intimidacao",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Intimidação)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n3_per_intuicao",
+                    "nome": "Intuição",
+                    "descricao": "Você recebe +1 em testes de Intuição.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "intuicao",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Intuição)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n3_per_investigacao",
+                    "nome": "Investigação",
+                    "descricao": "Você recebe +1 em testes de Investigação.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "investigacao",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Investigação)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n3_per_medicina",
+                    "nome": "Medicina",
+                    "descricao": "Você recebe +1 em testes de Medicina.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "medicina",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Medicina)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n3_per_ocultismo",
+                    "nome": "Ocultismo",
+                    "descricao": "Você recebe +1 em testes de Ocultismo.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "ocultismo",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Ocultismo)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n3_per_oficio",
+                    "nome": "Ofício",
+                    "descricao": "Você recebe +1 em testes de Ofício.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "oficio",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Ofício)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n3_per_percepcao",
+                    "nome": "Percepção",
+                    "descricao": "Você recebe +1 em testes de Percepção.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "percepcao",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Percepção)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n3_per_performance",
+                    "nome": "Performance",
+                    "descricao": "Você recebe +1 em testes de Performance.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "performance",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Performance)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n3_per_persuasao",
+                    "nome": "Persuasão",
+                    "descricao": "Você recebe +1 em testes de Persuasão.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "persuasao",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Persuasão)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n3_per_prestidigitacao",
+                    "nome": "Prestidigitação",
+                    "descricao": "Você recebe +1 em testes de Prestidigitação.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "prestidigitacao",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Prestidigitação)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n3_per_tecnologia",
+                    "nome": "Tecnologia",
+                    "descricao": "Você recebe +1 em testes de Tecnologia.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "tecnologia",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Tecnologia)"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "legado_n3_jogada",
+                "label": "Nível 3 · Ataque ou TR",
+                "vagas": 1,
+                "ndMin": 3,
+                "opcoes": [
+                  {
+                    "id": "legado_n3_atq_corpo",
+                    "nome": "Ataque Corpo a Corpo",
+                    "descricao": "Você recebe +1 em jogadas de ataque Corpo a Corpo.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusAcerto",
+                        "alvo": "corpo",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Ataque Corpo a Corpo)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n3_atq_distancia",
+                    "nome": "Ataque A Distância",
+                    "descricao": "Você recebe +1 em jogadas de ataque A Distância.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusAcerto",
+                        "alvo": "distancia",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Ataque A Distância)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n3_atq_amaldicoado",
+                    "nome": "Ataque Amaldiçoado",
+                    "descricao": "Você recebe +1 em jogadas de ataque Amaldiçoado.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusAcerto",
+                        "alvo": "amaldicoado",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Ataque Amaldiçoado)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n3_tr_reflexos",
+                    "nome": "TR de Reflexos",
+                    "descricao": "Você recebe +1 em testes de resistência de Reflexos.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "reflexos",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (TR de Reflexos)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n3_tr_fortitude",
+                    "nome": "TR de Fortitude",
+                    "descricao": "Você recebe +1 em testes de resistência de Fortitude.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "fortitude",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (TR de Fortitude)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n3_tr_vontade",
+                    "nome": "TR de Vontade",
+                    "descricao": "Você recebe +1 em testes de resistência de Vontade.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "vontade",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (TR de Vontade)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n3_tr_astucia",
+                    "nome": "TR de Astúcia",
+                    "descricao": "Você recebe +1 em testes de resistência de Astúcia.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "astucia",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (TR de Astúcia)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n3_tr_integridade",
+                    "nome": "TR de Integridade",
+                    "descricao": "Você recebe +1 em testes de resistência de Integridade.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "integridade",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (TR de Integridade)"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "legado_n10",
+                "label": "Nível 10",
+                "vagas": 1,
+                "ndMin": 10,
+                "opcoes": [
+                  {
+                    "id": "legado_n10_talento",
+                    "nome": "Talento",
+                    "descricao": "Você recebe um Talento adicional.",
+                    "efeitos": [
+                      {
+                        "canal": "vagasTalento",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Talento)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n10_aptidao",
+                    "nome": "Aptidão Amaldiçoada",
+                    "descricao": "Você recebe uma Aptidão Amaldiçoada adicional.",
+                    "efeitos": [
+                      {
+                        "canal": "vagasAptidao",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Aptidão Amaldiçoada)"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "legado_n13_pericias",
+                "label": "Nível 13 · Perícias",
+                "vagas": 2,
+                "ndMin": 13,
+                "opcoes": [
+                  {
+                    "id": "legado_n13_per_acrobacia",
+                    "nome": "Acrobacia",
+                    "descricao": "Você recebe +2 em testes de Acrobacia.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "acrobacia",
+                        "expr": "2",
+                        "nome": "Compensar Covardia (Acrobacia)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n13_per_atletismo",
+                    "nome": "Atletismo",
+                    "descricao": "Você recebe +2 em testes de Atletismo.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "atletismo",
+                        "expr": "2",
+                        "nome": "Compensar Covardia (Atletismo)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n13_per_enganacao",
+                    "nome": "Enganação",
+                    "descricao": "Você recebe +2 em testes de Enganação.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "enganacao",
+                        "expr": "2",
+                        "nome": "Compensar Covardia (Enganação)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n13_per_feiticaria",
+                    "nome": "Feitiçaria",
+                    "descricao": "Você recebe +2 em testes de Feitiçaria.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "feiticaria",
+                        "expr": "2",
+                        "nome": "Compensar Covardia (Feitiçaria)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n13_per_furtividade",
+                    "nome": "Furtividade",
+                    "descricao": "Você recebe +2 em testes de Furtividade.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "furtividade",
+                        "expr": "2",
+                        "nome": "Compensar Covardia (Furtividade)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n13_per_historia",
+                    "nome": "História",
+                    "descricao": "Você recebe +2 em testes de História.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "historia",
+                        "expr": "2",
+                        "nome": "Compensar Covardia (História)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n13_per_intimidacao",
+                    "nome": "Intimidação",
+                    "descricao": "Você recebe +2 em testes de Intimidação.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "intimidacao",
+                        "expr": "2",
+                        "nome": "Compensar Covardia (Intimidação)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n13_per_intuicao",
+                    "nome": "Intuição",
+                    "descricao": "Você recebe +2 em testes de Intuição.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "intuicao",
+                        "expr": "2",
+                        "nome": "Compensar Covardia (Intuição)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n13_per_investigacao",
+                    "nome": "Investigação",
+                    "descricao": "Você recebe +2 em testes de Investigação.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "investigacao",
+                        "expr": "2",
+                        "nome": "Compensar Covardia (Investigação)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n13_per_medicina",
+                    "nome": "Medicina",
+                    "descricao": "Você recebe +2 em testes de Medicina.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "medicina",
+                        "expr": "2",
+                        "nome": "Compensar Covardia (Medicina)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n13_per_ocultismo",
+                    "nome": "Ocultismo",
+                    "descricao": "Você recebe +2 em testes de Ocultismo.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "ocultismo",
+                        "expr": "2",
+                        "nome": "Compensar Covardia (Ocultismo)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n13_per_oficio",
+                    "nome": "Ofício",
+                    "descricao": "Você recebe +2 em testes de Ofício.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "oficio",
+                        "expr": "2",
+                        "nome": "Compensar Covardia (Ofício)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n13_per_percepcao",
+                    "nome": "Percepção",
+                    "descricao": "Você recebe +2 em testes de Percepção.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "percepcao",
+                        "expr": "2",
+                        "nome": "Compensar Covardia (Percepção)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n13_per_performance",
+                    "nome": "Performance",
+                    "descricao": "Você recebe +2 em testes de Performance.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "performance",
+                        "expr": "2",
+                        "nome": "Compensar Covardia (Performance)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n13_per_persuasao",
+                    "nome": "Persuasão",
+                    "descricao": "Você recebe +2 em testes de Persuasão.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "persuasao",
+                        "expr": "2",
+                        "nome": "Compensar Covardia (Persuasão)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n13_per_prestidigitacao",
+                    "nome": "Prestidigitação",
+                    "descricao": "Você recebe +2 em testes de Prestidigitação.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "prestidigitacao",
+                        "expr": "2",
+                        "nome": "Compensar Covardia (Prestidigitação)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n13_per_tecnologia",
+                    "nome": "Tecnologia",
+                    "descricao": "Você recebe +2 em testes de Tecnologia.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "tecnologia",
+                        "expr": "2",
+                        "nome": "Compensar Covardia (Tecnologia)"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "legado_n13_jogada",
+                "label": "Nível 13 · Ataque ou TR",
+                "vagas": 1,
+                "ndMin": 13,
+                "opcoes": [
+                  {
+                    "id": "legado_n13_atq_corpo",
+                    "nome": "Ataque Corpo a Corpo",
+                    "descricao": "Você recebe +1 em jogadas de ataque Corpo a Corpo.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusAcerto",
+                        "alvo": "corpo",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Ataque Corpo a Corpo)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n13_atq_distancia",
+                    "nome": "Ataque A Distância",
+                    "descricao": "Você recebe +1 em jogadas de ataque A Distância.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusAcerto",
+                        "alvo": "distancia",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Ataque A Distância)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n13_atq_amaldicoado",
+                    "nome": "Ataque Amaldiçoado",
+                    "descricao": "Você recebe +1 em jogadas de ataque Amaldiçoado.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusAcerto",
+                        "alvo": "amaldicoado",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (Ataque Amaldiçoado)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n13_tr_reflexos",
+                    "nome": "TR de Reflexos",
+                    "descricao": "Você recebe +1 em testes de resistência de Reflexos.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "reflexos",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (TR de Reflexos)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n13_tr_fortitude",
+                    "nome": "TR de Fortitude",
+                    "descricao": "Você recebe +1 em testes de resistência de Fortitude.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "fortitude",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (TR de Fortitude)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n13_tr_vontade",
+                    "nome": "TR de Vontade",
+                    "descricao": "Você recebe +1 em testes de resistência de Vontade.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "vontade",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (TR de Vontade)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n13_tr_astucia",
+                    "nome": "TR de Astúcia",
+                    "descricao": "Você recebe +1 em testes de resistência de Astúcia.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "astucia",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (TR de Astúcia)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n13_tr_integridade",
+                    "nome": "TR de Integridade",
+                    "descricao": "Você recebe +1 em testes de resistência de Integridade.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "integridade",
+                        "expr": "1",
+                        "nome": "Compensar Covardia (TR de Integridade)"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "legado_n17_pericias",
+                "label": "Nível 17 · Perícias",
+                "vagas": 2,
+                "ndMin": 17,
+                "opcoes": [
+                  {
+                    "id": "legado_n17_per_acrobacia",
+                    "nome": "Acrobacia",
+                    "descricao": "Você recebe +3 em testes de Acrobacia.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "acrobacia",
+                        "expr": "3",
+                        "nome": "Compensar Covardia (Acrobacia)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n17_per_atletismo",
+                    "nome": "Atletismo",
+                    "descricao": "Você recebe +3 em testes de Atletismo.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "atletismo",
+                        "expr": "3",
+                        "nome": "Compensar Covardia (Atletismo)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n17_per_enganacao",
+                    "nome": "Enganação",
+                    "descricao": "Você recebe +3 em testes de Enganação.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "enganacao",
+                        "expr": "3",
+                        "nome": "Compensar Covardia (Enganação)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n17_per_feiticaria",
+                    "nome": "Feitiçaria",
+                    "descricao": "Você recebe +3 em testes de Feitiçaria.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "feiticaria",
+                        "expr": "3",
+                        "nome": "Compensar Covardia (Feitiçaria)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n17_per_furtividade",
+                    "nome": "Furtividade",
+                    "descricao": "Você recebe +3 em testes de Furtividade.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "furtividade",
+                        "expr": "3",
+                        "nome": "Compensar Covardia (Furtividade)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n17_per_historia",
+                    "nome": "História",
+                    "descricao": "Você recebe +3 em testes de História.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "historia",
+                        "expr": "3",
+                        "nome": "Compensar Covardia (História)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n17_per_intimidacao",
+                    "nome": "Intimidação",
+                    "descricao": "Você recebe +3 em testes de Intimidação.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "intimidacao",
+                        "expr": "3",
+                        "nome": "Compensar Covardia (Intimidação)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n17_per_intuicao",
+                    "nome": "Intuição",
+                    "descricao": "Você recebe +3 em testes de Intuição.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "intuicao",
+                        "expr": "3",
+                        "nome": "Compensar Covardia (Intuição)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n17_per_investigacao",
+                    "nome": "Investigação",
+                    "descricao": "Você recebe +3 em testes de Investigação.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "investigacao",
+                        "expr": "3",
+                        "nome": "Compensar Covardia (Investigação)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n17_per_medicina",
+                    "nome": "Medicina",
+                    "descricao": "Você recebe +3 em testes de Medicina.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "medicina",
+                        "expr": "3",
+                        "nome": "Compensar Covardia (Medicina)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n17_per_ocultismo",
+                    "nome": "Ocultismo",
+                    "descricao": "Você recebe +3 em testes de Ocultismo.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "ocultismo",
+                        "expr": "3",
+                        "nome": "Compensar Covardia (Ocultismo)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n17_per_oficio",
+                    "nome": "Ofício",
+                    "descricao": "Você recebe +3 em testes de Ofício.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "oficio",
+                        "expr": "3",
+                        "nome": "Compensar Covardia (Ofício)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n17_per_percepcao",
+                    "nome": "Percepção",
+                    "descricao": "Você recebe +3 em testes de Percepção.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "percepcao",
+                        "expr": "3",
+                        "nome": "Compensar Covardia (Percepção)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n17_per_performance",
+                    "nome": "Performance",
+                    "descricao": "Você recebe +3 em testes de Performance.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "performance",
+                        "expr": "3",
+                        "nome": "Compensar Covardia (Performance)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n17_per_persuasao",
+                    "nome": "Persuasão",
+                    "descricao": "Você recebe +3 em testes de Persuasão.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "persuasao",
+                        "expr": "3",
+                        "nome": "Compensar Covardia (Persuasão)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n17_per_prestidigitacao",
+                    "nome": "Prestidigitação",
+                    "descricao": "Você recebe +3 em testes de Prestidigitação.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "prestidigitacao",
+                        "expr": "3",
+                        "nome": "Compensar Covardia (Prestidigitação)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n17_per_tecnologia",
+                    "nome": "Tecnologia",
+                    "descricao": "Você recebe +3 em testes de Tecnologia.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "tecnologia",
+                        "expr": "3",
+                        "nome": "Compensar Covardia (Tecnologia)"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "legado_n17_jogada",
+                "label": "Nível 17 · Ataque ou TR",
+                "vagas": 1,
+                "ndMin": 17,
+                "opcoes": [
+                  {
+                    "id": "legado_n17_atq_corpo",
+                    "nome": "Ataque Corpo a Corpo",
+                    "descricao": "Você recebe +2 em jogadas de ataque Corpo a Corpo.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusAcerto",
+                        "alvo": "corpo",
+                        "expr": "2",
+                        "nome": "Compensar Covardia (Ataque Corpo a Corpo)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n17_atq_distancia",
+                    "nome": "Ataque A Distância",
+                    "descricao": "Você recebe +2 em jogadas de ataque A Distância.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusAcerto",
+                        "alvo": "distancia",
+                        "expr": "2",
+                        "nome": "Compensar Covardia (Ataque A Distância)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n17_atq_amaldicoado",
+                    "nome": "Ataque Amaldiçoado",
+                    "descricao": "Você recebe +2 em jogadas de ataque Amaldiçoado.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusAcerto",
+                        "alvo": "amaldicoado",
+                        "expr": "2",
+                        "nome": "Compensar Covardia (Ataque Amaldiçoado)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n17_tr_reflexos",
+                    "nome": "TR de Reflexos",
+                    "descricao": "Você recebe +2 em testes de resistência de Reflexos.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "reflexos",
+                        "expr": "2",
+                        "nome": "Compensar Covardia (TR de Reflexos)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n17_tr_fortitude",
+                    "nome": "TR de Fortitude",
+                    "descricao": "Você recebe +2 em testes de resistência de Fortitude.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "fortitude",
+                        "expr": "2",
+                        "nome": "Compensar Covardia (TR de Fortitude)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n17_tr_vontade",
+                    "nome": "TR de Vontade",
+                    "descricao": "Você recebe +2 em testes de resistência de Vontade.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "vontade",
+                        "expr": "2",
+                        "nome": "Compensar Covardia (TR de Vontade)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n17_tr_astucia",
+                    "nome": "TR de Astúcia",
+                    "descricao": "Você recebe +2 em testes de resistência de Astúcia.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "astucia",
+                        "expr": "2",
+                        "nome": "Compensar Covardia (TR de Astúcia)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "legado_n17_tr_integridade",
+                    "nome": "TR de Integridade",
+                    "descricao": "Você recebe +2 em testes de resistência de Integridade.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "integridade",
+                        "expr": "2",
+                        "nome": "Compensar Covardia (TR de Integridade)"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "novo_estilo_das_sombras",
+            "nome": "Novo Estilo das Sombras",
+            "descricao": "Durante seu treinamento, seu Mestre lhe ensinou apenas como utilizar as Artes do Herói da Espada, mas nunca lhe apresentou realmente como usar do domínio simples, suas capacidades e demais, “pulando” essa etapa. Devido a forma com que lhe ensinaram sobre o uso das Artes do Herói, há algumas diferenças e limitações que você deve seguir relacionada a seu Domínio Simples.\n\nEm seu nível 4, você não recebe a Aptidão de Domínio Simples, por não ter sido ensinado a como utilizá-lo de forma defensiva, a depender pode nem mesmo sabendo sobre a existência de algo do tipo. Você também não pode adquirir essa aptidão normalmente conforme sobe de nível, precisando aprendê-la com alguém mais experiente no uso dessa aptidão. Converse com seu mestre para decidir como isso irá funcionar, mas como regra geral, ao aprender com alguém, você recebe a aptidão de forma adicional.\n\nVocê ainda recebe os Estilos da Sombra e pode usá-los, afinal, você só sabe usar seu Domínio Simples ofensivamente, por conta da limitação dessa Origem, você já inicia tendo 2 estilos da sombra e em seu nível 4 recebe 1 adicional, seguindo o ganho de Estilos da Sombra normal do Sem Técnica.",
+            "escolhas": [
+              {
+                "id": "legado_dominio_simples",
+                "label": "Domínio Simples",
+                "vagas": 1,
+                "ndMin": 1,
+                "opcoes": [
+                  {
+                    "id": "legado_aprendeu_dominio",
+                    "nome": "Aprendeu o Domínio Simples",
+                    "descricao": "Você aprendeu o Domínio Simples com alguém mais experiente no uso dessa aptidão, e o recebe de forma adicional.",
+                    "concedeAptidoes": [
+                      {
+                        "id": "dominio_simples"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "especializacaoExclusivaId": null
+      }
+    ],
+    "treinamentos": [
+      {
+        "id": "treino_de_escudo",
+        "nome": "Treino de Escudo",
+        "resumo": "Você se especificou totalmente na utilização de escudos, seja para proteger você ou aos outros, seu objetivo é sempre visando a proteção.",
+        "etapas": [
+          {
+            "n": 1,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "A sua CA aumenta em +1 enquanto estiver empunhando um escudo.",
+            "efeitos": [
+              {
+                "canal": "defesa",
+                "expr": "1",
+                "quando": "escudo_equipado"
+              }
+            ]
+          },
+          {
+            "n": 2,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Recebe +1 de Fortitude.",
+            "efeitos": [
+              {
+                "canal": "bonusTR",
+                "alvo": "fortitude",
+                "expr": "1"
+              }
+            ]
+          },
+          {
+            "n": 3,
+            "focos": 2,
+            "requisito": null,
+            "beneficio": "Seu escudo aumenta a RD física dele em 5.",
+            "efeitos": [
+              {
+                "canal": "rdEscudo",
+                "expr": "5"
+              }
+            ]
+          },
+          {
+            "n": 4,
+            "focos": 2,
+            "requisito": null,
+            "beneficio": "Você recebe +1 encantamento adicional em seu escudo.",
+            "vagaEncantamentoEscudo": 1
+          }
+        ],
+        "completo": {
+          "beneficio": "Seu escudo passa a conceder RD contra uma quantidade de tipos de dano igual ao seu BT (exceto etéreos)."
+        }
+      },
+      {
+        "id": "treino_de_firmeza",
+        "nome": "Treino de Firmeza",
+        "resumo": "Stark é inabalável para proteger seus aliados, seu corpo é forte o suficiente para se manter, sendo assim ele foca em manter seu corpo da maneira mais potente possível, afinal seu treino o fez resistir a qualquer momento.",
+        "etapas": [
+          {
+            "n": 1,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Adiciona +2 no PVT de sua Postura da Terra.",
+            "efeitos": [
+              {
+                "canal": "pvTemporario",
+                "expr": "2",
+                "quando": "em_postura_terra",
+                "duracao": "temporaria"
+              }
+            ]
+          },
+          {
+            "n": 2,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Enquanto em Postura da Terra recebe +1 de Fortitude.",
+            "efeitos": [
+              {
+                "canal": "bonusTR",
+                "alvo": "fortitude",
+                "expr": "1",
+                "quando": "em_postura_terra",
+                "duracao": "temporaria"
+              }
+            ]
+          },
+          {
+            "n": 3,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Adiciona +3 no PVT de sua Postura da Terra.",
+            "efeitos": [
+              {
+                "canal": "pvTemporario",
+                "expr": "3",
+                "quando": "em_postura_terra",
+                "duracao": "temporaria"
+              }
+            ]
+          },
+          {
+            "n": 4,
+            "focos": 2,
+            "requisito": null,
+            "beneficio": "Ao adentrar em Postura da Terra recebe o bônus de PVT dobrado no seu primeiro uso."
+          }
+        ],
+        "completo": {
+          "beneficio": "Ao adentrar em postura seu corpo aparenta se manter extremamente firme, focando em ficar de maneira inabalável. Uma quantidade de vezes igual a 1 + 1/2 BT, por descanso curto, pode, ao ser forçado a realizar uma TR de Reflexos durante a Postura da Terra, alterar para Fortitude."
+        }
+      },
+      {
+        "id": "treinamento_corporal",
+        "nome": "Treinamento Corporal",
+        "resumo": "Após anos de treino, seu corpo se moldou de forma que aparenta ter um potencial quase que ilimitado, ele se desenvolve de maneira que receber ataque é algo normal para seu corpo. Sofrendo estes danos e se recuperando rapidamente, com um vigor sobrenatural.",
+        "etapas": [
+          {
+            "n": 1,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Sempre que for recuperar vida (Pontos de vida temporários não contam), você se recupera +2 PV adicionais."
+          },
+          {
+            "n": 2,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Recebe +2 dados de vida do maior dado de vida disponível."
+          },
+          {
+            "n": 3,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "1x por rodada, caso venha a recuperar seus PV por qualquer meio, você recupera +5 PV adicionais."
+          },
+          {
+            "n": 4,
+            "focos": 2,
+            "requisito": null,
+            "beneficio": "Passa a adicionar 1 + 1/2 BT em rolagens no portão da morte.",
+            "efeitos": [
+              {
+                "canal": "bonusManobra",
+                "alvo": "morte",
+                "expr": "1 + piso(bt / 2)"
+              }
+            ]
+          }
+        ],
+        "completo": {
+          "beneficio": "Seu corpo se desenvolve de maneira mais otimizada e natural, se tornando capaz de utilizar de seu potencial melhorado para resistir a golpes. Recebe +1 PV por nível, além de adicionar seu maior modificador de atributo físico como bônus de vida máxima adicional.",
+          "efeitos": [
+            {
+              "canal": "hp",
+              "expr": "nd + max(mod_forca, mod_destreza, mod_constituicao)"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

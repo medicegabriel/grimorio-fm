@@ -16380,3 +16380,15 @@ Pedido do autor: um Addon chamado "Yna" com a Origem Kitsune, a Linhagem Clã Ge
 **Verificado ao vivo:** `/Player` com um Sem Técnica Lutador de nível 9 e três Técnicas (duas de Bônus de Acerto corpo a corpo e uma de Defesa). Com o Domínio Simples no ar e as três ligadas, o Acerto do Ataque Básico foi de +13 para +17 e a Defesa de 15 para 17. Na aba Habilidades as três aparecem "Ativa" e o Domínio Simples diz "Técnicas: Lâmina Rápida, Corte Duplo, Guarda Firme". Console limpo, e a ficha de teste apagada.
 
 **Achado e não mexido:** a pergunta da Exaustão com mais de uma Técnica (item 8 das leituras do Novo Estilo em `a-fazer.md`) segue aberta, agora citando as ligadas juntas. A leitura 2 do "manter dois Estilos" do Especialista em Estilo ficou sem efeito para a Expansão. Nenhum U+2014 novo, `src/components/` intocado. Sem commit ou push.
+
+## SESSÃO DE 2026-10-11 (parte 3): ADDON STARK (ARTE DO HERÓI)
+
+**Pedido do autor:** um addon "Stark" com a origem Legado do Guerreiro, o Voto O Covarde, as cinco Técnicas de Estilo da Arte do Herói, o segundo pacto Maldição - Instinto Corrompido e três treinos (PDF e Google Doc de Kami/shadowz664). Decisões: Técnicas à escolha, Domínio Simples travado com marcador na origem, interruptor de combate no Covarde, "Treino de Escudo" como nome.
+
+**O que mudou no motor:** `estiloNdMinimo` e `aptidoesVetadas` na origem, `concedeAptidoes` em opção de escolha, `escolhivel`/`requer`/`usos` nas Técnicas de pacote (com o catálogo no card do Estilo e `creature.estilosDoPacote`), os canais `peMult` e `rdEscudo`, a variável `escudo_equipado` (também no montante), a vaga `vagaEncantamentoEscudo` em etapa de treino, e o conserto do conversor de etapa, que jogava fora o `quando` e a `duracao`.
+
+**Asserts:** `t-stark.mjs` novo, com 86. Contraprova contra o HEAD: 44 vermelhos. Suíte: 175 arquivos e 9644 asserts, todos passaram. ESLint nos arquivos tocados, `t-ordem-modulos` (36) e build limpos.
+
+**Verificado ao vivo:** `/Player`, Legado de nível 5. O estado O Covarde levou o PE de 20 a 12 (Apavorado) e a 28 (Superou o Medo). O card da Origem mostrou as quatro características e o marcador do Domínio Simples, a aba Aptidões travou o Domínio Simples com o motivo no hover, e o card do Estilo listou as cinco Técnicas do Pacote (a Mente Inabalável marcada sem a Aura Anuladora saiu Inválida). A aba Votos não foi conferida na tela. Ficha de teste apagada.
+
+**Achado e não mexido:** as leituras e o que segue de mesa estão em `a-fazer.md`, "Stark". Nenhum U+2014 novo, `src/components/` intocado. Sem commit ou push.

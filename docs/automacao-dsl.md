@@ -445,3 +445,18 @@ Guia da área: `docs/afty-tecnica-maxima-dominio.md`.
   `{ "canal": "treinoArmaCasoJa", "alvo": "@arma_masterizada", "expr": "piso(bt / 2)" }`.
 - Os campos de origem que não são canal (`semEnergia`, `nivelMaximo`, `tetoNivelFeitico`,
   `concedeHabilidades`) estão em `docs/afty-addons.md`.
+
+## Pacote Stark: PE Máximo por estado, escudo e treino com condição (2026-10-11)
+
+- Canal `peMult` (Recursos): multiplica o PE Máximo depois de todas as fontes, junto do
+  multiplicador dos Votos. As fontes MULTIPLICAM entre si, e aceita valor abaixo de 1. Nasceu com
+  o Voto O Covarde (`addons/stark.json`): `0.6` com o estado Apavorado e `1.4` com Superou o Medo,
+  cada um com `quando` no estado do pacote. O hover do PE mostra cada multiplicador com o nome.
+- Canal `rdEscudo` (Defesas): soma na RD do escudo EQUIPADO, que é RD Geral na criatura e RD
+  Física no jogador (a divergência `rdEscudoFisico`). Sem escudo na mão não vale. Era só
+  pseudo-canal de encantamento, e agora é canal do Motor com o mesmo sentido.
+- Variável `escudo_equipado`: 1 com um escudo equipado, 0 sem. Existe no contexto principal e no
+  do montante, porque o Treino de Escudo a lê numa etapa.
+- Etapa de treino com `{ canal, expr }`: o `quando` e a `duracao` agora passam (antes caíam no
+  conversor, e a etapa valia sempre). Quem lê a bancada desce ao estágio principal pelo
+  `separarEfeitosDeBancada`, como qualquer efeito de montante.

@@ -555,6 +555,29 @@ export default function NovoEstiloSombrasCard({
             ))}
           </div>
 
+          {/* As Técnicas de pacote À ESCOLHA (2026-10-11): o catálogo do Addon,
+              e a ficha marca as que o personagem conhece. Cada marcada conta na
+              progressão. A marcada aparece também logo abaixo, com os números. */}
+          {(info.catalogoDoPacote ?? []).length > 0 && (
+            <div className="space-y-1.5">
+              <FieldLabel>Técnicas do Pacote</FieldLabel>
+              <div className="flex flex-wrap gap-1.5">
+                {info.catalogoDoPacote.map((t) => (
+                  <DicaDeTexto key={t.id} titulo={t.nome} texto={t.descricao}>
+                    <BoolChip
+                      ativo={t.marcada}
+                      onToggle={() => estiloApi.alternaTecnicaDoPacote(t.id)}
+                      bloqueado={!t.marcada && cheia}
+                      lockTitle="Técnicas de Estilo no limite"
+                    >
+                      {t.nome}
+                    </BoolChip>
+                  </DicaDeTexto>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* As Técnicas de PACOTE da Expansão (DA-06): do Addon, e não da ficha,
               então só leitura. A edição é no pacote. */}
           {(info.tecnicas ?? []).filter((t) => t.deAddon).map((t) => (

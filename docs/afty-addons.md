@@ -589,7 +589,20 @@ declara a regra em que foi escrita (DA-06):
 | `regra` | Como é lida | Campos |
 |---|---|---|
 | ausente ou `"legacy"` | modelo de imbuição: faixa própria na bancada e 1 do contador de Habilidades | `maxImbuicoes`, `custoImbuicao`, `efeitos` (linhas de Motor), `resultados`, `porImbuicao`, `acumulaComEstilo`, `adendo`, `aviso` |
-| `"expansao"` | Técnica-pacote da Expansão: progressão própria, escolhida em "Técnica Atual" | `tipo` (`modificacao` ou `especial`), `efeitos` (compras `{ uid, efeitoId, escolha? }` do catálogo), `aptidoes`, `requisitos`, `exaustao`, `especial: { texto, linhas }`, `critico`, `contraAtaque`, `usaReacao` |
+| `"expansao"` | Técnica-pacote da Expansão: progressão própria, ligada em "Técnicas Ativas" | `tipo` (`modificacao` ou `especial`), `efeitos` (compras `{ uid, efeitoId, escolha? }` do catálogo), `aptidoes`, `requisitos`, `exaustao`, `especial: { texto, linhas }`, `critico`, `contraAtaque`, `usaReacao`, e desde 2026-10-11 `escolhivel`, `requer` e `usos` (ver abaixo) |
+
+**À escolha, pré-requisito e contador (2026-10-11, pacote Stark).** Três campos que só a Técnica de
+pacote declara:
+
+- `escolhivel: true`: a Técnica vira CATÁLOGO. Ela só entra (e só gasta a progressão) quando a
+  ficha a marca no card do Estilo, que grava o id qualificado em `creature.estilosDoPacote`. Sem o
+  campo a Técnica vale para toda ficha, como antes. O resolvedor devolve o catálogo inteiro em
+  `estilo.catalogoDoPacote`, marcado ou não.
+- `requer: [{ "tipo": "aptidao" | "habilidade", "id" }]`: pré-requisito de verdade. Faltando, ERRO
+  `requer` ("Requer Aura Reforçada."), e a Técnica fica salva sem dar nada (DA-07). Não confundir
+  com `requisitos`, que é o Pré-Requisito de dificuldade da Expansão.
+- `usos: { "expr", "recarga" }`: o contador da linha da Técnica na Ficha (chave `estilo:<id>`),
+  pela mesma porta das Habilidades. O do Ataque com Gatilho vence quando os dois existem.
 
 - Nenhum pacote muda de regra sozinho. O Lime Neds não declara nada e segue `legacy`.
 - O id final é `<pacote>:<id>`, como nas famílias, e é ele que o seletor "Técnica Atual" grava na
@@ -2315,3 +2328,26 @@ deploy: no motor velho os três clãs aparecem também no seletor do Herdado do 
 não concede nada.
 
 Assert: `t-herdado-era-de-ouro.mjs`.
+
+## Stark (2026-10-11)
+
+`addons/stark.json`, "Estilo das Sombras: Arte do Herói" (homebrew de Kami/shadowz664). Cinco partes, e
+cada uma pediu verbo novo, genérico e nos dois sistemas:
+
+| Parte | Campo ou canal | O que faz |
+|---|---|---|
+| Origem Legado do Guerreiro (variação do Sem Técnica) | `estiloNdMinimo: 1` na origem | o Novo Estilo destrava neste Nível em vez do 4 (`estiloNdMinimoDaOrigem`). A progressão a mais sai de `vagasEstilo` na origem: 2 até o Nível 3, depois 1 |
+| | `aptidoesVetadas: [id]` na origem | a Aptidão não se escolhe na aba (trava com cadeado), e a marcada à mão deixa de contar sem ser apagada. A CONCEDIDA passa |
+| | `concedeAptidoes` numa OPÇÃO de escolha | como o `concedeHabilidades` já fazia: o marcador "Aprendeu o Domínio Simples" |
+| Voto O Covarde | `votoAutomatico` com o canal `peMult` | PE Máximo ×0,6 (Apavorado) ou ×1,4 (Superou o Medo), pelo estado de combate `stark:covarde` do pacote |
+| Técnicas da Arte do Herói | `escolhivel`, `requer`, `usos` nas `estilos[]` | ver a seção das Técnicas de pacote, acima |
+| Voto pronto Maldição - Instinto Corrompido | `pactoPadrao` | copiado na aba Votos com um botão. INT 6 por `limiteAtributo -14`, sem CL por `limiteAptidao -5`, e a Aura Reforçada dobrada com `estilo_ativo` |
+| Treino de Escudo | `escudo_equipado`, `rdEscudo`, `vagaEncantamentoEscudo` na etapa | Defesa só com escudo na mão, RD do escudo na pilha do sistema e uma vaga livre de encantamento em todo escudo que for Ferramenta |
+| Treino de Firmeza | `quando` na etapa | +PV Temporário e +Fortitude só com `em_postura_terra`. O `quando` caía no conversor de etapa até esta data |
+| Treinamento Corporal | `bonusManobra` alvo `morte`, `hp` no Completo | os canais de sempre |
+
+⚠ Motor e pacote vão no mesmo push, e o pacote só se instala depois do deploy. No motor velho o
+Estilo do Legado só abre no Nível 4, as 5 Técnicas valem todas e estouram a progressão, e as etapas
+com `quando` valem sempre.
+
+O que segue de mesa e as leituras para o autor estão em `docs/a-fazer.md`. Assert: `t-stark.mjs`.

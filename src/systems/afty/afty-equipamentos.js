@@ -2545,6 +2545,8 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
  *   vagasEncantamento  { [armaId]: n } — vagas LIVRES de encantamento naquela
  *                       arma (Completo do Treino de Manejo de Arma). Livre =
  *                       não desce o grau de cálculo.
+ *   vagasEncantamentoEscudo n: vagas LIVRES em todo escudo que for Ferramenta
+ *                       (Treino de Escudo do pacote Stark, 2026-10-11).
  *   encantamentosExtras [encId] — encantamentos CONCEDIDOS a toda arma
  *                       equipada (Manejo Especial, Combatente 6°), também sem
  *                       custo de grau.
@@ -2554,6 +2556,8 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
      jogador. Uma variável só, lida nos três pontos que somam RD de escudo. */
   const canalEscudo = canalRdEscudo(opcoes.sistema);
   const vagasEncantamento = opcoes.vagasEncantamento ?? {};
+  // Vagas livres em TODO escudo que for Ferramenta (Treino de Escudo, 2026-10-11).
+  const vagasEscudo = Math.max(0, Math.trunc(Number(opcoes.vagasEncantamentoEscudo) || 0));
   const encantamentosExtras = Array.isArray(opcoes.encantamentosExtras) ? opcoes.encantamentosExtras : [];
   // As liberações dos Addons desta ficha. Só as duas da Benção do Grão Mestre
   // da Forja são lidas aqui.
@@ -2750,7 +2754,8 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
       ? { aprimorado: marcasEspinho.get(e.uid) === true }
       : null;
     const entradaFa = marcaEspinho ? { ...e, fa: { ...(e?.fa ?? {}), grau: "especial" } } : e;
-    const fa = resolveFerramenta(entradaFa, def, bt, ctxBase, vagasEncantamento[def.id] ?? 0, marcaEspinho);
+    const vagasLivres = (vagasEncantamento[def.id] ?? 0) + (e?.tipo === "escudo" ? vagasEscudo : 0);
+    const fa = resolveFerramenta(entradaFa, def, bt, ctxBase, vagasLivres, marcaEspinho);
     /* O Feitiço da Técnica Inata (Criação de Equipamentos, fase 4): *"podendo ser
        conjurado uma quantidade de vezes igual a metade do seu BT"*. Resolvido
        aqui, e não no `resolveFerramenta`, porque ele precisa dos Feitiços da

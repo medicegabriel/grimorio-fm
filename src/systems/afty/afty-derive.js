@@ -47,10 +47,10 @@ import {
   fatorSlotsHabilidade, aptidoesConcedidasPelaOrigem, caracteristicasEfetivas,
   atributosDePericiaDaOrigem, origemMae, ehVariacaoDoRestringido, gatilhosDeOrigem,
   habilidadesConcedidasPelaOrigem, armasEscolhidasDaOrigem, origemSemEnergia,
-  nivelMaximoDaOrigem, tetoNivelFeiticoDaOrigem,
+  nivelMaximoDaOrigem, tetoNivelFeiticoDaOrigem, estiloNdMinimoDaOrigem, aptidoesVetadasDaOrigem,
 } from "./afty-origens";
 import {
-  efeitosDeTreino, vagasEncantamentoDeTreino, atributosDePericiaDeTreino, gatilhosDeTreino,
+  efeitosDeTreino, vagasEncantamentoDeTreino, vagasEncantamentoEscudoDeTreino, atributosDePericiaDeTreino, gatilhosDeTreino,
   efeitosInvocacaoDeTreino, linhasComEscolhaFeiticos, talentosDeTreino,
 } from "./afty-treinamentos";
 import { efeitosDeVotos, regrasAftyDeVotosAtivos, votosDaFicha } from "./afty-votos";
@@ -102,7 +102,7 @@ import {
   armaTreinadaPor, ARMAS, podeEscolherAtaqueDaArma,
   podeSerArmaDedicada, grauDoRank, efeitosEspeciaisDeArma, catalogoDoTipo,
   TIPOS_DANO, CATEGORIAS_DANO, tiposDeDanoDaCategoria, itensEquipados, ehFaixas,
-  SINTONIZADA_ID, ESTADO_SINTONIZADA, aplicarSintonizadaNoDano,
+  SINTONIZADA_ID, ESTADO_SINTONIZADA, aplicarSintonizadaNoDano, canalRdEscudo,
 } from "./afty-equipamentos";
 import { atributoDoApice, ESTADO_APICE_DEF } from "./afty-talisma-apice";
 import {
@@ -538,7 +538,14 @@ export function deriveAfty(creature, opcoes = {}) {
   const aptidoesEscolhidasRaw = semEnergia || !Array.isArray(creature?.aptidoesAmaldicoadas)
     ? []
     : creature.aptidoesAmaldicoadas;
-  const aptidoesEscolhidasFicha = aptidoesEscolhidasRaw.filter(aptidaoPermitidaPelaEstrutura);
+  /* A Aptidão que a origem VETA na escolha (`aptidoesVetadas`, o Domínio
+     Simples do Legado do Guerreiro, 2026-10-11) sai da conta quando marcada à
+     mão, e continua gravada. A concedida pelo nome passa, porque é o caminho
+     que a regra deixa aberto ("ao aprender com alguém"). */
+  const vetadasDaOrigem = new Set(aptidoesVetadasDaOrigem(creature));
+  const aptidoesEscolhidasFicha = aptidoesEscolhidasRaw
+    .filter(aptidaoPermitidaPelaEstrutura)
+    .filter((id) => !vetadasDaOrigem.has(id));
   // A concedida NÃO duplica quando o jogador também a marcou à mão.
   const aptidoesIds = [...new Set([...aptidoesEscolhidasFicha, ...aptidoesConcedidas])];
   // A ficha que o resto do motor enxerga já vem com a concedida dentro, para
@@ -604,6 +611,8 @@ export function deriveAfty(creature, opcoes = {}) {
   const configEspinho = espinhoDaFicha(creature);
   const equip = resolveEquipamentos(creature, bt, {
     vagasEncantamento: vagasEncantamentoDeTreino(creature),
+    // As do ESCUDO (Treino de Escudo do pacote Stark, 2026-10-11).
+    vagasEncantamentoEscudo: vagasEncantamentoEscudoDeTreino(creature),
     encantamentosExtras: encantamentosDeManejoEspecial(creature),
     /* O sistema decide onde a RD do escudo desemboca: RD Geral na criatura, RD
        Física no jogador. Ver `canalRdEscudo` e a divergência `rdEscudoFisico`. */
@@ -729,6 +738,11 @@ export function deriveAfty(creature, opcoes = {}) {
     iniciativaIrmao: creature?.core?.origem?.iniciativaIrmao,
     attrEff: attrBase, mods: modBase, modTecnica: modBase[tecnicaAttr] ?? 0, tecnicaAttr,
     periciasProf: creature?.pericias,
+    /* O escudo na mão já é conhecido aqui (o equipamento é o primeiro passo do
+       derive), e o Treino de Escudo do pacote Stark lê `escudo_equipado` numa
+       etapa, que roda neste estágio. Sem ele a variável valia zero e a Defesa
+       nunca entrava (2026-10-11). */
+    escudoEquipado: equip.entradas.some((e) => e.tipo === "escudo" && e.equipado),
     // O vocabulário entra AQUI TAMBÉM: o contexto reduzido não tem `esc_*` nem
     // `tem_*`, e sem eles declarados uma expressão que os citasse cairia inteira
     // no fallback, calada. Origem não escala com classe, então zero é a resposta
@@ -1449,6 +1463,12 @@ export function deriveAfty(creature, opcoes = {}) {
     efeitosDaAptidao: (id) => APTIDAO_EFEITOS[id] ?? getAptidao(id)?.efeitos ?? [],
     nomeDaAptidao: (id) => getAptidao(id)?.nome ?? id,
     niveis: aptidao.efetivo ?? {},
+    // O Nível em que o Estilo destrava, quando a origem o baixa (o Legado do
+    // Guerreiro do pacote Stark, 2026-10-11). Sem o campo, o 4 do livro.
+    ...(estiloNdMinimoDaOrigem(creature) ? { ndMinimo: estiloNdMinimoDaOrigem(creature) } : {}),
+    // As Habilidades, para o `requer` das Técnicas de pacote.
+    habilidadesPossuidas: habilidades.efetivas ?? [],
+    nomeDaHabilidade: (id) => getHabilidade(id)?.nome ?? id,
   };
   const estilo = resolveEstilos(creature, estiloCtx);
   const efeitosEstilo = efeitosDoEstilo(creature, estiloCtx);
@@ -1854,6 +1874,7 @@ export function deriveAfty(creature, opcoes = {}) {
     faixasTrDaClasse: trDaClasse?.faixas,
     aptidaoOpcoes: semEnergia ? {} : creature?.aptidaoOpcoes,
     rdEscudoBase: equip.rdEscudoBase,
+    escudoEquipado: equip.entradas.some((e) => e.tipo === "escudo" && e.equipado),
     fontesTreinoEscudo: treinoEscudo.fontes,
     /* O manejo atual, para o "enquanto estiver desarmado ou empunhando uma arma
        marcial" virar condição de verdade. `armasParaDano` já exclui o pugilato,
@@ -2330,6 +2351,13 @@ export function deriveAfty(creature, opcoes = {}) {
     if (usos || resultados.length) mesa[chave] = { usos, resultados };
   };
   for (const c of caracteristicasEfetivas(creature)) registraMesa(`origem:${c.id}`, c);
+  /* O contador da Técnica de pacote com `usos` (2026-10-11, pacote Stark: "Uma
+     quantidade de vezes igual ao seu bônus de treinamento"). Mesma chave do item
+     da Ficha. A inválida não ganha contador (DA-07), e o do Gatilho, que já mora
+     na mesma chave, vence. */
+  for (const t of estilo.tecnicas ?? []) {
+    if (t.mecanicamenteValida && t.usos && !mesa[`estilo:${t.id}`]) registraMesa(`estilo:${t.id}`, t);
+  }
   for (const id of talentos.escolhidas ?? []) registraMesa(`talento:${id}`, getTalento(id));
   for (const id of habilidades.efetivas ?? []) {
     registraMesa(`especializacao:${id}`, getHabilidade(id), { semUsos: true });
@@ -2704,7 +2732,12 @@ export function deriveAfty(creature, opcoes = {}) {
   const multiplicadorPeDosVotos = regrasAddon.ignoraMultiplicadorPeMaximoDeVotos
     ? 1
     : regrasVotos.multiplicadorPeMaximo;
-  const multiplicadorPeMaximo = regrasAddon.multiplicadorPeMaximo * multiplicadorPeDosVotos;
+  /* O canal `peMult` (2026-10-11, Voto O Covarde do pacote Stark: ×0,6 com
+     medo, ×1,4 depois de superá-lo). As fontes MULTIPLICAM entre si, e cada uma
+     sai do detalhamento para o hover dizer de onde veio. */
+  const fontesPeMult = detalhesDoCanal(ef, "peMult").filter((d) => Number(d.valor) > 0);
+  const peMultMotor = fontesPeMult.reduce((p, d) => p * Number(d.valor), 1);
+  const multiplicadorPeMaximo = regrasAddon.multiplicadorPeMaximo * multiplicadorPeDosVotos * peMultMotor;
   const peOriginal = Math.floor(peAntesMultiplicador * multiplicadorPeMaximo);
   const pe = bloodfeast.tem ? 0 : peOriginal;
   if (bloodfeast.tem) hp += peOriginal * 3 - bloodfeast.custoMaximo;
@@ -2760,7 +2793,15 @@ export function deriveAfty(creature, opcoes = {}) {
      entra no fim de cada uma, e o hover leva a parcela negativa com o nome da
      condição para as fontes fecharem no total. */
   const fragilizado = condicoes.fragilizado;
-  const rdGeralSemCondicao = rdGeralBase + equip.rdGeralBonus + canal("rdGeral");
+  /* O canal `rdEscudo` (2026-10-11, Treino de Escudo do pacote Stark: "Seu escudo
+     aumenta a RD física dele em 5") soma na RD do escudo, que mora em RD Geral
+     na criatura e em RD Física no jogador, igual ao pseudo-canal do encantamento
+     Reforçado. Sem escudo equipado ele não vale. */
+  const escudoNaMao = equip.entradas.some((e) => e.tipo === "escudo" && e.equipado);
+  const rdEscudoMotor = escudoNaMao ? canal("rdEscudo") : 0;
+  const pilhaDoEscudo = canalRdEscudo(sistema);
+  const rdGeralSemCondicao = rdGeralBase + equip.rdGeralBonus + canal("rdGeral")
+    + (pilhaDoEscudo === "rdGeral" ? rdEscudoMotor : 0);
   const rdGeral = fragilizado ? 0 : rdGeralSemCondicao;
 
   // ---------- RD Específico ----------
@@ -3087,7 +3128,8 @@ export function deriveAfty(creature, opcoes = {}) {
      a RD base, a do grau da Ferramenta e o encantamento Reforçado. Quem escolhe
      a pilha é o `resolveEquipamentos`, e aqui só se soma a que ele encheu.
      Ver a divergência `rdEscudoFisico`. */
-  const rdFisicoSemCondicao = equip.rdFisicoBonus + canal("rdFisico");
+  const rdFisicoSemCondicao = equip.rdFisicoBonus + canal("rdFisico")
+    + (pilhaDoEscudo === "rdFisico" ? rdEscudoMotor : 0);
   const rdFisico = fragilizado ? 0 : rdFisicoSemCondicao;
 
   /* ---------- Defesas por tipo de dano ----------
@@ -3988,6 +4030,7 @@ export function deriveAfty(creature, opcoes = {}) {
         label: fonte.nome,
         texto: `×${divTexto(fonte.valor)}`,
       })),
+      ...fontesPeMult.map((fonte) => ({ label: fonte.nome, texto: `×${divTexto(fonte.valor)}` })),
       ...(!regrasAddon.ignoraMultiplicadorPeMaximoDeVotos
         ? regrasVotos.fontesMultiplicadorPeMaximo.map((fonte) => ({
           label: fonte.nome,
@@ -4037,6 +4080,7 @@ export function deriveAfty(creature, opcoes = {}) {
       ...(rdSemBase ? [] : [{ label: `Base do Tipo (${TIPO_LABEL[tipo] ?? tipo})`, valor: rdGeralBase }]),
       ...rdPartesDe("rdGeral"),
       ...doMotor("rdGeral"),
+      ...(pilhaDoEscudo === "rdGeral" && escudoNaMao ? doMotor("rdEscudo") : []),
       ...zeradaPorCondicao(rdGeralSemCondicao),
     ],
     rdEspecifico: [
@@ -4049,6 +4093,7 @@ export function deriveAfty(creature, opcoes = {}) {
     rdFisico: [
       ...rdPartesDe("rdFisico"),
       ...doMotor("rdFisico"),
+      ...(pilhaDoEscudo === "rdFisico" && escudoNaMao ? doMotor("rdEscudo") : []),
       ...zeradaPorCondicao(rdFisicoSemCondicao),
     ],
     movimento: [
@@ -4412,6 +4457,8 @@ export function deriveAfty(creature, opcoes = {}) {
     aptidoesConcedidasAddon,
     // E as do Talento, com o nome dele na `fonte`, pela mesma razão.
     aptidoesConcedidasTalento,
+    // As que a origem não deixa escolher na aba, para a aba travá-las.
+    aptidoesVetadas: [...vetadasDaOrigem],
     dominios: resumoDominios,
     // A Exaustão de Técnica corrente (DA-16), para o aviso da Ficha. `null` sem ela.
     exaustaoTecnica,

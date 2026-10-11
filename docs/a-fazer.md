@@ -33,6 +33,38 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 ---
 
 ## PERGUNTAS AO AUTOR
+### Stark: leituras para confirmar e o que segue de mesa
+**Onde:** `addons/stark.json`
+**Situação:** o pacote saiu com os números que o motor sabe dizer. Estas leituras foram feitas sem o
+autor, e estão no número:
+1. **O Estilo sem o Domínio Simples ligado.** A nota do PDF diz que *"qualquer estilo das sombras
+   que seja especial (a maioria que estará presente) não requer o domínio simples ativo"*, e o motor
+   liga toda Técnica da Expansão só com o interruptor do Domínio Simples. Hoje: precisa do
+   interruptor (o Legado sem a Aptidão também o tem, porque conhece Técnicas). Alternativa: um campo
+   `semDominio` na Técnica de pacote, que ligue só pela Técnica Ativa.
+2. **"sua RD aumente em um valor igual ao seu BM"** (Reforço Corporal, Aura 3) e **"RD igual a sua
+   Aptidão em Aura"** (Impacto Trovejante) entraram como RD Geral. BM foi lido como o BT.
+3. **O Impacto Trovejante tira a Defesa do Golpe Descendente** ("ao invés de ganhar defesa"), por
+   uma linha de Defesa negativa igual à do Golpe.
+4. **Maldição - Instinto Corrompido:** a Inteligência 6 é `limiteAtributo -14`, então outra fonte
+   que suba o limite sobe o teto junto. "Não pode aprender Aptidões de CL" é o limite da trilha CL em
+   zero, e uma Aptidão de CL sem requisito de nível continua escolhível na aba.
+5. **Os três treinos valem para qualquer origem**, porque o texto não restringe.
+
+E ficaram de mesa, escritos no texto de cada item:
+6. **Legado do Guerreiro:** o máximo de 3 pontos no mesmo atributo não junta o pool de 3 com o ponto
+   físico, que são duas alocações.
+7. **O Covarde:** o teste de Vontade e a tabela de CD, as condições, a desvantagem, o −1 PE/PP das
+   habilidades com Estilo relacionado, e "recuperando a diferença" do PE ao superar o medo.
+8. **Técnicas:** a área de 1,5m e a RD que não pode ser ignorada (Reforço Corporal), os degraus de
+   Aura e de Domínio que não são número, a cura do Tempo para um Covarde (e a recarga de metade no
+   descanso curto), a Mente Inabalável e a Cobertura da Vanguarda inteiras.
+9. **Instinto Corrompido:** a desvantagem em Testes de Intelecto.
+10. **Treinos:** o Completo do Escudo (RD contra BT tipos), a Etapa 4 e o Completo da Firmeza, e as
+    Etapas 1 a 3 do Corporal (cura a mais e dados de vida, que o Afty não tem).
+**Precisa:** o autor confirmar o 1 ao 5.
+**Anotado:** 2026-10-11, ao fazer o addon Stark
+
 ### Herdado da Era de Ouro: leituras para confirmar e o que segue de mesa
 **Onde:** `addons/herdado-era-de-ouro.json`
 **Situação:** a origem saiu própria (não conta como o Herdado do livro), com os três clãs e os 7

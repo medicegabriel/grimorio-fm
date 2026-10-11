@@ -145,6 +145,7 @@ export const EFEITO_CANAIS = [
   // pilha infinita na rodada 10. O que a rodada faz é devolver ao teto da fonte
   // o que foi gasto, e não somar de novo.
   { id: "peTemporario",  label: "PE Temporário",         alvo: "gatilho", nota: "casca de PE, gasta ANTES do PE normal. O alvo é o gatilho: combate entrega uma vez na cena, rodada reenche a cada rodada. A mesma fonte topa, não acumula" },
+  { id: "peMult",        label: "Multiplicador de PE Máximo", nota: "multiplica o PE Máximo depois de todas as fontes, junto do multiplicador dos Votos. 0,6 tira 40%, 1,4 soma 40%. Ao contrário do de PV, as fontes MULTIPLICAM entre si, porque um multiplicador abaixo de 1 é a regra que pediu o canal (o Voto O Covarde)" },
   { id: "pe",            label: "PE",                    nota: "pilha ÚNICA: Ponto de Energia e Ponto de Estamina (o nome do Restringido) são o mesmo recurso" },
   { id: "defesa",        label: "Defesa" },
   { id: "cd",            label: "CD" },
@@ -155,6 +156,7 @@ export const EFEITO_CANAIS = [
   { id: "rdGeral",       label: "RD Geral" },
   { id: "rdEspecifico",  label: "RD Específica" },
   { id: "rdFisico",      label: "RD Física" },
+  { id: "rdEscudo",      label: "RD do Escudo", nota: "soma na RD do escudo equipado, que é RD Geral na criatura e RD Física no jogador. Sem escudo equipado não vale" },
   { id: "rdAlma",        label: "RD a Alma",             nota: "a RD Geral vale para todo tipo EXCETO alma, então o Dano na Alma tem canal próprio. Entra antes do teste de Integridade (autor, 2026-07-29)" },
   /* Os quatro POR TIPO DE DANO (2026-09-02). O alvo é o id do tipo (`ct`,
      `queimante`, `alma`...), da tabela TIPOS_DANO. Nasceram com a aba de
@@ -683,7 +685,7 @@ export const chaveExclusiva = (canal, alvo, valor = 1, grupo = GRUPO_POOL_UNICO)
  */
 const GRUPOS_DE_CANAL = [
   ["Vitalidade e Recursos", [
-    "hp", "hpMult", "pvTemporario", "pe", "passivaSemCusto", "peTemporario", "almaMax", "pontosPreparo", "preparoTemporario", "custoPE",
+    "hp", "hpMult", "pvTemporario", "pe", "peMult", "passivaSemCusto", "peTemporario", "almaMax", "pontosPreparo", "preparoTemporario", "custoPE",
     "recargaTecnicaMaxima",
   ]],
   // ⚠ Grupo PRÓPRIO desde 2026-08-03. Os três de Regeneração viviam soltos em
@@ -696,7 +698,7 @@ const GRUPOS_DE_CANAL = [
     "curaPorDado", "curaPorDadoTeto", "curaUsos", "curaPontos",
   ]],
   ["Defesa", [
-    "defesa", "rdGeral", "rdEspecifico", "rdFisico", "rdAlma",
+    "defesa", "rdGeral", "rdEspecifico", "rdFisico", "rdEscudo", "rdAlma",
     "rdTipo", "imunidadeDano", "resistenciaDano", "vulnerabilidadeDano",
     "guardaBonus", "guardaVida",
   ]],
@@ -902,6 +904,9 @@ export function buildCriaturaDslContext(base = {}) {
     // de equipamento no contexto, e entra porque o equipamento é resolvido antes
     // dos efeitos (ao contrário dos stats, que vêm depois: ver VARS_ADIADAS).
     rd_escudo: base.rdEscudoBase ?? 0,
+    // Um escudo equipado, de qualquer RD (2026-10-11, Treino de Escudo do pacote
+    // Stark: "enquanto estiver empunhando um escudo"). 1 ou 0.
+    escudo_equipado: base.escudoEquipado ? 1 : 0,
     // Uma fonte vem de qualquer Especialização treinada em escudo, e cada
     // Talento de escudo escolhido soma outra. O Mestre Defensivo lê a segunda.
     fontes_treino_escudo: base.fontesTreinoEscudo ?? 0,

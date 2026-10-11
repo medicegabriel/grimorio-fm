@@ -50,6 +50,7 @@ const POR_NOME = [
       ["vez", "Qual repetição está sendo avaliada"],
       ["alma_atual", "Integridade da Alma"],
       ["rd_escudo", "RD base do escudo equipado"],
+      ["escudo_equipado", "1 com um escudo equipado, 0 sem"],
     ],
   },
   {

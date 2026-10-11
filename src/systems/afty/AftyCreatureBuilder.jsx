@@ -730,6 +730,15 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       ...d,
       estiloFuncionamento: { texto: "", durabilidadeTrilha: null, ...(d.estiloFuncionamento ?? {}), ...partial },
     })),
+    /* Marca ou desmarca uma Técnica de pacote À ESCOLHA (`escolhivel`, 2026-10-11).
+       Grava o id qualificado em `estilosDoPacote`, e nunca copia a Técnica. */
+    alternaTecnicaDoPacote: (id) => setDraft((d) => {
+      const atual = Array.isArray(d.estilosDoPacote) ? d.estilosDoPacote : [];
+      return {
+        ...d,
+        estilosDoPacote: atual.includes(id) ? atual.filter((x) => x !== id) : [...atual, id],
+      };
+    }),
   };
 
   /* Devolve o id da cópia, pela mesma razão do `addFeitico`: a fileira precisa
@@ -10306,7 +10315,7 @@ function fonteDaConcessao(id, derived) {
 }
 
 function AptidaoCard({
-  aptidao, escolhida, concedida, concessao = FONTE_CONCESSAO_ORIGEM, vezes = 0, maxVezes = 1,
+  aptidao, escolhida, concedida, concessao = FONTE_CONCESSAO_ORIGEM, vezes = 0, maxVezes = 1, vetada = false,
   ctx, onToggle, opcaoAtual, onOpcao, opcoesRepetidas = [], onVezes, onOpcaoRepetida,
 }) {
   const [open, setOpen] = useState(false);
@@ -10314,7 +10323,9 @@ function AptidaoCard({
   const faltando = reqs.filter((r) => r.verificavel && !r.ok);
   // Já escolhida nunca trava: senão um requisito que deixou de ser
   // atendido prenderia a aptidão na ficha, sem como remover.
-  const bloqueada = faltando.length > 0 && !escolhida;
+  // A origem que VETA a escolha (`aptidoesVetadas`, o Domínio Simples do
+  // Legado do Guerreiro) trava igual a um requisito faltando.
+  const bloqueada = (faltando.length > 0 || vetada) && !escolhida;
   /* `categoria` recorta a lista dinâmica. As duas aptidões de Aura que escolhem
      tipo de dano pedem um ELEMENTAL, e recebiam a tabela inteira: antes de os
      quinze tipos do livro existirem, isso queria dizer três tipos físicos e um
@@ -10350,7 +10361,7 @@ function AptidaoCard({
             concedida
               ? concessao.titulo
               : bloqueada
-                ? `Requisito não atendido: ${faltando.map((r) => r.label).join(", ")}`
+                ? (vetada ? "A origem não deixa escolher esta Aptidão" : `Requisito não atendido: ${faltando.map((r) => r.label).join(", ")}`)
                 : escolhida ? "Remover esta aptidão" : "Escolher esta aptidão"
           }
           className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
@@ -12339,6 +12350,7 @@ function TabAptidoes({
                         escolhida={escolhidas.includes(ap.id)}
                         concedida={concedidas.includes(ap.id)}
                         concessao={fonteDaConcessao(ap.id, derived)}
+                        vetada={(derived.aptidoesVetadas ?? []).includes(ap.id)}
                         vezes={vezes}
                         maxVezes={maxVezes}
                         ctx={ctx}
@@ -12369,6 +12381,7 @@ function TabAptidoes({
                   escolhida={escolhidas.includes(ap.id)}
                   concedida={concedidas.includes(ap.id)}
                   concessao={fonteDaConcessao(ap.id, derived)}
+                  vetada={(derived.aptidoesVetadas ?? []).includes(ap.id)}
                   vezes={vezes}
                   maxVezes={maxVezes}
                   ctx={ctx}

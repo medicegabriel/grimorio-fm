@@ -753,6 +753,7 @@ const ARTIGO_ESCOLHA = { tr: "o TR", pericia: "a Perícia", ataque: "o Tipo de A
 
 export function validarTecnica(r, {
   aptidoesPossuidas = [], categoriaDaAptidao = () => null, efeitosDaAptidao = () => [], niveis = {},
+  habilidadesPossuidas = [], nomeDaAptidao = (id) => id, nomeDaHabilidade = (id) => id,
 } = {}) {
   const out = [];
   const erro = (codigo, texto, uid) => out.push({ nivel: "erro", codigo, texto, ...(uid ? { uid } : {}) });
@@ -865,6 +866,20 @@ export function validarTecnica(r, {
     info("auxiliar", "A regra que concentra um Feitiço Auxiliar em uma única instância não vale nos Estilos da Sombra.");
   }
 
+  /* O pré-requisito de verdade de uma Técnica de pacote (`requer`, 2026-10-11).
+     Faltando, ERRO: a Técnica fica salva e não dá nada (DA-07). */
+  if ((r.requer ?? []).length) {
+    const aptidoes = new Set(aptidoesPossuidas);
+    const habilidades = new Set(habilidadesPossuidas);
+    for (const req of r.requer) {
+      const tem = req.tipo === "aptidao" ? aptidoes.has(req.id) : habilidades.has(req.id);
+      if (!tem) {
+        const nome = req.tipo === "aptidao" ? nomeDaAptidao(req.id) : nomeDaHabilidade(req.id);
+        erro("requer", `Requer ${nome}.`);
+      }
+    }
+  }
+
   const usaEspecial = r.tipo === TIPO_ESPECIAL || r.grupos.some((g) => g.efeitoId === "especial");
   if (usaEspecial) {
     aviso("especial", "Efeito Especial: depende da aprovação do Narrador.");
@@ -897,8 +912,8 @@ const temErro = (lista) => lista.some((v) => v.nivel === "erro");
  * aptidão normalmente. Sem Domínio o Estilo é conhecido e não tem vaga de
  * imbuição, então o card avisa em vez de ficar mudo.
  */
-export const estiloDisponivel = (origemId, nd, liberado = false) =>
-  (origemId === ESTILO_ORIGEM || liberado) && (nd ?? 1) >= ESTILO_ND_MINIMO;
+export const estiloDisponivel = (origemId, nd, liberado = false, ndMinimo = ESTILO_ND_MINIMO) =>
+  (origemId === ESTILO_ORIGEM || liberado) && (nd ?? 1) >= ndMinimo;
 
 /**
  * O card do Estilo aparece na aba Habilidades do criador?
@@ -948,9 +963,14 @@ export function resolveEstilos(
     // módulo não importa o catálogo de Aptidões (ciclo).
     aptidoesPossuidas = [], categoriaDaAptidao = () => null, efeitosDaAptidao = () => [],
     nomeDaAptidao = (id) => id, niveis = {},
+    // O Nível em que o Estilo destrava. 4 pelo livro, e a origem de Addon pode
+    // baixar (`estiloNdMinimo`, o Legado do Guerreiro do pacote Stark).
+    ndMinimo = ESTILO_ND_MINIMO,
+    // As Habilidades da ficha, para o `requer` das Técnicas de pacote.
+    habilidadesPossuidas = [], nomeDaHabilidade = (id) => id,
   } = {},
 ) {
-  const disponivel = estiloDisponivel(origemId, nd, liberado);
+  const disponivel = estiloDisponivel(origemId, nd, liberado, ndMinimo);
   // Não entram em estilosDaFicha: o editor grava só as técnicas particulares,
   // nunca uma cópia do pacote que sobreviveria à desinstalação.
   /* As Técnicas de PACOTE (`estilos[]` de um Addon). DA-06: a que não declara
@@ -965,17 +985,60 @@ export function resolveEstilos(
       ...t, id: `${p.id}:${t.id}`, tipo: "especial", deAddon: true,
       descricao: [t.descricao, t.adendo].filter(Boolean).join("\n\n"),
     })));
+  /* ⚠ A TÉCNICA DE PACOTE À ESCOLHA (2026-10-11, pacote Stark). Até aqui toda
+     Técnica da Expansão de um pacote valia para toda ficha com ele, e todas
+     contavam na progressão: um pacote de 5 Técnicas deixava inválidas as 5 de
+     quem tem 2 vagas. Com `escolhivel: true` a Técnica é catálogo, e só entra a
+     que a ficha marcou em `estilosDoPacote` (id qualificado). A sem a marca
+     segue como antes, valendo sempre.
+
+     Dois campos que só a Técnica de pacote declara, lidos do cru porque o
+     `normalizaTecnicaEstilo` é o da ficha:
+       • `requer: [{ tipo: "aptidao" | "habilidade", id }]`, o pré-requisito
+         de verdade ("Requer: Aura Reforçada"). Faltando, ERRO (DA-07);
+       • `usos: { expr, recarga }`, o contador da linha na Ficha. */
+  const marcadasDoPacote = new Set(lista(creature?.estilosDoPacote).map((x) => texto(x)));
+  // O catálogo à escolha, marcado ou não, para o card do criador oferecer.
+  const catalogoDoPacote = pacotes.flatMap((p) => estilosDoPacote(p)
+    .filter((t) => regraDaTecnica(t) === REGRA_EXPANSAO && t.escolhivel === true)
+    .map((t) => {
+      const id = `${p.id}:${t.id}`;
+      return {
+        id, nome: texto(t.nome), descricao: texto(t.descricao),
+        pacote: p.nome ?? p.id, marcada: marcadasDoPacote.has(id),
+      };
+    }));
   const deAddonExpansao = pacotes.flatMap((p) => estilosDoPacote(p)
     .filter((t) => regraDaTecnica(t) === REGRA_EXPANSAO)
-    .map((t) => normalizaTecnicaEstilo({ ...t, id: `${p.id}:${t.id}` }))
-    .filter(Boolean)
-    .map((t) => ({ ...t, deAddon: true, pacote: p.nome ?? p.id })));
+    .map((t) => {
+      const n = normalizaTecnicaEstilo({ ...t, id: `${p.id}:${t.id}` });
+      if (!n) return null;
+      const escolhivel = t.escolhivel === true;
+      if (escolhivel && !marcadasDoPacote.has(n.id)) return null;
+      const requer = lista(t.requer)
+        .map((r) => objeto(r))
+        .filter((r) => r && ["aptidao", "habilidade"].includes(r.tipo) && texto(r.id).trim())
+        .map((r) => ({ tipo: r.tipo, id: texto(r.id).trim() }));
+      const usos = objeto(t.usos) && texto(t.usos.expr).trim()
+        ? { expr: texto(t.usos.expr).trim(), recarga: texto(t.usos.recarga).trim() || "descanso" }
+        : null;
+      return {
+        ...n, deAddon: true, pacote: p.nome ?? p.id,
+        ...(escolhivel ? { escolhivel: true } : {}),
+        ...(requer.length ? { requer } : {}),
+        ...(usos ? { usos } : {}),
+      };
+    })
+    .filter(Boolean));
   const conhecidasCru = [...estilosDaFicha(creature), ...deAddon];
   // As Técnicas da Expansão. Não entram na imbuição nem no contador de
   // Habilidades: o orçamento delas é a progressão própria.
   const tecnicasCru = [...tecnicasDaFicha(creature), ...deAddonExpansao]
     .map((t) => resolveTecnicaExpansao(t, { dom, imbuicoesExtras, partesImbuicao, nomeDaAptidao, efeitosDaAptidao, niveis }));
-  const ctxValidacao = { aptidoesPossuidas, categoriaDaAptidao, efeitosDaAptidao, niveis };
+  const ctxValidacao = {
+    aptidoesPossuidas, categoriaDaAptidao, efeitosDaAptidao, niveis,
+    habilidadesPossuidas, nomeDaAptidao, nomeDaHabilidade,
+  };
 
   /* A PROGRESSÃO DA EXPANSÃO (DA-03) mais a vaga exclusiva `vagasEstilo`, que
      o derive lê antes daqui. As Técnicas da Expansão usam a vaga exclusiva
@@ -1064,7 +1127,7 @@ export function resolveEstilos(
        desinstalado não teria como saber o que faltava. */
     avisos.push(
       origemId === ESTILO_ORIGEM || liberado
-        ? `Novo Estilo da Sombra destrava no Nível ${ESTILO_ND_MINIMO}.`
+        ? `Novo Estilo da Sombra destrava no Nível ${ndMinimo}.`
         : "As Técnicas de Estilo gravadas não valem: o Novo Estilo da Sombra é do Sem Técnica, ou de um Addon que o libere.",
     );
   }
@@ -1134,10 +1197,13 @@ export function resolveEstilos(
 
   return {
     disponivel,
-    ndMinimo: ESTILO_ND_MINIMO,
+    ndMinimo,
     conhecidas,
     // As Técnicas da Expansão (DA-02), já validadas, e a progressão delas.
     tecnicas,
+    // As Técnicas de pacote À ESCOLHA, marcadas ou não (2026-10-11). A marcada
+    // também está em `tecnicas`; esta lista é a do seletor do criador.
+    catalogoDoPacote: disponivel ? catalogoDoPacote : [],
     /* O que a mesa está usando AGORA, para a Ficha e o Encontro: o Domínio no ar
        (em combate), as Técnicas imbuídas e a Reação que o Contra-Ataque de
        qualquer uma delas tira. A Técnica inválida não conta como ativa: ela não

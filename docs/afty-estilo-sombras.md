@@ -211,6 +211,19 @@ e com `regra: "expansao"`, Técnica da Expansão com o id `<pacote>:<id>`, só l
 escolhível nas Técnicas Ativas. O formato e o que o validador do pacote confere estão em
 `docs/afty-addons.md`, na seção do `libera`.
 
+Desde 2026-10-11 (pacote Stark) a Técnica de pacote pode ser **à escolha** (`escolhivel`): o card do
+Estilo lista o catálogo em "Técnicas do Pacote", e só a marcada entra e gasta a progressão. Ela pode
+ter **pré-requisito de verdade** (`requer`, Aptidão ou Habilidade, ERRO quando falta) e **contador**
+(`usos`) na linha da Ficha.
+
+### O Nível em que o Estilo destrava
+
+O 4 do livro é o padrão (`ESTILO_ND_MINIMO`). Uma origem de Addon pode baixar com `estiloNdMinimo`:
+o Legado do Guerreiro do pacote Stark *"já inicia tendo 2 estilos da sombra"*, então o dele é 1, e a
+progressão a mais vem de `vagasEstilo` na própria origem. O Legado também não recebe o Domínio
+Simples e não pode escolhê-lo (`aptidoesVetadas`). Sem a Aptidão, o interruptor do Domínio Simples
+aparece assim que há uma Técnica, como já acontecia com as Técnicas de quem não tem a Aptidão.
+
 ## Pontos ainda abertos
 
 As leituras do PDF que a DA-09 manda perguntar estão em `docs/a-fazer.md`, em PERGUNTAS AO AUTOR, com

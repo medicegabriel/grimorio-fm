@@ -1576,7 +1576,10 @@ const comOpcoesDaCriatura = (creature) => {
 export function aptidoesConcedidasPelaOrigem(creature, nd = 1) {
   const nivel = Math.max(1, Math.trunc(Number(nd) || 1));
   const out = [];
-  for (const c of caracteristicasEfetivas(creature)) {
+  /* A OPÇÃO de escolha aninhada concede também (2026-10-11), como já fazia o
+     `concedeHabilidades`. É o marcador "Aprendeu o Domínio Simples" do Legado
+     do Guerreiro. */
+  for (const c of [...caracteristicasEfetivas(creature), ...opcoesEscolhidasDaOrigem(creature)]) {
     for (const a of c.concedeAptidoes ?? []) {
       if (!a?.id || nivel < (a.ndMin ?? 1) || out.includes(a.id)) continue;
       out.push(a.id);
@@ -1640,6 +1643,33 @@ export function nivelMaximoDaOrigem(creature) {
 export function tetoNivelFeiticoDaOrigem(creature) {
   const n = Math.trunc(Number(getOrigem(creature?.core?.origem?.id)?.tetoNivelFeitico));
   return Number.isFinite(n) && n >= 0 && n <= 5 ? n : null;
+}
+
+/* ------------------------------------------------------------ */
+/* LEGADO DO GUERREIRO (pacote Stark, 2026-10-11)                */
+/* ------------------------------------------------------------ */
+/**
+ * O Nível em que o Novo Estilo da Sombra destrava para esta origem
+ * (`estiloNdMinimo`), ou `null` para o 4 do livro. O Legado do Guerreiro
+ * *"já inicia tendo 2 estilos da sombra"*, então o dele é 1.
+ */
+export function estiloNdMinimoDaOrigem(creature) {
+  const n = Math.trunc(Number(getOrigem(creature?.core?.origem?.id)?.estiloNdMinimo));
+  return Number.isFinite(n) && n >= 1 ? n : null;
+}
+
+/**
+ * As Aptidões que a origem NÃO deixa escolher na aba (`aptidoesVetadas`). O
+ * Legado do Guerreiro *"também não pode adquirir essa aptidão normalmente"*: o
+ * Domínio Simples só chega concedido (o marcador "Aprendeu o Domínio Simples").
+ *
+ * ⚠ VETA A ESCOLHA, NÃO A CONCESSÃO: quem concede pelo nome (origem, opção,
+ * sessão, Addon) segue valendo, porque é o caminho que a regra deixa aberto. A
+ * escolhida à mão continua gravada e deixa de contar, sem ser apagada.
+ */
+export function aptidoesVetadasDaOrigem(creature) {
+  const v = getOrigem(creature?.core?.origem?.id)?.aptidoesVetadas;
+  return Array.isArray(v) ? v.filter((id) => typeof id === "string" && id) : [];
 }
 
 /**
@@ -2083,6 +2113,10 @@ export function validarCatalogoOrigens() {
     if (x.armaEscolhida != null && !(typeof x.armaEscolhida?.id === "string" && x.armaEscolhida.id.trim())) {
       problemas.push(`${dono}: armaEscolhida sem id`);
     }
+    if (x.concedeAptidoes != null) {
+      if (!Array.isArray(x.concedeAptidoes)) problemas.push(`${dono}: concedeAptidoes deve ser uma lista`);
+      else if (x.concedeAptidoes.some((a) => !a?.id)) problemas.push(`${dono}: concedeAptidoes com entrada sem id`);
+    }
   };
 
   const checarCaracteristicas = (dono, lista) => {
@@ -2151,6 +2185,14 @@ export function validarCatalogoOrigens() {
     if (o.tetoNivelFeitico != null) {
       const n = Number(o.tetoNivelFeitico);
       if (!Number.isInteger(n) || n < 0 || n > 5) problemas.push(`${o.nome}: tetoNivelFeitico deve ser um inteiro de 0 a 5`);
+    }
+    // Os dois campos do Legado do Guerreiro (pacote Stark, 2026-10-11).
+    if (o.estiloNdMinimo != null) {
+      const n = Number(o.estiloNdMinimo);
+      if (!Number.isInteger(n) || n < 1 || n > 30) problemas.push(`${o.nome}: estiloNdMinimo deve ser um inteiro de 1 a 30`);
+    }
+    if (o.aptidoesVetadas != null && !(Array.isArray(o.aptidoesVetadas) && o.aptidoesVetadas.every((id) => typeof id === "string" && id))) {
+      problemas.push(`${o.nome}: aptidoesVetadas deve ser uma lista de ids`);
     }
     checarCaracteristicas(o.nome, o.caracteristicas);
   }
