@@ -1,7 +1,7 @@
 {
   "id": "stark",
   "nome": "Stark",
-  "versao": "1.1.0",
+  "versao": "1.2.0",
   "autor": "Templas",
   "paraRaw": "afty",
   "descricao": "Estilo das Sombras: Arte do Herói, homebrew de Kami/shadowz664 baseada no Stark de Sōsō no Frieren. Traz a origem Legado do Guerreiro, o Voto Próprio Permanente O Covarde, as cinco Técnicas de Estilo da Arte do Herói, o Voto pronto Maldição - Instinto Corrompido e três treinos (Treino de Escudo, Treino de Firmeza e Treinamento Corporal). O Legado é uma variação do Sem Técnica: o Estilo destrava no Nível 1 com 2 Técnicas (3 no Nível 4, e depois a progressão normal), e o Domínio Simples não vem no Nível 4 nem pode ser escolhido na aba de Aptidões, só pelo marcador Aprendeu o Domínio Simples no card da Origem. As Técnicas são à escolha, marcadas no card do Estilo, e cada uma confere o próprio pré-requisito. O Covarde entra sozinho na vaga de Voto, e o estado O Covarde da Simulação de Combate aplica o PE Máximo de 60% (Apavorado) ou de 140% (Superou o Medo). O Instinto Corrompido é copiado na aba Votos com um botão, e quem o usa não precisa de CL nas Aptidões de outras trilhas que pedem CL (Energia Reversa, Raio Negro, Abençoado pelas Faíscas Negras e Revestimento de Domínio). O teste de Vontade, as condições e os efeitos por Nível de Aptidão das Técnicas ficam de mesa. Vale nos dois sistemas e precisa do app de 2026-10-11 ou mais novo.",
@@ -115,13 +115,13 @@
           {
             "canal": "rdFisico",
             "expr": "dobro(au)",
-            "quando": "estilo_ativo && tem_aura_reforcada",
+            "quando": "estilo_ativo && tem_aura_reforcada && !estilo_tecnica_stark_reforco_corporal",
             "duracao": "temporaria"
           },
           {
             "canal": "rdGeral",
-            "expr": "dobro(au)",
-            "quando": "estilo_ativo && aura_excessiva",
+            "expr": "2 + dobro(au) + (au >= 3 && (aura_excessiva || (au >= 4 && tem_aura_impenetravel))) * bt",
+            "quando": "estilo_ativo && tem_aura_reforcada && estilo_tecnica_stark_reforco_corporal",
             "duracao": "temporaria"
           }
         ]
@@ -147,14 +147,13 @@
         "linhas": [
           {
             "canal": "rdFisico",
-            "expr": "2",
+            "expr": "-dobro(au)",
             "nome": "Reforço Corporal"
           },
           {
             "canal": "rdGeral",
-            "expr": "bt",
-            "quando": "au >= 3 && aura_excessiva",
-            "nome": "Reforço Corporal (Aura 3)"
+            "expr": "2 + dobro(au) + (au >= 3 && (aura_excessiva || (au >= 4 && tem_aura_impenetravel))) * bt + (au >= 4 && tem_aura_impenetravel && tem_aura_excessiva && !aura_excessiva) * dobro(au)",
+            "nome": "Reforço Corporal"
           }
         ]
       }

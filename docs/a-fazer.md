@@ -42,8 +42,9 @@ autor, e estão no número:
    liga toda Técnica da Expansão só com o interruptor do Domínio Simples. Hoje: precisa do
    interruptor (o Legado sem a Aptidão também o tem, porque conhece Técnicas). Alternativa: um campo
    `semDominio` na Técnica de pacote, que ligue só pela Técnica Ativa.
-2. **"sua RD aumente em um valor igual ao seu BM"** (Reforço Corporal, Aura 3) e **"RD igual a sua
-   Aptidão em Aura"** (Impacto Trovejante) entraram como RD Geral. BM foi lido como o BT.
+2. **"RD igual a sua Aptidão em Aura"** (Impacto Trovejante) entrou como RD Geral. O bloco da Aura do
+   Reforço Corporal foi decidido pelo autor em 2026-10-11 pela planilha do Stark (ver afty-addons.md,
+   seção Stark), e o BM é o BT.
 3. **O Impacto Trovejante tira a Defesa do Golpe Descendente** ("ao invés de ganhar defesa"), por
    uma linha de Defesa negativa igual à do Golpe.
 4. **Maldição - Instinto Corrompido:** a Inteligência 6 é `limiteAtributo -14`, então outra fonte

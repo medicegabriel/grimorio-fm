@@ -1045,6 +1045,11 @@ export function buildCriaturaDslContext(base = {}) {
   // vocabulário, pelo mesmo motivo dos `tem_*`: expressão que cita variável
   // inexistente cai no fallback calada.
   for (const nome of voc.opcoesAptidao || []) ctx[nome] = 0;
+  /* Variáveis que precisam EXISTIR mesmo sem valor, sem apagar a que a bancada
+     já acendeu (2026-10-11): as `estilo_tecnica_<id>` das Técnicas da Expansão,
+     que um Voto cita mesmo com a Técnica desmarcada (o Instinto Corrompido do
+     pacote Stark). Sem isto a condição inteira caía no fallback, calada. */
+  for (const nome of voc.zeros || []) if (!(nome in ctx)) ctx[nome] = 0;
   for (const [aptId, valor] of Object.entries(base.aptidaoOpcoes || {})) {
     if (valor) ctx[`opt_${aptId}_${valor}`] = 1;
   }

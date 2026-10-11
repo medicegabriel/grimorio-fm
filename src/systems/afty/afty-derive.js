@@ -115,7 +115,7 @@ import {
 } from "./afty-feiticos";
 // O dado do golpe desarmado da ficha de jogador. Na criatura nada disto roda.
 import { dadoDesarmado } from "./afty-niveis-dano";
-import { resolveEstilos, efeitosDoEstilo } from "./afty-estilo-sombras";
+import { resolveEstilos, efeitosDoEstilo, variaveisDasTecnicas } from "./afty-estilo-sombras";
 import { resolveDominioSimples, DOMINIO_SIMPLES_APTIDAO } from "./afty-dominio-simples";
 import {
   estadosDoVislumbre, efeitosDoVislumbre, resolveVislumbre, olhosDescobertos, fadigaAtual,
@@ -365,6 +365,8 @@ export function deriveAfty(creature, opcoes = {}) {
   const vocabularioDsl = {
     ...vocabularioDoMundo(),
     pericias: catalogoPericiasFicha.map((p) => p.id),
+    // As `estilo_tecnica_<id>` de toda Técnica da Expansão, ligada ou não (2026-10-11).
+    zeros: variaveisDasTecnicas(creature),
   };
 
   /* ---------- CONDIÇÕES (2026-09-21) ----------
@@ -1468,9 +1470,15 @@ export function deriveAfty(creature, opcoes = {}) {
     // O Nível em que o Estilo destrava, quando a origem o baixa (o Legado do
     // Guerreiro do pacote Stark, 2026-10-11). Sem o campo, o 4 do livro.
     ...(estiloNdMinimoDaOrigem(creature) ? { ndMinimo: estiloNdMinimoDaOrigem(creature) } : {}),
-    // As Habilidades, para o `requer` das Técnicas de pacote.
-    habilidadesPossuidas: habilidades.efetivas ?? [],
-    nomeDaHabilidade: (id) => getHabilidade(id)?.nome ?? id,
+    /* As Habilidades, para o `requer` das Técnicas de pacote, e as OPÇÕES
+       escolhidas nelas: o Estilo do Interceptador é opção do Repertório do
+       Especialista, e não Habilidade (relato do autor, 2026-10-11, a Cobertura
+       da Vanguarda saía inválida com o Estilo escolhido). */
+    habilidadesPossuidas: [
+      ...(habilidades.efetivas ?? []),
+      ...Object.values(habilidades.escolhas?.mapa ?? {}).flat(),
+    ],
+    nomeDaHabilidade: (id) => getHabilidade(id)?.nome ?? OPCAO_ESCOLHA_NOME[id] ?? id,
   };
   const estilo = resolveEstilos(creature, estiloCtx);
   const efeitosEstilo = efeitosDoEstilo(creature, estiloCtx);

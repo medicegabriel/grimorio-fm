@@ -2075,8 +2075,11 @@ export const TALENTO_EFEITOS = {
   // "Caso já seja treinado, você recebe Redução de Dano adicional com o
   // escudo igual a metade do valor base de RD dele". A Especialização conta
   // como uma fonte de treino, e cada Talento de escudo conta como outra.
+  // ⚠ NA PILHA DO ESCUDO desde 2026-10-11 (autor): é RD "com o escudo", então
+  // segue o escudo, RD Física no jogador e RD Geral na criatura (o canal
+  // `rdEscudo`, ver a divergência `rdEscudoFisico`). Era `rdGeral` nos dois.
   tal_mestre_defensivo: [
-    { canal: "rdGeral", expr: "piso(rd_escudo / 2) * (fontes_treino_escudo >= 2)" },
+    { canal: "rdEscudo", expr: "piso(rd_escudo / 2) * (fontes_treino_escudo >= 2)" },
   ],
 
   // "você adiciona o bônus padrão do escudo em TRs de Reflexos." A redução da

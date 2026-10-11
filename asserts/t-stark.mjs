@@ -43,7 +43,7 @@ const t = (nome, real, esp) => {
 /* ============================================================ */
 const STARK = JSON.parse(readFileSync(new URL("../addons/stark.json", import.meta.url), "utf8"));
 t("o pacote valida", A.validarPacote(STARK), []);
-t("autor, sistema-alvo e versão", [STARK.autor, STARK.paraRaw, STARK.versao], ["Templas", "afty", "1.1.0"]);
+t("autor, sistema-alvo e versão", [STARK.autor, STARK.paraRaw, STARK.versao], ["Templas", "afty", "1.2.0"]);
 const pacote = A.normalizarPacote(STARK);
 t("aplicar não relata problema", A.aplicarAddons([pacote]).problemas, []);
 const ORIGEM = "stark:legado_do_guerreiro";
@@ -129,10 +129,13 @@ for (const sistema of ["player", "afty"]) {
   const ligada = comAura({ ativo: true, estilo_ativo: true, estilo_tecnica: [reforco] });
   const desligada = comAura({ ativo: true, estilo_ativo: true });
   t(tag("Reforço Corporal válida com a Aura Reforçada"), ligada.estilo.tecnicas[0].mecanicamenteValida, true);
-  t(tag("ligada, +2 na RD Física (2 + o dobro da Aura)"), ligada.rdFisico - desligada.rdFisico, 2);
+  /* 1.2.0 (autor, 2026-10-11, pela planilha do Stark): a RD da Aura Reforçada sai
+     da Física e vira RD Geral, 2 + o dobro da Aura. */
+  t(tag("ligada, a RD da Aura vai da Física para a Geral (2 + o dobro)"),
+    [ligada.rdFisico - desligada.rdFisico, ligada.rdGeral - desligada.rdGeral], [-6, 8]);
   const excessiva = comAura({ ativo: true, estilo_ativo: true, estilo_tecnica: [reforco], auraExcessiva: true });
   const excessivaSem = comAura({ ativo: true, estilo_ativo: true, auraExcessiva: true });
-  t(tag("Aura 3 com a Aura Excessiva: + BT na RD Geral"), excessiva.rdGeral - excessivaSem.rdGeral, excessiva.maestria);
+  t(tag("Aura 3 com a Aura Excessiva: + BT junto"), excessiva.rdGeral - excessivaSem.rdGeral, 2 + 6 + excessiva.maestria);
 
   const mente = "stark:mente_inabalavel";
   const comMente = deriveAfty(ficha({ estilos: [mente], aptidoes: ["aura_anuladora"] }));
@@ -182,6 +185,35 @@ for (const sistema of ["player", "afty"]) {
     escolhas: { legado_dominio_simples: ["legado_aprendeu_dominio"] },
     combate: { ativo: true, ...(ligado ? { estilo_ativo: true } : {}) } });
   t(tag("com o Domínio Simples no ar, a Aura Reforçada dobra"), auraDobra(true).rdFisico - auraDobra(false).rdFisico, 4);
+
+  /* ---------- 5b. O bloco da Aura da planilha do autor (2026-10-11) ----------
+     Aura 5 e BT 5, Aura Reforçada, Excessiva e Impenetrável, o Reforço Corporal e
+     o Instinto: (2 + BT + 2×AU) × 2 + 2×AU = 44 na RD Geral, e a Física da Aura sai.
+     Com Aura 4 e a Impenetrável, a Excessiva liga sozinha com o Domínio. */
+  {
+    const planilha = (combate, extra = {}) => deriveAfty(ficha({
+      nd: 14, estilos: [reforco], aptidoes: ["aura_reforcada", "aura_excessiva", "aura_impenetravel"], aptNiveis: { au: 5 },
+      escolhas: { legado_dominio_simples: ["legado_aprendeu_dominio"] },
+      votos: { contratuais: [], mecanicos: [molde.voto] }, combate, ...extra,
+    }));
+    const fora = planilha({ ativo: true });
+    const no = planilha({ ativo: true, estilo_ativo: true, estilo_tecnica: [reforco] });
+    const naMao = planilha({ ativo: true, estilo_ativo: true, estilo_tecnica: [reforco], auraExcessiva: true });
+    t(tag("planilha: BT 5"), no.maestria, 5);
+    t(tag("planilha: 44 na RD Geral, e a Física da Aura sai"), [no.rdGeral - fora.rdGeral, no.rdFisico - fora.rdFisico], [44, -10]);
+    t(tag("planilha: a Excessiva ligada à mão dá o mesmo"), [naMao.rdGeral, naMao.rdFisico], [no.rdGeral, no.rdFisico]);
+  }
+
+  /* ---------- 5c. Mestre Defensivo na pilha do escudo (2026-10-11) ---------- */
+  {
+    const escudoLeve = { itens: [{ uid: "e1", refId: "esc_leve", tipo: "escudo", qtd: 1, equipado: true }] };
+    const md = deriveAfty({ ...ficha({ equipamentos: escudoLeve }), talentos: ["tal_mestre_defensivo"] });
+    const pilha = sistema === "player" ? "rdFisico" : "rdGeral";
+    const outra = sistema === "player" ? "rdGeral" : "rdFisico";
+    t(tag("Mestre Defensivo na pilha do escudo"),
+      [(md.partes?.[pilha] ?? []).some((p) => p.label === "Mestre Defensivo"), (md.partes?.[outra] ?? []).some((p) => p.label === "Mestre Defensivo")],
+      [true, false]);
+  }
 
   /* ---------- 6. Os treinos ---------- */
   const escudo = { itens: [{ uid: "e1", refId: "esc_medio", tipo: "escudo", qtd: 1, equipado: true, fa: { grau: "quarto", encantamentos: [] } }] };
@@ -235,6 +267,14 @@ for (const sistema of ["player", "afty"]) {
   const so = golpe(false);
   t("criatura: com o Golpe, RD igual à Aura mais o BT", com.rdGeral - so.rdGeral, 2 + com.maestria);
   t("criatura: e a Defesa do Golpe sai", com.defesa - so.defesa, -Math.max(1, Math.floor(2 / 2)));
+  /* O Estilo do Interceptador é OPÇÃO do Repertório do Especialista, e não
+     Habilidade (relato do autor, 2026-10-11: a Cobertura saía inválida). */
+  const cobertura = (escolhas) => deriveAfty({ ...c, habilidades: ["cmb_artes_do_combate", "cmb_repertorio_do_especialista"],
+    estilosDoPacote: ["stark:cobertura_da_vanguarda"], escolhasHabilidade: escolhas })
+    .estilo.tecnicas[0].validacao.find((v) => v.codigo === "requer")?.texto ?? null;
+  t("criatura: a Cobertura enxerga o Estilo do Interceptador escolhido",
+    [cobertura({}), cobertura({ cmb_repertorio_do_especialista: ["cmb_estilo_do_interceptador"] })],
+    ["Requer Estilo do Interceptador.", null]);
 }
 
 /* ---------- 8. Validadores dos verbos ---------- */

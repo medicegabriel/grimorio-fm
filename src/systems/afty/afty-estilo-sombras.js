@@ -157,6 +157,23 @@ export const ESTILO_LABEL = "Novo Estilo das Sombras";
 export const ESTADO_TECNICA_ATIVA = "estilo_tecnica";
 export const varDaTecnicaAtiva = (id) => `${ESTADO_TECNICA_ATIVA}_${normalizarVariavel(id)}`;
 
+/**
+ * As variáveis `estilo_tecnica_<id>` de TODA Técnica da Expansão que a ficha
+ * pode citar: as dela e as dos pacotes, marcadas ou não. O vocabulário as declara
+ * com zero, para um Voto que cite uma Técnica desligada não cair no fallback.
+ */
+export function variaveisDasTecnicas(creature) {
+  const ids = lista(creature?.estilosSombra)
+    .filter((t) => objeto(t) && regraDaTecnica(t) === REGRA_EXPANSAO && texto(t.id).trim())
+    .map((t) => texto(t.id).trim());
+  for (const p of lista(creature?.addons)) {
+    for (const t of lista(p?.estilos)) {
+      if (objeto(t) && texto(t.id).trim() && regraDaTecnica(t) === REGRA_EXPANSAO) ids.push(`${p.id}:${texto(t.id).trim()}`);
+    }
+  }
+  return [...new Set(ids)].map(varDaTecnicaAtiva);
+}
+
 /** Os ids das Técnicas ligadas no `combate`, da lista de hoje ou do texto de antes. */
 export function tecnicasNoAr(combate) {
   const v = combate?.[ESTADO_TECNICA_ATIVA];

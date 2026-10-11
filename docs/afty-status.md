@@ -16408,3 +16408,15 @@ Pedido do autor: um Addon chamado "Yna" com a Origem Kitsune, a Linhagem Clã Ge
 **O que mudou:** canal novo `ignoraRequisitoTrilha` (alvo trilha). O derive devolve `requisitoTrilhaDispensado` ({ trilha: [fontes] }), e o `avaliarRequisitoAptidao` dá o requisito de trilha como cumprido quando a Aptidão avaliada é de OUTRA trilha (`ctx.trilhaDaAptidao`, que o card da aba Aptidões passa). O pacote foi a 1.1.0 com a linha no malefício "Não pode aprender Aptidões de CL".
 
 **Asserts:** `t-stark.mjs` com 98. ⚠ O Voto do Instinto é uma CÓPIA na ficha: quem já tinha copiado a 1.0.0 precisa remover o Voto e usar o molde de novo, depois de atualizar o pacote na ficha. Sem commit ou push.
+
+## SESSÃO DE 2026-10-11 (parte 6): A RD DO STARK PELA PLANILHA DO AUTOR
+
+**Pedido do autor:** a ficha do Stark (exportada) contra a planilha dele ("Stark Era de Ouro"), que dá RD Geral 60,5 e RD Física 81,5. As fórmulas da planilha (lidas do XLSX): Geral = (2 + BT + 2×AU) × 2 + 2×AU [Domínio Simples] + AU + BT [Golpe Descendente] + nível de Lutador ÷ 2 + 4 [Ferro Negro], e Física = Geral + 21 do escudo (6 + 5 + 2 + 5 + Mestre Defensivo 3). O app dava 21 (46 com a Excessiva ligada) e 40.
+
+**Decisões:** o bloco da Aura igual à planilha, o Mestre Defensivo na pilha do escudo (todas as fichas), e o Reflexo Evasivo mantém o nível de escalonamento (4, e não 2,5).
+
+**O que mudou:** Stark 1.2.0 (Reforço Corporal tira a Aura Reforçada da Física e põe 2 + 2×AU + BT com Aura 3 e Excessiva + a Excessiva automática com Aura 4 e Impenetrável na Geral, numa linha só, e o Instinto dobra esse bloco quando o Reforço está ligado). `tal_mestre_defensivo` foi para o canal `rdEscudo`. O `requer` das Técnicas de pacote enxerga as opções escolhidas das Habilidades (a Cobertura da Vanguarda saía inválida com o Estilo do Interceptador, que é opção do Repertório do Especialista), com o nome da opção na mensagem. O vocabulário da DSL declara com zero as `estilo_tecnica_<id>` de toda Técnica da Expansão (`variaveisDasTecnicas`, `voc.zeros`), sem apagar a que a bancada acendeu.
+
+**Resultado na ficha do autor:** RD Geral 62 e RD Física 21 com o Domínio Simples, as Técnicas e o Golpe Descendente ligados (a planilha dá 60,5 e 21; a diferença é o Reflexo Evasivo). Na planilha a "RD Física" é o total contra dano físico (Geral + escudo), e no app ela é o extra que soma com a Geral.
+
+**Asserts:** `t-stark.mjs` com 107. Sem commit ou push.
