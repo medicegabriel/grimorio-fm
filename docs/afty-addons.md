@@ -904,6 +904,15 @@ Quatro pegadinhas, todas pagas com bug:
 
 Opcionais na origem: `clasRotulo` (o nome do seletor, padrão "Clã") e `clasArtigo` (padrão "um").
 
+⚠ **O clã declarado na origem é DELA (consertado em 2026-10-11).** A família `clas` escreve toda
+definição em `CLAS_HERDADO`, e a entrada `herdado` do livro aponta para esse array. De 2026-09-22 a
+2026-10-11 os 5 Tipos da Maldição Era de Ouro apareciam no seletor de clãs do Herdado do livro, e o
+Gêmeo podia copiar Característica deles como se fossem do Herdado, passando por cima da proibição da
+Maldição no Verdadeiras Origens. Hoje `clasDaOrigem` (afty-origens.js) tira do Herdado todo clã que
+outra origem lista em `clas[]`, e devolve a definição inteira no lugar do `{ id, nome }`. O clã solto
+(família `clas` sem origem que o reclame, como o `addons/sugawara.json`) continua indo para o
+Herdado, que é o caso para que a família nasceu.
+
 ### O campo `espinho` e a primitiva `espinho` (2026-09-30)
 
 Uma loja de catálogo FIXO na ficha, paga em Almas: cada item tem custo, teto de compras (DSL) e o que
@@ -988,6 +997,14 @@ segue inteira no motor. Na Maldição de verdade a aba Maldição continua, com 
 
 ⚠ **O campo precisa estar no `normalizarPacote`.** A biblioteca grava o pacote normalizado, e campo
 que o normalizador não conhece some na instalação sem aviso.
+
+**No Talento (2026-10-11).** O mesmo nome vale dentro de uma entrada de Talento, como lista de ids:
+`"concedeAptidoes": ["emocao_da_petala_decadente"]`. Nasceu com o Desabrochar do Conhecimento
+Herdado (`addons/herdado-era-de-ouro.json`). Mesmas regras das outras concessões, e vale enquanto o
+Talento estiver na ficha, escolhido ou concedido: com o pré-requisito do Talento faltando ele sai
+inacessível, como tudo que ele faz. O verbo é `aptidoesConcedidasPorTalentos` (afty-talentos.js), a
+lista é `derived.aptidoesConcedidasTalento` e o rótulo verde da Aptidão é o nome do Talento. Aptidão
+do próprio pacote ganha o namespace (`caminhosDeId`), e id inexistente vira problema no validador.
 
 ⚠ **Achado no caminho: a Fineza das Armas Naturais estava morta desde 2026-09-01.** O canal
 `finezaAtaque` passou a ser lido pelo escopo da linha naquele dia, o Corpo Treinado foi migrado para
@@ -2272,3 +2289,29 @@ do Não-Feiticeiro, mora em pacote SEPARADO a pedido do autor e pediu mais dois 
 outro pacote instalado a referência fica inerte (a linha some, a escolha não abre).
 
 Asserts: `t-nao-feiticeiro.mjs`, `t-espirito-indomavel.mjs` e `t-herdeiro-celeste.mjs`.
+
+## Herdado da Era de Ouro (2026-10-11)
+
+`addons/herdado-era-de-ouro.json`, do suplemento Era de Ouro. Uma origem PRÓPRIA (autor: não conta
+como o Herdado do livro) que se divide em três clãs, como a Maldição Era de Ouro. Os Talentos citam
+a origem por `{ "tipo": "origem" }` e o clã por `{ "tipo": "cla" }`, com o id local, que ganha o
+prefixo do pacote.
+
+| Clã | Bônus em Atributo | O resto |
+|---|---|---|
+| Fujiwara | 3 entre Constituição e Sabedoria | +2 vagas de treino, Foco no Poder (contador de Feitiços Focados, de mesa) |
+| Sugawara | 3 entre Inteligência e Sabedoria | +2 vagas de treino, Potencial Lendário (PE por nível par e Feitiço no 1, 5, 10, 15 e 20) |
+| Akutame | 3 livres, até 2 no mesmo | treinado em Atletismo e Feitiçaria, mestre em um no nível 10 (escolha com `ndMin`), metade do BT no Acerto e na Defesa |
+
+Dos 7 Talentos, o motor faz o Desabrochar do Conhecimento Herdado (`concedeAptidoes` no Talento,
+verbo novo), os Fundamentos Imponentes (CD e Acerto Amaldiçoado), a Compreensão Avançada (escolha
+de 2 trilhas com `niveis: [1, 1]`), a Postura do Matador de Yokai (interruptor de combate
+"Alvo com Defesa Maior", com `requerTalento`) e a parte da recarga do Manuscrito Ancestral. O resto
+é de mesa e está em `docs/a-fazer.md`, junto das leituras para o autor confirmar.
+
+Pediu também o conserto do clã de origem de Addon que vazava para o Herdado (ver a seção da origem
+que se divide em Tipos). ⚠ Motor e pacote vão no mesmo push, e o pacote só se instala depois do
+deploy: no motor velho os três clãs aparecem também no seletor do Herdado do livro, e o Desabrochar
+não concede nada.
+
+Assert: `t-herdado-era-de-ouro.mjs`.

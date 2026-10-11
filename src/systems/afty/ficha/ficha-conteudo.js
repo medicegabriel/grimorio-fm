@@ -500,7 +500,9 @@ export function conteudoDaFicha(creature, derived) {
         concedidasOrigem.has(id)
           ? ((derived?.aptidoesConcedidasEspecializacao ?? []).includes(id) ? "Especialização"
             : (derived?.aptidoesConcedidasOrigem ?? []).includes(id) ? "Origem"
-              : (derived?.aptidoesConcedidasAddon ?? []).find((c) => c.id === id)?.fonte ?? "Origem")
+              : (derived?.aptidoesConcedidasAddon ?? []).find((c) => c.id === id)?.fonte
+                ?? (derived?.aptidoesConcedidasTalento ?? []).find((c) => c.id === id)?.fonte
+                ?? "Origem")
           : null,
         vezes > 1 ? { label: `${vezes}×`, tipo: "vezes" } : null,
         /* O DOMÍNIO SIMPLES carrega os números dele na própria linha. Eles são

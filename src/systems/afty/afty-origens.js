@@ -1077,7 +1077,9 @@ function opcoesVerdadeirasOrigens(liberacoes = []) {
       if (c.doCla) continue;
       out.push(opcaoVerdadeiraOrigem(origem, c));
     }
-    for (const cla of origem.clas || []) {
+    // Pela porta dos clãs, e não por `origem.clas`: ver o vazamento no
+    // `clasDaOrigem`.
+    for (const cla of clasDaOrigem(origem.id) || []) {
       for (const c of cla.caracteristicas || []) {
         if (c.id === "bonus_atributo") continue;
         out.push(opcaoVerdadeiraOrigem(origem, c, cla));
@@ -1419,8 +1421,34 @@ export const origemMae = (origemId) => {
 export const ehVariacaoDoRestringido = (origemId) =>
   !!origemId && origemId !== "restringido" && origemMae(origemId) === "restringido";
 
-/** Clãs da origem, se ela se divide (só o Herdado, por ora). */
-export const clasDaOrigem = (id) => getOrigem(id)?.clas ?? null;
+/**
+ * Clãs da origem, se ela se divide.
+ *
+ * ⚠ O CLÃ DE UMA ORIGEM DE ADDON VAZAVA PARA O HERDADO (consertado em
+ * 2026-10-11, com o Herdado da Era de Ouro). A família `clas` escreve TODA
+ * definição de clã em `CLAS_HERDADO`, porque é lá que `getCla` procura, e a
+ * entrada `herdado` aponta para esse mesmo array. Uma origem de Addon que se
+ * divide (a Maldição Era de Ouro) põe a definição dos Tipos dela ali também, e
+ * desde 2026-09-22 os 5 Tipos apareciam como clãs no seletor do Herdado do
+ * livro, e como cópia de Herdado no Verdadeiras Origens do Gêmeo, que proíbe a
+ * Maldição. O clã que outra origem declara em `clas[]` é DELA: aqui ele sai da
+ * lista do Herdado.
+ *
+ * A origem de Addon guarda só `{ id, nome }` em `clas[]`, e a definição inteira
+ * mora na família `clas`. A lista devolvida já vem com a definição, para o
+ * resumo do botão e o Verdadeiras Origens lerem as características.
+ */
+export const clasDaOrigem = (id) => {
+  const lista = getOrigem(id)?.clas;
+  if (!Array.isArray(lista)) return null;
+  if (lista !== CLAS_HERDADO) return lista.map((c) => CLA_BY_ID[c?.id] ?? c);
+  const deOutraOrigem = new Set(
+    AFTY_ORIGENS_CATALOG
+      .filter((o) => Array.isArray(o.clas) && o.clas !== CLAS_HERDADO)
+      .flatMap((o) => o.clas.map((c) => c?.id)),
+  );
+  return deOutraOrigem.size ? lista.filter((c) => !deOutraOrigem.has(c.id)) : lista;
+};
 
 /**
  * A caracteristica vale para ESTA criatura?

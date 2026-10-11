@@ -86,7 +86,7 @@ import {
 } from "./afty-habilidades";
 import {
   resolveTalentos, resolveTreinoEscudo, getTalento, OPCAO_TALENTO_NOME, AFTY_TALENTOS,
-  avaliarAcessoTalento, efeitosDeTalentosConfigurados,
+  avaliarAcessoTalento, efeitosDeTalentosConfigurados, aptidoesConcedidasPorTalentos,
 } from "./afty-talentos";
 import {
   resolveAltoNivel, comVagasDeCanal, getMelhoriaSuperior, getHabilidadeLendaria, getHabilidadeApice,
@@ -514,6 +514,15 @@ export function deriveAfty(creature, opcoes = {}) {
   const aptidoesConcedidasAddon = semEnergia
     ? []
     : aptidoesConcedidasPorAddon(creature, { equipados: itensEquipados(creature) });
+  /* E a do TALENTO (2026-10-11, Desabrochar do Conhecimento Herdado), também no
+     mesmo caixa. Lê a lista crua dos Talentos, escolhidos e concedidos, porque
+     o `resolveTalentos` só roda lá embaixo. Ver `aptidoesConcedidasPorTalentos`. */
+  const aptidoesConcedidasTalento = semEnergia
+    ? []
+    : aptidoesConcedidasPorTalentos([
+      ...(Array.isArray(creature?.talentos) ? creature.talentos : []),
+      ...concedido.talentos,
+    ]);
   const substituicaoEnergiaReversa = substituicaoEnergiaReversaPorAddon(creature);
   const aptidaoPermitidaPelaEstrutura = (id) => (
     !substituicaoEnergiaReversa || getAptidao(id)?.categoria !== "energia_reversa"
@@ -524,6 +533,7 @@ export function deriveAfty(creature, opcoes = {}) {
     ...aptidoesConcedidasEspecializacao,
     ...concedido.aptidoes,
     ...aptidoesConcedidasAddon.map((c) => c.id),
+    ...aptidoesConcedidasTalento.map((c) => c.id),
   ])].filter(aptidaoPermitidaPelaEstrutura);
   const aptidoesEscolhidasRaw = semEnergia || !Array.isArray(creature?.aptidoesAmaldicoadas)
     ? []
@@ -4400,6 +4410,8 @@ export function deriveAfty(creature, opcoes = {}) {
     // As do Addon vêm com a FONTE (o item que as dá, ou o pacote), porque a tela
     // escreve de onde a Aptidão veio, e "Origem" seria mentira para elas.
     aptidoesConcedidasAddon,
+    // E as do Talento, com o nome dele na `fonte`, pela mesma razão.
+    aptidoesConcedidasTalento,
     dominios: resumoDominios,
     // A Exaustão de Técnica corrente (DA-16), para o aviso da Ficha. `null` sem ela.
     exaustaoTecnica,

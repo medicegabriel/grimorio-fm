@@ -33,6 +33,31 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 ---
 
 ## PERGUNTAS AO AUTOR
+### Herdado da Era de Ouro: leituras para confirmar e o que segue de mesa
+**Onde:** `addons/herdado-era-de-ouro.json`
+**Situação:** a origem saiu própria (não conta como o Herdado do livro), com os três clãs e os 7
+Talentos. Estas leituras foram feitas sem o autor, e estão no número:
+1. **"Recebendo Acerto e Defesa"** do Talento Akutame vale nos TRÊS ataques (corpo a corpo, a
+   distância e amaldiçoado), porque o texto não restringe.
+2. **"Quando realiza a ação Atacar"** da Postura do Matador de Yokai vale no corpo a corpo e a
+   distância, e NÃO no Ataque Amaldiçoado, lendo "ação Atacar" como o ataque armado ou desarmado.
+3. **Fundamentos Imponentes** soma no canal `cd` inteiro (Feitiço, Aptidão e Habilidade), lendo
+   "CD Amaldiçoado e de Aptidões Amaldiçoada" como a CD única do Afty.
+
+E ficaram de mesa, escritos na descrição:
+4. **Compreensão Avançada**: "Possuir ao menos 1 nível nas Aptidões selecionadas" é `nota`. A
+   escolha de Talento não tem requisito por opção, e as 5 trilhas aparecem sempre.
+5. **Manuscrito Ancestral**: o Feitiço um nível acima do acesso e os 2 espaços que ele ocupa até o
+   nível liberar. Só o −1 na recarga da Técnica Máxima está no motor, igual ao Manual de Técnica.
+6. **Fortes Convicções** (vantagem a cada 2 rodadas), **Arsenal do Maior Clã** (item que não evolui
+   de grau) e o **Feitiço Focado** do Fujiwara (só o contador, igual ao do Zenin).
+7. **O addon Clã Sugawara antigo** (`addons/sugawara.json`) põe um Clã Sugawara no Herdado do livro,
+   com dois Talentos de mesmo nome. Os dois pacotes convivem sem conflito de id, mas uma ficha com os
+   dois instalados vê dois Fundamentos Imponentes e duas Compreensões Avançadas na lista.
+**Precisa:** o autor confirmar o 1 ao 3, dizer se o 4 vira trava (requisito por opção de Talento é
+verbo novo) e se o addon Clã Sugawara antigo continua.
+**Anotado:** 2026-10-11, ao fazer o addon Herdado da Era de Ouro
+
 ### Não-Feiticeiro (Regras Opcionais): o que segue de mesa
 **Onde:** `addons/nao-feiticeiro.json`, `src/systems/afty/afty-origens.js` (escolhas de origem)
 **Situação:** o pacote saiu com os números e as travas que o motor já sabe dizer (sem energia,

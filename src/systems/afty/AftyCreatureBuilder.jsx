@@ -10300,6 +10300,8 @@ function fonteDaConcessao(id, derived) {
         : `Concedida pelo Addon ${addon.addonNome}`,
     };
   }
+  const talento = (derived.aptidoesConcedidasTalento ?? []).find((c) => c.id === id);
+  if (talento) return { rotulo: talento.fonte, titulo: `Concedida pelo Talento ${talento.fonte}` };
   return FONTE_CONCESSAO_ORIGEM;
 }
 

@@ -1,0 +1,281 @@
+{
+  "id": "herdado-era-de-ouro",
+  "nome": "Herdado da Era de Ouro",
+  "versao": "1.0.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Origem Herdado da Era de Ouro, do suplemento Era de Ouro (F&M 2.5.2). Certos feiticeiros têm sua técnica provinda da linhagem sanguínea dos grandes clãs da Era Heian. A origem se divide em três clãs, escolhidos no card da Origem: Fujiwara (Constituição ou Sabedoria, Foco no Poder), Sugawara (Inteligência ou Sabedoria, Potencial Lendário) e Akutame (3 pontos livres, treinado em Atletismo e Feitiçaria, Acerto e Defesa iguais à metade do Bônus de Treinamento). Traz os 7 Talentos de Origem do suplemento. O Desabrochar do Conhecimento Herdado concede de fato a Emoção da Pétala Decadente, e a Postura do Matador de Yokai tem o interruptor Alvo com Defesa Maior na Simulação de Combate. O Feitiço Focado, as Fortes Convicções, o Arsenal do Maior Clã e o Feitiço acima do acesso do Manuscrito Ancestral ficam de mesa. É uma origem própria: não conta como o Herdado do livro. Vale nos dois sistemas. Precisa do app com `concedeAptidoes` em Talento e com o conserto dos clãs de origem de Addon (2026-10-11).",
+  "estadosCombate": [
+    {
+      "id": "alvo_defesa_maior",
+      "label": "Alvo com Defesa Maior",
+      "tipo": "bool",
+      "title": "Postura do Matador de Yokai",
+      "requerTalento": "tal_postura_do_matador_de_yokai"
+    }
+  ],
+  "acrescenta": {
+    "origens": [
+      {
+        "id": "herdado_era_de_ouro",
+        "nome": "Herdado da Era de Ouro",
+        "bonusAtributos": {},
+        "clas": [
+          { "id": "cla_fujiwara", "nome": "Clã Fujiwara" },
+          { "id": "cla_sugawara", "nome": "Clã Sugawara" },
+          { "id": "cla_akutame", "nome": "Clã Akutame" }
+        ],
+        "caracteristicas": [
+          {
+            "id": "bonus_atributo",
+            "nome": "Bônus em Atributo",
+            "descricao": "Um herdeiro recebe aumentos no valor de atributos baseado no seu clã escolhido.",
+            "doCla": true
+          },
+          {
+            "id": "treinamentos_de_cla",
+            "nome": "Treinamentos de Clã",
+            "descricao": "Cada clã concede treinamento ou te torna especialista em perícias específicas.",
+            "doCla": true
+          },
+          {
+            "id": "heranca_de_cla",
+            "nome": "Herança de Clã",
+            "descricao": "Um herdeiro tem técnicas e capacidades herdadas a partir da sua linhagem, destacando os valores e focos dela. Tal herança depende do clã escolhido para o personagem.",
+            "doCla": true
+          }
+        ],
+        "especializacaoExclusivaId": null
+      }
+    ],
+    "clas": [
+      {
+        "id": "cla_fujiwara",
+        "nome": "Clã Fujiwara",
+        "caracteristicas": [
+          {
+            "id": "bonus_atributo",
+            "nome": "Bônus em Atributo",
+            "descricao": "Um membro do clã Fujiwara aumenta em 2 o atributo de Constituição ou Sabedoria, e em 1 o que não foi escolhido.",
+            "bonus": { "distribuir": 3, "maxPorAtributo": 2, "entre": ["constituicao", "sabedoria"] }
+          },
+          {
+            "id": "treinamentos_cla",
+            "nome": "Treinamentos de Clã",
+            "descricao": "Você se torna treinado em 2 perícias quaisquer. Ao invés de receber treinamento em 2 perícias, você pode escolher se tornar especialista em uma."
+          },
+          {
+            "id": "foco_no_poder",
+            "nome": "Foco no Poder",
+            "descricao": "O clã Fujiwara se dedica completamente ao poder e aprimoramento de sua influência no Mundo Jujutsu, ampliando o clã e suas habilidades para se manter no topo. No primeiro nível, você pode escolher um Feitiço para ser um Feitiço Focado. Um Feitiço Focado pode: possuir 1 efeito de melhoria de ritual aplicado ao feitiço, ter o dobro do alcance ou ter a dificuldade do teste para resistir aumentada em um valor igual ao seu bônus de treinamento. Nos níveis 5, 10, 15 e 20 você pode escolher outro Feitiço para ser um Feitiço Focado.",
+            "contador": { "nome": "Feitiços Focados", "niveis": [1, 5, 10, 15, 20] },
+            "mesa": true
+          }
+        ],
+        "efeitos": [
+          { "canal": "vagasPericia", "expr": "2", "nome": "Treinamentos de Clã" }
+        ]
+      },
+      {
+        "id": "cla_sugawara",
+        "nome": "Clã Sugawara",
+        "caracteristicas": [
+          {
+            "id": "bonus_atributo",
+            "nome": "Bônus em Atributo",
+            "descricao": "Um membro do clã Sugawara aumenta em 2 o atributo de Inteligência ou Sabedoria, e em 1 o que não foi escolhido.",
+            "bonus": { "distribuir": 3, "maxPorAtributo": 2, "entre": ["inteligencia", "sabedoria"] }
+          },
+          {
+            "id": "treinamentos_cla",
+            "nome": "Treinamentos de Clã",
+            "descricao": "Você se torna treinado em 2 perícias quaisquer. Ao invés de receber treinamento em 2 perícias, você pode escolher se tornar especialista em uma."
+          },
+          {
+            "id": "potencial_lendario",
+            "nome": "Potencial Lendário",
+            "descricao": "Ser parte do clã Sugawara, pelo fundador do mesmo, ter passado uma linhagem abençoada para o Jujutsu, te confere um incrível potencial para ter uma energia extrema, juntamente de uma facilidade para desenvolver feitiços poderosos. Em todo nível par você recebe 1 ponto de energia amaldiçoada adicional. Além disso, você também recebe 1 Feitiço adicional no primeiro nível e mais um nos níveis 5, 10, 15 e 20."
+          }
+        ],
+        "efeitos": [
+          { "canal": "vagasPericia", "expr": "2", "nome": "Treinamentos de Clã" },
+          { "canal": "pe", "expr": "piso(nd / 2)", "nome": "Potencial Lendário" },
+          { "canal": "vagasFeitico", "expr": "1 + (nd >= 5) + (nd >= 10) + (nd >= 15) + (nd >= 20)", "nome": "Potencial Lendário" }
+        ]
+      },
+      {
+        "id": "cla_akutame",
+        "nome": "Clã Akutame",
+        "caracteristicas": [
+          {
+            "id": "bonus_atributo",
+            "nome": "Bônus em Atributo",
+            "descricao": "Membros dessa família são conhecidos por terem corpos que passam do limite natural de qualquer humano, sendo considerados o ápice do desenvolvimento físico do mundo, recebem 3 pontos de atributo para distribuir entre seus atributos, com limite de 2 em um mesmo.",
+            "bonus": { "distribuir": 3, "maxPorAtributo": 2 }
+          },
+          {
+            "id": "treinamento_de_cla",
+            "nome": "Treinamento de Clã",
+            "descricao": "Devido ao imenso conhecimento em combate da sua família, você se tornou um exímio combatente mesmo em uma idade bem jovem, recebendo treinamento em Atletismo e Feitiçaria, se tornando mestre em um desses testes no nível 10.",
+            "escolhas": [
+              {
+                "id": "akutame_mestre",
+                "label": "Mestre · Nível 10",
+                "vagas": 1,
+                "ndMin": 10,
+                "opcoes": [
+                  {
+                    "id": "akutame_mestre_atletismo",
+                    "nome": "Atletismo",
+                    "descricao": "Você se torna mestre em Atletismo.",
+                    "efeitos": [{ "canal": "proficienciaPericia", "alvo": "atletismo", "expr": "2", "nome": "Treinamento de Clã" }]
+                  },
+                  {
+                    "id": "akutame_mestre_feiticaria",
+                    "nome": "Feitiçaria",
+                    "descricao": "Você se torna mestre em Feitiçaria.",
+                    "efeitos": [{ "canal": "proficienciaPericia", "alvo": "feiticaria", "expr": "2", "nome": "Treinamento de Clã" }]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "talento_akutame",
+            "nome": "Talento Akutame",
+            "descricao": "Suas capacidades em um combate são superiores que qualquer outro ser, recebendo Acerto e Defesa em um valor igual à metade do seu Bônus de Treinamento."
+          }
+        ],
+        "efeitos": [
+          { "canal": "proficienciaPericia", "alvo": "atletismo", "expr": "1", "nome": "Treinamento de Clã" },
+          { "canal": "proficienciaPericia", "alvo": "feiticaria", "expr": "1", "nome": "Treinamento de Clã" },
+          { "canal": "bonusAcerto", "expr": "piso(bt / 2)", "nome": "Talento Akutame" },
+          { "canal": "defesa", "expr": "piso(bt / 2)", "nome": "Talento Akutame" }
+        ]
+      }
+    ],
+    "talentos": [
+      {
+        "id": "tal_manuscrito_ancestral",
+        "nome": "Manuscrito Ancestral",
+        "grupo": "origem",
+        "descricao": "Sua técnica já está registrada há muito tempo, com direito a um manual explicando seu funcionamento e uso. Ao obter este talento, você pode criar um único Feitiço de um nível acima ao maior que você possui acesso (esse feitiço ocupa um espaço adicional de feitiço na sua ficha, ocupando 2 espaços invés de 1, porém ao liberar o nível desse novo feitiço ele volta a ocupar apenas 1 espaço). Quando você receber acesso ao nível do Feitiço criado com o Manual, você deve obrigatoriamente o aprender quando ganhar um novo Feitiço e, após isso, pode criar outro Feitiço de nível superior com Manual de Técnica. Caso você já possua acesso a Feitiços de Nível 5, o tempo de recarga da sua Técnica Máxima é reduzido em 1 rodada.",
+        "requisitos": [
+          { "tipo": "origem", "id": "herdado_era_de_ouro" },
+          { "tipo": "periciaOr", "pericias": ["historia", "ocultismo"], "nivel": "treinado" },
+          { "tipo": "nd", "valor": 8 }
+        ],
+        "efeitos": [
+          { "canal": "recargaTecnicaMaxima", "expr": "-1", "quando": "nivel_feitico_max >= 5" }
+        ]
+      },
+      {
+        "id": "tal_desabrochar_do_conhecimento_herdado",
+        "nome": "Desabrochar do Conhecimento Herdado",
+        "grupo": "origem",
+        "descricao": "Vindo do treinamento intensivo de cada um desses grandes clãs, foi desenvolvido uma aptidão majestosa, ensinada para os membros desses clãs. Sendo um conhecimento herdado do seu clã, ensinado para você. Recebe a Aptidão Amaldiçoada Emoção da Pétala Decadente ignorando os pré requisitos normais.",
+        "requisitos": [
+          { "tipo": "origem", "id": "herdado_era_de_ouro" },
+          { "tipo": "nd", "valor": 4 }
+        ],
+        "concedeAptidoes": ["emocao_da_petala_decadente"]
+      },
+      {
+        "id": "tal_fortes_conviccoes",
+        "nome": "Fortes Convicções",
+        "grupo": "origem",
+        "descricao": "O clã Fujiwara é conhecido pelo seu enorme poder e influência no Japão, controlando instituições governamentais pelas sombras e se mantendo como um dos maiores clãs no mundo Jujutsu, onde cada membro desse clã possui fortes convicções para completar seus objetivos. Uma vez a cada 2 Rodadas pode girar com vantagem 1 Teste de Resistência de Vontade ou Astúcia.",
+        "requisitos": [
+          { "tipo": "cla", "id": "cla_fujiwara" },
+          { "tipo": "nd", "valor": 6 }
+        ]
+      },
+      {
+        "id": "tal_arsenal_do_maior_cla",
+        "nome": "Arsenal do Maior Clã",
+        "grupo": "origem",
+        "descricao": "Como membro do Clã Fujiwara, você possui acesso aos vastos depósitos de Objetos Amaldiçoados acumulados ao longo de séculos. Ao obter este talento, escolha uma Arma ou Escudo de até custo 2, este equipamento não evoluirá de grau com você (este item também não pode chegar a Grau Especial). Entre missões, o equipamento pode ser mudado, mantendo seu grau (é possível melhorar este equipamento para grau especial, caso o aprimore através de ofício ou comprando o aprimoramento na loja da guilda).",
+        "requisitos": [
+          { "tipo": "cla", "id": "cla_fujiwara" },
+          { "tipo": "nd", "valor": 6 }
+        ]
+      },
+      {
+        "id": "tal_fundamentos_imponentes",
+        "nome": "Fundamentos Imponentes",
+        "grupo": "origem",
+        "descricao": "Vindo pelo potencial para o Jujutsu, além de um grande conhecimento com as técnicas do clã Sugawara, você aprimora seus feitiços para serem absolutos, manipulando eles e projetando de formas a dificultar a compreensão deles e para resistir aos mesmos, fortalecendo a Potência de Dificuldade de seus Feitiços. Recebe um bônus de CD Amaldiçoado e de Aptidões Amaldiçoada e Acerto Amaldiçoado igual metade do seu Bônus de Treinamento.",
+        "requisitos": [
+          { "tipo": "cla", "id": "cla_sugawara" },
+          { "tipo": "nd", "valor": 6 }
+        ],
+        "efeitos": [
+          { "canal": "cd", "expr": "piso(bt / 2)" },
+          { "canal": "bonusAcerto", "alvo": "amaldicoado", "expr": "piso(bt / 2)" }
+        ]
+      },
+      {
+        "id": "tal_compreensao_avancada",
+        "nome": "Compreensão Avançada",
+        "grupo": "origem",
+        "descricao": "A linhagem dos Sugawara carrega o sangue de um dos maiores gênios da história do Jujutsu. Seus descendentes possuem uma compreensão quase sobrenatural da Energia Amaldiçoada, despertando talentos que outros feiticeiros levariam décadas para alcançar. Conforme seu potencial floresce, os ensinamentos e a genialidade herdados de seus ancestrais tornam-se cada vez mais evidentes. Você recebe +1 Nível de aptidão em 2 aptidões diferentes.",
+        "requisitos": [
+          { "tipo": "cla", "id": "cla_sugawara" },
+          { "tipo": "nota", "texto": "Possuir ao menos 1 nível nas Aptidões selecionadas" },
+          { "tipo": "nd", "valor": 9 }
+        ],
+        "escolha": {
+          "id": "compreensao_avancada",
+          "label": "Aptidão",
+          "niveis": [1, 1],
+          "opcoes": [
+            {
+              "id": "heo_compreensao_au",
+              "nome": "Aura",
+              "descricao": "Seu Nível de Aptidão em Aura aumenta em 1.",
+              "efeitos": [{ "canal": "nivelAptidao", "alvo": "au", "expr": "1" }]
+            },
+            {
+              "id": "heo_compreensao_cl",
+              "nome": "Controle e Leitura",
+              "descricao": "Seu Nível de Aptidão em Controle e Leitura aumenta em 1.",
+              "efeitos": [{ "canal": "nivelAptidao", "alvo": "cl", "expr": "1" }]
+            },
+            {
+              "id": "heo_compreensao_bar",
+              "nome": "Barreira",
+              "descricao": "Seu Nível de Aptidão em Barreira aumenta em 1.",
+              "efeitos": [{ "canal": "nivelAptidao", "alvo": "bar", "expr": "1" }]
+            },
+            {
+              "id": "heo_compreensao_dom",
+              "nome": "Domínio",
+              "descricao": "Seu Nível de Aptidão em Domínio aumenta em 1.",
+              "efeitos": [{ "canal": "nivelAptidao", "alvo": "dom", "expr": "1" }]
+            },
+            {
+              "id": "heo_compreensao_er",
+              "nome": "Energia Reversa",
+              "descricao": "Seu Nível de Aptidão em Energia Reversa aumenta em 1.",
+              "efeitos": [{ "canal": "nivelAptidao", "alvo": "er", "expr": "1" }]
+            }
+          ]
+        }
+      },
+      {
+        "id": "tal_postura_do_matador_de_yokai",
+        "nome": "Postura do Matador de Yokai",
+        "grupo": "origem",
+        "descricao": "Desde a infância, os membros do Clã Akutame são treinados para enfrentar adversários muito acima da capacidade humana. Seus movimentos são precisos, econômicos e letais, permitindo encontrar brechas onde outros enxergam apenas defesa. Quando realiza a ação Atacar contra um alvo que possua Defesa maior que a sua, recebe + metade do Bônus de Treinamento no teste.",
+        "requisitos": [
+          { "tipo": "cla", "id": "cla_akutame" },
+          { "tipo": "nd", "valor": 6 }
+        ],
+        "efeitos": [
+          { "canal": "bonusAcerto", "alvo": "corpo", "expr": "piso(bt / 2)", "quando": "herdado_era_de_ouro_alvo_defesa_maior", "duracao": "temporaria" },
+          { "canal": "bonusAcerto", "alvo": "distancia", "expr": "piso(bt / 2)", "quando": "herdado_era_de_ouro_alvo_defesa_maior", "duracao": "temporaria" }
+        ]
+      }
+    ]
+  }
+}

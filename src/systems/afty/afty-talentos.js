@@ -951,7 +951,7 @@ registrarFamilia("talentos", {
   rotulo: "Talento",
   chave: "id",
   obrigatorios: ["nome", "descricao", "grupo"],
-  caminhosDeId: ["requisitos[].id"],
+  caminhosDeId: ["requisitos[].id", "concedeAptidoes[]"],
   aplicar: aplicarExtrasTalentos,
   basicos: () => TALENTOS_BASE,
   validador: validarCatalogoTalentos,
@@ -960,6 +960,41 @@ registrarFamilia("talentos", {
 });
 
 export const getTalento = (id) => BY_ID[id] || null;
+
+/**
+ * As Aptidões que os Talentos da ficha CONCEDEM PELO NOME, com
+ * `concedeAptidoes: ["id"]` na entrada do Talento.
+ *
+ * Nasceu em 2026-10-11 com o Desabrochar do Conhecimento Herdado (Herdado da
+ * Era de Ouro): *"Recebe a Aptidão Amaldiçoada Emoção da Pétala Decadente
+ * ignorando os pré requisitos normais"*. O motor já concedia Aptidão pelo nome
+ * pela origem, pela Especialização, pela sessão e pelo Addon, e faltava o
+ * Talento dizer QUAL.
+ *
+ * Segue as regras das outras concessões: ignora o pré-requisito da Aptidão, não
+ * gasta vaga e conta para o requisito de terceiros. Vale enquanto o Talento
+ * estiver na ficha, escolhido ou concedido, como o resto do que ele faz: com o
+ * pré-requisito do Talento faltando, ele sai marcado inacessível e nada é tirado.
+ *
+ * ⚠ FICA FORA DO MOTOR DE EFEITOS pelo motivo das outras: a lista de Aptidões
+ * fecha antes de `coletarEfeitosAptidao`, e um canal chegaria tarde.
+ *
+ * Devolve `[{ id, fonte, talentoId }]`, uma linha por Aptidão. `fonte` é o nome
+ * do Talento, que a tela escreve ao lado da Aptidão.
+ */
+export function aptidoesConcedidasPorTalentos(talentosIds = []) {
+  const out = [];
+  const vistos = new Set();
+  for (const talId of Array.isArray(talentosIds) ? talentosIds : []) {
+    const tal = BY_ID[talId];
+    for (const id of Array.isArray(tal?.concedeAptidoes) ? tal.concedeAptidoes : []) {
+      if (typeof id !== "string" || !id || vistos.has(id)) continue;
+      vistos.add(id);
+      out.push({ id, fonte: tal.nome, talentoId: talId });
+    }
+  }
+  return out;
+}
 
 /** Talentos de um grupo, na ordem do catálogo. */
 export const talentosDoGrupo = (grupoId) => AFTY_TALENTOS.filter((t) => t.grupo === grupoId);
@@ -1345,6 +1380,17 @@ export function validarCatalogoTalentos() {
       }
       if (r?.tipo === "nd" && (!Number.isInteger(r.valor) || r.valor < 1)) {
         problemas.push(`${t.nome}: requisito nd inválido (${r.valor})`);
+      }
+    }
+    if (t.concedeAptidoes != null) {
+      if (!Array.isArray(t.concedeAptidoes)) {
+        problemas.push(`${t.nome}: concedeAptidoes deve ser uma lista`);
+      } else {
+        for (const id of t.concedeAptidoes) {
+          if (!AFTY_APTIDOES.some((a) => a.id === id)) {
+            problemas.push(`${t.nome}: concedeAptidoes aponta para Aptidão inexistente "${id}"`);
+          }
+        }
       }
     }
   }
