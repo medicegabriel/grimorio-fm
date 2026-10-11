@@ -33,7 +33,7 @@ import { AFTY_TAMANHOS } from "../afty-schema";
 import { normalizaAdaptacoes, avancarAdaptacoesNaRodada } from "../afty-adaptacao";
 import { avancaArmasTransformaveis } from "../afty-armas-transformaveis";
 import { ESTADO_APICE, RODADAS_APICE } from "../afty-talisma-apice";
-import { ESTADO_ESTILO_ATIVO, ESTADO_TECNICA_ATIVA } from "../afty-estilo-sombras";
+import { ESTADO_ESTILO_ATIVO, ESTADO_TECNICA_ATIVA, tecnicasNoAr } from "../afty-estilo-sombras";
 import {
   PROPRIEDADES_GOLPE, vezesDaPropriedade, marcasDoGolpe, custoDoGolpe, normalizaGolpeEspecial,
 } from "../afty-golpe-especial";
@@ -2764,8 +2764,11 @@ export function alteraEstadoCombate(sessao, estado, valor, derived = null) {
 /**
  * O Domínio Simples do Novo Estilo das Sombras na sessão (Expansão, 2026-10-04).
  *
- *   • DA-04: uma Técnica imbuída por vez. Trocar só muda qual pacote está no ar,
- *     e a troca é manual (a sessão não sabe quando o turno do usuário começa).
+ *   • Técnicas ligadas: quantas a ficha conhecer, ao mesmo tempo (2026-10-11,
+ *     revoga a DA-04, que era uma por vez). Ligar e desligar é manual (a sessão
+ *     não sabe quando o turno do usuário começa). O valor é a LISTA de ids, e o
+ *     texto que a sessão de antes gravou é lido como lista de um
+ *     (`tecnicasNoAr`).
  *   • DA-08: a Exaustão entra quando o Domínio FECHA, uma vez por fechamento.
  *     Nunca ao ligar nem ao trocar. O interruptor traz `exaustaoPorTecnica`
  *     (montado pelo `resolveEstilos`), então a sessão não precisa do derive.
@@ -2782,28 +2785,27 @@ export function alteraEstadoCombate(sessao, estado, valor, derived = null) {
 function alteraDominioDoEstilo(sessao, combate, estado, valor) {
   const usadas = Array.isArray(combate.estiloUsadas) ? combate.estiloUsadas : [];
   if (estado.id === ESTADO_TECNICA_ATIVA) {
-    const tecnica = valor || null;
+    const tecnicas = tecnicasNoAr({ [ESTADO_TECNICA_ATIVA]: valor });
     const noAr = !!combate[ESTADO_ESTILO_ATIVO];
     return {
       ...sessao,
       combate: {
         ...combate,
-        [ESTADO_TECNICA_ATIVA]: tecnica,
-        estiloUsadas: noAr && tecnica && !usadas.includes(tecnica) ? [...usadas, tecnica] : usadas,
+        [ESTADO_TECNICA_ATIVA]: tecnicas,
+        estiloUsadas: noAr ? [...new Set([...usadas, ...tecnicas])] : usadas,
       },
     };
   }
   const ligando = !!valor && !combate[ESTADO_ESTILO_ATIVO];
   const fechando = !valor && !!combate[ESTADO_ESTILO_ATIVO];
   if (ligando) {
-    const atual = combate[ESTADO_TECNICA_ATIVA];
     return {
       ...sessao,
-      combate: { ...combate, [ESTADO_ESTILO_ATIVO]: true, estiloUsadas: atual ? [atual] : [] },
+      combate: { ...combate, [ESTADO_ESTILO_ATIVO]: true, estiloUsadas: tecnicasNoAr(combate) },
     };
   }
   if (fechando) {
-    const ids = [...new Set([...usadas, combate[ESTADO_TECNICA_ATIVA]].filter(Boolean))];
+    const ids = [...new Set([...usadas, ...tecnicasNoAr(combate)])];
     const mapa = estado.exaustaoPorTecnica && typeof estado.exaustaoPorTecnica === "object"
       ? estado.exaustaoPorTecnica : {};
     const pontos = ids.reduce((s, id) => s + Math.max(0, inteiro(mapa[id], 0)), 0);

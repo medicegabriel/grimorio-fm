@@ -247,14 +247,14 @@ const velha = {
     const desligada = deriveAfty(c({ estilo_ativo: true }));
     const ligada = deriveAfty(c({ estilo_ativo: true, estilo_tecnica: "estilo-teste:muralha" }));
     t(`${sistema} pacote: a Defesa da Tecnica do pacote`, ligada.defesa - desligada.defesa, Math.floor(bt / 2));
-    t(`${sistema} pacote: a Tecnica ativa e a do pacote`, ligada.estilo.tecnicaAtiva, "estilo-teste:muralha");
+    t(`${sistema} pacote: a Tecnica ativa e a do pacote`, ligada.estilo.tecnicasAtivas, ["estilo-teste:muralha"]);
 
     /* Com DOM 1 o limite é 1, e a Técnica de 2 efeitos fica inválida inteira (DA-07). */
     const pobre = deriveAfty(c({ estilo_ativo: true, estilo_tecnica: "estilo-teste:muralha" }, { dom: 1 }));
     const pobreOff = deriveAfty(c({ estilo_ativo: true }, { dom: 1 }));
     t(`${sistema} pacote: acima do limite fica invalida`,
       [pobre.estilo.tecnicas[0].mecanicamenteValida, pobre.estilo.tecnicas[0].validacao.some((v) => v.codigo === "limite")], [false, true]);
-    t(`${sistema} pacote: e nao da nada`, [pobre.defesa - pobreOff.defesa, pobre.estilo.tecnicaAtiva], [0, null]);
+    t(`${sistema} pacote: e nao da nada`, [pobre.defesa - pobreOff.defesa, pobre.estilo.tecnicasAtivas], [0, []]);
   }
 }
 

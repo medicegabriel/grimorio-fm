@@ -141,13 +141,31 @@ export const ESTADO_ESTILO_ATIVO = "estilo_ativo";
 export const ESTILO_LABEL = "Novo Estilo das Sombras";
 
 /**
- * A Técnica da Expansão imbuída AGORA (DA-04: uma por vez, trocada à mão no
- * começo do turno). Estado `opcao` nos `estadosExtras`, dentro do interruptor
- * do Domínio. Na DSL cada Técnica vira `estilo_tecnica_<id>`, e é essa variável
- * que liga os efeitos dela. Vazio é Domínio no ar sem Técnica, que vale.
+ * As Técnicas da Expansão imbuídas AGORA. Estado `multi` nos `estadosExtras`,
+ * dentro do interruptor do Domínio. Na DSL cada Técnica vira
+ * `estilo_tecnica_<id>`, e é essa variável que liga os efeitos dela. Vazio é
+ * Domínio no ar sem Técnica, que vale.
+ *
+ * ⚠ ERA `opcao`, UMA POR VEZ, até 2026-10-11 (DA-04). O autor revogou: *"faça
+ * que seja possível de ativar múltiplos estilos de sem técnica"*, com todas as
+ * Técnicas conhecidas ligáveis juntas, e o mesmo bônus de duas Técnicas
+ * SOMANDO (o bloco `estiloTecnicas` do pool, ver `resolverExclusivos`). O id e
+ * as variáveis não mudaram. A sessão gravada antes guarda um TEXTO (o id da
+ * única Técnica), e toda leitura passa por `tecnicasNoAr`, que o lê como uma
+ * lista de um.
  */
 export const ESTADO_TECNICA_ATIVA = "estilo_tecnica";
 export const varDaTecnicaAtiva = (id) => `${ESTADO_TECNICA_ATIVA}_${normalizarVariavel(id)}`;
+
+/** Os ids das Técnicas ligadas no `combate`, da lista de hoje ou do texto de antes. */
+export function tecnicasNoAr(combate) {
+  const v = combate?.[ESTADO_TECNICA_ATIVA];
+  const lista = Array.isArray(v) ? v : (typeof v === "string" && v ? [v] : []);
+  return [...new Set(lista.filter((id) => typeof id === "string" && id))];
+}
+
+/** O bloco do pool em que as Técnicas da Expansão somam entre si. */
+export const BLOCO_TECNICAS_ESTILO = "estiloTecnicas";
 
 /**
  * A faixa de imbuição de uma Técnica. O id vira variável do DSL pelo
@@ -1057,22 +1075,24 @@ export function resolveEstilos(
   // ⚠ 2026-10-04: o interruptor existe também SEM Técnica nenhuma, desde que a
   // ficha tenha o Domínio Simples (E-03: o Sem Técnica de Nível 4 recém-criado
   // não conseguia marcar o Domínio no ar). As Técnicas da Expansão entram por um
-  // seletor só ("Técnica Atual"), porque a regra é uma por vez (DA-04). As
-  // faixas de imbuição seguem existindo para as `legacy`.
+  // seletor só ("Técnicas Ativas"), que desde 2026-10-11 liga quantas a ficha
+  // conhecer (a DA-04, uma por vez, foi revogada). As faixas de imbuição seguem
+  // existindo para as `legacy`.
   const temInterruptor = disponivel && (conhecidas.length || tecnicas.length || temDominioSimples);
   /* ⚠ O RÓTULO VOLTOU A SER "Domínio Simples" (DA-04, 2026-10-04): "a interface de
      combate deve deixar claro: Domínio Simples ativo, Técnica atual: X". A decisão
      de 2026-08-10 o chamava "Novo Estilo das Sombras" porque a linha solta lia
-     como Aptidão avulsa, e agora a Técnica Atual fica logo abaixo dela.
+     como Aptidão avulsa, e agora as Técnicas Ativas ficam logo abaixo dela.
 
      O interruptor carrega a Exaustão de cada Técnica da Expansão (DA-08): a
      sessão soma ao FECHAR o Domínio, sem precisar do derive na hora. A Técnica
      inválida não deu benefício nenhum (DA-07), e por isso não gera Exaustão. */
   // `combate` é a leitura CRUA da bancada ou da sessão, feita lá em cima.
   const dominioNoAr = disponivel && !!combate.ativo && !!combate[ESTADO_ESTILO_ATIVO];
-  const tecnicaAtiva = dominioNoAr
-    ? tecnicas.find((t) => t.id === combate[ESTADO_TECNICA_ATIVA] && t.mecanicamenteValida) ?? null
-    : null;
+  const ligadas = new Set(tecnicasNoAr(combate));
+  const tecnicasAtivas = dominioNoAr
+    ? tecnicas.filter((t) => ligadas.has(t.id) && t.mecanicamenteValida)
+    : [];
   const exaustaoPorTecnica = Object.fromEntries(
     tecnicas.map((t) => [t.id, t.mecanicamenteValida ? t.exaustaoGerada : 0]),
   );
@@ -1087,8 +1107,9 @@ export function resolveEstilos(
       ...(tecnicas.length
         ? [{
           id: ESTADO_TECNICA_ATIVA,
-          label: "Técnica Atual",
-          tipo: "opcao",
+          label: "Técnicas Ativas",
+          tipo: "multi",
+          maxSelecionados: tecnicas.length,
           requerEstado: ESTADO_ESTILO_ATIVO,
           opcoes: tecnicas.map((t) => ({
             id: t.id,
@@ -1118,11 +1139,12 @@ export function resolveEstilos(
     // As Técnicas da Expansão (DA-02), já validadas, e a progressão delas.
     tecnicas,
     /* O que a mesa está usando AGORA, para a Ficha e o Encontro: o Domínio no ar
-       (em combate), a Técnica imbuída e a Reação que o Contra-Ataque tira. A
-       Técnica inválida não conta como ativa: ela não dá nada (DA-07). */
+       (em combate), as Técnicas imbuídas e a Reação que o Contra-Ataque de
+       qualquer uma delas tira. A Técnica inválida não conta como ativa: ela não
+       dá nada (DA-07). */
     dominioAtivo: dominioNoAr,
-    tecnicaAtiva: tecnicaAtiva?.id ?? null,
-    reacaoIndisponivel: !!tecnicaAtiva?.removeReacao,
+    tecnicasAtivas: tecnicasAtivas.map((t) => t.id),
+    reacaoIndisponivel: tecnicasAtivas.some((t) => t.removeReacao),
     tecnicasUsadas: usadas,
     progressao,
     validacao: validacaoEstilo,
@@ -1207,12 +1229,21 @@ export function efeitosDoEstilo(creature, ctx = {}) {
   /* ---- Técnicas da Expansão ----
      Uma linha por efeito e escolha, com a contagem de compras dentro da
      expressão (N linhas iguais cairiam na mesma chave do pool `estiloSombra`).
-     A porta é o Domínio no ar E esta Técnica selecionada (DA-04). */
+     A porta é o Domínio no ar E esta Técnica ligada.
+
+     ⚠ O BLOCO (2026-10-11): várias Técnicas ligadas ao mesmo tempo SOMAM o
+     mesmo bônus entre si (autor), e o total ainda disputa com o Feitiço
+     Auxiliar e o resto do pool como um candidato só. Dentro de UMA Técnica a
+     disputa segue a de antes (a `origem` separa uma da outra). As `legacy`
+     ficam fora do bloco e calculam como sempre (DA-05). */
   for (const t of resolvido.tecnicas) {
     if (t.mecanicamenteValida === false) continue;
     const porta = `${ESTADO_ESTILO_ATIVO} && ${t.estado}`;
     const nomeTecnica = t.nome || "Técnica Sem Nome";
-    const base = { quando: porta, duracao: "temporaria", exclusivo: "estiloSombra", origem: `estilo:${t.id}` };
+    const base = {
+      quando: porta, duracao: "temporaria", exclusivo: "estiloSombra",
+      blocoExclusivo: BLOCO_TECNICAS_ESTILO, origem: `estilo:${t.id}`,
+    };
     for (const p of t.pessoais) {
       out.push({
         ...base,

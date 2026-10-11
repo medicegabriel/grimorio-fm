@@ -101,8 +101,9 @@ for (const sistema of ["afty", "player"]) {
     [13, 4].map((nd) => deriveAfty(ficha(sistema, { nd, estilos: [nums] })).estilo.tecnicas[0].numeros.find((n) => n.efeitoId === "margem").valor),
     [2, 0]);
 
-  /* Uma Técnica por vez: outra selecionada não liga esta, e o Domínio desligado
-     não liga nenhuma. */
+  /* Só liga a Técnica marcada: outra marcada não liga esta, e o Domínio
+     desligado não liga nenhuma. Várias ao mesmo tempo moram em
+     `t-estilo-sombras-sessao` (2026-10-11). */
   t(`${sistema}: outra Tecnica selecionada nao liga esta`,
     delta(sistema, { estilos: [def1, cd], ativa: "cd" }, (d) => d.defesa), 0);
   t(`${sistema}: com o Dominio desligado nada vale`,
@@ -111,9 +112,9 @@ for (const sistema of ["afty", "player"]) {
 
   /* Os estados da bancada: o Domínio, e o seletor com as Técnicas. */
   const estados = deriveAfty(ficha(sistema, { estilos: [def1, cd] })).estilo.estados;
-  t(`${sistema}: o seletor da Tecnica Atual dentro do Dominio`,
+  t(`${sistema}: o seletor das Tecnicas Ativas dentro do Dominio`,
     estados.map((e) => [e.id, e.tipo, e.requerEstado ?? null]),
-    [["estilo_ativo", "bool", null], ["estilo_tecnica", "opcao", "estilo_ativo"]]);
+    [["estilo_ativo", "bool", null], ["estilo_tecnica", "multi", "estilo_ativo"]]);
 
   /* E-03: o Sem Técnica de Nível 4 sem Técnica nenhuma liga o Domínio. */
   const so = deriveAfty(ficha(sistema, { nd: 4, dom: 1 }));

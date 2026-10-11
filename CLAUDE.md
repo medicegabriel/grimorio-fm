@@ -213,6 +213,8 @@ Algumas famílias não somam entre si. `chaveExclusiva(canal, alvo, sinal)` agru
 `resolverExclusivos` escolhe o maior valor absoluto e marca os outros como `suplantado`, que o
 painel de fontes mostra. Positivo e negativo do mesmo canal são grupos separados. Toda linha de
 Funcionamento Básico carrega `exclusivo: "funcionamentoBasico"`, inclusive as dos extras nativos.
+Linhas com o mesmo `blocoExclusivo` somam entre si (a melhor de cada `origem`) e disputam como um
+candidato só. Hoje só as Técnicas de Estilo da Expansão usam, para várias ligadas ao mesmo tempo.
 
 ### ⚠ Ordem de módulos, o invariante mais caro
 

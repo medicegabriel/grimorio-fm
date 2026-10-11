@@ -186,10 +186,11 @@ uma é **NOVA DECISÃO NECESSÁRIA**. Enquanto não houver resposta, o ponto fic
    Impacto: o bônus de Aptidão considerado. Hoje: (a), com aviso na Técnica até a resposta.
 8. **Exaustão quando a Técnica foi trocada no meio.** Fonte: *"Pontos de Exaustão são recebidos no
    momento em que o Domínio Simples é fechado"* e a decisão do autor (DA-08: "Se a Técnica utilizada
-   possui exaustao: 2, ao fechar o Domínio: +2"). Problema: com a troca do começo do turno (DA-04),
-   mais de uma Técnica pode ser usada na mesma ativação. Alternativas: (a) somam as Técnicas usadas,
-   cada uma uma vez; (b) só a ativa no fechamento; (c) a maior delas. Impacto: a Exaustão de quem
-   troca. Hoje: (a), porque (b) deixaria trocar para uma Técnica sem Exaustão antes de fechar.
+   possui exaustao: 2, ao fechar o Domínio: +2"). Problema: com a troca no meio, e desde 2026-10-11
+   com várias Técnicas ligadas ao mesmo tempo (a DA-04 foi revogada), mais de uma Técnica pode ser
+   usada na mesma ativação. Alternativas: (a) somam as Técnicas usadas, cada uma uma vez; (b) só as
+   ligadas no fechamento; (c) a maior delas. Impacto: a Exaustão de quem liga ou troca. Hoje: (a),
+   porque (b) deixaria trocar para uma Técnica sem Exaustão antes de fechar.
 
 **Precisa:** o autor responder cada item. Cada resposta é uma linha do catálogo ou da sessão.
 **Anotado:** 2026-10-04, na implementação da Expansão do Novo Estilo das Sombras
@@ -858,11 +859,12 @@ quem está no ar é o Domínio Simples.
 
 1. **Dois Domínios Simples no ar ao mesmo tempo.** Pede um segundo interruptor e uma segunda conta
    de sustentação em PE.
-2. **Duas Técnicas de Estilo imbuídas de graça naquela rodada.** Cabe no canal `imbuicoesEstilo`,
-   que já existe, e é uma linha.
+2. **Duas Técnicas de Estilo imbuídas de graça naquela rodada.** Para as Técnicas da Expansão isto
+   já vale para todo mundo desde 2026-10-11 (o autor liberou ligar quantas a ficha conhecer, e a
+   DA-04 foi revogada). Só restaria nas LEGACY, pelo canal `imbuicoesEstilo`.
 
-**Precisa:** o autor dizer se a frase vale e qual das duas ela é. Se valer a segunda, é um efeito
-no remendo de `cnj_conjuracao_aprimorada`.
+**Precisa:** o autor dizer se a frase vale e qual das duas ela é. Se for a segunda, para a Expansão
+não há mais nada a fazer.
 **Anotado:** 2026-09-07, ao montar o Especialista em Estilo
 
 ### Ritualizar Técnica de Estilo é procedimento de mesa

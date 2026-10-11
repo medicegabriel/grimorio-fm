@@ -363,7 +363,7 @@ export function conteudoDaFicha(creature, derived) {
       }));
     }
     for (const t of estilo.tecnicas ?? []) {
-      const ativa = estilo.tecnicaAtiva === t.id;
+      const ativa = (estilo.tecnicasAtivas ?? []).includes(t.id);
       const primeiroErro = (t.validacao ?? []).find((v) => v.nivel === "erro")?.texto
         ?? (estilo.validacao ?? []).find((v) => v.nivel === "erro")?.texto;
       itens.push(item({
@@ -523,10 +523,13 @@ export function conteudoDaFicha(creature, derived) {
             derived.dominioSimples.sustenta
               ? `Sustentar ${derived.dominioSimples.custoSustentarTotal} PE`
               : null,
-            /* O que está no ar (DA-04): "Domínio Simples ativo, Técnica atual: X". */
+            /* O que está no ar: "Domínio Simples ativo, Técnica: X". Desde
+               2026-10-11 podem ser várias, e a marca lista todas. */
             derived?.estilo?.dominioAtivo ? "Ativo" : null,
-            derived?.estilo?.tecnicaAtiva
-              ? `Técnica: ${(derived.estilo.tecnicas ?? []).find((t) => t.id === derived.estilo.tecnicaAtiva)?.nome || "Técnica Sem Nome"}`
+            (derived?.estilo?.tecnicasAtivas ?? []).length
+              ? `${derived.estilo.tecnicasAtivas.length > 1 ? "Técnicas" : "Técnica"}: ${derived.estilo.tecnicasAtivas
+                .map((tid) => (derived.estilo.tecnicas ?? []).find((t) => t.id === tid)?.nome || "Técnica Sem Nome")
+                .join(", ")}`
               : null,
             derived?.estilo?.reacaoIndisponivel ? "Reação Indisponível" : null,
           ]

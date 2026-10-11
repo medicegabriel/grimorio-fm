@@ -165,6 +165,13 @@ dois grupos separados). Dentro do grupo, `resolverExclusivos` escolhe o maior va
 "melhor bônus" ou a "pior penalidade") e marca os demais como `suplantado` (não descartados — o
 painel de fontes mostra que perderam).
 
+**O bloco (`blocoExclusivo`, 2026-10-11).** Linhas do mesmo grupo com o mesmo `blocoExclusivo` viram
+UM candidato da disputa: a melhor linha de cada `origem` dentro do bloco, somadas. O candidato
+inteiro ganha ou perde junto, e cada linha dele aparece no hover. Hoje só as Técnicas de Estilo da
+Expansão usam (`estiloTecnicas`): várias ligadas ao mesmo tempo somam o mesmo bônus entre si, e o
+total ainda disputa com o Feitiço Auxiliar e o resto do pool. Linha sem bloco disputa sozinha, como
+sempre.
+
 Famílias de hoje: `habilidadeUnica`, `feiticoAuxiliarPassivo`, `feiticoAuxiliarAtivo`,
 `shikigamiCaracteristica`, `shikigamiAcao`, `funcionamentoBasico`, `segundaHabilidadeUnica` (a mais
 nova, 2026-09-11, do addon de Forja).

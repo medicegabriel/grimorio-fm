@@ -1643,6 +1643,9 @@ export function aplicarEfeitos(efeitos, ctx = {}) {
         canal: e.canal, alvo, valor, exclusivo: e.exclusivo,
         // Sem carimbo é o pool único. Ver `carimbarGrupoExclusivo`.
         grupo: e.grupoExclusivo || GRUPO_POOL_UNICO,
+        // Linhas do mesmo bloco SOMAM entre si antes da disputa. Ver
+        // `resolverExclusivos`.
+        bloco: typeof e.blocoExclusivo === "string" && e.blocoExclusivo ? e.blocoExclusivo : null,
         origem: e.origem || null, nome: e.nome || e.origem || "Efeito",
         duracao: e.duracao || "permanente",
         semCredito: !!e.semCredito && !!canal.aceitaSemCredito,
@@ -1728,7 +1731,35 @@ export function resolverExclusivos(res, jaAplicado = {}) {
     // Bônus fica com o MAIOR, penalidade fica com a PIOR (a mais negativa).
     const negativo = k.endsWith("|-");
     const melhor = (a, b) => ((negativo ? b.valor < a.valor : b.valor > a.valor) ? b : a);
-    const vencedor = itens.reduce(melhor);
+    /* ⚠ O BLOCO (2026-10-11, autor: as Técnicas de Estilo da Expansão ativas ao
+       mesmo tempo SOMAM entre si, e continuam sem somar com o Feitiço Auxiliar e
+       o resto do pool). As linhas com o mesmo `bloco` viram UM candidato: a
+       melhor de cada `origem` dentro dele (a disputa interna de uma fonte segue
+       a de sempre) e a soma dessas. Quem não tem bloco é candidato sozinho, como
+       sempre foi, e sem bloco nenhum a conta é a de antes. */
+    const candidatos = [];
+    const blocos = new Map();
+    for (const e of itens) {
+      if (!e.bloco) {
+        candidatos.push({ valor: e.valor, canal: e.canal, alvo: e.alvo, membros: [e] });
+        continue;
+      }
+      if (!blocos.has(e.bloco)) blocos.set(e.bloco, new Map());
+      const porOrigem = blocos.get(e.bloco);
+      const o = e.origem ?? "";
+      if (!porOrigem.has(o)) porOrigem.set(o, []);
+      porOrigem.get(o).push(e);
+    }
+    for (const porOrigem of blocos.values()) {
+      const membros = [...porOrigem.values()].map((lista) => lista.reduce(melhor));
+      candidatos.push({
+        valor: membros.reduce((s, m) => s + m.valor, 0),
+        canal: membros[0].canal,
+        alvo: membros[0].alvo,
+        membros,
+      });
+    }
+    const vencedor = candidatos.reduce(melhor);
     const delta = vencedor.valor - (aplicado[k] || 0);
     // O `delta` também respeita o sinal: numa penalidade só entra o que PIORA o
     // que um estágio anterior já tinha aplicado. Sem isto, um -8 depois de um
@@ -1753,7 +1784,7 @@ export function resolverExclusivos(res, jaAplicado = {}) {
         semCredito: !!e.semCredito,
         // Perdeu para um irmão, ou empatou com o que um estágio anterior já
         // tinha aplicado. Nos dois casos o número não entrou nesta conta.
-        suplantado: e !== vencedor || !entra,
+        suplantado: !vencedor.membros.includes(e) || !entra,
       });
     }
   }

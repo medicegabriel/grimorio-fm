@@ -23,7 +23,7 @@ montada na mesa por imbuição) continua valendo só para as Técnicas LEGACY. V
 | DA-01 | Vale na criatura (`/Afty`) e no jogador (`/Player`), com a mesma estrutura de criação, validação, cálculo e armazenamento. Diferença real de comportamento vai para `DIVERGENCIAS` |
 | DA-02 | A Técnica de Estilo é um PACOTE: uma entidade própria, Modificação do Domínio Simples ou Técnica de Estilo Especial. A Modificação carrega os efeitos dentro dela, e os efeitos não ocupam a lista de Técnicas. Revoga a decisão de 2026-08-10 |
 | DA-03 | Progressão própria: 2 Técnicas no Nível 4 e +1 nos níveis 7, 10, 13, 16 e 19 (7 no 19). Não consome Habilidade de Especialização, Talento nem outro slot genérico. Revoga a decisão de 2026-08-07, em que a Técnica gastava o contador de Habilidades |
-| DA-04 | Com o Domínio Simples no ar, UMA Técnica imbuída por vez. No começo do turno o usuário mantém a atual ou troca por outra que conheça, à mão. Trocar não apaga nem recria efeito |
+| DA-04 | **Revogada em 2026-10-11.** Era "UMA Técnica imbuída por vez". Agora, com o Domínio Simples no ar, o usuário liga quantas Técnicas conhecer ao mesmo tempo, à mão. O mesmo bônus de duas Técnicas ligadas SOMA, e o total ainda não soma com o Feitiço Auxiliar nem com o resto do pool (ver "Várias Técnicas ligadas") |
 | DA-05 | Técnica criada antes desta data é `legacy`: calcula como antes, não é convertida nem apagada. A conversão é um botão manual, que preserva nome, descrição e os dados antigos |
 | DA-06 | Addon antigo segue `legacy` (o Lime Neds inclusive), sem agrupar efeitos em pacote. A regra é explícita (`regra: "legacy" \| "expansao"`), e Addon novo pode declarar a Expansão |
 | DA-07 | ERRO não dá benefício e não apaga dado: a configuração fica salva, o erro aparece, e a Técnica inteira fica mecanicamente inválida até ser corrigida. AVISO e INFO não bloqueiam, e a INFO mora no hover |
@@ -136,12 +136,30 @@ cada modificação ocupa 1 vaga.
 
 ### Em jogo: Ficha Final e Encontro
 
-- O interruptor **Domínio Simples** liga o Domínio (com ou sem Técnica), e a **Técnica Atual** escolhe
-  qual pacote está imbuído. Uma por vez, e a troca é à mão no começo do turno.
+- O interruptor **Domínio Simples** liga o Domínio (com ou sem Técnica), e as **Técnicas Ativas**
+  escolhem quais pacotes estão imbuídos. Várias ao mesmo tempo, ligadas e desligadas à mão.
 - A Exaustão entra quando o Domínio **fecha**, uma vez por fechamento: a soma das Técnicas usadas
   naquela ativação, cada uma uma vez (decisão pendente no `a-fazer.md`). A Técnica inválida não gera
   Exaustão. O fim do combate não fecha o Domínio sozinho, e o contador de Exaustão aceita ajuste.
-- Com Contra-Ataque na Técnica ativa, a Ficha marca **Reação Indisponível**. Nada é gravado na ficha.
+- Com Contra-Ataque em qualquer Técnica ligada, a Ficha marca **Reação Indisponível**. Nada é
+  gravado na ficha.
+
+### Várias Técnicas ligadas (2026-10-11)
+
+O autor revogou a DA-04: *"faça que seja possível de ativar múltiplos estilos de sem técnica"*.
+
+- **Quantas:** todas as que a ficha conhece. O seletor é um estado `multi`
+  (`ESTADO_TECNICA_ATIVA`, rótulo "Técnicas Ativas") com teto igual ao número de Técnicas.
+- **Acúmulo:** o mesmo bônus de duas Técnicas ligadas soma. Dentro de uma Técnica a disputa segue a
+  de antes. O total das Técnicas é UM candidato no pool `estiloSombra` (o bloco
+  `estiloTecnicas`, `blocoExclusivo` em afty-efeitos.js): ele ganha ou perde inteiro contra o
+  Feitiço Auxiliar, a Habilidade Única e as outras fontes. As LEGACY ficam fora do bloco e
+  calculam como antes (DA-05).
+- **Sessão gravada antes:** o valor era um texto (o id da única Técnica), e toda leitura passa por
+  `tecnicasNoAr`, que o lê como lista de um. O estado `multi` genérico do `resolveCombate` faz o
+  mesmo. Nada é regravado sozinho.
+- **Derive:** `estilo.tecnicasAtivas` (lista de ids) substituiu o `estilo.tecnicaAtiva`. A Ficha marca
+  "Ativa" em cada Técnica ligada, e a linha do Domínio Simples diz "Técnicas: A, B".
 - Os Ataques com Gatilho têm contador por rodada na linha da Técnica.
 - A Ficha e o Encontro usam a mesma função de sessão (`alteraEstadoCombate`) e a mesma lista
   (`conteudoDaFicha`).
@@ -190,7 +208,7 @@ dos formatos que existem gravados:
 
 As `estilos[]` de um Addon seguem a mesma divisão (DA-06): sem `regra`, LEGACY (o Lime Neds inteiro),
 e com `regra: "expansao"`, Técnica da Expansão com o id `<pacote>:<id>`, só leitura no criador e
-escolhível na Técnica Atual. O formato e o que o validador do pacote confere estão em
+escolhível nas Técnicas Ativas. O formato e o que o validador do pacote confere estão em
 `docs/afty-addons.md`, na seção do `libera`.
 
 ## Pontos ainda abertos

@@ -884,7 +884,11 @@ export function resolveCombate(creature, params = {}) {
         : null;
     } else if (e.tipo === "multi") {
       const validas = new Set((Array.isArray(e.opcoes) ? e.opcoes : []).map((o) => o.id));
-      out[e.id] = [...new Set(Array.isArray(c[e.id]) ? c[e.id] : [])]
+      /* Um TEXTO gravado vale como lista de um: é o que um estado que era
+         `opcao` deixou na sessão antes de virar `multi` (as Técnicas de Estilo,
+         2026-10-11). Sem isto a escolha de antes sumia calada. */
+      const cru = Array.isArray(c[e.id]) ? c[e.id] : (typeof c[e.id] === "string" && c[e.id] ? [c[e.id]] : []);
+      out[e.id] = [...new Set(cru)]
         .filter((id) => validas.has(id))
         .slice(0, Math.max(0, Math.trunc(Number(e.maxSelecionados) || 0)));
     } else {
@@ -1018,7 +1022,9 @@ export function combateDslVars(combate = {}) {
         out[`${nome}_${varDoEstado(o.id)}`] = boolDe(combate[e.id] === o.id);
       }
     } else if (e.tipo === "multi") {
-      const escolhidas = new Set(Array.isArray(combate[e.id]) ? combate[e.id] : []);
+      // O texto de antes vale como lista de um, igual ao `resolveCombate`.
+      const v = combate[e.id];
+      const escolhidas = new Set(Array.isArray(v) ? v : (typeof v === "string" && v ? [v] : []));
       out[nome] = escolhidas.size;
       for (const o of (Array.isArray(e.opcoes) ? e.opcoes : [])) {
         out[`${nome}_${varDoEstado(o.id)}`] = boolDe(escolhidas.has(o.id));
