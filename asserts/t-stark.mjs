@@ -144,6 +144,13 @@ for (const sistema of ["player", "afty"]) {
 
   /* ---------- 5. O Voto pronto Maldição - Instinto Corrompido ---------- */
   const molde = V.votoPadraoDeAddon(ficha());
+  /* O relato "Só tem um pacto" (2026-10-11): o Covarde automático ocupa a lista, e
+     o molde do Instinto Corrompido tem de continuar oferecido até ser copiado. */
+  t(tag("o Voto pronto é oferecido com o Covarde já na lista"),
+    V.votosProntosDisponiveis(ficha({ votos: V.sincronizarVotosAutomaticos(ficha()).votos })).map((m) => m.voto.nome),
+    ["Maldição - Instinto Corrompido"]);
+  t(tag("e some depois de copiado"),
+    V.votosProntosDisponiveis(ficha({ votos: { contratuais: [], mecanicos: [V.votoPadraoDeAddon(ficha()).voto] } })).length, 0);
   t(tag("o Voto pronto é o Instinto Corrompido"), molde?.voto?.nome, "Maldição - Instinto Corrompido");
   const instinto = (extra = {}) => deriveAfty(ficha({ votos: { contratuais: [], mecanicos: [molde.voto] }, ...extra }));
   const sem = deriveAfty(ficha());

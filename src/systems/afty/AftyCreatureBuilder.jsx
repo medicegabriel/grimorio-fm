@@ -63,7 +63,7 @@ import {
   SEP_ALVO_ACAO, linhasComEscolhaFeiticos, atributoDoAlvo,
 } from "./afty-treinamentos";
 import {
-  createBlankVotoContratual, createBlankVotoMecanico, limiteVotosMecanicos, votoPadraoDeAddon,
+  createBlankVotoContratual, createBlankVotoMecanico, limiteVotosMecanicos, votosProntosDisponiveis,
   sincronizarVotosAutomaticos,
 } from "./afty-votos";
 import { createBlankEnxerto } from "./afty-modificacoes-corporais";
@@ -12934,7 +12934,10 @@ function TabVotos({
   const contratuais = Array.isArray(votos.contratuais) ? votos.contratuais : [];
   const mecanicos = Array.isArray(votos.mecanicos) ? votos.mecanicos : [];
   const limiteMecanicos = limiteVotosMecanicos(derived.maestria);
-  const padrao = votoPadraoDeAddon(draft);
+  /* Um botão por molde de Addon ainda não usado (o id da cópia é o do molde).
+     Até 2026-10-11 só o primeiro aparecia, e só com a lista vazia: um Voto
+     automático escondia o pacto pronto do mesmo pacote. */
+  const padroes = votosProntosDisponiveis(draft);
   const pericias = derived.testes?.pericias;
   const fontesDano = fontesDanoDaFicha(draft, derived);
   const dslGrupos = useDslGrupos(derived);
@@ -12998,15 +13001,16 @@ function TabVotos({
           </span>
         </div>
 
-        {padrao && mecanicos.length === 0 && podeAdicionarMecanico && (
+        {podeAdicionarMecanico && padroes.map((padrao) => (
           <button
+            key={padrao.voto.id}
             type="button"
             onClick={() => addVotoMecanico(padrao.voto)}
             className="mb-3 flex items-center gap-1.5 rounded-lg border border-purple-900/50 px-2.5 py-1.5 text-[11px] text-purple-300 hover:text-purple-200"
           >
-            <Plus className="h-3.5 w-3.5" /> Usar o Voto de {padrao.addonNome}
+            <Plus className="h-3.5 w-3.5" /> Usar o Voto {padrao.voto.nome || `de ${padrao.addonNome}`}
           </button>
-        )}
+        ))}
 
         {limiteMecanicos === 0 && (
           <p className="mb-3 rounded-lg border border-slate-800 bg-slate-950/30 px-3 py-2 text-[11px] text-slate-500">

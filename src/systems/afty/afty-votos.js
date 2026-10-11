@@ -250,14 +250,35 @@ export function efeitosDeVotos(creature, bt) {
  * vira apenas uma biblioteca opcional, nunca o portão da aba nativa.
  */
 export function votoPadraoDeAddon(creature) {
+  return votosPadraoDeAddons(creature)[0] ?? null;
+}
+
+/**
+ * TODOS os moldes `pactoPadrao` dos Addons instalados, um por pacote, na ordem
+ * dos pacotes. O id da cópia é `voto_modelo_<pacote>`, e é por ele que a aba
+ * sabe que o molde já foi usado.
+ *
+ * ⚠ NASCEU DE UM RELATO (2026-10-11, pacote Stark: "Só tem um pacto"). A aba só
+ * oferecia o PRIMEIRO molde, e só com a lista de Votos Mecânicos vazia. O Stark
+ * traz um Voto automático (O Covarde) que ocupa a primeira vaga sozinho, então o
+ * botão do segundo pacto (Instinto Corrompido) nunca aparecia.
+ */
+/** Os moldes que a aba ainda oferece: os que nenhum Voto Mecânico da ficha já copiou. */
+export function votosProntosDisponiveis(creature) {
+  const usados = new Set(votosDaFicha(creature).mecanicos.map((v) => v.id));
+  return votosPadraoDeAddons(creature).filter((p) => !usados.has(p.voto.id));
+}
+
+export function votosPadraoDeAddons(creature) {
   const addons = Array.isArray(creature?.addons) ? creature.addons : [];
+  const out = [];
   for (const addon of addons) {
     if (!addon?.pactoPadrao || typeof addon.pactoPadrao !== "object" || Array.isArray(addon.pactoPadrao)) continue;
-    return {
+    out.push({
       addonId: addon.id,
       addonNome: addon.nome || addon.id,
       voto: votoMecanicoDePacto(addon.pactoPadrao, `voto_modelo_${addon.id || "addon"}`),
-    };
+    });
   }
-  return null;
+  return out;
 }

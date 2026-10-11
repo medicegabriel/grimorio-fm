@@ -16392,3 +16392,11 @@ Pedido do autor: um Addon chamado "Yna" com a Origem Kitsune, a Linhagem Clã Ge
 **Verificado ao vivo:** `/Player`, Legado de nível 5. O estado O Covarde levou o PE de 20 a 12 (Apavorado) e a 28 (Superou o Medo). O card da Origem mostrou as quatro características e o marcador do Domínio Simples, a aba Aptidões travou o Domínio Simples com o motivo no hover, e o card do Estilo listou as cinco Técnicas do Pacote (a Mente Inabalável marcada sem a Aura Anuladora saiu Inválida). A aba Votos não foi conferida na tela. Ficha de teste apagada.
 
 **Achado e não mexido:** as leituras e o que segue de mesa estão em `a-fazer.md`, "Stark". Nenhum U+2014 novo, `src/components/` intocado. Sem commit ou push.
+
+## SESSÃO DE 2026-10-11 (parte 4): RELATO DO STARK, O VOTO PRONTO ESCONDIDO
+
+**Relato do autor:** *"Só tem um pacto e os estilos da sombra não estão funcionando"*, 16 minutos depois do deploy do `67e44b3` (concluído na Vercel, e o pacote publicado já tinha `catalogoDoPacote`, `estiloNdMinimo` e `peMult`).
+
+**O Voto pronto:** era bug. A aba Votos só oferecia o PRIMEIRO `pactoPadrao` instalado, e só com a lista de Votos Mecânicos vazia. O Covarde (Voto automático do mesmo pacote) ocupa a lista, então o botão do Instinto Corrompido nunca aparecia. Agora `votosProntosDisponiveis` (afty-votos.js) devolve um molde por pacote ainda não copiado, e a aba desenha um botão para cada. Dois asserts novos em `t-stark.mjs` (90).
+
+**Os Estilos:** não reproduziu. O caminho inteiro (ficha nova, colar o JSON, ligar, escolher o Legado) mostra as cinco Técnicas do Pacote para marcar. Os sintomas relatados (Inválida, sem como selecionar, sem efeito) são os do motor antigo numa aba aberta antes do deploy, ou o comportamento esperado: cada Técnica pede o pré-requisito dela, a marcada além da progressão invalida todas, as Técnicas Ativas só aparecem com o Domínio Simples ligado na aba Buffs, e três das cinco são texto de mesa. Pedi ao autor para recarregar e conferir.
