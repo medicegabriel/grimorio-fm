@@ -16400,3 +16400,11 @@ Pedido do autor: um Addon chamado "Yna" com a Origem Kitsune, a Linhagem Clã Ge
 **O Voto pronto:** era bug. A aba Votos só oferecia o PRIMEIRO `pactoPadrao` instalado, e só com a lista de Votos Mecânicos vazia. O Covarde (Voto automático do mesmo pacote) ocupa a lista, então o botão do Instinto Corrompido nunca aparecia. Agora `votosProntosDisponiveis` (afty-votos.js) devolve um molde por pacote ainda não copiado, e a aba desenha um botão para cada. Dois asserts novos em `t-stark.mjs` (90).
 
 **Os Estilos:** não reproduziu. O caminho inteiro (ficha nova, colar o JSON, ligar, escolher o Legado) mostra as cinco Técnicas do Pacote para marcar. Os sintomas relatados (Inválida, sem como selecionar, sem efeito) são os do motor antigo numa aba aberta antes do deploy, ou o comportamento esperado: cada Técnica pede o pré-requisito dela, a marcada além da progressão invalida todas, as Técnicas Ativas só aparecem com o Domínio Simples ligado na aba Buffs, e três das cinco são texto de mesa. Pedi ao autor para recarregar e conferir.
+
+## SESSÃO DE 2026-10-11 (parte 5): STARK 1.1.0, SEM REQUISITO DE CL
+
+**Pedido do autor:** *"No Addon retire o requisito de Cl nas coisas"*. Decisão: só com o Instinto Corrompido, nas Aptidões de outras trilhas que pedem CL (Energia Reversa CL 3, Raio Negro CL 3, Abençoado pelas Faíscas Negras CL 4, Revestimento de Domínio CL 3). As da trilha CL continuam proibidas.
+
+**O que mudou:** canal novo `ignoraRequisitoTrilha` (alvo trilha). O derive devolve `requisitoTrilhaDispensado` ({ trilha: [fontes] }), e o `avaliarRequisitoAptidao` dá o requisito de trilha como cumprido quando a Aptidão avaliada é de OUTRA trilha (`ctx.trilhaDaAptidao`, que o card da aba Aptidões passa). O pacote foi a 1.1.0 com a linha no malefício "Não pode aprender Aptidões de CL".
+
+**Asserts:** `t-stark.mjs` com 98. ⚠ O Voto do Instinto é uma CÓPIA na ficha: quem já tinha copiado a 1.0.0 precisa remover o Voto e usar o molde de novo, depois de atualizar o pacote na ficha. Sem commit ou push.

@@ -414,6 +414,7 @@ export const EFEITO_CANAIS = [
 
      ⚠ Aparece no seletor só de quem instalou um addon com `permite:
      ["requisitoAptidao"]`, pela lição do `hpAtributo`. */
+  { id: "ignoraRequisitoTrilha", label: "Dispensa Requisito de Trilha", alvo: "trilha", nota: "acima de zero, o requisito de Nível de Aptidão daquela trilha deixa de travar as Aptidões de OUTRAS trilhas (a Energia Reversa que pede CL 3, por exemplo). As Aptidões da própria trilha continuam pedindo o nível" },
   { id: "reduzNivelAptidao", label: "Requisito de Nível de Aptidão", nota: "quanto o pré-requisito de NÍVEL de toda Aptidão Amaldiçoada DIMINUI, com piso de Nível 1. Não encosta no requisito de trilha" },
   /* ⚠ OS DOIS DE ALTO NÍVEL NASCERAM EM 2026-09-04, com a Loja de Catarse. O
      orçamento de Melhoria Superior e de Habilidade Lendária vinha SÓ do ND
@@ -726,7 +727,7 @@ const GRUPOS_DE_CANAL = [
   ["Orçamentos", [
     "vagasPericia", "vagasHabilidade", "vagasFeitico", "vagasEstilo", "vagasTecnicaMaxima", "vagasTalento", "vagasAptidao",
     "vagasCaracteristicaAmaldicoada",
-    "reduzNivelAptidao",
+    "reduzNivelAptidao", "ignoraRequisitoTrilha",
     "vagasMelhoria", "vagasLendaria",
     "pontosAptidao", "pontosAtributo", "focos", "espacosCarga",
   ]],

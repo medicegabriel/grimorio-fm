@@ -2341,7 +2341,7 @@ cada uma pediu verbo novo, genérico e nos dois sistemas:
 | | `concedeAptidoes` numa OPÇÃO de escolha | como o `concedeHabilidades` já fazia: o marcador "Aprendeu o Domínio Simples" |
 | Voto O Covarde | `votoAutomatico` com o canal `peMult` | PE Máximo ×0,6 (Apavorado) ou ×1,4 (Superou o Medo), pelo estado de combate `stark:covarde` do pacote |
 | Técnicas da Arte do Herói | `escolhivel`, `requer`, `usos` nas `estilos[]` | ver a seção das Técnicas de pacote, acima |
-| Voto pronto Maldição - Instinto Corrompido | `pactoPadrao` | copiado na aba Votos com um botão. INT 6 por `limiteAtributo -14`, sem CL por `limiteAptidao -5`, e a Aura Reforçada dobrada com `estilo_ativo` |
+| Voto pronto Maldição - Instinto Corrompido | `pactoPadrao` | copiado na aba Votos com um botão. INT 6 por `limiteAtributo -14`, sem CL por `limiteAptidao -5`, e a Aura Reforçada dobrada com `estilo_ativo`. Na 1.1.0, o canal `ignoraRequisitoTrilha` (alvo `cl`) tira o requisito de CL das Aptidões de outras trilhas (Energia Reversa, Raio Negro, Abençoado pelas Faíscas Negras, Revestimento de Domínio) |
 | Treino de Escudo | `escudo_equipado`, `rdEscudo`, `vagaEncantamentoEscudo` na etapa | Defesa só com escudo na mão, RD do escudo na pilha do sistema e uma vaga livre de encantamento em todo escudo que for Ferramenta |
 | Treino de Firmeza | `quando` na etapa | +PV Temporário e +Fortitude só com `em_postura_terra`. O `quando` caía no conversor de etapa até esta data |
 | Treinamento Corporal | `bonusManobra` alvo `morte`, `hp` no Completo | os canais de sempre |

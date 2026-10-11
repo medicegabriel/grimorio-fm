@@ -1737,6 +1737,20 @@ export function avaliarRequisitoAptidao(requisito, ctx = {}) {
   if (requisito.tipo === "trilha") {
     const niveis = normalizeAptidaoNiveis(ctx.niveis);
     const trilha = APTIDAO_TRILHAS.find((t) => t.key === requisito.trilha);
+    /* ⚠ O REQUISITO DISPENSADO (canal `ignoraRequisitoTrilha`, 2026-10-11). O
+       Instinto Corrompido do pacote Stark zera o CL, e o autor tirou o requisito
+       de CL das Aptidões de OUTRAS trilhas (Energia Reversa, Raio Negro...). A da
+       própria trilha continua pedindo o nível: `ctx.trilhaDaAptidao` é a trilha
+       da Aptidão avaliada, e sem ela nada é dispensado. */
+    const dispensa = ctx.requisitoTrilhaDispensado?.[requisito.trilha];
+    if (dispensa?.length && ctx.trilhaDaAptidao && ctx.trilhaDaAptidao !== requisito.trilha) {
+      return {
+        ok: true,
+        verificavel: true,
+        label: `${requisito.trilha.toUpperCase()} ${requisito.valor}`,
+        titulo: `Nível de Aptidão em ${trilha?.label || requisito.trilha} ${requisito.valor}, dispensado por ${dispensa.join(", ")}`,
+      };
+    }
     // SIGLA, não o nome por extenso. É a convenção do próprio livro: "o qual
     // será descrito apenas com a sigla... você encontrará com ER 1 ou com
     // BAR 3". As chaves do schema já SÃO as siglas (au, cl, bar, dom, er).

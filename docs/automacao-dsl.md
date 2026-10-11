@@ -460,3 +460,8 @@ Guia da área: `docs/afty-tecnica-maxima-dominio.md`.
 - Etapa de treino com `{ canal, expr }`: o `quando` e a `duracao` agora passam (antes caíam no
   conversor, e a etapa valia sempre). Quem lê a bancada desce ao estágio principal pelo
   `separarEfeitosDeBancada`, como qualquer efeito de montante.
+
+- Canal `ignoraRequisitoTrilha` (Orçamentos, alvo trilha, 2026-10-11): acima de zero, o requisito de
+  Nível de Aptidão daquela trilha deixa de travar as Aptidões de OUTRAS trilhas. A da própria trilha
+  continua pedindo o nível. O requisito dispensado aparece com o chip de sempre, e o hover diz quem o
+  dispensou (`derived.requisitoTrilhaDispensado`). Nasceu com o Instinto Corrompido do pacote Stark 1.1.0.

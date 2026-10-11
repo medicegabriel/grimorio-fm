@@ -48,7 +48,8 @@ autor, e estão no número:
    uma linha de Defesa negativa igual à do Golpe.
 4. **Maldição - Instinto Corrompido:** a Inteligência 6 é `limiteAtributo -14`, então outra fonte
    que suba o limite sobe o teto junto. "Não pode aprender Aptidões de CL" é o limite da trilha CL em
-   zero, e uma Aptidão de CL sem requisito de nível continua escolhível na aba.
+   zero, e uma Aptidão de CL sem requisito de nível continua escolhível na aba. Desde a 1.1.0 (autor,
+   2026-10-11) o CL deixa de ser requisito nas Aptidões de outras trilhas (`ignoraRequisitoTrilha`).
 5. **Os três treinos valem para qualquer origem**, porque o texto não restringe.
 
 E ficaram de mesa, escritos no texto de cada item:

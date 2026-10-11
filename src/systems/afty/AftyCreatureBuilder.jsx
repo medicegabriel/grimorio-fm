@@ -75,7 +75,7 @@ import {
 } from "./afty-treinos-especiais";
 import {
   APTIDAO_TRILHAS, APTIDAO_NIVEL_MAX,
-  aptidoesDaCategoria, subgruposDaCategoria, abasAptidao, avaliarRequisitoAptidao, getAptidao,
+  aptidoesDaCategoria, subgruposDaCategoria, abasAptidao, avaliarRequisitoAptidao, getAptidao, getCategoriaAptidao,
 } from "./afty-aptidoes";
 import {
   especializacoesDisponiveis, getEspecializacao, normalizeEspecializacoes, tipoObrigatorio,
@@ -10319,7 +10319,9 @@ function AptidaoCard({
   ctx, onToggle, opcaoAtual, onOpcao, opcoesRepetidas = [], onVezes, onOpcaoRepetida,
 }) {
   const [open, setOpen] = useState(false);
-  const reqs = (aptidao.requisitos || []).map((r) => avaliarRequisitoAptidao(r, ctx));
+  // A trilha da própria Aptidão, para o requisito dispensado não valer nela.
+  const ctxDaAptidao = { ...ctx, trilhaDaAptidao: getCategoriaAptidao(aptidao.categoria)?.trilha ?? null };
+  const reqs = (aptidao.requisitos || []).map((r) => avaliarRequisitoAptidao(r, ctxDaAptidao));
   const faltando = reqs.filter((r) => r.verificavel && !r.ok);
   // Já escolhida nunca trava: senão um requisito que deixou de ser
   // atendido prenderia a aptidão na ficha, sem como remover.
@@ -12172,6 +12174,8 @@ function TabAptidoes({
     // Quanto o pré-requisito de NÍVEL desce (canal `reduzNivelAptidao`). Zero
     // em toda ficha sem um Addon que o emita.
     reduzNivelAptidao: derived.reduzNivelAptidao,
+    // As trilhas cujo requisito não trava Aptidão de OUTRA trilha (2026-10-11).
+    requisitoTrilhaDispensado: derived.requisitoTrilhaDispensado,
     // O maior Nível de Feitiço acessível, para o requisito `nivelFeitico` da
     // Técnica Máxima (2026-10-08). Mesmo número da aba de Feitiços.
     nivelFeiticoMax: derived.feiticos?.nivelMax ?? null,

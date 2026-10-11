@@ -28,6 +28,7 @@ const A = await import(R + "afty-addons.js");
 const O = await import(R + "afty-origens.js");
 const V = await import(R + "afty-votos.js");
 const T = await import(R + "afty-treinamentos.js");
+const AP = await import(R + "afty-aptidoes.js");
 const { conteudoDaFicha } = await import(R + "ficha/ficha-conteudo.js");
 
 let ok = 0;
@@ -42,7 +43,7 @@ const t = (nome, real, esp) => {
 /* ============================================================ */
 const STARK = JSON.parse(readFileSync(new URL("../addons/stark.json", import.meta.url), "utf8"));
 t("o pacote valida", A.validarPacote(STARK), []);
-t("autor e sistema-alvo", [STARK.autor, STARK.paraRaw], ["Templas", "afty"]);
+t("autor, sistema-alvo e versão", [STARK.autor, STARK.paraRaw, STARK.versao], ["Templas", "afty", "1.1.0"]);
 const pacote = A.normalizarPacote(STARK);
 t("aplicar não relata problema", A.aplicarAddons([pacote]).problemas, []);
 const ORIGEM = "stark:legado_do_guerreiro";
@@ -161,6 +162,21 @@ for (const sistema of ["player", "afty"]) {
     [(com.partes?.pe ?? []).find((p) => /Instinto Corrompido/.test(p.label))?.valor, com.hp - sem.hp], [-10, 30]);
   t(tag("Inteligência limitada a 6"), [com.attrLimiteEfetivo.inteligencia, com.attrEff.inteligencia], [6, 6]);
   t(tag("sem Controle e Leitura"), com.aptidao.limite.cl, 0);
+  /* E o CL deixa de ser requisito nas Aptidões de OUTRA trilha (autor, 2026-10-11:
+     "retire o requisito de CL nas coisas", só com o Instinto). A da trilha CL segue
+     pedindo, porque o Instinto proíbe Aptidão de CL. */
+  // Só o requisito de CL: o Revestimento de Domínio também pede DOM 1.
+  const trilhasOk = (d, aptId) => {
+    const a = AP.getAptidao(aptId);
+    const ctx = { niveis: d.aptidao.efetivo, nd: d.nd, requisitoTrilhaDispensado: d.requisitoTrilhaDispensado,
+      trilhaDaAptidao: AP.getCategoriaAptidao(a.categoria)?.trilha ?? null };
+    return a.requisitos.filter((r) => r.tipo === "trilha" && r.trilha === "cl").every((r) => AP.avaliarRequisitoAptidao(r, ctx).ok);
+  };
+  t(tag("com o Instinto, a Energia Reversa não pede CL 3"), [trilhasOk(com, "energia_reversa"), trilhasOk(sem, "energia_reversa")], [true, false]);
+  t(tag("nem o Revestimento de Domínio"), trilhasOk(com, "revestimento_de_dominio"), true);
+  t(tag("e a Aptidão da trilha CL continua pedindo"), trilhasOk(com, "cobertura_avancada"), false);
+  t(tag("o requisito dispensado diz de onde"), [com.requisitoTrilhaDispensado, sem.requisitoTrilhaDispensado],
+    [{ cl: ["Voto Maldição - Instinto Corrompido (Malefício)"] }, {}]);
   // O interruptor do Domínio Simples só existe com a Aptidão (o marcador) ou com Técnica.
   const auraDobra = (ligado) => instinto({ aptidoes: ["aura_reforcada"], aptNiveis: { au: 2 },
     escolhas: { legado_dominio_simples: ["legado_aprendeu_dominio"] },

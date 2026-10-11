@@ -59,7 +59,9 @@ import { regrasAftyDaCriatura } from "./afty-regras-addon";
 import { efeitosDeModificacoesCorporais } from "./afty-modificacoes-corporais";
 import { resolveTita } from "./afty-tita";
 import { efeitosDeTreinoEspecial } from "./afty-treinos-especiais";
-import { resolveNiveisAptidao, trilhasDaCriatura, getAptidao, AFTY_APTIDOES, avaliarRequisitoAptidao } from "./afty-aptidoes";
+import {
+  resolveNiveisAptidao, trilhasDaCriatura, getAptidao, AFTY_APTIDOES, avaliarRequisitoAptidao, APTIDAO_TRILHAS,
+} from "./afty-aptidoes";
 // A contagem de invocações em campo (2026-09-30). Módulo FOLHA, sem ciclo.
 import { contaInvocacoesEmCampo } from "./afty-invocacoes-tipos";
 import { resolveCaracteristicasAmaldicoadas } from "./afty-caracteristicas-amaldicoadas";
@@ -3709,6 +3711,14 @@ export function deriveAfty(creature, opcoes = {}) {
      pergunta de tela, e não um stat. Segue o `semEnergia` como todo o resto da
      Aptidão, senão um Restringido carregaria um número que não usa. */
   const reduzNivelAptidao = semEnergia ? 0 : Math.max(0, canal("reduzNivelAptidao"));
+  /* As trilhas cujo requisito de nível deixa de travar Aptidões de OUTRA trilha
+     (canal `ignoraRequisitoTrilha`, 2026-10-11), com o nome de cada fonte para o
+     hover do requisito. Quem lê é o `avaliarRequisitoAptidao`, na aba. */
+  const requisitoTrilhaDispensado = semEnergia ? {} : Object.fromEntries(
+    APTIDAO_TRILHAS.map((t) => [t.key, detalhesDoCanal(ef, "ignoraRequisitoTrilha", t.key)
+      .filter((d) => d.alvo === t.key && d.valor > 0).map((d) => d.nome)])
+      .filter(([, fontes]) => fontes.length),
+  );
 
   /* Pool de Características Amaldiçoadas (Anatomia Amaldiçoada, addon Maldição
      - Era de Ouro): mesma forma da Aptidão, uma vaga por canal, sem trilha.
@@ -4442,6 +4452,7 @@ export function deriveAfty(creature, opcoes = {}) {
     totalAptidoesAmaldicoadas,  // quantas pode ter (só da Habilidade Geral Aptidão, 0 sem ela)
     caracteristicasAmaldicoadas, // { lista, catalogo, escolhidas, vagas, usadas, excedeu } (afty-caracteristicas-amaldicoadas.js)
     reduzNivelAptidao,          // quanto o pré-requisito de NÍVEL de cada Aptidão desce (0 no normal)
+    requisitoTrilhaDispensado,  // { trilha: [fontes] } cujo requisito não trava Aptidão de outra trilha
     aptidao,              // níveis por trilha: { alocado, concedido, efetivo, gastos, limite }
     // As Aptidões Amaldiçoadas EFETIVAS (escolhidas + concedidas por nome pela
     // origem), para o `requerAptidao` da bancada saber quais linhas mostrar.
