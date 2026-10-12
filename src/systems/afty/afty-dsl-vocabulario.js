@@ -128,6 +128,7 @@ const POR_PREFIXO = [
   { id: "nivelEspec", label: "Nível por Especialização", prefixo: "nivel_" },
   { id: "escEspec", label: "Escalonamento por Especialização", prefixo: "esc_" },
   { id: "opcaoAptidao", label: "Escolhas de Aptidão", prefixo: "opt_", sobPedido: true },
+  { id: "opcaoOrigem", label: "Escolhas de Origem", prefixo: "opcao_", sobPedido: true },
   { id: "estilo", label: "Estilo das Sombras", prefixo: "estilo_" },
 ];
 

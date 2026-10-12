@@ -728,6 +728,7 @@ export default function AftyFicha({
         onFavorito={alternaFavorito}
         destaque={destaque}
         contadorUsos={contadorUsos}
+        rotulosGrupo={{ caracteristicaAmaldicoada: derived.caracteristicasAmaldicoadas?.rotulo }}
         espinho={derived.primitivas?.includes("espinho") && derived.espinho?.ativo ? (
           <EspinhoCard compacto extrato={derived.espinho} estado={espinhoVivo} onPatch={setEspinhoVivo} />
         ) : null}

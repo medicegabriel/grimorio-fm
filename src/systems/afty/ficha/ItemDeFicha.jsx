@@ -28,12 +28,14 @@ import { useDestaque } from "./usar-destaque";
  * ============================================================
  */
 
-/** Restantes e máximo, com o menos gastando um uso e o mais devolvendo. */
+/** Restantes e máximo, com o menos gastando um uso e o mais devolvendo. O
+    rótulo é "Usos", ou o `rotulo` que a entrada deu ao contador ("Doses"). */
 function ContadorDeUsos({ nome, usos, gastos, onUso }) {
   const restantes = Math.max(0, usos.max - gastos);
+  const rotulo = usos.rotulo || "Usos";
   return (
     <span className="flex items-center gap-1 flex-shrink-0" data-afty-usos={usos.chave}>
-      <span className="afty-rotulo text-[10px]">Usos</span>
+      <span className="afty-rotulo text-[10px]">{rotulo}</span>
       <button
         type="button"
         className="afty-passo"

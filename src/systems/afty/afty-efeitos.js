@@ -1050,6 +1050,13 @@ export function buildCriaturaDslContext(base = {}) {
      que um Voto cita mesmo com a Técnica desmarcada (o Instinto Corrompido do
      pacote Stark). Sem isto a condição inteira caía no fallback, calada. */
   for (const nome of voc.zeros || []) if (!(nome in ctx)) ctx[nome] = 0;
+  /* A OPÇÃO ESCOLHIDA NUMA ESCOLHA DE ORIGEM, como booleana: `opcao_<id>`
+     (2026-10-12). Toda opção que a origem oferece nasce em zero, pela mesma razão
+     dos `tem_*`, e a escolhida vale 1. É o que deixa um efeito da origem ser
+     DESLIGADO por outra escolha: a Fraqueza que a Patente Experiente do Vampiro
+     ignora. */
+  for (const id of base.opcoesOrigem?.todas || []) ctx[`opcao_${normalizarVariavel(id)}`] = 0;
+  for (const id of base.opcoesOrigem?.escolhidas || []) ctx[`opcao_${normalizarVariavel(id)}`] = 1;
   for (const [aptId, valor] of Object.entries(base.aptidaoOpcoes || {})) {
     if (valor) ctx[`opt_${aptId}_${valor}`] = 1;
   }

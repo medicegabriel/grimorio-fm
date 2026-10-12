@@ -2234,7 +2234,10 @@ export function descansar(sessao, derived, { marioneteId = null } = {}) {
     // e o próximo `iniciaCombate` (ou a saída da rodada 0) a reergue cheia.
     guardaGolpes: 0,
     guardaEncerrada: false,
-    usos: {},
+    /* Todo contador volta cheio, MENOS o de recarga `manual` (2026-10-12): as
+       Doses de sangue do Vampiro só enchem quando ele se alimenta, e quem anota é
+       o jogador pelo mais do contador. */
+    usos: Object.fromEntries(Object.entries(sessao.usos ?? {}).filter(([k]) => k.startsWith("manual:"))),
     // A recarga da Técnica Máxima zera no descanso (DA-08).
     recargas: {},
     // Só a Marionete escolhida recebe o reparo completo. As outras não enchem.

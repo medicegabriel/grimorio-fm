@@ -149,7 +149,8 @@ export function conteudoDaFicha(creature, derived) {
      de Estilo. */
   const mesa = derived?.mesa ?? {};
   const usosDeMesa = (chave) => mesa[chave]?.usos ?? null;
-  const numerosDeMesa = (chave) => (mesa[chave]?.resultados ?? []).map((r) => `${r.label}: ${r.valor}`);
+  // O resultado com `textos` mostra o nome ("Patente: Conde"), e não o índice.
+  const numerosDeMesa = (chave) => (mesa[chave]?.resultados ?? []).map((r) => `${r.label}: ${r.texto ?? r.valor}`);
   /* A OPÇÃO com contador ou número vira LINHA PRÓPRIA, logo abaixo da mãe
      (autor, 2026-09-28: as Dádivas Intelectuais), e sai da lista de opções da
      mãe para não aparecer duas vezes. Opção sem nada disso segue como sempre. */
@@ -222,7 +223,11 @@ export function conteudoDaFicha(creature, derived) {
       numeros: numerosDeMesa(`origem:${c.id}`),
       usos: usosDeMesa(`origem:${c.id}`),
       opcoes: [
-        ...opcoesEscolhidas(c, mapaOrigem),
+        /* O mapa da origem é chaveado pelo id da ESCOLHA, e não da
+           característica (2026-10-12). Os dois coincidem na maioria dos pacotes,
+           e onde não coincidem (a Fraqueza Ignorada da Patente do Vampiro) a
+           opção escolhida não aparecia. */
+        ...opcoesEscolhidas(c.escolha?.id ? { ...c, id: c.escolha.id } : c, mapaOrigem),
         ...plural.filter((x) => !promovidaNaOrigem(x))
           .map(({ o }) => ({ id: o.id, nome: o.nome, descricao: o.descricao ?? null })),
       ],
@@ -568,6 +573,9 @@ export function conteudoDaFicha(creature, derived) {
         .filter((a) => a.valor)
         .map((a) => ({ id: `${c.id}:${a.id}`, nome: `${a.label}: ${rotuloDoAlvo(a)}`, descricao: null })),
       aviso: c.pendentes.length ? `Falta escolher ${c.pendentes.join(" e ")}` : (c.parcial ?? null),
+      // O contador e os números de mesa da característica (2026-10-12).
+      usos: usosDeMesa(`caracteristicaAmaldicoada:${c.id}`),
+      numeros: numerosDeMesa(`caracteristicaAmaldicoada:${c.id}`),
     }));
   }
 

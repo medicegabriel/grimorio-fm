@@ -48,6 +48,7 @@ import {
   atributosDePericiaDaOrigem, origemMae, ehVariacaoDoRestringido, gatilhosDeOrigem,
   habilidadesConcedidasPelaOrigem, armasEscolhidasDaOrigem, origemSemEnergia,
   nivelMaximoDaOrigem, tetoNivelFeiticoDaOrigem, estiloNdMinimoDaOrigem, aptidoesVetadasDaOrigem,
+  escolhasDaOrigem, rotuloCaracteristicasDaOrigem,
 } from "./afty-origens";
 import {
   efeitosDeTreino, vagasEncantamentoDeTreino, vagasEncantamentoEscudoDeTreino, atributosDePericiaDeTreino, gatilhosDeTreino,
@@ -64,7 +65,9 @@ import {
 } from "./afty-aptidoes";
 // A contagem de invocações em campo (2026-09-30). Módulo FOLHA, sem ciclo.
 import { contaInvocacoesEmCampo } from "./afty-invocacoes-tipos";
-import { resolveCaracteristicasAmaldicoadas } from "./afty-caracteristicas-amaldicoadas";
+import {
+  resolveCaracteristicasAmaldicoadas, getCaracteristicaAmaldicoada, AFTY_CARACTERISTICAS_AMALDICOADAS,
+} from "./afty-caracteristicas-amaldicoadas";
 import {
   efeitosDoDominio, efeitosDeAptidaoDoDominio, beneficiosRitualDoDominio,
   dominioEmUso,
@@ -78,7 +81,7 @@ import {
 } from "./afty-dominios";
 import { resolveEspecializacoes, AFTY_ESPECIALIZACOES, treinamentosDasEspecializacoes, getEspecializacao, especializacaoMae } from "./afty-especializacoes";
 import {
-  resolveHabilidades, efeitosInvocacaoControlador, getHabilidade, OPCAO_ESCOLHA_NOME, USOS_RECARGAS,
+  resolveHabilidades, efeitosInvocacaoControlador, getHabilidade, OPCAO_ESCOLHA_NOME, USOS_RECARGAS, RECARGAS_COM_PREFIXO,
   avaliarAcessoHabilidade, contaOrcamentoHabilidades,
   resolveMarcadoresInvocacao, resolveControleInvocacoes,
   AFTY_HABILIDADES,
@@ -250,6 +253,10 @@ function vocabularioDoMundo() {
       ...AFTY_HABILIDADES.map((h) => h.id),
       ...AFTY_TALENTOS.map((t) => t.id),
       ...AFTY_APTIDOES.map((a) => a.id),
+      /* E as Características Amaldiçoadas (2026-10-12): a Regeneração Vampírica
+         Aprimorada do pacote Vampiro aumenta a cura de uma característica da
+         origem, que a lê por `tem_<id>`. */
+      ...AFTY_CARACTERISTICAS_AMALDICOADAS.map((c) => c.id),
     ],
     especializacoes: AFTY_ESPECIALIZACOES.map((e) => e.id),
     // Toda booleana de escolha de Aptidão que pode existir, para nenhuma
@@ -734,10 +741,25 @@ export function deriveAfty(creature, opcoes = {}) {
   // A parcela de nível da Jogada de Ataque, na régua do sistema. É a mesma conta
   // do `escalaFixa` de `resolveTestes` (afty-pericias.js), para o DSL enxergar.
   const escalaAtaque = ehJogador("escalaDosTestes") ? Math.floor(nd / 2) : Math.floor(nd / 1.5);
+  // ORIGEM entra no montante junto do resto: ela concede vaga de habilidade, de
+  // perícia, de feitiço e de aptidão, e vaga é lida antes de os stats existirem.
+  // As escolhas aninhadas dela (Treinamentos de Clã, Empenho Implacável) saem
+  // primeiro porque carregam efeito próprio.
+  const escolhasOrigem = resolveEscolhasOrigem(creature, nd);
+  /* As OPÇÕES ESCOLHIDAS NA ORIGEM viram booleanas da DSL (2026-10-12),
+     `opcao_<id>`: 1 a escolhida, 0 toda opção que a origem oferece. Nasceu com
+     o Vampiro da Máscara de Pedra, em que a Patente Experiente deixa ignorar uma
+     Fraqueza, e a linha da Vulnerabilidade à Luz precisa saber qual. Por isso a
+     escolha sobe para antes do contexto do montante: ele também lê as opções. */
+  const opcoesOrigemDsl = {
+    todas: escolhasDaOrigem(creature).flatMap((e) => (e.opcoes ?? []).map((o) => o?.id).filter(Boolean)),
+    escolhidas: Object.values(escolhasOrigem.mapa ?? {}).flat(),
+  };
   const ctxMontante = buildCriaturaDslContext({
     nd, bt, escalaAtaque, grauRank: grau.rank, patamar, tipo, almaAtual: almaAtualDsl,
     nivelFeiticoMax: acessoFeitico,
     origemContadoresVars,
+    opcoesOrigem: opcoesOrigemDsl,
     irmaoMorto: !!creature?.core?.origem?.irmaoMorto,
     iniciativaIrmao: creature?.core?.origem?.iniciativaIrmao,
     attrEff: attrBase, mods: modBase, modTecnica: modBase[tecnicaAttr] ?? 0, tecnicaAttr,
@@ -756,11 +778,6 @@ export function deriveAfty(creature, opcoes = {}) {
        Talentos e Aptidões serem resolvidos, então não há o que contar. O
        `contar()` devolve 0 aqui, do mesmo jeito que `tem_*` vale 0. */
   });
-  // ORIGEM entra no montante junto do resto: ela concede vaga de habilidade, de
-  // perícia, de feitiço e de aptidão, e vaga é lida antes de os stats existirem.
-  // As escolhas aninhadas dela (Treinamentos de Clã, Empenho Implacável) saem
-  // primeiro porque carregam efeito próprio.
-  const escolhasOrigem = resolveEscolhasOrigem(creature, nd);
   // Nenhuma das cinco fontes do pool exclusivo alimenta o montante (elas dão
   // stat, não orçamento), mas a resolução entra aqui do mesmo jeito: sem ela um
   // exclusivo que aparecesse por engano sairia da soma e nunca voltaria.
@@ -1876,6 +1893,7 @@ export function deriveAfty(creature, opcoes = {}) {
     nd, bt, escalaAtaque, grauRank: grau.rank, patamar, tipo, almaAtual: almaAtualDsl, invocacoesEmCampo,
     nivelFeiticoMax: acessoFeitico,
     origemContadoresVars,
+    opcoesOrigem: opcoesOrigemDsl,
     irmaoMorto: !!creature?.core?.origem?.irmaoMorto,
     iniciativaIrmao: creature?.core?.origem?.iniciativaIrmao,
     attrEff: attrs, mods, modTecnica: mods[tecnicaAttr] ?? 0, tecnicaAttr,
@@ -1912,6 +1930,9 @@ export function deriveAfty(creature, opcoes = {}) {
       ...habilidades.efetivas,
       ...(talentosPre.escolhidas ?? []),
       ...aptidoesIds,
+      // As Características Amaldiçoadas que o catálogo ainda conhece (2026-10-12).
+      ...(Array.isArray(creature?.caracteristicasAmaldicoadas) ? creature.caracteristicasAmaldicoadas : [])
+        .filter((id) => getCaracteristicaAmaldicoada(id)),
     ],
     vocabulario: vocabularioDsl,
     marcas: marcasFicha,
@@ -2278,10 +2299,12 @@ export function deriveAfty(creature, opcoes = {}) {
       .map(([id, u]) => [id, {
         max: Math.max(0, Math.trunc(evalNumberDsl(u.expr, ctxTecnica, 0))),
         recarga: u.recarga ?? "descanso",
-        /* A chave da sessão leva a recarga na frente quando ela é `cena` ou
-           `rodada` (2026-09-28), a mesma convenção do `mesa` logo abaixo. As do
-           Combatente são de descanso e seguem com `hab:<id>`. */
-        chave: u.recarga === "cena" || u.recarga === "rodada" ? `${u.recarga}:hab:${id}` : `hab:${id}`,
+        /* A chave da sessão leva a recarga na frente quando ela é `cena`,
+           `rodada` (2026-09-28) ou `manual` (2026-10-12), a mesma convenção do
+           `mesa` logo abaixo. As do Combatente são de descanso e seguem com
+           `hab:<id>`. */
+        chave: RECARGAS_COM_PREFIXO.includes(u.recarga) ? `${u.recarga}:hab:${id}` : `hab:${id}`,
+        ...(String(u.rotulo ?? "").trim() ? { rotulo: String(u.rotulo).trim() } : {}),
       }]),
   );
   /* O MONTADOR DO GOLPE ESPECIAL (2026-09-24). O derive só diz se a ficha tem
@@ -2347,20 +2370,39 @@ export function deriveAfty(creature, opcoes = {}) {
       resultados: [],
     };
   }
+  /* `usos.rotulo` troca o "Usos" do contador na Ficha ("Doses"), e
+     `resultados[].textos` dá NOME ao número (2026-10-12, pacote Vampiro da
+     Máscara de Pedra): o valor vira o índice da lista, aparado nas pontas, e a
+     Ficha mostra "Patente: Conde" em vez de "Patente: 3". O `valor` segue no
+     objeto para quem precisar do número. */
   const registraMesa = (chave, entrada, { semUsos = false } = {}) => {
     const u = semUsos ? null : entrada?.usos;
     const recarga = USOS_RECARGAS.includes(u?.recarga) ? u.recarga : "descanso";
     const usos = u?.expr != null ? {
       max: Math.max(0, valorDeMesa(u.expr)),
       recarga,
-      chave: recarga === "cena" || recarga === "rodada" ? `${recarga}:${chave}` : chave,
+      chave: RECARGAS_COM_PREFIXO.includes(recarga) ? `${recarga}:${chave}` : chave,
+      ...(String(u.rotulo ?? "").trim() ? { rotulo: String(u.rotulo).trim() } : {}),
     } : null;
     const resultados = (Array.isArray(entrada?.resultados) ? entrada.resultados : [])
       .filter((r) => String(r?.label ?? "").trim() && r?.expr != null)
-      .map((r) => ({ label: String(r.label), valor: valorDeMesa(r.expr) }));
+      .map((r) => {
+        const valor = valorDeMesa(r.expr);
+        const textos = Array.isArray(r.textos) ? r.textos.map((t) => String(t ?? "")) : [];
+        const texto = textos.length ? textos[Math.max(0, Math.min(textos.length - 1, valor))] : "";
+        return { label: String(r.label), valor, ...(texto.trim() ? { texto } : {}) };
+      });
     if (usos || resultados.length) mesa[chave] = { usos, resultados };
   };
   for (const c of caracteristicasEfetivas(creature)) registraMesa(`origem:${c.id}`, c);
+  /* As Características Amaldiçoadas escolhidas também (2026-10-12): a Alma
+     Maldita do Vampiro tem "2 vezes por dia", e a Regeneração Vampírica
+     Aprimorada, "metade do seu bônus de treinamento". A chave é a do item da
+     Ficha. Id que o catálogo não conhece mais é linha morta e fica de fora. */
+  for (const id of new Set(Array.isArray(creature?.caracteristicasAmaldicoadas) ? creature.caracteristicasAmaldicoadas : [])) {
+    const entrada = getCaracteristicaAmaldicoada(id);
+    if (entrada) registraMesa(`caracteristicaAmaldicoada:${id}`, entrada);
+  }
   /* O contador da Técnica de pacote com `usos` (2026-10-11, pacote Stark: "Uma
      quantidade de vezes igual ao seu bônus de treinamento"). Mesma chave do item
      da Ficha. A inválida não ganha contador (DA-07), e o do Gatilho, que já mora
@@ -3737,9 +3779,18 @@ export function deriveAfty(creature, opcoes = {}) {
      hoje pede, mas o requisito é o da Aptidão e ele o lê). O `reduzNivelAptidao`
      NÃO entra de propósito: o canal fala em "pré-requisitos de nível" das
      Aptidões, e uma Característica não é Aptidão. */
-  const caracteristicasAmaldicoadas = resolveCaracteristicasAmaldicoadas(creature, {
-    nd, attrEff, vagas: Math.max(0, canal("vagasCaracteristicaAmaldicoada")),
-  });
+  const caracteristicasAmaldicoadas = {
+    ...resolveCaracteristicasAmaldicoadas(creature, {
+      nd, attrEff, vagas: Math.max(0, canal("vagasCaracteristicaAmaldicoada")),
+    }),
+    /* O nome que a origem dá ao pool, e de onde vem cada vaga (2026-10-12). O
+       Vampiro soma quatro fontes (Físico Amaldiçoado e três Patentes), e o hover
+       fixo "1 no 1° nível, +1 a cada 5 níveis" mentia para ele. */
+    rotulo: rotuloCaracteristicasDaOrigem(creature),
+    partes: detalhesDoCanal(ef, "vagasCaracteristicaAmaldicoada")
+      .filter((x) => x.valor)
+      .map((x) => ({ label: x.nome, valor: x.valor })),
+  };
 
   // ⚠ Especializações, Talentos, Habilidades, Alto Nível, Aptidão e o MOTOR DE
   // AUTOMAÇÃO subiram para o topo desta função (logo depois dos atributos

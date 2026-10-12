@@ -104,8 +104,16 @@ const opcoesDeResistencia = (prefixo, descricao) =>
  * essas duas NÃO são só registro: a sessão as devolve na cena nova e na virada
  * da rodada, pelo prefixo na chave (ver `mesa` em afty-derive.js). O derive
  * aceita a mesma lista para Talento, origem e opção de escolha.
+ *
+ * ⚠ `manual` entrou em 2026-10-12 (pacote Vampiro da Máscara de Pedra): um
+ * estoque que NADA devolve sozinho, nem o Descansar. As Doses de sangue enchem ao
+ * se alimentar, e quem anota é o jogador, pelo mais do contador. A chave leva o
+ * prefixo `manual:`, e o `descansar` da sessão a preserva.
  */
-export const USOS_RECARGAS = ["curto", "longo", "descanso", "cena", "rodada"];
+export const USOS_RECARGAS = ["curto", "longo", "descanso", "cena", "rodada", "manual"];
+
+/** As recargas que viajam na frente da chave da sessão (ver `mesa` em afty-derive.js). */
+export const RECARGAS_COM_PREFIXO = ["cena", "rodada", "manual"];
 
 export const HABILIDADE_TIPOS = [
   { id: "base",  label: "Habilidades Base" },

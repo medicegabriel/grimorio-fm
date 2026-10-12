@@ -197,6 +197,11 @@ Comidas, só um dos dois conta — não é bug, é a regra do pool.
   selecionada) + `X_a` + `X_b` (uma booleana por opção). `tipo: "multi"` gera `X` (contagem de
   selecionados) + uma booleana por opção. Isso é o que faz addon virar nativo (ou vice-versa) sem
   reescrever fórmula: o nome final da variável só depende do `id` final, não da origem.
+- Famílias de booleana declaradas a zero pelo vocabulário: `tem_<id>` (Habilidade, Talento, Aptidão e,
+  desde 2026-10-12, Característica Amaldiçoada), `opt_<aptidão>_<valor>` (escolha de Aptidão) e
+  `opcao_<id>` (opção escolhida numa escolha de origem ou de clã, 2026-10-12, também no montante). Os
+  contadores de origem (`contadoresOrigem`) entram como `<pacote>_<id>`, sempre, dentro ou fora de
+  combate.
 - O `alvo` de um canal de fonte de dano aceita escopos da linha (`arma`, `basico`, `cat:`, `grupo:`,
   `prop:`, `tipo:`, `atq:`, `empunho:duas_maos`, `treinada`), e um alvo com `|` vale para a linha que
   responde a qualquer uma das partes, uma vez só (`valorCanalEscopos`). Detalhes em

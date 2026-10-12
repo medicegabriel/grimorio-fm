@@ -1,0 +1,854 @@
+{
+  "id": "vampiro-mascara-de-pedra",
+  "nome": "Vampiro da Máscara de Pedra",
+  "versao": "1.0.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Origem Vampiro da Máscara de Pedra: Regeneração Vampírica com Doses, 17 Características de Anatomia, Fraquezas, Consumir Sangue, Patente, Criar Vampiro, Máscara de Pedra, Pedra Aja, Coleta de Sangue e 5 Talentos de Origem. Os Recursos de Origem (Doses Consumidas, Dias sem Sangue e Pedra Aja) ficam na aba Origem e ligam a Patente, a fome e as Fraquezas sozinhos.",
+  "permite": [
+    "caracteristicasAmaldicoadas"
+  ],
+  "contadoresOrigem": [
+    {
+      "id": "doses_consumidas",
+      "label": "Doses Consumidas",
+      "tipo": "contador",
+      "min": 0,
+      "requerOrigem": "vampiro",
+      "title": "Doses bebidas ao longo da vida, que decidem a Patente"
+    },
+    {
+      "id": "dias_sem_sangue",
+      "label": "Dias sem Sangue",
+      "tipo": "contador",
+      "min": 0,
+      "requerOrigem": "vampiro",
+      "title": "Consumir Sangue: 1d4 no início de cada sessão"
+    },
+    {
+      "id": "pedra_aja",
+      "label": "Pedra Aja",
+      "tipo": "bool",
+      "requerOrigem": "vampiro",
+      "title": "Profanidade Absoluta: sem as Fraquezas Vampíricas"
+    }
+  ],
+  "estadosCombate": [
+    {
+      "id": "forma_de_morcego",
+      "label": "Forma de Morcego",
+      "tipo": "bool",
+      "title": "Forma de Morcego",
+      "requerTalento": "tal_forma_de_morcego"
+    }
+  ],
+  "acrescenta": {
+    "origens": [
+      {
+        "id": "vampiro",
+        "nome": "Vampiro da Máscara de Pedra",
+        "lore": "Os Vampiros da Máscara de Pedra são Fetos Amaldiçoados de natureza ancestral, nascidos da união profana entre a carne humana e uma energia amaldiçoada capaz de despertar aquilo que existe de mais monstruoso dentro de um ser vivo. Diferente das maldições comuns, eles preservam parte de sua humanidade original, embora essa humanidade seja lentamente devorada por uma fome insaciável e por um instinto predatório absoluto.\n\nSeu despertar ocorre quando um receptáculo humano é submetido ao poder de uma Máscara de Pedra amaldiçoada. Ao penetrar o crânio, a máscara força uma evolução antinatural do corpo, estimulando-o através de energia amaldiçoada até que carne, sangue e ossos transcendam os limites impostos aos seres humanos. O resultado é uma criatura situada entre homem e maldição: um Feto Amaldiçoado que abandonou sua condição mortal em troca de uma existência monstruosa.\n\nOs Vampiros possuem uma necessidade constante de absorver sangue, carne e, principalmente, energia vital, drenando-os até que não reste praticamente nada de sua vitalidade.\n\nSeus corpos são aberrações de adaptação e evolução. Força, velocidade, resistência e sentidos ultrapassam facilmente os limites humanos, enquanto sua energia amaldiçoada lhes permite regenerar membros destruídos e sobreviver a ferimentos que matariam instantaneamente até mesmo um feiticeiro. A própria biologia de um Vampiro da Máscara de Pedra parece estar em constante transformação, reagindo ao perigo e alterando sua estrutura para garantir sua sobrevivência.\n\nEntre suas capacidades mais temidas está o domínio absoluto sobre a própria carne. Vampiros mais evoluídos podem modificar seus corpos em combate, alongando membros, criando armas a partir de ossos e músculos ou transformando partes de si mesmos em estruturas monstruosas. Essa habilidade se manifesta de maneira diferente em cada indivíduo, tornando cada Vampiro um Feto Amaldiçoado único, com uma Técnica Amaldiçoada moldada por sua personalidade, instintos e pela forma como sua humanidade foi corrompida.\n\nSua mordida e seus ataques, contudo, representam um perigo ainda maior. Através da transferência de seu sangue e energia amaldiçoada, um Vampiro pode contaminar outro ser vivo e transformá-lo em uma criatura semelhante. Aqueles que sobrevivem ao processo tornam-se servos inferiores, presos à vontade de seu criador e consumidos pela mesma fome que um dia destruiu sua humanidade.\n\nApesar de sua aparência imortal, os Vampiros carregam uma fraqueza absoluta: tudo aquilo que simula a luz e a vitalidade do sol. A luz solar destrói rapidamente seus corpos, podem causar danos devastadores à sua carne amaldiçoada.",
+        "restricoes": [
+          "Você não pode iniciar com essa origem, deve se tornar um vampiro através da máscara de pedra ou através da mordida de um progenitor."
+        ],
+        "rotuloCaracteristicasAmaldicoadas": "Características de Anatomia",
+        "bonusAtributos": {},
+        "caracteristicas": [
+          {
+            "id": "bonus_atributo",
+            "nome": "Bônus de Atributo",
+            "descricao": "Você ganha 3 pontos para distribuir entre seus atributos tendo o máximo de 2 em apenas um atributo.",
+            "bonus": {
+              "distribuir": 3,
+              "maxPorAtributo": 2
+            }
+          },
+          {
+            "id": "regeneracao_vampirica",
+            "nome": "Regeneração Vampírica",
+            "descricao": "Você possui um poder sobrenatural de regeneração, capaz de fechar feridas profundas e restaurar seu corpo mesmo após os mais brutais ataques. Enquanto estiver vivo e fora dos Portões da Morte, seu corpo se regenera constantemente.\n\nNo início de cada um dos seus turnos, você recupera pontos de vida igual a: Você pode usar uma ação bônus e um número Doses para recuperar uma quantidade de pontos de vida igual a 17 + seu mod. de constituição. Nos níveis 4, 8, e 12 o valor base da cura aumenta em 5. Você pode escolher gastar Doses a mais para, aumentando a cura limitado a metade do BT.\n\n*Para essa característica funcionar o usuário deve estar sem as penalidades de \"Consumir Sangue\", faça uma rolagem de 1d4 no inicio de cada sessão para saber quantos dias você está sem se alimentar. (Caso caia 1 você está alimentado).*",
+            "resultados": [
+              {
+                "label": "Cura por Dose",
+                "expr": "(17 + mod_constituicao + 5 * ((nd >= 4) + (nd >= 8) + (nd >= 12)) + 10 * tem_vampiro_mascara_de_pedra_tal_reposicao_vampirica + 10 * tem_vampiro_mascara_de_pedra_va_regeneracao_aprimorada) * (vampiro_mascara_de_pedra_dias_sem_sangue < 2)"
+              },
+              {
+                "label": "Doses Extras",
+                "expr": "piso(bt / 2) + 2 * tem_vampiro_mascara_de_pedra_tal_reposicao_vampirica"
+              }
+            ]
+          },
+          {
+            "id": "fisico_amaldicoado",
+            "nome": "Físico Amaldiçoado",
+            "descricao": "Sendo meio maldição, o seu físico é único, desenvolvendo um corpo com propriedades especiais. Você recebe uma Característica de Anatomia, entre as listadas na próxima página. A cada 5 níveis, seu corpo desenvolve mais, dando-o outra característica de anatomia."
+          },
+          {
+            "id": "heranca_maldita",
+            "nome": "Herança Maldita",
+            "descricao": "Como um híbrido entre humano e maldição, você carrega uma herança amaldiçoada. Toda cura que você receber provinda de energia reversa é reduzida pela metade. Caso obtenha uma habilidade de energia reversa de cura, você pode a utilizar tratando a energia reversa como energia amaldiçoada, curando-se o valor completo. Ao invés de 1 ponto de energia reversa, você gasta diretamente 2 pontos de energia amaldiçoada.",
+            "mesa": true
+          },
+          {
+            "id": "fraquezas_vampiricas",
+            "nome": "Fraquezas Vampíricas",
+            "descricao": "Mas como nem tudo é um mar de rosas, essas são as desvantagens de ser um vampiro:\n\n**Vulnerabilidade ao sol:** A luz solar queima sua carne, enfraquecendo ou até destruindo-os por completo. Em combate: a cada rodada em que permanecer exposto à luz do sol, o vampiro sofre dano de um sangramento extremo radiante. Fora de combate: esse dano ocorre a cada 1 minuto de exposição.\n\n**Vulnerabilidade à Luz:** O vampiro é vulnerável à luz solar e à luz abençoada, sofrendo dano radiante aumentado enquanto exposto. Ele se torna vulnerável a dano radiante.\n\n**Rejeição pelo solo sagrado:** Igrejas e cemitérios abençoados os repelem.\n\n**Reflexo e Sombra Ausentes:** O vampiro não projeta sombra nem aparece em espelhos, sinalizando sua natureza sobrenatural. Essa condição é permanente enquanto vivo e não pode ser ocultada.\n\n**Água Corrente:** Os vampiros carregam consigo uma limitação ancestral: são incapazes de atravessar água corrente (Rios, Lagos ou Oceanos)  por meios próprios, seja caminhando, nadando ou mesmo voando sobre ela, pois o fluxo natural repele sua essência profana. Quando forçados a entrar em contato direto com esse tipo de água, sofrem 2d8 de dano radiante por rodada de exposição, como se a própria pureza da correnteza queimasse sua carne. Contudo, barcos, pontes e estruturas artificiais fornecem meios seguros de atravessá-la, desde que o vampiro não toque o curso d’água."
+          },
+          {
+            "id": "consumir_sangue",
+            "nome": "Consumir Sangue",
+            "descricao": "O vampiro precisa consumir sangue pelo menos uma vez por dia (que seria equivalente a um humano adulto saudável) para manter sua força, vitalidade e sanidade, absorvendo juntamente a energia da vitima. A falta de sangue suficiente provoca efeitos progressivos, reduzindo atributos físicos e sanidade, podendo levar à levar um frenesi descontrolado de fome (você também é obrigado a usar a regra opcional de sanidade para contabilizar a sua fome).\n\n## Penalidades\n\n| Dias sem sangue | Sanidade | Penalidade |\n| --- | --- | --- |\n| 2-3 | 90% | -1 em Força, Destreza e Constituição. |\n| 4-6 | 75% | -2 em Força, Destreza e Constituição; desvantagem em técnicas e aptidões. |\n| 7-9 | 50% | -3 em Força, Destreza e Constituição; condição Condenado permanente |\n| 10-11 | 25% | -4 em todas as rolagens; inicia combates com Confuso |\n| 12-13 | 10% | Teste de Vontade CD 16 + Nível do personagem a cada turno; falha = Paralisado até o próximo turno; custo de Condenado aumentado para 2 |\n| 14+ | 0 | Você se descontrola completamente, atacando o primeiro ser que você veja, com o propósito de saciar sua fome, seus debuff são removidos em estado de frenesi, focando em saciar sua fome com o primeiro ser que veja em sua frente, assumindo uma aparência monstruosa. |\n\n*Todos os Debuffs são acumulativos.*",
+            "resultados": [
+              {
+                "label": "Dias sem Sangue",
+                "expr": "vampiro_mascara_de_pedra_dias_sem_sangue"
+              },
+              {
+                "label": "Sanidade",
+                "expr": "(vampiro_mascara_de_pedra_dias_sem_sangue >= 2) + (vampiro_mascara_de_pedra_dias_sem_sangue >= 4) + (vampiro_mascara_de_pedra_dias_sem_sangue >= 7) + (vampiro_mascara_de_pedra_dias_sem_sangue >= 10) + (vampiro_mascara_de_pedra_dias_sem_sangue >= 12) + (vampiro_mascara_de_pedra_dias_sem_sangue >= 14)",
+                "textos": [
+                  "100%",
+                  "90%",
+                  "75%",
+                  "50%",
+                  "25%",
+                  "10%",
+                  "0%"
+                ]
+              },
+              {
+                "label": "CD de Vontade",
+                "expr": "16 + nd"
+              }
+            ]
+          },
+          {
+            "id": "doses_de_sangue",
+            "nome": "Recebendo Doses",
+            "descricao": "*Além disso, um vampiro pode estocar até 4 litros de sangue (4 doses) drenado de suas vítimas em seu próprio corpo, funcionando como sua reserva vital para manter-se ativo e curar seus ferimentos.*\n\n| Vitimas | Doses |\n| --- | --- |\n| Civil, humanos normais que você comumente se alimenta para saciar sua sede. Eles não dão o prazer necessário para saciar sua alma. | Eles concedem uma dose, duas se você finalizar a vitima. |\n| Feiticeiro, super humanos que possuem uma constituição maior do que o comum, além de serem ricos em energia amaldiçoada, saciando o prazer que o rodeia. | Eles concedem duas doses, quatro se você finalizar sua vitima. A quantia de doses aumenta de acordo com o grau do feiticeiro, +1, +2, +3, +5 nos respectivos G3, G2, G1, GE. |\n| Humanos podem ter uma linhagem rara que é muito mais prazerosa pra você do que humanos normais, caso um humano for de um clã ou linhagem rara você recebe uma quantia de doses igual ao bônus de treinamento da vitima (Ex: Fujiwara, Joestar, Yamato) | |\n\n## Bote\n\nPara um vampiro dar o bote a vitima deve ser de dois graus abaixo do seu, estar inconsciente ou permitir que você faça isso. Você só pode se alimentar de sua vitima uma vez por descanso longo que aquele ser fizer, caso faça isso mais de uma vez você conta como se estivesse finalizando ele e recebe ainda quantia de uma dose normal.\n\nCaso você queira se alimentar forçadamente de um alvo você deve realizar um ataque desarmado ou com suas armas naturais contra o alvo, trocando o dano da mordida para receber uma dose. **VOCÊ NUNCA PODE FAZER ISSO DUAS VEZES NO MESMO SER, VOCÊ NÃO VAI GANHAR UM HK VIA ORIGEM.**\n\nAssim como existem os humanos raros, humanos doentes são mais comuns, caso você se alimente de um humano doente você não recebe nenhuma dose, e caso você fosse receber algum bônus seja por grau ou linhagem rara, você perde essa quantia de doses na mesma medida e fica com a condição enjoado até o próximo descanso longo.\n\nVocê pode receber doses de cadáver, sendo a dose mínima concedida por eles, caso tenha entrado em processo de decomposição conta como se estivesse doente.",
+            "usos": {
+              "expr": "4 + (vampiro_mascara_de_pedra_doses_consumidas >= 40) * max(0, mod_constituicao)",
+              "recarga": "manual",
+              "rotulo": "Doses"
+            }
+          },
+          {
+            "id": "patente",
+            "nome": "Patente",
+            "descricao": "As patentes de um vampiro são decididas pela quantia de sangue que eles se alimentam e assimilam ao longo da sua vida, sendo capaz de até mesmo um servo se libertar do controle de seu progenitor, e fazer com que um vampiro comum ascenda ao cargo de Rei, Lorde, Primordial, ou seja lá como suas vitimas o chamam, esse nome não é espalhado por algum motivo... Por que será?\n\n| Patente | Número de Doses |\n| --- | --- |\n| Vampiro novato | 0-40 |\n| Vampiro intermediario | 40-100 |\n| Vampiro Experiente | 100-200 |\n| Conde | 200-500 |\n| Rei | 500-1000 |\n\n- Vampiros novatos são vampiros iniciantes, normalmente lacaios de seu progenitor, portanto não recebem nenhum benefício.\n\n- Vampiros Intermediários, mais experientes em sua existência monstruosa. Vampiros Intermediários são capazes de guardar o seu modificador de constituição em número de doses extras dentro de seu corpo, e recebem +1 característica de anatomia.\n\n- Vampiro Experiente, vampiros reconhecidos, muitas das vezes autonomos ou armas leias e importante de seus senhores, sua existência já se tornou mais monstruosa do que humana, aqueles que passam de seus pontos abandonaram completamente qualquer senso de empatia e humanidade restante, eles são capazes de não perderem doses e não recebem a condição enjoado por morderem seres doentes. Você pode escolher uma Fraqueza Vampírica para ignorar (Com exceção do Sol), o dano recebido do sol aumenta em dois dados. (Vampiros Experientes podem se libertar do controle de seu progenitor caso tenha essa intenção, se alimentando dele\n\n- Conde, vampiros poderosos que possui diversos servos para sua trupe. Você recebe +1 característica de anatomia. E se torna capaz de realizar o treinamento de vampiro.\n\n- Rei, o primogênito renegado da natureza, uma pseudo-maldição formada totalmente artificialmente, utilizando a energia e sangue coletado de todos os seres que cruzaram o seu caminho, o medo das lendas sobre você lhe fortalecem para sua existência maquiavelica. Você recebe +1 característica de anatomia. Também pode utilizar a Mascara pela segunda vez com a Pedra Aja para evoluir sua existência. Você recebe acesso as aptidões de maldições presentes no conteúdo oficial do server, precisando de uma narrativa para as utiliza-las. O dano recebido pelo sol aumenta em +6 dados. Você também se torna vulnerável a E.R.",
+            "resultados": [
+              {
+                "label": "Patente",
+                "expr": "(vampiro_mascara_de_pedra_doses_consumidas >= 40) + (vampiro_mascara_de_pedra_doses_consumidas >= 100) + (vampiro_mascara_de_pedra_doses_consumidas >= 200) + (vampiro_mascara_de_pedra_doses_consumidas >= 500)",
+                "textos": [
+                  "Vampiro Novato",
+                  "Vampiro Intermediário",
+                  "Vampiro Experiente",
+                  "Conde",
+                  "Rei"
+                ]
+              },
+              {
+                "label": "Doses Consumidas",
+                "expr": "vampiro_mascara_de_pedra_doses_consumidas"
+              }
+            ],
+            "escolha": {
+              "id": "vmp_fraqueza_ignorada",
+              "label": "Fraqueza Ignorada",
+              "opcoes": [
+                {
+                  "id": "vmp_ignora_luz",
+                  "nome": "Vulnerabilidade à Luz",
+                  "descricao": "Vampiro Experiente: você ignora a Vulnerabilidade à Luz."
+                },
+                {
+                  "id": "vmp_ignora_solo_sagrado",
+                  "nome": "Rejeição pelo Solo Sagrado",
+                  "descricao": "Vampiro Experiente: você ignora a Rejeição pelo solo sagrado."
+                },
+                {
+                  "id": "vmp_ignora_reflexo",
+                  "nome": "Reflexo e Sombra Ausentes",
+                  "descricao": "Vampiro Experiente: você ignora o Reflexo e Sombra Ausentes."
+                },
+                {
+                  "id": "vmp_ignora_agua_corrente",
+                  "nome": "Água Corrente",
+                  "descricao": "Vampiro Experiente: você ignora a Água Corrente."
+                }
+              ]
+            }
+          },
+          {
+            "id": "criar_vampiro",
+            "nome": "Criar Vampiro",
+            "descricao": "O vampiro possui a capacidade de transformar mortais em vampiros, transmitindo sua maldição através de mordida ou ritual de sangue. A transformação é dolorosa e exige cuidado, controle e preparação.\n\n**Pré-requisitos:** O vampiro deve estar saciado (ter consumido seu mínimo diário de sangue). O alvo deve estar vivo, consciente e ter aceitado se tornar um vampiro.\n\n**Processo de Transformação:** O vampiro precisa morder o alvo e drenar parte de seu sangue, consumindo no mínimo 1 litro. Em seguida, injeta seu próprio sangue no alvo. Teste de Resistência do Alvo: O alvo realiza um Teste de Resistência de \"Integridade\". CD: 15 + nível do vampiro + bônus de treinamento. Falha: o alvo começa a transformação. Falha crítica: o alvo é transformado instantaneamente, sem chance de reação. Sucesso: a transformação falha; o alvo sofre apenas efeitos de exaustão e perda temporária de sanidade (-10%).\n\n**Tempo de Transformação:** A transformação completa dura 1d6 dias. Durante esse período, o alvo apresenta sintomas de vampirismo: fraqueza diurna, sede de sangue e sensibilidade à luz\n\n**Alteração de Origem:** Ao se tornar vampiro, o personagem perde todos os benefícios, talentos e habilidades da sua origem passada. Recebe automaticamente os benefícios, talentos, habilidades e fraquezas vampíricas\n\n**Consequências:** O vampiro que realiza a transformação gasta 2 litros de sangue próprios. Se o vampiro estiver com sanidade baixa ou fome extrema, o processo falha automaticamente. O novo vampiro deve aprender a se alimentar e controlar suas habilidades, seguindo as mecânicas de Consumir Sangue e Sanidade. O novo vampiro carrega dentro de si o vínculo de criação, uma compulsão mística que o obriga a obedecer às ordens diretas de seu criador e o impede de atacá-lo conscientemente, já que o sangue que lhe deu origem atua como corrente invisível sobre sua vontade (seria como um voto contratual que não ocupa slot de voto). Servos não podem criar outros",
+            "resultados": [
+              {
+                "label": "CD da Transformação",
+                "expr": "15 + nd + bt"
+              }
+            ]
+          },
+          {
+            "id": "mascara_de_pedra",
+            "nome": "Máscara de Pedra",
+            "descricao": "A Máscara de Pedra convencional tem a aparência de um rosto um tanto masculino, seus olhos pontiagudos e um tanto inclinados. Tem uma boca pequena em posição neutra ou um leve sorriso, com lábios carnudos e pequenas presas apoiadas no lábio inferior. Uma crista emerge da parte inferior da testa, correndo verticalmente até o topo da máscara, juntando-se a outra crista que se estende em uma espiral que repousa à esquerda de sua testa.\n\nEscrito em uma escrita obscura e semicursiva, o significado da escrita é inexplicável.  As máscaras apresentadas na história também costumam exibir rachaduras e outros sinais de desgaste, provavelmente devido à idade. Ela é ativada ao derramar sangue a ela, com diversos tentáculos aparecendo e indo em direção ao usuário. Matando-o, e logo em seguida causando sua Ressurreição como Vampiro. Se por algum motivo algum não feiticeiro usar a máscara, ele se torna também um feiticeiro, mas não desperta uma técnica. Para sequer ter uma informação de onde está a máscara ou oque faz a mesma, você precisa de três interlúdios, ou o mestre pode te dar partes em Narrativa dessas informações.\n\nNota: A Origem em si é um pouco mais forte que o comum pela necessidade da Máscara, penalidades, etc...\n\nNota 2: Caso seja usada em um jogador involuntário, ele possa utilizar alguma TR para ter chance de resistir e não ter sua origem e modo de jogo completamente alterados para sempre, podendo ser um TR de Reflexos para desviar da máscara ou um TR de Vontade para resistir aos seus efeitos, apenas perdendo PV. Em NPC's civis o efeito é garantido. Após o uso da máscara ela quebra e se desfaz, fazendo assim existir duas por existência de progenitor. Um progenitor pode gastar 10 focos de interlúdio e realizar um teste de Oficio (entalhador) para poder criar uma. Ela conta para a CD como um item de dificuldade máxima.",
+            "mesa": true
+          },
+          {
+            "id": "pedra_aja",
+            "nome": "Pedra Aja",
+            "descricao": "*O Ápice Vampírico*\n\nUma pedra preciosa comum tem imperfeições em sua estrutura cristalina (fissuras microscópicas, impurezas). A Pedra de Aja, especialmente a Super Aja é geometricamente perfeita a nível molecular. Quando um feixe de luz (seja a luz do Sol ou a energia Hamon, que possui a mesma assinatura energética) entra na pedra, ele não consegue simplesmente passar direto ou ricochetear para fora de forma dispersa. A estrutura interna da pedra guia a luz em um circuito fechado de reflexão total. A pedra é dita ser capaz de absorver a luz e a refracionar um milhão de vezes, fazendo com que ela emita um raio parecido com um laser. Em conjunção com a Máscara de Pedra, ela permtiria que Vampiros liberem seu potencial completo, removendo todas suas fraquezas, incluindo a habilidade de resistir a luz solar. Entretanto, aqui irei dizer um exemplo não-oficial, do que poderia acontecer caso um vampiro como Dio Brando, conseguisse usar os mesmos efeitos da Super Aja.\n\nDe forma geral, ao fazer com que o laser perfure o cérebro do vampiro, ele entrará, diferentemente dos Homens do Pilar, que alcançaria a forma de vida suprema, o vampiro entraria no que irei chamar de Profanidade Absoluta, que diferentemente dos homens do pilar, que desbloqueiam todo o potencial do DNA e manipulação celular, um vampiro com a dádiva da Super Aja. Ao utilizar a mascara com a pedra você perde todas as suas fraquezas vampiricas.\n\n*Créditos pela narrativa da Pedra Aja e da Mascara. Regras de vampiro a uma HB da onirigi*"
+          },
+          {
+            "id": "coleta_de_sangue",
+            "nome": "Coleta de Sangue (Interlúdio)",
+            "descricao": "O foco de coleta de sangue significa dedicar uma parcela do seu tempo a coleta e estoque de sangue e energia amaldiçoada. Ao escolher a opção, realize uma quantidade de testes de perícia de percepção ou investigação igual a 1 + seu Bônus de Treinamento. De acordo com o resultado, comparado à tabela abaixo, você escolhe qual item será criado com cada teste, respeitando também o tipo.\n\n| Item | CD |\n| --- | --- |\n| Frasco de sangue de Custo 1 | 15 |\n| Frasco de sangue de Custo 2 | 20 |\n| Frasco de sangue de Custo 3 | 25 |\n| Frasco de sangue de Custo 4 | 30 |\n\nCada frasco consegue armazenar \"Doses\" igual ao dobro do seu custo.",
+            "resultados": [
+              {
+                "label": "Testes",
+                "expr": "1 + bt"
+              }
+            ]
+          }
+        ],
+        "efeitos": [
+          {
+            "canal": "vagasCaracteristicaAmaldicoada",
+            "expr": "1 + piso(nd / 5)",
+            "nome": "Físico Amaldiçoado"
+          },
+          {
+            "canal": "vagasCaracteristicaAmaldicoada",
+            "expr": "(vampiro_mascara_de_pedra_doses_consumidas >= 40)",
+            "nome": "Patente: Vampiro Intermediário"
+          },
+          {
+            "canal": "vagasCaracteristicaAmaldicoada",
+            "expr": "(vampiro_mascara_de_pedra_doses_consumidas >= 200)",
+            "nome": "Patente: Conde"
+          },
+          {
+            "canal": "vagasCaracteristicaAmaldicoada",
+            "expr": "(vampiro_mascara_de_pedra_doses_consumidas >= 500)",
+            "nome": "Patente: Rei"
+          },
+          {
+            "canal": "vulnerabilidadeDano",
+            "alvo": "radiante",
+            "expr": "1",
+            "nome": "Vulnerabilidade à Luz",
+            "quando": "!vampiro_mascara_de_pedra_pedra_aja && !(opcao_vmp_ignora_luz && vampiro_mascara_de_pedra_doses_consumidas >= 100)"
+          },
+          {
+            "canal": "vulnerabilidadeDano",
+            "alvo": "energia_reversa",
+            "expr": "1",
+            "nome": "Patente: Rei",
+            "quando": "vampiro_mascara_de_pedra_doses_consumidas >= 500 && !vampiro_mascara_de_pedra_pedra_aja"
+          },
+          {
+            "canal": "atributo",
+            "alvo": "forca",
+            "expr": "-((vampiro_mascara_de_pedra_dias_sem_sangue >= 2) + (vampiro_mascara_de_pedra_dias_sem_sangue >= 4) + (vampiro_mascara_de_pedra_dias_sem_sangue >= 7))",
+            "quando": "vampiro_mascara_de_pedra_dias_sem_sangue >= 2 && vampiro_mascara_de_pedra_dias_sem_sangue < 14",
+            "duracao": "temporaria",
+            "nome": "Consumir Sangue"
+          },
+          {
+            "canal": "atributo",
+            "alvo": "destreza",
+            "expr": "-((vampiro_mascara_de_pedra_dias_sem_sangue >= 2) + (vampiro_mascara_de_pedra_dias_sem_sangue >= 4) + (vampiro_mascara_de_pedra_dias_sem_sangue >= 7))",
+            "quando": "vampiro_mascara_de_pedra_dias_sem_sangue >= 2 && vampiro_mascara_de_pedra_dias_sem_sangue < 14",
+            "duracao": "temporaria",
+            "nome": "Consumir Sangue"
+          },
+          {
+            "canal": "atributo",
+            "alvo": "constituicao",
+            "expr": "-((vampiro_mascara_de_pedra_dias_sem_sangue >= 2) + (vampiro_mascara_de_pedra_dias_sem_sangue >= 4) + (vampiro_mascara_de_pedra_dias_sem_sangue >= 7))",
+            "quando": "vampiro_mascara_de_pedra_dias_sem_sangue >= 2 && vampiro_mascara_de_pedra_dias_sem_sangue < 14",
+            "duracao": "temporaria",
+            "nome": "Consumir Sangue"
+          },
+          {
+            "canal": "bonusPericia",
+            "expr": "-4",
+            "quando": "vampiro_mascara_de_pedra_dias_sem_sangue >= 10 && vampiro_mascara_de_pedra_dias_sem_sangue < 14",
+            "duracao": "temporaria",
+            "nome": "Consumir Sangue"
+          },
+          {
+            "canal": "bonusTR",
+            "expr": "-4",
+            "quando": "vampiro_mascara_de_pedra_dias_sem_sangue >= 10 && vampiro_mascara_de_pedra_dias_sem_sangue < 14",
+            "duracao": "temporaria",
+            "nome": "Consumir Sangue"
+          },
+          {
+            "canal": "bonusAcerto",
+            "expr": "-4",
+            "quando": "vampiro_mascara_de_pedra_dias_sem_sangue >= 10 && vampiro_mascara_de_pedra_dias_sem_sangue < 14",
+            "duracao": "temporaria",
+            "nome": "Consumir Sangue"
+          },
+          {
+            "canal": "iniciativa",
+            "expr": "-4",
+            "quando": "vampiro_mascara_de_pedra_dias_sem_sangue >= 10 && vampiro_mascara_de_pedra_dias_sem_sangue < 14",
+            "duracao": "temporaria",
+            "nome": "Consumir Sangue"
+          }
+        ],
+        "especializacaoExclusivaId": null
+      }
+    ],
+    "caracteristicasAmaldicoadas": [
+      {
+        "id": "va_alma_maldita",
+        "nome": "Alma Maldita",
+        "descricao": "Sua alma é impregnada com energia amaldiçoada, assumindo um aspecto maldito e difícil de se alterar. Quando uma criatura for causar dano na sua alma, esse dano é reduzido à metade antes do teste de Integridade; a partir do nível 15, ele é anulado. Essa habilidade funciona 2 vezes por dia, 3 no nível 6, 4 no nível 12 e 5 no nível 18.",
+        "usos": {
+          "expr": "2 + (nd >= 6) + (nd >= 12) + (nd >= 18)",
+          "recarga": "descanso"
+        },
+        "resultados": [
+          {
+            "label": "Dano na Alma",
+            "expr": "(nd >= 15)",
+            "textos": [
+              "Metade",
+              "Anulado"
+            ]
+          }
+        ],
+        "mesa": true
+      },
+      {
+        "id": "va_anatomia_incompreensivel",
+        "nome": "Anatomia Incompreensível",
+        "descricao": "O seu corpo tem uma forma que é difícil de compreender. Você tem 25% de chance (resultado “1” em 1d4) de ignorar o dano adicional de um ataque crítico ou um ataque furtivo. No nível 15, se torna 50% (resultado “1 ou 2” em 1d4).",
+        "resultados": [
+          {
+            "label": "Ignora o Dano Adicional",
+            "expr": "(nd >= 15)",
+            "textos": [
+              "1 em 1d4",
+              "1 ou 2 em 1d4"
+            ]
+          }
+        ],
+        "mesa": true
+      },
+      {
+        "id": "va_articulacoes_extensas",
+        "nome": "Articulações Extensas",
+        "descricao": "Suas juntas são mais longas, ou suas garras são estendidas, aumentando a distância com que pode atacar. O alcance dos seus ataques corpo a corpo aumenta em 1,5 metros.",
+        "efeitos": [
+          {
+            "canal": "alcanceArma",
+            "alvo": "basico|cat:corpo",
+            "expr": "1.5",
+            "nome": "Articulações Extensas"
+          }
+        ]
+      },
+      {
+        "id": "va_bracos_extras",
+        "nome": "Braços Extras",
+        "descricao": "Seu corpo possui um par de braços adicionais. Você recebe +2 em testes de prestidigitação e se tiver pelo menos duas mãos livres, pode usar esse bônus em testes de atletismo. Uma vez por cena pode descer em um passo a ritualização de um feitiço. E recebe um par adicional de mãos, permitindo você equipar dois equipamentos de uma mão ou um equipamento de duas mãos adicional, assim como agarrar duas criaturas e outros benefícios à discrição do Narrador.",
+        "parcial": "O +2 em Prestidigitação já está no número. O +2 em Atletismo com duas mãos livres e as mãos adicionais ficam na mesa.",
+        "usos": {
+          "expr": "1",
+          "recarga": "cena"
+        },
+        "efeitos": [
+          {
+            "canal": "bonusPericia",
+            "alvo": "prestidigitacao",
+            "expr": "2",
+            "nome": "Braços Extras"
+          }
+        ]
+      },
+      {
+        "id": "va_capacidade_de_voo",
+        "nome": "Capacidade de Voo",
+        "descricao": "No seu corpo repousa uma capacidade de voo, que com um estímulo de energia se torna ativa. Uma vez por rodada como uma ação livre, você pode transformar seu deslocamento de caminhada em deslocamento de voo.",
+        "mesa": true
+      },
+      {
+        "id": "va_capacidade_de_nado",
+        "nome": "Capacidade de Nado",
+        "descricao": "No seu corpo repousa uma capacidade de nado, que com um estímulo de energia se torna ativa. Uma vez por rodada como uma ação livre, você pode transformar seu deslocamento de caminhada em deslocamento de nado.",
+        "mesa": true
+      },
+      {
+        "id": "va_carapaca_mutante",
+        "nome": "Carapaça Mutante",
+        "descricao": "Uma carapaça cobre o seu corpo, sendo uma mutação bizarra, mas resistente. Você recebe resistência a um tipo de dano físico à sua escolha. Depois de feita essa escolha não pode ser mudada.",
+        "requisitos": [
+          {
+            "tipo": "nd",
+            "valor": 10
+          }
+        ],
+        "alvos": [
+          {
+            "id": "tipo",
+            "tipo": "tipoDano",
+            "label": "Tipo de Dano",
+            "opcoes": [
+              "ct",
+              "im",
+              "pf"
+            ]
+          }
+        ],
+        "efeitos": [
+          {
+            "canal": "resistenciaDano",
+            "alvo": "escolha:tipo",
+            "expr": "1",
+            "nome": "Carapaça Mutante"
+          }
+        ]
+      },
+      {
+        "id": "va_corpo_especializado",
+        "nome": "Corpo Especializado",
+        "descricao": "Seu corpo se desenvolve de maneira a possuir um foco. Escolha uma perícia: você recebe um bônus de 1d4 nela.",
+        "alvos": [
+          {
+            "id": "pericia",
+            "tipo": "pericia",
+            "label": "Perícia"
+          }
+        ],
+        "efeitos": [
+          {
+            "canal": "dadosPericia",
+            "alvo": "escolha:pericia:d4",
+            "expr": "1",
+            "nome": "Corpo Especializado"
+          }
+        ]
+      },
+      {
+        "id": "va_devorador_de_energia",
+        "nome": "Devorador de Energia",
+        "descricao": "Sendo envolvido com a própria energia, você pode a devorar quando resiste a uma habilidade originada dela. Quando passar em um teste de resistência para resistir a um Feitiço, você recebe 1 ponto de energia temporário cumulativo.",
+        "mesa": true
+      },
+      {
+        "id": "va_olhos_adicionais",
+        "nome": "Olhos Adicionais",
+        "descricao": "Estranhamente, mais olhos começam a surgir em seu corpo, apurando o seu sentido da visão. Você recebe um bônus de +2 em Percepção, o qual aumenta em +1 nos níveis 5, 10, 15 e 20; além disso, sua atenção passa a ter como base 12 ao invés de 10.",
+        "efeitos": [
+          {
+            "canal": "bonusPericia",
+            "alvo": "percepcao",
+            "expr": "2 + (nd >= 5) + (nd >= 10) + (nd >= 15) + (nd >= 20)",
+            "nome": "Olhos Adicionais"
+          },
+          {
+            "canal": "atencao",
+            "expr": "2",
+            "nome": "Olhos Adicionais"
+          }
+        ]
+      },
+      {
+        "id": "va_instinto_sanguinario",
+        "nome": "Instinto Sanguinário",
+        "descricao": "Em sua essência há um instinto por sangue e violência. Você adiciona o seu bônus de treinamento na sua Iniciativa; enquanto em uma cena de combate, você também adiciona seu bônus de treinamento na sua Atenção.",
+        "efeitos": [
+          {
+            "canal": "iniciativa",
+            "expr": "bt",
+            "nome": "Instinto Sanguinário"
+          },
+          {
+            "canal": "atencao",
+            "expr": "bt",
+            "quando": "em_combate",
+            "nome": "Instinto Sanguinário"
+          }
+        ]
+      },
+      {
+        "id": "va_olhos_sombrios",
+        "nome": "Olhos Sombrios",
+        "descricao": "Seus olhos guardam escuridão, sendo sombrios por natureza e aguçados. Você recebe Visão no Escuro (p.297 do livro básico). Além disso, você se torna treinado em Percepção e recebe um bônus de +2 em rolagens com a perícia. No nível 12 você passa a ignorar completamente efeitos de escuridão Leve e Total.",
+        "parcial": "O treino em Percepção e o +2 já estão no número. A Visão no Escuro e o efeito de escuridão no nível 12 ficam na mesa.",
+        "efeitos": [
+          {
+            "canal": "proficienciaPericia",
+            "alvo": "percepcao",
+            "expr": "1",
+            "nome": "Olhos Sombrios"
+          },
+          {
+            "canal": "bonusPericia",
+            "alvo": "percepcao",
+            "expr": "2",
+            "nome": "Olhos Sombrios"
+          }
+        ]
+      },
+      {
+        "id": "va_pernas_extras",
+        "nome": "Pernas Extras",
+        "descricao": "No seu corpo cresce um par de pernas extras. Seu deslocamento aumenta em 4,5 metros e você passa a ignorar terreno difícil que esteja no solo.",
+        "parcial": "O deslocamento já está no número. Ignorar terreno difícil no solo fica na mesa.",
+        "efeitos": [
+          {
+            "canal": "movimento",
+            "expr": "4.5",
+            "nome": "Pernas Extras"
+          }
+        ]
+      },
+      {
+        "id": "va_presenca_nefasta",
+        "nome": "Presença Nefasta",
+        "descricao": "Com um semblante vil, a sua própria presença é nefasta. Toda criatura hostil, ao vê-lo pela primeira vez, deve realizar um teste de resistência de Vontade contra sua CD Amaldiçoada. Em uma falha, ela fica amedrontada por uma rodada. Em um sucesso, ela consegue lidar parcialmente com a sua presença, ficando abalada por uma rodada.",
+        "mesa": true
+      },
+      {
+        "id": "va_energia_toxica",
+        "nome": "Energia Tóxica",
+        "descricao": "A sua energia é tóxica, capaz de corroer o que entra em contato. Sempre que sofre dano de um ataque corpo a corpo, o atacante perde vida igual ao seu modificador de Constituição.",
+        "resultados": [
+          {
+            "label": "Perda de Vida",
+            "expr": "max(0, mod_constituicao)"
+          }
+        ],
+        "mesa": true
+      },
+      {
+        "id": "va_servo",
+        "nome": "Servo",
+        "descricao": "Ao você se transformar em vampiro você, transforma um ser em um servo para saciar seus desejos e seguir suas vontades, você recebe um guia que o acompanha, auxiliando a recuperar memórias, ficar mais forte ou guiá-lo ao seu objetivo. Recebe um aliado seguindo as regras da página 348 do livro básico.",
+        "requisitos": [
+          {
+            "tipo": "nd",
+            "valor": 9
+          }
+        ],
+        "mesa": true
+      },
+      {
+        "id": "va_regeneracao_aprimorada",
+        "nome": "Regeneração Vampírica Aprimorada",
+        "descricao": "Sua regeneração atingiu um nível anormal, indo além da mera cura. Você já não teme mutilações, elas são apenas um breve incômodo. Uma quantidade de vezes igual à metade do seu bônus de treinamento, com uma ação bônus, você pode regenerar um membro perdido (braço, perna, olho, etc.) instantaneamente no mesmo turno. A regeneração ocorre de forma visceral e rápida, muitas vezes acompanhada de sons grotescos de carne se reconstituindo. Além disso, sua “Regeneração Vampírica\" aumenta em 2 nível.",
+        "requisitos": [
+          {
+            "tipo": "nd",
+            "valor": 12
+          },
+          {
+            "tipo": "nota",
+            "texto": "Ter bebido mais de 100 pontos de sangue"
+          }
+        ],
+        "usos": {
+          "expr": "piso(bt / 2)",
+          "recarga": "descanso"
+        }
+      }
+    ],
+    "talentos": [
+      {
+        "id": "tal_ruptura_da_carne_imortal",
+        "nome": "Ruptura da Carne Imortal",
+        "grupo": "origem",
+        "descricao": "Seu corpo morto-vivo continua evoluindo, forçando os limites do que deveria ser possível. A própria maldição parece se alimentar da sua força para transgredir a realidade. Ao obter este talento, você escolhe dois atributos diferentes e aumenta: O valor de cada um desses atributos em +2 e O limite máximo de cada um deles também aumenta em +2.",
+        "requisitos": [
+          {
+            "tipo": "origem",
+            "id": "vampiro"
+          },
+          {
+            "tipo": "nd",
+            "valor": 6
+          }
+        ],
+        "escolha": {
+          "id": "vmp_ruptura_atributos",
+          "label": "Atributos",
+          "niveis": [
+            1,
+            1
+          ],
+          "opcoes": [
+            {
+              "id": "vmp_ruptura_forca",
+              "nome": "Força",
+              "descricao": "Seu valor e seu limite de Força aumentam em 2.",
+              "efeitos": [
+                {
+                  "canal": "atributo",
+                  "alvo": "forca",
+                  "expr": "2",
+                  "nome": "Ruptura da Carne Imortal (Força)"
+                },
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "forca",
+                  "expr": "2",
+                  "nome": "Ruptura da Carne Imortal (Força)"
+                }
+              ]
+            },
+            {
+              "id": "vmp_ruptura_destreza",
+              "nome": "Destreza",
+              "descricao": "Seu valor e seu limite de Destreza aumentam em 2.",
+              "efeitos": [
+                {
+                  "canal": "atributo",
+                  "alvo": "destreza",
+                  "expr": "2",
+                  "nome": "Ruptura da Carne Imortal (Destreza)"
+                },
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "destreza",
+                  "expr": "2",
+                  "nome": "Ruptura da Carne Imortal (Destreza)"
+                }
+              ]
+            },
+            {
+              "id": "vmp_ruptura_constituicao",
+              "nome": "Constituição",
+              "descricao": "Seu valor e seu limite de Constituição aumentam em 2.",
+              "efeitos": [
+                {
+                  "canal": "atributo",
+                  "alvo": "constituicao",
+                  "expr": "2",
+                  "nome": "Ruptura da Carne Imortal (Constituição)"
+                },
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "constituicao",
+                  "expr": "2",
+                  "nome": "Ruptura da Carne Imortal (Constituição)"
+                }
+              ]
+            },
+            {
+              "id": "vmp_ruptura_inteligencia",
+              "nome": "Inteligência",
+              "descricao": "Seu valor e seu limite de Inteligência aumentam em 2.",
+              "efeitos": [
+                {
+                  "canal": "atributo",
+                  "alvo": "inteligencia",
+                  "expr": "2",
+                  "nome": "Ruptura da Carne Imortal (Inteligência)"
+                },
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "inteligencia",
+                  "expr": "2",
+                  "nome": "Ruptura da Carne Imortal (Inteligência)"
+                }
+              ]
+            },
+            {
+              "id": "vmp_ruptura_sabedoria",
+              "nome": "Sabedoria",
+              "descricao": "Seu valor e seu limite de Sabedoria aumentam em 2.",
+              "efeitos": [
+                {
+                  "canal": "atributo",
+                  "alvo": "sabedoria",
+                  "expr": "2",
+                  "nome": "Ruptura da Carne Imortal (Sabedoria)"
+                },
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "sabedoria",
+                  "expr": "2",
+                  "nome": "Ruptura da Carne Imortal (Sabedoria)"
+                }
+              ]
+            },
+            {
+              "id": "vmp_ruptura_presenca",
+              "nome": "Presença",
+              "descricao": "Seu valor e seu limite de Presença aumentam em 2.",
+              "efeitos": [
+                {
+                  "canal": "atributo",
+                  "alvo": "presenca",
+                  "expr": "2",
+                  "nome": "Ruptura da Carne Imortal (Presença)"
+                },
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "presenca",
+                  "expr": "2",
+                  "nome": "Ruptura da Carne Imortal (Presença)"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "tal_reposicao_vampirica",
+        "nome": "Reposição Vampírica",
+        "grupo": "origem",
+        "descricao": "Seu sangue não apenas cura, ele responde ao perigo. Você se tornou um mestre da regeneração reativa, dominando a arte de se curar mesmo no meio da dor. Sua habilidade de Regeneração Vampírica recebe os seguintes aprimoramentos: +10 de cura e passa a gastar +2 cargas no limite.",
+        "requisitos": [
+          {
+            "tipo": "origem",
+            "id": "vampiro"
+          },
+          {
+            "tipo": "nd",
+            "valor": 4
+          }
+        ]
+      },
+      {
+        "id": "tal_forma_de_morcego",
+        "nome": "Forma de Morcego",
+        "grupo": "origem",
+        "descricao": "Você possui a habilidade sobrenatural de se transformar em um morcego, assumindo temporariamente uma forma alada para escapar, espreitar ou viajar com mais rapidez. Um número de vezes por dia igual à metade do seu bônus de treinamento (arredondado para baixo), você pode usar uma Ação Comum para se transformar em um morcego. Enquanto transformado, você mantém seus pontos de vida, mas não pode falar, conjurar ou usar armas ou equipamentos. Você ganha deslocamento aéreo igual ao seu deslocamento terrestre padrão. Você pode reverter à forma original gastando uma Ação Bônus. Se cair a 0 PV enquanto transformado, retorna imediatamente à sua forma original, sofrendo todos os efeitos do dano restante. Seu tamanho reduz para minúsculo enquanto transformado.",
+        "requisitos": [
+          {
+            "tipo": "origem",
+            "id": "vampiro"
+          }
+        ],
+        "usos": {
+          "expr": "piso(bt / 2)",
+          "recarga": "descanso"
+        },
+        "efeitos": [
+          {
+            "canal": "voo",
+            "expr": "9",
+            "quando": "vampiro_mascara_de_pedra_forma_de_morcego",
+            "duracao": "temporaria",
+            "nome": "Forma de Morcego"
+          },
+          {
+            "canal": "tamanho",
+            "expr": "-2",
+            "quando": "vampiro_mascara_de_pedra_forma_de_morcego",
+            "duracao": "temporaria",
+            "nome": "Forma de Morcego"
+          }
+        ]
+      },
+      {
+        "id": "tal_servos",
+        "nome": "Servos",
+        "grupo": "origem",
+        "descricao": "como vampiro você passou tempos se alimentando, e de algumas dessas refeições você decidiu que precisava de uma ajuda extra. Você Recebe uma Invocação a cada três níveis.",
+        "requisitos": [
+          {
+            "tipo": "origem",
+            "id": "vampiro"
+          },
+          {
+            "tipo": "nd",
+            "valor": 10
+          }
+        ],
+        "resultados": [
+          {
+            "label": "Invocações",
+            "expr": "piso(nd / 3)"
+          }
+        ]
+      },
+      {
+        "id": "tal_fisico_aperfeicoado_vampiro",
+        "nome": "Físico Aperfeiçoado (Vampiro)",
+        "grupo": "origem",
+        "descricao": "O seu corpo se torna específico e desenvolvido para uma área em peculiar, ligando-se mais firmemente a certos aspectos. Ao adquirir este talento, escolha um dos efeitos abaixo para receber:\n\n• Seu Deslocamento aumenta em 4,5 metros.\n• Você recebe um bônus de +2 em testes de Acrobacia ou Atletismo, escolhendo um entre eles.\n• Caso empurre uma criatura ou arremesse um objeto (Desarmar ou Empurrar), a distância é aumentada em 3 metros.\n• A distância de todo pulo que você realizar aumenta em um valor igual a metade da distância total.",
+        "requisitos": [
+          {
+            "tipo": "origem",
+            "id": "vampiro"
+          },
+          {
+            "tipo": "nd",
+            "valor": 6
+          }
+        ],
+        "escolha": {
+          "id": "vmp_fisico_aperfeicoado",
+          "label": "Efeito",
+          "opcoes": [
+            {
+              "id": "vmp_fisico_deslocamento",
+              "nome": "Deslocamento",
+              "descricao": "Seu Deslocamento aumenta em 4,5 metros.",
+              "efeitos": [
+                {
+                  "canal": "movimento",
+                  "expr": "4.5",
+                  "nome": "Físico Aperfeiçoado (Deslocamento)"
+                }
+              ]
+            },
+            {
+              "id": "vmp_fisico_acrobacia",
+              "nome": "Acrobacia",
+              "descricao": "Você recebe um bônus de +2 em testes de Acrobacia.",
+              "efeitos": [
+                {
+                  "canal": "bonusPericia",
+                  "alvo": "acrobacia",
+                  "expr": "2",
+                  "nome": "Físico Aperfeiçoado (Acrobacia)"
+                }
+              ]
+            },
+            {
+              "id": "vmp_fisico_atletismo",
+              "nome": "Atletismo",
+              "descricao": "Você recebe um bônus de +2 em testes de Atletismo.",
+              "efeitos": [
+                {
+                  "canal": "bonusPericia",
+                  "alvo": "atletismo",
+                  "expr": "2",
+                  "nome": "Físico Aperfeiçoado (Atletismo)"
+                }
+              ]
+            },
+            {
+              "id": "vmp_fisico_empurrao",
+              "nome": "Empurrão",
+              "descricao": "Ao empurrar uma criatura ou arremessar um objeto, a distância aumenta em 3 metros.",
+              "efeitos": [
+                {
+                  "canal": "distanciaEmpurrao",
+                  "expr": "3",
+                  "nome": "Físico Aperfeiçoado (Empurrão)"
+                }
+              ]
+            },
+            {
+              "id": "vmp_fisico_pulo",
+              "nome": "Pulo",
+              "descricao": "A distância de todo pulo que você realizar aumenta em metade da distância total."
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

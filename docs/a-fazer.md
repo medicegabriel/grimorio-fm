@@ -33,6 +33,46 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 ---
 
 ## PERGUNTAS AO AUTOR
+### Vampiro da Máscara de Pedra: leituras para confirmar e o que segue de mesa
+**Onde:** `addons/vampiro-mascara-de-pedra.json`
+**Situação:** o autor decidiu quatro leituras em 2026-10-12 (as penalidades de atributo da fome se
+substituem, a Aprimorada dá +10 na cura, só os 5 Talentos do texto, e a Pedra Aja tira também a
+vulnerabilidade a Energia Reversa do Rei). Estas outras foram feitas sem ele, e estão no número:
+1. **Regeneração Vampírica:** a frase *"No início de cada um dos seus turnos, você recupera pontos de
+   vida igual a:"* termina sem valor, e foi lida como sobra de rascunho. Só a ação bônus com Doses
+   está no número. Cada Dose cura a base inteira (como os usos a mais do Vigor Maldito), e as Doses a
+   mais vão até metade do BT. Com fome (2 dias ou mais) a Cura por Dose vira 0, inclusive no frenesi.
+2. **Patente:** as faixas do texto se encostam (0-40, 40-100). O número de baixo de cada faixa já é
+   dela: 40 é Intermediário, 100 Experiente, 200 Conde e 500 Rei. Os benefícios somam (o Conde tem o
+   +1 de Anatomia do Intermediário e o dele).
+3. **Fraqueza Ignorada:** a escolha aparece sempre na aba Origem e só vale com 100 Doses Consumidas.
+   Só a Vulnerabilidade à Luz tem número, as outras três seguem de mesa.
+4. **"-4 em todas as rolagens"** (10 a 13 dias) vale em Perícias, Testes de Resistência, ataques e
+   Iniciativa. Dano fica de fora.
+5. **Forma de Morcego:** o "deslocamento terrestre padrão" é o de 9 metros (sem bônus), e o tamanho
+   desce dois degraus a partir do Médio. Vale só com o interruptor da bancada (em combate).
+6. **Servos:** "uma Invocação a cada três níveis" é `piso(nd / 3)`, contando desde o nível 1.
+7. **A Pedra Aja** tira as vulnerabilidades mesmo sem a Patente Rei: o contador é marcado por quem
+   usou a Máscara com a Pedra.
+
+E ficaram de mesa, escritos no texto de cada item:
+8. **Consumir Sangue:** a desvantagem em técnicas e aptidões, o Condenado permanente e o custo dele,
+   o Confuso no início do combate, o teste de Vontade a cada turno (a CD está pronta) e o frenesi. Os
+   Dias sem Sangue e as Doses Consumidas só se mexem no criador (Recursos de Origem), como o contador
+   do Arauto da Corrupção.
+9. **Patente:** não perder Doses e o enjoado do Experiente, os dados a mais do sol, o "treinamento de
+   vampiro" do Conde (o texto não o define) e as Aptidões de Maldição do Rei ("precisando de uma
+   narrativa").
+10. **Herança Maldita, Máscara de Pedra, Criar Vampiro, Bote e Coleta de Sangue:** só texto e os
+    números prontos (CD da Transformação, Testes).
+11. **Características de Anatomia:** Capacidade de Voo e de Nado, Devorador de Energia, Presença
+    Nefasta, Servo, Anatomia Incompreensível, o Atletismo dos Braços Extras e a regeneração de membro
+    da Aprimorada (só o contador). Os "100 pontos de sangue" da Aprimorada são nota.
+12. **Uma ficha com o Vampiro e a Maldição Era de Ouro instalados** vê os dois catálogos na mesma aba,
+    porque a família é uma só.
+**Precisa:** o autor confirmar o 1 ao 7.
+**Anotado:** 2026-10-12, ao fazer o addon Vampiro da Máscara de Pedra
+
 ### Stark: leituras para confirmar e o que segue de mesa
 **Onde:** `addons/stark.json`
 **Situação:** o pacote saiu com os números que o motor sabe dizer. Estas leituras foram feitas sem o

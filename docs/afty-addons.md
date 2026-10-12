@@ -2352,3 +2352,33 @@ Estilo do Legado só abre no Nível 4, as 5 Técnicas valem todas e estouram a p
 com `quando` valem sempre.
 
 O que segue de mesa e as leituras para o autor estão em `docs/a-fazer.md`. Assert: `t-stark.mjs`.
+
+## Vampiro da Máscara de Pedra (2026-10-12)
+
+`addons/vampiro-mascara-de-pedra.json`, origem PRÓPRIA (não é variação do Feto Amaldiçoado Híbrido,
+e não abre os Talentos de Origem dele: autor, *"Só os 5 do texto"*). Gerado por um script, e o
+`asserts/t-vampiro-mascara-de-pedra.mjs` lê o mesmo JSON que a pessoa cola.
+
+| Parte | Como ficou |
+|---|---|
+| Características de Anatomia | 17 entradas na família `caracteristicasAmaldicoadas` (`permite` da primitiva), com o texto do Vampiro. A origem chama o pool pelo nome dela (`rotuloCaracteristicasAmaldicoadas`). Vagas: `1 + piso(nd / 5)` do Físico Amaldiçoado, mais uma no Intermediário, no Conde e no Rei. Carapaça pede Nível 10, Servo 9 e a Aprimorada 12 (os 100 pontos de sangue ficam em nota) |
+| Regeneração Vampírica | números de mesa: Cura por Dose (17 + mod. Con, +5 nos níveis 4, 8 e 12, +10 da Reposição, +10 da Aprimorada) e Doses Extras (metade do BT, +2 da Reposição). Com fome (2 dias ou mais) a cura vira 0 |
+| Doses | o estoque, contador `usos` com recarga `manual` e rótulo "Doses" na característica Recebendo Doses: 4, mais o mod. de Con a partir do Intermediário. O Descansar não devolve, o mais anota a Dose bebida |
+| Recursos de Origem | três `contadoresOrigem`: Doses Consumidas (a vida inteira, decide a Patente), Dias sem Sangue (a fome) e Pedra Aja (bool). Ficam na aba Origem do criador, e o número é digitável |
+| Patente | 40, 100, 200 e 500 Doses Consumidas, com o nome no número de mesa (`resultados[].textos`). A escolha Fraqueza Ignorada só vale do Experiente em diante (`opcao_vmp_ignora_luz`). O Rei fica vulnerável a Energia Reversa |
+| Fraquezas | a Vulnerabilidade à Luz é `vulnerabilidadeDano` radiante. A Pedra Aja tira ela e a de Energia Reversa do Rei (autor). O resto (sol, solo sagrado, reflexo, água corrente) é de mesa |
+| Consumir Sangue | pelos Dias sem Sangue: -1, -2 e -3 em Força, Destreza e Constituição (substituem, autor), -4 em perícias, TR, ataques e Iniciativa de 10 a 13 dias, nada no frenesi (14+). Temporárias. A Sanidade sai pelo nome (100% a 0%), e a CD de Vontade (16 + nível) também |
+| Criar Vampiro, Coleta de Sangue | CD da Transformação (15 + nível + BT) e Testes (1 + BT) |
+| Talentos | Ruptura da Carne Imortal (2 atributos, +2 no valor e no limite), Reposição Vampírica, Forma de Morcego (estado de combate do pacote: Voo 9 m e Minúsculo, usos metade do BT), Servos (Invocações: `piso(nd / 3)`) e Físico Aperfeiçoado (Vampiro), cópia do Talento do Feto com requisito de Vampiro (o validador recusa nome repetido) |
+
+Os verbos que ele pediu, todos genéricos e nos dois sistemas, estão em `docs/automacao-dsl.md`:
+`opcao_<id>`, `tem_` das Características Amaldiçoadas, `usos.recarga: "manual"`, `usos.rotulo`,
+`resultados[].textos`, contador e números de mesa nas Características Amaldiçoadas e o rótulo do
+pool. As vagas do pool mostram as fontes no hover, e o cartão do criador perdeu o texto fixo que
+mentia para quem soma vaga de outro lugar.
+
+⚠ Motor e pacote vão no mesmo push, e o pacote só se instala depois do deploy. No motor velho a
+Vulnerabilidade à Luz e a Cura por Dose caem a zero caladas (a variável `opcao_*` e o `tem_` da
+Característica não existem lá), e as Doses voltam no Descansar.
+
+O que segue de mesa e as leituras para o autor estão em `docs/a-fazer.md`.

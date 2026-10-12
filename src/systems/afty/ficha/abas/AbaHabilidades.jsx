@@ -70,7 +70,7 @@ function CartaoTecnica({ titulo, texto }) {
   );
 }
 
-export default function AbaHabilidades({ funcionamentos = [], itens, abertos, onAberto, favoritos, onFavorito, destaque, contadorUsos = null, espinho = null }) {
+export default function AbaHabilidades({ funcionamentos = [], itens, abertos, onAberto, favoritos, onFavorito, destaque, contadorUsos = null, espinho = null, rotulosGrupo = {} }) {
   const [termo, setTermo] = useState("");
   const [efeitoFiltro, setEfeitoFiltro] = useState("todos");
   const filtrados = useMemo(() => filtraHabilidades(itens, efeitoFiltro, termo), [itens, efeitoFiltro, termo]);
@@ -104,10 +104,13 @@ export default function AbaHabilidades({ funcionamentos = [], itens, abertos, on
 
       {filtrados.length === 0 && tecnicasFiltradas.length === 0 && <p className="afty-vazio py-2" role="status">Nenhuma habilidade encontrada</p>}
 
+      {/* `rotulosGrupo` troca o nome de um grupo pelo que a ficha usa (2026-10-12):
+          o Vampiro chama as Características Amaldiçoadas de Características de
+          Anatomia. */}
       {GRUPOS.map((g) => (
         <GrupoComSubAbas
           key={g.id}
-          grupo={g}
+          grupo={rotulosGrupo[g.id] ? { ...g, label: rotulosGrupo[g.id] } : g}
           lista={porGrupo.get(g.id) ?? []}
           abertos={abertos}
           onAberto={onAberto}

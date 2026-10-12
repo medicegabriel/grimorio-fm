@@ -1673,6 +1673,17 @@ export function aptidoesVetadasDaOrigem(creature) {
 }
 
 /**
+ * Como a origem CHAMA o pool de Características Amaldiçoadas
+ * (`rotuloCaracteristicasAmaldicoadas`), ou `null` para o nome de sempre. O
+ * Vampiro da Máscara de Pedra as chama de "Características de Anatomia", e o
+ * criador e a Ficha mostram o nome dele na aba e no grupo.
+ */
+export function rotuloCaracteristicasDaOrigem(creature) {
+  const r = getOrigem(creature?.core?.origem?.id)?.rotuloCaracteristicasAmaldicoadas;
+  return typeof r === "string" && r.trim() ? r.trim() : null;
+}
+
+/**
  * A caracteristica que o Gemeo COPIOU em Verdadeiras Origens, como uma
  * caracteristica de verdade. Lista de zero ou um, para o chamador so espalhar.
  *
@@ -2193,6 +2204,11 @@ export function validarCatalogoOrigens() {
     }
     if (o.aptidoesVetadas != null && !(Array.isArray(o.aptidoesVetadas) && o.aptidoesVetadas.every((id) => typeof id === "string" && id))) {
       problemas.push(`${o.nome}: aptidoesVetadas deve ser uma lista de ids`);
+    }
+    // O nome do pool de Características Amaldiçoadas (pacote Vampiro, 2026-10-12).
+    if (o.rotuloCaracteristicasAmaldicoadas != null
+      && !(typeof o.rotuloCaracteristicasAmaldicoadas === "string" && o.rotuloCaracteristicasAmaldicoadas.trim())) {
+      problemas.push(`${o.nome}: rotuloCaracteristicasAmaldicoadas deve ser um texto`);
     }
     checarCaracteristicas(o.nome, o.caracteristicas);
   }

@@ -465,3 +465,24 @@ Guia da área: `docs/afty-tecnica-maxima-dominio.md`.
   Nível de Aptidão daquela trilha deixa de travar as Aptidões de OUTRAS trilhas. A da própria trilha
   continua pedindo o nível. O requisito dispensado aparece com o chip de sempre, e o hover diz quem o
   dispensou (`derived.requisitoTrilhaDispensado`). Nasceu com o Instinto Corrompido do pacote Stark 1.1.0.
+
+## Pacote Vampiro da Máscara de Pedra: estoque manual, nome do número e escolha de origem (2026-10-12)
+
+- Variável `opcao_<id>`: 1 quando a opção foi escolhida numa escolha de ORIGEM ou de clã, 0 em
+  toda outra opção que a origem oferece (declaradas a zero, como os `tem_*`). O id passa pelo
+  `normalizarVariavel`, então `pacote-x:op_y` vira `opcao_pacote_x_op_y`. Existe no montante e no
+  contexto principal, e é o que deixa um efeito da origem ser DESLIGADO por outra escolha: a
+  Vulnerabilidade à Luz do Vampiro cai com `!(opcao_vmp_ignora_luz && <doses> >= 100)`.
+- `tem_<id>` passou a valer também para as Características Amaldiçoadas escolhidas. A Regeneração
+  Vampírica Aprimorada soma +10 na cura de uma característica da origem por ele.
+- `usos.recarga: "manual"` (em Habilidade, Talento, característica de origem, opção e
+  Característica Amaldiçoada): o contador que NADA devolve sozinho, nem o Descansar. A chave da
+  sessão leva o prefixo `manual:`, e o mais do contador é quem anota a recarga. É o estoque de Doses.
+- `usos.rotulo`: o nome do contador na Ficha ("Doses" no lugar de "Usos").
+- `resultados[].textos`: uma lista de nomes, e o número vira o índice dela, aparado nas pontas. A
+  Ficha mostra "Patente: Conde" em vez de "Patente: 3", e o `valor` segue no derivado.
+- As Características Amaldiçoadas aceitam `usos` e `resultados`, como a característica de origem
+  (a chave é `caracteristicaAmaldicoada:<id>`).
+- Campo de origem `rotuloCaracteristicasAmaldicoadas`: o nome do pool na aba do criador, no cartão e
+  no grupo da Ficha. As vagas do pool passaram a mostrar as fontes no hover
+  (`derived.caracteristicasAmaldicoadas.partes`).

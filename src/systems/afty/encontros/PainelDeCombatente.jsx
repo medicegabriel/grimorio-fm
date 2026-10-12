@@ -472,6 +472,7 @@ export default function PainelDeCombatente({
             gastosDe: (chave) => usosGastosDe(sessao, chave),
             onUso: (usos, delta) => onSessao((s) => marcaUso(s, usos, delta)),
           }}
+          rotulosGrupo={{ caracteristicaAmaldicoada: derived.caracteristicasAmaldicoadas?.rotulo }}
           // Só leitura: o combatente guarda uma cópia da ficha, e gravar as Almas
           // nela não chegaria à ficha de verdade.
           espinho={derived.primitivas?.includes("espinho") && derived.espinho?.ativo ? (

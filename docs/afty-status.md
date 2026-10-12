@@ -16420,3 +16420,25 @@ Pedido do autor: um Addon chamado "Yna" com a Origem Kitsune, a Linhagem Clã Ge
 **Resultado na ficha do autor:** RD Geral 62 e RD Física 21 com o Domínio Simples, as Técnicas e o Golpe Descendente ligados (a planilha dá 60,5 e 21; a diferença é o Reflexo Evasivo). Na planilha a "RD Física" é o total contra dano físico (Geral + escudo), e no app ela é o extra que soma com a Geral.
 
 **Asserts:** `t-stark.mjs` com 107. Sem commit ou push.
+
+## SESSÃO DE 2026-10-12: ORIGEM VAMPIRO DA MÁSCARA DE PEDRA (ADDON)
+
+**Pedido do autor:** *"Faça um addon desta origem com tudo isso"*, com o texto inteiro colado (origem, Regeneração Vampírica, Físico Amaldiçoado, Herança Maldita, 17 Características de Anatomia, 5 Talentos de Origem, Fraquezas, Criar Vampiro, Consumir Sangue, Patente, Recebendo Doses, Máscara de Pedra, Pedra Aja e Coleta de Sangue).
+
+**Decisões do autor:** as penalidades de atributo da fome se substituem (-1, -2, -3), a Regeneração Vampírica Aprimorada dá +10 na cura ("aumenta em 2 nível"), só os 5 Talentos do texto (o Vampiro não abre os do Feto), e a Pedra Aja tira também a vulnerabilidade a Energia Reversa do Rei.
+
+**O pacote:** `addons/vampiro-mascara-de-pedra.json` 1.0.0, origem própria com 12 características, 17 Características de Anatomia (família `caracteristicasAmaldicoadas`, com o pool chamado "Características de Anatomia"), 5 Talentos, 3 contadores de origem (Doses Consumidas, Dias sem Sangue, Pedra Aja) e o estado de combate Forma de Morcego. O que vira número e o que segue de mesa está na seção do guia (`afty-addons.md`) e em `a-fazer.md`.
+
+**O que o motor ganhou (genérico, nos dois sistemas):**
+- `usos.recarga: "manual"` (prefixo `manual:` na chave, preservado pelo `descansar`) e `usos.rotulo` no contador da Ficha;
+- `resultados[].textos`, o nome do número na Ficha;
+- contador e números de mesa nas Características Amaldiçoadas, e `tem_<id>` delas na DSL;
+- `opcao_<id>`, a opção escolhida numa escolha de origem como booleana (montante e principal). O `resolveEscolhasOrigem` subiu para antes do contexto do montante;
+- `rotuloCaracteristicasAmaldicoadas` na origem (aba do criador, cartão e grupo da Ficha e do Encontro), e as vagas do pool com as fontes no hover (`partes`) no lugar do texto fixo;
+- o contador de origem do criador ficou digitável (as Doses Consumidas chegam a 500).
+
+**Achado e consertado:** a linha de origem na Ficha procurava a opção escolhida pelo id da CARACTERÍSTICA, e o mapa é chaveado pelo id da ESCOLHA. Onde os dois diferem, a opção não aparecia (a Fraqueza Ignorada da Patente). Nenhum pacote anterior tinha os dois ids diferentes numa escolha única.
+
+**Navegador** (`/player`, ficha de teste ND 12): a aba "Características de Anatomia" com Vagas 3/4 e o hover Físico Amaldiçoado +3 e Patente: Vampiro Intermediário +1, os Recursos de Origem digitáveis, a Ficha com Doses 7/7, Cura por Dose 55, "Patente: Vampiro Experiente" e a Fraqueza escolhida na linha. Gastar 2 Doses e uma Alma Maldita, Descansar: a Alma volta a 4/4 e as Doses ficam em 5/7. Com 520 Doses e 3 dias de fome: "Patente: Rei", Sanidade 90%, Cura por Dose 0, Doses 4/6 (o -1 de Constituição), e na aba Resistências a Energia Reversa vulnerável pela "Patente: Rei" e o Radiante não (Luz ignorada). Console limpo. Dados de teste apagados e Vite desligado.
+
+**Asserts:** `t-vampiro-mascara-de-pedra.mjs` (121) nos dois sistemas. Contraprova no motor do `HEAD`: 62 de 119 falham (sem o `opcao_*` e o `tem_` da Característica, a Vulnerabilidade à Luz e a Cura por Dose caem a zero caladas, e as Doses voltam no Descansar). ⚠ Motor e pacote no mesmo push, e o pacote só se instala depois do deploy. Sem commit ou push.

@@ -402,7 +402,12 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
   // `tabAtiva` cobre quem já estava nela quando o Tipo mudou: em vez de deixar
   // a tela num limbo (aba escondida, conteúdo aberto), cai nas Informações.
   const semEnergia = draft.core.tipo === "restringido";
-  const abasVisiveis = useMemo(() => tabsDoSistema(sistema, derived.primitivas), [sistema, derived.primitivas]);
+  /* A aba das Características Amaldiçoadas leva o nome que a origem dá ao pool
+     (2026-10-12): "Características de Anatomia" no Vampiro. */
+  const rotuloCaracteristicas = derived.caracteristicasAmaldicoadas?.rotulo ?? null;
+  const abasVisiveis = useMemo(() => tabsDoSistema(sistema, derived.primitivas)
+    .map((t) => (t.id === "caracteristicasAmaldicoadas" && rotuloCaracteristicas ? { ...t, label: rotuloCaracteristicas } : t)),
+  [sistema, derived.primitivas, rotuloCaracteristicas]);
   const umaAbaSo = regraDo(sistema, "abasIdentidade") === "player";
   const abaBase = umaAbaSo ? "identidade" : "informacoes";
   // Quem estava numa aba que sumiu (a Aptidões do Restringido, ou a Informações
@@ -8661,7 +8666,18 @@ function OrigemCard({ draft, derived, patch, patchCore, setOrigemId, setOrigemBo
                 >
                   −
                 </button>
-                <span className="font-mono font-bold text-white text-sm tabular-nums w-10 text-center">{valor}</span>
+                {/* Digitável (2026-10-12): as Doses Consumidas do Vampiro chegam
+                    a 500, e mais nenhum contador cabia em cliques de um em um. */}
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  value={valor}
+                  min={c.min}
+                  max={c.max ?? undefined}
+                  onChange={(e) => setValor(e.target.value)}
+                  aria-label={c.label}
+                  className="font-mono font-bold text-white text-sm tabular-nums w-14 text-center rounded border border-slate-800 bg-slate-950/60 py-0.5"
+                />
                 <button
                   type="button"
                   onClick={() => setValor(valor + c.passo)}
@@ -13375,19 +13391,22 @@ function TabCaracteristicasAmaldicoadas({ derived, onToggle, onAlvo }) {
   // as complementares: o recorte delas é do Sem Técnica, e o texto do Corpo
   // Especializado diz só "escolha uma perícia".
   const pericias = derived.testes?.pericias ?? [];
+  /* O hover das Vagas lê as fontes do canal (2026-10-12). Era um texto fixo
+     ("1 no 1° nível, +1 a cada 5 níveis"), que mentia para quem soma vaga de
+     outro lugar, como as Patentes do Vampiro. */
   return (
     <Card
-      title="Características Amaldiçoadas"
+      title={res.rotulo || "Características Amaldiçoadas"}
       headerRight={
         <div
-          className={`flex items-center gap-1.5 border rounded-md px-2 py-1 ${
+          className={`relative group flex items-center gap-1.5 border rounded-md px-2 py-1 ${
             res.excedeu ? "border-rose-800 bg-rose-950/30" : "border-slate-800 bg-slate-950/50"
           }`}
-          title="Concedidas pela Anatomia Amaldiçoada: 1 no 1° nível, +1 a cada 5 níveis"
         >
           {res.excedeu && <AlertTriangle className="w-3 h-3 text-rose-400 flex-shrink-0" aria-hidden="true" />}
           <span className="text-[9px] uppercase tracking-wider text-slate-400">Vagas</span>
           <span className="font-mono text-xs font-bold tabular-nums text-white">{res.usadas} / {res.vagas}</span>
+          {res.partes?.length > 0 && <PainelDeFontes partes={res.partes} total={res.vagas} ancora="direita" />}
         </div>
       }
     >
