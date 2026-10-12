@@ -34,6 +34,22 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 
 ## PERGUNTAS AO AUTOR
 
+### Revisão de 2026-10-07: nove leituras de regra do bloco G00 a CMB-02
+**Chave:** BLOCO-2026-10-07-perguntas
+**Onde:** `docs/revisao-automacao/<lote>/revisao.md` de cada lote citado
+**Situação:** a revisão do bloco corrigiu o que tinha regra fechada. Estas ficaram paradas, sem leitura presumida, e o código continua como estava em cada uma:
+1. **P01, multiclasse na criatura.** Livro, página 47: "você deve atender os requisitos para Multiclasse especificados nas características da outra especialização". Desde 2026-10-07 isso vale na ficha de jogador (divergência `requisitoMulticlasse`). Na criatura do mestre a multiclasse já segue outra régua (ND, terceira classe no 31). Vale lá também? Se sim, a divergência some e o Afty passa a travar e avisar igual.
+2. **P01, PV por rolagem.** Página 46: ao subir de nível o PV pode ser a rolagem do dado de vida ou o valor fixo. O catálogo declara `pvDado` e só o valor fixo é usado. A ficha deve oferecer a rolagem (guardando o resultado de cada nível), ou o fixo é a regra da mesa?
+3. **M03, Armas Absolutas.** Página 61: 2 PE para os bônus por uma rodada, e mais 2 PE por rodada para manter, senão encerram. A regra vigente é "custoPE de estado só é exibido, sem cobrança automática" (só o Invencível sob o Sol cobra). Cobrar e expirar automaticamente como o Invencível, ou exibir o custo e deixar a manutenção com a pessoa (marcando "PE Não Descontado")?
+4. **M02, Funcionamento global e Funcionamento por arma.** Um Funcionamento com `danoBonus` sem alvo (+3) e outro mirando uma arma (+5) dão +8 naquela arma: a disputa do pool é por alvo LITERAL, e o global não briga com o direcionado. Somam (como hoje) ou vale o maior?
+5. **CMB-01, Estilo do Protetor.** Página 64: a reação impõe desvantagem a quem ataca aliado a 1,5 m, e "além disso" você concede vantagem no TR de aliado a 1,5 m. O segundo benefício também consome a reação?
+6. **CMB-01, Adepto de Combate com Estilos diferentes.** Página 166: o Adepto "considera seu Nível de Personagem para os efeitos" do Estilo que ele ensina. Hoje todo Estilo escala por `max(esc_combatente, nd * tem_tal_adepto_de_combate)`, então um Combatente 4 / Lutador 12 com Defensivo pelo Repertório e Massivo pelo Adepto ganha o ND também no Defensivo (+6 em vez de +4). O nível de personagem vale só para o Estilo do Adepto?
+7. **CMB-02, Golpe Especial em Feitiço.** Página 65: "Quando realizar um ataque, ou arte do combate que envolva um ataque". O Golpe vale em Feitiço com jogada de ataque e na jogada Amaldiçoada, ou só em arma e Ataque Básico? Hoje Atroz e Penetrante valem em arma, Básico e Feitiço com ataque (o Feitiço de TR saiu, porque lá não há ataque em leitura nenhuma), Desfocado vale em toda jogada de ataque e o Preciso só na arma e no Básico.
+8. **CMB-02, Sanguinário.** Página 65 fala em sangramento "leve" e "médio"; a tabela da página 211 usa Fraco, Médio, Forte e Extremo. O leve é o Fraco (2d6)? Sem isso a condição não pode ser aplicada pelo montador.
+9. **M03, Condenado no Ápice.** Ver a nota de 2026-10-07 na entrada "Condições: leituras para confirmar" (item 6).
+**Precisa:** a resposta de cada item. As do Golpe (7 e 8) e a do Protetor (5) destravam consequências que já têm desenho na seção da campanha, mais abaixo.
+**Anotado:** 2026-10-07, revisão do bloco G00, M01 a M05, P01, CMB-01 e CMB-02
+
 ### Conciliar aprovação inicial e evolução do arsenal de Ryuma
 **Onde:** `docs/arsenal-ryuma-aprovacao-inicial.md`, `addons/arsenal-de-ryuma.json`
 **Situação:** nova fonte inicial tem Murasama +2 Percepção situacional em
@@ -387,6 +403,7 @@ Vale notar que o custo só aparece em ficha COM imagem de tema: sem ela a camada
 10. **Valor manual da aba Cálculos vence a condição**, como vence todo efeito: uma Defesa sobrescrita à mão não cai com o Paralisado.
 **Precisa:** confirmação do autor, ou a leitura certa de cada item.
 **Anotado:** 2026-09-21, na entrega das Condições
+**Nota (2026-10-07, revisão M03):** o item 6 não alcança o Invencível sob o Sol. A ativação e a manutenção dele cobram 4 PE fixos por `gastaPe` (`alteraEstadoCombate` e `avancaInvencivelSobOSol`, ficha-sessao.js), fora do `custoEmPe` onde o Condenado entra, e a fonte própria do Ápice não está no Livro de Regras. Precisa: dizer se o Condenado aumenta o custo de ativação e o de manutenção do Ápice. Se sim, os dois passam pelo `custoEmPe`.
 
 ### Sem Técnica - Liberto: seis leituras para confirmar
 **Onde:** `addons/sem-tecnica-liberto.json` (o pacote) e `asserts/t-liberto.mjs` (as expectativas)
@@ -618,28 +635,17 @@ Tipo para linhas de `rdTipo` e tirar `rdEspecifico` do `OVERRIDABLE`, do Preview
 migração para as fichas que tenham override gravado nela.
 **Anotado:** 2026-09-05, ao pôr as fontes de RD na aba de Defesas
 
-### Os três encantamentos de RD por tipo esperam agora só a ESCOLHA DE TIPO
-**Onde:** `src/systems/afty/afty-equipamentos.js` (os três), `AftyTabEquipamentos`
-**Situação:** ⚠ **METADE DESTA PENDÊNCIA MORREU EM 2026-09-02.** Ela tinha dois bloqueios, e a aba de
-Defesas resolveu os dois que eram do sistema: o canal `rdTipo` (com o tipo no alvo) existe, e a ficha
-tem onde mostrar "RD 6 contra Queimante".
-
-O que resta é só o terceiro bloqueio, e ele é de UI: dois dos três encantamentos pedem uma ESCOLHA DE
-TIPO por encantamento, e encantamento não tem mecanismo de escolha nenhum.
-
-| Encantamento | Texto | O que falta |
-|---|---|---|
-| **Isolante** (uniforme) | *"5 de RD contra dano Queimante e Congelante"* | **NADA. É ligável hoje** |
-| **Isolante** (escudo, só jogador) | *"a redução de dano do escudo passa também a ser aplicado a um tipo de dano elemental à sua escolha"* | escolha de tipo elemental, repetível, valor = RD do escudo |
-| **Resiliente** (uniforme) | *"redução de dano igual a 5 contra um tipo de dano (exceto os danos físicos, alma e energética). A RD aumenta para 10 se for uma ferramenta de Grau Especial"* | escolha de tipo, com veto |
-
-⚠ **Ligar só o de uniforme é pior do que os três parados**, porque o jogador passaria a acreditar que
-os outros dois também funcionam. Há assert em `asserts/t-uniforme-escudo.mjs` prendendo os três
-juntos: ligar um faz falhar, para a decisão ser consciente.
-
-**Precisa:** dar aos encantamentos um mecanismo de escolha (o de habilidade não serve: o dono aqui é
-uma instância de item, e o do escudo é repetível). Depois ligar os três de uma vez.
-**Anotado:** 2026-08-31, e reduzido à metade em 2026-09-02 com a aba de Defesas
+### Automatizar os 16 encantamentos de Uniforme e Escudo que dependem de combate
+**Onde:** `src/systems/afty/afty-equipamentos.js`, Ficha Final e Encontros
+**Situação:** a revisão de 2026-10-05 ligou Resiliente e os dois Isolante; os 11 efeitos passivos
+das duas listas agora funcionam. Os outros 16 ainda conservam apenas o texto da regra.
+Uniforme: Aeronauta, Distorcivo, Escaldante, Estimulante, Impulso, Repulsor, Revestido com Espinhos
+e Ricochete. Escudo: Avassalador, Bloqueador, Destruidor, Disco, Espinhoso, Esponja,
+Expansão de Escudo e Intangível. Detalhamento em `docs/afty-equipamentos.md`.
+**Precisa:** controles de cargas, reações, duração e alvos; ataque próprio com escudo, níveis
+de dano e a suspensão de sua RD após atacar; ocupação da mão para requisitos e chance de falha
+dos ataques a distância. Os pré-requisitos já estão estruturados e devem continuar valendo.
+**Anotado:** 2026-10-05, revisão pedida pelo autor
 
 ### Confirmar o total de perícias das quatro Classes que o autor não citou
 **Onde:** `src/systems/afty/afty-especializacoes.js`, `caracteristicas.pericias`
@@ -663,20 +669,6 @@ vírgula ("Medicina, Prestidigitação") em vez de "ou".
 **Precisa:** o autor conferir os quatro números. Se algum estiver errado, o que muda é só a linha
 `pericias:` daquela Classe.
 **Anotado:** 2026-08-31, ao aplicar o parse que o autor deu para o Combatente
-
-### O Ataque Básico sem arma criada pode rolar como Ataque Amaldiçoado?
-
-**Onde:** `src/systems/afty/afty-pericias.js` (`resolveDano`, a linha `basico`)
-**Situação:** toda entrada de arma do inventário escolhe entre a jogada física da categoria e o
-Ataque Amaldiçoado (`ataqueId`, 2026-08-18). As três de pugilato (Faixas, Manoplas, Soco Inglês) não
-têm linha própria, elas são o Ataque Básico, e o básico rola sempre Corpo a Corpo. O seletor aparecia
-nas três e gravava o campo sem mudar número nenhum, e por isso ele foi **escondido** nelas em
-2026-08-20. Esconder um controle que mentia não decidiu a regra.
-**Nota (2026-10-03):** Pugilato criado pela receita do Addon Criação de Equipamentos pode escolher Acerto Amaldiçoado no item que define o Ataque Básico. Implementação registrada em `afty-status.md`.
-**Precisa:** decidir se um golpe desarmado sem esse item criado (ou com Faixas do catálogo) pode usar a jogada de Ataque Amaldiçoado.
-Se puder, o controle não volta para o card do item: o Ataque Básico existe sem item nenhum, então a
-escolha mora na linha do golpe, na aba de Perícias e Testes.
-**Anotado:** 2026-08-20, ao consertar os quatro buracos das Faixas
 
 ### ASSUNÇÃO: `gemeosSemTecnica` abre as DUAS do Sem Técnica, e não só as nomeadas
 
@@ -919,8 +911,9 @@ pelo mesmo caminho que o Múltiplos Efeitos já usa.
 **Onde:** `src/systems/afty/afty-treinos-especiais.js` (catálogo) e o card
 `Interlúdios · Treinos Especiais` do criador
 **Situação:** os Treinos Especiais (Interlúdios Adicionais, Livro do Narrador p. 22) ganharam
-sistema em 2026-08-18. Dois estão no catálogo (**Treinamento para Feitiço** e **Treinamento para
-Habilidade**) e o **Estudos** segue como cartão "em breve", porque só existe a paráfrase da aba
+sistema em 2026-08-18. Três estão no catálogo (**Treinamento para Feitiço**, **Treinamento para
+Habilidade** e **Treinamento para Aptidão**) e o **Estudos** segue como cartão "em breve", porque
+só existe a paráfrase da aba
 ("4 testes de INT/SAB, CD 12 + maestria, 2 sucessos concedem maestria, ou 3 testes CD 15 + nível
 para especialista"), nunca conferida contra o livro.
 **Precisa:** o autor mandar o texto. Entra como DADO no catálogo (`id`, `nome`, `focos`,
@@ -930,6 +923,7 @@ o primeiro a usar o campo `alvo` da instância (ele nomeia uma perícia) e o can
 `proficienciaPericia`. A CD dele não é a metade do Nível, e o `cdTeste` já aceita outra expressão.
 **Anotado:** 2026-08-18, ao criar os Treinos Especiais
 **Nota:** o texto do Treinamento para Habilidade chegou em 2026-09-16 e já está no catálogo.
+**Nota:** o Treinamento para Aptidão entrou em 2026-10-04 por pedido do autor, seguindo os parâmetros da Habilidade e concedendo Aptidões Amaldiçoadas.
 
 ### DECIDIR: fonte display baixada para a Ficha (arquivo no repositório)
 **Onde:** `public/` mais um `@font-face` em `src/systems/afty/ficha/ficha.css`
@@ -1536,3 +1530,58 @@ logo depois de um commit, para o diff ficar isolado.
 **Situação:** o addon Aberração Humanizada libera os Talentos de Origem do Feto Amaldiçoado Híbrido a partir do nível 6. Reposição Sanguínea melhora Vigor Maldito, mas essa característica não faz parte da Aberração Humanizada.
 
 **Precisa:** decisão do autor sobre conceder Vigor Maldito, adaptar Reposição Sanguínea a outra cura da origem ou manter o Talento selecionável sem efeito próprio.
+
+
+## Campanha de revisão da automação
+
+### G00: auditar inventário, fontes, cobertura e protocolo
+**Chave:** G00-auditoria-independente
+**Onde:** [revisao.md](revisao-automacao/G00/revisao.md), [registro.json](revisao-automacao/G00/registro.json) e [entrega-sha256.json](revisao-automacao/G00/entrega-sha256.json)
+**Situação:** auditoria externa REPROVADO, registrada como AUDITADO COM PENDÊNCIAS. Correções implementadas aguardam rechecagem independente. Os demais lotes permanecem NÃO REVISADO.
+**Precisa:** rechecagem independente dos novos hashes e das correções, incluindo reconciliação, fontes individuais, remendos, liberações, subpastas e preservação. Achado 9: decisão do autor sobre restaurar a instrução geral de sincronização anterior e manter a restrição apenas na campanha. A pergunta já foi apresentada e ainda aguarda resposta. Entregar achados em chat, por leitura, sem editar esta árvore.
+**Nota:** o autor autorizou ignorar por enquanto F&M 2.0, Livro do Narrador e fontes próprias dos homebrews não localizadas. Estão marcadas como adiadas nos lotes correspondentes, sem aprovação de regra e sem nova pergunta neste G00. As pendências de regra preexistentes conservam seu escopo.
+**Decisão do achado 6:** o autor exige motor e autoria em toda parcela. MANUAL INTENCIONAL não recebe exceção de aprovação.
+**Anotado:** 2026-10-05, execução e correção do G00.
+**Nota (2026-10-07):** a imprecisão que a auditoria do G00 apontou ("nenhum assert escreve", e o `t-fontes-revisao.mjs` cria e apaga temporários fora do repositório) foi corrigida em `asserts/LEIA.md` e no CLAUDE.md. O achado 9 continua aberto.
+
+### Encontro: leitura de catálogo FORA da derivação ainda vê a união dos addons
+**Chave:** M05-texto-fora-do-derive
+**Onde:** `src/systems/afty/encontros/` e as abas da Ficha que leem catálogo no render
+**Situação:** desde 2026-10-07 o remendo de addon é da ficha (`comEscopoDaFicha` em volta do `deriveAfty`), então todo NÚMERO sai certo no Encontro misto. Quem lê catálogo no render, fora da derivação (o texto de uma habilidade remendada no painel de um combatente), ainda enxerga a união, com o remendo do vizinho. A versão divergente do mesmo pacote em duas fichas segue a regra antiga: vale a primeira, e a divergência é relatada.
+**Precisa:** decidir se o painel do Encontro abre o escopo do combatente para o render (um provedor por combatente, como o `permite`) ou se o texto da união basta.
+**Anotado:** 2026-10-07, revisão M05
+
+### Não existe a transação genérica de "usar" uma habilidade
+**Chave:** M03-D01-transacao-de-uso
+**Onde:** `src/systems/afty/ficha/ficha-sessao.js` (`alteraEstadoCombate`, `marcaUso`, `gastaPe`)
+**Situação:** validar aquisição e recursos, cobrar uma vez, aplicar efeitos e registrar são operações separadas, e a cobrança na ativação existe só por ramo de id (Invencível sob o Sol, Talismã do Ápice). O `custoPE` de estado é exibido. Desde 2026-10-07 o estado de addon transporta `custoPE`, `umaVezPorRodada` e `exclusivoCom`, então a autoria já descreve o custo, mas nada o desconta.
+**Precisa:** a resposta da pergunta 3 de 2026-10-07 (Armas Absolutas). Com "cobrar", o desenho é um descritor de custo e manutenção por rodada no próprio estado (`custoPE`, `manutencaoPE`, expiração sem pagamento), consumido por um resolvedor único que valida antes de cobrar, e o Invencível passa a usá-lo em vez do ramo próprio.
+**Anotado:** 2026-10-07, revisão M03
+
+### O Fluxo Invencível lê a jogada resolvida por um ramo próprio do derive
+**Chave:** M02-A03-leitor-tardio
+**Onde:** `src/systems/afty/afty-derive.js` (`if (combate.fluxoInvencivel)`) e `VARS_ADIADAS` em afty-efeitos.js
+**Situação:** o número está certo (`t-fluxo-invencivel.mjs`), mas o bônus de acerto e de dano que lê "o acerto normal" é montado por um ramo que chama `resolveTestes` e cria constantes. Um addon não consegue escrever um efeito equivalente, porque `acerto` está em `VARS_ADIADAS`.
+**Precisa:** um estágio tardio geral, irmão do `dados_dano_final`: o efeito que lê `acerto_<ataque>` roda depois dos testes, lê o valor ANTES dele mesmo e soma uma vez. O Fluxo passa a ser dado em `APICE_EFEITOS`. Sem decisão de regra pendente: é capacidade.
+**Anotado:** 2026-10-07, revisão M02
+
+### Golpe Especial: Amplo, Impactante, Sanguinário e Lento não têm consequência, e o montador não é autorável
+**Chave:** CMB02-consequencias
+**Onde:** `src/systems/afty/afty-golpe-especial.js`, `ficha/ficha-sessao.js` (`pagaGolpeEspecial`)
+**Situação:** as quatro entram só no custo. Alvo a mais, empurrão com Fortitude, sangramento e a troca de ação pedem um evento de ataque com ALVO e o resultado do TR, que a sessão não tem (é a mesma lacuna das posturas do Ápice, abaixo em "AFTY, outros"). `PROPRIEDADES_GOLPE` é constante fixa, e um segundo montador com propriedades e preços próprios não tem contrato de dado. Atroz, Letal, Penetrante, Desfocado, Longo e Preciso (este desde 2026-10-07) já são do Motor.
+**Precisa:** as perguntas 7 e 8 de 2026-10-07, e depois o evento de ataque com alvo confirmado pela mesa. O montador vira família de addon quando houver um segundo cliente.
+**Anotado:** 2026-10-07, revisão CMB-02
+
+### Estilos de Combate: Interceptador, Protetor, saque do Arremessador e a segunda arma do Duplo
+**Chave:** CMB01-reacoes
+**Onde:** `src/systems/afty/afty-efeitos-conteudo.js` (fim dos Estilos)
+**Situação:** Interceptador e Protetor agem no ataque de OUTRA criatura, e a ficha só conhece a si (a primitiva de vínculo entre criaturas, 8.4 do docs/afty-addons.md, não chegou à sessão). O saque como parte do ataque é economia de ação sem canal. O atributo na segunda arma do Duplo é de mesa por decisão de 2026-09-01: a ficha tem uma linha por ARMA, e não por MÃO.
+**Precisa:** a pergunta 5 de 2026-10-07 para o Protetor; para os dois de reação, uma entrada de reação com alvo confirmado pela mesa. Os dois de mão ficam como estão até haver linha por mão.
+**Anotado:** 2026-10-07, revisão CMB-01
+
+### Armas Absolutas está na página 61, e o controle de fontes diz NÃO LOCALIZADA
+**Chave:** LUT10-armas-absolutas-fonte
+**Onde:** `docs/revisao-automacao/fontes.json`, item `afty-habilidades.js::AFTY_HABILIDADES::lut_armas_absolutas`
+**Situação:** o executor e o auditor do M03 leram o texto no Markdown vigente, página impressa 61 (marcador `<!-- página 61 -->`). A localização é do lote dono (LUT-10), e este bloco não altera o controle de outro lote.
+**Precisa:** o LUT-10 registrar a fonte localizada ao revisar a habilidade.
+**Anotado:** 2026-10-07, revisão M03

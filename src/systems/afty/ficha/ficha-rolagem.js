@@ -20,7 +20,7 @@
  * ============================================================
  */
 
-import { formulaModoDano, grupoMultiplicavel, grupoNoRaioNegro } from "../afty-dano";
+import { formulaModoDano, grupoMultiplicavel, grupoNoRaioNegro, dadosNoModo } from "../afty-dano";
 
 let sequencia = 0;
 const novoId = () => `rol_${Date.now().toString(36)}_${(sequencia += 1)}`;
@@ -111,12 +111,12 @@ export function rolarDano(
   },
   rng = Math.random,
 ) {
-  /* ⚠ ROLAR DE NOVO OS DADOS BAIXOS (`rerrola`, 2026-10-02, Estilo Massivo). Vem
-     pronto da linha de dano, `{ ate, fonte }`. Todo dado da rolagem que cair em
-     `ate` ou menos rola de novo UMA vez, e fica o novo mesmo que seja menor:
-     "ficando com o novo resultado". Automático e em todos os dados da linha,
-     decisões do autor. O registro guarda o par para o painel riscar o velho. */
+  /* Cada dado até `rerrola.ate` rola de novo uma vez. Por padrão fica o novo,
+     como no Estilo Massivo. `melhor: true` conserva o maior das duas tentativas,
+     como em Cura Aperfeiçoada. `continua` na cura repete até superar o limite.
+     O registro guarda cada tentativa e seu descartado. */
   const ateRerrola = Math.max(0, Math.trunc(Number(rerrola?.ate) || 0));
+  const continua = tom === "cura" && rerrola?.continua === true;
   const rerrolados = [];
   const fixoInt = Math.trunc(Number(fixo) || 0);
   const multBlocos = Math.max(1, Math.trunc(blocos) || 1);
@@ -134,13 +134,18 @@ export function rolarDano(
     .filter((g) => ["critico", "raio_negro"].includes(modo) || !g.apenasCritico)
     .map((g, indice) => ({
       ...g,
-      dados: Math.max(0, Math.trunc(Number(g.dados) || 0)) * multBlocos,
+      dados: dadosNoModo(g, modo) * multBlocos,
+      ...(g.dadosCritico != null ? { dadosCritico: dadosNoModo(g, modo) * multBlocos } : {}),
       faces: Math.max(2, Math.trunc(Number(
         ["critico", "raio_negro"].includes(modo) && g.facesCritico ? g.facesCritico : g.faces,
       ) || 6)),
       fixo: Math.trunc(Number(g.fixo) || 0) + (Array.isArray(grupos) && indice === 0 ? fixoInt : 0),
     }));
 
+  // Reprova uma configuração sem resultado possível antes de sortear dados.
+  if (continua && lista.some((g) => g.dados > 0 && ateRerrola >= g.faces)) {
+    throw new RangeError("O limite da rerrolagem contínua de cura precisa ser menor que as faces do dado.");
+  }
   const rolados = [];
   let total = 0;
   let subtotalRaioNegro = 0;
@@ -149,9 +154,16 @@ export function rolarDano(
     const multDados = criticoAtivo && grupoMultiplicavel(g) ? 2 : 1;
     const dadosGrupo = rolarDados(g.dados * multDados, g.faces, rng).map((n, i) => {
       if (n > ateRerrola) return n;
-      const novo = umDado(g.faces, rng);
-      rerrolados.push({ indice: rolados.length + i, de: n, para: novo });
-      return novo;
+      const melhor = rerrola?.melhor === true;
+      let atual = n;
+      do {
+        const novo = umDado(g.faces, rng);
+        rerrolados.push({ indice: rolados.length + i, de: atual, para: novo,
+          ...(melhor ? { descartado: Math.min(atual, novo) } : {}),
+        });
+        atual = melhor ? Math.max(atual, novo) : novo;
+      } while (continua && atual <= ateRerrola);
+      return atual;
     });
     rolados.push(...dadosGrupo);
     const somaDados = dadosGrupo.reduce((s, n) => s + n, 0);

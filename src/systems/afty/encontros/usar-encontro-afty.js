@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useCallback } from "react";
 
 import { deriveAfty } from "../afty-derive";
+import { iniciaTurnoArmas, encerraTurnoArmas } from "../afty-propriedades-armas";
 import { aplicarAddons, unirAddons, epocaAddons } from "../afty-addons";
 import {
   aparaSessao, proximaRodada, descansar, sessaoEmBranco, iniciaCombate, entradaDaGuarda,
@@ -44,6 +45,8 @@ import { juntarFundamentosPerdidos, sincronizarFundamentosNaBiblioteca } from ".
    diferença entre elas sai carimbada como bônus do estado medido. O painel
    passava só a Alma, e toda linha ligada de um Calamidade mostrava a Guarda. */
 const opcoesDoCombatente = (sessao) => (!sessao ? {} : {
+  propriedadesArmas: sessao.propriedadesArmas,
+  ataqueBasicoId: sessao.ataqueBasicoId,
   bloodfeast: sessao.bloodfeast,
   vidaAtual: sessao.hpAtual,
   almaAtual: sessao.almaAtual,
@@ -136,6 +139,8 @@ const CACHE_DERIVE = new WeakMap();
  * disso para bloquear a Técnica Inata na mesma hora.
  */
 const chaveDoDerive = (sessao, epoca) => ({
+  propriedadesArmas: sessao.propriedadesArmas,
+  ataqueBasicoId: sessao.ataqueBasicoId,
   combate: sessao.combate,
   buffs: sessao.buffs,
   alma: sessao.almaAtual,
@@ -286,7 +291,8 @@ const HANDLERS = {
     if (s.status !== ENCONTRO_STATUS.ATIVO) return s;
     const { proximoId, rodada, novaRodada } = proximoTurno(s);
     const entradas = [];
-    let combatentes = s.combatentes;
+    let combatentes = s.combatentes.map((c) => c.id === s.ativoId && c.sessao
+      ? { ...c, sessao: encerraTurnoArmas(c.sessao) } : c);
 
     if (novaRodada) {
       // ⚠ A duração desce para TODOS na virada, e não no turno de cada um. É o
@@ -299,7 +305,7 @@ const HANDLERS = {
         // teto. Sem ele o Completo do Treino de Controle de Energia valeria na
         // Ficha e não valeria na mesa do mestre, e as duas telas têm de contar
         // a mesma rodada.
-        const { sessao, expirou } = proximaRodada(c.sessao, derivados[c.id] ?? null);
+        const { sessao, expirou } = proximaRodada(c.sessao, derivados[c.id] ?? null, { preservarTurnoArmas: true });
         for (const item of expirou) {
           entradas.push(entradaDeLog({
             rodada, tipo: LOG_TIPOS.CONDICAO, combatenteId: c.id,
@@ -312,6 +318,8 @@ const HANDLERS = {
     }
 
     if (proximoId) {
+      combatentes = combatentes.map((c) => c.id === proximoId && c.sessao
+        ? { ...c, sessao: iniciaTurnoArmas(c.sessao) } : c);
       const alvo = combatentes.find((c) => c.id === proximoId);
       entradas.push(entradaDeLog({
         rodada, tipo: LOG_TIPOS.TURNO, combatenteId: proximoId,
@@ -327,7 +335,7 @@ const HANDLERS = {
     const entradas = [];
     const combatentes = s.combatentes.map((c) => {
       if (!c.sessao) return c;
-      const { sessao, expirou } = proximaRodada(c.sessao, derivados[c.id] ?? null);
+      const { sessao, expirou } = proximaRodada(c.sessao, derivados[c.id] ?? null, { preservarTurnoArmas: true });
       for (const item of expirou) {
         entradas.push(entradaDeLog({
           rodada, tipo: LOG_TIPOS.CONDICAO, combatenteId: c.id,

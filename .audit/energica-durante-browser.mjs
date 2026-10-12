@@ -1,0 +1,37 @@
+import {chromium} from 'playwright';
+import {mkdir,writeFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const out='.audit/energica-durante-shots';await mkdir(out,{recursive:true});
+const browser=await chromium.launch({channel:'chrome',ignoreDefaultArgs:['--hide-scrollbars']});
+const report=[];let checks=0;let current;
+const eq=(a,b)=>{checks++;assert.deepEqual(a,b);};
+async function click(locator){const p=locator.page();for(let i=0;i<2;i++){await locator.evaluate(e=>{const r=e.getBoundingClientRect();const h=document.querySelector('.afty-cabecalho')?.getBoundingClientRect().bottom??0;const log=document.querySelector('.afty-log')?.getBoundingClientRect().top??innerHeight-80;window.scrollBy(0,r.top+r.height/2-(Math.max(0,h)+Math.min(innerHeight-80,log))/2);});await p.waitForTimeout(100);}await locator.click();}
+async function fixture(p,route){const expected=await p.evaluate(async sistema=>{
+ const {deriveAfty}=await import('/src/systems/afty/afty-derive.js');
+ const {createBlankAfty}=await import('/src/systems/afty/afty-schema.js');
+ const {sessaoEmBranco}=await import('/src/systems/afty/ficha/ficha-sessao.js');
+ const {tiposDeDanoDaCategoria}=await import('/src/systems/afty/afty-equipamentos.js');
+ const {estadoLigadoDoFeitico}=await import('/src/systems/afty/afty-combate-conjurador.js');
+ const {aplicarAddons}=await import('/src/systems/afty/afty-addons.js');aplicarAddons([]);
+ const c=createBlankAfty();Object.assign(c,{id:'teste-energica-durante',name:'Teste Enérgica Durante',rulesVersion:sistema,attrMethod:'fixos'});
+ c.core={...c.core,nd:12,tipo:'combatente',patamar:'comum',tecnicaEfeitos:[{canal:'dadosDano',expr:'6'}]};c.especializacoes=[{id:'combatente',nivel:12}];c.attributes={forca:10,destreza:10,constituicao:10,inteligencia:10,sabedoria:10,presenca:10};c.ataquesProf={corpo:true};
+ c.armasCustom=[{id:'armc_teste',nome:'Arma de Teste',classe:'simples',categoria:'corpo',dano:{dado:'1d6',tipo:'ct'},critico:20,custo:1,grupo:'espada',props:{energica:true,mortal:'1d10'}}];c.equipamentos={itens:[{uid:'arma-1',tipo:'arma',refId:'armc_teste',qtd:1,equipado:true}]};
+ c.aptidoes={au:3,cl:3,bar:0,dom:0,er:3};c.aptidoesAmaldicoadas=['aura_elemental','canalizar_em_golpe','canalizacao_avancada','canalizacao_maxima','raio_negro'];c.aptidaoOpcoes={aura_elemental:tiposDeDanoDaCategoria('elemental')[0].id};
+ c.habilidades=['cmb_ataque_extra','cmb_ataque_concentrado'];c.combate={ativo:true,auraElemental:true,canalizarEmGolpe:true,canalizacaoMaxima:true,ataqueConcentrado:1};
+ c.feiticos=[{id:'extra',nome:'Extra Durante',tipo:'auxiliar',nivel:3,efeitoAux:'danoDurante',duracaoAux:'imediata',umGolpe:true},{id:'apos',nome:'Extra Após',tipo:'auxiliar',nivel:3,efeitoAux:'danoApos',duracaoAux:'imediata'}];c.combate[estadoLigadoDoFeitico('extra')]=true;c.combate[estadoLigadoDoFeitico('apos')]=true;
+ const l=(n)=>deriveAfty(c,{propriedadesArmas:{porArma:{'arma-1':{ataques:n-1}}}}).dano.entradas.find(e=>e.id==='armc_teste');const first=l(1),second=l(2),third=l(3);
+ const count=crit=>first.gruposDano.filter(g=>g.momento!=='apos'&&(crit||!g.apenasCritico)).reduce((n,g)=>n+(crit&&g.dadosCritico!=null?g.dadosCritico:g.dados),0);
+ localStorage.setItem('fm_creatures_'+sistema+'_v1',JSON.stringify([c]));
+ localStorage.setItem('fm_ficha_sessao_afty_v1:teste-energica-durante',JSON.stringify({...sessaoEmBranco(deriveAfty(c)),combate:c.combate}));
+ return {normal:count(false),critico:count(true),first:first.formulaNormal,second:second.formulaNormal,third:third.formulaNormal,secondCritico:second.formulaCritico,secondRN:second.formulaRaioNegro,sources:first.gruposDano.map(g=>({nome:g.nome,dados:g.dados,dadosCritico:g.dadosCritico,momento:g.momento,apenasCritico:g.apenasCritico})),bonus:[second.armaPropriedades.energica,second.armaPropriedades.energicaCritico]};
+},route);await p.reload({waitUntil:'networkidle'});await p.getByText('Teste Enérgica Durante',{exact:true}).click();return expected;}
+try{for(const route of ['player','afty'])for(const width of [1440,390]){
+ const ctx=await browser.newContext({viewport:{width,height:1000},hasTouch:width===390,isMobile:width===390});const p=await ctx.newPage();current=p;p.setDefaultTimeout(15000);const errors=[];p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{if(m.type()==='error')errors.push(m.text())});await p.addInitScript(()=>{Math.random=()=>0.5;});await p.goto('http://127.0.0.1:5287/'+route,{waitUntil:'networkidle'});const expected=await fixture(p,route);
+ eq(expected.bonus,[expected.normal,expected.critico]);eq(expected.normal>7,true);eq(expected.critico>expected.normal,true);eq(expected.sources.some(g=>g.nome==='Extra Após'&&g.momento==='apos'),true);
+ const line=p.locator('[id="afty-item-dano:armc_teste"]');const input=line.getByLabel('Golpe no turno de Arma de Teste');const badge=line.locator('[data-afty-energica="arma-1"]');const formula=()=>line.locator('button.afty-rolavel').nth(1).innerText();
+ eq(await input.isVisible(),true);eq(await formula(),expected.first);await input.fill('2');eq((await badge.innerText()).includes('Enérgica +'+expected.normal+' de dano'),true);eq(await formula(),expected.second);await input.fill('3');eq((await badge.innerText()).includes('Enérgica +'+(expected.normal+1)+' de dano'),true);eq(await formula(),expected.third);await input.fill('2');
+ await click(p.getByRole('button',{name:'Crítico',exact:true}));eq((await badge.innerText()).includes('Enérgica +'+expected.critico+' de dano'),true);eq(await formula(),expected.secondCritico);await click(p.getByRole('button',{name:'Crítico',exact:true}));await click(p.getByRole('button',{name:'Raio Negro',exact:true}));eq((await badge.innerText()).includes('Enérgica +'+expected.critico+' de dano'),true);eq(await formula(),expected.secondRN);await click(p.getByRole('button',{name:'Raio Negro',exact:true}));
+ await click(line.locator('button.afty-rolavel').nth(1));await p.waitForTimeout(700);const rolled=await p.evaluate(()=>JSON.parse(localStorage.getItem('fm_ficha_sessao_afty_v1:teste-energica-durante')).log[0]);eq(rolled.formula,expected.second);eq(await input.inputValue(),'3');await badge.scrollIntoViewIfNeeded();await p.screenshot({path:out+'/ficha-'+route+'-'+width+'.png'});
+ await p.locator('button[title="Editar no criador"]').click();await p.getByRole('tab',{name:'Habilidades',exact:true}).click();const creator=p.locator('[data-afty-teste-dano="arma-1"]');const test=creator.getByLabel('Golpe no turno de Arma de Teste');eq(await test.isVisible(),true);const cf=()=>creator.locator('[class~="group/dano"]').first().innerText();eq(await cf(),expected.first);await test.fill('2');eq((await creator.innerText()).includes('Enérgica +'+expected.normal+' de dano'),true);eq(await cf(),expected.second);await test.fill('3');eq(await cf(),expected.third);await creator.scrollIntoViewIfNeeded();await p.screenshot({path:out+'/criador-'+route+'-'+width+'.png'});eq(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);eq(errors,[]);report.push({route,width,passed:true,expected,errors});console.log('PASS',route,width);await ctx.close();
+}
+}catch(e){await current?.screenshot({path:out+'/falha.png'});report.push({failure:e.message,stack:e.stack});process.exitCode=1;}finally{await browser.close();await writeFile('.audit/energica-durante-report.json',JSON.stringify({checks,report},null,2));}console.log(JSON.stringify({checks,report},null,2));

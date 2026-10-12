@@ -1,0 +1,22 @@
+[
+  {
+    "largura": 1440,
+    "nd30": 2,
+    "nd31": 3,
+    "quartaBloqueada": true,
+    "ajustes": true,
+    "divisaoRestaurada": true,
+    "origemPreservada": true,
+    "erros": []
+  },
+  {
+    "largura": 390,
+    "nd30": 2,
+    "nd31": 3,
+    "quartaBloqueada": true,
+    "ajustes": true,
+    "divisaoRestaurada": true,
+    "origemPreservada": true,
+    "erros": []
+  }
+]

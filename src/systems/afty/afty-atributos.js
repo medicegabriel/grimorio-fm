@@ -37,6 +37,8 @@
 import { AFTY_ATTRS } from "./afty-schema";
 /* O Nível efetivo, que pode vir do XP da Carteira. Ver `nivelDaFicha`. */
 import { nivelDaFicha } from "./afty-addons";
+import { regrasAftyDaCriatura } from "./afty-regras-addon";
+import { sistemaDaFicha } from "./afty-sistema";
 
 export const ATTR_KEYS = ["forca", "destreza", "constituicao", "inteligencia", "sabedoria", "presenca"];
 
@@ -134,7 +136,9 @@ export function resumoAtributos(creature, limitesEfetivos = null, perdas = null,
      Motor (Aumento de Atributo do Espinho, `derived.pontosAtributoExtra`) e o
      Desenvolvimento Inesperado do jogador (`derived.attrNivelExtra`, divergência
      `desenvolvimentoNoNivel`). Quem chama soma os dois. */
-  const pontosNivel = nivelPontosTotal(nd, patamar);
+  const cicloAddon = sistemaDaFicha(creature) === "player"
+    ? regrasAftyDaCriatura(creature).pontosAtributoPorCiclo : null;
+  const pontosNivel = cicloAddon == null ? nivelPontosTotal(nd, patamar) : Math.floor(nd / 4) * cicloAddon;
   const pontosExtras = Math.max(0, Math.trunc(Number(extras) || 0));
   const nivelTotal = pontosNivel + pontosExtras;
   const nivelUsado = nivelPontosUsados(nivel);

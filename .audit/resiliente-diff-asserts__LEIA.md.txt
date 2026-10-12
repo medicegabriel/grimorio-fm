@@ -1,0 +1,12 @@
+diff --git a/.audit/resiliente-baseline/asserts__LEIA.md b/asserts/LEIA.md
+index dc20a05..458852c 100644
+--- a/.audit/resiliente-baseline/asserts__LEIA.md
++++ b/asserts/LEIA.md
+@@ -51,6 +51,7 @@ vai para o ar.
+ |---|---|
+ | `t-ataque-concentrado` | soma das metades antes do piso, seleção de fontes, Auxiliar de uma rodada ou de um golpe, Transformação, canalizações, tamanhos de dado, crítico/Fatal/Raio Negro, fórmulas, hover e rolagens nos dois sistemas |
+ | `t-treinos-especiais` | tetos de Feitiço, Habilidade e Aptidão nos dois sistemas, Interlúdios e Sucessos, Focos gastos, CD, vagas pelos ganhos, tetos independentes, restauração ao subir o nível e Restringido |
++| `t-uniforme-escudo` | os dois sistemas de Defesa e RD, Resiliente com tipos permitidos e Grau Especial, os dois Isolante, repetição e vagas, soma e fontes em Resistências, escolha ausente ou inválida, persistência e bônus passivos de uniforme |
+ | `t-propriedades-armas` | Enérgica com todos os dados de Durante Ataque, fontes adicionais e crítico, Fineza, propriedades situacionais, dados de Fatal/Mortal, Afiada/Defensora, sessão e turnos de Encontros nas duas fichas |
+ | `t-dsl` | o avaliador copiado, com **30 asserts de paridade** contra o `fm-dsl.js` da 2.5.2, mais o literal de texto e o `contar()` |
+ | `t-contar` | o `contar()` ponta a ponta, o mapa de marcas, e a descoberta dele no seletor `{ }` |

@@ -290,6 +290,7 @@ export function mesclaFichaAfty(existente) {
       && !Array.isArray(existente.ataqueAtributoManual))
       ? existente.ataqueAtributoManual
       : {},
+    ataqueBasicoId: existente.ataqueBasicoId === "amaldicoado" ? "amaldicoado" : "corpo",
   };
 }
 
@@ -439,6 +440,7 @@ export function createBlankAfty() {
     trAtributoManual: {},      // { [trValue]: chave }
     ataquesProf: {},           // { corpo: true, distancia: true }
     ataqueFineza: false,       // arma com o traço Fineza: corpo a corpo pode usar Destreza
+    ataqueBasicoId: "corpo",   // Corpo a Corpo ou Amaldiçoado na linha do golpe
     ataqueAtributoManual: {},  // { [ataqueId]: chave }, vale no acerto e no dano
 
     // Armas Dedicadas (Lutador 2°). Ids do catálogo de armas, até 3. A escolha
@@ -545,9 +547,9 @@ export function createBlankAfty() {
     // Ver afty-forja.js.
     forjas: [],                 // [{ id, focos, itens: [{ id, nome, tipo }] }] — ver novaForja()
 
-    // Especializações (classes). Até 2, e soma(niveis) === core.nd — o
-    // nível de Especialização É o ND. Não mudam cálculo: só destravam
-    // Habilidades de Especialização. Ver afty-especializacoes.js.
+    // Especializações (classes). Até 2 na criatura, até 3 no ND 31+ ou no
+    // jogador. A soma dos níveis é o nível efetivo da ficha. Destravam e
+    // escalam Habilidades de Especialização. Ver afty-especializacoes.js.
     especializacoes: [],        // [{ id, nivel }]
     // Feitiços CRIADOS pelo jogador (não é catálogo). Cada um é uma entrada
     // com os campos de criação (nível, tipo, ação, trocas...). O motor em

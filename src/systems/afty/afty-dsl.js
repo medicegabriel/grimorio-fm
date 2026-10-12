@@ -197,7 +197,12 @@ function tokenize(src) {
     if (/[0-9]/.test(c) || (c === "." && /[0-9]/.test(s[i + 1] || ""))) {
       let j = i + 1;
       while (j < s.length && /[0-9.]/.test(s[j])) j++;
-      tokens.push({ t: "num", v: parseFloat(s.slice(i, j)) });
+      /* ⚠ UM PONTO SÓ (achado M01-VAL-01, 2026-10-07). O laço consome dígitos e
+         pontos, e o `parseFloat` lia "1.2.3" como 1.2 jogando o resto fora,
+         calado: o editor aprovava e a ficha calculava outro número. */
+      const literal = s.slice(i, j);
+      if ((literal.match(/\./g) || []).length > 1) throw new Error(`Número malformado: ${literal}`);
+      tokens.push({ t: "num", v: parseFloat(literal) });
       i = j; continue;
     }
 
@@ -327,6 +332,12 @@ function evaluate(ast, ctx) {
     case "str": return ast.v;
     case "var": {
       if (!(ast.name in ctx)) throw new Error(`Variável desconhecida: ${ast.name}`);
+      /* Valor não finito no contexto é erro de quem montou o contexto, e cai no
+         fallback em vez de virar 1 numa comparação (achado M01-NUM-01). O NaN
+         continua sendo zero, como sempre foi. */
+      if (ctx[ast.name] === Infinity || ctx[ast.name] === -Infinity) {
+        throw new Error(`Valor não finito: ${ast.name}`);
+      }
       return Number(ctx[ast.name]) || 0;
     }
     case "call": {
@@ -413,8 +424,12 @@ export function evalNumber(src, ctx, fallback = 0) {
 }
 
 export function evalBoolean(src, ctx, fallback = false) {
-  try { return num(evaluate(astDe(src), ctx ?? {})) ? true : false; }
-  catch { return fallback; }
+  try {
+    const v = evaluate(astDe(src), ctx ?? {});
+    // Mesma conferência do `evalNumber`: número que não é finito é erro.
+    if (typeof v === "number" && !Number.isFinite(v)) return fallback;
+    return num(v) ? true : false;
+  } catch { return fallback; }
 }
 
 /**

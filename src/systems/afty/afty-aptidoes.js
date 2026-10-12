@@ -1553,7 +1553,10 @@ registrarFamilia("aptidoes", {
   rotulo: "Aptidão Amaldiçoada",
   chave: "id",
   obrigatorios: ["nome", "descricao", "trilha", "categoria"],
-  caminhosDeId: ["requisitos[].id"],
+  /* `efeitos[].alvo` (2026-10-07): o efeito que mira uma entrada DO PRÓPRIO
+     pacote (a linha de cura que ela declara, por exemplo) ganha o namespace. Alvo
+     que não é id local (atributo, perícia, escopo) fica intocado. */
+  caminhosDeId: ["requisitos[].id", "efeitos[].alvo"],
   aplicar: aplicarExtrasAptidoes,
   basicos: () => APTIDOES_BASE,
   validador: validarCatalogoAptidoes,

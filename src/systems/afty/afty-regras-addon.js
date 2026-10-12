@@ -10,6 +10,11 @@ const CHAVES = new Set([
   "multiplicadorPvFinal",
   "passivasSemCustoPeMaximo",
   "ignoraMultiplicadorPeMaximoDeVotos",
+  "nivelJogadorSemTeto",
+  "aptidaoApos20",
+  "focosPorNivel",
+  "pontosAtributoPorCiclo",
+  "talentosIniciais",
 ]);
 
 const objeto = (valor) => valor && typeof valor === "object" && !Array.isArray(valor);
@@ -29,6 +34,15 @@ export function normalizarRegrasAfty(regras) {
   if (regras.ignoraMultiplicadorPeMaximoDeVotos === true) {
     out.ignoraMultiplicadorPeMaximoDeVotos = true;
   }
+  if (regras.nivelJogadorSemTeto === true) out.nivelJogadorSemTeto = true;
+  if (regras.aptidaoApos20 === true) out.aptidaoApos20 = true;
+  if (multiplicadorValido(regras.focosPorNivel)) out.focosPorNivel = Number(regras.focosPorNivel);
+  if (Number.isInteger(regras.pontosAtributoPorCiclo) && regras.pontosAtributoPorCiclo > 0) {
+    out.pontosAtributoPorCiclo = regras.pontosAtributoPorCiclo;
+  }
+  if (Number.isInteger(regras.talentosIniciais) && regras.talentosIniciais >= 1 && regras.talentosIniciais <= 4) {
+    out.talentosIniciais = regras.talentosIniciais;
+  }
   return out;
 }
 
@@ -40,15 +54,23 @@ export function validarRegrasAfty(regras, onde = "regrasAfty") {
   for (const chave of Object.keys(regras)) {
     if (!CHAVES.has(chave)) problemas.push(`${onde}: regra desconhecida "${chave}".`);
   }
-  for (const chave of ["multiplicadorPeMaximo", "multiplicadorPvFinal"]) {
+  for (const chave of ["multiplicadorPeMaximo", "multiplicadorPvFinal", "focosPorNivel"]) {
     if (chave in regras && !multiplicadorValido(regras[chave])) {
       problemas.push(`${onde}: "${chave}" precisa ser um número maior que zero.`);
     }
   }
-  for (const chave of ["passivasSemCustoPeMaximo", "ignoraMultiplicadorPeMaximoDeVotos"]) {
+  for (const chave of ["passivasSemCustoPeMaximo", "ignoraMultiplicadorPeMaximoDeVotos", "nivelJogadorSemTeto", "aptidaoApos20"]) {
     if (chave in regras && typeof regras[chave] !== "boolean") {
       problemas.push(`${onde}: "${chave}" precisa ser verdadeiro ou falso.`);
     }
+  }
+  if ("pontosAtributoPorCiclo" in regras
+    && !(Number.isInteger(regras.pontosAtributoPorCiclo) && regras.pontosAtributoPorCiclo > 0)) {
+    problemas.push(onde + ': "pontosAtributoPorCiclo" precisa ser um inteiro maior que zero.');
+  }
+  if ("talentosIniciais" in regras
+    && !(Number.isInteger(regras.talentosIniciais) && regras.talentosIniciais >= 1 && regras.talentosIniciais <= 4)) {
+    problemas.push(onde + ': "talentosIniciais" precisa ser um inteiro de 1 a 4.');
   }
   return problemas;
 }
@@ -64,10 +86,24 @@ export function regrasAftyDaCriatura(creature) {
     fontesMultiplicadorPvFinal: [],
     fontesPassivasSemCusto: [],
     fontesIgnoraMultiplicadorPeVotos: [],
+    nivelJogadorSemTeto: false,
+    aptidaoApos20: false,
+    focosPorNivel: null,
+    pontosAtributoPorCiclo: null,
+    fontesTalentosIniciais: [],
   };
   for (const pacote of Array.isArray(creature?.addons) ? creature.addons : []) {
     const regras = normalizarRegrasAfty(pacote?.regrasAfty);
     const fonte = { id: pacote?.id ?? null, nome: pacote?.nome || pacote?.id || "Addon" };
+    out.nivelJogadorSemTeto ||= regras.nivelJogadorSemTeto === true;
+    out.aptidaoApos20 ||= regras.aptidaoApos20 === true;
+    if (regras.focosPorNivel != null) out.focosPorNivel = Math.max(out.focosPorNivel ?? 0, regras.focosPorNivel);
+    if (regras.pontosAtributoPorCiclo != null) {
+      out.pontosAtributoPorCiclo = Math.max(out.pontosAtributoPorCiclo ?? 0, regras.pontosAtributoPorCiclo);
+    }
+    if (regras.talentosIniciais != null) {
+      out.fontesTalentosIniciais.push({ ...fonte, valor: regras.talentosIniciais });
+    }
     if (regras.multiplicadorPeMaximo != null) {
       out.multiplicadorPeMaximo *= regras.multiplicadorPeMaximo;
       out.fontesMultiplicadorPeMaximo.push({ ...fonte, valor: regras.multiplicadorPeMaximo });

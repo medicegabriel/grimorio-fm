@@ -1,0 +1,22 @@
+[
+  {
+    "largura": 1440,
+    "addonInstalavel": true,
+    "liberacao": true,
+    "requisito10": true,
+    "especializacaoDiferente": true,
+    "combatente": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "largura": 390,
+    "addonInstalavel": true,
+    "liberacao": true,
+    "requisito10": true,
+    "especializacaoDiferente": true,
+    "combatente": true,
+    "persistencia": true,
+    "erros": []
+  }
+]

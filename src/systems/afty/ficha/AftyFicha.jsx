@@ -11,6 +11,7 @@ import { deriveAfty } from "../afty-derive";
 // A Herança criada pela mesa (2026-10-01, Etapa 11). O derive já carregou o módulo.
 import { criaHeranca } from "../afty-invocacoes";
 import { preparaAtivacaoComCustoVida } from "../afty-feiticos";
+import { preparaRolagemCura } from "../afty-cura";
 import { aplicarAddons, addonsDaCriatura } from "../afty-addons";
 import { NumeroComFontes } from "../ui/fontes";
 import { numeroBr } from "../ui/formato";
@@ -42,6 +43,7 @@ import {
   usosGastosDe, marcaUso,
 } from "./ficha-sessao";
 import { rolarTeste, rolarDano } from "./ficha-rolagem";
+import { preparaRolagemArma, registraRolagemArma, configuraArmaNaSessao, marcaErroDaArma, iniciaTurnoArmas, danoDaAmpla, usaAmpla } from "../afty-propriedades-armas";
 import PrimitivasDeAddon from "../ui/PrimitivasDeAddon";
 import { conteudoDaFicha, equipamentosDaFicha, alvosDeBusca } from "./ficha-conteudo";
 import {
@@ -202,6 +204,8 @@ export default function AftyFicha({
      nenhuma, aparecia dando +5. Uma lista só, e a diferença cancela sozinha. */
   const opcoesDerive = useMemo(
     () => ({
+      propriedadesArmas: sessaoBruta.propriedadesArmas,
+      ataqueBasicoId: sessaoBruta.ataqueBasicoId,
       bloodfeast: sessaoBruta.bloodfeast,
       vidaAtual: sessaoBruta.hpAtual,
       almaAtual: sessaoBruta.almaAtual,
@@ -542,12 +546,13 @@ export default function AftyFicha({
     const ativacao = preparaAtivacaoComCustoVida(desc, sessao.hpAtual);
     const custoVida = ativacao.custo;
     if (custoVida.config && !custoVida.disponivel) return null;
-    const descResolvida = ativacao.desc;
+    const descResolvida = preparaRolagemCura(preparaRolagemArma(ativacao.desc, modo), derived.efeitos);
+    if (!descResolvida) return null;
     const r = descResolvida.tipo === "dano"
       ? rolarDano(descResolvida)
-      : rolarTeste({ ...descResolvida, modo });
+      : rolarTeste(descResolvida);
     atualiza((s) => {
-      let proxima = registraRolagem(s, r);
+      let proxima = registraRolagemArma(registraRolagem(s, r), descResolvida, r);
       if (custoVida.pago > 0) proxima = pagaCustoVida(proxima, custoVida.pago).sessao;
       if (desc.consomeEstado) proxima = consomeEstadoCombate(proxima, desc.consomeEstado);
       if (desc.feiticoDanoId) proxima = registraFeiticoDano(proxima, desc.feiticoDanoId);
@@ -565,7 +570,7 @@ export default function AftyFicha({
       return proxima;
     });
     return r;
-  }, [atualiza, modo, sessao.hpAtual]);
+  }, [atualiza, modo, sessao.hpAtual, derived.efeitos]);
 
   /* A perda de vida do Sangramento: rola o dado da faixa, põe no histórico e
      desconta do PV, sem passar pela casca (ver `aplicaPerdaDeVida`). */
@@ -684,6 +689,7 @@ export default function AftyFicha({
         controleExpansao={(d) => <ControleExpansao d={d} sessao={sessao} onSessao={atualiza} rolar={rolar} feiticaria={derived.testes?.pericias?.find((p) => p.id === "feiticaria")?.bonus ?? null} />}
         exaustaoTecnica={<PainelExaustaoTecnica sessao={sessao} onSessao={atualiza} />}
         derived={derived}
+        onAtaqueBasico={(ataqueBasicoId) => atualiza((s) => ({ ...s, ataqueBasicoId }))}
         adaptacao={<PainelDeAdaptacao derived={derived} onSessao={atualiza} />}
         vislumbre={<PainelDoVislumbre derived={derived} sessao={sessao} onSessao={atualiza} />}
         olhinhosLu={<PainelOlhinhosLu derived={derived} onSessao={atualiza} />}
@@ -692,6 +698,16 @@ export default function AftyFicha({
         armasTransformaveis={<ArmasTransformaveis derived={derived} sessao={sessao} onSessao={atualiza} />}
         golpeEspecial={<PainelDoGolpeEspecial derived={derived} sessao={sessao} onSessao={atualiza} />}
         rolar={rolar}
+        turnoArmas={sessao.propriedadesArmas?.turno ?? 0}
+        onNovoTurnoArmas={() => atualiza((s) => iniciaTurnoArmas(s))}
+        onArma={(linha, campo, valor) => atualiza((s) => campo === "errou"
+          ? marcaErroDaArma(s, linha, valor) : configuraArmaNaSessao(s, linha, campo, valor))}
+        onAmpla={(linha) => atualiza((s) => {
+          const dano = danoDaAmpla(linha, s.rodada);
+          if (dano == null) return s;
+          return registraRolagem(usaAmpla(s, linha), rolarDano({ rotulo: linha.nome + " · Ampla", dados: 0, faces: 6, fixo: dano }));
+        })}
+        rodadaArmas={sessao.rodada}
         destaque={destaque}
         rapido={itensDoRapido}
         abertos={abertos}
@@ -1099,6 +1115,14 @@ export default function AftyFicha({
               </button>
             ))}
           </div>
+          <PainelDeRolagens
+            log={sessao.log}
+            modo={modo}
+            onModo={setModo}
+            aberto={logAberto}
+            onAberto={setLogAberto}
+            onLimpar={() => atualiza((s) => ({ ...s, log: [] }))}
+          />
         </div>
       </header>
 
@@ -1131,22 +1155,10 @@ export default function AftyFicha({
             </div>
           )}
           {(corpo[tab] ?? corpo.acoes)()}
-          {/* O painel de rolagens é fixo no canto e cobre o fim do conteúdo.
-              Este respiro impede que a última linha da aba fique embaixo dele.
-              ⚠ Ele cresceu em 2026-08-06: o painel subiu para não cobrir o botão
-              dos Livros, e o respiro tem que cobrir a soma dos dois. */}
-          <div className="afty-respiro h-48" aria-hidden="true" />
+          {/* Reserva o fim do conteúdo para os botões dos Livros e do CSS. */}
+          <div className="afty-respiro h-24" aria-hidden="true" />
         </main>
       </div>
-
-      <PainelDeRolagens
-        log={sessao.log}
-        modo={modo}
-        onModo={setModo}
-        aberto={logAberto}
-        onAberto={setLogAberto}
-        onLimpar={() => atualiza((s) => ({ ...s, log: [] }))}
-      />
 
       {buscaAberta && (
         <BuscaGlobal

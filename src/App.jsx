@@ -14,6 +14,7 @@ import EncounterSyncModal from "./components/EncounterSyncModal";
 import PdfFab from "./components/PdfFab";
 import useCreatureStorage from "./components/useCreatureStorage";
 import useEncounterManager from "./useEncounterManager";
+import useDashboardView from "./useDashboardView";
 import useEncontrosAfty from "./systems/afty/encontros/usar-encontros-afty";
 import { vocabularioDoDashboard, sistemaGravado, getSistema } from "./systems/afty/afty-sistema";
 import { COMPENDIUM, getCompendiumById, isBuiltInId } from "./fm-compendium";
@@ -59,6 +60,9 @@ export default function App() {
 
   const storageDaRota = useCreatureStorage(
     aftyMode ? { namespace: sistemaDaRota, defaultRulesVersion: sistemaDaRota } : undefined
+  );
+  const [folderView, setFolderView] = useDashboardView(
+    sistemaDaRota, storageDaRota.folders, !aftyMode,
   );
   // A biblioteca relida pelo Encontro também atualiza esta aba inteira.
   // Atualizar só o dono faria o hook regravar as demais fichas desatualizadas.
@@ -371,6 +375,8 @@ export default function App() {
     dashboard: () => (
       <Dashboard
         manager={storage}
+        folderView={folderView}
+        onFolderViewChange={setFolderView}
         compendium={COMPENDIUM}
         /* ⚠ O TÍTULO E A SEÇÃO DE CRIATURAS BASE SÃO DA ROTA, e é por isso
            que eles são decididos aqui e não lá dentro: o Dashboard lista o

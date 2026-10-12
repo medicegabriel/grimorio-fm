@@ -528,6 +528,7 @@ function efeitosDaTabelaDoAuxiliar(sub, config, nome, valor) {
         faces: sub.dado[1],
         momento: sub.efeito === "danoApos" ? "apos" : "durante",
         multiplica: sub.efeito !== "danoApos",
+        concentra: sub.efeito === "danoDurante" && !sub.umGolpe,
       }] : [],
     };
     case "danoFixo": return { efeitos: efeitoNumerico("danoBonus", valor, nome), dados: [] };

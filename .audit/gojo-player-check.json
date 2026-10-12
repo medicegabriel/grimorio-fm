@@ -1,0 +1,1616 @@
+{
+  "keys": [
+    "version",
+    "exportedAt",
+    "system",
+    "count",
+    "creatures",
+    "folders"
+  ],
+  "name": "Satoru Gojo",
+  "core": {
+    "tipo": "misto",
+    "patamar": "calamidade",
+    "nd": 35,
+    "tamanho": "medio",
+    "tecnicaAttr": "constituicao",
+    "tecnicaDescricao": "# Ilimitado\nSeu funcionamento é dividido em 3 formas principais, a neutralidade, chamada de “Infinito”, que manifesta uma barreira impenetrável ao redor do usuário, desacelerando tudo que se aproxima dele conforme ela chega mais perto, gerando um paradoxo que torna impossível tocá-lo enquanto essa habilidade estiver ativa, a amplificação de técnica “Azul”, que gera uma massa negativa, forçando o espaço a gerar uma poderosa força de compressão para suprir aquela inconsistência no espaço, a reversão de técnica “Vermelho”, que aplica energia reversa no próprio “Azul” para reverter seu efeito, criando uma poderosa força de repulsão devastadora.\n\nAlém de suas funções principais, o Ilimitado também permite o usuário fortificar seus ataques corpo a corpo com sua técnica, amplificando o efeito do próprio “Infinito” para esmagar seus oponentes, ou usando o “Azul” para puxá-los forçadamente contra seus golpes, podendo até mesmo se teleportar por pequenas ou longas distâncias; no entanto, o ápice da técnica vem da junção das cores do Azul e o Vermelho, criando uma massa energética capaz de destrinchar brutalmente tudo em seu caminho, a técnica do “Roxo”.\n\nO \"Infinito\" é a expressão neutra de seu Feitiço, que requer um nível sobre-humano de manipulação energética para ser usado. Para o seu devido funcionamento, é necessário que o usuário possua os **Seis Olhos Descobertos**, enquanto o tiver, o espaço envolta do usuário é comprimido e desacelerado infinitamente, fazendo com que ataques e efeitos que precisem chegar até ele sejam completamente freados e anulados. Caso esteja utilizando os **Seis Olhos Cobertos**, ao invés disso, o usuário recebe seu Bônus de Treinamento como Defesa e Redução de Dano, usando o Infinito de maneira simplificada.\n\nCaso alguém sem as capacidades de manipulação energética dos Seis Olhos copie o Infinito, ele sempre será usado em seu estado base, recebendo seu **Bônus de Treinamento como Defesa e Redução de Dano**, e precisando sustentar ele toda rodada, pagando o preço igual ao maior **Nível de Feitiço no qual possua acesso**. A decisão do Mestre, é possível alcançar o estado máximo do Ilimitado sem os Seis Olhos, como por exemplo usando a Habilidade Lendária **\"Manipulação Avançada de Energia\"**, ainda precisando pagar o preço de sustentação. ",
+    "tecnicaEfeitos": [
+      {
+        "canal": "defesa",
+        "expr": "bt"
+      },
+      {
+        "canal": "rdGeral",
+        "expr": "bt"
+      }
+    ],
+    "funcionamentosAdicionais": [
+      {
+        "id": "fb_muuckf1m_2",
+        "nome": "Seis Olhos",
+        "descricao": "",
+        "efeitos": []
+      }
+    ],
+    "origem": {
+      "id": "herdado",
+      "cla": "cla_gojo",
+      "bonusAtributos": {
+        "inteligencia": 2,
+        "sabedoria": 1
+      },
+      "escolhas": {
+        "treinamentos": [
+          "gojo_ms_feiticaria"
+        ]
+      }
+    }
+  },
+  "treinos": [
+    {
+      "id": "tes_habilidade",
+      "alvo": null
+    },
+    {
+      "id": "tes_habilidade",
+      "alvo": null
+    },
+    {
+      "id": "tes_habilidade",
+      "alvo": null
+    },
+    {
+      "id": "tes_habilidade",
+      "alvo": null
+    },
+    {
+      "id": "tes_habilidade",
+      "alvo": null
+    },
+    {
+      "id": "tes_feitico",
+      "alvo": null
+    },
+    {
+      "id": "tes_feitico",
+      "alvo": null
+    },
+    {
+      "id": "tes_feitico",
+      "alvo": null
+    },
+    {
+      "id": "tes_feitico",
+      "alvo": null
+    },
+    {
+      "id": "tes_feitico",
+      "alvo": null
+    },
+    {
+      "id": "tes_feitico",
+      "alvo": null
+    },
+    {
+      "id": "tes_feitico",
+      "alvo": null
+    },
+    {
+      "id": "tes_feitico",
+      "alvo": null
+    },
+    {
+      "id": "tes_aptidao",
+      "alvo": null
+    },
+    {
+      "id": "tes_aptidao",
+      "alvo": null
+    },
+    {
+      "id": "tes_aptidao",
+      "alvo": null
+    },
+    {
+      "id": "tes_aptidao",
+      "alvo": null
+    }
+  ],
+  "nd": 35,
+  "attr": {
+    "forca": 16,
+    "destreza": 22,
+    "constituicao": 32,
+    "inteligencia": 24,
+    "sabedoria": 20,
+    "presenca": 18
+  },
+  "totalAptidao": 26,
+  "aptidao": {
+    "alocado": {
+      "au": 5,
+      "cl": 5,
+      "bar": 4,
+      "dom": 5,
+      "er": 4
+    },
+    "concedido": {
+      "au": 0,
+      "cl": 1,
+      "bar": 1,
+      "dom": 0,
+      "er": 1
+    },
+    "efetivo": {
+      "au": 5,
+      "cl": 6,
+      "bar": 5,
+      "dom": 5,
+      "er": 5
+    },
+    "gastos": 23,
+    "limite": {
+      "au": 5,
+      "cl": 6,
+      "bar": 5,
+      "dom": 5,
+      "er": 5
+    }
+  },
+  "partesAptidao": {
+    "au": [
+      {
+        "label": "Pontos Alocados",
+        "valor": 5
+      }
+    ],
+    "cl": [
+      {
+        "label": "Pontos Alocados",
+        "valor": 5
+      },
+      {
+        "label": "Treino de Controle de Energia",
+        "valor": 1
+      }
+    ],
+    "bar": [
+      {
+        "label": "Pontos Alocados",
+        "valor": 4
+      },
+      {
+        "label": "Treino de Barreiras",
+        "valor": 1
+      }
+    ],
+    "dom": [
+      {
+        "label": "Pontos Alocados",
+        "valor": 5
+      }
+    ],
+    "er": [
+      {
+        "label": "Pontos Alocados",
+        "valor": 4
+      },
+      {
+        "label": "Treino de Energia Reversa",
+        "valor": 1
+      }
+    ]
+  },
+  "focosTotais": 52,
+  "treino": {
+    "aptidao": 5,
+    "aptidaoTrilha": {
+      "bar": 1,
+      "cl": 1,
+      "er": 1
+    }
+  },
+  "alto": {
+    "ativo": true,
+    "melhorias": {
+      "escolhidas": [
+        {
+          "id": "mel_alma",
+          "vezes": 2
+        },
+        {
+          "id": "mel_atencao",
+          "vezes": 1
+        },
+        {
+          "id": "mel_defesa",
+          "vezes": 1
+        },
+        {
+          "id": "mel_classe_de_dificuldade",
+          "vezes": 1
+        },
+        {
+          "id": "mel_pericia",
+          "vezes": 1
+        },
+        {
+          "id": "mel_precisao",
+          "vezes": 1
+        },
+        {
+          "id": "mel_resistencia",
+          "vezes": 1
+        }
+      ],
+      "total": 8,
+      "gastos": 8,
+      "restante": 0,
+      "excedeu": false,
+      "destravado": true,
+      "vagasND": 8,
+      "vagasCanal": 0,
+      "concedidas": {}
+    },
+    "lendarias": {
+      "escolhidas": [
+        "len_versatilidade_extrema",
+        "len_resistencia_lendaria",
+        "len_negar_a_morte",
+        "len_um_com_o_mundo",
+        "len_aperfeicoamento_de_atributo",
+        "len_consciencia_absoluta_da_alma"
+      ],
+      "total": 7,
+      "gastos": 6,
+      "restante": 1,
+      "excedeu": false,
+      "inacessiveis": [],
+      "destravado": true,
+      "vagasND": 7,
+      "vagasCanal": 0,
+      "concedidas": []
+    },
+    "escolhas": {
+      "porItem": {
+        "mel_pericia": {
+          "opcoes": [
+            "feiticaria"
+          ],
+          "quantidade": 1,
+          "excedeu": false
+        },
+        "mel_resistencia": {
+          "opcoes": [
+            "vontade"
+          ],
+          "quantidade": 1,
+          "excedeu": false
+        },
+        "len_versatilidade_extrema": {
+          "opcoes": [
+            "cl"
+          ],
+          "quantidade": 1,
+          "excedeu": false
+        },
+        "len_aperfeicoamento_de_atributo": {
+          "opcoes": [
+            "constituicao"
+          ],
+          "quantidade": 1,
+          "excedeu": false
+        }
+      },
+      "mapa": {
+        "mel_pericia": [
+          "feiticaria"
+        ],
+        "mel_resistencia": [
+          "vontade"
+        ],
+        "len_versatilidade_extrema": [
+          "cl"
+        ],
+        "len_aperfeicoamento_de_atributo": [
+          "constituicao"
+        ]
+      },
+      "opcoesPorItem": {
+        "mel_pericia": [
+          {
+            "id": "acrobacia",
+            "nome": "Acrobacia"
+          },
+          {
+            "id": "atletismo",
+            "nome": "Atletismo"
+          },
+          {
+            "id": "direcao",
+            "nome": "Direção"
+          },
+          {
+            "id": "enganacao",
+            "nome": "Enganação"
+          },
+          {
+            "id": "feiticaria",
+            "nome": "Feitiçaria"
+          },
+          {
+            "id": "furtividade",
+            "nome": "Furtividade"
+          },
+          {
+            "id": "historia",
+            "nome": "História"
+          },
+          {
+            "id": "intimidacao",
+            "nome": "Intimidação"
+          },
+          {
+            "id": "intuicao",
+            "nome": "Intuição"
+          },
+          {
+            "id": "investigacao",
+            "nome": "Investigação"
+          },
+          {
+            "id": "medicina",
+            "nome": "Medicina"
+          },
+          {
+            "id": "ocultismo",
+            "nome": "Ocultismo"
+          },
+          {
+            "id": "oficio",
+            "nome": "Ofício"
+          },
+          {
+            "id": "oficio__2",
+            "nome": "Ofício"
+          },
+          {
+            "id": "oficio__3",
+            "nome": "Ofício"
+          },
+          {
+            "id": "percepcao",
+            "nome": "Percepção"
+          },
+          {
+            "id": "performance",
+            "nome": "Performance"
+          },
+          {
+            "id": "persuasao",
+            "nome": "Persuasão"
+          },
+          {
+            "id": "prestidigitacao",
+            "nome": "Prestidigitação"
+          },
+          {
+            "id": "sobrevivencia",
+            "nome": "Sobrevivência"
+          },
+          {
+            "id": "tecnologia",
+            "nome": "Tecnologia"
+          },
+          {
+            "id": "teologia",
+            "nome": "Teologia"
+          }
+        ],
+        "mel_resistencia": [
+          {
+            "id": "reflexos",
+            "nome": "Reflexos"
+          },
+          {
+            "id": "fortitude",
+            "nome": "Fortitude"
+          },
+          {
+            "id": "vontade",
+            "nome": "Vontade"
+          },
+          {
+            "id": "astucia",
+            "nome": "Astúcia"
+          },
+          {
+            "id": "integridade",
+            "nome": "Integridade"
+          }
+        ],
+        "len_aperfeicoamento_de_atributo": [
+          {
+            "id": "forca",
+            "nome": "Força"
+          },
+          {
+            "id": "destreza",
+            "nome": "Destreza"
+          },
+          {
+            "id": "constituicao",
+            "nome": "Constituição"
+          },
+          {
+            "id": "inteligencia",
+            "nome": "Inteligência"
+          },
+          {
+            "id": "sabedoria",
+            "nome": "Sabedoria"
+          },
+          {
+            "id": "presenca",
+            "nome": "Presença"
+          }
+        ],
+        "len_conhecimento_iluminado": [
+          {
+            "id": "acrobacia",
+            "nome": "Acrobacia"
+          },
+          {
+            "id": "feiticaria",
+            "nome": "Feitiçaria"
+          },
+          {
+            "id": "oficio",
+            "nome": "Ofício"
+          },
+          {
+            "id": "percepcao",
+            "nome": "Percepção"
+          }
+        ],
+        "len_dominancia_em_tecnica": [
+          {
+            "id": "tecnicas",
+            "nome": "3 habilidades de técnica, marciais ou Estilos",
+            "efeitos": [
+              {
+                "canal": "vagasFeitico",
+                "expr": "3"
+              }
+            ]
+          },
+          {
+            "id": "variacoes",
+            "nome": "5 variações de Feitiço",
+            "efeitos": [
+              {
+                "canal": "vagasVariacao",
+                "expr": "5"
+              }
+            ]
+          }
+        ],
+        "len_versatilidade_extrema": [
+          {
+            "id": "au",
+            "nome": "Aura"
+          },
+          {
+            "id": "cl",
+            "nome": "Controle e Leitura"
+          },
+          {
+            "id": "bar",
+            "nome": "Barreira"
+          },
+          {
+            "id": "dom",
+            "nome": "Domínio"
+          },
+          {
+            "id": "er",
+            "nome": "Energia Reversa"
+          }
+        ],
+        "len_atingir_apice": [
+          {
+            "id": "api_fluxo_invencivel",
+            "nome": "Fluxo Invencível",
+            "descricao": "As lendas dizem de um restringido que aperfeiçoou tanto seu corpo que era capaz de bater de frente a feiticeiros cujo poder poderia ser comparado ao de deuses. Você consegue entrar em um estado de fluxo onde se equipara a ele, tornando-se quase invencível. Como uma ação livre, você pode gastar 6 pontos de vigor para adentrar no estado de Fluxo, onde recebe os seguintes benefícios: todos seus ataques causam dano adicional igual ao seu bônus de luta e metade do seu bônus de luta no acerto, você recebe +12 em testes de resistência, a sua margem de crítico reduz em dois números, todo acerto crítico causa +2 dados de dano, você recebe 30 de redução de dano e sua Classe de Armadura aumenta em 12, além de você poder realizar um ataque adicional junto da sua ação de ataque. Você pode manter este estado por até duas rodadas, mas para cada rodada mantida, você recebe um ponto de exaustão no final e paga 4 pontos de vigor.",
+            "requisitos": [
+              {
+                "tipo": "nivelEspec",
+                "espId": "restringido",
+                "valor": 20
+              },
+              {
+                "tipo": "nota",
+                "texto": "Ápice Corporal Humano"
+              }
+            ]
+          },
+          {
+            "id": "api_forca_do_infinito",
+            "nome": "Força do Infinito",
+            "descricao": "Na história do Jujutsu houve um feiticeiro cuja energia beirava o infinito, assim como a dimensão que portava em seu interior. Por alguns instantes, você consegue manipular a própria força do infinito. Como uma ação livre, você pode adentrar no estado de Infinitude, onde seu movimento torna-se em movimento de voo, habilidades de técnica de nível um e dois têm seu custo transformado em zero e você consegue dominar até mesmo a energia e técnica dos outros, liberando uma nova ação dentro de combate: como uma ação comum você pode forçar uma criatura a realizar um teste de resistência de vontade com dificuldade aumentada em 6 e, em uma falha, você pode forçar a criatura a usar qualquer uma das suas ações ou habilidades de técnica contra um alvo a sua escolha, incluindo ela mesma. Esse estado pode durar até três rodadas, mas para cada rodada mantida você deve pagar 5 pontos de energia e recebe um ponto de exaustão no final.",
+            "requisitos": [
+              {
+                "tipo": "nivelEspec",
+                "espId": "conjurador",
+                "valor": 20
+              },
+              {
+                "tipo": "habilidade",
+                "id": "cnj_manipulacao_perfeita"
+              },
+              {
+                "tipo": "habilidade",
+                "id": "cnj_dominancia_em_feitico"
+              }
+            ]
+          },
+          {
+            "id": "api_invencivel_sob_o_sol",
+            "nome": "Invencível sob o Sol",
+            "descricao": "Fala-se de um feiticeiro que mesmo cego percebia todos seus arredores e encontrou um caminho para alcançar seu ápice, tornando-se invencível e eterno sob o sol. No seu turno, você pode, como uma ação livre, adentrar em um estado de Invencibilidade, onde sua Classe de Armadura aumenta em 12 e recebe +12 em testes de resistência, você tem todos os efeitos positivos das suas posturas ativos simultaneamente e tem sua margem de crítico reduzido em um, além de ser imune a ataques críticos inimigos. Você pode manter este estado por até quatro rodadas, mas para cada rodada mantida, você recebe um ponto de exaustão no final e paga 4 pontos de energia amaldiçoada.",
+            "requisitos": [
+              {
+                "tipo": "nivelEspec",
+                "espId": "combatente",
+                "valor": 20
+              },
+              {
+                "tipo": "habilidade",
+                "id": "cmb_assumir_postura"
+              },
+              {
+                "tipo": "habilidade",
+                "id": "cmb_preparacao_rapida"
+              },
+              {
+                "tipo": "habilidade",
+                "id": "cmb_mestre_da_postura"
+              }
+            ]
+          },
+          {
+            "id": "api_mare_da_vida",
+            "nome": "Maré da Vida",
+            "descricao": "Uma peculiar feiticeira era conhecida pela sua técnica única que utilizava das águas da vida, assim nunca deixando que os seus aliados caíssem. Inspirando-se nisso, você pode trazer uma maré de vida para seus aliados: você pode gastar todo o seu turno cobrindo todos seus aliados com sua aura, que é expandida grandemente. Uma criatura coberta por sua aura não pode ter seus pontos de vida reduzidos a zero e nem a sua alma reduzida e ignora qualquer condição que seja imposta nela, além de receber da sua cura básica no começo de todo turno. Você pode manter essa habilidade por até quatro rodadas, mas para cada rodada que você manter, você recebe um ponto de exaustão quando a encerrar e gasta 4 pontos de energia amaldiçoada.",
+            "requisitos": [
+              {
+                "tipo": "nivelEspec",
+                "espId": "suporte",
+                "valor": 20
+              },
+              {
+                "tipo": "habilidade",
+                "id": "sup_intervencao"
+              },
+              {
+                "tipo": "habilidade",
+                "id": "sup_purificacao_da_alma"
+              }
+            ]
+          },
+          {
+            "id": "api_poder_da_trindade",
+            "nome": "Poder da Trindade",
+            "descricao": "Em tempos distantes, falava-se de três lendários feiticeiros, cada um representando um dos aspectos - corpo, mente e alma - e que juntos formavam a inabalável trindade; tendo masterizado esses aspectos, também, você pode temporariamente puxar do mesmo poder que eles. Uma vez por dia, como uma ação livre, você pode puxar o poder da trindade por uma rodada: você recebe 40 de redução de dano a todos os tipos de dano e sucede automaticamente em todos os testes de resistência; todos seus ataques são acertos, necessitando apenas da rolagem para a possibilidade de crítico e causam 10 de dano a mais, e ao terminar o seu turno, você pode realizar outro turno logo em seguida. Quando essa rodada terminar e você sai desse estado, você recebe dois pontos de exaustão.",
+            "requisitos": [
+              {
+                "tipo": "nivelEspec",
+                "espId": "lutador",
+                "valor": 20
+              },
+              {
+                "tipo": "habilidade",
+                "id": "lut_corpo_sincronizado"
+              },
+              {
+                "tipo": "habilidade",
+                "id": "lut_mente_em_paz"
+              },
+              {
+                "tipo": "habilidade",
+                "id": "lut_alma_quieta"
+              }
+            ]
+          },
+          {
+            "id": "api_rei_do_tabuleiro",
+            "nome": "Rei do Tabuleiro",
+            "descricao": "Para você, o campo de batalha é como o tabuleiro de um jogo, e o seu papel é claro: ser o Rei. Como uma ação livre, você se torna o Rei dentro de batalha, recebendo os seguintes benefícios durante o seu turno: sua ação de comando passa a afetar uma quantidade de invocações igual ao máximo que você pode manter ativo em campo (caso tenha apenas uma, considera-se que você pode dar essa quantidade de comandos para ela), o custo para utilizar Agilidade no Campo de Batalha se torna zero, além de você poder a utilizar uma segunda vez dentro de seu turno, e Flanco Avançado passa a ser aplicado em qualquer criatura que esteja dentro do alcance de pelo menos uma de suas invocações. Após o final do seu turno, você sai desse estado e recebe dois pontos de exaustão, mas você ainda continua a prezar por suas peças: até o começo do seu próximo turno, nenhuma de suas invocações pode ser dissipada ou exorcizada a força.",
+            "requisitos": [
+              {
+                "tipo": "nivelEspec",
+                "espId": "controlador",
+                "valor": 20
+              },
+              {
+                "tipo": "nota",
+                "texto": "Flanco"
+              },
+              {
+                "tipo": "nota",
+                "texto": "Agilidade no Campo de Batalha"
+              },
+              {
+                "tipo": "habilidade",
+                "id": "ctr_flanco_avancado"
+              },
+              {
+                "tipo": "habilidade",
+                "id": "ctr_mestre_do_controle"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "apiceId": null,
+    "catalogo": {
+      "melhorias": [
+        {
+          "id": "mel_alma",
+          "nome": "Melhoria de Alma",
+          "descricao": "Você compreende melhor a alma, expandindo a sua própria. Seu máximo de integridade da alma aumenta em 15. Você pode pegar essa melhoria uma segunda vez, aumentando em mais 10.",
+          "maxVezes": 2,
+          "jogador": null,
+          "efeitos": [
+            {
+              "canal": "almaMax",
+              "expr": "15 * (vez == 1) + 10 * (vez >= 2)"
+            }
+          ],
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "mel_atencao",
+          "nome": "Melhoria de Atenção",
+          "descricao": "Sua atenção é mais apurada, com sentidos afiados. Seu valor de atenção aumenta em um valor igual ao seu Bônus de Treinamento.",
+          "maxVezes": 1,
+          "jogador": null,
+          "efeitos": [
+            {
+              "canal": "atencao",
+              "expr": "bt"
+            }
+          ],
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "mel_defesa",
+          "nome": "Melhoria de Defesa",
+          "descricao": "Seja por resistência ou esquivando, te acertar é mais difícil. Você soma ½ do seu Bônus de Treinamento ao total de sua Defesa.",
+          "maxVezes": 1,
+          "jogador": null,
+          "efeitos": [
+            {
+              "canal": "defesa",
+              "expr": "piso(bt / 2)"
+            }
+          ],
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "mel_classe_de_dificuldade",
+          "nome": "Melhoria de Classe de Dificuldade",
+          "descricao": "Com técnicas e habilidades refinadas, resistir a elas se torna mais difícil. Você soma ½ do seu Bônus de Treinamento em sua CD Amaldiçoada e de Especialização.",
+          "maxVezes": 1,
+          "jogador": null,
+          "efeitos": [
+            {
+              "canal": "cd",
+              "expr": "piso(bt / 2)"
+            }
+          ],
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "mel_dano",
+          "nome": "Melhoria de Dano",
+          "descricao": "Poder destrutivo é o que há de mais valioso, e você refina isso. Sempre que causar dano com uma aptidão ou ataque, você soma o seu Bônus de Treinamento neste dano, caso seja um Feitiço de Dano, o dano do feitiço aumenta em um valor igual ao seu nível de personagem em vez disso.",
+          "maxVezes": 1,
+          "jogador": null,
+          "efeitos": [
+            {
+              "canal": "danoBonus",
+              "expr": "bt"
+            },
+            {
+              "canal": "danoBonus",
+              "expr": "nd - bt",
+              "alvo": "feitico:tipo:dano"
+            }
+          ],
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "mel_energia",
+          "nome": "Melhoria de Energia",
+          "descricao": "A energia amaldiçoada é cultivada com mais facilidade e naturalidade em seu interior. Seu máximo de pontos de energia amaldiçoada aumenta em um valor igual ao seu Bônus de Treinamento.",
+          "maxVezes": 1,
+          "jogador": null,
+          "efeitos": [
+            {
+              "canal": "pe",
+              "expr": "bt"
+            }
+          ],
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "mel_movimento",
+          "nome": "Melhoria de Movimento",
+          "descricao": "Agilidade e velocidade são importantes. Seu valor de movimento aumenta em um valor igual metade de seu Treinamento * 1,5m.",
+          "maxVezes": 1,
+          "jogador": null,
+          "efeitos": [
+            {
+              "canal": "movimento",
+              "expr": "piso(bt / 2) * 1.5"
+            }
+          ],
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "mel_pericia",
+          "nome": "Melhoria de Perícia",
+          "descricao": "Uma certa perícia é sua especialidade, e você domina ela cada vez mais. Uma perícia a sua escolha recebe um bônus adicional igual a metade do seu bônus de Treinamento.",
+          "maxVezes": 1,
+          "escolha": {
+            "label": "Perícia",
+            "quantidade": 1,
+            "opcoes": [
+              {
+                "id": "acrobacia",
+                "nome": "Acrobacia"
+              },
+              {
+                "id": "atletismo",
+                "nome": "Atletismo"
+              },
+              {
+                "id": "direcao",
+                "nome": "Direção"
+              },
+              {
+                "id": "enganacao",
+                "nome": "Enganação"
+              },
+              {
+                "id": "feiticaria",
+                "nome": "Feitiçaria"
+              },
+              {
+                "id": "furtividade",
+                "nome": "Furtividade"
+              },
+              {
+                "id": "historia",
+                "nome": "História"
+              },
+              {
+                "id": "intimidacao",
+                "nome": "Intimidação"
+              },
+              {
+                "id": "intuicao",
+                "nome": "Intuição"
+              },
+              {
+                "id": "investigacao",
+                "nome": "Investigação"
+              },
+              {
+                "id": "medicina",
+                "nome": "Medicina"
+              },
+              {
+                "id": "ocultismo",
+                "nome": "Ocultismo"
+              },
+              {
+                "id": "oficio",
+                "nome": "Ofício"
+              },
+              {
+                "id": "percepcao",
+                "nome": "Percepção"
+              },
+              {
+                "id": "performance",
+                "nome": "Performance"
+              },
+              {
+                "id": "persuasao",
+                "nome": "Persuasão"
+              },
+              {
+                "id": "prestidigitacao",
+                "nome": "Prestidigitação"
+              },
+              {
+                "id": "sobrevivencia",
+                "nome": "Sobrevivência"
+              },
+              {
+                "id": "tecnologia",
+                "nome": "Tecnologia"
+              },
+              {
+                "id": "teologia",
+                "nome": "Teologia"
+              }
+            ],
+            "fonteOpcoes": "periciasDaFicha"
+          },
+          "jogador": null,
+          "efeitos": [],
+          "efeitosAlvo": [
+            {
+              "canal": "bonusPericia",
+              "expr": "piso(bt / 2)"
+            }
+          ],
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "mel_precisao",
+          "nome": "Melhoria de Precisão",
+          "descricao": "Você é cada vez mais preciso, encaixando golpes com facilidade. Sempre que realizar uma rolagem de ataque, você soma metade do seu Bônus de Treinamento ao total.",
+          "maxVezes": 1,
+          "jogador": null,
+          "efeitos": [
+            {
+              "canal": "bonusAcerto",
+              "expr": "piso(bt / 2)"
+            }
+          ],
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "mel_resistencia",
+          "nome": "Melhoria de Resistência",
+          "descricao": "Resistir a efeitos é essencial, e você sabe o jeito certo de evitar danos. Você recebe um bônus igual a metade do seu Bônus de Treinamento em suas rolagens de TR, além disso, escolha um deles para ter a margem necessária para um sucesso crítico reduzida no mesmo valor.",
+          "maxVezes": 1,
+          "escolha": {
+            "label": "Teste de Resistência",
+            "quantidade": 1,
+            "opcoes": [
+              {
+                "id": "reflexos",
+                "nome": "Reflexos"
+              },
+              {
+                "id": "fortitude",
+                "nome": "Fortitude"
+              },
+              {
+                "id": "vontade",
+                "nome": "Vontade"
+              },
+              {
+                "id": "astucia",
+                "nome": "Astúcia"
+              },
+              {
+                "id": "integridade",
+                "nome": "Integridade"
+              }
+            ]
+          },
+          "jogador": null,
+          "efeitos": [
+            {
+              "canal": "bonusTR",
+              "expr": "piso(bt / 2)"
+            }
+          ],
+          "efeitosAlvo": [
+            {
+              "canal": "margemCriticoTR",
+              "expr": "piso(bt / 2)"
+            }
+          ],
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "mel_vida",
+          "nome": "Melhoria de Vida",
+          "descricao": "Você é vigoroso e inquebrável. Seu máximo de pontos de vida aumenta em 20. Você pode pegar esta melhoria mais duas vezes, aumentando o máximo em 15 ao invés de 20.",
+          "maxVezes": 3,
+          "jogador": null,
+          "efeitos": [
+            {
+              "canal": "hp",
+              "expr": "20 * (vez == 1) + 15 * (vez >= 2)"
+            }
+          ],
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        }
+      ],
+      "lendarias": [
+        {
+          "id": "len_agilidade_inigualavel",
+          "nome": "Agilidade Inigualável",
+          "descricao": "Sua agilidade e rapidez são inigualáveis, permitindo um movimento quase impossível de acompanhar. Ao obter esta habilidade, você recebe uma ação de movimento adicional todo turno.",
+          "requisitos": [],
+          "resultados": [
+            {
+              "label": "Ação de Movimento adicional por turno",
+              "expr": "1"
+            }
+          ],
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "len_aperfeicoamento_de_atributo",
+          "nome": "Aperfeiçoamento de Atributo",
+          "descricao": "Ao obter esta habilidade, você aumenta o valor de um atributo em 2, podendo superar o máximo de 30.",
+          "requisitos": [],
+          "escolha": {
+            "label": "Atributo",
+            "quantidade": 1,
+            "opcoes": [
+              {
+                "id": "forca",
+                "nome": "Força"
+              },
+              {
+                "id": "destreza",
+                "nome": "Destreza"
+              },
+              {
+                "id": "constituicao",
+                "nome": "Constituição"
+              },
+              {
+                "id": "inteligencia",
+                "nome": "Inteligência"
+              },
+              {
+                "id": "sabedoria",
+                "nome": "Sabedoria"
+              },
+              {
+                "id": "presenca",
+                "nome": "Presença"
+              }
+            ]
+          },
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "len_conhecimento_iluminado",
+          "nome": "Conhecimento Iluminado",
+          "descricao": "Sua mente foi iluminada com um conhecimento extremo. Ao obter esta habilidade, você escolhe 3 perícias que já for treinado para se tornar Mestre em.",
+          "requisitos": [],
+          "escolha": {
+            "label": "Perícias já treinadas",
+            "quantidade": 3,
+            "fonteOpcoes": "periciasDaFicha",
+            "somenteTreinadas": true,
+            "opcoes": []
+          },
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "len_consciencia_absoluta_da_alma",
+          "nome": "Consciência Absoluta da Alma",
+          "descricao": "Você conhece perfeitamente o traçado da sua alma, expandindo-a. Ao obter esta habilidade, o seu valor máximo de Integridade da Alma aumenta em 25 e você se torna capaz de enxergar o traçado da alma.",
+          "requisitos": [],
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "len_dominancia_em_tecnica",
+          "nome": "Dominância em Técnica",
+          "descricao": "Você domina sua própria técnica amaldiçoada ou Estilo de Combate, conseguindo criar diversos usos para a mesma. Ao obter esta habilidade, você recebe 3 habilidades de técnica, marciais ou Estilos adicionais. Alternativamente, você pode adquirir 5 variações de Feitiço em vez disso.",
+          "requisitos": [],
+          "efeitos": [],
+          "escolha": {
+            "label": "Benefício de Dominância",
+            "quantidade": 1,
+            "opcoes": [
+              {
+                "id": "tecnicas",
+                "nome": "3 habilidades de técnica, marciais ou Estilos",
+                "efeitos": [
+                  {
+                    "canal": "vagasFeitico",
+                    "expr": "3"
+                  }
+                ]
+              },
+              {
+                "id": "variacoes",
+                "nome": "5 variações de Feitiço",
+                "efeitos": [
+                  {
+                    "canal": "vagasVariacao",
+                    "expr": "5"
+                  }
+                ]
+              }
+            ]
+          },
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "len_favorecido_pela_energia",
+          "nome": "Favorecido pela Energia",
+          "descricao": "Você é favorecido pela própria energia amaldiçoada, conseguindo elevar seu conhecimento sobre ela. Ao obter esta habilidade, você recebe 3 aptidões amaldiçoadas a sua escolha.",
+          "requisitos": [],
+          "efeitos": [
+            {
+              "canal": "vagasAptidao",
+              "expr": "3"
+            }
+          ],
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "len_inesgotavel",
+          "nome": "Inesgotável",
+          "descricao": "Sua fonte de energia ou vigor é inesgotável. Ao obter esta habilidade, o seu máximo de pontos de energia amaldiçoada ou de estamina aumenta em um valor igual a ½ do nível.",
+          "requisitos": [],
+          "escolha": null,
+          "efeitos": [
+            {
+              "canal": "pe",
+              "expr": "piso(nd / 2)"
+            }
+          ],
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "len_inquebravel",
+          "nome": "Inquebrável",
+          "descricao": "O seu corpo é inquebrável. Ao obter esta habilidade, você recebe 30 pontos de vida máximos adicionais.",
+          "requisitos": [],
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "len_intocavel",
+          "nome": "Intocável",
+          "descricao": "Você é intocável. Ao obter esta habilidade, sua Defesa aumenta em 5.",
+          "requisitos": [],
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "len_motivacao_constante",
+          "nome": "Motivação Constante",
+          "descricao": "Acertar bons golpes é uma motivação constante para continuar lutando. Sempre que você acertar um ataque crítico, você recebe 15 pontos de vida temporários, os quais podem acumular.",
+          "requisitos": [],
+          "resultados": [
+            {
+              "label": "PV Temporários por ataque crítico",
+              "expr": "15"
+            }
+          ],
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "len_negar_a_morte",
+          "nome": "Negar a Morte",
+          "descricao": "Diante seu poder, até mesmo o chamado da morte pode ser negado. Uma vez por cena, caso você tenha seus pontos de vida reduzidos a 0 ou menos, você pode escolher ignorar todo o dano excedente. Ao fazer isso, você também se mantém com uma quantidade de vida igual ao dobro do seu nível de personagem.",
+          "requisitos": [],
+          "usos": {
+            "expr": "1",
+            "recarga": "cena"
+          },
+          "resultados": [
+            {
+              "label": "PV ao Negar a Morte",
+              "expr": "nd * 2"
+            }
+          ],
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "len_preparo_absoluto",
+          "nome": "Preparo Absoluto",
+          "descricao": "Você está sempre preparado para qualquer situação, desejando garantir ser o primeiro a agir. Ao obter esta habilidade, você recebe +5 em Iniciativa.",
+          "requisitos": [],
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "len_resistencia_lendaria",
+          "nome": "Resistência Lendária",
+          "descricao": "Em certos momentos, sua própria determinação o permite resistir a certos efeitos. Ao obter esta habilidade você passa a poder, duas vezes por dia, escolher automaticamente transformar um teste de resistência em um sucesso crítico.",
+          "requisitos": [],
+          "usos": {
+            "expr": "2",
+            "recarga": "descanso"
+          },
+          "resultados": [
+            {
+              "label": "Usos por dia",
+              "expr": "2"
+            }
+          ],
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "len_um_com_o_mundo",
+          "nome": "Um com o Mundo",
+          "descricao": "Você é um com o mundo, não deixando nada passar despercebido. Ao obter esta habilidade, você recebe um bônus em Percepção igual a metade de seu Bônus de Treinamento e seu Bônus de Treinamento na Atenção.",
+          "requisitos": [],
+          "efeitos": [
+            {
+              "canal": "bonusPericia",
+              "expr": "piso(bt / 2)",
+              "alvo": "percepcao"
+            },
+            {
+              "canal": "atencao",
+              "expr": "bt"
+            }
+          ],
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "len_versatilidade_extrema",
+          "nome": "Versatilidade Extrema",
+          "foraDoJogador": false,
+          "perdeNoJogador": false,
+          "descricao": "Buscando melhor entendimento e estudo sobre a energia, você desenvolveu seu próprio Jujutsu de forma excepcional. Você recebe 1 Nível de Aptidão adicional, além disso o nível máximo na aptidão escolhida se torna 6.",
+          "requisitos": [],
+          "escolha": {
+            "label": "Limite de Aptidão",
+            "quantidade": 1,
+            "opcoes": [
+              {
+                "id": "au",
+                "nome": "Aura"
+              },
+              {
+                "id": "cl",
+                "nome": "Controle e Leitura"
+              },
+              {
+                "id": "bar",
+                "nome": "Barreira"
+              },
+              {
+                "id": "dom",
+                "nome": "Domínio"
+              },
+              {
+                "id": "er",
+                "nome": "Energia Reversa"
+              }
+            ]
+          },
+          "efeitos": [
+            {
+              "canal": "pontosAptidao",
+              "expr": "1"
+            }
+          ],
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "len_visar_o_sucesso",
+          "nome": "Visar o Sucesso",
+          "descricao": "Você sempre visa o sucesso, desejando extrair o máximo do seu potencial. Sempre que falhar em um teste de perícia, você pode gastar 2 pontos de energia para rolar novamente o dado, ficando com o melhor resultado.",
+          "requisitos": [],
+          "resultados": [
+            {
+              "label": "Custo para repetir a perícia",
+              "expr": "2"
+            }
+          ],
+          "remendadoPor": [
+            "player-alto-nivel-afty"
+          ]
+        },
+        {
+          "id": "len_atingir_apice",
+          "nome": "Atingir Ápice",
+          "descricao": "Você atinge o ápice daquilo em que você se especializou, conseguindo extrair o máximo da sua dedicação e empenho.",
+          "requisitos": [
+            {
+              "tipo": "nd",
+              "valor": 26
+            }
+          ],
+          "escolha": {
+            "label": "Habilidade Ápice",
+            "quantidade": 1,
+            "intro": "Existem certas habilidades que representam o ápice de uma especialização, extraindo o máximo do seu potencial. Um personagem só pode obter uma habilidade ápice de especialização, e deve atender a todos os requisitos.",
+            "opcoes": [
+              {
+                "id": "api_fluxo_invencivel",
+                "nome": "Fluxo Invencível",
+                "descricao": "As lendas dizem de um restringido que aperfeiçoou tanto seu corpo que era capaz de bater de frente a feiticeiros cujo poder poderia ser comparado ao de deuses. Você consegue entrar em um estado de fluxo onde se equipara a ele, tornando-se quase invencível. Como uma ação livre, você pode gastar 6 pontos de vigor para adentrar no estado de Fluxo, onde recebe os seguintes benefícios: todos seus ataques causam dano adicional igual ao seu bônus de luta e metade do seu bônus de luta no acerto, você recebe +12 em testes de resistência, a sua margem de crítico reduz em dois números, todo acerto crítico causa +2 dados de dano, você recebe 30 de redução de dano e sua Classe de Armadura aumenta em 12, além de você poder realizar um ataque adicional junto da sua ação de ataque. Você pode manter este estado por até duas rodadas, mas para cada rodada mantida, você recebe um ponto de exaustão no final e paga 4 pontos de vigor.",
+                "requisitos": [
+                  {
+                    "tipo": "nivelEspec",
+                    "espId": "restringido",
+                    "valor": 20
+                  },
+                  {
+                    "tipo": "nota",
+                    "texto": "Ápice Corporal Humano"
+                  }
+                ]
+              },
+              {
+                "id": "api_forca_do_infinito",
+                "nome": "Força do Infinito",
+                "descricao": "Na história do Jujutsu houve um feiticeiro cuja energia beirava o infinito, assim como a dimensão que portava em seu interior. Por alguns instantes, você consegue manipular a própria força do infinito. Como uma ação livre, você pode adentrar no estado de Infinitude, onde seu movimento torna-se em movimento de voo, habilidades de técnica de nível um e dois têm seu custo transformado em zero e você consegue dominar até mesmo a energia e técnica dos outros, liberando uma nova ação dentro de combate: como uma ação comum você pode forçar uma criatura a realizar um teste de resistência de vontade com dificuldade aumentada em 6 e, em uma falha, você pode forçar a criatura a usar qualquer uma das suas ações ou habilidades de técnica contra um alvo a sua escolha, incluindo ela mesma. Esse estado pode durar até três rodadas, mas para cada rodada mantida você deve pagar 5 pontos de energia e recebe um ponto de exaustão no final.",
+                "requisitos": [
+                  {
+                    "tipo": "nivelEspec",
+                    "espId": "conjurador",
+                    "valor": 20
+                  },
+                  {
+                    "tipo": "habilidade",
+                    "id": "cnj_manipulacao_perfeita"
+                  },
+                  {
+                    "tipo": "habilidade",
+                    "id": "cnj_dominancia_em_feitico"
+                  }
+                ]
+              },
+              {
+                "id": "api_invencivel_sob_o_sol",
+                "nome": "Invencível sob o Sol",
+                "descricao": "Fala-se de um feiticeiro que mesmo cego percebia todos seus arredores e encontrou um caminho para alcançar seu ápice, tornando-se invencível e eterno sob o sol. No seu turno, você pode, como uma ação livre, adentrar em um estado de Invencibilidade, onde sua Classe de Armadura aumenta em 12 e recebe +12 em testes de resistência, você tem todos os efeitos positivos das suas posturas ativos simultaneamente e tem sua margem de crítico reduzido em um, além de ser imune a ataques críticos inimigos. Você pode manter este estado por até quatro rodadas, mas para cada rodada mantida, você recebe um ponto de exaustão no final e paga 4 pontos de energia amaldiçoada.",
+                "requisitos": [
+                  {
+                    "tipo": "nivelEspec",
+                    "espId": "combatente",
+                    "valor": 20
+                  },
+                  {
+                    "tipo": "habilidade",
+                    "id": "cmb_assumir_postura"
+                  },
+                  {
+                    "tipo": "habilidade",
+                    "id": "cmb_preparacao_rapida"
+                  },
+                  {
+                    "tipo": "habilidade",
+                    "id": "cmb_mestre_da_postura"
+                  }
+                ]
+              },
+              {
+                "id": "api_mare_da_vida",
+                "nome": "Maré da Vida",
+                "descricao": "Uma peculiar feiticeira era conhecida pela sua técnica única que utilizava das águas da vida, assim nunca deixando que os seus aliados caíssem. Inspirando-se nisso, você pode trazer uma maré de vida para seus aliados: você pode gastar todo o seu turno cobrindo todos seus aliados com sua aura, que é expandida grandemente. Uma criatura coberta por sua aura não pode ter seus pontos de vida reduzidos a zero e nem a sua alma reduzida e ignora qualquer condição que seja imposta nela, além de receber da sua cura básica no começo de todo turno. Você pode manter essa habilidade por até quatro rodadas, mas para cada rodada que você manter, você recebe um ponto de exaustão quando a encerrar e gasta 4 pontos de energia amaldiçoada.",
+                "requisitos": [
+                  {
+                    "tipo": "nivelEspec",
+                    "espId": "suporte",
+                    "valor": 20
+                  },
+                  {
+                    "tipo": "habilidade",
+                    "id": "sup_intervencao"
+                  },
+                  {
+                    "tipo": "habilidade",
+                    "id": "sup_purificacao_da_alma"
+                  }
+                ]
+              },
+              {
+                "id": "api_poder_da_trindade",
+                "nome": "Poder da Trindade",
+                "descricao": "Em tempos distantes, falava-se de três lendários feiticeiros, cada um representando um dos aspectos - corpo, mente e alma - e que juntos formavam a inabalável trindade; tendo masterizado esses aspectos, também, você pode temporariamente puxar do mesmo poder que eles. Uma vez por dia, como uma ação livre, você pode puxar o poder da trindade por uma rodada: você recebe 40 de redução de dano a todos os tipos de dano e sucede automaticamente em todos os testes de resistência; todos seus ataques são acertos, necessitando apenas da rolagem para a possibilidade de crítico e causam 10 de dano a mais, e ao terminar o seu turno, você pode realizar outro turno logo em seguida. Quando essa rodada terminar e você sai desse estado, você recebe dois pontos de exaustão.",
+                "requisitos": [
+                  {
+                    "tipo": "nivelEspec",
+                    "espId": "lutador",
+                    "valor": 20
+                  },
+                  {
+                    "tipo": "habilidade",
+                    "id": "lut_corpo_sincronizado"
+                  },
+                  {
+                    "tipo": "habilidade",
+                    "id": "lut_mente_em_paz"
+                  },
+                  {
+                    "tipo": "habilidade",
+                    "id": "lut_alma_quieta"
+                  }
+                ]
+              },
+              {
+                "id": "api_rei_do_tabuleiro",
+                "nome": "Rei do Tabuleiro",
+                "descricao": "Para você, o campo de batalha é como o tabuleiro de um jogo, e o seu papel é claro: ser o Rei. Como uma ação livre, você se torna o Rei dentro de batalha, recebendo os seguintes benefícios durante o seu turno: sua ação de comando passa a afetar uma quantidade de invocações igual ao máximo que você pode manter ativo em campo (caso tenha apenas uma, considera-se que você pode dar essa quantidade de comandos para ela), o custo para utilizar Agilidade no Campo de Batalha se torna zero, além de você poder a utilizar uma segunda vez dentro de seu turno, e Flanco Avançado passa a ser aplicado em qualquer criatura que esteja dentro do alcance de pelo menos uma de suas invocações. Após o final do seu turno, você sai desse estado e recebe dois pontos de exaustão, mas você ainda continua a prezar por suas peças: até o começo do seu próximo turno, nenhuma de suas invocações pode ser dissipada ou exorcizada a força.",
+                "requisitos": [
+                  {
+                    "tipo": "nivelEspec",
+                    "espId": "controlador",
+                    "valor": 20
+                  },
+                  {
+                    "tipo": "nota",
+                    "texto": "Flanco"
+                  },
+                  {
+                    "tipo": "nota",
+                    "texto": "Agilidade no Campo de Batalha"
+                  },
+                  {
+                    "tipo": "habilidade",
+                    "id": "ctr_flanco_avancado"
+                  },
+                  {
+                    "tipo": "habilidade",
+                    "id": "ctr_mestre_do_controle"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "player-alto-nivel-afty:len_incansavel",
+          "nome": "Incansável",
+          "descricao": "Tendo uma capacidade excepcional de regeneração, se mantendo na luta constantemente. Ao receber uma cura ou Pv Temporário, você aumenta o valor recebido igual a ½ de seu nível.",
+          "requisitos": [],
+          "resultados": [
+            {
+              "label": "Bônus ao receber Cura ou PV Temporários",
+              "expr": "piso(nd / 2)"
+            }
+          ],
+          "addonId": "player-alto-nivel-afty",
+          "addonNome": "Player: Alto Nível Afty"
+        },
+        {
+          "id": "player-alto-nivel-afty:len_invencivel",
+          "nome": "Invencível",
+          "descricao": "Ascendendo a um patamar superior, você é praticamente invencível, pelo menos considerando os padrões de um feiticeiro normal. Você recebe RD contra todos os tipos de dano igual ao seu Nível de Personagem.",
+          "requisitos": [
+            {
+              "tipo": "nd",
+              "valor": 26
+            },
+            {
+              "tipo": "lendariaOr",
+              "ids": [
+                "len_intocavel",
+                "len_inquebravel"
+              ]
+            }
+          ],
+          "efeitos": [
+            {
+              "canal": "rdGeral",
+              "expr": "nd"
+            },
+            {
+              "canal": "rdAlma",
+              "expr": "nd"
+            }
+          ],
+          "addonId": "player-alto-nivel-afty",
+          "addonNome": "Player: Alto Nível Afty"
+        },
+        {
+          "id": "player-alto-nivel-afty:len_manipulacao_avancada_de_energia",
+          "nome": "Manipulação Avançada de Energia",
+          "descricao": "O feiticeiro alcançou um nível extremo no controle da sua energia, conseguindo reduzir drasticamente seus gastos. Sempre que gastar energia amaldiçoada para o uso de aptidões ou técnicas, o gasto é reduzido em um valor igual a metade do seu nível de aptidão em Controle e Leitura. Por representar uma forma de manipulação avançada de energia, essa redução não acumula com elementos que já forneçam reduções no gasto de PE geral, como os Seis Olhos por exemplo.",
+          "requisitos": [
+            {
+              "tipo": "lendariaOr",
+              "ids": [
+                "len_favorecido_pela_energia",
+                "len_inesgotavel"
+              ]
+            }
+          ],
+          "efeitos": [
+            {
+              "canal": "custoPE",
+              "expr": "piso(cl / 2)",
+              "naoAcumulaReducaoGeral": true
+            }
+          ],
+          "addonId": "player-alto-nivel-afty",
+          "addonNome": "Player: Alto Nível Afty"
+        }
+      ]
+    }
+  },
+  "stats": {
+    "hp": 881,
+    "pe": 253,
+    "defesa": 74,
+    "cd": 68
+  },
+  "orcamento": {
+    "total": 70,
+    "comum": 18,
+    "partesComum": [
+      {
+        "label": "Maestria e Patamar",
+        "valor": 18
+      }
+    ],
+    "exclusivasVariacao": 0,
+    "exclusivasVariacaoUsadas": 0,
+    "proprioFeitico": 38,
+    "proprioFeiticoAtivo": true,
+    "proprioFeiticoPartes": [
+      {
+        "label": "Inicial",
+        "valor": 2
+      },
+      {
+        "label": "Por Nível (Conjuração Aprimorada)",
+        "valor": 34
+      },
+      {
+        "label": "Nível 10",
+        "valor": 1
+      },
+      {
+        "label": "Nível 20",
+        "valor": 1
+      }
+    ],
+    "proprioFeiticoUsado": 1,
+    "excedeuFeitico": false,
+    "exclusivasFeitico": 14,
+    "exclusivasUsadas": 0,
+    "exclusivasEstilo": 0,
+    "exclusivasEstiloUsadas": 0,
+    "feiticos": 1,
+    "estilos": 0,
+    "gerais": 0,
+    "gastos": 1,
+    "gastosNoComum": 0,
+    "restante": 69,
+    "excedeu": false
+  },
+  "habilidades": [
+    "cmb_surto_de_acao",
+    "cnj_agilidade_no_campo_de_batalha",
+    "cnj_expansao_maestral",
+    "cnj_dominancia_em_feitico",
+    "cnj_manipulacao_perfeita",
+    "cnj_mestre_das_aptidoes",
+    "cnj_conhecimento_aplicado",
+    "cnj_primeiro_disparo",
+    "lut_ataque_extra",
+    "cmb_ataque_extra",
+    "cmb_espirito_de_luta",
+    "cmb_espirito_incansavel",
+    "cnj_olhar_preciso",
+    "lut_corpo_calejado",
+    "cnj_movimentos_imprevisiveis",
+    "lut_caminho_da_mao_vazia",
+    "lut_corpo_treinado",
+    "lut_empolgacao",
+    "lut_reflexo_evasivo",
+    "lut_implemento_marcial",
+    "lut_gosto_pela_luta",
+    "cmb_repertorio_do_especialista",
+    "cmb_artes_do_combate",
+    "cmb_golpe_especial",
+    "cmb_implemento_marcial",
+    "cmb_renovacao_pelo_sangue",
+    "cnj_dominio_dos_fundamentos",
+    "cnj_conjuracao_aprimorada",
+    "cnj_adiantar_a_evolucao",
+    "cnj_foco_amaldicoado",
+    "cnj_o_honrado"
+  ],
+  "aptidoes": [
+    "aura_macica",
+    "aura_anuladora",
+    "raio_negro",
+    "abencoado_pelas_faiscas_negras",
+    "dominio_simples",
+    "energia_reversa",
+    "reversao_de_tecnica",
+    "tecnica_maxima",
+    "cura_amplificada",
+    "fluxo_constante",
+    "regeneracao_aprimorada",
+    "liberacao_de_energia_reversa",
+    "cura_em_grupo",
+    "anular_tecnica",
+    "expansao_de_dominio_incompleta",
+    "tecnicas_de_barreira",
+    "expansao_de_dominio_completa",
+    "acerto_garantido",
+    "expansao_de_dominio_sem_barreiras",
+    "paredes_resistentes",
+    "cortina",
+    "rastreio_avancado",
+    "leitura_de_aura",
+    "canalizar_em_golpe",
+    "canalizacao_avancada",
+    "canalizacao_maxima",
+    "estimulo_muscular",
+    "estimulo_muscular_avancado"
+  ],
+  "otherkeys": [
+    "tecnicaAttr",
+    "usosHabilidades",
+    "mesa",
+    "attrEff",
+    "attrPermanente",
+    "attrLimiteEfetivo",
+    "attrTetoAplicado",
+    "attrDesenv",
+    "attrBonus",
+    "attrBonusBaseAddon",
+    "attrEquip",
+    "attrPerda",
+    "attrMotor"
+  ]
+}

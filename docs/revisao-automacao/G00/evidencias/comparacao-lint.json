@@ -1,0 +1,9 @@
+{
+  "criterio": "Comparação dos diagnósticos por arquivo, linha, coluna, severidade e mensagem. Não apenas contagem.",
+  "problemasBase": 748,
+  "problemasFinal": 748,
+  "diagnosticosIdenticos": true,
+  "hashLogBase": "1423d7fc516b5200bccbaf913f26298abef92c06f39e587e578d6d4a2b1cb80a",
+  "hashLogFinal": "1423d7fc516b5200bccbaf913f26298abef92c06f39e587e578d6d4a2b1cb80a",
+  "verificacao": "2026-10-05T19:49:19.007Z"
+}

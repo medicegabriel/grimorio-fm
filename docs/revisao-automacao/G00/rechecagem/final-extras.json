@@ -1,0 +1,6 @@
+{
+  "codigo": 0,
+  "inicio": "2026-10-05T20:52:20.2614434Z",
+  "comando": "node src/systems/afty/asserts/t-imitacao.mjs",
+  "fim": "2026-10-05T20:52:20.6702036Z"
+}

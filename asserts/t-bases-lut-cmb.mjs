@@ -32,6 +32,7 @@ const R = new URL("../src/systems/afty/", import.meta.url).href;
 const { deriveAfty } = await import(R + "afty-derive.js");
 const { createBlankAfty } = await import(R + "afty-schema.js");
 const { AFTY_HABILIDADES, habilidadesConcedidasPelasEspecializacoes } = await import(R + "afty-habilidades.js");
+const { aplicarEfeitos, resolverExclusivos, coletarEfeitos, carimbarGrupoExclusivo, HABILIDADE_EFEITOS } = await import(R + "afty-efeitos.js");
 
 let ok = 0;
 const bad = [];
@@ -118,6 +119,58 @@ for (const classe of ["lutador", "combatente"]) {
   t(`Implemento Marcial do ${classe} entra com +2 no 4`, cd(4) - cd(3), 2 + 1);
   t(`e sobe mais 1 no 8`, cd(8) - cd(7), 1 + 1);
   t(`e mais 1 no 16`, cd(16) - cd(15), 1 + 1);
+}
+
+/* Mesmo nome, mesmo beneficio: os Implementos de classes diferentes disputam
+   pelo maior valor, sem somar. O escalonamento de cada classe continua proprio. */
+for (const sistema of ["player", "afty"]) {
+  for (const [cmb, lut, bonus] of [[4, 4, 2], [4, 8, 3], [4, 16, 4], [16, 4, 4], [8, 8, 3], [14, 16, 4], [16, 14, 4], [3, 17, 4]]) {
+    const f = ficha([{ id: "combatente", nivel: cmb }, { id: "lutador", nivel: lut }], cmb + lut, { sistema });
+    if (sistema === "afty") {
+      f.habilidades = [
+        ...(cmb >= 4 ? ["cmb_implemento_marcial"] : []),
+        ...(lut >= 4 ? ["lut_implemento_marcial"] : []),
+      ];
+    }
+    const d = deriveAfty(f);
+    const partes = d.partes.cd.filter((p) => p.label === "Implemento Marcial" && !p.suplantado);
+    t(`${sistema} Combatente ${cmb}/Lutador ${lut}: uma parcela com o maior Implemento`,
+      partes.map((p) => p.valor), [bonus]);
+    t(`${sistema} Combatente ${cmb}/Lutador ${lut}: parcelas fecham a CD`,
+      d.partes.cd.filter((p) => !p.suplantado).reduce((soma, p) => soma + p.valor, 0), d.cd);
+    t(`${sistema} Combatente ${cmb}/Lutador ${lut}: Feiticos recebem a mesma CD`,
+      d.feiticos.cdBase, d.cd);
+  }
+}
+
+/* A disputa dos Implementos e independente do pool de Feiticos/Itens e de
+   habilidades com outro nome, inclusive o Implemento Celeste do Restringido. */
+const catalogoHabilidades = Object.fromEntries(AFTY_HABILIDADES.map((h) => [h.id, h]));
+const implementos = coletarEfeitos(
+  ["cmb_implemento_marcial", "lut_implemento_marcial", "res_implemento_celeste"],
+  HABILIDADE_EFEITOS, catalogoHabilidades,
+);
+for (const emGrupos of [false, true]) {
+  for (const ordem of [implementos, [...implementos].reverse()]) {
+    const res = resolverExclusivos(aplicarEfeitos(carimbarGrupoExclusivo([
+      ...ordem,
+      { canal: "cd", expr: "5", exclusivo: "feiticoAuxiliarPassivo", nome: "Auxiliar" },
+      { canal: "cd", expr: "1", nome: "Outro bonus" },
+    ], emGrupos), { esc_combatente: 12, esc_lutador: 18, esc_restringido: 16 }));
+    t(`Implemento maior soma com outras fontes (grupos=${emGrupos})`, res.porCanal.cd, 14);
+    t(`Implementos nao geram aviso de familia desconhecida (grupos=${emGrupos})`, res.avisos, []);
+    t(`Implemento de Combatente menor e suplantado (grupos=${emGrupos})`,
+      res.detalhes.find((e) => e.origem === "cmb_implemento_marcial")?.suplantado, true);
+    t(`Implemento de Lutador maior permanece (grupos=${emGrupos})`,
+      !!res.detalhes.find((e) => e.origem === "lut_implemento_marcial")?.suplantado, false);
+  }
+}
+
+for (const ids of [["cmb_implemento_marcial"], ["lut_implemento_marcial"], []]) {
+  const res = resolverExclusivos(aplicarEfeitos(coletarEfeitos(ids, HABILIDADE_EFEITOS, catalogoHabilidades),
+    { esc_combatente: 12, esc_lutador: 18 }));
+  t(`Remover um Implemento conserva so o restante (${ids.join(",")})`, res.porCanal.cd ?? 0,
+    ids.includes("cmb_implemento_marcial") ? 3 : ids.includes("lut_implemento_marcial") ? 4 : 0);
 }
 
 /* Gosto pela Luta (5°): "+2 em jogadas de ataque desarmadas ou com armas

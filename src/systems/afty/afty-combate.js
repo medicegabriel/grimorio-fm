@@ -340,6 +340,15 @@ export const COMBATE_ESTADOS = [
     max: () => 3,
     requerHabilidade: "cmb_golpe_especial",
   },
+  /* "Preciso. Recebe vantagem no ataque." Virou estado de bancada em 2026-10-07,
+     como Atroz e Letal, porque passou a ter efeito no Motor: o canal
+     `vantagemAtaque` na linha da arma e do Ataque Básico. Ver afty-golpe-especial.js. */
+  {
+    id: "golpePreciso",
+    label: "Golpe Especial · Preciso",
+    tipo: "bool",
+    requerHabilidade: "cmb_golpe_especial",
+  },
 
   // Artes do Combate (Base 1): as duas que dão número.
   {

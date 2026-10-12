@@ -1,0 +1,29 @@
+{
+  "id": "cura-aperfeicoada-feiticos",
+  "nome": "Feitiços de Cura Aperfeiçoada",
+  "versao": "1.0.0",
+  "paraRaw": "afty",
+  "descricao": "Dois modelos de Feitiços Passivos de Nível 5 para aprimorar Cura Aperfeiçoada. Edite nome e descrição depois de copiar os modelos para a ficha.",
+  "feiticos": [
+    {
+      "id": "cura_limite_4",
+      "nome": "Feitiço 1 (editar nome)",
+      "descricao": "Editar descrição.",
+      "tipo": "passivo",
+      "nivel": 5,
+      "efeitosPassivo": [
+        { "canal": "rerrolaCura", "expr": "4", "quando": "tem_sup_cura_aperfeicoada" }
+      ]
+    },
+    {
+      "id": "cura_rerrolagem_continua",
+      "nome": "Feitiço 2 (editar nome)",
+      "descricao": "Editar descrição.",
+      "tipo": "passivo",
+      "nivel": 5,
+      "efeitosPassivo": [
+        { "canal": "rerrolaCuraContinua", "expr": "1", "quando": "tem_sup_cura_aperfeicoada" }
+      ]
+    }
+  ]
+}

@@ -28,6 +28,10 @@ export const grupoNoRaioNegro = grupoMultiplicavel;
 const facesNoModo = (grupo, modo) =>
   inteiro(modo !== "normal" && grupo?.facesCritico ? grupo.facesCritico : grupo?.faces, 2);
 
+// Ataque Concentrado pode ter quantidades diferentes no normal e no crítico.
+export const dadosNoModo = (grupo, modo = "normal") =>
+  inteiro(modo !== "normal" && grupo?.dadosCritico != null ? grupo.dadosCritico : grupo?.dados);
+
 const juntar = (termos) => termos.filter(Boolean).join(" + ").replace(/\+ -/g, "− ");
 
 /* Os dados de uma pilha, somados por FACE (autor, 2026-09-15): *"Some os danos
@@ -39,7 +43,7 @@ const juntar = (termos) => termos.filter(Boolean).join(" + ").replace(/\+ -/g, "
    fonte por fonte. */
 const dadosDaPilha = (lista, modo, dobrar) =>
   textoDosDados(lista.map((g) => ({
-    dados: inteiro(g?.dados) * (dobrar && grupoMultiplicavel(g) ? 2 : 1),
+    dados: dadosNoModo(g, modo) * (dobrar && grupoMultiplicavel(g) ? 2 : 1),
     faces: facesNoModo(g, modo),
   })));
 
@@ -64,7 +68,7 @@ export function formulaModoDano(grupos, modo = "normal") {
 export function textoDosDados(grupos, modo = "normal") {
   const porFaces = new Map();
   for (const g of Array.isArray(grupos) ? grupos : []) {
-    const dados = inteiro(g?.dados);
+    const dados = dadosNoModo(g, modo);
     if (!dados) continue;
     const faces = facesNoModo(g, modo);
     porFaces.set(faces, (porFaces.get(faces) ?? 0) + dados);

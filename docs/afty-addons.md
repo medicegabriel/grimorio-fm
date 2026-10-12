@@ -1,5 +1,22 @@
 # Addons do Afty (plano)
 
+## Feitiços de Cura Aperfeiçoada (2026-10-12)
+
+Pacote [cura-aperfeicoada-feiticos.json](../addons/cura-aperfeicoada-feiticos.json):
+dois modelos de Feitiços Passivos de Nível 5, com nome e descrição editáveis.
+O primeiro amplia a rerrolagem da habilidade para resultados até 4. O segundo
+repete até superar o limite vigente. Usa `rerrolaCura` e o novo canal genérico
+`rerrolaCuraContinua`. Instalação e contrato em [afty-cura-feiticos.md](afty-cura-feiticos.md).
+
+## Herdado: Vaticano (2026-10-12)
+
+Pacote [herdado-vaticano.json](../addons/herdado-vaticano.json): clã do Herdado
+com 3 pontos livres de atributo, Teologia (Religião, equivalência confirmada
+pelo autor) e Ocultismo treinados, e +1 por dado em todas as curas. Cura Perfeita
+requer Herdado: Vaticano e nível 8, concede 1 Nível de Energia Reversa e eleva
+o bônus total para +2 por dado. Usa somente canais existentes.
+Instalação e contrato em [afty-herdado-vaticano.md](afty-herdado-vaticano.md).
+
 ## Treino Guarda da Lâmina Divina (2026-10-08)
 
 `addons/guarda-da-lamina-divina.json` usa a família `treinamentos`, com
@@ -312,6 +329,22 @@ edita exatamente uma criatura, então um escopo no topo do render cobre.
 2. **Dois addons remendando a mesma linha.** O painel de fontes tem de dizer qual venceu. A ordem é
    declarada e o conflito é RELATADO, nunca bloqueado (decisão 3). Só vale na fase 3.
 
+✅ **A CAMADA DA CRIATURA EXISTE DESDE 2026-10-07** (achado M05-F01 da revisão). Ela foi desenhada
+aqui e nunca ligada: o Encontro aplicava a união e o remendo de uma ficha mudava o número da
+vizinha (no assert, a Defesa de quem não tinha o pacote ia de 16 para 23). O `deriveAfty` agora roda
+dentro de `comEscopoDaFicha` (afty-addons.js). Sem remendo de pacote alheio no ar, ele só chama a
+derivação. Com, ele reescreve o catálogo com os remendos da ficha, deriva, e devolve o mundo de
+antes no `finally`, também dentro de escopo aninhado. A época não muda, porque os ids do mundo (o
+que ela guarda) são os mesmos. Dois pacotes remendando a mesma entrada em fichas diferentes: cada
+ficha vê o seu. ⚠ O escopo cobre a DERIVAÇÃO, que é de onde sai todo número. Leitura de catálogo
+fora dela no painel do Encontro (o texto de uma habilidade) ainda vê a união, e está em
+docs/a-fazer.md.
+
+⚠ **A Base de pacote também é da ficha (achado M05-F02).** Acrescentar é global, e a Base de addon
+presa a uma classe do livro (`especializacaoId: "lutador"`) era concedida a todo Lutador da mesa no
+Encontro: no jogador, toda Base; na criatura, a `automatica`. A concessão automática agora só vale
+para quem carrega o pacote (`habilidadesConcedidasPelasEspecializacoes`, terceiro parâmetro).
+
 ⚠ **A ÉPOCA (`epocaAddons`) continua existindo, e ela é a chave do cache do Encontro.** Lá o
 `derivarComCache` guarda o derivado por ficha, e sem a época na chave um combatente derivado sob uma
 união menor seria devolvido do cache depois de a união crescer. Hoje isso quase nunca muda o número,
@@ -438,7 +471,15 @@ Um pacote pode trazer Funcionamentos Básicos sem publicar o conteúdo no catál
 ```
 
 O Funcionamento sai da cópia congelada em `creature.addons`, recebe o namespace do pacote e aparece
-somente nas criaturas que carregam aquela cópia. Ele participa do mesmo Motor dos Funcionamentos
+somente nas criaturas que carregam aquela cópia.
+
+**O portão confere cada efeito (2026-10-07, achados M01-VAL-02 e M04-A01).** Canal que o Motor não
+tem, `expr` vazia ou fora da sintaxe e `quando` fora da sintaxe recusam o pacote na instalação. Até
+aqui só a presença dos dois campos era cobrada, e o coletor descarta canal desconhecido calado: um
+pacote com o canal escrito errado instalava e a linha não somava nada. Linha com `escopo:
+"invocacao"` é conferida contra os canais de invocação. Variável não é conferida, porque a que o
+pacote cita pode existir só na ficha que o carrega. A Técnica de Estilo de pacote passa pela mesma
+conferência. Ele participa do mesmo Motor dos Funcionamentos
 escritos na ficha. No criador, o conteúdo aparece sem controles de edição ou remoção, porque a fonte
 de verdade é o arquivo do addon.
 
@@ -903,7 +944,7 @@ Lendária Aperfeiçoamento de Atributo.
 para o pacote do livro, porque uma entrada que não faz nada e não avisa parece que funciona.
 
 O canal `dadosPericia` (2026-09-23), irmão do `dadosTR`, soma um DADO ao resultado de UMA perícia. O
-alvo é `<perícia>:d<faces>` (`percepcao:d4`) e o valor é quantos dados. Não tem seletor no editor manual
+alvo é `<perícia>:d<faces>` (`percepcao:d4`) e o valor é quantos dados. Desde 2026-10-07 tem seletor duplo (perícia e dado) no editor manual. Antes, não tinha seletor no editor manual
 de efeitos, como o `dadosTR`: é canal de Addon.
 
 #### Origem de Addon que se divide em Tipos (2026-09-22)
@@ -1130,6 +1171,22 @@ impossível para sempre, e um id órfão numa ficha de terceiro fica legível em
 **Referência entre entradas do mesmo addon é escrita sem prefixo e resolve local primeiro, raw
 depois.** Um `requisito` apontando para `ciclo_de_adaptacao` acha o do próprio addon. Um apontando
 para `lut_corpo_treinado` acha o raw.
+
+**Os caminhos de `caminhosDeId` (revisão de 2026-10-07, achado M05-F03).** O `prefixarEntrada` anda o
+caminho passo a passo, em qualquer profundidade, com três formas que se combinam: `campo` (o valor),
+`campo[]` (cada item da lista) e `campo{}` (cada CHAVE do objeto, com o valor intacto). Até aqui ele
+só sabia dois níveis, e o `requisitos[].ids[]` das Lendárias deixava a lista do `lendariaOr` crua: a
+Lendária que citava irmãs do próprio pacote nunca era alcançável. Entraram junto três caminhos que
+faltavam:
+
+| Família | Caminho novo | O que ele cita |
+|---|---|---|
+| habilidades | `requisitos[].habId` | a mãe do requisito `escolha` (o `opcaoId` fica cru: é opção dela) |
+| especializacoes | `remendaHabilidades{}` | as habilidades da mãe que a herdeira remenda, quando a mãe é do pacote |
+| habilidades, talentos, aptidoes | `efeitos[].alvo` | a entrada do próprio pacote que o efeito mira, como a linha de cura dela |
+
+Alvo que não é id local (atributo, perícia, escopo de arma, `d6`) segue intocado. Nenhum dos 51
+pacotes do repositório tinha alvo igual a id local quando o caminho entrou.
 
 ---
 
@@ -2105,6 +2162,44 @@ do Nível de Feitiço acessível vira o rótulo atual. Opções fora da faixa de
 O `multi` aceita `maxSelecionados`. Sem esse campo, o limite é a quantidade de opções disponíveis
 naquele nível.
 
+**Os três controles que o estado nativo já tinha (2026-10-07, achados M04-A03 e M03-D07):**
+
+| Campo | O que faz |
+|---|---|
+| `umaVezPorRodada: true` | a segunda ativação na mesma rodada é recusada, como a Potência Concentrada |
+| `exclusivoCom: ["outro"]` | ligar este desliga os listados; id do próprio pacote ganha o namespace |
+| `custoPE` | número a partir de zero, ou expressão; é EXIBIDO na aba Buffs, como o do nativo |
+
+Até aqui o descritor de addon era montado campo a campo sem eles, e o estado derivado nascia sem os
+três. ⚠ O `custoPE` de estado continua só exibido, e não descontado: é a regra vigente para todo
+estado, nativo ou de addon (só o Invencível sob o Sol cobra). Cobrar é decisão do autor, em
+docs/a-fazer.md.
+
+### A linha de CURA própria (`fonteCura`, 2026-10-07)
+
+Uma Habilidade, Talento ou Aptidão de pacote pode ganhar a PRÓPRIA linha na seção de Cura, com nome
+e id dela, sem depender de um id do livro (achado M04-A04). A entrada declara o campo, e os números
+vêm pelos canais de cura mirando o id dela, escrito sem prefixo:
+
+```json
+{
+  "id": "retomar_vigor", "nome": "Retomar o Vigor", "especializacaoId": "combatente",
+  "tipo": "nivel", "nivel": 2, "descricao": "...", "requisitos": [],
+  "fonteCura": { "alcance": "Você" },
+  "efeitos": [
+    { "canal": "curaDados", "alvo": "retomar_vigor", "expr": "1 + piso(esc_combatente / 4)" },
+    { "canal": "curaFaces", "alvo": "retomar_vigor", "expr": "10" },
+    { "canal": "curaFixa",  "alvo": "retomar_vigor", "expr": "dobro(mod_constituicao) + maestria" },
+    { "canal": "curaUsos",  "alvo": "retomar_vigor", "expr": "maestria" }
+  ]
+}
+```
+
+`alcance` é `Você`, `Toque` ou `Grupo`. `nome` troca o rótulo da linha, e `unidade: { rotulo,
+porBloco }` faz a linha cobrar por bloco, como a Regeneração Corporal. A linha só existe na ficha que
+ADQUIRIU a entrada, e o editor de efeitos a oferece como alvo de cura junto das do livro. O assert
+`t-revisao-m04.mjs` reproduz o Revigorar com outro nome, outro id e outro dado.
+
 ### Arma pronta do addon
 
 Desde 2026-10-08, `escudos` e `uniformes` também são famílias de catálogo.
@@ -2247,6 +2342,42 @@ Primitiva `bloodfeast`, total do registro agora 23 (a `heranca` entrou no mesmo 
 ativar na criatura, escolher passivas e Anatomia em Habilidades e adicionar os
 modelos desejados. Controles de sessão disponíveis em Ações na Ficha e no Encontro.
 Decisões e limites detalhados em `afty-crimsom-queen.md`.
+
+## Regras optativas de Player e Alto Nível (2026-10-05)
+
+Quatro campos adicionais de regrasAfty, lidos dos addons da própria ficha Player:
+
+| Campo | Resultado |
+|---|---|
+| nivelJogadorSemTeto | true retira o teto padrão de nível 30 |
+| aptidaoApos20 | true mantém +1 Nível de Aptidão a cada dois níveis depois do 20 |
+| focosPorNivel | multiplicador positivo; total de nível arredondado para baixo |
+| pontosAtributoPorCiclo | inteiro positivo; pontos distribuíveis a cada quatro níveis |
+
+Interruptores se unem por OR e os dois valores usam o maior declarado. Fichas Afty conservam suas
+regras. Habilidades Lendárias aceitam requisito lendariaOr com ids de alternativas. A escolha pode
+usar somenteTreinadas: true junto de fonteOpcoes: periciasDaFicha. Remendos de Melhorias e Lendárias
+aceitam efeitosAlvo para efeitos direcionados pela escolha. custoPE aceita naoAcumulaReducaoGeral:
+true para disputar com reduções gerais, conservando reduções específicas. vagasVariacao é exclusivo
+para Feitiços marcados como variacaoDeTecnica, sem alterar as variações de Liberação Máxima.
+
+Pacotes e prévia importável descritos em [afty-player-progressao-epica.md](afty-player-progressao-epica.md).
+
+## Talentos Iniciais (2026-10-05)
+
+regrasAfty.talentosIniciais: inteiro de 1 a 4, que concede vagas exclusivas de Talento. O campo
+**Talentos** aparece no addon ativo em Outros > Addons e grava a quantidade na cópia da ficha.
+Pacote: [talentos-iniciais.json](../addons/talentos-iniciais.json). Uso e contrato em
+[afty-talentos-iniciais.md](afty-talentos-iniciais.md).
+
+## Alma Livre na Ficha de Jogador (2026-10-05)
+
+O pacote existente [addons/alma-livre.json](../addons/alma-livre.json) libera somente o Talento
+Alma Livre para Player por soPorAddon:tal_alma_livre. Instale e ative em Outros > Addons e escolha
+o Talento em Especializações > Talentos. O requisito permanece nível 10. Ao abrir o Talento,
+escolha uma Especialização diferente das atuais, exceto Restringido. A classe emprestada ganha
+uma aba para comprar uma única Habilidade usando uma vaga normal. A liberação funciona sozinha;
+remendos de outro addon, como Flugel, continuam valendo quando esse outro pacote também está ativo.
 
 ## Grande Roda do Dharma (2026-10-07)
 

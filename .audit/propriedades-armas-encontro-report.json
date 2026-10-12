@@ -1,0 +1,15 @@
+{
+  "checks": 18,
+  "report": [
+    {
+      "width": 1440,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "width": 390,
+      "passed": true,
+      "errors": []
+    }
+  ]
+}

@@ -46,6 +46,7 @@ import {
 } from "./afty-efeitos";
 // Quem separa a régua da criatura da do jogador nos três testes.
 import { regraDo } from "./afty-sistema";
+import { fonteParticipaDoConcentrado } from "./afty-ataque-concentrado";
 /* A escada de dados da ficha de jogador. Na criatura nada disto roda: lá o dano
    é fórmula fechada e o dado da tabela da arma não entra. */
 import {
@@ -906,6 +907,9 @@ export function resolveDano(creature, ctx = {}) {
     const danoPorArma = usarDadoArma || regraDo(ctx.sistema, "danoPorArma") === "player";
     const dadosExtras = Math.max(0, Math.trunc(canal("dadosDano", escopos)));
     const detalhesDados = ef ? detalhesDoCanalEscopos(ef, "dadosDano", escopos) : [];
+    const dadosForaConcentrado = detalhesDados
+      .filter((d) => !fonteParticipaDoConcentrado(d, ctx.origensDaFonte))
+      .reduce((s, d) => s + Math.max(0, Math.trunc(Number(d.valor) || 0)), 0);
     const dadosAtroz = detalhesDados
       .filter((d) => d.origem === "cmb_golpe_especial")
       .reduce((s, d) => s + Math.max(0, Math.trunc(Number(d.valor) || 0)), 0);
@@ -958,8 +962,25 @@ export function resolveDano(creature, ctx = {}) {
       removeResistencia: canal("removeResistencia", escopos) > 0,
       fontes: fontesDe("danoBonus", escopos),
     });
+    linha.escoposDano = escopos;
     linha.ignoraTodaRD = canal("ignoraTodaRD", escopos) > 0;
     linha.ignoraImunidade = canal("ignoraImunidade", escopos) > 0;
+    /* Vantagem e desvantagem do Motor na jogada de ataque desta linha (2026-10-07).
+       Cada SINAL é uma pergunta de sim ou não, porque elas não acumulam: duas
+       fontes de vantagem ainda são uma vantagem. Quem combina com o modo à mão é
+       `modoCombinado`, na hora de rolar. */
+    {
+      const fontes = (ef ? detalhesDoCanalEscopos(ef, "vantagemAtaque", escopos) : [])
+        .filter((d) => d.valor);
+      const vantagem = fontes.some((d) => d.valor > 0);
+      const desvantagem = fontes.some((d) => d.valor < 0);
+      if (vantagem || desvantagem) {
+        linha.vantagemAtaque = {
+          vantagem, desvantagem,
+          fontes: fontes.map((d) => ({ label: d.nome, texto: d.valor > 0 ? "Vantagem" : "Desvantagem" })),
+        };
+      }
+    }
     /* O ROLAR DE NOVO (canal `rerrolaDano`, 2026-10-02, Estilo Massivo). Lido
        pelos detalhes e não pelo `canal`, porque entre fontes vale o MAIOR e não
        a soma. A linha só leva a marca, com o nome de quem a deu: quem rola é o
@@ -1038,6 +1059,9 @@ export function resolveDano(creature, ctx = {}) {
              recebe uma parcela por FONTE logo abaixo. */
           nome: fontes.length === 1 ? fontes[0].label : "Dano Adicional",
           dados: g.qtd, faces: g.faces, fixo: 0,
+          dadosConcentraveis: (ef ? detalhesDoCanal(ef, "dadosNomeados", `d${g.faces}`) : [])
+            .filter((d) => fonteParticipaDoConcentrado(d, ctx.origensDaFonte))
+            .reduce((s, d) => s + Math.max(0, Math.trunc(Number(d.valor) || 0)), 0),
           momento: "durante", multiplica: true,
           // Já tem parcela própria logo abaixo: o hover não a repete.
           naPartes: true,
@@ -1076,6 +1100,8 @@ export function resolveDano(creature, ctx = {}) {
         .map((g, i) => ({
           nome: "Ataque",
           dados: g.faces === facesDoDado ? Math.max(0, g.qtd - dadosAtroz) : g.qtd,
+          dadosConcentraveis: g.faces === facesDoDado
+            ? Math.max(0, g.qtd - dadosAtroz - dadosForaConcentrado) : g.qtd,
           faces: g.faces,
           fixo: i === 0 ? linha.fixo : 0,
           momento: "durante", multiplica: true,
@@ -1094,6 +1120,7 @@ export function resolveDano(creature, ctx = {}) {
       : [
         {
           nome: "Ataque", dados: Math.max(0, linha.dados - dadosAtroz),
+          dadosConcentraveis: Math.max(0, linha.dados - dadosAtroz - dadosForaConcentrado),
           faces: facesDoDado, fixo: linha.fixo,
           momento: "durante", multiplica: true, naPartes: true,
         },
@@ -1153,9 +1180,17 @@ export function resolveDano(creature, ctx = {}) {
      Treinamento à linha depois de o `resolveTestes` o ter tirado do tipo de
      ataque. `null` = decide o tipo, como sempre foi na criatura. */
   const acertoDe = (ataqueId, grauBonus, escopos, fontes = [], atributoForcado = null,
-    treinadaNaArma = null, rotuloTreino = "Maestria (Treinado na Arma)") => {
-    const atq = ataques.find((a) => a.id === ataqueId);
-    if (!atq) return null;
+    treinadaNaArma = null, rotuloTreino = "Maestria (Treinado na Arma)", finezaDaArma = false) => {
+    const original = ataques.find((a) => a.id === ataqueId);
+    if (!original) return null;
+    // A marca geral de Fineza descreve o teste de categoria, não todas as armas.
+    const base = !original.atributoManual && !atributoForcado
+      ? (original.atributoSemFineza ?? original.atributo) : original.atributo;
+    const atq = { ...original, atributo: base,
+      bonus: original.bonus + modDe(base) - modDe(original.atributo),
+      partes: base === original.atributo ? original.partes
+        : [{ label: rotuloAttr(base), valor: modDe(base) }, ...original.partes.slice(1)],
+    };
     /* ⚠ NÃO SOMA EM CIMA DE UM ATAQUE QUE JÁ ESTÁ TREINADO. O Amaldiçoado é
        sempre treinado e já traz o BT dentro do `atq.bonus`: somar de novo aqui
        daria BT dobrado numa arma de técnica. */
@@ -1178,7 +1213,7 @@ export function resolveDano(creature, ctx = {}) {
     const finezaConcedida = !atributoForcado
       && !atq.atributoManual
       && !!atq.atributoFineza
-      && canal("finezaAtaque", escopos) > 0
+      && (finezaDaArma || canal("finezaAtaque", escopos) > 0)
       && modDe(atq.atributoFineza) > modDe(atq.atributo);
     const trocaFineza = finezaConcedida ? modDe(atq.atributoFineza) - modDe(atq.atributo) : 0;
     const bonusAtaque = atributoForcado
@@ -1226,9 +1261,8 @@ export function resolveDano(creature, ctx = {}) {
   const escoposBasico = [
     ...escoposDaArma(null),
     ...(Array.isArray(ctx.escoposBasicoExtra) ? ctx.escoposBasicoExtra : []),
-    // Responde pela jogada escolhida no item que define o Básico.
+    // O golpe responde pela jogada escolhida, inclusive com item de Pugilato.
     `atq:${ataqueIdBasico}`,
-    // O golpe desarmado é Impacto, junto do tipo de jogada escolhido.
     `atq_tipo:${ataqueIdBasico}:im`,
   ];
   // Fineza no golpe básico vem de duas portas: o canal (Corpo Treinado, "você
@@ -1237,17 +1271,24 @@ export function resolveDano(creature, ctx = {}) {
   // ⚠ O canal é lido pelo ESCOPO da linha desde 2026-09-01, e não mais pelo tipo
   // de ataque `corpo`: a mesma leitura serve o desarmado e cada arma.
   const finezaDesarmado = canal("finezaAtaque", escoposBasico) > 0 || !!ctx.finezaBasico;
+  const atributoBasico = ataqueIdBasico === "amaldicoado"
+    && regraDo(ctx.sistema, "danoDoAcertoAmaldicoado") === "afty"
+    ? (ataques.find((a) => a.id === "amaldicoado")?.atributo ?? atributoDe({ fineza: finezaDesarmado }))
+    : atributoDe({ fineza: finezaDesarmado });
   const entradas = [
     // Desarmado não tem margem de crítico listada em lugar nenhum: é 20.
-    aplicaCriticoDaArma({ id: "basico", nome: "Ataque Básico", fonte: "basico",
+    aplicaCriticoDaArma({ id: "basico", nome: "Ataque Básico", fonte: "basico", ataqueId: ataqueIdBasico,
       alcance: alcanceDe(null, 0, escoposBasico),
       propriedades: ctx.propriedadesBasico ?? [],
+      chaveArma: ctx.chaveArmaBasico ?? "basico",
+      treinada: ataqueIdBasico === "amaldicoado" || (armaDecide ? !!ctx.treinadaBasico : !!ataques.find((a) => a.id === "corpo")?.treinado),
+      avisosPropriedades: ctx.avisosPropriedadesBasico ?? [],
       /* ⚠ O DADO DO DESARMADO CHEGA PRONTO do deriveAfty (`ctx.dadoBasico`), e
          não é decidido aqui: ele sai do Corpo Treinado, das Armas Naturais, do
          Restringido ou do básico por nível (1d4 a 1d12), que são leituras da
          FICHA e não do canal. Ver
          `dadoDesarmado` em afty-niveis-dano.js. Na criatura ele é ignorado. */
-      ...monta(escoposBasico, atributoDe({ fineza: finezaDesarmado }), ctx.grauBasico, 20,
+      ...monta(escoposBasico, atributoBasico, ctx.grauBasico, 20,
         ctx.dadoBasico ?? DESARMADO_PADRAO, ctx.fonteDadoBasico ?? "Golpe Desarmado"),
       // Manoplas e Faixas são o Ataque Básico, então o grau delas entra aqui.
       // As `fontesAcertoBasico` são o que o encantamento somou por fora do grau:
@@ -1260,7 +1301,7 @@ export function resolveDano(creature, ctx = {}) {
         armaDecide ? !!ctx.treinadaBasico : null,
         /* Ataque desarmado não é arma ("ataques desarmados não são armas"), e o
            treino dele vem da regra do livro, e não de arma nenhuma. */
-        "Maestria (Ataque Desarmado)") },
+        "Maestria (Ataque Desarmado)", finezaDesarmado) },
     ctx.propriedadesBasico ?? [], ctx.criticoExtraDadosBasico),
   ];
 
@@ -1297,8 +1338,11 @@ export function resolveDano(creature, ctx = {}) {
         ?? atributoDe({ ...a, fineza: a.fineza || canal("finezaAtaque", escopos) > 0 }));
     const linhaArma = {
       id: a.id, nome: a.nome, fonte: "arma",
+      chaveArma: a.chaveArma ?? a.id, treinada: armaDecide ? !!a.treinada : !!ataques.find((atq) => atq.id === (a.ataqueId ?? (a.distancia ? "distancia" : "corpo")))?.treinado,
+      avisosPropriedades: a.avisosPropriedades ?? [],
       alcance: alcanceDe(a.alcance, a.alcanceBonusCorpo, escopos), propriedades,
       grupo: a.grupo ?? null, categoria: a.categoria ?? null, tipoDano: a.tipoDano ?? null,
+      tipoDanoBase: a.tipoDanoBase ?? a.tipoDano ?? null,
       dedicada,
       elegivelDedicada: !!a.elegivelDedicada,
       /* O dado impresso da arma, já resolvido pelo manejo escolhido na ficha
@@ -1310,11 +1354,16 @@ export function resolveDano(creature, ctx = {}) {
       ...acertoDe(a.ataqueId ?? (a.distancia ? "distancia" : "corpo"),
         Math.max(0, Math.trunc(Number(a.acertoGrau) || 0)), escopos, a.fontesAcerto ?? [],
         atributoDaArma ?? (usaTecnicas ? atributoTecnicas : null),
-        armaDecide ? !!a.treinada : null),
+        armaDecide ? !!a.treinada : null, "Maestria (Treinado na Arma)", !!a.fineza),
     };
     entradas.push(aplicaCriticoDaArma(linhaArma, propriedades, a.criticoExtraDados));
   }
-  for (const entrada of entradas) aplicarPermutasDeMargem(entrada, ctx.permutasDeMargem);
+  for (const entrada of entradas) {
+    entrada.dadosPropriosArma = (entrada.gruposDano ?? [])
+      .filter((g) => g.nome === "Ataque" && !g.apenasCritico)
+      .reduce((n, g) => n + Math.max(0, Number(g.dados) || 0), 0);
+    aplicarPermutasDeMargem(entrada, ctx.permutasDeMargem);
+  }
   return { entradas };
 }
 
@@ -1812,6 +1861,7 @@ export function resolveTestes(creature, ctx = {}) {
       ...a,
       atributo: attr,
       atributoPadrao,
+      atributoSemFineza: a.id === "amaldicoado" ? atributoPadrao : comTrocaDeAtaque(a.atributo),
       /* O `resolveDano` lê esta marca: com ela, o dano das armas deste tipo usa o
          mesmo atributo (autor, 2026-10-02, "Acerto e Dano") e a Fineza
          concedida por escopo não troca o acerto por cima. */

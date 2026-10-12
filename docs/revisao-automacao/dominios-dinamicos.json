@@ -1,0 +1,348 @@
+{
+  "tipoAlvo:atributo": {
+    "universo": "Seis atributos do schema.",
+    "arquivo": "src/systems/afty/AftyCreatureBuilder.jsx",
+    "funcao": "opcoesDeAlvo / TreinoLinha / alvos estruturais",
+    "sistemas": [
+      "afty",
+      "player"
+    ],
+    "evidencia": "NÃO VERIFICADA",
+    "casosObrigatorios": [
+      "sem conteúdo",
+      "dois valores/IDs próprios",
+      "valor removido ou inválido",
+      "addon e herança quando aplicáveis",
+      "paridade entre seletor e consumidor"
+    ],
+    "nota": "O G00 registra o domínio e seus arquivos. O lote proprietário prova comportamento e interface."
+  },
+  "tipoAlvo:pericia": {
+    "universo": "Perícias da ficha, inclusive Ofícios próprios.",
+    "arquivo": "src/systems/afty/AftyCreatureBuilder.jsx",
+    "funcao": "opcoesDeAlvo / TreinoLinha / alvos estruturais",
+    "sistemas": [
+      "afty",
+      "player"
+    ],
+    "evidencia": "NÃO VERIFICADA",
+    "casosObrigatorios": [
+      "sem conteúdo",
+      "dois valores/IDs próprios",
+      "valor removido ou inválido",
+      "addon e herança quando aplicáveis",
+      "paridade entre seletor e consumidor"
+    ],
+    "nota": "O G00 registra o domínio e seus arquivos. O lote proprietário prova comportamento e interface."
+  },
+  "tipoAlvo:numero": {
+    "universo": "Número informado pela mesa. Domínio aberto, sem inventar valores.",
+    "arquivo": "src/systems/afty/AftyCreatureBuilder.jsx",
+    "funcao": "opcoesDeAlvo / TreinoLinha / alvos estruturais",
+    "sistemas": [
+      "afty",
+      "player"
+    ],
+    "evidencia": "NÃO VERIFICADA",
+    "casosObrigatorios": [
+      "sem conteúdo",
+      "dois valores/IDs próprios",
+      "valor removido ou inválido",
+      "addon e herança quando aplicáveis",
+      "paridade entre seletor e consumidor"
+    ],
+    "nota": "O G00 registra o domínio e seus arquivos. O lote proprietário prova comportamento e interface."
+  },
+  "tipoAlvo:tipoDano": {
+    "universo": "TIPOS_DANO vivo, com categorias e validação.",
+    "arquivo": "src/systems/afty/AftyCreatureBuilder.jsx",
+    "funcao": "opcoesDeAlvo / TreinoLinha / alvos estruturais",
+    "sistemas": [
+      "afty",
+      "player"
+    ],
+    "evidencia": "NÃO VERIFICADA",
+    "casosObrigatorios": [
+      "sem conteúdo",
+      "dois valores/IDs próprios",
+      "valor removido ou inválido",
+      "addon e herança quando aplicáveis",
+      "paridade entre seletor e consumidor"
+    ],
+    "nota": "O G00 registra o domínio e seus arquivos. O lote proprietário prova comportamento e interface."
+  },
+  "fonteOpcoes:periciasDaFicha": {
+    "universo": "catalogoPericiasDaFicha(creature), inclusive Ofícios próprios; somenteTreinadas filtra pelas fontes da ficha.",
+    "arquivo": "src/systems/afty/afty-alto-nivel.js",
+    "funcao": "resolveAltoNivel",
+    "sistemas": [
+      "afty",
+      "player"
+    ],
+    "evidencia": "NÃO VERIFICADA",
+    "casosObrigatorios": [
+      "sem conteúdo",
+      "dois valores/IDs próprios",
+      "valor removido ou inválido",
+      "addon e herança quando aplicáveis",
+      "paridade entre seletor e consumidor"
+    ],
+    "nota": "O G00 registra o domínio e seus arquivos. O lote proprietário prova comportamento e interface.",
+    "provedores": [
+      {
+        "arquivo": "src/systems/afty/afty-pericias.js",
+        "funcao": "catalogoPericiasDaFicha"
+      }
+    ]
+  },
+  "alvoTipo:tr": {
+    "universo": "TR treináveis, exclui Integridade.",
+    "arquivo": "src/systems/afty/AftyCreatureBuilder.jsx",
+    "funcao": "opcoesDeAlvo / TreinoLinha / alvos estruturais",
+    "sistemas": [
+      "afty",
+      "player"
+    ],
+    "evidencia": "NÃO VERIFICADA",
+    "casosObrigatorios": [
+      "sem conteúdo",
+      "dois valores/IDs próprios",
+      "valor removido ou inválido",
+      "addon e herança quando aplicáveis",
+      "paridade entre seletor e consumidor"
+    ],
+    "nota": "O G00 registra o domínio e seus arquivos. O lote proprietário prova comportamento e interface."
+  },
+  "param:alcance": {
+    "universo": "Par de alcances numéricos. Domínio aberto validado por saneiaValorProp.",
+    "arquivo": "src/systems/afty/afty-equipamentos.js",
+    "funcao": "saneiaValorProp",
+    "sistemas": [
+      "afty",
+      "player"
+    ],
+    "evidencia": "NÃO VERIFICADA",
+    "casosObrigatorios": [
+      "sem conteúdo",
+      "dois valores/IDs próprios",
+      "valor removido ou inválido",
+      "addon e herança quando aplicáveis",
+      "paridade entre seletor e consumidor"
+    ],
+    "nota": "O G00 registra o domínio e seus arquivos. O lote proprietário prova comportamento e interface."
+  },
+  "param:numero": {
+    "universo": "Valor numérico próprio da propriedade, com validação e limites do catálogo.",
+    "arquivo": "src/systems/afty/afty-equipamentos.js",
+    "funcao": "saneiaValorProp",
+    "sistemas": [
+      "afty",
+      "player"
+    ],
+    "evidencia": "NÃO VERIFICADA",
+    "casosObrigatorios": [
+      "sem conteúdo",
+      "dois valores/IDs próprios",
+      "valor removido ou inválido",
+      "addon e herança quando aplicáveis",
+      "paridade entre seletor e consumidor"
+    ],
+    "nota": "O G00 registra o domínio e seus arquivos. O lote proprietário prova comportamento e interface."
+  },
+  "param:dado": {
+    "universo": "ARMA_DADOS_PROP, domínio fechado de dados.",
+    "arquivo": "src/systems/afty/afty-equipamentos.js",
+    "funcao": "saneiaValorProp",
+    "sistemas": [
+      "afty",
+      "player"
+    ],
+    "evidencia": "NÃO VERIFICADA",
+    "casosObrigatorios": [
+      "sem conteúdo",
+      "dois valores/IDs próprios",
+      "valor removido ou inválido",
+      "addon e herança quando aplicáveis",
+      "paridade entre seletor e consumidor"
+    ],
+    "nota": "O G00 registra o domínio e seus arquivos. O lote proprietário prova comportamento e interface."
+  },
+  "param:tipo": {
+    "universo": "TIPOS_DANO filtrados pela propriedade, inclusive addons.",
+    "arquivo": "src/systems/afty/afty-equipamentos.js",
+    "funcao": "saneiaValorProp",
+    "sistemas": [
+      "afty",
+      "player"
+    ],
+    "evidencia": "NÃO VERIFICADA",
+    "casosObrigatorios": [
+      "sem conteúdo",
+      "dois valores/IDs próprios",
+      "valor removido ou inválido",
+      "addon e herança quando aplicáveis",
+      "paridade entre seletor e consumidor"
+    ],
+    "nota": "O G00 registra o domínio e seus arquivos. O lote proprietário prova comportamento e interface."
+  },
+  "alvoTipo:atributo": {
+    "universo": "Seis atributos do schema.",
+    "arquivo": "src/systems/afty/AftyCreatureBuilder.jsx",
+    "funcao": "opcoesDeAlvo / TreinoLinha / alvos estruturais",
+    "sistemas": [
+      "afty",
+      "player"
+    ],
+    "evidencia": "NÃO VERIFICADA",
+    "casosObrigatorios": [
+      "sem conteúdo",
+      "dois valores/IDs próprios",
+      "valor removido ou inválido",
+      "addon e herança quando aplicáveis",
+      "paridade entre seletor e consumidor"
+    ],
+    "nota": "O G00 registra o domínio e seus arquivos. O lote proprietário prova comportamento e interface."
+  },
+  "alvoTipo:arma": {
+    "universo": "Armas carregadas na ficha, sem duplicar o modelo.",
+    "arquivo": "src/systems/afty/AftyCreatureBuilder.jsx",
+    "funcao": "opcoesDeAlvo / TreinoLinha / alvos estruturais",
+    "sistemas": [
+      "afty",
+      "player"
+    ],
+    "evidencia": "NÃO VERIFICADA",
+    "casosObrigatorios": [
+      "sem conteúdo",
+      "dois valores/IDs próprios",
+      "valor removido ou inválido",
+      "addon e herança quando aplicáveis",
+      "paridade entre seletor e consumidor"
+    ],
+    "nota": "O G00 registra o domínio e seus arquivos. O lote proprietário prova comportamento e interface."
+  },
+  "alvoTipo:pericia": {
+    "universo": "Perícias da ficha, inclusive Ofícios próprios.",
+    "arquivo": "src/systems/afty/AftyCreatureBuilder.jsx",
+    "funcao": "opcoesDeAlvo / TreinoLinha / alvos estruturais",
+    "sistemas": [
+      "afty",
+      "player"
+    ],
+    "evidencia": "NÃO VERIFICADA",
+    "casosObrigatorios": [
+      "sem conteúdo",
+      "dois valores/IDs próprios",
+      "valor removido ou inválido",
+      "addon e herança quando aplicáveis",
+      "paridade entre seletor e consumidor"
+    ],
+    "nota": "O G00 registra o domínio e seus arquivos. O lote proprietário prova comportamento e interface."
+  },
+  "contextual:alvos-motor": {
+    "universo": "Domínio tipado do canal, catálogo vivo e escopos de armas, não um canal numérico de requisito.",
+    "arquivo": "src/systems/afty/AftyCreatureBuilder.jsx",
+    "funcao": "alvoOpcoes, consumidor de alvoOpcoesInvocacao",
+    "sistemas": [
+      "afty",
+      "player"
+    ],
+    "evidencia": "NÃO VERIFICADA",
+    "casosObrigatorios": [
+      "sem conteúdo",
+      "dois valores/IDs próprios",
+      "valor removido ou inválido",
+      "addon e herança quando aplicáveis",
+      "paridade entre seletor e consumidor"
+    ],
+    "nota": "O G00 registra o domínio e seus arquivos. O lote proprietário prova comportamento e interface.",
+    "provedores": [
+      {
+        "arquivo": "src/systems/afty/AftyCreatureBuilder.jsx",
+        "funcao": "alvoOpcoes"
+      },
+      {
+        "arquivo": "src/systems/afty/afty-invocacoes.js",
+        "funcao": "alvoOpcoesInvocacao"
+      }
+    ]
+  },
+  "contextual:alvos-treinamento": {
+    "universo": "Atributos, perícias, TR treináveis, armas carregadas, roster de invocações e pares invocacaoId::acaoId. Valores livres são domínios abertos, não habilidades.",
+    "arquivo": "src/systems/afty/AftyCreatureBuilder.jsx",
+    "funcao": "opcoesDeAlvo / TreinoLinha",
+    "sistemas": [
+      "afty",
+      "player"
+    ],
+    "evidencia": "NÃO VERIFICADA",
+    "casosObrigatorios": [
+      "sem conteúdo",
+      "dois valores/IDs próprios",
+      "valor removido ou inválido",
+      "addon e herança quando aplicáveis",
+      "paridade entre seletor e consumidor"
+    ],
+    "nota": "O G00 registra o domínio e seus arquivos. O lote proprietário prova comportamento e interface."
+  },
+  "contextual:manejo-especial": {
+    "universo": "ENCANTAMENTOS_ARMA com prefixo MANEJO_ESPECIAL_PREFIXO, conservando a regra de encantamento no dono original.",
+    "arquivo": "src/systems/afty/afty-habilidades.js",
+    "funcao": "opcoesDeEncantamentoArma",
+    "sistemas": [
+      "afty",
+      "player"
+    ],
+    "evidencia": "NÃO VERIFICADA",
+    "casosObrigatorios": [
+      "sem conteúdo",
+      "dois valores/IDs próprios",
+      "valor removido ou inválido",
+      "addon e herança quando aplicáveis",
+      "paridade entre seletor e consumidor"
+    ],
+    "nota": "O G00 registra o domínio e seus arquivos. O lote proprietário prova comportamento e interface."
+  },
+  "contextual:pericias-ficha": {
+    "universo": "Catálogo de perícias da ficha, inclusive Ofícios gerados, com somenteTreinadas quando declarado.",
+    "arquivo": "src/systems/afty/afty-alto-nivel.js",
+    "funcao": "resolveAltoNivel, consumidor de catalogoPericiasDaFicha",
+    "sistemas": [
+      "afty",
+      "player"
+    ],
+    "evidencia": "NÃO VERIFICADA",
+    "casosObrigatorios": [
+      "sem conteúdo",
+      "dois valores/IDs próprios",
+      "valor removido ou inválido",
+      "addon e herança quando aplicáveis",
+      "paridade entre seletor e consumidor"
+    ],
+    "nota": "O G00 registra o domínio e seus arquivos. O lote proprietário prova comportamento e interface.",
+    "provedores": [
+      {
+        "arquivo": "src/systems/afty/afty-pericias.js",
+        "funcao": "catalogoPericiasDaFicha"
+      }
+    ]
+  },
+  "contextual:verdadeiras-origens": {
+    "universo": "Características de AFTY_ORIGENS_CATALOG e CLAS_HERDADO filtradas pelas liberações, sem repetir conteúdo",
+    "arquivo": "src/systems/afty/afty-origens.js",
+    "funcao": "opcoesVerdadeirasOrigens / comOpcoesDaCriatura",
+    "sistemas": [
+      "afty",
+      "player"
+    ],
+    "evidencia": "NÃO VERIFICADA",
+    "casosObrigatorios": [
+      "sem conteúdo",
+      "dois valores/IDs próprios",
+      "valor removido ou inválido",
+      "addon e herança quando aplicáveis",
+      "paridade entre seletor e consumidor"
+    ],
+    "nota": "O G00 registra o domínio e seus arquivos. O lote proprietário prova comportamento e interface."
+  }
+}

@@ -1,0 +1,233 @@
+{
+  "checks": 92,
+  "report": [
+    {
+      "route": "player",
+      "width": 1440,
+      "passed": true,
+      "expected": {
+        "normal": 21,
+        "critico": 44,
+        "first": "4d12 + 10d10 + 1d8 + 10d6 + 3",
+        "second": "4d12 + 10d10 + 1d8 + 10d6 + 24",
+        "third": "4d12 + 10d10 + 1d8 + 10d6 + 25",
+        "secondCritico": "4d12 + 22d10 + 2d8 + 20d6 + 47",
+        "secondRN": "(22d10 + 2d8 + 20d6)/2*3 + 4d12 + 47",
+        "sources": [
+          {
+            "nome": "Ataque",
+            "dados": 7,
+            "momento": "durante"
+          },
+          {
+            "nome": "Mortal",
+            "dados": 1,
+            "momento": "durante",
+            "apenasCritico": true
+          },
+          {
+            "nome": "Extra Durante",
+            "dados": 6,
+            "momento": "durante"
+          },
+          {
+            "nome": "Extra Após",
+            "dados": 4,
+            "momento": "apos"
+          },
+          {
+            "nome": "Aura Elemental",
+            "dados": 1,
+            "momento": "durante"
+          },
+          {
+            "nome": "Canalização Máxima",
+            "dados": 4,
+            "momento": "durante"
+          },
+          {
+            "nome": "Ataque Concentrado",
+            "dados": 3,
+            "momento": "durante"
+          }
+        ],
+        "bonus": [
+          21,
+          44
+        ]
+      },
+      "errors": []
+    },
+    {
+      "route": "player",
+      "width": 390,
+      "passed": true,
+      "expected": {
+        "normal": 21,
+        "critico": 44,
+        "first": "4d12 + 10d10 + 1d8 + 10d6 + 3",
+        "second": "4d12 + 10d10 + 1d8 + 10d6 + 24",
+        "third": "4d12 + 10d10 + 1d8 + 10d6 + 25",
+        "secondCritico": "4d12 + 22d10 + 2d8 + 20d6 + 47",
+        "secondRN": "(22d10 + 2d8 + 20d6)/2*3 + 4d12 + 47",
+        "sources": [
+          {
+            "nome": "Ataque",
+            "dados": 7,
+            "momento": "durante"
+          },
+          {
+            "nome": "Mortal",
+            "dados": 1,
+            "momento": "durante",
+            "apenasCritico": true
+          },
+          {
+            "nome": "Extra Durante",
+            "dados": 6,
+            "momento": "durante"
+          },
+          {
+            "nome": "Extra Após",
+            "dados": 4,
+            "momento": "apos"
+          },
+          {
+            "nome": "Aura Elemental",
+            "dados": 1,
+            "momento": "durante"
+          },
+          {
+            "nome": "Canalização Máxima",
+            "dados": 4,
+            "momento": "durante"
+          },
+          {
+            "nome": "Ataque Concentrado",
+            "dados": 3,
+            "momento": "durante"
+          }
+        ],
+        "bonus": [
+          21,
+          44
+        ]
+      },
+      "errors": []
+    },
+    {
+      "route": "afty",
+      "width": 1440,
+      "passed": true,
+      "expected": {
+        "normal": 22,
+        "critico": 46,
+        "first": "4d12 + 10d10 + 12d8 + 26",
+        "second": "4d12 + 10d10 + 12d8 + 48",
+        "third": "4d12 + 10d10 + 12d8 + 49",
+        "secondCritico": "4d12 + 22d10 + 24d8 + 72",
+        "secondRN": "(22d10 + 24d8)/2*3 + 4d12 + 72",
+        "sources": [
+          {
+            "nome": "Ataque",
+            "dados": 7,
+            "momento": "durante"
+          },
+          {
+            "nome": "Mortal",
+            "dados": 1,
+            "momento": "durante",
+            "apenasCritico": true
+          },
+          {
+            "nome": "Extra Durante",
+            "dados": 6,
+            "momento": "durante"
+          },
+          {
+            "nome": "Extra Após",
+            "dados": 4,
+            "momento": "apos"
+          },
+          {
+            "nome": "Aura Elemental",
+            "dados": 1,
+            "momento": "durante"
+          },
+          {
+            "nome": "Canalização Máxima",
+            "dados": 4,
+            "momento": "durante"
+          },
+          {
+            "nome": "Ataque Concentrado",
+            "dados": 4,
+            "momento": "durante"
+          }
+        ],
+        "bonus": [
+          22,
+          46
+        ]
+      },
+      "errors": []
+    },
+    {
+      "route": "afty",
+      "width": 390,
+      "passed": true,
+      "expected": {
+        "normal": 22,
+        "critico": 46,
+        "first": "4d12 + 10d10 + 12d8 + 26",
+        "second": "4d12 + 10d10 + 12d8 + 48",
+        "third": "4d12 + 10d10 + 12d8 + 49",
+        "secondCritico": "4d12 + 22d10 + 24d8 + 72",
+        "secondRN": "(22d10 + 24d8)/2*3 + 4d12 + 72",
+        "sources": [
+          {
+            "nome": "Ataque",
+            "dados": 7,
+            "momento": "durante"
+          },
+          {
+            "nome": "Mortal",
+            "dados": 1,
+            "momento": "durante",
+            "apenasCritico": true
+          },
+          {
+            "nome": "Extra Durante",
+            "dados": 6,
+            "momento": "durante"
+          },
+          {
+            "nome": "Extra Após",
+            "dados": 4,
+            "momento": "apos"
+          },
+          {
+            "nome": "Aura Elemental",
+            "dados": 1,
+            "momento": "durante"
+          },
+          {
+            "nome": "Canalização Máxima",
+            "dados": 4,
+            "momento": "durante"
+          },
+          {
+            "nome": "Ataque Concentrado",
+            "dados": 4,
+            "momento": "durante"
+          }
+        ],
+        "bonus": [
+          22,
+          46
+        ]
+      },
+      "errors": []
+    }
+  ]
+}

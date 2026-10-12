@@ -1,0 +1,24 @@
+[
+  {
+    "width": 1440,
+    "nd26": 20,
+    "nd31": 25,
+    "nd35": 25,
+    "nd36": 30,
+    "nd5": 4,
+    "persistencia": true,
+    "semRolagemHorizontal": true,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "nd26": 20,
+    "nd31": 25,
+    "nd35": 25,
+    "nd36": 30,
+    "nd5": 4,
+    "persistencia": true,
+    "semRolagemHorizontal": true,
+    "errors": []
+  }
+]

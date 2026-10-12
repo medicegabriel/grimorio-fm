@@ -290,6 +290,8 @@ for (const sistema of ["afty", "player"]) {
       niveis: { desarmado: true },
     };
     const c = cria([it(arma.id, fa("primeiro", ["enc_arma_precisa"]), { ataqueId: "amaldicoado" })]);
+    // Ficha antiga, anterior ao seletor próprio do Ataque Básico.
+    delete c.ataqueBasicoId;
     c.rulesVersion = sistema;
     c.armasCustom = [arma];
     c.core.tecnicaAttr = "inteligencia";
@@ -308,7 +310,8 @@ for (const sistema of ["afty", "player"]) {
     t(`${prefixo}: continua uma linha`, d.dano.entradas.map((e) => e.id), ["basico"]);
     c.equipamentos.itens[0].ataqueId = "corpo";
     const fisico = basico(c);
-    t(`${prefixo}: alternar preserva dano`, b.formulaNormal, fisico.formulaNormal);
+    t(`${prefixo}: dano segue a regra do sistema e a jogada escolhida`, b.formulaNormal,
+      sistema === "player" ? fisico.formulaNormal : basico({ ...c, ataqueBasicoId: "amaldicoado" }).formulaNormal);
     t(`${prefixo}: alternar volta ao Corpo a Corpo`, fisico.acertoAtaque, "Corpo a Corpo");
     c.equipamentos.itens[0].ataqueId = "amaldicoado";
     c.equipamentos.itens.push(it("arm_manoplas", fa("especial")));

@@ -40,6 +40,7 @@ import { ESCADA_DANO, nivelDoDado } from "./afty-niveis-dano";
 import { evalNumber, normalizarVariavel, validateExpression } from "./afty-dsl";
 import { normalizarAlvoEfeito } from "./afty-efeitos";
 import { regraDo } from "./afty-sistema";
+import { dadoDePropriedade } from "./afty-propriedades-armas";
 
 /* ============================================================ */
 /* GRAU DE EQUIPAMENTO                                          */
@@ -484,11 +485,23 @@ export function rotuloPropriedade(id, valor) {
  * Propriedades de uma arma prontas para exibição, na ordem do catálogo.
  * `especial: true` não vira linha: o texto próprio dela já é mostrado à parte.
  */
-export function propriedadesDaArma(def) {
-  const props = def?.props ?? {};
+export function propriedadesDaArma(def, ferramenta = null) {
+  const props = { ...(def?.props ?? {}) };
+  const encantamentos = (ferramenta?.encantamentos ?? []).filter((e) => e.atende);
+  const afiada = encantamentos.some((e) => e.id === "enc_arma_afiada");
+  const defensora = encantamentos.some((e) => e.id === "enc_arma_defensora");
+  if (afiada) {
+    const atual = dadoDePropriedade(props.fatal);
+    const faces = atual ? Number(atual.slice(2)) : 0;
+    props.fatal = "1d" + (faces ? Math.min(12, faces + 2) : 8);
+  }
+  if (defensora) props.aparar = true;
   return ARMA_PROPRIEDADES
     .filter((p) => p.id !== "especial" && props[p.id] != null && props[p.id] !== false)
-    .map((p) => ({ id: p.id, nome: p.nome, valor: props[p.id], rotulo: rotuloPropriedade(p.id, props[p.id]) }));
+    .map((p) => ({ id: p.id, nome: p.nome, valor: props[p.id], rotulo: rotuloPropriedade(p.id, props[p.id]),
+      ...(p.id === "aparar" ? { bonusDefesa: defensora && def?.props?.aparar ? 3 : 2 } : {}),
+      ...((p.id === "fatal" && afiada) || (p.id === "aparar" && defensora) ? { concedida: true } : {}),
+    }));
 }
 
 /**
@@ -1011,7 +1024,7 @@ const naFaixa = (v, min, max, padrao) => {
 function saneiaValorProp(id, valor) {
   const def = PROP_BY_ID[id];
   if (!def || valor == null || valor === false) return null;
-  if (def.param === "dado") return DADO_OK.has(valor) ? valor : "1d6";
+  if (def.param === "dado") return dadoDePropriedade(valor);
   if (def.param === "tipo") return TIPO_DANO_OK.has(valor) ? valor : "ct";
   if (def.param === "numero") return naFaixa(valor, 1, 30, 1);
   if (def.param === "alcance") {
@@ -1028,9 +1041,13 @@ export function saneiaArmaCustom(bruta) {
   const id = typeof bruta.id === "string" && bruta.id.startsWith("armc_") ? bruta.id : null;
   if (!id) return null;
   const props = {};
+  const avisosPropriedades = [];
   for (const [k, v] of Object.entries(bruta.props || {})) {
     const val = saneiaValorProp(k, v);
     if (val != null) props[k] = val;
+    else if (PROP_BY_ID[k]?.param === "dado" && v != null && v !== false) {
+      avisosPropriedades.push(PROP_BY_ID[k].nome + ": tamanho de dado inválido (" + String(v) + ").");
+    }
   }
   const criacao = saneiaCriacaoDeArma(bruta.criacao);
   const dado = DADO_OK.has(bruta.dano?.dado) ? bruta.dano.dado : "1d6";
@@ -1054,6 +1071,7 @@ export function saneiaArmaCustom(bruta) {
     custo: naFaixa(bruta.custo, 1, 4, 1),
     grupo: GRUPO_OK.has(bruta.grupo) ? bruta.grupo : "espada",
     props,
+    ...(avisosPropriedades.length ? { avisosPropriedades } : {}),
     /* A bancada de Pontos de Criação, quando a arma passou por ela. Ela é dado
        da ARMA e não do addon, então continua gravada depois de desinstalar o
        pacote, pela mesma razão da Carteira: uma ficha que perdeu o addon não
@@ -1606,12 +1624,12 @@ export const ENCANTAMENTOS_ESCUDO = [
      FÍSICA, então o encantamento volta a ter função. Ver a divergência
      `rdEscudoFisico`.
 
-     ⚠ Sem `efeitos`, e é o estado consistente e não um esquecimento: não existe
-     canal de RD POR TIPO DE DANO no motor. Os dois irmãos dele no uniforme
-     (Isolante e Resiliente) estão na mesma situação desde julho, e os três
-     precisam da mesma peça. Ver docs/a-fazer.md. */
+     A escolha pertence à Ferramenta, e cada tipo adicional ocupa uma vaga.
+     O valor estendido é só a RD deste escudo, incluindo grau e Reforçado. */
   { id: "enc_esc_isolante", nome: "Isolante", sistema: "player",
-    descricao: "A redução de dano do escudo passa também a ser aplicado a um tipo de dano elemental à sua escolha. Esta propriedade pode ser pega diversas vezes para tipos de dano diferentes." },
+    descricao: "A redução de dano do escudo passa também a ser aplicado a um tipo de dano elemental à sua escolha. Esta propriedade pode ser pega diversas vezes para tipos de dano diferentes.",
+    escolhaTipo: "elemental", repetivel: true,
+    efeitos: [{ canal: "rdTipo", alvoEscolhido: true, expr: "rd_escudo" }] },
   { id: "enc_esc_polido", nome: "Polido",
     descricao: "O escudo foi polido, removendo pesos desnecessários e o dando uma forma e composição mais leve. A penalidade do escudo é reduzida em 2.",
     efeitos: [{ canal: "penalidadeEquip", expr: "2" }] },
@@ -1657,7 +1675,11 @@ export const ENCANTAMENTOS_UNIFORME = [
     preReq: "Propulsor",
     requisitos: [{ tipo: "encantamento", encantamento: "enc_unif_propulsor" }] },
   { id: "enc_unif_isolante", nome: "Isolante",
-    descricao: "Seu uniforme é feito de materiais únicos, propícios para resistir a altas e baixas temperaturas. Você recebe 5 de RD contra dano Queimante e Congelante." },
+    descricao: "Seu uniforme é feito de materiais únicos, propícios para resistir a altas e baixas temperaturas. Você recebe 5 de RD contra dano Queimante e Congelante.",
+    efeitos: [
+      { canal: "rdTipo", alvo: "queimante", expr: "5" },
+      { canal: "rdTipo", alvo: "congelante", expr: "5" },
+    ] },
   { id: "enc_unif_marcial", nome: "Marcial",
     descricao: "Pensado e projetado perfeitamente para artes marciais. Um uniforme marcial concede um bônus de +2 em testes para realizar manobras.",
     // "Para realizar": só o lado de executar, e só as quatro Manobras.
@@ -1675,7 +1697,9 @@ export const ENCANTAMENTOS_UNIFORME = [
     preReq: "A ferramenta precisa ser de pelo menos segundo grau",
     requisitos: [{ tipo: "grauMin", grauMin: "segundo" }] },
   { id: "enc_unif_resiliente", nome: "Resiliente",
-    descricao: "O uniforme é melhorado com foco em ser resistente a um tipo específico de danos. Concede redução de dano igual a 5 contra um tipo de dano (exceto os danos físicos, alma e energética). A RD aumenta para 10 se for uma ferramenta de Grau Especial." },
+    descricao: "O uniforme é melhorado com foco em ser resistente a um tipo específico de danos. Concede redução de dano igual a 5 contra um tipo de dano (exceto os danos físicos, alma e energética). A RD aumenta para 10 se for uma ferramenta de Grau Especial.",
+    escolhaTipo: "resiliente",
+    efeitos: [{ canal: "rdTipo", alvoEscolhido: true, expr: "5 + 5 * (grau == 5)" }] },
   { id: "enc_unif_revestido_espinhos", nome: "Revestido com Espinhos",
     descricao: "O uniforme é revestido de espinhos. Sempre que o portador de um uniforme com esta Melhoria for alvo de um ataque corpo a corpo e o agressor estiver adjacente ao portador o agressor deve realizar um TR de Fortitude contra a CD de Especialização do portador, em uma falha ele recebe Xd6 + modificador de constituição do portador, de dano perfurante (onde X é igual ao bônus de treinamento) ou metade disso em um sucesso." },
   { id: "enc_unif_ricochete", nome: "Ricochete", usaCargas: true,
@@ -1738,6 +1762,27 @@ const ENCANT_BY_ID = Object.fromEntries(
   [...ENCANTAMENTOS_ARMA, ...ENCANTAMENTOS_ESCUDO, ...ENCANTAMENTOS_UNIFORME].map((e) => [e.id, e]),
 );
 export const getEncantamento = (id) => ENCANT_BY_ID[id] ?? null;
+
+/** Opções vivas, incluindo os tipos que um Addon acrescentou à categoria. */
+export function tiposDoEncantamento(encId) {
+  const escolha = getEncantamento(encId)?.escolhaTipo;
+  if (escolha === "elemental") return tiposDeDanoDaCategoria("elemental");
+  if (escolha === "resiliente") return CATEGORIAS_DANO
+    .filter((c) => c.id !== "fisico")
+    .flatMap((c) => tiposDeDanoDaCategoria(c.id))
+    .filter((t) => t.id !== "alma" && t.id !== "energetico");
+  return [];
+}
+
+/** Uma posição sem resposta continua ocupando vaga, mas não concede RD. */
+export function escolhasDeTiposEncantamento(encId, bruto) {
+  const enc = getEncantamento(encId);
+  if (!enc?.escolhaTipo) return [];
+  const opcoes = new Set(tiposDoEncantamento(encId).map((t) => t.id));
+  const lista = Array.isArray(bruto) && bruto.length ? bruto : [null];
+  return (enc.repetivel ? lista : lista.slice(0, 1))
+    .map((tipo) => opcoes.has(tipo) ? tipo : null);
+}
 
 /* ---------- Grau Especial: exemplo (Nuvem Brincalhona) ---------- */
 /* Ferramentas de Grau Especial são únicas: cada uma tem uma habilidade própria,
@@ -2363,7 +2408,13 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
   const tipo = entrada.tipo;
   const grauValue = fa.grau ?? "quarto";
   const grauMeta = AFTY_GRAUS.find((g) => g.value === grauValue) ?? AFTY_GRAUS[0];
-  const escolhidos = Array.isArray(fa.encantamentos) ? fa.encantamentos : [];
+  const idsEscolhidos = Array.isArray(fa.encantamentos) ? fa.encantamentos : [];
+  const encantamentoTipos = Object.fromEntries([...new Set([...Object.keys(fa.encantamentoTipos ?? {}), ...idsEscolhidos])]
+    .filter((id) => getEncantamento(id)?.escolhaTipo)
+    .map((id) => [id, escolhasDeTiposEncantamento(id, fa.encantamentoTipos?.[id])]));
+  // O Isolante repetido grava tipos no mesmo item e conta uma vaga por tipo.
+  const escolhidos = idsEscolhidos.flatMap((id) =>
+    getEncantamento(id)?.repetivel ? Array(encantamentoTipos[id].length).fill(id) : [id]);
   // Vaga LIVRE: encantamento a mais que a arma pode ter E que não cobra o grau
   // (Completo do Treino de Manejo de Arma). Ela soma no permitido e sai da
   // conta da redução, que é o que significa "não perder Acerto e Dano Fixo do
@@ -2404,12 +2455,14 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
   const ctx = { ...(ctxBase ?? { bt, nd: 1 }), ...contextoDsl };
 
   // Cada encantamento escolhido com o estado dos pré-requisitos e da exclusão.
-  const encantamentos = escolhidos.map((id) => {
+  const encantamentos = [...new Set(escolhidos)].map((id) => {
     const enc = getEncantamento(id);
     const reqs = (enc?.requisitos ?? []).map((r) =>
       avaliarRequisitoEncantamento(r, { def, grauValue, escolhidos, selfId: id }));
     const exclusivoAtivo = (enc?.exclusivoCom ?? []).filter((x) => escolhidos.includes(x));
-    return { id, enc, reqs, exclusivoAtivo, atende: reqs.every((r) => r.ok) && exclusivoAtivo.length === 0 };
+    const disponivel = !enc?.sistema || enc.sistema === (ctxBase?.["#canalEscudo"] === "rdFisico" ? "player" : "afty");
+    const doTipo = (ENCANTAMENTOS_POR_TIPO[tipo] ?? []).some((e) => e.id === id);
+    return { id, enc, reqs, exclusivoAtivo, atende: doTipo && disponivel && reqs.every((r) => r.ok) && exclusivoAtivo.length === 0 };
   });
 
   const usaCargas = encantamentos.some((x) => x.enc?.usaCargas);
@@ -2420,6 +2473,11 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
     avisos.push(`${escolhidos.length} encantamentos escolhidos, o grau permite ${permitidos}.`);
   }
   for (const x of encantamentos) {
+    const tipos = encantamentoTipos[x.id] ?? [];
+    if (tipos.some((t) => !t)) avisos.push(x.enc.nome + ": escolha um tipo de dano permitido.");
+    if (new Set(tipos.filter(Boolean)).size < tipos.filter(Boolean).length) {
+      avisos.push(x.enc.nome + ": escolha tipos de dano diferentes.");
+    }
     if (x.exclusivoAtivo.length) {
       const nomes = x.exclusivoAtivo.map((y) => getEncantamento(y)?.nome ?? y).join(", ");
       avisos.push(`${x.enc?.nome ?? x.id}: não coexiste com ${nomes}.`);
@@ -2447,6 +2505,12 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
     tiposDaCategoria: (cat) => tiposDeDanoDaCategoria(cat).map((t) => t.id),
   });
   const dobraDe = (encId) => (guia.melhorias.some((m) => m.encantamento === encId && m.modo === "valor") ? 2 : 1);
+  // O Isolante estende a RD do próprio escudo, sem copiar RD de outras fontes.
+  ctx.rd_escudo = (def?.rdEscudo ?? 0) + rdGrau + encantamentos
+    .filter((x) => x.atende)
+    .reduce((total, x) => total + (x.enc?.efeitos ?? [])
+      .filter((ef) => ef.canal === "rdEscudo")
+      .reduce((s, ef) => s + evalNumber(ef.expr, ctx) * dobraDe(x.id), 0), 0);
   for (const x of encantamentos) {
     if (!x.atende) continue;
     for (const ef of x.enc?.efeitos ?? []) {
@@ -2470,9 +2534,12 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
       /* `rdEscudo` é pseudo-canal, igual aos dois de cima: ele diz "some na RD do
          escudo" e o sistema decide onde essa RD mora. Hoje só o Reforçado usa. */
       const canal = ef.canal === "rdEscudo" ? (ctx?.["#canalEscudo"] ?? "rdGeral") : ef.canal;
-      efeitos.push({
+      const alvos = ef.alvoEscolhido
+        ? [...new Set((encantamentoTipos[x.id] ?? []).filter(Boolean))]
+        : [ef.alvoItem ? def?.id : ef.alvo];
+      for (const alvo of alvos) efeitos.push({
         canal,
-        ...(ef.alvoItem ? { alvo: def?.id } : ef.alvo ? { alvo: ef.alvo } : {}),
+        ...(alvo ? { alvo } : {}),
         valor,
         origem: x.enc.nome,
         fonte: "encantamento",
@@ -2530,6 +2597,7 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
     vagasLivres: livres,
     escolhidos,
     encantamentos,
+    encantamentoTipos,
     excedeu: escolhidos.length > permitidos,
     usaCargas,
     cargas: usaCargas ? bt : 0,

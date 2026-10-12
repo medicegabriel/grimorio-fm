@@ -61,10 +61,11 @@ t("vazio não quebra", familiaEParte(undefined), { familia: null, parte: "" });
    que entra na convenção pelo separador. 59 desde 2026-09-12, com o "Ataque
    Concentrado" do Combatente, que NÃO entra: é uma linha só, sem família. */
 /* 38 de 63 desde 2026-09-21, com o estado de Fluxo Invencível. 39 de 64 desde
-   2026-09-24, com o "Golpe Especial · Longo", que entra na família do Golpe. */
-t("a convenção cobre 39 dos 64",
-  COMBATE_ESTADOS.filter((e) => familiaEParte(e.label).familia).length, 39);
-t("e o catálogo tem 64 estados", COMBATE_ESTADOS.length, 64);
+   2026-09-24, com o "Golpe Especial · Longo", que entra na família do Golpe.
+   40 de 65 desde 2026-10-07, com o "Golpe Especial · Preciso", pelo mesmo motivo. */
+t("a convenção cobre 40 dos 65",
+  COMBATE_ESTADOS.filter((e) => familiaEParte(e.label).familia).length, 40);
+t("e o catálogo tem 65 estados", COMBATE_ESTADOS.length, 65);
 
 /* ============================================================ */
 /* TODA FAIXA PRECISA DE TETO NO `resolveCombate`                */
@@ -245,7 +246,15 @@ t("pai que casa leva os dois filhos",
 
 const tudo = organizaEstados(COMBATE_ESTADOS, "");
 const maior = Math.max(...tudo.subs.map((s) => s.quantos));
-t("nenhuma sub-aba passa de 20 raízes", maior <= 20, true);
+/* ⚠ 21 DESDE 2026-10-07: o Preciso do Golpe Especial virou estado de bancada,
+   porque a vantagem passou a ser do Motor (`vantagemAtaque`), e ele entra na
+   caixa "Golpe Especial" que já tinha cinco irmãos. A aula da auditoria era sobre
+   CAIXAS de primeiro nível (40 numa lista só), e é ela que segue presa em 20 logo
+   abaixo: a raiz a mais não abre caixa nova. */
+t("nenhuma sub-aba passa de 21 raízes", maior <= 21, true);
+const caixas = Math.max(...Object.values(tudo.blocosDaSub)
+  .map((blocos) => blocos.reduce((n, b) => n + (b.familia ? 1 : b.grupos.length), 0)));
+t("nenhuma sub-aba passa de 20 caixas de primeiro nível", caixas <= 20, true);
 t("as sub-abas somam as raízes todas",
   tudo.subs.reduce((a, s) => a + s.quantos, 0),
   COMBATE_ESTADOS.filter((e) => !e.requerEstado

@@ -12,7 +12,8 @@ estilo de escrita e nas regras de colaboração. O que mais pega está repetido 
   Confira o diff antes de entregar.
 - **Não faça commits nem push.** O autor cuida dessa etapa. O deploy é o push para `main`, que a
   Vercel publica.
-- O repositório tem mais de um colaborador. Rode `git fetch` e adiante o `main` antes de editar.
+- O repositório tem mais de um colaborador. Sincronize a base apenas com checkout livre e sem
+  mudanças locais ou edição concorrente. Preserve o trabalho existente; não mova a base durante a revisão.
 - **`src/components/` e `src/data/enciclopedia-digital-*.json` são somente-leitura, salvo as
   exceções listadas em `AGENTS.md`.** É o Grimório 2.5.2, o livro oficial. Correção de regra do
   livro dentro do Afty é feita por Addon com `substitui`, nunca no raw. Exceção nova só com o autor
@@ -76,13 +77,9 @@ node asserts/t-addons.mjs       # um só, o caminho mais rápido enquanto se mex
 ```
 
 - **Rode a suíte antes de começar.** Nem toda falha é sua, e a linha de base muda.
-- ⚠ **A linha de base tem UM vermelho conhecido**, e ele não é bug (conferida em 2026-09-22:
-  110 arquivos, 1 vermelho):
-  `t-invocacoes-motor.mjs` falha em *"a Livre com Motor custa 1 PE, como toda Característica"*,
-  porque a cota base de Ações e Características deixou de custar PE em 2026-09-14. É uma PERGUNTA
-  AO AUTOR aberta em `docs/a-fazer.md`, esperando decisão de regra. **Não conserte por conta
-  própria**: os dois consertos possíveis apontam para lados opostos, e escolher é do autor. Todo o
-  resto passa.
+- Linha de entrada do G00 em 2026-10-05: 153 arquivos e 9.038 asserts, todos passaram.
+  O vermelho de invocações citado em 2026-09-22 é histórico; não representa a suíte atual.
+  Após G00, confira a contagem e a validação em `docs/revisao-automacao/G00/revisao.md`.
 - `node asserts/t-ordem-modulos.mjs` sozinho pega quase todo acidente de import, em segundos. É
   obrigatório em qualquer mudança de `import`.
 - O lançador roda cada arquivo em processo próprio porque eles reescrevem os catálogos globais com
@@ -92,9 +89,10 @@ node asserts/t-addons.mjs       # um só, o caminho mais rápido enquanto se mex
   lançador, que lê só a pasta `asserts/`. Eles nem imprimem a linha de aprovação padrão. Rode-os à
   mão ao mexer nessas áreas.
 - Assert novo segue o padrão dos vizinhos: `register()` com o shim de extensão no topo, depois
-  `t(nome, real, esperado)` comparando `JSON.stringify`. Nenhum deles escreve nada. O contrato está
-  em `asserts/LEIA.md`, que também traz a tabela do que cada arquivo cobre. ⚠ As CONTAGENS daquele
-  arquivo estão velhas (ele diz 62 arquivos, e a pasta já tem 110). A tabela continua boa.
+  `t(nome, real, esperado)` comparando `JSON.stringify`. Nenhum deles escreve no repositório (o
+  `t-fontes-revisao.mjs` cria e apaga temporários fora dele). O contrato está
+  em `asserts/LEIA.md`, que também traz a tabela do que cada arquivo cobre. A lista efetiva de
+  arquivos vem do lançador; a linha de base do G00 preserva a contagem observada.
 - Todo arquivo importa `afty-derive.js` PRIMEIRO. Começar por `afty-habilidades.js` estoura o ciclo
   de `afty-combate.js`.
 - A pasta fica fora de `src/` e usa `.mjs` de propósito: nem o `vite build` nem o `eslint .` a
@@ -102,9 +100,12 @@ node asserts/t-addons.mjs       # um só, o caminho mais rápido enquanto se mex
 
 ### Lint
 
-`npm run lint` NÃO está limpo, e a sujeira é toda de fora do Afty (`src/components/`,
-`src/useEncounter.js`, `vite.config.js`), que é código somente-leitura ou de configuração. Hoje são
-22 problemas. O que precisa continuar em zero é:
+`npm run lint` não está limpo. Na entrada do G00 em 2026-10-05 foram 748 problemas
+(736 erros, 12 avisos), incluindo dependências Vite versionadas em
+  .audit/lote02-vite-*/deps, componentes legados e configuração.
+  Excluindo .audit/**, são 22 problemas (10 erros e 12 avisos), reproduzidos na rechecagem.
+  Essa medição não altera o lint padrão nem remove arquivos versionados.
+Use 748 como linha de base do comando padrão e 22 somente quando .audit/** for excluída explicitamente. A área Afty passou sem erros:
 
 ```bash
 npx eslint src/systems/afty
@@ -293,7 +294,7 @@ Uma aba da Ficha também é renderizada dentro do Encontro, então ela tem dois 
 
 ### Arquivos-chave
 
-A raiz de `src/systems/afty/` tem 67 módulos `.js`, e o nome é o índice: `afty-<área>.js` guarda o
+Na entrada do G00, a raiz de `src/systems/afty/` tem 76 módulos `.js` (75 `afty-*.js`), e o nome é o índice: `afty-<área>.js` guarda o
 CATÁLOGO daquela área (as constantes em MAIÚSCULA, tipo `AFTY_ORIGENS` ou `APTIDAO_TRILHAS`) mais
 as funções que leem esse catálogo. Procurar conteúdo de regra começa por aí (`afty-habilidades.js`,
 `afty-aptidoes.js`, `afty-origens.js`, `afty-pericias.js`, `afty-feiticos.js`,
@@ -320,7 +321,7 @@ abaixo é só o que não segue essa regra, ou o que se lê antes de tudo.
 
 - `docs/a-fazer.md`: a fila atual, incluindo as PERGUNTAS AO AUTOR paradas esperando decisão.
   **Leia as perguntas antes de "consertar" o que parecer errado.** Várias são decisão de regra do
-  autor, não bug, e uma delas é o assert vermelho da suíte.
+  autor, não bug. A linha de base atual está no registro do G00.
 - `docs/afty-status.md`: o log de sessões e o porquê das coisas. Afirmação datada nele não
   substitui conferir o código de hoje. ⚠ São mais de 14 mil linhas: procure com `grep`, não leia
   inteiro.
@@ -333,3 +334,9 @@ abaixo é só o que não segue essa regra, ou o que se lê antes de tudo.
 
 Ao mudar o código, atualize contagem, caminho e estado de implementação nos guias. Não apresente
 como pergunta em aberto uma decisão já tomada.
+
+## Fonte do Livro de Regras (2026-10-05)
+
+- Leia o Livro de Regras 2.5.2 em `C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md`, fora do repositório. Confirme o acesso e o SHA-256 `1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a` e registre esse hash como versão da fonte nos lotes.
+- Cite a página impressa pelo último `<!-- página N -->` acima do trecho. Use o PDF do Livro somente para desempate documentado. O Grimório das Maldições continua em PDF.
+- Cópias antigas do Markdown não são prova válida. A proveniência está em `C:/Projetos/Grimorio/_backup-livro/correcoes.md`. Não altere nem copie a fonte externa, nem reproduza U+2014 no repositório. O protocolo dos registros está em `docs/revisao-automacao/LEIA.md`.

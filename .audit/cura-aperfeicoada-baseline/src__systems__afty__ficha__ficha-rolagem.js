@@ -1,0 +1,209 @@
+/**
+ * ============================================================
+ * ROLAGEM — o motor de dados da Ficha Final
+ * ============================================================
+ * Puro e sem React, com o sorteio ENTRANDO POR PARÂMETRO: é o que deixa os
+ * asserts rodarem com dado viciado, e um motor de dados que não dá para testar
+ * é um motor em que ninguém confia.
+ *
+ * ⚠ Não há nada para parsear. O `deriveAfty` já entrega tudo estruturado, e é
+ * de propósito: a linha de dano vem com `{ dados, dado, fixo, margemCritico }`,
+ * a de cura com `{ dados, dado, fixo, blocos }` e todo teste com `{ bonus }`.
+ * Ler "3d8+12" de volta de uma string seria desfazer trabalho já feito.
+ *
+ * As duas regras que o autor fechou em 2026-08-05:
+ *
+ *   • **CRÍTICO DOBRA OS DADOS ROLADOS.** `3d8+12` vira `6d8+12`. O valor fixo
+ *     entra UMA vez, porque ele não é dado.
+ *   • **VANTAGEM E DESVANTAGEM SÃO 2d20**, ficando o maior ou o menor. Os dois
+ *     saem no registro, e o descartado aparece riscado.
+ * ============================================================
+ */
+
+import { formulaModoDano, grupoMultiplicavel, grupoNoRaioNegro, dadosNoModo } from "../afty-dano";
+
+let sequencia = 0;
+const novoId = () => `rol_${Date.now().toString(36)}_${(sequencia += 1)}`;
+
+export const MODOS = [
+  { id: "desvantagem", label: "Desvantagem" },
+  { id: "normal", label: "Normal" },
+  { id: "vantagem", label: "Vantagem" },
+];
+
+/** Um dado de N faces. `rng` devolve [0, 1), igual ao `Math.random`. */
+const umDado = (faces, rng) => 1 + Math.floor(rng() * Math.max(1, faces));
+
+/** N dados de F faces, na ordem em que caíram. */
+export function rolarDados(quantidade, faces, rng = Math.random) {
+  const n = Math.max(0, Math.trunc(quantidade) || 0);
+  return Array.from({ length: n }, () => umDado(faces, rng));
+}
+
+/**
+ * Teste de d20: perícia, Teste de Resistência, Jogada de Ataque, manobra.
+ *
+ * `margem` é a margem de crítico DAQUELA linha (o motor já a calcula, com o piso
+ * de 2 aplicado). Sem ela, crítico é só no 20 natural.
+ */
+export function rolarTeste(
+  { rotulo, detalhe, bonus = 0, dados = [], modo = "normal", margem = 20, cd = null },
+  rng = Math.random,
+) {
+  const bonusInt = Math.trunc(Number(bonus) || 0);
+  /* DADOS SOMADOS AO RESULTADO, quando a regra escreve um dado em vez de um
+     número ("adicionar 2d3 ao resultado", Resiliência pela Adrenalina). Eles não
+     são o d20: entram por cima dele, como o bônus, e por isso não mexem em
+     crítico nem em pifia, que são do d20 e só dele. */
+  const extras = (Array.isArray(dados) ? dados : [])
+    .filter((d) => d && d.qtd > 0 && d.faces > 0)
+    .map((d) => ({ qtd: Math.trunc(d.qtd), faces: Math.trunc(d.faces), valores: rolarDados(Math.trunc(d.qtd), Math.trunc(d.faces), rng) }));
+  const somaExtras = extras.reduce((s, d) => s + d.valores.reduce((a, b) => a + b, 0), 0);
+  const textoExtras = extras.map((d) => `${d.qtd}d${d.faces}`).join(" + ");
+  const dupla = modo === "vantagem" || modo === "desvantagem";
+  const d20 = rolarDados(dupla ? 2 : 1, 20, rng);
+  const escolhido = !dupla ? d20[0]
+    : modo === "vantagem" ? Math.max(...d20)
+    : Math.min(...d20);
+  // Qual dos dois foi descartado, para o painel poder riscá-lo. Com os dois
+  // iguais não há descarte visível, e o índice 1 serve igual.
+  const descartado = dupla ? (d20[0] === escolhido ? 1 : 0) : null;
+  const total = escolhido + bonusInt + somaExtras;
+  const cdFinal = cd == null ? null : Math.trunc(Number(cd));
+  return {
+    id: novoId(),
+    ts: Date.now(),
+    tipo: "teste",
+    rotulo,
+    detalhe: detalhe ?? null,
+    formula: `d20${bonusInt >= 0 ? "+" : "−"}${Math.abs(bonusInt)}${textoExtras ? ` + ${textoExtras}` : ""}`,
+    d20,
+    descartado,
+    natural: escolhido,
+    bonus: bonusInt,
+    // O que os dados extras somaram, e o detalhe de cada um, para o log poder
+    // mostrar a rolagem em vez de um número que apareceu do nada.
+    extras,
+    somaExtras,
+    total,
+    cd: Number.isFinite(cdFinal) ? cdFinal : null,
+    sucesso: Number.isFinite(cdFinal) ? total >= cdFinal : null,
+    // ⚠ Crítico do d20 é do ACERTO, e o que ele faz é habilitar o dano dobrado.
+    // Um 1 natural fica marcado também: quem lê o log quer ver a pedra.
+    critico: escolhido >= Math.max(2, Math.trunc(margem) || 20),
+    pifia: escolhido === 1,
+    modo,
+  };
+}
+
+/**
+ * Rolagem de dados sem d20: dano, cura, regeneração.
+ *
+ * `blocos` multiplica só os DADOS, e serve à cura que escala por ponto gasto
+ * (a escada de 10/15/20 vale por ponto, autor 2026-08-03, e o modificador entra
+ * uma vez porque o texto diz "ao TOTAL de cura"). O crítico faz o mesmo com o
+ * dobro, então os dois se compõem sem regra nova.
+ */
+export function rolarDano(
+  {
+    rotulo, detalhe, dados, faces, grupos, fixo = 0, blocos = 1,
+    critico = false, modoDano = null, explosiva = false, tom = "dano", rerrola = null,
+  },
+  rng = Math.random,
+) {
+  /* ⚠ ROLAR DE NOVO OS DADOS BAIXOS (`rerrola`, 2026-10-02, Estilo Massivo). Vem
+     pronto da linha de dano, `{ ate, fonte }`. Todo dado da rolagem que cair em
+     `ate` ou menos rola de novo UMA vez, e fica o novo mesmo que seja menor:
+     "ficando com o novo resultado". Automático e em todos os dados da linha,
+     decisões do autor. O registro guarda o par para o painel riscar o velho. */
+  const ateRerrola = Math.max(0, Math.trunc(Number(rerrola?.ate) || 0));
+  const rerrolados = [];
+  const fixoInt = Math.trunc(Number(fixo) || 0);
+  const multBlocos = Math.max(1, Math.trunc(blocos) || 1);
+  const modo = modoDano ?? (critico ? "critico" : "normal");
+
+  /* ⚠ `grupos` existe porque a escada de dano do Afty tem degraus de DOIS dados
+     diferentes: `"2d12 + 1d6"`. Sem ele, quem quisesse rolar isso teria de
+     chamar duas vezes e somar de cabeça, e o log mostraria duas rolagens onde a
+     regra vê uma. O caminho de UM grupo (`dados`/`faces`) continua igual, porque
+     é o de quase toda linha da Ficha. */
+  const bruta = Array.isArray(grupos) && grupos.length
+    ? grupos
+    : [{ dados, faces, fixo: fixoInt, momento: "durante", multiplica: true }];
+  const lista = bruta
+    .filter((g) => ["critico", "raio_negro"].includes(modo) || !g.apenasCritico)
+    .map((g, indice) => ({
+      ...g,
+      dados: dadosNoModo(g, modo) * multBlocos,
+      ...(g.dadosCritico != null ? { dadosCritico: dadosNoModo(g, modo) * multBlocos } : {}),
+      faces: Math.max(2, Math.trunc(Number(
+        ["critico", "raio_negro"].includes(modo) && g.facesCritico ? g.facesCritico : g.faces,
+      ) || 6)),
+      fixo: Math.trunc(Number(g.fixo) || 0) + (Array.isArray(grupos) && indice === 0 ? fixoInt : 0),
+    }));
+
+  const rolados = [];
+  let total = 0;
+  let subtotalRaioNegro = 0;
+  for (const g of lista) {
+    const criticoAtivo = ["critico", "raio_negro"].includes(modo);
+    const multDados = criticoAtivo && grupoMultiplicavel(g) ? 2 : 1;
+    const dadosGrupo = rolarDados(g.dados * multDados, g.faces, rng).map((n, i) => {
+      if (n > ateRerrola) return n;
+      const novo = umDado(g.faces, rng);
+      rerrolados.push({ indice: rolados.length + i, de: n, para: novo });
+      return novo;
+    });
+    rolados.push(...dadosGrupo);
+    const somaDados = dadosGrupo.reduce((s, n) => s + n, 0);
+    /* ⚠ SÓ OS DADOS CRITÁVEIS vão para o 1,5x do Raio Negro (autor, 2026-09-15).
+       O fixo de todo grupo soma uma vez, por fora, e era ele que também subia
+       junto até aqui. */
+    if (modo === "raio_negro" && grupoNoRaioNegro(g)) subtotalRaioNegro += somaDados;
+    else total += somaDados;
+    total += g.fixo;
+  }
+  if (modo === "raio_negro") {
+    // "dano adicional igual a metade do total": o total mais a metade, com piso
+    // na metade. `piso(x / 2) × 3` perdia 1 ponto em todo subtotal ímpar.
+    total += subtotalRaioNegro + Math.floor(subtotalRaioNegro / 2);
+  }
+  const soma = rolados.reduce((s, n) => s + n, 0);
+  const ajuste = total - soma;
+  const formulaBase = formulaModoDano(lista, modo);
+  return {
+    id: novoId(),
+    ts: Date.now(),
+    tipo: "dano",
+    tom,
+    rotulo,
+    detalhe: detalhe ?? null,
+    formula: explosiva ? formulaBase.replace(/d(\d+)/g, "d$1!") : formulaBase,
+    // Os dados que ficaram, já com os rolados de novo no lugar dos velhos.
+    dados: rolados,
+    rerrolados,
+    rerrolaFonte: rerrolados.length ? (rerrola?.fonte ?? null) : null,
+    // O `faces` do registro é o do PRIMEIRO grupo. Ele só serve ao painel para
+    // rotular a rolagem, e a fórmula acima é quem conta a história inteira.
+    faces: lista[0]?.faces ?? faces,
+    fixo: ajuste,
+    total,
+    critico: ["critico", "raio_negro"].includes(modo),
+    raioNegro: modo === "raio_negro",
+  };
+}
+
+/** `d8` vira 8. As linhas de dano e cura guardam o dado como texto. */
+export function facesDe(dado) {
+  const n = Math.trunc(Number(String(dado ?? "").replace(/^d/i, "")));
+  return Number.isFinite(n) && n > 1 ? n : 6;
+}
+
+/** O texto curto de uma rolagem, para o painel: `17 + 21`. */
+export function textoDaRolagem(r) {
+  if (r.tipo === "teste") {
+    return `${r.natural} ${r.bonus >= 0 ? "+" : "−"} ${Math.abs(r.bonus)}`;
+  }
+  const soma = r.dados.reduce((s, n) => s + n, 0);
+  return r.fixo ? `${soma} ${r.fixo > 0 ? "+" : "−"} ${Math.abs(r.fixo)}` : String(soma);
+}

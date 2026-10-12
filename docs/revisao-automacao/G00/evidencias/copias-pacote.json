@@ -1,0 +1,29 @@
+{
+  "copias": [
+    {
+      "origem": "C:\\Projetos\\Grimorio\\prompts-a-fazer\\revisao-automacao-2026-10-05\\schema-registro.json",
+      "destino": "docs/revisao-automacao/schema-registro.json",
+      "hashOrigem": "2837b2f90c185aa92a48f8826e4f70ef900788380bde7b1716591cd76a6f01a8",
+      "hashDestino": "2837b2f90c185aa92a48f8826e4f70ef900788380bde7b1716591cd76a6f01a8"
+    },
+    {
+      "origem": "C:\\Projetos\\Grimorio\\prompts-a-fazer\\revisao-automacao-2026-10-05\\manifesto-lotes.json",
+      "destino": "docs/revisao-automacao/manifesto-inicial.json",
+      "hashOrigem": "668d708d605e12032cb58d09fe3cdd6513403f8297a58b9af5ce86d7571c4f92",
+      "hashDestino": "668d708d605e12032cb58d09fe3cdd6513403f8297a58b9af5ce86d7571c4f92"
+    },
+    {
+      "origem": "C:\\Projetos\\Grimorio\\prompts-a-fazer\\revisao-automacao-2026-10-05\\mapa-opcoes-catalogos.json",
+      "destino": "docs/revisao-automacao/mapa-opcoes-inicial.json",
+      "hashOrigem": "ef49f0056a71b6c9be3269b919d1bf8d772771b8ba4344d9031cd3729db66cc4",
+      "hashDestino": "ef49f0056a71b6c9be3269b919d1bf8d772771b8ba4344d9031cd3729db66cc4"
+    },
+    {
+      "origem": "C:\\Projetos\\Grimorio\\prompts-a-fazer\\revisao-automacao-2026-10-05\\inventario-catalogos.json",
+      "destino": "docs/revisao-automacao/inventario-inicial.json",
+      "hashOrigem": "ae39f8340b630d0ce4798de9d67b3c91f5c3897009de7b1a8faa430f2faacc99",
+      "hashDestino": "ae39f8340b630d0ce4798de9d67b3c91f5c3897009de7b1a8faa430f2faacc99"
+    }
+  ],
+  "criterio": "Cópias byte a byte; nenhuma atribui aprovação."
+}

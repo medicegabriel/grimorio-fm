@@ -1,0 +1,6 @@
+{
+  "codigo": 0,
+  "inicio": "2026-10-05T19:38:57.8344489Z",
+  "comando": "npx eslint scripts/revisao-automacao/*.mjs asserts/t-revisao-g00.mjs --config scripts/revisao-automacao/eslint.config.mjs",
+  "fim": "2026-10-05T19:38:59.4195389Z"
+}

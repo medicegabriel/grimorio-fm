@@ -15,11 +15,11 @@ Antes de iniciar qualquer tarefa, leia os seguintes documentos nesta ordem:
 
 ## 2. Arquitetura e Limites de Código (A Regra de Ouro)
 - **NÃO TOQUE NO GRIMÓRIO 2.5.2:** O sistema base está em produção e é estritamente **somente-leitura**.
-- Tudo dentro de `src/components/` (incluindo `builder-controls.jsx`, `AutomationBuilder.jsx`, `fm-dsl.js` e as pastas `sections/`) pode ser importado, mas **nunca editado**.
+- Tudo dentro de `src/components/` (incluindo `builder-controls.jsx`, `AutomationBuilder.jsx`, `fm-dsl.js` e as pastas `sections/`) pode ser importado, mas é **somente-leitura**, salvo as exceções autorizadas na seção 6.
 - Se precisar de algo do 2.5.2 que não pode ser importado, copie para o lado do Afty e documente no código a origem do arquivo.
 - **Isolamento do Afty:** Todo o sistema Afty (motor, telas, catálogos) vive **exclusivamente** em `src/systems/afty/`. A rota correspondente é `/Afty`, que é escondida e possui storage isolado.
 - A regra de qual ficha usar vem sempre de `creature.rulesVersion`, não da rota onde ela foi aberta.
-- **Validação de isolamento:** Ao terminar qualquer tarefa, o comando `git diff --name-only | grep src/components/` **deve** retornar vazio.
+- **Validação de isolamento:** Confira o diff em `src/components/`. Ele deve conter somente alterações já autorizadas na seção 6, preservando trabalho local anterior à tarefa.
 
 ## 3. UI, Escrita e Regras de Negócio
 - **Fidelidade (VERBATIM):** O texto de regra vem exatamente como está no livro. Não parafraseie, não resuma, não invente. Se a regra for ambígua ou estiver faltando, registre a dúvida em `grimorio-tracker/docs/a-fazer.md` e pergunte ao autor.
@@ -58,5 +58,21 @@ No registro abaixo, Forma 1 é parâmetro opcional com o padrão preservado e va
   - `Dashboard.jsx`: o card e o fantasma do arrasto da ficha de jogador escondem Patamar, HP, PE e Defesa e trocam "ND" por "Nível" (2026-08-30). Forma 2.
   - `Dashboard.jsx`: `titulo` e `showSystemView` (2026-09-09). Forma 1.
   - `Dashboard.jsx`: `vocab` (2026-09-10). Forma 1.
+  - `Dashboard.jsx`: `folderView` e `onFolderViewChange` (2026-10-04), opcionais com seleção local por padrão. O `App.jsx` conserva e salva a última pasta nas três rotas, a pedido do autor. Forma 1.
   - `PdfFab.jsx` e `PdfViewerModal.jsx`: a janela do Livro de Regras virou flutuante, arrastável, redimensionável e minimizável, em `z-[120]` (2026-10-02). Forma 3.
   - `io-utils.js`: o `parseImportText` dá "Sem nome" à ficha sem nome em vez de derrubar o pacote inteiro (2026-10-03). Forma 3.
+- `src/systems/afty/` concentra o motor, as telas e os catálogos compartilhados por `/Afty` e `/Player`. A regra de uma ficha vem de `creature.rulesVersion`, não da rota em que ela foi aberta.
+- Não faça commits nem envie alterações. O autor cuida dessa etapa.
+- Antes de mudar código, confira a documentação específica e a implementação. Para mudanças de lógica, use `npm run asserts`; para mudanças de tela, confira também o comportamento no navegador.
+
+## Documentação
+
+- `docs/a-fazer.md` é a fila atual. Ao concluir uma entrada, retire-a da fila e registre a decisão ou a implementação no guia correspondente ou em `docs/afty-status.md`.
+- `docs/afty-status.md` é o histórico de sessões. Afirmações datadas nele não substituem a verificação do código atual.
+- Atualize contagens, caminhos, estados de implementação e instruções de navegação quando o código mudar. Não apresente uma decisão já tomada como pergunta em aberto. Antes de entregar, confira o diff e a resposta para garantir que não foi introduzido nenhum U+2014.
+
+## Fonte do Livro de Regras (2026-10-05)
+
+- Leia o Livro de Regras 2.5.2 em `C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md`, fora do repositório. Confirme o acesso e o SHA-256 `1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a` e registre esse hash como versão da fonte nos lotes.
+- Cite a página impressa pelo último `<!-- página N -->` acima do trecho. Use o PDF do Livro somente para desempate documentado. O Grimório das Maldições continua em PDF.
+- Cópias antigas do Markdown não são prova válida. A proveniência está em `C:/Projetos/Grimorio/_backup-livro/correcoes.md`. Não altere nem copie a fonte externa, nem reproduza U+2014 no repositório. O protocolo dos registros está em `docs/revisao-automacao/LEIA.md`.

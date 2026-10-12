@@ -555,8 +555,6 @@ export const HABILIDADES_LENDARIAS = [
    ⚠ As três exigem a Habilidade Geral correspondente além do ND 21/22, e isso
    vale para as de addon também: o gate é do sistema, e não da entrada. */
 
-let MELHORIA_BY_ID = {};
-let LENDARIA_BY_ID = {};
 let APICE_BY_ID = {};
 
 const MELHORIAS_BASE = MELHORIAS_SUPERIORES.slice();
@@ -565,11 +563,9 @@ const APICES_BASE = HABILIDADES_APICE.slice();
 
 function aplicarExtrasMelhorias(extras = [], remendos = null) {
   MELHORIAS_SUPERIORES.splice(0, MELHORIAS_SUPERIORES.length, ...remendarLista(MELHORIAS_BASE, remendos), ...extras);
-  MELHORIA_BY_ID = Object.fromEntries(MELHORIAS_SUPERIORES.map((m) => [m.id, m]));
 }
 function aplicarExtrasLendarias(extras = [], remendos = null) {
   HABILIDADES_LENDARIAS.splice(0, HABILIDADES_LENDARIAS.length, ...remendarLista(LENDARIAS_BASE, remendos), ...extras);
-  LENDARIA_BY_ID = Object.fromEntries(HABILIDADES_LENDARIAS.map((l) => [l.id, l]));
 }
 function aplicarExtrasApices(extras = [], remendos = null) {
   HABILIDADES_APICE.splice(0, HABILIDADES_APICE.length, ...remendarLista(APICES_BASE, remendos), ...extras);
@@ -599,6 +595,7 @@ registrarFamilia("melhoriasSuperiores", {
 registrarFamilia("lendarias", {
   rotulo: "Habilidade Lendária",
   chave: "id",
+  caminhosDeId: ["requisitos[].id", "requisitos[].ids[]"],
   obrigatorios: ["nome", "descricao"],
   aplicar: aplicarExtrasLendarias,
   basicos: () => LENDARIAS_BASE,
@@ -634,12 +631,30 @@ export function melhoriaNoSistema(m, sistema) {
   return regraDo(sistema, "melhoriasSuperioresDoJogador") === "player" ? { ...resto, ...jogador } : resto;
 }
 
-/** O catálogo de Melhorias como este sistema o lê. */
-export const melhoriasSuperioresDe = (sistema) => MELHORIAS_SUPERIORES.map((m) => melhoriaNoSistema(m, sistema));
+/** Remendos de Alto Nível pertencem à ficha, inclusive em Encontros mistos. */
+function entradaDaFicha(familia, id, creature, base, atual) {
+  if (!creature) return atual.find((e) => e.id === id) ?? null;
+  let entrada = base.find((e) => e.id === id);
+  if (!entrada) {
+    const pacoteId = String(id).split(":")[0];
+    if (!creature.addons?.some((p) => p.id === pacoteId)) return null;
+    return atual.find((e) => e.id === id) ?? null;
+  }
+  for (const pacote of creature.addons ?? []) {
+    const patch = pacote.substitui?.[familia]?.find((e) => e.id === id);
+    if (patch) entrada = { ...entrada, ...patch, id, remendadoPor: [...(entrada.remendadoPor ?? []), pacote.id] };
+  }
+  return entrada;
+}
 
-/** Sem sistema devolve a do Afty, que é o ramo padrão do `regraDo`. */
-export const getMelhoriaSuperior = (id, sistema = null) => melhoriaNoSistema(MELHORIA_BY_ID[id], sistema) || null;
-export const getHabilidadeLendaria = (id) => LENDARIA_BY_ID[id] || null;
+/** O catálogo de Melhorias como este sistema e esta ficha o leem. */
+export const melhoriasSuperioresDe = (sistema, creature = null) => MELHORIAS_SUPERIORES
+  .map((m) => getMelhoriaSuperior(m.id, sistema, creature)).filter(Boolean);
+
+export const getMelhoriaSuperior = (id, sistema = null, creature = null) =>
+  melhoriaNoSistema(entradaDaFicha("melhoriasSuperiores", id, creature, MELHORIAS_BASE, MELHORIAS_SUPERIORES), sistema) || null;
+export const getHabilidadeLendaria = (id, creature = null) =>
+  entradaDaFicha("lendarias", id, creature, LENDARIAS_BASE, HABILIDADES_LENDARIAS);
 export const getHabilidadeApice = (id) => APICE_BY_ID[id] || null;
 
 /**
@@ -696,6 +711,14 @@ export function avaliarRequisitoAltoNivel(requisito, ctx = {}) {
     // Referência pendente: exibe e NÃO bloqueia (senão a Ápice ficaria presa).
     if (!alvo) return { ok: true, verificavel: false, label: requisito.id };
     return { ok: (ctx.habilidades || []).includes(requisito.id), verificavel: true, label: alvo.nome };
+  }
+  if (requisito?.tipo === "lendariaOr") {
+    const ids = Array.isArray(requisito.ids) ? requisito.ids : [];
+    return {
+      ok: ids.some((id) => (ctx.lendarias || []).includes(id)),
+      verificavel: true,
+      label: ids.map((id) => getHabilidadeLendaria(id)?.nome || id).join(" ou "),
+    };
   }
   // Habilidade que o livro cita mas que não existe mais no Afty. Só exibe.
   if (requisito?.tipo === "nota") {
@@ -798,6 +821,10 @@ export function resolveAltoNivel(creature, ctx = {}) {
   const nd = nivelDaFicha(creature);
   const ativo = altoNivelAtivo(nd);
   const sistema = sistemaDaFicha(creature);
+  const melDe = (id) => getMelhoriaSuperior(id, sistema, creature);
+  const lenDe = (id) => getHabilidadeLendaria(id, creature);
+  const catalogoMel = melhoriasSuperioresDe(sistema, creature);
+  const catalogoLen = HABILIDADES_LENDARIAS.map((l) => lenDe(l.id)).filter(Boolean);
   const destravado = {
     melhorias: ctx.destravado ? !!ctx.destravado.melhorias : true,
     lendarias: ctx.destravado ? !!ctx.destravado.lendarias : true,
@@ -809,7 +836,7 @@ export function resolveAltoNivel(creature, ctx = {}) {
   for (const id of brutasMel) {
     // O `maxVezes` é do SISTEMA: a Classe de Armadura repete no jogador e a
     // Defesa não repete na criatura, e as duas são o mesmo id.
-    const m = melhoriaNoSistema(MELHORIA_BY_ID[id], sistema);
+    const m = melDe(id);
     if (!m) continue;
     const atual = vezesPorId.get(id) ?? 0;
     if (atual >= m.maxVezes) continue;       // apara no teto do texto do livro
@@ -820,12 +847,12 @@ export function resolveAltoNivel(creature, ctx = {}) {
   // comprar. Ver `afty-concessao.js`.
   const melConcedidas = new Map();
   for (const id of Array.isArray(ctx.concedidos?.melhoriasSuperiores) ? ctx.concedidos.melhoriasSuperiores : []) {
-    if (!MELHORIA_BY_ID[id]) continue;
+    if (!melDe(id)) continue;
     vezesPorId.set(id, (vezesPorId.get(id) ?? 0) + 1);
     melConcedidas.set(id, (melConcedidas.get(id) ?? 0) + 1);
   }
   // Ordem do catálogo, não a de escolha: a UI lista o catálogo inteiro.
-  const melhoriasEscolhidas = MELHORIAS_SUPERIORES
+  const melhoriasEscolhidas = catalogoMel
     .filter((m) => vezesPorId.has(m.id))
     .map((m) => ({ id: m.id, vezes: vezesPorId.get(m.id) }));
   const melConcedidasTotal = [...melConcedidas].reduce((s, [, n]) => s + n, 0);
@@ -846,18 +873,18 @@ export function resolveAltoNivel(creature, ctx = {}) {
   const vistos = new Set();
   const lendariasEscolhidas = [];
   for (const id of Array.isArray(creature?.habilidadesLendarias) ? creature.habilidadesLendarias : []) {
-    if (!LENDARIA_BY_ID[id] || vistos.has(id)) continue;
+    if (!lenDe(id) || vistos.has(id)) continue;
     /* ⚠ A LENDÁRIA QUE O JOGADOR PERDE (divergência `perdidoNoJogador`). Ela
        some daqui, e com ela os efeitos, a escolha aninhada e a vaga que ocupava.
        O id continua gravado na ficha: um Addon que a libere a devolve. */
-    if (perdidaNoJogador(LENDARIA_BY_ID[id], creature)) continue;
+    if (perdidaNoJogador(lenDe(id), creature)) continue;
     vistos.add(id);
     lendariasEscolhidas.push(id);
   }
   // Concessão vinda da sessão, mesma regra das Melhorias acima.
   const lenConcedidas = [];
   for (const id of Array.isArray(ctx.concedidos?.lendarias) ? ctx.concedidos.lendarias : []) {
-    if (!LENDARIA_BY_ID[id] || vistos.has(id)) continue;
+    if (!lenDe(id) || vistos.has(id)) continue;
     vistos.add(id);
     lenConcedidas.push(id);
     lendariasEscolhidas.push(id);
@@ -868,21 +895,25 @@ export function resolveAltoNivel(creature, ctx = {}) {
   const lenVagasCanal = Math.max(0, Math.trunc(Number(ctx.vagasLendaria) || 0));
   const lenTotal = totalDaTrilha(destravado.lendarias, lenVagasND, lenVagasCanal);
 
-  const ctxReq = { nd, niveisPorEspec: ctx.niveisPorEspec, habilidades: ctx.habilidades };
+  const ctxReq = { nd, niveisPorEspec: ctx.niveisPorEspec, habilidades: ctx.habilidades, lendarias: lendariasEscolhidas };
   const inacessiveis = lendariasEscolhidas.filter(
-    (id) => !avaliarAcessoAltoNivel(LENDARIA_BY_ID[id], ctxReq).ok
+    (id) => !avaliarAcessoAltoNivel(lenDe(id), ctxReq).ok
   );
 
   /* ---- Escolhas aninhadas dos dois lados, num mapa só ---- */
   const escolhidasComEscolha = [
-    ...melhoriasEscolhidas.map((m) => MELHORIA_BY_ID[m.id]),
-    ...lendariasEscolhidas.map((id) => LENDARIA_BY_ID[id]),
+    ...melhoriasEscolhidas.map((m) => melDe(m.id)),
+    ...lendariasEscolhidas.map((id) => lenDe(id)),
   ];
-  const itensComEscolha = [...MELHORIAS_SUPERIORES, ...HABILIDADES_LENDARIAS]
+  const itensComEscolha = [...catalogoMel, ...catalogoLen]
     .filter((item) => item.escolha);
   const opcoesPorItem = Object.fromEntries(itensComEscolha.map((item) => {
     const opcoes = item.escolha.fonteOpcoes === "periciasDaFicha"
-      ? catalogoPericiasDaFicha(creature).map((p) => ({ id: p.id, nome: p.nome }))
+      ? catalogoPericiasDaFicha(creature)
+        .filter((p) => !item.escolha.somenteTreinadas
+          || ["treinado", "mestre"].includes(creature?.pericias?.[p.id])
+          || (ctx.periciasTreinadas || []).includes(p.id))
+        .map((p) => ({ id: p.id, nome: p.nome }))
       : item.escolha.opcoes;
     return [item.id, opcoes];
   }));
@@ -927,8 +958,8 @@ export function resolveAltoNivel(creature, ctx = {}) {
        do sistema, e as Lendárias sem as que saíram do jogador. O card do criador
        não recebe a ficha, só o derivado, e é por isso que a lista sai daqui. */
     catalogo: {
-      melhorias: melhoriasSuperioresDe(sistema),
-      lendarias: filtraForaDoJogador(HABILIDADES_LENDARIAS, creature, lendariasEscolhidas),
+      melhorias: catalogoMel,
+      lendarias: filtraForaDoJogador(catalogoLen, creature, lendariasEscolhidas),
     },
   };
 }
@@ -948,11 +979,11 @@ export function validarCatalogoAltoNivel() {
 
   const checarEscolha = (item) => {
     if (!item.escolha) return;
-    if (!item.escolha.opcoes?.length) problemas.push(`${item.nome}: escolha sem opções`);
+    if (!item.escolha.fonteOpcoes && !item.escolha.opcoes?.length) problemas.push(`${item.nome}: escolha sem opções`);
     if (!Number.isInteger(item.escolha.quantidade) || item.escolha.quantidade < 1) {
       problemas.push(`${item.nome}: escolha com quantidade inválida (${item.escolha.quantidade})`);
     }
-    if (item.escolha.quantidade > (item.escolha.opcoes?.length ?? 0)) {
+    if (!item.escolha.fonteOpcoes && item.escolha.quantidade > (item.escolha.opcoes?.length ?? 0)) {
       problemas.push(`${item.nome}: escolha pede mais opções do que o pool tem`);
     }
     const opcaoIds = new Set();
@@ -978,6 +1009,9 @@ export function validarCatalogoAltoNivel() {
       // trata como não verificável), mas vale acusar para não passar batido.
       if (r?.tipo === "habilidade" && !getHabilidade(r.id)) {
         problemas.push(`${item.nome}: requisito aponta para habilidade inexistente "${r.id}"`);
+      }
+      if (r?.tipo === "lendariaOr" && (!r.ids?.length || r.ids.some((id) => !getHabilidadeLendaria(id)))) {
+        problemas.push(item.nome + ": requisito de Lendárias inválido");
       }
       if (r?.tipo === "nota" && !r.texto?.trim()) {
         problemas.push(`${item.nome}: requisito nota sem texto`);

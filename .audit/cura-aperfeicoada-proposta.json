@@ -1,0 +1,206 @@
+{
+  "versao": 1,
+  "shaInventario": "45cf74d3955aac49bb6a500db1628e437cbb7c8b6a4c73d19b5178e7a849b522",
+  "shaVivo": "8ce7ad146734e6a1cc3524b3164199de7e1199047e8804242c85bac76565223b",
+  "shaEscopo": "f4048b203eadc2525e87a8755b9386325eac90784746239fab170c3234dff4ff",
+  "adicionados": [
+    {
+      "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::sup_cura_aperfeicoada",
+      "item": {
+        "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::sup_cura_aperfeicoada",
+        "id": "sup_cura_aperfeicoada",
+        "nome": "sup_cura_aperfeicoada",
+        "arquivo": "src/systems/afty/afty-efeitos-conteudo.js",
+        "export": "HABILIDADE_EFEITOS",
+        "proprietario": "SUP-06",
+        "tipo": "entrada de tabela",
+        "hashDado": "c0cc1cd52ac022d4dc7a040060ab6f360e13e12f43995ee6991b38686da69402",
+        "regraOriginal": "afty-habilidades.js::AFTY_HABILIDADES::sup_cura_aperfeicoada"
+      },
+      "proprietarioSugerido": "SUP-06"
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::sup_cura_aperfeicoada::@0",
+      "item": {
+        "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::sup_cura_aperfeicoada::@0",
+        "id": "@0",
+        "nome": "@0",
+        "arquivo": "src/systems/afty/afty-efeitos-conteudo.js",
+        "export": "HABILIDADE_EFEITOS",
+        "pai": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::sup_cura_aperfeicoada",
+        "caminho": "@0",
+        "proprietario": "SUP-06",
+        "tipo": "parcela declarada",
+        "hashDado": "1da89eb30f9ed32c8df7f94237bb7b12528bb7e2cf1952bf776aa61f28a15923"
+      },
+      "proprietarioSugerido": "SUP-06"
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAIS::rerrolaCura",
+      "item": {
+        "chave": "afty-efeitos.js::EFEITO_CANAIS::rerrolaCura",
+        "id": "rerrolaCura",
+        "nome": "Cura: Rolar de Novo",
+        "arquivo": "src/systems/afty/afty-efeitos.js",
+        "export": "EFEITO_CANAIS",
+        "proprietario": "M01",
+        "tipo": "entrada",
+        "idLocal": "rerrolaCura",
+        "hashDado": "6d21535bc09179a964fc5ea188821ac1bbb1fb3745ac3d016b79f9ff13c64986"
+      },
+      "proprietarioSugerido": "M01"
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@1::itens/rerrolaCura",
+      "item": {
+        "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@1::itens/rerrolaCura",
+        "id": "itens/rerrolaCura",
+        "nome": "Cura: Rolar de Novo",
+        "arquivo": "src/systems/afty/afty-efeitos.js",
+        "export": "EFEITO_CANAL_GRUPOS",
+        "pai": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@1",
+        "caminho": "itens/rerrolaCura",
+        "proprietario": "M01",
+        "tipo": "referência",
+        "referencia": "afty-efeitos.js::EFEITO_CANAIS::rerrolaCura",
+        "integracaoProprietario": "M01",
+        "idLocal": "rerrolaCura",
+        "hashDado": "6d21535bc09179a964fc5ea188821ac1bbb1fb3745ac3d016b79f9ff13c64986"
+      },
+      "proprietarioSugerido": "M01"
+    },
+    {
+      "chave": "afty-efeitos.js::HABILIDADE_EFEITOS::sup_cura_aperfeicoada",
+      "item": {
+        "chave": "afty-efeitos.js::HABILIDADE_EFEITOS::sup_cura_aperfeicoada",
+        "id": "sup_cura_aperfeicoada",
+        "nome": "sup_cura_aperfeicoada",
+        "arquivo": "src/systems/afty/afty-efeitos.js",
+        "export": "HABILIDADE_EFEITOS",
+        "proprietario": "SUP-06",
+        "tipo": "referência",
+        "referencia": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::sup_cura_aperfeicoada",
+        "hashDado": "c0cc1cd52ac022d4dc7a040060ab6f360e13e12f43995ee6991b38686da69402"
+      },
+      "proprietarioSugerido": "SUP-06"
+    }
+  ],
+  "removidos": [],
+  "alterados": [
+    {
+      "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::@catalogo",
+      "proprietarioMantido": "M02",
+      "hashAnterior": "991f21536c35d87eae5464ad8314ced6921e1a79f8625499cbd037a6221a9a7f",
+      "hashNovo": "f84f12f0d5c4900fe328fae4285adf331dd747dbf90145ec9e0a1a413ca8b968",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAIS::@catalogo",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "189018729326e772396efb5e4d412f15fe4df035659a2b5280f535d19b4777f9",
+      "hashNovo": "217c5a6272fe45c1980f29c45f7c59da4c5e1d1011a9f27283d2d4ae8b53efe2",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@1",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "598f7a6bec171fe57f225095e3329907d0835732d9689dc4f2240a9c64d613e2",
+      "hashNovo": "9868579e59b348ef7ee24764babeedc7e365632fad56645dce37c48c21b6ee2b",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@1::itens",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "86d94e875f6b7d56341c8bf50009359fba6b5663e5b9c4d392e41ae062e01a7a",
+      "hashNovo": "9f7b34bdca95eaa1216a015241b879736ca65773195fb7c4edcb6cb47fb552bb",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@catalogo",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "a82211074aa356b838a200d67550862b72d3eb7fd8be822a9c633c9c98ef3888",
+      "hashNovo": "9d6c7807218cc1478f97872072b75cd33d4e7ad9972949c91730d6f0ea4bd189",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::HABILIDADE_EFEITOS::@catalogo",
+      "proprietarioMantido": "M02",
+      "hashAnterior": "991f21536c35d87eae5464ad8314ced6921e1a79f8625499cbd037a6221a9a7f",
+      "hashNovo": "f84f12f0d5c4900fe328fae4285adf331dd747dbf90145ec9e0a1a413ca8b968",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-gerais.js::GERAL_BY_ID::@catalogo",
+      "proprietarioMantido": "GER-01",
+      "hashAnterior": "c9f0db010b599fbaf400cf9d48c959bf527f9061cbfc65e64eae0651fb90d947",
+      "hashNovo": "b8870e34328a9fbc009557e5c759d05e8b948e06cc42877b22ca3b4f8845fdc7",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-gerais.js::GERAL_BY_ID::ger_aptidao",
+      "proprietarioMantido": "GER-01",
+      "hashAnterior": "44563524914d55313ecf0cf50ff74b8e07df182b53d61722f6ce0a633c3a53f5",
+      "hashNovo": "a897cc381b844ea359e68224326c156fb21a2d94162127215aeef9159a616ed6",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-gerais.js::GERAL_BY_ID::ger_especializacao",
+      "proprietarioMantido": "GER-01",
+      "hashAnterior": "e4dba767e97d41fd2a4b547666239554001bd7d73162a118dfa4ff1abe114ecd",
+      "hashNovo": "03c5bc592271907012a6677119dfb5f50b27ce7337be46e6296f462bea8d5d0d",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-gerais.js::HABILIDADES_GERAIS::@catalogo",
+      "proprietarioMantido": "GER-01",
+      "hashAnterior": "61e40051b034de04ba5d47f4b29a302e4ceb54895b0bd00c3168a27bcc18a379",
+      "hashNovo": "928cfa92cdea6da30e270edbf66fc121e2f44cfeb839a243c2fe24b6dc5ee747",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-gerais.js::HABILIDADES_GERAIS::ger_aptidao",
+      "proprietarioMantido": "GER-01",
+      "hashAnterior": "44563524914d55313ecf0cf50ff74b8e07df182b53d61722f6ce0a633c3a53f5",
+      "hashNovo": "a897cc381b844ea359e68224326c156fb21a2d94162127215aeef9159a616ed6",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-gerais.js::HABILIDADES_GERAIS::ger_especializacao",
+      "proprietarioMantido": "GER-01",
+      "hashAnterior": "e4dba767e97d41fd2a4b547666239554001bd7d73162a118dfa4ff1abe114ecd",
+      "hashNovo": "03c5bc592271907012a6677119dfb5f50b27ce7337be46e6296f462bea8d5d0d",
+      "campos": [
+        "hashDado"
+      ]
+    }
+  ],
+  "assinatura": "6702fe37bf9577576a8ed98cbbbd3fd1391155dbf5731257e7d2bc40466583df",
+  "decisoes": {
+    "adicoes": {},
+    "remocoes": {},
+    "justificativaAtualizacao": ""
+  },
+  "errosColeta": []
+}

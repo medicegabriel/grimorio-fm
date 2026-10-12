@@ -20,6 +20,7 @@
  * 6. A vaga sai dos GANHOS, e Interlúdio sem Ganho não dá vaga.
  * 7. ⚠ A CRIATURA NÃO MUDA: o progresso gravado não move número nenhum nela.
  * 8. As duas divergências e o validador dos campos novos.
+ * 9. Treinamento para Aptidão: vagas, tetos independentes e progresso nos dois sistemas.
  */
 import { register } from "node:module";
 register(
@@ -69,17 +70,17 @@ t("a paráfrase antiga saiu", hab.descricao.includes("três sucessos concluem"),
 /* 2. OS TETOS                                                   */
 /* ============================================================ */
 const tetos = (sistema) => [9, 10, 20, 30].map((n) => T.tetosDeTreinoEspecial(ficha(sistema, n)));
-t("a criatura segue 1 + ND/5 e 1 + ND/10", tetos("afty"), [
-  { tes_feitico: 2, tes_habilidade: 1 },
-  { tes_feitico: 3, tes_habilidade: 2 },
-  { tes_feitico: 5, tes_habilidade: 3 },
-  { tes_feitico: 7, tes_habilidade: 4 },
+t("a criatura: Feitiço segue 1 + ND/5, Habilidade e Aptidão seguem 1 + ND/10", tetos("afty"), [
+  { tes_feitico: 2, tes_habilidade: 1, tes_aptidao: 1 },
+  { tes_feitico: 3, tes_habilidade: 2, tes_aptidao: 2 },
+  { tes_feitico: 5, tes_habilidade: 3, tes_aptidao: 3 },
+  { tes_feitico: 7, tes_habilidade: 4, tes_aptidao: 4 },
 ]);
-t("o jogador: Feitiço sem teto, Habilidade 1 até o 9° e 2 daí em diante", tetos("player"), [
-  { tes_feitico: null, tes_habilidade: 1 },
-  { tes_feitico: null, tes_habilidade: 2 },
-  { tes_feitico: null, tes_habilidade: 2 },
-  { tes_feitico: null, tes_habilidade: 2 },
+t("o jogador: Feitiço sem teto, Habilidade e Aptidão 1 até o 9° e 2 daí em diante", tetos("player"), [
+  { tes_feitico: null, tes_habilidade: 1, tes_aptidao: 1 },
+  { tes_feitico: null, tes_habilidade: 2, tes_aptidao: 2 },
+  { tes_feitico: null, tes_habilidade: 2, tes_aptidao: 2 },
+  { tes_feitico: null, tes_habilidade: 2, tes_aptidao: 2 },
 ]);
 t("sem sistema no contexto vale a régua da criatura",
   T.maxVezesTreinoEspecial("tes_habilidade", { nd: 30 }), 4);
@@ -161,6 +162,85 @@ for (const nivel of [4, 10, 25]) {
   const com = deriveAfty(ficha("afty", nivel, { tes_feitico: 2, tes_habilidade: 1 }, misto));
   t(`criatura ND ${nivel}: o progresso gravado não move número nenhum`, foto(com), foto(sem));
 }
+
+/* ============================================================ */
+/* TREINAMENTO PARA APTIDÃO (autor, 2026-10-04)                    */
+/* ============================================================ */
+const apt = T.getTreinoEspecial("tes_aptidao");
+const vagasAptidao = (f) => deriveAfty(f).totalAptidoesAmaldicoadas;
+
+// Os tetos são independentes, mesmo quando os dois treinos foram completados.
+for (const sistema of ["afty", "player"]) {
+  for (const [nivel, teto] of [[1, 1], [9, 1], [10, 2], [20, sistema === "player" ? 2 : 3], [30, sistema === "player" ? 2 : 4]]) {
+    const base = deriveAfty(ficha(sistema, nivel));
+    const f = ficha(sistema, nivel, { tes_aptidao: 5 });
+    const com = deriveAfty(f);
+    t(`${sistema}, N ${nivel}: só os ganhos permitidos concedem Aptidões`,
+      com.totalAptidoesAmaldicoadas - base.totalAptidoesAmaldicoadas, teto);
+    t(`${sistema}, N ${nivel}: Aptidão não concede Nível de Aptidão nem Habilidade ou Feitiço`,
+      [com.totalAptidao, com.habilidades.total, com.orcamentoHabilidades.exclusivasFeitico],
+      [base.totalAptidao, base.habilidades.total, base.orcamentoHabilidades.exclusivasFeitico]);
+    t(`${sistema}, N ${nivel}: o teto não apaga ganhos gravados`, f.treinosEspeciais.length, 5);
+  }
+}
+
+const doisTreinos = ficha("player", 30, { tes_habilidade: 2, tes_aptidao: 2 }, {
+  tes_habilidade: { interludios: 4, sucessos: 1 },
+  tes_aptidao: { interludios: 6, sucessos: 2 },
+});
+const baseDoisTreinos = deriveAfty(ficha("player", 30));
+const comDoisTreinos = deriveAfty(doisTreinos);
+t("Habilidade e Aptidão concedem duas vagas cada, com tetos independentes",
+  [comDoisTreinos.habilidades.total - baseDoisTreinos.habilidades.total,
+    comDoisTreinos.totalAptidoesAmaldicoadas - baseDoisTreinos.totalAptidoesAmaldicoadas], [2, 2]);
+t("os dois treinos dividem os Focos pelas tentativas", T.focosDeTreinosEspeciais(doisTreinos), 10);
+t("o progresso da Aptidão mantém os seus Interlúdios, Sucessos e Ganhos",
+  T.progressoTreinoEspecial(doisTreinos, "tes_aptidao"), { interludios: 6, sucessos: 2, ganhos: 2 });
+
+const tentativaAptidao = ficha("player", 10, {}, { tes_aptidao: { interludios: 3, sucessos: 2 } });
+t("Aptidão em andamento gasta Focos", T.focosDeTreinosEspeciais(tentativaAptidao), 3);
+t("e só Interlúdios e Sucessos não concedem Aptidão",
+  vagasAptidao(tentativaAptidao), vagasAptidao(ficha("player", 10)));
+t("ganhos antigos de Aptidão têm o piso de um Interlúdio por ganho",
+  T.progressoTreinoEspecial(ficha("player", 10, { tes_aptidao: 2 }), "tes_aptidao"),
+  { interludios: 2, sucessos: 0, ganhos: 2 });
+t("Aptidão guarda até dois sucessos entre tentativas",
+  T.progressoTreinoEspecial(ficha("player", 10, {}, {
+    tes_aptidao: { interludios: 1, sucessos: 3 },
+  }), "tes_aptidao").sucessos, 2);
+t("CD da Aptidão segue metade do Nível, para baixo",
+  [1, 9, 10, 30].map((n) => T.cdDoTreinoEspecial(apt, ficha("player", n))), [12, 16, 17, 27]);
+
+const aptExcedente = ficha("player", 9, { tes_aptidao: 2 });
+t("no nível 9 o segundo ganho de Aptidão fica fora da conta",
+  T.vezesPorTreinoEspecial(aptExcedente).tes_aptidao, 1);
+aptExcedente.core.nd = 10;
+aptExcedente.especializacoes[0].nivel = 10;
+t("no nível 10 o segundo ganho volta sem editar a lista",
+  T.vezesPorTreinoEspecial(aptExcedente).tes_aptidao, 2);
+t("e o derivado recebe as duas vagas restauradas",
+  vagasAptidao(aptExcedente) - vagasAptidao(ficha("player", 10)), 2);
+
+const aptCriatura = ficha("afty", 20, { tes_aptidao: 3 });
+const aptCriaturaTentativa = ficha("afty", 20, { tes_aptidao: 3 }, {
+  tes_aptidao: { interludios: 8, sucessos: 2 },
+});
+t("na criatura cada ganho de Aptidão custa um Foco, com sucesso automático",
+  T.focosDeTreinosEspeciais(aptCriaturaTentativa), 3);
+t("o progresso do jogador não altera a criatura",
+  foto(deriveAfty(aptCriaturaTentativa)), foto(deriveAfty(aptCriatura)));
+
+for (const sistema of ["afty", "player"]) {
+  const restr = ficha(sistema, 10, { tes_aptidao: 2 });
+  restr.core.tipo = "restringido";
+  restr.core.origem = { id: "restringido" };
+  restr.especializacoes = [{ id: "restringido", nivel: 10 }];
+  t(`${sistema}: o treino conserva a restrição de Aptidões do Restringido`,
+    vagasAptidao(restr), 0);
+}
+t("o efeito da Aptidão identifica a fonte e o orçamento que concede",
+  T.efeitosDeTreinoEspecial(ficha("player", 10, { tes_aptidao: 1 })),
+  [{ canal: "vagasAptidao", expr: "1", origem: "tes_aptidao", nome: "Treinamento para Aptidão" }]);
 
 /* ============================================================ */
 /* 8. AS DIVERGÊNCIAS E O VALIDADOR                              */

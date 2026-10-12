@@ -420,6 +420,21 @@ export const DIVERGENCIAS = [
     ativa: true,
   },
   {
+    /* O REQUISITO DE ATRIBUTO DA MULTICLASSE (2026-10-07, achado P01). O livro do
+       jogador manda atender o requisito da Especialização nova para entrar nela,
+       e o catálogo sempre o declarou (`caracteristicas.multiclasse`) sem ninguém
+       ler. Na criatura do mestre a multiclasse já segue outra régua (o ND, e a
+       terceira classe só no 31), e se o requisito vale lá é pergunta ao autor em
+       docs/a-fazer.md: até a resposta, o Afty continua como era. */
+    id: "requisitoMulticlasse",
+    tipo: "regra",
+    onde: "afty-especializacoes.js, multiclassesSemRequisito e faltaRequisitoMulticlasse",
+    fonte: "Livro de Regras 2.5.2, página 47: você deve atender os requisitos para Multiclasse especificados nas características da outra especialização",
+    afty: "não cobrado (aguarda o autor)",
+    player: "a Especialização nova só entra com o atributo do requisito no valor permanente, e a ficha que já a tem sem ele recebe aviso",
+    ativa: true,
+  },
+  {
     /* ⚠ O AFTY É QUE DIVERGE DO LIVRO AQUI, e não o contrário. O cabeçalho de
        `afty-habilidades.js` diz isso desde sempre: "No livro as Bases são de
        graça; no Afty elas são escolhidas, igual às por Nível." A ficha de
@@ -616,8 +631,8 @@ export const DIVERGENCIAS = [
     id: "terceiraClasse",
     tipo: "regra",
     onde: "afty-especializacoes.js (limite, normalização e níveis), AftyCreatureBuilder.jsx (seleção)",
-    fonte: "Eu preciso que você habilite fazer Multiclasse com uma terceira classe na Ficha de Jogador, diferente da ficha de criatura (autor, 2026-09-14)",
-    afty: "até 2 Especializações",
+    fonte: "Eu preciso que você habilite fazer Multiclasse com uma terceira classe na Ficha de Jogador, diferente da ficha de criatura (autor, 2026-09-14). No Grimorio do Afty libera a Terceira Multiclasse para Níveis 31+ (autor, 2026-10-04)",
+    afty: "até 2 Especializações no ND 1 a 30, até 3 no ND 31+",
     player: "até 3 Especializações",
     ativa: true,
   },
@@ -885,13 +900,14 @@ export const DIVERGENCIAS = [
     /* O teto de repetição do Treino Especial. Na criatura ele é `1 + piso(ND /
        vezesACada)`, decisão do autor de 2026-08-18. No jogador vale a escada
        `tetoJogador` do catálogo, que é DADO: a Habilidade para em 2 e o Feitiço
-       não tem teto (autor, 2026-09-16, por pergunta com opções). */
+       não tem teto (autor, 2026-09-16, por pergunta com opções). A Aptidão
+       segue a Habilidade (autor, 2026-10-04). */
     id: "tetoDeTreinoEspecial",
     tipo: "regra",
     onde: "afty-treinos-especiais.js (maxVezesTreinoEspecial, campo tetoJogador)",
     fonte: "Um personagem pode obter apenas uma habilidade adicional a partir desse treinamento até o 9° nível. A partir do 10° nível, pode obter uma habilidade a mais. (Treinamento para Habilidade) + \"Máximo 2\" e \"Sem teto\" para o Feitiço (autor, 2026-09-16)",
-    afty: "1 + 1 a cada 5 ND no Feitiço, e 1 + 1 a cada 10 ND na Habilidade",
-    player: "Habilidade: 1 até o 9° nível e 2 do 10° em diante. Feitiço: sem teto",
+    afty: "1 + 1 a cada 5 ND no Feitiço, e 1 + 1 a cada 10 ND na Habilidade e na Aptidão",
+    player: "Habilidade e Aptidão: 1 até o 9° nível e 2 do 10° em diante, para cada treino. Feitiço: sem teto",
     ativa: true,
   },
   {

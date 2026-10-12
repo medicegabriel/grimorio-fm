@@ -1,0 +1,266 @@
+[
+  {
+    "route": "Afty",
+    "width": 320,
+    "height": 568,
+    "geometry": {
+      "top": 328.21875,
+      "bottom": 458.625,
+      "height": 130.40625,
+      "underTabs": true,
+      "bookOverlap": false,
+      "cssOverlap": false,
+      "scroll": false,
+      "visibleControls": true
+    },
+    "popup": {
+      "x": 12,
+      "y": 464.625,
+      "width": 296,
+      "height": 85.375
+    },
+    "passed": true
+  },
+  {
+    "route": "Afty",
+    "width": 390,
+    "height": 900,
+    "geometry": {
+      "top": 420.21875,
+      "bottom": 550.625,
+      "height": 130.40625,
+      "underTabs": true,
+      "bookOverlap": false,
+      "cssOverlap": false,
+      "scroll": false,
+      "visibleControls": true
+    },
+    "popup": {
+      "x": 12,
+      "y": 556.625,
+      "width": 366,
+      "height": 325.375
+    },
+    "passed": true
+  },
+  {
+    "route": "Afty",
+    "width": 640,
+    "height": 360,
+    "geometry": {
+      "top": 48.625,
+      "bottom": 179.03125,
+      "height": 130.40625,
+      "underTabs": true,
+      "bookOverlap": false,
+      "cssOverlap": false,
+      "scroll": false,
+      "visibleControls": true
+    },
+    "popup": {
+      "x": 16,
+      "y": 185.03125,
+      "width": 608,
+      "height": 156.96875
+    },
+    "passed": true
+  },
+  {
+    "route": "Afty",
+    "width": 641,
+    "height": 900,
+    "geometry": {
+      "top": 469.421875,
+      "bottom": 548.828125,
+      "height": 79.40625,
+      "underTabs": true,
+      "bookOverlap": false,
+      "cssOverlap": false,
+      "scroll": false,
+      "visibleControls": true
+    },
+    "popup": {
+      "x": 209,
+      "y": 554.828125,
+      "width": 416,
+      "height": 327.171875
+    },
+    "passed": true
+  },
+  {
+    "route": "Afty",
+    "width": 1024,
+    "height": 900,
+    "geometry": {
+      "top": 246.609375,
+      "bottom": 326.015625,
+      "height": 79.40625,
+      "underTabs": true,
+      "bookOverlap": false,
+      "cssOverlap": false,
+      "scroll": false,
+      "visibleControls": true
+    },
+    "popup": {
+      "x": 592,
+      "y": 332.015625,
+      "width": 416,
+      "height": 384
+    },
+    "passed": true
+  },
+  {
+    "route": "Afty",
+    "width": 1440,
+    "height": 900,
+    "geometry": {
+      "top": 275.78125,
+      "bottom": 365.71875,
+      "height": 89.9375,
+      "underTabs": true,
+      "bookOverlap": false,
+      "cssOverlap": false,
+      "scroll": false,
+      "visibleControls": true
+    },
+    "popup": {
+      "x": 954,
+      "y": 372.46875,
+      "width": 468,
+      "height": 432
+    },
+    "passed": true
+  },
+  {
+    "route": "Player",
+    "width": 320,
+    "height": 568,
+    "geometry": {
+      "top": 295.015625,
+      "bottom": 425.421875,
+      "height": 130.40625,
+      "underTabs": true,
+      "bookOverlap": false,
+      "cssOverlap": false,
+      "scroll": false,
+      "visibleControls": true
+    },
+    "popup": {
+      "x": 12,
+      "y": 431.421875,
+      "width": 296,
+      "height": 118.578125
+    },
+    "passed": true
+  },
+  {
+    "route": "Player",
+    "width": 390,
+    "height": 900,
+    "geometry": {
+      "top": 387.015625,
+      "bottom": 517.421875,
+      "height": 130.40625,
+      "underTabs": true,
+      "bookOverlap": false,
+      "cssOverlap": false,
+      "scroll": false,
+      "visibleControls": true
+    },
+    "popup": {
+      "x": 12,
+      "y": 523.421875,
+      "width": 366,
+      "height": 358.578125
+    },
+    "passed": true
+  },
+  {
+    "route": "Player",
+    "width": 640,
+    "height": 360,
+    "geometry": {
+      "top": 49.21875,
+      "bottom": 179.625,
+      "height": 130.40625,
+      "underTabs": true,
+      "bookOverlap": false,
+      "cssOverlap": false,
+      "scroll": false,
+      "visibleControls": true
+    },
+    "popup": {
+      "x": 16,
+      "y": 185.625,
+      "width": 608,
+      "height": 156.375
+    },
+    "passed": true
+  },
+  {
+    "route": "Player",
+    "width": 641,
+    "height": 900,
+    "geometry": {
+      "top": 436.21875,
+      "bottom": 515.625,
+      "height": 79.40625,
+      "underTabs": true,
+      "bookOverlap": false,
+      "cssOverlap": false,
+      "scroll": false,
+      "visibleControls": true
+    },
+    "popup": {
+      "x": 209,
+      "y": 521.625,
+      "width": 416,
+      "height": 360.375
+    },
+    "passed": true
+  },
+  {
+    "route": "Player",
+    "width": 1024,
+    "height": 900,
+    "geometry": {
+      "top": 246.609375,
+      "bottom": 326.015625,
+      "height": 79.40625,
+      "underTabs": true,
+      "bookOverlap": false,
+      "cssOverlap": false,
+      "scroll": false,
+      "visibleControls": true
+    },
+    "popup": {
+      "x": 592,
+      "y": 332.015625,
+      "width": 416,
+      "height": 384
+    },
+    "passed": true
+  },
+  {
+    "route": "Player",
+    "width": 1440,
+    "height": 900,
+    "geometry": {
+      "top": 275.78125,
+      "bottom": 365.71875,
+      "height": 89.9375,
+      "underTabs": true,
+      "bookOverlap": false,
+      "cssOverlap": false,
+      "scroll": false,
+      "visibleControls": true
+    },
+    "popup": {
+      "x": 954,
+      "y": 372.46875,
+      "width": 468,
+      "height": 432
+    },
+    "passed": true
+  }
+]

@@ -245,10 +245,9 @@ O encantamento **Isolante de escudo** foi removido na mesma decisão de 2026-08-
 jogador** em 2026-08-31. Entrada do catálogo com `sistema: "player"`, e a lista que a tela oferece
 vem de `encantamentosDe(tipo, sistema)`, nunca do `ENCANTAMENTOS_POR_TIPO` cru.
 
-⚠ **Ele está sem `efeitos`, e isso é consistente e não esquecimento.** Não existe canal de RD **por
-tipo de dano** no motor. Os dois irmãos dele no uniforme (**Isolante** e **Resiliente**) estão na
-mesma situação desde julho, e os três precisam da mesma peça. Há assert prendendo os três juntos, em
-`asserts/t-uniforme-escudo.mjs`, para que ligar um sozinho falhe.
+Desde 2026-10-05, os dois **Isolante** e o **Resiliente** emitem `rdTipo`.
+A escolha pertence à ferramenta e aparece em Equipamentos. Veja a revisão dos 27 encantamentos
+abaixo, incluindo contagem das escolhas repetidas do Isolante de Escudo.
 
 ---
 
@@ -258,7 +257,7 @@ Transcritas em 2026-07-22. Qualquer **arma, escudo ou uniforme** do catálogo co
 Ferramenta Amaldiçoada. Isso acrescenta à entrada do inventário um campo opcional:
 
 ```
-fa: { grau, encantamentos: [ids], habilidadeUnica: "" }
+fa: { grau, encantamentos: [ids], encantamentoTipos: { [encId]: [tipos] }, habilidadeUnica: "" }
 ```
 
 **Faixas contam como arma** para este fim (o próprio livro autoriza), então também podem virar
@@ -371,8 +370,9 @@ Dois campos são só deste arquivo e não chegam ao Motor:
   Destreza deste item é reduzida).
 
 A DSL do item ganhou `custo` e `penalidade`, além do `grau` que já tinha.
+O Isolante de Escudo também lê `rd_escudo`, a RD deste item com grau e Reforçado.
 
-**Os 17 encantamentos ligados**, de 52:
+**Efeitos passivos de encantamentos no Motor:**
 
 | Encantamento | Onde | Como |
 |---|---|---|
@@ -386,29 +386,28 @@ A DSL do item ganhou `custo` e `penalidade`, além do `grau` que já tinha.
 | Potente | arma | `dadosDano` 1, nesta arma |
 | Precisa | arma | `acertoArma` 2 |
 | Polido | escudo | `penalidadeEquip` 2 |
-| Reforçado | escudo | `rdGeral` 2 |
+| Reforçado | escudo | pseudo-canal `rdEscudo` 2, resolvido por sistema |
+| Isolante | escudo | `rdTipo` = RD deste escudo para cada elemental escolhido; só Player |
 | Ajustado | uniforme | `penalidadeEquip` 1, mais Furtividade 2 se a penalidade base for zero |
 | Blindado | uniforme | `defesa` 2 |
 | Furtivo | uniforme | `bonusPericia` furtividade = custo do uniforme |
 | Marcial | uniforme | `bonusManobra` 2, alvo `manobra:todas`. Só executar |
 | Material Pesado | uniforme | `bonusTR` fortitude 2 |
+| Isolante | uniforme | `rdTipo` 5 em Queimante e Congelante |
+| Resiliente | uniforme | `rdTipo` 5 no tipo permitido escolhido, ou 10 no Grau Especial |
 | Propulsor | uniforme | `movimento` 3 |
 
-⚠ **Reforçado é `rdGeral`, e não `rdFisico`** (autor, 2026-08-01), mesmo o texto dizendo "contra dano
-físico": a RD do escudo inteira virou Geral, e o adicional acompanha.
+**Reforçado acompanha o sistema do escudo:** RD Geral na criatura e RD Física no jogador.
+O pseudo-canal `rdEscudo` é convertido por `canalRdEscudo(sistema)`.
 
 **O Ajustado num único efeito declarativo.** As duas metades da regra ("a penalidade é reduzida em 1,
 caso possua" e "se já possuir 0 de penalidade, +2 em Furtividade") viram
 `2 * (penalidade == 0)` na expressão do bônus, e um efeito que resolve em zero não vira linha. Foi
 isso que evitou um caso especial em código.
 
-**Os 35 que seguem como texto** caem em cinco bloqueios: efeito por gatilho ou reação (Amplificadora,
-Harmonizada, Drenadora, Destruidora, Reluzente, Esponja, Repulsor, Ricochete, Revestido com
-Espinhos, Escaldante, Distorcivo, Impulso, Estimulante), traço de arma que a linha de dano não usa
-(Afiada, Defensora, Disco, Espinhoso, Destruidor, Avassalador), alcance e manejo (Cano Alongado,
-Longa, Retorno, Compartimento, Armazenadora, Intangível, Aeronauta), efeito em OUTRA criatura
-(Bloqueador, Expansão de Escudo), e **RD ou dano por tipo elemental** (Elemental, Sintonizada,
-Isolante de uniforme, Resiliente), que esperam a lista de tipos de dano do autor.
+Os encantamentos sem efeito passivo dependem de gatilhos, reações, ataques próprios ou de
+outras criaturas. A revisão abaixo discrimina os 16 de Uniforme e Escudo que ainda conservam
+somente o texto do livro. RD por tipo e escolha no item já funcionam.
 
 ⚠ Uma pendência real: **Complementar** dá "+2 na sua CD de Especialização e de Estilo Marcial". O
 Afty tem UMA CD só (a Amaldiçoada, que a Canalizadora usa). Se as duas forem a mesma coisa, é uma
@@ -419,10 +418,66 @@ texto porque aplicá-lo sempre seria errado: o bônus é para um uso específico
 
 Um efeito só entra se o encantamento **atende ao pré-requisito** (senão fica inerte, além do aviso).
 
-**Removido: o encantamento Isolante de ESCUDO** (autor, 2026-08-01). Ele dizia "a redução de dano do
-escudo passa também a ser aplicada a um tipo de dano elemental à sua escolha", e virou letra morta
-quando a RD do escudo passou a ser RD Geral, que já cobre todo tipo menos alma. O **Isolante de
-uniforme é outro encantamento**, com outro texto, e continua existindo.
+**Isolante de Escudo:** disponível e automatizado somente no Player, onde estende a RD Física
+a tipos elementais. No Afty a RD do escudo já é Geral, e esse encantamento continua fora da lista.
+
+### Revisão dos encantamentos de Uniforme e Escudo (2026-10-05)
+
+As duas listas têm 27 encantamentos: 16 de Uniforme e 11 de Escudo. Os 11 efeitos passivos
+abaixo chegam ao Motor enquanto o item está equipado. Os demais 16 conservam a regra do livro
+no catálogo e dependem de controles de combate ou de outras criaturas.
+
+| Encantamento | Item | Estado atual |
+|---|---|---|
+| Ajustado | Uniforme | Reduz a penalidade em 1; concede +2 Furtividade se a penalidade base é zero |
+| Blindado | Uniforme | +2 Defesa |
+| Furtivo | Uniforme | Furtividade aumenta pelo custo do uniforme |
+| Isolante | Uniforme | RD 5 contra Queimante e Congelante |
+| Marcial | Uniforme | +2 para realizar as quatro manobras, sem bônus ao resistir |
+| Material Pesado | Uniforme | +2 Fortitude, somente com Revestimento Médio ou Robusto |
+| Propulsor | Uniforme | +3 metros de Deslocamento |
+| Resiliente | Uniforme | RD 5 contra o tipo escolhido; RD 10 no Grau Especial real |
+| Isolante | Escudo | Somente Player; estende base, grau e Reforçado aos tipos elementais escolhidos |
+| Polido | Escudo | Reduz a penalidade em 2, com piso zero |
+| Reforçado | Escudo | +2 na RD do escudo, Física no Player e Geral no Afty |
+
+**Escolhas por item.** O campo opcional `fa.encantamentoTipos` guarda listas por id de encantamento:
+`{ enc_unif_resiliente: ["queimante"], enc_esc_isolante: ["queimante", "congelante"] }`.
+O Resiliente aceita uma escolha. Veda a categoria Física, Alma e Energético; Energia Reversa
+continua permitida, pois é outro tipo. As opções usam as categorias vivas, incluindo Addons.
+O aumento no Grau Especial lê o grau real da ferramenta, como a variável `grau` da DSL do item.
+
+O Isolante de Escudo continua com um id em `fa.encantamentos`, mas cada tipo selecionado conta
+uma vaga. Posição sem resposta também conta e gera aviso. Tipos inválidos não concedem RD;
+repetir um tipo gera aviso e aplica a extensão uma vez. Cada escudo estende somente sua própria RD,
+sem copiar a de outro escudo, a RD Geral, a RD Física do portador ou RD digitada em Resistências.
+A variável interna `rd_escudo` resolve essa parcela antes da emissão dos efeitos.
+
+A escolha aparece na linha do encantamento em Equipamentos. Resistências mostra a soma no Total
+do tipo, com o nome do equipamento e do encantamento no detalhamento. O campo RD continua sendo
+a parcela manual. Guardar o item encerra seus efeitos. Sem escolha em uma ficha antiga, aparece
+o aviso e nenhum tipo é presumido. A escolha é conservada ao salvar e reabrir.
+
+| Encantamentos que ainda são texto | Item | Controle que falta |
+|---|---|---|
+| Aeronauta | Uniforme | Reação para planar e queda por turno |
+| Distorcivo | Uniforme | Carga, uso por turno e deslocamento instantâneo |
+| Escaldante | Uniforme | Criatura agarrada, TR e perda de vida por turno |
+| Estimulante | Uniforme | Reação, carga e vantagem no TR escolhido |
+| Impulso | Uniforme | Carga, trajeto, distância percorrida e TR dos alvos |
+| Repulsor | Uniforme | Reação, carga, TR dos alvos e empurrão |
+| Revestido com Espinhos | Uniforme | Ataque adjacente, TR e dano ao agressor |
+| Ricochete | Uniforme | Chance de falha contra ataque a distância e aumento temporário por carga |
+| Avassalador, Destruidor e Espinhoso | Escudo | Ataque com escudo e níveis do dano |
+| Bloqueador | Escudo | Meia Cobertura para outra criatura |
+| Disco | Escudo | Ataque arremessado com alcance 6/18 |
+| Esponja | Escudo | Reação ao dano de queda ou estrutura |
+| Expansão de Escudo | Escudo | Ação bônus e benefício em uma segunda criatura |
+| Intangível | Escudo | Ocupação da mão para requisitos de habilidades |
+
+Os pré-requisitos de Impulso, Repulsor, Avassalador, Destruidor e Disco continuam verificáveis
+no editor. Aviso de falta de requisito ou de vagas não apaga o equipamento.
+A fila de automações de combate está em `docs/a-fazer.md`.
 
 **Efeitos de perícia de ITEM também foram ligados** na mesma passada, pelo mesmo cano: Sob Medida
 (+2 Acrobacia e Furtividade) e Amuleto do Vislumbre (+2 Percepção). Sobraram as duas Pulseiras
@@ -467,9 +522,9 @@ dentro dele.
 ### O que o motor NÃO aplica
 
 - **Bônus de Arma** (dano de arma não é stat da ficha, igual às armas comuns): só exibido no item.
-- **Encantamentos situacionais / de combate**, ou que dependem de stat que o Afty ainda não calcula
-  (Iniciativa, Acerto, manobras, TRs, Perícias, RD por tipo elemental): seguem só como texto na
-  descrição. São a maioria dos ~53 encantamentos.
+- **Encantamentos situacionais / de combate:** os 16 de Uniforme e Escudo relacionados na revisão
+  de 2026-10-05 ainda dependem dos controles indicados ali. Iniciativa, Acerto, manobras, TRs,
+  Perícias e RD por tipo já têm canais no Motor.
 
 ### Criação e Identificação (só referência, não modeladas)
 
@@ -590,10 +645,15 @@ vale para toda arma manejada.
 
 ### O que o item NÃO leva
 
-- **A jogada de ataque.** O básico rola sempre **Corpo a Corpo**, e por isso o seletor de Ataque
-  (Corpo a Corpo ou Amaldiçoado) **não aparece** nas três de pugilato. Ele aparecia e gravava o
-  campo sem mudar número nenhum. Se o Ataque Amaldiçoado tiver de valer para golpe desarmado, é
-  regra nova e o seletor não mora no card do item, porque o golpe básico existe sem item nenhum.
+- **A jogada de ataque.** Desde 2026-10-04 (autor), Corpo a Corpo ou Amaldiçoado é uma escolha
+  na linha do **Ataque Básico**, no card Dano da aba Habilidades do criador e na aba Ações da
+  Ficha Final e do Encontro. Vale nas fichas de Criatura e de Jogador, com Faixas, Manoplas,
+  Soco Inglês, armas criadas de Pugilato ou sem item. A escolha salva na ficha é `ataqueBasicoId`.
+  A sessão pode trocá-la sem alterar o criador e herda a ficha até a primeira troca.
+  Na Criatura, Amaldiçoado usa o atributo da jogada também no dano, conforme
+  `danoDoAcertoAmaldicoado`. No Jogador, muda o acerto e mantém o atributo físico no dano.
+  Grau, encantamentos e Fineza continuam vindo de um único item, e os efeitos por tipo de
+  jogada respondem à escolha. O Amaldiçoado soma Maestria uma vez só.
 - **A margem de crítico**, que é 20 fixa no básico. As três têm `critico: null` na tabela.
 - **O tipo de dano**, que o golpe desarmado não tem. Quem mira `tipo:im` não alcança o básico.
 
@@ -735,16 +795,13 @@ como a fonte "Armadura e Escudo". As Manobras herdam de graça pela Acrobacia, q
 7. ✅ **Sob Medida**: dá 1 de Defesa, quebrando a regra do custo (autor, 2026-08-01).
 8. ⬜ **Complementar** (encantamento de arma) dá "+2 na CD de Especialização e de Estilo Marcial". O
    Afty tem uma CD só. Se for a mesma, é uma linha de `cd`.
-9. ⬜ **Tipos de dano elementais**: `TIPOS_DANO` tem só os quatro das armas (Cortante, Impacto,
-   Perfurante, Queimante). O autor vai mandar a lista completa, que é o que destrava a RD por tipo
-   de dano prometida na sessão de 2026-07-30.
+9. ✅ **Tipos de dano:** os quinze tipos e as quatro categorias do livro estão disponíveis desde
+   2026-09-02. Resiliente e os dois Isolante foram ligados em 2026-10-05, com escolhas por item.
 
 ### Do sistema
-- **Ferramentas Amaldiçoadas** foram feitas em 2026-07-22 (ver a seção própria acima), com Motor de
-  Automação: os 4 encantamentos com efeito de stat (Canalizadora, Reforçado, Blindado, Propulsor) e a
-  Habilidade Única já entram no motor quando equipados. Os demais são situacionais/de combate e seguem
-  como texto. Se o Afty passar a calcular Iniciativa, Acerto, manobras, TRs ou RD por elemento, dá para
-  ligar mais encantamentos adicionando `efeitos: [{canal, expr}]` a eles.
+- **Ferramentas Amaldiçoadas:** os efeitos passivos e as Habilidades Únicas entram no Motor
+  enquanto equipadas. A revisão de 2026-10-05 registra os 11 encantamentos de Uniforme e Escudo
+  com efeitos ligados e os 16 que ainda dependem de controles de combate.
 - **RD Física** existe hoje só como número devolvido pelo motor (escudos comuns + grau da Ferramenta +
   Reforçado). O sistema de RD Física em si ainda não foi definido.
 - **Efeitos inertes**, marcados com `aplicado: false` no catálogo, esperando sistema que não existe:
@@ -756,3 +813,29 @@ como a fonte "Armadura e Escudo". As Manobras herdam de graça pela Acrobacia, q
   (espaços adicionais iguais ao BT), *Ajustes em Equipamento*, e o grupo **Pugilato** citado por um
   Talento. Nenhuma foi ligada ainda, porque continua valendo o bloqueio raiz (não existe canal de
   efeito do lado da criatura).
+
+
+## Propriedades de arma na sessão (2026-10-04)
+
+**Enérgica fica visível na linha de Dano**, sem abrir uma seção: o campo **Golpe no turno** escolhe o ataque cujo dano está sendo mostrado. Use 1 para o primeiro golpe, 2 para o segundo, 3 para o terceiro e assim por diante. A fórmula e o bônus Enérgica mudam junto. O campo aparece somente nas linhas que têm a propriedade.
+
+No **criador**, o campo fica em **Habilidades > Dano**. A escolha é uma simulação local: não grava golpes na ficha ou na sessão e volta a 1 ao reabrir o criador. Na **Ficha Final** e no **painel de Encontros**, fica em **Ações > Dano** e acompanha a sequência de Acerto e Dano da sessão. Para corrigir um golpe realizado fora do aplicativo, escolha a posição do próximo golpe. Novo turno volta ao primeiro.
+
+As outras propriedades situacionais continuam em **Propriedades em combate** na linha da arma. Os controles usam a sessão, sem alterar a arma salva no criador. As duas fichas, Criatura e Jogador, usam o mesmo fluxo.
+
+- **Enérgica:** registra ataques por exemplar equipado. Acerto e Dano do mesmo ataque contam uma vez; um ataque que errou também conta. **Decisão do autor em 2026-10-05:** o segundo ataque recebe um bônus fixo igual à quantidade de **todos os dados de Durante Ataque**, incluindo Auxiliares, Aura, Canalizar, Ataque Concentrado e outras fontes. Dados de Após Ataque e valores fixos não entram nessa quantidade. Cada ataque seguinte acrescenta +1 ao bônus. **Confirmação do autor:** a contagem usa todos os dados que serão efetivamente rolados, **já dobrados no crítico**, incluindo os exclusivos desse modo. Durante Ataque não critável conta uma vez. Raio Negro usa a mesma quantidade de dados rolados do crítico, sem aplicar 1,5 à contagem. O bônus resultante soma uma vez como dano fixo. Por exemplo, 2d6 da arma mais 3d8 de Durante Ataque dão +5 no segundo golpe e +6 no terceiro. Ele aparece na fórmula, nas fontes e na rolagem, sem multiplicar no crítico ou no Raio Negro. É possível escolher o golpe no turno para corrigir ataques feitos fora do aplicativo. O item de Pugilato que define o Ataque Básico e a Anatomia Arma Natural também usam o contador.
+- **Turnos:** o botão Novo turno inicia o próximo turno próprio. Nos Encontros, Próximo Turno encerra Enérgica e Oscilante do ator anterior, e inicia o turno do próximo. Aparar só termina no início do próximo turno próprio. A virada global de rodada não encerra Aparar dos demais combatentes. Recarga e emperramento permanecem ao trocar de turno.
+- **Aparar:** a ação de movimento liga o bônus de +2 na Defesa, exige treino na arma e dura até o próximo turno próprio. Defensora concede Aparar quando faltar ou melhora o bônus existente para +3. Posições simultâneas usam o maior bônus.
+- **Apunhaladora:** o controle Alvo desprevenido acrescenta o Bônus de Treinamento ao dano, como bônus fixo.
+- **Oscilante:** desastre ou falha contra a Defesa informada liga +2 para a próxima jogada de ataque antes do fim do turno. Sem a Defesa, os botões Errou e Acertou informam o resultado da mesa. O bônus vale também para outra arma e para as jogadas da aba Perícias, e é consumido pelo próximo ataque. Alterar um ataque anterior não recupera um bônus já consumido.
+- **Ampla:** exige segundo alvo adjacente e Defesa estritamente menor que o resultado do acerto; registra metade do dano realizado, arredondada para baixo, uma vez por rodada. **Decisão do autor:** pode ser usada em qualquer ataque, sem exigir crítico. O dano fica no histórico para aplicação ao segundo alvo.
+- **Recarga e Emperrar:** Acerto gasta uma munição; Dano do mesmo ataque não gasta outra. Sem munição, o próximo ataque fica bloqueado até Recarregar (ação bônus). Um 1 natural emperra a arma; Desemperrar exige ação comum. Recarregar não remove o emperramento.
+- **Pesada e Estabilidade:** requisitos usam Força e Destreza efetivas. Abaixo do mínimo, a jogada recebe desvantagem. **Decisão do autor:** vantagem e desvantagem se anulam; duas fontes de desvantagem continuam sendo uma rolagem com desvantagem.
+- **Modular:** escolhe entre o tipo original e o alternativo permitido. A escolha entra antes dos cálculos por tipo de dano, incluindo os talentos de especialização.
+- **Fineza:** a permissão vale no acerto e no dano da própria arma. A marca geral do teste de categoria não concede Fineza a outras armas. Trocas manuais de atributo e Técnicas de Combate mantêm a precedência.
+- **Fatal e Mortal em armas próprias:** aceitam tamanho simples como d10, 1d10 ou 10, normalizado para 1d10. Uma expressão composta, como 2d12 ou 1d12 + 1d4, não é um tamanho de dado e gera aviso visível, sem substituir silenciosamente por d6.
+- **Afiada:** concede Fatal d8 ou aumenta o tamanho já existente em um nível. **Decisão do autor:** Fatal d12 permanece como teto.
+
+Duas Mãos, Dupla e Leve continuam permissões de manejo; não geram ataques adicionais por conta própria. Os controles de ação registram a escolha da mesa, sem criar um orçamento automático de ações.
+
+A implementação fica em `afty-propriedades-armas.js`; os regressivos em `asserts/t-propriedades-armas.mjs` cobrem sessão persistida, exemplares independentes, rolagens, crítico, Raio Negro e turnos de Encontros.

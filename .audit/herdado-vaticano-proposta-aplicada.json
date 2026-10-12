@@ -1,0 +1,443 @@
+{
+  "versao": 1,
+  "shaInventario": "2dfb686dc52810a2dfd44f9d4cad1676a40ac405f8d3bc615e491a3279d000ae",
+  "shaVivo": "a8465f81ab982c46effb49dc2897d74276981396a0f4f9240d30157595d14815",
+  "shaEscopo": "ae08f2e75080c476bbecf12e85441722aae9fcd39dde39f7357740c38d34d3cd",
+  "adicionados": [
+    {
+      "chave": "addon::herdado-vaticano.json::@pacote",
+      "item": {
+        "chave": "addon::herdado-vaticano.json::@pacote",
+        "id": "herdado-vaticano",
+        "nome": "Herdado: Vaticano",
+        "arquivo": "addons/herdado-vaticano.json",
+        "proprietario": null,
+        "tipo": "pacote",
+        "addon": "herdado-vaticano.json",
+        "idLocal": "herdado-vaticano",
+        "hashDado": "606c63ac51ca14db3c6be2ace5bfc0b49c93b984c8de41896ee0172055da6621"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::@pacote::acrescenta",
+      "item": {
+        "chave": "addon::herdado-vaticano.json::@pacote::acrescenta",
+        "id": "acrescenta",
+        "nome": "acrescenta",
+        "arquivo": "addons/herdado-vaticano.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "herdado-vaticano.json",
+        "pai": "addon::herdado-vaticano.json::@pacote",
+        "hashDado": "9ddf1c8f6ae3db6124e8dad8fb606207cf13dd392c8fdd727a08124b02afd1f4"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::@pacote::descricao",
+      "item": {
+        "chave": "addon::herdado-vaticano.json::@pacote::descricao",
+        "id": "descricao",
+        "nome": "descricao",
+        "arquivo": "addons/herdado-vaticano.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "herdado-vaticano.json",
+        "pai": "addon::herdado-vaticano.json::@pacote",
+        "hashDado": "ec35aacdc4331e55f9e2a4fd986e21ab55a41d48d0c216f717447acaf4de8141"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::@pacote::id",
+      "item": {
+        "chave": "addon::herdado-vaticano.json::@pacote::id",
+        "id": "id",
+        "nome": "id",
+        "arquivo": "addons/herdado-vaticano.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "herdado-vaticano.json",
+        "pai": "addon::herdado-vaticano.json::@pacote",
+        "hashDado": "ab9da524a8be4c4cd4477bd4bce6b22e6f4b702d5b00144f034e6bd39bd78aa5"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::@pacote::nome",
+      "item": {
+        "chave": "addon::herdado-vaticano.json::@pacote::nome",
+        "id": "nome",
+        "nome": "nome",
+        "arquivo": "addons/herdado-vaticano.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "herdado-vaticano.json",
+        "pai": "addon::herdado-vaticano.json::@pacote",
+        "hashDado": "0a1908cc54903bbc90e5c6f8014f03f9e1173773fa290e095cca6ae9a55e4937"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::@pacote::paraRaw",
+      "item": {
+        "chave": "addon::herdado-vaticano.json::@pacote::paraRaw",
+        "id": "paraRaw",
+        "nome": "paraRaw",
+        "arquivo": "addons/herdado-vaticano.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "herdado-vaticano.json",
+        "pai": "addon::herdado-vaticano.json::@pacote",
+        "hashDado": "0289ece8033b573da3841cd5eea4bc968504b022915c4bb5174cab838f4f7c02"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::@pacote::versao",
+      "item": {
+        "chave": "addon::herdado-vaticano.json::@pacote::versao",
+        "id": "versao",
+        "nome": "versao",
+        "arquivo": "addons/herdado-vaticano.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "herdado-vaticano.json",
+        "pai": "addon::herdado-vaticano.json::@pacote",
+        "hashDado": "39fe4a40977d0585fd5704359e3685b0ada5cf5ee061e5d97385601d120cd0ec"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano",
+      "item": {
+        "chave": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano",
+        "id": "cla_vaticano",
+        "nome": "Vaticano",
+        "arquivo": "addons/herdado-vaticano.json",
+        "proprietario": null,
+        "tipo": "conteúdo de addon",
+        "addon": "herdado-vaticano.json",
+        "familia": "clas",
+        "operacao": "acrescenta",
+        "idLocal": "cla_vaticano",
+        "hashDado": "81ec910009ea958cab3e4c8e73d3ee01699f49767ed1bd969d83634a21d85d57"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::caracteristicas",
+      "item": {
+        "chave": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::caracteristicas",
+        "id": "caracteristicas",
+        "nome": "caracteristicas",
+        "arquivo": "addons/herdado-vaticano.json",
+        "pai": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano",
+        "caminho": "caracteristicas",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "herdado-vaticano.json",
+        "hashDado": "891acc1f79fc5668dc5c1a3874807cdff79e40883912c8c6c202e626c31d9cc2"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::caracteristicas/aprimorar_cura",
+      "item": {
+        "chave": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::caracteristicas/aprimorar_cura",
+        "id": "caracteristicas/aprimorar_cura",
+        "nome": "Aprimorar Cura",
+        "arquivo": "addons/herdado-vaticano.json",
+        "pai": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano",
+        "caminho": "caracteristicas/aprimorar_cura",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "herdado-vaticano.json",
+        "idLocal": "aprimorar_cura",
+        "hashDado": "11509388e1efaec74803857eaec637e5c088f35a3f832312cb9ff1c2da0f9284"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::caracteristicas/bonus_atributo",
+      "item": {
+        "chave": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::caracteristicas/bonus_atributo",
+        "id": "caracteristicas/bonus_atributo",
+        "nome": "Bônus em Atributo",
+        "arquivo": "addons/herdado-vaticano.json",
+        "pai": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano",
+        "caminho": "caracteristicas/bonus_atributo",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "herdado-vaticano.json",
+        "idLocal": "bonus_atributo",
+        "hashDado": "475a222a3ad153bc922aab6717f0abb873f67ecb9a9335b1beeca484fb3be6bb"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::caracteristicas/bonus_atributo/bonus",
+      "item": {
+        "chave": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::caracteristicas/bonus_atributo/bonus",
+        "id": "caracteristicas/bonus_atributo/bonus",
+        "nome": "caracteristicas/bonus_atributo/bonus",
+        "arquivo": "addons/herdado-vaticano.json",
+        "pai": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano",
+        "caminho": "caracteristicas/bonus_atributo/bonus",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "herdado-vaticano.json",
+        "hashDado": "b1de2278ee2077c8aeb98688b3a507b8eb9716b508fbfee08f4f9f9d761e0c90"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::caracteristicas/treinamentos_cla",
+      "item": {
+        "chave": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::caracteristicas/treinamentos_cla",
+        "id": "caracteristicas/treinamentos_cla",
+        "nome": "Treinamentos de Clã",
+        "arquivo": "addons/herdado-vaticano.json",
+        "pai": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano",
+        "caminho": "caracteristicas/treinamentos_cla",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "herdado-vaticano.json",
+        "idLocal": "treinamentos_cla",
+        "hashDado": "ef27f5c9b8d2a235efc95344d61cdb20b7de6ef0747943fac5ea6591b7deb936"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::efeitos",
+      "item": {
+        "chave": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::efeitos",
+        "id": "efeitos",
+        "nome": "efeitos",
+        "arquivo": "addons/herdado-vaticano.json",
+        "pai": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano",
+        "caminho": "efeitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "herdado-vaticano.json",
+        "hashDado": "970908e727aada0333d5662f7c5defa8ddccb7e9bc2267c8cc57d95ae79d2b05"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::efeitos/@0",
+      "item": {
+        "chave": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::efeitos/@0",
+        "id": "efeitos/@0",
+        "nome": "Treinamentos de Clã",
+        "arquivo": "addons/herdado-vaticano.json",
+        "pai": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano",
+        "caminho": "efeitos/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "herdado-vaticano.json",
+        "hashDado": "e772cf629b952cbc650e2c33f17015452e4813f335c6fd9ebf736deae935b0cc"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::efeitos/@1",
+      "item": {
+        "chave": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::efeitos/@1",
+        "id": "efeitos/@1",
+        "nome": "Treinamentos de Clã",
+        "arquivo": "addons/herdado-vaticano.json",
+        "pai": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano",
+        "caminho": "efeitos/@1",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "herdado-vaticano.json",
+        "hashDado": "e481a1da4b80ad1e0321ee2d7a0d7d5987ab71895bcded8144459cd0ed39a053"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::efeitos/@2",
+      "item": {
+        "chave": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::efeitos/@2",
+        "id": "efeitos/@2",
+        "nome": "Aprimorar Cura",
+        "arquivo": "addons/herdado-vaticano.json",
+        "pai": "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano",
+        "caminho": "efeitos/@2",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "herdado-vaticano.json",
+        "hashDado": "25ec745e52dddda971f4b3ff6ba3528ba359d57021f9233de2728ab0c6186019"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita",
+      "item": {
+        "chave": "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita",
+        "id": "tal_cura_perfeita",
+        "nome": "Cura Perfeita",
+        "arquivo": "addons/herdado-vaticano.json",
+        "proprietario": null,
+        "tipo": "conteúdo de addon",
+        "addon": "herdado-vaticano.json",
+        "familia": "talentos",
+        "operacao": "acrescenta",
+        "idLocal": "tal_cura_perfeita",
+        "hashDado": "c78d491d1e2397d50321a0479fba07227e0b506db3579d52d44c6650240da313"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita::efeitos",
+      "item": {
+        "chave": "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita::efeitos",
+        "id": "efeitos",
+        "nome": "efeitos",
+        "arquivo": "addons/herdado-vaticano.json",
+        "pai": "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita",
+        "caminho": "efeitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "herdado-vaticano.json",
+        "hashDado": "9a4079448b2dac71f60924524e1cba7c62d589cab22ae732607f56e1e6af4804"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita::efeitos/@0",
+      "item": {
+        "chave": "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita::efeitos/@0",
+        "id": "efeitos/@0",
+        "nome": "Cura Perfeita",
+        "arquivo": "addons/herdado-vaticano.json",
+        "pai": "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita",
+        "caminho": "efeitos/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "herdado-vaticano.json",
+        "hashDado": "d92dec841e7f90c37566c58ea330962b0c0781beecbf3b6f301bb54f4621e1f6"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita::efeitos/@1",
+      "item": {
+        "chave": "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita::efeitos/@1",
+        "id": "efeitos/@1",
+        "nome": "Cura Perfeita",
+        "arquivo": "addons/herdado-vaticano.json",
+        "pai": "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita",
+        "caminho": "efeitos/@1",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "herdado-vaticano.json",
+        "hashDado": "cba38de7325108a8f18c187ad2fc6402b6f7adc20b0215753fb2d838108339fc"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita::requisitos",
+      "item": {
+        "chave": "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita::requisitos",
+        "id": "requisitos",
+        "nome": "requisitos",
+        "arquivo": "addons/herdado-vaticano.json",
+        "pai": "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita",
+        "caminho": "requisitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "herdado-vaticano.json",
+        "hashDado": "a5175a84c5d0c66f51de78aefbc396ec6949228152420a9c5ab4c7408e364542"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita::requisitos/@2",
+      "item": {
+        "chave": "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita::requisitos/@2",
+        "id": "requisitos/@2",
+        "nome": "requisitos/@2",
+        "arquivo": "addons/herdado-vaticano.json",
+        "pai": "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita",
+        "caminho": "requisitos/@2",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "herdado-vaticano.json",
+        "hashDado": "b394ecaf382053da7b8282c898ecf812362ae9e4066bd2266fe3c00d9456cebb"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita::requisitos/cla_vaticano",
+      "item": {
+        "chave": "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita::requisitos/cla_vaticano",
+        "id": "requisitos/cla_vaticano",
+        "nome": "requisitos/cla_vaticano",
+        "arquivo": "addons/herdado-vaticano.json",
+        "pai": "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita",
+        "caminho": "requisitos/cla_vaticano",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "herdado-vaticano.json",
+        "idLocal": "cla_vaticano",
+        "hashDado": "153c8a270b243694ef4fc02d93044d4512924b9c1bd9afddec6a7eb9c53f6c26"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita::requisitos/herdado",
+      "item": {
+        "chave": "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita::requisitos/herdado",
+        "id": "requisitos/herdado",
+        "nome": "requisitos/herdado",
+        "arquivo": "addons/herdado-vaticano.json",
+        "pai": "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita",
+        "caminho": "requisitos/herdado",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "herdado-vaticano.json",
+        "idLocal": "herdado",
+        "hashDado": "d0381bad1d33a3f8b6c25f4ab4151e8acdcabc1770bd7e12a9b67e544d9eacbe"
+      },
+      "proprietarioSugerido": null
+    }
+  ],
+  "removidos": [],
+  "alterados": [],
+  "assinatura": "fe2cd0b972068215e1c77bae25155644f351cf677511f0170646178aec309a24",
+  "decisoes": {
+    "adicoes": {
+      "addon::herdado-vaticano.json::@pacote": "AD-52",
+      "addon::herdado-vaticano.json::@pacote::acrescenta": "AD-52",
+      "addon::herdado-vaticano.json::@pacote::descricao": "AD-52",
+      "addon::herdado-vaticano.json::@pacote::id": "AD-52",
+      "addon::herdado-vaticano.json::@pacote::nome": "AD-52",
+      "addon::herdado-vaticano.json::@pacote::paraRaw": "AD-52",
+      "addon::herdado-vaticano.json::@pacote::versao": "AD-52",
+      "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano": "AD-52",
+      "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::caracteristicas": "AD-52",
+      "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::caracteristicas/aprimorar_cura": "AD-52",
+      "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::caracteristicas/bonus_atributo": "AD-52",
+      "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::caracteristicas/bonus_atributo/bonus": "AD-52",
+      "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::caracteristicas/treinamentos_cla": "AD-52",
+      "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::efeitos": "AD-52",
+      "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::efeitos/@0": "AD-52",
+      "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::efeitos/@1": "AD-52",
+      "addon::herdado-vaticano.json::acrescenta.clas::cla_vaticano::efeitos/@2": "AD-52",
+      "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita": "AD-52",
+      "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita::efeitos": "AD-52",
+      "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita::efeitos/@0": "AD-52",
+      "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita::efeitos/@1": "AD-52",
+      "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita::requisitos": "AD-52",
+      "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita::requisitos/@2": "AD-52",
+      "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita::requisitos/cla_vaticano": "AD-52",
+      "addon::herdado-vaticano.json::acrescenta.talentos::tal_cura_perfeita::requisitos/herdado": "AD-52"
+    },
+    "remocoes": {},
+    "justificativaAtualizacao": "Pedido do autor em 2026-10-12: addon Herdado Vaticano. Registro restrito às 25 novas entradas, preservando conteúdo e estados anteriores. Teologia confirmada pelo autor como equivalente a Religião."
+  },
+  "errosColeta": []
+}

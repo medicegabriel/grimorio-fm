@@ -1,0 +1,2239 @@
+# Addons do Afty (plano)
+
+## Herdado: Vaticano (2026-10-12)
+
+Pacote [herdado-vaticano.json](../addons/herdado-vaticano.json): clã do Herdado
+com 3 pontos livres de atributo, Teologia (Religião, equivalência confirmada
+pelo autor) e Ocultismo treinados, e +1 por dado em todas as curas. Cura Perfeita
+requer Herdado: Vaticano e nível 8, concede 1 Nível de Energia Reversa e eleva
+o bônus total para +2 por dado. Usa somente canais existentes.
+Instalação e contrato em [afty-herdado-vaticano.md](afty-herdado-vaticano.md).
+
+Plano do sistema de **Addons**, a camada em que cada mesa acrescenta conteúdo próprio ao Grimório do
+Afty sem abrir o GitHub e sem virar regra de todo mundo. Escrito em 2026-08-20, antes de qualquer
+código. Leia junto com `afty-status.md` (estado do sistema), `automacao-dsl.md` (o DSL) e
+`afty-formulas-base.md` (as fórmulas).
+
+> O site serve o **raw** do sistema, e isso não muda. O Addon é uma camada declarada por cima:
+> sempre visível, sempre removível, e a ficha sabe dizer quais números vieram dela.
+
+---
+
+## ONDE ESTAMOS (conferido em 2026-09-13)
+
+**Fase 0 com três primitivas fechadas e fase 1 concluída.** O caminho inteiro do Addon funciona de
+ponta a ponta: colar o JSON, ligar na criatura, o número mudar na Ficha, desinstalar sem deixar
+resto. A primitiva de vínculo entre criaturas já foi decidida pelo autor e ainda aguarda implementação.
+
+| Primitiva | Estado | Onde |
+|---|---|---|
+| 8.1 `contar()` por marca | **Feita** | `afty-dsl.js` (novo), `marcasDeEntradas` em `afty-efeitos.js` |
+| 8.2 Canal `hpAtributo` | **Feita** | `afty-efeitos.js` e o PV do `afty-derive.js` |
+| 8.3 Concessão vinda da sessão | **Feita** | `afty-concessao.js`, Ficha Final e Encontro |
+| 8.3.1 Ciclo de Adaptação | **Feita** | `afty-adaptacao.js`, `ficha/PainelDeAdaptacao.jsx` |
+| Herança de Especialização | **Feita** | `herdaDe` em `afty-especializacoes.js` e `afty-habilidades.js` |
+| 8.4 Vínculo entre criaturas | **Pendente de implementação** | decisões do autor na seção 8.4 |
+
+⚠ **A herança nasceu em 2026-09-07, com o Especialista em Estilo**, e ela NÃO estava na fase 0: é
+mais um caso de "o addon bate no muro e o muro vira fila de trabalho". A variação de uma classe
+repetiria 65 habilidades do livro dentro do JSON, e cada errata passaria a ter dois donos. O verbo
+é `herdaDe`, e ele serve a qualquer mesa. Ver `afty-especialista-estilo.md`.
+
+⚠ **A ARMA TRANSFORMÁVEL entrou no mesmo dia, com o Azamaru** (`addons/azamaru.json`, doc em
+`afty-azamaru.md`). Ela é a sexta primitiva, e nasceu repetindo a lição do `hpAtributo` letra por
+letra: o verbo foi para o motor, os dois canais dele (`ignoraTodaRD` e `ignoraImunidade`)
+apareceram no seletor de TODO MUNDO, e só depois veio o `permite`. Vale registrar que a lição já
+estava escrita aqui e mesmo assim foi repetida.
+
+⚠ **Ela destravou DOIS bugs calados que valiam para toda Especialização de Addon**, ligada desde
+2026-08-20 e nunca escrita até ali: o `esc_<id>` de uma classe de addon era um nome que o tokenizer
+do DSL não aceita (namespace tem `-` e `:`), e o `VOCABULARIO_DSL` era uma fotografia do raw tirada
+no import, então nenhuma entrada de addon era declarada a zero. Os dois juntos faziam qualquer
+expressão que citasse conteúdo de addon cair no fallback, calada.
+
+**Fase 1 FECHADA**, enquanto a primitiva de vínculo aguarda implementação. O caminho inteiro está
+de pé e testado, de colar o JSON até o número mudar na Ficha, em **15 famílias**.
+
+| Peça da fase 1 | Estado | Onde |
+|---|---|---|
+| Registro de famílias | **Feita** | `afty-addons.js` (novo) |
+| Pacote, namespace e validação | **Feita** | `afty-addons.js` |
+| Reconstrução do mundo | **Feita** | `aplicarAddons`, sempre do zero |
+| Biblioteca (`fm_addons_afty_v1`) | **Feita** | `afty-addons-biblioteca.js` (novo) |
+| `creature.addons` | **Feita** | `afty-schema.js` |
+| Outros > Addons, colar JSON | **Feita** | `AftyTabAddons.jsx` |
+| Addons entrando antes da derivação | **Feita** | builder, Ficha e Encontro |
+| União para o Encontro misto | **Feita** | `unirAddons` |
+| Marca de "não raw" | **Feita** | chip no cabeçalho da Ficha |
+| Linha morta e marcada | **Feita** | `problemasDeAddon`, `derived.addonProblemas` |
+| **Famílias ligadas** | **17** | ver o quadro abaixo |
+
+### As 17 famílias
+
+| Família | Módulo | Estruturas que o religador refaz |
+|---|---|---|
+| `habilidades` | `afty-habilidades.js` | array, pool do Roubo de Habilidade, índice |
+| `talentos` | `afty-talentos.js` | array, índice |
+| `aptidoes` | `afty-aptidoes.js` | array, índice |
+| `especializacoes` | `afty-especializacoes.js` | array, índice |
+| `origens` | `afty-origens.js` | catálogo, **lista do seletor**, índice |
+| `treinamentos` | `afty-treinamentos.js` | array, índice |
+| `treinosEspeciais` | `afty-treinos-especiais.js` | array, índice |
+| `melhoriasSuperiores` | `afty-alto-nivel.js` | array, índice |
+| `lendarias` | `afty-alto-nivel.js` | array, índice |
+| `apices` | `afty-alto-nivel.js` | array, índice |
+| `tiposDano` | `afty-equipamentos.js` | objeto, **`TIPO_DANO_OK`** |
+| `armas` | `afty-equipamentos.js` | catálogo de armas reconstruído no mesmo array |
+| `condicoes` | `afty-feiticos.js` | mapa de listas de nomes |
+| `clas` | `afty-origens.js` | array **no lugar**, `CLA_BY_ID`, **cache das Verdadeiras Origens** |
+| `marcadores` | `afty-habilidades.js` | array no lugar |
+| `caracteristicasAmaldicoadas` | `afty-caracteristicas-amaldicoadas.js` | array no lugar (o catálogo nasce vazio no raw) |
+| `caracteristicasInvocacao` | `afty-habilidades.js` (catálogo em `afty-invocacoes-caracteristicas.js`) | array no lugar |
+
+⚠ **`caracteristicasInvocacao` entrou em 2026-09-30** (Etapa 5 da atualização de Invocações): o
+catálogo de Características de Invocação do *Adicionais* (Modificadoras, Intrínsecas e Auras). A
+entrada de addon segue o formato do raw (`escala` por grau e `canal`), e vira número pelo mesmo
+caminho. ⚠ Dado extra de dano só passa com `dadoExtra: true` (DA-10: a regra geral do Livro proíbe
+Característica de dar dado, e a exceção é por lista fechada); o validador reprova o resto.
+
+⚠ **A ORDEM DE RELIGAÇÃO PASSOU A SER DECLARADA em 2026-09-07** (`ordem` no `registrarFamilia`,
+padrão 50). Ela não importava enquanto nenhuma família lia outra, e a herança de Especialização
+quebrou isso: `habilidades` (ordem 20) lê o catálogo de `especializacoes` (ordem 10) já religado.
+Até ali a ordem era a de inserção no `Map`, que é a ordem de **import dos módulos**: um acidente do
+grafo de dependências. Quem depender de outra família declara a ordem e diz por quê.
+
+⚠ **Dois buracos do `caminhosDeId` apareceram no mesmo dia**, e os dois falhavam calados. O
+`prefixarEntrada` não sabia tratar **lista de string** (`incompativeisIds[]`): o caminho casava o
+`if`, o `sub` vazio derrubava a condição e a lista ficava crua. E a família `habilidades` não
+declarava `especializacaoId`, então um pacote que trouxesse a Especialização **e** as habilidades
+dela era reprovado inteiro, com "especializacaoId inexistente". O segundo nunca tinha aparecido
+porque o exemplo escrito aqui embaixo pendura as habilidades numa classe do LIVRO, e referência ao
+livro fica crua de propósito.
+
+⚠ **As duas últimas entraram em 2026-08-31, com a Estrela dos Zenin**, e as duas nasceram de um "não
+cabe": um clã do Herdado só entraria por `substitui` no campo `clas`, o que obrigaria o addon a
+carregar uma cópia congelada dos quatro clãs do livro; e "uma quantidade de Shikigamis igual a
+metade do seu Bônus de Treinamento" não tem canal, porque o que ela guarda é o QUAIS.
+
+⚠ **`clas` religa TRÊS estruturas**, e é a família com mais armadilha até hoje. O `splice` no array
+é obrigatório (a entrada `herdado` aponta para ele em `clas: CLAS_HERDADO`, e trocar a referência a
+deixaria com a lista velha), e o cache das Verdadeiras Origens tem de morrer junto pelo mesmo motivo
+que ele morre na família `origens`.
+
+⚠ **`marcadores` trouxe `requerId`.** Um marcador do raw pertence sempre a uma Habilidade de
+Controlador, e cobrar `habilidadeId` de um marcador de clã seria fingir uma habilidade que não
+existe. `requerId` é liberado por qualquer id que a ficha tenha: origem, clã, talento ou habilidade.
+
+Elas cobrem os **seis exemplos de homebrew que o autor deu**: Tipo de Dano, Condição,
+Especialização, Aptidão, Treino e mudar coisa existente (esta última só quando a fase 3 chegar).
+
+As duas últimas são **TABELA e não catálogo**: `TIPOS_DANO` é um objeto `chave -> rótulo` e
+`CONDICOES_CATALOGO` é um mapa de listas de NOMES. Elas provam que a mesma `registrarFamilia` serve
+para as duas formas, e cada uma trouxe uma lição:
+
+| Tabela | O que ela ensinou |
+|---|---|
+| Tipo de Dano | tinha uma **segunda** estrutura derivada, o `TIPO_DANO_OK`, que sanea arma custom. Sem religar o `Set`, um tipo de addon apareceria na lista e seria rejeitado calado ao gravar a arma |
+| Condição | é gravada no Feitiço **pelo NOME**, não por id. Então o namespace vale só para o `id` da entrada, e o nome entra limpo. Prefixar poria "minha-mesa:Congelado" na tela |
+
+⚠ Consequência assumida na Condição: **não há linha morta para ela.** Sem id na ficha não dá para
+saber que um nome veio de um addon que sumiu, e o Feitiço continua com o nome escrito. É honesto:
+condição é rótulo, e rótulo que perde a fonte continua sendo rótulo.
+
+Ligar uma família é a `registrarFamilia` do módulo dela. O trabalho real é o **religador** que
+conhece as estruturas derivadas daquele módulo, e ele é o único lugar onde dá para errar: esquecer
+uma estrutura dá bug calado. A maioria tem só o índice, e as três exceções estão marcadas em negrito
+no quadro acima.
+
+⚠ **Um achado ao ligar o Treino Especial:** o validador dele cobrava a convenção de id `tes_`, e
+o id de addon vem com o namespace na frente (`minha-mesa:tes_novo`), então ele reprovava TODO Treino
+Especial de addon. Era a única checagem de convenção de id do sistema, e agora ela olha o id sem o
+namespace. Vale a lição para as próximas: **validador que olha o FORMATO do id precisa de
+`partirId`**.
+
+| # | Fase | Estado | O que entrega | Seção |
+|---|---|---|---|---|
+| 0 | As 4 primitivas | **3 de 4** | o que falta no MOTOR para os casos reais do autor caberem | 8 |
+| 1 | Acrescentar por JSON | **Feita** (15 famílias) | registro, namespace, addon dentro da criatura, marca, linha morta | 3 a 7, 9 |
+| 2 | Oficina | Condicional | a tela de autoria, para quem não escreve JSON | 11 |
+| 3 | Remendar e desligar | Condicional | mexer no raw | 11 |
+| 4 | Tabelas | Condicional | Graus novos, Patamares novos, coeficientes | 11 |
+| 5 | Função | Condicional | o escape hatch em JavaScript | 11 |
+
+As fases 2 a 5 estão **adiadas por análise de custo, não recusadas**. O autor pediu remendo e
+desligamento na resposta 1 de 2026-08-19, e aprovou adiá-los em 2026-08-20. Ver a seção 11.
+
+---
+
+## 0. As decisões do autor (2026-08-19 e 2026-08-20)
+
+Todas vieram por pergunta direta. Não re-decidir sem falar com ele.
+
+| # | Pergunta | Resposta |
+|---|---|---|
+| 1 | Addon acrescenta só, ou também remenda e desliga o raw? | **Acrescenta, remenda e desliga.** |
+| 2 | Escopo do que ele pode tocar? | **Generalista.** "É para ser algo mais aberto, pois o sistema é MUITO ABERTO em termo de conteudo Homebrew." |
+| 3 | Encontro com criaturas de addons diferentes? | **Permitir.** "Nem sempre é mudança geral de sistema, pode ser mudança mínima em uma única criatura." |
+| 4 | Pedaço de addon que não roda? | **Linha morta e marcada**, com indicativo para descobrir o problema. Ficha salva sempre abre. |
+| 5 | Quem pode escrever DSL? | **Quase uma linguagem.** O autor conhece o risco e aceita: "vai ser usado por um escopo pequeno de pessoas de confiança." |
+| 6 | Copiar o avaliador do `fm-dsl.js` para o lado do Afty? | **Pode.** Destrava crescer a linguagem sem tocar no 2.5.2. |
+| 7 | Ordem de construção? | As 4 primitivas, depois acrescentar por JSON, depois **parar e ver se aparece alguém escrevendo addon**. |
+| 8 | A pasta `asserts/` fica? | **Fica, com script.** `npm run asserts`. |
+| 9 | Concessão de combate (8.3) | **Ficha Final e Encontro**, **de graça**, e **morre com a sessão**. Detalhe na 8.3. |
+| 10 | Vínculo entre criaturas (8.4) | **Uma barra só**, dano 1 para 1 no pool, e só PV, PE e PV temporário somam. Detalhe na 8.4. |
+| 11 | Quem destrava o Estilo das Sombras? | **Ter o addon.** A criatura em que o addon está ativado destrava, sem gastar vaga. |
+| 12 | O Domínio Simples vem junto? | **Não**, o personagem compra. |
+| 13 | O piso de Nível 4 do Estilo cai? | **Não**, continua valendo. |
+| 14 | O Gêmeo copia UMA ou as DUAS do Sem Técnica? | **Uma**, com as duas na lista de opções. |
+| 15 | Sem o addon, a escolha copiada? | **Some da ficha**, sem marca de linha morta. |
+| 16 | Estudo Amaldiçoado e Noção e Preparação já existem no raw com outros números. Corrigir o livro? | **Não. Só pelo Addon**, com remendo. O raw fica como está. |
+| 17 | Quem tem o addon alcança o Treino e os Talentos exclusivos do Sem Técnica? | **Sim, o Addon abre tudo.** Virou a liberação `qualificaSemTecnica`. |
+| 18 | "Uma Técnica de Estilo adicional" gasta qual contador? | **Vaga exclusiva de Estilo**, canal novo. Feitiço não pode gastá-la. |
+| 19 | O Completo do Treino ("o dobro do Nível de Domínio") soma ou substitui? | **Soma outro Nível de Domínio.** Outras fontes continuam contando por cima. |
+| 20 | O que faz a criatura seguir as regras de Maldição? | **Copiar da Maldição em Verdadeiras Origens**, e não ter o Addon. |
+| 21 | A Natureza Amaldiçoada copiada traz os números dela? | **Traz tudo**: as vagas de Aptidão e o +1 PE por nível. |
+| 22 | As duas características de Maldição disparam a regra? | **As duas.** Existência Metafísica também diz que a criatura É uma maldição. |
+| 23 | A Linha de Treinamento de Energia Reversa some junto? | **Some**, como na Maldição de verdade. O Foco preso nela volta. |
+
+⚠ **O nome "Poderes da Tormenta" é contexto narrativo da mesa dele, e não um sistema.** O autor
+pediu nome generalista: neste doc o padrão se chama **família marcada por tag**.
+
+---
+
+## 1. A tese
+
+### Addon é DADO, e o motor ganha o VERBO
+
+Duas frases seguram o sistema inteiro.
+
+**Um addon pode tudo que o Motor já sabe dizer, e nada além.** Quando alguém bate no muro, a
+resposta é canal novo, variável nova ou primitiva nova, que entra no MOTOR e serve ao raw também. O
+muro é a fila de trabalho, não a desculpa.
+
+**Addon nunca ganha verbo escondido.** Verbo (o mecanismo genérico) entra no motor. Substantivo (o
+conteúdo da mesa) fica no addon. É a mesma diretriz de 2026-07-27 já escrita no cabeçalho do
+`afty-efeitos.js`, agora valendo para o homebrew.
+
+Consequência prática: o *Ciclo de Adaptação* do Mahoraga e a família marcada por tag ficam no addon
+do autor, e ninguém mais vê. O que virou código do site foi conceder-da-sessão e `contar()`, que são
+genéricos e não custam nada a quem não usa.
+
+### Por que dado, e não JavaScript
+
+O autor pediu código e aceitou o risco, e mesmo assim o código saiu da primeira fase. O motivo não é
+segurança, é que ele **não resolve os casos**:
+
+- Sem backend, addon viaja como arquivo entre estranhos. JS de terceiro tem acesso ao `localStorage`
+  inteiro: todas as criaturas, todos os encontros, todos os temas.
+- Dos quatro casos mais extremos que o autor já tentou fazer (seção 8), **zero** são destravados por
+  ele. Três pedem primitiva, e o quarto pede dado que a derivação não tem.
+- Dado valida. Os 13 `validarCatalogo*` já existem e já são o portão de aceitação.
+
+⚠ Quando a fase 5 chegar, ela vem com estes fatos registrados: sandbox de verdade (Worker, iframe)
+é ASSÍNCRONO e `deriveAfty` é síncrona, então sandbox real custaria reescrever o motor. O que dá
+para fazer barato (`new Function` com os globais sombreados) é obstáculo, **não é parede**. E laço
+infinito em código síncrono trava a aba sem recuperação, o que sugere proibir `while` e `for` e
+deixar só expressão e `map`/`filter`/`reduce`, que sempre terminam.
+
+---
+
+## 2. O que já existe e vira fundação
+
+O sistema está mais perto disso do que parece. O Motor de Automação **já é** uma linguagem de
+extensão, só que hoje tem uma porta de entrada só (`core.tecnicaEfeitos`).
+
+| Peça | Onde | O que já resolve |
+|---|---|---|
+| Linguagem de efeito | `EFEITO_CANAIS`, 101 canais, 47 com alvo | como o addon diz "+3 de Defesa quando o ND passa de 10" |
+| Editor de efeito | `TecnicaMotorEditor` (AftyCreatureBuilder.jsx) | a tela de autoria, com seletor `{ }` e valor ao vivo |
+| Prova de conceito | `core.tecnicaEfeitos` | o único lugar onde efeito já é ESCRITO e não escolhido |
+| Portão de aceitação | os 13 `validarCatalogo*` | recusar addon quebrado antes de entrar na ficha |
+| Forma do catálogo | `{id, nome, descricao}` + `BY_ID` + acessor | as famílias têm o mesmo esqueleto, então uma forma de addon serve para todas |
+| Concessão por nome | `concedeAptidoes`, `concedeEscolha`, Bases da Especialização | conceder entrada de catálogo já é mecanismo do motor, só que estático |
+| Sobreposição de sessão | `deriveAfty({ ...creature, combate: sessao.combate })` | o caminho pronto para a sessão mexer na criatura sem sujar a ficha |
+| Rastro | `PainelDeFontes` | número de addon aparece com a origem nomeada, de graça |
+| Precedente de posse | `ficha/ficha-tema.js` | camadas do fácil ao livre, teto que avisa sem bloquear, artefato morando DENTRO da criatura |
+
+⚠ **"Generalista" não quer dizer "deixar programar", quer dizer abrir TODA tabela.** São 209
+constantes de catálogo exportadas no Afty. O trabalho é declarar cada uma extensível pelo mesmo
+caminho, em vez de tratar Habilidade como caso especial.
+
+---
+
+## 3. As três camadas
+
+O encontro misto (decisão 3) parte o addon em duas metades com regras diferentes.
+
+**Acrescentar é global e inofensivo.** Todo id nasce prefixado, então a união dos addons de todas as
+criaturas carregadas nunca colide. Criatura que não usa aquele id simplesmente não o referencia.
+
+**Remendar e desligar são por criatura.** Se o addon de uma ficha desliga *Corpo Treinado* e a
+criatura do vizinho no mesmo encontro usa *Corpo Treinado*, aplicar isso globalmente quebraria a
+ficha dele. Então remendo e desligamento **não podem mexer no catálogo base**: são camada de leitura
+consultada na hora de resolver.
+
+| Camada | O que é | Vive |
+|---|---|---|
+| **Mundo** | catálogo raw + os acréscimos de TODOS os addons carregados | módulo, reconstruído quando o conjunto muda |
+| **Camada da criatura** | remendos e desligamentos daquela ficha | dentro da criatura |
+| **Escopo** | a camada da criatura ativa durante uma derivação | aberto e fechado em volta do `deriveAfty` |
+
+### O escopo, e por que ele é barato
+
+`deriveAfty` é síncrona, tem 8 pontos de chamada, e JavaScript não interleava. Então um escopo de
+módulo aberto no começo da derivação e fechado no fim dá remendo por criatura **sem passar registro
+por 209 constantes**. É o mesmo truque do dispatcher do React.
+
+```js
+// afty-registro.js
+export function comEscopo(camada, fn) {
+  const anterior = escopoAtual;
+  escopoAtual = camada;
+  try { return fn(); } finally { escopoAtual = anterior; }
+}
+```
+
+⚠ Quem lê catálogo FORA de uma derivação (as listas do builder) precisa do escopo também. O builder
+edita exatamente uma criatura, então um escopo no topo do render cobre.
+
+### Duas armadilhas já nomeadas, e como cada uma foi resolvida
+
+1. **Memo que não recalcula quando o addon muda.** No builder, na Ficha e no Encontro a solução foi
+   a ORDEM, e não o contador: o `aplicarAddons` roda DENTRO do mesmo memo do `deriveAfty`, antes
+   dele. Num `useEffect` rodaria depois do render, e a primeira derivação sairia com o catálogo
+   velho.
+2. **Dois addons remendando a mesma linha.** O painel de fontes tem de dizer qual venceu. A ordem é
+   declarada e o conflito é RELATADO, nunca bloqueado (decisão 3). Só vale na fase 3.
+
+✅ **A CAMADA DA CRIATURA EXISTE DESDE 2026-10-07** (achado M05-F01 da revisão). Ela foi desenhada
+aqui e nunca ligada: o Encontro aplicava a união e o remendo de uma ficha mudava o número da
+vizinha (no assert, a Defesa de quem não tinha o pacote ia de 16 para 23). O `deriveAfty` agora roda
+dentro de `comEscopoDaFicha` (afty-addons.js). Sem remendo de pacote alheio no ar, ele só chama a
+derivação. Com, ele reescreve o catálogo com os remendos da ficha, deriva, e devolve o mundo de
+antes no `finally`, também dentro de escopo aninhado. A época não muda, porque os ids do mundo (o
+que ela guarda) são os mesmos. Dois pacotes remendando a mesma entrada em fichas diferentes: cada
+ficha vê o seu. ⚠ O escopo cobre a DERIVAÇÃO, que é de onde sai todo número. Leitura de catálogo
+fora dela no painel do Encontro (o texto de uma habilidade) ainda vê a união, e está em
+docs/a-fazer.md.
+
+⚠ **A Base de pacote também é da ficha (achado M05-F02).** Acrescentar é global, e a Base de addon
+presa a uma classe do livro (`especializacaoId: "lutador"`) era concedida a todo Lutador da mesa no
+Encontro: no jogador, toda Base; na criatura, a `automatica`. A concessão automática agora só vale
+para quem carrega o pacote (`habilidadesConcedidasPelasEspecializacoes`, terceiro parâmetro).
+
+⚠ **A ÉPOCA (`epocaAddons`) continua existindo, e ela é a chave do cache do Encontro.** Lá o
+`derivarComCache` guarda o derivado por ficha, e sem a época na chave um combatente derivado sob uma
+união menor seria devolvido do cache depois de a união crescer. Hoje isso quase nunca muda o número,
+porque addon só ACRESCENTA e todo id é prefixado, mas **essa é uma invariante da fase 1, e a fase 3 a
+quebra**: lá, um addon que entra no encontro pode mudar o número de quem já estava.
+
+### ⚠ A entrada é CLONADA ao entrar no mundo
+
+O pacote que está em `creature.addons` é o mesmo objeto que alimenta o catálogo, e o espalhamento do
+`prefixarEntrada` é raso: `escolha`, `requisitos` e afins ficavam sendo a MESMA referência dos dois
+lados. Como o sistema muta entrada de catálogo em pelo menos um lugar
+(`dona.escolha.opcoes = HABILIDADES_ROUBAVEIS`, em `afty-habilidades.js`), uma mutação do catálogo
+vazava para dentro da criatura gravada.
+
+A cópia é ida e volta em JSON, e não `structuredClone`, de propósito: o pacote **é** JSON, e a volta
+ainda tira o que não for serializável e tiver entrado por um caminho torto.
+
+---
+
+## 4. O pacote
+
+Um addon é um JSON. O `id` do pacote é o namespace, e os ids das entradas são escritos **sem
+prefixo**: o registro prefixa na carga.
+
+Este exemplo **funciona e é conferido por assert**: ele instala, as três habilidades escalam pelo
+`contar()`, o *Eco da Carne* troca o atributo do PV, o tipo de dano entra na lista de armas e a
+condição entra no seletor de Feitiço. Dá para colar na aba Addons e ver acontecer.
+
+```json
+{
+  "id": "mesa-do-afty",
+  "nome": "Regras da Mesa do Afty",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "descricao": "Exemplo dos Addons: uma família que escala por marca, uma que troca o atributo do PV, um tipo de dano e uma condição.",
+  "paraRaw": "afty",
+  "permite": ["contar", "hpAtributo"],
+  "acrescenta": {
+    "habilidades": [
+      {
+        "id": "eco_persistente",
+        "nome": "Eco Persistente",
+        "especializacaoId": "lutador",
+        "tipo": "base",
+        "nivel": 1,
+        "tags": ["eco"],
+        "descricao": "Cada eco que você carrega endurece o que sobrou de você. Você recebe 2 de redução de dano geral, e mais 1 para cada outra habilidade de Eco que você possuir.",
+        "requisitos": [],
+        "efeitos": [
+          { "canal": "rdGeral", "expr": "2 + contar(\"eco\") - 1" }
+        ]
+      },
+      {
+        "id": "eco_do_impacto",
+        "nome": "Eco do Impacto",
+        "especializacaoId": "lutador",
+        "tipo": "nivel",
+        "nivel": 4,
+        "tags": ["eco"],
+        "descricao": "O primeiro golpe nunca some. Seu deslocamento aumenta em 1,5 metro.",
+        "requisitos": [{ "tipo": "habilidade", "id": "eco_persistente" }],
+        "efeitos": [
+          { "canal": "movimento", "expr": "1.5" }
+        ]
+      },
+      {
+        "id": "eco_da_carne",
+        "nome": "Eco da Carne",
+        "especializacaoId": "lutador",
+        "tipo": "nivel",
+        "nivel": 6,
+        "tags": ["eco"],
+        "descricao": "Seu corpo passa a se sustentar pelo que ele lembra, e não pelo que ele é. Você pode usar o modificador de um atributo à sua escolha no lugar do de Constituição para calcular seus pontos de vida.",
+        "requisitos": [{ "tipo": "habilidade", "id": "eco_persistente" }],
+        "efeitos": [
+          { "canal": "hpAtributo", "expr": "1" }
+        ]
+      }
+    ],
+    "tiposDano": [
+      { "value": "sonico", "label": "Sônico" }
+    ],
+    "condicoes": [
+      { "id": "cnd_ensurdecido_pelo_eco", "nome": "Ensurdecido pelo Eco", "forca": "media" }
+    ]
+  }
+}
+```
+
+⚠ **A entrada do addon tem a MESMA forma da entrada do raw**, mais dois campos: `tags` e `efeitos`.
+
+O raw separa catálogo de efeito (`HABILIDADE_EFEITOS` mora em `afty-efeitos-conteudo.js`) porque o
+texto do livro e a automação têm donos diferentes e mudam em ritmos diferentes. **Num addon isso não
+existe:** quem escreve a habilidade escreve o efeito dela, no mesmo JSON, e separar os dois só criaria
+uma segunda chave para a pessoa manter em sincronia.
+
+Por isso `coletarEfeitos` passou a ler o mapa PRIMEIRO e a entrada como fallback
+(`mapa?.[id] ?? entradaDe(id)?.efeitos`). Nenhuma entrada do raw tem `efeitos` inline, então nada
+muda para elas, e a mudança vale para todas as famílias de uma vez.
+
+⚠ Esta era uma **lacuna real**, achada em 2026-08-20 só quando o pacote de exemplo foi testado de
+ponta a ponta: o `efeitos` do addon era validado e nunca aplicado, e as habilidades entravam na
+ficha sem somar número nenhum. É o argumento para todo exemplo de doc ser coberto por assert.
+
+### Funcionamento Básico próprio do pacote
+
+Um pacote pode trazer Funcionamentos Básicos sem publicar o conteúdo no catálogo raw:
+
+```json
+{
+  "id": "minha-tecnica",
+  "nome": "Minha Técnica",
+  "versao": "1.0.0",
+  "paraRaw": "afty",
+  "funcionamentos": [
+    {
+      "id": "nucleo",
+      "nome": "Núcleo Particular",
+      "descricao": "Texto do Funcionamento Básico.",
+      "efeitos": [{ "canal": "rdGeral", "expr": "3" }]
+    }
+  ]
+}
+```
+
+O Funcionamento sai da cópia congelada em `creature.addons`, recebe o namespace do pacote e aparece
+somente nas criaturas que carregam aquela cópia.
+
+**O portão confere cada efeito (2026-10-07, achados M01-VAL-02 e M04-A01).** Canal que o Motor não
+tem, `expr` vazia ou fora da sintaxe e `quando` fora da sintaxe recusam o pacote na instalação. Até
+aqui só a presença dos dois campos era cobrada, e o coletor descarta canal desconhecido calado: um
+pacote com o canal escrito errado instalava e a linha não somava nada. Linha com `escopo:
+"invocacao"` é conferida contra os canais de invocação. Variável não é conferida, porque a que o
+pacote cita pode existir só na ficha que o carrega. A Técnica de Estilo de pacote passa pela mesma
+conferência. Ele participa do mesmo Motor dos Funcionamentos
+escritos na ficha. No criador, o conteúdo aparece sem controles de edição ou remoção, porque a fonte
+de verdade é o arquivo do addon.
+
+**Linha de invocação dentro do Funcionamento do pacote (2026-09-26).** Uma linha com
+`escopo: "invocacao"` cai nas invocações da ficha, no espaço de canais delas (`INV_EFEITO_CANAIS`), e
+o `quando` é avaliado no contexto de cada invocação (`marc_*`, `nivel_controlador`, `grau`). É o
+caminho para um pacote mexer num benefício de Controlador sem verbo novo: o
+`concentrar-poder-dobrado` copia as sete linhas do Concentrar Poder do raw com o mesmo
+`quando: "marc_concentrar_poder"`, e somadas às do livro elas dão o dobro. A variável do marcador só
+existe com a Habilidade dona, então a linha não vale sem ela. Assert:
+`t-concentrar-poder-dobrado.mjs`.
+
+### Modelos de Feitiço próprios do pacote
+
+O campo `feiticos` mantém modelos prontos dentro da cópia congelada do addon. Modelo não é Feitiço
+conhecido e não gasta vaga. O criador oferece somente os modelos cujo `nivel` já está acessível para a
+criatura. Ao escolher um, copia a entrada para `creature.feiticos`, aplica o namespace do pacote e passa
+a usar o orçamento normal da ficha.
+
+```json
+{
+  "feiticos": [
+    {
+      "id": "regra_particular",
+      "nome": "Regra Particular",
+      "tipo": "personalizado",
+      "nivel": 3,
+      "conjuracaoTexto": "Conjuração: Ação Comum",
+      "descricao": "Texto verbatim da regra.",
+      "acaoPersonalizada": "comum",
+      "alcanceTexto": "24 Metros",
+      "alvoTexto": "1 criatura",
+      "duracaoTexto": "Imediata",
+      "resolucaoTexto": "TR de Vontade",
+      "rolagens": [{ "rotulo": "Dano", "dados": 12, "faces": 8 }]
+    }
+  ]
+}
+```
+
+`personalizado` usa o custo padrão do Nível de Feitiço e aceita as reduções normais da ficha, mas não
+converte a regra particular nas tabelas de Dano ou Auxiliar. `rolagens` oferece os dados exatos na Ficha.
+Passivas continuam usando `tipo: "passivo"` e podem trazer `efeitosPassivo` pelo Motor.
+
+Quando o custo não é um número único, o modelo pode declarar `custoPETexto`. O texto substitui o custo
+numérico na Ficha e impede que o custo padrão do Nível apareça ou receba reduções. É o caso de uma
+tabela por grau ou de uma habilidade cujo custo seja a soma de várias invocações.
+
+O criador expõe todos esses campos do `personalizado`. Cada entrada de `rolagens` pode editar nome,
+quantidade, faces, valor fixo, repetições e tom de Dano ou Cura. Assim uma regra particular pode manter
+rolagens separadas para o impacto inicial e para um dano recorrente.
+
+Um modelo com `nivel: "max"` conserva as tabelas e o custo próprios de Técnica Máxima. Como a progressão
+normal de Feitiços para no Nível 5, o modelo passa a ser oferecido quando a criatura alcança esse teto.
+O Addon não abre a criação comum de outras Técnicas Máximas.
+
+Um modelo pode declarar um custo especial pago na ativação:
+
+```json
+{
+  "custoVidaAtivacao": {
+    "modo": "percentualAtual",
+    "percentual": 50,
+    "minimo": 1,
+    "somaAoDano": true
+  }
+}
+```
+
+O valor é calculado a partir da Vida atual no instante da primeira rolagem. O custo reduz a Vida
+real sem consumir PV temporário. `somaAoDano` acrescenta somente o valor pago nessa ativação ao
+valor fixo da rolagem. Vida perdida antes não entra. Com Vida zero, a ativação fica indisponível.
+
+### O campo `libera`, e por que ele NÃO é o `permite`
+
+**O que ter o addon DESTRAVA para a criatura que o carrega.** São dezesseis em 2026-09-14. A tabela
+abaixo tem as nove primeiras. As outras sete: `carteiraFocos` e `carteiraNivel` estão em
+`docs/afty-carteira.md`, e `segundaHabilidadeUnica`, `acessoriosUnicos`, `revestimentosCriados` e
+`escudosCriados` e `itensDeCusto` têm seção própria mais abaixo.
+
+| id | O que destrava |
+|---|---|
+| `estiloSombras` | o Novo Estilo da Sombra fora do Sem Técnica, inclusive para quem tem Feitiços |
+| `gemeosSemTecnica` | o Gêmeo pode copiar **Estudos Dedicados** ou **Empenho Implacável** em Verdadeiras Origens |
+| `qualificaSemTecnica` | a criatura conta como Origem Sem Técnica para pré-requisito de Talento e de Linha de Treinamento |
+| `gemeosMaldicao` | o Gêmeo pode copiar da Maldição, e copiar passa a fazer a criatura seguir a estrutura dela |
+| `feiticosRestritos` | a aba de **Feitiços** para a origem que não conjura, limitada a Passivo e Personalizado |
+| `soPorAddon:gemeos` | devolve a origem Gêmeos à Ficha de Jogador |
+| `soPorAddon:atributo` | devolve a Linha de Treinamento Treino de Atributo à Ficha de Jogador |
+| `soPorAddon:cnj_agilidade_no_campo_de_batalha` | devolve a Habilidade [2.0] homônima à lista do Conjurador |
+| `soPorAddon:tal_alma_livre` | devolve o Talento Alma Livre à Ficha de Jogador |
+
+⚠ **São dois campos e não um, e a diferença é a razão de existirem os dois:**
+
+| Campo | O que é | Muda número? |
+|---|---|---|
+| `permite` | **TELA.** Quem ENXERGA uma primitiva que o motor já tem | **Nunca**, e há assert medindo |
+| `libera` | **REGRA.** O que a criatura PODE ter | **Sim**, é para isso que serve |
+
+Juntá-los faria o `permite` às vezes mexer na ficha e às vezes não, quebrando a única coisa que ele
+promete.
+
+⚠ **A liberação é lida DIRETO DA CRIATURA, e não por canal do Motor.** Foi a primeira coisa que eu
+projetei errado: comecei a acrescentar um canal `estiloLiberado` no estágio de pré-contexto, porque
+a liberação viria de uma habilidade. A decisão do autor (*"a opção libera para a Criatura que o
+Addon for ativado"*) matou o canal inteiro: a pergunta é estrutural (*esta criatura pode ter
+Estilo?*) e a resposta tem de existir antes de quase tudo. Ler a ficha resolve, um canal chegaria
+tarde.
+
+⚠ **Sai da FICHA, e não do mundo aplicado**, pela mesma razão do `permite`: num Encontro misto o
+mundo é a união de todos, e um combatente sem o addon não pode herdar a regra de quem tem.
+
+#### O caso que abriu isto: Estilo das Sombras
+
+A trava era `origemId === "sem_tecnica" && nd >= 4`, **JavaScript e não dado**, então nenhum pacote
+da fase 1 a alcançava. É o caminho previsto na tese 1 ("falta de canal ou de função vira trabalho no
+MOTOR"), só que a peça que faltava era um campo de pacote, não um canal.
+
+Duas descobertas mudaram o desenho, e as duas vieram de ler o raw antes de escrever:
+
+1. **O Estilo vem em par.** O Empenho Implacável do Sem Técnica dá acesso ao Estilo **e** a aptidão
+   Domínio Simples, e é do Nível de Aptidão em **Domínio** que saem as vagas de imbuição. Liberar só
+   o acesso entrega um Estilo que a criatura conhece e não consegue imbuir. O autor decidiu que quem
+   destrava por Addon **compra** o Domínio Simples: o Sem Técnica ganha de graça porque não tem
+   técnica nenhuma, e quem tem Feitiços não está nessa situação.
+2. **O piso de Nível 4 continua valendo** (autor). São duas travas independentes: a origem diz QUEM
+   tem, o nível diz A PARTIR DE QUANDO. O `libera` responde a primeira e não encosta na segunda.
+
+Duas coisas mudaram junto, e as duas são consequência e não escolha:
+
+- **`acrescenta` deixou de ser obrigatório.** O pacote deste caso não traz uma linha de catálogo, e
+  o validador reprovava "o pacote não acrescenta nada". Agora o que reprova é não fazer **nenhuma**
+  das três coisas.
+- **A mensagem de ficha sem acesso mudou.** Ela dizia só "o Novo Estilo da Sombra é do Sem Técnica",
+  e virou meia verdade no dia em que um Addon passou a poder destravar.
+
+⚠ **Desinstalar o addon não destrói a ficha.** A Técnica de Estilo gravada continua lá e some só da
+CONTA, que é a convenção do projeto para acesso perdido. Volta sozinha se o addon voltar.
+
+#### ⚠ A QUARTA TRAVA, e a lição que ela repetiu
+
+O motor liberou, os 54 asserts passaram, e **o card continuou sem aparecer**. O autor instalou o
+addon e mandou print (2026-08-21).
+
+A aba Habilidades do criador **ramifica o layout inteiro por origem**, e só o ramo do Sem Técnica
+montava o `EstiloSombrasCard`. Era uma quarta trava, separada das três de regra, e ela escapou da
+minha varredura porque compara a string crua `"sem_tecnica"` em vez da constante `ESTILO_ORIGEM`,
+que foi o que eu grepei.
+
+**É a segunda vez na mesma semana que o mesmo erro pega**, e as duas com o mesmo formato: eu
+acrescento a capacidade ao motor, provo por assert que o número muda, e esqueço de perguntar **quem
+monta a tela**. Na primeira foi o card de Concessão aparecendo para todo mundo, agora foi o do
+Estilo não aparecendo para ninguém. O mesmo descuido nas duas direções.
+
+O conserto foi tirar a decisão de dentro do JSX: ela virou `mostraCardEstilo(origemId, estilo)` em
+`afty-estilo-sombras.js`, ao lado das outras três travas, com 12 asserts. Dentro do JSX ela era
+intestável, e por isso saiu de sincronia duas vezes.
+
+Regra que fica: **grepar a constante não basta.** Varrer o valor cru dela junto.
+
+#### `gemeosSemTecnica`, a segunda liberação
+
+O texto de Verdadeiras Origens proíbe o Gêmeo de copiar do Sem Técnica. A liberação tira **essa
+origem, e só ela**, da lista de proibidas.
+
+O resultado é **exatamente as duas características que o autor nomeou**, e não por coincidência: o
+Sem Técnica tem três, e a terceira é o Bônus em Atributo, que o filtro genérico já tira de toda
+origem. Não precisou nomear nada.
+
+⚠ **Continua sendo UMA escolha** (autor: *"é para escolher só uma, porém deixar as duas como
+opção"*). O `vagas: 1` não foi tocado, e as duas entram lado a lado com as das outras origens.
+
+⚠ **A lista virou POR CRIATURA, e a troca mora no `caracteristicasEfetivas`.** Não em
+`escolhasDaOrigem`, porque são dois consumidores por caminhos diferentes: o `resolveEscolhasOrigem`
+passa pelo segundo, mas **o card do criador lê `c.escolha.opcoes` direto** do que o primeiro
+devolve. Filtrar só no resolvedor deixaria a tela oferecendo o que o motor recusa, que é o irmão do
+bug da quarta trava.
+
+⚠ **A característica é COPIADA, nunca alterada no lugar.** O catálogo é compartilhado por toda
+criatura carregada, e escrever nele vazaria a lista de quem tem addon para quem não tem. É o mesmo
+estrago que fez a entrada de Addon passar a ser clonada.
+
+**Sem o addon a escolha some da ficha, em silêncio** (autor), sem a marca de "sem acesso" que o
+Estilo usa. O id continua gravado em `core.origem.escolhas`, então reinstalar o addon a traz de
+volta, mas nada na tela a menciona enquanto ele estiver fora.
+
+⚠ **Copiar o Empenho Implacável traz o Domínio Simples junto**, no ND 4 e ignorando os
+pré-requisitos, porque a característica copiada é mecanicamente viva (`caracteristicasEfetivas`
+alimenta o `aptidoesConcedidasPelaOrigem`). Isso **não** dá vaga de imbuição sozinho: a vaga é o
+NÍVEL DE APTIDÃO em Domínio, comprado à parte, e o Sem Técnica raw está na mesma situação. Há assert
+medindo a igualdade entre os dois.
+
+#### `feiticosRestritos`, a liberação que ABRE E ESTREITA (2026-09-07)
+
+Pedido do autor: *"Addon para liberar a aba de Feitiços para Restringido, porém somente Passivas e
+Personalizado"*. O pacote é `addons/estilo-marcial.json`, e ele é **só-liberação**: uma linha de
+`libera` e nada mais.
+
+⚠ **É a primeira liberação que faz as DUAS coisas no mesmo movimento.** As quatro anteriores só
+abriam. Esta monta um card que a origem não tinha **e**, ao mesmo tempo, corta quatro dos seis tipos
+de Feitiço. Por isso ela virou duas funções em `afty-feiticos.js`, e não uma:
+
+| Função | Pergunta que ela responde |
+|---|---|
+| `mostraCardFeiticos` | quem ENXERGA a aba |
+| `tiposFeiticoPermitidos` | o que ele pode CRIAR ali dentro |
+
+**Os dois tipos não são um recorte arbitrário.** São os únicos que não dependem de conjuração
+amaldiçoada para existir: o Passivo é característica (não gasta PE, não tem alcance, escreve direto
+no Motor) e o Personalizado é regra que a mesa escreve à mão. Dano, Auxiliar, Curativo e Especial
+ficam de fora porque cada um deles **É** uma tabela de técnica amaldiçoada, e o Restringido não tem
+técnica. O assert nomeia os quatro de fora um a um, e não "o resto": um tipo novo no vocabulário
+passa a obrigar uma decisão em vez de entrar de carona.
+
+⚠ **A DECISÃO SAIU DO JSX ANTES DE MUDAR, e desta vez de propósito.** A aba Habilidades do criador
+ramifica o layout inteiro por origem, e o card de Feitiços só era montado no ramo "todas as
+outras". Enquanto "quem conjura" era regra fixa, dava para viver com a trava dentro do JSX. No
+momento em que um Addon passou a poder mudá-la, ela seria a quarta trava do Estilo das Sombras de
+novo: invisível, intestável e livre para sair de sincronia com o motor. O `derived.feiticos` passou
+a carregar `mostraCard` e `tiposPermitidos`, e o JSX só lê. **É a terceira vez que este arquivo
+registra a mesma lição, e a primeira em que ela foi aplicada antes do print do autor.**
+
+**A terceira porta, de novo.** O card também aparece para quem tem Feitiço **gravado**, mesmo sem
+addon e mesmo na origem errada. Sem ela, desinstalar o pacote (ou trocar de origem) deixaria a linha
+morta presa na ficha **gastando o contador de habilidades** e sem tela nenhuma para removê-la. É a
+mesma porta do `filtraForaDoJogador` e do `mostraCardEstilo`, e aqui ela tapa um buraco que já
+existia antes do addon: uma ficha que trocasse de origem para Restringido já era cobrada por
+Feitiços que a tela não mostrava mais.
+
+⚠ **A liberação abre porta fechada, e nunca estreita porta aberta.** Um Herdado com o pacote
+instalado continua com os seis tipos. Há assert medindo, porque o caminho fácil (trocar a lista pela
+dos dois) faria o addon punir quem já conjurava.
+
+**O que ela NÃO dá:** vaga. O Feitiço do Restringido gasta o mesmo contador único da aba (2×Maestria
++ patamar), dividido com as Habilidades Gerais, e o pacote não encosta nele. Os asserts medem PV,
+Defesa, PE e o contador dos dois lados: enquanto a criatura não criar Feitiço, instalar o addon não
+move número nenhum.
+
+#### Bug anterior consertado junto: o cache da lista
+
+`opcoesVerdadeirasOrigens` guardava o resultado num módulo e **nunca invalidava**. Como a lista é
+montada do `AFTY_ORIGENS_CATALOG`, uma origem vinda de Addon jamais aparecia em Verdadeiras Origens,
+calado. O bug entrou junto com a família `origens` e não tinha sintoma porque ninguém tinha escrito
+uma origem de addon ainda. O `aplicarExtrasOrigens` agora limpa o cache, e há assert com uma origem
+de teste.
+
+#### `segundaHabilidadeUnica` e `acessoriosUnicos`, a Benção do Grão Mestre da Forja (2026-09-11)
+
+O pacote é `addons/bencao-grao-mestre-forja.json`, e ele é só-liberação, com duas linhas de `libera`.
+Separadas pela mesma razão das duas da Carteira: a primeira mexe em todo item de Grau Especial que a
+ficha já tem, e a segunda abre um tipo de item que não existia.
+
+| Liberação | O que abre |
+|---|---|
+| `segundaHabilidadeUnica` | uma segunda Habilidade Única em todo item de Grau Especial |
+| `acessoriosUnicos` | o card Acessórios Únicos: sempre Grau Especial, sem Encantamentos, sem custo, pesa 1, duas Habilidades Únicas |
+
+⚠ **A regra de disputa da segunda é uma família do pool, e não o addon.** Ela é a oitava,
+`segundaHabilidadeUnica`, e mora em `FAMILIAS_EXCLUSIVAS`. No jogador ela cai no grupo dos Feitiços,
+e na criatura no pool único. O addon só decide se ela EXISTE. A divergência que partiu o pool do
+jogador em grupos nasceu da mesma conversa, e vale sem o addon. Ver `poolExclusivo` e a sessão de
+2026-09-11 (parte 3) em `afty-status.md`.
+
+⚠ **A segunda PREENCHIDA custa um Slot de Feitiço** (autor, 2026-09-16: *"Eu perco um Slot de
+Feitiço. Já que estou efetivamente colocando Feitiços no objeto"*). Preenchida é ter texto ou uma
+linha do Motor com expressão. Custa um por item, com o item guardado e com o Acessório Único fora do
+inventário também, e nos dois sistemas: no jogador sai do orçamento próprio de Feitiços, na criatura
+do contador comum. Cada item vira uma parcela negativa com o nome dele no hover do medidor de
+Feitiços. Quem lista é o `segundasUnicasPreenchidas` do `resolveEquipamentos`, e quem desconta é o
+`deriveAfty`.
+
+⚠ **Desinstalar não apaga nada.** O texto e as linhas das duas Habilidades ficam gravados e deixam de
+contar. O card de Acessórios Únicos continua aparecendo para quem tem acessório gravado, e é a porta
+para apagá-lo. Criar um novo pede a liberação. É a terceira porta do `feiticosRestritos`, aplicada ao
+item.
+
+#### `revestimentosCriados` e `escudosCriados`, a Criação de Equipamentos (2026-09-14)
+
+O pacote é `addons/criacao-de-equipamentos.json`, a fase 1 do guia Criação de Equipamentos e Itens
+2.5.2. Só-liberação, com duas linhas, pela mesma razão das da Benção: cada uma abre um tipo de item.
+
+| Liberação | O que abre |
+|---|---|
+| `revestimentosCriados` | o card Revestimentos Criados: Defesa e penalidade pelo Custo, e a troca de um degrau de Defesa por +2 em duas Perícias ou RD por Tipo |
+| `escudosCriados` | o card Escudos Criados: RD, penalidade e dado pelo Custo |
+
+⚠ **É liberação, e não primitiva como a bancada de Pontos de Criação.** A bancada conta uma arma que
+a pessoa já escrevia campo por campo, e por isso é `permite`. Aqui a tabela DECIDE a Defesa e a RD do
+item, e número decidido é regra. As contas e as decisões do autor estão em
+`docs/afty-criacao-equipamentos.md`.
+
+⚠ **Desligar não apaga nada**, no molde do Acessório Único: o item criado continua no catálogo e no
+inventário, marcado como equipado, e para de entrar em qualquer efeito. Os espaços continuam
+contando, porque ele continua carregado.
+
+#### A liberação `itensDeCusto` (2026-09-14)
+
+A fase 3 do mesmo pacote: o card Itens de Custo Criados, com um efeito da tabela do Custo, Passivo
+(vale equipado) ou Ativo (de uso). Liberação pela mesma razão das da fase 1: o item Passivo soma número
+na ficha, e sem a liberação ele continua carregado e deixa de contar. O item criado de Custo 4 Ativo que
+maximiza atributo abre o estado do Talismã do Ápice, e sem a liberação também não abre.
+
+#### A primitiva `armasPorNivel` (2026-09-14)
+
+A fase 2 do mesmo pacote. Ela abre no editor de arma própria a bancada do guia, onde o dado sai do
+Custo menos os Níveis de Dano gastos em propriedades e crítico. É primitiva, e não liberação, porque a
+**receita da arma vale sem o Addon** (autor: *"Continua com o dado da conta"*): a receita mora em
+`arma.niveis`, e ter o pacote só decide quem enxerga a bancada. Instalar ou desinstalar não muda número
+nenhum, que é a promessa de todo `permite`. Ver `docs/afty-criacao-equipamentos.md`.
+
+#### A primitiva `encantamentoGuia` (2026-09-14)
+
+A fase 4 do mesmo pacote. Ela abre, logo depois da primeira Habilidade Única da Ferramenta de Grau
+Especial, o interruptor "Conta do Guia": a tabela de Interações Simples, a divisão ou a penalidade de cada
+efeito a mais, a melhoria de um Encantamento Padrão e o Feitiço da Técnica Inata. É primitiva pela mesma
+razão da `armasPorNivel`: a **receita mora em `fa.guiaUnica` e vale sem o Addon**, e o pacote só decide
+quem enxerga a bancada. As linhas da conta somam com as livres da Habilidade Única, no mesmo pool
+exclusivo.
+
+#### A primitiva `pvEPassivas` (2026-09-18)
+
+Abre no seletor de canal os dois de PV e Passivas: `hpMult`, que multiplica o PV final (o valor é o
+multiplicador, `2` dobra), e `passivaSemCusto`, sinalizador que isenta toda Passiva do PE Máximo. É
+primitiva pela lição do `hpAtributo`: os canais vivem no motor sempre, e o `permite` só decide quem os
+enxerga. O pacote `vida-dobrada-passivas-gratis` usa os dois num Funcionamento do pacote, sempre ativo.
+Ver `docs/automacao-dsl.md` e `docs/afty-formulas-base.md`.
+
+#### A primitiva `quimera` (2026-09-20)
+
+Mostra o card de Quimeras ao lado das Hordas, na aba de Invocações. O motor (`resolveQuimera`) vive sempre
+e só a tela depende do `permite`. O pacote `quimera` só declara `permite: ["quimera"]`. Ver
+`docs/afty-invocacoes.md`.
+
+⚠ Desde 2026-10-01 a regra do addon é LEGACY (decisão do autor DA-06): a oficial é a do *Mecânicas
+para Invocações 2.5.2*, que o Controlador de nível 5 abre sem addon. Quimera gravada sem o campo
+`regra` continua com a do addon, e a nova nasce `"mecanicas"`. Quem abriu a aba só pela primitiva,
+sem o Controlador 5, ainda cria Quimera do addon.
+
+#### A primitiva `heranca` (2026-10-01)
+
+Mostra a sub-aba Heranças na ficha de cada Shikigami, no criador: a Herança das Sombras persistente
+do *Mecânicas* (`inv.herancas`). Ela já aparece para quem tem uma Invocação de Técnica ("para os
+Usuários de Dez Sombras e técnicas semelhantes"), e a primitiva a abre para quem não tem. O motor
+(`herancasDa`, `afty-invocacoes.js`) vive sempre. O exemplo antigo de Herança por marcador com
+`fontes` (`asserts/exemplo-dez-sombras.json`) segue funcionando, independente dela.
+
+#### A primitiva `titaColosso` (2026-09-22)
+
+Mostra a aba "Titã" no criador e o painel de barras na Ficha Final. O motor (`resolveTita`,
+`afty-tita.js`) calcula sempre a partir da Vida Máxima; o `permite` só decide quem vê a aba e o
+painel. O pacote `tita` só declara `permite: ["titaColosso"]`. Ver `docs/afty-status.md`, sessão de
+2026-09-22.
+
+#### A primitiva `caracteristicasAmaldicoadas` (2026-09-22)
+
+Mostra a aba "Características Amaldiçoadas" no criador: um cartão por entrada do catálogo
+`AFTY_CARACTERISTICAS_AMALDICOADAS` (`afty-caracteristicas-amaldicoadas.js`), que nasce VAZIO no
+raw porque o conteúdo (as 18 entradas do suplemento Maldição - Era de Ouro) é todo de Addon, pela
+família `caracteristicasAmaldicoadas`. O canal `vagasCaracteristicaAmaldicoada` dá o orçamento
+("Anatomia Amaldiçoada" concede 1 no 1° nível, +1 a cada 5). Ver `docs/afty-status.md`, sessões de
+2026-09-22 e 2026-09-23.
+
+**A entrada** (2026-09-23) é `{ id, nome, descricao }` mais o que ela quiser destes campos:
+
+| Campo | Para que serve |
+|---|---|
+| `efeitos` | linhas `{ canal, expr, alvo?, quando?, nome? }` do Motor, lidas de DENTRO da entrada |
+| `requisitos` | os da Aptidão (`nd`, `atributo`, `nota`...), que trancam a escolha na tela |
+| `incompativeisIds` | ids de outras características que brigam com esta, nos dois sentidos, com namespace automático |
+| `alvos` | o que o jogador escolhe: `[{ id, tipo, label, opcoes? }]`, com `tipo` em `atributo`, `pericia` ou `tipoDano` |
+| `mesa` | `true` quando nada nela vira número (a marca "Mesa") |
+| `parcial` | a frase que diz QUAL pedaço o Motor não cobre (aviso âmbar) |
+
+**Escolha do jogador.** O efeito mira a resposta com `alvo: "escolha:<id do alvo>"`, e o motor troca
+isso pelo valor gravado em `creature.caracteristicasAmaldicoadasAlvos`. Sem resposta válida o efeito
+NÃO ENTRA. `opcoes` recorta a lista (o Desenvolvimento Físico só aceita `forca`, `destreza` e
+`constituicao`) e resposta fora dela é ignorada. Um sufixo depois do id é preservado: `escolha:pericia:d4`
+vira `percepcao:d4`, que é o formato do canal `dadosPericia`.
+
+```json
+{
+  "id": "ca_desenvolvimento_fisico",
+  "nome": "Desenvolvimento Físico",
+  "descricao": "...",
+  "requisitos": [{ "tipo": "nd", "valor": 4 }],
+  "incompativeisIds": ["ca_desenvolvimento_mental"],
+  "alvos": [{ "id": "atributo", "tipo": "atributo", "label": "Atributo", "opcoes": ["forca", "destreza", "constituicao"] }],
+  "efeitos": [
+    { "canal": "atributo",       "alvo": "escolha:atributo", "expr": "2 + (nd >= 15) + (nd >= 20)" },
+    { "canal": "limiteAtributo", "alvo": "escolha:atributo", "expr": "2 + (nd >= 15) + (nd >= 20)" }
+  ]
+}
+```
+
+⚠ **"Ignora o limite natural" é o par `atributo` mais `limiteAtributo`**, e nunca só o primeiro: o
+`atributo` é aparado no limite do atributo, e quem sobe o limite é o outro canal. É o mesmo par da
+Lendária Aperfeiçoamento de Atributo.
+
+⚠ **Toda entrada tem número no Motor ou é `mesa`.** O `asserts/t-maldicao-era-de-ouro.mjs` cobra isso
+para o pacote do livro, porque uma entrada que não faz nada e não avisa parece que funciona.
+
+O canal `dadosPericia` (2026-09-23), irmão do `dadosTR`, soma um DADO ao resultado de UMA perícia. O
+alvo é `<perícia>:d<faces>` (`percepcao:d4`) e o valor é quantos dados. Desde 2026-10-07 tem seletor duplo (perícia e dado) no editor manual. Antes, não tinha seletor no editor manual
+de efeitos, como o `dadosTR`: é canal de Addon.
+
+#### Origem de Addon que se divide em Tipos (2026-09-22)
+
+Uma origem de Addon pode se dividir como o Herdado se divide em Clãs: o seletor aparece no card da
+Origem, e cada clã traz as próprias características. O exemplo vivo é `addons/maldicao-era-de-ouro.json`.
+Quatro pegadinhas, todas pagas com bug:
+
+1. **Os clãs vão em DOIS lugares, com o mesmo id.** `acrescenta.origens[].clas` guarda só `{ id, nome }`
+   (é o que a tela lê para desenhar os botões), e `acrescenta.clas` guarda a definição inteira
+   (`nome`, `caracteristicas`, `efeitos`). O id aninhado só ganha o prefixo do pacote se o mesmo id
+   existir como entrada de TOPO de alguma família.
+2. **Número mora em `efeitos` na RAIZ** da origem e do clã, nunca dentro de
+   `caracteristicas[].efeitos`, que o motor não lê. A característica fica só com o texto (e com
+   `bonus`/`poolLimite`, que são lidos por outro caminho).
+3. **`variacaoDe: "maldicao"` (ou `"sem_tecnica"`, ou `"restringido"`) é o que mantém as travas da origem do livro.**
+   Sem ele, as Aptidões de Maldição e os Talentos com requisito de Origem Maldição não enxergam a
+   origem nova. Só as mães de `VARIACOES_ACEITAS` (`afty-origens.js`) valem, e a lista cresce quando as
+   travas da mãe nova passam por `origemMae()`.
+4. **O motor tem de estar no ar ANTES de o addon ser instalado.** O pacote entra em qualquer versão do
+   app, e o motor velho só RELATA o problema (*"variacaoDe ainda não aceita maldicao"*, no retorno do
+   `aplicarAddons`). Desde 2026-09-23 o card "Problemas" da aba Addons o mostra (`problemasDaAplicacao()`),
+   mas um app anterior a isso segue calado. O sintoma é traiçoeiro: a origem aparece no seletor, e sobram a aba de Energia Reversa e nenhuma de
+   Maldição, como se a origem fosse uma qualquer. Foi o relato do autor 4 minutos depois de um commit, e
+   o `asserts/t-maldicao-era-de-ouro.mjs` (seção 6) fica vermelho contra o motor antigo justamente por
+   isso. Motor e addon vão no mesmo push, e o addon só se instala depois do deploy.
+
+Opcionais na origem: `clasRotulo` (o nome do seletor, padrão "Clã") e `clasArtigo` (padrão "um").
+
+### O campo `espinho` e a primitiva `espinho` (2026-09-30)
+
+Uma loja de catálogo FIXO na ficha, paga em Almas: cada item tem custo, teto de compras (DSL) e o que
+rende por unidade (linhas do Motor, um Talento concedido, ou um item do inventário marcado como Grau
+Especial). O verbo mora em `afty-espinho.js` e o catálogo no campo `espinho.itens` do pacote, lido por
+`espinhoDaFicha`. O campo `espinho.multiplicadorTeto` (o Addon Alter) multiplica todo teto, com um piso
+só no fim, e sozinho já faz o pacote válido. As compras rendem com ou sem o `permite`: a primitiva
+`espinho` só decide quem vê o card (aba Habilidades do criador e da Ficha Final) e o canal novo
+`pontosAtributo` no seletor. Guia completo em `docs/afty-espinho.md`, pacotes em `addons/espinho.json`
+e `addons/alter.json`.
+
+### O campo `incompativeis` (2026-09-14)
+
+Ids de pacotes que **não ligam na mesma ficha** que este. Nasceu com a Criação de Equipamentos, que o
+autor decidiu que *"convivem e não podem ser instaladas juntos"* com a Criação de Armas.
+
+```json
+{ "incompativeis": ["criacao-de-armas"] }
+```
+
+- ⚠ **A trava é simétrica: basta UM dos dois declarar.** A Criação de Armas é anterior e não declara
+  nada, e toda cópia dela já gravada numa ficha ou numa biblioteca continuaria sem declarar.
+- ⚠ **Ela é da ficha, e não da biblioteca.** A máquina guarda os dois pacotes, e uma mesa pode ter um
+  personagem com cada um. Na aba Addons o quadrado de ligar fica bloqueado com o chip "Não Liga com".
+- Só barra quem ENTRA. Desligar nunca é bloqueado, e atualizar um pacote que já está na ficha passa.
+- A ficha que chega com os dois (importada ou montada à mão) abre normalmente e acusa o par em
+  Problemas, pelo `problemasDeAddon` (família `incompativeis`). Os dois continuam valendo.
+- O validador cobra só o formato do id e recusa o próprio id. O outro pacote não precisa estar
+  instalado, porque a trava serve justamente para quando ele aparecer.
+
+### O campo `concedeAptidoes` (2026-09-12)
+
+O pacote pode **conceder Aptidões Amaldiçoadas pelo nome**, opcionalmente só enquanto um item está
+equipado. Nasceu das Faixas de Sif do autor (`addons/faixas-de-sif.json`): *"um dos efeitos da
+Habilidade Única (criada com o Narrador) é receber a Aptidão Amaldiçoada de Maldição 'Armas Naturais
+Aprimorada' mesmo sem ser uma Maldição."*
+
+```json
+{
+  "concedeAptidoes": [
+    {
+      "aptidoes": ["mal_armas_naturais", "mal_armas_naturais_aprimoradas"],
+      "enquantoEquipado": "arm_faixas"
+    }
+  ]
+}
+```
+
+O motor já concedia Aptidão pelo nome em três lugares (origem, Especialização e sessão do mestre), e
+a do Addon entra **no mesmo caixa**, com as mesmas regras: ignora o próprio pré-requisito, não gasta
+vaga, conta para o requisito de terceiros e some no Restringido. `enquantoEquipado` é o `refId` da
+entrada do inventário. Sem ele, a concessão vale enquanto o pacote estiver na ficha.
+
+As três decisões do autor, por pergunta:
+
+| Pergunta | Resposta |
+|---|---|
+| Quando vale | **só com o item equipado**, igual a todo efeito de Habilidade Única |
+| O que conceder | **Armas Naturais e Armas Naturais Aprimoradas**: a segunda exige a primeira, e as escadas somam |
+| Quem enxerga | **os dois sistemas** |
+
+⚠ **Não é `libera`.** Liberação é um id fixo do motor que destrava uma regra. Aqui o pacote diz QUAL
+Aptidão, que é substantivo, e por isso é campo com dado. O verbo mora em `aptidoesConcedidasPorAddon`
+(afty-addons.js), e o inventário chega por parâmetro (`itensEquipados`, afty-equipamentos.js), porque
+o catálogo de equipamento importa o registro e o contrário fecharia um ciclo.
+
+⚠ **Fica fora do Motor de efeitos**, pelo motivo da concessão da origem: a lista de Aptidões fecha
+antes do `coletarEfeitosAptidao`. Por isso o inventário é lido cru no topo do derive, muito antes do
+`resolveEquipamentos`.
+
+⚠ **Duas portas de tela que a concessão abriu.** A aba de Aptidões só mostra a categoria Maldição para
+a Maldição, e a Aptidão dada a quem não é entrava na conta e ficava invisível. A categoria agora
+aparece quando há concedida nela, listando **só as concedidas** (a categoria inteira ofereceria à mão
+o que a origem não alcança). E o rótulo verde da concedida era um `if` de dois ramos, que escrevia
+"Origem" em tudo que não fosse da Especialização. Agora ele diz a fonte, e na do Addon é o nome do
+item, com o hover citando o pacote.
+
+⚠ **A primeira porta foi fechada em 2026-09-17**, a pedido do autor: *"As Aptidões de Maldição
+fornecidas pela Faixa de Sif, não precisam aparecer na Aba de Aptidões. Só de funcionar mecânicamente
+já está bom"*. A aba de Aptidões voltou a mostrar só as categorias que a origem abre, e a concessão
+segue inteira no motor. Na Maldição de verdade a aba Maldição continua, com as concedidas dentro dela.
+
+⚠ **O campo precisa estar no `normalizarPacote`.** A biblioteca grava o pacote normalizado, e campo
+que o normalizador não conhece some na instalação sem aviso.
+
+⚠ **Achado no caminho: a Fineza das Armas Naturais estava morta desde 2026-09-01.** O canal
+`finezaAtaque` passou a ser lido pelo escopo da linha naquele dia, o Corpo Treinado foi migrado para
+`basico` e a linha da Armas Naturais ficou em `corpo`, que ninguém escuta. Nenhuma Maldição atacava
+com Destreza. Consertada para `basico`, com assert varrendo toda linha de Fineza.
+
+### O campo `substituiEnergiaReversa` (2026-09-17)
+
+Um pacote pode retirar a trilha e a aba Energia Reversa e colocar no lugar uma lista fechada de
+Aptidões já existentes. Nasceu do rebalanceamento da Tobimune: o portador não deve receber as cinco
+Aptidões gratuitamente, mas deve poder escolhê-las no lugar das Aptidões de Energia Reversa.
+
+```json
+{
+  "substituiEnergiaReversa": {
+    "tab": "Tobimune",
+    "aptidoes": [
+      "mal_regeneracao_corporal",
+      "mal_regeneracao_ampliada"
+    ]
+  }
+}
+```
+
+O campo abre escolhas normais. As Aptidões gastam vaga, respeitam pré-requisitos e só produzem
+efeito depois de escolhidas. Ele não é `concedeAptidoes`, não depende de item equipado e não muda a
+origem estrutural da ficha. Enquanto estiver ativo, escolhas e concessões da categoria Energia
+Reversa deixam de produzir efeitos. Desativar o addon devolve a trilha, a aba e as escolhas antigas.
+
+Na interface, a categoria usada é Maldição, filtrada pelos ids declarados no pacote. Assim o addon
+reutiliza os textos, requisitos e efeitos do catálogo sem duplicá-los e sem abrir as outras Aptidões
+de Maldição.
+
+### O campo `permite`, e por que ele existe
+
+**As primitivas da fase 0 vivem no motor sempre, e aparecem na TELA só de quem pediu.** É o que o
+campo declara. Os quatro valores de hoje:
+
+| id | O que destrava |
+|---|---|
+| `concessao` | o card **Concedido pelo Mestre**, na Ficha Final e no painel do Encontro |
+| `contar` | o grupo **Marcas** no seletor de variáveis, e a função `contar()` na lista de funções |
+| `hpAtributo` | o canal **Atributo do PV** no seletor de canais |
+| `adaptacao` | o painel **Roda de Adaptação**, na aba Ações da Ficha Final e do Encontro |
+
+⚠ **ISTO NASCEU DE UM ERRO, e vale escrito para não repetir.** Ao fechar a 8.3 eu construí o verbo
+no motor, marquei a primitiva como pronta e parei ali. O resultado foi o card "Concedido pelo
+Mestre" aparecendo na tela de jogo de **todo mundo**, com zero addons instalados, listando o
+catálogo raw inteiro. O autor viu no deploy em 2026-08-20 e apontou: *"deveria ser algo próprio de
+Addon"*. As outras duas primitivas tinham vazado do mesmo jeito, mais baixinho.
+
+A lição vale para a 8.4 e para a fase 3: **acrescentar o verbo ao motor não é a tarefa inteira.**
+Falta sempre dizer quem enxerga o verbo.
+
+**Como a decisão desce até a tela.** A fonte é `derived.primitivas`, calculada de
+`creature.addons` pelo `primitivasDaCriatura`. Da Ficha e do criador ela desce por **contexto React**
+(`ui/usar-primitiva.js`), porque dois dos três consumidores são folhas fundas do criador de 12 mil
+linhas, e passar prop até lá seria meia dúzia de assinaturas alteradas em componentes que não têm
+nada a ver com Addons.
+
+⚠ **Sai da FICHA, e não do mundo aplicado.** Num Encontro misto o mundo é a união de todos os
+addons, mas um combatente sem addon nenhum não pode herdar a tela de quem tem. É a mesma razão de a
+marca de "não raw" sair da ficha. Por isso o provedor é **um por combatente**.
+
+⚠ **O portão é de TELA, e nunca de motor.** Uma sessão que já tem coisa concedida continua valendo
+mesmo se o addon parar de permitir, e o card reaparece nesse caso: sem isso, desinstalar o addon
+deixaria a linha morta presa na sessão sem botão de tirar. Pela mesma razão, o canal já ESCOLHIDO
+numa expressão continua à vista no seletor.
+
+⚠ **Permitir não muda número nenhum**, e há assert medindo os stats principais dos dois lados.
+
+### O registro de famílias
+
+É isto que sustenta a promessa de "generalista": acrescentar uma família nova ao sistema de addons é
+**uma linha**, e não um caso especial.
+
+```js
+// afty-registro.js
+const FAMILIAS = {
+  habilidades: { base: AFTY_HABILIDADES, validador: validarCatalogoHabilidades, chave: "id" },
+  aptidoes:    { base: AFTY_APTIDOES,    validador: validarCatalogoAptidoes,    chave: "id" },
+  tiposDano:   { base: TIPOS_DANO,       validador: null,                       chave: "value" },
+  // ...
+};
+```
+
+---
+
+## 5. Namespace
+
+Todo id que um addon cria nasce prefixado: `minha-mesa:ciclo_de_adaptacao`. Colisão com o raw fica
+impossível para sempre, e um id órfão numa ficha de terceiro fica legível em vez de virar buraco.
+
+**Referência entre entradas do mesmo addon é escrita sem prefixo e resolve local primeiro, raw
+depois.** Um `requisito` apontando para `ciclo_de_adaptacao` acha o do próprio addon. Um apontando
+para `lut_corpo_treinado` acha o raw.
+
+**Os caminhos de `caminhosDeId` (revisão de 2026-10-07, achado M05-F03).** O `prefixarEntrada` anda o
+caminho passo a passo, em qualquer profundidade, com três formas que se combinam: `campo` (o valor),
+`campo[]` (cada item da lista) e `campo{}` (cada CHAVE do objeto, com o valor intacto). Até aqui ele
+só sabia dois níveis, e o `requisitos[].ids[]` das Lendárias deixava a lista do `lendariaOr` crua: a
+Lendária que citava irmãs do próprio pacote nunca era alcançável. Entraram junto três caminhos que
+faltavam:
+
+| Família | Caminho novo | O que ele cita |
+|---|---|---|
+| habilidades | `requisitos[].habId` | a mãe do requisito `escolha` (o `opcaoId` fica cru: é opção dela) |
+| especializacoes | `remendaHabilidades{}` | as habilidades da mãe que a herdeira remenda, quando a mãe é do pacote |
+| habilidades, talentos, aptidoes | `efeitos[].alvo` | a entrada do próprio pacote que o efeito mira, como a linha de cura dela |
+
+Alvo que não é id local (atributo, perícia, escopo de arma, `d6`) segue intocado. Nenhum dos 51
+pacotes do repositório tinha alvo igual a id local quando o caminho entrou.
+
+---
+
+## 6. Onde o addon mora
+
+Copiando a decisão que o autor já tomou para o tema da Ficha (`ficha-tema.js`, 2026-08-05:
+*"quero mandar minha ficha bonitinha para os outros"*). **Duas moradas, papéis separados.**
+
+| Morada | Chave | Papel |
+|---|---|---|
+| **Biblioteca** | `fm_addons_afty_v1` | onde a pessoa instala, edita e atualiza |
+| **Cópia embutida** | `creature.addons` | congelada no momento do uso. **É ela que manda no cálculo** |
+
+Exportar a ficha exporta as regras dela, então ninguém recebe ficha quebrada, e não existe servidor
+de registro, URL nem fetch. E resolve de graça o problema mais chato: o addon muda e as fichas
+antigas **não se mexem sozinhas**. A ficha diz que existe versão nova e atualizar é um botão.
+
+⚠ O custo é duplicação, e o `localStorage` tem 5MB. O pacote tem teto, no mesmo espírito do
+`CSS_MAX` de 64KB do tema: **avisa, não bloqueia**.
+
+---
+
+## 7. A marca de "não raw"
+
+Ficha que usa addon fica marcada no cabeçalho. Não como advertência moral, como informação: quem
+recebe a ficha precisa saber que ela não é raw **antes** de comparar com a mesa dele.
+
+O painel de fontes já mostra de onde veio cada número, então o addon vira só mais uma origem.
+
+---
+
+## 8. As quatro primitivas (fase 0)
+
+Cada uma nasceu de um caso real que o autor já tentou fazer e não coube. Elas entram no MOTOR, e as
+quatro são úteis fora do addon.
+
+### 8.1 Família marcada por tag, e `contar()`
+
+**O caso.** Uma habilidade dá 2 de RD Geral, e mais 1 a cada outra habilidade do mesmo arquétipo na
+ficha.
+
+**O que falta.** O DSL já tem uma booleana `tem_*` por habilidade do catálogo. Falta a irmã dela:
+contar em vez de perguntar. Com `tags` na entrada, `2 + contar("adaptacao") - 1` resolve a habilidade
+inteira, e a família toda de homebrew "escala com quantos X eu tenho" vem junto.
+
+**Onde.** Precisa da cópia do avaliador do `fm-dsl.js` para `src/systems/afty/` (decisão 6). Função
+nova do DSL exigiria editar o 2.5.2, que é somente-leitura, e o cabeçalho do `afty-efeitos.js` já
+mandava parar e perguntar nesse caso.
+
+### ✅ FEITA em 2026-08-20
+
+`src/systems/afty/afty-dsl.js` nasceu da cópia, e os 6 pontos de importação do Afty passaram a
+apontar para ela. A 2.5.2 segue com a cópia dela, intacta. Além do `contar()`, a linguagem ganhou
+**literal de texto**, que o `fm-dsl` não tem, e ele só vale como argumento de função: o validador
+reprova `2 + "abc"` em vez de deixar valer 2.
+
+Cada entrada da ficha rende duas espécies de marca:
+
+| Espécie | De onde vem |
+|---|---|
+| escrita | o campo `tags` da entrada, que é por onde o Addon marca as dele |
+| automática | a família (`habilidade`, `talento`, `aptidao`) e a especialização dona |
+
+⚠ **As automáticas são decisão minha, não do autor.** Sem elas a função nasceria morta, porque
+nenhuma entrada do catálogo raw tem `tags` e só o Addon (fase 1) traria a primeira. Com elas,
+`contar("lutador")` já responde hoje. Marca escrita com o mesmo nome de uma automática apenas SOMA,
+e é inofensivo. Apagar o bloco é uma linha, se o autor não quiser.
+
+⚠ **No estágio MONTANTE o `contar()` devolve 0**, porque ele roda antes de Habilidades, Talentos e
+Aptidões existirem. Mesma limitação do `tem_*` naquele estágio.
+
+### 8.2 Canal de substituição de atributo em fórmula
+
+**O caso.** Uma habilidade troca o atributo do cálculo de PV para um à escolha.
+
+**O que falta.** Quase nada: `defesaAtributo` já existe em `afty-efeitos.js`, com a nota "TROCA a
+Destreza no cálculo da Defesa, e não soma nada", e o desempate já está decidido ("com mais de um
+concedido vale o de maior modificador, porque a regra é sempre você pode optar"). `hpAtributo` é a
+mesma coisa apontada para outro lugar. Semântica, desempate e painel de fontes vêm prontos.
+
+⚠ Vale generalizar o padrão: **toda fórmula que lê um atributo específico deveria ter canal de
+substituição**. Ver `afty-status.md`, "Substituir não é somar".
+
+### ✅ FEITA em 2026-08-20
+
+Canal `hpAtributo`, com `alvo: "atributo"`, no grupo Atributos e Aptidões. O PV passou a ler
+`modHp` em vez de `modCon`, e o hover troca a linha "Constituição × ND" por
+"Força × ND (no lugar da Constituição)" mais a fonte que substituiu.
+
+⚠ **Alvo AUSENTE dá exatamente o texto do autor.** A convenção do motor é que canal com destino e
+sem alvo vale para TODOS, e aqui isso quer dizer o melhor dos seis, que é o "para um a minha
+escolha" da fala dele. Com alvo nomeado, vale aquele. Nos dois casos o hover diz qual foi.
+
+### 8.3 Concessão vinda da SESSÃO
+
+**O caso.** *Ciclo de Adaptação*, do Mahoraga: a cada condição em combate, o mestre acrescenta na
+hora Habilidades, Feitiços, Treinos ou qualquer coisa na criatura, **já calculando**.
+
+**O que falta.** Duas coisas, e a segunda parece cara e não é.
+
+1. Conceder QUALQUER família (hoje: Aptidão por nome, escolha de habilidade, Bases da Especialização).
+2. A concessão vir da mesa em vez de ser determinística.
+
+A Ficha já deriva com `{ ...creature, combate: sessao.combate }`. Uma `sessao.concedido` entra pelo
+mesmo caminho, e o "já calculando" sai de graça, porque a derivação é função pura da criatura
+mesclada. De brinde a ficha salva não suja, que é a razão de a sessão viver em chave separada.
+
+### ✅ FEITA em 2026-08-20
+
+O módulo é `afty-concessao.js`, a sessão guarda em `sessao.concedido`, e a tela é um
+componente só (`ficha/PainelDeConcessao.jsx`) usado pelos dois donos. **142 asserts** em
+`t-concessao.mjs` e `t-concessao-sessao.mjs`.
+
+#### As respostas do autor
+
+| Pergunta | Resposta |
+|---|---|
+| Onde o mestre escolhe | **Nos dois**: botão na Ficha Final e no painel de combatente do Encontro |
+| A concessão gasta vaga | **Não**, entra de graça. É ganho de combate, não compra de ficha |
+| Sobrevive ao combate | **Não**, morre com a sessão |
+
+As três juntas dizem uma coisa só, e ela simplifica muito: **a concessão é estado de sessão, nunca
+ficha**. Nada disso é gravado na criatura, nada disso passa pelos contadores de orçamento, e limpar
+a sessão desfaz tudo. É o mesmo estatuto que os buffs temporários já têm.
+
+Consequências que caem de graça dessa escolha:
+
+- **De graça** quer dizer que o concedido não entra em nenhum `usados` nem faz nada ficar vermelho.
+  Uma criatura com 12 habilidades concedidas no meio da luta continua com a ficha válida.
+- **Morre com a sessão** quer dizer que a ficha salva nunca é tocada, então não existe migração,
+  nem risco de sujar a criatura de outra pessoa, nem entrada nova no `afty-schema.js`.
+- **Nos dois lugares** quer dizer que a peça de tela é uma só, com dois donos. A Ficha Final e o
+  painel de combatente já leem a mesma sessão.
+
+⚠ O concedido continua **visível**, e com marca de onde veio, porque a criatura na mesa fica
+diferente da criatura no papel e ninguém pode se confundir sobre qual está lendo.
+
+#### Como ficou
+
+A concessão entra por `deriveAfty(creature, { concedido })`, **nunca pela criatura**, e o
+`deriveAfty` reparte a lista pelas famílias e entrega a cada resolvedor o **canal de concessão**
+dele.
+
+⚠ **O canal não foi inventado para isto.** A `resolveHabilidades` já tinha um desde sempre: as
+Bases que a Especialização concede entram em `concedidas`, valem para tudo e não gastam vaga, que é
+exatamente a semântica pedida. As outras seis famílias ganharam o mesmo canal, com o mesmo nome. O
+resultado é que "de graça" não é uma correção aplicada depois, é o caminho por onde o dado anda.
+
+**As 7 famílias**, que são as de id de catálogo: Habilidade de Especialização, Habilidade Geral,
+Talento, Treino Especial, Aptidão Amaldiçoada, Melhoria Superior e Habilidade Lendária.
+
+⚠ **O Feitiço ficou de fora**, e não por preguiça: ele não é id de catálogo, é objeto criado dentro
+da ficha, então conceder um significa escolher **de onde copiar**, que é outra interação. Está
+anotado em `docs/a-fazer.md`.
+
+**Três invariantes que os asserts prendem**, porque as três são fáceis de quebrar sem sintoma:
+
+1. o orçamento com a concessão tem de ser **idêntico** ao da mesma ficha sem ela (`gastos`,
+   `restante` e `excedeu` medidos contra a ficha crua, família por família);
+2. a criatura de entrada **não muda um byte**, e o `JSON.stringify` dela não contém a palavra
+   `concedido`;
+3. a pega concedida e a comprada dão **o mesmo número**. Se divergirem, o motor tem dois caminhos
+   para a mesma regra.
+
+⚠ **CONCEDER NÃO APARA NO TETO.** Três famílias são repetíveis com limite (Geral, Melhoria, Treino
+Especial), e o limite é do **orçamento de compra**. O Ciclo de Adaptação existe justamente para dar
+o que a criatura não alcançaria comprando, então aparar ali mataria a primitiva. A compra continua
+aparando, e há assert dos dois lados.
+
+⚠ **Pré-requisito também não é cobrado.** O resolvedor continua **reportando** o inacessível em
+`inacessiveis`, que é a convenção do projeto (reporta, não remove).
+
+**Linha morta:** a concessão que aponta para um addon que saiu do ar sobrevive na sessão, aparece
+riscada com o chip "Sem Addon" e o `title` mostra o id, para dar o que procurar. A ficha abre do
+mesmo jeito e o número volta ao de antes.
+
+### 8.3.1 Ciclo de Adaptação do Mahoraga
+
+Feito em 2026-08-28 como verbo genérico do motor mais um pacote declarativo. O pacote é
+**`addons/ciclo-adaptacao-mahoraga.json`**, na raiz do repositório, e entra pelo campo **Instalar**
+da aba Addons. Só a criatura que carrega a cópia do pacote enxerga o painel.
+
+⚠ **ELE TINHA BOTÃO PRÓPRIO E PERDEU** (autor, 2026-09-01: *"resolva do o Mahoraga também"*). Era o
+precedente que o Flugel seguiu, e caiu junto com ele: um botão fixo no cabeçalho da Biblioteca põe o
+pacote no bundle de todo usuário, e a fase 1 é explicitamente *"acrescentar por JSON colado"*.
+
+⚠ **Não existe mais `src/systems/afty/addons/`.** Os dois pacotes que moravam ali viraram JSON, e a
+pasta foi embora inteira. Um addon novo nasce em `addons/*.json` e nunca dentro de `src/`: se
+aparecer a tentação de embutir mais um, é esta linha que diz não.
+
+O estado fica em `sessao.adaptacoes`, separado por `pacote:ciclo`. O primeiro giro é manual e
+grava a rodada. Depois disso, `proximaRodada` gira uma vez automaticamente a cada rodada. Giros
+manuais adicionais continuam permitidos. Todo quinto giro cria uma escolha pendente e não concede
+Habilidade. O botão Resetar encerra o ciclo, limpa giros, rodada inicial, pendências, Narrativas e
+Mecânica, e remove somente as concessões produzidas por aquela roda. Giros antigos sem o id direto
+da concessão são reconhecidos pelo conteúdo e pelo instante em que foram criados.
+
+Nos giros comuns, o motor varre `HABILIDADE_EFEITOS` e `ESCOLHA_EFEITOS` atrás de
+`bonusAcerto` positivo, ordena as Habilidades por nível e depois pela ordem do catálogo, ignora as
+já possuídas e as já concedidas, e concede de graça. Um requisito do tipo Habilidade entra em um
+giro anterior. Escolhas aninhadas de Acerto viajam na própria concessão e chegam ao
+`resolveEscolhasHabilidade`. Os efeitos da Habilidade e das opções recebidas pela roda são aplicados
+diretamente durante o ciclo, sem depender do interruptor normal da Habilidade. Uma concessão comum
+continua respeitando o gatilho do catálogo.
+
+Nos marcos, Narrativa guarda texto livre e aumenta o requisito da próxima Mecânica. Mecânica
+substitui a anterior e usa as tabelas existentes de Feitiço Auxiliar no maior nível acessível. Os
+degraus são sem requisito, Fácil, Médio, Difícil e Impossível. Médio, Difícil e Impossível compram
+a maior Negação de RD que cabe no PE extra do requisito. Impossível aplica Ação Completa, Pressão
+Amaldiçoada e Ruptura Absoluta.
+
+O painel único `ficha/PainelDeAdaptacao.jsx` aparece no topo de Ações nas duas telas. A lógica pura
+tem 42 asserts em `t-adaptacao.mjs`.
+
+### 8.4 Vínculo entre criaturas
+
+**O caso.** Somar a barra de PV com a de outra criatura, virando uma só, e somar a de PE junto.
+
+**O que falta.** Essa é a única que atravessa a arquitetura. `deriveAfty` é função pura de UMA
+criatura, e somar duas barras é uma RELAÇÃO, não um número.
+
+O lugar é o **Encontro**, que já segura N combatentes, cada um com ficha e sessão. A forma é derivar
+os dois normalmente e combinar depois, o que é seguro enquanto o vínculo não realimentar as
+derivações individuais. Soma não realimenta.
+
+⚠ **É aqui que fica claro por que código não era a resposta.** Um gancho em JavaScript rodando
+dentro do `deriveAfty` também não teria os dados do amigo. O que falta não é poder de expressão, é
+uma primitiva que não existe em lugar nenhum.
+
+### ✅ DECIDIDA em 2026-08-20 (respostas do autor)
+
+| Pergunta | Resposta |
+|---|---|
+| Uma barra ou duas somadas | **Uma barra só.** O vínculo tem PV corrente PRÓPRIO, e os máximos somam |
+| Dano em um dos dois | **Um para um no pool comum.** 10 no amigo tira 10 da barra compartilhada |
+| O que mais compartilha | **PV, PE e PV temporário.** Nada além disso |
+| RD, resistências e imunidades | **Por pessoa.** Bateram em mim, vale a MINHA RD. Bateram nele, a dele |
+| Condições | **Por pessoa** |
+| Quem declara o vínculo | **Os dois caminhos**: a habilidade do addon e o mestre à mão no Encontro |
+| Pool zerado | **Os dois caem juntos**, e cada um entra em morrendo por conta própria |
+| Vínculo quebra no meio do combate | **Proporcional ao máximo de cada um** |
+
+**A linha que separa o que soma do que não soma é clara, e vale escrever em voz alta:** soma o que
+é **pilha de recurso** (PV, PE, PV temporário), e não soma o que é **propriedade de um corpo** (RD,
+resistência, imunidade, condição). A barra é comum, os corpos continuam dois.
+
+Isso resolve a pergunta mais espinhosa sozinho. A RD ser por pessoa quer dizer que **ela é aplicada
+ANTES de o dano chegar no pool**: o golpe de 30 no amigo com 30 de RD tira zero do pool, e o mesmo
+golpe em mim com 50 de RD também tira zero, mas por outra conta. O pool nunca precisa saber qual RD
+usar, porque quem recebeu já resolveu isso.
+
+**A ordem de uma pancada**, então, é esta, e ela não muda nada do que já existe até o último passo:
+
+1. o alvo é UM combatente, sempre. Vínculo não muda quem foi acertado;
+2. a RD, a resistência e a imunidade **daquele alvo** aparam o dano, como hoje;
+3. o que sobrou desce no PV temporário **do pool**, e depois no PV **do pool**;
+4. condição aplicada gruda **só naquele alvo**.
+
+**Proporcional ao máximo**, na quebra, quer dizer `floor(poolCorrente * maxDele / maxSomado)`, com
+o arredondamento para baixo de sempre. Sobra de divisão vai para quem tem o maior máximo, e o
+detalhe importa: com o floor nos dois lados, um ponto sumiria calado.
+
+⚠ **Uma barra só tem um custo que precisa estar escrito:** enquanto o vínculo está de pé, o PV
+corrente **individual de cada membro deixa de existir**, e não é só apresentação. Por isso a quebra
+precisa de uma regra de repartição, e por isso ela foi perguntada junto.
+
+---
+
+## 9. Linha morta e marcada (decisão 4)
+
+Três situações reais: a expressão do addon tem erro de sintaxe, a entrada cita um canal que a versão
+nova do addon não declara mais, ou o addon foi desligado e a criatura ainda o referencia.
+
+| Onde | Comportamento |
+|---|---|
+| **Instalar o addon** | recusa. Ninguém instala addon quebrado, e os 13 validadores já sabem reprovar |
+| **Abrir a ficha** | **sempre abre.** A linha aparece marcada e não soma nada |
+
+O que a linha morta mostra, para o problema ser descobrível:
+
+- de qual addon veio
+- o que falhou: expressão inválida, canal inexistente, ou id que sumiu
+- a expressão como está escrita, mais o erro do avaliador (`validateExpression` já devolve texto,
+  do tipo `"Função desconhecida: x()"`)
+- onde ela deveria ter entrado
+
+### Onde ela aparece
+
+Nas **três** telas que mostram números derivados, porque uma criatura com addon órfão mostra número
+ERRADO, e o sintoma tem de estar onde a pessoa está olhando:
+
+| Tela | Onde |
+|---|---|
+| Criador | um card "Problemas" no topo da aba Addons |
+| Ficha Final | um bloco acima do corpo, em qualquer aba |
+| Encontro | dentro do painel do combatente, acima dos vitais |
+
+⚠ O Encontro foi o último a receber, e ele era o mais importante dos três: é lá que o mestre abre a
+criatura de outra pessoa, que é exatamente o caso em que o addon está faltando.
+
+⚠ Isso **não fere** a regra de nada de texto explicativo na UI: a regra abre exceção para AVISO, que
+é exatamente o que isso é. Ver `afty-status.md`, "Regras de UI que este chat aprendeu apanhando".
+
+---
+
+## 10. A fronteira
+
+O que o addon NÃO faz, e é o que mantém o site raw:
+
+- não roda código (até a fase 5, se ela vier)
+- não desenha tela nem cria aba
+- não inventa canal nem variável de DSL escondido. Falta de verbo vira trabalho no motor (seção 1)
+- não reescreve fórmula. Coeficiente de tabela sim, na fase 4
+
+---
+
+## 11. Fases
+
+### Fase 0: as 4 primitivas
+Motor puro, sem nada de addon. Três pequenas e uma média. Testáveis já contra os quatro casos da
+seção 8. **Úteis mesmo se o resto nunca vier.**
+
+### Fase 1: acrescentar por JSON
+Registro, namespace, `creature.addons`, a época no `useMemo`, a marca na ficha e a linha morta.
+Entrada por colar JSON, sem tela de autoria. Os catálogos já têm forma uniforme e validador pronto,
+então é a melhor razão entre trabalho e resultado do projeto todo.
+
+### PARADA OBRIGATÓRIA
+Ver se aparece alguém escrevendo addon. As fases seguintes servem a quem NÃO escreve JSON, e o
+escopo declarado hoje é "um punhado de pessoas de confiança".
+
+### Fase 2: Oficina (condicional)
+A tela de autoria, reusando `TecnicaMotorEditor` e `TextoRico`. Uma família por vez, começando por
+Habilidade. As peças empilham: o formato do pacote não muda quando a tela chegar depois.
+
+### Fase 3: remendar e desligar
+**Remendar está FEITO (2026-08-22).** Desligar continua fora. Ver a seção 14.
+
+⚠ **A parte com preço que não termina.** Um remendo aponta para id do raw, e no dia em que o
+catálogo for refatorado, o remendo dos outros apodrece calado. É o mesmo problema do requisito `nota`
+já anotado, com o agravante de o conteúdo ser de terceiro e não ter como ser testado. O que existe
+contra isso hoje: o `validarPacote` confere o id contra a lista RAW da família (`basicos()`) e
+**recusa o pacote inteiro** quando ele erra o alvo, e a conferência refaz a cada `aplicarAddons`.
+Não é manutenção zero, e nunca vai ser.
+
+### Fase 4: tabelas (condicional)
+Grau novo, Patamar novo, Tipo novo, coeficiente de PV por Tipo.
+
+⚠ Não é "trocar uma constante". A sessão de 2026-08-19 é o estudo de caso: somar uma linha em
+`AFTY_GRAUS_CRIATURA` mexe em `rank` (que alimenta 4 fórmulas), em `EQUIP_GANHO_POR_GRAU` (chaveado
+pelo mesmo `value`) e em 3 invariantes do validador. Então a fase 4 é uma **lista fechada de tabelas
+que o sistema aceita ver substituídas**, cada uma com esquema, o validador que já guarda o raw, e
+uma regra de preenchimento para as tabelas irmãs (o autor já escolheu uma vez: `EQUIP_GANHO_ESPECIAL`
+repetindo a última linha).
+
+### Fase 5: função (condicional)
+O escape hatch em JavaScript. Ver os avisos da seção 1.
+
+---
+
+## 12. Riscos nomeados
+
+| Risco | Mitigação |
+|---|---|
+| Duplicação estourar os 5MB do `localStorage` | teto do pacote, com aviso e não bloqueio |
+| `useMemo` não recalcular ao trocar addon | contador de época na dependência (seção 3) |
+| Dois addons remendando a mesma linha | ordem declarada, vencedor mostrado no painel de fontes |
+| Remendo apodrecendo em refatoração do raw | versão do raw no pacote, revalidação ao abrir (fase 3) |
+| Addon virar coisa pública com sandbox que não é parede | a decisão 5 volta para a mesa nesse dia |
+| Catálogo novo do raw nascer fechado a addon | o registro de famílias (seção 4) é o lugar único a lembrar |
+
+---
+
+## 13. Perguntas abertas
+
+Nada bloqueando as fases 0 e 1. Anotar aqui o que aparecer.
+
+---
+
+## 14. O REMENDO (`substitui`), 2026-08-22
+
+A metade da fase 3 que o autor destravou ao mandar um Addon que **reescreve** o Domínio Simples e
+dois Talentos de Origem em vez de criar linhas novas. Criar não servia: dois Talentos com o mesmo
+nome na lista não é remendo, é confusão.
+
+```json
+"substitui": {
+  "aptidoes": [{ "id": "dominio_simples", "descricao": "..." }],
+  "talentos": [{ "id": "tal_nocao_e_preparacao", "descricao": "...", "efeitos": [...] }]
+}
+```
+
+### As quatro regras
+
+1. **A substituição é por CAMPO e é RASA.** `{ descricao }` troca a descrição e deixa `requisitos`
+   como estavam. `{ requisitos: [...] }` troca a lista INTEIRA, e não mistura item a item. Mesclar
+   fundo pareceria mais gentil e seria imprevisível, e apagar um item viraria impossível.
+2. **O id é intocável.** Ele é a âncora do remendo e a chave do que já está gravado nas fichas.
+   Trocá-lo seria apagar a entrada e criar outra, que é o que o `acrescenta` faz.
+3. **O alvo tem de existir no LIVRO.** O id não leva prefixo de pacote, e o validador o confere
+   contra `def.basicos()`, a lista raw da família. Errar o alvo **recusa o pacote inteiro**, e não
+   vira remendo que simplesmente não liga.
+4. **Dois pacotes na mesma entrada: o último vence**, campo a campo, e os dois ficam em
+   `remendadoPor`.
+
+### O que quase passou batido
+
+⚠ **O efeito do raw mora FORA do catálogo.** `TALENTO_EFEITOS`, `HABILIDADE_EFEITOS` e irmãos vivem
+em `afty-efeitos-conteudo.js`, chaveados pelo id, e o id não muda num remendo. Sem uma regra de
+precedência, o remendo trocava o TEXTO da regra e o NÚMERO continuava o antigo, calado. Era
+exatamente o caso do Noção e Preparação, que passa a subir nos níveis 9, 14 e 19 pelo Addon e
+continuaria subindo em 8, 12 e 16 no motor.
+
+A regra que entrou, em `coletarEfeitos`: **entrada remendada que declara `efeitos` vence o mapa do
+raw.** Quem não é remendada continua lendo o mapa primeiro, então nada muda para o livro.
+
+⚠ **Duas famílias recusam remendo, e dizem por quê.** `tiposDano` é um mapa `{ value: label }` e
+`condicoes` é uma lista de strings: nelas não existe "trocar um campo". O validador reprova com a
+razão, em vez de aceitar calado e não fazer nada.
+
+### O conteúdo que veio junto
+
+| Peça | Como |
+|---|---|
+| Domínio Simples com sustentação de 2 PE, sem Durabilidade | remendo em `aptidoes` |
+| Treino de Novo Estilo das Sombras (4 etapas + Completo) | acréscimo em `treinamentos` |
+| Coleta de Talismãs, Expansão de Estilo | acréscimo em `talentos` |
+| Estudo Amaldiçoado e Noção e Preparação reescritos | remendo em `talentos` |
+
+Cinco coisas no motor tiveram de nascer para o conteúdo caber, e nenhuma delas é sobre este Addon:
+
+- **canal `vagasEstilo`**, vaga exclusiva de Técnica de Estilo. Mais estreita que a de Feitiço, e por
+  isso é gasta primeiro.
+- **canal `imbuicoesEstilo`**, quantas Técnicas cabem no Domínio Simples além do Nível de Aptidão em
+  Domínio. ⚠ Ele roda num **passe próprio** (`CANAIS_POS_APTIDAO`, estágio 0c): no pré-contexto a
+  variável `dom` ainda não existe, e no estágio principal o `resolveEstilos` já rodou. E o passe lê
+  as DUAS listas de efeito, porque uma Linha de Treinamento entra pelo montante e não pelo
+  `efeitosTodos` (filtrar só o segundo deixava o Completo mudo).
+- **`soDaOrigem`** na Linha de Treinamento, a trava POSITIVA. Até aqui só existia a negativa
+  (`foraDaOrigem`).
+- **requisitos `aptidao` e `trilha`** na etapa de Treinamento e `aptidao` no Talento. Antes toda
+  etapa que citava aptidão era `nota`, que só exibe.
+- **repetição de Talento** (`maxVezes` / `maxVezesExpr`). ⚠ Não confundir com `escolha.repetivel`,
+  que é a outra repetição e continua valendo: ela é "pegue de novo, para outro alvo" e a ficha a
+  representa repetindo a ESCOLHA. Esta é "pegue de novo e ganhe a mesma coisa", e a ficha a
+  representa repetindo o ID, igual às Habilidades Gerais.
+
+⚠ **`passagem direta` na Linha de Treinamento.** Uma etapa pode declarar `{ canal, expr }` em vez de
+`{ tipo, valor }`. O vocabulário de `tipo` é uma lista fechada escrita para as 12 linhas do livro, e
+um addon que precise de canal fora dela não teria como dizê-lo. Também é o único jeito de escrever
+valor que não é constante: "o dobro do seu Nível de Domínio" é `dom`.
+
+### A liberação `qualificaSemTecnica`
+
+A terceira do sistema. Ela põe `sem_tecnica` em `origensQualificadas`, que é **o mesmo caminho que o
+Gêmeo já usava** para Verdadeiras Origens: *"considera a origem escolhida como sua para todos os fins
+de qualificação"*. Nada de novo precisou existir.
+
+É SEPARADA do `estiloSombras` de propósito: uma solta o Estilo, a outra solta os pré-requisitos de
+origem. Juntá-las faria a primeira mudar duas coisas de uma vez.
+
+⚠ Ela só ABRE, nunca tranca. `origensQualificadas` alimenta também `especializacoesDisponiveis`, e lá
+a origem extra só destrava especialização exclusiva. Nenhuma é exclusiva do Sem Técnica hoje, então
+o efeito colateral é zero, e continua sendo zero enquanto isso for verdade.
+
+
+---
+
+## 15. A ORIGEM ESTRUTURAL, 2026-08-29
+
+Pedido do autor: *"liberar Origem de Maldição para Gêmeos. Fazendo com que ele siga as regras de
+Maldição de não ter Energia Reversa, porém ter a aba de Aptidões de Maldição e etc."*
+
+A liberação `gemeosMaldicao` tira a Maldição de `VERDADEIRAS_ORIGENS_PROIBIDAS`, e isso é a metade
+fácil. A outra metade é o "e etc": **copiar da Maldição muda a ESTRUTURA da criatura**, e não só o
+que ela tem.
+
+### A pergunta nova, e por que ela não podia pegar carona
+
+Já existia `origensQualificadas`, e a tentação era pendurar isto nela. **Não dá.** Aquela lista está
+documentada como *"só ABRE, nunca tranca"*, e esta pergunta FECHA: virar Maldição TIRA a Energia
+Reversa. Pendurar um fechamento numa lista que promete só abrir é a armadilha, não a economia.
+
+Então nasceu `origemEstrutural(creature)`, que responde **uma** origem (não uma lista, porque a
+pergunta é excludente: a aba de Maldição OCUPA o lugar da de Energia Reversa, não se soma a ela).
+
+| Pergunta | Função | Devolve | Direção |
+|---|---|---|---|
+| O que a criatura ALCANÇA a mais? | `origensQualificadas` | lista | só abre |
+| O que a criatura É? | `origemEstrutural` | uma origem | abre e fecha |
+
+Três leitores mudaram, e são exatamente os três lugares que perguntavam `origem.id === "maldicao"`:
+
+- `trilhasDaCriatura` (nova, irmã da `trilhasDaOrigem`), lida pelo `deriveAfty`;
+- `abasAptidao`, que troca a aba de Energia Reversa pela de Maldição;
+- o `foraDaOrigem` das Linhas de Treinamento, nos três pontos que o consultam.
+
+⚠ **O Addon não é conferido dentro do `origemEstrutural`.** Quem confere é o
+`verdadeiraOrigemEscolhida`, que já devolve `null` quando a liberação saiu. Uma segunda trava seria
+uma segunda verdade para manter em sincronia.
+
+### A característica copiada passou a ter número
+
+⚠ **Até aqui, TODA característica copiada em Verdadeiras Origens entrava só como texto.**
+`ORIGEM_EFEITOS` é chaveado pela origem inteira e não desce à característica, e o comentário do
+`caracteristicaCopiada` já apontava a saída: *"quem precisar de canal declara em
+ORIGEM_ESCOLHA_EFEITOS, pelo id `vo_*`"*. Ninguém tinha usado, porque nenhuma das copiáveis tinha
+número.
+
+A Natureza Amaldiçoada tem: uma Aptidão à escolha, mais uma no 10° e no 15°, e +1 PE por nível. Os
+dois canais são **cópia literal** de `ORIGEM_EFEITOS.maldicao`, e a única razão de não serem lidos
+de lá é que aquele mapa não sabe a qual das três características da Maldição cada linha pertence.
+
+⚠ No dia em que a Maldição ganhar outra característica com número, as duas listas divergem em
+silêncio. Anotado em `docs/a-fazer.md`.
+
+### A variação de origem (`variacaoDe`), 2026-09-21
+
+Nasceu com o pacote **`addons/sem-tecnica-liberto.json`**, o Liberto, que o autor descreveu como
+"essa variação de Sem Técnica". Ele não é uma origem nova do zero: é um Sem Técnica com as
+características trocadas (Inquebrável e Caminho até o Fim no lugar de Estudos Dedicados e Empenho
+Implacável).
+
+O muro era o id. Toda origem de Addon ganha o namespace (`sem-tecnica-liberto:liberto`), e cada
+trava que perguntava "é Sem Técnica?" comparava com o literal `"sem_tecnica"` e respondia não,
+calada: Feitiços abertos, Estilo das Sombras fechado, a aba Habilidades com o leiaute das origens
+com técnica e nenhum Talento de Origem do Sem Técnica. As liberações `estiloSombras` e
+`qualificaSemTecnica` não resolviam: elas valem para a ficha que carrega o pacote, seja qual for a
+origem, e nenhuma fecha os Feitiços.
+
+```json
+{ "id": "liberto", "nome": "Sem Técnica - Liberto", "variacaoDe": "sem_tecnica" }
+```
+
+O verbo é `origemMae(id)` em `afty-origens.js`, e ele responde pela mãe em cinco lugares:
+
+| Trava | Onde |
+|---|---|
+| Estrutura (trilhas de Aptidão, `foraDaOrigem` das Linhas) | `origemEstrutural` |
+| Qualificação (Talento, Linha e Especialização de origem) | `origensQualificadas`, que devolve a variação E a mãe |
+| Verdadeiras Origens (o Gêmeo só copia da variação se puder copiar da mãe) | `opcoesVerdadeirasOrigens` |
+| Estilo das Sombras e Feitiços | `estiloCtx` e `tiposFeiticoPermitidos` no `deriveAfty` |
+| Leiaute da aba Habilidades | `TabHabilidades` no criador |
+
+⚠ **Herda a IDENTIDADE, não o CONTEÚDO.** Características, efeitos, `restricoes` e
+`especializacoesVetadas` são os da variação, escritos no pacote. É a diferença para o `herdaDe` da
+Especialização, que herda as habilidades: o Liberto não ganha os Estudos Dedicados da mãe.
+
+⚠ **Só as mães de `VARIACOES_ACEITAS` valem**: Sem Técnica (2026-09-21), Maldição (2026-09-22) e
+Restringido (2026-09-28, ver a seção seguinte). As outras origens têm travas literais espalhadas
+pelo código (os Gêmeos meia dúzia), e uma variação delas funcionaria pela metade sem aviso. O
+validador de Origem relata a mãe recusada, e o `origemMae` a ignora, então a origem responde como
+ela mesma em vez de meia mãe. A lista cresce quando as travas da mãe nova passarem pelo verbo.
+
+Veio junto uma correção pequena no `coletarEfeitosOrigem`: o `nome` do efeito inline de uma OPÇÃO
+passou a vencer o nome da opção, a mesma regra do `efeitos` da raiz. Sem isso o hover do +5 do
+Liberto dizia só "Percepção", e agora diz "Caminho até o Fim (Percepção)". Nenhum pacote anterior
+nomeava efeito de opção, então nada mudou para eles.
+
+O `asserts/t-liberto.mjs` lê o mesmo JSON que a pessoa cola, confere cada trava contra o Sem Técnica
+do livro nos dois sistemas, cada degrau no nível exato em que abre, e a mãe recusada (o Inato, desde
+que o Restringido entrou na lista).
+
+### A variação do Restringido, 2026-09-28
+
+Nasceu para o Addon **Fórmula de Combate Entrópica** (a Restrição Intelectual de Dr. Xeno, guia em
+`docs/afty-formula-entropica.md`). O Restringido é a mãe mais cara de aceitar porque tem travas em
+DOIS eixos: a origem trava a classe, e no jogador quem responde "sem energia amaldiçoada" é a
+CLASSE, e não o Tipo. Uma variação do Restringido vem então em par: a origem com `variacaoDe` e uma
+Especialização com `herdaDe: "restringido"`.
+
+```json
+"origens": [{ "id": "intelecto", "nome": "...", "variacaoDe": "restringido",
+              "especializacaoExclusivaId": "res_intelecto", "limiteAtributo": { "inteligencia": 30 } }],
+"especializacoes": [{ "id": "res_intelecto", "nome": "...", "herdaDe": "restringido",
+                      "exclusivaOrigemId": "intelecto", "incompativeisIds": ["restringido"] }]
+```
+
+| Eixo | O que passou a ler a mãe |
+|---|---|
+| Origem (`origemMae`) | `tipoObrigatorio` (o Tipo Restringido forçado), a classe exclusiva (`exclusivaDaOrigem`), a cópia do Gêmeo (só o Físico Abençoado, que a variação não tem), e pelo `origemEstrutural` as Linhas de energia e o Treino de Potencial Físico |
+| Classe (`especializacaoMae`, em `afty-especializacoes.js`) | o `semEnergia` do jogador, e o `niveisPorEfeito.restringido` (Caçador de Feiticeiros, Corpo de Aço), que a herdeira publica sob o nome da mãe como o `nivelEspec` já fazia |
+| Habilidade (`expandeHerdadas`) | a Restrição Definitiva no teto do Surto, a Imitação, o Ainda de Pé nas curas, e o Roubo de Habilidade (`roubadas`) |
+
+⚠ **Dois pedaços do Tipo NÃO descem**, por decisão do autor (*"Só INT vai a 30"*): o limite 30 de
+Força, Destreza e Constituição e o rótulo "Ápice Corporal Humano" no hover do limite. São o CONTEÚDO
+de uma característica do livro, e a variação herda identidade. Ela declara o próprio
+`limiteAtributo`. Quem responde é `ehVariacaoDoRestringido(id)`.
+
+⚠ **A variação sem classe própria fica presa ao Restringido do livro**, que é o que a identidade dela
+diz. Com a herdeira declarando `exclusivaOrigemId`, é a herdeira que vence. Os dois campos que se
+citam (`especializacaoExclusivaId` na origem e `exclusivaOrigemId` na classe) ganham o prefixo do
+pacote pelo `caminhosDeId`. A trava de origem NÃO desce pelo `herdaDe`, e o validador relata a herdeira
+de classe exclusiva que não declara a dela, porque no jogador isso daria um Herdado sem energia.
+
+⚠ **Um defeito da herança que valia para todo `herdaDe` saiu junto**: o clone de uma habilidade com
+`concedeEscolha` continuava apontando para a irmã do LIVRO. O Respeito Celeste clonado dava as Dádivas
+extras para um Restrito pelos Céus que a herdeira não tem, calado. `clonesDaHeranca` agora remapeia o
+`concedeEscolha.habilidade`, a terceira forma de citar uma irmã.
+
+Fica de fora, e já estava anotado para o Conjurador: o requisito `nivelEspec` do Alto Nível ("20 Níveis
+de Restringido") segue lendo o nível REAL, e a herdeira não o alcança. Ver `docs/a-fazer.md`.
+
+O `asserts/t-restringido-variacao.mjs` mede o verbo com um pacote mínimo, nos dois sistemas, e confere
+que o Restringido do livro deriva igual com e sem o pacote instalado.
+
+### O que a Fórmula de Combate Entrópica acrescentou ao motor, 2026-09-28
+
+O pacote `addons/formula-combate-entropica.json` é quase todo de regra que age em aliado ou inimigo,
+e o pedido era deixar a ficha "mastigada" para quem conhece pouco o sistema. Sete verbos novos, todos
+genéricos e valendo nos dois sistemas:
+
+| Verbo | Como se escreve | O que faz |
+|---|---|---|
+| `bonus.livres` | `"bonus": { "distribuir": 4, "maxPorAtributo": 3, "entre": [...], "livres": 1 }` na característica de origem | N dos pontos podem sair do `entre`. O teto por atributo vale para o pool inteiro, e é por isso que é campo do mesmo bônus, e não uma segunda alocação |
+| canal `ataqueAtributo` | `{ "canal": "ataqueAtributo", "alvo": "inteligencia", "expr": "1" }` | TROCA a FOR ou a DES no acerto e no dano do corpo a corpo e da distância, e vale o maior modificador. Irmão do `hpAtributo`, escondido no seletor pela primitiva `ataqueAtributo` |
+| teto de faixa por expressão | `"max": "bt"` num estado `faixa` | lido no contexto do montante. Antes, texto virava zero e a faixa nascia travada |
+| efeito na opção | `efeitos` dentro de `escolha.opcoes[]` de Habilidade ou Talento | o mapa do livro continua vencendo, e o `nome` do efeito escrito vence o da opção |
+| `usos` e `resultados` em toda entrada | em característica de origem, Talento, opção de escolha e (só `resultados`) Habilidade | o derive devolve em `mesa`, por chave de item. A Ficha mostra o contador na linha e o número pronto ("Bônus dos Aliados: 2") |
+| recargas `cena` e `rodada` | `"usos": { "expr": "1", "recarga": "cena" }` | a recarga vai na frente da chave da sessão (`cena:`, `rodada:`), e a sessão devolve por prefixo na cena nova e na virada da rodada. O Descansar segue devolvendo tudo |
+| porta `requerEscolha` | `"requerEscolha": "id_da_opcao"` num estado de Addon | a quarta porta de dono, a opção escolhida (a mesma das Posturas do livro) |
+
+⚠ **Opção com contador ou número vira LINHA PRÓPRIA na Ficha**, logo abaixo da mãe, e sai da lista de
+opções dela (decisão do autor para as Dádivas Intelectuais). Opção sem nada disso segue como sempre,
+então as Dádivas do Céu do livro não mudaram.
+
+⚠ **Os números de mesa são um campo à parte das marcas** (`numeros` no item da Ficha). Abaixo de
+560 px de linha eles saem do cabeçalho fechado e aparecem dentro da linha aberta, por
+`@container itemficha` em `ficha.css`.
+
+Asserts: `t-formula-entropica.mjs` (102) mede cada verbo pelo conteúdo que o usa, nos dois sistemas.
+O censo do `t-primitivas.mjs` foi para 21.
+
+---
+
+## 16. FLUGEL E AS ESCOLHAS ESTRUTURAIS DE TREINAMENTO, 2026-09-01
+
+O primeiro pacote que combina Origem, clã, Talento remendado e Linhas de Treinamento é
+**`addons/flugel.json`**, na raiz do repositório. Ele entra pelo campo **Instalar** da aba Addons,
+como qualquer addon de mesa, e segue o ciclo normal dali em diante: instalar na biblioteca, ligar na
+ficha e carregar a cópia congelada com a ficha exportada.
+
+⚠ **ELE NASCEU DENTRO DO BUNDLE E SAIU DE LÁ NO MESMO DIA** (autor, 2026-09-01: *"o Addon aparece
+para TODO MUNDO, o que não era o caso, era para ser ativado só ao colocar um JSON"*). A primeira
+versão morava em `src/systems/afty/addons/flugel.js` e tinha botão próprio no cabeçalho da
+Biblioteca, no molde do Mahoraga. Duas coisas saíam disso, e as duas contra o desenho da fase 1:
+
+- **o botão aparecia para todo usuário**, e a fase 1 é explicitamente *"acrescentar por JSON
+  colado"*. Um pacote de UMA mesa não é conteúdo do aplicativo.
+- **as 214 linhas viajavam no bundle de todo mundo**, inclusive a lore pessoal do Treino Cônjuge
+  Pt. 2 (*"Esse daqui é exclusivo do meu Casamento"*).
+
+⚠ **O conteúdo nunca vazou**, e vale registrar para não se contar a história errada depois: o mundo
+é reconstruído de `creature.addons`, então uma ficha sem o pacote nunca enxergou o Futen nem o
+Akutame. O que aparecia para todo mundo era o botão, não a regra. Medido antes de mexer.
+
+O JSON fica **fora de `src/` e fora de `public/`** de propósito: assim ele não entra no bundle nem é
+servido pelo site, e continua sendo um arquivo que o autor manda para quem joga na mesa dele. O
+`t-flugel.mjs` lê esse MESMO arquivo, então o que o assert mede é exatamente o que a pessoa cola.
+
+⚠ **O Mahoraga foi pelo mesmo caminho na mesma sessão** (*"resolva do o Mahoraga também"*). Ver a
+8.3.1. Com os dois fora, `src/systems/afty/addons/` deixou de existir.
+
+### Efeito na opção de Origem
+
+Uma opção de `escolha` ou `escolhas` pode declarar `efeitos` diretamente:
+
+```json
+{
+  "id": "pericia_atletismo",
+  "nome": "Atletismo",
+  "periciaId": "atletismo",
+  "efeitos": [{ "canal": "proficienciaPericia", "alvo": "atletismo", "expr": "1" }]
+}
+```
+
+`coletarEfeitosOrigem` resolve a opção inteira do catálogo já religado. O mapa estático
+`ORIGEM_ESCOLHA_EFEITOS` continua valendo para o raw, e o efeito inline é a porta de Addon.
+
+### Troca de atributo-chave de perícia
+
+A característica de Origem aponta para duas escolhas:
+
+```json
+{
+  "trocaAtributoPericia": {
+    "escolhaPericia": "futen_pericia",
+    "escolhaAtributo": "futen_atributo"
+  }
+}
+```
+
+As opções carregam `periciaId` e `atributoId`. `atributosDePericiaDaOrigem` transforma as duas
+escolhas no mapa `{ periciaId: atributoId }`, e `resolveTestes` usa esse mapa no lugar do atributo
+do catálogo. Bônus, penalidade e hover passam a ler o atributo substituto pelo mesmo caminho.
+
+Uma Linha de Treinamento declara a mesma operação pelos alvos dela:
+
+```json
+{
+  "trocaAtributoPericia": {
+    "etapa": 1,
+    "periciaAlvo": "pericia",
+    "atributoAlvo": "atributo"
+  }
+}
+```
+
+### Alvos de Linha não repetível
+
+`alvos` abre seletores antes da 1ª etapa:
+
+```json
+{
+  "alvos": [
+    { "id": "atributo", "tipo": "atributo", "label": "Atributo" },
+    { "id": "pericia", "tipo": "pericia", "label": "Perícia" }
+  ]
+}
+```
+
+A ficha guarda as respostas separadas do progresso em `treinamentoAlvos`. Um efeito da etapa usa a
+resposta com `alvo: "escolha:atributo"` ou `alvo: "escolha:pericia"`. Remover todo o progresso da
+linha remove também os alvos e escolhas dela.
+
+### Escolha aberta por etapa
+
+`escolhas` abre um seletor quando o progresso alcança `etapa`:
+
+```json
+{
+  "id": "heranca_conjuge",
+  "label": "Herança",
+  "etapa": 4,
+  "opcoes": [
+    { "id": "feitico", "nome": "Feitiço", "efeitos": [{ "canal": "vagasFeitico", "expr": "1" }] },
+    { "id": "talento", "nome": "Talento", "efeitos": [{ "canal": "vagasTalento", "expr": "1" }] }
+  ]
+}
+```
+
+O estado mora em `treinamentoEscolhas`. O efeito da opção só existe depois da etapa indicada e
+entra no Motor com o nome da Linha e da opção.
+
+### Interruptor manual de sessão
+
+A Linha declara o controle uma vez:
+
+```json
+{
+  "gatilhoSessao": { "id": "conjuge", "label": "Cônjuge" }
+}
+```
+
+Cada efeito condicionado aponta para ele:
+
+```json
+{ "canal": "defesa", "expr": "2", "gatilhoSessao": "conjuge" }
+```
+
+O estado fica em `sessao.treinosAtivos`, nunca na criatura. `gatilhosDeTreino` elimina duplicatas,
+então duas Linhas com `conjuge` produzem um único interruptor na aba Ações. Desligado é o padrão.
+
+⚠ A escolha da 4ª etapa não usa o gatilho: ela precisa abrir a vaga no criador para o usuário
+preencher Feitiço ou Talento. O interruptor governa os bônus numéricos que dependem da presença do
+Cônjuge na sessão.
+
+**O interruptor mora nas TRÊS telas** (2026-09-01). Ele nasceu só na Ficha Final, e as outras duas
+ficaram mudas por dois motivos diferentes:
+
+| Tela | O que faltava | Onde ficou |
+|---|---|---|
+| Ficha Final | nada | aba Ações |
+| Criador | o controle. O derivado já trazia `gatilhosTreino` pronto | bancada de Simulação de Combate |
+| Encontros | o controle E o `treinosAtivos` no `deriveAfty` | aba Ações do painel do combatente |
+
+⚠ **O do criador NÃO grava na criatura.** Ele é `useState` local, e por isso some ao fechar a ficha:
+gatilho é estado de MESA, e a regra da casa é que sessão nunca mora na criatura. O `combate` da mesma
+bancada mora no `draft` porque lá o estado é entrada de balanceamento, e são coisas diferentes.
+
+⚠ **E ele fica FORA do que "Em Combate" apaga.** O Cônjuge estar na cena mexe em Perícia e em
+Iniciativa, que valem antes de a briga começar.
+
+### Interruptor de sessão na ORIGEM (2026-09-29)
+
+O mesmo `gatilhoSessao` vale numa característica de origem ou de clã. Nasceu com a Forma de Raposa
+da Kitsune (`addons/yna.json`):
+
+```json
+{
+  "id": "forma_de_raposa",
+  "nome": "Forma de Raposa",
+  "descricao": "...",
+  "gatilhoSessao": { "id": "forma_de_raposa", "label": "Forma de Raposa" }
+}
+```
+
+Os efeitos moram no `efeitos` da origem (ou do clã) e apontam para o id:
+
+```json
+{ "canal": "tamanho", "expr": "-1", "gatilhoSessao": "forma_de_raposa", "duracao": "temporaria" }
+```
+
+⚠ **Por que interruptor, e não estado de combate.** Efeito de origem roda no MONTANTE, antes de a
+bancada existir. Até 2026-10-03 um `quando` que citasse estado de combate avaliava zero ali e caía
+calado (era o defeito da Atenção do Instinto Sanguinário). Hoje esse efeito desce ao estágio
+principal (`separarEfeitosDeBancada`) e funciona, mas a Forma de Raposa segue no interruptor por
+decisão do autor: ele não passa pelo `quando` (`coletarEfeitosOrigem` recebe o `treinosAtivos` e
+tira o efeito desligado antes do Motor, pela mesma porta do `efeitosDeTreino`) e vale fora de
+combate, que é o que uma forma usada para farejar precisa.
+
+`gatilhosDeOrigem` (afty-origens.js) lê `caracteristicasEfetivas`, então o do clã só existe com o
+clã escolhido. O derive junta os dois em `gatilhosTreino`, sem duplicar id, e as três telas que
+desenham o interruptor leem só dali: nenhuma mudou. O id não ganha namespace, igual ao do treino.
+
+### Alvo de VALOR, e um canal que substitui
+
+Um `alvo` de `tipo: "numero"` abre um campo digitado em vez de um seletor:
+
+```json
+{ "id": "bonusConjuge", "tipo": "numero", "label": "Bônus do Cônjuge" }
+```
+
+É o molde da **Iniciativa do Irmão** dos Gêmeos, e existe pela mesma razão: o número mora em OUTRA
+ficha, e ler a criatura dela do armazenamento criaria dependência entre fichas por um bônus só.
+
+O efeito lê o valor pondo `escolha:` no **`expr`**, simétrico ao que o `alvo` já fazia:
+
+```json
+{ "canal": "periciaFixa", "alvo": "escolha:pericia", "expr": "escolha:bonusConjuge",
+  "gatilhoSessao": "conjuge" }
+```
+
+⚠ **`periciaFixa` SUBSTITUI o bônus inteiro da perícia, e não soma nele.** É o irmão do
+`defesaAtributo` do lado da Perícia, e nasceu porque a 1ª etapa do Treino Cônjuge diz *"pode usar o
+bônus do seu cônjuge pra fazer um teste de perícia"*. Um delta daria o número certo com o
+detalhamento errado, e o hover passaria a mentir sobre de onde a linha veio: com a substituição, o
+painel de fontes mostra **uma** linha, "Treino Cônjuge".
+
+Com mais de uma fonte na mesma perícia vale a MAIOR, e não a soma, pela mesma razão do
+`defesaAtributo`: a regra é sempre *"você PODE usar"*, e quem oferece uma troca opcional nunca piora.
+
+⚠ **E a oferta só entra se for MAIOR que o bônus do próprio dono** (autor, 2026-09-16). O "vale a
+maior" comparava só uma oferta com a outra, e com o Cônjuge ligado a Percepção 61 da Shaula virava os 8
+digitados, levando junto o +2 do Treino Cônjuge Pt. 2. No empate fica o do dono, que tem as parcelas
+para mostrar no hover. Preso em `asserts/t-flugel.mjs`.
+
+⚠ **Alvo de `numero` não tranca a 1ª etapa**, e os outros trancam. Os outros são escolha estrutural
+(qual perícia, qual atributo) e a etapa não tem o que fazer sem eles. Um número é um valor, pode não
+se saber na hora de treinar, e o efeito que o lê já devolve nada quando ele falta. Campo vazio não é
+campo com zero.
+
+### Requisitos novos de etapa
+
+- `todosAtributos` verifica o menor dos seis atributos contra `valor`.
+- `treinamento` verifica se outra Linha chegou a `etapa`. O Flugel usa isso para manter as etapas do
+  Treino Cônjuge Pt. 2 presas às etapas correspondentes do primeiro treino.
+- `cla` (2026-09-11) verifica o clã da ficha pelo id com namespace. `label` troca o texto do chip, e o
+  nome do clã vai para o `title`. A Benção da Adaptação o usa para o "Santo da Espada".
+- **Lista** (2026-09-11): `requisito` aceita uma lista, e todos têm de passar.
+
+```json
+{ "n": 1, "focos": 1, "requisito": [
+  { "tipo": "aptidao", "id": "tecnica_maxima" },
+  { "tipo": "cla", "id": "flugel:cla_akutame", "label": "Técnica Herdada: Santo da Espada" }
+] }
+```
+
+### O Atributo de Técnica como alvo (2026-09-11)
+
+O alvo reservado `atributoDaTecnica` aponta para o `core.tecnicaAttr` da ficha, e vale em efeito de
+etapa e na troca de atributo de perícia (`"atributoAlvo": "atributoDaTecnica"`). Ele não é escolhido
+no treino: trocar o atributo da técnica leva o bônus junto.
+
+```json
+{ "canal": "atributo", "alvo": "atributoDaTecnica", "expr": "2" }
+```
+
+### O TR como alvo, o atributo do alvo e o efeito por alvo (2026-09-26)
+
+Três peças nasceram com o **Treino de Testes de Resistência** (`addons/treino-testes-de-resistencia.json`),
+uma linha repetível "uma vez para cada TR, exceto Integridade". As três servem a qualquer linha.
+
+- **`alvoTipo: "tr"`** abre o seletor com os quatro Testes de Resistência treináveis (sem
+  Integridade), sem os que a ficha já treinou. O efeito usa a resposta com `alvo: "instancia"`.
+- **O requisito `atributoDoAlvo`** confere o atributo do alvo da instância (Fortitude é
+  Constituição, Reflexos é Destreza, Vontade é Sabedoria, Astúcia é Inteligência, e vale também para
+  alvo de Atributo e de Perícia). O chip mostra o atributo de verdade ("Constituição 12"), e na prévia
+  da linha, ainda sem alvo, ele só exibe "Atributo do Alvo 12".
+- **`soAlvos`** num efeito de etapa ou do Completo: ele só existe para as instâncias com aquele alvo.
+
+```json
+{ "n": 2, "focos": 1,
+  "requisito": [{ "tipo": "nd", "valor": 13 }, { "tipo": "atributoDoAlvo", "valor": 12 }],
+  "efeitos": [{ "canal": "proficienciaTRCasoJa", "alvo": "instancia", "expr": "2" }] }
+```
+
+```json
+{ "canal": "margemCriticoTR", "alvo": "instancia", "expr": "2", "soAlvos": ["astucia", "vontade"] }
+```
+
+O "caso já fosse treinado" do mesmo treino é o canal `proficienciaTRCasoJa`, descrito em
+`docs/automacao-dsl.md`: ele conta o TR que vem da Classe e o do Motor, e o `prof_tr_*` conta só a
+marcação à mão e, no jogador, a Classe (desde 2026-10-03).
+
+⚠ **Achado no caminho: a linha repetível de um addon que sumiu não virava linha morta.** O
+`idsDaFicha` da família lia `Number(progresso)`, e numa linha repetível o progresso é a LISTA de
+instâncias, que dá NaN. A ficha perdia o treino calada. Corrigido no mesmo dia, e preso em
+`t-treino-testes-resistencia.mjs`.
+
+### Estado gravado na criatura
+
+```json
+{
+  "treinamentos": { "flugel:treino_exemplo": 4 },
+  "treinamentoAlvos": {
+    "flugel:treino_exemplo": { "atributo": "sabedoria", "pericia": "atletismo" }
+  },
+  "treinamentoEscolhas": {
+    "flugel:treino_exemplo": { "heranca_conjuge": "talento" }
+  }
+}
+```
+
+Os três mapas pertencem à ficha. Só `treinosAtivos` pertence à sessão.
+
+### Estados de combate do addon
+
+`estadosCombate` oferece controles próprios do pacote na Simulação de Combate e na Ficha Final.
+O estado recebe namespace automaticamente. `requerEstado` aponta para o id local de outro estado
+do mesmo pacote.
+
+```json
+{
+  "estadosCombate": [
+    { "id": "tecnica_ativa", "label": "Técnica", "tipo": "bool" },
+    {
+      "id": "modo",
+      "label": "Técnica · Modo",
+      "tipo": "opcao",
+      "requerEstado": "tecnica_ativa",
+      "opcoes": [
+        { "id": "comum", "label": "Comum" },
+        { "id": "completo", "label": "Completo", "nivelMin": 3 }
+      ]
+    }
+  ]
+}
+```
+
+Os tipos aceitos são `bool`, `opcao`, `multi` e `faixa`. Estado e opção podem declarar
+`nivelMin`, `nivelMax`, `title` e `labelPorNivel`. O maior degrau de `labelPorNivel` que não passa
+do Nível de Feitiço acessível vira o rótulo atual. Opções fora da faixa de nível não aparecem.
+
+O `multi` aceita `maxSelecionados`. Sem esse campo, o limite é a quantidade de opções disponíveis
+naquele nível.
+
+**Os três controles que o estado nativo já tinha (2026-10-07, achados M04-A03 e M03-D07):**
+
+| Campo | O que faz |
+|---|---|
+| `umaVezPorRodada: true` | a segunda ativação na mesma rodada é recusada, como a Potência Concentrada |
+| `exclusivoCom: ["outro"]` | ligar este desliga os listados; id do próprio pacote ganha o namespace |
+| `custoPE` | número a partir de zero, ou expressão; é EXIBIDO na aba Buffs, como o do nativo |
+
+Até aqui o descritor de addon era montado campo a campo sem eles, e o estado derivado nascia sem os
+três. ⚠ O `custoPE` de estado continua só exibido, e não descontado: é a regra vigente para todo
+estado, nativo ou de addon (só o Invencível sob o Sol cobra). Cobrar é decisão do autor, em
+docs/a-fazer.md.
+
+### A linha de CURA própria (`fonteCura`, 2026-10-07)
+
+Uma Habilidade, Talento ou Aptidão de pacote pode ganhar a PRÓPRIA linha na seção de Cura, com nome
+e id dela, sem depender de um id do livro (achado M04-A04). A entrada declara o campo, e os números
+vêm pelos canais de cura mirando o id dela, escrito sem prefixo:
+
+```json
+{
+  "id": "retomar_vigor", "nome": "Retomar o Vigor", "especializacaoId": "combatente",
+  "tipo": "nivel", "nivel": 2, "descricao": "...", "requisitos": [],
+  "fonteCura": { "alcance": "Você" },
+  "efeitos": [
+    { "canal": "curaDados", "alvo": "retomar_vigor", "expr": "1 + piso(esc_combatente / 4)" },
+    { "canal": "curaFaces", "alvo": "retomar_vigor", "expr": "10" },
+    { "canal": "curaFixa",  "alvo": "retomar_vigor", "expr": "dobro(mod_constituicao) + maestria" },
+    { "canal": "curaUsos",  "alvo": "retomar_vigor", "expr": "maestria" }
+  ]
+}
+```
+
+`alcance` é `Você`, `Toque` ou `Grupo`. `nome` troca o rótulo da linha, e `unidade: { rotulo,
+porBloco }` faz a linha cobrar por bloco, como a Regeneração Corporal. A linha só existe na ficha que
+ADQUIRIU a entrada, e o editor de efeitos a oferece como alvo de cura junto das do livro. O assert
+`t-revisao-m04.mjs` reproduz o Revigorar com outro nome, outro id e outro dado.
+
+### Arma pronta do addon
+
+A família `armas` põe uma arma privada no catálogo normal. Ela usa o mesmo formato de `ARMAS` e
+recebe namespace como qualquer outra família.
+
+Uma definição pode trazer `faPadrao` para a entrada já nascer como Ferramenta Amaldiçoada,
+`faFixa: true` para impedir que a configuração pronta seja desmontada e `equipadoPadrao: true`
+para ligar a arma assim que ela for adicionada. `etiquetas` mostra apenas os nomes das propriedades.
+O texto completo de cada uma fica no `title` da etiqueta.
+
+Uma faixa pode continuar disponível com um teto menor quando a criatura perde
+um Talento. `maxSemTalento` define esse teto e `maxRequerTalento` aponta para o
+Talento que libera o máximo normal. A referência pode usar o id local de uma
+entrada acrescentada pelo próprio pacote.
+
+`alcancePorTreino` permite que uma arma declare uma tabela de alcance pelo Bônus de Treinamento.
+Cada chave é um degrau e cada valor segue o formato de alcance curto e longo. Vale o maior degrau
+que não ultrapasse o Treino atual. Acima do último degrau, a arma conserva o último alcance. Antes
+do primeiro, continua valendo `props.alcance`.
+
+```json
+{
+  "props": { "alcance": [45] },
+  "alcancePorTreino": {
+    "2": [30, 60],
+    "3": [60, 120],
+    "4": [120, 240],
+    "5": [240, 360]
+  }
+}
+```
+
+`requerEstado` aponta para um Estado de Combate do mesmo pacote. A arma continua disponível no
+catálogo desde o primeiro nível, mas seus efeitos numéricos só entram enquanto aquele estado estiver
+ligado.
+
+```json
+{
+  "acrescenta": {
+    "armas": [{
+      "id": "lamina_da_mesa",
+      "nome": "Lâmina da Mesa",
+      "classe": "complexa",
+      "categoria": "corpo",
+      "dano": { "dado": "1d6", "tipo": "ct" },
+      "critico": 19,
+      "espacos": 1,
+      "custo": 1,
+      "grupo": "espada",
+      "props": { "fineza": true },
+      "faFixa": true,
+      "equipadoPadrao": true,
+      "requerEstado": "tecnica_ativa",
+      "faPadrao": {
+        "grau": "primeiro",
+        "encantamentos": ["enc_arma_potente"],
+        "habilidadeUnica": ""
+      }
+    }]
+  }
+}
+```
+
+### O que do Flugel continua de mesa
+
+O pacote automatiza 21 dos 26 benefícios que os textos dele escrevem. Os cinco de fora têm bloqueio
+nomeado, e a lista existe para nenhum deles envelhecer calado:
+
+| Benefício | O que falta |
+|---|---|
+| Postura do Matador de Yokai | condicional ao ALVO (*"Defesa maior que a sua"*). Cabe num estado da bancada, e o mecanismo existe |
+| Passos Flutuantes, 2ª e 3ª metades | terreno difícil e usos por Descanso Longo, que o Afty não modela |
+| Cônjuge 1ª etapa, o limite de usos | *"metade do seu BT por descanso longo"*. O VALOR já entra pelo `periciaFixa`, o contador não |
+| Cônjuge e Pt. 2, 4ª etapa | copiar Feitiço Passivo de outra ficha. A metade automatizável (a vaga) está feita |
+| Cônjuge Pt. 2, 1ª etapa | reescreve uma distância (120m, 210m) que nunca foi modelada |
+
+⚠ **A Dupla Empenhada saiu desta lista em 2026-09-01.** O texto pede *"Metade do BT de seu
+parceiro"*, que mora em outra ficha, e o autor trocou pelo BT do próprio dono: *"Dupla Empenhada pode
+usar Metade do BT do usuario."* A outra metade da regra, que só a MAIOR iniciativa da dupla recebe o
+bônus, continua de mesa, e quem a resolve é o interruptor: ele só se liga quando vale.
+
+## Voto automático e regras finais
+
+Desde 2026-09-20, um pacote pode declarar um único `votoAutomatico`. Ele usa a
+forma nativa de Voto Mecânico (`id`, `nome`, `narrativa`, `beneficio` e
+`maleficio`) e é materializado antes dos Votos criados pelo jogador. Portanto,
+ele consome a primeira vaga do limite por BT. A cópia gravada vence o molde em
+releituras, preservando edições. Enquanto o Addon estiver ativo, a interface não
+permite remover esse Voto.
+
+`regrasAfty` é o conjunto fechado de verbos numéricos seguros que um Addon ou
+Voto automático pode declarar:
+
+| Campo | Resultado |
+|---|---|
+| `multiplicadorPeMaximo` | multiplica o PE Máximo depois de todas as fontes e custos |
+| `multiplicadorPvFinal` | multiplica somente o PV final; Integridade e fontes proporcionais usam o valor anterior |
+| `passivasSemCustoPeMaximo` | isenta Feitiços Passivos da Técnica do custo no PE Máximo |
+| `ignoraMultiplicadorPeMaximoDeVotos` | ignora somente multiplicadores de PE declarados por Votos |
+
+Os multiplicadores precisam ser números maiores que zero e os interruptores
+precisam ser booleanos. Chaves desconhecidas reprovam a instalação. A origem de
+cada multiplicador aparece no detalhamento do atributo afetado.
+
+Pacotes de referência: `addons/restricao-celestial-santo-da-espada.json` e
+`addons/regras-grimorio.json`.
+
+## Categoria adicional de Aptidão por Origem
+
+Uma origem de addon pode declarar `categoriasAptidaoAdicionais`, lista de ids de categorias a mostrar além das abas normais. O motor lê essa lista da origem escolhida pela criatura e insere as categorias antes de Especiais, sem modificar suas trilhas. A Aberração Humanizada usa `["maldicao"]` para manter Energia Reversa e abrir Maldição ao mesmo tempo. Veja `addons/aberracao-humanizada.json` e `docs/afty-aberracao-humanizada.md`.
+
+A Maldição do livro e suas variações seguem trocando Energia Reversa por Maldição pela origem estrutural. O campo adicional não faz a origem herdar requisitos ou restrições da Maldição.
+
+Uma origem de addon também pode declarar `qualificaTalentosDeOrigem` com ids de origens do livro. Esse campo abre apenas Talentos do grupo Origem com pré-requisito da origem indicada. Não muda a origem estrutural nem libera Linhas de Treinamento ou Especializações. A Aberração Humanizada usa `["feto_amaldicoado_hibrido"]`.
+
+## The Crimsom Queen (2026-10-01)
+
+`addons/the-crimsom-queen.json`: 15 passivas, 6 modelos máximos e alabarda.
+Primitiva `bloodfeast`, total do registro agora 23 (a `heranca` entrou no mesmo dia). Instalar o JSON pela biblioteca,
+ativar na criatura, escolher passivas e Anatomia em Habilidades e adicionar os
+modelos desejados. Controles de sessão disponíveis em Ações na Ficha e no Encontro.
+Decisões e limites detalhados em `afty-crimsom-queen.md`.
+
+## Regras optativas de Player e Alto Nível (2026-10-05)
+
+Quatro campos adicionais de regrasAfty, lidos dos addons da própria ficha Player:
+
+| Campo | Resultado |
+|---|---|
+| nivelJogadorSemTeto | true retira o teto padrão de nível 30 |
+| aptidaoApos20 | true mantém +1 Nível de Aptidão a cada dois níveis depois do 20 |
+| focosPorNivel | multiplicador positivo; total de nível arredondado para baixo |
+| pontosAtributoPorCiclo | inteiro positivo; pontos distribuíveis a cada quatro níveis |
+
+Interruptores se unem por OR e os dois valores usam o maior declarado. Fichas Afty conservam suas
+regras. Habilidades Lendárias aceitam requisito lendariaOr com ids de alternativas. A escolha pode
+usar somenteTreinadas: true junto de fonteOpcoes: periciasDaFicha. Remendos de Melhorias e Lendárias
+aceitam efeitosAlvo para efeitos direcionados pela escolha. custoPE aceita naoAcumulaReducaoGeral:
+true para disputar com reduções gerais, conservando reduções específicas. vagasVariacao é exclusivo
+para Feitiços marcados como variacaoDeTecnica, sem alterar as variações de Liberação Máxima.
+
+Pacotes e prévia importável descritos em [afty-player-progressao-epica.md](afty-player-progressao-epica.md).
+
+## Talentos Iniciais (2026-10-05)
+
+regrasAfty.talentosIniciais: inteiro de 1 a 4, que concede vagas exclusivas de Talento. O campo
+**Talentos** aparece no addon ativo em Outros > Addons e grava a quantidade na cópia da ficha.
+Pacote: [talentos-iniciais.json](../addons/talentos-iniciais.json). Uso e contrato em
+[afty-talentos-iniciais.md](afty-talentos-iniciais.md).
+
+## Alma Livre na Ficha de Jogador (2026-10-05)
+
+O pacote existente [addons/alma-livre.json](../addons/alma-livre.json) libera somente o Talento
+Alma Livre para Player por soPorAddon:tal_alma_livre. Instale e ative em Outros > Addons e escolha
+o Talento em Especializações > Talentos. O requisito permanece nível 10. Ao abrir o Talento,
+escolha uma Especialização diferente das atuais, exceto Restringido. A classe emprestada ganha
+uma aba para comprar uma única Habilidade usando uma vaga normal. A liberação funciona sozinha;
+remendos de outro addon, como Flugel, continuam valendo quando esse outro pacote também está ativo.

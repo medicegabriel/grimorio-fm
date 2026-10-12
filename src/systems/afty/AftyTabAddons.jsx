@@ -108,6 +108,36 @@ function Chip({ children, tom = "slate" }) {
   );
 }
 
+function CampoTalentosIniciais({ valor, onChange }) {
+  const [digitado, setDigitado] = useState(null);
+  const confirmar = () => {
+    const numero = digitado === null || digitado.trim() === "" ? valor : Number(digitado);
+    const quantidade = Number.isInteger(numero) ? Math.min(4, Math.max(1, numero)) : valor;
+    onChange(quantidade);
+    setDigitado(null);
+  };
+  return (
+    <label className="flex items-center gap-2 px-2 pb-1 text-xs text-slate-400">
+      Talentos
+      <input
+        type="number" min={1} max={4} step={1}
+        aria-label="Quantidade de Talentos Iniciais"
+        title="De 1 a 4 Talentos adicionais para esta ficha"
+        className="afty-campo afty-linha w-16 px-2 py-1 tabular-nums"
+        value={digitado ?? valor}
+        onChange={(e) => {
+          const texto = e.target.value;
+          setDigitado(texto);
+          const numero = Number(texto);
+          if (texto !== "" && Number.isInteger(numero) && numero >= 1 && numero <= 4) onChange(numero);
+        }}
+        onBlur={confirmar}
+        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); e.currentTarget.blur(); } }}
+      />
+    </label>
+  );
+}
+
 export default function TabAddons({ draft, derived, setAddons, trocarFicha }) {
   const [biblioteca, setBiblioteca] = useState(() => lerBiblioteca());
   const [texto, setTexto] = useState("");
@@ -474,6 +504,14 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha }) {
                       </button>
                     </div>
                   </div>
+                  {p.regrasAfty?.talentosIniciais != null && (
+                    <CampoTalentosIniciais
+                      valor={p.regrasAfty.talentosIniciais}
+                      onChange={(quantidade) => setAddons(naFicha.map((addon) => addon.id === p.id
+                        ? { ...addon, regrasAfty: { ...addon.regrasAfty, talentosIniciais: quantidade } }
+                        : addon))}
+                    />
+                  )}
                 </div>
               );
             })}

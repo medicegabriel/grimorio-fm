@@ -1,0 +1,62 @@
+diff --git a/.audit/resiliente-baseline/docs__afty-status.md b/docs/afty-status.md
+index 87e88dd..1d6c629 100644
+--- a/.audit/resiliente-baseline/docs__afty-status.md
++++ b/docs/afty-status.md
+@@ -1,5 +1,39 @@
+ # Status do Grimório Afty (handoff para chat novo)
+ 
++## SESSÃO DE 2026-10-05: RESILIENTE E REVISÃO DE UNIFORME E ESCUDO
++
++Resiliente passou a conceder RD 5 no tipo escolhido e RD 10 no Grau Especial real do item.
++A escolha fica na linha do encantamento em Equipamentos, com veto à categoria Física,
++Alma e Energético. Energia Reversa continua permitida. O campo opcional
++`fa.encantamentoTipos` guarda a escolha na ferramenta, sem migrar ou presumir tipo
++em fichas antigas.
++
++Os dois Isolante foram ligados juntos: Uniforme concede RD 5 contra Queimante e Congelante;
++Escudo, somente Player, estende a RD daquele escudo (base, grau e Reforçado) a cada elemental
++escolhido. Cada tipo adicional ocupa uma vaga de encantamento. Repetir um tipo não duplica RD
++e gera aviso. As escolhas usam o catálogo vivo de Addons, e escolha inválida não emite efeito.
++
++Todos chegam a Resistências pelo canal `rdTipo`, com fontes nomeadas e soma com RD manual
++e RD Geral. A RD digitada continua sendo só a parcela manual. Guardar o equipamento encerra
++os efeitos, e Fragilizado anula as novas RDs. Isolante de Escudo gravado numa ficha de criatura
++continua inerte. A emissão também verifica se o encantamento pertence ao tipo do equipamento.
++
++Os 27 encantamentos de Uniforme e Escudo foram revisados: 11 têm efeitos passivos ligados,
++incluindo os três desta sessão. Os outros 16 conservam a regra como texto e dependem de
++controles de combate, alvos ou ataque próprio com escudo. A tabela completa está no guia
++`docs/afty-equipamentos.md`; a pendência antiga dos três foi retirada da fila e substituída
++pela automação dos 16 restantes em `docs/a-fazer.md`.
++
++Validação: a suíte completa passou com 153 arquivos e 8.963 asserts. Depois, a suíte de
++Uniforme e Escudo cresceu para 264 asserts com Addons e Fragilizado; os quatro arquivos
++afetados passaram com 475 asserts. Build e lint dos três arquivos de código alterados
++passaram. O lint global continua apontando erros em código anterior e em cópias de auditoria.
++
++No navegador, Player e Afty passaram em 1440 px e 390 px: tipos vetados fora da lista,
++RD 5, mudança para Grau Especial, os dois Isolante, escolha repetida ocupando vaga,
++tipos distintos, salvamento e reabertura. Nenhum erro de execução ou rolagem horizontal.
++Relatório e capturas em `.audit/resiliente-browser-report.json` e `.audit/resiliente-shots/`.
++
+ ## SESSÃO DE 2026-10-05: GOJO EM PLAYER E ADDONS DE PROGRESSÃO ÉPICA
+ 
+ Foram criados os addons player-progressao-epica e player-alto-nivel-afty a pedido do autor.
+@@ -16087,3 +16121,17 @@ Pedido do autor: um Addon chamado "Yna" com a Origem Kitsune, a Linhagem Clã Ge
+ **Correção:** aplicarPropriedadesNoDano usa a quantidade efetivamente rolada de cada grupo de Durante Ataque no modo escolhido. Dados critáveis contam duas vezes no crítico; os não critáveis contam uma vez. Dados exclusivos e quantidades críticas do Ataque Concentrado também participam. Após Ataque e valores fixos continuam fora da quantidade. O bônus resultante entra uma única vez como dano fixo, e o Raio Negro usa a quantidade de dados do crítico sem multiplicar Enérgica por 1,5. O acréscimo de +1 por golpe depois do segundo continua uma vez. O guia e a dica do campo visível foram atualizados.
+ 
+ **Validação:** 158 asserts de propriedades, incluindo regressão com os números enviados: Enérgica +56 no normal e +132 no crítico, fórmula normal 42d12 + 9d10 + 5d6 + 169 preservada e fórmula crítica 104d12 + 18d10 + 10d6 + 245. Rolagem e Raio Negro somam o bônus uma vez, e o terceiro golpe crítico recebe +133. Suíte completa: 151 arquivos e 8632 asserts, todos passaram. Build e ESLint dos arquivos desta correção passaram. Chrome em contextos temporários, /player e /afty a 1440 e 390 px, com 92 verificações do criador, campo visível, posições de golpe, fórmula, rolagem salva, Crítico e Raio Negro. Na combinação de navegador, o jogador recebeu +21 normal e +44 crítico; a criatura recebeu +22 e +46. Sem erros de página ou console nem rolagem horizontal. A ficha anexada foi lida e seus grupos reais de CortaCabeças foram conferidos, preservando o arquivo original; os estados de teste citados pelo usuário não estavam gravados no combate exportado. Evidências em .audit/energica-critico-*. Trabalho paralelo preservado. Sem commit ou push.
++
++## SESSÃO DE 2026-10-05: TALENTOS INICIAIS
++
++**Pedido do autor:** addon Talentos Iniciais que concede de 1 a 4 Talentos, com quantidade digitável.
++
++**Implementação:** addons/talentos-iniciais.json, padrão 1. O campo Talentos aparece na cópia ativa em Outros > Addons. A quantidade fica por ficha, acompanha a exportação e não altera o padrão da biblioteca. regrasAfty.talentosIniciais aceita somente inteiros de 1 a 4 e emite vagasTalento no montante, com fonte identificada. As vagas são exclusivas de Talento, acumulam com outras fontes, mantêm pré-requisitos e funcionam em Player e Afty. Desligar retira o bônus sem apagar Talentos escolhidos. Guia em docs/afty-talentos-iniciais.md.
++
++**Validação:** 68 asserts específicos; suíte completa com 153 arquivos e 8802 asserts, todos passaram. Build e ESLint dos três módulos alterados passaram. Navegador em contextos temporários, Player e Afty a 1440 e 390 px: instalação real pela biblioteca, quatro quantidades, limites, seleção manual de Talento, persistência, padrão da biblioteca preservado e remoção sem apagar escolhas. Sem erro de página nem rolagem horizontal. Capturas conferidas e relatório em .audit/talentos-iniciais-report.json. Alterações anteriores preservadas. Sem commit ou push.
++
++## SESSÃO DE 2026-10-05: ADDON ALMA LIVRE PARA PLAYER
++
++**Pedido:** liberar Alma Livre para Ficha de Jogador. O pacote addons/alma-livre.json já existia com a liberação correta e foi reutilizado. Nenhuma alteração de regra ou do catálogo foi necessária.
++
++**Validação:** instalação do JSON real, opção ausente antes de ativar, liberação após ativar, bloqueio no nível 9 e acesso no 10, exclusão da classe atual e de Restringido, escolha de Combatente como classe emprestada, aba no nível 10 e persistência do Talento, escolha e addon. Chrome em contextos temporários a 1440 e 390 px, sem erro de página nem rolagem horizontal. 646 asserts de sistema, Talentos, Flugel e Talentos Iniciais passaram. Evidências em .audit/alma-livre-report.json e .audit/alma-livre-shots. Instruções de uso acrescentadas ao guia de Addons. Alterações anteriores preservadas. Sem commit ou push.

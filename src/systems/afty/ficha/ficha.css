@@ -73,6 +73,8 @@
 
   position: relative;
   min-height: 100dvh;
+  /* Compactar o cabeçalho não deve corrigir scrollY e expandi-lo de novo. */
+  overflow-anchor: none;
   background-color: var(--afty-fundo);
   color: var(--afty-texto);
   font-family: var(--afty-fonte);
@@ -2979,41 +2981,60 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
 /* PAINEL DE ROLAGENS                                            */
 /* ============================================================ */
 
-/* ⚠ O `bottom` NÃO é 0.75rem, e o motivo mora fora do Afty: o botão dos Livros
-   (`components/PdfFab.jsx`, do grimório 2.5.2) é um círculo de 56px fixo em
-   `bottom-4 right-4`, e o painel caía exatamente em cima dele. 5.5rem é a altura
-   dele mais o respiro dele mais uma folga. Isso vale no celular também, onde o
-   painel ocupa a largura toda e passaria por cima do botão de ponta a ponta. */
+/* Barra integrada abaixo das abas. O histórico flutua a partir dela; a última
+   rolagem e os modos continuam visíveis enquanto o cabeçalho acompanha a página. */
 .afty-log {
-  position: fixed;
-  right: 0.75rem;
-  bottom: 5.5rem;
+  position: relative;
   z-index: 45;
-  width: min(22rem, calc(100vw - 1.5rem));
-  border: 1px solid var(--afty-borda-forte);
-  border-radius: var(--afty-raio);
-  /* ⚠ Opaco, e sem `backdrop-filter`, pelo mesmo motivo do `.afty-cabecalho`.
-     Este painel é `fixed` e o `PainelDeRolagens` é montado sem condicional, então
-     mesmo fechado ele mantinha uma segunda superfície borrada permanente por cima
-     do conteúdo que rola, e o borrão refazia a cada quadro. */
-  background: var(--afty-card);
-  box-shadow: var(--afty-sombra);
-  overflow: hidden;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding-block: 0.5rem;
+  background: var(--afty-fundo);
 }
 
 .afty-log-topo {
-  border-bottom: 1px solid var(--afty-borda);
   color: var(--afty-texto-suave);
 }
 
-.afty-log-corpo {
-  max-height: 3.75rem;
-  overflow: hidden;
+.afty-log-ultima {
+  min-width: 0;
+  border-left: 1px solid var(--afty-borda);
 }
 
-.afty-log[data-afty-aberto="sim"] .afty-log-corpo {
-  max-height: min(24rem, 50dvh);
+.afty-log-ultima > .afty-rotulo { padding-inline: 0.625rem; }
+
+.afty-log-historico { white-space: nowrap; }
+
+.afty-log-corpo {
+  position: absolute;
+  top: calc(100% + 0.375rem);
+  right: 0;
+  width: min(26rem, 100%);
+  max-height: min(24rem, 50dvh, var(--afty-log-altura, 50dvh));
   overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--afty-borda-forte);
+  border-radius: var(--afty-raio);
+  background: var(--afty-card);
+  box-shadow: var(--afty-sombra);
+}
+
+.afty-log-corpo[hidden] { display: none; }
+
+.afty-log-corpo-topo {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--afty-card);
+  border-bottom: 1px solid var(--afty-borda);
+}
+
+/* Em telas baixas, a identidade e os vitais podem sair ao rolar; as abas e a
+   barra de dados continuam presas ao topo, com espaço para ler as ações. */
+@media (max-height: 480px) {
+  .afty-cabecalho { top: calc(-1 * var(--afty-cabecalho-recolhido, 0px)); }
 }
 
 .afty-log-modo {
@@ -3028,6 +3049,10 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
 }
 
 .afty-log-modo:hover { color: var(--afty-texto); }
+
+@media (pointer: coarse) {
+  .afty-log-modo { min-width: 2.75rem; min-height: 2.75rem; }
+}
 
 .afty-log-modo[data-afty-ativo="sim"] {
   color: var(--afty-destaque-texto);
@@ -3182,13 +3207,22 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
   .afty-cabecalho[data-afty-compacto="sim"] .afty-vital { padding: 0.25rem 0.5rem; }
   .afty-cabecalho[data-afty-compacto="sim"] .afty-vital-numero { font-size: 1.125rem; }
   .afty-cabecalho[data-afty-compacto="sim"] .afty-passo { display: none; }
-  /* O painel de rolagens ocupa a largura toda no celular: encolhido no canto ele
-     fica com duas palavras por linha. */
+  /* Modos e Histórico na primeira linha; a última rolagem usa a segunda. */
   .afty-log {
-    left: 0.5rem;
-    right: 0.5rem;
-    width: auto;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.375rem;
   }
+
+  .afty-log-ultima {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    border-left: 0;
+    border-top: 1px solid var(--afty-borda);
+  }
+
+  .afty-log-corpo { width: 100%; }
+
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-log .afty-passo { display: inline-flex; }
 
   .afty-busca-fundo { padding-top: 6vh; }
 }
@@ -3618,7 +3652,7 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
     display: none !important;
   }
 
-  /* O respiro que existe por causa do painel de rolagens. */
+  /* O respiro dos botões flutuantes não vai para o papel. */
   .afty-respiro { display: none; }
 
   /* Cartão e linha não podem ser partidos ao meio pela quebra de página. */

@@ -165,6 +165,7 @@ export function aplicarAptidoesNoDano(dano, creature, combate, ctx = {}) {
           fixo: extra.fixo ?? 0,
           momento: extra.momento ?? "durante",
           multiplica: extra.multiplica !== false && extra.momento !== "apos",
+          concentra: extra.concentra !== false,
         });
       }
       for (const extra of lista(entrada.imbuir?.escolhido?.rolagens)) {
@@ -209,6 +210,7 @@ export function aplicarAptidoesNoDano(dano, creature, combate, ctx = {}) {
       if (canaliza && cl > 0) {
         gruposDano.push({
           nome: maxima ? "Canalização Máxima" : "Canalizar em Golpe",
+          concentra: false,
           dados: cl + (maxima ? 1 : 0),
           faces: maxima ? 10 : tem(aptidoesIds, "canalizacao_avancada") ? 8 : 6,
           fixo: maxima ? au : 0,
@@ -224,6 +226,7 @@ export function aplicarAptidoesNoDano(dano, creature, combate, ctx = {}) {
       if (canalizaER && bt > 0) {
         gruposDano.push({
           nome: "Canalizar Energia Reversa",
+          concentra: false,
           dados: 2 * bt,
           faces: 6,
           fixo: 0,

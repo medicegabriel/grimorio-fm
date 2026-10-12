@@ -12,6 +12,46 @@ FLOOR, `INT`=parte inteira, `MAIOR(intervalo;k)`=k-ésimo maior, `VERDADEIRO`=TR
 
 ## Correções estruturais ao que estava assumido
 
+### Quantidade de Especialização e Aptidões Amaldiçoadas (2026-10-10)
+
+Na criatura Afty, Especialização concede `1 + floor(Maestria / 2)` vagas por
+compra e pode ser comprada `ceil(Maestria / 2)` vezes. O ganho arredonda para
+baixo, e o teto de compras arredonda para cima.
+
+Aptidão voltou ao cálculo anterior, por pedido do autor no mesmo dia: cada
+compra concede `1 + Grau Numérico` Aptidões Amaldiçoadas e pode ser feita
+`floor(Maestria / 2)` vezes. Grau Numérico é o Grau do Feiticeiro derivado do ND
+(Quarto 1, Terceiro 2, Segundo 3, Primeiro 4, Especial 5).
+
+| Maestria | ND | Compras de Especialização | Máximo de Especialização | Compras de Aptidão | Máximo de Aptidões |
+|---|---|---|---|---|---|
+| 2 | 1 a 4 | 1 | 2 | 1 | 2 |
+| 3 | 5 a 8 | 2 | 4 | 1 | 3 |
+| 4 | 9 a 12 | 2 | 6 | 2 | 8 |
+| 5 | 13 a 16 | 3 | 9 | 2 | 10 |
+| 6 | 17 a 20 | 3 | 12 | 3 | 18 |
+| 7 | 21 a 25 | 4 | 16 | 3 | 18 |
+| 8 | 26 a 30 | 4 | 20 | 4 | 24 |
+| 9 | 31 a 35 | 5 | 25 | 4 | 24 |
+| 10 | 36 ou mais | 5 | 30 | 5 | 30 |
+
+A tabela considera cada Geral comprada até seu teto, sem outras fontes de vagas.
+Subir de ND não compra a Geral automaticamente: quatro compras de Especialização
+no ND 35 dão 20 vagas, e as mesmas quatro no ND 36 dão 24. Com cinco compras de
+Especialização, são 25 e 30 respectivamente. Quatro compras de Aptidão concedem
+24 nos dois níveis, e a quinta compra só vale a partir do ND 36, totalizando 30.
+As compras continuam gastando o contador compartilhado de Feitiços e Habilidades Gerais.
+
+As escolhas gravadas são preservadas. Ao baixar o ND, o resolver limita as compras
+na leitura e as restaura ao subir. Concessões de sessão continuam gratuitas e fora
+do teto de compras. A quinta compra de Aptidão eventualmente gravada no ND 31
+fica aparada na leitura até o ND 36, sem apagar a entrada ou as Aptidões escolhidas.
+O orçamento de Níveis de Aptidão e a progressão da ficha Player não foram alterados.
+
+Implementação: `afty-gerais.js` calcula o teto e descreve a regra;
+`GERAL_EFEITOS`, em `afty-efeitos-conteudo.js`, concede as vagas pelo Motor.
+Regressões em `asserts/t-gerais-progressao.mjs`.
+
 ### Atenção de Olhinhos Lu (2026-10-12)
 
 Autor confirmou condição corporal e bônus adicional de `teto(3 * cl)`
@@ -35,10 +75,14 @@ O resumo do card e o painel de Ações leem a mesma fonte mesmo sem Em Combate.
 Faixas e Manoplas criadas pela receita `niveis` da Criação de Equipamentos podem
 escolher `ataqueId: "amaldicoado"` na entrada do inventário. O item equipado que
 define o Ataque Básico fornece essa escolha junto dos seus encantamentos e grau.
+A integração de 2026-10-12 preserva a decisão local de 2026-10-04: a escolha
+`ataqueBasicoId` da sessão precede a da ficha, e ambas precedem a escolha do item.
+O campo do item serve de alternativa somente em fichas antigas sem escolha própria.
 A linha usa a jogada Amaldiçoada já resolvida, com seu atributo, escala, Maestria
-e fontes, sem duplicar o Bônus de Treinamento. O dano desarmado mantém sua fórmula.
-Os escopos `atq:*` e `atq_tipo:*:im` acompanham a jogada escolhida. Sem receita,
-sem item equipado ou com escolha inválida, o básico continua Corpo a Corpo.
+e fontes, sem duplicar o Bônus de Treinamento. O dano segue a divergência vigente
+`danoDoAcertoAmaldicoado`: atributo da jogada na criatura, físico no jogador.
+Os escopos `atq:*` e `atq_tipo:*:im` acompanham a jogada escolhida. Sem escolha
+própria, receita ou item equipado válido, o básico continua Corpo a Corpo.
 A receita permanece válida depois de remover o addon, como as demais contas da arma.
 
 ### Expressão de Raio Negro para bot de dados (2026-09-30)
@@ -109,6 +153,45 @@ o tamanho e a multiplicação já adotados pelo motor de crítico. O texto do ca
 verbatim. O autor confirmou 6 vigor na ativação e 4 para a segunda rodada, total de 10.
 Duração, gasto e exaustão ficam sob controle manual na ficha, sem cobrança ao desligar ou
 automatismo de manutenção.
+
+### Ataque Concentrado (decisão de 2026-10-05)
+
+Vale para armas e Ataque Básico nas fichas de Player e de Criatura. Para cada
+tamanho de dado, soma os dados elegíveis do ataque original, multiplica pela
+quantidade de concentrações, divide por dois e só então arredonda para baixo.
+Exemplo: 7d12 com três concentrações soma 3,5 + 3,5 + 3,5 = 10,5, acrescenta
+10d12 e termina em 17d12. As concentrações não aumentam a base umas das outras.
+Fontes do mesmo tamanho são somadas antes do piso. Tamanhos diferentes conservam
+suas faces. O mínimo continua sendo um dado por concentração para o ataque
+inteiro, sem repetir esse mínimo em cada fonte ou tamanho adicional.
+
+A classificação do autor, pelos números da lista revisada:
+
+| Números | Fontes incluídas nas metades |
+|---|---|
+| 1 a 6 | Lutador Superior (também Gêmeos), Autossuficiente, Postura do Sol, Invencível sob o Sol, Arsenal Cíclico e Mestre do Arremesso |
+| 7 a 11 | Potente, Sintonizada, Aura Elemental, Caçador de Feiticeiros e Foco no Inimigo |
+| 12 e 13 | Feitiço Auxiliar Durante Ataque que dure pelo menos uma rodada e Transformação Durante Ataque |
+| 14 a 16 | Golpe Especial Atroz, Pistoleiro Iniciado/Avançado e Execução Silenciosa |
+| 26 a 30 | Crítico Potente, Destruidora, Mortal, Fatal e Fluxo Invencível, apenas no modo em que o bônus de crítico existe |
+| 31 e 32 | Dados adicionais da Azamaru reunida e de Consumir Cinzas |
+
+Ficam fora das metades: Ajuste, Desarme, Quebra Crânio, Ataque Furtivo,
+Arremetida Encoberta, Golpe Impactante, dados do Aliado, Canalizar em Golpe
+(inclusive Avançada e Máxima), Canalizar Energia Reversa e Auxiliar de um único
+golpe. Seus dados continuam sendo somados uma vez ao ataque, conforme sua própria
+regra. Danos Após Ataque e dano fixo não entram nas metades. O dado de Postura do
+Sol não é repetido quando Invencível sob o Sol já o fornece.
+
+Os modos normal e crítico têm cálculos separados. Bônus exclusivos do crítico
+entram nas metades apenas no crítico e no Raio Negro. A dobra ocorre depois das
+metades; Fatal também conserva a mudança de tamanho apenas nesses modos.
+
+O motor aplica esta etapa em `afty-ataque-concentrado.js`, depois de Auxiliares,
+Sintonizada e Aptidões. `dadosConcentraveis` conserva a quantidade elegível quando
+um grupo mistura fontes incluídas e excluídas; `concentra: false` exclui grupos de
+um golpe. `dadosCritico` guarda a quantidade alternativa de um grupo no crítico,
+usada tanto nas fórmulas quanto na rolagem.
 
 ### Alma / Integridade
 `Alma.Max = 100`. `Alma.Atual` = valor corrente (0–100). Escala o HP.

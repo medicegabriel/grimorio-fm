@@ -4,6 +4,22 @@
 > Especialização". Leia junto com `automacao-dsl.md` (a linguagem), `afty-status.md` (pendências
 > de conteúdo) e `afty-invocacoes.md` (a seção GAPS DO MOTOR, que vale igual aqui).
 
+## Implemento Marcial: benefício compartilhado (2026-10-05)
+
+Implemento Marcial de Combatente e Lutador não acumula: é a mesma habilidade,
+apesar dos ids diferentes. Cada especialização calcula seu bônus pelo próprio
+nível de escalonamento, e só o maior entra na CD. Dois bônus de +4 dão +4.
+
+Os dois efeitos declaram `grupoNaoAcumula: "implemento_marcial"`.
+`aplicarEfeitos` encaminha esse grupo a `resolverExclusivos` numa disputa própria,
+independente dos pools de Feitiços, Itens e Invocações. O bônus vencedor continua
+somando com outras fontes de CD. O detalhamento marca a cópia menor ou empatada
+como `suplantado`, e a ficha a exibe riscada. Vale em Player e Afty, também na
+CD de Feitiços e nas habilidades herdadas que preservam os efeitos.
+
+Cobertura em `asserts/t-bases-lut-cmb.mjs`: classes isoladas, multiclasse,
+empate, valores diferentes, ordem das fontes, remoção e soma com outros bônus.
+
 ## 1. O problema em uma frase
 
 Os catálogos estão transcritos e travam pré-requisito e orçamento, mas **nenhum efeito é

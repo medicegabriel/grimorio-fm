@@ -32,7 +32,7 @@
 
 // Avaliador da DSL. Só o editor do Funcionamento Básico o usa aqui, para
 // reexibir o valor de cada linha: a aplicação de verdade é do `aplicarEfeitos`.
-import { evalNumber as evalNumberDsl } from "./afty-dsl";
+import { evalNumber as evalNumberDsl, normalizarVariavel } from "./afty-dsl";
 import {
   AFTY_RESISTENCIAS, TAMANHO_BASE, tamanhoPorDegraus, funcionamentosDaFicha,
   MELHORIA_NIVEL_INICIAL, LENDARIA_NIVEL_INICIAL,
@@ -45,7 +45,7 @@ import {
   resolveOrigemAttrBonus, resolveDesenvolvimento, origemTemDesenvolvimento, resolveEscolhasOrigem,
   limiteAtributoDaOrigem, resolveLimitePoolOrigem, origensQualificadas,
   fatorSlotsHabilidade, aptidoesConcedidasPelaOrigem, caracteristicasEfetivas,
-  atributosDePericiaDaOrigem, origemMae, ehVariacaoDoRestringido, gatilhosDeOrigem,
+  atributosDePericiaDaOrigem, origemMae, ehVariacaoDoRestringido, gatilhosDeOrigem, anatomiasEscolhidas,
   habilidadesConcedidasPelaOrigem, armasEscolhidasDaOrigem, origemSemEnergia,
   nivelMaximoDaOrigem, tetoNivelFeiticoDaOrigem, estiloNdMinimoDaOrigem, aptidoesVetadasDaOrigem,
   escolhasDaOrigem, rotuloCaracteristicasDaOrigem,
@@ -136,12 +136,14 @@ import { resolveCatarse } from "./afty-catarse";
 import { resolveEspinho, marcasDoEspinho, ESPINHO_TIPOS_ITEM } from "./afty-espinho";
 import { resolveCarteira } from "./afty-carteira";
 import { atributosDosAddons } from "./afty-addons-atributos";
-import { resolveCura } from "./afty-cura";
+import { resolveCura, fonteCuraDeclarada } from "./afty-cura";
 import { comFormulasDeDano } from "./afty-dano";
+import { efeitoDeAtaqueConcentrado, aplicarAtaqueConcentradoNoDano } from "./afty-ataque-concentrado";
+import { aplicarPropriedadesNoDano, defesaDeAparar, tipoDanoDaArma, aplicarOscilanteNosTestes } from "./afty-propriedades-armas";
 import {
   problemasDeAddon, marcasDeclaradas, primitivasDaCriatura, liberacoesDaCriatura, precosDeCatarse, espinhoDaFicha,
   nivelDaFicha, aptidoesConcedidasPorAddon, substituicaoEnergiaReversaPorAddon,
-  estadosCombateDeAddon, epocaAddons,
+  estadosCombateDeAddon, epocaAddons, comEscopoDaFicha, pacotesDaFicha,
 } from "./afty-addons";
 import { agrupaConcedido, concessoesDaSessao, escolhasDoConcedido } from "./afty-concessao";
 import { estadosNativosExtras, efeitosDaAlmaAtual } from "./afty-extras-nativos";
@@ -160,7 +162,7 @@ import {
   efeitosDaSessao, EFEITO_CANAIS,
   ehAtributoPermanente, ehAtributoTemporario, ehEstagio2, ehPreContexto, ehPosAptidao, efeitoUsaDadosDanoFinal,
   separarEfeitosDeBancada,
-  mesclarEfeitos, detalhesDoCanal, detalhesDoCanalEscopos, custoEmPe, normalizarAlvoEfeito,
+  mesclarEfeitos, detalhesDoCanal, detalhesDeCustoPe, custoEmPe, normalizarAlvoEfeito,
   varsDeEspecializacao, APTIDAO_EFEITOS, canalPermitidoEmExpansao,
 } from "./afty-efeitos";
 import { resolveGerais, contadorHabilidades, GERAL_BY_ID } from "./afty-gerais";
@@ -170,7 +172,7 @@ import { sistemaDaFicha, regraDo, rotuloDoNivel } from "./afty-sistema";
 // Os números da ficha de JOGADOR vêm da Classe, e não do Tipo.
 import {
   pvDaClasse, peDaClasse, peModTecnicaDaFicha, vagasDeHabilidadePorClasse,
-  pacoteInicialDaFicha, resistenciasDaClasse,
+  pacoteInicialDaFicha, resistenciasDaClasse, multiclassesSemRequisito,
 } from "./afty-especializacoes";
 import {
   resolveCombate, degrausBrutalidade, tetoAtaqueConcentrado,
@@ -265,7 +267,7 @@ function vocabularioDoMundo() {
     // Toda booleana de escolha de Aptidão que pode existir, para nenhuma
     // expressão que a cite cair no fallback por ela não estar declarada.
     opcoesAptidao: AFTY_APTIDOES.flatMap((a) =>
-      (a.opcoes?.valores ?? []).map((v) => `opt_${a.id}_${v.id}`)),
+      (a.opcoes?.valores ?? []).map((v) => `opt_${normalizarVariavel(a.id)}_${normalizarVariavel(v.id)}`)),
   };
   return vocCache;
 }
@@ -283,8 +285,17 @@ const acertoDosEncantamentos = (fa) =>
  *   • usosRitualista — melhorias adicionais gastas desde o último descanso.
  *   • ritualAtual — Ritual aguardando teste, escolha ou conclusão na Ficha Final.
  *   • rituaisSemTeste — mapa de Feitiços cuja fonte dispensa Prestidigitação.
+ *
+ * ⚠ O REMENDO DE ADDON É DA FICHA (achado M05-F01, 2026-10-07). A derivação roda
+ * dentro do escopo da criatura: o catálogo vê os acréscimos do mundo inteiro e só
+ * os remendos dos pacotes que ESTA ficha carrega. Sem isto, no Encontro misto, o
+ * `substitui` de um combatente mudava o número do vizinho. Ver `comEscopoDaFicha`.
  */
 export function deriveAfty(creature, opcoes = {}) {
+  return comEscopoDaFicha(creature, () => deriveAftyNoEscopo(creature, opcoes));
+}
+
+function deriveAftyNoEscopo(creature, opcoes = {}) {
   creature = comArmaBloodfeast(creature, opcoes.bloodfeast);
   const core = creature?.core ?? {};
   /* CONCESSÃO VINDA DA SESSÃO (Addons 8.3). Chega pelo `opcoes`, e não pela
@@ -454,13 +465,8 @@ export function deriveAfty(creature, opcoes = {}) {
      para não aparecer "nem como zero" é a Guarda, e ela segue devolvendo `null`
      pela divergência dela. */
   const patamar = ehJogador("patamarDoJogador") ? "comum" : (core.patamar || "comum");
-  /* ⚠ O NÍVEL DO JOGADOR TRAVA EM 30 (autor, 2026-08-30). O teto entra AQUI, no
-     `nd` que todo o resto lê, e não só no campo da tela: uma ficha importada ou
-     um rascunho antigo com 40 tem de derivar como 30, e não como 40 com a tela
-     mostrando 30. O ND da criatura segue sem teto.
-
-     Como a Maestria só passa de 8 no ND 31, o teto de nível é o que faz o Bônus
-     de Treinamento do jogador parar em +8 sem precisar de escada própria. */
+  // nivelDaFicha aplica o teto padrão de 30 do Player. Um Addon pode retirá-lo
+  // para esta ficha; todos os leitores de nível seguem a mesma decisão.
   /* ⚠ COM A LIBERAÇÃO, O NÍVEL VEM DO XP E O CAMPO DA FICHA É IGNORADO. É
      substituição e não soma, pela mesma razão do orçamento de Focos: somar o
      campo com a tabela cobraria a mesma experiência duas vezes. O `core.nd`
@@ -477,7 +483,7 @@ export function deriveAfty(creature, opcoes = {}) {
      elevar seu nível acima do nível 10". Entra no mesmo `nd` que todo o resto
      lê, pela mesma razão do teto de 30 do jogador. */
   const tetoDaOrigem = nivelMaximoDaOrigem(creature);
-  const ndSemOrigem = ehJogador("tetoDeNivel") ? Math.min(30, ndBruto) : ndBruto;
+  const ndSemOrigem = ndBruto;
   const nd = tetoDaOrigem ? Math.min(tetoDaOrigem, ndSemOrigem) : ndSemOrigem;
   /* As Habilidades que a origem CONCEDE (`concedeHabilidades`, 2026-10-09): entram
      pela mesma porta da concessão de sessão, sem gastar vaga e sem pedir a
@@ -498,7 +504,9 @@ export function deriveAfty(creature, opcoes = {}) {
   const acessoFeitico = tetoFeiticoOrigem == null
     ? nivelMaxFeitico(nd, nivelConjurador)
     : Math.min(tetoFeiticoOrigem, nivelMaxFeitico(nd, nivelConjurador));
-  const habilidadesConcedidas = habilidadesConcedidasPelasEspecializacoes(especializacoes.escolhidas, sistema);
+  const habilidadesConcedidas = habilidadesConcedidasPelasEspecializacoes(
+    especializacoes.escolhidas, sistema, pacotesDaFicha(creature),
+  );
   /* ⚠ ORIGEM ESTRUTURAL, e não a gravada. O Gêmeo que copiou da Maldição em
      Verdadeiras Origens perde a trilha de Energia Reversa como uma Maldição de
      verdade (autor, 2026-08-29). Ver `origemEstrutural` em afty-origens.js. */
@@ -833,6 +841,10 @@ export function deriveAfty(creature, opcoes = {}) {
      nunca somou. A regra vale para a lista inteira, e quem desce entra no
      `efeitosTodos` lá embaixo, UMA vez. Ver `separarEfeitosDeBancada`. */
   const { montante: efeitosMontante, bancada: efeitosMontanteDeBancada } = separarEfeitosDeBancada([
+      // Vagas exclusivas de Talento, configuradas na cópia do Addon desta ficha.
+      ...regrasAddon.fontesTalentosIniciais.map(({ id, nome, valor }) => ({
+        canal: "vagasTalento", expr: String(valor), origem: id, nome,
+      })),
       ...efeitosDeTreino(creature, opcoes.treinosAtivos, equip.entradas),
       ...efeitosRdEquipamentoDeTreino(creature, equip, bt, sistema),
       // Treino Especial entra ao lado da Linha de Treinamento porque é a mesma
@@ -988,7 +1000,20 @@ export function deriveAfty(creature, opcoes = {}) {
   );
   // Alto Nível (21+). Além do ND, cada trilha exige a Habilidade Geral
   // correspondente, que só DESTRAVA (não dá vaga).
+  // Conhecimento Iluminado só promove perícias treinadas por outra fonte.
+  const profsAntesDoAltoNivel = resolverExclusivos(aplicarEfeitos([
+    ...efeitosMontante,
+    ...coletarEfeitosCriatura({
+      habilidades, talentos: talentosPre, sistema,
+      catalogos: { habilidades: getHabilidade, talentos: getTalento, opcoes: { ...OPCAO_ESCOLHA_NOME, ...OPCAO_TALENTO_NOME } },
+    }),
+    ...coletarEfeitosAptidao(creatureComAptidoes, semEnergia),
+    ...efeitosDaTecnica(creature),
+  ].filter((e) => e.canal === "proficienciaPericia"), ctxMontante));
+  const periciasTreinadasAntes = Object.keys(profsAntesDoAltoNivel.porAlvo.proficienciaPericia || {})
+    .filter((id) => valorCanal(profsAntesDoAltoNivel, "proficienciaPericia", id) >= 1);
   const altoNivel = resolveAltoNivel(creature, {
+    periciasTreinadas: periciasTreinadasAntes,
     niveisPorEspec: habilidades.niveisPorEspec,
     habilidades: habilidades.efetivas,
     /* ⚠ `undefined` no jogador, e não um objeto com os dois em `true`. O
@@ -1134,10 +1159,13 @@ export function deriveAfty(creature, opcoes = {}) {
       grupo: e.def.grupo ?? null,
       // Tipo de dano da arma (ct, im, pf), que é como os Especialistas em
       // Cortes, Concussão e Perfuração (Talentos) miram.
-      tipoDano: e.def.dano?.tipo ?? null,
+      tipoDano: tipoDanoDaArma(e.def, e.uid ?? e.def.id, opcoes.propriedadesArmas),
+      tipoDanoBase: e.def.dano?.tipo ?? null,
       alcance: alcanceDaArma(e.def, bt, e.fa?.grau ?? null),
       alcanceBonusCorpo: e.def.props?.estendida ? 1.5 : 0,
-      propriedades: propriedadesDaArma(e.def),
+      propriedades: propriedadesDaArma(e.def, e.fa),
+      chaveArma: e.uid ?? e.def.id,
+      avisosPropriedades: e.def.avisosPropriedades ?? [],
       criticoExtraDados: e.fa?.encantamentos?.some((x) => x.id === "enc_arma_destruidora" && x.atende) ? 1 : 0,
       elegivelDedicada: podeSerArmaDedicada(e.def),
     }));
@@ -1169,7 +1197,15 @@ export function deriveAfty(creature, opcoes = {}) {
   // As fontes do Acerto que NÃO são o grau (o encantamento Precisa). Sem elas o
   // hover jogava o bônus todo dentro de "Grau da Ferramenta".
   const fontesAcertoBasico = pugilato?.fa?.fontesAcerto ?? [];
-  const propriedadesBasico = pugilato ? propriedadesDaArma(pugilato.def) : [];
+  const propriedadesBasico = pugilato ? propriedadesDaArma(pugilato.def, pugilato.fa) : [];
+  const anatomiaArmaNatural = anatomiasEscolhidas(creature).includes("arma_natural");
+  const propriedadesNaturais = {
+    ...(anatomiaArmaNatural || aptidoesIds.includes("mal_armas_naturais") ? { fineza: true } : {}),
+    ...(anatomiaArmaNatural ? { energica: true } : {}),
+  };
+  for (const p of propriedadesDaArma({ props: propriedadesNaturais })) {
+    if (!propriedadesBasico.some((x) => x.id === p.id)) propriedadesBasico.push(p);
+  }
   const criticoExtraDadosBasico = pugilato?.fa?.encantamentos?.some(
     (x) => x.id === "enc_arma_destruidora" && x.atende) ? 1 : 0;
   // O escopo do item, para o efeito de encantamento com `alvoItem` alcançar a
@@ -1180,10 +1216,12 @@ export function deriveAfty(creature, opcoes = {}) {
   const escoposBasicoExtra = pugilato?.def?.id ? [pugilato.def.id] : [];
   // Fineza do item que define o golpe (Soco Inglês). A propriedade estava na
   // tabela e não chegava em lugar nenhum: o básico só olhava o canal.
-  const finezaBasico = !!pugilato?.def?.props?.fineza;
-  // Só o item que define o Básico fornece a escolha, como os encantamentos.
-  const ataqueIdBasico = podeEscolherAtaqueDaArma(pugilato?.def)
-    && pugilato?.ataqueId === "amaldicoado" ? "amaldicoado" : "corpo";
+  const finezaBasico = propriedadesBasico.some((p) => p.id === "fineza");
+  // A escolha da sessão e da ficha precede a escolha de um item criado antigo.
+  const ataqueBasicoSalvo = opcoes.ataqueBasicoId ?? creature?.ataqueBasicoId;
+  const ataqueIdBasico = ataqueBasicoSalvo != null
+    ? (ataqueBasicoSalvo === "amaldicoado" ? "amaldicoado" : "corpo")
+    : (podeEscolherAtaqueDaArma(pugilato?.def) && pugilato?.ataqueId === "amaldicoado" ? "amaldicoado" : "corpo");
   /* As linhas de dano que carregam a Sintonizada. Mesmo recorte do Destruidora:
      a arma equipada que não é pugilato vira linha própria, e do pugilato só vale
      o item que DEFINE o Ataque Básico. Ver `aplicarSintonizadaNoDano`. */
@@ -1218,7 +1256,7 @@ export function deriveAfty(creature, opcoes = {}) {
         // (prefixo `lut_`/`cmb_`/`res_` contra `tal_`).
         opcoes: { ...OPCAO_ESCOLHA_NOME, ...OPCAO_TALENTO_NOME },
         // Com o sistema, o hover diz "Melhoria de Classe de Armadura" no jogador.
-        altoNivel: (id) => getMelhoriaSuperior(id, sistema) || getHabilidadeLendaria(id) || getHabilidadeApice(id),
+        altoNivel: (id) => getMelhoriaSuperior(id, sistema, creature) || getHabilidadeLendaria(id, creature) || getHabilidadeApice(id),
       },
     }).map(aplicarDiretoDaAdaptacao).map((e) => efeitoDaImitacao(e, imitacao, nd)),
     // Direcionados por uma escolha que mora FORA do card da habilidade (a
@@ -1526,7 +1564,8 @@ export function deriveAfty(creature, opcoes = {}) {
     // Os dois leitores vêm de fora para o módulo não importar `afty-efeitos.js`
     // e fechar um ciclo com o catálogo de Aptidões. Ver o cabeçalho de lá.
     canal: (id) => valorCanal(efPosAptidao, id),
-    fontes: (id, alvo = null) => detalhesDoCanal(efPosAptidao, id, alvo)
+    fontes: (id, alvo = null) => (id === "custoPE"
+      ? detalhesDeCustoPe(efPosAptidao, alvo) : detalhesDoCanal(efPosAptidao, id, alvo))
       .map((x) => ({ label: x.nome, valor: x.valor })),
   });
   const efeitosComDominio = (efeitosDominio.length || efeitosEstilo.length)
@@ -1826,6 +1865,7 @@ export function deriveAfty(creature, opcoes = {}) {
   // linha de dano já sabe quantos dados vai rolar. Elas não entram no agregado
   // geral e viajam cruas até o calculador de Feitiços.
   const efeitosLinhaDano = efeitosAtivos.filter(efeitoUsaDadosDanoFinal);
+  const efeitosConcentrados = efeitosLinhaDano.filter((e) => efeitoDeAtaqueConcentrado(e, (id) => expandeHerdadas([id])));
 
   /* MARCAS da ficha, para o `contar()` do DSL (Addons fase 0, 8.1 do
      docs/afty-addons.md). Sai das MESMAS três listas que alimentam o `tem_*`
@@ -2092,19 +2132,12 @@ export function deriveAfty(creature, opcoes = {}) {
   // os vencedores somados, então a disputa que sobra aqui é só a do estágio 2. E
   // ela não precisa do `aplicado` dos estágios anteriores: `atributo` é o único
   // canal que roda antes daqui, e o filtro `ehEstagio2` justamente o exclui.
-  /* ⚠ O `custoPE` TAMBÉM ENTRA AQUI (2026-10-08). Ele é canal do passe
-     pós-Aptidão desde 2026-09-09 (o Domínio Simples lê o custo lá), e por isso o
-     `ehEstagio2` o tira deste agregado. Só que o FEITIÇO e o custo das Aptidões
-     leem ESTE agregado, e ficaram sem redução nenhuma desde aquela data: uma
-     linha `custoPE` de Funcionamento, de condição ou da Expansão de Domínio
-     ("Reduz o custo de seus Feitiços dentro da expansão igual ao Nível de DOM")
-     não chegava a eles. A da Expansão nem era avaliada, porque ela mora na lista
-     do Domínio, que nenhum passe pós-Aptidão lê. O montante já está no agregado
-     pelo `efMontante`, então somar só os ativos não conta nada duas vezes. */
+  /* O `custoPE` entra uma vez pelo `ehEstagio2`, com o contexto final.
+     O passe pós-Aptidão conserva a leitura antecipada do Domínio Simples.
+     O montante já entra pelo `efMontanteSemAtributo`. */
   const efSemCrescimento = resolverExclusivos(mesclarEfeitos(
     efMontanteSemAtributo, efPreContexto, efAttrPerm, efAttrTemp,
     aplicarEfeitos(efeitosAtivos.filter(ehEstagio2), montarCtx(attrEff, modByAttr)),
-    aplicarEfeitos(efeitosAtivos.filter((e) => e?.canal === "custoPE" && !efeitoUsaDadosDanoFinal(e)), montarCtx(attrEff, modByAttr)),
   ));
 
   // Crescimento Corporal é a única Aptidão que pode aparecer duas vezes e cada
@@ -2425,6 +2458,9 @@ export function deriveAfty(creature, opcoes = {}) {
   for (const id of habilidades.efetivas ?? []) {
     registraMesa(`especializacao:${id}`, getHabilidade(id), { semUsos: true });
   }
+  for (const id of altoNivel.lendarias.escolhidas ?? []) {
+    registraMesa("altoNivel:len:" + id, getHabilidadeLendaria(id, creature));
+  }
   const opcoesDeMesa = (mapa, pegaPai) => {
     for (const [paiId, ids] of Object.entries(mapa ?? {})) {
       const opcoes = pegaPai(paiId)?.escolha?.opcoes ?? [];
@@ -2530,6 +2566,9 @@ export function deriveAfty(creature, opcoes = {}) {
         ...(e?.semCredito ? { semCredito: true } : {}),
         // `alvoTipo` diz à UI qual vocabulário oferecer (atributo, perícia, tr...).
         alvoTipo: def?.alvo ?? null,
+        /* O canal cujo alvo É o dado ou o gatilho não aceita "todos" (2026-10-07,
+           achado M01-UI-01): sem alvo o número cairia em todo tamanho de dado. */
+        alvoObrigatorio: !!def?.alvoObrigatorio,
         nota: def?.nota ?? null,
         valor: expr ? (valorTardio ? null : evalNumberDsl(expr, ctxTecnica, 0)) : 0,
         ativo: !e?.quando || condicaoTardia || evalNumberDsl(String(e.quando), ctxTecnica, 0) !== 0,
@@ -3039,8 +3078,11 @@ export function deriveAfty(creature, opcoes = {}) {
   /* O total pode ficar NEGATIVO (dois itens num orçamento de 1), e é o certo:
      as parcelas continuam somando o total, e o medidor fica vermelho. Só a
      conta de quantos Feitiços cabem apara em zero. */
-  const feiticosNoProprio = Math.min(feiticosGastos, Math.max(0, orcamentoFeitico.total));
-  const feiticoForaDoProprio = feiticosGastos - feiticosNoProprio;
+  const vagasVariacao = Math.max(0, Math.trunc(canal("vagasVariacao")));
+  const variacoesUsadas = Math.min(vagasVariacao, feiticosLista.filter((f) => !f.variacaoDe && f.variacaoDeTecnica).length);
+  const feiticosSemVariacoesExclusivas = feiticosGastos - variacoesUsadas;
+  const feiticosNoProprio = Math.min(feiticosSemVariacoesExclusivas, Math.max(0, orcamentoFeitico.total));
+  const feiticoForaDoProprio = feiticosSemVariacoesExclusivas - feiticosNoProprio;
   /* A vaga de Feitiço serve às DUAS famílias (a nota do canal diz "Feitiço,
      Estilo das Sombras ou Habilidade Marcial"), então elas a dividem. A Técnica
      de Estilo pega primeiro pela mesma razão que ela pega a de Estilo antes:
@@ -3063,7 +3105,7 @@ export function deriveAfty(creature, opcoes = {}) {
   const gastosNoComum = estiloForaDeTudo
     + (feiticoTemCaixaProprio ? 0 : feiticoForaDeTudo)
     + gerais.gastos;
-  const contadorTotal = contadorComum + vagasFeitico + vagasEstilo + orcamentoFeitico.total;
+  const contadorTotal = contadorComum + vagasFeitico + vagasEstilo + vagasVariacao + orcamentoFeitico.total;
   const contadorGastos = criacoesGastas + gerais.gastos;
   const orcamentoHabilidades = {
     total: contadorTotal,
@@ -3073,6 +3115,8 @@ export function deriveAfty(creature, opcoes = {}) {
        na criatura, e a UI usa justamente o zero para saber qual medidor
        desenhar: quem tem caixa próprio não mostra o contador comum, que ali não
        tem dono nenhum. */
+    exclusivasVariacao: vagasVariacao,
+    exclusivasVariacaoUsadas: variacoesUsadas,
     proprioFeitico: orcamentoFeitico.total,
     /* Se o caixa próprio EXISTE, separado do total: com a Segunda Habilidade
        Única ele pode chegar a zero ou menos, e a UI que perguntava `total > 0`
@@ -3134,6 +3178,7 @@ export function deriveAfty(creature, opcoes = {}) {
        Passiva é divergência: sem ele a linha diria que a criatura paga. */
     sistema,
     passivasIsentas,
+    vagasVariacao,
   };
   /* ⚠ A ABA DE FEITIÇOS É DECISÃO DE MOTOR, e não de JSX (2026-09-07). O criador
      ramifica o layout inteiro por origem, e enquanto "quem conjura" era regra
@@ -3242,7 +3287,14 @@ export function deriveAfty(creature, opcoes = {}) {
      Bônus", sem BT nenhum. É o que a separa da CD, que mantém o BT. */
   const defEscala = valoresDoJogador ? metadeDoNivel : defTipo;
   const defBt = valoresDoJogador ? 0 : bt;
-  const defesa = 10 + defEscala + modDefesa + defBt + equip.uniformeDefesa + carga.defesa + canal("defesa");
+  const aparar = defesaDeAparar([
+    ...armasParaDano.map((a) => ({ ...a, treinada: ehJogador("proficienciaPorArma")
+      ? a.treinada : !!creature?.ataquesProf?.[a.ataqueId ?? (a.distancia ? "distancia" : "corpo")] })),
+    ...(pugilato ? [{ nome: "Ataque Básico", chaveArma: pugilato.uid ?? pugilato.def.id,
+      propriedades: propriedadesBasico, treinada: ataqueIdBasico === "amaldicoado"
+        || ehJogador("proficienciaPorArma") || !!creature?.ataquesProf?.corpo }] : []),
+  ], opcoes.propriedadesArmas);
+  const defesa = (aparar?.valor ?? 0) + 10 + defEscala + modDefesa + defBt + equip.uniformeDefesa + carga.defesa + canal("defesa");
 
   // ---------- Perícias, Jogadas de Ataque e Testes de Resistência ----------
   // Depende de cdTipo e defTipo: a planilha do autor (2026-07-27) mostra que a
@@ -3510,6 +3562,8 @@ export function deriveAfty(creature, opcoes = {}) {
     efeitos: ef, armas: armasDoDano.armas, grauBasico, acertoGrauBasico,
     fontesAcertoBasico, escoposBasicoExtra, finezaBasico, ataqueIdBasico,
     propriedadesBasico, criticoExtraDadosBasico,
+    chaveArmaBasico: pugilato?.uid ?? "basico",
+    avisosPropriedadesBasico: pugilato?.def?.avisosPropriedades ?? [],
     /* ⚠ O DADO DO GOLPE DESARMADO DA FICHA DE JOGADOR (autor, 2026-08-31):
        "Golpe Desarmado segue o cálculo de Lutador ou Arma Natural." Sem nenhum
        dos dois, vale o básico do livro por nível (1d4, 1d6, 1d8, 1d10 e 1d12), e
@@ -3545,7 +3599,9 @@ export function deriveAfty(creature, opcoes = {}) {
       });
       return { dadoBasico: d.dado, fonteDadoBasico: d.fonte ?? "Golpe Desarmado" };
     })(),
-    efeitosLinhaDano, contextoDsl: ctxTecnica,
+    efeitosLinhaDano: efeitosLinhaDano.filter((e) => !efeitosConcentrados.includes(e)),
+    contextoDsl: ctxTecnica,
+    origensDaFonte: (id) => expandeHerdadas([id]),
     tecnicasCombate: { ...tecnicasCombate, bt },
     // Os Ataques já resolvidos, para cada linha fechar o Acerto dela: o ataque
     // da categoria mais o grau da arma daquela linha.
@@ -3579,6 +3635,13 @@ export function deriveAfty(creature, opcoes = {}) {
     bt,
     modTecnica,
     cd,
+  });
+  dano = aplicarAtaqueConcentradoNoDano(dano, {
+    efeitos: efeitosConcentrados, contexto: ctxTecnica, jaAplicado: ef.aplicado,
+    vezes: combate.ataqueConcentrado,
+  });
+  dano = aplicarPropriedadesNoDano(dano, {
+    estado: opcoes.propriedadesArmas, atributos: attrEff, bt, tipos: TIPOS_DANO,
   });
   const temEscudoEquipado = equip.entradas.some((e) => e.tipo === "escudo" && e.equipado);
   if (talentos.escolhidas.includes("tal_tecnicas_ofensivas_de_escudo") && temEscudoEquipado) {
@@ -3626,6 +3689,13 @@ export function deriveAfty(creature, opcoes = {}) {
     itens: equip.entradas,
     hp: hpAntesMultiplicador,
     danoBasico: dano.entradas.find((e) => e.id === "basico") ?? null,
+    /* As linhas que as entradas ADQUIRIDAS declaram (`fonteCura`, 2026-10-07). O
+       número de cada uma vem pelos canais de cura mirando o id dela. */
+    fontesDeclaradas: [
+      ...habilidades.efetivas.map((id) => fonteCuraDeclarada(getHabilidade(id), "habilidade")),
+      ...(talentos.escolhidas ?? []).map((id) => fonteCuraDeclarada(getTalento(id), "talento")),
+      ...aptidoesIds.map((id) => fonteCuraDeclarada(getAptidao(id), "aptidao")),
+    ].filter(Boolean),
   });
 
   // ---------- Empolgação (Lutador) ----------
@@ -3726,7 +3796,7 @@ export function deriveAfty(creature, opcoes = {}) {
   // Só o Grimório Afty prolonga o orçamento depois do ND 20. Na Ficha de
   // Player, o último marco de nível que dá pontos é o 20. As demais fontes do
   // canal `pontosAptidao` continuam somando normalmente nos dois sistemas.
-  const aptidaoAlem20 = ehJogador("aptidaoApos20")
+  const aptidaoAlem20 = ehJogador("aptidaoApos20") && !regrasAddon.aptidaoApos20
     ? 0 : Math.max(0, Math.floor((nd - 20) / 2));
   const rotuloMarcoAptidao = rotuloDoNivel(sistema);
   const partesAptidaoND = [
@@ -3749,8 +3819,9 @@ export function deriveAfty(creature, opcoes = {}) {
        perde este nível, e é a intenção. */
     canal("pontosAptidao"));
 
-  // Quantas Aptidões Amaldiçoadas a criatura PODE ter: só o que a Habilidade
-  // Geral Aptidão concedeu (regra 4 em afty-gerais.js, o ND não dá nenhuma).
+  // Quantas Aptidões Amaldiçoadas a criatura PODE ter: canal vagasAptidao,
+  // incluindo a Habilidade Geral Aptidão e o Treinamento para Aptidão.
+  // O ND não dá nenhuma à criatura (regra 4 em afty-gerais.js).
   // Segue separado e independente do orçamento de NÍVEIS de aptidão
   // (totalAptidao, os limiares de ND), que não mudou.
   /* ⚠ NO JOGADOR VEM DO NÍVEL: "1 por Nível a partir do Nível 2. Logo Nível 20
@@ -3921,7 +3992,7 @@ export function deriveAfty(creature, opcoes = {}) {
     overridesPorInvocacao,
     /* A redução ampla de PE, já com o alvo da Invocação resolvida. Vai PRONTA
        porque o `afty-invocacoes.js` não importa o `afty-efeitos.js`. */
-    reducaoCustoPe: detalhesDoCanalEscopos(ef, "custoPE", ["invocacao"])
+    reducaoCustoPe: detalhesDeCustoPe(ef, "invocacao")
       .map((d) => ({ label: d.nome, valor: d.valor })),
     membroQuartoGrauGratis: controle.membroQuartoGrauGratis,
     otimizacaoEnergia: controle.otimizacaoEnergia,
@@ -4003,7 +4074,9 @@ export function deriveAfty(creature, opcoes = {}) {
      ainda concede Foco. Ver a nota de `carteiraFocos` em `LIBERACOES`. */
   const baseFocos = carteiraAlimentaFocos
     ? carteira.interludios
-    : (ehJogador("focosLivres") ? focosLivres : nd);
+    : (ehJogador("focosLivres")
+      ? (regrasAddon.focosPorNivel == null ? focosLivres : Math.floor(nd * regrasAddon.focosPorNivel))
+      : nd);
   const focosTotais = baseFocos + canal("focos");
 
   // (Pontos de atributo agora vêm do método + pool de nível — ver afty-atributos.js.)
@@ -4140,6 +4213,7 @@ export function deriveAfty(creature, opcoes = {}) {
       ...(equip.uniformeDefesa ? [{ label: "Uniforme", valor: equip.uniformeDefesa }] : []),
       ...(carga.defesa ? [{ label: "Sobrecarga", valor: carga.defesa }] : []),
       ...doMotor("defesa"),
+      ...(aparar ? [aparar] : []),
     ],
     cd: [
       { label: "Base", valor: 10 },
@@ -4511,6 +4585,9 @@ export function deriveAfty(creature, opcoes = {}) {
       multiplicadorPvFinal: regrasAddon.multiplicadorPvFinal,
       passivasSemCustoPeMaximo,
       ignoraMultiplicadorPeMaximoDeVotos: regrasAddon.ignoraMultiplicadorPeMaximoDeVotos,
+      focosPorNivel: sistema === "player" ? regrasAddon.focosPorNivel : null,
+      nivelJogadorSemTeto: sistema === "player" && regrasAddon.nivelJogadorSemTeto,
+      aptidaoApos20: sistema === "player" && regrasAddon.aptidaoApos20,
     },
     almaMult,
     /* ⚠ O que sai é o `almaMaxFinal`: na criatura é `100 + Melhoria de Alma`, e
@@ -4520,7 +4597,7 @@ export function deriveAfty(creature, opcoes = {}) {
     modTecnica,
     tecnicaAttr,
     totalAptidao,               // orçamento de NÍVEIS de aptidão (Afty continua a cada 2 ND depois do 20)
-    totalAptidoesAmaldicoadas,  // quantas pode ter (só da Habilidade Geral Aptidão, 0 sem ela)
+    totalAptidoesAmaldicoadas,  // quantas pode ter (progressão do jogador e canal vagasAptidao)
     caracteristicasAmaldicoadas, // { lista, catalogo, escolhidas, vagas, usadas, excedeu } (afty-caracteristicas-amaldicoadas.js)
     reduzNivelAptidao,          // quanto o pré-requisito de NÍVEL de cada Aptidão desce (0 no normal)
     requisitoTrilhaDispensado,  // { trilha: [fontes] } cujo requisito não trava Aptidão de outra trilha
@@ -4574,7 +4651,7 @@ export function deriveAfty(creature, opcoes = {}) {
     gerais,               // { escolhidas, gastos, ganhos, destravado, maxVezes, acesso, inacessiveis }
     efeitos: ef,          // Motor de Automação: { porCanal, porAlvo, detalhes, avisos }
     olhinhosLu: resolveOlhinhosLu({ tem: temOlhinhosLu, ...olhosLu, cl: aptidao.efetivo?.cl ?? 0 }),
-    testes,               // { pericias, resistencias, ataques, orcamento, atencao }
+    testes: aplicarOscilanteNosTestes(testes, opcoes.propriedadesArmas),
     dano,                 // { entradas: [{ id, nome, fonte, texto, alcance, propriedades, partes }] }
     tecnicasCombate,
     auxiliaresAtivos,
@@ -4607,7 +4684,15 @@ export function deriveAfty(creature, opcoes = {}) {
     partes,               // fontes de cada stat, para o hover da UI
     orcamentoHabilidades, // contador ÚNICO da aba: Feitiços + Habilidades Gerais
     origem: escolhasOrigem, // { porEscolha, mapa } — escolhas aninhadas de Origem e Clã
-    especializacoes,      // { escolhidas, total, max, obrigatoria, completa, erro }
+    /* `semRequisito` (2026-10-07): as Especializações de multiclasse cujo
+       requisito de atributo a ficha não atende, pelos atributos PERMANENTES. Vazio
+       na criatura, pela divergência `requisitoMulticlasse`. */
+    especializacoes: {
+      ...especializacoes,
+      semRequisito: regraDo(sistema, "requisitoMulticlasse") === "player"
+        ? multiclassesSemRequisito(especializacoes.escolhidas, attrPermanente)
+        : [],
+    },
     treinamentosEquipamento,
     treinoEscudo,
     /* ⚠ OS DOIS SAEM DA VERSÃO REAVALIADA, e não da que o resolver devolveu. A

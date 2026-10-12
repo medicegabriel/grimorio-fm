@@ -47,7 +47,7 @@
 
 import { evalNumber, validateExpression } from "./afty-dsl";
 // Registro de Addons. Módulo FOLHA (só importa o afty-dsl), então não há ciclo.
-import { registrarFamilia, remendarLista, filtraForaDoJogador } from "./afty-addons";
+import { registrarFamilia, remendarLista, filtraForaDoJogador, pacotesDaFicha } from "./afty-addons";
 import { AFTY_ESPECIALIZACOES, getEspecializacao } from "./afty-especializacoes";
 /* Só a HERANÇA usa, para levar o efeito do raw junto do clone. afty-efeitos-conteudo.js
    não importa nada (conferido), então a seta para lá não fecha ciclo. Mesma
@@ -194,8 +194,15 @@ export const MANOBRAS_DE_EMPOLGACAO = [
  * existe porque uma opção como "Destreza" não diz de onde veio, e um Estilo
  * diz. A marca mora no POOL, e não na habilidade, porque o Talento Adepto de
  * Combate empresta o mesmo pool e tem de ler igual.
+ *
+ * ⚠ `naoAcumulaEntreFontes` (2026-10-07, achado CMB-01 B): o mesmo Estilo
+ * aprendido pelo Repertório E pelo Adepto de Combate não rende duas vezes, que é
+ * o que o Talento já dizia ("quem pega os dois não recebe em dobro"). A coleta
+ * era duas, uma por pool, e Defensivo pelos dois dava +12 de Defesa no nível 16.
+ * O coletor genérico põe as linhas da opção marcada num grupo que não acumula
+ * (`coletarEfeitosDeEscolha`), e o maior vence. Mora no POOL pelo mesmo motivo.
  */
-const comNomeProprio = (opcoes) => opcoes.map((o) => ({ ...o, nomeProprio: true }));
+const comNomeProprio = (opcoes) => opcoes.map((o) => ({ ...o, nomeProprio: true, naoAcumulaEntreFontes: true }));
 
 export const ESTILOS_DE_COMBATE = comNomeProprio([
   {
@@ -6309,7 +6316,14 @@ registrarFamilia("habilidades", {
      "especializacaoId inexistente" e o pacote inteiro caía. Quem aponta para
      uma classe do livro (o caso do exemplo em docs/afty-addons.md, com
      `"especializacaoId": "lutador"`) continua cru, como sempre. */
-  caminhosDeId: ["requisitos[].id", "concedeEscolha.habilidade", "especializacaoId"],
+  /* ⚠ E O `requisitos[].habId` ENTROU EM 2026-10-07 (achado M05-F03). É a
+     segunda forma de citar uma irmã, a do requisito `escolha` ("pegou a opção X
+     da habilidade Y"), que a herança já remapeava e o addon não: a mãe ganhava o
+     namespace, o `habId` seguia cru e o requisito nunca fechava. */
+  /* `efeitos[].alvo` (2026-10-07): o efeito que mira uma entrada DO PRÓPRIO
+     pacote (a linha de cura que ela declara, por exemplo) ganha o namespace. Alvo
+     que não é id local (atributo, perícia, escopo) fica intocado. */
+  caminhosDeId: ["requisitos[].id", "requisitos[].habId", "concedeEscolha.habilidade", "especializacaoId", "efeitos[].alvo"],
   /* ⚠ DEPOIS de `especializacoes` (ordem 10): a herança lê aquele catálogo já
      religado. Ver a nota da `ordem` em afty-addons.js. */
   ordem: 20,
@@ -6336,15 +6350,25 @@ export const getHabilidade = (id) => BY_ID[id] || null;
  * O `sistema` chega de fora, e não de uma global, pela mesma razão de sempre: a
  * tela de encontro resolve criatura e personagem lado a lado.
  */
-export function habilidadesConcedidasPelasEspecializacoes(escolhidasEspec = [], sistema = undefined) {
+export function habilidadesConcedidasPelasEspecializacoes(escolhidasEspec = [], sistema = undefined, pacotes = null) {
   const niveis = Object.fromEntries(
     (Array.isArray(escolhidasEspec) ? escolhidasEspec : [])
       .map((e) => [e?.id, Math.max(0, Math.trunc(Number(e?.nivel) || 0))]),
   );
   const todaBase = regraDo(sistema, "basesAutomaticas") === "player";
+  /* ⚠ A BASE DE UM PACOTE SÓ CHEGA A QUEM CARREGA O PACOTE (achado M05-F02,
+     2026-10-07). Acrescentar é global: no Encontro misto o mundo tem os pacotes
+     de todos os combatentes, e uma Base de addon presa a uma classe do livro
+     (`especializacaoId: "lutador"`) era concedida de graça a todo Lutador da
+     mesa, inclusive ao que nunca instalou o pacote. `pacotes` é o conjunto de
+     ids da ficha; ausente, ninguém é filtrado (quem chama sem ficha na mão).
+     O clone da herança passa: ele só existe para quem tem a Especialização
+     herdeira, que já é do pacote. */
+  const daFicha = (h) => !pacotes || !h.addonId || h.herdadaPor || pacotes.has(h.addonId);
   return AFTY_HABILIDADES
     .filter((h) => (h.automatica || (todaBase && h.tipo === "base"))
-      && (niveis[h.especializacaoId] ?? 0) >= h.nivel)
+      && (niveis[h.especializacaoId] ?? 0) >= h.nivel
+      && daFicha(h))
     .map((h) => h.id);
 }
 
@@ -7463,7 +7487,7 @@ export function resolveHabilidades(
   // gasta vaga", que é exatamente o que `concedidas` sempre significou. A da
   // sessão vem do mestre no meio do combate (Addons 8.3) e some com a sessão.
   const concedidas = [...new Set([
-    ...habilidadesConcedidasPelasEspecializacoes(escolhidasEspec, sistema),
+    ...habilidadesConcedidasPelasEspecializacoes(escolhidasEspec, sistema, pacotesDaFicha(creature)),
     ...(Array.isArray(concedidasSessao) ? concedidasSessao.filter((id) => BY_ID[id]) : []),
     ...(Array.isArray(concedidasTreino) ? concedidasTreino.filter((id) => BY_ID[id]) : []),
   ])];

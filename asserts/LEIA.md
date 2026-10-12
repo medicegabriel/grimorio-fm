@@ -1,5 +1,9 @@
 # Asserts do Afty
 
+`t-cura-feiticos.mjs` cobre os dois modelos de Nível 5 de Cura Aperfeiçoada,
+limites 2 e 4, repetição até superar o limite, todas as tentativas no histórico,
+falta da habilidade, alvos de cura, limites impossíveis e regressão de dano.
+
 Os asserts de lógica do lado do Afty cobrem o avaliador do DSL, as
 primitivas novas do motor, o sistema de Addons de ponta a ponta e regras do catálogo que
 são fáceis de quebrar sem sintoma.
@@ -37,7 +41,7 @@ um arquivo sujaria o outro), e a ordem de importação importa (ver o ciclo abai
 Ele só conta como sucesso quem sai com código **zero** E imprime a linha de aprovação. Arquivo que
 nem compila aparece com a stack inteira. Falhou algum, o `npm run asserts` sai diferente de zero.
 
-Nenhum assert escreve nada: são todos de leitura, com um `localStorage` de mentira onde precisa.
+Nenhum assert escreve no repositório: são de leitura, com um `localStorage` de mentira onde precisa. A exceção conhecida é o `t-fontes-revisao`, que cria e apaga arquivos TEMPORÁRIOS fora do repositório (`mkdtempSync`) para provar o verificador de fonte (achado da auditoria do G00, corrigido no texto em 2026-10-07).
 
 ## Fora do build
 
@@ -49,6 +53,13 @@ vai para o ar.
 
 | Arquivo | O que verifica |
 |---|---|
+| `t-cura-aperfeicoada` | rerrolagem de cura mantendo o melhor, sem repetir tentativas, todas as fontes e PER, Vaticano, autoria por canal, limites por alvo, isolamento de dano, PV Temporário e invocações nos dois sistemas |
+| `t-herdado-vaticano` | pacote do clã Vaticano, requisitos de Cura Perfeita, atributos livres, perícias concedidas, nível gratuito de Energia Reversa, cura por dado em várias fontes e desativação em Afty e Player |
+| `t-gerais-progressao` | progressão aprovada de Especialização e Aptidão em todas as faixas de ND, limites e compras, salto de 35 para 36, aparo sem perda de dados, concessões de sessão, Player e Restringido |
+| `t-ataque-concentrado` | soma das metades antes do piso, seleção de fontes, Auxiliar de uma rodada ou de um golpe, Transformação, canalizações, tamanhos de dado, crítico/Fatal/Raio Negro, fórmulas, hover e rolagens nos dois sistemas |
+| `t-treinos-especiais` | tetos de Feitiço, Habilidade e Aptidão nos dois sistemas, Interlúdios e Sucessos, Focos gastos, CD, vagas pelos ganhos, tetos independentes, restauração ao subir o nível e Restringido |
+| `t-uniforme-escudo` | os dois sistemas de Defesa e RD, Resiliente com tipos permitidos e Grau Especial, os dois Isolante, repetição e vagas, soma e fontes em Resistências, escolha ausente ou inválida, persistência e bônus passivos de uniforme |
+| `t-propriedades-armas` | Enérgica com todos os dados de Durante Ataque, fontes adicionais e crítico, Fineza, propriedades situacionais, dados de Fatal/Mortal, Afiada/Defensora, sessão e turnos de Encontros nas duas fichas |
 | `t-dsl` | o avaliador copiado, com **30 asserts de paridade** contra o `fm-dsl.js` da 2.5.2, mais o literal de texto e o `contar()` |
 | `t-contar` | o `contar()` ponta a ponta, o mapa de marcas, e a descoberta dele no seletor `{ }` |
 | `t-hpatributo` | o canal `hpAtributo`, incluindo alvo ausente, empate e as linhas do hover |
@@ -80,7 +91,7 @@ vai para o ar.
 | `t-gemeos-maldicao` | a liberacao `gemeosMaldicao` e a ORIGEM ESTRUTURAL: o Gemeo que copia da Maldicao perde a Energia Reversa e ganha a aba dela, medido pela igualdade com uma Maldicao de verdade |
 | `t-bases-automaticas` | as Bases que a Especialização concede sozinha (`automatica: true`): quem recebe, o orçamento intocado, e a escolha aninhada que sobrevive à concessão |
 | `t-pugilato` | Faixas, Manoplas e Soco Inglês alimentando o Ataque Básico: os cinco graus, o item que define o golpe, e o efeito de encantamento chegando na linha |
-| `t-dano-acerto-amaldicoado` | a divergência `danoDoAcertoAmaldicoado`: na criatura a arma no Acerto Amaldiçoado usa o Atributo de Técnica no dano, no jogador segue o da arma, e as Técnicas de Combate vêm antes |
+| `t-dano-acerto-amaldicoado` | a divergência `danoDoAcertoAmaldicoado`, incluindo o Ataque Básico com Pugilato ou sem item: atributo, Maestria, encantamentos, escopos, importação, escolha na sessão e cache do Encontro |
 | `t-tamanho-pingente` | Crescimento Corporal repetível, redução de categoria, distância por tamanho e o Pingente de Amaterasu sob o sol ou com os três tesouros |
 | `t-interludios` | a varredura das 12 Linhas de Treinamento: os 13 requisitos que deixaram de ser `nota`, a trava do Potencial Físico no Restringido, e ⚠ o assert estrutural que compara efeito DECLARADO contra efeito EMITIDO, para nenhum voltar a ser descartado calado |
 | `t-flugel` | o pacote Flugel de ponta a ponta, lido do JSON em `addons/flugel.json` (ele saiu do bundle em 2026-09-01): instalação, Futen, Akutame, Alma Livre no nível menos 4, troca de atributo-chave, Treino não congênito, vagas conjugais, o interruptor de sessão `Cônjuge`, a Dupla Empenhada em metade do BT, ⚠ o Bônus do Cônjuge, que SUBSTITUI a perícia em vez de somar nela, e ⚠ as quatro metades do BT aparadas para baixo com BT 3 (versão 1.1.1) |
@@ -103,6 +114,7 @@ vai para o ar.
 | `t-desenvolvimento-inesperado` | o Desenvolvimento Inesperado do Derivado (divergência `desenvolvimentoNoNivel`): na criatura o quadro sobe valor e limite, no jogador o ponto entra livre no contador de Pontos de Nível (`attrNivelExtra`, 1 a cada 4 níveis) e o quadro sobe só o limite, os hovers de valor e de limite, o Inato sem nada, e a ficha salva com pontos no quadro antigo lida como escolha de limite |
 | `t-tr-caso-ja-seja-classe` | o "caso já seja" da Força Imparável e da Resiliência Melhorada enxergando o TR da Classe no jogador (o `prof_tr_*` com a faixa da Classe, 2026-10-03): Mestre no TR da Classe e no segundo TR do nível 9, Treinado fora dela, o hover, o orçamento parado e a criatura intocada |
 | `t-montante-bancada` | o montante sem bancada (2026-10-03): a Atenção em combate do Instinto Sanguinário nos dois sistemas, com o hover e uma linha só, a regra do `separarEfeitosDeBancada` caso a caso (`quando` e `expr`, nome normalizado, texto entre aspas, função, `contextoDsl`, canal lido cedo que fica) e um Voto Mecânico "em combate", que é texto livre do montante |
+| `t-bases-lut-cmb` | bases de Lutador e Combatente, progressão e portões; Implemento Marcial sem acumular entre classes nos dois sistemas, com empate, maior bônus, fontes independentes, remoção e parcelas da CD |
 | `t-combatente-revisao` | a revisão do Especialista em Combate contra o livro (2026-09-23): a progressão nos níveis 1, 4, 6, 8, 12, 16 e 20 (PV, PE, Bases, Estilos, Posturas, Implemento, Estilo Defensivo, Duelista e Preparo), ⚠ nenhum bônus do Combatente vazando para Feitiço nem para a jogada Amaldiçoada, o Espírito Incansável na régua de cada sistema, a trava de "Pré-Requisito: Nível N" das opções pelo nível de escalonamento (Posturas, Feitiço Rápido e Apoio Estratégico), a escolha do Grupo Favorito e o Preparo na sessão, e os três pontos de verificação que eram erro: o Estilo Massivo UMA vez na arma Pesada e de Duas Mãos (alvo com "ou") e na Versátil nas duas mãos, a Postura da Lua tirando o atributo do dano no jogador (e não sob o Invencível sob o Sol), e o teto da Precisão Definitiva pelo escalonamento na multiclasse |
 | `t-combatente-automacoes` | as automações do Especialista em Combate (2026-09-23 e 24): o canal `alcanceArma` (Extensão do Corpo, Sincronia Perfeita e o Longo do Golpe Especial, nos dois alcances e antes do dobro do Céu), o Manejo Único somando uma propriedade, a Brutalidade pelo escalonamento, ⚠ o treino de equipamento só da Classe inicial no jogador com o Golpes Potentes na arma `treinada`, a casca de Preparo da Postura do Céu (topa, é gasta primeiro, some no descanso), o contador de usos das seis habilidades e o montador do Golpe Especial (custo, mínimo de 1 PE, Preciso por rodada, Autossuficiente uma vez por cena, Sacrifício e as marcas que ficam) |
 | `t-caracteristicas-amaldicoadas` | o MECANISMO das Características Amaldiçoadas com um pacote de teste próprio: `alvos` e `escolha:<id>` (sem resposta o efeito não entra), `opcoes`, o sufixo do alvo composto, `incompativeisIds` nos dois sentidos, o dado em perícia (`dadosPericia`) e o validador da família |
@@ -160,6 +172,18 @@ assunto. As decisões que elas medem estão no topo de `docs/afty-invocacoes.md`
 | `t-dez-sombras` | a Herança e a Quimera por marcador com `fontes` (o exemplo antigo, que segue valendo) |
 | `t-estrela-zenin`, `t-maldicao`, `t-tita` | o clã com shikigamis, a Maldição e o Titã |
 
+### Revisão da automação, bloco de 2026-10-07
+
+| Arquivo | O que prende |
+|---|---|
+| `t-revisao-m01` | número malformado, valor não finito, portão de efeito de addon (canal, `expr`, `quando`, invocação), `opt_` de addon, colisão de variável, `efeitoGravavel` e alvo obrigatório |
+| `t-revisao-m02` | as parcelas do atributo em dois estágios fecham o número grande (`declarado`) |
+| `t-revisao-m04` | os três controles de estado de addon chegam ao derivado e à sessão, e a linha de cura própria (`fonteCura`) |
+| `t-revisao-m05` | o remendo e a Base de pacote ficam na ficha que os carrega (Encontro misto nos dois sistemas e nas duas ordens) e o namespace aninhado |
+| `t-revisao-p01` | o requisito de atributo da Multiclasse no jogador, limiar, permanente contra temporário |
+| `t-revisao-cmb01` | o mesmo Estilo pelo Repertório e pelo Adepto rende uma vez |
+| `t-revisao-cmb02` | Atroz e Penetrante fora do Feitiço de TR, e o Preciso dando vantagem na rolagem |
+
 ⚠ O `t-exemplo` é o mais importante de manter: ele garante que o JSON que está escrito no doc
 realmente funciona. Foi ele que achou a lacuna do `efeitos` que era validado e nunca aplicado.
 
@@ -177,3 +201,10 @@ Copie a cabeça de qualquer um deles. O contrato é curto:
 `afty-habilidades.js` como primeiro módulo estoura um ciclo em `afty-combate.js`
 (`Cannot access 'POSTURAS_DE_COMBATE' before initialization`), e isso é anterior a este trabalho
 (ver `docs/a-fazer.md`).
+
+`t-talentos-iniciais`: bônus configurável de 1 a 4 Talentos por addon, limites, orçamento exclusivo, fontes, remoção e isolamento nos dois sistemas.
+
+
+`t-revisao-g00`: 35 provas do controle da campanha, incluindo item novo/órfão, proprietário duplicado, domínio ausente, alteração sob o mesmo ID, remoção justificada, estados do schema, auditoria independente vinculada a hashes, cobertura por parcela, aliases, Roubo e herança. Não aprova comportamento das regras inventariadas. Veja `docs/revisao-automacao/G00/revisao.md`.
+
+t-reconciliacao-g00: 47 regressões da auditoria, cobrindo propostas obsoletas, dono confirmado, payload alterado, tombstones, preservação de estados, invalidação de aprovação, ida e volta JSON, hashes consultados, fontes ausentes, manual intencional, vínculos de integração, subpastas e fontes individuais. Suíte da rechecagem: 156 arquivos e 9.144 asserts. Não aprova regras de jogo.

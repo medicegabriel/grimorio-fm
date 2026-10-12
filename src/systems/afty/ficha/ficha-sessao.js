@@ -39,6 +39,8 @@ import {
 } from "../afty-golpe-especial";
 
 import { rolarDano } from "./ficha-rolagem";
+import { preparaRolagemCura } from "../afty-cura";
+import { normalizaPropriedadesArmas, iniciaTurnoArmas } from "../afty-propriedades-armas";
 import { normalizaBloodfeast, pagaVidaBloodfeast, rodadaBloodfeast } from "../afty-bloodfeast";
 import { normalizaDharma, avancarRodadaDharma } from "../afty-dharma";
 // As fases da Expansão no ar (2026-10-08). Módulo FOLHA, sem ciclo.
@@ -109,6 +111,8 @@ export function sessaoEmBranco(derived = null) {
        encher: alma ferida continua ferida do mesmo tanto (autor, 2026-09-18). */
     almaMaxVisto: derived?.almaMax ?? 100,
     rodada: 0,
+    propriedadesArmas: normalizaPropriedadesArmas(),
+    ataqueBasicoId: null, // Herda a escolha da ficha até ser trocada na mesa.
     /* GUARDA INABALÁVEL: quantos golpes já desgastaram o bônus nesta rodada, e
        se ela foi encerrada antes da hora (Raio Negro ou uma das oito condições).
        O bônus corrente e a Vida não moram aqui: o bônus SAI dos golpes e a Vida
@@ -249,6 +253,8 @@ export function normalizaSessao(bruta, derived = null) {
     peTempFontes: normalizaPeTemp(bruta.peTempFontes),
     ...almaLida(bruta, base, derived),
     rodada: Math.max(0, inteiro(bruta.rodada, 0)),
+    propriedadesArmas: normalizaPropriedadesArmas(bruta.propriedadesArmas),
+    ataqueBasicoId: ["corpo", "amaldicoado"].includes(bruta.ataqueBasicoId) ? bruta.ataqueBasicoId : null,
     guardaGolpes: Math.max(0, inteiro(bruta.guardaGolpes, 0)),
     guardaEncerrada: !!bruta.guardaEncerrada,
     combate: bruta.combate && typeof bruta.combate === "object" ? bruta.combate : {},
@@ -2067,7 +2073,7 @@ function cenaNovaDoGolpe(sessao) {
  * O que zerou SAI, e volta na lista `expirou` para a Ficha poder avisar (buff
  * que some sem aviso é buff que o jogador continua contando na cabeça).
  */
-export function proximaRodada(sessao, derived = null) {
+export function proximaRodada(sessao, derived = null, { preservarTurnoArmas = false } = {}) {
   const expirou = [];
   const desce = (item) => {
     if (item.rodadas == null) return item;              // sem duração, fica
@@ -2083,7 +2089,7 @@ export function proximaRodada(sessao, derived = null) {
   /* A Exaustão de Técnica desce, e a Expansão no ar perde uma rodada da duração
      (Etapa 9). Ver `avancaExpansaoNaRodada`. */
   const base = avancaExpansaoNaRodada({
-    ...devolveUsos(sessao, (k) => k.startsWith("rodada:")),
+    ...iniciaTurnoArmas(devolveUsos(sessao, (k) => k.startsWith("rodada:")), { novaRodada: true, preservarTurno: preservarTurnoArmas }),
     // A recarga da Técnica Máxima desce uma rodada (DA-08). Ver `avancaRecargas`.
     recargas: avancaRecargas(sessao),
     rodada: sessao.rodada + 1,
@@ -2120,7 +2126,7 @@ export function proximaRodada(sessao, derived = null) {
     : avancaInvocacoesNaRodada(comPreparo, derived);
   let proxima = rodadaBloodfeast(avancaTalismaApice(avancaInvencivelSobOSol(comInvocacoes, derived)), derived);
   if (derived?.bloodfeast?.tem && derived.bloodfeast.ids.includes("regeneracao") && sessao.hpAtual < derived.hp / 2) {
-    const r = rolarDano({ rotulo: "Regeneração Constante", dados: 2, faces: 8, fixo: derived.bloodfeast.modCon, tom: "cura" });
+    const r = rolarDano(preparaRolagemCura({ tipo: "dano", rotulo: "Regeneração Constante", dados: 2, faces: 8, fixo: derived.bloodfeast.modCon, tom: "cura" }, derived.efeitos));
     proxima = aplicaCura(registraRolagem(proxima, r), r.total, derived.hp);
   }
   return { sessao: proxima, expirou };
@@ -2180,7 +2186,7 @@ function avancaInvencivelSobOSol(sessao, derived) {
  */
 export function iniciaCombate(sessao, derived = null) {
   sessao = cenaNovaDoGolpe(
-    avancaArmasTransformaveis(aplicaPatchCombate(sessao, { ativo: true }), true),
+    iniciaTurnoArmas(avancaArmasTransformaveis(aplicaPatchCombate(sessao, { ativo: true }), true), { novaRodada: true }),
   );
   if (!derived) return sessao;
   const comCena = aplicaPeTemporario(sessao, derived.peTemporario?.combate ?? []);
@@ -2230,6 +2236,7 @@ export function descansar(sessao, derived, { marioneteId = null } = {}) {
     }), derived, { descanso: true }),
     exaustaoTecnica: null,
     rodada: 0,
+    propriedadesArmas: iniciaTurnoArmas(sessao, { novaRodada: true }).propriedadesArmas,
     // A Guarda volta a zero com a rodada: fora de combate não há guarda erguida,
     // e o próximo `iniciaCombate` (ou a saída da rodada 0) a reergue cheia.
     guardaGolpes: 0,

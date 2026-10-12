@@ -1,0 +1,34 @@
+[
+  {
+    "route": "Player",
+    "width": 1440,
+    "fire": 28,
+    "cold": 18,
+    "acid": 0,
+    "errors": []
+  },
+  {
+    "route": "Player",
+    "width": 390,
+    "fire": 28,
+    "cold": 18,
+    "acid": 0,
+    "errors": []
+  },
+  {
+    "route": "Afty",
+    "width": 1440,
+    "fire": 37,
+    "cold": 27,
+    "acid": 22,
+    "errors": []
+  },
+  {
+    "route": "Afty",
+    "width": 390,
+    "fire": 37,
+    "cold": 27,
+    "acid": 22,
+    "errors": []
+  }
+]

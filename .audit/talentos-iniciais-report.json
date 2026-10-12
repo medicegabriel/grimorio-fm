@@ -1,0 +1,66 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "instalacao": true,
+    "quantidades": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "limites": true,
+    "escolha": true,
+    "persistencia": true,
+    "remocao": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "instalacao": true,
+    "quantidades": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "limites": true,
+    "escolha": true,
+    "persistencia": true,
+    "remocao": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "instalacao": true,
+    "quantidades": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "limites": true,
+    "escolha": true,
+    "persistencia": true,
+    "remocao": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "instalacao": true,
+    "quantidades": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "limites": true,
+    "escolha": true,
+    "persistencia": true,
+    "remocao": true,
+    "erros": []
+  }
+]

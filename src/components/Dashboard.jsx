@@ -792,8 +792,13 @@ export default function Dashboard({
      opcional". O texto do jogador mora em src/systems/afty/afty-sistema.js
      (`vocabularioDoDashboard`), para esta tela não saber que ele existe. */
   vocab = {},
+  // O App pode conservar a pasta entre telas; sem as props, a seleção é local.
+  folderView,
+  onFolderViewChange,
 }) {
-  const [view, setView] = useState({ type: "all", folderId: null });
+  const [localView, setLocalView] = useState({ type: "all", folderId: null });
+  const view = folderView ?? localView;
+  const setView = onFolderViewChange ?? setLocalView;
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(() => new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);

@@ -1,0 +1,34 @@
+[
+  {
+    "sistema": "player",
+    "width": 1440,
+    "cd": 37,
+    "implementoAplicado": 4,
+    "copiaDescartada": true,
+    "errors": []
+  },
+  {
+    "sistema": "player",
+    "width": 390,
+    "cd": 37,
+    "implementoAplicado": 4,
+    "copiaDescartada": true,
+    "errors": []
+  },
+  {
+    "sistema": "afty",
+    "width": 1440,
+    "cd": 39,
+    "implementoAplicado": 4,
+    "copiaDescartada": true,
+    "errors": []
+  },
+  {
+    "sistema": "afty",
+    "width": 390,
+    "cd": 39,
+    "implementoAplicado": 4,
+    "copiaDescartada": true,
+    "errors": []
+  }
+]

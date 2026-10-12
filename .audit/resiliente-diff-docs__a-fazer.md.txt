@@ -1,0 +1,44 @@
+diff --git a/.audit/resiliente-baseline/docs__a-fazer.md b/docs/a-fazer.md
+index c600cb0..b2e448a 100644
+--- a/.audit/resiliente-baseline/docs__a-fazer.md
++++ b/docs/a-fazer.md
+@@ -344,28 +344,17 @@ Tipo para linhas de `rdTipo` e tirar `rdEspecifico` do `OVERRIDABLE`, do Preview
+ migração para as fichas que tenham override gravado nela.
+ **Anotado:** 2026-09-05, ao pôr as fontes de RD na aba de Defesas
+ 
+-### Os três encantamentos de RD por tipo esperam agora só a ESCOLHA DE TIPO
+-**Onde:** `src/systems/afty/afty-equipamentos.js` (os três), `AftyTabEquipamentos`
+-**Situação:** ⚠ **METADE DESTA PENDÊNCIA MORREU EM 2026-09-02.** Ela tinha dois bloqueios, e a aba de
+-Defesas resolveu os dois que eram do sistema: o canal `rdTipo` (com o tipo no alvo) existe, e a ficha
+-tem onde mostrar "RD 6 contra Queimante".
+-
+-O que resta é só o terceiro bloqueio, e ele é de UI: dois dos três encantamentos pedem uma ESCOLHA DE
+-TIPO por encantamento, e encantamento não tem mecanismo de escolha nenhum.
+-
+-| Encantamento | Texto | O que falta |
+-|---|---|---|
+-| **Isolante** (uniforme) | *"5 de RD contra dano Queimante e Congelante"* | **NADA. É ligável hoje** |
+-| **Isolante** (escudo, só jogador) | *"a redução de dano do escudo passa também a ser aplicado a um tipo de dano elemental à sua escolha"* | escolha de tipo elemental, repetível, valor = RD do escudo |
+-| **Resiliente** (uniforme) | *"redução de dano igual a 5 contra um tipo de dano (exceto os danos físicos, alma e energética). A RD aumenta para 10 se for uma ferramenta de Grau Especial"* | escolha de tipo, com veto |
+-
+-⚠ **Ligar só o de uniforme é pior do que os três parados**, porque o jogador passaria a acreditar que
+-os outros dois também funcionam. Há assert em `asserts/t-uniforme-escudo.mjs` prendendo os três
+-juntos: ligar um faz falhar, para a decisão ser consciente.
+-
+-**Precisa:** dar aos encantamentos um mecanismo de escolha (o de habilidade não serve: o dono aqui é
+-uma instância de item, e o do escudo é repetível). Depois ligar os três de uma vez.
+-**Anotado:** 2026-08-31, e reduzido à metade em 2026-09-02 com a aba de Defesas
++### Automatizar os 16 encantamentos de Uniforme e Escudo que dependem de combate
++**Onde:** `src/systems/afty/afty-equipamentos.js`, Ficha Final e Encontros
++**Situação:** a revisão de 2026-10-05 ligou Resiliente e os dois Isolante; os 11 efeitos passivos
++das duas listas agora funcionam. Os outros 16 ainda conservam apenas o texto da regra.
++Uniforme: Aeronauta, Distorcivo, Escaldante, Estimulante, Impulso, Repulsor, Revestido com Espinhos
++e Ricochete. Escudo: Avassalador, Bloqueador, Destruidor, Disco, Espinhoso, Esponja,
++Expansão de Escudo e Intangível. Detalhamento em `docs/afty-equipamentos.md`.
++**Precisa:** controles de cargas, reações, duração e alvos; ataque próprio com escudo, níveis
++de dano e a suspensão de sua RD após atacar; ocupação da mão para requisitos e chance de falha
++dos ataques a distância. Os pré-requisitos já estão estruturados e devem continuar valendo.
++**Anotado:** 2026-10-05, revisão pedida pelo autor
+ 
+ ### Confirmar o total de perícias das quatro Classes que o autor não citou
+ **Onde:** `src/systems/afty/afty-especializacoes.js`, `caracteristicas.pericias`

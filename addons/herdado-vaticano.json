@@ -1,0 +1,55 @@
+{
+  "id": "herdado-vaticano",
+  "nome": "Herdado: Vaticano",
+  "versao": "1.0.0",
+  "paraRaw": "afty",
+  "descricao": "Acrescenta Vaticano aos clãs do Herdado: 3 pontos livres de atributo, treinamento em Teologia (Religião) e Ocultismo e +1 por dado em todas as curas do usuário. O Talento de Origem Cura Perfeita requer Herdado: Vaticano e nível 8, concede 1 Nível de Energia Reversa e aumenta o bônus de Aprimorar Cura para +2 por dado.",
+  "acrescenta": {
+    "clas": [
+      {
+        "id": "cla_vaticano",
+        "nome": "Vaticano",
+        "caracteristicas": [
+          {
+            "id": "bonus_atributo",
+            "nome": "Bônus em Atributo",
+            "descricao": "Você recebe 3 pontos livres para distribuir entre seus atributos.",
+            "bonus": { "distribuir": 3, "maxPorAtributo": 3 }
+          },
+          {
+            "id": "treinamentos_cla",
+            "nome": "Treinamentos de Clã",
+            "descricao": "Você se torna treinado em Teologia (Religião) e Ocultismo."
+          },
+          {
+            "id": "aprimorar_cura",
+            "nome": "Aprimorar Cura",
+            "descricao": "Aumenta todas as curas do usuário em +1 por dado de cura."
+          }
+        ],
+        "efeitos": [
+          { "canal": "proficienciaPericia", "alvo": "teologia", "expr": "1", "nome": "Treinamentos de Clã" },
+          { "canal": "proficienciaPericia", "alvo": "ocultismo", "expr": "1", "nome": "Treinamentos de Clã" },
+          { "canal": "curaPorDado", "expr": "1", "nome": "Aprimorar Cura" }
+        ]
+      }
+    ],
+    "talentos": [
+      {
+        "id": "tal_cura_perfeita",
+        "nome": "Cura Perfeita",
+        "grupo": "origem",
+        "descricao": "Os ensinamentos do Vaticano refinam seu controle sobre a energia positiva, permitindo que você restaure corpo e espírito com precisão extraordinária. Cada fluxo de cura carrega o cuidado e a disciplina de sua herança, fechando feridas com maior eficiência. Você recebe 1 Nível de Energia Reversa e o bônus concedido por Aprimorar Cura se torna +2 ao invés de +1 por dado de cura. [Requer: Herdado Vaticano, Nível 8]",
+        "requisitos": [
+          { "tipo": "origem", "id": "herdado" },
+          { "tipo": "cla", "id": "cla_vaticano" },
+          { "tipo": "nd", "valor": 8 }
+        ],
+        "efeitos": [
+          { "canal": "nivelAptidao", "alvo": "er", "expr": "1", "nome": "Cura Perfeita" },
+          { "canal": "curaPorDado", "expr": "1", "nome": "Cura Perfeita" }
+        ]
+      }
+    ]
+  }
+}

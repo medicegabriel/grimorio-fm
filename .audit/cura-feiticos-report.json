@@ -1,0 +1,109 @@
+{
+  "data": "2026-10-12",
+  "fonteLivroRegras": {
+    "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+    "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+    "paginaImpressa": 109
+  },
+  "validacao": {
+    "assertsEspecificos": 115,
+    "arquivosSuite": 167,
+    "assertsSuite": 9854,
+    "lint": "PASSOU",
+    "build": "PASSOU",
+    "fichaElesya": "45d8+98, 9 PER, todos os dados entre 5 e 8 com os dois modelos",
+    "navegador": [
+      "Ficha Afty: modelo 1 até 4 uma vez",
+      "Ficha Afty: modelo 2 até superar 2",
+      "Ficha Afty: ambos até superar 4",
+      "Sem habilidade: sem rerrolagem",
+      "Histórico: três descartes na sequência 2, 2, 1, 5",
+      "Encontro Afty: 5d8+6, resultado 31 com todos os dados 5",
+      "Encontro Player: chip de repetição até 4"
+    ],
+    "cobertura": "Pendências anteriores: AD-52 sem mapa de família, seis diferenças de Gerais e avisos de dependências consultadas. AD-53 e canal reconciliados.",
+    "screenshot": "C:/Users/gabri/.codex/visualizations/2026/10/12/01a12f48-df3a-7483-a0e6-e8c6ea4bff0e/cura-feiticos.png"
+  },
+  "arquivos": [
+    {
+      "arquivo": "C:\\Projetos\\Grimorio\\grimorio-tracker\\asserts\\LEIA.md",
+      "sha256Inicial": "4b3241ee8f528e7023cc24934219287f8a5c8a506fca8189be69aa65bc111ae1",
+      "sha256Final": "111bcf3f30fd81655e20637561dac72df57200289273006d360a12c8bb0210d8"
+    },
+    {
+      "arquivo": "C:\\Projetos\\Grimorio\\grimorio-tracker\\docs\\afty-addons.md",
+      "sha256Inicial": "bf7c2f4e28fdfd286b0b2459c98d9538628f9242bda827627ea315371fc81254",
+      "sha256Final": "1ea1b0e603eeb21329c6e61dd588adf1a0d98007da4790bd1b8ae8cee3f0311c"
+    },
+    {
+      "arquivo": "C:\\Projetos\\Grimorio\\grimorio-tracker\\docs\\afty-ficha-final.md",
+      "sha256Inicial": "0d994ade75d7b083d2b58c5d293afb6265487365df0fbabe22205a2f4e49e9e0",
+      "sha256Final": "4acdbd6e1758b8587afdb28e62771304e8d2d5d5f0b8a4cb3687f54a760f516c"
+    },
+    {
+      "arquivo": "C:\\Projetos\\Grimorio\\grimorio-tracker\\docs\\afty-status.md",
+      "sha256Inicial": "8245e63a8e0f1fc238dd54eb3e7778b53d7f81ef54d943a66e04d938179bf530",
+      "sha256Final": "ca12f82f0295b947e026fbae2654418f83f9ff07b6a58940acc3879014bafbf2"
+    },
+    {
+      "arquivo": "C:\\Projetos\\Grimorio\\grimorio-tracker\\docs\\automacao-dsl.md",
+      "sha256Inicial": "212c0230f5d51696b54c1ed95ed1af1b7af7bb2de203bd40897b4cdd60bd94a8",
+      "sha256Final": "c8d61944798649c5c02cce4ca71a548f587264b21da9440d29cdf1c5a50eb4b8"
+    },
+    {
+      "arquivo": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\afty-cura.js",
+      "sha256Inicial": "70b6335b1153e7b479bb27e80da3fe778160a7d4a08914263be3bb0053ab2d2e",
+      "sha256Final": "78b8e8e84125d4e21ef550d54f38972c244cb8d4316b04d3a0e47dc97a0d7dfd"
+    },
+    {
+      "arquivo": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\afty-efeitos.js",
+      "sha256Inicial": "70d8d1635884c2791bba862dea1e64a10b0b09ea13594005cc20ee3f50731dcd",
+      "sha256Final": "46c8438dd94880077f3d2c3f804a82b6c36d97c98662f9a2a683895ba256d3bc"
+    },
+    {
+      "arquivo": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas\\AbaAcoes.jsx",
+      "sha256Inicial": "03d72aef9af4cd715f8513474ecbebdbd5b9b983ea8131f5d3598e205748fcf2",
+      "sha256Final": "a082e3d03db29f3b88deefa604b08e0be13d59619363502d358d831beb17245f"
+    },
+    {
+      "arquivo": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-rolagem.js",
+      "sha256Inicial": "f75092730d615eb4064f49fbf8ebbe6da1727a272e3c72b894a979bf4eb462ff",
+      "sha256Final": "0b1cd7777e9dabd629fd7d8c76784e70606176b3ea18ac4a7569f085bf9c7127"
+    },
+    {
+      "arquivo": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\PainelDeRolagens.jsx",
+      "sha256Inicial": "052c9198a6a780cc15ef890e9746c1e7bc6de69f2fc99383dd385b72ef3809bd",
+      "sha256Final": "d4a7838fa6a42fa1d0d57ba3d0a302fa3443d050a1da0e10553c6b2d360da8a9"
+    },
+    {
+      "arquivo": "C:\\Projetos\\Grimorio\\grimorio-tracker\\addons\\cura-aperfeicoada-feiticos.json",
+      "sha256Inicial": null,
+      "sha256Final": "edbf23270b1b65008d979157037500cf48f599500bc2626e3dd1a595d6737e22"
+    },
+    {
+      "arquivo": "C:\\Projetos\\Grimorio\\grimorio-tracker\\docs\\afty-cura-feiticos.md",
+      "sha256Inicial": null,
+      "sha256Final": "051ed7ac821a0e0ab4bf6cd043887659b450a783c2fa176235f5883a89bd332e"
+    },
+    {
+      "arquivo": "C:\\Projetos\\Grimorio\\grimorio-tracker\\asserts\\t-cura-feiticos.mjs",
+      "sha256Inicial": null,
+      "sha256Final": "c5d6f3f74c2feef453d8b266bf2dc243a3af98befb0586f00d92a145a9eb5712"
+    },
+    {
+      "arquivo": "C:\\Projetos\\Grimorio\\grimorio-tracker\\.audit\\cura-feiticos-previa.jsx",
+      "sha256Inicial": null,
+      "sha256Final": "5df262a338b91289e9b2730045ca2f11cc094667245741ff1bcc0e042224d6a9"
+    },
+    {
+      "arquivo": "C:\\Projetos\\Grimorio\\grimorio-tracker\\.audit\\cura-feiticos.html",
+      "sha256Inicial": null,
+      "sha256Final": "379d5c8e8db3a3c07c2c18f067e277677f9324f3cfa66c2fd90105297507085a"
+    },
+    {
+      "arquivo": "C:\\Projetos\\Grimorio\\grimorio-tracker\\.audit\\cura-feiticos-registrar.mjs",
+      "sha256Inicial": null,
+      "sha256Final": "330b75c78caea409b79419952ab89db485b6502aa74d897dffd91a11fec6b944"
+    }
+  ]
+}

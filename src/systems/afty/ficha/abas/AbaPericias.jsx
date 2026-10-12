@@ -26,7 +26,7 @@ import { useDestaque } from "../usar-destaque";
 
 const ABREV = Object.fromEntries(AFTY_ATTRS.map((a) => [a.key, a.abbr]));
 
-function LinhaTeste({ nome, atributo, bonus, textoBonus, dados, partes, prof, tag, margem, rolar, chave, destacado, falha }) {
+function LinhaTeste({ nome, atributo, bonus, textoBonus, dados, partes, prof, tag, margem, rolar, chave, destacado, falha, ataqueId }) {
   const raiz = useDestaque(destacado);
   return (
     <div
@@ -69,7 +69,7 @@ function LinhaTeste({ nome, atributo, bonus, textoBonus, dados, partes, prof, ta
         total={textoBonus ?? sinalDe(bonus)}
         className={`afty-valor text-[13px] text-right ${textoBonus ? "w-20" : "w-10"}`}
         ancora="direita"
-        onRolar={() => rolar({ tipo: "teste", rotulo: nome, bonus, dados, margem })}
+        onRolar={() => rolar({ tipo: "teste", rotulo: nome, bonus, dados, margem, ataqueId })}
       />
     </div>
   );
@@ -146,6 +146,7 @@ export default function AbaPericias({ derived, rolar, destaque }) {
             <LinhaTeste
               key={a.id}
               nome={a.nome}
+              ataqueId={a.id}
               bonus={a.bonus}
               textoBonus={a.textoBonus}
               dados={a.dadosExtras}

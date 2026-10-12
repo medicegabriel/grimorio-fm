@@ -11,6 +11,7 @@ import { facesDe } from "../ficha-rolagem";
 import { useDestaque } from "../usar-destaque";
 import ItemDeFicha from "../ItemDeFicha";
 import TextoRico from "../../ui/TextoRico";
+import ControlesDeArma from "../ControlesDeArma";
 
 /**
  * ============================================================
@@ -54,7 +55,7 @@ function Secao({ titulo, controles = null, children }) {
  * A marca é CONSUMIDA pelo Dano. Ela some depois de usada, senão o próximo golpe
  * herdaria um crítico que não é dele.
  */
-function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir, modoDano }) {
+function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir, modoDano, onArma, onAmpla, rodadaArmas, onAtaqueBasico }) {
   const raiz = useDestaque(destacado);
   const feiticoImbuido = e.imbuir?.escolhido ?? null;
   const condicoesImbuidas = feiticoImbuido?.propriedades?.find((p) => p.id === "condicoes")?.valor;
@@ -70,8 +71,8 @@ function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir, modoDano
     ? e.formulaCritico
     : modoVisual === "raio_negro" ? e.formulaRaioNegro : (e.formulaNormal ?? e.texto);
   const rolarModo = (modoDano) => {
-    rolar({ tipo: "dano", rotulo: e.nome, grupos: e.gruposDano, modoDano, rerrola: e.rerrola });
-    if (critico) onCritico(false);
+    const resultado = rolar({ tipo: "dano", rotulo: e.nome, grupos: e.gruposDano, modoDano, rerrola: e.rerrola, linhaArma: e });
+    if (resultado && critico) onCritico(false);
   };
   return (
     <div
@@ -82,9 +83,21 @@ function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir, modoDano
       data-afty-alvo={destacado ? "sim" : undefined}
     >
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="flex-1 min-w-0 text-[12px] font-semibold truncate" title={e.nome}>
+        <span className={`flex-1 ${e.fonte === "basico" ? "min-w-[7rem]" : "min-w-0"} text-[12px] font-semibold truncate`} title={e.nome}>
           {e.nome}
         </span>
+        {e.fonte === "basico" && (
+          <select
+            aria-label="Ataque do Ataque Básico"
+            className="afty-campo px-1.5 py-1 text-[11px]"
+            value={e.ataqueId}
+            disabled={!onAtaqueBasico}
+            onChange={(evento) => onAtaqueBasico?.(evento.target.value)}
+          >
+            <option value="corpo">Corpo a Corpo</option>
+            <option value="amaldicoado">Amaldiçoado</option>
+          </select>
+        )}
         {e.ignoraRD > 0 && <span className="afty-rotulo text-[10px] whitespace-nowrap">Ignora RD {e.ignoraRD}</span>}
         {e.ignoraTodaRD && <span className="afty-rotulo text-[10px]">Ignora Toda RD</span>}
         {e.ignoraImunidade && <span className="afty-rotulo text-[10px]">Ignora Imunidade</span>}
@@ -106,6 +119,17 @@ function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir, modoDano
         )}
         {e.tipoDanoLabel && <span className="afty-chip">{e.tipoDanoLabel}</span>}
         {critico && <span className="afty-chip" data-afty-tom="destaque">Crítico</span>}
+        {/* O modo que o MOTOR dá à jogada de ataque desta linha (2026-10-07,
+            canal `vantagemAtaque`): a rolagem já sai assim, e a dica nomeia a
+            fonte. Uma de cada se anulam, e aí não há chip. */}
+        {e.acerto != null && e.vantagemAtaque && e.vantagemAtaque.vantagem !== e.vantagemAtaque.desvantagem && (
+          <DicaDeTexto
+            titulo={e.vantagemAtaque.vantagem ? "Vantagem" : "Desvantagem"}
+            texto={e.vantagemAtaque.fontes.map((f) => f.label).join(", ")}
+          >
+            <span className="afty-chip">{e.vantagemAtaque.vantagem ? "Vantagem" : "Desvantagem"}</span>
+          </DicaDeTexto>
+        )}
         {e.acerto != null && (
           <span className="afty-rotulo text-[10px] whitespace-nowrap" title={e.acertoAtaque}>
             Acerto{" "}
@@ -125,8 +149,9 @@ function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir, modoDano
                   bonus: e.acerto,
                   dados: e.acertoDados,
                   margem: e.margemCritico,
+                  linhaArma: e,
                 });
-                onCritico(r.critico);
+                if (r) onCritico(r.critico);
               }}
             />
           </span>
@@ -183,6 +208,7 @@ function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir, modoDano
           </span>
         </div>
       )}
+      <ControlesDeArma linha={e} onArma={onArma} onAmpla={onAmpla} rodada={rodadaArmas} modoDano={modoVisual} />
       {e.propriedades?.length > 0 && (
         <div className="flex flex-wrap gap-1 mt-1.5">
           {e.propriedades.map((p) => (
@@ -222,6 +248,11 @@ function LinhaCura({ l, rolar, destacado }) {
         {l.qtd ? <span className="afty-rotulo"> ×{l.qtd}</span> : null}
       </span>
       <span className="afty-rotulo text-[10px] whitespace-nowrap">{l.alcance}</span>
+      {l.rerrola && <span className="afty-chip" title={l.rerrola.continua
+        ? `${l.rerrola.fonte} + ${l.rerrola.fonteContinua}: repete até sair acima de ${l.rerrola.ate}`
+        : `${l.rerrola.fonte}: uma rerrolagem por dado, mantendo o melhor resultado`}>
+        Rerrola até {l.rerrola.ate}{l.rerrola.continua ? " (contínua)" : ""}
+      </span>}
       {l.espelhaNome && (
         <span className="afty-rotulo text-[10px] whitespace-nowrap" title={`Rola a mesma coisa que ${l.espelhaNome}`}>
           {l.espelhaNome}
@@ -264,6 +295,7 @@ function LinhaCura({ l, rolar, destacado }) {
         ancora="direita"
         onRolar={() => rolar({
           tipo: "dano", tom: "cura",
+          fonteCuraId: l.id,
           rotulo: l.nome,
           detalhe: l.unidade ? `${estado.pontos} ${l.unidade.rotulo}` : null,
           dados: l.dados, faces, fixo: estado.fixo, blocos: estado.blocos,
@@ -541,6 +573,7 @@ function LinhaFeitico({
     || "Feitiço Sem Nome";
   const rolarFeitico = (r, indice) => rolar({
     tipo: "dano", tom: r.tom,
+    curaDoUsuario: r.curaDoUsuario,
     rotulo: f.nome || "Feitiço Sem Nome",
     detalhe: rolagens.length > 1 || r.vezes > 1 ? r.rotulo : f.nivelLabel,
     dados: r.dados, faces: r.faces, fixo: r.fixo || 0,
@@ -1067,7 +1100,7 @@ export default function AbaAcoes({
   onDesativarRitual,
   onIniciarRitualEstendido, onIniciarRitualSemTeste, onConcluirPreparacaoRitual,
   onCancelarRitual, onFinalizarRitual, onEncerrarRitual,
-  onImbuir,
+  onImbuir, onAtaqueBasico = null,
   adaptacao = null,
   /* ⚠ NÓ PRONTO, e não os dados da arma. Mesma forma do `adaptacao` logo acima,
      e pelo mesmo motivo: o painel mexe na SESSÃO, e a sessão é de quem monta a
@@ -1099,6 +1132,7 @@ export default function AbaAcoes({
      cobra o dano do Sacrifício, e isso é sessão. */
   golpeEspecial = null,
   gatilhosTreino = [], onGatilhoTreino = null,
+  onArma = null, onAmpla = null, onNovoTurnoArmas = null, turnoArmas = 0, rodadaArmas = 0,
   // O contador de usos das habilidades fixadas no Rápido. Ver `ItemDeFicha`.
   contadorUsos = null,
 }) {
@@ -1173,6 +1207,9 @@ export default function AbaAcoes({
           titulo="Dano"
           controles={(
             <>
+              {onNovoTurnoArmas && <button type="button" className="afty-botao text-[10px]"
+                title="Zera ataques do turno e encerra Aparar e Oscilante. Munições e emperramento permanecem."
+                onClick={() => { setCriticos({}); onNovoTurnoArmas(); }}>Novo turno</button>}
               {derived.ataquesExtras > 0 && (
                 <span className="afty-chip" title="Ataques Extras adicionais nesta rodada">
                   Ataques Extras <NumeroComFontes
@@ -1206,14 +1243,16 @@ export default function AbaAcoes({
         >
           {dano.map((e) => (
             <LinhaDano
-              key={e.id}
+              key={(e.chaveArma ?? e.id) + ":" + turnoArmas}
               e={e}
               rolar={rolar}
-              critico={!!criticos[e.id]}
-              onCritico={(v) => setCriticos((c) => ({ ...c, [e.id]: v }))}
+              critico={!!criticos[(e.chaveArma ?? e.id) + ":" + turnoArmas]}
+              onCritico={(v) => setCriticos((c) => ({ ...c, [(e.chaveArma ?? e.id) + ":" + turnoArmas]: v }))}
               destacado={destaque === `dano:${e.id}`}
               onImbuir={onImbuir}
+              onAtaqueBasico={onAtaqueBasico}
               modoDano={modoDanoAtivo}
+              onArma={onArma} onAmpla={onAmpla} rodadaArmas={rodadaArmas}
             />
           ))}
         </Secao>

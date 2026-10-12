@@ -89,6 +89,10 @@ const GRUPOS_ARMA = [
  */
 const NIVEL_ESTILO = "max(esc_combatente, nd * tem_tal_adepto_de_combate)";
 
+/** Toda linha de dano que nasce de uma JOGADA DE ATAQUE: arma, Ataque Básico e
+ * Feitiço com jogada de ataque. Ver o Golpe Especial. */
+const ALVO_GOLPE_COM_ATAQUE = "arma|basico|feitico:resolucao:ataque";
+
 /**
  * *"Enquanto estiver desarmado ou empunhando uma arma marcial"*, a frase que
  * abre a Complementação Marcial (Lutador 2°) e a Defesa Marcial (Lutador 4°).
@@ -186,8 +190,9 @@ export const HABILIDADE_EFEITOS = {
 
   // "+2 na CD de suas Habilidades de Especialização, Feitiços e Aptidões
   // Amaldiçoadas. Esse bônus aumenta em 1 nos níveis 8° e 16° de Lutador."
+  // Mesmo nome no Combatente: os dois bônus não acumulam (autor, 2026-10-05).
   lut_implemento_marcial: [
-    { canal: "cd", expr: "2 + (esc_lutador >= 8) + (esc_lutador >= 16)" },
+    { canal: "cd", expr: "2 + (esc_lutador >= 8) + (esc_lutador >= 16)", grupoNaoAcumula: "implemento_marcial" },
   ],
 
   // "+2 em jogadas de ataque desarmadas ou com armas marciais e +1 em rolagens
@@ -609,13 +614,24 @@ export const HABILIDADE_EFEITOS = {
   // O CUSTO em PE de todas é somado pelo montador da Ficha, desde 2026-09-24
   // (afty-golpe-especial.js), e o Pagar desconta da sessão.
   cmb_golpe_especial: [
+    /* ⚠ ATROZ E PENETRANTE SÓ ONDE HÁ ATAQUE (achado CMB-02, 2026-10-07). Sem
+       alvo eles caíam em todo Feitiço de dano, inclusive no resolvido por TR,
+       que não tem ataque nenhum: errado em qualquer leitura da página 65. O
+       alvo conserva arma, Ataque Básico e Feitiço com jogada de ataque, que é
+       o comportamento de antes onde a regra ainda espera decisão (Golpe em
+       Feitiço, docs/a-fazer.md). */
     // "Atroz. Em um acerto, o ataque causa 1 dado de dano adicional."
-    { canal: "dadosDano", quando: "golpe_atroz", expr: "1", duracao: "temporaria" },
+    { canal: "dadosDano", alvo: ALVO_GOLPE_COM_ATAQUE, quando: "golpe_atroz", expr: "1", duracao: "temporaria" },
     // "Letal. Diminui em 1 a margem de crítico do ataque."
     { canal: "margemCritico", quando: "golpe_letal", expr: "1", duracao: "temporaria" },
     // "Penetrante. Ignora redução a dano em um valor igual a metade do seu
     // nível de personagem."
-    { canal: "ignoraRD", quando: "golpe_penetrante", expr: "piso(nd / 2)", duracao: "temporaria" },
+    { canal: "ignoraRD", alvo: ALVO_GOLPE_COM_ATAQUE, quando: "golpe_penetrante", expr: "piso(nd / 2)", duracao: "temporaria" },
+    /* "Preciso. Recebe vantagem no ataque." (2026-10-07). Na arma e no Ataque
+       Básico, que são as jogadas que leem a linha. O Feitiço com ataque rola por
+       outro caminho e segue com o modo à mão até a pergunta do Golpe em
+       Feitiço ter resposta (docs/a-fazer.md). */
+    { canal: "vantagemAtaque", alvo: "arma|basico", quando: "golpe_preciso", expr: "1", duracao: "temporaria" },
     // "Desfocado. O ataque recebe uma penalidade de 4 no acerto (cumulativo até
     // três vezes)."
     { canal: "bonusAcerto", quando: "golpe_desfocado",
@@ -633,7 +649,7 @@ export const HABILIDADE_EFEITOS = {
   // "+2 na CD [...] Esse bônus aumenta em 1 nos níveis 8° e 16°." Mesmo texto
   // do Implemento Marcial do Lutador.
   cmb_implemento_marcial: [
-    { canal: "cd", expr: "2 + (esc_combatente >= 8) + (esc_combatente >= 16)" },
+    { canal: "cd", expr: "2 + (esc_combatente >= 8) + (esc_combatente >= 16)", grupoNaoAcumula: "implemento_marcial" },
   ],
 
   // "todos seus ataques causam um dado de dano adicional, do mesmo tipo da arma
@@ -714,20 +730,19 @@ export const HABILIDADE_EFEITOS = {
   // rolagem de dano do seu próximo ataque", uma vez por concentração. O estado
   // `ataque_concentrado` diz quantas (0 a 3, ver afty-combate.js).
   //
-  // ⚠ A METADE É DA PRÓPRIA LINHA, e por isso a expressão lê `dados_dano_final`:
-  // uma espada de 2d6 recebe +1d6 por vez, e uma de 1d12 recebe +1d12, porque o
-  // mínimo é 1 dado. A variável manda a linha para a passagem tardia, que entrega
-  // a quantidade ANTERIOR a este efeito, então três concentrações somam três
-  // metades do ataque, e não metade de uma bola que cresce.
+  // Resolvido após montar os grupos Durante Ataque, por tamanho de dado e modo
+  // de dano (autor, 2026-10-05). O piso vem DEPOIS da soma das concentrações:
+  // 7d12 por três concentrações acrescenta 10d12. O mínimo de um dado por
+  // concentração é aplicado ao ataque inteiro em afty-ataque-concentrado.js.
   //
   // Duas linhas porque "Atacar" vale para as armas E para o Ataque Básico, e o
   // alvo `arma` exclui o básico de propósito. Sem alvo, o dado vazaria para a
   // linha de Feitiço, que também passa pela etapa tardia.
   cmb_ataque_concentrado: [
     { canal: "dadosDano", alvo: "arma", quando: "ataque_concentrado",
-      expr: "ataque_concentrado * max(1, piso(dados_dano_final / 2))", duracao: "temporaria" },
+      expr: "piso(ataque_concentrado * dados_dano_final / 2)", duracao: "temporaria" },
     { canal: "dadosDano", alvo: "basico", quando: "ataque_concentrado",
-      expr: "ataque_concentrado * max(1, piso(dados_dano_final / 2))", duracao: "temporaria" },
+      expr: "piso(ataque_concentrado * dados_dano_final / 2)", duracao: "temporaria" },
   ],
 
   // "antes da jogada de ataque, você pode escolher aumentar a margem de
@@ -1377,6 +1392,12 @@ export const HABILIDADE_EFEITOS = {
   // que a ficha não conta, e fica no texto.
   sup_medicina_infalivel: [
     { canal: "curaFixa", expr: "maestria" },
+  ],
+
+  // Cura Aperfeiçoada, Livro 2.5.2, página 109: rerrola 1 e 2 na cura,
+  // mantendo o melhor resultado. Sem alvo, acompanha toda cura do usuário.
+  sup_cura_aperfeicoada: [
+    { canal: "rerrolaCura", expr: "2" },
   ],
 
   // "sua quantidade de usos da habilidade Suporte em Combate são dobrados e você
@@ -2367,16 +2388,10 @@ export const MELHORIA_EFEITOS_ALVO = {
  * só DESTRAVAM as trilhas de alto nível e não concedem valor nenhum.
  */
 export const GERAL_EFEITOS = {
+  // Especialização: ganho para baixo e teto para cima (autor, 2026-10-10).
+  // Aptidão voltou à regra anterior no mesmo dia: ganho por Grau Numérico
+  // e teto de metade da Maestria para baixo em maxVezesGeral.
   ger_especializacao: [{ canal: "vagasHabilidade", expr: "1 + piso(maestria / 2)" }],
-  // ⚠ A Aptidão trocou "1 + metade da Maestria" por "1 + Grau" (autor,
-  // 2026-08-12), e as duas Gerais deixaram de ser gêmeas. `grau` é o rank do
-  // Grau do Feiticeiro (Quarto 1 ... Especial 5), que sai da faixa de ND em
-  // `grauFeiticeiro` e já vem no contexto MONTANTE, onde as Gerais rodam.
-  //
-  // ⚠ É um AUMENTO no meio da escada, e não uma troca neutra: o Grau chega ao 5
-  // no ND 17 e a metade da Maestria só no ND 36. Por pega, a diferença é 0 nos
-  // ND 1 a 4, +1 nos 5 a 12, +2 nos 13 a 25, +1 nos 26 a 35 e 0 do 36 em diante.
-  // No ND 17 são 6 Aptidões por pega, contra as 4 de antes.
   ger_aptidao:        [{ canal: "vagasAptidao",    expr: "1 + grau" }],
   ger_treinamentos:   [{ canal: "focos",           expr: "piso(nd / 2)" }],
 };

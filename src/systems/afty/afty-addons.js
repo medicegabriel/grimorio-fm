@@ -56,7 +56,7 @@
  */
 
 import { validarBloodfeast } from "./afty-bloodfeast";
-import { normalizarMarca, validateExpression } from "./afty-dsl";
+import { normalizarMarca, normalizarVariavel, validateExpression } from "./afty-dsl";
 // Folha (zero imports): o formato da Técnica de Estilo da Expansão nos pacotes.
 import {
   REGRA_EXPANSAO, TIPO_MODIFICACAO, TIPO_ESPECIAL, getEfeitoEstilo,
@@ -69,7 +69,7 @@ import { sistemaDaFicha, regraDo, palavrasDoSistema } from "./afty-sistema";
 /* A tabela de progressão da Carteira. O `afty-carteira.js` é FOLHA, então este
    import é de mão única e não pode fechar ciclo. Ver `nivelDaFicha`. */
 import { nivelDaCarteira } from "./afty-carteira";
-import { normalizarRegrasAfty, validarRegrasAfty } from "./afty-regras-addon";
+import { normalizarRegrasAfty, validarRegrasAfty, regrasAftyDaCriatura } from "./afty-regras-addon";
 
 /* ============================================================ */
 /* O REGISTRO DE FAMÍLIAS                                        */
@@ -185,32 +185,45 @@ export const ehIdDeAddon = (id) => partirId(id).pacoteId !== null;
 function prefixarEntrada(entrada, pacoteId, chave, caminhosDeId, idsLocais) {
   const out = { ...entrada, [chave]: comPrefixo(pacoteId, entrada[chave]) };
   const local = (v) => (idsLocais.has(String(v)) ? comPrefixo(pacoteId, v) : v);
+  let atual = out;
+  for (const caminho of caminhosDeId) atual = prefixarNoCaminho(atual, caminho.split("."), local);
+  return atual;
+}
 
-  for (const caminho of caminhosDeId) {
-    /* Três formas: "requisitos[].id" (lista de objetos), "incompativeisIds[]"
-       (lista de ids crus) e "concedeEscolha.habilidade" (objeto aninhado).
-       ⚠ A do meio entrou em 2026-09-07 com o `incompativeisIds`: até ali um
-       caminho sem sufixo depois do `[]` casava o `if` e não fazia NADA, porque
-       o `sub` vazio derrubava a condição. Lista de string ficava crua, calada. */
-    const [cabeca, ...resto] = caminho.split(".");
-    if (cabeca.endsWith("[]")) {
-      const campo = cabeca.slice(0, -2);
-      if (!Array.isArray(out[campo])) continue;
-      const sub = resto.join(".");
-      out[campo] = out[campo].map((item) => {
-        if (!sub) return local(item);
-        return item && item[sub] !== undefined ? { ...item, [sub]: local(item[sub]) } : item;
-      });
-    } else if (resto.length === 0) {
-      if (out[cabeca] !== undefined) out[cabeca] = local(out[cabeca]);
-    } else if (out[cabeca] && typeof out[cabeca] === "object") {
-      const sub = resto.join(".");
-      if (out[cabeca][sub] !== undefined) {
-        out[cabeca] = { ...out[cabeca], [sub]: local(out[cabeca][sub]) };
-      }
-    }
+/**
+ * Prefixa o que um caminho de `caminhosDeId` aponta, em qualquer profundidade.
+ * Quatro formas de passo, que se combinam:
+ *
+ *   • `campo`      o valor de um campo ("especializacaoId", "concedeEscolha.habilidade");
+ *   • `campo[]`    cada item de uma lista ("incompativeisIds[]", "requisitos[].id");
+ *   • `campo{}`    cada CHAVE de um objeto ("remendaHabilidades{}"), com o valor intacto.
+ *
+ * ⚠ ERA UM `split` DE DOIS NÍVEIS ATÉ 2026-10-07 (achado M05-F03). A família
+ * `lendarias` declara "requisitos[].ids[]", e a função buscava `item["ids[]"]`,
+ * que não existe: a lista de alternativas do `lendariaOr` ficava crua e a
+ * Lendária que citava irmãs do próprio pacote nunca era alcançável, calada.
+ * ⚠ Uma lista sem sufixo depois do `[]` é lista de ids crus (o furo de
+ * 2026-09-07 do `incompativeisIds`), e item que não é objeto passa intocado.
+ */
+function prefixarNoCaminho(alvo, passos, local) {
+  if (!alvo || typeof alvo !== "object" || !passos.length) return alvo;
+  const [passo, ...resto] = passos;
+  if (passo.endsWith("{}")) {
+    const campo = passo.slice(0, -2);
+    const obj = alvo[campo];
+    if (!obj || typeof obj !== "object" || Array.isArray(obj)) return alvo;
+    return { ...alvo, [campo]: Object.fromEntries(Object.entries(obj).map(([k, v]) => [local(k), v])) };
   }
-  return out;
+  if (passo.endsWith("[]")) {
+    const campo = passo.slice(0, -2);
+    if (!Array.isArray(alvo[campo])) return alvo;
+    return {
+      ...alvo,
+      [campo]: alvo[campo].map((item) => (resto.length ? prefixarNoCaminho(item, resto, local) : local(item))),
+    };
+  }
+  if (alvo[passo] === undefined) return alvo;
+  return { ...alvo, [passo]: resto.length ? prefixarNoCaminho(alvo[passo], resto, local) : local(alvo[passo]) };
 }
 
 /* ============================================================ */
@@ -260,6 +273,85 @@ export function remendarLista(base, remendos, chave = "id") {
 /* ============================================================ */
 /* O PACOTE                                                      */
 /* ============================================================ */
+
+/* ============================================================ */
+/* OS CANAIS QUE O MOTOR CONHECE                                 */
+/* ============================================================ */
+/**
+ * O `afty-efeitos.js` registra aqui os ids de `EFEITO_CANAIS` quando carrega.
+ * É o padrão inverso de sempre: ele já importa este módulo, e importar o dele
+ * daqui fecharia um ciclo.
+ *
+ * ⚠ EXISTE PARA O PORTÃO DE INSTALAÇÃO (achado M01-VAL-02 / M04-A01,
+ * 2026-10-07). O `validarPacote` só conferia que `canal` e `expr` eram texto não
+ * vazio, e o coletor descarta canal desconhecido em silêncio: um pacote com o
+ * canal escrito errado instalava e a linha simplesmente não somava.
+ */
+const canaisDoMotor = {};
+/* `escopo` é o do efeito: "criatura" (o Motor da ficha) ou "invocacao" (o
+   efeito com `escopo: "invocacao"`, que mira o Shikigami e usa os canais de
+   afty-invocacoes.js). */
+export function registrarCanaisDoMotor(ids, escopo = "criatura") {
+  canaisDoMotor[escopo] = new Set((Array.isArray(ids) ? ids : []).map(String));
+}
+
+/**
+ * O que está errado num efeito escrito no pacote: canal que o Motor não tem,
+ * `expr` vazia ou fora da sintaxe, `quando` fora da sintaxe. Variável não é
+ * conferida: a que o pacote cita pode só existir na ficha que o carrega.
+ */
+function problemasDoEfeito(onde, efeito) {
+  if (!efeito || typeof efeito !== "object") return [`${onde}: precisa ser um objeto.`];
+  const out = [];
+  const canal = String(efeito.canal ?? "").trim();
+  if (!canal) out.push(`${onde}: falta o campo "canal".`);
+  else {
+    const conhecidos = canaisDoMotor[efeito.escopo === "invocacao" ? "invocacao" : "criatura"];
+    if (conhecidos && !conhecidos.has(canal)) out.push(`${onde}: canal inexistente ("${canal}").`);
+  }
+  const expr = String(efeito.expr ?? "").trim();
+  if (!expr) out.push(`${onde}: falta o campo "expr".`);
+  else {
+    const v = validateExpression(expr);
+    if (!v.ok) out.push(`${onde}: "expr" inválido (${v.error}).`);
+  }
+  if (efeito.quando != null && String(efeito.quando).trim()) {
+    const v = validateExpression(String(efeito.quando));
+    if (!v.ok) out.push(`${onde}: "quando" inválido (${v.error}).`);
+  }
+  return out;
+}
+
+/**
+ * Os alcances que uma linha de CURA declarada aceita, os mesmos três rótulos das
+ * linhas do livro (afty-cura.js). Mora aqui, e não lá, para o portão de
+ * instalação conferir sem importar o módulo de cura, que fecharia um ciclo.
+ */
+export const ALCANCES_DE_CURA = ["Você", "Toque", "Grupo"];
+
+/**
+ * O que está errado no `fonteCura` de uma entrada de pacote (2026-10-07, achado
+ * M04-A04). É a primitiva que deixa uma Habilidade, Talento ou Aptidão de addon
+ * ganhar a PRÓPRIA linha de cura, com os números pelos canais de cura mirando o
+ * id dela. Ver `fonteCuraDeclarada` em afty-cura.js.
+ */
+function problemasDaFonteCura(onde, fonte) {
+  if (fonte == null) return [];
+  if (typeof fonte !== "object" || Array.isArray(fonte)) return [`${onde}: "fonteCura" precisa ser um objeto.`];
+  const out = [];
+  if (fonte.alcance != null && !ALCANCES_DE_CURA.includes(fonte.alcance)) {
+    out.push(`${onde}: "fonteCura.alcance" precisa ser ${ALCANCES_DE_CURA.join(", ")}.`);
+  }
+  if (fonte.nome != null && !String(fonte.nome).trim()) out.push(`${onde}: "fonteCura.nome" vazio.`);
+  if (fonte.unidade != null) {
+    const u = fonte.unidade;
+    if (!u || typeof u !== "object" || !String(u.rotulo ?? "").trim()
+      || !Number.isInteger(u.porBloco) || u.porBloco < 1) {
+      out.push(`${onde}: "fonteCura.unidade" precisa de "rotulo" e de "porBloco" inteiro a partir de 1.`);
+    }
+  }
+  return out;
+}
 
 /** Teto do pacote. Mesmo espírito do `CSS_MAX` do tema: avisa, não bloqueia. */
 export const PACOTE_MAX = 256 * 1024;
@@ -783,6 +875,12 @@ export function perdidaNoJogador(entrada, creature, chave = "id") {
 /* ============================================================ */
 /* O NÍVEL DA FICHA                                              */
 /* ============================================================ */
+/** Teto efetivo, ou null quando a ficha permite continuar acima de 30. */
+export function nivelMaximoDaFicha(creature) {
+  return regraDo(sistemaDaFicha(creature), "tetoDeNivel") === "player"
+    && !regrasAftyDaCriatura(creature).nivelJogadorSemTeto ? 30 : null;
+}
+
 /**
  * O Nível EFETIVO desta ficha: o campo `core.nd`, ou o que o XP da Carteira
  * compra quando a liberação `carteiraNivel` está ligada.
@@ -814,9 +912,11 @@ export function perdidaNoJogador(entrada, creature, chave = "id") {
  */
 export function nivelDaFicha(creature) {
   const bruto = Math.max(1, Math.trunc(Number(creature?.core?.nd) || 1));
-  return liberacoesDaCriatura(creature).includes("carteiraNivel")
+  const nivel = liberacoesDaCriatura(creature).includes("carteiraNivel")
     ? nivelDaCarteira(creature)
     : bruto;
+  const teto = nivelMaximoDaFicha(creature);
+  return teto == null ? nivel : Math.min(teto, nivel);
 }
 
 /** Nenhuma primitiva. Congelado, para virar valor padrão sem alocar. */
@@ -1393,6 +1493,25 @@ export function estadosCombateDeAddon(creature, nivelMax = 5, { avaliar = null }
         ...(tipo === "bool" && bruto.padrao != null ? { padrao: !!bruto.padrao } : {}),
         ...(bruto.foraCombate ? { foraCombate: true } : {}),
         ...(bruto.expiraNaRodada ? { expiraNaRodada: true } : {}),
+        /* ⚠ OS TRÊS CONTROLES QUE O NATIVO JÁ TINHA (achado M04-A03 / M03-D07,
+           2026-10-07). `alteraEstadoCombate` lê `umaVezPorRodada` (a segunda
+           ativação na mesma rodada é recusada) e `exclusivoCom` (ligar este
+           desliga os listados), e a aba Buffs mostra o `custoPE`. O descritor de
+           addon era montado campo a campo sem eles, então o pacote escrevia e o
+           estado derivado nascia sem nenhum dos três, calado. O `exclusivoCom`
+           segue a regra local primeiro: irmão do pacote ganha o prefixo. */
+        ...(bruto.umaVezPorRodada === true ? { umaVezPorRodada: true } : {}),
+        ...(() => {
+          const lista = (Array.isArray(bruto.exclusivoCom) ? bruto.exclusivoCom : [])
+            .map((x) => String(x ?? "").trim()).filter(Boolean)
+            .map((x) => (idsLocais.has(x) ? comPrefixo(pacoteId, x) : x));
+          return lista.length ? { exclusivoCom: lista } : {};
+        })(),
+        ...(() => {
+          if (bruto.custoPE == null || String(bruto.custoPE).trim() === "") return {};
+          const custo = Math.trunc(teto(bruto.custoPE));
+          return Number.isFinite(custo) && custo >= 0 ? { custoPE: custo } : {};
+        })(),
         dono: { id: `addon:${pacoteId}`, label: String(pacote?.nome ?? pacoteId) },
       });
     }
@@ -1457,6 +1576,12 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
   for (const id of p.incompativeis) {
     if (!ID_PACOTE_OK.test(id)) problemas.push(`id inválido em "incompativeis": "${id}".`);
     else if (id === p.id) problemas.push('O pacote não pode declarar a si mesmo em "incompativeis".');
+  }
+  // A linha de cura própria (2026-10-07). Ver `problemasDaFonteCura`.
+  for (const familia of ["habilidades", "talentos", "aptidoes"]) {
+    for (const e of p.acrescenta[familia] ?? []) {
+      problemas.push(...problemasDaFonteCura(`${familia} "${e?.id ?? "?"}"`, e?.fonteCura));
+    }
   }
   /* A concessão de Aptidão. O id tem de existir: no livro (a lista RAW da
      família, sem addon nenhum), no próprio pacote, ou já qualificado com o
@@ -1550,9 +1675,11 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
         problemas.push(`${t.nome}: ${campo} precisa ser uma lista.`);
         continue;
       }
-      for (const e of t[campo] ?? []) {
+      for (const [j, e] of (t[campo] ?? []).entries()) {
         if (!e || !String(e.expr ?? "").trim() || !String(e[campo === "efeitos" ? "canal" : "label"] ?? "").trim()) {
           problemas.push(`${t.nome}: entrada inválida em ${campo}.`);
+        } else if (campo === "efeitos") {
+          problemas.push(...problemasDoEfeito(`${t.nome}, efeito #${j + 1}`, e));
         }
       }
     }
@@ -1573,12 +1700,7 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
       problemas.push(`${onde}: precisa ter "descricao" ou "efeitos".`);
     }
     for (const [j, efeito] of (efeitos ?? []).entries()) {
-      if (!efeito || typeof efeito !== "object") {
-        problemas.push(`${onde}, efeito #${j + 1}: precisa ser um objeto.`);
-        continue;
-      }
-      if (!String(efeito.canal ?? "").trim()) problemas.push(`${onde}, efeito #${j + 1}: falta o campo "canal".`);
-      if (!String(efeito.expr ?? "").trim()) problemas.push(`${onde}, efeito #${j + 1}: falta o campo "expr".`);
+      problemas.push(...problemasDoEfeito(`${onde}, efeito #${j + 1}`, efeito));
     }
   }
 
@@ -1648,6 +1770,21 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
       if (reduzido < minimo || reduzido > maximo) {
         problemas.push(`${onde}: "maxSemTalento" precisa ficar dentro da faixa.`);
       }
+    }
+    // Os três controles transportados desde 2026-10-07. Ver `estadosCombateDeAddon`.
+    if (estado.umaVezPorRodada != null && typeof estado.umaVezPorRodada !== "boolean") {
+      problemas.push(`${onde}: "umaVezPorRodada" precisa ser true ou false.`);
+    }
+    if (estado.exclusivoCom != null && (!Array.isArray(estado.exclusivoCom)
+      || estado.exclusivoCom.some((x) => typeof x !== "string" || !x.trim()))) {
+      problemas.push(`${onde}: "exclusivoCom" precisa ser uma lista de ids de estado.`);
+    }
+    if (estado.custoPE != null && String(estado.custoPE).trim() !== "") {
+      const n = Number(estado.custoPE);
+      const ok = typeof estado.custoPE === "number"
+        ? Number.isFinite(n) && n >= 0
+        : validateExpression(String(estado.custoPE)).ok;
+      if (!ok) problemas.push(`${onde}: "custoPE" precisa ser um número a partir de zero ou uma expressão válida.`);
     }
   }
 
@@ -1912,6 +2049,49 @@ export function aplicarAddons(pacotes = []) {
     limpos.push(p);
   }
 
+  reconstruirMundo(limpos);
+
+  pacotesAtivos = limpos;
+  epoca += 1;
+
+  // Os validadores do raw agora enxergam o conteúdo de addon, porque leem o
+  // mesmo array. Se algum reprovar, o problema é do addon, e a fase 1 apenas o
+  // RELATA: desfazer aqui deixaria o mundo pela metade, e a ficha tem a linha
+  // morta e marcada para isso.
+  for (const def of FAMILIAS.values()) {
+    if (!def.validador) continue;
+    const ruins = def.validador();
+    if (ruins?.length) problemas.push({ pacote: `(validador de ${def.rotulo})`, problemas: ruins });
+  }
+  const colisoes = colisoesDeVariavel(limpos);
+  if (colisoes.length) problemas.push({ pacote: "(variáveis da DSL)", problemas: colisoes });
+
+  problemasDaUltimaAplicacao = problemas;
+  return { aplicados: addonsAtivos(), problemas };
+}
+
+/* ============================================================ */
+/* A CAMADA DA CRIATURA (o remendo é POR FICHA)                  */
+/* ============================================================ */
+/**
+ * Os pacotes cujo `substitui` está escrito no catálogo AGORA. Fora de um escopo
+ * são todos os pacotes ativos que remendam alguma coisa.
+ */
+let remendosNoMundo = [];
+
+const temRemendo = (p) => Object.values(p?.substitui ?? {}).some((l) => Array.isArray(l) && l.length > 0);
+
+/**
+ * Escreve nos catálogos o raw, os acréscimos de `limpos` e os remendos dos
+ * pacotes em `donosDoRemendo` (todos, quando é null).
+ *
+ * ⚠ É a mesma passada que o `aplicarAddons` sempre fez, separada para o escopo
+ * da ficha poder refazê-la com OUTRO conjunto de remendos sem mexer na época, nos
+ * pacotes ativos nem nos problemas. Os acréscimos são sempre os de todos os
+ * pacotes: id prefixado não colide e quem não o cita não o vê (seção 3 do
+ * docs/afty-addons.md).
+ */
+function reconstruirMundo(limpos, donosDoRemendo = null) {
   // Junta por família, já prefixado, e entrega tudo de uma vez a cada uma.
   const porFamilia = new Map([...FAMILIAS.keys()].map((f) => [f, []]));
   for (const p of limpos) {
@@ -1954,6 +2134,8 @@ export function aplicarAddons(pacotes = []) {
   // `remendadoPor` para a tela poder mostrar quem venceu.
   const remendosPorFamilia = new Map([...FAMILIAS.keys()].map((f) => [f, new Map()]));
   for (const p of limpos) {
+    // Dentro do escopo de uma ficha, só o remendo de pacote que ela possui.
+    if (donosDoRemendo && !donosDoRemendo.has(p.id)) continue;
     for (const [familia, lista] of Object.entries(p.substitui)) {
       const def = FAMILIAS.get(familia);
       if (!def || !lista.length) continue;
@@ -1980,21 +2162,101 @@ export function aplicarAddons(pacotes = []) {
     FAMILIAS.get(familia).aplicar(porFamilia.get(familia), remendosPorFamilia.get(familia));
   }
 
-  pacotesAtivos = limpos;
-  epoca += 1;
+  remendosNoMundo = limpos
+    .filter((p) => temRemendo(p) && (!donosDoRemendo || donosDoRemendo.has(p.id)))
+    .map((p) => p.id);
+}
 
-  // Os validadores do raw agora enxergam o conteúdo de addon, porque leem o
-  // mesmo array. Se algum reprovar, o problema é do addon, e a fase 1 apenas o
-  // RELATA: desfazer aqui deixaria o mundo pela metade, e a ficha tem a linha
-  // morta e marcada para isso.
-  for (const def of FAMILIAS.values()) {
-    if (!def.validador) continue;
-    const ruins = def.validador();
-    if (ruins?.length) problemas.push({ pacote: `(validador de ${def.rotulo})`, problemas: ruins });
+const mesmosIds = (a, b) => a.length === b.length && a.every((id, i) => id === b[i]);
+
+/**
+ * Roda `fn` com o catálogo como ESTA ficha o enxerga: os acréscimos do mundo
+ * inteiro e só os remendos dos pacotes que ela mesma carrega.
+ *
+ * ⚠ É A CAMADA DA CRIATURA DA SEÇÃO 3 do docs/afty-addons.md, que nasceu escrita
+ * e nunca tinha sido ligada (achado M05-F01 da revisão de 2026-10-07). O
+ * Encontro aplica a UNIÃO dos addons de todos os combatentes, e o remendo de uma
+ * ficha (um Talento com `efeitos` novos, por exemplo) mudava o número da ficha
+ * vizinha que nunca instalou o pacote: Defesa 16 virava 23 no exemplo do assert.
+ *
+ * O caso comum não custa nada: sem remendo de pacote alheio no ar, `fn` roda
+ * direto. Quando há, o mundo é reescrito com os remendos da ficha, `fn` roda, e o
+ * mundo anterior volta no `finally`, inclusive dentro de outro escopo. A época
+ * não muda, porque os ids do mundo (que é o que ela guarda) continuam os mesmos,
+ * e o mundo que sobra depois é idêntico ao de antes.
+ *
+ * `deriveAfty` é síncrona e o JavaScript não intercala, então o escopo aberto e
+ * fechado em volta dela vale para todo leitor de catálogo lá dentro.
+ */
+export function comEscopoDaFicha(creature, fn) {
+  if (!pacotesAtivos.some(temRemendo)) return fn();
+  const donos = pacotesDaFicha(creature);
+  const desejado = pacotesAtivos.filter((p) => temRemendo(p) && donos.has(p.id)).map((p) => p.id);
+  const anterior = remendosNoMundo;
+  if (mesmosIds(desejado, anterior)) return fn();
+  reconstruirMundo(pacotesAtivos, new Set(desejado));
+  try {
+    return fn();
+  } finally {
+    reconstruirMundo(pacotesAtivos, new Set(anterior));
   }
+}
 
-  problemasDaUltimaAplicacao = problemas;
-  return { aplicados: addonsAtivos(), problemas };
+/**
+ * Os ids dos pacotes que a ficha CARREGA, normalizados como o `normalizarPacote`
+ * faz. É a pergunta "este conteúdo de addon é desta ficha?", que o mundo unido
+ * do Encontro não responde.
+ */
+export function pacotesDaFicha(creature) {
+  return new Set(
+    (Array.isArray(creature?.addons) ? creature.addons : [])
+      .map((p) => String(p?.id ?? "").trim().toLowerCase())
+      .filter(Boolean),
+  );
+}
+
+/** Os pacotes cujo remendo está escrito no catálogo agora (para os asserts). */
+export const remendosNoCatalogo = () => [...remendosNoMundo];
+
+/**
+ * Dois ids diferentes que viram a MESMA variável da DSL.
+ *
+ * `normalizarVariavel` troca `:` e `-` por `_`, então `ab-cd:ef` e `ab:cd_ef`
+ * viram `ab_cd_ef`, e um pacote chamado `lut` com a entrada `x` vira `lut_x`,
+ * que é o nome de uma entrada do livro. O contexto guarda a primeira e a outra
+ * fica inalcançável por fórmula, calada (achado M01-VAR-02). Não recusa o pacote:
+ * relata, como os validadores de família, porque a ficha precisa continuar
+ * abrindo.
+ *
+ * As famílias olhadas são as que viram variável: Habilidade, Talento e Aptidão
+ * dividem o `tem_`, e a Especialização tem o `nivel_` e o `esc_`.
+ */
+const FAMILIAS_DE_VARIAVEL = [["habilidades", "talentos", "aptidoes"], ["especializacoes"]];
+
+function colisoesDeVariavel(limpos) {
+  const out = [];
+  for (const grupo of FAMILIAS_DE_VARIAVEL) {
+    const vistos = new Map();
+    const registra = (id) => {
+      const v = normalizarVariavel(id);
+      if (!v) return;
+      const antes = vistos.get(v);
+      if (antes && antes !== id) out.push(`"${antes}" e "${id}" viram a mesma variável (${v}).`);
+      else vistos.set(v, id);
+    };
+    for (const familia of grupo) {
+      const def = FAMILIAS.get(familia);
+      if (!def) continue;
+      for (const e of def.basicos?.() ?? []) registra(String(e?.[def.chave] ?? ""));
+    }
+    for (const p of limpos) {
+      for (const familia of grupo) {
+        const def = FAMILIAS.get(familia);
+        for (const e of def ? p.acrescenta[familia] ?? [] : []) registra(comPrefixo(p.id, e[def.chave]));
+      }
+    }
+  }
+  return out;
 }
 
 /** Volta ao raw puro. */

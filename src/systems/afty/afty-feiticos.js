@@ -46,7 +46,7 @@ import { ATTR_LABEL } from "./afty-atributos";
 import { PERICIA_NOME } from "./afty-pericias-catalogo";
 import { grauMeta } from "./afty-invocacoes";
 import {
-  detalhesDoCanalEscopos, resolverEfeitosDanoFinal, valorCanalEscopos,
+  detalhesDoCanalEscopos, resolverEfeitosDanoFinal, valorCanalEscopos, detalhesDeCustoPe,
 } from "./afty-efeitos";
 import { bonusRitual, resolveRitual, RITUAL_MELHORIA_BY_ID } from "./afty-rituais";
 // Só a leitura de QUEM tem direito a marcar Feitiço para redução de custo por
@@ -664,7 +664,7 @@ export function aplicaReducoesCustoFeitico(feitico, calculo, ctx = {}) {
   /* ⚠ E O NEGATIVO É AUMENTO (condição Condenado, 2026-09-21), somado DEPOIS do
      piso de 1 PE. Ver `custoEmPe` em afty-efeitos.js. */
   const aumentos = [];
-  for (const fonte of detalhesDoCanalEscopos(ctx.efeitos, "custoPE", ["feitico"])) {
+  for (const fonte of detalhesDeCustoPe(ctx.efeitos, "feitico")) {
     const valor = Math.trunc(Number(fonte.valor) || 0);
     if (valor > 0) reducoes.push({ fonte: fonte.nome, valor });
     else if (valor < 0) aumentos.push({ fonte: fonte.nome, valor });
@@ -1110,7 +1110,10 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   let [dados, tipoDado] = linha;
   const habilidades = Array.isArray(ctx.habilidades) ? ctx.habilidades : [];
   const explosiva = habilidades.includes("cnj_explosao_encadeada");
-  const escoposDano = ["feitico", `feitico:${f.id}`, `feitico:${alvo}`];
+  /* `feitico:resolucao:<ataque|tr>` (2026-10-07): diz se o Feitiço tem JOGADA DE
+     ATAQUE. Quem só vale em ataque (Atroz e Penetrante do Golpe Especial) mira
+     `feitico:resolucao:ataque` e deixa de cair no Feitiço resolvido por TR. */
+  const escoposDano = ["feitico", "feitico:tipo:dano", `feitico:${f.id}`, `feitico:${alvo}`, `feitico:resolucao:${resolucao}`];
 
   /* ⚠ AS FONTES DOS DADOS nascem junto da conta, uma a cada `dados +=`, e não
      numa segunda passada que refaz a conta (autor, 2026-09-29: o hover do Dano
@@ -4342,6 +4345,7 @@ export function createBlankFeitico() {
     nivel: 1,
     conjuracaoTexto: "",       // texto livre da conjuração (a seção geral virá depois)
     descricao: "",             // narrativa do Feitiço
+    variacaoDeTecnica: false,  // variação que pode usar vaga exclusiva de Dominância
     variacaoDe: null,          // id do Feitiço base, se for Variação de Liberação
     // --- campos de Feitiço de Dano ---
     resolucao: "tr",           // tr | ataque
@@ -4677,6 +4681,7 @@ export function rolagensDoFeitico(f, calc) {
   if (f.tipo === "curativo") {
     return [{
       rotulo: calc.ehTemporario ? "PV Temporário" : "Cura", dados, faces, tom: "cura", vezes: 1,
+      curaDoUsuario: !calc.ehTemporario,
       // Vigor Absoluto é parcela fixa somada ao total curado. O painel de
       // rolagem já sabe somar `fixo`, é o mesmo campo do dano.
       fixo: calc.bonusCura || 0,

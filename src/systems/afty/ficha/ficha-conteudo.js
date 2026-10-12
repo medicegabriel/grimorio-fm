@@ -593,7 +593,7 @@ export function conteudoDaFicha(creature, derived) {
   const opcoesAlto = derived?.altoNivel?.escolhas?.opcoesPorItem ?? {};
   for (const m of derived?.altoNivel?.melhorias?.escolhidas ?? []) {
     // O nome e o texto são os do livro desta ficha (Classe de Armadura no jogador).
-    const def = getMelhoriaSuperior(m.id, sistemaDaFicha(creature));
+    const def = getMelhoriaSuperior(m.id, sistemaDaFicha(creature), creature);
     if (!def) continue;
     itens.push(item({
       id: m.id,
@@ -608,7 +608,7 @@ export function conteudoDaFicha(creature, derived) {
   }
   const inacessiveisLen = new Set(derived?.altoNivel?.lendarias?.inacessiveis ?? []);
   for (const id of derived?.altoNivel?.lendarias?.escolhidas ?? []) {
-    const def = getHabilidadeLendaria(id);
+    const def = getHabilidadeLendaria(id, creature);
     if (!def) continue;
     itens.push(item({
       id,
@@ -617,6 +617,8 @@ export function conteudoDaFicha(creature, derived) {
       texto: def.descricao ?? "",
       grupo: "altoNivel",
       sub: SUBS_ALTO_NIVEL[1],
+      usos: usosDeMesa("altoNivel:len:" + id),
+      numeros: numerosDeMesa("altoNivel:len:" + id),
       tags: [],
       opcoes: opcoesEscolhidas(def, mapaAlto, opcoesAlto),
       aviso: inacessiveisLen.has(id) ? "Pré-requisito não atendido" : null,

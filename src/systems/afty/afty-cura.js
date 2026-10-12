@@ -63,6 +63,8 @@ import { valorCanal, detalhesDoCanal } from "./afty-efeitos";
 // Mesmo formatador da linha de dano, de propósito: `3d8+5` é a mesma notação
 // nos dois lugares, e uma segunda cópia divergiria na primeira errata.
 import { textoDeDano as textoDeRolagem } from "./afty-pericias";
+// Os alcances aceitos pela linha declarada. O afty-addons só importa folhas.
+import { ALCANCES_DE_CURA } from "./afty-addons";
 
 /* ============================================================ */
 /* CATÁLOGO DE LINHAS                                            */
@@ -189,6 +191,40 @@ export const FONTES_CURA = [
 ];
 
 const FONTE_BY_ID = Object.fromEntries(FONTES_CURA.map((f) => [f.id, f]));
+
+/**
+ * A linha de cura que uma entrada de catálogo DECLARA, ou null.
+ *
+ * ⚠ A PRIMITIVA QUE FALTAVA (2026-10-07, achado M04-A04). `FONTES_CURA` é uma
+ * lista fixa cujo `requer` cita o id do livro, então uma Habilidade de addon com
+ * nome e id próprios não tinha como ganhar uma linha de cura equivalente ao
+ * Revigorar: mirar `cura_revigorar` dependia do id nativo, e mirar um id novo
+ * não criava linha nenhuma. Agora a entrada diz `fonteCura: { alcance, nome?,
+ * unidade? }` e os números vêm, como os do livro, pelos canais de cura mirando o
+ * PRÓPRIO id dela (o local ganha o namespace, ver `caminhosDeId`).
+ *
+ * Quem chama já filtrou pela aquisição (a entrada é da ficha), por isso o
+ * `requer` é sempre verdadeiro. O `alcance` fora da lista cai em "Você", e o
+ * portão de instalação já recusa esse caso.
+ */
+export function fonteCuraDeclarada(entrada, grupo = "habilidade") {
+  const fc = entrada?.fonteCura;
+  if (!entrada?.id || !fc || typeof fc !== "object") return null;
+  const alcance = ALCANCES_DE_CURA.includes(fc.alcance) ? fc.alcance : "Você";
+  const u = fc.unidade;
+  const unidade = u && String(u.rotulo ?? "").trim() && Number.isInteger(u.porBloco) && u.porBloco >= 1
+    ? { rotulo: String(u.rotulo).trim(), porBloco: u.porBloco }
+    : null;
+  return {
+    id: entrada.id,
+    nome: String(fc.nome ?? "").trim() || entrada.nome || entrada.id,
+    grupo,
+    requer: () => true,
+    ...(unidade ? { unidade } : {}),
+    alcance: () => alcance,
+    declarada: true,
+  };
+}
 export const getFonteCura = (id) => FONTE_BY_ID[id] ?? null;
 
 /* ============================================================ */
@@ -196,6 +232,25 @@ export const getFonteCura = (id) => FONTE_BY_ID[id] ?? null;
 /* ============================================================ */
 
 const inteiro = (v) => Math.trunc(Number(v) || 0);
+
+/** Maior limite de rerrolagem, com repetição somente quando declarada. */
+export function rerrolagemDeCura(efeitos, alvo = null) {
+  const regra = (efeitos ? detalhesDoCanal(efeitos, "rerrolaCura", alvo) : [])
+    .map((d) => ({ ate: inteiro(d.valor), fonte: d.nome ?? null, melhor: true }))
+    .filter((d) => d.ate > 0)
+    .reduce((maior, d) => !maior || d.ate > maior.ate ? d : maior, null);
+  if (!regra) return null;
+  const continua = detalhesDoCanal(efeitos, "rerrolaCuraContinua", alvo)
+    .find((d) => inteiro(d.valor) > 0);
+  return continua ? { ...regra, continua: true, fonteContinua: continua.nome ?? null } : regra;
+}
+
+/** As curas do usuário recebem a regra, inclusive as rolagens de Feitiços. */
+export function preparaRolagemCura(desc, efeitos) {
+  if (desc?.tipo !== "dano" || desc.tom !== "cura" || desc.curaDoUsuario === false) return desc;
+  const rerrola = rerrolagemDeCura(efeitos, desc.fonteCuraId);
+  return rerrola ? { ...desc, rerrola } : desc;
+}
 
 /**
  * Fecha o bônus por dado por FONTE. O teto acompanha somente a fonte que o
@@ -358,7 +413,11 @@ export function resolveCura(ctx = {}) {
   const linhas = [];
   const porId = {};
 
-  for (const f of FONTES_CURA) {
+  /* As do livro, e depois as que as entradas da ficha DECLARAM (`fonteCura`).
+     Uma declarada com o id de uma do livro seria duplicata, e fica de fora. */
+  const declaradas = (Array.isArray(ctx.fontesDeclaradas) ? ctx.fontesDeclaradas : [])
+    .filter((f) => f?.id && !FONTE_BY_ID[f.id]);
+  for (const f of [...FONTES_CURA, ...declaradas]) {
     if (!f.requer(cond)) continue;
 
     const usos = Math.max(0, inteiro(canal("curaUsos", f.id)));
@@ -490,7 +549,7 @@ export function resolveCura(ctx = {}) {
     });
   }
 
-  return { linhas };
+  return { linhas: linhas.map((l) => ({ ...l, rerrola: rerrolagemDeCura(ef, l.id) })) };
 }
 
 /* ============================================================ */
@@ -532,7 +591,7 @@ export function validarCatalogoCura() {
 
 /** Os canais que miram uma linha de cura, para o validador de alvo abaixo. */
 const CANAIS_DE_CURA = [
-  "curaDados", "curaFaces", "curaFixa", "curaPorDado", "curaPorDadoTeto", "curaUsos", "curaPontos",
+  "curaDados", "curaFaces", "curaFixa", "curaPorDado", "curaPorDadoTeto", "rerrolaCura", "curaUsos", "curaPontos",
 ];
 
 /**

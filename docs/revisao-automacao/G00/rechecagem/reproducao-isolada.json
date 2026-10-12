@@ -1,0 +1,69 @@
+{
+  "data": "2026-10-05T21:02:36.061Z",
+  "estado": "PASSOU",
+  "fonteAusente": {
+    "codigo": 0,
+    "estrutura": "PASSOU",
+    "diagnostico": "FONTE_INDISPONIVEL"
+  },
+  "adicao": {
+    "adicionados": 4,
+    "alterados": 1
+  },
+  "renomeacao": {
+    "adicionados": 4,
+    "removidos": 4,
+    "alterados": 1
+  },
+  "proprietariosEEstadosPreexistentesPreservados": 11900,
+  "comandos": [
+    {
+      "cenario": "Fonte ausente sem derrubar inventário",
+      "codigo": 0,
+      "stdout": "{\"estrutura\":\"PASSOU\",\"resumo\":{\"itensVivos\":11900,\"itensRegistrados\":11900,\"catalogos\":418,\"addons\":51,\"lotes\":258,\"erros\":0,\"conteudosAlterados\":0,\"revisaoAusente\":11900,\"lotesSemRegistro\":257,\"revalidacoes\":253}}",
+      "stderr": ""
+    },
+    {
+      "cenario": "Novo conteúdo gera falha de cobertura",
+      "codigo": 1,
+      "stdout": "{\"estrutura\":\"FALHOU\",\"resumo\":{\"itensVivos\":11904,\"itensRegistrados\":11900,\"catalogos\":418,\"addons\":51,\"lotes\":258,\"erros\":4,\"conteudosAlterados\":1,\"revisaoAusente\":11900,\"lotesSemRegistro\":257,\"revalidacoes\":254}}",
+      "stderr": ""
+    },
+    {
+      "cenario": "Propor adicao",
+      "codigo": 0,
+      "stdout": "Proposta, sem alterar controle: 4 adições, 0 remoções, 1 atualizações.\nPreencha somente decisoes; cada adição precisa de dono confirmado, cada remoção precisa de justificativa.\n",
+      "stderr": ""
+    },
+    {
+      "cenario": "Aplicar adicao",
+      "codigo": 0,
+      "stdout": "Reconciliação aplicada: {\"adicionados\":4,\"removidos\":0,\"alterados\":1,\"lotesAtingidos\":[\"LUT-01\",\"LUT-02\",\"P01\"],\"lotesInvalidados\":[]}\n",
+      "stderr": ""
+    },
+    {
+      "cenario": "Cobertura após adicao",
+      "codigo": 0,
+      "stdout": "{\"estrutura\":\"PASSOU\",\"resumo\":{\"itensVivos\":11904,\"itensRegistrados\":11904,\"catalogos\":418,\"addons\":51,\"lotes\":258,\"erros\":0,\"conteudosAlterados\":0,\"revisaoAusente\":11904,\"lotesSemRegistro\":257,\"revalidacoes\":254}}",
+      "stderr": ""
+    },
+    {
+      "cenario": "Propor renomeacao",
+      "codigo": 0,
+      "stdout": "Proposta, sem alterar controle: 4 adições, 4 remoções, 1 atualizações.\nPreencha somente decisoes; cada adição precisa de dono confirmado, cada remoção precisa de justificativa.\n",
+      "stderr": ""
+    },
+    {
+      "cenario": "Aplicar renomeacao",
+      "codigo": 0,
+      "stdout": "Reconciliação aplicada: {\"adicionados\":4,\"removidos\":4,\"alterados\":1,\"lotesAtingidos\":[\"LUT-01\",\"LUT-02\",\"P01\"],\"lotesInvalidados\":[]}\n",
+      "stderr": ""
+    },
+    {
+      "cenario": "Cobertura após renomeacao",
+      "codigo": 0,
+      "stdout": "{\"estrutura\":\"PASSOU\",\"resumo\":{\"itensVivos\":11904,\"itensRegistrados\":11908,\"catalogos\":418,\"addons\":51,\"lotes\":258,\"erros\":0,\"conteudosAlterados\":0,\"revisaoAusente\":11904,\"lotesSemRegistro\":257,\"revalidacoes\":254}}",
+      "stderr": ""
+    }
+  ]
+}

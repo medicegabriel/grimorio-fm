@@ -1,0 +1,621 @@
+{
+  "versao": 1,
+  "shaInventario": "6c340b0dee937701ee7a8eb0c8b03acd2bf069b6b8a41f14d38e8f3c903e1718",
+  "shaVivo": "67917ea7ccc4a1415aedcd136b348a66a0d0e68540d62e07af8c0893ca54bc61",
+  "shaEscopo": "5c08128d80c8109c469ab35e050aa1917300bf6b8d31e1272ae575bd0f18ad81",
+  "adicionados": [
+    {
+      "chave": "afty-addons.js::ALCANCES_DE_CURA::@catalogo",
+      "item": {
+        "chave": "afty-addons.js::ALCANCES_DE_CURA::@catalogo",
+        "id": "@catalogo",
+        "nome": "@catalogo",
+        "arquivo": "src/systems/afty/afty-addons.js",
+        "export": "ALCANCES_DE_CURA",
+        "proprietario": "M05",
+        "tipo": "catálogo ou tabela",
+        "hashDado": "e56fdb0bd20650cd9dd7c629957bf61f84ac9953c04ca8a64a2ed11af69998af"
+      },
+      "proprietarioSugerido": "M05"
+    },
+    {
+      "chave": "afty-addons.js::ALCANCES_DE_CURA::Grupo",
+      "item": {
+        "chave": "afty-addons.js::ALCANCES_DE_CURA::Grupo",
+        "id": "Grupo",
+        "nome": "Grupo",
+        "arquivo": "src/systems/afty/afty-addons.js",
+        "export": "ALCANCES_DE_CURA",
+        "proprietario": "M05",
+        "tipo": "entrada",
+        "hashDado": "233f40454cb8da197616de85584d7be76ac8df392faa5fcc2dd1378d98bc6663"
+      },
+      "proprietarioSugerido": "M05"
+    },
+    {
+      "chave": "afty-addons.js::ALCANCES_DE_CURA::Toque",
+      "item": {
+        "chave": "afty-addons.js::ALCANCES_DE_CURA::Toque",
+        "id": "Toque",
+        "nome": "Toque",
+        "arquivo": "src/systems/afty/afty-addons.js",
+        "export": "ALCANCES_DE_CURA",
+        "proprietario": "M05",
+        "tipo": "entrada",
+        "hashDado": "ea32caff03f2be32d823f7a8f5d53e217eff4d80a50ef0fdb0bef1e669a4b3e6"
+      },
+      "proprietarioSugerido": "M05"
+    },
+    {
+      "chave": "afty-addons.js::ALCANCES_DE_CURA::Você",
+      "item": {
+        "chave": "afty-addons.js::ALCANCES_DE_CURA::Você",
+        "id": "Você",
+        "nome": "Você",
+        "arquivo": "src/systems/afty/afty-addons.js",
+        "export": "ALCANCES_DE_CURA",
+        "proprietario": "M05",
+        "tipo": "entrada",
+        "hashDado": "fb7ef48ab944e742afc63e6697d17a0791763e330763a81c7e156fac9f909110"
+      },
+      "proprietarioSugerido": "M05"
+    },
+    {
+      "chave": "afty-combate.js::COMBATE_ESTADOS::golpePreciso",
+      "item": {
+        "chave": "afty-combate.js::COMBATE_ESTADOS::golpePreciso",
+        "id": "golpePreciso",
+        "nome": "Golpe Especial · Preciso",
+        "arquivo": "src/systems/afty/afty-combate.js",
+        "export": "COMBATE_ESTADOS",
+        "proprietario": "M03",
+        "tipo": "entrada",
+        "idLocal": "golpePreciso",
+        "hashDado": "c747ac6be2e0705f9d090dc12771664df16ea2daab7825bbddf5d935c6bf877a"
+      },
+      "proprietarioSugerido": "M03"
+    },
+    {
+      "chave": "afty-combate.js::COMBATE_VARS::golpe_preciso",
+      "item": {
+        "chave": "afty-combate.js::COMBATE_VARS::golpe_preciso",
+        "id": "golpe_preciso",
+        "nome": "golpe_preciso",
+        "arquivo": "src/systems/afty/afty-combate.js",
+        "export": "COMBATE_VARS",
+        "proprietario": "M03",
+        "tipo": "entrada",
+        "hashDado": "9f3bef06a0b46274ea53cdd623445a497a54cba6ee77b798c978ddc02310c9e2"
+      },
+      "proprietarioSugerido": "M03"
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::cmb_golpe_especial::@6",
+      "item": {
+        "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::cmb_golpe_especial::@6",
+        "id": "@6",
+        "nome": "@6",
+        "arquivo": "src/systems/afty/afty-efeitos-conteudo.js",
+        "export": "HABILIDADE_EFEITOS",
+        "pai": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::cmb_golpe_especial",
+        "caminho": "@6",
+        "proprietario": "CMB-02",
+        "tipo": "parcela declarada",
+        "hashDado": "efbf068c1fc39286e7445988b038d7d9b3c5176aa73373db2fa4ed7c8a20159b"
+      },
+      "proprietarioSugerido": "CMB-02"
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAIS::vantagemAtaque",
+      "item": {
+        "chave": "afty-efeitos.js::EFEITO_CANAIS::vantagemAtaque",
+        "id": "vantagemAtaque",
+        "nome": "Vantagem no Ataque",
+        "arquivo": "src/systems/afty/afty-efeitos.js",
+        "export": "EFEITO_CANAIS",
+        "proprietario": "M01",
+        "tipo": "entrada",
+        "idLocal": "vantagemAtaque",
+        "hashDado": "44dbaf9188505f6e3bd72e255e02ac3781ed616ae4d63c92af4b43524d7a1e03"
+      },
+      "proprietarioSugerido": "M01"
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@3::itens/vantagemAtaque",
+      "item": {
+        "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@3::itens/vantagemAtaque",
+        "id": "itens/vantagemAtaque",
+        "nome": "Vantagem no Ataque",
+        "arquivo": "src/systems/afty/afty-efeitos.js",
+        "export": "EFEITO_CANAL_GRUPOS",
+        "pai": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@3",
+        "caminho": "itens/vantagemAtaque",
+        "proprietario": "M01",
+        "tipo": "referência",
+        "referencia": "afty-efeitos.js::EFEITO_CANAIS::vantagemAtaque",
+        "integracaoProprietario": "M01",
+        "idLocal": "vantagemAtaque",
+        "hashDado": "44dbaf9188505f6e3bd72e255e02ac3781ed616ae4d63c92af4b43524d7a1e03"
+      },
+      "proprietarioSugerido": "M01"
+    },
+    {
+      "chave": "afty-sistema.js::DIVERGENCIAS::requisitoMulticlasse",
+      "item": {
+        "chave": "afty-sistema.js::DIVERGENCIAS::requisitoMulticlasse",
+        "id": "requisitoMulticlasse",
+        "nome": "requisitoMulticlasse",
+        "arquivo": "src/systems/afty/afty-sistema.js",
+        "export": "DIVERGENCIAS",
+        "proprietario": "M02",
+        "tipo": "entrada",
+        "idLocal": "requisitoMulticlasse",
+        "hashDado": "bdde99720a258e7c00208e465ba0c416f822dfcb64ccb74114dd9fba3a1aa984",
+        "fonteDeclarada": "Livro de Regras 2.5.2, página 47: você deve atender os requisitos para Multiclasse especificados nas características da outra especialização"
+      },
+      "proprietarioSugerido": "M02"
+    }
+  ],
+  "removidos": [],
+  "alterados": [
+    {
+      "chave": "afty-combate.js::COMBATE_ESTADOS::@catalogo",
+      "proprietarioMantido": "M03",
+      "hashAnterior": "e01884c78225c5f1c524cc35ec03037384f93aae1f96f4fbe1e9d943dbd0bbb4",
+      "hashNovo": "a66b97ccae0f14b33da697feb623074593bbec112ac772bc1cf7deb1632fdf7f",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-combate.js::COMBATE_VARS::@catalogo",
+      "proprietarioMantido": "M03",
+      "hashAnterior": "b6f5c67b1aa6caba46571c069fe8c6a7cf9d34663dd2292a8913723c94cc44fe",
+      "hashNovo": "3a36224b33e9f43e373fc2b72fe264114b9a1fd6a9b0544a025cab6536733365",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::@catalogo",
+      "proprietarioMantido": "M02",
+      "hashAnterior": "ae37303a3fe2edee9a38f6f0e503dde9f1ca574e96d69fd5eaacbcf7e2e63439",
+      "hashNovo": "991f21536c35d87eae5464ad8314ced6921e1a79f8625499cbd037a6221a9a7f",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::cmb_golpe_especial",
+      "proprietarioMantido": "CMB-02",
+      "hashAnterior": "354fbe4ee17d153775798dfb06e7c2ad32493071852126fd58f8a7ceb23c7373",
+      "hashNovo": "8e9fe66259ff2447c81e530a98b30c0cdc1d8eab64ba317c13809f0793e1b85b",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::cmb_golpe_especial::@0",
+      "proprietarioMantido": "CMB-02",
+      "hashAnterior": "47464d25e7074b7271d3f4595abe982f6be42ac6cf4b9df898f2fc371e2354e2",
+      "hashNovo": "13ae7f8b1b8dd37147d7a8c29e4da1ac14232b9a823cf15082ade20d60b59a28",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::cmb_golpe_especial::@2",
+      "proprietarioMantido": "CMB-02",
+      "hashAnterior": "892f7c6c7e8b7446e3fbafdaaa62058cebbdbf37f7f88a64f1df7fe91a06784c",
+      "hashNovo": "771458305c82bbcfd1f8da01dd0e4338567026e6bf98e611e6831a3f894fb9a8",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::cmb_golpe_especial::@3",
+      "proprietarioMantido": "CMB-02",
+      "hashAnterior": "583e01b9d5ac218635486948b2937c815487c4b4e4a1f076b49cff1358500d10",
+      "hashNovo": "bf791f7ec39642278be97898153845cc1ab3539414efbf218cca9f68560d9536",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::cmb_golpe_especial::@4",
+      "proprietarioMantido": "CMB-02",
+      "hashAnterior": "4308c4c5e9b0f06a08e22566ffb1a3882c9d56f94e71433ef0a812178d457cd2",
+      "hashNovo": "583e01b9d5ac218635486948b2937c815487c4b4e4a1f076b49cff1358500d10",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::cmb_golpe_especial::@5",
+      "proprietarioMantido": "CMB-02",
+      "hashAnterior": "efbf068c1fc39286e7445988b038d7d9b3c5176aa73373db2fa4ed7c8a20159b",
+      "hashNovo": "4308c4c5e9b0f06a08e22566ffb1a3882c9d56f94e71433ef0a812178d457cd2",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAIS::@catalogo",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "d19885ae9b2655f41d47c00aebf53adae7d3ebff0a4bc1cb634d1181500d9458",
+      "hashNovo": "189018729326e772396efb5e4d412f15fe4df035659a2b5280f535d19b4777f9",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAIS::dadosAtaque",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "5261ef4778fe6163662826fdf9f9ee06907f5c1798c43315cc51ff1f62547861",
+      "hashNovo": "1ef22b6d400635ddc066fb89c028661a0d2a54458a1c259689b533d45a6e2f62",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAIS::dadosNomeados",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "9d11884884a7376667b71470d542e53e7dc4365321fc347068ba5b1e6ec2e57f",
+      "hashNovo": "e4d1e4d3e15cd987e3dcb661573f2b5859aa57795bd6d8ab22356483aefff1dc",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAIS::dadosPericia",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "b4962915e944b8a028f4ee830a8a0e0b20dab2d6dd6123ceeb0a901ff71edcbf",
+      "hashNovo": "bcd2520556934692b72e9b5ff9aabe4171ff95c21e4d7bcd24daae12f39e8f38",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAIS::dadosTR",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "0d720da5dec96236f94ca6c4fef6efce354882b19b5a7ccfcae496e1b9715085",
+      "hashNovo": "1842586bbf000221690c9631c59de7ec1cb89a71f28e49474714ae0cdb7b7e14",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAIS::peTemporario",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "5dde9c9fa35c3601f6584fcac523871e5c3cc42709b7a6121ab6d16e3feaa23c",
+      "hashNovo": "a632d0e8e71cdd7c7b309b71074cd043aea2667108b592347bb4147da9f977a3",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@0",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "7467326df7c373f0f9e50c75abe9e5d095375ad651b061f3f89a64d159d1b58f",
+      "hashNovo": "c273282c7889c339694ba9c7463ca715a841924a2bb90036d4d400309855b2c8",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@0::itens",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "5810fa31c38fccbed01d1050d8a608c001bf91dbb937852839e9e0e2c1c90f50",
+      "hashNovo": "075b36178425c7fb9e516142b7de10001cd1b283e9e029dcf6e94baef3bfbecd",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@0::itens/peTemporario",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "5dde9c9fa35c3601f6584fcac523871e5c3cc42709b7a6121ab6d16e3feaa23c",
+      "hashNovo": "a632d0e8e71cdd7c7b309b71074cd043aea2667108b592347bb4147da9f977a3",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@3",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "972b6ce199d7f5b592000cea125e11b67c5608df81ff9713e7e4f88aca71303c",
+      "hashNovo": "f400e52c4b0c5319288fe41134a8b2ec1a0e8a8190d083b984eec4901441c01a",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@3::itens",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "11ab549cd01ad1cbf44c55fe5ddfa50999adc1c626742f7d4bea45dfa6feb3a5",
+      "hashNovo": "2123cebba61c5abcc871c4a79ea9a0214fe31837590b52c92694b100c20ffeba",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@3::itens/dadosAtaque",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "5261ef4778fe6163662826fdf9f9ee06907f5c1798c43315cc51ff1f62547861",
+      "hashNovo": "1ef22b6d400635ddc066fb89c028661a0d2a54458a1c259689b533d45a6e2f62",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@3::itens/dadosNomeados",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "9d11884884a7376667b71470d542e53e7dc4365321fc347068ba5b1e6ec2e57f",
+      "hashNovo": "e4d1e4d3e15cd987e3dcb661573f2b5859aa57795bd6d8ab22356483aefff1dc",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@5",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "d7f2ff5e24c386c110169f07b28cd213fd017d1ae4d479cd3eef1a19505dda47",
+      "hashNovo": "f6aa00fc8c7c482ba28a6691459c61a665d454bd35d1678d5eb1cbae61beb73b",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@5::itens",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "48a7777375510407ebe283698b75f32dd0a9df3f3bfa0012477557e48958b233",
+      "hashNovo": "529e4fe0e9d267633aa4f2689e0bc59fed00e44450ec4f2f35bd1abc8aded320",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@5::itens/dadosPericia",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "b4962915e944b8a028f4ee830a8a0e0b20dab2d6dd6123ceeb0a901ff71edcbf",
+      "hashNovo": "bcd2520556934692b72e9b5ff9aabe4171ff95c21e4d7bcd24daae12f39e8f38",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@5::itens/dadosTR",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "0d720da5dec96236f94ca6c4fef6efce354882b19b5a7ccfcae496e1b9715085",
+      "hashNovo": "1842586bbf000221690c9631c59de7ec1cb89a71f28e49474714ae0cdb7b7e14",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@catalogo",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "68c2622371e32e8c25531f44b3504f3c61d03e0c547f9011e25d12c5cb374297",
+      "hashNovo": "a82211074aa356b838a200d67550862b72d3eb7fd8be822a9c633c9c98ef3888",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::HABILIDADE_EFEITOS::@catalogo",
+      "proprietarioMantido": "M02",
+      "hashAnterior": "ae37303a3fe2edee9a38f6f0e503dde9f1ca574e96d69fd5eaacbcf7e2e63439",
+      "hashNovo": "991f21536c35d87eae5464ad8314ced6921e1a79f8625499cbd037a6221a9a7f",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::HABILIDADE_EFEITOS::cmb_golpe_especial",
+      "proprietarioMantido": "CMB-02",
+      "hashAnterior": "354fbe4ee17d153775798dfb06e7c2ad32493071852126fd58f8a7ceb23c7373",
+      "hashNovo": "8e9fe66259ff2447c81e530a98b30c0cdc1d8eab64ba317c13809f0793e1b85b",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-golpe-especial.js::PROPRIEDADES_GOLPE::@catalogo",
+      "proprietarioMantido": "CMB-02",
+      "hashAnterior": "ba247832fb065c7882610e571f8e8f04d516a56c2363062e8eafe90227a71365",
+      "hashNovo": "fe38b0e79b3c31cddf449b9e0d204d14e3207f86c48ec1d67ca4601b8dc23125",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-golpe-especial.js::PROPRIEDADES_GOLPE::preciso",
+      "proprietarioMantido": "CMB-02",
+      "hashAnterior": "729778a338df365185766192f29193cb51b865f194edce8cea4ab9b8ab8f0069",
+      "hashNovo": "39480103d1443d4e72129899da0e037dccbfa344d5746ad70f84c66a8c798fe4",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::@catalogo",
+      "proprietarioMantido": "P01",
+      "hashAnterior": "371b6699ac45a6b39255e147b53f64ae2e4ee1f11ea1789322ea7290a2d18258",
+      "hashNovo": "ee5a6ed52b97e7466c21b478d729f916d247aadbe99d39df738c321f5543f59a",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::cmb_repertorio_do_especialista",
+      "proprietarioMantido": "CMB-01",
+      "hashAnterior": "4725eadf45e97e66958bc2a6f27a9a6189363544ee5563591faf766d63c7df3c",
+      "hashNovo": "dcb7ccd4e1dc4494c0f7374b6368df25f536cf7ee6880594f8584ac1b97faed1",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::cmb_repertorio_do_especialista::escolha",
+      "proprietarioMantido": "CMB-01",
+      "hashAnterior": "8a0ca06263d52ebcaaf5fdca5321628e0c810dc7fffc548d8b9e0f0b1b25ba59",
+      "hashNovo": "ba736e5138aee305652ac88c8b14a3440578d924e5efa5beaf2b6d9ce673958b",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::cmb_repertorio_do_especialista::escolha/opcoes",
+      "proprietarioMantido": "CMB-01",
+      "hashAnterior": "d379fb2d5e2ccb13f3586edaad25a55c82c49a416591738b472003e192160697",
+      "hashNovo": "04d989349663a6d2910e810e2d3d8f129dfc9956f217f92a9fa181e5ee59ca16",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-habilidades.js::ESTILOS_DE_COMBATE::@catalogo",
+      "proprietarioMantido": "CMB-01",
+      "hashAnterior": "d379fb2d5e2ccb13f3586edaad25a55c82c49a416591738b472003e192160697",
+      "hashNovo": "04d989349663a6d2910e810e2d3d8f129dfc9956f217f92a9fa181e5ee59ca16",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-habilidades.js::ESTILOS_DE_COMBATE::cmb_estilo_defensivo",
+      "proprietarioMantido": "CMB-01",
+      "hashAnterior": "ba59ee0532ae8d4b698309fc9eb5a8f80a83bea2a2a9b95c2aa14921d6f42a7f",
+      "hashNovo": "e0a59926436b775d8508914d5c05c321a3523d711b6ef76988c100f563484e0b",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-habilidades.js::ESTILOS_DE_COMBATE::cmb_estilo_distante",
+      "proprietarioMantido": "CMB-01",
+      "hashAnterior": "b5804a5b6f11b58f76e4091cee2860d433888fba3061bf6d93c1279b75974142",
+      "hashNovo": "ad5086075648f9a0b614a8bd532e56978eda4378492db04202dbd0869963d714",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-habilidades.js::ESTILOS_DE_COMBATE::cmb_estilo_do_arremessador",
+      "proprietarioMantido": "CMB-01",
+      "hashAnterior": "178f9974aff6fb10f7f7cdf53691e5583cc523b3bafa78dda3bf7428147ef51a",
+      "hashNovo": "4fd1c325dc2db4b177f5ca7e369490504931c1dbd9f5df127182b1d20434d076",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-habilidades.js::ESTILOS_DE_COMBATE::cmb_estilo_do_duelista",
+      "proprietarioMantido": "CMB-01",
+      "hashAnterior": "a9b825e85c402be8a5728dbf9fec527d4c3ae809d2f7c78594ac24f908562605",
+      "hashNovo": "123b044af1a64fdc819ac3c44a2de9148e1b359815abee165eeeb58e430fa28d",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-habilidades.js::ESTILOS_DE_COMBATE::cmb_estilo_do_interceptador",
+      "proprietarioMantido": "CMB-01",
+      "hashAnterior": "75b49a89221606985c54ab25ffd7d92f6ffa1bb35899641b3d323f65af3c9432",
+      "hashNovo": "19ee285233214704505b95c12c42429fc89a25a97f609fe9ff1173e2ad0701e9",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-habilidades.js::ESTILOS_DE_COMBATE::cmb_estilo_do_protetor",
+      "proprietarioMantido": "CMB-01",
+      "hashAnterior": "15777b1d9813d4d7292587b970dd8a6419452fcfb9690329efbe30e941454b74",
+      "hashNovo": "90e359fc02e89cf29a58e09231ec63e3eb13c271c270b587b80cd3d412f1b83b",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-habilidades.js::ESTILOS_DE_COMBATE::cmb_estilo_duplo",
+      "proprietarioMantido": "CMB-01",
+      "hashAnterior": "ff19a23b8d223da42aa7dad626dad93ccde20060a9d57caf05fa32391becca31",
+      "hashNovo": "cf60631e61aded516aece77db11cf8bfa1324e02cecde8feb02ccf8731a2c5bf",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-habilidades.js::ESTILOS_DE_COMBATE::cmb_estilo_massivo",
+      "proprietarioMantido": "CMB-01",
+      "hashAnterior": "b9eaba7f0bafbb6462c68969d4bfe6f8573cdf2a1080b78e24e897f10a0e6df5",
+      "hashNovo": "3607296ac7802a357b74cc388b464fa95b7ba13ba60ed2d8f8c99c3792c95e05",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-sistema.js::DIVERGENCIAS::@catalogo",
+      "proprietarioMantido": "M02",
+      "hashAnterior": "ae0b682c60314e208d861c212747ca18dfb9771c4059b150e5f0ec7782c376e0",
+      "hashNovo": "d4f8f9dd07b3f16ca726cdaee211429d1926f01473f0aafb66e15063b19a6a31",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-talentos.js::AFTY_TALENTOS::@catalogo",
+      "proprietarioMantido": "TAL-02",
+      "hashAnterior": "7c6dcc510922cc0be947f1504ec25ea6685faf135763422f90e9b8bb3db8fc2f",
+      "hashNovo": "a4892d8acd727d44e905f81321f625fcb9e905d89d779fe64551008ec1e0262b",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-talentos.js::AFTY_TALENTOS::tal_adepto_de_combate",
+      "proprietarioMantido": "TAL-04",
+      "hashAnterior": "3155ee07ebd13b45c6b29c5e1531495437b4c9f45546dc082ed2d3328d66370e",
+      "hashNovo": "d2ea469f9e23f2a40d89e8ae0efdfe032785e7521ebbd0fe58a59fd85fac46d1",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-talentos.js::AFTY_TALENTOS::tal_adepto_de_combate::escolha",
+      "proprietarioMantido": "TAL-04",
+      "hashAnterior": "653785b19bce9b388477e0dd766a6eed4228c3bb55a42906252dd68b62719906",
+      "hashNovo": "d67ad1c385eefbb38ad65bf100aa3691d589f455418b6f9534699c57cd2511d1",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-talentos.js::AFTY_TALENTOS::tal_adepto_de_combate::escolha/opcoes",
+      "proprietarioMantido": "CMB-01",
+      "hashAnterior": "d379fb2d5e2ccb13f3586edaad25a55c82c49a416591738b472003e192160697",
+      "hashNovo": "04d989349663a6d2910e810e2d3d8f129dfc9956f217f92a9fa181e5ee59ca16",
+      "campos": [
+        "hashDado"
+      ]
+    }
+  ],
+  "assinatura": "4c819bcbf35e8583ea864961c1b4eaa09d5878f9ba5aa8d84f2ac01ded39c7c8",
+  "decisoes": {
+    "adicoes": {
+      "afty-addons.js::ALCANCES_DE_CURA::@catalogo": "M05",
+      "afty-addons.js::ALCANCES_DE_CURA::Grupo": "M05",
+      "afty-addons.js::ALCANCES_DE_CURA::Toque": "M05",
+      "afty-addons.js::ALCANCES_DE_CURA::Você": "M05",
+      "afty-combate.js::COMBATE_ESTADOS::golpePreciso": "M03",
+      "afty-combate.js::COMBATE_VARS::golpe_preciso": "M03",
+      "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::cmb_golpe_especial::@6": "CMB-02",
+      "afty-efeitos.js::EFEITO_CANAIS::vantagemAtaque": "M01",
+      "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@3::itens/vantagemAtaque": "M01",
+      "afty-sistema.js::DIVERGENCIAS::requisitoMulticlasse": "M02"
+    },
+    "remocoes": {},
+    "justificativaAtualizacao": "Execução do bloco G00, M01 a M05, P01, CMB-01 e CMB-02 em 2026-10-07 (docs/revisao-automacao/<lote>/revisao.md). Adições: canal vantagemAtaque e seu item de grupo (M01), estado e variável golpePreciso do Golpe Especial (M03, como os irmãos golpeAtroz e golpe_atroz), linha vantagemAtaque do Golpe (CMB-02), divergência requisitoMulticlasse (M02, como as demais divergências; a regra é de P01) e a lista ALCANCES_DE_CURA do portão de fonteCura (M05, como as demais constantes de afty-addons.js). Atualizações: conteúdo alterado pelas correções do bloco (alvos de Atroz e Penetrante, naoAcumulaEntreFontes nos Estilos, alvoObrigatorio em cinco canais, caminhosDeId das famílias, efeitos do Golpe). A reconciliação registra identidade e não aprova regra; os lotes atingidos seguem sem aprovação."
+  },
+  "errosColeta": []
+}

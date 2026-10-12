@@ -1,0 +1,10 @@
+{
+  "data": "2026-10-05T21:11:15.250Z",
+  "fila": {
+    "hashEntrada": "ae88ab6a0777c53e6629e64901e5b2450df4629baaf6c6414736569466fda59d",
+    "hashReconstituido": "ae88ab6a0777c53e6629e64901e5b2450df4629baaf6c6414736569466fda59d",
+    "restantePreservado": true,
+    "metodo": "Reverter em memória apenas as três substituições da entrada G00 reconstitui byte a byte o hash inicial. Ocorrências U+2014 em outras entradas já existiam e foram preservadas.",
+    "novasOcorrenciasU2014": 0
+  }
+}

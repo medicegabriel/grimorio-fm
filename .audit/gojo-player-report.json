@@ -1,0 +1,26 @@
+[
+  {
+    "largura": 1440,
+    "importacao": true,
+    "nivel35": true,
+    "nivel36": true,
+    "interludios52": true,
+    "classes3": true,
+    "preRequisitos": true,
+    "variacoes": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "largura": 390,
+    "importacao": true,
+    "nivel35": true,
+    "nivel36": true,
+    "interludios52": true,
+    "classes3": true,
+    "preRequisitos": true,
+    "variacoes": true,
+    "persistencia": true,
+    "erros": []
+  }
+]

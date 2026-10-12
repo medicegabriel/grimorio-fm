@@ -8,7 +8,11 @@
     "build": "vite build",
     "lint": "eslint .",
     "asserts": "node asserts/rodar.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "revisao:inventario": "node scripts/revisao-automacao/relatorio-inventario.mjs",
+    "revisao:cobertura": "node scripts/revisao-automacao/cobertura.mjs",
+    "revisao:revisoes": "node scripts/revisao-automacao/cobertura.mjs --exigir-revisao",
+    "revisao:reconciliar": "node scripts/revisao-automacao/reconciliar.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

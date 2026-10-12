@@ -1,0 +1,123 @@
+{
+  "data": "2026-10-12",
+  "fonteLivroRegras": {
+    "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+    "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+    "paginaImpressa": 109
+  },
+  "validacao": {
+    "assertsEspecificos": 78,
+    "arquivosSuite": 166,
+    "assertsSuite": 9739,
+    "lint": "PASSOU",
+    "build": "PASSOU",
+    "navegador": [
+      "Ficha Player: 2 rerrolado para 1, fica 2",
+      "Ficha Afty: 2 rerrolado para 1, fica 2",
+      "Encontro Player: total 15",
+      "Encontro Afty: total 15",
+      "Sem habilidade: sem chip e sem rerrolagem",
+      "Vaticano e Cura Perfeita: bônus sem duplicação",
+      "Página final e aplicação normal: sem erros"
+    ],
+    "screenshot": "C:/Users/gabri/.codex/visualizations/2026/10/12/01a12f2b-d711-75d1-801d-5b61556de191/cura-aperfeicoada.png"
+  },
+  "arquivos": [
+    {
+      "arquivo": "asserts/LEIA.md",
+      "sha256Inicial": "7f5c7ba45ff63cb96a3d3f30389c9be18d2c29d29e37474028b96c08646f1f27",
+      "sha256Final": "4b3241ee8f528e7023cc24934219287f8a5c8a506fca8189be69aa65bc111ae1",
+      "linhasAdicionadas": 1
+    },
+    {
+      "arquivo": "docs/afty-ficha-final.md",
+      "sha256Inicial": "1fd3997531904f06e8c3ab6abda74236eb88af6c72e732f6f0125f1a5f21fa8d",
+      "sha256Final": "0d994ade75d7b083d2b58c5d293afb6265487365df0fbabe22205a2f4e49e9e0",
+      "linhasAdicionadas": 25
+    },
+    {
+      "arquivo": "docs/afty-status.md",
+      "sha256Inicial": "dd98ddeb80cb9d18baec77ad54a613a097ec0ced49e7e62c56f39baacdea3944",
+      "sha256Final": "8245e63a8e0f1fc238dd54eb3e7778b53d7f81ef54d943a66e04d938179bf530",
+      "linhasAdicionadas": 35
+    },
+    {
+      "arquivo": "docs/automacao-dsl.md",
+      "sha256Inicial": "afad90571833c9c8765e09a5111e283850b734d8266e09e3b44032bd26d2d6f8",
+      "sha256Final": "212c0230f5d51696b54c1ed95ed1af1b7af7bb2de203bd40897b4cdd60bd94a8",
+      "linhasAdicionadas": 13
+    },
+    {
+      "arquivo": "src/systems/afty/afty-cura.js",
+      "sha256Inicial": "78e4192fa83f01fed0902650fbc19babacb26ea3c85f8f3d3f5657655f4e620f",
+      "sha256Final": "70b6335b1153e7b479bb27e80da3fe778160a7d4a08914263be3bb0053ab2d2e",
+      "linhasAdicionadas": 17
+    },
+    {
+      "arquivo": "src/systems/afty/afty-efeitos-conteudo.js",
+      "sha256Inicial": "ee8877e7bfc54d14ab04bf0745a945b47fe65d3b3465b18d552c28fa142c588f",
+      "sha256Final": "09121f56c0319729253fdd1f48b6f74f5390a8e198b0956e897af35d086b51a3",
+      "linhasAdicionadas": 6
+    },
+    {
+      "arquivo": "src/systems/afty/afty-efeitos.js",
+      "sha256Inicial": "ff7e160d540d1cef2188a4820261da7547200e3987b291c7c7074dc160870f15",
+      "sha256Final": "70d8d1635884c2791bba862dea1e64a10b0b09ea13594005cc20ee3f50731dcd",
+      "linhasAdicionadas": 2
+    },
+    {
+      "arquivo": "src/systems/afty/afty-feiticos.js",
+      "sha256Inicial": "a00e3737ab8cc35fb87d86d1e2ef12e5a348d33420a3402b8725a5310e03acb5",
+      "sha256Final": "c52e54aac48f169c379f73da66795f16f20bd320e036de0320536eb552d3e2e9",
+      "linhasAdicionadas": 1
+    },
+    {
+      "arquivo": "src/systems/afty/encontros/PainelDeCombatente.jsx",
+      "sha256Inicial": "6c585a9bdbc9786274a74fc0d66b0dad177d2c8fc4a2bc045c9aa0fab08028ca",
+      "sha256Final": "fa8dd7efbe1e988e0c691dc673a44869d5a831ddca1fdd7db29d2910ce55b934",
+      "linhasAdicionadas": 3
+    },
+    {
+      "arquivo": "src/systems/afty/ficha/abas/AbaAcoes.jsx",
+      "sha256Inicial": "d9370a6dd4c7c2deae444d8edf1a826eee9104ae483d1ef878ec3c53a3f104ce",
+      "sha256Final": "03d72aef9af4cd715f8513474ecbebdbd5b9b983ea8131f5d3598e205748fcf2",
+      "linhasAdicionadas": 5
+    },
+    {
+      "arquivo": "src/systems/afty/ficha/abas/AbaInvocacoes.jsx",
+      "sha256Inicial": "222a027e15138703e2ee531cffe05cfa1482c987fa1943d93ef778880eda119a",
+      "sha256Final": "5847d47c5248d08a88746216039d9416ae3a9f107b772c2353f26be855981fd9",
+      "linhasAdicionadas": 2
+    },
+    {
+      "arquivo": "src/systems/afty/ficha/AftyFicha.jsx",
+      "sha256Inicial": "f2920c534e462d17e8574b9f8a0d7b7c58ce44d0bcd3f572441ef0b3278e8d3b",
+      "sha256Final": "fb636459281780b2fff64a028e73acca2a7ce83618742887c2e067db252dedae",
+      "linhasAdicionadas": 3
+    },
+    {
+      "arquivo": "src/systems/afty/ficha/ficha-rolagem.js",
+      "sha256Inicial": "08a33c40b691c7e02b67151ae0ff63faf846996ae4108d3d454782f578e09e9b",
+      "sha256Final": "f75092730d615eb4064f49fbf8ebbe6da1727a272e3c72b894a979bf4eb462ff",
+      "linhasAdicionadas": 8
+    },
+    {
+      "arquivo": "src/systems/afty/ficha/ficha-sessao.js",
+      "sha256Inicial": "40042f419031c86bacad00b9793e1a7f5d69935090f54f20e5cfefffc853e976",
+      "sha256Final": "9a455c744d14e9a8f5b27009ade7d95a5a0c9e880f6aa38653e6a39bff90b289",
+      "linhasAdicionadas": 2
+    },
+    {
+      "arquivo": "src/systems/afty/ficha/PainelBloodfeast.jsx",
+      "sha256Inicial": "705ee32efb01478cf3bd86bf32cd6c9ff52e9b1fba2d92aca762edc9c31bb1d0",
+      "sha256Final": "c421089250271d7622894c8f83171467b41f5ccfc779ab202ee6fa612dbed840",
+      "linhasAdicionadas": 2
+    },
+    {
+      "arquivo": "src/systems/afty/ficha/PainelDeRolagens.jsx",
+      "sha256Inicial": "072df552a4300d21a6755a773628e938c9f599bc2572247d0204b1dcb0bed94d",
+      "sha256Final": "052c9198a6a780cc15ef890e9746c1e7bc6de69f2fc99383dd385b72ef3809bd",
+      "linhasAdicionadas": 3
+    }
+  ]
+}

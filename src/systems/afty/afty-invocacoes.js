@@ -37,6 +37,9 @@ import {
   AFTY_PERICIAS, bonusProficiencia, usoPericias, ehPericiaOficio, periciasParaInvocacao,
 } from "./afty-pericias";
 import { TIPOS_DANO, ARMAS } from "./afty-equipamentos";
+/* Só o registro dos canais para o portão de instalação de Addon. O afty-addons
+   só importa folhas, então a seta é de mão única. */
+import { registrarCanaisDoMotor } from "./afty-addons";
 import {
   TIPOS_INVOCACAO_ORDEM, regrasDoTipoValor, validarRegrasPorTipo, estadoDaLinha,
   FONTE_PV_MECHA, entradaDeMesaDaHorda,
@@ -1882,6 +1885,7 @@ export const INV_EFEITO_CANAIS = [
 
 /** Os ids, na forma que o resto do arquivo sempre leu. */
 export const EFEITO_CANAIS = INV_EFEITO_CANAIS.map((c) => c.id);
+registrarCanaisDoMotor(EFEITO_CANAIS, "invocacao");
 const CANAL_VALIDO = new Set(EFEITO_CANAIS);
 const CANAL_INV_BY_ID = Object.fromEntries(INV_EFEITO_CANAIS.map((c) => [c.id, c]));
 

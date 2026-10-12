@@ -1,0 +1,65 @@
+{
+  "checks": 92,
+  "report": [
+    {
+      "route": "player",
+      "width": 1440,
+      "passed": true,
+      "formulas": [
+        "1d6",
+        "1d6 + 1",
+        "1d6 + 2"
+      ],
+      "creator": [
+        "1d6",
+        "1d6 + 2"
+      ],
+      "errors": []
+    },
+    {
+      "route": "player",
+      "width": 390,
+      "passed": true,
+      "formulas": [
+        "1d6",
+        "1d6 + 1",
+        "1d6 + 2"
+      ],
+      "creator": [
+        "1d6",
+        "1d6 + 2"
+      ],
+      "errors": []
+    },
+    {
+      "route": "afty",
+      "width": 1440,
+      "passed": true,
+      "formulas": [
+        "1d8 − 2",
+        "1d8 − 1",
+        "1d8"
+      ],
+      "creator": [
+        "1d8 − 2",
+        "1d8"
+      ],
+      "errors": []
+    },
+    {
+      "route": "afty",
+      "width": 390,
+      "passed": true,
+      "formulas": [
+        "1d8 − 2",
+        "1d8 − 1",
+        "1d8"
+      ],
+      "creator": [
+        "1d8 − 2",
+        "1d8"
+      ],
+      "errors": []
+    }
+  ]
+}

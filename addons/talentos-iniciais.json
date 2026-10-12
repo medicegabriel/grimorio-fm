@@ -1,0 +1,11 @@
+{
+  "id": "talentos-iniciais",
+  "nome": "Talentos Iniciais",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Concede de 1 a 4 Talentos adicionais. Digite a quantidade no campo Talentos do addon ativo e escolha os Talentos em Especializações.",
+  "regrasAfty": {
+    "talentosIniciais": 1
+  }
+}

@@ -1,0 +1,11 @@
+import {register} from 'node:module';
+register('data:text/javascript,export async function resolve(s,c,n){try{return await n(s,c)}catch(e){if(s.startsWith(".")&&!s.endsWith(".js"))return n(s+".js",c);throw e}}',import.meta.url);
+export const {deriveAfty}=await import('../src/systems/afty/afty-derive.js');
+export const A=await import('../src/systems/afty/afty-addons.js');
+export const AN=await import('../src/systems/afty/afty-alto-nivel.js');
+export const fs=await import('node:fs');
+export const pacotes=['player-progressao-epica','player-alto-nivel-afty'].map(n=>JSON.parse(fs.readFileSync('addons/'+n+'.json','utf8')));
+export const origem=JSON.parse(fs.readFileSync('C:/Users/gabri/.codex/attachments/146380a0-7dd6-4537-8a25-c8a7cf245647/Texto colado.txt','utf8'));
+const c=structuredClone(origem.creatures[0]);c.rulesVersion='player';c.addons.push(...pacotes);A.aplicarAddons(c.addons);
+const d=deriveAfty(c);
+console.log(JSON.stringify({keys:Object.keys(origem),name:c.name,core:c.core,treinos:c.treinosEspeciais,nd:d.nd,attr:d.attrEff,totalAptidao:d.totalAptidao,aptidao:d.aptidao,partesAptidao:d.partesAptidao,focosTotais:d.focosTotais,treino:d.treino,alto:d.altoNivel,stats:{hp:d.hp,pe:d.pe,defesa:d.defesa,cd:d.cd,alma:d.alma},orcamento:d.orcamentoHabilidades,habilidades:d.habilidades.escolhidas,aptidoes:d.aptidoesEscolhidas,otherkeys:Object.keys(d).filter(k=>/mesa|uso|resultado|attr/i.test(k))},null,2));

@@ -60,7 +60,9 @@
  * o que existe dele é paráfrase de uma sessão antiga, e texto de
  * regra vem verbatim. Entra aqui como DADO, sem tocar em código,
  * assim que o autor mandar o texto. O texto do **Treinamento para
- * Habilidade** chegou em 2026-09-16.
+ * Habilidade** chegou em 2026-09-16. O **Treinamento para Aptidão**
+ * segue seus parâmetros e concede Aptidões Amaldiçoadas (autor,
+ * 2026-10-04).
  *
  * `alvo` na instância: nenhum Treino Especial usa hoje (a vaga de
  * Feitiço é genérica, quem escolhe o Feitiço é a aba Habilidades).
@@ -144,6 +146,33 @@ export const AFTY_TREINOS_ESPECIAIS = [
       "9° nível. A partir do 10° nível, pode obter uma habilidade a mais.",
     efeitos: [{ canal: "vagasHabilidade", expr: "1" }],
   },
+
+  {
+    id: "tes_aptidao",
+    nome: "Treinamento para Aptidão",
+    // Mesmos parâmetros do Treinamento para Habilidade (autor, 2026-10-04).
+    focos: 1,
+    vezesACada: 10,
+    tetoJogador: [{ nivel: 1, max: 1 }, { nivel: 10, max: 2 }],
+    sucessosNecessarios: 3,
+    cdTeste: "12 + piso(nd / 2)",
+    concede: "Vaga de Aptidão",
+    // Texto adaptado da Habilidade conforme o pedido do autor, não transcrição do livro.
+    descricao:
+      "O Treinamento para Aptidão segue os mesmos parâmetros do Treinamento para Habilidade, " +
+      "concedendo uma Aptidão Amaldiçoada adicional.\n\n" +
+      "Ao escolher a opção do Treinamento para Aptidão, você deve escolher uma Aptidão Amaldiçoada " +
+      "cujos requisitos sejam atendidos, transformando-a no objetivo do seu treinamento. Logo após, " +
+      "você deve escolher um dos seus atributos e descrever como é o treino, realizando quatro " +
+      "testes de habilidade com o atributo escolhido. Os testes possuem CD igual a 12 + metade do " +
+      "seu nível, e o personagem deve suceder em pelo menos três deles para completar o seu " +
+      "treinamento.\n\n" +
+      "Caso não consiga completar o treinamento, você mantém os seus sucessos, podendo tentar " +
+      "novamente em outro interlúdio.\n\n" +
+      "Um personagem pode obter apenas uma Aptidão Amaldiçoada adicional a partir desse " +
+      "treinamento até o 9° nível. A partir do 10° nível, pode obter uma Aptidão Amaldiçoada a mais.",
+    efeitos: [{ canal: "vagasAptidao", expr: "1" }],
+  },
 ];
 
 /* ============================================================ */
@@ -190,8 +219,8 @@ const ndDaFicha = (creature) => nivelDaFicha(creature);
 
 /**
  * Teto de repetição, por ND. `vezesACada: N` no catálogo vira `1 + piso(ND/N)`,
- * e a conta é DADO porque as duas entradas só diferem no N (5 no Feitiço, 10 na
- * Habilidade). Mesmo desenho do `maxVezesGeral`: a regra mora no resolver, e o
+ * e a conta é DADO: N é 5 no Feitiço e 10 na Habilidade e na Aptidão.
+ * Mesmo desenho do `maxVezesGeral`: a regra mora no resolver, e o
  * catálogo só declara o número.
  *
  * `maxVezes` fixo continua atendido, e `null` é sem teto (o Foco é o limite).

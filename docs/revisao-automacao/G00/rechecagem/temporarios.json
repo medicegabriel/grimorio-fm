@@ -1,0 +1,8 @@
+{
+  "alvo": "C:\\Projetos\\Grimorio\\grimorio-tracker\\.audit\\g00-r2",
+  "data": "2026-10-05T21:05:23.2416030Z",
+  "ausenteNaEntrada": true,
+  "limitesVerificados": true,
+  "reparsePoints": 0,
+  "evidenciasPreservadas": "G00/rechecagem/reproducao-isolada.json"
+}

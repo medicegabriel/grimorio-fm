@@ -40,7 +40,7 @@ fallback: um id errado não pode derrubar o criador de fichas no meio da mesa.
 
 ### 2. A tabela `DIVERGENCIAS`
 
-Há 35 entradas em `afty-sistema.js`, 34 ativas no código atual. Só `inventarioSimplificado`
+Na entrada do G00 em 2026-10-05 há 38 entradas em `afty-sistema.js`, 37 ativas no código atual. Só `inventarioSimplificado`
 permanece com `ativa: false`. **Isto é DADO, e não comentário**, porque comentário envelhece
 calado: cada entrada carrega a citação verbatim de onde a divergência está escrita, o que vale de
 cada lado, e se o código JÁ desvia.
@@ -79,14 +79,35 @@ mostrar a origem do orçamento.
 ## MULTICLASSE DO JOGADOR
 
 A divergência ativa terceiraClasse permite até **3 Especializações** na Ficha de Player.
-A ficha de criatura continua com até **2**, e a Origem Restringido continua com apenas
-a sua classe obrigatória nos dois sistemas. A escolha depende de rulesVersion da
-ficha, inclusive quando ela aparece em Encontros.
+A ficha de criatura permite até **2** no ND 1 a 30 e até **3** no ND 31+
+(decisão do autor em 2026-10-04). A Origem Restringido continua com apenas
+a sua classe obrigatória nos dois sistemas. A escolha depende de rulesVersion e do
+nível efetivo da ficha, inclusive quando ela aparece em Encontros.
 
 Com três classes, os níveis das duas primeiras são escolhas gravadas. Com duas,
 só o da primeira. A última recebe o restante do nível total. Cada classe ativa precisa ter ao menos 1 nível, e os
 controles de mais e menos transferem um nível entre as classes. Ao baixar o nível
-total, classes que não cabem saem da conta sem apagar a divisão gravada.
+total, classes que não cabem saem da conta sem apagar a divisão gravada. Na criatura,
+baixar de ND 31 para 30 também retira a terceira classe da conta, e subir novamente
+restaura a divisão gravada.
+
+**O requisito de atributo da Multiclasse (2026-10-07, divergência `requisitoMulticlasse`).** O livro,
+página 47: *"Para o fazer, você deve atender os requisitos para Multiclasse especificados nas
+características da outra especialização que deseja."* O catálogo sempre declarou o requisito
+(`caracteristicas.multiclasse`: FOR ou DES 16 no Lutador e no Combatente, INT ou SAB 16 no
+Conjurador, PRE ou SAB 16 no Suporte e no Controlador) e ninguém o lia. Na ficha de jogador:
+
+- o chip da Especialização nova fica desligado no criador enquanto nenhum dos atributos do requisito
+  chega ao valor, com o motivo no hover ("Requisito de Multiclasse (INT ou SAB 16)");
+- conta o atributo PERMANENTE, como em todo pré-requisito: um bônus temporário não abre a classe;
+- a classe inicial (a primeira da lista) não paga requisito nenhum;
+- a ficha que já tem a multiclasse sem o requisito (importada, ou que perdeu o atributo) recebe aviso
+  âmbar e continua com as classes e os níveis. `derived.especializacoes.semRequisito` lista o que
+  falta.
+
+Na criatura nada muda: se o requisito vale lá é pergunta ao autor em docs/a-fazer.md.
+Funções: `faltaRequisitoMulticlasse` e `multiclassesSemRequisito` (afty-especializacoes.js). Assert:
+`t-revisao-p01.mjs`.
 
 ## ENTRADA COM TEXTO PRÓPRIO, E ENTRADA QUE O JOGADOR PERDE
 
@@ -167,7 +188,14 @@ Especial anota a tentativa. A pega de `treinosEspeciais` é o **Ganho**, e é de
 **Interlúdios** gastos e os **Sucessos** guardados moram em `treinoEspecialProgresso`, e Interlúdio
 é Foco, um para um. A linha mostra a CD pelo Nível.
 
-No jogador a Habilidade para em 2 e o Feitiço não tem teto. Os três números (`sucessosNecessarios`,
+O **Treinamento para Aptidão** (`tes_aptidao`, autor, 2026-10-04) segue os mesmos parâmetros
+da Habilidade: 1 Foco por Interlúdio, quatro testes com três sucessos e CD 12 + metade do Nível.
+Cada Ganho concede uma vaga de Aptidão Amaldiçoada (`vagasAptidao`), sem conceder Nível de Aptidão
+nem vaga de Habilidade. A escolha da Aptidão continua na aba Aptidões, com seus pré-requisitos.
+
+No jogador a Habilidade e a Aptidão têm tetos separados: 1 até o nível 9 e 2 do nível 10 em diante.
+Na criatura cada uma segue `1 + piso(ND / 10)`, com sucesso automático e 1 Foco por pega.
+O Feitiço não tem teto no jogador. Os três números (`sucessosNecessarios`,
 `cdTeste` e `tetoJogador`) são campos do catálogo, então um Treino Especial de Addon que os declare
 ganha a mesma linha.
 
@@ -340,3 +368,10 @@ Valem em todo chat, e são as que mais se quebram.
 | `docs/afty-addons.md` | o sistema de Addons, com as decisões do autor datadas |
 | `docs/automacao-dsl.md` | a DSL do Motor de Automação |
 | `docs/afty-formulas-base.md` | as fórmulas |
+
+## Progressão Épica e Alto Nível Afty por Addon (2026-10-05)
+
+Os pacotes player-progressao-epica e player-alto-nivel-afty permitem a conversão do Gojo para Player.
+Nível acima de 30, Aptidão a cada dois níveis depois de 20, 52 Interlúdios no nível 35 e Ápice no 26.
+As regras padrão de Player continuam valendo nas fichas sem esses pacotes. Instruções, valores e
+limites estão em [afty-player-progressao-epica.md](afty-player-progressao-epica.md).

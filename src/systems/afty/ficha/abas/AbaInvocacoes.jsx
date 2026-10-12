@@ -703,6 +703,7 @@ function Acao({ a, nomeDono, margemCritico = 20, criticoBrutal = false, rolar })
             titulo="Cura"
             onRolar={() => rolar({
               tipo: "dano", tom: "cura", rotulo,
+              curaDoUsuario: false,
               grupos: a.cura.grupos, fixo: a.cura.bonus ?? 0,
             })}
           />
@@ -1444,6 +1445,7 @@ function Horda({ h, rolar, estado = null, entrada = null, acoes = null }) {
                 titulo="Cura da horda"
                 onRolar={() => rolar({
                   tipo: "dano", tom: "cura", rotulo: `${rotulo} · ${a.nome || "Cura"}`,
+                  curaDoUsuario: false,
                   grupos: curaGrupos, fixo: a.base?.cura?.bonus ?? 0,
                 })}
               />

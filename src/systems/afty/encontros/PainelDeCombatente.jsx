@@ -24,6 +24,8 @@ import {
   usosGastosDe, marcaUso,
 } from "../ficha/ficha-sessao";
 import { rolarTeste, rolarDano, textoDaRolagem } from "../ficha/ficha-rolagem";
+import { preparaRolagemCura } from "../afty-cura";
+import { preparaRolagemArma, registraRolagemArma, configuraArmaNaSessao, marcaErroDaArma, iniciaTurnoArmas, danoDaAmpla, usaAmpla } from "../afty-propriedades-armas";
 import { deltaDosEstados, saldoDoAgora } from "../ficha/ficha-buffs";
 import { opcoesDoCombatente } from "./usar-encontro-afty";
 import { conteudoDaFicha, equipamentosDaFicha } from "../ficha/ficha-conteudo";
@@ -146,10 +148,12 @@ export default function PainelDeCombatente({
   /* Rola e registra no log DA SESSÃO daquele combatente. Devolve a rolagem,
      porque a linha de dano usa o crítico do Acerto para dobrar os dados. */
   const rolar = useCallback((desc) => {
-    const r = desc.tipo === "dano" ? rolarDano(desc) : rolarTeste(desc);
-    onSessao((s) => registraRolagem(s, r));
+    const pronta = preparaRolagemCura(preparaRolagemArma(desc), derived.efeitos);
+    if (!pronta) return null;
+    const r = pronta.tipo === "dano" ? rolarDano(pronta) : rolarTeste(pronta);
+    onSessao((s) => registraRolagemArma(registraRolagem(s, r), pronta, r));
     return r;
-  }, [onSessao]);
+  }, [onSessao, derived.efeitos]);
 
   /* Os escritores de invocação, os mesmos seis da Ficha Final. ⚠ Passam pelo
      `onSessao` como todo o resto do painel, então o mestre abate o PV de um
@@ -443,6 +447,7 @@ export default function PainelDeCombatente({
         controleExpansao={(d) => <ControleExpansao d={d} sessao={sessao} onSessao={onSessao} rolar={rolar} feiticaria={derived.testes?.pericias?.find((p) => p.id === "feiticaria")?.bonus ?? null} />}
         exaustaoTecnica={<PainelExaustaoTecnica sessao={sessao} onSessao={onSessao} />}
           derived={derived}
+          onAtaqueBasico={(ataqueBasicoId) => onSessao((s) => ({ ...s, ataqueBasicoId }))}
           adaptacao={<PainelDeAdaptacao derived={derived} onSessao={onSessao} />}
           olhosAgulha={<PainelOlhosAgulha derived={derived} sessao={sessao} onSessao={onSessao} />}
           olhinhosLu={<PainelOlhinhosLu derived={derived} onSessao={onSessao} />}
@@ -452,6 +457,16 @@ export default function PainelDeCombatente({
           gatilhosTreino={derived.gatilhosTreino}
           onGatilhoTreino={(id, v) => onSessao((s) => alteraTreinoAtivo(s, id, v))}
           rolar={rolar}
+          turnoArmas={sessao.propriedadesArmas?.turno ?? 0}
+          onNovoTurnoArmas={() => onSessao((s) => iniciaTurnoArmas(s))}
+          onArma={(linha, campo, valor) => onSessao((s) => campo === "errou"
+            ? marcaErroDaArma(s, linha, valor) : configuraArmaNaSessao(s, linha, campo, valor))}
+          onAmpla={(linha) => onSessao((s) => {
+            const dano = danoDaAmpla(linha, s.rodada);
+            if (dano == null) return s;
+            return registraRolagem(usaAmpla(s, linha), rolarDano({ rotulo: linha.nome + " · Ampla", dados: 0, faces: 6, fixo: dano }));
+          })}
+          rodadaArmas={sessao.rodada}
           destaque={destaque}
           rapido={[]}
           abertos={abertos}

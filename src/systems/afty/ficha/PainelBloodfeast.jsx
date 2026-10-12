@@ -3,6 +3,7 @@ import { HARDBLOOD_EFEITOS, normalizaBloodfeast, conjuraBloodfeast, sofreBleed,
   resolveCiclagem, fimCenaBloodfeast, recebeBleed } from "../afty-bloodfeast";
 import { aplicaCura, gastaPe, registraRolagem } from "./ficha-sessao";
 import { rolarDano, rolarTeste } from "./ficha-rolagem";
+import { preparaRolagemCura } from "../afty-cura";
 
 function Contador({ nome, valor, onChange, max = Infinity }) {
   return <label className="flex gap-2 items-center text-xs" title={nome}>
@@ -52,7 +53,7 @@ export default function PainelBloodfeast({ derived, sessao, onSessao, alvos = []
   const cura = (nome, dados, faces, fixo = 0, resolverUltima = false) => onSessao((s) => {
     const estado = normalizaBloodfeast(s.bloodfeast);
     if (resolverUltima && (!estado.ultima || estado.ultima.curaResolvida)) return s;
-    const r = rolarDano({ rotulo: nome, dados, faces, fixo, tom: "cura" });
+    const r = rolarDano(preparaRolagemCura({ tipo: "dano", rotulo: nome, dados, faces, fixo, tom: "cura" }, derived.efeitos));
     const proxima = aplicaCura(registraRolagem(s, r), r.total, derived.hp);
     return resolverUltima ? { ...proxima, bloodfeast: { ...normalizaBloodfeast(proxima.bloodfeast),
       ultima: { ...estado.ultima, curaResolvida: true } } } : proxima;

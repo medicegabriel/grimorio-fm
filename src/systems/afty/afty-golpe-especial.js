@@ -17,8 +17,10 @@
  *     bancada (`COMBATE_ESTADOS`, campo `estado` abaixo): o Motor lê
  *     `golpe_atroz` e companhia, e a marca mora em `sessao.combate`, valendo só
  *     em combate como todo estado.
- *   • Amplo, Impactante, Preciso, Sanguinário, Lento e Sacrifício não têm número
- *     na linha (alvo a mais, empurrão, vantagem, condição, ação e dano sofrido).
+ *   • Preciso também, desde 2026-10-07: a vantagem no ataque passou a ser do
+ *     Motor (canal `vantagemAtaque`), e a preparação da rolagem a aplica.
+ *   • Amplo, Impactante, Sanguinário, Lento e Sacrifício não têm número na
+ *     linha (alvo a mais, empurrão, condição, ação e dano sofrido).
  *     Entram só no custo, e a marca mora em `sessao.golpeEspecial`. ⚠ NÃO são
  *     estados de bancada de propósito: `golpeImpactante` já é o estado do Golpe
  *     Impactante do Restringido, e uma linha sem número na aba Buffs seria
@@ -46,8 +48,9 @@ export const PROPRIEDADES_GOLPE = [
   // personagem. +2PE"
   { id: "penetrante", nome: "Penetrante", custo: 2, estado: "golpePenetrante" },
   // "Recebe vantagem no ataque. Após o primeiro uso na rodada, o custo aumenta
-  // para 2PE. +1PE/+2PE"
-  { id: "preciso", nome: "Preciso", custo: 1, custoRepetido: 2 },
+  // para 2PE. +1PE/+2PE". ⚠ Estado de bancada desde 2026-10-07: a vantagem é
+  // número do Motor agora (`vantagemAtaque`), e não só custo.
+  { id: "preciso", nome: "Preciso", custo: 1, custoRepetido: 2, estado: "golpePreciso" },
   // "Uma criatura atingida sofre sangramento leve (CD de Especialização). Pode
   // ser pego uma segunda vez para causar sangramento médio ao invés de leve.
   // +2PE". Cada vez custa 2: pegar duas é pagar 4.

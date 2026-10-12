@@ -346,6 +346,35 @@ não as concessões do Motor. Por isso o "caso já seja" de TR que soma no teste
 expressão com `prof_tr_*`. A Força Imparável e a Resiliência Melhorada seguem nele (`1 +
 (prof_tr_<tr> >= 1)`, com `semCredito`) e passaram a enxergar o TR da Classe no jogador.
 
+### Revisão do Motor de 2026-10-07 (lotes M01, M02, M04, CMB-02)
+
+- **Número com um ponto só.** `1.2.3` é erro de sintaxe ("Número malformado"), e não 1.2. Até aqui
+  o tokenizer jogava o resto fora calado, o editor aprovava e a ficha calculava outro número.
+- **Valor não finito no contexto é erro.** Uma variável `Infinity` cai no fallback, inclusive numa
+  comparação (`x > 1` não vira 1) e no `evalBoolean`, que agora confere o resultado como o
+  `evalNumber` sempre conferiu. O `NaN` continua sendo zero.
+- **`opt_` normalizado.** A escolha de uma Aptidão vira `opt_<id normalizado>_<valor normalizado>`:
+  a Aptidão `foco` do pacote `mesa-x` com a opção `eco` é `opt_mesa_x_foco_eco`. O id do livro já é
+  snake_case e sai igual (`opt_mal_superioridade_fisica_atletismo`).
+- **Dois ids que viram a mesma variável são relatados** pelo `aplicarAddons` como problema
+  `(variáveis da DSL)`, sem recusar o pacote. `ab-cd:ef` e `ab:cd_ef` viram `ab_cd_ef`, e um pacote
+  chamado `lut` com a entrada `corpo_treinado` colide com o `lut_corpo_treinado` do livro.
+- **Alvo obrigatório.** `dadosTR`, `dadosPericia`, `dadosNomeados`, `dadosAtaque` e `peTemporario`
+  declaram `alvoObrigatorio`: o alvo É o dado ou o gatilho, e "todos" faria o número cair em todo
+  tamanho de dado. O editor visual não oferece "todos" neles e escolhe o primeiro alvo ao trocar de
+  canal.
+- **O editor visual alcança os cinco tipos que eram só de addon**: `tipoDano` (os 15 tipos),
+  `dadoNomeado` (`d3` a `d12`), `periciaDado` (dois seletores, perícia e dado, gravando
+  `percepcao:d4`), `gatilho` (Uma Vez no Combate ou Toda Rodada) e `custo` (os cinco gastos, mais
+  "todos"). Funcionamento Básico e Habilidade Única de item usam o mesmo vocabulário.
+- **Canal `vantagemAtaque`** (grupo Ataque e Dano, alvo de fonte de dano): positivo dá vantagem e
+  negativo dá desvantagem na jogada de ataque da LINHA (arma ou Ataque Básico). Não acumulam, e uma
+  de cada se anulam (Livro, página 282). A rolagem combina o sinal do Motor com o modo escolhido à mão
+  e com a desvantagem da arma (`modoCombinado`), na Ficha e no Encontro. O Preciso do Golpe Especial
+  é o primeiro cliente. O Feitiço com jogada de ataque rola por outro caminho e não lê o canal ainda.
+- **Escopo `feitico:resolucao:<ataque|tr>`** na linha de dano de Feitiço: diz se ele tem jogada de
+  ataque. Atroz e Penetrante miram `arma|basico|feitico:resolucao:ataque`.
+
 ## A LINHA PODE CAIR NA INVOCAÇÃO (`escopo`, 2026-09-15)
 
 Uma linha do Motor escrita pelo jogador vale, por padrão, na CRIATURA. Com `escopo: "invocacao"`
@@ -417,6 +446,26 @@ carga de Hardblood por evento. Melhorias compartilham teto BT e saldo disponíve
 `bloodfeastBase` preserva rolagens/CD antes de melhorias, impedindo acumulação
 entre conjurações. A arma optativa aceita atributoAtaque e usarDadoArma,
 resolvidos por linha de dano, sem mudar a política global do sistema.
+
+## Rerrolagem de cura no Afty (2026-10-12)
+
+O canal `rerrolaCuraContinua`, com valor positivo, repete a rerrolagem até o
+dado superar o limite resolvido por `rerrolaCura`. Sem limite não faz nada.
+O alvo opcional restringe a fonte de cura. O limite deve ser menor que as
+faces do dado; configuração impossível é rejeitada antes do sorteio.
+Todas as tentativas ficam no histórico. Contrato e modelos em
+[afty-cura-feiticos.md](afty-cura-feiticos.md).
+
+O canal `rerrolaCura` recebe o maior resultado de dado que deve rolar novamente.
+`expr: "2"` rerrola 1 e 2, uma única vez por dado, mantendo o melhor resultado.
+Sem alvo vale para todas as curas do usuário. Com alvo, usa um id de fonte de
+cura. Entre fontes vale o maior limite, sem somar. Cura Aperfeiçoada do Suporte
+emite esse canal sem alvo. O canal aparece no editor de efeitos no grupo Cura.
+
+Ficha Final e Encontro aplicam a regra nas curas do usuário e nos Feitiços de
+cura. Rolagens de PV Temporário e curas feitas por invocações conservam suas
+próprias regras. O bônus por dado não conta a tentativa adicional como outro
+dado de cura. O histórico conserva as duas tentativas e risca a descartada.
 
 ## Grande Roda do Dharma (2026-10-07)
 
@@ -600,3 +649,15 @@ coexistem. A vaga livre entra no limite e desconta da redução de grau da
 criatura. O encantamento concedido mantém sua vaga adicional e não é
 inserido novamente quando já consta no equipamento. O jogador mantém
 a regra de não reduzir grau. Teste: asserts/t-integracao-treinos-escudo.mjs.
+
+## Compatibilidade da integração do GitHub (2026-10-12)
+
+O canal `custoPE` é avaliado uma vez no agregado final pelo filtro `ehEstagio2`.
+Sua leitura antecipada no passe pós-Aptidão continua atendendo o Domínio Simples.
+Não se soma uma segunda avaliação do canal ao agregado, pois duplicaria a redução
+da Expansão nos Feitiços e na Técnica Máxima.
+
+O `blocoExclusivo` preserva a soma de Técnicas de Estilo recebida do remoto.
+Entre estágios, as parcelas do bloco vencedor representam somente o ganho adicional,
+mantendo o valor integral em `declarado` quando diferente. Bônus e penalidades usam
+grupos separados. Regressões em `asserts/t-revisao-m02.mjs` cobrem os dois sinais.

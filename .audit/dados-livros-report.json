@@ -1,0 +1,1290 @@
+[
+  {
+    "route": "Afty",
+    "width": 320,
+    "height": 568,
+    "historyOpen": false,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 112,
+    "log": {
+      "x": 8,
+      "y": 277,
+      "width": 304,
+      "height": 107
+    },
+    "book": {
+      "x": 248,
+      "y": 496,
+      "width": 56,
+      "height": 56
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Afty",
+    "width": 320,
+    "height": 568,
+    "historyOpen": false,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 20,
+    "log": {
+      "x": 8,
+      "y": 277,
+      "width": 304,
+      "height": 107
+    },
+    "book": {
+      "x": 95.578125,
+      "y": 404,
+      "width": 208.421875,
+      "height": 148
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Afty",
+    "width": 320,
+    "height": 568,
+    "historyOpen": true,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 112,
+    "log": {
+      "x": 8,
+      "y": 53,
+      "width": 304,
+      "height": 331
+    },
+    "book": {
+      "x": 248,
+      "y": 496,
+      "width": 56,
+      "height": 56
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Afty",
+    "width": 320,
+    "height": 568,
+    "historyOpen": true,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 20,
+    "log": {
+      "x": 8,
+      "y": 53,
+      "width": 304,
+      "height": 331
+    },
+    "book": {
+      "x": 95.578125,
+      "y": 404,
+      "width": 208.421875,
+      "height": 148
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Afty",
+    "width": 390,
+    "height": 900,
+    "historyOpen": false,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 112,
+    "log": {
+      "x": 8,
+      "y": 609,
+      "width": 374,
+      "height": 107
+    },
+    "book": {
+      "x": 318,
+      "y": 828,
+      "width": 56,
+      "height": 56
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Afty",
+    "width": 390,
+    "height": 900,
+    "historyOpen": false,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 20,
+    "log": {
+      "x": 8,
+      "y": 609,
+      "width": 374,
+      "height": 107
+    },
+    "book": {
+      "x": 165.578125,
+      "y": 736,
+      "width": 208.421875,
+      "height": 148
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Afty",
+    "width": 390,
+    "height": 900,
+    "historyOpen": true,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 112,
+    "log": {
+      "x": 8,
+      "y": 285,
+      "width": 374,
+      "height": 431
+    },
+    "book": {
+      "x": 318,
+      "y": 828,
+      "width": 56,
+      "height": 56
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Afty",
+    "width": 390,
+    "height": 900,
+    "historyOpen": true,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 20,
+    "log": {
+      "x": 8,
+      "y": 285,
+      "width": 374,
+      "height": 431
+    },
+    "book": {
+      "x": 165.578125,
+      "y": 736,
+      "width": 208.421875,
+      "height": 148
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Afty",
+    "width": 640,
+    "height": 900,
+    "historyOpen": false,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 112,
+    "log": {
+      "x": 8,
+      "y": 609,
+      "width": 624,
+      "height": 107
+    },
+    "book": {
+      "x": 568,
+      "y": 828,
+      "width": 56,
+      "height": 56
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Afty",
+    "width": 640,
+    "height": 900,
+    "historyOpen": false,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 20,
+    "log": {
+      "x": 8,
+      "y": 609,
+      "width": 624,
+      "height": 107
+    },
+    "book": {
+      "x": 415.578125,
+      "y": 736,
+      "width": 208.421875,
+      "height": 148
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Afty",
+    "width": 640,
+    "height": 900,
+    "historyOpen": true,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 112,
+    "log": {
+      "x": 8,
+      "y": 285,
+      "width": 624,
+      "height": 431
+    },
+    "book": {
+      "x": 568,
+      "y": 828,
+      "width": 56,
+      "height": 56
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Afty",
+    "width": 640,
+    "height": 900,
+    "historyOpen": true,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 20,
+    "log": {
+      "x": 8,
+      "y": 285,
+      "width": 624,
+      "height": 431
+    },
+    "book": {
+      "x": 415.578125,
+      "y": 736,
+      "width": 208.421875,
+      "height": 148
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Afty",
+    "width": 640,
+    "height": 360,
+    "historyOpen": false,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 112,
+    "log": {
+      "x": 8,
+      "y": 69,
+      "width": 624,
+      "height": 107
+    },
+    "book": {
+      "x": 568,
+      "y": 288,
+      "width": 56,
+      "height": 56
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Afty",
+    "width": 640,
+    "height": 360,
+    "historyOpen": false,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 20,
+    "log": {
+      "x": 8,
+      "y": 69,
+      "width": 624,
+      "height": 107
+    },
+    "book": {
+      "x": 415.578125,
+      "y": 196,
+      "width": 208.421875,
+      "height": 148
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Afty",
+    "width": 640,
+    "height": 360,
+    "historyOpen": true,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 112,
+    "log": {
+      "x": 8,
+      "y": 25,
+      "width": 624,
+      "height": 151
+    },
+    "book": {
+      "x": 568,
+      "y": 288,
+      "width": 56,
+      "height": 56
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Afty",
+    "width": 640,
+    "height": 360,
+    "historyOpen": true,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 20,
+    "log": {
+      "x": 8,
+      "y": 25,
+      "width": 624,
+      "height": 151
+    },
+    "book": {
+      "x": 415.578125,
+      "y": 196,
+      "width": 208.421875,
+      "height": 148
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Afty",
+    "width": 641,
+    "height": 900,
+    "historyOpen": false,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 201,
+    "log": {
+      "x": 16,
+      "y": 779.796875,
+      "width": 352,
+      "height": 104.203125
+    },
+    "book": {
+      "x": 569,
+      "y": 828,
+      "width": 56,
+      "height": 56
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Afty",
+    "width": 641,
+    "height": 900,
+    "historyOpen": false,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 48.578125,
+    "log": {
+      "x": 16,
+      "y": 779.796875,
+      "width": 352,
+      "height": 104.203125
+    },
+    "book": {
+      "x": 416.578125,
+      "y": 736,
+      "width": 208.421875,
+      "height": 148
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Afty",
+    "width": 641,
+    "height": 900,
+    "historyOpen": true,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 201,
+    "log": {
+      "x": 16,
+      "y": 455.796875,
+      "width": 352,
+      "height": 428.203125
+    },
+    "book": {
+      "x": 569,
+      "y": 828,
+      "width": 56,
+      "height": 56
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Afty",
+    "width": 641,
+    "height": 900,
+    "historyOpen": true,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 48.578125,
+    "log": {
+      "x": 16,
+      "y": 455.796875,
+      "width": 352,
+      "height": 428.203125
+    },
+    "book": {
+      "x": 416.578125,
+      "y": 736,
+      "width": 208.421875,
+      "height": 148
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Afty",
+    "width": 1024,
+    "height": 900,
+    "historyOpen": false,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 584,
+    "log": {
+      "x": 16,
+      "y": 779.796875,
+      "width": 352,
+      "height": 104.203125
+    },
+    "book": {
+      "x": 952,
+      "y": 828,
+      "width": 56,
+      "height": 56
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Afty",
+    "width": 1024,
+    "height": 900,
+    "historyOpen": false,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 431.578125,
+    "log": {
+      "x": 16,
+      "y": 779.796875,
+      "width": 352,
+      "height": 104.203125
+    },
+    "book": {
+      "x": 799.578125,
+      "y": 736,
+      "width": 208.421875,
+      "height": 148
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Afty",
+    "width": 1024,
+    "height": 900,
+    "historyOpen": true,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 584,
+    "log": {
+      "x": 16,
+      "y": 455.796875,
+      "width": 352,
+      "height": 428.203125
+    },
+    "book": {
+      "x": 952,
+      "y": 828,
+      "width": 56,
+      "height": 56
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Afty",
+    "width": 1024,
+    "height": 900,
+    "historyOpen": true,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 431.578125,
+    "log": {
+      "x": 16,
+      "y": 455.796875,
+      "width": 352,
+      "height": 428.203125
+    },
+    "book": {
+      "x": 799.578125,
+      "y": 736,
+      "width": 208.421875,
+      "height": 148
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Afty",
+    "width": 1440,
+    "height": 900,
+    "historyOpen": false,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 945,
+    "log": {
+      "x": 18,
+      "y": 765.40625,
+      "width": 396,
+      "height": 116.59375
+    },
+    "book": {
+      "x": 1359,
+      "y": 819,
+      "width": 63,
+      "height": 63
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Afty",
+    "width": 1440,
+    "height": 900,
+    "historyOpen": false,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 774.28125,
+    "log": {
+      "x": 18,
+      "y": 765.40625,
+      "width": 396,
+      "height": 116.59375
+    },
+    "book": {
+      "x": 1188.28125,
+      "y": 716,
+      "width": 233.71875,
+      "height": 166
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Afty",
+    "width": 1440,
+    "height": 900,
+    "historyOpen": true,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 945,
+    "log": {
+      "x": 18,
+      "y": 400.90625,
+      "width": 396,
+      "height": 481.09375
+    },
+    "book": {
+      "x": 1359,
+      "y": 819,
+      "width": 63,
+      "height": 63
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Afty",
+    "width": 1440,
+    "height": 900,
+    "historyOpen": true,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 774.28125,
+    "log": {
+      "x": 18,
+      "y": 400.90625,
+      "width": 396,
+      "height": 481.09375
+    },
+    "book": {
+      "x": 1188.28125,
+      "y": 716,
+      "width": 233.71875,
+      "height": 166
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Player",
+    "width": 320,
+    "height": 568,
+    "historyOpen": false,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 112,
+    "log": {
+      "x": 8,
+      "y": 277,
+      "width": 304,
+      "height": 107
+    },
+    "book": {
+      "x": 248,
+      "y": 496,
+      "width": 56,
+      "height": 56
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Player",
+    "width": 320,
+    "height": 568,
+    "historyOpen": false,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 20,
+    "log": {
+      "x": 8,
+      "y": 277,
+      "width": 304,
+      "height": 107
+    },
+    "book": {
+      "x": 95.578125,
+      "y": 404,
+      "width": 208.421875,
+      "height": 148
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Player",
+    "width": 320,
+    "height": 568,
+    "historyOpen": true,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 112,
+    "log": {
+      "x": 8,
+      "y": 53,
+      "width": 304,
+      "height": 331
+    },
+    "book": {
+      "x": 248,
+      "y": 496,
+      "width": 56,
+      "height": 56
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Player",
+    "width": 320,
+    "height": 568,
+    "historyOpen": true,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 20,
+    "log": {
+      "x": 8,
+      "y": 53,
+      "width": 304,
+      "height": 331
+    },
+    "book": {
+      "x": 95.578125,
+      "y": 404,
+      "width": 208.421875,
+      "height": 148
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Player",
+    "width": 390,
+    "height": 900,
+    "historyOpen": false,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 112,
+    "log": {
+      "x": 8,
+      "y": 609,
+      "width": 374,
+      "height": 107
+    },
+    "book": {
+      "x": 318,
+      "y": 828,
+      "width": 56,
+      "height": 56
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Player",
+    "width": 390,
+    "height": 900,
+    "historyOpen": false,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 20,
+    "log": {
+      "x": 8,
+      "y": 609,
+      "width": 374,
+      "height": 107
+    },
+    "book": {
+      "x": 165.578125,
+      "y": 736,
+      "width": 208.421875,
+      "height": 148
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Player",
+    "width": 390,
+    "height": 900,
+    "historyOpen": true,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 112,
+    "log": {
+      "x": 8,
+      "y": 285,
+      "width": 374,
+      "height": 431
+    },
+    "book": {
+      "x": 318,
+      "y": 828,
+      "width": 56,
+      "height": 56
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Player",
+    "width": 390,
+    "height": 900,
+    "historyOpen": true,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 20,
+    "log": {
+      "x": 8,
+      "y": 285,
+      "width": 374,
+      "height": 431
+    },
+    "book": {
+      "x": 165.578125,
+      "y": 736,
+      "width": 208.421875,
+      "height": 148
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Player",
+    "width": 640,
+    "height": 900,
+    "historyOpen": false,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 112,
+    "log": {
+      "x": 8,
+      "y": 609,
+      "width": 624,
+      "height": 107
+    },
+    "book": {
+      "x": 568,
+      "y": 828,
+      "width": 56,
+      "height": 56
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Player",
+    "width": 640,
+    "height": 900,
+    "historyOpen": false,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 20,
+    "log": {
+      "x": 8,
+      "y": 609,
+      "width": 624,
+      "height": 107
+    },
+    "book": {
+      "x": 415.578125,
+      "y": 736,
+      "width": 208.421875,
+      "height": 148
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Player",
+    "width": 640,
+    "height": 900,
+    "historyOpen": true,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 112,
+    "log": {
+      "x": 8,
+      "y": 285,
+      "width": 624,
+      "height": 431
+    },
+    "book": {
+      "x": 568,
+      "y": 828,
+      "width": 56,
+      "height": 56
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Player",
+    "width": 640,
+    "height": 900,
+    "historyOpen": true,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 20,
+    "log": {
+      "x": 8,
+      "y": 285,
+      "width": 624,
+      "height": 431
+    },
+    "book": {
+      "x": 415.578125,
+      "y": 736,
+      "width": 208.421875,
+      "height": 148
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Player",
+    "width": 640,
+    "height": 360,
+    "historyOpen": false,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 112,
+    "log": {
+      "x": 8,
+      "y": 69,
+      "width": 624,
+      "height": 107
+    },
+    "book": {
+      "x": 568,
+      "y": 288,
+      "width": 56,
+      "height": 56
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Player",
+    "width": 640,
+    "height": 360,
+    "historyOpen": false,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 20,
+    "log": {
+      "x": 8,
+      "y": 69,
+      "width": 624,
+      "height": 107
+    },
+    "book": {
+      "x": 415.578125,
+      "y": 196,
+      "width": 208.421875,
+      "height": 148
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Player",
+    "width": 640,
+    "height": 360,
+    "historyOpen": true,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 112,
+    "log": {
+      "x": 8,
+      "y": 25,
+      "width": 624,
+      "height": 151
+    },
+    "book": {
+      "x": 568,
+      "y": 288,
+      "width": 56,
+      "height": 56
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Player",
+    "width": 640,
+    "height": 360,
+    "historyOpen": true,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 20,
+    "log": {
+      "x": 8,
+      "y": 25,
+      "width": 624,
+      "height": 151
+    },
+    "book": {
+      "x": 415.578125,
+      "y": 196,
+      "width": 208.421875,
+      "height": 148
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Player",
+    "width": 641,
+    "height": 900,
+    "historyOpen": false,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 201,
+    "log": {
+      "x": 16,
+      "y": 779.796875,
+      "width": 352,
+      "height": 104.203125
+    },
+    "book": {
+      "x": 569,
+      "y": 828,
+      "width": 56,
+      "height": 56
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Player",
+    "width": 641,
+    "height": 900,
+    "historyOpen": false,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 48.578125,
+    "log": {
+      "x": 16,
+      "y": 779.796875,
+      "width": 352,
+      "height": 104.203125
+    },
+    "book": {
+      "x": 416.578125,
+      "y": 736,
+      "width": 208.421875,
+      "height": 148
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Player",
+    "width": 641,
+    "height": 900,
+    "historyOpen": true,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 201,
+    "log": {
+      "x": 16,
+      "y": 455.796875,
+      "width": 352,
+      "height": 428.203125
+    },
+    "book": {
+      "x": 569,
+      "y": 828,
+      "width": 56,
+      "height": 56
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Player",
+    "width": 641,
+    "height": 900,
+    "historyOpen": true,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 48.578125,
+    "log": {
+      "x": 16,
+      "y": 455.796875,
+      "width": 352,
+      "height": 428.203125
+    },
+    "book": {
+      "x": 416.578125,
+      "y": 736,
+      "width": 208.421875,
+      "height": 148
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Player",
+    "width": 1024,
+    "height": 900,
+    "historyOpen": false,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 584,
+    "log": {
+      "x": 16,
+      "y": 779.796875,
+      "width": 352,
+      "height": 104.203125
+    },
+    "book": {
+      "x": 952,
+      "y": 828,
+      "width": 56,
+      "height": 56
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Player",
+    "width": 1024,
+    "height": 900,
+    "historyOpen": false,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 431.578125,
+    "log": {
+      "x": 16,
+      "y": 779.796875,
+      "width": 352,
+      "height": 104.203125
+    },
+    "book": {
+      "x": 799.578125,
+      "y": 736,
+      "width": 208.421875,
+      "height": 148
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Player",
+    "width": 1024,
+    "height": 900,
+    "historyOpen": true,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 584,
+    "log": {
+      "x": 16,
+      "y": 455.796875,
+      "width": 352,
+      "height": 428.203125
+    },
+    "book": {
+      "x": 952,
+      "y": 828,
+      "width": 56,
+      "height": 56
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Player",
+    "width": 1024,
+    "height": 900,
+    "historyOpen": true,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 431.578125,
+    "log": {
+      "x": 16,
+      "y": 455.796875,
+      "width": 352,
+      "height": 428.203125
+    },
+    "book": {
+      "x": 799.578125,
+      "y": 736,
+      "width": 208.421875,
+      "height": 148
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Player",
+    "width": 1440,
+    "height": 900,
+    "historyOpen": false,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 945,
+    "log": {
+      "x": 18,
+      "y": 765.40625,
+      "width": 396,
+      "height": 116.59375
+    },
+    "book": {
+      "x": 1359,
+      "y": 819,
+      "width": 63,
+      "height": 63
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Player",
+    "width": 1440,
+    "height": 900,
+    "historyOpen": false,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 774.28125,
+    "log": {
+      "x": 18,
+      "y": 765.40625,
+      "width": 396,
+      "height": 116.59375
+    },
+    "book": {
+      "x": 1188.28125,
+      "y": 716,
+      "width": 233.71875,
+      "height": 166
+    },
+    "horizontalScroll": false,
+    "historyVisible": 1
+  },
+  {
+    "route": "Player",
+    "width": 1440,
+    "height": 900,
+    "historyOpen": true,
+    "booksOpen": false,
+    "overlap": false,
+    "gap": 945,
+    "log": {
+      "x": 18,
+      "y": 400.90625,
+      "width": 396,
+      "height": 481.09375
+    },
+    "book": {
+      "x": 1359,
+      "y": 819,
+      "width": 63,
+      "height": 63
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  },
+  {
+    "route": "Player",
+    "width": 1440,
+    "height": 900,
+    "historyOpen": true,
+    "booksOpen": true,
+    "overlap": false,
+    "gap": 774.28125,
+    "log": {
+      "x": 18,
+      "y": 400.90625,
+      "width": 396,
+      "height": 481.09375
+    },
+    "book": {
+      "x": 1188.28125,
+      "y": 716,
+      "width": 233.71875,
+      "height": 166
+    },
+    "horizontalScroll": false,
+    "historyVisible": 20
+  }
+]

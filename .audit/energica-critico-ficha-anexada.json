@@ -1,0 +1,89 @@
+{
+  "arma": "CortaCabeças",
+  "formulas": [
+    "40d12 + 9d10 + 147",
+    "100d12 + 18d10 + 216"
+  ],
+  "bonus": [
+    49,
+    118
+  ],
+  "fontes": [
+    {
+      "nome": "Ataque",
+      "dados": 11,
+      "momento": "durante"
+    },
+    {
+      "nome": "Golpe Especial",
+      "dados": 1,
+      "momento": "durante"
+    },
+    {
+      "nome": "Crítico Potente",
+      "dados": 1,
+      "apenasCritico": true,
+      "momento": "durante"
+    },
+    {
+      "nome": "Fatal",
+      "dados": 1,
+      "apenasCritico": true,
+      "momento": "durante"
+    },
+    {
+      "nome": "Mortal",
+      "dados": 1,
+      "apenasCritico": true,
+      "momento": "durante"
+    },
+    {
+      "nome": "Destruidora",
+      "dados": 1,
+      "apenasCritico": true,
+      "momento": "durante"
+    },
+    {
+      "nome": "Passo do Coelho, Mordida do Dragão",
+      "dados": 4,
+      "momento": "durante"
+    },
+    {
+      "nome": "Aura Elemental",
+      "dados": 1,
+      "momento": "durante"
+    },
+    {
+      "nome": "Afinidade Ampliada",
+      "dados": 0,
+      "momento": "durante"
+    },
+    {
+      "nome": "Canalização Máxima",
+      "dados": 7,
+      "momento": "durante"
+    },
+    {
+      "nome": "Ataque Concentrado",
+      "dados": 24,
+      "dadosCritico": 30,
+      "momento": "durante"
+    },
+    {
+      "nome": "Ataque Concentrado",
+      "dados": 1,
+      "momento": "durante"
+    },
+    {
+      "nome": "Enérgica",
+      "dados": 0,
+      "momento": "durante"
+    },
+    {
+      "nome": "Enérgica",
+      "dados": 0,
+      "apenasCritico": true,
+      "momento": "durante"
+    }
+  ]
+}

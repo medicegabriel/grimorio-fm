@@ -40,6 +40,10 @@
  *               Força for temporário, não! Se for permanente, sim!". Os dois
  *               contam para os stats, porque a ficha mostra o estado atual.
  *
+ * `grupoNaoAcumula` reúne cópias do mesmo benefício em uma disputa própria,
+ * por canal, alvo e sinal. Vale o maior bônus ou a pior penalidade, e esse
+ * grupo continua somando com os pools de Feitiços, Itens e Invocações.
+ *
  * A coleta carimba `origem` (o id da habilidade) e `nome` (para a UI).
  *
  * ------------------------------------------------------------
@@ -90,7 +94,7 @@ import {
 } from "./afty-origens";
 /* O Nível efetivo, que pode vir do XP da Carteira. O afty-addons só importa
    folhas (afty-dsl, afty-sistema e afty-carteira), entao a seta e segura. */
-import { nivelDaFicha } from "./afty-addons";
+import { nivelDaFicha, registrarCanaisDoMotor } from "./afty-addons";
 // Folha: a divergência das Melhorias Superiores do jogador.
 import { regraDo } from "./afty-sistema";
 import { getAnatomia } from "./afty-anatomias";
@@ -144,7 +148,7 @@ export const EFEITO_CANAIS = [
   // sem a regra, "no começo de toda rodada você ganha metade do BT" viraria uma
   // pilha infinita na rodada 10. O que a rodada faz é devolver ao teto da fonte
   // o que foi gasto, e não somar de novo.
-  { id: "peTemporario",  label: "PE Temporário",         alvo: "gatilho", nota: "casca de PE, gasta ANTES do PE normal. O alvo é o gatilho: combate entrega uma vez na cena, rodada reenche a cada rodada. A mesma fonte topa, não acumula" },
+  { id: "peTemporario",  label: "PE Temporário",         alvo: "gatilho", alvoObrigatorio: true, nota: "casca de PE, gasta ANTES do PE normal. O alvo é o gatilho: combate entrega uma vez na cena, rodada reenche a cada rodada. A mesma fonte topa, não acumula" },
   { id: "peMult",        label: "Multiplicador de PE Máximo", nota: "multiplica o PE Máximo depois de todas as fontes, junto do multiplicador dos Votos. 0,6 tira 40%, 1,4 soma 40%. Ao contrário do de PV, as fontes MULTIPLICAM entre si, porque um multiplicador abaixo de 1 é a regra que pediu o canal (o Voto O Covarde)" },
   { id: "pe",            label: "PE",                    nota: "pilha ÚNICA: Ponto de Energia e Ponto de Estamina (o nome do Restringido) são o mesmo recurso" },
   { id: "defesa",        label: "Defesa" },
@@ -177,7 +181,7 @@ export const EFEITO_CANAIS = [
   // lá (autor, 2026-08-08): tamanho não é escolha de ficha, é consequência de
   // uma Aptidão ou poder que diga que o corpo mudou. Apara nas pontas da lista.
   { id: "tamanho",       label: "Categoria de Tamanho",  nota: "em DEGRAUS a partir de Médio, e não em metros: +1 = Grande, +2 = Enorme, −1 = Pequeno. Apara em Minúsculo e Colossal. Cada degrau mexe em Atletismo e Furtividade" },
-  // ⚠ Os três de Regeneração e os sete de Cura moram no grupo "Cura e
+  // ⚠ Os três de Regeneração e os nove de Cura moram no grupo "Cura e
   // Regeneração", e não aqui. Ver GRUPOS_DE_CANAL.
   { id: "almaMax",       label: "Integridade da Alma" },
   { id: "empolgacaoMaxima",  label: "Empolgação Máxima",  nota: "sinalizador: troca a tabela de dados de Empolgação inteira, não soma" },
@@ -228,7 +232,7 @@ export const EFEITO_CANAIS = [
      resultado"). Mesma razão do `dadosNomeados` no dano: a média dá um número
      certo e uma rolagem errada. O alvo é o DADO, então ele vale em todo Teste de
      Resistência — que é o que o único caso de hoje diz, "vale em qualquer TR". */
-  { id: "dadosTR",       label: "Dados em Resistência",  alvo: "dadoNomeado", nota: "dado somado ao resultado do TR. O alvo é o dado e o valor é quantos. Vale em todo TR, porque o alvo já é o dado" },
+  { id: "dadosTR",       label: "Dados em Resistência",  alvo: "dadoNomeado", alvoObrigatorio: true, nota: "dado somado ao resultado do TR. O alvo é o dado e o valor é quantos. Vale em todo TR, porque o alvo já é o dado" },
   /* O irmão do `dadosTR` para a PERÍCIA (2026-09-23): o Corpo Especializado diz
      "você recebe um bônus de 1d4" numa perícia à escolha, e como no TR e no
      ataque a média (+2 ou +3) daria um número certo com a rolagem errada.
@@ -239,7 +243,7 @@ export const EFEITO_CANAIS = [
      campo no efeito seria um campo novo para o motor, a validação e o editor
      aprenderem. O sufixo de `escolha:pericia:d4` (afty-caracteristicas-
      amaldicoadas.js) é o que monta esta string a partir da perícia escolhida. */
-  { id: "dadosPericia",  label: "Dados em Perícia",      alvo: "periciaDado", nota: "dado somado ao resultado de UMA perícia. O alvo é a perícia e o dado, no formato pericia:dN (percepcao:d4), e o valor é quantos" },
+  { id: "dadosPericia",  label: "Dados em Perícia",      alvo: "periciaDado", alvoObrigatorio: true, nota: "dado somado ao resultado de UMA perícia. O alvo é a perícia e o dado, no formato pericia:dN (percepcao:d4), e o valor é quantos" },
   { id: "margemCriticoTR", label: "Crítico em Resistência", alvo: "tr", nota: "quanto a margem DIMINUI, com piso de 2. Irmão do margemCritico do ataque" },
   { id: "proficienciaTR", label: "Treino em Resistência", alvo: "tr", aceitaSemCredito: true, nota: "irmão de proficienciaPericia, mesmas regras (1 Treinado, 2 Mestre, nunca rebaixa, e credita no orçamento)" },
   /* O "CASO JÁ SEJA" DO TR (2026-09-26, Treino de Testes de Resistência): "Você
@@ -295,7 +299,7 @@ export const EFEITO_CANAIS = [
 
      ⚠ Ele NÃO aceita escopo de fonte de dano, porque o `alvo` já é o dado. As
      regras que o usam dizem "ao realizar um ataque", sem recorte de arma. */
-  { id: "dadosNomeados", label: "Dados de Dano (tamanho próprio)", alvo: "dadoNomeado", nota: "dado ADICIONAL com o tamanho escrito na regra (1d6, 2d10). O alvo é o dado e o valor é quantos. Para dado que acompanha o da linha, use Dados de Dano" },
+  { id: "dadosNomeados", label: "Dados de Dano (tamanho próprio)", alvo: "dadoNomeado", alvoObrigatorio: true, nota: "dado ADICIONAL com o tamanho escrito na regra (1d6, 2d10). O alvo é o dado e o valor é quantos. Para dado que acompanha o da linha, use Dados de Dano" },
   /* ⚠ O DADO QUE SÓ EXISTE NO CRÍTICO (2026-09-15, Crítico Potente: "Ao acertar
      um ataque crítico, ele causa 1 dado de dano adicional"). Não cabe no
      `dadosDano`, que vale em toda rolagem. O tamanho é o maior dado da linha,
@@ -313,7 +317,14 @@ export const EFEITO_CANAIS = [
      Ajuste: "você pode adicionar seu dado de empolgação na rolagem de acerto e
      no dano"). Somar a média no `bonusAcerto` dava número certo e rolagem
      errada, que é o mesmo bug que o `dadosNomeados` consertou no dano. */
-  { id: "dadosAtaque",   label: "Dados em Jogada de Ataque", alvo: "dadoNomeado", nota: "dado somado ao resultado do ataque. O alvo é o dado e o valor é quantos. Vale em toda jogada de ataque, porque o alvo já é o dado" },
+  { id: "dadosAtaque",   label: "Dados em Jogada de Ataque", alvo: "dadoNomeado", alvoObrigatorio: true, nota: "dado somado ao resultado do ataque. O alvo é o dado e o valor é quantos. Vale em toda jogada de ataque, porque o alvo já é o dado" },
+  /* ⚠ VANTAGEM E DESVANTAGEM NA JOGADA DE ATAQUE (2026-10-07, achado CMB-02).
+     Sinalizador por LINHA, com os escopos do dano (arma, Ataque Básico, categoria,
+     propriedade): positivo dá vantagem, negativo dá desvantagem. Não acumulam, e
+     uma de cada se anulam (Livro, página 282). Quem combina o sinal com o modo
+     escolhido à mão e com a desvantagem da arma é `modoCombinado`, na hora de
+     rolar. O Preciso do Golpe Especial é o primeiro cliente. */
+  { id: "vantagemAtaque", label: "Vantagem no Ataque", alvo: "fonteDano", nota: "sinalizador. Positivo dá vantagem na jogada de ataque da linha e negativo dá desvantagem. Não acumulam, e uma vantagem e uma desvantagem se anulam" },
   { id: "margemCritico", label: "Margem de Crítico",     alvo: "fonteDano", nota: "quanto a margem DIMINUI, com piso de 2" },
   { id: "ignoraRD",      label: "Ignora RD",             alvo: "fonteDano" },
   { id: "ignoraTodaRD", label: "Ignora Toda RD", alvo: "fonteDano" },
@@ -428,6 +439,7 @@ export const EFEITO_CANAIS = [
      Geral mais o ND 21 e 22 (`destravado` em afty-alto-nivel.js): sem ele o
      total é zero e a vaga comprada não vira nada. Vaga é quantidade, e o portão
      é outra pergunta. */
+  { id: "vagasVariacao", label: "Vagas de Variação de Feitiço", nota: "somente Feitiços marcados como variação" },
   { id: "vagasMelhoria",  label: "Vagas de Melhoria Superior", nota: "por cima do que o ND concede. Só rende com o Alto Nível já destravado" },
   { id: "vagasLendaria",  label: "Vagas de Habilidade Lendária", nota: "por cima do que o ND concede. Só rende com o Alto Nível já destravado" },
   // ⚠ O nome "Pontos de Aptidão" foi TROCADO em 2026-07-29: o autor perguntou o
@@ -500,6 +512,8 @@ export const EFEITO_CANAIS = [
   { id: "curaFixa",        label: "Cura: Valor Fixo",     alvo: "fonteCura", nota: "soma no TOTAL da cura, uma vez, mesmo quando os dados escalam por ponto gasto. Sem alvo vale para toda cura que a ficha realizar" },
   { id: "curaPorDado",     label: "Cura: Bônus por Dado", alvo: "fonteCura", nota: "soma este valor uma vez POR DADO rolado. O teto do que ele acrescenta é o canal Cura: Teto do Bônus por Dado" },
   { id: "curaPorDadoTeto", label: "Cura: Teto do Bônus por Dado", alvo: "fonteCura", nota: "quanto o Bônus por Dado pode acrescentar no máximo. Sem ele o bônus não tem teto" },
+  { id: "rerrolaCura", label: "Cura: Rolar de Novo", alvo: "fonteCura", nota: "rola novamente cada dado até este resultado, uma vez, mantendo o melhor. Sem alvo vale para todas as curas do usuário. Entre fontes vale o maior limite, sem somar" },
+  { id: "rerrolaCuraContinua", label: "Cura: Rerrolagem Contínua", alvo: "fonteCura", nota: "valor positivo repete a rerrolagem de cura até superar o limite de Rolar de Novo. Não concede um limite sozinho. O limite precisa ser menor que as faces do dado" },
   { id: "curaUsos",        label: "Cura: Usos por Descanso", alvo: "fonteCura", nota: "quantas vezes aquela cura pode ser usada por descanso. A linha sem usos é a que só depende de pagar o custo" },
   { id: "curaPontos",      label: "Cura: Pontos por Uso", alvo: "fonteCura", nota: "o TETO de pontos (PER ou PE) que podem ser gastos de uma vez. Os dados são multiplicados por ele" },
 ];
@@ -518,6 +532,8 @@ export const CANAL_LEGADO = {
 };
 
 const CANAL_BY_ID = Object.fromEntries(EFEITO_CANAIS.map((c) => [c.id, c]));
+// O portão de instalação de Addon confere o canal contra esta lista. Ver `registrarCanaisDoMotor`.
+registrarCanaisDoMotor(EFEITO_CANAIS.map((c) => c.id));
 export const getCanal = (id) => CANAL_BY_ID[id] ?? null;
 
 /**
@@ -693,11 +709,11 @@ const GRUPOS_DE_CANAL = [
   // ⚠ Grupo PRÓPRIO desde 2026-08-03. Os três de Regeneração viviam soltos em
   // "Vitalidade e Recursos", entre PV e Pontos de Preparo, e lá o leitor não
   // tinha como perceber que os três são partes da MESMA rolagem. Juntos, e ao
-  // lado dos sete irmãos de Cura, a anatomia (dados, faces, fixo) se lê sozinha.
+  // lado dos nove canais de Cura, a anatomia (dados, faces, fixo) se lê sozinha.
   ["Cura e Regeneração", [
     "regeneracaoDados", "regeneracaoFaces", "regeneracaoFixa",
     "curaDados", "curaFaces", "curaFixa",
-    "curaPorDado", "curaPorDadoTeto", "curaUsos", "curaPontos",
+    "curaPorDado", "curaPorDadoTeto", "rerrolaCura", "rerrolaCuraContinua", "curaUsos", "curaPontos",
   ]],
   ["Defesa", [
     "defesa", "rdGeral", "rdEspecifico", "rdFisico", "rdEscudo", "rdAlma",
@@ -706,7 +722,7 @@ const GRUPOS_DE_CANAL = [
   ]],
   ["Ataque e Dano", [
     "cd", "cdFeitico", "bonusAcerto", "acertoArma", "treinoArmaCasoJa", "ataquesExtras", "danoBonus", "nivelDano", "dadosDano", "dadosNomeados",
-    "dadosCritico", "rerrolaDano", "dadosAtaque", "margemCritico", "ignoraRD", "ignoraTodaRD", "ignoraImunidade", "removeResistencia", "propMarcial", "finezaAtaque",
+    "dadosCritico", "rerrolaDano", "dadosAtaque", "vantagemAtaque", "margemCritico", "ignoraRD", "ignoraTodaRD", "ignoraImunidade", "removeResistencia", "propMarcial", "finezaAtaque",
     "semAtributoDano", "alcanceArma",
   ]],
   // Atributo, limite e nível de trilha: o que a criatura É, em número próprio.
@@ -729,7 +745,7 @@ const GRUPOS_DE_CANAL = [
     "vagasPericia", "vagasHabilidade", "vagasFeitico", "vagasEstilo", "vagasTecnicaMaxima", "vagasTalento", "vagasAptidao",
     "vagasCaracteristicaAmaldicoada",
     "reduzNivelAptidao", "ignoraRequisitoTrilha",
-    "vagasMelhoria", "vagasLendaria",
+    "vagasVariacao", "vagasMelhoria", "vagasLendaria",
     "pontosAptidao", "pontosAtributo", "focos", "espacosCarga",
   ]],
   ["Empolgação", ["empolgacaoMaxima", "empolgacaoInicial"]],
@@ -1059,7 +1075,10 @@ export function buildCriaturaDslContext(base = {}) {
   for (const id of base.opcoesOrigem?.todas || []) ctx[`opcao_${normalizarVariavel(id)}`] = 0;
   for (const id of base.opcoesOrigem?.escolhidas || []) ctx[`opcao_${normalizarVariavel(id)}`] = 1;
   for (const [aptId, valor] of Object.entries(base.aptidaoOpcoes || {})) {
-    if (valor) ctx[`opt_${aptId}_${valor}`] = 1;
+    /* Normalizado dos dois lados (achado M01-VAR-01, 2026-10-07): a Aptidão de
+       Addon tem `:` no id, e `opt_mesa:foco_eco` não é nome que a DSL leia. O
+       id do livro já é snake_case e sai igual. */
+    if (valor) ctx[`opt_${normalizarVariavel(aptId)}_${normalizarVariavel(valor)}`] = 1;
   }
 
   // "Esta habilidade está escolhida?", como booleana: `tem_cmb_armas_perfeitas`.
@@ -1393,6 +1412,10 @@ export function coletarEfeitosCriatura({
       catalogos?.altoNivel, vezesMel,
     ),
     ...coletarEfeitos(altoNivel?.lendarias?.escolhidas, LENDARIA_EFEITOS, catalogos?.altoNivel),
+    // A Ápice tem coleta própria abaixo. Suas opções não emitem uma segunda cópia.
+    ...coletarEfeitosDeEscolha(Object.fromEntries(
+      Object.entries(altoNivel?.escolhas?.mapa || {}).filter(([id]) => id !== "len_atingir_apice"),
+    ), {}, catalogos?.altoNivel),
     ...coletarEfeitosComAlvo(
       altoNivel?.lendarias?.escolhidas, altoNivel?.escolhas?.mapa, LENDARIA_EFEITOS_ALVO,
       catalogos?.altoNivel,
@@ -1412,12 +1435,12 @@ export function coletarEfeitosCriatura({
  * Difere do `coletarEfeitosDeEscolha`, onde é a OPÇÃO que carrega o efeito.
  */
 export function coletarEfeitosComAlvo(ids, mapaAlvos, mapaEfeitos, catalogo = {}, vezesPorId = null) {
-  const nomeDe = typeof catalogo === "function"
-    ? (id) => catalogo(id)?.nome
-    : (id) => catalogo?.[id]?.nome;
+  const entradaDe = typeof catalogo === "function" ? catalogo : (id) => catalogo?.[id];
+  const nomeDe = (id) => entradaDe(id)?.nome;
   const out = [];
   for (const id of Array.isArray(ids) ? ids : []) {
-    const efs = mapaEfeitos?.[id];
+    const entrada = entradaDe(id);
+    const efs = entrada?.efeitosAlvo ?? mapaEfeitos?.[id];
     if (!efs) continue;
     const vezes = vezesPorId ? Math.max(1, vezesPorId[id] ?? 1) : 1;
     for (const alvo of mapaAlvos?.[id] || []) {
@@ -1472,11 +1495,15 @@ export function coletarEfeitosDeEscolha(mapa, nomesPorOpcao = {}, catalogoPai = 
          para o rótulo das opções do livro não mudar. */
       const doLivro = ESCOLHA_EFEITOS[opcaoId];
       const escritos = !doLivro && Array.isArray(opcaoCat?.efeitos) ? opcaoCat.efeitos : [];
+      /* A opção que NÃO ACUMULA ENTRE FONTES (2026-10-07): a mesma opção pega por
+         dois pais (o Estilo pelo Repertório e pelo Adepto) disputa num grupo só
+         dela, e vale o maior. Quem já traz um grupo próprio conserva o dele. */
+      const grupo = opcaoCat?.naoAcumulaEntreFontes ? { grupoNaoAcumula: `opcao:${opcaoId}` } : null;
       for (const e of doLivro ?? []) {
-        out.push({ ...e, origem: opcaoId, nome: nomeDaFonte });
+        out.push({ ...(grupo && !e.grupoNaoAcumula ? grupo : {}), ...e, origem: opcaoId, nome: nomeDaFonte });
       }
       for (const e of escritos) {
-        out.push({ ...e, origem: opcaoId, nome: e.nome ?? nomeDaFonte });
+        out.push({ ...(grupo && !e.grupoNaoAcumula ? grupo : {}), ...e, origem: opcaoId, nome: e.nome ?? nomeDaFonte });
       }
     }
   }
@@ -1607,6 +1634,38 @@ export function coletarEfeitosAptidao(creature, semEnergia = false) {
 /* ============================================================ */
 
 /**
+ * O efeito como o EDITOR o grava de volta na ficha: só os campos de DADO, nunca
+ * os resolvidos (`valor`, `ativo`, `alvoTipo`, `nota`), que são derivados e
+ * deixariam a ficha mentindo no próximo render.
+ *
+ * ⚠ UM LUGAR SÓ (achado M01-PERSIST-01, 2026-10-07). Os editores do criador
+ * reconstruíam o objeto campo a campo, cada um com a sua lista, e campo que não
+ * entrava na lista se perdia na primeira edição de QUALQUER linha, calado: o do
+ * Funcionamento esquecia o `semCredito` (o comentário dele até o citava), e o da
+ * Habilidade Única de item esquecia também `quando` e `duracao`. Uma concessão
+ * "sem crédito" virava concessão que abate o orçamento.
+ *
+ * `modo`: "explicito" grava sempre `ativa` ou `passiva` (as fontes que decidem por
+ * linha), "soAtiva" grava só o `ativa`, e ausente não grava. `canaisPorAcao` é o
+ * conjunto de canais que uma Ação de Invocação lê (afty-invocacoes.js): a mira em
+ * Ação só sobrevive com invocação escolhida e num desses canais.
+ */
+export function efeitoGravavel(e, { modo = null, canaisPorAcao = null } = {}) {
+  const invocacao = e?.escopo === "invocacao";
+  return {
+    canal: e?.canal, ...(e?.alvo ? { alvo: e.alvo } : {}), expr: e?.expr,
+    ...(e?.quando ? { quando: e.quando } : {}),
+    ...(e?.duracao === "temporaria" ? { duracao: "temporaria" } : {}),
+    ...(modo === "explicito" ? { modo: e?.modo === "ativa" ? "ativa" : "passiva" } : {}),
+    ...(modo === "soAtiva" && e?.modo === "ativa" ? { modo: "ativa" } : {}),
+    ...(e?.semCredito ? { semCredito: true } : {}),
+    ...(invocacao ? { escopo: "invocacao" } : {}),
+    ...(invocacao && e.invocacaoAlvo ? { invocacaoAlvo: e.invocacaoAlvo } : {}),
+    ...(invocacao && e.invocacaoAlvo && e.acaoAlvo && canaisPorAcao?.has(e.canal) ? { acaoAlvo: e.acaoAlvo } : {}),
+  };
+}
+
+/**
  * Avalia e soma os efeitos, canal a canal.
  *
  * Devolve:
@@ -1654,14 +1713,18 @@ export function aplicarEfeitos(efeitos, ctx = {}) {
     // Pool exclusivo: sai da soma e vai para a disputa. O `detalhes` também
     // espera, porque só depois de conhecer o vencedor dá para dizer quem entrou
     // e quem foi suplantado.
-    if (e.exclusivo) {
-      if (!FAMILIA_EXCLUSIVA_BY_ID[e.exclusivo]) {
+    // Mesmo benefício de fontes diferentes pode disputar em um grupo próprio,
+    // sem competir com os pools de Feitiços, Itens e Invocações.
+    if (e.exclusivo || e.grupoNaoAcumula) {
+      if (e.exclusivo && !FAMILIA_EXCLUSIVA_BY_ID[e.exclusivo]) {
         avisos.push(`Família exclusiva desconhecida "${e.exclusivo}" em ${e.nome || e.origem || "efeito"}.`);
       }
       exclusivos.push({
         canal: e.canal, alvo, valor, exclusivo: e.exclusivo,
-        // Sem carimbo é o pool único. Ver `carimbarGrupoExclusivo`.
-        grupo: e.grupoExclusivo || GRUPO_POOL_UNICO,
+        // O grupo do benefício é independente do pool em ambos os sistemas.
+        grupo: e.grupoNaoAcumula
+          ? `beneficio:${e.grupoNaoAcumula}`
+          : (e.grupoExclusivo || GRUPO_POOL_UNICO),
         // Linhas do mesmo bloco SOMAM entre si antes da disputa. Ver
         // `resolverExclusivos`.
         bloco: typeof e.blocoExclusivo === "string" && e.blocoExclusivo ? e.blocoExclusivo : null,
@@ -1691,6 +1754,7 @@ export function aplicarEfeitos(efeitos, ctx = {}) {
     const semCredito = !!e.semCredito && !!canal.aceitaSemCredito;
     detalhes.push({
       canal: e.canal, alvo, valor,
+      ...(e.naoAcumulaReducaoGeral ? { naoAcumulaReducaoGeral: true } : {}),
       origem: e.origem || null, nome: e.nome || e.origem || "Efeito",
       furaTeto, semCredito,
       // A duração viaja junto porque a aba Buffs LISTA os temporários: sem ela
@@ -1793,9 +1857,25 @@ export function resolverExclusivos(res, jaAplicado = {}) {
       }
       aplicado[k] = vencedor.valor;
     }
+    // Reparte somente o ganho deste estágio entre as linhas do bloco vencedor.
+    const rendimentos = new Map();
+    let restante = entra ? Math.abs(delta) : 0;
+    for (const e of vencedor.membros) {
+      const parcela = Math.min(Math.abs(e.valor), restante);
+      rendimentos.set(e, negativo ? -parcela : parcela);
+      restante -= parcela;
+    }
     for (const e of itens) {
+      /* ⚠ O VENCEDOR DE UM SEGUNDO ESTÁGIO RENDE SÓ O QUE PASSA DO PRIMEIRO
+         (achado M02-A02, 2026-10-07). O `atributo` resolve em dois estágios: um
+         Funcionamento permanente de +2 de Força e um temporário de +5 no mesmo
+         pool dão Força 15 (vale o maior), e o detalhe gravava +2 e +5, então o
+         hover somava 17 para um número grande de 15. Agora a parcela é o +3 que
+         entrou, e o `declarado` guarda o +5 da fonte. */
+      const rendeu = entra && rendimentos.has(e) ? rendimentos.get(e) : e.valor;
       out.detalhes.push({
-        canal: e.canal, alvo: e.alvo, valor: e.valor,
+        canal: e.canal, alvo: e.alvo, valor: rendeu,
+        ...(rendeu !== e.valor ? { declarado: e.valor } : {}),
         origem: e.origem, nome: e.nome, furaTeto: false,
         exclusivo: e.exclusivo, duracao: e.duracao || "permanente",
         // ⚠ Terceiro lugar que reconstrói o detalhe campo a campo, e o terceiro
@@ -2031,9 +2111,9 @@ export const ehAtributoTemporario = (e) =>
 export const ehEstagio2 = (e) =>
   !CANAIS_ESTAGIO_1.includes(e?.canal)
   && !ehPreContexto(e)
-  // Fora do estágio 2 para o canal ter UMA verdade só: quem o lê é o passe
-  // próprio, e deixá-lo cair aqui também daria dois números para a mesma coisa.
-  && !ehPosAptidao(e)
+  // Os canais do passe próprio ficam fora. Custo em PE também precisa do
+  // contexto final para os gastos de Feitiços, Aptidões e Invocações.
+  && (!ehPosAptidao(e) || e?.canal === "custoPE")
   && !efeitoUsaDadosDanoFinal(e);
 
 /**
@@ -2215,6 +2295,21 @@ const CUSTO_PE_OK = new Set(CUSTOS_PE.map((c) => c.value));
 /** O alvo de custo é conhecido? O validador de conteúdo usa. */
 export const custoPeValido = (alvo) => alvo == null || CUSTO_PE_OK.has(alvo);
 
+/** Reduções gerais que não acumulam disputam com as demais reduções gerais. */
+export function detalhesDeCustoPe(efeitos, escopo = null) {
+  const fontes = detalhesDoCanalEscopos(efeitos, "custoPE", escopo ? [escopo] : []);
+  const especiais = fontes.filter((f) => f.naoAcumulaReducaoGeral && f.valor > 0);
+  if (!especiais.length) return fontes;
+  const melhor = especiais.reduce((a, b) => a.valor >= b.valor ? a : b);
+  const gerais = fontes.filter((f) => !f.alvo && !f.naoAcumulaReducaoGeral && f.valor > 0);
+  const valorGeral = gerais.reduce((s, f) => s + f.valor, 0);
+  return fontes.filter((f) => {
+    if (f.naoAcumulaReducaoGeral && f.valor > 0) return valorGeral < melhor.valor && f === melhor;
+    if (!f.alvo && f.valor > 0) return valorGeral >= melhor.valor;
+    return true;
+  });
+}
+
 /**
  * O custo em PE de UM gasto, já com as reduções do canal `custoPE`.
  *
@@ -2237,7 +2332,7 @@ export const custoPeValido = (alvo) => alvo == null || CUSTO_PE_OK.has(alvo);
  */
 export function custoEmPe(base, efeitos, escopo = null) {
   const bruto = Math.max(0, Math.trunc(Number(base) || 0));
-  const partes = detalhesDoCanalEscopos(efeitos, "custoPE", escopo ? [escopo] : [])
+  const partes = detalhesDeCustoPe(efeitos, escopo)
     .map((d) => ({ label: d.nome, valor: Math.trunc(Number(d.valor) || 0) }))
     .filter((p) => p.valor !== 0);
   const reducao = partes.filter((p) => p.valor > 0).reduce((soma, p) => soma + p.valor, 0);

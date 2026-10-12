@@ -1,0 +1,171 @@
+diff --git a/.audit/resiliente-baseline/asserts__t-uniforme-escudo.mjs b/asserts/t-uniforme-escudo.mjs
+index 48c53e1..b3a5a7d 100644
+--- a/.audit/resiliente-baseline/asserts__t-uniforme-escudo.mjs
++++ b/asserts/t-uniforme-escudo.mjs
+@@ -153,13 +153,6 @@ t("o texto do Isolante é o do livro",
+   EQ.getEncantamento("enc_esc_isolante").descricao,
+   "A redução de dano do escudo passa também a ser aplicado a um tipo de dano elemental à sua escolha. Esta propriedade pode ser pega diversas vezes para tipos de dano diferentes.");
+ 
+-/* ⚠ SEM `efeitos`, e é o estado consistente. Não existe canal de RD por TIPO de
+-   dano no motor, e os dois irmãos dele no uniforme estão na mesma situação. Se
+-   alguém ligar um dos três, tem de ligar os outros dois: este assert avisa. */
+-const SEM_CANAL_POR_TIPO = ["enc_esc_isolante", "enc_unif_isolante", "enc_unif_resiliente"];
+-t("os três que precisam de RD por tipo seguem sem efeito",
+-  SEM_CANAL_POR_TIPO.filter((id) => EQ.getEncantamento(id)?.efeitos), []);
+-
+ /* ============================================================ */
+ /* 3. O CANAL, E O ENCANTAMENTO QUE O SEGUE                      */
+ /* ============================================================ */
+@@ -466,5 +459,152 @@ t("sem escudo nao ha parcela de equipamento",
+   [fontesEquip(semEscudo("player"), "rdFisico"), fontesEquip(semEscudo("afty"), "rdGeral")],
+   [[], []]);
+ 
++
++/* 11. RESILIENTE E ISOLANTE NA MESMA ABA DE RESISTÊNCIAS. */
++const ferramentaDefensiva = (sistema, {
++  tipo = "uniforme", refId = "unif_revestimento_robusto", grau = "especial",
++  encs = ["enc_unif_resiliente"], tipos = { enc_unif_resiliente: ["queimante"] },
++  equipado = true, manual = {}, efeitos = [], itens = [],
++} = {}) => {
++  const f = createBlankAfty();
++  f.rulesVersion = sistema;
++  f.core = { ...f.core, nd: 10, tipo: "misto", patamar: "comum", tecnicaEfeitos: efeitos };
++  f.attributes = { forca: 12, destreza: 12, constituicao: 12, inteligencia: 12, sabedoria: 12, presenca: 12 };
++  f.especializacoes = [{ id: "combatente", nivel: 10 }];
++  f.defesasDano = manual;
++  f.equipamentos = { itens: [
++    { uid: "defensivo", refId, tipo, qtd: 1, equipado, fa: { grau, encantamentos: encs, encantamentoTipos: tipos } },
++    ...itens,
++  ] };
++  return { f, d: deriveAfty(f) };
++};
++const rdTipoDe = (d, tipo) => d.defesasDano.porTipo[tipo];
++const passivos = ["enc_esc_polido", "enc_esc_reforcado", "enc_esc_isolante",
++  "enc_unif_ajustado", "enc_unif_blindado", "enc_unif_furtivo", "enc_unif_isolante",
++  "enc_unif_marcial", "enc_unif_material_pesado", "enc_unif_propulsor", "enc_unif_resiliente"];
++t("revisão: os 11 encantamentos passivos de uniforme e escudo estão ligados",
++  [...EQ.ENCANTAMENTOS_ESCUDO, ...EQ.ENCANTAMENTOS_UNIFORME]
++    .filter((e) => e.efeitos?.length).map((e) => e.id).sort(), passivos.sort());
++t("Resiliente permite os dez tipos sem os vetados",
++  EQ.tiposDoEncantamento("enc_unif_resiliente").map((t) => t.id),
++  ["acido", "congelante", "chocante", "queimante", "sonico", "energia_reversa", "psiquico", "radiante", "necrotico", "venenoso"]);
++t("Isolante de escudo permite apenas os cinco elementais",
++  EQ.tiposDoEncantamento("enc_esc_isolante").map((t) => t.id),
++  ["acido", "congelante", "chocante", "queimante", "sonico"]);
++
++for (const sis of ["afty", "player"]) {
++  for (const [grau, esperado] of [["quarto", 5], ["terceiro", 5], ["segundo", 5], ["primeiro", 5], ["especial", 10]]) {
++    const { d } = ferramentaDefensiva(sis, { grau });
++    const linha = rdTipoDe(d, "queimante");
++    t(sis + ": Resiliente " + grau + " concede a RD correta", linha.rdProprio, esperado);
++    t(sis + ": as fontes fecham o total em " + grau, soma(linha.partes), linha.rd);
++  }
++  for (const tipo of EQ.tiposDoEncantamento("enc_unif_resiliente").map((t) => t.id)) {
++    const { d } = ferramentaDefensiva(sis, { tipos: { enc_unif_resiliente: [tipo] } });
++    t(sis + ": a escolha " + tipo + " recebe RD 10", rdTipoDe(d, tipo).rdProprio, 10);
++    t(sis + ": Resiliente aparece no hover de " + tipo, rdTipoDe(d, tipo).partes.some((p) => /Resiliente/.test(p.label)), true);
++    t(sis + ": Resiliente não vaza para outro tipo", rdTipoDe(d, tipo === "queimante" ? "acido" : "queimante").rdProprio, 0);
++  }
++  for (const tipo of ["ct", "im", "pf", "alma", "energetico", "sumiu", null]) {
++    const { d } = ferramentaDefensiva(sis, { tipos: { enc_unif_resiliente: [tipo] } });
++    t(sis + ": escolha inválida não concede RD, " + tipo, d.equip.efeitosEncantamento.length, 0);
++    t(sis + ": escolha inválida gera aviso, " + tipo, d.equip.entradas[0].fa.avisos.some((a) => /escolha um tipo/.test(a)), true);
++  }
++  const pendente = ferramentaDefensiva(sis, { tipos: {} });
++  t(sis + ": ficha antiga sem escolha abre sem RD presumida", rdTipoDe(pendente.d, "queimante").rdProprio, 0);
++  const sem = ferramentaDefensiva(sis, { equipado: false }).d;
++  t(sis + ": retirar uniforme encerra o Resiliente", rdTipoDe(sem, "queimante").rdProprio, 0);
++  const isot = ferramentaDefensiva(sis, { encs: ["enc_unif_isolante"], tipos: {} }).d;
++  t(sis + ": Isolante de uniforme dá 5 nos dois tipos", ["queimante", "congelante"].map((tipo) => rdTipoDe(isot, tipo).rdProprio), [5, 5]);
++  t(sis + ": Isolante não concede RD aos outros elementais", rdTipoDe(isot, "acido").rdProprio, 0);
++  const junto = ferramentaDefensiva(sis, {
++    encs: ["enc_unif_isolante", "enc_unif_resiliente"],
++    manual: { queimante: { rd: 3, estado: "resistente" } },
++    efeitos: [{ canal: "rdGeral", expr: "4" }],
++  }).d;
++  t(sis + ": Resiliente soma com Isolante e RD manual", rdTipoDe(junto, "queimante").rdProprio, 18);
++  t(sis + ": RD Geral soma somente no total", rdTipoDe(junto, "queimante").rd, junto.rdGeral + 18);
++  t(sis + ": Resistência continua independente da RD", rdTipoDe(junto, "queimante").estados, ["resistente"]);
++  t(sis + ": fontes de três RDs e Geral fecham a conta", soma(rdTipoDe(junto, "queimante").partes), rdTipoDe(junto, "queimante").rd);
++  t(sis + ": salvar e reabrir preserva a escolha", deriveAfty(JSON.parse(JSON.stringify(pendente.f))).equip.entradas[0].fa.encantamentoTipos.enc_unif_resiliente, [null]);
++
++  const base = ferramentaDefensiva(sis, { encs: ["enc_unif_aeronauta"], tipos: {} }).d;
++  const blindado = ferramentaDefensiva(sis, { encs: ["enc_unif_blindado"], tipos: {} }).d;
++  t(sis + ": Blindado aumenta Defesa em 2", blindado.defesa - base.defesa, 2);
++  const propulsor = ferramentaDefensiva(sis, { encs: ["enc_unif_propulsor"], tipos: {} }).d;
++  t(sis + ": Propulsor aumenta Movimento em 3", propulsor.movimento - base.movimento, 3);
++  const furtivo = ferramentaDefensiva(sis, { encs: ["enc_unif_furtivo"], tipos: {} }).d;
++  const furtividadeDe = (d) => d.testes.pericias.find((p) => p.id === "furtividade")?.bonus;
++  t(sis + ": Furtivo aumenta Furtividade pelo custo", furtividadeDe(furtivo) - furtividadeDe(base), 3);
++  const pesado = ferramentaDefensiva(sis, { encs: ["enc_unif_material_pesado"], tipos: {} }).d;
++  const fortitudeDe = (d) => d.testes.resistencias.find((r) => r.value === "fortitude")?.bonus;
++  t(sis + ": Material Pesado aumenta Fortitude em 2", fortitudeDe(pesado) - fortitudeDe(base), 2);
++  const semRevest = ferramentaDefensiva(sis, { refId: "unif_comum", encs: ["enc_unif_material_pesado"], tipos: {} }).d;
++  t(sis + ": Material Pesado sem revestimento necessário é inerte", semRevest.equip.efeitosEncantamento.length, 0);
++}
++
++const escudoIsolante = (sis, tipos = ["queimante"], extras = {}) => ferramentaDefensiva(sis, {
++  tipo: "escudo", refId: "esc_pesado", encs: ["enc_esc_isolante", "enc_esc_reforcado"],
++  tipos: { enc_esc_isolante: tipos }, ...extras,
++});
++const isolado = escudoIsolante("player", ["queimante", "congelante"]).d;
++t("escudo: Isolante copia base 6, grau 5 e Reforçado 2", ["queimante", "congelante"].map((tipo) => rdTipoDe(isolado, tipo).rdProprio), [13, 13]);
++t("escudo: duas escolhas mais Reforçado ocupam três vagas", isolado.equip.entradas[0].fa.escolhidos.length, 3);
++t("escudo: extensão não duplica RD Física", isolado.rdFisico, 13);
++t("escudo: extensão não concede RD Geral", isolado.rdGeral, 0);
++t("escudo: extensão não vaza para Ácido ou Alma", ["acido", "alma"].map((tipo) => rdTipoDe(isolado, tipo).rdProprio), [0, 0]);
++for (const tipo of ["queimante", "congelante", "ct"]) {
++  t("escudo: fontes fecham a conta de " + tipo, soma(rdTipoDe(isolado, tipo).partes), rdTipoDe(isolado, tipo).rd);
++}
++const duplicado = escudoIsolante("player", ["queimante", "queimante"]).d;
++t("escudo: tipo repetido não duplica o bônus", rdTipoDe(duplicado, "queimante").rdProprio, 13);
++t("escudo: tipo repetido gera aviso", duplicado.equip.entradas[0].fa.avisos.some((a) => /tipos de dano diferentes/.test(a)), true);
++for (const tipo of ["ct", "alma", "energetico", "psiquico", "venenoso", "sumiu", null]) {
++  const { d } = escudoIsolante("player", [tipo]);
++  t("escudo: tipo inválido não recebe RD, " + tipo, d.equip.efeitosEncantamento.filter((e) => e.canal === "rdTipo").length, 0);
++}
++const preservada = escudoIsolante("player", ["queimante", "congelante"]);
++t("escudo: escolhas persistem após salvar", deriveAfty(JSON.parse(JSON.stringify(preservada.f))).equip.entradas[0].fa.encantamentoTipos.enc_esc_isolante, ["queimante", "congelante"]);
++t("escudo: retirar equipamento encerra toda RD Isolante", rdTipoDe(escudoIsolante("player", ["queimante"], { equipado: false }).d, "queimante").rdProprio, 0);
++t("escudo: ficha importada na criatura não ativa Isolante de jogador", rdTipoDe(escudoIsolante("afty").d, "queimante").rdProprio, 0);
++const variasFontes = escudoIsolante("player", ["queimante"], {
++  manual: { queimante: { rd: 3 } },
++  efeitos: [{ canal: "rdGeral", expr: "4" }, { canal: "rdFisico", expr: "7" }],
++  itens: [{ uid: "segundo_escudo", tipo: "escudo", refId: "esc_leve", equipado: true, qtd: 1 }],
++}).d;
++t("escudo: Isolante não copia a RD de outro escudo nem bônus do portador", rdTipoDe(variasFontes, "queimante").rd, 20);
++t("escudo: RD Física das fontes independentes continua somando", variasFontes.rdFisico, 22);
++const excesso = escudoIsolante("player", ["queimante", "congelante", "chocante"]).d;
++t("escudo: repetir Isolante pode exceder vagas com aviso", excesso.equip.entradas[0].fa.excedeu, true);
++
++
++/* O catálogo vivo altera as escolhas sem reescrever a ficha gravada. */
++const { aplicarAddons } = await import(R + "afty-addons.js");
++aplicarAddons([{
++  id: "teste-defensivo", nome: "Tipos defensivos de teste", versao: "1.0.0",
++  acrescenta: { tiposDano: [
++    { value: "plasma", label: "Plasma", categoria: "elemental" },
++    { value: "esmagamento", label: "Esmagamento", categoria: "fisico" },
++  ] },
++}]);
++t("Addon elemental aparece nas duas escolhas",
++  ["enc_unif_resiliente", "enc_esc_isolante"].map((id) => EQ.tiposDoEncantamento(id).some((t) => t.id === "teste-defensivo:plasma")), [true, true]);
++t("Addon físico continua vetado no Resiliente",
++  EQ.tiposDoEncantamento("enc_unif_resiliente").some((t) => t.id === "teste-defensivo:esmagamento"), false);
++const plasma = ferramentaDefensiva("player", { tipos: { enc_unif_resiliente: ["teste-defensivo:plasma"] } });
++t("Resiliente chega ao tipo de Addon na aba de Resistências", rdTipoDe(plasma.d, "teste-defensivo:plasma").rdProprio, 10);
++t("Isolante também estende RD ao elemental de Addon",
++  rdTipoDe(escudoIsolante("player", ["teste-defensivo:plasma"]).d, "teste-defensivo:plasma").rdProprio, 13);
++aplicarAddons([]);
++const semPlasma = deriveAfty(plasma.f);
++t("Desligar Addon encerra o bônus sem tipo válido",
++  semPlasma.equip.efeitosEncantamento.filter((e) => e.canal === "rdTipo").length, 0);
++t("Desligar Addon preserva a escolha gravada no item",
++  plasma.f.equipamentos.itens[0].fa.encantamentoTipos.enc_unif_resiliente, ["teste-defensivo:plasma"]);
++t("Escolha válida não muda os dados da ficha ao derivar",
++  preservada.f.equipamentos.itens[0].fa.encantamentoTipos.enc_esc_isolante, ["queimante", "congelante"]);
++const fragil = deriveAfty(preservada.f, { condicoes: ["Fragilizado"] });
++t("Fragilizado anula também as RDs dos encantamentos", ["queimante", "congelante", "ct"].map((tipo) => rdTipoDe(fragil, tipo).rd), [0, 0, 0]);
++
+ console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
+ process.exitCode = bad.length ? 1 : 0;

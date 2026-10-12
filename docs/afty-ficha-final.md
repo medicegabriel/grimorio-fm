@@ -1,11 +1,69 @@
 # Ficha Final do Afty (plano)
 
+## Feitiços de rerrolagem de cura (2026-10-12)
+
+O canal `rerrolaCuraContinua` permite repetir até sair acima do limite
+vigente de rerrolagem. A linha de cura mostra "(contínua)" e explica o limite
+no hover. O histórico da Ficha e do Encontro conserva todas as tentativas
+descartadas. Sem o canal o comportamento anterior permanece. Os dois modelos
+de Nível 5 e suas regras estão em [afty-cura-feiticos.md](afty-cura-feiticos.md).
+
+## Cura Aperfeiçoada automatizada (2026-10-12)
+
+Ao adquirir Cura Aperfeiçoada, habilidade de Suporte de nível 8, as rolagens
+de cura do usuário rerrolam automaticamente cada dado que sair 1 ou 2, uma
+única vez, mantendo o melhor resultado. O texto do livro continua inalterado.
+O pedido do autor autoriza a aplicação automática desse benefício opcional.
+
+O canal genérico `rerrolaCura` é resolvido por `rerrolagemDeCura` e
+`preparaRolagemCura` em `afty-cura.js`. As linhas da seção Cura mostram
+"Rerrola até 2" com o nome da fonte e a explicação no hover. `rolarDano`
+aceita `rerrola.melhor: true` para conservar o maior das duas tentativas;
+sem esse campo, mantém o comportamento anterior de dano, ficando o novo.
+O histórico registra ambas e mostra o descartado riscado.
+
+O caminho cobre a Ficha Final e o painel do combatente no Encontro, nos dois
+sistemas, incluindo Feitiços de cura e as curas de Bloodfeast que rolam
+diretamente na sessão. PV Temporário e curas da própria invocação não herdam
+o efeito do dono. Bônus fixos e por dado entram uma vez; rerrolar não aumenta
+a quantidade de dados para Vaticano, Cura Perfeita ou Apanhador de Saúde.
+
+Fonte: Livro de Regras 2.5.2, página impressa 109, Markdown externo
+`C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md`, SHA-256 confirmado:
+`1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a`.
+Regressão: `asserts/t-cura-aperfeicoada.mjs`.
+
 Plano de construção da **Ficha Final**, a tela de USO da criatura. Escrito em 2026-08-05, antes de
 qualquer código. Leia junto com `afty-status.md` (estado do sistema), `automacao-dsl.md` (o DSL) e
 `afty-formulas-base.md` (as fórmulas).
 
 Este documento preserva o plano e os marcos da implementação. Para pendências atuais, consulte
 `a-fazer.md` e confirme no código.
+
+## Barra de dados integrada ao cabeçalho (2026-10-08)
+
+Na Ficha Final, compartilhada pelo Afty e pelo Player, os modos DES/NOR/VAN, a última
+rolagem e o botão Histórico ficam abaixo das abas, no cabeçalho que acompanha a página.
+Até 640px, modos e Histórico ocupam a primeira linha e o resultado ocupa a segunda.
+A fórmula, os dados descartados, os marcadores e o total continuam disponíveis.
+
+O histórico abre abaixo da barra, com rolagem própria e altura limitada ao espaço da tela,
+sem aumentar o cabeçalho nem substituir o resumo da última rolagem. Clicar fora ou usar
+Escape recolhe o histórico; Escape devolve o foco ao botão. Limpar fica no cabeçalho do
+histórico e recolhe a lista. Sem rolagens, o botão fica desabilitado até um novo teste.
+
+Essa implementação substitui os dois posicionamentos anteriores nos cantos, que entravam
+em conflito com os Livros ou com o botão de desligar o CSS. O respiro final passa a `h-24`.
+A ancoragem automática da página fica desabilitada na ficha para evitar a oscilação do
+cabeçalho ao compactar. Em telas de até 480px de altura, a identidade e os vitais saem ao
+rolar, enquanto abas e dados permanecem acessíveis no topo. Os seletores antigos de tema
+são mantidos; os novos seletores do resumo e do histórico constam no contrato de classes.
+
+Verificação no navegador: Afty e Player em 12 combinações entre 320px e 1440px, incluindo
+640x360px, com CSS livre ligado, histórico longo, limpeza, Escape, clique fora, Livros e
+rolagem real com vantagem. Relatório e capturas em `.audit/barra-dados-report.json` e
+`.audit/barra-dados-shots/`. A suíte passou com 163 arquivos e 9.469 asserts; build e lint
+dos arquivos de código alterados passaram.
 
 > No início deste plano o Afty só tinha o **criador**. A Ficha Final é a outra metade: o que fica aberto na mesa
 > enquanto se joga. O criador **calcula**, a Ficha **opera**.
@@ -1159,7 +1217,8 @@ chapada, sem grupo e sem nota, que é exatamente o caso em que o nativo serve.
   é um círculo de 56px fixo em `bottom-4 right-4`, e o painel caía em cima dele. Aquilo
   é somente-leitura, então quem desvia é o Afty: o painel subiu para `bottom: 5.5rem` e
   o respiro do fim da aba cresceu junto. Tem assert, porque a correção é um número que
-  parece arbitrário e alguém "arrumaria" o painel de volta para o canto.
+  parece arbitrário e alguém "arrumaria" o painel de volta para o canto. Esse layout
+  foi substituído pelo ajuste de posição de 2026-10-08, descrito no início deste guia.
 - **O rodapé de feedback e o aviso de abertura saíram**, a pedido do autor: a pesquisa
   fechou. É a única mudança fora de `src/systems/afty/`, e foi autorizada
   explicitamente. O `components/FeedbackPrompt.jsx` continua no lugar, sem uso, e

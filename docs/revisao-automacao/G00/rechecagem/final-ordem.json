@@ -1,0 +1,6 @@
+{
+  "fim": "2026-10-05T20:52:32.4283453Z",
+  "codigo": 0,
+  "inicio": "2026-10-05T20:52:31.1067942Z",
+  "comando": "node asserts/t-ordem-modulos.mjs"
+}

@@ -1,0 +1,3743 @@
+{
+  "versao": 1,
+  "data": "2026-10-05",
+  "estadoInicial": "NÃO REVISADO",
+  "origem": "manifesto-inicial.json, snapshot recebido, sem aprovação de regra",
+  "decisaoFontes": "Autor em 2026-10-05: essas partes podem ser ignoradas por enquanto. Fontes externas ausentes adiadas, sem aprovar parcelas dependentes.",
+  "lotes": [
+    {
+      "lote": "G00",
+      "nome": "Inventário, fontes, cobertura e protocolo da campanha",
+      "fase": "Preparação",
+      "estado": "AUDITADO COM PENDÊNCIAS",
+      "auditoria": "REPROVADO",
+      "dependencias": [],
+      "registro": "G00/registro.json",
+      "proprietario": "executor do lote G00"
+    },
+    {
+      "lote": "M01",
+      "nome": "Motor: linguagem, variáveis, canais e validação",
+      "fase": "Fundação",
+      "estado": "PARCIAL",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "G00"
+      ],
+      "registro": "M01/registro.json",
+      "proprietario": "executor do lote M01"
+    },
+    {
+      "lote": "M02",
+      "nome": "Motor: estágios, acúmulo, alvos e rastreabilidade",
+      "fase": "Fundação",
+      "estado": "PARCIAL",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "G00",
+        "M01"
+      ],
+      "registro": "M02/registro.json",
+      "proprietario": "executor do lote M02"
+    },
+    {
+      "lote": "M03",
+      "nome": "Motor: ativação, eventos, custos, usos e duração",
+      "fase": "Fundação",
+      "estado": "PARCIAL",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "G00",
+        "M01",
+        "M02"
+      ],
+      "registro": "M03/registro.json",
+      "proprietario": "executor do lote M03"
+    },
+    {
+      "lote": "M04",
+      "nome": "Ferramentas do jogador: autoria de habilidades e efeitos",
+      "fase": "Fundação",
+      "estado": "PARCIAL",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "G00",
+        "M01",
+        "M02",
+        "M03"
+      ],
+      "registro": "M04/registro.json",
+      "proprietario": "executor do lote M04"
+    },
+    {
+      "lote": "M05",
+      "nome": "Addons: famílias, herança, isolamento e atualização",
+      "fase": "Fundação",
+      "estado": "PARCIAL",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "G00",
+        "M01",
+        "M02"
+      ],
+      "registro": "M05/registro.json",
+      "proprietario": "executor do lote M05"
+    },
+    {
+      "lote": "P01",
+      "nome": "Progressão, características das classes e multiclasse",
+      "fase": "Fundação",
+      "estado": "PARCIAL",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "G00",
+        "M01",
+        "M02"
+      ],
+      "registro": "P01/registro.json",
+      "proprietario": "executor do lote P01"
+    },
+    {
+      "lote": "CMB-01",
+      "nome": "Combatente: Repertório do Especialista e suas escolhas",
+      "fase": "Especializações",
+      "estado": "PARCIAL",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04"
+      ],
+      "registro": "CMB-01/registro.json",
+      "proprietario": "executor do lote CMB-01"
+    },
+    {
+      "lote": "CMB-02",
+      "nome": "Combatente: Golpe Especial e suas escolhas",
+      "fase": "Especializações",
+      "estado": "PARCIAL",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CMB-01"
+      ],
+      "registro": "CMB-02/registro.json",
+      "proprietario": "executor do lote CMB-02"
+    },
+    {
+      "lote": "CMB-03",
+      "nome": "Combatente: demais habilidades base",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CMB-02"
+      ],
+      "registro": "CMB-03/registro.json",
+      "proprietario": "executor do lote CMB-03"
+    },
+    {
+      "lote": "CMB-04",
+      "nome": "Combatente: Assumir Postura e suas escolhas",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CMB-03"
+      ],
+      "registro": "CMB-04/registro.json",
+      "proprietario": "executor do lote CMB-04"
+    },
+    {
+      "lote": "CMB-05",
+      "nome": "Combatente: níveis 2 a 4, grupo 1",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CMB-04"
+      ],
+      "registro": "CMB-05/registro.json",
+      "proprietario": "executor do lote CMB-05"
+    },
+    {
+      "lote": "CMB-06",
+      "nome": "Combatente: níveis 2 a 4, grupo 2",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CMB-05"
+      ],
+      "registro": "CMB-06/registro.json",
+      "proprietario": "executor do lote CMB-06"
+    },
+    {
+      "lote": "CMB-07",
+      "nome": "Combatente: níveis 2 a 4, grupo 3",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CMB-06"
+      ],
+      "registro": "CMB-07/registro.json",
+      "proprietario": "executor do lote CMB-07"
+    },
+    {
+      "lote": "CMB-08",
+      "nome": "Combatente: níveis 2 a 4, grupo 4",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CMB-07"
+      ],
+      "registro": "CMB-08/registro.json",
+      "proprietario": "executor do lote CMB-08"
+    },
+    {
+      "lote": "CMB-09",
+      "nome": "Combatente: Manejo Especial e suas escolhas",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CMB-08"
+      ],
+      "registro": "CMB-09/registro.json",
+      "proprietario": "executor do lote CMB-09"
+    },
+    {
+      "lote": "CMB-10",
+      "nome": "Combatente: níveis 6 a 8, grupo 1",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CMB-09"
+      ],
+      "registro": "CMB-10/registro.json",
+      "proprietario": "executor do lote CMB-10"
+    },
+    {
+      "lote": "CMB-11",
+      "nome": "Combatente: níveis 6 a 8, grupo 2",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CMB-10"
+      ],
+      "registro": "CMB-11/registro.json",
+      "proprietario": "executor do lote CMB-11"
+    },
+    {
+      "lote": "CMB-12",
+      "nome": "Combatente: níveis 6 a 8, grupo 3",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CMB-11"
+      ],
+      "registro": "CMB-12/registro.json",
+      "proprietario": "executor do lote CMB-12"
+    },
+    {
+      "lote": "CMB-13",
+      "nome": "Combatente: Ataque Concentrado e suas escolhas",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CMB-12"
+      ],
+      "registro": "CMB-13/registro.json",
+      "proprietario": "executor do lote CMB-13"
+    },
+    {
+      "lote": "CMB-14",
+      "nome": "Combatente: níveis 10 a 20, grupo 1",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CMB-13"
+      ],
+      "registro": "CMB-14/registro.json",
+      "proprietario": "executor do lote CMB-14"
+    },
+    {
+      "lote": "CMB-15",
+      "nome": "Combatente: níveis 10 a 20, grupo 2",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CMB-14"
+      ],
+      "registro": "CMB-15/registro.json",
+      "proprietario": "executor do lote CMB-15"
+    },
+    {
+      "lote": "LUT-01",
+      "nome": "Lutador: Empolgação e suas escolhas",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04"
+      ],
+      "registro": "LUT-01/registro.json",
+      "proprietario": "executor do lote LUT-01"
+    },
+    {
+      "lote": "LUT-02",
+      "nome": "Lutador: demais habilidades base",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "LUT-01"
+      ],
+      "registro": "LUT-02/registro.json",
+      "proprietario": "executor do lote LUT-02"
+    },
+    {
+      "lote": "LUT-03",
+      "nome": "Lutador: níveis 2 a 4, grupo 1",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "LUT-02"
+      ],
+      "registro": "LUT-03/registro.json",
+      "proprietario": "executor do lote LUT-03"
+    },
+    {
+      "lote": "LUT-04",
+      "nome": "Lutador: níveis 2 a 4, grupo 2",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "LUT-03"
+      ],
+      "registro": "LUT-04/registro.json",
+      "proprietario": "executor do lote LUT-04"
+    },
+    {
+      "lote": "LUT-05",
+      "nome": "Lutador: níveis 2 a 4, grupo 3",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "LUT-04"
+      ],
+      "registro": "LUT-05/registro.json",
+      "proprietario": "executor do lote LUT-05"
+    },
+    {
+      "lote": "LUT-06",
+      "nome": "Lutador: níveis 2 a 4, grupo 4",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "LUT-05"
+      ],
+      "registro": "LUT-06/registro.json",
+      "proprietario": "executor do lote LUT-06"
+    },
+    {
+      "lote": "LUT-07",
+      "nome": "Lutador: níveis 6 a 8, grupo 1",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "LUT-06"
+      ],
+      "registro": "LUT-07/registro.json",
+      "proprietario": "executor do lote LUT-07"
+    },
+    {
+      "lote": "LUT-08",
+      "nome": "Lutador: níveis 6 a 8, grupo 2",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "LUT-07"
+      ],
+      "registro": "LUT-08/registro.json",
+      "proprietario": "executor do lote LUT-08"
+    },
+    {
+      "lote": "LUT-09",
+      "nome": "Lutador: níveis 6 a 8, grupo 3",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "LUT-08"
+      ],
+      "registro": "LUT-09/registro.json",
+      "proprietario": "executor do lote LUT-09"
+    },
+    {
+      "lote": "LUT-10",
+      "nome": "Lutador: níveis 10 a 20, grupo 1",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "LUT-09"
+      ],
+      "registro": "LUT-10/registro.json",
+      "proprietario": "executor do lote LUT-10"
+    },
+    {
+      "lote": "LUT-11",
+      "nome": "Lutador: níveis 10 a 20, grupo 2",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "LUT-10"
+      ],
+      "registro": "LUT-11/registro.json",
+      "proprietario": "executor do lote LUT-11"
+    },
+    {
+      "lote": "CNJ-01",
+      "nome": "Conjurador: Domínio dos Fundamentos e suas escolhas",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04"
+      ],
+      "registro": "CNJ-01/registro.json",
+      "proprietario": "executor do lote CNJ-01"
+    },
+    {
+      "lote": "CNJ-02",
+      "nome": "Conjurador: demais habilidades base",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CNJ-01"
+      ],
+      "registro": "CNJ-02/registro.json",
+      "proprietario": "executor do lote CNJ-02"
+    },
+    {
+      "lote": "CNJ-03",
+      "nome": "Conjurador: níveis 2 a 4, grupo 1",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CNJ-02"
+      ],
+      "registro": "CNJ-03/registro.json",
+      "proprietario": "executor do lote CNJ-03"
+    },
+    {
+      "lote": "CNJ-04",
+      "nome": "Conjurador: níveis 2 a 4, grupo 2",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CNJ-03"
+      ],
+      "registro": "CNJ-04/registro.json",
+      "proprietario": "executor do lote CNJ-04"
+    },
+    {
+      "lote": "CNJ-05",
+      "nome": "Conjurador: níveis 2 a 4, grupo 3",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CNJ-04"
+      ],
+      "registro": "CNJ-05/registro.json",
+      "proprietario": "executor do lote CNJ-05"
+    },
+    {
+      "lote": "CNJ-06",
+      "nome": "Conjurador: níveis 2 a 4, grupo 4",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CNJ-05"
+      ],
+      "registro": "CNJ-06/registro.json",
+      "proprietario": "executor do lote CNJ-06"
+    },
+    {
+      "lote": "CNJ-07",
+      "nome": "Conjurador: níveis 6 a 8, grupo 1",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CNJ-06"
+      ],
+      "registro": "CNJ-07/registro.json",
+      "proprietario": "executor do lote CNJ-07"
+    },
+    {
+      "lote": "CNJ-08",
+      "nome": "Conjurador: níveis 6 a 8, grupo 2",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CNJ-07"
+      ],
+      "registro": "CNJ-08/registro.json",
+      "proprietario": "executor do lote CNJ-08"
+    },
+    {
+      "lote": "CNJ-09",
+      "nome": "Conjurador: níveis 6 a 8, grupo 3",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CNJ-08"
+      ],
+      "registro": "CNJ-09/registro.json",
+      "proprietario": "executor do lote CNJ-09"
+    },
+    {
+      "lote": "CNJ-10",
+      "nome": "Conjurador: níveis 10 a 20, grupo 1",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CNJ-09"
+      ],
+      "registro": "CNJ-10/registro.json",
+      "proprietario": "executor do lote CNJ-10"
+    },
+    {
+      "lote": "CNJ-11",
+      "nome": "Conjurador: níveis 10 a 20, grupo 2",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CNJ-10"
+      ],
+      "registro": "CNJ-11/registro.json",
+      "proprietario": "executor do lote CNJ-11"
+    },
+    {
+      "lote": "SUP-01",
+      "nome": "Suporte: demais habilidades base",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04"
+      ],
+      "registro": "SUP-01/registro.json",
+      "proprietario": "executor do lote SUP-01"
+    },
+    {
+      "lote": "SUP-02",
+      "nome": "Suporte: níveis 2 a 4, grupo 1",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "SUP-01"
+      ],
+      "registro": "SUP-02/registro.json",
+      "proprietario": "executor do lote SUP-02"
+    },
+    {
+      "lote": "SUP-03",
+      "nome": "Suporte: níveis 2 a 4, grupo 2",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "SUP-02"
+      ],
+      "registro": "SUP-03/registro.json",
+      "proprietario": "executor do lote SUP-03"
+    },
+    {
+      "lote": "SUP-04",
+      "nome": "Suporte: níveis 2 a 4, grupo 3",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "SUP-03"
+      ],
+      "registro": "SUP-04/registro.json",
+      "proprietario": "executor do lote SUP-04"
+    },
+    {
+      "lote": "SUP-05",
+      "nome": "Suporte: níveis 6 a 8, grupo 1",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "SUP-04"
+      ],
+      "registro": "SUP-05/registro.json",
+      "proprietario": "executor do lote SUP-05"
+    },
+    {
+      "lote": "SUP-06",
+      "nome": "Suporte: níveis 6 a 8, grupo 2",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "SUP-05"
+      ],
+      "registro": "SUP-06/registro.json",
+      "proprietario": "executor do lote SUP-06"
+    },
+    {
+      "lote": "SUP-07",
+      "nome": "Suporte: níveis 10 a 20, grupo 1",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "SUP-06"
+      ],
+      "registro": "SUP-07/registro.json",
+      "proprietario": "executor do lote SUP-07"
+    },
+    {
+      "lote": "SUP-08",
+      "nome": "Suporte: níveis 10 a 20, grupo 2",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "SUP-07"
+      ],
+      "registro": "SUP-08/registro.json",
+      "proprietario": "executor do lote SUP-08"
+    },
+    {
+      "lote": "CTR-01",
+      "nome": "Controlador: Apogeu e suas escolhas",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04"
+      ],
+      "registro": "CTR-01/registro.json",
+      "proprietario": "executor do lote CTR-01"
+    },
+    {
+      "lote": "CTR-02",
+      "nome": "Controlador: demais habilidades base",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CTR-01"
+      ],
+      "registro": "CTR-02/registro.json",
+      "proprietario": "executor do lote CTR-02"
+    },
+    {
+      "lote": "CTR-03",
+      "nome": "Controlador: níveis 2 a 4, grupo 1",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CTR-02"
+      ],
+      "registro": "CTR-03/registro.json",
+      "proprietario": "executor do lote CTR-03"
+    },
+    {
+      "lote": "CTR-04",
+      "nome": "Controlador: níveis 2 a 4, grupo 2",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CTR-03"
+      ],
+      "registro": "CTR-04/registro.json",
+      "proprietario": "executor do lote CTR-04"
+    },
+    {
+      "lote": "CTR-05",
+      "nome": "Controlador: níveis 2 a 4, grupo 3",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CTR-04"
+      ],
+      "registro": "CTR-05/registro.json",
+      "proprietario": "executor do lote CTR-05"
+    },
+    {
+      "lote": "CTR-06",
+      "nome": "Controlador: níveis 2 a 4, grupo 4",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CTR-05"
+      ],
+      "registro": "CTR-06/registro.json",
+      "proprietario": "executor do lote CTR-06"
+    },
+    {
+      "lote": "CTR-07",
+      "nome": "Controlador: níveis 6 a 8, grupo 1",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CTR-06"
+      ],
+      "registro": "CTR-07/registro.json",
+      "proprietario": "executor do lote CTR-07"
+    },
+    {
+      "lote": "CTR-08",
+      "nome": "Controlador: níveis 6 a 8, grupo 2",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CTR-07"
+      ],
+      "registro": "CTR-08/registro.json",
+      "proprietario": "executor do lote CTR-08"
+    },
+    {
+      "lote": "CTR-09",
+      "nome": "Controlador: níveis 10 a 20, grupo 1",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "CTR-08"
+      ],
+      "registro": "CTR-09/registro.json",
+      "proprietario": "executor do lote CTR-09"
+    },
+    {
+      "lote": "RES-01",
+      "nome": "Restringido: Restrito pelos Céus e suas escolhas",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04"
+      ],
+      "registro": "RES-01/registro.json",
+      "proprietario": "executor do lote RES-01"
+    },
+    {
+      "lote": "RES-02",
+      "nome": "Restringido: demais habilidades base",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "RES-01"
+      ],
+      "registro": "RES-02/registro.json",
+      "proprietario": "executor do lote RES-02"
+    },
+    {
+      "lote": "RES-03",
+      "nome": "Restringido: Roubo de Habilidade e suas escolhas",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "RES-02"
+      ],
+      "registro": "RES-03/registro.json",
+      "proprietario": "executor do lote RES-03"
+    },
+    {
+      "lote": "RES-04",
+      "nome": "Restringido: níveis 2 a 4, grupo 1",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "RES-03"
+      ],
+      "registro": "RES-04/registro.json",
+      "proprietario": "executor do lote RES-04"
+    },
+    {
+      "lote": "RES-05",
+      "nome": "Restringido: níveis 2 a 4, grupo 2",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "RES-04"
+      ],
+      "registro": "RES-05/registro.json",
+      "proprietario": "executor do lote RES-05"
+    },
+    {
+      "lote": "RES-06",
+      "nome": "Restringido: níveis 2 a 4, grupo 3",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "RES-05"
+      ],
+      "registro": "RES-06/registro.json",
+      "proprietario": "executor do lote RES-06"
+    },
+    {
+      "lote": "RES-07",
+      "nome": "Restringido: níveis 6 a 8, grupo 1",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "RES-06"
+      ],
+      "registro": "RES-07/registro.json",
+      "proprietario": "executor do lote RES-07"
+    },
+    {
+      "lote": "RES-08",
+      "nome": "Restringido: níveis 6 a 8, grupo 2",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "RES-07"
+      ],
+      "registro": "RES-08/registro.json",
+      "proprietario": "executor do lote RES-08"
+    },
+    {
+      "lote": "RES-09",
+      "nome": "Restringido: níveis 10 a 20, grupo 1",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "RES-08"
+      ],
+      "registro": "RES-09/registro.json",
+      "proprietario": "executor do lote RES-09"
+    },
+    {
+      "lote": "RES-10",
+      "nome": "Restringido: níveis 10 a 20, grupo 2",
+      "fase": "Especializações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04",
+        "RES-09"
+      ],
+      "registro": "RES-10/registro.json",
+      "proprietario": "executor do lote RES-10"
+    },
+    {
+      "lote": "APT-01",
+      "nome": "Aptidões de Aura, grupo 1",
+      "fase": "Aptidões",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M03",
+        "M04"
+      ],
+      "registro": "APT-01/registro.json",
+      "proprietario": "executor do lote APT-01"
+    },
+    {
+      "lote": "APT-02",
+      "nome": "Aptidões de Aura, grupo 2",
+      "fase": "Aptidões",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M03",
+        "M04"
+      ],
+      "registro": "APT-02/registro.json",
+      "proprietario": "executor do lote APT-02"
+    },
+    {
+      "lote": "APT-03",
+      "nome": "Aptidões de Aura, grupo 3",
+      "fase": "Aptidões",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M03",
+        "M04"
+      ],
+      "registro": "APT-03/registro.json",
+      "proprietario": "executor do lote APT-03"
+    },
+    {
+      "lote": "APT-04",
+      "nome": "Aptidões de Aura, grupo 4",
+      "fase": "Aptidões",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M03",
+        "M04"
+      ],
+      "registro": "APT-04/registro.json",
+      "proprietario": "executor do lote APT-04"
+    },
+    {
+      "lote": "APT-05",
+      "nome": "Aptidões de Controle e Leitura, grupo 1",
+      "fase": "Aptidões",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M03",
+        "M04"
+      ],
+      "registro": "APT-05/registro.json",
+      "proprietario": "executor do lote APT-05"
+    },
+    {
+      "lote": "APT-06",
+      "nome": "Aptidões de Controle e Leitura, grupo 2",
+      "fase": "Aptidões",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M03",
+        "M04"
+      ],
+      "registro": "APT-06/registro.json",
+      "proprietario": "executor do lote APT-06"
+    },
+    {
+      "lote": "APT-07",
+      "nome": "Aptidões de Controle e Leitura, grupo 3",
+      "fase": "Aptidões",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M03",
+        "M04"
+      ],
+      "registro": "APT-07/registro.json",
+      "proprietario": "executor do lote APT-07"
+    },
+    {
+      "lote": "APT-08",
+      "nome": "Aptidões de Barreira",
+      "fase": "Aptidões",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M03",
+        "M04"
+      ],
+      "registro": "APT-08/registro.json",
+      "proprietario": "executor do lote APT-08"
+    },
+    {
+      "lote": "APT-09",
+      "nome": "Aptidões de Domínio",
+      "fase": "Aptidões",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M03",
+        "M04"
+      ],
+      "registro": "APT-09/registro.json",
+      "proprietario": "executor do lote APT-09"
+    },
+    {
+      "lote": "APT-10",
+      "nome": "Aptidões de Energia Reversa",
+      "fase": "Aptidões",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M03",
+        "M04"
+      ],
+      "registro": "APT-10/registro.json",
+      "proprietario": "executor do lote APT-10"
+    },
+    {
+      "lote": "APT-11",
+      "nome": "Aptidões de Especiais",
+      "fase": "Aptidões",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M03",
+        "M04"
+      ],
+      "registro": "APT-11/registro.json",
+      "proprietario": "executor do lote APT-11"
+    },
+    {
+      "lote": "APT-12",
+      "nome": "Aptidões de Maldição, grupo 1",
+      "fase": "Aptidões",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M03",
+        "M04"
+      ],
+      "registro": "APT-12/registro.json",
+      "proprietario": "executor do lote APT-12"
+    },
+    {
+      "lote": "APT-13",
+      "nome": "Aptidões de Maldição, grupo 2",
+      "fase": "Aptidões",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M03",
+        "M04"
+      ],
+      "registro": "APT-13/registro.json",
+      "proprietario": "executor do lote APT-13"
+    },
+    {
+      "lote": "APT-14",
+      "nome": "Aptidões de Maldição, grupo 3",
+      "fase": "Aptidões",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M03",
+        "M04"
+      ],
+      "registro": "APT-14/registro.json",
+      "proprietario": "executor do lote APT-14"
+    },
+    {
+      "lote": "TAL-01",
+      "nome": "Talentos de Origem, grupo 1",
+      "fase": "Talentos e fundamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04"
+      ],
+      "registro": "TAL-01/registro.json",
+      "proprietario": "executor do lote TAL-01"
+    },
+    {
+      "lote": "TAL-02",
+      "nome": "Talentos Gerais, grupo 1",
+      "fase": "Talentos e fundamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04"
+      ],
+      "registro": "TAL-02/registro.json",
+      "proprietario": "executor do lote TAL-02"
+    },
+    {
+      "lote": "TAL-03",
+      "nome": "Talentos Gerais, grupo 2",
+      "fase": "Talentos e fundamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04"
+      ],
+      "registro": "TAL-03/registro.json",
+      "proprietario": "executor do lote TAL-03"
+    },
+    {
+      "lote": "TAL-04",
+      "nome": "Talentos Gerais, grupo 3",
+      "fase": "Talentos e fundamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04"
+      ],
+      "registro": "TAL-04/registro.json",
+      "proprietario": "executor do lote TAL-04"
+    },
+    {
+      "lote": "TAL-05",
+      "nome": "Talentos Gerais, grupo 4",
+      "fase": "Talentos e fundamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04"
+      ],
+      "registro": "TAL-05/registro.json",
+      "proprietario": "executor do lote TAL-05"
+    },
+    {
+      "lote": "TAL-06",
+      "nome": "Talentos Gerais, grupo 5",
+      "fase": "Talentos e fundamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04"
+      ],
+      "registro": "TAL-06/registro.json",
+      "proprietario": "executor do lote TAL-06"
+    },
+    {
+      "lote": "TAL-07",
+      "nome": "Talentos Gerais, grupo 6",
+      "fase": "Talentos e fundamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04"
+      ],
+      "registro": "TAL-07/registro.json",
+      "proprietario": "executor do lote TAL-07"
+    },
+    {
+      "lote": "GER-01",
+      "nome": "Habilidades Gerais e concessões de vagas",
+      "fase": "Talentos e fundamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M02"
+      ],
+      "registro": "GER-01/registro.json",
+      "proprietario": "executor do lote GER-01"
+    },
+    {
+      "lote": "ORI-01",
+      "nome": "Origens, grupo 1",
+      "fase": "Talentos e fundamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M03",
+        "M04"
+      ],
+      "registro": "ORI-01/registro.json",
+      "proprietario": "executor do lote ORI-01"
+    },
+    {
+      "lote": "ORI-02",
+      "nome": "Origens, grupo 2",
+      "fase": "Talentos e fundamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M03",
+        "M04"
+      ],
+      "registro": "ORI-02/registro.json",
+      "proprietario": "executor do lote ORI-02"
+    },
+    {
+      "lote": "ORI-03",
+      "nome": "Origens, grupo 3",
+      "fase": "Talentos e fundamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M03",
+        "M04"
+      ],
+      "registro": "ORI-03/registro.json",
+      "proprietario": "executor do lote ORI-03"
+    },
+    {
+      "lote": "CLA-01",
+      "nome": "Clãs nativos e características herdadas",
+      "fase": "Talentos e fundamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "CLA-01/registro.json",
+      "proprietario": "executor do lote CLA-01"
+    },
+    {
+      "lote": "TRE-01",
+      "nome": "Treinamentos comuns, grupo 1",
+      "fase": "Talentos e fundamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M02",
+        "M03",
+        "M04"
+      ],
+      "registro": "TRE-01/registro.json",
+      "proprietario": "executor do lote TRE-01"
+    },
+    {
+      "lote": "TRE-02",
+      "nome": "Treinamentos comuns, grupo 2",
+      "fase": "Talentos e fundamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M02",
+        "M03",
+        "M04"
+      ],
+      "registro": "TRE-02/registro.json",
+      "proprietario": "executor do lote TRE-02"
+    },
+    {
+      "lote": "TRE-03",
+      "nome": "Treinamentos comuns, grupo 3",
+      "fase": "Talentos e fundamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M02",
+        "M03",
+        "M04"
+      ],
+      "registro": "TRE-03/registro.json",
+      "proprietario": "executor do lote TRE-03"
+    },
+    {
+      "lote": "TRE-04",
+      "nome": "Treinos Especiais e escolhas por aquisição",
+      "fase": "Talentos e fundamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M02",
+        "M04"
+      ],
+      "registro": "TRE-04/registro.json",
+      "proprietario": "executor do lote TRE-04"
+    },
+    {
+      "lote": "ANA-01",
+      "nome": "Anatomias, grupo 1",
+      "fase": "Talentos e fundamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "ANA-01/registro.json",
+      "proprietario": "executor do lote ANA-01"
+    },
+    {
+      "lote": "ANA-02",
+      "nome": "Anatomias, grupo 2",
+      "fase": "Talentos e fundamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "ANA-02/registro.json",
+      "proprietario": "executor do lote ANA-02"
+    },
+    {
+      "lote": "ANA-03",
+      "nome": "Anatomias, grupo 3",
+      "fase": "Talentos e fundamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "ANA-03/registro.json",
+      "proprietario": "executor do lote ANA-03"
+    },
+    {
+      "lote": "ALT-01",
+      "nome": "Melhorias Superiores, grupo 1",
+      "fase": "Alto nível",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04"
+      ],
+      "registro": "ALT-01/registro.json",
+      "proprietario": "executor do lote ALT-01"
+    },
+    {
+      "lote": "ALT-02",
+      "nome": "Melhorias Superiores, grupo 2",
+      "fase": "Alto nível",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M04"
+      ],
+      "registro": "ALT-02/registro.json",
+      "proprietario": "executor do lote ALT-02"
+    },
+    {
+      "lote": "LEN-01",
+      "nome": "Habilidades Lendárias, grupo 1",
+      "fase": "Alto nível",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M03",
+        "M04"
+      ],
+      "registro": "LEN-01/registro.json",
+      "proprietario": "executor do lote LEN-01"
+    },
+    {
+      "lote": "LEN-02",
+      "nome": "Habilidades Lendárias, grupo 2",
+      "fase": "Alto nível",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M03",
+        "M04"
+      ],
+      "registro": "LEN-02/registro.json",
+      "proprietario": "executor do lote LEN-02"
+    },
+    {
+      "lote": "LEN-03",
+      "nome": "Habilidades Lendárias, grupo 3",
+      "fase": "Alto nível",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "P01",
+        "M03",
+        "M04"
+      ],
+      "registro": "LEN-03/registro.json",
+      "proprietario": "executor do lote LEN-03"
+    },
+    {
+      "lote": "API-01",
+      "nome": "Ápice: Fluxo Invencível",
+      "fase": "Alto nível",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "API-01/registro.json",
+      "proprietario": "executor do lote API-01"
+    },
+    {
+      "lote": "API-02",
+      "nome": "Ápice: Força do Infinito",
+      "fase": "Alto nível",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "API-02/registro.json",
+      "proprietario": "executor do lote API-02"
+    },
+    {
+      "lote": "API-03",
+      "nome": "Ápice: Invencível sob o Sol",
+      "fase": "Alto nível",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "API-03/registro.json",
+      "proprietario": "executor do lote API-03"
+    },
+    {
+      "lote": "API-04",
+      "nome": "Ápice: Maré da Vida",
+      "fase": "Alto nível",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "API-04/registro.json",
+      "proprietario": "executor do lote API-04"
+    },
+    {
+      "lote": "API-05",
+      "nome": "Ápice: Poder da Trindade",
+      "fase": "Alto nível",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "API-05/registro.json",
+      "proprietario": "executor do lote API-05"
+    },
+    {
+      "lote": "API-06",
+      "nome": "Ápice: Rei do Tabuleiro",
+      "fase": "Alto nível",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "API-06/registro.json",
+      "proprietario": "executor do lote API-06"
+    },
+    {
+      "lote": "SIS-01",
+      "nome": "Condições, vantagens, desvantagens e resistências",
+      "fase": "Sistemas transversais",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "SIS-01/registro.json",
+      "proprietario": "executor do lote SIS-01"
+    },
+    {
+      "lote": "SIS-02",
+      "nome": "Perícias, Ofícios e fontes de proficiência",
+      "fase": "Sistemas transversais",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "SIS-02/registro.json",
+      "proprietario": "executor do lote SIS-02"
+    },
+    {
+      "lote": "SIS-03",
+      "nome": "Votos e modificações corporais",
+      "fase": "Sistemas transversais",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "SIS-03/registro.json",
+      "proprietario": "executor do lote SIS-03"
+    },
+    {
+      "lote": "SIS-04",
+      "nome": "Catarse e Liberações",
+      "fase": "Sistemas transversais",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "SIS-04/registro.json",
+      "proprietario": "executor do lote SIS-04"
+    },
+    {
+      "lote": "SIS-05",
+      "nome": "Aliados, alma, alimentos e buffs nativos",
+      "fase": "Sistemas transversais",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "SIS-05/registro.json",
+      "proprietario": "executor do lote SIS-05"
+    },
+    {
+      "lote": "FEI-01",
+      "nome": "Feitiços: dano, ataque, TR, área e alcance",
+      "fase": "Feitiços e técnicas",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "FEI-01/registro.json",
+      "proprietario": "executor do lote FEI-01"
+    },
+    {
+      "lote": "FEI-02",
+      "nome": "Feitiços: cura e efeitos curativos",
+      "fase": "Feitiços e técnicas",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "FEI-02/registro.json",
+      "proprietario": "executor do lote FEI-02"
+    },
+    {
+      "lote": "FEI-03",
+      "nome": "Feitiços: auxiliares, múltiplos efeitos e duração",
+      "fase": "Feitiços e técnicas",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "FEI-03/registro.json",
+      "proprietario": "executor do lote FEI-03"
+    },
+    {
+      "lote": "FEI-04",
+      "nome": "Feitiços Permutativos",
+      "fase": "Feitiços e técnicas",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "FEI-04/registro.json",
+      "proprietario": "executor do lote FEI-04"
+    },
+    {
+      "lote": "FEI-05",
+      "nome": "Feitiços Passivos e reserva de energia",
+      "fase": "Feitiços e técnicas",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "FEI-05/registro.json",
+      "proprietario": "executor do lote FEI-05"
+    },
+    {
+      "lote": "FEI-06",
+      "nome": "Feitiços Especiais e Transformações",
+      "fase": "Feitiços e técnicas",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "FEI-06/registro.json",
+      "proprietario": "executor do lote FEI-06"
+    },
+    {
+      "lote": "TEC-01",
+      "nome": "Estilo da Sombra e Técnicas de Estilo",
+      "fase": "Feitiços e técnicas",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "TEC-01/registro.json",
+      "proprietario": "executor do lote TEC-01"
+    },
+    {
+      "lote": "TEC-02",
+      "nome": "Domínios, barreiras e Domínio Simples",
+      "fase": "Feitiços e técnicas",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "TEC-02/registro.json",
+      "proprietario": "executor do lote TEC-02"
+    },
+    {
+      "lote": "TEC-03",
+      "nome": "Rituais e suas melhorias",
+      "fase": "Feitiços e técnicas",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "TEC-03/registro.json",
+      "proprietario": "executor do lote TEC-03"
+    },
+    {
+      "lote": "INV-01",
+      "nome": "Invocações: tipos, graus, criação e custos",
+      "fase": "Invocações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "INV-01/registro.json",
+      "proprietario": "executor do lote INV-01"
+    },
+    {
+      "lote": "INV-02",
+      "nome": "Invocações: ações e auxílios personalizados",
+      "fase": "Invocações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "INV-02/registro.json",
+      "proprietario": "executor do lote INV-02"
+    },
+    {
+      "lote": "INV-03",
+      "nome": "Invocações: sessão, campo e Técnica Inata",
+      "fase": "Invocações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "INV-03/registro.json",
+      "proprietario": "executor do lote INV-03"
+    },
+    {
+      "lote": "INV-04",
+      "nome": "Invocações compostas: Horda, Quimera, Núcleos e Mecha",
+      "fase": "Invocações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "INV-04/registro.json",
+      "proprietario": "executor do lote INV-04"
+    },
+    {
+      "lote": "EQU-00",
+      "nome": "Equipamentos: inventário, equipamento e fontes",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "EQU-00/registro.json",
+      "proprietario": "executor do lote EQU-00"
+    },
+    {
+      "lote": "CRI-01",
+      "nome": "Criação de Armas e armas transformáveis",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "CRI-01/registro.json",
+      "proprietario": "executor do lote CRI-01"
+    },
+    {
+      "lote": "CRI-02",
+      "nome": "Criação de Equipamentos: armas e propriedades",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "CRI-02/registro.json",
+      "proprietario": "executor do lote CRI-02"
+    },
+    {
+      "lote": "CRI-03",
+      "nome": "Criação de Equipamentos: itens e efeitos ativos",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "CRI-03/registro.json",
+      "proprietario": "executor do lote CRI-03"
+    },
+    {
+      "lote": "CRI-04",
+      "nome": "Criação de Equipamentos: encantamentos, melhoria e Forja",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M03",
+        "M04"
+      ],
+      "registro": "CRI-04/registro.json",
+      "proprietario": "executor do lote CRI-04"
+    },
+    {
+      "lote": "INC-01",
+      "nome": "Características de Invocação, grupo 1",
+      "fase": "Invocações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "INV-01",
+        "INV-02",
+        "M04"
+      ],
+      "registro": "INC-01/registro.json",
+      "proprietario": "executor do lote INC-01"
+    },
+    {
+      "lote": "INC-02",
+      "nome": "Características de Invocação, grupo 2",
+      "fase": "Invocações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "INV-01",
+        "INV-02",
+        "M04"
+      ],
+      "registro": "INC-02/registro.json",
+      "proprietario": "executor do lote INC-02"
+    },
+    {
+      "lote": "INC-03",
+      "nome": "Características de Invocação, grupo 3",
+      "fase": "Invocações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "INV-01",
+        "INV-02",
+        "M04"
+      ],
+      "registro": "INC-03/registro.json",
+      "proprietario": "executor do lote INC-03"
+    },
+    {
+      "lote": "INC-04",
+      "nome": "Características de Invocação, grupo 4",
+      "fase": "Invocações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "INV-01",
+        "INV-02",
+        "M04"
+      ],
+      "registro": "INC-04/registro.json",
+      "proprietario": "executor do lote INC-04"
+    },
+    {
+      "lote": "INC-05",
+      "nome": "Características de Invocação, grupo 5",
+      "fase": "Invocações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "INV-01",
+        "INV-02",
+        "M04"
+      ],
+      "registro": "INC-05/registro.json",
+      "proprietario": "executor do lote INC-05"
+    },
+    {
+      "lote": "INC-06",
+      "nome": "Características de Invocação, grupo 6",
+      "fase": "Invocações",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "INV-01",
+        "INV-02",
+        "M04"
+      ],
+      "registro": "INC-06/registro.json",
+      "proprietario": "executor do lote INC-06"
+    },
+    {
+      "lote": "ARM-01",
+      "nome": "Armas, grupo 1",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ARM-01/registro.json",
+      "proprietario": "executor do lote ARM-01"
+    },
+    {
+      "lote": "ARM-02",
+      "nome": "Armas, grupo 2",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ARM-02/registro.json",
+      "proprietario": "executor do lote ARM-02"
+    },
+    {
+      "lote": "ARM-03",
+      "nome": "Armas, grupo 3",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ARM-03/registro.json",
+      "proprietario": "executor do lote ARM-03"
+    },
+    {
+      "lote": "ARM-04",
+      "nome": "Armas, grupo 4",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ARM-04/registro.json",
+      "proprietario": "executor do lote ARM-04"
+    },
+    {
+      "lote": "ARM-05",
+      "nome": "Armas, grupo 5",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ARM-05/registro.json",
+      "proprietario": "executor do lote ARM-05"
+    },
+    {
+      "lote": "ARM-06",
+      "nome": "Armas, grupo 6",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ARM-06/registro.json",
+      "proprietario": "executor do lote ARM-06"
+    },
+    {
+      "lote": "ARM-07",
+      "nome": "Armas, grupo 7",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ARM-07/registro.json",
+      "proprietario": "executor do lote ARM-07"
+    },
+    {
+      "lote": "PRO-01",
+      "nome": "Propriedades de Arma, grupo 1",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "PRO-01/registro.json",
+      "proprietario": "executor do lote PRO-01"
+    },
+    {
+      "lote": "PRO-02",
+      "nome": "Propriedades de Arma, grupo 2",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "PRO-02/registro.json",
+      "proprietario": "executor do lote PRO-02"
+    },
+    {
+      "lote": "PRO-03",
+      "nome": "Propriedades de Arma, grupo 3",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "PRO-03/registro.json",
+      "proprietario": "executor do lote PRO-03"
+    },
+    {
+      "lote": "ESP-01",
+      "nome": "Regras Especiais de Arma, grupo 1",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ESP-01/registro.json",
+      "proprietario": "executor do lote ESP-01"
+    },
+    {
+      "lote": "ESP-02",
+      "nome": "Regras Especiais de Arma, grupo 2",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ESP-02/registro.json",
+      "proprietario": "executor do lote ESP-02"
+    },
+    {
+      "lote": "ESP-03",
+      "nome": "Regras Especiais de Arma, grupo 3",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ESP-03/registro.json",
+      "proprietario": "executor do lote ESP-03"
+    },
+    {
+      "lote": "ECA-01",
+      "nome": "Encantamentos de Arma, grupo 1",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ECA-01/registro.json",
+      "proprietario": "executor do lote ECA-01"
+    },
+    {
+      "lote": "ECA-02",
+      "nome": "Encantamentos de Arma, grupo 2",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ECA-02/registro.json",
+      "proprietario": "executor do lote ECA-02"
+    },
+    {
+      "lote": "ECA-03",
+      "nome": "Encantamentos de Arma, grupo 3",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ECA-03/registro.json",
+      "proprietario": "executor do lote ECA-03"
+    },
+    {
+      "lote": "ECA-04",
+      "nome": "Encantamentos de Arma, grupo 4",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ECA-04/registro.json",
+      "proprietario": "executor do lote ECA-04"
+    },
+    {
+      "lote": "ECE-01",
+      "nome": "Encantamentos de Escudo, grupo 1",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ECE-01/registro.json",
+      "proprietario": "executor do lote ECE-01"
+    },
+    {
+      "lote": "ECE-02",
+      "nome": "Encantamentos de Escudo, grupo 2",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ECE-02/registro.json",
+      "proprietario": "executor do lote ECE-02"
+    },
+    {
+      "lote": "ECU-01",
+      "nome": "Encantamentos de Uniforme, grupo 1",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ECU-01/registro.json",
+      "proprietario": "executor do lote ECU-01"
+    },
+    {
+      "lote": "ECU-02",
+      "nome": "Encantamentos de Uniforme, grupo 2",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ECU-02/registro.json",
+      "proprietario": "executor do lote ECU-02"
+    },
+    {
+      "lote": "ITE-01",
+      "nome": "Itens Especiais, grupo 1",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ITE-01/registro.json",
+      "proprietario": "executor do lote ITE-01"
+    },
+    {
+      "lote": "ITE-02",
+      "nome": "Itens Especiais, grupo 2",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ITE-02/registro.json",
+      "proprietario": "executor do lote ITE-02"
+    },
+    {
+      "lote": "ITE-03",
+      "nome": "Itens Especiais, grupo 3",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ITE-03/registro.json",
+      "proprietario": "executor do lote ITE-03"
+    },
+    {
+      "lote": "ITE-04",
+      "nome": "Itens Especiais, grupo 4",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ITE-04/registro.json",
+      "proprietario": "executor do lote ITE-04"
+    },
+    {
+      "lote": "ITE-05",
+      "nome": "Itens Especiais, grupo 5",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ITE-05/registro.json",
+      "proprietario": "executor do lote ITE-05"
+    },
+    {
+      "lote": "ITE-06",
+      "nome": "Itens Especiais, grupo 6",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ITE-06/registro.json",
+      "proprietario": "executor do lote ITE-06"
+    },
+    {
+      "lote": "ITE-07",
+      "nome": "Itens Especiais, grupo 7",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ITE-07/registro.json",
+      "proprietario": "executor do lote ITE-07"
+    },
+    {
+      "lote": "UNI-01",
+      "nome": "Modificações de Uniforme, grupo 1",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "UNI-01/registro.json",
+      "proprietario": "executor do lote UNI-01"
+    },
+    {
+      "lote": "ESC-01",
+      "nome": "Escudos, grupo 1",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "ESC-01/registro.json",
+      "proprietario": "executor do lote ESC-01"
+    },
+    {
+      "lote": "KIT-01",
+      "nome": "Kits e Ferramentas, grupo 1",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "KIT-01/registro.json",
+      "proprietario": "executor do lote KIT-01"
+    },
+    {
+      "lote": "REF-01",
+      "nome": "Refeições do Cozinheiro, grupo 1",
+      "fase": "Equipamentos",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "EQU-00",
+        "M03",
+        "M04"
+      ],
+      "registro": "REF-01/registro.json",
+      "proprietario": "executor do lote REF-01"
+    },
+    {
+      "lote": "AD-01",
+      "nome": "Addon: Aberração Humanizada",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-01/registro.json",
+      "proprietario": "executor do lote AD-01"
+    },
+    {
+      "lote": "AD-02",
+      "nome": "Addon: Alma Livre",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-02/registro.json",
+      "proprietario": "executor do lote AD-02"
+    },
+    {
+      "lote": "AD-03",
+      "nome": "Addon: Alter",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-03/registro.json",
+      "proprietario": "executor do lote AD-03"
+    },
+    {
+      "lote": "AD-04",
+      "nome": "Addon: Aperfeiçoamento de Técnica",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-04/registro.json",
+      "proprietario": "executor do lote AD-04"
+    },
+    {
+      "lote": "AD-05",
+      "nome": "Addon: Arauto da Corrupção",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-05/registro.json",
+      "proprietario": "executor do lote AD-05"
+    },
+    {
+      "lote": "AD-06",
+      "nome": "Addon: Azamaru",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-06/registro.json",
+      "proprietario": "executor do lote AD-06"
+    },
+    {
+      "lote": "AD-07",
+      "nome": "Addon: Benção do Grão Mestre da Forja",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-07/registro.json",
+      "proprietario": "executor do lote AD-07"
+    },
+    {
+      "lote": "AD-08",
+      "nome": "Addon: Carteira da Guilda",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-08/registro.json",
+      "proprietario": "executor do lote AD-08"
+    },
+    {
+      "lote": "AD-09",
+      "nome": "Addon: Ciclo de Adaptação do Mahoraga",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-09/registro.json",
+      "proprietario": "executor do lote AD-09"
+    },
+    {
+      "lote": "AD-10",
+      "nome": "Addon: Cofre de Feitiços",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-10/registro.json",
+      "proprietario": "executor do lote AD-10"
+    },
+    {
+      "lote": "AD-11",
+      "nome": "Addon: Concentrar Poder Dobrado",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-11/registro.json",
+      "proprietario": "executor do lote AD-11"
+    },
+    {
+      "lote": "AD-12",
+      "nome": "Addon: Consumir Cinzas",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-12/registro.json",
+      "proprietario": "executor do lote AD-12"
+    },
+    {
+      "lote": "AD-13",
+      "nome": "Addon: Criação de Armas",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-13/registro.json",
+      "proprietario": "executor do lote AD-13"
+    },
+    {
+      "lote": "AD-14",
+      "nome": "Addon: Criação de Equipamentos",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-14/registro.json",
+      "proprietario": "executor do lote AD-14"
+    },
+    {
+      "lote": "AD-15",
+      "nome": "Addon: Dançarino das Lâminas",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-15/registro.json",
+      "proprietario": "executor do lote AD-15"
+    },
+    {
+      "lote": "AD-16",
+      "nome": "Addon: Era da Cesta Oca de Vime",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-16/registro.json",
+      "proprietario": "executor do lote AD-16"
+    },
+    {
+      "lote": "AD-17",
+      "nome": "Addon: Especialista em Estilo",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-17/registro.json",
+      "proprietario": "executor do lote AD-17"
+    },
+    {
+      "lote": "AD-17-H01",
+      "nome": "Herança de Especialista em Estilo, grupo 1",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-17",
+        "CNJ-01",
+        "CNJ-02",
+        "CNJ-03"
+      ],
+      "registro": "AD-17-H01/registro.json",
+      "proprietario": "executor do lote AD-17-H01"
+    },
+    {
+      "lote": "AD-17-H02",
+      "nome": "Herança de Especialista em Estilo, grupo 2",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-17",
+        "CNJ-03",
+        "CNJ-04"
+      ],
+      "registro": "AD-17-H02/registro.json",
+      "proprietario": "executor do lote AD-17-H02"
+    },
+    {
+      "lote": "AD-17-H03",
+      "nome": "Herança de Especialista em Estilo, grupo 3",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-17",
+        "CNJ-04",
+        "CNJ-05"
+      ],
+      "registro": "AD-17-H03/registro.json",
+      "proprietario": "executor do lote AD-17-H03"
+    },
+    {
+      "lote": "AD-17-H04",
+      "nome": "Herança de Especialista em Estilo, grupo 4",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-17",
+        "CNJ-05",
+        "CNJ-06"
+      ],
+      "registro": "AD-17-H04/registro.json",
+      "proprietario": "executor do lote AD-17-H04"
+    },
+    {
+      "lote": "AD-17-H05",
+      "nome": "Herança de Especialista em Estilo, grupo 5",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-17",
+        "CNJ-06",
+        "CNJ-07"
+      ],
+      "registro": "AD-17-H05/registro.json",
+      "proprietario": "executor do lote AD-17-H05"
+    },
+    {
+      "lote": "AD-17-H06",
+      "nome": "Herança de Especialista em Estilo, grupo 6",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-17",
+        "CNJ-07",
+        "CNJ-08"
+      ],
+      "registro": "AD-17-H06/registro.json",
+      "proprietario": "executor do lote AD-17-H06"
+    },
+    {
+      "lote": "AD-17-H07",
+      "nome": "Herança de Especialista em Estilo, grupo 7",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-17",
+        "CNJ-08",
+        "CNJ-09",
+        "CNJ-10"
+      ],
+      "registro": "AD-17-H07/registro.json",
+      "proprietario": "executor do lote AD-17-H07"
+    },
+    {
+      "lote": "AD-17-H08",
+      "nome": "Herança de Especialista em Estilo, grupo 8",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-17",
+        "CNJ-10",
+        "CNJ-11"
+      ],
+      "registro": "AD-17-H08/registro.json",
+      "proprietario": "executor do lote AD-17-H08"
+    },
+    {
+      "lote": "AD-17-H09",
+      "nome": "Herança de Especialista em Estilo, grupo 9",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-17",
+        "CNJ-11"
+      ],
+      "registro": "AD-17-H09/registro.json",
+      "proprietario": "executor do lote AD-17-H09"
+    },
+    {
+      "lote": "AD-18",
+      "nome": "Addon: Espinho",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-18/registro.json",
+      "proprietario": "executor do lote AD-18"
+    },
+    {
+      "lote": "AD-19",
+      "nome": "Addon: Estilo Marcial",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-19/registro.json",
+      "proprietario": "executor do lote AD-19"
+    },
+    {
+      "lote": "AD-20",
+      "nome": "Addon: Estilo das Sombras - Reforço Corporal e Pacto",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-20/registro.json",
+      "proprietario": "executor do lote AD-20"
+    },
+    {
+      "lote": "AD-21",
+      "nome": "Addon: Estudo do Jujutsu",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-21/registro.json",
+      "proprietario": "executor do lote AD-21"
+    },
+    {
+      "lote": "AD-22",
+      "nome": "Addon: Faixas de Sif",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-22/registro.json",
+      "proprietario": "executor do lote AD-22"
+    },
+    {
+      "lote": "AD-23",
+      "nome": "Addon: Flugel",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-23/registro.json",
+      "proprietario": "executor do lote AD-23"
+    },
+    {
+      "lote": "AD-24",
+      "nome": "Addon: Fórmula de Combate Entrópica",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-24/registro.json",
+      "proprietario": "executor do lote AD-24"
+    },
+    {
+      "lote": "AD-24-H01",
+      "nome": "Herança de Fórmula de Combate Entrópica, grupo 1",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-24",
+        "RES-01",
+        "RES-02",
+        "RES-04"
+      ],
+      "registro": "AD-24-H01/registro.json",
+      "proprietario": "executor do lote AD-24-H01"
+    },
+    {
+      "lote": "AD-24-H02",
+      "nome": "Herança de Fórmula de Combate Entrópica, grupo 2",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-24",
+        "RES-04",
+        "RES-03"
+      ],
+      "registro": "AD-24-H02/registro.json",
+      "proprietario": "executor do lote AD-24-H02"
+    },
+    {
+      "lote": "AD-24-H03",
+      "nome": "Herança de Fórmula de Combate Entrópica, grupo 3",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-24",
+        "RES-05"
+      ],
+      "registro": "AD-24-H03/registro.json",
+      "proprietario": "executor do lote AD-24-H03"
+    },
+    {
+      "lote": "AD-24-H04",
+      "nome": "Herança de Fórmula de Combate Entrópica, grupo 4",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-24",
+        "RES-06",
+        "RES-07"
+      ],
+      "registro": "AD-24-H04/registro.json",
+      "proprietario": "executor do lote AD-24-H04"
+    },
+    {
+      "lote": "AD-24-H05",
+      "nome": "Herança de Fórmula de Combate Entrópica, grupo 5",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-24",
+        "RES-07",
+        "RES-08"
+      ],
+      "registro": "AD-24-H05/registro.json",
+      "proprietario": "executor do lote AD-24-H05"
+    },
+    {
+      "lote": "AD-24-H06",
+      "nome": "Herança de Fórmula de Combate Entrópica, grupo 6",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-24",
+        "RES-08",
+        "RES-09"
+      ],
+      "registro": "AD-24-H06/registro.json",
+      "proprietario": "executor do lote AD-24-H06"
+    },
+    {
+      "lote": "AD-24-H07",
+      "nome": "Herança de Fórmula de Combate Entrópica, grupo 7",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-24",
+        "RES-09",
+        "RES-10"
+      ],
+      "registro": "AD-24-H07/registro.json",
+      "proprietario": "executor do lote AD-24-H07"
+    },
+    {
+      "lote": "AD-25",
+      "nome": "Addon: Lime - Novo Estilo das Sombras",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-25/registro.json",
+      "proprietario": "executor do lote AD-25"
+    },
+    {
+      "lote": "AD-26",
+      "nome": "Addon: Maldição - Era de Ouro",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-26/registro.json",
+      "proprietario": "executor do lote AD-26"
+    },
+    {
+      "lote": "AD-26-R01",
+      "nome": "Conteúdo de Maldição - Era de Ouro: caracteristicasAmaldicoadas, grupo 1",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-26",
+        "M04"
+      ],
+      "registro": "AD-26-R01/registro.json",
+      "proprietario": "executor do lote AD-26-R01"
+    },
+    {
+      "lote": "AD-26-R02",
+      "nome": "Conteúdo de Maldição - Era de Ouro: caracteristicasAmaldicoadas, grupo 2",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-26",
+        "M04"
+      ],
+      "registro": "AD-26-R02/registro.json",
+      "proprietario": "executor do lote AD-26-R02"
+    },
+    {
+      "lote": "AD-26-R03",
+      "nome": "Conteúdo de Maldição - Era de Ouro: caracteristicasAmaldicoadas, grupo 3",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-26",
+        "M04"
+      ],
+      "registro": "AD-26-R03/registro.json",
+      "proprietario": "executor do lote AD-26-R03"
+    },
+    {
+      "lote": "AD-27",
+      "nome": "Addon: Manipulação do Céu",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-27/registro.json",
+      "proprietario": "executor do lote AD-27"
+    },
+    {
+      "lote": "AD-28",
+      "nome": "Addon: Modificações Corporais",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-28/registro.json",
+      "proprietario": "executor do lote AD-28"
+    },
+    {
+      "lote": "AD-29",
+      "nome": "Addon: Nascido dos “Sonhos”",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-29/registro.json",
+      "proprietario": "executor do lote AD-29"
+    },
+    {
+      "lote": "AD-30",
+      "nome": "Addon: Olhos de Agulha",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-30/registro.json",
+      "proprietario": "executor do lote AD-30"
+    },
+    {
+      "lote": "AD-31",
+      "nome": "Addon: Pacto do Receptáculo",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-31/registro.json",
+      "proprietario": "executor do lote AD-31"
+    },
+    {
+      "lote": "AD-32",
+      "nome": "Addon: Pacto",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-32/registro.json",
+      "proprietario": "executor do lote AD-32"
+    },
+    {
+      "lote": "AD-33",
+      "nome": "Addon: Passiva - Sistema",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-33/registro.json",
+      "proprietario": "executor do lote AD-33"
+    },
+    {
+      "lote": "AD-34",
+      "nome": "Addon: Player: Alto Nível Afty",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-34/registro.json",
+      "proprietario": "executor do lote AD-34"
+    },
+    {
+      "lote": "AD-34-R01",
+      "nome": "Conteúdo de Player: Alto Nível Afty: lendarias, grupo 1",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-34",
+        "M04"
+      ],
+      "registro": "AD-34-R01/registro.json",
+      "proprietario": "executor do lote AD-34-R01"
+    },
+    {
+      "lote": "AD-34-R02",
+      "nome": "Conteúdo de Player: Alto Nível Afty: lendarias, grupo 2",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-34",
+        "M04"
+      ],
+      "registro": "AD-34-R02/registro.json",
+      "proprietario": "executor do lote AD-34-R02"
+    },
+    {
+      "lote": "AD-34-R03",
+      "nome": "Conteúdo de Player: Alto Nível Afty: lendarias, grupo 3",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-34",
+        "M04"
+      ],
+      "registro": "AD-34-R03/registro.json",
+      "proprietario": "executor do lote AD-34-R03"
+    },
+    {
+      "lote": "AD-34-R04",
+      "nome": "Conteúdo de Player: Alto Nível Afty: melhoriasSuperiores, grupo 4",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-34",
+        "M04"
+      ],
+      "registro": "AD-34-R04/registro.json",
+      "proprietario": "executor do lote AD-34-R04"
+    },
+    {
+      "lote": "AD-34-R05",
+      "nome": "Conteúdo de Player: Alto Nível Afty: melhoriasSuperiores, grupo 5",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-34",
+        "M04"
+      ],
+      "registro": "AD-34-R05/registro.json",
+      "proprietario": "executor do lote AD-34-R05"
+    },
+    {
+      "lote": "AD-35",
+      "nome": "Addon: Player: Progressão Épica",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-35/registro.json",
+      "proprietario": "executor do lote AD-35"
+    },
+    {
+      "lote": "AD-36",
+      "nome": "Addon: Quimera",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-36/registro.json",
+      "proprietario": "executor do lote AD-36"
+    },
+    {
+      "lote": "AD-37",
+      "nome": "Addon: Regras Grimorio",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-37/registro.json",
+      "proprietario": "executor do lote AD-37"
+    },
+    {
+      "lote": "AD-38",
+      "nome": "Addon: Restrição Celestial - O Santo da Espada",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-38/registro.json",
+      "proprietario": "executor do lote AD-38"
+    },
+    {
+      "lote": "AD-39",
+      "nome": "Addon: Sem Técnica - Liberto",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-39/registro.json",
+      "proprietario": "executor do lote AD-39"
+    },
+    {
+      "lote": "AD-40",
+      "nome": "Addon: Simuriano Deskunte",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-40/registro.json",
+      "proprietario": "executor do lote AD-40"
+    },
+    {
+      "lote": "AD-41",
+      "nome": "Addon: Clã Sugawara",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-41/registro.json",
+      "proprietario": "executor do lote AD-41"
+    },
+    {
+      "lote": "AD-42",
+      "nome": "Addon: Talentos Iniciais",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-42/registro.json",
+      "proprietario": "executor do lote AD-42"
+    },
+    {
+      "lote": "AD-43",
+      "nome": "Addon: The Crimsom Queen",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-43/registro.json",
+      "proprietario": "executor do lote AD-43"
+    },
+    {
+      "lote": "AD-44",
+      "nome": "Addon: Titã",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-44/registro.json",
+      "proprietario": "executor do lote AD-44"
+    },
+    {
+      "lote": "AD-45",
+      "nome": "Addon: Tobimune",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-45/registro.json",
+      "proprietario": "executor do lote AD-45"
+    },
+    {
+      "lote": "AD-46",
+      "nome": "Addon: Treinamento de Invocação",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-46/registro.json",
+      "proprietario": "executor do lote AD-46"
+    },
+    {
+      "lote": "AD-47",
+      "nome": "Addon: Treino de Testes de Resistência",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-47/registro.json",
+      "proprietario": "executor do lote AD-47"
+    },
+    {
+      "lote": "AD-48",
+      "nome": "Addon: Especialização em Combate com Armas",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-48/registro.json",
+      "proprietario": "executor do lote AD-48"
+    },
+    {
+      "lote": "AD-49",
+      "nome": "Addon: Vida Dobrada e Passivas Gratis",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-49/registro.json",
+      "proprietario": "executor do lote AD-49"
+    },
+    {
+      "lote": "AD-50",
+      "nome": "Addon: Vislumbre Celeste",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-50/registro.json",
+      "proprietario": "executor do lote AD-50"
+    },
+    {
+      "lote": "AD-51",
+      "nome": "Addon: Yna",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04"
+      ],
+      "registro": "AD-51/registro.json",
+      "proprietario": "executor do lote AD-51"
+    },
+    {
+      "lote": "AD-24-F2B",
+      "nome": "Fórmula Entrópica: Engenho Superior e criação de equipamentos",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-24",
+        "M03",
+        "M04"
+      ],
+      "registro": "AD-24-F2B/registro.json",
+      "proprietario": "executor do lote AD-24-F2B"
+    },
+    {
+      "lote": "AD-24-F3",
+      "nome": "Fórmula Entrópica: Doutrina e Técnicas Marciais",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-24",
+        "M03",
+        "M04"
+      ],
+      "registro": "AD-24-F3/registro.json",
+      "proprietario": "executor do lote AD-24-F3"
+    },
+    {
+      "lote": "AD-24-F4",
+      "nome": "Fórmula Entrópica: Dispositivos e Preparação de Terreno",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-24",
+        "M03",
+        "M04"
+      ],
+      "registro": "AD-24-F4/registro.json",
+      "proprietario": "executor do lote AD-24-F4"
+    },
+    {
+      "lote": "AD-24-F5",
+      "nome": "Fórmula Entrópica: Veículos e invocações de ficha fixa",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "AD-24",
+        "M03",
+        "M04"
+      ],
+      "registro": "AD-24-F5/registro.json",
+      "proprietario": "executor do lote AD-24-F5"
+    },
+    {
+      "lote": "Z01",
+      "nome": "Integração: combinações, multiclasse e pacotes",
+      "fase": "Fechamento",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "todos os lotes de conteúdo envolvidos"
+      ],
+      "registro": "Z01/registro.json",
+      "proprietario": "executor do lote Z01"
+    },
+    {
+      "lote": "Z02",
+      "nome": "Paridade de autoria: jogador reproduz as mecânicas",
+      "fase": "Fechamento",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M04",
+        "todos os lotes de conteúdo envolvidos"
+      ],
+      "registro": "Z02/registro.json",
+      "proprietario": "executor do lote Z02"
+    },
+    {
+      "lote": "Z03",
+      "nome": "Fechamento de cobertura e plano de revalidação",
+      "fase": "Fechamento",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "todos os lotes anteriores"
+      ],
+      "registro": "Z03/registro.json",
+      "proprietario": "executor do lote Z03"
+    },
+    {
+      "lote": "AD-52",
+      "nome": "Addon: Herdado Vaticano",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04",
+        "M02",
+        "SIS-02"
+      ],
+      "registro": "AD-52/registro.json",
+      "proprietario": "executor do lote AD-52"
+    },
+    {
+      "lote": "AD-53",
+      "nome": "Addon: Feitiços de Cura Aperfeiçoada",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M01",
+        "M02",
+        "M04",
+        "M05",
+        "SUP-06"
+      ],
+      "registro": "AD-53/registro.json",
+      "proprietario": "executor do lote AD-53"
+    },
+    {
+      "lote": "AD-54",
+      "nome": "Addon: Arsenal de Ryuma",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04",
+        "M02"
+      ],
+      "registro": "AD-54/registro.json",
+      "proprietario": "executor do lote AD-54"
+    },
+    {
+      "lote": "AD-55",
+      "nome": "Addon: O Espírito Indomável do Ser Humano",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04",
+        "M02"
+      ],
+      "registro": "AD-55/registro.json",
+      "proprietario": "executor do lote AD-55"
+    },
+    {
+      "lote": "AD-56",
+      "nome": "Addon: Grande Roda do Dharma",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04",
+        "M02"
+      ],
+      "registro": "AD-56/registro.json",
+      "proprietario": "executor do lote AD-56"
+    },
+    {
+      "lote": "AD-57",
+      "nome": "Addon: Treino Guarda da Lâmina Divina",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04",
+        "M02"
+      ],
+      "registro": "AD-57/registro.json",
+      "proprietario": "executor do lote AD-57"
+    },
+    {
+      "lote": "AD-58",
+      "nome": "Addon: Herdado da Era de Ouro",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04",
+        "M02"
+      ],
+      "registro": "AD-58/registro.json",
+      "proprietario": "executor do lote AD-58"
+    },
+    {
+      "lote": "AD-59",
+      "nome": "Addon: Herdeiro Celeste",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04",
+        "M02"
+      ],
+      "registro": "AD-59/registro.json",
+      "proprietario": "executor do lote AD-59"
+    },
+    {
+      "lote": "AD-60",
+      "nome": "Addon: Milenar",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04",
+        "M02"
+      ],
+      "registro": "AD-60/registro.json",
+      "proprietario": "executor do lote AD-60"
+    },
+    {
+      "lote": "AD-61",
+      "nome": "Addon: Não-Feiticeiro",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04",
+        "M02"
+      ],
+      "registro": "AD-61/registro.json",
+      "proprietario": "executor do lote AD-61"
+    },
+    {
+      "lote": "AD-62",
+      "nome": "Addon: Olhinhos Lu( Corpo Principal )",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04",
+        "M02"
+      ],
+      "registro": "AD-62/registro.json",
+      "proprietario": "executor do lote AD-62"
+    },
+    {
+      "lote": "AD-63",
+      "nome": "Addon: Treino Meta-Visão",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04",
+        "M02"
+      ],
+      "registro": "AD-63/registro.json",
+      "proprietario": "executor do lote AD-63"
+    },
+    {
+      "lote": "AD-64",
+      "nome": "Addon: Reencarnação das Terras Impuras",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04",
+        "M02"
+      ],
+      "registro": "AD-64/registro.json",
+      "proprietario": "executor do lote AD-64"
+    },
+    {
+      "lote": "AD-65",
+      "nome": "Addon: Stark",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04",
+        "M02"
+      ],
+      "registro": "AD-65/registro.json",
+      "proprietario": "executor do lote AD-65"
+    },
+    {
+      "lote": "AD-66",
+      "nome": "Addon: Treino de caçada",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04",
+        "M02"
+      ],
+      "registro": "AD-66/registro.json",
+      "proprietario": "executor do lote AD-66"
+    },
+    {
+      "lote": "AD-67",
+      "nome": "Addon: Treino de escudos",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04",
+        "M02"
+      ],
+      "registro": "AD-67/registro.json",
+      "proprietario": "executor do lote AD-67"
+    },
+    {
+      "lote": "AD-68",
+      "nome": "Addon: Vampiro da Máscara de Pedra",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04",
+        "M02"
+      ],
+      "registro": "AD-68/registro.json",
+      "proprietario": "executor do lote AD-68"
+    }
+  ]
+}

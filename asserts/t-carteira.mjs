@@ -372,6 +372,23 @@ t("com a liberação, o ND passa a ser o da tabela", dTudo.nd, 8);
    que faz desinstalar o addon devolver o nível que a pessoa tinha digitado. */
 t("o core.nd gravado não é tocado", comTudo.core.nd, 20);
 
+/* A terceira classe depende do nível efetivo, mesmo com ND 31 gravado. */
+const tresClassesPelaCarteira = {
+  ...comTudo,
+  core: { ...comTudo.core, nd: 31 },
+  especializacoes: [
+    { id: "lutador", nivel: 4 },
+    { id: "combatente", nivel: 3 },
+    { id: "conjurador", nivel: 24 },
+  ],
+};
+t("XP de nivel 8 nao libera a terceira classe pelo ND 31 gravado",
+  resolveEspecializacoes(tresClassesPelaCarteira).escolhidas.map((e) => [e.id, e.nivel]),
+  [["lutador", 4], ["combatente", 4]]);
+t("sem carteiraNivel o ND 31 volta a liberar a terceira classe",
+  resolveEspecializacoes({ ...tresClassesPelaCarteira, addons: [soAba] }).escolhidas.map((e) => e.id),
+  ["lutador", "combatente", "conjurador"]);
+
 /* O Nível é a entrada de quase toda fórmula do sistema, então mudá-lo tem de
    arrastar o resto junto. Estes três provam que o caminho é o normal, e não um
    atalho que só mexe no número da tela. */

@@ -1,0 +1,309 @@
+{
+  "versao": 1,
+  "shaInventario": "c64a5d9ad87646814a552c48a04e6dffa61c4a5858ff97f54457bafc2c7f4e42",
+  "shaVivo": "9bc12792201f8cd6bba00b512d0edfff11cf1d3331d83549f4d244e8d2b38141",
+  "shaEscopo": "af680b9d466234e83e8178fd4bd34dc4c392430f4fd3f5839793debacd47b54d",
+  "adicionados": [
+    {
+      "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote",
+      "item": {
+        "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote",
+        "id": "cura-aperfeicoada-feiticos",
+        "nome": "Feitiços de Cura Aperfeiçoada",
+        "arquivo": "addons/cura-aperfeicoada-feiticos.json",
+        "proprietario": null,
+        "tipo": "pacote",
+        "addon": "cura-aperfeicoada-feiticos.json",
+        "idLocal": "cura-aperfeicoada-feiticos",
+        "hashDado": "3681353a4b6d9f0e1368dfb82e92eb82ff7e82b461353fad84fadcf2dcc871fd"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::descricao",
+      "item": {
+        "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::descricao",
+        "id": "descricao",
+        "nome": "descricao",
+        "arquivo": "addons/cura-aperfeicoada-feiticos.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "cura-aperfeicoada-feiticos.json",
+        "pai": "addon::cura-aperfeicoada-feiticos.json::@pacote",
+        "hashDado": "5fe58dfe2fe5631caaad7e8912e487bf92abf9f3b47abae9e456b0bbf1bc2fe5"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos",
+      "item": {
+        "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos",
+        "id": "feiticos",
+        "nome": "feiticos",
+        "arquivo": "addons/cura-aperfeicoada-feiticos.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "cura-aperfeicoada-feiticos.json",
+        "pai": "addon::cura-aperfeicoada-feiticos.json::@pacote",
+        "hashDado": "7ac42fae104a46fd46908e71dad80b76ad597e8186a26ee2f5cd072d5da67ed5"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos::cura_limite_4",
+      "item": {
+        "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos::cura_limite_4",
+        "id": "cura_limite_4",
+        "nome": "Feitiço 1 (editar nome)",
+        "arquivo": "addons/cura-aperfeicoada-feiticos.json",
+        "pai": "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos",
+        "caminho": "cura_limite_4",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "cura-aperfeicoada-feiticos.json",
+        "idLocal": "cura_limite_4",
+        "hashDado": "fcd66cd4a399226be08a6e4a6c82b834fc742f2e410d749a9ec6d748b90ef0ac",
+        "nivel": 5
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos::cura_limite_4/efeitosPassivo",
+      "item": {
+        "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos::cura_limite_4/efeitosPassivo",
+        "id": "cura_limite_4/efeitosPassivo",
+        "nome": "cura_limite_4/efeitosPassivo",
+        "arquivo": "addons/cura-aperfeicoada-feiticos.json",
+        "pai": "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos",
+        "caminho": "cura_limite_4/efeitosPassivo",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "cura-aperfeicoada-feiticos.json",
+        "hashDado": "c9d7fce7d9ad11e4c0fd95b09c1034ff9a57721b896dc921c5107f0b67c1a98e"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos::cura_limite_4/efeitosPassivo/@0",
+      "item": {
+        "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos::cura_limite_4/efeitosPassivo/@0",
+        "id": "cura_limite_4/efeitosPassivo/@0",
+        "nome": "cura_limite_4/efeitosPassivo/@0",
+        "arquivo": "addons/cura-aperfeicoada-feiticos.json",
+        "pai": "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos",
+        "caminho": "cura_limite_4/efeitosPassivo/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "cura-aperfeicoada-feiticos.json",
+        "hashDado": "6b54766a6ae56e0876cd26e037770fc0882d151cecae73cba82020ce566ecf26"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos::cura_rerrolagem_continua",
+      "item": {
+        "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos::cura_rerrolagem_continua",
+        "id": "cura_rerrolagem_continua",
+        "nome": "Feitiço 2 (editar nome)",
+        "arquivo": "addons/cura-aperfeicoada-feiticos.json",
+        "pai": "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos",
+        "caminho": "cura_rerrolagem_continua",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "cura-aperfeicoada-feiticos.json",
+        "idLocal": "cura_rerrolagem_continua",
+        "hashDado": "2a4ba75e6a264ddd6559cd5fa0a8315c5f25857b0dd7c92291a3b7f6ec9fc7b8",
+        "nivel": 5
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos::cura_rerrolagem_continua/efeitosPassivo",
+      "item": {
+        "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos::cura_rerrolagem_continua/efeitosPassivo",
+        "id": "cura_rerrolagem_continua/efeitosPassivo",
+        "nome": "cura_rerrolagem_continua/efeitosPassivo",
+        "arquivo": "addons/cura-aperfeicoada-feiticos.json",
+        "pai": "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos",
+        "caminho": "cura_rerrolagem_continua/efeitosPassivo",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "cura-aperfeicoada-feiticos.json",
+        "hashDado": "db6e2cfc0d52fa6adc38e2fd36d8a22a1b7b136a21c71e049e08795831193882"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos::cura_rerrolagem_continua/efeitosPassivo/@0",
+      "item": {
+        "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos::cura_rerrolagem_continua/efeitosPassivo/@0",
+        "id": "cura_rerrolagem_continua/efeitosPassivo/@0",
+        "nome": "cura_rerrolagem_continua/efeitosPassivo/@0",
+        "arquivo": "addons/cura-aperfeicoada-feiticos.json",
+        "pai": "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos",
+        "caminho": "cura_rerrolagem_continua/efeitosPassivo/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "cura-aperfeicoada-feiticos.json",
+        "hashDado": "e7023e5453817d79eb2f916b6a5294951d9616e4ae04017f7f576881780f8c31"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::id",
+      "item": {
+        "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::id",
+        "id": "id",
+        "nome": "id",
+        "arquivo": "addons/cura-aperfeicoada-feiticos.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "cura-aperfeicoada-feiticos.json",
+        "pai": "addon::cura-aperfeicoada-feiticos.json::@pacote",
+        "hashDado": "2e8aed65fe5d4b7e31c2228e0a6bbbe41c778d79b50e57da03a0699be93a7055"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::nome",
+      "item": {
+        "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::nome",
+        "id": "nome",
+        "nome": "nome",
+        "arquivo": "addons/cura-aperfeicoada-feiticos.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "cura-aperfeicoada-feiticos.json",
+        "pai": "addon::cura-aperfeicoada-feiticos.json::@pacote",
+        "hashDado": "b154a1c80d2b838326f472657d8f73ed4f201a63adb42c952da527fcd3f767e5"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::paraRaw",
+      "item": {
+        "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::paraRaw",
+        "id": "paraRaw",
+        "nome": "paraRaw",
+        "arquivo": "addons/cura-aperfeicoada-feiticos.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "cura-aperfeicoada-feiticos.json",
+        "pai": "addon::cura-aperfeicoada-feiticos.json::@pacote",
+        "hashDado": "0289ece8033b573da3841cd5eea4bc968504b022915c4bb5174cab838f4f7c02"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::versao",
+      "item": {
+        "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::versao",
+        "id": "versao",
+        "nome": "versao",
+        "arquivo": "addons/cura-aperfeicoada-feiticos.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "cura-aperfeicoada-feiticos.json",
+        "pai": "addon::cura-aperfeicoada-feiticos.json::@pacote",
+        "hashDado": "39fe4a40977d0585fd5704359e3685b0ada5cf5ee061e5d97385601d120cd0ec"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAIS::rerrolaCuraContinua",
+      "item": {
+        "chave": "afty-efeitos.js::EFEITO_CANAIS::rerrolaCuraContinua",
+        "id": "rerrolaCuraContinua",
+        "nome": "Cura: Rerrolagem Contínua",
+        "arquivo": "src/systems/afty/afty-efeitos.js",
+        "export": "EFEITO_CANAIS",
+        "proprietario": "M01",
+        "tipo": "entrada",
+        "idLocal": "rerrolaCuraContinua",
+        "hashDado": "5921e985e83ddf4a533f3911b60154c8602f9b86d6a4179db875905d0a5790c9"
+      },
+      "proprietarioSugerido": "M01"
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@1::itens/rerrolaCuraContinua",
+      "item": {
+        "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@1::itens/rerrolaCuraContinua",
+        "id": "itens/rerrolaCuraContinua",
+        "nome": "Cura: Rerrolagem Contínua",
+        "arquivo": "src/systems/afty/afty-efeitos.js",
+        "export": "EFEITO_CANAL_GRUPOS",
+        "pai": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@1",
+        "caminho": "itens/rerrolaCuraContinua",
+        "proprietario": "M01",
+        "tipo": "referência",
+        "referencia": "afty-efeitos.js::EFEITO_CANAIS::rerrolaCuraContinua",
+        "integracaoProprietario": "M01",
+        "idLocal": "rerrolaCuraContinua",
+        "hashDado": "5921e985e83ddf4a533f3911b60154c8602f9b86d6a4179db875905d0a5790c9"
+      },
+      "proprietarioSugerido": "M01"
+    }
+  ],
+  "removidos": [],
+  "alterados": [
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAIS::@catalogo",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "217c5a6272fe45c1980f29c45f7c59da4c5e1d1011a9f27283d2d4ae8b53efe2",
+      "hashNovo": "6bc6dee669b03c4260a1d6d46633b0c6dc5077d3dafb4c7ce2d274bb6020e70b",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@1",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "9868579e59b348ef7ee24764babeedc7e365632fad56645dce37c48c21b6ee2b",
+      "hashNovo": "72558902b1ccf6a367075de9de866e2f2afc533095c01080a66b90c0fbe9aaf4",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@1::itens",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "9f7b34bdca95eaa1216a015241b879736ca65773195fb7c4edcb6cb47fb552bb",
+      "hashNovo": "726775dbdcf34c9f1a8f08655e8ce97b4463d264acc5b8dfcd6a40463e2a6b7e",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@catalogo",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "9d6c7807218cc1478f97872072b75cd33d4e7ad9972949c91730d6f0ea4bd189",
+      "hashNovo": "646632065a09f73156a16825dfd746ea331e2f8c840219f730e7fca9e58d06f8",
+      "campos": [
+        "hashDado"
+      ]
+    }
+  ],
+  "assinatura": "1e81e017cb3a8c6a09d48bdc9437e2fdd2422a4c6424e486339e33e3e16d657b",
+  "decisoes": {
+    "adicoes": {
+      "addon::cura-aperfeicoada-feiticos.json::@pacote": "AD-53",
+      "addon::cura-aperfeicoada-feiticos.json::@pacote::descricao": "AD-53",
+      "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos": "AD-53",
+      "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos::cura_limite_4": "AD-53",
+      "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos::cura_limite_4/efeitosPassivo": "AD-53",
+      "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos::cura_limite_4/efeitosPassivo/@0": "AD-53",
+      "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos::cura_rerrolagem_continua": "AD-53",
+      "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos::cura_rerrolagem_continua/efeitosPassivo": "AD-53",
+      "addon::cura-aperfeicoada-feiticos.json::@pacote::feiticos::cura_rerrolagem_continua/efeitosPassivo/@0": "AD-53",
+      "addon::cura-aperfeicoada-feiticos.json::@pacote::id": "AD-53",
+      "addon::cura-aperfeicoada-feiticos.json::@pacote::nome": "AD-53",
+      "addon::cura-aperfeicoada-feiticos.json::@pacote::paraRaw": "AD-53",
+      "addon::cura-aperfeicoada-feiticos.json::@pacote::versao": "AD-53",
+      "afty-efeitos.js::EFEITO_CANAIS::rerrolaCuraContinua": "M01",
+      "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@1::itens/rerrolaCuraContinua": "M01"
+    },
+    "remocoes": {},
+    "justificativaAtualizacao": "Pedido do autor em 2026-10-12: dois Feitiços Passivos de Nível 5, limite 4 e repetição até superar o limite. Canal genérico rerrolaCuraContinua. Registro restrito ao addon e canal, preservando conteúdo e estados anteriores."
+  },
+  "errosColeta": []
+}

@@ -1,5 +1,381 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-10-12: ATUALIZAÇÕES DOS COLABORADORES PRESERVANDO TRABALHO LOCAL
+
+Pedido do autor: conferir o GitHub, trazer as atualizações sem deixar conflitos e listar as mudanças.
+Main avançada por fast-forward de `a0cefc2` para `e8faae3`, incorporando 17 commits de Arthur Kyldare
+e GoliasK em 128 arquivos. Nova consulta ao remoto confirmou divergência `0 0`.
+Nenhum commit novo ou push foi realizado nesta sessão.
+
+Antes da integração havia 65 arquivos rastreados alterados e 397 arquivos novos.
+Cópia integral desses arquivos em `C:/Projetos/Grimorio/_backup-sync/2026-10-12/local`, com hashes
+em `manifesto.json`. Backup adicional do trabalho rastreado no stash
+`7e2fed7df593549c1018d74a8aff5023637f63a7`. O stash foi conservado após a restauração.
+Prévia de três vias conciliou 36 blocos em 16 arquivos antes de atualizar a branch.
+Alterações locais fora das sobreposições, inclusive `src/components/Dashboard.jsx`, foram preservadas.
+
+Mudanças recebidas: Novo Estilo das Sombras pela Expansão, várias Técnicas de Estilo simultâneas,
+Técnica Máxima e Expansão de Domínio em Feitiços > Especial, Desenvolvimento Inesperado no Player,
+Pugilato criado com Acerto Amaldiçoado, concessões de Aptidão por Talentos e novos verbos de origem.
+Novos pacotes: Arsenal de Ryuma, Espírito Indomável, Grande Roda do Dharma, Guarda da Lâmina Divina,
+Herdado da Era de Ouro, Herdeiro Celeste, Milenar, Não-Feiticeiro, Olhinhos Lu, Reavaliação,
+Reencarnação das Terras Impuras, Stark, treinos de Caçada e Escudos e Vampiro da Máscara de Pedra.
+Também entraram recarga manual de usos, nomes nos resultados de mesa, opções de origem na DSL,
+mesa nas Características Amaldiçoadas e correções de escudo, RD e requisitos.
+
+Compatibilidade: o custo em PE entra uma vez no agregado final, evitando redução duplicada de
+Expansão. O bloco exclusivo conserva as parcelas de rendimento entre estágios no hover.
+A escolha própria de Ataque Básico da sessão/ficha tem precedência sobre a escolha de item antigo,
+respeitando a decisão local de 2026-10-04. O teto de origem convive com a progressão épica optativa.
+Documentação de ambos os lados conservada; pergunta antiga de Ataque Básico já resolvida não voltou à fila.
+
+Inventário reconciliado pelo protocolo existente: 1.563 novas chaves, 75 atualizações, zero remoções,
+15 pacotes nos lotes AD-54 a AD-68. Total: 13.518 chaves, 435 catálogos/tabelas e 68 addons.
+Donos e estados anteriores preservados, sem aprovação de regras. A cobertura ainda aponta a falta
+preexistente de mapa de fonte da família AD-52 e revalidação de dependências consultadas.
+
+Validação: 203 arquivos e 11.812 asserts aprovados, ESLint da área Afty e build aprovados,
+`git diff --check` aprovado e índice sem conflitos. Permanece o aviso de tamanho do bundle.
+Navegador: Ficha Final e criador nas rotas Afty e Player a 1440 e 390 px,
+com pacotes locais e remotos juntos, Ataque Básico Amaldiçoado e Expansão cadastrada.
+Sem erro de página ou rolagem horizontal nos quatro cenários.
+Logs e evidências da integração em `C:/Projetos/Grimorio/_backup-sync/2026-10-12`.
+
+## SESSÃO DE 2026-10-12: FEITIÇOS DE CURA APERFEIÇOADA
+
+Pedido do autor: dois modelos de Feitiços Passivos de Nível 5 para o Afty,
+com nome e descrição a preencher manualmente. O primeiro rerrola 1 a 4 uma
+vez, mantendo o melhor. O autor confirmou que o segundo repete até sair
+acima do limite vigente: 3 ou mais sozinho, 5 ou mais junto do primeiro.
+Ambos exigem Cura Aperfeiçoada. Pacote em
+`addons/cura-aperfeicoada-feiticos.json`; contrato em `docs/afty-cura-feiticos.md`.
+
+Novo canal genérico `rerrolaCuraContinua` com alvo opcional de fonte de cura.
+O motor conserva o padrão de uma rerrolagem sem o canal. A repetição guarda
+todos os descartes no histórico e rejeita limites sem resultado possível
+antes de sortear. A linha de cura indica o modo contínuo na Ficha e no
+Encontro. O bônus por dado não conta tentativas como novos dados de cura.
+
+Validação: 115 asserts específicos; suíte completa com 167 arquivos e
+9.854 asserts; lint dos cinco arquivos alterados e build passaram. No
+navegador, conferidos os dois modelos, limite 4 sem repetição, limite 2
+com repetição, falta da habilidade e Energia Reversa no Encontro. A sequência
+2, 2, 1, 5 terminou em 5, com três descartes visíveis na barra da Ficha.
+Prévia isolada em `.audit/cura-feiticos.html` e `.audit/cura-feiticos-previa.jsx`.
+
+Reconciliação restrita: 13 entradas do addon no novo AD-53, duas entradas
+do canal em M01 e quatro atualizações de catálogo. Total atual: 11.955
+chaves, 419 catálogos/tabelas e 53 addons. Nenhuma remoção ou aprovação de
+auditoria. A cobertura continua apontando as pendências anteriores de
+mapa de família AD-52 e seis mudanças de Gerais fora deste pedido, além
+dos avisos de revalidação de dependências consultadas. O mapa de AD-53 está
+registrado. Não foram corrigidas nem aprovadas parcelas alheias.
+
+Fonte da habilidade original: Livro de Regras 2.5.2 externo, página impressa
+109, SHA-256 conferido
+`1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a`.
+Limite 4 e repetição são decisões da casa do autor nesta sessão.
+
+## SESSÃO DE 2026-10-12: CURA APERFEIÇOADA AUTOMÁTICA
+
+Pedido do autor: automatizar a rerrolagem da habilidade Cura Aperfeiçoada,
+do Suporte de nível 8. A regra da página impressa 109 do Livro 2.5.2 permanece
+no catálogo, e agora emite `rerrolaCura: 2` sem alvo. Cada dado de cura que sair
+1 ou 2 rola novamente uma única vez, mantendo o melhor resultado.
+
+O canal genérico aparece no editor no grupo Cura, aceita alvo de fonte de cura
+e usa o maior limite entre fontes. `preparaRolagemCura` atende Ficha Final e
+Encontro, Feitiços curativos e as curas de Bloodfeast que rolam na sessão.
+PV Temporário e curas da própria invocação não herdam a regra do dono.
+`rolarDano` aceita `rerrola.melhor: true`; sem esse campo, a rerrolagem de
+dano continua ficando com o novo resultado. O histórico conserva as duas
+tentativas e risca o descartado, inclusive quando o original era melhor.
+As linhas de cura mostram a regra ativa no chip "Rerrola até 2".
+
+Validação: 78 asserts novos, suíte completa com 166 arquivos e 9.739 asserts,
+lint dos 12 arquivos de código alterados e build passaram. O build conserva
+o aviso de tamanho do bundle. No navegador, Ficha e Encontro em Afty e Player
+passaram com dados 2 rerrolados para 1, mantendo 2; na Ficha, os três resultados
+1 aparecem riscados. Com Cura Perfeita, Suporte em Combate manteve `3d12+9`
+e totalizou 15, sem contar a tentativa adicional no bônus por dado. Sem a
+habilidade, desaparecem o chip e a rerrolagem. A página final de teste e a
+aplicação normal abriram sem erros de execução. A prévia isolada usa
+`.audit/cura-aperfeicoada.html` e `.audit/cura-aperfeicoada-previa.jsx`.
+
+Contrato e fonte em `docs/afty-ficha-final.md`; autoria do canal em
+`docs/automacao-dsl.md`. Fonte externa lida e hash confirmado:
+`1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a`.
+O inventário registra 5 novas entradas e 6 atualizações em M01, M02 e SUP-06,
+sem remover itens ou aprovar auditorias. Total: 11.940 chaves. As seis mudanças
+anteriores de Gerais continuam fora desta reconciliação, com os registros
+preservados. Evidência em `.audit/cura-aperfeicoada-report.json` e
+`.audit/cura-aperfeicoada-proposta-aplicada.json`.
+
+## SESSÃO DE 2026-10-12: HERDADO VATICANO
+
+Criado `addons/herdado-vaticano.json`, versão 1.0.0, com um clã do Herdado e
+o Talento de Origem Cura Perfeita. O clã concede 3 pontos livres de atributo,
+inclusive os três no mesmo atributo, treinamento em Teologia e Ocultismo e
++1 por dado em todas as curas do usuário. O autor confirmou Teologia como
+equivalente a Religião. Cura Perfeita exige Herdado: Vaticano e nível 8,
+concede 1 nível gratuito na trilha Energia Reversa e eleva o bônus total de
+Aprimorar Cura a +2 por dado. A descrição narrativa foi escrita para o pedido.
+Nenhuma alteração no motor ou em `src/components/` foi necessária.
+
+Guia: `docs/afty-herdado-vaticano.md`. Validação: 48 asserts específicos nos
+dois sistemas; suíte completa com 165 arquivos e 9.661 asserts passou.
+No navegador, instalação pela biblioteca, ativação no rascunho Player,
+seleção do clã, três pontos em Sabedoria e aquisição de Cura Perfeita no
+nível 8 passaram. O catálogo mostra os três requisitos e a descrição;
+a prévia mostra ER 1 e os treinamentos em Teologia e Ocultismo.
+
+O inventário passou a 52 addons e 11.935 chaves. As 25 entradas do Vaticano
+foram registradas no novo lote AD-52, em NÃO REVISADO, como conteúdo DA CASA.
+Reconciliação restrita ao novo pacote, sem remoções, mudanças em entradas
+anteriores ou invalidações de lotes aprovados. As seis atualizações anteriores
+de `afty-gerais.js` continuam pendentes de reconciliação, com seus registros
+preservados. A prova administrativa está em
+`.audit/herdado-vaticano-proposta-aplicada.json`.
+
+## SESSÃO DE 2026-10-10: APTIDÃO DE VOLTA AO CÁLCULO ANTERIOR
+
+Após a primeira mudança abaixo, o autor pediu para restaurar Aptidões ao
+cálculo anterior. A Geral Aptidão voltou a conceder `1 + Grau Numérico` vagas
+por compra, com teto de `floor(Maestria / 2)` compras. O texto do card explica
+que o limite arredonda para baixo. Especialização mantém a progressão nova:
+ganho de `1 + floor(Maestria / 2)` com teto de `ceil(Maestria / 2)` compras.
+
+Máximos de Aptidões para Maestria 2 a 10: 2, 3, 8, 10, 18, 18, 24, 24 e 30.
+Nos ND 26 a 35 são 24 Aptidões; a quinta compra só vale no ND 36, totalizando
+30. Especialização continua com 20 no ND 26, 25 no ND 31 e 30 no ND 36.
+Uma quinta Aptidão já gravada é aparada na leitura até o ND 36 e não apagada.
+Concessões de sessão continuam gratuitas e fora do teto. Player e o orçamento
+de Níveis de Aptidão não mudaram.
+
+O guia `docs/afty-formulas-base.md` registra as duas regras vigentes.
+`asserts/t-gerais-progressao.mjs` foi atualizado para testar as curvas e os
+tetos independentes, incluindo a restauração da quinta Aptidão no ND 36.
+
+Validação: 144 asserts específicos e a suíte completa com 164 arquivos e
+9.613 asserts passaram. Lint dos dois arquivos de código e build passaram;
+o build conserva o aviso de tamanho do bundle. No navegador, 1440 px e
+390 px passaram com os limites independentes, texto por Grau, compra da
+quinta Aptidão somente no ND 36, redução e recuperação de ND, salvamento
+e reabertura. Sem erros de execução ou rolagem horizontal. Evidência em
+`.audit/gerais-aptidao-restaurada-report.json` e
+`.audit/gerais-aptidao-restaurada-shots/`.
+
+## SESSÃO DE 2026-10-10: PROGRESSÃO DAS HABILIDADES GERAIS
+
+Esta foi a primeira implementação do dia. Aptidão foi restaurada depois,
+conforme a sessão acima; a regra vigente está no guia de fórmulas base.
+
+O autor aprovou a primeira proposta para suavizar Especialização e Aptidão.
+As duas Gerais concedem `1 + floor(Maestria / 2)` vagas por compra, com limite
+de `ceil(Maestria / 2)` compras de cada. Aptidão deixou de conceder `1 + Grau`.
+O ganho arredonda para baixo, e o teto de repetição arredonda para cima.
+Os textos dos cards foram atualizados para explicar os dois arredondamentos.
+
+Comprando até o teto, os máximos por tipo são 2, 4, 6, 9, 12, 16, 20, 25 e 30
+para Maestria 2 a 10. ND 26 a 30 permite 20; ND 31 a 35 permite 25; ND 36+
+permite 30. A compra adicional precisa ser escolhida, e continua gastando o
+contador compartilhado de Feitiços e Habilidades Gerais. Sem novas compras,
+quatro aquisições dão 20 no ND 35 e 24 no ND 36.
+
+As concessões de sessão seguem gratuitas e fora do teto de compra. O aparo ao
+baixar o ND continua só na leitura, sem apagar compras gravadas. Aptidões
+antigas podem exceder o novo orçamento nas faixas intermediárias; as escolhas
+não são removidas. Player e o orçamento de Níveis de Aptidão não mudaram.
+
+Regra vigente e tabela no guia `docs/afty-formulas-base.md`. A regressão
+`asserts/t-gerais-progressao.mjs` passou com 143 asserts; a suíte completa
+passou com 164 arquivos e 9.612 asserts.
+
+O lint dos dois arquivos de código alterados e o build passaram. O build conserva
+o aviso de tamanho do bundle. No navegador, Afty passou em 1440 px e 390 px:
+textos dos dois arredondamentos, quinta compra liberada no ND 31, contadores de
+ND 26/31/35/36, redução para ND 5 e restauração, salvamento e reabertura.
+Sem erros de execução ou rolagem horizontal. Evidência em
+`.audit/gerais-progressao-report.json` e `.audit/gerais-progressao-shots/`.
+
+## SESSÃO DE 2026-10-05: RESILIENTE E REVISÃO DE UNIFORME E ESCUDO
+
+Resiliente passou a conceder RD 5 no tipo escolhido e RD 10 no Grau Especial real do item.
+A escolha fica na linha do encantamento em Equipamentos, com veto à categoria Física,
+Alma e Energético. Energia Reversa continua permitida. O campo opcional
+`fa.encantamentoTipos` guarda a escolha na ferramenta, sem migrar ou presumir tipo
+em fichas antigas.
+
+Os dois Isolante foram ligados juntos: Uniforme concede RD 5 contra Queimante e Congelante;
+Escudo, somente Player, estende a RD daquele escudo (base, grau e Reforçado) a cada elemental
+escolhido. Cada tipo adicional ocupa uma vaga de encantamento. Repetir um tipo não duplica RD
+e gera aviso. As escolhas usam o catálogo vivo de Addons, e escolha inválida não emite efeito.
+
+Todos chegam a Resistências pelo canal `rdTipo`, com fontes nomeadas e soma com RD manual
+e RD Geral. A RD digitada continua sendo só a parcela manual. Guardar o equipamento encerra
+os efeitos, e Fragilizado anula as novas RDs. Isolante de Escudo gravado numa ficha de criatura
+continua inerte. A emissão também verifica se o encantamento pertence ao tipo do equipamento.
+
+Os 27 encantamentos de Uniforme e Escudo foram revisados: 11 têm efeitos passivos ligados,
+incluindo os três desta sessão. Os outros 16 conservam a regra como texto e dependem de
+controles de combate, alvos ou ataque próprio com escudo. A tabela completa está no guia
+`docs/afty-equipamentos.md`; a pendência antiga dos três foi retirada da fila e substituída
+pela automação dos 16 restantes em `docs/a-fazer.md`.
+
+Validação: a suíte completa passou com 153 arquivos e 8.963 asserts. Depois, a suíte de
+Uniforme e Escudo cresceu para 264 asserts com Addons e Fragilizado; os quatro arquivos
+afetados passaram com 475 asserts. Build e lint dos três arquivos de código alterados
+passaram. O lint global continua apontando erros em código anterior e em cópias de auditoria.
+
+No navegador, Player e Afty passaram em 1440 px e 390 px: tipos vetados fora da lista,
+RD 5, mudança para Grau Especial, os dois Isolante, escolha repetida ocupando vaga,
+tipos distintos, salvamento e reabertura. Nenhum erro de execução ou rolagem horizontal.
+Relatório e capturas em `.audit/resiliente-browser-report.json` e `.audit/resiliente-shots/`.
+
+## SESSÃO DE 2026-10-05: IMPLEMENTO MARCIAL SEM ACUMULAR
+
+A pedido do autor, Implemento Marcial de Combatente e Lutador aplica só o maior
+bônus na CD, mesmo vindo de especializações diferentes. Dois +4 resultam em +4.
+A progressão continua usando o nível de escalonamento de cada classe.
+
+Os dois efeitos compartilham `grupoNaoAcumula: "implemento_marcial"` no motor.
+O grupo disputa separado dos pools de Feitiços, Itens e Invocações, preservando
+a soma com outras fontes. A cópia menor ou empatada aparece riscada nas fontes.
+Vale em Player e Afty, incluindo a CD usada pelos Feitiços.
+
+O cache da prévia `previas/satoru-gojo-player.json` e o guia de progressão épica
+foram atualizados: a CD do Gojo passa de 68 para 64, retirando o +4 duplicado.
+
+Validação: 153 arquivos e 9.038 asserts passaram, com 155 em `t-bases-lut-cmb.mjs`.
+Build e lint dos arquivos de motor passaram. Ficha e fontes da CD conferidas
+no navegador em Player e Afty, nas larguras 1440 e 390 px, sem erros de execução.
+Relatório em `.audit/implemento-marcial-report.json`.
+
+## SESSÃO DE 2026-10-05: GOJO EM PLAYER E ADDONS DE PROGRESSÃO ÉPICA
+
+Foram criados os addons player-progressao-epica e player-alto-nivel-afty a pedido do autor.
+O primeiro retira o teto de nível 30 do Player, continua o Nível de Aptidão a cada dois níveis
+acima de 20 e calcula Interlúdios como piso(1,5 × Nível). Preserva os 24 pontos de atributo
+distribuídos do Gojo com três por ciclo de quatro níveis. Treinos Especiais seguem o Player.
+
+O segundo remenda as 11 Melhorias e as Lendárias conforme o texto enviado, acrescentando
+Incansável, Invencível e Manipulação Avançada de Energia. Ápice permanece no nível 26,
+decisão explícita do autor. Dominância oferece três técnicas ou cinco variações, Conhecimento
+só promove perícias treinadas, e Manipulação disputa com outras reduções gerais de PE.
+As Lendárias com gatilhos narrativos exibem valores e contadores para aplicação pelo jogador.
+
+O nível efetivo ficou centralizado em nivelDaFicha. Melhorias e Lendárias leem os pacotes
+da própria ficha, inclusive em Encontros mistos. Custo de PE também chega ao agregado final,
+além do passe de Domínio Simples. A Ápice escolhida não passa pela nova coleta de opções,
+para não aplicar o mesmo efeito duas vezes.
+
+previas/satoru-gojo-player.json é importável em /Player e já inclui os quatro addons.
+Atributos, Conjurador 20/Lutador 7/Combatente 8, escolhas de classe e 28 Aptidões escolhidas
+foram preservados. A prévia recalcula 881 PV, 253 PE, 881 Integridade, Defesa 72 e CD 68.
+Perícias e escolhas restantes ficam para revisão manual. Treinos mantidos gastam 82 de 52 Focos,
+com aviso de excesso e sem bônus oculto. Guia em docs/afty-player-progressao-epica.md.
+
+Validação: 152 arquivos e 8.734 asserts passaram, incluindo 102 do caso novo. Importação real,
+edição de nível 35/36, Interlúdios 52/54, três classes, pré-requisitos, variações e salvamento
+foram conferidos em 1440 e 390 px, sem erros de execução. Build e lint conferidos.
+
+## SESSÃO DE 2026-10-05: ATAQUE CONCENTRADO, FONTES E PISO FINAL
+
+A pedido do autor, Ataque Concentrado agora soma as metades antes de arredondar:
+7d12 com três concentrações acrescenta 10d12 e termina em 17d12. Cada metade
+usa o ataque original. Fontes do mesmo tamanho entram juntas no piso final,
+e tamanhos diferentes conservam suas faces. O mínimo de um dado por concentração
+vale para o ataque inteiro, sem conceder mínimos adicionais por fonte.
+
+A classificação dos 32 itens foi fechada pelo autor: entram 1 a 16 e 26 a 32.
+A lista completa está em `docs/afty-formulas-base.md`. Inclui Auxiliares Durante
+Ataque que durem uma rodada ou mais, Transformação, Sintonizada e Aura Elemental.
+Atroz, Pistoleiro e Execução Silenciosa participam por decisão explícita.
+Os itens 17 a 25 e Auxiliar de um golpe ficam fora das metades. Canalizações e
+os demais dados excluídos continuam somando uma vez, conforme sua própria regra.
+Danos Após Ataque e dano fixo continuam fora do cálculo das metades.
+
+A etapa física saiu do agregado inicial de `resolveDano` e passa a rodar após
+Auxiliares, Sintonizada e Aptidões, em `afty-ataque-concentrado.js`. As origens
+excluídas são reconhecidas inclusive em variações herdadas de Addon.
+Crítico e Raio Negro usam os bônus exclusivos de crítico nas metades antes da
+dobra, incluindo Fatal. `dadosCritico` permite quantidades diferentes por modo
+e é lido nas fórmulas e em `ficha-rolagem.js`. Hover, dados próprios da arma e
+parcelas de Dano Total conservam os resultados. Vale em Player e Afty.
+
+Validação: 151 arquivos e 8.624 asserts passaram, incluindo 113 em
+`t-ataque-concentrado.mjs`. A cobertura mede o exemplo do autor, fontes incluídas
+e excluídas, Auxiliar de uma rodada ou de um golpe, Transformação, tamanhos
+diferentes, crítico/Fatal/Raio Negro, hover e rolagens. Aura Elemental, Sintonizada
+e Destruidora também foram conferidas no motor real. Build e lint dos arquivos
+alterados passaram. Sem mudança de layout.
+
+## SESSÃO DE 2026-10-04: TREINAMENTO PARA APTIDÃO
+
+A pedido do autor, `tes_aptidao` entrou no catálogo de Treinos Especiais,
+na aba Interlúdios, seguindo os parâmetros do Treinamento para Habilidade.
+Cada ganho concede uma vaga de Aptidão Amaldiçoada pelo canal `vagasAptidao`.
+A escolha continua na aba Aptidões, respeitando os pré-requisitos.
+
+No jogador custa 1 Foco por Interlúdio, pede três sucessos em quatro testes,
+usa CD 12 + metade do Nível e guarda Interlúdios, Sucessos e Ganhos.
+Seu teto próprio é 1 até o nível 9 e 2 do nível 10 em diante.
+Na criatura custa 1 Foco por pega, com sucesso automático e teto
+`1 + piso(ND / 10)`. Os tetos de Habilidade e Aptidão são independentes.
+O treino não concede Nível de Aptidão nem vaga de Habilidade.
+A descrição foi adaptada conforme o pedido, com a origem registrada no catálogo.
+
+Validação: 151 arquivos e 8.485 asserts passaram, incluindo 87 em
+`t-treinos-especiais.mjs`. Build e lint dos arquivos alterados passaram.
+No navegador, `/Player` e `/Afty` conferidos em 1440 e 390 pixels:
+tentativa sem ganho, CD, limites nos níveis 9 e 10, contador de Aptidões,
+gravação e recarga. Sem erros de página ou rolagem horizontal.
+Relatório em `.audit/treinamento-aptidao-report.json`.
+
+
+## SESSÃO DE 2026-10-04: RETORNO À ÚLTIMA PASTA ABERTA
+
+A pedido do autor, sair de uma ficha retorna à última visualização da lista, em vez de
+reiniciar em Todas. Vale no Grimório público, em `/Afty` e em `/Player`, inclusive ao
+voltar do criador. A seleção também é recuperada após recarregar ou reabrir o site.
+
+O `App.jsx` conserva a seleção com `src/useDashboardView.js` e passa as props opcionais
+`folderView` e `onFolderViewChange` ao Dashboard. Sem essas props, o Dashboard mantém
+seu comportamento local anterior. As chaves são `fm_dashboard_view_v1`,
+`fm_dashboard_view_afty_v1` e `fm_dashboard_view_player_v1`, separadas por ambiente.
+Sem Pasta, Todas e Criaturas Base também são lembradas; a última só vale no público.
+Seleção corrompida ou pasta inexistente cai em Todas. Se o armazenamento falhar,
+a seleção continua em memória durante a navegação.
+
+Validação: 151 arquivos e 8.439 asserts passaram, assim como build e lint dos arquivos
+alterados. Navegador conferido nas três rotas, em 1440 e 390 pixels: retorno da ficha,
+retorno do criador no Afty e no Player, recarga, troca de pasta, separação entre ambientes,
+seleção corrompida, pasta apagada e falha de armazenamento, sem erros de execução.
+
+## SESSÃO DE 2026-10-04: ATAQUE BÁSICO PODE USAR ATAQUE AMALDIÇOADO
+
+O autor liberou a escolha nas fichas de Criatura e de Jogador. A linha do Ataque Básico mostra
+Corpo a Corpo ou Amaldiçoado no card Dano da aba Habilidades do criador e na aba Ações da Ficha
+Final e do Encontro. Funciona sem item, com Faixas, Manoplas, Soco Inglês e Pugilato criado.
+
+A ficha salva `ataqueBasicoId`. Na mesa a sessão herda essa escolha e pode trocá-la sem alterar
+o criador. A escolha da sessão entra nas opções e na chave do cache de derivação do Encontro.
+Fichas antigas seguem com Corpo a Corpo, e os campos novos são normalizados na importação.
+
+O acerto usa a jogada escolhida, incluindo seus bônus e dados extras. Na Criatura o Amaldiçoado
+leva o atributo da jogada ao dano, pela divergência existente `danoDoAcertoAmaldicoado`. No
+Jogador o dano segue o atributo físico. O golpe conserva o grau e os encantamentos do único
+item que o define, responde aos efeitos pelo tipo de jogada e soma Maestria uma vez só.
+O treino Amaldiçoado também é reconhecido por Aparar no item de Pugilato.
+
+A pendência correspondente saiu de `docs/a-fazer.md`. A cobertura de
+`asserts/t-dano-acerto-amaldicoado.mjs` inclui cálculo, encantamentos, importação,
+persistência de sessão, Pugilato criado e invalidação do cache do Encontro.
+
+Validação: 151 arquivos e 8.439 asserts passaram. Build e lint do Afty passaram.
+No navegador, criador, Ficha Final e Encontro conferidos em `/Afty` e `/Player`,
+com larguras de 1440 e 390 pixels, incluindo rolagem, gravação e recarga da escolha.
+
 ## SESSÃO DE 2026-10-12: INTEGRAÇÃO COMPLETA AUTORIZADA
 
 Autor confirmou incluir Ryuma e os demais trabalhos no mesmo commit preparado.
@@ -16832,6 +17208,81 @@ Pedido do autor: um Addon chamado "Yna" com a Origem Kitsune, a Linhagem Clã Ge
 **Verificado ao vivo:** servidor próprio em 5201, Chrome em contextos temporários sem ocultar barras, /afty e /player a 1440 e 390 px. A Quimera mostra PV 70, com parcelas 39, 13, -2 e Invocações Resistentes +20, por mouse e toque no criador e na Ficha. A morte no segundo exorcismo aparece na original na mesma aba. Nome, nível, Técnica, campos posteriores, outra ficha editada, campo excluído, inclusão e exclusão posteriores são preservados. No telefone, falha de armazenamento mostra o aviso e Tentar Novamente grava após desbloquear. Encontro antigo misto com identificador igual nas duas bibliotecas grava no livro de cada ficha e abrir a outra rota mostra a perda. Duas novas rodadas não regravam a biblioteca. Sem erro de página ou console, nem rolagem horizontal. Roteiros, capturas, relatórios e diff do lote em .audit/lote11-*.
 
 **Achado e não mexido:** nenhuma pendência deste lote. A conferência manual do Visionário é a decisão final. O build conserva o aviso de tamanho do pacote principal. Trabalho paralelo, mudanças preexistentes e fichas reais preservados. Nenhum U+2014 introduzido nas linhas deste lote. Sem commit ou push.
+
+
+## SESSÃO DE 2026-10-04: TERCEIRA MULTICLASSE NO AFTY A PARTIR DO ND 31
+
+**Decisão do autor:** a criatura do Grimório Afty pode ter até três Especializações no ND 31+. Até o ND 30, o limite permanece em duas. O jogador mantém o limite de três, e a Origem Restringido mantém sua classe obrigatória.
+
+**Implementação:** maxEspecializacoes e normalizeEspecializacoes recebem o nível efetivo. resolveEspecializacoes passa o nível de nivelDaFicha, e a troca de origem no criador também. A terceira classe participa da distribuição de níveis e do escalonamento. Ao baixar para o ND 30, ela sai da conta sem apagar a divisão gravada; ao voltar ao ND 31, a divisão retorna. O guia afty-player.md, a divergência terceiraClasse e o comentário do esquema foram atualizados.
+
+**Validação:** t-sistema.mjs passou de 460 para 471 asserts, com a fronteira 30/31, ND 40, Restringido, quarta classe recusada, preservação das escolhas, escalonamento e derive. t-carteira.mjs passou de 136 para 138, garantindo que o ND 31 gravado não libera a terceira classe se o nível efetivo pelo XP for 8. Suíte completa: 150 arquivos e 8284 asserts, todos passaram. Build e ESLint dos arquivos alterados passaram. Navegador em contextos temporários a 1440 e 390 px: seleção da terceira classe no ND 31, bloqueio da quarta, controles de nível, ida e volta 31/30/31 e troca de origem preservando as três classes. Sem erro de página ou rolagem horizontal. Roteiro, relatório e capturas em .audit/terceira-classe-*. Trabalho paralelo preservado. Sem commit ou push.
+
+
+## SESSÃO DE 2026-10-04: PROPRIEDADES DE ARMA EM COMBATE
+
+**Resolvido:** Enérgica conta ataques por exemplar da arma, sem duplicar Acerto e Dano, e acrescenta o bônus fixo aos ataques seguintes. Contador, correção manual, duração e rolagens funcionam na Ficha Final e no Encontro, incluindo Pugilato e Anatomia Arma Natural. Aparar, Apunhaladora, Oscilante, Ampla, Recarga, Emperrar, Pesada, Estabilidade e Modular receberam os controles e efeitos de sessão. Fineza é resolvida por arma no acerto e no dano. Fatal e Mortal normalizam tamanhos simples e avisam sobre parâmetros inválidos; Afiada e Defensora concedem ou melhoram suas propriedades efetivas.
+
+**Decisões do autor:** Ampla compara a Defesa com o resultado do acerto de qualquer ataque, sem exigir crítico. Afiada mantém Fatal d12 como teto. Vantagem e desvantagem de Pesada ou Estabilidade se anulam. As decisões e o uso dos controles estão em docs/afty-equipamentos.md. As cinco entradas desta auditoria saíram de docs/a-fazer.md.
+
+**Validação:** 103 regressivos específicos em t-propriedades-armas.mjs; suíte completa com 151 arquivos e 8439 asserts, todos passaram. Build e ESLint dos arquivos desta correção passaram. O lint geral continua apontando erros em arquivos fora desta correção, incluindo cópias antigas em .audit e a área somente-leitura src/components; não foi ampliado o escopo para alterá-los. Chrome em contextos temporários: /player e /afty a 1440 e 390 px, com 112 verificações de controles e rolagens, mais 18 do painel de Encontros. Enérgica mostrou +0, +1 e +2, Acerto e Dano contaram uma vez, estado persistiu, Aparar respeitou o turno próprio, Ampla funcionou sem crítico, e recarga, emperramento e anulação de vantagem foram conferidos. Sem erro de página ou console nem rolagem horizontal. Evidências em .audit/propriedades-armas-*. Trabalho paralelo preservado. Sem commit ou push.
+
+
+## SESSÃO DE 2026-10-04: ENÉRGICA VISÍVEL NO CRIADOR E NA FICHA
+
+**Correção de uso:** o criador ainda não tinha um campo para simular Enérgica, e o contador da Ficha Final ficava em uma seção recolhida. O campo Golpe no turno agora aparece diretamente na linha da arma em Habilidades > Dano no criador e em Ações > Dano na Ficha Final e no Encontro. 1, 2 e 3 representam o primeiro, segundo e terceiro golpes, com o bônus e a fórmula atualizados na mesma linha. No criador, o estado é local e não modifica a ficha salva nem a sessão da mesa. Na sessão, o Acerto mantém a posição para o Dano do mesmo golpe, e o Dano avança para o próximo. Novo turno volta a 1. Linhas de armas com identificadores iguais usam a identidade do exemplar equipado também no quadro do criador.
+
+**Validação:** 103 asserts das propriedades e suíte completa com 151 arquivos e 8485 asserts, todos passaram. Chrome em contextos temporários: Criatura e Jogador, 1440 e 390 px, com 92 verificações de campo visível, posições 1/2/3, fórmula, reinício, Acerto/Dano e preservação da ficha salva; mais 18 do painel de Encontros. No jogador, uma arma de 1d6 mostrou 1d6, 1d6 + 1 e 1d6 + 2. Na criatura de teste, mostrou 1d8 - 2, 1d8 - 1 e 1d8. Sem erros de página ou console nem rolagem horizontal. Evidências em .audit/energica-visivel-*. Trabalho paralelo preservado. Sem commit ou push.
+
+
+## SESSÃO DE 2026-10-05: ENÉRGICA COM TODOS OS DADOS DE DURANTE ATAQUE
+
+**Decisão do autor:** Enérgica considera todos os dados classificados como Durante Ataque. A interpretação anterior, limitada aos dados próprios da arma, foi substituída. Auxiliares, Aura Elemental, Canalizar, Ataque Concentrado e outras fontes participam da contagem; dados de Após Ataque e valores fixos ficam fora. No segundo golpe, 2d6 mais 3d8 de Durante Ataque dão +5, e no terceiro dão +6.
+
+**Implementação:** aplicarPropriedadesNoDano conta os grupos finais de dano, depois de todas as fontes adicionais. Usa os dados presentes no modo escolhido, antes das multiplicações. Mortal e outras parcelas exclusivas do crítico aumentam Enérgica somente no crítico e no Raio Negro, por uma parcela fixa identificada nas fontes. O bônus permanece fora do dobro e do 1,5x. O campo visível na Ficha Final e no Encontro acompanha o modo mostrado na fórmula; o criador continua permitindo simular o número do golpe. O metadado dadosPropriosArma foi preservado para compatibilidade com o trabalho paralelo de Ataque Concentrado, mas não limita Enérgica. Guia de equipamentos e índice dos asserts atualizados.
+
+**Validação:** t-propriedades-armas.mjs passou de 103 para 150 asserts, com combinações de tamanhos, Durante Ataque não critável, Após Ataque, fixos, fontes de um golpe, Aura, Canalizar, Auxiliares, Ataque Concentrado e Mortal nas duas fichas. t-ataque-concentrado.mjs passou com 113. Suíte completa com 151 arquivos e 8624 asserts, todos passaram. Build e ESLint dos arquivos desta correção passaram. Chrome em contextos temporários, /player e /afty a 1440 e 390 px: 92 verificações do criador, campo visível, posições 1/2/3, fórmula, rolagem salva, Crítico e Raio Negro. Na combinação testada, o jogador recebeu +21 no segundo golpe normal e +22 no crítico; a criatura recebeu +22 e +23. Os quatro dados de Após Ataque foram excluídos em todos os modos. Sem erros de página ou console nem rolagem horizontal. Capturas conferidas. Evidências em .audit/energica-durante-*. Trabalho paralelo preservado. Sem commit ou push.
+
+
+## SESSÃO DE 2026-10-05: ENÉRGICA CONTA OS DADOS JÁ DOBRADOS NO CRÍTICO
+
+**Diagnóstico e decisão do autor:** na fórmula enviada, o normal tinha 56 dados (42d12 + 9d10 + 5d6), enquanto o crítico tinha 132 (104d12 + 18d10 + 10d6). O cálculo anterior de Enérgica usava os 66 dados anteriores ao dobro crítico, por isso o bônus aumentava apenas 10 em relação aos 56 normais. Contar antes de dobrar foi uma interpretação da implementação, não uma decisão previamente confirmada pelo autor. Ao ser consultado, o autor confirmou: contar os dados já dobrados pelo crítico. Essa decisão substitui a contagem anterior registrada na sessão acima.
+
+**Correção:** aplicarPropriedadesNoDano usa a quantidade efetivamente rolada de cada grupo de Durante Ataque no modo escolhido. Dados critáveis contam duas vezes no crítico; os não critáveis contam uma vez. Dados exclusivos e quantidades críticas do Ataque Concentrado também participam. Após Ataque e valores fixos continuam fora da quantidade. O bônus resultante entra uma única vez como dano fixo, e o Raio Negro usa a quantidade de dados do crítico sem multiplicar Enérgica por 1,5. O acréscimo de +1 por golpe depois do segundo continua uma vez. O guia e a dica do campo visível foram atualizados.
+
+**Validação:** 158 asserts de propriedades, incluindo regressão com os números enviados: Enérgica +56 no normal e +132 no crítico, fórmula normal 42d12 + 9d10 + 5d6 + 169 preservada e fórmula crítica 104d12 + 18d10 + 10d6 + 245. Rolagem e Raio Negro somam o bônus uma vez, e o terceiro golpe crítico recebe +133. Suíte completa: 151 arquivos e 8632 asserts, todos passaram. Build e ESLint dos arquivos desta correção passaram. Chrome em contextos temporários, /player e /afty a 1440 e 390 px, com 92 verificações do criador, campo visível, posições de golpe, fórmula, rolagem salva, Crítico e Raio Negro. Na combinação de navegador, o jogador recebeu +21 normal e +44 crítico; a criatura recebeu +22 e +46. Sem erros de página ou console nem rolagem horizontal. A ficha anexada foi lida e seus grupos reais de CortaCabeças foram conferidos, preservando o arquivo original; os estados de teste citados pelo usuário não estavam gravados no combate exportado. Evidências em .audit/energica-critico-*. Trabalho paralelo preservado. Sem commit ou push.
+
+## SESSÃO DE 2026-10-05: TALENTOS INICIAIS
+
+**Pedido do autor:** addon Talentos Iniciais que concede de 1 a 4 Talentos, com quantidade digitável.
+
+**Implementação:** addons/talentos-iniciais.json, padrão 1. O campo Talentos aparece na cópia ativa em Outros > Addons. A quantidade fica por ficha, acompanha a exportação e não altera o padrão da biblioteca. regrasAfty.talentosIniciais aceita somente inteiros de 1 a 4 e emite vagasTalento no montante, com fonte identificada. As vagas são exclusivas de Talento, acumulam com outras fontes, mantêm pré-requisitos e funcionam em Player e Afty. Desligar retira o bônus sem apagar Talentos escolhidos. Guia em docs/afty-talentos-iniciais.md.
+
+**Validação:** 68 asserts específicos; suíte completa com 153 arquivos e 8802 asserts, todos passaram. Build e ESLint dos três módulos alterados passaram. Navegador em contextos temporários, Player e Afty a 1440 e 390 px: instalação real pela biblioteca, quatro quantidades, limites, seleção manual de Talento, persistência, padrão da biblioteca preservado e remoção sem apagar escolhas. Sem erro de página nem rolagem horizontal. Capturas conferidas e relatório em .audit/talentos-iniciais-report.json. Alterações anteriores preservadas. Sem commit ou push.
+
+## SESSÃO DE 2026-10-05: ADDON ALMA LIVRE PARA PLAYER
+
+**Pedido:** liberar Alma Livre para Ficha de Jogador. O pacote addons/alma-livre.json já existia com a liberação correta e foi reutilizado. Nenhuma alteração de regra ou do catálogo foi necessária.
+
+**Validação:** instalação do JSON real, opção ausente antes de ativar, liberação após ativar, bloqueio no nível 9 e acesso no 10, exclusão da classe atual e de Restringido, escolha de Combatente como classe emprestada, aba no nível 10 e persistência do Talento, escolha e addon. Chrome em contextos temporários a 1440 e 390 px, sem erro de página nem rolagem horizontal. 646 asserts de sistema, Talentos, Flugel e Talentos Iniciais passaram. Evidências em .audit/alma-livre-report.json e .audit/alma-livre-shots. Instruções de uso acrescentadas ao guia de Addons. Alterações anteriores preservadas. Sem commit ou push.
+
+## SESSÃO DE 2026-10-07: REVISÃO DA AUTOMAÇÃO, BLOCO G00, M01 A M05, P01, CMB-01 E CMB-02
+
+**Pedido:** consolidar os diagnósticos da revisão noturna dos nove lotes, confirmar cada achado no código atual e corrigir o que tinha regra fechada, com prova para auditoria independente. Registros em `docs/revisao-automacao/<lote>/`. Perguntas e pendências na fila única, sob a chave `BLOCO-2026-10-07-perguntas` e as seis entradas da seção da campanha.
+
+**Isolamento de addon (M05).** O remendo (`substitui`) passou a ser da ficha: `deriveAfty` roda em `comEscopoDaFicha` (afty-addons.js), que reescreve o catálogo só com os remendos dos pacotes da ficha e devolve o mundo no `finally`. É a camada da criatura desenhada na seção 3 do guia de addons e nunca ligada; antes, a Defesa de quem não tinha o pacote ia de 16 para 23 no Encontro misto. A Base de pacote (`automatica` na criatura, toda Base no jogador) só é concedida a quem carrega o pacote. O `prefixarEntrada` anda caminhos em qualquer profundidade, com a forma nova `campo{}` (chaves de objeto), e ganharam caminho `requisitos[].ids[]` (Lendárias, que já era declarado e não funcionava), `requisitos[].habId`, `remendaHabilidades{}` e `efeitos[].alvo`.
+
+**Linguagem e portão (M01, M04).** Número com dois pontos é erro de sintaxe. Valor não finito no contexto cai no fallback, também no `evalBoolean`. `opt_` de Aptidão sai normalizado. Colisão de variável depois da normalização é relatada pelo `aplicarAddons`. O `validarPacote` confere canal, `expr` e `quando` de Funcionamento e de Técnica de Estilo de pacote, contra os canais da criatura ou da invocação (registro `registrarCanaisDoMotor`, sem ciclo de import). Os 51 pacotes do repositório continuam aceitos.
+
+**Editor e autoria (M01, M04).** `efeitoGravavel` (afty-efeitos.js) é a lista única do que o editor grava: o do Funcionamento perdia `semCredito` e o da Habilidade Única perdia também `quando` e `duracao`. O editor visual ganhou os alvos de `tipoDano`, `dadoNomeado`, `periciaDado` (seletor duplo), `gatilho` e `custo`; os canais cujo alvo É o dado ou o gatilho declaram `alvoObrigatorio` e não oferecem "todos". Estado de addon transporta `umaVezPorRodada`, `exclusivoCom` e `custoPE`. Entrada de pacote pode declarar `fonteCura` e ganhar a própria linha de cura.
+
+**Acúmulo e alvo (M02, CMB-01, CMB-02).** O vencedor do segundo estágio de atributo rende só o que passa do primeiro (`declarado` guarda o valor da fonte), e as parcelas fecham o número grande. A opção `naoAcumulaEntreFontes` põe a mesma opção pega por dois pais num grupo que não acumula: o Estilo pelo Repertório e pelo Adepto rende uma vez, como o catálogo já dizia. Atroz e Penetrante miram arma, Ataque Básico e Feitiço com ataque (escopo novo `feitico:resolucao:<ataque|tr>`), e saíram do Feitiço de TR. Canal novo `vantagemAtaque` e `modoCombinado` (Livro, página 282): o Preciso virou estado de bancada e a rolagem do Acerto sai com vantagem na Ficha e no Encontro, com chip na linha.
+
+**Progressão (P01).** Divergência nova `requisitoMulticlasse`: no jogador a Especialização nova só entra com o atributo do requisito (página 47) no valor permanente, e a ficha que já a tem sem ele recebe aviso. Na criatura, pergunta ao autor.
+
+**Ficou pendente, com motivo:** cobrança e expiração de Armas Absolutas e a transação genérica de uso (conflito entre a regra vigente "custoPE só exibido" e o critério da campanha), Condenado no Ápice, o leitor tardio do acerto (Fluxo Invencível), as consequências do Golpe que pedem evento com alvo, as reações do Interceptador e do Protetor, PV por rolagem e as leituras de regra listadas na fila.
+
+**Validação:** ver `docs/revisao-automacao/<lote>/revisao.md` e os manifestos `entrega-sha256.json`. Trabalho paralelo preservado. Sem commit ou push.
 
 ## SESSÃO DE 2026-10-08: TÉCNICA MÁXIMA E EXPANSÃO DE DOMÍNIO EM FEITIÇOS → ESPECIAL
 

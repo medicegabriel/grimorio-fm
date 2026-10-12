@@ -1,0 +1,8 @@
+
+> grimorio-tracker@0.0.0 asserts
+> node asserts/rodar.mjs sistema ordem-modulos
+
+ok   t-ordem-modulos.mjs      34
+ok   t-sistema.mjs            471
+
+2 arquivos, 505 asserts, todos passaram.

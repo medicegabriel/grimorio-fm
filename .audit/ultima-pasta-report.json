@@ -1,0 +1,84 @@
+[
+  {
+    "width": 1440,
+    "route": "/",
+    "returnFromSheet": true,
+    "reload": true,
+    "switchFolder": true,
+    "unfiled": true,
+    "all": true,
+    "editor": false,
+    "builtins": true
+  },
+  {
+    "width": 1440,
+    "route": "/Afty",
+    "returnFromSheet": true,
+    "reload": true,
+    "switchFolder": true,
+    "unfiled": true,
+    "all": true,
+    "editor": true,
+    "builtins": false
+  },
+  {
+    "width": 1440,
+    "route": "/Player",
+    "returnFromSheet": true,
+    "reload": true,
+    "switchFolder": true,
+    "unfiled": true,
+    "all": true,
+    "editor": true,
+    "builtins": false
+  },
+  {
+    "width": 1440,
+    "isolatedRoutes": true,
+    "invalidSavedViews": 6,
+    "deletedFolder": true,
+    "unavailableStorage": true,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "route": "/",
+    "returnFromSheet": true,
+    "reload": true,
+    "switchFolder": true,
+    "unfiled": true,
+    "all": true,
+    "editor": false,
+    "builtins": true
+  },
+  {
+    "width": 390,
+    "route": "/Afty",
+    "returnFromSheet": true,
+    "reload": true,
+    "switchFolder": true,
+    "unfiled": true,
+    "all": true,
+    "editor": true,
+    "builtins": false
+  },
+  {
+    "width": 390,
+    "route": "/Player",
+    "returnFromSheet": true,
+    "reload": true,
+    "switchFolder": true,
+    "unfiled": true,
+    "all": true,
+    "editor": true,
+    "builtins": false
+  },
+  {
+    "width": 390,
+    "isolatedRoutes": true,
+    "invalidSavedViews": 6,
+    "deletedFolder": true,
+    "unavailableStorage": true,
+    "errors": []
+  }
+]

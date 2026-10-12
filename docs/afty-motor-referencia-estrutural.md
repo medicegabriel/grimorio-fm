@@ -15,16 +15,16 @@ colado no início de outra conversa.
 
 ## 1. Os três sistemas, um código só
 
-Uma SPA Vite+React (`grimorio-fm`). A rota decide o sistema:
+Uma SPA Vite+React. `creature.rulesVersion` define o sistema da ficha. A rota decide apenas o padrão de uma ficha nova:
 
 | Rota | Sistema | Chave de storage |
 |---|---|---|
 | `/` | Grimório 2.5.2 (o livro oficial, **somente-leitura** — não é para editar) | `fm_*` |
 | `/Afty` (case-insensitive) | Criatura mestre — homebrew "Afty" por cima do 2.5.2 | `fm_*_afty_v1` |
-| `/Player` | Ficha de jogador — **mesmo código** do Afty, com `sistema: "player"` | mesma base, chaves isoladas |
+| `/Player` | Ficha de jogador, mesmo código do Afty, com `rulesVersion: "player"` | mesma base, chaves isoladas |
 
-`/Afty` e `/Player` rodam o MESMO `deriveAfty`/`AftyCreatureBuilder`, diferenciados por
-`sistema` (ver `regraDo()` em `afty-sistema.js`). Uma mudança de motor pega os dois; use
+`/Afty` e `/Player` rodam o MESMO `deriveAfty`/`AftyCreatureBuilder`, diferenciados pelo sistema
+definido por `creature.rulesVersion` (ver `sistemaDaFicha()` e `regraDo()` em `afty-sistema.js`). Uma mudança de motor pega os dois; use
 `regraDo(sistema, chave)` quando o comportamento tiver que divergir (ex.: `passivaCustaPeMaximo`:
 `"afty"` não cobra PE Máximo da Passiva, `"player"` cobra o dobro do nível).
 
@@ -84,7 +84,11 @@ sozinho já pega 90% dos problemas — é rápido e não precisa de browser.
 
 ## 3. O pipeline: `deriveAfty(creature, opcoes)`
 
-Função pura e síncrona em `afty-derive.js` (3000+ linhas). Recebe a ficha crua e devolve TODOS os
+Função pura e síncrona em `afty-derive.js` (4000+ linhas). Desde 2026-10-07 ela roda dentro do
+ESCOPO DA FICHA (`comEscopoDaFicha`, afty-addons.js): o catálogo enxerga os acréscimos de todos os
+addons do mundo e só os REMENDOS (`substitui`) dos pacotes que esta ficha carrega. É a camada da
+criatura da seção 3 do docs/afty-addons.md, e é o que impede o remendo de um combatente de mudar o
+número do vizinho no Encontro misto. Recebe a ficha crua e devolve TODOS os
 números derivados (`hp`, `pe`, `defesa`, `testes.{pericias,resistencias,ataques}`, `dano.entradas`,
 `combate`, etc.). Chamada em 8 pontos (builder, Ficha Final, Encontro, ...). `opcoes` carrega o que
 só existe em JOGO e não na criação: `opcoes.almaAtual` (Integridade da Alma corrente, vira a
@@ -102,11 +106,13 @@ Estágios (ordem importa, cada canal só existe a partir do estágio dele):
    a regra só alcança a `expr`. Habilidades/Talentos/Aptidões AINDA NÃO existem neste estágio
    (`contar()` e `tem_*` devolvem 0).
 3. Resolução de Habilidades/Talentos/Aptidões/Especializações.
-4. **Motor de Automação** — `efeitosDaTecnica(creature)` (afty-efeitos.js) coleta
-   `funcionamentosComNativos(creature)` (principal + adicionais do jogador + addon + **os 3
-   nativos**: Aliados/Alma/Comidas), monta `{canal, expr, origem, nome, exclusivo:
-   "funcionamentoBasico", alvo, quando, duracao}` por linha, DESCARTA em silêncio entrada inválida
-   (validação é da UI, não do motor).
+4. **Motor de Automação**: `efeitosDaTecnica(creature)` (afty-efeitos.js) coleta
+   `funcionamentosDaFicha(creature)` (principal, adicionais do jogador e Funcionamentos de addon) e
+   monta `{canal, expr, origem, nome, exclusivo: "funcionamentoBasico", alvo, quando, duracao}` por
+   linha. Os três recursos nativos (Aliados, Alma, Comidas) entram por outra coleta,
+   `efeitosDosBuffsNativos()`, SEM `exclusivo` (conferido no código em 2026-10-07). A coleta
+   DESCARTA em silêncio entrada inválida: quem barra é o editor e, para addon, o portão de
+   instalação (`validarPacote` confere canal, `expr` e `quando` desde 2026-10-07).
 5. Aplicação de efeitos por canal (`aplicarEfeitos`/`valorCanal`), com `resolverExclusivos` para
    canais que competem em pool (seção 5).
 6. Cálculos finais: PV, PE, Defesa, CD, RD, Testes, Dano (`resolveDano`), Cura, etc.
@@ -172,16 +178,24 @@ Expansão usam (`estiloTecnicas`): várias ligadas ao mesmo tempo somam o mesmo 
 total ainda disputa com o Feitiço Auxiliar e o resto do pool. Linha sem bloco disputa sozinha, como
 sempre.
 
-Famílias de hoje: `habilidadeUnica`, `feiticoAuxiliarPassivo`, `feiticoAuxiliarAtivo`,
-`shikigamiCaracteristica`, `shikigamiAcao`, `funcionamentoBasico`, `segundaHabilidadeUnica` (a mais
-nova, 2026-09-11, do addon de Forja).
+Famílias de hoje (oito, conferidas em 2026-10-07): `habilidadeUnica`, `feiticoAuxiliarPassivo`,
+`shikigamiCaracteristica`, `feiticoAuxiliarAtivo`, `shikigamiAcao`, `estiloSombra`,
+`funcionamentoBasico` e `segundaHabilidadeUnica` (do addon de Forja). Na criatura o pool é
+único; no jogador cada família cai no `grupoJogador` dela (divergência `poolExclusivo`).
 
-**`funcionamentoBasico`** é a mais relevante para addons/nativos: TODA linha de
-`efeitosDaTecnica` (o principal, os adicionais do jogador, os de addon, **e os 3 nativos**) carrega
-`exclusivo: "funcionamentoBasico"` sem exceção — "dois Funcionamentos Básicos não somam entre si, e
-nenhum deles soma com Feitiço, Shikigami, Técnica Marcial ou Estilo da Sombra." Isso significa: se a
-Técnica principal da criatura também escrever um efeito no MESMO canal+alvo+sinal que Aliados/Alma/
-Comidas, só um dos dois conta — não é bug, é a regra do pool.
+Fora das famílias existe o `grupoNaoAcumula`: cópias do MESMO benefício de fontes diferentes disputam
+num grupo próprio (Implemento Marcial do Lutador e do Combatente) e somam com o resto. A opção de
+escolha que declara `naoAcumulaEntreFontes` ganha esse grupo sozinha (`coletarEfeitosDeEscolha`,
+2026-10-07): o mesmo Estilo de Combate pelo Repertório e pelo Adepto rende uma vez.
+
+O `atributo` resolve em dois estágios, e o vencedor do segundo rende só o que passa do primeiro: o
+detalhe dele guarda esse rendimento em `valor` e o valor da fonte em `declarado` (2026-10-07), para
+as parcelas do hover fecharem o número grande.
+
+**`funcionamentoBasico`** é a mais relevante para addons: TODA linha de `efeitosDaTecnica` (o
+principal, os adicionais do jogador e os de addon) carrega `exclusivo: "funcionamentoBasico"`. Os
+três recursos nativos (Aliados, Alma, Comidas) NÃO entram nesse pool: eles vêm de
+`efeitosDosBuffsNativos()`, sem `exclusivo`, e somam com o Funcionamento.
 
 ---
 
@@ -222,10 +236,7 @@ Comidas, só um dos dois conta — não é bug, é a regra do pool.
 ## 7. Verificação — o que rodar antes de dar qualquer trabalho por pronto
 
 1. **`node asserts/t-ordem-modulos.mjs`** — pega quebra de ciclo de import em segundos.
-2. **Suíte inteira**: `for f in asserts/t-*.mjs; do node "$f" || echo "FALHOU: $f"; done` (78
-   arquivos hoje, cada um com dezenas de asserts próprios, sem framework — só `t(nome, real,
-   esperado)` e `JSON.stringify` comparando). Não existe `npm test`; é isso mesmo, arquivo por
-   arquivo.
+2. **Suíte inteira**: `npm run asserts`, com processo isolado por arquivo e compatibilidade com Windows. A linha de entrada do G00 em 2026-10-05 passou 153 arquivos e 9.038 asserts. Veja a validação final no registro do G00.
 3. **Syntax check rápido de um arquivo**: `npx esbuild <arquivo> --bundle=false --outfile=/tmp/x.js`
    (sem `--loader`, o esbuild infere pela extensão; com `--loader=jsx` sem mapa de extensão só
    funciona lendo de stdin).
@@ -244,14 +255,9 @@ Comidas, só um dos dois conta — não é bug, é a regra do pool.
 
 ## 8. Fidelidade ao livro (Feiticeiros & Maldições v2.5.2)
 
-Fonte: `C:\Users\arthu\Downloads\F&M 2.5.2 - Livro de Regras.md` (Markdown, ~13940 linhas, cabeçalhos
-preservados — preferir a esta fonte; ela substitui a extração antiga via `pdftotext`).
+Fonte vigente desde 2026-10-05: o Markdown `C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md`, fora do repositório, com SHA-256 `1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a`. A página citada é a impressa, pelo último marcador `<!-- página N -->` acima do trecho. O PDF `public/docs/F&M 2.5.2 - Livro de Regras.pdf` serve só para desempate documentado, e o Grimório das Maldições continua em PDF. Protocolo em `docs/revisao-automacao/LEIA.md` e localização por item em `docs/revisao-automacao/fontes.json`.
 
-Convenção do projeto ao ADICIONAR valor onde o livro não define métrica: reaproveitar a tabela mais
-próxima já existente (nunca inventar número solto) e MARCAR a extrapolação com aviso visível na UI
-E no nome (ex.: `"Aumento de Iniciativa (sem tabela no livro)"`). Ver `PASSIVO_EFEITOS` em
-`afty-feiticos.js`: as categorias sem tabela de Passivo usam a régua da Defesa por analogia de
-porte, com aviso a cada uso — nunca silenciosamente.
+Nesta campanha, métrica ausente ou ambígua exige decisão do autor antes de uma fórmula nova. A extrapolação histórica dos Passivos deve ser examinada no lote proprietário, com sua decisão vigente; não autoriza inventar números nem alterar balanceamento neste G00.
 
 ---
 
@@ -263,6 +269,7 @@ porte, com aviso a cada uso — nunca silenciosamente.
 | `afty-schema.js` | fábrica de ficha em branco, `funcionamentosDaFicha` cru — **FOLHA, zero imports** |
 | `afty-efeitos.js` | canais (`EFEITO_CANAIS`), `efeitosDaTecnica`, pools exclusivos |
 | `afty-efeitos-conteudo.js` | efeitos de cada Habilidade/Talento/Aptidão do catálogo raw |
+| `afty-ataque-concentrado.js` | seleção dos dados elegíveis, soma das metades antes do piso e quantidades por modo de dano, depois de Auxiliares e Aptidões |
 | `afty-combate.js` | `COMBATE_ESTADOS` (catálogo nativo com dono), `resolveCombate`, `combateDslVars` |
 | `afty-extras-nativos.js` | estados/funcionamentos SEM dono, embutidos (Aliados/Alma/Comidas) |
 | `afty-addons.js` | registro de famílias, namespace, `estadosCombateDeAddon`, `permite`/`libera` |

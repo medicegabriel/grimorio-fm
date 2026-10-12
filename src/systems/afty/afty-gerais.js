@@ -15,8 +15,12 @@
  *    Maestria (no lugar do dobro, sem somar o +4) no Beyond.
  *    ⚠ Isso SUBSTITUIU o antigo `totalFeiticos(nd)` (2 + ND/2 + marcos de
  *    10 e 20), que deixou de existir em afty-feiticos.js.
- * 2. **Repetíveis com teto próprio.** Especialização e Aptidão saem metade
- *    da Maestria de vezes; Treinamentos sai 1 + ND/10 de vezes ("só uma vez
+ * 2. **Repetíveis com teto próprio.** Especialização sai metade da Maestria
+ *    de vezes, arredondando para cima (autor, 2026-10-10), e concede
+ *    1 + metade da Maestria, arredondando para baixo, por compra.
+ *    Aptidão mantém a regra anterior, restaurada no mesmo dia: metade da
+ *    Maestria de vezes para baixo, concedendo 1 + Grau Numérico por compra.
+ *    Treinamentos sai 1 + ND/10 de vezes ("só uma vez
  *    a cada 10 níveis", com a primeira valendo desde o ND 1); Melhoria
  *    Superior e Habilidade Lendária são uma vez só.
  * 2b. **Melhoria Superior pede ND 21 e Habilidade Lendária pede ND 22**
@@ -33,12 +37,14 @@
  *    Especialização e de Aptidões Amaldiçoadas (autor, 2026-07-27). As duas
  *    fórmulas por ND (`1 + floor(ND/3)` nos dois casos) foram REMOVIDAS de
  *    afty-habilidades.js e afty-derive.js. Sem pegar a Geral, o orçamento é 0.
- * 5. Todo arredondamento é para baixo (regra geral do projeto).
+ * 5. Todo arredondamento é para baixo, exceto o teto de repetição de
+ *    Especialização, que arredonda para cima desde 2026-10-10.
  *
  * ⚠ Ids levam prefixo `ger_`, mesma convenção de `mel_`/`len_`/`tal_`.
  *
- * ⚠ As três primeiras descrições são o texto do autor (só os acentos que
- * faltavam foram postos). As de Melhoria Superior e Habilidade Lendária
+ * ⚠ Especialização e Aptidão refletem a progressão aprovada em 2026-10-10.
+ * A descrição de Treinamentos é o texto do autor, com os acentos corrigidos.
+ * As de Melhoria Superior e Habilidade Lendária
  * foram escritas aqui: o texto original era instrução de implementação
  * ("do jeito que já está programado"), não regra para a tela.
  */
@@ -47,8 +53,8 @@ import { MELHORIA_NIVEL_INICIAL, LENDARIA_NIVEL_INICIAL } from "./afty-schema";
 /* O Nível efetivo, que pode vir do XP da Carteira. Ver `nivelDaFicha`. */
 import { nivelDaFicha } from "./afty-addons";
 
-/** Metade da Maestria, para baixo. É o TETO DE REPETIÇÃO das duas, e o valor por
-    pega só da Especialização: o da Aptidão virou o Grau em 2026-08-12. */
+/** Metade da Maestria, para baixo: base do ganho de Especialização e teto de
+    repetição de Aptidão. O teto de Especialização arredonda para cima. */
 export const metadeMaestria = (maestria) => Math.floor(Math.max(0, maestria) / 2);
 
 export const HABILIDADES_GERAIS = [
@@ -57,18 +63,17 @@ export const HABILIDADES_GERAIS = [
     nome: "Especialização",
     descricao:
       "Fornece uma quantidade de Habilidades de Especialização adicionais igual a 1 + Metade da " +
-      "Maestria. Essa habilidade pode ser pega uma quantidade de vezes igual a metade da maestria " +
-      "do usuário.",
+      "Maestria, arredondada para baixo. Essa habilidade pode ser pega uma quantidade de vezes " +
+      "igual à metade da Maestria do usuário, arredondada para cima.",
   },
   {
     id: "ger_aptidao",
-    // ⚠ O valor por pega era "1 + Metade da Maestria", igual ao da
-    // Especialização, e virou "1 + Grau" em 2026-08-12 (autor). O TETO DE
-    // REPETIÇÃO não mudou: continua metade da Maestria, em `maxVezesGeral`.
+    // Regra anterior restaurada pelo autor em 2026-10-10, incluindo o teto.
     nome: "Aptidão",
     descricao:
       "Fornece uma quantidade de Aptidões Amaldiçoadas adicionais igual a 1 + Grau Numérico. " +
-      "Essa habilidade pode ser pega uma quantidade de vezes igual a metade da maestria do usuário.",
+      "Essa habilidade pode ser pega uma quantidade de vezes igual à metade da Maestria " +
+      "do usuário, arredondada para baixo.",
   },
   {
     id: "ger_melhoria_superior",
@@ -116,6 +121,7 @@ export function maxVezesGeral(id, ctx = {}) {
   const maestria = Math.max(0, Math.trunc(Number(ctx.maestria) || 0));
   switch (id) {
     case "ger_especializacao":
+      return Math.ceil(maestria / 2);
     case "ger_aptidao":
       return metadeMaestria(maestria);
     case "ger_treinamentos":

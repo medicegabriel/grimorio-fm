@@ -11,7 +11,8 @@
  *    propósito (ver aviso abaixo).
  * 3. Nível de Especialização == ND. A soma dos níveis distribuídos é
  *    exatamente o ND da criatura, e a multiclasse divide o próprio ND.
- * 4. Multiclasse: até 2 Especializações na criatura, até 3 no jogador.
+ * 4. Multiclasse: até 2 Especializações na criatura, até 3 a partir do ND 31
+ *    (autor, 2026-10-04). O jogador permite até 3 em qualquer nível que comporte.
  * 5. Restringido é exclusiva da Origem Restringido, nos DOIS sentidos:
  *    - quem tem a origem só pode pegar Restringido, e sem multiclasse
  *    - quem não tem a origem não pode pegar Restringido
@@ -71,7 +72,7 @@ import { getOrigem, origensQualificadas, origemMae } from "./afty-origens";
 import { AFTY_TIPOS, AFTY_RESISTENCIAS } from "./afty-schema";
 import { regraDo, sistemaDaFicha } from "./afty-sistema";
 
-/** Teto da ficha de criatura. O jogador pode ter uma terceira classe. */
+/** Teto inicial da criatura. A terceira classe abre no ND 31 ou no jogador. */
 export const ESPECIALIZACAO_MAX = 2;
 export const ESPECIALIZACAO_MAX_PLAYER = 3;
 
@@ -751,7 +752,10 @@ registrarFamilia("especializacoes", {
      traga a variação e a classe variada no mesmo JSON precisa que a referência
      ache o irmão. Quem aponta para o livro (o caso do Especialista em Estilo,
      que herda do Conjurador) continua cru. */
-  caminhosDeId: ["herdaDe", "incompativeisIds[]", "restritaOrigemIds[]", "exclusivaOrigemId"],
+  /* As CHAVES do `remendaHabilidades` (2026-10-07, achado M05-P04) são ids de
+     habilidade da mãe. Mãe do livro fica crua; mãe do próprio pacote tem as
+     habilidades prefixadas, e o remendo escrito pelo id local nunca casava. */
+  caminhosDeId: ["herdaDe", "incompativeisIds[]", "restritaOrigemIds[]", "exclusivaOrigemId", "remendaHabilidades{}"],
   aplicar: aplicarExtrasEspecializacoes,
   basicos: () => ESPECIALIZACOES_BASE,
   validador: validarCatalogoEspecializacoes,
@@ -866,11 +870,12 @@ export function especializacaoIncompativel(id, jaEscolhidasIds = []) {
   return null;
 }
 
-/** Quantas Especializações a origem e o sistema da ficha permitem. */
-export function maxEspecializacoes(origemId, extras = [], sistema = "afty") {
+/** Quantas Especializações a origem, o sistema e o nível efetivo permitem. */
+export function maxEspecializacoes(origemId, extras = [], sistema = "afty", nivel = 0) {
   if (especializacoesDisponiveis(origemId, extras).length === 1) return 1;
   return regraDo(sistema, "terceiraClasse") === "player"
-    ? ESPECIALIZACAO_MAX_PLAYER : ESPECIALIZACAO_MAX;
+    ? ESPECIALIZACAO_MAX_PLAYER
+    : ESPECIALIZACAO_MAX + (nivel >= 31 ? 1 : 0);
 }
 
 /**
@@ -954,12 +959,12 @@ export function tipoDaOrigem(origemId, tipoAtual) {
  * gravar o rótulo junto faria uma errata de nome deixar fichas velhas
  * mentindo. Quem precisa do nome chama getEspecializacao(id).
  */
-export function normalizeEspecializacoes(lista, origemId, extras = [], sistema = "afty") {
+export function normalizeEspecializacoes(lista, origemId, extras = [], sistema = "afty", nivel = 0) {
   const arr = Array.isArray(lista) ? lista : [];
   const vistos = new Set();
   const disponiveis = new Set(especializacoesDisponiveis(origemId, extras).map((e) => e.id));
   const out = [];
-  const max = maxEspecializacoes(origemId, extras, sistema);
+  const max = maxEspecializacoes(origemId, extras, sistema, nivel);
   for (const item of arr) {
     const id = item?.id;
     if (!BY_ID[id] || vistos.has(id) || !disponiveis.has(id)) continue;
@@ -1013,6 +1018,37 @@ export function especializacoesRecusadas(creature) {
 }
 
 /**
+ * O requisito de Multiclasse que a ficha NÃO atende para a Especialização `id`,
+ * ou null.
+ *
+ * Livro de Regras, página 47: *"Para o fazer, você deve atender os requisitos para
+ * Multiclasse especificados nas características da outra especialização que
+ * deseja."* O catálogo declara `{ attrs, valor }` (FOR ou DES 16 no Lutador), e
+ * basta UM dos atributos chegar no valor. `atributos` são os PERMANENTES, que é
+ * o que todo pré-requisito enxerga. `multiclasse: null` (Restringido) não passa
+ * por aqui: a proibição dele é a trava de incompatibilidade.
+ */
+export function faltaRequisitoMulticlasse(id, atributos) {
+  const req = BY_ID[id]?.caracteristicas?.multiclasse;
+  if (!req || !Array.isArray(req.attrs) || !req.attrs.length || !Number.isFinite(req.valor)) return null;
+  const atende = req.attrs.some((k) => (Number(atributos?.[k]) || 0) >= req.valor);
+  return atende ? null : { attrs: [...req.attrs], valor: req.valor };
+}
+
+/**
+ * As Especializações de multiclasse da ficha (toda menos a inicial, que é a
+ * primeira da lista) cujo requisito de atributo não está atendido. Só AVISA: a
+ * ficha guarda a escolha e continua abrindo, e quem trava a entrada é o seletor
+ * do criador. Quem decide se vale é a divergência `requisitoMulticlasse`.
+ */
+export function multiclassesSemRequisito(escolhidas, atributos) {
+  return (Array.isArray(escolhidas) ? escolhidas : []).slice(1)
+    .map((e) => ({ id: e?.id, falta: faltaRequisitoMulticlasse(e?.id, atributos) }))
+    .filter((x) => x.falta)
+    .map((x) => ({ id: x.id, nome: BY_ID[x.id]?.nome ?? x.id, ...x.falta }));
+}
+
+/**
  * Resolve o estado das Especializações da ficha.
  *
  * O orçamento de níveis é o PRÓPRIO ND (autor, 2026-07-17): a soma dos
@@ -1039,8 +1075,8 @@ export function resolveEspecializacoes(creature) {
   // no valor digitado (autor, 2026-09-08). Ver `nivelDaFicha`.
   const total = nivelDaFicha(creature);
   const sistema = sistemaDaFicha(creature);
-  const lista = normalizeEspecializacoes(creature?.especializacoes, origemId, extras, sistema);
-  const max = maxEspecializacoes(origemId, extras, sistema);
+  const lista = normalizeEspecializacoes(creature?.especializacoes, origemId, extras, sistema, total);
+  const max = maxEspecializacoes(origemId, extras, sistema, total);
   const obrigatoria = especializacaoObrigatoria(origemId);
 
   const cabem = lista.slice(0, total);

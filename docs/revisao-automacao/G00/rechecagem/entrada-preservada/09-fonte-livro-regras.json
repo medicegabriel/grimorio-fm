@@ -1,0 +1,27 @@
+{
+  "versao": 1,
+  "data": "2026-10-05",
+  "livroRegras": {
+    "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+    "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+    "edicao": "F&M 2.5.2, texto corrigido e conferido em 2026-10-05",
+    "marcador": "<!-- página N -->",
+    "paginasImpressas": {
+      "inicio": 1,
+      "fim": 367
+    },
+    "desempate": {
+      "caminho": "public/docs/F&M 2.5.2 - Livro de Regras.pdf",
+      "sha256": "5c9c01a6ab24baa250fa9605c866cf37056af0ba908a32896af90a81aa731294"
+    },
+    "proveniencia": "C:/Projetos/Grimorio/_backup-livro/correcoes.md",
+    "copiasAnteriores": "Não servem como prova; continham paráfrases e números trocados, inclusive na página 270."
+  },
+  "grimorioMaldicoes": {
+    "caminho": "public/docs/F&M 2.5.2 - Grimório das Maldições.pdf",
+    "formato": "PDF"
+  },
+  "leitura": "Texto pelo Markdown canônico, página pelo último marcador acima do trecho, PDF do Livro de Regras somente para desempate documentado.",
+  "escrita": "Não copiar U+2014 para o repositório. Referenciar a fonte fiel sem reproduzir esse caractere.",
+  "acesso": "As fontes externas são somente leitura. Não copiar o livro para o repositório nem conceder escrita na pasta pai para viabilizar a leitura."
+}

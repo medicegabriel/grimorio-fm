@@ -1,0 +1,27 @@
+diff --git a/.audit/resiliente-baseline/src__systems__afty__AftyCreatureBuilder.jsx.snapshot b/src/systems/afty/AftyCreatureBuilder.jsx
+index a6fd42f..f482f51 100644
+--- a/.audit/resiliente-baseline/src__systems__afty__AftyCreatureBuilder.jsx.snapshot
++++ b/src/systems/afty/AftyCreatureBuilder.jsx
+@@ -183,6 +183,7 @@ import { novoEscudoCriado, novoRevestimentoCriado } from "./afty-criacao-equipam
+ import { novoItemCusto } from "./afty-criacao-equipamentos-itens";
+ import BancadaDeNiveis from "./ui/BancadaDeNiveis";
+ import BancadaDoEncantamento from "./ui/BancadaDoEncantamento";
++import EscolhaTipoEncantamento from "./ui/EscolhaTipoEncantamento";
+ import {
+   contaDaArmaPorNivel, DADOS_PROPRIEDADE, GRUPO_ARMA_DE_FOGO, NIVEIS_PROPRIEDADE, novaReceitaNiveis, OBSERVACOES_ARMAS,
+   PESADA_VALORES, PROPRIEDADES_FORA_DO_GUIA, tabelaDeAlcance, TEXTO_ARMA_DE_FOGO, TEXTO_ARMAS,
+@@ -12903,7 +12904,13 @@ function FerramentaEditor({
+                 selecionado={selecionado}
+                 reqs={reqs}
+                 onToggle={() => onToggleEnc(enc.id)}
+-                extra={enc.id === SINTONIZADA_ID ? (
++                extra={enc.escolhaTipo ? (
++                  <EscolhaTipoEncantamento
++                    enc={enc}
++                    tipos={fa.encantamentoTipos?.[enc.id]}
++                    onChange={(tipos) => onPatch({ encantamentoTipos: { ...fa.encantamentoTipos, [enc.id]: tipos } })}
++                  />
++                ) : enc.id === SINTONIZADA_ID ? (
+                   <Select
+                     value={fa.sintonizadaTipo ?? ""}
+                     onChange={(v) => onPatch({ sintonizadaTipo: v || null })}

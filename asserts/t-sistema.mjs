@@ -71,8 +71,8 @@ t("ficha inexistente nao quebra", S.sistemaDaFicha(null), "afty");
 t("ficha da 2.5.2 cai no afty", S.sistemaDaFicha({ rulesVersion: "2.5.2" }), "afty");
 t("ehPlayer le a ficha inteira", S.ehPlayer(S.sistemaDaFicha({ rulesVersion: "player" })), true);
 
-/* A terceira classe é exclusiva da ficha de jogador, inclusive na leitura de
-   uma ficha importada. A distribuição gravada volta quando o nível sobe. */
+/* A terceira classe abre no jogador e na criatura de ND 31+, inclusive na
+   leitura de ficha importada. A distribuição gravada volta quando o nível sobe. */
 const tresClasses = (rulesVersion, nd = 10) => {
   const f = createBlankAfty();
   f.rulesVersion = rulesVersion;
@@ -87,11 +87,41 @@ const tresClasses = (rulesVersion, nd = 10) => {
 const niveisClasses = (f) => E.resolveEspecializacoes(f).escolhidas
   .map(({ id, nivel }) => [id, nivel]);
 t("a criatura permite duas classes", E.maxEspecializacoes("inato", [], "afty"), 2);
+t("a criatura ainda permite duas classes no ND 30", E.maxEspecializacoes("inato", [], "afty", 30), 2);
+t("a criatura permite tres classes no ND 31", E.maxEspecializacoes("inato", [], "afty", 31), 3);
+t("a criatura continua com tres classes no ND 40", E.maxEspecializacoes("inato", [], "afty", 40), 3);
 t("o jogador permite tres classes", E.maxEspecializacoes("inato", [], "player"), 3);
 t("a origem Restringido continua sem multiclasse no jogador",
   E.maxEspecializacoes("restringido", [], "player"), 1);
-t("a criatura ignora a terceira classe importada",
+t("a origem Restringido continua sem multiclasse no ND 31",
+  E.maxEspecializacoes("restringido", [], "afty", 31), 1);
+t("a criatura abaixo do ND 31 ignora a terceira classe importada",
   niveisClasses(tresClasses("afty")), [["lutador", 4], ["combatente", 6]]);
+t("no ND 30 a terceira classe ainda fica fora da conta",
+  niveisClasses(tresClasses("afty", 30)), [["lutador", 4], ["combatente", 26]]);
+t("no ND 31 a criatura distribui os niveis entre tres classes",
+  niveisClasses(tresClasses("afty", 31)),
+  [["lutador", 4], ["combatente", 3], ["conjurador", 24]]);
+t("a quarta classe importada fica fora da criatura de ND 31",
+  E.normalizeEspecializacoes([...tresClasses("afty").especializacoes,
+    { id: "suporte", nivel: 1 }], "inato", [], "afty", 31).map((e) => e.id),
+  ["lutador", "combatente", "conjurador"]);
+const criaturaTresClasses = tresClasses("afty", 31);
+const divisaoGravada = JSON.stringify(criaturaTresClasses.especializacoes);
+criaturaTresClasses.core.nd = 30;
+E.resolveEspecializacoes(criaturaTresClasses);
+t("baixar o ND preserva as tres classes gravadas",
+  JSON.stringify(criaturaTresClasses.especializacoes), divisaoGravada);
+criaturaTresClasses.core.nd = 31;
+t("voltar ao ND 31 restaura a divisao gravada",
+  niveisClasses(criaturaTresClasses),
+  [["lutador", 4], ["combatente", 3], ["conjurador", 24]]);
+t("o escalonamento da criatura soma metade das outras duas classes",
+  E.resolveEspecializacoes(criaturaTresClasses).escolhidas.map((e) => e.nivelEscalonamento),
+  [17, 17, 27]);
+t("o derive usa as tres classes da criatura no ND 31",
+  deriveAfty(criaturaTresClasses).especializacoes.escolhidas.map((e) => e.id),
+  ["lutador", "combatente", "conjurador"]);
 t("o jogador distribui os niveis entre tres classes",
   niveisClasses(tresClasses("player")),
   [["lutador", 4], ["combatente", 3], ["conjurador", 3]]);
@@ -186,10 +216,10 @@ t("as divergencias de REGRA ligadas",
       arma no Amaldiçoado, então o clone dos derives não sente: quem mede é
       `t-dano-acerto-amaldicoado.mjs`. */
    "danoDoAcertoAmaldicoado",
-   /* O Desenvolvimento Inesperado do Derivado no jogador (2026-10-01). A ficha
-      abaixo não é Derivado, então o clone dos derives não sente: quem mede é
-      `t-desenvolvimento-inesperado.mjs`. */
-   "desenvolvimentoNoNivel"].sort());
+   /* O requisito de atributo da Multiclasse (2026-10-07, achado P01). A ficha
+      abaixo tem uma classe só, então o clone dos derives não sente: quem mede é
+      `t-revisao-p01.mjs`. */
+   "requisitoMulticlasse", "desenvolvimentoNoNivel"].sort());
 t("e a de TELA ligada e a das abas",
   S.DIVERGENCIAS.filter((d) => d.ativa && d.tipo === "tela").map((d) => d.id),
   ["abasIdentidade", "rotuloDoNivel", "marcaDoSistema"]);
@@ -463,7 +493,7 @@ t("as divergencias conhecidas estao na lista",
    "passivaCustaPeMaximo",
    "patamarDoJogador", "poolExclusivo", "proficienciaPorArma", "progressaoDeFeiticos",
    "pvPePorEspecializacao", "quantidadeDePE", "rdBase", "rdEscudoFisico",
-   "reducaoDeGrau", "danoFixoPorGrau", "rotuloDoNivel", "marcaDoSistema", "interludioComTeste",
+   "reducaoDeGrau", "requisitoMulticlasse", "danoFixoPorGrau", "rotuloDoNivel", "marcaDoSistema", "interludioComTeste",
    "terceiraClasse", "tetoDeNivel", "tetoDeTreinoEspecial", "trForaDoOrcamento", "trMestreDoJogador", "treinoDaClasseInicial",
    "vagasPorNivelDeClasse", "valoresAdicionais"].sort());
 

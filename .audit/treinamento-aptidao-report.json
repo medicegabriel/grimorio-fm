@@ -1,0 +1,42 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "limiteN9": 9,
+    "limiteN10": 11,
+    "tentativasSemGanho": true,
+    "persistencia": true,
+    "semRolagemHorizontal": true,
+    "errors": []
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "limiteN9": 9,
+    "limiteN10": 11,
+    "tentativasSemGanho": true,
+    "persistencia": true,
+    "semRolagemHorizontal": true,
+    "errors": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "limiteN9": 1,
+    "limiteN10": 2,
+    "tentativasSemGanho": false,
+    "persistencia": true,
+    "semRolagemHorizontal": true,
+    "errors": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "limiteN9": 1,
+    "limiteN10": 2,
+    "tentativasSemGanho": false,
+    "persistencia": true,
+    "semRolagemHorizontal": true,
+    "errors": []
+  }
+]

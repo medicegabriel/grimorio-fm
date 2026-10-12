@@ -1,0 +1,38 @@
+[
+  {
+    "width": 1440,
+    "especializacao": [
+      20,
+      25,
+      30
+    ],
+    "aptidoes": [
+      24,
+      24,
+      30
+    ],
+    "limitesIndependentes": true,
+    "quintaAptidaoPreservada": true,
+    "persistencia": true,
+    "semRolagemHorizontal": true,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "especializacao": [
+      20,
+      25,
+      30
+    ],
+    "aptidoes": [
+      24,
+      24,
+      30
+    ],
+    "limitesIndependentes": true,
+    "quintaAptidaoPreservada": true,
+    "persistencia": true,
+    "semRolagemHorizontal": true,
+    "errors": []
+  }
+]
