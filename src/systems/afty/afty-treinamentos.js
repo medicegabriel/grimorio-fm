@@ -107,7 +107,9 @@ import { origensQualificadas, origemEstrutural, getCla } from "./afty-origens";
 import { getAptidao, APTIDAO_TRILHAS } from "./afty-aptidoes";
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
 import { AFTY_PERICIAS, catalogoPericiasDaFicha } from "./afty-pericias";
-import { catalogoDoTipo } from "./afty-equipamentos";
+import { avaliarRequisitoDeTreino } from "./afty-pericias-catalogo";
+import { catalogoDoTipo, encantamentosDe, tiposDeDanoDaCategoria, canalRdEscudo } from "./afty-equipamentos";
+import { evalNumber } from "./afty-dsl";
 
 // Texto completo da aptidão concedida pelo Treino de Domínios (Completo).
 const MODIFICACAO_COMPLETA =
@@ -584,6 +586,7 @@ registrarFamilia("treinamentos", {
   rotulo: "Linha de Treinamento",
   chave: "id",
   obrigatorios: ["nome", "etapas"],
+  caminhosDeId: ["etapas[].concedeHabilidades[]"],
   aplicar: aplicarExtrasTreinamentos,
   basicos: () => TREINAMENTOS_BASE,
   resolver: (id) => getTreinamento(id),
@@ -600,6 +603,124 @@ registrarFamilia("treinamentos", {
 
 export function getTreinamento(id) {
   return BY_ID[id] || null;
+}
+
+export function opcoesDeEscolhaTreino(escolha, sistema) {
+  if (escolha.pool === "encantamentos") return encantamentosDe(escolha.tipoEquipamento, sistema)
+    .map((e) => ({ id: e.id, nome: e.nome }));
+  if (escolha.pool === "tiposDano") return (escolha.categorias ?? [])
+    .flatMap((categoria) => tiposDeDanoDaCategoria(categoria))
+    .filter((t) => !["alma", "energia_reversa"].includes(t.id))
+    .map((t) => ({ id: t.id, nome: t.label }));
+  return escolha.opcoes ?? [];
+}
+
+export function limiteEscolhaTreino(escolha, bt) {
+  return Math.max(0, Math.floor(evalNumber(escolha.limiteExpr ?? "1", { bt })));
+}
+
+/** Uma escolha imutável fica gravada mesmo ao desfazer etapas. */
+export function definirEscolhaTreino(creature, linhaId, escolhaId, valor, sistema) {
+  const escolha = getTreinamento(linhaId)?.escolhas?.find((e) => e.id === escolhaId);
+  const anterior = creature?.treinamentoEscolhas?.[linhaId]?.[escolhaId];
+  if (escolha?.imutavel && anterior) return creature;
+  if (escolha?.pool && !escolha.multi && valor
+    && !opcoesDeEscolhaTreino(escolha, sistema).some((o) => o.id === valor)) return creature;
+  return { ...creature, treinamentoEscolhas: {
+    ...(creature.treinamentoEscolhas ?? {}),
+    [linhaId]: { ...(creature.treinamentoEscolhas?.[linhaId] ?? {}), [escolhaId]: valor || null },
+  } };
+}
+
+/** Encantamentos normais adicionais declarados por etapas de Treinamento. */
+export function encantamentosAdicionaisDeTreino(creature, sistema) {
+  const out = {};
+  for (const [id, valor] of Object.entries(normalizeTreinamentos(creature?.treinamentos))) {
+    const linha = getTreinamento(id);
+    if (!treinoDisponivel(linha, origemEstrutural(creature), origensQualificadas(creature))) continue;
+    for (const escolha of linha.escolhas ?? []) {
+      if (escolha.pool !== "encantamentos" || Number(valor) < (escolha.etapa ?? 1)) continue;
+      const enc = creature.treinamentoEscolhas?.[id]?.[escolha.id];
+      if (!opcoesDeEscolhaTreino(escolha, sistema).some((o) => o.id === enc)) continue;
+      (out[escolha.tipoEquipamento] ??= []).push({ id: enc, fonte: linha.nome });
+    }
+  }
+  return out;
+}
+
+/** Ampliação da RD do escudo, sem incluir RD Física concedida por outras fontes. */
+export function efeitosRdEquipamentoDeTreino(creature, equip, bt, sistema) {
+  if (canalRdEscudo(sistema) !== "rdFisico") return [];
+  const out = [];
+  for (const [id, valor] of Object.entries(normalizeTreinamentos(creature?.treinamentos))) {
+    const linha = getTreinamento(id);
+    if (Number(valor) < ETAPAS_POR_LINHA || !linha.completo?.estendeRdEquipamento) continue;
+    if (!treinoDisponivel(linha, origemEstrutural(creature), origensQualificadas(creature))) continue;
+    const cfg = linha.completo.estendeRdEquipamento;
+    const escolha = linha.escolhas?.find((e) => e.id === cfg.escolha);
+    if (!escolha) continue;
+    const permitidos = new Set(opcoesDeEscolhaTreino(escolha, sistema).map((o) => o.id));
+    const bruto = creature.treinamentoEscolhas?.[id]?.[cfg.escolha];
+    const tipos = [...new Set(Array.isArray(bruto) ? bruto : [])]
+      .filter((t) => permitidos.has(t)).slice(0, limiteEscolhaTreino(escolha, bt));
+    for (const e of equip.entradas.filter((e) => e.equipado && !e.semAddon && e.tipo === cfg.tipo)) {
+      const nomesRdEscudo = new Set((e.fa?.encantamentos ?? [])
+        .filter((x) => x.atende && x.enc?.efeitos?.some((fx) => fx.canal === "rdEscudo"))
+        .map((x) => x.enc.nome));
+      const rd = (e.def.rdEscudo ?? 0) + (e.fa?.rdGrau ?? 0)
+        + (e.fa?.efeitos ?? []).filter((ef) => ef.canal === "rdFisico"
+          && nomesRdEscudo.has(ef.origem))
+          .reduce((s, ef) => s + ef.valor, 0);
+      for (const tipo of tipos) out.push({ canal: "rdTipo", alvo: tipo, expr: String(rd),
+        origem: id, nome: `${linha.nome} (${e.def.nome})` });
+    }
+  }
+  return out;
+}
+
+/** Habilidades gratuitas de etapas adquiridas, sem ocupar vaga de especialização. */
+export function habilidadesConcedidasPorTreino(creature) {
+  const origemId = origemEstrutural(creature);
+  const qualificadas = origensQualificadas(creature);
+  const ids = new Set();
+  for (const [id, valor] of Object.entries(normalizeTreinamentos(creature?.treinamentos))) {
+    const linha = getTreinamento(id);
+    if (!linha || !treinoDisponivel(linha, origemId, qualificadas)) continue;
+    const progressos = Array.isArray(valor) ? valor.map((v) => v.progresso) : [valor];
+    for (const etapa of linha.etapas) {
+      if (!progressos.some((p) => p >= etapa.n)) continue;
+      for (const habilidade of etapa.concedeHabilidades ?? []) ids.add(habilidade);
+    }
+  }
+  return [...ids];
+}
+
+/** Texto integral das etapas adquiridas de linhas que optam por aparecer na ficha. */
+export function beneficiosDeTreinoNaFicha(creature, ctx = {}) {
+  const origemId = origemEstrutural(creature);
+  const qualificadas = origensQualificadas(creature);
+  const out = [];
+  for (const [id, valor] of Object.entries(normalizeTreinamentos(creature?.treinamentos))) {
+    const linha = getTreinamento(id);
+    if (!linha?.exibirNaFicha || !treinoDisponivel(linha, origemId, qualificadas)) continue;
+    const instancias = Array.isArray(valor) ? valor : [{ progresso: valor, alvo: null }];
+    for (const inst of instancias) {
+      const nome = inst.alvo ? `${linha.nome} (${rotuloAlvo(linha, inst.alvo)})` : linha.nome;
+      for (const etapa of linha.etapas) {
+        if (etapa.n <= inst.progresso) out.push({
+          id: `${id}:${inst.alvo ?? ""}:${etapa.n}`,
+          nome: `${nome}: ${etapa.n}ª Etapa`, texto: etapa.beneficio,
+        });
+      }
+      if (inst.progresso < ETAPAS_POR_LINHA || !linha.completo) continue;
+      const reqs = requisitosDaEtapa(linha.completo.requisito).map((r) => avaliarRequisito(r, ctx));
+      if (reqs.some((r) => !r.ok)) continue;
+      out.push({ id: `${id}:${inst.alvo ?? ""}:completo`,
+        nome: `${nome}: ${linha.completo.nome ?? "Treinamento Completo"}`,
+        texto: linha.completo.beneficio });
+    }
+  }
+  return out;
 }
 
 /** Progresso máximo de uma linha (nº de etapas). */
@@ -775,9 +896,9 @@ function paraCanal(ef, alvoInstancia, alvos = {}, ficha = {}) {
       return { canal: "nivelDano", alvo: "basico", expr };
     // Concede a faixa de treino numa perícia: 1 = Treinado, 2 = Mestre.
     case "profPericia":
-      return alvoInstancia
+      return (ef.pericia || alvoInstancia)
         ? {
-          canal: "proficienciaPericia", alvo: alvoInstancia, expr,
+          canal: "proficienciaPericia", alvo: ef.pericia || alvoInstancia, expr,
           ...(ef.semCredito ? { semCredito: true } : {}),
         }
         : null;
@@ -899,7 +1020,7 @@ export const treinamentosDaOrigem = (origemId, qualificadas = null, creature = n
   return filtraForaDoJogador(daOrigem, creature, comProgresso);
 };
 
-export function efeitosDeTreino(creature, gatilhosAtivos = null) {
+export function efeitosDeTreino(creature, gatilhosAtivos = null, equipamentos = []) {
   /* ⚠ ORIGEM ESTRUTURAL no `foraDaOrigem`: um Gêmeo que copiou da Maldição
      perde a Linha de Energia Reversa como uma Maldição de verdade, e o Foco
      preso nela volta sozinho (autor, 2026-08-29). O `qualificadas` continua
@@ -913,6 +1034,9 @@ export function efeitosDeTreino(creature, gatilhosAtivos = null) {
   const out = [];
   const add = (efeitos, linha, alvo, alvos = {}, nome = null) => {
     for (const ef of efeitos || []) {
+      if (ef.requerEquipamento && !equipamentos.some((e) => e.tipo === ef.requerEquipamento
+        && e.equipado && !e.semAddon
+        && (!ef.grupoEquipamento || e.def?.grupo === ef.grupoEquipamento))) continue;
       if (ef.gatilhoSessao && !gatilhosAtivos?.[ef.gatilhoSessao]) continue;
       const conv = paraCanal(ef, alvo, alvos, { tecnicaAttr: atributoDaTecnica(creature) });
       if (!conv) continue;
@@ -1117,10 +1241,10 @@ export function atributosDePericiaDeTreino(creature) {
     const troca = linha?.trocaAtributoPericia;
     if (!troca || Number(val) < (troca.etapa ?? 1)) continue;
     const alvos = creature?.treinamentoAlvos?.[id] || {};
-    const pericia = alvos[troca.periciaAlvo];
+    const pericia = troca.pericia ?? alvos[troca.periciaAlvo];
     const atributo = troca.atributoAlvo === ALVO_ATRIBUTO_TECNICA
       ? atributoDaTecnica(creature)
-      : alvos[troca.atributoAlvo];
+      : (troca.atributo ?? alvos[troca.atributoAlvo]);
     if (pericia && ATTR_LABEL[atributo]) out[pericia] = atributo;
   }
   return out;
@@ -1227,6 +1351,16 @@ export function avaliarRequisito(requisito, ctx = {}) {
   const attrEff = ctx.attrEff || {};
   const nd = ctx.nd ?? 0;
   if (!requisito) return { ok: true, verificavel: true, label: null };
+  if (requisito.tipo === "escolhaTreino") return {
+    ok: !!ctx.escolhasTreino?.[requisito.id], verificavel: true, label: requisito.label,
+  };
+  const treino = avaliarRequisitoDeTreino(requisito, ctx);
+  if (treino) return treino;
+  if (requisito.tipo === "atencao") {
+    const atual = Number(ctx.atencao);
+    return { ok: Number.isFinite(atual) && atual >= requisito.valor,
+      verificavel: Number.isFinite(atual), label: `Atenção ${requisito.valor}` };
+  }
   if (requisito.tipo === "atributo") {
     const atual = attrEff[requisito.attr] ?? 0;
     const nomeAttr = ATTR_LABEL[requisito.attr] || requisito.attr;

@@ -513,6 +513,9 @@ export function podeSerArmaDedicada(def) {
  * O catálogo cru continua declarando só `props.alcance`.
  */
 export function alcanceDaArma(def, bonusTreinamento = 0, grauFerramenta = null) {
+  if (def?.categoria === "corpo" && Number.isFinite(def.alcanceCorpo) && def.alcanceCorpo >= 0) {
+    return { curto: def.alcanceCorpo, longo: def.alcanceCorpo, texto: `${def.alcanceCorpo}m` };
+  }
   let a = def?.props?.alcance ?? def?.props?.arremessavel;
   /* A arma criada pela conta do guia Criação de Equipamentos traz o alcance de
      cada grau da FERRAMENTA (autor, 2026-09-14). Sem Ferramenta vale o
@@ -1210,6 +1213,30 @@ export const ESCUDOS = [
 /* ============================================================ */
 /* FERRAMENTAS AMALDIÇOADAS                                     */
 /* ============================================================ */
+/* Escudos e uniformes especiais usam o catálogo já consumido pelo inventário
+   e pelo resolvedor. O addon fornece bases, sem passar pela bancada de criação,
+   que recalcula equipamentos comuns a partir do custo. */
+for (const [familia, tipo, lista, obrigatorios] of [
+  ["escudos", "escudo", ESCUDOS, ["nome", "rdEscudo", "penalidade", "custo", "espacos"]],
+  ["uniformes", "uniforme", UNIFORME_MODIFICACOES, ["nome", "defesa", "penalidade", "custo", "espacos"]],
+]) {
+  const basicos = lista.slice();
+  registrarFamilia(familia, {
+    rotulo: tipo === "escudo" ? "Escudo" : "Uniforme",
+    chave: "id",
+    obrigatorios,
+    caminhosDeId: ["requerEstado"],
+    aplicar: (extras = [], remendos = null) =>
+      lista.splice(0, lista.length, ...remendarLista(basicos, remendos), ...extras),
+    basicos: () => basicos,
+    validador: validarCatalogoEquipamentos,
+    resolver: (id) => getEquipamento(tipo, id),
+    idsDaFicha: (c) => (Array.isArray(c?.equipamentos?.itens) ? c.equipamentos.itens : [])
+      .filter((e) => e?.tipo === tipo)
+      .map((e) => e.refId),
+  });
+}
+
 /* Equipamentos genéricos (armas, escudos e uniformes) infundidos com
    energia amaldiçoada. Uma arma, escudo ou uniforme do catálogo comum vira
    Ferramenta Amaldiçoada recebendo um GRAU DE EQUIPAMENTO (os mesmos 5 nomes
@@ -2329,7 +2356,7 @@ export function itensEquipados(creature) {
  * cargas (= BT) e a habilidade única. `bt` é o bônus de treinamento do
  * portador, de onde saem as cargas.
  */
-export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLivres = 0, espinho = null) {
+export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLivres = 0, espinho = null, vagasAdicionais = 0) {
   const fa = entrada?.fa;
   if (!fa || !FA_TIPOS_EQUIP.includes(entrada?.tipo)) return null;
 
@@ -2342,7 +2369,7 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
   // conta da redução, que é o que significa "não perder Acerto e Dano Fixo do
   // Grau" (autor, 2026-08-07).
   const livres = Math.max(0, Math.trunc(Number(vagasLivres) || 0));
-  const permitidos = faEncantamentosPermitidos(tipo, grauValue) + livres;
+  const permitidos = faEncantamentosPermitidos(tipo, grauValue) + livres + vagasAdicionais;
 
   /* Grau PARA CÁLCULO: cada encantamento escolhido desce um degrau (ver
      grauRankCalculo), fora os que ocupam vaga livre. O `permitidos` acima segue
@@ -2423,6 +2450,9 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
   for (const x of encantamentos) {
     if (!x.atende) continue;
     for (const ef of x.enc?.efeitos ?? []) {
+      // O catálogo pode fornecer dados finais já contendo Potente. Mantém o
+      // encantamento e seus requisitos, sem acrescentar o mesmo dado novamente.
+      if (ef.canal === "dadosDano" && def?.dano?.encantamentosIncluidos?.includes(x.id)) continue;
       const valor = evalNumber(ef.expr, ctx) * dobraDe(x.id);
       // Efeito que resolve em zero não vira linha: é o caso do Ajustado num
       // uniforme que já tem penalidade, cuja metade de Furtividade não vale.
@@ -2730,10 +2760,16 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
     // ⚠ A criatura vai junto porque as armas CUSTOM moram nela. Sem isso, uma
     // arma criada pelo jogador cairia no aviso de "equipamento desconhecido" e
     // sumiria do inventário na primeira releitura.
-    const def = getEquipamento(e?.tipo, e?.refId, creature);
+    let def = getEquipamento(e?.tipo, e?.refId, creature);
     if (!def) {
       avisos.push(`Equipamento desconhecido na ficha (${e?.tipo ?? "?"}/${e?.refId ?? "?"}).`);
       continue;
+    }
+    // Aumento de RD BASE declarado pelo escudo. Só na cópia resolvida em uso,
+    // para habilidades que leem rd_escudo e treinos lerem a mesma parcela.
+    if (e?.tipo === "escudo" && e.equipado && def.rdEscudoAdicionalExpr) {
+      const adicional = evalNumber(def.rdEscudoAdicionalExpr, ctxBase);
+      def = { ...def, rdEscudo: (def.rdEscudo ?? 0) + adicional };
     }
     // Relíquia única também é aparada na leitura. A UI já não oferece o botão
     // de quantidade, mas uma ficha importada ou editada à mão ainda poderia
@@ -2753,9 +2789,17 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
     const marcaEspinho = marcasEspinho.has(e.uid) && FA_TIPOS_EQUIP.includes(e?.tipo)
       ? { aprimorado: marcasEspinho.get(e.uid) === true }
       : null;
-    const entradaFa = marcaEspinho ? { ...e, fa: { ...(e?.fa ?? {}), grau: "especial" } } : e;
+    let entradaFa = marcaEspinho ? { ...e, fa: { ...(e?.fa ?? {}), grau: "especial" } } : e;
+    const extrasTreino = e.equipado && entradaFa.fa
+      ? (opcoes.encantamentosAdicionais?.[e.tipo] ?? []) : [];
+    const novosEncantamentos = [...new Set(extrasTreino.map((x) => x.id))]
+      .filter((id) => !(entradaFa.fa?.encantamentos ?? []).includes(id));
+    if (novosEncantamentos.length) entradaFa = { ...entradaFa, fa: {
+      ...entradaFa.fa, encantamentos: [...(entradaFa.fa.encantamentos ?? []), ...novosEncantamentos],
+    } };
     const vagasLivres = (vagasEncantamento[def.id] ?? 0) + (e?.tipo === "escudo" ? vagasEscudo : 0);
-    const fa = resolveFerramenta(entradaFa, def, bt, ctxBase, vagasLivres, marcaEspinho);
+    const fa = resolveFerramenta(entradaFa, def, bt, ctxBase, vagasLivres,
+      marcaEspinho, novosEncantamentos.length);
     /* O Feitiço da Técnica Inata (Criação de Equipamentos, fase 4): *"podendo ser
        conjurado uma quantidade de vezes igual a metade do seu BT"*. Resolvido
        aqui, e não no `resolveFerramenta`, porque ele precisa dos Feitiços da

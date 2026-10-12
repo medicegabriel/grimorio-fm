@@ -1,0 +1,55 @@
+{
+  "id": "treino-de-cacada",
+  "nome": "Treino de caçada",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "acrescenta": {
+    "treinamentos": [
+      {
+        "id": "cacada",
+        "nome": "Treino de caçada",
+        "resumo": "Você práticou por muito tempo, seja em missões de batalha ou assassinato, a arte de caçar e matar feiticeiros, aprimorando tanto sua maestria com armas, quanto seu físico durante o processo.",
+        "exibirNaFicha": true,
+        "trocaAtributoPericia": { "etapa": 2, "pericia": "percepcao", "atributo": "destreza" },
+        "etapas": [
+          {
+            "n": 1,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Você recebe +2 pontos de vigor",
+            "efeitos": [{ "canal": "pe", "expr": "2" }]
+          },
+          {
+            "n": 2,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Você passa a ver tudo de uma forma mais desacelerada, ao invés de perceber as coisas com calma e atenção é mais fácil você olhar tudo ao mesmo tempo com extrema velocidade sem deixar espaços para brechas, você passa a calcular pericia de percepção com destreza."
+          },
+          {
+            "n": 3,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Recebe +2 em percepção.",
+            "efeitos": [{ "canal": "bonusPericia", "alvo": "percepcao", "expr": "2" }]
+          },
+          {
+            "n": 4,
+            "focos": 2,
+            "requisito": [
+              { "tipo": "pericia", "pericia": "intuicao", "nivel": "mestre" },
+              { "tipo": "pericia", "pericia": "percepcao", "nivel": "treinado" },
+              { "tipo": "nd", "valor": 13 }
+            ],
+            "beneficio": "Recebe +3 em Acrobacia\n[Pré-requisito: mestre em intuição, treinado em Percepção e nível 13]",
+            "efeitos": [{ "canal": "bonusPericia", "alvo": "acrobacia", "expr": "3" }]
+          }
+        ],
+        "completo": {
+          "beneficio": "Você recebe um Talento extra.",
+          "efeitos": [{ "canal": "vagasTalento", "expr": "1" }]
+        }
+      }
+    ]
+  }
+}

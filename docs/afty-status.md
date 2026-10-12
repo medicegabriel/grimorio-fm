@@ -1,5 +1,545 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-10-12: INTEGRAÇÃO COMPLETA AUTORIZADA
+
+Autor confirmou incluir Ryuma e os demais trabalhos no mesmo commit preparado.
+Validação: ESLint e build aprovados. Suíte de 185 arquivos e 10203 asserts
+aprovada, mais 20 asserts do novo teste de integração executado separadamente.
+Total verificado: 10223 asserts. Índice final: 52 arquivos. Main reconferida: 6c0c300.
+Sem conflitos, alterações em src/components/ ou U+2014 adicionado.
+Build mantém avisos existentes de Node 22.11 e tamanho de bundle.
+Integração na branch codex/olhinhos-lu sobre main 6c0c300, com seis blocos
+resolvidos em cinco arquivos. Documentos mantêm os acréscimos de ambos os lados.
+Imports e retorno do derive preservam treinos locais, talentos e Voo do remoto.
+Encantamentos concedidos e vagas livres de escudo coexistem no resolvedor.
+Regressão t-integracao-treinos-escudo.mjs: 20 asserts nos dois sistemas,
+sem duplicar encantamento, sem mutar ficha, com remoção de treino e equipamento.
+
+Incluídos arsenal de Ryuma, Guarda da Lâmina Divina, Reavaliação, treinos de
+Caçada e Escudos, Milenar, Reencarnação das Terras Impuras, custo textual de
+Feitiço, proteção desse texto no cofre e exports existentes de Kenji.
+Os dois arquivos __dharma-preview são prévias locais e ficam fora da entrega.
+Dúvidas de regra do arsenal continuam na fila, sem decisões novas nesta integração.
+A conferência visual continua pendente. Pendência de conciliação com main removida.
+Checkout original e seu índice humano preservados. Sem commit ou push.
+
+## SESSÃO DE 2026-10-12: REVALIDAÇÃO DA MAIN ANTES DO COMMIT
+
+Main remota avançou de de3c52b para 6c0c300 com Vampiro da Máscara de Pedra.
+Atualização integrada por três vias na branch codex/olhinhos-lu, sem conflitos.
+Base da branch avançada para 6c0c300 preservando os 22 arquivos de Olhinhos Lu
+no índice. Backup do patch anterior salvo fora do repositório.
+ESLint e build passaram. Suíte completa: 178 arquivos, 9875 asserts aprovados.
+Build mantém os avisos de versão do Node e tamanho do bundle.
+As alterações do novo pacote remoto permanecem integralmente na base.
+Nenhuma alteração em src/components/, commit ou push.
+
+O checkout original foi apenas comparado novamente. Sua integração completa
+continua prevendo seis blocos em cinco arquivos, nos mesmos pontos de Ryuma
+e documentação registrados anteriormente. Seu índice foi preservado.
+A conferência visual de Olhinhos Lu continua pendente em a-fazer.md.
+
+
+## SESSÃO DE 2026-10-12: PREPARAÇÃO DE OLHINHOS LU SOBRE A MAIN DO SITE
+
+Autor pediu preparar a entrega, comparar com o repositório do site e conferir
+conflitos. GitHub registra deployment Production success de de3c52b em
+2026-10-11 às 18:50 de São Paulo, igual à main remota. Checkout original
+continua em 891b6d4, dez commits atrás, com mudanças em 39 arquivos rastreados
+e 14 novos. Os 29 arquivos do índice humano de Ryuma foram preservados.
+
+Simulação completa revelou seis blocos de conflito em cinco arquivos:
+docs/a-fazer.md, docs/afty-addons.md, docs/automacao-dsl.md,
+afty-derive.js (dois) e afty-equipamentos.js (um). Documentação nova precisa
+preservar ambos os trabalhos. Código envolve imports e retorno dos treinos
+junto de Voo e o mecanismo de encantamento concedido junto das novas vagas
+de escudo. Não houve merge nem marcadores no checkout original.
+
+Preparação isolada em C:/Users/marcu/.codex/worktrees/olhinhos-lu-integracao/grimorio-fm,
+branch codex/olhinhos-lu, base de3c52b. Transferidos apenas os trechos de
+Olhinhos Lu, usando o índice anterior como base de extração. Duas sobreposições
+de contexto na DSL e no conteúdo da ficha foram resolvidas mantendo somente
+Olhinhos Lu sobre o remoto, sem levar Ryuma ou as demais demandas.
+
+ESLint e Vite build passaram. Suíte completa na preparação: 177 arquivos,
+9754 asserts, todos passaram, incluindo 57 de lógica e 32 de renderização
+SSR de Olhinhos Lu e as novidades do remoto. Conferência visual permanece
+pendente pela falha de acesso do navegador ao servidor local.
+
+Relatório e snapshots em
+C:/Users/marcu/.codex/visualizations/2026/10/12/01a12f5a-c939-7f72-b3ed-1c7782f9bedb/preparacao-olhinhos-lu/.
+Índice da branch isolada preparado exclusivamente para esta entrega.
+Sem alteração em src/components/, U+2014 novo, commit ou push.
+
+## SESSÃO DE 2026-10-12: OLHINHOS LU NO PADRÃO DO VISLUMBRE CELESTE
+
+Autor relatou comportamento incorreto e pediu o mesmo padrão do Vislumbre
+Celeste para a condição corporal. A integração anterior em Recursos de
+Origem foi substituída. Pacote atualizado para 1.1.0 com
+`permite: ["olhinhosLu"]`, sem compra de entrada nem gasto de vaga.
+
+Novo módulo folha `afty-olhinhos-lu.js` centraliza estados fixos, efeitos,
+resumo e escrita da sessão. Estados `olhinhosLuFechados` e
+`olhinhosLuAtencao` ficam em `creature.combate` ou `sessao.combate`.
+Efeitos e resumo leem a mesma fonte diretamente, mesmo sem Em Combate.
+O motor emite somente o bloco ativo, com bônus cumulativo `teto(3 * cl)`
+à Intuição. A troca opcional de Atenção mantém o canal `periciaAtencao`
+e as regras confirmadas de transferência de fontes destinadas à Percepção.
+Campos antigos de contadores são fallback após atualizar o pacote,
+com precedência dos estados novos, inclusive quando definidos como false.
+
+`ui/OlhinhosLuCard.jsx` aparece em Habilidades junto do Vislumbre,
+nos três ramos de origem. Estados entram na Simulação do criador e na
+lista de estados da ficha. `ficha/PainelOlhinhosLu.jsx` entra em Ações
+na Ficha Final e no Encontro, com controles para os olhos e para Atenção.
+O controle da troca fica indisponível de olhos abertos e não indica efeito
+ativo nessa situação. O painel mostra os valores derivados atuais.
+Texto integral continua na seção Condições corporais da ficha.
+
+Removidos `ControlesCorporais.jsx` e suporte genérico da primeira tentativa
+em contadores de origem, opções de sessão e AbaBuffs. Nenhuma interface
+existente de contador foi modificada no resultado final. Regras atuais
+documentadas em `docs/olhinhos-lu-regras.md`, DSL, fórmulas e guia de addons.
+
+ESLint da área Afty e build passaram. Suíte completa: 168 arquivos,
+9144 asserts, todos passaram. Depois do último ajuste do botão de Atenção,
+testes específicos passaram com 57 de lógica e 32 de renderização,
+quatro verificações de interface adicionais, total atual do censo 9148.
+Renderização SSR usa os componentes reais e AbaAcoes, nos dois sistemas,
+com olhos abertos e fechados fora de combate, painel único e ausência
+de interface em fichas sem o addon. Testes de lógica cobrem soma com
+Funcionamento, fontes, orçamento, estados antigos, sessão, descanso,
+Encontro, desinstalação e arredondamento. Censo atualizado para 26 primitivas.
+
+Tentativa visual pelo navegador retornou `ERR_CONNECTION_TIMED_OUT`
+em `http://localhost:5198/player`, além da falha anterior em 127.0.0.1.
+Conferência visual permanece na fila. Testes SSR não são declarados como
+conferência visual. Avisos existentes do build: Node 22.11 e bundle grande.
+
+Main remota continua `de3c52b`, HEAD local `891b6d4`. Nova simulação de
+integração não achou conflito nos trechos de Olhinhos Lu. Permanecem dois
+conflitos do trabalho anterior em `afty-derive.js`, nos imports de treinos
+e retorno de benefícios de treino versus voo, já registrados na fila.
+Índice humano preservado. Sem mudança em `src/components/`, commit ou push.
+O site precisa receber o motor e painéis, e a ficha deve atualizar sua
+cópia congelada do addon para 1.1.0. Não houve instalação em ficha real.
+
+## SESSÃO DE 2026-10-12: OLHINHOS LU, CORPO PRINCIPAL
+
+Autor confirmou condição corporal e soma de três vezes Controle e Leitura
+à Intuição atual. Ao usar Intuição para Atenção, cálculos de Talentos e
+Habilidades Lendárias destinados à Percepção acompanham essa troca.
+Texto integral em `docs/olhinhos-lu-regras.md` e `addons/olhinhos-lu.json`.
+
+Controles Olhos fechados e Atenção com Intuição reutilizam booleanos
+persistentes de addon, com efeitos declarativos opcionais. Bônus
+`teto(3 * cl)` usa nível efetivo. A troca só funciona de olhos fechados.
+Canal genérico `periciaAtencao` resolve uma cópia independente do cálculo,
+preservando linhas reais, proficiências escolhidas e orçamento. Concessões
+de treino usam o maior entre as duas perícias, sem promover dois Treinados
+a Mestre. Efeitos gerais não duplicam, ofertas fixas continuam pelo maior,
+dados extras não viram bônus passivo e fontes de Atenção fecham com o total.
+
+Criador usa Recursos de Origem. Ficha Final e Encontro oferecem controles
+em Ligado Agora, Condições corporais, com estado próprio da sessão e
+suporte fora de combate. Descanso preserva os controles. Texto integral
+aparece na seção Condições corporais da ficha. Visão de barreiras e
+domínios e escolha de rolar Intuição na mesa permanecem como regra escrita.
+Nenhuma compra de Habilidade ou Talento, instalação em ficha ou custo criado.
+
+ESLint e Vite build passaram. Suíte final: 167 arquivos, 9103 asserts,
+todos passaram, incluindo 44 de Olhinhos Lu. Asserts específicos cobrem
+os dois sistemas, efeitos reais de Atenção Infalível e Um com o Mundo,
+fontes, persistência, desinstalação, ofertas, treino e preservação da ficha.
+Avisos existentes do build: Node 22.11 e tamanho do bundle. Tentativa de
+conferência visual pelo navegador disponível falhou com
+`ERR_CONNECTION_TIMED_OUT` em `127.0.0.1:5198`. Verificação visual pendente.
+
+Consulta e fetch da main remota confirmaram `de3c52b`, enquanto HEAD local
+permanece `891b6d4`. Simulação de integração encontrou sobreposições de
+trabalho local anterior com remoto, incluindo imports dos treinos e retorno
+de benefícios de treino versus voo em `afty-derive.js`. Inserções de Olhinhos
+Lu em grupos do Motor e opções da Ficha foram posicionadas para evitar
+conflitos novos de proximidade com voo e exaustão de Técnica do remoto.
+Não houve merge na árvore de trabalho nem alteração do índice do autor.
+Integração e conferência visual registradas na fila. Motor novo precisa
+chegar ao site antes de instalar este pacote. Sem mudança em
+`src/components/`, commit ou push. Trabalho anterior preservado.
+
+## SESSÃO DE 2026-10-08: ADEQUAÇÃO DA FICHA RYUMA MURASAMA
+
+Entrada `C:/Users/marcu/Downloads/ryuma_murasama.json`, ficha
+`Ryuma Murasama`, id `muzpc5ls-xs31tib`, jogador Restringido nível 30.
+Os quatro addons de treinamento já coincidiam com as versões preparadas,
+carteira completa e progresso escolhido preservados. Inventário estava vazio.
+Adicionado addon do arsenal e suas oito entradas guardadas no export de saída
+`ryuma_murasama-adequado.json`, na pasta de artefatos desta conversa.
+
+Nome, ID, retrato, pastas, atributos, habilidades, talentos, focos, treino,
+escolhas, carteira e demais dados preservados. Original não sobrescrito.
+Autor confirmou deixar vazias por enquanto as escolhas de Treino de escudos.
+Não conceder Manejo Especial nem comprar Manejo de Arma automaticamente.
+Mantidas definições do arsenal preparadas anteriormente, sem resolver por
+suposição as perguntas ainda abertas da aprovação inicial dos itens.
+
+Validação com `deriveAfty`: oito entradas reconhecidas, oito addons,
+guardar/equipar em cópia, JSON salvo/recarregado e adequação repetida sem
+duplicação. Comparação estrutural confirmou que somente addon do arsenal e
+suas entradas mudaram. Atributos efetivos: Força 27, Destreza 22,
+Constituição 22, Inteligência 8, Sabedoria 13 e Presença 8. Atenção 88,
+abaixo dos 100 do Completo de Reavaliação. Guarda etapa 2 preservada,
+Sabedoria 13 não atende às etapas 3/4. Caçada etapa 4 gravada preservada,
+mas Intuição não está Mestre na ficha atual. Não alterar escolhas para
+satisfazer esses requisitos sem uma decisão do autor.
+
+Gerador específico em `adequar-ryuma-murasama.mjs` nos artefatos. Nenhum
+código de motor alterado, sem repetição de build ou suíte já validada.
+Registro fica fora do índice do commit que o autor está concluindo.
+Main remota consultada em `891b6d4`, igual ao HEAD. Sem commit ou push.
+
+## SESSÃO DE 2026-10-08: PAGINADOR NO COMMIT MANUAL
+
+Saída enviada pelo autor mostra `(END)` durante `git diff --cached --stat`.
+Consulta do repositório confirmou que o commit ainda não foi criado,
+índice de 29 arquivos preservado e HEAD em `891b6d4`. Orientado pressionar
+q para sair do paginador e deixar o script manual continuar para o commit.
+Script de artefatos atualizado com `git --no-pager` nas consultas de diff,
+sem alterar configuração global do Git e sem executar commit pelo agente.
+Este registro permanece na árvore de trabalho, fora do índice que o autor
+está concluindo, para não modificar o commit durante sua execução manual.
+
+## SESSÃO DE 2026-10-08: PREPARAÇÃO DO COMMIT DE RYUMA
+
+Autor pediu preparação pelo PowerShell. Escopo: addons e motor dos treinos
+Reavaliação, Caçada, Escudos e Guarda da Lâmina Divina, arsenal de Ryuma,
+gerador, asserts e documentação desta sessão. Mantidas perguntas de aprovação
+do arsenal, sem corrigir valores ou publicar enquanto aguardam resposta.
+
+Preparação não executa `git commit` ou `git push`, conforme AGENTS.md.
+Alterações anteriores de cofre e feitiços, addons de outras demandas,
+previews Dharma, exports de Kenji e a seção de aparência do Mahoraga
+permanecem fora do escopo. Documento de status recebe preparação parcial
+no índice para preservar a seção anterior de outro trabalho sem incluí-la.
+Remoto consultado em `891b6d4`, igual ao HEAD, sem conflitos de Git.
+Índice preparado com 29 arquivos. Cópia isolada do índice validada com
+ESLint e Vite build, sem depender das alterações anteriores de feitiços e
+cofre. A validação detectou comparação literal de quebras de linha em
+`t-reavaliacao.mjs` e `t-treino-cacada.mjs`, corrigida normalizando CRLF
+para LF somente nos testes. Regras e mecânicas preservadas.
+Mensagem e script PowerShell de conclusão manual disponíveis na pasta de
+artefatos desta conversa. Script confere os caminhos preparados, não faz push.
+Suíte completa na cópia isolada do índice: 165 arquivos, 9041 asserts,
+todos passaram. A diferença para os 166 arquivos da árvore de trabalho é
+o assert de Reencarnação de outra demanda, mantido fora desta preparação.
+Diff do índice sem conflito, whitespace inválido, U+2014 novo ou mudança
+em `src/components/`. Apenas a seção anterior de Mahoraga continua fora do
+índice nesse documento. O humano deve concluir o commit pelo PowerShell.
+
+## SESSÃO DE 2026-10-08: CONFLITOS ANTES DE ATUALIZAR ARMAMENTO
+
+Autor pediu revisão de conflitos e atualização, confirmando que Ryuma não
+tem Manejo Especial e que o próximo benefício deve exigir treino da arma.
+Main remota e `origin/main` continuam em `891b6d4`, iguais ao HEAD.
+Sem conflito de Git, mas persistem diferenças da aprovação inicial:
+Murasama usa BT situacional em vez de +2 e Yagen penalidade 0 em vez de -6.
+Perguntas concretas enviadas para corrigir esses campos, carga e crítico,
+e confirmar se o próximo é o encantamento extra do Manejo de Arma completo.
+
+Export atual confirmado via `deriveAfty`: não possui
+`cmb_manejo_especial`, nenhuma instância de `manejo_arma` e nenhuma vaga
+extra concedida por treino. Ausência de Manejo Especial explicitada no
+gerador como `manejoEspecialInformado: null`, removida dos campos pendentes.
+Não concedeu habilidade nem comprou treino. Cópia preservada em
+`ryuma-armamento-em-revisao.json`, sem resolver conflitos de regra por conta
+própria. Testes do arsenal passaram, 72 asserts.
+Simulação em cópias da ficha confirmou Dragon Bone: sem treino ou na etapa
+3 são quatro vagas para cinco escolhas, com aviso. Na etapa 4 do Manejo
+de Arma específico são cinco vagas e o aviso desaparece. Não gravou
+progresso de teste. O motor atual avisa excesso, não bloqueia sozinho o
+efeito do quinto escolhido, portanto trava desse benefício aguarda confirmar
+qual encantamento deve ser condicionado à etapa 4.
+
+Atualização externa aguarda conciliação das regras, conforme condição do
+pedido. Nenhum commit ou push realizado, trabalho da equipe preservado.
+
+## SESSÃO DE 2026-10-08: GUARDA DA LÂMINA DIVINA
+
+Criado `addons/guarda-da-lamina-divina.json`, linha
+`guarda-da-lamina-divina:guarda`. Texto integral e integração em
+`docs/guarda-lamina-divina-regras.md`. Custos 1, 1, 2 e 3 Focos, total 7,
+Completo automático no padrão dos treinos anteriores da sessão.
+
+Autor confirmou que +1 Nível de dano vale apenas para ataques com espadas.
+Alvo `grupo:espada`, condicionado a espada equipada. Etapa 2 concede
++2 Percepção. Etapa 3 exige Sabedoria 14 e concede Mestre condicional,
+ou +2 se a faixa já era escolhida como Mestre, usando `quandoProf` e
+`semCredito` do Treino de Perícia. Etapa 4 exige Destreza 22 e Sabedoria 14,
+concede +3 Defesa. Não aumenta limite de atributo para satisfazer requisito.
+
+Emissor de treino ganhou `grupoEquipamento` opcional junto de
+`requerEquipamento`, e `profPericia.pericia` fixa usa a mesma porta do
+alvo repetível. Efeitos saem ao guardar espada. Escudo narrativamente
+espada não ativa, duas espadas não duplicam, addon ausente não concede.
+Completo permanece como regra na ficha: desvantagem apenas da criatura
+sob Ler intenções contra o usuário, controle na mesa. Não há penalidade
+global automática contra todos os atacantes.
+
+`asserts/t-guarda-lamina-divina.mjs`: 70 asserts passaram, dois sistemas,
+escopo do dano, bônus por etapa, Mestre ou +2 sem realimentação, aquisição,
+guardar/equipar, ausência de duplicação, addon removido, arma desconhecida,
+preservação da ficha e texto do Completo. Vite build passou, avisos existentes
+de Node e bundle. Nenhum progresso comprado ou addon instalado na ficha.
+ESLint passou. Suíte completa: 166 arquivos, 9059 asserts, todos passaram.
+Diff sem conflito, sem mudança em `src/components/` e sem caractere proibido.
+Conferência visual permanece pendente pelo problema de acesso ao servidor
+local registrado na integração do arsenal, não declarada como realizada.
+Pendências da revisão anterior do arsenal continuam separadas.
+Main remota consultada em `891b6d4`, igual ao HEAD. Sem commit ou push.
+
+## SESSÃO DE 2026-10-08: REVISÃO DA APROVAÇÃO INICIAL DO ARSENAL
+
+Autor encontrou aprovação inicial de Murasama, Yagen e Corrente. Fonte
+integral e comparação em `docs/arsenal-ryuma-aprovacao-inicial.md`.
+Murasama usa +2 situacional na aprovação, BT no texto cadastrado. Yagen
+tem penalidade -6 na aprovação, 0 cadastrada. RD base 8 confere.
+Yagen tem Peso 1 no texto, 2 espaços no padrão autorizado anteriormente.
+Corrente (1d8, crítico 19, custo 1, Peso 0,5) está ausente do arsenal.
+Não equivale ao Chicote de Corrente do livro, que concede outros benefícios.
+
+Murasama tem crítico final 19 hoje, por base 20 e Certeira. Dano permanece
+2d10, com Potente incluído conforme resposta anterior. Pergunta enviada
+para esclarecer se a aprovação inicial dá bases ou totais antes de alterar
+crítico ou dano. Não remover evoluções de Grau Especial só por não constarem
+de uma aprovação inicial. Fila registra somente as dúvidas desta revisão.
+
+Verificado via `deriveAfty` no export real, sem escrever estados de uso.
+Nenhum código, addon ou export alterado nesta revisão. Main remota
+consultada em `891b6d4`, igual ao HEAD. Sem commit ou push.
+
+## SESSÃO DE 2026-10-08: ARSENAL ESPECIAL DE RYUMA
+
+Pedido anexado de seis equipamentos analisado antes de alterar a ficha.
+Mapeamento em `docs/arsenal-ryuma-integracao.md`. Confirmada existência de
+inventário, armas próprias, Ferramentas Amaldiçoadas e efeitos enquanto
+equipados. Escudos e revestimentos criados recalculam os números pelo custo
+e não aceitam diretamente os números especiais enviados.
+
+Impulso e Bloqueador existentes têm regras diferentes dos homônimos do
+pedido. Perceber o Ar e intensidades de Sangramento existem, mas não há
+cálculo de distância de pulo nem níveis de Ler Intenções. Valores podem
+incluir parcelas já calculadas por grau e encantamentos. Autor recebeu
+perguntas de confirmação, registradas em `docs/a-fazer.md`.
+
+Autor confirmou os elementos fixos na análise e que os dados já incluem
+Potente. Dragon Bone também possui Destruidora, totalizando cinco
+encantamentos para quatro vagas normais. Bases corrigidas: Yagen 8 RD,
+sem anotações de talento, Armeiro e treino, uniforme 8 Defesa e Blindado +2.
+Acrescentou Espada colossal e Presa do Desgarrado, totalizando oito itens.
+
+Addon `arsenal-de-ryuma.json` criado com oito equipamentos. Export
+`ryuma-carteira-e-arsenal.json` preparado, os oito guardados. Original da
+carteira completa preservado. Comparação confirmou que somente addon do
+arsenal e suas entradas de equipamento mudaram. Gerador idempotente em
+`scripts/preparar-arsenal-ryuma.mjs`, sem inserir itens em outras fichas.
+Famílias de catálogo `escudos` e `uniformes` preparadas em
+`afty-equipamentos.js`, reutilizando namespace, validação, remendos,
+inventário e resolvedor existentes. Não adicionam itens automaticamente.
+Campos opcionais: `dano.encantamentosIncluidos` não duplica dados de
+Potente já presentes, `rdEscudoAdicionalExpr` aumenta somente a base
+resolvida em uso e `alcanceCorpo` preserva alcance corpo a corpo separado
+de Arremessável. Uniforme fornece base 8 + Blindado 2 e bônus Sob Medida.
+Yagen base 8 + BT do Bloqueador, grau 5 e Reforçado 2. Predar reduz
+margem crítica em 3. Destruidora da Dragon Bone acrescenta dado crítico.
+Descrição não foi marcada como automação: procedimentos especiais sem
+regra fechada continuam na mesa, registrados em `docs/a-fazer.md`.
+
+Autor autorizou classe Complexa, crítico 20, espaços padrão e reutilizar
+Espada colossal do catálogo. Parâmetros ausentes não foram inventados.
+Mantidos avisos: Dragon Bone com cinco encantamentos para quatro vagas e
+Material Pesado sem equivalência de revestimento confirmada. Este último
+não concede Fortitude enquanto não atender seu requisito.
+
+`asserts/t-addon-escudos-uniformes.mjs`: 21 asserts. `t-arsenal-ryuma.mjs`:
+72 asserts. Suíte final: 165 arquivos, 8989 asserts, todos passaram.
+ESLint e Vite build passaram, com avisos existentes de Node e bundle.
+Preview local com componente real AbaEquipamentos criado para conferência,
+mas navegador retornou `ERR_CONNECTION_TIMED_OUT`. Preview e servidor
+removidos, verificação visual continua pendente. Relatório final completo
+em `docs/arsenal-ryuma-relatorio.md`.
+Sem alterações em `src/components/`, commit ou push. Main remota
+consultada em `891b6d4`, igual ao HEAD local. Trabalho anterior preservado.
+
+## SESSÃO DE 2026-10-08: TREINO DE ESCUDOS PARA RYUMA (GELO)
+
+Criado `addons/treino-de-escudos.json`, linha `treino-de-escudos:escudos`,
+com texto integral em `docs/treino-escudos-regras.md`. Autor confirmou custos
+1, 1, 1 e 2 Focos, Completo automático sem custo extra, escolha fixa de
+encantamento para qualquer escudo e aplicação das restrições normais.
+
+Etapas 1 a 3: +1 Defesa, +1 Fortitude e 4 RD Física enquanto escudo equipado.
+Campo genérico `requerEquipamento` no emissor de Treinamentos usa entradas
+resolvidas e ignora itens guardados, desconhecidos ou sem addon exigido.
+Os 4 de RD Física não alteram RD base do escudo nem os cálculos de
+Habilidades que leem `rd_escudo`.
+
+Etapa 4 exige escolha prévia de encantamento, disponível na etapa 3 e
+imutável depois de preenchida. Travada na UI e na função de gravação,
+inclusive ao desfazer etapas. Só se aplica à Ferramenta Amaldiçoada equipada:
+adiciona uma vaga normal e o encantamento escolhido, sem gravar na entrada
+original, mantendo pré-requisitos, exclusões e redução de grau por sistema.
+Escudo comum não é promovido automaticamente. Mesmo encantamento comprado
+não duplica. Propriedades de mesa mantêm a implementação do catálogo.
+
+Completo permite escolher tipos adicionais até floor(BT/2), nos pools
+Elementais e Biológicos. Físicos já são cobertos, e Etéreos, Alma e Energia
+Reversa ficam fora. No jogador, `rdTipo` recebe RD do escudo, grau calculado
+e encantamentos que emitem `rdEscudo`. Não inclui RD Física da etapa 3 nem
+de outras fontes. Na criatura a RD Geral já cobre os tipos e não é duplicada.
+Guardar o escudo ou remover o addon retira os benefícios derivados.
+
+Escolhas de treino agora aceitam pools vivos, múltiplos tipos com limite DSL,
+escolha imutável e requisito de preenchimento. Mudanças genéricas e opcionais,
+documentadas em `docs/afty-addons.md` e `docs/automacao-dsl.md`.
+`asserts/t-treino-escudos.mjs`: 65 asserts passaram, incluindo ambos sistemas,
+grau, pré-requisitos, seleção imutável, desinstalação, escudo comum, exclusões,
+limite de tipos, ausência de duplicação e preservação do arquivo da ficha.
+Suíte completa: 163 arquivos, 8896 asserts, todos passaram.
+ESLint e Vite build passaram, com os avisos existentes de versão de Node e
+tamanho do bundle. Conferência visual permanece pendente pela falha de
+acesso do navegador da ferramenta ao servidor local, registrada nesta sessão.
+
+Nenhuma pendência deste pedido ficou em `docs/a-fazer.md`. Main remota
+consultada em `891b6d4`, igual ao HEAD local. Sem conflito não resolvido,
+alteração em `src/components/`, commit ou push. Trabalho anterior preservado.
+Site publicado precisa receber as alterações de motor e controles. Addon
+não foi instalado e não houve escolha de encantamento ou tipos para o autor.
+
+## SESSÃO DE 2026-10-08: TREINO DE CAÇADA PARA RYUMA (GELO)
+
+Criado `addons/treino-de-cacada.json`, linha `treino-de-cacada:cacada`, com
+texto integral do autor em `docs/treino-cacada-regras.md`. Autor confirmou
+o nome Treino de caçada e que Vigor significa Estamina (canal `pe`).
+Custos das etapas: 1, 1, 1 e 2 Focos, 5 no total.
+
+Etapa 1 concede +2 Estamina. Etapa 2 muda o atributo de Percepção para
+Destreza, usando ids fixos em `trocaAtributoPericia.pericia` e `.atributo`,
+sem configuração extra na ficha. Campos de escolha antigos preservados.
+Etapa 3 concede +2 Percepção. Etapa 4 concede +3 Acrobacia e exige Mestre
+em Intuição, Treinado em Percepção e Nível 13. Treinamentos passaram a usar
+o avaliador compartilhado `avaliarRequisitoDeTreino`, e o criador fornece
+as proficiências resolvidas, incluindo concessões do Motor.
+
+Completo concede uma vaga exclusiva de Talento pelo canal `vagasTalento`,
+sem aumentar vagas comuns de Habilidade. Não concede um Talento específico.
+Benefícios adquiridos aparecem na ficha por `exibirNaFicha`. Caçada e
+Reavaliação coexistem e somam +3 Percepção, preservando Destreza como atributo
+e o bônus de deslocamento da Reavaliação. Não houve instalação nem escolha
+de progresso na ficha do autor.
+
+`asserts/t-treino-cacada.mjs`: 44 asserts passaram, cobrindo derive nos dois
+sistemas, etapas, orçamento, texto verbatim, desinstalação, três requisitos
+simultâneos e proficiência concedida pelo Motor. ESLint e Vite build passaram.
+Suíte completa: 162 arquivos, 8831 asserts, todos passaram.
+Conferência visual permanece pendente pela impossibilidade de acesso do
+navegador da ferramenta ao servidor local, registrada nesta mesma sessão.
+Avisos existentes do build: versão Node 22.11 e tamanho de bundle.
+
+Dúvida respondida e entrada correspondente retirada de `docs/a-fazer.md`.
+Motor documentado em `docs/automacao-dsl.md` e `docs/afty-addons.md`.
+Main remota consultada em `891b6d4`, igual ao HEAD local. Sem conflitos
+não resolvidos, sem alteração em `src/components/`, sem commit ou push.
+Alterações anteriores preservadas. Site publicado precisa receber o suporte
+a atributo fixo e requisitos de perícia para interpretar o addon completo.
+
+## SESSÃO DE 2026-10-08: ADDON REAVALIAÇÂO PARA RYUMA (GELO)
+
+Criado `addons/reavaliacao.json`, Linha de Treinamento com texto integral do
+autor, preservado em `docs/reavaliacao-regras.md`. Confirmados pelo autor:
+etapas custam 1, 1, 2 e 2 Focos (6 no total), Análise Profunda é gratuita
+na etapa 4, Completo sem custo adicional após a etapa 4 e Atenção 100.
+Troca de testes e ataque coordenado são procedimentos de mesa, sem contador,
+recuperação inventada ou desconto automático de PE.
+
+Etapa 1 aplica +1 Percepção e etapa 2 aplica +3 m de Deslocamento pelo Motor.
+Etapa 4 exige Atenção 85 no botão de treino e concede `sup_analise_profunda`,
+sem repetir seu texto nem exigir a Especialização Suporte. Acrescentados
+`etapas[].concedeHabilidades`, requisito de treino `atencao` e
+`exibirNaFicha`, todos genéricos e opcionais. Concessão usa o progresso
+adquirido, como os demais efeitos de treino. Desfazer etapa 4 ou remover o
+addon retira a concessão. Habilidade também marcada à mão não duplica nem
+gasta vaga enquanto concedida.
+
+Linhas com `exibirNaFicha` mostram suas etapas adquiridas no novo grupo
+Treinamentos da aba Habilidades. Texto do Completo só aparece nesse grupo
+com etapa 4 e Atenção 100. No criador, o Completo continua consultável, com
+requisito e destaque somente quando atendido. Sua regra é de mesa e não
+emite efeitos numéricos. Atenção vem do resultado final, incluindo override.
+
+`asserts/t-reavaliacao.mjs`: 38 asserts, incluindo derive nos dois sistemas,
+limites 84/85 e 99/100, custo, gratuidade, desinstalação e texto verbatim.
+ESLint e Vite build passaram. Suíte completa: 161 arquivos, 8787 asserts.
+Build informa os avisos existentes de Node 22.11 abaixo da versão recomendada
+pelo Vite e tamanho de bundle. Conferência visual não concluída: navegador
+da ferramenta retornou ERR_CONNECTION_TIMED_OUT em localhost e 127.0.0.1,
+apesar do servidor Vite iniciar. Páginas temporárias de prévia removidas.
+
+Dúvidas respondidas e entrada correspondente retirada de `docs/a-fazer.md`.
+Referência do motor atualizada em `docs/automacao-dsl.md` e
+`docs/afty-addons.md`. Remoto main consultado em `891b6d4`, igual ao HEAD
+local. Sem conflitos não resolvidos, sem alteração em `src/components/`,
+sem commit ou push. Trabalho anterior do autor preservado. Para usar todas
+as concessões e requisitos no site publicado, é necessário publicar este
+código junto do addon. O addon não foi instalado nem teve progresso escolhido
+na ficha do autor.
+
+## SESSÃO DE 2026-10-08: CARTEIRA DO GELO NA FICHA RYUMA
+
+Completada cópia importável do `C:/Users/marcu/Downloads/ryuma.json`
+com os ganhos enviados pelo autor. Acrescentadas 21 entradas às 12 existentes,
+totalizando 33, e corrigidos os ganhos iniciais para incluir os 4 Interlúdios
+da tabela. Demais campos das entradas existentes preservados.
+
+Autor confirmou manter o nome Ryuma, as duas linhas do salário de graça
+(4 XP, 1987 em dinheiro e 2 Interlúdios cada) e o registro de 1,5 Interlúdios
+no salário 8,5. Valores com ticket foram transcritos como enviados, sem aplicar
+outro multiplicador. Tipos das entradas novas ficaram em Sem Tipo, pois a
+segunda coluna da tabela identifica autores ou fontes, não tipos da Carteira.
+
+Totais conferidos pelo `resolveCarteira`: 627 XP, 46004,50 recebidos e atuais,
+zero gastos, Nível 30 e 100 Interlúdios contabilizados. A soma dos Interlúdios
+registrados é 100,5, mas o motor existente trunca o 1,5 da linha para 1,
+limitação informada e aceita pelo autor. Nenhuma regra do motor foi alterada.
+
+Arquivo entregue em
+`C:/Users/marcu/.codex/visualizations/2026/10/08/01a11c27-d32a-7d70-b030-881a015322e9/ryuma-carteira-completa.json`.
+Original preservado. Validação de JSON, ids únicos e comparação estrutural
+confirmaram alterações somente na Carteira. Nenhuma pendência correspondente
+em `docs/a-fazer.md`. Remoto consultado em `891b6d4`, igual ao HEAD local.
+Sem alteração em `src/components/`, sem commit ou push. Entrega de dados,
+sem mudança de código ou UI, validada pelo resolvedor existente e sem repetir
+build, lint ou suíte completa. Importação no navegador não foi executada.
+
+## SESSÃO DE 2026-10-07: APARÊNCIA PERSONALIZADA DO MAHORAGA
+
+Pedido do autor: tornar mais bonita a ficha enviada em `mahoraga (1).json`.
+Criada cópia importável com paleta grafite, marfim, dourado envelhecido e
+verde jade, títulos serifados, moldura dourada no retrato e fundo discreto.
+Usa os recursos existentes de `creature.aparencia`, sem mudar o aplicativo.
+Retrato, foco do retrato e imagem de fundo originais preservados.
+
+Comparação estrutural confirmou mudança somente em `creatures[0].aparencia`.
+Todos os atributos, regras, equipamentos, feitiços, addons e metadados do
+arquivo enviado foram preservados. O arquivo original não foi sobrescrito.
+Saída e captura em `C:/Users/marcu/.codex/visualizations/2026/10/07/01a116f2-2dc3-7092-b4e5-b6bbcad48c0a/`,
+arquivos `mahoraga-tema-dharma.json` e `mahoraga-tema-dharma.png`.
+
+Prévia local conferida no navegador, tela padrão e celular de 390 px:
+texto legível, retrato carregado no desktop e ausência de rolagem horizontal
+da página no celular. As páginas temporárias desta validação foram removidas.
+Sem mudança de motor, DSL ou fórmula, portanto sem repetição da suíte de lógica.
+Remoto consultado em `891b6d4`, igual ao HEAD local. Sem alteração em
+`src/components/`, sem commit ou push. Nenhuma pendência nova desta entrega.
+
 ## SESSÃO DE 2026-10-07: DHARMA, MAIN ATUALIZADA E COMMIT PREPARADO
 
 Preparação solicitada pelo autor. Consulta e fetch confirmaram main remota

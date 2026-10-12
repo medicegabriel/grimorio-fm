@@ -1,0 +1,851 @@
+{
+  "version": "2.0",
+  "exportedAt": "2026-09-07T23:55:29.074Z",
+  "system": "Feiticeiros & Maldições 2.5",
+  "count": 1,
+  "creatures": [
+    {
+      "system": "afty",
+      "rulesVersion": "afty",
+      "name": "Kenji Sugawara",
+      "portraitUrl": "https://media.discordapp.net/attachments/1527112064861208646/1527112065066733670/628d785fc311553ffdcf110401261906.jpg?ex=6aa001b0&is=6a9eb030&hm=620c494bd5213bc71f92e70ceae8a930092e238f55a54c3e12df268afd4bd43a&=&format=webp&width=683&height=1024",
+      "portraitFocus": {
+        "x": 18.88888888888889,
+        "y": 6.128472222222222
+      },
+      "core": {
+        "tipo": "combatente",
+        "patamar": "desafio",
+        "nd": 26,
+        "tamanho": "medio",
+        "tecnicaAttr": "inteligencia",
+        "tecnicaDescricao": "",
+        "tecnicaEfeitos": [],
+        "funcionamentosAdicionais": [],
+        "origem": {
+          "id": "sem_tecnica",
+          "bonusAtributos": {
+            "destreza": 1,
+            "inteligencia": 1,
+            "sabedoria": 1,
+            "presenca": 1
+          },
+          "escolhas": {
+            "empenho_1": [
+              "st_n1_talento"
+            ],
+            "empenho_3_pericias": [
+              "st_n3_per_feiticaria",
+              "st_n3_per_acrobacia"
+            ],
+            "empenho_3_jogada": [
+              "st_n3_tr_reflexos"
+            ],
+            "empenho_10": [
+              "st_n10_talento"
+            ],
+            "empenho_13_pericias": [
+              "st_n13_per_acrobacia",
+              "st_n13_per_feiticaria"
+            ],
+            "empenho_13_jogada": [
+              "st_n13_tr_reflexos"
+            ],
+            "empenho_17_pericias": [
+              "st_n17_per_acrobacia",
+              "st_n17_per_feiticaria"
+            ],
+            "empenho_17_jogada": [
+              "st_n17_tr_reflexos"
+            ]
+          }
+        }
+      },
+      "alma": {
+        "atual": 100,
+        "max": 100
+      },
+      "qntPE": "normal",
+      "attrMethod": "rolagem",
+      "attrLimite": {
+        "forca": 20,
+        "destreza": 20,
+        "constituicao": 20,
+        "inteligencia": 20,
+        "sabedoria": 20,
+        "presenca": 20
+      },
+      "attributes": {
+        "forca": 14,
+        "destreza": 15,
+        "constituicao": 18,
+        "inteligencia": 13,
+        "sabedoria": 13,
+        "presenca": 13
+      },
+      "attrNivel": {
+        "forca": 0,
+        "destreza": 6,
+        "constituicao": 0,
+        "inteligencia": 0,
+        "sabedoria": 6,
+        "presenca": 0
+      },
+      "pericias": {
+        "acrobacia": "mestre",
+        "feiticaria": "mestre"
+      },
+      "periciasOrdem": null,
+      "periciasPersonalizadas": [],
+      "periciaOficio": "",
+      "periciaOficios": {},
+      "periciasBonus": 0,
+      "resistenciasProf": {
+        "reflexos": "mestre",
+        "fortitude": "mestre",
+        "vontade": "mestre",
+        "astucia": "mestre"
+      },
+      "ataquesProf": {
+        "corpo": true
+      },
+      "ataqueFineza": true,
+      "armasDedicadas": [],
+      "tecnicasCombate": {
+        "armas": [],
+        "atributo": "inteligencia"
+      },
+      "combate": {
+        "ativo": true,
+        "empolgacao": 1,
+        "insistenciaUsada": false,
+        "manobraAjuste": false,
+        "manobraDesarme": false,
+        "manobraEsquiva": false,
+        "manobraTrabalhoDePes": false,
+        "manobraFinalizadora": null,
+        "brutalidade": false,
+        "brutalidadePE": 0,
+        "brutalidadePilha": 0,
+        "ataqueInconsequente": false,
+        "impactoMisto": false,
+        "resistirPE": 0,
+        "furiaVinganca": false,
+        "imprudenciaMotivadora": false,
+        "machucado": false,
+        "abates": 0,
+        "armasAbsolutas": null,
+        "auraElemental": true,
+        "concentrarAura": [],
+        "golpeComAura": null,
+        "canalizarEmGolpe": false,
+        "canalizacaoMaxima": false,
+        "estilo_ativo": true,
+        "postura": "sol",
+        "postura2": "terra",
+        "golpeAtroz": true,
+        "golpeLetal": false,
+        "golpePenetrante": false,
+        "arteGolpeDescendente": true,
+        "espiritoDeLuta": true,
+        "espiritoIncansavel": true,
+        "duelando": true,
+        "estilo_acerto": 0,
+        "fluxoPER": 0,
+        "lutandoComDuasArmas": true,
+        "arteExecucaoSilenciosa": true,
+        "dancarino-das-laminas:ritmo": 6,
+        "estilo_est_mtrkc5us_2": 1,
+        "estilo_est_mtrkoj7k_4": 1,
+        "estilo_est_mtrkp0jm_6": 1
+      },
+      "equipamentos": {
+        "itens": [
+          {
+            "uid": "eq_mtrjpvi2_1",
+            "tipo": "item",
+            "refId": "it_cinturao_do_inabalavel",
+            "qtd": 1,
+            "equipado": true
+          },
+          {
+            "uid": "eq_mtrjpwdm_3",
+            "tipo": "item",
+            "refId": "it_faixas_celeres",
+            "qtd": 1,
+            "equipado": true
+          },
+          {
+            "uid": "eq_mtrjq2rj_5",
+            "tipo": "item",
+            "refId": "it_aneis_do_conhecimento",
+            "qtd": 1,
+            "equipado": true
+          },
+          {
+            "uid": "eq_mtropyjf_1",
+            "tipo": "arma",
+            "refId": "azamaru:azamaru",
+            "qtd": 1,
+            "equipado": true,
+            "fa": {
+              "grau": "especial",
+              "encantamentos": [],
+              "habilidadeUnica": ""
+            },
+            "ataqueId": "corpo"
+          },
+          {
+            "uid": "eq_mtrpthq4_2",
+            "tipo": "uniforme",
+            "refId": "unif_sob_medida",
+            "qtd": 1,
+            "equipado": true,
+            "fa": {
+              "grau": "especial",
+              "encantamentos": [
+                "enc_unif_blindado"
+              ],
+              "habilidadeUnica": "",
+              "habilidadeEfeitos": [
+                {
+                  "canal": "bonusTR",
+                  "alvo": "reflexos",
+                  "expr": "5"
+                }
+              ]
+            }
+          },
+          {
+            "uid": "eq_mtrvyv91_1",
+            "tipo": "escudo",
+            "refId": "esc_pesado",
+            "qtd": 1,
+            "equipado": true
+          }
+        ]
+      },
+      "armasCustom": [],
+      "especializacoes": [
+        {
+          "id": "especialista-em-estilo:esp_estilo",
+          "nivel": 6
+        },
+        {
+          "id": "combatente",
+          "nivel": 19
+        }
+      ],
+      "feiticos": [],
+      "reducoesCustoFeitico": {
+        "dominancia": null,
+        "manipulacao": []
+      },
+      "estilosSombra": [
+        {
+          "id": "acerto",
+          "tipo": "tabela"
+        },
+        {
+          "id": "dano",
+          "tipo": "tabela"
+        },
+        {
+          "id": "est_mtrkc5us_2",
+          "tipo": "especial",
+          "nome": "Infinito",
+          "nomeCru": "Infinito",
+          "descricao": "Kenji Sugawara utiliza de seu Novo Estilo das Sombras para perceber cada variação de Energia que adentra seu Domínio Simples, conseguindo reagir de maneira semi instantânea a efeitos adversos. Enquanto esse Estilo estiver implementado em seu Domínio Simples, Kenji é capaz de utilizar Reflexos para resistir a efeitos externos (aqueles que ainda serão aplicados a você, como uma habilidade em área ou algo do tipo).",
+          "efeitos": []
+        },
+        {
+          "id": "est_mtrkoj7k_4",
+          "tipo": "especial",
+          "nome": "Dragões Duplos",
+          "nomeCru": "Dragões Duplos",
+          "descricao": "Utilizando de seu estilo único de batalha, Sylpha imbui seu Novo Estilo das Sombras como um amplificador direto do seu acúmulo de momentum em batalha. Para cada ataque acertado você recebe um acúmulo de ritmo que fornece +1 Nível de Dano do mesmo tipo de sua arma, até um limite máximo de 6 acúmulos. Contudo, errar um ataque quebra o seu fluxo de movimento, fazendo com que você perca um acúmulo de ritmo por desacelerar.\n\nPré-requisito: Dançarina das Lâminas. Caso perca acesso a essa caracteristica, o máximo de acúmulos se torna 3.",
+          "efeitos": [
+            {
+              "canal": "nivelDano",
+              "alvo": "arma",
+              "expr": "dancarino_das_laminas_ritmo"
+            }
+          ]
+        },
+        {
+          "id": "est_mtrkp0jm_6",
+          "tipo": "especial",
+          "nome": "Dragões Duplos",
+          "nomeCru": "Dragões Duplos",
+          "descricao": "[Gasta 2 Slots de Estilo]  Conforme entra em fluxo e acumula ritmo, Sylpha utiliza o seu Novo Estilo das Sombras para elevar a sua velocidade e a cadência de seus golpes. Ao atingir a marca de 3 acúmulos de ritmo, ela ganha a capacidade de realizar um Ataque Extra adicional por rodada. Caso alcance o limite de 6 acúmulos, essa aceleração atinge o seu ápice, permitindo que Sylpha realize a ação de Ataque Extra duas vezes adicionais a cada rodada.\n\nPré-requisito: Dançarina das Lâminas. Caso perca acesso a essa caracteristica, o máximo de acúmulos se torna 3.",
+          "efeitos": [
+            {
+              "canal": "ataquesExtras",
+              "expr": "(dancarino_das_laminas_ritmo >= 3) + (dancarino_das_laminas_ritmo >= 6)"
+            }
+          ],
+          "custoImbuicao": 2
+        }
+      ],
+      "habilidadesGerais": [
+        "ger_melhoria_superior",
+        "ger_habilidade_lendaria",
+        "ger_especializacao",
+        "ger_especializacao",
+        "ger_especializacao",
+        "ger_especializacao",
+        "ger_aptidao",
+        "ger_aptidao",
+        "ger_aptidao",
+        "ger_aptidao",
+        "ger_treinamentos",
+        "ger_treinamentos",
+        "ger_treinamentos"
+      ],
+      "habilidades": [
+        "especialista-em-estilo:esp_estilo__cnj_ritualista",
+        "especialista-em-estilo:esp_estilo__cnj_movimentos_imprevisiveis",
+        "especialista-em-estilo:esp_estilo__cnj_feitico_favorito",
+        "especialista-em-estilo:esp_estilo__cnj_energia_focalizada",
+        "especialista-em-estilo:esp_estilo__cnj_conhecimento_aplicado",
+        "especialista-em-estilo:esp_estilo__cnj_reacao_rapida",
+        "especialista-em-estilo:esp_estilo__cnj_dominio_dos_fundamentos",
+        "cmb_repertorio_do_especialista",
+        "cmb_golpe_especial",
+        "cmb_renovacao_pelo_sangue",
+        "cmb_autossuficiente",
+        "cmb_assumir_postura",
+        "cmb_mestre_da_postura",
+        "cmb_surto_de_acao",
+        "cmb_ataque_extra",
+        "cmb_espirito_de_luta",
+        "cmb_preparacao_rapida",
+        "cmb_espirito_incansavel",
+        "cmb_ataque_concentrado",
+        "cmb_potencia_antes_de_cair",
+        "cmb_guarda_estudada"
+      ],
+      "escolhasHabilidade": {
+        "especialista-em-estilo:esp_estilo__cnj_energia_focalizada": [
+          "cnj_focalizada_reflexos"
+        ],
+        "especialista-em-estilo:esp_estilo__cnj_dominio_dos_fundamentos": [
+          "cnj_fundamento_feitico_rapido",
+          "cnj_fundamento_feitico_expansivo"
+        ],
+        "cmb_repertorio_do_especialista": [
+          "cmb_estilo_defensivo",
+          "cmb_estilo_do_duelista",
+          "cmb_estilo_duplo"
+        ],
+        "cmb_assumir_postura": [
+          "cmb_postura_do_sol",
+          "cmb_postura_do_ceu",
+          "cmb_postura_da_terra"
+        ],
+        "cmb_guarda_estudada": [
+          "cmb_guarda_reflexos"
+        ]
+      },
+      "escolhasTalento": {
+        "tal_incremento_de_atributo": [
+          "tal_incremento_destreza",
+          "tal_incremento_constituicao",
+          "tal_incremento_sabedoria"
+        ],
+        "tal_estudo_amaldicoado": [
+          "tal_estudo_dom",
+          "tal_estudo_cl"
+        ]
+      },
+      "talentos": [
+        "tal_incremento_de_atributo",
+        "tal_nocao_e_preparacao",
+        "tal_estudo_amaldicoado",
+        "tal_tecnicas_de_reacao_rapida",
+        "tal_apaziguador_de_tecnica",
+        "dancarino-das-laminas:tal_dancarino_das_laminas",
+        "tal_tecnicas_defensivas_de_escudo"
+      ],
+      "invocacoes": [],
+      "hordas": [],
+      "aptidoes": {
+        "au": 5,
+        "cl": 3,
+        "bar": 1,
+        "dom": 4,
+        "er": 5
+      },
+      "aptidoesAmaldicoadas": [
+        "energia_reversa",
+        "cura_amplificada",
+        "fluxo_constante",
+        "regeneracao_aprimorada",
+        "liberacao_de_energia_reversa",
+        "cura_em_grupo",
+        "anular_tecnica",
+        "revestimento_de_dominio",
+        "tecnicas_de_barreira",
+        "aura_anuladora",
+        "aura_embacada",
+        "aura_macica",
+        "aura_reforcada",
+        "golpe_com_aura",
+        "aura_de_contencao",
+        "aura_elemental",
+        "canalizar_em_golpe",
+        "canalizacao_avancada",
+        "canalizacao_maxima",
+        "leitura_rapida_de_energia",
+        "rastreio_avancado",
+        "leitura_de_aura",
+        "raio_negro",
+        "abencoado_pelas_faiscas_negras"
+      ],
+      "aptidaoOpcoes": {},
+      "aptidaoOpcoesRepetidas": {},
+      "dominios": [],
+      "dominioAtivoId": null,
+      "treinamentos": {
+        "naocongenito:treino_atributo_nao_congenito": 4,
+        "controle_energia": 4,
+        "compreensao": 4,
+        "barreiras": 2,
+        "energia_reversa": 4,
+        "luta": 2,
+        "resistencia": 4,
+        "agilidade": 4,
+        "manejo_arma": [
+          {
+            "alvo": "arm_katana",
+            "progresso": 4
+          },
+          {
+            "alvo": "azamaru:azamaru",
+            "progresso": 4
+          }
+        ],
+        "pericia": [
+          {
+            "alvo": "feiticaria",
+            "progresso": 4
+          },
+          {
+            "alvo": "acrobacia",
+            "progresso": 4
+          },
+          {
+            "alvo": "intuicao",
+            "progresso": 4
+          }
+        ]
+      },
+      "treinosEspeciais": [
+        {
+          "id": "tes_habilidade",
+          "alvo": null
+        },
+        {
+          "id": "tes_habilidade",
+          "alvo": null
+        },
+        {
+          "id": "tes_habilidade",
+          "alvo": null
+        }
+      ],
+      "focosBonus": 0,
+      "statOverrides": {},
+      "melhoriasSuperiores": [
+        "mel_resistencia",
+        "mel_precisao",
+        "mel_defesa"
+      ],
+      "habilidadesLendarias": [
+        "len_aperfeicoamento_de_atributo",
+        "len_resistencia_lendaria",
+        "len_atingir_apice"
+      ],
+      "escolhasAltoNivel": {
+        "mel_resistencia": [
+          "reflexos"
+        ],
+        "len_aperfeicoamento_de_atributo": [
+          "destreza"
+        ],
+        "len_atingir_apice": [
+          "api_invencivel_sob_o_sol"
+        ]
+      },
+      "aparencia": {
+        "presetId": "padrao",
+        "vars": {},
+        "fonte": null,
+        "raio": null,
+        "imagem": {
+          "url": "",
+          "opacidade": 0.25,
+          "encaixe": "cover",
+          "posicao": "center top"
+        },
+        "css": "",
+        "ligado": true
+      },
+      "addons": [
+        {
+          "id": "naocongenito",
+          "nome": "Não Congênito",
+          "versao": "1.0.0",
+          "autor": "Afty",
+          "descricao": "",
+          "paraRaw": "afty",
+          "permite": [],
+          "libera": [],
+          "adaptacoes": [],
+          "funcionamentos": [],
+          "feiticos": [],
+          "estadosCombate": [],
+          "catarse": null,
+          "acrescenta": {
+            "treinamentos": [
+              {
+                "id": "treino_atributo_nao_congenito",
+                "nome": "Treino de Atributo - Não Congênito",
+                "lore": "Em um mundo, onde diversas pessoas vem ao mundo com benções e maldições congênitas. Você nasceu normal, normal até de mais.  Você não se destaca em nada, sempre ficando para trás na sua maior especialidade. Tentando reverter isso, você começa a treinar de maneira incessante em busca de quebrar essa distância.",
+                "alvos": [
+                  {
+                    "id": "atributo",
+                    "tipo": "atributo",
+                    "label": "Atributo"
+                  },
+                  {
+                    "id": "pericia",
+                    "tipo": "pericia",
+                    "label": "Perícia"
+                  }
+                ],
+                "trocaAtributoPericia": {
+                  "etapa": 1,
+                  "periciaAlvo": "pericia",
+                  "atributoAlvo": "atributo"
+                },
+                "etapas": [
+                  {
+                    "n": 1,
+                    "focos": 1,
+                    "requisito": {
+                      "tipo": "todosAtributos",
+                      "valor": 8
+                    },
+                    "beneficio": "Escolha uma Pericia, ela passa a usar o Atributo Escolhido para o calculo. [Não é possível escolher Acerto ou TRs]",
+                    "efeitos": [
+                      {
+                        "canal": "proficienciaPericia",
+                        "alvo": "escolha:pericia",
+                        "expr": "1"
+                      }
+                    ]
+                  },
+                  {
+                    "n": 2,
+                    "focos": 1,
+                    "requisito": null,
+                    "beneficio": "Você recebe +1 Ponto no Atributo Escolhido",
+                    "efeitos": [
+                      {
+                        "canal": "atributo",
+                        "alvo": "escolha:atributo",
+                        "expr": "1"
+                      }
+                    ]
+                  },
+                  {
+                    "n": 3,
+                    "focos": 1,
+                    "requisito": null,
+                    "beneficio": "Você recebe +1 de Limite no Atributo Escolhido",
+                    "efeitos": [
+                      {
+                        "canal": "limiteAtributo",
+                        "alvo": "escolha:atributo",
+                        "expr": "1"
+                      }
+                    ]
+                  },
+                  {
+                    "n": 4,
+                    "focos": 2,
+                    "requisito": null,
+                    "beneficio": "Você recebe +1 Ponto no Atributo Escolhido",
+                    "efeitos": [
+                      {
+                        "canal": "atributo",
+                        "alvo": "escolha:atributo",
+                        "expr": "1"
+                      }
+                    ]
+                  }
+                ],
+                "completo": {
+                  "beneficio": "Quebra de Limites\nVocê ultrapassa o limite humano no Atributo Escolhido no Treinamento. Aumentando o Limite do Atributo em um valor igual a Metade do seu Bônus de Treinamento.",
+                  "efeitos": [
+                    {
+                      "canal": "limiteAtributo",
+                      "alvo": "escolha:atributo",
+                      "expr": "metade(bt)"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "substitui": {}
+        },
+        {
+          "id": "especialista-em-estilo",
+          "nome": "Especialista em Estilo",
+          "versao": "1.0.0",
+          "autor": "Afty",
+          "descricao": "A variação do Especialista em Técnicas para quem não tem técnica nenhuma. O Sem Técnica não pode ter a Especialização Conjurador, e este pacote abre no lugar dela o Especialista em Estilo, que É o Conjurador com as mesmas 65 habilidades, lidas sobre Aptidões Amaldiçoadas e Técnicas de Estilo em vez de Feitiços. Só o Sem Técnica enxerga, e ela não convive com o Conjurador na mesma ficha.",
+          "paraRaw": "afty",
+          "permite": [
+            "requisitoAptidao"
+          ],
+          "libera": [],
+          "adaptacoes": [],
+          "funcionamentos": [],
+          "feiticos": [],
+          "estadosCombate": [],
+          "catarse": null,
+          "acrescenta": {
+            "especializacoes": [
+              {
+                "id": "esp_estilo",
+                "nome": "Especialista em Estilo",
+                "herdaDe": "conjurador",
+                "restritaOrigemIds": [
+                  "sem_tecnica"
+                ],
+                "incompativeisIds": [
+                  "conjurador"
+                ],
+                "resumo": "O Especialista em Técnicas do Sem Técnica: as mesmas habilidades, lidas sobre Aptidão e Estilo.",
+                "descricao": "Você recebe as Habilidades de Especialização do Especialista em Técnicas, e todas continuam valendo. O que muda é sobre o que elas falam.\n\nHabilidades de dano: Habilidades que aumentam o dano de técnicas amaldiçoadas continuam aumentando o dano na mesma medida, porém só é possível receber esse aumento de dano caso a aptidão amaldiçoada ou estilo da sombra já desse dano em si. Você não pode fazer com que sua aura macabra ou seu estímulo muscular cause dano no inimigo.\n\nHabilidades de buff ou feitiço rápido: habilidades que aumentam alcance, alvos ou qualquer tipo de buff afetam suas aptidões, desde que faça sentido logicamente. Você não conseguiria usar Feitiço Distante em sua aura lacerante, mas ainda seria possível utilizar Feitiço Expansivo. Ao utilizar o Feitiço Rápido segue a mesma redução de ação.\n\nConjuração em ritual: Ao ritualizar uma aptidão de buff ou dano você segue as mesmas regras do ritualizar e seus efeitos. Caso você ritualize um estilo da sombra, para cada efeito de ritual que você receber dele você conta como se tivesse +1 nível de domínio extra. Esses efeitos valem para qualquer efeito de ritual, como a habilidade Feitiço Favorito.\n\nCálculos que utilizam o nível do Feitiço: Coisas que envolvam esse cálculo continuam normalmente, substituindo o nível do Feitiço pelo seu Nível de Aptidão em Controle e Leitura.",
+                "remendaHabilidades": {
+                  "cnj_conjuracao_aprimorada": {
+                    "nome": "Conjuração Aprimorada",
+                    "descricao": "Todos podem utilizar a energia amaldiçoada, mas você consegue a aprimorar e extrair um maior potencial. Sempre que utilizar uma Aptidão Amaldiçoada ou Técnica de Estilo que cause dano, você soma um bônus ao total de dano causado baseado no seu Nível de Aptidão em Controle e Leitura, de acordo com a tabela abaixo. O bônus só vale se a aptidão ou o estilo já causasse dano por si.\n\nAlém disso, o Sem Técnica é mais focado em qualidade do que em quantidade: você recebe uma nova Técnica de Estilo a cada nível par, além dos níveis em que o próprio Sem Técnica as recebe naturalmente.\n\nNível em Controle e Leitura · Bônus de Dano\n• Nível 1: Modificador de Atributo\n• Nível 2: Modificador de Atributo\n• Nível 3: Dobro do Modificador de Atributo\n• Nível 4: 2x Mod. de Atributo + Nível de Personagem\n• Nível 5: 2x Mod. de Atributo + 2x Nível de Personagem\n• Técnica Máxima: 3x Mod. de Atributo + 3x Nível de Personagem",
+                    "efeitos": [
+                      {
+                        "canal": "vagasEstilo",
+                        "expr": "piso(esc_conjurador / 2)"
+                      }
+                    ]
+                  },
+                  "cnj_adiantar_a_evolucao": {
+                    "nome": "Adiantar a Evolução",
+                    "descricao": "Focado no seu treino, você consegue adiantar a evolução das suas habilidades. Você reduz em 2 os pré-requisitos de nível das Aptidões Amaldiçoadas. Os pré-requisitos de Nível de Aptidão em uma trilha continuam valendo como estão.",
+                    "efeitos": [
+                      {
+                        "canal": "reduzNivelAptidao",
+                        "expr": "2"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "substitui": {}
+        },
+        {
+          "id": "azamaru",
+          "nome": "Azamaru",
+          "versao": "1.0.0",
+          "autor": "",
+          "descricao": "O Fim de Todas as Coisas",
+          "paraRaw": "afty",
+          "permite": [],
+          "libera": [],
+          "adaptacoes": [],
+          "funcionamentos": [],
+          "feiticos": [],
+          "estadosCombate": [],
+          "catarse": null,
+          "acrescenta": {
+            "armas": [
+              {
+                "id": "azamaru",
+                "nome": "Azamaru",
+                "titulo": "O Fim de Todas as Coisas",
+                "classe": "complexa",
+                "categoria": "corpo",
+                "grupo": "espada",
+                "custo": 4,
+                "espacos": 2,
+                "critico": 18,
+                "dano": {
+                  "dado": "1d12 + 1d4",
+                  "tipo": "ct"
+                },
+                "props": {
+                  "fineza": true,
+                  "marcial": true,
+                  "dupla": true,
+                  "apunhaladora": true,
+                  "energica": true,
+                  "mortal": "d12",
+                  "oscilante": true
+                },
+                "unico": true,
+                "equipadoPadrao": true,
+                "faFixa": true,
+                "faPadrao": {
+                  "grau": "especial",
+                  "encantamentos": [],
+                  "habilidadeUnica": ""
+                },
+                "ilusoes": true,
+                "descricao": "O Fim de Todas as Coisas\nSua habilidade especial é Azamaru:\nTécnica Base: –\nCom uma ação bônus, você junta ambas as lâminas, as transformando em uma única espada colossal, a qual não possui as propriedades Pesada nem Especial. Enquanto transformada, a lâmina é imbuída com uma maldição capaz de romper conceitos enquanto abastecida pela sua fúria, fazendo com que seus ataques feitos com ela ignorem imunidade, resistência e RD, além disso, no momento da ativação, você cria clones ilusórios igual ao seu bônus de maestria, recebendo +2 em CA e testes de Reflexos para cada um. A cada ataque que errar contra você, um dos clones é dissipado, e caso você seja atingido por um ataque, todos eles são dissipados; efeitos em área que afetem os clones fazem com que eles sejam dissipados automaticamente, mas caso ele afete o usuário, todos só serão dissipados caso ele falhe no TR. A cada clone dissipar, a energia dele é canalizada na lâmina, fazendo com que seu próximo ataque que acertar cause 1 dado de dano adicional para cada 2 clones dissipados; você também pode dissipar clones voluntariamente com uma ação livre. Dividir a espada custa uma ação bônus, e ela não pode ser reunida na mesma rodada em que foi dividida, exigindo um gasto de PE igual ao seu bônus de maestria em todo o uso após o primeiro.",
+                "formas": {
+                  "reunida": {
+                    "props": {
+                      "fineza": true,
+                      "marcial": true,
+                      "ampla": true,
+                      "duas_maos": true,
+                      "energica": true,
+                      "mortal": "d12",
+                      "oscilante": true
+                    }
+                  }
+                },
+                "criacao": {
+                  "classificacao": "tatica",
+                  "deTecnica": true,
+                  "pcBase": 12,
+                  "pcCusto": 8,
+                  "pcEspaco": 1,
+                  "pcTotal": 21,
+                  "pcDano": 6,
+                  "pcCritico": 6,
+                  "pcPropriedades": 9,
+                  "limiteDano": 8,
+                  "limitePropriedades": 10,
+                  "habilidadeForaDoOrcamento": true
+                }
+              }
+            ]
+          },
+          "substitui": {}
+        },
+        {
+          "id": "dancarino-das-laminas",
+          "nome": "Dançarino das Lâminas",
+          "versao": "1.1.0",
+          "autor": "Afty",
+          "descricao": "Talento Geral que acumula Ritmo a cada ataque acertado. Cada acúmulo dá +1 em Testes de Acerto e em Reflexos, até 6, e errar um ataque tira um. O contador de Ritmo aparece na Simulação de Combate do criador e no painel de combate da Ficha e do Encontro.",
+          "paraRaw": "afty",
+          "permite": [],
+          "libera": [],
+          "adaptacoes": [],
+          "funcionamentos": [],
+          "feiticos": [],
+          "estadosCombate": [
+            {
+              "id": "ritmo",
+              "label": "Ritmo",
+              "tipo": "faixa",
+              "min": 0,
+              "max": 6,
+              "passo": 1,
+              "title": "Um acúmulo por ataque acertado, até 6. Errar um ataque tira um. Cada acúmulo dá +1 em Testes de Acerto e em Reflexos",
+              "maxSemTalento": 3,
+              "maxRequerTalento": "tal_dancarino_das_laminas"
+            }
+          ],
+          "catarse": null,
+          "acrescenta": {
+            "talentos": [
+              {
+                "id": "tal_dancarino_das_laminas",
+                "nome": "Dançarino das Lâminas",
+                "grupo": "geral",
+                "descricao": "Seu estilo se consiste em movimentos rápidos e agéis em campo de batalha, se movimentando, circulando e atacando seu oponente em uma velocidade sobre-humana, como se estivesse dançando em meio ao campo de batalha. Para cada ataque acertado você recebe um acúmulo de ritmo que fornece +1 em Testes de Acerto e Reflexos, até um limite máximo de 6 acúmulos. Com o máximo de acúmulos, você pode gastar sua reação para trocar um Teste de Resistência qualquer por um TR de Reflexos, ou utilizar sua reação para anular completamente a Reação Defensiva de um inimigo. Contudo, errar um ataque quebra o seu fluxo de movimento, fazendo com que você perca um acúmulo de ritmo por desacelerar.",
+                "requisitos": [],
+                "efeitos": [
+                  {
+                    "canal": "bonusAcerto",
+                    "expr": "dancarino_das_laminas_ritmo",
+                    "nome": "Ritmo",
+                    "duracao": "temporaria"
+                  },
+                  {
+                    "canal": "bonusTR",
+                    "alvo": "reflexos",
+                    "expr": "dancarino_das_laminas_ritmo",
+                    "nome": "Ritmo",
+                    "duracao": "temporaria"
+                  }
+                ]
+              }
+            ]
+          },
+          "substitui": {}
+        }
+      ],
+      "narratorNotes": "",
+      "combatState": {
+        "isActive": false,
+        "hpCurrent": 676,
+        "peCurrent": 142,
+        "almaCurrent": 100,
+        "activeConditions": [],
+        "customCounters": [],
+        "combatLog": []
+      },
+      "periciaAtributoManual": {
+        "feiticaria": "sabedoria"
+      },
+      "treinamentoAlvos": {
+        "naocongenito:treino_atributo_nao_congenito": {
+          "atributo": "destreza",
+          "pericia": "feiticaria"
+        }
+      },
+      "stats": {
+        "hpMax": 676,
+        "peMax": 142,
+        "defesa": 81,
+        "cd": 34
+      },
+      "updatedAt": "2026-09-07T23:54:21.244Z",
+      "editLog": [
+        "2026-09-07T17:43:48.442Z",
+        "2026-09-07T18:19:42.539Z",
+        "2026-09-07T18:27:34.871Z",
+        "2026-09-07T18:27:42.032Z",
+        "2026-09-07T20:21:08.572Z",
+        "2026-09-07T20:32:03.094Z",
+        "2026-09-07T20:53:47.116Z",
+        "2026-09-07T21:38:04.195Z",
+        "2026-09-07T23:32:03.699Z",
+        "2026-09-07T23:54:21.244Z"
+      ],
+      "id": "mtrrg58e-8pszcjk",
+      "folderId": null,
+      "isBuiltIn": false,
+      "createdAt": "2026-09-07T17:43:48.443Z",
+      "defesasDano": {},
+      "catarse": {
+        "saldo": 0,
+        "compras": []
+      },
+      "focosLivres": 0,
+      "periciaAtributo": "inteligencia",
+      "treinamentoEscolhas": {},
+      "formulaOverrides": {}
+    }
+  ],
+  "folders": []
+}

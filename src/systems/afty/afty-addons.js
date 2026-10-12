@@ -428,6 +428,11 @@ export const PRIMITIVAS = [
     nota: "Condição corporal do Clã Akutame, habilidades oculares e usos por descanso",
   },
   {
+    id: "olhinhosLu",
+    rotulo: "Olhinhos Lu",
+    nota: "Condição corporal, bônus de Intuição com olhos fechados e troca da perícia de Atenção",
+  },
+  {
     id: "criacaoArmas",
     rotulo: "Criação de Armas",
     nota: "A bancada de Pontos de Criação no editor de arma própria: orçamento por classificação, custo, técnica e espaços, com o preço de cada propriedade e os limites de gasto",

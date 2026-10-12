@@ -61,6 +61,7 @@ import {
 import {
   ETAPAS_POR_LINHA, focosGastos, avaliarRequisito, requisitosDaEtapa, rotuloAlvo, treinamentosDaOrigem,
   SEP_ALVO_ACAO, linhasComEscolhaFeiticos, atributoDoAlvo,
+  definirEscolhaTreino, opcoesDeEscolhaTreino, limiteEscolhaTreino,
 } from "./afty-treinamentos";
 import {
   createBlankVotoContratual, createBlankVotoMecanico, limiteVotosMecanicos, votosProntosDisponiveis,
@@ -189,6 +190,7 @@ import {
 } from "./afty-criacao-equipamentos-armas";
 import BloodfeastCard from "./ui/BloodfeastCard";
 import VislumbreCard from "./ui/VislumbreCard";
+import OlhinhosLuCard from "./ui/OlhinhosLuCard";
 import OlhosAgulhaCard from "./ui/OlhosAgulhaCard";
 import EspinhoCard from "./ui/EspinhoCard";
 import { habilidadeOcularAgulha } from "./afty-olhos-agulha";
@@ -1148,13 +1150,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
     }));
 
   const setTreinoEscolha = (lineId, escolhaId, valor) =>
-    setDraft((d) => ({
-      ...d,
-      treinamentoEscolhas: {
-        ...(d.treinamentoEscolhas || {}),
-        [lineId]: { ...(d.treinamentoEscolhas?.[lineId] || {}), [escolhaId]: valor || null },
-      },
-    }));
+    setDraft((d) => definirEscolhaTreino(d, lineId, escolhaId, valor, sistema));
 
   // Linha REPETÍVEL: upsert/remove de uma instância (alvo distinto → progresso).
   const setTreinoInstance = (lineId, alvo, prog) =>
@@ -2992,6 +2988,7 @@ function TabHabilidades({ draft, derived, patch, patchCore, toggleArmaDedicada, 
   const vislumbre = <>
     <BloodfeastCard draft={draft} derived={derived} onChange={(bloodfeast) => patch({ bloodfeast })} />
     {derived.vislumbre?.tem && <VislumbreCard vislumbre={derived.vislumbre} />}
+    {derived.olhinhosLu?.tem && <OlhinhosLuCard olhinhos={derived.olhinhosLu} />}
   </>;
   const olhosAgulha = <OlhosAgulhaCard derived={derived} patchCore={patchCore} addFeitico={addFeitico} updateFeitico={updateFeitico} removeFeitico={removeFeitico} />;
   /* O Espinho, pela mesma regra do Vislumbre: montado uma vez, consumido pelos
@@ -9304,7 +9301,9 @@ function ProgressoSegmentos({ progresso, total }) {
    `onSet(prog)` grava o novo progresso (bindado à linha/instância certa).
    `readOnly` = prévia só para consulta (sem ações, tudo em estado neutro). */
 function TreinoEtapas({ linha, progresso, attrEff, nd, ctxReq, onSet, readOnly = false, bloqueioExterno = null }) {
-  const completa = !readOnly && progresso >= ETAPAS_POR_LINHA;
+  const reqsCompleto = requisitosDaEtapa(linha.completo?.requisito)
+    .map((r) => avaliarRequisito(r, { attrEff, nd, ...ctxReq }));
+  const completa = !readOnly && progresso >= ETAPAS_POR_LINHA && reqsCompleto.every((r) => r.ok);
   return (
     <>
       <div className="pl-1.5 space-y-0.5">
@@ -9391,6 +9390,8 @@ function TreinoEtapas({ linha, progresso, attrEff, nd, ctxReq, onSet, readOnly =
       }`}>
         <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${completa ? "text-purple-300" : "text-slate-500"}`}>
           Treinamento Completo
+          {linha.completo.nome && <span className="ml-2 normal-case">{linha.completo.nome}</span>}
+          {!completa && reqsCompleto.map((req, i) => <RequisitoChip key={i} req={req} />)}
         </div>
         <p className={`text-[11px] leading-relaxed ${completa ? "text-purple-100/90" : "text-slate-400"}`}>
           {linha.completo.beneficio}
@@ -9598,15 +9599,33 @@ function TreinoLinha({
             </div>
           )}
 
-          {!repetivel && (linha.escolhas || []).filter((escolha) => progresso >= (escolha.etapa ?? 1)).map((escolha) => (
+          {!repetivel && (linha.escolhas || []).filter((escolha) => progresso >= (escolha.disponivelNaEtapa ?? escolha.etapa ?? 1)).map((escolha) => (
             <div key={escolha.id} className="mb-2.5 pl-6 max-w-xs">
               <FieldLabel>{escolha.label}</FieldLabel>
-              <Select
+              {escolha.multi ? (
+                <div className="flex flex-wrap gap-1">
+                  {opcoesDeEscolhaTreino(escolha, ctxReq.sistema).map((opcao) => {
+                    const valores = Array.isArray(escolhas[escolha.id]) ? escolhas[escolha.id] : [];
+                    const marcada = valores.includes(opcao.id);
+                    return <button key={opcao.id} type="button" aria-pressed={marcada}
+                      disabled={!marcada && valores.length >= limiteEscolhaTreino(escolha, ctxReq.bt)}
+                      onClick={() => onSetEscolha(linha.id, escolha.id, marcada
+                        ? valores.filter((id) => id !== opcao.id) : [...valores, opcao.id])}
+                      className={`px-2 py-1 text-xs rounded border disabled:opacity-40 ${marcada ? "border-purple-600 text-purple-200" : "border-slate-700 text-slate-400"}`}>
+                      {opcao.nome}
+                    </button>;
+                  })}
+                </div>
+              ) : escolha.imutavel && escolhas[escolha.id] ? (
+                <p className="text-xs text-slate-300" title="Escolha permanente">
+                  {opcoesDeEscolhaTreino(escolha, ctxReq.sistema).find((o) => o.id === escolhas[escolha.id])?.nome ?? escolhas[escolha.id]}
+                </p>
+              ) : <Select
                 value={escolhas[escolha.id] || ""}
                 onChange={(v) => onSetEscolha(linha.id, escolha.id, v)}
-                options={(escolha.opcoes || []).map((opcao) => ({ value: opcao.id, label: opcao.nome }))}
+                options={opcoesDeEscolhaTreino(escolha, ctxReq.sistema).map((opcao) => ({ value: opcao.id, label: opcao.nome }))}
                 placeholder="Selecione"
-              />
+              />}
             </div>
           ))}
 
@@ -9706,7 +9725,7 @@ function TreinoLinha({
               progresso={progresso}
               attrEff={attrEff}
               nd={nd}
-              ctxReq={ctxReq}
+              ctxReq={{ ...ctxReq, escolhasTreino: escolhas }}
               onSet={(p) => onSetProgresso(linha.id, p)}
               bloqueioExterno={bloqueioAlvos}
             />
@@ -15607,6 +15626,10 @@ function TabInterludios({
   // chamador os fornece, então esquecer isto aqui seria requisito sempre aberto.
   const ctxReq = {
     aptidoes: derived.aptidoesEscolhidas ?? [],
+    atencao: derived.atencao,
+    periciaProf: Object.fromEntries((derived.testes?.pericias ?? []).map((p) => [p.id, p.prof])),
+    sistema,
+    bt: derived.maestria,
     niveisAptidao: derived.aptidao?.efetivo ?? null,
     treinamentos: treinos,
     // O clã, para o requisito `cla`. `null` é "sem clã" e reprova; esquecer o

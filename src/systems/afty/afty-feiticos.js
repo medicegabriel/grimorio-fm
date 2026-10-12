@@ -548,10 +548,16 @@ export function custoPadrao(nivel) {
  */
 export function calcularFeiticoPersonalizado(feitico, ctx = {}) {
   const f = feitico || {};
-  const custoPE = custoPadrao(f.nivel);
+  /* Um Personalizado pode ter custo determinado pela regra da mesa, como uma
+     tabela por grau ou a soma de várias invocações. Nesses casos não existe um
+     único número honesto para o motor reduzir. O texto ocupa o lugar do custo
+     numérico na Ficha e o custo padrão deixa de aparecer. */
+  const custoPETexto = String(f.custoPETexto ?? "").trim() || null;
+  const custoPE = custoPETexto ? null : custoPadrao(f.nivel);
   return {
     custoPE,
     custoPEBase: custoPE,
+    custoPETexto,
     reducoesCustoPE: [],
     avisos: [],
     acao: f.acaoPersonalizada || null,
@@ -4408,6 +4414,7 @@ export function createBlankFeitico() {
     resolucaoTexto: "",
     comCd: true,
     rolagens: [],
+    custoPETexto: "",
     // --- custo especial pago ao ativar ---
     custoVidaAtivacao: null,
   };
@@ -5097,6 +5104,7 @@ function linhaDoFeitico(f, ctx, creature) {
       // Ritual seguirem mostrando de onde saíram.
       custoPE: calc?.liberacao?.custoPE ?? calc?.custoPE ?? null,
       custoPEBase: calc?.custoPEBase ?? calc?.custoPE ?? null,
+      custoPETexto: calc?.custoPETexto ?? null,
       reducoesCustoPE: calc?.reducoesCustoPE ?? [],
       partesCustoPE: partesCustoFeitico(calc),
       valor: valor ?? null,

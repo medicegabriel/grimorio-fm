@@ -1092,6 +1092,7 @@ export default function AbaAcoes({
   controleExpansao = null,
   exaustaoTecnica = null,
   vislumbre = null,
+  olhinhosLu = null,
   olhosAgulha = null,
   manipulacaoCeu = null,
   /* ⚠ NÓ PRONTO também: o montador do Golpe Especial (2026-09-24) paga PE e
@@ -1122,6 +1123,7 @@ export default function AbaAcoes({
       {/* Antes do Rápido: os olhos mudam o custo em PE de tudo que vem abaixo. */}
       {bloodfeast}
       {vislumbre}
+      {olhinhosLu}
       {olhosAgulha}
       {manipulacaoCeu}
       {/* Antes do Rápido e do Dano: reunir ou dividir é a primeira decisão da

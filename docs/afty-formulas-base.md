@@ -12,6 +12,24 @@ FLOOR, `INT`=parte inteira, `MAIOR(intervalo;k)`=k-ésimo maior, `VERDADEIRO`=TR
 
 ## Correções estruturais ao que estava assumido
 
+### Atenção de Olhinhos Lu (2026-10-12)
+
+Autor confirmou condição corporal e bônus adicional de `teto(3 * cl)`
+à Intuição com olhos fechados. `cl` é Controle e Leitura efetivo.
+O controle opcional de Atenção com Intuição usa
+`10 + Intuição da cópia de Atenção + efeitos diretos de Atenção`.
+Essa cópia recebe os efeitos direcionados originalmente à Percepção,
+incluindo Talentos e Habilidades Lendárias. Preserva o atributo e o treino
+escolhido de Intuição, os bônus próprios e o maior treino concedido.
+Não duplica efeitos globais nem converte dados extras em valor passivo.
+As linhas reais de Percepção e Intuição não recebem a transferência.
+Olhos abertos desativam o bônus corporal e a troca, mesmo que a opção
+de Atenção com Intuição ainda esteja marcada. Regra em
+`docs/olhinhos-lu-regras.md`, pacote em `addons/olhinhos-lu.json`.
+Na versão 1.1.0, os estados vêm diretamente de `creature.combate`, como
+no Vislumbre Celeste, e os efeitos emitidos ficam fora do pool exclusivo.
+O resumo do card e o painel de Ações leem a mesma fonte mesmo sem Em Combate.
+
 ### Acerto Amaldiçoado no Pugilato criado (2026-10-03)
 
 Faixas e Manoplas criadas pela receita `niveis` da Criação de Equipamentos podem

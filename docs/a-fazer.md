@@ -33,6 +33,44 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 ---
 
 ## PERGUNTAS AO AUTOR
+
+### Conciliar aprovação inicial e evolução do arsenal de Ryuma
+**Onde:** `docs/arsenal-ryuma-aprovacao-inicial.md`, `addons/arsenal-de-ryuma.json`
+**Situação:** nova fonte inicial tem Murasama +2 Percepção situacional em
+vez de BT e Yagen penalidade -6 em vez de 0. Murasama tem crítico 19 na
+fonte, cadastro usa base 20 com Certeira para resultado 19. Dano cadastrado
+2d10 já inclui Potente, conforme resposta anterior. Corrente está ausente.
+**Precisa:** esclarecer se crítico 19 e dano 2d10 iniciais são bases ou
+totais com encantamentos, pergunta enviada. Confirmar equivalência de Peso
+para espaços (Yagen Peso 1, Corrente Peso 0,5), preservando aprovações
+posteriores de Grau Especial. Revisão não alterou ficha nem addon.
+**Anotado:** 2026-10-08, aprovação inicial encontrada após a integração.
+**Nota:** autor confirmou ausência de Manejo Especial. Não é mais campo
+pendente, não conceder a habilidade automaticamente. Export foi verificado
+sem a habilidade, sem treino `manejo_arma` e sem vaga adicional de treino.
+Novas perguntas enviadas: correções de +2 Percepção e -6 penalidade/carga 1,
+base versus total do crítico, e desbloqueio do próximo encantamento pelo
+Treino de Manejo de Arma completo daquela arma. Remoto igual ao HEAD,
+publicação condicionada a resolver diferenças de regra.
+
+### Definir regras ausentes das habilidades especiais do arsenal de Ryuma
+**Onde:** `addons/arsenal-de-ryuma.json`, `docs/arsenal-ryuma-relatorio.md`
+**Situação:** oito itens cadastrados, export atualizado e passivas definidas
+automatizadas. Procedimentos que dependem da mesa têm texto integral, sem
+automação fictícia ou consumo automático. Cadastro e valores confirmados
+foram concluídos, não são mais perguntas abertas.
+**Precisa:** definir dados ausentes de Fatal/Mortal/Versátil, tipos físicos
+e alcances ausentes. Confirmar conversão PE/acúmulos, dado liberado,
+arredondamentos e destruição de arma da Dragon Bone. Definir cargas e
+substituição de custo de Perceber o Ar no Impulso personalizado. Definir
+duração do modo Radiante e níveis/acúmulo de Ler Intenções. Pulo não possui
+canal de cálculo. Manter esses pontos descritivos até confirmação.
+Dragon Bone tem cinco encantamentos confirmados para quatro vagas normais,
+mantidos com aviso. Falta informar o grau de Destruidora ou origem da vaga.
+Material Pesado tem requisito de revestimento Médio/Robusto por ID, sem
+equivalência definida para Lobo Saltitante. Não concede Fortitude até isso.
+**Anotado:** 2026-10-08, limites da automação dos oito equipamentos.
+
 ### Vampiro da Máscara de Pedra: leituras para confirmar e o que segue de mesa
 **Onde:** `addons/vampiro-mascara-de-pedra.json`
 **Situação:** o autor decidiu quatro leituras em 2026-10-12 (as penalidades de atributo da fome se
@@ -1322,6 +1360,18 @@ transcrever uma habilidade que fale de Guarda saber que o cano já está lá.
 ---
 
 ## AFTY — outros
+
+### Conferir Olhinhos Lu no navegador
+**Onde:** `addons/olhinhos-lu.json`, `src/systems/afty/ui/OlhinhosLuCard.jsx`,
+`src/systems/afty/ficha/PainelOlhinhosLu.jsx`
+**Situação:** versão 1.1.0 segue o Vislumbre Celeste, com card de Habilidades
+e painel de Ações na Ficha e no Encontro. ESLint, build e testes de lógica
+e renderização passaram. Navegador disponível não acessou o servidor local,
+retornando timeout em 127.0.0.1 e localhost.
+**Precisa:** conferir controles no criador, Ficha Final e Encontro,
+Intuição e Atenção com olhos abertos e fechados, fontes e texto integral,
+nas larguras de computador e telefone, após integrar o motor ao site.
+**Anotado:** 2026-10-12, Olhinhos Lu.
 
 ### Lapidação Prateada: alcance e área de Feitiço e de Aptidão não têm canal
 **Onde:** `addons/yna.json` (Clã Getsurin) e `src/systems/afty/afty-feiticos.js` (a calculadora de alcance e área)

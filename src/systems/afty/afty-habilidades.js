@@ -7454,6 +7454,7 @@ export function resolveHabilidades(
   {
     nd = 1, almaLivreEspecializacao = null, almaLivreNivelAjuste = 0, concedidasSessao = [],
     escolhasConcedidasSessao = {}, sistema = undefined,
+    concedidasTreino = [],
   } = {},
 ) {
   const niveisPorEspec = niveisPorEspecializacao(escolhidasEspec);
@@ -7464,6 +7465,7 @@ export function resolveHabilidades(
   const concedidas = [...new Set([
     ...habilidadesConcedidasPelasEspecializacoes(escolhidasEspec, sistema),
     ...(Array.isArray(concedidasSessao) ? concedidasSessao.filter((id) => BY_ID[id]) : []),
+    ...(Array.isArray(concedidasTreino) ? concedidasTreino.filter((id) => BY_ID[id]) : []),
   ])];
   const concedidasSet = new Set(concedidas);
   const vistos = new Set();

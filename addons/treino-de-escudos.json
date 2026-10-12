@@ -1,0 +1,69 @@
+{
+  "id": "treino-de-escudos",
+  "nome": "Treino de escudos",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "acrescenta": {
+    "treinamentos": [
+      {
+        "id": "escudos",
+        "nome": "Treino de escudos",
+        "exibirNaFicha": true,
+        "escolhas": [
+          {
+            "id": "encantamento",
+            "label": "Encantamento adicional",
+            "etapa": 4,
+            "disponivelNaEtapa": 3,
+            "imutavel": true,
+            "pool": "encantamentos",
+            "tipoEquipamento": "escudo"
+          },
+          {
+            "id": "tipos_rd",
+            "label": "Tipos de dano adicionais",
+            "etapa": 4,
+            "multi": true,
+            "limiteExpr": "metade(bt)",
+            "pool": "tiposDano",
+            "categorias": ["elemental", "biologico"]
+          }
+        ],
+        "etapas": [
+          {
+            "n": 1,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "A sua Defesa aumenta em +1 em quanto estiver empunhando um escudo",
+            "efeitos": [{ "canal": "defesa", "expr": "1", "requerEquipamento": "escudo" }]
+          },
+          {
+            "n": 2,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Você recebe +1 de Fortitude enquanto estiver empunhando um escudo.",
+            "efeitos": [{ "canal": "bonusTR", "alvo": "fortitude", "expr": "1", "requerEquipamento": "escudo" }]
+          },
+          {
+            "n": 3,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Você recebe 4 de RD Física enquanto estiver empunhando um escudo. (Não é RD do Escudo para fins de acúmulos com Habilidades e etc)",
+            "efeitos": [{ "canal": "rdFisico", "expr": "4", "requerEquipamento": "escudo" }]
+          },
+          {
+            "n": 4,
+            "focos": 2,
+            "requisito": { "tipo": "escolhaTreino", "id": "encantamento", "label": "Encantamento adicional" },
+            "beneficio": "Enquanto estiver empunhando um escudo, ele é considerado possuindo +1 Encantamento adicional. Que deve ser escolhido previamente, e essa escolha não pode ser alterada."
+          }
+        ],
+        "completo": {
+          "beneficio": "Seu escudo passa a conceder a RD dele contra uma quantidade de tipos de dano adicional igual a Metade do BT (Exceto Étereos, Alma e Energia Reversa)",
+          "estendeRdEquipamento": { "tipo": "escudo", "escolha": "tipos_rd" }
+        }
+      }
+    ]
+  }
+}

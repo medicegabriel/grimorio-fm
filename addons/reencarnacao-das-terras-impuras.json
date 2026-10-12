@@ -1,0 +1,101 @@
+{
+  "id": "reencarnacao-das-terras-impuras",
+  "nome": "Reencarnação das Terras Impuras",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Técnica Amaldiçoada de reconstrução por DNA. Acrescenta seis modelos de Feitiço Personalizado de Nível 0. Todos usam Ritual Estendido. Os corpos sem alma são cadastrados como Shikigamis e usam o custo nativo de invocação por grau. O acervo de corpos é ilimitado, mas o limite normal de Shikigamis simultâneos em campo continua valendo.",
+  "funcionamentos": [
+    {
+      "id": "reencarnacao_das_terras_impuras",
+      "nome": "Reencarnação das Terras Impuras",
+      "descricao": "Uma Técnica Amaldiçoada que reconstrói corpos a partir dos vestígios deixados de DNA de terceiros, replicando perfeitamente suas memórias físicas e as informações de suas Técnicas Amaldiçoadas e, caso o portador decida, podendo até mesmo trazer a alma de volta por completo, assim trazendo alguém de volta à vida.\n\nUma Técnica Amaldiçoada que permite ao usuário reconstruir e trazer corpos de volta à existência por meio de seu DNA, utilizando receptáculos apropriados para servir como base física, podendo, inclusive, usar o próprio corpo como recipiente.\n\nAo inserir o material genético do indivíduo desejado, o usuário é capaz de restaurar não apenas sua estrutura corporal, mas também todas as informações gravadas em sua essência, incluindo:\n\n- Memórias físicas\n- Habilidades\n- Técnica Amaldiçoada original\n\n## Corpos sem alma\n\nUma ramificação especial desta Técnica Amaldiçoada manifesta-se quando o usuário assume o papel de Controlador, adquirindo a capacidade de manipular corpos reconstituídos como extensões diretas de sua própria vontade.\n\nAo reviver um indivíduo por meio de um receptáculo apropriado, seja um corpo preparado ou até mesmo um cadáver amaldiçoado, o usuário pode optar por restaurar apenas as informações físicas e espirituais ligadas ao corpo e à Técnica Amaldiçoada do alvo, sem trazer sua alma de volta.\n\nO usuário da técnica é incapaz de utilizar diretamente as técnicas de seus corpos por qualquer meio que não seja diretamente através das invocações.\n\nO resultado é uma casca vazia, desprovida de consciência, emoções ou vontade própria, transformada em uma ferramenta viva completamente subordinada ao comando absoluto do usuário. Não existe limite para a quantidade de corpos que podem ser revividos e mantidos no acervo, mas o limite normal de Shikigamis simultâneos em campo continua valendo.\n\nApesar de manter as capacidades do indivíduo original, o corpo reanimado jamais alcança o mesmo nível de desempenho que possuía em vida. Assim, o corpo se tornará uma ficha de invocação, mantendo as técnicas e afinidades que possuía em vida.\n\nO domínio absoluto sobre o corpo reanimado está diretamente vinculado à compatibilidade entre o Grau do usuário e o Grau do indivíduo ressuscitado. O usuário só pode controlar plenamente corpos de indivíduos do mesmo grau ou inferior ao seu. Caso tente reanimar alguém de grau superior, o corpo poderá até ser reconstruído, porém não poderá ser dominado adequadamente, tornando-se instável, resistente ao comando ou até completamente incontrolável.\n\nTodo corpo revivido através desta Técnica Amaldiçoada deve ser adaptado como uma Invocação Amaldiçoada, tornando-se uma extensão direta do ritual do usuário. Para fins mecânicos, qualquer indivíduo reanimado passa a ser tratado como um Shikigami, mesmo preservando suas técnicas, características e traços originais.\n\nA adaptação é baseada no grau original do indivíduo revivido, o qual permanece o mesmo após sua transformação em invocação, seguindo as regras de invocações estabelecidas pelo sistema. A Vida do corpo reanimado deve ser recalculada utilizando o método padrão de invocações. Entretanto, o bônus fixo recebido por grau é dobrado, representando a estabilidade artificial concedida pelo ritual de reconstrução.\n\nAs perícias que o indivíduo possuía em vida são mantidas normalmente. Caso a quantidade fique abaixo do limite permitido para invocações de seu grau, novas perícias podem ser adicionadas até alcançar o valor adequado.\n\nHabilidades e características especiais do corpo revivido devem ser adaptadas conforme os limites permitidos para invocações de seu grau. Devido à conversão, é comum que técnicas sofram adaptações de custo ou potência, RD sejam mantidas junto de aptidões amaldiçoadas e técnica, características precisem ser reinterpretadas para funcionarem como uma invocação e certas habilidades exijam aumento de custo para manter equilíbrio dentro do sistema.\n\nApesar disso, o corpo preserva sua essência original, mantendo seu estilo de combate, técnicas e identidade como uma manifestação reanimada daquilo que foi em vida.\n\n## Custo para trazer ao campo\n\n| Grau do corpo | Custo |\n| --- | --- |\n| Quarto Grau | 2 Pontos de Energia |\n| Terceiro Grau | 4 Pontos de Energia |\n| Segundo Grau | 6 Pontos de Energia |\n| Primeiro Grau | 8 Pontos de Energia |\n| Grau Especial | 12 Pontos de Energia |"
+    }
+  ],
+  "feiticos": [
+    {
+      "id": "reviver_apenas_o_corpo",
+      "nome": "Reviver Apenas o Corpo",
+      "tipo": "personalizado",
+      "nivel": 0,
+      "acaoPersonalizada": "Ritual Estendido",
+      "alcanceTexto": "Receptáculo apropriado",
+      "alvoTexto": "DNA de um indivíduo morto",
+      "duracaoTexto": "",
+      "resolucaoTexto": "O corpo sem alma torna-se uma Invocação Amaldiçoada. O custo para trazê-lo ao campo é definido pelo grau do corpo. O controle pleno exige que o corpo seja do mesmo grau ou inferior ao usuário.",
+      "custoPETexto": "2/4/6/8/12 PE",
+      "comCd": false,
+      "descricao": "Consiste em reviver apenas o corpo, sem sua alma, transformando-o em uma casca vazia desprovida de consciência e vontade própria, completamente subordinada ao controle absoluto do usuário.\n\nO corpo se torna uma ficha de invocação e é tratado como um Shikigami, mantendo as técnicas, afinidades, perícias, aptidões amaldiçoadas, RD, características e traços que possuía em vida, adaptados aos limites permitidos para uma invocação do seu grau. Seu grau original permanece o mesmo.\n\nA Vida é recalculada pelo método padrão de invocações, mas o bônus fixo recebido por grau é dobrado. O usuário é incapaz de utilizar diretamente as técnicas de seus corpos por qualquer meio que não seja através das invocações.\n\nNão existe limite para a quantidade de corpos revividos no acervo. Em campo continua valendo o limite normal de Shikigamis simultâneos."
+    },
+    {
+      "id": "restaurar_corpo_e_alma",
+      "nome": "Restaurar Corpo e Alma",
+      "tipo": "personalizado",
+      "nivel": 0,
+      "acaoPersonalizada": "Ritual Estendido",
+      "alcanceTexto": "Receptáculo apropriado",
+      "alvoTexto": "DNA de um indivíduo morto",
+      "duracaoTexto": "Permanente",
+      "resolucaoTexto": "Pessoas mortas por pactos não podem retornar à vida de nenhuma forma. O custo é definido pelo grau do indivíduo revivido.",
+      "custoPETexto": "2/4/6/8/12 PE",
+      "comCd": false,
+      "descricao": "Permite restaurar também a alma do indivíduo, devolvendo-lhe sua identidade, consciência e autonomia, efetivamente trazendo-o de volta à vida de forma permanente.\n\nAo ser revivido, o alvo retorna preservando corpo e aparência originais, memórias e consciência, autonomia e livre-arbítrio, Técnicas Amaldiçoadas e habilidades adquiridas em vida, pactos e vínculos espirituais previamente estabelecidos.\n\nPessoas mortas por pactos não podem retornar à vida de nenhuma forma. Diferente de uma simples invocação, este processo restaura integralmente a existência do indivíduo, permitindo seu verdadeiro retorno à vida."
+    },
+    {
+      "id": "receptaculo_temporario",
+      "nome": "Receptáculo Temporário",
+      "tipo": "personalizado",
+      "nivel": 0,
+      "acaoPersonalizada": "Ritual Estendido",
+      "alcanceTexto": "Pessoal ou aliado",
+      "alvoTexto": "Usuário ou aliado que consuma o DNA",
+      "duracaoTexto": "Até o fim da cena",
+      "resolucaoTexto": "Teste de Vontade contra a CD de controle do cadáver: Quarto Grau 5, Terceiro Grau 10, Segundo Grau 15, Primeiro Grau 20 e Grau Especial 25. Os resultados são narrativos.",
+      "custoPETexto": "2/4/6/8/12 PE",
+      "comCd": true,
+      "descricao": "O usuário, ou um aliado, pode consumir uma parte do DNA de uma pessoa ou entidade para transformar temporariamente o próprio corpo em seu receptáculo.\n\nDurante a transformação, que dura até o fim da cena, o alvo recebe a aparência e traços físicos do indivíduo, memórias físicas e instintos de combate, acesso às suas Técnicas Amaldiçoadas e parte de suas capacidades e atributos.\n\nAo ativar o ritual, deve ser realizado um Teste de Vontade contra a CD de controle do cadáver, baseada no grau da entidade. A CD é 5 para Quarto Grau e aumenta em +5 para cada grau, chegando a 25 no Grau Especial.\n\nEm um sucesso, o alvo mantém controle total do próprio corpo, pode utilizar a ficha da entidade e assume normalmente suas técnicas, perícias e características.\n\nEm uma falha, a transformação ocorre normalmente, mas o alvo perde o controle do corpo para a alma da entidade até o fim da cena e perde o acesso à ficha, que fica sob controle do Mestre.\n\nEm uma falha crítica, a alma da entidade também é invocada e ela pode escolher sobrescrever permanentemente o hospedeiro."
+    },
+    {
+      "id": "voto_vinculativo_forcado",
+      "nome": "Voto Vinculativo Forçado",
+      "tipo": "personalizado",
+      "nivel": 0,
+      "acaoPersonalizada": "Ritual Estendido",
+      "alcanceTexto": "Corpo sob controle",
+      "alvoTexto": "Corpo reanimado ou receptáculo instável",
+      "duracaoTexto": "Variável",
+      "resolucaoTexto": "O voto não pode ser forçado sobre quem foi trazido de volta junto com a alma. O sacrifício explosivo perde o corpo permanentemente.",
+      "custoPETexto": "2/4/6/8/12 PE",
+      "comCd": false,
+      "descricao": "Como extensão de seu domínio sobre corpos reconstruídos e receptáculos sob sua influência, o usuário é capaz de impor Votos Vinculativos diretamente sobre aqueles que foram trazidos de volta por sua técnica.\n\nAo estabelecer esse vínculo, o usuário grava uma condição amaldiçoada na própria essência do alvo, conectando sua existência ao ritual que o mantém presente. Diferente de um acordo convencional, esse voto não depende de consentimento pleno. Ele pode ser forçado sobre corpos reanimados e receptáculos instáveis.\n\nAqueles trazidos por sua técnica junto à alma não estarão sob controle do usuário em relação ao voto forçado.\n\nO usuário pode forçar um Voto Vinculativo ao corpo sob seu controle, fazendo-o se sacrificar e explodir, perdendo assim o corpo permanentemente."
+    },
+    {
+      "id": "realizacao_de_ritual",
+      "nome": "Realização de Ritual",
+      "tipo": "personalizado",
+      "nivel": 0,
+      "acaoPersonalizada": "Ritual Estendido",
+      "alcanceTexto": "Pessoal",
+      "alvoTexto": "Próprio",
+      "duracaoTexto": "Variável",
+      "resolucaoTexto": "Os testes relacionados diretamente à Técnica Amaldiçoada recebem metade do nível do usuário. A aplicação é narrativa.",
+      "custoPETexto": "2/4/6/8/12 PE",
+      "comCd": false,
+      "descricao": "A Realização de Ritual representa o fundamento absoluto desta Técnica Amaldiçoada, sendo a base sobre a qual todos os seus processos e manifestações são sustentados. Todo ritual ligado à manipulação, reconstrução e controle de corpos depende diretamente da precisão e domínio desta habilidade.\n\nPor meio dela, o usuário desenvolve uma afinidade excepcional com os próprios rituais, permitindo maior estabilidade e controle sobre tudo aquilo que estiver diretamente relacionado à sua técnica.\n\nEnquanto estiver realizando ações ligadas diretamente à sua Técnica Amaldiçoada, o usuário pode somar metade de seu nível em todos os testes relacionados ao seu uso, incluindo testes para resistir à influência ou sobreposição de corpos e almas durante o uso de receptáculos, testes para manter controle sobre corpos reanimados ou invocações instáveis, testes para recuperar o domínio sobre corpos que tenham perdido o controle e testes de estabilidade ritual durante processos de ressurreição ou manifestação."
+    },
+    {
+      "id": "manifestacao_em_massa",
+      "nome": "Manifestação em Massa",
+      "tipo": "personalizado",
+      "nivel": 0,
+      "acaoPersonalizada": "Ritual Estendido",
+      "alcanceTexto": "9 metros",
+      "alvoTexto": "Corpos reanimados do acervo",
+      "duracaoTexto": "Imediata",
+      "resolucaoTexto": "Invoca até o limite simultâneo de invocações da ficha. O custo é a soma do custo de todos os corpos trazidos ao campo.",
+      "custoPETexto": "Soma dos corpos",
+      "comCd": false,
+      "descricao": "O usuário acelera o processo ritualístico de manifestação, focando-se em trazer ao campo o maior número possível de corpos reanimados de uma única vez, estabelecendo rapidamente domínio sobre o campo de batalha.\n\nAo utilizar esta habilidade, o usuário pode invocar uma quantidade de corpos reanimados igual ao número máximo de invocações que é capaz de manter simultaneamente em campo, posicionando-os em espaços desocupados dentro de até 9 metros de distância.\n\nO custo da habilidade é equivalente à soma total do custo de todos os corpos invocados através da técnica."
+    }
+  ]
+}

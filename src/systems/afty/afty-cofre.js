@@ -77,7 +77,7 @@ export const CAMPOS_FUNCIONAMENTO = ["nome", "descricao"];
 export const CHAVES_TEXTO_ADDON = new Set([
   "descricao", "lore", "texto", "nota", "preReq", "restricoes",
   // Os modelos de Feitiço que um pacote pode trazer usam os mesmos campos da ficha.
-  "conjuracaoTexto", "alcanceTexto", "alvoTexto", "duracaoTexto", "resolucaoTexto",
+  "conjuracaoTexto", "alcanceTexto", "alvoTexto", "duracaoTexto", "resolucaoTexto", "custoPETexto",
 ]);
 
 const MARCA_FUNCIONAMENTO = "Funcionamento protegido";

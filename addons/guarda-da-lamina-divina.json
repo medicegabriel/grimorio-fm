@@ -1,0 +1,46 @@
+{
+  "id": "guarda-da-lamina-divina",
+  "nome": "Treino Guarda da Lâmina Divina",
+  "versao": "1.0.0",
+  "paraRaw": "afty",
+  "acrescenta": {
+    "treinamentos": [{
+      "id": "guarda",
+      "nome": "Treino Guarda da Lâmina Divina",
+      "exibirNaFicha": true,
+      "etapas": [
+        {
+          "n": 1, "focos": 1, "requisito": null,
+          "beneficio": "Você recebe +1 Nível de dano enquanto estiver empunhando uma arma do grupo espada.",
+          "efeitos": [{ "canal": "nivelDano", "alvo": "grupo:espada", "expr": "1", "requerEquipamento": "arma", "grupoEquipamento": "espada" }]
+        },
+        {
+          "n": 2, "focos": 1, "requisito": null,
+          "beneficio": "Você recebe +2 de Percepção enquanto estiver empunhando uma arma do grupo espada.",
+          "efeitos": [{ "canal": "bonusPericia", "alvo": "percepcao", "expr": "2", "requerEquipamento": "arma", "grupoEquipamento": "espada" }]
+        },
+        {
+          "n": 3, "focos": 2,
+          "requisito": { "tipo": "atributo", "attr": "sabedoria", "valor": 14 },
+          "beneficio": "[Sabedoria 14] Você se torna mestre em Percepção enquanto estiver empunhando uma arma do grupo espada. Caso já seja, adicione +2 em testes nessa perícia.",
+          "efeitos": [
+            { "tipo": "profPericia", "pericia": "percepcao", "valor": 2, "semCredito": true, "requerEquipamento": "arma", "grupoEquipamento": "espada" },
+            { "tipo": "pericia", "pericia": "percepcao", "valor": 2, "quandoProf": 2, "requerEquipamento": "arma", "grupoEquipamento": "espada" }
+          ]
+        },
+        {
+          "n": 4, "focos": 3,
+          "requisito": [
+            { "tipo": "atributo", "attr": "destreza", "valor": 22 },
+            { "tipo": "atributo", "attr": "sabedoria", "valor": 14 }
+          ],
+          "beneficio": "[Pré-requisito: Destreza 22 e Sabedoria 14] Você recebe +3 de Defesa enquanto estiver empunhando uma arma do grupo espada.",
+          "efeitos": [{ "canal": "defesa", "expr": "3", "requerEquipamento": "arma", "grupoEquipamento": "espada" }]
+        }
+      ],
+      "completo": {
+        "beneficio": "Enquanto uma criatura estiver sob o efeito de Ler intenções usado por você, ela recebe desvantagem em jogadas de ataque contra você."
+      }
+    }]
+  }
+}

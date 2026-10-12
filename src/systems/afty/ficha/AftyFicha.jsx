@@ -59,6 +59,7 @@ import AbaAcoes from "./abas/AbaAcoes";
 import PainelDharma from "./PainelDharma";
 import PainelDeAdaptacao from "./PainelDeAdaptacao";
 import PainelDoVislumbre from "./PainelDoVislumbre";
+import PainelOlhinhosLu from "./PainelOlhinhosLu";
 import PainelOlhosAgulha from "./PainelOlhosAgulha";
 import PainelDoGolpeEspecial from "./PainelDoGolpeEspecial";
 import PainelManipulacaoCeu from "./PainelManipulacaoCeu";
@@ -685,6 +686,7 @@ export default function AftyFicha({
         derived={derived}
         adaptacao={<PainelDeAdaptacao derived={derived} onSessao={atualiza} />}
         vislumbre={<PainelDoVislumbre derived={derived} sessao={sessao} onSessao={atualiza} />}
+        olhinhosLu={<PainelOlhinhosLu derived={derived} onSessao={atualiza} />}
         olhosAgulha={<PainelOlhosAgulha derived={derived} sessao={sessao} onSessao={atualiza} />}
         manipulacaoCeu={<PainelManipulacaoCeu derived={derived} onEstado={alteraEstado} />}
         armasTransformaveis={<ArmasTransformaveis derived={derived} sessao={sessao} onSessao={atualiza} />}

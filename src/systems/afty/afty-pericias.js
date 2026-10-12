@@ -1959,6 +1959,37 @@ export function resolveTestes(creature, ctx = {}) {
   );
   const gastos = gastoPericias + (trForaDoCaixa ? 0 : gastoResistencias);
 
+  // A troca afeta somente Atenção. As linhas e os orçamentos originais ficam
+  // intactos, e os efeitos já avaliados não voltam a ler o próprio resultado.
+  const trocaAtencao = !ctx.semTrocaAtencao && (ef?.detalhes ?? [])
+    .find((e) => e.canal === "periciaAtencao" && e.valor > 0 && !e.suplantado
+      && e.alvo !== "percepcao" && pericias.some((p) => p.id === e.alvo));
+  let periciaDaAtencao = pericias.find((p) => p.id === "percepcao");
+  if (trocaAtencao) {
+    const destino = trocaAtencao.alvo;
+    const canais = new Set(["bonusPericia", "proficienciaPericia", "periciaFixa", "dadosPericia"]);
+    const alvoNovo = (canal, alvo) => canais.has(canal) && typeof alvo === "string"
+      && (alvo === "percepcao" || alvo.startsWith("percepcao:"))
+      ? destino + alvo.slice("percepcao".length) : alvo;
+    const porAlvo = {};
+    for (const [canal, alvos] of Object.entries(ef.porAlvo ?? {})) {
+      porAlvo[canal] = {};
+      for (const [alvo, valor] of Object.entries(alvos)) {
+        const novo = alvoNovo(canal, alvo);
+        // Valor fixo é oferta, não soma. O resolvedor usa os detalhes abaixo.
+        porAlvo[canal][novo] = canal === "proficienciaPericia"
+          ? Math.max(porAlvo[canal][novo] ?? 0, valor)
+          : (porAlvo[canal][novo] ?? 0) + valor;
+      }
+    }
+    const efeitos = {
+      ...ef, porAlvo,
+      detalhes: (ef.detalhes ?? []).map((e) => ({ ...e, alvo: alvoNovo(e.canal, e.alvo) })),
+    };
+    periciaDaAtencao = resolveTestes(creature, { ...ctx, efeitos, semTrocaAtencao: true })
+      .pericias.find((p) => p.id === destino);
+  }
+
   return {
     pericias,
     resistencias,
@@ -1976,7 +2007,11 @@ export function resolveTestes(creature, ctx = {}) {
        Perícias do jogador desenhar as duas escolhas. `null` na criatura. */
     trDaClasse: ctx.trDaClasse ?? null,
     // Atenção = 10 + o bônus de Percepção (Percepção passiva).
-    atencao: 10 + (pericias.find((p) => p.id === "percepcao")?.bonus ?? 0),
+    atencao: 10 + (periciaDaAtencao?.bonus ?? 0),
+    ...(trocaAtencao ? {
+      atencaoPericia: periciaDaAtencao.id,
+      atencaoPartes: periciaDaAtencao.partes.filter((p) => typeof p.valor === "number"),
+    } : {}),
   };
 }
 

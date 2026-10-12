@@ -170,6 +170,7 @@ export const EFEITO_CANAIS = [
   { id: "voo",           label: "Deslocamento de Voo",   nota: "em metros, aceita 1,5. Zero é não voar. As condições e o multiplicador de movimento valem nele, e Caído o zera" },
   { id: "movimentoMult", label: "Multiplicador de Movimento", nota: "multiplica o movimento final. A Expansão de Domínio usa 2" },
   { id: "atencao",       label: "Atenção" },
+  { id: "periciaAtencao", label: "Perícia de Atenção", alvo: "pericia", nota: "troca a perícia da Atenção e transfere os efeitos direcionados de Percepção somente para esse cálculo" },
   { id: "iniciativa",    label: "Iniciativa" },
   // ⚠ Conta DEGRAUS de categoria, e não metros: +1 leva Médio a Grande. A
   // criatura parte sempre de Médio, e este canal é o ÚNICO jeito de tirá-la de
@@ -714,7 +715,7 @@ const GRUPOS_DE_CANAL = [
   // outro canal e está em Orçamentos.
   ["Atributos e Aptidões", ["atributo", "limiteAtributo", "defesaAtributo", "hpAtributo", "ataqueAtributo", "nivelAptidao", "limiteAptidao", "imbuicoesEstilo"]],
   ["Perícias e Resistências", [
-    "bonusPericia", "periciaFixa", "proficienciaPericia", "penalidadeArmadura", "dadosPericia", "bonusTR", "dadosTR", "proficienciaTR",
+    "bonusPericia", "periciaAtencao", "periciaFixa", "proficienciaPericia", "penalidadeArmadura", "dadosPericia", "bonusTR", "dadosTR", "proficienciaTR",
     "proficienciaTRCasoJa", "margemCriticoTR",
   ]],
   ["Manobras", ["bonusManobra", "resistirManobra", "distanciaEmpurrao"]],

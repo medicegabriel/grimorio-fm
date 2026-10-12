@@ -1,0 +1,516 @@
+{
+  "id": "arsenal-de-ryuma",
+  "nome": "Arsenal de Ryuma",
+  "versao": "1.0.0",
+  "paraRaw": "afty",
+  "descricao": "Equipamentos de Ryuma.",
+  "acrescenta": {
+    "armas": [
+      {
+        "id": "murasama",
+        "nome": "Murasama",
+        "classe": "complexa",
+        "categoria": "corpo",
+        "grupo": "espada",
+        "custo": 4,
+        "espacos": 1,
+        "critico": 20,
+        "dano": {
+          "dado": "2d10",
+          "tipo": "congelante",
+          "encantamentosIncluidos": [
+            "enc_arma_potente"
+          ]
+        },
+        "props": {
+          "fineza": true,
+          "energica": true,
+          "leve": true
+        },
+        "faFixa": true,
+        "faPadrao": {
+          "grau": "especial",
+          "encantamentos": [
+            "enc_arma_certeira",
+            "enc_arma_complementar",
+            "enc_arma_potente",
+            "enc_arma_elemental"
+          ],
+          "habilidadeUnica": "Lâmina Carniceira\n\nA Murasama é uma espada guiada pelo sangue, permitindo que sua própria vontade influencie ainda mais seu portador.\n\nFuncionamento:\n- Quando o portador consegue um acerto crítico contra um alvo que já esteja sangrando, aumenta o sangramento desse alvo em um nível.\n- Caso o alvo já esteja em Sangramento Extremo, não aumenta mais o nível.\n- Em vez disso, o alvo sofre metade dos dados de dano correspondentes ao Sangramento Extremo.",
+          "habilidadeEfeitos": []
+        },
+        "narrativa": "Uma das melhores criações de Sengo Muramasa.\n\nO povo dizia que as espadas forjadas por Muramasa eram yōtō, espadas demoníacas que possuíam uma sede de sangue incontrolável.\n\nAcreditava-se que essas espadas precisavam provar sangue para não trazer azar ou enlouquecer seus portadores.\n\nApós provar inúmeras vezes o sangue de seus inimigos, principalmente de feiticeiros, essa espada carniceira se tornou amaldiçoada, assim como seu portador.",
+        "propriedadeEspecial": "Sede de Sangue\n\nEnquanto empunha a Murasama, o portador consegue perceber sensações relacionadas a:\n- Sede de sangue.\n- Agressividade.\n- Intenções hostis.\n- Outras sensações relacionadas às anteriores.\n\nO portador recebe um bônus igual ao seu BT em testes de Percepção relacionados a essas sensações.\n\nO bônus deve ser aplicado somente aos testes apropriados, conforme as regras existentes.",
+        "descricao": "Propriedades: Fineza, Fatal, Energética, Mortal, Leve e Especial.\n\nManejo de Arma: Precisa\n\nLâmina Carniceira\n\nA Murasama é uma espada guiada pelo sangue, permitindo que sua própria vontade influencie ainda mais seu portador.\n\nFuncionamento:\n- Quando o portador consegue um acerto crítico contra um alvo que já esteja sangrando, aumenta o sangramento desse alvo em um nível.\n- Caso o alvo já esteja em Sangramento Extremo, não aumenta mais o nível.\n- Em vez disso, o alvo sofre metade dos dados de dano correspondentes ao Sangramento Extremo.\n\nUma das melhores criações de Sengo Muramasa.\n\nO povo dizia que as espadas forjadas por Muramasa eram yōtō, espadas demoníacas que possuíam uma sede de sangue incontrolável.\n\nAcreditava-se que essas espadas precisavam provar sangue para não trazer azar ou enlouquecer seus portadores.\n\nApós provar inúmeras vezes o sangue de seus inimigos, principalmente de feiticeiros, essa espada carniceira se tornou amaldiçoada, assim como seu portador.\n\nSede de Sangue\n\nEnquanto empunha a Murasama, o portador consegue perceber sensações relacionadas a:\n- Sede de sangue.\n- Agressividade.\n- Intenções hostis.\n- Outras sensações relacionadas às anteriores.\n\nO portador recebe um bônus igual ao seu BT em testes de Percepção relacionados a essas sensações.\n\nO bônus deve ser aplicado somente aos testes apropriados, conforme as regras existentes.",
+        "camposPendentes": [
+          "fatal",
+          "mortal",
+          "nivel",
+          "tipoFisico"
+        ],
+        "dadosOriginais": {
+          "dano": 5,
+          "alcance": 1.5
+        },
+        "alcanceCorpo": 1.5,
+        "manejoInformado": "Precisa",
+        "manejoEspecialInformado": null,
+        "encantamentosPorGrau": {
+          "quarto": [],
+          "terceiro": [
+            "enc_arma_certeira"
+          ],
+          "segundo": [
+            "enc_arma_complementar"
+          ],
+          "primeiro": [
+            "enc_arma_potente",
+            "enc_arma_elemental"
+          ],
+          "especial": [
+            "Lâmina Carniceira"
+          ]
+        }
+      },
+      {
+        "id": "dragon_bone",
+        "nome": "Dragon Bone (Versão Odachi)",
+        "classe": "complexa",
+        "categoria": "corpo",
+        "grupo": "espada",
+        "custo": 4,
+        "espacos": 1,
+        "critico": 20,
+        "dano": {
+          "dado": "2d12",
+          "tipo": "queimante",
+          "encantamentosIncluidos": [
+            "enc_arma_potente"
+          ]
+        },
+        "props": {
+          "fineza": true,
+          "versatil": true,
+          "energica": true
+        },
+        "faFixa": true,
+        "faPadrao": {
+          "grau": "especial",
+          "encantamentos": [
+            "enc_arma_penetrante",
+            "enc_arma_amplificadora",
+            "enc_arma_elemental",
+            "enc_arma_potente",
+            "enc_arma_destruidora"
+          ],
+          "habilidadeUnica": "Armazenar e Liberar\n\nA Dragon Bone absorve e armazena parte da energia amaldiçoada de ataques recebidos, permitindo que seu portador libere a energia acumulada em ataques posteriores.\n\nAbsorção\nAo receber um ataque envolvendo energia amaldiçoada, o portador pode utilizar sua Reação para ativar a absorção.\n- Armazena metade da energia amaldiçoada gasta no ataque recebido.\n- Caso o ataque não tenha gasto de energia, recebe 2 acúmulos.\n- O limite máximo é de 20 acúmulos.\n\nRedução de dano\nAo absorver a energia do impacto, o portador reduz o dano proveniente de energia amaldiçoada daquele ataque.\nRedução de dano = BT × 3\nEssa redução se aplica ao ataque que desencadeou a reação.\n\nLiberação de energia\nO portador pode gastar uma Ação Bônus durante um ataque para liberar a energia armazenada.\n- A cada 2 acúmulos, recebe 1 dado adicional de dano.\n- O máximo de dados adicionais em um único ataque é igual à metade do Treinamento + 1.\n- Os acúmulos utilizados devem ser consumidos na liberação.\n\nA quantidade de acúmulos consumidos deve corresponder aos dados liberados, respeitando as regras que forem confirmadas.\n\nDestruição de armas\nAlternativamente, ao liberar a energia acumulada, o portador pode direcioná-la contra a arma de seu oponente para destruí-la.\nNesse caso:\n- Os acúmulos são gastos.\n- O ataque não causa dano adicional por essa liberação.\n- O efeito é direcionado à arma inimiga.",
+          "habilidadeEfeitos": []
+        },
+        "narrativa": "",
+        "propriedadeEspecial": "",
+        "descricao": "Propriedades: Versátil, Fineza, Fatal, Energética e Mortal.\n\nManejo de Arma: Precisa\n\nArmazenar e Liberar\n\nA Dragon Bone absorve e armazena parte da energia amaldiçoada de ataques recebidos, permitindo que seu portador libere a energia acumulada em ataques posteriores.\n\nAbsorção\nAo receber um ataque envolvendo energia amaldiçoada, o portador pode utilizar sua Reação para ativar a absorção.\n- Armazena metade da energia amaldiçoada gasta no ataque recebido.\n- Caso o ataque não tenha gasto de energia, recebe 2 acúmulos.\n- O limite máximo é de 20 acúmulos.\n\nRedução de dano\nAo absorver a energia do impacto, o portador reduz o dano proveniente de energia amaldiçoada daquele ataque.\nRedução de dano = BT × 3\nEssa redução se aplica ao ataque que desencadeou a reação.\n\nLiberação de energia\nO portador pode gastar uma Ação Bônus durante um ataque para liberar a energia armazenada.\n- A cada 2 acúmulos, recebe 1 dado adicional de dano.\n- O máximo de dados adicionais em um único ataque é igual à metade do Treinamento + 1.\n- Os acúmulos utilizados devem ser consumidos na liberação.\n\nA quantidade de acúmulos consumidos deve corresponder aos dados liberados, respeitando as regras que forem confirmadas.\n\nDestruição de armas\nAlternativamente, ao liberar a energia acumulada, o portador pode direcioná-la contra a arma de seu oponente para destruí-la.\nNesse caso:\n- Os acúmulos são gastos.\n- O ataque não causa dano adicional por essa liberação.\n- O efeito é direcionado à arma inimiga.",
+        "camposPendentes": [
+          "fatal",
+          "mortal",
+          "duasMaos",
+          "alcance",
+          "tipoFisico"
+        ],
+        "dadosOriginais": {
+          "dano": 5,
+          "nivel": "Padrão"
+        },
+        "manejoInformado": "Precisa",
+        "manejoEspecialInformado": null,
+        "encantamentosPorGrau": {
+          "quarto": [],
+          "terceiro": [
+            "enc_arma_penetrante"
+          ],
+          "segundo": [
+            "enc_arma_amplificadora"
+          ],
+          "primeiro": [
+            "enc_arma_elemental",
+            "enc_arma_potente"
+          ],
+          "especial": [
+            "Armazenar e Liberar"
+          ]
+        },
+        "encantamentosSemGrauInformado": [
+          "enc_arma_destruidora"
+        ]
+      },
+      {
+        "id": "totsuka",
+        "nome": "Totsuka-No-Tsurugi",
+        "classe": "complexa",
+        "categoria": "corpo",
+        "grupo": "espada",
+        "custo": 1,
+        "espacos": 1,
+        "critico": 20,
+        "dano": {
+          "dado": "1d8",
+          "tipo": "queimante"
+        },
+        "props": {
+          "versatil": true,
+          "fatal": "d10",
+          "fineza": true
+        },
+        "faFixa": true,
+        "faPadrao": {
+          "grau": "especial",
+          "encantamentos": [
+            "enc_arma_defensora",
+            "enc_arma_elemental",
+            "enc_arma_certeira",
+            "enc_arma_sintonizada"
+          ],
+          "habilidadeUnica": "Queimação Superior\n\nA Totsuka-No-Tsurugi possui uma manifestação superior de sua energia queimante.\n\nEfeito principal\nAo causar dano Queimante, o portador ignora a resistência do alvo a esse dano.\n\nEfeito alternativo\nO portador pode gastar uma Ação Bônus para abdicar da capacidade de ignorar resistências e, em troca, causar dano Radiante.",
+          "habilidadeEfeitos": [],
+          "sintonizadaTipo": "queimante"
+        },
+        "narrativa": "",
+        "propriedadeEspecial": "",
+        "descricao": "Propriedades: Versátil, Fatal d10 e Fineza.\n\nManejo de Arma: Precisa\n\nQueimação Superior\n\nA Totsuka-No-Tsurugi possui uma manifestação superior de sua energia queimante.\n\nEfeito principal\nAo causar dano Queimante, o portador ignora a resistência do alvo a esse dano.\n\nEfeito alternativo\nO portador pode gastar uma Ação Bônus para abdicar da capacidade de ignorar resistências e, em troca, causar dano Radiante.",
+        "camposPendentes": [
+          "duasMaos",
+          "alcance",
+          "tipoFisico"
+        ],
+        "dadosOriginais": {
+          "dano": 5,
+          "nivel": "Padrão"
+        },
+        "manejoInformado": "Precisa",
+        "manejoEspecialInformado": null,
+        "encantamentosPorGrau": {
+          "quarto": [],
+          "terceiro": [
+            "enc_arma_defensora"
+          ],
+          "segundo": [
+            "enc_arma_elemental"
+          ],
+          "primeiro": [
+            "enc_arma_certeira",
+            "enc_arma_sintonizada"
+          ],
+          "especial": [
+            "Queimação Superior"
+          ]
+        }
+      },
+      {
+        "id": "esmaga_mata",
+        "nome": "Esmaga Mata",
+        "classe": "complexa",
+        "categoria": "corpo",
+        "grupo": "faca",
+        "custo": 4,
+        "espacos": 1,
+        "critico": 20,
+        "dano": {
+          "dado": "1d6",
+          "tipo": "acido",
+          "encantamentosIncluidos": [
+            "enc_arma_potente"
+          ]
+        },
+        "props": {
+          "apunhaladora": true,
+          "arremessavel": [
+            6,
+            18
+          ],
+          "fineza": true,
+          "leve": true,
+          "marcial": true,
+          "modular": "ct"
+        },
+        "faFixa": true,
+        "faPadrao": {
+          "grau": "especial",
+          "encantamentos": [
+            "enc_arma_certeira",
+            "enc_arma_precisa",
+            "enc_arma_potente",
+            "enc_arma_elemental"
+          ],
+          "habilidadeUnica": "Leve Caminhada Matinal\n\nA arma reduz a dissipação da força utilizada nos passos do portador, permitindo impulsos muito mais eficientes.\n\nEnquanto empunha Esmaga Mata, o portador recebe:\n+13,5 metros no deslocamento de pulo.",
+          "habilidadeEfeitos": []
+        },
+        "narrativa": "",
+        "propriedadeEspecial": "",
+        "descricao": "Propriedades: Apunhaladora, Arremessável [6/18m], Fineza, Leve, Marcial e Modular Ct.\n\nManejo de Arma: Penetrante\n\nLeve Caminhada Matinal\n\nA arma reduz a dissipação da força utilizada nos passos do portador, permitindo impulsos muito mais eficientes.\n\nEnquanto empunha Esmaga Mata, o portador recebe:\n+13,5 metros no deslocamento de pulo.",
+        "dadosOriginais": {
+          "dano": 5,
+          "nivel": "Padrão",
+          "alcance": 1.5
+        },
+        "alcanceCorpo": 1.5,
+        "manejoInformado": "Penetrante",
+        "camposPendentes": [
+          "tipoFisico"
+        ],
+        "manejoEspecialInformado": null,
+        "encantamentosPorGrau": {
+          "quarto": [],
+          "terceiro": [
+            "enc_arma_certeira"
+          ],
+          "segundo": [
+            "enc_arma_precisa"
+          ],
+          "primeiro": [
+            "enc_arma_potente",
+            "enc_arma_elemental"
+          ],
+          "especial": [
+            "Leve Caminhada Matinal"
+          ]
+        }
+      },
+      {
+        "id": "espada_colossal",
+        "nome": "Espada colossal",
+        "classe": "complexa",
+        "categoria": "corpo",
+        "dano": {
+          "dado": "2d8",
+          "tipo": "chocante",
+          "encantamentosIncluidos": [
+            "enc_arma_potente"
+          ]
+        },
+        "critico": 20,
+        "espacos": 4,
+        "custo": 3,
+        "grupo": "espada",
+        "props": {
+          "ampla": true,
+          "duas_maos": true,
+          "modular": "im",
+          "pesada": 20,
+          "especial": true
+        },
+        "especial": "espada_colossal",
+        "faFixa": true,
+        "faPadrao": {
+          "grau": "primeiro",
+          "encantamentos": [
+            "enc_arma_penetrante",
+            "enc_arma_elemental",
+            "enc_arma_potente"
+          ],
+          "habilidadeUnica": "",
+          "habilidadeEfeitos": []
+        },
+        "dadosOriginais": {
+          "dano": 4,
+          "nivel": "Padrão"
+        },
+        "descricao": "Uma espada de tamanho excessivo, naturalmente mais forte. Como o efeito de Amplo, mas escolha uma terceira criatura adjacente ao alvo do primeiro ataque para também sofrer os efeitos.",
+        "manejoEspecialInformado": null,
+        "encantamentosPorGrau": {
+          "quarto": [],
+          "terceiro": [
+            "enc_arma_penetrante"
+          ],
+          "segundo": [
+            "enc_arma_elemental"
+          ],
+          "primeiro": [
+            "enc_arma_potente"
+          ],
+          "especial": []
+        }
+      },
+      {
+        "id": "presa_desgarrado",
+        "nome": "Presa do Desgarrado",
+        "classe": "complexa",
+        "categoria": "corpo",
+        "grupo": "faca",
+        "custo": 1,
+        "espacos": 1,
+        "critico": 20,
+        "dano": {
+          "dado": "1d6",
+          "tipo": "sonico",
+          "encantamentosIncluidos": [
+            "enc_arma_potente"
+          ]
+        },
+        "props": {
+          "apunhaladora": true,
+          "arremessavel": [
+            6,
+            18
+          ],
+          "fineza": true,
+          "leve": true,
+          "marcial": true,
+          "modular": "ct"
+        },
+        "faFixa": true,
+        "faPadrao": {
+          "grau": "especial",
+          "encantamentos": [
+            "enc_arma_certeira",
+            "enc_arma_harmonizada",
+            "enc_arma_potente",
+            "enc_arma_elemental"
+          ],
+          "habilidadeUnica": "Predar\n\nUma adaga feita sob medida para Ryuma auxiliar contra as maldições de GE na Raid de Yamato.\nPropriedade GE: Seu portador tem sua margem de crítico reduzida em 3 enquanto a empunha.",
+          "habilidadeEfeitos": []
+        },
+        "narrativa": "",
+        "propriedadeEspecial": "",
+        "descricao": "Propriedades: Apunhaladora, arremessável [6/18m], fineza, leve, marcial, modular Ct\n\nManejo de Arma: Precisa\n\nPredar\n\nUma adaga feita sob medida para Ryuma auxiliar contra as maldições de GE na Raid de Yamato.\nPropriedade GE: Seu portador tem sua margem de crítico reduzida em 3 enquanto a empunha.",
+        "efeito": {
+          "aplicado": true,
+          "motor": [
+            {
+              "canal": "margemCritico",
+              "expr": "3"
+            }
+          ]
+        },
+        "dadosOriginais": {
+          "dano": 5,
+          "nivel": "Padrão",
+          "alcance": 7.5
+        },
+        "alcanceCorpo": 7.5,
+        "manejoInformado": "Precisa",
+        "camposPendentes": [
+          "tipoFisico"
+        ],
+        "manejoEspecialInformado": null,
+        "encantamentosPorGrau": {
+          "quarto": [],
+          "terceiro": [
+            "enc_arma_certeira"
+          ],
+          "segundo": [
+            "enc_arma_harmonizada"
+          ],
+          "primeiro": [
+            "enc_arma_potente",
+            "enc_arma_elemental"
+          ],
+          "especial": [
+            "Predar"
+          ]
+        }
+      }
+    ],
+    "escudos": [
+      {
+        "id": "yagen",
+        "nome": "Yagen Tōshirō",
+        "rdEscudo": 8,
+        "rdEscudoAdicionalExpr": "bt",
+        "penalidade": 0,
+        "custo": 4,
+        "espacos": 2,
+        "ocupaMao": true,
+        "dano": null,
+        "faFixa": true,
+        "faPadrao": {
+          "grau": "especial",
+          "encantamentos": [
+            "enc_esc_reforcado",
+            "enc_esc_intangivel",
+            "enc_esc_expansao"
+          ],
+          "habilidadeUnica": "Bloqueador\n\nYagen é uma lâmina curta que clama por batalhas para saciar sua fome, mas está condenada a funcionar como uma lâmina de aparo.\n\n- A RD base do escudo aumenta em uma quantidade igual ao Bônus de Treinamento do portador.\n- A habilidade Ler Intenções aumenta em um nível.",
+          "habilidadeEfeitos": []
+        },
+        "descricao": "Bloqueador\n\nYagen é uma lâmina curta que clama por batalhas para saciar sua fome, mas está condenada a funcionar como uma lâmina de aparo.\n\n- A RD base do escudo aumenta em uma quantidade igual ao Bônus de Treinamento do portador.\n- A habilidade Ler Intenções aumenta em um nível.\n\nYagen é uma espada criada por Sengo Muramasa, assim como suas irmãs.\n\nDiferentemente das demais, foi criada para aparar ataques e proteger outras pessoas.\n\nTal propósito é revoltante para uma espada amaldiçoada que clama constantemente por batalhas.\n\nSua vontade está sempre direcionando o portador ao combate direto, incentivando confrontos e dificultando sua concentração em outras atividades.\n\nEspírito Confrontador\n\nOrientação Instintiva\nO portador sempre sabe onde fica o Norte.\n\nLeitura de Intenções\nAo utilizar a ação Ler Intenções, recebe +2 no bônus fornecido pela ação.",
+        "narrativa": "Yagen é uma espada criada por Sengo Muramasa, assim como suas irmãs.\n\nDiferentemente das demais, foi criada para aparar ataques e proteger outras pessoas.\n\nTal propósito é revoltante para uma espada amaldiçoada que clama constantemente por batalhas.\n\nSua vontade está sempre direcionando o portador ao combate direto, incentivando confrontos e dificultando sua concentração em outras atividades.",
+        "propriedadeEspecial": "Espírito Confrontador\n\nOrientação Instintiva\nO portador sempre sabe onde fica o Norte.\n\nLeitura de Intenções\nAo utilizar a ação Ler Intenções, recebe +2 no bônus fornecido pela ação.",
+        "dadosOriginais": {
+          "rdFisica": 31,
+          "rdGrau": 5,
+          "nivel": "Padrão",
+          "alcance": 1.5
+        },
+        "manejoEspecialInformado": null,
+        "encantamentosPorGrau": {
+          "quarto": [],
+          "terceiro": [
+            "enc_esc_reforcado"
+          ],
+          "segundo": [
+            "enc_esc_intangivel"
+          ],
+          "primeiro": [
+            "enc_esc_expansao"
+          ],
+          "especial": [
+            "Bloqueador"
+          ]
+        }
+      }
+    ],
+    "uniformes": [
+      {
+        "id": "lobo_saltitante",
+        "nome": "Uniforme do Lobo Saltitante",
+        "defesa": 8,
+        "penalidade": -6,
+        "custo": 4,
+        "espacos": 6,
+        "faFixa": true,
+        "faPadrao": {
+          "grau": "especial",
+          "encantamentos": [
+            "enc_unif_blindado",
+            "enc_unif_propulsor",
+            "enc_unif_furtivo",
+            "enc_unif_material_pesado"
+          ],
+          "habilidadeUnica": "Impulso\n\nUm traje que acompanhou toda a evolução de um feiticeiro de Grau Especial.\n\nO uniforme aprimora os reflexos do portador e sua capacidade de reagir às manifestações de energia amaldiçoada.\n\nQuando se torna alvo de uma fonte de energia amaldiçoada, o portador pode gastar uma carga para utilizar a habilidade Perceber o Ar.\n\nAo utilizar a habilidade, recebe metade de seu BT em Acrobacia, conforme a mecânica original.\n\nO uniforme não pode ser rastreado por meio de energia amaldiçoada.",
+          "habilidadeEfeitos": []
+        },
+        "descricao": "Impulso\n\nUm traje que acompanhou toda a evolução de um feiticeiro de Grau Especial.\n\nO uniforme aprimora os reflexos do portador e sua capacidade de reagir às manifestações de energia amaldiçoada.\n\nQuando se torna alvo de uma fonte de energia amaldiçoada, o portador pode gastar uma carga para utilizar a habilidade Perceber o Ar.\n\nAo utilizar a habilidade, recebe metade de seu BT em Acrobacia, conforme a mecânica original.\n\nO uniforme não pode ser rastreado por meio de energia amaldiçoada.\n\nO uniforme foi confeccionado especialmente para seu portador, encaixando-se perfeitamente em seu corpo e favorecendo movimentos ágeis e precisos.\n\nUniforme Sob Medida\n\nEnquanto utiliza o uniforme, o portador recebe:\n- +2 em testes de Acrobacia.\n- +2 em testes de Furtividade.\n\nEsses bônus devem ser removidos quando o uniforme deixar de ser utilizado, conforme as regras de equipamentos do sistema.",
+        "narrativa": "O uniforme foi confeccionado especialmente para seu portador, encaixando-se perfeitamente em seu corpo e favorecendo movimentos ágeis e precisos.",
+        "propriedadeEspecial": "Uniforme Sob Medida\n\nEnquanto utiliza o uniforme, o portador recebe:\n- +2 em testes de Acrobacia.\n- +2 em testes de Furtividade.\n\nEsses bônus devem ser removidos quando o uniforme deixar de ser utilizado, conforme as regras de equipamentos do sistema.",
+        "efeito": {
+          "aplicado": true,
+          "pericia": {
+            "acrobacia": 2,
+            "furtividade": 2
+          }
+        },
+        "dadosOriginais": {
+          "defesa": 10,
+          "penalidade": 6
+        },
+        "manejoEspecialInformado": null,
+        "encantamentosPorGrau": {
+          "quarto": [
+            "enc_unif_blindado"
+          ],
+          "terceiro": [
+            "enc_unif_propulsor"
+          ],
+          "segundo": [
+            "enc_unif_furtivo"
+          ],
+          "primeiro": [
+            "enc_unif_material_pesado"
+          ],
+          "especial": [
+            "Impulso"
+          ]
+        }
+      }
+    ]
+  }
+}

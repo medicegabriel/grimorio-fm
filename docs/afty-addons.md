@@ -1,5 +1,21 @@
 # Addons do Afty (plano)
 
+## Treino Guarda da Lâmina Divina (2026-10-08)
+
+`addons/guarda-da-lamina-divina.json` usa a família `treinamentos`, com
+1, 1, 2 e 3 Focos. `grupoEquipamento: "espada"` complementa
+`requerEquipamento: "arma"` no efeito, restringindo o emissor a uma entrada
+válida e equipada daquele grupo. Campo opcional, treinos existentes sem
+ele mantêm o comportamento anterior. O alvo `grupo:espada` restringe o
+nível de dano à linha de ataque das espadas, sem afetar outros ataques.
+
+`tipo: "profPericia"` aceita `pericia` fixa, como `tipo: "pericia"`, além
+do alvo de uma instância repetível. Mantém `semCredito` e o padrão
+`quandoProf` do Treino de Perícia. Mestre condicional não altera a faixa
+gravada nem gera crédito que devolva vagas já compradas.
+Regras e requisitos integrais em `docs/guarda-lamina-divina-regras.md`.
+Completo continua como texto na ficha, Ler intenções tem controle na mesa.
+
 Plano do sistema de **Addons**, a camada em que cada mesa acrescenta conteúdo próprio ao Grimório do
 Afty sem abrir o GitHub e sem virar regra de todo mundo. Escrito em 2026-08-20, antes de qualquer
 código. Leia junto com `afty-status.md` (estado do sistema), `automacao-dsl.md` (o DSL) e
@@ -2040,6 +2056,24 @@ instâncias, que dá NaN. A ficha perdia o treino calada. Corrigido no mesmo dia
 
 Os três mapas pertencem à ficha. Só `treinosAtivos` pertence à sessão.
 
+### Olhinhos Lu, condição corporal (2026-10-12)
+
+`permite: ["olhinhosLu"]` abre a condição corporal gratuita, no mesmo
+padrão de `vislumbreCeleste`. O pacote 1.1.0 não contém controles de origem.
+`afty-olhinhos-lu.js` é módulo folha e fornece estados, efeitos cumulativos,
+resumo e alteração da sessão. Estados fixos `olhinhosLuFechados` e
+`olhinhosLuAtencao` vivem em `creature.combate` ou `sessao.combate`.
+Efeitos e resumo leem o estado corporal mesmo fora de combate.
+
+O criador mostra `OlhinhosLuCard` em Habilidades, nos três ramos de origem,
+e oferece os estados na Simulação. Ficha e Encontro usam `PainelOlhinhosLu`
+em Ações. O texto integral também aparece em Condições corporais.
+Isso substitui a primeira integração via `contadoresOrigem[].efeitos`
+e `textoFicha`, que foram removidos do motor. Campos antigos gravados na
+ficha são fallback de estado após atualizar o pacote, sem efeito duplicado.
+Atualizar a biblioteca não muda a cópia congelada da ficha, como de costume.
+Pacote: `addons/olhinhos-lu.json`. Regra: `docs/olhinhos-lu-regras.md`.
+
 ### Estados de combate do addon
 
 `estadosCombate` oferece controles próprios do pacote na Simulação de Combate e na Ficha Final.
@@ -2072,6 +2106,26 @@ O `multi` aceita `maxSelecionados`. Sem esse campo, o limite é a quantidade de 
 naquele nível.
 
 ### Arma pronta do addon
+
+Desde 2026-10-08, `escudos` e `uniformes` também são famílias de catálogo.
+Usam os formatos de `ESCUDOS` e `UNIFORME_MODIFICACOES`, respectivamente.
+Escudos exigem `nome`, `rdEscudo`, `penalidade`, `custo` e `espacos`.
+Uniformes exigem `nome`, `defesa`, `penalidade`, `custo` e `espacos`.
+Recebem namespace, validação, remendos e reconstrução do catálogo como armas.
+Não adicionam entradas ao inventário automaticamente. A entrada da ficha
+continua usando `tipo: "escudo"` ou `tipo: "uniforme"` e `refId` com namespace.
+As bases são fornecidas pelo pacote, sem recalcular pelo custo da bancada.
+Grau, encantamentos e efeitos equipados continuam pelos caminhos existentes.
+Não gravar totais do jogador como base do item, pois seriam somados novamente.
+
+Campos opcionais de equipamento (2026-10-08): `alcanceCorpo` declara metros
+de alcance corpo a corpo sem trocar a propriedade Arremessável.
+`dano.encantamentosIncluidos` lista encantamentos cujos efeitos de
+`dadosDano` já estão no dado fornecido. Mantém o encantamento, requisitos e
+outros efeitos, sem repetir o dado, e não altera equipamento sem esse campo.
+`rdEscudoAdicionalExpr` declara aumento da RD base por DSL. O aumento existe
+somente na cópia resolvida do escudo empunhado, soma na RD e alimenta
+`rd_escudo`, preservando a base gravada. Exemplo: `"bt"` no Bloqueador da Yagen.
 
 A família `armas` põe uma arma privada no catálogo normal. Ela usa o mesmo formato de `ARMAS` e
 recebe namespace como qualquer outra família.
@@ -2242,6 +2296,110 @@ recebido nem modifica outras fichas a partir de um nome livre.
 
 Motor: `src/systems/afty/afty-dharma.js`. Tela compartilhada:
 `src/systems/afty/ficha/PainelDharma.jsx`. Cobertura em `asserts/t-dharma.mjs`.
+
+## Reavaliação (2026-10-08)
+
+Pacote: `addons/reavaliacao.json`. Texto original: `docs/reavaliacao-regras.md`.
+Provas: `asserts/t-reavaliacao.mjs` (38 asserts).
+
+Linha `reavaliacao:reavaliacao`, com custos 1, 1, 2 e 2 Focos, confirmados
+pelo autor. Etapas 1 e 2 emitem +1 Percepção e +3 m Deslocamento pelo Motor.
+Etapa 3 preserva a troca de Intuição por Percepção até BT usos, controlada na
+mesa. Etapa 4 pede Atenção 85 e concede gratuitamente Análise Profunda do
+catálogo raw (`sup_analise_profunda`). Completo exige etapa 4 e Atenção 100,
+sem custo extra. Ataque coordenado, reação do aliado, escolha de quem paga
+1 PE e proibição de ataque extra ficam no texto integral para uso na mesa.
+
+Três campos genéricos acrescentados ao sistema de Treinamentos:
+
+- `etapas[].concedeHabilidades`: ids de Habilidades de Especialização. São
+  gratuitos e entram por `concedidasTreino` no resolvedor, sem duplicar uma
+  habilidade já concedida ou marcada à mão. Id do pacote recebe namespace,
+  id raw fica intacto. Concessões dependem de progresso adquirido, não
+  verificam novamente requisitos de aquisição a cada derive.
+- `requisito: { tipo: "atencao", valor: N }`: o criador verifica Atenção final,
+  incluindo override. Contexto ausente não autoriza treinar a etapa.
+- `exibirNaFicha: true`: etapas adquiridas viram texto integral no grupo
+  Treinamentos da aba Habilidades e na busca da ficha. Sem o campo, a linha
+  conserva a apresentação anterior. `completo.nome` dá o título específico e
+  `completo.requisito` controla a disponibilidade do texto do Completo e seu
+  destaque no criador. Esse campo não adiciona uma quinta etapa paga.
+
+O requisito de Completo desta entrega governa texto de regra de mesa, sem
+efeitos numéricos. Não foi criada recuperação para os usos da etapa 3, pois
+o autor optou por controle de mesa. Remover o addon ou desfazer a etapa
+correspondente retira efeitos, texto e concessão derivados, sem editar a ficha.
+O site precisa receber as alterações de motor para interpretar os campos novos.
+
+## Treino de caçada (2026-10-08)
+
+Pacote: `addons/treino-de-cacada.json`. Texto original:
+`docs/treino-cacada-regras.md`. Provas: `asserts/t-treino-cacada.mjs`
+(44 asserts). Autor confirmou o nome e que Vigor significa Estamina.
+
+Linha `treino-de-cacada:cacada`, custos 1, 1, 1 e 2 Focos (5 no total).
+Etapa 1: +2 no recurso de Estamina, canal `pe` existente. Etapa 2: Percepção
+usa Destreza. Etapa 3: +2 Percepção. Etapa 4: +3 Acrobacia, exigindo Mestre
+em Intuição, Treinado em Percepção e Nível 13. Completo: uma vaga exclusiva
+de Talento, canal `vagasTalento`, sem acrescentar vaga comum de Habilidade.
+Texto adquirido aparece na ficha por `exibirNaFicha`, como em Reavaliação.
+
+`trocaAtributoPericia` agora aceita ids fixos por `pericia` e `atributo`,
+além dos campos de seleção existentes `periciaAlvo` e `atributoAlvo`. Exemplo:
+`{ etapa: 2, pericia: "percepcao", atributo: "destreza" }`. Não depende de
+configurar um alvo na ficha. A etapa mínima continua obrigatória.
+
+Requisitos de Treinamento usam o avaliador compartilhado de proficiência
+`avaliarRequisitoDeTreino`, que já serve a Habilidades, Talentos e Aptidões.
+O criador fornece `periciaProf` a partir das perícias resolvidas, incluindo
+proficiências concedidas pelo Motor. Os três requisitos da etapa 4 precisam
+passar juntos. As etapas adquiridas conservam o comportamento dos demais
+Treinamentos, sem apagar progresso por mudança posterior de pré-requisito.
+
+Caçada e Reavaliação coexistem: +2 e +1 Percepção somam, a troca para Destreza
+continua ativa e o +3 m de Reavaliação não é afetado. Remover o addon ou
+desfazer suas etapas retira os benefícios correspondentes. O site precisa
+receber o suporte a atributo fixo e a requisitos de proficiência em treino.
+
+## Treino de escudos (2026-10-08)
+
+Pacote `addons/treino-de-escudos.json`, linha `treino-de-escudos:escudos`.
+Texto integral em `docs/treino-escudos-regras.md`. Custos 1, 1, 1 e 2 Focos,
+Completo automático sem custo adicional, confirmados pelo autor.
+
+Etapas 1 a 3 usam `requerEquipamento: "escudo"` nos efeitos: +1 Defesa,
++1 Fortitude e 4 RD Física somente com escudo equipado e válido. O derive
+fornece as entradas resolvidas do equipamento ao emissor de Treinamentos.
+Essa RD Física é do Treino, não altera `rdEscudoBase`, não aumenta os TR
+do Especialista em Escudo nem a RD do Mestre Defensivo.
+
+Etapa 4: escolha única e permanente de encantamento, apresentada desde a
+etapa 3. A etapa 4 exige escolha previamente preenchida. `imutavel: true`
+trava tanto o controle quanto o caminho de gravação depois da primeira escolha,
+inclusive ao desfazer etapas. O autor confirmou que a escolha vale para
+qualquer escudo, mas segue restrições normais. Assim, só entra na Ferramenta
+Amaldiçoada equipada, como um encantamento adicional normal: +1 no limite,
+pré-requisitos e exclusões do catálogo, redução de grau na criatura e sem
+redução no jogador. Não transforma escudo comum em Ferramenta Amaldiçoada.
+Escudo que já possui o mesmo encantamento não o recebe duplicado.
+Os efeitos de mesa dos encantamentos mantêm o funcionamento do catálogo.
+
+O Completo usa `estendeRdEquipamento: { tipo: "escudo", escolha: "tipos_rd" }`.
+Escolha de tipos múltiplos limitada por `limiteExpr: "metade(bt)"`, arredondada
+para baixo. Pool vivo dos tipos Elementais e Biológicos: Físicos já eram
+cobertos pelo escudo, e todos os Etéreos, Alma e Energia Reversa ficam fora.
+Na criatura a RD Geral do escudo já cobre esses tipos, portanto não se soma
+novamente. No jogador usa `rdTipo`: RD base do escudo + grau calculado +
+encantamentos que emitem `rdEscudo`, sem os 4 de RD Física da etapa 3 nem
+qualquer RD Física de outras fontes. Desligar o escudo desliga a extensão.
+Escolhas repetidas, tipos proibidos e excedentes são ignorados na derivação.
+
+Campos de escolha: `pool: "encantamentos"`, `tipoEquipamento`, `imutavel`,
+`disponivelNaEtapa`, `multi`, `pool: "tiposDano"`, `categorias` e `limiteExpr`.
+`escolhaTreino` é requisito de preenchimento prévio. Campos são opcionais e
+as escolhas de Treinamento anteriores continuam funcionando.
+Provas em `asserts/t-treino-escudos.mjs` (65 asserts). Site publicado precisa
+receber estas alterações de motor e controles para interpretar o addon completo.
 
 ## Não-Feiticeiro e Herdeiro Celeste: o que a origem passou a dizer (2026-10-09)
 

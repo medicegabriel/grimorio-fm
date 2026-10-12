@@ -53,6 +53,8 @@ import {
 import {
   efeitosDeTreino, vagasEncantamentoDeTreino, vagasEncantamentoEscudoDeTreino, atributosDePericiaDeTreino, gatilhosDeTreino,
   efeitosInvocacaoDeTreino, linhasComEscolhaFeiticos, talentosDeTreino,
+  habilidadesConcedidasPorTreino, beneficiosDeTreinoNaFicha,
+  encantamentosAdicionaisDeTreino, efeitosRdEquipamentoDeTreino,
 } from "./afty-treinamentos";
 import { efeitosDeVotos, regrasAftyDeVotosAtivos, votosDaFicha } from "./afty-votos";
 import { resolveBloodfeast, temBloodfeast, efeitosBloodfeast, efeitosPoderDoSangue, comArmaBloodfeast, aprimoraLinhaBloodfeast } from "./afty-bloodfeast";
@@ -144,6 +146,7 @@ import {
 import { agrupaConcedido, concessoesDaSessao, escolhasDoConcedido } from "./afty-concessao";
 import { estadosNativosExtras, efeitosDaAlmaAtual } from "./afty-extras-nativos";
 import { origemContadoresDslVars } from "./afty-contadores-origem";
+import { estadoOlhinhosLu, estadosDosOlhinhosLu, efeitosDosOlhinhosLu, resolveOlhinhosLu } from "./afty-olhinhos-lu";
 import {
   efeitosDasAdaptacoes, origensDiretasDasAdaptacoes, resumoAdaptacoes,
 } from "./afty-adaptacao";
@@ -625,6 +628,7 @@ export function deriveAfty(creature, opcoes = {}) {
     // As do ESCUDO (Treino de Escudo do pacote Stark, 2026-10-11).
     vagasEncantamentoEscudo: vagasEncantamentoEscudoDeTreino(creature),
     encantamentosExtras: encantamentosDeManejoEspecial(creature),
+    encantamentosAdicionais: encantamentosAdicionaisDeTreino(creature, sistema),
     /* O sistema decide onde a RD do escudo desemboca: RD Geral na criatura, RD
        Física no jogador. Ver `canalRdEscudo` e a divergência `rdEscudoFisico`. */
     sistema,
@@ -805,6 +809,9 @@ export function deriveAfty(creature, opcoes = {}) {
      cima, antes do montante: a Compreensão do Jujutsu emite `pontosAptidao`, que
      é orçamento e é lido antes de os stats existirem. */
   const temVislumbre = primitivasDaCriatura(creature).includes("vislumbreCeleste");
+  const temOlhinhosLu = primitivasDaCriatura(creature).includes("olhinhosLu");
+  const olhosLu = estadoOlhinhosLu(creature);
+  const efeitosOlhinhosLu = efeitosDosOlhinhosLu({ tem: temOlhinhosLu, ...olhosLu });
   /* ⚠ O ESTADO SAI DA CRIATURA CRUA, e não do `combate` resolvido, porque este
      bloco roda ANTES dele: os efeitos daqui são lidos no montante e no passe
      pós-aptidão, e a bancada de combate só nasce umas 600 linhas abaixo. É a
@@ -826,7 +833,8 @@ export function deriveAfty(creature, opcoes = {}) {
      nunca somou. A regra vale para a lista inteira, e quem desce entra no
      `efeitosTodos` lá embaixo, UMA vez. Ver `separarEfeitosDeBancada`. */
   const { montante: efeitosMontante, bancada: efeitosMontanteDeBancada } = separarEfeitosDeBancada([
-      ...efeitosDeTreino(creature, opcoes.treinosAtivos),
+      ...efeitosDeTreino(creature, opcoes.treinosAtivos, equip.entradas),
+      ...efeitosRdEquipamentoDeTreino(creature, equip, bt, sistema),
       // Treino Especial entra ao lado da Linha de Treinamento porque é a mesma
       // família (Interlúdio) e emite a mesma classe de coisa: VAGA de orçamento,
       // lida antes de os stats existirem. Hoje só `vagasFeitico`.
@@ -973,6 +981,7 @@ export function deriveAfty(creature, opcoes = {}) {
       almaLivreEspecializacao: talentosPre.almaLivreEspecializacao,
       almaLivreNivelAjuste: getTalento("tal_alma_livre")?.nivelAlmaLivreAjuste ?? 0,
       concedidasSessao: concedido.habilidades,
+      concedidasTreino: habilidadesConcedidasPorTreino(creature),
       escolhasConcedidasSessao: escolhasConcedidas,
       sistema,
     },
@@ -1195,6 +1204,7 @@ export function deriveAfty(creature, opcoes = {}) {
     // Os dois blocos do Vislumbre Celeste. O `quando` de cada um lê o estado
     // "Olhos Descobertos", então os dois convivem e só um vale por vez.
     ...efeitosVislumbre.filter((e) => e.canal !== "pontosAptidao"),
+    ...efeitosOlhinhosLu,
     ...coletarEfeitosCriatura({
       habilidades, talentos: talentosPre, altoNivel,
       // As Melhorias Superiores do jogador têm números próprios.
@@ -1775,6 +1785,7 @@ export function deriveAfty(creature, opcoes = {}) {
       ...comDonoDeBancada(estadosAptidoes, SUB_APTIDOES),
       ...estadosAddon,
       ...comDonoDeBancada(estadosVislumbre, SUB_OUTROS),
+      ...comDonoDeBancada(estadosDosOlhinhosLu({ tem: temOlhinhosLu }), SUB_OUTROS),
       ...estadosCeu,
       // Só existe com uma arma equipada que tenha a Sintonizada.
       ...(sintonizadas.length
@@ -4233,7 +4244,7 @@ export function deriveAfty(creature, opcoes = {}) {
     maestria: [{ label: valoresDoJogador ? `Nível ${nd}` : `ND ${nd}`, valor: bt }],
     atencao: [
       { label: "Base", valor: 10 },
-      { label: "Percepção", valor: testes.atencao - 10 },
+      ...(testes.atencaoPartes ?? [{ label: "Percepção", valor: testes.atencao - 10 }]),
       ...doMotor("atencao"),
     ],
     /* ⚠ OS DOIS FICAM VAZIOS NA FICHA DE JOGADOR, onde a Guarda é `null`. O
@@ -4433,6 +4444,7 @@ export function deriveAfty(creature, opcoes = {}) {
 
   return {
     ...stats,
+    beneficiosTreinamento: beneficiosDeTreinoNaFicha(creature, { atencao: stats.atencao }),
     // O Deslocamento de Voo, em metros. Zero é não voar (2026-10-09).
     voo,
     /* LINHA MORTA: o que a ficha cita e o mundo não tem. Lista vazia é o caso
@@ -4561,6 +4573,7 @@ export function deriveAfty(creature, opcoes = {}) {
     motorLinhaDano: { efeitos: efeitosLinhaDano, contexto: ctxTecnica },
     gerais,               // { escolhidas, gastos, ganhos, destravado, maxVezes, acesso, inacessiveis }
     efeitos: ef,          // Motor de Automação: { porCanal, porAlvo, detalhes, avisos }
+    olhinhosLu: resolveOlhinhosLu({ tem: temOlhinhosLu, ...olhosLu, cl: aptidao.efetivo?.cl ?? 0 }),
     testes,               // { pericias, resistencias, ataques, orcamento, atencao }
     dano,                 // { entradas: [{ id, nome, fonte, texto, alcance, propriedades, partes }] }
     tecnicasCombate,

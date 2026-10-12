@@ -17,6 +17,49 @@ Onde se usa:
 
 ## Variáveis
 
+### Olhinhos Lu no padrão do Vislumbre Celeste (2026-10-12)
+
+A primitiva `olhinhosLu` emite efeitos cumulativos a partir dos estados
+fixos `olhinhosLuFechados` e `olhinhosLuAtencao` em `creature.combate`.
+A leitura corporal ignora Em Combate e é compartilhada pelos efeitos,
+pelo card de Habilidades e pelo painel de Ações. Bônus: `teto(3 * cl)`.
+Não usa efeitos em `contadoresOrigem` nem variáveis do namespace do pacote.
+Isso substitui a primeira integração desta sessão, que usava Recursos de
+Origem. Os controles entram na lista da bancada e de estados da ficha.
+
+O canal `periciaAtencao` usa `alvo` de perícia e `expr: "1"` para escolher
+a perícia de Atenção. Efeitos direcionados de Percepção nos canais
+`bonusPericia`, `proficienciaPericia`, `periciaFixa` e `dadosPericia`
+acompanham a troca somente numa cópia usada pelo cálculo de Atenção.
+Efeitos gerais não duplicam. Treino entre as duas perícias usa o maior.
+Dados extras não são convertidos em bônus numérico passivo. Efeitos diretos
+no canal `atencao` continuam por fora. Exemplo em `addons/olhinhos-lu.json`.
+
+### Treinos por grupo de equipamento (2026-10-08)
+
+`grupoEquipamento` restringe um efeito de treino ao grupo da entrada
+equipada, quando usado junto de `requerEquipamento`. Não cria uma variável
+nem exige estado manual de combate. Exemplo: arma do grupo espada.
+O alvo já existente `grupo:espada` aplica `nivelDano` apenas a essas armas.
+`tipo: "profPericia"` pode declarar `pericia` fixa e reutiliza o canal
+`proficienciaPericia`. Condição `quandoProf` continua lendo a faixa
+escolhida `prof_percepcao`, sem realimentação pela própria concessão.
+
+### Catálogos de equipamentos próprios (2026-10-08)
+
+As famílias de addon `escudos` e `uniformes` reutilizam o resolvedor de
+equipamentos e a emissão de `efeito.motor`. Não introduzem canais ou
+variáveis. Bases vêm do catálogo do pacote, e efeitos de grau,
+encantamentos e passivas continuam condicionados ao equipamento em uso.
+Inventários de outras fichas não recebem itens por instalação do pacote.
+
+`rdEscudoAdicionalExpr` usa o contexto DSL de equipamento, incluindo `bt`,
+para aumentar RD BASE na cópia resolvida do escudo em uso. A leitura de
+`rd_escudo` recebe essa base aumentada. Não escreve no catálogo nem na ficha.
+`dano.encantamentosIncluidos` evita repetir um efeito `dadosDano` já incluído
+no dado fornecido pelo catálogo. Não filtra outros canais do encantamento.
+`alcanceCorpo` é alcance em metros, sem canal de movimento ou pulo.
+
 ### Atributos
 - `forca, destreza, constituicao, inteligencia, sabedoria, presenca` — Valor do atributo (ex.: 18).
 - `mod_forca, mod_destreza, ...` — Modificador do atributo (ex.: +4).
@@ -402,6 +445,68 @@ acúmulo das RDs de Geral e Defesa. A confirmação final definiu Geral
 como dobro do BT e Defesa como BT. Somam `3 * bt`, ou 18 com BT 6.
 Essa decisão substitui os valores de RD do texto original preservado.
 
+## Metadados de treino: Reavaliação (2026-10-08)
+
+O addon `addons/reavaliacao.json` usa os canais existentes `bonusPericia`
+(alvo `percepcao`, expressão `1`) e `movimento` (expressão `3`). Não há
+variáveis ou canais novos no DSL. As regras de mesa não são efeitos numéricos.
+
+`etapas[].concedeHabilidades` é uma lista de ids de Habilidades de
+Especialização concedidas gratuitamente ao adquirir a etapa. É resolvida
+antes da lista de Habilidades no derive, separada dos efeitos do Motor,
+pois um canal chegaria depois da resolução da lista. Usa namespace local
+para habilidades do próprio pacote e mantém ids raw, como `sup_analise_profunda`.
+Desfazer a etapa ou remover o addon desfaz a concessão.
+
+O requisito `{ "tipo": "atencao", "valor": 85 }` bloqueia aquisição da
+etapa no criador quando Atenção final não alcança o valor. Para linhas com
+`exibirNaFicha: true`, o requisito em `completo.requisito` controla a
+disponibilidade do texto do Completo na ficha e seu destaque no criador.
+O Completo de Reavaliação não tem efeitos numéricos, exige etapa 4 e Atenção
+100, sem custo adicional. Não há recuperação automática para os usos de BT
+nem pagamento automático do ataque coordenado, conforme decisão do autor.
+
+## Treino de caçada (2026-10-08)
+
+Usa canais existentes `pe` (+2 Estamina, confirmação do autor), `bonusPericia`
+(+2 Percepção e +3 Acrobacia) e `vagasTalento` (+1 no Completo). Não há
+canal nem variável DSL nova. A vaga de Talento é exclusiva e não compra
+Habilidade de Especialização.
+
+Troca de atributo não é efeito numérico: `trocaAtributoPericia` aceita
+`{ etapa: 2, pericia: "percepcao", atributo: "destreza" }` para uma troca
+fixa, mantendo suporte às escolhas `periciaAlvo` e `atributoAlvo` anteriores.
+O atributo resultante entra no cálculo normal da perícia e de Atenção.
+
+Requisitos de proficiência por etapa passam pelo avaliador compartilhado
+`avaliarRequisitoDeTreino` e leem o mapa resolvido `periciaProf`. Isso permite
+exigir Mestre em Intuição e Treinado em Percepção, incluindo concessões do
+Motor, junto de `{ tipo: "nd", valor: 13 }`. O criador fornece o contexto
+resolvido. O comportamento de aquisição segue o restante dos Treinamentos,
+sem recalcular a validade de progresso já adquirido a cada derivação.
+
+## Treino de escudos (2026-10-08)
+
+Sem canal novo. Efeitos condicionais do Treinamento declaram
+`requerEquipamento: "escudo"`; o emissor só entrega a linha ao Motor se
+há um escudo equipado e válido nas entradas resolvidas. Usa `defesa`,
+`bonusTR` (alvo `fortitude`) e `rdFisico` (4). Esta última é independente
+da RD do escudo, preservando o significado de `rd_escudo` para Habilidades.
+
+A extensão do Completo emite `rdTipo` por tipo escolhido, limitada por
+`piso(metade(bt))`, sem Etéreos, Alma, Energia Reversa nem tipos já físicos.
+Valor é RD base do escudo + grau calculado + encantamentos `rdEscudo`.
+Ignora RD Física de outras fontes e não duplica a RD Geral do escudo da
+criatura, que já cobre os tipos permitidos. Tudo desliga com o escudo guardado.
+
+Encantamento adicional segue o resolvedor normal da Ferramenta, incluindo
+grau para cálculo e pré-requisitos. `encantamentosAdicionaisDeTreino` produz
+a lista por tipo de equipamento, sem escrever na ficha, e `imutavel` trava
+a escolha persistida. Escudo comum não recebe Ferramenta automaticamente.
+`escolhaTreino` confere preenchimento prévio para adquirir a etapa 4.
+Seletores usam pools de catálogo, inclusive tipos de dano trazidos por addons
+nas categorias permitidas. Referência completa em `docs/afty-addons.md`.
+
 ## Técnica Máxima e Expansão de Domínio (2026-10-08)
 
 Guia da área: `docs/afty-tecnica-maxima-dominio.md`.
@@ -486,3 +591,12 @@ Guia da área: `docs/afty-tecnica-maxima-dominio.md`.
 - Campo de origem `rotuloCaracteristicasAmaldicoadas`: o nome do pool na aba do criador, no cartão e
   no grupo da Ficha. As vagas do pool passaram a mostrar as fontes no hover
   (`derived.caracteristicasAmaldicoadas.partes`).
+
+
+## Integração dos treinos de escudo (2026-10-12)
+
+Vagas livres de encantamento de escudo e encantamentos concedidos por treino
+coexistem. A vaga livre entra no limite e desconta da redução de grau da
+criatura. O encantamento concedido mantém sua vaga adicional e não é
+inserido novamente quando já consta no equipamento. O jogador mantém
+a regra de não reduzir grau. Teste: asserts/t-integracao-treinos-escudo.mjs.

@@ -54,6 +54,7 @@ export const ROTULO_EQUIPAMENTO = {
 
 /** Os grupos, na ordem em que aparecem na aba. */
 export const GRUPOS = [
+  { id: "corporal", label: "Condições corporais" },
   { id: "origem", label: "Origem" },
   { id: "especializacao", label: "Habilidades de Especialização" },
   { id: "passivo", label: "Passivos e Características" },
@@ -63,6 +64,7 @@ export const GRUPOS = [
   { id: "aptidao", label: "Aptidões Amaldiçoadas" },
   { id: "caracteristicaAmaldicoada", label: "Características Amaldiçoadas" },
   { id: "altoNivel", label: "Níveis Lendários" },
+  { id: "treinamento", label: "Treinamentos" },
 ];
 
 /** Sem acento e em minúsculas, que é como a busca compara. */
@@ -141,6 +143,13 @@ const item = ({ id, chave, nome, texto, grupo, sub = null, tags = [], opcoes = [
  */
 export function conteudoDaFicha(creature, derived) {
   const itens = [];
+  if (derived?.olhinhosLu?.tem) itens.push(item({
+    id: "olhinhosLu", nome: derived.olhinhosLu.nome,
+    texto: derived.olhinhosLu.texto, grupo: "corporal",
+  }));
+  for (const beneficio of derived?.beneficiosTreinamento ?? []) {
+    itens.push(item({ ...beneficio, grupo: "treinamento" }));
+  }
 
   /* ⚠ CONTADOR E NÚMEROS DE MESA (2026-09-28). O derive devolve em `mesa`, pela
      chave do item, o contador (`usos`, com a chave da sessão já com a recarga) e

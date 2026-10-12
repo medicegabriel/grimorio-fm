@@ -1,0 +1,38 @@
+import { register } from "node:module";
+import { readFileSync } from "node:fs";
+import assert from "node:assert/strict";
+register('data:text/javascript,export async function resolve(s,c,n){try{return await n(s,c)}catch(e){if(s.startsWith(".")&&!s.endsWith(".js"))return n(s+".js",c);throw e}}', import.meta.url);
+globalThis.localStorage ??= { getItem: () => null, setItem: () => {}, removeItem: () => {} };
+const { deriveAfty } = await import("../src/systems/afty/afty-derive.js");
+const { createBlankAfty } = await import("../src/systems/afty/afty-schema.js");
+const AD = await import("../src/systems/afty/afty-addons.js");
+const pacotes = ["stark", "treino-de-escudos"].map(id => AD.normalizarPacote(JSON.parse(readFileSync(new URL(`../addons/${id}.json`, import.meta.url), "utf8"))));
+let checks = 0;
+const eq = (a, b) => { assert.deepEqual(a, b); checks++; };
+for (const sistema of ["player", "afty"]) {
+  const f = createBlankAfty();
+  f.rulesVersion = sistema; f.core.nd = 13; f.addons = pacotes;
+  f.treinamentos = { "stark:treino_de_escudo": 4, "treino-de-escudos:escudos": 4 };
+  f.treinamentoEscolhas = { "treino-de-escudos:escudos": { encantamento: "enc_esc_reforcado", tipos_rd: [] } };
+  f.equipamentos.itens = [{ uid: "escudo", tipo: "escudo", refId: "esc_medio", qtd: 1, equipado: true, fa: { grau: "segundo", encantamentos: [] } }];
+  AD.aplicarAddons(pacotes);
+  const antes = JSON.stringify(f);
+  const d = deriveAfty(f), fa = d.equip.entradas[0].fa;
+  eq(fa.vagasLivres, 1);
+  eq(fa.escolhidos, ["enc_esc_reforcado"]);
+  eq(fa.excedeu, false);
+  eq(fa.rankCalculo, 3);
+  eq(JSON.stringify(f), antes);
+  f.equipamentos.itens[0].fa.encantamentos = ["enc_esc_reforcado"];
+  const repetido = deriveAfty(f).equip.entradas[0].fa;
+  eq(repetido.escolhidos, ["enc_esc_reforcado"]);
+  eq(repetido.rankCalculo, 3);
+  f.equipamentos.itens[0].fa.encantamentos = [];
+  delete f.treinamentos["stark:treino_de_escudo"];
+  const semStark = deriveAfty(f).equip.entradas[0].fa;
+  eq(semStark.vagasLivres, 0);
+  eq(semStark.rankCalculo, sistema === "player" ? 3 : 2);
+  f.equipamentos.itens[0].equipado = false;
+  eq(deriveAfty(f).equip.entradas[0].fa.escolhidos, []);
+}
+console.log(`TODOS OS ${checks} ASSERTS PASSARAM`);

@@ -1,0 +1,171 @@
+{
+  "id": "milenar",
+  "nome": "Milenar",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Caso você seja um Milenar, você recebe as seguintes características:",
+  "acrescenta": {
+    "origens": [
+      {
+        "id": "orig_milenar",
+        "nome": "Milenar",
+        "caracteristicas": [
+          {
+            "id": "milenar_bonus_atributo",
+            "nome": "Bônus em Atributo",
+            "descricao": "Sua mente foi lapidada por eras. Você recebe +2 em Inteligência ou Sabedoria, e +1 em um atributo à sua escolha.",
+            "escolha": {
+              "id": "milenar_bonus_atributo",
+              "label": "Bônus em Atributo",
+              "vagas": 1,
+              "opcoes": [
+                {
+                  "id": "milenar_inteligencia_forca",
+                  "nome": "+2 Inteligência, +1 Força",
+                  "efeitos": [
+                    { "canal": "atributo", "alvo": "inteligencia", "expr": "2" },
+                    { "canal": "atributo", "alvo": "forca", "expr": "1" }
+                  ]
+                },
+                {
+                  "id": "milenar_inteligencia_destreza",
+                  "nome": "+2 Inteligência, +1 Destreza",
+                  "efeitos": [
+                    { "canal": "atributo", "alvo": "inteligencia", "expr": "2" },
+                    { "canal": "atributo", "alvo": "destreza", "expr": "1" }
+                  ]
+                },
+                {
+                  "id": "milenar_inteligencia_constituicao",
+                  "nome": "+2 Inteligência, +1 Constituição",
+                  "efeitos": [
+                    { "canal": "atributo", "alvo": "inteligencia", "expr": "2" },
+                    { "canal": "atributo", "alvo": "constituicao", "expr": "1" }
+                  ]
+                },
+                {
+                  "id": "milenar_inteligencia_sabedoria",
+                  "nome": "+2 Inteligência, +1 Sabedoria",
+                  "efeitos": [
+                    { "canal": "atributo", "alvo": "inteligencia", "expr": "2" },
+                    { "canal": "atributo", "alvo": "sabedoria", "expr": "1" }
+                  ]
+                },
+                {
+                  "id": "milenar_inteligencia_presenca",
+                  "nome": "+2 Inteligência, +1 Presença",
+                  "efeitos": [
+                    { "canal": "atributo", "alvo": "inteligencia", "expr": "2" },
+                    { "canal": "atributo", "alvo": "presenca", "expr": "1" }
+                  ]
+                },
+                {
+                  "id": "milenar_sabedoria_forca",
+                  "nome": "+2 Sabedoria, +1 Força",
+                  "efeitos": [
+                    { "canal": "atributo", "alvo": "sabedoria", "expr": "2" },
+                    { "canal": "atributo", "alvo": "forca", "expr": "1" }
+                  ]
+                },
+                {
+                  "id": "milenar_sabedoria_destreza",
+                  "nome": "+2 Sabedoria, +1 Destreza",
+                  "efeitos": [
+                    { "canal": "atributo", "alvo": "sabedoria", "expr": "2" },
+                    { "canal": "atributo", "alvo": "destreza", "expr": "1" }
+                  ]
+                },
+                {
+                  "id": "milenar_sabedoria_constituicao",
+                  "nome": "+2 Sabedoria, +1 Constituição",
+                  "efeitos": [
+                    { "canal": "atributo", "alvo": "sabedoria", "expr": "2" },
+                    { "canal": "atributo", "alvo": "constituicao", "expr": "1" }
+                  ]
+                },
+                {
+                  "id": "milenar_sabedoria_inteligencia",
+                  "nome": "+2 Sabedoria, +1 Inteligência",
+                  "efeitos": [
+                    { "canal": "atributo", "alvo": "sabedoria", "expr": "2" },
+                    { "canal": "atributo", "alvo": "inteligencia", "expr": "1" }
+                  ]
+                },
+                {
+                  "id": "milenar_sabedoria_presenca",
+                  "nome": "+2 Sabedoria, +1 Presença",
+                  "efeitos": [
+                    { "canal": "atributo", "alvo": "sabedoria", "expr": "2" },
+                    { "canal": "atributo", "alvo": "presenca", "expr": "1" }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "milenar_conhecimento_ancestral",
+            "nome": "Conhecimento Ancestral",
+            "descricao": "Devido à sua vasta experiência, você é considerado Treinado em História e Feitiçaria. Além disso, você recebe Especialização em uma dessas duas perícias.",
+            "escolha": {
+              "id": "milenar_especializacao",
+              "label": "Especialização",
+              "vagas": 1,
+              "opcoes": [
+                {
+                  "id": "milenar_especializacao_historia",
+                  "nome": "História",
+                  "efeitos": [
+                    { "canal": "proficienciaPericia", "alvo": "historia", "expr": "2" }
+                  ]
+                },
+                {
+                  "id": "milenar_especializacao_feiticaria",
+                  "nome": "Feitiçaria",
+                  "efeitos": [
+                    { "canal": "proficienciaPericia", "alvo": "feiticaria", "expr": "2" }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "milenar_voto_transmigracao",
+            "nome": "Voto de Transmigração",
+            "descricao": "Você não chegou ao presente por meios naturais. Escolha uma das seguintes heranças de sua jornada temporal:",
+            "escolha": {
+              "id": "milenar_voto_transmigracao",
+              "label": "Voto de Transmigração",
+              "vagas": 1,
+              "opcoes": [
+                {
+                  "id": "milenar_mestre_dos_votos",
+                  "nome": "Mestre dos Votos",
+                  "descricao": "Você conhece os termos exatos da alma. Você recebe um Voto Vinculativo adicional a cada nível par (2, 4, 6...)."
+                },
+                {
+                  "id": "milenar_refinamento_de_era",
+                  "nome": "Refinamento de Era",
+                  "descricao": "Seus feitiços utilizam fórmulas antigas. Você recebe +1 na CD (Classe de Dificuldade) e no dano de todos os seus feitiços.",
+                  "efeitos": [
+                    { "canal": "danoBonus", "alvo": "feitico", "expr": "1" }
+                  ]
+                },
+                {
+                  "id": "milenar_perspicacia",
+                  "nome": "Perspicácia",
+                  "descricao": "X quantidade de vezes por cena, você pode gastar 2 PE para identificar instantaneamente uma característica do alvo (pontos de vida, bônus em perícia ou ataque, por exemplo). Sendo X igual à metade do seu bônus de treinamento."
+                }
+              ]
+            }
+          }
+        ],
+        "efeitos": [
+          { "canal": "proficienciaPericia", "alvo": "historia", "expr": "1" },
+          { "canal": "proficienciaPericia", "alvo": "feiticaria", "expr": "1" }
+        ],
+        "especializacaoExclusivaId": null
+      }
+    ]
+  }
+}
