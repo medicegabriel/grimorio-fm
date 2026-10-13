@@ -62,6 +62,8 @@ import PainelDharma from "./PainelDharma";
 import PainelDeAdaptacao from "./PainelDeAdaptacao";
 import PainelDoVislumbre from "./PainelDoVislumbre";
 import PainelOlhinhosLu from "./PainelOlhinhosLu";
+import PainelAcoesAddon from "./PainelAcoesAddon";
+import { consumirAcoesAddon } from "../afty-acoes-addon";
 import PainelOlhosAgulha from "./PainelOlhosAgulha";
 import PainelDoGolpeEspecial from "./PainelDoGolpeEspecial";
 import PainelManipulacaoCeu from "./PainelManipulacaoCeu";
@@ -552,7 +554,7 @@ export default function AftyFicha({
       ? rolarDano(descResolvida)
       : rolarTeste(descResolvida);
     atualiza((s) => {
-      let proxima = registraRolagemArma(registraRolagem(s, r), descResolvida, r);
+      let proxima = consumirAcoesAddon(registraRolagemArma(registraRolagem(s, r), descResolvida, r), desc.consomeAcoesAddon);
       if (custoVida.pago > 0) proxima = pagaCustoVida(proxima, custoVida.pago).sessao;
       if (desc.consomeEstado) proxima = consomeEstadoCombate(proxima, desc.consomeEstado);
       if (desc.feiticoDanoId) proxima = registraFeiticoDano(proxima, desc.feiticoDanoId);
@@ -692,7 +694,8 @@ export default function AftyFicha({
         onAtaqueBasico={(ataqueBasicoId) => atualiza((s) => ({ ...s, ataqueBasicoId }))}
         adaptacao={<PainelDeAdaptacao derived={derived} onSessao={atualiza} />}
         vislumbre={<PainelDoVislumbre derived={derived} sessao={sessao} onSessao={atualiza} />}
-        olhinhosLu={<PainelOlhinhosLu derived={derived} onSessao={atualiza} />}
+        olhinhosLu={<><PainelOlhinhosLu derived={derived} onSessao={atualiza} />
+          <PainelAcoesAddon derived={derived} sessao={sessao} onSessao={atualiza} /></>}
         olhosAgulha={<PainelOlhosAgulha derived={derived} sessao={sessao} onSessao={atualiza} />}
         manipulacaoCeu={<PainelManipulacaoCeu derived={derived} onEstado={alteraEstado} />}
         armasTransformaveis={<ArmasTransformaveis derived={derived} sessao={sessao} onSessao={atualiza} />}

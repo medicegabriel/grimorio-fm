@@ -408,6 +408,11 @@ const ID_ENTRADA_OK = /^[a-z0-9][a-z0-9_]{0,63}$/;
  * do projeto é que quem enxerga é quem pediu.
  */
 export const PRIMITIVAS = [
+  {
+    id: "alcanceArmaMult",
+    rotulo: "Multiplicador de Alcance",
+    nota: "Canal de multiplicação de alcance concedido pelo addon",
+  },
   { id: "bloodfeast", rotulo: "Bloodfeast", nota: "Conversão de energia em Vida e recursos sanguíneos de cena" },
   {
     id: "concessao",
@@ -1181,6 +1186,7 @@ export function normalizarPacote(cru) {
        global: saem direto da cópia congelada em `creature.addons`, para uma
        criatura nunca herdar o Funcionamento de outra no mesmo encontro. */
     bloodfeast: p.bloodfeast && typeof p.bloodfeast === "object" ? clonar(p.bloodfeast) : null,
+    acoesMotor: Array.isArray(p.acoesMotor) ? p.acoesMotor.filter((a) => a && typeof a === "object").map(clonar) : [],
     funcionamentos: Array.isArray(p.funcionamentos)
       ? p.funcionamentos.filter((x) => x && typeof x === "object").map(clonar)
       : [],
@@ -1704,6 +1710,28 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     }
   }
 
+  const acoesVistas = new Set();
+  for (const a of p.acoesMotor) {
+    if (!a || typeof a !== "object") { problemas.push("Ação de addon inválida."); continue; }
+    if (!a.id || acoesVistas.has(a.id)) problemas.push("Ação de addon sem id ou repetida.");
+    acoesVistas.add(a.id);
+    if (!a.nome || !["contador", "estado", "disparo", "passivo"].includes(a.tipo)) problemas.push("Ação de addon sem nome ou tipo válido.");
+    if (a.tipo === "contador" && (!Number.isInteger(a.max) || a.max < 1)) problemas.push("Contador de addon sem máximo válido.");
+    if (a.tipo === "disparo" && !a.armaId) problemas.push("Disparo de addon sem arma.");
+    for (const campo of ["custoPE", "sustentacaoPV"]) {
+      if (a[campo] != null && (!Number.isFinite(a[campo]) || a[campo] < 0)) problemas.push("Custo de ação inválido.");
+    }
+    for (const campo of ["efeitos", "dados"]) {
+      if (a[campo] != null && !Array.isArray(a[campo])) problemas.push("Lista de ação inválida.");
+    }
+    for (const e of Array.isArray(a.efeitos) ? a.efeitos : []) {
+      problemas.push(...problemasDoEfeito(`Ação "${a.id}"`, e));
+    }
+    for (const d of Array.isArray(a.dados) ? a.dados : []) {
+      if (!Number.isInteger(d?.dados) || d.dados < 1 || !Number.isInteger(d.faces) || d.faces < 2
+        || !["durante", "apos"].includes(d.momento)) problemas.push("Dado de ação inválido.");
+    }
+  }
   const feiticosVistos = new Set();
   const tiposFeitico = new Set(["dano", "auxiliar", "curativo", "especial", "passivo", "personalizado"]);
   for (const [i, feitico] of p.feiticos.entries()) {
@@ -1878,6 +1906,7 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     && !p.substituiEnergiaReversa
     && p.adaptacoes.length === 0
     && p.funcionamentos.length === 0
+    && p.acoesMotor.length === 0
     && p.estilos.length === 0
     && Object.keys(p.atributos).length === 0
     && p.feiticos.length === 0

@@ -255,6 +255,7 @@ export const EFEITO_CANAIS = [
   { id: "proficienciaTRCasoJa", label: "Treino em Resistência (Caso Já Seja)", alvo: "tr", nota: "concede a faixa no TR (1 Treinado, 2 Mestre). Quando outra fonte já dá essa faixa, soma o mesmo número no teste (+1 no Treinado, +2 no Mestre). Cada efeito vale sozinho e não credita no orçamento" },
   { id: "bonusAcerto",   label: "Acerto",                alvo: "ataque" },
   { id: "ataquesExtras", label: "Ataques Extras",        nota: "quantidade adicional de Ataques Extras permitida por rodada" },
+  { id: "alcanceArmaMult", label: "Multiplicador de Alcance", alvo: "fonteDano", nota: "multiplica o alcance da arma após os bônus em metros. Fontes ativas multiplicam entre si" },
   // Irmão do `bonusAcerto` para quando o bônus é de UMA arma, e não da jogada
   // de ataque inteira ("+1 em jogadas de ataque com a arma escolhida", Treino
   // de Manejo de Arma). `bonusAcerto` mira a categoria (Corpo a Corpo, A
@@ -723,7 +724,7 @@ const GRUPOS_DE_CANAL = [
   ["Ataque e Dano", [
     "cd", "cdFeitico", "bonusAcerto", "acertoArma", "treinoArmaCasoJa", "ataquesExtras", "danoBonus", "nivelDano", "dadosDano", "dadosNomeados",
     "dadosCritico", "rerrolaDano", "dadosAtaque", "vantagemAtaque", "margemCritico", "ignoraRD", "ignoraTodaRD", "ignoraImunidade", "removeResistencia", "propMarcial", "finezaAtaque",
-    "semAtributoDano", "alcanceArma",
+    "semAtributoDano", "alcanceArma", "alcanceArmaMult",
   ]],
   // Atributo, limite e nível de trilha: o que a criatura É, em número próprio.
   // `nivelAptidao` entra aqui, e não num grupo de Aptidões, porque ele é

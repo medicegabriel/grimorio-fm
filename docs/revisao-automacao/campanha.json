@@ -3738,6 +3738,20 @@
       ],
       "registro": "AD-68/registro.json",
       "proprietario": "executor do lote AD-68"
+    },
+    {
+      "lote": "AD-69",
+      "nome": "Addon: Ciel Lucielus",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04",
+        "M02"
+      ],
+      "registro": "AD-69/registro.json",
+      "proprietario": "executor do lote AD-69"
     }
   ]
 }

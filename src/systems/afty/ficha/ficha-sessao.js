@@ -25,6 +25,7 @@
  */
 
 import { normalizaConcedido, comConcessao, semConcessao } from "../afty-concessao";
+import { definirAcaoAddon, consumirAcoesAddon, encerrarAcoesAddon } from "../afty-acoes-addon";
 import {
   regrasDoTipoValor, ESTADOS_INVOCACAO, ESTADOS_TERMINAIS, ESTADOS_EM_CAMPO, estadoDaLinha,
   FONTE_PV_MECHA, entradaDeMesaDaHorda,
@@ -2129,6 +2130,8 @@ export function proximaRodada(sessao, derived = null, { preservarTurnoArmas = fa
     const r = rolarDano(preparaRolagemCura({ tipo: "dano", rotulo: "Regeneração Constante", dados: 2, faces: 8, fixo: derived.bloodfeast.modCon, tom: "cura" }, derived.efeitos));
     proxima = aplicaCura(registraRolagem(proxima, r), r.total, derived.hp);
   }
+  proxima = consumirAcoesAddon(proxima, (derived?.acoesAddon ?? [])
+    .filter((a) => a.tipo === "disparo").map((a) => a.estado));
   return { sessao: proxima, expirou };
 }
 
@@ -2215,6 +2218,7 @@ export function iniciaCombate(sessao, derived = null) {
  */
 export function descansar(sessao, derived, { marioneteId = null } = {}) {
   if (!derived) return sessao;
+  sessao = encerrarAcoesAddon(sessao);
   // O Mecha devolve o PV atual às componentes antes de reparar só a escolhida.
   const mesa = separaMecha(sessao);
   return {
@@ -2837,6 +2841,7 @@ function alteraDominioDoEstilo(sessao, combate, estado, valor) {
 
 /** A mudança de combate encerra o Ápice e cobra a Exaustão da rodada aberta. */
 export function aplicaPatchCombate(sessao, parcial) {
+  if (parcial?.ativo === false) sessao = encerrarAcoesAddon(sessao);
   /* O fim do combate desmancha a Expansão no ar, com a Exaustão de Técnica de
      sempre (Etapa 9): fora de combate a bancada zera o estado, e deixá-la
      "aberta" esconderia a Exaustão que ela deve. */
@@ -3038,6 +3043,48 @@ export function desativaRitual(sessao, feiticoId) {
 /** Empilha uma rolagem no log, com teto. O mais novo fica em cima. */
 export function registraRolagem(sessao, rolagem) {
   return { ...sessao, log: [rolagem, ...sessao.log].slice(0, LOG_MAX) };
+}
+
+/** Ação do pacote: custos passam pelos mesmos pagadores da ficha. */
+export function bloqueioAcaoAddon(sessao, acao, derived) {
+  if (!derived?.acoesAddon?.some((a) => a.estado === acao.estado)) return "Addon indisponível";
+  if (!sessao.combate?.ativo) return "Fora de combate";
+  if (acao.armaId && !derived.dano?.entradas?.some((e) => e.id === acao.armaId)) return "Arma não equipada";
+  if (acao.consomeUso) {
+    const max = derived.usosHabilidades?.[acao.consomeUso]?.max ?? 0;
+    if (usosGastosDe(sessao, "hab:" + acao.consomeUso) >= max) return "Sem usos da habilidade";
+  }
+  if (acao.feiticoId) {
+    const linha = derived.feiticos?.lista?.find((f) => f.id === acao.feiticoId);
+    const situacao = situacaoDaTecnicaMaxima(sessao, linha);
+    if (!situacao?.disponivel) return situacao?.motivo || "Técnica Máxima indisponível";
+  } else if (acao.custoPE > 0 && sessao.peAtual + peTempTotal(sessao) < acao.custoPE) {
+    return "PE insuficiente";
+  }
+  return null;
+}
+
+export function usarAcaoAddon(sessao, acao, derived) {
+  if (bloqueioAcaoAddon(sessao, acao, derived) || sessao.combate?.[acao.estado]) return sessao;
+  let proxima = sessao;
+  if (acao.feiticoId) {
+    const linha = derived.feiticos?.lista?.find((f) => f.id === acao.feiticoId);
+    proxima = usaTecnicaMaxima(sessao, linha);
+  } else if (acao.custoPE > 0) {
+    proxima = gastaPe(sessao, acao.custoPE);
+  }
+  if (acao.consomeUso) {
+    proxima = marcaUso(proxima, { chave: "hab:" + acao.consomeUso,
+      max: derived.usosHabilidades[acao.consomeUso].max }, 1);
+  }
+  return definirAcaoAddon(proxima, acao, 1);
+}
+
+export function sustentarAcaoAddon(sessao, acao) {
+  if (!sessao.combate?.[acao.estado] || !(acao.sustentacaoPV > 0)) return sessao;
+  if (sessao.hpAtual < acao.sustentacaoPV) return definirAcaoAddon(sessao, acao, 0);
+  const paga = pagaCustoVida(sessao, acao.sustentacaoPV).sessao;
+  return paga.hpAtual > 0 ? paga : definirAcaoAddon(paga, acao, 0);
 }
 
 export { LOG_MAX };

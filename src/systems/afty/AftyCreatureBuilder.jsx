@@ -3547,6 +3547,7 @@ function CanalPicker({ value, onChange, grupos: catalogo = EFEITO_CANAL_GRUPOS }
   const veHpAtributo = usePrimitiva("hpAtributo") || value === "hpAtributo";
   // E o irmão dele no ataque (2026-09-28, Fórmula de Combate Entrópica).
   const veAtaqueAtributo = usePrimitiva("ataqueAtributo") || value === "ataqueAtributo";
+  const veAlcanceMult = usePrimitiva("alcanceArmaMult") || value === "alcanceArmaMult";
   // Mesma regra do de cima, para o canal que abaixa o pré-requisito de Aptidão.
   const veReqAptidao = usePrimitiva("requisitoAptidao") || value === "reduzNivelAptidao";
   // E para os dois da Arma Transformável, que o Azamaru abriu.
@@ -3565,6 +3566,7 @@ function CanalPicker({ value, onChange, grupos: catalogo = EFEITO_CANAL_GRUPOS }
       itens: g.itens.filter((c) =>
         (veHpAtributo || c.id !== "hpAtributo")
         && (veAtaqueAtributo || c.id !== "ataqueAtributo")
+        && (veAlcanceMult || c.id !== "alcanceArmaMult")
         && (veReqAptidao || c.id !== "reduzNivelAptidao")
         && (veArmaTransf || !CANAIS_ARMA_TRANSF.includes(c.id))
         && (vePvPassivas || !CANAIS_PV_PASSIVAS.includes(c.id))

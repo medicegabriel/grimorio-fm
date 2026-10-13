@@ -32,7 +32,7 @@ O inventário e a cobertura são somente leitura. Cada execução do comando usa
 
 `revisao:cobertura` sai com 0 quando identidades, proprietários, referências, hashes e estruturas estão coerentes. Ainda imprime revisão ausente. Sai com 1 ao detectar item novo sem registro, órfão, duplicação, conteúdo alterado, domínio sem protocolo ou inconsistência nos registros. `revisao:revisoes` também sai com 2 enquanto houver conteúdo sem aprovação ou lote sem registro. Essa saída 2 é esperada na abertura da campanha.
 
-A coleta descobre todos os módulos .js da raiz e percorre as subpastas. escopo.json classifica cada módulo adicional como DADOS ou INTERFACE, com justificativa e dono. Um módulo desconhecido gera erro. Inclui tabelas, Sets, aliases, arrays vazios e constantes escalares. Expande escolhas e pools, inspeciona os 68 addons e materializa heranças por instalação isolada. Domínios abertos têm protocolos; não se afirma que todos os seus valores foram testados.
+A coleta descobre todos os módulos .js da raiz e percorre as subpastas. escopo.json classifica cada módulo adicional como DADOS ou INTERFACE, com justificativa e dono. Um módulo desconhecido gera erro. Inclui tabelas, Sets, aliases, arrays vazios e constantes escalares. Expande escolhas e pools, inspeciona os 69 addons e materializa heranças por instalação isolada. Domínios abertos têm protocolos; não se afirma que todos os seus valores foram testados.
 
 Funções encontradas como dado são identificadas e recebem hash de seu texto, sem executá-las. Uma função nova ou um seletor interno novo precisa ser incorporado ao protocolo pelo lote do mecanismo. A coleta não é prova de que um consumidor executa corretamente uma regra.
 

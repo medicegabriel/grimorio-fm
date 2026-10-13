@@ -101599,6 +101599,348 @@
       "estado": "NÃO LOCALIZADA",
       "fontes": [],
       "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::alcance": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::alcance/efeitos": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::alcance/efeitos/@0": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::alcance/efeitos/@1": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::fome": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::fome/efeitos": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::fome/efeitos/@0": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::fome/efeitos/@1": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::fome/efeitos/@2": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::forma": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::forma/efeitos": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::forma/efeitos/@0": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::forma/efeitos/@1": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::forma/efeitos/@2": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::forma/efeitos/@3": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::forma/efeitos/@4": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::forma/efeitos/@5": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::maxima": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::maxima/dados": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::maxima/dados/@0": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::maxima/dados/@1": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::maxima/efeitos": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::maxima/efeitos/@0": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::mira": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::mira/efeitos": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::mira/efeitos/@0": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::sol": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::sol/efeitos": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acoesMotor::sol/efeitos/@0": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::acrescenta": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::descricao": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::funcionamentos": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::funcionamentos::fome": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::funcionamentos::forma": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::funcionamentos::mira": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::funcionamentos::mira_0": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::funcionamentos::mira_1": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::funcionamentos::mira_2": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::funcionamentos::mira_3": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::funcionamentos::sol": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::id": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::nome": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::paraRaw": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::permite": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::permite::alcanceArmaMult": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::@pacote::versao": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::acrescenta.armas::sniper": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::acrescenta.armas::sniper::dano": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::acrescenta.armas::sniper::props": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::acrescenta.armas::sniper::props/alcance": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::acrescenta.armas::sniper::props/alcance/@0": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::ciel-lucielus.json::acrescenta.armas::sniper::props/alcance/@1": {
+      "proprietario": "AD-69",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "afty-addons.js::PRIMITIVAS::alcanceArmaMult": {
+      "proprietario": "M05",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "afty-efeitos.js::EFEITO_CANAIS::alcanceArmaMult": {
+      "proprietario": "M01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@3::itens/alcanceArmaMult": {
+      "proprietario": "M01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
     }
   }
 }

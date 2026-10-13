@@ -1,0 +1,1966 @@
+{
+  "version": "2.0",
+  "exportedAt": "2026-10-13T00:52:31.867Z",
+  "system": "Feiticeiros & Maldições 2.5",
+  "count": 1,
+  "creatures": [
+    {
+      "system": "afty",
+      "rulesVersion": "afty",
+      "name": "Ciel Lucielus",
+      "portraitUrl": "https://i.pinimg.com/736x/39/81/3d/39813d646576471c5b22a1becd0739bb.jpg",
+      "portraitFocus": {
+        "x": 35.90583680714385,
+        "y": 38.91568783143926
+      },
+      "core": {
+        "tipo": "combatente",
+        "patamar": "calamidade",
+        "nd": 29,
+        "tamanho": "medio",
+        "tecnicaAttr": "destreza",
+        "tecnicaDescricao": "# **Ricochete **\nBasicamente utilizando da 3° Lei, faz com que a Força N gerada pelo impacto passa a ser totalmente redirecionado. Fazendo com que as coisas sejam ricocheteadas e impedindo que elas percam distanceamento, forçando ela a continuar se propagando até que essa força seja totalmente dissipada \n\nBuscando valorizar ao máximo cada disparo, você consegue encontrar sempre o ângulo perfeito para que um bom tiro não seja desperdiçado em um único alvo. Sempre que acerta um ataque com a Sniper, você pode fazer com que ele ricoche-teie contra outro alvo; nesse caso, você utiliza o mesmo ataque à distância com uma penalidade cumulativa de -3. Você pode continuar atacando novos alvos até errar um ataque.",
+        "tecnicaEfeitos": [],
+        "funcionamentosAdicionais": [
+          {
+            "id": "fb_mv4zi5v3_1",
+            "nome": "Disparo Destruidor ",
+            "descricao": "Fazendo com que a Inercia de seus disparos se mantenha, Ciel passa a conseguir consever e aprimorar o proprio disparo, fazendo com que para cada Dado de dano, some +2 de dano ",
+            "efeitos": [
+              {
+                "canal": "danoBonus",
+                "expr": "dados_dano_final"
+              }
+            ]
+          }
+        ],
+        "origem": {
+          "id": "derivado",
+          "bonusAtributos": {
+            "destreza": 2,
+            "inteligencia": 1
+          },
+          "desenvolvimento": {
+            "destreza": 6,
+            "inteligencia": 1
+          }
+        }
+      },
+      "alma": {
+        "atual": 100,
+        "max": 100
+      },
+      "qntPE": "muito_grande",
+      "attrMethod": "rolagem",
+      "attrLimite": {
+        "forca": 20,
+        "destreza": 20,
+        "constituicao": 20,
+        "inteligencia": 20,
+        "sabedoria": 20,
+        "presenca": 20
+      },
+      "attributes": {
+        "forca": 10,
+        "destreza": 16,
+        "constituicao": 14,
+        "inteligencia": 15,
+        "sabedoria": 14,
+        "presenca": 9
+      },
+      "attrNivel": {
+        "forca": 0,
+        "destreza": 0,
+        "constituicao": 4,
+        "inteligencia": 2,
+        "sabedoria": 6,
+        "presenca": 9
+      },
+      "pericias": {
+        "feiticaria": "treinado",
+        "intuicao": "mestre",
+        "oficio__3": "mestre",
+        "acrobacia": "mestre",
+        "percepcao": "treinado"
+      },
+      "periciasOrdem": null,
+      "periciasPersonalizadas": [],
+      "periciaOficio": "",
+      "periciaOficios": {
+        "oficio": [],
+        "oficio__2": [],
+        "oficio__3": [
+          "Cozinheiro"
+        ]
+      },
+      "periciasOficiosExtras": [],
+      "periciaAtributoManual": {
+        "oficio__3": "destreza"
+      },
+      "periciasBonus": 0,
+      "resistenciasProf": {
+        "reflexos": "mestre",
+        "fortitude": "mestre",
+        "vontade": "mestre",
+        "astucia": "mestre",
+        "integridade": "mestre"
+      },
+      "trDaClasse": [],
+      "trSegundo": null,
+      "trAtributoManual": {},
+      "ataquesProf": {
+        "corpo": true,
+        "distancia": true
+      },
+      "ataqueFineza": true,
+      "ataqueAtributoManual": {},
+      "armasDedicadas": [],
+      "defesasDano": {},
+      "catarse": {
+        "saldo": 0,
+        "compras": []
+      },
+      "carteira": {
+        "entradas": [],
+        "gastos": []
+      },
+      "espinho": {
+        "almas": 40,
+        "outros": 0,
+        "compras": {
+          "lendaria": 1,
+          "especializacao": 1
+        },
+        "equipamentos": []
+      },
+      "tecnicasCombate": {
+        "armas": [],
+        "atributo": "inteligencia"
+      },
+      "talentosConfig": {
+        "tal_mestre_das_armas": {
+          "modo": "armas",
+          "armas": [],
+          "grupo": null
+        },
+        "tal_tempestade_de_ideias": {
+          "pericia": "feiticaria",
+          "ferramenta": "",
+          "vantagemPericia": "furtividade"
+        },
+        "tal_artesao_amaldicoado": {
+          "ferramenta": null
+        }
+      },
+      "combate": {
+        "ativo": false,
+        "empolgacao": 1,
+        "insistenciaUsada": false,
+        "manobraAjuste": false,
+        "manobraDesarme": false,
+        "manobraEsquiva": false,
+        "manobraTrabalhoDePes": false,
+        "manobraFinalizadora": null,
+        "brutalidade": false,
+        "brutalidadePE": 0,
+        "brutalidadePilha": 0,
+        "ataqueInconsequente": false,
+        "impactoMisto": false,
+        "resistirPE": 0,
+        "furiaVinganca": false,
+        "imprudenciaMotivadora": false,
+        "machucado": false,
+        "abates": 0,
+        "armasAbsolutas": null,
+        "auraElemental": true,
+        "concentrarAura": [],
+        "golpeComAura": null,
+        "canalizarEmGolpe": false,
+        "canalizacaoMaxima": false
+      },
+      "equipamentos": {
+        "itens": [
+          {
+            "uid": "eq_mv4z3k1t_1",
+            "tipo": "item",
+            "refId": "itcc_mv4z0gvd_1",
+            "qtd": 1,
+            "equipado": true
+          },
+          {
+            "uid": "eq_mv4z79y9_2",
+            "tipo": "arma",
+            "refId": "ciel-lucielus:sniper",
+            "qtd": 1,
+            "equipado": true,
+            "fa": {
+              "grau": "especial",
+              "encantamentos": [
+                "enc_arma_cano_alongado"
+              ],
+              "habilidadeUnica": "",
+              "habilidadeEfeitos": [
+                {
+                  "canal": "nivelDano",
+                  "expr": "mod_destreza"
+                }
+              ]
+            },
+            "ataqueId": "distancia"
+          },
+          {
+            "uid": "eq_mv4zukad_3",
+            "tipo": "uniforme",
+            "refId": "unif_sob_medida",
+            "qtd": 1,
+            "equipado": true,
+            "fa": {
+              "grau": "especial",
+              "encantamentos": [],
+              "habilidadeUnica": ""
+            }
+          },
+          {
+            "uid": "eq_mv503lpe_4",
+            "tipo": "item",
+            "refId": "it_apanhador_de_saude",
+            "qtd": 1,
+            "equipado": true
+          },
+          {
+            "uid": "eq_mv50p7c1_5",
+            "tipo": "item",
+            "refId": "itcc_mv50ofsi_2",
+            "qtd": 1,
+            "equipado": true
+          }
+        ]
+      },
+      "armasCustom": [
+        {
+          "id": "armc_mv4z4kqz_1",
+          "nome": "",
+          "classe": "simples",
+          "categoria": "corpo",
+          "dano": {
+            "dado": "1d6",
+            "tipo": "ct"
+          },
+          "critico": 20,
+          "espacos": 1,
+          "custo": 1,
+          "grupo": "espada",
+          "props": {},
+          "niveis": {
+            "custoAnterior": false,
+            "desarmado": false,
+            "especiais": []
+          }
+        },
+        {
+          "id": "armc_mv4z4wfg_2",
+          "nome": "Sniper ",
+          "classe": "complexa",
+          "categoria": "distancia",
+          "dano": {
+            "dado": "1d12",
+            "tipo": "pf"
+          },
+          "critico": 19,
+          "espacos": 2,
+          "custo": 4,
+          "grupo": "tiro",
+          "props": {
+            "alcance": [
+              90,
+              120
+            ],
+            "emperrar": true,
+            "duas_maos": true,
+            "energica": true,
+            "fatal": "1d12",
+            "mortal": "1d12"
+          },
+          "niveis": {
+            "custoAnterior": false,
+            "desarmado": false,
+            "especiais": []
+          }
+        }
+      ],
+      "forjas": [],
+      "especializacoes": [
+        {
+          "id": "combatente",
+          "nivel": 20
+        },
+        {
+          "id": "conjurador",
+          "nivel": 9
+        }
+      ],
+      "feiticos": [
+        {
+          "id": "feit_mv50tr8o_2",
+          "nome": "Fio do Vazio ",
+          "tipo": "personalizado",
+          "nivel": "max",
+          "conjuracaoTexto": "",
+          "descricao": "Custo Mecânico: Ação Completa (Consome Ação Padrão, Ação Bônus, todos os Ataques Extras e o Surto de Ação  do turno)\n\nDescrição: Ciel subitamente cessa todo o movimento. No meio do caos da batalha, ele encontra um instante de silêncio absoluto. Ele não está apenas mirando, ele está impondo o fim.\n\nAo abrir mão de sua velocidade e de ataques múltiplos, Ciel força uma quantidade letal e instável de energia amaldiçoada no cano de sua arma. A pressão é tão densa que o ar ao redor deforma, criando pequenas faíscas negras gravitacionais que tentam escapar, mas são engolidas de volta pela força da compressão. Ele usa seu Surto de Ação não para se mover mais rápido, mas para forçar seu próprio corpo a suportar o recuo iminente de concentrar apenas morte em um espaço tão pequeno.\n\nQuando o gatilho é puxado, não há um estrondo comum, mas o som de um vácuo rasgando a realidade. O disparo é um feixe singular e escuro como o abismo.\n\nMecanico: TRANSFORMAÇÕES: Tecnica Maxima\nEscolha entre três efeitos auxiliares Duradouros de Nível 4\nDura apenas uma Rodada: 4 para 5.\nEfeitos da Transformação\nDANO ADICIONAL – APÓS ATAQUE - 7d12 Um Unico Disparo passa pra 14d12\nDANO ADICIONAL – DURANTE ATAQUE 5d12 Um Unico Disparo passa pra 10d12\nDANO ADICIONAL – DANO FIXO +50 Um Unico Disparo passa pra 100.",
+          "variacaoDe": null,
+          "resolucao": "tr",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "completa",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 12,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "transformacao",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "completa",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [],
+          "acaoPersonalizada": "Ação Completa",
+          "alcanceTexto": "Sniper",
+          "alvoTexto": "",
+          "duracaoTexto": "Um único disparo",
+          "resolucaoTexto": "",
+          "comCd": false,
+          "rolagens": [],
+          "custoVidaAtivacao": null,
+          "regraTecnicaMaxima": "oficial"
+        },
+        {
+          "id": "feit_mv51e64d_3",
+          "nome": "Disparo Destrutivo",
+          "tipo": "especial",
+          "nivel": 5,
+          "conjuracaoTexto": "",
+          "descricao": "",
+          "variacaoDe": null,
+          "resolucao": "tr",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "comum",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 10,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoVidaAtivacao": null
+        },
+        {
+          "id": "feit_mv51sroy_4",
+          "nome": "Mira telescópica ",
+          "tipo": "passivo",
+          "nivel": 5,
+          "conjuracaoTexto": "",
+          "descricao": "",
+          "variacaoDe": null,
+          "resolucao": "tr",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "comum",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "personalizado",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [
+            {
+              "canal": "alcanceArma",
+              "expr": "18"
+            }
+          ],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoVidaAtivacao": null
+        },
+        {
+          "id": "feit_mv51tvpn_5",
+          "nome": "Ricochete Perfeito",
+          "tipo": "passivo",
+          "nivel": 5,
+          "conjuracaoTexto": "",
+          "descricao": "Desde que tenha um caminho ou estruturas pra continuar se propagando, até o alvo ignorando Coberturas, Camuflagem e posso atirar em alvos mesmo que não esteja no meu campo de visão, por N fontes. ",
+          "variacaoDe": null,
+          "resolucao": "tr",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "comum",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoVidaAtivacao": null
+        },
+        {
+          "id": "feit_mv51u5gy_6",
+          "nome": "Primeiro Disparo Destrutivo ",
+          "tipo": "passivo",
+          "nivel": 5,
+          "conjuracaoTexto": "",
+          "descricao": "Quando um combate se inicia, você é o primeiro a disparar. Durante a rolagem da iniciativa, você pode efetuar um Disparo Destrutivo.",
+          "variacaoDe": null,
+          "resolucao": "tr",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "comum",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoVidaAtivacao": null
+        },
+        {
+          "id": "feit_mv51w87s_7",
+          "nome": "Sincronia do Abismo",
+          "tipo": "passivo",
+          "nivel": 5,
+          "conjuracaoTexto": "",
+          "descricao": " Sempre que Ciel realiza um ataque de precisão cirúrgica (resultado par 13, 15, 17 ou 19), Lu ou Alter atravez de um sentelha de sua alma, ainda acoplada em seu ataque, surgindo e completando o ataque.\nEsse efeito ocorre apenas com a 1° Pessoa acertada pelo ataque. Esse ataque coordenado canaliza a fúria da dupla, desferindo +8d de dano adicional.\nQuando efetuar a troca 3x, o 4° passa a ser garantido. ",
+          "variacaoDe": null,
+          "resolucao": "tr",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "comum",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoVidaAtivacao": null
+        },
+        {
+          "id": "feit_mv51xzvg_8",
+          "nome": "Química Geral",
+          "tipo": "passivo",
+          "nivel": 5,
+          "conjuracaoTexto": "",
+          "descricao": "Sempre que rolar um teste de resistência, tem 1 dado a mais enquanto ambos estiverem acordados, se eles já eram especialistas recebem +5 no teste. Por cada um ter se especializado, Lu focou em fazer seu corpo templo impuro basicamente cada vez mais resistente.",
+          "variacaoDe": null,
+          "resolucao": "tr",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "comum",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "tr",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [
+            {
+              "canal": "bonusTR",
+              "expr": "5"
+            }
+          ],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoVidaAtivacao": null
+        },
+        {
+          "id": "feit_mv51z2ma_9",
+          "nome": "Veredito do Carrasco (Sequencial Destrutivo)",
+          "tipo": "passivo",
+          "nivel": 1,
+          "conjuracaoTexto": "",
+          "descricao": "IV:Veredito do Carrasco (Sequencial Destrutivo): Ao superar a CA por 20 ou mais, o alvo é marcado com Vulnerabilidade total por 2 rodadas. Além disso, Ciel agora pode executar a Mira Destrutiva duas vezes por rodada.",
+          "variacaoDe": null,
+          "resolucao": "tr",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "comum",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoVidaAtivacao": null
+        },
+        {
+          "id": "feit_mv51zleh_10",
+          "nome": "Ricochete Perfeito",
+          "tipo": "passivo",
+          "nivel": 5,
+          "conjuracaoTexto": "",
+          "descricao": "Desde que tenha um caminho ou estruturas pra continuar se propagando, até o alvo ignorando Coberturas, Camuflagem e posso atirar em alvos mesmo que não esteja no meu campo de visão, por N fontes. ",
+          "variacaoDe": null,
+          "resolucao": "tr",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "comum",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoVidaAtivacao": null
+        },
+        {
+          "id": "feit_mv51zvky_11",
+          "nome": "Inércia Transferida",
+          "tipo": "passivo",
+          "nivel": 5,
+          "conjuracaoTexto": "",
+          "descricao": "Em vez do ricochete perder força (a penalidade cumulativa de -3 do ricochete normal), o soco da Lu \"zera\" a perda de inércia e adiciona a fúria dela ao disparo do Ciel.\nCondicional: Quando efetuar um ataque em conjunto com Lu",
+          "variacaoDe": null,
+          "resolucao": "tr",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "comum",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoVidaAtivacao": null
+        }
+      ],
+      "reducoesCustoFeitico": {
+        "dominancia": null,
+        "manipulacao": []
+      },
+      "estilosSombra": [],
+      "estiloFuncionamento": {
+        "texto": "",
+        "durabilidadeTrilha": null
+      },
+      "habilidadesGerais": [
+        "ger_melhoria_superior",
+        "ger_habilidade_lendaria",
+        "ger_treinamentos",
+        "ger_treinamentos",
+        "ger_treinamentos",
+        "ger_aptidao",
+        "ger_aptidao",
+        "ger_aptidao",
+        "ger_aptidao",
+        "ger_especializacao",
+        "ger_especializacao",
+        "ger_especializacao",
+        "ger_especializacao"
+      ],
+      "focosLivres": 0,
+      "periciaAtributo": "inteligencia",
+      "habilidades": [
+        "cmb_golpe_especial",
+        "cmb_repertorio_do_especialista",
+        "cmb_autossuficiente",
+        "cmb_assumir_postura",
+        "cnj_movimentos_imprevisiveis",
+        "cmb_extensao_do_corpo",
+        "cmb_precisao_definitiva",
+        "cmb_espirito_de_luta",
+        "cmb_critico_melhorado",
+        "cmb_manejo_especial",
+        "cmb_espirito_incansavel",
+        "cmb_mestre_da_postura",
+        "cmb_surto_de_acao",
+        "cmb_ataque_extra",
+        "cmb_ataque_concentrado",
+        "cmb_preparacao_rapida",
+        "cmb_guarda_estudada",
+        "cmb_mira_destrutiva",
+        "cnj_olhar_preciso",
+        "cmb_recarga_rapida",
+        "cmb_olhos_de_aguia",
+        "cnj_mira_aperfeicoada"
+      ],
+      "escolhasHabilidade": {
+        "cmb_repertorio_do_especialista": [
+          "cmb_estilo_defensivo",
+          "cmb_estilo_distante",
+          "cmb_estilo_massivo"
+        ],
+        "cmb_assumir_postura": [
+          "cmb_postura_da_devastacao",
+          "cmb_postura_do_ceu"
+        ],
+        "cmb_manejo_especial": [
+          "me_enc_arma_precisa"
+        ],
+        "cmb_guarda_estudada": [
+          "cmb_guarda_reflexos"
+        ]
+      },
+      "escolhasTalento": {
+        "tal_quebra_de_limites": [
+          "tal_quebra_inteligencia",
+          "tal_quebra_sabedoria"
+        ],
+        "tal_tempestade_de_ideias": [
+          "tal_tempestade_inteligencia"
+        ],
+        "tal_alma_livre": [
+          "tal_alma_livre_esp_lutador"
+        ]
+      },
+      "talentos": [
+        "tal_quebra_de_limites",
+        "tal_tempestade_de_ideias"
+      ],
+      "invocacoes": [],
+      "origemContadores": {
+        "olhinhos-lu:olhos_fechados": 1,
+        "olhinhos-lu:atencao_intuicao": 1
+      },
+      "hordas": [],
+      "quimeras": [],
+      "fundamentosPerdidos": [],
+      "aptidoes": {
+        "au": 5,
+        "cl": 4,
+        "bar": 5,
+        "dom": 0,
+        "er": 4
+      },
+      "aptidoesAmaldicoadas": [
+        "energia_reversa",
+        "dominio_simples",
+        "tecnica_maxima",
+        "abencoado_pelas_faiscas_negras",
+        "raio_negro",
+        "aura_macica",
+        "aura_anuladora",
+        "aura_elemental",
+        "aura_reforcada",
+        "aura_embacada",
+        "aura_controlada",
+        "canalizar_em_golpe",
+        "canalizacao_avancada",
+        "canalizacao_maxima",
+        "leitura_de_aura",
+        "leitura_rapida_de_energia",
+        "rastreio_avancado",
+        "tecnicas_de_barreira",
+        "cortina",
+        "cura_amplificada",
+        "fluxo_constante",
+        "regeneracao_aprimorada",
+        "liberacao_de_energia_reversa",
+        "cura_em_grupo",
+        "canalizar_energia_reversa"
+      ],
+      "aptidaoOpcoes": {
+        "aura_elemental": "sonico"
+      },
+      "aptidaoOpcoesRepetidas": {},
+      "dominios": [],
+      "dominioAtivoId": null,
+      "treinamentos": {
+        "atributo": [
+          {
+            "alvo": "destreza",
+            "progresso": 4
+          },
+          {
+            "alvo": "inteligencia",
+            "progresso": 4
+          }
+        ],
+        "agilidade": 4,
+        "compreensao": 4,
+        "controle_energia": 4,
+        "energia_reversa": 4,
+        "luta": 2,
+        "resistencia": 4,
+        "pericia": [
+          {
+            "alvo": "furtividade",
+            "progresso": 4
+          },
+          {
+            "alvo": "acrobacia",
+            "progresso": 4
+          },
+          {
+            "alvo": "intuicao",
+            "progresso": 4
+          },
+          {
+            "alvo": "feiticaria",
+            "progresso": 4
+          }
+        ],
+        "manejo_arma": [
+          {
+            "alvo": "ciel-lucielus:sniper",
+            "progresso": 4
+          }
+        ]
+      },
+      "treinamentoAlvos": {},
+      "treinamentoEscolhas": {},
+      "treinoEscolhaFeiticos": {},
+      "votos": {
+        "contratuais": [],
+        "mecanicos": []
+      },
+      "pacto": {
+        "nome": "",
+        "descricao": "",
+        "maleficios": [],
+        "beneficios": []
+      },
+      "modificacoesCorporais": {
+        "descricao": "",
+        "efeitosBase": [],
+        "limite": 0,
+        "enxertos": []
+      },
+      "tita": {
+        "ativo": false,
+        "membros": 5
+      },
+      "caracteristicasAmaldicoadas": [],
+      "caracteristicasAmaldicoadasAlvos": {},
+      "treinosEspeciais": [
+        {
+          "id": "tes_habilidade",
+          "alvo": null
+        },
+        {
+          "id": "tes_habilidade",
+          "alvo": null
+        },
+        {
+          "id": "tes_habilidade",
+          "alvo": null
+        },
+        {
+          "id": "tes_feitico",
+          "alvo": null
+        },
+        {
+          "id": "tes_feitico",
+          "alvo": null
+        },
+        {
+          "id": "tes_feitico",
+          "alvo": null
+        },
+        {
+          "id": "tes_feitico",
+          "alvo": null
+        },
+        {
+          "id": "tes_feitico",
+          "alvo": null
+        },
+        {
+          "id": "tes_feitico",
+          "alvo": null
+        }
+      ],
+      "treinoEspecialProgresso": {},
+      "focosBonus": 0,
+      "statOverrides": {},
+      "melhoriasSuperiores": [
+        "mel_precisao",
+        "mel_alma",
+        "mel_alma",
+        "mel_resistencia",
+        "mel_defesa"
+      ],
+      "habilidadesLendarias": [
+        "len_aperfeicoamento_de_atributo",
+        "len_intocavel",
+        "len_consciencia_absoluta_da_alma",
+        "len_um_com_o_mundo",
+        "len_atingir_apice"
+      ],
+      "escolhasAltoNivel": {
+        "len_aperfeicoamento_de_atributo": [
+          "destreza"
+        ],
+        "mel_resistencia": [
+          "reflexos"
+        ],
+        "len_atingir_apice": [
+          "api_invencivel_sob_o_sol"
+        ]
+      },
+      "aparencia": null,
+      "addons": [
+        {
+          "id": "criacao-de-equipamentos",
+          "nome": "Criação de Equipamentos",
+          "versao": "1.3.0",
+          "autor": "",
+          "descricao": "Guia Criação de Equipamentos e Itens 2.5.2. Abre os cards Revestimentos Criados e Escudos Criados na aba Equipamentos. O Custo, de 1 a 4, decide pela tabela a Defesa e a penalidade do Revestimento, e a RD, a penalidade e o dado do Escudo. Um Revestimento de Custo 2 ou mais pode trocar um degrau de Defesa por +2 em duas escolhas entre Perícia e RD por Tipo. No editor de arma própria, abre a conta do guia: o dado sai do Custo menos os Níveis de Dano gastos em propriedades e crítico, o alcance sai da tabela pelo grau da Ferramenta, e a Propriedade Especial recebe efeitos personalizados. Abre também o card Itens de Custo Criados: um efeito da tabela do Custo, Passivo quando vale equipado ou Ativo quando é de uso, com Arremessável, Área ou Totem. Na Habilidade Única da Ferramenta de Grau Especial, abre a conta opcional do Encantamento de Grau Especial: Interações Simples pelo modificador de um atributo, divisão ou penalidade, melhoria de Encantamento Padrão e o Feitiço da Técnica Inata. Sem o pacote, o Revestimento e o Escudo criados continuam na ficha e deixam de contar, e a arma continua com o dado da conta. Não liga junto com a Criação de Armas.",
+          "paraRaw": "afty",
+          "permite": [
+            "armasPorNivel",
+            "encantamentoGuia"
+          ],
+          "libera": [
+            "revestimentosCriados",
+            "escudosCriados",
+            "itensDeCusto"
+          ],
+          "concedeAptidoes": [],
+          "substituiEnergiaReversa": null,
+          "incompativeis": [
+            "criacao-de-armas"
+          ],
+          "adaptacoes": [],
+          "bloodfeast": null,
+          "funcionamentos": [],
+          "estilos": [],
+          "atributos": {},
+          "feiticos": [],
+          "estadosCombate": [],
+          "contadoresOrigem": [],
+          "catarse": null,
+          "espinho": null,
+          "pactoPadrao": null,
+          "votoAutomatico": null,
+          "regrasAfty": null,
+          "acrescenta": {},
+          "substitui": {}
+        },
+        {
+          "id": "espinho",
+          "nome": "Espinho",
+          "versao": "1.0.0",
+          "autor": "Afty",
+          "descricao": "Um contador de Almas (Totais e Restantes) e o que elas compram. Cada compra abre uma vaga ou dá um ganho na ficha, e nada disso é Feitiço: acumula com Feitiços, Equipamentos e todo o resto. O card fica na aba Habilidades do Criador e da Ficha Final. A vaga comprada é escolhida na aba de sempre (Talento em Talentos, Perícia em Perícias), e o Equipamento é um item do inventário marcado no card, que vira Grau Especial. O teto de cada item escala com o Bônus de Treinamento, e o Addon Alter aumenta esse teto em 50%.",
+          "paraRaw": "afty",
+          "permite": [
+            "espinho"
+          ],
+          "libera": [],
+          "concedeAptidoes": [],
+          "substituiEnergiaReversa": null,
+          "incompativeis": [],
+          "adaptacoes": [],
+          "bloodfeast": null,
+          "funcionamentos": [],
+          "estilos": [],
+          "atributos": {},
+          "feiticos": [],
+          "estadosCombate": [],
+          "contadoresOrigem": [],
+          "catarse": null,
+          "espinho": {
+            "itens": [
+              {
+                "id": "especializacao",
+                "nome": "Habilidade de Especialização",
+                "descricao": "Concede uma Habilidade de Especialização adicional.",
+                "custo": 6,
+                "teto": "bt",
+                "grupo": 1,
+                "efeitos": [
+                  {
+                    "canal": "vagasHabilidade",
+                    "expr": "1"
+                  }
+                ]
+              },
+              {
+                "id": "talento",
+                "nome": "Talento",
+                "descricao": "Concede um Talento adicional.",
+                "custo": 4,
+                "teto": "bt",
+                "grupo": 1,
+                "efeitos": [
+                  {
+                    "canal": "vagasTalento",
+                    "expr": "1"
+                  }
+                ]
+              },
+              {
+                "id": "aptidao",
+                "nome": "Aptidão Amaldiçoada",
+                "descricao": "Concede uma Aptidão Amaldiçoada adicional.",
+                "custo": 6,
+                "teto": "bt",
+                "grupo": 1,
+                "efeitos": [
+                  {
+                    "canal": "vagasAptidao",
+                    "expr": "1"
+                  }
+                ]
+              },
+              {
+                "id": "nivel_aptidao",
+                "nome": "Nível de Aptidão",
+                "descricao": "Concede um Nível de Aptidão adicional.",
+                "custo": 6,
+                "teto": "2",
+                "grupo": 1,
+                "efeitos": [
+                  {
+                    "canal": "pontosAptidao",
+                    "expr": "1"
+                  }
+                ]
+              },
+              {
+                "id": "treinamento",
+                "nome": "Treinamento",
+                "descricao": "Concede um Foco de Interlúdio adicional.",
+                "custo": 2,
+                "teto": "2 * bt",
+                "grupo": 1,
+                "efeitos": [
+                  {
+                    "canal": "focos",
+                    "expr": "1"
+                  }
+                ]
+              },
+              {
+                "id": "lendaria",
+                "nome": "Habilidade Lendária",
+                "descricao": "Concede uma Habilidade Lendária adicional.",
+                "custo": 6,
+                "teto": "bt / 2",
+                "grupo": 1,
+                "efeitos": [
+                  {
+                    "canal": "vagasLendaria",
+                    "expr": "1"
+                  }
+                ]
+              },
+              {
+                "id": "melhoria",
+                "nome": "Melhoria Superior",
+                "descricao": "Concede uma Melhoria Superior adicional.",
+                "custo": 4,
+                "teto": "bt / 2",
+                "grupo": 1,
+                "efeitos": [
+                  {
+                    "canal": "vagasMelhoria",
+                    "expr": "1"
+                  }
+                ]
+              },
+              {
+                "id": "alma",
+                "nome": "Aumento de Alma",
+                "descricao": "Recebe 10 Pontos de Alma/Integridade adicionais.",
+                "custo": 6,
+                "teto": "bt",
+                "grupo": 2,
+                "efeitos": [
+                  {
+                    "canal": "almaMax",
+                    "expr": "10"
+                  }
+                ]
+              },
+              {
+                "id": "atributo",
+                "nome": "Aumento de Atributo",
+                "descricao": "Recebe 1 Ponto de Atributo adicional.",
+                "custo": 4,
+                "teto": "bt",
+                "grupo": 2,
+                "efeitos": [
+                  {
+                    "canal": "pontosAtributo",
+                    "expr": "1"
+                  }
+                ]
+              },
+              {
+                "id": "determinado",
+                "nome": "Determinado a Viver",
+                "descricao": "Recebe um Talento chamado Determinado a Viver - Adicional, que contém os mesmos efeitos do Determinado a Viver clássico. É só mais uma fonte de usar o mesmo.",
+                "custo": 15,
+                "teto": "1",
+                "grupo": 2,
+                "tipo": "talento",
+                "concedeTalento": "tal_determinado_a_viver_adicional"
+              },
+              {
+                "id": "pericia",
+                "nome": "Perícias",
+                "descricao": "Se torna Treinado em uma Perícia.",
+                "custo": 3,
+                "grupo": 2,
+                "efeitos": [
+                  {
+                    "canal": "vagasPericia",
+                    "expr": "1"
+                  }
+                ]
+              },
+              {
+                "id": "aprimoramento",
+                "nome": "Aprimoramento de Equipamento",
+                "descricao": "Faz com que um Equipamento conseguido pelo Espinho receba um Efeito de Grau Especial adicional. Máximo de 1 por equipamento.",
+                "custo": 10,
+                "tipo": "aprimoramento"
+              },
+              {
+                "id": "equipamento",
+                "nome": "Equipamento",
+                "descricao": "Recebe um Equipamento de Grau Especial.",
+                "custo": 10,
+                "tipo": "equipamento"
+              }
+            ]
+          },
+          "pactoPadrao": null,
+          "votoAutomatico": null,
+          "regrasAfty": null,
+          "acrescenta": {
+            "talentos": [
+              {
+                "id": "tal_determinado_a_viver_adicional",
+                "nome": "Determinado a Viver - Adicional",
+                "grupo": "geral",
+                "soConcedido": true,
+                "descricao": "Mesmo de frente a perigos e ameaças sem limites, você mantém sua vontade de viver e seguir em frente. Uma vez por dia, na primeira vez que fosse para os testes de morte, você pode escolher ficar com 1 de vida ao invés disso. Todo teste de morte que você realiza, a partir do segundo, possui vantagem."
+              }
+            ]
+          },
+          "substitui": {}
+        },
+        {
+          "id": "olhinhos-lu",
+          "nome": "Olhinhos Lu( Corpo Principal )",
+          "versao": "1.1.0",
+          "autor": "Afty",
+          "descricao": "Enquanto de olhos estiverem fechados de alguma forma, o Coded Gigas fornece os seguintes efeitos:\n\nPRO:\n- Enquanto com os olhos fechados Ciel recebe 3x seu Nível de Controle e Leitura em Intuição. (Arredondado para Cima)\n\n- Pode mudar o Calculo de Atenção para usar Intuição, além de poder trocar Testes de Percepção por Intuição.\n\n- Consegue enxergar por Técnicas de Barreiras, além de conseguir ativamente ver os Limites de um Domínio e enxergar o Domínio Inato das pessoas.",
+          "paraRaw": "afty",
+          "permite": [
+            "olhinhosLu"
+          ],
+          "libera": [],
+          "concedeAptidoes": [],
+          "substituiEnergiaReversa": null,
+          "incompativeis": [],
+          "adaptacoes": [],
+          "bloodfeast": null,
+          "funcionamentos": [],
+          "estilos": [],
+          "atributos": {},
+          "feiticos": [],
+          "estadosCombate": [],
+          "contadoresOrigem": [],
+          "catarse": null,
+          "espinho": null,
+          "pactoPadrao": null,
+          "votoAutomatico": null,
+          "regrasAfty": null,
+          "acrescenta": {},
+          "substitui": {}
+        },
+        {
+          "id": "ciel-lucielus",
+          "nome": "Ciel Lucielus",
+          "versao": "1.0.0",
+          "autor": "",
+          "descricao": "Fome de Guerra, Mira Destrutiva, Forma Verdadeira e Fio do Vazio.",
+          "paraRaw": "afty",
+          "permite": [
+            "alcanceArmaMult"
+          ],
+          "libera": [],
+          "concedeAptidoes": [],
+          "substituiEnergiaReversa": null,
+          "incompativeis": [],
+          "adaptacoes": [],
+          "bloodfeast": null,
+          "acoesMotor": [
+            {
+              "id": "sol",
+              "nome": "Postura do Sol (estilo próprio)",
+              "tipo": "estado",
+              "descricao": "quando ele esteja na postura do Sol ele aumente de 2x para 4x o alcance de suas armas",
+              "efeitos": [
+                {
+                  "canal": "alcanceArmaMult",
+                  "alvo": "arma",
+                  "quando": "!em_postura_sol e !invencivel_sob_osol",
+                  "expr": "4 / (1 + em_postura_ceu)"
+                }
+              ]
+            },
+            {
+              "id": "fome",
+              "nome": "Fome de Guerra",
+              "descricao": "Fome de Guerra (Antiga: Espírito da Guerra): Ciel se transmuta conforme o caos aumenta. Para cada inimigo debilitado (petrificado ou sangrando), ele absorve o desespero ambiente, recebendo +1 em acerto e 1d+5 em dano físico, acumulando-se até o ápice de +5/5d+25.",
+              "tipo": "contador",
+              "max": 5,
+              "efeitos": [
+                {
+                  "canal": "bonusAcerto",
+                  "expr": "cargas"
+                },
+                {
+                  "canal": "dadosDano",
+                  "alvo": "basico|tipo:pf|tipo:ct|tipo:im",
+                  "expr": "cargas"
+                },
+                {
+                  "canal": "danoBonus",
+                  "alvo": "basico|tipo:pf|tipo:ct|tipo:im",
+                  "expr": "5 * cargas"
+                }
+              ]
+            },
+            {
+              "id": "mira",
+              "nome": "Mira Destrutiva",
+              "descricao": "(Mira Destrutiva): Ao abdicar da vantagem comum para focar em um ponto vital (olho, perna, braço), Ciel assume uma penalidade de -10 no acerto. Se bem-sucedido, ele não apenas fere, mas impõe as consequências de perda de membro conforme a tabela de danos extremos por 2 rodadas.",
+              "tipo": "estado",
+              "efeitos": [
+                {
+                  "canal": "acertoArma",
+                  "alvo": "ciel-lucielus:sniper",
+                  "expr": "-10"
+                }
+              ]
+            },
+            {
+              "id": "forma",
+              "nome": "LM - Forma Verdadeira(15)",
+              "descricao": "Tipo: Transformação | Conjuração: Ação Bônus\nSustento: 90 pontos de vida por rodada\nDuração: Sustentada\n\nLu e Ciel força sua energia amaldiçoada a transbordar pelo corpo, entrando em estado de hipervitalidade. Enquanto sustentada, ele recebe os seguintes efeitos simultaneamente:\n\n- Forma Demonica.\n- Aumento de Atributo( 4 Dex, 4 Const e 4 Int )\n\nEncerrando a transformação: Ao encerrar voluntariamente ou ao ficar sem vida para pagar o custo, Lu recebe a condição Exposto por 2 rodadas e sua regeneração é reduzida à metade até o início do seu próximo turno. Sustentar uma transformação por mais de 2 rodadas consecutivas, desconsiderando a rodada de ativação, garante um ponto de exaustão.",
+              "tipo": "estado",
+              "custoPE": 15,
+              "sustentacaoPV": 90,
+              "efeitos": [
+                {
+                  "canal": "atributo",
+                  "alvo": "destreza",
+                  "expr": "4",
+                  "furaTeto": true,
+                  "duracao": "temporaria"
+                },
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "destreza",
+                  "expr": "4",
+                  "furaTeto": true
+                },
+                {
+                  "canal": "atributo",
+                  "alvo": "constituicao",
+                  "expr": "4",
+                  "furaTeto": false,
+                  "duracao": "temporaria"
+                },
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "constituicao",
+                  "expr": "4",
+                  "furaTeto": false
+                },
+                {
+                  "canal": "atributo",
+                  "alvo": "inteligencia",
+                  "expr": "4",
+                  "furaTeto": false,
+                  "duracao": "temporaria"
+                },
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "inteligencia",
+                  "expr": "4",
+                  "furaTeto": false
+                }
+              ]
+            },
+            {
+              "id": "alcance",
+              "nome": "Estilo próprio de Ciel",
+              "tipo": "passivo",
+              "efeitos": [
+                {
+                  "canal": "alcanceArmaMult",
+                  "alvo": "cat:distancia|cat:arremesso",
+                  "quando": "destreza >= 32",
+                  "expr": "10"
+                },
+                {
+                  "canal": "alcanceArmaMult",
+                  "alvo": "arma",
+                  "quando": "em_postura_sol ou invencivel_sob_osol",
+                  "expr": "4 / (1 + (em_postura_ceu ou invencivel_sob_osol))"
+                }
+              ]
+            },
+            {
+              "id": "maxima",
+              "nome": "Fio do Vazio",
+              "descricao": "Custo Mecânico: Ação Completa (Consome Ação Padrão, Ação Bônus, todos os Ataques Extras e o Surto de Ação  do turno)\n\nDescrição: Ciel subitamente cessa todo o movimento. No meio do caos da batalha, ele encontra um instante de silêncio absoluto. Ele não está apenas mirando, ele está impondo o fim.\n\nAo abrir mão de sua velocidade e de ataques múltiplos, Ciel força uma quantidade letal e instável de energia amaldiçoada no cano de sua arma. A pressão é tão densa que o ar ao redor deforma, criando pequenas faíscas negras gravitacionais que tentam escapar, mas são engolidas de volta pela força da compressão. Ele usa seu Surto de Ação não para se mover mais rápido, mas para forçar seu próprio corpo a suportar o recuo iminente de concentrar apenas morte em um espaço tão pequeno.\n\nQuando o gatilho é puxado, não há um estrondo comum, mas o som de um vácuo rasgando a realidade. O disparo é um feixe singular e escuro como o abismo.\n\nMecanico: TRANSFORMAÇÕES: Tecnica Maxima\nEscolha entre três efeitos auxiliares Duradouros de Nível 4\nDura apenas uma Rodada: 4 para 5.\nEfeitos da Transformação\nDANO ADICIONAL – APÓS ATAQUE - 7d12 Um Unico Disparo passa pra 14d12\nDANO ADICIONAL – DURANTE ATAQUE 5d12 Um Unico Disparo passa pra 10d12\nDANO ADICIONAL – DANO FIXO +50 Um Unico Disparo passa pra 100.",
+              "tipo": "disparo",
+              "feiticoId": "feit_mv50tr8o_2",
+              "armaId": "ciel-lucielus:sniper",
+              "consomeUso": "cmb_surto_de_acao",
+              "efeitos": [
+                {
+                  "canal": "danoBonus",
+                  "alvo": "ciel-lucielus:sniper",
+                  "expr": "100"
+                }
+              ],
+              "dados": [
+                {
+                  "dados": 14,
+                  "faces": 12,
+                  "momento": "apos"
+                },
+                {
+                  "dados": 10,
+                  "faces": 12,
+                  "momento": "durante"
+                }
+              ]
+            }
+          ],
+          "funcionamentos": [
+            {
+              "id": "sol",
+              "nome": "Estilo próprio de Ciel",
+              "descricao": "quando ele esteja na postura do Sol ele aumente de 2x para 4x o alcance de suas armas"
+            },
+            {
+              "id": "fome",
+              "nome": "Fome de Guerra",
+              "descricao": "Fome de Guerra (Antiga: Espírito da Guerra): Ciel se transmuta conforme o caos aumenta. Para cada inimigo debilitado (petrificado ou sangrando), ele absorve o desespero ambiente, recebendo +1 em acerto e 1d+5 em dano físico, acumulando-se até o ápice de +5/5d+25."
+            },
+            {
+              "id": "mira",
+              "nome": "Mira Destrutiva",
+              "descricao": "(Mira Destrutiva): Ao abdicar da vantagem comum para focar em um ponto vital (olho, perna, braço), Ciel assume uma penalidade de -10 no acerto. Se bem-sucedido, ele não apenas fere, mas impõe as consequências de perda de membro conforme a tabela de danos extremos por 2 rodadas."
+            },
+            {
+              "id": "forma",
+              "nome": "LM - Forma Verdadeira(15)",
+              "descricao": "Tipo: Transformação | Conjuração: Ação Bônus\nSustento: 90 pontos de vida por rodada\nDuração: Sustentada\n\nLu e Ciel força sua energia amaldiçoada a transbordar pelo corpo, entrando em estado de hipervitalidade. Enquanto sustentada, ele recebe os seguintes efeitos simultaneamente:\n\n- Forma Demonica.\n- Aumento de Atributo( 4 Dex, 4 Const e 4 Int )\n\nEncerrando a transformação: Ao encerrar voluntariamente ou ao ficar sem vida para pagar o custo, Lu recebe a condição Exposto por 2 rodadas e sua regeneração é reduzida à metade até o início do seu próximo turno. Sustentar uma transformação por mais de 2 rodadas consecutivas, desconsiderando a rodada de ativação, garante um ponto de exaustão."
+            },
+            {
+              "id": "mira_0",
+              "nome": "Ponto de Ruptura: Exposição Fatal",
+              "descricao": "I: Ponto de Ruptura:Exposição Fatal: Caso a precisão supere a CA por 5 ou mais, o inimigo entra em choque, sofrendo desvantagem em todos os seus ataques por duas rodadas."
+            },
+            {
+              "id": "mira_1",
+              "nome": "Colapso de Defesa",
+              "descricao": "II: Colapso de Defesa: Tiros que superam a CA do alvo por 10 ou mais destroçam a postura do inimigo, reduzindo sua CA em 9 por duas rodadas."
+            },
+            {
+              "id": "mira_2",
+              "nome": "Carnificina Superior",
+              "descricao": "III:  Carnificina Superior: O ápice da técnica. O desmembramento causado por Ciel agora é definitivo (arranca o membro). Superar a CA por 15 ou mais aplica o estado de Sangramento Extremo."
+            },
+            {
+              "id": "mira_3",
+              "nome": "Veredito do Carrasco (Sequencial Destrutivo)",
+              "descricao": "IV:Veredito do Carrasco (Sequencial Destrutivo): Ao superar a CA por 20 ou mais, o alvo é marcado com Vulnerabilidade total por 2 rodadas. Além disso, Ciel agora pode executar a Mira Destrutiva duas vezes por rodada."
+            }
+          ],
+          "estilos": [],
+          "atributos": {},
+          "feiticos": [],
+          "estadosCombate": [],
+          "contadoresOrigem": [],
+          "catarse": null,
+          "espinho": null,
+          "pactoPadrao": null,
+          "votoAutomatico": null,
+          "regrasAfty": null,
+          "acrescenta": {
+            "armas": [
+              {
+                "id": "sniper",
+                "nome": "Sniper",
+                "classe": "complexa",
+                "categoria": "distancia",
+                "dano": {
+                  "dado": "1d12",
+                  "tipo": "pf"
+                },
+                "critico": 19,
+                "espacos": 2,
+                "custo": 4,
+                "grupo": "tiro",
+                "props": {
+                  "alcance": [
+                    360,
+                    720
+                  ],
+                  "emperrar": true,
+                  "duas_maos": true,
+                  "energica": true,
+                  "fatal": "1d12",
+                  "mortal": "1d12"
+                }
+              }
+            ]
+          },
+          "substitui": {}
+        }
+      ],
+      "narratorNotes": "",
+      "combatState": {
+        "isActive": false,
+        "hpCurrent": 1422,
+        "peCurrent": 194,
+        "almaCurrent": 150,
+        "activeConditions": [],
+        "customCounters": [],
+        "combatLog": []
+      },
+      "itensCustoCriados": [
+        {
+          "id": "itcc_mv4z0gvd_1",
+          "nome": "Anel ",
+          "categoria": "acessorio",
+          "custo": 4,
+          "modo": "passivo",
+          "forma": "arremessavel",
+          "efeito": "atributo",
+          "alvo": "inteligencia",
+          "alvos": [],
+          "tipoDano": ""
+        },
+        {
+          "id": "itcc_mv50ofsi_2",
+          "nome": "Luneta 4x20",
+          "categoria": "acessorio",
+          "custo": 4,
+          "modo": "passivo",
+          "forma": "arremessavel",
+          "efeito": "acerto",
+          "alvo": "distancia",
+          "alvos": [],
+          "tipoDano": ""
+        }
+      ],
+      "stats": {
+        "hpMax": 1422,
+        "peMax": 194,
+        "defesa": 91,
+        "cd": 44
+      },
+      "updatedAt": "2026-10-12T21:00:47.769Z",
+      "editLog": [
+        "2026-10-12T08:39:48.263Z",
+        "2026-10-12T08:53:02.356Z",
+        "2026-10-12T08:57:03.544Z",
+        "2026-10-12T09:07:28.179Z",
+        "2026-10-12T09:20:01.978Z",
+        "2026-10-12T09:25:44.427Z",
+        "2026-10-12T09:40:55.302Z",
+        "2026-10-12T20:28:35.067Z",
+        "2026-10-12T20:48:13.648Z",
+        "2026-10-12T20:49:27.916Z",
+        "2026-10-12T21:00:47.769Z"
+      ],
+      "id": "mv5046cn-p2sbrsu",
+      "folderId": null,
+      "isBuiltIn": false,
+      "createdAt": "2026-10-12T08:39:48.263Z",
+      "formulaOverrides": {}
+    }
+  ],
+  "folders": []
+}

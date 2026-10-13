@@ -1,5 +1,68 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-10-13: PASTA PRINCIPAL ATUALIZADA E CIEL INTEGRADO
+
+Autor pediu atualizar o repositório e conferir conflitos. A pasta principal
+avançou por fast-forward de 891b6d4 para origin/main 6888873, sem commit novo.
+HEAD e remoto ficaram alinhados, divergência 0 0.
+
+Antes da atualização, preservado o estado completo, incluindo índice e
+arquivos não rastreados, no stash a370ed262fc1ac84b2fb8320d8d31e0a3d92ae1a,
+nome codex-preservacao-atualizacao-2026-10-13. O stash foi conservado.
+A reaplicação encontrou 12 blocos em sete arquivos: docs/a-fazer.md,
+docs/afty-addons.md, docs/afty-formulas-base.md, docs/afty-status.md,
+docs/automacao-dsl.md, afty-derive.js e afty-equipamentos.js.
+Os trechos locais conflitantes já estavam incorporados na main. Preservadas
+as melhorias posteriores do remoto, inclusive escudos, talentos, Voo e
+Oscilante. A documentação remota e suas perguntas continuam presentes.
+Os dois arquivos __dharma-preview foram restaurados e permanecem locais.
+
+Aplicada a entrega de Ciel do worktree validado, incluindo pacote, export,
+controles, testes e reconciliação de inventário. Conteúdo equivalente,
+apenas com conversão de finais de linha pelo Git. Agora o código de Ciel
+está também na pasta principal, sem conflitos e sem edição autoral do 2.5.2.
+As alterações de Ciel estão fora do índice. O índice anterior é recuperável
+pelo stash, e as entregas anteriores já pertencem ao histórico remoto.
+ESLint, build e 121 asserts de regressão passaram nesta pasta. Código equivalente
+à entrega validada com 11865 asserts. Sem commit ou push. Detalhes em
+docs/ciel-lucielus.md.
+\n
+## SESSÃO DE 2026-10-13: CIEL LUCIELUS, ADDON E FICHA PREPARADOS
+
+Regras confirmadas pelo autor: Fome usa o dado da arma e persiste até o fim
+do combate, fatores de alcance 10 e 4 acumulam, Forma Verdadeira custa 15 PE
+e somente Destreza passa de 30, Máxima soma 14d12 após, 10d12 durante e 100
+em um único disparo. Mira aplica -10, consequências no alvo ficam em texto.
+
+Entrega isolada em C:/Users/marcu/.codex/worktrees/ciel-automacoes/grimorio-fm.
+Base atualizada por fast-forward de e8faae3 para main 6888873. Cinco conflitos
+conciliados preservando controles de arma, preparação de cura e registro
+de rolagens remotos. Checkout original e índice humano preservados.
+
+Motor recebe ações genéricas declaradas por pacote e canal alcanceArmaMult.
+Controles em Ações da Ficha e do Encontro: Sol próprio, Fome 0..5, Mira,
+Forma Verdadeira com sustentação manual de 90 PV e disparo Fio do Vazio.
+A Máxima usa PE, recarga e Surto de Ação existentes, consome o bônus ao rolar
+dano e expira na próxima rodada. Regra de Ação Completa permanece em texto,
+pois não há saldo geral de ações. Encerramento da Forma e efeitos nos alvos
+permanecem manuais. Não há código específico de Ciel no resolvedor.
+
+Addon em addons/ciel-lucielus.json e export em
+src/systems/afty/exports/ciel-lucielus-automatizado.json. Sniper do addon
+tem base 360/720 m. Manejo, encantamentos e Habilidade Única preservados.
+Mira Telescópica soma 18 m: alcance curto máximo 15120 m.
+Forma resolve Destreza 32, Constituição 22 e Inteligência 30.
+
+Inventário: novo módulo M05, pacote AD-69, 57 adições e 15 atualizações
+reconciliadas com proposta própria. Nenhuma regra de campanha aprovada.
+Conferência visual anterior verificou Forma, custos, dano adicional e
+consumo do disparo. A revisão automática bloqueou a nova leitura da prévia
+local após a integração. Não se afirma validação visual dessa última base.
+
+Validação final: ESLint e build passaram, 204 arquivos e 11865 asserts passaram.
+Detalhes em docs/ciel-lucielus.md. Sem commit ou push,
+sem alterações autorais em src/components/ e sem U+2014 novo.
+\n
 ## SESSÃO DE 2026-10-12: ATUALIZAÇÕES DOS COLABORADORES PRESERVANDO TRABALHO LOCAL
 
 Pedido do autor: conferir o GitHub, trazer as atualizações sem deixar conflitos e listar as mudanças.

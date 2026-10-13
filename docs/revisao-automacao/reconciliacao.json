@@ -59962,6 +59962,22 @@
         "TEC-02"
       ],
       "lotesInvalidados": []
+    },
+    {
+      "data": "2026-10-13T15:25:35.740Z",
+      "proposta": "docs/revisao-automacao/G00/rechecagem/proposta-ciel-2026-10-13.json",
+      "assinatura": "fda5c3bb9e1ec33b4114d878f04edc65e24efb00aa2d6798995ffbb57c12012b",
+      "justificativa": "Entrega de Ciel confirmada pelo autor em 2026-10-12 e retomada em 2026-10-13. Registra o pacote AD-69, a primitiva e o canal de alcance, preserva donos anteriores e sincroniza hashes vivos da main 6888873. Não aprova regras da campanha.",
+      "adicionados": 57,
+      "removidos": 0,
+      "alterados": 15,
+      "lotesAtingidos": [
+        "AD-69",
+        "M01",
+        "M03",
+        "M05"
+      ],
+      "lotesInvalidados": []
     }
   ],
   "rechecagem": {

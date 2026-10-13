@@ -41,6 +41,8 @@ import PainelDoGolpeEspecial from "../ficha/PainelDoGolpeEspecial";
 import PainelManipulacaoCeu from "../ficha/PainelManipulacaoCeu";
 import AbaBuffs from "../ficha/abas/AbaBuffs";
 import PainelOlhinhosLu from "../ficha/PainelOlhinhosLu";
+import PainelAcoesAddon from "../ficha/PainelAcoesAddon";
+import { consumirAcoesAddon } from "../afty-acoes-addon";
 import AbaPericias from "../ficha/abas/AbaPericias";
 import AbaHabilidades from "../ficha/abas/AbaHabilidades";
 import AbaEquipamentos from "../ficha/abas/AbaEquipamentos";
@@ -151,7 +153,7 @@ export default function PainelDeCombatente({
     const pronta = preparaRolagemCura(preparaRolagemArma(desc), derived.efeitos);
     if (!pronta) return null;
     const r = pronta.tipo === "dano" ? rolarDano(pronta) : rolarTeste(pronta);
-    onSessao((s) => registraRolagemArma(registraRolagem(s, r), pronta, r));
+    onSessao((s) => consumirAcoesAddon(registraRolagemArma(registraRolagem(s, r), pronta, r), desc.consomeAcoesAddon));
     return r;
   }, [onSessao, derived.efeitos]);
 
@@ -450,7 +452,8 @@ export default function PainelDeCombatente({
           onAtaqueBasico={(ataqueBasicoId) => onSessao((s) => ({ ...s, ataqueBasicoId }))}
           adaptacao={<PainelDeAdaptacao derived={derived} onSessao={onSessao} />}
           olhosAgulha={<PainelOlhosAgulha derived={derived} sessao={sessao} onSessao={onSessao} />}
-          olhinhosLu={<PainelOlhinhosLu derived={derived} onSessao={onSessao} />}
+          olhinhosLu={<><PainelOlhinhosLu derived={derived} onSessao={onSessao} />
+            <PainelAcoesAddon derived={derived} sessao={sessao} onSessao={onSessao} /></>}
           manipulacaoCeu={<PainelManipulacaoCeu derived={derived} onEstado={(estado, valor) => onSessao((s) => alteraEstadoCombate(s, estado, valor))} />}
           armasTransformaveis={<ArmasTransformaveis derived={derived} sessao={sessao} onSessao={onSessao} />}
           golpeEspecial={<PainelDoGolpeEspecial derived={derived} sessao={sessao} onSessao={onSessao} />}

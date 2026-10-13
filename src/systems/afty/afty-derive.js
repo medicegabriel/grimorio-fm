@@ -33,6 +33,7 @@
 // Avaliador da DSL. Só o editor do Funcionamento Básico o usa aqui, para
 // reexibir o valor de cada linha: a aplicação de verdade é do `aplicarEfeitos`.
 import { evalNumber as evalNumberDsl, normalizarVariavel } from "./afty-dsl";
+import { acoesDoAddon, efeitosDasAcoesAddon, dadosDasAcoesAddon } from "./afty-acoes-addon";
 import {
   AFTY_RESISTENCIAS, TAMANHO_BASE, tamanhoPorDegraus, funcionamentosDaFicha,
   MELHORIA_NIVEL_INICIAL, LENDARIA_NIVEL_INICIAL,
@@ -1243,6 +1244,7 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
     // "Olhos Descobertos", então os dois convivem e só um vale por vez.
     ...efeitosVislumbre.filter((e) => e.canal !== "pontosAptidao"),
     ...efeitosOlhinhosLu,
+    ...efeitosDasAcoesAddon(creature),
     ...coletarEfeitosCriatura({
       habilidades, talentos: talentosPre, altoNivel,
       // As Melhorias Superiores do jogador têm números próprios.
@@ -3489,7 +3491,9 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
     };
     // Erro e aviso da Técnica Máxima entram no triângulo de avisos da linha.
     const textos = (info.validacao ?? []).map((v) => v.texto);
-    return { ...f, tecnicaMaxima: info, avisos: [...(f.avisos ?? []), ...textos] };
+    return { ...f, tecnicaMaxima: info,
+      acaoAddon: acoesDoAddon(creature).some((a) => a.feiticoId === f.id),
+      avisos: [...(f.avisos ?? []), ...textos] };
   };
   feiticos = {
     ...feiticos,
@@ -3615,7 +3619,7 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
   dano = {
     ...dano,
     entradas: (dano.entradas ?? []).map((entrada) => (
-      dadosAuxiliaresNaLinha(entrada, auxiliaresAtivos.dados)
+      dadosDasAcoesAddon(creature, dadosAuxiliaresNaLinha(entrada, auxiliaresAtivos.dados))
     )),
   };
   dano = aplicarImbuicaoNoDano(
@@ -4518,6 +4522,7 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
 
   return {
     ...stats,
+    acoesAddon: acoesDoAddon(creature),
     beneficiosTreinamento: beneficiosDeTreinoNaFicha(creature, { atencao: stats.atencao }),
     // O Deslocamento de Voo, em metros. Zero é não voar (2026-10-09).
     voo,

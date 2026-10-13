@@ -661,3 +661,46 @@ O `blocoExclusivo` preserva a soma de Técnicas de Estilo recebida do remoto.
 Entre estágios, as parcelas do bloco vencedor representam somente o ganho adicional,
 mantendo o valor integral em `declarado` quando diferente. Bônus e penalidades usam
 grupos separados. Regressões em `asserts/t-revisao-m02.mjs` cobrem os dois sinais.
+
+## Ações declaradas por addon (2026-10-13)
+
+O campo opcional `acoesMotor` é uma lista de descritores, sem JavaScript.
+Cada descritor tem `id`, `nome`, `descricao` e `tipo`: `contador`,
+`estado`, `disparo` ou `passivo`. O motor lê somente o pacote instalado
+na própria ficha e somente `rulesVersion` afty ou player.
+
+- `contador` exige `max` inteiro positivo. O estado de combate é
+  `acaoAddon:<pacoteId>:<acaoId>`, aparado entre zero e o máximo.
+  Nos `efeitos`, o token inteiro `cargas` recebe esse valor antes da DSL.
+- `estado` mantém uma ativação até desligar ou encerrar o combate.
+  `custoPE` paga na ativação pelos pagadores normais, com PE temporário primeiro.
+  `sustentacaoPV` oferece pagamento manual da manutenção pelo botão.
+- `disparo` exige `armaId`. `feiticoId` vincula a uma Máxima existente,
+  usando disponibilidade, custo e recarga oficiais. `consomeUso` pode consumir
+  uma Habilidade existente. A ativação exige arma equipada e recursos disponíveis.
+- `dados` recebe `dados`, `faces`, `tipo` e `momento` (`durante` ou
+  `apos`). O grupo após ataque não multiplica no crítico. Os grupos entram
+  nos auxiliares da linha indicada, sem modificar a arma base.
+- `efeitos` usa os canais normais e passa pelo validador de canal e DSL.
+  As fontes preservam o nome da ação no hover. `passivo` emite esses efeitos
+  sem exigir ativação. `quando` continua decidindo sua incidência.
+- A rolagem de dano carrega `consomeAcoesAddon` e encerra o bônus de disparo
+  somente após gerar uma rolagem. Concluir disparo atende erro, rolagem externa
+  ou cancelamento, sem reembolso. Próxima rodada também encerra tiros pendentes.
+  Contadores persistem entre rodadas. Encerrar combate e descansar zeram ações.
+- O controle ligado a uma Máxima substitui o botão nativo daquela linha,
+  para evitar pagamento duplicado. Os demais controles de arma, cura, ritual
+  e registros de rolagem recebidos da main foram preservados.
+
+O canal `alcanceArmaMult`, alvo fonte de dano, multiplica os alcances curto
+e longo depois dos bônus em metros. Fontes ativas positivas multiplicam entre
+si, sem contar fontes suplantadas. O contexto nativo de postura continua
+aplicado uma vez. `permite: ["alcanceArmaMult"]` abre o canal nos seletores,
+sem alterar a conta por si só. O canal já gravado permanece visível.
+Há 27 primitivas em `PRIMITIVAS`.
+
+As ações não criam saldo geral de Ação Padrão, Bônus ou Ataques Extras.
+Efeitos sobre alvos, exaustão e encerramento de transformação permanecem no
+texto quando o pacote não declara automação para eles. Exemplo real:
+`addons/ciel-lucielus.json`, uso e limitações em `docs/ciel-lucielus.md`.
+\n

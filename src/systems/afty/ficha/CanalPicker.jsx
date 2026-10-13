@@ -47,6 +47,7 @@ export default function CanalPicker({ value, onChange, ancora = "esquerda", cata
   const veHpAtributo = usePrimitiva("hpAtributo") || value === "hpAtributo";
   // E o irmão dele no ataque (2026-09-28, Fórmula de Combate Entrópica).
   const veAtaqueAtributo = usePrimitiva("ataqueAtributo") || value === "ataqueAtributo";
+  const veAlcanceMult = usePrimitiva("alcanceArmaMult") || value === "alcanceArmaMult";
   // Mesma regra para os dois de PV e Passivas (multiplicador de PV e Passivas
   // sem custo de PE), que só aparecem para quem pediu a primitiva `pvEPassivas`.
   const vePvPassivas = usePrimitiva("pvEPassivas") || value === "hpMult" || value === "passivaSemCusto";
@@ -61,6 +62,7 @@ export default function CanalPicker({ value, onChange, ancora = "esquerda", cata
         itens: g.itens.filter((c) =>
           (veHpAtributo || c.id !== "hpAtributo")
           && (veAtaqueAtributo || c.id !== "ataqueAtributo")
+          && (veAlcanceMult || c.id !== "alcanceArmaMult")
           && (vePvPassivas || (c.id !== "hpMult" && c.id !== "passivaSemCusto"))
           && (!termo
           || semAcento(c.label).includes(termo)
@@ -68,7 +70,7 @@ export default function CanalPicker({ value, onChange, ancora = "esquerda", cata
           || semAcento(c.nota).includes(termo))),
       }))
       .filter((g) => g.itens.length);
-  }, [busca, catalogo, veHpAtributo, veAtaqueAtributo, vePvPassivas]);
+  }, [busca, catalogo, veHpAtributo, veAtaqueAtributo, veAlcanceMult, vePvPassivas]);
 
   const chapada = useMemo(() => grupos.flatMap((g) => g.itens), [grupos]);
 

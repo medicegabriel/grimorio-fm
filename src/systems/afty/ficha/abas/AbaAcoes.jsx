@@ -71,7 +71,8 @@ function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir, modoDano
     ? e.formulaCritico
     : modoVisual === "raio_negro" ? e.formulaRaioNegro : (e.formulaNormal ?? e.texto);
   const rolarModo = (modoDano) => {
-    const resultado = rolar({ tipo: "dano", rotulo: e.nome, grupos: e.gruposDano, modoDano, rerrola: e.rerrola, linhaArma: e });
+    const resultado = rolar({ tipo: "dano", rotulo: e.nome, grupos: e.gruposDano, modoDano, rerrola: e.rerrola, linhaArma: e,
+      consomeAcoesAddon: e.consomeAcoesAddon });
     if (resultado && critico) onCritico(false);
   };
   return (
@@ -706,7 +707,7 @@ function LinhaFeitico({
             bem diferentes. Seis propriedades viram duas filas em 1440px e seguem
             empilhando no telefone. */}
         {/* A Técnica Máxima (2026-10-08): recarga e Usar, da sessão. */}
-        {f.tecnicaMaxima && controleTecnicaMaxima?.(f)}
+        {f.tecnicaMaxima && !f.acaoAddon && controleTecnicaMaxima?.(f)}
         {conjuracaoBloodfeast?.(f)}
         {(propriedadesFixas.length > 0 || f.custoVidaAtivacao) && (
           <dl className="afty-feitico-propriedades">

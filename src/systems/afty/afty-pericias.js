@@ -828,7 +828,9 @@ export function resolveDano(creature, ctx = {}) {
      aos dois alcances. Entra ANTES do multiplicador, porque a Postura do Céu
      dobra "o alcance dos seus ataques", e o bônus já faz parte desse alcance. */
   const alcanceDe = (alcance, bonusCorpo = 0, escopos = []) => {
-    const mult = Math.max(1, Number(ctx.alcanceMult) || 1);
+    const multBase = Math.max(1, Number(ctx.alcanceMult) || 1);
+    const fatores = fontesDe("alcanceArmaMult", escopos).filter((p) => !p.suplantado && p.valor > 0);
+    const mult = fatores.reduce((v, p) => v * p.valor, multBase);
     const mais = Math.max(0, canal("alcanceArma", escopos));
     const br = (n) => String(n).replace(".", ",");
     const baseCorpo = Math.max(0, Number(ctx.alcanceCorpo) || 0);
@@ -840,9 +842,10 @@ export function resolveDano(creature, ctx = {}) {
       ...fontesDe("alcanceArma", escopos).map((p) => ({
         ...p, texto: `${p.valor >= 0 ? "+" : ""}${br(p.valor)}m`,
       })),
-      ...(mult > 1 ? [{
+      ...fatores.map((p) => ({ ...p, texto: `×${br(p.valor)}` })),
+      ...(multBase > 1 ? [{
         label: ctx.contextoDsl?.invencivel_sob_osol ? "Invencível sob o Sol" : "Postura do Céu",
-        texto: `×${br(mult)}`,
+        texto: `×${br(multBase)}`,
       }] : []),
     ];
     if (alcance) {
