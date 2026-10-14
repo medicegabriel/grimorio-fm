@@ -48,7 +48,8 @@ t("e a liberacao e uma so", PACOTE.libera, ["feiticosRestritos"]);
    2026-09-11, com as duas da Bencao do Grao Mestre da Forja, e 15 desde
    2026-09-14, com as duas da Criacao de Equipamentos, e 16 com a terceira, e 17
    desde 2026-09-17, com a Versatilidade Extrema fora do jogador. */
-t("existem 17 liberacoes hoje", AD.LIBERACOES.length, 17);
+/* E 18 desde 2026-10-14, com a Quimera de Maldições. */
+t("existem 18 liberacoes hoje", AD.LIBERACOES.length, 18);
 t("feiticosRestritos esta registrada",
   AD.LIBERACOES.some((l) => l.id === "feiticosRestritos"), true);
 t("id inventado parecido e REPROVADO",

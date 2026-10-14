@@ -3752,6 +3752,22 @@
       ],
       "registro": "AD-69/registro.json",
       "proprietario": "executor do lote AD-69"
+    },
+    {
+      "lote": "AD-70",
+      "nome": "Addon: Quimera de Maldições",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "INV-01",
+        "M03",
+        "M04",
+        "M02"
+      ],
+      "registro": "AD-70/registro.json",
+      "proprietario": "executor do lote AD-70"
     }
   ]
 }

@@ -87,6 +87,21 @@ Material Pesado tem requisito de revestimento Médio/Robusto por ID, sem
 equivalência definida para Lobo Saltitante. Não concede Fortitude até isso.
 **Anotado:** 2026-10-08, limites da automação dos oito equipamentos.
 
+### Quimera de Maldições: leituras para confirmar
+**Onde:** `addons/quimera-de-maldicoes.json`, `resolveQuimeraMecanicas` (afty-invocacoes.js) e `aplicaDanoQuimera` (ficha/ficha-sessao.js)
+**Situação:** o autor decidiu em 2026-10-14 que Maldição funde só com Maldição, que cada uma soma o
+custo base do grau e que o pedido de 5 níveis de Controlador continua. Estas leituras foram feitas sem
+ele, e estão no número:
+1. **A Quimera de Maldições cai pela regra da Maldição:** a 0 PV ela é exorcizada, e as componentes
+   ficam presas até o fim da cena, sem morrer (o texto da Quimera para "exorcizada"). A de Shikigamis
+   segue dissipando a 0 PV, com as componentes.
+2. **Ela é do tipo Maldição em tudo o mais** (herda da principal): é ativada, não dissipa, a
+   Autonomia é paga no início do combate e não recebe cura por Energia Reversa.
+3. **A mistura avisa e não trava**, como a Maldição já avisava na Quimera sem o addon. A Quimera
+   misturada continua aparecendo, com o aviso em âmbar.
+**Precisa:** o autor confirmar o 1 ao 3.
+**Anotado:** 2026-10-14, ao fazer o addon Quimera de Maldições
+
 ### Vampiro da Máscara de Pedra: leituras para confirmar e o que segue de mesa
 **Onde:** `addons/vampiro-mascara-de-pedra.json`
 **Situação:** o autor decidiu quatro leituras em 2026-10-12 (as penalidades de atributo da fome se

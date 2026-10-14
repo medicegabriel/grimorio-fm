@@ -4056,7 +4056,11 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
     ...resolveHordasList(creature?.hordas, creature?.invocacoes, donoInvoc),
     emCampo: hordasEmCampo,
   };
-  const quimeras = resolveQuimerasList(creature?.quimeras, creature?.invocacoes, donoInvoc);
+  /* A liberação do addon Quimera de Maldições (2026-10-14) entra só na Quimera:
+     as Maldições fundem entre si e somam o custo base do grau. */
+  const quimeras = resolveQuimerasList(creature?.quimeras, creature?.invocacoes, {
+    ...donoInvoc, quimeraDeMaldicoes: liberacoes.includes("quimeraDeMaldicoes"),
+  });
   /* Os Corpos de Múltiplos Núcleos e o Mecha (2026-10-01, Etapa 9). O Mecha é da
      SESSÃO (a linha `mecha`), e só existe com a mesa. */
   const multiplosNucleos = resolveMultiplosNucleosList(creature?.multiplosNucleos, creature?.invocacoes, donoInvoc);

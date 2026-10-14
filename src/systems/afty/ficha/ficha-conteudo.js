@@ -740,7 +740,9 @@ export function alvosDeBusca(derived) {
     if (!r) continue;
     const dentro = [...(r.acoes ?? []), ...(r.caracteristicas ?? []), ...(q.fundidas ?? [])]
       .map((x) => x.nome).filter(Boolean).join(" ");
-    add("invocacoes", "invocacao", r.id, r.nome || "Quimera Sem Nome", "Quimera", dentro);
+    // Com a aba própria (primitiva `abaQuimeras`, 2026-10-14), a busca leva para ela.
+    const aba = derived?.primitivas?.includes("abaQuimeras") ? "quimeras" : "invocacoes";
+    add(aba, "invocacao", r.id, r.nome || "Quimera Sem Nome", "Quimera", dentro);
   }
   for (const a of derived?.testes?.ataques ?? []) add("pericias", "ataque", a.id, a.nome, null);
   for (const r of derived?.testes?.resistencias ?? []) add("pericias", "tr", r.value, r.label, null);

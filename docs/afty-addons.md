@@ -2714,3 +2714,20 @@ Efeitos sobre alvos, exaustão e encerramento de transformação permanecem no
 texto quando o pacote não declara automação para eles. Exemplo real:
 `addons/ciel-lucielus.json`, uso e limitações em `docs/ciel-lucielus.md`.
 \n
+
+## Quimera de Maldições (2026-10-14)
+
+`addons/quimera-de-maldicoes.json`, a pedido do autor: a Quimera do Mecânicas (que o motor já tinha,
+nativa a partir do 5 de Controlador) numa aba própria, e aceitando Maldições. Sem conteúdo de catálogo:
+o pacote é só uma primitiva e uma liberação, as duas novas e genéricas.
+
+| Campo | O que faz |
+|---|---|
+| `permite: ["abaQuimeras"]` | as Quimeras saem da aba Invocações e ganham a aba Quimeras no criador (em Outros), na Ficha Final e no Encontro. A busca global leva para lá |
+| `libera: ["quimeraDeMaldicoes"]` | a Quimera funde Maldições Domadas, só entre elas (autor: *"Só Maldição com Maldição"*), e cada Maldição soma o custo base do grau dela (autor). Mistura e Marionete ou Corpo avisam |
+
+Continua pedindo 5 níveis de Controlador (2, 3 e 4 componentes nos níveis 5, 9 e 13), como o texto. A
+Quimera de Maldições cai pela regra da Maldição: exorcizada a 0 PV, com as componentes presas até o fim
+da cena. Detalhes em `docs/afty-invocacoes.md` e assert em `t-quimera-de-maldicoes.mjs`.
+
+⚠ Motor e pacote vão no mesmo push. No motor velho o pacote não instala (primitiva desconhecida).

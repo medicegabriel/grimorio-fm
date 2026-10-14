@@ -1466,10 +1466,14 @@ function Horda({ h, rolar, estado = null, entrada = null, acoes = null }) {
 /* A ABA                                                         */
 /* ============================================================ */
 
-export default function AbaInvocacoes({ derived, rolar, destaque, estadoDe, entradaDe, mechaDe = null, emCombate = false, reserva = null, acoes, aoTemar, temaEmEdicao }) {
+/* `modo` (2026-10-14, primitiva `abaQuimeras`): "tudo" é a aba de sempre,
+   "semQuimeras" é a aba Invocações quando as Quimeras têm aba própria, e
+   "quimeras" é essa aba, só com as Quimeras e o roster do Controlador. */
+export default function AbaInvocacoes({ derived, rolar, destaque, estadoDe, entradaDe, mechaDe = null, emCombate = false, reserva = null, acoes, aoTemar, temaEmEdicao, modo = "tudo" }) {
+  const soQuimeras = modo === "quimeras";
   const invocacoes = derived.invocacoes?.lista ?? [];
-  const hordas = derived.hordas?.lista ?? [];
-  const quimeras = (derived.quimeras?.lista ?? []).filter((q) => q.valido);
+  const hordas = soQuimeras ? [] : (derived.hordas?.lista ?? []);
+  const quimeras = modo === "semQuimeras" ? [] : (derived.quimeras?.lista ?? []).filter((q) => q.valido);
   const marcadores = derived.invocacoes?.marcadores ?? [];
   const controle = derived.invocacoes?.controle;
 
@@ -1494,7 +1498,7 @@ export default function AbaInvocacoes({ derived, rolar, destaque, estadoDe, entr
      os dois núcleos saem da fileira. O Mecha formado entra no fim (2026-10-01). */
   const gruposNucleos = (derived.multiplosNucleos?.lista ?? []).filter((g) => g.valido && g.resolvida);
   const idsNucleos = new Set(gruposNucleos.flatMap((g) => g.nucleoIds));
-  const fileira = [
+  const fileira = soQuimeras ? [...fusaoDe.values()].map((q) => q.resolvida) : [
     ...invocacoes.filter((i) => !idsNucleos.has(i.id)),
     ...[...fusaoDe.values()].map((q) => q.resolvida),
     ...gruposNucleos.map((g) => g.resolvida),
@@ -1553,10 +1557,10 @@ export default function AbaInvocacoes({ derived, rolar, destaque, estadoDe, entr
     return !e.terminal && !e.bloqueadaAteFimDaCena && !e.emComposto && ["fora", "guardada", "dissipada"].includes(e.estado);
   }).length;
 
-  if (!invocacoes.length && !hordas.length && !quimeras.length) {
+  if (soQuimeras ? !quimeras.length : (!invocacoes.length && !hordas.length && !quimeras.length)) {
     return (
       <section className="afty-card p-3">
-        <p className="afty-vazio">Nenhuma Invocação</p>
+        <p className="afty-vazio">{soQuimeras ? "Nenhuma Quimera" : "Nenhuma Invocação"}</p>
       </section>
     );
   }

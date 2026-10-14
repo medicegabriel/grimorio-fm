@@ -594,6 +594,15 @@ export const PRIMITIVAS = [
     rotulo: "Quimera",
     nota: "Card de Quimeras ao lado das Hordas: funde de 2 a 4 Invocações (Passiva de Nível 2, 3 ou 4) somando PV e custo, unindo treinos e fixando cada atributo no maior valor entre as fundidas. Desde 2026-10-01 é a regra LEGACY: a oficial é a do Mecânicas, que o Controlador de nível 5 abre sem addon",
   },
+  /* ⚠ NASCEU EM 2026-10-14, com o addon Quimera de Maldições: as Quimeras saem
+     da aba Invocações e ganham aba própria, no criador (em Outros), na Ficha
+     Final e no painel do Encontro. É tela e não regra: a fusão e quem pode
+     fundir continuam com o `resolveQuimera` e com a liberação `quimeraDeMaldicoes`. */
+  {
+    id: "abaQuimeras",
+    rotulo: "Aba Quimeras",
+    nota: "As Quimeras saem da aba Invocações para uma aba própria no criador, na Ficha Final e no Encontro",
+  },
   /* ⚠ NASCEU EM 2026-10-01 (Etapa 10 da atualização de Invocações, DA-12): a
      Herança das Sombras persistente do Mecânicas, "para os Usuários de Dez Sombras
      e técnicas semelhantes". O motor (`herancasDa`, afty-invocacoes.js) vive
@@ -680,6 +689,15 @@ export const LIBERACOES = [
     id: "gemeosMaldicao",
     rotulo: "Maldição em Verdadeiras Origens",
     nota: "O Gêmeo pode copiar da Maldição, e copiar passa a fazer a ficha seguir as regras de estrutura dela",
+  },
+  /* A Quimera do Mecânicas é "fusão entre Shikigamis". Esta liberação (2026-10-14,
+     addon Quimera de Maldições) deixa ela fundir Maldições Domadas, SÓ ENTRE ELAS
+     (autor: "Só Maldição com Maldição"), e cada Maldição soma o custo base do
+     grau dela, que ela não tem sozinha. Ver `resolveQuimeraMecanicas`. */
+  {
+    id: "quimeraDeMaldicoes",
+    rotulo: "Quimera de Maldições",
+    nota: "A Quimera do Mecânicas funde Maldições, só entre elas, e cada Maldição soma o custo base do grau",
   },
   /* ⚠ ABRE E ESTREITA NA MESMA LIBERAÇÃO, e é a primeira que faz as duas coisas.
      A origem que não conjura (Restringido e Sem Técnica) não monta o card de

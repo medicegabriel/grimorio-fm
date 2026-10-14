@@ -101941,6 +101941,84 @@
       "estado": "NÃO LOCALIZADA",
       "fontes": [],
       "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::quimera-de-maldicoes.json::@pacote": {
+      "proprietario": "AD-70",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::quimera-de-maldicoes.json::@pacote::autor": {
+      "proprietario": "AD-70",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::quimera-de-maldicoes.json::@pacote::descricao": {
+      "proprietario": "AD-70",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::quimera-de-maldicoes.json::@pacote::id": {
+      "proprietario": "AD-70",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::quimera-de-maldicoes.json::@pacote::libera": {
+      "proprietario": "AD-70",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::quimera-de-maldicoes.json::@pacote::libera::quimeraDeMaldicoes": {
+      "proprietario": "AD-70",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::quimera-de-maldicoes.json::@pacote::nome": {
+      "proprietario": "AD-70",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::quimera-de-maldicoes.json::@pacote::paraRaw": {
+      "proprietario": "AD-70",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::quimera-de-maldicoes.json::@pacote::permite": {
+      "proprietario": "AD-70",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::quimera-de-maldicoes.json::@pacote::permite::abaQuimeras": {
+      "proprietario": "AD-70",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::quimera-de-maldicoes.json::@pacote::versao": {
+      "proprietario": "AD-70",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "afty-addons.js::LIBERACOES::quimeraDeMaldicoes": {
+      "proprietario": "M05",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "afty-addons.js::PRIMITIVAS::abaQuimeras": {
+      "proprietario": "M05",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
     }
   }
 }

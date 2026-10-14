@@ -2380,6 +2380,19 @@
     "addon::ciel-lucielus.json::acrescenta.armas::sniper::props/alcance/@1": "AD-69",
     "afty-addons.js::PRIMITIVAS::alcanceArmaMult": "M05",
     "afty-efeitos.js::EFEITO_CANAIS::alcanceArmaMult": "M01",
-    "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@3::itens/alcanceArmaMult": "M01"
+    "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@3::itens/alcanceArmaMult": "M01",
+    "addon::quimera-de-maldicoes.json::@pacote": "AD-70",
+    "addon::quimera-de-maldicoes.json::@pacote::autor": "AD-70",
+    "addon::quimera-de-maldicoes.json::@pacote::descricao": "AD-70",
+    "addon::quimera-de-maldicoes.json::@pacote::id": "AD-70",
+    "addon::quimera-de-maldicoes.json::@pacote::libera": "AD-70",
+    "addon::quimera-de-maldicoes.json::@pacote::libera::quimeraDeMaldicoes": "AD-70",
+    "addon::quimera-de-maldicoes.json::@pacote::nome": "AD-70",
+    "addon::quimera-de-maldicoes.json::@pacote::paraRaw": "AD-70",
+    "addon::quimera-de-maldicoes.json::@pacote::permite": "AD-70",
+    "addon::quimera-de-maldicoes.json::@pacote::permite::abaQuimeras": "AD-70",
+    "addon::quimera-de-maldicoes.json::@pacote::versao": "AD-70",
+    "afty-addons.js::LIBERACOES::quimeraDeMaldicoes": "M05",
+    "afty-addons.js::PRIMITIVAS::abaQuimeras": "M05"
   }
 }

@@ -17496,3 +17496,13 @@ Pedido do autor: um Addon chamado "Yna" com a Origem Kitsune, a Linhagem Clã Ge
 **Navegador** (`/player`, ficha de teste ND 12): a aba "Características de Anatomia" com Vagas 3/4 e o hover Físico Amaldiçoado +3 e Patente: Vampiro Intermediário +1, os Recursos de Origem digitáveis, a Ficha com Doses 7/7, Cura por Dose 55, "Patente: Vampiro Experiente" e a Fraqueza escolhida na linha. Gastar 2 Doses e uma Alma Maldita, Descansar: a Alma volta a 4/4 e as Doses ficam em 5/7. Com 520 Doses e 3 dias de fome: "Patente: Rei", Sanidade 90%, Cura por Dose 0, Doses 4/6 (o -1 de Constituição), e na aba Resistências a Energia Reversa vulnerável pela "Patente: Rei" e o Radiante não (Luz ignorada). Console limpo. Dados de teste apagados e Vite desligado.
 
 **Asserts:** `t-vampiro-mascara-de-pedra.mjs` (121) nos dois sistemas. Contraprova no motor do `HEAD`: 62 de 119 falham (sem o `opcao_*` e o `tem_` da Característica, a Vulnerabilidade à Luz e a Cura por Dose caem a zero caladas, e as Doses voltam no Descansar). ⚠ Motor e pacote no mesmo push, e o pacote só se instala depois do deploy. Sem commit ou push.
+
+## SESSÃO DE 2026-10-14: ADDON QUIMERA DE MALDIÇÕES
+
+**Pedido do autor:** a mecânica de Quimera do Mecânicas (a imagem que ele mandou) num addon *"similar ao Addon de Quimeras criando uma aba e permita maldições"*. A regra da imagem já existia no motor (a Quimera `mecanicas`, nativa no Controlador 5, desde 2026-10-01), só para Shikigamis e como card na aba Invocações.
+
+**Decisões do autor:** Maldição funde só com Maldição, cada Maldição soma o custo base do grau, continua pedindo 5 níveis de Controlador, e a aba é própria (criador, Ficha e Encontro).
+
+**O que mudou:** `addons/quimera-de-maldicoes.json` 1.0.0. Primitiva nova `abaQuimeras` (28 no registro) e liberação nova `quimeraDeMaldicoes` (18). O `resolveQuimeraMecanicas` lê `dono.quimeraDeMaldicoes`: a família da principal manda, a mistura avisa, e a Maldição soma o custo base do grau. A aba do criador (`TabQuimeras`) é o mesmo `QuimerasCard`, e a da Ficha e do Encontro é a `AbaInvocacoes` com `modo="quimeras"` (a de Invocações ganha `modo="semQuimeras"`). A busca global leva a Quimera à aba dela. O `aplicaDanoQuimera` escolhe a regra pela família: a Quimera de Maldições é exorcizada a 0 PV e prende as componentes até o fim da cena.
+
+**Asserts:** `t-quimera-de-maldicoes.mjs` (37) nos dois sistemas, e os censos (`t-primitivas`, `t-estilo-liberado`, `t-estilo-marcial`) com a primitiva e a liberação novas. Contraprova no `HEAD`: 23 de 37 falham, e o motor velho recusa o pacote. Sem commit ou push.

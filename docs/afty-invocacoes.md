@@ -182,6 +182,16 @@ a condição, a mira e o grau da Quimera. A parcela recebe o nome da fonte no ho
 por mouse e toque no criador e na Ficha. Frações arredondam para baixo, com a parcela de
 arredondamento. A Quimera antiga do addon conserva soma dos cartões menos 10.
 
+**Quimera de Maldições (addon, autor, 2026-10-14):** o pacote `addons/quimera-de-maldicoes.json`
+traz a liberação `quimeraDeMaldicoes` e a primitiva `abaQuimeras`. Com a liberação, a Quimera do
+Mecânicas funde Maldições Domadas, só entre elas (a família da principal manda, e a componente de
+outra família avisa), e cada Maldição soma o custo base do grau dela no custo da Quimera. Marionete e
+Corpo seguem de fora, e o pedido de 5 níveis de Controlador continua. A Quimera de Maldições cai pela
+regra da Maldição: a 0 PV é exorcizada, e as componentes ficam presas até o fim da cena (a de
+Shikigamis segue dissipando). A primitiva tira o card de Quimeras da aba Invocações e o põe numa aba
+Quimeras própria no criador (em Outros), na Ficha Final e no Encontro, que é a mesma mesa da aba
+Invocações (`AbaInvocacoes` com `modo="quimeras"`). A busca global leva a Quimera para essa aba.
+
 **Visionário das componentes (autor, 2026-10-03):** a mesa identifica e desconsidera à mão
 as Ações e Características que ocupam vagas de Visionário ou efeitos semelhantes e não
 podem ser herdadas pela Quimera. Não há marcação de origem por item nem filtro automático.

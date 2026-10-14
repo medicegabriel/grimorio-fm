@@ -137,6 +137,8 @@ export default function PainelDeCombatente({
   const [aba, setAba] = useState("acoes");
   const [abertos, setAbertos] = useState(() => new Set());
   const [destaque, setDestaque] = useState(null);
+  // As Quimeras em aba própria (primitiva `abaQuimeras`, 2026-10-14).
+  const quimerasEmAbaPropria = !!derived.primitivas?.includes("abaQuimeras");
 
   const alternaItem = useCallback((chave) => {
     setDestaque(null);
@@ -422,7 +424,12 @@ export default function PainelDeCombatente({
           gramáticas de aba na mesma sessão de jogo confundem quem alterna entre
           a tela do mestre e a do jogador. */}
       <div className="afty-abas afty-encontro-abas" role="tablist" aria-label="Seções do combatente">
-        {[...ABAS, ...(derived.dharma?.ativo ? [{ id: "roda", rotulo: "Roda", icone: Sparkles }] : [])].map((a) => {
+        {[
+          // As Quimeras em aba própria, logo depois de Invocações (primitiva `abaQuimeras`).
+          ...ABAS.flatMap((a) => (a.id === "invocacoes" && quimerasEmAbaPropria
+            ? [a, { id: "quimeras", rotulo: "Quimeras", icone: Sparkles }] : [a])),
+          ...(derived.dharma?.ativo ? [{ id: "roda", rotulo: "Roda", icone: Sparkles }] : []),
+        ].map((a) => {
           const Icone = a.icone;
           return (
             <button
@@ -534,6 +541,20 @@ export default function PainelDeCombatente({
           emCombate={emCombateNaSessao(sessao)}
           reserva={sessao.reservaInvocacao}
           acoes={acoesDeInvocacao}
+          modo={quimerasEmAbaPropria ? "semQuimeras" : "tudo"}
+        />
+      )}
+      {aba === "quimeras" && quimerasEmAbaPropria && (
+        <AbaInvocacoes
+          derived={derived}
+          rolar={rolar}
+          destaque={destaque}
+          estadoDe={(id) => estadoDaInvocacao(sessao, id)}
+          entradaDe={(inv) => entradaDaInvocacao(sessao, inv)}
+          emCombate={emCombateNaSessao(sessao)}
+          reserva={sessao.reservaInvocacao}
+          acoes={acoesDeInvocacao}
+          modo="quimeras"
         />
       )}
       {aba === "buffs" && (

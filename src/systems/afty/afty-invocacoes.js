@@ -4588,8 +4588,21 @@ function resolveQuimeraMecanicas(quimera, invocacoes = [], dono = {}, base = nul
   out.total = usadas.length + 1;
   if (!usadas.length) { warnings.push("Escolha ao menos uma Invocação para fundir com a principal."); return out; }
   const componentes = [principal, ...usadas];
+  /* QUEM FUNDE. Sem addon, só Shikigamis. Com a liberação `quimeraDeMaldicoes`
+     (2026-10-14), também Maldições, mas SÓ ENTRE ELAS (autor: "Só Maldição com
+     Maldição"): a família da principal manda, e a componente de outra família
+     avisa. Marionete e Corpo Amaldiçoado ficam de fora nos dois casos. */
+  const comMaldicoes = !!dono.quimeraDeMaldicoes;
+  const familiaQ = regrasDoTipo(principal).familia;
   for (const c of componentes) {
-    if (regrasDoTipo(c).familia !== "shikigami") warnings.push(`${c.nome || "Componente"}: Quimera só funde Shikigamis.`);
+    const fam = regrasDoTipo(c).familia;
+    if (!comMaldicoes) {
+      if (fam !== "shikigami") warnings.push(`${c.nome || "Componente"}: Quimera só funde Shikigamis.`);
+    } else if (fam !== "shikigami" && fam !== "maldicao") {
+      warnings.push(`${c.nome || "Componente"}: Quimera só funde Shikigamis ou Maldições.`);
+    } else if (fam !== familiaQ && ["shikigami", "maldicao"].includes(familiaQ)) {
+      warnings.push(`${c.nome || "Componente"}: a Quimera não mistura Shikigamis e Maldições.`);
+    }
   }
 
   // Recalcula os cartões sem bônus aditivos de PV do dono, mantendo o passe
@@ -4626,8 +4639,13 @@ function resolveQuimeraMecanicas(quimera, invocacoes = [], dono = {}, base = nul
     }
   }
   const nEscolhas = acoesEscolhidas.length + caractEscolhidas.length;
+  /* "O custo em PE é calculado somando o custo de PE base das Invocações." A
+     Maldição não tem custo base, e com a liberação ela soma o do grau dela, como
+     um Shikigami do mesmo grau (autor, 2026-10-14). */
+  const somaCustoDoGrau = (c) => regrasDoTipo(c).custoBase === "grau"
+    || (comMaldicoes && regrasDoTipo(c).familia === "maldicao");
   const custoBaseFixo = componentes.reduce(
-    (t, c) => t + (regrasDoTipo(c).custoBase === "grau" ? grauMeta(c.grau).custoBase : 0), 0);
+    (t, c) => t + (somaCustoDoGrau(c) ? grauMeta(c.grau).custoBase : 0), 0);
 
   const sintetica = {
     ...principal,

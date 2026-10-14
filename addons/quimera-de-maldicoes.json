@@ -1,0 +1,10 @@
+{
+  "id": "quimera-de-maldicoes",
+  "nome": "Quimera de Maldições",
+  "versao": "1.0.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Quimeras em aba própria, no criador (em Outros), na Ficha Final e no Encontro, com a regra oficial do Mecânicas: Ação Bônus para invocar, custo pela soma dos custos base, 5 níveis de Controlador (funde 2, 3 e 4 nos níveis 5, 9 e 13), o maior grau e os maiores atributos, +1 em Ataque, CD e Perícias e -1 em Defesa, TR e RD por componente, PV da principal mais um terço dos outros menos Grau × adicionais, todas as Ações e Características da principal e até duas de cada adicional, e uma Quimera por cena. Libera a Quimera de Maldições: Maldições Domadas fundem só entre elas (sem misturar com Shikigamis), cada Maldição soma o custo base do grau dela, e a Quimera de Maldições exorcizada prende as componentes até o fim da cena.",
+  "permite": ["abaQuimeras"],
+  "libera": ["quimeraDeMaldicoes"]
+}

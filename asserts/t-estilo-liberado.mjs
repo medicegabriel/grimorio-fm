@@ -54,9 +54,10 @@ const t = (nome, real, esp) => {
    `t-criacao-equipamentos.mjs` e no `t-criacao-equipamentos-itens.mjs`. */
 /* E a quinta de conteudo fora do jogador (2026-09-17), a Versatilidade Extrema,
    medida no `t-melhorias-jogador.mjs`. */
-t("existem 17 liberacoes hoje", AD.LIBERACOES.length, 17);
+/* E a 18ª (2026-10-14), a Quimera de Maldições, medida em `t-quimera-de-maldicoes.mjs`. */
+t("existem 18 liberacoes hoje", AD.LIBERACOES.length, 18);
 t("os ids", AD.LIBERACOES.map((l) => l.id),
-  ["estiloSombras", "gemeosSemTecnica", "qualificaSemTecnica", "gemeosMaldicao",
+  ["estiloSombras", "gemeosSemTecnica", "qualificaSemTecnica", "gemeosMaldicao", "quimeraDeMaldicoes",
    "feiticosRestritos", "carteiraFocos", "carteiraNivel",
    "segundaHabilidadeUnica", "acessoriosUnicos",
    "revestimentosCriados", "escudosCriados", "itensDeCusto",

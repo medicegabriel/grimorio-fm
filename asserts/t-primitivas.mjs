@@ -51,9 +51,11 @@ const t = (nome, real, esp) => {
 /* A 22ª é o `espinho` (2026-09-30): o card das Almas, medido em `t-espinho.mjs`. */
 /* E a `heranca` (2026-10-01): a sub-aba de Heranças das Sombras do Mecânicas, medida
    em `t-invocacao-heranca.mjs`. A `bloodfeast` (2026-10-01) é do addon The Crimsom Queen. */
-t("sao 27 primitivas", AD.PRIMITIVAS.length, 27);
+/* E a `abaQuimeras` (2026-10-14): a aba própria das Quimeras, do addon Quimera de
+   Maldições, medida em `t-quimera-de-maldicoes.mjs`. */
+t("sao 28 primitivas", AD.PRIMITIVAS.length, 28);
 t("ids esperados", AD.PRIMITIVAS.map((p) => p.id).sort(),
-  ["adaptacao", "alcanceArmaMult", "armaTransformavel", "armasPorNivel", "ataqueAtributo", "bloodfeast", "caracteristicasAmaldicoadas", "carteira", "catarse", "cofre", "concessao", "contar", "criacaoArmas", "encantamentoGuia", "espinho", "heranca", "hpAtributo", "modificacoesCorporais", "olhinhosLu", "olhosDeAgulha", "pacto", "pvEPassivas", "quimera", "requisitoAptidao", "rodaDharma", "titaColosso", "vislumbreCeleste"]);
+  ["abaQuimeras", "adaptacao", "alcanceArmaMult", "armaTransformavel", "armasPorNivel", "ataqueAtributo", "bloodfeast", "caracteristicasAmaldicoadas", "carteira", "catarse", "cofre", "concessao", "contar", "criacaoArmas", "encantamentoGuia", "espinho", "heranca", "hpAtributo", "modificacoesCorporais", "olhinhosLu", "olhosDeAgulha", "pacto", "pvEPassivas", "quimera", "requisitoAptidao", "rodaDharma", "titaColosso", "vislumbreCeleste"]);
 t("toda primitiva tem rotulo", AD.PRIMITIVAS.every((p) => !!p.rotulo), true);
 t("SEM_PRIMITIVAS e vazio", AD.SEM_PRIMITIVAS, []);
 

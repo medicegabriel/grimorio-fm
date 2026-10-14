@@ -256,6 +256,8 @@ const TABS = [
   { id: "catarse",       label: "Catarse", primitiva: "catarse" },
   { id: "tita",          label: "Titã", primitiva: "titaColosso" },
   { id: "caracteristicasAmaldicoadas", label: "Características Amaldiçoadas", primitiva: "caracteristicasAmaldicoadas" },
+  // As Quimeras em aba própria (addon Quimera de Maldições, 2026-10-14).
+  { id: "quimeras",      label: "Quimeras", primitiva: "abaQuimeras" },
 ];
 
 // Novas telas liberadas por Addon entram em Outros quando registradas em TABS.
@@ -1731,6 +1733,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
 {tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} testarGolpeDaArma={testarGolpeDaArma} patch={patch} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} setArmaDaOrigem={setArmaDaOrigem} addFeitico={addFeitico} updateFeitico={updateFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} setTreinoEscolhaFeiticos={setTreinoEscolhaFeiticos} removeEstilo={removeEstilo} patchEstilo={patchEstilo} addFuncionamento={addFuncionamento} removeFuncionamento={removeFuncionamento} patchFuncionamento={patchFuncionamento} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} patchEspinho={patchEspinho} sistema={sistema} estiloApi={estiloApi} />}
           {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} setHabilidadeVezes={setHabilidadeVezes} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} patchTecnicasCombate={patchTecnicasCombate} patchTalentosConfig={patchTalentosConfig} />}
           {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} setAptidaoVezes={setAptidaoVezes} setAptidaoOpcaoRepetida={setAptidaoOpcaoRepetida} />}
+          {tabAtiva === "quimeras" && <TabQuimeras draft={draft} derived={derived} addQuimera={addQuimera} removeQuimera={removeQuimera} patchQuimera={patchQuimera} />}
           {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} addQuimera={addQuimera} removeQuimera={removeQuimera} patchQuimera={patchQuimera} addNucleos={addNucleos} removeNucleos={removeNucleos} patchNucleos={patchNucleos} />}
           {tabAtiva === "equipamentos" && <TabEquipamentos draft={draft} derived={derived} addEquipamento={addEquipamento} removeEquipamento={removeEquipamento} patchEquipamento={patchEquipamento} toggleFerramenta={toggleFerramenta} patchFerramenta={patchFerramenta} toggleEncantamento={toggleEncantamento} addArmaCustom={addArmaCustom} patchArmaCustom={patchArmaCustom} removeArmaCustom={removeArmaCustom} addAcessorioUnico={addAcessorioUnico} patchAcessorioUnico={patchAcessorioUnico} removeAcessorioUnico={removeAcessorioUnico} criados={criados} />}
           {tabAtiva === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} setTreinoAlvo={setTreinoAlvo} setTreinoEscolha={setTreinoEscolha} setTreinoEspecialVezes={setTreinoEspecialVezes} setTreinoEspecialProgresso={setTreinoEspecialProgresso} sistema={sistema} setFocosLivres={setFocosLivres} addForja={addForja} patchForja={patchForja} removeForja={removeForja} />}
@@ -18655,6 +18658,8 @@ function LimitesResumo({ acesso, controle, marcadores }) {
 
 function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicarInvocacao, moverInvocacao, patchInvocacao, patchInvocacaoAttr, efeitosApi, addHorda, removeHorda, patchHorda, addQuimera, removeQuimera, patchQuimera, addNucleos, removeNucleos, patchNucleos }) {
   const temQuimeraAddon = usePrimitiva("quimera");
+  // Com a aba própria (addon Quimera de Maldições), o card sai daqui.
+  const quimerasEmAbaPropria = usePrimitiva("abaQuimeras");
   /* A Herança das Sombras é "para os Usuários de Dez Sombras e técnicas
      semelhantes": abre com uma Invocação de Técnica, ou pela primitiva de addon. */
   const temHerancaAddon = usePrimitiva("heranca");
@@ -18827,7 +18832,7 @@ function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicar
       />
     )}
 
-    {temQuimera && (
+    {temQuimera && !quimerasEmAbaPropria && (
       <QuimerasCard
         fichas={lista}
         brutas={brutasQuimeras}
@@ -18850,6 +18855,27 @@ function TabInvocacoes({ draft, derived, addInvocacao, removeInvocacao, duplicar
       />
     )}
     </>
+  );
+}
+
+/* A ABA QUIMERAS (primitiva `abaQuimeras`, addon Quimera de Maldições,
+   2026-10-14). É o mesmo card que mora em Invocações, sozinho numa aba. A regra
+   da Quimera nova é a do Mecânicas, salvo quem só tem a Quimera do addon antigo e
+   não chegou ao 5 de Controlador, como lá. */
+function TabQuimeras({ draft, derived, addQuimera, removeQuimera, patchQuimera }) {
+  const temQuimeraAddon = usePrimitiva("quimera");
+  const nivelReal = derived.invocacoes?.nivelControladorReal ?? 0;
+  const regraNova = nivelReal >= 5 || !temQuimeraAddon ? "mecanicas" : "addon";
+  return (
+    <QuimerasCard
+      fichas={Array.isArray(draft.invocacoes) ? draft.invocacoes : []}
+      brutas={Array.isArray(draft.quimeras) ? draft.quimeras : []}
+      resolvidas={derived.quimeras?.lista ?? []}
+      custoTotal={derived.quimeras?.custoTotal ?? 0}
+      addQuimera={() => addQuimera(regraNova)}
+      removeQuimera={removeQuimera}
+      patchQuimera={patchQuimera}
+    />
   );
 }
 

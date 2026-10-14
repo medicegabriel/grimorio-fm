@@ -680,6 +680,8 @@ export default function AftyFicha({
   /* Estava sendo chamado direto dentro do JSX da aba Habilidades, então refazia
      a varredura a cada render da Ficha. Só depende da ficha. */
   const funcionamentos = useMemo(() => funcionamentosDaFicha(ficha), [ficha]);
+  // As Quimeras em aba própria (primitiva `abaQuimeras`, 2026-10-14).
+  const quimerasEmAbaPropria = !!derived.primitivas?.includes("abaQuimeras");
 
   const corpo = {
     roda: () => <PainelDharma derived={derived} sessao={sessao} onSessao={atualiza} />,
@@ -780,8 +782,24 @@ export default function AftyFicha({
         acoes={acoesDeInvocacao}
         aoTemar={setTemandoInvocacao}
         temaEmEdicao={rascunhoInv}
+        modo={quimerasEmAbaPropria ? "semQuimeras" : "tudo"}
       />
     ),
+    /* A aba Quimeras (primitiva `abaQuimeras`, 2026-10-14): a mesma mesa, só com
+       as Quimeras. Sem Mecha e sem editor de aparência, que são das invocações. */
+    ...(quimerasEmAbaPropria ? { quimeras: () => (
+      <AbaInvocacoes
+        derived={derived}
+        rolar={rolar}
+        destaque={destaque}
+        estadoDe={(id) => estadoDaInvocacao(sessao, id)}
+        entradaDe={(inv) => entradaDaInvocacao(sessao, inv)}
+        emCombate={emCombateNaSessao(sessao)}
+        reserva={sessao.reservaInvocacao}
+        acoes={acoesDeInvocacao}
+        modo="quimeras"
+      />
+    ) } : {}),
     buffs: () => (
       <AbaBuffs
         derived={derived}
@@ -1102,7 +1120,10 @@ export default function AftyFicha({
 
           {/* ---------- abas ---------- */}
           <div className="afty-abas" role="tablist" aria-label="Seções da ficha">
-            {[...TABS, ...(derived.dharma?.ativo ? [{ id: "roda", label: "Roda" }] : [])].map((t) => (
+            {[
+              ...TABS.flatMap((t) => (t.id === "invocacoes" && quimerasEmAbaPropria ? [t, { id: "quimeras", label: "Quimeras" }] : [t])),
+              ...(derived.dharma?.ativo ? [{ id: "roda", label: "Roda" }] : []),
+            ].map((t) => (
               <button
                 key={t.id}
                 type="button"

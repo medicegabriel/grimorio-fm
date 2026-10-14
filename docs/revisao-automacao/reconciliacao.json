@@ -59978,6 +59978,20 @@
         "M05"
       ],
       "lotesInvalidados": []
+    },
+    {
+      "data": "2026-10-14T20:41:31.675Z",
+      "proposta": "docs/revisao-automacao/G00/rechecagem/proposta-quimera-de-maldicoes-2026-10-14.json",
+      "assinatura": "f066c39fc8740e048b18fe32a105b960da349ef92ae3a893185efea72e8ed636",
+      "justificativa": "Addon Quimera de Maldições pedido pelo autor em 2026-10-13 e decidido em 2026-10-14. Registra o pacote AD-70, a primitiva abaQuimeras e a liberação quimeraDeMaldicoes, e sincroniza os hashes dos catálogos PRIMITIVAS e LIBERACOES. Não aprova regras da campanha.",
+      "adicionados": 13,
+      "removidos": 0,
+      "alterados": 2,
+      "lotesAtingidos": [
+        "AD-70",
+        "M05"
+      ],
+      "lotesInvalidados": []
     }
   ],
   "rechecagem": {

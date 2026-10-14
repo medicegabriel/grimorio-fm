@@ -880,7 +880,11 @@ function membrosQueSaemDaMesa(ativos) {
  */
 function aplicaDanoQuimera(sessao, q, bruto) {
   const antes = linhaDaInvocacao(sessao, q.id);
-  let out = aplicaDanoInvocacao(sessao, q.id, bruto, q.pv, regrasDoTipoValor("shikigami"));
+  /* A Quimera de Maldições (addon, 2026-10-14) cai pela regra da Maldição: a 0 PV
+     ela é exorcizada, e as componentes ficam presas até o fim da cena ("Caso ela
+     seja exorcizada [...]"). A de Shikigamis segue dissipando. */
+  const regras = regrasDoTipoValor(q.familia === "maldicao" ? "maldicao" : "shikigami");
+  let out = aplicaDanoInvocacao(sessao, q.id, bruto, q.pv, regras);
   const depois = linhaDaInvocacao(out, q.id);
   if (antes.estado !== "ativa" || depois.estado === "ativa") return out;
   const componentes = antes.componentes.length ? antes.componentes : (q.componentesIds ?? []);
