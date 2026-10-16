@@ -60,6 +60,7 @@ import {
 import { efeitosDeVotos, regrasAftyDeVotosAtivos, votosDaFicha } from "./afty-votos";
 import { resolveBloodfeast, temBloodfeast, efeitosBloodfeast, efeitosPoderDoSangue, comArmaBloodfeast, aprimoraLinhaBloodfeast } from "./afty-bloodfeast";
 import { regrasAftyDaCriatura } from "./afty-regras-addon";
+import { feiticosVinculadosDeAddon, variaveisDosVinculos, bonusPorFeitico, contadoresSessaoDeAddon } from "./afty-recursos-addon";
 import { efeitosDeModificacoesCorporais } from "./afty-modificacoes-corporais";
 import { resolveTita } from "./afty-tita";
 import { efeitosDeTreinoEspecial } from "./afty-treinos-especiais";
@@ -887,6 +888,12 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
       ...efeitosDeModificacoesCorporais(creature),
   ], ctxMontante);
   const efMontante = resolverExclusivos(aplicarEfeitos(efeitosMontante, ctxMontante));
+  /* OS VÍNCULOS DE FEITIÇO E O BÔNUS POR FEITIÇO (2026-10-15, Golem de Sangue
+     1.1.0). Os canais `nivelFeitico` e `rodadasFeitico` são lidos AQUI, no
+     montante, porque o cálculo de cada Feitiço (o ligado entra no Motor principal)
+     vem antes do Motor terminar. Voto, origem e treino rodam neste estágio. */
+  const vinculosFeitico = feiticosVinculadosDeAddon(creature);
+  const bonusFeitico = bonusPorFeitico(efMontante.detalhes, vinculosFeitico);
   // Os canais que precisam ser lidos ANTES do contexto principal: dois
   // alimentam resolveNiveisAptidao (nível de aptidão é variável do DSL) e um
   // alimenta o orçamento de Habilidades de Especialização. O resto (hp, pe,
@@ -1744,6 +1751,7 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
     feiticos: creature?.feiticos,
     // Para esconder o Feitiço cujo efeito não existe no nível dele.
     nd,
+    bonusFeitico,
   });
   const estadosAptidoes = estadosCombateAptidoes({
     aptidoesIds,
@@ -1846,6 +1854,7 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
     // (2026-10-08). Sem o nível de Conjurador o Adiantar Evolução ficaria de fora.
     nivelConjurador,
     habilidades: habilidades.efetivas,
+    bonusFeitico,
   });
   const aurasDesabilitadas = new Set(aptidoesAuraDesabilitadas(
     {
@@ -1947,6 +1956,8 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
     nivelFeiticoMax: acessoFeitico,
     origemContadoresVars,
     opcoesOrigem: opcoesOrigemDsl,
+    // `<pacote>_<id>_ligado`: o Feitiço vinculado está no ar (2026-10-15).
+    vinculosLigados: variaveisDosVinculos(vinculosFeitico, combate),
     irmaoMorto: !!creature?.core?.origem?.irmaoMorto,
     iniciativaIrmao: creature?.core?.origem?.iniciativaIrmao,
     attrEff: attrs, mods, modTecnica: mods[tecnicaAttr] ?? 0, tecnicaAttr,
@@ -2843,8 +2854,15 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
   const peMultMotor = fontesPeMult.reduce((p, d) => p * Number(d.valor), 1);
   const multiplicadorPeMaximo = regrasAddon.multiplicadorPeMaximo * multiplicadorPeDosVotos * peMultMotor;
   const peOriginal = Math.floor(peAntesMultiplicador * multiplicadorPeMaximo);
-  const pe = bloodfeast.tem ? 0 : peOriginal;
+  /* O PE MÁXIMO QUE VIRA PV por regra de pacote (`regrasAfty.energiaEmVida`,
+     2026-10-15, a Maldição Carmesim do Golem de Sangue: "cada PE se torna 3PV").
+     É a conta do Bloodfeast, aberta a qualquer pacote. O Bloodfeast vence, porque
+     ele já converte do jeito dele. O PE negativo não tira vida. */
+  const energiaEmVida = bloodfeast.tem ? 0 : regrasAddon.energiaEmVida;
+  const peConvertido = energiaEmVida ? Math.max(0, peOriginal) : 0;
+  const pe = bloodfeast.tem || energiaEmVida ? 0 : peOriginal;
   if (bloodfeast.tem) hp += peOriginal * 3 - bloodfeast.custoMaximo;
+  if (energiaEmVida) hp += Math.floor(peConvertido * energiaEmVida);
   const efeitosPoderSangue = efeitosPoderDoSangue(bloodfeast, opcoes.vidaAtual, hp);
   if (efeitosPoderSangue.length) ef = mesclarEfeitos(ef, aplicarEfeitos(efeitosPoderSangue, montarCtx(attrEff, modByAttr)));
 
@@ -3154,6 +3172,7 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
   const ctxFeiticos = {
     nd,
     nivelConjurador,
+    bonusFeitico,
     cdBase: cdFeitico,
     modTecnica,
     efeitos: ef,
@@ -4123,6 +4142,7 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
     hp: [
       ...(bloodfeast.tem ? [{ label: "Bloodfeast: energia convertida", valor: peOriginal * 3 },
         ...bloodfeast.passivas.filter((p) => p.custoPV).map((p) => ({ label: p.nome, valor: -p.custoPV }))] : []),
+      ...(energiaEmVida ? [{ label: `${regrasAddon.fonteEnergiaEmVida?.nome ?? "Addon"}: energia convertida`, valor: Math.floor(peConvertido * energiaEmVida) }] : []),
       ...(pvPorClasse
         ? linhasBaseDeClasse((e, i) => pvDaClasse(e.id, e.nivel, { inicial: i === 0 }))
         : [{ label: `Base do Tipo (${TIPO_LABEL[tipo] ?? tipo})`, valor: hpBase }]),
@@ -4165,6 +4185,7 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
     ],
     pe: [
       ...(bloodfeast.tem ? [{ label: "Bloodfeast: convertido em Vida", valor: -peOriginal }] : []),
+      ...(energiaEmVida ? [{ label: `${regrasAddon.fonteEnergiaEmVida?.nome ?? "Addon"}: convertido em Vida`, valor: -peOriginal }] : []),
       ...(pvPorClasse
         ? linhasBaseDeClasse((e) => peDaClasse(e.id, e.nivel))
         : [{ label: `Base do Tipo (${TIPO_LABEL[tipo] ?? tipo})`, valor: peBase }]),
@@ -4608,6 +4629,9 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
     totalAptidao,               // orçamento de NÍVEIS de aptidão (Afty continua a cada 2 ND depois do 20)
     totalAptidoesAmaldicoadas,  // quantas pode ter (progressão do jogador e canal vagasAptidao)
     caracteristicasAmaldicoadas, // { lista, catalogo, escolhidas, vagas, usadas, excedeu } (afty-caracteristicas-amaldicoadas.js)
+    feiticosVinculados: vinculosFeitico, // [{ id, label, tipo, feiticoId, variavel }] (afty-recursos-addon.js)
+    contadoresSessao: contadoresSessaoDeAddon(creature), // os contadores de mesa dos pacotes, com as ações
+    bonusFeitico,         // { [feiticoId | "*"]: { nivel, rodadas, partes } } dos canais de Feitiço
     reduzNivelAptidao,          // quanto o pré-requisito de NÍVEL de cada Aptidão desce (0 no normal)
     requisitoTrilhaDispensado,  // { trilha: [fontes] } cujo requisito não trava Aptidão de outra trilha
     aptidao,              // níveis por trilha: { alocado, concedido, efetivo, gastos, limite }

@@ -43,6 +43,7 @@ import { rolarDano } from "./ficha-rolagem";
 import { preparaRolagemCura } from "../afty-cura";
 import { normalizaPropriedadesArmas, iniciaTurnoArmas } from "../afty-propriedades-armas";
 import { normalizaBloodfeast, pagaVidaBloodfeast, rodadaBloodfeast } from "../afty-bloodfeast";
+import { valorContadorSessao, normalizaContadoresSessao } from "../afty-recursos-addon";
 import { normalizaDharma, avancarRodadaDharma } from "../afty-dharma";
 // As fases da Expansão no ar (2026-10-08). Módulo FOLHA, sem ciclo.
 import { FASES_DOMINIO } from "../afty-dominios";
@@ -188,6 +189,8 @@ export function sessaoEmBranco(derived = null) {
     usos: {},
     // A recarga das Técnicas Máximas, por id do Feitiço (2026-10-08).
     recargas: {},
+    // Os contadores de MESA dos pacotes (`contadoresSessao`, 2026-10-15).
+    contadoresSessao: {},
     ultimoFeiticoDanoId: null,
     rituais: {},
     ritualAtual: null,
@@ -261,6 +264,7 @@ export function normalizaSessao(bruta, derived = null) {
     combate: bruta.combate && typeof bruta.combate === "object" ? bruta.combate : {},
     usos: bruta.usos && typeof bruta.usos === "object" ? bruta.usos : {},
     recargas: normalizaRecargas(bruta.recargas),
+    contadoresSessao: normalizaContadoresSessao(bruta.contadoresSessao),
     ultimoFeiticoDanoId: typeof bruta.ultimoFeiticoDanoId === "string"
       ? bruta.ultimoFeiticoDanoId
       : null,
@@ -1802,6 +1806,72 @@ export function aplicaPerdaDeVida(sessao, bruto) {
 }
 
 /** Aplica cura. Nunca passa do máximo, e nunca ressuscita PV temporário. */
+/* ============================================================ */
+/* CONTADORES DE SESSÃO DOS PACOTES (2026-10-15)                */
+/* ============================================================ */
+/* Os números de mesa que um pacote declara (`contadoresSessao`, ver
+   afty-recursos-addon.js): Pontos de Sangue, Sangue Guardado e Fome do Golem de
+   Sangue. O valor mora em `sessao.contadoresSessao[<pacote>:<id>]`. */
+
+function zeraContadoresNoDescanso(mapa, contadores = []) {
+  const out = normalizaContadoresSessao(mapa);
+  for (const c of Array.isArray(contadores) ? contadores : []) {
+    if (c.zeraNoDescanso) out[c.id] = c.inicio;
+  }
+  return out;
+}
+
+/** Escreve um contador, aparado na faixa dele. */
+export function defineContadorSessao(sessao, contador, valor) {
+  const v = Math.min(contador.max ?? Infinity, Math.max(contador.min, inteiro(valor, contador.min)));
+  return { ...sessao, contadoresSessao: { ...normalizaContadoresSessao(sessao.contadoresSessao), [contador.id]: v } };
+}
+
+/**
+ * Por que a ação não pode agora, ou `null`. O contador não sai da faixa (nem o
+ * irmão citado em `outros`), e o PV não paga o que não tem.
+ */
+export function bloqueioAcaoContador(sessao, contadores, contador, acao) {
+  const v = valorContadorSessao(sessao, contador);
+  const novo = v + (acao.delta ?? 0);
+  if (novo < contador.min || (contador.max != null && novo > contador.max)) return `${contador.label} Insuficiente`;
+  for (const [id, d] of Object.entries(acao.outros ?? {})) {
+    const irmao = (contadores ?? []).find((c) => c.id === id);
+    if (!irmao) continue;
+    const n = valorContadorSessao(sessao, irmao) + d;
+    if (n < irmao.min || (irmao.max != null && n > irmao.max)) return `${irmao.label} no Limite`;
+  }
+  if ((acao.pv ?? 0) < 0 && Math.max(0, inteiro(sessao.hpAtual, 0)) < -acao.pv) return "PV Insuficiente";
+  if (acao.pvPeloValor && v <= 0) return "Nada a Recuperar";
+  return null;
+}
+
+/**
+ * Faz a ação: o PV pago ou curado, o próprio contador, os irmãos, e por fim o
+ * `zera`. O `pvPercentual` ESCREVE o PV atual (a Fome: "Inicia a sessão com 75%
+ * dos PV máximos"), e é por isso que ele vem antes da cura e do pagamento.
+ */
+export function aplicaAcaoContador(sessao, contadores, contador, acao, hpMax) {
+  if (bloqueioAcaoContador(sessao, contadores, contador, acao)) return sessao;
+  const v = valorContadorSessao(sessao, contador);
+  const max = Math.max(0, inteiro(hpMax, 0));
+  let out = sessao;
+  if (Array.isArray(acao.pvPercentual) && acao.pvPercentual.length) {
+    const pct = acao.pvPercentual[Math.min(acao.pvPercentual.length - 1, Math.max(0, v - contador.min))];
+    out = { ...out, hpAtual: Math.floor(max * pct / 100) };
+  }
+  if ((acao.pv ?? 0) < 0) out = { ...out, hpAtual: Math.max(0, inteiro(out.hpAtual, 0) + acao.pv) };
+  if ((acao.pv ?? 0) > 0) out = aplicaCura(out, acao.pv, max);
+  if (acao.pvPeloValor) out = aplicaCura(out, v, max);
+  out = defineContadorSessao(out, contador, v + (acao.delta ?? 0));
+  for (const [id, d] of Object.entries(acao.outros ?? {})) {
+    const irmao = (contadores ?? []).find((c) => c.id === id);
+    if (irmao) out = defineContadorSessao(out, irmao, valorContadorSessao(out, irmao) + d);
+  }
+  if (acao.zera) out = defineContadorSessao(out, contador, contador.min);
+  return out;
+}
+
 export function aplicaCura(sessao, bruto, hpMax, { externa = false } = {}) {
   if (externa && sessao.energiaEmVida) return sessao;
   const cura = Math.max(0, inteiro(bruto, 0));
@@ -2255,6 +2325,9 @@ export function descansar(sessao, derived, { marioneteId = null } = {}) {
     usos: Object.fromEntries(Object.entries(sessao.usos ?? {}).filter(([k]) => k.startsWith("manual:"))),
     // A recarga da Técnica Máxima zera no descanso (DA-08).
     recargas: {},
+    /* O contador de sessão que pede (`zeraNoDescanso`) volta ao início: os
+       Pontos de Sangue da Briar começam em 0 a cada sessão. Os outros ficam. */
+    contadoresSessao: zeraContadoresNoDescanso(sessao.contadoresSessao, derived?.contadoresSessao),
     // Só a Marionete escolhida recebe o reparo completo. As outras não enchem.
     invocacoes: descansaInvocacoes(mesa.invocacoes, derived, marioneteId),
     // A Reserva para Invocação volta com o descanso (2026-09-30).

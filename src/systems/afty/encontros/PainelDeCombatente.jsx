@@ -42,6 +42,7 @@ import PainelManipulacaoCeu from "../ficha/PainelManipulacaoCeu";
 import AbaBuffs from "../ficha/abas/AbaBuffs";
 import PainelOlhinhosLu from "../ficha/PainelOlhinhosLu";
 import PainelAcoesAddon from "../ficha/PainelAcoesAddon";
+import PainelContadoresSessao from "../ficha/PainelContadoresSessao";
 import { consumirAcoesAddon } from "../afty-acoes-addon";
 import AbaPericias from "../ficha/abas/AbaPericias";
 import AbaHabilidades from "../ficha/abas/AbaHabilidades";
@@ -460,7 +461,8 @@ export default function PainelDeCombatente({
           adaptacao={<PainelDeAdaptacao derived={derived} onSessao={onSessao} />}
           olhosAgulha={<PainelOlhosAgulha derived={derived} sessao={sessao} onSessao={onSessao} />}
           olhinhosLu={<><PainelOlhinhosLu derived={derived} onSessao={onSessao} />
-            <PainelAcoesAddon derived={derived} sessao={sessao} onSessao={onSessao} /></>}
+            <PainelAcoesAddon derived={derived} sessao={sessao} onSessao={onSessao} />
+            <PainelContadoresSessao derived={derived} sessao={sessao} onSessao={onSessao} /></>}
           manipulacaoCeu={<PainelManipulacaoCeu derived={derived} onEstado={(estado, valor) => onSessao((s) => alteraEstadoCombate(s, estado, valor))} />}
           armasTransformaveis={<ArmasTransformaveis derived={derived} sessao={sessao} onSessao={onSessao} />}
           golpeEspecial={<PainelDoGolpeEspecial derived={derived} sessao={sessao} onSessao={onSessao} />}

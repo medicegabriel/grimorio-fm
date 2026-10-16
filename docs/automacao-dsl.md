@@ -704,3 +704,18 @@ Efeitos sobre alvos, exaustão e encerramento de transformação permanecem no
 texto quando o pacote não declara automação para eles. Exemplo real:
 `addons/ciel-lucielus.json`, uso e limitações em `docs/ciel-lucielus.md`.
 \n
+
+## Feitiço vinculado e contadores de sessão (2026-10-16)
+
+Vieram com o Golem de Sangue 1.1.0. Detalhes do pacote em `docs/afty-addons.md`.
+
+- Variável `<pacote>_<id>_ligado` para cada `feiticosVinculados` do pacote: 1 quando o Feitiço que
+  a ficha apontou está no ar em combate (o `feiticoLigado_<id>` da Duradoura e da Cena, ou uma vaga
+  `sustentacaoFeitico<n>`), 0 fora de combate ou com o vínculo vazio. O Golem usa
+  `golem_de_sangue_frenesi_ligado` no `quando` do Hemólito e das amarras.
+- Canal `nivelFeitico`: níveis a mais nos EFEITOS do Feitiço, mesmo acima do acesso. Canal
+  `rodadasFeitico`: rodadas a mais na Duradoura. Os dois aceitam o alvo `vinculo:<id>` (o Feitiço do
+  vínculo) ou o id de um Feitiço, e sem alvo valem para todos. São lidos depois do montante, então um
+  Voto pode dá-los. Hoje só a Transformação lê os dois.
+- `regrasAfty.energiaEmVida` e os `contadoresSessao` não são DSL: o primeiro é regra numérica do
+  pacote, e os contadores são números de mesa que nenhuma expressão lê.

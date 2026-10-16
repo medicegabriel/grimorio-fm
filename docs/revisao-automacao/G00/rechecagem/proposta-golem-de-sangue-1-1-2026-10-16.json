@@ -1,0 +1,901 @@
+{
+  "versao": 1,
+  "shaInventario": "cb6b660d1708b3e7f2d79d8bb5f68626af1d2be7df3860491c1eb583ee021a43",
+  "shaVivo": "d4436a7635d057e987dae4a30f14f381b08eff2b6ad12054ca6dfb9f3940a44f",
+  "shaEscopo": "1c4451bc13b68e05712d8a922bfaf8526ccfce8b7a75c75c219f3256b5ea8c28",
+  "adicionados": [
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao",
+        "id": "contadoresSessao",
+        "nome": "contadoresSessao",
+        "arquivo": "addons/golem-de-sangue.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote",
+        "hashDado": "4668191f75d55d8663893af9d8c5e246fcad68fd22daaddbdbba89abfcb307fd"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome",
+        "id": "fome",
+        "nome": "Fome",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::contadoresSessao",
+        "caminho": "fome",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "fome",
+        "hashDado": "b36307f42006953b2c4e4dddab9ccadbb1c3b516bf85abb2d7ba39aaca873db5"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes",
+        "id": "fome/acoes",
+        "nome": "fome/acoes",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::contadoresSessao",
+        "caminho": "fome/acoes",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "fd0bb0d74be363ff85c2e425682a7b665bbbdf89c922a3fa93df28ca4125a876"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes/pv_inicial",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes/pv_inicial",
+        "id": "fome/acoes/pv_inicial",
+        "nome": "PV Inicial",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::contadoresSessao",
+        "caminho": "fome/acoes/pv_inicial",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "pv_inicial",
+        "hashDado": "c608262bb8a515f2c18d3de91e17cb9ff61a98621ca2209cd3d090c322dd8701"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes/pv_inicial/pvPercentual",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes/pv_inicial/pvPercentual",
+        "id": "fome/acoes/pv_inicial/pvPercentual",
+        "nome": "fome/acoes/pv_inicial/pvPercentual",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::contadoresSessao",
+        "caminho": "fome/acoes/pv_inicial/pvPercentual",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "319ac1f66aeeec1b67ff40d87296a43701b7359b6943b3af3a3f8bfe93a33436"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes/pv_inicial/pvPercentual/@0",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes/pv_inicial/pvPercentual/@0",
+        "id": "fome/acoes/pv_inicial/pvPercentual/@0",
+        "nome": "fome/acoes/pv_inicial/pvPercentual/@0",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::contadoresSessao",
+        "caminho": "fome/acoes/pv_inicial/pvPercentual/@0",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "ad57366865126e55649ecb23ae1d48887544976efea46a48eb5d85a6eeb4d306"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes/pv_inicial/pvPercentual/@1",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes/pv_inicial/pvPercentual/@1",
+        "id": "fome/acoes/pv_inicial/pvPercentual/@1",
+        "nome": "fome/acoes/pv_inicial/pvPercentual/@1",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::contadoresSessao",
+        "caminho": "fome/acoes/pv_inicial/pvPercentual/@1",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "f369cb89fc627e668987007d121ed1eacdc01db9e28f8bb26f358b7d8c4f08ac"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes/pv_inicial/pvPercentual/@2",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes/pv_inicial/pvPercentual/@2",
+        "id": "fome/acoes/pv_inicial/pvPercentual/@2",
+        "nome": "fome/acoes/pv_inicial/pvPercentual/@2",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::contadoresSessao",
+        "caminho": "fome/acoes/pv_inicial/pvPercentual/@2",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "1a6562590ef19d1045d06c4055742d38288e9e6dcd71ccde5cee80f1d5a774eb"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes/pv_inicial/pvPercentual/@3",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes/pv_inicial/pvPercentual/@3",
+        "id": "fome/acoes/pv_inicial/pvPercentual/@3",
+        "nome": "fome/acoes/pv_inicial/pvPercentual/@3",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::contadoresSessao",
+        "caminho": "fome/acoes/pv_inicial/pvPercentual/@3",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "b7a56873cd771f2c446d369b649430b65a756ba278ff97ec81bb6f55b2e73569"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::pontos_de_sangue",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::pontos_de_sangue",
+        "id": "pontos_de_sangue",
+        "nome": "Pontos de Sangue",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::contadoresSessao",
+        "caminho": "pontos_de_sangue",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "pontos_de_sangue",
+        "hashDado": "47901851b7b1223f320954ecc7b1c755545901001bd6c6a9e5da5f5b58274381"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::pontos_de_sangue/acoes",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::pontos_de_sangue/acoes",
+        "id": "pontos_de_sangue/acoes",
+        "nome": "pontos_de_sangue/acoes",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::contadoresSessao",
+        "caminho": "pontos_de_sangue/acoes",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "6f3ad0a222cf7aafeae580f5ddf7db521068619eec1d90ea58668ab61c4b047c"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::pontos_de_sangue/acoes/sangrar",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::pontos_de_sangue/acoes/sangrar",
+        "id": "pontos_de_sangue/acoes/sangrar",
+        "nome": "Sangrar 5 PV",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::contadoresSessao",
+        "caminho": "pontos_de_sangue/acoes/sangrar",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "sangrar",
+        "hashDado": "62c2e581a2a1e249086531482aa9d5a29b9c207cfd518a45db18857d32019b15"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::sangue_guardado",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::sangue_guardado",
+        "id": "sangue_guardado",
+        "nome": "Sangue Guardado",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::contadoresSessao",
+        "caminho": "sangue_guardado",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "sangue_guardado",
+        "hashDado": "c89ae8b6d0c1dac907a0dc8d62ebf6a8368c738878a88d714ad755d3ff16d47b"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::sangue_guardado/acoes",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::sangue_guardado/acoes",
+        "id": "sangue_guardado/acoes",
+        "nome": "sangue_guardado/acoes",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::contadoresSessao",
+        "caminho": "sangue_guardado/acoes",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "1046dcc21640ace6b39debfffef960ea5ed1ec6f72a8046967f320bbfa8fc4aa"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::sangue_guardado/acoes/converter",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::sangue_guardado/acoes/converter",
+        "id": "sangue_guardado/acoes/converter",
+        "nome": "5 em 1 Ponto de Sangue",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::contadoresSessao",
+        "caminho": "sangue_guardado/acoes/converter",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "converter",
+        "hashDado": "5143d254de10d4e693f9bbcd2e98ff1dcd676beaa4b3e05797cf95a34c164703"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::sangue_guardado/acoes/converter/outros",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::sangue_guardado/acoes/converter/outros",
+        "id": "sangue_guardado/acoes/converter/outros",
+        "nome": "sangue_guardado/acoes/converter/outros",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::contadoresSessao",
+        "caminho": "sangue_guardado/acoes/converter/outros",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "7c6ae49a0c8172f750fcd72bbafc63ccb867b1e6db27a55b0404ef718905e58f"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::sangue_guardado/acoes/recuperar",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::contadoresSessao::sangue_guardado/acoes/recuperar",
+        "id": "sangue_guardado/acoes/recuperar",
+        "nome": "Recuperar",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::contadoresSessao",
+        "caminho": "sangue_guardado/acoes/recuperar",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "recuperar",
+        "hashDado": "54a6e1108b5205f62b26da0840b125f361e1441e50487e5f2034b46190e54fb4"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::feiticosVinculados",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::feiticosVinculados",
+        "id": "feiticosVinculados",
+        "nome": "feiticosVinculados",
+        "arquivo": "addons/golem-de-sangue.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote",
+        "hashDado": "624f136331614513e297c190bdbc17c93c3d055e78e998d4f57befb6338709d0"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::feiticosVinculados::frenesi",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::feiticosVinculados::frenesi",
+        "id": "frenesi",
+        "nome": "Feitiço do Frenesi",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::feiticosVinculados",
+        "caminho": "frenesi",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "frenesi",
+        "hashDado": "b430167eca731039ee031e464f60fab96e884d1fc23a38231aa424ed64d727ab"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::funcionamentos",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::funcionamentos",
+        "id": "funcionamentos",
+        "nome": "funcionamentos",
+        "arquivo": "addons/golem-de-sangue.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote",
+        "hashDado": "d8a9ef76f878cf033add48996fbbfccb0849e6813359b12f7b680509653f513f"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::funcionamentos::maldicao_carmesim",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::funcionamentos::maldicao_carmesim",
+        "id": "maldicao_carmesim",
+        "nome": "Maldição Carmesim",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::funcionamentos",
+        "caminho": "maldicao_carmesim",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "maldicao_carmesim",
+        "hashDado": "374efba8c4ac2ef0545f53b700ba01c780cce327c78c28d926321ecc27456dff"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::regrasAfty",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::regrasAfty",
+        "id": "regrasAfty",
+        "nome": "regrasAfty",
+        "arquivo": "addons/golem-de-sangue.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote",
+        "hashDado": "082aa7c3890612d1a3799caf82e568f6c848763c4cdf4c697312e13c4a283127"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::beneficio/efeitos/@1",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::beneficio/efeitos/@1",
+        "id": "beneficio/efeitos/@1",
+        "nome": "beneficio/efeitos/@1",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::votoAutomatico",
+        "caminho": "beneficio/efeitos/@1",
+        "proprietario": "AD-71",
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "0c5a761b075bfe9268f304bc96e24a855b675c418c13e06f67c20c0521ef2237"
+      },
+      "proprietarioSugerido": "AD-71"
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::beneficio/efeitos/@2",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::beneficio/efeitos/@2",
+        "id": "beneficio/efeitos/@2",
+        "nome": "beneficio/efeitos/@2",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::votoAutomatico",
+        "caminho": "beneficio/efeitos/@2",
+        "proprietario": "AD-71",
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "975074c31364969407d0fba1e520c9ef4b6a95db2df6a1ab383b5a5e3dee5c58"
+      },
+      "proprietarioSugerido": "AD-71"
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/frenesi_incontrolavel",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/frenesi_incontrolavel",
+        "id": "caracteristicas/frenesi_incontrolavel",
+        "nome": "Frenesi Incontrolável",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/frenesi_incontrolavel",
+        "proprietario": "AD-71",
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "frenesi_incontrolavel",
+        "hashDado": "128d6be08ed4bea40dbb66da5d27d96dd6df1daf8609e43e19f2ff169e540245"
+      },
+      "proprietarioSugerido": "AD-71"
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/frenesi_incontrolavel/resultados",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/frenesi_incontrolavel/resultados",
+        "id": "caracteristicas/frenesi_incontrolavel/resultados",
+        "nome": "caracteristicas/frenesi_incontrolavel/resultados",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/frenesi_incontrolavel/resultados",
+        "proprietario": "AD-71",
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "db4d5b62c7bde523cc3417ccc5b0f13fe25c83de7450e43ebd30a069b460946b"
+      },
+      "proprietarioSugerido": "AD-71"
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/frenesi_incontrolavel/resultados/@0",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/frenesi_incontrolavel/resultados/@0",
+        "id": "caracteristicas/frenesi_incontrolavel/resultados/@0",
+        "nome": "CD de Vontade",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/frenesi_incontrolavel/resultados/@0",
+        "proprietario": "AD-71",
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "6266d3afb8e954ffa85dc5fb079e6dce60d677eb67f6f9c3eb564d731fde52a3"
+      },
+      "proprietarioSugerido": "AD-71"
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAIS::nivelFeitico",
+      "item": {
+        "chave": "afty-efeitos.js::EFEITO_CANAIS::nivelFeitico",
+        "id": "nivelFeitico",
+        "nome": "Nível dos Efeitos do Feitiço",
+        "arquivo": "src/systems/afty/afty-efeitos.js",
+        "export": "EFEITO_CANAIS",
+        "proprietario": "M01",
+        "tipo": "entrada",
+        "idLocal": "nivelFeitico",
+        "hashDado": "7d115caedb81a13bb494bf2238b0065d4f34a059b57f1db304fbc36f753cfd19"
+      },
+      "proprietarioSugerido": "M01"
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAIS::rodadasFeitico",
+      "item": {
+        "chave": "afty-efeitos.js::EFEITO_CANAIS::rodadasFeitico",
+        "id": "rodadasFeitico",
+        "nome": "Rodadas do Feitiço",
+        "arquivo": "src/systems/afty/afty-efeitos.js",
+        "export": "EFEITO_CANAIS",
+        "proprietario": "M01",
+        "tipo": "entrada",
+        "idLocal": "rodadasFeitico",
+        "hashDado": "4d956b8aaea8f381f019abaa12ea15f9eb19f6ccc9b90119aacca448c99174c3"
+      },
+      "proprietarioSugerido": "M01"
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@11",
+      "item": {
+        "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@11",
+        "id": "@11",
+        "nome": "Feitiços",
+        "arquivo": "src/systems/afty/afty-efeitos.js",
+        "export": "EFEITO_CANAL_GRUPOS",
+        "proprietario": "M01",
+        "tipo": "entrada",
+        "hashDado": "15e8af847519e71ca9b349107cc77aec0a71ed45b7a0f236a826def2c3945c5a"
+      },
+      "proprietarioSugerido": "M01"
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@11::itens",
+      "item": {
+        "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@11::itens",
+        "id": "itens",
+        "nome": "itens",
+        "arquivo": "src/systems/afty/afty-efeitos.js",
+        "export": "EFEITO_CANAL_GRUPOS",
+        "pai": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@11",
+        "caminho": "itens",
+        "proprietario": "M01",
+        "tipo": "pool",
+        "hashDado": "579d0e6459e4c1968b4565c70db1c8838587620d40024298977477bc1183a384"
+      },
+      "proprietarioSugerido": "M01"
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@11::itens/nivelFeitico",
+      "item": {
+        "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@11::itens/nivelFeitico",
+        "id": "itens/nivelFeitico",
+        "nome": "Nível dos Efeitos do Feitiço",
+        "arquivo": "src/systems/afty/afty-efeitos.js",
+        "export": "EFEITO_CANAL_GRUPOS",
+        "pai": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@11",
+        "caminho": "itens/nivelFeitico",
+        "proprietario": "M01",
+        "tipo": "referência",
+        "referencia": "afty-efeitos.js::EFEITO_CANAIS::nivelFeitico",
+        "integracaoProprietario": "M01",
+        "idLocal": "nivelFeitico",
+        "hashDado": "7d115caedb81a13bb494bf2238b0065d4f34a059b57f1db304fbc36f753cfd19"
+      },
+      "proprietarioSugerido": "M01"
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@11::itens/rodadasFeitico",
+      "item": {
+        "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@11::itens/rodadasFeitico",
+        "id": "itens/rodadasFeitico",
+        "nome": "Rodadas do Feitiço",
+        "arquivo": "src/systems/afty/afty-efeitos.js",
+        "export": "EFEITO_CANAL_GRUPOS",
+        "pai": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@11",
+        "caminho": "itens/rodadasFeitico",
+        "proprietario": "M01",
+        "tipo": "referência",
+        "referencia": "afty-efeitos.js::EFEITO_CANAIS::rodadasFeitico",
+        "integracaoProprietario": "M01",
+        "idLocal": "rodadasFeitico",
+        "hashDado": "4d956b8aaea8f381f019abaa12ea15f9eb19f6ccc9b90119aacca448c99174c3"
+      },
+      "proprietarioSugerido": "M01"
+    },
+    {
+      "chave": "afty-recursos-addon.js::TIPOS_VINCULO::@catalogo",
+      "item": {
+        "chave": "afty-recursos-addon.js::TIPOS_VINCULO::@catalogo",
+        "id": "@catalogo",
+        "nome": "@catalogo",
+        "arquivo": "src/systems/afty/afty-recursos-addon.js",
+        "export": "TIPOS_VINCULO",
+        "proprietario": "M05",
+        "tipo": "catálogo ou tabela",
+        "hashDado": "f91d18818be17697c4d3b6ccb3021c5d6fdda62b46de665a0f7cd84ae218d24f"
+      },
+      "proprietarioSugerido": "M05"
+    },
+    {
+      "chave": "afty-recursos-addon.js::TIPOS_VINCULO::auxiliar",
+      "item": {
+        "chave": "afty-recursos-addon.js::TIPOS_VINCULO::auxiliar",
+        "id": "auxiliar",
+        "nome": "auxiliar",
+        "arquivo": "src/systems/afty/afty-recursos-addon.js",
+        "export": "TIPOS_VINCULO",
+        "proprietario": "M05",
+        "tipo": "entrada",
+        "hashDado": "885f8f73e4de2095d5c36e7382a7cef89a9b9bee7f95e48e16cefd5cdadb9eb0"
+      },
+      "proprietarioSugerido": "M05"
+    },
+    {
+      "chave": "afty-recursos-addon.js::TIPOS_VINCULO::curativo",
+      "item": {
+        "chave": "afty-recursos-addon.js::TIPOS_VINCULO::curativo",
+        "id": "curativo",
+        "nome": "curativo",
+        "arquivo": "src/systems/afty/afty-recursos-addon.js",
+        "export": "TIPOS_VINCULO",
+        "proprietario": "M05",
+        "tipo": "entrada",
+        "hashDado": "c28371ef322ea62cbd8af2f4e42cdb4b5778abef86bbf9163df9068237f36d51"
+      },
+      "proprietarioSugerido": "M05"
+    },
+    {
+      "chave": "afty-recursos-addon.js::TIPOS_VINCULO::dano",
+      "item": {
+        "chave": "afty-recursos-addon.js::TIPOS_VINCULO::dano",
+        "id": "dano",
+        "nome": "dano",
+        "arquivo": "src/systems/afty/afty-recursos-addon.js",
+        "export": "TIPOS_VINCULO",
+        "proprietario": "M05",
+        "tipo": "entrada",
+        "hashDado": "be8642d7d30d879837070a24d968e358e50c29e019f98a089c1d4012adbeab8e"
+      },
+      "proprietarioSugerido": "M05"
+    },
+    {
+      "chave": "afty-recursos-addon.js::TIPOS_VINCULO::especial",
+      "item": {
+        "chave": "afty-recursos-addon.js::TIPOS_VINCULO::especial",
+        "id": "especial",
+        "nome": "especial",
+        "arquivo": "src/systems/afty/afty-recursos-addon.js",
+        "export": "TIPOS_VINCULO",
+        "proprietario": "M05",
+        "tipo": "entrada",
+        "hashDado": "7bb08ee60f2475e049db78af06e5c4526ce4b910dc62013fe199c1d5645148d4"
+      },
+      "proprietarioSugerido": "M05"
+    },
+    {
+      "chave": "afty-recursos-addon.js::TIPOS_VINCULO::qualquer",
+      "item": {
+        "chave": "afty-recursos-addon.js::TIPOS_VINCULO::qualquer",
+        "id": "qualquer",
+        "nome": "qualquer",
+        "arquivo": "src/systems/afty/afty-recursos-addon.js",
+        "export": "TIPOS_VINCULO",
+        "proprietario": "M05",
+        "tipo": "entrada",
+        "hashDado": "1ce9cac32e8c3f004f3e8c47466a786d376293c0a339a507762f61fb69399d0b"
+      },
+      "proprietarioSugerido": "M05"
+    },
+    {
+      "chave": "afty-recursos-addon.js::TIPOS_VINCULO::transformacao",
+      "item": {
+        "chave": "afty-recursos-addon.js::TIPOS_VINCULO::transformacao",
+        "id": "transformacao",
+        "nome": "transformacao",
+        "arquivo": "src/systems/afty/afty-recursos-addon.js",
+        "export": "TIPOS_VINCULO",
+        "proprietario": "M05",
+        "tipo": "entrada",
+        "hashDado": "b2c0f1a2d6821ac1962d0dd384439aefbc93b23b709ea17350142faac7981ee7"
+      },
+      "proprietarioSugerido": "M05"
+    }
+  ],
+  "removidos": [
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::estadosCombate::frenesi_sanguinario",
+      "proprietario": "AD-71",
+      "hashAnterior": "3f7bc631c7a3a601649bd53db7af0dbfc73a7059a623d415e1606c1164af684c"
+    }
+  ],
+  "alterados": [
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote",
+      "proprietarioMantido": "AD-71",
+      "hashAnterior": "b86796ee22685b2c7086e26758f84a5fca7c993f64ac579abe0db0a759680607",
+      "hashNovo": "12c87799c00d6dae68cddef3c7889c029b1bbcfc5ef148613c4b1f207402c111",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::acrescenta",
+      "proprietarioMantido": "AD-71",
+      "hashAnterior": "561e24b5861d54f9dc643e65e64bd9c0239a8aa4657b79ff6a4a1a002814aa39",
+      "hashNovo": "4e7cf27ce0dc399248fc6d40c7626fc9894ed84bca81b68412a5a12b602671b0",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::descricao",
+      "proprietarioMantido": "AD-71",
+      "hashAnterior": "aa9b79d1c7646e711b7421df3b33b18c9bb466554099043626f257bc7b886ac0",
+      "hashNovo": "60b88c076d1625a708fc192c4c6a980676652283c40440a2f1cecb03328fc11d",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::estadosCombate",
+      "proprietarioMantido": "AD-71",
+      "hashAnterior": "276289e1e616ffa5329887a274e8db9cd2ef937f75564bc859103288d11ebdf5",
+      "hashNovo": "2624745b57f26f5db293f836a609c1d268380651d13df4ef41ff5abc7db08f8a",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::versao",
+      "proprietarioMantido": "AD-71",
+      "hashAnterior": "39fe4a40977d0585fd5704359e3685b0ada5cf5ee061e5d97385601d120cd0ec",
+      "hashNovo": "e7ad5986cf98f45d2d11f5a65f149e95ecc61246dd2fb2427ab59a9033b66456",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico",
+      "proprietarioMantido": "AD-71",
+      "hashAnterior": "af09d3d5508874af2e77247c884a84b73a802cfc9cfce78e045d0b7258108617",
+      "hashNovo": "4edf9415487baf59ad4e1b1f9941649085476e9d52eada6c3f838e6d82aa0a67",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::beneficio",
+      "proprietarioMantido": "AD-71",
+      "hashAnterior": "dc564b5b82d6030073f0ebe44f276ab8946b4d9202c30b6dea975eba079e8f7b",
+      "hashNovo": "3da9bcf115f0008b22336e01935a3d81b973f324344a112ffea5f93d31ef56b6",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::beneficio/efeitos",
+      "proprietarioMantido": "AD-71",
+      "hashAnterior": "a25b081520bd579fdd71aaee8452a1551e1d530463a5f0bd8d09b4ad13f0191d",
+      "hashNovo": "4bc61f0d2b0b12e4cb514c857a3b76a04cc7a5e6bc4124c8f7750b8b3244241a",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio",
+      "proprietarioMantido": "AD-71",
+      "hashAnterior": "e8126a141574ece0cb7d1c8c6045cb18a4372376cb1caaab63603949bac08abe",
+      "hashNovo": "d591f1c77c2f93711d46c3e7101e4f623f52794bac921665b5a2075324a60865",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio/efeitos",
+      "proprietarioMantido": "AD-71",
+      "hashAnterior": "81a3be2a21353064bf01b176f191af3df4c24e712860fa18623e84995d2b4dcb",
+      "hashNovo": "a05a710fd894d7d15ebe12898a89c1e3acfe2ccce6ad700dba9321361d97f0e1",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio/efeitos/@1",
+      "proprietarioMantido": "AD-71",
+      "hashAnterior": "55ddefc4be58cbe7cc332930d4d42371061b5ffe9d8593487f8f5be954e280cf",
+      "hashNovo": "2a47dc0eccaa233d106acf808819f3563b8eac08614e41ae6bf30a2b47078fe2",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio/efeitos/@2",
+      "proprietarioMantido": "AD-71",
+      "hashAnterior": "259f6fd3b69e929e1f79923597d14be9c736044268761af8537e87c6e9c30638",
+      "hashNovo": "cf847fdcd7cedc888f5048ec42ef1912c795b7577bd42f2a359e206e96e032a4",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio/efeitos/@3",
+      "proprietarioMantido": "AD-71",
+      "hashAnterior": "b02f6b820976ddb50708cb84180b440e5a260838289bb95c0d66166f794f8230",
+      "hashNovo": "7f686db62f5c8e90dcbc1f39a209f75560459460d2a270db976821f905116509",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue",
+      "proprietarioMantido": "AD-71",
+      "hashAnterior": "f1d7181d0b6793559510cbfff71ce7895c59a3e766c3e5f3e54b17ae0279538e",
+      "hashNovo": "71728a4d728c95afad914a366157c7e6d66c302b2cb2d9a1a8e8af42ffd6c094",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::efeitosEspeciais",
+      "proprietarioMantido": "AD-71",
+      "hashAnterior": "e4e50ff7ea910c9b251cf5cc823d1c13fc54c38972c6f031f82cdb550821f68d",
+      "hashNovo": "953a59122c74674651ddb9041827d5503b387b80648aceff3fe7b3272710460b",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::efeitosEspeciais/@0",
+      "proprietarioMantido": "AD-71",
+      "hashAnterior": "87bfc7388c3a0ddc4f2f31bc58f9222eaa4527a2861e3ff893e6496563b258bb",
+      "hashNovo": "e434c6088679ca3172790202bb503e30cef32909f7387d1ab6b211fc411bfcdd",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::efeitosEspeciais/@1",
+      "proprietarioMantido": "AD-71",
+      "hashAnterior": "5203b5e692ee7d9e940f9ef43762a22fefe06aee8d5a6f025e00357356400676",
+      "hashNovo": "5065b196efe5d5734f02af1a8217ba47498a130c4fb32486eaa5f4b65b800c6d",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::efeitosEspeciais/@2",
+      "proprietarioMantido": "AD-71",
+      "hashAnterior": "4d6f80c712942d6e27d091c4b6af906c8fd6f7aee7dd0b1624658d942487e34f",
+      "hashNovo": "d0fce12aa3ce4b6a76adb14a5643f61be200944fc9debebfde4dfaa686c3a91e",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+      "proprietarioMantido": "AD-71",
+      "hashAnterior": "ee386b1ce42346d1d92d81233db50e65e4b5ea86398cf63643a8a80f968a83d6",
+      "hashNovo": "4f39f8ed5d2e6ddef43aa68e39fd38d4f63a4e448260db25e8543c61690e5759",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas",
+      "proprietarioMantido": "AD-71",
+      "hashAnterior": "b7cea9dc36e5ec76ac944456f12902b0326fe2c57f87eb93a0a9f298cf6771fc",
+      "hashNovo": "73fdb86a5716618d7105c9d2d6046dc4d86d3f473d932f98d8004e157d79b61a",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAIS::@catalogo",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "787c6032b3881461af95e17abdbf1854228eb73233d4d07349ad1a52cef8f010",
+      "hashNovo": "9f78ce6154b9ee95e1691bbf4eaf62596c3624e2d5021f593622c1231a7f5376",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@catalogo",
+      "proprietarioMantido": "M01",
+      "hashAnterior": "be538925738f5ffff4a5b19f39400f3a64a04bd3dc2848b1a29af36cdc8515ab",
+      "hashNovo": "f80738d1a921a043b9a15147a6e8f38c5cf4425eab87ec2fbc3499bc518663a9",
+      "campos": [
+        "hashDado"
+      ]
+    }
+  ],
+  "assinatura": "f24b52d762ecbd9a4378ed42e163d4f60bf0cbb460fefcbfbf2ca0be930d84d5",
+  "decisoes": {
+    "adicoes": {
+      "addon::golem-de-sangue.json::@pacote::contadoresSessao": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes/pv_inicial": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes/pv_inicial/pvPercentual": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes/pv_inicial/pvPercentual/@0": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes/pv_inicial/pvPercentual/@1": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes/pv_inicial/pvPercentual/@2": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes/pv_inicial/pvPercentual/@3": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::contadoresSessao::pontos_de_sangue": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::contadoresSessao::pontos_de_sangue/acoes": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::contadoresSessao::pontos_de_sangue/acoes/sangrar": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::contadoresSessao::sangue_guardado": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::contadoresSessao::sangue_guardado/acoes": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::contadoresSessao::sangue_guardado/acoes/converter": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::contadoresSessao::sangue_guardado/acoes/converter/outros": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::contadoresSessao::sangue_guardado/acoes/recuperar": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::feiticosVinculados": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::feiticosVinculados::frenesi": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::funcionamentos": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::funcionamentos::maldicao_carmesim": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::regrasAfty": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::votoAutomatico::beneficio/efeitos/@1": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::votoAutomatico::beneficio/efeitos/@2": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/frenesi_incontrolavel": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/frenesi_incontrolavel/resultados": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/frenesi_incontrolavel/resultados/@0": "AD-71",
+      "afty-efeitos.js::EFEITO_CANAIS::nivelFeitico": "M01",
+      "afty-efeitos.js::EFEITO_CANAIS::rodadasFeitico": "M01",
+      "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@11": "M01",
+      "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@11::itens": "M01",
+      "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@11::itens/nivelFeitico": "M01",
+      "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@11::itens/rodadasFeitico": "M01",
+      "afty-recursos-addon.js::TIPOS_VINCULO::@catalogo": "M05",
+      "afty-recursos-addon.js::TIPOS_VINCULO::auxiliar": "M05",
+      "afty-recursos-addon.js::TIPOS_VINCULO::curativo": "M05",
+      "afty-recursos-addon.js::TIPOS_VINCULO::dano": "M05",
+      "afty-recursos-addon.js::TIPOS_VINCULO::especial": "M05",
+      "afty-recursos-addon.js::TIPOS_VINCULO::qualquer": "M05",
+      "afty-recursos-addon.js::TIPOS_VINCULO::transformacao": "M05"
+    },
+    "remocoes": {
+      "addon::golem-de-sangue.json::@pacote::estadosCombate::frenesi_sanguinario": {
+        "justificativa": "O Frenesi Sanguinário deixou de ser interruptor do pacote: na 1.1.0 ele é o Feitiço de Transformação que a ficha liga ao vínculo frenesi (autor, 2026-10-15)."
+      }
+    },
+    "justificativaAtualizacao": "Golem de Sangue 1.1.0 pedido pelo autor em 2026-10-15: Maldição Carmesim, contadores de sessão, vínculo do Frenesi e os canais nivelFeitico e rodadasFeitico. Registra o módulo afty-recursos-addon.js (M05), os dois canais e o grupo Feitiços (M01). Não aprova regras da campanha."
+  },
+  "errosColeta": []
+}

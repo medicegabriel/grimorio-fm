@@ -59992,6 +59992,34 @@
         "M05"
       ],
       "lotesInvalidados": []
+    },
+    {
+      "data": "2026-10-16T02:56:59.845Z",
+      "proposta": "docs/revisao-automacao/G00/rechecagem/proposta-golem-de-sangue-2026-10-15.json",
+      "assinatura": "d9a79e9aed390ce0e689a9237ebf36c0d20cbfea501093d8c82c68eb58052c8c",
+      "justificativa": "Addon Golem de Sangue pedido pelo autor em 2026-10-15. Registra o pacote AD-71 (origem, três Talentos, o Hemólito de Sangue e o Voto automático Prisão da Besta), sem mudança no motor. Não aprova regras da campanha.",
+      "adicionados": 104,
+      "removidos": 0,
+      "alterados": 0,
+      "lotesAtingidos": [
+        "AD-71"
+      ],
+      "lotesInvalidados": []
+    },
+    {
+      "data": "2026-10-16T03:27:49.559Z",
+      "proposta": "docs/revisao-automacao/G00/rechecagem/proposta-golem-de-sangue-1-1-2026-10-16.json",
+      "assinatura": "f24b52d762ecbd9a4378ed42e163d4f60bf0cbb460fefcbfbf2ca0be930d84d5",
+      "justificativa": "Golem de Sangue 1.1.0 pedido pelo autor em 2026-10-15: Maldição Carmesim, contadores de sessão, vínculo do Frenesi e os canais nivelFeitico e rodadasFeitico. Registra o módulo afty-recursos-addon.js (M05), os dois canais e o grupo Feitiços (M01). Não aprova regras da campanha.",
+      "adicionados": 40,
+      "removidos": 1,
+      "alterados": 22,
+      "lotesAtingidos": [
+        "AD-71",
+        "M01",
+        "M05"
+      ],
+      "lotesInvalidados": []
     }
   ],
   "rechecagem": {

@@ -17506,3 +17506,25 @@ Pedido do autor: um Addon chamado "Yna" com a Origem Kitsune, a Linhagem Clã Ge
 **O que mudou:** `addons/quimera-de-maldicoes.json` 1.0.0. Primitiva nova `abaQuimeras` (28 no registro) e liberação nova `quimeraDeMaldicoes` (18). O `resolveQuimeraMecanicas` lê `dono.quimeraDeMaldicoes`: a família da principal manda, a mistura avisa, e a Maldição soma o custo base do grau. A aba do criador (`TabQuimeras`) é o mesmo `QuimerasCard`, e a da Ficha e do Encontro é a `AbaInvocacoes` com `modo="quimeras"` (a de Invocações ganha `modo="semQuimeras"`). A busca global leva a Quimera à aba dela. O `aplicaDanoQuimera` escolhe a regra pela família: a Quimera de Maldições é exorcizada a 0 PV e prende as componentes até o fim da cena.
 
 **Asserts:** `t-quimera-de-maldicoes.mjs` (37) nos dois sistemas, e os censos (`t-primitivas`, `t-estilo-liberado`, `t-estilo-marcial`) com a primitiva e a liberação novas. Contraprova no `HEAD`: 23 de 37 falham, e o motor velho recusa o pacote. Sem commit ou push.
+
+## SESSÃO DE 2026-10-15: ADDON GOLEM DE SANGUE
+
+**Pedido do autor:** um addon para a origem Golem de Sangue (Briar), os 3 Talentos de Origem, o Hemólito de Sangue e a Restrição Congênita: Prisão da Besta.
+
+**Decisões do autor:** o Frenesi Sanguinário é só um interruptor (a Maldição Carmesim não existe no app), a Prisão da Besta é Voto automático, o Corpo Morto fica em texto e as 5 Aptidões Especiais de Maldição entram no lugar da Energia Reversa.
+
+**O que mudou:** `addons/golem-de-sangue.json` 1.0.0, sem mudança no motor. O Hemólito usa `efeitosEspeciais` com `quando` em cada linha, porque o `requerEstado` da arma só segura a Ferramenta, e a propriedade Especial saiu da arma (arma de pacote não aponta para o catálogo de textos especiais do livro, e os dois textos ficam na descrição). Registrado na revisão G00 como o lote AD-71 (104 chaves do pacote).
+
+**Asserts:** `t-golem-de-sangue.mjs` (50) nos dois sistemas. Sem commit ou push.
+
+## SESSÃO DE 2026-10-16: GOLEM DE SANGUE 1.1.0
+
+**Pedido do autor:** *"Frenesi de sangue e uma trasformaçao, o nivel aumentado pode ultrpassar o limite de acesso"*, e depois o Funcionamento Básico da Maldição Carmesim e a Mecânica Única Frenesi Incontrolável (Fome Insaciável e Controle Restrito).
+
+**Decisões do autor:** o Feitiço do Frenesi é escolhido num seletor do criador, a Transformação é Duradoura (+BT/2 rodadas, Exaustão do nível escrito), e a Maldição Carmesim é automatizada (o PE Máximo vira PV, 3 por PE, e os contadores Pontos de Sangue, Sangue Guardado e Fome na Ficha).
+
+**O que mudou no motor:** módulo novo `afty-recursos-addon.js` (só importa a DSL) com dois verbos de pacote, `feiticosVinculados` (seletor na aba Origem, variável `<pacote>_<id>_ligado`, alvo `vinculo:<id>`) e `contadoresSessao` (painel `ficha/PainelContadoresSessao.jsx` na Ficha e no Encontro, ações aplicadas por `aplicaAcaoContador` em `ficha-sessao.js`, zerados no Descansar quando o pacote pede). Canais novos `nivelFeitico` e `rodadasFeitico`, lidos depois do montante e entregues à Transformação, que passa a calcular os efeitos no nível somado (até o Máximo, sem aviso de acesso) e mantém custo e Exaustão do nível escrito. A linha da Ficha mostra "Efeitos" e "Rodadas Extras" com a fonte. Regra `regrasAfty.energiaEmVida`. O grupo de canais "Feitiços" entrou no FIM de `GRUPOS_DE_CANAL`, para não deslocar os índices que a revisão G00 registra.
+
+**O pacote:** `addons/golem-de-sangue.json` 1.1.0. O interruptor `frenesi_sanguinario` saiu (o Frenesi é o Feitiço vinculado), e entraram o Funcionamento Maldição Carmesim, os três contadores, o vínculo e o Frenesi Incontrolável. Revisão G00: proposta `G00/rechecagem/proposta-golem-de-sangue-1-1-2026-10-16.json` aplicada (lotes AD-71, M01 e M05), e a entrada da chave removida apagada à mão de `fontes.json` (lacuna da ferramenta, em `docs/a-fazer.md`).
+
+**Asserts:** `t-golem-de-sangue.mjs` (107) nos dois sistemas. O motor do `HEAD` recusa o pacote 1.1.0 (regra desconhecida `energiaEmVida`). ⚠ Motor e pacote no mesmo push, e o pacote só se instala depois do deploy. Sem commit ou push.

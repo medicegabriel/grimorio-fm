@@ -1,0 +1,1802 @@
+{
+  "versao": 1,
+  "shaInventario": "bc920074bbb446835dcf59fded50bddd16cb34b2014f87af1de56644740d5fa3",
+  "shaVivo": "77611d1cc07621d872ff392ca0efc32ad609fff71e98ac92276150b129975ae2",
+  "shaEscopo": "bbb57892de3b705c9acf435728bfde3574ecde768910c4e4dcdf5a96312e3471",
+  "adicionados": [
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote",
+        "id": "golem-de-sangue",
+        "nome": "Golem de Sangue",
+        "arquivo": "addons/golem-de-sangue.json",
+        "proprietario": null,
+        "tipo": "pacote",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "golem-de-sangue",
+        "hashDado": "b86796ee22685b2c7086e26758f84a5fca7c993f64ac579abe0db0a759680607"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::acrescenta",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::acrescenta",
+        "id": "acrescenta",
+        "nome": "acrescenta",
+        "arquivo": "addons/golem-de-sangue.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote",
+        "hashDado": "561e24b5861d54f9dc643e65e64bd9c0239a8aa4657b79ff6a4a1a002814aa39"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::autor",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::autor",
+        "id": "autor",
+        "nome": "autor",
+        "arquivo": "addons/golem-de-sangue.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote",
+        "hashDado": "18506e61de29117c35efb6bc9b2f395b2d25ffa5152c8cb6131ef7fa3250a2b1"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::descricao",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::descricao",
+        "id": "descricao",
+        "nome": "descricao",
+        "arquivo": "addons/golem-de-sangue.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote",
+        "hashDado": "aa9b79d1c7646e711b7421df3b33b18c9bb466554099043626f257bc7b886ac0"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::estadosCombate",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::estadosCombate",
+        "id": "estadosCombate",
+        "nome": "estadosCombate",
+        "arquivo": "addons/golem-de-sangue.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote",
+        "hashDado": "276289e1e616ffa5329887a274e8db9cd2ef937f75564bc859103288d11ebdf5"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::estadosCombate::alvo_sangrando",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::estadosCombate::alvo_sangrando",
+        "id": "alvo_sangrando",
+        "nome": "Alvo Sangrando",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::estadosCombate",
+        "caminho": "alvo_sangrando",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "alvo_sangrando",
+        "hashDado": "d645bef434f1c072b6b61e25bbf16646dd0db676977cdb7295a3591c0314b8d1"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::estadosCombate::alvo_sangue_absorvido",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::estadosCombate::alvo_sangue_absorvido",
+        "id": "alvo_sangue_absorvido",
+        "nome": "Alvo com Sangue Absorvido",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::estadosCombate",
+        "caminho": "alvo_sangue_absorvido",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "alvo_sangue_absorvido",
+        "hashDado": "51d9f3f37052787435a904701f302bb7944701748e695c1d0349c9f2fdc77f7d"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::estadosCombate::frenesi_sanguinario",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::estadosCombate::frenesi_sanguinario",
+        "id": "frenesi_sanguinario",
+        "nome": "Frenesi Sanguinário",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::estadosCombate",
+        "caminho": "frenesi_sanguinario",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "frenesi_sanguinario",
+        "hashDado": "3f7bc631c7a3a601649bd53db7af0dbfc73a7059a623d415e1606c1164af684c"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::id",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::id",
+        "id": "id",
+        "nome": "id",
+        "arquivo": "addons/golem-de-sangue.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote",
+        "hashDado": "dd92711ca24b5eae43a38dac30af36bca30bec8a5894c286175e8e2efafeff14"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::nome",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::nome",
+        "id": "nome",
+        "nome": "nome",
+        "arquivo": "addons/golem-de-sangue.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote",
+        "hashDado": "a7fc2801c5d36be44d589b890b658b845a4cff8ac95c6bf7939e754781b59e7e"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::paraRaw",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::paraRaw",
+        "id": "paraRaw",
+        "nome": "paraRaw",
+        "arquivo": "addons/golem-de-sangue.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote",
+        "hashDado": "0289ece8033b573da3841cd5eea4bc968504b022915c4bb5174cab838f4f7c02"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa",
+        "id": "substituiEnergiaReversa",
+        "nome": "substituiEnergiaReversa",
+        "arquivo": "addons/golem-de-sangue.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote",
+        "hashDado": "5ca16874b2e0b2c57a9a7c156302717e954a5a7331e7b4a70de14a8d08ac29ef"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa::aptidoes",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa::aptidoes",
+        "id": "aptidoes",
+        "nome": "aptidoes",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa",
+        "caminho": "aptidoes",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "be3abeabefd1c41275e76124198d5b44cd5587f9037c546b27cee1190018f900"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa::aptidoes/mal_fluxo_imparavel",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa::aptidoes/mal_fluxo_imparavel",
+        "id": "aptidoes/mal_fluxo_imparavel",
+        "nome": "aptidoes/mal_fluxo_imparavel",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa",
+        "caminho": "aptidoes/mal_fluxo_imparavel",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "979b1664661595dc31f68e127598188fbcb4ecc98f0ae87ca66267bc97b0e9e9"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa::aptidoes/mal_regeneracao_ampliada",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa::aptidoes/mal_regeneracao_ampliada",
+        "id": "aptidoes/mal_regeneracao_ampliada",
+        "nome": "aptidoes/mal_regeneracao_ampliada",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa",
+        "caminho": "aptidoes/mal_regeneracao_ampliada",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "d76eef72a306f970cca8fff6f894a705d379cbda9ab8fd32d7c486bc6c4dd65e"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa::aptidoes/mal_regeneracao_corporal",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa::aptidoes/mal_regeneracao_corporal",
+        "id": "aptidoes/mal_regeneracao_corporal",
+        "nome": "aptidoes/mal_regeneracao_corporal",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa",
+        "caminho": "aptidoes/mal_regeneracao_corporal",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "3f1f8bddf9e2f597e16ae3e4ff8c59fef78ce93df46413a9d920d49796b4748e"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa::aptidoes/mal_regeneracao_de_membros",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa::aptidoes/mal_regeneracao_de_membros",
+        "id": "aptidoes/mal_regeneracao_de_membros",
+        "nome": "aptidoes/mal_regeneracao_de_membros",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa",
+        "caminho": "aptidoes/mal_regeneracao_de_membros",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "6eb0d0c9de33139d54d00591513f02678b9cb289eaf117ee8a665f60d9476d43"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa::aptidoes/mal_regeneracao_maxima",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa::aptidoes/mal_regeneracao_maxima",
+        "id": "aptidoes/mal_regeneracao_maxima",
+        "nome": "aptidoes/mal_regeneracao_maxima",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa",
+        "caminho": "aptidoes/mal_regeneracao_maxima",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "d5b14d0f4c3d8ae708a12a8ec43ab3a15f4288a47fe75b9845951fc0abfa8487"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::versao",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::versao",
+        "id": "versao",
+        "nome": "versao",
+        "arquivo": "addons/golem-de-sangue.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote",
+        "hashDado": "39fe4a40977d0585fd5704359e3685b0ada5cf5ee061e5d97385601d120cd0ec"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico",
+        "id": "votoAutomatico",
+        "nome": "Restriçao Congenita: Prisao da Besta",
+        "arquivo": "addons/golem-de-sangue.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote",
+        "idLocal": "prisao_da_besta",
+        "hashDado": "af09d3d5508874af2e77247c884a84b73a802cfc9cfce78e045d0b7258108617"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::beneficio",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::beneficio",
+        "id": "beneficio",
+        "nome": "beneficio",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::votoAutomatico",
+        "caminho": "beneficio",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "dc564b5b82d6030073f0ebe44f276ab8946b4d9202c30b6dea975eba079e8f7b"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::beneficio/efeitos",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::beneficio/efeitos",
+        "id": "beneficio/efeitos",
+        "nome": "beneficio/efeitos",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::votoAutomatico",
+        "caminho": "beneficio/efeitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "a25b081520bd579fdd71aaee8452a1551e1d530463a5f0bd8d09b4ad13f0191d"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::beneficio/efeitos/@0",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::beneficio/efeitos/@0",
+        "id": "beneficio/efeitos/@0",
+        "nome": "beneficio/efeitos/@0",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::votoAutomatico",
+        "caminho": "beneficio/efeitos/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "5fbe7ba05fab42584c074347f3a4f4bbfc1206501245a9c3b8eed658398fd97b"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio",
+        "id": "maleficio",
+        "nome": "maleficio",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::votoAutomatico",
+        "caminho": "maleficio",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "e8126a141574ece0cb7d1c8c6045cb18a4372376cb1caaab63603949bac08abe"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio/efeitos",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio/efeitos",
+        "id": "maleficio/efeitos",
+        "nome": "maleficio/efeitos",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::votoAutomatico",
+        "caminho": "maleficio/efeitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "81a3be2a21353064bf01b176f191af3df4c24e712860fa18623e84995d2b4dcb"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio/efeitos/@0",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio/efeitos/@0",
+        "id": "maleficio/efeitos/@0",
+        "nome": "maleficio/efeitos/@0",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::votoAutomatico",
+        "caminho": "maleficio/efeitos/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "9249e3ff914a8ce315754c264dfe4b465ef95915e45282913f6c3d3373ec9896"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio/efeitos/@1",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio/efeitos/@1",
+        "id": "maleficio/efeitos/@1",
+        "nome": "maleficio/efeitos/@1",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::votoAutomatico",
+        "caminho": "maleficio/efeitos/@1",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "55ddefc4be58cbe7cc332930d4d42371061b5ffe9d8593487f8f5be954e280cf"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio/efeitos/@2",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio/efeitos/@2",
+        "id": "maleficio/efeitos/@2",
+        "nome": "maleficio/efeitos/@2",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::votoAutomatico",
+        "caminho": "maleficio/efeitos/@2",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "259f6fd3b69e929e1f79923597d14be9c736044268761af8537e87c6e9c30638"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio/efeitos/@3",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio/efeitos/@3",
+        "id": "maleficio/efeitos/@3",
+        "nome": "maleficio/efeitos/@3",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::@pacote::votoAutomatico",
+        "caminho": "maleficio/efeitos/@3",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "b02f6b820976ddb50708cb84180b440e5a260838289bb95c0d66166f794f8230"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue",
+        "id": "hemolito_de_sangue",
+        "nome": "Hemólito de Sangue",
+        "arquivo": "addons/golem-de-sangue.json",
+        "proprietario": null,
+        "tipo": "conteúdo de addon",
+        "addon": "golem-de-sangue.json",
+        "familia": "armas",
+        "operacao": "acrescenta",
+        "idLocal": "hemolito_de_sangue",
+        "hashDado": "f1d7181d0b6793559510cbfff71ce7895c59a3e766c3e5f3e54b17ae0279538e"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::dano",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::dano",
+        "id": "dano",
+        "nome": "dano",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue",
+        "caminho": "dano",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "0e625ec2f8037a92d54b313aa15d2dfebc1fff668e31d5da2f7d485002064ea2"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::efeitosEspeciais",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::efeitosEspeciais",
+        "id": "efeitosEspeciais",
+        "nome": "efeitosEspeciais",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue",
+        "caminho": "efeitosEspeciais",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "e4e50ff7ea910c9b251cf5cc823d1c13fc54c38972c6f031f82cdb550821f68d"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::efeitosEspeciais/@0",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::efeitosEspeciais/@0",
+        "id": "efeitosEspeciais/@0",
+        "nome": "Hemólito de Sangue",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue",
+        "caminho": "efeitosEspeciais/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "87bfc7388c3a0ddc4f2f31bc58f9222eaa4527a2861e3ff893e6496563b258bb"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::efeitosEspeciais/@1",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::efeitosEspeciais/@1",
+        "id": "efeitosEspeciais/@1",
+        "nome": "Hemólito: Frenesi Sanguinário",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue",
+        "caminho": "efeitosEspeciais/@1",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "5203b5e692ee7d9e940f9ef43762a22fefe06aee8d5a6f025e00357356400676"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::efeitosEspeciais/@2",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::efeitosEspeciais/@2",
+        "id": "efeitosEspeciais/@2",
+        "nome": "Hemólito: Densidade Sanguínea",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue",
+        "caminho": "efeitosEspeciais/@2",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "4d6f80c712942d6e27d091c4b6af906c8fd6f7aee7dd0b1624658d942487e34f"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::props",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::props",
+        "id": "props",
+        "nome": "props",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue",
+        "caminho": "props",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "cb18c389cfd7c605c2feed186e89e17b26705e36556eb5fc89c606d3d8da14fc"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "id": "golem_de_sangue",
+        "nome": "Golem de Sangue",
+        "arquivo": "addons/golem-de-sangue.json",
+        "proprietario": null,
+        "tipo": "conteúdo de addon",
+        "addon": "golem-de-sangue.json",
+        "familia": "origens",
+        "operacao": "acrescenta",
+        "idLocal": "golem_de_sangue",
+        "hashDado": "ee386b1ce42346d1d92d81233db50e65e4b5ea86398cf63643a8a80f968a83d6"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::bonusAtributos",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::bonusAtributos",
+        "id": "bonusAtributos",
+        "nome": "bonusAtributos",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "bonusAtributos",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas",
+        "id": "caracteristicas",
+        "nome": "caracteristicas",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "b7cea9dc36e5ec76ac944456f12902b0326fe2c57f87eb93a0a9f298cf6771fc"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/artificial",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/artificial",
+        "id": "caracteristicas/artificial",
+        "nome": "Artificial",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/artificial",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "artificial",
+        "hashDado": "98d59e0e7888f864e770e41dbeb417f3175017413ed1dfd525c6758cd009953c"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/bonus_de_origem",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/bonus_de_origem",
+        "id": "caracteristicas/bonus_de_origem",
+        "nome": "Bônus de Origem",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/bonus_de_origem",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "bonus_de_origem",
+        "hashDado": "f14d77d004f6d0eaa880b456db872a7958338eab4e5acd39df6093a3f99e419d"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/bonus_de_origem/bonus",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/bonus_de_origem/bonus",
+        "id": "caracteristicas/bonus_de_origem/bonus",
+        "nome": "caracteristicas/bonus_de_origem/bonus",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/bonus_de_origem/bonus",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "fd67bbf25f39590dd1f4ea84f09afbf9eb8727c0bde52e7c905d7c8376167b70"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/bonus_de_origem/bonus/entre",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/bonus_de_origem/bonus/entre",
+        "id": "caracteristicas/bonus_de_origem/bonus/entre",
+        "nome": "caracteristicas/bonus_de_origem/bonus/entre",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/bonus_de_origem/bonus/entre",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "44f65465c33110e2a2d22a58e0a7b02a83bbd2cfe8755a238dba5e83a6c98c66"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/bonus_de_origem/bonus/entre/constituicao",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/bonus_de_origem/bonus/entre/constituicao",
+        "id": "caracteristicas/bonus_de_origem/bonus/entre/constituicao",
+        "nome": "caracteristicas/bonus_de_origem/bonus/entre/constituicao",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/bonus_de_origem/bonus/entre/constituicao",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "31e929deaa5d6c4744dc68d8f3b641eaa7723baa5e1c7a7be5b81f0187a2ce1f"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/bonus_de_origem/bonus/entre/destreza",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/bonus_de_origem/bonus/entre/destreza",
+        "id": "caracteristicas/bonus_de_origem/bonus/entre/destreza",
+        "nome": "caracteristicas/bonus_de_origem/bonus/entre/destreza",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/bonus_de_origem/bonus/entre/destreza",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "6faae53d5a3ac86393352aa0122fa105d4281869e96cc97c1045e12ce040d67b"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/bonus_de_origem/bonus/entre/forca",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/bonus_de_origem/bonus/entre/forca",
+        "id": "caracteristicas/bonus_de_origem/bonus/entre/forca",
+        "nome": "caracteristicas/bonus_de_origem/bonus/entre/forca",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/bonus_de_origem/bonus/entre/forca",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "201708f76071ab1c106e2a438bd21805248589771472014b686df4cd840d5555"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/corpo_morto",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/corpo_morto",
+        "id": "caracteristicas/corpo_morto",
+        "nome": "Corpo Morto",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/corpo_morto",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "corpo_morto",
+        "hashDado": "f3d0c296c45eb7898b5ccf73f649e6431ed9bab7d61d05bb0388529c0e8dfa8a"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado",
+        "id": "caracteristicas/fisico_amaldicoado",
+        "nome": "Físico Amaldiçoado",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "fisico_amaldicoado",
+        "hashDado": "5816f44f6fbb1856c71f43055bf4c017928a6516fd2efa83cffa9151a4b979b2"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/concedeAptidoes",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/concedeAptidoes",
+        "id": "caracteristicas/fisico_amaldicoado/concedeAptidoes",
+        "nome": "caracteristicas/fisico_amaldicoado/concedeAptidoes",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/concedeAptidoes",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "8134a51da4ff54646327f0ca905fcb9f4cf018ce4ab734c6927a2b309e0bd670"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/concedeAptidoes/mal_armas_naturais",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/concedeAptidoes/mal_armas_naturais",
+        "id": "caracteristicas/fisico_amaldicoado/concedeAptidoes/mal_armas_naturais",
+        "nome": "caracteristicas/fisico_amaldicoado/concedeAptidoes/mal_armas_naturais",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/concedeAptidoes/mal_armas_naturais",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "mal_armas_naturais",
+        "hashDado": "9a42cd59e1c2826bd291f16ba415ff30ebaaf13432749b59ad4301ba70ebb85e"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/concedeAptidoes/mal_armas_naturais_aprimoradas",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/concedeAptidoes/mal_armas_naturais_aprimoradas",
+        "id": "caracteristicas/fisico_amaldicoado/concedeAptidoes/mal_armas_naturais_aprimoradas",
+        "nome": "caracteristicas/fisico_amaldicoado/concedeAptidoes/mal_armas_naturais_aprimoradas",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/concedeAptidoes/mal_armas_naturais_aprimoradas",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "mal_armas_naturais_aprimoradas",
+        "hashDado": "00f4fed0ec12a74aab26f60d9fd45b55e108ef650a0a4a64139550e8fb47fec9"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas",
+        "nome": "caracteristicas/fisico_amaldicoado/escolhas",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "f7fad70ce0430165bd694038b7b0c8e8804a076e012bb5f64fef0a4f6b3686d5"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante",
+        "nome": "Carapaça Mutante",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "golem_carapaca_mutante",
+        "hashDado": "09a318cbe50c5bd124d88a549535ec97c999d0c1a7218cb7a9229212914c6383"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes",
+        "nome": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "146f7b2cce78aeeaa792ea618add08b39a94fbd4eddf30ca967859da35f5977b"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_ct",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_ct",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_ct",
+        "nome": "Cortante",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_ct",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "golem_carapaca_ct",
+        "hashDado": "2399b8438687d2c3a46d8ab240c264e74990461facf156ef09d20efb16b75dd8"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_ct/efeitos",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_ct/efeitos",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_ct/efeitos",
+        "nome": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_ct/efeitos",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_ct/efeitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "7e7ba1ff9b4b738cd40129babd7e3052263d76fbbd819fecbac5e9f099f96412"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_ct/efeitos/@0",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_ct/efeitos/@0",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_ct/efeitos/@0",
+        "nome": "Carapaça Mutante",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_ct/efeitos/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "7a59ef75514a3c2997eb45e7028c8b73ad3e7e826593f381310bd92007abaee6"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_im",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_im",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_im",
+        "nome": "Impacto",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_im",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "golem_carapaca_im",
+        "hashDado": "c119d266bbb68aed8b37e04ce2879e8615fe3cffb443600a73ab60583ff78ad0"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_im/efeitos",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_im/efeitos",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_im/efeitos",
+        "nome": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_im/efeitos",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_im/efeitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "7c44ee9c99cacd5c57d5ace55c414080e5953b33b48a05299cd8e79d2368d389"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_im/efeitos/@0",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_im/efeitos/@0",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_im/efeitos/@0",
+        "nome": "Carapaça Mutante",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_im/efeitos/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "379ccde804b74ed09b3597f22e9d664103e77a6a2b72a323f4e0a14502ff1cf7"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_pf",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_pf",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_pf",
+        "nome": "Perfurante",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_pf",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "golem_carapaca_pf",
+        "hashDado": "948fcd6596ef6e84d84d8222dcab5e556c20a684327e16838aae11f9add0e279"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_pf/efeitos",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_pf/efeitos",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_pf/efeitos",
+        "nome": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_pf/efeitos",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_pf/efeitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "d6c28332c6fbdf1a26d95ddbc15d6245cba2ff9880100dc1beeb8bdac29405d1"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_pf/efeitos/@0",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_pf/efeitos/@0",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_pf/efeitos/@0",
+        "nome": "Carapaça Mutante",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_pf/efeitos/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "f919d2139121f00123bd579fcc14422fef7c943ba1f5beffab647fd562f1cb6c"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico",
+        "nome": "Desenvolvimento Físico",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "golem_desenvolvimento_fisico",
+        "hashDado": "b1dea4522c02179a596702c8b2d688f103d8a7dc68e426556fafb9e2c54c2a46"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes",
+        "nome": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "d7cd038907ce0e5a2b6e79b3ba019103b3d51c2388ee49e39d5b6252e4fd437c"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_constituicao",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_constituicao",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_constituicao",
+        "nome": "Constituição",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_constituicao",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "golem_desenvolvimento_constituicao",
+        "hashDado": "58a93abda8a04359e8335d187f842c8d7076c54e73fca5f8a67f3a19bc5c1499"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_constituicao/efeitos",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_constituicao/efeitos",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_constituicao/efeitos",
+        "nome": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_constituicao/efeitos",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_constituicao/efeitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "a3196dab4bc6b6bbd61aa7810455f8afcd698f2de08c44014162c93f36255de0"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_constituicao/efeitos/@0",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_constituicao/efeitos/@0",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_constituicao/efeitos/@0",
+        "nome": "Desenvolvimento Físico",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_constituicao/efeitos/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "cfccbac3b46cbf52c7a4e5a8ffb5ed5b8d5ece85789f2749f78ea463724d70cf"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_constituicao/efeitos/@1",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_constituicao/efeitos/@1",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_constituicao/efeitos/@1",
+        "nome": "Desenvolvimento Físico",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_constituicao/efeitos/@1",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "265f06e6dd09920e6b5516dbf9227f920f6a022b44a1dff1c4cfa09ab5f48778"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_destreza",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_destreza",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_destreza",
+        "nome": "Destreza",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_destreza",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "golem_desenvolvimento_destreza",
+        "hashDado": "bebe59896d81b7b893dc88e8c0a7999dd4525b28451e958f8b62fcc71af3df6c"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_destreza/efeitos",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_destreza/efeitos",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_destreza/efeitos",
+        "nome": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_destreza/efeitos",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_destreza/efeitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "44d697d9055827e23952150538eafa66f4868625ea27728eef39e885bd93e90d"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_destreza/efeitos/@0",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_destreza/efeitos/@0",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_destreza/efeitos/@0",
+        "nome": "Desenvolvimento Físico",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_destreza/efeitos/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "08a2ff065994d6fecc7a0fb91ee4e3140a5b77b725a3c6f34dc299a29f86551f"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_destreza/efeitos/@1",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_destreza/efeitos/@1",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_destreza/efeitos/@1",
+        "nome": "Desenvolvimento Físico",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_destreza/efeitos/@1",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "31214f46704e1610d023a8558a6cf401b416bf66dacf46f9ca711023c7040fe6"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_forca",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_forca",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_forca",
+        "nome": "Força",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_forca",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "golem_desenvolvimento_forca",
+        "hashDado": "9140b784af98b4e46d7a57f48ba0cdce5230faede7a5ab41482ac2d339918148"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_forca/efeitos",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_forca/efeitos",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_forca/efeitos",
+        "nome": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_forca/efeitos",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_forca/efeitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "152f1ec959c78c4ca53101da5c8bff43fdc145a2bc1f79d8a6808eaaa593f96a"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_forca/efeitos/@0",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_forca/efeitos/@0",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_forca/efeitos/@0",
+        "nome": "Desenvolvimento Físico",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_forca/efeitos/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "0910a06e878a77ff6e7a165f5e33f97c48d3bcaadb24c22267aee7492cf7478b"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_forca/efeitos/@1",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_forca/efeitos/@1",
+        "id": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_forca/efeitos/@1",
+        "nome": "Desenvolvimento Físico",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_forca/efeitos/@1",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "b9e3ce8a3b963565c831d0f90c7ab4faf19cb89cc989b0a3fcc08404c99a44d7"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/resultados",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/resultados",
+        "id": "caracteristicas/fisico_amaldicoado/resultados",
+        "nome": "caracteristicas/fisico_amaldicoado/resultados",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/resultados",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "e9b4742235d3b819217d2cda0a4dcbba49b5560414aaddba607371306f05b013"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/resultados/@0",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/resultados/@0",
+        "id": "caracteristicas/fisico_amaldicoado/resultados/@0",
+        "nome": "Anatomia Incompreensível",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/resultados/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "350d1b2fa708456b7cc6cf6bb9d64d26e2488a1852d55985b23dd92247429b60"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/resultados/@0/textos",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/resultados/@0/textos",
+        "id": "caracteristicas/fisico_amaldicoado/resultados/@0/textos",
+        "nome": "caracteristicas/fisico_amaldicoado/resultados/@0/textos",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/resultados/@0/textos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "0491e33800b4575adc63c764e25f4eebcc6f5aa0b04bd2628870df63c50663ef"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/resultados/@0/textos/1 em 1d4",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/resultados/@0/textos/1 em 1d4",
+        "id": "caracteristicas/fisico_amaldicoado/resultados/@0/textos/1 em 1d4",
+        "nome": "caracteristicas/fisico_amaldicoado/resultados/@0/textos/1 em 1d4",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/resultados/@0/textos/1 em 1d4",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "1652de708425db579bbeabafbc4fe4d7e640bcb638a7e3812c4286d51cde2d66"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/resultados/@0/textos/1 ou 2 em 1d4",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/resultados/@0/textos/1 ou 2 em 1d4",
+        "id": "caracteristicas/fisico_amaldicoado/resultados/@0/textos/1 ou 2 em 1d4",
+        "nome": "caracteristicas/fisico_amaldicoado/resultados/@0/textos/1 ou 2 em 1d4",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/fisico_amaldicoado/resultados/@0/textos/1 ou 2 em 1d4",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "9f4c656cb710a70ca8c1680d88621b3e5088df201991883578e001870cda4eef"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/incompatibilidade_feiticaria",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/incompatibilidade_feiticaria",
+        "id": "caracteristicas/incompatibilidade_feiticaria",
+        "nome": "Incompatibilidade com a Feitiçaria",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "caracteristicas/incompatibilidade_feiticaria",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "incompatibilidade_feiticaria",
+        "hashDado": "23823df5d94731bb74bb2d11dd1cb2ec688ef8989eed6759afb5fc2e583dd4ae"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::efeitos",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::efeitos",
+        "id": "efeitos",
+        "nome": "efeitos",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "efeitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "75bb5da87a64f69bcc045b036742a973d9c438ba49cb0bdd6c94f247114e84f5"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::efeitos/@0",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::efeitos/@0",
+        "id": "efeitos/@0",
+        "nome": "Físico Amaldiçoado",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "efeitos/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "0d12d9efe274d0eb13e8b59e117d64020b3f7791757d910736e5191567114f56"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::efeitos/@1",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::efeitos/@1",
+        "id": "efeitos/@1",
+        "nome": "Instinto Sanguinário",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "efeitos/@1",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "54fdadabe0b51a35c1839d32a956307404bc2ee6c956a1c100c64d74d62b24f1"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::efeitos/@2",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::efeitos/@2",
+        "id": "efeitos/@2",
+        "nome": "Instinto Sanguinário",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "efeitos/@2",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "a771fe46d90d25ca3d37a994e90262956e8ec4c2a48f36bc0794b7c5dfa1852d"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::restricoes",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::restricoes",
+        "id": "restricoes",
+        "nome": "restricoes",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "restricoes",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "ae603e955954c50f083a5251dcc078809458be3529b9b10fe34288acca636237"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::restricoes/Para utilizar esta origem, é obrigatório possuir a Maldiçao Carmesim.",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::restricoes/Para utilizar esta origem, é obrigatório possuir a Maldiçao Carmesim.",
+        "id": "restricoes/Para utilizar esta origem, é obrigatório possuir a Maldiçao Carmesim.",
+        "nome": "restricoes/Para utilizar esta origem, é obrigatório possuir a Maldiçao Carmesim.",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue",
+        "caminho": "restricoes/Para utilizar esta origem, é obrigatório possuir a Maldiçao Carmesim.",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "07f77129687aaf5d421ad7f6c3b44ef119c16aecf550861489fcf3677563efd0"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue",
+        "id": "tal_bebada_de_sangue",
+        "nome": "Bêbada de Sangue",
+        "arquivo": "addons/golem-de-sangue.json",
+        "proprietario": null,
+        "tipo": "conteúdo de addon",
+        "addon": "golem-de-sangue.json",
+        "familia": "talentos",
+        "operacao": "acrescenta",
+        "idLocal": "tal_bebada_de_sangue",
+        "hashDado": "52851433d7d297c6c07f66207e7fda6c443e38b424c33d66cd1f42d770d2b62d"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue::efeitos",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue::efeitos",
+        "id": "efeitos",
+        "nome": "efeitos",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue",
+        "caminho": "efeitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "cba9f6958337c5654daeef67fcc6708f2731a1fd7aa743cb30c18c44abc0d14a"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue::efeitos/@0",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue::efeitos/@0",
+        "id": "efeitos/@0",
+        "nome": "Bêbada de Sangue",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue",
+        "caminho": "efeitos/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "2a73f1f3330805b8691b59b74e2516e759e383f05d57cc9763618c696f9a2197"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue::efeitos/@1",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue::efeitos/@1",
+        "id": "efeitos/@1",
+        "nome": "Bêbada de Sangue",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue",
+        "caminho": "efeitos/@1",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "9c769b2b30759d6d08232faf000bb245af814bdf73c20472d2d45ed99bb4f18e"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue::requisitos",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue::requisitos",
+        "id": "requisitos",
+        "nome": "requisitos",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue",
+        "caminho": "requisitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "89e228f1ecccabde201c7c51e711ce72a69995c8fc2f55a7bf0d88ec776ecef9"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue::requisitos/golem_de_sangue",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue::requisitos/golem_de_sangue",
+        "id": "requisitos/golem_de_sangue",
+        "nome": "requisitos/golem_de_sangue",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue",
+        "caminho": "requisitos/golem_de_sangue",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "golem_de_sangue",
+        "hashDado": "2b45c4cab1be237f50697526fd81c920c4ba8d27f3ce0a53b2745832bb19444e"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_preciosas_amarras",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_preciosas_amarras",
+        "id": "tal_preciosas_amarras",
+        "nome": "Preciosas Amarras",
+        "arquivo": "addons/golem-de-sangue.json",
+        "proprietario": null,
+        "tipo": "conteúdo de addon",
+        "addon": "golem-de-sangue.json",
+        "familia": "talentos",
+        "operacao": "acrescenta",
+        "idLocal": "tal_preciosas_amarras",
+        "hashDado": "329e1ff8c0b2c3ec1579c173da6094e501e38fab5663bc8e698663a46e512df3"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_preciosas_amarras::efeitos",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_preciosas_amarras::efeitos",
+        "id": "efeitos",
+        "nome": "efeitos",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.talentos::tal_preciosas_amarras",
+        "caminho": "efeitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "eb5275a0cf56439ff385e4d1b88ac6851079d9022cc23431a7d67c972219f71c"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_preciosas_amarras::efeitos/@0",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_preciosas_amarras::efeitos/@0",
+        "id": "efeitos/@0",
+        "nome": "Preciosas Amarras",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.talentos::tal_preciosas_amarras",
+        "caminho": "efeitos/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "7c7bf439ead360c3be338c952046c77dcdd8944bc8de89cc854bba7e634a6c2b"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_preciosas_amarras::requisitos",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_preciosas_amarras::requisitos",
+        "id": "requisitos",
+        "nome": "requisitos",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.talentos::tal_preciosas_amarras",
+        "caminho": "requisitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "89e228f1ecccabde201c7c51e711ce72a69995c8fc2f55a7bf0d88ec776ecef9"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_preciosas_amarras::requisitos/golem_de_sangue",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_preciosas_amarras::requisitos/golem_de_sangue",
+        "id": "requisitos/golem_de_sangue",
+        "nome": "requisitos/golem_de_sangue",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.talentos::tal_preciosas_amarras",
+        "caminho": "requisitos/golem_de_sangue",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "golem_de_sangue",
+        "hashDado": "2b45c4cab1be237f50697526fd81c920c4ba8d27f3ce0a53b2745832bb19444e"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_valorizar_alimento",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_valorizar_alimento",
+        "id": "tal_valorizar_alimento",
+        "nome": "Valorizar Alimento",
+        "arquivo": "addons/golem-de-sangue.json",
+        "proprietario": null,
+        "tipo": "conteúdo de addon",
+        "addon": "golem-de-sangue.json",
+        "familia": "talentos",
+        "operacao": "acrescenta",
+        "idLocal": "tal_valorizar_alimento",
+        "hashDado": "77adfc489adaa91bb0f591c1aeaa4211a1f2e754b83a6d7ca58b55d5a5fb6e21"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_valorizar_alimento::requisitos",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_valorizar_alimento::requisitos",
+        "id": "requisitos",
+        "nome": "requisitos",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.talentos::tal_valorizar_alimento",
+        "caminho": "requisitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "89e228f1ecccabde201c7c51e711ce72a69995c8fc2f55a7bf0d88ec776ecef9"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_valorizar_alimento::requisitos/golem_de_sangue",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_valorizar_alimento::requisitos/golem_de_sangue",
+        "id": "requisitos/golem_de_sangue",
+        "nome": "requisitos/golem_de_sangue",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.talentos::tal_valorizar_alimento",
+        "caminho": "requisitos/golem_de_sangue",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "idLocal": "golem_de_sangue",
+        "hashDado": "2b45c4cab1be237f50697526fd81c920c4ba8d27f3ce0a53b2745832bb19444e"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_valorizar_alimento::usos",
+      "item": {
+        "chave": "addon::golem-de-sangue.json::acrescenta.talentos::tal_valorizar_alimento::usos",
+        "id": "usos",
+        "nome": "usos",
+        "arquivo": "addons/golem-de-sangue.json",
+        "pai": "addon::golem-de-sangue.json::acrescenta.talentos::tal_valorizar_alimento",
+        "caminho": "usos",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "golem-de-sangue.json",
+        "hashDado": "e8ae1a27de10498ad0217513100bfbbd79340e9095278cd00742220cb4ed1e18"
+      },
+      "proprietarioSugerido": null
+    }
+  ],
+  "removidos": [],
+  "alterados": [],
+  "assinatura": "d9a79e9aed390ce0e689a9237ebf36c0d20cbfea501093d8c82c68eb58052c8c",
+  "decisoes": {
+    "adicoes": {
+      "addon::golem-de-sangue.json::@pacote": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::acrescenta": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::autor": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::descricao": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::estadosCombate": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::estadosCombate::alvo_sangrando": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::estadosCombate::alvo_sangue_absorvido": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::estadosCombate::frenesi_sanguinario": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::id": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::nome": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::paraRaw": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa::aptidoes": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa::aptidoes/mal_fluxo_imparavel": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa::aptidoes/mal_regeneracao_ampliada": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa::aptidoes/mal_regeneracao_corporal": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa::aptidoes/mal_regeneracao_de_membros": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa::aptidoes/mal_regeneracao_maxima": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::versao": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::votoAutomatico": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::votoAutomatico::beneficio": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::votoAutomatico::beneficio/efeitos": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::votoAutomatico::beneficio/efeitos/@0": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio/efeitos": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio/efeitos/@0": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio/efeitos/@1": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio/efeitos/@2": "AD-71",
+      "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio/efeitos/@3": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::dano": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::efeitosEspeciais": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::efeitosEspeciais/@0": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::efeitosEspeciais/@1": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::efeitosEspeciais/@2": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::props": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::bonusAtributos": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/artificial": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/bonus_de_origem": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/bonus_de_origem/bonus": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/bonus_de_origem/bonus/entre": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/bonus_de_origem/bonus/entre/constituicao": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/bonus_de_origem/bonus/entre/destreza": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/bonus_de_origem/bonus/entre/forca": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/corpo_morto": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/concedeAptidoes": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/concedeAptidoes/mal_armas_naturais": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/concedeAptidoes/mal_armas_naturais_aprimoradas": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_ct": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_ct/efeitos": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_ct/efeitos/@0": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_im": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_im/efeitos": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_im/efeitos/@0": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_pf": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_pf/efeitos": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_pf/efeitos/@0": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_constituicao": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_constituicao/efeitos": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_constituicao/efeitos/@0": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_constituicao/efeitos/@1": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_destreza": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_destreza/efeitos": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_destreza/efeitos/@0": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_destreza/efeitos/@1": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_forca": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_forca/efeitos": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_forca/efeitos/@0": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_forca/efeitos/@1": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/resultados": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/resultados/@0": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/resultados/@0/textos": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/resultados/@0/textos/1 em 1d4": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/resultados/@0/textos/1 ou 2 em 1d4": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/incompatibilidade_feiticaria": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::efeitos": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::efeitos/@0": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::efeitos/@1": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::efeitos/@2": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::restricoes": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::restricoes/Para utilizar esta origem, é obrigatório possuir a Maldiçao Carmesim.": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue::efeitos": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue::efeitos/@0": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue::efeitos/@1": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue::requisitos": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue::requisitos/golem_de_sangue": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.talentos::tal_preciosas_amarras": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.talentos::tal_preciosas_amarras::efeitos": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.talentos::tal_preciosas_amarras::efeitos/@0": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.talentos::tal_preciosas_amarras::requisitos": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.talentos::tal_preciosas_amarras::requisitos/golem_de_sangue": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.talentos::tal_valorizar_alimento": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.talentos::tal_valorizar_alimento::requisitos": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.talentos::tal_valorizar_alimento::requisitos/golem_de_sangue": "AD-71",
+      "addon::golem-de-sangue.json::acrescenta.talentos::tal_valorizar_alimento::usos": "AD-71"
+    },
+    "remocoes": {},
+    "justificativaAtualizacao": "Addon Golem de Sangue pedido pelo autor em 2026-10-15. Registra o pacote AD-71 (origem, três Talentos, o Hemólito de Sangue e o Voto automático Prisão da Besta), sem mudança no motor. Não aprova regras da campanha."
+  },
+  "errosColeta": []
+}

@@ -2319,6 +2319,7 @@ Voto automático pode declarar:
 | `multiplicadorPvFinal` | multiplica somente o PV final; Integridade e fontes proporcionais usam o valor anterior |
 | `passivasSemCustoPeMaximo` | isenta Feitiços Passivos da Técnica do custo no PE Máximo |
 | `ignoraMultiplicadorPeMaximoDeVotos` | ignora somente multiplicadores de PE declarados por Votos |
+| `energiaEmVida` | o PE Máximo final vira PV: o PE zera e o PV ganha piso(PE × valor), com as duas parcelas no hover (Golem de Sangue, 2026-10-16). Não vale junto do `bloodfeast`, que tem conversão própria |
 
 Os multiplicadores precisam ser números maiores que zero e os interruptores
 precisam ser booleanos. Chaves desconhecidas reprovam a instalação. A origem de
@@ -2731,3 +2732,42 @@ Quimera de Maldições cai pela regra da Maldição: exorcizada a 0 PV, com as c
 da cena. Detalhes em `docs/afty-invocacoes.md` e assert em `t-quimera-de-maldicoes.mjs`.
 
 ⚠ Motor e pacote vão no mesmo push. No motor velho o pacote não instala (primitiva desconhecida).
+
+## Golem de Sangue (2026-10-15, versão 1.1.0 em 2026-10-16)
+
+`addons/golem-de-sangue.json`, a origem da Briar. A 1.0.0 saiu só com o que o motor já sabia dizer. A
+1.1.0 trouxe a Maldição Carmesim e o Frenesi como Transformação, e com eles três verbos genéricos
+(tabela de baixo).
+
+| Parte | Como ficou |
+|---|---|
+| Bônus de Origem | 3 pontos entre Força, Destreza e Constituição (`bonus.entre`) |
+| Físico Amaldiçoado | concede `mal_armas_naturais` (nível 1) e `mal_armas_naturais_aprimoradas` (nível 5) por `concedeAptidoes` com `ndMin`, +1 PV por nível do 5, Instinto Sanguinário no 10 (BT na Iniciativa e na Atenção em combate), e no 15 as escolhas do Desenvolvimento Físico (atributo físico, +2 e +1 no 15 e no 20, no valor e no limite) e da Carapaça Mutante (resistência a um tipo físico). Anatomia Incompreensível sai pelo nome no número de mesa |
+| Incompatibilidade com a Feitiçaria | `substituiEnergiaReversa` com as 5 Aptidões Especiais de Maldição (autor). Vale para a ficha que liga o pacote, porque o campo é do pacote |
+| Hemólito de Sangue | arma do pacote com `dano.desarmado` (o dado desarmado de base), +6 níveis e +1 a cada 2 de mod. de Destreza só com o Frenesi, e +1 de margem de crítico contra quem sangra. Cada linha leva o próprio `quando`: o `requerEstado` segura só a Ferramenta |
+| Talentos | Bêbada de Sangue (interruptor "Alvo com Sangue Absorvido", +2 no acerto e no dano), Valorizar Alimento (BT usos) e Preciosas Amarras (+1 passo no Hemólito) |
+| Restrição Congênita: Prisão da Besta | `votoAutomatico` (autor), como a Restrição Celestial: -2 PE e +6 PV por nível, -2 nas perícias físicas enquanto o Frenesi estiver desligado, e no Feitiço do Frenesi +1 nível nos efeitos e +BT/2 rodadas |
+| Frenesi Sanguinário | desde a 1.1.0 é um Feitiço de Transformação da própria ficha, que o criador liga ao vínculo "Feitiço do Frenesi" na aba Origem (autor). Com ele no ar em combate, o Hemólito ativa e as amarras soltam. O nível a mais pode passar do acesso (autor), e as rodadas a mais valem na Duradoura, com a Exaustão do nível escrito (autor) |
+| Maldição Carmesim | Funcionamento Básico do pacote, com o texto do autor, e `regrasAfty.energiaEmVida: 3`: o PE Máximo vira PV, 3 por PE |
+| Pontos de Sangue, Sangue Guardado e Fome | `contadoresSessao` na Ficha e no Encontro (autor). Sangrar 5 PV dá 1 Ponto de Sangue, o Sangue Guardado volta em vida ou vira Pontos de Sangue 5 por 1, e a Fome (1 a 4) escreve o PV inicial em 100, 75, 50 ou 25% do máximo. Os dois primeiros zeram no descanso |
+| Frenesi Incontrolável | característica de origem com a Fome Insaciável e o Controle Restrito em texto, e a CD de Vontade 10 + metade do nível no número de mesa |
+
+### Os verbos da 1.1.0
+
+Moram em `afty-recursos-addon.js`. Os dois campos de pacote são genéricos e só de dado.
+
+| Campo | Resultado |
+|---|---|
+| `feiticosVinculados: [{ id, label, tipo }]` | o pacote pede que a ficha aponte um Feitiço dela, e o criador mostra o seletor na aba Origem. O `tipo` filtra a lista: `transformacao`, `auxiliar`, `dano`, `curativo`, `especial` ou `qualquer`. A escolha mora em `creature.feiticosVinculados["<pacote>:<id>"]`. Feitiço apagado ou de outro tipo deixa o vínculo vazio, sem apagar a escolha |
+| variável `<pacote>_<id>_ligado` | 1 quando o Feitiço do vínculo está no ar em combate (o interruptor da Duradoura e da Cena, ou uma vaga de Sustentação) |
+| canal `nivelFeitico` | soma níveis nos EFEITOS do Feitiço do alvo, mesmo acima do acesso (a Transformação vai até o Máximo). Custo, Exaustão e rodadas de base seguem o nível escrito |
+| canal `rodadasFeitico` | soma rodadas na duração Duradoura do Feitiço do alvo |
+| alvo `vinculo:<id>` | o Feitiço que a ficha apontou no vínculo. Sem alvo, os dois canais valem para todo Feitiço. Hoje só a Transformação lê os dois, e a linha da Ficha mostra "Efeitos" e "Rodadas Extras" com o nome da fonte |
+| `contadoresSessao: [{ id, label, title, min, max, inicio, zeraNoDescanso, acoes }]` | números de mesa que mudam em jogo, guardados na sessão (os `contadoresOrigem` moram na ficha e só mudam no criador). Painel na Ficha e no Encontro, com menos, mais e um botão por ação |
+| ação de contador | `delta` (no próprio contador), `pv` (negativo paga, positivo cura até o máximo), `pvPeloValor` (cura o valor do contador), `pvPercentual` (o PV atual vira a parte do máximo da lista, escolhida pelo valor, e a primeira é a do mínimo), `outros: { <id do irmão>: delta }` e `zera`. A ação sem recurso fica travada, com o motivo no hover |
+| `regrasAfty.energiaEmVida` | ver a tabela do `regrasAfty` |
+
+⚠ Motor e pacote vão no mesmo push. No motor velho a 1.1.0 não instala (regra desconhecida
+`energiaEmVida`).
+
+O que segue de mesa e as leituras para o autor estão em `docs/a-fazer.md`. Assert: `t-golem-de-sangue.mjs`.

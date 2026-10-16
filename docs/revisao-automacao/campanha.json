@@ -3768,6 +3768,24 @@
       ],
       "registro": "AD-70/registro.json",
       "proprietario": "executor do lote AD-70"
+    },
+    {
+      "lote": "AD-71",
+      "nome": "Addon: Golem de Sangue",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "ORI-01",
+        "TAL-02",
+        "EQU-00",
+        "SIS-03",
+        "M01",
+        "M02"
+      ],
+      "registro": "AD-71/registro.json",
+      "proprietario": "executor do lote AD-71"
     }
   ]
 }

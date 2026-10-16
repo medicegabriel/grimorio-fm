@@ -15,6 +15,7 @@ const CHAVES = new Set([
   "focosPorNivel",
   "pontosAtributoPorCiclo",
   "talentosIniciais",
+  "energiaEmVida",
 ]);
 
 const objeto = (valor) => valor && typeof valor === "object" && !Array.isArray(valor);
@@ -43,6 +44,8 @@ export function normalizarRegrasAfty(regras) {
   if (Number.isInteger(regras.talentosIniciais) && regras.talentosIniciais >= 1 && regras.talentosIniciais <= 4) {
     out.talentosIniciais = regras.talentosIniciais;
   }
+  // Quantos PV cada PE vira (2026-10-15, Maldição Carmesim do Golem de Sangue).
+  if (multiplicadorValido(regras.energiaEmVida)) out.energiaEmVida = Number(regras.energiaEmVida);
   return out;
 }
 
@@ -54,7 +57,7 @@ export function validarRegrasAfty(regras, onde = "regrasAfty") {
   for (const chave of Object.keys(regras)) {
     if (!CHAVES.has(chave)) problemas.push(`${onde}: regra desconhecida "${chave}".`);
   }
-  for (const chave of ["multiplicadorPeMaximo", "multiplicadorPvFinal", "focosPorNivel"]) {
+  for (const chave of ["multiplicadorPeMaximo", "multiplicadorPvFinal", "focosPorNivel", "energiaEmVida"]) {
     if (chave in regras && !multiplicadorValido(regras[chave])) {
       problemas.push(`${onde}: "${chave}" precisa ser um número maior que zero.`);
     }
@@ -91,6 +94,10 @@ export function regrasAftyDaCriatura(creature) {
     focosPorNivel: null,
     pontosAtributoPorCiclo: null,
     fontesTalentosIniciais: [],
+    /* O PE MÁXIMO VIRA PV (`energiaEmVida`, 2026-10-15): cada PE vale N PV, e o PE
+       Máximo fica zero. Com dois pacotes declarando, vale o maior. */
+    energiaEmVida: 0,
+    fonteEnergiaEmVida: null,
   };
   for (const pacote of Array.isArray(creature?.addons) ? creature.addons : []) {
     const regras = normalizarRegrasAfty(pacote?.regrasAfty);
@@ -103,6 +110,10 @@ export function regrasAftyDaCriatura(creature) {
     }
     if (regras.talentosIniciais != null) {
       out.fontesTalentosIniciais.push({ ...fonte, valor: regras.talentosIniciais });
+    }
+    if (regras.energiaEmVida != null && regras.energiaEmVida > out.energiaEmVida) {
+      out.energiaEmVida = regras.energiaEmVida;
+      out.fonteEnergiaEmVida = fonte;
     }
     if (regras.multiplicadorPeMaximo != null) {
       out.multiplicadorPeMaximo *= regras.multiplicadorPeMaximo;

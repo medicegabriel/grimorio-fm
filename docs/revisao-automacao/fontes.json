@@ -102019,6 +102019,864 @@
       "estado": "NÃO LOCALIZADA",
       "fontes": [],
       "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::acrescenta": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::autor": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::descricao": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::estadosCombate": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::estadosCombate::alvo_sangrando": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::estadosCombate::alvo_sangue_absorvido": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::id": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::nome": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::paraRaw": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa::aptidoes": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa::aptidoes/mal_fluxo_imparavel": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa::aptidoes/mal_regeneracao_ampliada": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa::aptidoes/mal_regeneracao_corporal": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa::aptidoes/mal_regeneracao_de_membros": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::substituiEnergiaReversa::aptidoes/mal_regeneracao_maxima": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::versao": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::votoAutomatico": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::votoAutomatico::beneficio": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::votoAutomatico::beneficio/efeitos": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::votoAutomatico::beneficio/efeitos/@0": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio/efeitos": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio/efeitos/@0": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio/efeitos/@1": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio/efeitos/@2": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::votoAutomatico::maleficio/efeitos/@3": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::dano": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::efeitosEspeciais": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::efeitosEspeciais/@0": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::efeitosEspeciais/@1": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::efeitosEspeciais/@2": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.armas::hemolito_de_sangue::props": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::bonusAtributos": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/artificial": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/bonus_de_origem": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/bonus_de_origem/bonus": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/bonus_de_origem/bonus/entre": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/bonus_de_origem/bonus/entre/constituicao": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/bonus_de_origem/bonus/entre/destreza": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/bonus_de_origem/bonus/entre/forca": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/corpo_morto": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/concedeAptidoes": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/concedeAptidoes/mal_armas_naturais": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/concedeAptidoes/mal_armas_naturais_aprimoradas": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_ct": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_ct/efeitos": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_ct/efeitos/@0": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_im": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_im/efeitos": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_im/efeitos/@0": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_pf": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_pf/efeitos": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_carapaca_mutante/opcoes/golem_carapaca_pf/efeitos/@0": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_constituicao": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_constituicao/efeitos": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_constituicao/efeitos/@0": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_constituicao/efeitos/@1": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_destreza": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_destreza/efeitos": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_destreza/efeitos/@0": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_destreza/efeitos/@1": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_forca": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_forca/efeitos": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_forca/efeitos/@0": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/escolhas/golem_desenvolvimento_fisico/opcoes/golem_desenvolvimento_forca/efeitos/@1": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/resultados": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/resultados/@0": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/resultados/@0/textos": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/resultados/@0/textos/1 em 1d4": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/fisico_amaldicoado/resultados/@0/textos/1 ou 2 em 1d4": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/incompatibilidade_feiticaria": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::efeitos": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::efeitos/@0": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::efeitos/@1": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::efeitos/@2": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::restricoes": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::restricoes/Para utilizar esta origem, é obrigatório possuir a Maldiçao Carmesim.": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue::efeitos": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue::efeitos/@0": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue::efeitos/@1": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue::requisitos": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.talentos::tal_bebada_de_sangue::requisitos/golem_de_sangue": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.talentos::tal_preciosas_amarras": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.talentos::tal_preciosas_amarras::efeitos": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.talentos::tal_preciosas_amarras::efeitos/@0": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.talentos::tal_preciosas_amarras::requisitos": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.talentos::tal_preciosas_amarras::requisitos/golem_de_sangue": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.talentos::tal_valorizar_alimento": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.talentos::tal_valorizar_alimento::requisitos": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.talentos::tal_valorizar_alimento::requisitos/golem_de_sangue": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.talentos::tal_valorizar_alimento::usos": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::contadoresSessao": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes/pv_inicial": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes/pv_inicial/pvPercentual": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes/pv_inicial/pvPercentual/@0": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes/pv_inicial/pvPercentual/@1": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes/pv_inicial/pvPercentual/@2": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::contadoresSessao::fome/acoes/pv_inicial/pvPercentual/@3": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::contadoresSessao::pontos_de_sangue": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::contadoresSessao::pontos_de_sangue/acoes": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::contadoresSessao::pontos_de_sangue/acoes/sangrar": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::contadoresSessao::sangue_guardado": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::contadoresSessao::sangue_guardado/acoes": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::contadoresSessao::sangue_guardado/acoes/converter": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::contadoresSessao::sangue_guardado/acoes/converter/outros": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::contadoresSessao::sangue_guardado/acoes/recuperar": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::feiticosVinculados": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::feiticosVinculados::frenesi": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::funcionamentos": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::funcionamentos::maldicao_carmesim": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::regrasAfty": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::votoAutomatico::beneficio/efeitos/@1": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::@pacote::votoAutomatico::beneficio/efeitos/@2": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/frenesi_incontrolavel": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/frenesi_incontrolavel/resultados": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::golem-de-sangue.json::acrescenta.origens::golem_de_sangue::caracteristicas/frenesi_incontrolavel/resultados/@0": {
+      "proprietario": "AD-71",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "afty-efeitos.js::EFEITO_CANAIS::nivelFeitico": {
+      "proprietario": "M01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "afty-efeitos.js::EFEITO_CANAIS::rodadasFeitico": {
+      "proprietario": "M01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@11": {
+      "proprietario": "M01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@11::itens": {
+      "proprietario": "M01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@11::itens/nivelFeitico": {
+      "proprietario": "M01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@11::itens/rodadasFeitico": {
+      "proprietario": "M01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "afty-recursos-addon.js::TIPOS_VINCULO::@catalogo": {
+      "proprietario": "M05",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "afty-recursos-addon.js::TIPOS_VINCULO::auxiliar": {
+      "proprietario": "M05",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "afty-recursos-addon.js::TIPOS_VINCULO::curativo": {
+      "proprietario": "M05",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "afty-recursos-addon.js::TIPOS_VINCULO::dano": {
+      "proprietario": "M05",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "afty-recursos-addon.js::TIPOS_VINCULO::especial": {
+      "proprietario": "M05",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "afty-recursos-addon.js::TIPOS_VINCULO::qualquer": {
+      "proprietario": "M05",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "afty-recursos-addon.js::TIPOS_VINCULO::transformacao": {
+      "proprietario": "M05",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
     }
   }
 }

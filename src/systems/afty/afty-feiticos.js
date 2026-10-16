@@ -54,6 +54,7 @@ import { bonusRitual, resolveRitual, RITUAL_MELHORIA_BY_ID } from "./afty-rituai
 // — ver t-ordem-modulos.mjs). A escolha em si mora na ficha (`creature.
 // treinoEscolhaFeiticos`), lida direto onde `creature` já está em mãos.
 import { linhasComEscolhaFeiticos } from "./afty-treinamentos";
+import { bonusDoFeitico } from "./afty-recursos-addon";
 // Liberações Máximas. ⚠ `multArea` chega renomeado: o calculador de Dano já tem
 // uma local com esse nome (a do Destrutivo × 1,5 com a da Linha).
 import {
@@ -2599,11 +2600,22 @@ export function calcularFeiticoTransformacao(feitico, ctx = {}) {
   if (foraDoAcesso(nivel, ctx)) {
     avisos.push(`Nível ${nivel} inacessível: no ND ${ctx.nd} o máximo é ${nivelMaxFeiticoDoContexto(ctx)}.`);
   }
-  const base = TRANSFORMACAO_BASE[nivel];
-  if (!base) {
+  if (!TRANSFORMACAO_BASE[nivel]) {
     avisos.push("Transformação é do Nível 1 ao 5.");
     return { nivel, slots: [], resumo: "-", custoPE: null, avisos, detalhes: {} };
   }
+  /* O NÍVEL DOS EFEITOS pode subir por canal (`nivelFeitico`, 2026-10-15: a
+     Prisão da Besta do Golem de Sangue dá "+1 nível" ao Frenesi, e o nível pode
+     passar do acesso). Sobem só os EFEITOS (espaços, nível de aux e o teto da
+     troca). Custo, duração base, sustentação e Exaustão seguem o nível escrito,
+     e o aviso de acesso também, porque o nível escrito é o que a ficha escolheu.
+     As rodadas a mais (`rodadasFeitico`) somam na duração Duradoura, sem mexer
+     na Exaustão. */
+  const bonus = bonusDoFeitico(ctx.bonusFeitico, f.id);
+  const bonusNivel = Math.max(0, Math.trunc(Number(bonus?.nivel) || 0));
+  const bonusRodadas = Math.max(0, Math.trunc(Number(bonus?.rodadas) || 0));
+  const nEfeitos = Math.min(6, nNum + bonusNivel);
+  const base = TRANSFORMACAO_BASE[nEfeitos === 6 ? "max" : nEfeitos];
 
   const acao = ["comum", "bonus", "completa"].includes(f.transfAcao) ? f.transfAcao : "comum";
   const duracao = ["sustentada", "duradoura", "cena"].includes(f.transfDuracao) ? f.transfDuracao : "sustentada";
@@ -2621,7 +2633,7 @@ export function calcularFeiticoTransformacao(feitico, ctx = {}) {
   if (duracao === "duradoura") slots.push(Math.min(...slots));
 
   // Troca de nível: −1 efeito por +1 em TODOS os outros, teto = min(nível, 5).
-  const nivelCap = Math.min(nNum, 5);
+  const nivelCap = Math.min(nEfeitos, 5);
   const trocasPedidas = Math.max(0, f.transfNivelTroca | 0);
   let aplicadas = 0;
   while (aplicadas < trocasPedidas && slots.length > 1 && Math.max(...slots) < nivelCap) {
@@ -2664,7 +2676,7 @@ export function calcularFeiticoTransformacao(feitico, ctx = {}) {
   let exaustaoFim = 0;
   let notaExaustao = "";
   if (duracao === "duradoura") {
-    duracaoRodadas = Math.ceil(nNum / 2);
+    duracaoRodadas = Math.ceil(nNum / 2) + bonusRodadas;
     exaustaoFim = Math.floor(nNum / 2);
     // ⚠ No Nível 1 a metade do nível arredondada para baixo é ZERO, e a nota
     // saía como "0 de exaustão quando acabar.", que é uma linha de tela
@@ -2699,6 +2711,13 @@ export function calcularFeiticoTransformacao(feitico, ctx = {}) {
     resumo,
     avisos,
     detalhes: {},
+    // O bônus de canal, para a Ficha dizer "Efeitos no Nível 4" e de onde veio.
+    ...(bonusNivel || bonusRodadas ? {
+      nivelEfeitos: nEfeitos === 6 ? "max" : nEfeitos,
+      bonusNivel,
+      bonusRodadas: duracao === "duradoura" ? bonusRodadas : 0,
+      partesBonus: bonus.partes,
+    } : {}),
   };
 }
 
@@ -4796,6 +4815,10 @@ function acaoResumoFeitico(f, calc) {
   return ACAO_RESUMO_LABEL[chaveAcaoResumo(valor)] ?? String(valor);
 }
 
+/* Os nomes das fontes de um bônus de canal do Feitiço, sem repetir. */
+const fontesDoBonus = (calc, campo) => [...new Set((calc?.partesBonus ?? [])
+  .filter((p) => p.campo === campo).map((p) => p.label))].join(", ");
+
 function duracaoResumoFeitico(f, calc) {
   const continuo = calc?.detalhes?.continuo;
   if (continuo) return DURACAO_RESUMO_LABEL[continuo.modo] ?? continuo.modo;
@@ -4944,6 +4967,15 @@ function propriedadesResumoFeitico(f, calc, valor, valorLabel) {
       : calc?.sustentacaoVida > 0 ? `${calc.sustentacaoVida} PV por rodada`
       : null },
     { id: "exaustao", nome: "Exaustão", valor: calc?.notaExaustao || null },
+    /* O nível dos EFEITOS e as rodadas a mais que um canal deu ao Feitiço
+       (`nivelFeitico` e `rodadasFeitico`, 2026-10-15), com o nome da fonte: o
+       Frenesi do Golem de Sangue sai com os efeitos um nível acima do escrito. */
+    { id: "nivelEfeitos", nome: "Efeitos", valor: calc?.bonusNivel > 0
+      ? `Nível ${calc.nivelEfeitos === "max" ? "Máximo" : calc.nivelEfeitos} (${fontesDoBonus(calc, "nivel")})`
+      : null },
+    { id: "rodadasExtras", nome: "Rodadas Extras", valor: calc?.bonusRodadas > 0
+      ? `+${calc.bonusRodadas} (${fontesDoBonus(calc, "rodadas")})`
+      : null },
     /* ⚠ O SHIKIGAMI só mostrava "Shikigami Grau Especial" e mais nada na Ficha
        (2026-08-16). Faltavam as duas coisas que a mesa precisa: QUAL invocação
        ele conjura, que é uma criatura inteira montada noutra aba, e a redução

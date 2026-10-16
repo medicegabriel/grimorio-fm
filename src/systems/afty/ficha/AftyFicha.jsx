@@ -63,6 +63,7 @@ import PainelDeAdaptacao from "./PainelDeAdaptacao";
 import PainelDoVislumbre from "./PainelDoVislumbre";
 import PainelOlhinhosLu from "./PainelOlhinhosLu";
 import PainelAcoesAddon from "./PainelAcoesAddon";
+import PainelContadoresSessao from "./PainelContadoresSessao";
 import { consumirAcoesAddon } from "../afty-acoes-addon";
 import PainelOlhosAgulha from "./PainelOlhosAgulha";
 import PainelDoGolpeEspecial from "./PainelDoGolpeEspecial";
@@ -697,7 +698,8 @@ export default function AftyFicha({
         adaptacao={<PainelDeAdaptacao derived={derived} onSessao={atualiza} />}
         vislumbre={<PainelDoVislumbre derived={derived} sessao={sessao} onSessao={atualiza} />}
         olhinhosLu={<><PainelOlhinhosLu derived={derived} onSessao={atualiza} />
-          <PainelAcoesAddon derived={derived} sessao={sessao} onSessao={atualiza} /></>}
+          <PainelAcoesAddon derived={derived} sessao={sessao} onSessao={atualiza} />
+          <PainelContadoresSessao derived={derived} sessao={sessao} onSessao={atualiza} /></>}
         olhosAgulha={<PainelOlhosAgulha derived={derived} sessao={sessao} onSessao={atualiza} />}
         manipulacaoCeu={<PainelManipulacaoCeu derived={derived} onEstado={alteraEstado} />}
         armasTransformaveis={<ArmasTransformaveis derived={derived} sessao={sessao} onSessao={atualiza} />}

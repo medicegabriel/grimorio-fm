@@ -70,6 +70,7 @@ import { sistemaDaFicha, regraDo, palavrasDoSistema } from "./afty-sistema";
    import é de mão única e não pode fechar ciclo. Ver `nivelDaFicha`. */
 import { nivelDaCarteira } from "./afty-carteira";
 import { normalizarRegrasAfty, validarRegrasAfty, regrasAftyDaCriatura } from "./afty-regras-addon";
+import { TIPOS_VINCULO } from "./afty-recursos-addon";
 
 /* ============================================================ */
 /* O REGISTRO DE FAMÍLIAS                                        */
@@ -1234,6 +1235,15 @@ export function normalizarPacote(cru) {
     contadoresOrigem: Array.isArray(p.contadoresOrigem)
       ? p.contadoresOrigem.filter((x) => x && typeof x === "object").map(clonar)
       : [],
+    /* Os dois de afty-recursos-addon.js (2026-10-15, Golem de Sangue 1.1.0): o
+       Feitiço que a ficha liga a um vínculo do pacote, e os contadores de MESA
+       que mudam em jogo, com as ações deles. */
+    feiticosVinculados: Array.isArray(p.feiticosVinculados)
+      ? p.feiticosVinculados.filter((x) => x && typeof x === "object").map(clonar)
+      : [],
+    contadoresSessao: Array.isArray(p.contadoresSessao)
+      ? p.contadoresSessao.filter((x) => x && typeof x === "object").map(clonar)
+      : [],
     /* A tabela de preços da Loja de Catarse. Fica num campo PRÓPRIO, e não
        dentro de `acrescenta`, porque ela não é uma entrada de catálogo: é
        configuração do pacote, como `permite` e `libera`. Ver `precosDeCatarse`. */
@@ -1852,6 +1862,52 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     }
   }
 
+  /* Os vínculos de Feitiço e os contadores de sessão (2026-10-15). */
+  const vinculosVistos = new Set();
+  for (const [i, v] of p.feiticosVinculados.entries()) {
+    const onde = `Feitiço Vinculado #${i + 1}`;
+    const id = String(v.id ?? "").trim();
+    if (!id || !ID_ENTRADA_OK.test(id)) problemas.push(`${onde}: id inválido.`);
+    else if (vinculosVistos.has(id)) problemas.push(`${onde}: id repetido ("${id}").`);
+    vinculosVistos.add(id);
+    if (!String(v.label ?? "").trim()) problemas.push(`${onde}: falta o campo "label".`);
+    if (v.tipo != null && !TIPOS_VINCULO.includes(v.tipo)) {
+      problemas.push(`${onde}: tipo inválido (${TIPOS_VINCULO.join(", ")}).`);
+    }
+  }
+  const sessaoVistos = new Set(p.contadoresSessao.map((c) => String(c.id ?? "").trim()));
+  const idsSessao = new Set();
+  for (const [i, c] of p.contadoresSessao.entries()) {
+    const onde = `Contador de Sessão #${i + 1}`;
+    const id = String(c.id ?? "").trim();
+    if (!id || !ID_ENTRADA_OK.test(id)) problemas.push(`${onde}: id inválido.`);
+    else if (idsSessao.has(id)) problemas.push(`${onde}: id repetido ("${id}").`);
+    idsSessao.add(id);
+    if (!String(c.label ?? "").trim()) problemas.push(`${onde}: falta o campo "label".`);
+    for (const campo of ["min", "max", "inicio"]) {
+      if (c[campo] != null && !Number.isInteger(c[campo])) problemas.push(`${onde}: "${campo}" precisa ser inteiro.`);
+    }
+    if (c.max != null && c.min != null && c.max < c.min) problemas.push(`${onde}: faixa inválida.`);
+    if (c.acoes !== undefined && !Array.isArray(c.acoes)) problemas.push(`${onde}: "acoes" precisa ser uma lista.`);
+    for (const [j, a] of (Array.isArray(c.acoes) ? c.acoes : []).entries()) {
+      const ondeA = `${onde}, ação #${j + 1}`;
+      if (!a || typeof a !== "object" || !String(a.id ?? "").trim() || !String(a.label ?? "").trim()) {
+        problemas.push(`${ondeA}: precisa de "id" e "label".`);
+        continue;
+      }
+      for (const campo of ["delta", "pv"]) {
+        if (a[campo] != null && !Number.isInteger(a[campo])) problemas.push(`${ondeA}: "${campo}" precisa ser inteiro.`);
+      }
+      if (a.pvPercentual != null && !(Array.isArray(a.pvPercentual) && a.pvPercentual.every((n) => Number.isFinite(Number(n)) && Number(n) >= 0))) {
+        problemas.push(`${ondeA}: "pvPercentual" precisa ser uma lista de números.`);
+      }
+      for (const [alvo, d] of Object.entries(a.outros && typeof a.outros === "object" ? a.outros : {})) {
+        if (!sessaoVistos.has(alvo)) problemas.push(`${ondeA}: "outros" cita contador inexistente ("${alvo}").`);
+        else if (!Number.isInteger(d)) problemas.push(`${ondeA}: o valor de "${alvo}" em "outros" precisa ser inteiro.`);
+      }
+    }
+  }
+
   /* O catálogo do Espinho (2026-09-30). O motor aproveita o que der de uma ficha
      já salva, mas a instalação é o portão duro: item sem id, custo negativo,
      tipo desconhecido e teto que não compila não entram. */
@@ -1930,6 +1986,8 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     && p.feiticos.length === 0
     && p.estadosCombate.length === 0
     && p.contadoresOrigem.length === 0
+    && p.feiticosVinculados.length === 0
+    && p.contadoresSessao.length === 0
     && !p.votoAutomatico
     && Object.keys(normalizarRegrasAfty(p.regrasAfty)).length === 0
     /* O Alter traz só o multiplicador de teto do Espinho, e é pacote de pleno

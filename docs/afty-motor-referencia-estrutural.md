@@ -215,7 +215,10 @@ três recursos nativos (Aliados, Alma, Comidas) NÃO entram nesse pool: eles vê
   desde 2026-10-12, Característica Amaldiçoada), `opt_<aptidão>_<valor>` (escolha de Aptidão) e
   `opcao_<id>` (opção escolhida numa escolha de origem ou de clã, 2026-10-12, também no montante). Os
   contadores de origem (`contadoresOrigem`) entram como `<pacote>_<id>`, sempre, dentro ou fora de
-  combate.
+  combate. O Feitiço vinculado de pacote (`feiticosVinculados`, 2026-10-16) entra como
+  `<pacote>_<id>_ligado`, 1 só com o Feitiço no ar em combate. Os canais `nivelFeitico` e
+  `rodadasFeitico` são lidos depois do montante (`bonusPorFeitico`) e chegam ao calculador do
+  Feitiço pelo `ctx.bonusFeitico`.
 - O `alvo` de um canal de fonte de dano aceita escopos da linha (`arma`, `basico`, `cat:`, `grupo:`,
   `prop:`, `tipo:`, `atq:`, `empunho:duas_maos`, `treinada`), e um alvo com `|` vale para a linha que
   responde a qualquer uma das partes, uma vez só (`valorCanalEscopos`). Detalhes em
@@ -274,6 +277,7 @@ Nesta campanha, métrica ausente ou ambígua exige decisão do autor antes de um
 | `afty-extras-nativos.js` | estados/funcionamentos SEM dono, embutidos (Aliados/Alma/Comidas) |
 | `afty-addons.js` | registro de famílias, namespace, `estadosCombateDeAddon`, `permite`/`libera` |
 | `afty-dsl.js` | avaliador de expressão, `normalizarVariavel` |
+| `afty-recursos-addon.js` | Feitiços vinculados e contadores de sessão de pacote (`feiticosVinculadosDeAddon`, `bonusPorFeitico`, `contadoresSessaoDeAddon`). Importa só a DSL |
 | `afty-feiticos.js` | calculadoras de Feitiço (Dano/Auxiliar/Curativo/Especial/Passivo), `AUX_TABELAS` |
 | `afty-sistema.js` | `regraDo()`/`REGRAS`, divergência Afty×Player |
 | `afty-golpe-especial.js` | as onze propriedades do Golpe Especial e a conta do custo. **FOLHA, zero imports** |

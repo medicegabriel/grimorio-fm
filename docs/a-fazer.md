@@ -87,6 +87,41 @@ Material Pesado tem requisito de revestimento Médio/Robusto por ID, sem
 equivalência definida para Lobo Saltitante. Não concede Fortitude até isso.
 **Anotado:** 2026-10-08, limites da automação dos oito equipamentos.
 
+### Golem de Sangue: leituras para confirmar e o que segue de mesa
+**Onde:** `addons/golem-de-sangue.json`
+**Situação:** o autor decidiu em 2026-10-15 a Prisão da Besta como Voto automático, o Corpo Morto em
+texto e as 5 Especiais de Maldição no lugar da Energia Reversa. Em 2026-10-16 (1.1.0) decidiu o
+Frenesi como Feitiço de Transformação ligado no criador, Duradouro, com o nível a mais podendo passar
+do acesso, e a Maldição Carmesim automatizada (PE em PV e os contadores de sessão). Estas leituras
+foram feitas sem ele, e estão no número:
+1. **"Dano: Desarmado +6 Níveis"** do Hemólito parte do dado desarmado de base (1d3), e não do dano
+   das Armas Naturais nem do Ataque Básico. Fora do Frenesi a linha mostra só esse dado.
+2. **"-2 em testes físicos"** vale nas perícias de Força, Destreza e Constituição. Testes de
+   Resistência e ataques ficam de fora.
+3. **Bêbada de Sangue** vale em todo acerto e dano com o interruptor "Alvo com Sangue Absorvido".
+4. **Desenvolvimento Físico e Carapaça Mutante** seguem o texto da Maldição Era de Ouro (+2 no
+   atributo e no limite, +1 no 15 e no 20, e resistência a um tipo físico). O livro não tem o
+   Desenvolvimento Físico.
+5. **Bônus de Origem** não diz o máximo no mesmo atributo, e ficou 3.
+6. **A troca da Energia Reversa vale para a ficha que liga o pacote**, seja qual for a origem, porque
+   o campo `substituiEnergiaReversa` é do pacote, e não da origem.
+7. **Os pagamentos automáticos seguem olhando o PE**, que é 0 (Técnica Máxima, Invocar, ação de
+   addon com `custoPE`). Os Pontos de Sangue se pagam à mão no contador.
+8. **O Sangue Guardado vira Pontos de Sangue 5 por 1**, a mesma métrica do PV ("cada de sangue
+   equivale a 5 pontos de vida").
+9. **Pontos de Sangue e Sangue Guardado zeram no Descansar** ("começa com 0 PS" a cada sessão). A
+   Fome fica, e o PV Inicial é um botão, não acontece sozinho.
+10. **As rodadas a mais do Voto valem só na Duradoura**, e a Exaustão segue o nível escrito.
+
+E ficaram de mesa: o Corpo Morto (decisão), a Imunidade a Sangramento (o motor não tem imunidade a
+condição), o "Manejo Único" das Preciosas Amarras (o texto não diz o que é), o Sangramento Leve do
+crítico do Hemólito, o efeito do Valorizar Alimento (só o contador), "considerado como sem ambos os
+braços", a obrigação de atacar a primeira criatura, o requisito da Maldição Carmesim, o +1
+sangramento acumulado, o 1d4 da Fome, o teste de Vontade no início de cada cena (a CD está na Ficha)
+e a caçada da Fome 4.
+**Precisa:** o autor confirmar o 1 ao 10 e dizer o que é o Manejo Único.
+**Anotado:** 2026-10-15, ao fazer o addon Golem de Sangue (7 ao 10 em 2026-10-16, na 1.1.0)
+
 ### Quimera de Maldições: leituras para confirmar
 **Onde:** `addons/quimera-de-maldicoes.json`, `resolveQuimeraMecanicas` (afty-invocacoes.js) e `aplicaDanoQuimera` (ficha/ficha-sessao.js)
 **Situação:** o autor decidiu em 2026-10-14 que Maldição funde só com Maldição, que cada uma soma o
@@ -1558,6 +1593,15 @@ logo depois de um commit, para o diff ficar isolado.
 **Decisão do achado 6:** o autor exige motor e autoria em toda parcela. MANUAL INTENCIONAL não recebe exceção de aprovação.
 **Anotado:** 2026-10-05, execução e correção do G00.
 **Nota (2026-10-07):** a imprecisão que a auditoria do G00 apontou ("nenhum assert escreve", e o `t-fontes-revisao.mjs` cria e apaga temporários fora do repositório) foi corrigida em `asserts/LEIA.md` e no CLAUDE.md. O achado 9 continua aberto.
+
+### Reconciliação: a chave removida continua em fontes.json
+**Chave:** G00-reconciliar-remocao
+**Onde:** `scripts/revisao-automacao/reconciliar.mjs` (`--aplicar`) e `docs/revisao-automacao/fontes.json`
+**Situação:** ao aplicar uma proposta com remoção, o inventário perde a chave e a entrada dela em
+`fontes.json` fica, e o `t-reconciliacao` reprova pela contagem (13732 contra 13731 no Golem de
+Sangue 1.1.0, com a remoção do `frenesi_sanguinario`). Foi apagada à mão.
+**Precisa:** o `--aplicar` tirar de `fontes.json` a entrada da chave removida, ou dizer que ela ficou.
+**Anotado:** 2026-10-16, Golem de Sangue 1.1.0
 
 ### Encontro: leitura de catálogo FORA da derivação ainda vê a união dos addons
 **Chave:** M05-texto-fora-do-derive

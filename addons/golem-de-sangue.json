@@ -1,0 +1,496 @@
+{
+  "id": "golem-de-sangue",
+  "nome": "Golem de Sangue",
+  "versao": "1.1.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Versão 1.1.0: a Maldição Carmesim como Funcionamento Básico (o PE Máximo vira PV, 3 por PE), os contadores de sessão Pontos de Sangue, Sangue Guardado e Fome, o Frenesi Incontrolável, e o Frenesi Sanguinário como o Feitiço de Transformação que a ficha liga na aba Origem (o Voto dá +1 nível nos efeitos dele, mesmo acima do acesso, e +BT/2 rodadas). Origem Golem de Sangue (Briar): Bônus de Origem, Corpo Morto, Físico Amaldiçoado (Armas Naturais e as Aprimoradas concedidas, +1 PV por nível, Instinto Sanguinário, Desenvolvimento Físico e Carapaça Mutante), Incompatibilidade com a Feitiçaria (sem Energia Reversa, e as 5 Aptidões Especiais de Maldição no lugar dela) e Artificial. Três Talentos de Origem, o Hemólito de Sangue (ativo só no Frenesi Sanguinário) e o Voto automático Restrição Congênita: Prisão da Besta. Com o Feitiço do Frenesi no ar, o Hemólito ativa e as amarras soltam.",
+  "estadosCombate": [
+    {
+      "id": "alvo_sangue_absorvido",
+      "label": "Alvo com Sangue Absorvido",
+      "tipo": "bool",
+      "title": "Bêbada de Sangue",
+      "requerTalento": "tal_bebada_de_sangue"
+    },
+    {
+      "id": "alvo_sangrando",
+      "label": "Alvo Sangrando",
+      "tipo": "bool",
+      "title": "Hemólito: Densidade Sanguínea"
+    }
+  ],
+  "feiticosVinculados": [
+    {
+      "id": "frenesi",
+      "label": "Feitiço do Frenesi",
+      "tipo": "transformacao"
+    }
+  ],
+  "regrasAfty": {
+    "energiaEmVida": 3
+  },
+  "funcionamentos": [
+    {
+      "id": "maldicao_carmesim",
+      "nome": "Maldição Carmesim",
+      "descricao": "Criada por feiticeiros a partir de cadáveres de usuários da Manipulação de Sangue, ela deveria ser uma arma. Entretanto, seu corpo tornou-se incompatível consigo mesmo: uma carne morta, incapaz de produzir sangue, regenerar-se naturalmente ou manipular energia reversa, um fracasso total.\n\nSeu único sucesso foi a capacidade de tomar para si quase todo sangue que entrasse em contato com sua energia, modificando sua estrutura e transformando-o em carne. Embora seu controle fosse impreciso além de sua liberação habitual de energia, dentro do próprio corpo essa manipulação era excepcional.\n\nSeus criadores queriam uma assassina. Ela só queria comer.\n\nSua primeira missão terminou em um massacre. Mesmo depois de reconstruir o corpo, continuou consumindo.\n\n**Comer. Comer. COMER.**\n\nUm experimento fracassado, cuja fome persistia mesmo quando já não havia nada para regenerar.\n\n- Para ultilizar sua tecnica ou causar efeitos similares e necessario ultilizar **Pontos de Sangue** cada de sangue equivale a 5 pontos de vida, podendo ser do usuario ou causado a qualquer criatura via sangramento. O gasto de Pontos de Sangue e equivalente ao custo de PE em cada uma de suas tecnicas.\n- Seu corpo, mesmo tendo energia amaldiçoada ela ja e intricica a seu corpo e natureza o usuario tem que ultilizar **Pontos de Sangue** no lugar de PE, seu PE se torna vida em uma metrica de 1 para 3, cada PE se torna 3PV.\n- Todo sangramento causado em uma criatura por Briar, fica quardado e pode ser usado uma açao bonus para reculperar o valor total causado em vida.\n- Sangramentos causados por Briar fazem que o proprio corpo da criatura se vire contra a propria, fazendo com que seja possivel acumular +1 sangramento."
+    }
+  ],
+  "contadoresSessao": [
+    {
+      "id": "pontos_de_sangue",
+      "label": "Pontos de Sangue",
+      "min": 0,
+      "inicio": 0,
+      "zeraNoDescanso": true,
+      "title": "Cada Ponto de Sangue equivale a 5 pontos de vida, e paga o custo de PE das técnicas",
+      "acoes": [
+        {
+          "id": "sangrar",
+          "label": "Sangrar 5 PV",
+          "title": "5 PV viram 1 Ponto de Sangue",
+          "pv": -5,
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "sangue_guardado",
+      "label": "Sangue Guardado",
+      "min": 0,
+      "inicio": 0,
+      "zeraNoDescanso": true,
+      "title": "O dano de sangramento que Briar causou",
+      "acoes": [
+        {
+          "id": "recuperar",
+          "label": "Recuperar",
+          "title": "Ação Bônus: recupera o total guardado em vida",
+          "pvPeloValor": true,
+          "zera": true
+        },
+        {
+          "id": "converter",
+          "label": "5 em 1 Ponto de Sangue",
+          "title": "5 do sangue guardado viram 1 Ponto de Sangue",
+          "delta": -5,
+          "outros": {
+            "pontos_de_sangue": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "fome",
+      "label": "Fome",
+      "min": 1,
+      "max": 4,
+      "inicio": 1,
+      "title": "1d4 no início da sessão: 1 Bem Alimentada, 2 Com Fome, 3 Comeria Até Você UwU, 4 Presa",
+      "acoes": [
+        {
+          "id": "pv_inicial",
+          "label": "PV Inicial",
+          "title": "100%, 75%, 50% ou 25% dos PV máximos, pela Fome",
+          "pvPercentual": [
+            100,
+            75,
+            50,
+            25
+          ]
+        }
+      ]
+    }
+  ],
+  "substituiEnergiaReversa": {
+    "tab": "Especiais de Maldição",
+    "aptidoes": [
+      "mal_regeneracao_corporal",
+      "mal_regeneracao_ampliada",
+      "mal_regeneracao_maxima",
+      "mal_regeneracao_de_membros",
+      "mal_fluxo_imparavel"
+    ]
+  },
+  "votoAutomatico": {
+    "id": "prisao_da_besta",
+    "nome": "Restriçao Congenita: Prisao da Besta",
+    "narrativa": "Briar mantem seus braços contidos por um equipamento peculiar que restrige seus braços e pernas com grandes espinhos que sugam seu sangue e o fazem circular pela arma de maneira peculiar enquanto a mantem entorpecida e com sua fome contida desta forma mesmo a mantendo sobre maior controle, ainda a auxilia de manter seu controle, mas apos muitos anos este objeto quase que se consagrou com seu corpo, fazendo que quando seus instintos saem do controle o sangue neste obejeto, sirva para o romper e ultilizando dele para criar arma ainda mais potentes que ganham caracteristicas muito similares a seu corpo",
+    "maleficio": {
+      "texto": "- O item prende seus braços, ate iniciar Frenesi Sanguinario e considerado como sem ambos os braços.\n- Durante Frenesi Sanguinario Briar e obrigada a atacar a primeira criatura em seu alcance corpo a corpo.\n- Enquanto restringido Briar tem -2 em testes fisicos.\n- -2 PE por level.",
+      "efeitos": [
+        {
+          "canal": "pe",
+          "expr": "-2 * nd"
+        },
+        {
+          "canal": "bonusPericia",
+          "alvo": "atr:forca",
+          "expr": "-2",
+          "quando": "!golem_de_sangue_frenesi_ligado",
+          "duracao": "temporaria"
+        },
+        {
+          "canal": "bonusPericia",
+          "alvo": "atr:destreza",
+          "expr": "-2",
+          "quando": "!golem_de_sangue_frenesi_ligado",
+          "duracao": "temporaria"
+        },
+        {
+          "canal": "bonusPericia",
+          "alvo": "atr:constituicao",
+          "expr": "-2",
+          "quando": "!golem_de_sangue_frenesi_ligado",
+          "duracao": "temporaria"
+        }
+      ]
+    },
+    "beneficio": {
+      "texto": "- Recebe +6 HP por level\n- Frenesi Sanguinario, recebe +BT/2 rodadas de duraçao sem aumentar o custo de exaustao e tem seus efeitos aumentados em 1 nivel.",
+      "efeitos": [
+        {
+          "canal": "hp",
+          "expr": "6 * nd"
+        },
+        {
+          "canal": "nivelFeitico",
+          "alvo": "vinculo:frenesi",
+          "expr": "1"
+        },
+        {
+          "canal": "rodadasFeitico",
+          "alvo": "vinculo:frenesi",
+          "expr": "piso(bt / 2)"
+        }
+      ]
+    }
+  },
+  "acrescenta": {
+    "origens": [
+      {
+        "id": "golem_de_sangue",
+        "nome": "Golem de Sangue",
+        "lore": "Criada artificialmente a partir dos corpos de outros feiticeiros de seu clã, portadores da mesma técnica, Briar foi submetida a altas concentrações de energia amaldiçoada para despertar um organismo capaz de suportar esse poder.\n\nO resultado, porém, foi um corpo imperfeito. Sua anatomia anormal mantém a carne e a energia em um estado de constante instabilidade, impondo limitações e necessidades que seus criadores não conseguiram corrigir.\n\nEmbora possua grande compatibilidade com a energia amaldiçoada e com sua própria técnica, seu organismo não consegue sustentar essa afinidade de maneira equilibrada. Preservar a integridade do corpo exige manutenção constante, tornando sua própria existência uma das falhas mais difíceis de controlar.",
+        "restricoes": [
+          "Para utilizar esta origem, é obrigatório possuir a Maldiçao Carmesim."
+        ],
+        "bonusAtributos": {},
+        "caracteristicas": [
+          {
+            "id": "bonus_de_origem",
+            "nome": "Bônus de Origem",
+            "descricao": "Seu corpo foi moldado para maximizar seu potencial de destruição. Você recebe **3 pontos de atributo** para distribuir entre seus atributos físicos.",
+            "bonus": {
+              "distribuir": 3,
+              "maxPorAtributo": 3,
+              "entre": [
+                "forca",
+                "destreza",
+                "constituicao"
+              ]
+            }
+          },
+          {
+            "id": "corpo_morto",
+            "nome": "Corpo Morto",
+            "descricao": "Sua anatomia se assemelha à de um cadáver, com pele pálida e ausência dos processos fisiológicos de um organismo vivo. Seus movimentos são sustentados por modificações constantes na própria estrutura. Você **não pode receber cura por descansos, itens ou energia reversa**.",
+            "mesa": true
+          },
+          {
+            "id": "fisico_amaldicoado",
+            "nome": "Físico Amaldiçoado",
+            "descricao": "Desenvolvido para funcionar como uma arma letal, seu corpo manifesta novas capacidades conforme você avança de nível:\n- **Inicialmente:** recebe **Anatomia Incompreensível** e a aptidão **Armas Naturais**.\n- **Nível 5:** recebe **+1 PV por nível** e **Armas Naturais Aprimoradas**.\n- **Nível 10:** recebe **Instinto Sanguinário** e **Imunidade a Sangramento**.\n- **Nível 15:** recebe **Desenvolvimento Físico** e **Carapaça Mutante**.",
+            "concedeAptidoes": [
+              {
+                "id": "mal_armas_naturais",
+                "ndMin": 1
+              },
+              {
+                "id": "mal_armas_naturais_aprimoradas",
+                "ndMin": 5
+              }
+            ],
+            "resultados": [
+              {
+                "label": "Anatomia Incompreensível",
+                "expr": "(nd >= 15)",
+                "textos": [
+                  "1 em 1d4",
+                  "1 ou 2 em 1d4"
+                ]
+              }
+            ],
+            "escolhas": [
+              {
+                "id": "golem_desenvolvimento_fisico",
+                "label": "Desenvolvimento Físico",
+                "ndMin": 15,
+                "opcoes": [
+                  {
+                    "id": "golem_desenvolvimento_forca",
+                    "nome": "Força",
+                    "descricao": "Sua Força aumenta em 2, ignorando o limite natural, e em mais 1 nos níveis 15 e 20.",
+                    "efeitos": [
+                      {
+                        "canal": "atributo",
+                        "alvo": "forca",
+                        "expr": "2 + (nd >= 15) + (nd >= 20)",
+                        "nome": "Desenvolvimento Físico"
+                      },
+                      {
+                        "canal": "limiteAtributo",
+                        "alvo": "forca",
+                        "expr": "2 + (nd >= 15) + (nd >= 20)",
+                        "nome": "Desenvolvimento Físico"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "golem_desenvolvimento_destreza",
+                    "nome": "Destreza",
+                    "descricao": "Sua Destreza aumenta em 2, ignorando o limite natural, e em mais 1 nos níveis 15 e 20.",
+                    "efeitos": [
+                      {
+                        "canal": "atributo",
+                        "alvo": "destreza",
+                        "expr": "2 + (nd >= 15) + (nd >= 20)",
+                        "nome": "Desenvolvimento Físico"
+                      },
+                      {
+                        "canal": "limiteAtributo",
+                        "alvo": "destreza",
+                        "expr": "2 + (nd >= 15) + (nd >= 20)",
+                        "nome": "Desenvolvimento Físico"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "golem_desenvolvimento_constituicao",
+                    "nome": "Constituição",
+                    "descricao": "Sua Constituição aumenta em 2, ignorando o limite natural, e em mais 1 nos níveis 15 e 20.",
+                    "efeitos": [
+                      {
+                        "canal": "atributo",
+                        "alvo": "constituicao",
+                        "expr": "2 + (nd >= 15) + (nd >= 20)",
+                        "nome": "Desenvolvimento Físico"
+                      },
+                      {
+                        "canal": "limiteAtributo",
+                        "alvo": "constituicao",
+                        "expr": "2 + (nd >= 15) + (nd >= 20)",
+                        "nome": "Desenvolvimento Físico"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "golem_carapaca_mutante",
+                "label": "Carapaça Mutante",
+                "ndMin": 15,
+                "opcoes": [
+                  {
+                    "id": "golem_carapaca_ct",
+                    "nome": "Cortante",
+                    "descricao": "Você recebe resistência a dano Cortante. Depois de feita essa escolha não pode ser mudada.",
+                    "efeitos": [
+                      {
+                        "canal": "resistenciaDano",
+                        "alvo": "ct",
+                        "expr": "1",
+                        "nome": "Carapaça Mutante"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "golem_carapaca_im",
+                    "nome": "Impacto",
+                    "descricao": "Você recebe resistência a dano Impacto. Depois de feita essa escolha não pode ser mudada.",
+                    "efeitos": [
+                      {
+                        "canal": "resistenciaDano",
+                        "alvo": "im",
+                        "expr": "1",
+                        "nome": "Carapaça Mutante"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "golem_carapaca_pf",
+                    "nome": "Perfurante",
+                    "descricao": "Você recebe resistência a dano Perfurante. Depois de feita essa escolha não pode ser mudada.",
+                    "efeitos": [
+                      {
+                        "canal": "resistenciaDano",
+                        "alvo": "pf",
+                        "expr": "1",
+                        "nome": "Carapaça Mutante"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "incompatibilidade_feiticaria",
+            "nome": "Incompatibilidade com a Feitiçaria",
+            "descricao": "Sua natureza artificial impede a utilização de **energia reversa**. Seu organismo depende da reconstrução por meio do sangue para recompor a própria carne. Em contrapartida, você recebe acesso às **Aptidões Especiais de maldições** ."
+          },
+          {
+            "id": "frenesi_incontrolavel",
+            "nome": "Frenesi Incontrolável",
+            "descricao": "Mesmo morto, o corpo de Briar continua faminto. Sua existência exige grandes quantidades de alimento, e a necessidade de comer pode levá-la a matar para garantir a próxima refeição.\n\nPara contê-la, foi criada uma estrutura que aprisiona seus braços e limita seus movimentos. As amarras, porém, apenas adiam o inevitável: conforme a fome aumenta, Briar força sua prisão até rompê-la.\n\n### Fome Insaciável\n\nNo início de cada sessão, Briar começa com **0 PS** e rola **1d4** para determinar seu estado de alimentação. Sua fome se reflete diretamente na condição de seu corpo.\n\n**1: Bem Alimentada**\nInicia a sessão com **100% dos PV máximos**. Alimentou-se recentemente, possivelmente de algum pobre coitado, e sua fome permanece sob controle.\n\n*“Ele tinha gosto de azul. Azul é bom.”*\n\n**2: Com Fome**\nInicia a sessão com **75% dos PV máximos**. A fome começa a incomodá-la, levando-a a matar pequenos animais para se alimentar, embora ainda consiga controlar seus impulsos.\n\n**3: Comeria Até Você UwU**\nInicia a sessão com **50% dos PV máximos** e precisa urgentemente de alimento. No início de cada cena, deve realizar um **teste de Vontade contra CD 10 + ND/2**. Ao acumular **duas falhas**, ataca a primeira criatura que enxergar para tentar se alimentar.\n\n**4: Presa**\nInicia a sessão com **25% dos PV máximos**. A privação prolongada tornou seu corpo incontrolável. Caso seja provocada ou falhe em qualquer teste, inicia uma caçada desenfreada, que só termina quando estiver completamente satisfeita.\n\n### Controle Restrito\n\nPara tentar manter sua fome sob controle seus criadores tentaram adotar um estranho equipamento, que restringe seus braços e pernas, e a cada momento de fome os faz perfurar seu corpo para manter sua mente sa, entretanto, depois de tantos anos com tal item ele se tornou parte de briar funcionando como uma modificação corporal e arma para sua técnica inata, absorvendo seu sangue e solidificando em armas.",
+            "resultados": [
+              {
+                "label": "CD de Vontade",
+                "expr": "10 + piso(nd / 2)"
+              }
+            ]
+          },
+          {
+            "id": "artificial",
+            "nome": "Artificial",
+            "descricao": "Seu corpo foi construído a partir dos restos de inúmeros feiticeiros e depende da técnica para a qual foi desenvolvido. Para utilizar esta origem, é obrigatório possuir a Maldiçao Carmesim.",
+            "mesa": true
+          }
+        ],
+        "efeitos": [
+          {
+            "canal": "hp",
+            "expr": "nd * (nd >= 5)",
+            "nome": "Físico Amaldiçoado"
+          },
+          {
+            "canal": "iniciativa",
+            "expr": "bt * (nd >= 10)",
+            "nome": "Instinto Sanguinário"
+          },
+          {
+            "canal": "atencao",
+            "expr": "bt * (nd >= 10)",
+            "quando": "em_combate",
+            "duracao": "temporaria",
+            "nome": "Instinto Sanguinário"
+          }
+        ],
+        "especializacaoExclusivaId": null
+      }
+    ],
+    "talentos": [
+      {
+        "id": "tal_bebada_de_sangue",
+        "nome": "Bêbada de Sangue",
+        "grupo": "origem",
+        "descricao": "A absorção de sangue sustenta seu corpo e intensifica sua fome, tornando-a ainda mais feroz contra a fonte de seu alimento. Ao absorver o sangue de uma criatura por qualquer meio, você recebe **+2 nas jogadas de acerto e dano contra essa criatura**.",
+        "requisitos": [
+          {
+            "tipo": "origem",
+            "id": "golem_de_sangue"
+          }
+        ],
+        "efeitos": [
+          {
+            "canal": "bonusAcerto",
+            "expr": "2",
+            "quando": "golem_de_sangue_alvo_sangue_absorvido",
+            "duracao": "temporaria",
+            "nome": "Bêbada de Sangue"
+          },
+          {
+            "canal": "danoBonus",
+            "expr": "2",
+            "quando": "golem_de_sangue_alvo_sangue_absorvido",
+            "duracao": "temporaria",
+            "nome": "Bêbada de Sangue"
+          }
+        ]
+      },
+      {
+        "id": "tal_valorizar_alimento",
+        "nome": "Valorizar Alimento",
+        "grupo": "origem",
+        "descricao": "Sua sobrevivência depende de aproveitar ao máximo cada fonte de sangue. Ao causar **Sangramento** em uma criatura, você pode **maximizar o dano de sangramento** desta rodada, utilizando esse benefício uma quantidade de vezes igual ao seu **BT**.",
+        "requisitos": [
+          {
+            "tipo": "origem",
+            "id": "golem_de_sangue"
+          }
+        ],
+        "usos": {
+          "expr": "bt",
+          "recarga": "descanso"
+        }
+      },
+      {
+        "id": "tal_preciosas_amarras",
+        "nome": "Preciosas Amarras",
+        "grupo": "origem",
+        "descricao": "Sua antiga prisão tornou-se uma de suas maiores armas. Ao utilizar o **Hemólito**, você recebe um **Manejo Único** e **+1 passo de dano nos ataques realizados com ele**.",
+        "requisitos": [
+          {
+            "tipo": "origem",
+            "id": "golem_de_sangue"
+          }
+        ],
+        "efeitos": [
+          {
+            "canal": "nivelDano",
+            "alvo": "golem-de-sangue:hemolito_de_sangue",
+            "expr": "1",
+            "nome": "Preciosas Amarras"
+          }
+        ]
+      }
+    ],
+    "armas": [
+      {
+        "id": "hemolito_de_sangue",
+        "nome": "Hemólito de Sangue",
+        "classe": "complexa",
+        "categoria": "corpo",
+        "dano": {
+          "desarmado": true,
+          "tipo": "ct"
+        },
+        "critico": 20,
+        "espacos": 2,
+        "custo": 4,
+        "grupo": null,
+        "props": {
+          "duas_maos": true,
+          "dupla": true,
+          "fineza": true
+        },
+        "descricao": "Um equipamento que, durante muitos anos, serviu como uma amarra para seu portador. Após tanto tempo em contato com seu sangue, acabou se moldando ao seu corpo, tornando-se praticamente uma extensão dele.\n\nQuando seu portador entra em um estado de fúria intensa e incontrolável, diversas rachaduras começam a surgir pela superfície do equipamento, que se transforma em duas grandes lâminas, uma em cada mão.\n\nEssas lâminas são formadas por um sangue extremamente denso e modificado, armazenado no interior do equipamento. Embora sejam feitas de sangue, possuem uma estrutura rígida e extremamente resistente, funcionando como verdadeiras extensões do corpo de seu portador, capazes de se tornar armas extremamente letais.\n\nDano: Desarmado +6 Níveis de Dano Categoria: Arma Complexa Tipo: Corpo a Corpo Dano: Cortante Crítico: 20 Espaço: 2 Custo: 4 Propriedades: Duas Mãos, Duplas, Especial (2x), Fineza.\n\n**Especial: Frenesi Sanguinário.** Este equipamento só se torna ativo durante a utilização de Frenesi Sanguinário. Antes disso, funciona apenas como um adereço que aprisiona os braços de seu portador, seguindo as regras de seu pacto. Após sua ativação, o dano da arma aumenta em 1 passo para cada 2 pontos no modificador de Destreza do usuário.\n\n**Especial: Densidade Sanguínea.** O sangue absorvido pelo equipamento é utilizado para aumentar a densidade de seus golpes e fortalecer sua estrutura. Ao atacar uma criatura que esteja sangrando, o equipamento recebe +1 na margem de crítico. Além disso, os ataques críticos realizados com esta arma possuem um efeito especial.\n\n**Efeito Crítico: Sangramento.** Ao acertar um ataque crítico com esta arma, a criatura atingida recebe Sangramento Leve, realizando o teste correspondente apenas durante sua própria rodada. Caso o alvo já esteja sangrando, o dano do sangramento aumenta em 1 nível.",
+        "requerEstado": "frenesi_sanguinario",
+        "efeitosEspeciais": [
+          {
+            "canal": "nivelDano",
+            "alvo": "golem-de-sangue:hemolito_de_sangue",
+            "expr": "6",
+            "quando": "golem_de_sangue_frenesi_ligado",
+            "nome": "Hemólito de Sangue"
+          },
+          {
+            "canal": "nivelDano",
+            "alvo": "golem-de-sangue:hemolito_de_sangue",
+            "expr": "max(0, piso(mod_destreza / 2))",
+            "quando": "golem_de_sangue_frenesi_ligado",
+            "nome": "Hemólito: Frenesi Sanguinário"
+          },
+          {
+            "canal": "margemCritico",
+            "alvo": "golem-de-sangue:hemolito_de_sangue",
+            "expr": "1",
+            "quando": "golem_de_sangue_frenesi_ligado && golem_de_sangue_alvo_sangrando",
+            "nome": "Hemólito: Densidade Sanguínea"
+          }
+        ]
+      }
+    ]
+  }
+}

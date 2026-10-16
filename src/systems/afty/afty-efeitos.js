@@ -408,6 +408,14 @@ export const EFEITO_CANAIS = [
   // A recarga da Técnica Máxima, em rodadas, por cima de `6 − piso(BT / 2)`.
   // NEGATIVO reduz (Manual de Técnica, 2026-10-08). O piso é 0.
   { id: "recargaTecnicaMaxima", label: "Recarga da Técnica Máxima", nota: "rodadas somadas à recarga da Técnica Máxima, que é 6 menos metade do Bônus de Treinamento. Negativo reduz, e a recarga nunca passa abaixo de 0" },
+  /* Os dois do Feitiço (2026-10-15, pacote Golem de Sangue: "tem seus efeitos
+     aumentados em 1 nível", e o nível pode passar do acesso). O alvo é o id do
+     Feitiço ou `vinculo:<id>` (o Feitiço que a ficha ligou ao vínculo do
+     pacote), e sem alvo vale para todos. São lidos no MONTANTE (Voto, origem,
+     treino), porque o cálculo do Feitiço vem antes do Motor principal. Hoje só a
+     Transformação os lê. */
+  { id: "nivelFeitico",  label: "Nível dos Efeitos do Feitiço", alvo: "feitico", nota: "níveis somados aos EFEITOS do Feitiço, podendo passar do acesso. O custo, a duração e a Exaustão seguem o nível escrito. Hoje só a Transformação lê" },
+  { id: "rodadasFeitico", label: "Rodadas do Feitiço", alvo: "feitico", nota: "rodadas somadas à duração do Feitiço Duradouro, sem mudar a Exaustão. Hoje só a Transformação lê" },
   { id: "vagasTecnicaMaxima", label: "Vagas de Técnica Máxima", nota: "quantas Técnicas Máximas oficiais a ficha pode ter. A Aptidão Técnica Máxima dá 1. Não serve para Feitiço comum" },
   // "Vagas de" no rótulo para o canal cair junto dos irmãos numa busca por
   // "vaga". O que ele dá é QUANTAS Aptidões Amaldiçoadas a criatura pode ter.
@@ -757,6 +765,8 @@ const GRUPOS_DE_CANAL = [
     "pvParede", "rdParede", "maxParedes", "areaDominio", "efeitosDominio", "conflitoDominio",
     "areaDominioSimples", "custoErguerDominio", "custoSustentarDominio", "custoSustentarEstilo",
   ]],
+  // No fim, para não mudar o índice dos grupos de antes (2026-10-15).
+  ["Feitiços", ["nivelFeitico", "rodadasFeitico"]],
 ];
 
 export const EFEITO_CANAL_GRUPOS = (() => {
@@ -1075,6 +1085,10 @@ export function buildCriaturaDslContext(base = {}) {
      ignora. */
   for (const id of base.opcoesOrigem?.todas || []) ctx[`opcao_${normalizarVariavel(id)}`] = 0;
   for (const id of base.opcoesOrigem?.escolhidas || []) ctx[`opcao_${normalizarVariavel(id)}`] = 1;
+  /* O Feitiço VINCULADO a um pacote está ligado agora? `<pacote>_<id>_ligado`,
+     1 com o Feitiço no ar em combate (2026-10-15, o Frenesi Sanguinário do
+     Golem de Sangue). Todo vínculo declarado nasce em zero. */
+  for (const [nome, valor] of Object.entries(base.vinculosLigados || {})) ctx[nome] = valor ? 1 : 0;
   for (const [aptId, valor] of Object.entries(base.aptidaoOpcoes || {})) {
     /* Normalizado dos dois lados (achado M01-VAR-01, 2026-10-07): a Aptidão de
        Addon tem `:` no id, e `opt_mesa:foco_eco` não é nome que a DSL leia. O

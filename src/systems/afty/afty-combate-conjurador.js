@@ -279,10 +279,13 @@ const comTrava = (f, ctx, alvo) => {
     : alvo;
 };
 
-export function estadosCombateConjurador({ habilidades, tecnicas, armas = [], feiticos = [], nd } = {}) {
+export function estadosCombateConjurador({ habilidades, tecnicas, armas = [], feiticos = [], nd, bonusFeitico = null } = {}) {
   const estados = [];
-  const utilizavel = (f) => feiticoUtilizavel(f, { nd, habilidades });
-  const opcaoDoFeitico = (f) => comTrava(f, { nd, habilidades }, { id: f.id, label: f.nome || "Feitiço Sem Nome" });
+  // O bônus por Feitiço (`nivelFeitico`) entra também aqui: o efeito que só existe
+  // no nível de cima não pode esconder o Feitiço da escolha.
+  const ctxBase = { nd, habilidades, bonusFeitico };
+  const utilizavel = (f) => feiticoUtilizavel(f, ctxBase);
+  const opcaoDoFeitico = (f) => comTrava(f, ctxBase, { id: f.id, label: f.nome || "Feitiço Sem Nome" });
   const armasTecnicas = new Set(tecnicas?.armas ?? []);
   const opcoesArma = lista(armas)
     .filter((a) => armasTecnicas.has(a.id))
@@ -334,7 +337,7 @@ export function estadosCombateConjurador({ habilidades, tecnicas, armas = [], fe
     const ligavel = (f?.tipo === "auxiliar" && !auxiliarSustentado(f))
       || (ehTransformacao(f) && !transformacaoSustentada(f));
     if (!ligavel || !f.id || !utilizavel(f)) continue;
-    estados.push(comTrava(f, { nd, habilidades }, {
+    estados.push(comTrava(f, ctxBase, {
       id: estadoLigadoDoFeitico(f.id),
       label: f.nome || "Feitiço Sem Nome",
       tipo: "bool",
