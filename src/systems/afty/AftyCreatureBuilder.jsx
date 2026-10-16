@@ -5109,6 +5109,10 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
        o custo). Esta aqui é só para a TELA mostrar o que a invocação virou, sem
        obrigar a pessoa a trocar de aba para ver o PV do próprio shikigami. */
     invocacoesResolvidas: derived.invocacoes?.lista ?? [],
+    /* Os níveis e rodadas a mais que um canal dá a um Feitiço (`nivelFeitico` e
+       `rodadasFeitico`). Sem isto o card do criador mostrava o Frenesi do Golem
+       de Sangue no nível escrito, enquanto a Ficha já o mostrava com o bônus. */
+    bonusFeitico: derived.bonusFeitico,
   };
 
   // `dados_dano_final` pertence a uma linha concreta, por isso o preview do
@@ -5660,7 +5664,22 @@ function tilesDoFeitico(f, calc, ctx = {}) {
   }
 
   if (f.tipo === "especial" && especial === "transformacao") {
-    push("duracao", "Duração", calc.duracaoRodadas ? `${calc.duracaoRodadas} rodadas` : null);
+    /* O nível dos efeitos e as rodadas a mais que um canal deu (`nivelFeitico`
+       e `rodadasFeitico`), com a fonte no hover, igual à linha da Ficha. */
+    const partesDoBonus = (campo) => (calc.partesBonus ?? [])
+      .filter((p) => p.campo === campo).map((p) => ({ label: p.label, valor: p.valor }));
+    if (calc.bonusNivel > 0) {
+      const nivelEfeitos = calc.nivelEfeitos === "max" ? 6 : calc.nivelEfeitos;
+      push("nivelEfeitos", "Nível dos Efeitos", calc.nivelEfeitos === "max" ? "Máximo" : nivelEfeitos, {
+        curto: "Efeitos",
+        partes: [{ label: "Nível do Feitiço", valor: nivelEfeitos - calc.bonusNivel }, ...partesDoBonus("nivel")],
+        total: nivelEfeitos,
+      });
+    }
+    push("duracao", "Duração", calc.duracaoRodadas ? `${calc.duracaoRodadas} rodadas` : null, calc.bonusRodadas > 0 ? {
+      partes: [{ label: "Do Nível", valor: calc.duracaoRodadas - calc.bonusRodadas }, ...partesDoBonus("rodadas")],
+      total: calc.duracaoRodadas,
+    } : {});
     push("exaustao", "Exaustão", calc.exaustaoFim ?? null);
   }
 

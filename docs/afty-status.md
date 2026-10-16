@@ -17527,4 +17527,6 @@ Pedido do autor: um Addon chamado "Yna" com a Origem Kitsune, a Linhagem Clã Ge
 
 **O pacote:** `addons/golem-de-sangue.json` 1.1.0. O interruptor `frenesi_sanguinario` saiu (o Frenesi é o Feitiço vinculado), e entraram o Funcionamento Maldição Carmesim, os três contadores, o vínculo e o Frenesi Incontrolável. Revisão G00: proposta `G00/rechecagem/proposta-golem-de-sangue-1-1-2026-10-16.json` aplicada (lotes AD-71, M01 e M05), e a entrada da chave removida apagada à mão de `fontes.json` (lacuna da ferramenta, em `docs/a-fazer.md`).
 
+**Achado depois do deploy (relato do autor com a ficha da Briar, ND 8):** o card do Feitiço no criador calculava a Transformação sem o `bonusFeitico`, então mostrava o Frenesi no nível escrito e sem as rodadas do Voto, enquanto a Ficha já mostrava os dois. O contexto dos Feitiços no criador passou a levar o `bonusFeitico`, e a barra do card da Transformação ganhou "Nível dos Efeitos" e a Duração com a fonte no hover. Conferido no navegador com uma cópia da ficha: Nível dos Efeitos 3 (2 do Feitiço e 1 do Voto), Duração 2 rodadas (1 do nível e 1 do Voto) e os espaços de efeito no Nível 3.
+
 **Asserts:** `t-golem-de-sangue.mjs` (107) nos dois sistemas. O motor do `HEAD` recusa o pacote 1.1.0 (regra desconhecida `energiaEmVida`). ⚠ Motor e pacote no mesmo push, e o pacote só se instala depois do deploy. Sem commit ou push.
