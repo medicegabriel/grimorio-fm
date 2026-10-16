@@ -1350,7 +1350,13 @@ export function resolveDano(creature, ctx = {}) {
       elegivelDedicada: !!a.elegivelDedicada,
       /* O dado impresso da arma, já resolvido pelo manejo escolhido na ficha
          (uma mão ou duas, nas versáteis). Só o jogador o usa. */
-      ...monta(escopos, atributo, a.grauArma, a.critico ?? 20, a.dadoArma ?? null, "Dano da Arma", a.usarDadoArma),
+      /* A arma de `dano.desarmado` sem dado próprio usa o dado do golpe
+         desarmado da ficha, o mesmo do Ataque Básico, com a fonte dele no hover
+         (o Hemólito do Golem sai das Armas Naturais Aprimoradas). */
+      ...(a.desarmado && !a.dadoArma
+        ? monta(escopos, atributo, a.grauArma, a.critico ?? 20, ctx.dadoBasico ?? DESARMADO_PADRAO,
+          ctx.fonteDadoBasico ?? "Golpe Desarmado", a.usarDadoArma)
+        : monta(escopos, atributo, a.grauArma, a.critico ?? 20, a.dadoArma ?? null, "Dano da Arma", a.usarDadoArma)),
       // A ficha escolhe entre o ataque físico da categoria e o Ataque
       // Amaldiçoado. No jogador o atributo do dano continua vindo da arma, e
       // na criatura o Amaldiçoado o troca pelo de Técnica (ver acima).

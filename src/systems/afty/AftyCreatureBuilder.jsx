@@ -5664,16 +5664,14 @@ function tilesDoFeitico(f, calc, ctx = {}) {
   }
 
   if (f.tipo === "especial" && especial === "transformacao") {
-    /* O nível dos efeitos e as rodadas a mais que um canal deu (`nivelFeitico`
-       e `rodadasFeitico`), com a fonte no hover, igual à linha da Ficha. */
+    /* Os níveis a mais em cada efeito e as rodadas a mais que um canal deu
+       (`nivelFeitico` e `rodadasFeitico`), com a fonte no hover, igual à linha
+       da Ficha. */
     const partesDoBonus = (campo) => (calc.partesBonus ?? [])
       .filter((p) => p.campo === campo).map((p) => ({ label: p.label, valor: p.valor }));
     if (calc.bonusNivel > 0) {
-      const nivelEfeitos = calc.nivelEfeitos === "max" ? 6 : calc.nivelEfeitos;
-      push("nivelEfeitos", "Nível dos Efeitos", calc.nivelEfeitos === "max" ? "Máximo" : nivelEfeitos, {
-        curto: "Efeitos",
-        partes: [{ label: "Nível do Feitiço", valor: nivelEfeitos - calc.bonusNivel }, ...partesDoBonus("nivel")],
-        total: nivelEfeitos,
+      push("nivelEfeitos", "Nível dos Efeitos", `+${calc.bonusNivel}`, {
+        curto: "Efeitos", partes: partesDoBonus("nivel"), total: calc.bonusNivel,
       });
     }
     push("duracao", "Duração", calc.duracaoRodadas ? `${calc.duracaoRodadas} rodadas` : null, calc.bonusRodadas > 0 ? {

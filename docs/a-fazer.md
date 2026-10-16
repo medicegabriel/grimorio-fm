@@ -91,11 +91,13 @@ equivalência definida para Lobo Saltitante. Não concede Fortitude até isso.
 **Onde:** `addons/golem-de-sangue.json`
 **Situação:** o autor decidiu em 2026-10-15 a Prisão da Besta como Voto automático, o Corpo Morto em
 texto e as 5 Especiais de Maldição no lugar da Energia Reversa. Em 2026-10-16 (1.1.0) decidiu o
-Frenesi como Feitiço de Transformação ligado no criador, Duradouro, com o nível a mais podendo passar
-do acesso, e a Maldição Carmesim automatizada (PE em PV e os contadores de sessão). Estas leituras
-foram feitas sem ele, e estão no número:
-1. **"Dano: Desarmado +6 Níveis"** do Hemólito parte do dado desarmado de base (1d3), e não do dano
-   das Armas Naturais nem do Ataque Básico. Fora do Frenesi a linha mostra só esse dado.
+Frenesi como Feitiço de Transformação ligado no criador, Duradouro, com CADA efeito um nível acima
+(podendo passar do acesso), o Hemólito partindo do golpe desarmado da ficha (as Armas Naturais
+Aprimoradas da Briar) e a Maldição Carmesim automatizada (PE em PV e os contadores de sessão). Estas
+leituras foram feitas sem ele, e estão no número:
+1. **"Dano: Desarmado +6 Níveis"** do Hemólito parte do DADO do golpe desarmado (o das Armas
+   Naturais Aprimoradas), sem os níveis que miram o Ataque Básico. O "+1 nível de dano nos níveis 8,
+   12, 16 e 20" das Aprimoradas fica só no Ataque Básico. Fora do Frenesi a linha mostra só esse dado.
 2. **"-2 em testes físicos"** vale nas perícias de Força, Destreza e Constituição. Testes de
    Resistência e ataques ficam de fora.
 3. **Bêbada de Sangue** vale em todo acerto e dano com o interruptor "Alvo com Sangue Absorvido".

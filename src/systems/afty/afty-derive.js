@@ -1129,6 +1129,11 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
         ? e.def.dano.dados.map((d) => d.dado).filter(Boolean).join(" + ")
         : ((e.duasMaos && e.def.dano?.duasMaos) ? e.def.dano.duasMaos : (e.def.dano?.dado ?? null)),
       versatil: !!(e.def.props?.versatil && e.def.dano?.duasMaos),
+      /* `dano: { desarmado: true }` numa arma que não é de pugilato (o Hemólito
+         de Sangue do Golem): o dado é o do golpe desarmado DA FICHA (Armas
+         Naturais, Corpo Treinado, Restringido ou o básico por nível), e não o
+         1d3 genérico, que era onde ela caía até 2026-10-16. */
+      desarmado: !!e.def.dano?.desarmado,
       duasMaos: !!e.duasMaos,
       // Acerto DESTA arma: +1 por grau da Ferramenta mais o que o encantamento
       // Precisa somar (autor, 2026-08-01). Fica na linha e não no Ataque da

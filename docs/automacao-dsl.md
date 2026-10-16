@@ -713,7 +713,8 @@ Vieram com o Golem de Sangue 1.1.0. Detalhes do pacote em `docs/afty-addons.md`.
   a ficha apontou está no ar em combate (o `feiticoLigado_<id>` da Duradoura e da Cena, ou uma vaga
   `sustentacaoFeitico<n>`), 0 fora de combate ou com o vínculo vazio. O Golem usa
   `golem_de_sangue_frenesi_ligado` no `quando` do Hemólito e das amarras.
-- Canal `nivelFeitico`: níveis a mais nos EFEITOS do Feitiço, mesmo acima do acesso. Canal
+- Canal `nivelFeitico`: níveis a mais em CADA efeito do Feitiço, mesmo acima do acesso, até o
+  Máximo (a quantidade de efeitos segue o nível escrito). Canal
   `rodadasFeitico`: rodadas a mais na Duradoura. Os dois aceitam o alvo `vinculo:<id>` (o Feitiço do
   vínculo) ou o id de um Feitiço, e sem alvo valem para todos. São lidos depois do montante, então um
   Voto pode dá-los. Hoje só a Transformação lê os dois.

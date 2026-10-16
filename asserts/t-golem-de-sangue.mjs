@@ -132,6 +132,16 @@ for (const sistema of ["player", "afty"]) {
 
   // Hemólito de Sangue
   t(tag("fora do Frenesi o Hemólito é só o dado desarmado"), hemolito(d10).niveisDano, 0);
+  /* Autor, 2026-10-16: o "Desarmado" do Hemólito é o golpe desarmado DA FICHA,
+     que na Briar sai das Armas Naturais Aprimoradas, e não o 1d3 genérico. Só o
+     jogador lê o dado da arma. */
+  if (sistema === "player") {
+    const basico = d10.dano.entradas.find((e) => e.id === "basico");
+    const dadoDaFonte = (e) => (e?.partes ?? []).find((p) => p.categoria === "critavel")?.texto ?? null;
+    t(tag("o Hemólito parte do dado do golpe desarmado da ficha, com a fonte"),
+      [dadoDaFonte(hemolito(d10)), (hemolito(d10).partes ?? [])[0]?.label],
+      [dadoDaFonte(basico), "Armas Naturais Aprimoradas"]);
+  }
   const modDes = Math.floor((16 - 10) / 2);
   t(tag("no Frenesi: +6 níveis e +1 a cada 2 de mod. de Destreza"), hemolito(df).niveisDano, 6 + Math.floor(modDes / 2));
   t(tag("Cortante, Duas Mãos, Dupla e Fineza"),
@@ -170,8 +180,22 @@ for (const sistema of ["player", "afty"]) {
   const ctxF = { nd: 10, bonusFeitico: d10.bonusFeitico };
   const comBonus = FEI.calcularFeitico(frenesiFeitico(), ctxF);
   const semBonus = FEI.calcularFeitico(frenesiFeitico(), { nd: 10 });
-  t(tag("acesso 3 no nível 10, e o Frenesi de nível 3 sai com os efeitos do nível 4"),
-    [FEI.nivelMaxFeitico(10), comBonus.nivelEfeitos, comBonus.slots, semBonus.slots], [3, 4, [2, 2, 2, 2], [2, 1, 1, 1]]);
+  // Autor, 2026-10-16: CADA efeito sobe um nível, e não o Feitiço inteiro.
+  t(tag("acesso 3 no nível 10, e cada efeito do Frenesi de nível 3 sobe um nível"),
+    [FEI.nivelMaxFeitico(10), comBonus.bonusNivel, comBonus.slots, semBonus.slots], [3, 1, [3, 2, 2, 2], [2, 1, 1, 1]]);
+  t(tag("a quantidade de efeitos segue o nível escrito"), comBonus.efeitos.length, semBonus.efeitos.length);
+  /* O exemplo da Briar (ND 8): Frenesi de Nível 2, Ação Completa, Duradouro,
+     1 troca, com Dano Durante, Ataque, Movimento e CD. */
+  const briar = frenesiFeitico({ nivel: 2, transfAcao: "completa", transfNivelTroca: 1,
+    transfEfeitos: ["danoDurante", "ataque", "movimento", "cd"] });
+  const textos = (c) => c.efeitos.map((e) => e.texto);
+  t(tag("Briar: sem o Voto, 2d8, +2, +7,5 m e +1 CD"),
+    textos(FEI.calcularFeitico(briar, { nd: 8 })), ["2d8", "+2", "+7,5 m", "+1 CD"]);
+  t(tag("Briar: com o Voto, 3d8, +4, +13,5 m e +2 CD"),
+    textos(FEI.calcularFeitico(briar, { nd: 8, bonusFeitico: { [FRENESI_ID]: { nivel: 1, rodadas: 0, partes: [] } } })),
+    ["3d8", "+4", "+13,5 m", "+2 CD"]);
+  const maximo = FEI.calcularFeitico(frenesiFeitico({ nivel: 5 }), { nd: 20, bonusFeitico: { [FRENESI_ID]: { nivel: 3, rodadas: 0, partes: [] } } });
+  t(tag("o nível a mais para no Máximo"), maximo.slots.every((l) => l === 6) && maximo.efeitos.every((e) => e.disponivel), true);
   t(tag("o nível acima do acesso não gera aviso"), comBonus.avisos, []);
   t(tag("rodadas: as do nível 3 mais BT/2, e a Exaustão do nível 3"),
     [comBonus.duracaoRodadas, comBonus.exaustaoFim, semBonus.duracaoRodadas, semBonus.exaustaoFim],
@@ -182,7 +206,7 @@ for (const sistema of ["player", "afty"]) {
   const linhaFrenesi = d10.feiticos.lista.find((x) => x.id === FRENESI_ID);
   const prop = (pid) => linhaFrenesi?.propriedades.find((p) => p.id === pid)?.valor ?? null;
   t(tag("a linha da Ficha mostra o nível dos efeitos e as rodadas extras, com a fonte"),
-    [prop("nivelEfeitos")?.startsWith("Nível 4 ("), prop("rodadasExtras")?.startsWith(`+${Math.floor(d10.maestria / 2)} (`)],
+    [prop("nivelEfeitos")?.startsWith("+1 Nível ("), prop("rodadasExtras")?.startsWith(`+${Math.floor(d10.maestria / 2)} (`)],
     [true, true]);
   t(tag("sem o vínculo a linha não mostra bônus"),
     deriveAfty(ficha({ vinculado: false })).feiticos.lista.find((x) => x.id === FRENESI_ID)

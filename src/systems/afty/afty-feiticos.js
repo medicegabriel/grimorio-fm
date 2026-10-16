@@ -2604,18 +2604,18 @@ export function calcularFeiticoTransformacao(feitico, ctx = {}) {
     avisos.push("Transformação é do Nível 1 ao 5.");
     return { nivel, slots: [], resumo: "-", custoPE: null, avisos, detalhes: {} };
   }
-  /* O NÍVEL DOS EFEITOS pode subir por canal (`nivelFeitico`, 2026-10-15: a
-     Prisão da Besta do Golem de Sangue dá "+1 nível" ao Frenesi, e o nível pode
-     passar do acesso). Sobem só os EFEITOS (espaços, nível de aux e o teto da
-     troca). Custo, duração base, sustentação e Exaustão seguem o nível escrito,
-     e o aviso de acesso também, porque o nível escrito é o que a ficha escolheu.
-     As rodadas a mais (`rodadasFeitico`) somam na duração Duradoura, sem mexer
-     na Exaustão. */
+  /* CADA EFEITO pode subir de nível por canal (`nivelFeitico`): a Prisão da
+     Besta do Golem de Sangue dá "+1 nível" nos efeitos do Frenesi, e o nível
+     pode passar do acesso, até o Máximo. Autor, 2026-10-16: é cada efeito que
+     sobe ("Ataque +2" vira "+4"), e não o Feitiço que calcula como um nível
+     acima (leitura de 2026-10-15, que deixava metade dos efeitos iguais). A
+     quantidade de efeitos, a troca, o custo, a duração base, a sustentação, a
+     Exaustão e o aviso de acesso seguem o nível escrito. As rodadas a mais
+     (`rodadasFeitico`) somam na duração Duradoura, sem mexer na Exaustão. */
   const bonus = bonusDoFeitico(ctx.bonusFeitico, f.id);
   const bonusNivel = Math.max(0, Math.trunc(Number(bonus?.nivel) || 0));
   const bonusRodadas = Math.max(0, Math.trunc(Number(bonus?.rodadas) || 0));
-  const nEfeitos = Math.min(6, nNum + bonusNivel);
-  const base = TRANSFORMACAO_BASE[nEfeitos === 6 ? "max" : nEfeitos];
+  const base = TRANSFORMACAO_BASE[nivel];
 
   const acao = ["comum", "bonus", "completa"].includes(f.transfAcao) ? f.transfAcao : "comum";
   const duracao = ["sustentada", "duradoura", "cena"].includes(f.transfDuracao) ? f.transfDuracao : "sustentada";
@@ -2633,7 +2633,7 @@ export function calcularFeiticoTransformacao(feitico, ctx = {}) {
   if (duracao === "duradoura") slots.push(Math.min(...slots));
 
   // Troca de nível: −1 efeito por +1 em TODOS os outros, teto = min(nível, 5).
-  const nivelCap = Math.min(nEfeitos, 5);
+  const nivelCap = Math.min(nNum, 5);
   const trocasPedidas = Math.max(0, f.transfNivelTroca | 0);
   let aplicadas = 0;
   while (aplicadas < trocasPedidas && slots.length > 1 && Math.max(...slots) < nivelCap) {
@@ -2646,13 +2646,16 @@ export function calcularFeiticoTransformacao(feitico, ctx = {}) {
     avisos.push(`Só foi possível aplicar ${aplicadas} troca(s) de nível (mínimo de 1 efeito, teto de nível ${nivelCap}).`);
   }
   slots.sort((a, b) => b - a);
+  // O bônus de canal entra DEPOIS da troca, em cada efeito, até o Máximo (6).
+  if (bonusNivel) slots = slots.map((l) => Math.min(6, l + bonusNivel));
 
   // Resolve os efeitos atribuídos a cada slot (id de aux por slot).
   const atribuidos = Array.isArray(f.transfEfeitos) ? f.transfEfeitos : [];
   const efeitos = slots.map((auxNivel, i) => {
-    const efeitoId = atribuidos[i] || efeitoPadraoTransf(auxNivel);
+    const chaveAux = auxNivel >= 6 ? "max" : auxNivel;
+    const efeitoId = atribuidos[i] || efeitoPadraoTransf(chaveAux);
     const def = AUX_EFEITOS.find((e) => e.value === efeitoId) || AUX_EFEITOS[0];
-    const { valor, coluna } = valorTransfEfeito(efeitoId, auxNivel);
+    const { valor, coluna } = valorTransfEfeito(efeitoId, chaveAux);
     const disponivel = valor != null;
     return {
       efeito: efeitoId,
@@ -2711,9 +2714,8 @@ export function calcularFeiticoTransformacao(feitico, ctx = {}) {
     resumo,
     avisos,
     detalhes: {},
-    // O bônus de canal, para a Ficha dizer "Efeitos no Nível 4" e de onde veio.
+    // O bônus de canal, para a Ficha dizer "Efeitos +1 Nível" e de onde veio.
     ...(bonusNivel || bonusRodadas ? {
-      nivelEfeitos: nEfeitos === 6 ? "max" : nEfeitos,
       bonusNivel,
       bonusRodadas: duracao === "duradoura" ? bonusRodadas : 0,
       partesBonus: bonus.partes,
@@ -4967,11 +4969,11 @@ function propriedadesResumoFeitico(f, calc, valor, valorLabel) {
       : calc?.sustentacaoVida > 0 ? `${calc.sustentacaoVida} PV por rodada`
       : null },
     { id: "exaustao", nome: "Exaustão", valor: calc?.notaExaustao || null },
-    /* O nível dos EFEITOS e as rodadas a mais que um canal deu ao Feitiço
-       (`nivelFeitico` e `rodadasFeitico`, 2026-10-15), com o nome da fonte: o
-       Frenesi do Golem de Sangue sai com os efeitos um nível acima do escrito. */
+    /* Os níveis a mais em cada efeito e as rodadas a mais que um canal deu ao
+       Feitiço (`nivelFeitico` e `rodadasFeitico`), com o nome da fonte: no
+       Frenesi do Golem de Sangue cada efeito sobe um nível (autor, 2026-10-16). */
     { id: "nivelEfeitos", nome: "Efeitos", valor: calc?.bonusNivel > 0
-      ? `Nível ${calc.nivelEfeitos === "max" ? "Máximo" : calc.nivelEfeitos} (${fontesDoBonus(calc, "nivel")})`
+      ? `+${calc.bonusNivel} Nível (${fontesDoBonus(calc, "nivel")})`
       : null },
     { id: "rodadasExtras", nome: "Rodadas Extras", valor: calc?.bonusRodadas > 0
       ? `+${calc.bonusRodadas} (${fontesDoBonus(calc, "rodadas")})`

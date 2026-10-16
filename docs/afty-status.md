@@ -17530,3 +17530,13 @@ Pedido do autor: um Addon chamado "Yna" com a Origem Kitsune, a Linhagem Clã Ge
 **Achado depois do deploy (relato do autor com a ficha da Briar, ND 8):** o card do Feitiço no criador calculava a Transformação sem o `bonusFeitico`, então mostrava o Frenesi no nível escrito e sem as rodadas do Voto, enquanto a Ficha já mostrava os dois. O contexto dos Feitiços no criador passou a levar o `bonusFeitico`, e a barra do card da Transformação ganhou "Nível dos Efeitos" e a Duração com a fonte no hover. Conferido no navegador com uma cópia da ficha: Nível dos Efeitos 3 (2 do Feitiço e 1 do Voto), Duração 2 rodadas (1 do nível e 1 do Voto) e os espaços de efeito no Nível 3.
 
 **Asserts:** `t-golem-de-sangue.mjs` (107) nos dois sistemas. O motor do `HEAD` recusa o pacote 1.1.0 (regra desconhecida `energiaEmVida`). ⚠ Motor e pacote no mesmo push, e o pacote só se instala depois do deploy. Sem commit ou push.
+
+## SESSÃO DE 2026-10-16 (TARDE): FRENESI E HEMÓLITO NA FICHA DA BRIAR
+
+**Relato do autor, com a ficha exportada (ND 8):** o Frenesi não subia os valores, e o Hemólito não contava as Armas Naturais Aprimoradas.
+
+**Decisão do autor:** "tem seus efeitos aumentados em 1 nível" é CADA efeito um nível acima, e não o Feitiço calculado como um nível acima (a leitura de 2026-10-15, que deixava metade dos efeitos iguais). No Frenesi de Nível 2 da Briar, com Dano Durante, Ataque, Movimento e CD: 2d8, +2, +7,5 m e +1 CD viram 3d8, +4, +13,5 m e +2 CD.
+
+**O que mudou:** `calcularFeiticoTransformacao` monta os efeitos pelo nível escrito (quantidade, Ação, Duradoura e troca) e soma o `nivelFeitico` em cada um no fim, até o Máximo. A linha da Ficha mostra "Efeitos: +1 Nível (fonte)", e o card do criador "Nível dos Efeitos +1" com a fonte no hover. A arma de `dano.desarmado` que não é de pugilato (o Hemólito) passou a usar o dado do golpe desarmado da ficha (`dadoBasico`, com a fonte no hover) no lugar do 1d3 genérico: a Briar sai com 1d12 + 3 fora do Frenesi e 2d12 + 1d6 + 3 nele.
+
+**Asserts:** `t-golem-de-sangue.mjs` (116) nos dois sistemas. Contraprova no `HEAD`: 9 falham. Sem commit ou push.
