@@ -12,6 +12,23 @@ FLOOR, `INT`=parte inteira, `MAIOR(intervalo;k)`=k-ésimo maior, `VERDADEIRO`=TR
 
 ## Correções estruturais ao que estava assumido
 
+### Fórmulas de dano em blocos de 100 dados (2026-10-17)
+
+Por decisão do autor, o limite do bot vale por termo da expressão, sem teto
+para a quantidade total de dados. `110d12` aparece como `100d12 + 10d12`,
+e `200d12` como `100d12 + 100d12`, sem termo vazio ao final.
+
+`textoDosDados`, em `src/systems/afty/afty-dano.js`, soma fontes de mesma
+face, ordena as faces e divide cada soma em blocos de até 100. A divisão
+ocorre depois da multiplicação de dados do crítico. No Raio Negro, conserva
+a separação entre dados critáveis e Após Ataque, por exemplo:
+`(100d12 + 10d12)/2*3 + 100d6 + 10d6 + 10`.
+
+Fórmulas normal, crítica e de Raio Negro, subtotais do hover e fórmula do
+registro de rolagem compartilham essa formatação. O motor interno continua
+rolando todos os dados, sem descarte ou mudança no dano fixo. Não há canal
+novo ou alteração na DSL. Regressão: `asserts/t-dano-blocos-100.mjs`.
+
 ### Quantidade de Especialização e Aptidões Amaldiçoadas (2026-10-10)
 
 Na criatura Afty, Especialização concede `1 + floor(Maestria / 2)` vagas por

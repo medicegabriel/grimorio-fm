@@ -102877,6 +102877,192 @@
       "estado": "NÃO LOCALIZADA",
       "fontes": [],
       "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon::habilidades-tauropolos.json::@pacote": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::descricao": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::feiticos": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::feiticos::akribeia_toxon": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::feiticos::akribeia_toxon/rolagens": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::feiticos::cacada_de_antares": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::feiticos::cacada_de_antares/rolagens": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::feiticos::hokuto_no_nanaya": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::feiticos::hokuto_no_nanaya_var_4": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::feiticos::hokuto_no_nanaya_var_4/rolagens": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::feiticos::hokuto_no_nanaya_var_4/rolagens/@0": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::feiticos::hokuto_no_nanaya_var_4/rolagens/@1": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::feiticos::hokuto_no_nanaya/rolagens": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::feiticos::hokuto_no_nanaya/rolagens/@0": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::feiticos::khrysea_mela": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::feiticos::khrysea_mela/rolagens": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::feiticos::khrysea_mela/rolagens/@0": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::feiticos::ourania_kynigos_var_5": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::feiticos::ourania_kynigos_var_5/rolagens": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::feiticos::ourania_kynigos_var_5/rolagens/@0": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::feiticos::phoebos_catastrophe": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::feiticos::phoebos_catastrophe/rolagens": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::feiticos::phoebos_catastrophe/rolagens/@0": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::feiticos::phoebos_pythoktonos_alter": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::feiticos::phoebos_pythoktonos_alter/rolagens": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::feiticos::phoebos_pythoktonos_alter/rolagens/@0": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::feiticos::phoebos_pythoktonos_alter/rolagens/@1": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::id": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::nome": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::paraRaw": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::habilidades-tauropolos.json::@pacote::versao": {
+      "proprietario": "AD-72",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
     }
   }
 }

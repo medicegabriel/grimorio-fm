@@ -265,8 +265,8 @@ const exemploDoAutor = { ...armaMista, gruposDano: [
 const autorSegundo = propriedadesMistas(exemploDoAutor);
 t("Exemplo do autor: Enérgica normal e crítico", [autorSegundo.armaPropriedades.energica, autorSegundo.armaPropriedades.energicaCritico], [56, 132]);
 t("Exemplo do autor: fórmula normal preservada", autorSegundo.formulaNormal, "42d12 + 9d10 + 5d6 + 169");
-t("Exemplo do autor: fórmula crítica corrigida", autorSegundo.formulaCritico, "104d12 + 18d10 + 10d6 + 245");
-t("Exemplo do autor: Raio Negro não multiplica Enérgica", autorSegundo.formulaRaioNegro, "(104d12 + 18d10 + 10d6)/2*3 + 245");
+t("Exemplo do autor: fórmula crítica corrigida", autorSegundo.formulaCritico, "100d12 + 4d12 + 18d10 + 10d6 + 245");
+t("Exemplo do autor: Raio Negro não multiplica Enérgica", autorSegundo.formulaRaioNegro, "(100d12 + 4d12 + 18d10 + 10d6)/2*3 + 245");
 for (const modo of ["normal", "critico", "raio_negro"]) {
   const r = rolarDano({ grupos: autorSegundo.gruposDano, modoDano: modo }, () => 0);
   t("Exemplo do autor: rolagem " + modo + " usa o bônus uma vez", [r.dados.length, r.total],

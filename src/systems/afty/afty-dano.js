@@ -64,7 +64,7 @@ export function formulaModoDano(grupos, modo = "normal") {
   return juntar([dadosDaPilha(lista, modo, dobra), textoDoFixo(fixoDaPilha(lista))]) || "0";
 }
 
-/** Os dados de vários grupos somados por tamanho, do maior para o menor: `12d12 + 8d10`. */
+/** Soma por face e divide em termos de até 100 dados, sem perder o excedente. */
 export function textoDosDados(grupos, modo = "normal") {
   const porFaces = new Map();
   for (const g of Array.isArray(grupos) ? grupos : []) {
@@ -75,7 +75,10 @@ export function textoDosDados(grupos, modo = "normal") {
   }
   return [...porFaces.entries()]
     .sort((a, b) => b[0] - a[0])
-    .map(([faces, qtd]) => `${qtd}d${faces}`)
+    .flatMap(([faces, qtd]) => Array.from(
+      { length: Math.ceil(qtd / 100) },
+      (_, indice) => `${Math.min(100, qtd - indice * 100)}d${faces}`,
+    ))
     .join(" + ");
 }
 

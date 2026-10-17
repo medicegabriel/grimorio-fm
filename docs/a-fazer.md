@@ -34,6 +34,19 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 
 ## PERGUNTAS AO AUTOR
 
+### Reconciliar o inventário do pacote privado de Oda Nobunaga
+**Onde:** `addons/oda-nobunaga.private.json`, `docs/revisao-automacao/`
+**Situação:** a coleta encontra 267 chaves preexistentes desse pacote sem
+registro no inventário e no mapa de fontes. Em 2026-10-16, após registrar
+as 31 chaves de Tauropolos, t-reconciliacao-g00 continua falhando na comparação
+13.606 fontes contra 13.873 itens vivos. Os outros 203 arquivos passaram.
+**Precisa:** definir o proprietário e reconciliar o pacote privado no escopo
+da sua entrega, preservando a fonte e sem aprovar regra automaticamente.
+**Anotado:** 2026-10-16, validação do addon de Tauropolos.
+**Nota 2026-10-17:** após integrar a main d4a0ed2 e renumerar Tauropolos
+para AD-72, a mesma diferença de 267 chaves permanece: 13.762 fontes para
+14.029 itens vivos. O inventário novo e os registros remotos foram preservados.
+
 ### Revisão de 2026-10-07: nove leituras de regra do bloco G00 a CMB-02
 **Chave:** BLOCO-2026-10-07-perguntas
 **Onde:** `docs/revisao-automacao/<lote>/revisao.md` de cada lote citado

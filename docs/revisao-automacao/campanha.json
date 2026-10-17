@@ -3786,6 +3786,20 @@
       ],
       "registro": "AD-71/registro.json",
       "proprietario": "executor do lote AD-71"
+    },
+    {
+      "lote": "AD-72",
+      "nome": "Addon: Habilidades de Tauropolos",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04",
+        "M02"
+      ],
+      "registro": "AD-72/registro.json",
+      "proprietario": "executor do lote AD-72"
     }
   ]
 }

@@ -1,5 +1,87 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-10-17: PREPARAÇÃO DO COMMIT
+
+Nova consulta ao GitHub confirmou main em d4a0ed2, sem atualização desde
+a integração acima. Preparado o índice com o addon de Tauropolos, seus
+registros de revisão, a divisão das fórmulas em termos de até 100 dados,
+os asserts e a documentação. As duas prévias __dharma-preview permanecem
+locais, fora do índice. Nenhuma alteração em src/components/.
+
+Revisão do diff e verificação de conflitos executadas. Mantidas as
+validações da implementação abaixo, sem mudança posterior no código.
+Permanece a pendência anterior de 267 entradas privadas de Oda no inventário.
+Mensagem proposta: feat(afty): adiciona Tauropolos e divide dano em blocos de 100 dados.
+Commit e push reservados ao autor, conforme AGENTS.md.
+
+## SESSÃO DE 2026-10-17: ATUALIZAÇÃO DO REMOTO E BLOCOS DE 100 DADOS
+
+Main avançada por fast-forward de c434d4d para d4a0ed2, quatro commits do
+remoto: Quimera de Maldições, Golem de Sangue 1.1.0 e correções de Frenesi
+e Hemólito. Preservação em stash 9a67699d13737c293c3d8efe003479ef88b8d175,
+nome codex-preservacao-atualizacao-2026-10-17, mantido para recuperação.
+
+Reaplicação encontrou conflitos em quatro JSONs de revisão. Conciliados
+por identidade, preservando integralmente o remoto e as 31 adições locais
+de Tauropolos. O remoto ocupa AD-70 com Quimera de Maldições e AD-71 com
+Golem de Sangue. Tauropolos foi renumerado para AD-72 na campanha, no
+inventário, no escopo e nas fontes. Proposta histórica original preservada.
+Arquivos de prévia e pacote de Tauropolos mantidos. Alterações fora do índice.
+
+Autor esclareceu que o dano deve continuar crescendo: `110d12` vira
+`100d12 + 10d12`, sem perder dados. Implementado em textoDosDados,
+compartilhado pelas fórmulas e pelo registro da rolagem. A divisão vem após
+o crítico e mantém os dados Após Ataque fora do fator de Raio Negro.
+O total rolado e o dano fixo não mudam. Sem canal novo ou mudança na 2.5.2.
+Contrato em docs/afty-formulas-base.md, 16 asserts novos de fronteira,
+crítico, Raio Negro, adicionais, múltiplas fontes, explosiva e rolagem simples.
+
+Validação: ESLint e build passaram, com os avisos existentes de Node e
+tamanho do bundle. Os 84 asserts de dano passaram. A suíte completa rodou
+207 arquivos: dois falharam inicialmente. As duas expectativas antigas de
+104d12 no teste de propriedades foram atualizadas para 100d12 + 4d12, e o
+arquivo passou na rechecagem com seus 158 asserts. Resta somente a falha
+preexistente de t-reconciliacao-g00: 13.762 fontes para 14.029 itens vivos,
+diferença de 267 chaves do pacote privado de Oda. Sem atualização dessas
+chaves fora do escopo. Conferência de inventário: 267 adições anteriores,
+zero remoções e zero atualizações. deriveAfty com +110 dados produziu
+crítico de 100d12 + 100d12 + 22d12 + 74, preservando a quantidade total.
+
+Conferidos hashes das duas prévias e do pacote Tauropolos contra o stash,
+preservação de todas as entradas remotas nos cinco JSONs conciliados,
+ausência de conflitos, índice vazio e ausência de U+2014 novo. Nenhuma
+alteração em src/components/. HEAD e remoto confirmados em d4a0ed2,
+divergência 0 0. Conferência no navegador não executada. Sem commit ou push.
+
+## SESSÃO DE 2026-10-16: MODELOS DAS HABILIDADES DE TAUROPOLOS
+
+Criado `addons/habilidades-tauropolos.json`, versão 1.0.0, com oito modelos
+personalizados do texto enviado pelo autor. Ourania usa 20 PE, conforme
+o custo de Nível 5 confirmado pelo autor. Catastrophe usa área de 12 m,
+também confirmada. O espaço vazio Habilidade Ativa 09 foi excluído.
+Textos preservados, exceto essas correções e substituição de U+2014.
+
+Rolagens próprias: cura 16d10, adicionais de Hokuto separados por disparo,
+Ourania 7d12, Catastrophe 10d10, Alter 15d10 e sangramento 6d10.
+Modificadores do arco, CD adicional, estoque, sustentação e condições
+continuam manuais. Dados da arma não constam do anexo. Contrato completo
+e instalação em `docs/afty-tauropolos.md`. Sem mudança no motor ou na 2.5.2.
+Não havia entrada correspondente na fila para remover.
+
+Validação direta de pacote, modelos por nível, custos, rolagens e
+deriveAfty passou nos sistemas Afty e Player. Build passou com avisos de
+versão do Node e tamanho do bundle. ESLint passou. Suíte completa: 203 de
+204 arquivos passaram, falhando somente t-reconciliacao-g00 pela ausência
+preexistente de 267 chaves do pacote privado Oda Nobunaga no mapa de fontes.
+Rechecagem isolada confirmou essa diferença após registrar Tauropolos.
+Reconciliação restrita a 31 adições no novo AD-70, nenhuma atualização,
+remoção ou invalidação. Mapa de fontes tem 13.606 chaves. As 267 chaves
+anteriores de Oda ficaram fora do escopo, preservadas. Pendência registrada
+em docs/a-fazer.md. Navegador não conferido. Consulta ao remoto falhou
+por conexão (getaddrinfo), sem confirmação de alinhamento. HEAD inicial
+`c434d4da84f5f27933f25c83379a340d4b1e8b66`. Preservados os dois arquivos
+locais __dharma-preview. Sem commit ou push.
+
 ## SESSÃO DE 2026-10-13: PASTA PRINCIPAL ATUALIZADA E CIEL INTEGRADO
 
 Autor pediu atualizar o repositório e conferir conflitos. A pasta principal

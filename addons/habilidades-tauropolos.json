@@ -1,0 +1,164 @@
+{
+  "id": "habilidades-tauropolos",
+  "nome": "Habilidades de Tauropolos",
+  "versao": "1.0.0",
+  "paraRaw": "afty",
+  "descricao": "Modelos das habilidades enviadas para Tauropolos.",
+  "feiticos": [
+    {
+      "id": "khrysea_mela",
+      "nome": "Khrysea Mela",
+      "tipo": "personalizado",
+      "nivel": 5,
+      "descricao": "Conjuração: Ação Comum\nCusto: 20 PE\nA usuária manifesta uma Khrysea Mela, uma Maçã Dourada inspirada nos frutos divinos da lenda que levaram Atalanta à sua única derrota.\nEmbora não possuam o encanto irresistível das maçãs originais, essas frutas carregam uma parcela de sua natureza divina, sendo capazes de restaurar grandes quantidades de vitalidade e fortalecer aqueles que as consomem.\nAs maçãs criadas podem ser utilizadas pela própria usuária ou entregues a aliados, seguindo normalmente as regras de consumíveis.\nEfeito:\nCria 1 Khrysea Mela\nAo ser consumida, a maçã cura 16d10 de Vida\nCaso o alvo esteja com a Vida máxima, ou parte da cura exceda a quantidade de Vida perdida, o excedente é convertido em Pontos de Vida Temporários\nCriação: Durante o combate, a usuária pode criar 1 Khrysea Mela utilizando uma Ação Comum.\nDurante um Descanso Curto, a usuária pode criar até 2 Khrysea Mela e mantê-las armazenadas, respeitando normalmente as regras de consumíveis.\nDurante Descansos Longos, a usuária também pode criar e armazenar Khrysea Mela. A quantidade máxima de maçãs que pode ser mantida é definida pelo Mestre.\nCada Khrysea Mela possui Peso 1.\nConsumo Imediato: No mesmo turno em que cria uma Khrysea Mela, a usuária pode consumi-la utilizando uma Ação Movimento.\nCaso a maçã seja utilizada em qualquer turno posterior, seu consumo segue normalmente as regras de utilização de itens consumíveis do sistema",
+      "acaoPersonalizada": "comum",
+      "alvoTexto": "Item Criado",
+      "alcanceTexto": "--",
+      "duracaoTexto": "Especial",
+      "comCd": false,
+      "rolagens": [
+        {
+          "rotulo": "Cura da Khrysea Mela",
+          "dados": 16,
+          "faces": 10,
+          "tom": "cura"
+        }
+      ]
+    },
+    {
+      "id": "hokuto_no_nanaya_var_4",
+      "nome": "Hokuto no Nanaya (Var.4)",
+      "tipo": "personalizado",
+      "nivel": 4,
+      "descricao": "Conjuração: Ação Comum\nCusto: 12 PE\n\nA usuária canaliza energia amaldiçoada através de \nTauropolos, fortalecendo o arco e os projéteis disparados \npor ele. A velocidade dos disparos alcança um nível absurdo, \npermitindo uma sequência de ataques que poucos \ncombatentes são capazes de acompanhar visualmente.\nEfeito: Ao utilizar este feitiço, a usuária realiza 3 ataques \nà distância com Tauropolos.\nPara cada disparo, realiza-se um teste de acerto \nseparadamente.\nPrimeiros 2 Disparos:\n• Cada disparo causa o dano normal de Tauropolos.\n• Cada disparo causa 4d10 de dano adicional.\nÚltimo Disparo:\n• Causa o dano normal de Tauropolos.\n• Causa 2d10 de dano adicional.\nTotalizando 10d10 de dano adicional caso todos os disparos acertem.\nEste dano é considerado Após Ataque e, portanto, não é afetado por acertos críticos.",
+      "acaoPersonalizada": "comum",
+      "alvoTexto": "Único",
+      "alcanceTexto": "Alcance de Tauropolos",
+      "duracaoTexto": "Imediata",
+      "comCd": false,
+      "rolagens": [
+        {
+          "rotulo": "Primeiros 2 Disparos (Após Ataque)",
+          "dados": 4,
+          "faces": 10,
+          "vezes": 2
+        },
+        {
+          "rotulo": "Último Disparo (Após Ataque)",
+          "dados": 2,
+          "faces": 10
+        }
+      ]
+    },
+    {
+      "id": "ourania_kynigos_var_5",
+      "nome": "Ourania Kynigos (Var.5)",
+      "tipo": "personalizado",
+      "nivel": 5,
+      "descricao": "Conjuração: Ação Comum\nCusto: 20 PE\n\nDuração: Sustentada\nA usuária assume a postura de uma caçadora celestial, espalhando a energia de sua técnica por todo o corpo. Seu estado torna-se mais feroz, instintivo e atento, como o de uma predadora em plena caça.\nEnquanto esta habilidade estiver ativa, seus disparos tornam-se mais letais e precisos, permitindo que suas flechas atravessem parcialmente as defesas de suas presas.\nEfeito (Enquanto ativa):\n+7d12 de dano em ataques com Tauropolos\n-4 de Redução de Dano perfurante do alvo (ao receber ataques de Tauropolos)\n+3m mais no alcance do Tauropolos\nAtivação e Sustentação: Após ativação, custa 2 PE por rodada para manter.\nInterações de dano: O dano adicional faz parte do dano do ataque e pode sofrer acerto crítico normalmente.",
+      "acaoPersonalizada": "comum",
+      "alvoTexto": "Proprio",
+      "alcanceTexto": "Alcance de Tauropolos",
+      "duracaoTexto": "Sustentada",
+      "comCd": false,
+      "rolagens": [
+        {
+          "rotulo": "Dano adicional de Ourania Kynigos",
+          "dados": 7,
+          "faces": 12
+        }
+      ]
+    },
+    {
+      "id": "hokuto_no_nanaya",
+      "nome": "Hokuto no Nanaya",
+      "tipo": "personalizado",
+      "nivel": 0,
+      "descricao": "Hokuto no Nanaya\nFeitiço Golpeador : Nível 0\nConjuração: Ação Comum\nCusto: 0 PE\nAlvo: Único\nDuração: Imediata\nA usuária canaliza energia amaldiçoada através de Tauropolos, fortalecendo o arco e os projéteis disparados por ele. A energia liberada durante o disparo amplifica momentaneamente o impacto do ataque.\nAo realizar um ataque com Tauropolos, a usuária causa 1d4 de dano adicional.\nEste dano é considerado Após Ataque e, portanto, não é afetado por acertos críticos.\nInterações:\nEste feitiço pode ser afetado por Triaster\nEste feitiço pode ser afetado por Ourania Kynigos",
+      "acaoPersonalizada": "comum",
+      "alvoTexto": "Único",
+      "alcanceTexto": "Alcance de Tauropolos",
+      "duracaoTexto": "Imediata",
+      "comCd": false,
+      "rolagens": [
+        {
+          "rotulo": "Dano adicional (Após Ataque)",
+          "dados": 1,
+          "faces": 4
+        }
+      ]
+    },
+    {
+      "id": "akribeia_toxon",
+      "nome": "Akribeia Toxon",
+      "tipo": "personalizado",
+      "nivel": 3,
+      "descricao": "Conjuração: Ação Bônus\nCusto: 8 PE\nAlvo: Próprio\nDuração: Concentração\nA usuária entra em um estado de precisão absoluta, onde cada disparo é ajustado instintivamente em tempo real. Seus sentidos se alinham ao arco, permitindo que pequenas correções ocorram no instante exato do disparo, como se a trajetória da flecha fosse “corrigida” pela própria intenção do tiro.\nEfeito:\nDiminui em 1 a margem de crítico (aumenta a chance de acerto crítico)\n+3m de alcance em ataques com Tauropolos\n-2 de Redução de Dano perfurante do alvo (ao receber ataques de Tauropolos)\nSustentação: Sustentada própria, baseada em concentração contínua.",
+      "acaoPersonalizada": "bonus",
+      "alvoTexto": "Próprio",
+      "alcanceTexto": "Próprio",
+      "duracaoTexto": "Concentração",
+      "comCd": false,
+      "rolagens": []
+    },
+    {
+      "id": "cacada_de_antares",
+      "nome": "Caçada de Antares",
+      "tipo": "personalizado",
+      "nivel": 2,
+      "descricao": "Nome - Habilidade Ativa de Nível 2\nConjuração: Ação Bônus.\nAlcance: Próprio.\nAlvo: Próprio.\nDuração: Duradoura (2 Rodadas).\n\nDescrição Longa e precisa da Habilidade Narrativamente. Com isso, você recebe um bônus de +2 de Acerto, recebendo adicionalmente +3 de Acerto para cada ponto de Margem perdida (Máximo 20, Limite de 2).",
+      "acaoPersonalizada": "bonus",
+      "alvoTexto": "Próprio",
+      "alcanceTexto": "Próprio",
+      "duracaoTexto": "Duradoura (2 Rodadas)",
+      "comCd": false,
+      "rolagens": []
+    },
+    {
+      "id": "phoebos_catastrophe",
+      "nome": "Phoebos Catastrophe",
+      "tipo": "personalizado",
+      "nivel": 4,
+      "descricao": "Conjuração: Ação Completa\nCusto: 12 PE\n\nDuração: Instantânea\nA usuária ergue o arco Tauropolos e dispara uma única flecha ao céu em forma de prece. O disparo não é direcionado aos  inimigos, mas lançado além das nuvens, para um ponto onde deixa de ser visível, tornando-se uma oferenda ao  firmamento.\nA técnica não pode ser utilizada em ambientes fechados ou locais onde o céu não esteja plenamente acessível.\nNo instante em que a flecha desaparece no alto, o ataque é aceito e o céu responde como julgamento divino.\nEfeito:\nCausa 10d10 de dano em uma  área de 12m Requer estar empunhando Tauropolos Aumenta a CD da técnica em +4",
+      "acaoPersonalizada": "completa",
+      "alvoTexto": "Área (12m)",
+      "alcanceTexto": "27 metros",
+      "duracaoTexto": "Instantânea",
+      "comCd": true,
+      "rolagens": [
+        {
+          "rotulo": "Dano",
+          "dados": 10,
+          "faces": 10
+        }
+      ],
+      "resolucaoTexto": "Aumenta a CD da técnica em +4"
+    },
+    {
+      "id": "phoebos_pythoktonos_alter",
+      "nome": "Phoebos Pythoktonos Alter",
+      "tipo": "personalizado",
+      "nivel": 4,
+      "descricao": "Feitiço Destrutivo : Nível 4 Liberação Máxima\nCusto: 18 PE\nAlvo:\nDuração: Instantânea\nA usuária realiza uma longa prece através de Tauropolos em sua forma Alter, concentrando uma quantidade colossal de energia divina em uma única flecha de julgamento.\nAo ser disparada, a flecha atravessa o campo de batalha como um julgamento celestial, rasgando o terreno e tudo que estiver em seu caminho, deixando uma trilha permanente de devastação.\nEfeito:\nCausa 15d10 de dano.\nAumenta a CD da técnica em +9.\nTeste de Resistência de Reflexo com desvantagem.\nA área atingida torna-se Terreno Difícil.\nSangramento Extremo: Criaturas atingidas por esta técnica recebem Sangramento Extremo.\nEnquanto estiver sob esta condição:\nSofrem 6d10 de dano ao final de cada turno.\nA condição só pode ser removida através de Sucesso Crítico em Teste de Fortitude ao final do turno do alvo.",
+      "alvoTexto": "Linha (1,5m de largura por 36m de comp.)",
+      "alcanceTexto": "27m",
+      "duracaoTexto": "Instantânea",
+      "comCd": true,
+      "rolagens": [
+        {
+          "rotulo": "Dano",
+          "dados": 15,
+          "faces": 10
+        },
+        {
+          "rotulo": "Sangramento Extremo (final de cada turno)",
+          "dados": 6,
+          "faces": 10
+        }
+      ],
+      "resolucaoTexto": "Aumenta a CD da técnica em +9. Teste de Resistência de Reflexo com desvantagem.",
+      "conjuracaoTexto": "Ritual Estendido",
+      "custoPETexto": "18 PE"
+    }
+  ]
+}

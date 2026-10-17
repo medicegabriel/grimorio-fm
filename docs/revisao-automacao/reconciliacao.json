@@ -60020,6 +60020,32 @@
         "M05"
       ],
       "lotesInvalidados": []
+    },
+    {
+      "data": "2026-10-17T01:12:05.513Z",
+      "proposta": "docs/revisao-automacao/tauropolos-proposta.json",
+      "assinatura": "34afbde08b0210bf9540014682ab210259cc92de9d3f9c382fdd28079e208ee1",
+      "justificativa": "Registro restrito a Tauropolos, conteudo da casa enviado em 2026-10-16. Identidades novas preexistentes de Oda Nobunaga excluidas desta reconciliacao e preservadas como pendencia. Nenhuma aprovacao de auditoria.",
+      "adicionados": 31,
+      "removidos": 0,
+      "alterados": 0,
+      "lotesAtingidos": [
+        "AD-70"
+      ],
+      "lotesInvalidados": []
+    },
+    {
+      "data": "2026-10-17T04:01:39.826Z",
+      "justificativa": "Integracao da main d4a0ed2 preservando registros remotos e locais. AD-70 local de Tauropolos renumerado para AD-72 porque AD-70 e AD-71 pertencem a Quimera de Maldicoes e Golem de Sangue no remoto. Proposta historica original preservada.",
+      "renumeracoes": [
+        {
+          "pacote": "habilidades-tauropolos",
+          "de": "AD-70",
+          "para": "AD-72",
+          "chaves": 31
+        }
+      ],
+      "lotesInvalidados": []
     }
   ],
   "rechecagem": {
