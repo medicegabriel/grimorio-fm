@@ -1,0 +1,323 @@
+{
+  "id": "vespa-crabro",
+  "nome": "Vespa Crabro",
+  "versao": "1.1.1",
+  "paraRaw": "afty",
+  "acrescenta": {
+    "treinamentos": [
+      {
+        "id": "guarda",
+        "nome": "Treino Guarda do Arpão Amarelo",
+        "exibirNaFicha": true,
+        "etapas": [
+          {
+            "n": 1,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Você recebe +1 Nível de dano enquanto estiver empunhando uma arma dos grupos espada ou haste.",
+            "efeitos": [
+              {
+                "canal": "nivelDano",
+                "alvo": "grupo:espada|grupo:haste",
+                "expr": "1",
+                "requerEquipamento": "arma",
+                "gruposEquipamento": [
+                  "espada",
+                  "haste"
+                ]
+              }
+            ]
+          },
+          {
+            "n": 2,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Você recebe +2 de Percepção enquanto estiver empunhando uma arma dos grupos espada ou haste.",
+            "efeitos": [
+              {
+                "canal": "bonusPericia",
+                "alvo": "percepcao",
+                "expr": "2",
+                "requerEquipamento": "arma",
+                "gruposEquipamento": [
+                  "espada",
+                  "haste"
+                ]
+              }
+            ]
+          },
+          {
+            "n": 3,
+            "focos": 2,
+            "requisito": {
+              "tipo": "atributo",
+              "attr": "sabedoria",
+              "valor": 14
+            },
+            "beneficio": "[Sabedoria 14] Você se torna mestre em Percepção enquanto estiver empunhando uma arma dos grupos espada ou haste. Caso já seja, adicione +2 em testes nessa perícia.",
+            "efeitos": [
+              {
+                "tipo": "profPericia",
+                "pericia": "percepcao",
+                "valor": 2,
+                "semCredito": true,
+                "requerEquipamento": "arma",
+                "gruposEquipamento": [
+                  "espada",
+                  "haste"
+                ]
+              },
+              {
+                "tipo": "pericia",
+                "pericia": "percepcao",
+                "valor": 2,
+                "quandoProf": 2,
+                "requerEquipamento": "arma",
+                "gruposEquipamento": [
+                  "espada",
+                  "haste"
+                ]
+              }
+            ]
+          },
+          {
+            "n": 4,
+            "focos": 3,
+            "requisito": [
+              {
+                "tipo": "atributo",
+                "attr": "destreza",
+                "valor": 22
+              },
+              {
+                "tipo": "atributo",
+                "attr": "sabedoria",
+                "valor": 14
+              }
+            ],
+            "beneficio": "[Pré-requisito: Destreza 22 e Sabedoria 14] Você recebe +3 de Defesa enquanto estiver empunhando uma arma dos grupos espada ou haste.",
+            "efeitos": [
+              {
+                "canal": "defesa",
+                "expr": "3",
+                "requerEquipamento": "arma",
+                "gruposEquipamento": [
+                  "espada",
+                  "haste"
+                ]
+              }
+            ]
+          }
+        ],
+        "completo": {
+          "beneficio": "Enquanto uma criatura estiver sob o efeito de Ler intenções usado por você, ela recebe desvantagem em jogadas de ataque contra você."
+        }
+      }
+    ],
+    "armas": [
+      {
+        "id": "gungnir",
+        "nome": "Gungnir, a Lança de Odin",
+        "classe": "complexa",
+        "categoria": "corpo",
+        "grupo": "haste",
+        "custo": 4,
+        "espacos": 2,
+        "critico": 20,
+        "dano": {
+          "dado": "2d12",
+          "tipo": "pf",
+          "duasMaos": "2d12 + 1d4"
+        },
+        "niveis": {
+          "custoAnterior": true
+        },
+        "props": {
+          "fineza": true,
+          "estendida": true,
+          "versatil": true,
+          "energica": true,
+          "arremessavel": [
+            27,
+            36
+          ]
+        },
+        "faFixa": true,
+        "faPadrao": {
+          "grau": "especial",
+          "encantamentos": [
+            "enc_arma_retorno",
+            "enc_arma_penetrante",
+            "enc_arma_potente"
+          ]
+        },
+        "descricao": "Arpão de ponta dourada que transmite vibrações ao corpo perfurado. Pode ser usado em corpo a corpo ou arremessado. Retorno recupera a arma após o ataque enquanto não estiver completamente presa. Recuperar uma lança cravada exige Harpoon Recall. Recuperação simples não causa dano e não consome ressonância."
+      },
+      {
+        "id": "hwando",
+        "nome": "Hwando",
+        "classe": "complexa",
+        "categoria": "corpo",
+        "grupo": "espada",
+        "custo": 4,
+        "espacos": 1,
+        "critico": 18,
+        "dano": {
+          "dado": "1d12 + 1d8",
+          "tipo": "ct"
+        },
+        "niveis": {
+          "custoAnterior": true
+        },
+        "props": {
+          "fineza": true,
+          "energica": true,
+          "mortal": "1d10"
+        },
+        "descricao": "Espada de fio único manejada com acelerações explosivas, posicionamento preciso e cortes decisivos. Sua propriedade Mortal amplia os golpes críticos pelo cálculo nativo da arma. Não possui poderes de teletransporte ou ressonância próprios."
+      }
+    ]
+  },
+  "descricao": "Gungnir, Hwando, manobras, Feitiços e Shin de Vespa Crabro.",
+  "permite": [
+    "ressonanciaGungnir"
+  ],
+  "libera": [
+    "feiticosRestritos"
+  ],
+  "funcionamentos": [
+    {
+      "id": "tecnica",
+      "nome": "Ressonância de Gungnir",
+      "descricao": "Vespa transmite vibrações aos adversários atingidos por Gungnir. Cada inimigo conserva sua própria ressonância. As perfurações da lança preparam o alvo para ataques posteriores, enquanto o domínio marcial da Hwando permite cortes rápidos e precisos. A ressonância pertence ao alvo e permanece separada do refinamento corporal de Shin."
+    }
+  ],
+  "acoesMotor": [
+    {
+      "id": "harpoon_throw",
+      "nome": "Harpoon Throw: Arremesso do Arpão",
+      "tipo": "manobra",
+      "armaId": "vespa-crabro:gungnir",
+      "acao": "Ação Atacar",
+      "descricao": "Realize um ataque de arremesso com Gungnir, usando a linha da arma e seu alcance. Não custa PE. Após resolver o ataque, confirme o acerto para gerar ressonância. Não aplica Beesting gratuitamente. Retorno recupera a arma se não ficou presa, sem outro ataque."
+    },
+    {
+      "id": "harpoon_recall",
+      "nome": "Harpoon Recall: Retorno do Arpão",
+      "tipo": "manobra",
+      "armaId": "vespa-crabro:gungnir",
+      "acao": "Ação Comum",
+      "descricao": "Retire Gungnir de um alvo ou recupere a lança afastada. Não custa PE. Remova os estados de arpão cravado, preservando a ressonância. Para retorno ofensivo, gaste sua Ação Atacar e recupere a lança pelo controle Retorno ofensivo e resolva um ataque normal com a arma. Não recebe ataque, sangramento ou dano adicional gratuito. O Retorno automático da lança solta não exige esta ação."
+    }
+  ],
+  "feiticos": [
+    {
+      "id": "beesting",
+      "nome": "Nested Harpoon: Beesting",
+      "descricao": "Vespa perfura o alvo com Gungnir e mantém o arpão alojado. Requer Gungnir em mãos ou cravada nesse alvo. Use um único golpe de Gungnir com o dano adicional nativo Após Ataque, uma vez por rodada. Acerto: dano da arma mais o adicional calculado. O alvo faz TR de Fortitude contra a CD da técnica. Falha: Lento por 4 rodadas. Sucesso: sem condição. Confirme o acerto uma única vez para a ressonância. Beesting e Waspsting podem coexistir, sem acumular duas reduções de movimento. Retirar Gungnir encerra os estados de perfuração, sem dano ou sangramento adicional.",
+      "nivel": 5,
+      "tipo": "especial",
+      "acao": "comum",
+      "condicoes": [
+        {
+          "nome": "Lento",
+          "forca": "media"
+        }
+      ],
+      "especialSubtipo": "golpeador",
+      "golpesGolpeador": 1,
+      "requerArmaId": "vespa-crabro:gungnir",
+      "aceitaArmaCravada": true
+    },
+    {
+      "id": "waspsting",
+      "nome": "Nested Harpoon: Waspsting",
+      "descricao": "Vespa aprofunda a perfuração de Gungnir. Requer Gungnir em mãos ou cravada nesse alvo. Use um único golpe de Gungnir com o dano adicional nativo Após Ataque, uma vez por rodada. Acerto: dano da arma mais o adicional calculado. TR de Fortitude contra a CD da técnica. Falha: Imóvel e Sangramento Forte por 3 rodadas, seguindo a resolução nativa das condições. Sucesso: sem condições. Confirme o acerto uma única vez para a ressonância. Pode coexistir com Beesting, mas Imóvel prevalece sobre Lento. Retirar Gungnir encerra a imobilização da perfuração, sem outro dano gratuito. Sangramento já aplicado continua pela duração da condição.",
+      "nivel": 5,
+      "tipo": "especial",
+      "acao": "comum",
+      "condicoes": [
+        {
+          "nome": "Imóvel",
+          "forca": "forte"
+        }
+      ],
+      "sangramento": "forte",
+      "especialSubtipo": "golpeador",
+      "golpesGolpeador": 1,
+      "requerArmaId": "vespa-crabro:gungnir",
+      "aceitaArmaCravada": true
+    },
+    {
+      "id": "zumbido",
+      "nome": "Gungnir’s Droning: Zumbido de Gungnir",
+      "nivel": 5,
+      "tipo": "passivo",
+      "categoriaPassivo": "",
+      "efeitosPassivo": [],
+      "descricao": "Uma vez por rodada, imediatamente após um acerto confirmado com Gungnir, pode consumir toda a ressonância daquele alvo. Causa 1d12 de dano perfurante por carga consumida, como dano Após Ataque que não multiplica no crítico. Cada acerto de Gungnir gera 1 carga antes do consumo, até o Bônus de Treinamento. As cargas de cada inimigo duram até o fim do combate. Beesting e Waspsting não geram cargas extras. A passiva não causa dano fora desse consumo. Na ficha de jogador, reduz o PE máximo em 10."
+    },
+    {
+      "id": "yellow",
+      "nome": "Yellow Apic Stinger: Ferrão Amarelo",
+      "nivel": 5,
+      "tipo": "especial",
+      "especialSubtipo": "golpeador",
+      "acao": "comum",
+      "golpesGolpeador": 4,
+      "descricao": "Com Gungnir em mãos, Vespa realiza quatro estocadas usando o Feitiço Golpeador. Uma utilização por rodada. Cada golpe usa o ataque e o dano da arma e a sua parcela do dano adicional nativo, como Após Ataque. As penalidades cumulativas de acerto seguem a categoria. Confirme separadamente cada golpe que acertar para gerar uma carga de ressonância. Não aplica nem remove Beesting gratuitamente e não consome cargas automaticamente.",
+      "requerArmaId": "vespa-crabro:gungnir"
+    },
+    {
+      "id": "lanca_odin",
+      "nome": "Gungnir: a Lança de Odin",
+      "descricao": "Vespa arremessa Gungnir com uma descarga concentrada de vibração. Requer a lança em mãos. Realize um ataque da técnica contra um único alvo. Acerto: dano perfurante calculado, sem somar novamente o dano da arma. Erro: nenhum dano. Confirme um acerto de Gungnir para gerar uma carga. Não concede acerto absoluto, não aplica Waspsting e não consome ressonância automaticamente.",
+      "nivel": 5,
+      "tipo": "dano",
+      "alvo": "unico",
+      "resolucao": "ataque",
+      "acao": "comum",
+      "subtipo": "nenhum",
+      "requerArmaId": "vespa-crabro:gungnir"
+    },
+    {
+      "id": "arte",
+      "nome": "Apic Flashburst Blade Art: Arte da Lâmina Relâmpago",
+      "nivel": 5,
+      "tipo": "auxiliar",
+      "efeitoAux": "margemCritico",
+      "duracaoAux": "sustentada",
+      "acaoAux": "bonus",
+      "alcancePropria": true,
+      "alvosAux": 1,
+      "armaAuxId": "vespa-crabro:hwando",
+      "descricao": "Vespa refina a postura e prepara cortes precisos com Hwando. Requer a espada empunhada. Enquanto sustenta, a margem de crítico dos ataques com Hwando melhora pelo valor calculado na tabela nativa. Não melhora outras armas, Ataque Básico ou Feitiços. A preparação é um estado sustentado, sem contador acumulativo adicional. Pague a manutenção nativa para continuar. Não permite teletransporte ou ataques gratuitos."
+    },
+    {
+      "id": "shin",
+      "nome": "Shin (心)",
+      "nivel": 5,
+      "tipo": "especial",
+      "especialSubtipo": "transformacao",
+      "transfAcao": "comum",
+      "transfDuracao": "sustentada",
+      "transfEfeitos": [
+        "ataque",
+        "defesa",
+        "rd"
+      ],
+      "descricao": "Vespa concentra determinação e controle corporal em um estado de refinamento marcial. Ativação manual por Ação Comum, com os custos calculados pela Transformação de nível 5. Enquanto ativo, recebe os bônus nativos de Ataque, Defesa e Redução de Dano. Pague 5 PE por rodada posterior para sustentar. A cada duas rodadas consecutivas sustentadas, desconsiderando a ativação, recebe 1 Exaustão. Pode encerrar voluntariamente. Não altera a Sanidade, não gera recursos e permanece separado do Novo Estilo das Sombras."
+    },
+    {
+      "id": "rend_space",
+      "nome": "Rend Space: Apic Flashburst Blade",
+      "nivel": 5,
+      "tipo": "especial",
+      "especialSubtipo": "golpeador",
+      "acao": "comum",
+      "golpesGolpeador": 1,
+      "descricao": "Com Hwando em mãos, Vespa avança e executa um corte explosivo contra um único alvo. Use o Feitiço Golpeador, com alcance de Movimento Restante mais 7,5 m. Uma utilização por rodada. O golpe aplica o ataque e o dano da espada com o dano adicional nativo Após Ataque, que não multiplica no crítico. É deslocamento físico e exige uma trajetória válida. Não ignora toda defesa ou resistência, não gera ressonância de Gungnir e não consome cargas do alvo.",
+      "requerArmaId": "vespa-crabro:hwando"
+    }
+  ]
+}

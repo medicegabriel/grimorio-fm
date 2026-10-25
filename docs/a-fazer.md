@@ -34,6 +34,27 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 
 ## PERGUNTAS AO AUTOR
 
+### Vespa Crabro: definir o bônus futuro do Novo Estilo das Sombras
+**Onde:** `addons/vespa-crabro.json`, `docs/afty-vespa-crabro.md`.
+**Situação:** pacote 1.1.0 tem treino, duas armas, duas manobras, oito
+modelos nativos e ressonância por alvo com números aprovados pelo autor.
+Shin é ativável manualmente, separado do Estilo e da Sanidade.
+**Precisa:** confirmar qual valor recebe até metade de BT e qual condição
+ativa esse bônus na futura adaptação ao Novo Estilo das Sombras.
+**Anotado:** 2026-10-25, ampliação do addon do Vespa.
+
+### Camellya: validar a fonte e o equilíbrio das regras propostas
+**Onde:** `docs/afty-camellya.md`, documento Camellya enviado em 2026-10-21.
+**Situação:** addon 1.2.0 usa categorias nativas, por pedido do autor em
+2026-10-22. Perfil com só o Funcionamento Básico e oito modelos em Feitiços.
+Custos, danos e bônus seguem as tabelas atuais. Chicote nível 5 custa 20 PE,
+Vinha nível 0 é gratuita e Germinação passou ao nível 3 para poder aplicar a
+condição forte Imóvel. A fonte Markdown obrigatória está ausente no caminho.
+**Precisa:** conferir a fonte oficial antes de aprovar legalidade, dano,
+exaustão e acumulação de RD. Sementes por alvo, duração, sustentação, limite
+por combate, RD de evento e gatilho do adicional são manuais, no guia.
+**Anotado:** 2026-10-21, entrega inicial de Camellya.
+
 ### Reconciliar o inventário do pacote privado de Oda Nobunaga
 **Onde:** `addons/oda-nobunaga.private.json`, `docs/revisao-automacao/`
 **Situação:** a coleta encontra 267 chaves preexistentes desse pacote sem
@@ -46,6 +67,21 @@ da sua entrega, preservando a fonte e sem aprovar regra automaticamente.
 **Nota 2026-10-17:** após integrar a main d4a0ed2 e renumerar Tauropolos
 para AD-72, a mesma diferença de 267 chaves permanece: 13.762 fontes para
 14.029 itens vivos. O inventário novo e os registros remotos foram preservados.
+**Nota 2026-10-21:** após registrar as 42 chaves de Camellya em AD-73,
+continuam faltando as mesmas 267 identidades: 13.804 fontes para 14.071 itens
+vivos. Os outros 207 arquivos da suíte passaram.
+**Nota 2026-10-22:** reorganização de Camellya 1.1.0 preservou a diferença de
+267 entradas, com 13.803 fontes para 14.070 itens vivos. A única falha na suíte
+continua sendo t-reconciliacao-g00, os demais 207 arquivos passaram.
+**Nota Camellya 1.2.0:** adaptação às categorias nativas preservou a diferença
+anterior de 267 identidades: 13.792 fontes para 14.059 itens vivos. Suíte com
+207 de 208 arquivos aprovados, restando apenas t-reconciliacao-g00.
+**Nota 2026-10-25:** addon do Vespa registrado em AD-74 com 41 adições.
+Diferença anterior de Oda preservada: 13.833 fontes para 14.100 itens vivos.
+Suíte com 208 de 209 arquivos aprovados, mesma falha em t-reconciliacao-g00.
+**Nota Vespa 1.1.0:** permanecem as mesmas 267 identidades de Oda,
+13.879 fontes para 14.146 itens vivos. A lista esperada de primitivas foi
+atualizada e passou na rechecagem, restando a falha anterior de reconciliação.
 
 ### Revisão de 2026-10-07: nove leituras de regra do bloco G00 a CMB-02
 **Chave:** BLOCO-2026-10-07-perguntas

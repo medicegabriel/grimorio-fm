@@ -17,6 +17,61 @@ Onde se usa:
 
 ## Variáveis
 
+### Manejo da Gungnir 1.1.1 (2026-10-25)
+
+O autor confirmou Corpo a Corpo como categoria principal, com alternância
+para Arremesso no seletor existente. O modo da sessão agora entra antes
+do resolvedor de equipamentos: requisitos de categoria, encantamentos,
+treinamento e escopos leem a mesma definição resolvida. No Arremesso,
+`cat:arremesso` e o teste físico de Distância são usados. No Corpo a Corpo,
+valem `cat:corpo` e o teste físico de Corpo a Corpo. A escolha explícita de
+Ataque Amaldiçoado continua sendo respeitada. O modo não altera o catálogo,
+não cria uma segunda arma e não concede categoria dupla permanente.
+
+`resolveEquipamentos` aceita a função interna `opcoes.definicaoArma`
+para resolver uma cópia da definição antes das contas. A função é fornecida
+pelo derive, não por código no JSON de addon. Sem essa opção ou sem o
+pacote do Vespa, o comportamento anterior permanece. Sem canal ou variável
+DSL nova. Regressões em `asserts/t-vespa-combate.mjs`.
+
+### Vespa Crabro: manobras, arma e ressonância (2026-10-25)
+
+`acoesMotor[].tipo: "manobra"` registra nome, armaId, ação e descrição
+de uma manobra de equipamento. Não concede efeito, dano ou estado ligado,
+nem cobra PE. O ataque usa a linha nativa da arma. Ações existentes mantêm
+seu comportamento. `armaAuxId` num Auxiliar ofensivo de efeito único
+direciona o efeito àquela arma equipada. Dados auxiliares respeitam o
+mesmo id. Sem arma equipada não há emissão. Auxiliares sem o campo não mudam.
+`requerArmaId` marca Feitiços indisponíveis sem a arma necessária. O cálculo
+com Liberação respeita a mesma trava. `aceitaArmaCravada` permite somente
+Gungnir cravada, com resolução do alvo pela mesa.
+
+A primitiva optativa `ressonanciaGungnir` tem estado em `sessao.gungnir`,
+fora da DSL e da ficha base. A opção do derive `gungnir` acompanha a Ficha,
+o Encontro e o cache de comparação. O modo Arremesso troca a categoria de
+uma cópia da arma para o resolvedor nativo. Lança afastada ou cravada não
+conta como empunhada. Retorno simples não gera dano ou ressonância.
+
+Cada acerto confirmado por evento único acrescenta 1 carga ao alvo correto,
+até BT. Zumbido, após adquirir a Passiva 5, consome todas as cargas daquele
+alvo após um acerto e gera 1d12 por carga, sem crítico, uma vez por rodada.
+Virar rodada preserva cargas e encerra a janela do acerto anterior. Fim do
+combate e descanso limpam a cena. Sem addon ou fora de Afty/Player, os dados
+ficam inertes. Não foram criados canais ou variáveis DSL para Sanidade,
+Shin ou o bônus futuro do Estilo. Há 29 primitivas no registro atual.
+Contrato, valores aprovados e limites manuais em `docs/afty-vespa-crabro.md`.
+
+### Grupos alternativos em Treinamentos (2026-10-25)
+
+`gruposEquipamento: ["espada", "haste"]`, junto de
+`requerEquipamento: "arma"`, condiciona a emissão a pelo menos uma arma
+válida e equipada de qualquer grupo da lista. Uma linha emite uma vez,
+mesmo com duas armas elegíveis. O filtro singular `grupoEquipamento`
+continua funcionando e, se informado junto da lista, também é exigido.
+O alvo `grupo:espada|grupo:haste` usa o OU já existente para limitar
+`nivelDano` às armas elegíveis. Não há canal, variável ou fórmula nova.
+Aplicação: `addons/vespa-crabro.json`, guia `docs/afty-vespa-crabro.md`.
+
 ### Olhinhos Lu no padrão do Vislumbre Celeste (2026-10-12)
 
 A primitiva `olhinhosLu` emite efeitos cumulativos a partir dos estados

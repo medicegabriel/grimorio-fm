@@ -1,0 +1,139 @@
+{
+  "id": "camellya",
+  "nome": "Camellya: A Flor Carmesim",
+  "versao": "1.2.0",
+  "paraRaw": "afty",
+  "descricao": "Homebrew: Jardim da Flor Carmesim, ataques, feitiços e Floração Descontrolada.",
+  "funcionamentos": [
+    {
+      "id": "tecnica",
+      "nome": "Jardim da Flor Carmesim",
+      "descricao": "Conceito\n\nCamellya converte sua energia amaldiçoada em estruturas vegetais temporárias, incluindo vinhas, raízes, sementes, flores e espinhos.\n\nEssas estruturas possuem presença física durante a manifestação e podem interagir com adversários e objetos.\n\nA técnica é alimentada pelos recursos energéticos da própria feiticeira.\n\nNão permite absorver ou recuperar PE de adversários por padrão.\n\nFuncionamento básico\n\nAs manifestações surgem:\n\n1. Diretamente do corpo de Camellya.\n2. De raízes ou vinhas produzidas anteriormente.\n3. De sementes amaldiçoadas estabelecidas pela técnica.\n\nA técnica não cria plantas naturais permanentes.\n\nTodas as manifestações controladas desaparecem quando seu efeito expira, quando são dissipadas ou quando Camellya fica incapaz de sustentá-las.\n\nO que a técnica consegue fazer\n\n- Causar dano cortante através de vinhas.\n- Produzir espinhos e flores ofensivas.\n- Aplicar sementes amaldiçoadas.\n- Restringir deslocamento de adversários.\n- Perceber movimentações através de raízes ativas.\n- Criar proteções vegetais temporárias.\n- Transformar parcialmente o corpo da usuária."
+    }
+  ],
+  "feiticos": [
+    {
+      "id": "marca",
+      "nome": "Marca da Germinação",
+      "nivel": 0,
+      "descricao": "Uma vez por rodada, quando Camellya acerta uma criatura com um ataque direto de sua técnica, pode implantar uma Semente Carmesim no alvo.\n\nA semente não causa dano imediato. Camellya pode manter sementes em até duas criaturas diferentes simultaneamente, uma por criatura. Aplicar uma nova semente com o limite preenchido exige encerrar uma das anteriores. Ataques em área e Vinha Secundária não aplicam sementes.\n\nA semente dura até o final do segundo turno de Camellya após a aplicação. Desaparece se Camellya ficar incapacitada ou morrer.\n\nO alvo ou uma criatura adjacente pode utilizar uma Ação Comum e fazer um teste de Feitiçaria ou Acrobacia contra a CD da técnica de Camellya. Sucesso remove a semente. Falha consome a ação e mantém a semente.",
+      "tipo": "passivo",
+      "categoriaPassivo": "",
+      "efeitosPassivo": []
+    },
+    {
+      "id": "vinha",
+      "nome": "Vinha Secundária",
+      "nivel": 0,
+      "descricao": "Camellya manifesta uma vinha curta que atinge um adversário próximo.\n\nAcerto: o alvo sofre dano cortante. Erro: nenhum dano.\n\nEste ataque não aplica Semente Carmesim.",
+      "tipo": "dano",
+      "alvo": "unico",
+      "resolucao": "ataque",
+      "acao": "comum",
+      "subtipo": "nenhum",
+      "trocas": {
+        "alcance": -6
+      }
+    },
+    {
+      "id": "chicote",
+      "nome": "Chicote Carmesim",
+      "nivel": 5,
+      "descricao": "Camellya manifesta uma vinha de grande porte, reforçada por espinhos de energia amaldiçoada, e realiza um único ataque.\n\nAcerto: dano cortante integral. Erro: nenhum dano. Pode ativar Marca da Germinação ao acertar, respeitando seu limite de uma aplicação por rodada.\n\nPode ser utilizado uma vez por turno de Camellya.",
+      "tipo": "dano",
+      "alvo": "unico",
+      "resolucao": "ataque",
+      "acao": "comum",
+      "subtipo": "nenhum",
+      "trocas": {
+        "alcance": -30
+      }
+    },
+    {
+      "id": "germinacao",
+      "nome": "Germinação Parasita",
+      "nivel": 3,
+      "descricao": "Camellya ativa uma semente previamente implantada, fazendo raízes crescerem ao redor do alvo. Exige Semente Carmesim ativa.\n\nO alvo realiza um teste de Fortitude contra a CD da técnica. Falha: sofre dano perfurante e fica Imóvel até o início do próximo turno de Camellya. Sucesso: sofre metade do dano, arredondada para baixo, sem a condição. A semente é consumida independentemente do resultado.\n\nNão impede ações, ataques ou conjurações por si só. Não impede teleporte ou movimentação que não dependa de deslocamento. Não se acumula com outra Germinação Parasita. Imunidade à condição não anula o dano.",
+      "tipo": "dano",
+      "alvo": "unico",
+      "resolucao": "tr",
+      "acao": "comum",
+      "subtipo": "nenhum",
+      "condicoes": [
+        {
+          "nome": "Imóvel",
+          "forca": "forte"
+        }
+      ],
+      "trocas": {
+        "alcance": -6
+      }
+    },
+    {
+      "id": "floracao",
+      "nome": "Floração Sangrenta",
+      "nivel": 4,
+      "descricao": "Camellya manifesta raízes espinhosas e flores cortantes dentro da área selecionada. Todas as criaturas na área são afetadas, incluindo aliados.\n\nTeste de Reflexos contra a CD da técnica. Falha: dano cortante integral. Sucesso: metade do dano, arredondada para baixo. Não aplica Semente Carmesim.\n\nPrecisa de linha de efeito até o centro escolhido. Não ultrapassa obstáculos sólidos que bloqueiem a manifestação. Não permanece no terreno depois da resolução.",
+      "tipo": "dano",
+      "alvo": "area",
+      "resolucao": "tr",
+      "formaArea": "esfera",
+      "acao": "comum",
+      "subtipo": "nenhum",
+      "trocas": {
+        "alcance": -6,
+        "area": -6
+      }
+    },
+    {
+      "id": "jardim",
+      "nome": "Jardim Silencioso",
+      "nivel": 2,
+      "descricao": "Camellya cria raízes finas no ambiente, que reagem a vibrações e perturbações de energia amaldiçoada.\n\nEnquanto a habilidade estiver ativa, recebe o bônus em testes de Percepção destinados a localizar criaturas ou movimentações em contato com a área enraizada, em um raio de 12 metros ao redor dela. Esse bônus não se aplica a outros tipos de teste.\n\nNão revela automaticamente criaturas escondidas, não permite enxergar através de paredes, não anula invisibilidade e não funciona em áreas sem conexão física com a rede de raízes. Raízes sem conexão com a nova área deixam de funcionar quando Camellya se move.\n\nPode manter uma manifestação ativa por até três rodadas, pagando 1 PE por rodada posterior. Encerra-se ao deixar de sustentar.",
+      "tipo": "auxiliar",
+      "efeitoAux": "rolagem",
+      "alvoAuxPericia": "percepcao",
+      "duracaoAux": "sustentada",
+      "acaoAux": "bonus",
+      "alcancePropria": true,
+      "alvosAux": 1
+    },
+    {
+      "id": "calice",
+      "nome": "Cálice de Espinhos",
+      "nivel": 3,
+      "descricao": "Camellya envolve seu corpo com uma camada densa de vinhas e espinhos, amortecendo parte do ataque recebido.\n\nApós confirmar que foi atingida, mas antes de aplicar o dano, pode gastar sua Reação. A Redução de Dano vale somente para o evento desencadeador.\n\nNão se aplica retroativamente, não evita condições associadas ao ataque, não impede acerto garantido e não cria PV temporários. Pode usar uma vez por rodada, sem acumular cópias no mesmo evento.",
+      "tipo": "auxiliar",
+      "efeitoAux": "rd",
+      "duracaoAux": "imediata",
+      "acaoAux": "reacao",
+      "alcancePropria": true,
+      "alvosAux": 1,
+      "umGolpe": true
+    },
+    {
+      "id": "transformacao",
+      "nome": "Floração Descontrolada",
+      "nivel": 5,
+      "descricao": "Os cabelos de Camellya tornam-se vermelhos, vinhas mais volumosas surgem pelo corpo e os losangos de seus olhos dão lugar a pupilas florais brancas.\n\nEnquanto transformada, recebe Aumento de Defesa, Aumento de Movimento e Dano Adicional Durante Ataque. Continua usando suas ações e pagando os custos das demais habilidades. Não recupera PE, não recebe cura automática ou imunidades adicionais.\n\nDura até três rodadas, incluindo a ativação. No início dos turnos posteriores, paga 5 PE para manter. Encerra voluntariamente, ao não sustentar, ao ficar incapacitada ou quando um efeito válido a encerrar. Uma utilização por combate. Não pode coexistir com outra transformação corporal que altere os mesmos benefícios.\n\nAo encerrar, Camellya perde temporariamente acesso consciente às lembranças pessoais dos dez minutos anteriores. Isso não retira técnicas, conhecimentos de combate ou habilidades mecânicas. As lembranças retornam após um descanso longo. Não há perda permanente automática.",
+      "tipo": "especial",
+      "especialSubtipo": "transformacao",
+      "transfAcao": "comum",
+      "transfDuracao": "sustentada",
+      "transfEfeitos": [
+        "defesa",
+        "movimento",
+        "danoDurante"
+      ]
+    }
+  ],
+  "acoesMotor": [
+    {
+      "id": "sementes",
+      "nome": "Sementes Carmesins",
+      "tipo": "contador",
+      "max": 2,
+      "descricao": "Uma vez por rodada, quando Camellya acerta uma criatura com um ataque direto de sua técnica, pode implantar uma Semente Carmesim no alvo.\n\nA semente não causa dano imediato. Camellya pode manter sementes em até duas criaturas diferentes simultaneamente, uma por criatura. Aplicar uma nova semente com o limite preenchido exige encerrar uma das anteriores. Ataques em área e Vinha Secundária não aplicam sementes.\n\nA semente dura até o final do segundo turno de Camellya após a aplicação. Desaparece se Camellya ficar incapacitada ou morrer.\n\nO alvo ou uma criatura adjacente pode utilizar uma Ação Comum e fazer um teste de Feitiçaria ou Acrobacia contra a CD da técnica de Camellya. Sucesso remove a semente. Falha consome a ação e mantém a semente."
+    }
+  ]
+}

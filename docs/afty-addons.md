@@ -1,5 +1,24 @@
 # Addons do Afty (plano)
 
+## Vespa Crabro (2026-10-25)
+
+`addons/vespa-crabro.json` 1.1.1 reúne o treino, Gungnir e Hwando, duas
+manobras e oito modelos de Feitiços nativos de nível 5. Shin usa Transformação
+sustentada de ativação manual. Ressonância por alvo tem números aprovados
+pelo autor e controle em Ações, sem converter rolagem em acerto confirmado.
+O Treino Guarda do Arpão Amarelo adapta a Guarda da Lâmina Divina para
+Espada e Haste. Custos e requisitos preservados.
+`gruposEquipamento` declara grupos alternativos sem duplicar a emissão
+com duas armas. O filtro singular continua válido. Guia e limites em
+`docs/afty-vespa-crabro.md`. `acoesMotor` aceita `tipo: "manobra"` para
+ações marciais de equipamento, sem efeitos ou cobrança automática.
+`armaAuxId` limita um Auxiliar ofensivo à arma equipada indicada.
+Primitiva optativa `ressonanciaGungnir`, total de 29 primitivas.
+Gungnir permanece Corpo a Corpo como padrão. O manejo Arremesso resolve
+a categoria antes dos requisitos, encantamentos e treinamento, além de
+usar os escopos e o teste de Distância corretos na linha nativa. Voltar
+a Corpo a Corpo restaura sua classificação, sem categoria dupla permanente.
+
 ## Feitiços de Cura Aperfeiçoada (2026-10-12)
 
 Pacote [cura-aperfeicoada-feiticos.json](../addons/cura-aperfeicoada-feiticos.json):

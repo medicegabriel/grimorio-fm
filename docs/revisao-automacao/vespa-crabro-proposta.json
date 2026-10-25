@@ -1,0 +1,710 @@
+{
+  "versao": 1,
+  "shaInventario": "7b790cb793cfd4dd7e72722d6f8a70aec5afb968fa4dcf88e01cabcb8c515361",
+  "shaVivo": "8f02e2b5a3de6c372ed958b41e2dfd47dfddab9a8f1f22146055d1987bed03e3",
+  "shaEscopo": "4211b6fdd37679c99b6fd3d5a183ff21d86eb5b2bd075ae885b7f58e555d4996",
+  "adicionados": [
+    {
+      "chave": "addon::vespa-crabro.json::@pacote",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote",
+        "id": "vespa-crabro",
+        "nome": "Vespa Crabro",
+        "arquivo": "addons/vespa-crabro.json",
+        "proprietario": null,
+        "tipo": "pacote",
+        "addon": "vespa-crabro.json",
+        "idLocal": "vespa-crabro",
+        "hashDado": "2feef6e7ffa1e7076eba902d8c55c8266e77072a0590b0ec9370e6f3b33e626b"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::acrescenta",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::acrescenta",
+        "id": "acrescenta",
+        "nome": "acrescenta",
+        "arquivo": "addons/vespa-crabro.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote",
+        "hashDado": "95a218362937ec95eb04c893510ed4762bba63e39cfc6ab4828bb0306a1ba041"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::id",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::id",
+        "id": "id",
+        "nome": "id",
+        "arquivo": "addons/vespa-crabro.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote",
+        "hashDado": "fd82a14eab57e5cd87ac84b4b96b6b36274f9fae0ffffe032d66f59b04c33afc"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::nome",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::nome",
+        "id": "nome",
+        "nome": "nome",
+        "arquivo": "addons/vespa-crabro.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote",
+        "hashDado": "07d5960857ef7d9eb8e27026835c738085989c58bab8639e52c2badfaf5c1b9a"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::paraRaw",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::paraRaw",
+        "id": "paraRaw",
+        "nome": "paraRaw",
+        "arquivo": "addons/vespa-crabro.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote",
+        "hashDado": "0289ece8033b573da3841cd5eea4bc968504b022915c4bb5174cab838f4f7c02"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::versao",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::versao",
+        "id": "versao",
+        "nome": "versao",
+        "arquivo": "addons/vespa-crabro.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote",
+        "hashDado": "39fe4a40977d0585fd5704359e3685b0ada5cf5ee061e5d97385601d120cd0ec"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "id": "guarda",
+        "nome": "Treino Guarda do Arpão Amarelo",
+        "arquivo": "addons/vespa-crabro.json",
+        "proprietario": null,
+        "tipo": "conteúdo de addon",
+        "addon": "vespa-crabro.json",
+        "familia": "treinamentos",
+        "operacao": "acrescenta",
+        "idLocal": "guarda",
+        "hashDado": "dd9afb70e921546a484b9d7b7375e3e754d67a23c2989e4324eeebf4ed309ab7"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::completo",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::completo",
+        "id": "completo",
+        "nome": "completo",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "completo",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "hashDado": "5cf1a1dd11abeff4d6a6817b81e0796f3a9da52e406a0138e84610797bd03ed3"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas",
+        "id": "etapas",
+        "nome": "etapas",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "vespa-crabro.json",
+        "hashDado": "88b7101e9ac56706daf4e35b38ffbbda2d66bf1c11505ae42693fc319dcb3d8c"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@0",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@0",
+        "id": "etapas/@0",
+        "nome": "etapas/@0",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "hashDado": "6ba5d02316379079878196004e5c6a6b53edaea9aeb4124c7952db763c126328"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@0/efeitos",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@0/efeitos",
+        "id": "etapas/@0/efeitos",
+        "nome": "etapas/@0/efeitos",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@0/efeitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "vespa-crabro.json",
+        "hashDado": "db6ca982db2d3d53ed0d632a8c177e097f17fb6456bdff8abba5ee0853514b4e"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@0/efeitos/@0",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@0/efeitos/@0",
+        "id": "etapas/@0/efeitos/@0",
+        "nome": "etapas/@0/efeitos/@0",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@0/efeitos/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "hashDado": "b168ede080453b7cf28e0c758b1006151595d15083e02cef1417cc132c324fc3"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@0/efeitos/@0/gruposEquipamento",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@0/efeitos/@0/gruposEquipamento",
+        "id": "etapas/@0/efeitos/@0/gruposEquipamento",
+        "nome": "etapas/@0/efeitos/@0/gruposEquipamento",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@0/efeitos/@0/gruposEquipamento",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "vespa-crabro.json",
+        "hashDado": "a0a5ef04f5ab8b19030e427e403801133d98ec7b2f5b741e69688ef7dac458b0"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@0/efeitos/@0/gruposEquipamento/espada",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@0/efeitos/@0/gruposEquipamento/espada",
+        "id": "etapas/@0/efeitos/@0/gruposEquipamento/espada",
+        "nome": "etapas/@0/efeitos/@0/gruposEquipamento/espada",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@0/efeitos/@0/gruposEquipamento/espada",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "vespa-crabro.json",
+        "hashDado": "c04953b1a22e55416dc0e27cb9c7c0c714eb2dd73ede67693dea94ddc5b150dc"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@0/efeitos/@0/gruposEquipamento/haste",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@0/efeitos/@0/gruposEquipamento/haste",
+        "id": "etapas/@0/efeitos/@0/gruposEquipamento/haste",
+        "nome": "etapas/@0/efeitos/@0/gruposEquipamento/haste",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@0/efeitos/@0/gruposEquipamento/haste",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "vespa-crabro.json",
+        "hashDado": "5c518fe21bbbea50a84519a7dc8a0f7bfe3e55795a6b7a9ea64153ecfe52a24c"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@1",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@1",
+        "id": "etapas/@1",
+        "nome": "etapas/@1",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@1",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "hashDado": "2febc75395065b0df7a81c90baadea2537cbd6c71014c8f5f852348e79c6b3e2"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@1/efeitos",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@1/efeitos",
+        "id": "etapas/@1/efeitos",
+        "nome": "etapas/@1/efeitos",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@1/efeitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "vespa-crabro.json",
+        "hashDado": "8db703909be20e97f7cbc6ad9a9c10d61097f43c0f330a30939ef19707dd254d"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@1/efeitos/@0",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@1/efeitos/@0",
+        "id": "etapas/@1/efeitos/@0",
+        "nome": "etapas/@1/efeitos/@0",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@1/efeitos/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "hashDado": "306e86c471123397911fee212011ad70c6d0a48c46c8367a90ef21d8b8a25842"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@1/efeitos/@0/gruposEquipamento",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@1/efeitos/@0/gruposEquipamento",
+        "id": "etapas/@1/efeitos/@0/gruposEquipamento",
+        "nome": "etapas/@1/efeitos/@0/gruposEquipamento",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@1/efeitos/@0/gruposEquipamento",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "vespa-crabro.json",
+        "hashDado": "a0a5ef04f5ab8b19030e427e403801133d98ec7b2f5b741e69688ef7dac458b0"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@1/efeitos/@0/gruposEquipamento/espada",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@1/efeitos/@0/gruposEquipamento/espada",
+        "id": "etapas/@1/efeitos/@0/gruposEquipamento/espada",
+        "nome": "etapas/@1/efeitos/@0/gruposEquipamento/espada",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@1/efeitos/@0/gruposEquipamento/espada",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "vespa-crabro.json",
+        "hashDado": "c04953b1a22e55416dc0e27cb9c7c0c714eb2dd73ede67693dea94ddc5b150dc"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@1/efeitos/@0/gruposEquipamento/haste",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@1/efeitos/@0/gruposEquipamento/haste",
+        "id": "etapas/@1/efeitos/@0/gruposEquipamento/haste",
+        "nome": "etapas/@1/efeitos/@0/gruposEquipamento/haste",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@1/efeitos/@0/gruposEquipamento/haste",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "vespa-crabro.json",
+        "hashDado": "5c518fe21bbbea50a84519a7dc8a0f7bfe3e55795a6b7a9ea64153ecfe52a24c"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2",
+        "id": "etapas/@2",
+        "nome": "etapas/@2",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@2",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "hashDado": "e8dc5f599d7ac337b9ac8fec48747d052a06e6f0b177ee8e14a42768dfaedee3"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos",
+        "id": "etapas/@2/efeitos",
+        "nome": "etapas/@2/efeitos",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@2/efeitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "vespa-crabro.json",
+        "hashDado": "7082eaf49139846914311c4603478807540b7c89ce9e6c22daf7ab4f01b201bf"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@0",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@0",
+        "id": "etapas/@2/efeitos/@0",
+        "nome": "etapas/@2/efeitos/@0",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@2/efeitos/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "hashDado": "a6733c002002b7ec4007587dd0076a21a3d3914bca79b57e3d518473832f6634"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@0/gruposEquipamento",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@0/gruposEquipamento",
+        "id": "etapas/@2/efeitos/@0/gruposEquipamento",
+        "nome": "etapas/@2/efeitos/@0/gruposEquipamento",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@2/efeitos/@0/gruposEquipamento",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "vespa-crabro.json",
+        "hashDado": "a0a5ef04f5ab8b19030e427e403801133d98ec7b2f5b741e69688ef7dac458b0"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@0/gruposEquipamento/espada",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@0/gruposEquipamento/espada",
+        "id": "etapas/@2/efeitos/@0/gruposEquipamento/espada",
+        "nome": "etapas/@2/efeitos/@0/gruposEquipamento/espada",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@2/efeitos/@0/gruposEquipamento/espada",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "vespa-crabro.json",
+        "hashDado": "c04953b1a22e55416dc0e27cb9c7c0c714eb2dd73ede67693dea94ddc5b150dc"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@0/gruposEquipamento/haste",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@0/gruposEquipamento/haste",
+        "id": "etapas/@2/efeitos/@0/gruposEquipamento/haste",
+        "nome": "etapas/@2/efeitos/@0/gruposEquipamento/haste",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@2/efeitos/@0/gruposEquipamento/haste",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "vespa-crabro.json",
+        "hashDado": "5c518fe21bbbea50a84519a7dc8a0f7bfe3e55795a6b7a9ea64153ecfe52a24c"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@1",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@1",
+        "id": "etapas/@2/efeitos/@1",
+        "nome": "etapas/@2/efeitos/@1",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@2/efeitos/@1",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "hashDado": "51ad5b7326ecc189605abeafc2bc338962950e039c25d5c92182a5d34b700400"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@1/gruposEquipamento",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@1/gruposEquipamento",
+        "id": "etapas/@2/efeitos/@1/gruposEquipamento",
+        "nome": "etapas/@2/efeitos/@1/gruposEquipamento",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@2/efeitos/@1/gruposEquipamento",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "vespa-crabro.json",
+        "hashDado": "a0a5ef04f5ab8b19030e427e403801133d98ec7b2f5b741e69688ef7dac458b0"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@1/gruposEquipamento/espada",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@1/gruposEquipamento/espada",
+        "id": "etapas/@2/efeitos/@1/gruposEquipamento/espada",
+        "nome": "etapas/@2/efeitos/@1/gruposEquipamento/espada",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@2/efeitos/@1/gruposEquipamento/espada",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "vespa-crabro.json",
+        "hashDado": "c04953b1a22e55416dc0e27cb9c7c0c714eb2dd73ede67693dea94ddc5b150dc"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@1/gruposEquipamento/haste",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@1/gruposEquipamento/haste",
+        "id": "etapas/@2/efeitos/@1/gruposEquipamento/haste",
+        "nome": "etapas/@2/efeitos/@1/gruposEquipamento/haste",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@2/efeitos/@1/gruposEquipamento/haste",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "vespa-crabro.json",
+        "hashDado": "5c518fe21bbbea50a84519a7dc8a0f7bfe3e55795a6b7a9ea64153ecfe52a24c"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/requisito",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/requisito",
+        "id": "etapas/@2/requisito",
+        "nome": "etapas/@2/requisito",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@2/requisito",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "hashDado": "53be5f580d913601c336274eba49b0e0c9095c648f6edc91eb71c6c20fc4005a"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3",
+        "id": "etapas/@3",
+        "nome": "etapas/@3",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@3",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "hashDado": "9b52cf087ebb59ed8c76ff8e786e76ccaf794018238315b0f31f879e9ea9c32e"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/efeitos",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/efeitos",
+        "id": "etapas/@3/efeitos",
+        "nome": "etapas/@3/efeitos",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@3/efeitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "vespa-crabro.json",
+        "hashDado": "de81fe2ae7b81ce3876c9c12941c38808a13190ece5b90b47597d067e22d4852"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/efeitos/@0",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/efeitos/@0",
+        "id": "etapas/@3/efeitos/@0",
+        "nome": "etapas/@3/efeitos/@0",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@3/efeitos/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "hashDado": "e4b77874d7d897fcce438438757cc54e1137c3a517db0d4936864e2e44a98c45"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/efeitos/@0/gruposEquipamento",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/efeitos/@0/gruposEquipamento",
+        "id": "etapas/@3/efeitos/@0/gruposEquipamento",
+        "nome": "etapas/@3/efeitos/@0/gruposEquipamento",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@3/efeitos/@0/gruposEquipamento",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "vespa-crabro.json",
+        "hashDado": "a0a5ef04f5ab8b19030e427e403801133d98ec7b2f5b741e69688ef7dac458b0"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/efeitos/@0/gruposEquipamento/espada",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/efeitos/@0/gruposEquipamento/espada",
+        "id": "etapas/@3/efeitos/@0/gruposEquipamento/espada",
+        "nome": "etapas/@3/efeitos/@0/gruposEquipamento/espada",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@3/efeitos/@0/gruposEquipamento/espada",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "vespa-crabro.json",
+        "hashDado": "c04953b1a22e55416dc0e27cb9c7c0c714eb2dd73ede67693dea94ddc5b150dc"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/efeitos/@0/gruposEquipamento/haste",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/efeitos/@0/gruposEquipamento/haste",
+        "id": "etapas/@3/efeitos/@0/gruposEquipamento/haste",
+        "nome": "etapas/@3/efeitos/@0/gruposEquipamento/haste",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@3/efeitos/@0/gruposEquipamento/haste",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "vespa-crabro.json",
+        "hashDado": "5c518fe21bbbea50a84519a7dc8a0f7bfe3e55795a6b7a9ea64153ecfe52a24c"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/requisito",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/requisito",
+        "id": "etapas/@3/requisito",
+        "nome": "etapas/@3/requisito",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@3/requisito",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "vespa-crabro.json",
+        "hashDado": "c945954deef9b67435970d2cce18bbbfe65b135f1941a45202c29c55e6aad40f"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/requisito/@0",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/requisito/@0",
+        "id": "etapas/@3/requisito/@0",
+        "nome": "etapas/@3/requisito/@0",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@3/requisito/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "hashDado": "50a64be540e707f58278bb7a70b3e61e9d11df74adad9d9fcd626ff2fc7f2ccf"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/requisito/@1",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/requisito/@1",
+        "id": "etapas/@3/requisito/@1",
+        "nome": "etapas/@3/requisito/@1",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.treinamentos::guarda",
+        "caminho": "etapas/@3/requisito/@1",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "hashDado": "53be5f580d913601c336274eba49b0e0c9095c648f6edc91eb71c6c20fc4005a"
+      },
+      "proprietarioSugerido": null
+    }
+  ],
+  "removidos": [],
+  "alterados": [],
+  "assinatura": "a11b89afe66871ffb0c827c8b2641da8fdcc2132fb37ff31bcdfad7eea88c8a4",
+  "decisoes": {
+    "adicoes": {
+      "addon::vespa-crabro.json::@pacote": "AD-74",
+      "addon::vespa-crabro.json::@pacote::acrescenta": "AD-74",
+      "addon::vespa-crabro.json::@pacote::id": "AD-74",
+      "addon::vespa-crabro.json::@pacote::nome": "AD-74",
+      "addon::vespa-crabro.json::@pacote::paraRaw": "AD-74",
+      "addon::vespa-crabro.json::@pacote::versao": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::completo": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@0": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@0/efeitos": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@0/efeitos/@0": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@0/efeitos/@0/gruposEquipamento": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@0/efeitos/@0/gruposEquipamento/espada": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@0/efeitos/@0/gruposEquipamento/haste": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@1": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@1/efeitos": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@1/efeitos/@0": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@1/efeitos/@0/gruposEquipamento": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@1/efeitos/@0/gruposEquipamento/espada": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@1/efeitos/@0/gruposEquipamento/haste": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@0": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@0/gruposEquipamento": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@0/gruposEquipamento/espada": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@0/gruposEquipamento/haste": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@1": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@1/gruposEquipamento": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@1/gruposEquipamento/espada": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@1/gruposEquipamento/haste": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/requisito": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/efeitos": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/efeitos/@0": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/efeitos/@0/gruposEquipamento": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/efeitos/@0/gruposEquipamento/espada": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/efeitos/@0/gruposEquipamento/haste": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/requisito": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/requisito/@0": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/requisito/@1": "AD-74"
+    },
+    "remocoes": {},
+    "justificativaAtualizacao": "Pedido do autor em 2026-10-25: addon Vespa Crabro. Registro restrito às 41 novas entradas, preservando conteúdo e estados anteriores. Variante de Guarda da Lâmina Divina para Espada e Haste, autorizada pelo autor para as duas armas."
+  },
+  "errosColeta": []
+}

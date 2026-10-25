@@ -409,6 +409,7 @@ const ID_ENTRADA_OK = /^[a-z0-9][a-z0-9_]{0,63}$/;
  * do projeto é que quem enxerga é quem pediu.
  */
 export const PRIMITIVAS = [
+  { id: "ressonanciaGungnir", rotulo: "Ressonância de Gungnir", nota: "Acertos confirmados e ressonância individual por alvo" },
   {
     id: "alcanceArmaMult",
     rotulo: "Multiplicador de Alcance",
@@ -1743,7 +1744,8 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     if (!a || typeof a !== "object") { problemas.push("Ação de addon inválida."); continue; }
     if (!a.id || acoesVistas.has(a.id)) problemas.push("Ação de addon sem id ou repetida.");
     acoesVistas.add(a.id);
-    if (!a.nome || !["contador", "estado", "disparo", "passivo"].includes(a.tipo)) problemas.push("Ação de addon sem nome ou tipo válido.");
+    if (!a.nome || !["contador", "estado", "disparo", "passivo", "manobra"].includes(a.tipo)) problemas.push("Ação de addon sem nome ou tipo válido.");
+    if (a.tipo === "manobra" && (!a.armaId || !a.acao || a.efeitos?.length || a.dados?.length || a.custoPE > 0)) problemas.push("Manobra de addon exige arma e ação, sem efeitos ou custos automáticos.");
     if (a.tipo === "contador" && (!Number.isInteger(a.max) || a.max < 1)) problemas.push("Contador de addon sem máximo válido.");
     if (a.tipo === "disparo" && !a.armaId) problemas.push("Disparo de addon sem arma.");
     for (const campo of ["custoPE", "sustentacaoPV"]) {
@@ -1773,6 +1775,10 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     if (![0, 1, 2, 3, 4, 5, "max"].includes(nivel)) problemas.push(`${onde}: nível inválido.`);
     if (!tiposFeitico.has(feitico.tipo)) problemas.push(`${onde}: tipo inválido.`);
     if (!String(feitico.descricao ?? "").trim()) problemas.push(`${onde}: falta o campo "descricao".`);
+    if (feitico.armaAuxId && (feitico.tipo !== "auxiliar" || feitico.multiplosAtivo
+      || !["margemCritico", "ataque", "danoDurante", "danoApos", "danoFixo", "niveisDano", "negacaoRd"].includes(feitico.efeitoAux))) {
+      problemas.push(`${onde}: armaAuxId exige Auxiliar ofensivo de efeito único.`);
+    }
     if (feitico.rolagens !== undefined && !Array.isArray(feitico.rolagens)) {
       problemas.push(`${onde}: "rolagens" precisa ser uma lista.`);
     }

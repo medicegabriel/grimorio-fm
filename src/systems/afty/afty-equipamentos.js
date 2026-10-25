@@ -2833,6 +2833,8 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
       avisos.push(`Equipamento desconhecido na ficha (${e?.tipo ?? "?"}/${e?.refId ?? "?"}).`);
       continue;
     }
+    // O manejo de sessão é resolvido antes de requisitos e encantamentos.
+    if (e.tipo === "arma" && opcoes.definicaoArma) def = opcoes.definicaoArma(def);
     // Aumento de RD BASE declarado pelo escudo. Só na cópia resolvida em uso,
     // para habilidades que leem rd_escudo e treinos lerem a mesma parcela.
     if (e?.tipo === "escudo" && e.equipado && def.rdEscudoAdicionalExpr) {

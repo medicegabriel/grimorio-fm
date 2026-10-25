@@ -103063,6 +103063,708 @@
       "estado": "DA CASA",
       "fontes": [],
       "nota": "Texto colado pelo autor em 2026-10-16, SHA-256 42d67dd92fa83d5c3d32eb876d4b8f5071b112f8dedef407810ee014d02fd353. Custo de Ourania 20 PE e area de Catastrophe 12 m confirmados em chat. Sem auditoria."
+    },
+    "addon::camellya.json::@pacote": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::acoesMotor": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::acoesMotor::sementes": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::descricao": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::feiticos": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::feiticos::calice": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::feiticos::floracao": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::feiticos::germinacao": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::feiticos::jardim": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::feiticos::transformacao": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::funcionamentos": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::funcionamentos::tecnica": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::id": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::nome": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::paraRaw": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::versao": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::feiticos::chicote": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::feiticos::marca": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::feiticos::marca/efeitosPassivo": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::feiticos::vinha": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::feiticos::chicote/trocas": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::feiticos::floracao/trocas": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::feiticos::germinacao/condicoes": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::feiticos::germinacao/condicoes/@0": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::feiticos::germinacao/trocas": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::feiticos::transformacao/transfEfeitos": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::feiticos::transformacao/transfEfeitos/danoDurante": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::feiticos::transformacao/transfEfeitos/defesa": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::feiticos::transformacao/transfEfeitos/movimento": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::camellya.json::@pacote::feiticos::vinha/trocas": {
+      "proprietario": "AD-73",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew enviado pelo autor, SHA-256 61f0838bf9e811f9d93363b11758f150ef7bc968ca1b0effe8b0e6b48f890377. Em 2026-10-22 o autor exigiu adaptar as habilidades às categorias e cálculos existentes em vez de Personalizado. Valores da versão 1.2.0 vêm das tabelas atuais do criador, sem certificação independente da fonte oficial ou equilíbrio."
+    },
+    "addon::vespa-crabro.json::@pacote": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::@pacote::acrescenta": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::@pacote::id": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::@pacote::nome": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::@pacote::paraRaw": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::@pacote::versao": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::completo": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@0": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@0/efeitos": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@0/efeitos/@0": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@0/efeitos/@0/gruposEquipamento": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@0/efeitos/@0/gruposEquipamento/espada": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@0/efeitos/@0/gruposEquipamento/haste": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@1": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@1/efeitos": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@1/efeitos/@0": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@1/efeitos/@0/gruposEquipamento": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@1/efeitos/@0/gruposEquipamento/espada": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@1/efeitos/@0/gruposEquipamento/haste": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@0": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@0/gruposEquipamento": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@0/gruposEquipamento/espada": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@0/gruposEquipamento/haste": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@1": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@1/gruposEquipamento": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@1/gruposEquipamento/espada": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/efeitos/@1/gruposEquipamento/haste": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@2/requisito": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/efeitos": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/efeitos/@0": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/efeitos/@0/gruposEquipamento": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/efeitos/@0/gruposEquipamento/espada": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/efeitos/@0/gruposEquipamento/haste": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/requisito": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/requisito/@0": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::acrescenta.treinamentos::guarda::etapas/@3/requisito/@1": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew solicitado pelo autor em 2026-10-25. Regra em docs/afty-vespa-crabro.md. Registro de identidade e decisão, sem aprovação de auditoria."
+    },
+    "addon::vespa-crabro.json::@pacote::acoesMotor": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::acoesMotor::harpoon_recall": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::acoesMotor::harpoon_throw": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::descricao": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::feiticos": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::feiticos::arte": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::feiticos::beesting": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::feiticos::beesting/condicoes": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::feiticos::beesting/condicoes/@0": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::feiticos::rend_space": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::feiticos::shin": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::feiticos::shin/transfEfeitos": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::feiticos::shin/transfEfeitos/ataque": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::feiticos::shin/transfEfeitos/defesa": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::feiticos::shin/transfEfeitos/rd": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::feiticos::waspsting": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::feiticos::waspsting/condicoes": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::feiticos::waspsting/condicoes/@0": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::feiticos::yellow": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::feiticos::zumbido": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::feiticos::zumbido/efeitosPassivo": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::funcionamentos": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::funcionamentos::tecnica": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::libera": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::libera::feiticosRestritos": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::permite": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::permite::ressonanciaGungnir": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::acrescenta.armas::gungnir": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::acrescenta.armas::gungnir::dano": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::acrescenta.armas::gungnir::faPadrao": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::acrescenta.armas::gungnir::faPadrao/encantamentos": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::acrescenta.armas::gungnir::faPadrao/encantamentos/enc_arma_penetrante": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::acrescenta.armas::gungnir::faPadrao/encantamentos/enc_arma_potente": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::acrescenta.armas::gungnir::faPadrao/encantamentos/enc_arma_retorno": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::acrescenta.armas::gungnir::niveis": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::acrescenta.armas::gungnir::props": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::acrescenta.armas::gungnir::props/arremessavel": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::acrescenta.armas::gungnir::props/arremessavel/@0": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::acrescenta.armas::gungnir::props/arremessavel/@1": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::acrescenta.armas::hwando": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::acrescenta.armas::hwando::dano": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::acrescenta.armas::hwando::niveis": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::acrescenta.armas::hwando::props": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "afty-addons.js::PRIMITIVAS::ressonanciaGungnir": {
+      "proprietario": "M05",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "afty-gungnir.js::GUNGNIR_ID::@valor": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Homebrew do autor de 2026-10-25. Contrato em docs/afty-vespa-crabro.md. Identidade registrada, sem aprovação independente de regra."
+    },
+    "addon::vespa-crabro.json::@pacote::feiticos::lanca_odin": {
+      "proprietario": "AD-74",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Feitiço de Vespa 1.1.0, id separado da arma Gungnir. Homebrew, contrato em docs/afty-vespa-crabro.md, sem aprovação de auditoria."
     }
   }
 }

@@ -53,6 +53,7 @@ const opcoesDoCombatente = (sessao) => (!sessao ? {} : {
   concedido: sessao.concedido,
   adaptacoes: sessao.adaptacoes,
   dharma: sessao.dharma,
+  gungnir: sessao.gungnir,
   // A Guarda Inabalável corrente, igual à Ficha: o bônus dela soma na
   // Defesa e nos cinco TRs desta mesma derivação.
   guarda: entradaDaGuarda(sessao),
@@ -147,6 +148,7 @@ const chaveDoDerive = (sessao, epoca) => ({
   concedido: sessao.concedido,
   adaptacoes: sessao.adaptacoes,
   dharma: sessao.dharma,
+  gungnir: sessao.gungnir,
   invocacoes: sessao.invocacoes,
   treinosAtivos: sessao.treinosAtivos,
   condicoes: sessao.condicoes,

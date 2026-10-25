@@ -568,7 +568,13 @@ export function resolveAuxiliaresAtivos(creature, combate, estados, ctx = {}) {
     const { calc, subs, configDe } = efeitosDoFeiticoLigado(f, ctx);
     const nome = f.nome || "Feitiço Sem Nome";
     for (const sub of subs) {
+      if (f.armaAuxId && !ctx.armasEquipadas?.includes(f.armaAuxId)) continue;
       const resolvido = efeitosDeAuxiliarResolvido(sub, configDe(sub), nome);
+      if (f.armaAuxId) {
+        resolvido.efeitos = resolvido.efeitos.map((e) => ({ ...e,
+          canal: e.canal === "bonusAcerto" ? "acertoArma" : e.canal, alvo: f.armaAuxId }));
+        resolvido.dados = resolvido.dados.map((d) => ({ ...d, armaAuxId: f.armaAuxId }));
+      }
       efeitos.push(...resolvido.efeitos);
       dados.push(...resolvido.dados);
       for (const m of lista(resolvido.margem)) permutasDeMargem.push({ ...m, feiticoId: id });
@@ -619,5 +625,5 @@ export function aplicarImbuicaoNoDano(dano, creature, combate, habilidades, feit
 
 export function dadosAuxiliaresNaLinha(entrada, dados = []) {
   if (!entrada || lista(dados).length === 0) return entrada;
-  return { ...entrada, danoAuxiliar: lista(dados) };
+  return { ...entrada, danoAuxiliar: lista(dados).filter((d) => !d.armaAuxId || d.armaAuxId === entrada.id) };
 }

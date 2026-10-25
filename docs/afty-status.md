@@ -1,5 +1,285 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-10-25: REMOTO E ERROS DE IMPORTAÇÃO DO VESPA
+
+Autor pediu consultar atualizações, conferir conflitos e fornecer a sequência
+de PowerShell para publicar o trabalho preparado. git fetch origin --prune
+concluído, HEAD e origin/main em bcaf978695c3d239b84f0a12ed11479adc428016,
+divergência 0 0. Não há atualização remota para integrar ou conflito pendente.
+Alterações locais anteriores preservadas, incluindo Camellya e Vespa.
+
+Conferido o validador em origin/main: ainda não registra ressonanciaGungnir
+e aceita somente contador, estado, disparo e passivo em acoesMotor. As duas
+manobras do pacote produzem os dois erros de tipo nessa versão. O código
+local já registra a primitiva e o tipo manobra, e valida o addon sem erros.
+Portanto, a mensagem recebida corresponde ao motor anterior ao trabalho
+local, sem indicar um novo defeito no JSON. Nenhuma regra foi removida
+do addon para contornar o validador antigo.
+
+Rechecagem específica: 380 asserts passaram (Vespa, treino original e
+primitivas). Build e ESLint passaram com os avisos existentes.
+A última suíte completa permanece com 209 de 210 arquivos aprovados,
+restando a diferença preexistente de 267 identidades de Oda. Sem mudança
+de lógica ou tela nesta conferência. Sequência de PowerShell preparada
+para o autor, incluindo Camellya e Vespa junto dos registros compartilhados
+e excluindo as prévias locais .audit e __dharma. Nenhum commit ou push
+executado pelo agente.
+
+## SESSÃO DE 2026-10-25: GUNGNIR 1.1.1, MANEJO E CATEGORIA
+
+Autor confirmou Corpo a Corpo como categoria principal, com alternância
+para Arremesso pelo seletor. Addon Vespa atualizado para 1.1.1, mantendo
+ids, treino, armas, habilidades e números anteriores. O modo selecionado
+agora resolve a definição do equipamento antes de requisitos, encantamentos
+e treinamento. A mesma categoria segue para os escopos do Motor e para o
+teste de ataque. Arremesso usa efetivamente Distância, em vez de herdar
+o teste de Corpo a Corpo do equipamento resolvido antes da troca.
+
+Corpo a Corpo continua sendo o padrão e a categoria do catálogo. O estado
+de combate apenas alterna a cópia resolvida. Sem categoria dupla permanente,
+sem nova arma e sem alterar a Hwando. Ataque Amaldiçoado escolhido à parte
+continua preservado. Contrato da opção interna definicaoArma documentado
+na DSL, além dos guias do addon. Nenhuma mudança no Grimório 2.5.2.
+
+176 asserts específicos de combate do Vespa passaram nos dois sistemas,
+incluindo efeitos por categoria, requisitos, treinamento, escopos, alcance,
+teste de ataque e retorno ao padrão. Suíte completa com 209 de 210 arquivos
+aprovados, restando apenas t-reconciliacao-g00 pela diferença preexistente
+de 267 identidades de Oda (13.879 fontes para 14.146 itens vivos). ESLint e
+build passaram, com avisos existentes. Reconciliação restrita ao AD-74,
+duas atualizações de versão e hash, sem adições, remoções ou aprovação de
+auditoria. Sem mudança de tela. Diff sem conflitos, sem U+2014 novo e sem
+alterações em src/components/. Remoto consultado, sem novas alterações,
+trabalho local anterior preservado. Sem commit ou push.
+
+## SESSÃO DE 2026-10-25: VESPA 1.1.0, ARMAS E HABILIDADES
+
+Autor autorizou criar as armas e adaptar as habilidades do novo anexo.
+Escolheu Shin como estado ativável manualmente, com benefícios e custos
+das tabelas nativas. Aprovou a proposta de ressonância: 1 carga por acerto
+confirmado, teto BT por inimigo, duração até o fim do combate, Zumbido
+consumindo todas as cargas de um alvo por 1d12 cada, sem crítico, uma vez
+por rodada. Golpes de Ferrão Amarelo contam separadamente. Nenhuma carga
+extra por Beesting ou Waspsting. Texto original do anexo tem SHA-256
+73a6c454d733f145c17e573e46ed7ab5a73ed605c39222dff261b8f75c95897c.
+
+Addon único addons/vespa-crabro.json 1.1.0 preserva o treino. Acrescenta
+Gungnir e Hwando com receitas conferidas por contaDaArmaPorNivel. Gungnir
+tem Retorno, Penetrante e Potente, usando os encantamentos nativos. Hwando
+tem Fineza, Energética, Mortal d10 e crítico 18. Seletor de manejo muda a
+linha única da lança para Corpo a Corpo ou Arremesso, sem duplicar item.
+Duas manobras aparecem em Ações, sem falsa ativação de Passiva ou custo PE.
+Oito modelos de nível 5: quatro Golpeadores, um Dano, uma Passiva de
+consumo por alvo, um Auxiliar exclusivo da Hwando e uma Transformação Shin.
+Perfil contém apenas Funcionamento Básico. Sem categoria Personalizado.
+
+Shin: Ataque +4, Defesa +4 e RD 11, 20 PE e manutenção 5 PE, com Exaustão
+e vagas nativas. Sem converter Sanidade ou somar BT pelo Estilo. Arte da
+Lâmina melhora margem só da Hwando em 3, 20 PE e manutenção 2 PE. Campos
+armaAuxId e requerArmaId restringem efeitos e disponibilidade. Golpeadores
+mantêm o componente da arma separado do adicional nativo Após Ataque.
+
+Primitiva optativa ressonanciaGungnir, registro com 29 primitivas. Estado
+em sessao.gungnir, normalização, persistência, virada de rodada, descanso
+e fim do combate. Integração com Ficha e Encontro, incluindo chave do cache.
+Confirmação manual de acerto com id de evento evita dupla aplicação.
+Zumbido consome o alvo correto e registra rolagem atomicamente, sem dano
+automático nos PV do inimigo. Perfurações coexistem e contam duração, mas
+TRs, custos, condições no inimigo e economia de ações seguem a mesa.
+Retorno simples não ataca nem consome cargas. Lança presa deixa de contar
+como empunhada e de sustentar sozinha os bônus do treino.
+
+Guias de addon, fórmulas e DSL atualizados. Fila substituída pela pendência
+específica do bônus futuro de metade de BT no Novo Estilo das Sombras.
+Fonte externa do Livro ainda ausente. Consulta de identidade via Firecrawl
+na referência Vespa/Assist_Unit, sem transferência direta de números da obra.
+Remoto novamente alinhado em bcaf978, divergência 0 0. Sem commit ou push.
+Preservados Camellya, prévias, auditoria e demais alterações anteriores.
+Reconciliação restrita ao AD-74 e à primitiva M05: 46 adições, 4 atualizações,
+nenhuma remoção ou aprovação independente. Diferença anterior de Oda mantida.
+Revisão final separou o id do Feitiço Gungnir (lanca_odin) do id da arma
+para não compartilhar alvos no Motor: 1 adição, 1 remoção com destino
+explícito e 2 atualizações, restritas ao AD-74, sem mudar os números.
+
+134 asserts de combate do Vespa e 86 do treino passaram. ESLint e build
+passaram com avisos existentes. Prévia isolada .audit/vespa.html conferida
+no navegador: alvos independentes, consumo e limite por rodada, coexistência
+de perfurações, recuperação sem dano, Shin e crítico exclusivo da Hwando.
+Imagem em .audit/vespa-validacao.png. Nenhuma ficha pessoal foi alterada.
+Suíte completa executada em 210 arquivos. Apontou a falha preexistente
+t-reconciliacao-g00 (13.879 fontes para 14.146 itens vivos, diferença de
+267 de Oda) e a lista de ids esperados de primitivas ainda com 28 entradas.
+Lista corrigida para 29 e rechecagem final aprovada: 338 asserts em quatro
+arquivos, incluindo primitivas, dois do Vespa e treino original. Resta
+somente a pendência preexistente de Oda. Ajustes finais revalidados por
+ESLint e build. Sem conflitos, U+2014 novo ou mudanças em src/components/.
+
+## SESSÃO DE 2026-10-25: TREINO DO VESPA CRABRO
+
+Autor enviou briefing e autorizou nesta etapa apenas a variante da Guarda
+da Lâmina Divina 1.0.0, reunida no addon do personagem. Confirmou Gungnir
+e Hwando como armas elegíveis. Criado addons/vespa-crabro.json 1.0.0,
+com Treino Guarda do Arpão Amarelo, id vespa-crabro:guarda.
+
+Adaptação por grupos nativos Espada ou Haste, incluindo outras armas desses
+grupos, no padrão do original. Preservados requisitos, 7 Focos, +1 Nível
+de dano, +2 Percepção, Mestre condicional ou +2 se já comprado, +3 Defesa
+e Completo de Ler intenções manual por alvo. Duas armas não duplicam os
+bônus. O campo opcional gruposEquipamento aceita alternativas no emissor,
+com alvo de dano usando o OU existente. Nenhum canal ou fórmula nova.
+Guias de addon, DSL e docs/afty-vespa-crabro.md atualizados.
+
+Sem estatísticas inventadas para armas, Feitiços ou ressonância. Definições
+faltantes do briefing e alvo/condição do bônus futuro de metade de BT
+registrados na fila. Fonte oficial externa ausente, sem certificação de
+regras do livro. Original e src/components/ preservados. Remoto consultado,
+HEAD e origin/main em bcaf978, divergência 0 0, sem commit ou push.
+Reconciliação restrita ao AD-74: 41 adições, nenhuma remoção ou atualização
+de conteúdo anterior e nenhuma aprovação de auditoria.
+
+Validação específica: 86 asserts do Vespa e 70 do treino original passaram
+via deriveAfty nos sistemas Afty e Player. ESLint passou, com aviso Babel
+de tamanho existente. Build passou, com avisos de versão Node e tamanho
+de bundle. Suíte completa: 208 de 209 arquivos aprovados, restando apenas
+t-reconciliacao-g00 pela diferença anterior de 267 identidades de Oda,
+13.833 fontes contra 14.100 itens vivos. Diff sem conflitos, sem U+2014
+novo e sem alterações em src/components/. Sem alteração de tela ou nova
+conferência visual nesta entrega.
+
+## SESSÃO DE 2026-10-25: ATUALIZAÇÃO DO REPOSITÓRIO E VESPA
+
+Autor pediu atualizar o repositório antes de focar na ficha do Vespa.
+Consulta `git fetch origin --prune` concluída. HEAD e origin/main em
+bcaf978695c3d239b84f0a12ed11479adc428016, divergência 0 0, sem atualização
+a integrar. Alterações locais de Camellya, auditoria, documentação e prévias
+preservadas. Nenhum commit ou push. Documentação obrigatória consultada em
+docs/, que é o caminho existente neste checkout.
+
+Busca em código, addons, asserts e documentação não encontrou ficha ou guia
+do Vespa. Aguardando identificação da ficha e o ajuste desejado pelo autor.
+Nenhuma mudança de código, motor, DSL ou fórmulas nesta conferência.
+
+## SESSÃO DE 2026-10-22: LOCAL DE CRIAÇÃO DA EXPANSÃO
+
+Autor perguntou por que o quadro de Expansão vazio não permite criar.
+Conferidos ResumoDominios, FeiticosCard e opcoesExtrasDeEspecial: o quadro
+da aba Habilidades é apenas resumo, conforme DA-18. A criação fica em
+Feitiços > Especial > Tipo de Especial > Expansão de Domínio. A opção exige
+uma Aptidão de Expansão selecionada, não apenas o nível DOM. Nenhuma mudança
+de código ou regra nesta conferência, sem testes adicionais necessários.
+
+## SESSÃO DE 2026-10-22: CAMELLYA 1.2.0, CRIAÇÃO NATIVA
+
+Autor pediu usar o sistema de criação e reservar Personalizado aos casos
+inadaptáveis. Orientação registrada na seção 3 do AGENTS.md. Os oito modelos
+de Camellya agora são Passivo, quatro de Dano, dois Auxiliares e uma
+Transformação. Nenhum usa Personalizado ou seus campos de custo/rolagens.
+Perfil continua com apenas o Funcionamento Básico, sem biografia.
+
+Valores adaptados às tabelas nativas: Vinha 2d10 a 3 m, Chicote 5 a 18 m e
+20 PE, Germinação 3 com Imóvel (forte, impossível no 2), Floração 4 com trocas
+de alcance e área, Jardim +1 Percepção sustentada, Cálice RD 28 em evento
+único e Transformação +4 Defesa, +13,5 m e 3d8 Durante Ataque. O dano fixo dos
+Feitiços nativos acompanha Conjuração Aprimorada e os atributos atuais.
+O adicional da Transformação segue o escopo nativo de Durante Ataque, sem
+fingir o antigo adicional de 2d8 em um Feitiço por turno.
+
+Retirados estados pagos antigos de Jardim e Transformação e o contexto
+Movimento na Rede para evitar duplicação. Aquisição e ativação agora seguem
+o Feitiço, suas vagas nativas de Sustentação e os controles de Buffs. Contador
+de sementes mantido, resolução dos alvos manual. Guia explica gastos de PE,
+duração, evento de Cálice e limites de mesa sem prometer pagamentos automáticos.
+Nenhuma mudança no motor, DSL ou fórmulas. A fonte oficial externa continua
+indisponível. Reconciliação AD-73: 10 adições, 21 remoções e 13 atualizações,
+30 chaves ativas, sem alteração em outro addon ou aprovação de auditoria.
+62 asserts específicos passaram nos dois sistemas. Remoto alinhado em
+bcaf978, sem conflitos ou commit/push, trabalho local anterior preservado.
+
+ESLint e build passaram com os avisos existentes. Suíte completa com 207 de
+208 arquivos aprovados. Única falha: t-reconciliacao-g00, diferença anterior
+de 267 chaves de Oda, com 13.792 fontes para 14.059 itens vivos. Prévia isolada
+atualizada para os controles nativos, sem nova validação visual nesta revisão.
+Diff sem conflitos, sem U+2014 novo e sem mudanças em src/components/.
+
+## SESSÃO DE 2026-10-22: CAMELLYA, HABILIDADES NA ÁREA DE FEITIÇOS
+
+Autor corrigiu a organização: Perfil Amaldiçoado recebe só o Funcionamento
+Básico da técnica. Biografia, aparência, histórico e descrições individuais
+das habilidades foram retirados do perfil. A orientação geral foi registrada
+na seção 3 do AGENTS.md para os próximos pedidos de homebrew e habilidades.
+
+Camellya 1.1.0 tem um Funcionamento e oito modelos prontos na área de Feitiços.
+Marca da Germinação agora é Passivo de nível 0. Vinha Secundária tem nível 0
+e rolagem 4d8. Autor pediu maior nível para o ataque principal: Chicote ficou
+no nível 5, custo próprio 8 PE e rolagem 9d10 + 76, sem virar Técnica Máxima.
+Custos e danos enviados preservados. Descrições filtradas para tirar dados
+editoriais, sem acrescentar biografia ao perfil. Controles existentes de
+sementes, Jardim e Transformação preservados. Nenhuma mudança no motor.
+
+Guia e fila atualizados. Aquisição dos ataques não está mais pendente.
+Reconciliação restrita ao AD-73: 8 adições, 9 remoções e 14 atualizações,
+41 chaves ativas. Sem aprovação de auditoria ou alteração em outro addon.
+79 asserts específicos passaram em Afty e Player. Consulta ao remoto sem
+atualizações, HEAD e origin/main em bcaf978, divergência 0 0. Preservados
+o trabalho local anterior e as prévias __dharma. Sem commit ou push.
+
+Validação final: ESLint e build passaram com avisos existentes. Suíte completa
+com 207 de 208 arquivos aprovados. Resta somente t-reconciliacao-g00 pela
+diferença anterior de 267 entradas de Oda: 13.803 fontes para 14.070 itens
+vivos. Os quatro asserts de atualização acrescentados durante a execução
+passaram na rechecagem específica. Diff sem conflitos e sem U+2014 novo.
+Prévia de Camellya atualizada, sem conferência visual nesta revisão.
+
+## SESSÃO DE 2026-10-21: ADDON CAMELLYA
+
+git fetch origin --prune concluído. HEAD e origin/main continuam em
+bcaf978695c3d239b84f0a12ed11479adc428016, divergência 0 0. Nenhuma atualização
+a integrar. Preservados o registro local de 2026-10-19 e as duas prévias
+__dharma-preview, sem alteração em src/components/ ou código do motor.
+
+Lido o documento de Camellya. Inspeção de compatibilidade registrada em
+docs/afty-camellya.md, com hash do anexo e caminhos atuais. Confirmados no
+código BT 8 no ND 26, Calamidade, Conjurador e opção Sabedoria. Habilidades
+nativas não precisam de duplicação. Livro Markdown obrigatório indisponível
+no caminho externo, hash não conferido e regras não certificadas.
+
+Autor esclareceu: manter a narrativa nas descrições e adaptar a mecânica
+tanto quanto possível ao motor existente. Criado addons/camellya.json 1.0.0,
+com dez Funcionamentos, cinco modelos de Feitiço, contador de sementes 0 a 2,
+Jardim com pagamento de 5 PE e +2 Percepção condicionado ao contexto manual
+Movimento na Rede, Transformação com pagamento de 20 PE, +4 Defesa e +3 m.
+Desligar remove os bônus, fim do combate e descanso limpam os estados.
+Não foram criados verbos novos nem alteradas a DSL e as fórmulas.
+
+Vinha e Chicote ficam em texto, sem inferir níveis de aquisição. Sementes
+por alvo, aplicação por rodada, manutenção, duração, exaustão, RD de evento,
+limite por combate e gatilho do adicional são manuais. Cópias de modelos
+permanecem na ficha após desligar o pacote. Guia e pendências atualizados.
+42 novas chaves em AD-73, nenhuma atualização ou remoção anterior, pela API
+de reconciliação. Preservadas as 267 identidades anteriores de Oda fora da
+transação, sem aprovação de auditoria ou equilíbrio.
+
+59 asserts novos passaram em Afty e Player. ESLint e build passaram com os
+avisos existentes de versão do Node, arquivo grande e bundle. Prévia isolada
+em .audit/camellya.html. O navegador não acessou o servidor local em 127.0.0.1
+nem localhost (ERR_CONNECTION_TIMED_OUT), portanto sem validação visual.
+Suíte completa: 207 de 208 arquivos passaram, falhando somente a pendência
+anterior t-reconciliacao-g00: 13.804 fontes para 14.071 itens vivos, diferença
+de 267 identidades de Oda. Sem ampliação da diferença. Diff sem conflitos ou
+U+2014 novo, sem mudança em src/components/. Sem commit ou push.
+
+## SESSÃO DE 2026-10-19: CONFERÊNCIA DO REMOTO E DO ESTADO LOCAL
+
+Consulta ao GitHub com git fetch origin --prune concluída. Main local e
+origin/main estão em bcaf978695c3d239b84f0a12ed11479adc428016, com
+divergência 0 0. Nenhuma atualização a integrar, conflito pendente,
+alteração rastreada ou arquivo preparado no índice antes deste registro.
+
+Permanecem fora do Git __dharma-preview.html e __dharma-preview.jsx,
+preservados sem alteração. Há 12 stashes anteriores, também preservados.
+Nenhuma entrada correspondente na fila para remover. Apenas este registro
+foi acrescentado pela conferência. Sem alteração de código, commit ou push.
+
 ## SESSÃO DE 2026-10-17: PREPARAÇÃO DO COMMIT
 
 Nova consulta ao GitHub confirmou main em d4a0ed2, sem atualização desde

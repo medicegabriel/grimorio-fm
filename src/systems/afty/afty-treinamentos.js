@@ -1036,7 +1036,8 @@ export function efeitosDeTreino(creature, gatilhosAtivos = null, equipamentos = 
     for (const ef of efeitos || []) {
       if (ef.requerEquipamento && !equipamentos.some((e) => e.tipo === ef.requerEquipamento
         && e.equipado && !e.semAddon
-        && (!ef.grupoEquipamento || e.def?.grupo === ef.grupoEquipamento))) continue;
+        && (!ef.grupoEquipamento || e.def?.grupo === ef.grupoEquipamento)
+        && (!ef.gruposEquipamento || ef.gruposEquipamento.includes(e.def?.grupo)))) continue;
       if (ef.gatilhoSessao && !gatilhosAtivos?.[ef.gatilhoSessao]) continue;
       const conv = paraCanal(ef, alvo, alvos, { tecnicaAttr: atributoDaTecnica(creature) });
       if (!conv) continue;

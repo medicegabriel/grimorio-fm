@@ -45,6 +45,7 @@ import { normalizaPropriedadesArmas, iniciaTurnoArmas } from "../afty-propriedad
 import { normalizaBloodfeast, pagaVidaBloodfeast, rodadaBloodfeast } from "../afty-bloodfeast";
 import { valorContadorSessao, normalizaContadoresSessao } from "../afty-recursos-addon";
 import { normalizaDharma, avancarRodadaDharma } from "../afty-dharma";
+import { normalizaGungnir, avancarGungnir } from "../afty-gungnir";
 // As fases da Expansão no ar (2026-10-08). Módulo FOLHA, sem ciclo.
 import { FASES_DOMINIO } from "../afty-dominios";
 
@@ -184,6 +185,7 @@ export function sessaoEmBranco(derived = null) {
     concedido: [],
     adaptacoes: {},
     dharma: normalizaDharma(),
+    gungnir: normalizaGungnir(),
     // Interruptores manuais de efeitos condicionais abertos por Treinamentos.
     treinosAtivos: {},
     usos: {},
@@ -278,6 +280,7 @@ export function normalizaSessao(bruta, derived = null) {
     concedido: normalizaConcedido(bruta.concedido),
     adaptacoes: normalizaAdaptacoes(bruta.adaptacoes),
     dharma: normalizaDharma(bruta.dharma),
+    gungnir: normalizaGungnir(bruta.gungnir),
     treinosAtivos: bruta.treinosAtivos && typeof bruta.treinosAtivos === "object"
       ? Object.fromEntries(Object.entries(bruta.treinosAtivos).map(([id, ativo]) => [id, !!ativo]))
       : {},
@@ -2168,6 +2171,7 @@ export function proximaRodada(sessao, derived = null, { preservarTurnoArmas = fa
     // A recarga da Técnica Máxima desce uma rodada (DA-08). Ver `avancaRecargas`.
     recargas: avancaRecargas(sessao),
     rodada: sessao.rodada + 1,
+    gungnir: sessao.rodada === 0 ? normalizaGungnir() : avancarGungnir(sessao.gungnir),
     combate: expirarEstadosDaRodada(sessao.combate, derived),
     buffs: sessao.buffs.map(desce).filter(Boolean),
     condicoes: sessao.condicoes.map(desce).filter(Boolean),
@@ -2298,6 +2302,7 @@ export function descansar(sessao, derived, { marioneteId = null } = {}) {
   return {
     ...sessao,
     dharma: normalizaDharma(),
+    gungnir: normalizaGungnir(),
     energiaEmVida: derived?.bloodfeast?.tem ? 3 : 0,
     bloodfeast: { ...normalizaBloodfeast(), sanidade: normalizaBloodfeast(sessao.bloodfeast).sanidade, bleed: normalizaBloodfeast(sessao.bloodfeast).bleed },
     hpAtual: Math.max(0, derived?.hp ?? 0),
@@ -2918,6 +2923,7 @@ function alteraDominioDoEstilo(sessao, combate, estado, valor) {
 
 /** A mudança de combate encerra o Ápice e cobra a Exaustão da rodada aberta. */
 export function aplicaPatchCombate(sessao, parcial) {
+  if (parcial?.ativo === false) sessao = { ...sessao, gungnir: normalizaGungnir() };
   if (parcial?.ativo === false) sessao = encerrarAcoesAddon(sessao);
   /* O fim do combate desmancha a Expansão no ar, com a Exaustão de Técnica de
      sempre (Etapa 9): fora de combate a bancada zera o estado, e deixá-la
@@ -3142,6 +3148,7 @@ export function bloqueioAcaoAddon(sessao, acao, derived) {
 }
 
 export function usarAcaoAddon(sessao, acao, derived) {
+  if (acao.tipo === "manobra") return sessao;
   if (bloqueioAcaoAddon(sessao, acao, derived) || sessao.combate?.[acao.estado]) return sessao;
   let proxima = sessao;
   if (acao.feiticoId) {

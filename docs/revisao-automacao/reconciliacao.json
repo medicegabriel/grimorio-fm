@@ -60046,6 +60046,98 @@
         }
       ],
       "lotesInvalidados": []
+    },
+    {
+      "data": "2026-10-21",
+      "proposta": "docs/revisao-automacao/camellya-proposta.json",
+      "assinatura": "a2955ac7a1f6ab1f44ed26320c859bd76b240a13b18735a73e7f6254fa8cc179",
+      "justificativa": "Camellya: conteúdo da casa enviado em 2026-10-21, autorizado adaptar aos mecanismos existentes, mantendo a narrativa e os limites manuais. Sem aprovação de equilíbrio ou auditoria. Mantidas fora desta transação as 267 identidades anteriores do pacote privado Oda.",
+      "adicionados": 42,
+      "removidos": 0,
+      "alterados": 0,
+      "lotesAtingidos": [
+        "AD-73"
+      ],
+      "lotesInvalidados": []
+    },
+    {
+      "data": "2026-10-22",
+      "proposta": "docs/revisao-automacao/camellya-1-1-proposta.json",
+      "assinatura": "5ad309cdce643dfc03f60d8b5adc3d8600a364777883b86beaf2e9a886273e40",
+      "justificativa": "Autor em 2026-10-22: somente Funcionamento Básico no perfil, habilidades em Feitiços, sem biografia ou instruções editoriais. Chicote no maior nível comum, mantendo custo e dano fornecidos. Controles existentes preservados. Sem aprovação de auditoria.",
+      "adicionados": 8,
+      "removidos": 9,
+      "alterados": 14,
+      "lotesAtingidos": [
+        "AD-73"
+      ],
+      "lotesInvalidados": []
+    },
+    {
+      "data": "2026-10-22",
+      "proposta": "docs/revisao-automacao/camellya-1-2-proposta.json",
+      "assinatura": "4f3280164d8aebcb533e4b74d4811253f48e46ddd92dea2ab4d03eb52473c199",
+      "justificativa": "Autor em 2026-10-22 exige criação nativa de habilidades. Camellya 1.2.0 usa Dano, condição Imóvel no nível 3, Auxiliares de Rolagem e RD, Transformação com três efeitos nativos e Passivo descritivo com contador. Cálculos e descrições adaptados às tabelas existentes. Retirados estados pagos que duplicariam os Feitiços. Sem mudança no motor ou aprovação de auditoria.",
+      "adicionados": 10,
+      "removidos": 21,
+      "alterados": 13,
+      "lotesAtingidos": [
+        "AD-73"
+      ],
+      "lotesInvalidados": []
+    },
+    {
+      "data": "2026-10-25T04:39:27.210Z",
+      "proposta": "docs/revisao-automacao/vespa-crabro-proposta.json",
+      "assinatura": "a11b89afe66871ffb0c827c8b2641da8fdcc2132fb37ff31bcdfad7eea88c8a4",
+      "justificativa": "Pedido do autor em 2026-10-25: addon Vespa Crabro. Registro restrito às 41 novas entradas, preservando conteúdo e estados anteriores. Variante de Guarda da Lâmina Divina para Espada e Haste, autorizada pelo autor para as duas armas.",
+      "adicionados": 41,
+      "removidos": 0,
+      "alterados": 0,
+      "lotesAtingidos": [
+        "AD-74"
+      ],
+      "lotesInvalidados": []
+    },
+    {
+      "data": "2026-10-25T05:09:43.709Z",
+      "proposta": "docs/revisao-automacao/vespa-crabro-1-1-proposta.json",
+      "assinatura": "57483ee58dd297f28beaaf0d1d79e4874d6b7f3570a918b7c401250b5ab53cf9",
+      "justificativa": "Vespa 1.1.0 aprovado em 2026-10-25: duas armas pelo guia, duas manobras, oito modelos nativos, Shin manual e ressonância por alvo com números confirmados. Registro restrito ao AD-74 e à primitiva M05, preservando Oda e alterações anteriores. Sem aprovação de auditoria.",
+      "adicionados": 46,
+      "removidos": 0,
+      "alterados": 4,
+      "lotesAtingidos": [
+        "AD-74",
+        "M05"
+      ],
+      "lotesInvalidados": []
+    },
+    {
+      "data": "2026-10-25T05:16:38.416Z",
+      "proposta": "docs/revisao-automacao/vespa-crabro-1-1-identidades-proposta.json",
+      "assinatura": "d50de36df08529ab54ccc60fe5a37d1610b265d92e8ee98e0abb0e135b3b7e2f",
+      "justificativa": "Ajuste de identidade antes da entrega Vespa 1.1.0: Feitiço Gungnir usa lanca_odin, arma mantém gungnir. Números e comportamento preservados. Sem alteração de outros addons.",
+      "adicionados": 1,
+      "removidos": 1,
+      "alterados": 2,
+      "lotesAtingidos": [
+        "AD-74"
+      ],
+      "lotesInvalidados": []
+    },
+    {
+      "data": "2026-10-25T05:27:10.137Z",
+      "proposta": "docs/revisao-automacao/vespa-crabro-1-1-1-proposta.json",
+      "assinatura": "82c566e72b0cca2e7b4e04d966e4ee1b8ecb8910cf582270298234233ec23165",
+      "justificativa": "Vespa 1.1.1, esclarecimento do autor em 2026-10-25: Corpo a Corpo principal e alternância para Arremesso. Categoria ativa resolvida antes dos requisitos, encantamentos e treinamento. Correção do teste de Distância no manejo de arremesso, sem categoria dupla permanente. Somente versão e hash do pacote atualizados, sem novos dados ou mudanças em outros addons.",
+      "adicionados": 0,
+      "removidos": 0,
+      "alterados": 2,
+      "lotesAtingidos": [
+        "AD-74"
+      ],
+      "lotesInvalidados": []
     }
   ],
   "rechecagem": {

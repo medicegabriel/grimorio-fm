@@ -12,6 +12,24 @@ FLOOR, `INT`=parte inteira, `MAIOR(intervalo;k)`=k-ésimo maior, `VERDADEIRO`=TR
 
 ## Correções estruturais ao que estava assumido
 
+### Vespa Crabro: consumo de ressonância e Shin (2026-10-25)
+
+Homebrew aprovado pelo autor: cada acerto confirmado de Gungnir gera
+`min(BT, cargasDoAlvo + 1)`. Ressonância não é dano automático. Zumbido
+consome todas as cargas de um único alvo e rola `min(cargasDoAlvo, BT)d12`
+perfurante, Após Ataque, sem multiplicar no crítico. Limite global de uma
+utilização por rodada, após acertar Gungnir naquele alvo na rodada atual.
+Cada golpe acertado do Golpeador Ferrão Amarelo conta separadamente.
+O consumo e a rolagem são uma transição de sessão, com registro no histórico.
+
+Shin é Transformação 5 sustentada, ativada manualmente, não uma conversão
+de Sanidade. Usa três espaços de Auxiliar 3 na coluna Duradoura: Ataque +4,
+Defesa +4 e RD 11, custo 20 PE e sustentação 5 PE. Exaustão e vagas seguem
+o comportamento nativo. Arte da Lâmina Relâmpago é Auxiliar 5 sustentado,
+margem de crítico +3 somente na Hwando, com custo 20 PE e manutenção 2 PE.
+As receitas das duas armas, os oito modelos e as limitações de mesa estão
+em `docs/afty-vespa-crabro.md`. Sem alteração nas tabelas oficiais.
+
 ### Fórmulas de dano em blocos de 100 dados (2026-10-17)
 
 Por decisão do autor, o limite do bot vale por termo da expressão, sem teto

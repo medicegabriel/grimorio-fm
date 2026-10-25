@@ -3800,6 +3800,35 @@
       ],
       "registro": "AD-72/registro.json",
       "proprietario": "executor do lote AD-72"
+    },
+    {
+      "lote": "AD-73",
+      "nome": "Addon: Camellya",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04",
+        "M02"
+      ],
+      "registro": "AD-73/registro.json",
+      "proprietario": "executor do lote AD-73"
+    },
+    {
+      "lote": "AD-74",
+      "nome": "Addon: Vespa Crabro",
+      "fase": "Addons",
+      "estado": "NÃO REVISADO",
+      "auditoria": "NÃO EXECUTADA",
+      "dependencias": [
+        "M05",
+        "M04",
+        "M02",
+        "SIS-02"
+      ],
+      "registro": "AD-74/registro.json",
+      "proprietario": "executor do lote AD-74"
     }
   ]
 }

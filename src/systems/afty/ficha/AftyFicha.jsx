@@ -224,6 +224,7 @@ export default function AftyFicha({
          única para o derivado principal e para os deltas dos estados. */
       adaptacoes: sessaoBruta.adaptacoes,
       dharma: sessaoBruta.dharma,
+      gungnir: sessaoBruta.gungnir,
       treinosAtivos: sessaoBruta.treinosAtivos,
       /* A Guarda Inabalável CORRENTE. Vai pelo `opcoes` como a concessão e
          pelo mesmo motivo: é estado de mesa. O derive precisa dela porque o

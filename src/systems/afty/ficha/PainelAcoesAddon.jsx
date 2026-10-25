@@ -1,17 +1,19 @@
 import React from "react";
 import { definirAcaoAddon } from "../afty-acoes-addon";
 import { usarAcaoAddon, sustentarAcaoAddon, bloqueioAcaoAddon } from "./ficha-sessao";
+import PainelGungnir from "./PainelGungnir";
 
 export default function PainelAcoesAddon({ derived, sessao, onSessao }) {
   const acoes = (derived.acoesAddon ?? []).filter((a) => a.tipo !== "passivo");
-  if (!acoes.length) return null;
+  if (!acoes.length && !derived.gungnir?.ativo) return null;
   const botao = "afty-botao px-2 py-1 text-xs disabled:opacity-40";
-  return <section className="afty-card p-3 space-y-2">
+  return <><PainelGungnir derived={derived} sessao={sessao} onSessao={onSessao} />
+  {acoes.length > 0 && <section className="afty-card p-3 space-y-2">
     {acoes.map((a) => {
       const bloqueio = a.valor ? null : bloqueioAcaoAddon(sessao, a, derived);
       return <div key={a.estado} className="flex gap-2 items-center flex-wrap">
       <span className="flex-1 text-xs font-semibold" title={a.descricao}>{a.nome}</span>
-      {a.tipo === "contador" ? <>
+      {a.tipo === "manobra" ? <span className="afty-chip" title={a.descricao}>{a.acao}</span> : a.tipo === "contador" ? <>
         <button className={botao} aria-label={`Reduzir ${a.nome}`} disabled={!a.valor}
           onClick={() => onSessao((s) => definirAcaoAddon(s, a, a.valor - 1))}>−</button>
         <span className="afty-valor text-xs">{a.valor}/{a.max}</span>
@@ -31,5 +33,5 @@ export default function PainelAcoesAddon({ derived, sessao, onSessao }) {
         </button>}
       </>}
     </div>; })}
-  </section>;
+  </section>}</>;
 }

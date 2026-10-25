@@ -1,0 +1,35 @@
+{
+  "versao": 1,
+  "shaInventario": "adcaf2a5acb89afc08fb78c223520a5a3f7a0f54d699c18a1776a50022fbc714",
+  "shaVivo": "1cca9f36f495de3dfd4c7e792d751df02ddc551345ce8b9db8647215cdcb2b51",
+  "shaEscopo": "d54fa75d62a731a33e608dfbdf05bbbf777b466d2cf27f6a24f0304b206c7b1e",
+  "adicionados": [],
+  "removidos": [],
+  "alterados": [
+    {
+      "chave": "addon::vespa-crabro.json::@pacote",
+      "proprietarioMantido": "AD-74",
+      "hashAnterior": "65c5d1a09d8ef13be54fd6123ce2bae9a7f17834bb6835296e39a4499d1bca69",
+      "hashNovo": "7066b588096841488a157ccdda8261c7900050315d0e9df25d4fad54da576381",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::versao",
+      "proprietarioMantido": "AD-74",
+      "hashAnterior": "e7ad5986cf98f45d2d11f5a65f149e95ecc61246dd2fb2427ab59a9033b66456",
+      "hashNovo": "ca7a9c640dcdb0c38f5102675a678c8dc6f34c764f320f741e2e434f062e01f4",
+      "campos": [
+        "hashDado"
+      ]
+    }
+  ],
+  "assinatura": "82c566e72b0cca2e7b4e04d966e4ee1b8ecb8910cf582270298234233ec23165",
+  "decisoes": {
+    "adicoes": {},
+    "remocoes": {},
+    "justificativaAtualizacao": "Vespa 1.1.1, esclarecimento do autor em 2026-10-25: Corpo a Corpo principal e alternância para Arremesso. Categoria ativa resolvida antes dos requisitos, encantamentos e treinamento. Correção do teste de Distância no manejo de arremesso, sem categoria dupla permanente. Somente versão e hash do pacote atualizados, sem novos dados ou mudanças em outros addons."
+  },
+  "errosColeta": []
+}

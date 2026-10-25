@@ -34,6 +34,7 @@
 // reexibir o valor de cada linha: a aplicação de verdade é do `aplicarEfeitos`.
 import { evalNumber as evalNumberDsl, normalizarVariavel } from "./afty-dsl";
 import { acoesDoAddon, efeitosDasAcoesAddon, dadosDasAcoesAddon } from "./afty-acoes-addon";
+import { temGungnir, comGungnirNaSessao, normalizaGungnir, entradaGungnirNoModo, GUNGNIR_ID } from "./afty-gungnir";
 import {
   AFTY_RESISTENCIAS, TAMANHO_BASE, tamanhoPorDegraus, funcionamentosDaFicha,
   MELHORIA_NIVEL_INICIAL, LENDARIA_NIVEL_INICIAL,
@@ -298,6 +299,7 @@ export function deriveAfty(creature, opcoes = {}) {
 }
 
 function deriveAftyNoEscopo(creature, opcoes = {}) {
+  creature = comGungnirNaSessao(creature, opcoes.gungnir);
   creature = comArmaBloodfeast(creature, opcoes.bloodfeast);
   const core = creature?.core ?? {};
   /* CONCESSÃO VINDA DA SESSÃO (Addons 8.3). Chega pelo `opcoes`, e não pela
@@ -634,6 +636,7 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
      passo do derive. Sem o pacote a configuração é vazia e nada é marcado. */
   const configEspinho = espinhoDaFicha(creature);
   const equip = resolveEquipamentos(creature, bt, {
+    definicaoArma: (def) => entradaGungnirNoModo({ def }, creature, opcoes.gungnir).def,
     vagasEncantamento: vagasEncantamentoDeTreino(creature),
     // As do ESCUDO (Treino de Escudo do pacote Stark, 2026-10-11).
     vagasEncantamentoEscudo: vagasEncantamentoEscudoDeTreino(creature),
@@ -1855,6 +1858,7 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
   });
   const auxiliaresAtivos = resolveAuxiliaresAtivos(creature, combate, estadosConjurador, {
     nd,
+    armasEquipadas: armasParaDano.map((a) => a.id),
     // O acesso inteiro, para a Técnica Máxima ligada sair na escala dela
     // (2026-10-08). Sem o nível de Conjurador o Adiantar Evolução ficaria de fora.
     nivelConjurador,
@@ -3474,8 +3478,17 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
   };
   /* A Técnica Inata bloqueada (DA-07): cada Feitiço continua na lista, marcado
      com o motivo, e a tela o desenha indisponível. Nada é apagado. */
-  const marcaBloqueio = (f) => (tecnicaInata.bloqueada ? { ...f, bloqueado: tecnicaInata.motivo }
-    : exaustaoTecnica ? { ...f, bloqueado: exaustaoTecnica.motivo } : f);
+  const marcaBloqueio = (f) => {
+    if (tecnicaInata.bloqueada) return { ...f, bloqueado: tecnicaInata.motivo };
+    if (exaustaoTecnica) return { ...f, bloqueado: exaustaoTecnica.motivo };
+    const config = creature.feiticos?.find((x) => x.id === f.id);
+    const arma = config?.requerArmaId || config?.armaAuxId;
+    const cravada = config?.aceitaArmaCravada && arma === GUNGNIR_ID && temGungnir(creature)
+      && normalizaGungnir(opcoes.gungnir).posicao === "cravada"
+      && equip.entradas.some((e) => e.def?.id === GUNGNIR_ID && !e.semAddon);
+    if (arma && !armasParaDano.some((a) => a.id === arma) && !cravada) return { ...f, bloqueado: "Arma necessária não equipada" };
+    return f;
+  };
   /* A TÉCNICA MÁXIMA (autor, 2026-10-08). A vaga EXCLUSIVA (`vagasTecnicaMaxima`,
      1 pela Aptidão) contra as Técnicas Máximas oficiais, e a validação de cada
      uma: vaga, natureza permitida e os requisitos da Aptidão (Mestre em
@@ -3534,7 +3547,7 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
        sistemas convivem no mesmo uso. */
     comLiberacao: (id, melhorias) => {
       const linha = resumoDeUmFeitico(creature, id, { ...ctxFeiticos, liberacao: { melhorias } });
-      return linha ? comTesteDeRitual(linha) : null;
+      return linha ? marcaBloqueio(comTesteDeRitual(linha)) : null;
     },
   };
 
@@ -4552,6 +4565,12 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
 
   return {
     ...stats,
+    gungnir: {
+      ativo: temGungnir(creature),
+      disponivel: temGungnir(creature) && dano.entradas.some((e) => e.id === GUNGNIR_ID),
+      inventariada: temGungnir(creature) && equip.entradas.some((e) => e.def?.id === GUNGNIR_ID && !e.semAddon),
+      zumbido: temGungnir(creature) && (feiticos.lista ?? []).some((f) => f.id === "vespa-crabro:zumbido" && !f.bloqueado),
+    },
     acoesAddon: acoesDoAddon(creature),
     beneficiosTreinamento: beneficiosDeTreinoNaFicha(creature, { atencao: stats.atencao }),
     // O Deslocamento de Voo, em metros. Zero é não voar (2026-10-09).
