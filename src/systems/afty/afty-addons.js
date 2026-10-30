@@ -56,6 +56,7 @@
  */
 
 import { validarBloodfeast } from "./afty-bloodfeast";
+import { hidratarFicha } from "./afty-addons-compostos";
 import { normalizarMarca, normalizarVariavel, validateExpression } from "./afty-dsl";
 // Folha (zero imports): o formato da Técnica de Estilo da Expansão nos pacotes.
 import {
@@ -63,7 +64,9 @@ import {
 } from "./afty-estilo-sombras-catalogo";
 /* O catálogo do Espinho vem do pacote e é saneado pelo verbo. O `afty-espinho.js`
    é FOLHA, então este import é de mão única. Ver `espinhoDaFicha`. */
-import { normalizarItemEspinho, ESPINHO_TIPOS } from "./afty-espinho";
+import {
+  normalizarItemEspinho, ESPINHO_TIPOS, ESPINHO_VISUAIS, ESPINHO_ARTIGOS, ESPINHO_IDENTIDADE_PADRAO, identidadeDeclarada,
+} from "./afty-espinho";
 // Sem risco de ciclo: `afty-sistema.js` não importa nada.
 import { sistemaDaFicha, regraDo, palavrasDoSistema } from "./afty-sistema";
 /* A tabela de progressão da Carteira. O `afty-carteira.js` é FOLHA, então este
@@ -123,6 +126,8 @@ export function registrarFamilia(id, def) {
     ordem: Number.isFinite(def.ordem) ? def.ordem : 50,
     aplicar: def.aplicar,
     validador: def.validador ?? null,
+    validarEntrada: def.validarEntrada ?? null,
+    validarEfeitos: def.validarEfeitos === true,
     // As duas de baixo servem à LINHA MORTA (ver `problemasDeAddon`): uma diz
     // como achar a entrada pelo id, a outra diz onde a ficha guarda os ids
     // daquela família.
@@ -710,6 +715,16 @@ export const LIBERACOES = [
     rotulo: "Feitiços Passivos e Personalizados",
     nota: "Abre a aba de Feitiços para a origem que não conjura, limitada a Passivo / Característica e Personalizado",
   },
+  /* ⚠ ABRE AS TÉCNICAS MARCIAIS PARA QUEM NÃO TEM A ESPECIALIZAÇÃO RESTRINGIDO
+     (2026-10-27), e não estreita nada. O Restringido e o Gêmeo com a classe já
+     recebem o card sozinhos; esta entrada é para o Não-Feiticeiro, que "recebe um
+     Estilo Marcial e um Fundamento Marcial de Restringido" sem ser um. O teto de
+     Nível da origem (`tetoNivelFeitico`) vale para a Técnica também. */
+  {
+    id: "tecnicasMarciais",
+    rotulo: "Técnicas Marciais",
+    nota: "Abre o Estilo Marcial e as Técnicas Marciais para quem não tem a Especialização Restringido, como o Não-Feiticeiro",
+  },
   /* ⚠ ESTA É A OUTRA METADE DA CARTEIRA, e a divisão entre ela e a primitiva
      `carteira` é a divisão inteira entre os dois campos. A aba é tela e não
      muda nada; SUBSTITUIR o orçamento de Focos pelos Interlúdios anotados muda
@@ -819,7 +834,7 @@ export const SEM_LIBERACOES = Object.freeze([]);
  * combatente sem o addon não pode herdar a regra de quem tem.
  */
 export function liberacoesDaCriatura(creature) {
-  const lista = Array.isArray(creature?.addons) ? creature.addons : [];
+  const lista = listaDeAddons(creature);
   const out = new Set();
   for (const pacote of lista) {
     for (const id of Array.isArray(pacote?.libera) ? pacote.libera : []) {
@@ -963,7 +978,7 @@ export const SEM_PRIMITIVAS = Object.freeze([]);
  * alternativa seria a ordem de instalação decidir, que é resposta por acidente.
  */
 export function precosDeCatarse(creature) {
-  const lista = Array.isArray(creature?.addons) ? creature.addons : [];
+  const lista = listaDeAddons(creature);
   const out = {};
   for (const pacote of lista) {
     const tabela = pacote?.catarse?.precos;
@@ -991,17 +1006,30 @@ export function precosDeCatarse(creature) {
  * ⚠ O `concedeTalento` resolve LOCAL PRIMEIRO, igual às referências de família:
  * o id que o próprio pacote acrescenta ganha o namespace dele, e o resto fica
  * como está (id do livro, ou já qualificado).
+ *
+ * A IDENTIDADE (nome, artigo e visual, 2026-10-12, Lanterna Coletora de Almas)
+ * vem do PRIMEIRO PACOTE QUE TRAZ ITENS, o dono do catálogo, pela mesma regra do
+ * item repetido: Espinho e Lanterna na mesma ficha são uma loja só, e quem foi
+ * instalado primeiro dá os itens E a cara. O Espinho original não declara
+ * identidade e vale o padrão. A `maestriaAnotada` liga com QUALQUER pacote que a
+ * declare, como o multiplicador do Alter.
  */
 export function espinhoDaFicha(creature) {
-  const lista = Array.isArray(creature?.addons) ? creature.addons : [];
+  const lista = listaDeAddons(creature);
   const itens = [];
   const vistos = new Set();
   let multiplicadorTeto = null;
+  let identidade = null;
+  let maestriaAnotada = false;
   for (const pacote of lista) {
     const cfg = pacote?.espinho;
     if (!cfg || typeof cfg !== "object") continue;
     const m = Number(cfg.multiplicadorTeto);
     if (Number.isFinite(m) && m > 0) multiplicadorTeto = Math.max(multiplicadorTeto ?? 0, m);
+    if (cfg.maestriaAnotada === true) maestriaAnotada = true;
+    if (!identidade && Array.isArray(cfg.itens) && cfg.itens.length > 0) {
+      identidade = identidadeDeclarada(cfg) ?? ESPINHO_IDENTIDADE_PADRAO;
+    }
     const talentosDoPacote = new Set(
       (pacote?.acrescenta?.talentos ?? []).map((t) => String(t?.id ?? "").trim()),
     );
@@ -1016,7 +1044,12 @@ export function espinhoDaFicha(creature) {
       itens.push(item);
     }
   }
-  return { itens, multiplicadorTeto: multiplicadorTeto ?? 1 };
+  return {
+    itens,
+    multiplicadorTeto: multiplicadorTeto ?? 1,
+    maestriaAnotada,
+    ...(identidade ?? ESPINHO_IDENTIDADE_PADRAO),
+  };
 }
 
 /**
@@ -1027,7 +1060,7 @@ export function espinhoDaFicha(creature) {
  * quem tem. É a mesma razão de a marca de "não raw" sair da ficha.
  */
 export function primitivasDaCriatura(creature) {
-  const lista = Array.isArray(creature?.addons) ? creature.addons : [];
+  const lista = listaDeAddons(creature);
   const out = new Set();
   for (const pacote of lista) {
     for (const id of Array.isArray(pacote?.permite) ? pacote.permite : []) {
@@ -1108,7 +1141,7 @@ function normalizarSubstituicaoEnergiaReversa(cru) {
  * nesse caso as listas se unem sem duplicar ids.
  */
 export function substituicaoEnergiaReversaPorAddon(creature) {
-  const regras = (Array.isArray(creature?.addons) ? creature.addons : [])
+  const regras = (listaDeAddons(creature))
     .map(normalizarPacote)
     .map((p) => p.substituiEnergiaReversa)
     .filter(Boolean);
@@ -1142,7 +1175,7 @@ export function aptidoesConcedidasPorAddon(creature, { equipados = [] } = {}) {
   }
   const out = [];
   const vistos = new Set();
-  for (const cru of Array.isArray(creature?.addons) ? creature.addons : []) {
+  for (const cru of listaDeAddons(creature)) {
     const pacote = normalizarPacote(cru);
     if (!pacote.id) continue;
     const locais = new Set((pacote.acrescenta.aptidoes ?? []).map((a) => String(a?.id ?? "").trim()));
@@ -1172,6 +1205,12 @@ export function normalizarPacote(cru) {
     versao: String(p.versao ?? "").trim() || "1.0.0",
     autor: String(p.autor ?? "").trim(),
     descricao: String(p.descricao ?? "").trim(),
+    /* O que a lista da aba mostra em cada linha, e o grupo em que o pacote cai.
+       ⚠ TÊM DE ESTAR AQUI, e não só na aba: o normalizador apaga o campo que não
+       conhece. Os dois são opcionais, e sem eles a lista usa um recurso automático.
+       Ver afty-addons-lista.js. */
+    resumo: String(p.resumo ?? "").trim(),
+    categoria: String(p.categoria ?? "").trim(),
     paraRaw: String(p.paraRaw ?? "afty").trim(),
     /* As primitivas que este pacote quer VER na tela. Só isto: o motor já as
        tem, e o campo diz quem as enxerga. Ver `PRIMITIVAS`. */
@@ -1267,6 +1306,13 @@ export function normalizarPacote(cru) {
     regrasAfty: (p.regrasAfty && typeof p.regrasAfty === "object" && !Array.isArray(p.regrasAfty))
       ? clonar(p.regrasAfty)
       : null,
+    /* A marca de um pacote COMPOSTO que a ficha carrega: de que fonte embutida
+       e de que versão, sistema e ajustes ele saiu. É o que a hidratação confere
+       para saber se a cópia está em dia. ⚠ Tem de estar aqui, ou o normalizador
+       a apaga na instalação. Ver afty-addons-compostos.js. */
+    composicao: (p.composicao && typeof p.composicao === "object" && !Array.isArray(p.composicao))
+      ? { fonte: String(p.composicao.fonte ?? ""), chave: String(p.composicao.chave ?? "") }
+      : null,
     acrescenta: {},
     /* O que este pacote REESCREVE de entradas que já existem no livro. Ver
        `remendarLista`. */
@@ -1297,7 +1343,7 @@ export function feiticosDeAddon(creature, nivelMax = 5) {
   const teto = nivelMax === "max" ? 6 : Math.max(0, Math.trunc(Number(nivelMax) || 0));
   const modelos = [];
   const vistos = new Set();
-  for (const pacote of Array.isArray(creature?.addons) ? creature.addons : []) {
+  for (const pacote of listaDeAddons(creature)) {
     const pacoteId = String(pacote?.id ?? "").trim();
     if (!pacoteId) continue;
     for (const feitico of Array.isArray(pacote?.feiticos) ? pacote.feiticos : []) {
@@ -1433,7 +1479,7 @@ export function estadosCombateDeAddon(creature, nivelMax = 5, { avaliar = null }
   const estados = [];
   const vistos = new Set();
 
-  for (const pacote of Array.isArray(creature?.addons) ? creature.addons : []) {
+  for (const pacote of listaDeAddons(creature)) {
     const pacoteId = String(pacote?.id ?? "").trim();
     if (!pacoteId) continue;
     const brutos = Array.isArray(pacote?.estadosCombate) ? pacote.estadosCombate : [];
@@ -1458,6 +1504,7 @@ export function estadosCombateDeAddon(creature, nivelMax = 5, { avaliar = null }
       const nivelMin = Math.max(0, Math.trunc(Number(bruto?.nivelMin) || 0));
       const nivelTeto = bruto?.nivelMax == null ? 5 : Math.trunc(Number(bruto.nivelMax));
       if (!idLocal || nivel < nivelMin || nivel > nivelTeto) continue;
+      if (bruto.quando && !(typeof avaliar === "function" && avaliar(bruto.quando))) continue;
       const id = comPrefixo(pacoteId, idLocal);
       if (vistos.has(id)) continue;
 
@@ -1528,6 +1575,7 @@ export function estadosCombateDeAddon(creature, nivelMax = 5, { avaliar = null }
         ...(tipo === "bool" && bruto.padrao != null ? { padrao: !!bruto.padrao } : {}),
         ...(bruto.foraCombate ? { foraCombate: true } : {}),
         ...(bruto.expiraNaRodada ? { expiraNaRodada: true } : {}),
+        ...(bruto.ampliaRecursos ? { ampliaRecursos: clonar(bruto.ampliaRecursos) } : {}),
         /* ⚠ OS TRÊS CONTROLES QUE O NATIVO JÁ TINHA (achado M04-A03 / M03-D07,
            2026-10-07). `alteraEstadoCombate` lê `umaVezPorRodada` (a segunda
            ativação na mesma rodada é recusada) e `exclusivoCom` (ligar este
@@ -1552,6 +1600,33 @@ export function estadosCombateDeAddon(creature, nivelMax = 5, { avaliar = null }
     }
   }
   return estados;
+}
+
+/** Ampliação percentual de máximos por estado, depois das demais fontes.
+ * A mesma conta serve ao derive e à sessão, inclusive no clique que ainda
+ * recebe o derive anterior. Cada aumento arredonda para baixo. */
+export function ampliarMaximosRecursos(base, estados, combate) {
+  const out = { hp: base.hp, pe: base.pe, fontesHp: [], fontesPe: [] };
+  if (!combate?.ativo) return out;
+  for (const e of estados ?? []) {
+    if (!combate[e.id]) continue;
+    for (const recurso of ["hp", "pe"]) {
+      const percentual = Number(e.ampliaRecursos?.[recurso]);
+      if (!(Number.isFinite(percentual) && percentual > 0)) continue;
+      const bonus = Math.floor(Math.max(0, out[recurso]) * percentual / 100);
+      out[recurso] += bonus;
+      out[recurso === "hp" ? "fontesHp" : "fontesPe"].push({ label: e.label, valor: bonus });
+    }
+  }
+  return out;
+}
+
+/** Máximos da sessão após uma troca de estado, mesmo antes do novo derive. */
+export function maximosRecursosNaSessao(derived, combate) {
+  const ampliacao = derived?.recursosAmpliados;
+  return ampliacao
+    ? ampliarMaximosRecursos(ampliacao.base, ampliacao.estados, combate)
+    : { hp: derived?.hp ?? 0, pe: derived?.pe ?? 0 };
 }
 
 /**
@@ -1663,7 +1738,10 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
   for (const [key, regra] of Object.entries(p.atributos)) {
     if (!atributosValidos.has(key) || !regra || typeof regra !== "object"
       || (regra.bonusBase != null && !Number.isInteger(regra.bonusBase))
-      || (regra.limiteFixo != null && (!Number.isInteger(regra.limiteFixo) || regra.limiteFixo < 0 || regra.limiteFixo > 32))) {
+      || (regra.limiteFixo != null && (!Number.isInteger(regra.limiteFixo) || regra.limiteFixo < 0 || regra.limiteFixo > 32))
+      || (regra.rolagem != null && (typeof regra.rolagem !== "object" || Array.isArray(regra.rolagem)
+        || (regra.rolagem.baseMax != null && (!Number.isInteger(regra.rolagem.baseMax) || regra.rolagem.baseMax < 18 || regra.rolagem.baseMax > 30))
+        || (regra.rolagem.limite != null && (!Number.isInteger(regra.rolagem.limite) || regra.rolagem.limite < 1))))) {
       problemas.push(`Atributo de addon inválido: ${key}.`);
     }
   }
@@ -1727,6 +1805,9 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     else if (funcionamentosVistos.has(id)) problemas.push(`${onde}: id repetido ("${id}").`);
     funcionamentosVistos.add(id);
     if (!String(funcionamento.nome ?? "").trim()) problemas.push(`${onde}: falta o campo "nome".`);
+    if (funcionamento.acumula !== undefined && typeof funcionamento.acumula !== "boolean") {
+      problemas.push(`${onde}: "acumula" precisa ser verdadeiro ou falso.`);
+    }
     if (efeitos !== undefined && !Array.isArray(efeitos)) {
       problemas.push(`${onde}: "efeitos" precisa ser uma lista.`);
       continue;
@@ -1804,6 +1885,19 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     estadosVistos.add(id);
     if (!String(estado.label ?? "").trim()) problemas.push(`${onde}: falta o campo "label".`);
     if (!tiposEstado.has(tipo)) problemas.push(`${onde}: tipo inválido.`);
+    if (estado.quando != null && (typeof estado.quando !== "string" || !validateExpression(estado.quando).ok)) {
+      problemas.push(`${onde}: "quando" precisa ser uma expressão válida.`);
+    }
+    if (estado.ampliaRecursos != null) {
+      const a = estado.ampliaRecursos;
+      if (tipo !== "bool" || !estado.requerAptidao || estado.foraCombate
+        || !a || typeof a !== "object" || Array.isArray(a)
+        || !Object.keys(a).length
+        || Object.entries(a).some(([k, v]) => !["hp", "pe"].includes(k)
+          || typeof v !== "number" || !Number.isFinite(v) || v <= 0)) {
+        problemas.push(`${onde}: "ampliaRecursos" exige estado bool de Aptidão em combate e percentuais positivos de hp ou pe.`);
+      }
+    }
     if (estado.requerEstado && !p.estadosCombate.some((e) => e.id === estado.requerEstado)) {
       problemas.push(`${onde}: "requerEstado" aponta para um estado que não existe no pacote.`);
     }
@@ -1924,6 +2018,18 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     if (cfg.multiplicadorTeto != null && !(Number(cfg.multiplicadorTeto) > 0)) {
       problemas.push('Espinho: "multiplicadorTeto" precisa ser um número maior que zero.');
     }
+    /* A identidade e a Maestria anotada (2026-10-12, Lanterna Coletora de
+       Almas). A pele é código, então o pacote só escolhe uma que exista. */
+    if (cfg.nome != null && !String(cfg.nome).trim()) problemas.push('Espinho: "nome" não pode ser vazio.');
+    if (cfg.visual != null && !ESPINHO_VISUAIS.includes(cfg.visual)) {
+      problemas.push(`Espinho: visual desconhecido ("${cfg.visual}"). Existem: ${ESPINHO_VISUAIS.join(", ")}.`);
+    }
+    if (cfg.artigo != null && !ESPINHO_ARTIGOS.includes(cfg.artigo)) {
+      problemas.push(`Espinho: "artigo" precisa ser ${ESPINHO_ARTIGOS.map((a) => `"${a}"`).join(" ou ")}.`);
+    }
+    if (cfg.maestriaAnotada != null && typeof cfg.maestriaAnotada !== "boolean") {
+      problemas.push('Espinho: "maestriaAnotada" precisa ser true ou false.');
+    }
     const talentosDoPacote = new Set((p.acrescenta.talentos ?? []).map((t) => String(t?.id ?? "").trim()));
     const expressaoOk = (onde, campo, expr) => {
       const v = validateExpression(String(expr));
@@ -1965,8 +2071,8 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     if (nEquip > 1) problemas.push('Espinho: só pode haver um item do tipo "equipamento".');
     if (nAprimora > 1) problemas.push('Espinho: só pode haver um item do tipo "aprimoramento".');
     if (nAprimora && !nEquip) problemas.push('Espinho: o item "aprimoramento" precisa do item "equipamento".');
-    if (lista.length === 0 && cfg.multiplicadorTeto == null) {
-      problemas.push('Espinho: o campo precisa de "itens" ou de "multiplicadorTeto".');
+    if (lista.length === 0 && cfg.multiplicadorTeto == null && cfg.maestriaAnotada !== true) {
+      problemas.push('Espinho: o campo precisa de "itens", de "multiplicadorTeto" ou de "maestriaAnotada".');
     }
   }
 
@@ -2033,6 +2139,12 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
       }
       if (e.tags !== undefined && !Array.isArray(e.tags)) {
         problemas.push(`${onde} ("${id}"): "tags" precisa ser uma lista.`);
+      }
+      if (def.validarEntrada) problemas.push(...def.validarEntrada(e, p));
+      if (def.validarEfeitos && Array.isArray(e.efeitos)) {
+        for (const [indice, efeito] of e.efeitos.entries()) {
+          problemas.push(...problemasDoEfeito(`${onde}, efeito #${indice + 1}`, efeito));
+        }
       }
     }
   }
@@ -2320,7 +2432,7 @@ export function comEscopoDaFicha(creature, fn) {
  */
 export function pacotesDaFicha(creature) {
   return new Set(
-    (Array.isArray(creature?.addons) ? creature.addons : [])
+    (listaDeAddons(creature))
       .map((p) => String(p?.id ?? "").trim().toLowerCase())
       .filter(Boolean),
   );
@@ -2389,8 +2501,15 @@ export const limparAddons = () => aplicarAddons([]);
  * o addon mudar não mexe sozinho nas fichas antigas: a ficha avisa que existe
  * versão nova, e atualizar é um botão.
  */
+/** Os pacotes CRUS da ficha, já com os embutidos em dia. Todo leitor desta
+ *  família passa por aqui, para a tela e o motor verem a mesma cópia. */
+function listaDeAddons(creature) {
+  const lista = hidratarFicha(creature)?.addons;
+  return Array.isArray(lista) ? lista : [];
+}
+
 export function addonsDaCriatura(creature) {
-  const lista = creature?.addons;
+  const lista = hidratarFicha(creature)?.addons;
   return Array.isArray(lista) ? lista.map(normalizarPacote) : [];
 }
 

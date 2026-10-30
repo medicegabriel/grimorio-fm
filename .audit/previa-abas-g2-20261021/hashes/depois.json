@@ -1,0 +1,20 @@
+{
+ "em": "2026-10-21T19:06:31.240Z",
+ "out": {
+  "src/systems/afty/ui/fontes.jsx": "d2a55925b2555eb462a3f2e3207b1c9a06fe0884841483ee1eccab8fe5e6740c",
+  "src/systems/afty/ficha/AftyFichaG2.jsx": "f0daba7bff93273a29b60d4dd9c55f096b61b3f2862ddebaf1afd4db6cf5b9e0",
+  "src/systems/afty/ficha/AftyFichaClassica.jsx": "33f3ae726c8856db5e6324115918c304e1b7b0f5663cf1c897003a9751fea1f7",
+  "src/systems/afty/ficha/AftyFicha.jsx": "5bd1a3eafda476e028ef777ff4b830bb5d2ec772c7451478f4a81ee9ba2f2217",
+  "src/systems/afty/ficha/abas/AbaAcoes.jsx": "7ace040415bc13a6e47d6cd132a0d07271b06f922228a9e896a80cd269a47653",
+  "src/systems/afty/ficha/abas/AbaPericias.jsx": "ba4679e05eece6d81ac53f7d9d9e0aa27d96368fc3ea853163c07fcb60ca86d6",
+  "src/systems/afty/ficha/abas/AbaEquipamentos.jsx": "c0c492923ddc1e239eef7893e3fa9a8c5f7c059a8168e2b7fb15e4ec16ddf5c6",
+  "src/systems/afty/ficha/efeitos/HabilidadesG2.jsx": "265f1ea9ee7620284a979c1102b1b1fc0d9227edcacc0c06ef22c2bbb7f4559f",
+  "src/systems/afty/ficha/ControlesDeArma.jsx": "49e3d675bfb7fb96983d43ba13eb49e82427bda3aede6f9cceae6a7d4b6aead5",
+  "src/systems/afty/ficha/ficha-conteudo.js": "5556ce8cea2bda522d4cdcd0707cddd517ca1b7ec8a23450ed77a76f177ad0cb",
+  "src/systems/afty/encontros/PainelDeCombatente.jsx": "526dd99e6dd07e414140adb4b4d637f77281b03f1941062ac9a7dc1113d44ee2",
+  "src/systems/afty/ficha/efeitos/efeitos-g2.css": "fb884d72e5924c1b8ce99ffefa56759698f2be81e434cd52e35ce1f3fefd476d",
+  "src/systems/afty/ficha/ficha.css": "555a8eb6a1e0c8c883274691e27ca2aa7b42376a283879b97ef95d0c7c01ab4e",
+  "src/App.jsx": "ebd0af3a43dafa2b3094ea4360dca11991cc05381638effc0c924ad107528a0c",
+  "dist/index.html": "53347b14dd4ee29bcfc13a4c89a9168d00f8bfdf4fa1a38497b0aa9bc062f01b"
+ }
+}

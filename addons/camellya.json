@@ -4,6 +4,8 @@
   "versao": "1.2.0",
   "paraRaw": "afty",
   "descricao": "Homebrew: Jardim da Flor Carmesim, ataques, feitiços e Floração Descontrolada.",
+  "resumo": "Homebrew Camellya: Jardim da Flor Carmesim, ataques, Feitiços e Floração Descontrolada",
+  "categoria": "tecnicas",
   "funcionamentos": [
     {
       "id": "tecnica",

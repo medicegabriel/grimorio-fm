@@ -1,0 +1,17 @@
+369fad100ad6e666  src/systems/afty/ficha/ficha-recebidos.js
+c452e98af6ea16e8  src/systems/afty/ficha/fatias.js
+6af1750c682e8fb5  src/systems/afty/ficha/efeitos/recebidos.js
+63b789eb9d67cdab  src/systems/afty/ficha/efeitos/efeitos-dados.js
+a78ec5e8fc34d52e  src/systems/afty/ficha/efeitos/g2-linha-do-tempo.js
+0106ea2dd7ac80b7  src/systems/afty/ficha/efeitos/gestor-logica.js
+81822291ef1254f7  src/systems/afty/ficha/efeitos/LinhaDoTempoG2.jsx
+1c40a058ea7431da  src/systems/afty/ficha/usar-delta-dos-estados.js
+92634852dd10b53d  src/systems/afty/ficha/ficha-buffs.js
+33f3ae726c8856db  src/systems/afty/ficha/AftyFichaClassica.jsx
+299546983abdf069  src/systems/afty/encontros/usar-encontro-afty.js
+f5fe3b8bbd1083a4  asserts/t-g2-fonte-compat.mjs
+7dd4bc0e1e30d6a6  asserts/t-g2-desempenho.mjs
+5a7e7b8b659b3ffc  docs/revisao-automacao/escopo.json
+9303f675b9125e98  .audit/correcao-g2-i1-20261019/perf-fonte.mjs
+c110850af2af37cd  .audit/correcao-g2-i1-20261019/perfil-fonte.mjs
+12f8612bfee2b093  .audit/correcao-g2-i1-20261019/browser-fonte.mjs

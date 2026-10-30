@@ -103765,6 +103765,1413 @@
       "estado": "DA CASA",
       "fontes": [],
       "nota": "Feitiço de Vespa 1.1.0, id separado da arma Gungnir. Homebrew, contrato em docs/afty-vespa-crabro.md, sem aprovação de auditoria."
+    },
+    "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::defesa::exprPessoal": {
+      "proprietario": "TEC-01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::pericia::exprPessoal": {
+      "proprietario": "TEC-01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::tr::exprPessoal": {
+      "proprietario": "TEC-01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "afty-estilo-sombras-catalogo.js::PROGRESSAO_TECNICAS::intervalo": {
+      "proprietario": "TEC-01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::acerto::exprPessoal": {
+      "proprietario": "TEC-01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::cd::exprPessoal": {
+      "proprietario": "TEC-01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Reconciliação registra identidade, não localiza nem aprova a regra."
+    },
+    "addon-herdada::formula-combate-entropica.json::formula-combate-entropica:res_intelectual__res_ataque_extra::efeitos": {
+      "proprietario": "RES-07",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "addon-herdada::formula-combate-entropica.json::formula-combate-entropica:res_intelectual__res_libertacao_do_destino::escolha": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-combate.js::COMBATE_ESTADOS::contraFeiticaria": {
+      "proprietario": "M03",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-combate.js::COMBATE_ESTADOS::precisaoForcada": {
+      "proprietario": "M03",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-combate.js::COMBATE_ESTADOS::resAtaqueExtra": {
+      "proprietario": "M03",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-combate.js::COMBATE_VARS::contra_feiticaria": {
+      "proprietario": "M03",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-combate.js::COMBATE_VARS::precisao_forcada": {
+      "proprietario": "M03",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-combate.js::COMBATE_VARS::res_ataque_extra": {
+      "proprietario": "M03",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::res_dadiva_indulgente_a_feiticaria::@3": {
+      "proprietario": "RES-01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_ataque_extra": {
+      "proprietario": "RES-07",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_ataque_extra::@0": {
+      "proprietario": "RES-07",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_libertacao_do_destino::@2": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_libertacao_do_destino::@3": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_libertacao_do_destino::@4": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-efeitos.js::HABILIDADE_EFEITOS::res_ataque_extra": {
+      "proprietario": "RES-07",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/niveis": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/niveis/@0": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_acido": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_acido/efeitos": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_acido/efeitos/@0": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_chocante": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_chocante/efeitos": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_chocante/efeitos/@0": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_congelante": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_congelante/efeitos": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_congelante/efeitos/@0": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energetico": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energetico/efeitos": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energetico/efeitos/@0": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energia_reversa": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energia_reversa/efeitos": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energia_reversa/efeitos/@0": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_necrotico": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_necrotico/efeitos": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_necrotico/efeitos/@0": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_psiquico": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_psiquico/efeitos": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_psiquico/efeitos/@0": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_queimante": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_queimante/efeitos": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_queimante/efeitos/@0": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_radiante": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_radiante/efeitos": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_radiante/efeitos/@0": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_sonico": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_sonico/efeitos": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_sonico/efeitos/@0": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_venenoso": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_venenoso/efeitos": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_venenoso/efeitos/@0": {
+      "proprietario": "LUT-11",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/niveis": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/niveis/@0": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_acido": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_acido/efeitos": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_acido/efeitos/@0": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_chocante": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_chocante/efeitos": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_chocante/efeitos/@0": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_congelante": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_congelante/efeitos": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_congelante/efeitos/@0": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energetico": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energetico/efeitos": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energetico/efeitos/@0": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energia_reversa": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energia_reversa/efeitos": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energia_reversa/efeitos/@0": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_necrotico": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_necrotico/efeitos": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_necrotico/efeitos/@0": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_psiquico": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_psiquico/efeitos": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_psiquico/efeitos/@0": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_queimante": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_queimante/efeitos": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_queimante/efeitos/@0": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_radiante": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_radiante/efeitos": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_radiante/efeitos/@0": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_sonico": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_sonico/efeitos": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_sonico/efeitos/@0": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_venenoso": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_venenoso/efeitos": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_venenoso/efeitos/@0": {
+      "proprietario": "RES-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_acido": {
+      "proprietario": "P01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_chocante": {
+      "proprietario": "P01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_congelante": {
+      "proprietario": "P01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_energetico": {
+      "proprietario": "P01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_energia_reversa": {
+      "proprietario": "P01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_necrotico": {
+      "proprietario": "P01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_psiquico": {
+      "proprietario": "P01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_queimante": {
+      "proprietario": "P01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_radiante": {
+      "proprietario": "P01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_sonico": {
+      "proprietario": "P01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_venenoso": {
+      "proprietario": "P01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_acido": {
+      "proprietario": "P01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_chocante": {
+      "proprietario": "P01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_congelante": {
+      "proprietario": "P01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_energetico": {
+      "proprietario": "P01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_energia_reversa": {
+      "proprietario": "P01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_necrotico": {
+      "proprietario": "P01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_psiquico": {
+      "proprietario": "P01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_queimante": {
+      "proprietario": "P01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_radiante": {
+      "proprietario": "P01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_sonico": {
+      "proprietario": "P01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_venenoso": {
+      "proprietario": "P01",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra."
+    },
+    "addon::treino-de-tr.json::@pacote": {
+      "proprietario": "TRE-03",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon para Grimorio do Afty / Ficha de Player que permita fazer o \"Treino de TR\" ele funciona exatamente igual aos Treinos de Pericia. Porém para Testes de Resistência. Correção explícita do autor: Faltou Integridade no Treino de TR.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de addon Treino de TR para Afty e Player",
+          "tipo": "decisão do autor",
+          "papel": "Autorização da adaptação de Perícia para TR"
+        },
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 345,
+          "marcadorPagina": "<!-- página 345 -->",
+          "local": "TREINO DE PERÍCIA",
+          "papel": "Modelo de etapas, custos e benefícios. A aplicação a TR é regra da casa solicitada pelo autor"
+        }
+      ],
+      "nota": "Identidade e fontes registradas. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::treino-de-tr.json::@pacote::acrescenta": {
+      "proprietario": "TRE-03",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon para Grimorio do Afty / Ficha de Player que permita fazer o \"Treino de TR\" ele funciona exatamente igual aos Treinos de Pericia. Porém para Testes de Resistência. Correção explícita do autor: Faltou Integridade no Treino de TR.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de addon Treino de TR para Afty e Player",
+          "tipo": "decisão do autor",
+          "papel": "Autorização da adaptação de Perícia para TR"
+        },
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 345,
+          "marcadorPagina": "<!-- página 345 -->",
+          "local": "TREINO DE PERÍCIA",
+          "papel": "Modelo de etapas, custos e benefícios. A aplicação a TR é regra da casa solicitada pelo autor"
+        }
+      ],
+      "nota": "Identidade e fontes registradas. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::treino-de-tr.json::@pacote::autor": {
+      "proprietario": "TRE-03",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon para Grimorio do Afty / Ficha de Player que permita fazer o \"Treino de TR\" ele funciona exatamente igual aos Treinos de Pericia. Porém para Testes de Resistência. Correção explícita do autor: Faltou Integridade no Treino de TR.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de addon Treino de TR para Afty e Player",
+          "tipo": "decisão do autor",
+          "papel": "Autorização da adaptação de Perícia para TR"
+        },
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 345,
+          "marcadorPagina": "<!-- página 345 -->",
+          "local": "TREINO DE PERÍCIA",
+          "papel": "Modelo de etapas, custos e benefícios. A aplicação a TR é regra da casa solicitada pelo autor"
+        }
+      ],
+      "nota": "Identidade e fontes registradas. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::treino-de-tr.json::@pacote::descricao": {
+      "proprietario": "TRE-03",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon para Grimorio do Afty / Ficha de Player que permita fazer o \"Treino de TR\" ele funciona exatamente igual aos Treinos de Pericia. Porém para Testes de Resistência. Correção explícita do autor: Faltou Integridade no Treino de TR.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de addon Treino de TR para Afty e Player",
+          "tipo": "decisão do autor",
+          "papel": "Autorização da adaptação de Perícia para TR"
+        },
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 345,
+          "marcadorPagina": "<!-- página 345 -->",
+          "local": "TREINO DE PERÍCIA",
+          "papel": "Modelo de etapas, custos e benefícios. A aplicação a TR é regra da casa solicitada pelo autor"
+        }
+      ],
+      "nota": "Identidade e fontes registradas. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::treino-de-tr.json::@pacote::id": {
+      "proprietario": "TRE-03",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon para Grimorio do Afty / Ficha de Player que permita fazer o \"Treino de TR\" ele funciona exatamente igual aos Treinos de Pericia. Porém para Testes de Resistência. Correção explícita do autor: Faltou Integridade no Treino de TR.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de addon Treino de TR para Afty e Player",
+          "tipo": "decisão do autor",
+          "papel": "Autorização da adaptação de Perícia para TR"
+        },
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 345,
+          "marcadorPagina": "<!-- página 345 -->",
+          "local": "TREINO DE PERÍCIA",
+          "papel": "Modelo de etapas, custos e benefícios. A aplicação a TR é regra da casa solicitada pelo autor"
+        }
+      ],
+      "nota": "Identidade e fontes registradas. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::treino-de-tr.json::@pacote::nome": {
+      "proprietario": "TRE-03",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon para Grimorio do Afty / Ficha de Player que permita fazer o \"Treino de TR\" ele funciona exatamente igual aos Treinos de Pericia. Porém para Testes de Resistência. Correção explícita do autor: Faltou Integridade no Treino de TR.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de addon Treino de TR para Afty e Player",
+          "tipo": "decisão do autor",
+          "papel": "Autorização da adaptação de Perícia para TR"
+        },
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 345,
+          "marcadorPagina": "<!-- página 345 -->",
+          "local": "TREINO DE PERÍCIA",
+          "papel": "Modelo de etapas, custos e benefícios. A aplicação a TR é regra da casa solicitada pelo autor"
+        }
+      ],
+      "nota": "Identidade e fontes registradas. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::treino-de-tr.json::@pacote::paraRaw": {
+      "proprietario": "TRE-03",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon para Grimorio do Afty / Ficha de Player que permita fazer o \"Treino de TR\" ele funciona exatamente igual aos Treinos de Pericia. Porém para Testes de Resistência. Correção explícita do autor: Faltou Integridade no Treino de TR.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de addon Treino de TR para Afty e Player",
+          "tipo": "decisão do autor",
+          "papel": "Autorização da adaptação de Perícia para TR"
+        },
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 345,
+          "marcadorPagina": "<!-- página 345 -->",
+          "local": "TREINO DE PERÍCIA",
+          "papel": "Modelo de etapas, custos e benefícios. A aplicação a TR é regra da casa solicitada pelo autor"
+        }
+      ],
+      "nota": "Identidade e fontes registradas. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::treino-de-tr.json::@pacote::versao": {
+      "proprietario": "TRE-03",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon para Grimorio do Afty / Ficha de Player que permita fazer o \"Treino de TR\" ele funciona exatamente igual aos Treinos de Pericia. Porém para Testes de Resistência. Correção explícita do autor: Faltou Integridade no Treino de TR.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de addon Treino de TR para Afty e Player",
+          "tipo": "decisão do autor",
+          "papel": "Autorização da adaptação de Perícia para TR"
+        },
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 345,
+          "marcadorPagina": "<!-- página 345 -->",
+          "local": "TREINO DE PERÍCIA",
+          "papel": "Modelo de etapas, custos e benefícios. A aplicação a TR é regra da casa solicitada pelo autor"
+        }
+      ],
+      "nota": "Identidade e fontes registradas. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::treino-de-tr.json::acrescenta.treinamentos::tr": {
+      "proprietario": "TRE-03",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon para Grimorio do Afty / Ficha de Player que permita fazer o \"Treino de TR\" ele funciona exatamente igual aos Treinos de Pericia. Porém para Testes de Resistência. Correção explícita do autor: Faltou Integridade no Treino de TR.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de addon Treino de TR para Afty e Player",
+          "tipo": "decisão do autor",
+          "papel": "Autorização da adaptação de Perícia para TR"
+        },
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 345,
+          "marcadorPagina": "<!-- página 345 -->",
+          "local": "TREINO DE PERÍCIA",
+          "papel": "Modelo de etapas, custos e benefícios. A aplicação a TR é regra da casa solicitada pelo autor"
+        }
+      ],
+      "nota": "Identidade e fontes registradas. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::treino-de-tr.json::acrescenta.treinamentos::tr::alvoTipo": {
+      "proprietario": "TRE-03",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon para Grimorio do Afty / Ficha de Player que permita fazer o \"Treino de TR\" ele funciona exatamente igual aos Treinos de Pericia. Porém para Testes de Resistência. Correção explícita do autor: Faltou Integridade no Treino de TR.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de addon Treino de TR para Afty e Player",
+          "tipo": "decisão do autor",
+          "papel": "Autorização da adaptação de Perícia para TR"
+        },
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 345,
+          "marcadorPagina": "<!-- página 345 -->",
+          "local": "TREINO DE PERÍCIA",
+          "papel": "Modelo de etapas, custos e benefícios. A aplicação a TR é regra da casa solicitada pelo autor"
+        }
+      ],
+      "nota": "Identidade e fontes registradas. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::treino-de-tr.json::acrescenta.treinamentos::tr::completo": {
+      "proprietario": "TRE-03",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon para Grimorio do Afty / Ficha de Player que permita fazer o \"Treino de TR\" ele funciona exatamente igual aos Treinos de Pericia. Porém para Testes de Resistência. Correção explícita do autor: Faltou Integridade no Treino de TR.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de addon Treino de TR para Afty e Player",
+          "tipo": "decisão do autor",
+          "papel": "Autorização da adaptação de Perícia para TR"
+        },
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 345,
+          "marcadorPagina": "<!-- página 345 -->",
+          "local": "TREINO DE PERÍCIA",
+          "papel": "Modelo de etapas, custos e benefícios. A aplicação a TR é regra da casa solicitada pelo autor"
+        }
+      ],
+      "nota": "Identidade e fontes registradas. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas": {
+      "proprietario": "TRE-03",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon para Grimorio do Afty / Ficha de Player que permita fazer o \"Treino de TR\" ele funciona exatamente igual aos Treinos de Pericia. Porém para Testes de Resistência. Correção explícita do autor: Faltou Integridade no Treino de TR.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de addon Treino de TR para Afty e Player",
+          "tipo": "decisão do autor",
+          "papel": "Autorização da adaptação de Perícia para TR"
+        },
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 345,
+          "marcadorPagina": "<!-- página 345 -->",
+          "local": "TREINO DE PERÍCIA",
+          "papel": "Modelo de etapas, custos e benefícios. A aplicação a TR é regra da casa solicitada pelo autor"
+        }
+      ],
+      "nota": "Identidade e fontes registradas. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@0": {
+      "proprietario": "TRE-03",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon para Grimorio do Afty / Ficha de Player que permita fazer o \"Treino de TR\" ele funciona exatamente igual aos Treinos de Pericia. Porém para Testes de Resistência. Correção explícita do autor: Faltou Integridade no Treino de TR.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de addon Treino de TR para Afty e Player",
+          "tipo": "decisão do autor",
+          "papel": "Autorização da adaptação de Perícia para TR"
+        },
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 345,
+          "marcadorPagina": "<!-- página 345 -->",
+          "local": "TREINO DE PERÍCIA",
+          "papel": "Modelo de etapas, custos e benefícios. A aplicação a TR é regra da casa solicitada pelo autor"
+        }
+      ],
+      "nota": "Identidade e fontes registradas. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@0/efeitos": {
+      "proprietario": "TRE-03",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon para Grimorio do Afty / Ficha de Player que permita fazer o \"Treino de TR\" ele funciona exatamente igual aos Treinos de Pericia. Porém para Testes de Resistência. Correção explícita do autor: Faltou Integridade no Treino de TR.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de addon Treino de TR para Afty e Player",
+          "tipo": "decisão do autor",
+          "papel": "Autorização da adaptação de Perícia para TR"
+        },
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 345,
+          "marcadorPagina": "<!-- página 345 -->",
+          "local": "TREINO DE PERÍCIA",
+          "papel": "Modelo de etapas, custos e benefícios. A aplicação a TR é regra da casa solicitada pelo autor"
+        }
+      ],
+      "nota": "Identidade e fontes registradas. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@0/efeitos/@0": {
+      "proprietario": "TRE-03",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon para Grimorio do Afty / Ficha de Player que permita fazer o \"Treino de TR\" ele funciona exatamente igual aos Treinos de Pericia. Porém para Testes de Resistência. Correção explícita do autor: Faltou Integridade no Treino de TR.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de addon Treino de TR para Afty e Player",
+          "tipo": "decisão do autor",
+          "papel": "Autorização da adaptação de Perícia para TR"
+        },
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 345,
+          "marcadorPagina": "<!-- página 345 -->",
+          "local": "TREINO DE PERÍCIA",
+          "papel": "Modelo de etapas, custos e benefícios. A aplicação a TR é regra da casa solicitada pelo autor"
+        }
+      ],
+      "nota": "Identidade e fontes registradas. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@1": {
+      "proprietario": "TRE-03",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon para Grimorio do Afty / Ficha de Player que permita fazer o \"Treino de TR\" ele funciona exatamente igual aos Treinos de Pericia. Porém para Testes de Resistência. Correção explícita do autor: Faltou Integridade no Treino de TR.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de addon Treino de TR para Afty e Player",
+          "tipo": "decisão do autor",
+          "papel": "Autorização da adaptação de Perícia para TR"
+        },
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 345,
+          "marcadorPagina": "<!-- página 345 -->",
+          "local": "TREINO DE PERÍCIA",
+          "papel": "Modelo de etapas, custos e benefícios. A aplicação a TR é regra da casa solicitada pelo autor"
+        }
+      ],
+      "nota": "Identidade e fontes registradas. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@2": {
+      "proprietario": "TRE-03",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon para Grimorio do Afty / Ficha de Player que permita fazer o \"Treino de TR\" ele funciona exatamente igual aos Treinos de Pericia. Porém para Testes de Resistência. Correção explícita do autor: Faltou Integridade no Treino de TR.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de addon Treino de TR para Afty e Player",
+          "tipo": "decisão do autor",
+          "papel": "Autorização da adaptação de Perícia para TR"
+        },
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 345,
+          "marcadorPagina": "<!-- página 345 -->",
+          "local": "TREINO DE PERÍCIA",
+          "papel": "Modelo de etapas, custos e benefícios. A aplicação a TR é regra da casa solicitada pelo autor"
+        }
+      ],
+      "nota": "Identidade e fontes registradas. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@2/efeitos": {
+      "proprietario": "TRE-03",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon para Grimorio do Afty / Ficha de Player que permita fazer o \"Treino de TR\" ele funciona exatamente igual aos Treinos de Pericia. Porém para Testes de Resistência. Correção explícita do autor: Faltou Integridade no Treino de TR.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de addon Treino de TR para Afty e Player",
+          "tipo": "decisão do autor",
+          "papel": "Autorização da adaptação de Perícia para TR"
+        },
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 345,
+          "marcadorPagina": "<!-- página 345 -->",
+          "local": "TREINO DE PERÍCIA",
+          "papel": "Modelo de etapas, custos e benefícios. A aplicação a TR é regra da casa solicitada pelo autor"
+        }
+      ],
+      "nota": "Identidade e fontes registradas. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@2/efeitos/@0": {
+      "proprietario": "TRE-03",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon para Grimorio do Afty / Ficha de Player que permita fazer o \"Treino de TR\" ele funciona exatamente igual aos Treinos de Pericia. Porém para Testes de Resistência. Correção explícita do autor: Faltou Integridade no Treino de TR.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de addon Treino de TR para Afty e Player",
+          "tipo": "decisão do autor",
+          "papel": "Autorização da adaptação de Perícia para TR"
+        },
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 345,
+          "marcadorPagina": "<!-- página 345 -->",
+          "local": "TREINO DE PERÍCIA",
+          "papel": "Modelo de etapas, custos e benefícios. A aplicação a TR é regra da casa solicitada pelo autor"
+        }
+      ],
+      "nota": "Identidade e fontes registradas. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@3": {
+      "proprietario": "TRE-03",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon para Grimorio do Afty / Ficha de Player que permita fazer o \"Treino de TR\" ele funciona exatamente igual aos Treinos de Pericia. Porém para Testes de Resistência. Correção explícita do autor: Faltou Integridade no Treino de TR.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de addon Treino de TR para Afty e Player",
+          "tipo": "decisão do autor",
+          "papel": "Autorização da adaptação de Perícia para TR"
+        },
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 345,
+          "marcadorPagina": "<!-- página 345 -->",
+          "local": "TREINO DE PERÍCIA",
+          "papel": "Modelo de etapas, custos e benefícios. A aplicação a TR é regra da casa solicitada pelo autor"
+        }
+      ],
+      "nota": "Identidade e fontes registradas. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::retracao-de-dominio.json::@pacote": {
+      "proprietario": "APT-09",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon chamado \"Retração de Domínio\" que funciona de maneira bem similar a uma Expansão de Domínio. É uma Aptidão que requer \"Dom 3\". Ela precisa ser ativa como se fosse um buff, ou uma expansão. E quando ativada, o jogador recebe 20% de HP Máximo e PE Máximo. Recebendo a diferença no PV e PE atual.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de Retração de Domínio, Aptidão de Dom 3",
+          "tipo": "decisão do autor",
+          "papel": "Regra da casa de ampliação ativável de PV e PE máximos e ganho da diferença aos atuais"
+        }
+      ],
+      "nota": "Identidade e pedido humano registrados. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::retracao-de-dominio.json::@pacote::acrescenta": {
+      "proprietario": "APT-09",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon chamado \"Retração de Domínio\" que funciona de maneira bem similar a uma Expansão de Domínio. É uma Aptidão que requer \"Dom 3\". Ela precisa ser ativa como se fosse um buff, ou uma expansão. E quando ativada, o jogador recebe 20% de HP Máximo e PE Máximo. Recebendo a diferença no PV e PE atual.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de Retração de Domínio, Aptidão de Dom 3",
+          "tipo": "decisão do autor",
+          "papel": "Regra da casa de ampliação ativável de PV e PE máximos e ganho da diferença aos atuais"
+        }
+      ],
+      "nota": "Identidade e pedido humano registrados. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::retracao-de-dominio.json::@pacote::autor": {
+      "proprietario": "APT-09",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon chamado \"Retração de Domínio\" que funciona de maneira bem similar a uma Expansão de Domínio. É uma Aptidão que requer \"Dom 3\". Ela precisa ser ativa como se fosse um buff, ou uma expansão. E quando ativada, o jogador recebe 20% de HP Máximo e PE Máximo. Recebendo a diferença no PV e PE atual.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de Retração de Domínio, Aptidão de Dom 3",
+          "tipo": "decisão do autor",
+          "papel": "Regra da casa de ampliação ativável de PV e PE máximos e ganho da diferença aos atuais"
+        }
+      ],
+      "nota": "Identidade e pedido humano registrados. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::retracao-de-dominio.json::@pacote::descricao": {
+      "proprietario": "APT-09",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon chamado \"Retração de Domínio\" que funciona de maneira bem similar a uma Expansão de Domínio. É uma Aptidão que requer \"Dom 3\". Ela precisa ser ativa como se fosse um buff, ou uma expansão. E quando ativada, o jogador recebe 20% de HP Máximo e PE Máximo. Recebendo a diferença no PV e PE atual.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de Retração de Domínio, Aptidão de Dom 3",
+          "tipo": "decisão do autor",
+          "papel": "Regra da casa de ampliação ativável de PV e PE máximos e ganho da diferença aos atuais"
+        }
+      ],
+      "nota": "Identidade e pedido humano registrados. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::retracao-de-dominio.json::@pacote::estadosCombate": {
+      "proprietario": "APT-09",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon chamado \"Retração de Domínio\" que funciona de maneira bem similar a uma Expansão de Domínio. É uma Aptidão que requer \"Dom 3\". Ela precisa ser ativa como se fosse um buff, ou uma expansão. E quando ativada, o jogador recebe 20% de HP Máximo e PE Máximo. Recebendo a diferença no PV e PE atual.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de Retração de Domínio, Aptidão de Dom 3",
+          "tipo": "decisão do autor",
+          "papel": "Regra da casa de ampliação ativável de PV e PE máximos e ganho da diferença aos atuais"
+        }
+      ],
+      "nota": "Identidade e pedido humano registrados. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::retracao-de-dominio.json::@pacote::estadosCombate::retracao_ativa": {
+      "proprietario": "APT-09",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon chamado \"Retração de Domínio\" que funciona de maneira bem similar a uma Expansão de Domínio. É uma Aptidão que requer \"Dom 3\". Ela precisa ser ativa como se fosse um buff, ou uma expansão. E quando ativada, o jogador recebe 20% de HP Máximo e PE Máximo. Recebendo a diferença no PV e PE atual.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de Retração de Domínio, Aptidão de Dom 3",
+          "tipo": "decisão do autor",
+          "papel": "Regra da casa de ampliação ativável de PV e PE máximos e ganho da diferença aos atuais"
+        }
+      ],
+      "nota": "Identidade e pedido humano registrados. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::retracao-de-dominio.json::@pacote::estadosCombate::retracao_ativa/ampliaRecursos": {
+      "proprietario": "APT-09",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon chamado \"Retração de Domínio\" que funciona de maneira bem similar a uma Expansão de Domínio. É uma Aptidão que requer \"Dom 3\". Ela precisa ser ativa como se fosse um buff, ou uma expansão. E quando ativada, o jogador recebe 20% de HP Máximo e PE Máximo. Recebendo a diferença no PV e PE atual.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de Retração de Domínio, Aptidão de Dom 3",
+          "tipo": "decisão do autor",
+          "papel": "Regra da casa de ampliação ativável de PV e PE máximos e ganho da diferença aos atuais"
+        }
+      ],
+      "nota": "Identidade e pedido humano registrados. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::retracao-de-dominio.json::@pacote::id": {
+      "proprietario": "APT-09",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon chamado \"Retração de Domínio\" que funciona de maneira bem similar a uma Expansão de Domínio. É uma Aptidão que requer \"Dom 3\". Ela precisa ser ativa como se fosse um buff, ou uma expansão. E quando ativada, o jogador recebe 20% de HP Máximo e PE Máximo. Recebendo a diferença no PV e PE atual.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de Retração de Domínio, Aptidão de Dom 3",
+          "tipo": "decisão do autor",
+          "papel": "Regra da casa de ampliação ativável de PV e PE máximos e ganho da diferença aos atuais"
+        }
+      ],
+      "nota": "Identidade e pedido humano registrados. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::retracao-de-dominio.json::@pacote::nome": {
+      "proprietario": "APT-09",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon chamado \"Retração de Domínio\" que funciona de maneira bem similar a uma Expansão de Domínio. É uma Aptidão que requer \"Dom 3\". Ela precisa ser ativa como se fosse um buff, ou uma expansão. E quando ativada, o jogador recebe 20% de HP Máximo e PE Máximo. Recebendo a diferença no PV e PE atual.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de Retração de Domínio, Aptidão de Dom 3",
+          "tipo": "decisão do autor",
+          "papel": "Regra da casa de ampliação ativável de PV e PE máximos e ganho da diferença aos atuais"
+        }
+      ],
+      "nota": "Identidade e pedido humano registrados. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::retracao-de-dominio.json::@pacote::paraRaw": {
+      "proprietario": "APT-09",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon chamado \"Retração de Domínio\" que funciona de maneira bem similar a uma Expansão de Domínio. É uma Aptidão que requer \"Dom 3\". Ela precisa ser ativa como se fosse um buff, ou uma expansão. E quando ativada, o jogador recebe 20% de HP Máximo e PE Máximo. Recebendo a diferença no PV e PE atual.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de Retração de Domínio, Aptidão de Dom 3",
+          "tipo": "decisão do autor",
+          "papel": "Regra da casa de ampliação ativável de PV e PE máximos e ganho da diferença aos atuais"
+        }
+      ],
+      "nota": "Identidade e pedido humano registrados. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::retracao-de-dominio.json::@pacote::versao": {
+      "proprietario": "APT-09",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon chamado \"Retração de Domínio\" que funciona de maneira bem similar a uma Expansão de Domínio. É uma Aptidão que requer \"Dom 3\". Ela precisa ser ativa como se fosse um buff, ou uma expansão. E quando ativada, o jogador recebe 20% de HP Máximo e PE Máximo. Recebendo a diferença no PV e PE atual.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de Retração de Domínio, Aptidão de Dom 3",
+          "tipo": "decisão do autor",
+          "papel": "Regra da casa de ampliação ativável de PV e PE máximos e ganho da diferença aos atuais"
+        }
+      ],
+      "nota": "Identidade e pedido humano registrados. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio": {
+      "proprietario": "APT-09",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon chamado \"Retração de Domínio\" que funciona de maneira bem similar a uma Expansão de Domínio. É uma Aptidão que requer \"Dom 3\". Ela precisa ser ativa como se fosse um buff, ou uma expansão. E quando ativada, o jogador recebe 20% de HP Máximo e PE Máximo. Recebendo a diferença no PV e PE atual.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de Retração de Domínio, Aptidão de Dom 3",
+          "tipo": "decisão do autor",
+          "papel": "Regra da casa de ampliação ativável de PV e PE máximos e ganho da diferença aos atuais"
+        }
+      ],
+      "nota": "Identidade e pedido humano registrados. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio::efeitos": {
+      "proprietario": "APT-09",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon chamado \"Retração de Domínio\" que funciona de maneira bem similar a uma Expansão de Domínio. É uma Aptidão que requer \"Dom 3\". Ela precisa ser ativa como se fosse um buff, ou uma expansão. E quando ativada, o jogador recebe 20% de HP Máximo e PE Máximo. Recebendo a diferença no PV e PE atual.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de Retração de Domínio, Aptidão de Dom 3",
+          "tipo": "decisão do autor",
+          "papel": "Regra da casa de ampliação ativável de PV e PE máximos e ganho da diferença aos atuais"
+        }
+      ],
+      "nota": "Identidade e pedido humano registrados. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio::requisitos": {
+      "proprietario": "APT-09",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon chamado \"Retração de Domínio\" que funciona de maneira bem similar a uma Expansão de Domínio. É uma Aptidão que requer \"Dom 3\". Ela precisa ser ativa como se fosse um buff, ou uma expansão. E quando ativada, o jogador recebe 20% de HP Máximo e PE Máximo. Recebendo a diferença no PV e PE atual.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de Retração de Domínio, Aptidão de Dom 3",
+          "tipo": "decisão do autor",
+          "papel": "Regra da casa de ampliação ativável de PV e PE máximos e ganho da diferença aos atuais"
+        }
+      ],
+      "nota": "Identidade e pedido humano registrados. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio::requisitos/@0": {
+      "proprietario": "APT-09",
+      "estado": "DA CASA",
+      "decisaoAutor": "Faça um Addon chamado \"Retração de Domínio\" que funciona de maneira bem similar a uma Expansão de Domínio. É uma Aptidão que requer \"Dom 3\". Ela precisa ser ativa como se fosse um buff, ou uma expansão. E quando ativada, o jogador recebe 20% de HP Máximo e PE Máximo. Recebendo a diferença no PV e PE atual.",
+      "fontes": [
+        {
+          "caminho": "Conversa do autor em 2026-10-25",
+          "versao": "Pedido humano desta tarefa",
+          "local": "Criação de Retração de Domínio, Aptidão de Dom 3",
+          "tipo": "decisão do autor",
+          "papel": "Regra da casa de ampliação ativável de PV e PE máximos e ganho da diferença aos atuais"
+        }
+      ],
+      "nota": "Identidade e pedido humano registrados. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
     }
   }
 }

@@ -155,3 +155,69 @@ mesmo motivo: traço que passa da caixa entra na área rolável da página.
 - `grupo`: só visual, separa os blocos da lista por uma fenda.
 - `concedeTalento` resolve local primeiro: o id que o próprio pacote acrescenta ganha o namespace dele.
 - O Alter traz só `"espinho": { "multiplicadorTeto": 1.5 }` e é pacote válido sozinho.
+- `nome`, `artigo` (`"o"` ou `"a"`) e `visual` (`"espinho"` ou `"lanterna"`): a identidade do card.
+  Ausentes, vale o Espinho. Ver a Lanterna abaixo.
+- `maestriaAnotada: true` abre o campo Maestria no card. Também é pacote válido sozinho.
+
+## A Lanterna Coletora de Almas (2026-10-12)
+
+Pedido do autor: *"Ele é IDENTICO ao addon do ESPINHO. Só muda a paleta de cores"*, com a lanterna
+da imagem dele no lugar do cristal e *"ao invés de algo pulsando e quebrando a tela, faça como se
+fossem chamas saindo da caixa"*. Depois, no mesmo pedido: o Alter vale nela também, e um campo
+para anotar a Maestria, porque o personagem dele tem Maestria alta e a Lanterna só considera até
+certa Maestria.
+
+| Peça | Onde mora |
+|---|---|
+| O pacote | `addons/lanterna-coletora-de-almas.json` |
+| A pele (paleta, título em duas linhas, chamas) | `src/systems/afty/ui/lanterna.css` |
+| A imagem (recortada, 256 px de largura, WebP de 29 KB) | `src/systems/afty/ui/lanterna-coletora.webp` |
+| O assert | seção 10 de `asserts/t-espinho.mjs` |
+
+**Ela não tem verbo, estado nem primitiva próprios.** O pacote dela traz o MESMO catálogo do
+Espinho (o assert compara campo a campo, menos a descrição) e declara `nome`, `artigo: "a"`,
+`visual: "lanterna"` e `maestriaAnotada: true` no campo `espinho`. O estado continua em
+`creature.espinho`, a primitiva continua `espinho`, e o card é o `EspinhoCard` com a raiz marcada
+`.afty-lanterna`. Por isso o Alter vale nela sem código nenhum.
+
+**O nome dela chega onde o jogador lê:** título e `aria-label` do card, a parcela do hover
+("Lanterna Coletora de Almas (Talento)"), o selo do item marcado na aba Equipamentos (azul, e não
+rosa) e o rótulo "Habilidade Única da Lanterna Coletora de Almas". O texto de validação do pacote
+segue dizendo "Espinho", porque é o nome do campo.
+
+**Os dois na mesma ficha são uma loja só.** A identidade vem do primeiro pacote instalado que traz
+itens, pela mesma regra do item repetido, e os itens não dobram. O Alter na frente não rouba a cara.
+
+### A Maestria anotada
+
+- Campo "Maestria" na faixa das Almas, só no criador (na Ficha ele não muda número que o card
+  mostre). Vazio é a Maestria real, que aparece como dica do campo.
+- **Substitui o BT, e não apara.** Decisão minha: o que está escrito é o que vale, inclusive
+  acima da real. A frase do autor ("só considera até certa Maestria") é o caso de uso, e quem
+  anota é o jogador.
+- **Só nos tetos.** As vagas compradas, o BT da ficha e todo o resto seguem lendo a real. O
+  `avaliar` do derive aceita um segundo argumento que troca `bt` e `maestria` no contexto do
+  montante, e só o teto o passa.
+- O Alter vem DEPOIS: `floor(teto(bt anotado) × 1,5)`, com o mesmo piso único.
+- O Espinho ignora a anotação: o pacote dele não declara `maestriaAnotada`. Liga com qualquer
+  pacote que a declare, como o multiplicador.
+- `creature.espinho.maestria`: `null` é a real, número é a anotada, e o card manda o campo em
+  todo patch (um patch sem ele apagaria a anotação a cada compra).
+
+### O visual
+
+- Paleta azul e violeta da imagem nos MESMOS tokens `--espinho-*`. O que o `espinho.css` pinta com
+  cor fixa (brilhos, fenda, gradientes da casca) é reescrito em `lanterna.css`, com
+  `.afty-lanterna` na frente para vencer pela especificidade.
+- Sem batimento, sem glitch, sem rachadura e sem rasgo. O que se mexe é luz de chama irregular
+  (opacidade), a tremulação das labaredas e faíscas subindo.
+- **As chamas** são duas fileiras de labaredas em SVG (data URI): atrás, largas e violeta; na
+  frente, azuis com o miolo claro. Moram fora da casca, atrás dela, nascem 14 px abaixo da borda
+  de cima e uma máscara apaga essa base (nas quinas a borda é curva e a base aparecia pendurada).
+  O contêiner tem a largura do card: nada passa dos lados, e a 390 px a página não rola de lado.
+- **O espaço de cima é `margin-top` da raiz** (58 px no criador, 42 na Ficha), para as chamas não
+  cobrirem o vizinho de cima nem serem cortadas por pai com `overflow`.
+- A lanterna tem 96 × 150 no criador e 60 × 94 na Ficha, com as Almas Restantes no vidro e o mesmo
+  hover do cristal.
+- Título: "LANTERNA" vazada como o Espinho, e "Coletora de Almas" embaixo, em serifa itálica cheia.
+  O `Titulo` quebra qualquer nome de mais de uma palavra assim; o "Espinho" sai igual a antes.

@@ -4,6 +4,8 @@
   "versao": "1.0.0",
   "paraRaw": "afty",
   "descricao": "Acrescenta Vaticano aos clãs do Herdado: 3 pontos livres de atributo, treinamento em Teologia (Religião) e Ocultismo e +1 por dado em todas as curas do usuário. O Talento de Origem Cura Perfeita requer Herdado: Vaticano e nível 8, concede 1 Nível de Energia Reversa e aumenta o bônus de Aprimorar Cura para +2 por dado.",
+  "resumo": "Clã Vaticano do Herdado: 3 pontos livres, Teologia e Ocultismo, e +1 por dado nas curas",
+  "categoria": "origens",
   "acrescenta": {
     "clas": [
       {

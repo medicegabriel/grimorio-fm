@@ -29,7 +29,7 @@
  */
 
 import { registrarFamilia, remendarLista, filtraForaDoJogador } from "./afty-addons";
-import { evalNumber } from "./afty-dsl";
+import { evalNumber, validateExpression } from "./afty-dsl";
 import { getOrigem, getCla } from "./afty-origens";
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
 // Requisito de treino em perícia ou TR. Módulo FOLHA, então não há ciclo.
@@ -40,7 +40,7 @@ import { APTIDAO_TRILHAS, AFTY_APTIDOES } from "./afty-aptidoes";
 import { AFTY_ESPECIALIZACOES, treinamentosDasEspecializacoes } from "./afty-especializacoes";
 // O Adepto de Combate empresta o pool de Estilos do Combatente. Sem ciclo:
 // afty-habilidades.js não importa daqui.
-import { ESTILOS_DE_COMBATE, MUDANCAS_DE_FUNDAMENTO } from "./afty-habilidades";
+import { ESTILOS_DE_COMBATE, MUDANCAS_DE_FUNDAMENTO, getHabilidade } from "./afty-habilidades";
 
 export const ALMA_LIVRE_TALENTO_ID = "tal_alma_livre";
 const ALMA_LIVRE_OPCAO_PREFIXO = "tal_alma_livre_esp_";
@@ -937,12 +937,34 @@ export const AFTY_TALENTOS = [
    `talentosDoGrupo` e `gruposDeTalento` filtram na hora da chamada. */
 
 let BY_ID = {};
+let OPCOES_BY_ID = {};
+
+export const AFTY_OPCOES_TALENTO = [];
+export const OPCAO_TALENTO_NOME = {};
 
 const TALENTOS_BASE = AFTY_TALENTOS.slice();
+let talentosSemOpcoesAdicionais = [];
+
+const copiarEscolhaDoTalento = (talento) => talento.escolha
+  ? { ...talento, escolha: { ...talento.escolha, opcoes: [...(talento.escolha.opcoes ?? [])] } }
+  : talento;
+
+function religarIndicesTalentos() {
+  BY_ID = Object.fromEntries(AFTY_TALENTOS.map((t) => [t.id, t]));
+  for (const id of Object.keys(OPCAO_TALENTO_NOME)) delete OPCAO_TALENTO_NOME[id];
+  for (const talento of AFTY_TALENTOS) {
+    for (const opcao of talento.escolha?.opcoes ?? []) {
+      if (opcao?.id && !OPCAO_TALENTO_NOME[opcao.id]) OPCAO_TALENTO_NOME[opcao.id] = opcao.nome ?? opcao.id;
+    }
+  }
+}
 
 function aplicarExtrasTalentos(extras = [], remendos = null) {
-  AFTY_TALENTOS.splice(0, AFTY_TALENTOS.length, ...remendarLista(TALENTOS_BASE, remendos), ...extras);
-  BY_ID = Object.fromEntries(AFTY_TALENTOS.map((t) => [t.id, t]));
+  talentosSemOpcoesAdicionais = [...remendarLista(TALENTOS_BASE, remendos), ...extras];
+  AFTY_TALENTOS.splice(0, AFTY_TALENTOS.length, ...talentosSemOpcoesAdicionais);
+  AFTY_OPCOES_TALENTO.splice(0, AFTY_OPCOES_TALENTO.length);
+  OPCOES_BY_ID = {};
+  religarIndicesTalentos();
 }
 
 aplicarExtrasTalentos();
@@ -963,6 +985,114 @@ registrarFamilia("talentos", {
 });
 
 export const getTalento = (id) => BY_ID[id] || null;
+
+export const getOpcaoTalento = (id) => OPCOES_BY_ID[id] || null;
+
+/* Opções são acréscimos independentes: dois addons alimentam o mesmo seletor
+   sem trocar a lista inteira por remendo. A cópia inicial impede acúmulo ao
+   reconstruir o mundo e mantém intactas as cópias salvas nos pacotes. */
+function aplicarExtrasOpcoesTalento(extras = []) {
+  AFTY_OPCOES_TALENTO.splice(0, AFTY_OPCOES_TALENTO.length,
+    ...extras.map((opcao) => JSON.parse(JSON.stringify(opcao))));
+  OPCOES_BY_ID = Object.fromEntries(AFTY_OPCOES_TALENTO.map((o) => [o.id, o]));
+  const talentos = talentosSemOpcoesAdicionais.slice();
+  const porId = Object.fromEntries(talentos.map((t) => [t.id, t]));
+  const copiados = new Set();
+  for (const opcao of AFTY_OPCOES_TALENTO) {
+    let talento = porId[opcao.talentoId];
+    if (!talento?.escolha) continue;
+    if (!copiados.has(talento.id)) {
+      const indice = talentos.indexOf(talento);
+      talento = copiarEscolhaDoTalento(talento);
+      talentos[indice] = talento;
+      porId[talento.id] = talento;
+      copiados.add(talento.id);
+    }
+    talento.escolha.opcoes.push({ ...opcao });
+  }
+  AFTY_TALENTOS.splice(0, AFTY_TALENTOS.length, ...talentos);
+  religarIndicesTalentos();
+}
+
+/** Validação compartilhada pelo portão de instalação e pelo catálogo unido. */
+export function validarOpcaoTalento(opcao, { talentos = [], habilidades = [] } = {}) {
+  const problemas = [];
+  const onde = `Opção de Talento "${opcao?.nome || opcao?.id || "?"}"`;
+  if (!opcao || typeof opcao !== "object" || Array.isArray(opcao)) return [`${onde}: precisa ser um objeto.`];
+  const extraPorId = (lista, id) => Array.isArray(lista) ? lista.find((e) => e?.id === id) : null;
+  const talento = extraPorId(talentos, opcao.talentoId) ?? getTalento(opcao.talentoId);
+  if (!String(opcao.talentoId ?? "").trim()) problemas.push(`${onde}: falta o campo "talentoId".`);
+  else if (!talento && !String(opcao.talentoId).includes(":")) {
+    problemas.push(`${onde}: Talento inexistente "${opcao.talentoId}".`);
+  } else if (talento && !talento.escolha) problemas.push(`${onde}: o Talento não possui escolha.`);
+  for (const campo of ["habilidadeId", "requerHabilidade"]) {
+    if (opcao[campo] == null) continue;
+    const id = String(opcao[campo]).trim();
+    if (!id) problemas.push(`${onde}: "${campo}" vazio.`);
+    else if (!extraPorId(habilidades, id) && !getHabilidade(id) && !id.includes(":")) {
+      problemas.push(`${onde}: Habilidade inexistente em "${campo}" ("${id}").`);
+    }
+  }
+  if (opcao.trocaAtributo != null) {
+    const troca = opcao.trocaAtributo;
+    const atributos = new Set(AFTY_ATTRS.map((a) => a.key));
+    if (!troca || typeof troca !== "object" || Array.isArray(troca)
+      || !atributos.has(troca.de) || !atributos.has(troca.para) || troca.de === troca.para) {
+      problemas.push(`${onde}: "trocaAtributo" precisa de atributos diferentes e válidos em "de" e "para".`);
+    }
+    if (!String(opcao.requerHabilidade ?? "").trim()) {
+      problemas.push(`${onde}: "trocaAtributo" requer o campo "requerHabilidade".`);
+    }
+  }
+  if (opcao.efeitos != null && !Array.isArray(opcao.efeitos)) {
+    problemas.push(`${onde}: "efeitos" precisa ser uma lista.`);
+  }
+  for (const [i, efeito] of (Array.isArray(opcao.efeitos) ? opcao.efeitos : []).entries()) {
+    const fonte = `${onde}, efeito #${i + 1}`;
+    if (!efeito || typeof efeito !== "object" || !String(efeito.canal ?? "").trim()) {
+      problemas.push(`${fonte}: falta o campo "canal".`);
+      continue;
+    }
+    for (const campo of ["expr", "quando"]) {
+      if (campo === "quando" && efeito[campo] == null) continue;
+      const expr = String(efeito[campo] ?? "").trim();
+      const validacao = validateExpression(expr);
+      if (!expr || !validacao.ok) problemas.push(`${fonte}: "${campo}" inválido.`);
+    }
+  }
+  return problemas;
+}
+
+function validarCatalogoOpcoesTalento() {
+  const problemas = [];
+  const ids = new Set();
+  for (const opcao of AFTY_OPCOES_TALENTO) {
+    if (ids.has(opcao.id)) problemas.push(`id duplicado de opção de Talento: ${opcao.id}`);
+    ids.add(opcao.id);
+    problemas.push(...validarOpcaoTalento(opcao));
+  }
+  return problemas;
+}
+
+registrarFamilia("opcoesTalento", {
+  rotulo: "Opção de Talento",
+  chave: "id",
+  obrigatorios: ["nome", "descricao", "talentoId"],
+  caminhosDeId: ["talentoId", "habilidadeId", "requerHabilidade", "efeitos[].alvo"],
+  ordem: 60,
+  aplicar: aplicarExtrasOpcoesTalento,
+  validador: validarCatalogoOpcoesTalento,
+  validarEntrada: (opcao, pacote) => validarOpcaoTalento(opcao, {
+    talentos: pacote.acrescenta.talentos ?? [],
+    habilidades: pacote.acrescenta.habilidades ?? [],
+  }),
+  validarEfeitos: true,
+  resolver: getOpcaoTalento,
+  idsDaFicha: (c) => Object.entries(c?.escolhasTalento ?? {}).flatMap(([talentoId, ids]) =>
+    (Array.isArray(ids) ? ids : []).filter((id) => !!getOpcaoTalento(id)
+      || (getTalento(talentoId)?.escolha?.aceitaOpcoesAddon && typeof id === "string" && id.includes(":")))),
+  remendavel: false,
+});
 
 /**
  * As Aptidões que os Talentos da ficha CONCEDEM PELO NOME, com
@@ -1204,6 +1334,13 @@ export function maxVezesTalento(id, ctx = {}) {
 export function resolveTalentos(creature, ctx = {}) {
   const vistos = new Set();
   const escolhidas = [];
+  const addonsAtivos = Array.isArray(ctx.addonsAtivos) || ctx.addonsAtivos instanceof Set
+    ? new Set(ctx.addonsAtivos) : null;
+  const paiDisponivel = (id) => {
+    const talento = BY_ID[id];
+    return talento && (!talento.escolha?.aceitaOpcoesAddon || !talento.addonId
+      || !addonsAtivos || addonsAtivos.has(talento.addonId));
+  };
   /* ⚠ A LISTA DA FICHA ACEITA REPETIÇÃO desde 2026-08-22, e `escolhidas`
      continua SEM ela. Os dois são usados para coisas diferentes: `escolhidas`
      responde "a criatura tem este Talento?" (pré-requisito, efeito, tela), e
@@ -1212,7 +1349,7 @@ export function resolveTalentos(creature, ctx = {}) {
      de LEITURA: baixar o ND devolve a pega excedente em vez de apagá-la. */
   const vezes = {};
   for (const id of Array.isArray(creature?.talentos) ? creature.talentos : []) {
-    if (!BY_ID[id]) continue;
+    if (!paiDisponivel(id)) continue;
     if (vistos.has(id)) {
       if ((vezes[id] ?? 1) >= maxVezesTalento(id, ctx)) continue;
       vezes[id] = (vezes[id] ?? 1) + 1;
@@ -1228,7 +1365,7 @@ export function resolveTalentos(creature, ctx = {}) {
   // Talento tenha caixa próprio. Ver `afty-concessao.js`.
   const concedidos = [];
   for (const id of Array.isArray(ctx.concedidos) ? ctx.concedidos : []) {
-    if (!BY_ID[id] || vistos.has(id)) continue;
+    if (!paiDisponivel(id) || vistos.has(id)) continue;
     vistos.add(id);
     vezes[id] = 1;
     concedidos.push(id);
@@ -1289,6 +1426,10 @@ export function resolveEscolhasTalento(
   const especializacoesAtuais = new Set(
     (Array.isArray(especializacoes) ? especializacoes : []).map((e) => typeof e === "string" ? e : e?.id),
   );
+  const habilidadesEfetivas = new Set(Array.isArray(ctx.habilidadesEfetivas) ? ctx.habilidadesEfetivas : []);
+  const addonsAtivos = Array.isArray(ctx.addonsAtivos) || ctx.addonsAtivos instanceof Set
+    ? new Set(ctx.addonsAtivos)
+    : null;
   for (const talId of escolhidasIds) {
     const tal = BY_ID[talId];
     if (!tal?.escolha) continue;
@@ -1299,12 +1440,27 @@ export function resolveEscolhasTalento(
       ? Math.max(...AFTY_ATTRS.map((a) => Number(limites[a.key])).filter(Number.isFinite))
       : null;
     const disponiveis = tal.escolha.opcoes.filter((o) => {
+      if (tal.addonId && addonsAtivos && !addonsAtivos.has(tal.addonId)) return false;
+      if (o.addonId && addonsAtivos && !addonsAtivos.has(o.addonId)) return false;
+      if (o.habilidadeId) {
+        const concedida = getHabilidade(o.habilidadeId);
+        if (!concedida || (concedida.addonId && addonsAtivos && !addonsAtivos.has(concedida.addonId))) return false;
+      }
       if (talId === ALMA_LIVRE_TALENTO_ID && especializacoesAtuais.has(o.especializacaoId)) return false;
       if (talId !== "tal_quebra_de_limites" || !Number.isFinite(maiorLimite)) return true;
       const atributo = o.id.replace(/^tal_quebra_/, "");
       return Number(limites[atributo]) !== maiorLimite;
     });
     const validas = new Set(disponiveis.map((o) => o.id));
+    const bloqueadas = disponiveis.filter((o) => o.requerHabilidade && (
+      !habilidadesEfetivas.has(o.requerHabilidade)
+      || (getHabilidade(o.requerHabilidade)?.addonId && addonsAtivos
+        && !addonsAtivos.has(getHabilidade(o.requerHabilidade).addonId))))
+      .map((o) => o.id);
+    const bloqueadasSet = new Set(bloqueadas);
+    const motivosBloqueio = Object.fromEntries(disponiveis
+      .filter((o) => bloqueadasSet.has(o.id))
+      .map((o) => [o.id, `Requer ${getHabilidade(o.requerHabilidade)?.nome ?? o.requerHabilidade}`]));
     const brutas = Array.isArray(escolhasTalento?.[talId]) ? escolhasTalento[talId] : [];
     const vistos = new Set();
     const opcoes = [];
@@ -1314,7 +1470,7 @@ export function resolveEscolhasTalento(
       opcoes.push(id);
     }
     const allowance = tal.escolha.repetivel
-      ? tal.escolha.opcoes.length
+      ? disponiveis.length
       : (tal.escolha.niveis ?? [1]).filter((n) => nd >= n).length;
     porTal[talId] = {
       opcoes,
@@ -1322,25 +1478,14 @@ export function resolveEscolhasTalento(
       allowance,
       repetivel: !!tal.escolha.repetivel,
       excedeu: opcoes.length > allowance,
+      bloqueadas,
+      motivosBloqueio,
     };
-    mapa[talId] = opcoes;
+    mapa[talId] = opcoes.filter((id) => !bloqueadasSet.has(id));
     if (tal.escolha.repetivel) vagasExtras += Math.max(0, opcoes.length - 1);
   }
   return { porTal, mapa, vagasExtras };
 }
-
-/**
- * Nome de cada OPÇÃO de escolha aninhada de Talento, por id. Irmão do
- * OPCAO_ESCOLHA_NOME das Habilidades, e serve ao mesmo fim: rotular a fonte de
- * um número no hover, já que o efeito é chaveado pela opção e não pelo talento.
- */
-export const OPCAO_TALENTO_NOME = (() => {
-  const out = {};
-  for (const t of AFTY_TALENTOS) {
-    for (const o of t.escolha?.opcoes || []) if (o?.id && !out[o.id]) out[o.id] = o.nome ?? o.id;
-  }
-  return out;
-})();
 
 /** Erros de conteúdo do catálogo. Rodar a cada leva nova. */
 export function validarCatalogoTalentos() {

@@ -41,7 +41,7 @@ const t = (nome, real, esp) => {
 /* ============================================================ */
 const CRU = JSON.parse(readFileSync(new URL("../addons/nao-feiticeiro.json", import.meta.url), "utf8"));
 t("o pacote valida sem problema nenhum", A.validarPacote(CRU), []);
-t("autor, sistema-alvo e a liberação do Estilo Marcial", [CRU.autor, CRU.paraRaw, CRU.libera], ["Templas", "afty", ["feiticosRestritos"]]);
+t("autor, sistema-alvo e a liberação das Técnicas Marciais", [CRU.autor, CRU.paraRaw, CRU.libera], ["Templas", "afty", ["tecnicasMarciais"]]);
 t("o canal de treino na arma existe", !!EFE.getCanal("treinoArmaCasoJa"), true);
 const pacote = A.normalizarPacote(CRU);
 A.aplicarAddons([pacote]);
@@ -87,9 +87,15 @@ for (const sistema of ["player", "afty"]) {
   t(tag("a origem diz sem energia"), d.origemSemEnergia, true);
   t(tag("nenhuma trilha de Aptidão"), AP.trilhasDaCriatura(ficha({ sistema })).length, 0);
   t(tag("e a Aptidão gravada não vale"), (d.aptidoesEscolhidas ?? []).includes("aura_reforcada"), false);
-  t(tag("Feitiços só Passivo e Personalizado"), d.feiticos.tiposPermitidos, ["passivo", "personalizado"]);
-  t(tag("até o Nível 2"), d.feiticos.nivelMax, 2);
-  t(tag("e no nível 4, até onde o nível alcança"), deriveAfty(ficha({ sistema, nd: 4 })).feiticos.nivelMax, 1);
+  /* ⚠ DESDE 2026-10-27 O ESTILO E O FUNDAMENTO MARCIAL SÃO AS TÉCNICAS MARCIAIS
+     NATIVAS, abertas pela liberação `tecnicasMarciais`, e o Não-Feiticeiro não
+     cria Feitiço nenhum. O teto de Nível 2 da origem vale para a Técnica. */
+  t(tag("nenhum tipo de Feitiço"), d.feiticos.tiposPermitidos, []);
+  t(tag("as Técnicas Marciais abertas, com os cinco tipos"),
+    [d.tecnicasMarciais.disponivel, d.tecnicasMarciais.tiposPermitidos], [true, ["ataque", "auxiliar", "curativo", "passivo", "personalizado"]]);
+  t(tag("até o Nível 2"), [d.feiticos.nivelMax, d.tecnicasMarciais.nivelMax], [2, 2]);
+  t(tag("e no nível 4, até onde o nível alcança"),
+    [deriveAfty(ficha({ sistema, nd: 4 })).feiticos.nivelMax, deriveAfty(ficha({ sistema, nd: 4 })).tecnicasMarciais.nivelMax], [1, 1]);
   t(tag("o nível trava em 10"), d.nd, 10);
   const inato = deriveAfty(ficha({ sistema, origemId: "inato", escolhas: {} }));
   t(tag("o Inato segue com Energia, trilhas e nível 12"),

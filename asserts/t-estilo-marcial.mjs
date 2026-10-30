@@ -48,8 +48,9 @@ t("e a liberacao e uma so", PACOTE.libera, ["feiticosRestritos"]);
    2026-09-11, com as duas da Bencao do Grao Mestre da Forja, e 15 desde
    2026-09-14, com as duas da Criacao de Equipamentos, e 16 com a terceira, e 17
    desde 2026-09-17, com a Versatilidade Extrema fora do jogador. */
-/* E 18 desde 2026-10-14, com a Quimera de Maldições. */
-t("existem 18 liberacoes hoje", AD.LIBERACOES.length, 18);
+/* E 18 desde 2026-10-14, com a Quimera de Maldições, e 19 desde 2026-10-27, com a `tecnicasMarciais`
+   (Estilo Marcial nativo). */
+t("existem 19 liberacoes hoje", AD.LIBERACOES.length, 19);
 t("feiticosRestritos esta registrada",
   AD.LIBERACOES.some((l) => l.id === "feiticosRestritos"), true);
 t("id inventado parecido e REPROVADO",
@@ -131,12 +132,15 @@ t("sem tipo permitido, so o gravado aparece",
 /* 4. PONTA A PONTA, PELO deriveAfty                             */
 /* ============================================================ */
 
-const criatura = (addons, { nd = 12, origem = "restringido", feiticos = [] } = {}) => {
+/* ⚠ DESDE 2026-10-27 O ADDON SÓ TRABALHA NO SEM TÉCNICA. No Restringido (e em toda
+   ficha sem energia que não é Sem Técnica) as Técnicas Marciais nativas ocupam o
+   lugar dele, e os Feitiços que ele criou viram Técnicas na leitura, sem perda.
+   A metade do Restringido está no bloco 6 daqui e em t-tecnicas-marciais.mjs. */
+const criatura = (addons, { nd = 12, origem = "sem_tecnica", feiticos = [] } = {}) => {
   const c = createBlankAfty();
   c.core.nd = nd;
   c.core.tipo = "combatente";
   c.core.origem = { id: origem };
-  c.especializacoes = [{ id: "restringido", nivel: nd }];
   c.feiticos = feiticos;
   c.addons = addons;
   return c;
@@ -161,19 +165,19 @@ const herdado = deriveAfty(criatura([], { origem: "herdado" }));
 t("Herdado sem addon ve o card", herdado.feiticos.mostraCard, true);
 t("e continua com os seis tipos", herdado.feiticos.tiposPermitidos.length, 6);
 
-/* ⚠ ABRIR A ABA NAO DA VAGA DE GRACA. O Feitico do Restringido gasta o mesmo
+/* ⚠ ABRIR A ABA NAO DA VAGA DE GRACA. O Feitico do Sem Tecnica gasta o mesmo
    contador unico de habilidades que o resto da aba, e o addon nao encosta nele. */
 t("o contador nao muda com o addon",
   comAddon.orcamentoHabilidades.total, semAddon.orcamentoHabilidades.total);
 
 /* ⚠ E NAO MUDA STAT NENHUM. A liberacao muda REGRA (o que a criatura PODE ter),
-   e nao numero: o PV, a Defesa e o PE de um Restringido sao os mesmos dos dois
+   e nao numero: o PV, a Defesa e o PE de um Sem Tecnica sao os mesmos dos dois
    lados enquanto ele nao criar Feitico. */
 t("PV igual", comAddon.pv, semAddon.pv);
 t("Defesa igual", comAddon.defesa, semAddon.defesa);
 t("PE igual", comAddon.pe, semAddon.pe);
 
-/* ⚠ A TERCEIRA PORTA, MEDIDA PELO deriveAfty. Um Restringido com Feitico
+/* ⚠ A TERCEIRA PORTA, MEDIDA PELO deriveAfty. Um Sem Tecnica com Feitico
    gravado e o addon FORA continua vendo o card, para poder remover a linha. */
 const gravado = { ...createBlankFeitico(), tipo: "passivo", nome: "Corpo Marcial" };
 t("feitico gravado sem addon ainda mostra o card",
@@ -199,7 +203,7 @@ const passivo = {
   efeitosPassivo: [{ canal: "rdGeral", expr: "3" }],
 };
 const comPassivo = deriveAfty(criatura([PACOTE], { feiticos: [passivo] }));
-t("o Passivo do Restringido soma RD", comPassivo.rdGeral, comAddon.rdGeral + 3);
+t("o Passivo do Sem Tecnica soma RD", comPassivo.rdGeral, comAddon.rdGeral + 3);
 t("e ele gasta uma vaga do contador unico",
   comPassivo.orcamentoHabilidades.gastosNoComum,
   comAddon.orcamentoHabilidades.gastosNoComum + 1);
@@ -209,6 +213,31 @@ const proprio = { ...createBlankFeitico(), tipo: "personalizado", nome: "Golpe E
 const comProprio = deriveAfty(criatura([PACOTE], { feiticos: [proprio] }));
 t("o Personalizado entra na lista", comProprio.feiticos.lista.length, 1);
 t("e cobra o custo padrao do nivel", comProprio.feiticos.lista[0].custoPE, 5);
+
+/* ============================================================ */
+/* 6. O RESTRINGIDO: A TECNICA MARCIAL NATIVA OCUPA O LUGAR      */
+/* ============================================================ */
+const restringido = (addons, extra = {}) => {
+  const c = criatura(addons, { ...extra, origem: "restringido" });
+  c.especializacoes = [{ id: "restringido", nivel: c.core.nd }];
+  return c;
+};
+const rSem = deriveAfty(restringido([]));
+const rCom = deriveAfty(restringido([PACOTE]));
+t("o Restringido com o addon NAO abre o card de Feitiços", rCom.feiticos.mostraCard, false);
+t("e nao cria tipo de Feitiço nenhum", rCom.feiticos.tiposPermitidos, []);
+t("quem abre e o card das Técnicas Marciais", rCom.tecnicasMarciais.mostraCard, true);
+t("o addon nao muda numero nenhum do Restringido",
+  [rCom.pv, rCom.defesa, rCom.pe], [rSem.pv, rSem.defesa, rSem.pe]);
+
+/* O Feitiço que o addon criou ANTES vira Técnica Marcial, sem apagar nada. */
+const rPassivo = deriveAfty(restringido([PACOTE], { feiticos: [passivo] }));
+t("o Feitiço gravado vira Técnica Marcial", rPassivo.tecnicasMarciais.ids, [passivo.id]);
+t("e some da conta de Feitiço", rPassivo.feiticos.gastos, 0);
+t("e entra na conta de Técnica Marcial", rPassivo.orcamentoHabilidades.tecnicasMarciais, 1);
+t("o Passivo marcial segue somando RD", rPassivo.rdGeral, rCom.rdGeral + 3);
+t("o Personalizado migra com o custo da Técnica Marcial",
+  deriveAfty(restringido([PACOTE], { feiticos: [proprio] })).tecnicasMarciais.lista[0].custoPE, 5);
 
 AD.limparAddons();
 t("mundo limpo no fim", AD.addonsAtivos().length, 0);

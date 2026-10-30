@@ -1,0 +1,107 @@
+[
+  {
+    "name": "t-imitacao-configuracoes",
+    "status": 0,
+    "ms": 471,
+    "stdout": "TODOS OS 44 ASSERTS PASSARAM\n",
+    "stderr": ""
+  },
+  {
+    "name": "t-concessao",
+    "status": 0,
+    "ms": 442,
+    "stdout": "TODOS OS 107 ASSERTS PASSARAM\n",
+    "stderr": ""
+  },
+  {
+    "name": "t-concessao-sessao",
+    "status": 0,
+    "ms": 318,
+    "stdout": "TODOS OS 37 ASSERTS PASSARAM\n",
+    "stderr": ""
+  },
+  {
+    "name": "t-condicoes",
+    "status": 0,
+    "ms": 252,
+    "stdout": "TODOS OS 29 ASSERTS PASSARAM\n",
+    "stderr": ""
+  },
+  {
+    "name": "t-condicoes-efeitos",
+    "status": 0,
+    "ms": 617,
+    "stdout": "TODOS OS 141 ASSERTS PASSARAM\n",
+    "stderr": ""
+  },
+  {
+    "name": "t-delta-buffs",
+    "status": 0,
+    "ms": 397,
+    "stdout": "TODOS OS 10 ASSERTS PASSARAM\n",
+    "stderr": ""
+  },
+  {
+    "name": "t-g2-desempenho",
+    "status": 0,
+    "ms": 1247,
+    "stdout": "TODOS OS 30 ASSERTS PASSARAM\n",
+    "stderr": ""
+  },
+  {
+    "name": "t-g2-fonte-compat",
+    "status": 0,
+    "ms": 1196,
+    "stdout": "TODOS OS 52 ASSERTS PASSARAM\n",
+    "stderr": ""
+  },
+  {
+    "name": "t-g2-preferencias",
+    "status": 0,
+    "ms": 313,
+    "stdout": "TODOS OS 42 ASSERTS PASSARAM\n",
+    "stderr": ""
+  },
+  {
+    "name": "t-g2-sessao-operacoes",
+    "status": 0,
+    "ms": 400,
+    "stdout": "TODOS OS 51 ASSERTS PASSARAM\n",
+    "stderr": ""
+  },
+  {
+    "name": "t-g2-virada-registro",
+    "status": 0,
+    "ms": 371,
+    "stdout": "TODOS OS 57 ASSERTS PASSARAM\n",
+    "stderr": ""
+  },
+  {
+    "name": "t-pacotes-aliados",
+    "status": 0,
+    "ms": 1657,
+    "stdout": "TODOS OS 189 ASSERTS PASSARAM\n",
+    "stderr": ""
+  },
+  {
+    "name": "t-ordem-modulos",
+    "status": 0,
+    "ms": 1585,
+    "stdout": "TODOS OS 38 ASSERTS PASSARAM\n",
+    "stderr": ""
+  },
+  {
+    "name": "t-revisao-g00",
+    "status": 0,
+    "ms": 1478,
+    "stdout": "TODOS OS 35 ASSERTS PASSARAM\n",
+    "stderr": ""
+  },
+  {
+    "name": "t-fechamento-g2",
+    "status": 0,
+    "ms": 851,
+    "stdout": "TODOS OS 124 ASSERTS PASSARAM\n",
+    "stderr": ""
+  }
+]

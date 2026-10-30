@@ -155,8 +155,19 @@ for (const sistema of ["afty", "player"]) {
   const base = clone("res_restrito_pelos_ceus");
   const semRespeito = deriveAfty(variacao(12, sistema, { habilidades: [base] }));
   const comRespeito = deriveAfty(variacao(12, sistema, { habilidades: [base, clone("res_respeito_celeste")] }));
+  const comDois = deriveAfty(variacao(12, sistema, {
+    habilidades: [base, clone("res_respeito_celeste"), clone("res_respeito_celeste")],
+  }));
   const vagas = (x) => x.habilidades?.escolhas?.porHab?.[clone("res_restrito_pelos_ceus")]?.allowance ?? null;
-  t(`[${sistema}] o Respeito Celeste da herdeira dá 2 Dádivas a mais no 12`, vagas(comRespeito) - vagas(semRespeito), 2);
+  /* PEGA POR PEGA desde 2026-10-12 (autor): uma pega dá uma Dádiva, e a 2ª pega
+     abre no 12. */
+  t(`[${sistema}] uma pega do Respeito Celeste da herdeira dá 1 Dádiva a mais`, vagas(comRespeito) - vagas(semRespeito), 1);
+  t(`[${sistema}] duas pegas dão 2 no 12`, vagas(comDois) - vagas(semRespeito), 2);
+  t(`[${sistema}] e a 2ª pega gasta vaga de Habilidade`, comDois.habilidades?.gastos - comRespeito.habilidades?.gastos, 1);
+  /* O Potencial Físico cita o Restrito pelos Céus do livro, e a herdeira
+     responde pelo id da mãe. */
+  const comTreino = deriveAfty(variacao(12, sistema, { habilidades: [base], treinamentos: { potencial_fisico: 4 } }));
+  t(`[${sistema}] o Potencial Físico 4ª dá Dádiva à herdeira`, vagas(comTreino) - vagas(semRespeito), 1);
 }
 
 /* ---------------- a variação sem classe própria segue a mãe ---------------- */

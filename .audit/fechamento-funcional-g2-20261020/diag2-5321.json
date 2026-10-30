@@ -1,0 +1,16 @@
+{
+  "geradoEm": "2026-10-20T20:46:43.923Z",
+  "base": "http://127.0.0.1:5321",
+  "etapas": [
+    {
+      "nome": "sticky",
+      "checks": [],
+      "erros": [],
+      "observado": {}
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "sticky: 0/0"
+  ]
+}

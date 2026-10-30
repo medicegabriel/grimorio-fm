@@ -1,5 +1,603 @@
 # Ficha Final do Afty (plano)
 
+## Agora na Mesa como seção única, 23/10
+
+O autor pediu repensar o refinamento anterior. A composição atual usa uma
+seção comum, sem cartões individuais, com nome/estado abrindo o painel e
+ação direta à direita. Cabeçalho e divisórias seguem a linguagem dos grupos
+do G2. Contadores, pendências, rascunhos e operações preservados. No telefone,
+lista contínua com alvos de 40 px. Nova avaliação visual fica com o autor.
+Lint/build, 52 asserts, 94 checks de leiaute, 53 de interação e 50 da Mesa
+passaram. S1 agora em 792/800 e 928/1024 nos 331 px. Evidências e limites em
+.audit/mesa-unificada-g2-20261022/RELATORIO.md. Somente MesaG2.jsx e CSS
+alterados, dist diário preservado. Integração sem autorização própria,
+barra antiga 9/10. As seções abaixo registram os ajustes anteriores.
+
+## Refinamento visual de Agora na Mesa em 22/10
+
+Autor pediu elevar a aparência da faixa. Cartões mais largos, tipografia
+das linhas da ficha, setas ao fim do nome e ações à direita de nome e estado.
+Somente CSS. Na largura de 1064 px, nove cartões em três colunas e 192,55 px
+de altura, antes 207,09. Lint/build aprovados, leiaute focado 94/94 e controles
+conferidos. S1 em 788/800 e 962/1024 nos 331 px. A faixa densa S2 fica maior
+com a compacta em 1280, de 201 para 302 px. Registro e evidências em
+.audit/refino-mesa-abas-g2-20261022/RELATORIO.md. Integração ainda sem
+autorização própria, barra antiga 9/10 preservada.
+
+## Retoque das bordas em 22/10
+
+Pedido posterior à reconferência: cantos uniformes em Rápido e Dano.
+abas-g2.css centraliza o raio das seções em 12 px e arredonda o fundo do
+cabeçalho em 11 px, acompanhando a borda interna. Vale nas três abas da
+prévia, sem mudança de altura ou interação. Conferido de 390 a 2560 px,
+incluindo compacta aberta. Lint e build isolado aprovados. Registro em
+.audit/ajuste-bordas-abas-g2-20261022/RELATORIO.md. Integração ainda sem
+autorização própria, barra antiga 9/10 intacta.
+
+## Reconferência encerrada em 22/10, integração aguarda autorização
+
+Reconferência independente concluída pelo Codex em 22/10. Outros em Perícias,
+destinos únicos da busca, filtros, rolagens, foco e callbacks atuais confirmados.
+Linhas de armas com colunas comuns confirmadas, inclusive Raio Negro em amostra
+sintética separada. Nenhuma correção adicional de produto necessária.
+
+Provas próprias: 52 asserts específicos, lint e build isolado aprovados,
+181/181 ajustes, 94/94 leiaute focado, 39/39 complemento e 21/21 temas e
+compatibilidade. Suíte 225/227, somente as duas falhas históricas.
+S1 segue 788/800 e 956/1024 na coluna efetiva de 331 px. Fontes e dist
+diário preservados por hash. Prévia na 5330, 5173 não tocada.
+
+Parecer: C:/Projetos/Grimorio/REVISAO-AJUSTES-PREVIA-TRES-ABAS-20261022.md.
+Evidências: grimorio-tracker/.audit/revisao-codex-ajustes-g2-20261022/.
+Restante já aprovado preservado. Próxima etapa: integração nas rotas normais,
+ainda dependente de autorização própria. Barra antiga 9/10 intacta.
+Sem commit, push, merge ou deploy.
+
+Os registros abaixo descrevem as etapas anteriores. A reconferência não está
+mais pendente e foi retirada da fila em docs/a-fazer.md. Permanecem a folga de
+12 px de S1, Dano abaixo da dobra em S2, livro no telefone, DOM das abas retidas
+e limites do armazenamento da casca isolada.
+
+## Continuação em 22/10: outro Codex assume a reconferência
+
+Os dois ajustes foram entregues pelo Claude, seção 8 de
+`.audit/previa-abas-g2-20261021/RELATORIO.md`. Claude ficou sem tokens e
+o autor pediu continuação em outro chat do Codex. Falta reconferência
+independente, não nova construção. Contexto completo em
+C:/Projetos/Grimorio/PROMPT-CODEX-CONTINUAR-PREVIA-TRES-ABAS-G2-20261022.md.
+Restante aprovado e integração ainda depende de autorização própria.
+
+## Ajustes do aceite aplicados, 21/10 à noite: aguardam reconferência
+
+- **Outros mora em Perícias** (`PericiasG2.jsx`), numa seção própria entre os testes e a
+  lista de perícias, fora do filtro de treino e da busca local. `CartaoManobra` foi
+  movido sem mudança de conta ou verbo.
+- **Busca**: o G2 da prévia usa `alvosDaBuscaG2` (`abas-g2/busca-g2.js`), que troca só a
+  aba dos destinos `manobra:` e acrescenta os destinos da prévia. `alvosDeBusca`
+  continua da clássica e do Encontro.
+- **Linhas de Dano** em colunas comuns: `.m-secao-dano` é contêiner e grade, e cada
+  linha é subgrid dela.
+  - O arranjo vale para a seção inteira, nunca para uma linha. Uma fileira a partir de
+    720 px, nome sobre metas com os alvos ao lado de 560 a 719, e três fileiras abaixo.
+  - Ao integrar, manter a decisão na seção. Uma linha não pode quebrar sozinha por
+    causa da própria fórmula.
+- **Colunas de Ações**: duas só com conteúdo nas duas. Uma ficha só de armas fica numa
+  coluna.
+
+Relatório na seção 8 de `.audit/previa-abas-g2-20261021/RELATORIO.md`.
+
+## Aceite visual das três abas, 21/10: dois ajustes solicitados
+
+Restante aprovado pelo autor. Outros, incluindo Manobras e Concentração,
+deve passar de Ações para Perícias, com a busca global acompanhando no G2.
+As linhas de armas devem usar uma distribuição uniforme na mesma largura,
+sem Azamaru crescer por quebrar os botões para uma segunda linha sozinha.
+Claude aplica na prévia isolada e Codex reconfere. Encaminhamento em
+C:/Projetos/Grimorio/PROMPT-CLAUDE-AJUSTES-ACEITE-TRES-ABAS-G2.md.
+Integração continua dependendo de autorização própria posterior.
+
+## Prévia das três abas no G2, 21/10: revisada, aguarda aceite visual
+
+Codex concluiu a revisão independente sem novo bloqueio técnico na amostra.
+47 asserts específicos, lint e compilação isolada aprovados. Suíte completa
+225/227 com as duas falhas já registradas. Percursos e medições próprios em
+C:/Projetos/Grimorio/REVISAO-PREVIA-TRES-ABAS-20261021.md e
+`.audit/revisao-codex-abas-g2-20261021/`. O aceite visual e a autorização
+própria de integração continuam com o autor.
+
+Ações, Perícias e Equipamentos do G2 moram em `ficha/abas-g2/` e só entram
+com a prop `previaAbasG2` do `AftyFichaG2`, desligada por padrão. Nenhuma
+rota passa a prop: quem abre `/Afty` ou `/Player` vê as abas de sempre.
+Executor isolado em `.audit/previa-abas-g2-20261021/`, servido em
+http://127.0.0.1:5330/, com relatório e roteiro de aceite em `RELATORIO.md`.
+
+Contratos que a integração precisa manter:
+
+- **Disponibilidade é por operação.** `abas-g2/rolagem-g2.js` tem
+  `prepararRolagem`, a sequência que o `rolar` fazia antes de sortear
+  (Especialização, Custo de Vida, propriedades da arma, rerrolagem de cura),
+  agora pura. O `rolar` passa por ela, e cada botão pergunta a ela. O
+  motivo da recusa (`motivoDaRecusa`) lê os campos da etapa que recusou.
+- **Técnica Máxima: Usar não é Rolar.** Recarga e PE decidem o Usar. A
+  rolagem do uso pago só respeita as travas de `travaDoFeitico` (validade,
+  Técnica Inata, Ritual fora de Pronto, Custo de Vida).
+- **Aba escondida fica montada e congelada** (`aba-congelada.jsx`): com
+  `hidden`, `inert` e memo que pula o render. O último render antes de
+  esconder fecha os flutuantes pelo contexto `VisibilidadeDaAba` (em
+  `ui/`, padrão visível, então os outros consumidores de `useFlutuante` não
+  mudam). O foco que estava na aba vai para o botão da aba de destino.
+- **Rápido do G2** lê `sessao.favoritos` contra habilidades e equipamentos,
+  na ordem salva, sem apagar chave sem destino (`rapido-g2.js`).
+- **Golpe pela Preparação** dos Efeitos (decisão 2A): a célula da Mesa usa
+  os mesmos verbos da `EntradaDoPreparo`.
+
+Medido no build da prévia: S1 com o Dano inteiro em 1280x800 com a
+compacta e a barra de rolagem real (788 de 800). 331 px úteis sem corte nem
+estouro. S2 deixa o Dano 110 px abaixo da dobra. As três abas montadas
+somam de 230 a 580 nós de DOM, sem tarefa longa. Ver o relatório para a
+lista completa e as pendências.
+
+## Ajustes do teste real, 21/10: largura e fechamento da leitura
+
+Cabeçalho e corpo do G2 compartilham `.e-pagina`, incluindo a largura da
+compacta. A coluna tem teto de 1280 px, 1440 px em janelas a partir de 1920,
+e 1760 px a partir de 2400. A consulta respeita a margem externa. Até 720 px,
+a compacta aberta ocupa o palco e a coluna fica montada, escondida até
+recolher. Não há zoom de fonte, mudança no motor ou na apresentação clássica.
+
+Na aba completa, clicar fora de um detalhe o fecha, sem encerrar o buff.
+Outro cartão resolve sua própria seleção. Controles internos não fecham a
+leitura, e uma consulta ou flutuante aberto tem prioridade sobre esse gesto.
+Fechar um ajuste não confirmado descarta o rascunho, sem custo.
+
+20 checks de interação e 17 medições de layout aprovados, de 390 a 2560 px.
+196 asserts focados, lint e build aprovados. Evidências em
+`.audit/ajustes-teste-real-g2-20261021/`. Disponível na 5173 após atualizar.
+Teste visual do autor pendente, barra 9/10 preservada.
+
+## Revisão vigente, 20/10: fechamento funcional aprovado tecnicamente
+
+Codex reconferiu as cinco rotinas na completa e compacta, seus contratos de
+sessão, igualdade com a clássica, navegação, persistência, layout e Pacotes.
+Nenhum novo bloqueio identificado. 986 asserts focados, 495 conferências
+efetivas de interface, lint/build aprovados. A suíte completa reproduziu só
+as duas falhas da base (224/226 arquivos). Relatório atual:
+`.audit/revisao-codex-fechamento-g2-20261020/REVISAO-CODEX.md`.
+
+552 hashes preservados durante a revisão, sem edição de produto pelo Codex.
+Teste real e aceite visual continuam com o autor, inclusive o cabeçalho
+ainda alto em 390 px. Não refazer o lote nem promover o G2 automaticamente.
+Clássica padrão, G2 prévia, barra 9/10. Sem commit, push, merge ou deploy.
+Revalidar depois de eventual integração do remoto. Registros abaixo são
+históricos e não reabrem correções encerradas.
+
+## Fechamento funcional do G2 (2026-10-20): implementado, aguarda revisão e teste
+
+Autorizado pelo autor e executado por Claude a partir de
+C:/Projetos/Grimorio/PROMPT-CLAUDE-FECHAMENTO-FUNCIONAL-G2.md. As cinco
+rotinas rodam no G2 sem a Apresentação Anterior (que fica no menu só como
+comparação), na completa e na compacta quando há ação correspondente. Mesmos
+verbos, mesma sessão e mesmo derive, sem motor novo. Revisão independente do
+Codex e teste real do autor continuam pendentes, o marco 10 não está
+declarado e a barra segue em 9/10. Clássica padrão, G2 prévia.
+
+| Rotina | Caminho no G2 | Módulos |
+|---|---|---|
+| Imitação | Efeitos > Adicionar > Imitação (ficha com `res_imitacao`, Perfeita incluída) | `ImitacaoG2.jsx`, `imitacao-logica.js` |
+| Concedido pelo Mestre | Efeitos > Adicionar > Fonte Externa > Concedido pelo Mestre | `ConcedidoG2.jsx`, `concedido-logica.js` |
+| Buff de Mesa | Efeitos > Adicionar > Fonte Externa > Buff de Mesa | `BuffDeMesaG2.jsx`, `buff-mesa-logica.js` |
+| Exaustão desde zero | botão Exaustão no cabeçalho dos Ativos e ícone no painel compacto | `ExaustaoG2.jsx`, `exaustao-logica.js` |
+| Sangramento | Ativos > cartão da condição > Ajustar > Perda de Vida XdY | `VisaoG2.jsx` (`PerdaDeSangramento`), `mesa-verbos.js` |
+
+Regras que valem para o lote:
+
+- Selecionar, consultar e abrir NUNCA gravam. Imitação: só Confirmar Cópia troca
+  a cópia. Buff: só Criar Buff cria, e o rascunho mora em `tela.catalogo`
+  (nunca na sessão). Exaustão: abrir o painel não muda o contador.
+- Cada ação opera sobre a sessão vigente por id, e a recusa não grava nada.
+  `perdaPorSangramento` rola uma vez fora da operação, para a conferência e a
+  gravação verem o mesmo total, aplica direto na Vida e registra rolagem e evento.
+- `sessao.buffs` guarda registros recebidos, instâncias de Pacote e buffs de
+  mesa: criar ou tirar um buff de mesa mexe só nele (por id).
+- O "+" inicial da expressão do buff é descartado antes da conferência do DSL
+  (`+2` não passa pelo avaliador e valia 0 calado). A conferência recusa vazio,
+  expressão inválida, canal desconhecido e invocação desconhecida sem gravar.
+- Layout estreito: o catálogo e o detalhe do Ativo respondem à largura do
+  contêiner (`@container`), o cabeçalho em 721 a 1180 px junta valores e Agora, e
+  em 390 px a moldura e os recursos ficam mais compactos. Em Combate ligado lê
+  pelo texto do tema. Tudo escopado em `.e-g2`.
+
+Provas e limites: `grimorio-tracker/.audit/fechamento-funcional-g2-20261020/RELATORIO.md`.
+
+## Reconferência atual, 20/10: PA-I4 encerrado
+
+PA-I1 a PA-I4 encerrados na revisão técnica do escopo entregue. 750 asserts
+focados, 98 conferências de interface (22 dev, 76 produção), 1024/1440,
+lint/build passando. Prazos próprios/herdados contam, cada parte termina
+sem levar a outra, instâncias antigas não são reescritas e o detalhe as
+mostra como manuais quando não têm contador. Recarga, Reativar e as duas
+apresentações G2 e a clássica conferidos. 36 hashes preservados durante os
+testes. Sem novo bloqueio identificado nesta correção.
+
+Relatório atual: `.audit/revisao-codex-pai4-20261020/REVISAO-CODEX.md`.
+Próximo passo: teste real do autor com pacote de suporte e aliado. Sete
+leituras anteriores e cobertura Só Consulta/sem representação continuam
+separadas. A decisão dos prazos próprios já foi dada. Clássica padrão,
+G2 prévia, 9/10 preservado. Sem edição de produto, commit/push/merge/deploy
+pelo revisor. Estados abaixo são históricos.
+
+## Revisão atual de PA-I3, 20/10/2026
+
+PA-I3 do exportador atual reconferido: 727 asserts, 86 conferências do fluxo
+em dev/produção, 48 de regressão em produção, 14 da compacta, lint/build
+passando. As duas ordens de término funcionam, com recarga e reativação.
+Os 36 hashes da entrega permaneceram iguais durante a revisão.
+
+Resta PA-I4, P2: benefício que herda rodadas da opção fica sem contador se
+outro tem prazo próprio. A importação aceita esse arquivo válido e Reflexos
+continua +9 após a virada em vez de voltar a +7. Reproduzido por função e
+interface, G2/clássica, 1024/1440. O formato gerado atualmente declara todos
+os prazos e passa. Corrigir somente o prazo efetivo e contador na nova
+instância. Não reabrir PA-I1/PA-I2/PA-I3 ou a decisão de prazos próprios.
+
+Relatório: `.audit/revisao-codex-pai3-20261020/REVISAO-CODEX.md`.
+Clássica padrão, G2 prévia, 9/10 preservado. Teste real e sete leituras
+anteriores pendentes, pergunta 8 resolvida. Nenhuma edição de produto pelo
+Codex. Registros abaixo são históricos.
+
+## Reconferência dos Pacotes para Aliados (2026-10-20)
+
+PA-I1 e PA-I2 encerrados pelo Codex na correção entregue. 706 asserts focados,
+96 conferências de interface no total (48 dev, 48 produção, 1024/1440), seis
+provas de função, lint e build aprovados. Os 33 hashes da entrega permaneceram
+iguais durante as verificações. Sem edição de produto pelo revisor.
+
+Pendência localizada PA-I3: a opção mista de Defesa por ataque e TR de uma
+rodada mantém ambos por prazo de uso. Na reprodução própria, Reflexos +7 sobe
+para +9 e continua +9 após três viradas no G2 e na clássica. O autor respondeu
+em 20/10: cada benefício termina no próprio prazo. A pergunta 8 está resolvida,
+a implementação e a reconferência de PA-I3 estão pendentes. As outras sete
+leituras e o teste real continuam pendentes.
+
+Relatório atual: `.audit/reconferencia-codex-pacotes-20261020/REVISAO-CODEX.md`.
+Benchmark reexecutado: com oito opções, Confirmar 31 a 32 ms, ativar nona 54 a
+58 ms, sem tarefa longa nesses casos. No cenário sem pacote uma tarefa de
+57 ms. Não declarar ausência universal de travadas. Clássica padrão, G2 prévia,
+9/10 do projeto anterior preservado. As devoluções abaixo são históricas.
+
+## Revisão dos Pacotes para Aliados (2026-10-20)
+
+Lote devolvido por PA-I1, maior condicionado a combate cobre o menor que
+deveria valer fora de combate, e PA-I2, Feitiço de um ataque convertido em
+uma rodada na exportação. Reproduzidos por interface em dev/produção e
+1024/1440, com arquivo real. Devolutiva executável em
+C:/Projetos/Grimorio/DEVOLUTIVA-CLAUDE-PACOTES-ALIADOS.md.
+
+677 asserts existentes passaram, lint/build ok. Nas 64 conferências próprias,
+54 passaram e dez falhas repetem os dois defeitos. Suíte integral e benchmark
+da entrega não repetidos pelo Codex. As sete leituras de regra continuam
+sem aprovação. Nenhuma interferência detectada do outro chat: 33 hashes da
+entrega iguais antes e depois das verificações, sem edição de produto pelo
+revisor. Evidências em .audit/revisao-codex-pacotes-20261020/.
+
+## Pacotes para Aliados (2026-10-19)
+
+Pedido do autor: o suporte concede cinco a oito fontes, ou mais, e registrar cada
+uma no receptor é trabalhoso. Escopo novo, na prévia do G2, sem reabrir os nove
+marcos. A clássica mostra os números e as linhas das instâncias.
+
+**Três coisas separadas.**
+
+| O quê | Onde mora | Quem grava |
+|---|---|---|
+| Pacote do suporte (a receita: fonte e escolhas) | `creature.pacotesAliados` = { emissorId, pacotes } | Para Aliados, Salvar e Exportar |
+| Biblioteca do aliado (opções validadas, por emissor e pacote) | `creature.pacotesRecebidos` | Recebidos, Importar Pacote |
+| Instância ativa (benefício e prazo de uma opção) | `sessao.buffs`, registro `rec` com `pacote` | Ativar, Encerrar, a virada e o descanso |
+
+As duas primeiras moram no personagem: sobrevivem à recarga, ao descanso e ao
+export e import da ficha inteira. `App.jsx` grava cada campo pelo `update` com
+merge, e o criador apaga as duas chaves do que salva, então um rascunho antigo não
+as sobrescreve. O emissor tem id próprio (`emi_...`), e não o da ficha, que muda
+quando a ficha é importada.
+
+**O arquivo** (`ficha/pacotes-aliados.js`, módulo folha) é JSON versionado
+(`formato`, `versao` 1, pacote com id e revisão, emissor, opções com id). É dado:
+os números chegam prontos, calculados com os atributos e as escolhas do EMISSOR, e
+o receptor nunca reavalia fórmula. A leitura copia campo a campo por lista branca e
+recusa com motivo: canal fora da lista, valor não numérico, infinito ou zero, alvo
+que a ficha do receptor não conhece, condição que o motor não avalia, duração,
+regra de acúmulo e ids. Opção ruim fica de fora com o motivo, e o arquivo sem
+nenhuma opção boa é recusado inteiro. Mesmo pacote de novo não duplica, revisão
+nova atualiza, revisão antiga não sobrescreve, e dois emissores convivem.
+
+**As famílias** (`ficha/pacotes-familias.js`) usam o resolvedor que o Afty já tem,
+com o derive do emissor SEM sessão (um estado ligado agora não muda o pacote):
+
+| Família | Resolvedor | Acúmulo no aliado (`tipoFonte`) |
+|---|---|---|
+| Aura do Bastião, Comandante e Evoluída | texto do livro, p. 174 e 175, com o `au` efetivo | `catalogo`, a mesma origem para as duas versões |
+| Feitiço Auxiliar | `resolveAuxiliaresAtivos` sobre uma cópia com só ele ligado, e o prazo pelo `umGolpe` resolvido de cada efeito | `feitico` (Passivo gerado, pool de Feitiços) |
+| Auxílio de invocação para Aliados | `auxiliosLigadosDa` sobre uma mesa com ela em campo | `auxilioInvocacao`: soma, e o mesmo auxílio vale uma vez |
+| Aura de invocação | `aurasLigadasDa`, idem | `auraInvocacao`: auras iguais não acumulam, vale a maior |
+| Novo Estilo das Sombras | grupos da Técnica resolvida pelo derive (`aliadosCalculados`) | `estilo` (mesmo grupo dos Feitiços) |
+| Habilidades de Suporte | texto de cada uma | `catalogo` |
+| Definição à mão | o que o suporte escreve, marcado como tal | `catalogo` com origem, `feitico` ou `outro` |
+
+**No receptor**, a instância passa pela tradução de sempre (`ficha/ficha-recebidos.js`),
+agora com alvo e condição por benefício e as três regras novas, para o G2, a
+clássica, o Encontro e os derives de comparação. O custo é do emissor: nada é
+cobrado do aliado, e o rodapé do cartão só informa. O prazo começa ao ativar, só
+`rodadas` é contado pela ficha, e alcance, manutenção, cena e uso aparecem como
+prazo de mesa (no G2 e na linha da clássica). O descanso encerra o que não é
+permanente (`terminaNoDescanso`).
+
+**A condição decide quem disputa (PA-I1, 2026-10-20).** O "vale o maior" que a
+tradução faz fora do motor (catálogo, auxílio, Aura numérica e Aura de Dano) só põe
+na disputa o benefício cuja condição vale agora no receptor, pela regra do motor e
+com o combate do próprio receptor. Um +5 Só em Combate da mesma origem não cobre
+mais o +3 sem condição fora de combate, e a condição segue na linha do vencedor até
+o derive final. O Feitiço e o Estilo já eram certos: lá a disputa é do motor, que
+avalia o `quando` antes do pool.
+
+**Um ataque não é uma rodada (PA-I2, 2026-10-20).** "Imediatas, cujo benefício irá
+durar por um ataque ou por uma rodada apenas" (p. 216). O Feitiço Imediato cujo
+efeito o motor resolve como de um ataque (a marca, a Reação de Defesa e RD, também
+dentro do Múltiplos Efeitos) sai com prazo de uso ("Por Um Ataque"): a virada não o
+encerra, e o jogador encerra. A ficha não conta ataques.
+
+**Cada benefício no próprio prazo (PA-I3, 2026-10-20, decisão do autor).** O
+Múltiplos Efeitos Imediato pode misturar um efeito de um ataque (a Reação de
+Defesa) com outro de uma rodada (TR). Cada benefício leva o prazo do efeito de onde
+saiu (`efeitosDoAuxiliarPorEfeito`, só leitura, a união é a lista do resolvedor),
+no campo `duracao` do benefício, quando difere do prazo da opção. A instância
+guarda a cópia e, no de rodadas, o contador dele: a virada desce cada um e tira só
+o que zera, e a instância sai quando não sobra benefício (`partesDaInstancia`,
+`semParteDaInstancia`). No G2, o detalhe lista cada parte com quem encerra, o
+Encerrar Parte tira só a de um ataque, o Encerrar tira o Feitiço inteiro, e a
+Linha do Tempo tem a barra da parte de rodadas. A linha da clássica diz o prazo de
+cada benefício. Arquivo e instância antigos, sem o campo, seguem com o prazo da
+opção.
+
+**O prazo herdado também conta (PA-I4, 2026-10-20).** O formato aceita o prazo
+comum na opção e uma exceção no benefício, e isso vale o mesmo que um prazo em cada
+benefício (o exportador escreve sempre um em cada). A instância nova resolve o prazo
+EFETIVO de cada benefício (`beneficiosComPrazoEfetivo`: o próprio, ou o herdado da
+opção) e cria o contador de todo benefício cujo prazo efetivo é em rodadas. Antes só
+o prazo escrito no benefício ganhava contador, e o que herdava as rodadas nunca
+saía na virada. Nada é reescrito: a opção da biblioteca fica como veio, e a
+instância que já estava ativa sem contador segue como está, mostrada na tela como
+parte de encerramento manual (`rodadas|sem contador`) e não como contada pela
+ficha. O resumo da opção e o da importação dizem o prazo efetivo de cada benefício.
+
+**Verificação.** `asserts/t-pacotes-aliados.mjs` (189: 29 da correção de PA-I1 e
+PA-I2, 21 de PA-I3 e 23 de PA-I4). Percurso completo no Chrome (dois suportes e um
+aliado em contextos separados, arquivo real): 65 de 65, o roteiro da devolutiva com
+48 de 48, o de PA-I3 com 43 de 43 e o de PA-I4 com 54 de 54, em dev e em produção,
+em 1024 e 1440. Desempenho em produção, Player 30 com oito recebidos ligados: sem
+tarefa longa observada. Números e limites em `.audit/pacotes-aliados-20261019/`,
+`.audit/pacotes-aliados-correcao-20261020/`, `.audit/pacotes-aliados-pai3-20261020/`
+e `.audit/pacotes-aliados-pai4-20261020/`.
+
+## Reconferência independente do G2-I1 pelo Codex (2026-10-19)
+
+G2-I1 encerrado. Marcos 8 e 9 concluídos por amostra na base local. A clássica
+permanece padrão e o G2 prévia até o teste real do autor, marco 10. Relatório:
+`.audit/revisao-codex-g2-i1-20261019/REVISAO-CODEX.md`.
+
+- 303 asserts focados, 36 conferências próprias de interface e 21 das funções
+  do Encontro passaram. O Encontro não foi exercitado pela inclusão de
+  registro na interface. Minamoto mantém 89 nas duas apresentações.
+- Os 17 hashes da correção conferem antes e depois. Lint Afty/App e build
+  aprovados. Suíte completa: 222/224, com as duas falhas anteriores de
+  t-prodigio e t-reconciliacao-g00. Não declarar suíte inteiramente verde.
+- Desempenho próprio: 26 operações em dez contextos dev/produção com Fonte
+  Externa, incluindo ficha densa e sequência sem pausa. Sem ativação perdida
+  ou pausa de dois segundos na amostra. G2 em produção: 29 a 43 ms do
+  ponteiro ao cartão e dois quadros. Tarefas longas residuais chegam a 94 ms
+  em dev e 72 ms em produção. A amostra de Catálogo contém também um Feitiço
+  recebido. As medidas de 54 ms da entrega abaixo não são um teto universal.
+- Nenhum código de produto ou dado do autor foi alterado pelo revisor. A
+  versão anterior não foi reexecutada pelo Codex. O aceite de uso real é do
+  autor, e os seis commits remotos à frente ainda precisam de integração e
+  revalidação antes de publicar. Servidor de produção para o teste em
+  http://127.0.0.1:5321/Afty?ficha-g2=1 ou /Player?ficha-g2=1.
+
+## Correção do G2-I1 e corte previsivo das fatias (2026-10-19)
+
+**G2-I1 corrigido.** Um registro de Fonte Externa (`rec: true` em `sessao.buffs`, por
+exemplo Feitiço recebido de Defesa +7) só era traduzido pelo G2 (`prepararCalculo`).
+A ficha anterior, o Encontro e os derives de comparação de `ficha-buffs.js`
+derivavam a sessão direto e ignoravam o registro: Minamoto 89 no G2 e 82 na
+clássica, na mesma sessão.
+
+A interpretação passou a morar num módulo único, `ficha/ficha-recebidos.js`
+(`calcularRecebidos(ficha, sessao, derivarFn)`), que é folha: não importa derive,
+ponte, React nem CSS. A função de derive vem de quem chama, e a ficha traduzida é
+guardada por identidade para a guarda do derive acertar. A tradução é idempotente.
+
+| Consumidor | Como passa a usar |
+|---|---|
+| G2 | `prepararCalculo` em `efeitos/recebidos.js` delega ao módulo, mesma API |
+| Ficha anterior | `AftyFichaClassica.jsx` chama `calcularRecebidos` no memo do derived, sem importar nada de `efeitos/` |
+| Encontro | `derivarCombatente` em `encontros/usar-encontro-afty.js`, sem addons por combatente |
+| Delta e saldo | `ficha-buffs.js` deriva pela mesma tradução |
+
+Defeito extra achado no caminho: o `deltaDosEstados` creditava o "Defesa +7" a cada
+estado ligado, na aba Buffs do G2 e na da clássica. Corrigido junto.
+
+**Provas.** `asserts/t-g2-fonte-compat.mjs` (52): Feitiço, catálogo, Outra Origem, dois
+aplicadores, buff antigo, idempotência, delta e saldo, Encontro, recarga, expiração e
+descanso, com guarda estática contra consumidor novo que derive `buffsSessao` sem a
+tradução. Revertendo cada um dos três pontos (ficha-buffs, Encontro, clássica) o assert
+falha. No Chrome, código final: **47 de 47** verificações em 8 casos (Feitiço +7 em
+Minamoto, Player 30 e Calamidade, Outra Origem com e sem somar, catálogo repetido, dois
+aplicadores, expiração por rodada, recarga, volta ao G2, sem erro de página). Antes, com o
+código antigo: Minamoto 89 contra 82, e as outras duas fichas também divergiam
+(46 contra 39 e 77 contra 70). Evidências em `.audit/correcao-g2-i1-20261019/`.
+O Encontro foi provado só na função (não há caminho de interface que ponha um registro
+na sessão de um combatente), e não declaro esse percurso testado no navegador.
+
+**Fatias com corte previsivo.** A devolutiva do Codex notou que o orçamento de 30 ms
+"não preempta um derive": a fatia rodava um passo e continuava enquanto o tempo gasto
+fosse menor que 30 ms, então um passo de 38 ms (dois derives) caía numa tarefa de 60 a
+80 ms. Agora há um lugar só para o corte, `ficha/fatias.js` (`avancaFatia`, folha): o
+corte prevê o próximo passo pelo anterior, e o pior caso é o custo de um passo. Os três
+ganchos (consequências, delta dos estados, projeção da Linha do Tempo) usam ele. Com uma
+Fonte de Catálogo, a conta tem dois derives (o de base e o final): `aquecerTraducao`
+adianta o de base, que já é guardado, e os geradores devolvem o controle entre os dois.
+O resultado final não muda, e o `t-g2-desempenho` (30) prova isso.
+
+**Medida com Fonte Externa registrada** (Minamoto, mesmo roteiro, tarefas longas pelo
+PerformanceObserver, `.audit/correcao-g2-i1-20261019/perf-fonte.mjs`):
+
+| Cenário (G2) | Antes do corte previsivo | Depois |
+|---|---|---|
+| Feitiço recebido, abrir a Preparação e confirmar sem pausa | nenhuma | nenhuma |
+| Feitiço recebido, duas ativações em sequência | nenhuma | nenhuma |
+| Dois registros de Catálogo, produção, confirmar sem pausa | 4 tarefas, 50 a 67 ms (soma 223 ms) | 1 tarefa de 54 ms |
+| Dois registros de Catálogo, produção, duas ativações em sequência | 5 tarefas no dev (soma 273 ms) | 1 tarefa de 54 ms |
+
+Fica uma tarefa de cerca de 54 ms com dois registros de Catálogo: é o derive síncrono do
+número que a tela precisa pintar (base e final), que não dá para adiar sem mostrar um
+valor velho. Nas ativações em sequência nenhuma ativação se perdeu (os três estados
+ficaram ligados na sessão). Espírito de Luta e Conhecimento Aplicado são estados sem
+custo, então não geram evento no Histórico, como esperado. A ficha anterior, com os
+mesmos registros, ficou sem tarefa longa. O antes não foi reexecutado pelo Codex e não há
+aceite de desempenho do autor.
+
+**Verificação.** Lint de `src/systems/afty` e `src/App.jsx` limpo, `vite build` ok.
+`npm run asserts`: 222 de 224 arquivos ok, com as mesmas duas falhas da linha de base
+(`t-prodigio`, que passa isolado, e `t-reconciliacao-g00`). `t-ordem-modulos` (36) e
+`t-revisao-g00` (35) passam, com os dois módulos novos classificados em `escopo.json`.
+Progresso: o marco 8 volta para reconferência e o 9 segue pendente.
+
+## Revisão independente da integração (2026-10-19)
+
+Devolvida por G2-I1: Fonte Externa de Defesa +7 é contada na prévia e ignorada
+na clássica para o mesmo registro da sessão. A clássica permanece padrão,
+conforme decisão de 17/10. Correção na fila e na devolutiva compartilhada.
+Relatório do Codex: `.audit/revisao-codex-integracao-g2-20261019/auditoria.json`.
+
+52 de 53 verificações funcionais e 244 asserts focados passaram, assim como
+build e lint reexecutados. Em 42 operações atuais medidas não houve pausa de
+dois segundos, com tarefas longas residuais de 57 a 80 ms em alguns casos.
+Essas medidas têm condições e método próprios e não repetem o antes da
+correção. Não substituem teste real nem aprovam o lançamento. Progresso 7/10,
+compatibilidade devolvida e aprovação final da revisão pendente.
+
+## Integração do G2 na aplicação (2026-10-19)
+
+Lote da Fase 2: o G2 aprovado foi integrado em `ficha/AftyFichaG2.jsx` e
+nos módulos de `ficha/efeitos/`. **Continua prévia**: o padrão diário é a
+ficha anterior (`AftyFichaClassica.jsx`) e o G2 abre só com `?ficha-g2=1`
+em /Afty e /Player, por decisão do autor de 17/10. Promover depende da
+revisão independente e do teste do autor (marcos 9 e 10, não declarados aqui).
+
+**O que o G2 integrado cobre.** Cabeçalho (placa, recursos Vida, Energia,
+Alma e Preparo, busca, descanso, menu), Habilidades e consulta, Efeitos
+completa e compacta, catálogo, Preparação, Linha do Tempo, Encerrados e
+Histórico. Toda troca de aba (clique e teclas 1 a 6) passa por `ui.irPara`.
+
+**Estado e persistência.**
+- Os metadados das operações moram na própria sessão da Ficha, no campo
+  `operacoes` = {eventos, ativacoes, reusos, pvConcessoes, encerrados}.
+  `daSessao` e `paraSessao` (em `efeitos/sessao-g2.js`) fazem a ponte com a
+  mesa das operações puras. Nada de armazenamento paralelo.
+- As operações são atômicas (`operaNaMesa` e `confirmaNaMesa` em
+  `useModeloG2`): a prova roda na mesa de agora, a confirmação roda de novo
+  dentro do `atualiza` e o evento só nasce depois do sucesso.
+- A preferência de estatísticas do cabeçalho vive em
+  `creature.preferenciasFicha.estatisticasCabecalho` (versão 1, ordem,
+  ocultas), com export e import (`ficha/ficha-preferencias.js`, módulo folha).
+- A virada de rodada registra renovação e cobrança como fatos separados
+  (extensão aditiva de `proximaRodada`, via `avancaRodadaComRegistro`). Idêntica
+  à base em 7 cenários (`.audit/integracao-g2/virada-compara-saida.txt`).
+- O Surto (`usarEfeitoEspecializacao` em `ficha/ficha-especializacoes.js`)
+  foi verificado. **O arquivo não é rastreado** e deve seguir junto com os
+  demais desta relação.
+
+**Apresentação Anterior.** O menu do cabeçalho tem, por item, a antiga
+`AbaBuffs` para o que o G2 ainda não cobre: Imitação, Concessão do mestre,
+Exaustão a partir de zero, Sangramento e buff de mesa. A aba Efeitos mantém o
+id `buffs` (gancho de tema).
+
+**Escopo de CSS.** `.e-g2` (conteúdo), `.e-layout`, `.e-lado` e `.e-portal`.
+A placa do cabeçalho também leva `afty-cabecalho` para o tema e o CSS livre
+funcionarem. `--afty-ficha-topo` é medido por ResizeObserver.
+
+**Fronteiras mantidas.** Sem alias @motor ou @v2, sem porta 5200, sem global
+de teste ou amostra. `t-ordem-modulos` passa (36). `src/components/` e o
+Grimório 2.5.2 intocados. Fórmulas, custos e requisitos não mudaram.
+
+### Desempenho ao ativar efeitos
+
+**Causa medida.** O derive é o custo da interação. Um único "Confirmar
+Ativação" fazia 14 derives (ficha, prova e confirmação da operação, prévia,
+saldo, quatro viradas da Linha do Tempo), e dois blocos faziam um derive por
+efeito ligado dentro do render (as consequências do G2 e o delta dos estados
+da aba Buffs, esta também na ficha anterior).
+
+**Correções, sem mudar nenhuma conta.**
+1. `efeitos/ponte.js`: `derivar` guardado (WeakMap por ficha, Map por chave de
+   combate, buffs e `opcoesDeriveDaSessao`, teto 16, LRU). Saldo e delta
+   reescritos sobre ele.
+2. `consequenciasEmPassos` (`efeitos-dados.js`) e `useConsequencias`
+   (`gestor-logica.js`): gerador fatiado em 30 ms, a resposta antiga vale até
+   a nova chegar.
+3. `deltaDosEstadosEmPassos` (`ficha-buffs.js`) e o gancho
+   `ficha/usar-delta-dos-estados.js`, nas duas apresentações.
+4. `projetarViradasEmPassos` (`g2-linha-do-tempo.js`) e o gancho
+   `useProjecao` em `LinhaDoTempoG2.jsx`: a previsão chega depois do clique,
+   em fatias.
+Cada gerador dá o mesmo resultado final de rodar tudo de uma vez, e
+`asserts/t-g2-desempenho.mjs` (23) prova isso.
+
+**Medida (Chrome, mesmas fichas, tarefas longas pelo PerformanceObserver).**
+
+| Cenário | Antes | Depois |
+|---|---|---|
+| Dev, Calamidade, 14 efeitos ligados, desligar um, G2 | 258 a 366 ms de tarefa longa | nenhuma (pintou em 255 a 310 ms) |
+| Dev, o mesmo, ficha anterior | 149 a 172 ms de tarefa longa | nenhuma (pintou em 149 a 152 ms) |
+| Produção, Minamoto, confirmar ativação, G2 | cerca de 152 ms | 90 a 199 ms, sem tarefa longa |
+| Produção, Calamidade, confirmar ativação, G2 | sem medida | 133 a 149 ms, sem tarefa longa |
+
+O derive restante (cerca de 90 ms por confirmação no dev) agora roda em
+fatias entre quadros. Os tempos em produção variam entre execuções e não
+devem ser lidos como ganho de latência pura: o ganho é não bloquear a página.
+Evidências em `.audit/integracao-g2/perf/` e nos scripts `perf-ativar.mjs`,
+`calam-medida.mjs` e `perfil-incl.mjs`.
+
+**Verificação.** `npm run asserts`: 220 de 223 arquivos ok. Falham
+`t-prodigio` (ok isolado, falha só na suíte) e `t-reconciliacao-g00`, as duas já
+falhavam na linha de base, mais `t-revisao-g00`, que apontou o módulo novo sem
+classificação e foi corrigido em `escopo.json` (35 ok). Lint de
+`src/systems/afty` e `src/App.jsx` limpo, `vite build` ok. Hashes em
+`.audit/integracao-g2/hashes-finais.txt`.
+
+## Interface diária e prévia do G2 (2026-10-17)
+
+Por pedido do autor, a interface anterior voltou a ser o padrão em `/Afty`
+e `/Player` enquanto o rework está incompleto. `ficha/AftyFicha.jsx` escolhe
+`AftyFichaClassica.jsx`, restaurada da cópia anterior à integração em
+`.audit/integracao-g2/base/src_systems_afty_ficha_AftyFicha.jsx`.
+
+O trabalho parcial foi preservado integralmente em `AftyFichaG2.jsx` e nos
+módulos de `ficha/efeitos/`. A prévia abre com `?ficha-g2=1` na mesma rota.
+O carregamento do G2 e do seu CSS é adiado até essa entrada explícita.
+As duas apresentações usam as fichas e a sessão existentes, sem migração,
+limpeza de armazenamento ou reversão dos módulos compartilhados do motor.
+
+O G2 só deve voltar a ser padrão quando a integração, as verificações,
+a revisão independente e a avaliação final do autor estiverem concluídas.
+
+## Hover de fontes do Crít (2026-10-13)
+
+Na Ficha Final e no Criador, o Crít das linhas de dano e a margem dos
+testes de resistência abrem o painel de fontes. Ele lista a base, cada
+redução e o total vigente, incluindo o ajuste de margem mínima quando
+necessário. Fontes suplantadas aparecem riscadas. O gatilho usa
+`NumeroComFontes`, com hover, foco e toque, em Afty e Player.
+
 ## Feitiços de rerrolagem de cura (2026-10-12)
 
 O canal `rerrolaCuraContinua` permite repetir até sair acima do limite

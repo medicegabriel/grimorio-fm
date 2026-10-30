@@ -37,24 +37,43 @@ const ficha = (sistema, { nd = 4, origem = "sem_tecnica", estilos = [] } = {}) =
   return c;
 };
 
-/* 1. A progressão (DA-03): 2 no Nível 4, +1 em 7, 10, 13, 16 e 19. */
+/* 1. A progressão (DA-03): 2 no Nível 4, +1 a cada três níveis seguintes. */
 t("progressao por nivel",
   [1, 3, 4, 6, 7, 9, 10, 13, 16, 19, 20, 30].map((nd) => CAT.tecnicasDaProgressao(nd).total),
-  [0, 0, 2, 2, 3, 3, 4, 5, 6, 7, 7, 7]);
+  [0, 0, 2, 2, 3, 3, 4, 5, 6, 7, 7, 10]);
+for (const nd of [22, 25, 28, 31, 34, 37, 40, 43, 70]) {
+  const r = CAT.tecnicasDaProgressao(nd);
+  t(`Marco ${nd}: concede mais uma Técnica`, r.total - CAT.tecnicasDaProgressao(nd - 1).total, 1);
+  t(`Marco ${nd}: parcelas fecham o total`, r.partes.reduce((s, p) => s + p.valor, 0), r.total);
+  t(`Marco ${nd}: fonte do novo ganho`, r.partes.at(-1), { label: `Nível ${nd}`, valor: 1 });
+}
+t("Nível não finito não gera progressão", [Infinity, NaN, -Infinity].map((nd) => CAT.tecnicasDaProgressao(nd).total), [0, 0, 0]);
 t("as parcelas do hover", CAT.tecnicasDaProgressao(10).partes,
   [{ label: "Nível 4", valor: 2 }, { label: "Nível 7", valor: 1 }, { label: "Nível 10", valor: 1 }]);
 
+/* ⚠ A PROGRESSAO PROPRIA E SO DO PERSONAGEM (autor, 2026-10-26, divergencia
+   `progressaoDoEstilo`). Na CRIATURA as Tecnicas da Expansao gastam o contador
+   comum, como as legacy sempre gastaram, e o estouro so deixa o contador
+   vermelho: nenhuma Tecnica perde o efeito. O laco mede os dois lados com a
+   expectativa de cada um. */
 for (const sistema of ["afty", "player"]) {
+  const propria = sistema === "player";
   const d4 = deriveAfty(ficha(sistema, { estilos: [tecnica("a"), tecnica("b")] }));
-  t(`${sistema}: duas Tecnicas no Nivel 4 cabem`,
-    [d4.estilo.progressao.total, d4.estilo.progressao.usadas, d4.estilo.progressao.excedeu], [2, 2, false]);
-  t(`${sistema}: a Tecnica da Expansao nao gasta o contador de Habilidades`,
+  const gastosSemTecnica = deriveAfty(ficha(sistema)).orcamentoHabilidades.gastos;
+  t(`${sistema}: duas Tecnicas no Nivel 4`,
+    [d4.estilo.progressao.total, d4.estilo.progressao.usadas, d4.estilo.progressao.excedeu],
+    propria ? [2, 2, false] : [0, 2, false]);
+  t(`${sistema}: a progressao diz de quem e`, d4.estilo.progressao.propria, propria);
+  t(`${sistema}: o contador de Habilidades`,
     [d4.orcamentoHabilidades.estilos, d4.orcamentoHabilidades.gastos],
-    [0, deriveAfty(ficha(sistema)).orcamentoHabilidades.gastos]);
-  t(`${sistema}: a terceira no Nivel 4 estoura`,
-    deriveAfty(ficha(sistema, { estilos: [tecnica("a"), tecnica("b"), tecnica("c")] })).estilo.progressao.excedeu, true);
-  t(`${sistema}: no Nivel 19 sao sete`,
-    deriveAfty(ficha(sistema, { nd: 19 })).estilo.progressao.total, 7);
+    propria ? [0, gastosSemTecnica] : [2, gastosSemTecnica + 2]);
+  const d3 = deriveAfty(ficha(sistema, { estilos: [tecnica("a"), tecnica("b"), tecnica("c")] }));
+  t(`${sistema}: a terceira no Nivel 4`, d3.estilo.progressao.excedeu, propria);
+  t(`${sistema}: estourar so invalida no personagem`,
+    d3.estilo.tecnicas.map((x) => x.mecanicamenteValida), propria ? [false, false, false] : [true, true, true]);
+  t(`${sistema}: no Nivel 19`,
+    deriveAfty(ficha(sistema, { nd: 19 })).estilo.progressao.total, propria ? 7 : 0);
+  t(`${sistema}: no Nivel 28`, deriveAfty(ficha(sistema, { nd: 28 })).estilo.progressao.total, propria ? 10 : 0);
   t(`${sistema}: abaixo do Nivel 4 nao ha progressao`,
     deriveAfty(ficha(sistema, { nd: 3, estilos: [tecnica("a")] })).estilo.progressao, { total: 0, partes: [], usadas: 0, excedeu: false });
   t(`${sistema}: outra origem sem liberacao nao tem progressao, e a Tecnica fica gravada`,
@@ -70,7 +89,7 @@ for (const sistema of ["afty", "player"]) {
   const misto = deriveAfty(ficha(sistema, { nd: 10, estilos: [...legado.estilosSombra, tecnica("nova")] }));
   t(`${sistema}: as duas regras convivem`,
     [misto.orcamentoHabilidades.estilos, misto.estilo.progressao.usadas, misto.estilo.conhecidas.length, misto.estilo.tecnicas.length],
-    [2, 1, 2, 1]);
+    propria ? [2, 1, 2, 1] : [3, 1, 2, 1]);
 }
 
 /* 3. A vaga exclusiva `vagasEstilo` soma na progressão, e a sobra segue para as
@@ -83,14 +102,18 @@ const liberto = (estilos) => {
   return c;
 };
 const lib = deriveAfty(liberto([]));
-t("Liberto no Nivel 10: 4 da progressao + 1 do Caminho",
+/* O Liberto e uma CRIATURA: sem progressao propria, so o Caminho ate o Fim (a vaga
+   exclusiva) conta em `progressao`. A progressao de 4 do Nivel 10 e do personagem. */
+t("Liberto (criatura) no Nivel 10: so a vaga do Caminho",
   [lib.estilo.progressao.total, lib.estilo.progressao.partes.map((p) => p.label)],
-  [5, ["Nível 4", "Nível 7", "Nível 10", "Caminho até o Fim"]]);
+  [1, ["Caminho até o Fim"]]);
 t("sem Tecnica da Expansao, a vaga exclusiva segue inteira para as legacy",
   lib.orcamentoHabilidades.exclusivasEstilo, 1);
 const libCheio = deriveAfty(liberto(["a", "b", "c", "d", "e"].map((id) => tecnica(id))));
-t("a quinta Tecnica usa a vaga exclusiva, e as legacy ficam sem ela",
-  [libCheio.estilo.progressao.excedeu, libCheio.orcamentoHabilidades.exclusivasEstilo], [false, 0]);
+t("as cinco Tecnicas: a vaga exclusiva e gasta pelo derive, sem invalidar nenhuma",
+  [libCheio.estilo.progressao.excedeu, libCheio.orcamentoHabilidades.exclusivasEstilo,
+    libCheio.orcamentoHabilidades.exclusivasEstiloUsadas, libCheio.estilo.tecnicas.every((x) => x.mecanicamenteValida)],
+  [false, 1, 1, true]);
 A.aplicarAddons([]);
 
 /* 4. O caminho legacy NÃO lê a Técnica da Expansão. A Modificação nova tem o

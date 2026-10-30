@@ -1,0 +1,18 @@
+{
+  "geradoEm": "2026-10-19T17:14:41.303Z",
+  "base": "http://127.0.0.1:5310",
+  "casos": [
+    {
+      "id": "linha-tempo",
+      "checks": [],
+      "erros": [],
+      "exception": "locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Definir', exact: true })\u001b[22m\n\n    at C:\\Projetos\\Grimorio\\grimorio-tracker\\.audit\\revisao-codex-integracao-g2-20261019\\linha-tempo.mjs:34:324\n    at async scenario (C:\\Projetos\\Grimorio\\grimorio-tracker\\.audit\\revisao-codex-integracao-g2-20261019\\linha-tempo.mjs:19:248)\n    at async file:///C:/Projetos/Grimorio/grimorio-tracker/.audit/revisao-codex-integracao-g2-20261019/linha-tempo.mjs:33:1"
+    }
+  ],
+  "falhas": [
+    {
+      "caso": "linha-tempo",
+      "exception": "locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Definir', exact: true })\u001b[22m\n"
+    }
+  ]
+}

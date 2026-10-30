@@ -6,7 +6,7 @@ outras origens (`libera: ["estiloSombras"]`).
 
 Fontes, em ordem de precedência:
 
-1. as decisões do autor abaixo (2026-10-04);
+1. as decisões do autor abaixo (2026-10-04, atualizadas em 2026-10-11 e 2026-10-12);
 2. a *Expansão do Novo Estilo das Sombras (F&M 2.5)*, da Equipe de Desenvolvimento 2.5.5, que o autor
    adotou como regra;
 3. o Livro 2.5.2, seção do Novo Estilo da Sombra.
@@ -22,7 +22,7 @@ montada na mesa por imbuição) continua valendo só para as Técnicas LEGACY. V
 |---|---|
 | DA-01 | Vale na criatura (`/Afty`) e no jogador (`/Player`), com a mesma estrutura de criação, validação, cálculo e armazenamento. Diferença real de comportamento vai para `DIVERGENCIAS` |
 | DA-02 | A Técnica de Estilo é um PACOTE: uma entidade própria, Modificação do Domínio Simples ou Técnica de Estilo Especial. A Modificação carrega os efeitos dentro dela, e os efeitos não ocupam a lista de Técnicas. Revoga a decisão de 2026-08-10 |
-| DA-03 | Progressão própria: 2 Técnicas no Nível 4 e +1 nos níveis 7, 10, 13, 16 e 19 (7 no 19). Não consome Habilidade de Especialização, Talento nem outro slot genérico. Revoga a decisão de 2026-08-07, em que a Técnica gastava o contador de Habilidades |
+| DA-03 | Progressão própria: 2 Técnicas no Nível 4 e +1 a cada três níveis seguintes, sem parar no 19. Inclui 22, 25, 28, 31, 34, 37, 40 e os seguintes (decisão de 2026-10-12). Não consome Habilidade de Especialização, Talento nem outro slot genérico. Revoga a decisão de 2026-08-07, em que a Técnica gastava o contador de Habilidades. **Emenda de 2026-10-26: vale só no personagem.** Na criatura as Técnicas da Expansão gastam o contador comum (divergência `progressaoDoEstilo`), e o estouro só deixa o contador vermelho |
 | DA-04 | **Revogada em 2026-10-11.** Era "UMA Técnica imbuída por vez". Agora, com o Domínio Simples no ar, o usuário liga quantas Técnicas conhecer ao mesmo tempo, à mão. O mesmo bônus de duas Técnicas ligadas SOMA, e o total ainda não soma com o Feitiço Auxiliar nem com o resto do pool (ver "Várias Técnicas ligadas") |
 | DA-05 | Técnica criada antes desta data é `legacy`: calcula como antes, não é convertida nem apagada. A conversão é um botão manual, que preserva nome, descrição e os dados antigos |
 | DA-06 | Addon antigo segue `legacy` (o Lime Neds inclusive), sem agrupar efeitos em pacote. A regra é explícita (`regra: "legacy" \| "expansao"`), e Addon novo pode declarar a Expansão |
@@ -40,7 +40,7 @@ Leituras do PDF decididas pelo autor:
 | Ataque com Gatilho | cada aplicação ocupa 1 vaga e dá +1 ataque por rodada |
 | Pré-Requisito | Fácil +1, Médio +2, Difícil +3, Impossível +4 no Nível de Aptidão considerado para UM efeito. Não mexe na Aptidão real, não é global, não dá vaga e não aumenta Ataque com Gatilho nem Contra-Ataque |
 | Exaustão | Domínio 3 com Exaustão 2: 5 vagas, e 2 Pontos de Exaustão ao fechar |
-| Repetição | definida por efeito no catálogo (o Acerto soma, o Dano soma +2, o Gatilho soma +1 ataque, e na Defesa, TR, Perícia, Deslocamento e Margem a 2ª compra estende aos aliados) |
+| Repetição | definida por efeito. Dano soma +2 por compra, Gatilho soma +1 ataque. Acerto e CD aceitam duas compras: metade do BT ou BT inteiro. Em todo efeito que admite aliados, a segunda compra escolhe entre extensão para aliados e bônus pessoal aumentado, sem combinar as alternativas (decisão de 2026-10-12) |
 | Aliados | nunca somados em outra ficha. A ficha do usuário mostra o valor, o alcance e que afeta aliados |
 | Condições por crítico | manual ou parcial até existir a tabela de efeitos de crítico das armas |
 
@@ -53,7 +53,8 @@ O Livro tem dois textos para a quantidade de Técnicas:
 - na seção do Novo Estilo da Sombra, igual à Expansão: duas no Nível 4 e mais uma nos níveis 7, 10,
   13, 16 e 19.
 
-O sistema usa a segunda (DA-03). O texto da origem fica registrado aqui como divergência da fonte.
+O sistema usa a segunda (DA-03), com a continuidade depois do 19 confirmada pelo autor em 2026-10-12.
+O texto da origem fica registrado aqui como divergência da fonte.
 
 ## Como o código está montado
 
@@ -77,7 +78,7 @@ O sistema usa a segunda (DA-03). O texto da origem fica registrado aqui como div
 
 ### Progressão
 
-`tecnicasDaProgressao(nd)`: 2 no Nível 4 e +1 em 7, 10, 13, 16 e 19, com uma parcela por nível
+`tecnicasDaProgressao(nd)`: 2 no Nível 4 e +1 a cada três níveis seguintes, com uma parcela por marco
 para o hover. A vaga exclusiva `vagasEstilo` (o Liberto, o Treino de Novo Estilo, a Expansão de
 Estilo, o Especialista em Estilo) soma em cima. A Técnica da Expansão usa a vaga exclusiva antes da
 legacy, e o que sobrar segue para as legacy como antes.
@@ -88,21 +89,48 @@ legacy, e o que sobrar segue para as legacy como antes.
 
 | Efeito | No usuário | Repetição |
 |---|---|---|
-| Aumento de Defesa | Defesa + metade do BT | a 2ª compra estende aos aliados, sem somar no usuário |
-| Aumento de TR (escolha) | o TR escolhido + metade do BT | a 2ª estende aos aliados |
-| Bônus de Acerto (escolha) | Acerto + metade do BT por compra | soma |
-| Bônus de Margem Crítica | margem -1 no Nível 5, -2 no 13 | a 2ª estende aos aliados |
-| Aumento de Perícia (escolha) | a Perícia + metade do BT | a 2ª estende aos aliados |
+| Aumento de Defesa | Defesa + metade do BT | a 2ª estende aos aliados ou passa o bônus pessoal a BT inteiro |
+| Aumento de TR (escolha) | o TR escolhido + metade do BT | a 2ª estende aos aliados ou passa o bônus pessoal a BT inteiro |
+| Bônus de Acerto (escolha) | Acerto + metade do BT | a 2ª estende aos aliados ou passa a BT inteiro, limite de duas por tipo de ataque |
+| Bônus de Margem Crítica | margem -1 no Nível 5, -2 no 13 | a 2ª estende aos aliados ou dobra a redução pessoal para -2/-4 |
+| Aumento de Perícia (escolha) | a Perícia + metade do BT | a 2ª estende aos aliados ou passa o bônus pessoal a BT inteiro |
 | Dano Adicional | +2 Níveis de Dano por compra | soma |
 | Alcance Adicional | alcance de ataque +3 m | uma compra |
-| Deslocamento Adicional | +4,5 m | a 2ª estende aos aliados |
+| Deslocamento Adicional | +4,5 m | a 2ª estende aos aliados ou passa o bônus pessoal a +9 m |
 | Ataque com Gatilho | 1 ataque por rodada por compra (número de mesa) | soma |
-| Bônus de CD | CD + metade do BT por compra | soma |
+| Bônus de CD | CD + metade do BT | a 2ª estende aos aliados ou passa a BT inteiro, limite de duas |
 | Efeito Especial | texto e linhas de Motor, aprovado pelo Narrador | uma compra |
 
 - Metade do BT é `piso(bt / 2)`. O limite de efeitos é DOM + `imbuicoesEstilo` + Exaustão.
 - O valor dos aliados é número de mesa na ficha do usuário. Ele nunca é somado em outra ficha.
 - A Técnica liga pela variável `estilo_tecnica_<id>`, com o Domínio no ar (`estilo_ativo`).
+
+### Segunda compra: Aliados ou Dobrar Bônus (2026-10-12)
+
+Todo efeito que admite uma segunda compra para aliados oferece uma alternativa pessoal.
+O limite continua duas compras no total: base mais uma das alternativas. A exclusão vale
+para o mesmo efeito e escolha dentro de uma Técnica. TRs, Perícias e Aptidões diferentes
+mantêm escolhas independentes. As Técnicas ativas continuam somando entre si conforme a DA-04.
+
+Defesa, TR e Perícia usam BT inteiro na alternativa pessoal, inclusive BT ímpar: BT 5 passa
+de +2 para +5. Acerto e CD também escolhem entre BT inteiro pessoal e extensão para aliados:
+com BT 5, a extensão concede +2 ao usuário e +2 aos aliados, sem aplicar o bônus duas vezes.
+Margem e Deslocamento dobram seu valor original. Nos bônus numéricos de Aura e Controle e Leitura,
+o bônus pessoal dobra depois do arredondamento: AU ou CL 3 passa de +2 para +4.
+
+No criador, adicionar o efeito duas vezes mostra o seletor Aliados ou Dobrar Bônus.
+A segunda compra grava `repeticao: "aliados" | "pessoal"`. Compras antigas sem esse campo
+conservam a extensão para aliados, exceto Acerto e CD: duas compras anteriores sem marca
+mantêm BT inteiro pessoal, e a extensão exige escolha explícita. A escolha sobrevive à importação e à sessão e aparece
+nos números da Ficha e do Encontro. Combinação das alternativas, terceira compra nos efeitos
+limitados ou reforço sem compra base invalida a Técnica inteira, preservando os dados.
+
+| Nível | 19 | 22 | 25 | 28 | 31 | 34 | 37 | 40 |
+|---|---|---|---|---|---|---|---|---|
+| Técnicas pela progressão | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 |
+
+O Player continua usando seu nível efetivo: sem a liberação de progressão épica, o teto
+geral permanece 30. A continuidade das Técnicas não retira esse teto por conta própria.
 
 ### Modificações de Aptidão
 
@@ -111,7 +139,7 @@ cada modificação ocupa 1 vaga.
 
 | Trilha | Modificações | Automação |
 |---|---|---|
-| Aura | Bônus Numérico (+`teto(au / 2)`, a 2ª aos aliados), Área do Domínio, Aura Anuladora, Aura Embaçada, Aura Elemental, Vantagem por PE, Transferência de Aura | o Bônus Numérico no Motor, o resto é texto de mesa |
+| Aura | Bônus Numérico (+`teto(au / 2)`, a 2ª aos aliados ou dobrando o bônus pessoal), Área do Domínio, Aura Anuladora, Aura Embaçada, Aura Elemental, Vantagem por PE, Transferência de Aura | o Bônus Numérico no Motor, o resto é texto de mesa |
 | Controle e Leitura | Canalizar em Golpe com Vantagem, Cobrir-se no Domínio, Bônus Numérico (+`teto(cl / 2)`), Rastreio e Leitura, Munição Imbuída, Punho Divergente (CD + CL) | o Bônus Numérico no Motor e a CD do Punho Divergente como número |
 | Energia Reversa | Cura em Área, Energia Reversa Ofensiva (pede Projetar Energia ou Canalizar em Golpe, e ER 1) | texto de mesa, com o requisito validado |
 | Barreira | Cortina no Domínio (o raio não muda) | texto de mesa |
@@ -119,6 +147,8 @@ cada modificação ocupa 1 vaga.
 - As Aptidões de Domínio (a categoria inteira) não podem ser modificadas.
 - O Bônus Numérico só vale enquanto a linha da Aptidão está valendo: o Cobrir-se sem PE gasto não
   ganha nada.
+- Bônus Numérico de Controle e Leitura também escolhe entre aliados e bônus pessoal dobrado
+  na segunda compra, com as mesmas restrições de Aura.
 
 ### Pré-Requisitos, Contra-Ataque, crítico e Exaustão
 

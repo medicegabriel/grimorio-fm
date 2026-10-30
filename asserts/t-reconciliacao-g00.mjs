@@ -87,7 +87,10 @@ t("alvos nativos apontam de volta ao remendo",()=>assert.ok(patches.every(i=>liv
 t("liberações soPorAddon vinculam a regra nativa",()=>assert.ok(live.itens.filter(i=>i.chave.includes("::LIBERACOES::soPorAddon:")&&!i.pai).every(i=>i.regraOriginal&&i.proprietarioOriginal)));
 t("Roubo conserva 127 referências",()=>assert.equal(live.itens.filter(i=>i.export==="HABILIDADES_ROUBAVEIS"&&i.id!=="@catalogo").length,127));
 t("herança conserva 118 integrações",()=>assert.equal(live.itens.filter(i=>i.tipo==="integração herdada").length,118));
-t("fontes individuais cobrem cada chave sem herdar páginas",()=>assert.equal(Object.keys(mapa.itens).length,live.itens.length));
+t("fontes individuais cobrem cada chave viva sem herdar páginas",()=>assert.ok(live.itens.every(i=>Object.hasOwn(mapa.itens,i.chave))));
+const inventarioFontes=lerJson(resolve(CONTROLE,"inventario.json"));
+const chavesVivas=new Set(live.itens.map(i=>i.chave));
+t("fontes históricas extras exigem remoção documentada",()=>assert.ok(Object.keys(mapa.itens).filter(k=>!chavesVivas.has(k)).every(k=>inventarioFontes.itens.some(i=>i.chave===k&&i.situacao==="REMOVIDO"&&i.justificativaRemocao))));
 t("Agilidade 2.0 permanece adiada sem páginas 2.5",()=>assert.deepEqual([mapa.itens["afty-habilidades.js::AFTY_HABILIDADES::cnj_agilidade_no_campo_de_batalha"].estado,mapa.itens["afty-habilidades.js::AFTY_HABILIDADES::cnj_agilidade_no_campo_de_batalha"].fontes],["ADIADA",[]]));
 const chars=live.itens.filter(i=>i.export==="CARACTERISTICAS_INVOCACAO"&&!i.pai&&i.id!=="@catalogo");
 t("características distinguem livro, adicionais e casa",()=>assert.deepEqual(["LOCALIZADA","ADIADA","DA CASA"].map(e=>chars.filter(i=>mapa.itens[i.chave].estado===e).length),[4,40,1]));

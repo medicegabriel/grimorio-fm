@@ -5,6 +5,8 @@
   "autor": "Afty",
   "paraRaw": "afty",
   "descricao": "Enquanto de olhos estiverem fechados de alguma forma, o Coded Gigas fornece os seguintes efeitos:\n\nPRO:\n- Enquanto com os olhos fechados Ciel recebe 3x seu Nível de Controle e Leitura em Intuição. (Arredondado para Cima)\n\n- Pode mudar o Calculo de Atenção para usar Intuição, além de poder trocar Testes de Percepção por Intuição.\n\n- Consegue enxergar por Técnicas de Barreiras, além de conseguir ativamente ver os Limites de um Domínio e enxergar o Domínio Inato das pessoas.",
+  "resumo": "Efeitos de Intuição e de visão enquanto os olhos da Ciel estão fechados",
+  "categoria": "tecnicas",
   "permite": [
     "olhinhosLu"
   ]

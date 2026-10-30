@@ -5,6 +5,8 @@
   "autor": "Templas",
   "paraRaw": "afty",
   "descricao": "Mesma primitiva do Addon Pacto (`permite: [\"pacto\"]`), mais um Pacto PRONTO em `pactoPadrao` que o jogador copia com um botão na própria aba (mesmo espírito dos Modelos de Feitiço: o pacote é biblioteca, a cópia é escolha do jogador). Dois Malefícios não têm canal no motor (custo de Foco por uso e a regra de aprendizado de Aptidão em combate são texto puro, sem número); os outros dois usam vulnerabilidadeDano, hp e pe. O Benefício de dobrar o Concentrar Poder e +1 Shikigami em campo também ficou texto puro: depende de uma Habilidade específica (Concentrar Poder) e de um limite que o motor não modela como número — aplique os dois na mesa.",
+  "resumo": "Pacto pronto do Receptáculo, para copiar na aba Pacto",
+  "categoria": "ferramentas",
   "permite": ["pacto"],
   "pactoPadrao": {
     "nome": "Pacto do Receptáculo",

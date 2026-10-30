@@ -5,6 +5,8 @@
   "autor": "Afty",
   "paraRaw": "afty",
   "descricao": "Melhorias Superiores e Habilidades Lendárias conforme as regras de Afty para Player. Mantém uma Melhoria nos níveis ímpares a partir de 21 e uma Lendária nos pares a partir de 22. Atingir Ápice e as Habilidades Ápice continuam nas regras atuais, com acesso no nível 26.",
+  "resumo": "Melhorias e Lendárias do Afty no Player: uma Melhoria nos níveis ímpares e uma Lendária nos pares",
+  "categoria": "regras",
   "libera": [
     "soPorAddon:len_versatilidade_extrema"
   ],

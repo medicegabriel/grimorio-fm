@@ -1,0 +1,92 @@
+{
+  "formato": "grimorio-afty-pacote-aliados",
+  "versao": 1,
+  "pacote": {
+    "id": "pac_mvgtbs1m6fc5c0eafb8a",
+    "nome": "Pacote PA-I3",
+    "revisao": 1,
+    "exportadoEm": "2026-10-20T15:03:01.074Z"
+  },
+  "emissor": {
+    "id": "emi_mvgtbshv7de431d54667",
+    "nome": "Yuki (Teste Pacotes)",
+    "sistema": "afty"
+  },
+  "opcoes": [
+    {
+      "id": "op_mvgtbs31efebbeba0566",
+      "nome": "Guarda e Firmeza",
+      "familia": "feitico",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "feitico",
+        "id": "pai3-misto",
+        "nome": "Guarda e Firmeza"
+      },
+      "escolhas": [],
+      "acumulo": {
+        "regra": "feitico"
+      },
+      "beneficios": [
+        {
+          "canal": "defesa",
+          "valor": 3,
+          "duracao": {
+            "tipo": "proximo",
+            "texto": "Por Um Ataque"
+          }
+        },
+        {
+          "canal": "bonusTR",
+          "valor": 2,
+          "alvo": "reflexos",
+          "duracao": {
+            "tipo": "rodadas",
+            "rodadas": 1
+          }
+        }
+      ],
+      "duracao": {
+        "tipo": "proximo",
+        "texto": "Por Um Ataque"
+      },
+      "condicoes": [
+        "Um Alvo"
+      ],
+      "custoEmissor": "2 PE",
+      "consulta": [],
+      "naoRepresentado": []
+    },
+    {
+      "id": "op_mvgtbs3z521c9111631f",
+      "nome": "Precisão de Um Ataque",
+      "familia": "feitico",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "feitico",
+        "id": "codex-um-ataque",
+        "nome": "Precisão de Um Ataque"
+      },
+      "escolhas": [],
+      "acumulo": {
+        "regra": "feitico"
+      },
+      "beneficios": [
+        {
+          "canal": "bonusAcerto",
+          "valor": 3
+        }
+      ],
+      "duracao": {
+        "tipo": "proximo",
+        "texto": "Por Um Ataque"
+      },
+      "condicoes": [
+        "Um Alvo"
+      ],
+      "custoEmissor": "2 PE",
+      "consulta": [],
+      "naoRepresentado": []
+    }
+  ]
+}

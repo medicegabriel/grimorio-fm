@@ -1,0 +1,282 @@
+{
+  "geradoEm": "2026-10-21T22:58:36.158Z",
+  "base": "http://127.0.0.1:5330",
+  "fichas": {
+    "mesa": {
+      "previa": {
+        "ir a Ações (de Habilidades)": {
+          "mediana": 26,
+          "maximo": 32,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "voltar a Ações (de Perícias)": {
+          "mediana": 16,
+          "maximo": 26,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "ir a Perícias": {
+          "mediana": 16,
+          "maximo": 31,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "ir a Equipamentos": {
+          "mediana": 23,
+          "maximo": 29,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "abrir o detalhe de um Feitiço": {
+          "mediana": 10,
+          "maximo": 12,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "rolar o Acerto do Ataque Básico": {
+          "mediana": 34,
+          "maximo": 43,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "mudar a sessão com Ações aberta (Em Combate)": {
+          "mediana": 14,
+          "maximo": 16,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "nosDoDom": 1138
+      },
+      "atual": {
+        "ir a Ações (de Habilidades)": {
+          "mediana": 25,
+          "maximo": 26,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "voltar a Ações (de Perícias)": {
+          "mediana": 23,
+          "maximo": 34,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "ir a Perícias": {
+          "mediana": 15,
+          "maximo": 24,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "ir a Equipamentos": {
+          "mediana": 10,
+          "maximo": 15,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "abrir o detalhe de um Feitiço": {
+          "mediana": 5,
+          "maximo": 15,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "rolar o Acerto do Ataque Básico": {
+          "mediana": 25,
+          "maximo": 50,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "mudar a sessão com Ações aberta (Em Combate)": {
+          "mediana": 17,
+          "maximo": 18,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "nosDoDom": 695
+      }
+    },
+    "conjurador": {
+      "previa": {
+        "ir a Ações (de Habilidades)": {
+          "mediana": 24,
+          "maximo": 29,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "voltar a Ações (de Perícias)": {
+          "mediana": 16,
+          "maximo": 32,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "ir a Perícias": {
+          "mediana": 16,
+          "maximo": 32,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "ir a Equipamentos": {
+          "mediana": 7,
+          "maximo": 32,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "abrir o detalhe de um Feitiço": {
+          "mediana": 11,
+          "maximo": 26,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "rolar o Acerto do Ataque Básico": {
+          "mediana": 34,
+          "maximo": 44,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "mudar a sessão com Ações aberta (Em Combate)": {
+          "mediana": 15,
+          "maximo": 21,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "nosDoDom": 978
+      },
+      "atual": {
+        "ir a Ações (de Habilidades)": {
+          "mediana": 25,
+          "maximo": 29,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "voltar a Ações (de Perícias)": {
+          "mediana": 22,
+          "maximo": 32,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "ir a Perícias": {
+          "mediana": 10,
+          "maximo": 13,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "ir a Equipamentos": {
+          "mediana": 20,
+          "maximo": 26,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "abrir o detalhe de um Feitiço": {
+          "mediana": 8,
+          "maximo": 8,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "rolar o Acerto do Ataque Básico": {
+          "mediana": 37,
+          "maximo": 43,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "mudar a sessão com Ações aberta (Em Combate)": {
+          "mediana": 16,
+          "maximo": 17,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "nosDoDom": 749
+      }
+    },
+    "arsenal": {
+      "previa": {
+        "ir a Ações (de Habilidades)": {
+          "mediana": 11,
+          "maximo": 17,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "voltar a Ações (de Perícias)": {
+          "mediana": 25,
+          "maximo": 32,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "ir a Perícias": {
+          "mediana": 24,
+          "maximo": 24,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "ir a Equipamentos": {
+          "mediana": 28,
+          "maximo": 31,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "abrir o detalhe de um Feitiço": {
+          "mediana": 4,
+          "maximo": 14,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "rolar o Acerto do Ataque Básico": {
+          "mediana": 18,
+          "maximo": 37,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "mudar a sessão com Ações aberta (Em Combate)": {
+          "mediana": 13,
+          "maximo": 18,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "nosDoDom": 1040
+      },
+      "atual": {
+        "ir a Ações (de Habilidades)": {
+          "mediana": 15,
+          "maximo": 21,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "voltar a Ações (de Perícias)": {
+          "mediana": 25,
+          "maximo": 33,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "ir a Perícias": {
+          "mediana": 13,
+          "maximo": 22,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "ir a Equipamentos": {
+          "mediana": 25,
+          "maximo": 33,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "abrir o detalhe de um Feitiço": {
+          "mediana": 14,
+          "maximo": 24,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "rolar o Acerto do Ataque Básico": {
+          "mediana": 18,
+          "maximo": 40,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "mudar a sessão com Ações aberta (Em Combate)": {
+          "mediana": 13,
+          "maximo": 15,
+          "tarefasLongas": 0,
+          "maiorTarefa": 0
+        },
+        "nosDoDom": 463
+      }
+    }
+  }
+}

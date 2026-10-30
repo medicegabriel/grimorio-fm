@@ -1,0 +1,271 @@
+{
+  "geradoEm": "2026-10-19T21:39:26.799Z",
+  "base": "http://127.0.0.1:5320",
+  "casos": [
+    {
+      "id": "fonte-minamoto",
+      "checks": [
+        {
+          "id": "registro pela interface soma sete",
+          "ok": true,
+          "dados": {
+            "base": 82,
+            "atual": 89
+          }
+        },
+        {
+          "id": "classica conta o mesmo registro sem camada visual G2",
+          "ok": true
+        },
+        {
+          "id": "recarga classica conserva valor e dados",
+          "ok": true
+        },
+        {
+          "id": "volta ao G2 nao duplica nem perde",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    },
+    {
+      "id": "fonte-player30",
+      "checks": [
+        {
+          "id": "registro pela interface soma sete",
+          "ok": true,
+          "dados": {
+            "base": 39,
+            "atual": 46
+          }
+        },
+        {
+          "id": "classica conta o mesmo registro sem camada visual G2",
+          "ok": true
+        },
+        {
+          "id": "recarga classica conserva valor e dados",
+          "ok": true
+        },
+        {
+          "id": "volta ao G2 nao duplica nem perde",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    },
+    {
+      "id": "fonte-calamidade",
+      "checks": [
+        {
+          "id": "registro pela interface soma sete",
+          "ok": true,
+          "dados": {
+            "base": 70,
+            "atual": 77
+          }
+        },
+        {
+          "id": "classica conta o mesmo registro sem camada visual G2",
+          "ok": true
+        },
+        {
+          "id": "recarga classica conserva valor e dados",
+          "ok": true
+        },
+        {
+          "id": "volta ao G2 nao duplica nem perde",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    },
+    {
+      "id": "catalogo-1024",
+      "checks": [
+        {
+          "id": "duas origens iguais de aliados distintos valem maior",
+          "ok": true,
+          "dados": {
+            "base": 82,
+            "atual": 85
+          }
+        },
+        {
+          "id": "classica conta maior uma vez",
+          "ok": true
+        },
+        {
+          "id": "feitico e catalogo conservam regras diferentes",
+          "ok": true
+        },
+        {
+          "id": "classica conserva combinacao",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    },
+    {
+      "id": "catalogo-1440",
+      "checks": [
+        {
+          "id": "duas origens iguais de aliados distintos valem maior",
+          "ok": true,
+          "dados": {
+            "base": 82,
+            "atual": 85
+          }
+        },
+        {
+          "id": "classica conta maior uma vez",
+          "ok": true
+        },
+        {
+          "id": "feitico e catalogo conservam regras diferentes",
+          "ok": true
+        },
+        {
+          "id": "classica conserva combinacao",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    },
+    {
+      "id": "prazo-persistencia",
+      "checks": [
+        {
+          "id": "classica ve registro com prazo",
+          "ok": true
+        },
+        {
+          "id": "virada classica mantem ultimo prazo e valor",
+          "ok": true
+        },
+        {
+          "id": "G2 ve prazo atualizado apos recarga",
+          "ok": true
+        },
+        {
+          "id": "virada G2 expira registro e numero",
+          "ok": true
+        },
+        {
+          "id": "classica ve expiracao",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    },
+    {
+      "id": "confirmacoes-rapidas",
+      "checks": [
+        {
+          "id": "tres confirmacoes sem pausa nao perdem estados",
+          "ok": true,
+          "dados": {
+            "ativo": true,
+            "ataqueConcentrado": 1,
+            "espiritoDeLuta": true,
+            "conhecimentoAplicado": 1
+          }
+        },
+        {
+          "id": "so AC automatico cobra PE uma vez",
+          "ok": true,
+          "dados": {
+            "energia": [
+              178,
+              177
+            ],
+            "operacoes": {
+              "eventos": [
+                {
+                  "id": "8l1hu71h",
+                  "ts": 1792446048911,
+                  "rodada": 0,
+                  "tipo": "gasto",
+                  "ativacaoId": "07icbd3g",
+                  "nome": "Ataque Concentrado · Intensidade 1",
+                  "custo": 1,
+                  "pago": {
+                    "casca": {},
+                    "reserva": 1
+                  }
+                }
+              ],
+              "ativacoes": {
+                "07icbd3g": {
+                  "id": "07icbd3g",
+                  "tipo": "gasto",
+                  "nome": "Ataque Concentrado · Intensidade 1",
+                  "custo": 1,
+                  "pago": {
+                    "casca": {},
+                    "reserva": 1
+                  },
+                  "rodada": 0,
+                  "desfeita": false,
+                  "criadaEm": 1792446048911
+                }
+              },
+              "reusos": {},
+              "pvConcessoes": {},
+              "encerrados": []
+            }
+          }
+        },
+        {
+          "id": "numero final da tela corresponde a sessao mais recente",
+          "ok": true,
+          "dados": {
+            "tela": 89,
+            "motor": 89
+          }
+        },
+        {
+          "id": "classica ve mesmos estados e numero",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    }
+  ],
+  "falhas": []
+}

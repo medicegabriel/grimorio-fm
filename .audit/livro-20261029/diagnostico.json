@@ -1,0 +1,908 @@
+[
+  {
+    "id": "origem-mutante",
+    "observado": {
+      "caracteristicas": 0,
+      "bonus": {},
+      "pv": 66
+    }
+  },
+  {
+    "id": "bracos-extras-sem-estado-de-maos",
+    "observado": {
+      "base": 5,
+      "comAnatomia": 7
+    }
+  },
+  {
+    "id": "corpo-especializado-sem-escolha",
+    "observado": {
+      "base": {
+        "id": "atletismo",
+        "nome": "Atletismo",
+        "atributo": "forca",
+        "descricao": "Atletismo serve para representar as capacidades físicas que exigem força e resistência, englobando proezas físicas como escalar, pular, empurrar, agarrar e outras aplicações de potência.",
+        "exemplos": "escalar superfícies inclinadas ou verticais, nadar por correntes de água, quebrar amarras o segurando e forçar uma porta com seu corpo.",
+        "oficios": [],
+        "atributoPadrao": "forca",
+        "prof": null,
+        "profEscolhida": null,
+        "concedida": false,
+        "bonus": 5,
+        "partes": [
+          {
+            "label": "Força",
+            "valor": 0
+          },
+          {
+            "label": "Metade do Nível",
+            "valor": 5
+          }
+        ]
+      },
+      "comAnatomia": {
+        "id": "atletismo",
+        "nome": "Atletismo",
+        "atributo": "forca",
+        "descricao": "Atletismo serve para representar as capacidades físicas que exigem força e resistência, englobando proezas físicas como escalar, pular, empurrar, agarrar e outras aplicações de potência.",
+        "exemplos": "escalar superfícies inclinadas ou verticais, nadar por correntes de água, quebrar amarras o segurando e forçar uma porta com seu corpo.",
+        "oficios": [],
+        "atributoPadrao": "forca",
+        "prof": null,
+        "profEscolhida": null,
+        "concedida": false,
+        "bonus": 5,
+        "partes": [
+          {
+            "label": "Força",
+            "valor": 0
+          },
+          {
+            "label": "Metade do Nível",
+            "valor": 5
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "articulacoes-extensas",
+    "observado": {
+      "base": {
+        "curto": 1.5,
+        "longo": 1.5,
+        "texto": "1,5m",
+        "partes": [
+          {
+            "label": "Tamanho",
+            "texto": "1,5m"
+          }
+        ]
+      },
+      "comAnatomia": {
+        "curto": 1.5,
+        "longo": 1.5,
+        "texto": "1,5m",
+        "partes": [
+          {
+            "label": "Tamanho",
+            "texto": "1,5m"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "arma-natural",
+    "observado": {
+      "base": {
+        "id": "basico",
+        "nome": "Ataque Básico",
+        "fonte": "basico",
+        "ataqueId": "corpo",
+        "alcance": {
+          "curto": 1.5,
+          "longo": 1.5,
+          "texto": "1,5m",
+          "partes": [
+            {
+              "label": "Tamanho",
+              "texto": "1,5m"
+            }
+          ]
+        },
+        "propriedades": [],
+        "chaveArma": "basico",
+        "treinada": true,
+        "avisosPropriedades": [],
+        "atributo": "forca",
+        "dado": "d12",
+        "dados": 1,
+        "dadosBase": 1,
+        "dadosExtras": 0,
+        "dadosGrupos": [
+          {
+            "qtd": 1,
+            "faces": 12
+          }
+        ],
+        "fixo": 2,
+        "total": 8,
+        "niveisDano": 0,
+        "grauArma": "desarmado",
+        "maximo": 14,
+        "margemCritico": 20,
+        "ignoraRD": 0,
+        "removeResistencia": false,
+        "texto": "1d12 + 2",
+        "totalFontes": "1d12 + 2",
+        "partes": [
+          {
+            "label": "Corpo Treinado",
+            "texto": "1d12",
+            "categoria": "critavel"
+          },
+          {
+            "label": "Força",
+            "valor": 0,
+            "categoria": "fixo"
+          },
+          {
+            "label": "Gosto pela Luta",
+            "valor": 2,
+            "categoria": "fixo"
+          }
+        ],
+        "partesMargemCritico": [
+          {
+            "label": "Margem Base",
+            "valor": 20,
+            "texto": "20"
+          }
+        ],
+        "escoposDano": [
+          "basico",
+          "atq:corpo",
+          "atq_tipo:corpo:im"
+        ],
+        "ignoraTodaRD": false,
+        "ignoraImunidade": false,
+        "rerrola": null,
+        "gruposDano": [
+          {
+            "nome": "Ataque",
+            "dados": 1,
+            "dadosConcentraveis": 1,
+            "faces": 12,
+            "fixo": 2,
+            "momento": "durante",
+            "multiplica": true,
+            "naPartes": true
+          }
+        ],
+        "acerto": 12,
+        "acertoDados": [],
+        "acertoTexto": null,
+        "acertoAtaque": "Corpo a Corpo",
+        "partesAcerto": [
+          {
+            "label": "Força",
+            "valor": 0
+          },
+          {
+            "label": "Metade do Nível",
+            "valor": 5
+          },
+          {
+            "label": "Maestria (Ataque Desarmado)",
+            "valor": 4
+          },
+          {
+            "label": "Gosto pela Luta",
+            "valor": 3
+          }
+        ],
+        "dadosPropriosArma": 1,
+        "tipoDano": null,
+        "tipoDanoLabel": null,
+        "golpeComAura": null,
+        "formulaNormal": "1d12 + 2",
+        "formulaCritico": "2d12 + 2",
+        "formulaRaioNegro": "(2d12)/2*3 + 2",
+        "hoverDano": {
+          "partes": [
+            {
+              "secao": "Critável",
+              "texto": "1d12"
+            },
+            {
+              "label": "Corpo Treinado",
+              "texto": "1d12",
+              "categoria": "critavel"
+            },
+            {
+              "secao": "Fixo",
+              "texto": "+2"
+            },
+            {
+              "label": "Força",
+              "valor": 0,
+              "categoria": "fixo"
+            },
+            {
+              "label": "Gosto pela Luta",
+              "valor": 2,
+              "categoria": "fixo"
+            }
+          ],
+          "total": "1d12 + 2"
+        },
+        "armaPropriedades": {
+          "estado": {
+            "ataques": 0,
+            "gastos": 0,
+            "emperrada": false,
+            "aparando": false,
+            "desprevenido": false,
+            "tipoDano": null,
+            "defesaAlvo": null,
+            "defesaAmpla": null,
+            "adjacente": false,
+            "amplaRodada": null,
+            "pendente": null,
+            "ultimo": null
+          },
+          "numero": 1,
+          "energica": 0,
+          "energicaCritico": 0,
+          "apunhaladora": 0,
+          "oscilante": 0,
+          "capacidade": 0,
+          "desvantagem": false,
+          "requisitos": [],
+          "bloqueio": null,
+          "tipos": []
+        }
+      },
+      "comAnatomia": {
+        "id": "basico",
+        "nome": "Ataque Básico",
+        "fonte": "basico",
+        "ataqueId": "corpo",
+        "alcance": {
+          "curto": 1.5,
+          "longo": 1.5,
+          "texto": "1,5m",
+          "partes": [
+            {
+              "label": "Tamanho",
+              "texto": "1,5m"
+            }
+          ]
+        },
+        "propriedades": [
+          {
+            "id": "energica",
+            "nome": "Enérgica",
+            "valor": true,
+            "rotulo": "Enérgica"
+          },
+          {
+            "id": "fineza",
+            "nome": "Fineza",
+            "valor": true,
+            "rotulo": "Fineza"
+          }
+        ],
+        "chaveArma": "basico",
+        "treinada": true,
+        "avisosPropriedades": [],
+        "atributo": "forca",
+        "dado": "d12",
+        "dados": 1,
+        "dadosBase": 1,
+        "dadosExtras": 0,
+        "dadosGrupos": [
+          {
+            "qtd": 1,
+            "faces": 12
+          }
+        ],
+        "fixo": 2,
+        "total": 8,
+        "niveisDano": 0,
+        "grauArma": "desarmado",
+        "maximo": 14,
+        "margemCritico": 20,
+        "ignoraRD": 0,
+        "removeResistencia": false,
+        "texto": "1d12 + 2",
+        "totalFontes": "1d12 + 2",
+        "partes": [
+          {
+            "label": "Corpo Treinado",
+            "texto": "1d12",
+            "categoria": "critavel"
+          },
+          {
+            "label": "Força",
+            "valor": 0,
+            "categoria": "fixo"
+          },
+          {
+            "label": "Gosto pela Luta",
+            "valor": 2,
+            "categoria": "fixo"
+          }
+        ],
+        "partesMargemCritico": [
+          {
+            "label": "Margem Base",
+            "valor": 20,
+            "texto": "20"
+          }
+        ],
+        "escoposDano": [
+          "basico",
+          "atq:corpo",
+          "atq_tipo:corpo:im"
+        ],
+        "ignoraTodaRD": false,
+        "ignoraImunidade": false,
+        "rerrola": null,
+        "gruposDano": [
+          {
+            "nome": "Ataque",
+            "dados": 1,
+            "dadosConcentraveis": 1,
+            "faces": 12,
+            "fixo": 2,
+            "momento": "durante",
+            "multiplica": true,
+            "naPartes": true
+          }
+        ],
+        "acerto": 12,
+        "acertoDados": [],
+        "acertoTexto": null,
+        "acertoAtaque": "Corpo a Corpo",
+        "partesAcerto": [
+          {
+            "label": "Força",
+            "valor": 0
+          },
+          {
+            "label": "Metade do Nível",
+            "valor": 5
+          },
+          {
+            "label": "Maestria (Ataque Desarmado)",
+            "valor": 4
+          },
+          {
+            "label": "Gosto pela Luta",
+            "valor": 3
+          }
+        ],
+        "dadosPropriosArma": 1,
+        "tipoDano": null,
+        "tipoDanoLabel": null,
+        "golpeComAura": null,
+        "formulaNormal": "1d12 + 2",
+        "formulaCritico": "2d12 + 2",
+        "formulaRaioNegro": "(2d12)/2*3 + 2",
+        "hoverDano": {
+          "partes": [
+            {
+              "secao": "Critável",
+              "texto": "1d12"
+            },
+            {
+              "label": "Corpo Treinado",
+              "texto": "1d12",
+              "categoria": "critavel"
+            },
+            {
+              "secao": "Fixo",
+              "texto": "+2"
+            },
+            {
+              "label": "Força",
+              "valor": 0,
+              "categoria": "fixo"
+            },
+            {
+              "label": "Gosto pela Luta",
+              "valor": 2,
+              "categoria": "fixo"
+            }
+          ],
+          "total": "1d12 + 2"
+        },
+        "armaPropriedades": {
+          "estado": {
+            "ataques": 0,
+            "gastos": 0,
+            "emperrada": false,
+            "aparando": false,
+            "desprevenido": false,
+            "tipoDano": null,
+            "defesaAlvo": null,
+            "defesaAmpla": null,
+            "adjacente": false,
+            "amplaRodada": null,
+            "pendente": null,
+            "ultimo": null
+          },
+          "numero": 1,
+          "energica": 0,
+          "energicaCritico": 0,
+          "apunhaladora": 0,
+          "oscilante": 0,
+          "capacidade": 0,
+          "desvantagem": false,
+          "requisitos": [],
+          "bloqueio": null,
+          "tipos": []
+        }
+      }
+    }
+  },
+  {
+    "id": "dano-negativo-generico",
+    "observado": {
+      "max": 66,
+      "resultado": {
+        "bloodfeastRegras": [],
+        "energiaEmVida": 0,
+        "bloodfeast": {
+          "cargas": 0,
+          "hardblood": 0,
+          "bleed": 0,
+          "sanidade": 0,
+          "sangue": 0,
+          "reutilizado": 0,
+          "agua": false,
+          "ativos": {},
+          "ultima": null
+        },
+        "hpAtual": 0,
+        "peAtual": 40,
+        "pvTempFontes": {},
+        "peTempFontes": {},
+        "almaAtual": 66,
+        "almaMaxVisto": 66,
+        "rodada": 0,
+        "propriedadesArmas": {
+          "turno": 0,
+          "porArma": {},
+          "oscilante": null,
+          "ultimoAtaque": null
+        },
+        "ataqueBasicoId": null,
+        "armasDaTecnica": {},
+        "guardaGolpes": 0,
+        "guardaEncerrada": false,
+        "exaustao": 0,
+        "exaustaoTecnica": null,
+        "combate": {},
+        "condicoes": [],
+        "buffs": [],
+        "invocacoes": {},
+        "tita": {
+          "cabeca": null,
+          "membros": []
+        },
+        "preparoAtual": null,
+        "preparoTemp": 0,
+        "golpeEspecial": {},
+        "reservaInvocacao": {
+          "usada": false,
+          "modo": null,
+          "restantes": 0
+        },
+        "quimeraDaCena": null,
+        "lideresDeHordaDissolvida": [],
+        "concedido": [],
+        "adaptacoes": {},
+        "dharma": {
+          "entradas": [],
+          "alvo": "",
+          "fenomeno": "",
+          "existencia": ""
+        },
+        "treinosAtivos": {},
+        "usos": {},
+        "recargas": {},
+        "ultimoFeiticoDanoId": null,
+        "rituais": {},
+        "ritualAtual": null,
+        "favoritos": [],
+        "log": [],
+        "atualizadoEm": null
+      }
+    }
+  },
+  {
+    "id": "cura-sem-quitar-negativo",
+    "observado": {
+      "bloodfeastRegras": [],
+      "energiaEmVida": 0,
+      "bloodfeast": {
+        "cargas": 0,
+        "hardblood": 0,
+        "bleed": 0,
+        "sanidade": 0,
+        "sangue": 0,
+        "reutilizado": 0,
+        "agua": false,
+        "ativos": {},
+        "ultima": null
+      },
+      "hpAtual": 1,
+      "peAtual": 40,
+      "pvTempFontes": {},
+      "peTempFontes": {},
+      "almaAtual": 66,
+      "almaMaxVisto": 66,
+      "rodada": 0,
+      "propriedadesArmas": {
+        "turno": 0,
+        "porArma": {},
+        "oscilante": null,
+        "ultimoAtaque": null
+      },
+      "ataqueBasicoId": null,
+      "armasDaTecnica": {},
+      "guardaGolpes": 0,
+      "guardaEncerrada": false,
+      "exaustao": 0,
+      "exaustaoTecnica": null,
+      "combate": {},
+      "condicoes": [],
+      "buffs": [],
+      "invocacoes": {},
+      "tita": {
+        "cabeca": null,
+        "membros": []
+      },
+      "preparoAtual": null,
+      "preparoTemp": 0,
+      "golpeEspecial": {},
+      "reservaInvocacao": {
+        "usada": false,
+        "modo": null,
+        "restantes": 0
+      },
+      "quimeraDaCena": null,
+      "lideresDeHordaDissolvida": [],
+      "concedido": [],
+      "adaptacoes": {},
+      "dharma": {
+        "entradas": [],
+        "alvo": "",
+        "fenomeno": "",
+        "existencia": ""
+      },
+      "treinosAtivos": {},
+      "usos": {},
+      "recargas": {},
+      "ultimoFeiticoDanoId": null,
+      "rituais": {},
+      "ritualAtual": null,
+      "favoritos": [],
+      "log": [],
+      "atualizadoEm": null,
+      "especializacaoSessao": {
+        "pvNegativos": 0,
+        "modoMorte": null,
+        "quedaPendente": false,
+        "cairNoProximoDano": false
+      }
+    }
+  },
+  {
+    "id": "ataque-20-com-total-insuficiente",
+    "observado": {
+      "id": "rol_mvu97c9z_1",
+      "ts": 1793321306855,
+      "tipo": "teste",
+      "rotulo": "Ataque",
+      "detalhe": null,
+      "formula": "d20+0",
+      "d20": [
+        20
+      ],
+      "descartado": null,
+      "natural": 20,
+      "bonus": 0,
+      "extras": [],
+      "somaExtras": 0,
+      "total": 20,
+      "cd": 100,
+      "sucesso": false,
+      "critico": true,
+      "pifia": false,
+      "modo": "normal"
+    }
+  },
+  {
+    "id": "ataque-1-com-total-suficiente",
+    "observado": {
+      "id": "rol_mvu97c9z_2",
+      "ts": 1793321306855,
+      "tipo": "teste",
+      "rotulo": "Ataque",
+      "detalhe": null,
+      "formula": "d20+100",
+      "d20": [
+        1
+      ],
+      "descartado": null,
+      "natural": 1,
+      "bonus": 100,
+      "extras": [],
+      "somaExtras": 0,
+      "total": 101,
+      "cd": 10,
+      "sucesso": true,
+      "critico": false,
+      "pifia": true,
+      "modo": "normal"
+    }
+  },
+  {
+    "id": "pe-temporario-duas-fontes-genericas",
+    "observado": {
+      "maxPe": 40,
+      "total": 100,
+      "fontes": {
+        "Fonte A": 60,
+        "Fonte B": 40
+      }
+    }
+  },
+  {
+    "id": "exaustao-sem-penalidades",
+    "observado": {
+      "normal": {
+        "hp": 66,
+        "defesa": 15,
+        "cd": 22,
+        "movimento": 9
+      },
+      "exaustao3": {
+        "hp": 66,
+        "defesa": 15,
+        "cd": 22,
+        "movimento": 9
+      },
+      "aposDescanso": 3
+    }
+  },
+  {
+    "id": "passivo-regeneracao",
+    "observado": {
+      "disponivel": true,
+      "efeito": "regeneracao",
+      "efeitoLabel": "Regeneração por Rodada",
+      "unidade": "PV/rodada",
+      "valor": 9,
+      "notacao": "2d8",
+      "texto": "+9 PV/rodada",
+      "tiposDanoExtra": 0,
+      "alvo": null,
+      "custoPeMaximo": 6,
+      "custoPeMaximoAtivo": true,
+      "efeitosGerados": [],
+      "avisos": [
+        "Sem canal de cura periódica no motor: some os PV na mesa, a cada rodada. Vira PV Temporário sem Energia Reversa ou justificativa equivalente, e não funciona fora de combate."
+      ]
+    }
+  },
+  {
+    "id": "passivo-arredondamento-defesa5",
+    "observado": {
+      "sustentada": 7,
+      "metadeComPiso": 3,
+      "calculado": 4
+    }
+  },
+  {
+    "id": "passivo-dados-transformados-em-fixo",
+    "observado": [
+      {
+        "categoria": "danoDurante",
+        "calculado": {
+          "disponivel": true,
+          "efeito": "danoDurante",
+          "efeitoLabel": "Dano Adicional (Durante Ataque)",
+          "unidade": "",
+          "valor": 4.5,
+          "notacao": null,
+          "texto": "+4,5",
+          "tiposDanoExtra": 0,
+          "alvo": null,
+          "custoPeMaximo": 4,
+          "custoPeMaximoAtivo": true,
+          "efeitosGerados": [
+            {
+              "canal": "danoBonus",
+              "expr": "4.5"
+            }
+          ],
+          "avisos": []
+        }
+      },
+      {
+        "categoria": "danoApos",
+        "calculado": {
+          "disponivel": true,
+          "efeito": "danoApos",
+          "efeitoLabel": "Dano Adicional (Após Ataque)",
+          "unidade": "",
+          "valor": 6.5,
+          "notacao": null,
+          "texto": "+6,5",
+          "tiposDanoExtra": 0,
+          "alvo": null,
+          "custoPeMaximo": 4,
+          "custoPeMaximoAtivo": true,
+          "efeitosGerados": [
+            {
+              "canal": "danoBonus",
+              "expr": "6.5"
+            }
+          ],
+          "avisos": []
+        }
+      }
+    ]
+  },
+  {
+    "id": "adepto-de-medicina",
+    "observado": {
+      "sem": [],
+      "com": [],
+      "talentos": {
+        "escolhidas": [
+          "tal_adepto_de_medicina"
+        ],
+        "concedidos": [],
+        "gastos": 1,
+        "inacessiveis": [],
+        "escolhas": {
+          "porTal": {},
+          "mapa": {},
+          "vagasExtras": 0
+        },
+        "vezes": {
+          "tal_adepto_de_medicina": 1
+        },
+        "maxVezes": {
+          "tal_adepto_de_medicina": 1
+        },
+        "almaLivreEspecializacao": null
+      }
+    }
+  },
+  {
+    "id": "acumulo-de-acessorios",
+    "observado": {
+      "base": 66,
+      "um": 76,
+      "duplicado": 86,
+      "evolucao": 96
+    }
+  },
+  {
+    "id": "itens-sem-efeito-ou-cura",
+    "observado": {
+      "total": 49,
+      "quantidade": 30,
+      "nomes": [
+        "Antídoto Simples",
+        "Brinco da Comunicação",
+        "Injeção Estimulante",
+        "Mix Energético Pequeno",
+        "Óleo Amolador",
+        "Óleo Flamejante",
+        "Pérola Carregada",
+        "Remédio Simples",
+        "Talismã de Barreira",
+        "Veneno Debilitante",
+        "Veneno Intenso",
+        "Antídoto Intermediário",
+        "Conjunto de Pérolas Carregadas",
+        "Injeção de Adrenalina",
+        "Mix Energético Médio",
+        "Remédio Intermediário",
+        "Talismã de Barreira Superior",
+        "Veneno Desnorteante",
+        "Antídoto Superior",
+        "Chaveiro Absorsor",
+        "Domínio Simples Contido",
+        "Mistura Profana",
+        "Mix Energético Grande",
+        "Remédio Complexo",
+        "Terço de Pérolas Carregadas",
+        "Veneno Maldito",
+        "Antídoto Absoluto",
+        "Elixir da Vida",
+        "Lágrima de Shinigami",
+        "Talismã do Ápice"
+      ]
+    }
+  },
+  {
+    "id": "reinvocacao-forcada-na-mesma-rodada",
+    "observado": {
+      "rodada": 2,
+      "estado": {
+        "estado": "dissipada",
+        "pvAtual": 0,
+        "almaAtual": null,
+        "pvTempFontes": {},
+        "auxilios": {},
+        "retorno": 0.5,
+        "quedas": 0,
+        "exorcismos": 0,
+        "bloqueadaAteFimDaCena": false,
+        "ultimaEntrada": {
+          "via": "invocar",
+          "rodada": 2,
+          "custo": 4
+        },
+        "auras": {},
+        "emTarefa": false,
+        "forma": null,
+        "opcoesDeEntrada": {},
+        "autonomia": false,
+        "sobrecargaPv": 0,
+        "entradasDesdeDescanso": 1,
+        "rodadasAtiva": 0,
+        "manutencaoPendente": false,
+        "componentes": [],
+        "membrosAtivos": null,
+        "pvMaxMetade": false,
+        "metadePerdida": false,
+        "nucleoAtivo": null,
+        "maiorId": null,
+        "menorId": null,
+        "menorQuebrada": false,
+        "emCampo": false,
+        "abatida": true,
+        "exorcizada": false,
+        "rotulo": "Dissipada",
+        "terminal": false,
+        "contaNoCampo": false,
+        "emComposto": null,
+        "rotuloComposto": null
+      },
+      "entrada": {
+        "permitida": true,
+        "motivo": null,
+        "verbo": "Invocar",
+        "via": "invocar",
+        "contaComoInvocar": true,
+        "custo": {
+          "partes": [
+            {
+              "label": "Custo",
+              "valor": 4
+            }
+          ],
+          "total": 4
+        },
+        "pvInicial": 10,
+        "usaReserva": null,
+        "autonomia": false,
+        "sobrecargaPv": 0,
+        "manutencaoImediata": false,
+        "componentes": [],
+        "quimeraDaCena": null,
+        "pvMaxMetade": false
+      }
+    }
+  }
+]

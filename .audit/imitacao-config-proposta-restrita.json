@@ -1,0 +1,35 @@
+{
+  "versao": 1,
+  "shaInventario": "16edce9bc77a7c0f1f003ffcdd214b42983d1e4b26c65c716a70e4df6d2ec803",
+  "shaVivo": "abb0ae6c00d9d6d51bd97382562a54724dc923151806eb781dd24b2a58d43265",
+  "shaEscopo": "553d3e356659be880465f6ec5fcc22ead767a1b8e39387b4deca7fb2dc6c3ec9",
+  "adicionados": [],
+  "removidos": [],
+  "alterados": [
+    {
+      "chave": "afty-combate.js::COMBATE_ESTADOS::@catalogo",
+      "proprietarioMantido": "M03",
+      "hashAnterior": "35e43e8111cd86be8c4b65245a5293dccd87b3dce0649f1966ba91ff40ac7b07",
+      "hashNovo": "ef3b8c48a0797ad841afc1cbe2975617e2d58810654bd991d25289a3c095bb33",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-combate.js::COMBATE_ESTADOS::postura",
+      "proprietarioMantido": "M03",
+      "hashAnterior": "9b31dc145b84c0f06445f4b8474e7da44cc6ed3c25ddd84219aaa82ae54eaf02",
+      "hashNovo": "a3c9d859fdda4c4eac4c6d84a666bac1811860f7bff90c2cd7eb23dba229bd04",
+      "campos": [
+        "hashDado"
+      ]
+    }
+  ],
+  "assinatura": "9babfd7d37e173ad7362af0d466b61614d4249f8f55e1d3a939df0f4c36e3559",
+  "decisoes": {
+    "adicoes": {},
+    "remocoes": {},
+    "justificativaAtualizacao": "Pedido do autor em 2026-10-13: Mestre da Postura aprendido por Imitação deve permitir configurar e usar duas Posturas mesmo sem Assumir Postura. A lista de habilitações do primeiro slot inclui Mestre/Aprender Postura, mantendo o filtro por Posturas escolhidas. A escolha dinâmica só existe na concessão imitada, sem alterar o catálogo da aquisição normal. Reconciliação restrita ao estado postura e seu agregado, preservando identidades e estados dos demais trabalhos."
+  },
+  "errosColeta": []
+}

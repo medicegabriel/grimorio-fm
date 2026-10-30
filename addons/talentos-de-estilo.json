@@ -1,0 +1,46 @@
+{
+  "id": "talentos-de-estilo",
+  "nome": "Inovar Estilo e Estilo Próprio",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Talentos Inovar Estilo e Estilo Próprio. As versões criadas como addons aparecem nas escolhas de cada Talento.",
+  "resumo": "Os Talentos Inovar Estilo e Estilo Próprio",
+  "categoria": "talentos",
+  "acrescenta": {
+    "talentos": [
+      {
+        "id": "tal_inovar_estilo",
+        "nome": "Inovar Estilo",
+        "grupo": "geral",
+        "descricao": "Permite ao jogador modificar uma Habilidade de Especialização que possui, por exemplo, mudando seu atributo de escalonamento.",
+        "requisitos": [],
+        "escolha": {
+          "abertaPorPadrao": true,
+          "aceitaOpcoesAddon": true,
+          "id": "inovacoes_de_estilo",
+          "label": "Inovação",
+          "repetivel": true,
+          "mensagemVazia": "Nenhuma inovação disponível",
+          "opcoes": []
+        }
+      },
+      {
+        "id": "tal_estilo_proprio",
+        "nome": "Estilo Próprio",
+        "grupo": "geral",
+        "descricao": "Permite ao jogador criar sua própria Habilidade de Especialização.",
+        "requisitos": [],
+        "escolha": {
+          "abertaPorPadrao": true,
+          "aceitaOpcoesAddon": true,
+          "id": "estilos_proprios",
+          "label": "Habilidade",
+          "repetivel": true,
+          "mensagemVazia": "Nenhum estilo disponível",
+          "opcoes": []
+        }
+      }
+    ]
+  }
+}

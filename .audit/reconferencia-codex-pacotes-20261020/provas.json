@@ -1,0 +1,143 @@
+{
+  "geradoEm": "2026-10-20T13:59:37.398Z",
+  "checks": [
+    {
+      "id": "origem igual escolhe maior elegivel, combate false",
+      "real": 3,
+      "esperado": 3,
+      "dados": {
+        "base": 17,
+        "defesa": 20,
+        "analise": {
+          "maior": {
+            "defesa": {
+              "canal": "defesa",
+              "alvo": null,
+              "status": "condicao",
+              "valor": 5,
+              "quando": "em_combate"
+            }
+          },
+          "menor": {
+            "defesa": {
+              "canal": "defesa",
+              "alvo": null,
+              "status": "soma",
+              "valor": 3,
+              "delta": 3
+            }
+          }
+        }
+      },
+      "ok": true
+    },
+    {
+      "id": "origem igual escolhe maior elegivel, combate true",
+      "real": 5,
+      "esperado": 5,
+      "dados": {
+        "base": 17,
+        "defesa": 22,
+        "analise": {
+          "menor": {
+            "defesa": {
+              "canal": "defesa",
+              "alvo": null,
+              "status": "repete",
+              "valor": 3,
+              "vencedor": {
+                "nome": "maior",
+                "valor": 5
+              }
+            }
+          },
+          "maior": {
+            "defesa": {
+              "canal": "defesa",
+              "alvo": null,
+              "status": "substitui",
+              "valor": 5,
+              "perdedor": {
+                "nome": "menor",
+                "valor": 3
+              },
+              "delta": 2
+            }
+          }
+        }
+      },
+      "ok": true
+    },
+    {
+      "id": "biblioteca relida preserva todas opcoes",
+      "real": 13,
+      "esperado": 13,
+      "ok": true
+    },
+    {
+      "id": "atualizar biblioteca conserva instancia ativa",
+      "real": "{\"id\":\"codex-inst\",\"rec\":true,\"tipoFonte\":\"feitico\",\"origemId\":null,\"origemNome\":\"Escudo Dourado\",\"aplicadoPor\":\"Yuki (Teste Pacotes)\",\"beneficios\":[{\"canal\":\"defesa\",\"valor\":2}],\"rodadas\":2,\"somaPresumida\":false,\"terminaNoDescanso\":true,\"pacote\":{\"chave\":\"emi_mvg6z0p923534305477f:pac_mvg6z01m5624c34a5308\",\"id\":\"pac_mvg6z01m5624c34a5308\",\"nome\":\"Apoio do Grupo\",\"revisao\":1,\"opcaoId\":\"op_mvg6z04w590b1b1560d2\",\"emissorId\":\"emi_mvg6z0p923534305477f\",\"emissorNome\":\"Yuki (Teste Pacotes)\",\"familia\":\"feitico\",\"calculo\":\"automatico\",\"duracao\":{\"tipo\":\"rodadas\",\"rodadas\":2},\"condicoes\":[\"Um Alvo\"],\"custoEmissor\":\"5 PE\"}}",
+      "esperado": "{\"id\":\"codex-inst\",\"rec\":true,\"tipoFonte\":\"feitico\",\"origemId\":null,\"origemNome\":\"Escudo Dourado\",\"aplicadoPor\":\"Yuki (Teste Pacotes)\",\"beneficios\":[{\"canal\":\"defesa\",\"valor\":2}],\"rodadas\":2,\"somaPresumida\":false,\"terminaNoDescanso\":true,\"pacote\":{\"chave\":\"emi_mvg6z0p923534305477f:pac_mvg6z01m5624c34a5308\",\"id\":\"pac_mvg6z01m5624c34a5308\",\"nome\":\"Apoio do Grupo\",\"revisao\":1,\"opcaoId\":\"op_mvg6z04w590b1b1560d2\",\"emissorId\":\"emi_mvg6z0p923534305477f\",\"emissorNome\":\"Yuki (Teste Pacotes)\",\"familia\":\"feitico\",\"calculo\":\"automatico\",\"duracao\":{\"tipo\":\"rodadas\",\"rodadas\":2},\"condicoes\":[\"Um Alvo\"],\"custoEmissor\":\"5 PE\"}}",
+      "ok": true
+    },
+    {
+      "id": "nova ativacao usa revisao nova",
+      "real": 5,
+      "esperado": 5,
+      "ok": true
+    },
+    {
+      "id": "descanso conserva biblioteca e tira instancia temporaria",
+      "real": [
+        1,
+        0
+      ],
+      "esperado": [
+        1,
+        0
+      ],
+      "ok": true
+    }
+  ],
+  "umAtaque": {
+    "nome": "Precisao para um ataque",
+    "familia": "feitico",
+    "calculo": "automatico",
+    "fonte": {
+      "tipo": "feitico",
+      "id": "ataque-unico",
+      "nome": "Precisao para um ataque"
+    },
+    "escolhas": [],
+    "acumulo": {
+      "regra": "feitico"
+    },
+    "beneficios": [
+      {
+        "canal": "bonusAcerto",
+        "valor": 3
+      }
+    ],
+    "duracao": {
+      "tipo": "proximo",
+      "texto": "Por Um Ataque"
+    },
+    "condicoes": [
+      "Um Alvo"
+    ],
+    "custoEmissor": "2 PE",
+    "consulta": [],
+    "naoRepresentado": [],
+    "bloqueio": null,
+    "origemDoNumero": [
+      {
+        "rotulo": "Nível do Feitiço",
+        "valor": 1
+      },
+      {
+        "rotulo": "Duração",
+        "valor": "imediata"
+      }
+    ]
+  }
+}

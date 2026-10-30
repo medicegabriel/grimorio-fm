@@ -1,0 +1,14 @@
+[
+  {
+    "path": "src/systems/afty/ficha/AftyFichaG2.jsx",
+    "sha256": "9A3E35E83BEA019DA714BD25693DA67655F215C65A8B45ACD17D9DDC5FA78B76"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/efeitos-g2.css",
+    "sha256": "51B45CEAE71EF69E69692C9E16747292DA6BCAEAD47B4DC126E7A67C13E0B734"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/VisaoG2.jsx",
+    "sha256": "084A18452F5BA8812400157679F80641C5BF1FC412BDD46A54F037A35B133D89"
+  }
+]

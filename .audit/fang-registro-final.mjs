@@ -1,0 +1,3 @@
+import fs from 'node:fs';
+const p='docs/revisao-automacao/escopo.json';const e=JSON.parse(fs.readFileSync(p,'utf8'));e.modulos['afty-especializacao-config.js']='M02';e.modulosAdicionais['ficha/ficha-especializacoes.js']={modo:'DADOS',proprietario:'M03',justificativa:'Transições de turno e acionamento de efeitos de Especialização na sessão'};fs.writeFileSync(p,JSON.stringify(e,null,2)+'\n');
+const t='asserts/t-estados-organiza.mjs';fs.writeFileSync(t,fs.readFileSync(t,'utf8').replace('a convenção cobre 40 dos 65','a convenção cobre 40 dos 68').replace('e o catálogo tem 65 estados", COMBATE_ESTADOS.length, 65','e o catálogo tem 68 estados", COMBATE_ESTADOS.length, 68'));

@@ -1,0 +1,4018 @@
+{
+  "geradoEm": "2026-10-21T18:05:19.512Z",
+  "origem": "sintéticas, criadas do zero por gerar-fichas.mjs",
+  "fichas": {
+    "arsenal": {
+      "system": "afty",
+      "rulesVersion": "player",
+      "name": "Arsenal RN (Teste Codex)",
+      "portraitUrl": null,
+      "portraitFocus": {
+        "x": 50,
+        "y": 50
+      },
+      "core": {
+        "tipo": "combatente",
+        "patamar": "comum",
+        "nd": 20,
+        "tamanho": "medio",
+        "tecnicaAttr": "inteligencia",
+        "tecnicaDescricao": "",
+        "tecnicaEfeitos": [],
+        "funcionamentosAdicionais": [],
+        "origem": {
+          "id": "inato"
+        }
+      },
+      "alma": {
+        "atual": 100,
+        "max": 100
+      },
+      "qntPE": "normal",
+      "attrMethod": "fixos",
+      "attrLimite": {
+        "forca": 20,
+        "destreza": 20,
+        "constituicao": 20,
+        "inteligencia": 20,
+        "sabedoria": 20,
+        "presenca": 20
+      },
+      "attributes": {
+        "forca": 16,
+        "destreza": 16,
+        "constituicao": 14,
+        "inteligencia": 10,
+        "sabedoria": 12,
+        "presenca": 10
+      },
+      "attrNivel": {
+        "forca": 0,
+        "destreza": 0,
+        "constituicao": 0,
+        "inteligencia": 0,
+        "sabedoria": 0,
+        "presenca": 0
+      },
+      "pericias": {
+        "atletismo": "treinado",
+        "percepcao": "mestre",
+        "furtividade": "treinado",
+        "intuicao": "treinado"
+      },
+      "periciasOrdem": null,
+      "periciasPersonalizadas": [
+        {
+          "id": "custom_navegacao",
+          "nome": "Navegação Astral por Constelações Esquecidas",
+          "atributo": "sabedoria"
+        }
+      ],
+      "periciaOficio": "",
+      "periciaOficios": {
+        "oficio": [
+          "Ferreiro",
+          "Alquimista"
+        ],
+        "oficio__2": [
+          "Canalizador"
+        ]
+      },
+      "periciasOficiosExtras": [
+        "oficio__2"
+      ],
+      "periciaAtributoManual": {},
+      "periciasBonus": 0,
+      "resistenciasProf": {},
+      "trDaClasse": [],
+      "trSegundo": null,
+      "trAtributoManual": {},
+      "ataquesProf": {
+        "corpo": true,
+        "distancia": true
+      },
+      "ataqueFineza": false,
+      "ataqueBasicoId": "corpo",
+      "ataqueAtributoManual": {},
+      "armasDedicadas": [],
+      "defesasDano": {},
+      "catarse": {
+        "saldo": 0,
+        "compras": []
+      },
+      "carteira": {
+        "entradas": [],
+        "gastos": []
+      },
+      "espinho": {
+        "almas": 0,
+        "outros": 0,
+        "compras": {},
+        "equipamentos": []
+      },
+      "tecnicasCombate": {
+        "armas": [],
+        "atributo": "inteligencia"
+      },
+      "talentosConfig": {
+        "tal_mestre_das_armas": {
+          "modo": "armas",
+          "armas": [],
+          "grupo": null
+        },
+        "tal_tempestade_de_ideias": {
+          "pericia": null,
+          "ferramenta": "",
+          "vantagemPericia": null
+        },
+        "tal_artesao_amaldicoado": {
+          "ferramenta": null
+        }
+      },
+      "combate": {
+        "ativo": false,
+        "empolgacao": 1,
+        "insistenciaUsada": false,
+        "manobraAjuste": false,
+        "manobraDesarme": false,
+        "manobraEsquiva": false,
+        "manobraTrabalhoDePes": false,
+        "manobraFinalizadora": null,
+        "brutalidade": false,
+        "brutalidadePE": 0,
+        "brutalidadePilha": 0,
+        "ataqueInconsequente": false,
+        "impactoMisto": false,
+        "resistirPE": 0,
+        "furiaVinganca": false,
+        "imprudenciaMotivadora": false,
+        "machucado": false,
+        "abates": 0,
+        "armasAbsolutas": null,
+        "auraElemental": true,
+        "concentrarAura": [],
+        "golpeComAura": null,
+        "canalizarEmGolpe": false,
+        "canalizacaoMaxima": false
+      },
+      "equipamentos": {
+        "itens": [
+          {
+            "uid": "abas-besta",
+            "tipo": "arma",
+            "refId": "armc_besta",
+            "qtd": 1,
+            "equipado": true
+          },
+          {
+            "uid": "abas-oscilante",
+            "tipo": "arma",
+            "refId": "armc_oscilante",
+            "qtd": 1,
+            "equipado": true
+          },
+          {
+            "uid": "abas-ampla",
+            "tipo": "arma",
+            "refId": "armc_ampla",
+            "qtd": 1,
+            "equipado": true
+          },
+          {
+            "uid": "abas-modular",
+            "tipo": "arma",
+            "refId": "armc_modular",
+            "qtd": 1,
+            "equipado": true
+          },
+          {
+            "uid": "abas-katana-afiada",
+            "tipo": "arma",
+            "refId": "arm_katana",
+            "qtd": 1,
+            "equipado": false,
+            "fa": {
+              "grau": "terceiro",
+              "encantamentos": [
+                "enc_arma_afiada"
+              ],
+              "habilidadeUnica": ""
+            }
+          },
+          {
+            "uid": "abas-katana-defensora",
+            "tipo": "arma",
+            "refId": "arm_katana",
+            "qtd": 1,
+            "equipado": false,
+            "fa": {
+              "grau": "terceiro",
+              "encantamentos": [
+                "enc_arma_defensora"
+              ],
+              "habilidadeUnica": ""
+            }
+          },
+          {
+            "uid": "abas-robusto",
+            "tipo": "uniforme",
+            "refId": "unif_revestimento_robusto",
+            "qtd": 1,
+            "equipado": true
+          },
+          {
+            "uid": "abas-medio",
+            "tipo": "uniforme",
+            "refId": "unif_revestimento_medio",
+            "qtd": 1,
+            "equipado": true
+          },
+          {
+            "uid": "abas-escudo",
+            "tipo": "escudo",
+            "refId": "esc_medio",
+            "qtd": 1,
+            "equipado": false
+          },
+          {
+            "uid": "abas-antidoto",
+            "tipo": "item",
+            "refId": "it_antidoto_simples",
+            "qtd": 6,
+            "equipado": false
+          },
+          {
+            "uid": "abas-oleo",
+            "tipo": "item",
+            "refId": "it_oleo_flamejante",
+            "qtd": 4,
+            "equipado": false
+          },
+          {
+            "uid": "abas-injecao",
+            "tipo": "item",
+            "refId": "it_injecao_estimulante",
+            "qtd": 5,
+            "equipado": false
+          },
+          {
+            "uid": "abas-mix",
+            "tipo": "item",
+            "refId": "it_mix_energetico_pequeno",
+            "qtd": 8,
+            "equipado": false
+          },
+          {
+            "uid": "abas-brinco",
+            "tipo": "item",
+            "refId": "it_brinco_da_comunicacao",
+            "qtd": 1,
+            "equipado": false
+          }
+        ]
+      },
+      "armasCustom": [
+        {
+          "id": "armc_besta",
+          "nome": "Besta de Repetição de Teste",
+          "classe": "simples",
+          "categoria": "distancia",
+          "dano": {
+            "dado": "1d10",
+            "tipo": "pf"
+          },
+          "critico": 19,
+          "custo": 1,
+          "grupo": "besta",
+          "props": {
+            "recarga": 1,
+            "emperrar": true
+          }
+        },
+        {
+          "id": "armc_oscilante",
+          "nome": "Lâmina Oscilante de Teste",
+          "classe": "simples",
+          "categoria": "corpo",
+          "dano": {
+            "dado": "1d8",
+            "tipo": "ct"
+          },
+          "critico": 20,
+          "custo": 1,
+          "grupo": "espada",
+          "props": {
+            "oscilante": true,
+            "energica": true
+          }
+        },
+        {
+          "id": "armc_ampla",
+          "nome": "Machado de Guerra Amplo de Teste com um Nome Bem Comprido para Quebrar a Linha",
+          "classe": "simples",
+          "categoria": "corpo",
+          "dano": {
+            "dado": "1d12",
+            "tipo": "ct"
+          },
+          "critico": 20,
+          "custo": 1,
+          "grupo": "machado",
+          "props": {
+            "ampla": true,
+            "pesada": 18
+          }
+        },
+        {
+          "id": "armc_modular",
+          "nome": "Rapieira Modular de Teste",
+          "classe": "simples",
+          "categoria": "corpo",
+          "dano": {
+            "dado": "1d8",
+            "tipo": "pf"
+          },
+          "critico": 19,
+          "custo": 1,
+          "grupo": "espada",
+          "props": {
+            "modular": "ct",
+            "aparar": true,
+            "apunhaladora": true
+          }
+        }
+      ],
+      "forjas": [],
+      "especializacoes": [
+        {
+          "id": "combatente",
+          "nivel": 20
+        }
+      ],
+      "feiticos": [],
+      "reducoesCustoFeitico": {
+        "dominancia": null,
+        "manipulacao": []
+      },
+      "estilosSombra": [],
+      "estiloFuncionamento": {
+        "texto": "",
+        "durabilidadeTrilha": null
+      },
+      "habilidadesGerais": [],
+      "focosLivres": 0,
+      "periciaAtributo": "inteligencia",
+      "habilidades": [
+        "cmb_golpe_especial",
+        "cmb_assumir_postura",
+        "cmb_ataque_concentrado"
+      ],
+      "escolhasHabilidade": {},
+      "especializacaoConfig": {},
+      "escolhasTalento": {},
+      "talentos": [],
+      "invocacoes": [],
+      "origemContadores": {},
+      "hordas": [],
+      "quimeras": [],
+      "fundamentosPerdidos": [],
+      "aptidoes": {
+        "au": 0,
+        "cl": 3,
+        "bar": 0,
+        "dom": 0,
+        "er": 0
+      },
+      "aptidoesAmaldicoadas": [
+        "raio_negro"
+      ],
+      "aptidaoOpcoes": {},
+      "aptidaoOpcoesRepetidas": {},
+      "dominios": [],
+      "dominioAtivoId": null,
+      "treinamentos": {},
+      "treinamentoAlvos": {},
+      "treinamentoEscolhas": {},
+      "treinoEscolhaFeiticos": {},
+      "votos": {
+        "contratuais": [],
+        "mecanicos": []
+      },
+      "pacto": {
+        "nome": "",
+        "descricao": "",
+        "maleficios": [],
+        "beneficios": []
+      },
+      "modificacoesCorporais": {
+        "descricao": "",
+        "efeitosBase": [],
+        "limite": 0,
+        "enxertos": []
+      },
+      "tita": {
+        "ativo": false,
+        "membros": 5
+      },
+      "caracteristicasAmaldicoadas": [],
+      "caracteristicasAmaldicoadasAlvos": {},
+      "treinosEspeciais": [],
+      "treinoEspecialProgresso": {},
+      "focosBonus": 0,
+      "statOverrides": {},
+      "melhoriasSuperiores": [],
+      "habilidadesLendarias": [],
+      "escolhasAltoNivel": {},
+      "aparencia": null,
+      "preferenciasFicha": null,
+      "addons": [],
+      "narratorNotes": "",
+      "combatState": {
+        "isActive": false,
+        "hpCurrent": 0,
+        "peCurrent": 0,
+        "almaCurrent": 100,
+        "activeConditions": [],
+        "customCounters": [],
+        "combatLog": []
+      },
+      "id": "teste-codex-ajustes-raio-negro"
+    },
+    "conjurador": {
+      "system": "afty",
+      "rulesVersion": "player",
+      "name": "Conjurador (Teste Abas)",
+      "portraitUrl": null,
+      "portraitFocus": {
+        "x": 50,
+        "y": 50
+      },
+      "core": {
+        "tipo": "conjurador",
+        "patamar": "comum",
+        "nd": 20,
+        "tamanho": "medio",
+        "tecnicaAttr": "inteligencia",
+        "tecnicaDescricao": "",
+        "tecnicaEfeitos": [],
+        "funcionamentosAdicionais": [],
+        "origem": {
+          "id": "herdado"
+        }
+      },
+      "alma": {
+        "atual": 100,
+        "max": 100
+      },
+      "qntPE": "normal",
+      "attrMethod": "fixos",
+      "attrLimite": {
+        "forca": 20,
+        "destreza": 20,
+        "constituicao": 20,
+        "inteligencia": 20,
+        "sabedoria": 20,
+        "presenca": 20
+      },
+      "attributes": {
+        "forca": 10,
+        "destreza": 10,
+        "constituicao": 14,
+        "inteligencia": 18,
+        "sabedoria": 16,
+        "presenca": 12
+      },
+      "attrNivel": {
+        "forca": 0,
+        "destreza": 0,
+        "constituicao": 0,
+        "inteligencia": 0,
+        "sabedoria": 0,
+        "presenca": 0
+      },
+      "pericias": {
+        "feiticaria": "mestre",
+        "historia": "treinado",
+        "prestidigitacao": "treinado",
+        "medicina": "treinado"
+      },
+      "periciasOrdem": null,
+      "periciasPersonalizadas": [],
+      "periciaOficio": "",
+      "periciaOficios": {},
+      "periciasOficiosExtras": [],
+      "periciaAtributoManual": {},
+      "periciasBonus": 0,
+      "resistenciasProf": {},
+      "trDaClasse": [],
+      "trSegundo": null,
+      "trAtributoManual": {},
+      "ataquesProf": {},
+      "ataqueFineza": false,
+      "ataqueBasicoId": "corpo",
+      "ataqueAtributoManual": {},
+      "armasDedicadas": [],
+      "defesasDano": {},
+      "catarse": {
+        "saldo": 0,
+        "compras": []
+      },
+      "carteira": {
+        "entradas": [],
+        "gastos": []
+      },
+      "espinho": {
+        "almas": 0,
+        "outros": 0,
+        "compras": {},
+        "equipamentos": []
+      },
+      "tecnicasCombate": {
+        "armas": [],
+        "atributo": "inteligencia"
+      },
+      "talentosConfig": {
+        "tal_mestre_das_armas": {
+          "modo": "armas",
+          "armas": [],
+          "grupo": null
+        },
+        "tal_tempestade_de_ideias": {
+          "pericia": null,
+          "ferramenta": "",
+          "vantagemPericia": null
+        },
+        "tal_artesao_amaldicoado": {
+          "ferramenta": null
+        }
+      },
+      "combate": {
+        "ativo": false,
+        "empolgacao": 1,
+        "insistenciaUsada": false,
+        "manobraAjuste": false,
+        "manobraDesarme": false,
+        "manobraEsquiva": false,
+        "manobraTrabalhoDePes": false,
+        "manobraFinalizadora": null,
+        "brutalidade": false,
+        "brutalidadePE": 0,
+        "brutalidadePilha": 0,
+        "ataqueInconsequente": false,
+        "impactoMisto": false,
+        "resistirPE": 0,
+        "furiaVinganca": false,
+        "imprudenciaMotivadora": false,
+        "machucado": false,
+        "abates": 0,
+        "armasAbsolutas": null,
+        "auraElemental": true,
+        "concentrarAura": [],
+        "golpeComAura": null,
+        "canalizarEmGolpe": false,
+        "canalizacaoMaxima": false
+      },
+      "equipamentos": {
+        "itens": []
+      },
+      "armasCustom": [],
+      "forjas": [],
+      "especializacoes": [
+        {
+          "id": "conjurador",
+          "nivel": 10
+        },
+        {
+          "id": "suporte",
+          "nivel": 10
+        }
+      ],
+      "feiticos": [
+        {
+          "id": "tf1",
+          "nome": "Lança de Gelo de Teste",
+          "tipo": "dano",
+          "nivel": 3,
+          "conjuracaoTexto": "",
+          "descricao": "Texto de teste da prévia (Lança de Gelo de Teste). **Negrito** de marcação rica, e uma segunda frase para medir a leitura.",
+          "variacaoDeTecnica": false,
+          "variacaoDe": null,
+          "resolucao": "ataque",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "comum",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoPETexto": "",
+          "custoVidaAtivacao": null
+        },
+        {
+          "id": "tf2",
+          "nome": "Tempestade Contínua de Teste",
+          "tipo": "dano",
+          "nivel": 4,
+          "conjuracaoTexto": "",
+          "descricao": "Texto de teste da prévia (Tempestade Contínua de Teste). **Negrito** de marcação rica, e uma segunda frase para medir a leitura.",
+          "variacaoDeTecnica": false,
+          "variacaoDe": null,
+          "resolucao": "tr",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "comum",
+          "subtipo": "continuo",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoPETexto": "",
+          "custoVidaAtivacao": null
+        },
+        {
+          "id": "tf3",
+          "nome": "Disparos Múltiplos de Teste",
+          "tipo": "dano",
+          "nivel": 2,
+          "conjuracaoTexto": "",
+          "descricao": "Texto de teste da prévia (Disparos Múltiplos de Teste). **Negrito** de marcação rica, e uma segunda frase para medir a leitura.",
+          "variacaoDeTecnica": false,
+          "variacaoDe": null,
+          "resolucao": "ataque",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "comum",
+          "subtipo": "multiplos",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 3,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoPETexto": "",
+          "custoVidaAtivacao": null
+        },
+        {
+          "id": "tf4",
+          "nome": "Muralha Sagrada de Teste",
+          "tipo": "auxiliar",
+          "nivel": 2,
+          "conjuracaoTexto": "",
+          "descricao": "Texto de teste da prévia (Muralha Sagrada de Teste). **Negrito** de marcação rica, e uma segunda frase para medir a leitura.",
+          "variacaoDeTecnica": false,
+          "variacaoDe": null,
+          "resolucao": "tr",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "comum",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoPETexto": "",
+          "custoVidaAtivacao": null
+        },
+        {
+          "id": "tf5",
+          "nome": "Bênção Restauradora de Teste",
+          "tipo": "curativo",
+          "nivel": 3,
+          "conjuracaoTexto": "",
+          "descricao": "Texto de teste da prévia (Bênção Restauradora de Teste). **Negrito** de marcação rica, e uma segunda frase para medir a leitura.",
+          "variacaoDeTecnica": false,
+          "variacaoDe": null,
+          "resolucao": "tr",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "comum",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoPETexto": "",
+          "custoVidaAtivacao": null
+        },
+        {
+          "id": "tf6",
+          "nome": "Ruptura Vital de Teste",
+          "tipo": "dano",
+          "nivel": "max",
+          "conjuracaoTexto": "",
+          "descricao": "Texto de teste da prévia (Ruptura Vital de Teste). **Negrito** de marcação rica, e uma segunda frase para medir a leitura.",
+          "variacaoDeTecnica": false,
+          "variacaoDe": null,
+          "resolucao": "tr",
+          "alvo": "area",
+          "formaArea": "cone",
+          "acao": "completa",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoPETexto": "",
+          "custoVidaAtivacao": {
+            "modo": "percentualAtual",
+            "percentual": 50,
+            "minimo": 1,
+            "somaAoDano": true
+          },
+          "regraTecnicaMaxima": "oficial"
+        }
+      ],
+      "reducoesCustoFeitico": {
+        "dominancia": null,
+        "manipulacao": []
+      },
+      "estilosSombra": [],
+      "estiloFuncionamento": {
+        "texto": "",
+        "durabilidadeTrilha": null
+      },
+      "habilidadesGerais": [],
+      "focosLivres": 0,
+      "periciaAtributo": "inteligencia",
+      "habilidades": [
+        "cnj_dominio_dos_fundamentos",
+        "cnj_conjuracao_aprimorada",
+        "cnj_adiantar_a_evolucao",
+        "cnj_foco_amaldicoado",
+        "cnj_abastecido_pelo_sangue",
+        "cnj_conhecimento_aplicado",
+        "cnj_conjuracao_defensiva",
+        "cnj_economia_de_energia",
+        "cnj_explosao_encadeada",
+        "cnj_finta_amaldicoada",
+        "cnj_mente_placida",
+        "cnj_nova_habilidade",
+        "cnj_perturbacao_amaldicoada",
+        "cnj_reacao_rapida",
+        "cnj_reforco_amaldicoado",
+        "cnj_sobrecarregar",
+        "cnj_tecnicas_de_combate",
+        "cnj_zelo_recompensador",
+        "cnj_ate_a_ultima_gota",
+        "cnj_ciclagem_maldita",
+        "cnj_determinacao_energizada",
+        "cnj_energia_focalizada",
+        "cnj_energia_inacabavel",
+        "cnj_epifania_amaldicoada",
+        "cnj_explosao_defensiva",
+        "cnj_feitico_favorito",
+        "cnj_feiticos_refinados",
+        "cnj_movimentos_imprevisiveis",
+        "cnj_naturalidade_com_rituais",
+        "cnj_preparacao_de_tecnicas",
+        "cnj_olhar_preciso",
+        "cnj_sacrificio_pela_energia",
+        "cnj_versatilidade_em_fundamentos",
+        "cnj_agilidade_no_campo_de_batalha",
+        "cnj_bastiao_interior",
+        "cnj_combate_amaldicoado",
+        "cnj_correcao",
+        "cnj_dominancia_em_feitico",
+        "cnj_elevar_aptidao",
+        "cnj_especializacao",
+        "cnj_incapaz_de_falhar",
+        "cnj_mente_repartida",
+        "cnj_nivel_perfeito",
+        "cnj_passo_rapido",
+        "cnj_potencia_concentrada",
+        "cnj_ritualista",
+        "cnj_expansao_dos_fundamentos",
+        "cnj_fisico_amaldicoado_defensivo",
+        "cnj_imbuir_com_tecnica",
+        "cnj_mira_aperfeicoada",
+        "cnj_primeiro_disparo",
+        "cnj_revestimento_constante",
+        "cnj_sustentacao_avancada",
+        "cnj_destruicao_ampla",
+        "cnj_destruicao_focada",
+        "cnj_economia_de_energia_avancada",
+        "cnj_sentidos_agucados",
+        "sup_suporte_em_combate",
+        "sup_presenca_inspiradora",
+        "sup_versatilidade",
+        "sup_energia_reversa",
+        "sup_liberacao_de_energia_reversa",
+        "sup_medicina_infalivel",
+        "sup_amizade_inquebravel",
+        "sup_analise_profunda",
+        "sup_apoio_avancado",
+        "sup_conceder_outra_chance",
+        "sup_comando_motivador",
+        "sup_desvendar_terreno",
+        "sup_expandir_repertorio",
+        "sup_mobilidade_avancada",
+        "sup_otimizacao_de_espaco",
+        "sup_pronto_para_agir",
+        "sup_protetor",
+        "sup_tecnicas_de_combate",
+        "sup_transmitir_conhecimento",
+        "sup_apoios_versateis",
+        "sup_guarda_sincronizada",
+        "sup_inspirar_aliados",
+        "sup_intervencao",
+        "sup_negacao_critica",
+        "sup_no_ultimo_segundo",
+        "sup_pre_analise",
+        "sup_recompensa_pelo_sucesso",
+        "sup_sintonizacao_vital",
+        "sup_contra_ataque",
+        "sup_cura_avancada_em_grupo",
+        "sup_devolver_na_mesma_moeda",
+        "sup_disseminar_cura",
+        "sup_incitar_vigor",
+        "sup_inimigo_comum",
+        "sup_posicionamento_estrategico",
+        "sup_aptidoes_de_suporte",
+        "sup_contaminar_com_determinacao",
+        "sup_criar_medicina",
+        "sup_cura_aperfeicoada",
+        "sup_elevar_sucesso",
+        "sup_fisico_controlado",
+        "sup_motivacao_pelo_triunfo",
+        "sup_pressao_do_medico",
+        "sup_sustentacao_avancada",
+        "sup_descarga_reanimadora",
+        "sup_necessidade_de_continuar",
+        "sup_olhar_agucado",
+        "sup_taticas_defensivas"
+      ],
+      "escolhasHabilidade": {},
+      "especializacaoConfig": {},
+      "escolhasTalento": {},
+      "talentos": [],
+      "invocacoes": [],
+      "origemContadores": {},
+      "hordas": [],
+      "quimeras": [],
+      "fundamentosPerdidos": [],
+      "aptidoes": {
+        "au": 2,
+        "cl": 3,
+        "bar": 4,
+        "dom": 4,
+        "er": 3
+      },
+      "aptidoesAmaldicoadas": [
+        "tecnicas_de_barreira",
+        "expansao_de_dominio_incompleta",
+        "expansao_de_dominio_completa",
+        "tecnica_maxima",
+        "energia_reversa",
+        "cortina"
+      ],
+      "aptidaoOpcoes": {},
+      "aptidaoOpcoesRepetidas": {},
+      "dominios": [
+        {
+          "id": "abas-d1",
+          "nome": "Jardim das Mil Lâminas de Teste",
+          "versao": "completa",
+          "regra": "oficial",
+          "efeitos": []
+        },
+        {
+          "id": "abas-d2",
+          "nome": "Recinto Incompleto de Teste",
+          "versao": "incompleta",
+          "regra": "oficial",
+          "efeitos": []
+        }
+      ],
+      "dominioAtivoId": null,
+      "treinamentos": {},
+      "treinamentoAlvos": {},
+      "treinamentoEscolhas": {},
+      "treinoEscolhaFeiticos": {},
+      "votos": {
+        "contratuais": [],
+        "mecanicos": []
+      },
+      "pacto": {
+        "nome": "",
+        "descricao": "",
+        "maleficios": [],
+        "beneficios": []
+      },
+      "modificacoesCorporais": {
+        "descricao": "",
+        "efeitosBase": [],
+        "limite": 0,
+        "enxertos": []
+      },
+      "tita": {
+        "ativo": false,
+        "membros": 5
+      },
+      "caracteristicasAmaldicoadas": [],
+      "caracteristicasAmaldicoadasAlvos": {},
+      "treinosEspeciais": [],
+      "treinoEspecialProgresso": {},
+      "focosBonus": 0,
+      "statOverrides": {},
+      "melhoriasSuperiores": [],
+      "habilidadesLendarias": [],
+      "escolhasAltoNivel": {},
+      "aparencia": null,
+      "preferenciasFicha": null,
+      "addons": [],
+      "narratorNotes": "",
+      "combatState": {
+        "isActive": false,
+        "hpCurrent": 0,
+        "peCurrent": 0,
+        "almaCurrent": 100,
+        "activeConditions": [],
+        "customCounters": [],
+        "combatLog": []
+      },
+      "id": "teste-abas-conjurador"
+    },
+    "mesa": {
+      "system": "afty",
+      "rulesVersion": "player",
+      "name": "Mesa Cheia (Teste Abas)",
+      "portraitUrl": null,
+      "portraitFocus": {
+        "x": 50,
+        "y": 50
+      },
+      "core": {
+        "tipo": "conjurador",
+        "patamar": "comum",
+        "nd": 20,
+        "tamanho": "medio",
+        "tecnicaAttr": "inteligencia",
+        "tecnicaDescricao": "",
+        "tecnicaEfeitos": [],
+        "funcionamentosAdicionais": [],
+        "origem": {
+          "id": "herdado"
+        },
+        "olhosAgulhaRestantes": 2
+      },
+      "alma": {
+        "atual": 100,
+        "max": 100
+      },
+      "qntPE": "normal",
+      "attrMethod": "fixos",
+      "attrLimite": {
+        "forca": 20,
+        "destreza": 20,
+        "constituicao": 20,
+        "inteligencia": 20,
+        "sabedoria": 20,
+        "presenca": 20
+      },
+      "attributes": {
+        "forca": 14,
+        "destreza": 14,
+        "constituicao": 14,
+        "inteligencia": 10,
+        "sabedoria": 14,
+        "presenca": 10
+      },
+      "attrNivel": {
+        "forca": 0,
+        "destreza": 0,
+        "constituicao": 0,
+        "inteligencia": 0,
+        "sabedoria": 0,
+        "presenca": 0
+      },
+      "pericias": {},
+      "periciasOrdem": null,
+      "periciasPersonalizadas": [],
+      "periciaOficio": "",
+      "periciaOficios": {},
+      "periciasOficiosExtras": [],
+      "periciaAtributoManual": {},
+      "periciasBonus": 0,
+      "resistenciasProf": {},
+      "trDaClasse": [],
+      "trSegundo": null,
+      "trAtributoManual": {},
+      "ataquesProf": {},
+      "ataqueFineza": false,
+      "ataqueBasicoId": "corpo",
+      "ataqueAtributoManual": {},
+      "armasDedicadas": [],
+      "defesasDano": {},
+      "catarse": {
+        "saldo": 0,
+        "compras": []
+      },
+      "carteira": {
+        "entradas": [],
+        "gastos": []
+      },
+      "espinho": {
+        "almas": 0,
+        "outros": 0,
+        "compras": {},
+        "equipamentos": []
+      },
+      "tecnicasCombate": {
+        "armas": [],
+        "atributo": "inteligencia"
+      },
+      "talentosConfig": {
+        "tal_mestre_das_armas": {
+          "modo": "armas",
+          "armas": [],
+          "grupo": null
+        },
+        "tal_tempestade_de_ideias": {
+          "pericia": null,
+          "ferramenta": "",
+          "vantagemPericia": null
+        },
+        "tal_artesao_amaldicoado": {
+          "ferramenta": null
+        }
+      },
+      "combate": {
+        "ativo": false,
+        "empolgacao": 1,
+        "insistenciaUsada": false,
+        "manobraAjuste": false,
+        "manobraDesarme": false,
+        "manobraEsquiva": false,
+        "manobraTrabalhoDePes": false,
+        "manobraFinalizadora": null,
+        "brutalidade": false,
+        "brutalidadePE": 0,
+        "brutalidadePilha": 0,
+        "ataqueInconsequente": false,
+        "impactoMisto": false,
+        "resistirPE": 0,
+        "furiaVinganca": false,
+        "imprudenciaMotivadora": false,
+        "machucado": false,
+        "abates": 0,
+        "armasAbsolutas": null,
+        "auraElemental": true,
+        "concentrarAura": [],
+        "golpeComAura": null,
+        "canalizarEmGolpe": false,
+        "canalizacaoMaxima": false
+      },
+      "equipamentos": {
+        "itens": [
+          {
+            "uid": "abas-azamaru",
+            "tipo": "arma",
+            "refId": "azamaru:azamaru",
+            "qtd": 1,
+            "equipado": true
+          }
+        ]
+      },
+      "armasCustom": [],
+      "forjas": [],
+      "especializacoes": [
+        {
+          "id": "conjurador",
+          "nivel": 10
+        },
+        {
+          "id": "combatente",
+          "nivel": 10
+        }
+      ],
+      "feiticos": [
+        {
+          "id": "manipulacao-do-ceu:refletir_imagem",
+          "nome": "Refletir Imagem",
+          "tipo": "personalizado",
+          "nivel": 5,
+          "descricao": "Você altera o tecido do céu, alterando a forma como a luz se propaga em si próprio, fazendo ela refletir duas imagens perfeitamente idênticas a você, como clones, que perturbam a percepção de inimigos sobre o real. Essa habilidade não afeta alvos cegos ou que não dependam dos olhos para enxergar. Ao criar os dois clones eles duram enquanto você se mantiver concentrando a habilidade, sempre que for alvo de um efeito que cause dano o oponente deve realizar um TR de Astúcia, num fracasso ele acerta uma de suas cópias e você anula o ataque, com o céu sendo distorcido e a cópia atingida sendo dissipada. Além de serem dissipadas caso você pare de se concentrar ou caso falhem no TR, você precisa gastar 2 PE no início de cada um de seus turnos para manter as imagens, se durante o intervalo entre turnos você receber um ataque, ambas as cópias são desfeitas e a habilidade se encerra, caso seja alvo de um efeito em área, ambas as cópias são desfeitas e a habilidade se encerra.",
+          "resolucao": "tr",
+          "acaoPersonalizada": "Comum",
+          "alcanceTexto": "Pessoal",
+          "alvoTexto": "Próprio",
+          "duracaoTexto": "Sustentado, Concentração",
+          "resolucaoTexto": "",
+          "comCd": true
+        },
+        {
+          "id": "olhos-de-agulha:olhar",
+          "nome": "Olhar que Não Falha",
+          "tipo": "passivo",
+          "nivel": 4,
+          "descricao": "A quantidade de Vantagens passa a ser BT vezes por descanso longo, pode realizar um teste de percepção com vantagem. Seu PE Máximo diminui em 8.",
+          "efeitosPassivo": [],
+          "variacaoDe": null
+        },
+        {
+          "id": "tf7",
+          "nome": "Dardo Simples de Teste",
+          "tipo": "dano",
+          "nivel": 1,
+          "conjuracaoTexto": "",
+          "descricao": "Texto de teste da prévia (Dardo Simples de Teste). **Negrito** de marcação rica, e uma segunda frase para medir a leitura.",
+          "variacaoDeTecnica": false,
+          "variacaoDe": null,
+          "resolucao": "ataque",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "comum",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoPETexto": "",
+          "custoVidaAtivacao": null
+        }
+      ],
+      "reducoesCustoFeitico": {
+        "dominancia": null,
+        "manipulacao": []
+      },
+      "estilosSombra": [],
+      "estiloFuncionamento": {
+        "texto": "",
+        "durabilidadeTrilha": null
+      },
+      "habilidadesGerais": [],
+      "focosLivres": 0,
+      "periciaAtributo": "inteligencia",
+      "habilidades": [
+        "cmb_golpe_especial",
+        "cmb_assumir_postura",
+        "cmb_ataque_concentrado",
+        "cmb_repertorio_do_especialista",
+        "cmb_artes_do_combate"
+      ],
+      "escolhasHabilidade": {},
+      "especializacaoConfig": {},
+      "escolhasTalento": {},
+      "talentos": [],
+      "invocacoes": [],
+      "origemContadores": {},
+      "hordas": [],
+      "quimeras": [],
+      "fundamentosPerdidos": [],
+      "aptidoes": {
+        "au": 2,
+        "cl": 4,
+        "bar": 0,
+        "dom": 3,
+        "er": 0
+      },
+      "aptidoesAmaldicoadas": [
+        "aura_embacada"
+      ],
+      "aptidaoOpcoes": {},
+      "aptidaoOpcoesRepetidas": {},
+      "dominios": [],
+      "dominioAtivoId": null,
+      "treinamentos": {
+        "sombras:treino_escudo_protetor": 1
+      },
+      "treinamentoAlvos": {},
+      "treinamentoEscolhas": {},
+      "treinoEscolhaFeiticos": {},
+      "votos": {
+        "contratuais": [],
+        "mecanicos": []
+      },
+      "pacto": {
+        "nome": "",
+        "descricao": "",
+        "maleficios": [],
+        "beneficios": []
+      },
+      "modificacoesCorporais": {
+        "descricao": "",
+        "efeitosBase": [],
+        "limite": 0,
+        "enxertos": []
+      },
+      "tita": {
+        "ativo": false,
+        "membros": 5
+      },
+      "caracteristicasAmaldicoadas": [],
+      "caracteristicasAmaldicoadasAlvos": {},
+      "treinosEspeciais": [],
+      "treinoEspecialProgresso": {},
+      "focosBonus": 0,
+      "statOverrides": {},
+      "melhoriasSuperiores": [],
+      "habilidadesLendarias": [],
+      "escolhasAltoNivel": {},
+      "aparencia": null,
+      "preferenciasFicha": null,
+      "addons": [
+        {
+          "id": "the-crimsom-queen",
+          "nome": "The Crimsom Queen",
+          "versao": "1.0.0",
+          "autor": "Afty, O Sem Sombras",
+          "paraRaw": "afty",
+          "descricao": "Restrição Congênita: Bloodfeast",
+          "permite": [
+            "bloodfeast"
+          ],
+          "bloodfeast": {
+            "descricao": "Restrição Congênita: Bloodfeast Você é uma maldição, um ser feito inteiramente de energia. Ou, pelo menos deveria ser assim! A combinação de técnicas e raças de seus pais criaram algo único, um ser completamente diferente dos demais. Seu corpo é feito inteiramente de energia, porém sua energia é sangue e sangue é sua energia, em um mix perfeito entre humanidade e maldição. Malefícios Como uma maldição vampírica, seu corpo tem as seguintes limitações: - Você se torna vulnerável a dano de Energia Reversa e Radiante. - Enquanto em contato direto com Água Corrente ou Chuva, você fica sobre a condição \"Exposto\" e “Abalado”. - Você não pode ser curada por nenhuma fonte externa que não seja sua, fazendo com que itens como 'Pote do Espírito Curandeiro' e 'Laço da Vida' não tenham efeitos em seu corpo, e que suportes não possam te curar. Benefícios Seu corpo funciona de forma diferente do normal, gastando sangue ao invés de energia. Fazendo com que sua energia seja sempre convertida em sangue . - Você converte todos os seus pontos de energia amaldiçoada para pontos de vida (3 PVs equivalem a 1 PM). Todos os seus gastos de energia são convertidos para gastos de vida e qualquer forma de regeneração de pontos de energia que você fosse ter, é convertido em recuperação de vida. - Você recebe acesso às Aptidões de Anatomia, e recebe uma Aptidão de Anatomia. - Você recebe vantagem nos Portões da Morte. ",
+            "passivas": [
+              {
+                "id": "ultima_gota",
+                "nome": "Até a Última Gota",
+                "nivel": 0,
+                "custoPV": 0,
+                "descricao": "Até a Última Gota Habilidade Passiva de Nível 0 A falta de sangue pode ser nociva e mortal para maioria dos seres, porém você consegue continuar mesmo em casos extremos. Seus pontos de vida não podem ser baixados para abaixo de 1 por uso de suas Habilidades e Aptidões. Entretanto, para cada 3 Pontos de Vida consumidos além do limite desta forma você recebe 1 Ponto de Sanidade. Além disso, você soma seu modificador de Constituição em Testes no Portão da Morte."
+              },
+              {
+                "id": "bloodfeast",
+                "nome": "Bloodfeast",
+                "nivel": 0,
+                "custoPV": 0,
+                "descricao": "Bloodfeast Habilidade Passiva de Nível 0 Para cada Ponto de Vida perdido na cena por Bleed, você recebe uma carga de Bloodfeast. Todas as suas habilidades de técnica consomem obrigatoriamente uma quantidade de Bloodfeast igual a (Nível da Habilidade * Maestria). Caso você não tenha Bloodfeast o suficiente a Habilidade é usada indiferentemente, porém você recebe o Nível da Habilidade como Cargas de Bleed em si mesmo."
+              },
+              {
+                "id": "hardblood",
+                "nome": "Hardblood",
+                "nivel": 0,
+                "custoPV": 0,
+                "descricao": "Hardblood Habilidade Passiva de Nível 0 Para cada vez que você consumir uma quantidade de Bloodfeast igual ou maior que seu bônus de maestria, você recebe uma carga de Hardblood, que dura até o final da cena. Ao conjurar uma Habilidade de Técnica, você pode gastar uma quantidade Hardblood limitada ao seu bônus de maestria para aplicar os seguintes efeitos: • Aumento de Dano: Para cada ponto de Hardblood consumido, você pode adicionar 1 dado de dano à habilidade. • Aumento de Alcance ou Área: Para cada ponto de Hardblood consumido, você pode aumentar o alcance em 3 metros ou a área em 1,5 metros. • Bônus em Acerto: Para cada ponto de Hardblood consumido, você pode adicionar +1 na rolagem de acerto com a habilidade. • Aumento de CD: Para cada ponto de Hardblood consumido, você pode aumentar a CD da habilidade em 1. • Bônus em Auxiliar: Para cada ponto de Hardblood consumida, você pode aumentar os benefícios numéricos da habilidade (aumento de CA, RD, bônus em rolagem etc.) aumentado em um valor igual a 1. Algumas habilidades específicas podem também utilizar Hardblood em seu funcionamento."
+              },
+              {
+                "id": "robustez",
+                "nome": "Robustez",
+                "nivel": 0,
+                "custoPV": 0,
+                "descricao": "Robustez Habilidade Passiva de Nível 0 Sua robustez é muito acima do comum, fazendo com que você tenha uma vitalidade muito maior do que qualquer humano ou maldição. Você recebe o talento “Robustez Aprimorada”."
+              },
+              {
+                "id": "pureza",
+                "nome": "Pureza Sanguínea",
+                "nivel": 1,
+                "custoPV": 6,
+                "descricao": "Pureza Sanguínea Habilidade Passiva de Nível 1 Seu sangue cristalizado segue um fluxo quase perfeito dentro do seu corpo, sendo capaz de expulsar e remover a maioria das impurezas. Você se torna imune a condição Envenenado e passa a ter resistência contra dano Venenoso. Seus Pontos de Vida máximo diminuem em 6."
+              },
+              {
+                "id": "mais_sangue",
+                "nome": "Mais Sangue",
+                "nivel": 4,
+                "custoPV": 24,
+                "descricao": "Mais Sangue Habilidade Passiva de Nível 1 Suas marcas de Bleed já são extremamente letais, porém você aprendeu como intensificar isso ainda mais. Quando aplica Bleed a inimigos com Sangramento Leve, você causa uma carga de Bleed adicional. Seus Pontos de Vida máximo diminuem em 6. - Nível 2: Assim como acima, porém adicionar “Quando ataca inimigos com Sangramento Médio, você causa duas cargas de Bleed adicionais. Seus Pontos de Vida Máximo diminuem em 12.” - Nível 3: Assim como acima, porém adicionar “Quando ataca inimigos com Sangramento Forte, você causa três cargas de Bleed adicionais. Seus Pontos de Vida Máximo diminuem em 18.” - Nível 4: Assim como acima, porém adicionar “Quando ataca inimigos com Sangramento Extremo, você causa quatro cargas de Bleed adicionais. Seus Pontos de Vida Máximo diminuem em 24.”"
+              },
+              {
+                "id": "hemofagia",
+                "nome": "Hemofagia",
+                "nivel": 5,
+                "custoPV": 30,
+                "descricao": "Hemofagia Habilidade Passiva de Nível 1 As feridas de seus oponentes mexem com você, te fortalecem e recuperam parte dos danos sofridos em combate. Sempre que causar dano a um oponente com uma Habilidade de Técnica, você recupera 1d6 Pontos de Vida. Seus Pontos de Vida máximo diminuem em 6. - Nível 2: Assim como acima, porém recupera 2d6 Pontos de Vida. Seus Pontos de Vida máximo diminuem em 12. - Nível 3: Assim como acima, porém recupera 2d10 Pontos de Vida. Seus Pontos de Vida máximo diminuem em 18. - Nível 4: Assim como acima, porém recupera 4d8 Pontos de Vida. Seus Pontos de Vida máximo diminuem em 24. - Nível 5: Assim como acima, porém recupera 7d8 Pontos de Vida. Seus Pontos de Vida máximo diminuem em 30."
+              },
+              {
+                "id": "mircalla_passiva",
+                "nome": "Yearning Mircalla",
+                "nivel": 4,
+                "custoPV": 24,
+                "descricao": "Yearning Mircalla Habilidade Passiva de Nível 2 Uma quantidade de vezes igual ao seu bônus de maestria por descanso, caso você vá perder a concentração da habilidade Yearning Mircalla, você consegue manter a concentração de maneira forçada. Seus Pontos de Vida máximo diminuem em 12. - Nível 4: A habilidade Yearning Mircalla deixa de precisar ser concentrada, só mantendo o preço da sustentação e você pode invocá-la como Ação Livre. Seus Pontos de Vida máximo diminuem em 24."
+              },
+              {
+                "id": "ciclagem",
+                "nome": "Ciclagem Sanguínea",
+                "nivel": 2,
+                "custoPV": 12,
+                "descricao": "Ciclagem Sanguínea Habilidade Passiva de Nível 2 Você se torna capaz de manter uma ciclagem do seu sangue que está fora do seu corpo, reduzindo as perdas ao utilizar habilidades. Sempre que usar uma habilidade de técnica você pode realizar um teste de Fortitude com CD igual a 10 + 4 para cada nível da habilidade e, caso suceda, você consegue manter uma quantidade de sangue equivalente à metade dos pontos de vida gastos na habilidade ao seu redor, reutilizando-os em outras habilidades de técnica. Por ser um processo exaustivo, caso reutilize uma quantidade de pontos de vida igual ao seu modificador de Constituição multiplicado por 10, sem realizar um descanso, você recebe 1 ponto de exaustão cada vez que reutilizar sangue com esta habilidade. Seu máximo de Pontos de Vida é reduzido em 12 pontos."
+              },
+              {
+                "id": "reacoes",
+                "nome": "Reação Sanguínea",
+                "nivel": 3,
+                "custoPV": 18,
+                "descricao": "Reação Sanguínea Habilidade Passiva de Nível 3 Sua manipulação sanguínea apurada permite que seu corpo reaja muito mais rapidamente. Você passa a ser capaz de utilizar duas reações por rodada. Seu máximo de Pontos de Vida é reduzido em 18 pontos."
+              },
+              {
+                "id": "regeneracao",
+                "nome": "Regeneração Constante",
+                "nivel": 3,
+                "custoPV": 18,
+                "descricao": "Regeneração Constante Habilidade Passiva de Nível 3 Sua regeneração sanguínea é gravemente aumentada enquanto em perigo de vida. Sempre que estiver com menos de 50% de sua vida máxima, no início de todas as suas rodadas você recupera 2d8 + Mod de Constituição. Seu máximo de Pontos de Vida é reduzido em 18 pontos."
+              },
+              {
+                "id": "cristalizacao",
+                "nome": "Cristalização Corporal",
+                "nivel": 3,
+                "custoPV": 18,
+                "descricao": "Cristalização Corporal Habilidade Passiva de Nível 3 Você criou uma camada de sangue cristalizado em volta do seu corpo natural. Você recebe RD contra todo tipo de dano, exceto psíquico e alma, igual ao seu bônus de maestria. Seu máximo de Pontos de Vida é reduzido em 18 pontos."
+              },
+              {
+                "id": "poder",
+                "nome": "Poder do Sangue",
+                "nivel": 4,
+                "custoPV": 24,
+                "descricao": "Poder do Sangue Habilidade Passiva de Nível 4 Conseguindo reutilizar a vitalidade em seu sangue por conta da propriedade que o impede de liberá-la, você reduz a perda da vitalidade contida na carne e no sangue perdido em um golpe drasticamente, reaproveitando dela para fortalecer seu físico. Quando abaixo de metade dos seus pontos de vida máximo, você recebe metade do seu bônus de maestria em todos os testes de atributos físicos, e enquanto abaixo de ¼ dos seus pontos de vida máximos, muda o bônus para seu bônus de maestria total. Seu máximo de Pontos de Vida é reduzido em 24 pontos."
+              },
+              {
+                "id": "pureza_refinada",
+                "nome": "Pureza Sanguínea Refinada",
+                "nivel": 4,
+                "custoPV": 24,
+                "descricao": "Pureza Sanguínea Refinada Habilidade Passiva de Nível 4 Aprimorando e refinando ainda mais seu sangue, você faz com que ele flua de maneira realmente perfeita dentro de seu corpo. Condições negativas não perduram por mais de uma rodada em seu corpo e você se torna imune a dano Venenoso e a todo tipo de veneno e toxina. Seu máximo de Pontos de Vida é reduzido em 24 pontos. [Requer: Regeneração Corporal e Pureza Sanguínea]"
+              }
+            ]
+          },
+          "feiticos": [
+            {
+              "id": "sancho_1",
+              "nome": "Variante Sancho Hardblood Arts 1",
+              "tipo": "personalizado",
+              "nivel": 4,
+              "acaoPersonalizada": "Ação Comum",
+              "alcanceTexto": "Corpo-a-Corpo",
+              "alvoTexto": "Uma Criatura",
+              "duracaoTexto": "Imediata",
+              "resolucaoTexto": "",
+              "descricao": "Variante Sancho Hardblood Arts 1 Habilidade de Técnica de Nível 1 Conjuração: Ação Comum Alcance: Corpo-a-Corpo Alvo: Uma Criatura Duração: Imediata Você golpeia seu inimigo com brutalidade anormal. Realize um Teste de Acerto contra a Classe de Armadura adversária. Em um acerto o alvo recebe 5d8 de Dano Cortante e o alvo deve realizar um TR de Fortitude, recebendo a condição Sangramento Leve em uma falha. - Nível 2: Muda o dano para 8d8 e a condição para Sangramento Médio. - Nível 3: Muda o dano para 13d8 e a condição para Sangramento Forte. - Nível 4: Muda o dano para 13d10 e a condição para Sangramento Extremo.",
+              "comCd": true,
+              "rolagens": [
+                {
+                  "rotulo": "Dano Cortante",
+                  "dados": 13,
+                  "faces": 10
+                }
+              ],
+              "bloodfeastTecnica": {
+                "id": "sancho_1",
+                "ataques": 1,
+                "bonusCD": 0,
+                "sustentacaoPE": 0
+              }
+            },
+            {
+              "id": "sancho_2",
+              "nome": "Variante Sancho Hardblood Arts 2",
+              "tipo": "personalizado",
+              "nivel": 5,
+              "acaoPersonalizada": "Ação Bônus",
+              "alcanceTexto": "Corpo-a-Corpo",
+              "alvoTexto": "Uma Criatura",
+              "duracaoTexto": "Imediata",
+              "resolucaoTexto": "Fortitude",
+              "descricao": "Variante Sancho Hardblood Arts 2 Habilidade de Técnica de Nível 1 Conjuração: Ação Bônus Alcance: Corpo-a-Corpo Alvo: Uma Criatura Duração: Imediata Você canaliza sua energia e começa a cristalizar o sangue do adversário, fazendo com que sangre de dentro para fora. Escolha uma criatura, ela deve realizar um TR de Fortitude com a CD aumentada em +2. Recebendo a condição “Sangramento Leve” em uma falha. - Nível 2: Muda o aumento de CD para +3. Recebendo a condição “Sangramento Médio” em uma falha ou a condição “Sangramento Leve” em um sucesso. - Nível 3: Muda o aumento de CD para +4. Recebendo a condição “Sangramento Forte” em uma falha ou a condição “Sangramento Médio” em um sucesso. - Nível 4: Muda o aumento de CD para +5. Recebendo a condição “Sangramento Extremo” em uma falha ou a condição “Sangramento Leve” em um sucesso. - Nível 5: Muda o aumento de CD para +6. Recebendo a condição “Sangramento Extremo” em uma falha ou as condições “Sangramento Forte”, “Caído” e “Desorientado” por três rodadas em um sucesso.",
+              "comCd": true,
+              "rolagens": [],
+              "bloodfeastTecnica": {
+                "id": "sancho_2",
+                "ataques": 1,
+                "bonusCD": 6,
+                "sustentacaoPE": 0
+              }
+            },
+            {
+              "id": "defesa",
+              "nome": "Defensive Sancho Hardblood Arts 1",
+              "tipo": "personalizado",
+              "nivel": 5,
+              "acaoPersonalizada": "Ação Comum",
+              "alcanceTexto": "Próprio",
+              "alvoTexto": "Próprio",
+              "duracaoTexto": "Sustentada",
+              "resolucaoTexto": "",
+              "descricao": "Defensive Sancho Hardblood Arts 1 Habilidade de Técnica de Nível 1 Conjuração: Ação Comum Alcance: Próprio Duração: Sustentada Você canaliza seu sangue em volta do seu corpo, criando uma camada protetiva fazendo com que os danos gerados contra seu corpo sejam reduzidos. Você recebe 4 de RD Geral, exceto alma. - Nível 2: Assim como acima, porém muda o bônus para 7 de RD Geral. - Nível 3: Assim como acima, porém muda o bônus para 10 de RD Geral. - Nível 4: Assim como acima, porém muda o bônus para 12 de RD Geral. - Nível 5: Assim como acima, porém muda o bônus para 18 de RD Geral.",
+              "comCd": false,
+              "rolagens": [],
+              "bloodfeastTecnica": {
+                "id": "defesa",
+                "ataques": 1,
+                "bonusCD": 0,
+                "sustentacaoPE": 2
+              }
+            },
+            {
+              "id": "sancho_3",
+              "nome": "Variante Sancho Hardblood Arts 3",
+              "tipo": "personalizado",
+              "nivel": 4,
+              "acaoPersonalizada": "Ação Completa",
+              "alcanceTexto": "Restante do Seu Movimento + 9 Metros",
+              "alvoTexto": "Uma Criatura",
+              "duracaoTexto": "Imediata",
+              "resolucaoTexto": "",
+              "descricao": "Variante Sancho Hardblood Arts 3 Habilidade de Técnica de Nível 2 Conjuração: Ação Completa Alcance: Restante do Seu Movimento + 3 Metros Alvo: Uma Criatura Duração: Imediata Você dispara em direção a uma criatura de maneira feroz e focada. Realizando dois ataques consecutivos, que recebem um bônus em acerto equivalente ao grau de Sangramento do alvo. (Leve +1, Médio +2, Forte +3, Extremo +4) - Nível 3: Muda para três ataques consecutivos e o deslocamento para 4,5 Metros. - Nível 3: Muda para quatro ataques consecutivos e o deslocamento para 6 Metros. - Nível 4: Muda para cinco ataques consecutivos e o deslocamento para 9 Metros.",
+              "comCd": false,
+              "rolagens": [],
+              "bloodfeastTecnica": {
+                "id": "sancho_3",
+                "ataques": 5,
+                "bonusCD": 0,
+                "sustentacaoPE": 0
+              }
+            },
+            {
+              "id": "reacao",
+              "nome": "Defensive Sancho Hardblood Arts 2",
+              "tipo": "personalizado",
+              "nivel": 5,
+              "acaoPersonalizada": "Reação",
+              "alcanceTexto": "Próprio",
+              "alvoTexto": "Próprio",
+              "duracaoTexto": "Imediata",
+              "resolucaoTexto": "",
+              "descricao": "Defensive Sancho Hardblood Arts 2 Habilidade de Técnica de Nível 2 Conjuração: Reação Alcance: Próprio Alvo: Próprio Duração: Imediata Você endurece grandemente o seu sangue em resposta a um golpe, absorvendo o dano dele grandemente. Ao receber um ataque, você pode usar sua reação para reduzir o dano. Faça um Teste de Fortitude contra o Acerto ou CD do Ataque. Em um sucesso você evita completamente o ataque, em uma falha você recebe somente metade do dano. Após utilizar essa habilidade, você também recebe sua maestria como redução de danos contra danos físicos até o final da rodada. - Nível 3: Você desvia automaticamente do ataque, sem precisar realizar qualquer rolagem. - Nível 4: Assim como acima, porém você realiza um ataque como parte da reação. - Nível 5: Assim como acima, porém você realiza dois ataques como parte da reação.",
+              "comCd": false,
+              "rolagens": [],
+              "bloodfeastTecnica": {
+                "id": "reacao",
+                "ataques": 2,
+                "bonusCD": 0,
+                "sustentacaoPE": 0
+              }
+            },
+            {
+              "id": "mircalla",
+              "nome": "Yearning Mircalla",
+              "tipo": "personalizado",
+              "nivel": 5,
+              "acaoPersonalizada": "Ação Bônus",
+              "alcanceTexto": "Próprio",
+              "alvoTexto": "Próprio",
+              "duracaoTexto": "Concentrada",
+              "resolucaoTexto": "",
+              "descricao": "Yearning Mircalla Habilidade de Técnica de Nível 2 Conjuração: Ação Bônus Alcance: Próprio Duração: Concentrada Você forma uma Alabarda de sangue, mantendo sempre uma alta concentração afiando a ponta, atingindo assim uma grande letalidade. Ao utilizar a habilidade, você cria uma Alabarda de sangue, o qual possui as propriedades Adaptada (Constituição) e Potente (já contabilizado), margem de crítico 18 e causa 2d10 de Dano Cortante. Você possui maestria na Alabarda e ela não pode ser desarmada. Ela dura até que você perca a sua concentração. Qualquer Habilidade ou Aptidão que afete armas de qualquer forma, afeta a Alabarda. - Nível 3: Adiciona a propriedade Afiada e reduz a margem de crítico para 17. - Nível 4: Adiciona as propriedades Catalisadora, Canalizadora e Harmonizada. - Nível 5: Adiciona a propriedade de Grau Especial “ Yearning Mircalla ” e tem seu nível de dano aumentado em dois. Yearning Mircalla : Coming soon. Mudar descrição para “Sempre que causar dano em um oponente com uma habilidade de técnica”. Mudar cura para Xd10. Onde X é igual a (Nível da Habilidade ÷ 2).",
+              "comCd": false,
+              "rolagens": [],
+              "bloodfeastTecnica": {
+                "id": "mircalla",
+                "ataques": 1,
+                "bonusCD": 0,
+                "sustentacaoPE": 2
+              }
+            }
+          ],
+          "acrescenta": {
+            "armas": [
+              {
+                "id": "alabarda_mircalla",
+                "nome": "Yearning Mircalla",
+                "classe": "complexa",
+                "categoria": "corpo",
+                "grupo": "haste",
+                "dano": {
+                  "dado": "2d10",
+                  "tipo": "ct"
+                },
+                "critico": 17,
+                "espacos": 0,
+                "custo": 1,
+                "props": {
+                  "duas_maos": true
+                },
+                "atributoAtaque": "constituicao",
+                "usarDadoArma": true,
+                "treinadaPadrao": true,
+                "descricao": "Yearning Mircalla Habilidade de Técnica de Nível 2 Conjuração: Ação Bônus Alcance: Próprio Duração: Concentrada Você forma uma Alabarda de sangue, mantendo sempre uma alta concentração afiando a ponta, atingindo assim uma grande letalidade. Ao utilizar a habilidade, você cria uma Alabarda de sangue, o qual possui as propriedades Adaptada (Constituição) e Potente (já contabilizado), margem de crítico 18 e causa 2d10 de Dano Cortante. Você possui maestria na Alabarda e ela não pode ser desarmada. Ela dura até que você perca a sua concentração. Qualquer Habilidade ou Aptidão que afete armas de qualquer forma, afeta a Alabarda. - Nível 3: Adiciona a propriedade Afiada e reduz a margem de crítico para 17. - Nível 4: Adiciona as propriedades Catalisadora, Canalizadora e Harmonizada. - Nível 5: Adiciona a propriedade de Grau Especial “ Yearning Mircalla ” e tem seu nível de dano aumentado em dois. Yearning Mircalla : Coming soon. Mudar descrição para “Sempre que causar dano em um oponente com uma habilidade de técnica”. Mudar cura para Xd10. Onde X é igual a (Nível da Habilidade ÷ 2)."
+              }
+            ]
+          }
+        },
+        {
+          "id": "ciclo-adaptacao-mahoraga",
+          "nome": "Ciclo de Adaptação do Mahoraga",
+          "versao": "1.0.0",
+          "autor": "Afty",
+          "descricao": "Roda de adaptação progressiva por rodada.",
+          "paraRaw": "afty",
+          "permite": [
+            "adaptacao"
+          ],
+          "adaptacoes": [
+            {
+              "id": "roda",
+              "nome": "Roda de Adaptação",
+              "intervalo": 5,
+              "ganho": "habilidades_bonus_acerto",
+              "mecanica": "auxiliar_acerto_progressivo"
+            }
+          ],
+          "acrescenta": {}
+        },
+        {
+          "id": "vislumbre-celeste",
+          "nome": "Vislumbre Celeste",
+          "versao": "1.0.0",
+          "autor": "Afty",
+          "paraRaw": "afty",
+          "descricao": "A Condição Corporal dos Seis Olhos, com outro nome. Ela é ganha de graça: não gasta vaga de Origem, Talento, Aptidão nem o contador da aba Habilidades, e o card dela fica na aba Habilidades, entre o Funcionamento Básico e os Feitiços. Com os olhos cobertos você reduz todo gasto em PE pela metade do seu Nível de Aptidão em Controle e Leitura, recebe percepção às cegas de 9m mais 4,5m por nível e +1 em Percepção e Feitiçaria por nível. Descobrir os olhos é uma Ação Livre que troca esses benefícios pelos plenos: a redução passa a ser o nível inteiro, a visão vai a 18m mais 9m por nível e o bônus de perícia dobra, ao preço de 1 Ponto de Fadiga no fim de cada turno. Quatro pontos viram um Nível de Exaustão. Por cima dos dois blocos, a Compreensão do Jujutsu dá quatro Níveis de Aptidão ao longo da vida do personagem, um já na criação e mais um nos Níveis 5, 15 e 25. Como Condição Corporal, tudo isso SOMA com Feitiços e com o resto da ficha, em vez de disputar o maior valor.",
+          "permite": [
+            "vislumbreCeleste"
+          ]
+        },
+        {
+          "id": "olhinhos-lu",
+          "nome": "Olhinhos Lu( Corpo Principal )",
+          "versao": "1.1.0",
+          "autor": "Afty",
+          "paraRaw": "afty",
+          "descricao": "Enquanto de olhos estiverem fechados de alguma forma, o Coded Gigas fornece os seguintes efeitos:\n\nPRO:\n- Enquanto com os olhos fechados Ciel recebe 3x seu Nível de Controle e Leitura em Intuição. (Arredondado para Cima)\n\n- Pode mudar o Calculo de Atenção para usar Intuição, além de poder trocar Testes de Percepção por Intuição.\n\n- Consegue enxergar por Técnicas de Barreiras, além de conseguir ativamente ver os Limites de um Domínio e enxergar o Domínio Inato das pessoas.",
+          "permite": [
+            "olhinhosLu"
+          ]
+        },
+        {
+          "id": "olhos-de-agulha",
+          "nome": "Olhos de Agulha",
+          "versao": "1.0.0",
+          "autor": "Afty",
+          "paraRaw": "afty",
+          "descricao": "Condição corporal intrínseca do Clã Akutame.",
+          "permite": [
+            "olhosDeAgulha"
+          ]
+        },
+        {
+          "id": "manipulacao-do-ceu",
+          "nome": "Manipulação do Céu",
+          "versao": "1.0.0",
+          "autor": "Afty",
+          "paraRaw": "afty",
+          "descricao": "Refletir Imagem e Duplicata Perfeita.",
+          "feiticos": [
+            {
+              "id": "refletir_imagem",
+              "nome": "Refletir Imagem",
+              "tipo": "personalizado",
+              "nivel": 5,
+              "descricao": "Você altera o tecido do céu, alterando a forma como a luz se propaga em si próprio, fazendo ela refletir duas imagens perfeitamente idênticas a você, como clones, que perturbam a percepção de inimigos sobre o real. Essa habilidade não afeta alvos cegos ou que não dependam dos olhos para enxergar. Ao criar os dois clones eles duram enquanto você se mantiver concentrando a habilidade, sempre que for alvo de um efeito que cause dano o oponente deve realizar um TR de Astúcia, num fracasso ele acerta uma de suas cópias e você anula o ataque, com o céu sendo distorcido e a cópia atingida sendo dissipada. Além de serem dissipadas caso você pare de se concentrar ou caso falhem no TR, você precisa gastar 2 PE no início de cada um de seus turnos para manter as imagens, se durante o intervalo entre turnos você receber um ataque, ambas as cópias são desfeitas e a habilidade se encerra, caso seja alvo de um efeito em área, ambas as cópias são desfeitas e a habilidade se encerra.",
+              "resolucao": "tr",
+              "acaoPersonalizada": "Comum",
+              "alcanceTexto": "Pessoal",
+              "alvoTexto": "Próprio",
+              "duracaoTexto": "Sustentado, Concentração",
+              "resolucaoTexto": "",
+              "comCd": true
+            },
+            {
+              "id": "duplicata_perfeita",
+              "nome": "Duplicata perfeita",
+              "tipo": "passivo",
+              "nivel": 5,
+              "descricao": "Enquanto estiver com as duplicatas em campo, o valor de sua Aura embaça aumenta em +1 para ataques corpo a corpo e ataques a distancia",
+              "efeitoPassivo": "personalizado",
+              "efeitosPassivo": []
+            }
+          ]
+        },
+        {
+          "id": "azamaru",
+          "nome": "Azamaru",
+          "versao": "1.0.0",
+          "paraRaw": "afty",
+          "descricao": "A arma de duas formas. Dividida são duas lâminas de Fineza; reunida vira uma espada colossal que ignora RD, imunidade e resistência, e cria clones ilusórios iguais ao Bônus de Maestria. O painel de combate da Ficha e do Encontro controla as duas formas, os clones e a reserva.",
+          "permite": [
+            "armaTransformavel"
+          ],
+          "acrescenta": {
+            "armas": [
+              {
+                "id": "azamaru",
+                "nome": "Azamaru",
+                "titulo": "O Fim de Todas as Coisas",
+                "classe": "complexa",
+                "categoria": "corpo",
+                "grupo": "espada",
+                "custo": 4,
+                "espacos": 2,
+                "critico": 18,
+                "dano": {
+                  "dado": "1d12 + 1d4",
+                  "tipo": "ct"
+                },
+                "props": {
+                  "fineza": true,
+                  "marcial": true,
+                  "dupla": true,
+                  "apunhaladora": true,
+                  "energica": true,
+                  "mortal": "d12",
+                  "oscilante": true
+                },
+                "unico": true,
+                "equipadoPadrao": true,
+                "faFixa": true,
+                "faPadrao": {
+                  "grau": "especial",
+                  "encantamentos": [],
+                  "habilidadeUnica": ""
+                },
+                "ilusoes": true,
+                "descricao": "O Fim de Todas as Coisas\nSua habilidade especial é Azamaru:\nTécnica Base: –\nCom uma ação bônus, você junta ambas as lâminas, as transformando em uma única espada colossal, a qual não possui as propriedades Pesada nem Especial. Enquanto transformada, a lâmina é imbuída com uma maldição capaz de romper conceitos enquanto abastecida pela sua fúria, fazendo com que seus ataques feitos com ela ignorem imunidade, resistência e RD, além disso, no momento da ativação, você cria clones ilusórios igual ao seu bônus de maestria, recebendo +2 de Defesa para cada um, até um máximo de 8. A cada ataque que errar contra você, um dos clones é dissipado, e caso você seja atingido por um ataque, todos eles são dissipados; efeitos em área que afetem os clones fazem com que eles sejam dissipados automaticamente, mas caso ele afete o usuário, todos só serão dissipados caso ele falhe no TR. A cada clone dissipar, a energia dele é canalizada na lâmina, fazendo com que seu próximo ataque que acertar cause 1 dado de dano adicional para cada 2 de Defesa dissipada, até um máximo de 4 dados; você também pode dissipar clones voluntariamente com uma ação livre. Dividir a espada custa uma ação bônus, e ela não pode ser reunida na mesma rodada em que foi dividida, exigindo um gasto de PE igual ao seu bônus de maestria em todo o uso após o primeiro.",
+                "formas": {
+                  "reunida": {
+                    "props": {
+                      "fineza": true,
+                      "marcial": true,
+                      "ampla": true,
+                      "duas_maos": true,
+                      "energica": true,
+                      "mortal": "d12",
+                      "oscilante": true
+                    }
+                  }
+                },
+                "criacao": {
+                  "classificacao": "tatica",
+                  "deTecnica": true,
+                  "pcBase": 12,
+                  "pcCusto": 8,
+                  "pcEspaco": 1,
+                  "pcTotal": 21,
+                  "pcDano": 6,
+                  "pcCritico": 6,
+                  "pcPropriedades": 9,
+                  "limiteDano": 8,
+                  "limitePropriedades": 10,
+                  "habilidadeForaDoOrcamento": true
+                }
+              }
+            ]
+          }
+        },
+        {
+          "id": "sombras",
+          "nome": "Estilo das Sombras — Reforço Corporal e Pacto",
+          "versao": "1.1.0",
+          "autor": "Templas",
+          "paraRaw": "afty",
+          "descricao": "Addon do Estilo das Sombras. Libera Aura Excessiva, Aura Impenetrável e Casulo de Energia sem pré-requisito (só zera os requisitos). Bancada: Reforço Corporal (+6 PV/nível, +2 RD física, +BT RD Geral com Aura Excessiva) e duas seções de exemplo com campos de valor — 'Resistir a Manobra · nova regra' (troca o valor atual por Fortitude + Aura) e 'RD de Aura · dobrar' (você digita a RD atual e o addon soma de novo = dobra). Pacto e Cura Corporal são só sinalizadores. Três Linhas de Treinamento (Escudo Protetor, Firmeza, Treinamento Corporal) — as condicionais usam os interruptores de sessão 'Escudo erguido' e 'Firmeza · em Postura da Terra', que você liga junto com a condição real. ⚠ Ligue 'Em Combate'. Itens [REFERÊNCIA] não têm canal.",
+          "substitui": {
+            "aptidoes": [
+              {
+                "id": "aura_excessiva",
+                "requisitos": []
+              },
+              {
+                "id": "aura_impenetravel",
+                "requisitos": []
+              },
+              {
+                "id": "casulo_de_energia",
+                "requisitos": []
+              }
+            ]
+          },
+          "estadosCombate": [
+            {
+              "id": "reforco",
+              "label": "Reforço Corporal",
+              "tipo": "bool",
+              "title": "Enquanto ativo: +6 PV por nível; +2 de RD física (o '2 +' de Aura Reforçada); com o interruptor Aura Excessiva ligado e Aura ≥ 3, +BT de RD Geral. O dobrar da RD e a nova Resistir a Manobra têm seções próprias abaixo. ⚠ Precisa de 'Em Combate' ligado."
+            },
+            {
+              "id": "rm_ativo",
+              "label": "Resistir a Manobra · nova regra",
+              "tipo": "bool",
+              "requerEstado": "reforco",
+              "title": "SEÇÃO DE EXEMPLO — Aura ≥ 4 com Aura Impenetrável: 'Resistir a Manobra se torna Fortitude + Aura'. O motor não sabe substituir sozinho, então preencha os dois campos abaixo e o addon troca: ele tira o valor atual e põe (Fortitude + Nível de Aptidão em Aura). O número novo aparece na linha de Manobras da ficha."
+            },
+            {
+              "id": "rm_base",
+              "label": "Resistir a Manobra · valor atual",
+              "tipo": "faixa",
+              "requerEstado": "rm_ativo",
+              "min": 0,
+              "max": 40,
+              "passo": 1,
+              "title": "O valor de Resistir a Manobra que a ficha mostra HOJE (Acrobacia/Atletismo + bônus). O addon subtrai este número."
+            },
+            {
+              "id": "rm_fort",
+              "label": "Resistir a Manobra · Fortitude",
+              "tipo": "faixa",
+              "requerEstado": "rm_ativo",
+              "min": 0,
+              "max": 40,
+              "passo": 1,
+              "title": "O seu bônus total de TR de Fortitude. O addon soma este número + o Nível de Aptidão em Aura no lugar do valor atual."
+            },
+            {
+              "id": "rd_dobrar",
+              "label": "RD de Aura · dobrar",
+              "tipo": "bool",
+              "requerEstado": "reforco",
+              "title": "SEÇÃO DE EXEMPLO — 'a RD de Aura Reforçada e as demais dobram após todos os cálculos'. O motor não dobra um total já fechado, então preencha abaixo o valor de RD de Aura que a ficha mostra e o addon adiciona o mesmo valor de novo (= dobra)."
+            },
+            {
+              "id": "rd_fis_val",
+              "label": "RD de Aura · física atual",
+              "tipo": "faixa",
+              "requerEstado": "rd_dobrar",
+              "min": 0,
+              "max": 80,
+              "passo": 1,
+              "title": "O total de RD física vindo de Aura (Aura Reforçada + Aura Elemental Reforçada + Casulo...) que a ficha mostra. O addon soma este valor de novo."
+            },
+            {
+              "id": "rd_ger_val",
+              "label": "RD de Aura · geral atual",
+              "tipo": "faixa",
+              "requerEstado": "rd_dobrar",
+              "min": 0,
+              "max": 80,
+              "passo": 1,
+              "title": "O total de RD Geral vindo de Aura (Aura Excessiva...) que a ficha mostra. O addon soma este valor de novo."
+            },
+            {
+              "id": "pacto",
+              "label": "Pacto (referência)",
+              "tipo": "bool",
+              "title": "Enquanto NÃO ativo, sua Energia Amaldiçoada máxima é 40% do total. Enquanto ativo, é 140% do total, e você recupera o ganho adicional. ⚠ REFERÊNCIA: o motor não tem canal para porcentagem do PE máximo — ajuste o PE na mão. Este interruptor só marca o estado."
+            },
+            {
+              "id": "cura_ref",
+              "label": "Cura Corporal +2 / +5 (referência)",
+              "tipo": "bool",
+              "title": "REFERÊNCIA — Treinamento Corporal etapas 1 e 3: 'ao recuperar PV (não PVT), +2 PV; 1x por rodada, +5 PV'. O motor não tem canal de bônus de cura recebida. Este interruptor só lembra — some os PV na mão."
+            }
+          ],
+          "funcionamentos": [
+            {
+              "id": "reforco_motor",
+              "nome": "Reforço Corporal (bancada)",
+              "descricao": "Bônus do Reforço Corporal conforme o Nível de Aptidão em Aura. Só vale com 'Em Combate' e o interruptor Reforço Corporal ligados.",
+              "efeitos": [
+                {
+                  "canal": "hp",
+                  "expr": "6 * (nd - 1)",
+                  "quando": "sombras_reforco",
+                  "duracao": "temporaria"
+                },
+                {
+                  "canal": "rdFisico",
+                  "expr": "2 * (au >= 1) + sombras_rd_dobrar * sombras_rd_fis_val",
+                  "quando": "sombras_reforco",
+                  "duracao": "temporaria"
+                },
+                {
+                  "canal": "rdGeral",
+                  "expr": "aura_excessiva * bt * (au >= 3) + sombras_rd_dobrar * sombras_rd_ger_val",
+                  "quando": "sombras_reforco",
+                  "duracao": "temporaria"
+                },
+                {
+                  "canal": "resistirManobra",
+                  "expr": "(sombras_rm_fort + au) - sombras_rm_base",
+                  "quando": "sombras_reforco && sombras_rm_ativo && au >= 4",
+                  "duracao": "temporaria"
+                }
+              ]
+            }
+          ],
+          "acrescenta": {
+            "treinamentos": [
+              {
+                "id": "treino_escudo_protetor",
+                "nome": "Escudo Protetor",
+                "lore": "Você se especificou totalmente na utilização de escudos, seja para proteger você ou aos outros; seu objetivo é sempre visando a proteção.",
+                "gatilhoSessao": {
+                  "id": "escudo_erguido",
+                  "label": "Escudo erguido"
+                },
+                "etapas": [
+                  {
+                    "n": 1,
+                    "focos": 1,
+                    "requisito": null,
+                    "beneficio": "A sua CA aumenta em +1 enquanto estiver empunhando um escudo. [Ligue o interruptor 'Escudo erguido' quando estiver com o escudo.]",
+                    "efeitos": [
+                      {
+                        "canal": "defesa",
+                        "expr": "1",
+                        "gatilhoSessao": "escudo_erguido"
+                      }
+                    ]
+                  },
+                  {
+                    "n": 2,
+                    "focos": 1,
+                    "requisito": null,
+                    "beneficio": "Você recebe +1 de Fortitude.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "fortitude",
+                        "expr": "1"
+                      }
+                    ]
+                  },
+                  {
+                    "n": 3,
+                    "focos": 2,
+                    "requisito": null,
+                    "beneficio": "Seu escudo aumenta a RD física dele em 5. [Interruptor 'Escudo erguido'.]",
+                    "efeitos": [
+                      {
+                        "canal": "rdFisico",
+                        "expr": "5",
+                        "gatilhoSessao": "escudo_erguido"
+                      }
+                    ]
+                  },
+                  {
+                    "n": 4,
+                    "focos": 2,
+                    "requisito": null,
+                    "beneficio": "Você recebe +1 encantamento adicional em seu escudo — aqui vale +2 de RD Geral enquanto o escudo estiver erguido.",
+                    "efeitos": [
+                      {
+                        "canal": "rdGeral",
+                        "expr": "2",
+                        "gatilhoSessao": "escudo_erguido"
+                      }
+                    ]
+                  }
+                ],
+                "completo": {
+                  "beneficio": "Firmeza Absoluta\nSeu escudo passa a conceder RD contra uma quantidade de tipos de dano igual ao seu BT (exceto etéreos). [REFERÊNCIA: RD por tipo à escolha — resolvida na mesa.]",
+                  "efeitos": []
+                }
+              },
+              {
+                "id": "treino_firmeza",
+                "nome": "Firmeza",
+                "lore": "Stark e inabalável para proteger seus aliados, seu corpo é forte o suficiente para se manter assim; ele foca em manter o corpo da maneira mais potente possível — afinal, seu treino o fez resistir a qualquer momento.",
+                "gatilhoSessao": {
+                  "id": "postura_terra_firmeza",
+                  "label": "Firmeza · em Postura da Terra"
+                },
+                "etapas": [
+                  {
+                    "n": 1,
+                    "focos": 1,
+                    "requisito": null,
+                    "beneficio": "Adiciona +2 no PV Temporário da sua Postura da Terra. [Ligue 'Firmeza · em Postura da Terra' junto com a Postura.]",
+                    "efeitos": [
+                      {
+                        "canal": "pvTemporario",
+                        "expr": "2",
+                        "gatilhoSessao": "postura_terra_firmeza"
+                      }
+                    ]
+                  },
+                  {
+                    "n": 2,
+                    "focos": 1,
+                    "requisito": null,
+                    "beneficio": "Enquanto em Postura da Terra, recebe +1 de Fortitude.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "fortitude",
+                        "expr": "1",
+                        "gatilhoSessao": "postura_terra_firmeza"
+                      }
+                    ]
+                  },
+                  {
+                    "n": 3,
+                    "focos": 1,
+                    "requisito": null,
+                    "beneficio": "Adiciona +3 no PV Temporário da sua Postura da Terra.",
+                    "efeitos": [
+                      {
+                        "canal": "pvTemporario",
+                        "expr": "3",
+                        "gatilhoSessao": "postura_terra_firmeza"
+                      }
+                    ]
+                  },
+                  {
+                    "n": 4,
+                    "focos": 2,
+                    "requisito": null,
+                    "beneficio": "Ao adentrar em Postura da Terra, recebe o bônus de PV Temporário dobrado no seu primeiro uso. [REFERÊNCIA: 'primeiro uso' não é rastreado — role dobrado na mesa.]",
+                    "efeitos": []
+                  }
+                ],
+                "completo": {
+                  "beneficio": "Inabalável\nAo adentrar em postura, seu corpo se mantém extremamente firme. Uma quantidade de vezes igual a 1 + metade do BT, por descanso curto, ao ser forçado a realizar uma TR de Reflexos durante a Postura da Terra, você pode alterar para Fortitude. [REFERÊNCIA: troca limitada por usos — resolvida na mesa.]",
+                  "efeitos": []
+                }
+              },
+              {
+                "id": "treino_corporal",
+                "nome": "Treinamento Corporal",
+                "lore": "Após anos de treino, seu corpo se moldou de forma que aparenta ter um potencial quase ilimitado; receber ataques é algo normal para ele. Sofrendo estes danos e se recuperando rapidamente, com um vigor sobrenatural.",
+                "etapas": [
+                  {
+                    "n": 1,
+                    "focos": 1,
+                    "requisito": null,
+                    "beneficio": "Sempre que for recuperar vida (PV Temporário não conta), você se recupera +2 PV adicionais. [REFERÊNCIA — sinalizado pelo interruptor 'Cura Corporal +2 / +5' na bancada; some os PV na mão.]",
+                    "efeitos": []
+                  },
+                  {
+                    "n": 2,
+                    "focos": 1,
+                    "requisito": null,
+                    "beneficio": "Nada.",
+                    "efeitos": []
+                  },
+                  {
+                    "n": 3,
+                    "focos": 1,
+                    "requisito": null,
+                    "beneficio": "1x por rodada, caso recupere seus PV por qualquer meio, você recupera +5 PV adicionais. [REFERÊNCIA — sinalizado pelo interruptor 'Cura Corporal +2 / +5' na bancada; some os PV na mão.]",
+                    "efeitos": []
+                  },
+                  {
+                    "n": 4,
+                    "focos": 2,
+                    "requisito": null,
+                    "beneficio": "Passa a adicionar 1 + metade do BT em rolagens no portão da morte. [REFERÊNCIA: o motor não tem canal de portão da morte — some na mesa.]",
+                    "efeitos": []
+                  }
+                ],
+                "completo": {
+                  "beneficio": "Vigor Sobrenatural\nSeu corpo se desenvolve de maneira mais otimizada e natural, capaz de usar seu potencial melhorado para resistir a golpes. Recebe +1 PV por nível, além de adicionar seu maior modificador de atributo físico como bônus de vida máxima adicional.",
+                  "efeitos": [
+                    {
+                      "canal": "hp",
+                      "expr": "(nd - 1) + max(mod_forca, mod_destreza, mod_constituicao)"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "narratorNotes": "",
+      "combatState": {
+        "isActive": false,
+        "hpCurrent": 0,
+        "peCurrent": 0,
+        "almaCurrent": 100,
+        "activeConditions": [],
+        "customCounters": [],
+        "combatLog": []
+      },
+      "id": "teste-abas-mesa",
+      "aptidoesEscolhidas": [
+        "dominio_simples"
+      ]
+    },
+    "tipica": {
+      "system": "afty",
+      "rulesVersion": "player",
+      "name": "Mesa Típica (Teste Abas)",
+      "portraitUrl": null,
+      "portraitFocus": {
+        "x": 50,
+        "y": 50
+      },
+      "core": {
+        "tipo": "conjurador",
+        "patamar": "comum",
+        "nd": 20,
+        "tamanho": "medio",
+        "tecnicaAttr": "inteligencia",
+        "tecnicaDescricao": "",
+        "tecnicaEfeitos": [],
+        "funcionamentosAdicionais": [],
+        "origem": {
+          "id": "herdado"
+        }
+      },
+      "alma": {
+        "atual": 100,
+        "max": 100
+      },
+      "qntPE": "normal",
+      "attrMethod": "fixos",
+      "attrLimite": {
+        "forca": 20,
+        "destreza": 20,
+        "constituicao": 20,
+        "inteligencia": 20,
+        "sabedoria": 20,
+        "presenca": 20
+      },
+      "attributes": {
+        "forca": 14,
+        "destreza": 14,
+        "constituicao": 14,
+        "inteligencia": 10,
+        "sabedoria": 14,
+        "presenca": 10
+      },
+      "attrNivel": {
+        "forca": 0,
+        "destreza": 0,
+        "constituicao": 0,
+        "inteligencia": 0,
+        "sabedoria": 0,
+        "presenca": 0
+      },
+      "pericias": {},
+      "periciasOrdem": null,
+      "periciasPersonalizadas": [],
+      "periciaOficio": "",
+      "periciaOficios": {},
+      "periciasOficiosExtras": [],
+      "periciaAtributoManual": {},
+      "periciasBonus": 0,
+      "resistenciasProf": {},
+      "trDaClasse": [],
+      "trSegundo": null,
+      "trAtributoManual": {},
+      "ataquesProf": {},
+      "ataqueFineza": false,
+      "ataqueBasicoId": "corpo",
+      "ataqueAtributoManual": {},
+      "armasDedicadas": [],
+      "defesasDano": {},
+      "catarse": {
+        "saldo": 0,
+        "compras": []
+      },
+      "carteira": {
+        "entradas": [],
+        "gastos": []
+      },
+      "espinho": {
+        "almas": 0,
+        "outros": 0,
+        "compras": {},
+        "equipamentos": []
+      },
+      "tecnicasCombate": {
+        "armas": [],
+        "atributo": "inteligencia"
+      },
+      "talentosConfig": {
+        "tal_mestre_das_armas": {
+          "modo": "armas",
+          "armas": [],
+          "grupo": null
+        },
+        "tal_tempestade_de_ideias": {
+          "pericia": null,
+          "ferramenta": "",
+          "vantagemPericia": null
+        },
+        "tal_artesao_amaldicoado": {
+          "ferramenta": null
+        }
+      },
+      "combate": {
+        "ativo": false,
+        "empolgacao": 1,
+        "insistenciaUsada": false,
+        "manobraAjuste": false,
+        "manobraDesarme": false,
+        "manobraEsquiva": false,
+        "manobraTrabalhoDePes": false,
+        "manobraFinalizadora": null,
+        "brutalidade": false,
+        "brutalidadePE": 0,
+        "brutalidadePilha": 0,
+        "ataqueInconsequente": false,
+        "impactoMisto": false,
+        "resistirPE": 0,
+        "furiaVinganca": false,
+        "imprudenciaMotivadora": false,
+        "machucado": false,
+        "abates": 0,
+        "armasAbsolutas": null,
+        "auraElemental": true,
+        "concentrarAura": [],
+        "golpeComAura": null,
+        "canalizarEmGolpe": false,
+        "canalizacaoMaxima": false
+      },
+      "equipamentos": {
+        "itens": [
+          {
+            "uid": "abas-tip-azamaru",
+            "tipo": "arma",
+            "refId": "azamaru:azamaru",
+            "qtd": 1,
+            "equipado": true
+          }
+        ]
+      },
+      "armasCustom": [],
+      "forjas": [],
+      "especializacoes": [
+        {
+          "id": "conjurador",
+          "nivel": 10
+        },
+        {
+          "id": "combatente",
+          "nivel": 10
+        }
+      ],
+      "feiticos": [
+        {
+          "id": "tf8",
+          "nome": "Dardo Simples de Teste",
+          "tipo": "dano",
+          "nivel": 1,
+          "conjuracaoTexto": "",
+          "descricao": "Texto de teste da prévia (Dardo Simples de Teste). **Negrito** de marcação rica, e uma segunda frase para medir a leitura.",
+          "variacaoDeTecnica": false,
+          "variacaoDe": null,
+          "resolucao": "ataque",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "comum",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoPETexto": "",
+          "custoVidaAtivacao": null
+        }
+      ],
+      "reducoesCustoFeitico": {
+        "dominancia": null,
+        "manipulacao": []
+      },
+      "estilosSombra": [],
+      "estiloFuncionamento": {
+        "texto": "",
+        "durabilidadeTrilha": null
+      },
+      "habilidadesGerais": [],
+      "focosLivres": 0,
+      "periciaAtributo": "inteligencia",
+      "habilidades": [
+        "cmb_golpe_especial",
+        "cmb_assumir_postura",
+        "cmb_ataque_concentrado"
+      ],
+      "escolhasHabilidade": {},
+      "especializacaoConfig": {},
+      "escolhasTalento": {},
+      "talentos": [],
+      "invocacoes": [],
+      "origemContadores": {},
+      "hordas": [],
+      "quimeras": [],
+      "fundamentosPerdidos": [],
+      "aptidoes": {
+        "au": 2,
+        "cl": 4,
+        "bar": 0,
+        "dom": 3,
+        "er": 0
+      },
+      "aptidoesAmaldicoadas": [],
+      "aptidaoOpcoes": {},
+      "aptidaoOpcoesRepetidas": {},
+      "dominios": [],
+      "dominioAtivoId": null,
+      "treinamentos": {
+        "sombras:treino_escudo_protetor": 1
+      },
+      "treinamentoAlvos": {},
+      "treinamentoEscolhas": {},
+      "treinoEscolhaFeiticos": {},
+      "votos": {
+        "contratuais": [],
+        "mecanicos": []
+      },
+      "pacto": {
+        "nome": "",
+        "descricao": "",
+        "maleficios": [],
+        "beneficios": []
+      },
+      "modificacoesCorporais": {
+        "descricao": "",
+        "efeitosBase": [],
+        "limite": 0,
+        "enxertos": []
+      },
+      "tita": {
+        "ativo": false,
+        "membros": 5
+      },
+      "caracteristicasAmaldicoadas": [],
+      "caracteristicasAmaldicoadasAlvos": {},
+      "treinosEspeciais": [],
+      "treinoEspecialProgresso": {},
+      "focosBonus": 0,
+      "statOverrides": {},
+      "melhoriasSuperiores": [],
+      "habilidadesLendarias": [],
+      "escolhasAltoNivel": {},
+      "aparencia": null,
+      "preferenciasFicha": null,
+      "addons": [
+        {
+          "id": "vislumbre-celeste",
+          "nome": "Vislumbre Celeste",
+          "versao": "1.0.0",
+          "autor": "Afty",
+          "paraRaw": "afty",
+          "descricao": "A Condição Corporal dos Seis Olhos, com outro nome. Ela é ganha de graça: não gasta vaga de Origem, Talento, Aptidão nem o contador da aba Habilidades, e o card dela fica na aba Habilidades, entre o Funcionamento Básico e os Feitiços. Com os olhos cobertos você reduz todo gasto em PE pela metade do seu Nível de Aptidão em Controle e Leitura, recebe percepção às cegas de 9m mais 4,5m por nível e +1 em Percepção e Feitiçaria por nível. Descobrir os olhos é uma Ação Livre que troca esses benefícios pelos plenos: a redução passa a ser o nível inteiro, a visão vai a 18m mais 9m por nível e o bônus de perícia dobra, ao preço de 1 Ponto de Fadiga no fim de cada turno. Quatro pontos viram um Nível de Exaustão. Por cima dos dois blocos, a Compreensão do Jujutsu dá quatro Níveis de Aptidão ao longo da vida do personagem, um já na criação e mais um nos Níveis 5, 15 e 25. Como Condição Corporal, tudo isso SOMA com Feitiços e com o resto da ficha, em vez de disputar o maior valor.",
+          "permite": [
+            "vislumbreCeleste"
+          ]
+        },
+        {
+          "id": "azamaru",
+          "nome": "Azamaru",
+          "versao": "1.0.0",
+          "paraRaw": "afty",
+          "descricao": "A arma de duas formas. Dividida são duas lâminas de Fineza; reunida vira uma espada colossal que ignora RD, imunidade e resistência, e cria clones ilusórios iguais ao Bônus de Maestria. O painel de combate da Ficha e do Encontro controla as duas formas, os clones e a reserva.",
+          "permite": [
+            "armaTransformavel"
+          ],
+          "acrescenta": {
+            "armas": [
+              {
+                "id": "azamaru",
+                "nome": "Azamaru",
+                "titulo": "O Fim de Todas as Coisas",
+                "classe": "complexa",
+                "categoria": "corpo",
+                "grupo": "espada",
+                "custo": 4,
+                "espacos": 2,
+                "critico": 18,
+                "dano": {
+                  "dado": "1d12 + 1d4",
+                  "tipo": "ct"
+                },
+                "props": {
+                  "fineza": true,
+                  "marcial": true,
+                  "dupla": true,
+                  "apunhaladora": true,
+                  "energica": true,
+                  "mortal": "d12",
+                  "oscilante": true
+                },
+                "unico": true,
+                "equipadoPadrao": true,
+                "faFixa": true,
+                "faPadrao": {
+                  "grau": "especial",
+                  "encantamentos": [],
+                  "habilidadeUnica": ""
+                },
+                "ilusoes": true,
+                "descricao": "O Fim de Todas as Coisas\nSua habilidade especial é Azamaru:\nTécnica Base: –\nCom uma ação bônus, você junta ambas as lâminas, as transformando em uma única espada colossal, a qual não possui as propriedades Pesada nem Especial. Enquanto transformada, a lâmina é imbuída com uma maldição capaz de romper conceitos enquanto abastecida pela sua fúria, fazendo com que seus ataques feitos com ela ignorem imunidade, resistência e RD, além disso, no momento da ativação, você cria clones ilusórios igual ao seu bônus de maestria, recebendo +2 de Defesa para cada um, até um máximo de 8. A cada ataque que errar contra você, um dos clones é dissipado, e caso você seja atingido por um ataque, todos eles são dissipados; efeitos em área que afetem os clones fazem com que eles sejam dissipados automaticamente, mas caso ele afete o usuário, todos só serão dissipados caso ele falhe no TR. A cada clone dissipar, a energia dele é canalizada na lâmina, fazendo com que seu próximo ataque que acertar cause 1 dado de dano adicional para cada 2 de Defesa dissipada, até um máximo de 4 dados; você também pode dissipar clones voluntariamente com uma ação livre. Dividir a espada custa uma ação bônus, e ela não pode ser reunida na mesma rodada em que foi dividida, exigindo um gasto de PE igual ao seu bônus de maestria em todo o uso após o primeiro.",
+                "formas": {
+                  "reunida": {
+                    "props": {
+                      "fineza": true,
+                      "marcial": true,
+                      "ampla": true,
+                      "duas_maos": true,
+                      "energica": true,
+                      "mortal": "d12",
+                      "oscilante": true
+                    }
+                  }
+                },
+                "criacao": {
+                  "classificacao": "tatica",
+                  "deTecnica": true,
+                  "pcBase": 12,
+                  "pcCusto": 8,
+                  "pcEspaco": 1,
+                  "pcTotal": 21,
+                  "pcDano": 6,
+                  "pcCritico": 6,
+                  "pcPropriedades": 9,
+                  "limiteDano": 8,
+                  "limitePropriedades": 10,
+                  "habilidadeForaDoOrcamento": true
+                }
+              }
+            ]
+          }
+        },
+        {
+          "id": "sombras",
+          "nome": "Estilo das Sombras — Reforço Corporal e Pacto",
+          "versao": "1.1.0",
+          "autor": "Templas",
+          "paraRaw": "afty",
+          "descricao": "Addon do Estilo das Sombras. Libera Aura Excessiva, Aura Impenetrável e Casulo de Energia sem pré-requisito (só zera os requisitos). Bancada: Reforço Corporal (+6 PV/nível, +2 RD física, +BT RD Geral com Aura Excessiva) e duas seções de exemplo com campos de valor — 'Resistir a Manobra · nova regra' (troca o valor atual por Fortitude + Aura) e 'RD de Aura · dobrar' (você digita a RD atual e o addon soma de novo = dobra). Pacto e Cura Corporal são só sinalizadores. Três Linhas de Treinamento (Escudo Protetor, Firmeza, Treinamento Corporal) — as condicionais usam os interruptores de sessão 'Escudo erguido' e 'Firmeza · em Postura da Terra', que você liga junto com a condição real. ⚠ Ligue 'Em Combate'. Itens [REFERÊNCIA] não têm canal.",
+          "substitui": {
+            "aptidoes": [
+              {
+                "id": "aura_excessiva",
+                "requisitos": []
+              },
+              {
+                "id": "aura_impenetravel",
+                "requisitos": []
+              },
+              {
+                "id": "casulo_de_energia",
+                "requisitos": []
+              }
+            ]
+          },
+          "estadosCombate": [
+            {
+              "id": "reforco",
+              "label": "Reforço Corporal",
+              "tipo": "bool",
+              "title": "Enquanto ativo: +6 PV por nível; +2 de RD física (o '2 +' de Aura Reforçada); com o interruptor Aura Excessiva ligado e Aura ≥ 3, +BT de RD Geral. O dobrar da RD e a nova Resistir a Manobra têm seções próprias abaixo. ⚠ Precisa de 'Em Combate' ligado."
+            },
+            {
+              "id": "rm_ativo",
+              "label": "Resistir a Manobra · nova regra",
+              "tipo": "bool",
+              "requerEstado": "reforco",
+              "title": "SEÇÃO DE EXEMPLO — Aura ≥ 4 com Aura Impenetrável: 'Resistir a Manobra se torna Fortitude + Aura'. O motor não sabe substituir sozinho, então preencha os dois campos abaixo e o addon troca: ele tira o valor atual e põe (Fortitude + Nível de Aptidão em Aura). O número novo aparece na linha de Manobras da ficha."
+            },
+            {
+              "id": "rm_base",
+              "label": "Resistir a Manobra · valor atual",
+              "tipo": "faixa",
+              "requerEstado": "rm_ativo",
+              "min": 0,
+              "max": 40,
+              "passo": 1,
+              "title": "O valor de Resistir a Manobra que a ficha mostra HOJE (Acrobacia/Atletismo + bônus). O addon subtrai este número."
+            },
+            {
+              "id": "rm_fort",
+              "label": "Resistir a Manobra · Fortitude",
+              "tipo": "faixa",
+              "requerEstado": "rm_ativo",
+              "min": 0,
+              "max": 40,
+              "passo": 1,
+              "title": "O seu bônus total de TR de Fortitude. O addon soma este número + o Nível de Aptidão em Aura no lugar do valor atual."
+            },
+            {
+              "id": "rd_dobrar",
+              "label": "RD de Aura · dobrar",
+              "tipo": "bool",
+              "requerEstado": "reforco",
+              "title": "SEÇÃO DE EXEMPLO — 'a RD de Aura Reforçada e as demais dobram após todos os cálculos'. O motor não dobra um total já fechado, então preencha abaixo o valor de RD de Aura que a ficha mostra e o addon adiciona o mesmo valor de novo (= dobra)."
+            },
+            {
+              "id": "rd_fis_val",
+              "label": "RD de Aura · física atual",
+              "tipo": "faixa",
+              "requerEstado": "rd_dobrar",
+              "min": 0,
+              "max": 80,
+              "passo": 1,
+              "title": "O total de RD física vindo de Aura (Aura Reforçada + Aura Elemental Reforçada + Casulo...) que a ficha mostra. O addon soma este valor de novo."
+            },
+            {
+              "id": "rd_ger_val",
+              "label": "RD de Aura · geral atual",
+              "tipo": "faixa",
+              "requerEstado": "rd_dobrar",
+              "min": 0,
+              "max": 80,
+              "passo": 1,
+              "title": "O total de RD Geral vindo de Aura (Aura Excessiva...) que a ficha mostra. O addon soma este valor de novo."
+            },
+            {
+              "id": "pacto",
+              "label": "Pacto (referência)",
+              "tipo": "bool",
+              "title": "Enquanto NÃO ativo, sua Energia Amaldiçoada máxima é 40% do total. Enquanto ativo, é 140% do total, e você recupera o ganho adicional. ⚠ REFERÊNCIA: o motor não tem canal para porcentagem do PE máximo — ajuste o PE na mão. Este interruptor só marca o estado."
+            },
+            {
+              "id": "cura_ref",
+              "label": "Cura Corporal +2 / +5 (referência)",
+              "tipo": "bool",
+              "title": "REFERÊNCIA — Treinamento Corporal etapas 1 e 3: 'ao recuperar PV (não PVT), +2 PV; 1x por rodada, +5 PV'. O motor não tem canal de bônus de cura recebida. Este interruptor só lembra — some os PV na mão."
+            }
+          ],
+          "funcionamentos": [
+            {
+              "id": "reforco_motor",
+              "nome": "Reforço Corporal (bancada)",
+              "descricao": "Bônus do Reforço Corporal conforme o Nível de Aptidão em Aura. Só vale com 'Em Combate' e o interruptor Reforço Corporal ligados.",
+              "efeitos": [
+                {
+                  "canal": "hp",
+                  "expr": "6 * (nd - 1)",
+                  "quando": "sombras_reforco",
+                  "duracao": "temporaria"
+                },
+                {
+                  "canal": "rdFisico",
+                  "expr": "2 * (au >= 1) + sombras_rd_dobrar * sombras_rd_fis_val",
+                  "quando": "sombras_reforco",
+                  "duracao": "temporaria"
+                },
+                {
+                  "canal": "rdGeral",
+                  "expr": "aura_excessiva * bt * (au >= 3) + sombras_rd_dobrar * sombras_rd_ger_val",
+                  "quando": "sombras_reforco",
+                  "duracao": "temporaria"
+                },
+                {
+                  "canal": "resistirManobra",
+                  "expr": "(sombras_rm_fort + au) - sombras_rm_base",
+                  "quando": "sombras_reforco && sombras_rm_ativo && au >= 4",
+                  "duracao": "temporaria"
+                }
+              ]
+            }
+          ],
+          "acrescenta": {
+            "treinamentos": [
+              {
+                "id": "treino_escudo_protetor",
+                "nome": "Escudo Protetor",
+                "lore": "Você se especificou totalmente na utilização de escudos, seja para proteger você ou aos outros; seu objetivo é sempre visando a proteção.",
+                "gatilhoSessao": {
+                  "id": "escudo_erguido",
+                  "label": "Escudo erguido"
+                },
+                "etapas": [
+                  {
+                    "n": 1,
+                    "focos": 1,
+                    "requisito": null,
+                    "beneficio": "A sua CA aumenta em +1 enquanto estiver empunhando um escudo. [Ligue o interruptor 'Escudo erguido' quando estiver com o escudo.]",
+                    "efeitos": [
+                      {
+                        "canal": "defesa",
+                        "expr": "1",
+                        "gatilhoSessao": "escudo_erguido"
+                      }
+                    ]
+                  },
+                  {
+                    "n": 2,
+                    "focos": 1,
+                    "requisito": null,
+                    "beneficio": "Você recebe +1 de Fortitude.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "fortitude",
+                        "expr": "1"
+                      }
+                    ]
+                  },
+                  {
+                    "n": 3,
+                    "focos": 2,
+                    "requisito": null,
+                    "beneficio": "Seu escudo aumenta a RD física dele em 5. [Interruptor 'Escudo erguido'.]",
+                    "efeitos": [
+                      {
+                        "canal": "rdFisico",
+                        "expr": "5",
+                        "gatilhoSessao": "escudo_erguido"
+                      }
+                    ]
+                  },
+                  {
+                    "n": 4,
+                    "focos": 2,
+                    "requisito": null,
+                    "beneficio": "Você recebe +1 encantamento adicional em seu escudo — aqui vale +2 de RD Geral enquanto o escudo estiver erguido.",
+                    "efeitos": [
+                      {
+                        "canal": "rdGeral",
+                        "expr": "2",
+                        "gatilhoSessao": "escudo_erguido"
+                      }
+                    ]
+                  }
+                ],
+                "completo": {
+                  "beneficio": "Firmeza Absoluta\nSeu escudo passa a conceder RD contra uma quantidade de tipos de dano igual ao seu BT (exceto etéreos). [REFERÊNCIA: RD por tipo à escolha — resolvida na mesa.]",
+                  "efeitos": []
+                }
+              },
+              {
+                "id": "treino_firmeza",
+                "nome": "Firmeza",
+                "lore": "Stark e inabalável para proteger seus aliados, seu corpo é forte o suficiente para se manter assim; ele foca em manter o corpo da maneira mais potente possível — afinal, seu treino o fez resistir a qualquer momento.",
+                "gatilhoSessao": {
+                  "id": "postura_terra_firmeza",
+                  "label": "Firmeza · em Postura da Terra"
+                },
+                "etapas": [
+                  {
+                    "n": 1,
+                    "focos": 1,
+                    "requisito": null,
+                    "beneficio": "Adiciona +2 no PV Temporário da sua Postura da Terra. [Ligue 'Firmeza · em Postura da Terra' junto com a Postura.]",
+                    "efeitos": [
+                      {
+                        "canal": "pvTemporario",
+                        "expr": "2",
+                        "gatilhoSessao": "postura_terra_firmeza"
+                      }
+                    ]
+                  },
+                  {
+                    "n": 2,
+                    "focos": 1,
+                    "requisito": null,
+                    "beneficio": "Enquanto em Postura da Terra, recebe +1 de Fortitude.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusTR",
+                        "alvo": "fortitude",
+                        "expr": "1",
+                        "gatilhoSessao": "postura_terra_firmeza"
+                      }
+                    ]
+                  },
+                  {
+                    "n": 3,
+                    "focos": 1,
+                    "requisito": null,
+                    "beneficio": "Adiciona +3 no PV Temporário da sua Postura da Terra.",
+                    "efeitos": [
+                      {
+                        "canal": "pvTemporario",
+                        "expr": "3",
+                        "gatilhoSessao": "postura_terra_firmeza"
+                      }
+                    ]
+                  },
+                  {
+                    "n": 4,
+                    "focos": 2,
+                    "requisito": null,
+                    "beneficio": "Ao adentrar em Postura da Terra, recebe o bônus de PV Temporário dobrado no seu primeiro uso. [REFERÊNCIA: 'primeiro uso' não é rastreado — role dobrado na mesa.]",
+                    "efeitos": []
+                  }
+                ],
+                "completo": {
+                  "beneficio": "Inabalável\nAo adentrar em postura, seu corpo se mantém extremamente firme. Uma quantidade de vezes igual a 1 + metade do BT, por descanso curto, ao ser forçado a realizar uma TR de Reflexos durante a Postura da Terra, você pode alterar para Fortitude. [REFERÊNCIA: troca limitada por usos — resolvida na mesa.]",
+                  "efeitos": []
+                }
+              },
+              {
+                "id": "treino_corporal",
+                "nome": "Treinamento Corporal",
+                "lore": "Após anos de treino, seu corpo se moldou de forma que aparenta ter um potencial quase ilimitado; receber ataques é algo normal para ele. Sofrendo estes danos e se recuperando rapidamente, com um vigor sobrenatural.",
+                "etapas": [
+                  {
+                    "n": 1,
+                    "focos": 1,
+                    "requisito": null,
+                    "beneficio": "Sempre que for recuperar vida (PV Temporário não conta), você se recupera +2 PV adicionais. [REFERÊNCIA — sinalizado pelo interruptor 'Cura Corporal +2 / +5' na bancada; some os PV na mão.]",
+                    "efeitos": []
+                  },
+                  {
+                    "n": 2,
+                    "focos": 1,
+                    "requisito": null,
+                    "beneficio": "Nada.",
+                    "efeitos": []
+                  },
+                  {
+                    "n": 3,
+                    "focos": 1,
+                    "requisito": null,
+                    "beneficio": "1x por rodada, caso recupere seus PV por qualquer meio, você recupera +5 PV adicionais. [REFERÊNCIA — sinalizado pelo interruptor 'Cura Corporal +2 / +5' na bancada; some os PV na mão.]",
+                    "efeitos": []
+                  },
+                  {
+                    "n": 4,
+                    "focos": 2,
+                    "requisito": null,
+                    "beneficio": "Passa a adicionar 1 + metade do BT em rolagens no portão da morte. [REFERÊNCIA: o motor não tem canal de portão da morte — some na mesa.]",
+                    "efeitos": []
+                  }
+                ],
+                "completo": {
+                  "beneficio": "Vigor Sobrenatural\nSeu corpo se desenvolve de maneira mais otimizada e natural, capaz de usar seu potencial melhorado para resistir a golpes. Recebe +1 PV por nível, além de adicionar seu maior modificador de atributo físico como bônus de vida máxima adicional.",
+                  "efeitos": [
+                    {
+                      "canal": "hp",
+                      "expr": "(nd - 1) + max(mod_forca, mod_destreza, mod_constituicao)"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "narratorNotes": "",
+      "combatState": {
+        "isActive": false,
+        "hpCurrent": 0,
+        "peCurrent": 0,
+        "almaCurrent": 100,
+        "activeConditions": [],
+        "customCounters": [],
+        "combatLog": []
+      },
+      "id": "teste-abas-tipica",
+      "aptidoesEscolhidas": [
+        "dominio_simples"
+      ]
+    },
+    "vazia": {
+      "system": "afty",
+      "rulesVersion": "player",
+      "name": "Vazia (Teste Abas)",
+      "portraitUrl": null,
+      "portraitFocus": {
+        "x": 50,
+        "y": 50
+      },
+      "core": {
+        "tipo": "combatente",
+        "patamar": "comum",
+        "nd": 1,
+        "tamanho": "medio",
+        "tecnicaAttr": "inteligencia",
+        "tecnicaDescricao": "",
+        "tecnicaEfeitos": [],
+        "funcionamentosAdicionais": [],
+        "origem": {
+          "id": "inato"
+        }
+      },
+      "alma": {
+        "atual": 100,
+        "max": 100
+      },
+      "qntPE": "normal",
+      "attrMethod": "pontos",
+      "attrLimite": {
+        "forca": 20,
+        "destreza": 20,
+        "constituicao": 20,
+        "inteligencia": 20,
+        "sabedoria": 20,
+        "presenca": 20
+      },
+      "attributes": {
+        "forca": 10,
+        "destreza": 10,
+        "constituicao": 10,
+        "inteligencia": 10,
+        "sabedoria": 10,
+        "presenca": 10
+      },
+      "attrNivel": {
+        "forca": 0,
+        "destreza": 0,
+        "constituicao": 0,
+        "inteligencia": 0,
+        "sabedoria": 0,
+        "presenca": 0
+      },
+      "pericias": {},
+      "periciasOrdem": null,
+      "periciasPersonalizadas": [],
+      "periciaOficio": "",
+      "periciaOficios": {},
+      "periciasOficiosExtras": [],
+      "periciaAtributoManual": {},
+      "periciasBonus": 0,
+      "resistenciasProf": {},
+      "trDaClasse": [],
+      "trSegundo": null,
+      "trAtributoManual": {},
+      "ataquesProf": {},
+      "ataqueFineza": false,
+      "ataqueBasicoId": "corpo",
+      "ataqueAtributoManual": {},
+      "armasDedicadas": [],
+      "defesasDano": {},
+      "catarse": {
+        "saldo": 0,
+        "compras": []
+      },
+      "carteira": {
+        "entradas": [],
+        "gastos": []
+      },
+      "espinho": {
+        "almas": 0,
+        "outros": 0,
+        "compras": {},
+        "equipamentos": []
+      },
+      "tecnicasCombate": {
+        "armas": [],
+        "atributo": "inteligencia"
+      },
+      "talentosConfig": {
+        "tal_mestre_das_armas": {
+          "modo": "armas",
+          "armas": [],
+          "grupo": null
+        },
+        "tal_tempestade_de_ideias": {
+          "pericia": null,
+          "ferramenta": "",
+          "vantagemPericia": null
+        },
+        "tal_artesao_amaldicoado": {
+          "ferramenta": null
+        }
+      },
+      "combate": {
+        "ativo": false,
+        "empolgacao": 1,
+        "insistenciaUsada": false,
+        "manobraAjuste": false,
+        "manobraDesarme": false,
+        "manobraEsquiva": false,
+        "manobraTrabalhoDePes": false,
+        "manobraFinalizadora": null,
+        "brutalidade": false,
+        "brutalidadePE": 0,
+        "brutalidadePilha": 0,
+        "ataqueInconsequente": false,
+        "impactoMisto": false,
+        "resistirPE": 0,
+        "furiaVinganca": false,
+        "imprudenciaMotivadora": false,
+        "machucado": false,
+        "abates": 0,
+        "armasAbsolutas": null,
+        "auraElemental": true,
+        "concentrarAura": [],
+        "golpeComAura": null,
+        "canalizarEmGolpe": false,
+        "canalizacaoMaxima": false
+      },
+      "equipamentos": {
+        "itens": []
+      },
+      "armasCustom": [],
+      "forjas": [],
+      "especializacoes": [],
+      "feiticos": [],
+      "reducoesCustoFeitico": {
+        "dominancia": null,
+        "manipulacao": []
+      },
+      "estilosSombra": [],
+      "estiloFuncionamento": {
+        "texto": "",
+        "durabilidadeTrilha": null
+      },
+      "habilidadesGerais": [],
+      "focosLivres": 0,
+      "periciaAtributo": "inteligencia",
+      "habilidades": [],
+      "escolhasHabilidade": {},
+      "especializacaoConfig": {},
+      "escolhasTalento": {},
+      "talentos": [],
+      "invocacoes": [],
+      "origemContadores": {},
+      "hordas": [],
+      "quimeras": [],
+      "fundamentosPerdidos": [],
+      "aptidoes": {
+        "au": 0,
+        "cl": 0,
+        "bar": 0,
+        "dom": 0,
+        "er": 0
+      },
+      "aptidoesAmaldicoadas": [],
+      "aptidaoOpcoes": {},
+      "aptidaoOpcoesRepetidas": {},
+      "dominios": [],
+      "dominioAtivoId": null,
+      "treinamentos": {},
+      "treinamentoAlvos": {},
+      "treinamentoEscolhas": {},
+      "treinoEscolhaFeiticos": {},
+      "votos": {
+        "contratuais": [],
+        "mecanicos": []
+      },
+      "pacto": {
+        "nome": "",
+        "descricao": "",
+        "maleficios": [],
+        "beneficios": []
+      },
+      "modificacoesCorporais": {
+        "descricao": "",
+        "efeitosBase": [],
+        "limite": 0,
+        "enxertos": []
+      },
+      "tita": {
+        "ativo": false,
+        "membros": 5
+      },
+      "caracteristicasAmaldicoadas": [],
+      "caracteristicasAmaldicoadasAlvos": {},
+      "treinosEspeciais": [],
+      "treinoEspecialProgresso": {},
+      "focosBonus": 0,
+      "statOverrides": {},
+      "melhoriasSuperiores": [],
+      "habilidadesLendarias": [],
+      "escolhasAltoNivel": {},
+      "aparencia": null,
+      "preferenciasFicha": null,
+      "addons": [],
+      "narratorNotes": "",
+      "combatState": {
+        "isActive": false,
+        "hpCurrent": 0,
+        "peCurrent": 0,
+        "almaCurrent": 100,
+        "activeConditions": [],
+        "customCounters": [],
+        "combatLog": []
+      },
+      "id": "teste-abas-vazia"
+    },
+    "criatura": {
+      "system": "afty",
+      "rulesVersion": "afty",
+      "name": "Criatura (Teste Abas)",
+      "portraitUrl": null,
+      "portraitFocus": {
+        "x": 50,
+        "y": 50
+      },
+      "core": {
+        "tipo": "combatente",
+        "patamar": "desafio",
+        "nd": 14,
+        "tamanho": "medio",
+        "tecnicaAttr": "inteligencia",
+        "tecnicaDescricao": "",
+        "tecnicaEfeitos": [],
+        "funcionamentosAdicionais": [],
+        "origem": {
+          "id": "inato"
+        }
+      },
+      "alma": {
+        "atual": 100,
+        "max": 100
+      },
+      "qntPE": "normal",
+      "attrMethod": "fixos",
+      "attrLimite": {
+        "forca": 20,
+        "destreza": 20,
+        "constituicao": 20,
+        "inteligencia": 20,
+        "sabedoria": 20,
+        "presenca": 20
+      },
+      "attributes": {
+        "forca": 18,
+        "destreza": 12,
+        "constituicao": 16,
+        "inteligencia": 10,
+        "sabedoria": 10,
+        "presenca": 10
+      },
+      "attrNivel": {
+        "forca": 0,
+        "destreza": 0,
+        "constituicao": 0,
+        "inteligencia": 0,
+        "sabedoria": 0,
+        "presenca": 0
+      },
+      "pericias": {},
+      "periciasOrdem": null,
+      "periciasPersonalizadas": [],
+      "periciaOficio": "",
+      "periciaOficios": {},
+      "periciasOficiosExtras": [],
+      "periciaAtributoManual": {},
+      "periciasBonus": 0,
+      "resistenciasProf": {},
+      "trDaClasse": [],
+      "trSegundo": null,
+      "trAtributoManual": {},
+      "ataquesProf": {},
+      "ataqueFineza": false,
+      "ataqueBasicoId": "corpo",
+      "ataqueAtributoManual": {},
+      "armasDedicadas": [],
+      "defesasDano": {},
+      "catarse": {
+        "saldo": 0,
+        "compras": []
+      },
+      "carteira": {
+        "entradas": [],
+        "gastos": []
+      },
+      "espinho": {
+        "almas": 0,
+        "outros": 0,
+        "compras": {},
+        "equipamentos": []
+      },
+      "tecnicasCombate": {
+        "armas": [],
+        "atributo": "inteligencia"
+      },
+      "talentosConfig": {
+        "tal_mestre_das_armas": {
+          "modo": "armas",
+          "armas": [],
+          "grupo": null
+        },
+        "tal_tempestade_de_ideias": {
+          "pericia": null,
+          "ferramenta": "",
+          "vantagemPericia": null
+        },
+        "tal_artesao_amaldicoado": {
+          "ferramenta": null
+        }
+      },
+      "combate": {
+        "ativo": false,
+        "empolgacao": 1,
+        "insistenciaUsada": false,
+        "manobraAjuste": false,
+        "manobraDesarme": false,
+        "manobraEsquiva": false,
+        "manobraTrabalhoDePes": false,
+        "manobraFinalizadora": null,
+        "brutalidade": false,
+        "brutalidadePE": 0,
+        "brutalidadePilha": 0,
+        "ataqueInconsequente": false,
+        "impactoMisto": false,
+        "resistirPE": 0,
+        "furiaVinganca": false,
+        "imprudenciaMotivadora": false,
+        "machucado": false,
+        "abates": 0,
+        "armasAbsolutas": null,
+        "auraElemental": true,
+        "concentrarAura": [],
+        "golpeComAura": null,
+        "canalizarEmGolpe": false,
+        "canalizacaoMaxima": false
+      },
+      "equipamentos": {
+        "itens": [
+          {
+            "uid": "abas-cria-katana",
+            "tipo": "arma",
+            "refId": "arm_katana",
+            "qtd": 1,
+            "equipado": true
+          }
+        ]
+      },
+      "armasCustom": [],
+      "forjas": [],
+      "especializacoes": [
+        {
+          "id": "combatente",
+          "nivel": 14
+        }
+      ],
+      "feiticos": [],
+      "reducoesCustoFeitico": {
+        "dominancia": null,
+        "manipulacao": []
+      },
+      "estilosSombra": [],
+      "estiloFuncionamento": {
+        "texto": "",
+        "durabilidadeTrilha": null
+      },
+      "habilidadesGerais": [],
+      "focosLivres": 0,
+      "periciaAtributo": "inteligencia",
+      "habilidades": [
+        "cmb_golpe_especial"
+      ],
+      "escolhasHabilidade": {},
+      "especializacaoConfig": {},
+      "escolhasTalento": {},
+      "talentos": [],
+      "invocacoes": [],
+      "origemContadores": {},
+      "hordas": [],
+      "quimeras": [],
+      "fundamentosPerdidos": [],
+      "aptidoes": {
+        "au": 0,
+        "cl": 0,
+        "bar": 0,
+        "dom": 0,
+        "er": 0
+      },
+      "aptidoesAmaldicoadas": [],
+      "aptidaoOpcoes": {},
+      "aptidaoOpcoesRepetidas": {},
+      "dominios": [],
+      "dominioAtivoId": null,
+      "treinamentos": {},
+      "treinamentoAlvos": {},
+      "treinamentoEscolhas": {},
+      "treinoEscolhaFeiticos": {},
+      "votos": {
+        "contratuais": [],
+        "mecanicos": []
+      },
+      "pacto": {
+        "nome": "",
+        "descricao": "",
+        "maleficios": [],
+        "beneficios": []
+      },
+      "modificacoesCorporais": {
+        "descricao": "",
+        "efeitosBase": [],
+        "limite": 0,
+        "enxertos": []
+      },
+      "tita": {
+        "ativo": false,
+        "membros": 5
+      },
+      "caracteristicasAmaldicoadas": [],
+      "caracteristicasAmaldicoadasAlvos": {},
+      "treinosEspeciais": [],
+      "treinoEspecialProgresso": {},
+      "focosBonus": 0,
+      "statOverrides": {},
+      "melhoriasSuperiores": [],
+      "habilidadesLendarias": [],
+      "escolhasAltoNivel": {},
+      "aparencia": null,
+      "preferenciasFicha": null,
+      "addons": [],
+      "narratorNotes": "",
+      "combatState": {
+        "isActive": false,
+        "hpCurrent": 0,
+        "peCurrent": 0,
+        "almaCurrent": 100,
+        "activeConditions": [],
+        "customCounters": [],
+        "combatLog": []
+      },
+      "id": "teste-abas-criatura"
+    }
+  },
+  "sessoes": {
+    "teste-abas-conjurador": {
+      "bloodfeastRegras": [],
+      "energiaEmVida": 0,
+      "bloodfeast": {
+        "cargas": 0,
+        "hardblood": 0,
+        "bleed": 0,
+        "sanidade": 0,
+        "sangue": 0,
+        "reutilizado": 0,
+        "agua": false,
+        "ativos": {},
+        "ultima": null
+      },
+      "hpAtual": 165,
+      "peAtual": 121,
+      "pvTempFontes": {},
+      "peTempFontes": {},
+      "almaAtual": 165,
+      "almaMaxVisto": 165,
+      "rodada": 0,
+      "propriedadesArmas": {
+        "turno": 0,
+        "porArma": {},
+        "oscilante": null,
+        "ultimoAtaque": null
+      },
+      "ataqueBasicoId": null,
+      "guardaGolpes": 0,
+      "guardaEncerrada": false,
+      "exaustao": 0,
+      "exaustaoTecnica": null,
+      "combate": {
+        "ativo": true
+      },
+      "condicoes": [],
+      "buffs": [],
+      "invocacoes": {},
+      "tita": {
+        "cabeca": null,
+        "membros": []
+      },
+      "preparoAtual": null,
+      "preparoTemp": 0,
+      "golpeEspecial": {},
+      "reservaInvocacao": {
+        "usada": false,
+        "modo": null,
+        "restantes": 0
+      },
+      "quimeraDaCena": null,
+      "lideresDeHordaDissolvida": [],
+      "concedido": [],
+      "adaptacoes": {},
+      "dharma": {
+        "entradas": [],
+        "alvo": "",
+        "fenomeno": "",
+        "existencia": ""
+      },
+      "treinosAtivos": {},
+      "usos": {},
+      "recargas": {},
+      "ultimoFeiticoDanoId": null,
+      "rituais": {},
+      "ritualAtual": null,
+      "favoritos": [
+        "feitico-passivo:inexistente"
+      ],
+      "log": [],
+      "atualizadoEm": null
+    },
+    "teste-abas-mesa": {
+      "bloodfeastRegras": [
+        "ultima_gota",
+        "bloodfeast",
+        "hardblood",
+        "robustez"
+      ],
+      "energiaEmVida": 3,
+      "bloodfeast": {
+        "cargas": 0,
+        "hardblood": 0,
+        "bleed": 0,
+        "sanidade": 0,
+        "sangue": 0,
+        "reutilizado": 0,
+        "agua": false,
+        "ativos": {},
+        "ultima": null
+      },
+      "hpAtual": 451,
+      "peAtual": 60,
+      "pvTempFontes": {},
+      "peTempFontes": {},
+      "almaAtual": 175,
+      "almaMaxVisto": 175,
+      "rodada": 0,
+      "propriedadesArmas": {
+        "turno": 0,
+        "porArma": {},
+        "oscilante": null,
+        "ultimoAtaque": null
+      },
+      "ataqueBasicoId": null,
+      "guardaGolpes": 0,
+      "guardaEncerrada": false,
+      "exaustao": 0,
+      "exaustaoTecnica": null,
+      "combate": {
+        "ativo": true
+      },
+      "condicoes": [],
+      "buffs": [],
+      "invocacoes": {},
+      "tita": {
+        "cabeca": null,
+        "membros": []
+      },
+      "preparoAtual": null,
+      "preparoTemp": 0,
+      "golpeEspecial": {},
+      "reservaInvocacao": {
+        "usada": false,
+        "modo": null,
+        "restantes": 0
+      },
+      "quimeraDaCena": null,
+      "lideresDeHordaDissolvida": [],
+      "concedido": [],
+      "adaptacoes": {},
+      "dharma": {
+        "entradas": [],
+        "alvo": "",
+        "fenomeno": "",
+        "existencia": ""
+      },
+      "treinosAtivos": {},
+      "usos": {},
+      "recargas": {},
+      "ultimoFeiticoDanoId": null,
+      "rituais": {},
+      "ritualAtual": null,
+      "favoritos": [
+        "especializacao:cmb_golpe_especial",
+        "especializacao:cmb_assumir_postura",
+        "especializacao:cmb_ataque_concentrado",
+        "especializacao:cmb_repertorio_do_especialista",
+        "especializacao:cmb_artes_do_combate",
+        "equipamento:abas-azamaru",
+        "chave:que-nao-existe"
+      ],
+      "log": [],
+      "atualizadoEm": null
+    },
+    "teste-abas-tipica": {
+      "bloodfeastRegras": [],
+      "energiaEmVida": 0,
+      "bloodfeast": {
+        "cargas": 0,
+        "hardblood": 0,
+        "bleed": 0,
+        "sanidade": 0,
+        "sangue": 0,
+        "reutilizado": 0,
+        "agua": false,
+        "ativos": {},
+        "ultima": null
+      },
+      "hpAtual": 155,
+      "peAtual": 100,
+      "pvTempFontes": {},
+      "peTempFontes": {},
+      "almaAtual": 155,
+      "almaMaxVisto": 155,
+      "rodada": 0,
+      "propriedadesArmas": {
+        "turno": 0,
+        "porArma": {},
+        "oscilante": null,
+        "ultimoAtaque": null
+      },
+      "ataqueBasicoId": null,
+      "guardaGolpes": 0,
+      "guardaEncerrada": false,
+      "exaustao": 0,
+      "exaustaoTecnica": null,
+      "combate": {
+        "ativo": true
+      },
+      "condicoes": [],
+      "buffs": [],
+      "invocacoes": {},
+      "tita": {
+        "cabeca": null,
+        "membros": []
+      },
+      "preparoAtual": null,
+      "preparoTemp": 0,
+      "golpeEspecial": {},
+      "reservaInvocacao": {
+        "usada": false,
+        "modo": null,
+        "restantes": 0
+      },
+      "quimeraDaCena": null,
+      "lideresDeHordaDissolvida": [],
+      "concedido": [],
+      "adaptacoes": {},
+      "dharma": {
+        "entradas": [],
+        "alvo": "",
+        "fenomeno": "",
+        "existencia": ""
+      },
+      "treinosAtivos": {},
+      "usos": {},
+      "recargas": {},
+      "ultimoFeiticoDanoId": null,
+      "rituais": {},
+      "ritualAtual": null,
+      "favoritos": [
+        "especializacao:cmb_golpe_especial",
+        "especializacao:cmb_ataque_concentrado",
+        "equipamento:abas-tip-azamaru"
+      ],
+      "log": [],
+      "atualizadoEm": null
+    },
+    "teste-abas-vazia": {
+      "bloodfeastRegras": [],
+      "energiaEmVida": 0,
+      "bloodfeast": {
+        "cargas": 0,
+        "hardblood": 0,
+        "bleed": 0,
+        "sanidade": 0,
+        "sangue": 0,
+        "reutilizado": 0,
+        "agua": false,
+        "ativos": {},
+        "ultima": null
+      },
+      "hpAtual": 0,
+      "peAtual": 60,
+      "pvTempFontes": {},
+      "peTempFontes": {},
+      "almaAtual": 0,
+      "almaMaxVisto": 0,
+      "rodada": 0,
+      "propriedadesArmas": {
+        "turno": 0,
+        "porArma": {},
+        "oscilante": null,
+        "ultimoAtaque": null
+      },
+      "ataqueBasicoId": null,
+      "guardaGolpes": 0,
+      "guardaEncerrada": false,
+      "exaustao": 0,
+      "exaustaoTecnica": null,
+      "combate": {
+        "ativo": false,
+        "invencivelSobOSol": false,
+        "invencivelRodadas": 0,
+        "invencivelPendenteExaustao": false,
+        "talismaApice": null,
+        "talismaApiceRodadas": 0
+      },
+      "condicoes": [],
+      "buffs": [],
+      "invocacoes": {},
+      "tita": {
+        "cabeca": null,
+        "membros": []
+      },
+      "preparoAtual": null,
+      "preparoTemp": 0,
+      "golpeEspecial": {},
+      "reservaInvocacao": {
+        "usada": false,
+        "modo": null,
+        "restantes": 0
+      },
+      "quimeraDaCena": null,
+      "lideresDeHordaDissolvida": [],
+      "concedido": [],
+      "adaptacoes": {},
+      "dharma": {
+        "entradas": [],
+        "alvo": "",
+        "fenomeno": "",
+        "existencia": ""
+      },
+      "treinosAtivos": {},
+      "usos": {},
+      "recargas": {},
+      "ultimoFeiticoDanoId": null,
+      "rituais": {},
+      "ritualAtual": null,
+      "favoritos": [],
+      "log": [],
+      "atualizadoEm": null
+    },
+    "teste-abas-criatura": {
+      "bloodfeastRegras": [],
+      "energiaEmVida": 0,
+      "bloodfeast": {
+        "cargas": 0,
+        "hardblood": 0,
+        "bleed": 0,
+        "sanidade": 0,
+        "sangue": 0,
+        "reutilizado": 0,
+        "agua": false,
+        "ativos": {},
+        "ultima": null
+      },
+      "hpAtual": 264,
+      "peAtual": 60,
+      "pvTempFontes": {},
+      "peTempFontes": {},
+      "almaAtual": 100,
+      "almaMaxVisto": 100,
+      "rodada": 0,
+      "propriedadesArmas": {
+        "turno": 0,
+        "porArma": {},
+        "oscilante": null,
+        "ultimoAtaque": null
+      },
+      "ataqueBasicoId": null,
+      "guardaGolpes": 0,
+      "guardaEncerrada": false,
+      "exaustao": 0,
+      "exaustaoTecnica": null,
+      "combate": {
+        "ativo": true
+      },
+      "condicoes": [],
+      "buffs": [],
+      "invocacoes": {},
+      "tita": {
+        "cabeca": null,
+        "membros": []
+      },
+      "preparoAtual": null,
+      "preparoTemp": 0,
+      "golpeEspecial": {},
+      "reservaInvocacao": {
+        "usada": false,
+        "modo": null,
+        "restantes": 0
+      },
+      "quimeraDaCena": null,
+      "lideresDeHordaDissolvida": [],
+      "concedido": [],
+      "adaptacoes": {},
+      "dharma": {
+        "entradas": [],
+        "alvo": "",
+        "fenomeno": "",
+        "existencia": ""
+      },
+      "treinosAtivos": {},
+      "usos": {},
+      "recargas": {},
+      "ultimoFeiticoDanoId": null,
+      "rituais": {},
+      "ritualAtual": null,
+      "favoritos": [],
+      "log": [],
+      "atualizadoEm": null
+    },
+    "teste-codex-ajustes-raio-negro": {
+      "bloodfeastRegras": [],
+      "energiaEmVida": 0,
+      "bloodfeast": {
+        "cargas": 0,
+        "hardblood": 0,
+        "bleed": 0,
+        "sanidade": 0,
+        "sangue": 0,
+        "reutilizado": 0,
+        "agua": false,
+        "ativos": {},
+        "ultima": null
+      },
+      "hpAtual": 166,
+      "peAtual": 80,
+      "pvTempFontes": {},
+      "peTempFontes": {},
+      "almaAtual": 166,
+      "almaMaxVisto": 166,
+      "rodada": 0,
+      "propriedadesArmas": {
+        "turno": 0,
+        "porArma": {},
+        "oscilante": null,
+        "ultimoAtaque": null
+      },
+      "ataqueBasicoId": null,
+      "guardaGolpes": 0,
+      "guardaEncerrada": false,
+      "exaustao": 0,
+      "exaustaoTecnica": null,
+      "combate": {
+        "ativo": true
+      },
+      "condicoes": [],
+      "buffs": [],
+      "invocacoes": {},
+      "tita": {
+        "cabeca": null,
+        "membros": []
+      },
+      "preparoAtual": null,
+      "preparoTemp": 0,
+      "golpeEspecial": {},
+      "reservaInvocacao": {
+        "usada": false,
+        "modo": null,
+        "restantes": 0
+      },
+      "quimeraDaCena": null,
+      "lideresDeHordaDissolvida": [],
+      "concedido": [],
+      "adaptacoes": {},
+      "dharma": {
+        "entradas": [],
+        "alvo": "",
+        "fenomeno": "",
+        "existencia": ""
+      },
+      "treinosAtivos": {},
+      "usos": {},
+      "recargas": {},
+      "ultimoFeiticoDanoId": null,
+      "rituais": {},
+      "ritualAtual": null,
+      "favoritos": [
+        "especializacao:cmb_ataque_concentrado",
+        "equipamento:abas-katana-afiada",
+        "chave:que-nao-existe",
+        "especializacao:cmb_assumir_postura"
+      ],
+      "log": [],
+      "atualizadoEm": null
+    }
+  }
+}

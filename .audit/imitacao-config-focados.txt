@@ -1,0 +1,16 @@
+
+> grimorio-tracker@0.0.0 asserts
+> node asserts/rodar.mjs imitacao fang combatente restringido requisitos-ficha ordem-modulos
+
+ok   t-atributo-fang.mjs      41
+ok   t-combatente-automacoes.mjs 73
+ok   t-combatente-revisao.mjs 80
+ok   t-fang-especializacoes.mjs 106
+ok   t-gemeos-restringido.mjs 31
+ok   t-imitacao-configuracoes.mjs 44
+ok   t-ordem-modulos.mjs      36
+ok   t-requisitos-ficha.mjs   33
+ok   t-restringido-variacao.mjs 58
+ok   t-treinos-restringido.mjs 24
+
+10 arquivos, 526 asserts, todos passaram.

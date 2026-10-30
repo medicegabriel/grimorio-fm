@@ -1,0 +1,230 @@
+{
+  "geradoEm": "2026-10-20T21:39:15.553Z",
+  "base": "http://127.0.0.1:5320",
+  "etapas": [
+    {
+      "nome": "B Concedido pelo Mestre (mestre, /Player)",
+      "checks": [
+        {
+          "id": "B1 o acesso existe no trilho da Fonte Externa, com a contagem",
+          "ok": true,
+          "dados": "Concedido pelo Mestre3"
+        },
+        {
+          "id": "B2 lista as três concessões existentes",
+          "ok": true
+        },
+        {
+          "id": "B2 a que perdeu o addon vem marcada",
+          "ok": true
+        },
+        {
+          "id": "B3 remover tira só a pega escolhida",
+          "ok": true
+        },
+        {
+          "id": "B4 remover a que perdeu o addon limpa o aviso",
+          "ok": true
+        },
+        {
+          "id": "B5 a busca por família acha a entrada",
+          "ok": true
+        },
+        {
+          "id": "B5 conceder grava na sessão",
+          "ok": true,
+          "dados": [
+            {
+              "uid": "cmvh5bic42",
+              "familia": "talentos",
+              "id": "tal_adepto_de_combate",
+              "alvo": null,
+              "escolhas": [],
+              "em": 1792528722580
+            },
+            {
+              "uid": "cmvh7hif33",
+              "familia": "habilidades",
+              "id": "lut_defesa_marcial",
+              "alvo": null,
+              "escolhas": [],
+              "em": 1792532361855
+            }
+          ]
+        },
+        {
+          "id": "B5 o aviso diz o que foi concedido",
+          "ok": true
+        },
+        {
+          "id": "B5 a linha vira Concedido e perde o botão (não repetível)",
+          "ok": true
+        },
+        {
+          "id": "B5 entra em Concedidos Agora",
+          "ok": true
+        },
+        {
+          "id": "B5 a Defesa sobe de 18 para 21 com a Defesa Marcial concedida",
+          "ok": true,
+          "dados": {
+            "antes": "18",
+            "depois": "21"
+          }
+        },
+        {
+          "id": "B6 a ficha não muda (é estado de sessão)",
+          "ok": true
+        },
+        {
+          "id": "B7 família repetível aceita a mesma duas vezes, com pegas distintas",
+          "ok": true,
+          "dados": [
+            {
+              "uid": "cmvh7hjy96",
+              "familia": "gerais",
+              "id": "ger_especializacao",
+              "alvo": null,
+              "escolhas": [],
+              "em": 1792532363841
+            },
+            {
+              "uid": "cmvh7hk7w9",
+              "familia": "gerais",
+              "id": "ger_especializacao",
+              "alvo": null,
+              "escolhas": [],
+              "em": 1792532364188
+            }
+          ]
+        },
+        {
+          "id": "B7 remover uma das duas deixa a outra",
+          "ok": true
+        },
+        {
+          "id": "B8 conceder Talento",
+          "ok": true
+        },
+        {
+          "id": "B9 depois de recarregar as concessões continuam",
+          "ok": true,
+          "dados": [
+            {
+              "uid": "cmvh5bic42",
+              "familia": "talentos",
+              "id": "tal_adepto_de_combate",
+              "alvo": null,
+              "escolhas": [],
+              "em": 1792528722580
+            },
+            {
+              "uid": "cmvh7hif33",
+              "familia": "habilidades",
+              "id": "lut_defesa_marcial",
+              "alvo": null,
+              "escolhas": [],
+              "em": 1792532361855
+            },
+            {
+              "uid": "cmvh7hk7w9",
+              "familia": "gerais",
+              "id": "ger_especializacao",
+              "alvo": null,
+              "escolhas": [],
+              "em": 1792532364188
+            },
+            {
+              "uid": "cmvh7hmslc",
+              "familia": "talentos",
+              "id": "tal_adepto_de_medicina",
+              "alvo": null,
+              "escolhas": [],
+              "em": 1792532367525
+            }
+          ]
+        },
+        {
+          "id": "B9 os números do G2 e da clássica são iguais",
+          "ok": true,
+          "dados": {
+            "g2": {
+              "defesa": "21",
+              "cd": "23",
+              "rd-geral": "0",
+              "movimento": "9m",
+              "iniciativa": "+2",
+              "atencao": "16",
+              "maestria": "+4"
+            },
+            "classica": {
+              "defesa": "21",
+              "cd": "23",
+              "rd-geral": "0",
+              "movimento": "9m",
+              "iniciativa": "+2",
+              "atencao": "16",
+              "maestria": "+4"
+            }
+          }
+        },
+        {
+          "id": "B9 a Defesa concedida sobrevive ao recarregar",
+          "ok": true,
+          "dados": {
+            "g2": "21"
+          }
+        },
+        {
+          "id": "B9 remover devolve a Defesa a 18",
+          "ok": true,
+          "dados": {
+            "defesa": "18",
+            "cd": "23",
+            "rd-geral": "0",
+            "movimento": "9m",
+            "iniciativa": "+2",
+            "atencao": "16",
+            "maestria": "+4"
+          }
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "B Sem a concessão (ima) e /Afty (cria)",
+      "checks": [
+        {
+          "id": "B10 sem o addon e sem concessão o acesso não existe",
+          "ok": true
+        },
+        {
+          "id": "B11 /Afty: o acesso existe com o addon da concessão",
+          "ok": true
+        },
+        {
+          "id": "B11 /Afty: conceder grava na sessão",
+          "ok": true,
+          "dados": [
+            {
+              "uid": "cmvh7i2a03",
+              "familia": "habilidades",
+              "id": "lut_defesa_marcial",
+              "alvo": null,
+              "escolhas": [],
+              "em": 1792532387592
+            }
+          ]
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "B Concedido pelo Mestre (mestre, /Player): 19/19",
+    "B Sem a concessão (ima) e /Afty (cria): 3/3"
+  ]
+}

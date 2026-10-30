@@ -1,0 +1,298 @@
+{
+  "system": "afty",
+  "rulesVersion": "player",
+  "name": "Mente Analítica: player",
+  "portraitUrl": null,
+  "portraitFocus": {
+    "x": 50,
+    "y": 50
+  },
+  "core": {
+    "tipo": "combatente",
+    "patamar": "comum",
+    "nd": 8,
+    "tamanho": "medio",
+    "tecnicaAttr": "inteligencia",
+    "tecnicaDescricao": "",
+    "tecnicaEfeitos": [],
+    "funcionamentosAdicionais": [],
+    "origem": {
+      "id": "inato"
+    }
+  },
+  "alma": {
+    "atual": 100,
+    "max": 100
+  },
+  "qntPE": "normal",
+  "attrMethod": "fixos",
+  "attrLimite": {
+    "forca": 20,
+    "destreza": 20,
+    "constituicao": 20,
+    "inteligencia": 20,
+    "sabedoria": 20,
+    "presenca": 20
+  },
+  "attributes": {
+    "forca": 12,
+    "destreza": 14,
+    "constituicao": 12,
+    "inteligencia": 18,
+    "sabedoria": 10,
+    "presenca": 10
+  },
+  "attrNivel": {
+    "forca": 0,
+    "destreza": 0,
+    "constituicao": 0,
+    "inteligencia": 0,
+    "sabedoria": 0,
+    "presenca": 0
+  },
+  "pericias": {},
+  "periciasOrdem": null,
+  "periciasPersonalizadas": [],
+  "periciaOficio": "",
+  "periciaOficios": {},
+  "periciasOficiosExtras": [],
+  "periciaAtributoManual": {},
+  "periciasBonus": 0,
+  "resistenciasProf": {},
+  "trDaClasse": [],
+  "trSegundo": null,
+  "trAtributoManual": {},
+  "ataquesProf": {},
+  "ataqueFineza": false,
+  "ataqueBasicoId": "corpo",
+  "ataqueAtributoManual": {},
+  "armasDedicadas": [],
+  "defesasDano": {},
+  "catarse": {
+    "saldo": 0,
+    "compras": []
+  },
+  "carteira": {
+    "entradas": [],
+    "gastos": []
+  },
+  "espinho": {
+    "almas": 0,
+    "outros": 0,
+    "compras": {},
+    "equipamentos": []
+  },
+  "tecnicasCombate": {
+    "armas": [],
+    "atributo": "inteligencia"
+  },
+  "talentosConfig": {
+    "tal_mestre_das_armas": {
+      "modo": "armas",
+      "armas": [],
+      "grupo": null
+    },
+    "tal_tempestade_de_ideias": {
+      "pericia": null,
+      "ferramenta": "",
+      "vantagemPericia": null
+    },
+    "tal_artesao_amaldicoado": {
+      "ferramenta": null
+    }
+  },
+  "combate": {
+    "ativo": false,
+    "empolgacao": 1,
+    "insistenciaUsada": false,
+    "manobraAjuste": false,
+    "manobraDesarme": false,
+    "manobraEsquiva": false,
+    "manobraTrabalhoDePes": false,
+    "manobraFinalizadora": null,
+    "brutalidade": false,
+    "brutalidadePE": 0,
+    "brutalidadePilha": 0,
+    "ataqueInconsequente": false,
+    "impactoMisto": false,
+    "resistirPE": 0,
+    "furiaVinganca": false,
+    "imprudenciaMotivadora": false,
+    "machucado": false,
+    "abates": 0,
+    "armasAbsolutas": null,
+    "auraElemental": true,
+    "concentrarAura": [],
+    "golpeComAura": null,
+    "canalizarEmGolpe": false,
+    "canalizacaoMaxima": false
+  },
+  "equipamentos": {
+    "itens": []
+  },
+  "armasCustom": [],
+  "forjas": [],
+  "especializacoes": [
+    {
+      "id": "combatente",
+      "nivel": 8
+    }
+  ],
+  "feiticos": [],
+  "reducoesCustoFeitico": {
+    "dominancia": null,
+    "manipulacao": []
+  },
+  "estilosSombra": [],
+  "estiloFuncionamento": {
+    "texto": "",
+    "durabilidadeTrilha": null
+  },
+  "habilidadesGerais": [],
+  "focosLivres": 0,
+  "periciaAtributo": "inteligencia",
+  "habilidades": [
+    "cmb_mente_oculta"
+  ],
+  "escolhasHabilidade": {},
+  "especializacaoConfig": {},
+  "escolhasTalento": {
+    "talentos-de-estilo:tal_inovar_estilo": [
+      "mente-analitica:mente_analitica"
+    ]
+  },
+  "talentos": [
+    "talentos-de-estilo:tal_inovar_estilo"
+  ],
+  "invocacoes": [],
+  "origemContadores": {},
+  "hordas": [],
+  "quimeras": [],
+  "fundamentosPerdidos": [],
+  "aptidoes": {
+    "au": 0,
+    "cl": 0,
+    "bar": 0,
+    "dom": 0,
+    "er": 0
+  },
+  "aptidoesAmaldicoadas": [],
+  "aptidaoOpcoes": {},
+  "aptidaoOpcoesRepetidas": {},
+  "dominios": [],
+  "dominioAtivoId": null,
+  "treinamentos": {},
+  "treinamentoAlvos": {},
+  "treinamentoEscolhas": {},
+  "treinoEscolhaFeiticos": {},
+  "votos": {
+    "contratuais": [],
+    "mecanicos": []
+  },
+  "pacto": {
+    "nome": "",
+    "descricao": "",
+    "maleficios": [],
+    "beneficios": []
+  },
+  "modificacoesCorporais": {
+    "descricao": "",
+    "efeitosBase": [],
+    "limite": 0,
+    "enxertos": []
+  },
+  "tita": {
+    "ativo": false,
+    "membros": 5
+  },
+  "caracteristicasAmaldicoadas": [],
+  "caracteristicasAmaldicoadasAlvos": {},
+  "treinosEspeciais": [],
+  "treinoEspecialProgresso": {},
+  "focosBonus": 0,
+  "statOverrides": {},
+  "melhoriasSuperiores": [],
+  "habilidadesLendarias": [],
+  "escolhasAltoNivel": {},
+  "aparencia": null,
+  "preferenciasFicha": null,
+  "addons": [
+    {
+      "id": "talentos-de-estilo",
+      "nome": "Inovar Estilo e Estilo Próprio",
+      "versao": "1.0.0",
+      "autor": "Afty",
+      "paraRaw": "afty",
+      "descricao": "Talentos Inovar Estilo e Estilo Próprio. As versões criadas como addons aparecem nas escolhas de cada Talento.",
+      "acrescenta": {
+        "talentos": [
+          {
+            "id": "tal_inovar_estilo",
+            "nome": "Inovar Estilo",
+            "grupo": "geral",
+            "descricao": "Permite ao jogador modificar uma Habilidade de Especialização que possui, por exemplo, mudando seu atributo de escalonamento.",
+            "requisitos": [],
+            "escolha": {
+              "abertaPorPadrao": true,
+              "aceitaOpcoesAddon": true,
+              "id": "inovacoes_de_estilo",
+              "label": "Inovação",
+              "repetivel": true,
+              "mensagemVazia": "Nenhuma inovação disponível",
+              "opcoes": []
+            }
+          },
+          {
+            "id": "tal_estilo_proprio",
+            "nome": "Estilo Próprio",
+            "grupo": "geral",
+            "descricao": "Permite ao jogador criar sua própria Habilidade de Especialização.",
+            "requisitos": [],
+            "escolha": {
+              "abertaPorPadrao": true,
+              "aceitaOpcoesAddon": true,
+              "id": "estilos_proprios",
+              "label": "Habilidade",
+              "repetivel": true,
+              "mensagemVazia": "Nenhum estilo disponível",
+              "opcoes": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "mente-analitica",
+      "nome": "Mente Analítica",
+      "versao": "1.0.0",
+      "autor": "Afty",
+      "paraRaw": "afty",
+      "descricao": "Inovar Estilo: Mente Oculta passa a escalar com Inteligência ao invés de Sabedoria.",
+      "acrescenta": {
+        "opcoesTalento": [
+          {
+            "id": "mente_analitica",
+            "nome": "Mente Analítica",
+            "descricao": "Mente Oculta passa a escalar com Inteligência ao invés de Sabedoria.",
+            "talentoId": "talentos-de-estilo:tal_inovar_estilo",
+            "requerHabilidade": "cmb_mente_oculta",
+            "trocaAtributo": {
+              "de": "sabedoria",
+              "para": "inteligencia"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "narratorNotes": "",
+  "combatState": {
+    "isActive": false,
+    "hpCurrent": 0,
+    "peCurrent": 0,
+    "almaCurrent": 100,
+    "activeConditions": [],
+    "customCounters": [],
+    "combatLog": []
+  }
+}

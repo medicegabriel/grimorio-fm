@@ -1,0 +1,12 @@
+{
+  "id": "atributo-fang",
+  "nome": "Atributo Fang",
+  "versao": "1.0.0",
+  "paraRaw": "afty",
+  "descricao": "Altera o Método de Rolagem de Atributos: a Inteligência pode chegar à Base de 19 ao invés de 18. Com o Método de Rolagem, o Limite de Inteligência sobe sempre em 1, até mesmo acima de 30 (Limite 31, ou 33 com Aperfeiçoamento de Atributo).",
+  "resumo": "A Inteligência chega a Base 19 na rolagem, e o limite dela sobe 1",
+  "categoria": "regras",
+  "atributos": {
+    "inteligencia": { "nome": "Atributo Fang", "rolagem": { "baseMax": 19, "limite": 1 } }
+  }
+}

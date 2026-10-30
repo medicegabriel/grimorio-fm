@@ -5,6 +5,8 @@
   "autor": "Afty",
   "paraRaw": "afty",
   "descricao": "Origem Aberração Humanizada. Possui limite natural 30 em todos os atributos, recebe as características Bônus em Atributo, Herança Maldita e Físico Amaldiçoado do Feto Amaldiçoado Híbrido, e Natureza Amaldiçoada da Maldição. Pode escolher Aptidões de Maldição e também mantém os Níveis e as Aptidões de Energia Reversa. Também libera os Talentos de Origem do Feto Amaldiçoado Híbrido, respeitando os requisitos de nível.",
+  "resumo": "Origem com limite 30 em todos os atributos e traços do Feto Amaldiçoado Híbrido e da Maldição",
+  "categoria": "origens",
   "acrescenta": {
     "origens": [
       {

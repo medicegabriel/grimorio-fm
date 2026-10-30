@@ -1,0 +1,64 @@
+{
+  "em": "2026-10-22T18:43:00.072Z",
+  "arquivosFonte": 331,
+  "distDiario": 14,
+  "alterados": [],
+  "divergenciasEntregaClaude": [],
+  "servido": [
+    {
+      "path": "index.html",
+      "status": 200,
+      "same": true
+    },
+    {
+      "path": "assets/AftyFichaClassica-DkjYYGL1.js",
+      "status": 200,
+      "same": true
+    },
+    {
+      "path": "assets/AftyFichaG2-h0h_neW9.js",
+      "status": 200,
+      "same": true
+    },
+    {
+      "path": "assets/AftyFichaG2-jbSyXDmw.css",
+      "status": 200,
+      "same": true
+    },
+    {
+      "path": "assets/EspinhoCard-Dgnx62yy.js",
+      "status": 200,
+      "same": true
+    },
+    {
+      "path": "assets/EspinhoCard-gNqI8gcc.css",
+      "status": 200,
+      "same": true
+    },
+    {
+      "path": "assets/index-BM2UcGm1.css",
+      "status": 200,
+      "same": true
+    },
+    {
+      "path": "assets/index-t0pcW7w1.js",
+      "status": 200,
+      "same": true
+    },
+    {
+      "path": "assets/lanterna-coletora-BtjSWi8x.webp",
+      "status": 200,
+      "same": true
+    },
+    {
+      "path": "assets/maximize-2-N0T_CmMJ.js",
+      "status": 200,
+      "same": true
+    },
+    {
+      "path": "assets/x-DN_yUZc7.js",
+      "status": 200,
+      "same": true
+    }
+  ]
+}

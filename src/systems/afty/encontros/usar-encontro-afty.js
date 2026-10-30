@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useCallback } from "react";
 
 import { deriveAfty } from "../afty-derive";
-import { iniciaTurnoArmas, encerraTurnoArmas } from "../afty-propriedades-armas";
+import { encerraTurnoArmas } from "../afty-propriedades-armas";
+import { iniciaTurnoFicha, encerraTurnoFicha } from "../ficha/ficha-sessao";
+import { calcularRecebidos } from "../ficha/ficha-recebidos";
 import { aplicarAddons, unirAddons, epocaAddons } from "../afty-addons";
 import {
   aparaSessao, proximaRodada, descansar, sessaoEmBranco, iniciaCombate, entradaDaGuarda,
@@ -83,10 +85,14 @@ const derivarCombatente = (c) => {
        comentário lá: aplicar por combatente deixava o mundo com o addon do
        ÚLTIMO derivado depois do laço, e qualquer leitura de catálogo no render
        (um `getHabilidade` no painel) via um mundo arbitrário. */
-    return deriveAfty(
-      { ...c.ficha, combate: c.sessao.combate, buffsSessao: c.sessao.buffs },
-      opcoesDoCombatente(c.sessao),
-    );
+    /* ⚠ A FONTE EXTERNA PELA MESMA INTERPRETAÇÃO DA FICHA (G2-I1, 2026-10-19). Um registro `rec` em `sessao.buffs` só conta se for traduzido
+       (ficha-recebidos.js), e o derive do Encontro era outro consumidor que o ignoraria. Sem registro nenhum é exatamente o derive de antes, com as
+       opções do combatente e SEM aplicar addons por combatente (a função de derive é esta, e não a da camada dos Efeitos, que os aplicaria). */
+    return calcularRecebidos(
+      c.ficha,
+      c.sessao,
+      (f, s) => deriveAfty({ ...f, combate: s.combate, buffsSessao: s.buffs }, opcoesDoCombatente(s)),
+    ).derived;
   } catch {
     // Ficha de uma versão antiga que o derive não engole. O encontro continua
     // rodando com aquele combatente sem números, em vez de a tela toda cair.
@@ -294,7 +300,7 @@ const HANDLERS = {
     const { proximoId, rodada, novaRodada } = proximoTurno(s);
     const entradas = [];
     let combatentes = s.combatentes.map((c) => c.id === s.ativoId && c.sessao
-      ? { ...c, sessao: encerraTurnoArmas(c.sessao) } : c);
+      ? { ...c, sessao: encerraTurnoArmas(encerraTurnoFicha(c.sessao, derivados[c.id] ?? null)) } : c);
 
     if (novaRodada) {
       // ⚠ A duração desce para TODOS na virada, e não no turno de cada um. É o
@@ -321,7 +327,7 @@ const HANDLERS = {
 
     if (proximoId) {
       combatentes = combatentes.map((c) => c.id === proximoId && c.sessao
-        ? { ...c, sessao: iniciaTurnoArmas(c.sessao) } : c);
+        ? { ...c, sessao: iniciaTurnoFicha(c.sessao, derivados[c.id] ?? null) } : c);
       const alvo = combatentes.find((c) => c.id === proximoId);
       entradas.push(entradaDeLog({
         rodada, tipo: LOG_TIPOS.TURNO, combatenteId: proximoId,

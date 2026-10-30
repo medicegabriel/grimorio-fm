@@ -4,6 +4,9 @@
   "versao": "1.0.0",
   "autor": "Afty",
   "paraRaw": "afty",
+  "descricao": "Treino de caça a feiticeiros, em 4 etapas: +2 de vigor, +2 em Percepção e +3 em Acrobacia (pede mestre em Intuição, treinado em Percepção e nível 13). O Completo dá um Talento extra.",
+  "resumo": "Treino de caçada: +2 de vigor, +2 em Percepção, +3 em Acrobacia e um Talento extra",
+  "categoria": "treinos",
   "acrescenta": {
     "treinamentos": [
       {

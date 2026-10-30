@@ -4,7 +4,9 @@
   "versao": "1.0.0",
   "autor": "Afty",
   "paraRaw": "afty",
-  "descricao": "Refletir Imagem e Duplicata Perfeita.",
+  "descricao": "Dois Feitiços: Refletir Imagem e Duplicata Perfeita.",
+  "resumo": "Dois Feitiços: Refletir Imagem e Duplicata Perfeita",
+  "categoria": "tecnicas",
   "feiticos": [
     {
       "id": "refletir_imagem",

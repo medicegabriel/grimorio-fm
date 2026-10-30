@@ -5,6 +5,8 @@
   "autor": "Templas",
   "paraRaw": "afty",
   "descricao": "Linha de Treinamento pro Controlador, NÃO repetível: vale de uma vez para TODAS as invocações do seu roster (o texto do livro diz 'suas invocações', no plural). Usa só `efeitosInvocacao` SEM `invocacaoAlvo`/`acaoAlvo` nenhum, que é o caso mais simples e mais antigo do motor: sem alvo, o efeito chega em toda invocação que o Controlador tiver, presente ou futura. Zero modificação de código, só este JSON.",
+  "resumo": "Treino do Controlador que vale para todas as invocações do roster",
+  "categoria": "treinos",
   "acrescenta": {
     "treinamentos": [
       {

@@ -3,6 +3,7 @@ import { COMBATE_ESTADOS, estadoVisivel } from "../afty-combate";
 import { expandeHerdadas } from "../afty-habilidades";
 import { sinalDe, numeroBr } from "../ui/formato";
 import { OUTROS } from "./ficha-estados";
+import { calcularRecebidos } from "./ficha-recebidos";
 
 /**
  * ============================================================
@@ -139,7 +140,11 @@ export function linhasDeEstado(derived) {
      o interruptor ligado, e a tela não tinha o interruptor. */
   const opcoesDeHabilidade = Object.values(derived.habilidades?.escolhas?.mapa ?? {}).flat();
   const opcoesDeTalento = Object.values(derived.talentos?.escolhas?.mapa ?? {}).flat();
-  const opcoesEscolhidas = [...opcoesDeHabilidade, ...opcoesDeTalento];
+  /* E AS DA ORIGEM (2026-10-12, Zodíaco da H Corp): o interruptor do Addon pede
+     o animal escolhido no card da Origem, e sem esta lista ele sumia mesmo com
+     o animal escolhido. */
+  const opcoesDeOrigem = Object.values(derived.origem?.mapa ?? {}).flat();
+  const opcoesEscolhidas = [...opcoesDeHabilidade, ...opcoesDeTalento, ...opcoesDeOrigem];
   /* Quem tem a opção só pelo Talento mora em Outros, com os outros estados de
      Talento, e não na sub-aba de uma Especialização que a ficha não tem. */
   const soPeloTalento = (e) => !!e.requerEscolha
@@ -184,6 +189,17 @@ export function linhasDeEstado(derived) {
   ].map((e) => ({ ...e, opcoesVisiveis: opcoesDe(e) }));
 }
 /**
+ * O derive de COMPARAÇÃO: a ficha com um combate e uma lista de buffs, pelas opções da Ficha, com a Fonte Externa (`rec`) já traduzida (`ficha-recebidos.js`,
+ * G2-I1). O `derived` que a tela mostra passou por essa tradução, e a diferença entre ele e um derive que a ignora seria creditada, calada, ao estado que
+ * estivesse sendo medido (o mesmo defeito das listas de opção de 2026-08-28: "Defesa +7" em toda linha ligada). Sem registro nenhum é o `deriveAfty` de sempre.
+ */
+const derivarParaComparar = (ficha, combate, buffs, opcoesDerive) => calcularRecebidos(
+  ficha,
+  { combate, buffs: buffs ?? [] },
+  (f, s) => deriveAfty({ ...f, combate: s.combate, buffsSessao: s.buffs }, opcoesDerive),
+).derived;
+
+/**
  * O delta de cada estado LIGADO, como `{ [estadoId]: [chip, ...] }`.
  *
  * ⚠ AS `opcoes` SÃO AS DA FICHA INTEIRAS, e o `buffs` é o único campo daqui que
@@ -205,12 +221,22 @@ export function linhasDeEstado(derived) {
  * @param atual     a ficha derivada AGORA, para não derivar duas vezes o mesmo
  */
 export function deltaDosEstados(ficha, combate, opcoes = {}, atual = null) {
+  const it = deltaDosEstadosEmPassos(ficha, combate, opcoes, atual);
+  let r = it.next();
+  while (!r.done) r = it.next();
+  return r.value;
+}
+
+/**
+ * A MESMA conta de `deltaDosEstados`, como GERADOR: devolve o controle depois de cada derive (um por estado ligado), e quem o roda decide quando continuar
+ * (`usar-delta-dos-estados.js` o fatia em pedaços curtos para o clique não esperar). O resultado final é idêntico ao de rodar tudo de uma vez.
+ */
+export function* deltaDosEstadosEmPassos(ficha, combate, opcoes = {}, atual = null) {
   const out = {};
   if (!combate?.ativo) return out;
 
   const { buffs, ...opcoesDerive } = opcoes;
-  const base = { ...ficha, combate, buffsSessao: buffs ?? [] };
-  const comTudo = atual ?? deriveAfty(base, opcoesDerive);
+  const comTudo = atual ?? derivarParaComparar(ficha, combate, buffs, opcoesDerive);
 
   /* ⚠ A MESMA LISTA QUE A ABA DESENHA, e não o catálogo cru: só entra na conta
      estado que a ficha POSSUI e que está VISÍVEL. Cada linha aqui custa um
@@ -228,12 +254,10 @@ export function deltaDosEstados(ficha, combate, opcoes = {}, atual = null) {
   const ligados = todos.filter((e) => estaLigado(e, combate[e.id])
     && estadoVisivel(e, combate));
   for (const e of ligados) {
-    const semEle = deriveAfty(
-      { ...base, combate: { ...combate, [e.id]: padraoDe(e) } },
-      opcoesDerive,
-    );
+    const semEle = derivarParaComparar(ficha, { ...combate, [e.id]: padraoDe(e) }, buffs, opcoesDerive);
     const chips = comparar(comTudo, semEle);
     if (chips.length) out[e.id] = chips;
+    yield out;
   }
   return out;
 }
@@ -371,7 +395,7 @@ export function saldoDoAgora(ficha, combate, opcoes = {}, atual = null) {
   const { buffs, ...opcoesDerive } = opcoes;
   const temBancada = Object.values(combate ?? {}).some((v) => (Array.isArray(v) ? v.length > 0 : !!v));
   if (!temBancada && !(buffs?.length) && !(opcoesDerive.condicoes?.length)) return [];
-  const comTudo = atual ?? deriveAfty({ ...ficha, combate, buffsSessao: buffs ?? [] }, opcoesDerive);
+  const comTudo = atual ?? derivarParaComparar(ficha, combate, buffs, opcoesDerive);
   const semNada = deriveAfty({ ...ficha, combate: {}, buffsSessao: [] }, { ...opcoesDerive, condicoes: [] });
   return compararSaldo(comTudo, semNada);
 }

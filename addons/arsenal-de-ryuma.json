@@ -3,7 +3,9 @@
   "nome": "Arsenal de Ryuma",
   "versao": "1.0.0",
   "paraRaw": "afty",
-  "descricao": "Equipamentos de Ryuma.",
+  "descricao": "Seis armas (Murasama, Dragon Bone em versão Odachi, Totsuka-No-Tsurugi, Esmaga Mata, uma espada colossal e Presa do Desgarrado), o escudo Yagen Tōshirō e o Uniforme do Lobo Saltitante.",
+  "resumo": "Seis armas, um escudo e um uniforme do Ryuma",
+  "categoria": "equipamentos",
   "acrescenta": {
     "armas": [
       {

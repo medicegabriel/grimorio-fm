@@ -1,0 +1,22 @@
+import fs from 'node:fs';
+import {coletarInventario} from '../scripts/revisao-automacao/inventario.mjs';
+import {construirProposta,aplicarProposta} from '../scripts/revisao-automacao/reconciliar.mjs';
+const root='docs/revisao-automacao/';const ler=n=>JSON.parse(fs.readFileSync(root+n,'utf8'));const gravar=(n,v)=>fs.writeFileSync(root+n,JSON.stringify(v,null,2).replaceAll(String.fromCharCode(0x2014),'\\u2014')+'\n');
+const inventario=ler('inventario.json'),escopo=ler('escopo.json'),campanha=ler('campanha.json');const vivoReal=await coletarInventario();
+const alvo=k=>/lut_corpo_supremo|res_libertacao_do_destino|res_dadiva_indulgente_a_feiticaria|res_ataque_extra|resAtaqueExtra|precisaoForcada|precisao_forcada|contraFeiticaria|contra_feiticaria|cmb_critico_aperfeicoado|adrenalinaAtletismo|lut_supremo_|res_destino_/.test(k);
+const agregado=k=>['afty-combate.js::COMBATE_ESTADOS::@catalogo','afty-combate.js::COMBATE_VARS::@catalogo','afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::@catalogo','afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::@catalogo','afty-habilidades.js::AFTY_HABILIDADES::@catalogo','afty-habilidades.js::OPCAO_ESCOLHA_NOME::@catalogo','afty-efeitos.js::ESCOLHA_EFEITOS::@catalogo','afty-efeitos.js::HABILIDADE_EFEITOS::@catalogo'].includes(k);
+const itens=new Map(inventario.itens.filter(i=>i.situacao!=='REMOVIDO').map(i=>[i.chave,i]));for(const i of vivoReal.itens)if(alvo(i.chave)||agregado(i.chave))itens.set(i.chave,i);
+const vivo={...vivoReal,itens:[...itens.values()].sort((a,b)=>a.chave.localeCompare(b.chave))};
+const proposta=construirProposta({vivo,inventario,escopo});
+const arquivo='.audit/fang-proposta-restrita.json';fs.writeFileSync(arquivo,JSON.stringify(proposta,null,2));
+if(process.argv.includes('--aplicar')){
+ for(const ad of proposta.adicionados)proposta.decisoes.adicoes[ad.chave]=ad.proprietarioSugerido;
+ proposta.decisoes.justificativaAtualizacao='Pedido do autor de 2026-10-13: nível e escolhas de habilidades roubadas, Crítico Aperfeiçoado completo sem pré-requisito, RD condicional, Resistência e escolhas de tipo, distribuição permanente de Adrenalina. Transições pela rodada existente, sem painel de Restringido. Reconciliação restrita aos itens destas mudanças e seus agregados. Preservadas identidades e estados de alterações anteriores fora deste escopo. Não aprova regras nem registra addons de outras tarefas.';
+ fs.writeFileSync(arquivo,JSON.stringify(proposta,null,2));const registros=campanha.lotes.map(l=>root+l.lote+'/registro.json').filter(p=>fs.existsSync(p)).map(p=>JSON.parse(fs.readFileSync(p,'utf8')));
+ const r=aplicarProposta({proposta,vivo,inventario,escopo,campanha,registros});
+ const fontes=ler('fontes.json');fontes.itens??={};for(const ad of proposta.adicionados)fontes.itens[ad.chave]??={proprietario:ad.proprietarioSugerido,estado:'NÃO LOCALIZADA',fontes:[],nota:'Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra.'};
+ const rec=ler('reconciliacao.json');(rec.historico??=[]).push({data:new Date().toISOString(),proposta:arquivo,assinatura:proposta.assinatura,justificativa:proposta.decisoes.justificativaAtualizacao,...r.resumo});
+ for(const [p,v] of [['inventario.json',r.inventario],['escopo.json',r.escopo],['campanha.json',r.campanha],['fontes.json',fontes],['reconciliacao.json',rec]])gravar(p,v);
+ for(const reg of r.registros)if(r.resumo.lotesInvalidados.includes(reg.lote))gravar(reg.lote+'/registro.json',reg);
+ console.log(JSON.stringify(r.resumo));
+}else console.log(JSON.stringify({adicoes:proposta.adicionados.length,alterados:proposta.alterados.length,removidos:proposta.removidos.length,erros:vivo.erros}));

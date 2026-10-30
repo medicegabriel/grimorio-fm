@@ -1,0 +1,477 @@
+{
+  "geradoEm": "2026-10-20T16:30:47.740Z",
+  "base": "http://127.0.0.1:5321",
+  "etapas": [
+    {
+      "nome": "suporte monta e exporta",
+      "checks": [
+        {
+          "id": "o suporte vê o prazo de cada benefício antes de exportar",
+          "ok": true,
+          "dados": "Para o AliadoDefesa +3 · Por Um AtaqueTR de Reflexos +2 · 1 RodadaPrazoPor BenefícioCondiçõesUm AlvoCusto do Emissor: 2 PE"
+        },
+        {
+          "id": "o arquivo guarda o prazo de cada benefício (Defesa por um ataque, TR uma rodada)",
+          "ok": true,
+          "dados": [
+            {
+              "canal": "defesa",
+              "valor": 3,
+              "duracao": {
+                "tipo": "proximo",
+                "texto": "Por Um Ataque"
+              }
+            },
+            {
+              "canal": "bonusTR",
+              "valor": 2,
+              "alvo": "reflexos",
+              "duracao": {
+                "tipo": "rodadas",
+                "rodadas": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "e não há mais a condição de texto Uma Rodada",
+          "ok": true,
+          "dados": [
+            "Um Alvo"
+          ]
+        },
+        {
+          "id": "o Feitiço só de um ataque segue com o prazo da opção",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "aliado, largura 1024",
+      "checks": [
+        {
+          "id": "o aliado vê o prazo de cada benefício antes de ativar",
+          "ok": true,
+          "dados": "Para VocêDefesa +3 · Por Um AtaqueTR de Reflexos +2 · 1 RodadaPrazoPor BenefícioCondiçõesUm AlvoCusto do Emissor: 2 PE"
+        },
+        {
+          "id": "ligada: Defesa +3 e Reflexos +2",
+          "ok": true,
+          "dados": {
+            "defesa": 20,
+            "reflexos": 9
+          }
+        },
+        {
+          "id": "a Linha do Tempo do G2 tem a barra da parte de uma rodada",
+          "ok": true,
+          "dados": "Guarda e FirmezaTR de Reflexos +2Última Rodada"
+        },
+        {
+          "id": "o detalhe diz o prazo de cada parte, e quem encerra cada uma",
+          "ok": true,
+          "dados": "Termina1 Rodada · TR de Reflexos +2A Ficha Conta as Rodadas e Encerra SozinhaPor Um Ataque · Defesa +3A Ficha Não Conta Este Prazo: Encerre Quando AcabarEncerrar Parte"
+        },
+        {
+          "id": "o cartão mostra a parte que acaba antes",
+          "ok": true,
+          "dados": "1 RodadaGuarda e Firmeza"
+        },
+        {
+          "id": "ordem 1: a virada tira só o TR, e a Defesa de um ataque fica",
+          "ok": true,
+          "dados": {
+            "defesa": 20,
+            "reflexos": 7,
+            "canais": [
+              "defesa"
+            ]
+          }
+        },
+        {
+          "id": "ordem 1: mais duas viradas sem ataque, a Defesa continua",
+          "ok": true,
+          "dados": [
+            "defesa"
+          ]
+        },
+        {
+          "id": "o efeito só de um ataque também continua (PA-I2)",
+          "ok": true
+        },
+        {
+          "id": "a recarga conserva o que sobrou de cada instância",
+          "ok": true
+        },
+        {
+          "id": "a clássica dá os mesmos números",
+          "ok": true
+        },
+        {
+          "id": "a linha da clássica diz o que sobrou e o prazo dele",
+          "ok": true,
+          "dados": "Guarda e FirmezaDe Yuki (Teste Pacotes)Defesa +3 · Por Um Ataque∞"
+        },
+        {
+          "id": "o Encerrar do Feitiço inteiro tira a instância",
+          "ok": true
+        },
+        {
+          "id": "Reativar é uma ativação nova, com as duas partes e os prazos de novo",
+          "ok": true,
+          "dados": {
+            "id": "r7yu6jgcb",
+            "rec": true,
+            "tipoFonte": "feitico",
+            "origemId": null,
+            "origemNome": "Guarda e Firmeza",
+            "aplicadoPor": "Yuki (Teste Pacotes)",
+            "beneficios": [
+              {
+                "canal": "defesa",
+                "valor": 3,
+                "duracao": {
+                  "tipo": "proximo",
+                  "texto": "Por Um Ataque"
+                }
+              },
+              {
+                "canal": "bonusTR",
+                "valor": 2,
+                "alvo": "reflexos",
+                "duracao": {
+                  "tipo": "rodadas",
+                  "rodadas": 1
+                },
+                "rodadas": 1
+              }
+            ],
+            "rodadas": null,
+            "somaPresumida": false,
+            "terminaNoDescanso": true,
+            "pacote": {
+              "chave": "emi_mvgwgr0kcd58c85b0c60:pac_mvgwgqla27df320d6df5",
+              "id": "pac_mvgwgqla27df320d6df5",
+              "nome": "Pacote PA-I3",
+              "revisao": 1,
+              "opcaoId": "op_mvgwgqm7ef63d8a9a437",
+              "emissorId": "emi_mvgwgr0kcd58c85b0c60",
+              "emissorNome": "Yuki (Teste Pacotes)",
+              "familia": "feitico",
+              "calculo": "automatico",
+              "duracao": {
+                "tipo": "proximo",
+                "texto": "Por Um Ataque"
+              },
+              "condicoes": [
+                "Um Alvo"
+              ],
+              "custoEmissor": "2 PE"
+            }
+          }
+        },
+        {
+          "id": "de novo: Defesa +3 e Reflexos +2",
+          "ok": true
+        },
+        {
+          "id": "ordem 2: Encerrar Parte tira só a Defesa, e o TR segue com o prazo dele",
+          "ok": true,
+          "dados": {
+            "defesa": 17,
+            "reflexos": 9,
+            "inst": {
+              "id": "r7yu6jgcb",
+              "rec": true,
+              "tipoFonte": "feitico",
+              "origemId": null,
+              "origemNome": "Guarda e Firmeza",
+              "aplicadoPor": "Yuki (Teste Pacotes)",
+              "beneficios": [
+                {
+                  "canal": "bonusTR",
+                  "valor": 2,
+                  "alvo": "reflexos",
+                  "duracao": {
+                    "tipo": "rodadas",
+                    "rodadas": 1
+                  },
+                  "rodadas": 1
+                }
+              ],
+              "rodadas": null,
+              "somaPresumida": false,
+              "terminaNoDescanso": true,
+              "pacote": {
+                "chave": "emi_mvgwgr0kcd58c85b0c60:pac_mvgwgqla27df320d6df5",
+                "id": "pac_mvgwgqla27df320d6df5",
+                "nome": "Pacote PA-I3",
+                "revisao": 1,
+                "opcaoId": "op_mvgwgqm7ef63d8a9a437",
+                "emissorId": "emi_mvgwgr0kcd58c85b0c60",
+                "emissorNome": "Yuki (Teste Pacotes)",
+                "familia": "feitico",
+                "calculo": "automatico",
+                "duracao": {
+                  "tipo": "proximo",
+                  "texto": "Por Um Ataque"
+                },
+                "condicoes": [
+                  "Um Alvo"
+                ],
+                "custoEmissor": "2 PE"
+              }
+            }
+          }
+        },
+        {
+          "id": "ordem 2: a clássica mostra Reflexos +2 e a Defesa da base",
+          "ok": true
+        },
+        {
+          "id": "ordem 2: a virada na clássica tira o TR e a instância",
+          "ok": true,
+          "dados": [
+            "Precisão de Um Ataque"
+          ]
+        },
+        {
+          "id": "o descanso tira a instância e conserva a biblioteca",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "observado": {
+        "base": {
+          "defesa": 17,
+          "reflexos": 7
+        }
+      }
+    },
+    {
+      "nome": "aliado, largura 1440",
+      "checks": [
+        {
+          "id": "o aliado vê o prazo de cada benefício antes de ativar",
+          "ok": true,
+          "dados": "Para VocêDefesa +3 · Por Um AtaqueTR de Reflexos +2 · 1 RodadaPrazoPor BenefícioCondiçõesUm AlvoCusto do Emissor: 2 PE"
+        },
+        {
+          "id": "ligada: Defesa +3 e Reflexos +2",
+          "ok": true,
+          "dados": {
+            "defesa": 20,
+            "reflexos": 9
+          }
+        },
+        {
+          "id": "a Linha do Tempo do G2 tem a barra da parte de uma rodada",
+          "ok": true,
+          "dados": "Guarda e FirmezaTR de Reflexos +2Última Rodada"
+        },
+        {
+          "id": "o detalhe diz o prazo de cada parte, e quem encerra cada uma",
+          "ok": true,
+          "dados": "Termina1 Rodada · TR de Reflexos +2A Ficha Conta as Rodadas e Encerra SozinhaPor Um Ataque · Defesa +3A Ficha Não Conta Este Prazo: Encerre Quando AcabarEncerrar Parte"
+        },
+        {
+          "id": "o cartão mostra a parte que acaba antes",
+          "ok": true,
+          "dados": "1 RodadaGuarda e Firmeza"
+        },
+        {
+          "id": "ordem 1: a virada tira só o TR, e a Defesa de um ataque fica",
+          "ok": true,
+          "dados": {
+            "defesa": 20,
+            "reflexos": 7,
+            "canais": [
+              "defesa"
+            ]
+          }
+        },
+        {
+          "id": "ordem 1: mais duas viradas sem ataque, a Defesa continua",
+          "ok": true,
+          "dados": [
+            "defesa"
+          ]
+        },
+        {
+          "id": "o efeito só de um ataque também continua (PA-I2)",
+          "ok": true
+        },
+        {
+          "id": "a recarga conserva o que sobrou de cada instância",
+          "ok": true
+        },
+        {
+          "id": "a clássica dá os mesmos números",
+          "ok": true
+        },
+        {
+          "id": "a linha da clássica diz o que sobrou e o prazo dele",
+          "ok": true,
+          "dados": "Guarda e FirmezaDe Yuki (Teste Pacotes)Defesa +3 · Por Um Ataque∞"
+        },
+        {
+          "id": "o Encerrar do Feitiço inteiro tira a instância",
+          "ok": true
+        },
+        {
+          "id": "Reativar é uma ativação nova, com as duas partes e os prazos de novo",
+          "ok": true,
+          "dados": {
+            "id": "rt86hz6b7",
+            "rec": true,
+            "tipoFonte": "feitico",
+            "origemId": null,
+            "origemNome": "Guarda e Firmeza",
+            "aplicadoPor": "Yuki (Teste Pacotes)",
+            "beneficios": [
+              {
+                "canal": "defesa",
+                "valor": 3,
+                "duracao": {
+                  "tipo": "proximo",
+                  "texto": "Por Um Ataque"
+                }
+              },
+              {
+                "canal": "bonusTR",
+                "valor": 2,
+                "alvo": "reflexos",
+                "duracao": {
+                  "tipo": "rodadas",
+                  "rodadas": 1
+                },
+                "rodadas": 1
+              }
+            ],
+            "rodadas": null,
+            "somaPresumida": false,
+            "terminaNoDescanso": true,
+            "pacote": {
+              "chave": "emi_mvgwgr0kcd58c85b0c60:pac_mvgwgqla27df320d6df5",
+              "id": "pac_mvgwgqla27df320d6df5",
+              "nome": "Pacote PA-I3",
+              "revisao": 1,
+              "opcaoId": "op_mvgwgqm7ef63d8a9a437",
+              "emissorId": "emi_mvgwgr0kcd58c85b0c60",
+              "emissorNome": "Yuki (Teste Pacotes)",
+              "familia": "feitico",
+              "calculo": "automatico",
+              "duracao": {
+                "tipo": "proximo",
+                "texto": "Por Um Ataque"
+              },
+              "condicoes": [
+                "Um Alvo"
+              ],
+              "custoEmissor": "2 PE"
+            }
+          }
+        },
+        {
+          "id": "de novo: Defesa +3 e Reflexos +2",
+          "ok": true
+        },
+        {
+          "id": "ordem 2: Encerrar Parte tira só a Defesa, e o TR segue com o prazo dele",
+          "ok": true,
+          "dados": {
+            "defesa": 17,
+            "reflexos": 9,
+            "inst": {
+              "id": "rt86hz6b7",
+              "rec": true,
+              "tipoFonte": "feitico",
+              "origemId": null,
+              "origemNome": "Guarda e Firmeza",
+              "aplicadoPor": "Yuki (Teste Pacotes)",
+              "beneficios": [
+                {
+                  "canal": "bonusTR",
+                  "valor": 2,
+                  "alvo": "reflexos",
+                  "duracao": {
+                    "tipo": "rodadas",
+                    "rodadas": 1
+                  },
+                  "rodadas": 1
+                }
+              ],
+              "rodadas": null,
+              "somaPresumida": false,
+              "terminaNoDescanso": true,
+              "pacote": {
+                "chave": "emi_mvgwgr0kcd58c85b0c60:pac_mvgwgqla27df320d6df5",
+                "id": "pac_mvgwgqla27df320d6df5",
+                "nome": "Pacote PA-I3",
+                "revisao": 1,
+                "opcaoId": "op_mvgwgqm7ef63d8a9a437",
+                "emissorId": "emi_mvgwgr0kcd58c85b0c60",
+                "emissorNome": "Yuki (Teste Pacotes)",
+                "familia": "feitico",
+                "calculo": "automatico",
+                "duracao": {
+                  "tipo": "proximo",
+                  "texto": "Por Um Ataque"
+                },
+                "condicoes": [
+                  "Um Alvo"
+                ],
+                "custoEmissor": "2 PE"
+              }
+            }
+          }
+        },
+        {
+          "id": "ordem 2: a clássica mostra Reflexos +2 e a Defesa da base",
+          "ok": true
+        },
+        {
+          "id": "ordem 2: a virada na clássica tira o TR e a instância",
+          "ok": true,
+          "dados": [
+            "Precisão de Um Ataque"
+          ]
+        },
+        {
+          "id": "o descanso tira a instância e conserva a biblioteca",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "observado": {
+        "base": {
+          "defesa": 17,
+          "reflexos": 7
+        }
+      }
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "suporte monta e exporta: 5/5",
+    "aliado, largura 1024: 19/19",
+    "aliado, largura 1440: 19/19"
+  ]
+}

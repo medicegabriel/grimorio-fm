@@ -1,0 +1,562 @@
+{
+  "geradoEm": "2026-10-20T15:00:04.230Z",
+  "base": "http://127.0.0.1:5321",
+  "etapas": [
+    {
+      "nome": "suporte monta e exporta pelo clique real",
+      "checks": [
+        {
+          "id": "o arquivo tem as dez opções",
+          "ok": true,
+          "dados": 10
+        },
+        {
+          "id": "PA-I2: o arquivo guarda o prazo de uso do efeito de um ataque",
+          "ok": true,
+          "dados": {
+            "tipo": "proximo",
+            "texto": "Por Um Ataque"
+          }
+        },
+        {
+          "id": "PA-I1: a definição à mão leva +5 Só em Combate com a origem da Aura do Bastião",
+          "ok": true,
+          "dados": {
+            "id": "op_mvgt8380c83b314c04ed",
+            "nome": "Bastião Condicional",
+            "familia": "manual",
+            "calculo": "manual",
+            "fonte": {
+              "tipo": "manual",
+              "id": "aptidao:aura_do_bastiao",
+              "nome": "Bastião Condicional"
+            },
+            "escolhas": [],
+            "acumulo": {
+              "regra": "catalogo",
+              "origemId": "aptidao:aura_do_bastiao"
+            },
+            "beneficios": [
+              {
+                "canal": "defesa",
+                "valor": 5,
+                "quando": "em_combate"
+              }
+            ],
+            "duracao": {
+              "tipo": "alcance"
+            },
+            "condicoes": [],
+            "custoEmissor": null,
+            "consulta": [],
+            "naoRepresentado": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    },
+    {
+      "nome": "aliado importa e usa, largura 1024",
+      "checks": [
+        {
+          "id": "a biblioteca grava sem mudar Defesa nem Energia",
+          "ok": true
+        },
+        {
+          "id": "o clique duplo cria uma instância só",
+          "ok": true
+        },
+        {
+          "id": "PA-I1: fora de combate, com as duas ligadas, vale o +3",
+          "ok": true,
+          "dados": {
+            "base": 17,
+            "atual": 20
+          }
+        },
+        {
+          "id": "PA-I1: o resultado da segunda ativação não tira Defesa",
+          "ok": true,
+          "dados": {
+            "resultado": "AtivadoSem Mudança nos Seus Números",
+            "previa": "Se Ativar+5 de Defesa fica fora da conta agora: Só em Combate.Nenhum dos Seus Números Muda Agora"
+          }
+        },
+        {
+          "id": "PA-I1: em combate vale o +5",
+          "ok": true,
+          "dados": {
+            "base": 17,
+            "atual": 22
+          }
+        },
+        {
+          "id": "PA-I1: a clássica em combate também dá +5",
+          "ok": true,
+          "dados": {
+            "base": 17,
+            "atual": 22
+          }
+        },
+        {
+          "id": "PA-I1: fora de combate de novo, volta ao +3",
+          "ok": true,
+          "dados": {
+            "base": 17,
+            "atual": 20
+          }
+        },
+        {
+          "id": "PA-I1: a clássica fora de combate também dá +3",
+          "ok": true,
+          "dados": {
+            "base": 17,
+            "atual": 20
+          }
+        },
+        {
+          "id": "PA-I1: e em combate de novo, +5",
+          "ok": true,
+          "dados": {
+            "base": 17,
+            "atual": 22
+          }
+        },
+        {
+          "id": "nove opções convivem sem gasto do aliado",
+          "ok": true,
+          "dados": [
+            "Aura do Bastião",
+            "Aura do Comandante",
+            "Escudo Dourado",
+            "Bênção Tripla",
+            "Nue · Escudo de Raios",
+            "Nue · Halo",
+            "Nue · Faíscas",
+            "Presença Inspiradora",
+            "Precisão de Um Ataque"
+          ]
+        },
+        {
+          "id": "as famílias somam sem duplicar Feitiços",
+          "ok": true,
+          "dados": {
+            "base": 17,
+            "atual": 28
+          }
+        },
+        {
+          "id": "PA-I2: o G2 mostra o prazo de uso",
+          "ok": true
+        },
+        {
+          "id": "PA-I2: a virada no G2 conserva o efeito de um ataque não usado",
+          "ok": true,
+          "dados": [
+            [
+              "Aura do Bastião",
+              null
+            ],
+            [
+              "Aura do Comandante",
+              null
+            ],
+            [
+              "Escudo Dourado",
+              1
+            ],
+            [
+              "Nue · Escudo de Raios",
+              null
+            ],
+            [
+              "Nue · Halo",
+              null
+            ],
+            [
+              "Nue · Faíscas",
+              null
+            ],
+            [
+              "Presença Inspiradora",
+              null
+            ],
+            [
+              "Precisão de Um Ataque",
+              null
+            ]
+          ]
+        },
+        {
+          "id": "as fontes de rodadas contam cada uma o seu prazo",
+          "ok": true,
+          "dados": [
+            [
+              "Aura do Bastião",
+              null
+            ],
+            [
+              "Aura do Comandante",
+              null
+            ],
+            [
+              "Escudo Dourado",
+              1
+            ],
+            [
+              "Nue · Escudo de Raios",
+              null
+            ],
+            [
+              "Nue · Halo",
+              null
+            ],
+            [
+              "Nue · Faíscas",
+              null
+            ],
+            [
+              "Presença Inspiradora",
+              null
+            ],
+            [
+              "Precisão de Um Ataque",
+              null
+            ]
+          ]
+        },
+        {
+          "id": "PA-I2: o cartão nos Ativos do G2 mostra Um Ataque",
+          "ok": true,
+          "dados": "Um AtaquePrecisão de Um Ataque"
+        },
+        {
+          "id": "PA-I2: o detalhe do cartão diz o prazo e que quem encerra é o jogador",
+          "ok": true
+        },
+        {
+          "id": "PA-I2: a linha da clássica diz o prazo",
+          "ok": true,
+          "dados": "Precisão de Um AtaqueDe Yuki (Teste Pacotes) · Por Um AtaqueAcerto +3∞"
+        },
+        {
+          "id": "PA-I2: a virada na clássica também o conserva, e a Duradoura de 2 rodadas sai",
+          "ok": true,
+          "dados": [
+            [
+              "Aura do Bastião",
+              null
+            ],
+            [
+              "Aura do Comandante",
+              null
+            ],
+            [
+              "Nue · Escudo de Raios",
+              null
+            ],
+            [
+              "Nue · Halo",
+              null
+            ],
+            [
+              "Nue · Faíscas",
+              null
+            ],
+            [
+              "Presença Inspiradora",
+              null
+            ],
+            [
+              "Precisão de Um Ataque",
+              null
+            ]
+          ]
+        },
+        {
+          "id": "a recarga conserva a biblioteca e os ativos",
+          "ok": true
+        },
+        {
+          "id": "PA-I2: o Encerrar do jogador tira o efeito de um ataque",
+          "ok": true,
+          "dados": [
+            "Aura do Bastião",
+            "Aura do Comandante",
+            "Nue · Escudo de Raios",
+            "Nue · Halo",
+            "Nue · Faíscas",
+            "Presença Inspiradora"
+          ]
+        },
+        {
+          "id": "o descanso conserva a biblioteca e não religa nada",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    },
+    {
+      "nome": "aliado importa e usa, largura 1440",
+      "checks": [
+        {
+          "id": "a biblioteca grava sem mudar Defesa nem Energia",
+          "ok": true
+        },
+        {
+          "id": "o clique duplo cria uma instância só",
+          "ok": true
+        },
+        {
+          "id": "PA-I1: fora de combate, com as duas ligadas, vale o +3",
+          "ok": true,
+          "dados": {
+            "base": 17,
+            "atual": 20
+          }
+        },
+        {
+          "id": "PA-I1: o resultado da segunda ativação não tira Defesa",
+          "ok": true,
+          "dados": {
+            "resultado": "AtivadoSem Mudança nos Seus Números",
+            "previa": "Se Ativar+5 de Defesa fica fora da conta agora: Só em Combate.Nenhum dos Seus Números Muda Agora"
+          }
+        },
+        {
+          "id": "PA-I1: em combate vale o +5",
+          "ok": true,
+          "dados": {
+            "base": 17,
+            "atual": 22
+          }
+        },
+        {
+          "id": "PA-I1: a clássica em combate também dá +5",
+          "ok": true,
+          "dados": {
+            "base": 17,
+            "atual": 22
+          }
+        },
+        {
+          "id": "PA-I1: fora de combate de novo, volta ao +3",
+          "ok": true,
+          "dados": {
+            "base": 17,
+            "atual": 20
+          }
+        },
+        {
+          "id": "PA-I1: a clássica fora de combate também dá +3",
+          "ok": true,
+          "dados": {
+            "base": 17,
+            "atual": 20
+          }
+        },
+        {
+          "id": "PA-I1: e em combate de novo, +5",
+          "ok": true,
+          "dados": {
+            "base": 17,
+            "atual": 22
+          }
+        },
+        {
+          "id": "nove opções convivem sem gasto do aliado",
+          "ok": true,
+          "dados": [
+            "Aura do Bastião",
+            "Aura do Comandante",
+            "Escudo Dourado",
+            "Bênção Tripla",
+            "Nue · Escudo de Raios",
+            "Nue · Halo",
+            "Nue · Faíscas",
+            "Presença Inspiradora",
+            "Precisão de Um Ataque"
+          ]
+        },
+        {
+          "id": "as famílias somam sem duplicar Feitiços",
+          "ok": true,
+          "dados": {
+            "base": 17,
+            "atual": 28
+          }
+        },
+        {
+          "id": "PA-I2: o G2 mostra o prazo de uso",
+          "ok": true
+        },
+        {
+          "id": "PA-I2: a virada no G2 conserva o efeito de um ataque não usado",
+          "ok": true,
+          "dados": [
+            [
+              "Aura do Bastião",
+              null
+            ],
+            [
+              "Aura do Comandante",
+              null
+            ],
+            [
+              "Escudo Dourado",
+              1
+            ],
+            [
+              "Nue · Escudo de Raios",
+              null
+            ],
+            [
+              "Nue · Halo",
+              null
+            ],
+            [
+              "Nue · Faíscas",
+              null
+            ],
+            [
+              "Presença Inspiradora",
+              null
+            ],
+            [
+              "Precisão de Um Ataque",
+              null
+            ]
+          ]
+        },
+        {
+          "id": "as fontes de rodadas contam cada uma o seu prazo",
+          "ok": true,
+          "dados": [
+            [
+              "Aura do Bastião",
+              null
+            ],
+            [
+              "Aura do Comandante",
+              null
+            ],
+            [
+              "Escudo Dourado",
+              1
+            ],
+            [
+              "Nue · Escudo de Raios",
+              null
+            ],
+            [
+              "Nue · Halo",
+              null
+            ],
+            [
+              "Nue · Faíscas",
+              null
+            ],
+            [
+              "Presença Inspiradora",
+              null
+            ],
+            [
+              "Precisão de Um Ataque",
+              null
+            ]
+          ]
+        },
+        {
+          "id": "PA-I2: o cartão nos Ativos do G2 mostra Um Ataque",
+          "ok": true,
+          "dados": "Um AtaquePrecisão de Um Ataque"
+        },
+        {
+          "id": "PA-I2: o detalhe do cartão diz o prazo e que quem encerra é o jogador",
+          "ok": true
+        },
+        {
+          "id": "PA-I2: a linha da clássica diz o prazo",
+          "ok": true,
+          "dados": "Precisão de Um AtaqueDe Yuki (Teste Pacotes) · Por Um AtaqueAcerto +3∞"
+        },
+        {
+          "id": "PA-I2: a virada na clássica também o conserva, e a Duradoura de 2 rodadas sai",
+          "ok": true,
+          "dados": [
+            [
+              "Aura do Bastião",
+              null
+            ],
+            [
+              "Aura do Comandante",
+              null
+            ],
+            [
+              "Nue · Escudo de Raios",
+              null
+            ],
+            [
+              "Nue · Halo",
+              null
+            ],
+            [
+              "Nue · Faíscas",
+              null
+            ],
+            [
+              "Presença Inspiradora",
+              null
+            ],
+            [
+              "Precisão de Um Ataque",
+              null
+            ]
+          ]
+        },
+        {
+          "id": "a recarga conserva a biblioteca e os ativos",
+          "ok": true
+        },
+        {
+          "id": "PA-I2: o Encerrar do jogador tira o efeito de um ataque",
+          "ok": true,
+          "dados": [
+            "Aura do Bastião",
+            "Aura do Comandante",
+            "Nue · Escudo de Raios",
+            "Nue · Halo",
+            "Nue · Faíscas",
+            "Presença Inspiradora"
+          ]
+        },
+        {
+          "id": "o descanso conserva a biblioteca e não religa nada",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "suporte monta e exporta pelo clique real: 4/4",
+    "aliado importa e usa, largura 1024: 22/22",
+    "aliado importa e usa, largura 1440: 22/22"
+  ]
+}

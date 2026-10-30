@@ -5,6 +5,8 @@
   "autor": "Dr. Xeno",
   "paraRaw": "afty",
   "descricao": "A Restrição Intelectual: um Restringido que troca o físico pela mente. Traz a origem, os Talentos de Origem, a Especialização Restringido Intelectual (herda o Restringido, com a Restrição Congênita, as Dádivas Intelectuais do Céu e a Restrição Definitiva Intelectual no lugar das do livro) e os estados de combate que contam as falhas contra o mesmo inimigo. Guia em docs/afty-formula-entropica.md.",
+  "resumo": "Restringido que luta com a mente: origem, Especialização e 8 Talentos",
+  "categoria": "origens",
   "permite": ["ataqueAtributo"],
   "estadosCombate": [
     {

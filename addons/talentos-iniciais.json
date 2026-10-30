@@ -5,6 +5,8 @@
   "autor": "Afty",
   "paraRaw": "afty",
   "descricao": "Concede de 1 a 4 Talentos adicionais. Digite a quantidade no campo Talentos do addon ativo e escolha os Talentos em Especializações.",
+  "resumo": "De 1 a 4 Talentos extras, com a quantidade digitada em cada ficha",
+  "categoria": "regras",
   "regrasAfty": {
     "talentosIniciais": 1
   }

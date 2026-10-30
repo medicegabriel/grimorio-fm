@@ -3,6 +3,9 @@
   "nome": "Treino Guarda da Lâmina Divina",
   "versao": "1.0.0",
   "paraRaw": "afty",
+  "descricao": "Treino de 4 etapas para quem empunha arma do grupo espada: +1 Nível de dano, +2 de Percepção, Mestre em Percepção e +3 de Defesa. O Completo dá desvantagem nos ataques contra você a quem estiver sob o seu Ler Intenções.",
+  "resumo": "Treino com arma do grupo espada: +1 Nível de dano, Percepção e +3 de Defesa",
+  "categoria": "treinos",
   "acrescenta": {
     "treinamentos": [{
       "id": "guarda",

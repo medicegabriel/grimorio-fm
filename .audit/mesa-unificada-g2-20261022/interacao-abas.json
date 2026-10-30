@@ -1,0 +1,390 @@
+{
+  "geradoEm": "2026-10-23T02:31:20.493Z",
+  "base": "http://127.0.0.1:5330",
+  "etapas": [
+    {
+      "nome": "isolamento: flutuante, foco, Tab, seletores e contexto atual com as três abas visitadas",
+      "checks": [
+        {
+          "id": "as três abas ficam montadas",
+          "ok": true
+        },
+        {
+          "id": "as fontes abriram em Perícias",
+          "ok": true
+        },
+        {
+          "id": "trocar de aba pelo teclado fecha o flutuante da aba escondida",
+          "ok": true,
+          "dados": {
+            "daPericia": "Força+3Metade do Nível+10Maestria+6Total+19",
+            "sobrou": []
+          }
+        },
+        {
+          "id": "as duas abas ocultas estão `inert` e não oferecem seletores lidos pela raiz",
+          "ok": true,
+          "dados": [
+            {
+              "nome": "pericias",
+              "inert": true,
+              "alvos": 0
+            },
+            {
+              "nome": "equipamentos",
+              "inert": true,
+              "alvos": 0
+            }
+          ]
+        },
+        {
+          "id": "80 Tabs: o foco nunca entra numa aba oculta",
+          "ok": true,
+          "dados": null
+        },
+        {
+          "id": "o foco que estava na aba escondida foi para o botão da aba de destino",
+          "ok": true
+        },
+        {
+          "id": "a célula do Golpe lê o combate de agora",
+          "ok": true
+        },
+        {
+          "id": "o Dano espelha o d20 de agora",
+          "ok": true
+        },
+        {
+          "id": "o callback de agora rola com o modo de agora",
+          "ok": true,
+          "dados": {
+            "modo": "vantagem"
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "retenção: filtros, seleção e detalhe sobrevivem à troca de aba, Esc fecha só o detalhe, sessão intacta",
+      "checks": [
+        {
+          "id": "o detalhe abriu",
+          "ok": true
+        },
+        {
+          "id": "Esc fecha o detalhe e devolve o foco ao nome da linha",
+          "ok": true
+        },
+        {
+          "id": "Perícias manteve o filtro e a busca",
+          "ok": true
+        },
+        {
+          "id": "Equipamentos manteve a seleção",
+          "ok": true
+        },
+        {
+          "id": "ir e voltar sem agir não mudou a sessão",
+          "ok": true
+        },
+        {
+          "id": "recarregar descarta o filtro (Todas, busca vazia)",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "rascunho do painel: o contador local do Bloodfeast sobrevive a fechar o corpo e a trocar de aba",
+      "checks": [
+        {
+          "id": "fechar o corpo esconde o painel",
+          "ok": true
+        },
+        {
+          "id": "o contador continua 3",
+          "ok": true
+        },
+        {
+          "id": "recarregar descarta o rascunho",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "CampoDomo: a edição pendente confirma no blur ao trocar de aba",
+      "checks": [
+        {
+          "id": "trocar de aba confirmou o domo pelo blur",
+          "ok": true,
+          "dados": 123
+        },
+        {
+          "id": "o campo mostra o valor confirmado",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "Liberação: a seleção fica, o Feitiço exibido acompanha Ritual e derive",
+      "checks": [
+        {
+          "id": "escolher a melhoria marca a linha",
+          "ok": true,
+          "dados": {
+            "f0": "14d8!+8",
+            "f1": "18d8!+8"
+          }
+        },
+        {
+          "id": "a seleção sobrevive à ida aos Efeitos",
+          "ok": true
+        },
+        {
+          "id": "o Ritual muda o derive e a linha liberada acompanha (seleção mantida)",
+          "ok": true,
+          "dados": {
+            "f1": "18d8!+8",
+            "f2": "18d8!+20"
+          }
+        },
+        {
+          "id": "com o Ritual ativo e não iniciado, a rolagem da linha recusa com o motivo",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "favoritos: o Rápido mostra habilidade e equipamento, na ordem salva, sem apagar a chave sem destino",
+      "checks": [
+        {
+          "id": "três favoritos com destino, na ordem salva",
+          "ok": true,
+          "dados": [
+            "Ataque ConcentradoCombatenteNí",
+            "KatanaTerceiro Grau1 Esp.1 Enc",
+            "Assumir PosturaCombatenteNível"
+          ]
+        },
+        {
+          "id": "fixar a segunda Katana a põe no fim do Rápido",
+          "ok": true
+        },
+        {
+          "id": "a chave sem destino continua salva",
+          "ok": true,
+          "dados": [
+            "especializacao:cmb_ataque_concentrado",
+            "equipamento:abas-katana-afiada",
+            "chave:que-nao-existe",
+            "especializacao:cmb_assumir_postura",
+            "equipamento:abas-katana-defensora"
+          ]
+        },
+        {
+          "id": "tirar pela estrela do Rápido remove só ela",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "busca global: chega à linha, revela, abre, limpa o filtro que esconderia e não rola dado",
+      "checks": [
+        {
+          "id": "foi para Perícias e limpou o filtro Mestre",
+          "ok": true
+        },
+        {
+          "id": "a linha está à vista e realçada",
+          "ok": true
+        },
+        {
+          "id": "Expansão (destino novo da prévia): Ações com o detalhe aberto",
+          "ok": true
+        },
+        {
+          "id": "Atributo (destino novo da prévia): Perícias com a célula realçada",
+          "ok": true
+        },
+        {
+          "id": "Feitiço: abre o detalhe",
+          "ok": true
+        },
+        {
+          "id": "nenhuma busca rolou dado",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "busca global no inventário: seleciona o item certo entre duas Katanas",
+      "checks": [
+        {
+          "id": "a Katana com Defensora ficou selecionada e o filtro saiu",
+          "ok": true,
+          "dados": "equipamento:abas-katana-defensora"
+        },
+        {
+          "id": "o detalhe lateral mostra o encantamento dela",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "Golpe: primeiro uso, clique duplo, Montar Outro com as mesmas marcas, Voltar, Sacrifício e estorno só do PE",
+      "checks": [
+        {
+          "id": "Montar Golpe abre a Preparação no painel, sem gravar",
+          "ok": true
+        },
+        {
+          "id": "o golpe montado tem custo a pagar",
+          "ok": true,
+          "dados": 4
+        },
+        {
+          "id": "clique duplo no Confirmar cobra uma vez",
+          "ok": true,
+          "dados": {
+            "pe0": 80,
+            "pe1": 76,
+            "custo": 4
+          }
+        },
+        {
+          "id": "a célula diz as marcas e vira Abrir Golpe",
+          "ok": true
+        },
+        {
+          "id": "Voltar não cobra nada",
+          "ok": true
+        },
+        {
+          "id": "Montar Outro com as mesmas marcas é um golpe novo, custo inteiro",
+          "ok": true,
+          "dados": {
+            "pe1": 76,
+            "pe2": 72,
+            "custo2": 4
+          }
+        },
+        {
+          "id": "Sacrifício: paga o PE e sofre 15 de dano",
+          "ok": true,
+          "dados": {
+            "pe2": 72,
+            "pe3": 69,
+            "custo3": 3,
+            "pv0": 166,
+            "pv1": 151
+          }
+        },
+        {
+          "id": "o estorno devolve só o PE do último golpe: Vida e marcas ficam",
+          "ok": true,
+          "dados": {
+            "pe": 72,
+            "hp": 151
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "historico": [
+          "Estornar PE",
+          "Estornar PE",
+          "Estornar PE"
+        ]
+      }
+    },
+    {
+      "nome": "Golpe recusado: Faltam N PE e Pede Em Combate, Confirmar desligado, nada cobrado",
+      "checks": [
+        {
+          "id": "partida: Em Combate com 1 PE",
+          "ok": true,
+          "dados": {
+            "pe": 1
+          }
+        },
+        {
+          "id": "o bloqueio diz quanto falta",
+          "ok": true,
+          "dados": {
+            "custo": 4,
+            "avisos": [
+              "Faltam 3 PE"
+            ]
+          }
+        },
+        {
+          "id": "Confirmar desligado",
+          "ok": true
+        },
+        {
+          "id": "fora de combate o bloqueio diz Pede Em Combate",
+          "ok": true,
+          "dados": [
+            "Pede Em Combate",
+            "Faltam 3 PE"
+          ]
+        },
+        {
+          "id": "a célula diz Fora de Combate",
+          "ok": true
+        },
+        {
+          "id": "nada cobrado e nenhuma marca aplicada",
+          "ok": true,
+          "dados": {
+            "pe": 1
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "isolamento: flutuante, foco, Tab, seletores e contexto atual com as três abas visitadas: 10/10",
+    "retenção: filtros, seleção e detalhe sobrevivem à troca de aba, Esc fecha só o detalhe, sessão intacta: 6/6",
+    "rascunho do painel: o contador local do Bloodfeast sobrevive a fechar o corpo e a trocar de aba: 3/3",
+    "CampoDomo: a edição pendente confirma no blur ao trocar de aba: 2/2",
+    "Liberação: a seleção fica, o Feitiço exibido acompanha Ritual e derive: 4/4",
+    "favoritos: o Rápido mostra habilidade e equipamento, na ordem salva, sem apagar a chave sem destino: 4/4",
+    "busca global: chega à linha, revela, abre, limpa o filtro que esconderia e não rola dado: 6/6",
+    "busca global no inventário: seleciona o item certo entre duas Katanas: 2/2",
+    "Golpe: primeiro uso, clique duplo, Montar Outro com as mesmas marcas, Voltar, Sacrifício e estorno só do PE: 9/9",
+    "Golpe recusado: Faltam N PE e Pede Em Combate, Confirmar desligado, nada cobrado: 7/7"
+  ]
+}

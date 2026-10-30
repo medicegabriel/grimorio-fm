@@ -5,6 +5,8 @@
   "autor": "Templas",
   "paraRaw": "afty",
   "descricao": "Calculadora de Feitiço Passivo (o tipo que o app nunca implementou) entregue como MODELOS DE FEITIÇO — aparecem na aba de Feitiços/Técnica do criador (não na bancada de combate), filtrados pelo nível já acessível à criatura. Escolher um modelo copia ele pra creature.feiticos, gasta vaga de Feitiço normalmente e FICA ATIVO PARA SEMPRE, sem interruptor: é uma criação de ficha, não um buff de sessão. Cada modelo já vem com a redução de PE máximo (dobro do nível) embutida. Cobre Defesa, RD (um tipo, ajustável), Dano Adicional (3 formas — NÃO acumulam entre si) e Nível de Dano (este acumula com Dano Adicional). Perícia e Atributo passivos dependem de um alvo à escolha do jogador, que os Modelos de Feitiço não conseguem pré-fixar: valores de referência — metade de Sustentada, Nv2 +1 / Nv3 +1 / Nv4 +2 / Nv5 +4 pra Perícia; tabela própria Nv2 +2 / Nv3 +3 / Nv4 +4 / Nv5 +6 pra Atributo — escreva-os direto no editor de Efeitos do próprio Feitiço Passivo (canal bonusPericia ou atributo, com o alvo que quiser).",
+  "resumo": "Calculadora de Feitiço Passivo em modelos: Defesa, RD, Dano Adicional e Nível de Dano",
+  "categoria": "tecnicas",
   "feiticos": [
     {
       "id": "passivo_defesa_nv2",

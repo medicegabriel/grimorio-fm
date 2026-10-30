@@ -1,0 +1,4663 @@
+{
+  "geradoEm": "2026-10-22T18:31:57.101Z",
+  "base": "http://127.0.0.1:5330",
+  "etapas": [
+    {
+      "nome": "Outros em Perícias: arsenal",
+      "checks": [
+        {
+          "id": "Ações sem a seção Outros",
+          "ok": true
+        },
+        {
+          "id": "o índice de Ações não oferece Outros",
+          "ok": true
+        },
+        {
+          "id": "Perícias tem os mesmos 8 cartões da referência, na mesma ordem",
+          "ok": true,
+          "dados": {
+            "esperados": [
+              "Agarrar",
+              "Derrubar",
+              "Desarmar",
+              "Empurrar",
+              "Concentração",
+              "Fintar",
+              "Provocar",
+              "Teste de Morte"
+            ],
+            "nomes": [
+              "Agarrar",
+              "Derrubar",
+              "Desarmar",
+              "Empurrar",
+              "Concentração",
+              "Fintar",
+              "Provocar",
+              "Teste de Morte"
+            ]
+          }
+        },
+        {
+          "id": "com filtro Mestre e uma busca sem resultado, os cartões de Outros continuam à vista",
+          "ok": true,
+          "dados": {
+            "visiveis": 8
+          }
+        },
+        {
+          "id": "Perícias sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "esperados": [
+          "Agarrar",
+          "Derrubar",
+          "Desarmar",
+          "Empurrar",
+          "Concentração",
+          "Fintar",
+          "Provocar",
+          "Teste de Morte"
+        ],
+        "nomes": [
+          "Agarrar",
+          "Derrubar",
+          "Desarmar",
+          "Empurrar",
+          "Concentração",
+          "Fintar",
+          "Provocar",
+          "Teste de Morte"
+        ]
+      }
+    },
+    {
+      "nome": "Outros em Perícias: conjurador",
+      "checks": [
+        {
+          "id": "Ações sem a seção Outros",
+          "ok": true
+        },
+        {
+          "id": "o índice de Ações não oferece Outros",
+          "ok": true
+        },
+        {
+          "id": "Perícias tem os mesmos 8 cartões da referência, na mesma ordem",
+          "ok": true,
+          "dados": {
+            "esperados": [
+              "Agarrar",
+              "Derrubar",
+              "Desarmar",
+              "Empurrar",
+              "Concentração",
+              "Fintar",
+              "Provocar",
+              "Teste de Morte"
+            ],
+            "nomes": [
+              "Agarrar",
+              "Derrubar",
+              "Desarmar",
+              "Empurrar",
+              "Concentração",
+              "Fintar",
+              "Provocar",
+              "Teste de Morte"
+            ]
+          }
+        },
+        {
+          "id": "com filtro Mestre e uma busca sem resultado, os cartões de Outros continuam à vista",
+          "ok": true,
+          "dados": {
+            "visiveis": 8
+          }
+        },
+        {
+          "id": "Perícias sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "esperados": [
+          "Agarrar",
+          "Derrubar",
+          "Desarmar",
+          "Empurrar",
+          "Concentração",
+          "Fintar",
+          "Provocar",
+          "Teste de Morte"
+        ],
+        "nomes": [
+          "Agarrar",
+          "Derrubar",
+          "Desarmar",
+          "Empurrar",
+          "Concentração",
+          "Fintar",
+          "Provocar",
+          "Teste de Morte"
+        ]
+      }
+    },
+    {
+      "nome": "Outros em Perícias: mesa",
+      "checks": [
+        {
+          "id": "Ações sem a seção Outros",
+          "ok": true
+        },
+        {
+          "id": "o índice de Ações não oferece Outros",
+          "ok": true
+        },
+        {
+          "id": "Perícias tem os mesmos 8 cartões da referência, na mesma ordem",
+          "ok": true,
+          "dados": {
+            "esperados": [
+              "Agarrar",
+              "Derrubar",
+              "Desarmar",
+              "Empurrar",
+              "Concentração",
+              "Fintar",
+              "Provocar",
+              "Teste de Morte"
+            ],
+            "nomes": [
+              "Agarrar",
+              "Derrubar",
+              "Desarmar",
+              "Empurrar",
+              "Concentração",
+              "Fintar",
+              "Provocar",
+              "Teste de Morte"
+            ]
+          }
+        },
+        {
+          "id": "com filtro Mestre e uma busca sem resultado, os cartões de Outros continuam à vista",
+          "ok": true,
+          "dados": {
+            "visiveis": 8
+          }
+        },
+        {
+          "id": "Perícias sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "esperados": [
+          "Agarrar",
+          "Derrubar",
+          "Desarmar",
+          "Empurrar",
+          "Concentração",
+          "Fintar",
+          "Provocar",
+          "Teste de Morte"
+        ],
+        "nomes": [
+          "Agarrar",
+          "Derrubar",
+          "Desarmar",
+          "Empurrar",
+          "Concentração",
+          "Fintar",
+          "Provocar",
+          "Teste de Morte"
+        ]
+      }
+    },
+    {
+      "nome": "Outros em Perícias: tipica",
+      "checks": [
+        {
+          "id": "Ações sem a seção Outros",
+          "ok": true
+        },
+        {
+          "id": "o índice de Ações não oferece Outros",
+          "ok": true
+        },
+        {
+          "id": "Perícias tem os mesmos 8 cartões da referência, na mesma ordem",
+          "ok": true,
+          "dados": {
+            "esperados": [
+              "Agarrar",
+              "Derrubar",
+              "Desarmar",
+              "Empurrar",
+              "Concentração",
+              "Fintar",
+              "Provocar",
+              "Teste de Morte"
+            ],
+            "nomes": [
+              "Agarrar",
+              "Derrubar",
+              "Desarmar",
+              "Empurrar",
+              "Concentração",
+              "Fintar",
+              "Provocar",
+              "Teste de Morte"
+            ]
+          }
+        },
+        {
+          "id": "com filtro Mestre e uma busca sem resultado, os cartões de Outros continuam à vista",
+          "ok": true,
+          "dados": {
+            "visiveis": 8
+          }
+        },
+        {
+          "id": "Perícias sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "esperados": [
+          "Agarrar",
+          "Derrubar",
+          "Desarmar",
+          "Empurrar",
+          "Concentração",
+          "Fintar",
+          "Provocar",
+          "Teste de Morte"
+        ],
+        "nomes": [
+          "Agarrar",
+          "Derrubar",
+          "Desarmar",
+          "Empurrar",
+          "Concentração",
+          "Fintar",
+          "Provocar",
+          "Teste de Morte"
+        ]
+      }
+    },
+    {
+      "nome": "Outros em Perícias: vazia",
+      "checks": [
+        {
+          "id": "Ações sem a seção Outros",
+          "ok": true
+        },
+        {
+          "id": "o índice de Ações não oferece Outros",
+          "ok": true
+        },
+        {
+          "id": "Perícias tem os mesmos 8 cartões da referência, na mesma ordem",
+          "ok": true,
+          "dados": {
+            "esperados": [
+              "Agarrar",
+              "Derrubar",
+              "Desarmar",
+              "Empurrar",
+              "Concentração",
+              "Fintar",
+              "Provocar",
+              "Teste de Morte"
+            ],
+            "nomes": [
+              "Agarrar",
+              "Derrubar",
+              "Desarmar",
+              "Empurrar",
+              "Concentração",
+              "Fintar",
+              "Provocar",
+              "Teste de Morte"
+            ]
+          }
+        },
+        {
+          "id": "com filtro Mestre e uma busca sem resultado, os cartões de Outros continuam à vista",
+          "ok": true,
+          "dados": {
+            "visiveis": 8
+          }
+        },
+        {
+          "id": "Perícias sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "esperados": [
+          "Agarrar",
+          "Derrubar",
+          "Desarmar",
+          "Empurrar",
+          "Concentração",
+          "Fintar",
+          "Provocar",
+          "Teste de Morte"
+        ],
+        "nomes": [
+          "Agarrar",
+          "Derrubar",
+          "Desarmar",
+          "Empurrar",
+          "Concentração",
+          "Fintar",
+          "Provocar",
+          "Teste de Morte"
+        ]
+      }
+    },
+    {
+      "nome": "Outros em Perícias: criatura",
+      "checks": [
+        {
+          "id": "Ações sem a seção Outros",
+          "ok": true
+        },
+        {
+          "id": "o índice de Ações não oferece Outros",
+          "ok": true
+        },
+        {
+          "id": "Perícias tem os mesmos 8 cartões da referência, na mesma ordem",
+          "ok": true,
+          "dados": {
+            "esperados": [
+              "Agarrar",
+              "Derrubar",
+              "Desarmar",
+              "Empurrar",
+              "Concentração",
+              "Fintar",
+              "Provocar",
+              "Teste de Morte"
+            ],
+            "nomes": [
+              "Agarrar",
+              "Derrubar",
+              "Desarmar",
+              "Empurrar",
+              "Concentração",
+              "Fintar",
+              "Provocar",
+              "Teste de Morte"
+            ]
+          }
+        },
+        {
+          "id": "com filtro Mestre e uma busca sem resultado, os cartões de Outros continuam à vista",
+          "ok": true,
+          "dados": {
+            "visiveis": 8
+          }
+        },
+        {
+          "id": "Perícias sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "esperados": [
+          "Agarrar",
+          "Derrubar",
+          "Desarmar",
+          "Empurrar",
+          "Concentração",
+          "Fintar",
+          "Provocar",
+          "Teste de Morte"
+        ],
+        "nomes": [
+          "Agarrar",
+          "Derrubar",
+          "Desarmar",
+          "Empurrar",
+          "Concentração",
+          "Fintar",
+          "Provocar",
+          "Teste de Morte"
+        ]
+      }
+    },
+    {
+      "nome": "Executar, Resistir e teste simples rolam igual à referência, nos modos Normal e Vantagem",
+      "checks": [
+        {
+          "id": "oito rolagens registradas iguais (Executar, Resistir, Concentração e Teste de Morte, em Normal e Vantagem)",
+          "ok": true,
+          "dados": {
+            "previa": [
+              "{\"tipo\":\"teste\",\"rotulo\":\"Agarrar · Executar\",\"detalhe\":null,\"formula\":\"d20+19\",\"d20\":[11],\"descartado\":null,\"natural\":11,\"bonus\":19,\"extras\":[],\"somaExtras\":0,",
+              "{\"tipo\":\"teste\",\"rotulo\":\"Agarrar · Resistir\",\"detalhe\":null,\"formula\":\"d20+19\",\"d20\":[11],\"descartado\":null,\"natural\":11,\"bonus\":19,\"extras\":[],\"somaExtras\":0,",
+              "{\"tipo\":\"teste\",\"rotulo\":\"Concentração\",\"detalhe\":null,\"formula\":\"d20+12\",\"d20\":[11],\"descartado\":null,\"natural\":11,\"bonus\":12,\"extras\":[],\"somaExtras\":0,\"total",
+              "{\"tipo\":\"teste\",\"rotulo\":\"Teste de Morte\",\"detalhe\":null,\"formula\":\"d20+0\",\"d20\":[11],\"descartado\":null,\"natural\":11,\"bonus\":0,\"extras\":[],\"somaExtras\":0,\"total",
+              "{\"tipo\":\"teste\",\"rotulo\":\"Agarrar · Executar\",\"detalhe\":null,\"formula\":\"d20+19\",\"d20\":[11,11],\"descartado\":1,\"natural\":11,\"bonus\":19,\"extras\":[],\"somaExtras\":0,",
+              "{\"tipo\":\"teste\",\"rotulo\":\"Agarrar · Resistir\",\"detalhe\":null,\"formula\":\"d20+19\",\"d20\":[11,11],\"descartado\":1,\"natural\":11,\"bonus\":19,\"extras\":[],\"somaExtras\":0,",
+              "{\"tipo\":\"teste\",\"rotulo\":\"Concentração\",\"detalhe\":null,\"formula\":\"d20+12\",\"d20\":[11,11],\"descartado\":1,\"natural\":11,\"bonus\":12,\"extras\":[],\"somaExtras\":0,\"total",
+              "{\"tipo\":\"teste\",\"rotulo\":\"Teste de Morte\",\"detalhe\":null,\"formula\":\"d20+0\",\"d20\":[11,11],\"descartado\":1,\"natural\":11,\"bonus\":0,\"extras\":[],\"somaExtras\":0,\"total"
+            ],
+            "referencia": [
+              "{\"tipo\":\"teste\",\"rotulo\":\"Agarrar · Executar\",\"detalhe\":null,\"formula\":\"d20+19\",\"d20\":[11],\"descartado\":null,\"natural\":11,\"bonus\":19,\"extras\":[],\"somaExtras\":0,",
+              "{\"tipo\":\"teste\",\"rotulo\":\"Agarrar · Resistir\",\"detalhe\":null,\"formula\":\"d20+19\",\"d20\":[11],\"descartado\":null,\"natural\":11,\"bonus\":19,\"extras\":[],\"somaExtras\":0,",
+              "{\"tipo\":\"teste\",\"rotulo\":\"Concentração\",\"detalhe\":null,\"formula\":\"d20+12\",\"d20\":[11],\"descartado\":null,\"natural\":11,\"bonus\":12,\"extras\":[],\"somaExtras\":0,\"total",
+              "{\"tipo\":\"teste\",\"rotulo\":\"Teste de Morte\",\"detalhe\":null,\"formula\":\"d20+0\",\"d20\":[11],\"descartado\":null,\"natural\":11,\"bonus\":0,\"extras\":[],\"somaExtras\":0,\"total",
+              "{\"tipo\":\"teste\",\"rotulo\":\"Agarrar · Executar\",\"detalhe\":null,\"formula\":\"d20+19\",\"d20\":[11,11],\"descartado\":1,\"natural\":11,\"bonus\":19,\"extras\":[],\"somaExtras\":0,",
+              "{\"tipo\":\"teste\",\"rotulo\":\"Agarrar · Resistir\",\"detalhe\":null,\"formula\":\"d20+19\",\"d20\":[11,11],\"descartado\":1,\"natural\":11,\"bonus\":19,\"extras\":[],\"somaExtras\":0,",
+              "{\"tipo\":\"teste\",\"rotulo\":\"Concentração\",\"detalhe\":null,\"formula\":\"d20+12\",\"d20\":[11,11],\"descartado\":1,\"natural\":11,\"bonus\":12,\"extras\":[],\"somaExtras\":0,\"total",
+              "{\"tipo\":\"teste\",\"rotulo\":\"Teste de Morte\",\"detalhe\":null,\"formula\":\"d20+0\",\"d20\":[11,11],\"descartado\":1,\"natural\":11,\"bonus\":0,\"extras\":[],\"somaExtras\":0,\"total"
+            ]
+          }
+        },
+        {
+          "id": "o modo Vantagem chegou ao registro",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "previa": [
+          "{\"tipo\":\"teste\",\"rotulo\":\"Agarrar · Executar\",\"detalhe\":null,\"formula\":\"d20+19\",\"d20\":[11],\"descartado\":null,\"natural\":11,\"bonus\":19,\"extras\":[],\"somaExtras\":0,",
+          "{\"tipo\":\"teste\",\"rotulo\":\"Agarrar · Resistir\",\"detalhe\":null,\"formula\":\"d20+19\",\"d20\":[11],\"descartado\":null,\"natural\":11,\"bonus\":19,\"extras\":[],\"somaExtras\":0,",
+          "{\"tipo\":\"teste\",\"rotulo\":\"Concentração\",\"detalhe\":null,\"formula\":\"d20+12\",\"d20\":[11],\"descartado\":null,\"natural\":11,\"bonus\":12,\"extras\":[],\"somaExtras\":0,\"total",
+          "{\"tipo\":\"teste\",\"rotulo\":\"Teste de Morte\",\"detalhe\":null,\"formula\":\"d20+0\",\"d20\":[11],\"descartado\":null,\"natural\":11,\"bonus\":0,\"extras\":[],\"somaExtras\":0,\"total",
+          "{\"tipo\":\"teste\",\"rotulo\":\"Agarrar · Executar\",\"detalhe\":null,\"formula\":\"d20+19\",\"d20\":[11,11],\"descartado\":1,\"natural\":11,\"bonus\":19,\"extras\":[],\"somaExtras\":0,",
+          "{\"tipo\":\"teste\",\"rotulo\":\"Agarrar · Resistir\",\"detalhe\":null,\"formula\":\"d20+19\",\"d20\":[11,11],\"descartado\":1,\"natural\":11,\"bonus\":19,\"extras\":[],\"somaExtras\":0,",
+          "{\"tipo\":\"teste\",\"rotulo\":\"Concentração\",\"detalhe\":null,\"formula\":\"d20+12\",\"d20\":[11,11],\"descartado\":1,\"natural\":11,\"bonus\":12,\"extras\":[],\"somaExtras\":0,\"total",
+          "{\"tipo\":\"teste\",\"rotulo\":\"Teste de Morte\",\"detalhe\":null,\"formula\":\"d20+0\",\"d20\":[11,11],\"descartado\":1,\"natural\":11,\"bonus\":0,\"extras\":[],\"somaExtras\":0,\"total"
+        ],
+        "referencia": [
+          "{\"tipo\":\"teste\",\"rotulo\":\"Agarrar · Executar\",\"detalhe\":null,\"formula\":\"d20+19\",\"d20\":[11],\"descartado\":null,\"natural\":11,\"bonus\":19,\"extras\":[],\"somaExtras\":0,",
+          "{\"tipo\":\"teste\",\"rotulo\":\"Agarrar · Resistir\",\"detalhe\":null,\"formula\":\"d20+19\",\"d20\":[11],\"descartado\":null,\"natural\":11,\"bonus\":19,\"extras\":[],\"somaExtras\":0,",
+          "{\"tipo\":\"teste\",\"rotulo\":\"Concentração\",\"detalhe\":null,\"formula\":\"d20+12\",\"d20\":[11],\"descartado\":null,\"natural\":11,\"bonus\":12,\"extras\":[],\"somaExtras\":0,\"total",
+          "{\"tipo\":\"teste\",\"rotulo\":\"Teste de Morte\",\"detalhe\":null,\"formula\":\"d20+0\",\"d20\":[11],\"descartado\":null,\"natural\":11,\"bonus\":0,\"extras\":[],\"somaExtras\":0,\"total",
+          "{\"tipo\":\"teste\",\"rotulo\":\"Agarrar · Executar\",\"detalhe\":null,\"formula\":\"d20+19\",\"d20\":[11,11],\"descartado\":1,\"natural\":11,\"bonus\":19,\"extras\":[],\"somaExtras\":0,",
+          "{\"tipo\":\"teste\",\"rotulo\":\"Agarrar · Resistir\",\"detalhe\":null,\"formula\":\"d20+19\",\"d20\":[11,11],\"descartado\":1,\"natural\":11,\"bonus\":19,\"extras\":[],\"somaExtras\":0,",
+          "{\"tipo\":\"teste\",\"rotulo\":\"Concentração\",\"detalhe\":null,\"formula\":\"d20+12\",\"d20\":[11,11],\"descartado\":1,\"natural\":11,\"bonus\":12,\"extras\":[],\"somaExtras\":0,\"total",
+          "{\"tipo\":\"teste\",\"rotulo\":\"Teste de Morte\",\"detalhe\":null,\"formula\":\"d20+0\",\"d20\":[11,11],\"descartado\":1,\"natural\":11,\"bonus\":0,\"extras\":[],\"somaExtras\":0,\"total"
+        ]
+      }
+    },
+    {
+      "nome": "Ctrl+K leva Agarrar e Concentração a Perícias, com as três abas visitadas",
+      "checks": [
+        {
+          "id": "Agarrar: o resultado aparece no grupo Manobras",
+          "ok": true
+        },
+        {
+          "id": "Agarrar: Perícias à frente, cartão realçado e à vista",
+          "ok": true,
+          "dados": {
+            "aba": "pericias",
+            "dentroDePericias": true,
+            "realce": "sim",
+            "chave": "manobra:agarrar",
+            "aVista": true,
+            "ancoras": 1,
+            "ocultas": 0
+          }
+        },
+        {
+          "id": "Agarrar: uma âncora só, e nenhuma aba escondida oferece o destino",
+          "ok": true,
+          "dados": {
+            "aba": "pericias",
+            "dentroDePericias": true,
+            "realce": "sim",
+            "chave": "manobra:agarrar",
+            "aVista": true,
+            "ancoras": 1,
+            "ocultas": 0
+          }
+        },
+        {
+          "id": "Agarrar: a busca não rolou e não mudou a sessão",
+          "ok": true,
+          "dados": {
+            "log": [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "id": "Concentração: o resultado aparece no grupo Manobras",
+          "ok": true
+        },
+        {
+          "id": "Concentração: Perícias à frente, cartão realçado e à vista",
+          "ok": true,
+          "dados": {
+            "aba": "pericias",
+            "dentroDePericias": true,
+            "realce": "sim",
+            "chave": "manobra:concentracao",
+            "aVista": true,
+            "ancoras": 1,
+            "ocultas": 0
+          }
+        },
+        {
+          "id": "Concentração: uma âncora só, e nenhuma aba escondida oferece o destino",
+          "ok": true,
+          "dados": {
+            "aba": "pericias",
+            "dentroDePericias": true,
+            "realce": "sim",
+            "chave": "manobra:concentracao",
+            "aVista": true,
+            "ancoras": 1,
+            "ocultas": 0
+          }
+        },
+        {
+          "id": "Concentração: a busca não rolou e não mudou a sessão",
+          "ok": true,
+          "dados": {
+            "log": [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "id": "ir a Ações e voltar não muda a sessão",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "Agarrar": {
+          "aba": "pericias",
+          "dentroDePericias": true,
+          "realce": "sim",
+          "chave": "manobra:agarrar",
+          "aVista": true,
+          "ancoras": 1,
+          "ocultas": 0
+        },
+        "Concentração": {
+          "aba": "pericias",
+          "dentroDePericias": true,
+          "realce": "sim",
+          "chave": "manobra:concentracao",
+          "aVista": true,
+          "ancoras": 1,
+          "ocultas": 0
+        }
+      }
+    },
+    {
+      "nome": "Dano em colunas comuns: par do autor (mesa, 1440)",
+      "checks": [
+        {
+          "id": "Normal: todas as linhas no mesmo arranjo",
+          "ok": true,
+          "dados": [
+            "alvos ao lado, metas sob o nome",
+            "alvos ao lado, metas sob o nome"
+          ]
+        },
+        {
+          "id": "Normal: Acerto na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            436
+          ]
+        },
+        {
+          "id": "Normal: Dano na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            541
+          ]
+        },
+        {
+          "id": "Normal: metas na mesma coluna",
+          "ok": true,
+          "dados": [
+            102
+          ]
+        },
+        {
+          "id": "Normal: mesma altura base (nome de uma linha, sem motivo)",
+          "ok": true,
+          "dados": [
+            [
+              "Ataque Básico",
+              61
+            ],
+            [
+              "Azamaru",
+              62
+            ]
+          ]
+        },
+        {
+          "id": "Normal: nada cortado",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "Crítico: todas as linhas no mesmo arranjo",
+          "ok": true,
+          "dados": [
+            "alvos ao lado, metas sob o nome",
+            "alvos ao lado, metas sob o nome"
+          ]
+        },
+        {
+          "id": "Crítico: Acerto na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            436
+          ]
+        },
+        {
+          "id": "Crítico: Dano na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            541
+          ]
+        },
+        {
+          "id": "Crítico: metas na mesma coluna",
+          "ok": true,
+          "dados": [
+            102
+          ]
+        },
+        {
+          "id": "Crítico: mesma altura base (nome de uma linha, sem motivo)",
+          "ok": true,
+          "dados": [
+            [
+              "Ataque Básico",
+              61
+            ],
+            [
+              "Azamaru",
+              62
+            ]
+          ]
+        },
+        {
+          "id": "Crítico: nada cortado",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "normal": {
+          "largura": 615,
+          "linhas": [
+            {
+              "nome": "Ataque Básico",
+              "alt": 61,
+              "topo": 61,
+              "linhasNome": 1,
+              "metas": {
+                "x": 102,
+                "y": 599,
+                "w": 323,
+                "h": 19,
+                "cy": 608
+              },
+              "cxNome": {
+                "x": 102,
+                "y": 569,
+                "w": 323,
+                "h": 28,
+                "cy": 583
+              },
+              "acerto": {
+                "x": 436,
+                "y": 575,
+                "w": 93,
+                "h": 36,
+                "cy": 593
+              },
+              "dano": {
+                "x": 541,
+                "y": 575,
+                "w": 150,
+                "h": 36,
+                "cy": 593
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Azamaru",
+              "alt": 62,
+              "topo": 62,
+              "linhasNome": 1,
+              "metas": {
+                "x": 102,
+                "y": 661,
+                "w": 323,
+                "h": 19,
+                "cy": 670
+              },
+              "cxNome": {
+                "x": 102,
+                "y": 631,
+                "w": 323,
+                "h": 28,
+                "cy": 645
+              },
+              "acerto": {
+                "x": 436,
+                "y": 637,
+                "w": 93,
+                "h": 36,
+                "cy": 655
+              },
+              "dano": {
+                "x": 541,
+                "y": 637,
+                "w": 150,
+                "h": 36,
+                "cy": 655
+              },
+              "motivo": false,
+              "cortados": []
+            }
+          ]
+        },
+        "critico": {
+          "largura": 615,
+          "linhas": [
+            {
+              "nome": "Ataque Básico",
+              "alt": 61,
+              "topo": 61,
+              "linhasNome": 1,
+              "metas": {
+                "x": 102,
+                "y": 599,
+                "w": 323,
+                "h": 19,
+                "cy": 608
+              },
+              "cxNome": {
+                "x": 102,
+                "y": 569,
+                "w": 323,
+                "h": 28,
+                "cy": 583
+              },
+              "acerto": {
+                "x": 436,
+                "y": 575,
+                "w": 93,
+                "h": 36,
+                "cy": 593
+              },
+              "dano": {
+                "x": 541,
+                "y": 575,
+                "w": 150,
+                "h": 36,
+                "cy": 593
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Azamaru",
+              "alt": 62,
+              "topo": 62,
+              "linhasNome": 1,
+              "metas": {
+                "x": 102,
+                "y": 661,
+                "w": 323,
+                "h": 19,
+                "cy": 670
+              },
+              "cxNome": {
+                "x": 102,
+                "y": 631,
+                "w": 323,
+                "h": 28,
+                "cy": 645
+              },
+              "acerto": {
+                "x": 436,
+                "y": 637,
+                "w": 93,
+                "h": 36,
+                "cy": 655
+              },
+              "dano": {
+                "x": 541,
+                "y": 637,
+                "w": 150,
+                "h": 36,
+                "cy": 655
+              },
+              "motivo": false,
+              "cortados": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "nome": "Dano em colunas comuns: tipica 1280x800 com a compacta",
+      "checks": [
+        {
+          "id": "Normal: todas as linhas no mesmo arranjo",
+          "ok": true,
+          "dados": [
+            "alvos ao lado, metas ao lado",
+            "alvos ao lado, metas ao lado"
+          ]
+        },
+        {
+          "id": "Normal: Acerto na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            588
+          ]
+        },
+        {
+          "id": "Normal: Dano na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            692
+          ]
+        },
+        {
+          "id": "Normal: metas na mesma coluna",
+          "ok": true,
+          "dados": [
+            397
+          ]
+        },
+        {
+          "id": "Normal: mesma altura base (nome de uma linha, sem motivo)",
+          "ok": true,
+          "dados": [
+            [
+              "Ataque Básico",
+              52
+            ],
+            [
+              "Azamaru",
+              53
+            ]
+          ]
+        },
+        {
+          "id": "Normal: nada cortado",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "Crítico: todas as linhas no mesmo arranjo",
+          "ok": true,
+          "dados": [
+            "alvos ao lado, metas ao lado",
+            "alvos ao lado, metas ao lado"
+          ]
+        },
+        {
+          "id": "Crítico: Acerto na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            588
+          ]
+        },
+        {
+          "id": "Crítico: Dano na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            692
+          ]
+        },
+        {
+          "id": "Crítico: metas na mesma coluna",
+          "ok": true,
+          "dados": [
+            397
+          ]
+        },
+        {
+          "id": "Crítico: mesma altura base (nome de uma linha, sem motivo)",
+          "ok": true,
+          "dados": [
+            [
+              "Ataque Básico",
+              52
+            ],
+            [
+              "Azamaru",
+              53
+            ]
+          ]
+        },
+        {
+          "id": "Crítico: nada cortado",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "normal": {
+          "largura": 839,
+          "linhas": [
+            {
+              "nome": "Ataque Básico",
+              "alt": 52,
+              "topo": 52,
+              "linhasNome": 1,
+              "metas": {
+                "x": 397,
+                "y": 380,
+                "w": 179,
+                "h": 19,
+                "cy": 390
+              },
+              "cxNome": {
+                "x": 29,
+                "y": 372,
+                "w": 356,
+                "h": 36,
+                "cy": 390
+              },
+              "acerto": {
+                "x": 588,
+                "y": 372,
+                "w": 93,
+                "h": 36,
+                "cy": 390
+              },
+              "dano": {
+                "x": 692,
+                "y": 372,
+                "w": 150,
+                "h": 36,
+                "cy": 390
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Azamaru",
+              "alt": 53,
+              "topo": 53,
+              "linhasNome": 1,
+              "metas": {
+                "x": 397,
+                "y": 433,
+                "w": 179,
+                "h": 19,
+                "cy": 443
+              },
+              "cxNome": {
+                "x": 29,
+                "y": 425,
+                "w": 356,
+                "h": 36,
+                "cy": 443
+              },
+              "acerto": {
+                "x": 588,
+                "y": 425,
+                "w": 93,
+                "h": 36,
+                "cy": 443
+              },
+              "dano": {
+                "x": 692,
+                "y": 425,
+                "w": 150,
+                "h": 36,
+                "cy": 443
+              },
+              "motivo": false,
+              "cortados": []
+            }
+          ]
+        },
+        "critico": {
+          "largura": 839,
+          "linhas": [
+            {
+              "nome": "Ataque Básico",
+              "alt": 52,
+              "topo": 52,
+              "linhasNome": 1,
+              "metas": {
+                "x": 397,
+                "y": 380,
+                "w": 179,
+                "h": 19,
+                "cy": 390
+              },
+              "cxNome": {
+                "x": 29,
+                "y": 372,
+                "w": 356,
+                "h": 36,
+                "cy": 390
+              },
+              "acerto": {
+                "x": 588,
+                "y": 372,
+                "w": 93,
+                "h": 36,
+                "cy": 390
+              },
+              "dano": {
+                "x": 692,
+                "y": 372,
+                "w": 150,
+                "h": 36,
+                "cy": 390
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Azamaru",
+              "alt": 53,
+              "topo": 53,
+              "linhasNome": 1,
+              "metas": {
+                "x": 397,
+                "y": 433,
+                "w": 179,
+                "h": 19,
+                "cy": 443
+              },
+              "cxNome": {
+                "x": 29,
+                "y": 425,
+                "w": 356,
+                "h": 36,
+                "cy": 443
+              },
+              "acerto": {
+                "x": 588,
+                "y": 425,
+                "w": 93,
+                "h": 36,
+                "cy": 443
+              },
+              "dano": {
+                "x": 692,
+                "y": 425,
+                "w": 150,
+                "h": 36,
+                "cy": 443
+              },
+              "motivo": false,
+              "cortados": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "nome": "Dano em colunas comuns: arsenal 1280x800 com a compacta",
+      "checks": [
+        {
+          "id": "Normal: todas as linhas no mesmo arranjo",
+          "ok": true,
+          "dados": [
+            "alvos ao lado, metas ao lado",
+            "alvos ao lado, metas ao lado",
+            "alvos ao lado, metas ao lado",
+            "alvos ao lado, metas ao lado",
+            "alvos ao lado, metas ao lado"
+          ]
+        },
+        {
+          "id": "Normal: Acerto na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            623
+          ]
+        },
+        {
+          "id": "Normal: Dano na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            728
+          ]
+        },
+        {
+          "id": "Normal: metas na mesma coluna",
+          "ok": true,
+          "dados": [
+            372
+          ]
+        },
+        {
+          "id": "Normal: mesma altura base (nome de uma linha, sem motivo)",
+          "ok": true,
+          "dados": [
+            [
+              "Ataque Básico",
+              52
+            ],
+            [
+              "Besta de Repetição de Te",
+              53
+            ],
+            [
+              "Lâmina Oscilante de Test",
+              53
+            ],
+            [
+              "Machado de Guerra Amplo ",
+              72
+            ],
+            [
+              "Rapieira Modular de Test",
+              53
+            ]
+          ]
+        },
+        {
+          "id": "Normal: nada cortado",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "Crítico: todas as linhas no mesmo arranjo",
+          "ok": true,
+          "dados": [
+            "alvos ao lado, metas ao lado",
+            "alvos ao lado, metas ao lado",
+            "alvos ao lado, metas ao lado",
+            "alvos ao lado, metas ao lado",
+            "alvos ao lado, metas ao lado"
+          ]
+        },
+        {
+          "id": "Crítico: Acerto na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            623
+          ]
+        },
+        {
+          "id": "Crítico: Dano na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            728
+          ]
+        },
+        {
+          "id": "Crítico: metas na mesma coluna",
+          "ok": true,
+          "dados": [
+            372
+          ]
+        },
+        {
+          "id": "Crítico: mesma altura base (nome de uma linha, sem motivo)",
+          "ok": true,
+          "dados": [
+            [
+              "Ataque Básico",
+              52
+            ],
+            [
+              "Besta de Repetição de Te",
+              53
+            ],
+            [
+              "Lâmina Oscilante de Test",
+              53
+            ],
+            [
+              "Machado de Guerra Amplo ",
+              72
+            ],
+            [
+              "Rapieira Modular de Test",
+              53
+            ]
+          ]
+        },
+        {
+          "id": "Crítico: nada cortado",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "normal": {
+          "largura": 839,
+          "linhas": [
+            {
+              "nome": "Ataque Básico",
+              "alt": 52,
+              "topo": 52,
+              "linhasNome": 1,
+              "metas": {
+                "x": 372,
+                "y": 414,
+                "w": 239,
+                "h": 19,
+                "cy": 423
+              },
+              "cxNome": {
+                "x": 29,
+                "y": 405,
+                "w": 331,
+                "h": 36,
+                "cy": 423
+              },
+              "acerto": {
+                "x": 623,
+                "y": 405,
+                "w": 93,
+                "h": 36,
+                "cy": 423
+              },
+              "dano": {
+                "x": 728,
+                "y": 405,
+                "w": 114,
+                "h": 36,
+                "cy": 423
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Besta de Repetição de Te",
+              "alt": 53,
+              "topo": 53,
+              "linhasNome": 1,
+              "metas": {
+                "x": 372,
+                "y": 467,
+                "w": 239,
+                "h": 19,
+                "cy": 476
+              },
+              "cxNome": {
+                "x": 29,
+                "y": 458,
+                "w": 331,
+                "h": 36,
+                "cy": 476
+              },
+              "acerto": {
+                "x": 623,
+                "y": 458,
+                "w": 93,
+                "h": 36,
+                "cy": 476
+              },
+              "dano": {
+                "x": 728,
+                "y": 458,
+                "w": 114,
+                "h": 36,
+                "cy": 476
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Lâmina Oscilante de Test",
+              "alt": 53,
+              "topo": 53,
+              "linhasNome": 1,
+              "metas": {
+                "x": 372,
+                "y": 520,
+                "w": 239,
+                "h": 19,
+                "cy": 529
+              },
+              "cxNome": {
+                "x": 29,
+                "y": 511,
+                "w": 331,
+                "h": 36,
+                "cy": 529
+              },
+              "acerto": {
+                "x": 623,
+                "y": 511,
+                "w": 93,
+                "h": 36,
+                "cy": 529
+              },
+              "dano": {
+                "x": 728,
+                "y": 511,
+                "w": 114,
+                "h": 36,
+                "cy": 529
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Machado de Guerra Amplo ",
+              "alt": 72,
+              "topo": 72,
+              "linhasNome": 3,
+              "metas": {
+                "x": 372,
+                "y": 582,
+                "w": 239,
+                "h": 19,
+                "cy": 591
+              },
+              "cxNome": {
+                "x": 29,
+                "y": 562,
+                "w": 331,
+                "h": 59,
+                "cy": 591
+              },
+              "acerto": {
+                "x": 623,
+                "y": 573,
+                "w": 93,
+                "h": 36,
+                "cy": 591
+              },
+              "dano": {
+                "x": 728,
+                "y": 573,
+                "w": 114,
+                "h": 36,
+                "cy": 591
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Rapieira Modular de Test",
+              "alt": 53,
+              "topo": 53,
+              "linhasNome": 1,
+              "metas": {
+                "x": 372,
+                "y": 644,
+                "w": 239,
+                "h": 19,
+                "cy": 654
+              },
+              "cxNome": {
+                "x": 29,
+                "y": 636,
+                "w": 331,
+                "h": 36,
+                "cy": 654
+              },
+              "acerto": {
+                "x": 623,
+                "y": 636,
+                "w": 93,
+                "h": 36,
+                "cy": 654
+              },
+              "dano": {
+                "x": 728,
+                "y": 636,
+                "w": 114,
+                "h": 36,
+                "cy": 654
+              },
+              "motivo": false,
+              "cortados": []
+            }
+          ]
+        },
+        "critico": {
+          "largura": 839,
+          "linhas": [
+            {
+              "nome": "Ataque Básico",
+              "alt": 52,
+              "topo": 52,
+              "linhasNome": 1,
+              "metas": {
+                "x": 372,
+                "y": 414,
+                "w": 239,
+                "h": 19,
+                "cy": 423
+              },
+              "cxNome": {
+                "x": 29,
+                "y": 405,
+                "w": 331,
+                "h": 36,
+                "cy": 423
+              },
+              "acerto": {
+                "x": 623,
+                "y": 405,
+                "w": 93,
+                "h": 36,
+                "cy": 423
+              },
+              "dano": {
+                "x": 728,
+                "y": 405,
+                "w": 114,
+                "h": 36,
+                "cy": 423
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Besta de Repetição de Te",
+              "alt": 53,
+              "topo": 53,
+              "linhasNome": 1,
+              "metas": {
+                "x": 372,
+                "y": 467,
+                "w": 239,
+                "h": 19,
+                "cy": 476
+              },
+              "cxNome": {
+                "x": 29,
+                "y": 458,
+                "w": 331,
+                "h": 36,
+                "cy": 476
+              },
+              "acerto": {
+                "x": 623,
+                "y": 458,
+                "w": 93,
+                "h": 36,
+                "cy": 476
+              },
+              "dano": {
+                "x": 728,
+                "y": 458,
+                "w": 114,
+                "h": 36,
+                "cy": 476
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Lâmina Oscilante de Test",
+              "alt": 53,
+              "topo": 53,
+              "linhasNome": 1,
+              "metas": {
+                "x": 372,
+                "y": 520,
+                "w": 239,
+                "h": 19,
+                "cy": 529
+              },
+              "cxNome": {
+                "x": 29,
+                "y": 511,
+                "w": 331,
+                "h": 36,
+                "cy": 529
+              },
+              "acerto": {
+                "x": 623,
+                "y": 511,
+                "w": 93,
+                "h": 36,
+                "cy": 529
+              },
+              "dano": {
+                "x": 728,
+                "y": 511,
+                "w": 114,
+                "h": 36,
+                "cy": 529
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Machado de Guerra Amplo ",
+              "alt": 72,
+              "topo": 72,
+              "linhasNome": 3,
+              "metas": {
+                "x": 372,
+                "y": 582,
+                "w": 239,
+                "h": 19,
+                "cy": 591
+              },
+              "cxNome": {
+                "x": 29,
+                "y": 562,
+                "w": 331,
+                "h": 59,
+                "cy": 591
+              },
+              "acerto": {
+                "x": 623,
+                "y": 573,
+                "w": 93,
+                "h": 36,
+                "cy": 591
+              },
+              "dano": {
+                "x": 728,
+                "y": 573,
+                "w": 114,
+                "h": 36,
+                "cy": 591
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Rapieira Modular de Test",
+              "alt": 53,
+              "topo": 53,
+              "linhasNome": 1,
+              "metas": {
+                "x": 372,
+                "y": 644,
+                "w": 239,
+                "h": 19,
+                "cy": 654
+              },
+              "cxNome": {
+                "x": 29,
+                "y": 636,
+                "w": 331,
+                "h": 36,
+                "cy": 654
+              },
+              "acerto": {
+                "x": 623,
+                "y": 636,
+                "w": 93,
+                "h": 36,
+                "cy": 654
+              },
+              "dano": {
+                "x": 728,
+                "y": 636,
+                "w": 114,
+                "h": 36,
+                "cy": 654
+              },
+              "motivo": false,
+              "cortados": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "nome": "Dano em colunas comuns: arsenal 1024 com a compacta",
+      "checks": [
+        {
+          "id": "Normal: todas as linhas no mesmo arranjo",
+          "ok": true,
+          "dados": [
+            "alvos ao lado, metas sob o nome",
+            "alvos ao lado, metas sob o nome",
+            "alvos ao lado, metas sob o nome",
+            "alvos ao lado, metas sob o nome",
+            "alvos ao lado, metas sob o nome"
+          ]
+        },
+        {
+          "id": "Normal: Acerto na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            369
+          ]
+        },
+        {
+          "id": "Normal: Dano na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            474
+          ]
+        },
+        {
+          "id": "Normal: metas na mesma coluna",
+          "ok": true,
+          "dados": [
+            27
+          ]
+        },
+        {
+          "id": "Normal: mesma altura base (nome de uma linha, sem motivo)",
+          "ok": true,
+          "dados": [
+            [
+              "Ataque Básico",
+              61
+            ],
+            [
+              "Besta de Repetição de Te",
+              62
+            ],
+            [
+              "Lâmina Oscilante de Test",
+              62
+            ],
+            [
+              "Machado de Guerra Amplo ",
+              92
+            ],
+            [
+              "Rapieira Modular de Test",
+              62
+            ]
+          ]
+        },
+        {
+          "id": "Normal: nada cortado",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "Crítico: todas as linhas no mesmo arranjo",
+          "ok": true,
+          "dados": [
+            "alvos ao lado, metas sob o nome",
+            "alvos ao lado, metas sob o nome",
+            "alvos ao lado, metas sob o nome",
+            "alvos ao lado, metas sob o nome",
+            "alvos ao lado, metas sob o nome"
+          ]
+        },
+        {
+          "id": "Crítico: Acerto na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            369
+          ]
+        },
+        {
+          "id": "Crítico: Dano na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            474
+          ]
+        },
+        {
+          "id": "Crítico: metas na mesma coluna",
+          "ok": true,
+          "dados": [
+            27
+          ]
+        },
+        {
+          "id": "Crítico: mesma altura base (nome de uma linha, sem motivo)",
+          "ok": true,
+          "dados": [
+            [
+              "Ataque Básico",
+              61
+            ],
+            [
+              "Besta de Repetição de Te",
+              62
+            ],
+            [
+              "Lâmina Oscilante de Test",
+              62
+            ],
+            [
+              "Machado de Guerra Amplo ",
+              92
+            ],
+            [
+              "Rapieira Modular de Test",
+              62
+            ]
+          ]
+        },
+        {
+          "id": "Crítico: nada cortado",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "normal": {
+          "largura": 587,
+          "linhas": [
+            {
+              "nome": "Ataque Básico",
+              "alt": 61,
+              "topo": 61,
+              "linhasNome": 1,
+              "metas": {
+                "x": 27,
+                "y": 418,
+                "w": 330,
+                "h": 19,
+                "cy": 427
+              },
+              "cxNome": {
+                "x": 27,
+                "y": 388,
+                "w": 330,
+                "h": 28,
+                "cy": 402
+              },
+              "acerto": {
+                "x": 369,
+                "y": 394,
+                "w": 93,
+                "h": 36,
+                "cy": 412
+              },
+              "dano": {
+                "x": 474,
+                "y": 394,
+                "w": 114,
+                "h": 36,
+                "cy": 412
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Besta de Repetição de Te",
+              "alt": 62,
+              "topo": 62,
+              "linhasNome": 1,
+              "metas": {
+                "x": 27,
+                "y": 479,
+                "w": 330,
+                "h": 19,
+                "cy": 489
+              },
+              "cxNome": {
+                "x": 27,
+                "y": 449,
+                "w": 330,
+                "h": 28,
+                "cy": 463
+              },
+              "acerto": {
+                "x": 369,
+                "y": 456,
+                "w": 93,
+                "h": 36,
+                "cy": 474
+              },
+              "dano": {
+                "x": 474,
+                "y": 456,
+                "w": 114,
+                "h": 36,
+                "cy": 474
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Lâmina Oscilante de Test",
+              "alt": 62,
+              "topo": 62,
+              "linhasNome": 1,
+              "metas": {
+                "x": 27,
+                "y": 541,
+                "w": 330,
+                "h": 19,
+                "cy": 551
+              },
+              "cxNome": {
+                "x": 27,
+                "y": 511,
+                "w": 330,
+                "h": 28,
+                "cy": 525
+              },
+              "acerto": {
+                "x": 369,
+                "y": 518,
+                "w": 93,
+                "h": 36,
+                "cy": 536
+              },
+              "dano": {
+                "x": 474,
+                "y": 518,
+                "w": 114,
+                "h": 36,
+                "cy": 536
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Machado de Guerra Amplo ",
+              "alt": 92,
+              "topo": 92,
+              "linhasNome": 3,
+              "metas": {
+                "x": 27,
+                "y": 634,
+                "w": 330,
+                "h": 19,
+                "cy": 643
+              },
+              "cxNome": {
+                "x": 27,
+                "y": 573,
+                "w": 330,
+                "h": 59,
+                "cy": 602
+              },
+              "acerto": {
+                "x": 369,
+                "y": 595,
+                "w": 93,
+                "h": 36,
+                "cy": 613
+              },
+              "dano": {
+                "x": 474,
+                "y": 595,
+                "w": 114,
+                "h": 36,
+                "cy": 613
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Rapieira Modular de Test",
+              "alt": 62,
+              "topo": 62,
+              "linhasNome": 1,
+              "metas": {
+                "x": 27,
+                "y": 695,
+                "w": 330,
+                "h": 19,
+                "cy": 705
+              },
+              "cxNome": {
+                "x": 27,
+                "y": 665,
+                "w": 330,
+                "h": 28,
+                "cy": 679
+              },
+              "acerto": {
+                "x": 369,
+                "y": 672,
+                "w": 93,
+                "h": 36,
+                "cy": 690
+              },
+              "dano": {
+                "x": 474,
+                "y": 672,
+                "w": 114,
+                "h": 36,
+                "cy": 690
+              },
+              "motivo": false,
+              "cortados": []
+            }
+          ]
+        },
+        "critico": {
+          "largura": 587,
+          "linhas": [
+            {
+              "nome": "Ataque Básico",
+              "alt": 61,
+              "topo": 61,
+              "linhasNome": 1,
+              "metas": {
+                "x": 27,
+                "y": 418,
+                "w": 330,
+                "h": 19,
+                "cy": 427
+              },
+              "cxNome": {
+                "x": 27,
+                "y": 388,
+                "w": 330,
+                "h": 28,
+                "cy": 402
+              },
+              "acerto": {
+                "x": 369,
+                "y": 394,
+                "w": 93,
+                "h": 36,
+                "cy": 412
+              },
+              "dano": {
+                "x": 474,
+                "y": 394,
+                "w": 114,
+                "h": 36,
+                "cy": 412
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Besta de Repetição de Te",
+              "alt": 62,
+              "topo": 62,
+              "linhasNome": 1,
+              "metas": {
+                "x": 27,
+                "y": 479,
+                "w": 330,
+                "h": 19,
+                "cy": 489
+              },
+              "cxNome": {
+                "x": 27,
+                "y": 449,
+                "w": 330,
+                "h": 28,
+                "cy": 463
+              },
+              "acerto": {
+                "x": 369,
+                "y": 456,
+                "w": 93,
+                "h": 36,
+                "cy": 474
+              },
+              "dano": {
+                "x": 474,
+                "y": 456,
+                "w": 114,
+                "h": 36,
+                "cy": 474
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Lâmina Oscilante de Test",
+              "alt": 62,
+              "topo": 62,
+              "linhasNome": 1,
+              "metas": {
+                "x": 27,
+                "y": 541,
+                "w": 330,
+                "h": 19,
+                "cy": 551
+              },
+              "cxNome": {
+                "x": 27,
+                "y": 511,
+                "w": 330,
+                "h": 28,
+                "cy": 525
+              },
+              "acerto": {
+                "x": 369,
+                "y": 518,
+                "w": 93,
+                "h": 36,
+                "cy": 536
+              },
+              "dano": {
+                "x": 474,
+                "y": 518,
+                "w": 114,
+                "h": 36,
+                "cy": 536
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Machado de Guerra Amplo ",
+              "alt": 92,
+              "topo": 92,
+              "linhasNome": 3,
+              "metas": {
+                "x": 27,
+                "y": 634,
+                "w": 330,
+                "h": 19,
+                "cy": 643
+              },
+              "cxNome": {
+                "x": 27,
+                "y": 573,
+                "w": 330,
+                "h": 59,
+                "cy": 602
+              },
+              "acerto": {
+                "x": 369,
+                "y": 595,
+                "w": 93,
+                "h": 36,
+                "cy": 613
+              },
+              "dano": {
+                "x": 474,
+                "y": 595,
+                "w": 114,
+                "h": 36,
+                "cy": 613
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Rapieira Modular de Test",
+              "alt": 62,
+              "topo": 62,
+              "linhasNome": 1,
+              "metas": {
+                "x": 27,
+                "y": 695,
+                "w": 330,
+                "h": 19,
+                "cy": 705
+              },
+              "cxNome": {
+                "x": 27,
+                "y": 665,
+                "w": 330,
+                "h": 28,
+                "cy": 679
+              },
+              "acerto": {
+                "x": 369,
+                "y": 672,
+                "w": 93,
+                "h": 36,
+                "cy": 690
+              },
+              "dano": {
+                "x": 474,
+                "y": 672,
+                "w": 114,
+                "h": 36,
+                "cy": 690
+              },
+              "motivo": false,
+              "cortados": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "nome": "Dano em colunas comuns: arsenal 331 úteis (768 com a compacta)",
+      "checks": [
+        {
+          "id": "Normal: todas as linhas no mesmo arranjo",
+          "ok": true,
+          "dados": [
+            "alvos abaixo, metas sob o nome",
+            "alvos abaixo, metas sob o nome",
+            "alvos abaixo, metas sob o nome",
+            "alvos abaixo, metas sob o nome",
+            "alvos abaixo, metas sob o nome"
+          ]
+        },
+        {
+          "id": "Normal: Acerto na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            113
+          ]
+        },
+        {
+          "id": "Normal: Dano na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            218
+          ]
+        },
+        {
+          "id": "Normal: metas na mesma coluna",
+          "ok": true,
+          "dados": [
+            27
+          ]
+        },
+        {
+          "id": "Normal: mesma altura base (nome de uma linha, sem motivo)",
+          "ok": true,
+          "dados": [
+            [
+              "Ataque Básico",
+              99
+            ],
+            [
+              "Besta de Repetição de Te",
+              100
+            ],
+            [
+              "Lâmina Oscilante de Test",
+              100
+            ],
+            [
+              "Machado de Guerra Amplo ",
+              130
+            ],
+            [
+              "Rapieira Modular de Test",
+              100
+            ]
+          ]
+        },
+        {
+          "id": "Normal: nada cortado",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "Crítico: todas as linhas no mesmo arranjo",
+          "ok": true,
+          "dados": [
+            "alvos abaixo, metas sob o nome",
+            "alvos abaixo, metas sob o nome",
+            "alvos abaixo, metas sob o nome",
+            "alvos abaixo, metas sob o nome",
+            "alvos abaixo, metas sob o nome"
+          ]
+        },
+        {
+          "id": "Crítico: Acerto na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            113
+          ]
+        },
+        {
+          "id": "Crítico: Dano na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            218
+          ]
+        },
+        {
+          "id": "Crítico: metas na mesma coluna",
+          "ok": true,
+          "dados": [
+            27
+          ]
+        },
+        {
+          "id": "Crítico: mesma altura base (nome de uma linha, sem motivo)",
+          "ok": true,
+          "dados": [
+            [
+              "Ataque Básico",
+              99
+            ],
+            [
+              "Besta de Repetição de Te",
+              100
+            ],
+            [
+              "Lâmina Oscilante de Test",
+              100
+            ],
+            [
+              "Machado de Guerra Amplo ",
+              130
+            ],
+            [
+              "Rapieira Modular de Test",
+              100
+            ]
+          ]
+        },
+        {
+          "id": "Crítico: nada cortado",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "normal": {
+          "largura": 331,
+          "linhas": [
+            {
+              "nome": "Ataque Básico",
+              "alt": 99,
+              "topo": 99,
+              "linhasNome": 1,
+              "metas": {
+                "x": 27,
+                "y": 418,
+                "w": 305,
+                "h": 19,
+                "cy": 427
+              },
+              "cxNome": {
+                "x": 27,
+                "y": 388,
+                "w": 305,
+                "h": 28,
+                "cy": 402
+              },
+              "acerto": {
+                "x": 113,
+                "y": 439,
+                "w": 93,
+                "h": 36,
+                "cy": 457
+              },
+              "dano": {
+                "x": 218,
+                "y": 439,
+                "w": 114,
+                "h": 36,
+                "cy": 457
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Besta de Repetição de Te",
+              "alt": 100,
+              "topo": 100,
+              "linhasNome": 1,
+              "metas": {
+                "x": 27,
+                "y": 518,
+                "w": 305,
+                "h": 19,
+                "cy": 527
+              },
+              "cxNome": {
+                "x": 27,
+                "y": 488,
+                "w": 305,
+                "h": 28,
+                "cy": 502
+              },
+              "acerto": {
+                "x": 113,
+                "y": 539,
+                "w": 93,
+                "h": 36,
+                "cy": 557
+              },
+              "dano": {
+                "x": 218,
+                "y": 539,
+                "w": 114,
+                "h": 36,
+                "cy": 557
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Lâmina Oscilante de Test",
+              "alt": 100,
+              "topo": 100,
+              "linhasNome": 1,
+              "metas": {
+                "x": 27,
+                "y": 618,
+                "w": 305,
+                "h": 19,
+                "cy": 627
+              },
+              "cxNome": {
+                "x": 27,
+                "y": 588,
+                "w": 305,
+                "h": 28,
+                "cy": 602
+              },
+              "acerto": {
+                "x": 113,
+                "y": 638,
+                "w": 93,
+                "h": 36,
+                "cy": 656
+              },
+              "dano": {
+                "x": 218,
+                "y": 638,
+                "w": 114,
+                "h": 36,
+                "cy": 656
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Machado de Guerra Amplo ",
+              "alt": 130,
+              "topo": 130,
+              "linhasNome": 3,
+              "metas": {
+                "x": 27,
+                "y": 748,
+                "w": 305,
+                "h": 19,
+                "cy": 757
+              },
+              "cxNome": {
+                "x": 27,
+                "y": 687,
+                "w": 305,
+                "h": 59,
+                "cy": 717
+              },
+              "acerto": {
+                "x": 113,
+                "y": 769,
+                "w": 93,
+                "h": 36,
+                "cy": 787
+              },
+              "dano": {
+                "x": 218,
+                "y": 769,
+                "w": 114,
+                "h": 36,
+                "cy": 787
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Rapieira Modular de Test",
+              "alt": 100,
+              "topo": 100,
+              "linhasNome": 1,
+              "metas": {
+                "x": 27,
+                "y": 848,
+                "w": 305,
+                "h": 19,
+                "cy": 857
+              },
+              "cxNome": {
+                "x": 27,
+                "y": 818,
+                "w": 305,
+                "h": 28,
+                "cy": 832
+              },
+              "acerto": {
+                "x": 113,
+                "y": 869,
+                "w": 93,
+                "h": 36,
+                "cy": 887
+              },
+              "dano": {
+                "x": 218,
+                "y": 869,
+                "w": 114,
+                "h": 36,
+                "cy": 887
+              },
+              "motivo": false,
+              "cortados": []
+            }
+          ]
+        },
+        "critico": {
+          "largura": 331,
+          "linhas": [
+            {
+              "nome": "Ataque Básico",
+              "alt": 99,
+              "topo": 99,
+              "linhasNome": 1,
+              "metas": {
+                "x": 27,
+                "y": 418,
+                "w": 305,
+                "h": 19,
+                "cy": 427
+              },
+              "cxNome": {
+                "x": 27,
+                "y": 388,
+                "w": 305,
+                "h": 28,
+                "cy": 402
+              },
+              "acerto": {
+                "x": 113,
+                "y": 439,
+                "w": 93,
+                "h": 36,
+                "cy": 457
+              },
+              "dano": {
+                "x": 218,
+                "y": 439,
+                "w": 114,
+                "h": 36,
+                "cy": 457
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Besta de Repetição de Te",
+              "alt": 100,
+              "topo": 100,
+              "linhasNome": 1,
+              "metas": {
+                "x": 27,
+                "y": 518,
+                "w": 305,
+                "h": 19,
+                "cy": 527
+              },
+              "cxNome": {
+                "x": 27,
+                "y": 488,
+                "w": 305,
+                "h": 28,
+                "cy": 502
+              },
+              "acerto": {
+                "x": 113,
+                "y": 539,
+                "w": 93,
+                "h": 36,
+                "cy": 557
+              },
+              "dano": {
+                "x": 218,
+                "y": 539,
+                "w": 114,
+                "h": 36,
+                "cy": 557
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Lâmina Oscilante de Test",
+              "alt": 100,
+              "topo": 100,
+              "linhasNome": 1,
+              "metas": {
+                "x": 27,
+                "y": 618,
+                "w": 305,
+                "h": 19,
+                "cy": 627
+              },
+              "cxNome": {
+                "x": 27,
+                "y": 588,
+                "w": 305,
+                "h": 28,
+                "cy": 602
+              },
+              "acerto": {
+                "x": 113,
+                "y": 638,
+                "w": 93,
+                "h": 36,
+                "cy": 656
+              },
+              "dano": {
+                "x": 218,
+                "y": 638,
+                "w": 114,
+                "h": 36,
+                "cy": 656
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Machado de Guerra Amplo ",
+              "alt": 130,
+              "topo": 130,
+              "linhasNome": 3,
+              "metas": {
+                "x": 27,
+                "y": 748,
+                "w": 305,
+                "h": 19,
+                "cy": 757
+              },
+              "cxNome": {
+                "x": 27,
+                "y": 687,
+                "w": 305,
+                "h": 59,
+                "cy": 717
+              },
+              "acerto": {
+                "x": 113,
+                "y": 769,
+                "w": 93,
+                "h": 36,
+                "cy": 787
+              },
+              "dano": {
+                "x": 218,
+                "y": 769,
+                "w": 114,
+                "h": 36,
+                "cy": 787
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Rapieira Modular de Test",
+              "alt": 100,
+              "topo": 100,
+              "linhasNome": 1,
+              "metas": {
+                "x": 27,
+                "y": 848,
+                "w": 305,
+                "h": 19,
+                "cy": 857
+              },
+              "cxNome": {
+                "x": 27,
+                "y": 818,
+                "w": 305,
+                "h": 28,
+                "cy": 832
+              },
+              "acerto": {
+                "x": 113,
+                "y": 869,
+                "w": 93,
+                "h": 36,
+                "cy": 887
+              },
+              "dano": {
+                "x": 218,
+                "y": 869,
+                "w": 114,
+                "h": 36,
+                "cy": 887
+              },
+              "motivo": false,
+              "cortados": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "nome": "Dano em colunas comuns: arsenal telefone 390",
+      "checks": [
+        {
+          "id": "Normal: todas as linhas no mesmo arranjo",
+          "ok": true,
+          "dados": [
+            "alvos abaixo, metas sob o nome",
+            "alvos abaixo, metas sob o nome",
+            "alvos abaixo, metas sob o nome",
+            "alvos abaixo, metas sob o nome",
+            "alvos abaixo, metas sob o nome"
+          ]
+        },
+        {
+          "id": "Normal: Acerto na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            144
+          ]
+        },
+        {
+          "id": "Normal: Dano na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            249
+          ]
+        },
+        {
+          "id": "Normal: metas na mesma coluna",
+          "ok": true,
+          "dados": [
+            23
+          ]
+        },
+        {
+          "id": "Normal: mesma altura base (nome de uma linha, sem motivo)",
+          "ok": true,
+          "dados": [
+            [
+              "Ataque Básico",
+              115
+            ],
+            [
+              "Besta de Repetição de Te",
+              116
+            ],
+            [
+              "Lâmina Oscilante de Test",
+              116
+            ],
+            [
+              "Machado de Guerra Amplo ",
+              116
+            ],
+            [
+              "Rapieira Modular de Test",
+              116
+            ]
+          ]
+        },
+        {
+          "id": "Normal: nada cortado",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "Crítico: todas as linhas no mesmo arranjo",
+          "ok": true,
+          "dados": [
+            "alvos abaixo, metas sob o nome",
+            "alvos abaixo, metas sob o nome",
+            "alvos abaixo, metas sob o nome",
+            "alvos abaixo, metas sob o nome",
+            "alvos abaixo, metas sob o nome"
+          ]
+        },
+        {
+          "id": "Crítico: Acerto na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            144
+          ]
+        },
+        {
+          "id": "Crítico: Dano na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            249
+          ]
+        },
+        {
+          "id": "Crítico: metas na mesma coluna",
+          "ok": true,
+          "dados": [
+            23
+          ]
+        },
+        {
+          "id": "Crítico: mesma altura base (nome de uma linha, sem motivo)",
+          "ok": true,
+          "dados": [
+            [
+              "Ataque Básico",
+              115
+            ],
+            [
+              "Besta de Repetição de Te",
+              116
+            ],
+            [
+              "Lâmina Oscilante de Test",
+              116
+            ],
+            [
+              "Machado de Guerra Amplo ",
+              116
+            ],
+            [
+              "Rapieira Modular de Test",
+              116
+            ]
+          ]
+        },
+        {
+          "id": "Crítico: nada cortado",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "normal": {
+          "largura": 366,
+          "linhas": [
+            {
+              "nome": "Ataque Básico",
+              "alt": 115,
+              "topo": 115,
+              "linhasNome": 1,
+              "metas": {
+                "x": 23,
+                "y": 554,
+                "w": 340,
+                "h": 19,
+                "cy": 564
+              },
+              "cxNome": {
+                "x": 23,
+                "y": 512,
+                "w": 340,
+                "h": 40,
+                "cy": 532
+              },
+              "acerto": {
+                "x": 144,
+                "y": 575,
+                "w": 93,
+                "h": 40,
+                "cy": 595
+              },
+              "dano": {
+                "x": 249,
+                "y": 575,
+                "w": 114,
+                "h": 40,
+                "cy": 595
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Besta de Repetição de Te",
+              "alt": 116,
+              "topo": 116,
+              "linhasNome": 1,
+              "metas": {
+                "x": 23,
+                "y": 670,
+                "w": 340,
+                "h": 19,
+                "cy": 680
+              },
+              "cxNome": {
+                "x": 23,
+                "y": 628,
+                "w": 340,
+                "h": 40,
+                "cy": 648
+              },
+              "acerto": {
+                "x": 144,
+                "y": 691,
+                "w": 93,
+                "h": 40,
+                "cy": 711
+              },
+              "dano": {
+                "x": 249,
+                "y": 691,
+                "w": 114,
+                "h": 40,
+                "cy": 711
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Lâmina Oscilante de Test",
+              "alt": 116,
+              "topo": 116,
+              "linhasNome": 1,
+              "metas": {
+                "x": 23,
+                "y": 786,
+                "w": 340,
+                "h": 19,
+                "cy": 795
+              },
+              "cxNome": {
+                "x": 23,
+                "y": 744,
+                "w": 340,
+                "h": 40,
+                "cy": 764
+              },
+              "acerto": {
+                "x": 144,
+                "y": 807,
+                "w": 93,
+                "h": 40,
+                "cy": 827
+              },
+              "dano": {
+                "x": 249,
+                "y": 807,
+                "w": 114,
+                "h": 40,
+                "cy": 827
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Machado de Guerra Amplo ",
+              "alt": 116,
+              "topo": 116,
+              "linhasNome": 2,
+              "metas": {
+                "x": 23,
+                "y": 902,
+                "w": 340,
+                "h": 19,
+                "cy": 911
+              },
+              "cxNome": {
+                "x": 23,
+                "y": 860,
+                "w": 340,
+                "h": 40,
+                "cy": 880
+              },
+              "acerto": {
+                "x": 144,
+                "y": 923,
+                "w": 93,
+                "h": 40,
+                "cy": 943
+              },
+              "dano": {
+                "x": 249,
+                "y": 923,
+                "w": 114,
+                "h": 40,
+                "cy": 943
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Rapieira Modular de Test",
+              "alt": 116,
+              "topo": 116,
+              "linhasNome": 1,
+              "metas": {
+                "x": 23,
+                "y": 1018,
+                "w": 340,
+                "h": 19,
+                "cy": 1027
+              },
+              "cxNome": {
+                "x": 23,
+                "y": 976,
+                "w": 340,
+                "h": 40,
+                "cy": 996
+              },
+              "acerto": {
+                "x": 144,
+                "y": 1038,
+                "w": 93,
+                "h": 40,
+                "cy": 1058
+              },
+              "dano": {
+                "x": 249,
+                "y": 1038,
+                "w": 114,
+                "h": 40,
+                "cy": 1058
+              },
+              "motivo": false,
+              "cortados": []
+            }
+          ]
+        },
+        "critico": {
+          "largura": 366,
+          "linhas": [
+            {
+              "nome": "Ataque Básico",
+              "alt": 115,
+              "topo": 115,
+              "linhasNome": 1,
+              "metas": {
+                "x": 23,
+                "y": 554,
+                "w": 340,
+                "h": 19,
+                "cy": 564
+              },
+              "cxNome": {
+                "x": 23,
+                "y": 512,
+                "w": 340,
+                "h": 40,
+                "cy": 532
+              },
+              "acerto": {
+                "x": 144,
+                "y": 575,
+                "w": 93,
+                "h": 40,
+                "cy": 595
+              },
+              "dano": {
+                "x": 249,
+                "y": 575,
+                "w": 114,
+                "h": 40,
+                "cy": 595
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Besta de Repetição de Te",
+              "alt": 116,
+              "topo": 116,
+              "linhasNome": 1,
+              "metas": {
+                "x": 23,
+                "y": 670,
+                "w": 340,
+                "h": 19,
+                "cy": 680
+              },
+              "cxNome": {
+                "x": 23,
+                "y": 628,
+                "w": 340,
+                "h": 40,
+                "cy": 648
+              },
+              "acerto": {
+                "x": 144,
+                "y": 691,
+                "w": 93,
+                "h": 40,
+                "cy": 711
+              },
+              "dano": {
+                "x": 249,
+                "y": 691,
+                "w": 114,
+                "h": 40,
+                "cy": 711
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Lâmina Oscilante de Test",
+              "alt": 116,
+              "topo": 116,
+              "linhasNome": 1,
+              "metas": {
+                "x": 23,
+                "y": 786,
+                "w": 340,
+                "h": 19,
+                "cy": 795
+              },
+              "cxNome": {
+                "x": 23,
+                "y": 744,
+                "w": 340,
+                "h": 40,
+                "cy": 764
+              },
+              "acerto": {
+                "x": 144,
+                "y": 807,
+                "w": 93,
+                "h": 40,
+                "cy": 827
+              },
+              "dano": {
+                "x": 249,
+                "y": 807,
+                "w": 114,
+                "h": 40,
+                "cy": 827
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Machado de Guerra Amplo ",
+              "alt": 116,
+              "topo": 116,
+              "linhasNome": 2,
+              "metas": {
+                "x": 23,
+                "y": 902,
+                "w": 340,
+                "h": 19,
+                "cy": 911
+              },
+              "cxNome": {
+                "x": 23,
+                "y": 860,
+                "w": 340,
+                "h": 40,
+                "cy": 880
+              },
+              "acerto": {
+                "x": 144,
+                "y": 923,
+                "w": 93,
+                "h": 40,
+                "cy": 943
+              },
+              "dano": {
+                "x": 249,
+                "y": 923,
+                "w": 114,
+                "h": 40,
+                "cy": 943
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Rapieira Modular de Test",
+              "alt": 116,
+              "topo": 116,
+              "linhasNome": 1,
+              "metas": {
+                "x": 23,
+                "y": 1018,
+                "w": 340,
+                "h": 19,
+                "cy": 1027
+              },
+              "cxNome": {
+                "x": 23,
+                "y": 976,
+                "w": 340,
+                "h": 40,
+                "cy": 996
+              },
+              "acerto": {
+                "x": 144,
+                "y": 1038,
+                "w": 93,
+                "h": 40,
+                "cy": 1058
+              },
+              "dano": {
+                "x": 249,
+                "y": 1038,
+                "w": 114,
+                "h": 40,
+                "cy": 1058
+              },
+              "motivo": false,
+              "cortados": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "nome": "Dano em colunas comuns: mesa Quad HD com a compacta",
+      "checks": [
+        {
+          "id": "Normal: todas as linhas no mesmo arranjo",
+          "ok": true,
+          "dados": [
+            "alvos ao lado, metas ao lado",
+            "alvos ao lado, metas ao lado"
+          ]
+        },
+        {
+          "id": "Normal: Acerto na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            782
+          ]
+        },
+        {
+          "id": "Normal: Dano na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            887
+          ]
+        },
+        {
+          "id": "Normal: metas na mesma coluna",
+          "ok": true,
+          "dados": [
+            591
+          ]
+        },
+        {
+          "id": "Normal: mesma altura base (nome de uma linha, sem motivo)",
+          "ok": true,
+          "dados": [
+            [
+              "Ataque Básico",
+              52
+            ],
+            [
+              "Azamaru",
+              53
+            ]
+          ]
+        },
+        {
+          "id": "Normal: nada cortado",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "Crítico: todas as linhas no mesmo arranjo",
+          "ok": true,
+          "dados": [
+            "alvos ao lado, metas ao lado",
+            "alvos ao lado, metas ao lado"
+          ]
+        },
+        {
+          "id": "Crítico: Acerto na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            782
+          ]
+        },
+        {
+          "id": "Crítico: Dano na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            887
+          ]
+        },
+        {
+          "id": "Crítico: metas na mesma coluna",
+          "ok": true,
+          "dados": [
+            591
+          ]
+        },
+        {
+          "id": "Crítico: mesma altura base (nome de uma linha, sem motivo)",
+          "ok": true,
+          "dados": [
+            [
+              "Ataque Básico",
+              52
+            ],
+            [
+              "Azamaru",
+              53
+            ]
+          ]
+        },
+        {
+          "id": "Crítico: nada cortado",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "normal": {
+          "largura": 855,
+          "linhas": [
+            {
+              "nome": "Ataque Básico",
+              "alt": 52,
+              "topo": 52,
+              "linhasNome": 1,
+              "metas": {
+                "x": 591,
+                "y": 587,
+                "w": 179,
+                "h": 19,
+                "cy": 597
+              },
+              "cxNome": {
+                "x": 208,
+                "y": 579,
+                "w": 372,
+                "h": 36,
+                "cy": 597
+              },
+              "acerto": {
+                "x": 782,
+                "y": 579,
+                "w": 93,
+                "h": 36,
+                "cy": 597
+              },
+              "dano": {
+                "x": 887,
+                "y": 579,
+                "w": 150,
+                "h": 36,
+                "cy": 597
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Azamaru",
+              "alt": 53,
+              "topo": 53,
+              "linhasNome": 1,
+              "metas": {
+                "x": 591,
+                "y": 640,
+                "w": 179,
+                "h": 19,
+                "cy": 650
+              },
+              "cxNome": {
+                "x": 208,
+                "y": 632,
+                "w": 372,
+                "h": 36,
+                "cy": 650
+              },
+              "acerto": {
+                "x": 782,
+                "y": 632,
+                "w": 93,
+                "h": 36,
+                "cy": 650
+              },
+              "dano": {
+                "x": 887,
+                "y": 632,
+                "w": 150,
+                "h": 36,
+                "cy": 650
+              },
+              "motivo": false,
+              "cortados": []
+            }
+          ]
+        },
+        "critico": {
+          "largura": 855,
+          "linhas": [
+            {
+              "nome": "Ataque Básico",
+              "alt": 52,
+              "topo": 52,
+              "linhasNome": 1,
+              "metas": {
+                "x": 591,
+                "y": 587,
+                "w": 179,
+                "h": 19,
+                "cy": 597
+              },
+              "cxNome": {
+                "x": 208,
+                "y": 579,
+                "w": 372,
+                "h": 36,
+                "cy": 597
+              },
+              "acerto": {
+                "x": 782,
+                "y": 579,
+                "w": 93,
+                "h": 36,
+                "cy": 597
+              },
+              "dano": {
+                "x": 887,
+                "y": 579,
+                "w": 150,
+                "h": 36,
+                "cy": 597
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Azamaru",
+              "alt": 53,
+              "topo": 53,
+              "linhasNome": 1,
+              "metas": {
+                "x": 591,
+                "y": 640,
+                "w": 179,
+                "h": 19,
+                "cy": 650
+              },
+              "cxNome": {
+                "x": 208,
+                "y": 632,
+                "w": 372,
+                "h": 36,
+                "cy": 650
+              },
+              "acerto": {
+                "x": 782,
+                "y": 632,
+                "w": 93,
+                "h": 36,
+                "cy": 650
+              },
+              "dano": {
+                "x": 887,
+                "y": 632,
+                "w": 150,
+                "h": 36,
+                "cy": 650
+              },
+              "motivo": false,
+              "cortados": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "nome": "Dano em colunas comuns: arsenal Quad HD",
+      "checks": [
+        {
+          "id": "Normal: todas as linhas no mesmo arranjo",
+          "ok": true,
+          "dados": [
+            "alvos ao lado, metas ao lado",
+            "alvos ao lado, metas ao lado",
+            "alvos ao lado, metas ao lado",
+            "alvos ao lado, metas ao lado",
+            "alvos ao lado, metas ao lado"
+          ]
+        },
+        {
+          "id": "Normal: Acerto na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            1901
+          ]
+        },
+        {
+          "id": "Normal: Dano na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            2006
+          ]
+        },
+        {
+          "id": "Normal: metas na mesma coluna",
+          "ok": true,
+          "dados": [
+            1650
+          ]
+        },
+        {
+          "id": "Normal: mesma altura base (nome de uma linha, sem motivo)",
+          "ok": true,
+          "dados": [
+            [
+              "Ataque Básico",
+              52
+            ],
+            [
+              "Besta de Repetição de Te",
+              53
+            ],
+            [
+              "Lâmina Oscilante de Test",
+              53
+            ],
+            [
+              "Machado de Guerra Amplo ",
+              53
+            ],
+            [
+              "Rapieira Modular de Test",
+              53
+            ]
+          ]
+        },
+        {
+          "id": "Normal: nada cortado",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "Crítico: todas as linhas no mesmo arranjo",
+          "ok": true,
+          "dados": [
+            "alvos ao lado, metas ao lado",
+            "alvos ao lado, metas ao lado",
+            "alvos ao lado, metas ao lado",
+            "alvos ao lado, metas ao lado",
+            "alvos ao lado, metas ao lado"
+          ]
+        },
+        {
+          "id": "Crítico: Acerto na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            1901
+          ]
+        },
+        {
+          "id": "Crítico: Dano na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            2006
+          ]
+        },
+        {
+          "id": "Crítico: metas na mesma coluna",
+          "ok": true,
+          "dados": [
+            1650
+          ]
+        },
+        {
+          "id": "Crítico: mesma altura base (nome de uma linha, sem motivo)",
+          "ok": true,
+          "dados": [
+            [
+              "Ataque Básico",
+              52
+            ],
+            [
+              "Besta de Repetição de Te",
+              53
+            ],
+            [
+              "Lâmina Oscilante de Test",
+              53
+            ],
+            [
+              "Machado de Guerra Amplo ",
+              53
+            ],
+            [
+              "Rapieira Modular de Test",
+              53
+            ]
+          ]
+        },
+        {
+          "id": "Crítico: nada cortado",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "normal": {
+          "largura": 1724,
+          "linhas": [
+            {
+              "nome": "Ataque Básico",
+              "alt": 52,
+              "topo": 52,
+              "linhasNome": 1,
+              "metas": {
+                "x": 1650,
+                "y": 382,
+                "w": 239,
+                "h": 19,
+                "cy": 392
+              },
+              "cxNome": {
+                "x": 422,
+                "y": 374,
+                "w": 1216,
+                "h": 36,
+                "cy": 392
+              },
+              "acerto": {
+                "x": 1901,
+                "y": 374,
+                "w": 93,
+                "h": 36,
+                "cy": 392
+              },
+              "dano": {
+                "x": 2006,
+                "y": 374,
+                "w": 114,
+                "h": 36,
+                "cy": 392
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Besta de Repetição de Te",
+              "alt": 53,
+              "topo": 53,
+              "linhasNome": 1,
+              "metas": {
+                "x": 1650,
+                "y": 435,
+                "w": 239,
+                "h": 19,
+                "cy": 445
+              },
+              "cxNome": {
+                "x": 422,
+                "y": 427,
+                "w": 1216,
+                "h": 36,
+                "cy": 445
+              },
+              "acerto": {
+                "x": 1901,
+                "y": 427,
+                "w": 93,
+                "h": 36,
+                "cy": 445
+              },
+              "dano": {
+                "x": 2006,
+                "y": 427,
+                "w": 114,
+                "h": 36,
+                "cy": 445
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Lâmina Oscilante de Test",
+              "alt": 53,
+              "topo": 53,
+              "linhasNome": 1,
+              "metas": {
+                "x": 1650,
+                "y": 488,
+                "w": 239,
+                "h": 19,
+                "cy": 498
+              },
+              "cxNome": {
+                "x": 422,
+                "y": 480,
+                "w": 1216,
+                "h": 36,
+                "cy": 498
+              },
+              "acerto": {
+                "x": 1901,
+                "y": 480,
+                "w": 93,
+                "h": 36,
+                "cy": 498
+              },
+              "dano": {
+                "x": 2006,
+                "y": 480,
+                "w": 114,
+                "h": 36,
+                "cy": 498
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Machado de Guerra Amplo ",
+              "alt": 53,
+              "topo": 53,
+              "linhasNome": 1,
+              "metas": {
+                "x": 1650,
+                "y": 541,
+                "w": 239,
+                "h": 19,
+                "cy": 551
+              },
+              "cxNome": {
+                "x": 422,
+                "y": 533,
+                "w": 1216,
+                "h": 36,
+                "cy": 551
+              },
+              "acerto": {
+                "x": 1901,
+                "y": 533,
+                "w": 93,
+                "h": 36,
+                "cy": 551
+              },
+              "dano": {
+                "x": 2006,
+                "y": 533,
+                "w": 114,
+                "h": 36,
+                "cy": 551
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Rapieira Modular de Test",
+              "alt": 53,
+              "topo": 53,
+              "linhasNome": 1,
+              "metas": {
+                "x": 1650,
+                "y": 594,
+                "w": 239,
+                "h": 19,
+                "cy": 604
+              },
+              "cxNome": {
+                "x": 422,
+                "y": 586,
+                "w": 1216,
+                "h": 36,
+                "cy": 604
+              },
+              "acerto": {
+                "x": 1901,
+                "y": 586,
+                "w": 93,
+                "h": 36,
+                "cy": 604
+              },
+              "dano": {
+                "x": 2006,
+                "y": 586,
+                "w": 114,
+                "h": 36,
+                "cy": 604
+              },
+              "motivo": false,
+              "cortados": []
+            }
+          ]
+        },
+        "critico": {
+          "largura": 1724,
+          "linhas": [
+            {
+              "nome": "Ataque Básico",
+              "alt": 52,
+              "topo": 52,
+              "linhasNome": 1,
+              "metas": {
+                "x": 1650,
+                "y": 382,
+                "w": 239,
+                "h": 19,
+                "cy": 392
+              },
+              "cxNome": {
+                "x": 422,
+                "y": 374,
+                "w": 1216,
+                "h": 36,
+                "cy": 392
+              },
+              "acerto": {
+                "x": 1901,
+                "y": 374,
+                "w": 93,
+                "h": 36,
+                "cy": 392
+              },
+              "dano": {
+                "x": 2006,
+                "y": 374,
+                "w": 114,
+                "h": 36,
+                "cy": 392
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Besta de Repetição de Te",
+              "alt": 53,
+              "topo": 53,
+              "linhasNome": 1,
+              "metas": {
+                "x": 1650,
+                "y": 435,
+                "w": 239,
+                "h": 19,
+                "cy": 445
+              },
+              "cxNome": {
+                "x": 422,
+                "y": 427,
+                "w": 1216,
+                "h": 36,
+                "cy": 445
+              },
+              "acerto": {
+                "x": 1901,
+                "y": 427,
+                "w": 93,
+                "h": 36,
+                "cy": 445
+              },
+              "dano": {
+                "x": 2006,
+                "y": 427,
+                "w": 114,
+                "h": 36,
+                "cy": 445
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Lâmina Oscilante de Test",
+              "alt": 53,
+              "topo": 53,
+              "linhasNome": 1,
+              "metas": {
+                "x": 1650,
+                "y": 488,
+                "w": 239,
+                "h": 19,
+                "cy": 498
+              },
+              "cxNome": {
+                "x": 422,
+                "y": 480,
+                "w": 1216,
+                "h": 36,
+                "cy": 498
+              },
+              "acerto": {
+                "x": 1901,
+                "y": 480,
+                "w": 93,
+                "h": 36,
+                "cy": 498
+              },
+              "dano": {
+                "x": 2006,
+                "y": 480,
+                "w": 114,
+                "h": 36,
+                "cy": 498
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Machado de Guerra Amplo ",
+              "alt": 53,
+              "topo": 53,
+              "linhasNome": 1,
+              "metas": {
+                "x": 1650,
+                "y": 541,
+                "w": 239,
+                "h": 19,
+                "cy": 551
+              },
+              "cxNome": {
+                "x": 422,
+                "y": 533,
+                "w": 1216,
+                "h": 36,
+                "cy": 551
+              },
+              "acerto": {
+                "x": 1901,
+                "y": 533,
+                "w": 93,
+                "h": 36,
+                "cy": 551
+              },
+              "dano": {
+                "x": 2006,
+                "y": 533,
+                "w": 114,
+                "h": 36,
+                "cy": 551
+              },
+              "motivo": false,
+              "cortados": []
+            },
+            {
+              "nome": "Rapieira Modular de Test",
+              "alt": 53,
+              "topo": 53,
+              "linhasNome": 1,
+              "metas": {
+                "x": 1650,
+                "y": 594,
+                "w": 239,
+                "h": 19,
+                "cy": 604
+              },
+              "cxNome": {
+                "x": 422,
+                "y": 586,
+                "w": 1216,
+                "h": 36,
+                "cy": 604
+              },
+              "acerto": {
+                "x": 1901,
+                "y": 586,
+                "w": 93,
+                "h": 36,
+                "cy": 604
+              },
+              "dano": {
+                "x": 2006,
+                "y": 586,
+                "w": 114,
+                "h": 36,
+                "cy": 604
+              },
+              "motivo": false,
+              "cortados": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "nome": "Dano com motivo de recusa: arsenal 1280 com a compacta",
+      "checks": [
+        {
+          "id": "o motivo está à vista na linha da Besta",
+          "ok": true
+        },
+        {
+          "id": "com motivo: todas as linhas no mesmo arranjo",
+          "ok": true,
+          "dados": [
+            "alvos ao lado, metas ao lado",
+            "alvos ao lado, metas ao lado",
+            "alvos ao lado, metas ao lado",
+            "alvos ao lado, metas ao lado",
+            "alvos ao lado, metas ao lado"
+          ]
+        },
+        {
+          "id": "com motivo: Acerto na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            623
+          ]
+        },
+        {
+          "id": "com motivo: Dano na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            728
+          ]
+        },
+        {
+          "id": "com motivo: metas na mesma coluna",
+          "ok": true,
+          "dados": [
+            372
+          ]
+        },
+        {
+          "id": "com motivo: mesma altura base (nome de uma linha, sem motivo)",
+          "ok": true,
+          "dados": [
+            [
+              "Ataque Básico",
+              52
+            ],
+            [
+              "Besta de Repetição de Te",
+              51
+            ],
+            [
+              "Lâmina Oscilante de Test",
+              53
+            ],
+            [
+              "Machado de Guerra Amplo ",
+              72
+            ],
+            [
+              "Rapieira Modular de Test",
+              53
+            ]
+          ]
+        },
+        {
+          "id": "com motivo: nada cortado",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "largura": 839,
+        "linhas": [
+          {
+            "nome": "Ataque Básico",
+            "alt": 52,
+            "topo": 52,
+            "linhasNome": 1,
+            "metas": {
+              "x": 372,
+              "y": 444,
+              "w": 239,
+              "h": 19,
+              "cy": 454
+            },
+            "cxNome": {
+              "x": 29,
+              "y": 436,
+              "w": 331,
+              "h": 36,
+              "cy": 454
+            },
+            "acerto": {
+              "x": 623,
+              "y": 436,
+              "w": 93,
+              "h": 36,
+              "cy": 454
+            },
+            "dano": {
+              "x": 728,
+              "y": 436,
+              "w": 114,
+              "h": 36,
+              "cy": 454
+            },
+            "motivo": false,
+            "cortados": []
+          },
+          {
+            "nome": "Besta de Repetição de Te",
+            "alt": 79,
+            "topo": 51,
+            "linhasNome": 1,
+            "metas": {
+              "x": 372,
+              "y": 497,
+              "w": 239,
+              "h": 19,
+              "cy": 507
+            },
+            "cxNome": {
+              "x": 29,
+              "y": 489,
+              "w": 331,
+              "h": 36,
+              "cy": 507
+            },
+            "acerto": {
+              "x": 623,
+              "y": 489,
+              "w": 93,
+              "h": 36,
+              "cy": 507
+            },
+            "dano": {
+              "x": 728,
+              "y": 489,
+              "w": 114,
+              "h": 36,
+              "cy": 507
+            },
+            "motivo": true,
+            "cortados": []
+          },
+          {
+            "nome": "Lâmina Oscilante de Test",
+            "alt": 53,
+            "topo": 53,
+            "linhasNome": 1,
+            "metas": {
+              "x": 372,
+              "y": 576,
+              "w": 239,
+              "h": 19,
+              "cy": 586
+            },
+            "cxNome": {
+              "x": 29,
+              "y": 568,
+              "w": 331,
+              "h": 36,
+              "cy": 586
+            },
+            "acerto": {
+              "x": 623,
+              "y": 568,
+              "w": 93,
+              "h": 36,
+              "cy": 586
+            },
+            "dano": {
+              "x": 728,
+              "y": 568,
+              "w": 114,
+              "h": 36,
+              "cy": 586
+            },
+            "motivo": false,
+            "cortados": []
+          },
+          {
+            "nome": "Machado de Guerra Amplo ",
+            "alt": 72,
+            "topo": 72,
+            "linhasNome": 3,
+            "metas": {
+              "x": 372,
+              "y": 638,
+              "w": 239,
+              "h": 19,
+              "cy": 648
+            },
+            "cxNome": {
+              "x": 29,
+              "y": 619,
+              "w": 331,
+              "h": 59,
+              "cy": 648
+            },
+            "acerto": {
+              "x": 623,
+              "y": 630,
+              "w": 93,
+              "h": 36,
+              "cy": 648
+            },
+            "dano": {
+              "x": 728,
+              "y": 630,
+              "w": 114,
+              "h": 36,
+              "cy": 648
+            },
+            "motivo": false,
+            "cortados": []
+          },
+          {
+            "nome": "Rapieira Modular de Test",
+            "alt": 53,
+            "topo": 53,
+            "linhasNome": 1,
+            "metas": {
+              "x": 372,
+              "y": 701,
+              "w": 239,
+              "h": 19,
+              "cy": 710
+            },
+            "cxNome": {
+              "x": 29,
+              "y": 692,
+              "w": 331,
+              "h": 36,
+              "cy": 710
+            },
+            "acerto": {
+              "x": 623,
+              "y": 692,
+              "w": 93,
+              "h": 36,
+              "cy": 710
+            },
+            "dano": {
+              "x": 728,
+              "y": 692,
+              "w": 114,
+              "h": 36,
+              "cy": 710
+            },
+            "motivo": false,
+            "cortados": []
+          }
+        ]
+      }
+    },
+    {
+      "nome": "Dano com motivo de recusa: arsenal 768 com a compacta",
+      "checks": [
+        {
+          "id": "o motivo está à vista na linha da Besta",
+          "ok": true
+        },
+        {
+          "id": "com motivo: todas as linhas no mesmo arranjo",
+          "ok": true,
+          "dados": [
+            "alvos abaixo, metas sob o nome",
+            "alvos abaixo, metas sob o nome",
+            "alvos abaixo, metas sob o nome",
+            "alvos abaixo, metas sob o nome",
+            "alvos abaixo, metas sob o nome"
+          ]
+        },
+        {
+          "id": "com motivo: Acerto na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            113
+          ]
+        },
+        {
+          "id": "com motivo: Dano na mesma coluna em todas as linhas",
+          "ok": true,
+          "dados": [
+            218
+          ]
+        },
+        {
+          "id": "com motivo: metas na mesma coluna",
+          "ok": true,
+          "dados": [
+            27
+          ]
+        },
+        {
+          "id": "com motivo: mesma altura base (nome de uma linha, sem motivo)",
+          "ok": true,
+          "dados": [
+            [
+              "Ataque Básico",
+              99
+            ],
+            [
+              "Besta de Repetição de Te",
+              96
+            ],
+            [
+              "Lâmina Oscilante de Test",
+              100
+            ],
+            [
+              "Machado de Guerra Amplo ",
+              130
+            ],
+            [
+              "Rapieira Modular de Test",
+              100
+            ]
+          ]
+        },
+        {
+          "id": "com motivo: nada cortado",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "largura": 331,
+        "linhas": [
+          {
+            "nome": "Ataque Básico",
+            "alt": 99,
+            "topo": 99,
+            "linhasNome": 1,
+            "metas": {
+              "x": 27,
+              "y": 444,
+              "w": 305,
+              "h": 19,
+              "cy": 454
+            },
+            "cxNome": {
+              "x": 27,
+              "y": 414,
+              "w": 305,
+              "h": 28,
+              "cy": 428
+            },
+            "acerto": {
+              "x": 113,
+              "y": 465,
+              "w": 93,
+              "h": 36,
+              "cy": 483
+            },
+            "dano": {
+              "x": 218,
+              "y": 465,
+              "w": 114,
+              "h": 36,
+              "cy": 483
+            },
+            "motivo": false,
+            "cortados": []
+          },
+          {
+            "nome": "Besta de Repetição de Te",
+            "alt": 124,
+            "topo": 96,
+            "linhasNome": 1,
+            "metas": {
+              "x": 27,
+              "y": 544,
+              "w": 305,
+              "h": 19,
+              "cy": 553
+            },
+            "cxNome": {
+              "x": 27,
+              "y": 514,
+              "w": 305,
+              "h": 28,
+              "cy": 528
+            },
+            "acerto": {
+              "x": 113,
+              "y": 565,
+              "w": 93,
+              "h": 36,
+              "cy": 583
+            },
+            "dano": {
+              "x": 218,
+              "y": 565,
+              "w": 114,
+              "h": 36,
+              "cy": 583
+            },
+            "motivo": true,
+            "cortados": []
+          },
+          {
+            "nome": "Lâmina Oscilante de Test",
+            "alt": 100,
+            "topo": 100,
+            "linhasNome": 1,
+            "metas": {
+              "x": 27,
+              "y": 668,
+              "w": 305,
+              "h": 19,
+              "cy": 677
+            },
+            "cxNome": {
+              "x": 27,
+              "y": 638,
+              "w": 305,
+              "h": 28,
+              "cy": 652
+            },
+            "acerto": {
+              "x": 113,
+              "y": 689,
+              "w": 93,
+              "h": 36,
+              "cy": 707
+            },
+            "dano": {
+              "x": 218,
+              "y": 689,
+              "w": 114,
+              "h": 36,
+              "cy": 707
+            },
+            "motivo": false,
+            "cortados": []
+          },
+          {
+            "nome": "Machado de Guerra Amplo ",
+            "alt": 130,
+            "topo": 130,
+            "linhasNome": 3,
+            "metas": {
+              "x": 27,
+              "y": 798,
+              "w": 305,
+              "h": 19,
+              "cy": 808
+            },
+            "cxNome": {
+              "x": 27,
+              "y": 738,
+              "w": 305,
+              "h": 59,
+              "cy": 767
+            },
+            "acerto": {
+              "x": 113,
+              "y": 819,
+              "w": 93,
+              "h": 36,
+              "cy": 837
+            },
+            "dano": {
+              "x": 218,
+              "y": 819,
+              "w": 114,
+              "h": 36,
+              "cy": 837
+            },
+            "motivo": false,
+            "cortados": []
+          },
+          {
+            "nome": "Rapieira Modular de Test",
+            "alt": 100,
+            "topo": 100,
+            "linhasNome": 1,
+            "metas": {
+              "x": 27,
+              "y": 898,
+              "w": 305,
+              "h": 19,
+              "cy": 908
+            },
+            "cxNome": {
+              "x": 27,
+              "y": 868,
+              "w": 305,
+              "h": 28,
+              "cy": 882
+            },
+            "acerto": {
+              "x": 113,
+              "y": 919,
+              "w": 93,
+              "h": 36,
+              "cy": 937
+            },
+            "dano": {
+              "x": 218,
+              "y": 919,
+              "w": 114,
+              "h": 36,
+              "cy": 937
+            },
+            "motivo": false,
+            "cortados": []
+          }
+        ]
+      }
+    },
+    {
+      "nome": "captura de Perícias com Outros: 1280",
+      "checks": [
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "alvos de Outros com 34 px ou mais",
+          "ok": true,
+          "dados": 36
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "captura de Perícias com Outros: 390",
+      "checks": [
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "alvos de Outros com 40 px ou mais",
+          "ok": true,
+          "dados": 40
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "Outros em Perícias: arsenal: 6/6",
+    "Outros em Perícias: conjurador: 6/6",
+    "Outros em Perícias: mesa: 6/6",
+    "Outros em Perícias: tipica: 6/6",
+    "Outros em Perícias: vazia: 6/6",
+    "Outros em Perícias: criatura: 6/6",
+    "Executar, Resistir e teste simples rolam igual à referência, nos modos Normal e Vantagem: 3/3",
+    "Ctrl+K leva Agarrar e Concentração a Perícias, com as três abas visitadas: 10/10",
+    "Dano em colunas comuns: par do autor (mesa, 1440): 14/14",
+    "Dano em colunas comuns: tipica 1280x800 com a compacta: 14/14",
+    "Dano em colunas comuns: arsenal 1280x800 com a compacta: 14/14",
+    "Dano em colunas comuns: arsenal 1024 com a compacta: 14/14",
+    "Dano em colunas comuns: arsenal 331 úteis (768 com a compacta): 14/14",
+    "Dano em colunas comuns: arsenal telefone 390: 14/14",
+    "Dano em colunas comuns: mesa Quad HD com a compacta: 14/14",
+    "Dano em colunas comuns: arsenal Quad HD: 14/14",
+    "Dano com motivo de recusa: arsenal 1280 com a compacta: 8/8",
+    "Dano com motivo de recusa: arsenal 768 com a compacta: 8/8",
+    "captura de Perícias com Outros: 1280: 2/2",
+    "captura de Perícias com Outros: 390: 2/2"
+  ]
+}

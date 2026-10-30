@@ -88,6 +88,7 @@ import { evalNumber, CHAVE_MARCAS, normalizarMarca, normalizarVariavel } from ".
 import { combateDslVars, COMBATE_VARS } from "./afty-combate";
 // afty-origens.js só importa folhas de propósito, então a seta aponta para cá:
 // é este arquivo que junta os efeitos de origem, não aquele. Ver coletarEfeitosOrigem.
+import { inovarEfeitoDeHabilidade } from "./afty-talentos-estilo";
 import {
   getOrigem, getCla, resolveEscolhasOrigem, ORIGEM_ESCOLHA_EFEITOS, OPCAO_ORIGEM_NOME,
   opcoesEscolhidasDaOrigem, anatomiasEscolhidas,
@@ -393,7 +394,16 @@ export const EFEITO_CANAIS = [
   // Orçamentos
   { id: "vagasPericia",   label: "Vagas de Treino" },
   { id: "vagasHabilidade", label: "Vagas de Habilidade" },
-  { id: "vagasFeitico",   label: "Vagas de Feitiço",     nota: "vaga EXCLUSIVA de Feitiço (= Habilidade de Técnica, Estilo das Sombras ou Habilidade Marcial). Não serve para Habilidade Geral (autor, 2026-07-28)" },
+  /* A vaga a mais numa escolha ANINHADA (2026-10-12). O `concedeEscolha` só vai
+     de habilidade para habilidade, e o Treino de Potencial Físico 4ª ("uma
+     Dádiva do Céu adicional") não tinha como dizê-la. O alvo é a habilidade
+     DONA da escolha, e a herdeira responde também pelo id da mãe. */
+  { id: "vagasEscolha",   label: "Vagas de Escolha de Habilidade", alvo: "escolhaHabilidade", alvoObrigatorio: true, nota: "uma opção a mais no pool de escolha de uma Habilidade de Especialização (Dádiva do Céu, Postura, Estilo). Só rende se a ficha tiver a habilidade dona" },
+  { id: "vagasFeitico",   label: "Vagas de Feitiço",     nota: "vaga EXCLUSIVA de Feitiço (= Habilidade de Técnica, Técnica Marcial ou Estilo das Sombras). Não serve para Habilidade Geral (autor, 2026-07-28)" },
+  // ⚠ MAIS ESTREITO que o `vagasFeitico` (autor, 2026-10-26): só a Técnica Marcial
+  // do Restringido usa esta vaga. Desenvolver Ideias ("duas técnicas marciais
+  // adicionais") a concede, e um Feitiço não pode gastá-la.
+  { id: "vagasMarcial",   label: "Vagas de Técnica Marcial", nota: "vaga EXCLUSIVA de Técnica Marcial. Não serve para Feitiço, Técnica de Estilo nem Habilidade Geral" },
   { id: "vagasTalento",   label: "Vagas de Talento",     nota: "vaga EXCLUSIVA de Talento. Não serve para Habilidade de Especialização (autor, 2026-08-03)" },
   // ⚠ MAIS ESTREITO que o `vagasFeitico`, e é essa a razão de ele existir. O
   // autor decidiu em 2026-08-22, sobre a 1ª Etapa do Treino de Novo Estilo das
@@ -631,9 +641,9 @@ export const FAMILIAS_EXCLUSIVAS = [
   // "ambos" porque a linha decide: o Funcionamento Básico é passivo por
   // natureza, mas o Motor dele aceita `duracao` e `quando`.
   //
-  // ⚠ Técnica Marcial ainda NÃO é uma família: o subsistema nunca foi enviado.
-  // Quando ele nascer, entra aqui, e o Funcionamento Básico já para de acumular
-  // com ele sem precisar de mais nada.
+  // ⚠ A Técnica Marcial é a nona família (2026-10-27, abaixo), e o Funcionamento
+  // Básico já não acumula com ela. O Fundamento Marcial do Restringido usa o
+  // Funcionamento Básico, então os dois disputam entre si como sempre.
   //
   // ⚠ No jogador ele fica com os Feitiços (autor, 2026-09-11, por pergunta: ele
   // não estava em nenhuma das duas listas do pool do jogador).
@@ -645,6 +655,11 @@ export const FAMILIAS_EXCLUSIVAS = [
   // etc."*. No jogador isso é o grupo dos Feitiços. Na criatura o pool é um só,
   // e ela disputa com tudo, inclusive com a primeira (autor, mesma data).
   { id: "segundaHabilidadeUnica",  label: "Segunda Habilidade Única",    modo: "ambos",   grupoJogador: "feiticos" },
+  // ⚠ A NONA (autor, 2026-10-26): a Técnica Marcial do Restringido. Livro: *"Técnicas
+  // Marciais não se acumulam"* com Feitiços Passivos, Auxiliares e o Novo Estilo das
+  // Sombras, e no jogador cai no grupo dos Feitiços. "ambos" porque a Passiva é
+  // sempre ligada e o Auxiliar marcial liga e desliga como o do Feitiço.
+  { id: "tecnicaMarcial",          label: "Técnica Marcial",             modo: "ambos",   grupoJogador: "feiticos" },
 ];
 
 const FAMILIA_EXCLUSIVA_BY_ID = Object.fromEntries(FAMILIAS_EXCLUSIVAS.map((f) => [f.id, f]));
@@ -751,7 +766,7 @@ const GRUPOS_DE_CANAL = [
   // ele é orçamento, irmão das vagas. `pontosAptidao` veio junto pelo mesmo
   // motivo, ele é orçamento de nível de aptidão.
   ["Orçamentos", [
-    "vagasPericia", "vagasHabilidade", "vagasFeitico", "vagasEstilo", "vagasTecnicaMaxima", "vagasTalento", "vagasAptidao",
+    "vagasPericia", "vagasHabilidade", "vagasEscolha", "vagasFeitico", "vagasMarcial", "vagasEstilo", "vagasTecnicaMaxima", "vagasTalento", "vagasAptidao",
     "vagasCaracteristicaAmaldicoada",
     "reduzNivelAptidao", "ignoraRequisitoTrilha",
     "vagasVariacao", "vagasMelhoria", "vagasLendaria",
@@ -1195,7 +1210,7 @@ export function efeitosManuaisDaFicha(creature) {
  * mensagem de erro são da UI, que mostra a expressão quebrada em vermelho na
  * hora de escrever. O motor não é o lugar de reclamar de digitação.
  */
-function efeitosDeLinhas(linhas, tipo) {
+function efeitosDeLinhas(linhas, tipo, nomePrincipal = "Técnica") {
   const out = [];
   for (const linha of linhas) {
     for (const e of linha.efeitos) {
@@ -1213,22 +1228,34 @@ function efeitosDeLinhas(linhas, tipo) {
         canal,
         expr,
         origem: buff ? "buff:" + linha.id : linha.principal ? "tecnica" : "funcionamento:" + linha.id,
-        nome: linha.principal ? "Técnica" : linha.nome,
+        nome: linha.principal ? nomePrincipal : linha.nome,
       };
-      if (!buff) ef.exclusivo = "funcionamentoBasico";
+      /* ⚠ `acumula` SÓ EXISTE NO FUNCIONAMENTO DE ADDON (2026-10-12): regra de
+         mesa sempre ativa (Morador da Cidade, Ascendendo Além dos Céus) não é
+         Funcionamento Básico de Técnica, e dois desses pacotes se riscavam no
+         pool exclusivo em vez de somar. O jogador não escreve o campo. */
+      if (!buff && !linha.acumula) ef.exclusivo = "funcionamentoBasico";
       const alvo = normalizarAlvoEfeito(e.alvo);
       if (alvo) ef.alvo = alvo;
       if (e.quando) ef.quando = String(e.quando).trim();
       if (e.duracao === "temporaria") ef.duracao = "temporaria";
       if (e.semCredito) ef.semCredito = true;
+      // Ver `casaEscopoDaLinha`: o dado só entra na linha que responde ao escopo.
+      if (e.escopoLinha) ef.escopoLinha = String(e.escopoLinha).trim();
       out.push(ef);
     }
   }
   return out;
 }
 
-export function efeitosDaTecnica(creature) {
-  return efeitosDeLinhas(funcionamentosDaFicha(creature), "funcionamento");
+/**
+ * `nomePrincipal` é o rótulo do Funcionamento principal no hover de fontes. O
+ * Fundamento Marcial do Restringido usa o mesmo Funcionamento e o mesmo
+ * armazenamento (autor, 2026-10-26), então só o NOME muda: o derive manda
+ * "Fundamento Marcial" na ficha sem energia.
+ */
+export function efeitosDaTecnica(creature, { nomePrincipal = "Técnica" } = {}) {
+  return efeitosDeLinhas(funcionamentosDaFicha(creature), "funcionamento", nomePrincipal);
 }
 
 export function efeitosDosBuffsNativos() {
@@ -1243,25 +1270,36 @@ export function efeitosDosBuffsNativos() {
  * acumula com Habilidade Única, Shikigami e Feitiço Auxiliar, conforme a regra
  * já modelada pelo Motor.
  */
+/* Os canais que a Passiva da Técnica Marcial NÃO escreve (p. 249: "não é possível
+   criar uma passiva que envolva Aumento de Atributo"). O Motor livre aceita
+   qualquer canal, então o veto mora aqui, e o editor esconde os dois. */
+export const CANAIS_VETADOS_NA_PASSIVA_MARCIAL = Object.freeze(["atributo", "limiteAtributo"]);
+
 export function efeitosDosPassivos(creature) {
   const feiticos = Array.isArray(creature?.feiticos) ? creature.feiticos : [];
   const out = [];
   for (const feitico of feiticos) {
     if (feitico?.tipo !== "passivo") continue;
     const lista = Array.isArray(feitico.efeitosPassivo) ? feitico.efeitosPassivo : [];
+    /* ⚠ A TÉCNICA MARCIAL TEM ORIGEM E FAMÍLIA PRÓPRIAS (2026-10-27). O prefixo
+       `feitico:` é o que a Técnica Inata bloqueada e a Exaustão de Técnica
+       suprimem, e a Técnica Marcial não depende de técnica amaldiçoada, então ela
+       sai como `tecnicaMarcial:<id>` e fica fora dos dois. */
+    const marcial = feitico.marcial === true;
     for (const e of lista) {
       // Mirada na invocação: ver o descarte gêmeo em `efeitosDeLinhas`.
       if (e?.escopo === "invocacao") continue;
       const canal = CANAL_LEGADO[e?.canal] ?? e?.canal;
       if (!canal || !CANAL_BY_ID[canal]) continue;
+      if (marcial && CANAIS_VETADOS_NA_PASSIVA_MARCIAL.includes(canal)) continue;
       const expr = String(e.expr ?? "").trim();
       if (!expr) continue;
       const ef = {
         canal,
         expr,
-        origem: `feitico:${feitico.id}`,
+        origem: marcial ? `tecnicaMarcial:${feitico.id}` : `feitico:${feitico.id}`,
         nome: String(feitico.nome ?? "").trim() || "Passivo",
-        exclusivo: "feiticoAuxiliarPassivo",
+        exclusivo: marcial ? "tecnicaMarcial" : "feiticoAuxiliarPassivo",
       };
       if (e.alvo) ef.alvo = e.alvo;
       if (e.quando) ef.quando = String(e.quando).trim();
@@ -1395,14 +1433,17 @@ export function coletarEfeitosCriatura({
      fica para quem chama com um `habilidades` parcial. */
   const roubadas = habilidades?.roubadas
     ?? ESCOLHAS_DE_HABILIDADE.flatMap((id) => habilidades?.escolhas?.mapa?.[id] || []);
+  const inovar = (e) => inovarEfeitoDeHabilidade(e, habilidades?.inovacoesEstilo?.[e.origemPai ?? e.origem]);
   return [
     /* `habilidades.vezes` multiplica a Habilidade de Especialização pega mais de
        uma vez (o Elevar Aptidão do Conjurador é a primeira). Sem isso a 2ª pega
        aparecia na conta de vagas e não rendia efeito nenhum, que é o mesmo
        buraco que o Talento repetível teve até agosto. */
-    ...coletarEfeitos(habilidades?.escolhidas, HABILIDADE_EFEITOS, catalogos?.habilidades, habilidades?.vezes),
-    ...coletarEfeitos(roubadas.filter((id) => !habilidades?.escolhidas?.includes(id)), HABILIDADE_EFEITOS, catalogos?.habilidades),
-    ...coletarEfeitosDeEscolha(habilidades?.escolhas?.mapa, catalogos?.opcoes, catalogos?.habilidades),
+    ...coletarEfeitos(habilidades?.escolhidas, HABILIDADE_EFEITOS, catalogos?.habilidades, habilidades?.vezes).map(inovar),
+    ...coletarEfeitos(roubadas.filter((id) => !habilidades?.escolhidas?.includes(id)), HABILIDADE_EFEITOS, catalogos?.habilidades)
+      .map((e) => inovar({ ...e, contextoDsl: { ...e.contextoDsl, ...habilidades?.contextosPorHabilidade?.[e.origem] } })),
+    ...coletarEfeitosDeEscolha(habilidades?.escolhas?.mapa, catalogos?.opcoes, catalogos?.habilidades)
+      .map((e) => inovar({ ...e, contextoDsl: { ...e.contextoDsl, ...habilidades?.contextosPorHabilidade?.[e.origem] } })),
     // `talentos.vezes` multiplica o Talento pego mais de uma vez (o Estudo
     // Amaldiçoado remendado por Addon é o primeiro). Sem isso a 2ª pega
     // aparecia na conta de vagas e não rendia efeito nenhum.
@@ -1515,10 +1556,10 @@ export function coletarEfeitosDeEscolha(mapa, nomesPorOpcao = {}, catalogoPai = 
          dela, e vale o maior. Quem já traz um grupo próprio conserva o dele. */
       const grupo = opcaoCat?.naoAcumulaEntreFontes ? { grupoNaoAcumula: `opcao:${opcaoId}` } : null;
       for (const e of doLivro ?? []) {
-        out.push({ ...(grupo && !e.grupoNaoAcumula ? grupo : {}), ...e, origem: opcaoId, nome: nomeDaFonte });
+        out.push({ ...(grupo && !e.grupoNaoAcumula ? grupo : {}), ...e, origem: opcaoId, origemPai: paiId, nome: nomeDaFonte });
       }
       for (const e of escritos) {
-        out.push({ ...(grupo && !e.grupoNaoAcumula ? grupo : {}), ...e, origem: opcaoId, nome: e.nome ?? nomeDaFonte });
+        out.push({ ...(grupo && !e.grupoNaoAcumula ? grupo : {}), ...e, origem: opcaoId, origemPai: paiId, nome: e.nome ?? nomeDaFonte });
       }
     }
   }
@@ -1770,6 +1811,7 @@ export function aplicarEfeitos(efeitos, ctx = {}) {
     detalhes.push({
       canal: e.canal, alvo, valor,
       ...(e.naoAcumulaReducaoGeral ? { naoAcumulaReducaoGeral: true } : {}),
+      ...(e.escopoLinha ? { escopoLinha: e.escopoLinha } : {}),
       origem: e.origem || null, nome: e.nome || e.origem || "Efeito",
       furaTeto, semCredito,
       // A duração viaja junto porque a aba Buffs LISTA os temporários: sem ela
@@ -2021,7 +2063,7 @@ export const CANAIS_POS_APTIDAO = [
  * dele chegaria com o orçamento já fechado. Ver `separarEfeitosDeBancada`.
  */
 export const CANAIS_LIDOS_NO_MONTANTE = [
-  "pontosAptidao", "vagasHabilidade", "vagasTalento", "vagasMelhoria", "vagasLendaria",
+  "pontosAptidao", "vagasHabilidade", "vagasEscolha", "vagasTalento", "vagasMelhoria", "vagasLendaria",
   ...CANAIS_PRE_CONTEXTO,
 ];
 
@@ -2086,12 +2128,22 @@ export function efeitoLeBancada(e, ctxReduzido = {}) {
  *
  * Os canais lidos cedo (`CANAIS_LIDOS_NO_MONTANTE`) nunca descem, mesmo lendo a
  * bancada: fora do montante eles chegariam com o orçamento já fechado.
+ *
+ * ⚠ SALVO O `limiteAtributo` (2026-10-12, Zodíaco da H Corp). Limite que lê a
+ * bancada é limite de COMBATE, e o estágio principal já tem quem o leia: o
+ * `limiteAtivoPor` do deriveAfty, o mesmo caminho do Feitiço Auxiliar de
+ * Atributo. Preso no montante ele valia zero sempre, e o atributo parava no 20
+ * com o interruptor ligado, calado. O limite permanente continua no montante,
+ * porque ele não lê a bancada e não desce.
  */
+const CANAIS_DESCEM_COM_BANCADA = ["limiteAtributo"];
 export function separarEfeitosDeBancada(efeitos, ctxReduzido = {}) {
   const montante = [];
   const bancada = [];
   for (const e of Array.isArray(efeitos) ? efeitos : []) {
-    const desce = !CANAIS_LIDOS_NO_MONTANTE.includes(e?.canal) && efeitoLeBancada(e, ctxReduzido);
+    const presoNoMontante = CANAIS_LIDOS_NO_MONTANTE.includes(e?.canal)
+      && !CANAIS_DESCEM_COM_BANCADA.includes(e?.canal);
+    const desce = !presoNoMontante && efeitoLeBancada(e, ctxReduzido);
     (desce ? bancada : montante).push(e);
   }
   return { montante, bancada };
@@ -2268,6 +2320,18 @@ export function valorCanalEscopos(res, canal, escopos = []) {
     if (!escopos.includes(alvo) && casaAlvoComOu(alvo, escopos)) comOu += valor || 0;
   }
   return direto + comOu;
+}
+
+/**
+ * O `escopoLinha` de um efeito casa com a LINHA de dano que responde a `escopos`?
+ * Hoje só o `dadosNomeados` o usa: o total do canal soma todos os dados do
+ * tamanho, e quem monta a linha tira o que não casa (ver `monta` em
+ * afty-pericias.js). Efeito sem escopo vale em toda linha. Aceita `a|b` como o
+ * alvo dos leitores por escopo.
+ */
+export function casaEscopoDaLinha(escopoLinha, escopos = []) {
+  if (!escopoLinha) return true;
+  return String(escopoLinha).split("|").some((parte) => escopos.includes(parte.trim()));
 }
 
 /** O alvo `a|b` casa com a linha que responde a qualquer uma das partes. */

@@ -1,0 +1,175 @@
+{
+  "geradoEm": "2026-10-21T00:41:43.431Z",
+  "base": "http://127.0.0.1:5320",
+  "etapas": [
+    {
+      "nome": "Compacta 1024",
+      "checks": [
+        {
+          "id": "C-imitacao a aba existe no Adicionar da compacta (1024)",
+          "ok": true
+        },
+        {
+          "id": "C-imitacao sem estouro (1024)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1024
+          }
+        },
+        {
+          "id": "C-imitacao selecionar não copia (1024)",
+          "ok": true
+        },
+        {
+          "id": "C-imitacao Confirmar copia na compacta (1024)",
+          "ok": true
+        },
+        {
+          "id": "C-imitacao Encerrar na compacta (1024)",
+          "ok": true
+        },
+        {
+          "id": "C-buff sem estouro (1024)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1024
+          }
+        },
+        {
+          "id": "C-buff criar pela compacta grava um buff (1024)",
+          "ok": true,
+          "dados": [
+            {
+              "id": "buff_t3ugk817",
+              "nome": "Na Compacta",
+              "canal": "defesa",
+              "expr": "2",
+              "rodadas": null
+            }
+          ]
+        },
+        {
+          "id": "C-concedido sem estouro (1024)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1024
+          }
+        },
+        {
+          "id": "C-concedido conceder pela compacta grava na sessão (1024)",
+          "ok": true
+        },
+        {
+          "id": "C-concedido remover pela compacta (1024)",
+          "ok": true
+        },
+        {
+          "id": "C-buff o cartão aparece na lista da compacta (1024)",
+          "ok": true
+        },
+        {
+          "id": "C-buff Encerrar pela compacta tira só o buff de mesa (1024)",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "Compacta 1440",
+      "checks": [
+        {
+          "id": "C-imitacao a aba existe no Adicionar da compacta (1440)",
+          "ok": true
+        },
+        {
+          "id": "C-imitacao sem estouro (1440)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1440
+          }
+        },
+        {
+          "id": "C-imitacao selecionar não copia (1440)",
+          "ok": true
+        },
+        {
+          "id": "C-imitacao Confirmar copia na compacta (1440)",
+          "ok": true
+        },
+        {
+          "id": "C-imitacao Encerrar na compacta (1440)",
+          "ok": true
+        },
+        {
+          "id": "C-buff sem estouro (1440)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1440
+          }
+        },
+        {
+          "id": "C-buff criar pela compacta grava um buff (1440)",
+          "ok": true,
+          "dados": [
+            {
+              "id": "buff_sren1xvm",
+              "nome": "Na Compacta",
+              "canal": "defesa",
+              "expr": "2",
+              "rodadas": null
+            }
+          ]
+        },
+        {
+          "id": "C-concedido sem estouro (1440)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1440
+          }
+        },
+        {
+          "id": "C-concedido conceder pela compacta grava na sessão (1440)",
+          "ok": true
+        },
+        {
+          "id": "C-concedido remover pela compacta (1440)",
+          "ok": true
+        },
+        {
+          "id": "C-buff o cartão aparece na lista da compacta (1440)",
+          "ok": true
+        },
+        {
+          "id": "C-buff Encerrar pela compacta tira só o buff de mesa (1440)",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "Compacta 1024: 12/12",
+    "Compacta 1440: 12/12"
+  ]
+}

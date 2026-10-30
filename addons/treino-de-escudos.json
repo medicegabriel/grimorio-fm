@@ -4,6 +4,9 @@
   "versao": "1.0.0",
   "autor": "Afty",
   "paraRaw": "afty",
+  "descricao": "Treino com escudo empunhado, em 4 etapas: +1 de Defesa, +1 de Fortitude, 4 de RD Física e +1 Encantamento escolhido de antemão. O Completo estende a RD do escudo a mais tipos de dano, em quantidade igual à metade do BT.",
+  "resumo": "Treino com escudo empunhado: +1 Defesa, +1 Fortitude, 4 de RD Física e +1 Encantamento",
+  "categoria": "treinos",
   "acrescenta": {
     "treinamentos": [
       {

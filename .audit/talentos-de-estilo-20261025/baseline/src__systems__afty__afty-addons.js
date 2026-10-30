@@ -1,0 +1,2478 @@
+/**
+ * ============================================================
+ * ADDONS DO AFTY — o registro
+ * ============================================================
+ * A camada em que cada mesa ACRESCENTA conteúdo próprio ao Afty sem abrir o
+ * GitHub. O desenho inteiro, com as 7 decisões do autor datadas, está em
+ * `docs/afty-addons.md`. Aqui mora a fase 1, e só ela.
+ *
+ * ------------------------------------------------------------
+ * AS DUAS FRASES QUE SEGURAM O SISTEMA
+ * ------------------------------------------------------------
+ * 1. **Um addon pode tudo que o Motor já sabe dizer, e nada além.** Falta de
+ *    canal ou de função vira trabalho no MOTOR, e o addon passa a usar.
+ * 2. **Addon nunca ganha verbo escondido.** Verbo (mecanismo genérico) entra no
+ *    motor, substantivo (o conteúdo da mesa) fica aqui.
+ *
+ * ⚠ ADDON É DADO, NUNCA JavaScript. Sem backend, um addon viaja como arquivo
+ * entre pessoas, e código de terceiro rodando na aba alcança o `localStorage`
+ * inteiro: todas as criaturas, todos os encontros, todos os temas. O que um
+ * addon escreve de "lógica" é DSL (`afty-dsl.js`), que só faz aritmética e cai
+ * no fallback quando erra.
+ *
+ * ------------------------------------------------------------
+ * O QUE ESTA FASE FAZ, E O QUE ELA NÃO FAZ
+ * ------------------------------------------------------------
+ * FAZ: **acrescentar** entradas a catálogos que já existem, e **remendar** uma
+ * entrada do livro trocando campos dela (`substitui`, ver `remendarLista`).
+ * NÃO FAZ: desligar entrada do raw, trocar tabela (fase 4), rodar código
+ * (fase 5). O autor pediu as duas metades da fase 3 em 2026-08-20 e aprovou
+ * adiá-las; o REMENDO entrou em 2026-08-22, quando ele mandou um Addon que
+ * reescreve Domínio Simples e dois Talentos de Origem. Desligar continua fora.
+ *
+ * Acrescentar é a metade segura, e por um motivo estrutural: como todo id nasce
+ * com o namespace do pacote, a UNIÃO dos addons de todas as criaturas
+ * carregadas nunca colide, e criatura que não usa um id simplesmente não o
+ * referencia. Por isso o encontro misto (decisão 3 do autor) sai de graça aqui,
+ * e só fica caro na fase 3.
+ *
+ * ------------------------------------------------------------
+ * COMO O MUNDO É RECONSTRUÍDO
+ * ------------------------------------------------------------
+ * Os catálogos do Afty são `export const` lidos em dezenas de lugares. Em vez
+ * de trocar cada ponto de leitura por uma função, o registro **reescreve o
+ * array no lugar** e manda a família religar os índices dela.
+ *
+ * Isso é estado mutável de módulo, e a escolha é consciente. O que ela compra:
+ *
+ *   • zero mudança nos ~60 pontos que hoje leem os catálogos.
+ *   • os 13 `validarCatalogo*` passam a validar o conteúdo de addon DE GRAÇA,
+ *     porque eles leem o mesmo array. O portão de aceitação já estava escrito.
+ *
+ * O que ela cobra: quem memoriza em cima de catálogo precisa da ÉPOCA
+ * (`epocaAddons()`) na dependência, senão não recalcula. O `useMemo` do builder
+ * é o caso conhecido.
+ * ============================================================
+ */
+
+import { validarBloodfeast } from "./afty-bloodfeast";
+import { normalizarMarca, normalizarVariavel, validateExpression } from "./afty-dsl";
+// Folha (zero imports): o formato da Técnica de Estilo da Expansão nos pacotes.
+import {
+  REGRA_EXPANSAO, TIPO_MODIFICACAO, TIPO_ESPECIAL, getEfeitoEstilo,
+} from "./afty-estilo-sombras-catalogo";
+/* O catálogo do Espinho vem do pacote e é saneado pelo verbo. O `afty-espinho.js`
+   é FOLHA, então este import é de mão única. Ver `espinhoDaFicha`. */
+import {
+  normalizarItemEspinho, ESPINHO_TIPOS, ESPINHO_VISUAIS, ESPINHO_ARTIGOS, ESPINHO_IDENTIDADE_PADRAO, identidadeDeclarada,
+} from "./afty-espinho";
+// Sem risco de ciclo: `afty-sistema.js` não importa nada.
+import { sistemaDaFicha, regraDo, palavrasDoSistema } from "./afty-sistema";
+/* A tabela de progressão da Carteira. O `afty-carteira.js` é FOLHA, então este
+   import é de mão única e não pode fechar ciclo. Ver `nivelDaFicha`. */
+import { nivelDaCarteira } from "./afty-carteira";
+import { normalizarRegrasAfty, validarRegrasAfty, regrasAftyDaCriatura } from "./afty-regras-addon";
+
+/* ============================================================ */
+/* O REGISTRO DE FAMÍLIAS                                        */
+/* ============================================================ */
+/**
+ * É isto que sustenta a promessa de "generalista" do autor: abrir uma família
+ * nova ao addon é **uma linha aqui**, e não um caso especial espalhado.
+ *
+ * Cada família declara:
+ *   • `rotulo`      nome na tela e nas mensagens de erro.
+ *   • `chave`       o campo que identifica a entrada (`id` na maioria,
+ *                   `value` nas tabelas curtas como Tipo de Dano).
+ *   • `obrigatorios` campos sem os quais a entrada não entra.
+ *   • `aplicar`     a função da família que reescreve o catálogo e religa os
+ *                   índices internos dela. Só ela conhece as estruturas
+ *                   derivadas do próprio módulo.
+ *   • `validador`   o `validarCatalogo*` da família, para rodar DEPOIS de
+ *                   acrescentar e reprovar o que quebrou.
+ *   • `caminhosDeId` onde, dentro da entrada, existem referências a outros ids
+ *                   que precisam ganhar o mesmo prefixo. Ver `prefixarEntrada`.
+ *   • `ordem`       quem religa primeiro. Menor vai antes, e o padrão é 50.
+ *
+ * ⚠ A `ordem` NASCEU EM 2026-09-07, com a herança de Especialização. Até ali a
+ * ordem de religação era a de INSERÇÃO no Map, que é a ordem de import dos
+ * módulos: um acidente do grafo de dependências, e portanto uma coisa que
+ * ninguém pode ler no código nem confiar. Passou a importar porque a família
+ * `habilidades` agora LÊ o catálogo de `especializacoes` para expandir o
+ * `herdaDe`, e ler uma família que ainda não religou daria a lista velha,
+ * calada. Quem depende de outra declara a ordem e diz por quê.
+ *
+ * ⚠ Começa com UMA família ligada de propósito (2026-08-20). O caminho inteiro
+ * (pacote, namespace, validação, religação, época) fica provado numa família
+ * antes de as outras doze entrarem, e assim um erro de desenho custa uma
+ * família e não treze.
+ */
+const FAMILIAS = new Map();
+
+/**
+ * Liga uma família ao registro. Chamado pelo próprio módulo da família, para o
+ * conhecimento das estruturas internas dela não vazar para cá.
+ */
+export function registrarFamilia(id, def) {
+  FAMILIAS.set(id, {
+    id,
+    rotulo: def.rotulo ?? id,
+    chave: def.chave ?? "id",
+    obrigatorios: def.obrigatorios ?? ["nome"],
+    caminhosDeId: def.caminhosDeId ?? [],
+    // Quem religa antes. Ver a nota da `ordem` no cabeçalho do registro.
+    ordem: Number.isFinite(def.ordem) ? def.ordem : 50,
+    aplicar: def.aplicar,
+    validador: def.validador ?? null,
+    // As duas de baixo servem à LINHA MORTA (ver `problemasDeAddon`): uma diz
+    // como achar a entrada pelo id, a outra diz onde a ficha guarda os ids
+    // daquela família.
+    resolver: def.resolver ?? null,
+    idsDaFicha: def.idsDaFicha ?? null,
+    // A lista RAW da família, sem addon nenhum. Só o REMENDO usa: ele aponta
+    // para id do livro, e é aqui que se confere se aquele id existe mesmo. Não
+    // dá para perguntar ao `resolver`, que enxerga o mundo já com addons e
+    // deixaria um pacote remendar a entrada de outro sem querer.
+    basicos: def.basicos ?? null,
+    // Família cujo catálogo não é lista de entradas com campos (Tipo de Dano é
+    // um mapa, Condição é uma string). Nelas não existe "trocar um campo".
+    remendavel: def.remendavel !== false,
+  });
+}
+
+/** As famílias abertas a addon, para a UI listar e para o validador conferir. */
+export const familiasDeAddon = () =>
+  [...FAMILIAS.values()].map((f) => ({ id: f.id, rotulo: f.rotulo }));
+
+/* ============================================================ */
+/* NAMESPACE                                                     */
+/* ============================================================ */
+/**
+ * Todo id que um addon cria nasce prefixado com o id do pacote, e o autor do
+ * addon **escreve sem o prefixo**. Duas coisas saem disso:
+ *
+ *   • colisão com o raw fica impossível para sempre.
+ *   • um id órfão numa ficha de terceiro é LEGÍVEL: dá para dizer de que addon
+ *     ele veio em vez de ele virar um buraco sem nome.
+ *
+ * O separador é `:`, que nenhum id do raw usa (eles são `lut_`, `cmb_`, `tal_`).
+ */
+export const SEPARADOR = ":";
+
+export const comPrefixo = (pacoteId, id) => `${pacoteId}${SEPARADOR}${id}`;
+
+/** Parte um id de addon. Id do raw devolve `{ pacoteId: null, id }`. */
+export function partirId(id) {
+  const s = String(id ?? "");
+  const i = s.indexOf(SEPARADOR);
+  return i === -1 ? { pacoteId: null, id: s } : { pacoteId: s.slice(0, i), id: s.slice(i + 1) };
+}
+
+export const ehIdDeAddon = (id) => partirId(id).pacoteId !== null;
+
+/**
+ * Prefixa o id próprio da entrada e as referências que a família declarou em
+ * `caminhosDeId`.
+ *
+ * ⚠ REFERÊNCIA RESOLVE LOCAL PRIMEIRO, RAW DEPOIS. Um `requisito` apontando
+ * para `ciclo_de_adaptacao` acha o do próprio addon, e um apontando para
+ * `lut_corpo_treinado` acha o raw. A regra é: se o id citado existe DENTRO do
+ * pacote, ele ganha o prefixo; senão fica como está e vai procurar no raw.
+ *
+ * ⚠ Caminho que a família NÃO declarou fica intocado, e portanto aponta para o
+ * raw. É o padrão certo, porque a esmagadora maioria das referências de um
+ * addon mira conteúdo do livro. Quando aparecer um caminho novo, declarar aqui
+ * é preferível a adivinhar a forma inteira da entrada.
+ */
+function prefixarEntrada(entrada, pacoteId, chave, caminhosDeId, idsLocais) {
+  const out = { ...entrada, [chave]: comPrefixo(pacoteId, entrada[chave]) };
+  const local = (v) => (idsLocais.has(String(v)) ? comPrefixo(pacoteId, v) : v);
+  let atual = out;
+  for (const caminho of caminhosDeId) atual = prefixarNoCaminho(atual, caminho.split("."), local);
+  return atual;
+}
+
+/**
+ * Prefixa o que um caminho de `caminhosDeId` aponta, em qualquer profundidade.
+ * Quatro formas de passo, que se combinam:
+ *
+ *   • `campo`      o valor de um campo ("especializacaoId", "concedeEscolha.habilidade");
+ *   • `campo[]`    cada item de uma lista ("incompativeisIds[]", "requisitos[].id");
+ *   • `campo{}`    cada CHAVE de um objeto ("remendaHabilidades{}"), com o valor intacto.
+ *
+ * ⚠ ERA UM `split` DE DOIS NÍVEIS ATÉ 2026-10-07 (achado M05-F03). A família
+ * `lendarias` declara "requisitos[].ids[]", e a função buscava `item["ids[]"]`,
+ * que não existe: a lista de alternativas do `lendariaOr` ficava crua e a
+ * Lendária que citava irmãs do próprio pacote nunca era alcançável, calada.
+ * ⚠ Uma lista sem sufixo depois do `[]` é lista de ids crus (o furo de
+ * 2026-09-07 do `incompativeisIds`), e item que não é objeto passa intocado.
+ */
+function prefixarNoCaminho(alvo, passos, local) {
+  if (!alvo || typeof alvo !== "object" || !passos.length) return alvo;
+  const [passo, ...resto] = passos;
+  if (passo.endsWith("{}")) {
+    const campo = passo.slice(0, -2);
+    const obj = alvo[campo];
+    if (!obj || typeof obj !== "object" || Array.isArray(obj)) return alvo;
+    return { ...alvo, [campo]: Object.fromEntries(Object.entries(obj).map(([k, v]) => [local(k), v])) };
+  }
+  if (passo.endsWith("[]")) {
+    const campo = passo.slice(0, -2);
+    if (!Array.isArray(alvo[campo])) return alvo;
+    return {
+      ...alvo,
+      [campo]: alvo[campo].map((item) => (resto.length ? prefixarNoCaminho(item, resto, local) : local(item))),
+    };
+  }
+  if (alvo[passo] === undefined) return alvo;
+  return { ...alvo, [passo]: resto.length ? prefixarNoCaminho(alvo[passo], resto, local) : local(alvo[passo]) };
+}
+
+/* ============================================================ */
+/* REMENDO (fase 3, a metade que o autor pediu em 2026-08-22)    */
+/* ============================================================ */
+/**
+ * Um remendo TROCA CAMPOS de uma entrada que já existe no livro, sem criar
+ * entrada nova. É o que o `acrescenta` não sabe fazer: dois Talentos com o
+ * mesmo nome na lista não é remendo, é confusão.
+ *
+ * ⚠ A SUBSTITUIÇÃO É POR CAMPO E É RASA. `{ descricao }` troca a descrição e
+ * deixa `requisitos` como estavam; `{ requisitos: [...] }` troca a lista
+ * INTEIRA, e não mistura item a item. Mesclar fundo pareceria mais gentil e
+ * seria imprevisível: ninguém consegue adivinhar o que sai de duas listas
+ * casadas por índice, e apagar um requisito viraria impossível.
+ *
+ * ⚠ O ID É INTOCÁVEL. Ele é a âncora do remendo e a chave de tudo que já está
+ * gravado nas fichas. Trocar o id seria apagar a entrada e criar outra, que é
+ * exatamente o que o `acrescenta` faz e o remendo não.
+ *
+ * ⚠ O PREÇO, NOMEADO NO PLANO E NÃO RESOLVIDO POR ESTA FUNÇÃO: um remendo
+ * aponta para id do raw, e o dia em que o livro renomear aquele id o remendo
+ * de terceiro apodrece. O que existe contra isso é o portão de instalação
+ * (`validarPacote` confere o id contra a lista RAW da família, e recusa o
+ * pacote inteiro) e a revalidação a cada `aplicarAddons`. Não é manutenção
+ * zero, e o plano já dizia que não seria.
+ *
+ * `remendos` é um Map(id -> patch). Devolve lista NOVA, com as entradas não
+ * remendadas passando por referência.
+ */
+export function remendarLista(base, remendos, chave = "id") {
+  if (!remendos || remendos.size === 0) return base;
+  return base.map((entrada) => {
+    const patch = remendos.get(String(entrada?.[chave]));
+    if (!patch) return entrada;
+    return {
+      ...entrada,
+      ...patch.campos,
+      [chave]: entrada[chave],
+      // De quem veio o remendo, para a tela poder dizer que aquela linha não é
+      // mais a do livro. Lista porque dois pacotes podem tocar a mesma entrada.
+      remendadoPor: [...(entrada.remendadoPor ?? []), ...patch.por],
+    };
+  });
+}
+
+/* ============================================================ */
+/* O PACOTE                                                      */
+/* ============================================================ */
+
+/* ============================================================ */
+/* OS CANAIS QUE O MOTOR CONHECE                                 */
+/* ============================================================ */
+/**
+ * O `afty-efeitos.js` registra aqui os ids de `EFEITO_CANAIS` quando carrega.
+ * É o padrão inverso de sempre: ele já importa este módulo, e importar o dele
+ * daqui fecharia um ciclo.
+ *
+ * ⚠ EXISTE PARA O PORTÃO DE INSTALAÇÃO (achado M01-VAL-02 / M04-A01,
+ * 2026-10-07). O `validarPacote` só conferia que `canal` e `expr` eram texto não
+ * vazio, e o coletor descarta canal desconhecido em silêncio: um pacote com o
+ * canal escrito errado instalava e a linha simplesmente não somava.
+ */
+const canaisDoMotor = {};
+/* `escopo` é o do efeito: "criatura" (o Motor da ficha) ou "invocacao" (o
+   efeito com `escopo: "invocacao"`, que mira o Shikigami e usa os canais de
+   afty-invocacoes.js). */
+export function registrarCanaisDoMotor(ids, escopo = "criatura") {
+  canaisDoMotor[escopo] = new Set((Array.isArray(ids) ? ids : []).map(String));
+}
+
+/**
+ * O que está errado num efeito escrito no pacote: canal que o Motor não tem,
+ * `expr` vazia ou fora da sintaxe, `quando` fora da sintaxe. Variável não é
+ * conferida: a que o pacote cita pode só existir na ficha que o carrega.
+ */
+function problemasDoEfeito(onde, efeito) {
+  if (!efeito || typeof efeito !== "object") return [`${onde}: precisa ser um objeto.`];
+  const out = [];
+  const canal = String(efeito.canal ?? "").trim();
+  if (!canal) out.push(`${onde}: falta o campo "canal".`);
+  else {
+    const conhecidos = canaisDoMotor[efeito.escopo === "invocacao" ? "invocacao" : "criatura"];
+    if (conhecidos && !conhecidos.has(canal)) out.push(`${onde}: canal inexistente ("${canal}").`);
+  }
+  const expr = String(efeito.expr ?? "").trim();
+  if (!expr) out.push(`${onde}: falta o campo "expr".`);
+  else {
+    const v = validateExpression(expr);
+    if (!v.ok) out.push(`${onde}: "expr" inválido (${v.error}).`);
+  }
+  if (efeito.quando != null && String(efeito.quando).trim()) {
+    const v = validateExpression(String(efeito.quando));
+    if (!v.ok) out.push(`${onde}: "quando" inválido (${v.error}).`);
+  }
+  return out;
+}
+
+/**
+ * Os alcances que uma linha de CURA declarada aceita, os mesmos três rótulos das
+ * linhas do livro (afty-cura.js). Mora aqui, e não lá, para o portão de
+ * instalação conferir sem importar o módulo de cura, que fecharia um ciclo.
+ */
+export const ALCANCES_DE_CURA = ["Você", "Toque", "Grupo"];
+
+/**
+ * O que está errado no `fonteCura` de uma entrada de pacote (2026-10-07, achado
+ * M04-A04). É a primitiva que deixa uma Habilidade, Talento ou Aptidão de addon
+ * ganhar a PRÓPRIA linha de cura, com os números pelos canais de cura mirando o
+ * id dela. Ver `fonteCuraDeclarada` em afty-cura.js.
+ */
+function problemasDaFonteCura(onde, fonte) {
+  if (fonte == null) return [];
+  if (typeof fonte !== "object" || Array.isArray(fonte)) return [`${onde}: "fonteCura" precisa ser um objeto.`];
+  const out = [];
+  if (fonte.alcance != null && !ALCANCES_DE_CURA.includes(fonte.alcance)) {
+    out.push(`${onde}: "fonteCura.alcance" precisa ser ${ALCANCES_DE_CURA.join(", ")}.`);
+  }
+  if (fonte.nome != null && !String(fonte.nome).trim()) out.push(`${onde}: "fonteCura.nome" vazio.`);
+  if (fonte.unidade != null) {
+    const u = fonte.unidade;
+    if (!u || typeof u !== "object" || !String(u.rotulo ?? "").trim()
+      || !Number.isInteger(u.porBloco) || u.porBloco < 1) {
+      out.push(`${onde}: "fonteCura.unidade" precisa de "rotulo" e de "porBloco" inteiro a partir de 1.`);
+    }
+  }
+  return out;
+}
+
+/** Teto do pacote. Mesmo espírito do `CSS_MAX` do tema: avisa, não bloqueia. */
+export const PACOTE_MAX = 256 * 1024;
+
+/**
+ * Cópia FUNDA de uma entrada, na entrada do catálogo.
+ *
+ * ⚠ SEM ISTO O CATÁLOGO E A FICHA SALVA DIVIDEM OBJETO. O pacote que está em
+ * `creature.addons` é o mesmo que alimenta o mundo, e o `{ ...entrada }` do
+ * `prefixarEntrada` é raso: `escolha`, `requisitos` e afins continuavam sendo a
+ * MESMA referência dos dois lados. Como o sistema MUTA entrada de catálogo em
+ * pelo menos um lugar (`dona.escolha.opcoes = HABILIDADES_ROUBAVEIS`, em
+ * afty-habilidades.js), uma mutação do catálogo vazava para dentro da criatura
+ * gravada. Achado em 2026-08-20, na revisão da fase 1.
+ *
+ * Volta e meia por JSON, e não por `structuredClone`, de propósito: o pacote É
+ * JSON (veio de um `JSON.parse` do campo de colar), e a ida e volta ainda tira
+ * de brinde qualquer coisa que não seja serializável e que tenha entrado por
+ * um caminho torto.
+ */
+const clonar = (e) => {
+  try { return JSON.parse(JSON.stringify(e)); } catch { return { ...e }; }
+};
+
+/** Id de pacote: minúsculas, número e hífen. É ele que vira o namespace. */
+const ID_PACOTE_OK = /^[a-z0-9][a-z0-9-]{1,39}$/;
+/** Id de entrada: o vocabulário dos ids do raw, sem o separador. */
+const ID_ENTRADA_OK = /^[a-z0-9][a-z0-9_]{0,63}$/;
+
+/**
+ * Saneia um pacote cru (o que veio do JSON colado) numa forma previsível.
+ * NÃO valida: quem reprova é o `validarPacote`. Aqui só se garante que os
+ * campos existem com o tipo certo, para o validador poder falar de conteúdo em
+ * vez de morrer num `undefined`.
+ */
+/* ============================================================ */
+/* PRIMITIVAS DA FASE 0                                          */
+/* ============================================================ */
+/**
+ * As primitivas que o MOTOR ganhou para atender casos de Addon. Elas vivem no
+ * motor sempre (é o VERBO, e verbo é do motor), mas **só aparecem na tela de
+ * quem instalou um addon que as PEDIU**, pelo campo `permite` do pacote.
+ *
+ * ⚠ ISTO NASCEU DE UM ERRO MEU, e vale escrito para não repetir. Ao fechar a
+ * 8.3 eu construí o verbo, marquei a primitiva como pronta e parei ali. O
+ * resultado foi que o card "Concedido pelo Mestre" apareceu na tela de jogo de
+ * TODO MUNDO, com zero addons instalados, listando o catálogo raw inteiro. O
+ * autor viu no deploy e apontou (2026-08-20): *"deveria ser algo próprio de
+ * Addon"*. As outras duas primitivas tinham vazado igual, mais baixinho: o
+ * `contar()` no seletor de variáveis e o `hpAtributo` no seletor de canais.
+ *
+ * A lição, que vale para a fase 3 e para a 8.4: **acrescentar o verbo ao motor
+ * não é a tarefa inteira**. Falta sempre dizer quem enxerga o verbo, e o padrão
+ * do projeto é que quem enxerga é quem pediu.
+ */
+export const PRIMITIVAS = [
+  { id: "bloodfeast", rotulo: "Bloodfeast", nota: "Conversão de energia em Vida e recursos sanguíneos de cena" },
+  {
+    id: "concessao",
+    rotulo: "Concessão do Mestre",
+    nota: "O mestre acrescenta Habilidade, Talento, Treino e afins na ficha no meio da luta",
+  },
+  {
+    id: "contar",
+    rotulo: "Marcas e contar()",
+    nota: "A função contar(\"marca\") do DSL, e o grupo Marcas no seletor de variáveis",
+  },
+  {
+    id: "hpAtributo",
+    rotulo: "Atributo do PV",
+    nota: "O canal que TROCA a Constituição no cálculo do PV",
+  },
+  /* ⚠ NASCEU EM 2026-09-28, com a Fórmula de Combate Entrópica, já com o portão
+     junto: é a lição do `hpAtributo` e do Azamaru, canal novo por causa de Addon
+     nasce com a primitiva. */
+  {
+    id: "ataqueAtributo",
+    rotulo: "Atributo do Ataque",
+    nota: "O canal que TROCA a Força ou a Destreza no acerto e no dano dos ataques corpo a corpo e à distância",
+  },
+  {
+    id: "rodaDharma",
+    rotulo: "Grande Roda do Dharma",
+    nota: "Adaptações individuais do inimigo por fenômeno e alvo",
+  },
+  {
+    id: "adaptacao",
+    rotulo: "Ciclo de Adaptação",
+    nota: "Progressão de sessão com giro manual, avanço por rodada e marcos configuráveis",
+  },
+  /* ⚠ NASCEU EM 2026-09-04, com a Loja de Catarse. Ela é primitiva e não
+     família de catálogo porque o que ela acrescenta não é uma ENTRADA nova: é
+     uma moeda na ficha e uma forma de gastá-la, e as duas coisas são verbo. O
+     que o pacote traz de dado é a tabela de PREÇOS. */
+  /* ⚠ NASCEU EM 2026-09-07, com o Especialista em Estilo. O canal existe no
+     motor sempre, e só aparece no seletor de quem pediu, pela mesma lição do
+     `hpAtributo`: sem o `permite`, todo mundo passaria a ver um canal que mexe
+     em pré-requisito de Aptidão e que nenhuma entrada do livro emite. */
+  {
+    id: "requisitoAptidao",
+    rotulo: "Requisito de Aptidão",
+    nota: "O canal que ABAIXA o pré-requisito de NÍVEL das Aptidões Amaldiçoadas. Não encosta no requisito de trilha",
+  },
+  /* ⚠ NASCEU EM 2026-09-07, junto com o Azamaru. A arma com formas alternáveis
+     e reserva de ilusões é VERBO e mora no motor, mas os dois canais que ela
+     abriu (`ignoraTodaRD` e `ignoraImunidade`) apareciam no seletor de TODO
+     mundo, com zero addons instalados. É a mesma lição do `hpAtributo`, escrita
+     no topo desta lista: acrescentar o verbo ao motor não é a tarefa inteira. */
+  {
+    id: "armaTransformavel",
+    rotulo: "Arma Transformável",
+    nota: "Arma com duas formas, reserva de clones ilusórios e os canais que ignoram toda RD e imunidade",
+  },
+  {
+    id: "catarse",
+    rotulo: "Loja de Catarse",
+    nota: "Moeda de mesa que compra vaga de Talento, Habilidade, Melhoria, Lendária e Aptidão, mais anotação com Motor que ACUMULA",
+  },
+  /* ⚠ NASCEU EM 2026-09-08, para mandar uma ficha para avaliação pública sem
+     mandar junto o conteúdo pago que ela usa. É primitiva e não família de
+     catálogo porque o que ela acrescenta não é ENTRADA nova: é uma
+     transformação da própria ficha, que tira o texto e põe um blob cifrado.
+     Ver `afty-cofre.js` e `docs/afty-cofre.md`. */
+  {
+    id: "cofre",
+    rotulo: "Cofre de Texto",
+    nota: "Tranca o texto dos Feitiços e dos Funcionamentos Básicos com senha. O texto SAI da ficha e vira blob cifrado, então o arquivo exportado não o contém",
+  },
+  /* ⚠ NASCEU EM 2026-09-08, com a Carteira da Guilda. É primitiva e não família
+     de catálogo pela mesma razão da Loja de Catarse: o que ela acrescenta não é
+     ENTRADA nova, é um livro-caixa na ficha, e livro-caixa é verbo. O dado que
+     o pacote traz é nenhum, porque as linhas quem escreve é o jogador.
+
+     ⚠ ELA ANDA COM A LIBERAÇÃO `carteiraFocos`, e as duas são separadas de
+     propósito. Esta abre a ABA (tela, e não muda número). A outra faz os
+     Interlúdios anotados virarem o orçamento de Focos (regra, e muda número).
+     Um pacote pode pedir só a primeira e ter a Carteira como caderno puro. Ver
+     `afty-carteira.js` e docs/afty-carteira.md. */
+  {
+    id: "carteira",
+    rotulo: "Carteira",
+    nota: "Livro-caixa das sessões: XP, dinheiro e Interlúdios que entraram, o que saiu, e os totais",
+  },
+  /* ⚠ NASCEU EM 2026-09-09, com o padrão de criação de armas do autor. É
+     primitiva e não família de catálogo porque o que ela acrescenta não é
+     ENTRADA nova: é uma RÉGUA para a arma que a pessoa já podia criar. O
+     catálogo de armas continua o mesmo, e a arma criada continua a mesma arma.
+
+     ⚠ ELA NÃO MOVE NÚMERO NENHUM, e há assert medindo isso. A bancada lê a arma
+     gravada, conta os Pontos de Criação e AVISA quando um limite estoura. Quem
+     escreve dano, margem e propriedade continua sendo a pessoa. Ver
+     `afty-criacao-armas.js` e docs/afty-criacao-armas.md. */
+  /* ⚠ NASCEU EM 2026-09-09, com o Vislumbre Celeste. É primitiva e não família
+     de catálogo pela mesma razão da Carteira: o autor decidiu que a condição é
+     GANHA DE GRAÇA, sem Origem, Talento nem Aptidão, então não há entrada para
+     gastar vaga nenhuma e ter o pacote É ter os olhos. Ver
+     `afty-vislumbre-celeste.js` e docs/afty-vislumbre-celeste.md. */
+  {
+    id: "vislumbreCeleste",
+    rotulo: "Vislumbre Celeste",
+    nota: "A Condição Corporal dos Seis Olhos: os dois blocos de benefício (cobertos e descobertos), a redução ampla de PE, a Fadiga Mental e o card na aba Habilidades",
+  },
+  {
+    id: "olhosDeAgulha",
+    rotulo: "Olhos de Agulha",
+    nota: "Condição corporal do Clã Akutame, habilidades oculares e usos por descanso",
+  },
+  {
+    id: "olhinhosLu",
+    rotulo: "Olhinhos Lu",
+    nota: "Condição corporal, bônus de Intuição com olhos fechados e troca da perícia de Atenção",
+  },
+  {
+    id: "criacaoArmas",
+    rotulo: "Criação de Armas",
+    nota: "A bancada de Pontos de Criação no editor de arma própria: orçamento por classificação, custo, técnica e espaços, com o preço de cada propriedade e os limites de gasto",
+  },
+  /* ⚠ NASCEU EM 2026-09-14, com a fase 2 do guia Criação de Equipamentos. É
+     primitiva, e não liberação como a fase 1, porque a receita da arma é dado da
+     ARMA e vale sem o Addon (autor: "Continua com o dado da conta"). Ter o pacote
+     só abre a bancada que escreve a receita. Ver
+     `afty-criacao-equipamentos-armas.js`. */
+  /* A fase 4 do mesmo guia. Primitiva pela mesma razão da de cima: a receita
+     mora na Ferramenta (`fa.guiaUnica`) e continua valendo sem o Addon, e ter o
+     pacote só abre a bancada. Ver `afty-criacao-equipamentos-encantamento.js`. */
+  {
+    id: "encantamentoGuia",
+    rotulo: "Encantamento de Grau Especial pelo Guia",
+    nota: "A conta opcional do guia Criação de Equipamentos na Habilidade Única da Ferramenta de Grau Especial: Interações Simples pelo modificador, divisão ou penalidade, melhoria de Encantamento Padrão e o Feitiço da Técnica Inata",
+  },
+  {
+    id: "armasPorNivel",
+    rotulo: "Armas por Nível de Dano",
+    nota: "A bancada do guia Criação de Equipamentos no editor de arma própria: o dado sai do Custo menos os Níveis gastos em propriedades e crítico, com alcance por grau e Propriedade Especial personalizada",
+  },
+  /* Compatibilidade com os addons anteriores à área nativa de Votos. O id
+     `pacto` continua válido para não reprovar pacotes salvos, mas não libera
+     mais tela alguma. Um `pactoPadrao` pode ser copiado como Voto Mecânico na
+     aba nativa, que existe com ou sem addon. */
+  {
+    id: "pacto",
+    rotulo: "Voto (compatibilidade)",
+    nota: "Compatibilidade com addons antigos que ofereciam um Voto pronto no campo pactoPadrao. A aba Votos agora é nativa e não depende desta permissão",
+  },
+  /* ⚠ NASCEU EM 2026-09-17, a pedido do autor: uma aba ao lado de Habilidades,
+     mesmo espírito do Perfil Amaldiçoado (Base + lista de texto livre com
+     efeito opcional), reflavorada para modificação corporal e com orçamento
+     PRÓPRIO digitado na ficha (sem fórmula ligada a ND/BT). É primitiva pela
+     mesma razão do Pacto: o que ela acrescenta não é ENTRADA de catálogo, é
+     uma aba onde o jogador escreve as linhas.
+     ⚠ NUNCA ENTRA EM POOL EXCLUSIVO, mesma regra do Pacto: os efeitos somam
+     por cima de Habilidade e de qualquer outra fonte sempre ("capaz de
+     acumular com Habilidades"). Ver `afty-modificacoes-corporais.js`. */
+  {
+    id: "modificacoesCorporais",
+    rotulo: "Modificações Corporais",
+    nota: "Aba própria ao lado de Habilidades: Base da Modificação e Enxertos de texto livre, com efeito opcional no Motor. O orçamento de Enxertos é digitado na ficha, e os efeitos somam sempre, sem entrar em pool exclusivo",
+  },
+  /* ⚠ NASCEU EM 2026-09-18, a pedido do autor: "dobre a vida e tire o gasto de PE
+     de passivas de uma ficha". É primitiva pela lição do `hpAtributo`: os dois
+     canais (`hpMult` e `passivaSemCusto`) vivem no motor sempre e só aparecem no
+     seletor de quem pediu. Ver `afty-derive.js` (PV e PE) e
+     `peMaximoDasPassivas` em afty-feiticos.js. */
+  {
+    id: "pvEPassivas",
+    rotulo: "PV e Passivas",
+    nota: "Os dois canais que multiplicam o PV final (hpMult) e isentam as Passivas do custo de PE Máximo (passivaSemCusto)",
+  },
+  /* ⚠ NASCEU EM 2026-09-20, a pedido do autor: a Quimera deixou de ser Talento e
+     virou um card ao lado das Hordas, na aba de Invocações. O motor da fusão
+     (`resolveQuimera`, afty-invocacoes.js) vive sempre e só aparece na tela de
+     quem instalou o addon que pediu. */
+  {
+    id: "quimera",
+    rotulo: "Quimera",
+    nota: "Card de Quimeras ao lado das Hordas: funde de 2 a 4 Invocações (Passiva de Nível 2, 3 ou 4) somando PV e custo, unindo treinos e fixando cada atributo no maior valor entre as fundidas. Desde 2026-10-01 é a regra LEGACY: a oficial é a do Mecânicas, que o Controlador de nível 5 abre sem addon",
+  },
+  /* ⚠ NASCEU EM 2026-10-01 (Etapa 10 da atualização de Invocações, DA-12): a
+     Herança das Sombras persistente do Mecânicas, "para os Usuários de Dez Sombras
+     e técnicas semelhantes". O motor (`herancasDa`, afty-invocacoes.js) vive
+     sempre. A sub-aba Heranças aparece para quem tem uma Invocação de Técnica, e
+     esta primitiva a abre para quem não tem (um addon de clã, por exemplo). */
+  {
+    id: "heranca",
+    rotulo: "Herança das Sombras",
+    nota: "Sub-aba Heranças na Invocação: a fusão permanente de uma sombra exorcizada numa viva, com Nível de Dano, bônus escolhido, resistência, Ação, Característica, treinos e atributo, acumulando e passando adiante",
+  },
+  /* ⚠ NASCEU EM 2026-09-22, a pedido do autor: a regra do Titã (Mechamaru
+     Supremo), que separa a Vida Máxima de um inimigo Colossal em barras por
+     membro. O número (dobro, divisão) é sempre calculado (`resolveTita`,
+     afty-tita.js), e o `permite` só decide quem enxerga o card no criador e o
+     painel na Ficha Final. */
+  {
+    id: "titaColosso",
+    rotulo: "Titã (Colosso)",
+    nota: "Card na criação e painel na Ficha Final: separa a Vida Máxima em barras por membro (dobro dividido pela contagem) e uma barra de Cabeça (o dobro inteiro), com aviso de crítico e morte só pela cabeça",
+  },
+  /* ⚠ NASCEU EM 2026-09-22, junto da primitiva `titaColosso`, para o addon
+     Maldição - Era de Ouro: o pool de Características Amaldiçoadas que a
+     característica "Anatomia Amaldiçoada" concede. O catálogo em si é vazio no
+     raw (família `caracteristicasAmaldicoadas`, afty-caracteristicas-amaldicoadas.js);
+     o addon é quem traz as ~20 entradas. */
+  {
+    id: "caracteristicasAmaldicoadas",
+    rotulo: "Características Amaldiçoadas",
+    nota: "Aba de escolha do pool de Características Amaldiçoadas (Anatomia Amaldiçoada: 1 no 1° nível, +1 a cada 5 níveis). O catálogo em si vem do addon, pela família caracteristicasAmaldicoadas",
+  },
+  /* ⚠ NASCEU EM 2026-09-30, com o Addon Espinho. É primitiva pela mesma razão da
+     Loja de Catarse: o que ela acrescenta é uma LOJA na ficha, e loja é verbo. O
+     catálogo (itens, custo, teto, canal) vem do pacote, no campo `espinho`, e as
+     compras rendem pelo Motor com ou sem este `permite`: ele só decide quem
+     enxerga o card e o canal `pontosAtributo` no seletor. Ver afty-espinho.js. */
+  {
+    id: "espinho",
+    rotulo: "Espinho",
+    nota: "Card das Almas na aba Habilidades do criador e da Ficha Final: Almas Totais e Restantes, e as compras do catálogo do pacote, que ACUMULAM com tudo",
+  },
+];
+
+const PRIMITIVA_IDS = new Set(PRIMITIVAS.map((p) => p.id));
+
+/* ============================================================ */
+/* LIBERAÇÕES                                                    */
+/* ============================================================ */
+/**
+ * O que ter o addon DESTRAVA para a criatura que o carrega.
+ *
+ * ⚠ NÃO CONFUNDIR COM `permite`, e a diferença é a razão de existirem dois
+ * campos em vez de um:
+ *
+ *   • `permite` é TELA. Ele decide quem ENXERGA uma primitiva que o motor já
+ *     tem, e por definição não muda número nenhum (há assert medindo isso).
+ *   • `libera` é REGRA. Ele muda o que a criatura PODE ter, e portanto muda
+ *     número.
+ *
+ * Misturar os dois faria o `permite` às vezes mexer na ficha e às vezes não, o
+ * que quebra a única coisa que ele promete.
+ *
+ * ⚠ A liberação é lida DIRETO DA CRIATURA, e não por canal do Motor. Isso é de
+ * propósito: ela é uma pergunta estrutural ("esta criatura pode ter Estilo?")
+ * que precisa ser respondida antes de quase tudo, e um canal só ficaria pronto
+ * no meio da derivação. Ver `liberacoesDaCriatura`.
+ */
+export const LIBERACOES = [
+  {
+    id: "estiloSombras",
+    rotulo: "Estilo das Sombras",
+    nota: "Destrava o Novo Estilo da Sombra fora do Sem Técnica, inclusive para quem tem Feitiços",
+  },
+  {
+    id: "gemeosSemTecnica",
+    rotulo: "Sem Técnica em Verdadeiras Origens",
+    nota: "O Gêmeo pode copiar Estudos Dedicados ou Empenho Implacável, que o texto proíbe",
+  },
+  {
+    id: "qualificaSemTecnica",
+    rotulo: "Qualifica Como Sem Técnica",
+    nota: "A ficha conta como Origem Sem Técnica para pré-requisito de Talento e de Linha de Treinamento",
+  },
+  {
+    id: "gemeosMaldicao",
+    rotulo: "Maldição em Verdadeiras Origens",
+    nota: "O Gêmeo pode copiar da Maldição, e copiar passa a fazer a ficha seguir as regras de estrutura dela",
+  },
+  /* ⚠ ABRE E ESTREITA NA MESMA LIBERAÇÃO, e é a primeira que faz as duas coisas.
+     A origem que não conjura (Restringido e Sem Técnica) não monta o card de
+     Feitiços; esta entrada monta, e ao mesmo tempo limita os chips de tipo a
+     Passivo / Característica e Personalizado. Ver `tiposFeiticoPermitidos`. */
+  {
+    id: "feiticosRestritos",
+    rotulo: "Feitiços Passivos e Personalizados",
+    nota: "Abre a aba de Feitiços para a origem que não conjura, limitada a Passivo / Característica e Personalizado",
+  },
+  /* ⚠ ESTA É A OUTRA METADE DA CARTEIRA, e a divisão entre ela e a primitiva
+     `carteira` é a divisão inteira entre os dois campos. A aba é tela e não
+     muda nada; SUBSTITUIR o orçamento de Focos pelos Interlúdios anotados muda
+     número, e por isso mora aqui.
+
+     ⚠ E ela SUBSTITUI, não soma. O total de Focos deixa de ser o ND (na
+     criatura) ou o campo digitado (no jogador) e passa a ser o que a Carteira
+     conta, porque somar os dois cobraria o mesmo Interlúdio duas vezes. O canal
+     `focos` continua entrando por cima nos três casos, que é como uma
+     habilidade ou outro addon ainda concede Foco. Ver `focosTotais`. */
+  {
+    id: "carteiraFocos",
+    rotulo: "Interlúdios da Carteira",
+    nota: "O total de Interlúdios anotado na Carteira VIRA o orçamento de Focos, no lugar do ND ou do campo digitado",
+  },
+  /* ⚠ A SEGUNDA DA CARTEIRA, e ela é a que mexe em mais coisa no sistema
+     inteiro: o Nível é a entrada de quase toda fórmula do Afty, então o XP
+     anotado passa a decidir Maestria, Grau, PV, PE, orçamentos e limites de
+     atributo. Por isso ela é liberação SEPARADA da `carteiraFocos`, e não um
+     pacote só: uma mesa pode querer o livro-caixa e continuar subindo de nível
+     à mão. A tabela mora em `afty-carteira.js`. */
+  {
+    id: "carteiraNivel",
+    rotulo: "Nível pelo XP da Carteira",
+    nota: "O XP anotado na Carteira VIRA o Nível, pela tabela de progressão. Zero de XP é o Nível 3, e o campo de Nível deixa de ser digitável",
+  },
+  /* ⚠ AS DUAS DA BENÇÃO DO GRÃO MESTRE DA FORJA (2026-09-11), separadas pela
+     mesma razão das duas da Carteira: uma mexe em todo item de Grau Especial
+     que a ficha JÁ tem, e a outra abre um tipo de item que não existia. A regra
+     de disputa das duas é a família `segundaHabilidadeUnica` (afty-efeitos.js). */
+  {
+    id: "segundaHabilidadeUnica",
+    rotulo: "Segunda Habilidade Única",
+    nota: "Todo item de Grau Especial recebe uma segunda Habilidade Única, que não acumula com Feitiços. Cada item com a segunda preenchida custa um Slot de Feitiço",
+  },
+  {
+    id: "acessoriosUnicos",
+    rotulo: "Acessórios Únicos",
+    nota: "Abre a criação de Acessórios Únicos, que contam como Grau Especial, pesam 1, não têm custo nem Encantamentos e recebem duas Habilidades Únicas",
+  },
+  /* ⚠ NASCERAM EM 2026-09-14, com o guia Criação de Equipamentos e Itens 2.5.2.
+     São DUAS pela mesma razão das da Benção: cada uma abre um tipo de item
+     diferente, e quem quer só o escudo não leva o revestimento de brinde. São
+     liberação, e não primitiva como a bancada de Pontos de Criação, porque a
+     tabela DECIDE a Defesa e a RD do item. Sem a liberação o item gravado
+     continua na ficha e deixa de contar. Ver `afty-criacao-equipamentos.js`. */
+  {
+    id: "revestimentosCriados",
+    rotulo: "Revestimentos Criados",
+    nota: "Abre a criação de Revestimentos por Custo: Defesa e penalidade da tabela, e a troca de um degrau de Defesa por +2 em duas Perícias ou RD por Tipo",
+  },
+  {
+    id: "escudosCriados",
+    rotulo: "Escudos Criados",
+    nota: "Abre a criação de Escudos por Custo: RD, penalidade e dado da tabela, sem efeito especial",
+  },
+  /* A fase 3 do mesmo guia. Liberação pela mesma razão das duas acima: o item
+     Passivo soma número na ficha, e sem a liberação ele deixa de contar. */
+  {
+    id: "itensDeCusto",
+    rotulo: "Itens de Custo Criados",
+    nota: "Abre a criação de Itens de Custo: um efeito da tabela do Custo, Passivo (vale equipado) ou Ativo (Arremessável, Área ou Totem, aplicado na mesa)",
+  },
+  /* As quatro entradas que saíram da Ficha de Jogador em 2026-09-01. O id segue
+     o molde do `liberacaoSoPorAddon`, e cada uma é NOMEADA: quem quer só o
+     Gêmeos de volta não reabre as outras três de brinde. Na ficha de criatura
+     nenhuma delas saiu, então a liberação não faz nada lá. */
+  {
+    id: "soPorAddon:gemeos",
+    rotulo: "Origem Gêmeos no Jogador",
+    nota: "Devolve a origem Gêmeos à lista de origens da Ficha de Jogador",
+  },
+  {
+    id: "soPorAddon:atributo",
+    rotulo: "Treino de Atributo no Jogador",
+    nota: "Devolve a Linha de Treinamento Treino de Atributo à lista de Interlúdios da Ficha de Jogador",
+  },
+  {
+    id: "soPorAddon:cnj_agilidade_no_campo_de_batalha",
+    rotulo: "Agilidade no Campo de Batalha no Jogador",
+    nota: "Devolve a Habilidade [2.0] Agilidade no Campo de Batalha à lista do Conjurador na Ficha de Jogador",
+  },
+  {
+    id: "soPorAddon:tal_alma_livre",
+    rotulo: "Talento Alma Livre no Jogador",
+    nota: "Devolve o Talento Alma Livre à lista de Talentos da Ficha de Jogador",
+  },
+  /* A quinta (2026-09-17), e a primeira que o jogador PERDE mesmo já tendo. Ver
+     a divergência `perdidoNoJogador`. */
+  {
+    id: "soPorAddon:len_versatilidade_extrema",
+    rotulo: "Versatilidade Extrema no Jogador",
+    nota: "Devolve a Habilidade Lendária Versatilidade Extrema à Ficha de Jogador, inclusive para quem já a tinha escolhido",
+  },
+];
+
+const LIBERACAO_IDS = new Set(LIBERACOES.map((l) => l.id));
+
+/** Nenhuma liberação. Congelado, para virar valor padrão sem alocar. */
+export const SEM_LIBERACOES = Object.freeze([]);
+
+/**
+ * O que os addons DESTA criatura destravam.
+ *
+ * ⚠ Sai da criatura, e não do mundo aplicado, pela mesma razão do
+ * `primitivasDaCriatura`: num Encontro misto o mundo é a UNIÃO de todos, e um
+ * combatente sem o addon não pode herdar a regra de quem tem.
+ */
+export function liberacoesDaCriatura(creature) {
+  const lista = Array.isArray(creature?.addons) ? creature.addons : [];
+  const out = new Set();
+  for (const pacote of lista) {
+    for (const id of Array.isArray(pacote?.libera) ? pacote.libera : []) {
+      if (LIBERACAO_IDS.has(id)) out.add(id);
+    }
+  }
+  return out.size ? [...out] : SEM_LIBERACOES;
+}
+
+/* ============================================================ */
+/* CONTEÚDO SÓ POR ADDON                                         */
+/* ============================================================ */
+/**
+ * Entradas do livro que NÃO existem na Ficha de Jogador, e que uma mesa devolve
+ * instalando um Addon. O autor pediu quatro em sequência em 2026-09-01.
+ *
+ * A entrada do catálogo se marca com `foraDoJogador: true`, e a divergência
+ * `conteudoSoPorAddon` decide se a marca vale. É UM mecanismo para as quatro
+ * porque a regra é a mesma: o que muda de uma para outra é só qual entrada.
+ *
+ * ⚠ NENHUMA VIROU ADDON DE VERDADE, e a razão é medida no Gêmeos: ele tem NOVE
+ * ganchos no motor presos ao id CRU `"gemeos"`. Id de addon nasce com o
+ * namespace do pacote, então viraria `pacote:gemeos` e os nove quebrariam
+ * calados. Tirar da LISTA resolve o pedido sem tocar em id nenhum.
+ *
+ * ⚠ A LIBERAÇÃO É POR ID, e não uma chave geral. Uma mesa que queira só o Gêmeos
+ * de volta não deve reabrir as outras três de brinde.
+ */
+export const liberacaoSoPorAddon = (id) => `soPorAddon:${id}`;
+
+/**
+ * Uma lista de catálogo, sem o que este sistema não tem.
+ *
+ * Três portas deixam a entrada marcada passar, e a terceira é a que protege
+ * ficha salva:
+ *
+ *   1. o sistema é criatura, onde ela nunca saiu.
+ *   2. um Addon desta criatura declara a liberação daquele id.
+ *   3. ⚠ A FICHA JÁ TEM A ENTRADA (decisão do autor). Sem esta porta a lista
+ *      abriria sem a opção gravada, e a próxima edição trocaria a escolha do
+ *      personagem por acidente. Tirar da lista é fechar a PORTA, e não confiscar
+ *      o que já passou por ela.
+ *
+ *      ⚠ Salvo a entrada marcada `perdeNoJogador`, que é justamente o confisco
+ *      (divergência `perdidoNoJogador`, 2026-09-17). Para ela a terceira porta
+ *      não existe, e quem a tinha a perde. Ver `perdidaNoJogador`.
+ *
+ * `jaNaFicha` é o conjunto de ids que a ficha já escolheu naquela família. Quem
+ * chama sabe onde eles moram, e por isso ele vem de fora.
+ */
+export function filtraForaDoJogador(lista, creature, jaNaFicha = null, chave = "id") {
+  if (!Array.isArray(lista) || !lista.length) return lista;
+  // Sai cedo quando não há nada marcado: é o caso de quase toda lista, e assim o
+  // filtro não custa nem uma leitura de divergência.
+  if (!lista.some((e) => e?.foraDoJogador)) return lista;
+  if (regraDo(sistemaDaFicha(creature), "conteudoSoPorAddon") !== "player") return lista;
+  const liberadas = liberacoesDaCriatura(creature);
+  const tem = jaNaFicha instanceof Set ? jaNaFicha : new Set(jaNaFicha || []);
+  return lista.filter((e) => !e?.foraDoJogador
+    || liberadas.includes(liberacaoSoPorAddon(e?.[chave]))
+    || (tem.has(e?.[chave]) && !perdidaNoJogador(e, creature, chave)));
+}
+
+/**
+ * Esta entrada foi tirada do jogador, INCLUSIVE de quem já a tinha? Quem lê a
+ * lista resolvida da ficha pergunta aqui e descarta o id, e com ele somem os
+ * efeitos e a vaga que ele ocupava.
+ *
+ * Verdadeiro só com as três condições: a marca `perdeNoJogador`, a ficha é de
+ * jogador, e nenhum Addon dela libera aquele id.
+ */
+export function perdidaNoJogador(entrada, creature, chave = "id") {
+  if (!entrada?.perdeNoJogador) return false;
+  if (regraDo(sistemaDaFicha(creature), "perdidoNoJogador") !== "player") return false;
+  return !liberacoesDaCriatura(creature).includes(liberacaoSoPorAddon(entrada?.[chave]));
+}
+
+/* ============================================================ */
+/* O NÍVEL DA FICHA                                              */
+/* ============================================================ */
+/** Teto efetivo, ou null quando a ficha permite continuar acima de 30. */
+export function nivelMaximoDaFicha(creature) {
+  return regraDo(sistemaDaFicha(creature), "tetoDeNivel") === "player"
+    && !regrasAftyDaCriatura(creature).nivelJogadorSemTeto ? 30 : null;
+}
+
+/**
+ * O Nível EFETIVO desta ficha: o campo `core.nd`, ou o que o XP da Carteira
+ * compra quando a liberação `carteiraNivel` está ligada.
+ *
+ * ⚠ ELA EXISTE PORQUE O NÍVEL PASSOU A TER DUAS FONTES, e onze lugares liam
+ * uma só. O `carteiraNivel` nasceu em 2026-09-08 mexendo só no `deriveAfty`, e
+ * o autor achou o buraco no mesmo dia: *"eu não consigo colocar Nível de
+ * Especialização, mesmo com meu XP me deixando Nível 8"*, e logo depois *"Meus
+ * pontos de atributo também não aumentaram"*.
+ *
+ * Os dois eram o mesmo defeito. O `resolveEspecializacoes` e o
+ * `resumoAtributos` leem `creature.core.nd` CRU, e a UI os chama com o
+ * RASCUNHO, que nunca passa pelo derive. O nível novo chegava ao PV e à
+ * Maestria (que saem do derive) e não chegava a nenhum orçamento (que sai dos
+ * catálogos). Meia funcionalidade, e calada.
+ *
+ * ⚠ A LIÇÃO, e ela já estava escrita em docs/afty-addons.md com outro nome:
+ * acrescentar o verbo ao motor não é a tarefa inteira. Aqui a versão é
+ * **trocar a fonte de um número não é a tarefa inteira**: falta procurar quem
+ * mais lê aquele número, e o `grep` por `core.nd` é de graça.
+ *
+ * ⚠ MORA AQUI, e não no `afty-carteira.js`, porque a pergunta tem duas metades:
+ * "que nível o XP compra" (a tabela, lá) e "esta ficha usa a tabela?" (a
+ * liberação, aqui). O módulo da Carteira é FOLHA e não pode importar este.
+ *
+ * ⚠ E ELA ACEITA O RASCUNHO, de propósito: é a mesma resposta para a ficha
+ * salva e para a que está sendo editada, que é o que faz a tela e o derive
+ * concordarem.
+ */
+export function nivelDaFicha(creature) {
+  const bruto = Math.max(1, Math.trunc(Number(creature?.core?.nd) || 1));
+  const nivel = liberacoesDaCriatura(creature).includes("carteiraNivel")
+    ? nivelDaCarteira(creature)
+    : bruto;
+  const teto = nivelMaximoDaFicha(creature);
+  return teto == null ? nivel : Math.min(teto, nivel);
+}
+
+/** Nenhuma primitiva. Congelado, para virar valor padrão sem alocar. */
+export const SEM_PRIMITIVAS = Object.freeze([]);
+
+/**
+ * A tabela de PREÇOS da Loja de Catarse, unida de todos os addons da criatura.
+ *
+ * ⚠ É DADO DE PACOTE, e por isso mora aqui e não no `afty-catarse.js`. Mudar o
+ * preço de um Talento não pode pedir código, que é a tese inteira dos Addons.
+ * O módulo da Loja é o verbo, e esta função entrega o substantivo.
+ *
+ * ⚠ E ela NÃO decide o custo de uma compra JÁ FEITA. O custo fica gravado na
+ * linha da compra, para uma mudança de tabela não reescrever o passado do
+ * personagem: quem comprou a 3 continua tendo comprado a 3. Isto aqui é só o
+ * que a tela sugere ao criar linha nova.
+ *
+ * Com dois addons declarando preço para a mesma família, vence o MENOR: a
+ * alternativa seria a ordem de instalação decidir, que é resposta por acidente.
+ */
+export function precosDeCatarse(creature) {
+  const lista = Array.isArray(creature?.addons) ? creature.addons : [];
+  const out = {};
+  for (const pacote of lista) {
+    const tabela = pacote?.catarse?.precos;
+    if (!tabela || typeof tabela !== "object") continue;
+    for (const [familia, bruto] of Object.entries(tabela)) {
+      const n = Math.trunc(Number(bruto));
+      if (!Number.isFinite(n) || n < 0) continue;
+      out[familia] = familia in out ? Math.min(out[familia], n) : n;
+    }
+  }
+  return out;
+}
+
+/**
+ * O catálogo do Espinho, unido de todos os addons da criatura.
+ *
+ * ⚠ É DADO DE PACOTE, pela mesma razão do `precosDeCatarse`: o módulo do
+ * Espinho é o verbo, e esta função entrega o substantivo.
+ *
+ * Duas regras de união. Item com o MESMO id em dois pacotes: vale o do primeiro
+ * instalado, porque são o mesmo item e somar os dois abriria o dobro de teto. E o
+ * `multiplicadorTeto` (Addon Alter): vale o MAIOR declarado, porque dois Alter
+ * não são dois aumentos de 50%.
+ *
+ * ⚠ O `concedeTalento` resolve LOCAL PRIMEIRO, igual às referências de família:
+ * o id que o próprio pacote acrescenta ganha o namespace dele, e o resto fica
+ * como está (id do livro, ou já qualificado).
+ *
+ * A IDENTIDADE (nome, artigo e visual, 2026-10-12, Lanterna Coletora de Almas)
+ * vem do PRIMEIRO PACOTE QUE TRAZ ITENS, o dono do catálogo, pela mesma regra do
+ * item repetido: Espinho e Lanterna na mesma ficha são uma loja só, e quem foi
+ * instalado primeiro dá os itens E a cara. O Espinho original não declara
+ * identidade e vale o padrão. A `maestriaAnotada` liga com QUALQUER pacote que a
+ * declare, como o multiplicador do Alter.
+ */
+export function espinhoDaFicha(creature) {
+  const lista = Array.isArray(creature?.addons) ? creature.addons : [];
+  const itens = [];
+  const vistos = new Set();
+  let multiplicadorTeto = null;
+  let identidade = null;
+  let maestriaAnotada = false;
+  for (const pacote of lista) {
+    const cfg = pacote?.espinho;
+    if (!cfg || typeof cfg !== "object") continue;
+    const m = Number(cfg.multiplicadorTeto);
+    if (Number.isFinite(m) && m > 0) multiplicadorTeto = Math.max(multiplicadorTeto ?? 0, m);
+    if (cfg.maestriaAnotada === true) maestriaAnotada = true;
+    if (!identidade && Array.isArray(cfg.itens) && cfg.itens.length > 0) {
+      identidade = identidadeDeclarada(cfg) ?? ESPINHO_IDENTIDADE_PADRAO;
+    }
+    const talentosDoPacote = new Set(
+      (pacote?.acrescenta?.talentos ?? []).map((t) => String(t?.id ?? "").trim()),
+    );
+    for (const bruto of Array.isArray(cfg.itens) ? cfg.itens : []) {
+      const item = normalizarItemEspinho(bruto);
+      if (!item || vistos.has(item.id)) continue;
+      vistos.add(item.id);
+      if (item.concedeTalento && !item.concedeTalento.includes(SEPARADOR)
+        && talentosDoPacote.has(item.concedeTalento) && pacote.id) {
+        item.concedeTalento = `${pacote.id}${SEPARADOR}${item.concedeTalento}`;
+      }
+      itens.push(item);
+    }
+  }
+  return {
+    itens,
+    multiplicadorTeto: multiplicadorTeto ?? 1,
+    maestriaAnotada,
+    ...(identidade ?? ESPINHO_IDENTIDADE_PADRAO),
+  };
+}
+
+/**
+ * As primitivas que os addons DESTA criatura pedem.
+ *
+ * ⚠ Sai da criatura, e não do mundo aplicado: num Encontro misto o mundo é a
+ * UNIÃO de todos, e um combatente sem addon nenhum não pode herdar a tela de
+ * quem tem. É a mesma razão de a marca de "não raw" sair da ficha.
+ */
+export function primitivasDaCriatura(creature) {
+  const lista = Array.isArray(creature?.addons) ? creature.addons : [];
+  const out = new Set();
+  for (const pacote of lista) {
+    for (const id of Array.isArray(pacote?.permite) ? pacote.permite : []) {
+      if (PRIMITIVA_IDS.has(id)) out.add(id);
+    }
+  }
+  return out.size ? [...out] : SEM_PRIMITIVAS;
+}
+
+/* ============================================================ */
+/* APTIDÃO CONCEDIDA POR ADDON                                   */
+/* ============================================================ */
+/**
+ * O verbo "conceder uma Aptidão pelo nome", aberto a Addon em 2026-09-12.
+ *
+ * Nasceu de uma Faixa do autor: a Habilidade Única dela, criada com o Narrador,
+ * dá Armas Naturais Aprimoradas a um personagem que não é Maldição. O motor já
+ * sabia conceder Aptidão pelo nome (origem, Especialização e sessão do mestre,
+ * ver `aptidoesConcedidas` no afty-derive.js), e o que faltava era o Addon
+ * poder dizer QUAL. É a tese de sempre: o verbo mora no motor e o substantivo
+ * mora no pacote.
+ *
+ * As três decisões do autor, por pergunta:
+ *   1. **Só com o item equipado.** Todo efeito de Habilidade Única só conta com
+ *      o item equipado, e a Aptidão dada por ela segue a mesma régua. Por isso
+ *      `enquantoEquipado`, que é o `refId` do item no inventário. Sem ele, a
+ *      concessão vale enquanto o pacote estiver na ficha.
+ *   2. **As duas Aptidões, e não só a pedida.** Armas Naturais Aprimoradas exige
+ *      Armas Naturais no livro, e a escada dela SOMA com a da outra. Isso é
+ *      conteúdo do pacote, e não regra do verbo: o verbo concede o que a lista
+ *      disser.
+ *   3. **Vale nos dois sistemas.**
+ *
+ * A concedida segue as regras das outras concessões por nome: ignora o próprio
+ * pré-requisito, não gasta vaga, conta para o requisito de terceiros e some
+ * inteira no Restringido, que não tem Aptidão nenhuma.
+ *
+ * ⚠ FICA FORA DO MOTOR DE EFEITOS, pelo mesmo motivo da concessão da origem: a
+ * lista de Aptidões tem de estar fechada antes de `coletarEfeitosAptidao`. Um
+ * canal chegaria tarde, e a Aptidão entraria sem os efeitos dela.
+ *
+ * Forma no pacote:
+ *   "concedeAptidoes": [
+ *     { "aptidoes": ["mal_armas_naturais"], "enquantoEquipado": "arm_faixas" }
+ *   ]
+ */
+function normalizarConcessoesDeAptidao(cru) {
+  if (!Array.isArray(cru)) return [];
+  return cru
+    .filter((c) => c && typeof c === "object")
+    .map((c) => ({
+      aptidoes: Array.isArray(c.aptidoes)
+        ? [...new Set(c.aptidoes.filter((x) => typeof x === "string").map((x) => x.trim()).filter(Boolean))]
+        : [],
+      enquantoEquipado: typeof c.enquantoEquipado === "string" && c.enquantoEquipado.trim()
+        ? c.enquantoEquipado.trim()
+        : null,
+    }));
+}
+
+function normalizarSubstituicaoEnergiaReversa(cru) {
+  if (!cru || typeof cru !== "object") return null;
+  const aptidoes = Array.isArray(cru.aptidoes)
+    ? [...new Set(cru.aptidoes.filter((x) => typeof x === "string").map((x) => x.trim()).filter(Boolean))]
+    : [];
+  if (aptidoes.length === 0) return null;
+  return {
+    tab: String(cru.tab ?? "Alternativas").trim() || "Alternativas",
+    aptidoes,
+  };
+}
+
+/**
+ * Aptidões que ocupam o lugar da Energia Reversa por regra de Addon.
+ *
+ * Isto ABRE escolhas, não concede nenhuma delas. A lista serve à aba de
+ * Aptidões e também retira a trilha ER. Mais de um pacote pode contribuir, e
+ * nesse caso as listas se unem sem duplicar ids.
+ */
+export function substituicaoEnergiaReversaPorAddon(creature) {
+  const regras = (Array.isArray(creature?.addons) ? creature.addons : [])
+    .map(normalizarPacote)
+    .map((p) => p.substituiEnergiaReversa)
+    .filter(Boolean);
+  if (regras.length === 0) return null;
+  return {
+    tab: regras.length === 1 ? regras[0].tab : "Alternativas",
+    aptidoes: [...new Set(regras.flatMap((r) => r.aptidoes))],
+  };
+}
+
+/**
+ * As Aptidões que os addons DESTA criatura concedem agora.
+ *
+ * `equipados` é a lista `[{ refId, nome }]` dos itens equipados, montada por
+ * quem conhece o inventário (`itensEquipados`, em afty-equipamentos.js). Ela
+ * chega por parâmetro porque o catálogo de equipamento importa este módulo, e o
+ * contrário fecharia um ciclo.
+ *
+ * ⚠ Sai da CRIATURA, e não do mundo aplicado, pela mesma razão do
+ * `liberacoesDaCriatura`: num Encontro misto um combatente sem o addon não pode
+ * herdar a Aptidão de quem tem.
+ *
+ * Devolve `[{ id, fonte, addonId, addonNome, item }]`, uma linha por Aptidão.
+ * `fonte` é o que a tela escreve ao lado dela: o nome do item quando a
+ * concessão depende de um, e o nome do pacote quando não depende.
+ */
+export function aptidoesConcedidasPorAddon(creature, { equipados = [] } = {}) {
+  const porRefId = new Map();
+  for (const e of Array.isArray(equipados) ? equipados : []) {
+    if (e?.refId && !porRefId.has(e.refId)) porRefId.set(e.refId, e.nome ?? e.refId);
+  }
+  const out = [];
+  const vistos = new Set();
+  for (const cru of Array.isArray(creature?.addons) ? creature.addons : []) {
+    const pacote = normalizarPacote(cru);
+    if (!pacote.id) continue;
+    const locais = new Set((pacote.acrescenta.aptidoes ?? []).map((a) => String(a?.id ?? "").trim()));
+    for (const c of pacote.concedeAptidoes) {
+      if (c.enquantoEquipado && !porRefId.has(c.enquantoEquipado)) continue;
+      const item = c.enquantoEquipado ? porRefId.get(c.enquantoEquipado) : null;
+      for (const idCru of c.aptidoes) {
+        // Aptidão do próprio pacote ganha o namespace, como toda referência a
+        // irmão. Id do livro, ou de outro pacote já qualificado, fica cru.
+        const id = locais.has(idCru) ? `${pacote.id}${SEPARADOR}${idCru}` : idCru;
+        if (vistos.has(id)) continue;
+        vistos.add(id);
+        out.push({ id, fonte: item ?? (pacote.nome || pacote.id), addonId: pacote.id, addonNome: pacote.nome || pacote.id, item });
+      }
+    }
+  }
+  return out;
+}
+
+export function normalizarPacote(cru) {
+  const p = cru && typeof cru === "object" ? cru : {};
+  const acrescenta = p.acrescenta && typeof p.acrescenta === "object" ? p.acrescenta : {};
+  const substitui = p.substitui && typeof p.substitui === "object" ? p.substitui : {};
+  const out = {
+    id: String(p.id ?? "").trim().toLowerCase(),
+    nome: String(p.nome ?? "").trim(),
+    versao: String(p.versao ?? "").trim() || "1.0.0",
+    autor: String(p.autor ?? "").trim(),
+    descricao: String(p.descricao ?? "").trim(),
+    paraRaw: String(p.paraRaw ?? "afty").trim(),
+    /* As primitivas que este pacote quer VER na tela. Só isto: o motor já as
+       tem, e o campo diz quem as enxerga. Ver `PRIMITIVAS`. */
+    permite: Array.isArray(p.permite)
+      ? [...new Set(p.permite.filter((x) => typeof x === "string").map((x) => x.trim()))]
+      : [],
+    /* O que ter este pacote DESTRAVA na criatura. Ao contrário do `permite`,
+       isto muda regra e portanto muda número. Ver `LIBERACOES`. */
+    libera: Array.isArray(p.libera)
+      ? [...new Set(p.libera.filter((x) => typeof x === "string").map((x) => x.trim()))]
+      : [],
+    /* Aptidões Amaldiçoadas que o pacote CONCEDE pelo nome, opcionalmente só
+       enquanto um item está equipado. Ver `aptidoesConcedidasPorAddon`.
+
+       ⚠ ESTE CAMPO TEM DE ESTAR AQUI, e não só no leitor: a biblioteca grava o
+       pacote NORMALIZADO, e campo que o normalizador não conhece some na
+       instalação sem aviso nenhum. */
+    concedeAptidoes: normalizarConcessoesDeAptidao(p.concedeAptidoes),
+    /* Substitui a trilha e a aba de Energia Reversa por uma lista fechada de
+       Aptidões. Diferente de `concedeAptidoes`, as entradas continuam sendo
+       escolhas normais e gastam vaga. */
+    substituiEnergiaReversa: normalizarSubstituicaoEnergiaReversa(p.substituiEnergiaReversa),
+    /* Ids de pacotes que NÃO ligam na mesma ficha que este. Ver
+       `incompativeisNaFicha`. */
+    incompativeis: Array.isArray(p.incompativeis)
+      ? [...new Set(p.incompativeis.filter((x) => typeof x === "string").map((x) => x.trim().toLowerCase()).filter(Boolean))]
+      : [],
+    adaptacoes: Array.isArray(p.adaptacoes)
+      ? p.adaptacoes.filter((x) => x && typeof x === "object").map(clonar)
+      : [],
+    /* Funcionamentos Básicos próprios do pacote. Eles não entram no catálogo
+       global: saem direto da cópia congelada em `creature.addons`, para uma
+       criatura nunca herdar o Funcionamento de outra no mesmo encontro. */
+    bloodfeast: p.bloodfeast && typeof p.bloodfeast === "object" ? clonar(p.bloodfeast) : null,
+    funcionamentos: Array.isArray(p.funcionamentos)
+      ? p.funcionamentos.filter((x) => x && typeof x === "object").map(clonar)
+      : [],
+    // Técnicas conhecidas fornecidas pelo pacote, isoladas por criatura.
+    estilos: Array.isArray(p.estilos) ? p.estilos.map(clonar) : [],
+    atributos: p.atributos && typeof p.atributos === "object" ? clonar(p.atributos) : {},
+    /* Modelos de Feitiço próprios do pacote. Diferente de conteúdo de catálogo,
+       eles não entram automaticamente na ficha nem gastam vaga enquanto forem
+       só modelos. A pessoa escolhe um modelo já liberado e recebe uma cópia. */
+    feiticos: Array.isArray(p.feiticos)
+      ? p.feiticos.filter((x) => x && typeof x === "object").map(clonar)
+      : [],
+    /* Controles próprios da mesa na Simulação de Combate e na Ficha Final.
+       São dados, não código: o pacote declara estados que o motor já sabe
+       operar (`bool`, `opcao`, `multi` e `faixa`). */
+    estadosCombate: Array.isArray(p.estadosCombate)
+      ? p.estadosCombate.filter((x) => x && typeof x === "object").map(clonar)
+      : [],
+    /* Contadores PERSISTENTES de origem (2026-09-13): ao contrário de
+       `estadosCombate`, que mora em `creature.combate` e zera fora de "Em
+       Combate", isto mora em `creature.origemContadores` — sobrevive a
+       Descanso e a qualquer reset de sessão, e vale sempre, dentro ou fora de
+       combate. Nasceu do Arauto da Corrupção: um contador manual (+/-) que
+       precisa acionar Características por limiar (`quando: "corrupcao >=
+       60"`) independente de a criatura estar em combate. Ver
+       afty-contadores-origem.js. */
+    contadoresOrigem: Array.isArray(p.contadoresOrigem)
+      ? p.contadoresOrigem.filter((x) => x && typeof x === "object").map(clonar)
+      : [],
+    /* A tabela de preços da Loja de Catarse. Fica num campo PRÓPRIO, e não
+       dentro de `acrescenta`, porque ela não é uma entrada de catálogo: é
+       configuração do pacote, como `permite` e `libera`. Ver `precosDeCatarse`. */
+    catarse: (p.catarse && typeof p.catarse === "object") ? clonar(p.catarse) : null,
+    /* O catálogo do Espinho (itens, custo, teto) e o multiplicador de teto do
+       Alter. Campo PRÓPRIO pela mesma razão da Catarse: é configuração do
+       pacote, e não entrada de catálogo. Ver `espinhoDaFicha`. */
+    espinho: (p.espinho && typeof p.espinho === "object" && !Array.isArray(p.espinho)) ? clonar(p.espinho) : null,
+    /* Campo legado de um Voto pronto. A aba nativa pode converter e copiar o
+       molde mesmo sem `permite: ["pacto"]`. O nome do campo fica estável para
+       addons e fichas existentes. Ver `afty-votos.js`. */
+    pactoPadrao: (p.pactoPadrao && typeof p.pactoPadrao === "object") ? clonar(p.pactoPadrao) : null,
+    /* Voto obrigatório inserido na primeira vaga da ficha quando o pacote é
+       ligado. Diferente de `pactoPadrao`, ele não espera um clique do jogador. */
+    votoAutomatico: (p.votoAutomatico && typeof p.votoAutomatico === "object" && !Array.isArray(p.votoAutomatico))
+      ? clonar(p.votoAutomatico)
+      : null,
+    /* Ajustes finais seguros que pertencem ao pacote, como multiplicar o PV
+       depois das fontes ou isentar o custo de PE Máximo das Passivas. */
+    regrasAfty: (p.regrasAfty && typeof p.regrasAfty === "object" && !Array.isArray(p.regrasAfty))
+      ? clonar(p.regrasAfty)
+      : null,
+    acrescenta: {},
+    /* O que este pacote REESCREVE de entradas que já existem no livro. Ver
+       `remendarLista`. */
+    substitui: {},
+  };
+  for (const [familia, lista] of Object.entries(acrescenta)) {
+    out.acrescenta[familia] = Array.isArray(lista)
+      ? lista.filter((e) => e && typeof e === "object")
+      : [];
+  }
+  for (const [familia, lista] of Object.entries(substitui)) {
+    out.substitui[familia] = Array.isArray(lista)
+      ? lista.filter((e) => e && typeof e === "object")
+      : [];
+  }
+  return out;
+}
+
+/**
+ * Modelos de Feitiço liberados para esta criatura.
+ *
+ * O addon é uma biblioteca privada, não uma concessão de vagas. Por isso a
+ * lista respeita o maior Nível de Feitiço acessível e devolve cópias para o
+ * criador. Só depois de escolher um modelo ele entra em `creature.feiticos` e
+ * passa a contar no orçamento normal da ficha.
+ */
+export function feiticosDeAddon(creature, nivelMax = 5) {
+  const teto = nivelMax === "max" ? 6 : Math.max(0, Math.trunc(Number(nivelMax) || 0));
+  const modelos = [];
+  const vistos = new Set();
+  for (const pacote of Array.isArray(creature?.addons) ? creature.addons : []) {
+    const pacoteId = String(pacote?.id ?? "").trim();
+    if (!pacoteId) continue;
+    for (const feitico of Array.isArray(pacote?.feiticos) ? pacote.feiticos : []) {
+      const idLocal = String(feitico?.id ?? "").trim();
+      const nome = String(feitico?.nome ?? "").trim();
+      /* Um modelo de Técnica Máxima vindo do Addon é oferecido no mesmo teto
+         em que a progressão comum alcança o Nível 5. O modelo conserva "max"
+         para usar as tabelas próprias. Contá-lo como 6 aqui o tornava
+         impossível, porque `nivelMaxFeitico` para em 5. */
+      const nivel = feitico?.nivel === "max" ? 5 : Math.trunc(Number(feitico?.nivel));
+      if (!idLocal || !nome || !Number.isFinite(nivel) || nivel > teto) continue;
+      const id = `${pacoteId}${SEPARADOR}${idLocal}`;
+      if (vistos.has(id)) continue;
+      vistos.add(id);
+      modelos.push({
+        ...clonar(feitico),
+        id,
+        nome,
+        deAddon: true,
+        addonId: pacoteId,
+        addonNome: String(pacote?.nome ?? pacoteId),
+        addonModeloId: idLocal,
+        addonVersao: String(pacote?.versao ?? ""),
+      });
+    }
+  }
+  return modelos;
+}
+
+/**
+ * Modelos ainda não copiados e cópias cuja versão ficou para trás.
+ *
+ * ⚠ O MODELO DE TÉCNICA MÁXIMA (DA-02, 2026-10-08). Addon não concede Técnica
+ * Máxima só por gravar `nivel: "max"`:
+ *   • o modelo NOVO só aparece com vaga livre de Técnica Máxima
+ *     (`vagasTecnicaMaxima`, da Aptidão ou de concessão explícita de Addon), e a
+ *     cópia nasce OFICIAL (`regraTecnicaMaxima: "oficial"`);
+ *   • a cópia que JÁ EXISTE fica no regime em que está. A atualização carrega o
+ *     `regraTecnicaMaxima` dela, ou a falta dele: a LEGACY (Oda, Honnō-ji e as
+ *     fichas de antes) continua LEGACY, sem conversão calada.
+ * `tecnicasMaximasLivres` nulo é quem chama sem saber das vagas (o validador e os
+ * testes de antes): o modelo novo aparece como antes, sem marca nenhuma. O
+ * criador sempre passa o número.
+ */
+export function modelosPendentesDeAddon(creature, nivelMax = 5, feiticosAtuais = [], { tecnicasMaximasLivres = null } = {}) {
+  const atuais = new Map(
+    (Array.isArray(feiticosAtuais) ? feiticosAtuais : [])
+      .filter((feitico) => feitico && !feitico.variacaoDe)
+      .map((feitico) => [feitico.id, feitico]),
+  );
+  const sabeVagas = tecnicasMaximasLivres != null;
+  return feiticosDeAddon(creature, nivelMax).flatMap((modelo) => {
+    const atual = atuais.get(modelo.id);
+    const ehMax = modelo.nivel === "max";
+    if (!atual) {
+      if (!ehMax || !sabeVagas) return [{ ...modelo, situacaoModelo: "novo" }];
+      if (tecnicasMaximasLivres <= 0) return [];
+      return [{ ...modelo, regraTecnicaMaxima: "oficial", situacaoModelo: "novo" }];
+    }
+    if (String(atual.addonVersao ?? "") !== String(modelo.addonVersao ?? "")) {
+      const { regraTecnicaMaxima: _semRegime, ...semRegime } = modelo;
+      return [{
+        ...semRegime,
+        ...(atual.regraTecnicaMaxima ? { regraTecnicaMaxima: atual.regraTecnicaMaxima } : {}),
+        situacaoModelo: "desatualizado",
+      }];
+    }
+    return [];
+  });
+}
+
+/** Texto de uma linha no maior degrau declarado que não passe do nível atual. */
+function textoNoNivel(entrada, nivel, campo = "label") {
+  let texto = String(entrada?.[campo] ?? "").trim();
+  const porNivel = entrada?.[`${campo}PorNivel`];
+  if (!porNivel || typeof porNivel !== "object" || Array.isArray(porNivel)) return texto;
+  let melhor = -1;
+  for (const [chave, valor] of Object.entries(porNivel)) {
+    const degrau = Math.trunc(Number(chave));
+    if (degrau >= 0 && degrau <= nivel && degrau >= melhor && String(valor ?? "").trim()) {
+      melhor = degrau;
+      texto = String(valor).trim();
+    }
+  }
+  return texto;
+}
+
+/**
+ * Estados de combate declarados pelos addons desta criatura.
+ *
+ * O namespace pertence ao ESTADO, não às opções. Uma opção só existe dentro
+ * do estado dela, enquanto o estado entra no mesmo mapa global de todos os
+ * outros controles da ficha. `requerEstado` é escrito com o id local e sai
+ * apontando para o id prefixado do mesmo pacote.
+ */
+/**
+ * As três portas de dono de um estado de addon, já com o namespace resolvido.
+ * `idsDoPacote` são todos os ids que o pacote declara, em qualquer família: um
+ * estado que exige o Talento do próprio pacote cita o id local.
+ */
+/* ⚠ A QUARTA PORTA, `requerEscolha` (2026-09-28): a OPÇÃO de escolha aninhada
+   escolhida, a mesma porta das Posturas do livro. Nasceu com as Dádivas
+   Intelectuais, que são opções e não Habilidades: sem ela o contador da
+   Inferência Rápida apareceria para quem não pegou a Dádiva. Id de opção não é
+   entrada de família, então fica cru, que é o que a ficha grava. */
+function comDono(bruto, pacoteId, idsDoPacote) {
+  const out = {};
+  for (const porta of ["requerTalento", "requerHabilidade", "requerAptidao", "requerEscolha"]) {
+    const cru = bruto?.[porta];
+    if (!cru) continue;
+    const resolve = (id) => (idsDoPacote.has(String(id)) ? comPrefixo(pacoteId, id) : String(id));
+    out[porta] = Array.isArray(cru) ? cru.map(resolve) : resolve(cru);
+  }
+  return out;
+}
+
+/**
+ * ⚠ O TETO DA FAIXA PODE SER EXPRESSÃO (2026-09-28, Fórmula de Combate
+ * Entrópica: *"+1 cumulativo [...] até o máximo do seu Bônus de Treinamento"*).
+ * Número continua valendo como sempre. Texto que não é número vai para o
+ * `avaliar`, que o derive passa com o contexto do montante: sem ele, `"bt"`
+ * virava `Number("bt")`, zero, e a faixa nascia travada em 0, calada.
+ */
+export function estadosCombateDeAddon(creature, nivelMax = 5, { avaliar = null } = {}) {
+  const nivel = nivelMax === "max"
+    ? 5
+    : Math.max(0, Math.min(5, Math.trunc(Number(nivelMax) || 0)));
+  const teto = (cru) => {
+    const texto = typeof cru === "string" ? cru.trim() : "";
+    if (texto && !Number.isFinite(Number(texto)) && typeof avaliar === "function") return avaliar(texto);
+    return Number(cru);
+  };
+  const estados = [];
+  const vistos = new Set();
+
+  for (const pacote of Array.isArray(creature?.addons) ? creature.addons : []) {
+    const pacoteId = String(pacote?.id ?? "").trim();
+    if (!pacoteId) continue;
+    const brutos = Array.isArray(pacote?.estadosCombate) ? pacote.estadosCombate : [];
+    const idsLocais = new Set(brutos.map((e) => String(e?.id ?? "").trim()).filter(Boolean));
+    /* Os ids que o pacote acrescenta em QUALQUER família, para o `requerTalento`
+       achar o Talento do próprio pacote. É a mesma regra do `prefixarEntrada`:
+       citar um irmão é citar um irmão, esteja ele na mesma família ou não. */
+    const idsDoPacote = new Set();
+    for (const lista of Object.values(pacote?.acrescenta ?? {})) {
+      for (const e of Array.isArray(lista) ? lista : []) {
+        const id = String(e?.id ?? e?.value ?? "").trim();
+        if (id) idsDoPacote.add(id);
+      }
+    }
+    const talentosDaFicha = new Set(
+      (Array.isArray(creature?.talentos) ? creature.talentos : []).map(String),
+    );
+
+    for (const bruto of brutos) {
+      const idLocal = String(bruto?.id ?? "").trim();
+      const tipo = ["bool", "opcao", "multi", "faixa"].includes(bruto?.tipo) ? bruto.tipo : "bool";
+      const nivelMin = Math.max(0, Math.trunc(Number(bruto?.nivelMin) || 0));
+      const nivelTeto = bruto?.nivelMax == null ? 5 : Math.trunc(Number(bruto.nivelMax));
+      if (!idLocal || nivel < nivelMin || nivel > nivelTeto) continue;
+      const id = comPrefixo(pacoteId, idLocal);
+      if (vistos.has(id)) continue;
+
+      // Algumas faixas continuam existindo sem um Talento, mas com teto menor.
+      // A referência segue a regra local primeiro do pacote, igual às entradas
+      // acrescentadas pelo Addon.
+      const maxRequerTalentoCru = String(bruto?.maxRequerTalento ?? "").trim();
+      const maxRequerTalento = idsDoPacote.has(maxRequerTalentoCru)
+        ? comPrefixo(pacoteId, maxRequerTalentoCru)
+        : maxRequerTalentoCru;
+      const usaMaxSemTalento = tipo === "faixa"
+        && bruto?.maxSemTalento != null
+        && maxRequerTalento
+        && !talentosDaFicha.has(maxRequerTalento);
+      const minFaixa = Math.trunc(Number(bruto.min) || 0);
+      const maxFaixaCru = usaMaxSemTalento ? bruto.maxSemTalento : bruto.max;
+
+      const opcoes = (Array.isArray(bruto?.opcoes) ? bruto.opcoes : [])
+        .filter((o) => {
+          const min = Math.max(0, Math.trunc(Number(o?.nivelMin) || 0));
+          const max = o?.nivelMax == null ? 5 : Math.trunc(Number(o.nivelMax));
+          return nivel >= min && nivel <= max;
+        })
+        .map((o) => ({
+          id: String(o.id ?? "").trim(),
+          label: textoNoNivel(o, nivel),
+          ...(String(o.title ?? "").trim() ? { title: String(o.title).trim() } : {}),
+        }))
+        .filter((o) => o.id && o.label);
+
+      vistos.add(id);
+      estados.push({
+        id,
+        label: textoNoNivel(bruto, nivel),
+        tipo,
+        ...(String(bruto?.title ?? "").trim() ? { title: String(bruto.title).trim() } : {}),
+        ...(bruto?.requerEstado && idsLocais.has(String(bruto.requerEstado))
+          ? { requerEstado: comPrefixo(pacoteId, bruto.requerEstado) }
+          : {}),
+        /* ⚠ AS TRÊS PORTAS DE DONO, abertas em 2026-09-07 com o Dançarino das
+           Lâminas. Um estado de addon existia pelo simples fato de o PACOTE
+           estar instalado, e o Ritmo dele aparecia no painel de quem tinha o
+           addon e não tinha pego o Talento: um contador morto, que mexe e não
+           muda número nenhum.
+
+           O catálogo do raw já tinha `requerHabilidade`, `requerTalento` e
+           `requerAptidao` (ver COMBATE_ESTADOS em afty-combate.js), e o extra de
+           addon simplesmente não os carregava. Os outros extras (Habilidade
+           Única de item, imbuição de Estilo) não precisam deles porque a
+           existência do interruptor já depende do item equipado ou da Técnica
+           conhecida, e é essa a diferença: o addon não tem esse portão natural.
+
+           O id local ganha o namespace, porque o caso normal é o pacote citar o
+           PRÓPRIO Talento. Quem cita entrada do livro fica cru. */
+        ...comDono(bruto, pacoteId, idsDoPacote),
+        ...(tipo === "opcao" || tipo === "multi" ? { opcoes } : {}),
+        ...(tipo === "multi" ? {
+          maxSelecionados: Math.min(
+            opcoes.length,
+            Math.max(1, Math.trunc(Number(bruto.maxSelecionados) || opcoes.length)),
+          ),
+        } : {}),
+        ...(tipo === "faixa" ? {
+          min: minFaixa,
+          max: Math.max(minFaixa, Math.trunc(teto(maxFaixaCru) || 0)),
+          passo: Math.max(1, Math.trunc(Number(bruto.passo) || 1)),
+        } : {}),
+        ...(tipo === "bool" && bruto.padrao != null ? { padrao: !!bruto.padrao } : {}),
+        ...(bruto.foraCombate ? { foraCombate: true } : {}),
+        ...(bruto.expiraNaRodada ? { expiraNaRodada: true } : {}),
+        /* ⚠ OS TRÊS CONTROLES QUE O NATIVO JÁ TINHA (achado M04-A03 / M03-D07,
+           2026-10-07). `alteraEstadoCombate` lê `umaVezPorRodada` (a segunda
+           ativação na mesma rodada é recusada) e `exclusivoCom` (ligar este
+           desliga os listados), e a aba Buffs mostra o `custoPE`. O descritor de
+           addon era montado campo a campo sem eles, então o pacote escrevia e o
+           estado derivado nascia sem nenhum dos três, calado. O `exclusivoCom`
+           segue a regra local primeiro: irmão do pacote ganha o prefixo. */
+        ...(bruto.umaVezPorRodada === true ? { umaVezPorRodada: true } : {}),
+        ...(() => {
+          const lista = (Array.isArray(bruto.exclusivoCom) ? bruto.exclusivoCom : [])
+            .map((x) => String(x ?? "").trim()).filter(Boolean)
+            .map((x) => (idsLocais.has(x) ? comPrefixo(pacoteId, x) : x));
+          return lista.length ? { exclusivoCom: lista } : {};
+        })(),
+        ...(() => {
+          if (bruto.custoPE == null || String(bruto.custoPE).trim() === "") return {};
+          const custo = Math.trunc(teto(bruto.custoPE));
+          return Number.isFinite(custo) && custo >= 0 ? { custoPE: custo } : {};
+        })(),
+        dono: { id: `addon:${pacoteId}`, label: String(pacote?.nome ?? pacoteId) },
+      });
+    }
+  }
+  return estados;
+}
+
+/**
+ * Reprova o que não pode entrar. Devolve `[]` quando o pacote está bom.
+ *
+ * ⚠ NINGUÉM INSTALA ADDON QUEBRADO (decisão 4 do autor), mas ficha já salva
+ * SEMPRE abre. São dois portões diferentes: aqui é o da instalação, e ele é
+ * duro. O da ficha é a linha morta e marcada, que não impede nada.
+ */
+export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
+  const p = normalizarPacote(cru);
+  const problemas = [];
+
+  if (!p.id) problemas.push("O pacote precisa de um id.");
+  else if (!ID_PACOTE_OK.test(p.id)) {
+    problemas.push(`id do pacote inválido: "${p.id}". Use minúsculas, números e hífen, de 2 a 40 caracteres.`);
+  } else if (idsEmUso.has(p.id)) {
+    problemas.push(`Já existe um addon instalado com o id "${p.id}".`);
+  }
+  if (!p.nome) problemas.push("O pacote precisa de um nome.");
+  if (p.paraRaw !== "afty") problemas.push(`Este pacote é para "${p.paraRaw}", e não para o Afty.`);
+
+  problemas.push(...validarBloodfeast(p.bloodfeast));
+  problemas.push(...validarRegrasAfty(p.regrasAfty, "Regras Afty do Addon"));
+  if (p.votoAutomatico) {
+    const voto = p.votoAutomatico;
+    const votoId = String(voto.id ?? "").trim();
+    if (!votoId || !ID_ENTRADA_OK.test(votoId)) {
+      problemas.push("Voto automático: id inválido.");
+    }
+    if (!String(voto.nome ?? "").trim()) problemas.push("Voto automático: falta o campo nome.");
+    if (!voto.beneficio || typeof voto.beneficio !== "object" || Array.isArray(voto.beneficio)) {
+      problemas.push("Voto automático: falta o objeto beneficio.");
+    }
+    if (!voto.maleficio || typeof voto.maleficio !== "object" || Array.isArray(voto.maleficio)) {
+      problemas.push("Voto automático: falta o objeto maleficio.");
+    }
+    problemas.push(...validarRegrasAfty(voto.regrasAfty, "Regras Afty do Voto automático"));
+  }
+
+  for (const id of p.permite) {
+    if (!PRIMITIVA_IDS.has(id)) {
+      problemas.push(
+        `Primitiva desconhecida em "permite": "${id}". Existem hoje: ${PRIMITIVAS.map((x) => x.id).join(", ")}.`,
+      );
+    }
+  }
+  for (const id of p.libera) {
+    if (!LIBERACAO_IDS.has(id)) {
+      problemas.push(
+        `Liberação desconhecida em "libera": "${id}". Existem hoje: ${LIBERACOES.map((x) => x.id).join(", ")}.`,
+      );
+    }
+  }
+  /* O pacote incompatível NÃO precisa estar instalado: a trava serve justamente
+     para quando o outro aparecer. Só o formato do id e o próprio id são cobrados. */
+  for (const id of p.incompativeis) {
+    if (!ID_PACOTE_OK.test(id)) problemas.push(`id inválido em "incompativeis": "${id}".`);
+    else if (id === p.id) problemas.push('O pacote não pode declarar a si mesmo em "incompativeis".');
+  }
+  // A linha de cura própria (2026-10-07). Ver `problemasDaFonteCura`.
+  for (const familia of ["habilidades", "talentos", "aptidoes"]) {
+    for (const e of p.acrescenta[familia] ?? []) {
+      problemas.push(...problemasDaFonteCura(`${familia} "${e?.id ?? "?"}"`, e?.fonteCura));
+    }
+  }
+  /* A concessão de Aptidão. O id tem de existir: no livro (a lista RAW da
+     família, sem addon nenhum), no próprio pacote, ou já qualificado com o
+     namespace de outro pacote, que a linha morta cobre se sumir. */
+  const familiaAptidoes = FAMILIAS.get("aptidoes");
+  const aptidoesDoLivro = familiaAptidoes?.basicos
+    ? new Set(familiaAptidoes.basicos().map((a) => a.id))
+    : null;
+  const aptidoesDoPacote = new Set((p.acrescenta.aptidoes ?? []).map((a) => String(a?.id ?? "").trim()));
+  for (const [i, c] of p.concedeAptidoes.entries()) {
+    const onde = `Concessão de Aptidão #${i + 1}`;
+    if (c.aptidoes.length === 0) problemas.push(`${onde}: a lista "aptidoes" está vazia.`);
+    for (const id of c.aptidoes) {
+      const conhecida = aptidoesDoPacote.has(id) || id.includes(SEPARADOR)
+        || !aptidoesDoLivro || aptidoesDoLivro.has(id);
+      if (!conhecida) problemas.push(`${onde}: Aptidão inexistente "${id}".`);
+    }
+  }
+  if (p.substituiEnergiaReversa) {
+    for (const id of p.substituiEnergiaReversa.aptidoes) {
+      const conhecida = aptidoesDoPacote.has(id) || id.includes(SEPARADOR)
+        || !aptidoesDoLivro || aptidoesDoLivro.has(id);
+      if (!conhecida) problemas.push(`Substituição de Energia Reversa: Aptidão inexistente "${id}".`);
+    }
+  }
+  const ciclosVistos = new Set();
+  if (p.adaptacoes.length > 0 && !p.permite.includes("adaptacao")) {
+    problemas.push('Pacote com "adaptacoes" precisa incluir "adaptacao" em "permite".');
+  }
+  for (const [i, ciclo] of p.adaptacoes.entries()) {
+    const onde = `Adaptação #${i + 1}`;
+    const id = String(ciclo.id ?? "").trim();
+    if (!id || !ID_ENTRADA_OK.test(id)) problemas.push(`${onde}: id inválido.`);
+    else if (ciclosVistos.has(id)) problemas.push(`${onde}: id repetido ("${id}").`);
+    ciclosVistos.add(id);
+    if (!String(ciclo.nome ?? "").trim()) problemas.push(`${onde}: falta o campo "nome".`);
+    if (ciclo.ganho !== "habilidades_bonus_acerto") problemas.push(`${onde}: ganho desconhecido.`);
+    if (ciclo.mecanica !== "auxiliar_acerto_progressivo") problemas.push(`${onde}: mecânica desconhecida.`);
+    if (Math.trunc(Number(ciclo.intervalo)) < 1) problemas.push(`${onde}: intervalo inválido.`);
+  }
+
+  const funcionamentosVistos = new Set();
+  const atributosValidos = new Set(["forca", "destreza", "constituicao", "inteligencia", "sabedoria", "presenca"]);
+  for (const [key, regra] of Object.entries(p.atributos)) {
+    if (!atributosValidos.has(key) || !regra || typeof regra !== "object"
+      || (regra.bonusBase != null && !Number.isInteger(regra.bonusBase))
+      || (regra.limiteFixo != null && (!Number.isInteger(regra.limiteFixo) || regra.limiteFixo < 0 || regra.limiteFixo > 32))
+      || (regra.rolagem != null && (typeof regra.rolagem !== "object" || Array.isArray(regra.rolagem)
+        || (regra.rolagem.baseMax != null && (!Number.isInteger(regra.rolagem.baseMax) || regra.rolagem.baseMax < 18 || regra.rolagem.baseMax > 30))
+        || (regra.rolagem.limite != null && (!Number.isInteger(regra.rolagem.limite) || regra.rolagem.limite < 1))))) {
+      problemas.push(`Atributo de addon inválido: ${key}.`);
+    }
+  }
+  const estilosVistos = new Set();
+  for (const t of p.estilos) {
+    if (!t || !ID_ENTRADA_OK.test(t.id ?? "") || estilosVistos.has(t.id)
+      || !String(t.nome ?? "").trim() || !String(t.descricao ?? "").trim()) {
+      problemas.push("Técnica de Estilo de addon inválida ou repetida.");
+      continue;
+    }
+    estilosVistos.add(t.id);
+    /* A Técnica de pacote que declara a Expansão (DA-06, 2026-10-04) tem outro
+       formato: as compras de efeito (`{ uid, efeitoId }`) e o Motor dentro do
+       `especial.linhas`. Ela é conferida pelo formato dela, e o resto do laço é
+       só da `legacy`. */
+    if (t.regra === REGRA_EXPANSAO) {
+      if (![TIPO_MODIFICACAO, TIPO_ESPECIAL].includes(t.tipo ?? TIPO_MODIFICACAO)) {
+        problemas.push(`${t.nome}: tipo de Técnica desconhecido.`);
+      }
+      const efeitos = t.efeitos ?? [];
+      if (!Array.isArray(efeitos)) problemas.push(`${t.nome}: efeitos precisa ser uma lista.`);
+      const uids = new Set();
+      for (const e of Array.isArray(efeitos) ? efeitos : []) {
+        if (!e || !String(e.uid ?? "").trim() || uids.has(e.uid) || !getEfeitoEstilo(e.efeitoId)) {
+          problemas.push(`${t.nome}: compra de efeito inválida ou repetida em efeitos.`);
+          continue;
+        }
+        uids.add(e.uid);
+      }
+      for (const e of t.especial?.linhas ?? []) {
+        if (!e || !String(e.expr ?? "").trim() || !String(e.canal ?? "").trim()) {
+          problemas.push(`${t.nome}: linha inválida no Efeito Especial.`);
+        }
+      }
+      continue;
+    }
+    for (const campo of ["maxImbuicoes", "custoImbuicao"]) {
+      if (t[campo] != null && (!Number.isInteger(t[campo]) || t[campo] < 1 || t[campo] > 99)) {
+        problemas.push(`${t.nome}: ${campo} inválido.`);
+      }
+    }
+    for (const campo of ["efeitos", "resultados"]) {
+      if (t[campo] != null && !Array.isArray(t[campo])) {
+        problemas.push(`${t.nome}: ${campo} precisa ser uma lista.`);
+        continue;
+      }
+      for (const [j, e] of (t[campo] ?? []).entries()) {
+        if (!e || !String(e.expr ?? "").trim() || !String(e[campo === "efeitos" ? "canal" : "label"] ?? "").trim()) {
+          problemas.push(`${t.nome}: entrada inválida em ${campo}.`);
+        } else if (campo === "efeitos") {
+          problemas.push(...problemasDoEfeito(`${t.nome}, efeito #${j + 1}`, e));
+        }
+      }
+    }
+  }
+  for (const [i, funcionamento] of p.funcionamentos.entries()) {
+    const onde = `Funcionamento Básico #${i + 1}`;
+    const id = String(funcionamento.id ?? "").trim();
+    const efeitos = funcionamento.efeitos;
+    if (!id || !ID_ENTRADA_OK.test(id)) problemas.push(`${onde}: id inválido.`);
+    else if (funcionamentosVistos.has(id)) problemas.push(`${onde}: id repetido ("${id}").`);
+    funcionamentosVistos.add(id);
+    if (!String(funcionamento.nome ?? "").trim()) problemas.push(`${onde}: falta o campo "nome".`);
+    if (funcionamento.acumula !== undefined && typeof funcionamento.acumula !== "boolean") {
+      problemas.push(`${onde}: "acumula" precisa ser verdadeiro ou falso.`);
+    }
+    if (efeitos !== undefined && !Array.isArray(efeitos)) {
+      problemas.push(`${onde}: "efeitos" precisa ser uma lista.`);
+      continue;
+    }
+    if (!String(funcionamento.descricao ?? "").trim() && !(efeitos?.length > 0)) {
+      problemas.push(`${onde}: precisa ter "descricao" ou "efeitos".`);
+    }
+    for (const [j, efeito] of (efeitos ?? []).entries()) {
+      problemas.push(...problemasDoEfeito(`${onde}, efeito #${j + 1}`, efeito));
+    }
+  }
+
+  const feiticosVistos = new Set();
+  const tiposFeitico = new Set(["dano", "auxiliar", "curativo", "especial", "passivo", "personalizado"]);
+  for (const [i, feitico] of p.feiticos.entries()) {
+    const onde = `Feitiço #${i + 1}`;
+    const id = String(feitico.id ?? "").trim();
+    const nivel = feitico.nivel;
+    if (!id || !ID_ENTRADA_OK.test(id)) problemas.push(`${onde}: id inválido.`);
+    else if (feiticosVistos.has(id)) problemas.push(`${onde}: id repetido ("${id}").`);
+    feiticosVistos.add(id);
+    if (!String(feitico.nome ?? "").trim()) problemas.push(`${onde}: falta o campo "nome".`);
+    if (![0, 1, 2, 3, 4, 5, "max"].includes(nivel)) problemas.push(`${onde}: nível inválido.`);
+    if (!tiposFeitico.has(feitico.tipo)) problemas.push(`${onde}: tipo inválido.`);
+    if (!String(feitico.descricao ?? "").trim()) problemas.push(`${onde}: falta o campo "descricao".`);
+    if (feitico.rolagens !== undefined && !Array.isArray(feitico.rolagens)) {
+      problemas.push(`${onde}: "rolagens" precisa ser uma lista.`);
+    }
+    for (const [j, rolagem] of (Array.isArray(feitico.rolagens) ? feitico.rolagens : []).entries()) {
+      if (!rolagem || typeof rolagem !== "object") {
+        problemas.push(`${onde}, rolagem #${j + 1}: precisa ser um objeto.`);
+        continue;
+      }
+      if (Math.trunc(Number(rolagem.dados)) < 1 || Math.trunc(Number(rolagem.faces)) < 2) {
+        problemas.push(`${onde}, rolagem #${j + 1}: dados inválidos.`);
+      }
+    }
+  }
+
+  const estadosVistos = new Set();
+  const tiposEstado = new Set(["bool", "opcao", "multi", "faixa"]);
+  for (const [i, estado] of p.estadosCombate.entries()) {
+    const onde = `Estado de Combate #${i + 1}`;
+    const id = String(estado.id ?? "").trim();
+    const tipo = estado.tipo ?? "bool";
+    if (!id || !ID_ENTRADA_OK.test(id)) problemas.push(`${onde}: id inválido.`);
+    else if (estadosVistos.has(id)) problemas.push(`${onde}: id repetido ("${id}").`);
+    estadosVistos.add(id);
+    if (!String(estado.label ?? "").trim()) problemas.push(`${onde}: falta o campo "label".`);
+    if (!tiposEstado.has(tipo)) problemas.push(`${onde}: tipo inválido.`);
+    if (estado.requerEstado && !p.estadosCombate.some((e) => e.id === estado.requerEstado)) {
+      problemas.push(`${onde}: "requerEstado" aponta para um estado que não existe no pacote.`);
+    }
+    if (["opcao", "multi"].includes(tipo) && !Array.isArray(estado.opcoes)) {
+      problemas.push(`${onde}: "opcoes" precisa ser uma lista.`);
+    }
+    const opcoesVistas = new Set();
+    for (const [j, opcao] of (Array.isArray(estado.opcoes) ? estado.opcoes : []).entries()) {
+      const ondeOpcao = `${onde}, opção #${j + 1}`;
+      const opcaoId = String(opcao?.id ?? "").trim();
+      if (!opcaoId || !ID_ENTRADA_OK.test(opcaoId)) problemas.push(`${ondeOpcao}: id inválido.`);
+      else if (opcoesVistas.has(opcaoId)) problemas.push(`${ondeOpcao}: id repetido ("${opcaoId}").`);
+      opcoesVistas.add(opcaoId);
+      if (!String(opcao?.label ?? "").trim()) problemas.push(`${ondeOpcao}: falta o campo "label".`);
+    }
+    if (tipo === "faixa" && Math.trunc(Number(estado.max)) < Math.trunc(Number(estado.min) || 0)) {
+      problemas.push(`${onde}: faixa inválida.`);
+    }
+    if (estado.maxSemTalento != null) {
+      const minimo = Math.trunc(Number(estado.min) || 0);
+      const maximo = Math.trunc(Number(estado.max));
+      const reduzido = Math.trunc(Number(estado.maxSemTalento));
+      if (!String(estado.maxRequerTalento ?? "").trim()) {
+        problemas.push(`${onde}: "maxSemTalento" exige "maxRequerTalento".`);
+      }
+      if (reduzido < minimo || reduzido > maximo) {
+        problemas.push(`${onde}: "maxSemTalento" precisa ficar dentro da faixa.`);
+      }
+    }
+    // Os três controles transportados desde 2026-10-07. Ver `estadosCombateDeAddon`.
+    if (estado.umaVezPorRodada != null && typeof estado.umaVezPorRodada !== "boolean") {
+      problemas.push(`${onde}: "umaVezPorRodada" precisa ser true ou false.`);
+    }
+    if (estado.exclusivoCom != null && (!Array.isArray(estado.exclusivoCom)
+      || estado.exclusivoCom.some((x) => typeof x !== "string" || !x.trim()))) {
+      problemas.push(`${onde}: "exclusivoCom" precisa ser uma lista de ids de estado.`);
+    }
+    if (estado.custoPE != null && String(estado.custoPE).trim() !== "") {
+      const n = Number(estado.custoPE);
+      const ok = typeof estado.custoPE === "number"
+        ? Number.isFinite(n) && n >= 0
+        : validateExpression(String(estado.custoPE)).ok;
+      if (!ok) problemas.push(`${onde}: "custoPE" precisa ser um número a partir de zero ou uma expressão válida.`);
+    }
+  }
+
+  const contadoresVistos = new Set();
+  const tiposContador = new Set(["contador", "bool"]);
+  for (const [i, contador] of p.contadoresOrigem.entries()) {
+    const onde = `Contador de Origem #${i + 1}`;
+    const id = String(contador.id ?? "").trim();
+    if (!id || !ID_ENTRADA_OK.test(id)) problemas.push(`${onde}: id inválido.`);
+    else if (contadoresVistos.has(id)) problemas.push(`${onde}: id repetido ("${id}").`);
+    contadoresVistos.add(id);
+    if (!String(contador.label ?? "").trim()) problemas.push(`${onde}: falta o campo "label".`);
+    if (contador.tipo != null && !tiposContador.has(contador.tipo)) {
+      problemas.push(`${onde}: tipo inválido (use "contador" ou "bool").`);
+    }
+    if ((contador.tipo ?? "contador") === "contador"
+      && contador.max != null && Math.trunc(Number(contador.max)) < Math.trunc(Number(contador.min) || 0)) {
+      problemas.push(`${onde}: faixa inválida.`);
+    }
+  }
+
+  /* O catálogo do Espinho (2026-09-30). O motor aproveita o que der de uma ficha
+     já salva, mas a instalação é o portão duro: item sem id, custo negativo,
+     tipo desconhecido e teto que não compila não entram. */
+  if (p.espinho) {
+    const cfg = p.espinho;
+    const itensCru = cfg.itens;
+    if (itensCru !== undefined && !Array.isArray(itensCru)) problemas.push('Espinho: "itens" precisa ser uma lista.');
+    if (cfg.multiplicadorTeto != null && !(Number(cfg.multiplicadorTeto) > 0)) {
+      problemas.push('Espinho: "multiplicadorTeto" precisa ser um número maior que zero.');
+    }
+    /* A identidade e a Maestria anotada (2026-10-12, Lanterna Coletora de
+       Almas). A pele é código, então o pacote só escolhe uma que exista. */
+    if (cfg.nome != null && !String(cfg.nome).trim()) problemas.push('Espinho: "nome" não pode ser vazio.');
+    if (cfg.visual != null && !ESPINHO_VISUAIS.includes(cfg.visual)) {
+      problemas.push(`Espinho: visual desconhecido ("${cfg.visual}"). Existem: ${ESPINHO_VISUAIS.join(", ")}.`);
+    }
+    if (cfg.artigo != null && !ESPINHO_ARTIGOS.includes(cfg.artigo)) {
+      problemas.push(`Espinho: "artigo" precisa ser ${ESPINHO_ARTIGOS.map((a) => `"${a}"`).join(" ou ")}.`);
+    }
+    if (cfg.maestriaAnotada != null && typeof cfg.maestriaAnotada !== "boolean") {
+      problemas.push('Espinho: "maestriaAnotada" precisa ser true ou false.');
+    }
+    const talentosDoPacote = new Set((p.acrescenta.talentos ?? []).map((t) => String(t?.id ?? "").trim()));
+    const expressaoOk = (onde, campo, expr) => {
+      const v = validateExpression(String(expr));
+      if (!v.ok) problemas.push(`${onde}: "${campo}" inválido (${v.error}).`);
+    };
+    const vistosEsp = new Set();
+    let nEquip = 0;
+    let nAprimora = 0;
+    const lista = Array.isArray(itensCru) ? itensCru : [];
+    for (const [i, bruto] of lista.entries()) {
+      const onde = `Espinho, item #${i + 1}`;
+      const id = String(bruto?.id ?? "").trim();
+      if (!id || !ID_ENTRADA_OK.test(id)) { problemas.push(`${onde}: id inválido.`); continue; }
+      if (vistosEsp.has(id)) problemas.push(`${onde}: id repetido ("${id}").`);
+      vistosEsp.add(id);
+      if (!String(bruto.nome ?? "").trim()) problemas.push(`${onde}: falta o campo "nome".`);
+      if (bruto.tipo != null && !ESPINHO_TIPOS.includes(bruto.tipo)) {
+        problemas.push(`${onde}: tipo desconhecido ("${bruto.tipo}"). Existem: ${ESPINHO_TIPOS.join(", ")}.`);
+      }
+      const custo = Number(bruto.custo);
+      if (!Number.isInteger(custo) || custo < 0) problemas.push(`${onde}: "custo" precisa ser um inteiro a partir de zero.`);
+      if (bruto.teto != null && String(bruto.teto).trim()) expressaoOk(onde, "teto", bruto.teto);
+      const item = normalizarItemEspinho(bruto);
+      if (item.tipo === "equipamento") nEquip += 1;
+      if (item.tipo === "aprimoramento") nAprimora += 1;
+      if (item.tipo === "talento") {
+        const alvo = item.concedeTalento;
+        if (!alvo) problemas.push(`${onde}: falta o campo "concedeTalento".`);
+        else if (!talentosDoPacote.has(alvo) && !alvo.includes(SEPARADOR) && !alvo.startsWith("tal_")) {
+          problemas.push(`${onde}: Talento inexistente "${alvo}".`);
+        }
+      }
+      for (const [j, e] of (Array.isArray(bruto.efeitos) ? bruto.efeitos : []).entries()) {
+        if (!e || !String(e.canal ?? "").trim()) problemas.push(`${onde}, efeito #${j + 1}: falta o campo "canal".`);
+        else if (e.expr != null) expressaoOk(`${onde}, efeito #${j + 1}`, "expr", e.expr);
+      }
+      if (item.tipo === "efeitos" && item.efeitos.length === 0) problemas.push(`${onde}: item sem "efeitos".`);
+    }
+    if (nEquip > 1) problemas.push('Espinho: só pode haver um item do tipo "equipamento".');
+    if (nAprimora > 1) problemas.push('Espinho: só pode haver um item do tipo "aprimoramento".');
+    if (nAprimora && !nEquip) problemas.push('Espinho: o item "aprimoramento" precisa do item "equipamento".');
+    if (lista.length === 0 && cfg.multiplicadorTeto == null && cfg.maestriaAnotada !== true) {
+      problemas.push('Espinho: o campo precisa de "itens", de "multiplicadorTeto" ou de "maestriaAnotada".');
+    }
+  }
+
+  const familias = Object.keys(p.acrescenta);
+  /* ⚠ ACRESCENTAR DEIXOU DE SER OBRIGATÓRIO em 2026-08-21. Um pacote que só
+     DESTRAVA (`libera`) ou só MOSTRA (`permite`) é legítimo e não traz conteúdo
+     nenhum: o caso que abriu isto é o addon que solta o Estilo das Sombras fora
+     do Sem Técnica, que não acrescenta uma linha de catálogo. O que continua
+     reprovado é o pacote que não faz NADA das três coisas. */
+  const familiasRemendadas = Object.keys(p.substitui).filter((f) => p.substitui[f].length);
+  if (
+    familias.length === 0
+    && familiasRemendadas.length === 0
+    && p.permite.length === 0
+    && p.libera.length === 0
+    && p.concedeAptidoes.length === 0
+    && !p.substituiEnergiaReversa
+    && p.adaptacoes.length === 0
+    && p.funcionamentos.length === 0
+    && p.estilos.length === 0
+    && Object.keys(p.atributos).length === 0
+    && p.feiticos.length === 0
+    && p.estadosCombate.length === 0
+    && p.contadoresOrigem.length === 0
+    && !p.votoAutomatico
+    && Object.keys(normalizarRegrasAfty(p.regrasAfty)).length === 0
+    /* O Alter traz só o multiplicador de teto do Espinho, e é pacote de pleno
+       direito: ele muda regra na ficha de quem tem o Espinho. */
+    && !p.espinho
+  ) {
+    problemas.push("O pacote não acrescenta, não substitui, não libera, não permite, não concede ou libera Aptidão e não traz Funcionamento Básico, Feitiço, Estado de Combate, Contador de Origem, Voto automático, Regra Afty ou Espinho.");
+  }
+
+  const vistos = new Set();
+  for (const familia of familias) {
+    const def = FAMILIAS.get(familia);
+    if (!def) {
+      problemas.push(
+        `Família desconhecida: "${familia}". Abertas hoje: ${familiasDeAddon().map((f) => f.id).join(", ") || "nenhuma"}.`,
+      );
+      continue;
+    }
+    const lista = p.acrescenta[familia];
+    if (lista.length === 0) continue;
+
+    for (const [i, e] of lista.entries()) {
+      const onde = `${def.rotulo} #${i + 1}`;
+      const id = String(e[def.chave] ?? "").trim();
+      if (!id) { problemas.push(`${onde}: falta o campo "${def.chave}".`); continue; }
+      if (!ID_ENTRADA_OK.test(id)) {
+        problemas.push(`${onde}: id inválido ("${id}"). Use minúsculas, números e sublinhado, e não use "${SEPARADOR}".`);
+      }
+      const marca = `${familia}/${id}`;
+      if (vistos.has(marca)) problemas.push(`${onde}: id repetido dentro do pacote ("${id}").`);
+      vistos.add(marca);
+
+      for (const campo of def.obrigatorios) {
+        if (e[campo] === undefined || e[campo] === null || e[campo] === "") {
+          problemas.push(`${onde} ("${id}"): falta o campo "${campo}".`);
+        }
+      }
+      if (e.tags !== undefined && !Array.isArray(e.tags)) {
+        problemas.push(`${onde} ("${id}"): "tags" precisa ser uma lista.`);
+      }
+    }
+  }
+
+  /* O portão do REMENDO. Mais duro que o do acréscimo, e de propósito: um
+     acréscimo que ninguém referencia é inofensivo, e um remendo que erra o alvo
+     é uma regra que a pessoa acha que trocou e não trocou. */
+  const remendados = new Set();
+  for (const familia of Object.keys(p.substitui)) {
+    const def = FAMILIAS.get(familia);
+    if (!def) {
+      problemas.push(
+        `Família desconhecida em "substitui": "${familia}". Abertas hoje: ${familiasDeAddon().map((f) => f.id).join(", ") || "nenhuma"}.`,
+      );
+      continue;
+    }
+    if (!def.remendavel) {
+      problemas.push(`${def.rotulo} não aceita remendo: o catálogo dela não é feito de entradas com campos.`);
+      continue;
+    }
+    const idsRaw = def.basicos ? new Set(def.basicos().map((e) => String(e[def.chave]))) : null;
+    for (const [i, e] of p.substitui[familia].entries()) {
+      const onde = `Remendo de ${def.rotulo} #${i + 1}`;
+      const id = String(e[def.chave] ?? "").trim();
+      if (!id) { problemas.push(`${onde}: falta o campo "${def.chave}", que diz o que remendar.`); continue; }
+      const marca = `${familia}/${id}`;
+      if (remendados.has(marca)) problemas.push(`${onde}: "${id}" remendado duas vezes no mesmo pacote.`);
+      remendados.add(marca);
+      if (ehIdDeAddon(id)) {
+        problemas.push(`${onde}: "${id}" é id de addon. Um remendo aponta para entrada do livro.`);
+        continue;
+      }
+      if (idsRaw && !idsRaw.has(id)) {
+        problemas.push(`${onde}: o livro não tem ${def.rotulo.toLowerCase()} "${id}".`);
+        continue;
+      }
+      const campos = Object.keys(e).filter((k) => k !== def.chave);
+      if (campos.length === 0) problemas.push(`${onde} ("${id}"): o remendo não troca campo nenhum.`);
+      for (const campo of def.obrigatorios) {
+        if (campo in e && (e[campo] === undefined || e[campo] === null || e[campo] === "")) {
+          problemas.push(`${onde} ("${id}"): "${campo}" é obrigatório e o remendo o esvazia.`);
+        }
+      }
+    }
+  }
+
+  const tamanho = JSON.stringify(p).length;
+  if (tamanho > PACOTE_MAX) {
+    problemas.push(
+      `O pacote tem ${Math.round(tamanho / 1024)}KB, acima do teto de ${PACOTE_MAX / 1024}KB.`,
+    );
+  }
+  return problemas;
+}
+
+/* ============================================================ */
+/* O MUNDO                                                       */
+/* ============================================================ */
+
+let pacotesAtivos = [];
+let epoca = 0;
+let problemasDaUltimaAplicacao = [];
+
+/**
+ * O que a ÚLTIMA `aplicarAddons` reclamou, no formato dela: `[{ pacote, problemas }]`.
+ * Pacote recusado vem com o id dele, e o relato de um validador de família vem
+ * como `(validador de Origem)`.
+ *
+ * ⚠ EXISTE PORQUE O RETORNO ERA JOGADO FORA (2026-09-23). Os três chamadores
+ * (o criador, a Ficha e o Encontro) chamam `aplicarAddons(...)` e ignoram o que
+ * ela devolve, então o único jeito de um addon dizer "esta versão do app não me
+ * entende" era sumir calado. Foi o que aconteceu com a Maldição - Era de Ouro: o
+ * app no ar era o da v1, cuja lista de mães aceitas não tinha `maldicao`, o
+ * pacote entrou, a origem apareceu no seletor, e sobraram a Energia Reversa e
+ * nenhuma aba de Maldição, sem uma palavra na tela. A aba Addons lê isto.
+ */
+export const problemasDaAplicacao = () => problemasDaUltimaAplicacao.map((p) => ({
+  pacote: p.pacote, problemas: [...p.problemas],
+}));
+
+/**
+ * Contador que sobe a cada troca do conjunto de addons.
+ *
+ * ⚠ QUEM MEMORIZA EM CIMA DE CATÁLOGO PRECISA DISTO NA DEPENDÊNCIA. O
+ * `useMemo(() => deriveAfty(draft), [draft])` do builder não recalcularia ao
+ * instalar um addon, porque o `draft` não mudou: o catálogo é que mudou por
+ * baixo. É a armadilha nomeada na seção 3 do `docs/afty-addons.md`.
+ */
+export const epocaAddons = () => epoca;
+
+/** Os pacotes no ar agora, na ordem em que foram aplicados. */
+export const addonsAtivos = () => pacotesAtivos.map((p) => ({
+  id: p.id, nome: p.nome, versao: p.versao, autor: p.autor, descricao: p.descricao,
+}));
+
+/** O pacote que declarou um id, ou null. Serve para a ficha nomear a origem. */
+export function pacoteDoId(id) {
+  const { pacoteId } = partirId(id);
+  if (!pacoteId) return null;
+  return pacotesAtivos.find((p) => p.id === pacoteId) ?? null;
+}
+
+/**
+ * Reconstrói o mundo: catálogo raw mais os acréscimos de todos os pacotes.
+ *
+ * É SEMPRE do zero, e nunca incremental. Aplicar A e depois B tem de dar
+ * exatamente o mesmo resultado que aplicar [A, B] de uma vez, senão desinstalar
+ * um addon deixaria restos. Cada família recebe a lista inteira dela e reescreve
+ * o próprio catálogo.
+ *
+ * Devolve `{ aplicados, problemas }`. Pacote com problema é RECUSADO INTEIRO, e
+ * não pela metade: meio addon é pior que nenhum, porque o que falta vira número
+ * errado sem sintoma.
+ */
+export function aplicarAddons(pacotes = []) {
+  const limpos = [];
+  const problemas = [];
+  const idsEmUso = new Set();
+
+  for (const cru of Array.isArray(pacotes) ? pacotes : []) {
+    const p = normalizarPacote(cru);
+    const ruins = validarPacote(p, { idsEmUso });
+    if (ruins.length) { problemas.push({ pacote: p.id || "(sem id)", problemas: ruins }); continue; }
+    idsEmUso.add(p.id);
+    limpos.push(p);
+  }
+
+  reconstruirMundo(limpos);
+
+  pacotesAtivos = limpos;
+  epoca += 1;
+
+  // Os validadores do raw agora enxergam o conteúdo de addon, porque leem o
+  // mesmo array. Se algum reprovar, o problema é do addon, e a fase 1 apenas o
+  // RELATA: desfazer aqui deixaria o mundo pela metade, e a ficha tem a linha
+  // morta e marcada para isso.
+  for (const def of FAMILIAS.values()) {
+    if (!def.validador) continue;
+    const ruins = def.validador();
+    if (ruins?.length) problemas.push({ pacote: `(validador de ${def.rotulo})`, problemas: ruins });
+  }
+  const colisoes = colisoesDeVariavel(limpos);
+  if (colisoes.length) problemas.push({ pacote: "(variáveis da DSL)", problemas: colisoes });
+
+  problemasDaUltimaAplicacao = problemas;
+  return { aplicados: addonsAtivos(), problemas };
+}
+
+/* ============================================================ */
+/* A CAMADA DA CRIATURA (o remendo é POR FICHA)                  */
+/* ============================================================ */
+/**
+ * Os pacotes cujo `substitui` está escrito no catálogo AGORA. Fora de um escopo
+ * são todos os pacotes ativos que remendam alguma coisa.
+ */
+let remendosNoMundo = [];
+
+const temRemendo = (p) => Object.values(p?.substitui ?? {}).some((l) => Array.isArray(l) && l.length > 0);
+
+/**
+ * Escreve nos catálogos o raw, os acréscimos de `limpos` e os remendos dos
+ * pacotes em `donosDoRemendo` (todos, quando é null).
+ *
+ * ⚠ É a mesma passada que o `aplicarAddons` sempre fez, separada para o escopo
+ * da ficha poder refazê-la com OUTRO conjunto de remendos sem mexer na época, nos
+ * pacotes ativos nem nos problemas. Os acréscimos são sempre os de todos os
+ * pacotes: id prefixado não colide e quem não o cita não o vê (seção 3 do
+ * docs/afty-addons.md).
+ */
+function reconstruirMundo(limpos, donosDoRemendo = null) {
+  // Junta por família, já prefixado, e entrega tudo de uma vez a cada uma.
+  const porFamilia = new Map([...FAMILIAS.keys()].map((f) => [f, []]));
+  for (const p of limpos) {
+    /* ⚠ OS IDS LOCAIS SÃO DO PACOTE INTEIRO, e não da família (2026-08-31).
+       Eram por família até a Estrela dos Zenin, e ali o furo apareceu: o
+       marcador dela cita o CLÃ dela por `requerId`, os dois vêm no mesmo JSON, e
+       como a busca só olhava a própria lista a referência ficava CRUA enquanto o
+       clã ganhava o namespace. O marcador então apontava para um id que não
+       existia e simplesmente nunca aparecia, calado.
+
+       Um pacote é uma unidade: citar um irmão é citar um irmão, esteja ele na
+       mesma família ou não. Referência que não acha irmão nenhum continua crua e
+       vai procurar no raw, que segue sendo o caso comum. */
+    const idsLocais = new Set();
+    for (const estado of p.estadosCombate) {
+      const id = String(estado?.id ?? "").trim();
+      if (id) idsLocais.add(id);
+    }
+    for (const [familia, lista] of Object.entries(p.acrescenta)) {
+      const def = FAMILIAS.get(familia);
+      if (!def) continue;
+      for (const e of lista) idsLocais.add(String(e[def.chave]));
+    }
+    for (const [familia, lista] of Object.entries(p.acrescenta)) {
+      const def = FAMILIAS.get(familia);
+      if (!def || !lista.length) continue;
+      for (const e of lista) {
+        porFamilia.get(familia).push({
+          ...prefixarEntrada(clonar(e), p.id, def.chave, def.caminhosDeId, idsLocais),
+          addonId: p.id,
+          addonNome: p.nome,
+        });
+      }
+    }
+  }
+
+  // Os REMENDOS, juntados na mesma passada. Um Map por família, chaveado pelo
+  // id do raw. Dois pacotes tocando a mesma entrada é permitido e a ORDEM
+  // decide: o último instalado escreve por cima, e os dois ficam anotados em
+  // `remendadoPor` para a tela poder mostrar quem venceu.
+  const remendosPorFamilia = new Map([...FAMILIAS.keys()].map((f) => [f, new Map()]));
+  for (const p of limpos) {
+    // Dentro do escopo de uma ficha, só o remendo de pacote que ela possui.
+    if (donosDoRemendo && !donosDoRemendo.has(p.id)) continue;
+    for (const [familia, lista] of Object.entries(p.substitui)) {
+      const def = FAMILIAS.get(familia);
+      if (!def || !lista.length) continue;
+      const mapa = remendosPorFamilia.get(familia);
+      for (const e of lista) {
+        const id = String(e[def.chave]);
+        const { [def.chave]: _ignora, ...campos } = clonar(e);
+        const antigo = mapa.get(id);
+        mapa.set(id, {
+          campos: { ...(antigo?.campos ?? {}), ...campos },
+          por: [...(antigo?.por ?? []), { id: p.id, nome: p.nome }],
+        });
+      }
+    }
+  }
+
+  /* ⚠ POR `ordem`, e não pela ordem do Map. A família `habilidades` lê o
+     catálogo de `especializacoes` já religado para expandir o `herdaDe`, e a
+     ordem de inserção do Map é a ordem de import dos módulos, que ninguém
+     controla. Ver a nota da `ordem` no `registrarFamilia`. */
+  const porOrdem = [...porFamilia.keys()]
+    .sort((a, b) => FAMILIAS.get(a).ordem - FAMILIAS.get(b).ordem);
+  for (const familia of porOrdem) {
+    FAMILIAS.get(familia).aplicar(porFamilia.get(familia), remendosPorFamilia.get(familia));
+  }
+
+  remendosNoMundo = limpos
+    .filter((p) => temRemendo(p) && (!donosDoRemendo || donosDoRemendo.has(p.id)))
+    .map((p) => p.id);
+}
+
+const mesmosIds = (a, b) => a.length === b.length && a.every((id, i) => id === b[i]);
+
+/**
+ * Roda `fn` com o catálogo como ESTA ficha o enxerga: os acréscimos do mundo
+ * inteiro e só os remendos dos pacotes que ela mesma carrega.
+ *
+ * ⚠ É A CAMADA DA CRIATURA DA SEÇÃO 3 do docs/afty-addons.md, que nasceu escrita
+ * e nunca tinha sido ligada (achado M05-F01 da revisão de 2026-10-07). O
+ * Encontro aplica a UNIÃO dos addons de todos os combatentes, e o remendo de uma
+ * ficha (um Talento com `efeitos` novos, por exemplo) mudava o número da ficha
+ * vizinha que nunca instalou o pacote: Defesa 16 virava 23 no exemplo do assert.
+ *
+ * O caso comum não custa nada: sem remendo de pacote alheio no ar, `fn` roda
+ * direto. Quando há, o mundo é reescrito com os remendos da ficha, `fn` roda, e o
+ * mundo anterior volta no `finally`, inclusive dentro de outro escopo. A época
+ * não muda, porque os ids do mundo (que é o que ela guarda) continuam os mesmos,
+ * e o mundo que sobra depois é idêntico ao de antes.
+ *
+ * `deriveAfty` é síncrona e o JavaScript não intercala, então o escopo aberto e
+ * fechado em volta dela vale para todo leitor de catálogo lá dentro.
+ */
+export function comEscopoDaFicha(creature, fn) {
+  if (!pacotesAtivos.some(temRemendo)) return fn();
+  const donos = pacotesDaFicha(creature);
+  const desejado = pacotesAtivos.filter((p) => temRemendo(p) && donos.has(p.id)).map((p) => p.id);
+  const anterior = remendosNoMundo;
+  if (mesmosIds(desejado, anterior)) return fn();
+  reconstruirMundo(pacotesAtivos, new Set(desejado));
+  try {
+    return fn();
+  } finally {
+    reconstruirMundo(pacotesAtivos, new Set(anterior));
+  }
+}
+
+/**
+ * Os ids dos pacotes que a ficha CARREGA, normalizados como o `normalizarPacote`
+ * faz. É a pergunta "este conteúdo de addon é desta ficha?", que o mundo unido
+ * do Encontro não responde.
+ */
+export function pacotesDaFicha(creature) {
+  return new Set(
+    (Array.isArray(creature?.addons) ? creature.addons : [])
+      .map((p) => String(p?.id ?? "").trim().toLowerCase())
+      .filter(Boolean),
+  );
+}
+
+/** Os pacotes cujo remendo está escrito no catálogo agora (para os asserts). */
+export const remendosNoCatalogo = () => [...remendosNoMundo];
+
+/**
+ * Dois ids diferentes que viram a MESMA variável da DSL.
+ *
+ * `normalizarVariavel` troca `:` e `-` por `_`, então `ab-cd:ef` e `ab:cd_ef`
+ * viram `ab_cd_ef`, e um pacote chamado `lut` com a entrada `x` vira `lut_x`,
+ * que é o nome de uma entrada do livro. O contexto guarda a primeira e a outra
+ * fica inalcançável por fórmula, calada (achado M01-VAR-02). Não recusa o pacote:
+ * relata, como os validadores de família, porque a ficha precisa continuar
+ * abrindo.
+ *
+ * As famílias olhadas são as que viram variável: Habilidade, Talento e Aptidão
+ * dividem o `tem_`, e a Especialização tem o `nivel_` e o `esc_`.
+ */
+const FAMILIAS_DE_VARIAVEL = [["habilidades", "talentos", "aptidoes"], ["especializacoes"]];
+
+function colisoesDeVariavel(limpos) {
+  const out = [];
+  for (const grupo of FAMILIAS_DE_VARIAVEL) {
+    const vistos = new Map();
+    const registra = (id) => {
+      const v = normalizarVariavel(id);
+      if (!v) return;
+      const antes = vistos.get(v);
+      if (antes && antes !== id) out.push(`"${antes}" e "${id}" viram a mesma variável (${v}).`);
+      else vistos.set(v, id);
+    };
+    for (const familia of grupo) {
+      const def = FAMILIAS.get(familia);
+      if (!def) continue;
+      for (const e of def.basicos?.() ?? []) registra(String(e?.[def.chave] ?? ""));
+    }
+    for (const p of limpos) {
+      for (const familia of grupo) {
+        const def = FAMILIAS.get(familia);
+        for (const e of def ? p.acrescenta[familia] ?? [] : []) registra(comPrefixo(p.id, e[def.chave]));
+      }
+    }
+  }
+  return out;
+}
+
+/** Volta ao raw puro. */
+export const limparAddons = () => aplicarAddons([]);
+
+/* ============================================================ */
+/* OS ADDONS DA CRIATURA                                         */
+/* ============================================================ */
+/**
+ * ⚠ O ADDON MORA DENTRO DA CRIATURA, e é cópia congelada, não referência.
+ *
+ * É a mesma decisão que o autor já tomou para o tema da Ficha em 2026-08-05
+ * (*"quero mandar minha ficha bonitinha para os outros"*): exportar a ficha
+ * exporta as regras dela, ninguém recebe ficha quebrada, e não existe servidor
+ * de registro, URL nem fetch.
+ *
+ * A biblioteca (`fm_addons_afty_v1`) é a outra morada, e serve para instalar,
+ * editar e ATUALIZAR. Quem manda no cálculo é a cópia embutida, e é por isso que
+ * o addon mudar não mexe sozinho nas fichas antigas: a ficha avisa que existe
+ * versão nova, e atualizar é um botão.
+ */
+export function addonsDaCriatura(creature) {
+  const lista = creature?.addons;
+  return Array.isArray(lista) ? lista.map(normalizarPacote) : [];
+}
+
+/* ============================================================ */
+/* PACOTES QUE NÃO LIGAM JUNTOS                                  */
+/* ============================================================ */
+/**
+ * Os pacotes de `outros` que não ligam na mesma ficha que `pacote`.
+ *
+ * ⚠ A TRAVA É SIMÉTRICA: basta UM dos dois declarar o outro. Nasceu em
+ * 2026-09-14 com a Criação de Equipamentos, que o autor decidiu que convive com
+ * a Criação de Armas e não liga junto com ela. A Criação de Armas é anterior e
+ * não declara nada, e toda cópia dela já gravada numa ficha ou numa biblioteca
+ * continuaria sem declarar. Exigir as duas pontas deixaria essas cópias soltas.
+ *
+ * ⚠ E ELA É DA FICHA, e não da biblioteca: a máquina guarda os dois pacotes, e
+ * uma mesa pode ter um personagem com cada um.
+ */
+export function incompativeisCom(pacote, outros) {
+  const p = normalizarPacote(pacote);
+  return (Array.isArray(outros) ? outros : [])
+    .map(normalizarPacote)
+    .filter((o) => o.id !== p.id && (p.incompativeis.includes(o.id) || o.incompativeis.includes(p.id)));
+}
+
+/**
+ * Os pares de pacotes que estão NA MESMA FICHA sem poder estar. A tela de
+ * Addons já não deixa ligar o segundo, então isto só aparece numa ficha
+ * importada ou montada à mão.
+ */
+export function incompativeisNaFicha(creature) {
+  const lista = addonsDaCriatura(creature);
+  const pares = [];
+  lista.forEach((p, i) => {
+    for (const o of incompativeisCom(p, lista.slice(i + 1))) pares.push([p, o]);
+  });
+  return pares;
+}
+
+/**
+ * A união dos addons de VÁRIAS criaturas, para o Encontro misto (decisão 3 do
+ * autor: *"nem sempre é mudança geral de sistema, pode ser mudança mínima em uma
+ * única criatura"*).
+ *
+ * A união é segura porque nesta fase o addon só ACRESCENTA e todo id é
+ * prefixado: dois pacotes nunca disputam a mesma entrada. Quando o mesmo pacote
+ * aparecer em duas fichas com versões diferentes, vale a PRIMEIRA e a divergência
+ * é relatada, porque escolher sozinho qual versão vence mudaria números de uma
+ * ficha que o dono não abriu.
+ */
+export function unirAddons(criaturas = []) {
+  const porId = new Map();
+  const divergencias = [];
+  for (const c of criaturas) {
+    for (const p of addonsDaCriatura(c)) {
+      const antigo = porId.get(p.id);
+      if (!antigo) { porId.set(p.id, p); continue; }
+      if (antigo.versao !== p.versao) {
+        divergencias.push({ id: p.id, nome: p.nome, versoes: [antigo.versao, p.versao] });
+      }
+    }
+  }
+  return { pacotes: [...porId.values()], divergencias };
+}
+
+/* ============================================================ */
+/* LINHA MORTA E MARCADA                                         */
+/* ============================================================ */
+/**
+ * O que a criatura CITA e o mundo não tem.
+ *
+ * ⚠ DECISÃO 4 DO AUTOR (2026-08-20), com as palavras dele: *"Linha Morta e
+ * Marcada, se possível com algum indicativo para descobrir o problema."*
+ *
+ * São DOIS portões diferentes, e confundi-los é o erro clássico:
+ *
+ *   • INSTALAR um addon é portão DURO. `validarPacote` reprova, e addon
+ *     quebrado não entra (ver `afty-addons-biblioteca.js`).
+ *   • ABRIR uma ficha NUNCA falha. A entrada aparece marcada, não soma nada, e
+ *     diz o que houve. Recusar a abrir puniria a pessoa por um problema que ela
+ *     talvez nem tenha causado, e a ficha pode ter vindo de outra mesa.
+ *
+ * Cada problema carrega de onde veio, o que falhou e o que fazer, porque o
+ * pedido foi explicitamente que desse para DESCOBRIR o problema, e não só saber
+ * que existe um.
+ */
+export function problemasDeAddon(creature) {
+  const naFicha = new Set(addonsDaCriatura(creature).map((p) => p.id));
+  const ativos = new Set(pacotesAtivos.map((p) => p.id));
+  const out = [];
+  // O aviso chega à tela, e fala da ficha na palavra do sistema dela.
+  const pal = palavrasDoSistema(sistemaDaFicha(creature));
+
+  for (const def of FAMILIAS.values()) {
+    if (!def.idsDaFicha || !def.resolver) continue;
+    for (const id of def.idsDaFicha(creature) ?? []) {
+      const { pacoteId, id: idCru } = partirId(id);
+      if (!pacoteId) continue;          // id do raw: não é assunto de addon
+      if (def.resolver(id)) continue;   // resolveu, está tudo certo
+
+      const motivo = !naFicha.has(pacoteId)
+        ? `A ficha usa "${idCru}", do addon "${pacoteId}", que não está ligado ${pal.g("neste", "nesta")} ${pal.nome}.`
+        : !ativos.has(pacoteId)
+          ? `O addon "${pacoteId}" está na ficha mas não pôde ser carregado.`
+          : `O addon "${pacoteId}" não declara mais "${idCru}". Ele pode ter sido renomeado ou removido numa versão nova.`;
+
+      out.push({
+        familia: def.id,
+        rotulo: def.rotulo,
+        id,
+        pacoteId,
+        idCru,
+        motivo,
+        // O que resolve, para o aviso não terminar num beco.
+        saida: naFicha.has(pacoteId)
+          ? `Volte à versão antiga do addon, ou tire esta entrada ${pal.g("do", "da")} ${pal.nome}.`
+          : `Ligue esse addon em Outros > Addons, ou tire esta entrada ${pal.g("do", "da")} ${pal.nome}.`,
+      });
+    }
+  }
+  // Dois pacotes que não ligam juntos e chegaram juntos. Os dois continuam
+  // valendo: ficha salva sempre abre, e o aviso diz o que resolver.
+  for (const [a, b] of incompativeisNaFicha(creature)) {
+    out.push({
+      familia: "incompativeis",
+      rotulo: "Addons",
+      id: `${a.id}+${b.id}`,
+      pacoteId: a.id,
+      idCru: b.id,
+      motivo: `Os addons "${a.nome || a.id}" e "${b.nome || b.id}" não ligam juntos ${pal.g("no mesmo", "na mesma")} ${pal.nome}.`,
+      saida: `Tire um dos dois em Outros > Addons.`,
+    });
+  }
+  return out;
+}
+
+/* ============================================================ */
+/* MARCAS DECLARADAS                                             */
+/* ============================================================ */
+/**
+ * Todas as marcas escritas pelos addons no ar, para a UI oferecer no editor de
+ * expressão em vez de a pessoa ter de lembrar de cor. É o mesmo espírito do
+ * seletor `{ }` do vocabulário: o que existe se descobre, não se decora.
+ */
+export function marcasDeclaradas() {
+  const out = new Map();
+  for (const p of pacotesAtivos) {
+    for (const lista of [...Object.values(p.acrescenta), ...Object.values(p.substitui)]) {
+      for (const e of lista) {
+        for (const t of Array.isArray(e.tags) ? e.tags : []) {
+          const k = normalizarMarca(t);
+          if (k) out.set(k, (out.get(k) ?? 0) + 1);
+        }
+      }
+    }
+  }
+  return [...out.entries()].map(([marca, quantas]) => ({ marca, quantas }));
+}

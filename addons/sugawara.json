@@ -5,6 +5,8 @@
   "autor": "Templas",
   "paraRaw": "afty",
   "descricao": "Adiciona o Clã Sugawara (um clã do Herdado, rival do Fujiwara e fundador do futuro Clã Gojo) com Bônus em Atributo, Treinamentos de Clã e Potencial Lendário, mais dois Talentos de Origem (Fundamentos Imponentes, Compreensão Avançada). Os pré-requisitos dos talentos (clã Sugawara, nível, aptidões) entram só como TEXTO — não travam a seleção, a mesa confere. Atributos e perícias entram como orçamento livre — o motor libera a quantidade, você escolhe onde gastar na aba de Atributos / Perícias / Aptidões.",
+  "resumo": "Clã Sugawara do Herdado, com 2 Talentos de Origem e Potencial Lendário",
+  "categoria": "origens",
   "acrescenta": {
     "clas": [
       {

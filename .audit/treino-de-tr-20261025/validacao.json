@@ -1,0 +1,25 @@
+{
+  "addon": "addons/treino-de-tr.json",
+  "data": "2026-10-25",
+  "versao": "1.0.0",
+  "lintAfty": "PASSOU",
+  "buildIsolado": "PASSOU",
+  "assertsPacote": { "passaram": 86, "falharam": 0 },
+  "assertsFocados": { "arquivos": 5, "passaram": 221, "falharam": 0 },
+  "bateriaGeral": {
+    "arquivos": 228,
+    "passaram": 224,
+    "falharam": ["t-prodigio.mjs", "t-reconciliacao-g00.mjs", "t-revisao-cmb01.mjs", "t-revisao-g00.mjs"],
+    "observacao": "Listagem anterior à criação do assert novo. Falhas externas ao pacote, detalhadas em docs/afty-status.md."
+  },
+  "interface": {
+    "origemTeste": "http://127.0.0.1:5448",
+    "instalacaoJson": "PASSOU",
+    "player": { "alvo": "vontade", "progresso": 4, "focosGastos": 5, "bonusAntes": 10, "bonusTreinado": 16, "bonusMestre": 19, "recargaRestaurou": true },
+    "afty": { "alvo": "astucia", "progresso": 4, "focosGastos": 5, "focosTotal": 20 },
+    "alvos": ["reflexos", "fortitude", "vontade", "astucia"],
+    "alvoTreinadoSaiDoSeletor": true,
+    "errosConsole": [],
+    "captura": "treino-completo.png"
+  }
+}

@@ -1,0 +1,8 @@
+e569008af5a6a4d03a1c9eafa51ddec37df15269e7d763eb1c882b488705fdb4 *asserts/LEIA.md
+ef5c41f27a13691cf9b696f67fb70cadc812c092f7591bf2ac3623ce301ea719 *docs/revisao-automacao/escopo.json
+a478061c7386dd3f0b0a288b7ad89f0acec7f6dbef81a4f0fef7e0243a85ccd2 *docs/a-fazer.md
+b155a01eb3fe4a06c4d54415c6d546def822fd452ee44e37b517e0d1747dbadf *docs/afty-status.md
+f1e333c1adeebab5da045a3ee4716233157a320ccb09cb30e27fb5b561b0c328 *docs/afty-ficha-final.md
+3e32ede8ede3d617ff911267ac349154cbdc9ab850278e68ca7f61f6d1bfd48b */c/Projetos/Grimorio/RETOMADA-CLAUDE-FICHA-FINAL.md
+3dc058e4b9da266a136240a58f0cc6b52ac7663f325cd96794152c746c053450 */c/Projetos/Grimorio/CONTINUIDADE-FICHA-FINAL.md
+c73c9fe50bad324ecf378bf579ea60449f0e7a54bb49ad07eaede84336a0ab08 */c/Projetos/Grimorio/PROGRESSO-FICHA-FINAL.md

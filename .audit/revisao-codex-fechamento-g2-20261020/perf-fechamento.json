@@ -1,0 +1,100 @@
+{
+  "geradoEm": "2026-10-21T00:45:28.969Z",
+  "base": "http://127.0.0.1:5321",
+  "amostra": "Player 30 Volumoso (Perf G2)",
+  "medidas": [
+    {
+      "rotulo": "Exaustão mais 1",
+      "ms": 30,
+      "longas": []
+    },
+    {
+      "rotulo": "Perda de Vida do Sangramento",
+      "ms": 36,
+      "longas": []
+    },
+    {
+      "rotulo": "Confirmar Cópia da Imitação",
+      "ms": 38,
+      "longas": []
+    },
+    {
+      "rotulo": "Criar Buff de Mesa",
+      "ms": 37,
+      "longas": []
+    },
+    {
+      "rotulo": "Conceder pelo Mestre",
+      "ms": 43,
+      "longas": []
+    },
+    {
+      "rotulo": "Exaustão mais 1",
+      "ms": 29,
+      "longas": []
+    },
+    {
+      "rotulo": "Perda de Vida do Sangramento",
+      "ms": 37,
+      "longas": []
+    },
+    {
+      "rotulo": "Confirmar Cópia da Imitação",
+      "ms": 41,
+      "longas": []
+    },
+    {
+      "rotulo": "Criar Buff de Mesa",
+      "ms": 39,
+      "longas": []
+    },
+    {
+      "rotulo": "Conceder pelo Mestre",
+      "ms": 30,
+      "longas": []
+    }
+  ],
+  "erros": [],
+  "resumo": {
+    "Exaustão mais 1": {
+      "ms": [
+        30,
+        29
+      ],
+      "maximo": 30,
+      "tarefasLongas": 0
+    },
+    "Perda de Vida do Sangramento": {
+      "ms": [
+        36,
+        37
+      ],
+      "maximo": 37,
+      "tarefasLongas": 0
+    },
+    "Confirmar Cópia da Imitação": {
+      "ms": [
+        38,
+        41
+      ],
+      "maximo": 41,
+      "tarefasLongas": 0
+    },
+    "Criar Buff de Mesa": {
+      "ms": [
+        37,
+        39
+      ],
+      "maximo": 39,
+      "tarefasLongas": 0
+    },
+    "Conceder pelo Mestre": {
+      "ms": [
+        43,
+        30
+      ],
+      "maximo": 43,
+      "tarefasLongas": 0
+    }
+  }
+}

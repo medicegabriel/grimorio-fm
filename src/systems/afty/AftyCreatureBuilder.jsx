@@ -10,6 +10,7 @@ import {
 import { FieldLabel, TextInput, TextArea, Select, NumberInput, StatField, ExpandableText } from "../../components/builder-controls";
 import TabAddons from "./AftyTabAddons";
 import { aplicarAddons, modelosPendentesDeAddon, nivelDaFicha, nivelMaximoDaFicha } from "./afty-addons";
+import { hidratarFicha, addonsDaFicha } from "./afty-addons-compostos";
 import {
   mesclaFichaAfty, AFTY_ATTRS, AFTY_TIPOS, AFTY_PATAMARES, AFTY_QNT_PE,
   AFTY_TECNICA_ATTRS, AFTY_TAMANHOS, AFTY_RESISTENCIAS, getTamanho,
@@ -46,9 +47,9 @@ import {
   origensDoSistema, getOrigem, origemTemDesenvolvimento, origemPoolLimite,
   clasDaOrigem, getCla, caracteristicasEfetivas, totalDaAlocacao, usoDaAlocacao,
   origensQualificadas,
-  origemEstrutural,
   origemMae,
   nivelMaximoDaOrigem,
+  tipoDaFicha,
 } from "./afty-origens";
 // A descrição de cada anatomia agora aparece na própria linha selecionável, em
 // vez de repetida numa lista embaixo: o `getAnatomia` deixou de ser preciso aqui.
@@ -56,11 +57,11 @@ import { ANATOMIAS, anatomiaTotal } from "./afty-anatomias";
 import {
   ATTR_METODOS, VALORES_FIXOS, valoresFixosOk, rolarAtributos, resumoAtributos,
   desenvolvimentoTotal, desenvolvimentoUsado, limitePoolTotal, limitePoolUsado,
-  POINT_BUY_MIN, POINT_BUY_MAX,
+  POINT_BUY_MIN, POINT_BUY_MAX, ROLAGEM_MIN, rolagemMaxDe,
   ATTR_LIMITE_PADRAO,
 } from "./afty-atributos";
 import {
-  ETAPAS_POR_LINHA, focosGastos, avaliarRequisito, requisitosDaEtapa, rotuloAlvo, treinamentosDaOrigem,
+  ETAPAS_POR_LINHA, focosGastos, avaliarRequisito, requisitosDaEtapa, rotuloAlvo, treinamentosDaOrigem, origemDosTreinos,
   SEP_ALVO_ACAO, linhasComEscolhaFeiticos, atributoDoAlvo,
   definirEscolhaTreino, opcoesDeEscolhaTreino, limiteEscolhaTreino,
 } from "./afty-treinamentos";
@@ -86,7 +87,7 @@ import {
 } from "./afty-especializacoes";
 import {
   gruposDeHabilidade, avaliarAcessoHabilidade, escolhasConcedidas, abasDeOpcoes,
-  expandeHerdadas, AFTY_HABILIDADES,
+  expandeHerdadas, AFTY_HABILIDADES, getHabilidade,
 } from "./afty-habilidades";
 import { ALMA_LIVRE_TALENTO_ID, gruposDeTalento, avaliarAcessoTalento, AFTY_TALENTOS } from "./afty-talentos";
 import { avaliarAcessoAltoNivel } from "./afty-alto-nivel";
@@ -101,10 +102,11 @@ import { FONTES_CURA, rotuloBloco } from "./afty-cura";
 // do Funcionamento Básico.
 import {
   EFEITO_CANAL_GRUPOS, VAR_DADOS_DANO_FINAL, VAR_NIVEL_FEITICO,
-  efeitoUsaDadosDanoFinal, getCanal, efeitoGravavel, CUSTOS_PE,
+  efeitoUsaDadosDanoFinal, getCanal, efeitoGravavel, CUSTOS_PE, CANAIS_VETADOS_NA_PASSIVA_MARCIAL,
 } from "./afty-efeitos";
 import { novoDominio, versoesDisponiveis, rotuloVersao } from "./afty-dominios";
 import { CARACTERISTICAS_INVOCACAO } from "./afty-invocacoes-caracteristicas";
+import ConfiguracaoHabilidade from "./ui/ConfiguracaoHabilidade";
 import { COMBATE_ESTADOS, estadoVisivel } from "./afty-combate";
 import { condicoesPorForca, descreveCondicao, listaComE, CONDICAO_EFEITOS, SANGRAMENTO_FAIXAS, faixaDeSangramento } from "./afty-condicoes";
 import { IconeDaCondicao } from "./ui/icones-afty";
@@ -146,6 +148,8 @@ import {
 } from "./afty-equipamentos";
 import { evalNumber as evalNumberDsl, validateExpression } from "./afty-dsl";
 import { deriveAfty } from "./afty-derive";
+import { trocarCopiaImitacao } from "./afty-imitacao";
+import { carregarSessao, salvarSessao } from "./ficha/ficha-sessao";
 import { configuraArmaNaSessao } from "./afty-propriedades-armas";
 import { ControleDeEnergica } from "./ficha/ControlesDeArma";
 import {
@@ -168,7 +172,14 @@ import {
   duracoesDoEfeitoAux, permutaDoEfeito, PERMUTA_ASPECTOS, nomeDaPerda, textoDasPermutas,
   calcularFeitico, feiticoNaEscala, ehTecnicaMaxima, ehTecnicaMaximaOficial,
   opcoesExtrasDeEspecial, patchParaTecnicaMaxima, OPCAO_TECNICA_MAXIMA, OPCAO_EXPANSAO_DOMINIO, feiticoEmBranco,
+  createBlankTecnicaMarcial, ctxDaTecnicaMarcial, ctxSemReducoesDeCusto, VETOS_TECNICA_MARCIAL,
+  efeitoAuxVetado, categoriaPassivoVetada,
 } from "./afty-feiticos";
+import {
+  TIPOS_TECNICA_MARCIAL, TIPO_TECNICA_MARCIAL_LABEL, TM_NIVEIS, TM_FORCAS, TM_FORCA_LABEL,
+  tiposDaLinhaMarcial, niveisDaTecnicaMarcial, acoesDaTecnicaAtaque, ataquesNaAcao,
+  efeitosAtaqueDisponiveis, textoDaEscada,
+} from "./afty-tecnicas-marciais";
 import { TecnicaMaximaPainel } from "./AftyTecnicaMaxima";
 import { DominioEditor, ResumoDominios } from "./AftyDominioEditor";
 import { IconeDeTipo } from "./ui/feitico-tipo";
@@ -328,7 +339,16 @@ function IndicadorRascunho({ rascunho }) {
    ou a ficha em branco. É a régua do "tem alteração pendente" e o destino do
    Descartar. O merge em si mora no schema desde 2026-08-05, porque a Ficha Final
    precisa exatamente do mesmo saneamento antes de derivar. */
-const fichaGravada = (creature) => sincronizarVotosAutomaticos(mesclaFichaAfty(creature));
+const fichaGravada = (creature) => {
+  const ficha = sincronizarVotosAutomaticos(mesclaFichaAfty(creature));
+  const imitacao = creature?.id ? carregarSessao(creature.id).combate?.imitacao : null;
+  if (Array.isArray(imitacao?.aprendidas)) {
+    ficha.imitacaoAprendidas = imitacao.aprendidas;
+    ficha.escolhasHabilidade = { ...ficha.escolhasHabilidade,
+      ...Object.fromEntries(imitacao.aprendidas.filter((c) => Array.isArray(c.escolhas)).map((c) => [c.id, c.escolhas])) };
+  }
+  return ficha;
+};
 
 export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel, sistema: sistemaDaRota = SISTEMA_PADRAO }) {
   const alvoId = existingCreature?.id ?? null;
@@ -350,12 +370,20 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
      criatura. A tela já era a do jogador (as abas saem daqui), mas os números
      não, e a divergência aparecia inteira, do orçamento de perícias ao chip de
      Patamar. Quem deriva lê a FICHA, então é a ficha que tem de dizer. */
+  const [copiaParaConfigurar] = useState(() => existingCreature?.id ? carregarSessao(existingCreature.id).combate?.imitacao?.copia : null);
   const [base] = useState(() => ({ ...fichaGravada(existingCreature), rulesVersion: sistema }));
   // ⚠ O rascunho é aplicado AQUI, no inicializador, e não num efeito depois de
   // montar: restaurar depois faria a tela piscar a ficha em branco antes de
   // trocar, e todo `useState` derivado do draft nasceria do valor errado.
   const [rascunhoInicial] = useState(() => estadoInicialComRascunho(alvoId, base, sistema));
-  const [draft, setDraft] = useState(() => sincronizarVotosAutomaticos(rascunhoInicial.draft));
+  const [draft, setDraft] = useState(() => {
+    const d = sincronizarVotosAutomaticos(hidratarFicha(rascunhoInicial.draft));
+    if (!Array.isArray(base.imitacaoAprendidas)) return d;
+    const aprendidas = base.imitacaoAprendidas.map((c) => ({ ...c,
+      ...(d.imitacaoAprendidas ?? []).find((a) => a.id === c.id) }));
+    return { ...d, imitacaoAprendidas: aprendidas,
+      escolhasHabilidade: { ...base.escolhasHabilidade, ...d.escolhasHabilidade } };
+  });
   /* ⚠ A aba de pouso, e o fallback do `tabAtiva` mais abaixo, apontavam os dois
      para "informacoes". Ela NÃO EXISTE no Player, onde o conteúdo dela mora
      dentro da "identidade", e apontar para uma aba que a barra não mostra daria
@@ -403,9 +431,9 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
     configuraArmaNaSessao({ propriedadesArmas: estado }, linha, "ataques", golpe - 1).propriedadesArmas);
 
   const derived = useMemo(() => {
-    aplicarAddons(draft.addons ?? []);
-    return deriveAfty(draft, { treinosAtivos, propriedadesArmas: propriedadesArmasTeste });
-  }, [draft, treinosAtivos, propriedadesArmasTeste]);
+    aplicarAddons(addonsDaFicha(draft));
+    return deriveAfty(draft, { treinosAtivos, propriedadesArmas: propriedadesArmasTeste, imitacaoParaConfigurar: copiaParaConfigurar });
+  }, [draft, treinosAtivos, propriedadesArmasTeste, copiaParaConfigurar]);
   const isEditing = !!existingCreature?.id;
 
   // O Restringido não tem energia amaldiçoada (autor, 2026-07-29): sem Nível de
@@ -413,7 +441,8 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
   // ele TEM, com o mesmo valor: só chama de Ponto de Estamina (ver deriveAfty).
   // `tabAtiva` cobre quem já estava nela quando o Tipo mudou: em vez de deixar
   // a tela num limbo (aba escondida, conteúdo aberto), cai nas Informações.
-  const semEnergia = draft.core.tipo === "restringido";
+  // `tipoDaFicha`, e não o campo: o Gêmeo do jogador é Restringido pela cópia.
+  const semEnergia = tipoDaFicha(draft) === "restringido";
   /* A aba das Características Amaldiçoadas leva o nome que a origem dá ao pool
      (2026-10-12): "Características de Anatomia" no Vampiro. */
   const rotuloCaracteristicas = derived.caracteristicasAmaldicoadas?.rotulo ?? null;
@@ -572,12 +601,22 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
   // Escolha aninhada de uma habilidade (Estilo de Controle, Melhoria...).
   // Alterna a opção na lista daquela habilidade. Guarda só a escolha; o
   // resolver (afty-habilidades.js) sanea e conta as vagas.
+  const ativarImitacao = (id) => setDraft((d) => {
+    const c = derived.imitacao.configuraveis.find((c) => c.id === id);
+    if (!c) return d;
+    return { ...d, imitacaoAtivarAoSalvar: id, combate: { ...d.combate, ativo: true,
+      ...trocarCopiaImitacao(d.combate, { ...c, escolhas: d.escolhasHabilidade?.[id] ?? c.escolhas, aprendida: true }) } };
+  });
   const toggleEscolhaHabilidade = (habId, opcaoId) =>
     setDraft((d) => {
       const mapa = d.escolhasHabilidade && typeof d.escolhasHabilidade === "object" ? d.escolhasHabilidade : {};
       const atual = Array.isArray(mapa[habId]) ? mapa[habId] : [];
       const proxima = atual.includes(opcaoId) ? atual.filter((x) => x !== opcaoId) : [...atual, opcaoId];
-      return { ...d, escolhasHabilidade: { ...mapa, [habId]: proxima } };
+      return { ...d, escolhasHabilidade: { ...mapa, [habId]: proxima },
+        ...(d.imitacaoAprendidas?.some((c) => c.id === habId) ? { imitacaoAprendidas:
+          d.imitacaoAprendidas.map((c) => c.id === habId ? { ...c, escolhas: proxima } : c) } : {}),
+        ...(d.combate?.imitacao?.copia?.id === habId ? { combate: { ...d.combate, imitacao: { ...d.combate.imitacao,
+          copia: { ...d.combate.imitacao.copia, escolhas: proxima } } } } : {}) };
     });
 
   // Talento também tem escolha aninhada (o atributo do Incremento, a trilha da
@@ -928,10 +967,10 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
     });
 
   const VOTOS_VAZIOS = { contratuais: [], mecanicos: [] };
-  const addVotoContratual = () =>
+  const addVotoContratual = (voto = createBlankVotoContratual()) =>
     setDraft((d) => {
       const atual = d.votos ?? VOTOS_VAZIOS;
-      return { ...d, votos: { ...atual, contratuais: [...(atual.contratuais ?? []), createBlankVotoContratual()] } };
+      return { ...d, votos: { ...atual, contratuais: [...(atual.contratuais ?? []), voto] } };
     });
   const removeVotoContratual = (id) =>
     setDraft((d) => {
@@ -1034,6 +1073,9 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
         ...partial,
       },
     }));
+
+  const patchEspecializacaoConfig = (partial) =>
+    setDraft((d) => ({ ...d, especializacaoConfig: { ...(d.especializacaoConfig ?? {}), ...partial } }));
 
   const patchTalentosConfig = (talentoId, partial) =>
     setDraft((d) => ({
@@ -1536,6 +1578,22 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
     };
     // Apaga o rascunho e move a régua do "tem alteração pendente" para a ficha
     // recém-gravada. Sem isso a próxima abertura restauraria por cima dela.
+    if (existingCreature?.id && (draft.imitacaoAprendidas?.length || copiaParaConfigurar)) {
+      const sessao = carregarSessao(existingCreature.id, derived);
+      const i = draft.imitacaoAtivarAoSalvar ? draft.combate.imitacao : sessao.combate?.imitacao ?? {};
+      const configurar = (c) => ({ ...c, escolhas: draft.escolhasHabilidade?.[c.id] ?? c.escolhas ?? [] });
+      const aprendidas = (draft.imitacaoAprendidas ?? []).map(configurar);
+      creature.imitacaoAprendidas = aprendidas;
+      salvarSessao(existingCreature.id, { ...sessao, combate: { ...sessao.combate,
+        ...(draft.imitacaoAtivarAoSalvar ? { ativo: true } : {}),
+        imitacao: { ...i, aprendidas, ...(i.copia ? { copia: configurar(i.copia) } : {}) } } });
+    }
+    delete creature.imitacaoAtivarAoSalvar;
+    /* PACOTES PARA ALIADOS (2026-10-19): os pacotes do suporte e a biblioteca recebida são escritos pela Ficha Final, e não pelo criador. Sem as
+       duas chaves no que vai para o armazenamento, o merge de primeiro nível do `update` conserva o que a Ficha gravou, mesmo quando a tela veio de
+       um rascunho restaurado mais antigo que a última importação. */
+    delete creature.pacotesAliados;
+    delete creature.pacotesRecebidos;
     rascunho.aoSalvar(creature);
     onSave(creature);
   };
@@ -1732,7 +1790,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
             />
           )}
 {tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} testarGolpeDaArma={testarGolpeDaArma} patch={patch} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} setArmaDaOrigem={setArmaDaOrigem} addFeitico={addFeitico} updateFeitico={updateFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} setTreinoEscolhaFeiticos={setTreinoEscolhaFeiticos} removeEstilo={removeEstilo} patchEstilo={patchEstilo} addFuncionamento={addFuncionamento} removeFuncionamento={removeFuncionamento} patchFuncionamento={patchFuncionamento} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} patchEspinho={patchEspinho} sistema={sistema} estiloApi={estiloApi} />}
-          {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} setHabilidadeVezes={setHabilidadeVezes} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} patchTecnicasCombate={patchTecnicasCombate} patchTalentosConfig={patchTalentosConfig} />}
+          {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} setHabilidadeVezes={setHabilidadeVezes} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} patchTecnicasCombate={patchTecnicasCombate} patchTalentosConfig={patchTalentosConfig} patchEspecializacaoConfig={patchEspecializacaoConfig} ativarImitacao={ativarImitacao} />}
           {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} setAptidaoVezes={setAptidaoVezes} setAptidaoOpcaoRepetida={setAptidaoOpcaoRepetida} />}
           {tabAtiva === "quimeras" && <TabQuimeras draft={draft} derived={derived} addQuimera={addQuimera} removeQuimera={removeQuimera} patchQuimera={patchQuimera} />}
           {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} addQuimera={addQuimera} removeQuimera={removeQuimera} patchQuimera={patchQuimera} addNucleos={addNucleos} removeNucleos={removeNucleos} patchNucleos={patchNucleos} />}
@@ -1762,7 +1820,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
               patchEnxerto={patchEnxerto}
             />
           )}
-          {tabAtiva === "catarse" && <TabCatarse draft={draft} derived={derived} patchCatarse={patchCatarse} />}
+          {tabAtiva === "catarse" && <TabCatarseComMotor draft={draft} derived={derived} patchCatarse={patchCatarse} />}
           {tabAtiva === "tita" && <TabTita draft={draft} derived={derived} patchTita={patchTita} />}
           {tabAtiva === "caracteristicasAmaldicoadas" && (
             <TabCaracteristicasAmaldicoadas
@@ -2553,12 +2611,15 @@ function TesteLinha({
             </span>
           )}
           {item.margemCritico != null && (
-            <span
+            <NumeroComFontes
               className="text-[10px] font-mono tabular-nums text-slate-500 whitespace-nowrap flex-shrink-0"
-              title="Margem de crítico"
-            >
-              ({item.margemCritico})
-            </span>
+              titulo="Margem de Crítico"
+              valor={`(${item.margemCritico})`}
+              partes={item.partesMargemCritico}
+              total={item.margemCritico}
+              formatar={false}
+              ancora="direita"
+            />
           )}
         </span>
 
@@ -2705,9 +2766,15 @@ function DanoCard({ derived, toggleArmaDedicada, setArmaDaOrigem, onAtaqueBasico
                 </span>
               )}
               {e.margemCritico != null && (
-                <span className="text-[10px] text-slate-400 whitespace-nowrap flex-shrink-0" title="Margem de Crítico">
-                  Crít. {e.margemCritico}
-                </span>
+                <NumeroComFontes
+                  className="text-[10px] text-slate-400 whitespace-nowrap flex-shrink-0"
+                  titulo="Margem de Crítico"
+                  valor={`Crít. ${e.margemCritico}`}
+                  partes={e.partesMargemCritico}
+                  total={e.margemCritico}
+                  formatar={false}
+                  ancora="direita"
+                />
               )}
               {e.alcance && (
                 <span className="text-[10px] text-slate-400 whitespace-nowrap flex-shrink-0">{e.alcance.texto}</span>
@@ -2954,10 +3021,15 @@ function TabHabilidades({ draft, derived, testarGolpeDaArma, patch, patchCore, t
   // A MÃE decide o leiaute: a variação do Sem Técnica monta a aba dele. Ver
   // `origemMae`.
   /* ⚠ A ORIGEM SEM ENERGIA AMALDIÇOADA (2026-10-09, `semEnergia`) monta a aba como
-     a do Restringido: sem Perfil Amaldiçoado, porque não há técnica. O card
-     pendente das Habilidades Marciais só aparece no Restringido do livro. */
-  const origemDoLivro = origemMae(draft.core.origem?.id);
-  const origem = derived.origemSemEnergia ? "restringido" : origemDoLivro;
+     a do Restringido: sem Perfil Amaldiçoado, porque não há técnica. O Estilo
+     Marcial e as Técnicas Marciais (2026-10-27) são o conteúdo dela. */
+  /* ⚠ O LEIAUTE VEM DO MOTOR (`derived.ramoHabilidades`, 2026-10-26), e não de
+     uma pergunta de origem aqui dentro: o Restringido, o Não-Feiticeiro e o Gêmeo
+     Restringido montam o Estilo Marcial e as Técnicas Marciais, o Sem Técnica
+     monta o Estilo das Sombras, e o resto monta o Perfil Amaldiçoado e os
+     Feitiços. É a quarta trava do Estilo das Sombras, que a lição pede no motor. */
+  const ramo = derived.ramoHabilidades ?? "padrao";
+  const origem = ramo === "restringido" ? "restringido" : origemMae(draft.core.origem?.id);
   /* ⚠ A ficha de jogador não tem Habilidades Gerais (autor, 2026-08-30). Some
      AQUI, e não nos três lugares que compõem `{gerais}` por origem: uma variável
      nula é o único ponto em que a regra cabe uma vez só. O derive já resolve as
@@ -3048,7 +3120,20 @@ function TabHabilidades({ draft, derived, testarGolpeDaArma, patch, patchCore, t
       />
     </div>
   ) : null;
-  if (origem === "sem_tecnica") {
+  /* As Técnicas Marciais do Restringido (Livro, p. 124 e 247): o card existe para
+     quem tem a Especialização ou a liberação, TRANCADO para quem só tem a origem,
+     e para quem já tem Técnica gravada. Quem decide é o `derived`. */
+  const tecnicasCard = derived.tecnicasMarciais?.mostraCard ? (
+    <TecnicasMarciaisCard
+      draft={draft}
+      derived={derived}
+      addFeitico={addFeitico}
+      removeFeitico={removeFeitico}
+      patchFeitico={patchFeitico}
+      duplicarFeitico={duplicarFeitico}
+    />
+  ) : null;
+  if (ramo === "sem_tecnica") {
     return (
       <>
         {vislumbre}
@@ -3065,13 +3150,21 @@ function TabHabilidades({ draft, derived, testarGolpeDaArma, patch, patchCore, t
       </>
     );
   }
-  if (origem === "restringido") {
+  if (ramo === "restringido") {
     return (
       <>
-        {origemDoLivro === "restringido" && <SubsistemaPendente titulo="Habilidades Marciais" origem="Restringido" />}
+        <EstiloMarcialCard
+          draft={draft}
+          derived={derived}
+          patchCore={patchCore}
+          addFuncionamento={addFuncionamento}
+          removeFuncionamento={removeFuncionamento}
+          patchFuncionamento={patchFuncionamento}
+        />
         {vislumbre}
         {olhosAgulha}
         {espinho}
+        {tecnicasCard}
         {feiticosCard}
         {estilo}
         {dano}
@@ -3117,11 +3210,13 @@ function TabHabilidades({ draft, derived, testarGolpeDaArma, patch, patchCore, t
    progressão do livro. O card passa `proprio` e o widget troca a pilha que
    mostra, em vez de existirem dois componentes que envelheceriam separados.
    Quem decide é o motor: `proprioFeitico` é zero na criatura. */
-function ContadorHabilidades({ derived, proprio = false }) {
+function ContadorHabilidades({ derived, proprio = false, marcial = false }) {
   const {
     gastosNoComum, comum, partesComum, exclusivasFeitico, exclusivasUsadas,
     exclusivasEstilo, exclusivasEstiloUsadas, exclusivasVariacao, exclusivasVariacaoUsadas, excedeu,
     proprioFeitico, proprioFeiticoAtivo, proprioFeiticoPartes, proprioFeiticoUsado, excedeuFeitico,
+    exclusivasMarcial, exclusivasMarcialUsadas, proprioMarcial, proprioMarcialAtivo,
+    proprioMarcialPartes, proprioMarcialUsado, excedeuMarcial,
   } = derived.orcamentoHabilidades;
   /* O contador comum não tem dono na ficha de jogador de quem tem caixa próprio:
      lá não existe Habilidade Geral, e o Estilo é de outra origem. Mostrá-lo
@@ -3130,17 +3225,21 @@ function ContadorHabilidades({ derived, proprio = false }) {
      ⚠ A pergunta é se o caixa EXISTE, e não se o total é positivo: a Segunda
      Habilidade Única preenchida desconta dele, e um total zero trocaria o
      medidor de Feitiços pelo de Habilidades. */
-  const proprioAtivo = proprio && proprioFeiticoAtivo;
-  const usado = proprioAtivo ? proprioFeiticoUsado : gastosNoComum;
-  const teto = proprioAtivo ? proprioFeitico : comum;
-  const partes = proprioAtivo ? proprioFeiticoPartes : partesComum;
-  const estourou = proprioAtivo ? excedeuFeitico : excedeu;
+  /* ⚠ A TÉCNICA MARCIAL TEM O PRÓPRIO CAIXA NO PERSONAGEM (2026-10-26), com a
+     progressão do livro, e gasta o contador comum na criatura. O card dela passa
+     `marcial`, e o widget troca a pilha, como fez com o Feitiço. */
+  const proprioAtivo = proprio && (marcial ? proprioMarcialAtivo : proprioFeiticoAtivo);
+  const usado = proprioAtivo ? (marcial ? proprioMarcialUsado : proprioFeiticoUsado) : gastosNoComum;
+  const teto = proprioAtivo ? (marcial ? proprioMarcial : proprioFeitico) : comum;
+  const partes = proprioAtivo ? (marcial ? proprioMarcialPartes : proprioFeiticoPartes) : partesComum;
+  const estourou = proprioAtivo ? (marcial ? excedeuMarcial : excedeuFeitico) : excedeu;
+  const nomeDaPilha = marcial ? "Técnicas Marciais" : "Feitiços";
   return (
     <div
       className="flex items-center gap-2"
       title={proprioAtivo
-        ? "Feitiços recebidos por nível"
-        : "Feitiços e Habilidades Gerais gastam o mesmo contador"}
+        ? `${nomeDaPilha} recebidas por nível`
+        : "Feitiços, Técnicas Marciais e Habilidades Gerais gastam o mesmo contador"}
     >
       {/* O contador pode ser MULTIPLICADO pela origem (os Gêmeos ficam com
           metade, ou uma vez e meia depois da morte do irmão), então ele ganhou
@@ -3172,6 +3271,15 @@ function ContadorHabilidades({ derived, proprio = false }) {
           +{exclusivasEstiloUsadas} / {exclusivasEstilo}
         </span>
       )}
+      {/* Desenvolver Ideias dá vagas que só a Técnica Marcial gasta. */}
+      {exclusivasMarcial > 0 && (
+        <span
+          className="font-mono text-[11px] font-bold text-amber-300 tabular-nums"
+          title="Vagas exclusivas de Técnica Marcial, que não servem para Feitiço nem para Habilidade Geral"
+        >
+          +{exclusivasMarcialUsadas} / {exclusivasMarcial}
+        </span>
+      )}
       {exclusivasVariacao > 0 && (
         <span className="font-mono text-[11px] font-bold text-purple-300 tabular-nums" title="Vagas exclusivas de Variação de Feitiço">
           +{exclusivasVariacaoUsadas} / {exclusivasVariacao}
@@ -3180,7 +3288,7 @@ function ContadorHabilidades({ derived, proprio = false }) {
       {/* O rótulo segue a pilha: no caixa próprio o que se conta são Feitiços, e
           "Habilidades" ali mandaria procurar um contador que não existe. */}
       <span className="text-[9px] uppercase tracking-wider text-slate-400">
-        {proprioAtivo ? "Feitiços" : "Habilidades"}
+        {proprioAtivo ? nomeDaPilha : "Habilidades"}
       </span>
     </div>
   );
@@ -3454,23 +3562,10 @@ function EstiloSombrasCard({ draft, derived, removeEstilo, patchEstilo, estiloAp
       motorProps={motorProps}
       aptidoesDaFicha={aptidoesDaFicha}
       legado={legado}
-      // As Técnicas antigas seguem no contador de Habilidades (DA-05).
-      cabecalho={antigas.length ? <ContadorHabilidades derived={derived} /> : null}
+      // As Técnicas antigas seguem no contador de Habilidades (DA-05), e na CRIATURA as
+      // da Expansão também gastam o contador comum (autor, 2026-10-26).
+      cabecalho={antigas.length || info.progressao?.propria === false ? <ContadorHabilidades derived={derived} /> : null}
     />
-  );
-}
-
-/* Habilidades Marciais entram num incremento futuro. */
-function SubsistemaPendente({ titulo, origem }) {
-  return (
-    <Card title={titulo}>
-      <div className="text-center py-8 border border-dashed border-slate-700 rounded-lg text-sm text-slate-400">
-        A origem <span className="text-slate-200 font-semibold">{origem}</span> usa {titulo} no lugar de Feitiços.
-        <div className="mt-2 inline-block text-[10px] font-bold uppercase tracking-wide text-amber-400 border border-amber-800/60 rounded px-2 py-0.5">
-          próximo incremento
-        </div>
-      </div>
-    </Card>
   );
 }
 
@@ -3916,6 +4011,42 @@ function useDslGrupos(derived) {
   return useMemo(() => vocabularioDsl(ctx, extras, { contar }), [ctx, extras, contar]);
 }
 
+// A Loja reutiliza o editor completo sob o provedor de primitivas da ficha.
+function TabCatarseComMotor({ draft, derived, patchCatarse }) {
+  const dslGrupos = useDslGrupos(derived);
+  const classes = new Set(derived.especializacoes.escolhidas.flatMap((e) => [e.id, getEspecializacao(e.id)?.herdaDe].filter(Boolean)));
+  const compradas = derived.habilidades.habilidadesOutraClasse;
+  const possuidas = new Set(derived.habilidades.efetivas.filter((id) => !compradas.includes(id)));
+  const ctx = {
+    nd: derived.nd, niveisPorEspec: derived.habilidades.niveisPorEspec,
+    escolhidas: derived.habilidades.canonicas, escolhasHabilidade: derived.habilidades.escolhas.mapa,
+    attrEff: derived.attrPermanente, aptidoes: derived.aptidoesEscolhidas,
+    periciaProf: derived.periciaProf, resistenciaProf: derived.resistenciaProf,
+    periciaOficios: derived.periciaOficios,
+  };
+  const opcoesOutraClasse = [...new Set(AFTY_HABILIDADES.map((h) => h.especializacaoId))]
+    .filter((id) => !classes.has(id))
+    .flatMap((id) => gruposDeHabilidade(id, draft).flatMap((g) => g.habilidades))
+    .map((h) => {
+      const acesso = avaliarAcessoHabilidade(h, { ...ctx,
+        nivelPorHabilidade: { [h.id]: derived.nd }, habilidadesOutraClasse: [h.id] });
+      const vetada = derived.habilidades.vetadas.includes(h.id);
+      return { id: h.id, nome: h.nome, nivel: h.nivel, descricao: h.descricao,
+        classe: getEspecializacao(h.especializacaoId)?.nome ?? h.especializacaoId,
+        bloqueada: !acesso.ok || possuidas.has(h.id) || vetada,
+        motivo: vetada ? "Vetada pela Origem" : acesso.extras.filter((r) => !r.ok).map((r) => r.label).join(", "),
+      };
+    });
+  return <TabCatarse
+    draft={draft}
+    derived={derived}
+    patchCatarse={patchCatarse}
+    MotorEditor={TecnicaMotorEditor}
+    opcoesOutraClasse={opcoesOutraClasse}
+    motorProps={{ pericias: derived.testes?.pericias, fontesDano: fontesDanoDaFicha(draft, derived), dslGrupos }}
+  />;
+}
+
 /* Cada editor valida no mesmo namespace do seu seletor. Chamadas como
    contar("eco") não são nomes de variável. Sem vocabulário, mantém a validação
    de sintaxe dos chamadores que ainda não oferecem o seletor. */
@@ -3974,6 +4105,13 @@ function alvoOpcoes(tipo, pericias = AFTY_PERICIAS, fontesDano = [], canal = nul
   if (tipo === "dadoNomeado") return FACES_DO_EDITOR.map((f) => ({ value: `d${f}`, label: `d${f}` }));
   if (tipo === "gatilho") return ALVOS_GATILHO;
   if (tipo === "custo") return CUSTOS_PE.map((c) => ({ value: c.value, label: c.label }));
+  /* A habilidade DONA da escolha aninhada (`vagasEscolha`). O clone de herança
+     fica de fora: o id da mãe já alcança a herdeira. */
+  if (tipo === "escolhaHabilidade") {
+    return AFTY_HABILIDADES
+      .filter((h) => h.escolha && !h.herdadaDe)
+      .map((h) => ({ value: h.id, label: `${h.nome}: ${h.escolha.label ?? "Escolha"}` }));
+  }
   return ALVO_OPCOES_BASE[tipo] ?? null;
 }
 
@@ -4805,6 +4943,9 @@ function FuncionamentoAddonCard({ linha }) {
 
 function PerfilAmaldicoadoCard({
   draft, derived, patchCore, addFuncionamento, removeFuncionamento, patchFuncionamento,
+  // O Estilo Marcial do Restringido usa este MESMO card (2026-10-26): o Fundamento
+  // Marcial é o Funcionamento Básico com outro nome, no mesmo armazenamento.
+  marcial = false,
 }) {
   const dslGrupos = useDslGrupos(derived);
   const fontesDano = fontesDanoDaFicha(draft, derived);
@@ -4817,29 +4958,42 @@ function PerfilAmaldicoadoCard({
   const invocacoesDaFicha = derived.invocacoes?.lista ?? null;
   return (
     <Card
-      title="Perfil Amaldiçoado"
+      title={marcial ? derived.tecnicasMarciais.fundamento.titulo : "Perfil Amaldiçoado"}
       headerEmpilhadoNoTelefone
       headerRight={
         <div className="flex items-center gap-2">
           <span className="text-[9px] uppercase tracking-wider text-slate-400 whitespace-nowrap">
-            Atributo da Técnica
+            {marcial ? "Atributo da CD" : "Atributo da Técnica"}
           </span>
           <div className="w-40">
             <Select
               value={draft.core.tecnicaAttr}
               onChange={(v) => patchCore({ tecnicaAttr: v })}
               options={AFTY_TECNICA_ATTRS}
-              aria-label="Atributo da Técnica"
+              aria-label={marcial ? "Atributo da CD" : "Atributo da Técnica"}
             />
           </div>
         </div>
       }
     >
-      <FieldLabel>Funcionamento Básico</FieldLabel>
+      {marcial && (
+        <div className="mb-3">
+          <FieldLabel>Nome do Estilo</FieldLabel>
+          <TextInput
+            value={draft.core.estiloMarcialNome ?? ""}
+            onChange={(v) => patchCore({ estiloMarcialNome: v })}
+            placeholder="Estilo Marcial"
+            aria-label="Nome do Estilo Marcial"
+          />
+        </div>
+      )}
+      <FieldLabel>{marcial ? "Fundamento Marcial" : "Funcionamento Básico"}</FieldLabel>
       <TextoLongo
         value={draft.core.tecnicaDescricao}
         onChange={(v) => patchCore({ tecnicaDescricao: v })}
-        placeholder="Descreva o núcleo da técnica: o que ela faz, seus limites e o que ela concede (equipamentos, elemento, mecânicas próprias...)."
+        placeholder={marcial
+          ? "Descreva o propósito do estilo: o que ele busca, e o que ele concede (uma ferramenta própria, uma manobra mais barata, um bônus contra alvo em condição)."
+          : "Descreva o núcleo da técnica: o que ela faz, seus limites e o que ela concede (equipamentos, elemento, mecânicas próprias...)."}
         formatacao
       />
       <TecnicaMotorEditor
@@ -4872,17 +5026,28 @@ function PerfilAmaldicoadoCard({
           )
       ))}
 
-      <div className="flex flex-wrap gap-2 mt-4">
-        <button
-          type="button"
-          onClick={addFuncionamento}
-          className="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded border border-purple-700 bg-purple-800/40 text-purple-200 hover:bg-purple-700/50 transition-colors"
-        >
-          <Plus className="w-3 h-3" /> Funcionamento Básico
-        </button>
-      </div>
+      {/* O Fundamento é um só: o Estilo Marcial não cria outros, e os que já existem
+          na ficha (um Gêmeo que veio de Feiticeiro) seguem editáveis acima. */}
+      {!marcial && (
+        <div className="flex flex-wrap gap-2 mt-4">
+          <button
+            type="button"
+            onClick={addFuncionamento}
+            className="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded border border-purple-700 bg-purple-800/40 text-purple-200 hover:bg-purple-700/50 transition-colors"
+          >
+            <Plus className="w-3 h-3" /> Funcionamento Básico
+          </button>
+        </div>
+      )}
     </Card>
   );
+}
+
+/* O Estilo Marcial do Restringido (Livro, p. 124 e 247): o Fundamento Marcial no
+   lugar do Funcionamento Básico, mais o atributo da CD, que o Restringido escolhe
+   livremente (p. 114). */
+function EstiloMarcialCard(props) {
+  return <PerfilAmaldicoadoCard {...props} marcial />;
 }
 
 /* ============================================================ */
@@ -5434,6 +5599,156 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
 }
 
 /* ============================================================ */
+/* AS TÉCNICAS MARCIAIS: O CARD E A LISTA                        */
+/* ============================================================ */
+/* Os tipos na ordem dos grupos da lista. Dano e Especial não são tipos da Técnica
+   Marcial, mas chegam num Feitiço migrado do Addon Estilo Marcial, e a lista não
+   pode escondê-los (decisão 22: o tipo gravado fica, com aviso). */
+const TIPOS_TECNICA_DA_LISTA = [
+  ...TIPOS_TECNICA_MARCIAL.map((t) => ({ value: t.value, label: t.label })),
+  { value: "dano", label: "Dano" },
+  { value: "especial", label: "Especial" },
+];
+
+/* Os canais do Motor livre da Passiva marcial: o Livro não deixa a Técnica Passiva
+   aumentar atributo (p. 249), e o Motor descarta as duas linhas de qualquer jeito.
+   Sem elas no seletor a pessoa nem tenta. */
+const CANAL_GRUPOS_DA_PASSIVA_MARCIAL = EFEITO_CANAL_GRUPOS
+  .map((g) => ({ ...g, itens: g.itens.filter((c) => !CANAIS_VETADOS_NA_PASSIVA_MARCIAL.includes(c.id)) }))
+  .filter((g) => g.itens.length > 0);
+
+/* O card das Técnicas Marciais do Restringido (Livro, p. 248 a 251): o orçamento
+   no cabeçalho, a lista lateral e UM editor. Reaproveita o `FeiticoCard`, porque a
+   Técnica Marcial mora em `creature.feiticos` com a marca `marcial` e usa o
+   mesmo caminho do Feitiço, com cinco tipos (Ataque, Auxiliar, Curativo, Passiva e
+   Personalizado) e os dois vetos do livro.
+
+   ⚠ A LISTA SAI DOS IDS DO MOTOR (`derived.tecnicasMarciais.ids`), e não de um
+   filtro na ficha: o Feitiço gravado sem marca, numa ficha sem energia, só vira
+   Técnica no derive. */
+function TecnicasMarciaisCard({ draft, derived, addFeitico, removeFeitico, patchFeitico, duplicarFeitico }) {
+  const info = derived.tecnicasMarciais;
+  const ids = new Set(info.ids);
+  const lista = (Array.isArray(draft.feiticos) ? draft.feiticos : []).filter((f) => ids.has(f.id));
+  const tiposPermitidos = info.tiposPermitidos;
+  const podeCriar = tiposPermitidos.length > 0;
+  const dslGrupos = useDslGrupos(derived);
+  const fontesDano = fontesDanoDaFicha(draft, derived);
+  const ctx = ctxDaTecnicaMarcial({
+    nd: derived.nd,
+    nivelConjurador: 0,
+    cdBase: derived.feiticos.cdBase,
+    modTecnica: derived.modTecnica,
+    efeitos: derived.efeitos,
+    efeitosLinhaDano: derived.motorLinhaDano?.efeitos ?? [],
+    contextoDsl: derived.motorLinhaDano?.contexto ?? {},
+    habilidades: derived.habilidades?.escolhidas ?? [],
+    bonusTreinamento: derived.maestria,
+    passivasIsentas: !!derived.passivasIsentas,
+    feiticos: lista,
+    sistema: sistemaDaFicha(draft),
+    passivasSemCustoPeMaximo: !!derived.regrasAfty?.passivasSemCustoPeMaximo,
+    invocacoes: Array.isArray(draft.invocacoes) ? draft.invocacoes : [],
+    marcial: { cdBase: info.cd, acessoNivel: info.nivelMax, niveisPermitidos: TM_NIVEIS, temEnergiaReversa: false },
+  });
+
+  /* ⚠ O ESTADO GUARDA O ID, e não o índice, pela mesma razão do card de Feitiços:
+     remover o segundo reordenaria e o editor mostraria outra Técnica. */
+  const [escolhidoId, setEscolhidoId] = useState(null);
+  const escolhido = lista.find((f) => f.id === escolhidoId) ?? lista[0] ?? null;
+  const resumoDe = (id) => (derived.feiticos.lista ?? []).find((r) => r.id === id);
+  const travaDoEscolhido = escolhido?.tipo === "auxiliar"
+    ? travaDaPermuta(trocasDoFeitico(escolhido, { nd: derived.nd, habilidades: ctx.habilidades }), derived, {
+      ligado: (derived.auxiliaresAtivos?.ativos ?? []).some((a) => a.id === escolhido.id),
+      feiticoId: escolhido.id,
+    })
+    : null;
+  const nova = () => {
+    if (!podeCriar) return;
+    const criada = addFeitico(createBlankTecnicaMarcial("ataque"));
+    if (criada?.id) setEscolhidoId(criada.id);
+  };
+  const duplicar = (id) => {
+    const novoId = duplicarFeitico(id);
+    if (novoId) setEscolhidoId(novoId);
+  };
+
+  return (
+    <Card title="Técnicas Marciais" headerRight={<ContadorHabilidades derived={derived} proprio marcial />}>
+      {info.travado && (
+        <p className="mb-3 inline-flex items-center gap-1.5 text-[11px] text-amber-300" role="status">
+          <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
+          {info.motivoTrava}
+        </p>
+      )}
+      {derived.orcamentoHabilidades.excedeuMarcial && (
+        <p className="text-[11px] text-rose-400 mb-3">
+          Você tem mais Técnicas Marciais do que recebeu. Remova uma ou suba de nível.
+        </p>
+      )}
+      {lista.length === 0 ? (
+        <div className="text-center py-8 border border-dashed border-slate-700 rounded-lg">
+          <p className="text-sm text-slate-400">Nenhuma Técnica Marcial criada ainda.</p>
+          {podeCriar && (
+            <div className="mt-3 flex justify-center">
+              <button
+                type="button"
+                onClick={nova}
+                className="inline-flex items-center justify-center gap-1.5 text-[12px] font-semibold px-3 py-2 rounded-lg border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500"
+              >
+                <Plus className="w-4 h-4" /> Criar Técnica Marcial
+              </button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <ListaLateral
+          itens={lista.map((f) => ({
+            id: f.id,
+            nome: f.nome || "Sem nome",
+            tipo: f.tipo,
+            nivel: Number(f.nivel) || 0,
+            feitico: f,
+          }))}
+          tipos={TIPOS_TECNICA_DA_LISTA}
+          IconeTipo={IconeDeTipo}
+          rotuloNivel="Nível"
+          selecionadoId={escolhido?.id ?? null}
+          onSelecionar={setEscolhidoId}
+          renderItem={(item, selecionado) => (
+            <FeiticoLinha feitico={item.feitico} resumo={resumoDe(item.id)} selecionado={selecionado} />
+          )}
+          onNova={podeCriar ? nova : null}
+          rotuloNovo="Nova Técnica"
+          rotuloBusca="Buscar Técnica"
+          rotuloVazio="Nenhuma Técnica encontrada"
+        >
+          {escolhido && (
+            <FeiticoCard
+              key={escolhido.id}
+              feitico={escolhido}
+              ctx={ctx}
+              nivelMax={info.nivelMax}
+              resumo={resumoDe(escolhido.id)}
+              tecnicasMaximas={null}
+              tiposPermitidos={tiposPermitidos}
+              efeitosPassivo={derived.passivosEfeitos?.[escolhido.id] ?? []}
+              fontesDano={fontesDano}
+              dslGrupos={dslGrupos}
+              invocacoes={derived.invocacoes?.lista ?? null}
+              travaDeUso={travaDoEscolhido}
+              onPatch={(partial) => patchFeitico(escolhido.id, partial)}
+              onRemove={() => removeFeitico(escolhido.id)}
+              onDuplicate={() => duplicar(escolhido.id)}
+            />
+          )}
+        </ListaLateral>
+      )}
+    </Card>
+  );
+}
+
+/* ============================================================ */
 /* A BARRA GRUDADA DO FEITIÇO                                    */
 /* ============================================================ */
 /**
@@ -5550,6 +5865,25 @@ function tilesDoFeitico(f, calc, ctx = {}) {
     if (valor == null || valor === "" || valor === "-" || valor === 0) return;
     tiles.push({ id, label, valor, ...extra });
   };
+
+  /* ⚠ A TÉCNICA MARCIAL DE ATAQUE (2026-10-26) não tem Dano, Média nem Alcance: o
+     que importa é quantos golpes, e o que cada golpe soma. Cada soma leva o hover
+     de fontes (o Nível dos efeitos e o que os ataques reduzidos acrescentaram). */
+  if (f.tipo === "ataque") {
+    const comSinal = (n) => `+${n}`;
+    const parte = (partes, total) => (partes?.length ? { partes, total } : {});
+    push("ataques", "Ataques", calc.ataques, { accent: true, curto: "Ataques", icon: Zap });
+    push("nivelEfeito", "Nível dos Efeitos", calc.efeitos.length > 1 ? `Nível ${calc.nivelEfeito}` : null, { curto: "Efeitos" });
+    push("acerto", "Acerto", calc.bonusAcerto ? comSinal(calc.bonusAcerto) : null, parte(calc.partesAcerto, comSinal(calc.bonusAcerto)));
+    push("danoAdicional", "Dano Adicional", calc.danoAdicional ? `${comSinal(calc.danoAdicional)} por Ataque` : null,
+      { curto: "Dano", ...parte(calc.partesDano, comSinal(calc.danoAdicional)) });
+    push("rdIgnorada", "RD Ignorada", calc.rdIgnorada || null, { curto: "RD", ...parte(calc.partesRd, String(calc.rdIgnorada)) });
+    push("condicao", "Condição Máxima", calc.condicao ? TM_FORCA_LABEL[calc.condicao.forcaMax] : null, { curto: "Condição" });
+    push("cd", "CD", calc.cd ?? null, { icon: Shield });
+    push("custo", "Custo", calc.custoPE != null ? `${calc.custoPE} PE` : null, { icon: Sparkles, title: tituloCustoFeitico(calc) });
+    push("uso", "Uso", "1 por Rodada", { curto: "Uso" });
+    return tiles;
+  }
 
   /* O VALOR é o primeiro e é o único acentuado: é o número pelo qual o Feitiço
      existe. O rótulo muda com o tipo, e sai do mesmo lugar de onde a Ficha Final
@@ -5727,6 +6061,12 @@ function subAbasDoFeitico(f) {
       if (!comTroca.length) return [SUBABA_BASE];
       return [SUBABA_BASE, { id: "trocas", label: "Trocas", n: comTroca.filter((e) => e.permuta?.reducao > 0).length }];
     }
+    case "ataque":
+      /* A aba Condições nasce com o efeito Aplicar Condições, e conta as forças que
+         o nível dos efeitos permite escolher. */
+      return f.efeitosAtaque?.includes("condicao")
+        ? [SUBABA_BASE, { id: "condicoes", label: "Condições" }]
+        : [SUBABA_BASE];
     case "especial":
       // Só os dois que causam dano têm trocas e condições. Ver `saldoUnicoVariante`.
       return ["golpeador", "danoAlma"].includes(especial)
@@ -5772,9 +6112,12 @@ function FeiticoCard({ feitico, ctx, nivelMax, resumo, tecnicasMaximas, tiposPer
      dela (Nível 5 ou `max`) e com o custo de 25, igual à Ficha. Os editores
      recebem a cópia escalada, para os tetos (acerto, CD, golpes) saírem na
      escala certa. */
+  /* A Técnica Marcial usa este MESMO card (2026-10-26). Ela calcula com o `ctx`
+     dela e custa o da tabela, sem as reduções que só o Feitiço tem. */
+  const marcial = feitico.marcial === true;
   const calculoBase = calcularFeitico(feitico, ctx);
   const feiticoEscala = feiticoNaEscala(feitico, ctx);
-  const calc = aplicaReducoesCustoFeitico(feitico, calculoBase, ctx);
+  const calc = aplicaReducoesCustoFeitico(feitico, calculoBase, marcial ? ctxSemReducoesDeCusto(ctx) : ctx);
   // Agrega avisos do Feitiço e dos sub-efeitos (Múltiplos Efeitos), para a barra
   // não mentir o número.
   const avisosTodos = calc
@@ -5789,8 +6132,13 @@ function FeiticoCard({ feitico, ctx, nivelMax, resumo, tecnicasMaximas, tiposPer
   /* Os chips de tipo. Com a liberação por Addon são só dois, e o tipo que a
      linha JÁ TEM entra na lista mesmo quando não é permitido: sem ele o chip
      aceso sumiria e o editor mostraria um Dano sem nada dizendo que ele é um. */
-  const valoresDeTipo = tiposFeiticoDaLinha(tiposPermitidos, feitico.tipo);
-  const tiposDaLinha = TIPOS_FEITICO.filter((t) => valoresDeTipo.includes(t.value));
+  const valoresDeTipo = marcial
+    ? tiposDaLinhaMarcial(tiposPermitidos, feitico.tipo)
+    : tiposFeiticoDaLinha(tiposPermitidos, feitico.tipo);
+  const tiposDaLinha = marcial
+    ? valoresDeTipo.map((v) => ({ value: v, label: TIPO_TECNICA_MARCIAL_LABEL[v] ?? TIPO_FEITICO_LABEL[v] ?? v }))
+    : TIPOS_FEITICO.filter((t) => valoresDeTipo.includes(t.value));
+  const rotuloItem = marcial ? "Técnica" : "Feitiço";
 
   const subabas = subAbasDoFeitico(feitico);
   /* ⚠ A ABA ATIVA VOLTA PARA A BASE quando o tipo muda e a aba aberta deixa de
@@ -5806,7 +6154,11 @@ function FeiticoCard({ feitico, ctx, nivelMax, resumo, tecnicasMaximas, tiposPer
      Calculadas aqui uma vez só, porque o Nível mora na Identidade e o resto
      no editor. Só o Dano e o Dano na Alma têm dado a perder pela Conjuração. */
   const semDado = opcoesSemDadoFeitico(feiticoEscala);
-  const propsEditor = { feitico: feiticoEscala, calc, onPatch, aba: abaAtiva, semDado };
+  const propsEditor = {
+    feitico: feiticoEscala, calc, onPatch, aba: abaAtiva, semDado,
+    // Os dois vetos do Livro (p. 249), só para a Técnica Marcial.
+    vetos: marcial ? VETOS_TECNICA_MARCIAL : null,
+  };
 
   return (
     <div className="rounded-lg border border-slate-800 bg-slate-950/40">
@@ -5817,8 +6169,8 @@ function FeiticoCard({ feitico, ctx, nivelMax, resumo, tecnicasMaximas, tiposPer
             <TextInput
               value={feitico.nome}
               onChange={(v) => onPatch({ nome: v })}
-              placeholder="Nome do Feitiço"
-              aria-label="Nome do Feitiço"
+              placeholder={marcial ? "Nome da Técnica Marcial" : "Nome do Feitiço"}
+              aria-label={marcial ? "Nome da Técnica Marcial" : "Nome do Feitiço"}
             />
           </div>
           {confirmDel ? (
@@ -5833,10 +6185,10 @@ function FeiticoCard({ feitico, ctx, nivelMax, resumo, tecnicasMaximas, tiposPer
             </span>
           ) : (
             <span className="flex items-center flex-shrink-0 text-slate-600">
-              <button type="button" onClick={onDuplicate} className={`${btnFerramenta} hover:text-white`} title="Duplicar" aria-label="Duplicar Feitiço">
+              <button type="button" onClick={onDuplicate} className={`${btnFerramenta} hover:text-white`} title="Duplicar" aria-label={`Duplicar ${rotuloItem}`}>
                 <Copy className="w-4 h-4" />
               </button>
-              <button type="button" onClick={() => setConfirmDel(true)} className={`${btnFerramenta} hover:text-rose-300`} title="Remover Feitiço" aria-label={`Remover ${feitico.nome || "Feitiço"}`}>
+              <button type="button" onClick={() => setConfirmDel(true)} className={`${btnFerramenta} hover:text-rose-300`} title={`Remover ${rotuloItem}`} aria-label={`Remover ${feitico.nome || rotuloItem}`}>
                 <X className="w-4 h-4" />
               </button>
             </span>
@@ -5897,8 +6249,10 @@ function FeiticoCard({ feitico, ctx, nivelMax, resumo, tecnicasMaximas, tiposPer
             value={feitico.nivel}
             onChange={(n) => onPatch(patchNivelFeitico(feitico, n))}
             nivelMax={nivelMax}
-            nivelMin={feitico.tipo === "curativo" ? 1 : 0}
+            nivelMin={marcial || feitico.tipo === "curativo" ? 1 : 0}
             niveisSemDado={semDado.niveis}
+            niveis={marcial ? niveisDaTecnicaMarcial(feitico.nivel) : undefined}
+            rotulo={marcial ? "Nível da Técnica" : undefined}
           />
         )}
       </div>
@@ -5939,7 +6293,9 @@ function FeiticoCard({ feitico, ctx, nivelMax, resumo, tecnicasMaximas, tiposPer
         )}
 
         <div className="pt-3 space-y-3">
-          {feitico.tipo === "dano" ? (
+          {feitico.tipo === "ataque" ? (
+            <TecnicaAtaqueEditor {...propsEditor} />
+          ) : feitico.tipo === "dano" ? (
             <FeiticoDanoEditor {...propsEditor} />
           ) : feitico.tipo === "auxiliar" ? (
             <FeiticoAuxiliarEditor {...propsEditor} />
@@ -5956,6 +6312,7 @@ function FeiticoCard({ feitico, ctx, nivelMax, resumo, tecnicasMaximas, tiposPer
               fontesDano={fontesDano}
               dslGrupos={dslGrupos}
               invocacoes={invocacoes}
+              vetos={propsEditor.vetos}
             />
           ) : feitico.tipo === "personalizado" ? (
             <FeiticoPersonalizadoEditor feitico={feitico} onPatch={onPatch} />
@@ -5988,13 +6345,121 @@ function FeiticoCard({ feitico, ctx, nivelMax, resumo, tecnicasMaximas, tiposPer
             <TextoLongo
               value={feitico.descricao}
               onChange={(v) => onPatch({ descricao: v })}
-              placeholder="O que o Feitiço faz na ficção."
+              placeholder={marcial ? "O que a Técnica faz na ficção." : "O que o Feitiço faz na ficção."}
               minRows={3}
               formatacao
             />
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ============================================================ */
+/* A TÉCNICA MARCIAL DE ATAQUE (Livro, p. 250 e 251)             */
+/* ============================================================ */
+/* O cálculo é do motor (`calcularTecnicaAtaque`), e a tela escolhe e mostra: a
+   Ação, quantos ataques reduzir, os Efeitos Adicionais e, na outra sub-aba, uma
+   Condição por força com o TR do alvo. O resultado vai na barra grudada, e é só
+   número: nenhuma regra é explicada aqui. */
+function TecnicaAtaqueEditor({ feitico, calc, onPatch, aba }) {
+  const f = feitico;
+  if (!calc) return null;
+  if (aba === "condicoes") return <CondicoesDoAtaque feitico={f} calc={calc} onPatch={onPatch} />;
+  const acoes = acoesDaTecnicaAtaque(calc.nivel);
+  const maxReducoes = Math.max(0, calc.ataquesNaAcao - 1);
+  const efeitos = efeitosAtaqueDisponiveis(calc.nivel, calc.efeitos);
+  const alternaEfeito = (id) => onPatch({
+    efeitosAtaque: calc.efeitos.includes(id) ? calc.efeitos.filter((e) => e !== id) : [...calc.efeitos, id],
+  });
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <FieldLabel>Ação</FieldLabel>
+          <OptionChips
+            value={calc.acao}
+            onChange={(v) => onPatch({
+              acaoAtaque: v,
+              ataquesReduzidos: Math.min(calc.ataquesReduzidos, Math.max(0, ataquesNaAcao(calc.nivel, v) - 1)),
+            })}
+            options={acoes.map((a) => ({ value: a.value, label: a.label, lockTitle: "A Técnica de Nível 1 não tem Ação Bônus" }))}
+            disabledValues={acoes.filter((a) => a.indisponivel).map((a) => a.value)}
+          />
+        </div>
+        <div>
+          <FieldLabel>Ataques Reduzidos</FieldLabel>
+          <ContadorCompacto
+            value={calc.ataquesReduzidos}
+            min={0}
+            max={maxReducoes}
+            onChange={(v) => onPatch({ ataquesReduzidos: v })}
+          />
+        </div>
+      </div>
+      <div>
+        <FieldLabel>Efeitos Adicionais</FieldLabel>
+        <div className="flex flex-wrap gap-1.5">
+          {efeitos.map((e) => (
+            <BoolChip
+              key={e.value}
+              ativo={e.escolhido}
+              bloqueado={e.indisponivel}
+              lockTitle={`O Nível ${calc.nivel} aceita ${calc.nivel} ${calc.nivel === 1 ? "efeito" : "efeitos"}`}
+              onToggle={() => alternaEfeito(e.value)}
+            >
+              {e.label}
+            </BoolChip>
+          ))}
+        </div>
+      </div>
+      <NotasDeFeitico avisos={calc.avisos} />
+    </div>
+  );
+}
+
+/* A sub-aba Condições da Técnica de Ataque: uma Condição por força, até a que o
+   nível dos efeitos permite, e o TR único do alvo. A escada que sai disso é o
+   resultado, e por isso aparece sem legenda. */
+function CondicoesDoAtaque({ feitico, calc, onPatch }) {
+  const f = feitico;
+  const cond = calc.condicao;
+  if (!cond) return null;
+  const escolhidas = f.condicoesAtaque && typeof f.condicoesAtaque === "object" ? f.condicoesAtaque : {};
+  const forcas = TM_FORCAS.slice(0, TM_FORCAS.indexOf(cond.forcaMax) + 1);
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {forcas.map((forca) => (
+          <div key={forca}>
+            <FieldLabel>{`Condição ${TM_FORCA_LABEL[forca]}`}</FieldLabel>
+            <Select
+              value={escolhidas[forca] ?? ""}
+              onChange={(v) => onPatch({ condicoesAtaque: { ...escolhidas, [forca]: v } })}
+              options={(CONDICOES_CATALOGO[forca] || []).filter((n) => n !== "Sangramento").map((n) => ({ value: n, label: n }))}
+              placeholder="-"
+            />
+          </div>
+        ))}
+        <div>
+          <FieldLabel>Teste de Resistência do Alvo</FieldLabel>
+          <Select
+            value={f.trCondicaoAtaque ?? ""}
+            onChange={(v) => onPatch({ trCondicaoAtaque: v })}
+            options={AFTY_RESISTENCIAS.map((r) => ({ value: r.value, label: r.label }))}
+            placeholder="-"
+          />
+        </div>
+      </div>
+      {cond.escada.length > 0 && (
+        <div className="rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 space-y-1">
+          {cond.escada.map((degrau) => (
+            <div key={degrau.acertos} className="font-mono text-[11px] text-slate-300">{textoDaEscada(degrau)}</div>
+          ))}
+        </div>
+      )}
+      <NotasDeFeitico avisos={calc.avisos} />
     </div>
   );
 }
@@ -6025,13 +6490,14 @@ function comTravaSemDado(options, travados = [], disabledValues = []) {
 }
 
 /* Picker segmentado 0..5 do nível do Feitiço (medidor, não campo numérico). */
-function NivelFeiticoPicker({ value, onChange, nivelMax, nivelMin = 0, niveisSemDado = [] }) {
+function NivelFeiticoPicker({ value, onChange, nivelMax, nivelMin = 0, niveisSemDado = [], niveis: niveisDoChamador, rotulo = "Nível do Feitiço" }) {
   // A Técnica Máxima não nasce na criação comum. Quando uma fonte externa,
   // como um Addon, entrega uma pronta, o degrau precisa continuar editável sem
-  // abrir a criação irrestrita de novas Técnicas Máximas.
-  const niveis = value === "max" ? [0, 1, 2, 3, 4, 5, "max"] : [0, 1, 2, 3, 4, 5];
+  // abrir a criação irrestrita de novas Técnicas Máximas. A Técnica Marcial manda
+  // a lista dela (1 a 4, mais o nível gravado quando fora disso).
+  const niveis = niveisDoChamador ?? (value === "max" ? [0, 1, 2, 3, 4, 5, "max"] : [0, 1, 2, 3, 4, 5]);
   return (
-    <div className="flex gap-1.5" role="group" aria-label="Nível do Feitiço">
+    <div className="flex gap-1.5" role="group" aria-label={rotulo}>
       {niveis.map((n) => {
         const on = n === value;
         const foraDoAcesso = n !== "max" && (n > nivelMax || n < nivelMin);
@@ -7340,6 +7806,18 @@ function acaoPadraoAux(efeito, duracao) {
 /* Patch de nível do Feitiço. Num Auxiliar de efeito único, revalida a Duração
    contra o novo nível (o picker fica fora do editor e só mandava {nivel}). */
 function patchNivelFeitico(feitico, n) {
+  /* A Técnica de Ataque cabe no nível novo: o Bônus some no Nível 1, as reduções
+     seguem o número de ataques da ação, e o Nível N aceita N efeitos. */
+  if (feitico.tipo === "ataque") {
+    const nivelNum = Math.max(1, Number(n) || 1);
+    const acao = feitico.acaoAtaque === "bonus" && nivelNum === 1 ? "comum" : (feitico.acaoAtaque || "comum");
+    return {
+      nivel: n,
+      acaoAtaque: acao,
+      ataquesReduzidos: Math.min(Math.max(0, feitico.ataquesReduzidos | 0), Math.max(0, ataquesNaAcao(nivelNum, acao) - 1)),
+      efeitosAtaque: (Array.isArray(feitico.efeitosAtaque) ? feitico.efeitosAtaque : []).slice(0, nivelNum),
+    };
+  }
   if (feitico.tipo === "auxiliar" && !feitico.multiplosAtivo) {
     const disp = auxDuracoesDisponiveis(feitico.efeitoAux || "defesa", n);
     const atual = feitico.duracaoAux || "imediata";
@@ -7368,7 +7846,7 @@ function acaoOpcoesAux(efeito, duracao) {
 }
 
 /* Seletor de modo do Auxiliar. */
-function ModoAuxToggle({ f, onPatch }) {
+function ModoAuxToggle({ f, onPatch, vetos = null }) {
   // Os dois efeitos iniciais nascem DIFERENTES (não se repete efeito).
   const trocar = (v) => {
     if (v === "unico") { onPatch({ multiplosAtivo: false }); return; }
@@ -7377,7 +7855,7 @@ function ModoAuxToggle({ f, onPatch }) {
       return;
     }
     const primeiro = createBlankAuxEffect(0);
-    const segundo = { ...createBlankAuxEffect(0), efeito: primeiroEfeitoLivre([primeiro]) };
+    const segundo = { ...createBlankAuxEffect(0), efeito: primeiroEfeitoLivre([primeiro], vetos ?? {}) };
     onPatch({ multiplosAtivo: true, efeitosMult: [primeiro, segundo] });
   };
   return (
@@ -7576,7 +8054,7 @@ function AtributosDoAuxiliar({ config, feitico, total, onPatch }) {
  * Motor de Automação abaixo, que continua livre para ajuste manual depois —
  * a calculadora SUGERE, ela nunca é a única fonte de verdade da linha.
  */
-function FeiticoPassivoEditor({ feitico, calc, onPatch, efeitosPassivo, fontesDano, dslGrupos, invocacoes }) {
+function FeiticoPassivoEditor({ feitico, calc, onPatch, efeitosPassivo, fontesDano, dslGrupos, invocacoes, vetos = null }) {
   const f = feitico;
   /* ⚠ O SELETOR COMEÇA EM "-" (autor, 2026-09-17), e a escolha mora em
      `categoriaPassivo`. O `efeitoPassivo` antigo tinha "defesa" gravado em todo
@@ -7596,7 +8074,9 @@ function FeiticoPassivoEditor({ feitico, calc, onPatch, efeitosPassivo, fontesDa
           <Select
             value={efeito}
             onChange={(v) => onPatch({ categoriaPassivo: v })}
-            options={PASSIVO_EFEITOS.map((e) => ({ value: e.value, label: e.label }))}
+            options={PASSIVO_EFEITOS
+              .filter((e) => !categoriaPassivoVetada(e.value, vetos ?? {}) || e.value === efeito)
+              .map((e) => ({ value: e.value, label: e.label }))}
             placeholder="-"
           />
         </div>
@@ -7674,16 +8154,17 @@ function FeiticoPassivoEditor({ feitico, calc, onPatch, efeitosPassivo, fontesDa
         titulo="Efeitos da Passiva (Motor de Automação)"
         simplificarTamanho
         invocacoes={invocacoes}
+        canalGrupos={vetos ? CANAL_GRUPOS_DA_PASSIVA_MARCIAL : undefined}
       />
     </div>
   );
 }
 
-function FeiticoAuxiliarEditor({ feitico, calc, onPatch, aba }) {
+function FeiticoAuxiliarEditor({ feitico, calc, onPatch, aba, vetos = null }) {
   const f = feitico;
   // A sub-aba Trocas serve os dois modos: ela lista os efeitos que aceitam troca.
   if (aba === "trocas") return <PermutasDoAuxiliar feitico={f} calc={calc} onPatch={onPatch} />;
-  if (f.multiplosAtivo) return <FeiticoAuxMultiplos feitico={f} calc={calc} onPatch={onPatch} />;
+  if (f.multiplosAtivo) return <FeiticoAuxMultiplos feitico={f} calc={calc} onPatch={onPatch} vetos={vetos} />;
 
   const efeito = f.efeitoAux || "defesa";
   const nivel = f.nivel;
@@ -7747,7 +8228,7 @@ function FeiticoAuxiliarEditor({ feitico, calc, onPatch, aba }) {
      Feitiço não separa nada de nada. */
   return (
     <div className="space-y-3">
-      <ModoAuxToggle f={f} onPatch={onPatch} />
+      <ModoAuxToggle f={f} onPatch={onPatch} vetos={vetos} />
 
       <AuxParametros p={p}>
           <div>
@@ -7760,7 +8241,7 @@ function FeiticoAuxiliarEditor({ feitico, calc, onPatch, aba }) {
                 // A troca é do efeito: trocar o efeito leva a troca junto.
                 permuta: null,
               })}
-              options={AUX_EFEITOS}
+              options={AUX_EFEITOS.filter((m) => !efeitoAuxVetado(m.value, vetos ?? {}) || m.value === efeito)}
             />
           </div>
           {efeito === "rolagem" && (
@@ -7803,7 +8284,7 @@ function FeiticoAuxiliarEditor({ feitico, calc, onPatch, aba }) {
 }
 
 /* Múltiplos Efeitos: orçamento de PE (ganhos) + lista de efeitos. */
-function FeiticoAuxMultiplos({ feitico, calc, onPatch }) {
+function FeiticoAuxMultiplos({ feitico, calc, onPatch, vetos = null }) {
   const f = feitico;
   const entries = Array.isArray(f.efeitosMult) ? f.efeitosMult : [];
   const duracaoMult = f.duracaoMult || "imediata";
@@ -7842,7 +8323,7 @@ function FeiticoAuxMultiplos({ feitico, calc, onPatch }) {
     ? { concentracaoAux: false }
     : { concentracaoAux: true, umGolpe: false });
   // Efeito novo nasce no primeiro efeito ainda livre e compatível com o Feitiço.
-  const livre = efeitosDisponiveisMult(entries, null, eventoUnico, { nivel: 0, duracao: duracaoMult })[0]?.value ?? null;
+  const livre = efeitosDisponiveisMult(entries, null, eventoUnico, { nivel: 0, duracao: duracaoMult, ...(vetos ?? {}) })[0]?.value ?? null;
   const addEfeito = () => {
     if (!livre) return;
     onPatch({ efeitosMult: [...entries, { ...createBlankAuxEffect(0), efeito: livre }] });
@@ -7882,7 +8363,7 @@ function FeiticoAuxMultiplos({ feitico, calc, onPatch }) {
 
   return (
     <div className="space-y-3">
-      <ModoAuxToggle f={f} onPatch={onPatch} />
+      <ModoAuxToggle f={f} onPatch={onPatch} vetos={vetos} />
 
       <AuxParametros p={p}>
           <div>
@@ -7907,7 +8388,7 @@ function FeiticoAuxMultiplos({ feitico, calc, onPatch }) {
               // enxergar os outros Aumentos de Atributo do mesmo Feitiço.
               feitico={f}
               nivelFeitico={f.nivel}
-              opcoesEfeito={efeitosDisponiveisMult(entries, en.efeito, eventoUnico, { nivel: en.nivel, duracao: duracaoMult })}
+              opcoesEfeito={efeitosDisponiveisMult(entries, en.efeito, eventoUnico, { nivel: en.nivel, duracao: duracaoMult, ...(vetos ?? {}) })}
               onChange={(partial) => setEfeito(en.id, partial)}
               onRemove={() => removeEfeito(en.id)}
             />
@@ -8565,7 +9046,7 @@ function OrigemCard({ draft, derived, patch, patchCore, setOrigemId, setOrigemBo
                     atributos físicos são aumentados em 1": os dois casos são
                     excludentes, e deixar o alocador na tela ofereceria pontos
                     que o `resolveOrigemAttrBonus` recusa a somar. */}
-                {c.bonus?.distribuir && !(c.bonus.semEnergiaNao && draft.core.tipo === "restringido") && (() => {
+                {c.bonus?.distribuir && !(c.bonus.semEnergiaNao && tipoDaFicha(draft) === "restringido") && (() => {
                   /* ⚠ `livres` (2026-09-28, Restrição Intelectual: "+4 pontos
                      entre os atributos mentais [...] e +1 o qual você pode
                      distribuir em que quiser", lido pelo autor como 4 no total):
@@ -9139,8 +9620,8 @@ function AttributesCard({ draft, derived, patch, patchCore, patchAttr, patchNive
                   <NumberInput
                     value={base}
                     onChange={(v) => patchAttr(a.key, v)}
-                    min={metodo === "pontos" ? POINT_BUY_MIN : 0}
-                    max={metodo === "pontos" ? POINT_BUY_MAX : 30}
+                    min={metodo === "pontos" ? POINT_BUY_MIN : ROLAGEM_MIN}
+                    max={metodo === "pontos" ? POINT_BUY_MAX : rolagemMaxDe(draft, a.key)}
                     aria-label={`${a.label} base`}
                   />
                 )}
@@ -9345,7 +9826,7 @@ function ValoresBasicosCard({ draft, derived, patch, patchCore, sistema }) {
               Máximo já diz tudo, e a ficha é montada com a alma íntegra. O valor
               corrente nasce cheio, no combatState, e só o jogo o mexe. */}
           <div>
-            <FieldLabel>{semTipoNemPatamar ? "Integridade da Alma" : "Máximo da Alma"}</FieldLabel>
+            <FieldLabel>{derived.almaPilha ? "Integridade da Alma" : "Máximo da Alma"}</FieldLabel>
             <div className="h-9 bg-slate-950/60 border border-slate-800 rounded px-3 flex items-center text-sm font-mono text-purple-300">
               {derived.almaMax}
             </div>
@@ -9566,9 +10047,10 @@ function opcoesDeAlvo(linha, instances, pericias = AFTY_PERICIAS, armas = [], in
   if (linha.alvoTipo === "pericia") {
     return pericias.filter((p) => !usados.has(p.id)).map((p) => ({ value: p.id, label: p.nome }));
   }
-  // `tr` (2026-09-26): os quatro Testes de Resistência treináveis, sem Integridade.
+  // Integridade é optativa por linha, preservando os treinos que a excluem.
   if (linha.alvoTipo === "tr") {
-    return resistenciasTreinaveis().filter((r) => !usados.has(r.value)).map((r) => ({ value: r.value, label: r.label }));
+    const resistencias = linha.incluiIntegridade === true ? AFTY_RESISTENCIAS : resistenciasTreinaveis();
+    return resistencias.filter((r) => !usados.has(r.value)).map((r) => ({ value: r.value, label: r.label }));
   }
   if (linha.alvoTipo === "arma") {
     const vistos = new Set();
@@ -10728,7 +11210,7 @@ function AptidaoCard({
 
    Com multiclasse, os botões transferem um nível entre classes e preservam
    a soma. A última classe recebe o restante no resolveEspecializacoes. */
-function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilidade, setHabilidadeVezes, toggleEscolhaHabilidade, toggleTalento, setTalentoVezes, toggleEscolhaTalento, setMelhoriaVezes, toggleLendaria, toggleEscolhaAltoNivel, patchTecnicasCombate, patchTalentosConfig }) {
+function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilidade, setHabilidadeVezes, toggleEscolhaHabilidade, toggleTalento, setTalentoVezes, toggleEscolhaTalento, setMelhoriaVezes, toggleLendaria, toggleEscolhaAltoNivel, patchTecnicasCombate, patchTalentosConfig, patchEspecializacaoConfig, ativarImitacao }) {
   const { escolhidas, total, max, obrigatoria } = derived.especializacoes;
   // A origem copiada em Verdadeiras Origens ABRE o que for exclusivo dela: o
   // Físico Abençoado do Restringido diz que dá acesso à Especialização
@@ -10952,7 +11434,7 @@ function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilida
         (autor, 2026-07-17): a aba "Habilidades" do topo é de Ações &
         Características, não destas. Mesmo arranjo da aba de Aptidões, que
         tem o alocador em cima e a lista de leitura embaixo. */}
-    <HabilidadesEspecializacao draft={draft} derived={derived} toggleHabilidade={toggleHabilidade} setHabilidadeVezes={setHabilidadeVezes} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} patchTecnicasCombate={patchTecnicasCombate} patchTalentosConfig={patchTalentosConfig} />
+    <HabilidadesEspecializacao draft={draft} derived={derived} toggleHabilidade={toggleHabilidade} setHabilidadeVezes={setHabilidadeVezes} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} patchTecnicasCombate={patchTecnicasCombate} patchTalentosConfig={patchTalentosConfig} patchEspecializacaoConfig={patchEspecializacaoConfig} ativarImitacao={ativarImitacao} />
 
     {/* Empolgação: some inteira sem a habilidade Base do Lutador. */}
     <EmpolgacaoCard derived={derived} />
@@ -10994,7 +11476,7 @@ function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilida
    escalonamento ainda não alcança (ver `resolveEscolhasHabilidade`). Livre, ela
    trava. Já marcada, ela continua desmarcável e o rótulo do nível fica âmbar,
    porque a ficha a guarda e só reporta. */
-function OpcoesDeEscolha({ escolha, opcoesEscolhidas, escolhida, onToggleOpcao, bloqueadas = [] }) {
+function OpcoesDeEscolha({ escolha, opcoesEscolhidas, escolhida, onToggleOpcao, bloqueadas = [], motivosBloqueio = {} }) {
   const eixos = escolha.abas || [];
   // Aba ativa por eixo. Vazio = a primeira de cada barra.
   const [abaPorEixo, setAbaPorEixo] = useState([]);
@@ -11057,7 +11539,7 @@ function OpcoesDeEscolha({ escolha, opcoesEscolhidas, escolhida, onToggleOpcao, 
       ))}
 
       <div className="space-y-1.5">
-        {lista.length === 0 && <p className="text-xs text-slate-500 py-2" role="status">Nenhuma habilidade encontrada</p>}
+        {lista.length === 0 && <p className="text-xs text-slate-500 py-2" role="status">{escolha.mensagemVazia ?? "Nenhuma habilidade encontrada"}</p>}
         {lista.map((o) => {
           const sel = opcoesEscolhidas.includes(o.id);
           const trancada = bloqueadas.includes(o.id);
@@ -11071,7 +11553,7 @@ function OpcoesDeEscolha({ escolha, opcoesEscolhidas, escolhida, onToggleOpcao, 
               onClick={() => onToggleOpcao?.(o.id)}
               disabled={desabilitada}
               aria-pressed={sel}
-              title={trancada ? `Requer Nível ${o.nivelMin}` : undefined}
+              title={trancada ? motivosBloqueio[o.id] ?? `Requer Nível ${o.nivelMin}` : undefined}
               className={`w-full text-left rounded-md border px-2 py-1.5 transition-colors flex gap-2 ${
                 sel
                   ? "border-purple-700 bg-purple-950/40"
@@ -11111,6 +11593,7 @@ function OpcoesDeEscolha({ escolha, opcoesEscolhidas, escolhida, onToggleOpcao, 
    primeiro porque é o requisito mais comum; se ele está em dia, o culpado é
    um dos extras (outra habilidade, uma aptidão, um atributo mínimo). */
 function motivoBloqueio(habilidade, acesso) {
+  if (acesso.vetada) return "Vetada pela Origem";
   if (acesso.almaLivreOcupada) return "Alma Livre permite uma habilidade";
   if (!acesso.nivelOk && acesso.label) {
     return `Requer nível ${habilidade.nivel} em ${acesso.label.split(" ")[0]}`;
@@ -11330,8 +11813,8 @@ function HabilidadeMedidor({ habilidade, vezes, max, onSetVezes }) {
   );
 }
 
-function HabilidadeCard({ habilidade, escolhida, concedida = false, acesso, nivelEspec, escolhaEstado, onToggleOpcao, extra, medidor }) {
-  const [open, setOpen] = useState(false);
+function HabilidadeCard({ habilidade, escolhida, concedida = false, fonteConcessao = "Especialização", acesso, nivelEspec, escolhaEstado, onToggleOpcao, extra, medidor }) {
+  const [open, setOpen] = useState(() => !!habilidade.escolha?.abertaPorPadrao);
   // Já escolhida nunca trava: senão redividir a multiclasse prenderia a
   // habilidade na ficha, sem como remover (mesma regra do AptidaoCard).
   const bloqueada = !acesso.ok && !escolhida && !concedida;
@@ -11354,7 +11837,7 @@ function HabilidadeCard({ habilidade, escolhida, concedida = false, acesso, nive
           onClick={habilidade.onToggle}
           disabled={bloqueada || concedida}
           aria-pressed={escolhida || concedida}
-          aria-label={concedida ? `${habilidade.nome} concedida pela Especialização` : `${escolhida ? "Remover" : "Escolher"} ${habilidade.nome}`}
+          aria-label={concedida ? `${habilidade.nome} concedida por ${fonteConcessao}` : `${escolhida ? "Remover" : "Escolher"} ${habilidade.nome}`}
           title={
             // O rótulo diz o que REALMENTE falta. Antes ele sempre acusava o
             // nível de classe, porque `acesso.label` existe mesmo quando o
@@ -11363,7 +11846,7 @@ function HabilidadeCard({ habilidade, escolhida, concedida = false, acesso, nive
             // Talento não tem requisito de nível de classe (não vem com
             // `label`), só os extras, que já aparecem na linha.
             concedida
-              ? "Concedida pela Especialização"
+              ? `Concedida por ${fonteConcessao}`
               : bloqueada
                 ? motivoBloqueio(habilidade, acesso)
               : escolhida ? "Remover esta habilidade" : "Escolher esta habilidade"
@@ -11397,9 +11880,9 @@ function HabilidadeCard({ habilidade, escolhida, concedida = false, acesso, nive
             {concedida && (
               <span
                 className="inline-flex items-center text-[10px] font-medium whitespace-nowrap text-emerald-400"
-                title="Concedida pela Especialização"
+                title={`Concedida por ${fonteConcessao}`}
               >
-                Especialização
+                {fonteConcessao}
               </span>
             )}
             {/* Requisito de NÍVEL: só aparece quando falta, e diz quanto.
@@ -11465,6 +11948,7 @@ function HabilidadeCard({ habilidade, escolhida, concedida = false, acesso, nive
                 escolhida={escolhida}
                 onToggleOpcao={onToggleOpcao}
                 bloqueadas={escolhaEstado?.bloqueadas}
+                motivosBloqueio={escolhaEstado?.motivosBloqueio}
               />
             </div>
           )}
@@ -11476,18 +11960,23 @@ function HabilidadeCard({ habilidade, escolhida, concedida = false, acesso, nive
 
 const TALENTOS_TAB = "__talentos__";
 
-function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, setHabilidadeVezes, toggleEscolhaHabilidade, toggleTalento, setTalentoVezes, toggleEscolhaTalento, patchTecnicasCombate, patchTalentosConfig }) {
+function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, setHabilidadeVezes, toggleEscolhaHabilidade, toggleTalento, setTalentoVezes, toggleEscolhaTalento, patchTecnicasCombate, patchTalentosConfig, patchEspecializacaoConfig, ativarImitacao }) {
   const {
-    escolhidas, selecionadas, concedidas, escolhas, gastosNoComum, comum, exclusivasTalento, exclusivasUsadas,
+    escolhidas, selecionadas, concedidas, efetivas, roubadas, escolhas, gastosNoComum, comum, exclusivasTalento, exclusivasUsadas,
     excedeu, niveisPorEspec,
   } = derived.habilidades;
   const especs = derived.especializacoes.escolhidas;
   const talentosEscolhidos = derived.talentos.escolhidas;
   const especializacoesAtuais = new Set(especs.map((e) => e.id));
   const almaLivreEspId = derived.habilidades.almaLivre?.especializacaoId;
-  const especsVisiveis = almaLivreEspId && !especializacoesAtuais.has(almaLivreEspId)
+  const especsComAlmaLivre = almaLivreEspId && !especializacoesAtuais.has(almaLivreEspId)
     ? [...especs, { id: almaLivreEspId, nivel: derived.habilidades.almaLivre.nivel, almaLivre: true }]
     : especs;
+  const classesDaCatarse = [...new Set(derived.habilidades.habilidadesOutraClasse
+    .map((id) => getHabilidade(id)?.especializacaoId).filter(Boolean))];
+  const especsVisiveis = [...especsComAlmaLivre, ...classesDaCatarse
+    .filter((id) => !especsComAlmaLivre.some((e) => e.id === id))
+    .map((id) => ({ id, nivel: 0, catarse: true }))];
 
   // Tabulada pelas especializações escolhidas, não pelo catálogo inteiro:
   // habilidade de especialização que a criatura não tem é ruído. Talentos são
@@ -11514,20 +12003,25 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, setHabili
 
   // Os dois catálogos viram a MESMA forma ({ id, titulo, habilidades }) para
   // reusar a barra de grupos e o HabilidadeCard sem ramificar a árvore.
+  const adquiridas = [...new Map([...(roubadas ?? []).map(getHabilidade).filter(Boolean),
+    ...(derived.imitacao?.definicoes ?? [])].map((h) => [h.id, h])).values()];
+  const imitadasConfiguraveis = derived.imitacao?.configuraveis?.map((c) => c.id) ?? [];
   const gruposCatalogo = emTalentos
     ? gruposDeTalento(draft).map((g) => ({ id: g.id, titulo: g.titulo, habilidades: g.talentos }))
-    : gruposDeHabilidade(ativa.id, draft);
+    : [...gruposDeHabilidade(ativa.id, draft), ...(adquiridas.length && (ativa.id === "restringido" || getEspecializacao(ativa.id)?.herdaDe === "restringido")
+      ? [{ id: "roubadas", titulo: "Habilidades Roubadas", habilidades: adquiridas }] : [])];
   const grupos = filtraGruposDeHabilidade(gruposCatalogo, efeitoFiltro, termoFiltro);
   const grupoAtivo = grupos.find((g) => g.id === grupoTab) ?? grupos[0];
   // attrEff alimenta os requisitos de atributo (ex.: Sobrevivente, Constituição
   // 16) e aptidoes os de aptidão (ex.: Revestimento Constante pede Cobrir-se).
   const ctx = {
     niveisPorEspec,
-    escolhidas,
+    escolhidas: derived.habilidades.canonicas ?? efetivas,
     escolhasHabilidade: escolhas?.mapa,
     attrEff: derived.attrEff,
     aptidoes: derived.aptidoesEscolhidas ?? [],
     almaLivre: derived.habilidades.almaLivre,
+    habilidadesOutraClasse: derived.habilidades.habilidadesOutraClasse,
     /* Proficiência RESOLVIDA (escolhida mais a concedida pelo Motor), para os
        requisitos "Treinado em X" e "Mestre em X" travarem de verdade. ⚠ Os TRÊS
        mapas, porque as três formas do requisito perguntam coisas diferentes:
@@ -11535,6 +12029,8 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, setHabili
     periciaProf: derived.periciaProf,
     resistenciaProf: derived.resistenciaProf,
     periciaOficios: derived.periciaOficios,
+    imitadas: derived.habilidades.imitadas,
+    nivelPorHabilidade: derived.habilidades.nivelPorHabilidade,
   };
   // Talento lê o ND e a origem, nunca o nível de classe.
   const ctxTalento = {
@@ -11570,6 +12066,10 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, setHabili
       : g.titulo.replace("Habilidades de ", "").replace("Talentos ", "").replace(" Nível", "");
   const talentoParaTela = (talento) => {
     if (!talento.escolha) return talento;
+    const addonsAtivos = new Set((draft.addons ?? []).map((p) => p.id));
+    talento = { ...talento, escolha: { ...talento.escolha,
+      opcoes: talento.escolha.opcoes.filter((o) => !o.addonId || addonsAtivos.has(o.addonId)),
+    } };
     const disponiveis = derived.talentos?.escolhas?.porTal?.[talento.id]?.disponiveis;
     if (Array.isArray(disponiveis)) {
       const ids = new Set(disponiveis);
@@ -11627,13 +12127,13 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, setHabili
               role="tab"
               aria-selected={on}
               onClick={() => setEspTab(e.id)}
-              title={e.almaLivre ? "Alma Livre" : undefined}
+              title={e.catarse ? "Loja de Catarse" : e.almaLivre ? "Alma Livre" : undefined}
               className={`grow justify-center whitespace-nowrap px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5 ${
                 on ? "bg-purple-700 text-white" : "text-slate-400 hover:text-white hover:bg-slate-800/60"
               }`}
             >
               {getEspecializacao(e.id)?.nome}
-              <span className={`font-mono text-xs ${on ? "text-purple-200/90" : "text-slate-600"}`}>{e.nivel}</span>
+              {!e.catarse && <span className={`font-mono text-xs ${on ? "text-purple-200/90" : "text-slate-600"}`}>{e.nivel}</span>}
             </button>
           );
         })}
@@ -11741,12 +12241,17 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, setHabili
               ) : (
                 <HabilidadeCard
                   key={h.id}
-                  habilidade={{ ...h, onToggle: () => toggleHabilidade(h.id) }}
-                  escolhida={escolhidas.includes(h.id)}
-                  concedida={concedidas.includes(h.id)}
-                  acesso={avaliarAcessoHabilidade(h, ctx)}
+                  habilidade={{ ...h, onToggle: () => { if (!roubadas?.includes(h.id)) toggleHabilidade(h.id); } }}
+                  escolhida={efetivas.includes(h.id) || imitadasConfiguraveis.includes(h.id)}
+                  concedida={concedidas.includes(h.id) || roubadas?.includes(h.id) || imitadasConfiguraveis.includes(h.id)}
+                  fonteConcessao={imitadasConfiguraveis.includes(h.id) && !roubadas?.includes(h.id) ? "Imitação" : "Especialização"}
+                  /* A Origem pode vetar (`vetaHabilidades`, o Gêmeo Restringido
+                     com o irmão vivo): trava como requisito em falta. */
+                  acesso={imitadasConfiguraveis.includes(h.id) && !roubadas?.includes(h.id) ? { ok: true, nivelOk: true, extras: [] } : (derived.habilidades?.vetadas ?? []).includes(h.id)
+                    ? { ...avaliarAcessoHabilidade(h, ctx), ok: false, vetada: true }
+                    : avaliarAcessoHabilidade(h, ctx)}
                   nivelEspec={ativa.nivel}
-                  escolhaEstado={escolhas?.porHab?.[h.id]}
+                  escolhaEstado={imitadasConfiguraveis.includes(h.id) ? derived.imitacao.escolhas?.porHab?.[h.id] : escolhas?.porHab?.[h.id]}
                   onToggleOpcao={(opcaoId) => toggleEscolhaHabilidade(h.id, opcaoId)}
                   medidor={<HabilidadeMedidor
                     habilidade={h}
@@ -11754,7 +12259,11 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, setHabili
                     max={derived.habilidades?.maxVezes?.[h.id] ?? 1}
                     onSetVezes={setHabilidadeVezes}
                   />}
-                  extra={TECNICAS_COMBATE_IDS.includes(h.id) ? (
+                  extra={efetivas.includes(h.id) || imitadasConfiguraveis.includes(h.id) ? <>
+                    {derived.imitacao.aprendidas.some((c) => c.id === h.id) && !roubadas?.includes(h.id) && <button type="button"
+                      className="afty-botao" onClick={() => ativarImitacao(h.id)}>Imitar</button>}
+                    <ConfiguracaoHabilidade habilidade={h} derived={derived} onPatch={patchEspecializacaoConfig} />
+                    {TECNICAS_COMBATE_IDS.includes(h.id) ? (
                     <TecnicasCombateEscolhas
                       habilidadeId={h.id}
                       draft={draft}
@@ -11762,7 +12271,7 @@ function HabilidadesEspecializacao({ draft, derived, toggleHabilidade, setHabili
                       escolhida={escolhidas.includes(h.id)}
                       onPatch={patchTecnicasCombate}
                     />
-                  ) : null}
+                  ) : null}</> : null}
                 />
               )
             )}
@@ -11990,9 +12499,11 @@ function SimulacaoCombateCard({ derived, patchCombate, gatilhosTreino = [], onGa
   // As opções aninhadas escolhidas (Manobra de Empolgação, Estilo de Combate),
   // achatadas: é o que `requerEscolha` consulta. As dos Talentos entram junto:
   // o Adepto de Combate empresta os Estilos com o mesmo id (ver `linhasDeEstado`).
+  // As da Origem também, pelo Zodíaco da H Corp.
   const opcoes = [
     ...Object.values(derived.habilidades?.escolhas?.mapa ?? {}).flat(),
     ...Object.values(derived.talentos?.escolhas?.mapa ?? {}).flat(),
+    ...Object.values(derived.origem?.mapa ?? {}).flat(),
   ];
   // Uma OPÇÃO também pode exigir escolha: das 8 Posturas, só aparecem as que a
   // criatura aprendeu. Linha que fica sem opção nenhuma some junto.
@@ -12963,8 +13474,13 @@ function FerramentaEditor({
         )}
         {/* O item marcado pelo Espinho: o Grau Especial vem da marca, e quem
             desmarca é o card do Espinho, na aba Habilidades. */}
+        {/* A Lanterna Coletora de Almas é o mesmo selo com o nome e a cor dela. */}
         {fa.doEspinho && (
-          <span className="text-[10px] px-1.5 py-0.5 rounded border border-rose-800 bg-rose-950/60 text-rose-300 font-mono">Espinho</span>
+          <span className={`text-[10px] px-1.5 py-0.5 rounded border font-mono ${
+            fa.espinhoVisual === "lanterna"
+              ? "border-indigo-700 bg-indigo-950/60 text-sky-300"
+              : "border-rose-800 bg-rose-950/60 text-rose-300"
+          }`}>{fa.espinhoNome ?? "Espinho"}</span>
         )}
         {!fa.doEspinho && (
           <button
@@ -13084,7 +13600,7 @@ function FerramentaEditor({
           primeira e não custa Slot de Feitiço. */}
       {fa.temUnicaEspinho && (
         <BlocoHabilidadeUnica
-          titulo="Habilidade Única do Espinho (Aprimoramento)"
+          titulo={`Habilidade Única d${fa.espinhoArtigo ?? "o"} ${fa.espinhoNome ?? "Espinho"} (Aprimoramento)`}
           texto={fa.espinhoHabilidadeUnica}
           onTexto={(v) => onPatch({ espinhoHabilidadeUnica: v })}
           efeitos={fa.espinhoHabilidadeEfeitos}
@@ -13167,86 +13683,76 @@ function TabVotos({
   const dslGrupos = useDslGrupos(derived);
   const podeAdicionarMecanico = mecanicos.length < limiteMecanicos;
   const addonsAtivos = new Set((draft.addons ?? []).map((addon) => addon?.id).filter(Boolean));
+  const [votoAberto, setVotoAberto] = useState(() =>
+    mecanicos.find((voto) => !voto.nome && !voto.narrativa)?.id
+      ?? contratuais.find((voto) => !voto.texto)?.id
+      ?? null,
+  );
+  const alternarVoto = (id) => setVotoAberto((atual) => atual === id ? null : id);
+  const adicionarMecanico = (modelo = null) => {
+    const voto = modelo ?? createBlankVotoMecanico();
+    addVotoMecanico(voto);
+    setVotoAberto(voto.id);
+  };
+  const adicionarContratual = () => {
+    // O callback do criador recebe a entrada para abrir exatamente o novo Voto.
+    const voto = createBlankVotoContratual();
+    addVotoContratual(voto);
+    setVotoAberto(voto.id);
+  };
+  const botaoAdicionar = "inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-200 transition-colors hover:border-purple-500 hover:bg-purple-950/30 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 disabled:cursor-not-allowed disabled:opacity-40";
 
   return (
     <Card title="Votos">
-      <section className="mb-6">
-        <div className="mb-2 flex items-center justify-between gap-3">
-          <div>
-            <h3 className="text-sm font-bold text-slate-100">Votos Contratuais</h3>
+      <section aria-labelledby="votos-mecanicos-titulo">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h3 id="votos-mecanicos-titulo" className="text-sm font-semibold text-slate-100">Votos Mecânicos</h3>
+            <span
+              title={`Votos Mecânicos ativos: ${Math.min(mecanicos.length, limiteMecanicos)} de ${limiteMecanicos}. Limite pelo Bônus de Treinamento.`}
+              className="rounded-md bg-purple-950/40 px-2 py-1 font-mono text-[11px] tabular-nums text-purple-200"
+            >
+              {Math.min(mecanicos.length, limiteMecanicos)} / {limiteMecanicos} BT
+            </span>
           </div>
-          <span className="rounded border border-slate-700 px-2 py-0.5 font-mono text-[10px] text-slate-400">
-            {contratuais.length}
-          </span>
-        </div>
-
-        <div className="space-y-2.5">
-          {contratuais.map((voto, indice) => (
-            <div key={voto.id} className="rounded-lg border border-slate-800 bg-slate-950/30 p-2.5">
-              <div className="mb-1.5 flex items-center justify-between gap-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                  Voto Contratual {indice + 1}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => removeVotoContratual(voto.id)}
-                  className="rounded p-1 text-slate-600 hover:text-rose-300"
-                  aria-label={`Remover Voto Contratual ${indice + 1}`}
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </div>
-              <textarea
-                value={voto.texto}
-                onChange={(e) => patchVotoContratual(voto.id, { texto: e.target.value })}
-                rows={3}
-                placeholder="Descreva o acordo, as partes e as condições do Voto."
-                className="w-full resize-y rounded-lg border border-slate-700 bg-slate-950/60 px-2.5 py-2 text-[12px] text-slate-100 placeholder:text-slate-600 focus:border-purple-600 focus:outline-none"
-              />
-            </div>
-          ))}
           <button
             type="button"
-            onClick={addVotoContratual}
-            className="flex items-center gap-1 text-[11px] text-purple-300 hover:text-purple-200"
+            onClick={() => adicionarMecanico()}
+            disabled={!podeAdicionarMecanico}
+            title={podeAdicionarMecanico ? undefined : `Limite de ${limiteMecanicos} Votos Mecânicos atingido pelo BT atual.`}
+            className={botaoAdicionar}
           >
-            <Plus className="h-3 w-3" /> Adicionar Voto Contratual
+            <Plus className="h-3.5 w-3.5" aria-hidden="true" /> Adicionar Voto Mecânico
           </button>
         </div>
-      </section>
 
-      <section>
-        <div className="mb-2 flex items-center justify-between gap-3">
-          <div>
-            <h3 className="text-sm font-bold text-slate-100">Votos Mecânicos</h3>
+        {podeAdicionarMecanico && padroes.length > 0 && (
+          <div className="mb-3 flex flex-wrap gap-2">
+            {padroes.map((padrao) => (
+              <button
+                key={padrao.voto.id}
+                type="button"
+                onClick={() => adicionarMecanico(padrao.voto)}
+                className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-purple-900/60 px-3 py-1.5 text-xs text-purple-200 hover:bg-purple-950/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
+              >
+                <Plus className="h-3.5 w-3.5 shrink-0" aria-hidden="true" /> Usar o Voto {padrao.voto.nome || `de ${padrao.addonNome}`}
+              </button>
+            ))}
           </div>
-          <span className="rounded border border-purple-900/60 bg-purple-950/30 px-2 py-0.5 font-mono text-[10px] text-purple-300">
-            {Math.min(mecanicos.length, limiteMecanicos)}/{limiteMecanicos} BT
-          </span>
-        </div>
-
-        {podeAdicionarMecanico && padroes.map((padrao) => (
-          <button
-            key={padrao.voto.id}
-            type="button"
-            onClick={() => addVotoMecanico(padrao.voto)}
-            className="mb-3 flex items-center gap-1.5 rounded-lg border border-purple-900/50 px-2.5 py-1.5 text-[11px] text-purple-300 hover:text-purple-200"
-          >
-            <Plus className="h-3.5 w-3.5" /> Usar o Voto {padrao.voto.nome || `de ${padrao.addonNome}`}
-          </button>
-        ))}
-
-        {limiteMecanicos === 0 && (
-          <p className="mb-3 rounded-lg border border-slate-800 bg-slate-950/30 px-3 py-2 text-[11px] text-slate-500">
-            Seu BT atual é 0. A primeira vaga de Voto Mecânico será liberada quando o BT aumentar.
-          </p>
         )}
 
-        <div className="space-y-3">
+        <div className="space-y-2">
+          {mecanicos.length === 0 && (
+            <p className="rounded-lg border border-dashed border-slate-700 px-4 py-5 text-center text-xs text-slate-400">
+              {limiteMecanicos === 0 ? "Nenhuma vaga de Voto Mecânico disponível." : "Nenhum Voto Mecânico."}
+            </p>
+          )}
           {mecanicos.map((voto, indice) => (
             <VotoMecanicoCard
               key={voto.id}
               voto={voto}
+              aberto={votoAberto === voto.id}
+              onToggle={() => alternarVoto(voto.id)}
               efeitosMotor={derived.votosEfeitos?.[voto.id]}
               indice={indice}
               ativo={indice < limiteMecanicos}
@@ -13258,88 +13764,140 @@ function TabVotos({
               dslGrupos={dslGrupos}
             />
           ))}
-          {podeAdicionarMecanico && (
-            <button
-              type="button"
-              onClick={() => addVotoMecanico()}
-              className="flex items-center gap-1 text-[11px] text-purple-300 hover:text-purple-200"
+        </div>
+      </section>
+
+      <section aria-labelledby="votos-contratuais-titulo" className="mt-6 border-t border-slate-800 pt-5">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <h3 id="votos-contratuais-titulo" className="text-sm font-semibold text-slate-100">Votos Contratuais</h3>
+            <span className="rounded-md bg-slate-800 px-2 py-1 font-mono text-[11px] tabular-nums text-slate-300">{contratuais.length}</span>
+          </div>
+          <button type="button" onClick={adicionarContratual} className={botaoAdicionar}>
+            <Plus className="h-3.5 w-3.5" aria-hidden="true" /> Adicionar Voto Contratual
+          </button>
+        </div>
+        <div className="space-y-2">
+          {contratuais.length === 0 && (
+            <p className="py-2 text-xs text-slate-400">Nenhum Voto Contratual.</p>
+          )}
+          {contratuais.map((voto, indice) => (
+            <VotoEditorCard
+              key={voto.id}
+              id={voto.id}
+              nome={voto.texto.trim() || `Voto Contratual ${indice + 1}`}
+              indice={indice}
+              aberto={votoAberto === voto.id}
+              onToggle={() => alternarVoto(voto.id)}
+              onRemove={() => removeVotoContratual(voto.id)}
+              rotuloRemover={`Remover Voto Contratual ${indice + 1}`}
             >
-              <Plus className="h-3 w-3" /> Adicionar Voto Mecânico
-            </button>
-          )}
-          {!podeAdicionarMecanico && limiteMecanicos > 0 && (
-            <p className="text-[11px] text-slate-500">Limite de {limiteMecanicos} Votos Mecânicos atingido pelo BT atual.</p>
-          )}
+              <label htmlFor={`texto-${voto.id}`} className="mb-1.5 block text-xs font-medium text-slate-300">Acordo e condições</label>
+              <textarea
+                id={`texto-${voto.id}`}
+                value={voto.texto}
+                onChange={(e) => patchVotoContratual(voto.id, { texto: e.target.value })}
+                rows={3}
+                className="block w-full resize-y rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-[13px] leading-relaxed text-slate-100 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+              />
+            </VotoEditorCard>
+          ))}
         </div>
       </section>
     </Card>
   );
 }
 
+function VotoEditorCard({ id, nome, indice, aberto, onToggle, onRemove, rotuloRemover, aviso, children }) {
+  return (
+    <div className={`min-w-0 rounded-lg border ${aberto ? "border-slate-600 bg-slate-950/20" : "border-slate-800 bg-slate-950/10"}`}>
+      <div className="flex items-center gap-1 pr-2">
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-expanded={aberto}
+          aria-controls={`editor-${id}`}
+          className="flex min-h-12 min-w-0 flex-1 items-center gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-slate-800/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-purple-400"
+        >
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-slate-800 font-mono text-[11px] text-slate-400">{indice + 1}</span>
+          <span className="min-w-0 flex-1">
+            <span title={nome} className="block truncate text-[13px] font-semibold text-slate-100">{nome}</span>
+            {aviso}
+          </span>
+          <ChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${aberto ? "rotate-180" : ""}`} aria-hidden="true" />
+        </button>
+        {onRemove && (
+          <button
+            type="button"
+            onClick={onRemove}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-slate-500 hover:bg-rose-950/30 hover:text-rose-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+            aria-label={rotuloRemover}
+            title={rotuloRemover}
+          >
+            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+          </button>
+        )}
+      </div>
+      <div id={`editor-${id}`} hidden={!aberto}>
+        {aberto && <div className="space-y-4 border-t border-slate-800 p-3 sm:p-4">{children}</div>}
+      </div>
+    </div>
+  );
+}
+
 function VotoMecanicoCard({
-  voto, efeitosMotor, indice, ativo, protegidoAddon, onRemove, onPatch, pericias, fontesDano, dslGrupos,
+  voto, aberto, onToggle, efeitosMotor, indice, ativo, protegidoAddon, onRemove, onPatch, pericias, fontesDano, dslGrupos,
 }) {
   const patchLado = (chave, partial) => onPatch({
     [chave]: { ...(voto[chave] ?? { texto: "", efeitos: [] }), ...partial },
   });
 
   return (
-    <div className={`rounded-xl border p-3 ${
-      ativo ? "border-purple-900/60 bg-purple-950/15" : "border-amber-900/50 bg-amber-950/10"
-    }`}>
-      <div className="mb-3 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-purple-300">
-            Voto Mecânico {indice + 1}
-          </span>
-          {!ativo && (
-            <span className="rounded border border-amber-800/70 px-1.5 py-0.5 text-[9px] font-bold uppercase text-amber-300">
+    <VotoEditorCard
+      id={voto.id}
+      nome={voto.nome.trim() || `Voto Mecânico ${indice + 1}`}
+      indice={indice}
+      aberto={aberto}
+      onToggle={onToggle}
+      onRemove={protegidoAddon ? null : onRemove}
+      rotuloRemover={`Remover Voto Mecânico ${indice + 1}`}
+      aviso={(!ativo || protegidoAddon) && (
+        <span className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-medium">
+          {!ativo && <span className="inline-flex items-center gap-1 text-amber-300">
+            <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden="true" />
               Automação inativa acima do BT
-            </span>
-          )}
-          {protegidoAddon && (
-            <span className="rounded border border-sky-800/70 px-1.5 py-0.5 text-[9px] font-bold uppercase text-sky-300">
-              Voto do Addon
-            </span>
-          )}
-        </div>
-        {!protegidoAddon && (
-          <button
-            type="button"
-            onClick={onRemove}
-            className="rounded p-1 text-slate-600 hover:text-rose-300"
-            aria-label={`Remover Voto Mecânico ${indice + 1}`}
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
-        )}
+          </span>}
+          {protegidoAddon && <span className="inline-flex items-center gap-1 text-sky-300">
+            <Lock className="h-3 w-3 shrink-0" aria-hidden="true" /> Voto do Addon
+          </span>}
+        </span>
+      )}
+    >
+      <div>
+        <label htmlFor={`nome-${voto.id}`} className="mb-1.5 block text-xs font-medium text-slate-300">Nome do Voto</label>
+        <input
+          id={`nome-${voto.id}`}
+          type="text"
+          value={voto.nome ?? ""}
+          onChange={(e) => onPatch({ nome: e.target.value })}
+          placeholder="Nome do Voto"
+          className="w-full rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-[13px] text-slate-100 placeholder:text-slate-500 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+        />
+      </div>
+      <div>
+        <label htmlFor={`narrativa-${voto.id}`} className="mb-1.5 block text-xs font-medium text-slate-300">Narrativa do Voto</label>
+        <textarea
+          id={`narrativa-${voto.id}`}
+          value={voto.narrativa ?? ""}
+          onChange={(e) => onPatch({ narrativa: e.target.value })}
+          rows={2}
+          className="block w-full resize-y rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-[13px] leading-relaxed text-slate-100 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+        />
       </div>
 
-      <div className="mb-3 space-y-2.5">
-        <div>
-          <FieldLabel>Nome do Voto</FieldLabel>
-          <input
-            type="text"
-            value={voto.nome ?? ""}
-            onChange={(e) => onPatch({ nome: e.target.value })}
-            placeholder="Nome do Voto"
-            className="w-full rounded-lg border border-slate-700 bg-slate-950/60 px-2.5 py-1.5 text-[13px] text-slate-100 placeholder:text-slate-600 focus:border-purple-600 focus:outline-none"
-          />
-        </div>
-        <div>
-          <FieldLabel>Narrativa do Voto</FieldLabel>
-          <textarea
-            value={voto.narrativa ?? ""}
-            onChange={(e) => onPatch({ narrativa: e.target.value })}
-            rows={3}
-            placeholder="Descreva como o Voto foi firmado e quais condições ele impõe."
-            className="w-full resize-y rounded-lg border border-slate-700 bg-slate-950/60 px-2.5 py-2 text-[12px] text-slate-100 placeholder:text-slate-600 focus:border-purple-600 focus:outline-none"
-          />
-        </div>
-      </div>
-
-      <div className="space-y-3">
+      <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2">
         <VotoLado
+          id={`beneficio-${voto.id}`}
           titulo="Benefício"
           lado={voto.beneficio}
           efeitos={efeitosMotor?.beneficio}
@@ -13349,6 +13907,7 @@ function VotoMecanicoCard({
           dslGrupos={dslGrupos}
         />
         <VotoLado
+          id={`maleficio-${voto.id}`}
           titulo="Malefício"
           lado={voto.maleficio}
           efeitos={efeitosMotor?.maleficio}
@@ -13358,29 +13917,42 @@ function VotoMecanicoCard({
           dslGrupos={dslGrupos}
         />
       </div>
-    </div>
+    </VotoEditorCard>
   );
 }
 
-function VotoLado({ titulo, lado, efeitos, onPatch, pericias, fontesDano, dslGrupos }) {
+function VotoLado({ id, titulo, lado, efeitos, onPatch, pericias, fontesDano, dslGrupos }) {
+  const quantidade = lado?.efeitos?.length ?? 0;
   return (
-    <div className="space-y-2 rounded-lg border border-slate-800 bg-slate-950/30 p-2.5">
-      <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">{titulo}</span>
+    <div className="min-w-0">
+      <label htmlFor={id} className={`mb-1.5 block text-xs font-semibold ${titulo === "Benefício" ? "text-emerald-300" : "text-rose-300"}`}>{titulo}</label>
       <textarea
+        id={id}
         value={lado?.texto ?? ""}
         onChange={(e) => onPatch({ texto: e.target.value })}
         rows={3}
-        placeholder={`Descreva o ${titulo.toLowerCase()} do Voto.`}
-        className="w-full resize-y rounded-lg border border-slate-700 bg-slate-950/60 px-2.5 py-2 text-[12px] text-slate-100 placeholder:text-slate-600 focus:border-purple-600 focus:outline-none"
+        className="block w-full resize-y rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-[13px] leading-relaxed text-slate-100 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
       />
-      <TecnicaMotorEditor
-        efeitos={efeitos ?? lado?.efeitos ?? []}
-        onChange={(efeitos) => onPatch({ efeitos })}
-        titulo={`Motor de Automação do ${titulo} (opcional)`}
-        pericias={pericias}
-        fontesDano={fontesDano}
-        dslGrupos={dslGrupos}
-      />
+      <details className="group mt-2 min-w-0">
+        <summary
+          title={`Automação do ${titulo}, opcional`}
+          aria-label={`Automação do ${titulo}`}
+          className="flex min-h-9 cursor-pointer list-none items-center gap-2 rounded-md px-1 text-xs text-slate-400 hover:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 [&::-webkit-details-marker]:hidden"
+        >
+          <Zap className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          Automação
+          {quantidade > 0 && <span className="font-mono text-[10px] text-purple-200">{quantidade} {quantidade === 1 ? "efeito" : "efeitos"}</span>}
+          <ChevronDown className="ml-auto h-3.5 w-3.5 shrink-0 group-open:rotate-180" aria-hidden="true" />
+        </summary>
+        <TecnicaMotorEditor
+          efeitos={efeitos ?? lado?.efeitos ?? []}
+          onChange={(efeitos) => onPatch({ efeitos })}
+          titulo={`Efeitos do ${titulo}`}
+          pericias={pericias}
+          fontesDano={fontesDano}
+          dslGrupos={dslGrupos}
+        />
+      </details>
     </div>
   );
 }
@@ -15802,9 +16374,10 @@ function TabInterludios({
   // Reversa), e o gasto acompanha: o Foco preso numa linha escondida volta.
   // ⚠ As duas perguntas são diferentes e as duas são feitas aqui. `origemId` é
   // o que a criatura É (o Gêmeo que copiou da Maldição perde a Linha de Energia
-  // Reversa), e `qualificadas` é o que ela ALCANÇA a mais (a origem copiada e a
-  // que um Addon libera abrem a linha exclusiva de origem).
-  const origemId = origemEstrutural(draft);
+  // Reversa, o Gêmeo Restringido perde as de energia), e `qualificadas` é o que
+  // ela ALCANÇA a mais (a origem copiada e a que um Addon libera abrem a linha
+  // exclusiva de origem).
+  const origemId = origemDosTreinos(draft);
   const qualificadas = origensQualificadas(draft);
   const linhasTreino = treinamentosDaOrigem(origemId, qualificadas, draft);
   // Contexto dos requisitos de etapa. Aptidão e trilha só bloqueiam quando o
@@ -20112,15 +20685,18 @@ function AftyPreview({ draft, derived }) {
             custo em PE fica em roxo (mesma cor da pilha de energia na aba). */}
         {feiticosLista.length > 0 && (
           <div className="mt-4">
-            <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">Feitiços</div>
+            {/* A Técnica Marcial mora na mesma lista (2026-10-27): o rótulo diz o que há nela. */}
+            <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">
+              {feiticosLista.every((f) => f.marcial) ? "Técnicas Marciais" : feiticosLista.some((f) => f.marcial) ? "Feitiços e Técnicas Marciais" : "Feitiços"}
+            </div>
             <div className="space-y-1">
               {feiticosLista.map((f) => (
                 <div key={f.id} className="flex items-baseline gap-1.5 bg-slate-950/60 border border-slate-800 rounded-lg px-2.5 py-1.5">
                   <span
                     className={`flex-1 min-w-0 text-[11px] truncate ${f.nome ? "text-slate-300" : "text-slate-500"}`}
-                    title={f.nome || "Feitiço Sem Nome"}
+                    title={f.nome || (f.marcial ? "Técnica Sem Nome" : "Feitiço Sem Nome")}
                   >
-                    {f.nome || "Feitiço Sem Nome"}
+                    {f.nome || (f.marcial ? "Técnica Sem Nome" : "Feitiço Sem Nome")}
                   </span>
                   {f.variacao && (
                     <span className="text-[9px] uppercase tracking-wider text-slate-500 flex-shrink-0" title="Variação de liberação, não gasta vaga">

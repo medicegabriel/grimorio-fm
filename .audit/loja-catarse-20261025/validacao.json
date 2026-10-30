@@ -1,0 +1,43 @@
+{
+  "data": "2026-10-25",
+  "lintAfty": "PASSOU",
+  "buildIsolado": "PASSOU",
+  "assertsCatarse": 49,
+  "assertsFocados": { "arquivos": 9, "passaram": 369 },
+  "bateriaGeral": {
+    "arquivos": 229,
+    "aprovados": 226,
+    "falhasForaDaCatarse": ["t-prodigio.mjs", "t-reconciliacao-g00.mjs", "t-revisao-g00.mjs"],
+    "observacao": "Executada antes das três regressões de conteúdo e durante alterações de outras sessões."
+  },
+  "interface": {
+    "ambienteCompilado": "http://127.0.0.1:5450/Player",
+    "amostra": "Verificação da Loja",
+    "seletorCanal": "PASSOU",
+    "alvoConstituicao": "PASSOU",
+    "expressaoInvalidaExibeErro": "PASSOU",
+    "condicaoSempre": "PASSOU",
+    "persistenciaAposSalvarERecarregar": "PASSOU",
+    "errosConsoleObservados": [],
+    "captura": "motor-corrigido-teste.png"
+  },
+  "importacao": {
+    "fonte": "Catarse Discord, banco local atualizado em 07/10/2026",
+    "itens": 13,
+    "unidades": 22,
+    "aquisicoes": 16,
+    "constituicao": 6,
+    "vagasLendarias": 3,
+    "preservacaoDosDemaisDados": "PASSOU",
+    "saldoNaAmostra": [495, 495],
+    "backupVerificado": "PASSOU",
+    "idempotencia": "PASSOU",
+    "recusaDeConflitos": "PASSOU",
+    "textosVerbatimNaFichaDeJogo": "PASSOU",
+    "aplicacaoNaFichaReal": "PENDENTE",
+    "bloqueio": "Controle do Chrome interrompido pela ferramenta por não conseguir verificar a URL.",
+    "pagina": "http://localhost:5173/.audit/loja-catarse-20261025/importar-chrollo.html"
+  },
+  "srcComponentsAlterado": false,
+  "commitPushOuIntegracaoRemota": false
+}

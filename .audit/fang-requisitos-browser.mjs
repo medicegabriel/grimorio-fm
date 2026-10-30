@@ -1,0 +1,18 @@
+import {chromium} from 'playwright';import fs from 'node:fs';import assert from 'node:assert/strict';
+const browser=await chromium.launch({channel:'chrome',headless:true});const report=[];
+try{for(const sistema of ['afty','player']){
+const context=await browser.newContext({viewport:{width:1440,height:1000}});const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
+await page.goto('http://127.0.0.1:5301/'+sistema,{waitUntil:'networkidle'});
+await page.evaluate(async sistema=>{const {createBlankAfty}=await import('/src/systems/afty/afty-schema.js');const c=createBlankAfty();c.id='teste-requisitos-roubo';c.name='Teste de Requisitos';c.rulesVersion=sistema;c.core.nd=16;c.core.origem={id:'restringido'};c.especializacoes=[{id:'restringido',nivel:16}];c.habilidades=['res_roubo_de_habilidade','res_imitacao','res_imitacao_perfeita'];localStorage.setItem('fm_creatures_'+sistema+'_v1',JSON.stringify([c]));},sistema);
+await page.reload({waitUntil:'networkidle'});await page.getByText('Teste de Requisitos',{exact:true}).click();await page.locator('button[title="Editar no criador"]').click();await page.getByRole('tab',{name:'Especializações',exact:true}).click();
+
+await page.getByRole('tab',{name:/^2°/}).click();const opener=page.getByRole('button',{name:/^Roubo de Habilidade/});await opener.click();
+const card=opener.locator('..').locator('..');const search=card.getByPlaceholder('Buscar',{exact:true});
+await search.fill('Crítico Aperfeiçoado');const aper=card.getByRole('button',{name:/^Crítico Aperfeiçoado\./});assert.equal(await aper.isDisabled(),true);assert.equal(await aper.getAttribute('title'),'Requer Crítico Melhorado');
+await search.fill('Crítico Melhorado');const melhor=card.getByRole('button',{name:/^Crítico Melhorado\./});assert.equal(await melhor.isDisabled(),false);await melhor.click();await search.fill('Crítico Aperfeiçoado');assert.equal(await aper.isDisabled(),false);await aper.click();assert.equal(await aper.getAttribute('aria-pressed'),'true');
+await search.fill('Crítico Melhorado');await melhor.click();await search.fill('Crítico Aperfeiçoado');assert.equal(await aper.getAttribute('aria-pressed'),'true');assert.equal(await aper.getAttribute('title'),'Requer Crítico Melhorado');await aper.click();assert.equal(await aper.isDisabled(),true);
+await page.getByRole('button',{name:'Salvar Alterações',exact:true}).click();await page.getByText('Teste de Requisitos',{exact:true}).click();await page.getByRole('tab',{name:'Buffs',exact:true}).click();const panel=page.locator('section').filter({has:page.getByRole('heading',{name:'Imitação Perfeita',exact:true})});await panel.getByRole('tablist',{name:'Tipos de cópia'}).getByRole('tab',{name:/Habilidades passivas/}).click();
+await page.getByRole('button',{name:'Em Combate',exact:true}).click();await panel.getByRole('textbox',{name:'Buscar cópia por texto'}).fill('Crítico Aperfeiçoado');await panel.getByRole('checkbox').check();const copy=panel.getByRole('region',{name:'Opções de cópia'}).getByRole('button',{name:'Crítico Aperfeiçoado',exact:true});assert.equal(await copy.isDisabled(),false);await copy.click();await panel.getByRole('button',{name:'Encerrar cópia',exact:true}).waitFor();
+await panel.screenshot({path:'.audit/fang-requisitos-'+sistema+'.png'});assert.deepEqual(errors,[]);
+report.push({sistema,rouboBloqueiaSemAnterior:true,rouboLiberaComAnterior:true,remocaoReportaRequisito:true,imitacaoIgnoraAnterior:true,errors});await context.close();
+}}finally{fs.writeFileSync('.audit/fang-requisitos-browser-report.json',JSON.stringify(report,null,2));await browser.close();}

@@ -1,0 +1,356 @@
+{
+  "formato": "grimorio-afty-pacote-aliados",
+  "versao": 1,
+  "pacote": {
+    "id": "pac_mvgqcw819c6c3012d417",
+    "nome": "Pacote da Devolutiva",
+    "revisao": 1,
+    "exportadoEm": "2026-10-20T13:39:54.669Z"
+  },
+  "emissor": {
+    "id": "emi_mvgqcwjn6125a0c1172d",
+    "nome": "Yuki (Teste Pacotes)",
+    "sistema": "afty"
+  },
+  "opcoes": [
+    {
+      "id": "op_mvgqcw9d75c3d847eda6",
+      "nome": "Aura do Bastião",
+      "familia": "aptidaoAura",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "aptidao",
+        "id": "aura_do_bastiao",
+        "nome": "Aura do Bastião"
+      },
+      "escolhas": [],
+      "acumulo": {
+        "regra": "catalogo",
+        "origemId": "aptidao:aura_do_bastiao"
+      },
+      "beneficios": [
+        {
+          "canal": "defesa",
+          "valor": 3
+        }
+      ],
+      "duracao": {
+        "tipo": "alcance"
+      },
+      "condicoes": [
+        "Dentro de 4,5 m do Emissor"
+      ],
+      "custoEmissor": null,
+      "consulta": [],
+      "naoRepresentado": []
+    },
+    {
+      "id": "op_mvgqcwad2a1c414e290a",
+      "nome": "Aura do Comandante",
+      "familia": "aptidaoAura",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "aptidao",
+        "id": "aura_do_comandante",
+        "nome": "Aura do Comandante"
+      },
+      "escolhas": [
+        {
+          "rotulo": "Versão",
+          "valor": "Base"
+        }
+      ],
+      "acumulo": {
+        "regra": "catalogo",
+        "origemId": "aptidao:aura_do_comandante"
+      },
+      "beneficios": [
+        {
+          "canal": "danoBonus",
+          "valor": 2,
+          "quando": "em_combate"
+        },
+        {
+          "canal": "bonusPericia",
+          "valor": 2,
+          "quando": "em_combate"
+        }
+      ],
+      "duracao": {
+        "tipo": "mantida",
+        "texto": "Enquanto o Emissor Mantiver a Aura"
+      },
+      "condicoes": [
+        "Dentro de 4,5 m do Emissor"
+      ],
+      "custoEmissor": "2 PE por Turno",
+      "consulta": [],
+      "naoRepresentado": []
+    },
+    {
+      "id": "op_mvgqcwb8befaa9ae1b54",
+      "nome": "Escudo Dourado",
+      "familia": "feitico",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "feitico",
+        "id": "tp-f1",
+        "nome": "Escudo Dourado"
+      },
+      "escolhas": [],
+      "acumulo": {
+        "regra": "feitico"
+      },
+      "beneficios": [
+        {
+          "canal": "defesa",
+          "valor": 2
+        }
+      ],
+      "duracao": {
+        "tipo": "rodadas",
+        "rodadas": 2
+      },
+      "condicoes": [
+        "Um Alvo"
+      ],
+      "custoEmissor": "5 PE",
+      "consulta": [],
+      "naoRepresentado": []
+    },
+    {
+      "id": "op_mvgqcwc5f1060d108b9a",
+      "nome": "Bênção Tripla",
+      "familia": "feitico",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "feitico",
+        "id": "tp-f2",
+        "nome": "Bênção Tripla"
+      },
+      "escolhas": [],
+      "acumulo": {
+        "regra": "feitico"
+      },
+      "beneficios": [
+        {
+          "canal": "defesa",
+          "valor": 2
+        },
+        {
+          "canal": "rdGeral",
+          "valor": 5
+        }
+      ],
+      "duracao": {
+        "tipo": "rodadas",
+        "rodadas": 1
+      },
+      "condicoes": [
+        "Um Alvo"
+      ],
+      "custoEmissor": "8 PE",
+      "consulta": [],
+      "naoRepresentado": []
+    },
+    {
+      "id": "op_mvgqcwd285e850baf58d",
+      "nome": "Nue · Escudo de Raios",
+      "familia": "auxilioInvocacao",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "invocacao",
+        "id": "tp-inv1/tp-a1",
+        "nome": "Nue · Escudo de Raios"
+      },
+      "escolhas": [],
+      "acumulo": {
+        "regra": "auxilioInvocacao",
+        "chave": "emi_mvgqcwjn6125a0c1172d|tp-inv1|tp-a1"
+      },
+      "beneficios": [
+        {
+          "canal": "defesa",
+          "valor": 4
+        }
+      ],
+      "duracao": {
+        "tipo": "mantida",
+        "texto": "Enquanto o Auxílio Estiver Ligado"
+      },
+      "condicoes": [
+        "Invocação em Campo"
+      ],
+      "custoEmissor": null,
+      "consulta": [],
+      "naoRepresentado": []
+    },
+    {
+      "id": "op_mvgqcwe00104df4fafa6",
+      "nome": "Nue · Halo",
+      "familia": "auraInvocacao",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "invocacao",
+        "id": "tp-inv1/tp-c1",
+        "nome": "Nue · Halo"
+      },
+      "escolhas": [],
+      "acumulo": {
+        "regra": "auraInvocacao",
+        "chave": "aura:auraDefesa|",
+        "forca": 2
+      },
+      "beneficios": [
+        {
+          "canal": "defesa",
+          "valor": 2
+        }
+      ],
+      "duracao": {
+        "tipo": "alcance",
+        "texto": "Enquanto Estiver na Aura"
+      },
+      "condicoes": [
+        "Dentro de 4,5 m da Invocação",
+        "Invocação em Campo"
+      ],
+      "custoEmissor": null,
+      "consulta": [],
+      "naoRepresentado": []
+    },
+    {
+      "id": "op_mvgqcwf0c74816cfdb1e",
+      "nome": "Nue · Faíscas",
+      "familia": "auraInvocacao",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "invocacao",
+        "id": "tp-inv1/tp-c2",
+        "nome": "Nue · Faíscas"
+      },
+      "escolhas": [],
+      "acumulo": {
+        "regra": "auraInvocacao",
+        "chave": "aura:auraDano|",
+        "forca": 6
+      },
+      "beneficios": [
+        {
+          "canal": "dadosNomeados",
+          "alvo": "d6",
+          "valor": 1
+        }
+      ],
+      "duracao": {
+        "tipo": "alcance",
+        "texto": "Enquanto Estiver na Aura"
+      },
+      "condicoes": [
+        "Dentro de 4,5 m da Invocação",
+        "Invocação em Campo"
+      ],
+      "custoEmissor": null,
+      "consulta": [],
+      "naoRepresentado": []
+    },
+    {
+      "id": "op_mvgqcwfuc45628cee617",
+      "nome": "Presença Inspiradora",
+      "familia": "especializacao",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "habilidade",
+        "id": "sup_presenca_inspiradora",
+        "nome": "Presença Inspiradora"
+      },
+      "escolhas": [
+        {
+          "rotulo": "PE Adicional",
+          "valor": "2"
+        }
+      ],
+      "acumulo": {
+        "regra": "catalogo",
+        "origemId": "habilidade:sup_presenca_inspiradora"
+      },
+      "beneficios": [
+        {
+          "canal": "bonusPericia",
+          "valor": 3
+        }
+      ],
+      "duracao": {
+        "tipo": "cena",
+        "texto": "Durante a Cena"
+      },
+      "condicoes": [
+        "Dentro de 9 m Quando o Emissor Usa"
+      ],
+      "custoEmissor": "4 PE",
+      "consulta": [],
+      "naoRepresentado": []
+    },
+    {
+      "id": "op_mvgqcwgrabc54f7d31e1",
+      "nome": "Precisão de Um Ataque",
+      "familia": "feitico",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "feitico",
+        "id": "codex-um-ataque",
+        "nome": "Precisão de Um Ataque"
+      },
+      "escolhas": [],
+      "acumulo": {
+        "regra": "feitico"
+      },
+      "beneficios": [
+        {
+          "canal": "bonusAcerto",
+          "valor": 3
+        }
+      ],
+      "duracao": {
+        "tipo": "proximo",
+        "texto": "Por Um Ataque"
+      },
+      "condicoes": [
+        "Um Alvo"
+      ],
+      "custoEmissor": "2 PE",
+      "consulta": [],
+      "naoRepresentado": []
+    },
+    {
+      "id": "op_mvgqcx5db2429f195d32",
+      "nome": "Bastião Condicional",
+      "familia": "manual",
+      "calculo": "manual",
+      "fonte": {
+        "tipo": "manual",
+        "id": "aptidao:aura_do_bastiao",
+        "nome": "Bastião Condicional"
+      },
+      "escolhas": [],
+      "acumulo": {
+        "regra": "catalogo",
+        "origemId": "aptidao:aura_do_bastiao"
+      },
+      "beneficios": [
+        {
+          "canal": "defesa",
+          "valor": 5,
+          "quando": "em_combate"
+        }
+      ],
+      "duracao": {
+        "tipo": "alcance"
+      },
+      "condicoes": [],
+      "custoEmissor": null,
+      "consulta": [],
+      "naoRepresentado": []
+    }
+  ]
+}

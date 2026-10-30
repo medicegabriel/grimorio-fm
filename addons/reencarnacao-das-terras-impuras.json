@@ -5,6 +5,8 @@
   "autor": "Afty",
   "paraRaw": "afty",
   "descricao": "Técnica Amaldiçoada de reconstrução por DNA. Acrescenta seis modelos de Feitiço Personalizado de Nível 0. Todos usam Ritual Estendido. Os corpos sem alma são cadastrados como Shikigamis e usam o custo nativo de invocação por grau. O acervo de corpos é ilimitado, mas o limite normal de Shikigamis simultâneos em campo continua valendo.",
+  "resumo": "Seis modelos de Feitiço de reconstrução por DNA, com os corpos cadastrados como Shikigamis",
+  "categoria": "tecnicas",
   "funcionamentos": [
     {
       "id": "reencarnacao_das_terras_impuras",

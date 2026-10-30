@@ -1,0 +1,330 @@
+{
+  "geradoEm": "2026-10-20T19:30:58.259Z",
+  "arquivo": {
+    "formato": "grimorio-afty-pacote-aliados",
+    "versao": 1,
+    "pacote": {
+      "id": "codex-herdado",
+      "nome": "Prazos Herdados Codex",
+      "revisao": 1,
+      "exportadoEm": "2026-10-20T19:30:58.214Z"
+    },
+    "emissor": {
+      "id": "codex-herdado",
+      "nome": "Yuki (Teste Pacotes)",
+      "sistema": "player"
+    },
+    "opcoes": [
+      {
+        "id": "misto",
+        "nome": "Prazos Herdados Codex",
+        "familia": "feitico",
+        "calculo": "automatico",
+        "fonte": {
+          "tipo": "feitico",
+          "id": "misto",
+          "nome": "Prazos Herdados Codex"
+        },
+        "escolhas": [],
+        "acumulo": {
+          "regra": "feitico"
+        },
+        "beneficios": [
+          {
+            "canal": "defesa",
+            "valor": 3,
+            "duracao": {
+              "tipo": "proximo",
+              "texto": "Por Um Ataque"
+            }
+          },
+          {
+            "canal": "bonusTR",
+            "valor": 2,
+            "alvo": "reflexos"
+          }
+        ],
+        "duracao": {
+          "tipo": "rodadas",
+          "rodadas": 1
+        },
+        "condicoes": [
+          "Um Alvo"
+        ],
+        "custoEmissor": "2 PE",
+        "consulta": [],
+        "naoRepresentado": []
+      }
+    ]
+  },
+  "leitura": {
+    "ok": true,
+    "recusadas": []
+  },
+  "base": {
+    "defesa": 17,
+    "reflexos": 7
+  },
+  "inst": {
+    "id": "codex-inst-herdada",
+    "rec": true,
+    "tipoFonte": "feitico",
+    "origemId": null,
+    "origemNome": "Prazos Herdados Codex",
+    "aplicadoPor": "Yuki (Teste Pacotes)",
+    "beneficios": [
+      {
+        "canal": "defesa",
+        "valor": 3,
+        "duracao": {
+          "tipo": "proximo",
+          "texto": "Por Um Ataque"
+        }
+      },
+      {
+        "canal": "bonusTR",
+        "valor": 2,
+        "alvo": "reflexos",
+        "duracao": {
+          "tipo": "rodadas",
+          "rodadas": 1
+        },
+        "rodadas": 1
+      }
+    ],
+    "rodadas": null,
+    "somaPresumida": false,
+    "terminaNoDescanso": true,
+    "pacote": {
+      "chave": "codex-herdado:codex-herdado",
+      "id": "codex-herdado",
+      "nome": "Prazos Herdados Codex",
+      "revisao": 1,
+      "opcaoId": "misto",
+      "emissorId": "codex-herdado",
+      "emissorNome": "Yuki (Teste Pacotes)",
+      "familia": "feitico",
+      "calculo": "automatico",
+      "duracao": {
+        "tipo": "rodadas",
+        "rodadas": 1
+      },
+      "condicoes": [
+        "Um Alvo"
+      ],
+      "custoEmissor": "2 PE"
+    }
+  },
+  "passos": [
+    {
+      "rodada": 1,
+      "numeros": {
+        "defesa": 20,
+        "reflexos": 9
+      },
+      "instancias": [
+        {
+          "id": "codex-inst-herdada",
+          "rec": true,
+          "tipoFonte": "feitico",
+          "origemId": null,
+          "origemNome": "Prazos Herdados Codex",
+          "aplicadoPor": "Yuki (Teste Pacotes)",
+          "beneficios": [
+            {
+              "canal": "defesa",
+              "valor": 3,
+              "duracao": {
+                "tipo": "proximo",
+                "texto": "Por Um Ataque"
+              }
+            },
+            {
+              "canal": "bonusTR",
+              "valor": 2,
+              "alvo": "reflexos",
+              "duracao": {
+                "tipo": "rodadas",
+                "rodadas": 1
+              },
+              "rodadas": 1
+            }
+          ],
+          "rodadas": null,
+          "somaPresumida": false,
+          "terminaNoDescanso": true,
+          "pacote": {
+            "chave": "codex-herdado:codex-herdado",
+            "id": "codex-herdado",
+            "nome": "Prazos Herdados Codex",
+            "revisao": 1,
+            "opcaoId": "misto",
+            "emissorId": "codex-herdado",
+            "emissorNome": "Yuki (Teste Pacotes)",
+            "familia": "feitico",
+            "calculo": "automatico",
+            "duracao": {
+              "tipo": "rodadas",
+              "rodadas": 1
+            },
+            "condicoes": [
+              "Um Alvo"
+            ],
+            "custoEmissor": "2 PE"
+          }
+        }
+      ]
+    },
+    {
+      "rodada": 2,
+      "numeros": {
+        "defesa": 20,
+        "reflexos": 7
+      },
+      "instancias": [
+        {
+          "id": "codex-inst-herdada",
+          "rec": true,
+          "tipoFonte": "feitico",
+          "origemId": null,
+          "origemNome": "Prazos Herdados Codex",
+          "aplicadoPor": "Yuki (Teste Pacotes)",
+          "beneficios": [
+            {
+              "canal": "defesa",
+              "valor": 3,
+              "duracao": {
+                "tipo": "proximo",
+                "texto": "Por Um Ataque"
+              }
+            }
+          ],
+          "rodadas": null,
+          "somaPresumida": false,
+          "terminaNoDescanso": true,
+          "pacote": {
+            "chave": "codex-herdado:codex-herdado",
+            "id": "codex-herdado",
+            "nome": "Prazos Herdados Codex",
+            "revisao": 1,
+            "opcaoId": "misto",
+            "emissorId": "codex-herdado",
+            "emissorNome": "Yuki (Teste Pacotes)",
+            "familia": "feitico",
+            "calculo": "automatico",
+            "duracao": {
+              "tipo": "rodadas",
+              "rodadas": 1
+            },
+            "condicoes": [
+              "Um Alvo"
+            ],
+            "custoEmissor": "2 PE"
+          }
+        }
+      ]
+    },
+    {
+      "rodada": 3,
+      "numeros": {
+        "defesa": 20,
+        "reflexos": 7
+      },
+      "instancias": [
+        {
+          "id": "codex-inst-herdada",
+          "rec": true,
+          "tipoFonte": "feitico",
+          "origemId": null,
+          "origemNome": "Prazos Herdados Codex",
+          "aplicadoPor": "Yuki (Teste Pacotes)",
+          "beneficios": [
+            {
+              "canal": "defesa",
+              "valor": 3,
+              "duracao": {
+                "tipo": "proximo",
+                "texto": "Por Um Ataque"
+              }
+            }
+          ],
+          "rodadas": null,
+          "somaPresumida": false,
+          "terminaNoDescanso": true,
+          "pacote": {
+            "chave": "codex-herdado:codex-herdado",
+            "id": "codex-herdado",
+            "nome": "Prazos Herdados Codex",
+            "revisao": 1,
+            "opcaoId": "misto",
+            "emissorId": "codex-herdado",
+            "emissorNome": "Yuki (Teste Pacotes)",
+            "familia": "feitico",
+            "calculo": "automatico",
+            "duracao": {
+              "tipo": "rodadas",
+              "rodadas": 1
+            },
+            "condicoes": [
+              "Um Alvo"
+            ],
+            "custoEmissor": "2 PE"
+          }
+        }
+      ]
+    },
+    {
+      "rodada": 4,
+      "numeros": {
+        "defesa": 20,
+        "reflexos": 7
+      },
+      "instancias": [
+        {
+          "id": "codex-inst-herdada",
+          "rec": true,
+          "tipoFonte": "feitico",
+          "origemId": null,
+          "origemNome": "Prazos Herdados Codex",
+          "aplicadoPor": "Yuki (Teste Pacotes)",
+          "beneficios": [
+            {
+              "canal": "defesa",
+              "valor": 3,
+              "duracao": {
+                "tipo": "proximo",
+                "texto": "Por Um Ataque"
+              }
+            }
+          ],
+          "rodadas": null,
+          "somaPresumida": false,
+          "terminaNoDescanso": true,
+          "pacote": {
+            "chave": "codex-herdado:codex-herdado",
+            "id": "codex-herdado",
+            "nome": "Prazos Herdados Codex",
+            "revisao": 1,
+            "opcaoId": "misto",
+            "emissorId": "codex-herdado",
+            "emissorNome": "Yuki (Teste Pacotes)",
+            "familia": "feitico",
+            "calculo": "automatico",
+            "duracao": {
+              "tipo": "rodadas",
+              "rodadas": 1
+            },
+            "condicoes": [
+              "Um Alvo"
+            ],
+            "custoEmissor": "2 PE"
+          }
+        }
+      ]
+    }
+  ],
+  "criterios": {
+    "defesaPreservada": true,
+    "trExpira": true
+  }
+}

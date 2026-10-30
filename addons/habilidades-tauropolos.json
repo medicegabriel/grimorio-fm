@@ -4,6 +4,8 @@
   "versao": "1.0.0",
   "paraRaw": "afty",
   "descricao": "Modelos das habilidades enviadas para Tauropolos.",
+  "resumo": "Modelos de Feitiço das habilidades enviadas para Tauropolos",
+  "categoria": "tecnicas",
   "feiticos": [
     {
       "id": "khrysea_mela",

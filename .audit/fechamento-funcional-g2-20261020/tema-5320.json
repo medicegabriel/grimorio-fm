@@ -1,0 +1,377 @@
+{
+  "geradoEm": "2026-10-20T21:44:25.639Z",
+  "base": "http://127.0.0.1:5320",
+  "etapas": [
+    {
+      "nome": "tema 1440",
+      "checks": [
+        {
+          "id": "padrao-ligado-1440",
+          "ok": true
+        },
+        {
+          "id": "padrao-contraste-1440",
+          "ok": true,
+          "dados": {
+            "fundo": [
+              22,
+              54,
+              58
+            ],
+            "texto": [
+              241,
+              245,
+              249
+            ],
+            "porCor": 11.81,
+            "renderizado": 11.81
+          }
+        },
+        {
+          "id": "pergaminho-ligado-1440",
+          "ok": true
+        },
+        {
+          "id": "pergaminho-contraste-1440",
+          "ok": true,
+          "dados": {
+            "fundo": [
+              218,
+              222,
+              202
+            ],
+            "texto": [
+              43,
+              33,
+              22
+            ],
+            "porCor": 11.47,
+            "renderizado": 11.47
+          }
+        },
+        {
+          "id": "sangue-ligado-1440",
+          "ok": true
+        },
+        {
+          "id": "sangue-contraste-1440",
+          "ok": true,
+          "dados": {
+            "fundo": [
+              42,
+              42,
+              14
+            ],
+            "texto": [
+              247,
+              233,
+              234
+            ],
+            "porCor": 12.39,
+            "renderizado": 12.39
+          }
+        },
+        {
+          "id": "abissal-ligado-1440",
+          "ok": true
+        },
+        {
+          "id": "abissal-contraste-1440",
+          "ok": true,
+          "dados": {
+            "fundo": [
+              14,
+              50,
+              58
+            ],
+            "texto": [
+              226,
+              241,
+              255
+            ],
+            "porCor": 11.89,
+            "renderizado": 11.89
+          }
+        },
+        {
+          "id": "terminal-ligado-1440",
+          "ok": true
+        },
+        {
+          "id": "terminal-contraste-1440",
+          "ok": true,
+          "dados": {
+            "fundo": [
+              14,
+              46,
+              22
+            ],
+            "texto": [
+              204,
+              255,
+              204
+            ],
+            "porCor": 13.19,
+            "renderizado": 13.19
+          }
+        },
+        {
+          "id": "minamoto-ligado-1440",
+          "ok": true
+        },
+        {
+          "id": "minamoto-contraste-1440",
+          "ok": true,
+          "dados": {
+            "fundo": [
+              62,
+              94,
+              118
+            ],
+            "texto": [
+              255,
+              249,
+              253
+            ],
+            "porCor": 6.59,
+            "renderizado": 6.59
+          }
+        },
+        {
+          "id": "hostil-escuro-ligado-1440",
+          "ok": true
+        },
+        {
+          "id": "hostil-escuro-contraste-1440",
+          "ok": true,
+          "dados": {
+            "fundo": [
+              14,
+              26,
+              38
+            ],
+            "texto": [
+              241,
+              245,
+              249
+            ],
+            "porCor": 16.05,
+            "renderizado": 16.05
+          }
+        },
+        {
+          "id": "hostil-claro-ligado-1440",
+          "ok": true
+        },
+        {
+          "id": "hostil-claro-contraste-1440",
+          "ok": true,
+          "dados": {
+            "fundo": [
+              246,
+              242,
+              226
+            ],
+            "texto": [
+              43,
+              33,
+              22
+            ],
+            "porCor": 14.05,
+            "renderizado": 14.05
+          }
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "tema 390",
+      "checks": [
+        {
+          "id": "padrao-ligado-390",
+          "ok": true
+        },
+        {
+          "id": "padrao-contraste-390",
+          "ok": true,
+          "dados": {
+            "fundo": [
+              22,
+              54,
+              58
+            ],
+            "texto": [
+              241,
+              245,
+              249
+            ],
+            "porCor": 11.81,
+            "renderizado": 11.81
+          }
+        },
+        {
+          "id": "pergaminho-ligado-390",
+          "ok": true
+        },
+        {
+          "id": "pergaminho-contraste-390",
+          "ok": true,
+          "dados": {
+            "fundo": [
+              218,
+              222,
+              202
+            ],
+            "texto": [
+              43,
+              33,
+              22
+            ],
+            "porCor": 11.47,
+            "renderizado": 11.47
+          }
+        },
+        {
+          "id": "sangue-ligado-390",
+          "ok": true
+        },
+        {
+          "id": "sangue-contraste-390",
+          "ok": true,
+          "dados": {
+            "fundo": [
+              42,
+              42,
+              14
+            ],
+            "texto": [
+              247,
+              233,
+              234
+            ],
+            "porCor": 12.39,
+            "renderizado": 12.39
+          }
+        },
+        {
+          "id": "abissal-ligado-390",
+          "ok": true
+        },
+        {
+          "id": "abissal-contraste-390",
+          "ok": true,
+          "dados": {
+            "fundo": [
+              14,
+              50,
+              58
+            ],
+            "texto": [
+              226,
+              241,
+              255
+            ],
+            "porCor": 11.89,
+            "renderizado": 11.89
+          }
+        },
+        {
+          "id": "terminal-ligado-390",
+          "ok": true
+        },
+        {
+          "id": "terminal-contraste-390",
+          "ok": true,
+          "dados": {
+            "fundo": [
+              14,
+              46,
+              22
+            ],
+            "texto": [
+              204,
+              255,
+              204
+            ],
+            "porCor": 13.19,
+            "renderizado": 13.19
+          }
+        },
+        {
+          "id": "minamoto-ligado-390",
+          "ok": true
+        },
+        {
+          "id": "minamoto-contraste-390",
+          "ok": true,
+          "dados": {
+            "fundo": [
+              66,
+              106,
+              126
+            ],
+            "texto": [
+              255,
+              249,
+              253
+            ],
+            "porCor": 5.63,
+            "renderizado": 5.63
+          }
+        },
+        {
+          "id": "hostil-escuro-ligado-390",
+          "ok": true
+        },
+        {
+          "id": "hostil-escuro-contraste-390",
+          "ok": true,
+          "dados": {
+            "fundo": [
+              14,
+              26,
+              38
+            ],
+            "texto": [
+              241,
+              245,
+              249
+            ],
+            "porCor": 16.05,
+            "renderizado": 16.05
+          }
+        },
+        {
+          "id": "hostil-claro-ligado-390",
+          "ok": true
+        },
+        {
+          "id": "hostil-claro-contraste-390",
+          "ok": true,
+          "dados": {
+            "fundo": [
+              246,
+              242,
+              226
+            ],
+            "texto": [
+              43,
+              33,
+              22
+            ],
+            "porCor": 14.05,
+            "renderizado": 14.05
+          }
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "tema 1440: 16/16",
+    "tema 390: 16/16"
+  ]
+}

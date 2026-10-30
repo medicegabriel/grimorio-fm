@@ -1,0 +1,13 @@
+{
+  "id": "alma-do-afty",
+  "nome": "Alma do Grimório Afty",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Na Ficha de Player, a Integridade da Alma passa a ser calculada como no Grimório Afty: 100 de Máximo mais Outros (Melhoria de Alma, Consciência Absoluta da Alma e qualquer outra fonte do Motor). A Alma volta a ser porcentagem e multiplica o PV, então em 100 a Vida não muda e cada ponto acima de 100 vale 1% de PV. Dano na Alma baixa o PV máximo na mesma proporção e não desconta mais a Vida corrente. Na ficha de criatura nada muda.",
+  "resumo": "No Player, a Alma volta a ser porcentagem e multiplica o PV, como no Afty",
+  "categoria": "regras",
+  "regrasAfty": {
+    "almaComoAfty": true
+  }
+}

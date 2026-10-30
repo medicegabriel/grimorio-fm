@@ -1,0 +1,62 @@
+[
+  {
+    "name": "t-pacotes-aliados",
+    "exit": 0,
+    "output": "TODOS OS 145 ASSERTS PASSARAM\n"
+  },
+  {
+    "name": "t-g2-fonte-compat",
+    "exit": 0,
+    "output": "TODOS OS 52 ASSERTS PASSARAM\n"
+  },
+  {
+    "name": "t-g2-desempenho",
+    "exit": 0,
+    "output": "TODOS OS 30 ASSERTS PASSARAM\n"
+  },
+  {
+    "name": "t-g2-preferencias",
+    "exit": 0,
+    "output": "TODOS OS 42 ASSERTS PASSARAM\n"
+  },
+  {
+    "name": "t-g2-sessao-operacoes",
+    "exit": 0,
+    "output": "TODOS OS 51 ASSERTS PASSARAM\n"
+  },
+  {
+    "name": "t-g2-virada-registro",
+    "exit": 0,
+    "output": "TODOS OS 57 ASSERTS PASSARAM\n"
+  },
+  {
+    "name": "t-invocacoes-mesa",
+    "exit": 0,
+    "output": "TODOS OS 120 ASSERTS PASSARAM\n"
+  },
+  {
+    "name": "t-auxiliar-ligado",
+    "exit": 0,
+    "output": "TODOS OS 26 ASSERTS PASSARAM\n"
+  },
+  {
+    "name": "t-estilo-sombras-metricas",
+    "exit": 0,
+    "output": "TODOS OS 43 ASSERTS PASSARAM\n"
+  },
+  {
+    "name": "t-novo-estilo-sombras",
+    "exit": 0,
+    "output": "TODOS OS 67 ASSERTS PASSARAM\n"
+  },
+  {
+    "name": "t-ordem-modulos",
+    "exit": 0,
+    "output": "TODOS OS 38 ASSERTS PASSARAM\n"
+  },
+  {
+    "name": "t-revisao-g00",
+    "exit": 0,
+    "output": "TODOS OS 35 ASSERTS PASSARAM\n"
+  }
+]

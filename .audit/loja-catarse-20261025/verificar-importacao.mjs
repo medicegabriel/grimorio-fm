@@ -1,0 +1,53 @@
+import assert from 'node:assert/strict';
+import {register} from 'node:module';
+register('data:text/javascript,export async function resolve(s,c,n){try{return await n(s,c)}catch(e){if(s.startsWith(".")&&!s.endsWith(".js"))return n(s+".js",c);throw e}}',import.meta.url);
+const {CHAVE,MARCA,inventario,prepararImportacao,aplicarImportacao}=await import('./importacao-chrollo.js');
+const {deriveAfty}=await import('../../src/systems/afty/afty-derive.js');
+const {createBlankAfty}=await import('../../src/systems/afty/afty-schema.js');
+const {conteudoDaFicha}=await import('../../src/systems/afty/ficha/ficha-conteudo.js');
+const ficha={...createBlankAfty(),id:'chrollo-teste',name:'Chrollo',rulesVersion:'player',
+  atributosExtras:{preservar:true},catarse:{saldo:500,compras:[{
+    id:'anotacao-manual',familia:'texto',nome:'Atributo [Constituição]',custo:5,texto:'',
+    efeitos:[{canal:'',expr:''},{canal:'',expr:''}],
+  }]}};
+ficha.attributes.constituicao=10;
+const outra={id:'outro',name:'Outro',rulesVersion:'player',qualquer:['dado']};
+const entrada=[ficha,outra];
+const antes=JSON.stringify(entrada);
+const plano=prepararImportacao(entrada);
+assert.deepEqual(plano.conflitos,[]);
+assert.equal(plano.ficha.id,ficha.id);
+assert.equal(plano.ficha.catarse.compras.length,13);
+assert.equal(plano.ficha.catarse.compras.reduce((s,c)=>s+c.quantidade,0),22);
+assert.equal(plano.ficha.catarse.compras.find(c=>c.nome==='Atributo [Constituição]').id,'anotacao-manual');
+assert.equal(plano.saldoAntes,495);assert.equal(plano.saldoDepois,495);
+assert.equal(JSON.stringify(entrada),antes);
+assert.deepEqual(plano.ficha.atributosExtras,{preservar:true});
+assert.equal(plano.biblioteca[1],outra);
+assert.equal(plano.ficha.catarse.compras.reduce((s,c)=>s+c.procedenciaCatarseDiscord.custoHistoricoConhecido,0),120);
+assert.equal(plano.ficha.catarse.compras.flatMap(c=>c.procedenciaCatarseDiscord.compras).length,16);
+assert.ok(!plano.ficha.catarse.compras.flatMap(c=>c.procedenciaCatarseDiscord.compras).includes(6));
+assert.equal(plano.ficha.catarse.compras.find(c=>c.nome==='Mudar Regra').quantidade,1);
+assert.equal(plano.ficha.catarse.compras.find(c=>c.nome==='Bússola').quantidade,1);
+const derivado=deriveAfty(plano.ficha);
+assert.equal(derivado.attrEff.constituicao,16);
+assert.equal(derivado.catarse.restante,495);
+assert.equal(derivado.efeitos.porCanal.vagasLendaria,3);
+const linhas=conteudoDaFicha(plano.ficha,derivado).filter(c=>c.grupo==='catarse');
+assert.equal(linhas.length,13);
+for(const i of inventario.itens)assert.equal(linhas.find(c=>c.nome===(i.itemId===27?'Atributo [Constituição]':i.nome)).texto,i.texto);
+const repetido=prepararImportacao(plano.biblioteca);
+assert.ok(repetido.jaAplicado);assert.equal(repetido.biblioteca,plano.biblioteca);
+assert.throws(()=>prepararImportacao([outra]),/não foi encontrada/);
+assert.throws(()=>prepararImportacao([ficha,{...ficha,id:'duplicado'}]),/mais de uma/);
+const conflitante=structuredClone(ficha);conflitante.catarse.compras[0].efeitos=[{canal:'atributo',alvo:'constituicao',expr:'1'}];
+assert.equal(prepararImportacao([conflitante]).conflitos.length,1);
+const mapa=new Map([[CHAVE,antes]]);const storage={getItem:k=>mapa.get(k)??null,setItem:(k,v)=>mapa.set(k,v)};
+const aplicado=aplicarImportacao(storage,antes);
+assert.equal(storage.getItem(aplicado.backup),antes);
+assert.equal(JSON.parse(storage.getItem(CHAVE))[0].catarse.importacoes[MARCA].constituicao,6);
+assert.throws(()=>aplicarImportacao(storage,antes),/mudou em outra aba/);
+assert.ok(aplicarImportacao(storage,storage.getItem(CHAVE)).jaAplicado);
+const semBackup={getItem:k=>k===CHAVE?antes:null,setItem:()=>{}};
+assert.throws(()=>aplicarImportacao(semBackup,antes),/cópia de segurança/);
+console.log('Importação: preservação, quantidades, efeitos, textos, idempotência, conflitos e backup aprovados.');

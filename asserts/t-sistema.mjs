@@ -187,10 +187,11 @@ t("ficha existente carrega o id no lugar do new",
 t("as divergencias de REGRA ligadas",
   S.DIVERGENCIAS.filter((d) => d.ativa && d.tipo === "regra").map((d) => d.id).sort(),
   ["altoNivelSemGeral", "aptidaoApos20", "basesAutomaticas", "escalaDosTestes", "focosLivres",
+   "gemeoRestringidoPelaCopia",
    "danoPorArma", "defesaUniforme", "danoFixoPorGrau", "reducaoDeGrau",
    "conteudoSoPorAddon", "guardaInabalavel", "habilidadesGerais",
    "pacoteDaClasseInicial", "passivaCustaPeMaximo", "patamarDoJogador", "poolExclusivo",
-   "proficienciaPorArma", "progressaoDeFeiticos",
+   "proficienciaPorArma", "progressaoDeFeiticos", "progressaoDeTecnicasMarciais", "progressaoDoEstilo",
    "pvPePorEspecializacao", "quantidadeDePE", "rdBase", "rdEscudoFisico", "tetoDeNivel",
    "trForaDoOrcamento", "vagasPorNivelDeClasse", "valoresAdicionais", "terceiraClasse",
    /* ⚠ `interludioComTeste` era de TELA até 2026-09-16, quando a linha do Treino
@@ -278,7 +279,9 @@ const DIFERENCAS_ESPERADAS = {
   especializacoes: "terceiraClasse",
   hp: "pvPePorEspecializacao",
   almaMax: "pvPePorEspecializacao",
-  pe: "pvPePorEspecializacao e quantidadeDePE",
+  // O regime da Alma publicado para a sessão: pilha no jogador, porcento na criatura.
+  almaPilha: "pvPePorEspecializacao",
+  pe:"pvPePorEspecializacao e quantidadeDePE",
   defesa: "valoresAdicionais",
   cd: "valoresAdicionais",
   iniciativa: "valoresAdicionais",
@@ -304,7 +307,7 @@ const DIFERENCAS_ESPERADAS = {
   /* O caixa dos Feitiços. No Afty é o contador único, e no jogador é a
      progressão do livro em orçamento próprio. O `comum` também cai, porque ele
      somava o bônus de Calamidade que o jogador deixou de ter. */
-  orcamentoHabilidades: "progressaoDeFeiticos e patamarDoJogador",
+  orcamentoHabilidades: "progressaoDeFeiticos, progressaoDeTecnicasMarciais e patamarDoJogador",
   testes: "escalaDosTestes e trForaDoOrcamento",
   /* ⚠ O DANO DEIXOU DE DIVERGIR POR CONSEQUÊNCIA e passou a divergir por regra
      em 2026-08-31: o jogador rola o dado da arma mais o modificador, e a fórmula
@@ -487,11 +490,11 @@ t("a ficha de player continua player depois de derivada",
 t("as divergencias conhecidas estao na lista",
   S.DIVERGENCIAS.map((d) => d.id).sort(),
   ["abasIdentidade", "altoNivelSemGeral", "aptidaoApos20", "basesAutomaticas", "danoDoAcertoAmaldicoado", "danoPorArma",
-   "defesaUniforme", "desenvolvimentoNoNivel", "escalaDosTestes", "focosLivres", "guardaInabalavel",
+   "defesaUniforme", "desenvolvimentoNoNivel", "escalaDosTestes", "focosLivres", "gemeoRestringidoPelaCopia", "guardaInabalavel",
    "conteudoSoPorAddon", "habilidadesGerais", "inventarioSimplificado", "melhoriasSuperioresDoJogador",
    "pacoteDaClasseInicial", "perdidoNoJogador",
    "passivaCustaPeMaximo",
-   "patamarDoJogador", "poolExclusivo", "proficienciaPorArma", "progressaoDeFeiticos",
+   "patamarDoJogador", "poolExclusivo", "proficienciaPorArma", "progressaoDeFeiticos", "progressaoDeTecnicasMarciais", "progressaoDoEstilo",
    "pvPePorEspecializacao", "quantidadeDePE", "rdBase", "rdEscudoFisico",
    "reducaoDeGrau", "requisitoMulticlasse", "danoFixoPorGrau", "rotuloDoNivel", "marcaDoSistema", "interludioComTeste",
    "terceiraClasse", "tetoDeNivel", "tetoDeTreinoEspecial", "trForaDoOrcamento", "trMestreDoJogador", "treinoDaClasseInicial",

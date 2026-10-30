@@ -1,5 +1,5 @@
 import React from "react";
-import { Flame, Shield, HeartPulse, Sparkles, Anchor, PenLine } from "lucide-react";
+import { Flame, Shield, HeartPulse, Sparkles, Anchor, PenLine, Swords } from "lucide-react";
 
 /**
  * ============================================================
@@ -38,6 +38,8 @@ const ICONES = {
   especial: Sparkles,
   passivo: Anchor,
   personalizado: PenLine,
+  // A Técnica Marcial de Ataque (2026-10-27): o golpe em sequência do Restringido.
+  ataque: Swords,
 };
 
 /* ⚠ A BUSCA NO MAPA FICA FORA DO COMPONENTE, e não é firula de lint. O

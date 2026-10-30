@@ -1,0 +1,38 @@
+{
+  "origem": "../previa-abas-g2-20261021/fichas/fichas.json, arsenal sintético",
+  "alteracoes": [
+    "id e nome próprios",
+    "Controle e Leitura 3",
+    "Aptidão raio_negro"
+  ],
+  "aptidoes": [
+    "raio_negro"
+  ],
+  "linhas": [
+    {
+      "id": "basico",
+      "nome": "Ataque Básico",
+      "formula": "(4d12)/2*3 + 3"
+    },
+    {
+      "id": "armc_besta",
+      "nome": "Besta de Repetição de Teste",
+      "formula": "(4d10)/2*3 + 3"
+    },
+    {
+      "id": "armc_oscilante",
+      "nome": "Lâmina Oscilante de Teste",
+      "formula": "(4d8)/2*3 + 3"
+    },
+    {
+      "id": "armc_ampla",
+      "nome": "Machado de Guerra Amplo de Teste com um Nome Bem Comprido para Quebrar a Linha",
+      "formula": "(4d12)/2*3 + 3"
+    },
+    {
+      "id": "armc_modular",
+      "nome": "Rapieira Modular de Teste",
+      "formula": "(4d8)/2*3 + 3"
+    }
+  ]
+}

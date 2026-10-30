@@ -1,0 +1,222 @@
+{
+  "geradoEm": "2026-10-20T12:54:34.651Z",
+  "interferencia": {
+    "id": "01a15915-fd2c-7180-93d7-0f33cbf44ca9",
+    "estado": "idle",
+    "historicoImportado": true,
+    "chamadasNativas": 0,
+    "alteracaoDeArquivosDaEntrega": false,
+    "nota": "App read_thread indisponivel, conferido historico local restrito ao id e 33 hashes da entrega. Nenhuma mensagem enviada."
+  },
+  "hashesIguais": 33,
+  "hashesTotal": 33,
+  "asserts": {
+    "total": 677,
+    "falhas": []
+  },
+  "browser": [
+    {
+      "base": "http://127.0.0.1:5320",
+      "total": 32,
+      "passaram": 27,
+      "falhas": [
+        {
+          "etapa": "suporte cria e exporta pacote por clique real",
+          "id": "um ataque conserva prazo de uso, sem rodada inventada",
+          "dados": {
+            "tipo": "rodadas",
+            "rodadas": 1,
+            "texto": "Um Ataque"
+          }
+        },
+        {
+          "etapa": "aliado importa e usa, largura 1024",
+          "id": "fora de combate maior inelegivel nao apaga menor",
+          "dados": {
+            "base": 17,
+            "atual": 17
+          }
+        },
+        {
+          "etapa": "aliado importa e usa, largura 1024",
+          "id": "virada conserva efeito de um ataque ainda nao utilizado",
+          "dados": [
+            [
+              "Aura do Bastião",
+              null
+            ],
+            [
+              "Aura do Comandante",
+              null
+            ],
+            [
+              "Escudo Dourado",
+              1
+            ],
+            [
+              "Nue · Escudo de Raios",
+              null
+            ],
+            [
+              "Nue · Halo",
+              null
+            ],
+            [
+              "Nue · Faíscas",
+              null
+            ],
+            [
+              "Presença Inspiradora",
+              null
+            ]
+          ]
+        },
+        {
+          "etapa": "aliado importa e usa, largura 1440",
+          "id": "fora de combate maior inelegivel nao apaga menor",
+          "dados": {
+            "base": 17,
+            "atual": 17
+          }
+        },
+        {
+          "etapa": "aliado importa e usa, largura 1440",
+          "id": "virada conserva efeito de um ataque ainda nao utilizado",
+          "dados": [
+            [
+              "Aura do Bastião",
+              null
+            ],
+            [
+              "Aura do Comandante",
+              null
+            ],
+            [
+              "Escudo Dourado",
+              1
+            ],
+            [
+              "Nue · Escudo de Raios",
+              null
+            ],
+            [
+              "Nue · Halo",
+              null
+            ],
+            [
+              "Nue · Faíscas",
+              null
+            ],
+            [
+              "Presença Inspiradora",
+              null
+            ]
+          ]
+        }
+      ],
+      "exception": null
+    },
+    {
+      "base": "http://127.0.0.1:5321",
+      "total": 32,
+      "passaram": 27,
+      "falhas": [
+        {
+          "etapa": "suporte cria e exporta pacote por clique real",
+          "id": "um ataque conserva prazo de uso, sem rodada inventada",
+          "dados": {
+            "tipo": "rodadas",
+            "rodadas": 1,
+            "texto": "Um Ataque"
+          }
+        },
+        {
+          "etapa": "aliado importa e usa, largura 1024",
+          "id": "fora de combate maior inelegivel nao apaga menor",
+          "dados": {
+            "base": 17,
+            "atual": 17
+          }
+        },
+        {
+          "etapa": "aliado importa e usa, largura 1024",
+          "id": "virada conserva efeito de um ataque ainda nao utilizado",
+          "dados": [
+            [
+              "Aura do Bastião",
+              null
+            ],
+            [
+              "Aura do Comandante",
+              null
+            ],
+            [
+              "Escudo Dourado",
+              1
+            ],
+            [
+              "Nue · Escudo de Raios",
+              null
+            ],
+            [
+              "Nue · Halo",
+              null
+            ],
+            [
+              "Nue · Faíscas",
+              null
+            ],
+            [
+              "Presença Inspiradora",
+              null
+            ]
+          ]
+        },
+        {
+          "etapa": "aliado importa e usa, largura 1440",
+          "id": "fora de combate maior inelegivel nao apaga menor",
+          "dados": {
+            "base": 17,
+            "atual": 17
+          }
+        },
+        {
+          "etapa": "aliado importa e usa, largura 1440",
+          "id": "virada conserva efeito de um ataque ainda nao utilizado",
+          "dados": [
+            [
+              "Aura do Bastião",
+              null
+            ],
+            [
+              "Aura do Comandante",
+              null
+            ],
+            [
+              "Escudo Dourado",
+              1
+            ],
+            [
+              "Nue · Escudo de Raios",
+              null
+            ],
+            [
+              "Nue · Halo",
+              null
+            ],
+            [
+              "Nue · Faíscas",
+              null
+            ],
+            [
+              "Presença Inspiradora",
+              null
+            ]
+          ]
+        }
+      ],
+      "exception": null
+    }
+  ],
+  "decisao": "Sem interferencia detectada, Pacotes devolvido por PA-I1 e PA-I2. Marcos anteriores G2 preservados."
+}

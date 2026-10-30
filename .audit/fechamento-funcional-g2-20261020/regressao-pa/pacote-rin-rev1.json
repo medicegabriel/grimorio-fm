@@ -1,0 +1,87 @@
+{
+  "formato": "grimorio-afty-pacote-aliados",
+  "versao": 1,
+  "pacote": {
+    "id": "pac_mvh7pq6t7243a4d85c05",
+    "nome": "Sombra do Grupo",
+    "revisao": 1,
+    "exportadoEm": "2026-10-20T21:45:45.975Z"
+  },
+  "emissor": {
+    "id": "emi_mvh7pqaz248b1c96f832",
+    "nome": "Rin (Teste Pacotes)",
+    "sistema": "afty"
+  },
+  "opcoes": [
+    {
+      "id": "op_mvh7pq7qebc0f1701f65",
+      "nome": "Véu da Sombra Comum",
+      "familia": "estilo",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "estilo",
+        "id": "tp-tec1",
+        "nome": "Véu da Sombra Comum"
+      },
+      "escolhas": [],
+      "acumulo": {
+        "regra": "estilo"
+      },
+      "beneficios": [
+        {
+          "canal": "defesa",
+          "valor": 2,
+          "rotulo": "Defesa dos Aliados no Domínio"
+        },
+        {
+          "canal": "bonusTR",
+          "valor": 2,
+          "alvo": "vontade",
+          "rotulo": "TR dos Aliados no Domínio (Vontade)"
+        }
+      ],
+      "duracao": {
+        "tipo": "mantida",
+        "texto": "Enquanto o Domínio Simples Estiver Ativo"
+      },
+      "condicoes": [
+        "Dentro do Domínio Simples do Emissor"
+      ],
+      "custoEmissor": null,
+      "consulta": [],
+      "naoRepresentado": []
+    },
+    {
+      "id": "op_mvh7pq8nccfd08414bdf",
+      "nome": "Presença Inspiradora",
+      "familia": "especializacao",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "habilidade",
+        "id": "sup_presenca_inspiradora",
+        "nome": "Presença Inspiradora"
+      },
+      "escolhas": [],
+      "acumulo": {
+        "regra": "catalogo",
+        "origemId": "habilidade:sup_presenca_inspiradora"
+      },
+      "beneficios": [
+        {
+          "canal": "bonusPericia",
+          "valor": 1
+        }
+      ],
+      "duracao": {
+        "tipo": "cena",
+        "texto": "Durante a Cena"
+      },
+      "condicoes": [
+        "Dentro de 9 m Quando o Emissor Usa"
+      ],
+      "custoEmissor": "2 PE",
+      "consulta": [],
+      "naoRepresentado": []
+    }
+  ]
+}

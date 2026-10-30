@@ -1,0 +1,91 @@
+{
+  "atual": {
+    "copia": "lut_manobra_desarme",
+    "aprendida": true,
+    "entradas": [
+      {
+        "nome": "Ataque Básico",
+        "margem": 18,
+        "fontes": [
+          {
+            "label": "Margem Base",
+            "valor": 20,
+            "texto": "20"
+          },
+          {
+            "label": "Fluxo Invencível",
+            "valor": -2
+          }
+        ]
+      },
+      {
+        "nome": "Espada Longa",
+        "margem": 17,
+        "fontes": [
+          {
+            "label": "Margem da Arma",
+            "valor": 20,
+            "texto": "20"
+          },
+          {
+            "label": "Fluxo Invencível",
+            "valor": -2
+          },
+          {
+            "label": "Espada Longa (Certeira)",
+            "valor": -1
+          }
+        ]
+      }
+    ]
+  },
+  "aoImitarCritico": {
+    "copia": "cmb_critico_aperfeicoado",
+    "aprendida": true,
+    "entradas": [
+      {
+        "nome": "Ataque Básico",
+        "margem": 16,
+        "fontes": [
+          {
+            "label": "Margem Base",
+            "valor": 20,
+            "texto": "20"
+          },
+          {
+            "label": "Crítico Aperfeiçoado",
+            "valor": -2
+          },
+          {
+            "label": "Fluxo Invencível",
+            "valor": -2
+          }
+        ]
+      },
+      {
+        "nome": "Espada Longa",
+        "margem": 15,
+        "fontes": [
+          {
+            "label": "Margem da Arma",
+            "valor": 20,
+            "texto": "20"
+          },
+          {
+            "label": "Crítico Aperfeiçoado",
+            "valor": -2
+          },
+          {
+            "label": "Fluxo Invencível",
+            "valor": -2
+          },
+          {
+            "label": "Espada Longa (Certeira)",
+            "valor": -1
+          }
+        ]
+      }
+    ]
+  },
+  "verificacoes": 6
+}

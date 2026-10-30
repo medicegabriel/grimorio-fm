@@ -1,0 +1,327 @@
+{
+  "geradoEm": "2026-10-20T15:01:04.937Z",
+  "base": "http://127.0.0.1:5321",
+  "etapas": [
+    {
+      "nome": "suporte A monta e exporta",
+      "checks": [
+        {
+          "id": "a fonte de Alcance Próprio aparece sem Incluir",
+          "ok": true
+        },
+        {
+          "id": "o auxílio da própria invocação não é fonte para aliados",
+          "ok": true
+        },
+        {
+          "id": "a prévia do suporte mostra a Evoluída com Acerto e TR",
+          "ok": true
+        },
+        {
+          "id": "Exportar fica travado com rascunho por salvar",
+          "ok": true
+        },
+        {
+          "id": "o pacote foi gravado no personagem",
+          "ok": true
+        },
+        {
+          "id": "o emissor ganhou id estável",
+          "ok": true
+        },
+        {
+          "id": "montar o pacote não mexeu na sessão do suporte",
+          "ok": true
+        },
+        {
+          "id": "o arquivo tem formato e versão",
+          "ok": true
+        },
+        {
+          "id": "revisão 1",
+          "ok": true
+        },
+        {
+          "id": "Bastião leva o Nível de Aura do emissor (3)",
+          "ok": true
+        },
+        {
+          "id": "Comandante Evoluída: dano e perícias 3 em combate, acerto e TR 2",
+          "ok": true
+        },
+        {
+          "id": "Inimigo Comum com a Presença do emissor (mod 4)",
+          "ok": true
+        },
+        {
+          "id": "Lâmina Viva vai só como consulta",
+          "ok": true
+        },
+        {
+          "id": "o Feitiço de Alcance Próprio não está no arquivo",
+          "ok": true
+        },
+        {
+          "id": "o arquivo não leva a ficha do emissor",
+          "ok": true
+        },
+        {
+          "id": "exportar de novo sem mudança repete a revisão",
+          "ok": true
+        },
+        {
+          "id": "a revisão 2 recalcula com a Presença nova (dano 5)",
+          "ok": true
+        },
+        {
+          "id": "os ids de pacote, emissor e opções são estáveis entre revisões",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true
+        }
+      ],
+      "erros": []
+    },
+    {
+      "nome": "suporte B (Estilo) exporta",
+      "checks": [
+        {
+          "id": "o Estilo vai com Defesa e TR de Vontade dos aliados",
+          "ok": true
+        },
+        {
+          "id": "acúmulo do Estilo declarado",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true
+        }
+      ],
+      "erros": []
+    },
+    {
+      "nome": "aliado importa sem ativar",
+      "checks": [
+        {
+          "id": "o resumo diz Pacote Novo antes de gravar",
+          "ok": true
+        },
+        {
+          "id": "o resumo lista as opções",
+          "ok": true
+        },
+        {
+          "id": "nada gravado antes de Salvar",
+          "ok": true
+        },
+        {
+          "id": "a biblioteca foi gravada no personagem",
+          "ok": true
+        },
+        {
+          "id": "importar não ativou nada nem cobrou",
+          "ok": true
+        },
+        {
+          "id": "os números não mudaram ao importar",
+          "ok": true
+        },
+        {
+          "id": "a outra ficha do mesmo navegador não recebeu a biblioteca",
+          "ok": true
+        }
+      ],
+      "erros": []
+    },
+    {
+      "nome": "mesmo arquivo de novo",
+      "checks": [
+        {
+          "id": "reimportar o mesmo arquivo diz Já Está na Biblioteca",
+          "ok": true
+        },
+        {
+          "id": "e não deixa salvar de novo",
+          "ok": true
+        },
+        {
+          "id": "a biblioteca continua com uma entrada",
+          "ok": true
+        }
+      ],
+      "erros": []
+    },
+    {
+      "nome": "arquivo inválido",
+      "checks": [
+        {
+          "id": "versão desconhecida é recusada inteira",
+          "ok": true
+        },
+        {
+          "id": "e não grava nada",
+          "ok": true
+        },
+        {
+          "id": "opções ruins ficam de fora com motivo, e o resto entra",
+          "ok": true
+        }
+      ],
+      "erros": []
+    },
+    {
+      "nome": "ativar oito opções de famílias diferentes",
+      "checks": [
+        {
+          "id": "uma instância por opção ativada",
+          "ok": true
+        },
+        {
+          "id": "cada instância guarda a origem e a revisão",
+          "ok": true
+        },
+        {
+          "id": "prazo contado a partir da ativação: Escudo Dourado 2 rodadas, Bênção Tripla 1",
+          "ok": true
+        },
+        {
+          "id": "alcance e manutenção não ganham rodadas",
+          "ok": true
+        },
+        {
+          "id": "nada foi cobrado do aliado",
+          "ok": true
+        },
+        {
+          "id": "a opção ativa não oferece Ativar de novo",
+          "ok": true
+        },
+        {
+          "id": "Defesa soma 11 (Bastião 3, Feitiços 2 uma vez, auxílio 4, aura 2)",
+          "ok": true
+        },
+        {
+          "id": "Iniciativa não foi tocada",
+          "ok": true
+        },
+        {
+          "id": "a ficha clássica mostra os MESMOS números",
+          "ok": true
+        }
+      ],
+      "erros": []
+    },
+    {
+      "nome": "prazo e expiração",
+      "checks": [
+        {
+          "id": "a Bênção Tripla (1 rodada) expirou e o Escudo Dourado tem 1",
+          "ok": true
+        },
+        {
+          "id": "o Escudo Dourado expirou na segunda virada",
+          "ok": true
+        },
+        {
+          "id": "o que não tem rodadas segue ativo",
+          "ok": true
+        },
+        {
+          "id": "expirar não mexeu na biblioteca",
+          "ok": true
+        }
+      ],
+      "erros": []
+    },
+    {
+      "nome": "encerrar e reativar",
+      "checks": [
+        {
+          "id": "encerrar tira a instância",
+          "ok": true
+        },
+        {
+          "id": "e a opção fica na biblioteca",
+          "ok": true
+        },
+        {
+          "id": "Encerrados lista o Bastião para reativar",
+          "ok": true
+        },
+        {
+          "id": "reativar cria uma instância nova, com outro id",
+          "ok": true
+        }
+      ],
+      "erros": []
+    },
+    {
+      "nome": "nova revisão e segundo emissor",
+      "checks": [
+        {
+          "id": "revisão 2 é reconhecida como Nova Revisão",
+          "ok": true
+        },
+        {
+          "id": "a biblioteca foi atualizada para a revisão 2, sem duplicar",
+          "ok": true
+        },
+        {
+          "id": "a instância ativa conserva o valor e o prazo de antes",
+          "ok": true
+        },
+        {
+          "id": "o segundo emissor entra ao lado",
+          "ok": true
+        },
+        {
+          "id": "dois pacotes de dois emissores coexistem",
+          "ok": true
+        }
+      ],
+      "erros": []
+    },
+    {
+      "nome": "descanso, recarga e criador",
+      "checks": [
+        {
+          "id": "o descanso tira o que é de cena e deixa o permanente",
+          "ok": true
+        },
+        {
+          "id": "a biblioteca sobrevive ao descanso",
+          "ok": true
+        },
+        {
+          "id": "recarregar não reativa nada sozinho",
+          "ok": true
+        },
+        {
+          "id": "a biblioteca sobrevive à recarga",
+          "ok": true
+        },
+        {
+          "id": "salvar no criador conserva a biblioteca",
+          "ok": true
+        },
+        {
+          "id": "a ficha importada traz a biblioteca",
+          "ok": true
+        },
+        {
+          "id": "e nenhuma instância ativa",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true
+        }
+      ],
+      "erros": []
+    }
+  ],
+  "falhas": []
+}

@@ -364,22 +364,27 @@ t("a Guarda drena antes da outra casca",
    Tracker divergir da Ficha na casca de PE, em 2026-08-26. */
 
 const fonte = (caminho) => readFileSync(new URL(`../src/systems/afty/${caminho}`, import.meta.url), "utf8");
-for (const tela of ["ficha/AftyFicha.jsx", "encontros/PainelDeCombatente.jsx"]) {
+for (const tela of ["ficha/AftyFichaClassica.jsx", "ficha/AftyFichaG2.jsx", "encontros/PainelDeCombatente.jsx"]) {
   const src = fonte(tela);
   t(`${tela} importa a Guarda compartilhada`, src.includes('from "../ui/guarda"'), true);
   t(`${tela} nao declara uma Guarda propria`, src.includes("function Guarda({"), false);
   /* ⚠ E as duas escrevem condição pelo `defineCondicoes`. Escrever o campo cru
      deixaria o chefe com a Guarda de pé debaixo de um Atordoado, naquela tela. */
   t(`${tela} grava condicao pelo defineCondicoes`, src.includes("defineCondicoes(s, condicoes)"), true);
-  /* A casca da Guarda tem de aparecer na barra de PV: ela é o mesmo pote. */
-  t(`${tela} soma as fontes na barra de PV`, src.includes("temp={pvTempTotal(sessao)}"), true);
+  /* A casca da Guarda tem de aparecer na barra de PV: ela é o mesmo pote. O Encontro desenha o Vital; a Ficha, desde a integração do G2, o Medidor do
+     cabeçalho, que lê o mesmo total em `recursos(m)`. */
+  t(`${tela} soma as fontes na barra de PV`, tela === "ficha/AftyFichaG2.jsx"
+    ? fonte("ficha/efeitos/pecas-logica.js").includes("temp: Sessao.pvTempTotal(sessao)")
+    : src.includes("temp={pvTempTotal(sessao)}"), true);
   /* ⚠ O golpe leva o `derived` junto. Sem ele o contador sobe, a Guarda NÃO
      quebra no terceiro golpe e a casca fica de pé, naquela tela só. */
   t(`${tela} manda o derived no golpe`, src.includes("sofreGolpeNaGuarda(s, derived)"), true);
 }
 /* E as duas mandam a Guarda corrente para o derive, senão o bônus não chega na
    Defesa daquela tela. */
-t("a Ficha manda a Guarda ao derive", fonte("ficha/AftyFicha.jsx").includes("guarda: entradaDaGuarda("), true);
+/* A lista de opções do derive mora em `ficha-opcoes-derive.js` desde a integração do G2 (uma lista só, lida pela Ficha e pelo delta dos estados). */
+t("a Ficha classica manda a Guarda ao derive", fonte("ficha/AftyFichaClassica.jsx").includes("guarda: entradaDaGuarda("), true);
+t("a previa G2 manda a Guarda ao derive", fonte("ficha/ficha-opcoes-derive.js").includes("guarda: entradaDaGuarda(") && fonte("ficha/AftyFichaG2.jsx").includes("opcoesDeriveDaSessao("), true);
 t("o Encontro manda a Guarda ao derive", fonte("encontros/usar-encontro-afty.js").includes("guarda: entradaDaGuarda("), true);
 
 /* ⚠ E as classes da tira entram no CONTRATO DE TEMA. Classe que a Ficha desenha

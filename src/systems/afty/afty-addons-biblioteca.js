@@ -26,6 +26,7 @@
  */
 
 import { normalizarPacote, validarPacote, PACOTE_MAX } from "./afty-addons";
+import { ehEmbutido } from "./afty-addons-compostos";
 
 const CHAVE = "fm_addons_afty_v1";
 
@@ -71,6 +72,16 @@ export function gravarBiblioteca(lista) {
 export function instalarPacote(cru, { substituir = false } = {}) {
   const p = normalizarPacote(cru);
   const atual = lerBiblioteca();
+  /* ⚠ PACOTE EMBUTIDO NÃO ENTRA PELA BIBLIOTECA. A cópia colada perderia os campos
+     de composição (o normalizador os descarta) e a hidratação a trocaria pela
+     fonte do app sem avisar. Para mudar o pacote, edita-se o JSON do app. */
+  if (ehEmbutido(p.id)) {
+    return {
+      ok: false,
+      problemas: [`"${p.nome || p.id}" já vem embutido no app e se atualiza sozinho. Ele não se instala pela biblioteca.`],
+      biblioteca: atual,
+    };
+  }
   const jaTem = atual.find((x) => x.id === p.id);
 
   // Só cobra unicidade quando NÃO é substituição declarada: atualizar um addon

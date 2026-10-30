@@ -1,0 +1,134 @@
+[
+ {
+  "w": 1024,
+  "h": 720,
+  "acoes": {
+   "overflowX": 0,
+   "cabecalho": 320,
+   "estagio": null,
+   "estagioBase": null
+  },
+  "habilidades": {
+   "overflowX": 0,
+   "cabecalho": 320,
+   "estagio": 392,
+   "estagioBase": 722
+  },
+  "buffs": {
+   "overflowX": 0,
+   "cabecalho": 320,
+   "estagio": 392,
+   "estagioBase": 722
+  },
+  "pericias": {
+   "overflowX": 0,
+   "cabecalho": 320,
+   "estagio": null,
+   "estagioBase": null
+  },
+  "painel": {
+   "overflowX": 0,
+   "aberto": true
+  },
+  "erros": 0
+ },
+ {
+  "w": 1280,
+  "h": 800,
+  "acoes": {
+   "overflowX": 0,
+   "cabecalho": 290,
+   "estagio": null,
+   "estagioBase": null
+  },
+  "habilidades": {
+   "overflowX": 0,
+   "cabecalho": 290,
+   "estagio": 502,
+   "estagioBase": 802
+  },
+  "buffs": {
+   "overflowX": 0,
+   "cabecalho": 290,
+   "estagio": 502,
+   "estagioBase": 802
+  },
+  "pericias": {
+   "overflowX": 0,
+   "cabecalho": 290,
+   "estagio": null,
+   "estagioBase": null
+  },
+  "painel": {
+   "overflowX": 0,
+   "aberto": true
+  },
+  "erros": 0
+ },
+ {
+  "w": 1440,
+  "h": 900,
+  "acoes": {
+   "overflowX": 0,
+   "cabecalho": 262,
+   "estagio": null,
+   "estagioBase": null
+  },
+  "habilidades": {
+   "overflowX": 0,
+   "cabecalho": 262,
+   "estagio": 630,
+   "estagioBase": 902
+  },
+  "buffs": {
+   "overflowX": 0,
+   "cabecalho": 262,
+   "estagio": 630,
+   "estagioBase": 902
+  },
+  "pericias": {
+   "overflowX": 0,
+   "cabecalho": 262,
+   "estagio": null,
+   "estagioBase": null
+  },
+  "painel": {
+   "overflowX": 0,
+   "aberto": true
+  },
+  "erros": 0
+ },
+ {
+  "w": 390,
+  "h": 844,
+  "acoes": {
+   "overflowX": 0,
+   "cabecalho": 489,
+   "estagio": null,
+   "estagioBase": null
+  },
+  "habilidades": {
+   "overflowX": 0,
+   "cabecalho": 489,
+   "estagio": 347,
+   "estagioBase": 846
+  },
+  "buffs": {
+   "overflowX": 0,
+   "cabecalho": 489,
+   "estagio": 347,
+   "estagioBase": 846
+  },
+  "pericias": {
+   "overflowX": 0,
+   "cabecalho": 489,
+   "estagio": null,
+   "estagioBase": null
+  },
+  "painel": {
+   "overflowX": 0,
+   "aberto": true
+  },
+  "erros": 0
+ }
+]

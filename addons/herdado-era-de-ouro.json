@@ -5,6 +5,8 @@
   "autor": "Templas",
   "paraRaw": "afty",
   "descricao": "Origem Herdado da Era de Ouro, do suplemento Era de Ouro (F&M 2.5.2). Certos feiticeiros têm sua técnica provinda da linhagem sanguínea dos grandes clãs da Era Heian. A origem se divide em três clãs, escolhidos no card da Origem: Fujiwara (Constituição ou Sabedoria, Foco no Poder), Sugawara (Inteligência ou Sabedoria, Potencial Lendário) e Akutame (3 pontos livres, treinado em Atletismo e Feitiçaria, Acerto e Defesa iguais à metade do Bônus de Treinamento). Traz os 7 Talentos de Origem do suplemento. O Desabrochar do Conhecimento Herdado concede de fato a Emoção da Pétala Decadente, e a Postura do Matador de Yokai tem o interruptor Alvo com Defesa Maior na Simulação de Combate. O Feitiço Focado, as Fortes Convicções, o Arsenal do Maior Clã e o Feitiço acima do acesso do Manuscrito Ancestral ficam de mesa. É uma origem própria: não conta como o Herdado do livro. Vale nos dois sistemas. Precisa do app com `concedeAptidoes` em Talento e com o conserto dos clãs de origem de Addon (2026-10-11).",
+  "resumo": "Origem com os clãs Fujiwara, Sugawara e Akutame e 7 Talentos do suplemento Era de Ouro",
+  "categoria": "origens",
   "estadosCombate": [
     {
       "id": "alvo_defesa_maior",

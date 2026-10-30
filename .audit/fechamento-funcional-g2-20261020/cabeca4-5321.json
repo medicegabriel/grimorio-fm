@@ -1,0 +1,35 @@
+{
+  "geradoEm": "2026-10-20T20:51:21.269Z",
+  "base": "http://127.0.0.1:5321",
+  "etapas": [
+    {
+      "nome": "cabeçalho",
+      "checks": [
+        {
+          "id": "minamoto-768-sem-sangria",
+          "ok": true,
+          "dados": {
+            "total": 221,
+            "placa": 157,
+            "ident": 48,
+            "recursos": 53,
+            "faixa": 48,
+            "stats": 26,
+            "agora": 44,
+            "nome": 24,
+            "nomeCortado": false,
+            "vh": 900,
+            "medidores": 4,
+            "sangra": 0
+          }
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "cabeçalho: 1/1"
+  ]
+}

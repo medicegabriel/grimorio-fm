@@ -1,0 +1,15 @@
+{
+  "arquivo": "C:/Projetos/Grimorio/outputs/Chrollo-catarse-corrigida.json",
+  "fonte": "C:/Users/gabri/.codex/attachments/f786826d-b686-4ec8-b302-4a32858fdd8f/Texto colado.txt",
+  "id": "mtkfm72o-u51uv6n",
+  "concluido": true,
+  "novasVerificacoes": 27,
+  "assertsFocados": 319,
+  "suiteGeral": { "aprovados": 231, "total": 233, "falhasExternas": ["t-prodigio.mjs", "t-reconciliacao-g00.mjs"] },
+  "preservacao": true,
+  "build": true,
+  "lint": true,
+  "interfaceValidada": true,
+  "escolhasTesteIncluidasNoArquivo": false,
+  "bibliotecaPessoalChromeAlterada": false
+}

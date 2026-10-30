@@ -1,0 +1,138 @@
+{
+  "raiz": "C:\\Users\\gabri\\AppData\\Local\\Temp\\claude\\c--Projetos-Grimorio\\a6045166-d925-4625-a4dc-6dba594f5fc6\\scratchpad\\arvore-pai3-antes",
+  "arquivoOpcao": {
+    "id": "o1",
+    "nome": "Guarda e Firmeza",
+    "familia": "feitico",
+    "calculo": "automatico",
+    "fonte": {
+      "tipo": "feitico",
+      "id": "g4",
+      "nome": "Guarda e Firmeza"
+    },
+    "escolhas": [],
+    "acumulo": {
+      "regra": "feitico"
+    },
+    "beneficios": [
+      {
+        "canal": "defesa",
+        "valor": 3
+      },
+      {
+        "canal": "bonusTR",
+        "valor": 2,
+        "alvo": "reflexos"
+      }
+    ],
+    "duracao": {
+      "tipo": "proximo",
+      "texto": "Por Um Ataque"
+    },
+    "condicoes": [
+      "Um Alvo",
+      "Bônus em Teste de Resistência: Uma Rodada"
+    ],
+    "custoEmissor": "2 PE",
+    "consulta": [],
+    "naoRepresentado": []
+  },
+  "instancia": {
+    "id": "i1",
+    "rec": true,
+    "tipoFonte": "feitico",
+    "origemId": null,
+    "origemNome": "Guarda e Firmeza",
+    "aplicadoPor": "Yuki",
+    "beneficios": [
+      {
+        "canal": "defesa",
+        "valor": 3
+      },
+      {
+        "canal": "bonusTR",
+        "valor": 2,
+        "alvo": "reflexos"
+      }
+    ],
+    "rodadas": null,
+    "somaPresumida": false,
+    "terminaNoDescanso": true,
+    "pacote": {
+      "chave": "emi:pac",
+      "id": "pac",
+      "nome": "Prova",
+      "revisao": 1,
+      "opcaoId": "o1",
+      "emissorId": "emi",
+      "emissorNome": "Yuki",
+      "familia": "feitico",
+      "calculo": "automatico",
+      "duracao": {
+        "tipo": "proximo",
+        "texto": "Por Um Ataque"
+      },
+      "condicoes": [
+        "Um Alvo",
+        "Bônus em Teste de Resistência: Uma Rodada"
+      ],
+      "custoEmissor": "2 PE"
+    }
+  },
+  "passos": [
+    {
+      "momento": "ligada",
+      "defesa": 20,
+      "reflexos": 9,
+      "beneficios": [
+        [
+          "defesa",
+          "bonusTR"
+        ]
+      ]
+    },
+    {
+      "momento": "virada 1",
+      "defesa": 20,
+      "reflexos": 9,
+      "beneficios": [
+        [
+          "defesa",
+          "bonusTR"
+        ]
+      ]
+    },
+    {
+      "momento": "virada 2",
+      "defesa": 20,
+      "reflexos": 9,
+      "beneficios": [
+        [
+          "defesa",
+          "bonusTR"
+        ]
+      ]
+    },
+    {
+      "momento": "virada 3",
+      "defesa": 20,
+      "reflexos": 9,
+      "beneficios": [
+        [
+          "defesa",
+          "bonusTR"
+        ]
+      ]
+    }
+  ],
+  "base": {
+    "defesa": 17,
+    "reflexos": 7
+  },
+  "criterios": {
+    "ligada: Defesa +3 e Reflexos +2": true,
+    "virada 1: Reflexos volta à base": false,
+    "virada 1: a Defesa de um ataque continua": true,
+    "virada 3: a Defesa continua sem ataque": true
+  }
+}

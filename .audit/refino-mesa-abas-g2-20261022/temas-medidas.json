@@ -1,0 +1,23 @@
+[
+  {
+    "tema": "escuro",
+    "largura": 1064,
+    "altura": 192.546875,
+    "colunas": "349.328px 349.328px 349.344px",
+    "estouro": 0
+  },
+  {
+    "tema": "claro",
+    "largura": 1064,
+    "altura": 192.546875,
+    "colunas": "349.328px 349.328px 349.344px",
+    "estouro": 0
+  },
+  {
+    "tema": "minamoto",
+    "largura": 1064,
+    "altura": 192.546875,
+    "colunas": "349.328px 349.328px 349.344px",
+    "estouro": 0
+  }
+]

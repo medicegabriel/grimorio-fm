@@ -1,0 +1,122 @@
+{
+ "geradoEm": "2026-10-17T01:48:48.500Z",
+ "head": "68888733deffa9700aa69761fd965a504b9152db",
+ "branch": "main",
+ "mudancasNoDiretorio": 213,
+ "modificados": 58,
+ "naoRastreados": 155,
+ "srcComponents": "sem mudanças",
+ "remoto": {
+  "origem": "https://github.com/medicegabriel/grimorio-fm.git",
+  "originMainLocalAntesDoFetch": "c434d4d",
+  "originMainAposFetch": "d4a0ed2",
+  "commitsAFrente": [
+   "d4a0ed2 fix(afty): Frenesi sobe cada efeito em 1 nivel e Hemolito usa o dado do golpe desarmado da ficha",
+   "00768db fix(afty): criador mostra o nivel e as rodadas a mais do Feitico vinculado (Frenesi do Golem de Sangue)",
+   "0d65774 feat(afty): addon Golem de Sangue 1.1.0 (Maldicao Carmesim, contadores de sessao, Frenesi vinculado com nivel acima do acesso)",
+   "b0f98e7 feat(afty): addon Quimera de Maldicoes (aba Quimeras propria e Quimera do Mecanicas fundindo Maldicoes entre si)",
+   "c434d4d feat(afty): automatiza habilidades e disparo maximo de Ciel"
+  ]
+ },
+ "arquivosQueVouTocar": {
+  "src/App.jsx": {
+   "sha256": "72da45c077a452a5",
+   "git": "igual ao HEAD"
+  },
+  "src/systems/afty/ficha/AftyFicha.jsx": {
+   "sha256": "80df6dfd79a84799",
+   "git": "M"
+  },
+  "src/systems/afty/ficha/ficha-sessao.js": {
+   "sha256": "c1f9d96a0334a3e4",
+   "git": "M"
+  },
+  "src/systems/afty/ficha/ficha-especializacoes.js": {
+   "sha256": "3e44bec64385f130",
+   "git": "??"
+  },
+  "src/systems/afty/ficha/ficha-tema.js": {
+   "sha256": "6149202010a719b2",
+   "git": "M"
+  },
+  "src/systems/afty/ficha/ficha.css": {
+   "sha256": "555a8eb6a1e0c8c8",
+   "git": "igual ao HEAD"
+  },
+  "src/systems/afty/ficha/abas/AbaBuffs.jsx": {
+   "sha256": "a8c06b727f07eb0b",
+   "git": "igual ao HEAD"
+  },
+  "src/systems/afty/ficha/abas/AbaHabilidades.jsx": {
+   "sha256": "c0a344a8483084e5",
+   "git": "igual ao HEAD"
+  },
+  "src/systems/afty/ficha/abas/AbaAcoes.jsx": {
+   "sha256": "1bb0286940e00dde",
+   "git": "M"
+  },
+  "src/systems/afty/ficha/PainelDeRolagens.jsx": {
+   "sha256": "d4a7838fa6a42fa1",
+   "git": "igual ao HEAD"
+  },
+  "src/systems/afty/ficha/BuscaGlobal.jsx": {
+   "sha256": "c09bdaab5e00349a",
+   "git": "igual ao HEAD"
+  },
+  "src/systems/afty/afty-schema.js": {
+   "sha256": "df2cd6724c3b8bfc",
+   "git": "M"
+  },
+  "src/systems/afty/afty-derive.js": {
+   "sha256": "1365dcbc53b5350b",
+   "git": "M"
+  },
+  "src/systems/afty/afty-sistema.js": {
+   "sha256": "4b07cad1bc7bf36b",
+   "git": "M"
+  },
+  "src/systems/afty/ui/vital.jsx": {
+   "sha256": "9dfebaa4bc1e41b2",
+   "git": "igual ao HEAD"
+  },
+  "src/systems/afty/encontros/usar-encontro-afty.js": {
+   "sha256": "0352ddd432906642",
+   "git": "M"
+  },
+  "src/systems/afty/encontros/PainelDeCombatente.jsx": {
+   "sha256": "526dd99e6dd07e41",
+   "git": "M"
+  },
+  "asserts/t-ordem-modulos.mjs": {
+   "sha256": "1e85354d95381a1c",
+   "git": "igual ao HEAD"
+  },
+  "docs/afty-ficha-final.md": {
+   "sha256": "66d5e04cadee6a98",
+   "git": "M"
+  },
+  "docs/afty-status.md": {
+   "sha256": "df4bdcf8d23787f4",
+   "git": "M"
+  },
+  "docs/a-fazer.md": {
+   "sha256": "83b07541afcdc402",
+   "git": "M"
+  },
+  "package.json": {
+   "sha256": "058df6bcc5d5c33b",
+   "git": "igual ao HEAD"
+  },
+  "eslint.config.js": {
+   "sha256": "6a0a24a306b9a835",
+   "git": "igual ao HEAD"
+  }
+ },
+ "naoRastreadosNoAfty": [
+  "src/systems/afty/afty-especializacao-config.js",
+  "src/systems/afty/ficha/ficha-especializacoes.js",
+  "src/systems/afty/ui/ConfiguracaoHabilidade.jsx",
+  "src/systems/afty/ui/lanterna-coletora.webp",
+  "src/systems/afty/ui/lanterna.css"
+ ]
+}

@@ -500,9 +500,11 @@ export function normalizaTecnicaEstilo(b) {
       texto: texto(objeto(b.gatilho)?.texto),
     },
     efeitos: comUid(b.efeitos, ["efeitoId"])
-      .map((e) => ({ uid: texto(e.uid), efeitoId: texto(e.efeitoId), escolha: objeto(e.escolha) })),
+      .map((e) => ({ uid: texto(e.uid), efeitoId: texto(e.efeitoId), escolha: objeto(e.escolha),
+        ...(e.repeticao ? { repeticao: texto(e.repeticao) } : {}) })),
     aptidoes: comUid(b.aptidoes, ["aptidaoId", "modId"])
-      .map((a) => ({ uid: texto(a.uid), aptidaoId: texto(a.aptidaoId), modId: texto(a.modId), escolha: objeto(a.escolha) })),
+      .map((a) => ({ uid: texto(a.uid), aptidaoId: texto(a.aptidaoId), modId: texto(a.modId), escolha: objeto(a.escolha),
+        ...(a.repeticao ? { repeticao: texto(a.repeticao) } : {}) })),
     requisitos: comUid(b.requisitos, ["dificuldade"])
       .map((r) => ({ uid: texto(r.uid), dificuldade: texto(r.dificuldade), alvoUid: texto(r.alvoUid), texto: texto(r.texto) })),
     exaustao: inteiro(b.exaustao, 0, 99),
@@ -567,13 +569,25 @@ export function gruposDeCompras(tecnica) {
         efeitoId: c.efeitoId,
         escolha,
         nomeEscolha: def?.escolha ? nomeDaEscolha(def.escolha, escolha) : null,
-        uids: [],
+        uids: [], compras: [],
       });
     }
     grupos.get(chave).uids.push(c.uid);
+    grupos.get(chave).compras.push(c);
   }
-  return [...grupos.values()].map((g) => ({ ...g, n: g.uids.length }));
+  return [...grupos.values()].map((g) => ({ ...g, n: g.uids.length,
+    repeticao: repeticaoDasCompras(g.compras, getEfeitoEstilo(g.efeitoId)?.repeticaoPadrao) }));
 }
+
+// Sem marca, cada efeito conserva o comportamento anterior das compras repetidas.
+const repeticaoDasCompras = (compras, padrao = "aliados") => ({
+  pessoal: compras.filter((c) => c.repeticao === "pessoal").length
+    + (padrao === "pessoal" ? Math.max(0, compras.filter((c) => !c.repeticao).length - 1) : 0),
+  aliados: compras.filter((c) => c.repeticao === "aliados").length
+    + (padrao === "aliados" ? Math.max(0, compras.filter((c) => !c.repeticao).length - 1) : 0),
+  semBase: compras.some((c) => c.repeticao) && !compras.some((c) => !c.repeticao),
+  invalidas: compras.filter((c) => c.repeticao && !["pessoal", "aliados"].includes(c.repeticao)),
+});
 
 /**
  * Resolve UMA Técnica da Expansão: o orçamento de efeitos, o que ela escreve no
@@ -597,12 +611,13 @@ export function gruposDeModificacoes(tecnica, nomeDaAptidao = (id) => id) {
     const chave = `${a.modId}:${a.aptidaoId}`;
     if (!grupos.has(chave)) {
       grupos.set(chave, {
-        chave, modId: a.modId, aptidaoId: a.aptidaoId, nomeAptidao: nomeDaAptidao(a.aptidaoId), uids: [],
+        chave, modId: a.modId, aptidaoId: a.aptidaoId, nomeAptidao: nomeDaAptidao(a.aptidaoId), uids: [], compras: [],
       });
     }
     grupos.get(chave).uids.push(a.uid);
+    grupos.get(chave).compras.push(a);
   }
-  return [...grupos.values()].map((g) => ({ ...g, n: g.uids.length }));
+  return [...grupos.values()].map((g) => ({ ...g, n: g.uids.length, repeticao: repeticaoDasCompras(g.compras) }));
 }
 
 /** O canal de uma linha de Aptidão é numérico se a expressão não é vazia e o
@@ -653,13 +668,14 @@ export function resolveTecnicaExpansao(t, {
         nome: rotulo,
         canal: def.canal,
         ...(g.escolha ? { alvo: g.escolha } : {}),
-        expr: def.expr(g.n),
+        expr: def.repeticao === "aliados" && g.repeticao.pessoal
+          ? (def.exprPessoal ? def.exprPessoal() : `2 * (${def.expr(1)})`)
+          : def.expr(g.n),
         n: g.n,
       });
     }
-    // A 2ª compra ESTENDE aos aliados, e nunca soma no usuário (o `expr` do
-    // catálogo ignora o `n` nesses efeitos).
-    if (def.repeticao === "aliados" && g.n >= 2 && def.aliados) {
+    // A segunda compra escolhe entre bônus pessoal e extensão para aliados.
+    if (def.repeticao === "aliados" && g.repeticao.aliados && def.aliados) {
       aliados.push({
         efeitoId: def.id,
         rotulo: g.nomeEscolha ? `${def.aliados} (${g.nomeEscolha})` : def.aliados,
@@ -686,7 +702,8 @@ export function resolveTecnicaExpansao(t, {
     // própria linha estar valendo (`!= 0`).
     const b = bonusDoGrupo(g.uids);
     if (mod.bonus) {
-      const expr = `teto(${trilhaCom(mod.bonus, b)} / 2)`;
+      const metade = `teto(${trilhaCom(mod.bonus, b)} / 2)`;
+      const expr = g.repeticao.pessoal ? `2 * (${metade})` : metade;
       for (const linha of (efeitosDaAptidao(g.aptidaoId) ?? []).filter(linhaNumerica)) {
         pessoais.push({
           efeitoId: mod.id,
@@ -698,7 +715,7 @@ export function resolveTecnicaExpansao(t, {
           n: g.n,
         });
       }
-      if (g.n >= 2) aliados.push({ efeitoId: mod.id, rotulo: `Bônus dos Aliados no Domínio (${g.nomeAptidao})`, expr });
+      if (g.repeticao.aliados) aliados.push({ efeitoId: mod.id, rotulo: `Bônus dos Aliados no Domínio (${g.nomeAptidao})`, expr: metade });
     }
     if (mod.numero) {
       mesa.push({ efeitoId: mod.id, rotulo: mod.numero.rotulo, expr: trilhaCom(mod.numero.expr, b) });
@@ -776,6 +793,16 @@ export function validarTecnica(r, {
   const erro = (codigo, texto, uid) => out.push({ nivel: "erro", codigo, texto, ...(uid ? { uid } : {}) });
   const aviso = (codigo, texto, uid) => out.push({ nivel: "aviso", codigo, texto, ...(uid ? { uid } : {}) });
   const info = (codigo, texto) => out.push({ nivel: "info", codigo, texto });
+  const validarRepeticao = (g, def, rotulo) => {
+    const rep = g.repeticao;
+    if (rep.invalidas.length || ((rep.pessoal || g.compras.some((c) => c.repeticao === "aliados")) && def.repeticao !== "aliados")) {
+      erro("repeticao", `${rotulo}: opção de repetição inválida.`, g.uids[0]);
+    }
+    if (rep.semBase) erro("repeticao_base", `${rotulo}: a repetição pede uma compra base.`, g.uids[0]);
+    if (rep.pessoal && rep.aliados) {
+      erro("repeticao_exclusiva", `${rotulo}: bônus pessoal e extensão para aliados não podem ser combinados.`, g.uids[0]);
+    }
+  };
 
   if (r.tipo === TIPO_MODIFICACAO) {
     if (r.usados > r.limite.total) erro("limite", `Efeitos: ${r.usados} de ${r.limite.total}.`);
@@ -792,6 +819,7 @@ export function validarTecnica(r, {
         const rotulo = g.nomeEscolha ? `${def.nome} (${g.nomeEscolha})` : def.nome;
         erro("teto", `${rotulo}: ${g.n} compras, o teto é ${def.max}.`, g.uids[0]);
       }
+      validarRepeticao(g, def, def.nome);
     }
     // As modificações de Aptidão: a Aptidão precisa existir na ficha, servir
     // para a modificação, e nunca ser de Domínio.
@@ -819,6 +847,7 @@ export function validarTecnica(r, {
         erro("requisito", `${mod.nome}: pede Nível de Aptidão ${mod.requerTrilha.min} em ${mod.requerTrilha.trilha.toUpperCase()}.`, g.uids[0]);
       }
       if (g.n > mod.max) erro("teto", `${mod.nome} (${quem}): ${g.n} compras, o teto é ${mod.max}.`, g.uids[0]);
+      validarRepeticao(g, mod, `${mod.nome} (${quem})`);
     }
     // Pré-Requisitos: cada um aponta para UM efeito da Técnica.
     const alvos = new Map();
@@ -985,6 +1014,12 @@ export function resolveEstilos(
     ndMinimo = ESTILO_ND_MINIMO,
     // As Habilidades da ficha, para o `requer` das Técnicas de pacote.
     habilidadesPossuidas = [], nomeDaHabilidade = (id) => id,
+    /* ⚠ A PROGRESSÃO PRÓPRIA É DO PERSONAGEM (autor, 2026-10-26). Na criatura as
+       Técnicas da Expansão gastam o contador comum, como as `legacy` sempre
+       gastaram, e o estouro só deixa o contador vermelho: nada é invalidado.
+       O padrão é o de sempre (próprio), e é o derive quem decide pela divergência
+       `progressaoDoEstilo`. */
+    progressaoPropria = true,
   } = {},
 ) {
   const disponivel = estiloDisponivel(origemId, nd, liberado, ndMinimo);
@@ -1061,16 +1096,24 @@ export function resolveEstilos(
      o derive lê antes daqui. As Técnicas da Expansão usam a vaga exclusiva
      primeiro, e o que sobrar dela segue para as `legacy`. */
   const vagasEstiloTotal = Math.max(0, Math.trunc(Number(vagasEstilo) || 0));
-  const daProgressao = disponivel ? tecnicasDaProgressao(nd) : { total: 0, partes: [] };
+  const daProgressao = disponivel && progressaoPropria ? tecnicasDaProgressao(nd) : { total: 0, partes: [] };
   const usadas = disponivel ? tecnicasCru.length : 0;
   const totalProgressao = daProgressao.total + (disponivel ? vagasEstiloTotal : 0);
   const progressao = {
     total: totalProgressao,
     partes: [...daProgressao.partes, ...(disponivel ? partesVagasEstilo : [])],
     usadas,
-    excedeu: usadas > totalProgressao,
+    /* Na criatura quem mede o estouro é o contador comum do derive, e a Técnica
+       nunca perde o efeito por causa dele. */
+    excedeu: progressaoPropria && usadas > totalProgressao,
+    // Só quando o Estilo existe: a ficha sem ele não ganha campo novo.
+    ...(disponivel ? { propria: progressaoPropria } : {}),
   };
-  const vagasEstiloNasNovas = Math.min(Math.max(0, usadas - daProgressao.total), vagasEstiloTotal);
+  // Sem progressão própria a vaga exclusiva não é consumida aqui: ela sobra inteira
+  // para o contador do derive, que gasta `estilo.gastos` nela primeiro.
+  const vagasEstiloNasNovas = progressaoPropria
+    ? Math.min(Math.max(0, usadas - daProgressao.total), vagasEstiloTotal)
+    : 0;
 
   /* Validação: a Técnica com ERRO fica inteira sem efeito (DA-07), e a
      progressão estourada invalida TODAS, porque escolher quais valeriam seria
@@ -1234,9 +1277,9 @@ export function resolveEstilos(
     // A vaga exclusiva inteira, e o que sobrou dela para as `legacy`.
     vagasEstiloTotal,
     vagasEstiloSobra: vagasEstiloTotal - vagasEstiloNasNovas,
-    // O que a aba cobra do contador de Habilidades: uma por Técnica LEGACY.
-    // A da Expansão não gasta o contador (DA-03).
-    gastos: disponivel ? conhecidas.length : 0,
+    // O que a aba cobra do contador de Habilidades: uma por Técnica LEGACY. A da
+    // Expansão não gasta o contador no personagem (DA-03), e gasta na criatura.
+    gastos: disponivel ? conhecidas.length + (progressaoPropria ? 0 : usadas) : 0,
     vagas,
     gastoVagas,
     excedeuVagas: disponivel && gastoVagas > vagas,

@@ -49,12 +49,13 @@ export const TIPO_ESPECIAL = "especial";
  * Estilo... nos níveis 8, 12, 16 e 20"). O autor escolheu esta (DA-03), e a
  * outra fica registrada como divergência de fonte no guia da área.
  *
- * ⚠ Para no 19, porque o texto para no 19.
+ * Decisão do autor: a progressão continua a cada três níveis depois do 19,
+ * incluindo 22, 25, 28, 31 e os marcos seguintes.
  */
 export const PROGRESSAO_TECNICAS = Object.freeze({
   inicio: 4,
   base: 2,
-  extras: Object.freeze([7, 10, 13, 16, 19]),
+  intervalo: 3,
 });
 
 /**
@@ -62,11 +63,13 @@ export const PROGRESSAO_TECNICAS = Object.freeze({
  * `{ total, partes: [{ label, valor }] }`. Abaixo do 4 é zero e sem parcela.
  */
 export function tecnicasDaProgressao(nd) {
-  const n = Math.trunc(Number(nd) || 0);
+  const bruto = Number(nd);
+  const n = Number.isFinite(bruto) ? Math.trunc(bruto) : 0;
   if (n < PROGRESSAO_TECNICAS.inicio) return { total: 0, partes: [] };
   const partes = [{ label: `Nível ${PROGRESSAO_TECNICAS.inicio}`, valor: PROGRESSAO_TECNICAS.base }];
-  for (const nivel of PROGRESSAO_TECNICAS.extras) {
-    if (n >= nivel) partes.push({ label: `Nível ${nivel}`, valor: 1 });
+  for (let nivel = PROGRESSAO_TECNICAS.inicio + PROGRESSAO_TECNICAS.intervalo;
+    nivel <= n; nivel += PROGRESSAO_TECNICAS.intervalo) {
+    partes.push({ label: `Nível ${nivel}`, valor: 1 });
   }
   return { total: partes.reduce((s, p) => s + p.valor, 0), partes };
 }
@@ -103,8 +106,8 @@ export const ESCOLHA_TR = Object.freeze([
      repeticao   o que a compra repetida faz, POR EFEITO (decisão do autor: não
                  assumir que repetir dobra):
                    "soma"     cada compra soma o valor de novo
-                   "aliados"  a 2ª compra estende o mesmo valor aos aliados
-                              dentro do Domínio, e NÃO soma no usuário
+                   "aliados"  a 2ª compra escolhe entre extensão aos aliados
+                              e aumento pessoal, sem combinar as alternativas
                    "unica"    uma compra só
      max         teto de compras (por escolha, quando o efeito tem escolha).
                  `null` = sem teto: quem limita é a vaga da Técnica.
@@ -112,6 +115,8 @@ export const ESCOLHA_TR = Object.freeze([
                  escolha: TR de Reflexos e TR de Vontade são compras separadas.
      canal/expr  o que o efeito escreve no Motor do usuário. `expr(n)` recebe
                  quantas compras há no grupo. Sem canal = número de mesa.
+     exprPessoal alternativa pessoal da segunda compra. Sem ela, dobra `expr(1)`.
+     repeticaoPadrao modo de compras antigas sem marca. Ausente conserva aliados.
      leAptidao   a trilha que o efeito lê, para o Pré-Requisito. `null` = o
                  efeito escala por BT ou é fixo, e o Pré-Requisito não tem o
                  que aumentar nele.
@@ -130,7 +135,7 @@ export const EFEITOS_ESTILO = [
       "enquanto ele estiver ativo. Este efeito pode ser colocado mais uma vez, passando a conceder " +
       "o Aumento de Defesa também para aliados dentro do Domínio Simples.",
     custo: 1, repeticao: "aliados", max: 2, escolha: null,
-    canal: "defesa", expr: () => METADE_BT,
+    canal: "defesa", expr: () => METADE_BT, exprPessoal: () => "bt",
     leAptidao: null, aceitaBonusPreRequisito: true,
     aliados: "Defesa dos Aliados no Domínio", automacao: "A",
   },
@@ -142,7 +147,7 @@ export const EFEITOS_ESTILO = [
       "ele estiver ativo. Este efeito pode ser colocado mais uma vez, passando a conceder o Aumento " +
       "de TR também para aliados dentro do Domínio Simples.",
     custo: 1, repeticao: "aliados", max: 2, escolha: "tr",
-    canal: "bonusTR", expr: () => METADE_BT,
+    canal: "bonusTR", expr: () => METADE_BT, exprPessoal: () => "bt",
     leAptidao: null, aceitaBonusPreRequisito: true,
     aliados: "TR dos Aliados no Domínio", automacao: "A",
   },
@@ -153,11 +158,11 @@ export const EFEITOS_ESTILO = [
       "O usuário do Domínio Simples recebe um bônus igual a metade do seu BT em jogadas de ataque " +
       "que realizar enquanto o Domínio Simples estiver ativo. Este efeito pode ser colocado mais " +
       "vezes, aumentando o bônus.",
-    // Cada compra soma outra metade do BT, a mesma leitura que o autor deu à
-    // imbuição repetida em 2026-08-07.
-    custo: 1, repeticao: "soma", max: null, escolha: "ataque",
-    canal: "bonusAcerto", expr: (n) => `${METADE_BT} * ${n}`,
-    leAptidao: null, aceitaBonusPreRequisito: true, automacao: "A",
+    // Duas compras anteriores conservam BT inteiro. Aliados é escolha explícita.
+    custo: 1, repeticao: "aliados", repeticaoPadrao: "pessoal", max: 2, escolha: "ataque",
+    canal: "bonusAcerto", expr: () => METADE_BT, exprPessoal: () => "bt",
+    leAptidao: null, aceitaBonusPreRequisito: true,
+    aliados: "Acerto dos Aliados no Domínio", automacao: "A",
   },
   {
     id: "margem",
@@ -182,7 +187,7 @@ export const EFEITOS_ESTILO = [
       "enquanto ele estiver ativo. Este efeito pode ser colocado mais uma vez, passando a conceder " +
       "o Aumento na perícia também para aliados dentro do Domínio Simples.",
     custo: 1, repeticao: "aliados", max: 2, escolha: "pericia",
-    canal: "bonusPericia", expr: () => METADE_BT,
+    canal: "bonusPericia", expr: () => METADE_BT, exprPessoal: () => "bt",
     leAptidao: null, aceitaBonusPreRequisito: true,
     aliados: "Perícia dos Aliados no Domínio", automacao: "A",
   },
@@ -242,9 +247,10 @@ export const EFEITOS_ESTILO = [
     notaAutor:
       "Soma na CD. A frase \"em jogadas de ataque\" é erro de cópia do Bônus de Acerto (decisão do " +
       "autor, 2026-10-04).",
-    custo: 1, repeticao: "soma", max: null, escolha: null,
-    canal: "cd", expr: (n) => `${METADE_BT} * ${n}`,
-    leAptidao: null, aceitaBonusPreRequisito: true, automacao: "A",
+    custo: 1, repeticao: "aliados", repeticaoPadrao: "pessoal", max: 2, escolha: null,
+    canal: "cd", expr: () => METADE_BT, exprPessoal: () => "bt",
+    leAptidao: null, aceitaBonusPreRequisito: true,
+    aliados: "CD dos Aliados no Domínio", automacao: "A",
   },
   {
     id: "especial",
@@ -284,7 +290,8 @@ export const EFEITOS_ESTILO = [
      requerUmaDe  além da Aptidão, a ficha precisa de UMA destas
      requerTrilha a ficha precisa deste Nível de Aptidão
      bonus        "au" | "cl": soma `teto(trilha / 2)` em cada canal numérico da
-                  Aptidão, e a 2ª compra dá o mesmo aos aliados. O texto manda
+                  Aptidão, e a 2ª compra estende aos aliados ou dobra o bônus
+                  pessoal (decisão do autor). O texto manda
                   "arredondado para cima" (decisão do autor: não usar piso)
      numero       um número de mesa pronto ({ rotulo, expr })
      leAptidao    a trilha que a modificação lê, para o Pré-Requisito */

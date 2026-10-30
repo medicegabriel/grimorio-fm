@@ -1,0 +1,9 @@
+import fs from 'node:fs';
+const b=JSON.parse(fs.readFileSync('.audit/fang-correcoes-baseline.json','utf8'));
+const edit=(p,f)=>fs.writeFileSync(p,f(fs.readFileSync(p,'utf8')));
+const ef='src/systems/afty/afty-efeitos-conteudo.js';const old=b[ef];const start=old.indexOf('  /* ---- Força Imparável (8°)');const end=old.indexOf('  /* ============================================================ */',start);
+edit(ef,s=>s.replace('  /* TALENTOS', '  /* TALENTOS'));let s=fs.readFileSync(ef,'utf8');const anchor=s.indexOf('  /* TALENTOS',s.indexOf('export const ESCOLHA_EFEITOS'));const insert=s.lastIndexOf('  /* ============================================================ */',anchor);s=s.slice(0,insert)+old.slice(start,end)+s.slice(insert);fs.writeFileSync(ef,s);
+edit('src/systems/afty/afty-especializacao-config.js',s=>{const a=s.indexOf('  if (ids.has("res_forca_imparavel"))');const z=s.indexOf('  const totalAdrenalina',a);return s.slice(0,a)+s.slice(z);});
+edit('src/systems/afty/ui/ConfiguracaoHabilidade.jsx',s=>{s=s.replace('import { AFTY_RESISTENCIAS } from "../afty-schema";\n','').replace('  const trs = AFTY_RESISTENCIAS.map((p) => ({ id: p.value, label: p.label }));\n','');const a=s.indexOf('  if (id === "res_forca_imparavel")');const z=s.indexOf('  if (id !== "res_restrito_pelos_ceus")',a);return s.slice(0,a)+s.slice(z);});
+edit('src/systems/afty/AftyCreatureBuilder.jsx',s=>s.replace('...(h.id === "res_forca_imparavel" || h.id.endsWith("__res_forca_imparavel") ? { escolha: null } : {}), ',''));
+edit('src/systems/afty/afty-combate.js',s=>s.replace('requerHabilidade: "res_ataque_extra", soAcoes: true','requerHabilidade: "res_ataque_extra"').replace('requerHabilidade: "res_precisao_forcada", soAcoes: true','requerHabilidade: "res_precisao_forcada", umaVezPorRodada: true').replace('estado?.soConfiguracao || estado?.soAcoes','estado?.soConfiguracao'));

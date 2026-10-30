@@ -1,0 +1,25 @@
+[36mvite v8.0.8 [32mbuilding client environment for production...[36m[39m
+[2Ktransforming...✓ 1761 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                      1.01 kB │ gzip:   0.55 kB
+dist/assets/lanterna-coletora-BtjSWi8x.webp         29.13 kB
+dist/assets/AftyFichaG2-DquVvhE0.css                76.60 kB │ gzip:  13.33 kB
+dist/assets/usar-delta-dos-estados-oZ0IrZu-.css     77.20 kB │ gzip:  13.86 kB
+dist/assets/index-D6nxKjFv.css                     152.50 kB │ gzip:  22.11 kB
+dist/assets/AftyFichaG2-BDSDvU4x.js                324.62 kB │ gzip:  91.46 kB
+dist/assets/usar-delta-dos-estados-DTfMtJPA.js   1,758.31 kB │ gzip: 514.73 kB
+dist/assets/index-DQAFE9mE.js                    4,380.15 kB │ gzip: 857.20 kB
+
+[33m[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.[39m
+[33m[33m[PLUGIN_TIMINGS] Warning:[0m Your build spent significant time in plugins. Here is a breakdown:
+  - vite:css (45%)
+  - @tailwindcss/vite:generate:build (33%)
+  - vite:asset (12%)
+See https://rolldown.rs/options/checks#plugintimings for more details.
+[39m
+[32m✓ built in 3.43s[39m

@@ -141,9 +141,10 @@ t("nem os efeitos dela chegam no motor",
 
 const resComPF = ficha(12, "restringido", "restringido");
 resComPF.treinamentos = gasto;
-/* Três: os dois de PE das etapas 1ª e 3ª, mais a casca de PE do Completo. */
+/* Quatro: os dois de PE das etapas 1ª e 3ª, a Dádiva do Céu da 4ª (canal
+   `vagasEscolha`, 2026-10-12) e a casca de PE do Completo. */
 t("e chegam para o Restringido",
-  TRE.efeitosDeTreino(resComPF).filter((e) => e.origem === "potencial_fisico").length, 3);
+  TRE.efeitosDeTreino(resComPF).filter((e) => e.origem === "potencial_fisico").length, 4);
 
 /* ============================================================ */
 /* 4. ⚠ O assert que impede o efeito morto de voltar             */

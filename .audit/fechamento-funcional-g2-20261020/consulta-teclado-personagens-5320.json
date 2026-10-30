@@ -1,0 +1,134 @@
+{
+  "geradoEm": "2026-10-20T21:41:51.622Z",
+  "base": "http://127.0.0.1:5320",
+  "etapas": [
+    {
+      "nome": "G Consulta sobre o rascunho da Imitação (ima)",
+      "checks": [
+        {
+          "id": "G1 a consulta abre cobrindo o catálogo",
+          "ok": true
+        },
+        {
+          "id": "G1 fechar a consulta volta ao catálogo",
+          "ok": true
+        },
+        {
+          "id": "G1 o candidato aberto continua selecionado (rascunho)",
+          "ok": true
+        },
+        {
+          "id": "G1 Confirmar depois da consulta recebe o ponteiro e copia",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "G Consulta sobre o rascunho do Buff de Mesa (mestre)",
+      "checks": [
+        {
+          "id": "G2 a consulta abre",
+          "ok": true
+        },
+        {
+          "id": "G2 Esc fecha só a consulta, e o catálogo continua",
+          "ok": true
+        },
+        {
+          "id": "G2 o rascunho do buff sobreviveu à consulta",
+          "ok": true
+        },
+        {
+          "id": "G2 nada foi criado enquanto era rascunho",
+          "ok": true
+        },
+        {
+          "id": "G2 Esc no formulário fecha o catálogo",
+          "ok": true
+        },
+        {
+          "id": "G2 reabrir o catálogo reencontra o rascunho",
+          "ok": true
+        },
+        {
+          "id": "G2 Enter no campo cria o buff, uma vez",
+          "ok": true,
+          "dados": [
+            {
+              "id": "buff_uo5fmyvj",
+              "nome": "Rascunho",
+              "canal": "defesa",
+              "expr": "3",
+              "rodadas": 4
+            }
+          ]
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "G Teclado na Imitação (ima)",
+      "checks": [
+        {
+          "id": "G3 Enter na linha abre o detalhe sem copiar",
+          "ok": true
+        },
+        {
+          "id": "G3 Esc fecha o detalhe e deixa o catálogo",
+          "ok": true
+        },
+        {
+          "id": "G3 Enter no Confirmar copia",
+          "ok": true
+        },
+        {
+          "id": "G3 Enter no resultado tenta aprender (falha e baixa a CD)",
+          "ok": true
+        },
+        {
+          "id": "G3 Esc sem detalhe fecha o catálogo",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "G Troca de personagem (invocador, sangrador, ima)",
+      "checks": [
+        {
+          "id": "G4 o outro personagem não herda o buff nem a Exaustão",
+          "ok": true
+        },
+        {
+          "id": "G4 o invocador mantém o buff e a Exaustão 4",
+          "ok": true
+        },
+        {
+          "id": "G4 o sangrador mantém só a própria Exaustão",
+          "ok": true
+        },
+        {
+          "id": "G4 a cópia da Imitação continua só na ficha dela",
+          "ok": true
+        },
+        {
+          "id": "G4 o invocador não tem a aba Imitação nem a cópia dela",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "G Consulta sobre o rascunho da Imitação (ima): 4/4",
+    "G Consulta sobre o rascunho do Buff de Mesa (mestre): 7/7",
+    "G Teclado na Imitação (ima): 5/5",
+    "G Troca de personagem (invocador, sangrador, ima): 5/5"
+  ]
+}

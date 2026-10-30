@@ -1,0 +1,24 @@
+[
+  {
+    "width": 1440,
+    "disponiveis": 118,
+    "divisao": true,
+    "possuidasOcultas": true,
+    "aprendidasPreservadas": true,
+    "duracaoPelaRodada": true,
+    "persistencia": true,
+    "horizontal": false,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "disponiveis": 118,
+    "divisao": true,
+    "possuidasOcultas": true,
+    "aprendidasPreservadas": true,
+    "duracaoPelaRodada": true,
+    "persistencia": true,
+    "horizontal": false,
+    "errors": []
+  }
+]

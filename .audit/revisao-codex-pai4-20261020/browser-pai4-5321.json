@@ -1,0 +1,907 @@
+{
+  "geradoEm": "2026-10-20T19:32:03.696Z",
+  "base": "http://127.0.0.1:5321",
+  "etapas": [
+    {
+      "nome": "A próprio/herdado, largura 1024",
+      "checks": [
+        {
+          "id": "o arquivo que herda o prazo é aceito sem recusa",
+          "ok": true,
+          "dados": "Guarda e Firmeza Defesa +3 · Por Um Ataque, TR de Reflexos +2 · 1 Rodada"
+        },
+        {
+          "id": "o resumo da importação diz o prazo efetivo de cada benefício, inclusive o herdado",
+          "ok": true,
+          "dados": "Guarda e Firmeza Defesa +3 · Por Um Ataque, TR de Reflexos +2 · 1 Rodada"
+        },
+        {
+          "id": "o detalhe da opção diz o prazo efetivo de cada benefício antes de ativar",
+          "ok": true,
+          "dados": "Para VocêDefesa +3 · Por Um AtaqueTR de Reflexos +2 · 1 RodadaPrazoPor BenefícioCondiçõesUm AlvoCusto do Emissor: 2 PE"
+        },
+        {
+          "id": "ligada: Defesa +3 e Reflexos +2",
+          "ok": true,
+          "dados": {
+            "defesa": 20,
+            "reflexos": 9
+          }
+        },
+        {
+          "id": "a instância nasce com o contador do benefício que herda",
+          "ok": true,
+          "dados": {
+            "id": "r094g793t",
+            "rec": true,
+            "tipoFonte": "feitico",
+            "origemId": null,
+            "origemNome": "Guarda e Firmeza",
+            "aplicadoPor": "Yuki (Teste Pacotes)",
+            "beneficios": [
+              {
+                "canal": "defesa",
+                "valor": 3,
+                "duracao": {
+                  "tipo": "proximo",
+                  "texto": "Por Um Ataque"
+                }
+              },
+              {
+                "canal": "bonusTR",
+                "valor": 2,
+                "alvo": "reflexos",
+                "duracao": {
+                  "tipo": "rodadas",
+                  "rodadas": 1
+                },
+                "rodadas": 1
+              }
+            ],
+            "rodadas": null,
+            "somaPresumida": false,
+            "terminaNoDescanso": true,
+            "pacote": {
+              "chave": "emi-pai4:pac-herdado-a",
+              "id": "pac-herdado-a",
+              "nome": "Pacote herdado-a",
+              "revisao": 1,
+              "opcaoId": "o1",
+              "emissorId": "emi-pai4",
+              "emissorNome": "Yuki (Teste Pacotes)",
+              "familia": "feitico",
+              "calculo": "automatico",
+              "duracao": {
+                "tipo": "rodadas",
+                "rodadas": 1
+              },
+              "condicoes": [
+                "Um Alvo"
+              ],
+              "custoEmissor": "2 PE"
+            }
+          }
+        },
+        {
+          "id": "o detalhe da completa diz que a ficha conta a rodada do TR e encerra sozinha",
+          "ok": true,
+          "dados": "Termina1 Rodada · TR de Reflexos +2A Ficha Conta as Rodadas e Encerra SozinhaPor Um Ataque · Defesa +3A Ficha Não Conta Este Prazo: Encerre Quando AcabarEncerrar Parte"
+        },
+        {
+          "id": "o detalhe da compacta diz o mesmo",
+          "ok": true,
+          "dados": "Termina1 Rodada · TR de Reflexos +2A Ficha Conta as Rodadas e Encerra SozinhaPor Um Ataque · Defesa +3A Ficha Não Conta Este Prazo: Encerre Quando AcabarEncerrar Parte"
+        },
+        {
+          "id": "ordem 1: a virada tira só o TR herdado, e a Defesa de um ataque fica",
+          "ok": true,
+          "dados": {
+            "defesa": 20,
+            "reflexos": 7,
+            "inst": {
+              "id": "r094g793t",
+              "rec": true,
+              "tipoFonte": "feitico",
+              "origemId": null,
+              "origemNome": "Guarda e Firmeza",
+              "aplicadoPor": "Yuki (Teste Pacotes)",
+              "beneficios": [
+                {
+                  "canal": "defesa",
+                  "valor": 3,
+                  "duracao": {
+                    "tipo": "proximo",
+                    "texto": "Por Um Ataque"
+                  }
+                }
+              ],
+              "rodadas": null,
+              "somaPresumida": false,
+              "terminaNoDescanso": true,
+              "pacote": {
+                "chave": "emi-pai4:pac-herdado-a",
+                "id": "pac-herdado-a",
+                "nome": "Pacote herdado-a",
+                "revisao": 1,
+                "opcaoId": "o1",
+                "emissorId": "emi-pai4",
+                "emissorNome": "Yuki (Teste Pacotes)",
+                "familia": "feitico",
+                "calculo": "automatico",
+                "duracao": {
+                  "tipo": "rodadas",
+                  "rodadas": 1
+                },
+                "condicoes": [
+                  "Um Alvo"
+                ],
+                "custoEmissor": "2 PE"
+              }
+            }
+          }
+        },
+        {
+          "id": "ordem 1: mais duas viradas, a Defesa continua e o TR não volta",
+          "ok": true,
+          "dados": [
+            [
+              "defesa",
+              null
+            ]
+          ]
+        },
+        {
+          "id": "a recarga conserva o que sobrou",
+          "ok": true
+        },
+        {
+          "id": "a clássica dá os mesmos números",
+          "ok": true
+        },
+        {
+          "id": "Reativar leva as duas partes, o TR com o contador de novo",
+          "ok": true,
+          "dados": {
+            "id": "rr4l986tz",
+            "rec": true,
+            "tipoFonte": "feitico",
+            "origemId": null,
+            "origemNome": "Guarda e Firmeza",
+            "aplicadoPor": "Yuki (Teste Pacotes)",
+            "beneficios": [
+              {
+                "canal": "defesa",
+                "valor": 3,
+                "duracao": {
+                  "tipo": "proximo",
+                  "texto": "Por Um Ataque"
+                }
+              },
+              {
+                "canal": "bonusTR",
+                "valor": 2,
+                "alvo": "reflexos",
+                "duracao": {
+                  "tipo": "rodadas",
+                  "rodadas": 1
+                },
+                "rodadas": 1
+              }
+            ],
+            "rodadas": null,
+            "somaPresumida": false,
+            "terminaNoDescanso": true,
+            "pacote": {
+              "chave": "emi-pai4:pac-herdado-a",
+              "id": "pac-herdado-a",
+              "nome": "Pacote herdado-a",
+              "revisao": 1,
+              "opcaoId": "o1",
+              "emissorId": "emi-pai4",
+              "emissorNome": "Yuki (Teste Pacotes)",
+              "familia": "feitico",
+              "calculo": "automatico",
+              "duracao": {
+                "tipo": "rodadas",
+                "rodadas": 1
+              },
+              "condicoes": [
+                "Um Alvo"
+              ],
+              "custoEmissor": "2 PE"
+            }
+          }
+        },
+        {
+          "id": "a recarga conserva o contador do TR reativado",
+          "ok": true
+        },
+        {
+          "id": "ordem 2: Encerrar Parte na compacta tira só a Defesa, e o TR herdado segue com o contador",
+          "ok": true,
+          "dados": {
+            "defesa": 17,
+            "reflexos": 9,
+            "inst": {
+              "id": "rr4l986tz",
+              "rec": true,
+              "tipoFonte": "feitico",
+              "origemId": null,
+              "origemNome": "Guarda e Firmeza",
+              "aplicadoPor": "Yuki (Teste Pacotes)",
+              "beneficios": [
+                {
+                  "canal": "bonusTR",
+                  "valor": 2,
+                  "alvo": "reflexos",
+                  "duracao": {
+                    "tipo": "rodadas",
+                    "rodadas": 1
+                  },
+                  "rodadas": 1
+                }
+              ],
+              "rodadas": null,
+              "somaPresumida": false,
+              "terminaNoDescanso": true,
+              "pacote": {
+                "chave": "emi-pai4:pac-herdado-a",
+                "id": "pac-herdado-a",
+                "nome": "Pacote herdado-a",
+                "revisao": 1,
+                "opcaoId": "o1",
+                "emissorId": "emi-pai4",
+                "emissorNome": "Yuki (Teste Pacotes)",
+                "familia": "feitico",
+                "calculo": "automatico",
+                "duracao": {
+                  "tipo": "rodadas",
+                  "rodadas": 1
+                },
+                "condicoes": [
+                  "Um Alvo"
+                ],
+                "custoEmissor": "2 PE"
+              }
+            }
+          }
+        },
+        {
+          "id": "ordem 2: a virada na clássica tira o TR e a instância",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "observado": {
+        "base": {
+          "defesa": 17,
+          "reflexos": 7
+        }
+      }
+    },
+    {
+      "nome": "D rodadas diferentes, largura 1024",
+      "checks": [
+        {
+          "id": "o arquivo é aceito",
+          "ok": true,
+          "dados": "Guarda e Firmeza Defesa +3 · 1 Rodada, TR de Reflexos +2 · 2 Rodadas"
+        },
+        {
+          "id": "ligada: Defesa +3 e Reflexos +2, a Defesa com 1 rodada e o TR com as 2 da opção",
+          "ok": true,
+          "dados": [
+            [
+              "defesa",
+              1
+            ],
+            [
+              "bonusTR",
+              2
+            ]
+          ]
+        },
+        {
+          "id": "primeira virada: a Defesa sai e o TR fica com 1 rodada",
+          "ok": true,
+          "dados": {
+            "defesa": 17,
+            "reflexos": 9,
+            "inst": {
+              "id": "rwey164tg",
+              "rec": true,
+              "tipoFonte": "feitico",
+              "origemId": null,
+              "origemNome": "Guarda e Firmeza",
+              "aplicadoPor": "Yuki (Teste Pacotes)",
+              "beneficios": [
+                {
+                  "canal": "bonusTR",
+                  "valor": 2,
+                  "alvo": "reflexos",
+                  "duracao": {
+                    "tipo": "rodadas",
+                    "rodadas": 2
+                  },
+                  "rodadas": 1
+                }
+              ],
+              "rodadas": null,
+              "somaPresumida": false,
+              "terminaNoDescanso": true,
+              "pacote": {
+                "chave": "emi-pai4:pac-herdado-d",
+                "id": "pac-herdado-d",
+                "nome": "Pacote herdado-d",
+                "revisao": 1,
+                "opcaoId": "o1",
+                "emissorId": "emi-pai4",
+                "emissorNome": "Yuki (Teste Pacotes)",
+                "familia": "feitico",
+                "calculo": "automatico",
+                "duracao": {
+                  "tipo": "rodadas",
+                  "rodadas": 2
+                },
+                "condicoes": [
+                  "Um Alvo"
+                ],
+                "custoEmissor": "2 PE"
+              }
+            }
+          }
+        },
+        {
+          "id": "a clássica, depois da recarga, dá os mesmos números",
+          "ok": true
+        },
+        {
+          "id": "segunda virada: o TR sai e a instância também",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "F instância antiga com o TR sem contador, largura 1024",
+      "checks": [
+        {
+          "id": "a instância antiga conta o TR (Reflexos +2) e a Defesa (+3)",
+          "ok": true
+        },
+        {
+          "id": "a tela não finge que a ficha conta o TR: ele é uma parte de encerramento manual",
+          "ok": true,
+          "dados": "TerminaPor Um Ataque · Defesa +3A Ficha Não Conta Este Prazo: Encerre Quando AcabarEncerrar Parte1 Rodada · TR de Reflexos +2A Ficha Não Conta Este Prazo: Encerre Quando AcabarEncerrar Parte"
+        },
+        {
+          "id": "a virada não reescreve a instância antiga, e o TR continua até o jogador encerrar",
+          "ok": true,
+          "dados": {
+            "antes": "{\"id\":\"ry0cxsf7l\",\"rec\":true,\"tipoFonte\":\"feitico\",\"origemId\":null,\"origemNome\":\"Guarda e Firmeza\",\"aplicadoPor\":\"Yuki (Teste Pacotes)\",\"beneficios\":[{\"canal\":\"defesa\",\"valor\":3,\"duracao\":{\"tipo\":\"proximo\",\"texto\":\"Por Um Ataque\"}},{\"canal\":\"bonusTR\",\"valor\":2,\"alvo\":\"reflexos\"}],\"rodadas\":null,\"somaPresumida\":false,\"terminaNoDescanso\":true,\"pacote\":{\"chave\":\"emi-pai4:pac-herdado-a\",\"id\":\"pac-herdado-a\",\"nome\":\"Pacote herdado-a\",\"revisao\":1,\"opcaoId\":\"o1\",\"emissorId\":\"emi-pai4\",\"emissorNome\":\"Yuki (Teste Pacotes)\",\"familia\":\"feitico\",\"calculo\":\"automatico\",\"duracao\":{\"tipo\":\"rodadas\",\"rodadas\":1},\"condicoes\":[\"Um Alvo\"],\"custoEmissor\":\"2 PE\"}}",
+            "depois": "{\"id\":\"ry0cxsf7l\",\"rec\":true,\"tipoFonte\":\"feitico\",\"origemId\":null,\"origemNome\":\"Guarda e Firmeza\",\"aplicadoPor\":\"Yuki (Teste Pacotes)\",\"beneficios\":[{\"canal\":\"defesa\",\"valor\":3,\"duracao\":{\"tipo\":\"proximo\",\"texto\":\"Por Um Ataque\"}},{\"canal\":\"bonusTR\",\"valor\":2,\"alvo\":\"reflexos\"}],\"rodadas\":null,\"somaPresumida\":false,\"terminaNoDescanso\":true,\"pacote\":{\"chave\":\"emi-pai4:pac-herdado-a\",\"id\":\"pac-herdado-a\",\"nome\":\"Pacote herdado-a\",\"revisao\":1,\"opcaoId\":\"o1\",\"emissorId\":\"emi-pai4\",\"emissorNome\":\"Yuki (Teste Pacotes)\",\"familia\":\"feitico\",\"calculo\":\"automatico\",\"duracao\":{\"tipo\":\"rodadas\",\"rodadas\":1},\"condicoes\":[\"Um Alvo\"],\"custoEmissor\":\"2 PE\"}}"
+          }
+        },
+        {
+          "id": "Encerrar Parte no TR sem contador tira só o TR",
+          "ok": true,
+          "dados": {
+            "id": "ry0cxsf7l",
+            "rec": true,
+            "tipoFonte": "feitico",
+            "origemId": null,
+            "origemNome": "Guarda e Firmeza",
+            "aplicadoPor": "Yuki (Teste Pacotes)",
+            "beneficios": [
+              {
+                "canal": "defesa",
+                "valor": 3,
+                "duracao": {
+                  "tipo": "proximo",
+                  "texto": "Por Um Ataque"
+                }
+              }
+            ],
+            "rodadas": null,
+            "somaPresumida": false,
+            "terminaNoDescanso": true,
+            "pacote": {
+              "chave": "emi-pai4:pac-herdado-a",
+              "id": "pac-herdado-a",
+              "nome": "Pacote herdado-a",
+              "revisao": 1,
+              "opcaoId": "o1",
+              "emissorId": "emi-pai4",
+              "emissorNome": "Yuki (Teste Pacotes)",
+              "familia": "feitico",
+              "calculo": "automatico",
+              "duracao": {
+                "tipo": "rodadas",
+                "rodadas": 1
+              },
+              "condicoes": [
+                "Um Alvo"
+              ],
+              "custoEmissor": "2 PE"
+            }
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "A próprio/herdado, largura 1440",
+      "checks": [
+        {
+          "id": "o arquivo que herda o prazo é aceito sem recusa",
+          "ok": true,
+          "dados": "Guarda e Firmeza Defesa +3 · Por Um Ataque, TR de Reflexos +2 · 1 Rodada"
+        },
+        {
+          "id": "o resumo da importação diz o prazo efetivo de cada benefício, inclusive o herdado",
+          "ok": true,
+          "dados": "Guarda e Firmeza Defesa +3 · Por Um Ataque, TR de Reflexos +2 · 1 Rodada"
+        },
+        {
+          "id": "o detalhe da opção diz o prazo efetivo de cada benefício antes de ativar",
+          "ok": true,
+          "dados": "Para VocêDefesa +3 · Por Um AtaqueTR de Reflexos +2 · 1 RodadaPrazoPor BenefícioCondiçõesUm AlvoCusto do Emissor: 2 PE"
+        },
+        {
+          "id": "ligada: Defesa +3 e Reflexos +2",
+          "ok": true,
+          "dados": {
+            "defesa": 20,
+            "reflexos": 9
+          }
+        },
+        {
+          "id": "a instância nasce com o contador do benefício que herda",
+          "ok": true,
+          "dados": {
+            "id": "rtskemwh9",
+            "rec": true,
+            "tipoFonte": "feitico",
+            "origemId": null,
+            "origemNome": "Guarda e Firmeza",
+            "aplicadoPor": "Yuki (Teste Pacotes)",
+            "beneficios": [
+              {
+                "canal": "defesa",
+                "valor": 3,
+                "duracao": {
+                  "tipo": "proximo",
+                  "texto": "Por Um Ataque"
+                }
+              },
+              {
+                "canal": "bonusTR",
+                "valor": 2,
+                "alvo": "reflexos",
+                "duracao": {
+                  "tipo": "rodadas",
+                  "rodadas": 1
+                },
+                "rodadas": 1
+              }
+            ],
+            "rodadas": null,
+            "somaPresumida": false,
+            "terminaNoDescanso": true,
+            "pacote": {
+              "chave": "emi-pai4:pac-herdado-a",
+              "id": "pac-herdado-a",
+              "nome": "Pacote herdado-a",
+              "revisao": 1,
+              "opcaoId": "o1",
+              "emissorId": "emi-pai4",
+              "emissorNome": "Yuki (Teste Pacotes)",
+              "familia": "feitico",
+              "calculo": "automatico",
+              "duracao": {
+                "tipo": "rodadas",
+                "rodadas": 1
+              },
+              "condicoes": [
+                "Um Alvo"
+              ],
+              "custoEmissor": "2 PE"
+            }
+          }
+        },
+        {
+          "id": "o detalhe da completa diz que a ficha conta a rodada do TR e encerra sozinha",
+          "ok": true,
+          "dados": "Termina1 Rodada · TR de Reflexos +2A Ficha Conta as Rodadas e Encerra SozinhaPor Um Ataque · Defesa +3A Ficha Não Conta Este Prazo: Encerre Quando AcabarEncerrar Parte"
+        },
+        {
+          "id": "o detalhe da compacta diz o mesmo",
+          "ok": true,
+          "dados": "Termina1 Rodada · TR de Reflexos +2A Ficha Conta as Rodadas e Encerra SozinhaPor Um Ataque · Defesa +3A Ficha Não Conta Este Prazo: Encerre Quando AcabarEncerrar Parte"
+        },
+        {
+          "id": "ordem 1: a virada tira só o TR herdado, e a Defesa de um ataque fica",
+          "ok": true,
+          "dados": {
+            "defesa": 20,
+            "reflexos": 7,
+            "inst": {
+              "id": "rtskemwh9",
+              "rec": true,
+              "tipoFonte": "feitico",
+              "origemId": null,
+              "origemNome": "Guarda e Firmeza",
+              "aplicadoPor": "Yuki (Teste Pacotes)",
+              "beneficios": [
+                {
+                  "canal": "defesa",
+                  "valor": 3,
+                  "duracao": {
+                    "tipo": "proximo",
+                    "texto": "Por Um Ataque"
+                  }
+                }
+              ],
+              "rodadas": null,
+              "somaPresumida": false,
+              "terminaNoDescanso": true,
+              "pacote": {
+                "chave": "emi-pai4:pac-herdado-a",
+                "id": "pac-herdado-a",
+                "nome": "Pacote herdado-a",
+                "revisao": 1,
+                "opcaoId": "o1",
+                "emissorId": "emi-pai4",
+                "emissorNome": "Yuki (Teste Pacotes)",
+                "familia": "feitico",
+                "calculo": "automatico",
+                "duracao": {
+                  "tipo": "rodadas",
+                  "rodadas": 1
+                },
+                "condicoes": [
+                  "Um Alvo"
+                ],
+                "custoEmissor": "2 PE"
+              }
+            }
+          }
+        },
+        {
+          "id": "ordem 1: mais duas viradas, a Defesa continua e o TR não volta",
+          "ok": true,
+          "dados": [
+            [
+              "defesa",
+              null
+            ]
+          ]
+        },
+        {
+          "id": "a recarga conserva o que sobrou",
+          "ok": true
+        },
+        {
+          "id": "a clássica dá os mesmos números",
+          "ok": true
+        },
+        {
+          "id": "Reativar leva as duas partes, o TR com o contador de novo",
+          "ok": true,
+          "dados": {
+            "id": "rjv61zcw8",
+            "rec": true,
+            "tipoFonte": "feitico",
+            "origemId": null,
+            "origemNome": "Guarda e Firmeza",
+            "aplicadoPor": "Yuki (Teste Pacotes)",
+            "beneficios": [
+              {
+                "canal": "defesa",
+                "valor": 3,
+                "duracao": {
+                  "tipo": "proximo",
+                  "texto": "Por Um Ataque"
+                }
+              },
+              {
+                "canal": "bonusTR",
+                "valor": 2,
+                "alvo": "reflexos",
+                "duracao": {
+                  "tipo": "rodadas",
+                  "rodadas": 1
+                },
+                "rodadas": 1
+              }
+            ],
+            "rodadas": null,
+            "somaPresumida": false,
+            "terminaNoDescanso": true,
+            "pacote": {
+              "chave": "emi-pai4:pac-herdado-a",
+              "id": "pac-herdado-a",
+              "nome": "Pacote herdado-a",
+              "revisao": 1,
+              "opcaoId": "o1",
+              "emissorId": "emi-pai4",
+              "emissorNome": "Yuki (Teste Pacotes)",
+              "familia": "feitico",
+              "calculo": "automatico",
+              "duracao": {
+                "tipo": "rodadas",
+                "rodadas": 1
+              },
+              "condicoes": [
+                "Um Alvo"
+              ],
+              "custoEmissor": "2 PE"
+            }
+          }
+        },
+        {
+          "id": "a recarga conserva o contador do TR reativado",
+          "ok": true
+        },
+        {
+          "id": "ordem 2: Encerrar Parte na compacta tira só a Defesa, e o TR herdado segue com o contador",
+          "ok": true,
+          "dados": {
+            "defesa": 17,
+            "reflexos": 9,
+            "inst": {
+              "id": "rjv61zcw8",
+              "rec": true,
+              "tipoFonte": "feitico",
+              "origemId": null,
+              "origemNome": "Guarda e Firmeza",
+              "aplicadoPor": "Yuki (Teste Pacotes)",
+              "beneficios": [
+                {
+                  "canal": "bonusTR",
+                  "valor": 2,
+                  "alvo": "reflexos",
+                  "duracao": {
+                    "tipo": "rodadas",
+                    "rodadas": 1
+                  },
+                  "rodadas": 1
+                }
+              ],
+              "rodadas": null,
+              "somaPresumida": false,
+              "terminaNoDescanso": true,
+              "pacote": {
+                "chave": "emi-pai4:pac-herdado-a",
+                "id": "pac-herdado-a",
+                "nome": "Pacote herdado-a",
+                "revisao": 1,
+                "opcaoId": "o1",
+                "emissorId": "emi-pai4",
+                "emissorNome": "Yuki (Teste Pacotes)",
+                "familia": "feitico",
+                "calculo": "automatico",
+                "duracao": {
+                  "tipo": "rodadas",
+                  "rodadas": 1
+                },
+                "condicoes": [
+                  "Um Alvo"
+                ],
+                "custoEmissor": "2 PE"
+              }
+            }
+          }
+        },
+        {
+          "id": "ordem 2: a virada na clássica tira o TR e a instância",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "observado": {
+        "base": {
+          "defesa": 17,
+          "reflexos": 7
+        }
+      }
+    },
+    {
+      "nome": "D rodadas diferentes, largura 1440",
+      "checks": [
+        {
+          "id": "o arquivo é aceito",
+          "ok": true,
+          "dados": "Guarda e Firmeza Defesa +3 · 1 Rodada, TR de Reflexos +2 · 2 Rodadas"
+        },
+        {
+          "id": "ligada: Defesa +3 e Reflexos +2, a Defesa com 1 rodada e o TR com as 2 da opção",
+          "ok": true,
+          "dados": [
+            [
+              "defesa",
+              1
+            ],
+            [
+              "bonusTR",
+              2
+            ]
+          ]
+        },
+        {
+          "id": "primeira virada: a Defesa sai e o TR fica com 1 rodada",
+          "ok": true,
+          "dados": {
+            "defesa": 17,
+            "reflexos": 9,
+            "inst": {
+              "id": "rlaae92oh",
+              "rec": true,
+              "tipoFonte": "feitico",
+              "origemId": null,
+              "origemNome": "Guarda e Firmeza",
+              "aplicadoPor": "Yuki (Teste Pacotes)",
+              "beneficios": [
+                {
+                  "canal": "bonusTR",
+                  "valor": 2,
+                  "alvo": "reflexos",
+                  "duracao": {
+                    "tipo": "rodadas",
+                    "rodadas": 2
+                  },
+                  "rodadas": 1
+                }
+              ],
+              "rodadas": null,
+              "somaPresumida": false,
+              "terminaNoDescanso": true,
+              "pacote": {
+                "chave": "emi-pai4:pac-herdado-d",
+                "id": "pac-herdado-d",
+                "nome": "Pacote herdado-d",
+                "revisao": 1,
+                "opcaoId": "o1",
+                "emissorId": "emi-pai4",
+                "emissorNome": "Yuki (Teste Pacotes)",
+                "familia": "feitico",
+                "calculo": "automatico",
+                "duracao": {
+                  "tipo": "rodadas",
+                  "rodadas": 2
+                },
+                "condicoes": [
+                  "Um Alvo"
+                ],
+                "custoEmissor": "2 PE"
+              }
+            }
+          }
+        },
+        {
+          "id": "a clássica, depois da recarga, dá os mesmos números",
+          "ok": true
+        },
+        {
+          "id": "segunda virada: o TR sai e a instância também",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "F instância antiga com o TR sem contador, largura 1440",
+      "checks": [
+        {
+          "id": "a instância antiga conta o TR (Reflexos +2) e a Defesa (+3)",
+          "ok": true
+        },
+        {
+          "id": "a tela não finge que a ficha conta o TR: ele é uma parte de encerramento manual",
+          "ok": true,
+          "dados": "TerminaPor Um Ataque · Defesa +3A Ficha Não Conta Este Prazo: Encerre Quando AcabarEncerrar Parte1 Rodada · TR de Reflexos +2A Ficha Não Conta Este Prazo: Encerre Quando AcabarEncerrar Parte"
+        },
+        {
+          "id": "a virada não reescreve a instância antiga, e o TR continua até o jogador encerrar",
+          "ok": true,
+          "dados": {
+            "antes": "{\"id\":\"rtcvz3fc4\",\"rec\":true,\"tipoFonte\":\"feitico\",\"origemId\":null,\"origemNome\":\"Guarda e Firmeza\",\"aplicadoPor\":\"Yuki (Teste Pacotes)\",\"beneficios\":[{\"canal\":\"defesa\",\"valor\":3,\"duracao\":{\"tipo\":\"proximo\",\"texto\":\"Por Um Ataque\"}},{\"canal\":\"bonusTR\",\"valor\":2,\"alvo\":\"reflexos\"}],\"rodadas\":null,\"somaPresumida\":false,\"terminaNoDescanso\":true,\"pacote\":{\"chave\":\"emi-pai4:pac-herdado-a\",\"id\":\"pac-herdado-a\",\"nome\":\"Pacote herdado-a\",\"revisao\":1,\"opcaoId\":\"o1\",\"emissorId\":\"emi-pai4\",\"emissorNome\":\"Yuki (Teste Pacotes)\",\"familia\":\"feitico\",\"calculo\":\"automatico\",\"duracao\":{\"tipo\":\"rodadas\",\"rodadas\":1},\"condicoes\":[\"Um Alvo\"],\"custoEmissor\":\"2 PE\"}}",
+            "depois": "{\"id\":\"rtcvz3fc4\",\"rec\":true,\"tipoFonte\":\"feitico\",\"origemId\":null,\"origemNome\":\"Guarda e Firmeza\",\"aplicadoPor\":\"Yuki (Teste Pacotes)\",\"beneficios\":[{\"canal\":\"defesa\",\"valor\":3,\"duracao\":{\"tipo\":\"proximo\",\"texto\":\"Por Um Ataque\"}},{\"canal\":\"bonusTR\",\"valor\":2,\"alvo\":\"reflexos\"}],\"rodadas\":null,\"somaPresumida\":false,\"terminaNoDescanso\":true,\"pacote\":{\"chave\":\"emi-pai4:pac-herdado-a\",\"id\":\"pac-herdado-a\",\"nome\":\"Pacote herdado-a\",\"revisao\":1,\"opcaoId\":\"o1\",\"emissorId\":\"emi-pai4\",\"emissorNome\":\"Yuki (Teste Pacotes)\",\"familia\":\"feitico\",\"calculo\":\"automatico\",\"duracao\":{\"tipo\":\"rodadas\",\"rodadas\":1},\"condicoes\":[\"Um Alvo\"],\"custoEmissor\":\"2 PE\"}}"
+          }
+        },
+        {
+          "id": "Encerrar Parte no TR sem contador tira só o TR",
+          "ok": true,
+          "dados": {
+            "id": "rtcvz3fc4",
+            "rec": true,
+            "tipoFonte": "feitico",
+            "origemId": null,
+            "origemNome": "Guarda e Firmeza",
+            "aplicadoPor": "Yuki (Teste Pacotes)",
+            "beneficios": [
+              {
+                "canal": "defesa",
+                "valor": 3,
+                "duracao": {
+                  "tipo": "proximo",
+                  "texto": "Por Um Ataque"
+                }
+              }
+            ],
+            "rodadas": null,
+            "somaPresumida": false,
+            "terminaNoDescanso": true,
+            "pacote": {
+              "chave": "emi-pai4:pac-herdado-a",
+              "id": "pac-herdado-a",
+              "nome": "Pacote herdado-a",
+              "revisao": 1,
+              "opcaoId": "o1",
+              "emissorId": "emi-pai4",
+              "emissorNome": "Yuki (Teste Pacotes)",
+              "familia": "feitico",
+              "calculo": "automatico",
+              "duracao": {
+                "tipo": "rodadas",
+                "rodadas": 1
+              },
+              "condicoes": [
+                "Um Alvo"
+              ],
+              "custoEmissor": "2 PE"
+            }
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "A próprio/herdado, largura 1024: 16/16",
+    "D rodadas diferentes, largura 1024: 6/6",
+    "F instância antiga com o TR sem contador, largura 1024: 5/5",
+    "A próprio/herdado, largura 1440: 16/16",
+    "D rodadas diferentes, largura 1440: 6/6",
+    "F instância antiga com o TR sem contador, largura 1440: 5/5"
+  ]
+}

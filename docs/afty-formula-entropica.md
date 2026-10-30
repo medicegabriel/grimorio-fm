@@ -134,7 +134,7 @@ Duas observações de tela, anotadas no `docs/a-fazer.md`:
 | Restrição Definitiva Intelectual (4) | Restrição Definitiva (Base 10) | remendo em `res_restricao_definitiva` na herdeira |
 | Dádivas Intelectuais do Céu (5), 11 | Dádivas do Céu | escolha aninhada da herdeira |
 | Doutrina da Guerra Matemática (6) | Estilo Marcial, nunca enviado | habilidade da herdeira e estados de combate |
-| Técnicas Marciais Nvl. 1 a 4 (7 a 10), 12 | técnicas marciais | modelos de Feitiço Personalizado. O custo 2/5/8/12 é a tabela `FEITICO_CUSTO_PE` |
+| Técnicas Marciais Nvl. 1 a 4 (7 a 10), 12 | técnicas marciais | modelos de Técnica Marcial Personalizada. Desde 2026-10-27 a Técnica Marcial é nativa (`docs/afty-tecnicas-marciais.md`), com o custo 2/5/8/12 em `TM_CUSTO_PE` |
 | Arsenal das Possibilidades e Preparação de Terreno (11 a 17) | Arsenal Amaldiçoado, nunca enviado | card novo de Preparação de Terreno |
 | M.E.D.U.S.A. e Bomba Atômica (18 e 19) | nada | dispositivos únicos no mesmo card |
 | Veículos de Combate (20 a 24) | nada | Invocação do tipo Veículo, com ficha fixa |

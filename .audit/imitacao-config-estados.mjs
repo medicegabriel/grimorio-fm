@@ -1,0 +1,1 @@
+import fs from 'node:fs';const p='src/systems/afty/afty-combate.js';let s=fs.readFileSync(p,'utf8').replace('["cmb_assumir_postura", "cmb_mestre_da_postura"]','["cmb_assumir_postura", "cmb_mestre_da_postura", "cmb_aprender_postura"]');fs.writeFileSync(p,s);

@@ -1,0 +1,298 @@
+/* ============================================================
+   AÇÕES, PERÍCIAS E EQUIPAMENTOS NO G2 (prévia isolada, 2026-10-21)
+   ============================================================
+   Tudo escopado em `.e-g2.m-aba` e carregado só pelo `AftyFichaG2` (que já é um pedaço preguiçoso): a clássica, o criador e o Encontro
+   não recebem uma linha daqui. Pinta por papel do G2 (`--e-*`, derivados dos `--afty-*` do tema), então os presets, o Minamoto e o CSS
+   personalizado alcançam as abas pelos mesmos ganchos (`.afty-card`, `.afty-linha`, `.afty-valor`, `[data-afty-*]`).
+   O leiaute responde à largura da ABA (contêiner), e não da janela: a compacta aberta estreita a aba.
+   ============================================================ */
+.e-g2.m-aba { container: aba / inline-size; display: flex; flex-direction: column; gap: 12px; font-size: 14px; }
+.e-g2.m-aba .e-grupo { margin-top: 0; }
+.e-g2.m-aba .m-secao-topo { flex-wrap: wrap; row-gap: 8px; border-radius: calc(var(--m-raio-secao) - 1px) calc(var(--m-raio-secao) - 1px) 0 0; }
+/* Título com controle (o modo do Dano, os filtros): o controle já dá a altura, então o respiro em volta é o do Rápido. Medido em
+   1280x800 com a compacta e a barra de rolagem real, o S1 só mostrava a linha de Dano inteira com esta folga. */
+.e-g2.m-aba .m-secao-topo:has(> .m-secao-controles .m-seg) { padding-top: 6px; padding-bottom: 6px; }
+.e-g2.m-aba .m-secao-topo .e-grupo-titulo { outline: none; }
+.e-g2.m-aba .m-secao-controles { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; min-width: 0; }
+.e-g2.m-aba .m-secao-corpo { min-width: 0; }
+/* `clip` corta como o `hidden` do grupo, cantos inclusive, mas NÃO vira contêiner de rolagem: o detalhe grudado do inventário gruda na
+   janela, e não na seção (com `hidden`, o `top` dele contava a partir do topo da seção e o detalhe descia 347 px). Também impede que um
+   `scrollIntoView` role a seção por dentro. */
+/* A curva do cartão e a do fundo do cabeçalho usam a mesma medida fixa, descontando a borda interna de 1 px. */
+.e-g2.m-aba .m-secao { --m-raio-secao: 12px; border-radius: var(--m-raio-secao); overflow: clip; }
+
+/* ---------- índice ---------- */
+.e-g2 .m-indice { display: flex; flex-wrap: wrap; gap: 6px; }
+/* Rótulo e contagem numa linha só, centrada no botão. A contagem (outra fonte) tem `line-height: 0` para não alongar a linha: com ela ou
+   sem ela (Domínio), a base do rótulo fica na mesma altura em todos os botões. */
+.e-g2 .m-indice-item { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 12px; border: 1px solid var(--e-ctrl-borda); border-radius: 9px; background: none; color: var(--e-t1); font: 600 14px/20px var(--e-display); font-stretch: semi-condensed; }
+.e-g2 .m-indice-item:hover { background: var(--e-ctrl); }
+/* Estreito, o índice é uma fita de uma fileira que o dedo rola (como a fita de categorias do catálogo): não come altura do Dano. */
+@container aba (max-width: 599px) {
+  .e-g2 .m-indice { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+  .e-g2 .m-indice-item { flex: none; }
+}
+.e-g2 .m-indice-item small { margin-left: 6px; font: 400 13px/0 var(--afty-fonte); color: var(--e-t3); font-variant-numeric: var(--e-num); }
+.e-g2 .m-pendente { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 700; color: var(--e-aviso); white-space: nowrap; }
+.e-g2 .m-pendente svg { width: 13px; height: 13px; color: var(--e-aviso-icone); }
+
+/* ---------- Agora na Mesa ---------- */
+.e-g2 .m-mesa { display: grid; gap: 8px; }
+.e-g2 .m-rapido .m-secao-topo { padding-top: 6px; padding-bottom: 6px; }
+/* O Rápido é a lista de atalhos: linha um pouco mais baixa que a de Habilidades (44 contra 48), ainda com folga para o botão de 34. */
+.e-g2.m-aba .m-rapido .e-linha, .e-g2.m-aba .m-rapido .m-item-corpo { min-height: 44px; }
+.e-g2 .m-so-leitor { position: absolute !important; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.e-g2 .m-mesa-titulo { margin: 0; display: flex; align-items: center; gap: 12px; font: 600 15px var(--e-display); font-stretch: semi-condensed; color: var(--e-t2); outline: none; }
+.e-g2 .m-celulas { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+/* Duas fileiras fixas: o nome e a ação em cima, o estado embaixo. A célula não cresce com o texto do estado, que quebra dentro dela. */
+.e-g2 .m-celula { min-height: 48px; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "nome acao" "estado estado"; align-items: center; column-gap: 10px; padding: 5px 8px 5px 10px; border: 1px solid var(--e-painel-borda); border-radius: 12px; background: var(--e-painel); min-width: 0; }
+.e-g2 .m-celula > .m-celula-nome { grid-area: nome; }
+.e-g2 .m-celula > :is(.m-celula-estado, .m-pendente) { grid-area: estado; }
+.e-g2 .m-celula > .m-celula-estado + .m-pendente { grid-area: auto; grid-column: 1; }
+.e-g2 .m-celula > :is(.m-celula-acao, .m-gatilhos) { grid-area: acao; }
+.e-g2 .m-celula[data-aberta] { border-color: var(--e-sel-borda); background: var(--e-sel); }
+.e-g2 .m-celula-nome { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; padding: 0; border: 0; background: none; color: var(--e-t1); font: 600 14.5px var(--e-display); font-stretch: semi-condensed; text-align: left; min-width: 0; }
+.e-g2 .m-celula-nome > span { overflow-wrap: anywhere; }
+.e-g2 .m-celula-seta { width: 15px; height: 15px; color: var(--e-t3); transition: transform .15s; transform: rotate(-90deg); }
+.e-g2 .m-celula[data-aberta] .m-celula-seta { transform: none; }
+.e-g2 .m-celula-estado { min-width: 0; font-size: 13px; line-height: 1.35; color: var(--e-t2); overflow-wrap: anywhere; }
+.e-g2 .m-celula .e-botao, .e-g2 .m-celula .m-botao { height: 30px; }
+@media (pointer: coarse) { .e-g2 .m-celula .e-botao, .e-g2 .m-celula .m-botao, .e-g2 .m-celula .m-gatilho { height: 40px; } }
+.e-g2 .m-gatilhos { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.e-g2 .m-gatilho { border: 1px solid var(--e-ctrl-borda); }
+.e-g2 .m-corpo:not([hidden]) { padding: 10px 12px; border: 1px solid var(--e-sel-borda); border-radius: 12px; background: var(--e-painel); }
+/* O painel existente dentro do corpo: sem cartão dentro de cartão. */
+.e-g2 .m-corpo .afty-card { border: 0; background: none; box-shadow: none; padding: 0; }
+@container aba (max-width: 599px) {
+  .e-g2 .m-celulas { display: flex; flex-wrap: wrap; }
+  .e-g2 .m-celula { min-height: 36px; flex: 1 1 100%; padding: 4px 8px 4px 10px; }
+}
+
+/* ---------- linhas operáveis (Ações) ---------- */
+.e-g2 .m-linha { padding: 6px 14px 6px 10px; border: 0; border-top: 1px solid var(--e-linha); border-radius: 0; background: none; }
+.e-g2 .m-secao-corpo > .m-linha:first-child, .e-g2 .m-secao-corpo > .m-faixa + .m-linha { border-top: 0; }
+.e-g2 .m-linha:hover { background: var(--e-hover); }
+.e-g2 .m-linha-topo { min-height: 40px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+.e-g2 .m-linha-nome { flex: 1 1 180px; min-width: 0; display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0; border: 0; background: none; color: var(--e-t1); text-align: left; cursor: pointer; }
+.e-g2 .m-linha-nome-fixo { cursor: default; padding-left: 4px; }
+.e-g2 .m-nome { font-size: 15px; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+.e-g2 .m-qtd { font-weight: 400; color: var(--e-t2); }
+.e-g2 .m-seta { width: 16px; height: 16px; flex: none; color: var(--e-t3); transform: rotate(-90deg); transition: transform .15s; }
+.e-g2 [aria-expanded="true"] > .m-seta { transform: none; }
+.e-g2 .m-tipo { display: inline-flex; color: var(--e-ativo); }
+.e-g2 .m-metas { flex: 1 1 200px; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: 13px; color: var(--e-t2); }
+.e-g2 .m-meta { white-space: nowrap; }
+.e-g2 .m-meta-num { font-variant-numeric: var(--e-num); color: var(--e-t1); }
+.e-g2 .m-custo { color: var(--afty-pe); font-weight: 600; }
+.e-g2 .m-custo-vida { color: var(--afty-pv); font-weight: 600; }
+.e-g2 .m-chip { display: inline-flex; align-items: center; gap: 5px; min-height: 24px; padding: 0 8px; border: 1px solid var(--e-ctrl-borda); border-radius: 7px; font-size: 12.5px; font-weight: 600; color: var(--e-t2); white-space: nowrap; }
+.e-g2 .m-chip[data-tom="destaque"] { border-color: var(--e-sel-borda); background: var(--e-sel); color: var(--e-t1); }
+.e-g2 .m-chip[data-tom="aviso"] { border-color: var(--e-aviso-borda); background: var(--e-aviso-fundo); color: var(--e-aviso); }
+.e-g2 .m-chip svg { width: 13px; height: 13px; }
+.e-g2 .m-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.e-g2 .m-acoes { flex: 0 1 auto; margin-left: auto; display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; min-width: 0; }
+.e-g2 .m-valor { font: 600 15px var(--e-display); font-stretch: semi-condensed; color: var(--e-t1); font-variant-numeric: var(--e-num); overflow-wrap: anywhere; }
+
+/* O alvo que rola: rótulo e número numa pastilha, e a pastilha INTEIRA recebe o clique (o `::after` do botão cobre a pastilha). */
+.e-g2 .m-rolar { position: relative; display: inline-flex; align-items: baseline; gap: 7px; min-height: 36px; padding: 6px 12px; border: 1px solid var(--e-ctrl-borda); border-radius: 9px; background: var(--e-ctrl); max-width: 100%; }
+.e-g2 .m-rolar:hover { background: var(--e-ctrl-hover); border-color: var(--e-sel-borda); }
+.e-g2 .m-rolar:has(button:focus-visible) { outline: 2px solid var(--afty-destaque); outline-offset: 2px; }
+.e-g2 .m-rolar .afty-fontes-raiz { position: static; min-width: 0; }
+.e-g2 .m-rolar button.afty-rolavel { position: static; padding: 0; border: 0; background: none; outline: none; }
+.e-g2 .m-rolar button.afty-rolavel::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+.e-g2 .m-rolar-rotulo { font-size: 12.5px; font-weight: 600; color: var(--e-t2); white-space: nowrap; }
+.e-g2 .m-rolar-num { font: 700 15px var(--e-display); font-stretch: semi-condensed; color: var(--e-t1); font-variant-numeric: var(--e-num); overflow-wrap: anywhere; text-align: left; }
+.e-g2 .m-rolar-dano .m-rolar-num { color: var(--e-t1); }
+.e-g2 .m-rolar-cura .m-rolar-num { color: var(--afty-cura); }
+.e-g2 .m-rolar[data-indisponivel] { background: none; border-style: dashed; }
+/* Recusada: borda tracejada e sem fundo. O texto segue legível (tom secundário), porque o número ainda informa e o motivo está ao lado. */
+.e-g2 .m-rolar[data-indisponivel] .m-rolar-num, .e-g2 .m-rolar[data-indisponivel] .m-rolar-rotulo { color: var(--e-t2); }
+@media (pointer: coarse) { .e-g2 .m-rolar, .e-g2 .m-linha-nome, .e-g2 .m-indice-item { min-height: 40px; } }
+
+.e-g2 .m-motivos { display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 2px 0 2px 28px; }
+.e-g2 .m-motivo { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; color: var(--e-aviso); }
+.e-g2 .m-motivo svg { width: 13px; height: 13px; flex: none; color: var(--e-aviso-icone); }
+
+/* ---------- linhas de Dano: colunas comuns ----------
+   Aceite do autor (21/10): uma arma não fica mais alta que a outra. Antes cada linha era um flex com quebra própria, e a fórmula um
+   pouco maior de uma arma derrubava só os botões DELA para a segunda fileira. Agora a seção é uma grade e cada linha a herda (subgrid):
+   nome, metas, Acerto e Dano ficam nas mesmas colunas em todas as linhas, cada coluna com a largura da maior entrada. Descer os alvos
+   para uma fileira própria é decisão da SEÇÃO, pela largura real dela (contêiner `dano`, que já desconta a compacta e as duas colunas),
+   e vale para todas as linhas de uma vez. As colunas dos alvos são `auto`: no aperto a fórmula quebra dentro do botão, nunca estoura,
+   e as metas quebram entre si. A linha sem Acerto deixa a coluna dele vazia, e o Dano fica no lugar do Dano.
+   Três arranjos, pela largura da seção:
+     - 720 px ou mais: uma fileira (nome, metas, Acerto, Dano). O nome tem piso de 9rem, as metas o resto.
+     - de 560 a 719: o nome com as metas embaixo e os alvos à direita, nas duas fileiras. Numa fileira só, as metas tomavam a largura
+       inteira delas antes do nome, e os nomes quebravam em quatro a seis linhas (arsenal em 1024 com a compacta).
+     - abaixo de 560: nome, metas e os alvos, cada um na sua fileira. */
+.e-g2 .m-secao-dano { container: dano / inline-size; }
+.e-g2 .m-secao-dano > .m-secao-corpo { display: grid; column-gap: 12px; grid-template-columns: [nome] minmax(9rem, 1fr) [metas] auto [acerto] auto [dano] auto [fim]; }
+.e-g2 .m-secao-dano .m-linha { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; grid-template-rows: minmax(40px, auto); align-items: center; row-gap: 4px; }
+.e-g2 .m-secao-dano :is(.m-linha-topo, .m-linha-topo > .m-acoes) { display: contents; }
+.e-g2 .m-secao-dano .m-linha-nome { grid-row: 1; grid-column: nome; }
+.e-g2 .m-secao-dano .m-linha-topo > .m-metas { grid-row: 1; grid-column: metas; }
+.e-g2 .m-secao-dano .m-acoes > .m-rolar { grid-row: 1; grid-column: acerto; }
+.e-g2 .m-secao-dano .m-acoes > .m-rolar-dano { grid-column: dano; }
+.e-g2 .m-secao-dano :is(.m-motivos, .m-detalhe) { grid-column: 1 / -1; }
+@container dano (max-width: 719px) {
+  .e-g2 .m-secao-dano > .m-secao-corpo { grid-template-columns: [nome metas] minmax(0, 1fr) [acerto] auto [dano] auto [fim]; }
+  .e-g2 .m-secao-dano .m-linha { grid-template-rows: auto auto; row-gap: 2px; }
+  /* O nome abre o detalhe (não rola): 28 px no ponteiro fino para o par nome e metas caber na altura dos alvos. No toque, 40. */
+  .e-g2 .m-secao-dano .m-linha-nome { grid-column: nome; min-height: 28px; }
+  .e-g2 .m-secao-dano .m-linha-topo > .m-metas { grid-row: 2; grid-column: metas; padding-left: 24px; }
+  .e-g2 .m-secao-dano .m-acoes > .m-rolar { grid-row: 1 / span 2; }
+  @media (pointer: coarse) { .e-g2 .m-secao-dano .m-linha-nome { min-height: 40px; } }
+}
+@container dano (max-width: 559px) {
+  .e-g2 .m-secao-dano .m-linha-nome { grid-column: nome / fim; }
+  .e-g2 .m-secao-dano .m-linha-topo > .m-metas { grid-column: metas / fim; }
+  .e-g2 .m-secao-dano .m-acoes > .m-rolar { grid-row: 3; }
+}
+
+/* O detalhe no lugar. */
+.e-g2 .m-detalhe:not([hidden]) { display: grid; gap: 12px; margin: 6px 0 6px 26px; padding: 12px 14px; border-left: 2px solid var(--e-sel-borda); border-radius: 0 10px 10px 0; background: color-mix(in oklab, var(--afty-texto) 3%, transparent); }
+.e-g2 .m-bloco { display: grid; gap: 8px; min-width: 0; }
+.e-g2 .m-bloco-titulo { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font: 600 14.5px var(--e-display); font-stretch: semi-condensed; color: var(--e-t2); }
+.e-g2 .m-bloco-titulo small { font: 400 13px var(--afty-fonte); color: var(--e-t3); }
+.e-g2 .m-controles { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.e-g2 .m-campo { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--e-t2); }
+.e-g2 .m-campo .afty-campo { height: 32px; }
+.e-g2 .m-aviso-chip { display: inline-flex; align-items: center; gap: 5px; margin: 0; min-height: 26px; padding: 0 8px; border: 1px solid var(--e-aviso-borda); border-radius: 7px; background: var(--e-aviso-fundo); color: var(--e-aviso); font-size: 12.5px; font-weight: 600; }
+.e-g2 .m-aviso-chip svg { width: 13px; height: 13px; }
+.e-g2 .m-avisos { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: 13px; color: var(--e-aviso); }
+.e-g2 .m-avisos li { display: flex; align-items: flex-start; gap: 6px; }
+.e-g2 .m-avisos svg { width: 14px; height: 14px; flex: none; margin-top: 2px; color: var(--e-aviso-icone); }
+.e-g2 .m-saidas { display: flex; flex-wrap: wrap; gap: 10px 16px; }
+.e-g2 .m-saida { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.e-g2 .m-valor-grande { margin: 0; font: 700 16px var(--e-display); font-stretch: semi-condensed; }
+.e-g2 .m-propriedades { margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px 18px; font-size: 13.5px; }
+.e-g2 .m-propriedades-texto { grid-template-columns: minmax(0, 1fr); }
+.e-g2 .m-propriedade { display: flex; flex-wrap: wrap; gap: 4px 8px; min-width: 0; }
+.e-g2 .m-propriedade dt { font-weight: 600; color: var(--e-t2); }
+.e-g2 .m-propriedade dt::after { content: ":"; }
+.e-g2 .m-propriedade dd { margin: 0; color: var(--e-t1); overflow-wrap: anywhere; }
+.e-g2 .m-texto { margin: 0; max-width: 84ch; font-size: 14px; line-height: 1.55; color: var(--e-t1); white-space: pre-line; }
+.e-g2 .m-regra .e-texto { font-size: 14.5px; }
+.e-g2 .m-liberacao-grupo { display: grid; gap: 6px; }
+.e-g2 .m-opcao { border: 1px solid var(--e-ctrl-borda); }
+.e-g2 .m-sem-detalhe { margin: 0; font-size: 13px; color: var(--e-t3); }
+.e-g2 .m-efeito { display: grid; gap: 4px; }
+.e-g2 .m-expansao-controle { margin: 4px 0 2px 26px; }
+/* O controle de mesa da Expansão vem num `.afty-linha` próprio: aqui ele não é outra caixa dentro da linha. */
+.e-g2 .m-expansao-controle > .afty-linha { border: 0; background: none; padding: 2px 0; }
+.e-g2 .m-faixa { padding: 8px 10px; border-bottom: 1px solid var(--e-linha); }
+.e-g2 .m-passos { display: inline-flex; align-items: center; gap: 6px; }
+.e-g2 .m-passo { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--e-ctrl-borda); border-radius: 8px; background: none; color: var(--e-t1); font-size: 16px; }
+.e-g2 .m-passo:disabled { color: var(--e-t3); border-color: var(--e-linha); }
+.e-g2 .m-passos-valor { min-width: 54px; text-align: center; font: 600 14px var(--e-display); font-variant-numeric: var(--e-num); color: var(--e-t1); }
+.e-g2 .m-seg-pequeno .m-seg-op { height: 28px; padding: 0 10px; font-size: 13px; }
+.e-g2 .m-seg-rotulo { align-self: center; padding: 0 6px 0 8px; font: 600 13px var(--e-display); color: var(--e-t3); }
+.e-g2 .m-seg .m-seg-op small { margin-left: 6px; font-weight: 400; color: var(--e-t3); font-variant-numeric: var(--e-num); }
+
+/* As peças existentes que entram no detalhe (Ritual, Técnica Máxima, Expansão, Bloodfeast): tamanho de leitura do G2, sem reescrevê-las. */
+.e-g2.m-aba :is(.m-detalhe, .m-expansao-controle, .m-faixa, .m-corpo) :is(.afty-chip, .afty-botao, .afty-rotulo, .afty-valor) { font-size: 13px; }
+.e-g2.m-aba :is(.m-detalhe, .m-expansao-controle, .m-faixa, .m-corpo) .text-xs { font-size: 13px; }
+.e-g2.m-aba :is(.m-detalhe, .m-expansao-controle, .m-faixa, .m-corpo) :is(.text-\[10px\], .text-\[11px\]) { font-size: 12.5px; }
+.e-g2.m-aba :is(.m-detalhe, .m-expansao-controle, .m-faixa, .m-corpo) .afty-botao { min-height: 30px; }
+.e-g2.m-aba :is(.m-detalhe, .m-expansao-controle, .m-faixa, .m-corpo) details > summary { font-size: 13.5px; padding: 4px 0; }
+/* Cores fixas dos painéis compartilhados: no G2 o aviso segue o tema, sem tocar os arquivos (a clássica fica como está). */
+.e-g2.m-aba .text-amber-400 { color: var(--e-aviso); }
+.e-g2.m-aba .bg-slate-950 { background: var(--e-ctrl); color: var(--e-t1); }
+.e-g2.m-aba .m-corpo input[type="number"]:not(.afty-campo) { height: 30px; padding: 0 8px; border: 1px solid var(--e-ctrl-borda); border-radius: 7px; background: var(--e-ctrl); color: var(--e-t1); }
+
+/* ---------- duas colunas de seções (decisão 1A): DOM, Tab e ordem estreita iguais ---------- */
+.e-g2 .m-colunas { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start; }
+.e-g2 .m-coluna { display: grid; gap: 14px; min-width: 0; }
+@container aba (min-width: 1180px) {
+  .e-g2 .m-colunas[data-duas] { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}
+
+/* ---------- Outros ---------- */
+/* As linhas entre cartões são bordas de cada cartão (em cima e à esquerda), e a margem negativa esconde as de fora sob o recorte da seção.
+   Com o fundo da grade na cor da linha, a última casa vazia (8 cartões em 3 colunas) aparecia como um bloco claro. */
+/* 300 px: a perícia usada, Executar e Resistir cabem na mesma fileira (em Perícias a seção é a largura toda, e com 240 px a grade fazia
+   cinco colunas e empilhava os dois alvos). O conteúdo fica no topo, igual nos cartões de uma fileira. */
+.e-g2 .m-grade-cartoes { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); margin: -1px 0 0 -1px; }
+.e-g2 .m-cartao { display: flex; flex-wrap: wrap; align-items: center; align-content: flex-start; gap: 6px 10px; padding: 10px 12px; border: 0; border-top: 1px solid var(--e-linha); border-left: 1px solid var(--e-linha); border-radius: 0; background: var(--e-painel); min-width: 0; }
+.e-g2 .m-cartao-nome { flex: 1 1 100%; font-size: 14.5px; font-weight: 600; color: var(--e-t1); overflow-wrap: anywhere; }
+.e-g2 .m-cartao .m-acoes { margin-left: 0; justify-content: flex-start; }
+
+/* ---------- Rápido: a linha de Habilidades do G2, com o nome inteiro ---------- */
+.e-g2.m-aba .m-rapido .e-linha-topo { flex-wrap: wrap; overflow: visible; row-gap: 2px; }
+.e-g2.m-aba .m-rapido .e-linha-topo .e-nome-item { white-space: normal; overflow: visible; overflow-wrap: anywhere; }
+.e-g2.m-aba .m-rapido .e-metas { white-space: normal; overflow: visible; contain: none; text-overflow: clip; }
+
+/* ---------- Perícias ---------- */
+.e-g2 .m-atributos { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; padding: 10px; border: 1px solid var(--e-painel-borda); border-radius: 14px; background: var(--e-painel); }
+.e-g2 .m-atributo-celula { display: grid; justify-items: center; gap: 2px; padding: 8px 4px; border: 1px solid var(--e-linha); border-radius: 10px; background: none; }
+.e-g2 .m-atributo-rotulo { font: 600 13px var(--e-display); letter-spacing: .04em; color: var(--e-t2); }
+.e-g2 .m-atributo-valor { font: 700 22px var(--e-display); font-variant-numeric: var(--e-num); color: var(--e-t1); }
+.e-g2 .m-rolar-mod { padding: 4px 12px; }
+@container aba (max-width: 599px) { .e-g2 .m-atributos { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.e-g2 .m-testes { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start; }
+@container aba (min-width: 820px) { .e-g2 .m-testes { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); } }
+.e-g2 .m-teste { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-height: 48px; padding: 6px 12px 6px 10px; border: 0; border-top: 1px solid var(--e-linha); border-radius: 0; background: none; }
+.e-g2 .m-secao-corpo > .m-teste:first-child { border-top: 0; }
+.e-g2 .m-teste:hover { background: var(--e-hover); }
+.e-g2 .m-treino { flex: none; width: 18px; text-align: center; font-size: 14px; color: var(--e-t3); }
+.e-g2 .m-teste[data-treino="treinado"] .m-treino { color: var(--e-ativo); }
+.e-g2 .m-teste[data-treino="mestre"] .m-treino { color: var(--afty-destaque); }
+.e-g2 .m-teste-nome { flex: 1 1 140px; min-width: 0; font-size: 15px; font-weight: 600; line-height: 1.3; color: var(--e-t2); overflow-wrap: anywhere; }
+.e-g2 .m-teste:is([data-treino="treinado"], [data-treino="mestre"]) .m-teste-nome { color: var(--e-t1); }
+.e-g2 .m-teste-metas { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 13px; color: var(--e-t2); }
+.e-g2 .m-atributo { font: 600 12.5px var(--e-display); letter-spacing: .05em; text-transform: uppercase; }
+.e-g2 .m-atributo[data-trocado] { color: var(--e-ativo); text-decoration: underline dotted; text-underline-offset: 3px; }
+.e-g2 .m-rolar-teste { margin-left: auto; }
+.e-g2 .m-teste .m-motivo { flex-basis: 100%; padding-left: 28px; }
+.e-g2 .m-grade-pericias { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+.e-g2 .m-grade-pericias > .m-teste { border-top: 1px solid var(--e-linha); }
+.e-g2 .m-ferramentas { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.e-g2 .m-busca { flex: 1 1 220px; min-width: 0; }
+.e-g2 .m-busca .afty-campo { height: 36px; font-size: 14px; }
+
+/* ---------- Equipamentos ---------- */
+.e-g2 .m-carga { display: grid; gap: 8px; padding: 12px 14px; border: 1px solid var(--e-painel-borda); border-radius: 14px; background: var(--e-painel); }
+.e-g2 .m-carga-topo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.e-g2 .m-carga-rotulo { font: 600 17px var(--e-display); font-stretch: semi-condensed; color: var(--e-t1); }
+.e-g2 .m-carga-num { font: 700 17px var(--e-display); font-variant-numeric: var(--e-num); color: var(--e-t1); }
+.e-g2 .m-carga-num small { font-size: 14px; font-weight: 400; color: var(--e-t2); }
+.e-g2 .m-penalidade { margin-left: auto; font-size: 13px; color: var(--e-t2); }
+.e-g2 .m-carga-trilho { display: flex; height: 8px; }
+.e-g2 .m-carga-penalidades { margin: 0; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; font-weight: 600; color: var(--e-aviso); }
+.e-g2 .m-avisos-equip { padding: 10px 14px; border: 1px solid var(--e-aviso-borda); border-radius: 12px; background: var(--e-aviso-fundo); }
+/* As linhas do inventário e do Rápido seguem as linhas de Ações: separadas por fio, sem caixa por linha. */
+.e-g2.m-aba :is(.m-item, .m-rapido .e-linha) { border: 0; border-top: 1px solid var(--e-linha); border-radius: 0; background: none; }
+.e-g2.m-aba :is(.m-inventario-lista, .m-rapido .e-grupo-lista) > :first-child { border-top: 0; }
+.e-g2 .m-item { flex-wrap: wrap; padding-right: 10px; }
+.e-g2 .m-item[data-selecionado] { background: var(--e-sel); }
+.e-g2 .m-item[data-selecionado]::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--afty-destaque); }
+.e-g2 .m-item-corpo { flex: 1 1 0; min-width: 0; align-self: stretch; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; min-height: 48px; padding: 6px 0; border: 0; background: none; color: var(--e-t1); text-align: left; cursor: pointer; }
+.e-g2 .m-item-corpo .m-nome { flex: 1 1 160px; }
+.e-g2 .m-item-corpo .m-metas { flex: 0 1 auto; }
+.e-g2 .m-seta-fim { margin-left: auto; }
+.e-g2 .m-item-no-lugar { flex-basis: 100%; margin: 0 0 8px 40px !important; }
+.e-g2 .m-inventario { display: grid; grid-template-columns: minmax(0, 1fr); }
+.e-g2 .m-inventario-detalhe { display: none; }
+.e-g2 .m-item-detalhe { display: grid; gap: 10px; min-width: 0; }
+.e-g2 .m-item-detalhe-topo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.e-g2 .m-item-detalhe-nome { flex: 1 1 160px; margin: 0; font: 600 20px/1.2 var(--e-display); font-stretch: semi-condensed; color: var(--e-t1); overflow-wrap: anywhere; }
+.e-g2 .m-item-marcas { margin: 0; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 13px; color: var(--e-t2); }
+.e-g2 .m-encantamento { display: grid; gap: 4px; padding: 8px 0 8px 12px; border-left: 2px solid var(--e-linha); }
+.e-g2 .m-encantamento-nome { font-size: 14.5px; font-weight: 600; }
+@container aba (min-width: 900px) {
+  .e-g2 .m-inventario[data-com-detalhe] { grid-template-columns: minmax(0, 58fr) minmax(0, 42fr); }
+  .e-g2 .m-inventario-detalhe { display: block; position: sticky; top: calc(var(--afty-ficha-topo, 0px) + 10px); align-self: start; max-height: calc(100dvh - var(--afty-ficha-topo, 0px) - 24px); overflow: auto; padding: 14px 16px; border-left: 1px solid var(--e-linha); }
+  .e-g2 .m-item-no-lugar { display: none !important; }
+}
+
+/* ---------- estados comuns ---------- */
+.e-g2 .m-vazio { padding: 28px 16px; }
+/* O realce da busca: aparece e esmaece, sem ficar pintado para sempre. */
+.e-g2.m-aba [data-afty-alvo="sim"] { animation: m-realce 2.6s ease-out 1; }
+@keyframes m-realce { 0%, 30% { box-shadow: inset 0 0 0 2px var(--afty-destaque); background: var(--e-sel); } 100% { box-shadow: inset 0 0 0 0 transparent; } }
+@media (prefers-reduced-motion: reduce) { .e-g2.m-aba [data-afty-alvo="sim"] { animation: none; box-shadow: inset 0 0 0 2px var(--afty-destaque); } }
+
+/* Densidade compacta: menos respiro, mesmo tamanho de letra. */
+.afty-ficha[data-afty-densidade="compacta"] .e-g2.m-aba { gap: 10px; }
+.afty-ficha[data-afty-densidade="compacta"] .e-g2 :is(.m-linha, .m-teste) { padding-top: 3px; padding-bottom: 3px; }
+.afty-ficha[data-afty-densidade="compacta"] .e-g2 .m-teste { min-height: 42px; }

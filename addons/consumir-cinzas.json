@@ -5,6 +5,8 @@
   "autor": "Templas",
   "paraRaw": "afty",
   "descricao": "Habilidade Ápice do Locke, escolhida dentro de Atingir Ápice como qualquer outra Ápice. O motor só alcança dois números dela: +12 em Testes de Acerto e +2 Dados de Dano Adicional, que valem enquanto o interruptor Consumir Cinzas da bancada estiver ligado. Todo o resto é texto do livro, resolvido na mesa: os PEs Temporários por ataque (não existe canal por ataque), os 3d10 de Perda de Vida (o livro separa Perda de Vida de dano, e ela não tem canal), Morte Direta, o TR de Integridade, a Exaustão por rodada, a perda de Integridade máxima (o motor não altera a Integridade máxima de forma permanente) e a troca da Ficha pela Maldição. Sem requisito de Especialização escrito no livro, ela fica aberta a quem tiver Atingir Ápice. O interruptor aparece para quem instala o Addon, mas os números só contam com a Ápice escolhida.",
+  "resumo": "Ápice do Locke: +12 no acerto e +2 dados de dano com o interruptor ligado",
+  "categoria": "talentos",
   "estadosCombate": [
     {
       "id": "ativo",

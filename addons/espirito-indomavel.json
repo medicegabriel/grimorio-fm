@@ -5,6 +5,8 @@
   "autor": "Templas",
   "paraRaw": "afty",
   "descricao": "Linha de Treinamento exclusiva do Não-Feiticeiro. +4 de vida máxima, treinado em Vontade, +3 nos acertos corpo a corpo e o Talento Determinado a Viver (os pré-requisitos dele continuam valendo). Completo, abre mais uma escolha de Artimanha na origem. Precisa do addon Não-Feiticeiro 1.1.0 instalado na mesma ficha, e do app com `concedeTalentos` em etapa de treino e `requerTreinoCompleto` em escolha de origem (2026-10-09).",
+  "resumo": "Treino do Não-Feiticeiro: +4 de vida, treinado em Vontade, +3 no corpo a corpo e um Talento",
+  "categoria": "treinos",
   "acrescenta": {
     "treinamentos": [
       {

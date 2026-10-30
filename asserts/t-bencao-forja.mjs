@@ -80,6 +80,7 @@ for (const f of EF.FAMILIAS_EXCLUSIVAS) {
   t(`${f.id} declara o grupo do jogador`, typeof f.grupoJogador === "string" && f.grupoJogador.length > 0, true);
 }
 t("a oitava família existe", !!EF.getFamiliaExclusiva("segundaHabilidadeUnica"), true);
+t("a nona família existe (Técnica Marcial, 2026-10-27)", !!EF.getFamiliaExclusiva("tecnicaMarcial"), true);
 
 const grupos = Object.fromEntries(EF.FAMILIAS_EXCLUSIVAS.map((f) => [f.id, f.grupoJogador]));
 t("os grupos do jogador, um a um", grupos, {
@@ -91,6 +92,7 @@ t("os grupos do jogador, um a um", grupos, {
   estiloSombra: "feiticos",
   funcionamentoBasico: "feiticos",
   segundaHabilidadeUnica: "feiticos",
+  tecnicaMarcial: "feiticos",
 });
 t("na criatura toda família cai no pool único",
   EF.FAMILIAS_EXCLUSIVAS.every((f) => EF.grupoExclusivo(f.id, false) === EF.GRUPO_POOL_UNICO), true);

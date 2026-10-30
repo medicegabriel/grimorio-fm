@@ -5,5 +5,7 @@
   "autor": "Templas",
   "paraRaw": "afty",
   "descricao": "Libera o card de Quimeras na aba de Invocações, ao lado das Hordas. Quimeras são fusões realizadas entre Invocações, permitindo maior versatilidade ao Controlador. Uma Quimera funde até 4 Invocações (Passiva de Nível 2 funde até 2, Nível 3 até 3, Nível 4 até 4). No card você escolhe o Nível da Passiva, a Invocação principal e as fundidas. O Custo em PE é a soma de todas as fundidas. A Vida Máxima é a soma do PV de cada fundida menos 10. A Quimera une os Treinamentos de Perícia, Acerto e TR, tem cada atributo FIXO no maior valor daquele atributo entre as fundidas, e recebe +1 em Acerto, CD, Defesa, Nível de Dano, TRs e Perícia por fundida além da primeira. Ela tem as Ações e Características da principal, mais 1 por fundida além da primeira. Movimento, Defesa e valores são recalculados normalmente. Não alcançados pelo motor, feitos na mesa: o custo de PE Máximo da Passiva na ficha de jogador, a ficha da Quimera enviada de antemão para avaliação, a regra de uma Quimera por cena e as Invocações fundidas que ficam bloqueadas depois que ela é Dissipada.",
+  "resumo": "Funde até 4 invocações numa Quimera, no card ao lado das Hordas",
+  "categoria": "ferramentas",
   "permite": ["quimera"]
 }

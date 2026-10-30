@@ -26,7 +26,7 @@ import { useDestaque } from "../usar-destaque";
 
 const ABREV = Object.fromEntries(AFTY_ATTRS.map((a) => [a.key, a.abbr]));
 
-function LinhaTeste({ nome, atributo, bonus, textoBonus, dados, partes, prof, tag, margem, rolar, chave, destacado, falha, ataqueId }) {
+function LinhaTeste({ nome, atributo, bonus, textoBonus, dados, partes, prof, tag, margem, partesMargemCritico, rolar, chave, destacado, falha, ataqueId, minimoNatural }) {
   const raiz = useDestaque(destacado);
   return (
     <div
@@ -56,9 +56,15 @@ function LinhaTeste({ nome, atributo, bonus, textoBonus, dados, partes, prof, ta
         </span>
       )}
       {margem != null && (
-        <span className="afty-rotulo font-mono tabular-nums flex-shrink-0" title="Margem de crítico">
-          ({margem})
-        </span>
+        <NumeroComFontes
+          className="afty-rotulo font-mono tabular-nums flex-shrink-0"
+          titulo="Margem de Crítico"
+          valor={`(${margem})`}
+          partes={partesMargemCritico}
+          total={margem}
+          formatar={false}
+          ancora="direita"
+        />
       )}
       {/* ⚠ COM DADO A LINHA MOSTRA A ROLAGEM, e não só o fixo. A Resiliência
           pela Adrenalina soma "2d3 ao resultado", e um "+7" sozinho leria como
@@ -69,7 +75,7 @@ function LinhaTeste({ nome, atributo, bonus, textoBonus, dados, partes, prof, ta
         total={textoBonus ?? sinalDe(bonus)}
         className={`afty-valor text-[13px] text-right ${textoBonus ? "w-20" : "w-10"}`}
         ancora="direita"
-        onRolar={() => rolar({ tipo: "teste", rotulo: nome, bonus, dados, margem, ataqueId })}
+        onRolar={() => rolar({ tipo: "teste", rotulo: nome, bonus, dados, margem, ataqueId, minimoNatural })}
       />
     </div>
   );
@@ -176,6 +182,7 @@ export default function AbaPericias({ derived, rolar, destaque }) {
               /* A margem é própria do TR. O treinamento Mestre continua
                  identificado na linha, mas não bloqueia o crítico reduzido. */
               margem={r.margemCritico}
+              partesMargemCritico={r.partesMargemCritico}
               falha={r.falhaAutomatica}
               rolar={rolar}
               chave={`tr:${r.value}`}
@@ -191,6 +198,7 @@ export default function AbaPericias({ derived, rolar, destaque }) {
             <LinhaTeste
               key={p.id}
               nome={p.nome}
+              minimoNatural={p.minimoNatural}
               atributo={p.atributo}
               bonus={p.bonus}
               textoBonus={p.textoBonus}

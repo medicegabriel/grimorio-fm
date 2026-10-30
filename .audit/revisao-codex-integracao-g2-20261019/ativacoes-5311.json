@@ -1,0 +1,89 @@
+{
+  "geradoEm": "2026-10-19T17:13:44.774Z",
+  "base": "http://127.0.0.1:5311",
+  "casos": [
+    {
+      "id": "ativacao-calamidade",
+      "checks": [
+        {
+          "id": "ativação concluída uma vez",
+          "ok": true,
+          "dados": {
+            "medida": {
+              "ponteiroAteDoisQuadros": 39.19999998807907,
+              "tarefasLongas": [
+                57
+              ]
+            },
+            "energia": 217
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medida": {
+        "ponteiroAteDoisQuadros": 39.19999998807907,
+        "tarefasLongas": [
+          57
+        ]
+      }
+    },
+    {
+      "id": "ativacao-minamoto",
+      "checks": [
+        {
+          "id": "ativação concluída uma vez",
+          "ok": true,
+          "dados": {
+            "medida": {
+              "ponteiroAteDoisQuadros": 31.400000035762787,
+              "tarefasLongas": []
+            },
+            "energia": 177
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medida": {
+        "ponteiroAteDoisQuadros": 31.400000035762787,
+        "tarefasLongas": []
+      }
+    },
+    {
+      "id": "ativacao-player30",
+      "checks": [
+        {
+          "id": "ativação concluída uma vez",
+          "ok": true,
+          "dados": {
+            "medida": {
+              "ponteiroAteDoisQuadros": 35,
+              "tarefasLongas": []
+            },
+            "energia": 159
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medida": {
+        "ponteiroAteDoisQuadros": 35,
+        "tarefasLongas": []
+      }
+    }
+  ],
+  "falhas": []
+}

@@ -1,0 +1,197 @@
+{
+  "versao": 3,
+  "fichaId": "mtkfm72o-u51uv6n",
+  "fonte": {
+    "sistema": "catarse-discord",
+    "guildId": "1013147404805087263",
+    "personagemId": 2,
+    "dono": "aftbah",
+    "sha256": "706f05c2efda18473859a8ec0bca62f8a665beac38f7edfbacab2e0b0d1d4b09",
+    "atualizadoEm": "2026-10-07T19:30:18.272697+00:00"
+  },
+  "itens": [
+    {
+      "itemId": 26,
+      "nome": "Especialização [Outra Classe]",
+      "texto": "Você recebe uma Habilidade de Especialização a sua escolha de outra classe, não precisando cumprir o Requisito de Classe, mas ainda precisando cumprir todos os outros. Você pode comprar isso uma quantidade de vezes igual ao seu bônus de maestria por personagem.",
+      "quantidade": 2,
+      "compras": [
+        3,
+        16
+      ],
+      "familia": "habilidadesOutraClasse",
+      "custoHistoricoConhecido": 0,
+      "custoCompleto": false,
+      "efeitos": []
+    },
+    {
+      "itemId": 27,
+      "nome": "Atributo",
+      "texto": "Você recebe um ponto de atributo. Você pode comprar isso uma quantidade de vezes igual ao seu bônus de maestria por personagem.",
+      "quantidade": 6,
+      "compras": [
+        4,
+        15
+      ],
+      "familia": "texto",
+      "custoHistoricoConhecido": 0,
+      "custoCompleto": false,
+      "efeitos": [
+        {
+          "canal": "limiteAtributo",
+          "alvo": "constituicao",
+          "expr": "6"
+        },
+        {
+          "canal": "atributo",
+          "alvo": "constituicao",
+          "expr": "6"
+        }
+      ]
+    },
+    {
+      "itemId": 32,
+      "nome": "Mudar Regra (Gasto)",
+      "texto": "Registro de um Mudar Regra já utilizado. Não pode ser comprado e não possui valor patrimonial.",
+      "quantidade": 1,
+      "compras": [
+        7
+      ],
+      "familia": "anotacao",
+      "custoHistoricoConhecido": 0,
+      "custoCompleto": false,
+      "efeitos": []
+    },
+    {
+      "itemId": 30,
+      "nome": "Caminho Título",
+      "texto": "Você compra o Caminho para um Título a sua escolha. Para mais informações, discuta com o Narrador.",
+      "quantidade": 2,
+      "compras": [
+        8
+      ],
+      "familia": "anotacao",
+      "custoHistoricoConhecido": 0,
+      "custoCompleto": false,
+      "efeitos": []
+    },
+    {
+      "itemId": 31,
+      "nome": "HABILIDADE LENDARIA",
+      "texto": "Você recebe uma Habilidade Lendária a sua escolha, desde que cumpra os pré-requisitos. Você pode comprar isso uma quantidade de vezes igual a metade de seu bônus de maestria por personagem.",
+      "quantidade": 3,
+      "compras": [
+        9,
+        17
+      ],
+      "familia": "lendarias",
+      "custoHistoricoConhecido": 0,
+      "custoCompleto": false,
+      "efeitos": []
+    },
+    {
+      "itemId": 51,
+      "nome": "Bússola",
+      "texto": "",
+      "quantidade": 1,
+      "compras": [
+        11
+      ],
+      "familia": "anotacao",
+      "custoHistoricoConhecido": 0,
+      "custoCompleto": true,
+      "efeitos": []
+    },
+    {
+      "itemId": 45,
+      "nome": "Método de Transferência de Mana",
+      "texto": "Durante Atos Libidinosos, você pode transferir e receber Energia. Para cada ponto de Energia transferido, o alvo da transferência se cura em 6 Pontos de Vida no processo.",
+      "quantidade": 1,
+      "compras": [
+        18
+      ],
+      "familia": "anotacao",
+      "custoHistoricoConhecido": 0,
+      "custoCompleto": true,
+      "efeitos": []
+    },
+    {
+      "itemId": 29,
+      "nome": "Mudar Regra",
+      "texto": "Propõe um ajuste de regra especifico para mesa, ao qual ainda deve ser aprovado pelo narrador.",
+      "quantidade": 1,
+      "compras": [
+        19
+      ],
+      "familia": "anotacao",
+      "custoHistoricoConhecido": 0,
+      "custoCompleto": true,
+      "efeitos": []
+    },
+    {
+      "itemId": 43,
+      "nome": "Parceiro",
+      "texto": "Escolha alguém para ser seu Parceiro (requer consentimento). Você e seu parceiro perdem 20% do seu máximo de Energia, que se juntam e podem ser utilizados de maneira compartilhada por ambos.",
+      "quantidade": 1,
+      "compras": [
+        20
+      ],
+      "familia": "anotacao",
+      "custoHistoricoConhecido": 10,
+      "custoCompleto": true,
+      "efeitos": []
+    },
+    {
+      "itemId": 46,
+      "nome": "Rapidinha",
+      "texto": "Requer: Parceiro.\n\nEm um Descanso Longo, em vez de cozinhar ou revisar seus equipamentos, você pode passar seu tempo com seu Parceiro. Você e seu Parceiro recebem 1d6 PEs temporários para cada poder de Atos Libidinosos que tiver. Em um Descanso Curto, esse valor é reduzido pela metade. Pode ser usado com Ir Tomar Um Ar.",
+      "quantidade": 1,
+      "compras": [
+        21
+      ],
+      "familia": "anotacao",
+      "custoHistoricoConhecido": 30,
+      "custoCompleto": true,
+      "efeitos": []
+    },
+    {
+      "itemId": 50,
+      "nome": "Vida Sexual Ativa",
+      "texto": "Requer: Rapidinha.\n\nVocê faz dos Atos Libidinosos algo do dia a dia, uma fonte de proximidade e prazer, que agora se estende a uma reserva de energia para usar quando quiser.\n\nAo fazer um descanso curto, recebe 1 de PE temporário; ao fazer um descanso longo, recebe metade do seu bônus de maestria em PE temporário; em um interlúdio, ganha seu bônus de maestria em PE temporário.\n\nPode escolher quando gasta este PE temporário, conseguindo manter reservas guardadas. PE temporário adquirido de outras fontes não acumula e segue as regras normais.\n\nVocê é capaz de passar do máximo de PE temporário de Vida Sexual Ativa e Rapidinha, podendo acumulá-lo infinitamente utilizando esta regra.",
+      "quantidade": 1,
+      "compras": [
+        22
+      ],
+      "familia": "anotacao",
+      "custoHistoricoConhecido": 60,
+      "custoCompleto": true,
+      "efeitos": []
+    },
+    {
+      "itemId": 44,
+      "nome": "Abraço Quentinho",
+      "texto": "Você pode utilizar um Abraço Quentinho. Você e o alvo do abraço recebem 1d4 em Testes de Resistência pelo dia. Com 3 poderes de Atos Libidinosos além deste, se torna 1d6; com 6 poderes, se torna 2d4; e com 9 poderes, se torna 2d6.",
+      "quantidade": 1,
+      "compras": [
+        23
+      ],
+      "familia": "anotacao",
+      "custoHistoricoConhecido": 10,
+      "custoCompleto": true,
+      "efeitos": []
+    },
+    {
+      "itemId": 41,
+      "nome": "Conchinha Tática",
+      "texto": "Enquanto dorme de conchinha, você se torna imune a ser surpreendido ou pego indefeso durante o sono.",
+      "quantidade": 1,
+      "compras": [
+        24
+      ],
+      "familia": "anotacao",
+      "custoHistoricoConhecido": 10,
+      "custoCompleto": true,
+      "efeitos": []
+    }
+  ]
+}

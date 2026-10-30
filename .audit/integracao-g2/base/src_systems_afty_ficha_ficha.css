@@ -1,0 +1,3664 @@
+/**
+ * ============================================================
+ * FICHA FINAL — a pintura, por TOKEN
+ * ============================================================
+ * ⚠ A Ficha NÃO é pintada com classe de utilidade do Tailwind, ao contrário do
+ * criador. Cor escrita como `bg-slate-900` não é tematizável: para trocar o roxo
+ * o usuário teria que sobrescrever dezenas de utilidades e adivinhar quais.
+ *
+ * Aqui: **Tailwind só para LAYOUT** (flex, grid, espaçamento, tamanho), e cor,
+ * borda, raio, sombra, fundo e fonte saem das variáveis `--afty-*` abaixo.
+ *
+ * Isso é o que torna o CSS personalizado possível, e o Tailwind v4 joga a favor:
+ * as utilidades dele vivem em `@layer`, e CSS SEM camada vence CSS EM camada
+ * independente de especificidade. Então este arquivo, e depois o `<style>` do
+ * usuário, sobrepõem a folha do app sem precisar de um `!important` sequer.
+ *
+ * ⚠ CONTRATO DE CLASSES. Os nomes daqui são a API pública do tema e não mudam.
+ * Classe do Tailwind NÃO é API, e quem mirar nela assume o risco.
+ * ============================================================
+ */
+
+.afty-ficha {
+  /* ---------- superfícies ---------- */
+  --afty-fundo: #060910;
+  --afty-fundo-brilho: radial-gradient(120% 60% at 50% -10%, #7e22ce33, transparent 70%);
+  --afty-card: #0f172a;
+  --afty-poco: #020617;
+  --afty-borda: #1e293b;
+  --afty-borda-forte: #334155;
+
+  /* ---------- texto ---------- */
+  --afty-texto: #f1f5f9;
+  --afty-texto-suave: #94a3b8;
+  --afty-texto-fraco: #64748b;
+
+  /* ---------- destaque ---------- */
+  --afty-destaque: #a855f7;
+  --afty-destaque-texto: #d8b4fe;
+  --afty-destaque-fundo: #581c8766;
+
+  /* ---------- recursos ---------- */
+  --afty-pv: #f43f5e;
+  --afty-pe: #38bdf8;
+  --afty-pvtemp: #fbbf24;
+  /* A casca de PE. ⚠ Não reusa o --afty-pvtemp: o âmbar dele contrasta com o
+     vermelho do PV, e sobre o azul do PE viraria uma terceira cor sem
+     parentesco. Este é o mesmo azul, mais claro, que é como a 2.5.2 pinta a
+     dela (ciano por cima do roxo). */
+  --afty-petemp: #67e8f9;
+  --afty-alma: #e879f9;
+  --afty-cura: #34d399;
+  --afty-aviso: #fbbf24;
+
+  /* Véu das camadas de cima (busca, aparência). É token porque num tema CLARO
+     um véu preto empasta a tela inteira. */
+  --afty-veu: rgb(0 0 0 / 0.55);
+
+  /* ---------- forma ---------- */
+  --afty-raio: 12px;
+  --afty-raio-peq: 8px;
+  --afty-sombra: 0 2px 10px rgb(0 0 0 / 0.45);
+  --afty-fonte: ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+  --afty-fonte-titulo: var(--afty-fonte);
+  --afty-fonte-num: ui-monospace, Consolas, monospace;
+
+  /* ---------- imagem de fundo (o tema do usuário) ---------- */
+  --afty-imagem: none;
+  --afty-imagem-opacidade: 0.25;
+  --afty-imagem-opacidade-ambiente: 0.125;
+  --afty-imagem-opacidade-banner: 0.15;
+  --afty-imagem-encaixe: cover;
+  --afty-imagem-posicao: center top;
+
+  position: relative;
+  min-height: 100dvh;
+  /* Compactar o cabeçalho não deve corrigir scrollY e expandi-lo de novo. */
+  overflow-anchor: none;
+  background-color: var(--afty-fundo);
+  color: var(--afty-texto);
+  font-family: var(--afty-fonte);
+}
+
+/* ⚠ O BRILHO DE FUNDO MORA NUMA CAMADA PRÓPRIA, E NÃO NA RAIZ.
+   Ele já foi `background-image` mais `background-attachment: fixed` aqui em cima.
+   O efeito na tela é o mesmo, o custo não: `attachment: fixed` tira o navegador
+   do caminho rápido de rolagem e obriga a re-rasterizar o fundo da viewport
+   inteira a CADA QUADRO, na thread principal. Numa ficha de nível alto, que é
+   justamente a mais comprida, isso derruba a rolagem sozinho.
+
+   Como camada `position: fixed` separada, o compositor pinta uma vez e só
+   reaproveita enquanto a página rola. Quem fica por cima continua por cima pelo
+   `z-index: 1` de `.afty-ficha > *` logo abaixo, e a impressão já esconde esta
+   camada na regra de `@media print`. */
+.afty-ficha::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: var(--afty-fundo-brilho);
+}
+
+/* ============================================================ */
+/* NÚMERO AO LADO DE TEXTO — alinhar pela LINHA DE BASE           */
+/* ============================================================ */
+/* ⚠ A REGRA, e não mais um conserto avulso. O autor já a tinha achado sozinho
+   em 2026-08-26, na tira da Guarda, e escrito lá o diagnóstico certo: "caixas de
+   alturas diferentes centradas não põem as bases no mesmo lugar, e número se lê
+   pela base". Ela voltou em 2026-08-28 na contagem das sub-abas ("Combatente 10"
+   com o 10 torto), porque o conserto tinha ficado preso a uma classe.
+
+   POR QUE ACONTECE. A Ficha escreve número numa fonte e texto em outra
+   (`--afty-fonte-num` contra `--afty-fonte`), quase sempre em corpos diferentes.
+   Duas coisas se somam:
+
+     1. sem `line-height` declarado, cada caixa tem a altura NATURAL da própria
+        fonte, e Consolas e Segoe UI não têm a mesma proporção;
+     2. dentro da caixa, a base fica a uma distância do topo que também depende
+        da fonte.
+
+   Com `align-items: center` o navegador iguala os CENTROS das duas caixas, e as
+   bases sobram ~1,5px fora de lugar. Nenhum recuo conserta isso: o erro muda com
+   a fonte, e a fonte dos números é um botão do Painel de Aparência, então a
+   correção certa hoje estaria errada amanhã. `align-items: baseline` acerta as
+   BASES, que é o que o olho lê, e não depende de fonte nenhuma.
+
+   ⚠ A ARMADILHA, que é por que aplicar `baseline` na lista inteira PIORA. Um
+   filho com `overflow` diferente de `visible` (todo `truncate` do projeto) não
+   entrega a base do texto dele: o navegador sintetiza a base na BORDA DE BAIXO
+   da caixa. Numa fileira com rótulo aparado, o rótulo subiria inteiro. Ícone,
+   imagem e botão só de ícone têm o mesmo problema, pelo mesmo motivo.
+
+   POR ISSO A REGRA TEM DUAS METADES: o container alinha pela base, e quem não
+   tem base de verdade volta para o centro com `align-self`. Marque um filho com
+   `data-afty-alinha="centro"` para tirá-lo da base à mão (é o caso do rótulo
+   aparado, que fica sozinho na ponta esquerda e lê melhor centrado).
+
+   ⚠ Travado pelo `asserts/t-alinhamento.mjs`, que lista os containers que
+   MISTURAM as duas fontes e recusa qualquer um deles em `center`. */
+.afty-base { align-items: baseline; }
+
+.afty-base > svg,
+.afty-base > img,
+.afty-base > button,
+.afty-base > .afty-chip,
+.afty-base > .afty-passo,
+.afty-base > .afty-botao,
+.afty-base > [data-afty-alinha="centro"] { align-self: center; }
+
+/* A imagem do usuário começa depois do cabeçalho. A camada de ambiente acompanha
+   toda a altura da aba, inclusive quando o conteúdo passa de uma tela. */
+.afty-ficha-corpo {
+  position: relative;
+  min-height: 100dvh;
+  isolation: isolate;
+}
+
+.afty-ficha-corpo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  min-height: 100dvh;
+  z-index: 0;
+  pointer-events: none;
+  background-image: var(--afty-imagem);
+  background-size: cover;
+  background-position: var(--afty-imagem-posicao);
+  background-repeat: no-repeat;
+  opacity: var(--afty-imagem-opacidade);
+}
+
+/* Em Caber e Tamanho Real, o primeiro plano conserva o enquadramento escolhido.
+   A cópia de ambiente permanece por baixo para a imagem não terminar em uma
+   faixa preta quando a aba é mais alta do que ela. */
+.afty-ficha-corpo[data-afty-imagem-encaixe="contain"]::before,
+.afty-ficha-corpo[data-afty-imagem-encaixe="auto"]::before {
+  opacity: var(--afty-imagem-opacidade-ambiente);
+}
+
+.afty-ficha-corpo[data-afty-imagem-encaixe="contain"]::after,
+.afty-ficha-corpo[data-afty-imagem-encaixe="auto"]::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100dvh;
+  z-index: 0;
+  pointer-events: none;
+  background-image: var(--afty-imagem);
+  background-size: var(--afty-imagem-encaixe);
+  background-position: var(--afty-imagem-posicao);
+  background-repeat: no-repeat;
+  opacity: var(--afty-imagem-opacidade-banner);
+}
+
+.afty-ficha-corpo > * {
+  position: relative;
+  z-index: 1;
+}
+
+.afty-ficha > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================================ */
+/* CABEÇALHO — o que nunca sai da tela                          */
+/* ============================================================ */
+
+/* ⚠ FUNDO OPACO, SEM `backdrop-filter`. Ele já foi 88% mais `blur(10px)`.
+   Um `backdrop-filter` re-amostra e re-borra tudo que está atrás dele a cada
+   quadro, e este cabeçalho é grudento, ocupa a largura toda e nunca sai da
+   tela. Pior no nível alto, que é onde o cabeçalho é o mais alto do sistema
+   (nome, chips quebrando linha, três vitais, Guarda e as até doze defesas):
+   a área borrada por quadro cresce junto com o nível.
+
+   Os 12% de transparência que se perdem não se veem sobre `--afty-fundo`, que
+   é a cor que estava por baixo de qualquer jeito. Para reaver o vidro, basta
+   devolver as duas linhas antigas, mas a rolagem volta a engasgar junto. */
+.afty-cabecalho {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background-color: var(--afty-fundo);
+  border-bottom: 1px solid var(--afty-borda);
+}
+
+/* O fio de luz embaixo do cabeçalho. É a única linha decorativa da Ficha, e
+   existe para separar o que é fixo do que rola sem precisar de sombra pesada. */
+.afty-cabecalho::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--afty-destaque), transparent);
+  opacity: 0.5;
+}
+
+.afty-nome {
+  font-family: var(--afty-fonte-titulo);
+  color: var(--afty-texto);
+}
+
+/* O retrato da ficha pronta é uma peça vertical do cabeçalho, não um avatar.
+   Ele ocupa a lateral direita sem roubar largura dos vitais e das defesas no
+   celular, onde fica oculto. O ponto focal continua vindo do mesmo campo do
+   criador e por isso uma imagem de corpo inteiro não perde o rosto. */
+.afty-cabecalho-conteudo {
+  min-width: 0;
+}
+
+.afty-cabecalho-principal {
+  min-width: 0;
+}
+
+.afty-retrato-painel {
+  display: none;
+  position: relative;
+  min-height: 10.5rem;
+  /* ⚠ O TETO existe para a moldura não virar tira. Ela é uma célula da grade
+     do cabeçalho e estica com a altura da linha, então tudo que cresce à
+     esquerda (uma fileira de defesas a mais, um chip que quebrou) a puxava
+     junto, e a foto ia perdendo as laterais no `object-fit: cover`. Com as
+     defesas em fileira única isso quase não acontece mais, e o teto cobre o
+     que sobra: tablet estreito e ficha com as doze defesas. */
+  max-height: 13rem;
+  margin-block: 0.5rem;
+  overflow: hidden;
+  border: 1px solid var(--afty-borda-forte);
+  border-radius: var(--afty-raio);
+  background: var(--afty-poco);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--afty-destaque) 18%, transparent);
+}
+
+.afty-retrato-painel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, transparent 58%, color-mix(in srgb, var(--afty-fundo) 72%, transparent)),
+    linear-gradient(90deg, color-mix(in srgb, var(--afty-destaque) 12%, transparent), transparent 45%);
+}
+
+.afty-retrato {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (min-width: 768px) {
+  .afty-cabecalho-conteudo[data-afty-com-retrato="sim"] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 10.5rem;
+    gap: 0.75rem;
+  }
+
+  .afty-retrato-painel {
+    display: block;
+  }
+}
+
+@media (min-width: 1024px) {
+  .afty-cabecalho-conteudo[data-afty-com-retrato="sim"] {
+    grid-template-columns: minmax(0, 1fr) 12rem;
+    gap: 1rem;
+  }
+}
+
+/* ============================================================ */
+/* CHIPS                                                         */
+/* ============================================================ */
+
+.afty-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid var(--afty-borda-forte);
+  background: var(--afty-poco);
+  color: var(--afty-texto-suave);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.afty-chip[data-afty-tom="destaque"] {
+  border-color: color-mix(in srgb, var(--afty-destaque) 55%, transparent);
+  background: var(--afty-destaque-fundo);
+  color: var(--afty-destaque-texto);
+}
+
+/* ⚠ MARCA QUE É NÚMERO TEM LARGURA FIXA. "Nível 1" e "Nível 20" são textos de
+   tamanhos diferentes, e como chip eles serrilhavam a coluna da direita das
+   listas: cada linha empurrava o próprio chip para um lugar (autor,
+   2026-08-06). É o mesmo problema que a grade de defesas teve no cabeçalho, e
+   a resposta é a mesma: célula de tamanho igual.
+
+   A largura é dimensionada pelo MAIOR caso real, que é "Nível 20" no ND 40. */
+/* Chip que É botão (as melhorias da Liberação Máxima). Sem isto ele fica com a
+   aparência de rótulo e o jogador não descobre que clica. O desligado por ter
+   enchido a cota precisa se distinguir do desligado por escolha, ou clicar e
+   nada acontecer parece defeito. Nenhum token novo: só estados. */
+button.afty-chip { cursor: pointer; }
+button.afty-chip:hover:not(:disabled) { border-color: var(--afty-destaque); }
+button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.afty-chip[data-afty-tag] {
+  justify-content: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.afty-chip[data-afty-tag="nivel"]   { min-width: 4.25rem; }
+.afty-chip[data-afty-tag="vezes"]   { min-width: 2.25rem; }
+.afty-chip[data-afty-tag="espacos"] { min-width: 3.5rem; }
+
+.afty-chip[data-afty-tom="aviso"] {
+  border-color: color-mix(in srgb, var(--afty-aviso) 55%, transparent);
+  background: color-mix(in srgb, var(--afty-aviso) 12%, transparent);
+  color: var(--afty-aviso);
+}
+
+/* ============================================================ */
+/* VITAIS — as barras de recurso                                 */
+/* ============================================================ */
+
+/* ⚠ Desenho da 2.5.2, a pedido do autor (2026-08-05): ícone e rótulo à
+   esquerda, o número GRANDE à direita, barra embaixo. A versão anterior tinha o
+   número do mesmo tamanho do rótulo e a barra fininha, e sumia no cabeçalho. */
+.afty-vital {
+  --afty-vital-cor: var(--afty-destaque);
+  border: 1px solid color-mix(in srgb, var(--afty-vital-cor) 28%, var(--afty-borda));
+  border-radius: var(--afty-raio);
+  background: var(--afty-card);
+  padding: 0.625rem 0.75rem;
+  transition: border-color 160ms;
+}
+
+.afty-vital:hover {
+  border-color: color-mix(in srgb, var(--afty-vital-cor) 55%, var(--afty-borda));
+}
+
+.afty-vital[data-afty-vital="pv"]     { --afty-vital-cor: var(--afty-pv); }
+.afty-vital[data-afty-vital="pe"]     { --afty-vital-cor: var(--afty-pe); }
+.afty-vital[data-afty-vital="pvtemp"] { --afty-vital-cor: var(--afty-pvtemp); }
+.afty-vital[data-afty-vital="alma"]   { --afty-vital-cor: var(--afty-alma); }
+
+.afty-vital-icone {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  color: var(--afty-vital-cor);
+}
+
+.afty-vital-rotulo {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--afty-texto-suave);
+  /* ⚠ O rótulo é `truncate`, e `overflow: hidden` faz o navegador sintetizar a
+     base dele na BORDA DE BAIXO. Numa fileira alinhada pela base ele subiria
+     inteiro, então sai da base à mão. Sozinho na ponta esquerda, centrado é o
+     que lê melhor. Ver o bloco "NÚMERO AO LADO DE TEXTO". */
+  align-self: center;
+}
+
+/* O número é um `input` sem cara de input: só vira campo ao receber o foco. */
+.afty-vital-numero {
+  width: 3.5rem;
+  text-align: right;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--afty-raio-peq);
+  outline: none;
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 1.1;
+  color: var(--afty-vital-cor);
+}
+
+.afty-vital-numero:hover { border-color: var(--afty-borda); }
+
+.afty-vital-numero:focus {
+  border-color: var(--afty-vital-cor);
+  background: var(--afty-poco);
+}
+
+.afty-vital-max {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.75rem;
+  color: var(--afty-texto-fraco);
+  flex-shrink: 0;
+}
+
+.afty-vital-temp {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--afty-pvtemp);
+  flex-shrink: 0;
+}
+
+/* ⚠ O "+N" do PE segue a casca DELE. Sem isto o número saía âmbar ao lado de
+   uma barra ciano, e o jogador leria como se fossem duas coisas. */
+.afty-vital[data-afty-vital="pe"] .afty-vital-temp {
+  color: var(--afty-petemp);
+}
+
+/* Abaixo da metade o número puxa para o âmbar, e abaixo de um quarto ele fica
+   na cor do próprio recurso e a barra pulsa. É a informação que o jogador
+   procura primeiro ao olhar a ficha. */
+.afty-vital[data-afty-nivel="baixo"] .afty-vital-numero {
+  color: var(--afty-aviso);
+}
+
+.afty-vital[data-afty-nivel="critico"] .afty-vital-barra {
+  animation: afty-pulso 1.6s ease-in-out infinite;
+}
+
+.afty-vital-trilho {
+  position: relative;
+  height: 0.625rem;
+  border-radius: 9999px;
+  background: var(--afty-poco);
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.5);
+}
+
+/* ⚠ A CASCA SOBREPÕE, e não fica ao lado (2026-08-26). Ao lado ela dividia os
+   100% do trilho com o recurso, e o caso em que ela mais importa é justamente
+   aquele em que ela SOMEM: com o recurso cheio sobram 0% e a faixa não aparecia,
+   e ganhar casca com o recurso cheio é o normal, não a exceção. Pintar por cima
+   é o que o autor pediu ("usar a mesma barra e ir sobrescrevendo ela com outra
+   cor") e é como a 2.5.2 desenha a dela. */
+.afty-vital-casca {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.afty-vital-barra {
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--afty-vital-cor) 85%, white),
+    var(--afty-vital-cor) 55%,
+    color-mix(in srgb, var(--afty-vital-cor) 75%, black));
+  box-shadow: 0 0 8px color-mix(in srgb, var(--afty-vital-cor) 45%, transparent);
+  transition: width 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes afty-pulso {
+  50% { opacity: 0.55; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .afty-vital[data-afty-nivel="critico"] .afty-vital-barra { animation: none; }
+  .afty-vital-barra { transition: none; }
+}
+
+/* Passo de 1 nos recursos. Pequeno no mouse e grande no dedo. */
+.afty-passo {
+  width: 1.25rem;
+  height: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--afty-borda-forte);
+  border-radius: var(--afty-raio-peq);
+  color: var(--afty-texto-suave);
+  font-size: 0.75rem;
+  line-height: 1;
+  transition: color 140ms, border-color 140ms;
+}
+
+.afty-passo:hover {
+  color: var(--afty-texto);
+  border-color: var(--afty-vital-cor, var(--afty-destaque));
+}
+
+@media (pointer: coarse) {
+  .afty-passo { width: 2rem; height: 2rem; font-size: 1rem; }
+}
+
+/* ============================================================ */
+/* GUARDA INABALÁVEL — só Calamidade e Beyond                    */
+/* ============================================================ */
+/* Uma TIRA de uma linha, e não um cartão: ela vive no cabeçalho, que é a parte
+   da tela que o autor já apontou como alta demais, e some inteira para os
+   outros patamares. A casca dela NÃO é desenhada aqui: a Vida da Guarda está no
+   mesmo pote do PV Temporário, então quem a mostra é a barra de PV logo acima.
+
+   `flex-wrap` e não grade: são poucos itens, de larguras muito diferentes, e o
+   que precisa acontecer no celular é os botões caírem para a linha de baixo
+   inteiros. É o caso oposto ao da fileira de defesas. */
+.afty-guarda {
+  display: flex;
+  /* ⚠ LINHA DE BASE, e não centro. O bônus é 1,0625rem e o resto da tira é
+     0,5625rem e 0,75rem, e centrar caixas de alturas diferentes deixa cada
+     número apoiado num lugar. Number se lê pela base: com `center` o "+5"
+     flutuava em relação ao "0 / 145" ao lado (autor, 2026-08-26). O ícone e os
+     botões voltam para o centro logo abaixo, porque eles não têm base. */
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding: 0.375rem 0.625rem;
+  border: 1px solid var(--afty-borda);
+  border-left: 3px solid var(--afty-destaque);
+  border-radius: var(--afty-raio-peq);
+  background: var(--afty-poco);
+}
+
+/* Quebrada perde o realce da borda e esmaece: o mestre tem de ver de longe que
+   aquele chefe está aberto, sem ler número nenhum. */
+.afty-guarda[data-afty-guarda="quebrada"] {
+  border-left-color: var(--afty-borda-forte);
+  opacity: 0.72;
+}
+
+.afty-guarda-icone {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  align-self: center;
+  color: var(--afty-destaque);
+}
+
+.afty-guarda[data-afty-guarda="quebrada"] .afty-guarda-icone {
+  color: var(--afty-texto-fraco);
+}
+
+.afty-guarda-rotulo {
+  font-size: 0.5625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--afty-texto-fraco);
+}
+
+.afty-guarda-valor {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 1.0625rem;
+  line-height: 1.1;
+  color: var(--afty-texto);
+}
+
+.afty-guarda-vida {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.75rem;
+  /* A mesma entrelinha do bônus. Com a herdada (1,5) a caixa desta ficava mais
+     alta que a do número grande e engordava a tira sem motivo. */
+  line-height: 1.1;
+  color: var(--afty-texto-fraco);
+}
+
+/* ⚠ PALAVRA SOLTA, sem pílula e sem borda. Era um `afty-chip[data-afty-tom=
+   "aviso"]` e o autor apontou em 2026-08-26 que ficava berrante: âmbar, cantos
+   9999px e borda, ao lado dos vitais. Quebrada não é erro do jogador nem coisa
+   a corrigir, é o resultado da luta, e o `--afty-aviso` é para o que pede ação.
+   O roxo do sistema diz o estado sem gritar, e a tira inteira já esmaece por
+   fora (ver o `data-afty-guarda`). Mesmo corpo do rótulo "Guarda" ao lado, para
+   os dois lerem como uma linha só. */
+.afty-guarda-quebrada {
+  font-size: 0.5625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--afty-destaque-texto);
+  white-space: nowrap;
+}
+
+/* Empurra os botões para a direita e os mantém juntos ao quebrar a linha. */
+.afty-guarda-controles {
+  display: flex;
+  align-items: center;
+  /* Botão não tem linha de base útil: alinhado por ela, ele afundava. */
+  align-self: center;
+  gap: 0.25rem;
+  margin-left: auto;
+}
+
+/* ⚠ BOTÃO DISCRETO, e não o `afty-botao` do resto da ficha. O autor apontou em
+   2026-08-26 que Golpe e Raio Negro ficaram "grandes e destacados": eles moram
+   no cabeçalho, encostados nos vitais, e com preenchimento e peso de fonte
+   disputavam a atenção com o PV. Aqui o peso todo é a BORDA, e ela só acende no
+   hover. Mesma altura do `afty-passo`, para a tira não engordar. */
+.afty-guarda-botao {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  height: 1.25rem;
+  padding-inline: 0.375rem;
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio-peq);
+  color: var(--afty-texto-fraco);
+  font-size: 0.6875rem;
+  line-height: 1;
+  white-space: nowrap;
+  transition: color 140ms, border-color 140ms;
+}
+
+.afty-guarda-botao:hover:not(:disabled) {
+  color: var(--afty-texto);
+  border-color: var(--afty-destaque);
+}
+
+.afty-guarda-botao:disabled {
+  opacity: 0.4;
+}
+
+.afty-guarda-botao-icone {
+  width: 0.6875rem;
+  height: 0.6875rem;
+  flex-shrink: 0;
+}
+
+/* O contador de golpes gruda no rótulo, como um índice. */
+.afty-guarda-contador {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  margin-left: 0.125rem;
+  color: var(--afty-texto-suave);
+}
+
+/* Alvo de toque: no celular e no tablet os três crescem, como o `afty-passo`
+   já faz. Um botão de 20px de altura não se acerta com o dedo. */
+@media (pointer: coarse) {
+  .afty-guarda-botao { height: 2rem; padding-inline: 0.625rem; font-size: 0.75rem; }
+}
+
+.afty-ficha[data-afty-densidade="compacta"] .afty-guarda {
+  padding-block: 0.1875rem;
+}
+
+/* ============================================================ */
+/* ARMA TRANSFORMÁVEL — a tira das duas formas                   */
+/* ============================================================ */
+/* ⚠ MORA NA ABA AÇÕES desde 2026-09-07, e não mais no cabeçalho (autor: *"o
+   local aonde está o controle da Azamaru é meio ruim. Deixe em Ações"*). Por
+   isso ela é um CARTÃO da aba, e não uma tira encostada nos vitais: mesmo fundo,
+   mesmo raio e mesma sombra do `afty-card`, para ler como irmã do Dano e do
+   Rápido logo abaixo dela.
+
+   ⚠ A BORDA ESQUERDA É O ESTADO, e isso ela herdou da Guarda. Reunida acende no
+   destaque, dividida fica na borda comum e esmaece. O jogador vê de longe em que
+   forma a arma está sem ler palavra nenhuma. */
+.afty-forma {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--afty-borda);
+  border-left: 3px solid var(--afty-borda-forte);
+  border-radius: var(--afty-raio);
+  background: var(--afty-card);
+  box-shadow: var(--afty-sombra);
+  opacity: 0.72;
+}
+
+.afty-forma[data-afty-forma="reunida"] {
+  border-left-color: var(--afty-destaque);
+  opacity: 1;
+}
+
+/* ---------- 1. identidade ---------- */
+.afty-forma-topo {
+  display: flex;
+  /* Linha de base, como a Guarda: o nome e o estado têm corpos diferentes, e
+     centrar deixaria cada um apoiado num lugar. O ícone e os botões voltam para
+     o centro logo abaixo, porque eles não têm base. */
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.afty-forma-icone {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  align-self: center;
+  color: var(--afty-texto-fraco);
+}
+
+.afty-forma[data-afty-forma="reunida"] .afty-forma-icone { color: var(--afty-destaque); }
+
+.afty-forma-nome {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--afty-texto);
+}
+
+.afty-forma-estado {
+  font-size: 0.5625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--afty-texto-fraco);
+}
+
+.afty-forma-controles {
+  display: flex;
+  align-items: center;
+  align-self: center;
+  gap: 0.25rem;
+  margin-left: auto;
+}
+
+/* ---------- 2. o que ela dá agora ---------- */
+/* ⚠ FAIXA PRÓPRIA, e não misturada com os botões. Era tudo um `flex-wrap` só, e
+   "Clones: 4" ficava perdido no meio de sete controles. Número e campo não se
+   intercalam, que é a mesma regra das quatro faixas da Invocação. */
+.afty-forma-numeros {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.375rem;
+}
+
+.afty-forma-numero {
+  font-size: 0.5625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--afty-texto-fraco);
+  white-space: nowrap;
+}
+
+.afty-forma-numero b {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--afty-texto);
+  margin-right: 0.1875rem;
+}
+
+/* ---------- 3. controles ---------- */
+.afty-forma-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.375rem;
+}
+
+/* Mesmo botão discreto da Guarda: o peso é a BORDA, e ela só acende no hover.
+   São seis controles numa aba que já tem muito botão, e com preenchimento eles
+   virariam a coisa mais pesada da tela. */
+.afty-forma-botao {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  height: 1.25rem;
+  padding-inline: 0.375rem;
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio-peq);
+  color: var(--afty-texto-fraco);
+  font-size: 0.6875rem;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 140ms, border-color 140ms;
+}
+
+.afty-forma-botao:hover:not(:disabled) {
+  color: var(--afty-texto);
+  border-color: var(--afty-destaque);
+}
+
+.afty-forma-botao:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ---------- 4. detalhe ---------- */
+.afty-forma-detalhe {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.375rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--afty-texto-fraco);
+  font-size: 0.6875rem;
+  cursor: pointer;
+  transition: color 140ms;
+}
+
+.afty-forma-detalhe:hover { color: var(--afty-texto); }
+
+.afty-forma-detalhe-icone {
+  width: 0.75rem;
+  height: 0.75rem;
+  flex-shrink: 0;
+}
+
+.afty-forma-texto { margin-top: 0.25rem; }
+
+/* Alvo de toque, igual ao `afty-guarda-botao`: 20px de altura não se acerta com
+   o dedo. */
+@media (pointer: coarse) {
+  .afty-forma-botao { height: 2rem; padding-inline: 0.625rem; font-size: 0.75rem; }
+}
+
+.afty-ficha[data-afty-densidade="compacta"] .afty-forma { padding-block: 0.1875rem; }
+
+/* ============================================================ */
+/* STATS — cada número derivado                                  */
+/* ============================================================ */
+
+/* ⚠ AS COLUNAS SAEM DA LARGURA, e não de um `grid-cols-N` por breakpoint.
+   A fileira tem de 8 a 12 células conforme a criatura: Preparo aparece só para
+   o Combatente, e RD Específica, RD a Alma e RD Física só para quem tem a
+   fonte. Com o número de colunas fixo, a primeira célula a mais abria uma
+   SEGUNDA FILEIRA quase vazia, e o cabeçalho crescia junto. Onde isso mais
+   dói é no retrato: ele é uma célula da grade do cabeçalho e estica com a
+   altura da linha, então a moldura virava uma tira alta e estreita e a foto
+   perdia as laterais. O autor apontou em 2026-08-26, pelo Preparo.
+
+   `auto-fit` resolve dos dois lados: com poucas células as faixas vazias
+   somem e as que ficam se alargam, e com muitas ele cria quantas couberem.
+   O piso de 4,5rem é o ponto em que o número continua legível, e o rótulo
+   apara no `text-overflow` com o nome inteiro no `title`. */
+.afty-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(4.5rem, 1fr));
+  gap: 0.375rem;
+}
+
+/* ⚠ CÉLULA DE TAMANHO FIXO, numa grade. Antes era `flex-wrap` e cada caixa
+   ficava do tamanho do próprio texto, com "CD" minúscula ao lado de
+   "Res. Parcial" larga (rótulo que saiu em 2026-09-21): a fileira virava uma
+   serra. O autor apontou em 2026-08-05. Rótulo em cima, número embaixo, os
+   dois centrados. */
+.afty-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.125rem;
+  min-height: 3rem;
+  /* ⚠ RESPIRO DE BAIXO MENOR QUE O DE CIMA, de propósito. Todo valor desta
+     célula é dígito, maiúscula ou palavra sem perna ("58", "13.5m", "Médio"),
+     e a caixa de linha do número reserva a descida que nenhum deles usa: com
+     recuo igual dos dois lados a TINTA fica 2px alta, mesmo com as caixas
+     centradas. Os 2,25px de diferença devolvem o par ao meio óptico. */
+  padding: 0.3125rem 0.375rem 0.1875rem;
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio-peq);
+  background: var(--afty-poco);
+  transition: border-color 140ms ease-out;
+}
+
+.afty-stat:hover {
+  border-color: var(--afty-borda-forte);
+}
+
+/* ⚠ ENTRELINHA PRÓPRIA, e é o conserto de 2026-09-03. O rótulo herdava a
+   entrelinha do cartão, que é 1,45 de um corpo de 18px: 26px de caixa para uma
+   fonte de 10px. Os 14px de espaço morto ficavam TODOS acima e abaixo das
+   maiúsculas, e como a caixa do número quase não tem folga, o par rótulo mais
+   número nascia centrado como CAIXA e baixo como TINTA (medido: 14px de vazio
+   acima da primeira letra contra 8,5px abaixo do último dígito). O autor viu
+   como *"a fonte está muito alinhada para baixo ao invés de estar no centro"*,
+   e o "Tamanho / Médio" quase encostando na borda. Vale para toda a Ficha:
+   a tira do cabeçalho tinha exatamente a mesma medida. */
+.afty-stat-rotulo {
+  display: block;
+  max-width: 100%;
+  line-height: 1.25;
+  font-size: 0.5625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--afty-texto-fraco);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.afty-stat-valor {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 1.0625rem;
+  line-height: 1.1;
+  color: var(--afty-texto);
+}
+
+/* ⚠ A fileira de defesas some ao rolar SÓ EM TELA BAIXA. Num monitor grande o
+   cabeçalho inteiro cabe de sobra, e escondê-lo trocaria carga cognitiva por
+   rolagem, que é justo o que a Ficha existe para evitar. */
+@media (max-height: 820px) {
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-stats {
+    display: none;
+  }
+
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-retrato-painel {
+    display: none;
+  }
+
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-cabecalho-conteudo[data-afty-com-retrato="sim"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ============================================================ */
+/* ABAS                                                          */
+/* ============================================================ */
+
+.afty-abas {
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.afty-abas::-webkit-scrollbar { display: none; }
+
+.afty-aba {
+  position: relative;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--afty-texto-suave);
+  border-bottom: 2px solid transparent;
+  transition: color 140ms ease-out;
+}
+
+.afty-aba:hover { color: var(--afty-texto); }
+
+.afty-aba[aria-selected="true"] {
+  color: var(--afty-destaque-texto);
+  border-bottom-color: var(--afty-destaque);
+}
+
+/* ============================================================ */
+/* ATRIBUTOS                                                     */
+/* ============================================================ */
+
+/* Os seis, numa fileira de células iguais. O valor é o número grande e o
+   modificador é a pastilha embaixo, que é a que ROLA. */
+.afty-atributo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.375rem 0.25rem;
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio-peq);
+  background: var(--afty-poco);
+  transition: border-color 140ms ease-out;
+}
+
+.afty-atributo:hover { border-color: var(--afty-borda-forte); }
+
+.afty-atributo-rotulo {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--afty-texto-fraco);
+}
+
+.afty-atributo-valor {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 1.375rem;
+  line-height: 1.1;
+  color: var(--afty-texto);
+}
+
+.afty-atributo-mod {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0 0.375rem;
+  border-radius: 9999px;
+  color: var(--afty-destaque-texto);
+  background: var(--afty-destaque-fundo);
+}
+
+/* ============================================================ */
+/* CARGA                                                         */
+/* ============================================================ */
+
+/* A barra de carga reusa a anatomia dos vitais (trilho e barra), e por isso não
+   tem regra própria. O que muda é o AVISO: acima do limite a barra vira âmbar,
+   e é o componente que troca a variável de cor. */
+.afty-card[data-afty-carga="critico"] {
+  border-color: color-mix(in srgb, var(--afty-pv) 45%, var(--afty-borda));
+}
+
+.afty-card[data-afty-carga="baixo"] {
+  border-color: color-mix(in srgb, var(--afty-aviso) 45%, var(--afty-borda));
+}
+
+/* ============================================================ */
+/* SUB-ABAS                                                      */
+/* ============================================================ */
+
+/* As divisões de dentro de um cartão: uma por Especialização, e as três dos
+   Níveis Lendários. Elas são visivelmente MENORES que as abas do cabeçalho, e
+   isso é hierarquia e não enfeite: duas fileiras de abas do mesmo peso fazem o
+   jogador perder qual delas manda em qual. */
+.afty-subabas {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.375rem;
+  border-bottom: 1px solid var(--afty-borda);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.afty-subabas::-webkit-scrollbar { display: none; }
+
+.afty-subaba {
+  display: inline-flex;
+  /* Mistura as duas fontes: o nome no corpo, a contagem nos números. Ver o
+     bloco "NÚMERO AO LADO DE TEXTO". */
+  align-items: baseline;
+  gap: 0.3125rem;
+  flex-shrink: 0;
+  padding: 0.1875rem 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--afty-texto-suave);
+  transition: color 140ms, border-color 140ms, background-color 140ms;
+}
+
+.afty-subaba:hover { color: var(--afty-texto); }
+
+.afty-subaba[aria-selected="true"] {
+  color: var(--afty-destaque-texto);
+  border-color: color-mix(in srgb, var(--afty-destaque) 55%, transparent);
+  background: var(--afty-destaque-fundo);
+}
+
+/* A metade de baixo da regra da base, para estes dois containers: ícone e
+   pílula não têm base de texto, e sem isto o navegador os penduraria pela borda
+   de baixo. Ver o bloco "NÚMERO AO LADO DE TEXTO". */
+.afty-subaba > svg,
+.afty-feitico-topo > svg,
+.afty-feitico-topo > .afty-chip { align-self: center; }
+
+/* Quantos itens tem a divisão. Ele existe para o jogador saber o tamanho do que
+   está escondido atrás da outra aba antes de clicar nela. */
+.afty-subaba-conta {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.625rem;
+  color: var(--afty-texto-fraco);
+}
+
+.afty-subaba[aria-selected="true"] .afty-subaba-conta { color: inherit; }
+
+@media (pointer: coarse) {
+  .afty-subaba { padding-block: 0.5rem; }
+}
+
+/* ============================================================ */
+/* CORPO                                                         */
+/* ============================================================ */
+
+.afty-card {
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio);
+  background: var(--afty-card);
+  box-shadow: var(--afty-sombra);
+}
+
+.afty-card-titulo {
+  font-family: var(--afty-fonte-titulo);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--afty-texto-suave);
+}
+
+/* ⚠ TÍTULO QUE DIVIDE A LINHA COM UM CONTROLE NÃO LEVA MARGEM, e isto não é
+   ajuste fino: é o conserto de um desalinhamento de 4px em toda linha dessas.
+
+   O `index.css` declara `h2 { margin: 0 0 8px }` FORA de camada, e as
+   utilidades do Tailwind vivem em `@layer`. Consequência medida no navegador:
+   `mb-2`, `mb-1.5` e até `mb-4` escritos no JSX de um `h2` valem TODOS 8px, e
+   nenhum deles chega. Num título que é item de um flex com `align-items:
+   center`, esses 8px de margem embaixo sobem o TEXTO 4px em relação ao ícone
+   irmão, porque o flex centra a caixa de MARGEM e não o glifo.
+
+   Medido no Funcionamento Básico: o centro do texto ficava 4,30px acima do
+   centro da seta, igual com tema e sem tema.
+
+   ⚠ É a terceira vez que o `index.css` morde este arquivo pelo mesmo motivo, e
+   a lição é sempre a mesma: ele declara VÁRIAS propriedades de uma vez, e
+   sobrescrever `font-size` não sobrescreve `margin`. Ver a nota do topo. */
+.afty-card-titulo[data-afty-linha] {
+  margin: 0;
+}
+
+/* ⚠ O canto arredondado do card NÃO usa `overflow: hidden`: ele cortaria o
+   painel de fontes das últimas linhas. Quem arredonda é o filho com fundo. */
+.afty-linha {
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio-peq);
+  background: var(--afty-poco);
+  transition: border-color 140ms ease-out;
+}
+
+.afty-linha:hover { border-color: var(--afty-borda-forte); }
+
+/* ⚠ A LINHA DE LISTA LONGA PULA LAYOUT E PINTURA ENQUANTO ESTÁ FORA DA TELA.
+   É a única classe do projeto com `content-visibility`, e é escopada de
+   propósito: `.afty-linha` sozinha pega também as fileiras curtas do Encontro e
+   dos painéis, onde não há o que economizar. Quem recebe esta aqui é o
+   `ItemDeFicha`, que numa ficha de ND alto se repete de 40 a 150 vezes e gera
+   de 12 a 15 nós por linha FECHADA.
+
+   É o conserto que cresce junto com o nível: quanto mais comprida a aba, mais
+   linha o navegador deixa de medir e pintar a cada quadro de rolagem.
+
+   ⚠ O `contain-intrinsic-size` NÃO é enfeite. Sem ele o navegador trata a linha
+   escondida como altura zero, e a barra de rolagem pula enquanto a pessoa rola.
+   O prefixo `auto` manda ele lembrar a altura real depois da primeira pintura,
+   então o `2rem` vale só para a linha que ainda não apareceu nenhuma vez, e a
+   linha ABERTA (que é bem mais alta) se corrige sozinha. */
+.afty-item-lista {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 2rem;
+  container: itemficha / inline-size;
+}
+
+/* OS NÚMEROS DE MESA (2026-09-28, Fórmula de Combate Entrópica). Na linha larga
+   eles ficam no cabeçalho, ao lado das marcas. Na estreita saem de lá e vão para
+   dentro da linha aberta: medido em 390px, "Bônus dos Aliados: 2" e o contador
+   espremiam o nome até ele sumir. A pergunta vai à própria LINHA (`@container`),
+   e não à janela, porque a aba mora também no painel do Encontro. O limiar vai
+   em pixel: `rem` numa consulta de container resolve contra a raiz de 18px.
+
+   AS MARCAS DA LINHA (a origem, a Especialização, o Nível) seguem o mesmo
+   caminho desde 2026-10-03 (autor: saem da fechada e voltam na aberta). Antes
+   elas tinham `hidden sm:inline-flex`, que nunca escondeu nada: o `display` do
+   `.afty-chip` lá em cima, fora de camada, vence o `hidden` do Tailwind. Esta
+   regra vence o `.afty-chip` porque tem o mesmo peso e vem depois. */
+.afty-mesa-aberta { display: none; }
+@container itemficha (max-width: 560px) {
+  .afty-mesa-fechada,
+  .afty-marca-fechada { display: none; }
+  .afty-mesa-aberta { display: flex; }
+}
+
+.afty-linha[data-afty-destacada="sim"] {
+  border-color: color-mix(in srgb, var(--afty-destaque) 55%, transparent);
+  background: var(--afty-destaque-fundo);
+}
+
+/* ============================================================ */
+/* ABA BUFFS — a coluna de controle, a família e a escolha       */
+/* ============================================================ */
+
+/* ⚠ A COLUNA DE CONTROLE TEM PISO DE LARGURA (2026-08-28). Um estado `bool`
+   entrega um botão, uma `faixa` entrega três células e uma `opcao` entrega de
+   duas a oito, e o rótulo à esquerda é elástico: sem piso, a borda esquerda do
+   controle cai num x diferente em cada linha, e numa criatura de ND 40 são
+   quarenta linhas serrilhando a direita do cartão de cima a baixo.
+
+   É a mesma resposta que os chips numerados receberam em 2026-08-06, pelo mesmo
+   relato do autor: célula de tamanho igual. Ver o `data-afty-tag` acima. */
+.afty-estado-controle {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+  min-width: 5.25rem;
+  flex-shrink: 0;
+}
+
+/* No toque todo botão vai a 44px e a fileira de passo (− valor +) fica bem mais
+   larga, então o piso sobe junto. Sem isto, o alinhamento que o desktop ganha o
+   celular perde. */
+@media (pointer: coarse) {
+  .afty-estado-controle { min-width: 7.5rem; }
+}
+
+/* ⚠ OS CONTROLES DA LINHA SÃO MENORES QUE OS DA FICHA EM GERAL (autor,
+   2026-08-28, com captura: "as caixas que tem Ativa/Inativa são maiores e mais
+   grossas que outras"). O `afty-botao` padrão tem 0,8125rem de corpo e 0,375rem
+   de recuo vertical, e ao lado do `afty-passo`, que é um quadrado de 1,25rem,
+   ele lia como outra família de peça. Aqui os dois têm a MESMA altura, e a
+   linha inteira passa a ter uma régua só.
+
+   O toque não entra nesta conta: a regra de `pointer: coarse` lá embaixo põe
+   todo botão em 44px, e é ela que continua valendo no celular. */
+.afty-estado-linha .afty-botao {
+  height: 1.375rem;
+  padding: 0 0.5rem;
+  font-size: 0.6875rem;
+}
+
+.afty-estado-linha .afty-passo { width: 1.375rem; height: 1.375rem; }
+
+@media (pointer: coarse) {
+  .afty-estado-linha .afty-botao { height: auto; min-height: 44px; padding-inline: 1rem; }
+  .afty-estado-linha .afty-passo { width: 2rem; height: 2rem; }
+}
+
+/* O DELTA, que é o que ligar aquele estado está fazendo agora.
+
+   ⚠ TEXTO, E NÃO PÍLULA. Era `afty-chip` e o autor recusou em 2026-08-28: borda,
+   fundo e canto de 9999px repetidos por quarenta linhas viram quarenta cápsulas
+   ao lado dos botões, que são o que de fato se clica. Este é o desenho dos
+   pré-requisitos do criador, que resolvem o mesmo problema (marca de leitura
+   encostada em alvo de clique) do mesmo jeito. */
+.afty-estado-delta {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.afty-delta {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--afty-destaque-texto);
+}
+
+/* O ponto médio entre duas marcas, e não um `gap`: o separador precisa existir
+   como sinal, senão "Dano +6" e "Acerto +3" lidos juntos parecem uma frase.
+
+   ⚠ É `::after` DO ANTERIOR, e não `::before` do seguinte. Com o `::before`, o
+   separador quebrava junto com a marca e a linha nova começava com "· Acerto
+   +2" pendurado (defeito 6 da primeira leva). Como `::after` ele fica preso ao
+   fim da linha de cima, que é onde um separador de fato pertence. */
+.afty-delta:not(:last-child)::after {
+  content: "·";
+  margin: 0 0.375rem;
+  color: var(--afty-texto-fraco);
+}
+
+/* Efeito temporário que PERDEU o pool exclusivo para uma fonte maior. Riscado e
+   apagado, e não uma marca "Suplantado" ao lado: a marca era mais larga que o
+   número que ela desqualificava. O risco diz a mesma coisa no próprio número. */
+.afty-delta[data-afty-suplantado="sim"] {
+  color: var(--afty-texto-fraco);
+  text-decoration: line-through;
+}
+
+/* O que uma condição faz, na linha de baixo dela. Alinha pela esquerda, embaixo
+   do nome, e não pela direita como a marca de um estado: aqui a linha é só
+   dela, e a leitura começa onde o nome começa. */
+.afty-condicao-efeitos { justify-content: flex-start; }
+
+/* Texto de apoio numa régua de deltas (as rodadas do Invencível, "Imune a
+   Críticos"). Mesma régua, peso menor e cor neutra: não é número que se soma. */
+.afty-delta[data-afty-tom="nota"] {
+  font-weight: 500;
+  color: var(--afty-texto-suave);
+}
+
+/* O motivo de uma trava ("Defesa Abaixo da Base", do Feitiço Permutativo). Texto
+   com o ícone, na mesma régua, e não cápsula: são três ou quatro palavras. */
+.afty-delta[data-afty-tom="aviso"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--afty-aviso);
+}
+
+/* ============================================================ */
+/* ABA BUFFS: a faixa Agora (2026-09-22)                         */
+/* ============================================================ */
+/* O saldo de tudo que a aba liga. Uma célula por stat, o rótulo em cima, o
+   quanto mudou no meio e onde ficou embaixo. As células quebram em fileira, e é
+   o que deixa a faixa servir igual na Ficha inteira e no painel do Encontro.
+
+   ⚠ Verde e vermelho aqui são os tokens de CURA e de PV, e não cores novas: o
+   tema do usuário pinta por token, e uma cor escrita à mão ficaria de fora. */
+.afty-agora {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+
+.afty-agora-item {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 4.75rem;
+  padding: 0.3rem 0.6rem 0.35rem;
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio-peq);
+  background: var(--afty-poco);
+}
+
+.afty-agora-rotulo {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--afty-texto-suave);
+}
+
+.afty-agora-valor {
+  font-family: var(--afty-fonte-num);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--afty-texto);
+}
+
+.afty-agora-item[data-afty-sinal="mais"] .afty-agora-valor { color: var(--afty-cura); }
+.afty-agora-item[data-afty-sinal="menos"] .afty-agora-valor { color: var(--afty-pv); }
+
+.afty-agora-final {
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--afty-texto-fraco);
+}
+
+/* ⚠ NO ESTREITO A CÉLULA VIRA LINHA CORRIDA. No celular as treze células
+   empilhavam em três fileiras de caixas e empurravam as Condições para baixo da
+   dobra. Rótulo e número lado a lado, sem o "onde ficou", cabem em duas.
+
+   A pergunta vai ao CARTÃO e não à janela, porque a aba mora também no painel
+   do Encontro (ver `.afty-inv-ficha`), e o limiar vai em pixel: `rem` numa
+   consulta de container resolve contra a raiz de 18px. Nenhum hover mora aqui
+   dentro, então a contenção de layout do `container-type` não corta painel. */
+[data-afty-agora] { container-type: inline-size; container-name: agora; }
+
+@container agora (max-width: 560px) {
+  .afty-agora { gap: 0.25rem 0.375rem; }
+  .afty-agora-item {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.3rem;
+    min-width: 0;
+    padding: 0.15rem 0.45rem;
+  }
+  .afty-agora-valor { font-size: 0.8125rem; }
+  .afty-agora-final { display: none; }
+}
+
+/* ============================================================ */
+/* ABA BUFFS: a lista de Ligados Agora (2026-09-22)              */
+/* ============================================================ */
+/* ⚠ FOI LADRILHO POR UM DIA, e o autor recusou: "extremamente feio em quesito
+   Design e confuso". Vinte caixas roxas iguais, a fileira da grade esticando
+   pela altura do ladrilho mais alto e o nome cortado em 27 dos 63 estados do
+   catálogo. A resposta é a da NN/g para este caso: cartão é para explorar
+   conteúdo rico, LISTA é para varrer e comparar, que é o que se faz no turno.
+
+   COLUNAS DE JORNAL, e não grade: `columns` deixa o grupo inteiro (dono,
+   família e linhas) fluir para a coluna seguinte sem quebrar no meio, e sem
+   fileira que estica pelo item mais alto. A largura da coluna decide quantas
+   cabem, na Ficha e no painel do Encontro. */
+.afty-ligados {
+  columns: 20rem auto;
+  column-gap: 1.25rem;
+}
+
+.afty-ligados-grupo {
+  break-inside: avoid;
+  margin-bottom: 0.5rem;
+}
+
+/* O dono (a Especialização, a Técnica, as Aptidões) com o ícone dele. O ícone
+   fica no CABEÇALHO e não em cada linha: numa lista de vinte linhas, um ícone
+   por linha vira mural e devolve o ruído que a lista veio resolver. */
+.afty-ligados-dono {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0 0 0.25rem;
+  font-family: var(--afty-fonte-titulo);
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--afty-texto-suave);
+}
+
+/* ⚠ O FIO É O SEPARADOR (autor, 2026-09-22: "ícones de separação faltando").
+   Com dois donos numa coluna de jornal, o versalete sozinho não marcava onde um
+   grupo acabava: o fio corre do nome até a borda e fecha o cabeçalho. */
+.afty-ligados-dono::after {
+  content: "";
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--afty-borda);
+}
+
+.afty-ligados-quantos {
+  order: 1;
+  flex-shrink: 0;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: normal;
+  color: var(--afty-texto-fraco);
+}
+
+/* A família e as linhas dela, ligadas por um trilho. */
+.afty-ligados-familia-bloco {
+  margin-left: 0.75rem;
+  padding-left: 0.375rem;
+  border-left: 1px solid var(--afty-borda);
+}
+
+.afty-ligados-familia-bloco .afty-ligada { padding-left: 0.75rem; }
+
+.afty-ligados-familia {
+  margin: 0.25rem 0 0.0625rem 0.75rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--afty-texto-fraco);
+}
+
+/* A linha. Sem caixa própria: fundo só no hover e no foco, que é o que tira as
+   vinte molduras disputando a atenção com os botões.
+
+   ⚠ SÃO DUAS LINHAS DESDE A SEGUNDA LEVA (2026-09-22). Em uma só, o nome, a
+   escolha e os números disputavam a mesma largura, e o resultado na captura do
+   autor foi "Postura S... efesa −4 · Dano +7": a escolha encolhida a nada e o
+   delta cortado no COMEÇO, porque ele alinhava à direita com `overflow:
+   hidden` e o que transbordava saía pela esquerda. Em cima quem é e o que se
+   clica, embaixo o que ele está dando, com quebra livre. */
+.afty-ligada {
+  display: flex;
+  flex-direction: column;
+  gap: 0.0625rem;
+  padding: 0.1875rem 0.25rem 0.1875rem 1.5rem;
+  border-radius: var(--afty-raio-peq);
+  min-width: 0;
+}
+
+.afty-ligada-topo {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 1.5rem;
+  min-width: 0;
+}
+
+/* O que o estado está dando, na linha de baixo e alinhado com o nome (o recuo
+   é a largura da seta). */
+.afty-ligada-marcas {
+  padding-left: 1rem;
+  min-width: 0;
+}
+
+.afty-ligada:hover { background: var(--afty-poco); }
+.afty-ligada:focus-within { background: var(--afty-poco); }
+
+/* O nome é BOTÃO desde a fase 3: ele abre o detalhe da linha. Continua parecendo
+   texto, porque o que ele faz é revelar e não executar. */
+.afty-ligada-nome {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: 1 1 auto;
+  min-width: 4rem;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--afty-texto);
+  cursor: pointer;
+}
+
+.afty-ligada-nome:focus-visible { outline: 2px solid var(--afty-destaque); outline-offset: 2px; }
+
+/* Sem detalhe não há seta, e o recuo dela fica: a coluna dos nomes continua
+   reta, e a seta passa a significar "aqui tem mais" de verdade. */
+.afty-ligada-nome[data-afty-sem-seta] {
+  padding-left: 1rem;
+  cursor: default;
+}
+
+.afty-ligada[data-afty-aberta="sim"] { background: var(--afty-poco); }
+
+/* O rótulo dentro do botão: é ele que corta, e não o botão, senão a seta some
+   junto com o fim do nome. */
+.afty-ligada-rotulo {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A escolha que está valendo (a Postura, a Manobra). Tem MÍNIMO de leitura: com
+   `min-width: 0` ela encolhia antes de todo o resto e "Sol" virava "S...". */
+.afty-ligada-escolha {
+  flex: 0 1 auto;
+  min-width: 3.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-left: 0.375rem;
+  border-left: 1px solid var(--afty-borda);
+  font-size: 0.6875rem;
+  color: var(--afty-destaque-texto);
+}
+
+.afty-ligada-nota {
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.6875rem;
+  color: var(--afty-texto-suave);
+}
+
+.afty-ligada-passo { display: flex; align-items: center; gap: 0.125rem; flex-shrink: 0; }
+
+.afty-ligada .afty-passo { width: 1.25rem; height: 1.25rem; flex-shrink: 0; }
+
+@media (pointer: coarse) {
+  .afty-ligada-topo { min-height: 2.5rem; }
+  .afty-ligada .afty-passo { width: 2rem; height: 2rem; }
+}
+
+/* ============================================================ */
+/* ABA BUFFS: a faixa SOFRENDO e a seção recolhível (2026-09-22) */
+/* ============================================================ */
+/* As condições ativas no painel do turno, antes de qualquer rolagem.
+
+   ⚠ SEM VERMELHO (autor, 2026-09-22). Quem separa "o que eu ganhei" de "o que
+   estão fazendo comigo" é o ÍCONE e a posição: verde e vermelho seguem só nos
+   números do saldo, onde são sinal de grandeza e não de natureza. */
+.afty-sofrendo {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--afty-borda);
+}
+
+.afty-sofrendo-rotulo {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--afty-texto-suave);
+}
+
+/* Pastilha de canto pequeno, e não cápsula de raio total: a regra do autor
+   (2026-09-03) vale, e aqui o rótulo tem nome mais número. */
+.afty-pastilha {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--afty-destaque) 45%, var(--afty-borda));
+  border-radius: var(--afty-raio-peq);
+  background: var(--afty-destaque-fundo);
+  color: var(--afty-texto);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 140ms ease-out;
+}
+
+.afty-pastilha:hover { border-color: var(--afty-destaque); }
+.afty-pastilha:focus-visible { outline: 2px solid var(--afty-destaque); outline-offset: 1px; }
+
+.afty-pastilha-rodadas {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  color: var(--afty-texto-suave);
+}
+
+@media (pointer: coarse) {
+  .afty-pastilha { min-height: 2.25rem; }
+}
+
+/* O título que recolhe a seção. Botão, mas com cara de título: quem abre e
+   fecha é a seta, e o alvo é a linha inteira. */
+.afty-secao-botao {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--afty-texto-suave);
+  cursor: pointer;
+  text-align: left;
+}
+
+.afty-secao-botao:hover { color: var(--afty-texto); }
+.afty-secao-botao:focus-visible { outline: 2px solid var(--afty-destaque); outline-offset: 2px; }
+
+.afty-secao-conta {
+  font-family: var(--afty-fonte-num);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--afty-texto-fraco);
+}
+
+/* A marca "+N" do saldo é um botão com a mesma caixa das células. */
+button.afty-agora-item { cursor: pointer; font-family: inherit; text-align: left; }
+button.afty-agora-item:hover { border-color: var(--afty-borda-forte); }
+button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); outline-offset: 1px; }
+
+/* ============================================================ */
+/* ABA BUFFS: a condição em linha e o catálogo (2026-09-22)      */
+/* ============================================================ */
+/* ⚠ FOI CARTÃO ATÉ A FASE 3, e caiu pelo mesmo motivo do ladrilho: o cartão diz
+   tudo de uma vez (número, inclusão, resumo, rodadas) e três condições comiam
+   248px da aba. A linha diz o nome, o degrau, os números e as rodadas, e o resto
+   abre embaixo (`.afty-detalhe`).
+
+   ⚠ A BORDA DA ESQUERDA CRESCE COM A FORÇA, no roxo do destaque e não em
+   vermelho: o autor recusou cor de severidade duas vezes (2026-08-28 e
+   2026-09-22). O que cresce é a intensidade, como os traços do degrau. */
+.afty-cond-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  container-type: inline-size;
+  container-name: condicoes;
+}
+
+/* ⚠ NO ESTREITO O NÚMERO CEDE A VEZ AO NOME. Em 390px os números espremiam o
+   nome até "San..." no Sangramento, e o nome é a primeira coisa que se procura.
+   Eles descem para uma segunda linha, recuados, e a linha continua com uma
+   altura só quando não há número.
+
+   A pergunta vai ao CARTÃO (`@container`), e não à janela, porque a aba mora
+   também no painel do Encontro. O limiar vai em pixel: `rem` numa consulta de
+   container resolve contra a raiz de 18px. */
+@container condicoes (max-width: 560px) {
+  .afty-cond-linha { flex-wrap: wrap; padding-block: 0.25rem; }
+  .afty-cond-abrir { flex: 1 1 8rem; }
+  .afty-cond-efeitos {
+    order: 9;
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    overflow: visible;
+    padding-left: 1.75rem;
+  }
+}
+
+.afty-cond-linha {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  min-height: 1.875rem;
+  padding: 0.0625rem 0.25rem 0.0625rem 0.5rem;
+  border-left: 3px solid var(--afty-cond-cor, var(--afty-borda-forte));
+  border-radius: 0 var(--afty-raio-peq) var(--afty-raio-peq) 0;
+}
+
+.afty-cond-linha:hover,
+.afty-cond-linha:focus-within { background: var(--afty-poco); }
+
+.afty-cond-linha[data-afty-forca="1"] { --afty-cond-cor: color-mix(in srgb, var(--afty-destaque) 35%, var(--afty-borda)); }
+.afty-cond-linha[data-afty-forca="2"] { --afty-cond-cor: color-mix(in srgb, var(--afty-destaque) 60%, var(--afty-borda)); }
+.afty-cond-linha[data-afty-forca="3"] { --afty-cond-cor: color-mix(in srgb, var(--afty-destaque) 85%, var(--afty-borda)); }
+.afty-cond-linha[data-afty-forca="4"] { --afty-cond-cor: var(--afty-destaque); }
+
+/* O nome abre o detalhe, e leva o ícone e a seta junto: alvo grande, que é o que
+   o toque pede. */
+.afty-cond-abrir {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  color: var(--afty-texto-suave);
+  cursor: pointer;
+}
+
+.afty-cond-abrir:focus-visible { outline: 2px solid var(--afty-destaque); outline-offset: 2px; }
+
+.afty-cond-nome {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--afty-texto);
+}
+
+/* Os números na linha não quebram: o que passa de três vira "e mais N" e o
+   detalhe mostra todos. */
+.afty-cond-efeitos {
+  flex: 0 1 auto;
+  min-width: 0;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.afty-cond-resumo {
+  margin: 0;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: var(--afty-texto-suave);
+}
+
+/* ============================================================ */
+/* ABA BUFFS: o detalhe sob demanda (fase 3, 2026-09-22)         */
+/* ============================================================ */
+/* Recuado e com um fio à esquerda, para ler como filho da linha que o abriu. É
+   onde mora o que saiu das linhas: a lista inteira de escolhas, as notas, o
+   custo, a troca da Postura e o texto do livro. */
+.afty-detalhe {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0.1875rem 0 0.375rem 1.5rem;
+  padding: 0.5rem 0.625rem;
+  border-left: 2px solid var(--afty-borda-forte);
+  border-radius: 0 var(--afty-raio-peq) var(--afty-raio-peq) 0;
+  background: var(--afty-poco);
+  /* A aba vive na Ficha e no painel do Encontro: quem decide se o rótulo fica ao
+     lado ou em cima é a LARGURA DO DETALHE, e não a da janela. */
+  container-type: inline-size;
+  container-name: detalhe;
+}
+
+/* ⚠ GRADE, E NÃO `flex-wrap` (autor, 2026-09-22: "quando clicamos para
+   expandir, as informações estão muito mal mostradas"). Com flex, cada linha
+   media o próprio rótulo e as colunas não alinhavam entre si: "Custo" começava
+   num lugar e "Está Dando" em outro. A grade dá a mesma coluna a todos. */
+.afty-detalhe-linha {
+  display: grid;
+  grid-template-columns: 5.25rem minmax(0, 1fr);
+  align-items: baseline;
+  gap: 0.25rem 0.5rem;
+  min-width: 0;
+}
+
+@container detalhe (max-width: 22rem) {
+  .afty-detalhe-linha { grid-template-columns: minmax(0, 1fr); }
+}
+
+.afty-detalhe-rotulo {
+  padding-top: 0.0625rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--afty-texto-fraco);
+}
+
+.afty-detalhe-opcoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.afty-detalhe-opcoes .afty-botao {
+  height: 1.375rem;
+  padding: 0 0.5rem;
+  font-size: 0.6875rem;
+}
+
+.afty-detalhe-texto {
+  margin: 0;
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  color: var(--afty-texto-suave);
+}
+
+/* O texto do livro fica separado do resto por um fio: ele é citação, e não
+   resultado. */
+.afty-detalhe-livro {
+  padding-top: 0.3rem;
+  border-top: 1px solid var(--afty-borda);
+  color: var(--afty-texto);
+}
+
+@media (pointer: coarse) {
+  .afty-cond-linha { min-height: 2.75rem; }
+  .afty-detalhe-opcoes .afty-botao { height: auto; min-height: 44px; }
+}
+
+/* ============================================================ */
+/* A GAVETA DE CONDIÇÕES: mestre-detalhe (2026-09-22)            */
+/* ============================================================ */
+/* Véu, caixa no alto e foco no campo, como a busca global e o Cofre. Ver
+   `GavetaDeCondicoes.jsx` para o porquê do portal.
+
+   ⚠ FOI GRADE DE LADRILHOS por um dia. O autor: "tamanhos irregulares,
+   inicialmente enorme, e os efeitos mecânicos aparecendo junto aos narrativos".
+   As três queixas são o mesmo defeito: o ladrilho carregava conteúdo de tamanho
+   livre, a fileira esticava pelo mais alto e a caixa mudava de tamanho a cada
+   tecla. Agora a lista tem linhas iguais e o conteúdo variável mora no detalhe.
+
+   ⚠ Não reusa `.afty-busca-fundo` porque a busca tem regras de lista que não
+   valem aqui, e herdar metade de um componente para desligar a outra metade sai
+   mais caro que dez linhas. É a mesma nota que o Cofre já carrega. */
+.afty-gaveta-veu {
+  position: fixed;
+  inset: 0;
+  /* O mesmo andar da busca: acima do painel de fontes, do cabeçalho e do painel
+     de rolagens. */
+  z-index: 1200;
+  display: flex;
+  justify-content: center;
+  padding: 8vh 1rem 1rem;
+  background: var(--afty-veu);
+  backdrop-filter: blur(2px);
+}
+
+/* ⚠ `height`, E NÃO `max-height`. Com altura livre a caixa nascia do tamanho da
+   lista inteira e encolhia a cada letra do filtro, puxando o chão de quem
+   estava lendo. Fixa, o que muda é só o que rola dentro dela. */
+.afty-gaveta {
+  width: min(58rem, 100%);
+  height: min(34rem, 82dvh);
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--afty-borda-forte);
+  border-radius: var(--afty-raio);
+  background: var(--afty-card);
+  box-shadow: var(--afty-sombra);
+  overflow: hidden;
+}
+
+.afty-gaveta-topo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--afty-borda);
+}
+
+.afty-gaveta-corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 16rem) minmax(0, 1fr);
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* ---------- o mestre ---------- */
+.afty-gaveta-master {
+  overflow-y: auto;
+  padding: 0.25rem 0.375rem 0.75rem;
+  border-right: 1px solid var(--afty-borda);
+}
+
+.afty-gaveta-forca-bloco { margin-bottom: 0.125rem; }
+
+/* O degrau de força gruda no topo da rolagem: com 29 nomes iguais, é ele que
+   diz onde se está. */
+.afty-gaveta-forca {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: 0;
+  padding: 0.3125rem 0.375rem 0.1875rem;
+  background: var(--afty-card);
+  font-family: var(--afty-fonte-titulo);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--afty-texto-fraco);
+}
+
+/* A linha do mestre: ícone, nome e a marca de aplicada. Nada mais, porque é o
+   "nada mais" que mantém todas com a mesma altura. */
+.afty-cond-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  width: 100%;
+  min-height: 1.75rem;
+  padding: 0.125rem 0.375rem;
+  border: 0;
+  border-radius: var(--afty-raio-peq);
+  background: none;
+  font: inherit;
+  text-align: left;
+  color: var(--afty-texto-suave);
+  cursor: pointer;
+}
+
+.afty-cond-item:hover { background: var(--afty-poco); }
+.afty-cond-item:focus-visible { outline: 2px solid var(--afty-destaque); outline-offset: -2px; }
+
+.afty-cond-item-nome {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  color: var(--afty-texto);
+}
+
+.afty-cond-item[data-afty-aplicada="sim"] { color: var(--afty-destaque-texto); }
+.afty-cond-item[data-afty-aplicada="sim"] .afty-cond-item-nome {
+  font-weight: 700;
+  color: var(--afty-destaque-texto);
+}
+
+/* O item sob o cursor do teclado. É o que o Enter aplica, e o que o detalhe ao
+   lado está mostrando, então precisa ser visível sem depender do mouse. */
+.afty-cond-item[data-afty-cursor="sim"] {
+  background: var(--afty-destaque-fundo);
+  box-shadow: inset 2px 0 0 var(--afty-destaque);
+}
+
+/* ---------- o detalhe ---------- */
+.afty-gaveta-detalhe {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+.afty-gaveta-detalhe > .afty-vazio { padding: 0.875rem; }
+
+.afty-det-corpo {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.75rem 0.875rem;
+}
+
+.afty-det-nome {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0;
+  font-family: var(--afty-fonte-titulo);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--afty-texto);
+}
+
+.afty-det-meta {
+  margin: 0.125rem 0 0;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--afty-texto-fraco);
+}
+
+.afty-det-bloco { margin-top: 0.625rem; }
+
+/* ⚠ O RÓTULO É O QUE SEPARA MECÂNICA DE NARRATIVA. Sem ele, "Ataques -3" e "Não
+   converte ações na Hierarquia" eram dois parágrafos seguidos, e nada dizia que
+   o primeiro entra na conta e o segundo não. */
+.afty-det-rotulo {
+  margin: 0 0 0.1875rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--afty-texto-fraco);
+}
+
+/* Uma linha por efeito, com o valor alinhado à direita: em frase única com
+   pontos médios, quatro efeitos liam como uma coisa só. */
+.afty-det-numeros {
+  /* Com o painel largo, rótulo à esquerda e valor colado na borda direita
+     ficavam a meio metro um do outro: a tabela tem teto de largura. */
+  max-width: 24rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.afty-det-numeros li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.1875rem 0;
+  border-bottom: 1px solid var(--afty-borda);
+}
+
+.afty-det-numeros li:last-child { border-bottom: 0; }
+
+.afty-det-chave {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.6875rem;
+  color: var(--afty-texto-suave);
+}
+
+.afty-det-valor {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--afty-destaque-texto);
+}
+
+.afty-det-texto {
+  margin: 0;
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  color: var(--afty-texto-suave);
+}
+
+.afty-det-livro { color: var(--afty-texto); }
+
+/* O rodapé não rola com o texto: a faixa, as rodadas e o botão são o que se faz
+   DEPOIS de ler, e procurá-los no fim de um texto longo seria uma rolagem a
+   mais no meio do turno. */
+.afty-det-pe {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  padding: 0.5rem 0.875rem;
+  border-top: 1px solid var(--afty-borda);
+}
+
+.afty-det-campo {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+/* Em tela estreita o detalhe desce para BAIXO da lista, que é a variante do
+   mesmo padrão. A altura da caixa não muda. */
+@media (max-width: 48rem) {
+  .afty-gaveta-corpo {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 42%) minmax(0, 58%);
+  }
+  .afty-gaveta-master {
+    border-right: 0;
+    border-bottom: 1px solid var(--afty-borda);
+  }
+}
+
+@media (max-width: 30rem) {
+  .afty-gaveta-veu { padding: 0; }
+  .afty-gaveta { width: 100%; height: 100dvh; border-radius: 0; }
+}
+
+@media (pointer: coarse) {
+  .afty-cond-item { min-height: 2.5rem; }
+  .afty-det-pe .afty-botao { height: auto; min-height: 44px; }
+}
+
+/* ============================================================ */
+/* CONDIÇÕES — a força como degrau                               */
+/* ============================================================ */
+/* ⚠ A FORÇA É UMA ESCALA DE QUATRO, e a tela tem de mostrar isso (autor,
+   2026-08-28: "não consigo ver o nível da condição"). Ela era desenhada como a
+   CHAVE CRUA numa pílula: "media", em minúscula, sem dizer que é a segunda de
+   quatro. Quatro traços resolvem o degrau, e a palavra ao lado resolve o nome.
+
+   Os traços não carregam cor de severidade: o vermelho do Afty é do PV e o
+   âmbar é do aviso que pede ação, e uma condição não pede ação nenhuma, ela é o
+   estado da criatura. O que cresce é a QUANTIDADE de traço cheio. */
+.afty-forca {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+.afty-forca-degraus {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.afty-forca-degraus > span {
+  width: 3px;
+  height: 0.625rem;
+  border-radius: 1px;
+  background: var(--afty-borda-forte);
+}
+
+.afty-forca-degraus > span[data-afty-cheio="sim"] { background: var(--afty-destaque); }
+
+.afty-forca-nome {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--afty-texto-suave);
+  white-space: nowrap;
+}
+
+/* No celular fica só o degrau: a palavra e o nome da condição disputariam a
+   mesma largura, e o degrau é a metade que não tem como ser deduzida. */
+@media (max-width: 28rem) {
+  .afty-forca-nome { display: none; }
+}
+
+/* O cabeçalho de família. Ele é uma ETIQUETA de lista, e não um título de
+   seção: quem titula é o `afty-card-titulo` do cartão, e repetir aquele peso
+   aqui dentro criaria dois níveis de título disputando a mesma leitura. */
+.afty-estado-familia {
+  margin: 0.5rem 0 0.125rem;
+  padding-left: 0.25rem;
+  font-family: var(--afty-fonte-titulo);
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--afty-texto-fraco);
+}
+
+/* O primeiro cabeçalho não empurra: o filtro e as sub-abas já deram o respiro
+   acima dele. */
+.afty-estado-familia:first-child { margin-top: 0; }
+
+/* A escolha corrente de uma lista fechada, ao lado do nome. Peso normal contra
+   o rótulo em negrito, porque ela é o VALOR e não o nome da coisa. */
+.afty-estado-escolha {
+  margin-left: 0.4rem;
+  font-weight: 400;
+  color: var(--afty-destaque-texto);
+}
+
+/* As opções de uma lista longa, quando aberta: fileira própria, largura cheia,
+   separada do controle por um fio. Ao lado do rótulo elas empurrariam o
+   controle e desfariam o alinhamento que a regra do topo acabou de ganhar. */
+.afty-estado-opcoes {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  justify-content: flex-end;
+  margin-top: 0.375rem;
+  padding-top: 0.375rem;
+  border-top: 1px solid var(--afty-borda);
+}
+
+/* Estados FILHOS: os que declaram `requerEstado` moram na caixa do pai, e não
+   soltos embaixo dela (autor, 2026-08-10, sobre a imbuição das Técnicas de
+   Estilo aparecer desligada do Novo Estilo das Sombras). Vale igual para o PE
+   Extra e as pilhas da Brutalidade.
+
+   ⚠ O laço é feito com BORDA, e não com tom de fundo: no tema claro `--afty-poco`
+   e `--afty-card` são os dois branco, então um degradê de fundo não separaria
+   nada. */
+.afty-estado-filhos {
+  position: relative;
+  margin: 0 0.5rem 0.375rem 1.375rem;
+  padding-left: 0.75rem;
+  border-top: 1px solid var(--afty-borda);
+}
+
+/* O fio que corre ao lado dos filhos. Começa no topo do bloco e para na altura
+   da última linha, para não sobrar rabo pendurado. */
+.afty-estado-filhos::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0.875rem;
+  width: 1px;
+  background: var(--afty-borda-forte);
+}
+
+.afty-estado-filhos > * + * { border-top: 1px solid var(--afty-borda); }
+
+/* O gancho que liga cada filho ao fio. */
+.afty-estado-filhos > * {
+  position: relative;
+}
+
+.afty-estado-filhos > *::before {
+  content: "";
+  position: absolute;
+  left: -0.75rem;
+  top: 50%;
+  width: 0.5rem;
+  height: 1px;
+  background: var(--afty-borda-forte);
+}
+
+/* ⚠ Quem tem o respiro agora é a LINHA, e não mais a caixa: a caixa passou a
+   segurar o pai mais os filhos, e um padding nela empurraria o grupo inteiro
+   para dentro. A densidade compacta segue a mesma mudança logo abaixo. */
+.afty-estado-caixa { padding-block: 0; }
+
+/* ⚠ O CABEÇALHO DEIXOU DE SER CENTRALIZADO em 2026-09-07, e o motivo é a
+   varredura. Uma lista se lê pela margem ESQUERDA: com `justify-content: center`
+   e nomes de tamanhos diferentes, doze Feitiços davam doze pontos de partida
+   diferentes, e o olho tinha de reancorar em cada linha. O nome agora começa
+   sempre no mesmo x, e os números terminam sempre no mesmo x. */
+.afty-feitico-topo {
+  position: relative;
+  display: flex;
+  /* ⚠ A FILA EMBRULHA, e é por isso que não há consulta de largura nenhuma aqui.
+     Em 390px a linha tem de carregar ícone, nome, nível, valor e custo, e um
+     valor longo ("Shikigami Segundo Grau") não cabe junto do nome de jeito
+     nenhum: ou o nome vira "C...", ou o custo sai da tela. Embrulhando, o grupo
+     de números desce para a segunda linha SOZINHO e continua ancorado à direita
+     pelo `margin-left: auto`.
+
+     Isto vale mais que um breakpoint porque o cartão tem dois donos com larguras
+     diferentes (a Ficha e o painel de Encontros), e o flex mede o espaço real em
+     vez de perguntar o tamanho da janela. */
+  flex-wrap: wrap;
+  /* O nome do Feitiço no corpo, os números na fonte de número. A seta, o ícone
+     de tipo e o triângulo de aviso voltam ao centro logo abaixo. */
+  align-items: baseline;
+  gap: 0.5rem;
+  min-height: 2rem;
+  padding: 0.375rem 0.75rem 0.375rem 1.75rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--afty-destaque) 45%, var(--afty-borda));
+  border-radius: calc(var(--afty-raio-peq) - 1px) calc(var(--afty-raio-peq) - 1px) 0 0;
+  background: var(--afty-destaque-fundo);
+  cursor: pointer;
+  list-style: none;
+}
+
+.afty-feitico-topo::-webkit-details-marker { display: none; }
+
+.afty-feitico-seta {
+  position: absolute;
+  left: 0.625rem;
+  width: 0.875rem;
+  height: 0.875rem;
+  color: var(--afty-texto-suave);
+  transition: transform 140ms ease-out;
+}
+
+.afty-feitico[open] .afty-feitico-seta { transform: rotate(90deg); }
+
+/* ⚠ AQUI MORAVA `.afty-feitico:not([open]) .afty-feitico-meta { display: none }`,
+   e ele era o defeito central da lista de Feitiços: escondia nível, custo e o
+   triângulo de aviso justamente no estado em que a linha é lida, o fechado. Um
+   aviso que só aparece depois de abrir não é aviso. */
+
+/* ⚠ O NOME TEM PISO, e quem cede é o valor. Sem isto, um valor longo ("Shikigami
+   Segundo Grau") esmagava o nome até "C..." em 390px, e a linha ficava sem a
+   única coisa que identifica aquele Feitiço. O nome é a identidade, o valor é
+   consulta: numa disputa por largura, quem encolhe é a consulta. */
+.afty-feitico-nome {
+  min-width: 5rem;
+  flex: 1 1 auto;
+  font-family: var(--afty-fonte-titulo);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--afty-texto);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* O ícone do tipo. `align-self: center` porque um SVG não tem base de texto: numa
+   fila `align-items: baseline` o navegador sintetiza a base na borda de baixo do
+   ícone e a linha inteira desce. Mesma correção que a barra da Invocação levou. */
+.afty-feitico-tipo {
+  display: inline-flex;
+  align-self: center;
+  flex-shrink: 0;
+  color: var(--afty-texto-suave);
+}
+
+.afty-feitico-nivel,
+.afty-feitico-valor,
+.afty-feitico-custo,
+.afty-feitico-var {
+  flex-shrink: 0;
+  font-family: var(--afty-fonte-num);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--afty-texto-suave);
+}
+
+.afty-feitico-alerta { flex-shrink: 0; align-self: center; }
+
+/* ⚠ OS NÚMEROS SÃO UM GRUPO, e não dois itens soltos da fila. `margin-left: auto`
+   num só deles empurraria o outro junto, mas o espaço ENTRE eles passaria a
+   depender do tamanho do valor. Agrupados, o valor e o custo mantêm o mesmo
+   respiro em toda linha e o bloco inteiro encosta na direita. */
+.afty-feitico-numeros {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-left: auto;
+  min-width: 0;
+}
+
+/* O nível e o custo são curtos e não encolhem. O valor é o único do grupo que
+   pode ser texto longo, então é ele quem apara. */
+.afty-feitico-nivel,
+.afty-feitico-custo { flex-shrink: 0; }
+
+.afty-feitico-valor {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--afty-texto);
+}
+
+.afty-feitico-custo {
+  color: var(--afty-pe);
+}
+
+.afty-feitico-corpo {
+  padding: 0.625rem 0.75rem 0.75rem;
+}
+
+/* ---------- O QUE O FEITIÇO ENTREGA ----------
+   ⚠ A ROLAGEM SUBIU PARA CÁ em 2026-09-07. Ela era a última linha de uma lista
+   plana, com o mesmo peso de "Duração: Instantânea", e é a única coisa clicável
+   do cartão. Célula própria, número na fonte de número e tamanho maior. */
+.afty-feitico-saida {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: 0.375rem;
+  margin-bottom: 0.625rem;
+}
+
+.afty-feitico-saida-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio-peq);
+  background: var(--afty-poco);
+}
+
+.afty-feitico-saida-rotulo {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--afty-texto-suave);
+}
+
+.afty-feitico-saida-num {
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+/* ---------- O QUE SE CONSULTA ----------
+   ⚠ ERA UMA COLUNA de `display: grid` sem `grid-template-columns`, ou seja, uma
+   propriedade por linha. Num cartão de 1373px isso deixava 85% da largura vazia
+   e empilhava seis linhas de 200px. `auto-fill` e nunca coluna fixa: este cartão
+   tem dois donos (a Ficha e o painel de Encontros), com larguras bem diferentes. */
+/* ⚠ FLEX-WRAP, E NÃO GRADE. A primeira tentativa foi `auto-fill minmax(13rem,
+   1fr)`, e ela conserta o empilhamento mas cria o problema oposto: num cartão de
+   1373px saem cinco colunas de 270px, e "Resolução: Jogada de Ataque" vai parar
+   a 1120px do nome que ele descreve. Estes pares são de tamanhos bem diferentes
+   ("Alvo: Único" contra "Conjuração: Ação Comum"), e coluna de largura fixa
+   desperdiça o vão de todos pelo maior. O flex embrulha na largura de cada um. */
+.afty-feitico-propriedades {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.125rem 1.25rem;
+}
+
+.afty-feitico-propriedade {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  min-width: 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--afty-texto-suave);
+}
+
+/* ⚠ OS DOIS-PONTOS SAÍRAM DO JSX e viraram `::after`. Eles estavam escritos
+   dentro do texto do rótulo ("Conjuração:"), e numa grade isso impede alinhar a
+   coluna: o separador tem de pertencer ao rótulo sem entrar no conteúdo. */
+.afty-feitico-propriedade dt {
+  flex-shrink: 0;
+  font-weight: 700;
+  color: var(--afty-texto);
+}
+
+.afty-feitico-propriedade dt::after { content: ":"; }
+
+.afty-feitico-propriedade dd {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.afty-feitico-efeito {
+  max-width: 78ch;
+  margin-top: 0.625rem;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--afty-texto-suave);
+  white-space: pre-line;
+}
+
+.afty-feitico-efeito strong {
+  color: var(--afty-texto);
+}
+
+/* ============================================================ */
+/* EXPANSÃO DE DOMÍNIO — a linha e o corpo                       */
+/* ============================================================ */
+/* ⚠ REDESENHADA EM 2026-09-11, a pedido do autor (*"Ficou muito feio a Expansão
+   de Domínio na Ficha Final"*). O corpo era UM parágrafo em `.afty-texto`, preso
+   em 78ch num cartão de 1400px, com a área, a duração e o PV repetidos em prosa
+   e o que é desta expansão no fim, depois de cinco efeitos iguais em toda
+   expansão. Mesma lição da linha de Feitiço: a linha FECHADA informa, e o corpo
+   só acrescenta o que a linha não tem.
+
+   Tudo aqui pinta por TOKEN, para o CSS personalizado de cada ficha alcançar a
+   seção sem regra própria. */
+.afty-dominio-cabeca {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem 0.625rem;
+  padding: 0.5rem 0.625rem;
+}
+
+/* ⚠ O NOME TEM PISO, e quem cede é o grupo de números: ele embrulha para a linha
+   de baixo em vez de o nome virar "Parede ...". Medido em 390px antes disto. */
+.afty-dominio-nome {
+  flex: 1 1 8rem;
+  min-width: 8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--afty-texto);
+}
+
+.afty-dominio-numeros {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 0.125rem 0.875rem;
+}
+
+.afty-dominio-numero {
+  white-space: nowrap;
+  font-size: 0.6875rem;
+  color: var(--afty-texto-suave);
+}
+
+.afty-dominio-numero .afty-valor { font-size: 0.6875rem; }
+
+.afty-dominio-corpo {
+  padding: 0 0.75rem 0.75rem 2rem;
+}
+
+.afty-dominio-efeitos {
+  list-style: none;
+  margin: 0.625rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.625rem;
+}
+
+.afty-dominio-efeito-cabeca {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.125rem 0.5rem;
+}
+
+.afty-dominio-efeito-titulo {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--afty-texto);
+}
+
+.afty-dominio-efeito-categoria {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--afty-texto-fraco);
+}
+
+/* ⚠ O RESTO VEM DO `.afty-texto`, que o texto de regra da seção também leva. O
+   contrato de classes promete essa classe como "o texto de regra do livro", e o
+   tema personalizado de cada ficha mira nela: sem ela, o corpo do domínio sairia
+   pintado diferente do resto do texto de regra da mesma ficha. */
+.afty-dominio-efeito-texto {
+  margin: 0.125rem 0 0;
+}
+
+.afty-dominio-secao {
+  margin: 0.875rem 0 0.375rem;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--afty-texto-fraco);
+}
+
+/* ⚠ `auto-fill` com piso em PIXEL, e não consulta de container nem `rem`. O
+   cartão tem dois donos (a Ficha e o painel de Encontros) e a raiz do projeto
+   tem 18px, então `16rem` viraria 288px sem ninguém ver. Duas colunas no
+   desktop, uma no telefone, medido pela largura real do cartão. */
+.afty-dominio-base {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.5rem 1.5rem;
+}
+
+.afty-dominio-base-item {
+  min-width: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--afty-texto-suave);
+}
+
+.afty-dominio-base-item dt {
+  font-weight: 700;
+  color: var(--afty-texto);
+}
+
+.afty-dominio-base-item dd { margin: 0; }
+
+/* ============================================================ */
+/* LIBERAÇÃO MÁXIMA e a DICA de regra                           */
+/* ============================================================ */
+
+/* A categoria fica na PRÓPRIA linha, acima das pastilhas dela. Inline, ela
+   empurrava as pastilhas para a direita e as três categorias produziam três
+   recuos diferentes, sem alinhamento nenhum. */
+.afty-liberacao-grupo {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.afty-liberacao-categoria {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--afty-texto-fraco);
+}
+
+/* A dica de regra. Ela é TEXTO CORRIDO, ao contrário do painel de fontes, que é
+   uma tabela de números: precisa de medida de leitura e de entrelinha. */
+.afty-dica-titulo {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--afty-texto);
+  margin-bottom: 0.25rem;
+}
+
+.afty-dica-texto {
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  color: var(--afty-texto-suave);
+  white-space: normal;
+}
+
+/* A nota é a exceção da regra ("não pode ser usado em feitiços de múltiplos
+   alvos"), e ela precisa se separar do texto principal ou some no meio dele. */
+.afty-dica-nota {
+  margin-top: 0.375rem;
+  padding-top: 0.375rem;
+  border-top: 1px solid var(--afty-borda);
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  color: var(--afty-texto-fraco);
+  white-space: normal;
+}
+
+.afty-rotulo {
+  font-size: 0.75rem;
+  color: var(--afty-texto-suave);
+}
+
+.afty-valor {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--afty-texto);
+}
+
+.afty-valor[data-afty-tom="dano"]  { color: var(--afty-texto); }
+.afty-valor[data-afty-tom="cura"]  { color: var(--afty-cura); }
+.afty-valor[data-afty-tom="custo"] { color: var(--afty-pe); }
+/* A MESMA cor, para quem não pode receber o atributo: o `NumeroComFontes` não
+   repassa `data-afty-*`, e o custo da Expansão de Domínio tem hover. */
+.afty-valor-pe { color: var(--afty-pe); }
+
+.afty-vazio {
+  color: var(--afty-texto-fraco);
+  font-size: 0.8125rem;
+}
+
+/* Número que ROLA ao clique. O sublinhado pontilhado é a única marca, e ela
+   precisa existir: sem nada, um número clicável e um número morto ficam
+   idênticos, e o jogador não descobre que a ficha rola. */
+.afty-rolavel {
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--afty-destaque) 60%, transparent);
+  border-radius: var(--afty-raio-peq);
+  transition: color 120ms, background-color 120ms;
+}
+
+.afty-rolavel:hover {
+  color: var(--afty-destaque-texto);
+  background: var(--afty-destaque-fundo);
+}
+
+/* ============================================================ */
+/* BOTÕES                                                        */
+/* ============================================================ */
+
+.afty-botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border: 1px solid var(--afty-borda-forte);
+  border-radius: var(--afty-raio-peq);
+  background: var(--afty-card);
+  color: var(--afty-texto-suave);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0.375rem 0.75rem;
+  transition: color 140ms, border-color 140ms, background-color 140ms;
+}
+
+.afty-botao:hover {
+  color: var(--afty-texto);
+  border-color: var(--afty-destaque);
+}
+
+.afty-botao[data-afty-tom="destaque"] {
+  background: var(--afty-destaque-fundo);
+  border-color: color-mix(in srgb, var(--afty-destaque) 55%, transparent);
+  color: var(--afty-destaque-texto);
+}
+
+.afty-botao[data-afty-tom="dano"]:hover { border-color: var(--afty-pv); color: var(--afty-pv); }
+.afty-botao[data-afty-tom="cura"]:hover { border-color: var(--afty-cura); color: var(--afty-cura); }
+
+/* Alvo de toque decente no celular, que é 25% do uso. 44px é o mínimo que
+   passa em qualquer diretriz de acessibilidade. */
+@media (pointer: coarse) {
+  .afty-botao { min-height: 44px; padding-inline: 1rem; }
+  .afty-aba { padding-block: 0.75rem; }
+}
+
+/* ============================================================ */
+/* TEXTO DO LIVRO                                                */
+/* ============================================================ */
+
+/* ⚠ Medida de leitura limitada e entrelinha larga: isto é PARÁGRAFO DE REGRA,
+   às vezes com três páginas, e não rótulo de campo. Linha que atravessa um
+   monitor de 27 polegadas perde o começo da seguinte. */
+.afty-texto {
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--afty-texto-suave);
+  max-width: 78ch;
+  white-space: pre-line;
+}
+
+.afty-opcao {
+  border-left: 2px solid color-mix(in srgb, var(--afty-destaque) 55%, transparent);
+  border-radius: 0 var(--afty-raio-peq) var(--afty-raio-peq) 0;
+  background: var(--afty-destaque-fundo);
+}
+
+.afty-estrela {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  border-radius: var(--afty-raio-peq);
+  color: var(--afty-texto-fraco);
+  transition: color 140ms;
+}
+
+.afty-estrela:hover { color: var(--afty-texto-suave); }
+.afty-estrela[data-afty-ativa="sim"] { color: var(--afty-aviso); }
+
+@media (pointer: coarse) {
+  .afty-estrela { width: 2.25rem; height: 2.25rem; }
+}
+
+/* O item para onde a busca navegou. Anel em vez de fundo, para o destaque não
+   competir com o `data-afty-destacada` das linhas que já são especiais. */
+.afty-linha[data-afty-alvo="sim"],
+[data-afty-alvo="sim"] {
+  outline: 2px solid var(--afty-destaque);
+  outline-offset: 1px;
+}
+
+.afty-campo {
+  font-size: 0.8125rem;
+  color: var(--afty-texto);
+}
+
+.afty-campo::placeholder { color: var(--afty-texto-fraco); }
+
+/* O seletor de cor nativo, sem a moldura grossa que os navegadores dão. */
+.afty-cor {
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+  padding: 0;
+  border: 1px solid var(--afty-borda-forte);
+  border-radius: var(--afty-raio-peq);
+  background: transparent;
+  cursor: pointer;
+}
+
+.afty-cor::-webkit-color-swatch-wrapper { padding: 2px; }
+.afty-cor::-webkit-color-swatch { border: none; border-radius: 4px; }
+.afty-cor::-moz-color-swatch { border: none; border-radius: 4px; }
+
+/* ============================================================ */
+/* SELETOR DE CANAL                                              */
+/* ============================================================ */
+
+/* O do Motor, repintado por token. Ver o cabeçalho do `CanalPicker.jsx`. */
+.afty-canal { min-width: 10.5rem; }
+
+.afty-canal-gatilho {
+  padding: 0.125rem 0.375rem;
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio-peq);
+  font-size: 0.8125rem;
+  color: var(--afty-texto);
+  transition: border-color 140ms;
+}
+
+.afty-canal-gatilho:hover { border-color: var(--afty-borda-forte); }
+
+.afty-canal-painel {
+  border: 1px solid var(--afty-borda-forte);
+  border-radius: var(--afty-raio);
+  background: var(--afty-card);
+  box-shadow: var(--afty-sombra);
+}
+
+.afty-canal-busca { border-bottom: 1px solid var(--afty-borda); }
+
+.afty-canal-grupo {
+  padding: 0 0.25rem 0.125rem;
+  margin-bottom: 0.125rem;
+  border-bottom: 1px solid var(--afty-borda);
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--afty-texto-fraco);
+}
+
+.afty-canal-item {
+  padding: 0.1875rem 0.25rem;
+  border-radius: 0.25rem;
+  font-size: 0.6875rem;
+  line-height: 1.25;
+  color: var(--afty-texto-suave);
+  transition: background-color 120ms, color 120ms;
+}
+
+.afty-canal-item[data-afty-escolhido="sim"] {
+  color: var(--afty-destaque-texto);
+  font-weight: 600;
+}
+
+.afty-canal-item[data-afty-cursor="sim"] { background: var(--afty-destaque-fundo); }
+
+/* ============================================================ */
+/* PAINEL DE FONTES                                              */
+/* ============================================================ */
+
+/* ⚠ TODA cor aqui tem FALLBACK, e não é enfeite: este mesmo painel é usado pelo
+   CRIADOR, que não tem a raiz `.afty-ficha` e portanto não tem nenhuma variável
+   `--afty-*` declarada. Sem o segundo argumento do `var()`, o painel do criador
+   ficaria transparente e sem borda. Os fallbacks são exatamente as cores que ele
+   tinha em classe do Tailwind antes de 2026-08-06. */
+.afty-fontes {
+  border: 1px solid var(--afty-borda-forte, #334155);
+  border-radius: var(--afty-raio-peq, 8px);
+  background: var(--afty-poco, #020617);
+  box-shadow: var(--afty-sombra, 0 10px 25px rgb(0 0 0 / 0.5));
+}
+
+/* ⚠ z-index ALTO e `fixed`: o painel flutuante é filho direto da raiz da Ficha,
+   então ele não está mais preso ao contexto de empilhamento do cartão de onde
+   veio. Ver a nota do `PainelFlutuante` sobre o vidro fosco. */
+.afty-fontes-flutuante {
+  z-index: 1000;
+}
+
+/* O cabeçalho de uma pilha dentro do painel (Critável, Não Critável, Fixo). A
+   borda só aparece da segunda pilha em diante, porque só ela vem depois de uma
+   parcela: a primeira não tem nada acima para separar. */
+.afty-fonte-secao { color: var(--afty-destaque-texto, #d8b4fe); }
+.afty-fonte-secao + .afty-fonte-linha { margin-top: 0.125rem; }
+.afty-fonte-linha + .afty-fonte-secao { border-top: 1px solid var(--afty-borda, #1e293b); }
+
+.afty-fonte-rotulo { color: var(--afty-texto-suave, #94a3b8); }
+.afty-fonte-valor { color: var(--afty-texto, #e2e8f0); }
+
+.afty-fonte-total {
+  border-top: 1px solid var(--afty-borda, #1e293b);
+}
+
+.afty-fonte-total > span:first-child { color: var(--afty-texto-fraco, #64748b); }
+.afty-fonte-total > span:last-child { color: var(--afty-texto, #ffffff); }
+
+/* ============================================================ */
+/* BUSCA GLOBAL                                                  */
+/* ============================================================ */
+
+/* ============================================================ */
+/* COFRE — o véu que pede a senha na tela de jogo                */
+/* ============================================================ */
+/* Mesma anatomia da busca, e no mesmo andar de z-index: ele é uma camada que
+   cobre a ficha e pede uma coisa só. Não reusa `.afty-busca-fundo` porque a
+   busca tem regras de altura e de lista que não valem aqui, e herdar metade de
+   um componente para desligar a outra metade sai mais caro que dez linhas. */
+
+.afty-cofre-veu {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  justify-content: center;
+  padding: 12vh 1rem 1rem;
+  background: var(--afty-veu);
+  backdrop-filter: blur(2px);
+}
+
+.afty-cofre-caixa {
+  width: min(32rem, 100%);
+  align-self: flex-start;
+  padding: 0.875rem;
+  border: 1px solid var(--afty-borda-forte);
+  border-radius: var(--afty-raio);
+  background: var(--afty-card);
+  box-shadow: var(--afty-sombra);
+}
+
+.afty-busca-fundo {
+  position: fixed;
+  inset: 0;
+  /* Acima do painel de fontes (1000), que por sua vez fica acima do cabeçalho
+     (40) e do painel de rolagens (45). O bote salva-vidas mora fora da raiz e
+     usa o teto do z-index. */
+  z-index: 1200;
+  display: flex;
+  justify-content: center;
+  padding: 12vh 1rem 1rem;
+  background: var(--afty-veu);
+  backdrop-filter: blur(2px);
+}
+
+.afty-busca {
+  width: min(38rem, 100%);
+  align-self: flex-start;
+  max-height: 70dvh;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--afty-borda-forte);
+  border-radius: var(--afty-raio);
+  background: var(--afty-card);
+  box-shadow: var(--afty-sombra);
+  overflow: hidden;
+}
+
+.afty-busca-lista {
+  border-top: 1px solid var(--afty-borda);
+  overflow-y: auto;
+}
+
+.afty-busca-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  color: var(--afty-texto-suave);
+}
+
+.afty-busca-item + .afty-busca-item {
+  border-top: 1px solid var(--afty-borda);
+}
+
+.afty-busca-item[data-afty-cursor="sim"] {
+  background: var(--afty-destaque-fundo);
+  color: var(--afty-texto);
+}
+
+/* ============================================================ */
+/* PAINEL DE ROLAGENS                                            */
+/* ============================================================ */
+
+/* Barra integrada abaixo das abas. O histórico flutua a partir dela; a última
+   rolagem e os modos continuam visíveis enquanto o cabeçalho acompanha a página. */
+.afty-log {
+  position: relative;
+  z-index: 45;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding-block: 0.5rem;
+  background: var(--afty-fundo);
+}
+
+.afty-log-topo {
+  color: var(--afty-texto-suave);
+}
+
+.afty-log-ultima {
+  min-width: 0;
+  border-left: 1px solid var(--afty-borda);
+}
+
+.afty-log-ultima > .afty-rotulo { padding-inline: 0.625rem; }
+
+.afty-log-historico { white-space: nowrap; }
+
+.afty-log-corpo {
+  position: absolute;
+  top: calc(100% + 0.375rem);
+  right: 0;
+  width: min(26rem, 100%);
+  max-height: min(24rem, 50dvh, var(--afty-log-altura, 50dvh));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--afty-borda-forte);
+  border-radius: var(--afty-raio);
+  background: var(--afty-card);
+  box-shadow: var(--afty-sombra);
+}
+
+.afty-log-corpo[hidden] { display: none; }
+
+.afty-log-corpo-topo {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--afty-card);
+  border-bottom: 1px solid var(--afty-borda);
+}
+
+/* Em telas baixas, a identidade e os vitais podem sair ao rolar; as abas e a
+   barra de dados continuam presas ao topo, com espaço para ler as ações. */
+@media (max-height: 480px) {
+  .afty-cabecalho { top: calc(-1 * var(--afty-cabecalho-recolhido, 0px)); }
+}
+
+.afty-log-modo {
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--afty-raio-peq);
+  border: 1px solid transparent;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--afty-texto-fraco);
+}
+
+.afty-log-modo:hover { color: var(--afty-texto); }
+
+@media (pointer: coarse) {
+  .afty-log-modo { min-width: 2.75rem; min-height: 2.75rem; }
+}
+
+.afty-log-modo[data-afty-ativo="sim"] {
+  color: var(--afty-destaque-texto);
+  border-color: color-mix(in srgb, var(--afty-destaque) 55%, transparent);
+  background: var(--afty-destaque-fundo);
+}
+
+/* Vantagem e desvantagem ligadas mudam a COR do próprio interruptor, e é o que
+   substitui o modo se desarmar sozinho: dá para ver o estado sem procurar. */
+.afty-log-modo[data-afty-modo="vantagem"][data-afty-ativo="sim"] {
+  color: var(--afty-cura);
+  border-color: color-mix(in srgb, var(--afty-cura) 55%, transparent);
+  background: color-mix(in srgb, var(--afty-cura) 14%, transparent);
+}
+
+.afty-log-modo[data-afty-modo="desvantagem"][data-afty-ativo="sim"] {
+  color: var(--afty-pv);
+  border-color: color-mix(in srgb, var(--afty-pv) 55%, transparent);
+  background: color-mix(in srgb, var(--afty-pv) 14%, transparent);
+}
+
+.afty-rolagem + .afty-rolagem {
+  border-top: 1px solid var(--afty-borda);
+}
+
+.afty-rolagem[data-afty-marca="critico"] {
+  background: color-mix(in srgb, var(--afty-destaque) 12%, transparent);
+}
+
+.afty-rolagem[data-afty-marca="pifia"] {
+  background: color-mix(in srgb, var(--afty-pv) 12%, transparent);
+}
+
+.afty-rolagem-total {
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 1.125rem;
+  line-height: 1;
+  color: var(--afty-texto);
+}
+
+.afty-rolagem[data-afty-marca="critico"] .afty-rolagem-total { color: var(--afty-destaque-texto); }
+.afty-rolagem[data-afty-marca="pifia"] .afty-rolagem-total { color: var(--afty-pv); }
+
+.afty-dado {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.125rem;
+  padding: 0 0.1875rem;
+  border: 1px solid var(--afty-borda-forte);
+  border-radius: 0.25rem;
+  background: var(--afty-poco);
+  font-family: var(--afty-fonte-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.625rem;
+  color: var(--afty-texto-suave);
+}
+
+.afty-dado[data-afty-descartado="sim"] {
+  color: var(--afty-texto-fraco);
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+/* A rolagem nova pisca uma vez. Sem isso, rolar duas vezes o mesmo número
+   parece que o botão não funcionou. */
+.afty-rolagem[data-afty-nova="sim"] {
+  animation: afty-entrada 320ms ease-out;
+}
+
+@keyframes afty-entrada {
+  from { background: var(--afty-destaque-fundo); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .afty-rolagem[data-afty-nova="sim"] { animation: none; }
+}
+
+/* ============================================================ */
+/* FOCO — um só, visível em qualquer tema                        */
+/* ============================================================ */
+
+.afty-ficha :focus-visible {
+  outline: 2px solid var(--afty-destaque);
+  outline-offset: 2px;
+  border-radius: var(--afty-raio-peq);
+}
+
+/* ============================================================ */
+/* DENSIDADE                                                     */
+/* ============================================================ */
+
+/* ⚠ A densidade compacta APERTA, e não ESCONDE. Nenhum número, nenhuma linha e
+   nenhum texto some: quem escolhe compacta quer ver MAIS de uma vez, e uma
+   densidade que apaga conteúdo obriga a voltar para a confortável para conferir
+   qualquer coisa, o que é o oposto do pedido.
+
+   O padding daqui vence o do Tailwind pela mesma razão que o tema vence: as
+   utilidades vivem em `@layer` e isto não. */
+.afty-ficha[data-afty-densidade="compacta"] .afty-linha {
+  padding-block: 0.25rem;
+}
+
+/* A caixa de estados não tem padding próprio (ver `.afty-estado-caixa`): quem
+   aperta é cada linha dentro dela. */
+.afty-ficha[data-afty-densidade="compacta"] .afty-estado-caixa { padding-block: 0; }
+.afty-ficha[data-afty-densidade="compacta"] .afty-estado-linha { padding-block: 0.25rem; }
+
+.afty-ficha[data-afty-densidade="compacta"] .afty-card {
+  padding: 0.5rem;
+}
+
+.afty-ficha[data-afty-densidade="compacta"] .afty-stat {
+  min-height: 2.375rem;
+  padding-block: 0.125rem;
+}
+
+.afty-ficha[data-afty-densidade="compacta"] .afty-stat-valor { font-size: 0.9375rem; }
+
+.afty-ficha[data-afty-densidade="compacta"] .afty-vital { padding: 0.375rem 0.625rem; }
+.afty-ficha[data-afty-densidade="compacta"] .afty-vital-numero { font-size: 1.25rem; }
+.afty-ficha[data-afty-densidade="compacta"] .afty-vital-trilho { height: 0.4375rem; }
+
+.afty-ficha[data-afty-densidade="compacta"] .afty-aba { padding-block: 0.375rem; }
+
+/* O texto do livro NÃO encolhe junto: parágrafo de regra em corpo menor é o
+   primeiro lugar onde a compacta viraria ilegível. Só a entrelinha cede. */
+.afty-ficha[data-afty-densidade="compacta"] .afty-texto { line-height: 1.45; }
+
+/* ============================================================ */
+/* CELULAR E TABLET — 25% do uso                                 */
+/* ============================================================ */
+
+/* ⚠ O problema do celular NÃO é largura, é ALTURA. O cabeçalho é fixo e leva
+   identidade, três vitais, doze defesas e as abas: numa tela de 360×740 isso come
+   a tela inteira e o corpo da ficha, que é o que se veio ler, nasce fora dela.
+
+   A resposta é o cabeçalho ENCOLHER ao rolar, e não sumir. O que ele perde é
+   sempre o que dá para reaver rolando de volta uma vez. */
+@media (max-width: 640px) {
+  /* A fileira de defesas cabe em quatro colunas antes de virar tira de fita. */
+  .afty-stats { gap: 0.25rem; }
+  .afty-stat { min-height: 2.5rem; }
+  .afty-stat-rotulo { font-size: 0.5rem; }
+  .afty-stat-valor { font-size: 0.9375rem; }
+
+  /* Rolou: os vitais viram uma faixa de números, sem barra e sem os passos. O
+     campo continua lá, e ele é o que importa no meio da luta. */
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-vital-trilho { display: none; }
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-vital { padding: 0.25rem 0.5rem; }
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-vital-numero { font-size: 1.125rem; }
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-passo { display: none; }
+  /* Modos e Histórico na primeira linha; a última rolagem usa a segunda. */
+  .afty-log {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.375rem;
+  }
+
+  .afty-log-ultima {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    border-left: 0;
+    border-top: 1px solid var(--afty-borda);
+  }
+
+  .afty-log-corpo { width: 100%; }
+
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-log .afty-passo { display: inline-flex; }
+
+  .afty-busca-fundo { padding-top: 6vh; }
+}
+
+/* Entre 641 e 1024 (o tablet) o cabeçalho cabe inteiro, e o que falta é alvo de
+   toque. Isso já vem das regras de `pointer: coarse` lá em cima. */
+
+/* ============================================================ */
+/* IMPRESSÃO                                                     */
+/* ============================================================ */
+
+/**
+ * ⚠ O QUE IMPRIME É O QUE ESTÁ NA TELA. A aba aberta imprime, as outras três
+ * não existem no documento, e Habilidade fechada não tem o texto renderizado.
+ * Não é limitação a corrigir: abrir tudo para imprimir sairia com trinta páginas
+ * de regra que ninguém pediu. Quem quer o texto de uma Habilidade no papel abre
+ * ela antes.
+ */
+/* ============================================================ */
+/* SHIKIGAMIS                                                    */
+/* ============================================================ */
+/* ⚠ REFEITO EM 2026-08-31. O autor: *"a aba de Shikigamis ficou horripilante de
+   entender e usar tudo que eu tenho a dispor [...] eles são a Peça CHAVE em um
+   personagem Controlador"*. O desenho é MESTRE-DETALHE: uma fileira de cartões
+   em cima e a ficha inteira de um deles embaixo.
+
+   ⚠ TUDO AQUI PINTA POR TOKEN (`--afty-*`), como o resto da Ficha. É isso que
+   faz o CSS personalizado POR SHIKIGAMI funcionar: o tema dele redefine os
+   tokens dentro de `#afty-inv-<id>`, e cada peça abaixo se repinta sozinha. Uma
+   cor escrita à mão aqui seria uma peça imune ao tema do dono da ficha. */
+
+/* ---------- a fileira ---------- */
+/* Rolagem horizontal, e não quebra de linha: com sete shikigamis a quebra
+   empurra a ficha do selecionado para fora da tela, e a fileira deixa de ser
+   uma referência rápida para virar metade da página. */
+.afty-inv-fileira {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scrollbar-width: thin;
+}
+
+.afty-inv-cartao {
+  flex: 0 0 11.5rem;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio);
+  background: var(--afty-card);
+  overflow: hidden;
+  transition: border-color 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
+}
+
+/* Fora de campo o cartão APAGA, e é a leitura mais rápida da fileira: dá para
+   ver quem está na mesa sem ler uma palavra. Apagar, e não esconder, porque a
+   invocação guardada continua sendo consultável. */
+.afty-inv-cartao[data-afty-campo="nao"] { opacity: 0.62; }
+
+/* ⚠ Exorcizada é MAIS apagada que fora de campo, e riscada: os dois estados
+   apagam o cartão e só um deles tem volta. Sem a distinção, um shikigami
+   perdido para sempre parecia um shikigami guardado. */
+.afty-inv-cartao[data-afty-fora="sim"] { opacity: 0.38; }
+.afty-inv-cartao[data-afty-fora="sim"] .afty-inv-cartao-nome { text-decoration: line-through; }
+.afty-inv-campo:disabled { cursor: not-allowed; color: var(--afty-texto-fraco); }
+
+.afty-inv-cartao[data-afty-alvo="sim"] {
+  border-color: var(--afty-destaque);
+  box-shadow: 0 0 0 1px var(--afty-destaque), var(--afty-sombra);
+}
+
+.afty-inv-cartao-corpo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.5rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* ⚠ RETRATO É ÍCONE, e não tira (autor, 2026-08-31 à noite). O cartão tem
+   11,5rem de largura e o retrato ocupava a largura inteira com 4,5rem de
+   altura: `object-fit: cover` numa caixa de proporção 2,5:1 recorta uma faixa
+   do meio de uma imagem quadrada. Quadrado ao lado do nome mostra a imagem
+   inteira, e o nome ainda ganha espaço, porque deixa de dividir a linha com
+   o grau. */
+.afty-inv-cartao-topo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.afty-inv-cartao-texto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.afty-inv-cartao-nome {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  color: var(--afty-texto);
+}
+
+.afty-inv-cartao-grau {
+  flex-shrink: 0;
+  font-size: 0.625rem;
+  color: var(--afty-texto-fraco);
+}
+
+.afty-inv-cartao-vida { display: block; }
+
+/* ⚠ O trilho da fileira é MAIS FINO que o do vital (0,625rem). Aqui ele é
+   referência de relance e não alvo de edição, e na altura cheia ele competia
+   com o retrato pela atenção do cartão. */
+.afty-inv-cartao-vida .afty-vital-trilho { height: 0.3125rem; }
+
+.afty-inv-cartao-pv {
+  display: block;
+  margin-top: 0.1875rem;
+  font-family: var(--afty-fonte-num);
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--afty-texto-suave);
+}
+
+/* O interruptor de campo. Ele é a AÇÃO do cartão e por isso ocupa a largura
+   inteira embaixo: alvo grande no dedo, e impossível de confundir com o corpo
+   do cartão, que só seleciona. */
+.afty-inv-campo {
+  border: 0;
+  border-top: 1px solid var(--afty-borda);
+  padding: 0.3125rem;
+  background: var(--afty-poco);
+  color: var(--afty-texto-suave);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease;
+}
+
+.afty-inv-campo:hover { color: var(--afty-texto); }
+
+.afty-inv-campo[data-afty-tom="destaque"] {
+  background: var(--afty-destaque-fundo);
+  color: var(--afty-destaque-texto);
+}
+
+/* ---------- retrato ---------- */
+/* ⚠ CADA SHIKIGAMI TEM O SEU (autor, 2026-08-31). Mesmo par de campos do
+   retrato da criatura, então o `object-position` carrega o ponto focal. */
+.afty-inv-retrato {
+  display: block;
+  width: 100%;
+  object-fit: cover;
+  background: var(--afty-poco);
+}
+
+.afty-inv-retrato-vazio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--afty-texto-fraco);
+  opacity: 0.5;
+}
+
+.afty-inv-retrato-cartao {
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: none;
+  border-radius: var(--afty-raio-peq);
+  border: 1px solid var(--afty-borda);
+}
+
+/* ⚠ 4,5rem DESDE 2026-09-03, e a mudança que importa não é o tamanho: é o que
+   saiu de perto dele. O autor viu *"a Imagem da Invocação mesmo ficou
+   completamente ofuscada"* com o retrato em 3,25rem ao lado de OITO pastilhas
+   roxas de marcador. O retrato perdia em área e em cor para um bloco de texto
+   que ninguém lê duas vezes. Os marcadores desceram para um bloco próprio (ver
+   `FichaDoShikigami`) e o retrato ficou com a altura das duas linhas de
+   identidade que sobraram, que é o que faz dele a âncora da faixa. */
+.afty-inv-retrato-icone {
+  width: 4.5rem;
+  height: 4.5rem;
+  flex: none;
+  border-radius: var(--afty-raio-peq);
+  border: 1px solid var(--afty-borda);
+}
+
+/* ---------- a ficha do selecionado ---------- */
+.afty-inv-ficha {
+  overflow: hidden;
+  padding: 0;
+}
+
+/* Fora de campo o RETRATO perde a saturação, e não a ficha: os números
+   continuam todos lá, porque consultar um shikigami guardado é normal. Antes
+   o filtro caía na faixa inteira e apagava o nome junto. */
+.afty-inv-ficha[data-afty-campo="nao"] .afty-inv-retrato-icone {
+  filter: saturate(0.35);
+  opacity: 0.75;
+}
+
+/* ⚠ ERA UM BANNER de largura inteira e 9rem de altura até 2026-08-31, com o
+   retrato em `position: absolute; inset: 0` por baixo de um véu. O autor
+   cortou na mesma noite: *"as imagens dos Shikigamis ficaram super esticadas ao
+   invés de serem um Icon. Não queria um banner na Ficha Final"*.
+
+   O diagnóstico é geométrico e não de gosto: retrato de shikigami é quadrado ou
+   em pé, e `object-fit: cover` numa caixa de proporção 12:1 mostra uma tira do
+   meio da imagem. Ícone quadrado ao lado do nome mostra a imagem INTEIRA, não
+   precisa de véu (o nome nunca cai por cima dela) e devolve quase 6rem de
+   altura para o que interessa, que são os números. */
+.afty-inv-cabeca {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  background: var(--afty-poco);
+  border-bottom: 1px solid var(--afty-borda);
+}
+
+.afty-inv-cabeca-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  flex: 1;
+  min-width: 0;
+}
+
+/* A segunda linha da identidade: grau, tipo e custo. Nada mais entra aqui.
+   O que a invocação GANHOU de habilidade tem bloco próprio no corpo. */
+.afty-inv-cabeca-marcas {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.afty-inv-titulo {
+  margin: 0;
+  font-family: var(--afty-fonte-titulo);
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--afty-texto);
+}
+
+.afty-inv-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 0.75rem;
+}
+
+/* ⚠ `auto-fit`, e não quatro colunas fixas (2026-09-03). Ver `StatDaInvocacao`:
+   com `repeat(4, 1fr)` num monitor de 1440 cada célula ganhava 300px para
+   mostrar dois dígitos, e a tira parecia quatro cartazes vazios. Mesma régua do
+   `.afty-stats` do cabeçalho da Ficha, que nunca teve esse problema. */
+.afty-inv-stats {
+  display: grid;
+  /* `auto-fill`, e não `auto-fit`: com seis células numa tela de 1440, o
+     `auto-fit` colapsa as trilhas vazias e devolve 230px para cada "63".
+     `auto-fill` mantém as trilhas, e a célula fica do tamanho de uma célula. */
+  grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr));
+  gap: 0.375rem;
+}
+
+.afty-inv-bloco { min-width: 0; }
+
+/* ---------- as duas colunas do corpo ---------- */
+/* ⚠ O CORPO ERA UMA COLUNA SÓ até 2026-09-03, e o autor apontou o resultado:
+   *"no geral ficou bem esquisito e pouco intuitivo o uso"*. O defeito é de
+   medida, e não de gosto: numa seção de 1250px o rótulo "Reflexos" fica a
+   1200px do "+45" que ele nomeia, e o olho tem de atravessar a tela inteira
+   para parear os dois. Duas colunas cortam a linha pela metade e cortam a
+   altura da ficha junto.
+
+   ⚠ `align-items: start` NÃO É DETALHE: sem ele as duas colunas esticam para a
+   altura da mais alta, e os blocos da mais curta ficam com um vão no fim que
+   parece falta de conteúdo. */
+/* ⚠ QUEM DECIDE É A LARGURA DO CARTÃO, e não a da janela. Esta aba tem DOIS
+   consumidores: a Ficha Final, onde o cartão é a página inteira, e o painel do
+   combatente no Encontro, onde ele é uma coluna de 3/4 de 1280px. Uma
+   `@media (min-width: 1024px)` acende as duas colunas nos dois casos, e no
+   painel elas nasceriam com 340px cada. `@container` pergunta ao cartão.
+
+   ⚠ `container-type: inline-size` traz contenção de layout junto, e isso faria
+   do cartão o bloco de contenção de qualquer descendente `fixed`. O painel de
+   fontes é `fixed`, e escapa porque ele é enviado por PORTAL para o
+   `.afty-ficha`, que é ANCESTRAL do cartão: ele nunca é descendente daqui. Ver
+   `MolduraFlutuante`. Mexer no destino do portal quebra isto. */
+.afty-inv-ficha { container-type: inline-size; container-name: invocacao; }
+
+.afty-inv-colunas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 0.625rem;
+}
+
+/* ⚠ EM PIXEL, e não em `rem`. O `rem` de uma consulta de container resolve
+   contra a raiz do documento, e a raiz daqui tem 18px: um `60rem` escrito à
+   mão viraria 1080px sem aviso, e o painel do Encontro (1047px de cartão)
+   ficava numa coluna só por 33px de diferença. */
+@container invocacao (min-width: 860px) {
+  /* Meio a meio. Era 1,15 para a esquerda quando ela levava as Ações; com os
+     testes de um lado e as Ações do outro, os dois lados querem a mesma largura:
+     a esquerda para caber o `afty-inv-duplo`, a direita para as pastilhas e o
+     número da Ação na mesma linha. */
+  .afty-inv-colunas { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.875rem; }
+}
+
+/* ⚠ A COLUNA TAMBÉM É CONTAINER, e é o que fecha o vão do cartão. Ver o
+   comentário do `FichaDoShikigami`: com lado fixo, a coluna mais curta termina
+   antes e o cartão fica com um vazio no fim. A altura do cartão é a da coluna
+   mais alta e isso não muda; o que muda é a diferença entre as duas. */
+.afty-inv-coluna {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  min-width: 0;
+  container-type: inline-size;
+  container-name: invcoluna;
+}
+
+/* Lista de teste: uma coluna quando não cabe, duas quando cabe. O limiar sai do
+   caso mais largo de uma metade: o nome mais comprido ("Sobrevivência"), o
+   "Não Treinado" e o número, que somam uns 220px com os recuos. 460px cobre o
+   par com folga, e é o número que faz a coluna do painel de Encontro (505px)
+   dobrar junto com a da Ficha. Em pixel, e não em `rem`, pelo mesmo motivo do
+   container de cima. */
+.afty-inv-duplo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.25rem;
+}
+
+@container invcoluna (min-width: 460px) {
+  .afty-inv-duplo { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ---------- os bônus ---------- */
+/* ⚠ ESTE É O *"saber ativar e desativar seus bônus"* do pedido, e o interruptor
+   mexe no número de verdade (ver `auxiliosLigadosDa`). A lâmpada é o sinal, e
+   ela é redundante de propósito: a linha ligada muda de cor E acende o ponto,
+   porque cor sozinha não serve a quem não a distingue. */
+.afty-inv-bonus { width: 100%; }
+
+.afty-inv-bonus-botao { cursor: pointer; }
+
+.afty-inv-bonus-botao:hover { border-color: var(--afty-borda-forte); }
+
+.afty-inv-lampada {
+  flex-shrink: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid var(--afty-borda-forte);
+  background: transparent;
+  transition: background 140ms ease, box-shadow 140ms ease;
+}
+
+.afty-inv-bonus-botao[data-afty-ligado="sim"] {
+  border-color: var(--afty-destaque);
+  background: var(--afty-destaque-fundo);
+}
+
+.afty-inv-bonus-botao[data-afty-ligado="sim"] .afty-inv-lampada {
+  border-color: var(--afty-destaque);
+  background: var(--afty-destaque);
+  box-shadow: 0 0 6px var(--afty-destaque);
+}
+
+@media print {
+  /* Fundo escuro em papel gasta a tinta toda e sai cinza. A impressão é preta no
+     branco, independente do tema, e as variáveis são reescritas para o CSS do
+     usuário sair junto em vez de brigar. */
+  .afty-ficha {
+    --afty-fundo: #ffffff;
+    --afty-fundo-brilho: none;
+    --afty-card: #ffffff;
+    --afty-poco: #ffffff;
+    --afty-borda: #cbd5e1;
+    --afty-borda-forte: #94a3b8;
+    --afty-texto: #0f172a;
+    --afty-texto-suave: #334155;
+    --afty-texto-fraco: #64748b;
+    --afty-sombra: none;
+    --afty-imagem: none;
+    min-height: 0;
+    background: #ffffff;
+  }
+
+  .afty-ficha::before { display: none; }
+
+  /* Cabeçalho fixo em papel repete em toda página ou cobre o conteúdo. */
+  .afty-cabecalho {
+    position: static;
+    backdrop-filter: none;
+  }
+
+  .afty-cabecalho::after { display: none; }
+
+  .afty-retrato-painel {
+    display: block;
+    min-height: 9rem;
+  }
+
+  /* Nada que só serve para clicar vai para o papel. */
+  .afty-passo,
+  .afty-inv-campo,
+  .afty-abas,
+  .afty-log,
+  .afty-busca-fundo,
+  .afty-fontes,
+  .afty-estrela,
+  .afty-botao {
+    display: none !important;
+  }
+
+  /* O respiro dos botões flutuantes não vai para o papel. */
+  .afty-respiro { display: none; }
+
+  /* Cartão e linha não podem ser partidos ao meio pela quebra de página. */
+  .afty-card { break-inside: avoid; }
+  .afty-linha { break-inside: avoid; }
+
+  .afty-vital-barra { box-shadow: none; }
+  .afty-vital-numero { border-color: transparent; }
+}

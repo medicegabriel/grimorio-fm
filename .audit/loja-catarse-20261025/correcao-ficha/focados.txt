@@ -1,0 +1,14 @@
+
+> grimorio-tracker@0.0.0 asserts
+> node asserts/rodar.mjs catarse hpatributo linha-morta ponta requisitos-ficha talentos-de-estilo ordem-modulos
+
+ok   t-catarse-outra-classe.mjs 27
+ok   t-catarse.mjs            49
+ok   t-hpatributo.mjs         24
+ok   t-linha-morta.mjs        19
+ok   t-ordem-modulos.mjs      38
+ok   t-ponta.mjs              16
+ok   t-requisitos-ficha.mjs   33
+ok   t-talentos-de-estilo.mjs 113
+
+8 arquivos, 319 asserts, todos passaram.

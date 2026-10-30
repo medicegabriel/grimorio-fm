@@ -179,6 +179,8 @@
     ]
   },
   "descricao": "Gungnir, Hwando, manobras, Feitiços e Shin de Vespa Crabro.",
+  "resumo": "Armas Gungnir e Hwando, manobras, Feitiços e Shin de Vespa Crabro",
+  "categoria": "tecnicas",
   "permite": [
     "ressonanciaGungnir"
   ],

@@ -1,0 +1,34 @@
+import { chromium } from "playwright";
+import fs from "node:fs";
+const BASE = "http://127.0.0.1:5310";
+const pasta = "C:/Projetos/Grimorio/grimorio-tracker/.audit/integracao-g2/capturas";
+const amostras = JSON.parse(fs.readFileSync("C:/Projetos/Grimorio/prototipos/ficha-final-v2/dados/amostras.json", "utf8")).amostras;
+const a = amostras.find((x) => x.id === "megumi");
+const browser = await chromium.launch({ channel: "chrome", headless: true });
+const page = await (await browser.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
+const erros = [];
+page.on("pageerror", (e) => erros.push(e.message));
+page.on("console", (m) => { if (m.type() === "error") erros.push("console: " + m.text().slice(0, 200)); });
+const log = (...x) => console.log(...x);
+try {
+  await page.goto(`${BASE}/afty`, { waitUntil: "domcontentloaded" });
+  await page.evaluate((f) => localStorage.setItem("fm_creatures_afty_v1", JSON.stringify([f])), { ...a.ficha, id: "g2-enc-megumi" });
+  await page.goto(`${BASE}/afty`, { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: /^Encontros/ }).click();
+  await page.waitForTimeout(500);
+  log("tela:", (await page.locator("body").innerText()).split("\n").map((s) => s.trim()).filter(Boolean).slice(0, 25).join(" | "));
+  await page.screenshot({ path: `${pasta}/encontros-1.png` });
+  await page.getByRole("button", { name: /Novo Encontro|Criar Encontro|Novo/ }).first().click();
+  await page.waitForTimeout(600);
+  log("depois:", (await page.locator("body").innerText()).split("\n").map((s) => s.trim()).filter(Boolean).slice(0, 30).join(" | "));
+  await page.screenshot({ path: `${pasta}/encontros-2.png` });
+  await page.getByRole("button", { name: "Adicionar", exact: true }).first().click();
+  await page.waitForTimeout(400);
+  await page.getByRole("button", { name: /Rolar Tudo/ }).click();
+  await page.waitForTimeout(300);
+  await page.getByRole("button", { name: /^Começar/ }).click();
+  await page.waitForTimeout(800);
+  await page.screenshot({ path: `${pasta}/encontros-3.png` });
+  log("em combate:", (await page.locator("body").innerText()).split("\n").map((s) => s.trim()).filter(Boolean).slice(0, 40).join(" | "));
+  log("erros", JSON.stringify(erros.slice(0, 4)));
+} catch (e) { log("FALHA:", e.message.split("\n")[0]); log("erros", JSON.stringify(erros.slice(0, 4))); await page.screenshot({ path: `${pasta}/encontros-falha.png` }); } finally { await browser.close(); }

@@ -1,0 +1,374 @@
+[
+  {
+    "path": "src/App.jsx",
+    "match": true
+  },
+  {
+    "path": "src/index.css",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/AftyFicha.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/AftyFichaClassica.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/AftyFichaG2.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/BotaoDeDescanso.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/BuscaGlobal.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/CanalPicker.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/ControleExpansao.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/ControleTecnicaMaxima.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/ControlesDeArma.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/GavetaDeCondicoes.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/GrupoComSubAbas.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/ItemDeFicha.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/PainelBloodfeast.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/PainelDeAdaptacao.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/PainelDeAparencia.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/PainelDeConcessao.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/PainelDeImitacao.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/PainelDeRolagens.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/PainelDharma.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/PainelDoGolpeEspecial.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/PainelDoVislumbre.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/PainelManipulacaoCeu.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/PainelOlhinhosLu.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/PainelOlhosAgulha.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/SubAbas.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/abas/AbaAcoes.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/abas/AbaBuffs.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/abas/AbaEquipamentos.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/abas/AbaHabilidades.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/abas/AbaInvocacoes.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/abas/AbaPericias.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/CabecalhoG2.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/CatalogoG2.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/CompactaG2.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/ConsultaG2.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/EncerradosG2.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/EstatisticasConfig.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/Gestor.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/HabilidadesG2.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/HistoricoSessao.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/LinhaDoTempoG2.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/PacotesPecas.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/ParaAliadosG2.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/PecasG2.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/PreparoG2.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/RecebidosG2.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/UsoG2.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/VisaoG2.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/efeitos-dados.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/efeitos-g2.css",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/estatisticas.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/exemplos.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/feitico.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/g2-dados.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/g2-golpe.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/g2-linha-do-tempo.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/g2-preparo.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/g2-uso.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/gestor-logica.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/habilidades-logica.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/historico-logica.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/mesa-verbos.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/operacoes.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/pecas-logica.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/pecas.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/ponte.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/preparo-logica.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/recebidos.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/repertorio.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/rolagem-g2.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/sessao-g2.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/ui-fontes.jsx",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/useEfeitosG2.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/useModeloG2.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/util.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/fatias.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/ficha-buffs.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/ficha-conteudo.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/ficha-especializacoes.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/ficha-estados.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/ficha-opcoes-derive.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/ficha-preferencias.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/ficha-recebidos.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/ficha-rolagem.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/ficha-sessao.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/ficha-tema.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/ficha.css",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/pacotes-aliados.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/pacotes-familias.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/usar-delta-dos-estados.js",
+    "match": true
+  },
+  {
+    "path": "src/systems/afty/ficha/usar-destaque.js",
+    "match": true
+  }
+]

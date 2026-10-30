@@ -1,0 +1,151 @@
+{
+  "geradoEm": "2026-10-19T17:13:17.781Z",
+  "base": "http://127.0.0.1:5310",
+  "casos": [
+    {
+      "id": "ativacao-calamidade",
+      "checks": [
+        {
+          "id": "ativação concluída uma vez",
+          "ok": true,
+          "dados": {
+            "medida": {
+              "ponteiroAteDoisQuadros": 35.89999997615814,
+              "tarefasLongas": [
+                58
+              ]
+            },
+            "energia": 217
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medida": {
+        "ponteiroAteDoisQuadros": 35.89999997615814,
+        "tarefasLongas": [
+          58
+        ]
+      },
+      "perfil": [
+        {
+          "funcao": "(idle) ",
+          "ms": 758
+        },
+        {
+          "funcao": "(program) ",
+          "ms": 363
+        },
+        {
+          "funcao": "resolverEfeitosDanoFinal afty-efeitos.js",
+          "ms": 106
+        },
+        {
+          "funcao": "buildCriaturaDslContext afty-efeitos.js",
+          "ms": 52
+        },
+        {
+          "funcao": "deriveAftyNoEscopo afty-derive.js",
+          "ms": 28
+        },
+        {
+          "funcao": "(garbage collector) ",
+          "ms": 25
+        },
+        {
+          "funcao": "combateDslVars afty-combate.js",
+          "ms": 18
+        },
+        {
+          "funcao": "validarCatalogoHabilidades afty-habilidades.js",
+          "ms": 16
+        },
+        {
+          "funcao": "regrasDoTipoValor afty-invocacoes-tipos.js",
+          "ms": 14
+        },
+        {
+          "funcao": "aplicarEfeitos afty-efeitos.js",
+          "ms": 10
+        },
+        {
+          "funcao": "getHabilidade afty-habilidades.js",
+          "ms": 9
+        },
+        {
+          "funcao": "aplicarAddons afty-addons.js",
+          "ms": 8
+        },
+        {
+          "funcao": " afty-derive.js",
+          "ms": 8
+        },
+        {
+          "funcao": "jsxDEV react_jsx-dev-runtime.js?v=fb4395f8",
+          "ms": 7
+        },
+        {
+          "funcao": "normalizarVariavel afty-dsl.js",
+          "ms": 7
+        }
+      ]
+    },
+    {
+      "id": "ativacao-minamoto",
+      "checks": [
+        {
+          "id": "ativação concluída uma vez",
+          "ok": true,
+          "dados": {
+            "medida": {
+              "ponteiroAteDoisQuadros": 32.30000001192093,
+              "tarefasLongas": []
+            },
+            "energia": 177
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medida": {
+        "ponteiroAteDoisQuadros": 32.30000001192093,
+        "tarefasLongas": []
+      }
+    },
+    {
+      "id": "ativacao-player30",
+      "checks": [
+        {
+          "id": "ativação concluída uma vez",
+          "ok": true,
+          "dados": {
+            "medida": {
+              "ponteiroAteDoisQuadros": 31.30000001192093,
+              "tarefasLongas": []
+            },
+            "energia": 159
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medida": {
+        "ponteiroAteDoisQuadros": 31.30000001192093,
+        "tarefasLongas": []
+      }
+    }
+  ],
+  "falhas": []
+}

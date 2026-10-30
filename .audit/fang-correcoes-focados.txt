@@ -1,0 +1,16 @@
+
+> grimorio-tracker@0.0.0 asserts
+> node asserts/rodar.mjs fang imitacao combatente restringido tr-caso estados-organiza revisao-g00
+
+ok   t-atributo-fang.mjs      41
+ok   t-combatente-automacoes.mjs 73
+ok   t-combatente-revisao.mjs 80
+ok   t-estados-organiza.mjs   63
+ok   t-fang-especializacoes.mjs 84
+ok   t-gemeos-restringido.mjs 31
+ok   t-restringido-variacao.mjs 58
+ok   t-revisao-g00.mjs        35
+ok   t-tr-caso-ja-seja-classe.mjs 22
+ok   t-treinos-restringido.mjs 24
+
+10 arquivos, 511 asserts, todos passaram.

@@ -1,0 +1,233 @@
+{
+  "geradoEm": "2026-10-20T21:54:37.422Z",
+  "base": "http://127.0.0.1:5321",
+  "etapas": [
+    {
+      "nome": "cabeçalho",
+      "checks": [
+        {
+          "id": "ima-390-sem-sangria",
+          "ok": true,
+          "dados": {
+            "total": 289,
+            "placa": 212,
+            "ident": 48,
+            "recursos": 101,
+            "faixa": 67,
+            "stats": 26,
+            "agora": 40,
+            "nome": 23,
+            "nomeCortado": false,
+            "vh": 844,
+            "medidores": 3,
+            "sangra": 0
+          }
+        },
+        {
+          "id": "ima-600-sem-sangria",
+          "ok": true,
+          "dados": {
+            "total": 284,
+            "placa": 212,
+            "ident": 48,
+            "recursos": 101,
+            "faixa": 62,
+            "stats": 21,
+            "agora": 40,
+            "nome": 23,
+            "nomeCortado": false,
+            "vh": 900,
+            "medidores": 3,
+            "sangra": 0
+          }
+        },
+        {
+          "id": "ima-768-sem-sangria",
+          "ok": true,
+          "dados": {
+            "total": 201,
+            "placa": 141,
+            "ident": 54,
+            "recursos": 53,
+            "faixa": 48,
+            "stats": 26,
+            "agora": 44,
+            "nome": 29,
+            "nomeCortado": false,
+            "vh": 900,
+            "medidores": 3,
+            "sangra": 0
+          }
+        },
+        {
+          "id": "ima-1024-sem-sangria",
+          "ok": true,
+          "dados": {
+            "total": 201,
+            "placa": 141,
+            "ident": 54,
+            "recursos": 53,
+            "faixa": 48,
+            "stats": 21,
+            "agora": 44,
+            "nome": 29,
+            "nomeCortado": false,
+            "vh": 900,
+            "medidores": 3,
+            "sangra": 0
+          }
+        },
+        {
+          "id": "ima-1280-sem-sangria",
+          "ok": true,
+          "dados": {
+            "total": 157,
+            "placa": 92,
+            "ident": 54,
+            "recursos": 53,
+            "faixa": 49,
+            "stats": 21,
+            "agora": 48,
+            "nome": 29,
+            "nomeCortado": false,
+            "vh": 900,
+            "medidores": 3,
+            "sangra": 0
+          }
+        },
+        {
+          "id": "ima-1440-sem-sangria",
+          "ok": true,
+          "dados": {
+            "total": 157,
+            "placa": 92,
+            "ident": 54,
+            "recursos": 53,
+            "faixa": 49,
+            "stats": 21,
+            "agora": 48,
+            "nome": 29,
+            "nomeCortado": false,
+            "vh": 900,
+            "medidores": 3,
+            "sangra": 0
+          }
+        },
+        {
+          "id": "minamoto-390-sem-sangria",
+          "ok": true,
+          "dados": {
+            "total": 310,
+            "placa": 233,
+            "ident": 68,
+            "recursos": 101,
+            "faixa": 67,
+            "stats": 26,
+            "agora": 40,
+            "nome": 24,
+            "nomeCortado": false,
+            "vh": 844,
+            "medidores": 4,
+            "sangra": 0
+          }
+        },
+        {
+          "id": "minamoto-600-sem-sangria",
+          "ok": true,
+          "dados": {
+            "total": 285,
+            "placa": 213,
+            "ident": 48,
+            "recursos": 101,
+            "faixa": 62,
+            "stats": 21,
+            "agora": 40,
+            "nome": 24,
+            "nomeCortado": false,
+            "vh": 900,
+            "medidores": 4,
+            "sangra": 0
+          }
+        },
+        {
+          "id": "minamoto-768-sem-sangria",
+          "ok": true,
+          "dados": {
+            "total": 201,
+            "placa": 141,
+            "ident": 48,
+            "recursos": 53,
+            "faixa": 48,
+            "stats": 26,
+            "agora": 44,
+            "nome": 24,
+            "nomeCortado": false,
+            "vh": 900,
+            "medidores": 4,
+            "sangra": 0
+          }
+        },
+        {
+          "id": "minamoto-1024-sem-sangria",
+          "ok": true,
+          "dados": {
+            "total": 201,
+            "placa": 141,
+            "ident": 50,
+            "recursos": 53,
+            "faixa": 48,
+            "stats": 26,
+            "agora": 44,
+            "nome": 26,
+            "nomeCortado": false,
+            "vh": 900,
+            "medidores": 4,
+            "sangra": 0
+          }
+        },
+        {
+          "id": "minamoto-1280-sem-sangria",
+          "ok": true,
+          "dados": {
+            "total": 218,
+            "placa": 153,
+            "ident": 141,
+            "recursos": 53,
+            "faixa": 49,
+            "stats": 21,
+            "agora": 48,
+            "nome": 97,
+            "nomeCortado": false,
+            "vh": 900,
+            "medidores": 4,
+            "sangra": 0
+          }
+        },
+        {
+          "id": "minamoto-1440-sem-sangria",
+          "ok": true,
+          "dados": {
+            "total": 172,
+            "placa": 107,
+            "ident": 95,
+            "recursos": 53,
+            "faixa": 49,
+            "stats": 21,
+            "agora": 48,
+            "nome": 70,
+            "nomeCortado": false,
+            "vh": 900,
+            "medidores": 4,
+            "sangra": 0
+          }
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "cabeçalho: 12/12"
+  ]
+}

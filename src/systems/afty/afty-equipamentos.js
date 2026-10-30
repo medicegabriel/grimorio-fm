@@ -1594,6 +1594,19 @@ export function aplicarSintonizadaNoDano(dano, sintonizadas, ligada) {
   };
 }
 
+/* "Após realizar um ataque com esta arma, o portador causa metade do bônus de
+   treinamento em dados de dano a mais no próximo Feitiço de Dano ou Técnica
+   Marcial de Ataque que cause dano que utilizar até o final do próximo turno
+   (caso ela realize diversos golpes, é aplicado apenas no primeiro). O dano
+   adicional deste Encantamento é considerado Após Ataque." (p. 156)
+
+   Não tinha efeito até 2026-10-27. O gatilho é um interruptor na bancada, como o
+   da Sintonizada: quem sabe se o ataque com a arma já aconteceu e se o prazo do
+   próximo turno ainda vale é a mesa. O derive lê o interruptor, e a Técnica de
+   Ataque e o Feitiço de Dano recebem o dado no primeiro ataque. */
+export const AMPLIFICADORA_ID = "enc_arma_amplificadora";
+export const ESTADO_AMPLIFICADORA = "amplificadora";
+
 export const ENCANTAMENTOS_ESCUDO = [
   { id: "enc_esc_avassalador", nome: "Avassalador",
     descricao: "O escudo é levado ao limite, para ter um impacto avassalador. Caso seja usado para atacar, o dano dele conta como três níveis acima.",
@@ -2616,6 +2629,10 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
     // Marcado pelo Espinho (o grau Especial veio dele) e o espaço da Habilidade
     // Única que o Aprimoramento abre.
     doEspinho: !!espinho,
+    // O nome e a pele de quem marcou ("Espinho" ou "Lanterna Coletora de Almas").
+    espinhoNome: espinho ? (espinho.nome ?? "Espinho") : null,
+    espinhoArtigo: espinho ? (espinho.artigo ?? "o") : null,
+    espinhoVisual: espinho ? (espinho.visual ?? "espinho") : null,
     temUnicaEspinho,
     espinhoHabilidadeUnica: fa.espinhoHabilidadeUnica ?? "",
     espinhoHabilidadeEfeitos,
@@ -2664,6 +2681,14 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
   /* Os itens marcados pelo Espinho: `Map(uid → aprimorado)`. Chega pronto do
      derive, que é quem sabe se o pacote existe. Ver `marcasDoEspinho`. */
   const marcasEspinho = opcoes.espinho instanceof Map ? opcoes.espinho : new Map();
+  /* O nome e a pele do pacote dono da loja (a Lanterna Coletora de Almas é o
+     mesmo verbo com outra cara, 2026-10-12). Só texto de tela: o selo do item e
+     o rótulo da Habilidade Única. Ver `espinhoDaFicha`. */
+  const identidadeEspinho = {
+    nome: String(opcoes.espinhoIdentidade?.nome ?? "").trim() || "Espinho",
+    artigo: opcoes.espinhoIdentidade?.artigo === "a" ? "a" : "o",
+    visual: opcoes.espinhoIdentidade?.visual ?? "espinho",
+  };
   // O Revestimento e o Escudo criados só contam com a liberação do tipo deles.
   const criadoVale = (def) => !def?.criado || liberacoes.includes(LIBERACAO_DO_CRIADO[def.criado]);
   const entradas = [];
@@ -2787,7 +2812,11 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
   const UNICA_POR_FAMILIA = {
     habilidadeUnica:        { estado: estadoDaUnica,        rotulo: "Habilidade Única" },
     segundaHabilidadeUnica: { estado: estadoDaSegundaUnica, rotulo: "Segunda Habilidade Única" },
-    habilidadeUnicaEspinho: { estado: estadoDaUnicaEspinho, rotulo: "Habilidade Única do Espinho", familia: "habilidadeUnica" },
+    habilidadeUnicaEspinho: {
+      estado: estadoDaUnicaEspinho,
+      rotulo: `Habilidade Única d${identidadeEspinho.artigo} ${identidadeEspinho.nome}`,
+      familia: "habilidadeUnica",
+    },
   };
   const emitirUnica = (linhas, uid, nomeItem, chave) => {
     const { estado, rotulo, familia = chave } = UNICA_POR_FAMILIA[chave];
@@ -2857,7 +2886,7 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
        o `fa.grau` gravado fica como estava, e desmarcar devolve o grau antigo. Um
        item sem Ferramenta nenhuma vira uma, já no Especial. */
     const marcaEspinho = marcasEspinho.has(e.uid) && FA_TIPOS_EQUIP.includes(e?.tipo)
-      ? { aprimorado: marcasEspinho.get(e.uid) === true }
+      ? { aprimorado: marcasEspinho.get(e.uid) === true, ...identidadeEspinho }
       : null;
     let entradaFa = marcaEspinho ? { ...e, fa: { ...(e?.fa ?? {}), grau: "especial" } } : e;
     const extrasTreino = e.equipado && entradaFa.fa

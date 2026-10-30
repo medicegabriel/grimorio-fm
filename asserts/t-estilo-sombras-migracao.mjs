@@ -133,8 +133,11 @@ for (const sistema of ["afty", "player"]) {
   t("tecnicasDaFicha devolve so as da Expansao", EST.tecnicasDaFicha(mista).map((x) => x.id), ["nova"]);
   t("tecnicasCruasDaExpansao devolve o objeto gravado", EST.tecnicasCruasDaExpansao(mista)[0] === nova, true);
   const d = deriveAfty(mista);
-  t("ficha mista: as LEGACY seguem no contador, a nova nao", [d.estilo.conhecidas.map((x) => x.id), d.estilo.gastos], [["defesa", "dano"], 2]);
-  t("ficha mista: a nova na progressao propria", [d.estilo.tecnicas.map((x) => x.id), d.estilo.progressao.usadas, d.estilo.progressao.total], [["nova"], 1, 3]);
+  /* ⚠ A FICHA MISTA E UMA CRIATURA: sem progressao propria (autor, 2026-10-26), a
+     nova tambem gasta o contador, junto das duas LEGACY. A progressao propria e
+     do personagem, e o bloco do laco de baixo mede a conversao nos dois. */
+  t("ficha mista (criatura): as LEGACY e a nova gastam o contador", [d.estilo.conhecidas.map((x) => x.id), d.estilo.gastos], [["defesa", "dano"], 3]);
+  t("ficha mista (criatura): a nova usa o contador, sem progressao propria", [d.estilo.tecnicas.map((x) => x.id), d.estilo.progressao.usadas, d.estilo.progressao.total], [["nova"], 1, 0]);
 }
 
 /* ============================================================ */
@@ -164,7 +167,9 @@ for (const sistema of ["afty", "player"]) {
   t(`${sistema}: a convertida e a unica Tecnica da Expansao`, dt.estilo.tecnicas.map((x) => x.id), [defesa.id]);
   t(`${sistema}: a convertida e valida e guarda o legado`, [tec.mecanicamenteValida, tec.legado], [true, { id: "defesa", tipo: "tabela" }]);
   t(`${sistema}: as outras LEGACY seguem como antes`, dt.estilo.conhecidas.map((x) => x.id), ["acerto", "dano", "est_velha"]);
-  t(`${sistema}: a LEGACY convertida sai do contador`, dt.estilo.gastos, 3);
+  /* No personagem a convertida vai para a progressao propria e sai do contador. Na
+     criatura ela continua gastando o contador, como a LEGACY que foi. */
+  t(`${sistema}: a LEGACY convertida e o contador`, dt.estilo.gastos, sistema === "player" ? 3 : 4);
 
   /* A convertida funciona: Domínio no ar e ela imbuída. */
   const bt = dt.maestria;
@@ -238,7 +243,7 @@ const velha = {
     t(`${sistema} pacote: a Tecnica entra com o id do pacote`, [d.estilo.tecnicas.map((x) => x.id), tec.deAddon, tec.pacote], [["estilo-teste:muralha"], true, "Estilo de Teste"]);
     t(`${sistema} pacote: e vale`, [tec.mecanicamenteValida, tec.usados, tec.limite.total], [true, 2, 3]);
     t(`${sistema} pacote: a sem regra segue LEGACY`, d.estilo.conhecidas.map((x) => x.id), ["estilo-teste:velha"]);
-    t(`${sistema} pacote: so a LEGACY gasta o contador`, d.estilo.gastos, 1);
+    t(`${sistema} pacote: o contador`, d.estilo.gastos, sistema === "player" ? 1 : 2);
     t(`${sistema} pacote: o editor nao copia o pacote`, [EST.estilosDaFicha(c({})).length, EST.tecnicasDaFicha(c({})).length], [0, 0]);
     t(`${sistema} pacote: o seletor oferece a Tecnica do pacote`,
       d.estilo.estados.find((e) => e.id === EST.ESTADO_TECNICA_ATIVA)?.opcoes, [{ id: "estilo-teste:muralha", label: "Muralha" }]);

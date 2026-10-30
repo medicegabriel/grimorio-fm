@@ -1,0 +1,254 @@
+{
+  "geradoEm": "2026-10-21T22:53:55.975Z",
+  "base": "http://127.0.0.1:5330",
+  "etapas": [
+    {
+      "nome": "fumaça arsenal",
+      "checks": [
+        {
+          "id": "acoes desenha",
+          "ok": true
+        },
+        {
+          "id": "acoes sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "pericias desenha",
+          "ok": true
+        },
+        {
+          "id": "pericias sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "equipamentos desenha",
+          "ok": true
+        },
+        {
+          "id": "equipamentos sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "fumaça conjurador",
+      "checks": [
+        {
+          "id": "acoes desenha",
+          "ok": true
+        },
+        {
+          "id": "acoes sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "pericias desenha",
+          "ok": true
+        },
+        {
+          "id": "pericias sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "equipamentos desenha",
+          "ok": true
+        },
+        {
+          "id": "equipamentos sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "fumaça mesa",
+      "checks": [
+        {
+          "id": "acoes desenha",
+          "ok": true
+        },
+        {
+          "id": "acoes sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "pericias desenha",
+          "ok": true
+        },
+        {
+          "id": "pericias sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "equipamentos desenha",
+          "ok": true
+        },
+        {
+          "id": "equipamentos sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "fumaça vazia",
+      "checks": [
+        {
+          "id": "acoes desenha",
+          "ok": true
+        },
+        {
+          "id": "acoes sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "pericias desenha",
+          "ok": true
+        },
+        {
+          "id": "pericias sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "equipamentos desenha",
+          "ok": true
+        },
+        {
+          "id": "equipamentos sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "fumaça criatura",
+      "checks": [
+        {
+          "id": "acoes desenha",
+          "ok": true
+        },
+        {
+          "id": "acoes sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "pericias desenha",
+          "ok": true
+        },
+        {
+          "id": "pericias sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "equipamentos desenha",
+          "ok": true
+        },
+        {
+          "id": "equipamentos sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "fumaça arsenal: 7/7",
+    "fumaça conjurador: 7/7",
+    "fumaça mesa: 7/7",
+    "fumaça vazia: 7/7",
+    "fumaça criatura: 7/7"
+  ]
+}

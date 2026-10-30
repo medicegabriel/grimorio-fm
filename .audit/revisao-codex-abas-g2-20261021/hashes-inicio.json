@@ -1,0 +1,134 @@
+[
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\aba-congelada.jsx",
+    "hash": "0DD39EFD793EDACFD5926017D31725BD49946A6CA5E9E54036E0519BCE649B0A"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\abas-g2.css",
+    "hash": "621C1E6BA1C09971F42A872193B4E8AF05F983091B8E627B9618CDA11BD37224"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\AcoesG2.jsx",
+    "hash": "198F889557506D6924DAAA6BB8C66621A1A713FA89CC94F30BEC0F07DBA8B28F"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\busca-g2.js",
+    "hash": "43D0EAA91726FDB59328968AE99A7D7BE5AE0BDB332CC8F7D61C9B936A606CEE"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\EquipamentosG2.jsx",
+    "hash": "1F78C0F505B861B64D964C27AEA13B0244D52FAC39B12468D59CF55C152FD471"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\mesa-celulas.js",
+    "hash": "46ECAE5BC53A575DEE98CB24D71E0E29FE1298D24FA308E7B8AD2A4C951B993C"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\MesaG2.jsx",
+    "hash": "DEBDBFD8F748F9ED6C5EECC9FEA995800924EBC7FE798B7DF2A79AE0C24C7BCF"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\pecas-mesa.jsx",
+    "hash": "7DEAFEE4C94F462CB809995C2E9932D508E524AD0BAB4A6AD9B96235860AEF87"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\PericiasG2.jsx",
+    "hash": "60AF8F214B6BED8CBA3370EA432F80332481539717B5345FD8BE86E5409F8156"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\rapido-g2.js",
+    "hash": "CA593C28571272DB99A3102B3C782772D860BAFB2EB244E44453B8ED12AA0CF8"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\rolagem-g2.js",
+    "hash": "FFD77830BEB74698546C002EECECFE6546C6C67A3DAE2ECC8BD5C8FDA90CBC4A"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\rolagens-acoes.js",
+    "hash": "D772C57DF517433119C15768C73A3F74EAE2D45DF642B4ED2A4679C9C722B1A1"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\usar-destaque-g2.js",
+    "hash": "3BC66DBA8297532D444AB224DB040938C5406DA4FD275A0310D8DA51796B98A6"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\AftyFichaG2.jsx",
+    "hash": "F0DABA7BFF93273A29B60D4DD9C55F096B61B3F2862DDEBAF1AFD4DB6CF5B9E0"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ui\\fontes.jsx",
+    "hash": "D2A55925B2555EB462A3F2E3207B1C9A06FE0884841483EE1ECCAB8FE5E6740C"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ui\\visibilidade-da-aba.js",
+    "hash": "450D73F81B0E55CC409DD06ACDEB7BEC91D544A0A00E03EB31400981E84A9D14"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\App.jsx",
+    "hash": "EBD0AF3A43DAFA2B3094EA4360DCA11991CC05381638EFFC0C924AD107528A0C"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas\\AbaAcoes.jsx",
+    "hash": "7ACE040415BC13A6E47D6CD132A0D07271B06F922228A9E896A80CD269A47653"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\HabilidadesG2.jsx",
+    "hash": "265F1EA9EE7620284A979C1102B1B1FC0D9227EDCACC0C06EF22C2BBB7F4559F"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\dist\\alter-lucielos-olhos-ciano.png",
+    "hash": "724DCAD2AEDCA43E68E933A73EE5D9A01933072E99A059C1D36612BA6A96A012"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\dist\\favicon.svg",
+    "hash": "61BC9A161DE58248288E6905425D7180F0624C2865007B97D763FDAC12043A66"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\dist\\icons.svg",
+    "hash": "B45FA506195CFCDEF406BA9F0C77B36DDC1A7C224040926EC70ABC2FDEA7B93A"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\dist\\index.html",
+    "hash": "53347B14DD4EE29BCFC13A4C89A9168D00F8BFDF4FA1A38497B0AA9BC062F01B"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\dist\\assets\\AftyFichaG2-DRODBq43.css",
+    "hash": "A43E89F4544AF39B92C0CD7962F978A3E30836D19E43FA54B26DBE2B7EDA5157"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\dist\\assets\\AftyFichaG2-SMzJ3gJw.js",
+    "hash": "1681FD752FED1C0ABE369D95AFF915A8F4BEA1013E7582C9AACF7CAA0E3366B0"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\dist\\assets\\index-CaOM8unz.js",
+    "hash": "B5D2629806B3062521A877DA6DB00F837257CEF652BA8B3B49AA7C0D830EA191"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\dist\\assets\\index-D6nxKjFv.css",
+    "hash": "FC0051BFDC7F238777A5133D863AA069336BED2261308E2B09E2281CA2CFED07"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\dist\\assets\\lanterna-coletora-BtjSWi8x.webp",
+    "hash": "6283E973423E5E7D38B1F03B0203401F8467948DC4519DE62370547358E4075E"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\dist\\assets\\usar-delta-dos-estados-DTfMtJPA.js",
+    "hash": "86C79415884504745143334210FDB5CA24C937FECA171FF440602A50327ADCED"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\dist\\assets\\usar-delta-dos-estados-oZ0IrZu-.css",
+    "hash": "91E2D4259903732EBDAD151D15B397F86CB8DCD1F947F32D2FDBD08EC063CF6C"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\dist\\docs\\F&M 2.5.2 - Grimório das Maldições.pdf",
+    "hash": "B9B7799E6101E702E5A1514C8AC4651B6B14319CAD4004AB6C63DA33C7567952"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\dist\\docs\\F&M 2.5.2 - Livro de Regras.pdf",
+    "hash": "5C9C01A6AB24BAA250FA9605C866CF37056AF0BA908A32896AF90A81AA731294"
+  },
+  {
+    "path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\dist\\docs\\README.md",
+    "hash": "2C32882DB90A97D53B0D902BBB7B0902CB91F964718ED540E91ADA4B923CD117"
+  }
+]

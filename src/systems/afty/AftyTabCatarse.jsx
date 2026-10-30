@@ -86,59 +86,15 @@ function FaixaDeSaldo({ extrato, saldo, onSaldo }) {
 }
 
 /* ============================================================ */
-/* UMA LINHA DE EFEITO DA ANOTAÇÃO                               */
-/* ============================================================ */
-/* ⚠ O CANAL E A EXPRESSÃO SÃO CAMPOS DE TEXTO CRU, e isso é o mínimo honesto
-   para a base. O criador tem `CanalPicker` e o seletor de variáveis do DSL, que
-   são a experiência de verdade, e ligá-los aqui é o próximo passo natural desta
-   aba. Enquanto não estiverem, o campo aceita o que o Motor aceita, e uma
-   expressão inválida cai no fallback do DSL em vez de derrubar a ficha. */
-function LinhaDeEfeito({ efeito, onPatch, onRemove }) {
-  return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      <input
-        value={efeito.canal ?? ""}
-        onChange={(e) => onPatch({ canal: e.target.value })}
-        placeholder="canal"
-        title="O canal do Motor que este efeito escreve"
-        className="w-32 px-2 py-1 rounded border border-slate-800 bg-slate-950/70 text-[11px] font-mono text-slate-200 outline-none focus:border-purple-700"
-      />
-      <input
-        value={efeito.expr ?? ""}
-        onChange={(e) => onPatch({ expr: e.target.value })}
-        placeholder="expressão"
-        title="A expressão do Motor de Automação"
-        className="flex-1 min-w-[8rem] px-2 py-1 rounded border border-slate-800 bg-slate-950/70 text-[11px] font-mono text-slate-200 outline-none focus:border-purple-700"
-      />
-      <input
-        value={efeito.alvo ?? ""}
-        onChange={(e) => onPatch({ alvo: e.target.value })}
-        placeholder="alvo"
-        title="Alvo do canal, quando ele aceita um"
-        className="w-24 px-2 py-1 rounded border border-slate-800 bg-slate-950/70 text-[11px] font-mono text-slate-200 outline-none focus:border-purple-700"
-      />
-      <button
-        type="button"
-        onClick={onRemove}
-        title="Remover este efeito"
-        className="p-1 rounded border border-slate-800 text-slate-500 hover:border-rose-800 hover:text-rose-300"
-      >
-        <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
-      </button>
-    </div>
-  );
-}
-
-/* ============================================================ */
 /* UMA COMPRA                                                    */
 /* ============================================================ */
-function CardDeCompra({ compra, precos, onPatch, onRemove }) {
+function CardDeCompra({ compra, precos, efeitosResolvidos, motorProps, MotorEditor, opcoesOutraClasse, escolhasOcupadas, onPatch, onRemove }) {
   const familia = getCatarseFamilia(compra.familia);
   const ehTexto = compra.familia === "texto";
-  const efeitos = Array.isArray(compra.efeitos) ? compra.efeitos : [];
-  const patchEfeito = (i, campo) => onPatch({
-    efeitos: efeitos.map((e, k) => (k === i ? { ...e, ...campo } : e)),
-  });
+  // O rascunho conserva linhas incompletas e espaços durante a digitação.
+  // O derivado acrescenta apenas alvo, prévia e estado para o editor comum.
+  const efeitos = (Array.isArray(compra.efeitos) ? compra.efeitos : [])
+    .map((efeito, i) => ({ ...efeitosResolvidos?.[i], ...efeito }));
   return (
     <div className="p-2.5 rounded-md border border-slate-800 bg-slate-950/50 space-y-2">
       <div className="flex flex-wrap items-center gap-1.5">
@@ -170,6 +126,12 @@ function CardDeCompra({ compra, precos, onPatch, onRemove }) {
           className="flex-1 min-w-[8rem] px-2 py-1 rounded border border-slate-800 bg-slate-950/70 text-[12px] text-slate-200 outline-none focus:border-purple-700"
         />
         <label className="inline-flex items-baseline gap-1 px-2 py-1 rounded border border-slate-800 bg-slate-950/70">
+          <span className="text-[9px] uppercase tracking-wider text-slate-500">Quantidade</span>
+          <input type="number" min="1" aria-label="Quantidade da compra" value={compra.quantidade ?? 1}
+            onChange={(e) => onPatch({ quantidade: e.target.value })}
+            className="w-10 bg-transparent font-mono text-[12px] text-white text-right outline-none" />
+        </label>
+        <label className="inline-flex items-baseline gap-1 px-2 py-1 rounded border border-slate-800 bg-slate-950/70">
           <span className="text-[9px] uppercase tracking-wider text-slate-500">Custo</span>
           <input
             type="number"
@@ -189,8 +151,7 @@ function CardDeCompra({ compra, precos, onPatch, onRemove }) {
         </button>
       </div>
 
-      {ehTexto && (
-        <>
+      {(ehTexto || compra.texto || compra.familia === "anotacao" || compra.familia === "habilidadesOutraClasse") && (
           <textarea
             value={compra.texto ?? ""}
             onChange={(e) => onPatch({ texto: e.target.value })}
@@ -198,24 +159,32 @@ function CardDeCompra({ compra, precos, onPatch, onRemove }) {
             placeholder="A regra, como ela foi escrita"
             className="w-full px-2 py-1 rounded border border-slate-800 bg-slate-950/70 text-[12px] text-slate-200 outline-none focus:border-purple-700 resize-y"
           />
-          <div className="space-y-1.5">
-            {efeitos.map((ef, i) => (
-              <LinhaDeEfeito
-                key={i}
-                efeito={ef}
-                onPatch={(campo) => patchEfeito(i, campo)}
-                onRemove={() => onPatch({ efeitos: efeitos.filter((_, k) => k !== i) })}
-              />
-            ))}
-            <button
-              type="button"
-              onClick={() => onPatch({ efeitos: [...efeitos, { canal: "", expr: "" }] })}
-              className="inline-flex items-center gap-1 px-2 py-1 rounded border border-slate-800 text-[11px] text-slate-400 hover:border-purple-700 hover:text-purple-300"
-            >
-              <Plus className="w-3 h-3" aria-hidden="true" /> Efeito
-            </button>
-          </div>
-        </>
+      )}
+      {compra.familia === "habilidadesOutraClasse" && Array.from({ length: Math.max(1, Math.trunc(Number(compra.quantidade) || 1)) }, (_, i) => {
+        const escolhidas = Array.isArray(compra.escolhas) ? compra.escolhas : [];
+        const atual = escolhidas[i] ?? "";
+        return <select key={i} aria-label={`Habilidade de outra classe ${i + 1}`} value={atual}
+          className="w-full px-2 py-2 rounded border border-slate-800 bg-slate-950 text-[12px] text-slate-200"
+          onChange={(e) => {
+            const proxima = [...escolhidas];
+            proxima[i] = e.target.value;
+            onPatch({ escolhas: proxima.filter(Boolean) });
+          }}>
+          <option value="">Escolher habilidade {i + 1}</option>
+          {atual && !opcoesOutraClasse.some((o) => o.id === atual) && <option value={atual}>{atual} (indisponível)</option>}
+          {opcoesOutraClasse.map((o) => <option key={o.id} value={o.id}
+            disabled={o.id !== atual && (o.bloqueada || escolhidas.includes(o.id) || escolhasOcupadas.includes(o.id))}
+            title={o.motivo || o.descricao}>
+            {o.classe}: {o.nome} ({o.nivel})
+          </option>)}
+        </select>;
+      })}
+      {ehTexto && (
+          <MotorEditor
+            {...motorProps}
+            efeitos={efeitos}
+            onChange={(lista) => onPatch({ efeitos: lista })}
+          />
       )}
     </div>
   );
@@ -244,7 +213,7 @@ function CardDeCompra({ compra, precos, onPatch, onRemove }) {
 
    Um saneador entre o campo e o campo de volta come todo estado intermediário,
    e estado intermediário é o que digitar é. */
-export default function TabCatarse({ draft, derived, patchCatarse }) {
+export default function TabCatarse({ draft, derived, patchCatarse, MotorEditor, motorProps, opcoesOutraClasse = [] }) {
   const extrato = derived.catarse ?? { ganho: 0, gasto: 0, restante: 0, compras: [], mortas: [], avisos: [], porCanal: {}, precos: {} };
   const compras = Array.isArray(draft?.catarse?.compras) ? draft.catarse.compras : [];
   // O saldo também vem do rascunho: apagar o campo para digitar outro número
@@ -285,6 +254,12 @@ export default function TabCatarse({ draft, derived, patchCatarse }) {
               key={c.id}
               compra={c}
               precos={extrato.precos}
+              efeitosResolvidos={derived.catarseEfeitos?.[c.id]}
+              MotorEditor={MotorEditor}
+              motorProps={motorProps}
+              opcoesOutraClasse={opcoesOutraClasse}
+              escolhasOcupadas={compras.filter((x) => x.id !== c.id && x.familia === "habilidadesOutraClasse")
+                .flatMap((x) => Array.isArray(x.escolhas) ? x.escolhas : [])}
               onPatch={(campo) => patchCompra(c.id, campo)}
               onRemove={() => patchCatarse({ compras: compras.filter((x) => x.id !== c.id) })}
             />

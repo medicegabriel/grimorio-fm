@@ -47,7 +47,7 @@ export function rolarDados(quantidade, faces, rng = Math.random) {
  * de 2 aplicado). Sem ela, crítico é só no 20 natural.
  */
 export function rolarTeste(
-  { rotulo, detalhe, bonus = 0, dados = [], modo = "normal", margem = 20, cd = null },
+  { rotulo, detalhe, bonus = 0, dados = [], modo = "normal", margem = 20, cd = null, minimoNatural = 0 },
   rng = Math.random,
 ) {
   const bonusInt = Math.trunc(Number(bonus) || 0);
@@ -68,7 +68,8 @@ export function rolarTeste(
   // Qual dos dois foi descartado, para o painel poder riscá-lo. Com os dois
   // iguais não há descarte visível, e o índice 1 serve igual.
   const descartado = dupla ? (d20[0] === escolhido ? 1 : 0) : null;
-  const total = escolhido + bonusInt + somaExtras;
+  const naturalTratado = Math.max(escolhido, Math.trunc(Number(minimoNatural) || 0));
+  const total = naturalTratado + bonusInt + somaExtras;
   const cdFinal = cd == null ? null : Math.trunc(Number(cd));
   return {
     id: novoId(),
@@ -79,7 +80,8 @@ export function rolarTeste(
     formula: `d20${bonusInt >= 0 ? "+" : "−"}${Math.abs(bonusInt)}${textoExtras ? ` + ${textoExtras}` : ""}`,
     d20,
     descartado,
-    natural: escolhido,
+    natural: naturalTratado,
+    ...(naturalTratado !== escolhido ? { naturalOriginal: escolhido } : {}),
     bonus: bonusInt,
     // O que os dados extras somaram, e o detalhe de cada um, para o log poder
     // mostrar a rolagem em vez de um número que apareceu do nada.
@@ -90,8 +92,8 @@ export function rolarTeste(
     sucesso: Number.isFinite(cdFinal) ? total >= cdFinal : null,
     // ⚠ Crítico do d20 é do ACERTO, e o que ele faz é habilitar o dano dobrado.
     // Um 1 natural fica marcado também: quem lê o log quer ver a pedra.
-    critico: escolhido >= Math.max(2, Math.trunc(margem) || 20),
-    pifia: escolhido === 1,
+    critico: naturalTratado >= Math.max(2, Math.trunc(margem) || 20),
+    pifia: naturalTratado === 1,
     modo,
   };
 }
@@ -107,7 +109,7 @@ export function rolarTeste(
 export function rolarDano(
   {
     rotulo, detalhe, dados, faces, grupos, fixo = 0, blocos = 1,
-    critico = false, modoDano = null, explosiva = false, tom = "dano", rerrola = null,
+    critico = false, modoDano = null, explosiva = false, tom = "dano", rerrola = null, maximizado = false,
   },
   rng = Math.random,
 ) {
@@ -152,7 +154,8 @@ export function rolarDano(
   for (const g of lista) {
     const criticoAtivo = ["critico", "raio_negro"].includes(modo);
     const multDados = criticoAtivo && grupoMultiplicavel(g) ? 2 : 1;
-    const dadosGrupo = rolarDados(g.dados * multDados, g.faces, rng).map((n, i) => {
+    const dadosGrupo = (maximizado ? Array.from({ length: Math.max(0, Math.trunc(g.dados * multDados) || 0) }, () => g.faces)
+      : rolarDados(g.dados * multDados, g.faces, rng)).map((n, i) => {
       if (n > ateRerrola) return n;
       const melhor = rerrola?.melhor === true;
       let atual = n;

@@ -1,0 +1,59 @@
+{
+  "formato": "grimorio-afty-pacote-aliados",
+  "versao": 1,
+  "pacote": {
+    "id": "pac_mvfv73cs9dc4379789c2",
+    "nome": "Apoio do Grupo",
+    "revisao": 1,
+    "exportadoEm": "2026-10-19T23:07:35.088Z"
+  },
+  "emissor": {
+    "id": "emi_mvfv73fk7441908d5305",
+    "nome": "Yuki (Teste Pacotes)",
+    "sistema": "afty"
+  },
+  "opcoes": [
+    {
+      "id": "op_mvfv73dp4e973f5a3735",
+      "nome": "Inimigo Comum",
+      "familia": "especializacao",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "habilidade",
+        "id": "sup_inimigo_comum",
+        "nome": "Inimigo Comum"
+      },
+      "escolhas": [
+        {
+          "rotulo": "Atributo",
+          "valor": "Presença"
+        }
+      ],
+      "acumulo": {
+        "regra": "catalogo",
+        "origemId": "habilidade:sup_inimigo_comum"
+      },
+      "beneficios": [
+        {
+          "canal": "bonusAcerto",
+          "valor": 2
+        },
+        {
+          "canal": "danoBonus",
+          "valor": 4
+        }
+      ],
+      "duracao": {
+        "tipo": "cena",
+        "texto": "Até o Inimigo Comum Cair"
+      },
+      "condicoes": [
+        "Só ao Atacar o Inimigo Comum",
+        "Atacar Outra Criatura Encerra"
+      ],
+      "custoEmissor": "2 PE",
+      "consulta": [],
+      "naoRepresentado": []
+    }
+  ]
+}

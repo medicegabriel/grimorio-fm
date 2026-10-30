@@ -7,6 +7,312 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 
 ---
 
+## Livro de Regras: lacunas confirmadas na análise aprofundada (2026-10-29)
+
+**Onde:** [análise](revisao-livro-regras/10-analise-aprofundada-2026-10-29.md),
+[matriz dos Talentos](revisao-livro-regras/11-matriz-talentos-2026-10-29.md), evidências em
+`.audit/livro-20261029/`. A análise não altera os estados dos lotes da campanha de automação.
+
+**Situação:** análise do código local, sem implementação. Cenários N01 a N15 reproduzidos nas funções reais.
+Pendências novas ou detalhadas que não devem ficar escondidas no histórico:
+
+- Origem Corpo Amaldiçoado Mutante vazia. A fonte completa já está no Livro, p.39 a 41. Não confundir com os núcleos de invocação.
+- Arma Natural sem o aumento de dano quando o desarmado é superior, Articulações Extensas sem alcance, Corpo Especializado sem escolha/dado e Atletismo de Braços Extras incondicional (p.35).
+- Duas cópias equipadas de Bracelete do Vigor somam o mesmo benefício, contra o acúmulo da p.365.
+- Passiva de Defesa 5 usa `Math.round(7 / 2)` e retorna 4, enquanto p.235 e 365 indicam metade com piso, 3.
+- Resultado de ataque publicado como sucesso/falha só pelo total, mesmo com 1/20 naturais. Requer distinguir ataque dos outros testes (p.307).
+- Portas da Morte sem saldo negativo geral, e cura comum apagando o saldo negativo registrado com qualquer quantidade de cura (p.313).
+- Adepto de Medicina sem linha de cura e usos, Mestre da Criação sem escolhas de Ofício e procedimento adicional, benefícios de clãs e origens discriminados na matriz.
+- Regeneração Passiva calculada sem operação de rodada. Dano Passivo convertido em média fixa sem preservar Durante/Após e dados. Confirmar a simplificação ou ligar a rolagem fiel.
+- Reinvocação após dissipação por dano sem espera até o próximo turno (p.257).
+
+**Precisa:** implementar e verificar por grupos de dependência indicados na análise. As entradas já existentes de
+Marca Registrada, excedentes de Aptidão, Temporários, Golpe Especial, Controlador, Votos, descanso, CD, treinos e G2
+continuam com suas decisões e escopos, sem duplicar suas perguntas aqui. Exaustão está na p.324, efeitos de crítico
+na p.308 e prosa dos Auxiliares nas p.215 a 227: não é mais necessário solicitar esses textos ao autor.
+O canal `pontosAtributo` também já existe, mas a segunda etapa de Potencial Físico continua sem o conceder e
+precisa restringir a alocação aos físicos. As entradas antigas sobre essas dependências precisam de atualização
+quando a implementação correspondente for assumida.
+
+**Verificação da base:** 234/236 arquivos de asserts aprovados, build e eslint Afty aprovados. Restam o padrão de
+saída de `t-prodigio` (33 verificações passam sozinho) e a expectativa fixa de 32 remendos em `t-reconciliacao-g00`.
+O remoto está sete commits à frente do HEAD local. Não houve integração nem alteração de regra nesta demanda.
+
+### Divisão de execução: Codex e Claude (2026-10-29)
+
+**Plano vigente: nove lotes grandes, seis do Codex e três do Claude.** Substitui a divisão anterior de 31 lotes,
+reduzida a pedido do autor. Todo o escopo anterior foi preservado dentro dos blocos abaixo. Todos estão **a iniciar**.
+
+**Prompts para chats novos:** [índice dos nove prompts completos](revisao-livro-regras/prompts/README.md).
+Antes de programar, cada responsável deve confrontar o pedido com livro, decisões e implementação atual,
+reproduzir os casos por um percurso válido e apresentar o diagnóstico. Achados antigos são hipóteses a revalidar.
+Depois, executar as parcelas confirmadas, sem pedir aprovação genérica adicional. A criação dos prompts não
+altera os estados dos lotes nem inicia outros chats.
+
+Codex assume o maior volume de correções, conteúdo, interface, integração e conferência. Claude entrega os
+mecanismos de maior complexidade, com modelo, operações, testes e instruções para ligar o conteúdo às telas.
+As parcelas internas são um checklist do lote, sem criar outra fila de pequenos lotes.
+
+**Referências:** [análise completa](revisao-livro-regras/10-analise-aprofundada-2026-10-29.md),
+[matriz dos Talentos](revisao-livro-regras/11-matriz-talentos-2026-10-29.md), AGENTS.md e guias específicos.
+Fonte do livro: SHA-256 `1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a`.
+
+#### Claude: três lotes grandes de mecanismos complexos
+
+| ID | Lote | Escopo e entrega | Dependências |
+|---|---|---|---|
+| CL1 | Motor de uso e combate | Requisitos, parâmetros, custos, usos, cargas, duração, manutenção e recargas. Ataques com alvo, confirmação de acerto/erro, crítico, TR, dano tipado, ações, reações, sequência e concentração. Entregar operações reutilizáveis, com recusa sem efeito e proteção contra cobrança/aplicação repetida | Conferência inicial da base em CX1. Compartilhar cedo o contrato de uso, sem esperar o lote inteiro |
+| CL2 | Vida, morte, Alma e Mutante | Saldo negativo, Portas da Morte, estabilização, dano massivo, ferimentos, Alma e Dados de Vida por classe. Modelo completo do Corpo Amaldiçoado Mutante com seus três núcleos, primário, escolhas fixas/versáteis, recursos e troca por diferença | Operações de uso de CL1. O Mutante deve reutilizar o mesmo núcleo vital, sem outra implementação de queda/Alma |
+| CL3 | Invocações, Domínios e Votos | Ligações entre dono/invocação, Forma de Arma, auxílios, repetição e contexto da sessão. Confronto/contestação, domo, barreiras, Cortinas e Cesta Oca. Tipos/pesos, prazo, ruptura e validação de Votos. Preservar os sistemas já implementados | Eventos e duração de CL1, recursos vitais de CL2 quando necessários. Pode liberar primeiro Votos ou contratos independentes |
+
+**Encerramento do Claude:** cada núcleo precisa ter operações e persistência verificadas, testes relevantes e
+pontos de integração documentados. A entrega deve ser utilizável pelo Codex sem reconstruir a regra ou criar
+outro mecanismo equivalente. Decisões pendentes não impedem liberar as partes já definidas.
+
+#### Codex: seis lotes grandes de conteúdo e integração
+
+| ID | Lote | Escopo e entrega | Dependências |
+|---|---|---|---|
+| CX1 | Base e correções comprovadas | Conferir remoto, preservar alterações locais, coordenar arquivos compartilhados e corrigir os problemas antigos dos testes. Arredondamento de Passivas, acessórios repetidos, 1/20 natural nos ataques, Arma Natural, Articulações Extensas, Corpo Especializado e Braços Extras | Começa imediatamente. Reutilizar estados de mãos de CL1 se já disponíveis |
+| CX2 | Origens, clãs e Anatomias | Completar as 15 Anatomias, Marca Registrada/Familiaridade, Foco Zenin/Manual de Técnica, Derivado/Reserva, Inumaki, Kamo, Resiliência, Vigor/Herança Maldita e Reposição. Construir a interface dos três núcleos usando o motor do Claude | CL1 para usos/eventos, CL2 para vida/Mutante e CX4 para temporários, conforme a parcela. Escolhas e contas independentes podem ser adiantadas |
+| CX3 | Talentos, Especializações, Aptidões e Treinos | Completar a matriz dos 52 Talentos e as parcelas restantes das seis classes. Sorte, rerrolagens, curas, alcances, críticos dos 12 grupos, Golpe Especial, Estilos e posturas. Auras, canalizações, estímulos, Energia Reversa, concessões por categoria/excedentes, Potencial Físico e demais benefícios de Treino | Contratos de CL1/CL2, escolhas de CX2. CL3 só para parcelas de Voto, Domínio ou invocação. Não refazer os núcleos |
+| CX4 | Feitiços e recursos temporários | Transformações com escolhas de atributo/TR, Regeneração Passiva, dano Durante/Após, aplicação/cura de condições e histórico de edição por nível. Penalidades dos seis níveis de Exaustão, PV/PE temporários, teto, substituição, exceções e expiração. Integrar cura, Dados de Vida e descanso aos percursos autorizados | CL1 e CL2. Dano Passivo, controle de edição, PV rolado, descanso e desconto de Shikigami obedecem às decisões específicas |
+| CX5 | Inventário, itens, encantamentos e Interlúdios | Equipamento inicial, aquisição por missão/grau, carga/Intermediários, itens criados por Feitiço, Pulseiras, consumíveis, venenos e demais itens ativos. Os 16 encantamentos de uniforme/escudo. Adaptação, produção e criação de invocações, Focos, testes, vestígios, Mestre da Criação e Ferreiro. Conferir fontes externas/equipamentos próprios sem ampliar os escopos recusados | CL1 para consumo, CL2 para efeitos vitais, CX4 para temporários e CL3 para vínculos de invocação. Reutilizar as escolhas de CX3 |
+| CX6 | Aliados, Controlador, telas e fechamento | Completar Pacotes/Aliados e poderes de Controlador, limites em campo/por Invocar, espera após queda, posição declarada, proteção, Frenesi e Companheiro. Integrar telas de uso, vida, Mutante, Votos e Domínios. Conferir catálogos por cláusula, fontes, persistência/importação, Player/Afty, clássica/G2 autorizado e Encontro | Contratos de CL1 a CL3 e conteúdo de CX2 a CX5 conforme entregue. Integração e revisão são incrementais, com fechamento após os demais |
+
+**Encerramento do Codex:** conteúdo chega à operação real e à interface, com fonte do número, salvamento e
+contraprovas pertinentes. Conferir ambos os sistemas, testes, lint/build e navegador conforme a mudança.
+As 412 células já conferidas e funcionalidades concluídas não são trabalho a reconstruir. Auditoria restante
+é verificação, não indicação automática de ausência.
+
+#### Ordem e trabalho em paralelo
+
+1. **Primeiro:** Codex começa CX1 pela conferência da base. Claude já pode preparar CL1 sobre essa base identificada.
+2. **Enquanto Claude faz CL1:** Codex conclui as correções de CX1 e adianta escolhas/contas independentes de CX2 e CX3.
+3. **Enquanto Claude faz CL2 e depois CL3:** Codex avança CX2 a CX5 conforme cada operação é liberada.
+4. **Durante toda a execução:** Codex integra e verifica em CX6. O fechamento final só ocorre quando todas as parcelas
+   aplicáveis estiverem ligadas ou identificadas como decisão pendente do autor.
+
+Uma dependência vale para a parcela que a usa. Não esperar o fim de um lote inteiro para consumir uma operação
+já entregue e verificada. Também não marcar o lote inteiro como concluído quando só parte dele funciona.
+
+#### Coordenação e decisões preservadas
+
+- Antes de editar, registrar nesta entrada o lote em andamento e os arquivos reservados. Arquivos centrais e
+  documentação têm um editor por vez. Não editar o mesmo arquivo simultaneamente, mesmo em regiões diferentes.
+- Claude concentra os núcleos em módulos próprios quando adequado e documenta entradas, saídas, estados salvos,
+  recusas e pontos de ligação. Codex coordena a maior parte da integração nos arquivos centrais e nas telas.
+- Preservar trabalho local e compatibilidade de fichas antigas. Nenhum commit, push ou promoção do G2 está incluído.
+- Dúvidas de regra entram na pendência específica já existente. Mantêm-se as decisões atuais sobre CD separada,
+  descanso único, PV fixo/rolado, gastos manuais, acúmulo, Golpe/Sangramento, Dano Passivo, PE máximo de Shikigami,
+  Grau/carga e as perguntas de Domínios, Técnicas Marciais, Pacotes e Linhas de Treinamento.
+- O bloqueio de uma dessas decisões não bloqueia o restante do lote. Texto já localizado no livro não precisa
+  ser solicitado novamente. Repartir trabalho não altera as regras nem concede exceção a AGENTS.md.
+- Ao encerrar um lote, retirar a linha da fila ativa e registrar o ID, a entrega e a validação em `afty-status.md`.
+  A divisão vigente fica somente aqui, os relatórios continuam como referência.
+
+#### Correspondência com a divisão anterior
+
+Este mapa conserva o escopo, sem manter os 31 lotes antigos como tarefas ativas.
+
+| Lote atual | Absorve os lotes anteriores |
+|---|---|
+| CX1 | CO01 a CO06 |
+| CX2 | CO07 a CO11 |
+| CX3 | CO12 a CO14 e CO21 |
+| CX4 | CO15 e CO16 |
+| CX5 | CO17 a CO20 |
+| CX6 | CO22 a CO24 |
+| CL1 | CL01 e CL02 |
+| CL2 | CL03 e CL04 |
+| CL3 | CL05, CL06 e CL07 |
+
+## Guerra de Feiticeiros: perguntas ao autor (2026-10-29)
+
+Pacote embutido em `addons/guerra-de-feiticeiros.json`, guia em `docs/afty-addons.md`.
+
+- **Parciais mantidos.** Regras Grimorio e Progressão Épica ficam ligados ao lado do Guerra, com aviso (decisão do autor).
+  Se isso dobrar PV ou Interlúdios de forma indesejada, a saída é trazer o 9c e o 5c para dentro do Guerra e então passar
+  os dois para `absorve`.
+- **Pacotes antigos.** Os 16 arquivos seguem em `addons/` porque fichas que não ligaram o Guerra ainda os usam e os asserts
+  testam a mecânica deles. Apagar só depois que todas as fichas da mesa tiverem o Guerra ligado.
+- **Ficha com o Guerra desatualizado abre como alterada.** A hidratação a deixa diferente da gravada até salvar.
+
+---
+
+## Ficha Final: avaliação da Mesa e autorização para integrar as três abas do G2
+
+Prévia isolada e os dois ajustes do aceite reconferidos pelo Codex em 22/10.
+Retoque posterior das bordas concluído na prévia, registro em
+.audit/ajuste-bordas-abas-g2-20261022/RELATORIO.md.
+O autor pediu repensar o refinamento visual de Agora na Mesa. Nova composição
+como seção única aplicada e conferida em 23/10, aguardando avaliação visual
+do autor. Registro atual em .audit/mesa-unificada-g2-20261022/RELATORIO.md.
+Não repetir a construção ou reconferência encerrada. Restante já aprovado.
+Próxima etapa: autorização própria do autor para integrar Ações, Perícias e
+Equipamentos nas rotas normais, seguida de verificação no destino real.
+A autorização ainda não foi concedida. Não ligar a prop no App por conta própria.
+Parecer e limites: C:/Projetos/Grimorio/REVISAO-AJUSTES-PREVIA-TRES-ABAS-20261022.md.
+Prévia: http://127.0.0.1:5330/. Barra antiga 9/10 preservada.
+
+## Ficha Final: integração e desempenho
+
+### Pacotes para Aliados: revisão, aceite e o que ficou de fora
+**Onde:** `ficha/pacotes-aliados.js`, `ficha/pacotes-familias.js`,
+`ficha/ficha-recebidos.js`, `ficha/efeitos/ParaAliadosG2.jsx` e
+`ficha/efeitos/RecebidosG2.jsx`.
+**Situação:** implementado na prévia do G2. Revisão técnica das correções
+PA-I1 a PA-I4 concluída pelo Codex em 20/10/2026, sem novo bloqueio identificado
+na última correção. 750 asserts focados, 98 conferências de interface em
+1024/1440 (22 dev, 76 produção), lint/build passando. Relatório atual:
+`.audit/revisao-codex-pai4-20261020/REVISAO-CODEX.md`.
+Os quatro defeitos saíram da fila de correções. Não refazer o lote.
+**Precisa:** teste real do autor, com pacote exportado pelo suporte e importado
+no aliado, ativação/desativação, rodadas e recarga. Confirmar as sete leituras
+em PERGUNTAS AO AUTOR, sem tratá-las como aprovadas pela revisão técnica.
+A decisão de cada benefício no próprio prazo já foi dada, antiga pergunta 8
+resolvida. Clássica permanece padrão, G2 prévia.
+**Cobertura separada:** ficam SÓ COMO CONSULTA (número mostrado, sem mudar a
+ficha do aliado) os dados de dano de Feitiço Auxiliar, Comando Motivador,
+Guarda Sincronizada, Inspirar Aliados, Elevar Sucesso, Motivação pelo Triunfo,
+Apoio Focado e o bônus de Aptidão estendido do Estilo. PV Temporário concedido
+por pacote não existe ainda. Matriz e limites nos relatórios da entrega.
+**Compatibilidade:** arquivo e instância antigos não são reescritos. Para
+instância antiga sem contador herdado, encerrar e reativar. Reexportar/importar
+quando a biblioteca ainda tem o prazo anterior às correções.
+**Anotado:** 2026-10-19, pedido do autor depois da revisão técnica da integração.
+Escopo adicional, não reabre os nove marcos técnicos anteriores do G2.
+
+### Concluir e revisar o G2 antes de torná-lo padrão
+**Onde:** `src/systems/afty/ficha/AftyFichaG2.jsx` e `ficha/efeitos/`
+**Teste real (2026-10-21):** cabeçalho e corpo alinhados num contêiner comum
+em Quad HD, com largura maior em telas grandes. Clique fora do detalhe na
+completa fecha só a leitura. Compacta e consulta cabem no telefone. Correções
+implementadas e verificadas pelo Codex, sem nova pendência de código neste
+ajuste. 20 checks de interação, 17 medições de layout e 196 asserts focados
+aprovados, lint/build limpos. Evidências em
+`.audit/ajustes-teste-real-g2-20261021/`. Falta o autor atualizar a 5173 e
+continuar seu teste visual e de sessão. Não declarar o marco 10.
+**Situação:** integração preservada na prévia `?ficha-g2=1`. Por pedido
+do autor, a ficha anterior é o padrão diário em Afty e Player desde 17/10/2026.
+**Precisa:** teste final e aceite do autor, mais revalidação após eventual
+integração do remoto antes de promover o rework. Retomada e progresso em
+`C:/Projetos/Grimorio/RETOMADA-CLAUDE-FICHA-FINAL.md` e
+`C:/Projetos/Grimorio/PROGRESSO-FICHA-FINAL.md`. Preservar a abertura clássica
+durante esse trabalho.
+**Anotado:** 2026-10-17, restauração do uso diário solicitada pelo autor
+**Nota (2026-10-19):** integração feita (marcos 7 e 8). Seguem em aberto, sem
+autodeclarar: revisão independente (9) e teste do autor (10).
+**Revisão Codex (2026-10-19):** marco 7 entregue tecnicamente em prévia.
+Marco 8 devolvido por G2-I1, marco 9 aguarda correção e conferência. Clássica
+continua padrão. Em 42 operações atuais medidas não houve pausa de dois
+segundos, com tarefas de 57 a 80 ms em alguns casos. Não declarar ausência
+universal de tarefa longa nem aceite do autor. Evidências na pasta acima.
+**Nota (2026-10-19, noite):** G2-I1 corrigido e saído da fila (módulo
+`ficha/ficha-recebidos.js`, 47 de 47 no navegador, 52 asserts novos). Falta o
+Codex reconferir o marco 8 e decidir o 9. O corte das fatias agora é previsivo
+(`ficha/fatias.js`). Com dois registros de Catálogo fica uma tarefa de cerca de
+54 ms, que é o derive síncrono do número pintado. O Encontro com Fonte Externa só
+foi provado na função, sem caminho de interface.
+
+**Reconferência Codex (2026-10-19):** G2-I1 encerrado. Marcos 8 e 9 concluídos
+na base local, marco 10 aguarda o autor. São 36 conferências próprias de
+interface, 303 asserts focados e 21 das funções do Encontro passando.
+Relatório em `.audit/revisao-codex-g2-i1-20261019/REVISAO-CODEX.md`. O teste
+real e a revalidação após integrar o remoto continuam antes da promoção.
+
+### Fechamento funcional do G2: teste e aceite do autor
+**Onde:** `ficha/AftyFichaG2.jsx`, `ficha/efeitos/` (módulos novos
+`imitacao-logica.js`, `concedido-logica.js`, `buff-mesa-logica.js`,
+`exaustao-logica.js` e os componentes `ImitacaoG2`, `ConcedidoG2`,
+`BuffDeMesaG2`, `ExaustaoG2`)
+**Situação:** implementado e verificado por Claude em 2026-10-20. Imitação,
+Concedido pelo Mestre, Exaustão desde zero, Sangramento e buff de mesa rodam
+no G2 (completa e compacta onde há ação), sem a Apresentação Anterior, que
+fica no menu só como comparação. A pergunta de cobertura foi resolvida pelo
+autor e a pendência técnica de implementação saiu da fila. Em Combate legível
+no Minamoto, cabeçalho mais baixo em largura estreita e catálogo sem estouro
+em 390 px entraram no mesmo lote. 124 asserts novos (`t-fechamento-g2`),
+986 focados, suíte completa 224 de 226 (só as duas históricas), 387
+conferências de interface por ambiente em produção e dev. Relatório:
+`.audit/fechamento-funcional-g2-20261020/RELATORIO.md`.
+**Revisão Codex (2026-10-20):** aprovada na base local, sem novo bloqueio
+identificado. 986 asserts focados, 499 checks de interface executados,
+495 efetivos após descartar quatro tautológicos, todos aprovados. Suíte
+completa 224/226 com as duas falhas históricas, lint/build passando.
+Relatório em `.audit/revisao-codex-fechamento-g2-20261020/REVISAO-CODEX.md`.
+A revisão independente saiu da fila.
+**Precisa:** teste real e aceite visual do autor (roteiro de cinco tarefas
+no relatório da entrega). Não declarar o marco 10. A clássica continua
+padrão e o G2 segue prévia. Revalidar após eventual integração do remoto.
+**Teste em sessão (2026-10-20):** o autor pediu o endereço habitual com suas
+fichas normais. A prévia local em http://localhost:5173/Player e /Afty agora
+acrescenta ficha-g2=1 automaticamente. ?ficha-g2=0 mantém a clássica. O
+direcionamento é só do servidor local de teste, sem mudar produto/build.
+Abrir no navegador/perfil habitual e atualizar a página para usar os dados
+locais existentes. O interno do Codex tem armazenamento separado. Nove
+verificações HTTP aprovadas, evidências em .audit/teste-real-localhost-20261020/.
+Nenhuma migração, importação de amostras ou alteração de fichas foi feita.
+**Limites conhecidos:** a penalidade de cada nível de Exaustão continua sem
+fonte no Afty (contador apenas). Condição Sangramento sem faixa gravada não
+ganha o botão de perda, como na tela anterior. A cópia da Imitação sai da
+lista de candidatas enquanto está ativa. O "+" inicial do valor de um buff de
+mesa é descartado (o DSL não o aceita).
+**Integração:** `origin/main` está 6 commits à frente e toca os mesmos
+`asserts/LEIA.md`, `docs/a-fazer.md`, `docs/afty-status.md` e
+`docs/revisao-automacao/escopo.json`. Nada foi integrado. O código novo lê
+`CanalPicker.jsx`, `ficha-sessao.js` e `afty-derive.js`, que o remoto altera:
+depois de integrar, rodar `t-fechamento-g2` e o roteiro de interface de novo.
+**Anotado:** 2026-10-19, implementado em 2026-10-20
+
+### Conflito com o remoto antes de promover o G2
+**Onde:** AftyFicha.jsx, ficha-sessao.js, AbaAcoes, AbaInvocacoes,
+PainelDeCombatente, afty-derive
+**Situação:** o remoto está 5 commits à frente e sobrepõe esses arquivos.
+Nenhum merge foi feito. ficha-especializacoes.js não é rastreado.
+**Nota Codex (2026-10-19):** referências locais agora indicam seis commits
+à frente, não cinco. A consulta atual ao GitHub falhou. Nenhum merge feito.
+**Precisa:** integrar o remoto por quem commita, conferindo o seletor de
+AftyFicha.jsx e a relação de arquivos que seguem juntos.
+**Anotado:** 2026-10-19
+
+### Polimento do G2
+**Onde:** `efeitos/efeitos-g2.css`
+**Situação:** feito e reconferido em 2026-10-20 no fechamento funcional,
+à espera do teste visual do autor. Em Combate ligado lê pelo texto do tema (contraste 1,21
+para 6,59 no Minamoto, 11,5 ou mais nos presets). Cabeçalho grudado em 390 px
+de 481 para 407 px, em 768 px de 342 para 300. Catálogo e detalhe do Ativo sem
+estouro em 390 px, medidos pelo contêiner. Tudo escopado em `.e-g2`.
+**Precisa:** olhar do autor em tela real. O cabeçalho em 390 px ainda ocupa
+48% da altura de 844 px (o resto é identidade, quatro recursos, valores,
+Agora, abas e barra de dados, todos mantidos), e a trilha de 72 px do botão dos
+Livros continua reservada à direita, como o autor decidiu antes.
+**Anotado:** 2026-10-19
+
+### Eliminar as travadas ao ativar efeitos antes de lançar o G2
+**Onde:** Ficha Final clássica, `AftyFichaG2.jsx` e módulos compartilhados
+**Situação:** autor relata congelamentos de aproximadamente dois segundos
+a cada efeito ativado no G2. O problema também aparece na ficha anterior,
+com menor intensidade. A restauração visual não resolve essa causa.
+**Precisa:** reproduzir com fichas isoladas, medir interação até atualização
+visível em ambas as apresentações, localizar o custo por perfil de execução
+e corrigir a causa. Comparar antes/depois, incluindo uso rápido em sequência,
+ficha densa, custos, valores derivados e persistência. Não mascarar com atraso
+na confirmação nem liberar o G2 antes da correção e revisão independente.
+**Anotado:** 2026-10-17, bloqueio de lançamento relatado pelo autor
+**Nota (2026-10-19):** causa medida e corrigida (derive guardado e geradores
+fatiados), sem tarefa longa nas duas apresentações. Falta o autor confirmar no
+uso real com a ficha densa antes de apagar esta entrada. Números em
+`docs/afty-ficha-final.md`.
+
+**Reconferência Codex (2026-10-19):** a frase anterior sobre ausência de
+tarefa longa não vale para a amostra independente. Em 26 operações com Fonte
+Externa não houve pausa de dois segundos nem perda de ativação, mas houve
+tarefas de até 94 ms em dev e 72 ms em produção. Confirmações G2 em produção
+pintaram em 29 a 43 ms após pointerdown e dois quadros. A amostra usa fichas
+densas, Feitiço recebido e dois registros de Catálogo. A revisão técnica foi
+aprovada com esses limites, o teste real do autor continua pendente.
+
 ## Como usar
 
 1. **Toda pendência nasce aqui.** Não abra `// TODO` no código sem deixar a linha correspondente
@@ -82,6 +388,54 @@ Suíte com 208 de 209 arquivos aprovados, mesma falha em t-reconciliacao-g00.
 **Nota Vespa 1.1.0:** permanecem as mesmas 267 identidades de Oda,
 13.879 fontes para 14.146 itens vivos. A lista esperada de primitivas foi
 atualizada e passou na rechecagem, restando a falha anterior de reconciliação.
+
+### Aliados, Comidas e Ferreiro: o que a conferência de 2026-10-26 deixou aberto
+**Onde:** `afty-extras-nativos.js`, `afty-equipamentos.js` (`grauFeiticeiro`) e `afty-feiticos.js`.
+1. **Elementalista.** FEITO em 2026-10-27 junto das Técnicas Marciais: o dado saiu das linhas de arma e entra só no
+   primeiro ataque da Técnica e na primeira rolagem do Feitiço de Dano (`docs/afty-tecnicas-marciais.md`, seção 7).
+2. **Grau do feiticeiro do Player.** O livro (p.45) dá como referência nível 1 a 4 Quarto, 5 a 7 Terceiro, 8 a 13
+   Segundo e 14 a 18 Primeiro, e diz que não é regra. O Afty usa a escala da criatura (5, 9, 13 e 17, decisão de
+   2026-08-19) também no Player. O teto de aliados sai dela: nos níveis 13, 17 e 18 o Player tem um aliado a mais que
+   pela referência do livro. Vale a escala da criatura, ou o Player ganha a do livro?
+3. **Ferreiro, quantidade de equipamentos.** O livro limita a BT/2 equipamentos no descanso curto e a BT no longo. A
+   bancada só tem `maxSelecionados: 2` (arma e escudo) e o limite mora no hover. Vale um contador que aplique o teto
+   pelo tipo de descanso?
+4. **Seletor de Aliados cheio.** Clicar num aliado a mais quando o teto do grau já foi atingido não faz nada e não
+   avisa, porque o botão não fica desabilitado. Vale desabilitar ou avisar?
+5. **Combatente e Disparador com Ataque Amaldiçoado.** O escopo usa o tipo de ataque da linha (`atq:corpo` e
+   `atq:distancia`). Uma arma rolada como Ataque Amaldiçoado não recebe nenhum dos dois dados. Confere, ou o
+   Amaldiçoado conta como corpo a corpo?
+**Anotado:** 2026-10-26.
+
+### Pacotes para Aliados: leituras feitas no lote, para confirmar
+**Onde:** `ficha/pacotes-familias.js` e `ficha/pacotes-aliados.js`
+**Situação:** o lote seguiu o texto onde ele fecha a conta, e nestes pontos
+escolheu a leitura abaixo, reversível, sem inventar número:
+1. Feitiço Permutativo em aliado NÃO vai no pacote: o livro não diz em quem a
+   perda cai quando o alvo é outro. Vale mandar o ganho e a perda para o aliado?
+2. Aura do Comandante: "dentro do combate" vale no dano e nas perícias, e o +2 da
+   Evoluída em ataque e TR vale sem essa condição. Confere?
+3. Presença Inspiradora: "uma quantidade de PE adicional igual a metade do seu
+   modificador de Presença" virou um teto, com o suporte escolhendo de 0 até ele.
+   Ou é sempre o valor inteiro?
+4. Apoio Defensivo ("até o começo do próximo turno") virou uma rodada contada.
+5. O descanso encerra toda instância recebida que não é permanente, inclusive
+   Bastião e auras (posição da cena). Táticas Defensivas e Pronto para Agir ficam.
+6. Pronto para Agir do próprio aliado e o recebido são a MESMA habilidade (regra
+   do catálogo): só o que passa do próprio soma.
+7. Discurso Motivador (Talento) ficou fora: "o dobro do seu nível + seu
+   modificador de Presença multiplicado pela metade do seu bônus de treinamento,
+   arredondado para cima" tem mais de uma leitura de precedência.
+**Anotado:** 2026-10-19, lote dos Pacotes para Aliados.
+
+**Decisão já tomada (20/10):** a antiga pergunta 8, sobre Múltiplos Efeitos
+com prazos mistos, foi respondida: cada benefício termina no próprio prazo.
+Ela saiu das perguntas abertas. PA-I3 e PA-I4 foram implementados e
+reconferidos pelo Codex em 20/10. As correções técnicas estão encerradas,
+com teste real do autor ainda pendente.
+A equivalência entre próximo turno do emissor e rodada do receptor (item 4)
+continua sem decisão. As outras sete leituras não foram aprovadas por esta
+resposta nem pelo encerramento técnico de PA-I1 a PA-I4.
 
 ### Revisão de 2026-10-07: nove leituras de regra do bloco G00 a CMB-02
 **Chave:** BLOCO-2026-10-07-perguntas
@@ -187,6 +541,22 @@ ele, e estão no número:
    misturada continua aparecendo, com o aviso em âmbar.
 **Precisa:** o autor confirmar o 1 ao 3.
 **Anotado:** 2026-10-14, ao fazer o addon Quimera de Maldições
+
+### Reconciliar H Corp, Talentos da H Corp e Morador da Cidade no inventário do G00
+**Onde:** `docs/revisao-automacao/` (`fontes.json`, `inventario.json`, `reconciliacao.json`)
+**Situação:** os três Addons novos entram no inventário vivo e o `t-reconciliacao-g00.mjs` falha em
+"fontes individuais cobrem cada chave viva". Não reconciliei porque esses arquivos estavam com
+edições não commitadas de outra sessão (Estilo das Sombras), e o protocolo pede um editor por vez.
+**Precisa:** com a árvore livre, rodar `npm run revisao:reconciliar` nas duas etapas do guia das
+ferramentas e registrar o dono dos itens novos.
+**Anotado:** 2026-10-12, na criação dos Addons H Corp, Talentos da H Corp e Morador da Cidade
+
+**Complemento de 2026-10-25:** incluir também os dois Talentos de
+`addons/talentos-de-estilo.json` e o catálogo `AFTY_OPCOES_TALENTO` na
+reconciliação dos conteúdos da casa. O módulo novo
+`afty-talentos-estilo.js` já tem proprietário de mecanismo `M05` no escopo.
+O conteúdo não recebeu aprovação de regra do Livro. A suíte final da
+implementação manteve as duas falhas anteriores, sem novo erro de coleta.
 
 ### Vampiro da Máscara de Pedra: leituras para confirmar e o que segue de mesa
 **Onde:** `addons/vampiro-mascara-de-pedra.json`
@@ -440,6 +810,13 @@ uma é **NOVA DECISÃO NECESSÁRIA**. Enquanto não houver resposta, o ponto fic
 5. **Focos das etapas 1 a 3 do Treino de Desenvolvimento.** O texto só marca a etapa 4 ("2 focos"), e as outras ficaram com 1 Foco cada.
 **Precisa:** o autor confirmar cada item ou dizer qual muda. O 1 pede uma variável de tamanho no DSL ou um canal que FIXA o tamanho, e os outros são uma linha do JSON.
 **Anotado:** 2026-09-29, ao fazer o pacote da Yna
+
+### Técnicas Marciais: o que ficou provisório (2026-10-27)
+**Onde:** `src/systems/afty/afty-tecnicas-marciais.js`, `afty-derive.js`, `afty-feiticos.js`. Guia: `docs/afty-tecnicas-marciais.md` (seção 9 tem a lista inteira).
+**Situação:** a calculadora está feita nos dois sistemas, e o plano seguiu a recomendação nas dezesseis perguntas que o autor não respondeu. As que mais mudam número: (1) a ordem em que a vaga `vagasFeitico` serve Estilo, Técnica Marcial e Feitiço (provisório nessa ordem), (2) Dominância, Manipulação Perfeita e Treinos com `escolhaFeiticos` NÃO reduzem o custo da Técnica, (3) o Sangramento da Técnica de Ataque fica só como Fraca, sem a tabela variável, (4) o Encantamento Complementar ("+2 na CD de Especialização e de Estilo Marcial") segue fora porque o Afty tem uma CD só, (5) Técnica Marcial não conta como Feitiço no requisito "Possuir Feitiços" de Talento, (6) os dados do Elementalista e da Amplificadora entram Após Ataque e não dobram no crítico, (7) o contador de acertos da Ficha é manual e a expiração da Amplificadora também.
+**Também fica sem conferência no navegador:** o painel do Encontro com a linha nova, o Gêmeo Restringido, o Não-Feiticeiro e o Sem Técnica com o Addon Estilo Marcial (cobertos só pelos asserts `t-tecnicas-marciais`, `t-estilo-marcial` e `t-nao-feiticeiro`), e a aba G2, que só abre pela prévia (`.audit/tecnicas-marciais-20261027/`).
+**Precisa:** o autor responder as dezesseis, por pergunta com opções, e abrir uma ficha de cada origem acima na tela.
+**Anotado:** 2026-10-27, ao entregar as Técnicas Marciais
 
 ### Fórmula de Combate Entrópica: as leituras do PDF que faltam, antes de cada fase
 **Onde:** `docs/afty-formula-entropica.md`, seção "Perguntas em aberto" (a lista inteira e numerada mora SÓ lá, para não haver duas cópias)
@@ -1042,10 +1419,10 @@ da fonte escolhida.
 
 ### ASSUNÇÃO: Treinamento para Feitiço vale para Restringido e Sem Técnica
 **Onde:** `src/systems/afty/afty-treinos-especiais.js` (`tes_feitico`)
-**Situação:** o texto diz "Feitiço", e o Restringido não tem Feitiço (tem Habilidade Marcial) e o
+**Situação:** o texto diz "Feitiço", e o Restringido não tem Feitiço (tem Técnica Marcial) e o
 Sem Técnica também não (tem Técnica de Estilo). Foi deixado **aberto a toda origem**, porque a vaga
 que ele concede é o canal `vagasFeitico`, cuja própria nota diz que ela vale para "Feitiço, Estilo
-das Sombras ou Habilidade Marcial", e porque o `deriveAfty` já soma `feiticos + estilo` no mesmo
+das Sombras ou Técnica Marcial", e porque o `deriveAfty` já soma `feiticos + estilo` no mesmo
 gasto. Se estivesse errado, o conserto é um `foraDaOrigem: [...]` na entrada, igual às cinco Linhas
 de energia amaldiçoada.
 **Precisa:** o autor confirmar, ou dizer quais origens ficam de fora.
@@ -1366,10 +1743,18 @@ restrição aos três físicos (`ATRIBUTOS_FISICOS`, em `afty-dominios.js`) é d
 da etapa. O canal `atributo` é direcionado e não serve.
 **Anotado:** 2026-08-26, na varredura dos Interlúdios
 
-### Não existe vaga extra de escolha aninhada
+### ✅ Não existe vaga extra de escolha aninhada
+
+**Resolvido em 2026-10-12.** Canal `vagasEscolha` (alvo: o id da habilidade dona,
+a herdeira responde também pela mãe), lido no montante e refechado no agregado final
+(`refecharVagasEscolha`). A 4ª etapa do Potencial Físico emite 1 no Restrito pelos
+Céus. Junto, o Respeito Celeste virou pega por pega (`maxVezesExpr: "1 + (nd >= 12)"`,
+1 Dádiva por pega, a 2ª gasta vaga), e o `concedeEscolha` passou a contar as pegas.
+Antes uma pega só dava as duas Dádivas. Preso em `t-restringido-variacao` e
+`t-interludios`.
 
 **Onde:** `src/systems/afty/afty-habilidades.js` (`resolveEscolhasHabilidade`)
-**Situação:** Potencial Físico 4ª diz "Você recebe uma Dádiva do Céu adicional", e as
+**Situação (histórico):** Potencial Físico 4ª diz "Você recebe uma Dádiva do Céu adicional", e as
 Dádivas são escolha aninhada de Restrito pelos Céus. O mecanismo que dá vaga a mais num
 pool aninhado é o `concedeEscolha`, e ele lê **só** `escolhidasIds`, ou seja, vai de
 habilidade para habilidade. Uma Linha de Treinamento não tem como emitir.
@@ -1695,3 +2080,10 @@ Sangue 1.1.0, com a remoção do `frenesi_sanguinario`). Foi apagada à mão.
 **Situação:** o executor e o auditor do M03 leram o texto no Markdown vigente, página impressa 61 (marcador `<!-- página 61 -->`). A localização é do lote dono (LUT-10), e este bloco não altera o controle de outro lote.
 **Precisa:** o LUT-10 registrar a fonte localizada ao revisar a habilidade.
 **Anotado:** 2026-10-07, revisão M03
+
+### Especializações: acionamentos opcionais após remoção do painel
+**Chave:** FANG-2026-10-12-especializacoes
+**Onde:** ficha/ficha-especializacoes.js e interações existentes da ficha
+**Situação:** cálculos, escolhas roubadas, proficiências físicas, Resistência, Imitação e ajustes de interface corrigidos em 2026-10-13. O autor recusou painel separado de Restringido, Novo turno e Ataques Extras em Dano. Custos/Usos são planejados em outro chat e Resiliência fica como está. As funções de reação, Força Imparável/Barreira, alternativa letal de Ainda de Pé e Rejeitar a Morte existem no motor de sessão, mas o acionamento opcional não deve depender do painel removido. O teste de Mesmo Morto e as curas por turno acompanham a rodada existente.
+**Precisa:** integrar os acionamentos opcionais às interações existentes, sem recriar painel ou barra de ações. Alvo de Foco, reação de desvio e circunstâncias de queda ainda exigem informação de mesa. Preservar gastos manuais. Decisões já fechadas: RD de Surto/Físico não cobre Alma, Surto de Ação pode ser roubado, Espírito Incansável está certo, Foco concede +10 Atenção, Roubo exige pré-requisitos de outras habilidades, e apenas Imitação os dispensa.
+**Anotado:** 2026-10-13, escopo ajustado pelo autor

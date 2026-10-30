@@ -5,6 +5,8 @@
   "autor": "Templas",
   "paraRaw": "afty",
   "descricao": "Uma Linha de Treinamento repetível, uma vez para cada Teste de Resistência exceto Integridade. A 1ª etapa torna treinado no TR escolhido (ou +1 no teste, se outra fonte já dava o treino) e a 2ª torna mestre (ou +2, se outra fonte já dava o mestre), contando o TR que vem da Classe. A 2ª e a 4ª conferem o Nível de Personagem e o atributo do TR escolhido. O Completo reduz a margem de crítico em 2 em Astúcia e Vontade, e dá +2 em Fortitude e Reflexos. A 3ª e a 4ª etapa (vantagem ou +3 por rodada, e subir o nível de sucesso uma vez por cena) ficam de mesa.",
+  "resumo": "Treino por TR com pré-requisitos de ND e atributo, e bônus no Completo",
+  "categoria": "treinos",
   "acrescenta": {
     "treinamentos": [
       {

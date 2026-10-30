@@ -1,0 +1,29 @@
+{
+  "adicionados": 15,
+  "removidos": 0,
+  "alterados": 0,
+  "lotesAtingidos": [
+    "APT-09"
+  ],
+  "lotesInvalidados": [],
+  "campanhaPreservada": true,
+  "itensAnterioresPreservados": 13655,
+  "fontesAnterioresPreservadas": 13655,
+  "novasChaves": [
+    "addon::retracao-de-dominio.json::@pacote",
+    "addon::retracao-de-dominio.json::@pacote::acrescenta",
+    "addon::retracao-de-dominio.json::@pacote::autor",
+    "addon::retracao-de-dominio.json::@pacote::descricao",
+    "addon::retracao-de-dominio.json::@pacote::estadosCombate",
+    "addon::retracao-de-dominio.json::@pacote::estadosCombate::retracao_ativa",
+    "addon::retracao-de-dominio.json::@pacote::estadosCombate::retracao_ativa/ampliaRecursos",
+    "addon::retracao-de-dominio.json::@pacote::id",
+    "addon::retracao-de-dominio.json::@pacote::nome",
+    "addon::retracao-de-dominio.json::@pacote::paraRaw",
+    "addon::retracao-de-dominio.json::@pacote::versao",
+    "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio",
+    "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio::efeitos",
+    "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio::requisitos",
+    "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio::requisitos/@0"
+  ]
+}

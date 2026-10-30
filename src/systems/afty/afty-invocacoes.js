@@ -3987,6 +3987,12 @@ export function resolveInvocacoesList(lista, dono = {}) {
  * própria invocação (decisão do autor). Leve como os auxílios: lê o grau, a
  * escolha e a sessão, e nenhum número que a resolução mexe.
  */
+/**
+ * A identidade de uma Aura para a disputa "duas auras iguais não acumulam": o tipo de Aura e o alvo escolhido. É a mesma chave do
+ * `aurasPorChave` logo abaixo, e é por ela que uma Aura recebida de outro personagem (Pacote para Aliados) disputa com a da própria ficha.
+ */
+export const chaveDaAuraDeInvocacao = (subtipo, alvo) => `aura:${subtipo}|${alvo ?? ""}`;
+
 export function aurasLigadasDa(inv, dono = {}) {
   const sess = sessaoDaInvocacao(dono, inv?.id);
   if (!sess.emCampo) return [];
@@ -4049,7 +4055,7 @@ export function efeitosDeInvocacao(creature, ctx = {}) {
       });
     }
     for (const a of aurasLigadasDa(inv, dono)) {
-      const chave = `${a.subtipo}|${a.alvo ?? ""}`;
+      const chave = chaveDaAuraDeInvocacao(a.subtipo, a.alvo);
       const antes = aurasPorChave.get(chave);
       if (!antes || a.valor > antes.valor) aurasPorChave.set(chave, { ...a, dono: inv?.nome || "Invocação" });
     }
@@ -4062,7 +4068,9 @@ export function efeitosDeInvocacao(creature, ctx = {}) {
       ...(dado ? { alvo: `d${a.valor}` } : a.alvo ? { alvo: a.alvo } : {}),
       expr: dado ? "1" : String(a.valor),
       duracao: "temporaria",
-      origem: "invocacao",
+      /* A chave da aura na `origem` (2026-10-19): a Aura recebida de um Pacote para Aliados disputa com a da própria ficha pelo mesmo tipo e
+         alvo ("duas auras iguais não acumulam"), e o detalhe do motor só guarda a origem. Ninguém lia `origem === "invocacao"`. */
+      origem: `invocacao:${chaveDaAuraDeInvocacao(a.subtipo, a.alvo)}`,
       nome: `${a.dono} · ${a.nome}`,
     });
   }

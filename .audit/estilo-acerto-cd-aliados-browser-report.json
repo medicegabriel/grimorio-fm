@@ -1,0 +1,34 @@
+[
+  {
+    "sistema": "afty",
+    "width": 1440,
+    "seletores": 9,
+    "persistencia": true,
+    "horizontal": false,
+    "errors": []
+  },
+  {
+    "sistema": "afty",
+    "width": 390,
+    "seletores": 9,
+    "persistencia": true,
+    "horizontal": false,
+    "errors": []
+  },
+  {
+    "sistema": "player",
+    "width": 1440,
+    "seletores": 9,
+    "persistencia": true,
+    "horizontal": false,
+    "errors": []
+  },
+  {
+    "sistema": "player",
+    "width": 390,
+    "seletores": 9,
+    "persistencia": true,
+    "horizontal": false,
+    "errors": []
+  }
+]

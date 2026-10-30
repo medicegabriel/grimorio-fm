@@ -1,0 +1,1 @@
+import fs from 'node:fs';const p='src/systems/afty/afty-imitacao.js';let s=fs.readFileSync(p,'utf8').replace('...(permitida && copia ? [copia] : [])','...(permitida && copia ? [configurar(copia)] : [])');fs.writeFileSync(p,s);

@@ -1,0 +1,178 @@
+{
+  "geradoEm": "2026-10-20T14:05:21.498Z",
+  "itens": [
+    {
+      "path": "asserts/LEIA.md",
+      "igual": true,
+      "agora": "f7216139b59ba8956bb74063d204431bfd626efbdd0cc8c13163f4fde5e4a2ef"
+    },
+    {
+      "path": "asserts/t-ordem-modulos.mjs",
+      "igual": true,
+      "agora": "a690a103e80efcec22d006482756a8bb67da90b579de2a25a60f1c33e8fcd843"
+    },
+    {
+      "path": "asserts/t-pacotes-aliados.mjs",
+      "igual": true,
+      "agora": "be8e2377f59b6e5a8b368c8ba94b76f151c46d48dd253597da58b03c6f293638"
+    },
+    {
+      "path": "docs/a-fazer.md",
+      "igual": false,
+      "agora": "10aa09b5d56e82f862763dd4936c1b4629e78f1b09a5edf490c08843b08d14ee"
+    },
+    {
+      "path": "docs/afty-ficha-final.md",
+      "igual": false,
+      "agora": "570937ec7eb1908b70302a04b88cfe2b9396492093e32267f95419a54a524a66"
+    },
+    {
+      "path": "docs/afty-status.md",
+      "igual": false,
+      "agora": "ad71de981e601149bc0b417bd4a708ceb89e5d7ab0e49ac31ca3936933307268"
+    },
+    {
+      "path": "docs/automacao-dsl.md",
+      "igual": true,
+      "agora": "7235bdad4971499e64adaf4a35b5811b7e64b9a566ffa9528f23bbddbeee2e66"
+    },
+    {
+      "path": "docs/afty-invocacoes.md",
+      "igual": true,
+      "agora": "babf04f2505e9fc15336cd8f6d2ffcebb062b14a1954579a58be3a93f0baa2c5"
+    },
+    {
+      "path": "docs/revisao-automacao/escopo.json",
+      "igual": true,
+      "agora": "bb6e69aba4a34e09a02ea841674b154400f618183607cb7357c8cf8ecf4acbf6"
+    },
+    {
+      "path": "src/App.jsx",
+      "igual": true,
+      "agora": "ebd0af3a43dafa2b3094ea4360dca11991cc05381638effc0c924ad107528a0c"
+    },
+    {
+      "path": "src/systems/afty/AftyCreatureBuilder.jsx",
+      "igual": true,
+      "agora": "99ab1df2c547001a2d10380fd30ff0f87ed0cdfe67902fbbd1d628a478474ff4"
+    },
+    {
+      "path": "src/systems/afty/afty-invocacoes.js",
+      "igual": true,
+      "agora": "d1710bf5662278bd903feaa42bf01aa188fc8854a720851208b26a89657ca305"
+    },
+    {
+      "path": "src/systems/afty/ficha/AftyFichaG2.jsx",
+      "igual": true,
+      "agora": "84f5319ae3bb8786ae5001b690d849200fbd79cecaa67ad8382983a253696434"
+    },
+    {
+      "path": "src/systems/afty/ficha/abas/AbaBuffs.jsx",
+      "igual": true,
+      "agora": "5ad8be4167091bbb7f6d7425abb50bc62871c092201c9b9dfaa5cca48e36fcc7"
+    },
+    {
+      "path": "src/systems/afty/ficha/ficha-recebidos.js",
+      "igual": true,
+      "agora": "6f5a46c5f34033533ba1961b786c2a092b9c3c4af803b99c1167bdd39c4f8d3b"
+    },
+    {
+      "path": "src/systems/afty/ficha/ficha-sessao.js",
+      "igual": true,
+      "agora": "ffcbe0a021f1b38b3e8cec4adde8fd901479d5a88ace784d99a4cda338c6d926"
+    },
+    {
+      "path": "src/systems/afty/ficha/pacotes-aliados.js",
+      "igual": true,
+      "agora": "d5fd8f4efd9f7623ed0abbc5b2cd8feaa8acec767a62f442472603fa3faae037"
+    },
+    {
+      "path": "src/systems/afty/ficha/pacotes-familias.js",
+      "igual": true,
+      "agora": "fa63d92731d1327787062af09c32fcfa87dfb64ab5462e9d86b7207a1aec7b25"
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/CatalogoG2.jsx",
+      "igual": true,
+      "agora": "9877e12a652adde135fb56f16bac6fc9d226f6cd7f18be883fb1a082b70fbce6"
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/VisaoG2.jsx",
+      "igual": true,
+      "agora": "50fb5862df9ffd733f1d45d0cef523d4c3ef28fc136bbd178d6c0d5cbb34fe9b"
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/efeitos-dados.js",
+      "igual": true,
+      "agora": "36d0ebdad0ab45c1075086317e43d6583205143ec44e0459584d822ba5323f0c"
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/efeitos-g2.css",
+      "igual": true,
+      "agora": "dbfdadb1c6e24a8df28828e106067a89ae893e2988d45f230b93acf7566ae938"
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/g2-dados.js",
+      "igual": true,
+      "agora": "77a0d66cf3f3e20fc032318938dad8cb0b20be0c7f4d2697be10904db33616a3"
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/gestor-logica.js",
+      "igual": true,
+      "agora": "ae2319cef099c3d77c36d47ab9e99b65baed2c29cacfc957532cab1cdfcf98e2"
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/recebidos.js",
+      "igual": true,
+      "agora": "f03a6966d87a48bce8070b55344cc7567b109832574b0584678da7e0c5d4dcd7"
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/useModeloG2.js",
+      "igual": true,
+      "agora": "0f0868a11fec1d8d5fceb758bbcff78cbed59d9827e38335ccf08f74398b8070"
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/util.js",
+      "igual": true,
+      "agora": "449dcad9bdce888cd07ac21908aec28790172afd1180733d88517c11a827db32"
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/ParaAliadosG2.jsx",
+      "igual": true,
+      "agora": "5f6ae7147ffc48b2f4d1cbd16066502690e17d60e2ec77db06155dbb3f45d04c"
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/RecebidosG2.jsx",
+      "igual": true,
+      "agora": "1298999b69cd3d319c2127a8a716540bccee0b3abb6489a092540afbdd2468ae"
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/PacotesPecas.jsx",
+      "igual": true,
+      "agora": "75b4b6e74cddff2d81168ea593f30ef598502b4e14e95af185a9ce75baf1cbc0"
+    },
+    {
+      "path": "../PROGRESSO-FICHA-FINAL.md",
+      "igual": false,
+      "agora": "29ea2462a1e9fadd7e24cccd4944b440d214fd1ec5e27b457c2785696782b11b"
+    },
+    {
+      "path": "../RETOMADA-CLAUDE-FICHA-FINAL.md",
+      "igual": false,
+      "agora": "8f0ba55c5ece246a67475708779f02b3869dfde2cd16febb9d428af7286b88c5"
+    },
+    {
+      "path": "../CONTINUIDADE-FICHA-FINAL.md",
+      "igual": false,
+      "agora": "9e4d38e233a43044e0b3cbb568feb3a7a6f81ec301fb0d297194bc884d51e89d"
+    }
+  ],
+  "alterados": [
+    "docs/a-fazer.md",
+    "docs/afty-ficha-final.md",
+    "docs/afty-status.md",
+    "../PROGRESSO-FICHA-FINAL.md",
+    "../RETOMADA-CLAUDE-FICHA-FINAL.md",
+    "../CONTINUIDADE-FICHA-FINAL.md"
+  ]
+}

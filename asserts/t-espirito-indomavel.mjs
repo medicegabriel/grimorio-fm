@@ -37,7 +37,7 @@ const ler = (n) => JSON.parse(readFileSync(new URL(`../addons/${n}.json`, import
 const NF = ler("nao-feiticeiro");
 const EI = ler("espirito-indomavel");
 t("o treino valida", A.validarPacote(EI), []);
-t("o Não-Feiticeiro 1.1.0 valida", [A.validarPacote(NF), NF.versao], [[], "1.1.0"]);
+t("o Não-Feiticeiro 1.2.0 valida", [A.validarPacote(NF), NF.versao], [[], "1.2.0"]);
 t("autor e sistema-alvo do treino", [EI.autor, EI.paraRaw], ["Templas", "afty"]);
 const pNF = A.normalizarPacote(NF);
 const pEI = A.normalizarPacote(EI);

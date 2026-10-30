@@ -4,7 +4,9 @@
   "versao": "1.0.0",
   "autor": "Afty, O Sem Sombras",
   "paraRaw": "afty",
-  "descricao": "Restrição Congênita: Bloodfeast",
+  "descricao": "Arma da Crimson Queen e a Restrição Congênita Bloodfeast, com os Feitiços dela.",
+  "resumo": "Arma da Crimson Queen e a Restrição Congênita Bloodfeast",
+  "categoria": "equipamentos",
   "permite": [
     "bloodfeast"
   ],

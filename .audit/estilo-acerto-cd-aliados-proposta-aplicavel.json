@@ -1,0 +1,98 @@
+{
+  "versao": 1,
+  "shaInventario": "0e87b6e0030a634ebf0027dc3b76e0ac4791a4da16bf29e23e559f7bbbb51a38",
+  "shaVivo": "5cd7d99470a3cf14561295ae0cbee144472dbd84be2c7125d1b5927c8154dd82",
+  "shaEscopo": "e480c79ab7ef908dfb60e5754cdb5b6822cc37f510ca797cba4aa505598af953",
+  "adicionados": [
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::acerto::exprPessoal",
+      "item": {
+        "chave": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::acerto::exprPessoal",
+        "id": "exprPessoal",
+        "nome": "exprPessoal",
+        "arquivo": "src/systems/afty/afty-estilo-sombras-catalogo.js",
+        "export": "EFEITOS_ESTILO",
+        "pai": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::acerto",
+        "caminho": "exprPessoal",
+        "proprietario": "TEC-01",
+        "tipo": "gerador",
+        "hashDado": "1830c5f3a7159a234f037f0f8d94fb9ebe7975f1ce5a8e3c8dd578d2a366144b"
+      },
+      "proprietarioSugerido": "TEC-01"
+    },
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::cd::exprPessoal",
+      "item": {
+        "chave": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::cd::exprPessoal",
+        "id": "exprPessoal",
+        "nome": "exprPessoal",
+        "arquivo": "src/systems/afty/afty-estilo-sombras-catalogo.js",
+        "export": "EFEITOS_ESTILO",
+        "pai": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::cd",
+        "caminho": "exprPessoal",
+        "proprietario": "TEC-01",
+        "tipo": "gerador",
+        "hashDado": "1830c5f3a7159a234f037f0f8d94fb9ebe7975f1ce5a8e3c8dd578d2a366144b"
+      },
+      "proprietarioSugerido": "TEC-01"
+    }
+  ],
+  "removidos": [],
+  "alterados": [
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::@catalogo",
+      "proprietarioMantido": "TEC-01",
+      "hashAnterior": "11c305e62ce49eb7a1b3a5e02ebd330b22e339979b703851145306b53f87035e",
+      "hashNovo": "f6ee000e657a1dce4bd22db8e78b9963940128dc6f46c9f3b72152d39ba1db92",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::acerto",
+      "proprietarioMantido": "TEC-01",
+      "hashAnterior": "bdf20c126ec84b02430f7f431d914a337e7ac4406fc16970d91c7ddff6674371",
+      "hashNovo": "d58a4f3afdc05f188ed85607f495c091cd69845ca059fcad78ea3317e927525e",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::acerto::expr",
+      "proprietarioMantido": "TEC-01",
+      "hashAnterior": "6a22c992c9434278f9bb7628ad41e35134b7f4e604eaf486dfa714f72bf56602",
+      "hashNovo": "01b652ee7c2f329a5830bdeaf04b69e1e0166a5c08d4beeaf86a7d50813b69dd",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::cd",
+      "proprietarioMantido": "TEC-01",
+      "hashAnterior": "0596b836c970bfc0004153788882d87e41c943a60a53f2b91f5bd36266ab3b2b",
+      "hashNovo": "2cfe253d5f85ff5cc2c1c802ace615379174eaf559751d8bd208298b01b9236a",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::cd::expr",
+      "proprietarioMantido": "TEC-01",
+      "hashAnterior": "6a22c992c9434278f9bb7628ad41e35134b7f4e604eaf486dfa714f72bf56602",
+      "hashNovo": "01b652ee7c2f329a5830bdeaf04b69e1e0166a5c08d4beeaf86a7d50813b69dd",
+      "campos": [
+        "hashDado"
+      ]
+    }
+  ],
+  "assinatura": "333e0712685987bdde7c15400d8f0cd4394d7c755df6583eb6b6f3b10d5099e6",
+  "decisoes": {
+    "adicoes": {
+      "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::acerto::exprPessoal": "TEC-01",
+      "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::cd::exprPessoal": "TEC-01"
+    },
+    "remocoes": {},
+    "justificativaAtualizacao": "Pedido do autor em 2026-10-12: Bônus de Acerto e CD também oferecem Aliados na segunda compra. Limite de duas e exclusão entre opções conservados. Compras anteriores sem marca mantêm BT inteiro pessoal por repeticaoPadrao. Reconciliação restrita ao TEC-01, sem aprovação ou remoção de regras."
+  },
+  "errosColeta": []
+}

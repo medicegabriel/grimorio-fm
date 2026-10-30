@@ -1,0 +1,2381 @@
+{
+  "geradoEm": "2026-10-19T17:17:03.404Z",
+  "resultado": "devolvido_para_correcao",
+  "chatConsultado": {
+    "id": "01a14cd0-b5db-7eb1-aa14-2fa2ff82bc35",
+    "titulo": "Restaurar versão antiga do localhost",
+    "decisoes": [
+      "clássica padrão até concluir revisão e teste do autor",
+      "travadas ao ativar bloqueiam lançamento, testar as duas apresentações"
+    ]
+  },
+  "funcional": {
+    "contextos": 8,
+    "conferencias": 53,
+    "passaram": 52,
+    "falhas": [
+      {
+        "id": "apresentações conservam o mesmo bônus registrado",
+        "ok": false,
+        "dados": {
+          "antes": "Defesa82",
+          "g2": "Defesa89",
+          "classica": "Defesa82",
+          "buffs": [
+            {
+              "id": "r6cqdn1ek",
+              "rec": true,
+              "tipoFonte": "feitico",
+              "origemId": null,
+              "origemNome": "Proteção de teste independente",
+              "aplicadoPor": null,
+              "beneficios": [
+                {
+                  "canal": "defesa",
+                  "valor": 7
+                }
+              ],
+              "rodadas": null,
+              "somaPresumida": false
+            }
+          ]
+        }
+      }
+    ],
+    "casos": [
+      {
+        "id": "golpe-1024",
+        "checks": [
+          {
+            "id": "montador dentro do painel e Confirmar alcançável",
+            "ok": true,
+            "dados": {
+              "largura": 300,
+              "painel": 300,
+              "dentro": true,
+              "recebe": true
+            }
+          },
+          {
+            "id": "Golpe paga e aplica Sacrifício uma vez",
+            "ok": true,
+            "dados": {
+              "energia": [
+                178,
+                174
+              ],
+              "vida": [
+                541,
+                526
+              ]
+            }
+          },
+          {
+            "id": "sete propriedades no cartão",
+            "ok": true
+          },
+          {
+            "id": "reativar preserva escolhas e cancelar não muda sessão",
+            "ok": true
+          },
+          {
+            "id": "cancelar reativação não paga de novo",
+            "ok": true
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": []
+      },
+      {
+        "id": "golpe-1440",
+        "checks": [
+          {
+            "id": "montador dentro do painel e Confirmar alcançável",
+            "ok": true,
+            "dados": {
+              "largura": 532,
+              "painel": 532,
+              "dentro": true,
+              "recebe": true
+            }
+          },
+          {
+            "id": "Golpe paga e aplica Sacrifício uma vez",
+            "ok": true,
+            "dados": {
+              "energia": [
+                178,
+                174
+              ],
+              "vida": [
+                541,
+                526
+              ]
+            }
+          },
+          {
+            "id": "sete propriedades no cartão",
+            "ok": true
+          },
+          {
+            "id": "reativar preserva escolhas e cancelar não muda sessão",
+            "ok": true
+          },
+          {
+            "id": "cancelar reativação não paga de novo",
+            "ok": true
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": []
+      },
+      {
+        "id": "preferencia-megumi",
+        "checks": [
+          {
+            "id": "preferência salva no personagem sem mudar jogo",
+            "ok": true
+          },
+          {
+            "id": "preferência persiste e CD oculta",
+            "ok": true
+          },
+          {
+            "id": "salvar no criador mantém preferência",
+            "ok": true
+          },
+          {
+            "id": "round trip do personagem conserva preferência",
+            "ok": true
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": []
+      },
+      {
+        "id": "preferencia-player30",
+        "checks": [
+          {
+            "id": "preferência salva no personagem sem mudar jogo",
+            "ok": true
+          },
+          {
+            "id": "preferência persiste e CD oculta",
+            "ok": true
+          },
+          {
+            "id": "salvar no criador mantém preferência",
+            "ok": true
+          },
+          {
+            "id": "round trip do personagem conserva preferência",
+            "ok": true
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": []
+      },
+      {
+        "id": "ac-1024",
+        "checks": [
+          {
+            "id": "confirmar cobra custo público uma vez",
+            "ok": true,
+            "dados": {
+              "custo": 3,
+              "energia": [
+                178,
+                175
+              ]
+            }
+          },
+          {
+            "id": "uma operação paga no histórico",
+            "ok": true
+          },
+          {
+            "id": "estorno uma vez preserva efeito",
+            "ok": true
+          },
+          {
+            "id": "virada com metadados usa sessão real",
+            "ok": true
+          },
+          {
+            "id": "clássica mantém sessão e não carrega CSS do G2",
+            "ok": true
+          },
+          {
+            "id": "voltar à prévia conserva sessão",
+            "ok": true
+          },
+          {
+            "id": "cartão conserva intensidade",
+            "ok": true
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": []
+      },
+      {
+        "id": "ac-1440",
+        "checks": [
+          {
+            "id": "confirmar cobra custo público uma vez",
+            "ok": true,
+            "dados": {
+              "custo": 3,
+              "energia": [
+                178,
+                175
+              ]
+            }
+          },
+          {
+            "id": "uma operação paga no histórico",
+            "ok": true
+          },
+          {
+            "id": "estorno uma vez preserva efeito",
+            "ok": true
+          },
+          {
+            "id": "virada com metadados usa sessão real",
+            "ok": true
+          },
+          {
+            "id": "clássica mantém sessão e não carrega CSS do G2",
+            "ok": true
+          },
+          {
+            "id": "voltar à prévia conserva sessão",
+            "ok": true
+          },
+          {
+            "id": "cartão conserva intensidade",
+            "ok": true
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": []
+      },
+      {
+        "id": "fonte-compartilhada",
+        "checks": [
+          {
+            "id": "fonte externa registrada uma vez",
+            "ok": true
+          },
+          {
+            "id": "apresentações conservam o mesmo bônus registrado",
+            "ok": false,
+            "dados": {
+              "antes": "Defesa82",
+              "g2": "Defesa89",
+              "classica": "Defesa82",
+              "buffs": [
+                {
+                  "id": "r6cqdn1ek",
+                  "rec": true,
+                  "tipoFonte": "feitico",
+                  "origemId": null,
+                  "origemNome": "Proteção de teste independente",
+                  "aplicadoPor": null,
+                  "beneficios": [
+                    {
+                      "canal": "defesa",
+                      "valor": 7
+                    }
+                  ],
+                  "rodadas": null,
+                  "somaPresumida": false
+                }
+              ]
+            }
+          },
+          {
+            "id": "registro não desaparece ao alternar",
+            "ok": true
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": [],
+        "defAntes": "Defesa82",
+        "defG2": "Defesa89",
+        "defClassica": "Defesa82"
+      },
+      {
+        "id": "linha-tempo",
+        "checks": [
+          {
+            "id": "Invencível ligado com PE principal zero",
+            "ok": true
+          },
+          {
+            "id": "quatro colunas atuais 0",
+            "ok": true,
+            "dados": [
+              {
+                "rodada": 0,
+                "energia": 0,
+                "exaustao": 0
+              },
+              {
+                "rodada": 1,
+                "energia": 4,
+                "exaustao": 1
+              },
+              {
+                "rodada": 2,
+                "energia": 0,
+                "exaustao": 2
+              },
+              {
+                "rodada": 3,
+                "energia": 0,
+                "exaustao": 3
+              }
+            ]
+          },
+          {
+            "id": "próxima coluna prevê recursos 0",
+            "ok": true,
+            "dados": {
+              "coluna": {
+                "rodada": 1,
+                "energia": 4,
+                "exaustao": 1
+              },
+              "esperado": {
+                "rodada": 1,
+                "energia": 4,
+                "exaustao": 1
+              }
+            }
+          },
+          {
+            "id": "virada real coincide e registra cobrança 0",
+            "ok": true,
+            "dados": {
+              "nota": {
+                "rodada": 1,
+                "expirou": [],
+                "cobrado": [
+                  {
+                    "nome": "Invencível sob o Sol",
+                    "valor": 4,
+                    "casca": 4,
+                    "reserva": 0
+                  }
+                ],
+                "renovou": [
+                  {
+                    "chave": "combate:Treino de Controle de Energia",
+                    "de": 0,
+                    "para": 4
+                  },
+                  {
+                    "chave": "rodada:Treino de Controle de Energia",
+                    "de": 0,
+                    "para": 4
+                  }
+                ],
+                "casca": 8,
+                "encerrou": [],
+                "exaustao": 1
+              },
+              "rodada": 1,
+              "inv": 2
+            }
+          },
+          {
+            "id": "quatro colunas atuais 1",
+            "ok": true,
+            "dados": [
+              {
+                "rodada": 1,
+                "energia": 4,
+                "exaustao": 1
+              },
+              {
+                "rodada": 2,
+                "energia": 0,
+                "exaustao": 2
+              },
+              {
+                "rodada": 3,
+                "energia": 0,
+                "exaustao": 3
+              },
+              {
+                "rodada": 4,
+                "energia": 4,
+                "exaustao": 4
+              }
+            ]
+          },
+          {
+            "id": "próxima coluna prevê recursos 1",
+            "ok": true,
+            "dados": {
+              "coluna": {
+                "rodada": 2,
+                "energia": 0,
+                "exaustao": 2
+              },
+              "esperado": {
+                "rodada": 2,
+                "energia": 0,
+                "exaustao": 2
+              }
+            }
+          },
+          {
+            "id": "virada real coincide e registra cobrança 1",
+            "ok": true,
+            "dados": {
+              "nota": {
+                "rodada": 2,
+                "expirou": [],
+                "cobrado": [
+                  {
+                    "nome": "Invencível sob o Sol",
+                    "valor": 4,
+                    "casca": 4,
+                    "reserva": 0
+                  }
+                ],
+                "renovou": [],
+                "casca": 0,
+                "encerrou": [],
+                "exaustao": 1
+              },
+              "rodada": 2,
+              "inv": 3
+            }
+          },
+          {
+            "id": "quatro colunas atuais 2",
+            "ok": true,
+            "dados": [
+              {
+                "rodada": 2,
+                "energia": 0,
+                "exaustao": 2
+              },
+              {
+                "rodada": 3,
+                "energia": 0,
+                "exaustao": 3
+              },
+              {
+                "rodada": 4,
+                "energia": 4,
+                "exaustao": 4
+              },
+              {
+                "rodada": 5,
+                "energia": 4,
+                "exaustao": 4
+              }
+            ]
+          },
+          {
+            "id": "próxima coluna prevê recursos 2",
+            "ok": true,
+            "dados": {
+              "coluna": {
+                "rodada": 3,
+                "energia": 0,
+                "exaustao": 3
+              },
+              "esperado": {
+                "rodada": 3,
+                "energia": 0,
+                "exaustao": 3
+              }
+            }
+          },
+          {
+            "id": "virada real coincide e registra cobrança 2",
+            "ok": true,
+            "dados": {
+              "nota": {
+                "rodada": 3,
+                "expirou": [],
+                "cobrado": [
+                  {
+                    "nome": "Invencível sob o Sol",
+                    "valor": 4,
+                    "casca": 4,
+                    "reserva": 0
+                  }
+                ],
+                "renovou": [
+                  {
+                    "chave": "rodada:Treino de Controle de Energia",
+                    "de": 0,
+                    "para": 4
+                  }
+                ],
+                "casca": 4,
+                "encerrou": [],
+                "exaustao": 1
+              },
+              "rodada": 3,
+              "inv": 4
+            }
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": []
+      }
+    ]
+  },
+  "desempenho": {
+    "metodo": "Chrome local, sem throttling, fichas e sementes iguais por ambiente/apresentação. Ponteiro até alteração observada no DOM e dois quadros. PerformanceObserver por mais 600 a 1000 ms. Assets externos abortados nos contextos isolados. Versão antes da correção não foi reexecutada, não é uma comparação independente antes/depois.",
+    "encerramentos": [
+      {
+        "id": "perf-calamidade-classica",
+        "checks": [
+          {
+            "id": "três operações reais medidas",
+            "ok": true,
+            "dados": [
+              {
+                "label": "Desligar Um com a Arma",
+                "tempoDOM": 38.80000001192093,
+                "tempoDoPonteiroAteDoisQuadros": 42,
+                "maxIntervaloEntreQuadros": 34.399999999999636,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Desligar Brutalidade",
+                "tempoDOM": 33.89999997615814,
+                "tempoDoPonteiroAteDoisQuadros": 37,
+                "maxIntervaloEntreQuadros": 16.900000000000546,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Desligar Ataque Inconsequente",
+                "tempoDOM": 29.80000001192093,
+                "tempoDoPonteiroAteDoisQuadros": 33,
+                "maxIntervaloEntreQuadros": 17,
+                "tarefasLongas": []
+              }
+            ]
+          },
+          {
+            "id": "sem congelamento de dois segundos na amostra",
+            "ok": true,
+            "dados": [
+              {
+                "label": "Desligar Um com a Arma",
+                "tempoDOM": 38.80000001192093,
+                "tempoDoPonteiroAteDoisQuadros": 42,
+                "maxIntervaloEntreQuadros": 34.399999999999636,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Desligar Brutalidade",
+                "tempoDOM": 33.89999997615814,
+                "tempoDoPonteiroAteDoisQuadros": 37,
+                "maxIntervaloEntreQuadros": 16.900000000000546,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Desligar Ataque Inconsequente",
+                "tempoDOM": 29.80000001192093,
+                "tempoDoPonteiroAteDoisQuadros": 33,
+                "maxIntervaloEntreQuadros": 17,
+                "tarefasLongas": []
+              }
+            ]
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": [],
+        "seed": {
+          "rodada": 3,
+          "ligados": [
+            "ativo",
+            "umComArma",
+            "brutalidade",
+            "ataqueInconsequente",
+            "impactoMisto",
+            "furiaVinganca",
+            "imprudenciaMotivadora",
+            "golpeAtroz",
+            "golpeLetal",
+            "arteExecucaoSilenciosa",
+            "espiritoDeLuta",
+            "auraExcessiva",
+            "auraElemental",
+            "faiscasNegras",
+            "canalizarEmGolpe"
+          ]
+        },
+        "medidas": [
+          {
+            "label": "Desligar Um com a Arma",
+            "tempoDOM": 38.80000001192093,
+            "tempoDoPonteiroAteDoisQuadros": 42,
+            "maxIntervaloEntreQuadros": 34.399999999999636,
+            "tarefasLongas": []
+          },
+          {
+            "label": "Desligar Brutalidade",
+            "tempoDOM": 33.89999997615814,
+            "tempoDoPonteiroAteDoisQuadros": 37,
+            "maxIntervaloEntreQuadros": 16.900000000000546,
+            "tarefasLongas": []
+          },
+          {
+            "label": "Desligar Ataque Inconsequente",
+            "tempoDOM": 29.80000001192093,
+            "tempoDoPonteiroAteDoisQuadros": 33,
+            "maxIntervaloEntreQuadros": 17,
+            "tarefasLongas": []
+          }
+        ],
+        "depois": {
+          "pe": 218,
+          "rodada": 3,
+          "ligados": [
+            "ativo",
+            "impactoMisto",
+            "furiaVinganca",
+            "imprudenciaMotivadora",
+            "golpeAtroz",
+            "golpeLetal",
+            "arteExecucaoSilenciosa",
+            "espiritoDeLuta",
+            "auraExcessiva",
+            "auraElemental",
+            "faiscasNegras",
+            "canalizarEmGolpe"
+          ],
+          "eventos": 0
+        }
+      },
+      {
+        "id": "perf-calamidade-g2",
+        "checks": [
+          {
+            "id": "três operações reais medidas",
+            "ok": true,
+            "dados": [
+              {
+                "label": "Abençoado pelas Faíscas Negras",
+                "tempoDOM": 20.200000047683716,
+                "tempoDoPonteiroAteDoisQuadros": 37.90000003576279,
+                "maxIntervaloEntreQuadros": 34.09999999999991,
+                "tarefasLongas": []
+              },
+              {
+                "label": "ArteExecução SilenciosaArtes do Combate",
+                "tempoDOM": 17.399999976158142,
+                "tempoDoPonteiroAteDoisQuadros": 54.39999997615814,
+                "maxIntervaloEntreQuadros": 50.19999999999982,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Ataque Inconsequente",
+                "tempoDOM": 17.69999998807907,
+                "tempoDoPonteiroAteDoisQuadros": 54.19999998807907,
+                "maxIntervaloEntreQuadros": 50.100000000000364,
+                "tarefasLongas": []
+              }
+            ]
+          },
+          {
+            "id": "sem congelamento de dois segundos na amostra",
+            "ok": true,
+            "dados": [
+              {
+                "label": "Abençoado pelas Faíscas Negras",
+                "tempoDOM": 20.200000047683716,
+                "tempoDoPonteiroAteDoisQuadros": 37.90000003576279,
+                "maxIntervaloEntreQuadros": 34.09999999999991,
+                "tarefasLongas": []
+              },
+              {
+                "label": "ArteExecução SilenciosaArtes do Combate",
+                "tempoDOM": 17.399999976158142,
+                "tempoDoPonteiroAteDoisQuadros": 54.39999997615814,
+                "maxIntervaloEntreQuadros": 50.19999999999982,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Ataque Inconsequente",
+                "tempoDOM": 17.69999998807907,
+                "tempoDoPonteiroAteDoisQuadros": 54.19999998807907,
+                "maxIntervaloEntreQuadros": 50.100000000000364,
+                "tarefasLongas": []
+              }
+            ]
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": [],
+        "seed": {
+          "rodada": 3,
+          "ligados": [
+            "ativo",
+            "umComArma",
+            "brutalidade",
+            "ataqueInconsequente",
+            "impactoMisto",
+            "furiaVinganca",
+            "imprudenciaMotivadora",
+            "golpeAtroz",
+            "golpeLetal",
+            "arteExecucaoSilenciosa",
+            "espiritoDeLuta",
+            "auraExcessiva",
+            "auraElemental",
+            "faiscasNegras",
+            "canalizarEmGolpe"
+          ]
+        },
+        "medidas": [
+          {
+            "label": "Abençoado pelas Faíscas Negras",
+            "tempoDOM": 20.200000047683716,
+            "tempoDoPonteiroAteDoisQuadros": 37.90000003576279,
+            "maxIntervaloEntreQuadros": 34.09999999999991,
+            "tarefasLongas": []
+          },
+          {
+            "label": "ArteExecução SilenciosaArtes do Combate",
+            "tempoDOM": 17.399999976158142,
+            "tempoDoPonteiroAteDoisQuadros": 54.39999997615814,
+            "maxIntervaloEntreQuadros": 50.19999999999982,
+            "tarefasLongas": []
+          },
+          {
+            "label": "Ataque Inconsequente",
+            "tempoDOM": 17.69999998807907,
+            "tempoDoPonteiroAteDoisQuadros": 54.19999998807907,
+            "maxIntervaloEntreQuadros": 50.100000000000364,
+            "tarefasLongas": []
+          }
+        ],
+        "depois": {
+          "pe": 218,
+          "rodada": 3,
+          "ligados": [
+            "ativo",
+            "umComArma",
+            "brutalidade",
+            "impactoMisto",
+            "furiaVinganca",
+            "imprudenciaMotivadora",
+            "golpeAtroz",
+            "golpeLetal",
+            "espiritoDeLuta",
+            "auraExcessiva",
+            "auraElemental",
+            "canalizarEmGolpe"
+          ],
+          "eventos": 0
+        }
+      },
+      {
+        "id": "perf-minamoto-classica",
+        "checks": [
+          {
+            "id": "três operações reais medidas",
+            "ok": true,
+            "dados": [
+              {
+                "label": "Desligar Golpe Especial · Atroz",
+                "tempoDOM": 78.69999998807907,
+                "tempoDoPonteiroAteDoisQuadros": 81.89999997615814,
+                "maxIntervaloEntreQuadros": 66.89999999999964,
+                "tarefasLongas": [
+                  80
+                ]
+              },
+              {
+                "label": "Desligar Golpe Especial · Letal",
+                "tempoDOM": 71.80000001192093,
+                "tempoDoPonteiroAteDoisQuadros": 74.30000001192093,
+                "maxIntervaloEntreQuadros": 50,
+                "tarefasLongas": [
+                  73
+                ]
+              },
+              {
+                "label": "Desligar Golpe Especial · Penetrante",
+                "tempoDOM": 74,
+                "tempoDoPonteiroAteDoisQuadros": 76.30000001192093,
+                "maxIntervaloEntreQuadros": 50,
+                "tarefasLongas": [
+                  75
+                ]
+              }
+            ]
+          },
+          {
+            "id": "sem congelamento de dois segundos na amostra",
+            "ok": true,
+            "dados": [
+              {
+                "label": "Desligar Golpe Especial · Atroz",
+                "tempoDOM": 78.69999998807907,
+                "tempoDoPonteiroAteDoisQuadros": 81.89999997615814,
+                "maxIntervaloEntreQuadros": 66.89999999999964,
+                "tarefasLongas": [
+                  80
+                ]
+              },
+              {
+                "label": "Desligar Golpe Especial · Letal",
+                "tempoDOM": 71.80000001192093,
+                "tempoDoPonteiroAteDoisQuadros": 74.30000001192093,
+                "maxIntervaloEntreQuadros": 50,
+                "tarefasLongas": [
+                  73
+                ]
+              },
+              {
+                "label": "Desligar Golpe Especial · Penetrante",
+                "tempoDOM": 74,
+                "tempoDoPonteiroAteDoisQuadros": 76.30000001192093,
+                "maxIntervaloEntreQuadros": 50,
+                "tarefasLongas": [
+                  75
+                ]
+              }
+            ]
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": [],
+        "seed": {
+          "rodada": 3,
+          "ligados": [
+            "ativo",
+            "golpeAtroz",
+            "golpeLetal",
+            "golpePenetrante",
+            "golpeLongo",
+            "golpePreciso",
+            "arteExecucaoSilenciosa",
+            "arteGolpeDescendente",
+            "espiritoDeLuta",
+            "espiritoIncansavel",
+            "arsenalCiclico",
+            "duelando",
+            "lutandoComDuasArmas"
+          ]
+        },
+        "medidas": [
+          {
+            "label": "Desligar Golpe Especial · Atroz",
+            "tempoDOM": 78.69999998807907,
+            "tempoDoPonteiroAteDoisQuadros": 81.89999997615814,
+            "maxIntervaloEntreQuadros": 66.89999999999964,
+            "tarefasLongas": [
+              80
+            ]
+          },
+          {
+            "label": "Desligar Golpe Especial · Letal",
+            "tempoDOM": 71.80000001192093,
+            "tempoDoPonteiroAteDoisQuadros": 74.30000001192093,
+            "maxIntervaloEntreQuadros": 50,
+            "tarefasLongas": [
+              73
+            ]
+          },
+          {
+            "label": "Desligar Golpe Especial · Penetrante",
+            "tempoDOM": 74,
+            "tempoDoPonteiroAteDoisQuadros": 76.30000001192093,
+            "maxIntervaloEntreQuadros": 50,
+            "tarefasLongas": [
+              75
+            ]
+          }
+        ],
+        "depois": {
+          "pe": 178,
+          "rodada": 3,
+          "ligados": [
+            "ativo",
+            "golpeLongo",
+            "golpePreciso",
+            "arteExecucaoSilenciosa",
+            "arteGolpeDescendente",
+            "espiritoDeLuta",
+            "espiritoIncansavel",
+            "arsenalCiclico",
+            "duelando",
+            "lutandoComDuasArmas"
+          ],
+          "eventos": 0
+        }
+      },
+      {
+        "id": "perf-minamoto-g2",
+        "checks": [
+          {
+            "id": "três operações reais medidas",
+            "ok": true,
+            "dados": [
+              {
+                "label": "Trocou de GrupoArsenal Cíclico",
+                "tempoDOM": 11.5,
+                "tempoDoPonteiroAteDoisQuadros": 58,
+                "maxIntervaloEntreQuadros": 66.70000000000027,
+                "tarefasLongas": []
+              },
+              {
+                "label": "ArteExecução Silenciosa, Golpe DescendenteArtes do Combate",
+                "tempoDOM": 11.199999988079071,
+                "tempoDoPonteiroAteDoisQuadros": 55.80000001192093,
+                "maxIntervaloEntreQuadros": 50.20000000000073,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Espírito IncansávelEspírito de Luta",
+                "tempoDOM": 9.900000035762787,
+                "tempoDoPonteiroAteDoisQuadros": 56.700000047683716,
+                "maxIntervaloEntreQuadros": 33.600000000000364,
+                "tarefasLongas": []
+              }
+            ]
+          },
+          {
+            "id": "sem congelamento de dois segundos na amostra",
+            "ok": true,
+            "dados": [
+              {
+                "label": "Trocou de GrupoArsenal Cíclico",
+                "tempoDOM": 11.5,
+                "tempoDoPonteiroAteDoisQuadros": 58,
+                "maxIntervaloEntreQuadros": 66.70000000000027,
+                "tarefasLongas": []
+              },
+              {
+                "label": "ArteExecução Silenciosa, Golpe DescendenteArtes do Combate",
+                "tempoDOM": 11.199999988079071,
+                "tempoDoPonteiroAteDoisQuadros": 55.80000001192093,
+                "maxIntervaloEntreQuadros": 50.20000000000073,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Espírito IncansávelEspírito de Luta",
+                "tempoDOM": 9.900000035762787,
+                "tempoDoPonteiroAteDoisQuadros": 56.700000047683716,
+                "maxIntervaloEntreQuadros": 33.600000000000364,
+                "tarefasLongas": []
+              }
+            ]
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": [],
+        "seed": {
+          "rodada": 3,
+          "ligados": [
+            "ativo",
+            "golpeAtroz",
+            "golpeLetal",
+            "golpePenetrante",
+            "golpeLongo",
+            "golpePreciso",
+            "arteExecucaoSilenciosa",
+            "arteGolpeDescendente",
+            "espiritoDeLuta",
+            "espiritoIncansavel",
+            "arsenalCiclico",
+            "duelando",
+            "lutandoComDuasArmas"
+          ]
+        },
+        "medidas": [
+          {
+            "label": "Trocou de GrupoArsenal Cíclico",
+            "tempoDOM": 11.5,
+            "tempoDoPonteiroAteDoisQuadros": 58,
+            "maxIntervaloEntreQuadros": 66.70000000000027,
+            "tarefasLongas": []
+          },
+          {
+            "label": "ArteExecução Silenciosa, Golpe DescendenteArtes do Combate",
+            "tempoDOM": 11.199999988079071,
+            "tempoDoPonteiroAteDoisQuadros": 55.80000001192093,
+            "maxIntervaloEntreQuadros": 50.20000000000073,
+            "tarefasLongas": []
+          },
+          {
+            "label": "Espírito IncansávelEspírito de Luta",
+            "tempoDOM": 9.900000035762787,
+            "tempoDoPonteiroAteDoisQuadros": 56.700000047683716,
+            "maxIntervaloEntreQuadros": 33.600000000000364,
+            "tarefasLongas": []
+          }
+        ],
+        "depois": {
+          "pe": 178,
+          "rodada": 3,
+          "ligados": [
+            "ativo",
+            "golpeAtroz",
+            "golpeLetal",
+            "golpePenetrante",
+            "golpeLongo",
+            "golpePreciso",
+            "duelando",
+            "lutandoComDuasArmas"
+          ],
+          "eventos": 0
+        }
+      },
+      {
+        "id": "perf-player30-classica",
+        "checks": [
+          {
+            "id": "três operações reais medidas",
+            "ok": true,
+            "dados": [
+              {
+                "label": "Desligar Golpe Especial · Atroz",
+                "tempoDOM": 35.5,
+                "tempoDoPonteiroAteDoisQuadros": 38,
+                "maxIntervaloEntreQuadros": 16.900000000000546,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Desligar Golpe Especial · Letal",
+                "tempoDOM": 29.69999998807907,
+                "tempoDoPonteiroAteDoisQuadros": 33.19999998807907,
+                "maxIntervaloEntreQuadros": 16.800000000000182,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Desligar Golpe Especial · Penetrante",
+                "tempoDOM": 28.600000023841858,
+                "tempoDoPonteiroAteDoisQuadros": 31.30000001192093,
+                "maxIntervaloEntreQuadros": 16.900000000000546,
+                "tarefasLongas": []
+              }
+            ]
+          },
+          {
+            "id": "sem congelamento de dois segundos na amostra",
+            "ok": true,
+            "dados": [
+              {
+                "label": "Desligar Golpe Especial · Atroz",
+                "tempoDOM": 35.5,
+                "tempoDoPonteiroAteDoisQuadros": 38,
+                "maxIntervaloEntreQuadros": 16.900000000000546,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Desligar Golpe Especial · Letal",
+                "tempoDOM": 29.69999998807907,
+                "tempoDoPonteiroAteDoisQuadros": 33.19999998807907,
+                "maxIntervaloEntreQuadros": 16.800000000000182,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Desligar Golpe Especial · Penetrante",
+                "tempoDOM": 28.600000023841858,
+                "tempoDoPonteiroAteDoisQuadros": 31.30000001192093,
+                "maxIntervaloEntreQuadros": 16.900000000000546,
+                "tarefasLongas": []
+              }
+            ]
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": [],
+        "seed": {
+          "rodada": 3,
+          "ligados": [
+            "ativo",
+            "golpeAtroz",
+            "golpeLetal",
+            "golpePenetrante",
+            "golpeLongo",
+            "golpePreciso",
+            "arteExecucaoSilenciosa",
+            "arteGolpeDescendente",
+            "espiritoDeLuta",
+            "espiritoIncansavel",
+            "arsenalCiclico",
+            "arremessosPotentes",
+            "potenciaConcentrada"
+          ]
+        },
+        "medidas": [
+          {
+            "label": "Desligar Golpe Especial · Atroz",
+            "tempoDOM": 35.5,
+            "tempoDoPonteiroAteDoisQuadros": 38,
+            "maxIntervaloEntreQuadros": 16.900000000000546,
+            "tarefasLongas": []
+          },
+          {
+            "label": "Desligar Golpe Especial · Letal",
+            "tempoDOM": 29.69999998807907,
+            "tempoDoPonteiroAteDoisQuadros": 33.19999998807907,
+            "maxIntervaloEntreQuadros": 16.800000000000182,
+            "tarefasLongas": []
+          },
+          {
+            "label": "Desligar Golpe Especial · Penetrante",
+            "tempoDOM": 28.600000023841858,
+            "tempoDoPonteiroAteDoisQuadros": 31.30000001192093,
+            "maxIntervaloEntreQuadros": 16.900000000000546,
+            "tarefasLongas": []
+          }
+        ],
+        "depois": {
+          "pe": 160,
+          "rodada": 3,
+          "ligados": [
+            "ativo",
+            "golpeLongo",
+            "golpePreciso",
+            "arteExecucaoSilenciosa",
+            "arteGolpeDescendente",
+            "espiritoDeLuta",
+            "espiritoIncansavel",
+            "arsenalCiclico",
+            "arremessosPotentes",
+            "potenciaConcentrada"
+          ],
+          "eventos": 0
+        }
+      },
+      {
+        "id": "perf-player30-g2",
+        "checks": [
+          {
+            "id": "três operações reais medidas",
+            "ok": true,
+            "dados": [
+              {
+                "label": "1 PEArremessos Potentes",
+                "tempoDOM": 12,
+                "tempoDoPonteiroAteDoisQuadros": 48.09999996423721,
+                "maxIntervaloEntreQuadros": 33.20000000000027,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Trocou de GrupoArsenal Cíclico",
+                "tempoDOM": 10.700000047683716,
+                "tempoDoPonteiroAteDoisQuadros": 46.5,
+                "maxIntervaloEntreQuadros": 16.800000000000182,
+                "tarefasLongas": []
+              },
+              {
+                "label": "ArteExecução Silenciosa, Golpe DescendenteArtes do Combate",
+                "tempoDOM": 11.599999964237213,
+                "tempoDoPonteiroAteDoisQuadros": 46.89999997615814,
+                "maxIntervaloEntreQuadros": 16.800000000000182,
+                "tarefasLongas": []
+              }
+            ]
+          },
+          {
+            "id": "sem congelamento de dois segundos na amostra",
+            "ok": true,
+            "dados": [
+              {
+                "label": "1 PEArremessos Potentes",
+                "tempoDOM": 12,
+                "tempoDoPonteiroAteDoisQuadros": 48.09999996423721,
+                "maxIntervaloEntreQuadros": 33.20000000000027,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Trocou de GrupoArsenal Cíclico",
+                "tempoDOM": 10.700000047683716,
+                "tempoDoPonteiroAteDoisQuadros": 46.5,
+                "maxIntervaloEntreQuadros": 16.800000000000182,
+                "tarefasLongas": []
+              },
+              {
+                "label": "ArteExecução Silenciosa, Golpe DescendenteArtes do Combate",
+                "tempoDOM": 11.599999964237213,
+                "tempoDoPonteiroAteDoisQuadros": 46.89999997615814,
+                "maxIntervaloEntreQuadros": 16.800000000000182,
+                "tarefasLongas": []
+              }
+            ]
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": [],
+        "seed": {
+          "rodada": 3,
+          "ligados": [
+            "ativo",
+            "golpeAtroz",
+            "golpeLetal",
+            "golpePenetrante",
+            "golpeLongo",
+            "golpePreciso",
+            "arteExecucaoSilenciosa",
+            "arteGolpeDescendente",
+            "espiritoDeLuta",
+            "espiritoIncansavel",
+            "arsenalCiclico",
+            "arremessosPotentes",
+            "potenciaConcentrada"
+          ]
+        },
+        "medidas": [
+          {
+            "label": "1 PEArremessos Potentes",
+            "tempoDOM": 12,
+            "tempoDoPonteiroAteDoisQuadros": 48.09999996423721,
+            "maxIntervaloEntreQuadros": 33.20000000000027,
+            "tarefasLongas": []
+          },
+          {
+            "label": "Trocou de GrupoArsenal Cíclico",
+            "tempoDOM": 10.700000047683716,
+            "tempoDoPonteiroAteDoisQuadros": 46.5,
+            "maxIntervaloEntreQuadros": 16.800000000000182,
+            "tarefasLongas": []
+          },
+          {
+            "label": "ArteExecução Silenciosa, Golpe DescendenteArtes do Combate",
+            "tempoDOM": 11.599999964237213,
+            "tempoDoPonteiroAteDoisQuadros": 46.89999997615814,
+            "maxIntervaloEntreQuadros": 16.800000000000182,
+            "tarefasLongas": []
+          }
+        ],
+        "depois": {
+          "pe": 160,
+          "rodada": 3,
+          "ligados": [
+            "ativo",
+            "golpeAtroz",
+            "golpeLetal",
+            "golpePenetrante",
+            "golpeLongo",
+            "golpePreciso",
+            "espiritoDeLuta",
+            "espiritoIncansavel",
+            "potenciaConcentrada"
+          ],
+          "eventos": 0
+        }
+      },
+      {
+        "id": "perf-calamidade-classica",
+        "checks": [
+          {
+            "id": "três operações reais medidas",
+            "ok": true,
+            "dados": [
+              {
+                "label": "Desligar Um com a Arma",
+                "tempoDOM": 17.80000001192093,
+                "tempoDoPonteiroAteDoisQuadros": 56.30000001192093,
+                "maxIntervaloEntreQuadros": 16.800000000000182,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Desligar Brutalidade",
+                "tempoDOM": 15.699999988079071,
+                "tempoDoPonteiroAteDoisQuadros": 53.09999996423721,
+                "maxIntervaloEntreQuadros": 16.899999999999636,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Desligar Ataque Inconsequente",
+                "tempoDOM": 15.600000023841858,
+                "tempoDoPonteiroAteDoisQuadros": 50.80000001192093,
+                "maxIntervaloEntreQuadros": 16.899999999999636,
+                "tarefasLongas": []
+              }
+            ]
+          },
+          {
+            "id": "sem congelamento de dois segundos na amostra",
+            "ok": true,
+            "dados": [
+              {
+                "label": "Desligar Um com a Arma",
+                "tempoDOM": 17.80000001192093,
+                "tempoDoPonteiroAteDoisQuadros": 56.30000001192093,
+                "maxIntervaloEntreQuadros": 16.800000000000182,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Desligar Brutalidade",
+                "tempoDOM": 15.699999988079071,
+                "tempoDoPonteiroAteDoisQuadros": 53.09999996423721,
+                "maxIntervaloEntreQuadros": 16.899999999999636,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Desligar Ataque Inconsequente",
+                "tempoDOM": 15.600000023841858,
+                "tempoDoPonteiroAteDoisQuadros": 50.80000001192093,
+                "maxIntervaloEntreQuadros": 16.899999999999636,
+                "tarefasLongas": []
+              }
+            ]
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": [],
+        "seed": {
+          "rodada": 3,
+          "ligados": [
+            "ativo",
+            "umComArma",
+            "brutalidade",
+            "ataqueInconsequente",
+            "impactoMisto",
+            "furiaVinganca",
+            "imprudenciaMotivadora",
+            "golpeAtroz",
+            "golpeLetal",
+            "arteExecucaoSilenciosa",
+            "espiritoDeLuta",
+            "auraExcessiva",
+            "auraElemental",
+            "faiscasNegras",
+            "canalizarEmGolpe"
+          ]
+        },
+        "medidas": [
+          {
+            "label": "Desligar Um com a Arma",
+            "tempoDOM": 17.80000001192093,
+            "tempoDoPonteiroAteDoisQuadros": 56.30000001192093,
+            "maxIntervaloEntreQuadros": 16.800000000000182,
+            "tarefasLongas": []
+          },
+          {
+            "label": "Desligar Brutalidade",
+            "tempoDOM": 15.699999988079071,
+            "tempoDoPonteiroAteDoisQuadros": 53.09999996423721,
+            "maxIntervaloEntreQuadros": 16.899999999999636,
+            "tarefasLongas": []
+          },
+          {
+            "label": "Desligar Ataque Inconsequente",
+            "tempoDOM": 15.600000023841858,
+            "tempoDoPonteiroAteDoisQuadros": 50.80000001192093,
+            "maxIntervaloEntreQuadros": 16.899999999999636,
+            "tarefasLongas": []
+          }
+        ],
+        "depois": {
+          "pe": 218,
+          "rodada": 3,
+          "ligados": [
+            "ativo",
+            "impactoMisto",
+            "furiaVinganca",
+            "imprudenciaMotivadora",
+            "golpeAtroz",
+            "golpeLetal",
+            "arteExecucaoSilenciosa",
+            "espiritoDeLuta",
+            "auraExcessiva",
+            "auraElemental",
+            "faiscasNegras",
+            "canalizarEmGolpe"
+          ],
+          "eventos": 0
+        }
+      },
+      {
+        "id": "perf-calamidade-g2",
+        "checks": [
+          {
+            "id": "três operações reais medidas",
+            "ok": true,
+            "dados": [
+              {
+                "label": "Abençoado pelas Faíscas Negras",
+                "tempoDOM": 15.199999988079071,
+                "tempoDoPonteiroAteDoisQuadros": 53.80000001192093,
+                "maxIntervaloEntreQuadros": 50,
+                "tarefasLongas": []
+              },
+              {
+                "label": "ArteExecução SilenciosaArtes do Combate",
+                "tempoDOM": 11.700000047683716,
+                "tempoDoPonteiroAteDoisQuadros": 48.200000047683716,
+                "maxIntervaloEntreQuadros": 50,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Ataque Inconsequente",
+                "tempoDOM": 15.299999952316284,
+                "tempoDoPonteiroAteDoisQuadros": 51,
+                "maxIntervaloEntreQuadros": 33.399999999999636,
+                "tarefasLongas": []
+              }
+            ]
+          },
+          {
+            "id": "sem congelamento de dois segundos na amostra",
+            "ok": true,
+            "dados": [
+              {
+                "label": "Abençoado pelas Faíscas Negras",
+                "tempoDOM": 15.199999988079071,
+                "tempoDoPonteiroAteDoisQuadros": 53.80000001192093,
+                "maxIntervaloEntreQuadros": 50,
+                "tarefasLongas": []
+              },
+              {
+                "label": "ArteExecução SilenciosaArtes do Combate",
+                "tempoDOM": 11.700000047683716,
+                "tempoDoPonteiroAteDoisQuadros": 48.200000047683716,
+                "maxIntervaloEntreQuadros": 50,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Ataque Inconsequente",
+                "tempoDOM": 15.299999952316284,
+                "tempoDoPonteiroAteDoisQuadros": 51,
+                "maxIntervaloEntreQuadros": 33.399999999999636,
+                "tarefasLongas": []
+              }
+            ]
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": [],
+        "seed": {
+          "rodada": 3,
+          "ligados": [
+            "ativo",
+            "umComArma",
+            "brutalidade",
+            "ataqueInconsequente",
+            "impactoMisto",
+            "furiaVinganca",
+            "imprudenciaMotivadora",
+            "golpeAtroz",
+            "golpeLetal",
+            "arteExecucaoSilenciosa",
+            "espiritoDeLuta",
+            "auraExcessiva",
+            "auraElemental",
+            "faiscasNegras",
+            "canalizarEmGolpe"
+          ]
+        },
+        "medidas": [
+          {
+            "label": "Abençoado pelas Faíscas Negras",
+            "tempoDOM": 15.199999988079071,
+            "tempoDoPonteiroAteDoisQuadros": 53.80000001192093,
+            "maxIntervaloEntreQuadros": 50,
+            "tarefasLongas": []
+          },
+          {
+            "label": "ArteExecução SilenciosaArtes do Combate",
+            "tempoDOM": 11.700000047683716,
+            "tempoDoPonteiroAteDoisQuadros": 48.200000047683716,
+            "maxIntervaloEntreQuadros": 50,
+            "tarefasLongas": []
+          },
+          {
+            "label": "Ataque Inconsequente",
+            "tempoDOM": 15.299999952316284,
+            "tempoDoPonteiroAteDoisQuadros": 51,
+            "maxIntervaloEntreQuadros": 33.399999999999636,
+            "tarefasLongas": []
+          }
+        ],
+        "depois": {
+          "pe": 218,
+          "rodada": 3,
+          "ligados": [
+            "ativo",
+            "umComArma",
+            "brutalidade",
+            "impactoMisto",
+            "furiaVinganca",
+            "imprudenciaMotivadora",
+            "golpeAtroz",
+            "golpeLetal",
+            "espiritoDeLuta",
+            "auraExcessiva",
+            "auraElemental",
+            "canalizarEmGolpe"
+          ],
+          "eventos": 0
+        }
+      },
+      {
+        "id": "perf-minamoto-classica",
+        "checks": [
+          {
+            "id": "três operações reais medidas",
+            "ok": true,
+            "dados": [
+              {
+                "label": "Desligar Golpe Especial · Atroz",
+                "tempoDOM": 36.5,
+                "tempoDoPonteiroAteDoisQuadros": 38.90000003576279,
+                "maxIntervaloEntreQuadros": 33.40000000000009,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Desligar Golpe Especial · Letal",
+                "tempoDOM": 33.69999998807907,
+                "tempoDoPonteiroAteDoisQuadros": 36,
+                "maxIntervaloEntreQuadros": 33.400000000000546,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Desligar Golpe Especial · Penetrante",
+                "tempoDOM": 33.5,
+                "tempoDoPonteiroAteDoisQuadros": 36,
+                "maxIntervaloEntreQuadros": 50,
+                "tarefasLongas": []
+              }
+            ]
+          },
+          {
+            "id": "sem congelamento de dois segundos na amostra",
+            "ok": true,
+            "dados": [
+              {
+                "label": "Desligar Golpe Especial · Atroz",
+                "tempoDOM": 36.5,
+                "tempoDoPonteiroAteDoisQuadros": 38.90000003576279,
+                "maxIntervaloEntreQuadros": 33.40000000000009,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Desligar Golpe Especial · Letal",
+                "tempoDOM": 33.69999998807907,
+                "tempoDoPonteiroAteDoisQuadros": 36,
+                "maxIntervaloEntreQuadros": 33.400000000000546,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Desligar Golpe Especial · Penetrante",
+                "tempoDOM": 33.5,
+                "tempoDoPonteiroAteDoisQuadros": 36,
+                "maxIntervaloEntreQuadros": 50,
+                "tarefasLongas": []
+              }
+            ]
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": [],
+        "seed": {
+          "rodada": 3,
+          "ligados": [
+            "ativo",
+            "golpeAtroz",
+            "golpeLetal",
+            "golpePenetrante",
+            "golpeLongo",
+            "golpePreciso",
+            "arteExecucaoSilenciosa",
+            "arteGolpeDescendente",
+            "espiritoDeLuta",
+            "espiritoIncansavel",
+            "arsenalCiclico",
+            "duelando",
+            "lutandoComDuasArmas"
+          ]
+        },
+        "medidas": [
+          {
+            "label": "Desligar Golpe Especial · Atroz",
+            "tempoDOM": 36.5,
+            "tempoDoPonteiroAteDoisQuadros": 38.90000003576279,
+            "maxIntervaloEntreQuadros": 33.40000000000009,
+            "tarefasLongas": []
+          },
+          {
+            "label": "Desligar Golpe Especial · Letal",
+            "tempoDOM": 33.69999998807907,
+            "tempoDoPonteiroAteDoisQuadros": 36,
+            "maxIntervaloEntreQuadros": 33.400000000000546,
+            "tarefasLongas": []
+          },
+          {
+            "label": "Desligar Golpe Especial · Penetrante",
+            "tempoDOM": 33.5,
+            "tempoDoPonteiroAteDoisQuadros": 36,
+            "maxIntervaloEntreQuadros": 50,
+            "tarefasLongas": []
+          }
+        ],
+        "depois": {
+          "pe": 178,
+          "rodada": 3,
+          "ligados": [
+            "ativo",
+            "golpeLongo",
+            "golpePreciso",
+            "arteExecucaoSilenciosa",
+            "arteGolpeDescendente",
+            "espiritoDeLuta",
+            "espiritoIncansavel",
+            "arsenalCiclico",
+            "duelando",
+            "lutandoComDuasArmas"
+          ],
+          "eventos": 0
+        }
+      },
+      {
+        "id": "perf-minamoto-g2",
+        "checks": [
+          {
+            "id": "três operações reais medidas",
+            "ok": true,
+            "dados": [
+              {
+                "label": "Trocou de GrupoArsenal Cíclico",
+                "tempoDOM": 6.899999976158142,
+                "tempoDoPonteiroAteDoisQuadros": 52.89999997615814,
+                "maxIntervaloEntreQuadros": 50,
+                "tarefasLongas": []
+              },
+              {
+                "label": "ArteExecução Silenciosa, Golpe DescendenteArtes do Combate",
+                "tempoDOM": 6.199999988079071,
+                "tempoDoPonteiroAteDoisQuadros": 52.59999996423721,
+                "maxIntervaloEntreQuadros": 50,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Espírito IncansávelEspírito de Luta",
+                "tempoDOM": 5.599999964237213,
+                "tempoDoPonteiroAteDoisQuadros": 50.299999952316284,
+                "maxIntervaloEntreQuadros": 16.900000000000546,
+                "tarefasLongas": []
+              }
+            ]
+          },
+          {
+            "id": "sem congelamento de dois segundos na amostra",
+            "ok": true,
+            "dados": [
+              {
+                "label": "Trocou de GrupoArsenal Cíclico",
+                "tempoDOM": 6.899999976158142,
+                "tempoDoPonteiroAteDoisQuadros": 52.89999997615814,
+                "maxIntervaloEntreQuadros": 50,
+                "tarefasLongas": []
+              },
+              {
+                "label": "ArteExecução Silenciosa, Golpe DescendenteArtes do Combate",
+                "tempoDOM": 6.199999988079071,
+                "tempoDoPonteiroAteDoisQuadros": 52.59999996423721,
+                "maxIntervaloEntreQuadros": 50,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Espírito IncansávelEspírito de Luta",
+                "tempoDOM": 5.599999964237213,
+                "tempoDoPonteiroAteDoisQuadros": 50.299999952316284,
+                "maxIntervaloEntreQuadros": 16.900000000000546,
+                "tarefasLongas": []
+              }
+            ]
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": [],
+        "seed": {
+          "rodada": 3,
+          "ligados": [
+            "ativo",
+            "golpeAtroz",
+            "golpeLetal",
+            "golpePenetrante",
+            "golpeLongo",
+            "golpePreciso",
+            "arteExecucaoSilenciosa",
+            "arteGolpeDescendente",
+            "espiritoDeLuta",
+            "espiritoIncansavel",
+            "arsenalCiclico",
+            "duelando",
+            "lutandoComDuasArmas"
+          ]
+        },
+        "medidas": [
+          {
+            "label": "Trocou de GrupoArsenal Cíclico",
+            "tempoDOM": 6.899999976158142,
+            "tempoDoPonteiroAteDoisQuadros": 52.89999997615814,
+            "maxIntervaloEntreQuadros": 50,
+            "tarefasLongas": []
+          },
+          {
+            "label": "ArteExecução Silenciosa, Golpe DescendenteArtes do Combate",
+            "tempoDOM": 6.199999988079071,
+            "tempoDoPonteiroAteDoisQuadros": 52.59999996423721,
+            "maxIntervaloEntreQuadros": 50,
+            "tarefasLongas": []
+          },
+          {
+            "label": "Espírito IncansávelEspírito de Luta",
+            "tempoDOM": 5.599999964237213,
+            "tempoDoPonteiroAteDoisQuadros": 50.299999952316284,
+            "maxIntervaloEntreQuadros": 16.900000000000546,
+            "tarefasLongas": []
+          }
+        ],
+        "depois": {
+          "pe": 178,
+          "rodada": 3,
+          "ligados": [
+            "ativo",
+            "golpeAtroz",
+            "golpeLetal",
+            "golpePenetrante",
+            "golpeLongo",
+            "golpePreciso",
+            "duelando",
+            "lutandoComDuasArmas"
+          ],
+          "eventos": 0
+        }
+      },
+      {
+        "id": "perf-player30-classica",
+        "checks": [
+          {
+            "id": "três operações reais medidas",
+            "ok": true,
+            "dados": [
+              {
+                "label": "Desligar Golpe Especial · Atroz",
+                "tempoDOM": 16.899999976158142,
+                "tempoDoPonteiroAteDoisQuadros": 50.39999997615814,
+                "maxIntervaloEntreQuadros": 16.90000000000009,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Desligar Golpe Especial · Letal",
+                "tempoDOM": 15,
+                "tempoDoPonteiroAteDoisQuadros": 48,
+                "maxIntervaloEntreQuadros": 16.900000000000546,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Desligar Golpe Especial · Penetrante",
+                "tempoDOM": 14.699999988079071,
+                "tempoDoPonteiroAteDoisQuadros": 51.40000003576279,
+                "maxIntervaloEntreQuadros": 16.900000000000546,
+                "tarefasLongas": []
+              }
+            ]
+          },
+          {
+            "id": "sem congelamento de dois segundos na amostra",
+            "ok": true,
+            "dados": [
+              {
+                "label": "Desligar Golpe Especial · Atroz",
+                "tempoDOM": 16.899999976158142,
+                "tempoDoPonteiroAteDoisQuadros": 50.39999997615814,
+                "maxIntervaloEntreQuadros": 16.90000000000009,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Desligar Golpe Especial · Letal",
+                "tempoDOM": 15,
+                "tempoDoPonteiroAteDoisQuadros": 48,
+                "maxIntervaloEntreQuadros": 16.900000000000546,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Desligar Golpe Especial · Penetrante",
+                "tempoDOM": 14.699999988079071,
+                "tempoDoPonteiroAteDoisQuadros": 51.40000003576279,
+                "maxIntervaloEntreQuadros": 16.900000000000546,
+                "tarefasLongas": []
+              }
+            ]
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": [],
+        "seed": {
+          "rodada": 3,
+          "ligados": [
+            "ativo",
+            "golpeAtroz",
+            "golpeLetal",
+            "golpePenetrante",
+            "golpeLongo",
+            "golpePreciso",
+            "arteExecucaoSilenciosa",
+            "arteGolpeDescendente",
+            "espiritoDeLuta",
+            "espiritoIncansavel",
+            "arsenalCiclico",
+            "arremessosPotentes",
+            "potenciaConcentrada"
+          ]
+        },
+        "medidas": [
+          {
+            "label": "Desligar Golpe Especial · Atroz",
+            "tempoDOM": 16.899999976158142,
+            "tempoDoPonteiroAteDoisQuadros": 50.39999997615814,
+            "maxIntervaloEntreQuadros": 16.90000000000009,
+            "tarefasLongas": []
+          },
+          {
+            "label": "Desligar Golpe Especial · Letal",
+            "tempoDOM": 15,
+            "tempoDoPonteiroAteDoisQuadros": 48,
+            "maxIntervaloEntreQuadros": 16.900000000000546,
+            "tarefasLongas": []
+          },
+          {
+            "label": "Desligar Golpe Especial · Penetrante",
+            "tempoDOM": 14.699999988079071,
+            "tempoDoPonteiroAteDoisQuadros": 51.40000003576279,
+            "maxIntervaloEntreQuadros": 16.900000000000546,
+            "tarefasLongas": []
+          }
+        ],
+        "depois": {
+          "pe": 160,
+          "rodada": 3,
+          "ligados": [
+            "ativo",
+            "golpeLongo",
+            "golpePreciso",
+            "arteExecucaoSilenciosa",
+            "arteGolpeDescendente",
+            "espiritoDeLuta",
+            "espiritoIncansavel",
+            "arsenalCiclico",
+            "arremessosPotentes",
+            "potenciaConcentrada"
+          ],
+          "eventos": 0
+        }
+      },
+      {
+        "id": "perf-player30-g2",
+        "checks": [
+          {
+            "id": "três operações reais medidas",
+            "ok": true,
+            "dados": [
+              {
+                "label": "1 PEArremessos Potentes",
+                "tempoDOM": 7.599999964237213,
+                "tempoDoPonteiroAteDoisQuadros": 50.89999997615814,
+                "maxIntervaloEntreQuadros": 16.90000000000009,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Trocou de GrupoArsenal Cíclico",
+                "tempoDOM": 7.199999988079071,
+                "tempoDoPonteiroAteDoisQuadros": 49.69999998807907,
+                "maxIntervaloEntreQuadros": 17,
+                "tarefasLongas": []
+              },
+              {
+                "label": "ArteExecução Silenciosa, Golpe DescendenteArtes do Combate",
+                "tempoDOM": 6.5,
+                "tempoDoPonteiroAteDoisQuadros": 42.10000002384186,
+                "maxIntervaloEntreQuadros": 17,
+                "tarefasLongas": []
+              }
+            ]
+          },
+          {
+            "id": "sem congelamento de dois segundos na amostra",
+            "ok": true,
+            "dados": [
+              {
+                "label": "1 PEArremessos Potentes",
+                "tempoDOM": 7.599999964237213,
+                "tempoDoPonteiroAteDoisQuadros": 50.89999997615814,
+                "maxIntervaloEntreQuadros": 16.90000000000009,
+                "tarefasLongas": []
+              },
+              {
+                "label": "Trocou de GrupoArsenal Cíclico",
+                "tempoDOM": 7.199999988079071,
+                "tempoDoPonteiroAteDoisQuadros": 49.69999998807907,
+                "maxIntervaloEntreQuadros": 17,
+                "tarefasLongas": []
+              },
+              {
+                "label": "ArteExecução Silenciosa, Golpe DescendenteArtes do Combate",
+                "tempoDOM": 6.5,
+                "tempoDoPonteiroAteDoisQuadros": 42.10000002384186,
+                "maxIntervaloEntreQuadros": 17,
+                "tarefasLongas": []
+              }
+            ]
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": [],
+        "seed": {
+          "rodada": 3,
+          "ligados": [
+            "ativo",
+            "golpeAtroz",
+            "golpeLetal",
+            "golpePenetrante",
+            "golpeLongo",
+            "golpePreciso",
+            "arteExecucaoSilenciosa",
+            "arteGolpeDescendente",
+            "espiritoDeLuta",
+            "espiritoIncansavel",
+            "arsenalCiclico",
+            "arremessosPotentes",
+            "potenciaConcentrada"
+          ]
+        },
+        "medidas": [
+          {
+            "label": "1 PEArremessos Potentes",
+            "tempoDOM": 7.599999964237213,
+            "tempoDoPonteiroAteDoisQuadros": 50.89999997615814,
+            "maxIntervaloEntreQuadros": 16.90000000000009,
+            "tarefasLongas": []
+          },
+          {
+            "label": "Trocou de GrupoArsenal Cíclico",
+            "tempoDOM": 7.199999988079071,
+            "tempoDoPonteiroAteDoisQuadros": 49.69999998807907,
+            "maxIntervaloEntreQuadros": 17,
+            "tarefasLongas": []
+          },
+          {
+            "label": "ArteExecução Silenciosa, Golpe DescendenteArtes do Combate",
+            "tempoDOM": 6.5,
+            "tempoDoPonteiroAteDoisQuadros": 42.10000002384186,
+            "maxIntervaloEntreQuadros": 17,
+            "tarefasLongas": []
+          }
+        ],
+        "depois": {
+          "pe": 160,
+          "rodada": 3,
+          "ligados": [
+            "ativo",
+            "golpeAtroz",
+            "golpeLetal",
+            "golpePenetrante",
+            "golpeLongo",
+            "golpePreciso",
+            "espiritoDeLuta",
+            "espiritoIncansavel",
+            "potenciaConcentrada"
+          ],
+          "eventos": 0
+        }
+      }
+    ],
+    "ativacoesG2": [
+      {
+        "id": "ativacao-calamidade",
+        "checks": [
+          {
+            "id": "ativação concluída uma vez",
+            "ok": true,
+            "dados": {
+              "medida": {
+                "ponteiroAteDoisQuadros": 35.89999997615814,
+                "tarefasLongas": [
+                  58
+                ]
+              },
+              "energia": 217
+            }
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": [],
+        "medida": {
+          "ponteiroAteDoisQuadros": 35.89999997615814,
+          "tarefasLongas": [
+            58
+          ]
+        },
+        "perfil": [
+          {
+            "funcao": "(idle) ",
+            "ms": 758
+          },
+          {
+            "funcao": "(program) ",
+            "ms": 363
+          },
+          {
+            "funcao": "resolverEfeitosDanoFinal afty-efeitos.js",
+            "ms": 106
+          },
+          {
+            "funcao": "buildCriaturaDslContext afty-efeitos.js",
+            "ms": 52
+          },
+          {
+            "funcao": "deriveAftyNoEscopo afty-derive.js",
+            "ms": 28
+          },
+          {
+            "funcao": "(garbage collector) ",
+            "ms": 25
+          },
+          {
+            "funcao": "combateDslVars afty-combate.js",
+            "ms": 18
+          },
+          {
+            "funcao": "validarCatalogoHabilidades afty-habilidades.js",
+            "ms": 16
+          },
+          {
+            "funcao": "regrasDoTipoValor afty-invocacoes-tipos.js",
+            "ms": 14
+          },
+          {
+            "funcao": "aplicarEfeitos afty-efeitos.js",
+            "ms": 10
+          },
+          {
+            "funcao": "getHabilidade afty-habilidades.js",
+            "ms": 9
+          },
+          {
+            "funcao": "aplicarAddons afty-addons.js",
+            "ms": 8
+          },
+          {
+            "funcao": " afty-derive.js",
+            "ms": 8
+          },
+          {
+            "funcao": "jsxDEV react_jsx-dev-runtime.js?v=fb4395f8",
+            "ms": 7
+          },
+          {
+            "funcao": "normalizarVariavel afty-dsl.js",
+            "ms": 7
+          }
+        ]
+      },
+      {
+        "id": "ativacao-minamoto",
+        "checks": [
+          {
+            "id": "ativação concluída uma vez",
+            "ok": true,
+            "dados": {
+              "medida": {
+                "ponteiroAteDoisQuadros": 32.30000001192093,
+                "tarefasLongas": []
+              },
+              "energia": 177
+            }
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": [],
+        "medida": {
+          "ponteiroAteDoisQuadros": 32.30000001192093,
+          "tarefasLongas": []
+        }
+      },
+      {
+        "id": "ativacao-player30",
+        "checks": [
+          {
+            "id": "ativação concluída uma vez",
+            "ok": true,
+            "dados": {
+              "medida": {
+                "ponteiroAteDoisQuadros": 31.30000001192093,
+                "tarefasLongas": []
+              },
+              "energia": 159
+            }
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": [],
+        "medida": {
+          "ponteiroAteDoisQuadros": 31.30000001192093,
+          "tarefasLongas": []
+        }
+      },
+      {
+        "id": "ativacao-calamidade",
+        "checks": [
+          {
+            "id": "ativação concluída uma vez",
+            "ok": true,
+            "dados": {
+              "medida": {
+                "ponteiroAteDoisQuadros": 39.19999998807907,
+                "tarefasLongas": [
+                  57
+                ]
+              },
+              "energia": 217
+            }
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": [],
+        "medida": {
+          "ponteiroAteDoisQuadros": 39.19999998807907,
+          "tarefasLongas": [
+            57
+          ]
+        }
+      },
+      {
+        "id": "ativacao-minamoto",
+        "checks": [
+          {
+            "id": "ativação concluída uma vez",
+            "ok": true,
+            "dados": {
+              "medida": {
+                "ponteiroAteDoisQuadros": 31.400000035762787,
+                "tarefasLongas": []
+              },
+              "energia": 177
+            }
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": [],
+        "medida": {
+          "ponteiroAteDoisQuadros": 31.400000035762787,
+          "tarefasLongas": []
+        }
+      },
+      {
+        "id": "ativacao-player30",
+        "checks": [
+          {
+            "id": "ativação concluída uma vez",
+            "ok": true,
+            "dados": {
+              "medida": {
+                "ponteiroAteDoisQuadros": 35,
+                "tarefasLongas": []
+              },
+              "energia": 159
+            }
+          },
+          {
+            "id": "sem erro de página",
+            "ok": true,
+            "dados": []
+          }
+        ],
+        "erros": [],
+        "medida": {
+          "ponteiroAteDoisQuadros": 35,
+          "tarefasLongas": []
+        }
+      }
+    ],
+    "medicoes": 42,
+    "observacao": "Não houve pausa de dois segundos na amostra final. Houve tarefas longas de 73 a 80 ms no Minamoto clássico em dev e de 58/57 ms na confirmação da Calamidade G2 em dev/produção. Não declarar ausência universal de bloqueio."
+  },
+  "asserts": {
+    "testes": [
+      {
+        "arquivo": "t-g2-desempenho.mjs",
+        "codigo": 0,
+        "ms": 1112,
+        "resumo": [
+          "TODOS OS 23 ASSERTS PASSARAM"
+        ]
+      },
+      {
+        "arquivo": "t-g2-preferencias.mjs",
+        "codigo": 0,
+        "ms": 324,
+        "resumo": [
+          "TODOS OS 42 ASSERTS PASSARAM"
+        ]
+      },
+      {
+        "arquivo": "t-g2-sessao-operacoes.mjs",
+        "codigo": 0,
+        "ms": 388,
+        "resumo": [
+          "TODOS OS 51 ASSERTS PASSARAM"
+        ]
+      },
+      {
+        "arquivo": "t-g2-virada-registro.mjs",
+        "codigo": 0,
+        "ms": 357,
+        "resumo": [
+          "TODOS OS 57 ASSERTS PASSARAM"
+        ]
+      },
+      {
+        "arquivo": "t-ordem-modulos.mjs",
+        "codigo": 0,
+        "ms": 1447,
+        "resumo": [
+          "TODOS OS 36 ASSERTS PASSARAM"
+        ]
+      },
+      {
+        "arquivo": "t-revisao-g00.mjs",
+        "codigo": 0,
+        "ms": 1555,
+        "resumo": [
+          "TODOS OS 35 ASSERTS PASSARAM"
+        ]
+      }
+    ],
+    "total": 244
+  },
+  "build": {
+    "codigo": 0,
+    "observacao": "Build reexecutado na revisão, sem alteração de fonte."
+  },
+  "lint": {
+    "codigo": 0,
+    "observacao": "Afty e App, somente nota Babel pelo tamanho do builder."
+  },
+  "suiteGeral": {
+    "reexecutadaPeloCodex": false,
+    "relatorio": "A execução final fornecida teve 3 falhas em 223 arquivos. Uma classificação foi corrigida e o teste de revisão passa isolado. As outras duas já constam na linha de base, não declarar suíte inteira verde."
+  },
+  "proveniencia": {
+    "arquivos": 84,
+    "divergencias": []
+  },
+  "errosDoVerificador": [
+    "Networkidle aguardava imagens externas e timeout curto: casos substituídos com isolamento de rede e espera pelo conteúdo.",
+    "Rótulo do pagamento inclui Intensidade 2. Comparação de negócio corrigida para ignorar atualizadoEm, ordem de chaves e reservas vazias de Titã normalizadas no reload.",
+    "Fonte Externa é uma tab, e Definir inclui o nome do recurso. Seletores corrigidos e casos repetidos.",
+    "Primeiros testes clássicos de desempenho selecionaram Desligar Tudo e CSS. Descartados. Relatórios finais usam exclusivamente os botões individuais com aria-label Desligar."
+  ]
+}

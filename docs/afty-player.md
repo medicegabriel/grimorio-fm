@@ -139,6 +139,11 @@ em Combate:
   Nada é tirado de ninguém, e marcar o que uma fonte já dá não acusa. Quem decide é a mesma
   divergência `trForaDoOrcamento` ("NÃO PODEM SER ESCOLHIDOS DE FORMA LIVRE"), então na criatura o
   campo é sempre falso.
+- **Um Addon põe o TR no Limite de Perícias** (2026-10-25, `addons/tr-no-limite-de-pericias.json`, verbo
+  `regrasAfty.trNoLimiteDePericias`). Com ele o jogador escolhe TR na aba e gasta vaga (Treinado 1,
+  Mestre 2), o "Sem Fonte" some, o contador aparece também no card de Testes de Resistência, e o TR
+  concedido pela Classe, Talento, Treino ou Habilidade entra como vaga gasta e sobe o total na mesma
+  medida. Detalhes em `docs/afty-addons.md`.
 - **O "caso já seja" de TR conta a Classe, e não a marcação à mão** (2026-09-26, canal
   `proficienciaTRCasoJa`, do Treino de Testes de Resistência). Um Combatente com a Fortitude da
   Classe que faz a 1ª etapa na Fortitude ganha +1, e no nível 9 (Mestre pela Classe) a 2ª etapa vira
@@ -231,13 +236,16 @@ continuam registradas em `a-fazer.md`.
 
 O catálogo está inteiro em `afty-equipamentos.js`. É a divergência pendente que mais muda a tela.
 
-### 2. O Estilo das Sombras: resolvido em 2026-10-04, sem divergência
+### 2. O Estilo das Sombras: era igual nos dois sistemas, e virou divergência em 2026-10-26
 
 O cálculo chegou com a *Expansão do Novo Estilo das Sombras*: as Técnicas da Expansão têm progressão
-**própria** (2 no Nível 4 e +1 em 7, 10, 13, 16 e 19), que não gasta o contador de Habilidades, e é
-**igual nos dois sistemas**. Por isso não virou divergência. A vaga exclusiva `vagasEstilo` soma em
+**própria** (2 no Nível 4 e +1 em 7, 10, 13, 16 e 19), que não gasta o contador de Habilidades. Até
+2026-10-04 isso era **igual nos dois sistemas**. O autor mudou em 2026-10-26: só o **personagem** tem a progressão
+própria. Na **criatura** as Técnicas da Expansão gastam o contador comum de habilidades, e o estouro só deixa o
+contador vermelho, sem invalidar nada. É a divergência `progressaoDoEstilo`. A vaga exclusiva `vagasEstilo` soma em
 cima da progressão, e o que sobrar dela segue para as Técnicas `legacy`, que continuam no contador
-comum como antes. Ver `docs/afty-estilo-sombras.md`.
+comum como antes. A Técnica Marcial do Restringido segue o mesmo desenho (`progressaoDeTecnicasMarciais`, ver
+`docs/afty-tecnicas-marciais.md`). Ver `docs/afty-estilo-sombras.md`.
 
 ⚠ **O Sem Técnica ficou de fora da trava de energia amaldiçoada de propósito.** Ele TEM energia, só
 não tem técnica, então o portão *"todo usuário de energia amaldiçoada"* que zera o Feitiço do
@@ -375,3 +383,8 @@ Os pacotes player-progressao-epica e player-alto-nivel-afty permitem a conversã
 Nível acima de 30, Aptidão a cada dois níveis depois de 20, 52 Interlúdios no nível 35 e Ápice no 26.
 As regras padrão de Player continuam valendo nas fichas sem esses pacotes. Instruções, valores e
 limites estão em [afty-player-progressao-epica.md](afty-player-progressao-epica.md).
+
+Desde 2026-10-29 essas regras, mais Regras Grimorio, Ascendendo Além dos Céus, Alma do Afty e as demais da mesa do
+autor, também vêm reunidas no pacote embutido Guerra de Feiticeiros, que serve Player e criatura, se atualiza sozinho
+e troca o "1 Nível de Aptidão a cada 2 níveis depois do 20" por **1 por avanço de Bônus de Treinamento acima de 6**
+(`aptidaoPorAvancoDeBt`: 21, 26, 31, 36, 41...). Ver `docs/afty-addons.md`.

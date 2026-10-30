@@ -1,0 +1,9 @@
+
+> grimorio-tracker@0.0.0 asserts
+> node asserts/rodar.mjs critico-fontes feiticos-permutativos bases-lut-cmb
+
+ok   t-bases-lut-cmb.mjs      155
+ok   t-critico-fontes.mjs     44
+ok   t-feiticos-permutativos.mjs 100
+
+3 arquivos, 299 asserts, todos passaram.

@@ -1,0 +1,44 @@
+const defesa=async p=>Number((await p.locator('[data-afty-stat="defesa"]').first().textContent()).replace(/[^\d-]/g,''));
+async function registra(p,{tipo='feitico',nome='Protecao Codex',valor=7,por,rodadas,origemId,somar=false}){
+ await effects(p);if(!await p.locator('[data-busca-catalogo]').isVisible())await p.getByRole('button',{name:/Adicionar/}).first().click();
+ await p.getByRole('tab',{name:'Fonte Externa',exact:true}).click();const form=p.getByRole('form',{name:'Registrar fonte externa'});
+ if(tipo!=='feitico')await form.locator('[data-tipo="'+tipo+'"]').click();await form.locator('[data-campo="origem"]').fill(nome);
+ if(origemId)await form.locator('[data-origem-id="'+origemId+'"]').click();if(por)await form.locator('[data-campo="por"]').fill(por);
+ await form.locator('[data-campo="valor-0"]').fill(String(valor));if(rodadas)await form.locator('[data-campo="rodadas"]').fill(String(rodadas));
+ if(somar)await form.locator('[data-campo="presumir"]').check();await form.getByRole('button',{name:'Registrar',exact:true}).click();await wait(p);
+}
+for(const sample of ['minamoto','player30','calamidade'])await scenario('fonte-'+sample,sample,1280,async(p,r,f)=>{
+ await combate(p);const before=await snap(p,f),base=await defesa(p);await registra(p,{});const saved=await snap(p,f);
+ check(r,'registro pela interface soma sete',await defesa(p)===base+7&&saved.buffs.filter(x=>x.rec).length===1,{base,atual:await defesa(p)});
+ await go(p,f,false);check(r,'classica conta o mesmo registro sem camada visual G2',await defesa(p)===base+7&&!await p.locator('.e-g2').count());
+ await go(p,f,false);check(r,'recarga classica conserva valor e dados',await defesa(p)===base+7&&eq((await snap(p,f)).buffs,saved.buffs));
+ await go(p,f,true);check(r,'volta ao G2 nao duplica nem perde',await defesa(p)===base+7&&eq((await snap(p,f)).buffs,saved.buffs)&&energy(before)===energy(await snap(p,f)));
+ await p.screenshot({path:DIR+'/fonte-'+sample+'.png'});
+});
+for(const width of [1024,1440])await scenario('catalogo-'+width,'minamoto',width,async(p,r,f)=>{
+ await combate(p);const base=await defesa(p);const opts={tipo:'catalogo',nome:'Aura do Basti',origemId:'aptidao:aura_do_bastiao'};
+ await registra(p,{...opts,valor:2,por:'Ana'});await registra(p,{...opts,valor:3,por:'Rui'});
+ const s=await snap(p,f);check(r,'duas origens iguais de aliados distintos valem maior',await defesa(p)===base+3&&s.buffs.filter(x=>x.rec).length===2,{base,atual:await defesa(p)});
+ await go(p,f,false);check(r,'classica conta maior uma vez',await defesa(p)===base+3);
+ await go(p,f,true);await registra(p,{nome:'Protecao combinada',valor:7});check(r,'feitico e catalogo conservam regras diferentes',await defesa(p)===base+10);
+ await go(p,f,false);check(r,'classica conserva combinacao',await defesa(p)===base+10);
+});
+await scenario('prazo-persistencia','minamoto',1280,async(p,r,f)=>{
+ await combate(p);const base=await defesa(p);await registra(p,{rodadas:2});await go(p,f,false);
+ check(r,'classica ve registro com prazo',await defesa(p)===base+7);
+ await p.getByRole('button',{name:'Próxima rodada',exact:true}).click();let s=await snap(p,f);check(r,'virada classica mantem ultimo prazo e valor',s.buffs.find(x=>x.rec)?.rodadas===1&&await defesa(p)===base+7);
+ await go(p,f,true);await effects(p);check(r,'G2 ve prazo atualizado apos recarga',await defesa(p)===base+7&&(await snap(p,f)).buffs.find(x=>x.rec)?.rodadas===1);
+ await p.getByRole('button',{name:'Próxima rodada',exact:true}).click();s=await snap(p,f);check(r,'virada G2 expira registro e numero',!s.buffs.some(x=>x.rec)&&await defesa(p)===base);
+ await go(p,f,false);check(r,'classica ve expiracao',await defesa(p)===base&&!((await snap(p,f)).buffs.some(x=>x.rec)));
+});
+await scenario('confirmacoes-rapidas','minamoto',1440,async(p,r,f)=>{
+ await combate(p);await registra(p,{});const before=await snap(p,f);await effects(p);
+ for(const [name,key] of [['Ataque Concentrado',AC],['Espírito de Luta','especializacao:cmb_espirito_de_luta'],['Conhecimento Aplicado','especializacao:cnj_conhecimento_aplicado']]){
+   const pr=await prep(p,name,key);await pr.locator('[data-confirmar]').click();
+ }
+ const after=await snap(p,f);check(r,'tres confirmacoes sem pausa nao perdem estados',after.combate.ataqueConcentrado===1&&after.combate.espiritoDeLuta===true&&after.combate.conhecimentoAplicado>0,after.combate);
+ check(r,'so AC automatico cobra PE uma vez',energy(before)-energy(after)===1&&Object.values(after.operacoes?.ativacoes??{}).filter(x=>x.nome.startsWith('Ataque Concentrado')).length===1,{energia:[energy(before),energy(after)],operacoes:after.operacoes});
+ const d=await engine(p,f,'derived');check(r,'numero final da tela corresponde a sessao mais recente',await defesa(p)===d.defesa,{tela:await defesa(p),motor:d.defesa});
+ await go(p,f,false);check(r,'classica ve mesmos estados e numero',eq(after.combate,(await snap(p,f)).combate)&&await defesa(p)===d.defesa);
+});
+await b.close();save();console.log(JSON.stringify({casos:out.casos.length,checks:out.casos.reduce((a,x)=>a+x.checks.length,0),falhas:out.falhas}));process.exitCode=out.falhas.length?1:0;

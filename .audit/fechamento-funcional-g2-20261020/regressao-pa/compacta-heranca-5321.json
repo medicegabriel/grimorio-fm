@@ -1,0 +1,575 @@
+{
+  "geradoEm": "2026-10-20T21:21:45.941Z",
+  "base": "http://127.0.0.1:5321",
+  "etapas": [
+    {
+      "nome": "compacta canonica 1024",
+      "checks": [
+        {
+          "id": "compacta exibe as duas partes",
+          "ok": true
+        },
+        {
+          "id": "encerrar parte na compacta tira so Defesa",
+          "ok": true,
+          "dados": {
+            "id": "rfpgxyb7v",
+            "rec": true,
+            "tipoFonte": "feitico",
+            "origemId": null,
+            "origemNome": "Guarda e Firmeza",
+            "aplicadoPor": "Yuki (Teste Pacotes)",
+            "beneficios": [
+              {
+                "canal": "bonusTR",
+                "valor": 2,
+                "alvo": "reflexos",
+                "duracao": {
+                  "tipo": "rodadas",
+                  "rodadas": 1
+                },
+                "rodadas": 1
+              }
+            ],
+            "rodadas": null,
+            "somaPresumida": false,
+            "terminaNoDescanso": true,
+            "pacote": {
+              "chave": "emi_mvh6q4bx1628645d4430:pac_mvh6q3wlf95dca272f7d",
+              "id": "pac_mvh6q3wlf95dca272f7d",
+              "nome": "Pacote PA-I3",
+              "revisao": 1,
+              "opcaoId": "op_mvh6q3xjb7db57654bfa",
+              "emissorId": "emi_mvh6q4bx1628645d4430",
+              "emissorNome": "Yuki (Teste Pacotes)",
+              "familia": "feitico",
+              "calculo": "automatico",
+              "duracao": {
+                "tipo": "proximo",
+                "texto": "Por Um Ataque"
+              },
+              "condicoes": [
+                "Um Alvo"
+              ],
+              "custoEmissor": "2 PE"
+            }
+          }
+        },
+        {
+          "id": "recarga preserva o TR e seu contador",
+          "ok": true
+        },
+        {
+          "id": "Encerrar inteiro na compacta tira a parte que sobrou",
+          "ok": true
+        },
+        {
+          "id": "Reativar pela compacta devolve as duas partes e reinicia so seus prazos",
+          "ok": true,
+          "dados": {
+            "id": "re6zk22k0",
+            "rec": true,
+            "tipoFonte": "feitico",
+            "origemId": null,
+            "origemNome": "Guarda e Firmeza",
+            "aplicadoPor": "Yuki (Teste Pacotes)",
+            "beneficios": [
+              {
+                "canal": "defesa",
+                "valor": 3,
+                "duracao": {
+                  "tipo": "proximo",
+                  "texto": "Por Um Ataque"
+                }
+              },
+              {
+                "canal": "bonusTR",
+                "valor": 2,
+                "alvo": "reflexos",
+                "duracao": {
+                  "tipo": "rodadas",
+                  "rodadas": 1
+                },
+                "rodadas": 1
+              }
+            ],
+            "rodadas": null,
+            "somaPresumida": false,
+            "terminaNoDescanso": true,
+            "pacote": {
+              "chave": "emi_mvh6q4bx1628645d4430:pac_mvh6q3wlf95dca272f7d",
+              "id": "pac_mvh6q3wlf95dca272f7d",
+              "nome": "Pacote PA-I3",
+              "revisao": 1,
+              "opcaoId": "op_mvh6q3xjb7db57654bfa",
+              "emissorId": "emi_mvh6q4bx1628645d4430",
+              "emissorNome": "Yuki (Teste Pacotes)",
+              "familia": "feitico",
+              "calculo": "automatico",
+              "duracao": {
+                "tipo": "proximo",
+                "texto": "Por Um Ataque"
+              },
+              "condicoes": [
+                "Um Alvo"
+              ],
+              "custoEmissor": "2 PE"
+            }
+          }
+        },
+        {
+          "id": "virada na compacta tira so TR, preserva Defesa",
+          "ok": true,
+          "dados": {
+            "id": "re6zk22k0",
+            "rec": true,
+            "tipoFonte": "feitico",
+            "origemId": null,
+            "origemNome": "Guarda e Firmeza",
+            "aplicadoPor": "Yuki (Teste Pacotes)",
+            "beneficios": [
+              {
+                "canal": "defesa",
+                "valor": 3,
+                "duracao": {
+                  "tipo": "proximo",
+                  "texto": "Por Um Ataque"
+                }
+              }
+            ],
+            "rodadas": null,
+            "somaPresumida": false,
+            "terminaNoDescanso": true,
+            "pacote": {
+              "chave": "emi_mvh6q4bx1628645d4430:pac_mvh6q3wlf95dca272f7d",
+              "id": "pac_mvh6q3wlf95dca272f7d",
+              "nome": "Pacote PA-I3",
+              "revisao": 1,
+              "opcaoId": "op_mvh6q3xjb7db57654bfa",
+              "emissorId": "emi_mvh6q4bx1628645d4430",
+              "emissorNome": "Yuki (Teste Pacotes)",
+              "familia": "feitico",
+              "calculo": "automatico",
+              "duracao": {
+                "tipo": "proximo",
+                "texto": "Por Um Ataque"
+              },
+              "condicoes": [
+                "Um Alvo"
+              ],
+              "custoEmissor": "2 PE"
+            }
+          }
+        },
+        {
+          "id": "parte restante pode ser encerrada inteira sem botao duplicado",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "compacta canonica 1440",
+      "checks": [
+        {
+          "id": "compacta exibe as duas partes",
+          "ok": true
+        },
+        {
+          "id": "encerrar parte na compacta tira so Defesa",
+          "ok": true,
+          "dados": {
+            "id": "rg4u244ql",
+            "rec": true,
+            "tipoFonte": "feitico",
+            "origemId": null,
+            "origemNome": "Guarda e Firmeza",
+            "aplicadoPor": "Yuki (Teste Pacotes)",
+            "beneficios": [
+              {
+                "canal": "bonusTR",
+                "valor": 2,
+                "alvo": "reflexos",
+                "duracao": {
+                  "tipo": "rodadas",
+                  "rodadas": 1
+                },
+                "rodadas": 1
+              }
+            ],
+            "rodadas": null,
+            "somaPresumida": false,
+            "terminaNoDescanso": true,
+            "pacote": {
+              "chave": "emi_mvh6q4bx1628645d4430:pac_mvh6q3wlf95dca272f7d",
+              "id": "pac_mvh6q3wlf95dca272f7d",
+              "nome": "Pacote PA-I3",
+              "revisao": 1,
+              "opcaoId": "op_mvh6q3xjb7db57654bfa",
+              "emissorId": "emi_mvh6q4bx1628645d4430",
+              "emissorNome": "Yuki (Teste Pacotes)",
+              "familia": "feitico",
+              "calculo": "automatico",
+              "duracao": {
+                "tipo": "proximo",
+                "texto": "Por Um Ataque"
+              },
+              "condicoes": [
+                "Um Alvo"
+              ],
+              "custoEmissor": "2 PE"
+            }
+          }
+        },
+        {
+          "id": "recarga preserva o TR e seu contador",
+          "ok": true
+        },
+        {
+          "id": "Encerrar inteiro na compacta tira a parte que sobrou",
+          "ok": true
+        },
+        {
+          "id": "Reativar pela compacta devolve as duas partes e reinicia so seus prazos",
+          "ok": true,
+          "dados": {
+            "id": "rw2y0qemt",
+            "rec": true,
+            "tipoFonte": "feitico",
+            "origemId": null,
+            "origemNome": "Guarda e Firmeza",
+            "aplicadoPor": "Yuki (Teste Pacotes)",
+            "beneficios": [
+              {
+                "canal": "defesa",
+                "valor": 3,
+                "duracao": {
+                  "tipo": "proximo",
+                  "texto": "Por Um Ataque"
+                }
+              },
+              {
+                "canal": "bonusTR",
+                "valor": 2,
+                "alvo": "reflexos",
+                "duracao": {
+                  "tipo": "rodadas",
+                  "rodadas": 1
+                },
+                "rodadas": 1
+              }
+            ],
+            "rodadas": null,
+            "somaPresumida": false,
+            "terminaNoDescanso": true,
+            "pacote": {
+              "chave": "emi_mvh6q4bx1628645d4430:pac_mvh6q3wlf95dca272f7d",
+              "id": "pac_mvh6q3wlf95dca272f7d",
+              "nome": "Pacote PA-I3",
+              "revisao": 1,
+              "opcaoId": "op_mvh6q3xjb7db57654bfa",
+              "emissorId": "emi_mvh6q4bx1628645d4430",
+              "emissorNome": "Yuki (Teste Pacotes)",
+              "familia": "feitico",
+              "calculo": "automatico",
+              "duracao": {
+                "tipo": "proximo",
+                "texto": "Por Um Ataque"
+              },
+              "condicoes": [
+                "Um Alvo"
+              ],
+              "custoEmissor": "2 PE"
+            }
+          }
+        },
+        {
+          "id": "virada na compacta tira so TR, preserva Defesa",
+          "ok": true,
+          "dados": {
+            "id": "rw2y0qemt",
+            "rec": true,
+            "tipoFonte": "feitico",
+            "origemId": null,
+            "origemNome": "Guarda e Firmeza",
+            "aplicadoPor": "Yuki (Teste Pacotes)",
+            "beneficios": [
+              {
+                "canal": "defesa",
+                "valor": 3,
+                "duracao": {
+                  "tipo": "proximo",
+                  "texto": "Por Um Ataque"
+                }
+              }
+            ],
+            "rodadas": null,
+            "somaPresumida": false,
+            "terminaNoDescanso": true,
+            "pacote": {
+              "chave": "emi_mvh6q4bx1628645d4430:pac_mvh6q3wlf95dca272f7d",
+              "id": "pac_mvh6q3wlf95dca272f7d",
+              "nome": "Pacote PA-I3",
+              "revisao": 1,
+              "opcaoId": "op_mvh6q3xjb7db57654bfa",
+              "emissorId": "emi_mvh6q4bx1628645d4430",
+              "emissorNome": "Yuki (Teste Pacotes)",
+              "familia": "feitico",
+              "calculo": "automatico",
+              "duracao": {
+                "tipo": "proximo",
+                "texto": "Por Um Ataque"
+              },
+              "condicoes": [
+                "Um Alvo"
+              ],
+              "custoEmissor": "2 PE"
+            }
+          }
+        },
+        {
+          "id": "parte restante pode ser encerrada inteira sem botao duplicado",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "prazo herdado importado 1024",
+      "checks": [
+        {
+          "id": "arquivo com prazo comum e excecao por ataque e aceito",
+          "ok": true
+        },
+        {
+          "id": "PA-I4: TR herda a rodada da opcao e sai na virada",
+          "ok": true,
+          "dados": {
+            "baseTR": 7,
+            "trDepois": 7,
+            "inst": {
+              "id": "rfkywymr4",
+              "rec": true,
+              "tipoFonte": "feitico",
+              "origemId": null,
+              "origemNome": "Prazos Herdados Codex",
+              "aplicadoPor": "Yuki (Teste Pacotes)",
+              "beneficios": [
+                {
+                  "canal": "defesa",
+                  "valor": 3,
+                  "duracao": {
+                    "tipo": "proximo",
+                    "texto": "Por Um Ataque"
+                  }
+                }
+              ],
+              "rodadas": null,
+              "somaPresumida": false,
+              "terminaNoDescanso": true,
+              "pacote": {
+                "chave": "codex-herdado:codex-herdado",
+                "id": "codex-herdado",
+                "nome": "Prazos Herdados Codex",
+                "revisao": 1,
+                "opcaoId": "misto",
+                "emissorId": "codex-herdado",
+                "emissorNome": "Yuki (Teste Pacotes)",
+                "familia": "feitico",
+                "calculo": "automatico",
+                "duracao": {
+                  "tipo": "rodadas",
+                  "rodadas": 1
+                },
+                "condicoes": [
+                  "Um Alvo"
+                ],
+                "custoEmissor": "2 PE"
+              }
+            }
+          }
+        },
+        {
+          "id": "PA-I4: classica tambem retira o TR herdado apos a virada",
+          "ok": true,
+          "dados": {
+            "baseTR": 7,
+            "atual": 7
+          }
+        },
+        {
+          "id": "sem erros de pagina",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "observado": {
+        "terminaAntes": "Termina1 Rodada · TR de Reflexos +2A Ficha Conta as Rodadas e Encerra SozinhaPor Um Ataque · Defesa +3A Ficha Não Conta Este Prazo: Encerre Quando AcabarEncerrar Parte",
+        "baseDef": 17,
+        "baseTR": 7,
+        "trDepois": 7,
+        "instancia": {
+          "id": "rfkywymr4",
+          "rec": true,
+          "tipoFonte": "feitico",
+          "origemId": null,
+          "origemNome": "Prazos Herdados Codex",
+          "aplicadoPor": "Yuki (Teste Pacotes)",
+          "beneficios": [
+            {
+              "canal": "defesa",
+              "valor": 3,
+              "duracao": {
+                "tipo": "proximo",
+                "texto": "Por Um Ataque"
+              }
+            }
+          ],
+          "rodadas": null,
+          "somaPresumida": false,
+          "terminaNoDescanso": true,
+          "pacote": {
+            "chave": "codex-herdado:codex-herdado",
+            "id": "codex-herdado",
+            "nome": "Prazos Herdados Codex",
+            "revisao": 1,
+            "opcaoId": "misto",
+            "emissorId": "codex-herdado",
+            "emissorNome": "Yuki (Teste Pacotes)",
+            "familia": "feitico",
+            "calculo": "automatico",
+            "duracao": {
+              "tipo": "rodadas",
+              "rodadas": 1
+            },
+            "condicoes": [
+              "Um Alvo"
+            ],
+            "custoEmissor": "2 PE"
+          }
+        }
+      }
+    },
+    {
+      "nome": "prazo herdado importado 1440",
+      "checks": [
+        {
+          "id": "arquivo com prazo comum e excecao por ataque e aceito",
+          "ok": true
+        },
+        {
+          "id": "PA-I4: TR herda a rodada da opcao e sai na virada",
+          "ok": true,
+          "dados": {
+            "baseTR": 7,
+            "trDepois": 7,
+            "inst": {
+              "id": "r3piir150",
+              "rec": true,
+              "tipoFonte": "feitico",
+              "origemId": null,
+              "origemNome": "Prazos Herdados Codex",
+              "aplicadoPor": "Yuki (Teste Pacotes)",
+              "beneficios": [
+                {
+                  "canal": "defesa",
+                  "valor": 3,
+                  "duracao": {
+                    "tipo": "proximo",
+                    "texto": "Por Um Ataque"
+                  }
+                }
+              ],
+              "rodadas": null,
+              "somaPresumida": false,
+              "terminaNoDescanso": true,
+              "pacote": {
+                "chave": "codex-herdado:codex-herdado",
+                "id": "codex-herdado",
+                "nome": "Prazos Herdados Codex",
+                "revisao": 1,
+                "opcaoId": "misto",
+                "emissorId": "codex-herdado",
+                "emissorNome": "Yuki (Teste Pacotes)",
+                "familia": "feitico",
+                "calculo": "automatico",
+                "duracao": {
+                  "tipo": "rodadas",
+                  "rodadas": 1
+                },
+                "condicoes": [
+                  "Um Alvo"
+                ],
+                "custoEmissor": "2 PE"
+              }
+            }
+          }
+        },
+        {
+          "id": "PA-I4: classica tambem retira o TR herdado apos a virada",
+          "ok": true,
+          "dados": {
+            "baseTR": 7,
+            "atual": 7
+          }
+        },
+        {
+          "id": "sem erros de pagina",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "observado": {
+        "terminaAntes": "Termina1 Rodada · TR de Reflexos +2A Ficha Conta as Rodadas e Encerra SozinhaPor Um Ataque · Defesa +3A Ficha Não Conta Este Prazo: Encerre Quando AcabarEncerrar Parte",
+        "baseDef": 17,
+        "baseTR": 7,
+        "trDepois": 7,
+        "instancia": {
+          "id": "r3piir150",
+          "rec": true,
+          "tipoFonte": "feitico",
+          "origemId": null,
+          "origemNome": "Prazos Herdados Codex",
+          "aplicadoPor": "Yuki (Teste Pacotes)",
+          "beneficios": [
+            {
+              "canal": "defesa",
+              "valor": 3,
+              "duracao": {
+                "tipo": "proximo",
+                "texto": "Por Um Ataque"
+              }
+            }
+          ],
+          "rodadas": null,
+          "somaPresumida": false,
+          "terminaNoDescanso": true,
+          "pacote": {
+            "chave": "codex-herdado:codex-herdado",
+            "id": "codex-herdado",
+            "nome": "Prazos Herdados Codex",
+            "revisao": 1,
+            "opcaoId": "misto",
+            "emissorId": "codex-herdado",
+            "emissorNome": "Yuki (Teste Pacotes)",
+            "familia": "feitico",
+            "calculo": "automatico",
+            "duracao": {
+              "tipo": "rodadas",
+              "rodadas": 1
+            },
+            "condicoes": [
+              "Um Alvo"
+            ],
+            "custoEmissor": "2 PE"
+          }
+        }
+      }
+    }
+  ],
+  "falhas": []
+}

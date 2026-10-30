@@ -5,6 +5,8 @@
   "autor": "Templas",
   "paraRaw": "afty",
   "descricao": "Addon do Estilo das Sombras. Libera Aura Excessiva, Aura Impenetrável e Casulo de Energia sem pré-requisito (só zera os requisitos). Bancada: Reforço Corporal (+6 PV/nível, +2 RD física, +BT RD Geral com Aura Excessiva) e duas seções de exemplo com campos de valor — 'Resistir a Manobra · nova regra' (troca o valor atual por Fortitude + Aura) e 'RD de Aura · dobrar' (você digita a RD atual e o addon soma de novo = dobra). Pacto e Cura Corporal são só sinalizadores. Três Linhas de Treinamento (Escudo Protetor, Firmeza, Treinamento Corporal) — as condicionais usam os interruptores de sessão 'Escudo erguido' e 'Firmeza · em Postura da Terra', que você liga junto com a condição real. ⚠ Ligue 'Em Combate'. Itens [REFERÊNCIA] não têm canal.",
+  "resumo": "Três auras sem pré-requisito, o Reforço Corporal e três Linhas de Treinamento",
+  "categoria": "treinos",
   "substitui": {
     "aptidoes": [
       { "id": "aura_excessiva", "requisitos": [] },

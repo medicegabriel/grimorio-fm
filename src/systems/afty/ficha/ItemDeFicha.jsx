@@ -30,7 +30,7 @@ import { useDestaque } from "./usar-destaque";
 
 /** Restantes e máximo, com o menos gastando um uso e o mais devolvendo. O
     rótulo é "Usos", ou o `rotulo` que a entrada deu ao contador ("Doses"). */
-function ContadorDeUsos({ nome, usos, gastos, onUso }) {
+export function ContadorDeUsos({ nome, usos, gastos, onUso }) {
   const restantes = Math.max(0, usos.max - gastos);
   const rotulo = usos.rotulo || "Usos";
   return (

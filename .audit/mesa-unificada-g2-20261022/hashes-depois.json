@@ -1,0 +1,1382 @@
+[
+  {
+    "path": "src/App.css",
+    "sha256": "6e25a776d3e8102da5bacb3cb99f4a5fc662a2e01e6143140671a556d28c3d5c"
+  },
+  {
+    "path": "src/App.jsx",
+    "sha256": "ebd0af3a43dafa2b3094ea4360dca11991cc05381638effc0c924ad107528a0c"
+  },
+  {
+    "path": "src/fm-compendium.js",
+    "sha256": "e0921738661b3d0f6c806f9d9b64e578300b2f0475083f043da9b8ad46e37152"
+  },
+  {
+    "path": "src/fm-encounter.js",
+    "sha256": "6f7366247a094a19a06997ca4381811a340b3e692bf9ca3fadd862b381d76da5"
+  },
+  {
+    "path": "src/index.css",
+    "sha256": "1b3ce3c3a58b53ef138668719f7e277c48ce249e4d0030c2ca1ea81ec543c893"
+  },
+  {
+    "path": "src/main.jsx",
+    "sha256": "e13c284ec03710580ea094f0489c7c0f02b5b6db8f0840449226f3d2aecf85d2"
+  },
+  {
+    "path": "src/useDashboardView.js",
+    "sha256": "c6f574f681abc2e169551c6272c98b2045bb835e2d362662db97fd3a031969a6"
+  },
+  {
+    "path": "src/useEncounter.js",
+    "sha256": "64df654201820b3026c639f5c0162da6b837768821bdac2848b439130faa48a9"
+  },
+  {
+    "path": "src/useEncounterManager.js",
+    "sha256": "6cf71a7382c42e0e9c77af2981f66a134007b25d45db39bff097cfec4d19060f"
+  },
+  {
+    "path": "src/assets/hero.png",
+    "sha256": "72a860570eddf1dd9988f26c7106c67be286bc9f2fd3303c465ce87edb1ae6cd"
+  },
+  {
+    "path": "src/assets/react.svg",
+    "sha256": "35ef61ed53b323ae94a16a8ec659b3d0af3880698791133f23b084085ab1c2e5"
+  },
+  {
+    "path": "src/assets/vite.svg",
+    "sha256": "5be21acd42eb7b896e517f4e0f0f11eb5c5d9e54fbbcebe9453f033008fcca6f"
+  },
+  {
+    "path": "src/components/ApplyTemplatesModal.jsx",
+    "sha256": "5bbe6c55efe3acbd11cc8d3e68798efa9deae6238a82a6214a5afec9af29c2fc"
+  },
+  {
+    "path": "src/components/AutomationBuilder.jsx",
+    "sha256": "b36ce7578b444926aa7dfb7a603ddad67051feabcaec004c0e95fa90d46d6830"
+  },
+  {
+    "path": "src/components/AutomationDocsModal.jsx",
+    "sha256": "ce943b5247ce3826cef64a6068dcbdd91bf7fd3fc031f441268c8add214a6860"
+  },
+  {
+    "path": "src/components/AutomationEditorPanel.jsx",
+    "sha256": "470c259550b4a0083eec910b9de6c77a19a33b9c1776d11a03e95aa77588e384"
+  },
+  {
+    "path": "src/components/builder-controls.jsx",
+    "sha256": "ba0b41fb368b83c193f6225c7a4167b7a705237ba4562f0643bfeda88cc3cdcf"
+  },
+  {
+    "path": "src/components/CombatantPanel.jsx",
+    "sha256": "3a919f0fb4a97df2d8a9f9c47e60396b544f8d639011655197320939d12a0d0b"
+  },
+  {
+    "path": "src/components/CombatTracker.jsx",
+    "sha256": "49cdd1f7ac21a8755102e1db9d09dac609ac2cc63821178a3a34f50a1eea10f7"
+  },
+  {
+    "path": "src/components/creature-schema.js",
+    "sha256": "484c25cabb1993376b0b368df4b622cbdcb437c8505fe341e1111ab887eab7d4"
+  },
+  {
+    "path": "src/components/CreatureBuilder.jsx",
+    "sha256": "ffbcce73273e8a764eb36d3c161f7c253b59e947e68611b2af543e6ed9a14534"
+  },
+  {
+    "path": "src/components/Dashboard.jsx",
+    "sha256": "c7cb1d1a763366481eb214d28efd2fbfcd8e5cf432d7591741665eee98ec66a7"
+  },
+  {
+    "path": "src/components/EncountersDashboard.jsx",
+    "sha256": "d517c787ba7055df6f034d0879634a873d9880394dda94d23255e6eff4a1280b"
+  },
+  {
+    "path": "src/components/EncounterSyncModal.jsx",
+    "sha256": "a97dd1c353f85f9dd64149e0b1283f654bf52c0a620a120afa0f65aa026b2262"
+  },
+  {
+    "path": "src/components/EncounterTracker.jsx",
+    "sha256": "32de51522a7ebcf4718eea10a526bd322fd5b364fcbbc1d05acabecbdd39bd55"
+  },
+  {
+    "path": "src/components/ErrorBoundary.jsx",
+    "sha256": "ee2cb3a2d3294700796268b31b7e85a36d9ac5578d3b803171350c94f154abb8"
+  },
+  {
+    "path": "src/components/FeedbackPrompt.jsx",
+    "sha256": "4862ae02c85b170b6f8851d447fc70abc161a00f5f67fe074afa7be1a38f7146"
+  },
+  {
+    "path": "src/components/fm-action-calc.js",
+    "sha256": "fef5de7d59c676095613504f5f03ad25b9170730d66ee142f280098ab4424a6d"
+  },
+  {
+    "path": "src/components/fm-aptidoes.js",
+    "sha256": "45aa0b77702eb1d5269bf6d469396e19b11195e9f3337a7349c8bdb8fd4d1545"
+  },
+  {
+    "path": "src/components/fm-automation-entities.js",
+    "sha256": "0fafa250636f8f2cdcc0c73be4cda4cd316c7bd5d1e5d2468455b2e8961f757b"
+  },
+  {
+    "path": "src/components/fm-automation.js",
+    "sha256": "99bfa53324c26d41a4fe2c7e493f952e858fd1bef2b981748e9241bf3364415a"
+  },
+  {
+    "path": "src/components/fm-caracteristicas.js",
+    "sha256": "ce0693d1bcb887e8b96e196f2758cecf1594f75e6af5cc58991b0cdedfb92db9"
+  },
+  {
+    "path": "src/components/fm-conditions.js",
+    "sha256": "fc25c36635c86adc40b44d7ac26b6f375c5108b7651ed4df77e3d5727ec89e60"
+  },
+  {
+    "path": "src/components/fm-creature-ops.js",
+    "sha256": "6f33530b2dc6ecbd393b649f138a8f20b9db0f6a16279ea03c1b0b43dbacc882"
+  },
+  {
+    "path": "src/components/fm-derive.js",
+    "sha256": "13d94205105947bf38142c442a458acc5865f9e034535397e85d6b5027659a71"
+  },
+  {
+    "path": "src/components/fm-docs.js",
+    "sha256": "0a76983a7aebe0439924c8ebc42ae134e62d87e0351cc7eebf1eed68ff54edd2"
+  },
+  {
+    "path": "src/components/fm-domain-calc.js",
+    "sha256": "037bdc3a34f393def7390a0229e14574a84923eef062cbe4d3c3e72dc4ea3f9a"
+  },
+  {
+    "path": "src/components/fm-dotes.js",
+    "sha256": "c881e9120120ec5975cbf8f82ba6c0287a7cf7b0f028991d60dd31ad216055de"
+  },
+  {
+    "path": "src/components/fm-dsl.js",
+    "sha256": "bcaf86434a28f2814708328b744d6bb43e49adb6f3641c59ab83c2981e5857ef"
+  },
+  {
+    "path": "src/components/fm-modifiers.js",
+    "sha256": "090a9cd3d35f79947bbd5b6271ed09efbd624ffa6f03d3cb30a77f81ac4cb225"
+  },
+  {
+    "path": "src/components/fm-origens.js",
+    "sha256": "55500444d81258985a7c8e8400ab9c0535e140f16650f97734608c8bec13721e"
+  },
+  {
+    "path": "src/components/fm-suporte.js",
+    "sha256": "d719c72f01230be7699ecd06c7f171969bf81ef8e8eea2232e28a7910dd56fed"
+  },
+  {
+    "path": "src/components/fm-tables.js",
+    "sha256": "3d3cbb266abb57d34dea75320cf0e4c1872b748ad2b908944a9c9df233c84fd3"
+  },
+  {
+    "path": "src/components/fm-templates.js",
+    "sha256": "a3e4c63514495a61adc08dfe0b16a2b8b8773c9cbb52cb698add1cc2ecfdcda2"
+  },
+  {
+    "path": "src/components/fm-treinamentos.js",
+    "sha256": "992a5bba3490ee9cf44b26da44367ae7c9bdd834ddce50c24b3558acea57fec9"
+  },
+  {
+    "path": "src/components/FolderFormModal.jsx",
+    "sha256": "a0151183b4dde42f704b4d0fec60f280809aa3ba0923741c228fc3a9bbb50bc1"
+  },
+  {
+    "path": "src/components/FolderSidebar.jsx",
+    "sha256": "0d0984b51dfd4c1dd22d259d4cf98cd21211857f4a17a1099e8f0a21a32908bb"
+  },
+  {
+    "path": "src/components/io-utils.js",
+    "sha256": "a6afda2de252f1f82b390188298974f216ec01dc681cdfb7ef9170d347eb34aa"
+  },
+  {
+    "path": "src/components/MoveToFolderMenu.jsx",
+    "sha256": "62e3f845e7cbe647c55983f632ea935d7d46ee1a673405deb06372c35edbb0ca"
+  },
+  {
+    "path": "src/components/PdfFab.jsx",
+    "sha256": "1e2a6b1a87f8e008f1a3586010b3767757fac811746a0b006f5a42c46e9090d1"
+  },
+  {
+    "path": "src/components/PdfViewerModal.jsx",
+    "sha256": "84778ff53201fbee78fbd90115639d1b0629fce3eb4f91e3b68a78643a21d3ce"
+  },
+  {
+    "path": "src/components/StorageMeter.jsx",
+    "sha256": "952141e10f86d286428047a07c21c50fb220066155340c69a395f44538db4091"
+  },
+  {
+    "path": "src/components/TemplateControls.jsx",
+    "sha256": "4bf6188c45d4c58f17df9063b850fa1340f34c3f21f61ec18cef5ab68ab07cda"
+  },
+  {
+    "path": "src/components/TemplateDetail.jsx",
+    "sha256": "519fe00004ec7ec27ac72ceceaeaee0486e6228d0eae66d572b3af3ca1fa6dab"
+  },
+  {
+    "path": "src/components/TemplateLibrary.jsx",
+    "sha256": "f8c89987eb300120642965ad366311a06528d45896837f0eb688146c6d78fc35"
+  },
+  {
+    "path": "src/components/useActionTemplates.js",
+    "sha256": "fe586fcf3d094e5c7d0831c2857f7d82c14e6ba61fcc9b8f304e87a4b56bf112"
+  },
+  {
+    "path": "src/components/useCreatureBuilder.js",
+    "sha256": "ca80537d410111fa5b3546a4155711ef42b36dafde657f666d4fcc3fd4c812e2"
+  },
+  {
+    "path": "src/components/useCreatureStorage.js",
+    "sha256": "38b506c96c41d6eccf6a5af173f749d1a608f1182dc5d87804d7c47ccc65db2e"
+  },
+  {
+    "path": "src/components/useFeatureTemplates.js",
+    "sha256": "6e8da788bf5503b9ee188fb001cb8ee1f33a7e171b66e9a960ed914c303d7ff1"
+  },
+  {
+    "path": "src/components/useTemplates.js",
+    "sha256": "5e20739c59884fe8c7e86d4e44cf113281166f450a7bb76091907c50970fd538"
+  },
+  {
+    "path": "src/components/sections/LivePreview.jsx",
+    "sha256": "aadff72956ab83e3de40d7b5ad7e18969d21d45615d55f387e3447df2e37c1b4"
+  },
+  {
+    "path": "src/components/sections/SectionAptidoes.jsx",
+    "sha256": "9dff15bc55604169110015b3f3496283fbb2dc1f6f1dcbf7190359fff3f2c448"
+  },
+  {
+    "path": "src/components/sections/SectionAptidoesEspeciais.jsx",
+    "sha256": "07373a4e80e57c3557368ef659bf38c4b15d8eb067d1c5d9fa6d9f6974fe1fd1"
+  },
+  {
+    "path": "src/components/sections/SectionArtimanhas.jsx",
+    "sha256": "c09da53c95ebf58bd60f9750bf2f3ac66e61764af471ee24b1acf057f7da8991"
+  },
+  {
+    "path": "src/components/sections/SectionAttributes.jsx",
+    "sha256": "818b32918395eedff9084f91555c6c0cb91cd0f8ae0113cd76c1a271d3829c5a"
+  },
+  {
+    "path": "src/components/sections/SectionCaracteristicas.jsx",
+    "sha256": "624a02dcb202df7bb455c68a91a323c7182a46f9cc1c45df502b141f5eeaaec7"
+  },
+  {
+    "path": "src/components/sections/SectionCaracteristicasUnified.jsx",
+    "sha256": "eddb7b795fbfbcad21e3de03957e5e6ac545f9ab2f20b8a00e1bf3a6c28fb0dc"
+  },
+  {
+    "path": "src/components/sections/SectionCore.jsx",
+    "sha256": "26737d25c965093ad43a2e0fd2e9ddd77e0b520554caeedb4607a90c2bd1580b"
+  },
+  {
+    "path": "src/components/sections/SectionDefenses.jsx",
+    "sha256": "115db385832ce32136fbabe35f805172fb57a1616c8fd4697c10a956758761df"
+  },
+  {
+    "path": "src/components/sections/SectionDerivedStats.jsx",
+    "sha256": "3b853e90caa533909689cd8d0986b82d83e6f8bcd4e2bf6d772b22a7441eccfb"
+  },
+  {
+    "path": "src/components/sections/SectionDotes.jsx",
+    "sha256": "773a583fbf5a140fa433564dc4c81f033fc175c8d270a30134463a0b82527da9"
+  },
+  {
+    "path": "src/components/sections/SectionFeatures.jsx",
+    "sha256": "9219618efca728bfd2e41d2b94e68b6c20581689ec73b15262e1f00e4f0f43cd"
+  },
+  {
+    "path": "src/components/sections/SectionIdentity.jsx",
+    "sha256": "b09fb1536dadccc188d6282bdc69dbd015130181927ecf4707a03c18198f5a63"
+  },
+  {
+    "path": "src/components/sections/SectionSkills.jsx",
+    "sha256": "a7be7e67fa94aa01b0ceb171a379659f7267a3d1dbf0c92daf20f2d29a47cf86"
+  },
+  {
+    "path": "src/components/sections/SectionTreinamentos.jsx",
+    "sha256": "05de010150387ac46f5c2c45c81fc9e10a6631eb37544594f7c12ee54a5badf7"
+  },
+  {
+    "path": "src/components/sections/actions/ActionForm.jsx",
+    "sha256": "99ecce500e4acd3326d029eeefd4a878bb5bce834f9e90e21cc901d10a206a14"
+  },
+  {
+    "path": "src/components/sections/actions/ActionFormFields.jsx",
+    "sha256": "1fb916c51d66a41cb4b0ff8c2241a47919a5a47ad7a77fce228ca74722d4b76b"
+  },
+  {
+    "path": "src/components/sections/actions/ActionItem.jsx",
+    "sha256": "185b61b6ca588a48d793078d2aaeb641fbead275c89ab89e860d76bb0dfb4188"
+  },
+  {
+    "path": "src/components/sections/actions/DomainForm.jsx",
+    "sha256": "0bee253764da3b67b107265328763c2882a801d07d4db594e3e670c7f8d6b6ff"
+  },
+  {
+    "path": "src/components/sections/actions/DomainItem.jsx",
+    "sha256": "3ced253b1f759dcbc8744bc10ab41b544ebda8ad758338f04df33720070ba6c9"
+  },
+  {
+    "path": "src/components/sections/actions/DomainText.jsx",
+    "sha256": "999809785bfefb22d8395c39ccbfb1308be2d15f962a692dbf4553cf7d25d8ee"
+  },
+  {
+    "path": "src/components/sections/actions/SectionActions.jsx",
+    "sha256": "62f7db54c476fff05dcf73995eb09f128a6246576edd79f4f4b29b64aa8a4ae0"
+  },
+  {
+    "path": "src/components/sections/actions/SuporteStandardsPanel.jsx",
+    "sha256": "854fd338b7ea1daf310911b8c33b0297e7f1a56ff887c24f84ccd55eae7ce116"
+  },
+  {
+    "path": "src/data/enciclopedia-digital-0.1.json",
+    "sha256": "db5740cb914a42b39ecdfd6e62dfbb69b997bd1fe0081cf2334a43790aa463ff"
+  },
+  {
+    "path": "src/data/enciclopedia-digital-0.2.json",
+    "sha256": "bd09073ee00a155a5fb10efba79cc64ce86ed1d71b2ce877275787d0d0d07165"
+  },
+  {
+    "path": "src/data/enciclopedia-digital-0.3.json",
+    "sha256": "1cffd244d5063d766d80f8629e35f9fc819f4b2f9f71802eb54b1b3d2973a58a"
+  },
+  {
+    "path": "src/data/enciclopedia-digital-0.4.json",
+    "sha256": "60d48ad3c74fad86aa53b5ffd50cf5983576cc561bf9ed319cc25df18425b7cd"
+  },
+  {
+    "path": "src/data/enciclopedia-digital-0.5.json",
+    "sha256": "a36a92240d4f22e88e90000e6ace58000c8706d5d4bc47f4aee34fc4b7f0aaab"
+  },
+  {
+    "path": "src/systems/afty/afty-adaptacao.js",
+    "sha256": "b3c80b930d788f7dd36ed5481211eecf3313678871b6136b5f20078da33c3ee5"
+  },
+  {
+    "path": "src/systems/afty/afty-addons-atributos.js",
+    "sha256": "a56ac89f7893458ee7cff44104cc44e336150efb2cf2507892f4fa15deae90b1"
+  },
+  {
+    "path": "src/systems/afty/afty-addons-biblioteca.js",
+    "sha256": "62a6087a3275f93f22fdde52bbc4599bff3033003f044d59c2073d5943de5774"
+  },
+  {
+    "path": "src/systems/afty/afty-addons.js",
+    "sha256": "e0d33ecfa05fc28197b96f6f4085e8085340925c9d30d5853307d7fb383bb59b"
+  },
+  {
+    "path": "src/systems/afty/afty-alto-nivel.js",
+    "sha256": "e8d0d50817f58d3c472d890b8275a938f7aa4f684ff30091faab6ffa4dcbadde"
+  },
+  {
+    "path": "src/systems/afty/afty-anatomias.js",
+    "sha256": "a8f97ca0f352b1de12d42113015d103bed56786f0da721a455e54f4b62576ae5"
+  },
+  {
+    "path": "src/systems/afty/afty-aptidoes.js",
+    "sha256": "46d79d67a157566bfc0dc54e78357782b6f099985dc7ea87a8d63237c731b898"
+  },
+  {
+    "path": "src/systems/afty/afty-armas-transformaveis.js",
+    "sha256": "2c23872fdd169705e94b6445ff16b0453389f99bc2277e6548bf5f078df6886e"
+  },
+  {
+    "path": "src/systems/afty/afty-ataque-concentrado.js",
+    "sha256": "111a02c33d0ad64fd46b29466f8340943f13baa01dacbe14cbf0a480a8b3c5a0"
+  },
+  {
+    "path": "src/systems/afty/afty-atributos.js",
+    "sha256": "cb71df492dfb5e47164946c570310eb6346e8831ae404e2373e548681c22e4c9"
+  },
+  {
+    "path": "src/systems/afty/afty-bloodfeast.js",
+    "sha256": "99dc0dfb062b41722ba9fac13f554aaf17d90489bea603c4806cc7f869e37991"
+  },
+  {
+    "path": "src/systems/afty/afty-caracteristicas-amaldicoadas.js",
+    "sha256": "64cb30d1987e927aa60d9428905883fef6e110153397c7f1e27139c37530761a"
+  },
+  {
+    "path": "src/systems/afty/afty-carteira.js",
+    "sha256": "b406ece5c28b33e276658b519cfec3fd078bd259cfc75e0c2f0b7bf8da31f80e"
+  },
+  {
+    "path": "src/systems/afty/afty-catarse.js",
+    "sha256": "ac67a08de3eb6bec1607ce14b2eec1b7ee938a4b00025ba31e5edbe9ca72f2df"
+  },
+  {
+    "path": "src/systems/afty/afty-cofre.js",
+    "sha256": "0e07df93c156a18212b02097df7411b79391e1d3ef70d4e890a46c8e65295936"
+  },
+  {
+    "path": "src/systems/afty/afty-combate-aptidoes.js",
+    "sha256": "72a03a1916eae83b37eb3c15f54cd3471ee2b3b7804cb21f0e7c70cc1a92f403"
+  },
+  {
+    "path": "src/systems/afty/afty-combate-conjurador.js",
+    "sha256": "f3d8424dc2c1d5d973e3edf4e8fc581cfec4d37b8a72706157030b8608052404"
+  },
+  {
+    "path": "src/systems/afty/afty-combate.js",
+    "sha256": "7409a6907c6fb0efb064f017e2f56e0ec05764fdbb92b7ba8de276eb7ecf1da1"
+  },
+  {
+    "path": "src/systems/afty/afty-concessao.js",
+    "sha256": "8650c5c114679d35be6189d5ea42a4ef1b6e37e0e26d32481c5719cefbfbefe3"
+  },
+  {
+    "path": "src/systems/afty/afty-condicoes.js",
+    "sha256": "2f88b5db3dfb46b04a06136cce8a927b182a5def1312b2719f4ec4b383bd50e5"
+  },
+  {
+    "path": "src/systems/afty/afty-contadores-origem.js",
+    "sha256": "919490c6defa5d6cd958310cd4b157db1ca3ab43de51b5bc5effcb079c23f259"
+  },
+  {
+    "path": "src/systems/afty/afty-criacao-armas.js",
+    "sha256": "0fc40254a00ec015afd0bbf3ed518c571681a82289dd9851c8b10d995180a241"
+  },
+  {
+    "path": "src/systems/afty/afty-criacao-equipamentos-armas.js",
+    "sha256": "7c997c345b38da3f4bad4f226e91b82587fa78462087c46554f042810b6bbb22"
+  },
+  {
+    "path": "src/systems/afty/afty-criacao-equipamentos-encantamento.js",
+    "sha256": "5c33dd5b3e21873e8150fe87da4c85b0e7af663470209a63aeba9e9c83179fd5"
+  },
+  {
+    "path": "src/systems/afty/afty-criacao-equipamentos-itens.js",
+    "sha256": "2b20078da38fbb2b667df7ef6895d7c635af897ca712de0da8d38d5fde529ec8"
+  },
+  {
+    "path": "src/systems/afty/afty-criacao-equipamentos.js",
+    "sha256": "44eabde7cca353816fa311fd0807fd62460e1e3170fc1c9768d435b98d978716"
+  },
+  {
+    "path": "src/systems/afty/afty-cura.js",
+    "sha256": "78b8e8e84125d4e21ef550d54f38972c244cb8d4316b04d3a0e47dc97a0d7dfd"
+  },
+  {
+    "path": "src/systems/afty/afty-dano.js",
+    "sha256": "643e8d75e7d77c52fbd04063b4ce4445e268de117d2d880b70f00b1e1ac81f80"
+  },
+  {
+    "path": "src/systems/afty/afty-defesas-dano.js",
+    "sha256": "97ec630454f830971689df5c9e44be52284b0d41aa7aec215a839b57db7b89c7"
+  },
+  {
+    "path": "src/systems/afty/afty-derive.js",
+    "sha256": "1365dcbc53b5350b514eee90cc5e24e60b7eeeded511cb02686ebc98aa43cd28"
+  },
+  {
+    "path": "src/systems/afty/afty-dharma.js",
+    "sha256": "fb9626e45d757d94682b0aadf0dd44c6909fc0ebff9815cd6dc795d809e983a4"
+  },
+  {
+    "path": "src/systems/afty/afty-dominio-simples.js",
+    "sha256": "b872016508b53e2f774a5dc284672eaf7cf6900c0621ce44b35b8053426a9a2e"
+  },
+  {
+    "path": "src/systems/afty/afty-dominios.js",
+    "sha256": "da13809b8b33a4e5998241f320ea2e50834b95e5fc1e162d540917f9b375c346"
+  },
+  {
+    "path": "src/systems/afty/afty-dsl-vocabulario.js",
+    "sha256": "f2fcbc410cfe1fdbe1784d16c19c722d08093fd2f41015836ee2ea9ac3e941c4"
+  },
+  {
+    "path": "src/systems/afty/afty-dsl.js",
+    "sha256": "bf22e8d0eb744f6c8ddb6172ee83f6b5e71951040c267911f4e3935453c04bca"
+  },
+  {
+    "path": "src/systems/afty/afty-efeitos-conteudo.js",
+    "sha256": "a49d3f251cc5042d4821f80c08faccf6516040862e74a4c0987a4a3db42892de"
+  },
+  {
+    "path": "src/systems/afty/afty-efeitos.js",
+    "sha256": "137094a1079a78857f897de43566221573e304c43006be2283aaef5afa363f80"
+  },
+  {
+    "path": "src/systems/afty/afty-equipamentos.js",
+    "sha256": "7105f8e2c048ef3aaeb9213bdfd1271688ca07b846f81ea9e51113af9581f4c1"
+  },
+  {
+    "path": "src/systems/afty/afty-especializacao-config.js",
+    "sha256": "2b26108cf3518cf28bdce029ad337ad5bcec1ef3cc60b245458380bb0e139726"
+  },
+  {
+    "path": "src/systems/afty/afty-especializacoes.js",
+    "sha256": "78d1c78a510f4af1fbbc8c28d117e388bb17e0b2e695ee0b2e5d7054392f6379"
+  },
+  {
+    "path": "src/systems/afty/afty-espinho.js",
+    "sha256": "6d220f6234eab2b7f67ced18892badc087ad071cdca949553a7addf7862ce606"
+  },
+  {
+    "path": "src/systems/afty/afty-estilo-sombras-catalogo.js",
+    "sha256": "6b1ad45439332ca0622b24c309e66bd4472c18d4ddb000930e409eb8b70f393e"
+  },
+  {
+    "path": "src/systems/afty/afty-estilo-sombras.js",
+    "sha256": "4a748fe07874e4b753ef3c95358e63475d22bba91e8fb9087b5ab31135295bd1"
+  },
+  {
+    "path": "src/systems/afty/afty-extras-nativos.js",
+    "sha256": "897e1c03d3e0eff1016977b50236b38255e9b905376729dc478bd05c761e4872"
+  },
+  {
+    "path": "src/systems/afty/afty-feiticos.js",
+    "sha256": "61059e3815d032b1fefbe7b4ddab4e21b91045b573e049ce0650b74e4d12bc59"
+  },
+  {
+    "path": "src/systems/afty/afty-filtro-habilidades.js",
+    "sha256": "955e7565129bb4ce8eb91a92a86ad294e89d8de0d2468ce45f89fa36d5373246"
+  },
+  {
+    "path": "src/systems/afty/afty-forja.js",
+    "sha256": "26c4ddf51c7ea6167ff10bae75db905c9d150ecd5a9d246c5c45db8ba5209326"
+  },
+  {
+    "path": "src/systems/afty/afty-gerais.js",
+    "sha256": "350360b67d1585c6764751904308cb949a8745756296b016ebd3325eb442c76f"
+  },
+  {
+    "path": "src/systems/afty/afty-golpe-especial.js",
+    "sha256": "85fa38d950a51760501291a1fe8b1d8febcf2b2f5527225b91c541ebbf23b07c"
+  },
+  {
+    "path": "src/systems/afty/afty-habilidades.js",
+    "sha256": "426cfdaf2099e8c842e4b3550feb4222c30498c1c894bc4719cd797a3e2e6aa4"
+  },
+  {
+    "path": "src/systems/afty/afty-imitacao.js",
+    "sha256": "f8a7090bd89af29580f7aed4e7469389362b4eefc9a09af4304b47c763bc6d48"
+  },
+  {
+    "path": "src/systems/afty/afty-invocacoes-caracteristicas.js",
+    "sha256": "9cfa3a5c30bd21acc2350fcfb574c043025e2eb0dbdacede7b4d5746d41a9744"
+  },
+  {
+    "path": "src/systems/afty/afty-invocacoes-tipos.js",
+    "sha256": "a0ed826d98516fb8cdef76b3efa04500eb4e6dedbf3499dc5f07e32ef426719e"
+  },
+  {
+    "path": "src/systems/afty/afty-invocacoes.js",
+    "sha256": "d1710bf5662278bd903feaa42bf01aa188fc8854a720851208b26a89657ca305"
+  },
+  {
+    "path": "src/systems/afty/afty-liberacoes.js",
+    "sha256": "228d526b454b55eb8bde883bdaa4ed4159d381ddd543e7ebe1e23cc57bc6f41b"
+  },
+  {
+    "path": "src/systems/afty/afty-lista-lateral.js",
+    "sha256": "d62a97c252a882036e7dd55af14c834484f7ff262199ffa899c2c9cb4f61dbb9"
+  },
+  {
+    "path": "src/systems/afty/afty-manipulacao-ceu.js",
+    "sha256": "523b8f05eac447aabfca0413f29a53ce59080a44a87caaaa1d2534361750fe8b"
+  },
+  {
+    "path": "src/systems/afty/afty-modificacoes-corporais.js",
+    "sha256": "d9e3577585c60cd210cc9d4ed4dae4844bedf294f962e6bb73802e96855ee0d4"
+  },
+  {
+    "path": "src/systems/afty/afty-niveis-dano.js",
+    "sha256": "6af18bcc57c85fd9fde78f5e3029f794751d9dc3c614928dffc42f293ef983da"
+  },
+  {
+    "path": "src/systems/afty/afty-olhinhos-lu.js",
+    "sha256": "001c5701a925998bf9e5d089a002c483a66addc39a19a99c1eba5d1d486c4eb8"
+  },
+  {
+    "path": "src/systems/afty/afty-olhos-agulha.js",
+    "sha256": "e01d797b9734accd4c4b11a9a4896f0510309e0fbaf6e29eb8893282700d36c0"
+  },
+  {
+    "path": "src/systems/afty/afty-origens.js",
+    "sha256": "372306212d5cc388c33e5a5046871a66f6b93d4bddd9974066f400f117135850"
+  },
+  {
+    "path": "src/systems/afty/afty-pacto.js",
+    "sha256": "0719123f733460e658c01094a5dfbcd700d2a9317eed554e4a87e8feb1e7ff7c"
+  },
+  {
+    "path": "src/systems/afty/afty-pericias-catalogo.js",
+    "sha256": "61b6293e552e7ae9d3a2650028c1ca69213330c9d8d8652b729468c4602d0234"
+  },
+  {
+    "path": "src/systems/afty/afty-pericias.js",
+    "sha256": "890456120afecf5f7af12e71ed01aa5c9b800fd44267333e56e2fb9820adb007"
+  },
+  {
+    "path": "src/systems/afty/afty-propriedades-armas.js",
+    "sha256": "5711ce7d754b6e5799ee7a828fcc5efbf26380d539dffc6cd4162d51c662c0f6"
+  },
+  {
+    "path": "src/systems/afty/afty-rascunho.js",
+    "sha256": "b4948ff6ad6fae0d8f9d1f6927422010da8047b9a5e87697e4392f649808d3d1"
+  },
+  {
+    "path": "src/systems/afty/afty-regras-addon.js",
+    "sha256": "2f9f009280984bd4a2a24d0c1817d6de7d11ddf9bce5153f9a32a504490c89f3"
+  },
+  {
+    "path": "src/systems/afty/afty-rituais.js",
+    "sha256": "d4d4da64b5629a22cad65d9d9a34fe2e10de665319b4e0da3146560c8f57dda2"
+  },
+  {
+    "path": "src/systems/afty/afty-schema.js",
+    "sha256": "f4efd2e8c582fc194ae5f118b7b82a8ac79cc8c735daef1f5a6dd31f5926cce8"
+  },
+  {
+    "path": "src/systems/afty/afty-sistema.js",
+    "sha256": "4b07cad1bc7bf36ba1a26d55335cc5207f93af829cc2a90aeb6ef81c6d274b3b"
+  },
+  {
+    "path": "src/systems/afty/afty-talentos.js",
+    "sha256": "fd9f468f62d395e9bb692d5b04f71cb8ba8f85bd63a04c84c934f496b2e55dd2"
+  },
+  {
+    "path": "src/systems/afty/afty-talisma-apice.js",
+    "sha256": "18c4adccc406498f1613bbba2e95d4d6bd754402cb6faa7ca025f527b2789203"
+  },
+  {
+    "path": "src/systems/afty/afty-texto-rico.js",
+    "sha256": "c096f56b5a17aa0a2411e7ec9ba388d578e857283b9aa70d58b0924d4f946a33"
+  },
+  {
+    "path": "src/systems/afty/afty-tita.js",
+    "sha256": "6c4b0ccc43cee22f39ded0826f27d03159cda026990ac4232dd5f210fa60f6b0"
+  },
+  {
+    "path": "src/systems/afty/afty-treinamentos.js",
+    "sha256": "218e16de90f67b7442edb65c45065719dd6929b469370d1901e188134eee0102"
+  },
+  {
+    "path": "src/systems/afty/afty-treinos-especiais.js",
+    "sha256": "1dda93005bb1671f3e8af1e43a043c46c609d03dec294dfcd5b82293b5837727"
+  },
+  {
+    "path": "src/systems/afty/afty-vislumbre-celeste.js",
+    "sha256": "197d9f30b4f7473af024348878c5a8644a3eb5ac02f3ec92ab4407a3c0005e29"
+  },
+  {
+    "path": "src/systems/afty/afty-votos.js",
+    "sha256": "7a3aab93cb1adb2b5f59fe588c85469d7608b8ab6ef5c5eb46747ef06c072735"
+  },
+  {
+    "path": "src/systems/afty/AftyCreatureBuilder.jsx",
+    "sha256": "99ab1df2c547001a2d10380fd30ff0f87ed0cdfe67902fbbd1d628a478474ff4"
+  },
+  {
+    "path": "src/systems/afty/AftyDominioEditor.jsx",
+    "sha256": "cea032994a0c4f4ac6a0b533cd13b8de2a153c6d28dac6d7364c201042d399e3"
+  },
+  {
+    "path": "src/systems/afty/AftyEstiloSombras.jsx",
+    "sha256": "b72a3aa6b6dfe97aadfe402d57c7550426dfd337e7d9cfd39823bd81a34625e2"
+  },
+  {
+    "path": "src/systems/afty/AftyTabAddons.jsx",
+    "sha256": "e75511c7badf6de58e98b408f291e88b59bf3d3cc1d3c0da70d2f477b0b3e3bf"
+  },
+  {
+    "path": "src/systems/afty/AftyTabCarteira.css",
+    "sha256": "e8cd669a5f82d12f74b423dffa3d89868c0a65f3ed740ef8b71328feb7371fa7"
+  },
+  {
+    "path": "src/systems/afty/AftyTabCarteira.jsx",
+    "sha256": "379a30d12e0f28b3b9eb3df2fb802612005d62e357c788e139510f0f3dd2fefe"
+  },
+  {
+    "path": "src/systems/afty/AftyTabCatarse.jsx",
+    "sha256": "58a185ade648b956b91c1f49203dba85bdb84846bbbf67cdccec000840f50014"
+  },
+  {
+    "path": "src/systems/afty/AftyTabDefesas.jsx",
+    "sha256": "e0746b3571c3067d31be92656fba9642df867206adcc5537c2922dbce71967c3"
+  },
+  {
+    "path": "src/systems/afty/AftyTecnicaMaxima.jsx",
+    "sha256": "935b88a1c85166552606454fc99a15fcec6b0d09780b69e9ff06ff807aea17ea"
+  },
+  {
+    "path": "src/systems/afty/creature-schema.js",
+    "sha256": "ded2e5d84463d16fe48a6a9abfdc54e67556a0fb43768e8af7fbee03b204cd75"
+  },
+  {
+    "path": "src/systems/afty/asserts/t-filtro-habilidades.mjs",
+    "sha256": "f02e374c35cb0dec373e6b0b00f738506f712d688f3a5543b403a8de1397051c"
+  },
+  {
+    "path": "src/systems/afty/asserts/t-imitacao.mjs",
+    "sha256": "3cfeb6f90482c5db95d7cf38f93e28452f65899d35d495cf57876ac656f87c6f"
+  },
+  {
+    "path": "src/systems/afty/encontros/afty-encontro.js",
+    "sha256": "4762e67ad1106b77b54caf63eecc226d65f36bf321e4767d711e8005642076f3"
+  },
+  {
+    "path": "src/systems/afty/encontros/AftyEncontro.jsx",
+    "sha256": "be79e971e781d630f1f6f1221e6fa8d60b3f93477f4a89ec37902ded776b4dcc"
+  },
+  {
+    "path": "src/systems/afty/encontros/AftyEncontros.jsx",
+    "sha256": "f7405f8928150a67b900171c34c18a64f11cfd2aa92a4dd08ccf17c635925ecd"
+  },
+  {
+    "path": "src/systems/afty/encontros/encontros.css",
+    "sha256": "3ae351e9bfbd7df2b3fe547e4bc40641c1bf234b23eb1cca72e0378e867a0bfe"
+  },
+  {
+    "path": "src/systems/afty/encontros/fundamento-biblioteca.js",
+    "sha256": "a781ebd2440a4581e1f0f58df1d8a20cea8209e63ae3ae4e741ee7bf3a4ce387"
+  },
+  {
+    "path": "src/systems/afty/encontros/PainelDeCombatente.jsx",
+    "sha256": "526dd99e6dd07e414140adb4b4d637f77281b03f1941062ac9a7dc1113d44ee2"
+  },
+  {
+    "path": "src/systems/afty/encontros/usar-encontro-afty.js",
+    "sha256": "299546983abdf06934cc06b20bb55ec8d3265a4214ddd3acb5bbf248f5aac01a"
+  },
+  {
+    "path": "src/systems/afty/encontros/usar-encontros-afty.js",
+    "sha256": "f8eae3804e729dbd1751c7205bb033b04ee62c372fb07df5295fefdf41e3cb26"
+  },
+  {
+    "path": "src/systems/afty/exports/kenji-sugawara-novo-estilo-sombras.json",
+    "sha256": "8fa646fb3a64ae0bc68be3c2124b5cef97bf0b26d455a83ebbf7f43983611aba"
+  },
+  {
+    "path": "src/systems/afty/exports/kenji-sugawara-site-atualizada.json",
+    "sha256": "1a9f90b6165848da988a1e9dab530d5fe946beb8becc649162e6d450b273019c"
+  },
+  {
+    "path": "src/systems/afty/ficha/AftyFicha.jsx",
+    "sha256": "5bd1a3eafda476e028ef777ff4b830bb5d2ec772c7451478f4a81ee9ba2f2217"
+  },
+  {
+    "path": "src/systems/afty/ficha/AftyFichaClassica.jsx",
+    "sha256": "33f3ae726c8856db5e6324115918c304e1b7b0f5663cf1c897003a9751fea1f7"
+  },
+  {
+    "path": "src/systems/afty/ficha/AftyFichaG2.jsx",
+    "sha256": "2cd20ae65eefb6c00faa423059b47fdea79902b03d270558326b5eb8511fe968"
+  },
+  {
+    "path": "src/systems/afty/ficha/BotaoDeDescanso.jsx",
+    "sha256": "4ea6ef13c580b3c6c5785190fc43e8995d4d4e61aed00cb4511cba4428b1c30a"
+  },
+  {
+    "path": "src/systems/afty/ficha/BuscaGlobal.jsx",
+    "sha256": "c09bdaab5e00349a2289aa80047f0bfe7ce06faa276bbe75625b575563d37e18"
+  },
+  {
+    "path": "src/systems/afty/ficha/CanalPicker.jsx",
+    "sha256": "bdbc4869889034fe396d1972a432706ba2dbbaa19c9f8d48e588d3c81f74552d"
+  },
+  {
+    "path": "src/systems/afty/ficha/ControleExpansao.jsx",
+    "sha256": "841a536171bfbd3d0ee072d18278aab6bdf7ea78eb8d1f86c27f465b7f914d18"
+  },
+  {
+    "path": "src/systems/afty/ficha/ControlesDeArma.jsx",
+    "sha256": "49e3d675bfb7fb96983d43ba13eb49e82427bda3aede6f9cceae6a7d4b6aead5"
+  },
+  {
+    "path": "src/systems/afty/ficha/ControleTecnicaMaxima.jsx",
+    "sha256": "ef96de4272553eab695c1f888cb61b0e26173c3dc189a58eef99fd6654adf77d"
+  },
+  {
+    "path": "src/systems/afty/ficha/fatias.js",
+    "sha256": "c452e98af6ea16e836a7c3d156caee614681b270e1977e5f15ff3fac632874fb"
+  },
+  {
+    "path": "src/systems/afty/ficha/ficha-buffs.js",
+    "sha256": "92634852dd10b53d44910716efb945e4917f7bdc3c02882b6099a83cf46a6722"
+  },
+  {
+    "path": "src/systems/afty/ficha/ficha-conteudo.js",
+    "sha256": "5556ce8cea2bda522d4cdcd0707cddd517ca1b7ec8a23450ed77a76f177ad0cb"
+  },
+  {
+    "path": "src/systems/afty/ficha/ficha-especializacoes.js",
+    "sha256": "3e44bec64385f1301b971d7166925adc08a57b0d7a693495daa99ebaa2729bc2"
+  },
+  {
+    "path": "src/systems/afty/ficha/ficha-estados.js",
+    "sha256": "6db1389953fe9d8e62842745bf128daec4393a7b09098cb9eb6185a05dc32d4b"
+  },
+  {
+    "path": "src/systems/afty/ficha/ficha-opcoes-derive.js",
+    "sha256": "f17a1432b4acbfe8d6d8b1f7b37351a4f1c0024e99dc6ea32eed903d6dc232f0"
+  },
+  {
+    "path": "src/systems/afty/ficha/ficha-preferencias.js",
+    "sha256": "7a3ed3c200509b01c25dd1684e7228fac34ff694782f9309fbd4a63cc25f3125"
+  },
+  {
+    "path": "src/systems/afty/ficha/ficha-recebidos.js",
+    "sha256": "6f5a46c5f34033533ba1961b786c2a092b9c3c4af803b99c1167bdd39c4f8d3b"
+  },
+  {
+    "path": "src/systems/afty/ficha/ficha-rolagem.js",
+    "sha256": "69485d82b98d9419bc90ffab9363fee1735542dbefa17f99ce6d0fda56f607ad"
+  },
+  {
+    "path": "src/systems/afty/ficha/ficha-sessao.js",
+    "sha256": "4b7f3831fb6152f55652845b860724c013c25602fc602a8300c6904b516f1177"
+  },
+  {
+    "path": "src/systems/afty/ficha/ficha-tema.js",
+    "sha256": "6149202010a719b2675e25f055580ad0911d3d3b04a9bbbb92a0dc02ef88957d"
+  },
+  {
+    "path": "src/systems/afty/ficha/ficha.css",
+    "sha256": "555a8eb6a1e0c8c883274691e27ca2aa7b42376a283879b97ef95d0c7c01ab4e"
+  },
+  {
+    "path": "src/systems/afty/ficha/GavetaDeCondicoes.jsx",
+    "sha256": "de019203f4b6fa63a0b1dab6c91c5ac12e75e5f0c6bf726d4f2c5960da099394"
+  },
+  {
+    "path": "src/systems/afty/ficha/GrupoComSubAbas.jsx",
+    "sha256": "376ee0bca4fb976616a44f0724bf152ac37ef0965b9df1e180901d7fef393cf8"
+  },
+  {
+    "path": "src/systems/afty/ficha/ItemDeFicha.jsx",
+    "sha256": "aa45ed9a3dd50144b42f79faec151ed9cf8efa269c8cd98daf85ea03fb01802d"
+  },
+  {
+    "path": "src/systems/afty/ficha/pacotes-aliados.js",
+    "sha256": "5113cae9dd798c2531cb30d356c9b2c897c0aa882cac1555430e566ba584d65d"
+  },
+  {
+    "path": "src/systems/afty/ficha/pacotes-familias.js",
+    "sha256": "8d2213a21dad2446b046e313e7762ca08c48788daa87a721ad772aa0546dbf4d"
+  },
+  {
+    "path": "src/systems/afty/ficha/PainelBloodfeast.jsx",
+    "sha256": "c421089250271d7622894c8f83171467b41f5ccfc779ab202ee6fa612dbed840"
+  },
+  {
+    "path": "src/systems/afty/ficha/PainelDeAdaptacao.jsx",
+    "sha256": "20fc6e9fa20b8d922c0cc315157d4de4dc503afad55fb58d6d85300cdfaee04c"
+  },
+  {
+    "path": "src/systems/afty/ficha/PainelDeAparencia.jsx",
+    "sha256": "7adcc51e49b2f67428c0c9acace1e0054b088a6b69a4c756b5b8612de518d45d"
+  },
+  {
+    "path": "src/systems/afty/ficha/PainelDeConcessao.jsx",
+    "sha256": "c58f27e821fc3815e43e7435d40e07dd341f148f2d032d76217c422673922b5e"
+  },
+  {
+    "path": "src/systems/afty/ficha/PainelDeImitacao.jsx",
+    "sha256": "d196a7e9bbdda07cd4f1d07f8283e86e3d714f080816215b99b091ad10bb89e3"
+  },
+  {
+    "path": "src/systems/afty/ficha/PainelDeRolagens.jsx",
+    "sha256": "d4a7838fa6a42fa1d0d57ba3d0a302fa3443d050a1da0e10553c6b2d360da8a9"
+  },
+  {
+    "path": "src/systems/afty/ficha/PainelDharma.jsx",
+    "sha256": "f69af08c70768df51eb56c163cb22cb696b8010b9fbfd48972ffb9ea59ff8269"
+  },
+  {
+    "path": "src/systems/afty/ficha/PainelDoGolpeEspecial.jsx",
+    "sha256": "7e4265335a3739ceb6b71f8152e78998f7604d9ad66dfb5ca03b6fd4df19a4ed"
+  },
+  {
+    "path": "src/systems/afty/ficha/PainelDoVislumbre.jsx",
+    "sha256": "3cdc4c4b1dc74371190f78a51c81d05903ca4611d3a155021c7d809cc0c95b08"
+  },
+  {
+    "path": "src/systems/afty/ficha/PainelManipulacaoCeu.jsx",
+    "sha256": "c4c52f1cf6ddca9ab42b101b237b13817ad78100f70245008c40f8f7b3e85513"
+  },
+  {
+    "path": "src/systems/afty/ficha/PainelOlhinhosLu.jsx",
+    "sha256": "f2f164f2155747e5c3ccf7ab38f0731df7ae61eeba2e93c2188b83360ff4ccf3"
+  },
+  {
+    "path": "src/systems/afty/ficha/PainelOlhosAgulha.jsx",
+    "sha256": "dbbec7439e83294089dae92b71a16cefce6c5faf9e84c29ddafff96699570558"
+  },
+  {
+    "path": "src/systems/afty/ficha/SubAbas.jsx",
+    "sha256": "ec1c86fafab8a36be5213c2ce56f9f871b86e63930f95fed13dce970b7a59ea1"
+  },
+  {
+    "path": "src/systems/afty/ficha/usar-delta-dos-estados.js",
+    "sha256": "1c40a058ea7431dac4231ce20dbd3b3da9590b04c16412df19841d15666a6f82"
+  },
+  {
+    "path": "src/systems/afty/ficha/usar-destaque.js",
+    "sha256": "f55b8e3e8bad4568a00aa25052f083eadd5642fc2bd16659cdcfb455359b95c0"
+  },
+  {
+    "path": "src/systems/afty/ficha/abas/AbaAcoes.jsx",
+    "sha256": "7ace040415bc13a6e47d6cd132a0d07271b06f922228a9e896a80cd269a47653"
+  },
+  {
+    "path": "src/systems/afty/ficha/abas/AbaBuffs.jsx",
+    "sha256": "f4557ab5c4d0f0badc1de94635bb7859d07a0be724924002cbba3cf6c385b9ea"
+  },
+  {
+    "path": "src/systems/afty/ficha/abas/AbaEquipamentos.jsx",
+    "sha256": "c0c492923ddc1e239eef7893e3fa9a8c5f7c059a8168e2b7fb15e4ec16ddf5c6"
+  },
+  {
+    "path": "src/systems/afty/ficha/abas/AbaHabilidades.jsx",
+    "sha256": "c0a344a8483084e5464f75f2cb1424e5f626192c58d21a76e436f280a8568ce6"
+  },
+  {
+    "path": "src/systems/afty/ficha/abas/AbaInvocacoes.jsx",
+    "sha256": "5847d47c5248d08a88746216039d9416ae3a9f107b772c2353f26be855981fd9"
+  },
+  {
+    "path": "src/systems/afty/ficha/abas/AbaPericias.jsx",
+    "sha256": "ba4679e05eece6d81ac53f7d9d9e0aa27d96368fc3ea853163c07fcb60ca86d6"
+  },
+  {
+    "path": "src/systems/afty/ficha/abas-g2/aba-congelada.jsx",
+    "sha256": "0dd39efd793edacfd5926017d31725bd49946a6ca5e9e54036e0519bce649b0a"
+  },
+  {
+    "path": "src/systems/afty/ficha/abas-g2/abas-g2.css",
+    "sha256": "6dc7571167d697bf48fa3828910fd7c44971ae415af2a326c9c066c49e71e4be"
+  },
+  {
+    "path": "src/systems/afty/ficha/abas-g2/AcoesG2.jsx",
+    "sha256": "09b07396de590106bde271718613a4fdf5d5d029663cb18c663c14623f536956"
+  },
+  {
+    "path": "src/systems/afty/ficha/abas-g2/busca-g2.js",
+    "sha256": "2b9bc6d7499a4050a9bff4673cdf61d0bb0bb8db9fc71f557f86a9d2c7178252"
+  },
+  {
+    "path": "src/systems/afty/ficha/abas-g2/EquipamentosG2.jsx",
+    "sha256": "1f78c0f505b861b64d964c27aea13b0244d52fac39b12468d59cf55c152fd471"
+  },
+  {
+    "path": "src/systems/afty/ficha/abas-g2/mesa-celulas.js",
+    "sha256": "46ecae5bc53a575dee98cb24d71e0e29fe1298d24fa308e7b8ad2a4c951b993c"
+  },
+  {
+    "path": "src/systems/afty/ficha/abas-g2/MesaG2.jsx",
+    "sha256": "3ff289a27d341608c0fd4c915c21e455ded8631487850ef028b205c6061b3eca"
+  },
+  {
+    "path": "src/systems/afty/ficha/abas-g2/pecas-mesa.jsx",
+    "sha256": "7deafee4c94f462cb809995c2e9932d508e524ad0bab4a6ad9b96235860aef87"
+  },
+  {
+    "path": "src/systems/afty/ficha/abas-g2/PericiasG2.jsx",
+    "sha256": "4ae45f53203035d316d6b66364a513cf58c0ac77048d159ccd0f0f719b659481"
+  },
+  {
+    "path": "src/systems/afty/ficha/abas-g2/rapido-g2.js",
+    "sha256": "ca593c28571272db99a3102b3c782772d860bafb2eb244e44453b8ed12aa0cf8"
+  },
+  {
+    "path": "src/systems/afty/ficha/abas-g2/rolagem-g2.js",
+    "sha256": "ffd77830beb74698546c002eececfe6546c6c67a3dae2ecc8bd5c8fda90cbc4a"
+  },
+  {
+    "path": "src/systems/afty/ficha/abas-g2/rolagens-acoes.js",
+    "sha256": "d772c57df517433119c15768c73a3f74eae2d45df642b4ed2a4679c9c722b1a1"
+  },
+  {
+    "path": "src/systems/afty/ficha/abas-g2/usar-destaque-g2.js",
+    "sha256": "3bc66dba8297532d444ab224db040938c5406da4fd275a0310d8da51796b98a6"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/buff-mesa-logica.js",
+    "sha256": "e3864156cb343298b5dd940101748d125e92836c5614df728e0305b705a6793b"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/BuffDeMesaG2.jsx",
+    "sha256": "a58cb908e3fd8c5e7a5525d329002b9f28a7f1be927e8a895f53fc61575713fe"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/CabecalhoG2.jsx",
+    "sha256": "91373077b35d9f41820753d886fa680d219bcd9a3b88d55a19c776ded46dfef5"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/CatalogoG2.jsx",
+    "sha256": "368902a52019e41bf5169f732d41442ea247f0d707a4108830b1ca65c3c48d69"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/CompactaG2.jsx",
+    "sha256": "e61ab2f741b552ac032ebc8a12a3ccc727ab8002b4de780c4c83a6961c891cd6"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/concedido-logica.js",
+    "sha256": "993401cfb37c420fa9733edffdb42bfb62708fb3ed0867704d47408e41b03463"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/ConcedidoG2.jsx",
+    "sha256": "a48b7765b7fd78798fd2039448dad4d7097099da1886dbe06e046c418a6fc808"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/ConsultaG2.jsx",
+    "sha256": "b641b345cbf33c7033b5b17bde064c276c2ef458420bfdae9ba6003d04378b95"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/efeitos-dados.js",
+    "sha256": "1a4fada2681895961a034bc9a26ab47bb3d7825237cc26bc4bc159c841c3bd6b"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/efeitos-g2.css",
+    "sha256": "fb884d72e5924c1b8ce99ffefa56759698f2be81e434cd52e35ce1f3fefd476d"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/EncerradosG2.jsx",
+    "sha256": "a2ee686e810dd5024516667ba73b4d718e827528addfb8716ede62640b72b98a"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/estatisticas.js",
+    "sha256": "1e2658974c38ed0ff735ce6f092b92ad275d15383a6cb3ae148390860e825ef3"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/EstatisticasConfig.jsx",
+    "sha256": "c291814aef10dac441e4d056d906c1ed803e4e19ca68213432ab7902a76eca72"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/exaustao-logica.js",
+    "sha256": "a5ccd32e730bd8581236f39c97b7c4e3a0a22549af6246d378068c473f5bb8ec"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/ExaustaoG2.jsx",
+    "sha256": "b2623125b437ba5e8a062f2057a2a3cb1e905b1bf8b72e3ac19de61481965648"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/exemplos.js",
+    "sha256": "7ad555823eeb9d489f1269d3621da71b1ab29f19a161a94ad9b22723002f6c1b"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/feitico.js",
+    "sha256": "880ae9cebb4ae64b81a81b3245f64bb85619e632d1a4c7273aa3b77ba07e3bfc"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/g2-dados.js",
+    "sha256": "0a18186b2bdc8566a88b7af3365c5d5c210d3235b0ea44eab23353cdd94909c7"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/g2-golpe.js",
+    "sha256": "e53064dfac6f967294cb36faf47efe1cf60fd4aad119b7ca073b22f7162055fd"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/g2-linha-do-tempo.js",
+    "sha256": "b09688e94e928c71b5379ffac574f3e290fc709678747fae8dc14581e819e62d"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/g2-preparo.js",
+    "sha256": "266bf5b0ead1fb5359440691a7d9fc7de5cb387e42b95127e17192f32fcd50e3"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/g2-uso.js",
+    "sha256": "b9c6373deee17f65c058a3eba5562fb4689b3bdfb88a1a3780b88b289aba47c2"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/gestor-logica.js",
+    "sha256": "48adc3d77aa2207606bc45b546a1504e673e5710ba182ab97f28130843fcb1be"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/Gestor.jsx",
+    "sha256": "7454facb9ab0472507b8b66e268a853e59d3beae4ce46b0da30974575d7f635e"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/habilidades-logica.js",
+    "sha256": "6b1f5c7094c81bbd2378a4082edc12a4567b2a96211e5681ce25e95a7dbb4487"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/HabilidadesG2.jsx",
+    "sha256": "265f1ea9ee7620284a979c1102b1b1fc0d9227edcacc0c06ef22c2bbb7f4559f"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/historico-logica.js",
+    "sha256": "9f4c1e8d1519304e34f50ea1254186f8e22acac4685372bcfdf44c5e5deaa596"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/HistoricoSessao.jsx",
+    "sha256": "e059ab89ed4becc45ca6282c29e1532402a960b5585aedd97e654a8ceb6b7e11"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/imitacao-logica.js",
+    "sha256": "ba552b74fa07de56e1d7fb15d2787d7321d53f279e7ca2aca156df3fd2c13b7c"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/ImitacaoG2.jsx",
+    "sha256": "a12dd1f7ab099f71843cafc2c6fc2f3cba1f4768d261caf932e54bbf0ae919a8"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/LinhaDoTempoG2.jsx",
+    "sha256": "81822291ef1254f71c996c677c1b4c1d08b102deb3572d564dbeb7c82b82b120"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/mesa-verbos.js",
+    "sha256": "b90b9b12c5155584bbe4b9a05cacb826d4a596a31510b4581483504210dcf19e"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/operacoes.js",
+    "sha256": "b18ee50eb25e01faf3a15d14297836dcfcb8394d042c5a175b5ab7332870500d"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/PacotesPecas.jsx",
+    "sha256": "7193d265fce84bd2d7c90b6f18daf296c0ac3047ecd52734f75076895b29be1b"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/ParaAliadosG2.jsx",
+    "sha256": "5f6ae7147ffc48b2f4d1cbd16066502690e17d60e2ec77db06155dbb3f45d04c"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/pecas-logica.js",
+    "sha256": "fbe3ac878087a512fa48e5ea1ba8cc534da3efe980eee51bee7c48463ebb20ce"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/pecas.jsx",
+    "sha256": "4438515bebaa19531bfa3d6b667f1ab35226f56ce10051b717982b8654c595c6"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/PecasG2.jsx",
+    "sha256": "a2002b67bb57e07ea00d0cfbe6d87dc7b779c3a2de3199b5653e77509f3c0d71"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/ponte.js",
+    "sha256": "cf7495447809cb233aeeccbd662795466e912db6fee8fd3429591e4ab5d83643"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/preparo-logica.js",
+    "sha256": "7d22c53595a12268aeac711c7cfb3b5298a004cb07427ff965cc7b3479b1e060"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/PreparoG2.jsx",
+    "sha256": "30366c67e544e467bf90b2140fdbe22914aa03c3ba7f7524500c97f237a5a668"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/recebidos.js",
+    "sha256": "f34be6d1be8ca71517fc4587af72a571052d125685ca56345138bb499b5293eb"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/RecebidosG2.jsx",
+    "sha256": "8d7e2a4693a33ee6d25dfd0fcf0359dbb30a845667f57fade098a54766b0cf03"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/repertorio.js",
+    "sha256": "6f9d52d682db9ae69a266a269e058c20589fe980a9c67f596f47f3d3e464d66f"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/rolagem-g2.js",
+    "sha256": "e193d9ab9ae691c516325a6626a5176b3b35861338e341bd57d98d9d824e04af"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/sessao-g2.js",
+    "sha256": "883ae39042b3847b5d76594c406f12f74d2edaf138a8b6ab3d34ba3656665429"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/ui-fontes.jsx",
+    "sha256": "8f115643c00f18d3eff38120a8a956c94d854ae3ac7d961add99d533bcdb37ed"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/useEfeitosG2.js",
+    "sha256": "5ceead6bcdeb7812c63b5835f1fd9c5d47921184eb6f7791ca2375182c6dae94"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/useModeloG2.js",
+    "sha256": "03195507944cbb22a16af2f730fe4d76e957f8d4b01750f96c711fec97f01ffc"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/UsoG2.jsx",
+    "sha256": "0ce0530b66d35122f6e2082904b30a72c68a3ad897c4a204770b341615b0bf56"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/util.js",
+    "sha256": "449dcad9bdce888cd07ac21908aec28790172afd1180733d88517c11a827db32"
+  },
+  {
+    "path": "src/systems/afty/ficha/efeitos/VisaoG2.jsx",
+    "sha256": "37fc3cdb4e26111f471f70670fcb40addda0a4747251c3e5b3507300f13ac2ad"
+  },
+  {
+    "path": "src/systems/afty/ui/armas-transformaveis.jsx",
+    "sha256": "fc0494e41aacbfc888d124cc7f6756290cb65395f80d3b5c12eecf71e8db06a6"
+  },
+  {
+    "path": "src/systems/afty/ui/BancadaDeArma.jsx",
+    "sha256": "a2c00f8b8978aae7ded85a4b4b429bf133afc118912ce39716a200bfca78e64f"
+  },
+  {
+    "path": "src/systems/afty/ui/BancadaDeNiveis.jsx",
+    "sha256": "fd0e397554c0347934008d9c2651fb7b356f407d799e0eccddd732804b9aa4f1"
+  },
+  {
+    "path": "src/systems/afty/ui/BancadaDoEncantamento.jsx",
+    "sha256": "886e0786eefd2e3318ee17a11f588aa2aa009e05b7ebbb486171c5607f78f6ad"
+  },
+  {
+    "path": "src/systems/afty/ui/BloodfeastCard.jsx",
+    "sha256": "3ef7a2b13f49e9d5ce4c597e0b2c7baca7ea552150078230d6c5a1d5dab057e0"
+  },
+  {
+    "path": "src/systems/afty/ui/ConfiguracaoHabilidade.jsx",
+    "sha256": "23fcc9272b3fa43f681a3721cf506e9aa038188779e480dfba649981541cce5f"
+  },
+  {
+    "path": "src/systems/afty/ui/EquipamentosCriados.jsx",
+    "sha256": "084ce3ff78abf11bfcdee724a797536e9c07ee4e9eac790505b45b2738beed6d"
+  },
+  {
+    "path": "src/systems/afty/ui/EscolhaTipoEncantamento.jsx",
+    "sha256": "da73f53be7ca1681d252c3c3e8339e90172756ef9d37334db7c3d1dcdee5759e"
+  },
+  {
+    "path": "src/systems/afty/ui/espinho.css",
+    "sha256": "bf8991a91e993607751d060c4376e1c17923b699a3c84b0e95e1bcacf93db9db"
+  },
+  {
+    "path": "src/systems/afty/ui/EspinhoCard.jsx",
+    "sha256": "037c0e6be1fc177d5b4ae8001d1aef28412eeda0d85128f019c382e4f00e0b97"
+  },
+  {
+    "path": "src/systems/afty/ui/feitico-tipo.jsx",
+    "sha256": "83f67f12da48f22f8063ec75dc9e70cfdcc2cb19f28fc92c82a2376a89d376f6"
+  },
+  {
+    "path": "src/systems/afty/ui/FiltroDeHabilidades.jsx",
+    "sha256": "1b398b38ae88c0e2e686922926a87a79f94df5a079eeb73ee61e95eb8b48f5d7"
+  },
+  {
+    "path": "src/systems/afty/ui/fontes.jsx",
+    "sha256": "d2a55925b2555eb462a3f2e3207b1c9a06fe0884841483ee1eccab8fe5e6740c"
+  },
+  {
+    "path": "src/systems/afty/ui/formato.js",
+    "sha256": "1aff33db54fefcca40a2f334f5e6ec659089a56b337c724c85d34ea88114d3e0"
+  },
+  {
+    "path": "src/systems/afty/ui/guarda.jsx",
+    "sha256": "b2f8d46e14d60bebf645aa83f5ee91370aae71e3b719b12be2f09001b7d70c42"
+  },
+  {
+    "path": "src/systems/afty/ui/icones-afty.jsx",
+    "sha256": "a5d0f4ce5f0ef4eb2b4ff89233b4a9e532e9dec61e3c59282c967abc02ad5993"
+  },
+  {
+    "path": "src/systems/afty/ui/lanterna-coletora.webp",
+    "sha256": "6283e973423e5e7d38b1f03b0203401f8467948dc4519de62370547358e4075e"
+  },
+  {
+    "path": "src/systems/afty/ui/lanterna.css",
+    "sha256": "01e882853791d936b797768dacd980615df9a1103b368420c5c234a83f3fa534"
+  },
+  {
+    "path": "src/systems/afty/ui/ListaLateral.jsx",
+    "sha256": "6e0920491b51da53b6533c9747fc90a6495e96ce380ee9a56bd6e438af08d0db"
+  },
+  {
+    "path": "src/systems/afty/ui/OlhinhosLuCard.jsx",
+    "sha256": "3a52bb2ef414937a833382b0c0c60127ebe53e6bcbb19825ced72ef4915092ac"
+  },
+  {
+    "path": "src/systems/afty/ui/OlhosAgulhaCard.jsx",
+    "sha256": "2fa7dc3017d629fe226752281ff6733346a2b597d2d1d6736795c964376b556f"
+  },
+  {
+    "path": "src/systems/afty/ui/PainelDoCofre.jsx",
+    "sha256": "870edb2a89223c15cd47f4dbfa97141c6f6214319df288b0b623f5cc81efbe25"
+  },
+  {
+    "path": "src/systems/afty/ui/PrimitivasDeAddon.jsx",
+    "sha256": "f87a533a6691f3e0875c3270ae097b1aa3750b7e277110ff904472b1477eb918"
+  },
+  {
+    "path": "src/systems/afty/ui/primitivos.jsx",
+    "sha256": "3cd39041d8a844477431367cee4bb1532942e02ebd8ce18683018bf816dcccfa"
+  },
+  {
+    "path": "src/systems/afty/ui/TextoRico.jsx",
+    "sha256": "7211f2edd1d6b1b151c2ae1c03e2d8e603e6b32fe98bbc5242488d14da373924"
+  },
+  {
+    "path": "src/systems/afty/ui/tita.jsx",
+    "sha256": "4f8b8a528d43ce4b01782c9efeaf98cf5845428319fb2c51575ee2afcda13748"
+  },
+  {
+    "path": "src/systems/afty/ui/usar-primitiva.js",
+    "sha256": "5b083840084e391f205d73d36dcbccd66478670574ec5615eeea2abf8087e5bc"
+  },
+  {
+    "path": "src/systems/afty/ui/visibilidade-da-aba.js",
+    "sha256": "450d73f81b0e55cc409dd06acdeb7bec91d544a0a00e03eb31400981e84a9d14"
+  },
+  {
+    "path": "src/systems/afty/ui/VislumbreCard.jsx",
+    "sha256": "316852d6716ce3adcbb909d926dd0df39005e8ddb865ff0c1d974b156f5f754b"
+  },
+  {
+    "path": "src/systems/afty/ui/vital.jsx",
+    "sha256": "9dfebaa4bc1e41b2e9ab679148e7c6f00cd1f9af7e3ffeea83b15a8be85c782c"
+  },
+  {
+    "path": "dist/alter-lucielos-olhos-ciano.png",
+    "sha256": "724dcad2aedca43e68e933a73ee5d9a01933072e99a059c1d36612ba6a96a012"
+  },
+  {
+    "path": "dist/favicon.svg",
+    "sha256": "61bc9a161de58248288e6905425d7180f0624c2865007b97d763fdac12043a66"
+  },
+  {
+    "path": "dist/icons.svg",
+    "sha256": "b45fa506195cfcdef406ba9f0c77b36ddc1a7c224040926ec70abc2fdea7b93a"
+  },
+  {
+    "path": "dist/index.html",
+    "sha256": "53347b14dd4ee29bcfc13a4c89a9168d00f8bfdf4fa1a38497b0aa9bc062f01b"
+  },
+  {
+    "path": "dist/assets/AftyFichaG2-DRODBq43.css",
+    "sha256": "a43e89f4544af39b92c0cd7962f978a3e30836d19e43fa54b26dbe2b7eda5157"
+  },
+  {
+    "path": "dist/assets/AftyFichaG2-SMzJ3gJw.js",
+    "sha256": "1681fd752fed1c0abe369d95aff915a8f4bea1013e7582c9aacf7caa0e3366b0"
+  },
+  {
+    "path": "dist/assets/index-CaOM8unz.js",
+    "sha256": "b5d2629806b3062521a877da6db00f837257cef652ba8b3b49aa7c0d830ea191"
+  },
+  {
+    "path": "dist/assets/index-D6nxKjFv.css",
+    "sha256": "fc0051bfdc7f238777a5133d863aa069336bed2261308e2b09e2281ca2cfed07"
+  },
+  {
+    "path": "dist/assets/lanterna-coletora-BtjSWi8x.webp",
+    "sha256": "6283e973423e5e7d38b1f03b0203401f8467948dc4519de62370547358e4075e"
+  },
+  {
+    "path": "dist/assets/usar-delta-dos-estados-DTfMtJPA.js",
+    "sha256": "86c79415884504745143334210fdb5ca24c937feca171ff440602a50327adced"
+  },
+  {
+    "path": "dist/assets/usar-delta-dos-estados-oZ0IrZu-.css",
+    "sha256": "91e2d4259903732ebdad151d15b397f86cb8dcd1f947f32d2fdbd08ec063cf6c"
+  },
+  {
+    "path": "dist/docs/F&M 2.5.2 - Grimório das Maldições.pdf",
+    "sha256": "b9b7799e6101e702e5a1514c8ac4651b6b14319cad4004ab6c63da33c7567952"
+  },
+  {
+    "path": "dist/docs/F&M 2.5.2 - Livro de Regras.pdf",
+    "sha256": "5c9c01a6ab24baa250fa9605c866cf37056af0ba908a32896af90a81aa731294"
+  },
+  {
+    "path": "dist/docs/README.md",
+    "sha256": "2c32882db90a97d53b0d902bbb7b0902cb91f964718ed540e91ada4b923cd117"
+  }
+]

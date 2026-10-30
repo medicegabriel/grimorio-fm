@@ -1,0 +1,15 @@
+vite v8.0.8 building client environment for production...
+[2K
+transforming...✓ 1776 modules transformed.
+rendering chunks...
+computing gzip size...
+.audit/loja-catarse-20261025/correcao-ficha/dist/index.html                                      1.01 kB │ gzip:   0.56 kB
+.audit/loja-catarse-20261025/correcao-ficha/dist/assets/lanterna-coletora-BtjSWi8x.webp         29.13 kB
+.audit/loja-catarse-20261025/correcao-ficha/dist/assets/usar-delta-dos-estados-oZ0IrZu-.css     77.20 kB │ gzip:  13.86 kB
+.audit/loja-catarse-20261025/correcao-ficha/dist/assets/AftyFichaG2-BeAIPXjg.css               100.90 kB │ gzip:  17.45 kB
+.audit/loja-catarse-20261025/correcao-ficha/dist/assets/index-BMjETKwi.css                     152.54 kB │ gzip:  22.12 kB
+.audit/loja-catarse-20261025/correcao-ficha/dist/assets/AftyFichaG2-CkwmQKmn.js                383.75 kB │ gzip: 107.87 kB
+.audit/loja-catarse-20261025/correcao-ficha/dist/assets/usar-delta-dos-estados-SDbLtYOq.js   1,769.89 kB │ gzip: 518.57 kB
+.audit/loja-catarse-20261025/correcao-ficha/dist/assets/index-CmV-OfB5.js                    4,381.76 kB │ gzip: 858.07 kB
+
+✓ built in 5.09s

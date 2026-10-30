@@ -6,6 +6,9 @@ import { ESTADO_APICE, RODADAS_APICE } from "../../afty-talisma-apice";
 import { fichaDaCondicao, listaComE } from "../../afty-condicoes";
 import { IconeDaCondicao, IconeDoDono } from "../../ui/icones-afty";
 import { getCanal } from "../../afty-efeitos";
+import { AFTY_PERICIAS } from "../../afty-pericias-catalogo";
+import { AFTY_RESISTENCIAS } from "../../afty-schema";
+import { temPrazoPorBeneficio, textoDoBeneficio, textoDaDuracao } from "../pacotes-aliados";
 import { INV_EFEITO_CANAL_GRUPOS } from "../../afty-invocacoes";
 import CanalPicker from "../CanalPicker";
 import PainelDeConcessao from "../PainelDeConcessao";
@@ -120,7 +123,20 @@ function ContadorDeExaustao({ valor, onValor }) {
 /* O rótulo de uma linha de buff: o canal, e para quem ele vai quando é de
    invocação. Os dois espaços de canal repetem nomes, então ler o rótulo no
    catálogo errado mostraria outro número com o mesmo nome. */
+/* O registro de Fonte Externa (`rec`, inclusive a instância de um Pacote para Aliados) não tem `canal` nem `expr` no topo: a linha diz de quem veio
+   e os benefícios. Só módulos FOLHA aqui: esta aba entra cedo, com a ficha diária. */
+const nomeDoAlvoLeve = (tipo, id) => (tipo === "pericia" ? AFTY_PERICIAS.find((p) => p.id === id)?.nome
+  : tipo === "tr" ? AFTY_RESISTENCIAS.find((r) => r.value === id)?.label : null) ?? null;
+const textoDoRegistro = (b) => (b.beneficios ?? []).filter((x) => x?.canal && Number(x.valor)).map((x) => textoDoBeneficio(x, nomeDoAlvoLeve)).join(", ");
+
 function rotuloDoBuff(buff, invocacoes = []) {
+  /* O prazo de uma instância de pacote que a ficha não conta em rodadas ("Por Um Ataque", "Enquanto Estiver no Alcance") vai no rótulo: o "∞" das
+     rodadas sozinho diria que ela não acaba (PA-I2, 2026-10-20). */
+  if (buff?.rec) {
+    /* Com prazo por benefício (PA-I3) cada benefício diz o seu no valor da linha, com as rodadas que restam. */
+    const prazo = buff.rodadas == null && buff.pacote?.duracao && !temPrazoPorBeneficio(buff) ? textoDaDuracao(buff.pacote.duracao) : null;
+    return [buff.aplicadoPor ? `De ${buff.aplicadoPor}` : "Recebido", prazo].filter(Boolean).join(" · ");
+  }
   if (buff?.escopo !== "invocacao") return getCanal(buff?.canal)?.label ?? buff?.canal;
   const def = INV_EFEITO_CANAL_GRUPOS.flatMap((g) => g.itens).find((c) => c.id === buff.canal);
   const canal = def?.label ?? buff.canal;
@@ -1381,12 +1397,13 @@ export default function AbaBuffs({
       <Secao titulo="Buffs de Mesa">
         {buffs.map((b) => (
           <div key={b.id} className="afty-linha px-2.5 py-1.5 flex items-center gap-2">
-            <span className="flex-1 min-w-0 text-[12px] font-semibold truncate">{b.nome}</span>
+            {/* O nome não some atrás do rótulo e do valor longos de uma instância de pacote (prazo e condição): quem encolhe primeiro são eles. */}
+            <span className="flex-1 min-w-0 text-[12px] font-semibold truncate" style={{ minWidth: "min(8rem, 35%)" }}>{b.nome ?? b.origemNome}</span>
             {/* O buff da invocação lê o rótulo no catálogo DELA, e diz para
                 quem vai: sem isso um "+2 Defesa" na lista não se distingue do
                 da criatura. */}
-            <span className="afty-rotulo text-[10px] truncate">{rotuloDoBuff(b, invocacoes)}</span>
-            <span className="afty-valor text-[12px]">{b.expr}</span>
+            <span className="afty-rotulo text-[10px] truncate" title={rotuloDoBuff(b, invocacoes)}>{rotuloDoBuff(b, invocacoes)}</span>
+            <span className="afty-valor text-[12px] truncate" title={b.rec ? textoDoRegistro(b) : undefined}>{b.rec ? textoDoRegistro(b) : b.expr}</span>
             <Rodadas
               nome={b.nome}
               rodadas={b.rodadas}

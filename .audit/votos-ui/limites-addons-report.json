@@ -1,0 +1,24 @@
+[
+  {
+    "sistema": "afty",
+    "automaticoProtegido": true,
+    "excedentePreservado": true,
+    "limiteBT": true,
+    "modeloDisponivel": true,
+    "modeloAbreAoAdicionar": true,
+    "modeloSemDuplicacao": true,
+    "persistencia": true,
+    "errors": []
+  },
+  {
+    "sistema": "player",
+    "automaticoProtegido": true,
+    "excedentePreservado": true,
+    "limiteBT": true,
+    "modeloDisponivel": true,
+    "modeloAbreAoAdicionar": true,
+    "modeloSemDuplicacao": true,
+    "persistencia": true,
+    "errors": []
+  }
+]

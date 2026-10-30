@@ -5,6 +5,8 @@
   "autor": "Templas",
   "paraRaw": "afty",
   "descricao": "Origem Vampiro da Máscara de Pedra: Regeneração Vampírica com Doses, 17 Características de Anatomia, Fraquezas, Consumir Sangue, Patente, Criar Vampiro, Máscara de Pedra, Pedra Aja, Coleta de Sangue e 5 Talentos de Origem. Os Recursos de Origem (Doses Consumidas, Dias sem Sangue e Pedra Aja) ficam na aba Origem e ligam a Patente, a fome e as Fraquezas sozinhos.",
+  "resumo": "Origem de vampiro com Doses, Patente, Fraquezas e 17 Características de Anatomia",
+  "categoria": "origens",
   "permite": [
     "caracteristicasAmaldicoadas"
   ],

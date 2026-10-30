@@ -3,6 +3,9 @@
   "nome": "Lime - Novo Estilo das Sombras",
   "versao": "1.0.0",
   "paraRaw": "afty",
+  "descricao": "Cinco técnicas do Novo Estilo das Sombras do Lime: Provocação Desafiadora, Anulação, Poder da Amizade, Aumento de Defesa e Reforçada. O Pacto dá +4 de base e limite 30 em Força e Constituição, e limite 6 em Inteligência e Sabedoria. Os testes opostos de Provocação e Anulação ficam para a mesa.",
+  "resumo": "Cinco técnicas do Novo Estilo das Sombras do Lime e o Pacto que sobe Força e Constituição",
+  "categoria": "tecnicas",
   "libera": ["estiloSombras"],
   "atributos": {
     "forca": { "nome": "Pacto ( restrição congenita )", "bonusBase": 4, "limiteFixo": 30 },

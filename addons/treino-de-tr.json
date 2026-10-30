@@ -1,0 +1,58 @@
+{
+  "id": "treino-de-tr",
+  "nome": "Treino de TR",
+  "versao": "1.1.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Treino de TR com as mesmas etapas e custos do Treino de Perícia, aplicado ao Teste de Resistência escolhido.",
+  "resumo": "Treino de um Teste de Resistência escolhido, com as etapas e os custos do Treino de Perícia",
+  "categoria": "treinos",
+  "acrescenta": {
+    "treinamentos": [
+      {
+        "id": "tr",
+        "nome": "Treino de TR",
+        "repetivel": true,
+        "incluiIntegridade": true,
+        "alvoTipo": "tr",
+        "alvoLabel": "Teste de Resistência",
+        "resumo": "O treino de TR envolve o domínio de um Teste de Resistência específico, permitindo ao feiticeiro dominá-lo em níveis superiores. Este treinamento pode ser repetido, mas escolhendo um Teste de Resistência diferente, o qual ainda não tenha sido treinado.",
+        "etapas": [
+          {
+            "n": 1,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Escolha um Teste de Resistência: você se torna treinado nele. Caso já seja, adicione +1 em testes usando-o.",
+            "efeitos": [
+              { "canal": "proficienciaTRCasoJa", "alvo": "instancia", "expr": "1" }
+            ]
+          },
+          {
+            "n": 2,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Duas vezes por descanso, você pode escolher realizar o Teste de Resistência escolhido para o treinamento com vantagem."
+          },
+          {
+            "n": 3,
+            "focos": 1,
+            "requisito": null,
+            "beneficio": "Você se torna mestre no Teste de Resistência escolhido. Caso já seja, adicione +2 em testes usando-o.",
+            "efeitos": [
+              { "canal": "proficienciaTRCasoJa", "alvo": "instancia", "expr": "2" }
+            ]
+          },
+          {
+            "n": 4,
+            "focos": 2,
+            "requisito": null,
+            "beneficio": "Uma vez por cena, você pode escolher obter um sucesso garantido no Teste de Resistência escolhido, desde que não seja um teste oposto."
+          }
+        ],
+        "completo": {
+          "beneficio": "Você treinou e se dedicou tanto a um Teste de Resistência específico, que ele se tornou algo no qual você é quase incapaz de falhar, mantendo uma consistência invejável. Caso realize o Teste de Resistência escolhido e obtenha um resultado menor do que 5 no d20, você pode o rolar novamente e manter o melhor resultado."
+        }
+      }
+    ]
+  }
+}

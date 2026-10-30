@@ -281,7 +281,7 @@ export const COMBATE_ESTADOS = [
     tipo: "opcao",
     familia: "postura",
     opcoes: POSTURA_OPCOES,
-    requerHabilidade: "cmb_assumir_postura",
+    requerHabilidade: ["cmb_assumir_postura", "cmb_mestre_da_postura", "cmb_aprender_postura"],
   },
   {
     id: "postura2",
@@ -486,6 +486,8 @@ export const COMBATE_ESTADOS = [
     tipo: "bool",
     requerHabilidade: "res_surto_de_adrenalina",
   },
+  { id: "resAtaqueExtra", label: "Ataque Extra", tipo: "bool", requerHabilidade: "res_ataque_extra" },
+  { id: "precisaoForcada", label: "Precisão Forçada", tipo: "bool", requerHabilidade: "res_precisao_forcada", umaVezPorRodada: true },
   {
     id: "adrenalinaAbsoluta",
     label: "Surto · Absoluto",
@@ -495,6 +497,7 @@ export const COMBATE_ESTADOS = [
   },
   {
     id: "adrenalinaAtletismo",
+    soConfiguracao: true,
     label: "Surto · Bônus em Atletismo",
     tipo: "faixa",
     min: 0,
@@ -523,6 +526,10 @@ export const COMBATE_ESTADOS = [
     label: "Foco no Inimigo",
     tipo: "bool",
     requerHabilidade: "res_foco_no_inimigo",
+  },
+  {
+    id: "contraFeiticaria", label: "Contra Técnica ou Aptidão", tipo: "bool",
+    requerEscolha: "res_dadiva_indulgente_a_feiticaria",
   },
   {
     id: "cacadorFeiticeiros",
@@ -789,7 +796,13 @@ const listaExtras = (params) => (Array.isArray(params?.estadosExtras) ? params.e
 export function resolveCombate(creature, params = {}) {
   const c = (creature?.combate && typeof creature.combate === "object") ? creature.combate : {};
   const ativo = !!c.ativo;
-  const extras = listaExtras(params);
+  /* O teto de um `multi` pode depender da escolha de OUTRO estado
+     (`maxPorOpcao`): as perícias do Auxiliar são 2, 3 ou 4 conforme a graduação
+     dele. Lê o valor CRU, e não o resolvido, porque o teto também tem de chegar à
+     tela fora de combate. Graduação ausente ou inválida dá teto zero. */
+  const extras = listaExtras(params).map((e) => (e.maxPorOpcao
+    ? { ...e, maxSelecionados: Math.max(0, Math.trunc(Number(e.maxPorOpcao.tetos?.[c[e.maxPorOpcao.estado]]) || 0)) }
+    : e));
   // Insistência (10°): "até que realize um descanso longo, o seu nível máximo
   // de empolgação abaixa em 1". Não passa por canal porque é TETO de um estado,
   // e o estado é montado antes de o Motor rodar. Mesmo caso do brutalidadePE.
@@ -983,6 +996,7 @@ export const comDonoDeBancada = (lista, dono) => (Array.isArray(lista) ? lista :
  * enxergando os aliados que ela já tinha.
  */
 export function estadoVisivel(estado, combate = {}) {
+  if (estado?.soConfiguracao) return false;
   if (!estado?.requerEstado) return true;
   const proprio = combate[estado.id];
   if (Array.isArray(proprio) ? proprio.length > 0 : proprio) return true;

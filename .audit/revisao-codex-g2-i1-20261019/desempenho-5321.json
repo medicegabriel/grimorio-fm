@@ -1,0 +1,411 @@
+{
+  "geradoEm": "2026-10-19T21:41:53.030Z",
+  "base": "http://127.0.0.1:5321",
+  "casos": [
+    {
+      "id": "minamoto-feitico-g2",
+      "checks": [
+        {
+          "id": "AC ligado uma vez e custo publico de intensidade 1",
+          "ok": true,
+          "dados": [
+            178,
+            177
+          ]
+        },
+        {
+          "id": "confirmacao recebe ponteiro e pinta",
+          "ok": true,
+          "dados": [
+            {
+              "chave": "especializacao:cmb_ataque_concentrado",
+              "inicio": 1734.699999988079,
+              "phase": "confirmacao",
+              "pintura": 1763.5999999642372,
+              "ponteiroAteDoisQuadros": 28.899999976158142
+            },
+            {
+              "chave": "especializacao:cmb_espirito_de_luta",
+              "inicio": 2715.399999976158,
+              "phase": "sequencia",
+              "pintura": 2753.399999976158,
+              "ponteiroAteDoisQuadros": 38
+            },
+            {
+              "chave": "especializacao:cnj_conhecimento_aplicado",
+              "inicio": 3015.5,
+              "phase": "sequencia",
+              "pintura": 3050.800000011921,
+              "ponteiroAteDoisQuadros": 35.30000001192093
+            }
+          ]
+        },
+        {
+          "id": "sequencia mantem os tres efeitos",
+          "ok": true
+        },
+        {
+          "id": "nenhuma pausa de dois segundos na amostra",
+          "ok": true
+        },
+        {
+          "id": "sem erro de pagina",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "tarefasLongas": [],
+        "cliques": [
+          {
+            "chave": "especializacao:cmb_ataque_concentrado",
+            "inicio": 1734.699999988079,
+            "phase": "confirmacao",
+            "pintura": 1763.5999999642372,
+            "ponteiroAteDoisQuadros": 28.899999976158142
+          },
+          {
+            "chave": "especializacao:cmb_espirito_de_luta",
+            "inicio": 2715.399999976158,
+            "phase": "sequencia",
+            "pintura": 2753.399999976158,
+            "ponteiroAteDoisQuadros": 38
+          },
+          {
+            "chave": "especializacao:cnj_conhecimento_aplicado",
+            "inicio": 3015.5,
+            "phase": "sequencia",
+            "pintura": 3050.800000011921,
+            "ponteiroAteDoisQuadros": 35.30000001192093
+          }
+        ]
+      },
+      "energia": [
+        178,
+        177
+      ],
+      "estadosFinais": {
+        "ativo": true,
+        "golpeAtroz": true,
+        "golpeLetal": true,
+        "golpePenetrante": true,
+        "golpeLongo": true,
+        "golpePreciso": true,
+        "arteExecucaoSilenciosa": true,
+        "arteGolpeDescendente": true,
+        "espiritoDeLuta": true,
+        "espiritoIncansavel": false,
+        "arsenalCiclico": true,
+        "duelando": true,
+        "lutandoComDuasArmas": true,
+        "conhecimentoAplicado": 1,
+        "ataqueConcentrado": 1
+      }
+    },
+    {
+      "id": "minamoto-feitico-classica",
+      "checks": [
+        {
+          "id": "tres encerramentos reais sem operacao perdida",
+          "ok": true,
+          "dados": [
+            "Desligar Golpe Especial · Atroz",
+            "Desligar Golpe Especial · Letal",
+            "Desligar Golpe Especial · Penetrante"
+          ]
+        },
+        {
+          "id": "nenhuma pausa de dois segundos na amostra",
+          "ok": true
+        },
+        {
+          "id": "sem erro de pagina",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "estados": [
+        "Desligar Golpe Especial · Atroz",
+        "Desligar Golpe Especial · Letal",
+        "Desligar Golpe Especial · Penetrante"
+      ],
+      "medidas": {
+        "tarefasLongas": [],
+        "cliques": []
+      },
+      "energia": [
+        178,
+        178
+      ],
+      "estadosFinais": {
+        "ativo": true,
+        "golpeAtroz": false,
+        "golpeLetal": false,
+        "golpePenetrante": false,
+        "golpeLongo": true,
+        "golpePreciso": true,
+        "arteExecucaoSilenciosa": true,
+        "arteGolpeDescendente": true,
+        "espiritoDeLuta": false,
+        "espiritoIncansavel": false,
+        "arsenalCiclico": true,
+        "duelando": true,
+        "lutandoComDuasArmas": true,
+        "conhecimentoAplicado": 0,
+        "ataqueConcentrado": 0
+      }
+    },
+    {
+      "id": "minamoto-catalogo-g2",
+      "checks": [
+        {
+          "id": "AC ligado uma vez e custo publico de intensidade 1",
+          "ok": true,
+          "dados": [
+            178,
+            177
+          ]
+        },
+        {
+          "id": "confirmacao recebe ponteiro e pinta",
+          "ok": true,
+          "dados": [
+            {
+              "chave": "especializacao:cmb_ataque_concentrado",
+              "inicio": 1723.5,
+              "phase": "confirmacao",
+              "pintura": 1766.5,
+              "ponteiroAteDoisQuadros": 43
+            },
+            {
+              "chave": "especializacao:cmb_espirito_de_luta",
+              "inicio": 2792.400000035763,
+              "phase": "sequencia",
+              "pintura": 2828.800000011921,
+              "ponteiroAteDoisQuadros": 36.39999997615814
+            },
+            {
+              "chave": "especializacao:cnj_conhecimento_aplicado",
+              "inicio": 3325,
+              "phase": "sequencia",
+              "pintura": 3358.100000023842,
+              "ponteiroAteDoisQuadros": 33.10000002384186
+            }
+          ]
+        },
+        {
+          "id": "sequencia mantem os tres efeitos",
+          "ok": true
+        },
+        {
+          "id": "nenhuma pausa de dois segundos na amostra",
+          "ok": true
+        },
+        {
+          "id": "sem erro de pagina",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "tarefasLongas": [
+          {
+            "duracao": 71,
+            "inicio": 1623.300000011921,
+            "phase": "confirmacao"
+          },
+          {
+            "duracao": 70,
+            "inicio": 2691.5,
+            "phase": "sequencia"
+          },
+          {
+            "duracao": 72,
+            "inicio": 3204.699999988079,
+            "phase": "sequencia"
+          }
+        ],
+        "cliques": [
+          {
+            "chave": "especializacao:cmb_ataque_concentrado",
+            "inicio": 1723.5,
+            "phase": "confirmacao",
+            "pintura": 1766.5,
+            "ponteiroAteDoisQuadros": 43
+          },
+          {
+            "chave": "especializacao:cmb_espirito_de_luta",
+            "inicio": 2792.400000035763,
+            "phase": "sequencia",
+            "pintura": 2828.800000011921,
+            "ponteiroAteDoisQuadros": 36.39999997615814
+          },
+          {
+            "chave": "especializacao:cnj_conhecimento_aplicado",
+            "inicio": 3325,
+            "phase": "sequencia",
+            "pintura": 3358.100000023842,
+            "ponteiroAteDoisQuadros": 33.10000002384186
+          }
+        ]
+      },
+      "energia": [
+        178,
+        177
+      ],
+      "estadosFinais": {
+        "ativo": true,
+        "golpeAtroz": true,
+        "golpeLetal": true,
+        "golpePenetrante": true,
+        "golpeLongo": true,
+        "golpePreciso": true,
+        "arteExecucaoSilenciosa": true,
+        "arteGolpeDescendente": true,
+        "espiritoDeLuta": true,
+        "espiritoIncansavel": false,
+        "arsenalCiclico": true,
+        "duelando": true,
+        "lutandoComDuasArmas": true,
+        "conhecimentoAplicado": 1,
+        "ataqueConcentrado": 1
+      }
+    },
+    {
+      "id": "minamoto-catalogo-classica",
+      "checks": [
+        {
+          "id": "tres encerramentos reais sem operacao perdida",
+          "ok": true,
+          "dados": [
+            "Desligar Golpe Especial · Atroz",
+            "Desligar Golpe Especial · Letal",
+            "Desligar Golpe Especial · Penetrante"
+          ]
+        },
+        {
+          "id": "nenhuma pausa de dois segundos na amostra",
+          "ok": true
+        },
+        {
+          "id": "sem erro de pagina",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "estados": [
+        "Desligar Golpe Especial · Atroz",
+        "Desligar Golpe Especial · Letal",
+        "Desligar Golpe Especial · Penetrante"
+      ],
+      "medidas": {
+        "tarefasLongas": [
+          {
+            "duracao": 55,
+            "inicio": 1321.3999999761581,
+            "phase": "estados-classica"
+          }
+        ],
+        "cliques": []
+      },
+      "energia": [
+        178,
+        178
+      ],
+      "estadosFinais": {
+        "ativo": true,
+        "golpeAtroz": false,
+        "golpeLetal": false,
+        "golpePenetrante": false,
+        "golpeLongo": true,
+        "golpePreciso": true,
+        "arteExecucaoSilenciosa": true,
+        "arteGolpeDescendente": true,
+        "espiritoDeLuta": false,
+        "espiritoIncansavel": false,
+        "arsenalCiclico": true,
+        "duelando": true,
+        "lutandoComDuasArmas": true,
+        "conhecimentoAplicado": 0,
+        "ataqueConcentrado": 0
+      }
+    },
+    {
+      "id": "calamidade-catalogo-g2",
+      "checks": [
+        {
+          "id": "AC ligado uma vez e custo publico de intensidade 1",
+          "ok": true,
+          "dados": [
+            218,
+            217
+          ]
+        },
+        {
+          "id": "confirmacao recebe ponteiro e pinta",
+          "ok": true,
+          "dados": [
+            {
+              "chave": "especializacao:cmb_ataque_concentrado",
+              "inicio": 1667.699999988079,
+              "phase": "confirmacao",
+              "pintura": 1701,
+              "ponteiroAteDoisQuadros": 33.30000001192093
+            }
+          ]
+        },
+        {
+          "id": "nenhuma pausa de dois segundos na amostra",
+          "ok": true
+        },
+        {
+          "id": "sem erro de pagina",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "tarefasLongas": [],
+        "cliques": [
+          {
+            "chave": "especializacao:cmb_ataque_concentrado",
+            "inicio": 1667.699999988079,
+            "phase": "confirmacao",
+            "pintura": 1701,
+            "ponteiroAteDoisQuadros": 33.30000001192093
+          }
+        ]
+      },
+      "energia": [
+        218,
+        217
+      ],
+      "estadosFinais": {
+        "ativo": true,
+        "umComArma": true,
+        "brutalidade": true,
+        "ataqueInconsequente": true,
+        "impactoMisto": true,
+        "furiaVinganca": true,
+        "imprudenciaMotivadora": true,
+        "golpeAtroz": true,
+        "golpeLetal": true,
+        "arteExecucaoSilenciosa": true,
+        "espiritoDeLuta": false,
+        "auraExcessiva": true,
+        "auraElemental": true,
+        "faiscasNegras": true,
+        "canalizarEmGolpe": true,
+        "espiritoIncansavel": false,
+        "conhecimentoAplicado": 0,
+        "ataqueConcentrado": 1
+      }
+    }
+  ],
+  "falhas": []
+}

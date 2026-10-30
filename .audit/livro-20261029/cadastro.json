@@ -1,0 +1,4699 @@
+{
+  "comparacaoDeNomes": [
+    {
+      "nome": "LUTADOR",
+      "page": 49,
+      "line": 1139,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "CARACTERÍSTICAS DE ESPECIALIZAÇÃO",
+      "page": 49,
+      "line": 1147,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "HABILIDADES BASE DE LUTADOR",
+      "page": 49,
+      "line": 1161,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "TABELA DE NÍVEL DO LUTADOR",
+      "page": 52,
+      "line": 1224,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "HABILIDADES DO LUTADOR",
+      "page": 53,
+      "line": 1256,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "HABILIDADES DE 2° NÍVEL",
+      "page": 53,
+      "line": 1260,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "APARAR ATAQUE",
+      "page": 53,
+      "line": 1262,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_aparar_ataque"
+      ]
+    },
+    {
+      "nome": "APARAR PROJÉTEIS",
+      "page": 53,
+      "line": 1265,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_aparar_projeteis"
+      ]
+    },
+    {
+      "nome": "ATAQUE INCONSEQUENTE",
+      "page": 53,
+      "line": 1268,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_ataque_inconsequente",
+        "res_ataque_inconsequente"
+      ]
+    },
+    {
+      "nome": "CAMINHO DA MÃO VAZIA",
+      "page": 53,
+      "line": 1271,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_caminho_da_mao_vazia"
+      ]
+    },
+    {
+      "nome": "COMPLEMENTAÇÃO MARCIAL",
+      "page": 53,
+      "line": 1274,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_complementacao_marcial"
+      ]
+    },
+    {
+      "nome": "DEBOCHE DESCONCERTANTE",
+      "page": 53,
+      "line": 1277,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_deboche_desconcertante"
+      ]
+    },
+    {
+      "nome": "DEDICAÇÃO EM ARMA",
+      "page": 53,
+      "line": 1280,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_dedicacao_em_arma"
+      ]
+    },
+    {
+      "nome": "ESQUIVA RÁPIDA",
+      "page": 53,
+      "line": 1283,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_esquiva_rapida"
+      ]
+    },
+    {
+      "nome": "FINTA MELHORADA",
+      "page": 53,
+      "line": 1286,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_finta_melhorada",
+        "res_finta_melhorada"
+      ]
+    },
+    {
+      "nome": "IMPACTO MISTO",
+      "page": 54,
+      "line": 1291,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_impacto_misto"
+      ]
+    },
+    {
+      "nome": "KIAI INTIMIDADOR",
+      "page": 54,
+      "line": 1295,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_kiai_intimidador"
+      ]
+    },
+    {
+      "nome": "MÃOS AMALDIÇOADAS",
+      "page": 54,
+      "line": 1299,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_maos_amaldicoadas"
+      ]
+    },
+    {
+      "nome": "PUXAR UM AR",
+      "page": 54,
+      "line": 1303,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_puxar_um_ar"
+      ]
+    },
+    {
+      "nome": "QUEBRANDO TUDO",
+      "page": 54,
+      "line": 1307,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_quebrando_tudo"
+      ]
+    },
+    {
+      "nome": "RESISTIR",
+      "page": 54,
+      "line": 1311,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_resistir"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 4º NÍVEL",
+      "page": 55,
+      "line": 1317,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "AÇÃO ÁGIL",
+      "page": 55,
+      "line": 1319,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_acao_agil",
+        "res_acao_agil"
+      ]
+    },
+    {
+      "nome": "ACROBATA",
+      "page": 55,
+      "line": 1322,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_acrobata"
+      ]
+    },
+    {
+      "nome": "ATACAR E RECUAR",
+      "page": 55,
+      "line": 1325,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_atacar_e_recuar"
+      ]
+    },
+    {
+      "nome": "BRUTALIDADE",
+      "page": 55,
+      "line": 1328,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_brutalidade"
+      ]
+    },
+    {
+      "nome": "DEFESA MARCIAL",
+      "page": 55,
+      "line": 1331,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_defesa_marcial"
+      ]
+    },
+    {
+      "nome": "DEVOLVER PROJÉTEIS",
+      "page": 55,
+      "line": 1334,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_devolver_projeteis"
+      ]
+    },
+    {
+      "nome": "FLUXO",
+      "page": 55,
+      "line": 1337,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_fluxo"
+      ]
+    },
+    {
+      "nome": "FÚRIA DA VINGANÇA",
+      "page": 55,
+      "line": 1340,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_furia_da_vinganca"
+      ]
+    },
+    {
+      "nome": "IMPRUDÊNCIA MOTIVADORA",
+      "page": 55,
+      "line": 1343,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_imprudencia_motivadora"
+      ]
+    },
+    {
+      "nome": "MÚSCULOS DESENVOLVIDOS",
+      "page": 56,
+      "line": 1348,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_musculos_desenvolvidos"
+      ]
+    },
+    {
+      "nome": "REDIRECIONAR FORÇA",
+      "page": 56,
+      "line": 1352,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_redirecionar_forca"
+      ]
+    },
+    {
+      "nome": "SEGURA PRA MIM",
+      "page": 56,
+      "line": 1356,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_segura_pra_mim"
+      ]
+    },
+    {
+      "nome": "SOBREVIVENTE",
+      "page": 56,
+      "line": 1360,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_sobrevivente"
+      ]
+    },
+    {
+      "nome": "VOADORA",
+      "page": 56,
+      "line": 1364,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_voadora"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 6° NÍVEL",
+      "page": 57,
+      "line": 1370,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "APRIMORAMENTO MARCIAL",
+      "page": 57,
+      "line": 1372,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_aprimoramento_marcial"
+      ]
+    },
+    {
+      "nome": "ATAQUE EXTRA",
+      "page": 57,
+      "line": 1375,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_ataque_extra",
+        "cmb_ataque_extra",
+        "res_ataque_extra"
+      ]
+    },
+    {
+      "nome": "BRUTALIDADE SANGUINÁRIA",
+      "page": 57,
+      "line": 1378,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_brutalidade_sanguinaria"
+      ]
+    },
+    {
+      "nome": "CORPO CALEJADO",
+      "page": 57,
+      "line": 1381,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_corpo_calejado"
+      ]
+    },
+    {
+      "nome": "ELIMINAR E CONTINUAR",
+      "page": 57,
+      "line": 1384,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_eliminar_e_continuar"
+      ]
+    },
+    {
+      "nome": "FOGUETE SEM RÉ",
+      "page": 57,
+      "line": 1387,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_foguete_sem_re"
+      ]
+    },
+    {
+      "nome": "GOLPE DA MÃO ABERTA",
+      "page": 57,
+      "line": 1390,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_golpe_da_mao_aberta"
+      ]
+    },
+    {
+      "nome": "GOLPE DA MÃO ABERTA",
+      "page": 57,
+      "line": 1391,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_golpe_da_mao_aberta"
+      ]
+    },
+    {
+      "nome": "IGNORAR DOR",
+      "page": 57,
+      "line": 1395,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_ignorar_dor"
+      ]
+    },
+    {
+      "nome": "MANOBRAS FINALIZADORAS",
+      "page": 57,
+      "line": 1398,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_manobras_finalizadoras"
+      ]
+    },
+    {
+      "nome": "PODER CORPORAL",
+      "page": 58,
+      "line": 1403,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_poder_corporal"
+      ]
+    },
+    {
+      "nome": "POTÊNCIA SUPERIOR",
+      "page": 58,
+      "line": 1407,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_potencia_superior"
+      ]
+    },
+    {
+      "nome": "SEQUÊNCIA INCONSEQUENTE",
+      "page": 58,
+      "line": 1411,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_sequencia_inconsequente"
+      ]
+    },
+    {
+      "nome": "UM COM A ARMA",
+      "page": 58,
+      "line": 1415,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_um_com_a_arma"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 8° NÍVEL",
+      "page": 59,
+      "line": 1421,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "APTIDÕES DE LUTA",
+      "page": 59,
+      "line": 1423,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_aptidoes_de_luta"
+      ]
+    },
+    {
+      "nome": "ATAQUES RESSOANTES",
+      "page": 59,
+      "line": 1426,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_ataques_ressoantes"
+      ]
+    },
+    {
+      "nome": "BRUTALIDADE APRIMORADA",
+      "page": 59,
+      "line": 1429,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_brutalidade_aprimorada"
+      ]
+    },
+    {
+      "nome": "FEITIÇO E PUNHO",
+      "page": 59,
+      "line": 1432,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_feitico_e_punho"
+      ]
+    },
+    {
+      "nome": "GOLPEAR BRECHA",
+      "page": 59,
+      "line": 1435,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_golpear_brecha"
+      ]
+    },
+    {
+      "nome": "OPORTUNISTA",
+      "page": 59,
+      "line": 1438,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_oportunista"
+      ]
+    },
+    {
+      "nome": "PANCADA DESNORTEANTE",
+      "page": 59,
+      "line": 1441,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_pancada_desnorteante"
+      ]
+    },
+    {
+      "nome": "PUNHOS LETAIS",
+      "page": 59,
+      "line": 1444,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_punhos_letais"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 10° NÍVEL",
+      "page": 60,
+      "line": 1449,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "ALMA QUIETA",
+      "page": 60,
+      "line": 1451,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_alma_quieta"
+      ]
+    },
+    {
+      "nome": "CORPO SINCRONIZADO",
+      "page": 60,
+      "line": 1454,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_corpo_sincronizado"
+      ]
+    },
+    {
+      "nome": "EMPOLGAR-SE",
+      "page": 60,
+      "line": 1457,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_empolgar_se"
+      ]
+    },
+    {
+      "nome": "IMPACTO DEMOLIDOR",
+      "page": 60,
+      "line": 1460,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_impacto_demolidor"
+      ]
+    },
+    {
+      "nome": "IMPACTO DEMOLIDOR",
+      "page": 60,
+      "line": 1461,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_impacto_demolidor"
+      ]
+    },
+    {
+      "nome": "INSISTÊNCIA",
+      "page": 60,
+      "line": 1465,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_insistencia"
+      ]
+    },
+    {
+      "nome": "MENTE EM PAZ",
+      "page": 60,
+      "line": 1468,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_mente_em_paz"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 12° NÍVEL",
+      "page": 61,
+      "line": 1473,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "ARMAS ABSOLUTAS",
+      "page": 61,
+      "line": 1475,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_armas_absolutas"
+      ]
+    },
+    {
+      "nome": "CORPO ARSENAL",
+      "page": 61,
+      "line": 1478,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_corpo_arsenal"
+      ]
+    },
+    {
+      "nome": "SEJA ÁGUA",
+      "page": 61,
+      "line": 1481,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_seja_agua"
+      ]
+    },
+    {
+      "nome": "TEMPESTADE SUFOCANTE",
+      "page": 61,
+      "line": 1484,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_tempestade_sufocante"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 16° NÍVEL",
+      "page": 61,
+      "line": 1487,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "CORPO SUPREMO",
+      "page": 61,
+      "line": 1489,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_corpo_supremo"
+      ]
+    },
+    {
+      "nome": "DURO NA QUEDA",
+      "page": 61,
+      "line": 1492,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_duro_na_queda"
+      ]
+    },
+    {
+      "nome": "MANOBRAS FINALIZADORAS",
+      "page": 62,
+      "line": 1497,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_manobras_finalizadoras"
+      ]
+    },
+    {
+      "nome": "ESPECIALISTA EM COMBATE",
+      "page": 63,
+      "line": 1509,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "CARACTERÍSTICAS DE ESPECIALIZAÇÃO",
+      "page": 63,
+      "line": 1515,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "HABILIDADES BASE DE ESPECIALISTA EM COMBATE",
+      "page": 63,
+      "line": 1529,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "TABELA DE NÍVEL DO ESPECIALISTA EM COMBATE",
+      "page": 66,
+      "line": 1606,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "HABILIDADES DO ESPECIALISTA EM COMBATE",
+      "page": 67,
+      "line": 1641,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "HABILIDADES DE 2° NÍVEL",
+      "page": 67,
+      "line": 1645,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "ARREMESSOS POTENTES",
+      "page": 67,
+      "line": 1647,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_arremessos_potentes"
+      ]
+    },
+    {
+      "nome": "ARSENAL CÍCLICO",
+      "page": 67,
+      "line": 1650,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_arsenal_ciclico"
+      ]
+    },
+    {
+      "nome": "ASSUMIR POSTURA",
+      "page": 67,
+      "line": 1653,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_assumir_postura"
+      ]
+    },
+    {
+      "nome": "DISPAROS SINCRONIZADOS",
+      "page": 67,
+      "line": 1656,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_disparos_sincronizados"
+      ]
+    },
+    {
+      "nome": "ESCUDEIRO AGRESSIVO",
+      "page": 67,
+      "line": 1659,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_escudeiro_agressivo"
+      ]
+    },
+    {
+      "nome": "EXTENSÃO DO CORPO",
+      "page": 67,
+      "line": 1662,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_extensao_do_corpo"
+      ]
+    },
+    {
+      "nome": "FLANQUEADOR SUPERIOR",
+      "page": 67,
+      "line": 1665,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_flanqueador_superior"
+      ]
+    },
+    {
+      "nome": "GOLPE FALSO",
+      "page": 67,
+      "line": 1668,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_golpe_falso"
+      ]
+    },
+    {
+      "nome": "GOLPES POTENTES",
+      "page": 68,
+      "line": 1673,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_golpes_potentes"
+      ]
+    },
+    {
+      "nome": "INDOMÁVEL",
+      "page": 68,
+      "line": 1676,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_indomavel"
+      ]
+    },
+    {
+      "nome": "PISTOLEIRO INICIADO",
+      "page": 68,
+      "line": 1679,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_pistoleiro_iniciado"
+      ]
+    },
+    {
+      "nome": "POSICIONAMENTO AMEAÇADOR",
+      "page": 68,
+      "line": 1682,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_posicionamento_ameacador"
+      ]
+    },
+    {
+      "nome": "PRECISÃO DEFINITIVA",
+      "page": 68,
+      "line": 1685,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_precisao_definitiva"
+      ]
+    },
+    {
+      "nome": "PRESENÇA SUPRIMIDA",
+      "page": 68,
+      "line": 1688,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_presenca_suprimida"
+      ]
+    },
+    {
+      "nome": "REVIGORAR",
+      "page": 68,
+      "line": 1691,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_revigorar"
+      ]
+    },
+    {
+      "nome": "TIRO FALSO",
+      "page": 68,
+      "line": 1694,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_tiro_falso"
+      ]
+    },
+    {
+      "nome": "ZONA DE RISCO",
+      "page": 68,
+      "line": 1697,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_zona_de_risco"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 4° NÍVEL",
+      "page": 69,
+      "line": 1702,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "APRENDER POSTURA",
+      "page": 69,
+      "line": 1704,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_aprender_postura"
+      ]
+    },
+    {
+      "nome": "ARMAS ESCOLHIDAS",
+      "page": 69,
+      "line": 1707,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_armas_escolhidas"
+      ]
+    },
+    {
+      "nome": "ARREMESSO RÁPIDO",
+      "page": 69,
+      "line": 1710,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_arremesso_rapido"
+      ]
+    },
+    {
+      "nome": "TÉCNICAS DE AVANÇO",
+      "page": 69,
+      "line": 1713,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_tecnicas_de_avanco"
+      ]
+    },
+    {
+      "nome": "BUSCAR OPORTUNIDADE",
+      "page": 69,
+      "line": 1716,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_buscar_oportunidade"
+      ]
+    },
+    {
+      "nome": "COMPENSAR ERRO",
+      "page": 69,
+      "line": 1719,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_compensar_erro"
+      ]
+    },
+    {
+      "nome": "ESPECIALISTA EM ESCUDO",
+      "page": 69,
+      "line": 1722,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_especialista_em_escudo"
+      ]
+    },
+    {
+      "nome": "ESPÍRITO DE LUTA",
+      "page": 69,
+      "line": 1725,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_espirito_de_luta"
+      ]
+    },
+    {
+      "nome": "GRUPO FAVORITO",
+      "page": 69,
+      "line": 1728,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_grupo_favorito"
+      ]
+    },
+    {
+      "nome": "GUARDA ESTUDADA",
+      "page": 69,
+      "line": 1731,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_guarda_estudada"
+      ]
+    },
+    {
+      "nome": "MENTE OCULTA",
+      "page": 69,
+      "line": 1734,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_mente_oculta"
+      ]
+    },
+    {
+      "nome": "PREPARO IMEDIATO",
+      "page": 70,
+      "line": 1739,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_preparo_imediato"
+      ]
+    },
+    {
+      "nome": "RECARGA RÁPIDA",
+      "page": 70,
+      "line": 1743,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_recarga_rapida"
+      ]
+    },
+    {
+      "nome": "USO RÁPIDO",
+      "page": 70,
+      "line": 1747,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_uso_rapido"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 6° NÍVEL",
+      "page": 71,
+      "line": 1753,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "ACERVO AMPLO",
+      "page": 71,
+      "line": 1755,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_acervo_amplo"
+      ]
+    },
+    {
+      "nome": "APRIMORAMENTO ESPECIALIZADO",
+      "page": 71,
+      "line": 1758,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_aprimoramento_especializado"
+      ]
+    },
+    {
+      "nome": "ATAQUE EXTRA",
+      "page": 71,
+      "line": 1761,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_ataque_extra",
+        "cmb_ataque_extra",
+        "res_ataque_extra"
+      ]
+    },
+    {
+      "nome": "CRÍTICO MELHORADO",
+      "page": 71,
+      "line": 1764,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_critico_melhorado"
+      ]
+    },
+    {
+      "nome": "CRÍTICO POTENTE",
+      "page": 71,
+      "line": 1767,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_critico_potente"
+      ]
+    },
+    {
+      "nome": "FEITIÇARIA IMPLEMENTADA",
+      "page": 71,
+      "line": 1770,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_feiticaria_implementada"
+      ]
+    },
+    {
+      "nome": "FLUXO PERFEITO",
+      "page": 71,
+      "line": 1773,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_fluxo_perfeito"
+      ]
+    },
+    {
+      "nome": "OLHOS DE ÁGUIA",
+      "page": 71,
+      "line": 1776,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_olhos_de_aguia"
+      ]
+    },
+    {
+      "nome": "MANEJO ESPECIAL",
+      "page": 71,
+      "line": 1779,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_manejo_especial"
+      ]
+    },
+    {
+      "nome": "MARCAR INIMIGO",
+      "page": 71,
+      "line": 1782,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_marcar_inimigo"
+      ]
+    },
+    {
+      "nome": "MIRA DESTRUTIVA",
+      "page": 72,
+      "line": 1787,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_mira_destrutiva"
+      ]
+    },
+    {
+      "nome": "PREPARAÇÃO RÁPIDA",
+      "page": 72,
+      "line": 1791,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_preparacao_rapida"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 8° NÍVEL",
+      "page": 73,
+      "line": 1797,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "APTIDÕES DE COMBATE",
+      "page": 73,
+      "line": 1799,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_aptidoes_de_combate"
+      ]
+    },
+    {
+      "nome": "TÉCNICAS DA FORÇA",
+      "page": 73,
+      "line": 1802,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_tecnicas_da_forca"
+      ]
+    },
+    {
+      "nome": "DESTRUIÇÃO DUPLA",
+      "page": 73,
+      "line": 1805,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_destruicao_dupla"
+      ]
+    },
+    {
+      "nome": "ESPÍRITO INCANSÁVEL",
+      "page": 73,
+      "line": 1808,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_espirito_incansavel"
+      ]
+    },
+    {
+      "nome": "PISTOLEIRO AVANÇADO",
+      "page": 73,
+      "line": 1811,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_pistoleiro_avancado"
+      ]
+    },
+    {
+      "nome": "RICOCHETE CONSTANTE",
+      "page": 73,
+      "line": 1814,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_ricochete_constante"
+      ]
+    },
+    {
+      "nome": "SOMBRA VIVA",
+      "page": 73,
+      "line": 1817,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_sombra_viva"
+      ]
+    },
+    {
+      "nome": "SURTO DE AÇÃO",
+      "page": 73,
+      "line": 1820,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_surto_de_acao"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 10° NÍVEL",
+      "page": 74,
+      "line": 1825,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "ANÁLISE ACELERADA",
+      "page": 74,
+      "line": 1827,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_analise_acelerada"
+      ]
+    },
+    {
+      "nome": "ARMAS PERFEITAS",
+      "page": 74,
+      "line": 1830,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_armas_perfeitas"
+      ]
+    },
+    {
+      "nome": "ASSASSINAR",
+      "page": 74,
+      "line": 1833,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_assassinar",
+        "res_assassinar"
+      ]
+    },
+    {
+      "nome": "ATAQUE CONCENTRADO",
+      "page": 74,
+      "line": 1836,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_ataque_concentrado"
+      ]
+    },
+    {
+      "nome": "CHUVA DE ARREMESSOS",
+      "page": 74,
+      "line": 1839,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_chuva_de_arremessos"
+      ]
+    },
+    {
+      "nome": "POTÊNCIA ANTES DE CAIR",
+      "page": 74,
+      "line": 1842,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_potencia_antes_de_cair"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 12° NÍVEL",
+      "page": 75,
+      "line": 1847,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "TÉCNICAS DE SAQUE",
+      "page": 75,
+      "line": 1849,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_tecnicas_de_saque"
+      ]
+    },
+    {
+      "nome": "CICLAGEM ABSOLUTA",
+      "page": 75,
+      "line": 1852,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_ciclagem_absoluta"
+      ]
+    },
+    {
+      "nome": "MANEJO ÚNICO",
+      "page": 75,
+      "line": 1855,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_manejo_unico"
+      ]
+    },
+    {
+      "nome": "MESTRE PISTOLEIRO",
+      "page": 75,
+      "line": 1858,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_mestre_pistoleiro"
+      ]
+    },
+    {
+      "nome": "SINCRONIA PERFEITA",
+      "page": 75,
+      "line": 1861,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_sincronia_perfeita"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 16° NÍVEL",
+      "page": 75,
+      "line": 1864,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "CRÍTICO APERFEIÇOADO",
+      "page": 75,
+      "line": 1866,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_critico_aperfeicoado"
+      ]
+    },
+    {
+      "nome": "MESTRE DA POSTURA",
+      "page": 75,
+      "line": 1869,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_mestre_da_postura"
+      ]
+    },
+    {
+      "nome": "ASSUMIR POSTURA",
+      "page": 76,
+      "line": 1874,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_assumir_postura"
+      ]
+    },
+    {
+      "nome": "ARTES DO COMBATE",
+      "page": 77,
+      "line": 1898,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_artes_do_combate"
+      ]
+    },
+    {
+      "nome": "ESPECIALISTA EM TÉCNICA",
+      "page": 78,
+      "line": 1920,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "CARACTERÍSTICAS DE ESPECIALIZAÇÃO",
+      "page": 78,
+      "line": 1926,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "HABILIDADES BASE DE ESPECIALISTA EM TÉCNICA",
+      "page": 78,
+      "line": 1940,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "TABELA DE NÍVEL DO ESPECIALISTA EM TÉCNICA",
+      "page": 81,
+      "line": 1994,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "HABILIDADES DO ESPECIALISTA EM TÉCNICAS",
+      "page": 82,
+      "line": 2029,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "HABILIDADES DE 2° NÍVEL",
+      "page": 82,
+      "line": 2033,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "ABASTECIDO PELO SANGUE",
+      "page": 82,
+      "line": 2035,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_abastecido_pelo_sangue"
+      ]
+    },
+    {
+      "nome": "CONHECIMENTO APLICADO",
+      "page": 82,
+      "line": 2038,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_conhecimento_aplicado"
+      ]
+    },
+    {
+      "nome": "CONJURAÇÃO DEFENSIVA",
+      "page": 82,
+      "line": 2041,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_conjuracao_defensiva"
+      ]
+    },
+    {
+      "nome": "ECONOMIA DE ENERGIA",
+      "page": 82,
+      "line": 2044,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_economia_de_energia"
+      ]
+    },
+    {
+      "nome": "EXPLOSÃO ENCADEADA",
+      "page": 82,
+      "line": 2047,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_explosao_encadeada"
+      ]
+    },
+    {
+      "nome": "FINTA AMALDIÇOADA",
+      "page": 82,
+      "line": 2050,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_finta_amaldicoada"
+      ]
+    },
+    {
+      "nome": "MENTE PLÁCIDA",
+      "page": 82,
+      "line": 2053,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_mente_placida"
+      ]
+    },
+    {
+      "nome": "NOVA HABILIDADE",
+      "page": 82,
+      "line": 2056,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_nova_habilidade"
+      ]
+    },
+    {
+      "nome": "PERTURBAÇÃO AMALDIÇOADA",
+      "page": 83,
+      "line": 2061,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_perturbacao_amaldicoada"
+      ]
+    },
+    {
+      "nome": "REAÇÃO RÁPIDA",
+      "page": 83,
+      "line": 2065,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_reacao_rapida",
+        "res_reacao_rapida"
+      ]
+    },
+    {
+      "nome": "REFORÇO AMALDIÇOADO",
+      "page": 83,
+      "line": 2069,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_reforco_amaldicoado"
+      ]
+    },
+    {
+      "nome": "SOBRECARREGAR",
+      "page": 83,
+      "line": 2073,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_sobrecarregar"
+      ]
+    },
+    {
+      "nome": "TÉCNICAS DE COMBATE",
+      "page": 83,
+      "line": 2077,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_tecnicas_de_combate",
+        "sup_tecnicas_de_combate",
+        "ctr_tecnicas_de_combate"
+      ]
+    },
+    {
+      "nome": "ZELO RECOMPENSADOR",
+      "page": 83,
+      "line": 2081,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_zelo_recompensador"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 4° NÍVEL",
+      "page": 84,
+      "line": 2087,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "ATÉ A ÚLTIMA GOTA",
+      "page": 84,
+      "line": 2089,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_ate_a_ultima_gota"
+      ]
+    },
+    {
+      "nome": "CICLAGEM MALDITA",
+      "page": 84,
+      "line": 2092,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_ciclagem_maldita"
+      ]
+    },
+    {
+      "nome": "DETERMINAÇÃO ENERGIZADA",
+      "page": 84,
+      "line": 2095,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_determinacao_energizada"
+      ]
+    },
+    {
+      "nome": "ENERGIA FOCALIZADA",
+      "page": 84,
+      "line": 2098,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_energia_focalizada"
+      ]
+    },
+    {
+      "nome": "ENERGIA INACABÁVEL",
+      "page": 84,
+      "line": 2101,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_energia_inacabavel"
+      ]
+    },
+    {
+      "nome": "EPIFANIA AMALDIÇOADA",
+      "page": 84,
+      "line": 2104,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_epifania_amaldicoada"
+      ]
+    },
+    {
+      "nome": "EXPLOSÃO DEFENSIVA",
+      "page": 84,
+      "line": 2107,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_explosao_defensiva"
+      ]
+    },
+    {
+      "nome": "FEITIÇO FAVORITO",
+      "page": 84,
+      "line": 2110,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_feitico_favorito"
+      ]
+    },
+    {
+      "nome": "FEITIÇOS REFINADOS",
+      "page": 84,
+      "line": 2113,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_feiticos_refinados"
+      ]
+    },
+    {
+      "nome": "MOVIMENTOS IMPREVISÍVEIS",
+      "page": 84,
+      "line": 2116,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_movimentos_imprevisiveis"
+      ]
+    },
+    {
+      "nome": "NATURALIDADE COM RITUAIS",
+      "page": 84,
+      "line": 2119,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_naturalidade_com_rituais"
+      ]
+    },
+    {
+      "nome": "PREPARAÇÃO DE TÉCNICAS",
+      "page": 85,
+      "line": 2124,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_preparacao_de_tecnicas"
+      ]
+    },
+    {
+      "nome": "OLHAR PRECISO",
+      "page": 85,
+      "line": 2128,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_olhar_preciso"
+      ]
+    },
+    {
+      "nome": "SACRIFÍCIO PELA ENERGIA",
+      "page": 85,
+      "line": 2132,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_sacrificio_pela_energia"
+      ]
+    },
+    {
+      "nome": "VERSATILIDADE EM FUNDAMENTOS",
+      "page": 85,
+      "line": 2136,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_versatilidade_em_fundamentos"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 6º NÍVEL",
+      "page": 86,
+      "line": 2142,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "BASTIÃO INTERIOR",
+      "page": 86,
+      "line": 2144,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_bastiao_interior"
+      ]
+    },
+    {
+      "nome": "COMBATE AMALDIÇOADO",
+      "page": 86,
+      "line": 2147,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_combate_amaldicoado"
+      ]
+    },
+    {
+      "nome": "CORREÇÃO",
+      "page": 86,
+      "line": 2150,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_correcao"
+      ]
+    },
+    {
+      "nome": "DOMINÂNCIA EM FEITIÇO",
+      "page": 86,
+      "line": 2153,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_dominancia_em_feitico"
+      ]
+    },
+    {
+      "nome": "ELEVAR APTIDÃO",
+      "page": 86,
+      "line": 2156,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_elevar_aptidao"
+      ]
+    },
+    {
+      "nome": "ESPECIALIZAÇÃO",
+      "page": 86,
+      "line": 2159,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_especializacao"
+      ]
+    },
+    {
+      "nome": "INCAPAZ DE FALHAR",
+      "page": 86,
+      "line": 2162,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_incapaz_de_falhar"
+      ]
+    },
+    {
+      "nome": "MENTE REPARTIDA",
+      "page": 86,
+      "line": 2165,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_mente_repartida"
+      ]
+    },
+    {
+      "nome": "NÍVEL PERFEITO",
+      "page": 86,
+      "line": 2168,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_nivel_perfeito"
+      ]
+    },
+    {
+      "nome": "PASSO RÁPIDO",
+      "page": 86,
+      "line": 2171,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_passo_rapido"
+      ]
+    },
+    {
+      "nome": "POTÊNCIA CONCENTRADA",
+      "page": 86,
+      "line": 2174,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_potencia_concentrada"
+      ]
+    },
+    {
+      "nome": "RITUALISTA",
+      "page": 86,
+      "line": 2177,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_ritualista"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 8° NÍVEL",
+      "page": 87,
+      "line": 2182,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "EXPANSÃO DOS FUNDAMENTOS",
+      "page": 87,
+      "line": 2184,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_expansao_dos_fundamentos"
+      ]
+    },
+    {
+      "nome": "FÍSICO AMALDIÇOADO DEFENSIVO",
+      "page": 87,
+      "line": 2187,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_fisico_amaldicoado_defensivo"
+      ]
+    },
+    {
+      "nome": "IMBUIR COM TÉCNICA",
+      "page": 87,
+      "line": 2190,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_imbuir_com_tecnica"
+      ]
+    },
+    {
+      "nome": "LIBERAÇÕES EXPANDIDAS",
+      "page": 87,
+      "line": 2193,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "MIRA APERFEIÇOADA",
+      "page": 87,
+      "line": 2196,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_mira_aperfeicoada"
+      ]
+    },
+    {
+      "nome": "PRIMEIRO DISPARO",
+      "page": 87,
+      "line": 2199,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_primeiro_disparo"
+      ]
+    },
+    {
+      "nome": "REVESTIMENTO CONSTANTE",
+      "page": 87,
+      "line": 2202,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_revestimento_constante"
+      ]
+    },
+    {
+      "nome": "SUSTENTAÇÃO AVANÇADA",
+      "page": 87,
+      "line": 2205,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_sustentacao_avancada",
+        "sup_sustentacao_avancada"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 10° NÍVEL",
+      "page": 88,
+      "line": 2210,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "DESTRUIÇÃO AMPLA",
+      "page": 88,
+      "line": 2212,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_destruicao_ampla"
+      ]
+    },
+    {
+      "nome": "DESTRUIÇÃO FOCADA",
+      "page": 88,
+      "line": 2215,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_destruicao_focada"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 12° NÍVEL",
+      "page": 88,
+      "line": 2218,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "ESGRIMISTA JUJUTSU",
+      "page": 88,
+      "line": 2220,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_esgrimista_jujutsu"
+      ]
+    },
+    {
+      "nome": "EXPANSÃO MAESTRAL",
+      "page": 88,
+      "line": 2223,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_expansao_maestral"
+      ]
+    },
+    {
+      "nome": "EXPLOSÃO MÁXIMA",
+      "page": 88,
+      "line": 2226,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_explosao_maxima"
+      ]
+    },
+    {
+      "nome": "ECONOMIA DE ENERGIA AVANÇADA",
+      "page": 88,
+      "line": 2229,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_economia_de_energia_avancada"
+      ]
+    },
+    {
+      "nome": "SENTIDOS AGUÇADOS",
+      "page": 88,
+      "line": 2232,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_sentidos_agucados"
+      ]
+    },
+    {
+      "nome": "MESTRE DAS APTIDÕES",
+      "page": 88,
+      "line": 2235,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_mestre_das_aptidoes"
+      ]
+    },
+    {
+      "nome": "VERSATILIDADE AMPLIADA",
+      "page": 88,
+      "line": 2238,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_versatilidade_ampliada"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 16° NÍVEL",
+      "page": 89,
+      "line": 2243,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "CONTROLADOR",
+      "page": 90,
+      "line": 2253,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "CARACTERÍSTICAS DE ESPECIALIZAÇÃO",
+      "page": 90,
+      "line": 2259,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "HABILIDADES BASE DE CONTROLADOR",
+      "page": 90,
+      "line": 2273,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "TABELA DE NÍVEL DO CONTROLADOR",
+      "page": 92,
+      "line": 2311,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "HABILIDADES DO CONTROLADOR",
+      "page": 93,
+      "line": 2343,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "HABILIDADES DE 2° NÍVEL",
+      "page": 93,
+      "line": 2347,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "ACELERAÇÃO",
+      "page": 93,
+      "line": 2349,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_aceleracao"
+      ]
+    },
+    {
+      "nome": "CAMUFLAGEM APRIMORADA",
+      "page": 93,
+      "line": 2353,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_camuflagem_aprimorada"
+      ]
+    },
+    {
+      "nome": "CHAMADO DESTRUIDOR",
+      "page": 93,
+      "line": 2357,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_chamado_destruidor"
+      ]
+    },
+    {
+      "nome": "COMPANHEIRO AMALDIÇOADO",
+      "page": 93,
+      "line": 2361,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_companheiro_amaldicoado"
+      ]
+    },
+    {
+      "nome": "DOR PARTILHADA",
+      "page": 93,
+      "line": 2365,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_dor_partilhada"
+      ]
+    },
+    {
+      "nome": "FRENESI DA INVOCAÇÃO",
+      "page": 93,
+      "line": 2369,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_frenesi_da_invocacao"
+      ]
+    },
+    {
+      "nome": "GUARDA VIVA",
+      "page": 93,
+      "line": 2373,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_guarda_viva"
+      ]
+    },
+    {
+      "nome": "INVOCAÇÕES MÓVEIS",
+      "page": 93,
+      "line": 2377,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_invocacoes_moveis"
+      ]
+    },
+    {
+      "nome": "INVOCAÇÕES RESISTENTES",
+      "page": 93,
+      "line": 2381,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_invocacoes_resistentes"
+      ]
+    },
+    {
+      "nome": "INVOCAÇÕES TREINADAS",
+      "page": 94,
+      "line": 2387,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_invocacoes_treinadas"
+      ]
+    },
+    {
+      "nome": "MELHORIA DE CONTROLADOR",
+      "page": 94,
+      "line": 2390,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_melhoria_de_controlador"
+      ]
+    },
+    {
+      "nome": "OTIMIZAÇÃO DE ENERGIA",
+      "page": 94,
+      "line": 2393,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_otimizacao_de_energia"
+      ]
+    },
+    {
+      "nome": "PROTEGER INVOCAÇÃO",
+      "page": 94,
+      "line": 2396,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_proteger_invocacao"
+      ]
+    },
+    {
+      "nome": "REDE DE DETECÇÃO",
+      "page": 94,
+      "line": 2399,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_rede_de_deteccao"
+      ]
+    },
+    {
+      "nome": "TÉCNICAS DE COMBATE",
+      "page": 94,
+      "line": 2402,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_tecnicas_de_combate",
+        "sup_tecnicas_de_combate",
+        "ctr_tecnicas_de_combate"
+      ]
+    },
+    {
+      "nome": "VISIONÁRIO",
+      "page": 94,
+      "line": 2405,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_visionario"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 4° NÍVEL",
+      "page": 95,
+      "line": 2410,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "AÇÃO CORRETIVA",
+      "page": 95,
+      "line": 2412,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_acao_corretiva"
+      ]
+    },
+    {
+      "nome": "ACOMPANHAMENTO AMALDIÇOADO",
+      "page": 95,
+      "line": 2415,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_acompanhamento_amaldicoado"
+      ]
+    },
+    {
+      "nome": "ATAQUE EM CONJUNTO",
+      "page": 95,
+      "line": 2418,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_ataque_em_conjunto"
+      ]
+    },
+    {
+      "nome": "AUTONOMIA",
+      "page": 95,
+      "line": 2421,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_autonomia"
+      ]
+    },
+    {
+      "nome": "COMPANHEIRO AVANÇADO",
+      "page": 95,
+      "line": 2424,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_companheiro_avancado"
+      ]
+    },
+    {
+      "nome": "CRÍTICO BRUTAL",
+      "page": 96,
+      "line": 2429,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_critico_brutal"
+      ]
+    },
+    {
+      "nome": "DOMADOR DE MALDIÇÕES",
+      "page": 96,
+      "line": 2432,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_domador_de_maldicoes"
+      ]
+    },
+    {
+      "nome": "INVOCAÇÃO ÀS",
+      "page": 96,
+      "line": 2435,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_invocacao_as"
+      ]
+    },
+    {
+      "nome": "INVOCAÇÃO PARCIAL",
+      "page": 96,
+      "line": 2438,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_invocacao_parcial"
+      ]
+    },
+    {
+      "nome": "POTENCIAL SUPERIOR",
+      "page": 96,
+      "line": 2441,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_potencial_superior"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 6° NÍVEL",
+      "page": 97,
+      "line": 2446,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "COMBATE EM ALCATEIA",
+      "page": 97,
+      "line": 2448,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_combate_em_alcateia"
+      ]
+    },
+    {
+      "nome": "CONCENTRAR PODER",
+      "page": 97,
+      "line": 2451,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_concentrar_poder"
+      ]
+    },
+    {
+      "nome": "HOSTE AMALDIÇOADA",
+      "page": 97,
+      "line": 2454,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_hoste_amaldicoada"
+      ]
+    },
+    {
+      "nome": "INVOCAÇÕES ECONÔMICAS",
+      "page": 97,
+      "line": 2457,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_invocacoes_economicas"
+      ]
+    },
+    {
+      "nome": "PROTEÇÃO AVANÇADA DE INVOCAÇÃO",
+      "page": 97,
+      "line": 2460,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_protecao_avancada_de_invocacao"
+      ]
+    },
+    {
+      "nome": "TÁTICAS DE ALCATEIA",
+      "page": 97,
+      "line": 2463,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_taticas_de_alcateia"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 8° NÍVEL",
+      "page": 98,
+      "line": 2468,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "APTIDÕES DE CONTROLE",
+      "page": 98,
+      "line": 2470,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_aptidoes_de_controle"
+      ]
+    },
+    {
+      "nome": "ATACAR E INVOCAR",
+      "page": 98,
+      "line": 2473,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_atacar_e_invocar"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 10° NÍVEL",
+      "page": 98,
+      "line": 2476,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "BUCHAS DE CANHÃO",
+      "page": 98,
+      "line": 2478,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_buchas_de_canhao"
+      ]
+    },
+    {
+      "nome": "CRÍTICO APRIMORADO",
+      "page": 98,
+      "line": 2481,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_critico_aprimorado"
+      ]
+    },
+    {
+      "nome": "GOLPES ÁGEIS",
+      "page": 98,
+      "line": 2484,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_golpes_ageis"
+      ]
+    },
+    {
+      "nome": "TÉCNICAS DE OPORTUNIDADE",
+      "page": 98,
+      "line": 2487,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_tecnicas_de_oportunidade"
+      ]
+    },
+    {
+      "nome": "FLANCO AVANÇADO",
+      "page": 98,
+      "line": 2490,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_flanco_avancado"
+      ]
+    },
+    {
+      "nome": "RESISTÊNCIA SOBRECARREGADA",
+      "page": 98,
+      "line": 2493,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_resistencia_sobrecarregada"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 16º NÍVEL",
+      "page": 99,
+      "line": 2498,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "FANTOCHE SUPREMO",
+      "page": 99,
+      "line": 2500,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_fantoche_supremo"
+      ]
+    },
+    {
+      "nome": "MESTRE DO CONTROLE",
+      "page": 99,
+      "line": 2503,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_mestre_do_controle"
+      ]
+    },
+    {
+      "nome": "MELHORIA DE CONTROLADOR",
+      "page": 100,
+      "line": 2508,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_melhoria_de_controlador"
+      ]
+    },
+    {
+      "nome": "INVOCAÇÃO ÀS",
+      "page": 100,
+      "line": 2519,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_invocacao_as"
+      ]
+    },
+    {
+      "nome": "CONCENTRAR PODER",
+      "page": 101,
+      "line": 2531,
+      "familia": "habilidades",
+      "catalogo": [
+        "ctr_concentrar_poder"
+      ]
+    },
+    {
+      "nome": "SUPORTE",
+      "page": 102,
+      "line": 2544,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "CARACTERÍSTICAS DE ESPECIALIZAÇÃO",
+      "page": 102,
+      "line": 2550,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "HABILIDADES BASE DE SUPORTE",
+      "page": 102,
+      "line": 2564,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "TABELA DE NÍVEL DO SUPORTE",
+      "page": 104,
+      "line": 2601,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "HABILIDADES DO SUPORTE",
+      "page": 105,
+      "line": 2633,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "HABILIDADES DE 2° NÍVEL",
+      "page": 105,
+      "line": 2637,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "AMIZADE INQUEBRÁVEL",
+      "page": 105,
+      "line": 2639,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_amizade_inquebravel"
+      ]
+    },
+    {
+      "nome": "ANÁLISE PROFUNDA",
+      "page": 105,
+      "line": 2643,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_analise_profunda"
+      ]
+    },
+    {
+      "nome": "APOIO AVANÇADO",
+      "page": 105,
+      "line": 2647,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_apoio_avancado"
+      ]
+    },
+    {
+      "nome": "CONCEDER OUTRA CHANCE",
+      "page": 105,
+      "line": 2651,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_conceder_outra_chance"
+      ]
+    },
+    {
+      "nome": "COMANDO MOTIVADOR",
+      "page": 105,
+      "line": 2655,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_comando_motivador"
+      ]
+    },
+    {
+      "nome": "DESVENDAR TERRENO",
+      "page": 105,
+      "line": 2659,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_desvendar_terreno"
+      ]
+    },
+    {
+      "nome": "EXPANDIR REPERTÓRIO",
+      "page": 105,
+      "line": 2663,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_expandir_repertorio"
+      ]
+    },
+    {
+      "nome": "MOBILIDADE AVANÇADA",
+      "page": 105,
+      "line": 2667,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_mobilidade_avancada"
+      ]
+    },
+    {
+      "nome": "OTIMIZAÇÃO DE ESPAÇO",
+      "page": 106,
+      "line": 2673,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_otimizacao_de_espaco"
+      ]
+    },
+    {
+      "nome": "PRONTO PARA AGIR",
+      "page": 106,
+      "line": 2677,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_pronto_para_agir"
+      ]
+    },
+    {
+      "nome": "PROTETOR",
+      "page": 106,
+      "line": 2681,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_protetor"
+      ]
+    },
+    {
+      "nome": "TÉCNICAS DE COMBATE",
+      "page": 106,
+      "line": 2685,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_tecnicas_de_combate",
+        "sup_tecnicas_de_combate",
+        "ctr_tecnicas_de_combate"
+      ]
+    },
+    {
+      "nome": "TRANSMITIR CONHECIMENTO",
+      "page": 106,
+      "line": 2689,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_transmitir_conhecimento"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 4° NÍVEL",
+      "page": 107,
+      "line": 2695,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "APOIOS VERSÁTEIS",
+      "page": 107,
+      "line": 2697,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_apoios_versateis"
+      ]
+    },
+    {
+      "nome": "GUARDA SINCRONIZADA",
+      "page": 107,
+      "line": 2700,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_guarda_sincronizada"
+      ]
+    },
+    {
+      "nome": "INSPIRAR ALIADOS",
+      "page": 107,
+      "line": 2703,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_inspirar_aliados"
+      ]
+    },
+    {
+      "nome": "INTERVENÇÃO",
+      "page": 107,
+      "line": 2706,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_intervencao"
+      ]
+    },
+    {
+      "nome": "NEGAÇÃO CRÍTICA",
+      "page": 107,
+      "line": 2709,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_negacao_critica"
+      ]
+    },
+    {
+      "nome": "NO ÚLTIMO SEGUNDO",
+      "page": 107,
+      "line": 2712,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_no_ultimo_segundo"
+      ]
+    },
+    {
+      "nome": "PRÉ-ANÁLISE",
+      "page": 107,
+      "line": 2715,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_pre_analise"
+      ]
+    },
+    {
+      "nome": "RECOMPENSA PELO SUCESSO",
+      "page": 107,
+      "line": 2718,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_recompensa_pelo_sucesso"
+      ]
+    },
+    {
+      "nome": "SINTONIZAÇÃO VITAL",
+      "page": 107,
+      "line": 2721,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_sintonizacao_vital"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 6° NÍVEL",
+      "page": 108,
+      "line": 2726,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "CONTRA-ATAQUE",
+      "page": 108,
+      "line": 2728,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_contra_ataque"
+      ]
+    },
+    {
+      "nome": "CURA AVANÇADA EM GRUPO",
+      "page": 108,
+      "line": 2731,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_cura_avancada_em_grupo"
+      ]
+    },
+    {
+      "nome": "DEVOLVER NA MESMA MOEDA",
+      "page": 108,
+      "line": 2734,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_devolver_na_mesma_moeda"
+      ]
+    },
+    {
+      "nome": "DISSEMINAR CURA",
+      "page": 108,
+      "line": 2737,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_disseminar_cura"
+      ]
+    },
+    {
+      "nome": "INCITAR VIGOR",
+      "page": 108,
+      "line": 2740,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_incitar_vigor"
+      ]
+    },
+    {
+      "nome": "INIMIGO COMUM",
+      "page": 108,
+      "line": 2743,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_inimigo_comum"
+      ]
+    },
+    {
+      "nome": "POSICIONAMENTO ESTRATÉGICO",
+      "page": 108,
+      "line": 2746,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_posicionamento_estrategico"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 8° NÍVEL",
+      "page": 109,
+      "line": 2751,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "APTIDÕES DE SUPORTE",
+      "page": 109,
+      "line": 2753,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_aptidoes_de_suporte"
+      ]
+    },
+    {
+      "nome": "CONTAMINAR COM DETERMINAÇÃO",
+      "page": 109,
+      "line": 2756,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_contaminar_com_determinacao"
+      ]
+    },
+    {
+      "nome": "CRIAR MEDICINA",
+      "page": 109,
+      "line": 2759,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_criar_medicina"
+      ]
+    },
+    {
+      "nome": "CURA APERFEIÇOADA",
+      "page": 109,
+      "line": 2762,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_cura_aperfeicoada"
+      ]
+    },
+    {
+      "nome": "ELEVAR SUCESSO",
+      "page": 109,
+      "line": 2765,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_elevar_sucesso"
+      ]
+    },
+    {
+      "nome": "FÍSICO CONTROLADO",
+      "page": 109,
+      "line": 2768,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_fisico_controlado"
+      ]
+    },
+    {
+      "nome": "MOTIVAÇÃO PELO TRIUNFO",
+      "page": 109,
+      "line": 2771,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_motivacao_pelo_triunfo"
+      ]
+    },
+    {
+      "nome": "PRESSÃO DO MÉDICO",
+      "page": 109,
+      "line": 2774,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_pressao_do_medico"
+      ]
+    },
+    {
+      "nome": "SUSTENTAÇÃO AVANÇADA",
+      "page": 109,
+      "line": 2777,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_sustentacao_avancada",
+        "sup_sustentacao_avancada"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 10° NÍVEL",
+      "page": 110,
+      "line": 2782,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "DESCARGA REANIMADORA",
+      "page": 110,
+      "line": 2784,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_descarga_reanimadora"
+      ]
+    },
+    {
+      "nome": "NECESSIDADE DE CONTINUAR",
+      "page": 110,
+      "line": 2787,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_necessidade_de_continuar"
+      ]
+    },
+    {
+      "nome": "OLHAR AGUÇADO",
+      "page": 110,
+      "line": 2790,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_olhar_agucado"
+      ]
+    },
+    {
+      "nome": "TÁTICAS DEFENSIVAS",
+      "page": 110,
+      "line": 2793,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_taticas_defensivas"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 12° NÍVEL",
+      "page": 111,
+      "line": 2798,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "AJUSTES EM EQUIPAMENTO",
+      "page": 111,
+      "line": 2800,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_ajustes_em_equipamento"
+      ]
+    },
+    {
+      "nome": "INTERFERÊNCIA",
+      "page": 111,
+      "line": 2803,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_interferencia"
+      ]
+    },
+    {
+      "nome": "NÃO DESISTA!",
+      "page": 111,
+      "line": 2806,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_nao_desista"
+      ]
+    },
+    {
+      "nome": "SOBRECURA",
+      "page": 111,
+      "line": 2809,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_sobrecura"
+      ]
+    },
+    {
+      "nome": "REAÇÃO NECESSÁRIA",
+      "page": 111,
+      "line": 2812,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_reacao_necessaria"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 14° NÍVEL",
+      "page": 112,
+      "line": 2817,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "APOIO ABRANGENTE",
+      "page": 112,
+      "line": 2819,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_apoio_abrangente"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 16° NÍVEL",
+      "page": 112,
+      "line": 2822,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "PURIFICAÇÃO DA ALMA",
+      "page": 112,
+      "line": 2824,
+      "familia": "habilidades",
+      "catalogo": [
+        "sup_purificacao_da_alma"
+      ]
+    },
+    {
+      "nome": "SUSTENTAÇÃO MESTRE",
+      "page": 112,
+      "line": 2827,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_sustentacao_mestre",
+        "sup_sustentacao_mestre"
+      ]
+    },
+    {
+      "nome": "APOIOS AVANÇADOS",
+      "page": 113,
+      "line": 2832,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "RESTRINGIDO",
+      "page": 114,
+      "line": 2846,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "CARACTERÍSTICAS DE ESPECIALIZAÇÃO",
+      "page": 114,
+      "line": 2852,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "HABILIDADES BASE DE RESTRINGIDO",
+      "page": 114,
+      "line": 2864,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "TABELA DE NÍVEL DO RESTRINGIDO",
+      "page": 116,
+      "line": 2913,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "HABILIDADES DO RESTRINGIDO",
+      "page": 117,
+      "line": 2946,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "HABILIDADES DE 2° NÍVEL",
+      "page": 117,
+      "line": 2950,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "ATAQUE INCONSEQUENTE",
+      "page": 117,
+      "line": 2952,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_ataque_inconsequente",
+        "res_ataque_inconsequente"
+      ]
+    },
+    {
+      "nome": "APROPRIAR-SE",
+      "page": 117,
+      "line": 2955,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_apropriar_se"
+      ]
+    },
+    {
+      "nome": "APROXIMAÇÃO INSTINTIVA",
+      "page": 117,
+      "line": 2958,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_aproximacao_instintiva"
+      ]
+    },
+    {
+      "nome": "EXISTÊNCIA IMPERCEPTÍVEL",
+      "page": 117,
+      "line": 2961,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_existencia_imperceptivel"
+      ]
+    },
+    {
+      "nome": "FINTA MELHORADA",
+      "page": 117,
+      "line": 2964,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_finta_melhorada",
+        "res_finta_melhorada"
+      ]
+    },
+    {
+      "nome": "GOLPE IMPACTANTE",
+      "page": 117,
+      "line": 2967,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_golpe_impactante"
+      ]
+    },
+    {
+      "nome": "IMITAÇÃO",
+      "page": 117,
+      "line": 2970,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_imitacao"
+      ]
+    },
+    {
+      "nome": "IMITAÇÃO",
+      "page": 117,
+      "line": 2972,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_imitacao"
+      ]
+    },
+    {
+      "nome": "MANEJO SUPERIOR",
+      "page": 118,
+      "line": 2978,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_manejo_superior"
+      ]
+    },
+    {
+      "nome": "ROUBO DE HABILIDADE",
+      "page": 118,
+      "line": 2982,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_roubo_de_habilidade"
+      ]
+    },
+    {
+      "nome": "SURTO DE ADRENALINA",
+      "page": 118,
+      "line": 2986,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_surto_de_adrenalina"
+      ]
+    },
+    {
+      "nome": "VALORIZAR INVOCAÇÃO",
+      "page": 118,
+      "line": 2990,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_valorizar_invocacao"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 4° NÍVEL",
+      "page": 119,
+      "line": 2996,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "AÇÃO ÁGIL",
+      "page": 119,
+      "line": 2998,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_acao_agil",
+        "res_acao_agil"
+      ]
+    },
+    {
+      "nome": "ADRENALINA INTENSIFICADORA",
+      "page": 119,
+      "line": 3001,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_adrenalina_intensificadora"
+      ]
+    },
+    {
+      "nome": "CAÇADOR DE FEITICEIROS",
+      "page": 119,
+      "line": 3004,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_cacador_de_feiticeiros"
+      ]
+    },
+    {
+      "nome": "DESENVOLVER IDEIAS",
+      "page": 119,
+      "line": 3007,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_desenvolver_ideias"
+      ]
+    },
+    {
+      "nome": "FOCO NO INIMIGO",
+      "page": 119,
+      "line": 3010,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_foco_no_inimigo"
+      ]
+    },
+    {
+      "nome": "PONTO CEGO",
+      "page": 119,
+      "line": 3013,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_ponto_cego"
+      ]
+    },
+    {
+      "nome": "RESILIÊNCIA PELA ADRENALINA",
+      "page": 119,
+      "line": 3016,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_resiliencia_pela_adrenalina"
+      ]
+    },
+    {
+      "nome": "TÉCNICAS DE MEMORIZAÇÃO",
+      "page": 119,
+      "line": 3020,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_tecnicas_de_memorizacao"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 6° NÍVEL",
+      "page": 120,
+      "line": 3026,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "APRIMORAMENTO CELESTE",
+      "page": 120,
+      "line": 3028,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_aprimoramento_celeste"
+      ]
+    },
+    {
+      "nome": "ATAQUE EXTRA",
+      "page": 120,
+      "line": 3031,
+      "familia": "habilidades",
+      "catalogo": [
+        "lut_ataque_extra",
+        "cmb_ataque_extra",
+        "res_ataque_extra"
+      ]
+    },
+    {
+      "nome": "ATAQUE INCONSEQUENTE APRIMORADO",
+      "page": 120,
+      "line": 3034,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_ataque_inconsequente_aprimorado"
+      ]
+    },
+    {
+      "nome": "CORPO DE AÇO",
+      "page": 120,
+      "line": 3037,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_corpo_de_aco"
+      ]
+    },
+    {
+      "nome": "CORREDOR FANTASMA",
+      "page": 120,
+      "line": 3040,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_corredor_fantasma"
+      ]
+    },
+    {
+      "nome": "DISPARADA TROVEJANTE",
+      "page": 120,
+      "line": 3043,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_disparada_trovejante"
+      ]
+    },
+    {
+      "nome": "FRENESI",
+      "page": 120,
+      "line": 3046,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_frenesi"
+      ]
+    },
+    {
+      "nome": "MOVIMENTO REATIVO",
+      "page": 120,
+      "line": 3049,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_movimento_reativo"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 8° NÍVEL",
+      "page": 121,
+      "line": 3054,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "AINDA DE PÉ",
+      "page": 121,
+      "line": 3056,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_ainda_de_pe"
+      ]
+    },
+    {
+      "nome": "ARREMETIDA ENCOBERTA",
+      "page": 121,
+      "line": 3059,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_arremetida_encoberta"
+      ]
+    },
+    {
+      "nome": "BARREIRA INAMOVÍVEL",
+      "page": 121,
+      "line": 3062,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_barreira_inamovivel"
+      ]
+    },
+    {
+      "nome": "FORÇA IMPARÁVEL",
+      "page": 121,
+      "line": 3065,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_forca_imparavel"
+      ]
+    },
+    {
+      "nome": "IMITAÇÃO PERFEITA",
+      "page": 121,
+      "line": 3068,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_imitacao_perfeita"
+      ]
+    },
+    {
+      "nome": "PRESENÇA AMEAÇADORA",
+      "page": 121,
+      "line": 3071,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_presenca_ameacadora"
+      ]
+    },
+    {
+      "nome": "REAÇÃO RÁPIDA",
+      "page": 121,
+      "line": 3074,
+      "familia": "habilidades",
+      "catalogo": [
+        "cnj_reacao_rapida",
+        "res_reacao_rapida"
+      ]
+    },
+    {
+      "nome": "RESPEITO CELESTE",
+      "page": 121,
+      "line": 3077,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_respeito_celeste"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 10° NÍVEL",
+      "page": 122,
+      "line": 3082,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "ASSASSINAR",
+      "page": 122,
+      "line": 3084,
+      "familia": "habilidades",
+      "catalogo": [
+        "cmb_assassinar",
+        "res_assassinar"
+      ]
+    },
+    {
+      "nome": "MENTE LIMPA",
+      "page": 122,
+      "line": 3088,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_mente_limpa"
+      ]
+    },
+    {
+      "nome": "PERCEBER O AR",
+      "page": 122,
+      "line": 3092,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_perceber_o_ar"
+      ]
+    },
+    {
+      "nome": "PRECISÃO FORÇADA",
+      "page": 122,
+      "line": 3096,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_precisao_forcada"
+      ]
+    },
+    {
+      "nome": "RETALIAÇÃO",
+      "page": 122,
+      "line": 3100,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_retaliacao"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 12° NÍVEL",
+      "page": 123,
+      "line": 3106,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "ADRENALINA ABSOLUTA",
+      "page": 123,
+      "line": 3108,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_adrenalina_absoluta"
+      ]
+    },
+    {
+      "nome": "PINÁCULO FÍSICO",
+      "page": 123,
+      "line": 3111,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_pinaculo_fisico"
+      ]
+    },
+    {
+      "nome": "REJEITAR A MORTE",
+      "page": 123,
+      "line": 3114,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_rejeitar_a_morte"
+      ]
+    },
+    {
+      "nome": "HABILIDADES DE 16° NÍVEL",
+      "page": 123,
+      "line": 3117,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "ENTRE AS SOMBRAS",
+      "page": 123,
+      "line": 3119,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_entre_as_sombras"
+      ]
+    },
+    {
+      "nome": "INSTINTOS AGUÇADOS",
+      "page": 123,
+      "line": 3122,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_instintos_agucados"
+      ]
+    },
+    {
+      "nome": "MESMO MORTO",
+      "page": 123,
+      "line": 3125,
+      "familia": "habilidades",
+      "catalogo": [
+        "res_mesmo_morto"
+      ]
+    },
+    {
+      "nome": "ESTILO MARCIAL",
+      "page": 124,
+      "line": 3130,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "CRIANDO TÉCNICAS MARCIAIS",
+      "page": 124,
+      "line": 3149,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "ARSENAL AMALDIÇOADO",
+      "page": 125,
+      "line": 3159,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "DÁDIVAS DO CÉU",
+      "page": 126,
+      "line": 3181,
+      "familia": "habilidades",
+      "catalogo": []
+    },
+    {
+      "nome": "TALENTOS",
+      "page": 163,
+      "line": 4000,
+      "familia": "talentos",
+      "catalogo": []
+    },
+    {
+      "nome": "TALENTOS GERAIS",
+      "page": 163,
+      "line": 4006,
+      "familia": "talentos",
+      "catalogo": []
+    },
+    {
+      "nome": "AFINIDADE COM TÉCNICA",
+      "page": 163,
+      "line": 4008,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_afinidade_com_tecnica"
+      ]
+    },
+    {
+      "nome": "ARTESÃO AMALDIÇOADO",
+      "page": 163,
+      "line": 4011,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_artesao_amaldicoado"
+      ]
+    },
+    {
+      "nome": "ATAQUE INFALÍVEL",
+      "page": 163,
+      "line": 4014,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_ataque_infalivel"
+      ]
+    },
+    {
+      "nome": "ATENÇÃO INFALÍVEL",
+      "page": 163,
+      "line": 4017,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_atencao_infalivel"
+      ]
+    },
+    {
+      "nome": "DEDICAÇÃO RECOMPENSADORA",
+      "page": 163,
+      "line": 4020,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_dedicacao_recompensadora"
+      ]
+    },
+    {
+      "nome": "FAVORECIDO PELA SORTE",
+      "page": 163,
+      "line": 4023,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_favorecido_pela_sorte"
+      ]
+    },
+    {
+      "nome": "GUARDA INFALÍVEL",
+      "page": 164,
+      "line": 4028,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_guarda_infalivel"
+      ]
+    },
+    {
+      "nome": "INCREMENTO DE ATRIBUTO",
+      "page": 164,
+      "line": 4031,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_incremento_de_atributo"
+      ]
+    },
+    {
+      "nome": "INVESTIDA APRIMORADA",
+      "page": 164,
+      "line": 4034,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_investida_aprimorada"
+      ]
+    },
+    {
+      "nome": "MESTRE DAS ARMAS",
+      "page": 164,
+      "line": 4037,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_mestre_das_armas"
+      ]
+    },
+    {
+      "nome": "MESTRE DEFENSIVO",
+      "page": 164,
+      "line": 4040,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_mestre_defensivo"
+      ]
+    },
+    {
+      "nome": "PERCEBER OPORTUNIDADE",
+      "page": 164,
+      "line": 4043,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_perceber_oportunidade"
+      ]
+    },
+    {
+      "nome": "PROVOCAÇÃO DESAFIADORA",
+      "page": 164,
+      "line": 4046,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_provocacao_desafiadora"
+      ]
+    },
+    {
+      "nome": "RESILIÊNCIA MELHORADA",
+      "page": 164,
+      "line": 4049,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_resiliencia_melhorada"
+      ]
+    },
+    {
+      "nome": "SALTADOR CONSTANTE",
+      "page": 164,
+      "line": 4052,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_saltador_constante"
+      ]
+    },
+    {
+      "nome": "TÉCNICAS AGRESSIVAS DE ESCUDO",
+      "page": 165,
+      "line": 4057,
+      "familia": "talentos",
+      "catalogo": []
+    },
+    {
+      "nome": "TÉCNICAS DE ARREMESSO",
+      "page": 165,
+      "line": 4061,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_tecnicas_de_arremesso"
+      ]
+    },
+    {
+      "nome": "TÉCNICAS DE REAÇÃO RÁPIDA",
+      "page": 165,
+      "line": 4065,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_tecnicas_de_reacao_rapida"
+      ]
+    },
+    {
+      "nome": "TÉCNICAS DEFENSIVAS DE ESCUDO",
+      "page": 165,
+      "line": 4069,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_tecnicas_defensivas_de_escudo"
+      ]
+    },
+    {
+      "nome": "TEMPESTADE DE IDEIAS",
+      "page": 165,
+      "line": 4073,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_tempestade_de_ideias"
+      ]
+    },
+    {
+      "nome": "ADEPTO DE MEDICINA",
+      "page": 165,
+      "line": 4077,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_adepto_de_medicina"
+      ]
+    },
+    {
+      "nome": "ADEPTO DE BRIGA",
+      "page": 165,
+      "line": 4081,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_adepto_de_briga"
+      ]
+    },
+    {
+      "nome": "ADEPTO DE COMBATE",
+      "page": 166,
+      "line": 4087,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_adepto_de_combate"
+      ]
+    },
+    {
+      "nome": "ADEPTO DE FEITIÇARIA",
+      "page": 166,
+      "line": 4090,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_adepto_de_feiticaria"
+      ]
+    },
+    {
+      "nome": "ALMA INQUEBRÁVEL",
+      "page": 166,
+      "line": 4093,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_alma_inquebravel"
+      ]
+    },
+    {
+      "nome": "APAZIGUADOR DE TÉCNICA",
+      "page": 166,
+      "line": 4096,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_apaziguador_de_tecnica"
+      ]
+    },
+    {
+      "nome": "APTIDÃO DESENVOLVIDA",
+      "page": 166,
+      "line": 4099,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_aptidao_desenvolvida"
+      ]
+    },
+    {
+      "nome": "DETERMINADO A VIVER",
+      "page": 166,
+      "line": 4102,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_determinado_a_viver"
+      ]
+    },
+    {
+      "nome": "DISCURSO MOTIVADOR",
+      "page": 167,
+      "line": 4107,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_discurso_motivador"
+      ]
+    },
+    {
+      "nome": "ESPECIALISTA EM CONCUSSÃO",
+      "page": 167,
+      "line": 4111,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_especialista_em_concussao"
+      ]
+    },
+    {
+      "nome": "ESPECIALISTA EM CORTES",
+      "page": 167,
+      "line": 4115,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_especialista_em_cortes"
+      ]
+    },
+    {
+      "nome": "ESPECIALISTA EM PERFURAÇÃO",
+      "page": 167,
+      "line": 4119,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_especialista_em_perfuracao"
+      ]
+    },
+    {
+      "nome": "MESTRE DA CRIAÇÃO",
+      "page": 167,
+      "line": 4123,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_mestre_da_criacao"
+      ]
+    },
+    {
+      "nome": "MESTRE DO ARREMESSO",
+      "page": 167,
+      "line": 4127,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_mestre_do_arremesso"
+      ]
+    },
+    {
+      "nome": "MESTRE DOS CHICOTES",
+      "page": 167,
+      "line": 4131,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_mestre_dos_chicotes"
+      ]
+    },
+    {
+      "nome": "MOVIMENTOS ACROBÁTICOS",
+      "page": 168,
+      "line": 4137,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_movimentos_acrobaticos"
+      ]
+    },
+    {
+      "nome": "ROBUSTEZ APRIMORADA",
+      "page": 168,
+      "line": 4141,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_robustez_aprimorada"
+      ]
+    },
+    {
+      "nome": "TÉCNICAS DE EMPUNHADURA DUPLA",
+      "page": 168,
+      "line": 4145,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_tecnicas_de_empunhadura_dupla"
+      ]
+    },
+    {
+      "nome": "TÉCNICAS DE MOBILIDADE",
+      "page": 168,
+      "line": 4149,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_tecnicas_de_mobilidade"
+      ]
+    },
+    {
+      "nome": "TÉCNICAS DE OCULTAMENTO",
+      "page": 168,
+      "line": 4153,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_tecnicas_de_ocultamento"
+      ]
+    },
+    {
+      "nome": "TÉCNICAS DO SENTINELA",
+      "page": 168,
+      "line": 4157,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_tecnicas_do_sentinela"
+      ]
+    },
+    {
+      "nome": "WRESTLING",
+      "page": 168,
+      "line": 4161,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_wrestling"
+      ]
+    },
+    {
+      "nome": "VOTO MALEVOLENTE",
+      "page": 168,
+      "line": 4165,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_voto_malevolente"
+      ]
+    },
+    {
+      "nome": "TALENTOS DE ORIGEM",
+      "page": 169,
+      "line": 4171,
+      "familia": "talentos",
+      "catalogo": []
+    },
+    {
+      "nome": "FAMILIARIDADE COM TÉCNICA",
+      "page": 169,
+      "line": 4175,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_familiaridade_com_tecnica"
+      ]
+    },
+    {
+      "nome": "MANUAL DE TÉCNICA",
+      "page": 169,
+      "line": 4178,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_manual_de_tecnica"
+      ]
+    },
+    {
+      "nome": "EXPANSÃO DE RESERVA",
+      "page": 169,
+      "line": 4181,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_expansao_de_reserva"
+      ]
+    },
+    {
+      "nome": "QUEBRA DE LIMITES",
+      "page": 169,
+      "line": 4184,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_quebra_de_limites"
+      ]
+    },
+    {
+      "nome": "FÍSICO APERFEIÇOADO",
+      "page": 169,
+      "line": 4187,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_fisico_aperfeicoado"
+      ]
+    },
+    {
+      "nome": "REPOSIÇÃO SANGUÍNEA",
+      "page": 170,
+      "line": 4197,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_reposicao_sanguinea"
+      ]
+    },
+    {
+      "nome": "ESTUDO AMALDIÇOADO",
+      "page": 170,
+      "line": 4201,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_estudo_amaldicoado"
+      ]
+    },
+    {
+      "nome": "NOÇÃO E PREPARAÇÃO",
+      "page": 170,
+      "line": 4205,
+      "familia": "talentos",
+      "catalogo": [
+        "tal_nocao_e_preparacao"
+      ]
+    },
+    {
+      "nome": "APTIDÕES DE AURA",
+      "page": 174,
+      "line": 4258,
+      "familia": "aptidoes",
+      "catalogo": []
+    },
+    {
+      "nome": "AFINIDADE AMPLIADA",
+      "page": 174,
+      "line": 4260,
+      "familia": "aptidoes",
+      "catalogo": [
+        "afinidade_ampliada"
+      ]
+    },
+    {
+      "nome": "AURA ANULADORA",
+      "page": 174,
+      "line": 4263,
+      "familia": "aptidoes",
+      "catalogo": [
+        "aura_anuladora"
+      ]
+    },
+    {
+      "nome": "AURA CHAMATIVA",
+      "page": 174,
+      "line": 4266,
+      "familia": "aptidoes",
+      "catalogo": [
+        "aura_chamativa"
+      ]
+    },
+    {
+      "nome": "AURA CONTROLADA",
+      "page": 174,
+      "line": 4270,
+      "familia": "aptidoes",
+      "catalogo": [
+        "aura_controlada"
+      ]
+    },
+    {
+      "nome": "AURA DE CONTENÇÃO",
+      "page": 174,
+      "line": 4273,
+      "familia": "aptidoes",
+      "catalogo": [
+        "aura_de_contencao"
+      ]
+    },
+    {
+      "nome": "AURA DO BASTIÃO",
+      "page": 174,
+      "line": 4276,
+      "familia": "aptidoes",
+      "catalogo": [
+        "aura_do_bastiao"
+      ]
+    },
+    {
+      "nome": "AURA DO COMANDANTE",
+      "page": 174,
+      "line": 4279,
+      "familia": "aptidoes",
+      "catalogo": [
+        "aura_do_comandante"
+      ]
+    },
+    {
+      "nome": "ABSORÇÃO ELEMENTAL",
+      "page": 175,
+      "line": 4296,
+      "familia": "aptidoes",
+      "catalogo": [
+        "absorcao_elemental",
+        "mal_absorcao_elemental"
+      ]
+    },
+    {
+      "nome": "AURA EMBAÇADA",
+      "page": 175,
+      "line": 4299,
+      "familia": "aptidoes",
+      "catalogo": [
+        "aura_embacada"
+      ]
+    },
+    {
+      "nome": "AURA INOFENSIVA",
+      "page": 175,
+      "line": 4302,
+      "familia": "aptidoes",
+      "catalogo": [
+        "aura_inofensiva"
+      ]
+    },
+    {
+      "nome": "CASULO DE ENERGIA",
+      "page": 176,
+      "line": 4307,
+      "familia": "aptidoes",
+      "catalogo": [
+        "casulo_de_energia"
+      ]
+    },
+    {
+      "nome": "AURA EXCESSIVA",
+      "page": 176,
+      "line": 4310,
+      "familia": "aptidoes",
+      "catalogo": [
+        "aura_excessiva"
+      ]
+    },
+    {
+      "nome": "CONCENTRAR AURA",
+      "page": 176,
+      "line": 4313,
+      "familia": "aptidoes",
+      "catalogo": [
+        "concentrar_aura"
+      ]
+    },
+    {
+      "nome": "ENGANAÇÃO PROJETADA",
+      "page": 176,
+      "line": 4316,
+      "familia": "aptidoes",
+      "catalogo": [
+        "enganacao_projetada"
+      ]
+    },
+    {
+      "nome": "GOLPE COM AURA",
+      "page": 176,
+      "line": 4319,
+      "familia": "aptidoes",
+      "catalogo": [
+        "golpe_com_aura"
+      ]
+    },
+    {
+      "nome": "TRANSFERÊNCIA DE AURA",
+      "page": 176,
+      "line": 4322,
+      "familia": "aptidoes",
+      "catalogo": [
+        "transferencia_de_aura"
+      ]
+    },
+    {
+      "nome": "AURA LACERANTE",
+      "page": 177,
+      "line": 4329,
+      "familia": "aptidoes",
+      "catalogo": [
+        "aura_lacerante"
+      ]
+    },
+    {
+      "nome": "AURA MACABRA",
+      "page": 177,
+      "line": 4332,
+      "familia": "aptidoes",
+      "catalogo": [
+        "aura_macabra"
+      ]
+    },
+    {
+      "nome": "AURA MACIÇA",
+      "page": 177,
+      "line": 4335,
+      "familia": "aptidoes",
+      "catalogo": [
+        "aura_macica"
+      ]
+    },
+    {
+      "nome": "AURA MOVEDIÇA",
+      "page": 177,
+      "line": 4338,
+      "familia": "aptidoes",
+      "catalogo": [
+        "aura_movedica"
+      ]
+    },
+    {
+      "nome": "AURA REDIRECIONADORA",
+      "page": 177,
+      "line": 4341,
+      "familia": "aptidoes",
+      "catalogo": [
+        "aura_redirecionadora"
+      ]
+    },
+    {
+      "nome": "AURA REFORÇADA",
+      "page": 177,
+      "line": 4344,
+      "familia": "aptidoes",
+      "catalogo": [
+        "aura_reforcada"
+      ]
+    },
+    {
+      "nome": "AURA IMPENETRÁVEL",
+      "page": 177,
+      "line": 4347,
+      "familia": "aptidoes",
+      "catalogo": [
+        "aura_impenetravel"
+      ]
+    },
+    {
+      "nome": "APTIDÕES DE CONTROLE E LEITURA",
+      "page": 178,
+      "line": 4352,
+      "familia": "aptidoes",
+      "catalogo": []
+    },
+    {
+      "nome": "CANALIZAR EM GOLPE",
+      "page": 178,
+      "line": 4354,
+      "familia": "aptidoes",
+      "catalogo": [
+        "canalizar_em_golpe"
+      ]
+    },
+    {
+      "nome": "CANALIZAÇÃO AVANÇADA",
+      "page": 178,
+      "line": 4357,
+      "familia": "aptidoes",
+      "catalogo": [
+        "canalizacao_avancada"
+      ]
+    },
+    {
+      "nome": "CANALIZAÇÃO MÁXIMA",
+      "page": 178,
+      "line": 4360,
+      "familia": "aptidoes",
+      "catalogo": [
+        "canalizacao_maxima"
+      ]
+    },
+    {
+      "nome": "COBRIR-SE",
+      "page": 178,
+      "line": 4363,
+      "familia": "aptidoes",
+      "catalogo": [
+        "cobrir_se"
+      ]
+    },
+    {
+      "nome": "COBERTURA AVANÇADA",
+      "page": 178,
+      "line": 4366,
+      "familia": "aptidoes",
+      "catalogo": [
+        "cobertura_avancada"
+      ]
+    },
+    {
+      "nome": "ESTÍMULO MUSCULAR",
+      "page": 179,
+      "line": 4371,
+      "familia": "aptidoes",
+      "catalogo": [
+        "estimulo_muscular"
+      ]
+    },
+    {
+      "nome": "ESTÍMULO MUSCULAR AVANÇADO",
+      "page": 179,
+      "line": 4382,
+      "familia": "aptidoes",
+      "catalogo": [
+        "estimulo_muscular_avancado"
+      ]
+    },
+    {
+      "nome": "EXPANDIR AURA",
+      "page": 179,
+      "line": 4390,
+      "familia": "aptidoes",
+      "catalogo": [
+        "expandir_aura"
+      ]
+    },
+    {
+      "nome": "LEITURA DE AURA",
+      "page": 179,
+      "line": 4394,
+      "familia": "aptidoes",
+      "catalogo": [
+        "leitura_de_aura"
+      ]
+    },
+    {
+      "nome": "LEITURA RÁPIDA DE ENERGIA",
+      "page": 180,
+      "line": 4400,
+      "familia": "aptidoes",
+      "catalogo": [
+        "leitura_rapida_de_energia"
+      ]
+    },
+    {
+      "nome": "PROJETAR ENERGIA",
+      "page": 180,
+      "line": 4403,
+      "familia": "aptidoes",
+      "catalogo": [
+        "projetar_energia"
+      ]
+    },
+    {
+      "nome": "PROJEÇÃO AVANÇADA",
+      "page": 180,
+      "line": 4406,
+      "familia": "aptidoes",
+      "catalogo": [
+        "projecao_avancada"
+      ]
+    },
+    {
+      "nome": "PROJEÇÃO MÁXIMA",
+      "page": 180,
+      "line": 4409,
+      "familia": "aptidoes",
+      "catalogo": [
+        "projecao_maxima"
+      ]
+    },
+    {
+      "nome": "PROJEÇÃO DIVIDIDA",
+      "page": 180,
+      "line": 4412,
+      "familia": "aptidoes",
+      "catalogo": [
+        "projecao_dividida"
+      ]
+    },
+    {
+      "nome": "PUNHO DIVERGENTE",
+      "page": 181,
+      "line": 4417,
+      "familia": "aptidoes",
+      "catalogo": [
+        "punho_divergente"
+      ]
+    },
+    {
+      "nome": "EMOÇÃO DA PÉTALA DECADENTE",
+      "page": 181,
+      "line": 4421,
+      "familia": "aptidoes",
+      "catalogo": [
+        "emocao_da_petala_decadente"
+      ]
+    },
+    {
+      "nome": "RASTREIO AVANÇADO",
+      "page": 181,
+      "line": 4425,
+      "familia": "aptidoes",
+      "catalogo": [
+        "rastreio_avancado"
+      ]
+    },
+    {
+      "nome": "APTIDÕES DE DOMÍNIO",
+      "page": 182,
+      "line": 4431,
+      "familia": "aptidoes",
+      "catalogo": []
+    },
+    {
+      "nome": "REVESTIMENTO DE DOMÍNIO",
+      "page": 182,
+      "line": 4433,
+      "familia": "aptidoes",
+      "catalogo": [
+        "revestimento_de_dominio"
+      ]
+    },
+    {
+      "nome": "ANULAR TÉCNICA",
+      "page": 182,
+      "line": 4439,
+      "familia": "aptidoes",
+      "catalogo": [
+        "anular_tecnica"
+      ]
+    },
+    {
+      "nome": "EXPANSÃO DE DOMÍNIO INCOMPLETA",
+      "page": 183,
+      "line": 4445,
+      "familia": "aptidoes",
+      "catalogo": [
+        "expansao_de_dominio_incompleta"
+      ]
+    },
+    {
+      "nome": "EXPANSÃO DE DOMÍNIO COMPLETA",
+      "page": 183,
+      "line": 4449,
+      "familia": "aptidoes",
+      "catalogo": [
+        "expansao_de_dominio_completa"
+      ]
+    },
+    {
+      "nome": "ACERTO GARANTIDO",
+      "page": 184,
+      "line": 4455,
+      "familia": "aptidoes",
+      "catalogo": [
+        "acerto_garantido"
+      ]
+    },
+    {
+      "nome": "EXPANSÃO DE DOMÍNIO SEM BARREIRAS",
+      "page": 184,
+      "line": 4459,
+      "familia": "aptidoes",
+      "catalogo": [
+        "expansao_de_dominio_sem_barreiras"
+      ]
+    },
+    {
+      "nome": "REGRAS SOBRE DOMÍNIOS",
+      "page": 185,
+      "line": 4465,
+      "familia": "aptidoes",
+      "catalogo": []
+    },
+    {
+      "nome": "CONFRONTO DE DOMÍNIOS",
+      "page": 185,
+      "line": 4469,
+      "familia": "aptidoes",
+      "catalogo": []
+    },
+    {
+      "nome": "CONTESTAÇÃO DE DOMÍNIO",
+      "page": 186,
+      "line": 4496,
+      "familia": "aptidoes",
+      "catalogo": []
+    },
+    {
+      "nome": "EXAUSTÃO DE TÉCNICA",
+      "page": 187,
+      "line": 4511,
+      "familia": "aptidoes",
+      "catalogo": []
+    },
+    {
+      "nome": "RESISTÊNCIA DE EXPANSÕES DE DOMÍNIO",
+      "page": 187,
+      "line": 4522,
+      "familia": "aptidoes",
+      "catalogo": []
+    },
+    {
+      "nome": "APTIDÕES DE BARREIRA",
+      "page": 188,
+      "line": 4532,
+      "familia": "aptidoes",
+      "catalogo": []
+    },
+    {
+      "nome": "TÉCNICAS DE BARREIRA",
+      "page": 188,
+      "line": 4534,
+      "familia": "aptidoes",
+      "catalogo": [
+        "tecnicas_de_barreira"
+      ]
+    },
+    {
+      "nome": "PAREDES RESISTENTES",
+      "page": 188,
+      "line": 4541,
+      "familia": "aptidoes",
+      "catalogo": [
+        "paredes_resistentes"
+      ]
+    },
+    {
+      "nome": "BARREIRA RÁPIDA",
+      "page": 188,
+      "line": 4544,
+      "familia": "aptidoes",
+      "catalogo": [
+        "barreira_rapida"
+      ]
+    },
+    {
+      "nome": "CESTA OCA DE VIME",
+      "page": 188,
+      "line": 4547,
+      "familia": "aptidoes",
+      "catalogo": [
+        "cesta_oca_de_vime"
+      ]
+    },
+    {
+      "nome": "CORTINA",
+      "page": 188,
+      "line": 4550,
+      "familia": "aptidoes",
+      "catalogo": [
+        "cortina"
+      ]
+    },
+    {
+      "nome": "REGRAS SOBRE BARREIRAS",
+      "page": 189,
+      "line": 4555,
+      "familia": "aptidoes",
+      "catalogo": []
+    },
+    {
+      "nome": "REGRAS SOBRE CORTINAS",
+      "page": 189,
+      "line": 4563,
+      "familia": "aptidoes",
+      "catalogo": []
+    },
+    {
+      "nome": "APTIDÕES DE ENERGIA REVERSA",
+      "page": 190,
+      "line": 4573,
+      "familia": "aptidoes",
+      "catalogo": []
+    },
+    {
+      "nome": "ENERGIA REVERSA",
+      "page": 190,
+      "line": 4575,
+      "familia": "aptidoes",
+      "catalogo": [
+        "energia_reversa"
+      ]
+    },
+    {
+      "nome": "CURA AMPLIFICADA",
+      "page": 190,
+      "line": 4578,
+      "familia": "aptidoes",
+      "catalogo": [
+        "cura_amplificada"
+      ]
+    },
+    {
+      "nome": "FLUXO CONSTANTE",
+      "page": 190,
+      "line": 4581,
+      "familia": "aptidoes",
+      "catalogo": [
+        "fluxo_constante"
+      ]
+    },
+    {
+      "nome": "REGENERAÇÃO APRIMORADA",
+      "page": 190,
+      "line": 4584,
+      "familia": "aptidoes",
+      "catalogo": [
+        "regeneracao_aprimorada"
+      ]
+    },
+    {
+      "nome": "LIBERAÇÃO DE ENERGIA REVERSA",
+      "page": 191,
+      "line": 4589,
+      "familia": "aptidoes",
+      "catalogo": [
+        "liberacao_de_energia_reversa"
+      ]
+    },
+    {
+      "nome": "CANALIZAR ENERGIA REVERSA",
+      "page": 191,
+      "line": 4592,
+      "familia": "aptidoes",
+      "catalogo": [
+        "canalizar_energia_reversa"
+      ]
+    },
+    {
+      "nome": "CURA EM GRUPO",
+      "page": 191,
+      "line": 4595,
+      "familia": "aptidoes",
+      "catalogo": [
+        "cura_em_grupo"
+      ]
+    },
+    {
+      "nome": "APTIDÕES ESPECIAIS",
+      "page": 192,
+      "line": 4600,
+      "familia": "aptidoes",
+      "catalogo": []
+    },
+    {
+      "nome": "RAIO NEGRO",
+      "page": 192,
+      "line": 4602,
+      "familia": "aptidoes",
+      "catalogo": [
+        "raio_negro"
+      ]
+    },
+    {
+      "nome": "RAIO NEGRO",
+      "page": 192,
+      "line": 4604,
+      "familia": "aptidoes",
+      "catalogo": [
+        "raio_negro"
+      ]
+    },
+    {
+      "nome": "ABENÇOADO PELAS FAÍSCAS NEGRAS",
+      "page": 192,
+      "line": 4614,
+      "familia": "aptidoes",
+      "catalogo": [
+        "abencoado_pelas_faiscas_negras"
+      ]
+    },
+    {
+      "nome": "DOMÍNIO SIMPLES",
+      "page": 193,
+      "line": 4620,
+      "familia": "aptidoes",
+      "catalogo": [
+        "dominio_simples"
+      ]
+    },
+    {
+      "nome": "REVERSÃO DE TÉCNICA",
+      "page": 194,
+      "line": 4629,
+      "familia": "aptidoes",
+      "catalogo": [
+        "reversao_de_tecnica"
+      ]
+    },
+    {
+      "nome": "TÉCNICA MÁXIMA",
+      "page": 194,
+      "line": 4633,
+      "familia": "aptidoes",
+      "catalogo": [
+        "tecnica_maxima"
+      ]
+    }
+  ],
+  "equipamentos": {
+    "armas": 52,
+    "itensEspeciais": 49,
+    "kits": 7,
+    "encArma": 26,
+    "encEscudo": 11,
+    "encUniforme": 16
+  }
+}

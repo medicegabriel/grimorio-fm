@@ -1,0 +1,128 @@
+[
+  {
+    "file": "src/systems/afty/ficha/AftyFichaG2.jsx",
+    "addedLines": 5,
+    "forbiddenDash": false,
+    "conflict": false
+  },
+  {
+    "file": "src/systems/afty/ficha/efeitos/BuffDeMesaG2.jsx",
+    "addedLines": 91,
+    "forbiddenDash": false,
+    "conflict": false
+  },
+  {
+    "file": "src/systems/afty/ficha/efeitos/CatalogoG2.jsx",
+    "addedLines": 16,
+    "forbiddenDash": false,
+    "conflict": false
+  },
+  {
+    "file": "src/systems/afty/ficha/efeitos/CompactaG2.jsx",
+    "addedLines": 2,
+    "forbiddenDash": false,
+    "conflict": false
+  },
+  {
+    "file": "src/systems/afty/ficha/efeitos/ConcedidoG2.jsx",
+    "addedLines": 89,
+    "forbiddenDash": false,
+    "conflict": false
+  },
+  {
+    "file": "src/systems/afty/ficha/efeitos/ExaustaoG2.jsx",
+    "addedLines": 41,
+    "forbiddenDash": false,
+    "conflict": false
+  },
+  {
+    "file": "src/systems/afty/ficha/efeitos/Gestor.jsx",
+    "addedLines": 19,
+    "forbiddenDash": false,
+    "conflict": false
+  },
+  {
+    "file": "src/systems/afty/ficha/efeitos/HistoricoSessao.jsx",
+    "addedLines": 1,
+    "forbiddenDash": false,
+    "conflict": false
+  },
+  {
+    "file": "src/systems/afty/ficha/efeitos/ImitacaoG2.jsx",
+    "addedLines": 189,
+    "forbiddenDash": false,
+    "conflict": false
+  },
+  {
+    "file": "src/systems/afty/ficha/efeitos/RecebidosG2.jsx",
+    "addedLines": 15,
+    "forbiddenDash": false,
+    "conflict": false
+  },
+  {
+    "file": "src/systems/afty/ficha/efeitos/VisaoG2.jsx",
+    "addedLines": 23,
+    "forbiddenDash": false,
+    "conflict": false
+  },
+  {
+    "file": "src/systems/afty/ficha/efeitos/buff-mesa-logica.js",
+    "addedLines": 104,
+    "forbiddenDash": false,
+    "conflict": false
+  },
+  {
+    "file": "src/systems/afty/ficha/efeitos/concedido-logica.js",
+    "addedLines": 46,
+    "forbiddenDash": false,
+    "conflict": false
+  },
+  {
+    "file": "src/systems/afty/ficha/efeitos/efeitos-dados.js",
+    "addedLines": 4,
+    "forbiddenDash": false,
+    "conflict": false
+  },
+  {
+    "file": "src/systems/afty/ficha/efeitos/efeitos-g2.css",
+    "addedLines": 87,
+    "forbiddenDash": false,
+    "conflict": false
+  },
+  {
+    "file": "src/systems/afty/ficha/efeitos/exaustao-logica.js",
+    "addedLines": 19,
+    "forbiddenDash": false,
+    "conflict": false
+  },
+  {
+    "file": "src/systems/afty/ficha/efeitos/gestor-logica.js",
+    "addedLines": 19,
+    "forbiddenDash": false,
+    "conflict": false
+  },
+  {
+    "file": "src/systems/afty/ficha/efeitos/historico-logica.js",
+    "addedLines": 1,
+    "forbiddenDash": false,
+    "conflict": false
+  },
+  {
+    "file": "src/systems/afty/ficha/efeitos/imitacao-logica.js",
+    "addedLines": 116,
+    "forbiddenDash": false,
+    "conflict": false
+  },
+  {
+    "file": "src/systems/afty/ficha/efeitos/mesa-verbos.js",
+    "addedLines": 14,
+    "forbiddenDash": false,
+    "conflict": false
+  },
+  {
+    "file": "src/systems/afty/ficha/efeitos/useModeloG2.js",
+    "addedLines": 53,
+    "forbiddenDash": false,
+    "conflict": false
+  }
+]

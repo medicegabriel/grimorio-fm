@@ -33,6 +33,7 @@ import {
   registrarFamilia, remendarLista, liberacoesDaCriatura, filtraForaDoJogador, nivelDaFicha,
 } from "./afty-addons";
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
+import { regraDo, sistemaDaFicha } from "./afty-sistema";
 // Do módulo FOLHA, não de ./afty-pericias.js: os geradores de opção abaixo
 // rodam na INICIALIZAÇÃO deste arquivo, e afty-pericias.js puxa afty-efeitos.js,
 // que volta até aqui por combate → habilidades → especializações. Ver o
@@ -783,12 +784,18 @@ export const AFTY_ORIGENS_CATALOG = [
           "mesmo que insignificante, você é incapaz de receber a habilidade Restrição Definitiva, " +
           "além disso, seus atributos de força e destreza são reduzidos em 2 cada. Você também " +
           "recebe apenas 2 pontos de vigor por nível.",
+        // "você é incapaz de receber a habilidade Restrição Definitiva". Tira
+        // também a Base automática da Classe no jogador (autor, 2026-10-12).
+        vetaHabilidades: ["res_restricao_definitiva"],
       },
       {
         id: "restricao_celestial_restringido_morto",
         nome: "Restrição Celestial: Restringido",
         soSemEnergia: true,
         soIrmaoMorto: true,
+        // "Você recebe a habilidade Restrição Definitiva, independente de seu
+        // nível" (autor, 2026-10-12). Concessão, sem `ndMin` e sem pedir Classe.
+        concedeHabilidades: ["res_restricao_definitiva"],
         descricao:
           "Mas quando seu irmão vem a morrer, ele tira toda a energia que ainda existia em você, " +
           "liberando todo seu potencial e força de uma única vez. Você recebe a habilidade " +
@@ -1110,6 +1117,29 @@ export function verdadeiraOrigemEscolhida(creature) {
   const caracteristica = (dona?.caracteristicas || []).find((c) => c.id === opcao.caracteristicaId);
   if (!caracteristica) return null;
   return { opcao, origem, cla, caracteristica };
+}
+
+/**
+ * O TIPO que a ficha É, para toda regra que pergunta "é Restringido?".
+ *
+ * Na criatura é o campo Tipo, sem conta nenhuma. No jogador o campo não existe
+ * (`pvPePorEspecializacao`), e o Gêmeo vira Restringido pela cópia do Físico
+ * Abençoado nas Verdadeiras Origens (divergência `gemeoRestringidoPelaCopia`).
+ * Sem a cópia ele é Feiticeiro, mesmo que um Tipo Restringido tenha ficado
+ * gravado de outro jeito: a regra é a cópia, e o campo escondido não decide.
+ *
+ * ⚠ LÊ NA HORA, e não grava. Uma ficha salva antes da regra, ou importada, já
+ * abre no ramo certo, e desfazer a cópia desfaz o Tipo sem ninguém lembrar.
+ */
+export function tipoDaFicha(creature) {
+  const gravado = creature?.core?.tipo || "combatente";
+  if (creature?.core?.origem?.id !== "gemeos") return gravado;
+  if (regraDo(sistemaDaFicha(creature), "gemeoRestringidoPelaCopia") !== "player") return gravado;
+  const copia = verdadeiraOrigemEscolhida(creature);
+  const copiouFisico = copia?.origem?.id === "restringido"
+    && copia?.caracteristica?.id === RESTRINGIDO_CARACTERISTICA_OBRIGATORIA;
+  if (copiouFisico) return "restringido";
+  return gravado === "restringido" ? "combatente" : gravado;
 }
 
 /**
@@ -1471,7 +1501,7 @@ export const clasDaOrigem = (id) => {
  */
 function valeParaEsta(c, creature) {
   if (!c) return false;
-  const restringido = creature?.core?.tipo === "restringido";
+  const restringido = tipoDaFicha(creature) === "restringido";
   if (c.soSemEnergia && !restringido) return false;
   if (c.soComEnergia && restringido) return false;
   const morto = !!creature?.core?.origem?.irmaoMorto;
@@ -1607,6 +1637,24 @@ export function habilidadesConcedidasPelaOrigem(creature, nd = 1) {
       const id = typeof h === "string" ? h : h?.id;
       if (!id || nivel < (h?.ndMin ?? 1) || out.includes(id)) continue;
       out.push(id);
+    }
+  }
+  return out;
+}
+
+/**
+ * HABILIDADES VETADAS pela origem: `vetaHabilidades: [id]` numa característica
+ * ou opção, o avesso do `concedeHabilidades` logo acima. Nasceu no Gêmeo
+ * Restringido (2026-10-12): com o irmão vivo ele "é incapaz de receber a
+ * habilidade Restrição Definitiva". Como a característica só vale enquanto o
+ * irmão vive, o veto cai sozinho com a morte.
+ */
+export function habilidadesVetadasPelaOrigem(creature) {
+  const out = [];
+  const fontes = [...caracteristicasEfetivas(creature), ...opcoesEscolhidasDaOrigem(creature)];
+  for (const f of fontes) {
+    for (const id of f?.vetaHabilidades ?? []) {
+      if (typeof id === "string" && id && !out.includes(id)) out.push(id);
     }
   }
   return out;
@@ -1759,7 +1807,7 @@ export function resolveOrigemAttrBonus(creature) {
 
   // A distribuição livre, se ela ainda vale para esta criatura.
   const distrib = caracteristicasEfetivas(creature).find((c) => c.bonus?.distribuir)?.bonus;
-  const semEnergia = creature?.core?.tipo === "restringido";
+  const semEnergia = tipoDaFicha(creature) === "restringido";
   if (!(distrib?.semEnergiaNao && semEnergia)) {
     somar(creature?.core?.origem?.bonusAtributos);
   }
@@ -1804,7 +1852,7 @@ export function limiteAtributoDaOrigem(creatureOuId) {
   if (
     creature?.core?.origem?.id === "gemeos"
     && creature?.core?.origem?.irmaoMorto
-    && creature?.core?.tipo !== "restringido"
+    && tipoDaFicha(creature) !== "restringido"
   ) {
     return {
       ...doCatalogo,
@@ -2120,6 +2168,10 @@ export function validarCatalogoOrigens() {
           if (!id) problemas.push(`${dono}: concedeHabilidades com entrada sem id`);
         }
       }
+    }
+    if (x.vetaHabilidades != null
+      && !(Array.isArray(x.vetaHabilidades) && x.vetaHabilidades.every((id) => typeof id === "string" && id))) {
+      problemas.push(`${dono}: vetaHabilidades deve ser uma lista de ids`);
     }
     if (x.armaEscolhida != null && !(typeof x.armaEscolhida?.id === "string" && x.armaEscolhida.id.trim())) {
       problemas.push(`${dono}: armaEscolhida sem id`);

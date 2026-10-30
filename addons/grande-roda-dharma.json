@@ -4,6 +4,8 @@
   "versao": "1.0.0",
   "autor": "Afty",
   "descricao": "Um grande leme flutuando sobre a cabeça de Mahoraga enquanto consciente. Sendo indestrutível, não pode ser removida ou destruída exceto pela morte do mesmo.",
+  "resumo": "Leme indestrutível sobre a cabeça do Mahoraga, que só some com a morte dele",
+  "categoria": "tecnicas",
   "paraRaw": "afty",
   "permite": [
     "rodaDharma"

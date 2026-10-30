@@ -1,0 +1,380 @@
+{
+  "geradoEm": "2026-10-19T18:18:29.727Z",
+  "base": "http://localhost:5320",
+  "casos": [
+    {
+      "id": "feitico-mais7",
+      "amostra": "minamoto",
+      "checks": [
+        {
+          "id": "o registro está na sessão uma vez, com benefício +7",
+          "ok": true,
+          "dados": [
+            {
+              "id": "rfx15c3b8",
+              "rec": true,
+              "tipoFonte": "feitico",
+              "origemId": null,
+              "origemNome": "Proteção de teste independente",
+              "aplicadoPor": null,
+              "beneficios": [
+                {
+                  "canal": "defesa",
+                  "valor": 7
+                }
+              ],
+              "rodadas": null,
+              "somaPresumida": false
+            }
+          ]
+        },
+        {
+          "id": "Feitiço +7: G2 soma 7",
+          "ok": true,
+          "dados": {
+            "antes": 82,
+            "g2": 89
+          }
+        },
+        {
+          "id": "Feitiço +7: a clássica dá a MESMA Defesa do G2",
+          "ok": true,
+          "dados": {
+            "g2": 89,
+            "classica": 89
+          }
+        },
+        {
+          "id": "Feitiço +7: recarregar a clássica mantém",
+          "ok": true
+        },
+        {
+          "id": "Feitiço +7: voltar ao G2 mantém",
+          "ok": true
+        },
+        {
+          "id": "o registro continua intacto na sessão depois de alternar e recarregar",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    },
+    {
+      "id": "feitico-mais7",
+      "amostra": "player30",
+      "checks": [
+        {
+          "id": "o registro está na sessão uma vez, com benefício +7",
+          "ok": true,
+          "dados": [
+            {
+              "id": "rshyp1r70",
+              "rec": true,
+              "tipoFonte": "feitico",
+              "origemId": null,
+              "origemNome": "Proteção de teste independente",
+              "aplicadoPor": null,
+              "beneficios": [
+                {
+                  "canal": "defesa",
+                  "valor": 7
+                }
+              ],
+              "rodadas": null,
+              "somaPresumida": false
+            }
+          ]
+        },
+        {
+          "id": "Feitiço +7: G2 soma 7",
+          "ok": true,
+          "dados": {
+            "antes": 39,
+            "g2": 46
+          }
+        },
+        {
+          "id": "Feitiço +7: a clássica dá a MESMA Defesa do G2",
+          "ok": true,
+          "dados": {
+            "g2": 46,
+            "classica": 46
+          }
+        },
+        {
+          "id": "Feitiço +7: recarregar a clássica mantém",
+          "ok": true
+        },
+        {
+          "id": "Feitiço +7: voltar ao G2 mantém",
+          "ok": true
+        },
+        {
+          "id": "o registro continua intacto na sessão depois de alternar e recarregar",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    },
+    {
+      "id": "feitico-mais7",
+      "amostra": "calamidade",
+      "checks": [
+        {
+          "id": "o registro está na sessão uma vez, com benefício +7",
+          "ok": true,
+          "dados": [
+            {
+              "id": "rw8yhp6a7",
+              "rec": true,
+              "tipoFonte": "feitico",
+              "origemId": null,
+              "origemNome": "Proteção de teste independente",
+              "aplicadoPor": null,
+              "beneficios": [
+                {
+                  "canal": "defesa",
+                  "valor": 7
+                }
+              ],
+              "rodadas": null,
+              "somaPresumida": false
+            }
+          ]
+        },
+        {
+          "id": "Feitiço +7: G2 soma 7",
+          "ok": true,
+          "dados": {
+            "antes": 70,
+            "g2": 77
+          }
+        },
+        {
+          "id": "Feitiço +7: a clássica dá a MESMA Defesa do G2",
+          "ok": true,
+          "dados": {
+            "g2": 77,
+            "classica": 77
+          }
+        },
+        {
+          "id": "Feitiço +7: recarregar a clássica mantém",
+          "ok": true
+        },
+        {
+          "id": "Feitiço +7: voltar ao G2 mantém",
+          "ok": true
+        },
+        {
+          "id": "o registro continua intacto na sessão depois de alternar e recarregar",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    },
+    {
+      "id": "outra-origem-somar",
+      "amostra": "minamoto",
+      "checks": [
+        {
+          "id": "Outra Origem somando: G2 soma 3",
+          "ok": true,
+          "dados": {
+            "antes": 82,
+            "g2": 85
+          }
+        },
+        {
+          "id": "Outra Origem somando: a clássica dá a MESMA Defesa do G2",
+          "ok": true,
+          "dados": {
+            "g2": 85,
+            "classica": 85
+          }
+        },
+        {
+          "id": "Outra Origem somando: recarregar a clássica mantém",
+          "ok": true
+        },
+        {
+          "id": "Outra Origem somando: voltar ao G2 mantém",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    },
+    {
+      "id": "outra-origem-sem-somar",
+      "amostra": "minamoto",
+      "checks": [
+        {
+          "id": "Outra Origem sem decidir somar: G2 soma 0",
+          "ok": true,
+          "dados": {
+            "antes": 82,
+            "g2": 82
+          }
+        },
+        {
+          "id": "Outra Origem sem decidir somar: a clássica dá a MESMA Defesa do G2",
+          "ok": true,
+          "dados": {
+            "g2": 82,
+            "classica": 82
+          }
+        },
+        {
+          "id": "Outra Origem sem decidir somar: recarregar a clássica mantém",
+          "ok": true
+        },
+        {
+          "id": "Outra Origem sem decidir somar: voltar ao G2 mantém",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    },
+    {
+      "id": "catalogo-repetido",
+      "amostra": "minamoto",
+      "checks": [
+        {
+          "id": "dois registros da mesma origem na sessão",
+          "ok": true,
+          "dados": [
+            [
+              "aptidao:aura_do_bastiao",
+              "Ana"
+            ],
+            [
+              "aptidao:aura_do_bastiao",
+              "Rui"
+            ]
+          ]
+        },
+        {
+          "id": "mesma origem, +2 e +3: vale o maior: G2 soma 3",
+          "ok": true,
+          "dados": {
+            "antes": 82,
+            "g2": 85
+          }
+        },
+        {
+          "id": "mesma origem, +2 e +3: vale o maior: a clássica dá a MESMA Defesa do G2",
+          "ok": true,
+          "dados": {
+            "g2": 85,
+            "classica": 85
+          }
+        },
+        {
+          "id": "mesma origem, +2 e +3: vale o maior: recarregar a clássica mantém",
+          "ok": true
+        },
+        {
+          "id": "mesma origem, +2 e +3: vale o maior: voltar ao G2 mantém",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    },
+    {
+      "id": "feiticos-dois-aplicadores",
+      "amostra": "minamoto",
+      "checks": [
+        {
+          "id": "Feitiço de dois aplicadores: G2 soma 7",
+          "ok": true,
+          "dados": {
+            "antes": 82,
+            "g2": 89
+          }
+        },
+        {
+          "id": "Feitiço de dois aplicadores: a clássica dá a MESMA Defesa do G2",
+          "ok": true,
+          "dados": {
+            "g2": 89,
+            "classica": 89
+          }
+        },
+        {
+          "id": "Feitiço de dois aplicadores: recarregar a clássica mantém",
+          "ok": true
+        },
+        {
+          "id": "Feitiço de dois aplicadores: voltar ao G2 mantém",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    },
+    {
+      "id": "expiracao-por-rodada",
+      "amostra": "minamoto",
+      "checks": [
+        {
+          "id": "G2 soma 5 enquanto o prazo dura",
+          "ok": true
+        },
+        {
+          "id": "o registro expira na virada e sai da sessão",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "G2 volta à Defesa de antes",
+          "ok": true
+        },
+        {
+          "id": "a clássica também volta à Defesa de antes",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    }
+  ],
+  "falhas": []
+}

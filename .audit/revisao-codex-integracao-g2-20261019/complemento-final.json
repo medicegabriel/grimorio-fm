@@ -1,0 +1,176 @@
+{
+  "geradoEm": "2026-10-19T17:08:18.514Z",
+  "base": "http://127.0.0.1:5310",
+  "casos": [
+    {
+      "id": "ac-1024",
+      "checks": [
+        {
+          "id": "confirmar cobra custo público uma vez",
+          "ok": true,
+          "dados": {
+            "custo": 3,
+            "energia": [
+              178,
+              175
+            ]
+          }
+        },
+        {
+          "id": "uma operação paga no histórico",
+          "ok": true
+        },
+        {
+          "id": "estorno uma vez preserva efeito",
+          "ok": true
+        },
+        {
+          "id": "virada com metadados usa sessão real",
+          "ok": true
+        },
+        {
+          "id": "clássica mantém sessão e não carrega CSS do G2",
+          "ok": true
+        },
+        {
+          "id": "voltar à prévia conserva sessão",
+          "ok": true
+        },
+        {
+          "id": "cartão conserva intensidade",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    },
+    {
+      "id": "ac-1440",
+      "checks": [
+        {
+          "id": "confirmar cobra custo público uma vez",
+          "ok": true,
+          "dados": {
+            "custo": 3,
+            "energia": [
+              178,
+              175
+            ]
+          }
+        },
+        {
+          "id": "uma operação paga no histórico",
+          "ok": true
+        },
+        {
+          "id": "estorno uma vez preserva efeito",
+          "ok": true
+        },
+        {
+          "id": "virada com metadados usa sessão real",
+          "ok": true
+        },
+        {
+          "id": "clássica mantém sessão e não carrega CSS do G2",
+          "ok": true
+        },
+        {
+          "id": "voltar à prévia conserva sessão",
+          "ok": true
+        },
+        {
+          "id": "cartão conserva intensidade",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    },
+    {
+      "id": "fonte-compartilhada",
+      "checks": [
+        {
+          "id": "fonte externa registrada uma vez",
+          "ok": true
+        },
+        {
+          "id": "apresentações conservam o mesmo bônus registrado",
+          "ok": false,
+          "dados": {
+            "antes": "Defesa82",
+            "g2": "Defesa89",
+            "classica": "Defesa82",
+            "buffs": [
+              {
+                "id": "r6cqdn1ek",
+                "rec": true,
+                "tipoFonte": "feitico",
+                "origemId": null,
+                "origemNome": "Proteção de teste independente",
+                "aplicadoPor": null,
+                "beneficios": [
+                  {
+                    "canal": "defesa",
+                    "valor": 7
+                  }
+                ],
+                "rodadas": null,
+                "somaPresumida": false
+              }
+            ]
+          }
+        },
+        {
+          "id": "registro não desaparece ao alternar",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "defAntes": "Defesa82",
+      "defG2": "Defesa89",
+      "defClassica": "Defesa82"
+    }
+  ],
+  "falhas": [
+    {
+      "caso": "fonte-compartilhada",
+      "id": "apresentações conservam o mesmo bônus registrado",
+      "dados": {
+        "antes": "Defesa82",
+        "g2": "Defesa89",
+        "classica": "Defesa82",
+        "buffs": [
+          {
+            "id": "r6cqdn1ek",
+            "rec": true,
+            "tipoFonte": "feitico",
+            "origemId": null,
+            "origemNome": "Proteção de teste independente",
+            "aplicadoPor": null,
+            "beneficios": [
+              {
+                "canal": "defesa",
+                "valor": 7
+              }
+            ],
+            "rodadas": null,
+            "somaPresumida": false
+          }
+        ]
+      }
+    }
+  ]
+}

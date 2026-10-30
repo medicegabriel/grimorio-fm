@@ -35,17 +35,30 @@ const comparaNome = (a, b) => semAcento(a.nome).localeCompare(semAcento(b.nome),
  * Devolve `{ grupos: [{ tipo, rotulo, itens }], visiveis, total }`. Sem
  * agrupar, há um grupo só com `tipo` e `rotulo` nulos.
  *
+ * Três opções que a aba de Addons acrescentou em 2026-10-29, todas com padrão
+ * que não muda nada para Feitiços e Invocações:
+ *   textoDe(item)     o texto que a busca varre (o padrão é o nome)
+ *   predicados        funções que o item precisa passar, além do filtro de Tipo
+ *   destaqueDe(item)  quem vira o primeiro grupo, `rotuloDestaque` no cabeçalho
+ *                     (sem agrupar, esses itens só vão para o começo da fila)
+ *
  * ⚠ O EMPATE CAI NA ORDEM DE CRIAÇÃO, sempre. Sem isso dois Feitiços de Nível 5
  * trocariam de lugar a cada tecla digitada no nome de um terceiro.
  */
-export function organizarLista(itens, { termo = "", tiposAtivos = [], ordem = "criacao", agrupar = false, tipos = [] } = {}) {
+export const TIPO_DESTAQUE = "__destaque";
+
+export function organizarLista(itens, {
+  termo = "", tiposAtivos = [], ordem = "criacao", agrupar = false, tipos = [],
+  textoDe = null, predicados = [], destaqueDe = null, rotuloDestaque = "Em Destaque",
+} = {}) {
   const lista = (Array.isArray(itens) ? itens : []).map((item, indice) => ({ item, indice }));
   const busca = semAcento(termo).trim();
   const filtroTipo = new Set(Array.isArray(tiposAtivos) ? tiposAtivos : []);
 
   const filtrados = lista.filter(({ item }) =>
-    (!busca || semAcento(item.nome).includes(busca))
-    && (filtroTipo.size === 0 || filtroTipo.has(item.tipo)));
+    (!busca || semAcento(textoDe ? textoDe(item) : item.nome).includes(busca))
+    && (filtroTipo.size === 0 || filtroTipo.has(item.tipo))
+    && (predicados ?? []).every((passa) => passa(item)));
 
   const porCriacao = (a, b) => a.indice - b.indice;
   const comparador = {
@@ -53,11 +66,15 @@ export function organizarLista(itens, { termo = "", tiposAtivos = [], ordem = "c
     nivel: (a, b) => (Number(a.item.nivel) || 0) - (Number(b.item.nivel) || 0)
       || comparaNome(a.item, b.item) || porCriacao(a, b),
   }[ordem] ?? porCriacao;
-  const ordenados = [...filtrados].sort(comparador).map(({ item }) => item);
+  const emDestaque = (x) => (destaqueDe && destaqueDe(x.item) ? 1 : 0);
+  const ordenados = [...filtrados].sort((a, b) => emDestaque(b) - emDestaque(a) || comparador(a, b)).map(({ item }) => item);
 
   if (!agrupar) {
     return { grupos: ordenados.length ? [{ tipo: null, rotulo: null, itens: ordenados }] : [], visiveis: ordenados.length, total: lista.length };
   }
+  const destaques = destaqueDe ? ordenados.filter((i) => destaqueDe(i)) : [];
+  const gruposDestaque = destaques.length ? [{ tipo: TIPO_DESTAQUE, rotulo: rotuloDestaque, itens: destaques }] : [];
+  const restantes = destaqueDe ? ordenados.filter((i) => !destaqueDe(i)) : ordenados;
 
   /* Os grupos saem na ordem da lista de Tipos, e não na de aparição: o Dano
      fica sempre em cima, e o grupo não muda de lugar quando se cria um Feitiço.
@@ -65,11 +82,11 @@ export function organizarLista(itens, { termo = "", tiposAtivos = [], ordem = "c
      próprio nome, em vez de sumir. */
   const conhecidos = (Array.isArray(tipos) ? tipos : []).map((t) => t.value);
   const rotuloDe = Object.fromEntries((tipos ?? []).map((t) => [t.value, t.label]));
-  const ordemTipos = [...conhecidos, ...new Set(ordenados.map((i) => i.tipo).filter((t) => !conhecidos.includes(t)))];
+  const ordemTipos = [...conhecidos, ...new Set(restantes.map((i) => i.tipo).filter((t) => !conhecidos.includes(t)))];
   const grupos = ordemTipos
-    .map((tipo) => ({ tipo, rotulo: rotuloDe[tipo] ?? String(tipo ?? "Sem Tipo"), itens: ordenados.filter((i) => i.tipo === tipo) }))
+    .map((tipo) => ({ tipo, rotulo: rotuloDe[tipo] ?? String(tipo ?? "Sem Tipo"), itens: restantes.filter((i) => i.tipo === tipo) }))
     .filter((g) => g.itens.length > 0);
-  return { grupos, visiveis: ordenados.length, total: lista.length };
+  return { grupos: [...gruposDestaque, ...grupos], visiveis: ordenados.length, total: lista.length };
 }
 
 /** Os Tipos que a lista TEM, na ordem da lista de Tipos, com a contagem de cada um. */

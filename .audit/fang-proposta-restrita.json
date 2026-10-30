@@ -1,0 +1,2096 @@
+{
+  "versao": 1,
+  "shaInventario": "db862f879a4d6c7d0be51cbf21cae53f4d3277a6ab9fb0d08ad67eca1963e63c",
+  "shaVivo": "3b3ba2f92b16e948b788fef59e831d3d18af0b1146696899e53ef3bc9b7d9f88",
+  "shaEscopo": "14ef3d139df24b0e98d55bbb1981aeac8c8de71f16d70a43c958eeb969d1fb29",
+  "adicionados": [
+    {
+      "chave": "addon-herdada::formula-combate-entropica.json::formula-combate-entropica:res_intelectual__res_ataque_extra::efeitos",
+      "item": {
+        "chave": "addon-herdada::formula-combate-entropica.json::formula-combate-entropica:res_intelectual__res_ataque_extra::efeitos",
+        "id": "efeitos",
+        "nome": "efeitos",
+        "arquivo": "addons/formula-combate-entropica.json",
+        "pai": "addon-herdada::formula-combate-entropica.json::formula-combate-entropica:res_intelectual__res_ataque_extra",
+        "caminho": "efeitos",
+        "proprietario": "RES-07",
+        "tipo": "referência",
+        "referencia": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_ataque_extra",
+        "integracaoProprietario": "AD-24-H04",
+        "addon": "formula-combate-entropica.json",
+        "hashDado": "d822baed9374f812c66e9ad86a66c4c16346f59a16e0633d638de97407178976"
+      },
+      "proprietarioSugerido": "RES-07"
+    },
+    {
+      "chave": "addon-herdada::formula-combate-entropica.json::formula-combate-entropica:res_intelectual__res_libertacao_do_destino::escolha",
+      "item": {
+        "chave": "addon-herdada::formula-combate-entropica.json::formula-combate-entropica:res_intelectual__res_libertacao_do_destino::escolha",
+        "id": "escolha",
+        "nome": "Tipo de Dano",
+        "arquivo": "addons/formula-combate-entropica.json",
+        "pai": "addon-herdada::formula-combate-entropica.json::formula-combate-entropica:res_intelectual__res_libertacao_do_destino",
+        "caminho": "escolha",
+        "proprietario": "RES-02",
+        "tipo": "referência",
+        "referencia": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha",
+        "integracaoProprietario": "AD-24-H01",
+        "addon": "formula-combate-entropica.json",
+        "idLocal": "res_destino_tipo",
+        "hashDado": "e4291f0363f5a9fd84c4631e53475592e75e7737e188c50eb939c1e2c1d45d9d"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-combate.js::COMBATE_ESTADOS::contraFeiticaria",
+      "item": {
+        "chave": "afty-combate.js::COMBATE_ESTADOS::contraFeiticaria",
+        "id": "contraFeiticaria",
+        "nome": "Contra Técnica ou Aptidão",
+        "arquivo": "src/systems/afty/afty-combate.js",
+        "export": "COMBATE_ESTADOS",
+        "proprietario": "M03",
+        "tipo": "entrada",
+        "idLocal": "contraFeiticaria",
+        "hashDado": "0ec87bd1ad5bc6e06b7e2f9a68e505d73d9d3b37b878cfaafc8c9f70a87ba676"
+      },
+      "proprietarioSugerido": "M03"
+    },
+    {
+      "chave": "afty-combate.js::COMBATE_ESTADOS::precisaoForcada",
+      "item": {
+        "chave": "afty-combate.js::COMBATE_ESTADOS::precisaoForcada",
+        "id": "precisaoForcada",
+        "nome": "Precisão Forçada",
+        "arquivo": "src/systems/afty/afty-combate.js",
+        "export": "COMBATE_ESTADOS",
+        "proprietario": "M03",
+        "tipo": "entrada",
+        "idLocal": "precisaoForcada",
+        "hashDado": "01dc8abbee5ce7b6ab380744c31211bbe603026b9118695312d7519027dddd40"
+      },
+      "proprietarioSugerido": "M03"
+    },
+    {
+      "chave": "afty-combate.js::COMBATE_ESTADOS::resAtaqueExtra",
+      "item": {
+        "chave": "afty-combate.js::COMBATE_ESTADOS::resAtaqueExtra",
+        "id": "resAtaqueExtra",
+        "nome": "Ataque Extra",
+        "arquivo": "src/systems/afty/afty-combate.js",
+        "export": "COMBATE_ESTADOS",
+        "proprietario": "M03",
+        "tipo": "entrada",
+        "idLocal": "resAtaqueExtra",
+        "hashDado": "f23954f6ab0b25709cadefa5835983ccd62ba9adec2a30d0adc898e4ddbc7d09"
+      },
+      "proprietarioSugerido": "M03"
+    },
+    {
+      "chave": "afty-combate.js::COMBATE_VARS::contra_feiticaria",
+      "item": {
+        "chave": "afty-combate.js::COMBATE_VARS::contra_feiticaria",
+        "id": "contra_feiticaria",
+        "nome": "contra_feiticaria",
+        "arquivo": "src/systems/afty/afty-combate.js",
+        "export": "COMBATE_VARS",
+        "proprietario": "M03",
+        "tipo": "entrada",
+        "hashDado": "a11c2886ba54c4e4dcabce8f914345081d96870bf4d83ab9864d23d8cc722fa1"
+      },
+      "proprietarioSugerido": "M03"
+    },
+    {
+      "chave": "afty-combate.js::COMBATE_VARS::precisao_forcada",
+      "item": {
+        "chave": "afty-combate.js::COMBATE_VARS::precisao_forcada",
+        "id": "precisao_forcada",
+        "nome": "precisao_forcada",
+        "arquivo": "src/systems/afty/afty-combate.js",
+        "export": "COMBATE_VARS",
+        "proprietario": "M03",
+        "tipo": "entrada",
+        "hashDado": "e61b1ca85eb91440decc253c1bbbab1923207336ee210913dfaae526f9a13a9c"
+      },
+      "proprietarioSugerido": "M03"
+    },
+    {
+      "chave": "afty-combate.js::COMBATE_VARS::res_ataque_extra",
+      "item": {
+        "chave": "afty-combate.js::COMBATE_VARS::res_ataque_extra",
+        "id": "res_ataque_extra",
+        "nome": "res_ataque_extra",
+        "arquivo": "src/systems/afty/afty-combate.js",
+        "export": "COMBATE_VARS",
+        "proprietario": "M03",
+        "tipo": "entrada",
+        "hashDado": "b660bd6960b676399595dcec355d3b40a1e1de86ba883eb8499298723dc2ea95"
+      },
+      "proprietarioSugerido": "M03"
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::res_dadiva_indulgente_a_feiticaria::@3",
+      "item": {
+        "chave": "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::res_dadiva_indulgente_a_feiticaria::@3",
+        "id": "@3",
+        "nome": "@3",
+        "arquivo": "src/systems/afty/afty-efeitos-conteudo.js",
+        "export": "ESCOLHA_EFEITOS",
+        "pai": "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::res_dadiva_indulgente_a_feiticaria",
+        "caminho": "@3",
+        "proprietario": "RES-01",
+        "tipo": "parcela declarada",
+        "hashDado": "98764be1f1e263c086f31af0d09856a98e1da5544ad3dd40278377de9370684f"
+      },
+      "proprietarioSugerido": "RES-01"
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_ataque_extra",
+      "item": {
+        "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_ataque_extra",
+        "id": "res_ataque_extra",
+        "nome": "res_ataque_extra",
+        "arquivo": "src/systems/afty/afty-efeitos-conteudo.js",
+        "export": "HABILIDADE_EFEITOS",
+        "proprietario": "RES-07",
+        "tipo": "entrada de tabela",
+        "hashDado": "d822baed9374f812c66e9ad86a66c4c16346f59a16e0633d638de97407178976",
+        "regraOriginal": "afty-habilidades.js::AFTY_HABILIDADES::res_ataque_extra"
+      },
+      "proprietarioSugerido": "RES-07"
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_ataque_extra::@0",
+      "item": {
+        "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_ataque_extra::@0",
+        "id": "@0",
+        "nome": "@0",
+        "arquivo": "src/systems/afty/afty-efeitos-conteudo.js",
+        "export": "HABILIDADE_EFEITOS",
+        "pai": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_ataque_extra",
+        "caminho": "@0",
+        "proprietario": "RES-07",
+        "tipo": "parcela declarada",
+        "hashDado": "7b2557fe360bef14e99069c260575c00390477ab7eaa45bb111ec02bfd186ae7"
+      },
+      "proprietarioSugerido": "RES-07"
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_libertacao_do_destino::@2",
+      "item": {
+        "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_libertacao_do_destino::@2",
+        "id": "@2",
+        "nome": "@2",
+        "arquivo": "src/systems/afty/afty-efeitos-conteudo.js",
+        "export": "HABILIDADE_EFEITOS",
+        "pai": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_libertacao_do_destino",
+        "caminho": "@2",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "hashDado": "deecd89a61f387a8e6e686c4a7132e4fd446df36cb7cdc78cc6874ff2768b482"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_libertacao_do_destino::@3",
+      "item": {
+        "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_libertacao_do_destino::@3",
+        "id": "@3",
+        "nome": "@3",
+        "arquivo": "src/systems/afty/afty-efeitos-conteudo.js",
+        "export": "HABILIDADE_EFEITOS",
+        "pai": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_libertacao_do_destino",
+        "caminho": "@3",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "hashDado": "403f6bafa3d746270eb64bbf4693e95c1659a789b0010d504eed2aee24f8b51e"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_libertacao_do_destino::@4",
+      "item": {
+        "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_libertacao_do_destino::@4",
+        "id": "@4",
+        "nome": "@4",
+        "arquivo": "src/systems/afty/afty-efeitos-conteudo.js",
+        "export": "HABILIDADE_EFEITOS",
+        "pai": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_libertacao_do_destino",
+        "caminho": "@4",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "hashDado": "1bdf2c3e0ae1279c53acdfc0a6cb623d36d1556af1af534a114c89e2db266f65"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-efeitos.js::HABILIDADE_EFEITOS::res_ataque_extra",
+      "item": {
+        "chave": "afty-efeitos.js::HABILIDADE_EFEITOS::res_ataque_extra",
+        "id": "res_ataque_extra",
+        "nome": "res_ataque_extra",
+        "arquivo": "src/systems/afty/afty-efeitos.js",
+        "export": "HABILIDADE_EFEITOS",
+        "proprietario": "RES-07",
+        "tipo": "referência",
+        "referencia": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_ataque_extra",
+        "hashDado": "d822baed9374f812c66e9ad86a66c4c16346f59a16e0633d638de97407178976"
+      },
+      "proprietarioSugerido": "RES-07"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha",
+        "id": "escolha",
+        "nome": "Tipo de Dano",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha",
+        "proprietario": "LUT-11",
+        "tipo": "parcela declarada",
+        "idLocal": "lut_supremo_tipo",
+        "hashDado": "d59ade21e309e0f44c4b80be74332b1afcf4de5dec421d07c735a41d904c230e"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/niveis",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/niveis",
+        "id": "escolha/niveis",
+        "nome": "escolha/niveis",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/niveis",
+        "proprietario": "LUT-11",
+        "tipo": "pool",
+        "hashDado": "f0d0e023f9b1a4da91c19ac15cf2ea71427f0e4a8cf70397527d67c360d80af7"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/niveis/@0",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/niveis/@0",
+        "id": "escolha/niveis/@0",
+        "nome": "escolha/niveis/@0",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/niveis/@0",
+        "proprietario": "LUT-11",
+        "tipo": "valor de domínio",
+        "hashDado": "b17ef6d19c7a5b1ee83b907c595526dcb1eb06db8227d650d5dda0a9f4ce8cd9"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes",
+        "id": "escolha/opcoes",
+        "nome": "escolha/opcoes",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes",
+        "proprietario": "LUT-11",
+        "tipo": "pool",
+        "hashDado": "9820381c0b3c1a586a5667d681f594c814b7d764192672c08e268d80be5912e7"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_acido",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_acido",
+        "id": "escolha/opcoes/lut_supremo_acido",
+        "nome": "Ácido",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_acido",
+        "proprietario": "LUT-11",
+        "tipo": "parcela declarada",
+        "idLocal": "lut_supremo_acido",
+        "hashDado": "5e972f72080a92e53125d655fd58b4c5ac4e93c24e2577d65fe385bc7efdd774"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_acido/efeitos",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_acido/efeitos",
+        "id": "escolha/opcoes/lut_supremo_acido/efeitos",
+        "nome": "escolha/opcoes/lut_supremo_acido/efeitos",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_acido/efeitos",
+        "proprietario": "LUT-11",
+        "tipo": "pool",
+        "hashDado": "a2d8ad0ce2d6b703dfbdca79ab000c1466aea3219a66524be06530263460dc35"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_acido/efeitos/@0",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_acido/efeitos/@0",
+        "id": "escolha/opcoes/lut_supremo_acido/efeitos/@0",
+        "nome": "escolha/opcoes/lut_supremo_acido/efeitos/@0",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_acido/efeitos/@0",
+        "proprietario": "LUT-11",
+        "tipo": "parcela declarada",
+        "hashDado": "7160259cc89a6927f7674383ad96ae331b3126aa46f200ac553965f03f289331"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_chocante",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_chocante",
+        "id": "escolha/opcoes/lut_supremo_chocante",
+        "nome": "Chocante",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_chocante",
+        "proprietario": "LUT-11",
+        "tipo": "parcela declarada",
+        "idLocal": "lut_supremo_chocante",
+        "hashDado": "7a86ad1df542468099523bb3bfeaa0126adbf128daf22e7d353c032780464c5d"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_chocante/efeitos",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_chocante/efeitos",
+        "id": "escolha/opcoes/lut_supremo_chocante/efeitos",
+        "nome": "escolha/opcoes/lut_supremo_chocante/efeitos",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_chocante/efeitos",
+        "proprietario": "LUT-11",
+        "tipo": "pool",
+        "hashDado": "1f76a6fed05627ac926c6ef6364d13c6647802c5419f6e3d8b39db828408c4e7"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_chocante/efeitos/@0",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_chocante/efeitos/@0",
+        "id": "escolha/opcoes/lut_supremo_chocante/efeitos/@0",
+        "nome": "escolha/opcoes/lut_supremo_chocante/efeitos/@0",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_chocante/efeitos/@0",
+        "proprietario": "LUT-11",
+        "tipo": "parcela declarada",
+        "hashDado": "b7295365fbb55d51c264ca5bced70ed672c5025f0aa9ac257897ab65d57966b7"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_congelante",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_congelante",
+        "id": "escolha/opcoes/lut_supremo_congelante",
+        "nome": "Congelante",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_congelante",
+        "proprietario": "LUT-11",
+        "tipo": "parcela declarada",
+        "idLocal": "lut_supremo_congelante",
+        "hashDado": "416d6c162135bba8f88d7621b4a51662f8e79e7621637ebebe2ee11af20ddfbb"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_congelante/efeitos",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_congelante/efeitos",
+        "id": "escolha/opcoes/lut_supremo_congelante/efeitos",
+        "nome": "escolha/opcoes/lut_supremo_congelante/efeitos",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_congelante/efeitos",
+        "proprietario": "LUT-11",
+        "tipo": "pool",
+        "hashDado": "d0130b1e1ff004a0d189dd00de8c1acc1f2c5735619b2c9b798f7494706ab5d5"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_congelante/efeitos/@0",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_congelante/efeitos/@0",
+        "id": "escolha/opcoes/lut_supremo_congelante/efeitos/@0",
+        "nome": "escolha/opcoes/lut_supremo_congelante/efeitos/@0",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_congelante/efeitos/@0",
+        "proprietario": "LUT-11",
+        "tipo": "parcela declarada",
+        "hashDado": "a95fb7f780112264e90e580c59311d49138f931ba71599d13a8f03c96afdf55a"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energetico",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energetico",
+        "id": "escolha/opcoes/lut_supremo_energetico",
+        "nome": "Energético",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_energetico",
+        "proprietario": "LUT-11",
+        "tipo": "parcela declarada",
+        "idLocal": "lut_supremo_energetico",
+        "hashDado": "95002b73b6bd44bce3f0c32726b6147023062da5cbbbff941b955bf1eb94006e"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energetico/efeitos",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energetico/efeitos",
+        "id": "escolha/opcoes/lut_supremo_energetico/efeitos",
+        "nome": "escolha/opcoes/lut_supremo_energetico/efeitos",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_energetico/efeitos",
+        "proprietario": "LUT-11",
+        "tipo": "pool",
+        "hashDado": "1575b185a7e666058a7e639fb7de518689d92b1bdc1861dca63aa996444048ce"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energetico/efeitos/@0",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energetico/efeitos/@0",
+        "id": "escolha/opcoes/lut_supremo_energetico/efeitos/@0",
+        "nome": "escolha/opcoes/lut_supremo_energetico/efeitos/@0",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_energetico/efeitos/@0",
+        "proprietario": "LUT-11",
+        "tipo": "parcela declarada",
+        "hashDado": "827c0487e05b661ef42f7b99bb9fbbe00d8f75fabc4776d2ad102fa4347b8f60"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energia_reversa",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energia_reversa",
+        "id": "escolha/opcoes/lut_supremo_energia_reversa",
+        "nome": "Energia Reversa",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_energia_reversa",
+        "proprietario": "LUT-11",
+        "tipo": "parcela declarada",
+        "idLocal": "lut_supremo_energia_reversa",
+        "hashDado": "6a8b209b229e022754300e38fee5fb04316ebd95d7c32b45e3f6d18ad9f81769"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energia_reversa/efeitos",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energia_reversa/efeitos",
+        "id": "escolha/opcoes/lut_supremo_energia_reversa/efeitos",
+        "nome": "escolha/opcoes/lut_supremo_energia_reversa/efeitos",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_energia_reversa/efeitos",
+        "proprietario": "LUT-11",
+        "tipo": "pool",
+        "hashDado": "080b7e882b74413dd7bed58d85d6f579f9c92c7f0a4c67586280c624407393e5"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energia_reversa/efeitos/@0",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energia_reversa/efeitos/@0",
+        "id": "escolha/opcoes/lut_supremo_energia_reversa/efeitos/@0",
+        "nome": "escolha/opcoes/lut_supremo_energia_reversa/efeitos/@0",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_energia_reversa/efeitos/@0",
+        "proprietario": "LUT-11",
+        "tipo": "parcela declarada",
+        "hashDado": "aa186fb14ebac4517ff98edfe65058939a3806d7fb8be54675c529af5578967c"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_necrotico",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_necrotico",
+        "id": "escolha/opcoes/lut_supremo_necrotico",
+        "nome": "Necrótico",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_necrotico",
+        "proprietario": "LUT-11",
+        "tipo": "parcela declarada",
+        "idLocal": "lut_supremo_necrotico",
+        "hashDado": "3b99e6deb831dbc27363c7a13311b56f19dde7f7d31740268c56dba4704a1a4c"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_necrotico/efeitos",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_necrotico/efeitos",
+        "id": "escolha/opcoes/lut_supremo_necrotico/efeitos",
+        "nome": "escolha/opcoes/lut_supremo_necrotico/efeitos",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_necrotico/efeitos",
+        "proprietario": "LUT-11",
+        "tipo": "pool",
+        "hashDado": "8377a8bb8f14d9e132b887b5cb71613c6279eb0a555990bc417c264a8c320c43"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_necrotico/efeitos/@0",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_necrotico/efeitos/@0",
+        "id": "escolha/opcoes/lut_supremo_necrotico/efeitos/@0",
+        "nome": "escolha/opcoes/lut_supremo_necrotico/efeitos/@0",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_necrotico/efeitos/@0",
+        "proprietario": "LUT-11",
+        "tipo": "parcela declarada",
+        "hashDado": "6c0c2072950d2edce73458b2fa5976a46326f7979eeb8b915bff378bbe217878"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_psiquico",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_psiquico",
+        "id": "escolha/opcoes/lut_supremo_psiquico",
+        "nome": "Psíquico",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_psiquico",
+        "proprietario": "LUT-11",
+        "tipo": "parcela declarada",
+        "idLocal": "lut_supremo_psiquico",
+        "hashDado": "264c239a3cdf114619a0c5f64daac75a628c12a9b5c44b54382be6fa3804c9af"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_psiquico/efeitos",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_psiquico/efeitos",
+        "id": "escolha/opcoes/lut_supremo_psiquico/efeitos",
+        "nome": "escolha/opcoes/lut_supremo_psiquico/efeitos",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_psiquico/efeitos",
+        "proprietario": "LUT-11",
+        "tipo": "pool",
+        "hashDado": "82b56b0747369affc6bdc612286f22707a088138484fd6283a7c97e900026ae0"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_psiquico/efeitos/@0",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_psiquico/efeitos/@0",
+        "id": "escolha/opcoes/lut_supremo_psiquico/efeitos/@0",
+        "nome": "escolha/opcoes/lut_supremo_psiquico/efeitos/@0",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_psiquico/efeitos/@0",
+        "proprietario": "LUT-11",
+        "tipo": "parcela declarada",
+        "hashDado": "c379ae49da31bf3e141de17e44669a6afebc64f4d29a622277c56806970252dd"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_queimante",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_queimante",
+        "id": "escolha/opcoes/lut_supremo_queimante",
+        "nome": "Queimante",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_queimante",
+        "proprietario": "LUT-11",
+        "tipo": "parcela declarada",
+        "idLocal": "lut_supremo_queimante",
+        "hashDado": "ae2b2e99c038e7e7ee039f80a270449f4a5fa37fa83c9edc0e178c485c068a42"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_queimante/efeitos",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_queimante/efeitos",
+        "id": "escolha/opcoes/lut_supremo_queimante/efeitos",
+        "nome": "escolha/opcoes/lut_supremo_queimante/efeitos",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_queimante/efeitos",
+        "proprietario": "LUT-11",
+        "tipo": "pool",
+        "hashDado": "066cf078c26726b6d35a1fbb95611ddf3fd86fa7df7e42363a1c40506167288b"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_queimante/efeitos/@0",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_queimante/efeitos/@0",
+        "id": "escolha/opcoes/lut_supremo_queimante/efeitos/@0",
+        "nome": "escolha/opcoes/lut_supremo_queimante/efeitos/@0",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_queimante/efeitos/@0",
+        "proprietario": "LUT-11",
+        "tipo": "parcela declarada",
+        "hashDado": "488cd01aa6447057fe780a8979a6c45121bace922b2393fc94ebb1c97fab297f"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_radiante",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_radiante",
+        "id": "escolha/opcoes/lut_supremo_radiante",
+        "nome": "Radiante",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_radiante",
+        "proprietario": "LUT-11",
+        "tipo": "parcela declarada",
+        "idLocal": "lut_supremo_radiante",
+        "hashDado": "d7fbbe744d3b9ec03f13d34c426884b8af636ce0143ddd7bfade2a134c08ee16"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_radiante/efeitos",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_radiante/efeitos",
+        "id": "escolha/opcoes/lut_supremo_radiante/efeitos",
+        "nome": "escolha/opcoes/lut_supremo_radiante/efeitos",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_radiante/efeitos",
+        "proprietario": "LUT-11",
+        "tipo": "pool",
+        "hashDado": "6c856f587bd206d72a22958849a0a42299183a1b5fd7f761ad355e0eda0b8041"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_radiante/efeitos/@0",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_radiante/efeitos/@0",
+        "id": "escolha/opcoes/lut_supremo_radiante/efeitos/@0",
+        "nome": "escolha/opcoes/lut_supremo_radiante/efeitos/@0",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_radiante/efeitos/@0",
+        "proprietario": "LUT-11",
+        "tipo": "parcela declarada",
+        "hashDado": "081d6c16068bc48b6ab6e21d2e02087b019003bbf6a8dd9e6787f5f0c55e031c"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_sonico",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_sonico",
+        "id": "escolha/opcoes/lut_supremo_sonico",
+        "nome": "Sônico",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_sonico",
+        "proprietario": "LUT-11",
+        "tipo": "parcela declarada",
+        "idLocal": "lut_supremo_sonico",
+        "hashDado": "5bc3004d0bb862fdcd085a088a46e8fa488f78ffc23faf49b3b3d88f4d2d994b"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_sonico/efeitos",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_sonico/efeitos",
+        "id": "escolha/opcoes/lut_supremo_sonico/efeitos",
+        "nome": "escolha/opcoes/lut_supremo_sonico/efeitos",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_sonico/efeitos",
+        "proprietario": "LUT-11",
+        "tipo": "pool",
+        "hashDado": "d28a86ac51f71d0bdfd681020ca040983df4a11b77067a871cb99be82554e2c7"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_sonico/efeitos/@0",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_sonico/efeitos/@0",
+        "id": "escolha/opcoes/lut_supremo_sonico/efeitos/@0",
+        "nome": "escolha/opcoes/lut_supremo_sonico/efeitos/@0",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_sonico/efeitos/@0",
+        "proprietario": "LUT-11",
+        "tipo": "parcela declarada",
+        "hashDado": "0ca6d9ac8bdf33ad3f28f85e2b2eaf78b7dc7160be0c2be441d0f1de7095002f"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_venenoso",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_venenoso",
+        "id": "escolha/opcoes/lut_supremo_venenoso",
+        "nome": "Venenoso",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_venenoso",
+        "proprietario": "LUT-11",
+        "tipo": "parcela declarada",
+        "idLocal": "lut_supremo_venenoso",
+        "hashDado": "2bbbe8db182c23be26cc8f4a1f375c2478bc1aea2ae67ea4366c0d1d58d95274"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_venenoso/efeitos",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_venenoso/efeitos",
+        "id": "escolha/opcoes/lut_supremo_venenoso/efeitos",
+        "nome": "escolha/opcoes/lut_supremo_venenoso/efeitos",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_venenoso/efeitos",
+        "proprietario": "LUT-11",
+        "tipo": "pool",
+        "hashDado": "9a55522980aa555d4624885f0d768c0d5aa5f9f45ecb186f0755313634bccfe0"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_venenoso/efeitos/@0",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_venenoso/efeitos/@0",
+        "id": "escolha/opcoes/lut_supremo_venenoso/efeitos/@0",
+        "nome": "escolha/opcoes/lut_supremo_venenoso/efeitos/@0",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+        "caminho": "escolha/opcoes/lut_supremo_venenoso/efeitos/@0",
+        "proprietario": "LUT-11",
+        "tipo": "parcela declarada",
+        "hashDado": "51a66399e2dc6f22f46ef26447d982f29fc5a2b95eff9033ba070299aa07df9a"
+      },
+      "proprietarioSugerido": "LUT-11"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha",
+        "id": "escolha",
+        "nome": "Tipo de Dano",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "idLocal": "res_destino_tipo",
+        "hashDado": "e4291f0363f5a9fd84c4631e53475592e75e7737e188c50eb939c1e2c1d45d9d"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/niveis",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/niveis",
+        "id": "escolha/niveis",
+        "nome": "escolha/niveis",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/niveis",
+        "proprietario": "RES-02",
+        "tipo": "pool",
+        "hashDado": "49e165525ebdb26f765e7bbab7689c4772a55771dd3ce3b1786d75188895cf03"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/niveis/@0",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/niveis/@0",
+        "id": "escolha/niveis/@0",
+        "nome": "escolha/niveis/@0",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/niveis/@0",
+        "proprietario": "RES-02",
+        "tipo": "valor de domínio",
+        "hashDado": "f5ca38f748a1d6eaf726b8a42fb575c3c71f1864a8143301782de13da2d9202b"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes",
+        "id": "escolha/opcoes",
+        "nome": "escolha/opcoes",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes",
+        "proprietario": "RES-02",
+        "tipo": "pool",
+        "hashDado": "e0383e8b907b8e7de3229217375db815847d36a05b1e2c5746e4e27512d5ce92"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_acido",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_acido",
+        "id": "escolha/opcoes/res_destino_acido",
+        "nome": "Ácido",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_acido",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "idLocal": "res_destino_acido",
+        "hashDado": "61dbc3ae474173f1414ec12e0c3ec97df3aa6afd78d8f06ecf3ed6277eb68a48"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_acido/efeitos",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_acido/efeitos",
+        "id": "escolha/opcoes/res_destino_acido/efeitos",
+        "nome": "escolha/opcoes/res_destino_acido/efeitos",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_acido/efeitos",
+        "proprietario": "RES-02",
+        "tipo": "pool",
+        "hashDado": "a2a4a842b2ca78a8c1bcd319fcfcf1a826f9baadced23aa7591deb8f2b8683f4"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_acido/efeitos/@0",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_acido/efeitos/@0",
+        "id": "escolha/opcoes/res_destino_acido/efeitos/@0",
+        "nome": "escolha/opcoes/res_destino_acido/efeitos/@0",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_acido/efeitos/@0",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "hashDado": "c48b2d06222fb381b186da1882c8a6e8f1d2c5ee80069f80adb5dc4cf60717c0"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_chocante",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_chocante",
+        "id": "escolha/opcoes/res_destino_chocante",
+        "nome": "Chocante",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_chocante",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "idLocal": "res_destino_chocante",
+        "hashDado": "ff50f92ac26bfda6a634ea31aa4b194a7d07aa2d2d406a28f5cd498393150b22"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_chocante/efeitos",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_chocante/efeitos",
+        "id": "escolha/opcoes/res_destino_chocante/efeitos",
+        "nome": "escolha/opcoes/res_destino_chocante/efeitos",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_chocante/efeitos",
+        "proprietario": "RES-02",
+        "tipo": "pool",
+        "hashDado": "89e7349e0922030fdbd12078f27c7c068ab85aa32f188e0e69ef2eb8d892c05b"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_chocante/efeitos/@0",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_chocante/efeitos/@0",
+        "id": "escolha/opcoes/res_destino_chocante/efeitos/@0",
+        "nome": "escolha/opcoes/res_destino_chocante/efeitos/@0",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_chocante/efeitos/@0",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "hashDado": "e822f6b5e8276276a7d89c62143a92173f1d3abe1801807b3c07b3ad2a39bfa3"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_congelante",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_congelante",
+        "id": "escolha/opcoes/res_destino_congelante",
+        "nome": "Congelante",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_congelante",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "idLocal": "res_destino_congelante",
+        "hashDado": "8f438b48e92a59ecf9e0a57c61135ca92abf9509e4651d860368124b4d210a2a"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_congelante/efeitos",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_congelante/efeitos",
+        "id": "escolha/opcoes/res_destino_congelante/efeitos",
+        "nome": "escolha/opcoes/res_destino_congelante/efeitos",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_congelante/efeitos",
+        "proprietario": "RES-02",
+        "tipo": "pool",
+        "hashDado": "389f0bebca9e938b9095c971026f12dfa5568034d20f94e8d10c189e8897e8e3"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_congelante/efeitos/@0",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_congelante/efeitos/@0",
+        "id": "escolha/opcoes/res_destino_congelante/efeitos/@0",
+        "nome": "escolha/opcoes/res_destino_congelante/efeitos/@0",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_congelante/efeitos/@0",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "hashDado": "35248c2cacb07233996d9f75b530b635cafc4f0c330d244de24fbd726c106e7c"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energetico",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energetico",
+        "id": "escolha/opcoes/res_destino_energetico",
+        "nome": "Energético",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_energetico",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "idLocal": "res_destino_energetico",
+        "hashDado": "53fe4a9d367734bafce0ec7fd0d5a19a766333ae6b88427e2b2d0db6804c3774"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energetico/efeitos",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energetico/efeitos",
+        "id": "escolha/opcoes/res_destino_energetico/efeitos",
+        "nome": "escolha/opcoes/res_destino_energetico/efeitos",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_energetico/efeitos",
+        "proprietario": "RES-02",
+        "tipo": "pool",
+        "hashDado": "3b45b635992a76fec1216698422fbf8f1d55559ca9eddab389fef26a03305187"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energetico/efeitos/@0",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energetico/efeitos/@0",
+        "id": "escolha/opcoes/res_destino_energetico/efeitos/@0",
+        "nome": "escolha/opcoes/res_destino_energetico/efeitos/@0",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_energetico/efeitos/@0",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "hashDado": "138363f09972d1b4531394738616cc0c376e0319ccdc971dbefb65891ff34fe2"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energia_reversa",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energia_reversa",
+        "id": "escolha/opcoes/res_destino_energia_reversa",
+        "nome": "Energia Reversa",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_energia_reversa",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "idLocal": "res_destino_energia_reversa",
+        "hashDado": "a26d39fe2fcbe0dd21a818b75ac3084db8fa2f2a7929573a168afbad103ed6d2"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energia_reversa/efeitos",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energia_reversa/efeitos",
+        "id": "escolha/opcoes/res_destino_energia_reversa/efeitos",
+        "nome": "escolha/opcoes/res_destino_energia_reversa/efeitos",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_energia_reversa/efeitos",
+        "proprietario": "RES-02",
+        "tipo": "pool",
+        "hashDado": "dc4911db2c4011c4836c0e7febcefe4b0198038284bd0c000b92a65c52db0bd2"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energia_reversa/efeitos/@0",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energia_reversa/efeitos/@0",
+        "id": "escolha/opcoes/res_destino_energia_reversa/efeitos/@0",
+        "nome": "escolha/opcoes/res_destino_energia_reversa/efeitos/@0",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_energia_reversa/efeitos/@0",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "hashDado": "66e896fa5f9944652786709330bffe27d3f27f5709c4ca78f143aa495b359996"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_necrotico",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_necrotico",
+        "id": "escolha/opcoes/res_destino_necrotico",
+        "nome": "Necrótico",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_necrotico",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "idLocal": "res_destino_necrotico",
+        "hashDado": "61570aa826af44187683543f02db53803d310c602c1aed646a92c0ecaee64ae6"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_necrotico/efeitos",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_necrotico/efeitos",
+        "id": "escolha/opcoes/res_destino_necrotico/efeitos",
+        "nome": "escolha/opcoes/res_destino_necrotico/efeitos",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_necrotico/efeitos",
+        "proprietario": "RES-02",
+        "tipo": "pool",
+        "hashDado": "f93a363fec95c866f0da303e1d858d5d0f77fe87823cd6b30af4fca3e640a45c"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_necrotico/efeitos/@0",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_necrotico/efeitos/@0",
+        "id": "escolha/opcoes/res_destino_necrotico/efeitos/@0",
+        "nome": "escolha/opcoes/res_destino_necrotico/efeitos/@0",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_necrotico/efeitos/@0",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "hashDado": "c3d056a51165254582ebcc25d741e7adfb3416bb25755a5282f88b0e7f49490a"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_psiquico",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_psiquico",
+        "id": "escolha/opcoes/res_destino_psiquico",
+        "nome": "Psíquico",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_psiquico",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "idLocal": "res_destino_psiquico",
+        "hashDado": "4a763910a008f5eaec57bc6056512f349adc57c9e938f489f8f97bc77da4b0fe"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_psiquico/efeitos",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_psiquico/efeitos",
+        "id": "escolha/opcoes/res_destino_psiquico/efeitos",
+        "nome": "escolha/opcoes/res_destino_psiquico/efeitos",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_psiquico/efeitos",
+        "proprietario": "RES-02",
+        "tipo": "pool",
+        "hashDado": "a19bd55b11568cc57af5d8986c05b1e775ecc5a728a2a0c497b87cbf4e5c77c7"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_psiquico/efeitos/@0",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_psiquico/efeitos/@0",
+        "id": "escolha/opcoes/res_destino_psiquico/efeitos/@0",
+        "nome": "escolha/opcoes/res_destino_psiquico/efeitos/@0",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_psiquico/efeitos/@0",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "hashDado": "1e4ed82fa3a861aab9e9d2fef54f13b2292b62e895c4d84a572ed940970a35a8"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_queimante",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_queimante",
+        "id": "escolha/opcoes/res_destino_queimante",
+        "nome": "Queimante",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_queimante",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "idLocal": "res_destino_queimante",
+        "hashDado": "89eb4c76b7ec954878731dc6ec10bd382442fc25cdb0766abbe8e03e9de5b660"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_queimante/efeitos",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_queimante/efeitos",
+        "id": "escolha/opcoes/res_destino_queimante/efeitos",
+        "nome": "escolha/opcoes/res_destino_queimante/efeitos",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_queimante/efeitos",
+        "proprietario": "RES-02",
+        "tipo": "pool",
+        "hashDado": "5e0e21e6794f533de50a07a0a71197f17b7216083e4c73e182224321b10603be"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_queimante/efeitos/@0",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_queimante/efeitos/@0",
+        "id": "escolha/opcoes/res_destino_queimante/efeitos/@0",
+        "nome": "escolha/opcoes/res_destino_queimante/efeitos/@0",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_queimante/efeitos/@0",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "hashDado": "461a85fb7ed9e4f0bd5f70da305b3424259ed04ed4bfaefc4111ec3ff63c2567"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_radiante",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_radiante",
+        "id": "escolha/opcoes/res_destino_radiante",
+        "nome": "Radiante",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_radiante",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "idLocal": "res_destino_radiante",
+        "hashDado": "c9a3555dad6313594c58d83cbba737da9fab79a423fb5ac398a31dc29a304af1"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_radiante/efeitos",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_radiante/efeitos",
+        "id": "escolha/opcoes/res_destino_radiante/efeitos",
+        "nome": "escolha/opcoes/res_destino_radiante/efeitos",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_radiante/efeitos",
+        "proprietario": "RES-02",
+        "tipo": "pool",
+        "hashDado": "2cd1dd9adee40e87a532909a2011bb2d40c9e0508c99713ac908fde700c6583a"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_radiante/efeitos/@0",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_radiante/efeitos/@0",
+        "id": "escolha/opcoes/res_destino_radiante/efeitos/@0",
+        "nome": "escolha/opcoes/res_destino_radiante/efeitos/@0",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_radiante/efeitos/@0",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "hashDado": "196c4734020f1916412541a957f97568db155abbad7fbbbf296c27936d90e158"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_sonico",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_sonico",
+        "id": "escolha/opcoes/res_destino_sonico",
+        "nome": "Sônico",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_sonico",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "idLocal": "res_destino_sonico",
+        "hashDado": "e9923c7b417bc66a7abd2873a8193360e598694f3436d4a71242619e3f50530a"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_sonico/efeitos",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_sonico/efeitos",
+        "id": "escolha/opcoes/res_destino_sonico/efeitos",
+        "nome": "escolha/opcoes/res_destino_sonico/efeitos",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_sonico/efeitos",
+        "proprietario": "RES-02",
+        "tipo": "pool",
+        "hashDado": "8e7d6d34ecf5021c780716693c30f8b88b622c73049fadab9f179b68a46692df"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_sonico/efeitos/@0",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_sonico/efeitos/@0",
+        "id": "escolha/opcoes/res_destino_sonico/efeitos/@0",
+        "nome": "escolha/opcoes/res_destino_sonico/efeitos/@0",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_sonico/efeitos/@0",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "hashDado": "6a5f95c8a9bb014cba3de22e3926db302933fdcea58ec15c964203cdcc543878"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_venenoso",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_venenoso",
+        "id": "escolha/opcoes/res_destino_venenoso",
+        "nome": "Venenoso",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_venenoso",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "idLocal": "res_destino_venenoso",
+        "hashDado": "351e0c6af2ad41189f37f26392af3dced7daad1fc6fd220c8d380c0a0d26d226"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_venenoso/efeitos",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_venenoso/efeitos",
+        "id": "escolha/opcoes/res_destino_venenoso/efeitos",
+        "nome": "escolha/opcoes/res_destino_venenoso/efeitos",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_venenoso/efeitos",
+        "proprietario": "RES-02",
+        "tipo": "pool",
+        "hashDado": "857a035f605deaa29e2e6c6b95695ebe6649e316c66c71edd6f18f90fa6dab5e"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_venenoso/efeitos/@0",
+      "item": {
+        "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_venenoso/efeitos/@0",
+        "id": "escolha/opcoes/res_destino_venenoso/efeitos/@0",
+        "nome": "escolha/opcoes/res_destino_venenoso/efeitos/@0",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "AFTY_HABILIDADES",
+        "pai": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+        "caminho": "escolha/opcoes/res_destino_venenoso/efeitos/@0",
+        "proprietario": "RES-02",
+        "tipo": "parcela declarada",
+        "hashDado": "20a8d55b9ac2234d787733a9ab26a3929a018f49da9d19be575914aea23a23c1"
+      },
+      "proprietarioSugerido": "RES-02"
+    },
+    {
+      "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_acido",
+      "item": {
+        "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_acido",
+        "id": "lut_supremo_acido",
+        "nome": "lut_supremo_acido",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "OPCAO_ESCOLHA_NOME",
+        "proprietario": "P01",
+        "tipo": "entrada de tabela",
+        "hashDado": "6fd1eba427a2a7028023796f5d81f324d6ba544f49332c44c18a2021266cb7c1"
+      },
+      "proprietarioSugerido": "P01"
+    },
+    {
+      "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_chocante",
+      "item": {
+        "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_chocante",
+        "id": "lut_supremo_chocante",
+        "nome": "lut_supremo_chocante",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "OPCAO_ESCOLHA_NOME",
+        "proprietario": "P01",
+        "tipo": "entrada de tabela",
+        "hashDado": "71b10153479debbc50a8b7ff5ad6f39ee4a7eac85f4bf65e75357f9d4b3c5df6"
+      },
+      "proprietarioSugerido": "P01"
+    },
+    {
+      "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_congelante",
+      "item": {
+        "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_congelante",
+        "id": "lut_supremo_congelante",
+        "nome": "lut_supremo_congelante",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "OPCAO_ESCOLHA_NOME",
+        "proprietario": "P01",
+        "tipo": "entrada de tabela",
+        "hashDado": "06676bb8dfb86ddf3399f531070cf4085dc325995ad86c516129a8ff6c92ac6c"
+      },
+      "proprietarioSugerido": "P01"
+    },
+    {
+      "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_energetico",
+      "item": {
+        "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_energetico",
+        "id": "lut_supremo_energetico",
+        "nome": "lut_supremo_energetico",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "OPCAO_ESCOLHA_NOME",
+        "proprietario": "P01",
+        "tipo": "entrada de tabela",
+        "hashDado": "950b57353a82085b8545c82f6b9a386e05d90485e6a3b7e613734c2d0e455200"
+      },
+      "proprietarioSugerido": "P01"
+    },
+    {
+      "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_energia_reversa",
+      "item": {
+        "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_energia_reversa",
+        "id": "lut_supremo_energia_reversa",
+        "nome": "lut_supremo_energia_reversa",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "OPCAO_ESCOLHA_NOME",
+        "proprietario": "P01",
+        "tipo": "entrada de tabela",
+        "hashDado": "0c2fef78321a65e5db3d8fa8bc64582f806f6d1cd720a36ca4f90786f01f65ef"
+      },
+      "proprietarioSugerido": "P01"
+    },
+    {
+      "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_necrotico",
+      "item": {
+        "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_necrotico",
+        "id": "lut_supremo_necrotico",
+        "nome": "lut_supremo_necrotico",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "OPCAO_ESCOLHA_NOME",
+        "proprietario": "P01",
+        "tipo": "entrada de tabela",
+        "hashDado": "b0427f1c151d2772d0b5c61b145d846ab5c9ba0fd227946323de343906c530c8"
+      },
+      "proprietarioSugerido": "P01"
+    },
+    {
+      "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_psiquico",
+      "item": {
+        "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_psiquico",
+        "id": "lut_supremo_psiquico",
+        "nome": "lut_supremo_psiquico",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "OPCAO_ESCOLHA_NOME",
+        "proprietario": "P01",
+        "tipo": "entrada de tabela",
+        "hashDado": "1c221075ea6ce246470a91382653359a69f45a13d17e533f5e918b6f450f6a09"
+      },
+      "proprietarioSugerido": "P01"
+    },
+    {
+      "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_queimante",
+      "item": {
+        "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_queimante",
+        "id": "lut_supremo_queimante",
+        "nome": "lut_supremo_queimante",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "OPCAO_ESCOLHA_NOME",
+        "proprietario": "P01",
+        "tipo": "entrada de tabela",
+        "hashDado": "7b0f003a0d4dcfb920190e1a0c031688f4059b039f1a96f22835316d4c4d4bc5"
+      },
+      "proprietarioSugerido": "P01"
+    },
+    {
+      "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_radiante",
+      "item": {
+        "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_radiante",
+        "id": "lut_supremo_radiante",
+        "nome": "lut_supremo_radiante",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "OPCAO_ESCOLHA_NOME",
+        "proprietario": "P01",
+        "tipo": "entrada de tabela",
+        "hashDado": "270427953d876b850fd68ea068f9b44954fe3c74cc1115e1e3f50a175801e314"
+      },
+      "proprietarioSugerido": "P01"
+    },
+    {
+      "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_sonico",
+      "item": {
+        "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_sonico",
+        "id": "lut_supremo_sonico",
+        "nome": "lut_supremo_sonico",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "OPCAO_ESCOLHA_NOME",
+        "proprietario": "P01",
+        "tipo": "entrada de tabela",
+        "hashDado": "7e80e5b9169acaffae4ea59ea29ae15de220a90715dc16df1d1baba65b2c54e8"
+      },
+      "proprietarioSugerido": "P01"
+    },
+    {
+      "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_venenoso",
+      "item": {
+        "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_venenoso",
+        "id": "lut_supremo_venenoso",
+        "nome": "lut_supremo_venenoso",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "OPCAO_ESCOLHA_NOME",
+        "proprietario": "P01",
+        "tipo": "entrada de tabela",
+        "hashDado": "6740fc9825591772e74ee78cbcc521e2f3b25720e1bc6e13e22c4b0ad858963d"
+      },
+      "proprietarioSugerido": "P01"
+    },
+    {
+      "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_acido",
+      "item": {
+        "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_acido",
+        "id": "res_destino_acido",
+        "nome": "res_destino_acido",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "OPCAO_ESCOLHA_NOME",
+        "proprietario": "P01",
+        "tipo": "entrada de tabela",
+        "hashDado": "6fd1eba427a2a7028023796f5d81f324d6ba544f49332c44c18a2021266cb7c1"
+      },
+      "proprietarioSugerido": "P01"
+    },
+    {
+      "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_chocante",
+      "item": {
+        "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_chocante",
+        "id": "res_destino_chocante",
+        "nome": "res_destino_chocante",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "OPCAO_ESCOLHA_NOME",
+        "proprietario": "P01",
+        "tipo": "entrada de tabela",
+        "hashDado": "71b10153479debbc50a8b7ff5ad6f39ee4a7eac85f4bf65e75357f9d4b3c5df6"
+      },
+      "proprietarioSugerido": "P01"
+    },
+    {
+      "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_congelante",
+      "item": {
+        "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_congelante",
+        "id": "res_destino_congelante",
+        "nome": "res_destino_congelante",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "OPCAO_ESCOLHA_NOME",
+        "proprietario": "P01",
+        "tipo": "entrada de tabela",
+        "hashDado": "06676bb8dfb86ddf3399f531070cf4085dc325995ad86c516129a8ff6c92ac6c"
+      },
+      "proprietarioSugerido": "P01"
+    },
+    {
+      "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_energetico",
+      "item": {
+        "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_energetico",
+        "id": "res_destino_energetico",
+        "nome": "res_destino_energetico",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "OPCAO_ESCOLHA_NOME",
+        "proprietario": "P01",
+        "tipo": "entrada de tabela",
+        "hashDado": "950b57353a82085b8545c82f6b9a386e05d90485e6a3b7e613734c2d0e455200"
+      },
+      "proprietarioSugerido": "P01"
+    },
+    {
+      "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_energia_reversa",
+      "item": {
+        "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_energia_reversa",
+        "id": "res_destino_energia_reversa",
+        "nome": "res_destino_energia_reversa",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "OPCAO_ESCOLHA_NOME",
+        "proprietario": "P01",
+        "tipo": "entrada de tabela",
+        "hashDado": "0c2fef78321a65e5db3d8fa8bc64582f806f6d1cd720a36ca4f90786f01f65ef"
+      },
+      "proprietarioSugerido": "P01"
+    },
+    {
+      "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_necrotico",
+      "item": {
+        "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_necrotico",
+        "id": "res_destino_necrotico",
+        "nome": "res_destino_necrotico",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "OPCAO_ESCOLHA_NOME",
+        "proprietario": "P01",
+        "tipo": "entrada de tabela",
+        "hashDado": "b0427f1c151d2772d0b5c61b145d846ab5c9ba0fd227946323de343906c530c8"
+      },
+      "proprietarioSugerido": "P01"
+    },
+    {
+      "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_psiquico",
+      "item": {
+        "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_psiquico",
+        "id": "res_destino_psiquico",
+        "nome": "res_destino_psiquico",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "OPCAO_ESCOLHA_NOME",
+        "proprietario": "P01",
+        "tipo": "entrada de tabela",
+        "hashDado": "1c221075ea6ce246470a91382653359a69f45a13d17e533f5e918b6f450f6a09"
+      },
+      "proprietarioSugerido": "P01"
+    },
+    {
+      "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_queimante",
+      "item": {
+        "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_queimante",
+        "id": "res_destino_queimante",
+        "nome": "res_destino_queimante",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "OPCAO_ESCOLHA_NOME",
+        "proprietario": "P01",
+        "tipo": "entrada de tabela",
+        "hashDado": "7b0f003a0d4dcfb920190e1a0c031688f4059b039f1a96f22835316d4c4d4bc5"
+      },
+      "proprietarioSugerido": "P01"
+    },
+    {
+      "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_radiante",
+      "item": {
+        "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_radiante",
+        "id": "res_destino_radiante",
+        "nome": "res_destino_radiante",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "OPCAO_ESCOLHA_NOME",
+        "proprietario": "P01",
+        "tipo": "entrada de tabela",
+        "hashDado": "270427953d876b850fd68ea068f9b44954fe3c74cc1115e1e3f50a175801e314"
+      },
+      "proprietarioSugerido": "P01"
+    },
+    {
+      "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_sonico",
+      "item": {
+        "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_sonico",
+        "id": "res_destino_sonico",
+        "nome": "res_destino_sonico",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "OPCAO_ESCOLHA_NOME",
+        "proprietario": "P01",
+        "tipo": "entrada de tabela",
+        "hashDado": "7e80e5b9169acaffae4ea59ea29ae15de220a90715dc16df1d1baba65b2c54e8"
+      },
+      "proprietarioSugerido": "P01"
+    },
+    {
+      "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_venenoso",
+      "item": {
+        "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_venenoso",
+        "id": "res_destino_venenoso",
+        "nome": "res_destino_venenoso",
+        "arquivo": "src/systems/afty/afty-habilidades.js",
+        "export": "OPCAO_ESCOLHA_NOME",
+        "proprietario": "P01",
+        "tipo": "entrada de tabela",
+        "hashDado": "6740fc9825591772e74ee78cbcc521e2f3b25720e1bc6e13e22c4b0ad858963d"
+      },
+      "proprietarioSugerido": "P01"
+    }
+  ],
+  "removidos": [],
+  "alterados": [
+    {
+      "chave": "addon-herdada::formula-combate-entropica.json::formula-combate-entropica:res_intelectual__res_ataque_extra",
+      "proprietarioMantido": "AD-24-H04",
+      "hashAnterior": "02e9f04dad0eea96f79058fa4cdf611823ddbe7bf2fda9621e2cde4f7ab59d4c",
+      "hashNovo": "f8056e528875c556814eaf53526a70546e2aa96db4f746174970e28c1bbddec7",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon-herdada::formula-combate-entropica.json::formula-combate-entropica:res_intelectual__res_libertacao_do_destino",
+      "proprietarioMantido": "AD-24-H01",
+      "hashAnterior": "a34c667316f6be80db184333bbf399524b07b07d8ab51aecfb5e5459e7739eb4",
+      "hashNovo": "7186f58d17fcba43f2c471d190b3462aa1a431e3e70ca99f0c065f19d6b1bd75",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon-herdada::formula-combate-entropica.json::formula-combate-entropica:res_intelectual__res_libertacao_do_destino::efeitos",
+      "proprietarioMantido": "RES-02",
+      "hashAnterior": "9b6fa0af2cca72c00f5c4546a47e470a06f018730f090fa1818c8e2fbe33ac01",
+      "hashNovo": "cf753bd78502a27379c3ced709b20e11f4a7113ae419891b0cbbe5444c82eff9",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-combate.js::COMBATE_ESTADOS::@catalogo",
+      "proprietarioMantido": "M03",
+      "hashAnterior": "0095b49aec4d1eebd512e0a333afa3fc04a1a0b5b3f39eca85ffc0c812a328e9",
+      "hashNovo": "35e43e8111cd86be8c4b65245a5293dccd87b3dce0649f1966ba91ff40ac7b07",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-combate.js::COMBATE_ESTADOS::adrenalinaAtletismo",
+      "proprietarioMantido": "M03",
+      "hashAnterior": "77adb3a40ef8a754abe32b8683a03ddf5ec6f09bd2f6031219a8b17ae271fe39",
+      "hashNovo": "4d64f69a6e900a870645bfc964b5ae5c8d3d6bb0a1876bf91bbbc075e45dbbfe",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-combate.js::COMBATE_VARS::@catalogo",
+      "proprietarioMantido": "M03",
+      "hashAnterior": "3a36224b33e9f43e373fc2b72fe264114b9a1fd6a9b0544a025cab6536733365",
+      "hashNovo": "d0fc7f44883ce2a734e589000cbf5b2a6d615b5ec993ca3b214f44d64d28dded",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::@catalogo",
+      "proprietarioMantido": "M02",
+      "hashAnterior": "1a11d7b5590e53fd7ae06296b17ad0fb8d7daeac0b043ad1eec2afee8153a606",
+      "hashNovo": "d53b2b55c0bcc4e8726084eee631d8a016ec192f207d183fa9ed71accaa7c94a",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::res_dadiva_indulgente_a_feiticaria",
+      "proprietarioMantido": "RES-01",
+      "hashAnterior": "6feff350e7879a8edb6394629b3c66130297a646df1cbc798fc452a8eec873e5",
+      "hashNovo": "87321efbea3b424bf4889913c0de3854489590e19cb48318fd31bd6e7e36e741",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::res_dadiva_indulgente_a_feiticaria::@0",
+      "proprietarioMantido": "RES-01",
+      "hashAnterior": "f80113e81eaf286ce9e5a494435df62bce910a37ffdab93a06a4f761d105c6f2",
+      "hashNovo": "06f9e7b6f190ba0c8280cbeaab3a8ac3f0507101dac92510aa09ada2fd97a655",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::res_dadiva_indulgente_a_feiticaria::@1",
+      "proprietarioMantido": "RES-01",
+      "hashAnterior": "1107a2265355eadb956bab2152d3c1e7867a900cbd6c7a8fc8a176517c652a29",
+      "hashNovo": "923758e15b6d816905bbdf8c574d468e7dbf33bdb9d7ffa56992821b0b702777",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::res_dadiva_indulgente_a_feiticaria::@2",
+      "proprietarioMantido": "RES-01",
+      "hashAnterior": "ea9ea990a32b2d1a442938944d8ef7c273f00d0fc252c41bbfeb005f3fa54cd7",
+      "hashNovo": "a893a7dfff19026c500c7e84dad47e8a7943de44ff23ce34da11cf76a6fe1c52",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::@catalogo",
+      "proprietarioMantido": "M02",
+      "hashAnterior": "f84f12f0d5c4900fe328fae4285adf331dd747dbf90145ec9e0a1a413ca8b968",
+      "hashNovo": "6c214eeceffaffa920c9f720b55ff9d32ab6f48edac497a778ed31ad4b04426b",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::cmb_critico_aperfeicoado",
+      "proprietarioMantido": "CMB-15",
+      "hashAnterior": "e1e357eb155886825a93a93c353a7e78d8aa1e154768995539c0f5284ea44f0b",
+      "hashNovo": "daeaf998b59f57f705c0a3ca2045c3f747da291f99c6b347e18b6c50276c4ae7",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::cmb_critico_aperfeicoado::@0",
+      "proprietarioMantido": "CMB-15",
+      "hashAnterior": "4931a79cdd76cb8294b64d400e1b961edb62a22f2457801bd5532ee2b2f32106",
+      "hashNovo": "40c7c348c1bfddf24f4e4b9f7f6f024f3476ba02aa803a44d78a6ab958962780",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_libertacao_do_destino",
+      "proprietarioMantido": "RES-02",
+      "hashAnterior": "9b6fa0af2cca72c00f5c4546a47e470a06f018730f090fa1818c8e2fbe33ac01",
+      "hashNovo": "cf753bd78502a27379c3ced709b20e11f4a7113ae419891b0cbbe5444c82eff9",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::ESCOLHA_EFEITOS::@catalogo",
+      "proprietarioMantido": "M02",
+      "hashAnterior": "1a11d7b5590e53fd7ae06296b17ad0fb8d7daeac0b043ad1eec2afee8153a606",
+      "hashNovo": "d53b2b55c0bcc4e8726084eee631d8a016ec192f207d183fa9ed71accaa7c94a",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::ESCOLHA_EFEITOS::res_dadiva_indulgente_a_feiticaria",
+      "proprietarioMantido": "RES-01",
+      "hashAnterior": "6feff350e7879a8edb6394629b3c66130297a646df1cbc798fc452a8eec873e5",
+      "hashNovo": "87321efbea3b424bf4889913c0de3854489590e19cb48318fd31bd6e7e36e741",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::HABILIDADE_EFEITOS::@catalogo",
+      "proprietarioMantido": "M02",
+      "hashAnterior": "f84f12f0d5c4900fe328fae4285adf331dd747dbf90145ec9e0a1a413ca8b968",
+      "hashNovo": "6c214eeceffaffa920c9f720b55ff9d32ab6f48edac497a778ed31ad4b04426b",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::HABILIDADE_EFEITOS::cmb_critico_aperfeicoado",
+      "proprietarioMantido": "CMB-15",
+      "hashAnterior": "e1e357eb155886825a93a93c353a7e78d8aa1e154768995539c0f5284ea44f0b",
+      "hashNovo": "daeaf998b59f57f705c0a3ca2045c3f747da291f99c6b347e18b6c50276c4ae7",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-efeitos.js::HABILIDADE_EFEITOS::res_libertacao_do_destino",
+      "proprietarioMantido": "RES-02",
+      "hashAnterior": "9b6fa0af2cca72c00f5c4546a47e470a06f018730f090fa1818c8e2fbe33ac01",
+      "hashNovo": "cf753bd78502a27379c3ced709b20e11f4a7113ae419891b0cbbe5444c82eff9",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::@catalogo",
+      "proprietarioMantido": "P01",
+      "hashAnterior": "ee5a6ed52b97e7466c21b478d729f916d247aadbe99d39df738c321f5543f59a",
+      "hashNovo": "d3268696ea89ecd6ef19243c79dc751e310c6657ece8ce3df66212e43a98bd4e",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo",
+      "proprietarioMantido": "LUT-11",
+      "hashAnterior": "05183a5e448d24bff3f8d493ad525ff8f28b7037dfe0a3afb5c1d0d3dc30ecca",
+      "hashNovo": "7eb4e73745195b6850ebd88c39ae03c3cec55ae83add2cf199cfc4ef078148be",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino",
+      "proprietarioMantido": "RES-02",
+      "hashAnterior": "a3adc7d4d6da28e245425735431bdefd21a05fa3f669580f478943a41feeae98",
+      "hashNovo": "41e4504cd2cc5c300688ccfc17e5c4ba65a5cda278f6db3214347fa3c8d0f986",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-habilidades.js::OPCAO_ESCOLHA_NOME::@catalogo",
+      "proprietarioMantido": "P01",
+      "hashAnterior": "3438563835aaa7c825faeb46089d20a7a64d2c534c5bfe31a7bfea7883097934",
+      "hashNovo": "138e46c4d45fd4da72334ccb4f4f8b207e15eacb364df8d9d032f6462bb0f7fc",
+      "campos": [
+        "hashDado"
+      ]
+    }
+  ],
+  "assinatura": "4bced25ec9d9f2752a921e5042cffc5f42d0c5b3a7dcd935a7001601bc4f7ddf",
+  "decisoes": {
+    "adicoes": {
+      "addon-herdada::formula-combate-entropica.json::formula-combate-entropica:res_intelectual__res_ataque_extra::efeitos": "RES-07",
+      "addon-herdada::formula-combate-entropica.json::formula-combate-entropica:res_intelectual__res_libertacao_do_destino::escolha": "RES-02",
+      "afty-combate.js::COMBATE_ESTADOS::contraFeiticaria": "M03",
+      "afty-combate.js::COMBATE_ESTADOS::precisaoForcada": "M03",
+      "afty-combate.js::COMBATE_ESTADOS::resAtaqueExtra": "M03",
+      "afty-combate.js::COMBATE_VARS::contra_feiticaria": "M03",
+      "afty-combate.js::COMBATE_VARS::precisao_forcada": "M03",
+      "afty-combate.js::COMBATE_VARS::res_ataque_extra": "M03",
+      "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::res_dadiva_indulgente_a_feiticaria::@3": "RES-01",
+      "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_ataque_extra": "RES-07",
+      "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_ataque_extra::@0": "RES-07",
+      "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_libertacao_do_destino::@2": "RES-02",
+      "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_libertacao_do_destino::@3": "RES-02",
+      "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_libertacao_do_destino::@4": "RES-02",
+      "afty-efeitos.js::HABILIDADE_EFEITOS::res_ataque_extra": "RES-07",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/niveis": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/niveis/@0": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_acido": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_acido/efeitos": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_acido/efeitos/@0": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_chocante": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_chocante/efeitos": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_chocante/efeitos/@0": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_congelante": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_congelante/efeitos": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_congelante/efeitos/@0": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energetico": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energetico/efeitos": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energetico/efeitos/@0": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energia_reversa": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energia_reversa/efeitos": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energia_reversa/efeitos/@0": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_necrotico": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_necrotico/efeitos": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_necrotico/efeitos/@0": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_psiquico": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_psiquico/efeitos": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_psiquico/efeitos/@0": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_queimante": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_queimante/efeitos": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_queimante/efeitos/@0": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_radiante": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_radiante/efeitos": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_radiante/efeitos/@0": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_sonico": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_sonico/efeitos": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_sonico/efeitos/@0": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_venenoso": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_venenoso/efeitos": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_venenoso/efeitos/@0": "LUT-11",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/niveis": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/niveis/@0": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_acido": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_acido/efeitos": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_acido/efeitos/@0": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_chocante": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_chocante/efeitos": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_chocante/efeitos/@0": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_congelante": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_congelante/efeitos": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_congelante/efeitos/@0": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energetico": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energetico/efeitos": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energetico/efeitos/@0": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energia_reversa": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energia_reversa/efeitos": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energia_reversa/efeitos/@0": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_necrotico": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_necrotico/efeitos": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_necrotico/efeitos/@0": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_psiquico": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_psiquico/efeitos": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_psiquico/efeitos/@0": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_queimante": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_queimante/efeitos": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_queimante/efeitos/@0": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_radiante": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_radiante/efeitos": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_radiante/efeitos/@0": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_sonico": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_sonico/efeitos": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_sonico/efeitos/@0": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_venenoso": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_venenoso/efeitos": "RES-02",
+      "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_venenoso/efeitos/@0": "RES-02",
+      "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_acido": "P01",
+      "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_chocante": "P01",
+      "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_congelante": "P01",
+      "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_energetico": "P01",
+      "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_energia_reversa": "P01",
+      "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_necrotico": "P01",
+      "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_psiquico": "P01",
+      "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_queimante": "P01",
+      "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_radiante": "P01",
+      "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_sonico": "P01",
+      "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_venenoso": "P01",
+      "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_acido": "P01",
+      "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_chocante": "P01",
+      "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_congelante": "P01",
+      "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_energetico": "P01",
+      "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_energia_reversa": "P01",
+      "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_necrotico": "P01",
+      "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_psiquico": "P01",
+      "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_queimante": "P01",
+      "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_radiante": "P01",
+      "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_sonico": "P01",
+      "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_venenoso": "P01"
+    },
+    "remocoes": {},
+    "justificativaAtualizacao": "Pedido do autor de 2026-10-13: nível e escolhas de habilidades roubadas, Crítico Aperfeiçoado completo sem pré-requisito, RD condicional, Resistência e escolhas de tipo, distribuição permanente de Adrenalina. Transições pela rodada existente, sem painel de Restringido. Reconciliação restrita aos itens destas mudanças e seus agregados. Preservadas identidades e estados de alterações anteriores fora deste escopo. Não aprova regras nem registra addons de outras tarefas."
+  },
+  "errosColeta": []
+}

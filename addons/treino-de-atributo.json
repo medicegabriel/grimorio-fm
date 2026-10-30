@@ -1,0 +1,11 @@
+{
+  "id": "treino-de-atributo",
+  "nome": "Treino de Atributo",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Devolve a Linha de Treinamento Treino de Atributo à lista de Interlúdios da Ficha de Player. A Linha saiu da lista do jogador em 2026-09-01 e continua inteira na ficha de criatura: este pacote não muda as etapas nem o Completo, só reabre a porta. Cada etapa dá +1 no atributo escolhido, o Completo sobe o limite dele em 2, até 30, e a Linha pode ser feita uma vez por atributo.",
+  "resumo": "Devolve ao Player o Treino de Atributo: +1 por etapa e +2 no limite no Completo",
+  "categoria": "treinos",
+  "libera": ["soPorAddon:atributo"]
+}

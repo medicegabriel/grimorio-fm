@@ -1,0 +1,28 @@
+{
+  "id": "obedecendo-a-ignia",
+  "nome": "Obedecendo a Ignia",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Insere automaticamente o Voto Obedecendo a Ignia na primeira vaga de Voto Mecânico. Enquanto estiver dentro do limite de BT, o PE Máximo final é multiplicado por 1,25.",
+  "resumo": "Voto Obedecendo a Ignia na primeira vaga: PE Máximo ×1,25 dentro do limite de BT",
+  "categoria": "regras",
+  "votoAutomatico": {
+    "id": "obedecendo_a_ignia",
+    "nome": "Obedecendo a Ignia",
+    "narrativa": "",
+    "maleficio": {
+      "texto": "",
+      "efeitos": []
+    },
+    "beneficio": {
+      "texto": "Sua energia máxima é aumentada para 125% do total (1,25x).",
+      "efeitos": [
+        {
+          "canal": "peMult",
+          "expr": "1.25"
+        }
+      ]
+    }
+  }
+}

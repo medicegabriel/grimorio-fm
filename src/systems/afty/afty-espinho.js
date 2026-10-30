@@ -115,8 +115,52 @@ export function normalizarItemEspinho(bruto) {
   };
 }
 
+/* ============================================================ */
+/* A IDENTIDADE: o nome e a pele do card                        */
+/* ============================================================ */
+/**
+ * A Lanterna Coletora de Almas (pedido do autor em 2026-10-12) é o MESMO verbo
+ * com outro nome e outro visual: *"Ele é IDENTICO ao addon do ESPINHO. Só muda a
+ * paleta de cores"*. Por isso ela não tem módulo, estado nem primitiva próprios:
+ * o pacote dela declara `nome`, `artigo` e `visual` no campo `espinho`, e o card
+ * troca a pele.
+ *
+ * `visual` é a pele, e pele é CÓDIGO (folha de estilo e imagem): pacote só
+ * escolhe uma das que existem. O `artigo` serve às frases que citam o nome ("a
+ * Habilidade Única do Espinho", "da Lanterna Coletora de Almas").
+ */
+export const ESPINHO_VISUAIS = ["espinho", "lanterna"];
+export const ESPINHO_ARTIGOS = ["o", "a"];
+
+export const ESPINHO_IDENTIDADE_PADRAO = Object.freeze({ nome: "Espinho", artigo: "o", visual: "espinho" });
+
+/**
+ * A identidade declarada num `espinho` de pacote, ou `null` quando ele não
+ * declara nenhuma (o pacote Espinho original não declara, e vale o padrão).
+ */
+export function identidadeDeclarada(cfg) {
+  if (!cfg || typeof cfg !== "object") return null;
+  const nome = String(cfg.nome ?? "").trim();
+  const visual = ESPINHO_VISUAIS.includes(cfg.visual) ? cfg.visual : null;
+  if (!nome && !visual) return null;
+  return {
+    nome: nome || ESPINHO_IDENTIDADE_PADRAO.nome,
+    artigo: ESPINHO_ARTIGOS.includes(cfg.artigo) ? cfg.artigo : ESPINHO_IDENTIDADE_PADRAO.artigo,
+    visual: visual ?? ESPINHO_IDENTIDADE_PADRAO.visual,
+  };
+}
+
+/** "do Espinho", "da Lanterna Coletora de Almas". */
+export const deDoEspinho = (identidade = ESPINHO_IDENTIDADE_PADRAO) =>
+  `d${identidade?.artigo ?? "o"} ${identidade?.nome ?? ESPINHO_IDENTIDADE_PADRAO.nome}`;
+
 /** A configuração vazia: sem pacote, o Espinho não existe. */
-export const ESPINHO_SEM_CONFIG = Object.freeze({ itens: Object.freeze([]), multiplicadorTeto: 1 });
+export const ESPINHO_SEM_CONFIG = Object.freeze({
+  itens: Object.freeze([]),
+  multiplicadorTeto: 1,
+  maestriaAnotada: false,
+  ...ESPINHO_IDENTIDADE_PADRAO,
+});
 
 /* ============================================================ */
 /* O ESTADO NA FICHA                                            */
@@ -125,7 +169,10 @@ export const ESPINHO_SEM_CONFIG = Object.freeze({ itens: Object.freeze([]), mult
  * `creature.espinho` saneado. Nunca lança: campo sujo vira zero.
  *
  * Forma: { almas, outros, compras: { [itemId]: qtd }, equipamentos: [{ uid,
- * aprimorado }] }. O uid é o da entrada de inventário.
+ * aprimorado }], maestria }. O uid é o da entrada de inventário.
+ *
+ * `maestria` é a Maestria ANOTADA (Lanterna, 2026-10-12), e `null` é "use a
+ * real". Zero é valor válido: anotar 0 zera os tetos que leem o BT.
  */
 export function estadoDoEspinho(creature) {
   const bruto = creature?.espinho && typeof creature.espinho === "object" ? creature.espinho : {};
@@ -144,16 +191,21 @@ export function estadoDoEspinho(creature) {
     vistos.add(uid);
     equipamentos.push({ uid, aprimorado: e?.aprimorado === true });
   }
+  const maestriaCrua = bruto.maestria;
+  const maestria = maestriaCrua == null || String(maestriaCrua).trim() === "" || !Number.isFinite(Number(maestriaCrua))
+    ? null
+    : naoNegativo(maestriaCrua);
   return {
     almas: naoNegativo(bruto.almas),
     outros: naoNegativo(bruto.outros),
     compras,
     equipamentos,
+    maestria,
   };
 }
 
 /** Uma ficha nova começa assim. */
-export const createBlankEspinho = () => ({ almas: 0, outros: 0, compras: {}, equipamentos: [] });
+export const createBlankEspinho = () => ({ almas: 0, outros: 0, compras: {}, equipamentos: [], maestria: null });
 
 /**
  * Os itens do inventário MARCADOS como do Espinho: `Map(uid → aprimorado)`.
@@ -181,8 +233,9 @@ export function marcasDoEspinho(creature, config = ESPINHO_SEM_CONFIG) {
  * O extrato do Espinho.
  *
  * `opcoes.config`     a configuração unida dos pacotes (`espinhoDaFicha`).
- * `opcoes.avaliar`    (expr) => número, a DSL no contexto do montante. É por ele
- *                     que `bt` e `nd` chegam ao teto.
+ * `opcoes.avaliar`    (expr, extra) => número, a DSL no contexto do montante. É
+ *                     por ele que `bt` e `nd` chegam ao teto, e o `extra` troca
+ *                     variáveis do contexto (a Maestria anotada).
  * `opcoes.inventario` [{ uid, nome, tipo }] das entradas que podem ser marcadas,
  *                     para dizer o nome do item e achar o marcado que sumiu.
  */
@@ -199,6 +252,11 @@ export function resolveEspinho(creature, opcoes = {}) {
   );
   const estado = estadoDoEspinho(creature);
   const ativo = config.itens.length > 0;
+  const identidade = {
+    nome: String(config.nome ?? "").trim() || ESPINHO_IDENTIDADE_PADRAO.nome,
+    artigo: ESPINHO_ARTIGOS.includes(config.artigo) ? config.artigo : ESPINHO_IDENTIDADE_PADRAO.artigo,
+    visual: ESPINHO_VISUAIS.includes(config.visual) ? config.visual : ESPINHO_IDENTIDADE_PADRAO.visual,
+  };
 
   const itemEquip = config.itens.find((i) => i.tipo === "equipamento") ?? null;
   const itemAprimora = config.itens.find((i) => i.tipo === "aprimoramento") ?? null;
@@ -219,9 +277,18 @@ export function resolveEspinho(creature, opcoes = {}) {
     })
     : [];
 
+  /* A MAESTRIA ANOTADA (Lanterna, 2026-10-12). Autor: *"o personagem possui
+     Maestria alta, porém a Lanterna só considera até certa maestria"*. O número
+     anotado SUBSTITUI o BT nos tetos, e só neles: as vagas compradas e o resto da
+     ficha seguem lendo o BT real. Vazio é o real. Substitui, e não apara: é o que
+     está escrito que vale, e a anotação é do jogador. O multiplicador do Alter
+     vem DEPOIS, sobre o teto já calculado com a anotada. */
+  const btReal = Math.trunc(Number(avaliar("bt")) || 0);
+  const anotada = config.maestriaAnotada === true ? estado.maestria : null;
+  const extra = anotada == null ? null : { bt: anotada, maestria: anotada };
   const tetoDe = (item) => {
     if (item.teto == null) return null;
-    const bruto = Number(avaliar(item.teto));
+    const bruto = Number(avaliar(item.teto, extra));
     return Math.max(0, Math.floor((Number.isFinite(bruto) ? bruto : 0) * mult));
   };
 
@@ -264,7 +331,7 @@ export function resolveEspinho(creature, opcoes = {}) {
         origem: "espinho",
         // O nome do ITEM: é o que o jogador procura no hover quando uma vaga a
         // mais aparece na aba de Talentos.
-        nome: `Espinho (${item.nome})`,
+        nome: `${identidade.nome} (${item.nome})`,
       });
     }
     if (item.concedeTalento && !talentosConcedidos.includes(item.concedeTalento)) {
@@ -290,7 +357,13 @@ export function resolveEspinho(creature, opcoes = {}) {
 
   return {
     ativo,
+    ...identidade,
     multiplicadorTeto: mult,
+    /* `null` quando o pacote não abre a anotação. `usada` é a que os tetos
+       leram, e o card mostra a `real` como dica do campo vazio. */
+    maestria: config.maestriaAnotada === true
+      ? { real: btReal, anotada, usada: anotada ?? btReal }
+      : null,
     almas: {
       totais: estado.almas,
       outros: estado.outros,

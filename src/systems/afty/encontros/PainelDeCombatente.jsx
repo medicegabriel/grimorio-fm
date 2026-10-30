@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import { ArmasTransformaveis } from "../ui/armas-transformaveis";
 import { Heart, Zap, Sparkles, Skull, EyeOff, Swords, Shield, BookOpen, Backpack, Wand2, AlertTriangle, Crosshair } from "lucide-react";
 
-import { funcionamentosDaFicha } from "../afty-schema";
+
 import { sistemaDaFicha, palavrasDoSistema } from "../afty-sistema";
 import { NumeroComFontes } from "../ui/fontes";
 import { numeroBr } from "../ui/formato";
@@ -21,14 +21,15 @@ import {
   aplicaDanoNaMesa, formaMecha, separaMecha, trocaNucleo, mechaPermitido, emCombateNaSessao,
   preparoDe, preparoTempDe, alteraPreparo, definePreparo,
   alteraTreinoAtivo, alteraEstadoCombate, aplicaPatchCombate,
-  usosGastosDe, marcaUso,
+  usosGastosDe, marcaUso, consomeEstadoCombate,
 } from "../ficha/ficha-sessao";
 import { rolarTeste, rolarDano, textoDaRolagem } from "../ficha/ficha-rolagem";
+import { prepararRolagemEspecializacao, registrarAtaqueEspecializacao, aplicarCuraRoladaEspecializacao } from "../ficha/ficha-especializacoes";
 import { preparaRolagemCura } from "../afty-cura";
-import { preparaRolagemArma, registraRolagemArma, configuraArmaNaSessao, marcaErroDaArma, iniciaTurnoArmas, danoDaAmpla, usaAmpla } from "../afty-propriedades-armas";
+import { preparaRolagemArma, registraRolagemArma, configuraArmaNaSessao, marcaErroDaArma, danoDaAmpla, usaAmpla } from "../afty-propriedades-armas";
 import { deltaDosEstados, saldoDoAgora } from "../ficha/ficha-buffs";
 import { opcoesDoCombatente } from "./usar-encontro-afty";
-import { conteudoDaFicha, equipamentosDaFicha } from "../ficha/ficha-conteudo";
+import { conteudoDaFicha, equipamentosDaFicha, funcionamentosParaFicha } from "../ficha/ficha-conteudo";
 import BotaoDeDescanso from "../ficha/BotaoDeDescanso";
 import PainelBloodfeast, { ConjuracaoBloodfeast } from "../ficha/PainelBloodfeast";
 import ControleTecnicaMaxima from "../ficha/ControleTecnicaMaxima";
@@ -153,12 +154,20 @@ export default function PainelDeCombatente({
   /* Rola e registra no log DA SESSÃO daquele combatente. Devolve a rolagem,
      porque a linha de dano usa o crítico do Acerto para dobrar os dados. */
   const rolar = useCallback((desc) => {
+    desc = prepararRolagemEspecializacao(desc, sessao, derived);
+    if (!desc) return null;
     const pronta = preparaRolagemCura(preparaRolagemArma(desc), derived.efeitos);
     if (!pronta) return null;
     const r = pronta.tipo === "dano" ? rolarDano(pronta) : rolarTeste(pronta);
-    onSessao((s) => consumirAcoesAddon(registraRolagemArma(registraRolagem(s, r), pronta, r), desc.consomeAcoesAddon));
+    onSessao((s) => {
+      const registrada = aplicarCuraRoladaEspecializacao(
+        registrarAtaqueEspecializacao(registraRolagemArma(registraRolagem(s, r), pronta, r), desc, derived), desc, r, derived);
+      // A Amplificadora (2026-10-27): rolar o primeiro ataque a descarrega, como na Ficha.
+      const comEstado = desc.consomeEstado ? consomeEstadoCombate(registrada, desc.consomeEstado) : registrada;
+      return consumirAcoesAddon(comEstado, desc.consomeAcoesAddon);
+    });
     return r;
-  }, [onSessao, derived.efeitos]);
+  }, [onSessao, derived, sessao]);
 
   /* Os escritores de invocação, os mesmos seis da Ficha Final. ⚠ Passam pelo
      `onSessao` como todo o resto do painel, então o mestre abate o PV de um
@@ -331,7 +340,7 @@ export default function PainelDeCombatente({
             tipo="pv" icone={Heart} rotulo="PV"
             atual={sessao.hpAtual} max={derived.hp} temp={pvTempTotal(sessao)}
             onSet={(v) => onSessao((s) => ({ ...s, hpAtual: v }))}
-            onDelta={(d) => onSessao((s) => ({ ...s, hpAtual: s.hpAtual + d }))}
+            onDelta={(n) => onSessao((s) => n < 0 ? aplicaDano(s, -n, derived) : aplicaCura(s, n, derived.hp))}
           />
           {!derived.bloodfeast?.tem && <Vital
             tipo="pe" icone={Zap} rotulo={derived.recursoLabel}
@@ -370,7 +379,7 @@ export default function PainelDeCombatente({
             />
           )}
           <DanoRapido
-            onDano={(n) => onSessao((s) => aplicaDano(s, n))}
+            onDano={(n) => onSessao((s) => aplicaDano(s, n, derived))}
             onCura={(n) => onSessao((s) => aplicaCura(s, n, derived.hp))}
           />
         </div>
@@ -458,6 +467,14 @@ export default function PainelDeCombatente({
         exaustaoTecnica={<PainelExaustaoTecnica sessao={sessao} onSessao={onSessao} />}
           derived={derived}
           onAtaqueBasico={(ataqueBasicoId) => onSessao((s) => ({ ...s, ataqueBasicoId }))}
+          armasDaTecnica={sessao.armasDaTecnica}
+          onArmaDaTecnica={(feiticoId, linhaId) => onSessao((s) => ({
+            ...s, armasDaTecnica: { ...(s.armasDaTecnica ?? {}), [feiticoId]: linhaId },
+          }))}
+          contadorUsos={{
+            gastosDe: (chave) => usosGastosDe(sessao, chave),
+            onUso: (usos, delta) => onSessao((s) => marcaUso(s, usos, delta)),
+          }}
           adaptacao={<PainelDeAdaptacao derived={derived} onSessao={onSessao} />}
           olhosAgulha={<PainelOlhosAgulha derived={derived} sessao={sessao} onSessao={onSessao} />}
           olhinhosLu={<><PainelOlhinhosLu derived={derived} onSessao={onSessao} />
@@ -470,7 +487,6 @@ export default function PainelDeCombatente({
           onGatilhoTreino={(id, v) => onSessao((s) => alteraTreinoAtivo(s, id, v))}
           rolar={rolar}
           turnoArmas={sessao.propriedadesArmas?.turno ?? 0}
-          onNovoTurnoArmas={() => onSessao((s) => iniciaTurnoArmas(s))}
           onArma={(linha, campo, valor) => onSessao((s) => campo === "errou"
             ? marcaErroDaArma(s, linha, valor) : configuraArmaNaSessao(s, linha, campo, valor))}
           onAmpla={(linha) => onSessao((s) => {
@@ -490,7 +506,7 @@ export default function PainelDeCombatente({
         <AbaHabilidades
           // Nativos (Aliados, Alma, Comidas) saíram daqui em 2026-09-13 — ver
           // o mesmo comentário em AftyFicha.jsx. Aparecem na aba Buffs.
-          funcionamentos={funcionamentosDaFicha(combatente.ficha)}
+          funcionamentos={funcionamentosParaFicha(combatente.ficha, derived)}
           itens={itens}
           abertos={abertos}
           onAberto={alternaItem}

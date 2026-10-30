@@ -1,0 +1,189 @@
+/* A ORDEM DE AVALIAÇÃO DOS MÓDULOS, que quebrou o app em 2026-09-02.
+
+   ⚠ ESTE ARQUIVO NÃO MEDE REGRA NENHUMA DO LIVRO. Ele mede o GRAFO DE IMPORTS,
+   e existe porque o app inteiro ficou em tela branca com
+
+       Uncaught ReferenceError: Cannot access 'ARMA_GRUPOS' before initialization
+
+   e nenhum dos 2547 asserts pegou. A razão de não pegarem é o próprio arnês: os
+   asserts importam `afty-derive.js` na primeira linha, e o afty-derive puxa o
+   `afty-habilidades` ANTES do `afty-equipamentos`, que é justamente a ordem que
+   funciona. O navegador entra por outra porta.
+
+   ------------------------------------------------------------
+   O CICLO, QUE É ANTIGO E NÃO É DE NINGUÉM EM PARTICULAR
+   ------------------------------------------------------------
+     afty-equipamentos -> afty-efeitos -> afty-combate -> afty-habilidades
+                       -> afty-equipamentos   (ARMA_GRUPOS, linha 50)
+
+   Ele nunca estourou porque `afty-habilidades` SEMPRE entrava primeiro: aí o
+   `afty-equipamentos` termina de avaliar antes do corpo do habilidades rodar.
+   Invertida a ordem, o corpo do habilidades roda com o equipamentos no meio da
+   avaliação, e `ARMA_GRUPOS` ainda está na zona morta do `const`.
+
+   Quem inverteu foi a aba de Defesas: o `AftyCreatureBuilder.jsx` a importa lá
+   no topo, e ela importava o `afty-equipamentos`.
+
+   ------------------------------------------------------------
+   O QUE ESTE ARQUIVO GARANTE
+   ------------------------------------------------------------
+   Que os módulos FOLHA continuam folha. Cada um deles é carregado PRIMEIRO, num
+   processo em que mais nada foi importado, que é a única forma de reproduzir a
+   entrada do navegador.
+
+   ⚠ Um import novo num destes arquivos derruba este assert, e é para derrubar
+   mesmo: o custo de descobrir isso aqui é um teste vermelho, e o de descobrir
+   no navegador é o app inteiro em branco. */
+import { register } from "node:module";
+register(
+  "data:text/javascript,export async function resolve(s,c,n){try{return await n(s,c)}catch(e){if(s.startsWith(\".\")&&!s.endsWith(\".js\"))return n(s+\".js\",c);throw e}}",
+  import.meta.url,
+);
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+
+const R = new URL("../src/systems/afty/", import.meta.url).href;
+
+let ok = 0;
+const bad = [];
+const t = (nome, real, esp) => {
+  if (JSON.stringify(real) === JSON.stringify(esp)) ok++;
+  else bad.push(`${nome}: ${JSON.stringify(real)} != ${JSON.stringify(esp)}`);
+};
+
+/* Os módulos que SÃO folha, e a razão de cada um. Acrescentar um aqui é de
+   graça; tirar um daqui pede saber por que ele deixou de precisar ser. */
+const FOLHAS = [
+  ["afty-defesas-dano.js", "a aba de Defesas entra cedo no AftyCreatureBuilder"],
+  ["afty-catarse.js", "o painel da Loja de Catarse entra cedo no AftyCreatureBuilder"],
+  /* ⚠ ELE TEM DOIS MOTIVOS, e o segundo nasceu em 2026-09-08. O primeiro é o de
+     sempre: a aba da Carteira entra cedo no builder. O segundo é que o
+     `afty-addons.js` passou a IMPORTÁ-LO, para o `nivelDaFicha` saber a tabela
+     de progressão, e o afty-addons é importado por meio sistema. Um import novo
+     aqui dentro deixaria de ser uma seta de mão única e viraria ciclo. */
+  ["afty-carteira.js", "a aba entra cedo no builder E o afty-addons o importa"],
+  /* ⚠ ENTROU EM 2026-09-30, pelos mesmos DOIS motivos da Carteira: o card do
+     Espinho entra cedo no builder, e o `afty-addons.js` o importa para sanear o
+     catálogo do pacote em `espinhoDaFicha`. */
+  ["afty-espinho.js", "o card entra cedo no builder E o afty-addons o importa"],
+  /* ⚠ ENTROU EM 2026-09-09, quando a criação de armas passou a ler a escada de
+     Níveis de Dano em vez de espelhá-la. Ele já era folha e agora é folha
+     CARREGADA: o `afty-criacao-armas` depende dele e o `afty-equipamentos`
+     depende do afty-criacao-armas, então um import novo aqui dentro viraria o
+     ciclo do topo deste arquivo. */
+  ["afty-niveis-dano.js", "a escada de dano e lida de dentro da criacao de armas"],
+  /* ⚠ ENTROU EM 2026-09-14, com a Criação de Equipamentos. O `afty-equipamentos`
+     o chama dentro do `catalogoDoTipo`, então um import de volta fecharia um
+     ciclo com o módulo que mais gente importa. */
+  ["afty-criacao-equipamentos.js", "o catalogoDoTipo de afty-equipamentos o chama"],
+  ["afty-criacao-equipamentos-itens.js", "idem, para os Itens de Custo"],
+  ["afty-talisma-apice.js", "o derive, a sessao e o equipamento o leem"],
+  // Entrou em 2026-09-24: o montador do Golpe Especial, lido pela sessão e pelo painel.
+  ["afty-golpe-especial.js", "a sessao e o painel do Golpe Especial o leem"],
+  ["afty-criacao-equipamentos-encantamento.js", "o resolveFerramenta de afty-equipamentos o chama"],
+  ["afty-pericias-catalogo.js", "os três catálogos de requisito o chamam"],
+  // Entrou em 2026-09-30: as regras por tipo de invocação, lidas pelo afty-invocacoes.
+  ["afty-invocacoes-tipos.js", "o afty-invocacoes o importa, e o criador importa o afty-invocacoes no topo"],
+  // Entrou em 2026-09-30: o catálogo de Características de Invocação, lido pelo
+  // afty-invocacoes, pelo afty-habilidades (família de addon) e pelo criador.
+  ["afty-invocacoes-caracteristicas.js", "o afty-habilidades o importa, e ele está no ciclo"],
+  // Entrou em 2026-10-04: o catálogo do Novo Estilo das Sombras (Expansão), lido
+  // pelo afty-estilo-sombras, pelo derive e pelo criador.
+  ["afty-estilo-sombras-catalogo.js", "o afty-estilo-sombras o importa, e o criador importa os dois no topo"],
+  // Entrou em 2026-10-19: o formato e a biblioteca dos Pacotes para Aliados, lidos pela
+  // ficha diária (a aba Buffs), pelo G2 e pelos asserts.
+  ["ficha/pacotes-aliados.js", "a aba Buffs da ficha diaria o le, e ela entra cedo"],
+  ["afty-schema.js", "todo mundo cria ficha em branco"],
+  ["afty-dsl.js", "o avaliador não pode depender de conteúdo"],
+  ["afty-sistema.js", "regraDo() é lido de dentro dos catálogos"],
+];
+
+/* 1. NENHUM IMPORT, lido do próprio texto do arquivo. É a garantia estrutural:
+      um módulo sem import não tem como entrar num ciclo. */
+for (const [arquivo, porque] of FOLHAS) {
+  const texto = readFileSync(fileURLToPath(R + arquivo), "utf8");
+  const imports = texto.split("\n")
+    .map((l) => l.trim())
+    .filter((l) => /^import\s/.test(l) || /^\}\s*from\s/.test(l));
+  t(`${arquivo} nao importa nada (${porque})`, imports, []);
+}
+
+/* 2. E CARREGA SOZINHO. O teste de cima é sintático; este é o comportamento.
+      Um `import()` dinâmico dentro do módulo passaria pelo primeiro e morreria
+      aqui. Cada folha entra num processo LIMPO, porque uma vez que qualquer
+      outro módulo tenha sido importado a ordem já está resolvida e o teste
+      deixaria de medir o que quer. */
+const { execFileSync } = await import("node:child_process");
+const shim = "data:text/javascript,export async function resolve(s,c,n){try{return await n(s,c)}catch(e){if(s.startsWith(\\\".\\\")&&!s.endsWith(\\\".js\\\"))return n(s+\\\".js\\\",c);throw e}}";
+for (const [arquivo] of FOLHAS) {
+  const codigo = `import { register } from "node:module";`
+    + `register("${shim}", import.meta.url);`
+    + `await import(${JSON.stringify(R + arquivo)});`
+    + `console.log("ok");`;
+  let saida;
+  try {
+    saida = execFileSync(process.execPath, ["--input-type=module", "-e", codigo], { encoding: "utf8" }).trim();
+  } catch (e) {
+    saida = `QUEBROU: ${String(e.stderr ?? e.message).split("\n").find((l) => /Error/.test(l)) ?? "?"}`;
+  }
+  t(`${arquivo} carrega sozinho, sem mais nada importado`, saida, "ok");
+}
+
+/* 2.1 QUEM NÃO É FOLHA MAS PRECISA CARREGAR SOZINHO.
+
+      O `afty-criacao-armas.js` era folha e deixou de ser em 2026-09-09: ele
+      importa a escada de `afty-niveis-dano.js`, que é folha. A regra que sobra é
+      mais fraca que a das FOLHAS e é a que importa aqui: ele entra pelo editor
+      de arma do builder E pelo `afty-equipamentos.js`, então tem de carregar num
+      processo limpo. Se alguém lhe der um import que chegue ao equipamentos, o
+      ciclo do topo deste arquivo volta, e é este assert que acende. */
+const codigoCriacao = `import { register } from "node:module";`
+  + `register("${shim}", import.meta.url);`
+  + `const m = await import(${JSON.stringify(R + "afty-criacao-armas.js")});`
+  + `console.log(m.pcDoDado("1d12") === 5 ? "ok" : "escada errada");`;
+let saidaCriacao;
+try {
+  saidaCriacao = execFileSync(process.execPath, ["--input-type=module", "-e", codigoCriacao],
+    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
+} catch (e) {
+  saidaCriacao = `QUEBROU: ${String(e.stderr ?? e.message).split("\n").find((l) => /Error/.test(l))?.trim() ?? "?"}`;
+}
+t("afty-criacao-armas.js carrega sozinho, e com a escada de pe", saidaCriacao, "ok");
+
+/* 3. A CONTRAPROVA: o ciclo REALMENTE existe, e a folha é o que protege dele.
+      Entrar pelo `afty-equipamentos` primeiro é a ordem ruim, e ela tem de
+      continuar funcionando também (ninguém a proíbe, ela só não pode ser a
+      única que funciona). Se um dia alguém desfizer o ciclo de verdade, este
+      assert continua verde: ele não exige que o ciclo exista. */
+const codigoEquip = `import { register } from "node:module";`
+  + `register("${shim}", import.meta.url);`
+  + `await import(${JSON.stringify(R + "afty-equipamentos.js")});`
+  + `const m = await import(${JSON.stringify(R + "afty-habilidades.js")});`
+  + `console.log(m.AFTY_HABILIDADES.length > 0 ? "ok" : "vazio");`;
+let saidaEquip;
+try {
+  saidaEquip = execFileSync(process.execPath, ["--input-type=module", "-e", codigoEquip],
+    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
+} catch (e) {
+  saidaEquip = `QUEBROU: ${String(e.stderr ?? e.message).split("\n").find((l) => /Error/.test(l))?.trim() ?? "?"}`;
+}
+/* ⚠ AQUI A EXPECTATIVA É FROUXA DE PROPÓSITO, e aceita os DOIS desfechos.
+
+   Entrar pelo `afty-equipamentos` ainda quebra hoje: o conserto de 2026-09-02
+   foi tirar a aba de Defesas desse caminho, e NÃO desfazer o ciclo. Desfazê-lo
+   exige mexer no `OPCAO_ESCOLHA_NOME`, um IIFE de escopo de módulo que varre
+   todas as opções de escolha do catálogo.
+
+   Um assert que EXIGISSE a quebra ficaria vermelho no dia em que alguém
+   consertasse o ciclo, que é punir a melhoria. Então o que se cobra é outra
+   coisa: ou carrega, ou quebra pelo motivo QUE JÁ CONHECEMOS. Uma quebra nova,
+   com outra variável, é sintoma de um segundo ciclo e aí sim tem de acender. */
+t("ou o afty-equipamentos carrega primeiro, ou quebra so pelo motivo conhecido",
+  saidaEquip === "ok" || (saidaEquip.startsWith("QUEBROU") && saidaEquip.includes("ARMA_GRUPOS")), true);
+
+if (bad.length) {
+  console.log(`FALHAS (${bad.length}):`);
+  for (const b of bad) console.log("  " + b);
+  process.exit(1);
+}
+console.log(`TODOS OS ${ok} ASSERTS PASSARAM`);

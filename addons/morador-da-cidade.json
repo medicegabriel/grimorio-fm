@@ -1,0 +1,21 @@
+{
+  "id": "morador-da-cidade",
+  "nome": "Morador da Cidade",
+  "versao": "1.0.1",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Por viver em um ambiente com uma concentração extrema de energia, o corpo de quem mora na Cidade está em contato com ela e se adapta. Toda ficha que instala o Addon recebe 2 Pontos de Atributo para distribuir livremente na aba de Atributos, pelo canal `pontosAtributo`, dentro do limite de cada atributo. O efeito mora num Funcionamento do pacote, sempre ativo. Vale nos dois sistemas.",
+  "resumo": "2 pontos de atributo livres para toda ficha que instala",
+  "categoria": "regras",
+  "funcionamentos": [
+    {
+      "id": "morador_da_cidade",
+      "acumula": true,
+      "nome": "Morador da Cidade",
+      "descricao": "Por viver em um ambiente com uma concentração extrema de energia, seu corpo naturalmente está em contato e se adaptando a ela. Você recebe 2 Pontos de Atributo para distribuir livremente.",
+      "efeitos": [
+        { "canal": "pontosAtributo", "expr": "2", "nome": "Morador da Cidade" }
+      ]
+    }
+  ]
+}

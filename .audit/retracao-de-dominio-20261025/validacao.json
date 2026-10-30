@@ -1,0 +1,45 @@
+{
+  "data": "2026-10-25",
+  "addon": "addons/retracao-de-dominio.json",
+  "versao": "1.0.0",
+  "assertsProprios": { "passaram": 94, "falharam": 0 },
+  "assertsFocados": { "arquivos": 5, "passaram": 304, "falharam": 0 },
+  "lintAfty": "PASSOU",
+  "buildIsolado": "PASSOU",
+  "suiteGeral": {
+    "arquivos": 230,
+    "aprovados": 227,
+    "falhas": ["t-prodigio.mjs", "t-reconciliacao-g00.mjs", "t-treino-de-tr.mjs"],
+    "nota": "Falhas fora do addon. Saída do executor, contagem fixa de remendos e flag de Integridade alterada por outra tarefa, respectivamente. Nenhum desses arquivos foi editado nesta demanda."
+  },
+  "navegador": {
+    "origem": "http://127.0.0.1:5459/Player",
+    "personagemSintetico": "teste-retracao-player-20261025",
+    "maximosAntes": { "hp": 200, "pe": 100 },
+    "maximosAtivos": { "hp": 240, "pe": 120 },
+    "atuaisFeridosAntes": { "hp": 130, "pe": 35 },
+    "atuaisFeridosDepois": { "hp": 170, "pe": 55 },
+    "atuaisCheiosDepois": { "hp": 240, "pe": 120 },
+    "recargaPreservou": true,
+    "fimDeCombateEncerrou": true,
+    "novoCombateExigeAtivacaoManual": true,
+    "capturas": ["player-ativo.png", "player-240-120.png"]
+  },
+  "inventario": {
+    "adicoes": 15,
+    "alteracoes": 0,
+    "remocoes": 0,
+    "proprietario": "APT-09",
+    "fonte": "DA CASA",
+    "estado": "NÃO REVISADO",
+    "campanhaPreservada": true,
+    "coletaSemErros": true
+  },
+  "git": {
+    "local": "6888873",
+    "remotoConsultado": "bcaf978695c3d239b84f0a12ed11479adc428016",
+    "integracaoExecutada": false,
+    "commitExecutado": false,
+    "pushExecutado": false
+  }
+}

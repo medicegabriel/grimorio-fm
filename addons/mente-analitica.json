@@ -1,0 +1,25 @@
+{
+  "id": "mente-analitica",
+  "nome": "Mente Analítica",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Inovar Estilo: Mente Oculta passa a escalar com Inteligência ao invés de Sabedoria.",
+  "resumo": "Inovação do Inovar Estilo: Mente Oculta escala com Inteligência em vez de Sabedoria",
+  "categoria": "talentos",
+  "acrescenta": {
+    "opcoesTalento": [
+      {
+        "id": "mente_analitica",
+        "nome": "Mente Analítica",
+        "descricao": "Mente Oculta passa a escalar com Inteligência ao invés de Sabedoria.",
+        "talentoId": "talentos-de-estilo:tal_inovar_estilo",
+        "requerHabilidade": "cmb_mente_oculta",
+        "trocaAtributo": {
+          "de": "sabedoria",
+          "para": "inteligencia"
+        }
+      }
+    ]
+  }
+}

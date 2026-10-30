@@ -1,0 +1,16 @@
+{
+  "geradoEm": "2026-10-20T21:07:24.865Z",
+  "base": "http://127.0.0.1:5321",
+  "etapas": [
+    {
+      "nome": "buff",
+      "checks": [],
+      "erros": [],
+      "observado": {}
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "buff: 0/0"
+  ]
+}

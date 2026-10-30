@@ -1,0 +1,22 @@
+import fs from 'node:fs';
+import {coletarInventario} from '../scripts/revisao-automacao/inventario.mjs';
+import {construirProposta,aplicarProposta} from '../scripts/revisao-automacao/reconciliar.mjs';
+const root='docs/revisao-automacao/';const ler=n=>JSON.parse(fs.readFileSync(root+n,'utf8'));const gravar=(n,v)=>fs.writeFileSync(root+n,JSON.stringify(v,null,2).replaceAll(String.fromCharCode(0x2014),'\\u2014')+'\n');
+const inventario=ler('inventario.json'),escopo=ler('escopo.json'),campanha=ler('campanha.json');const vivoReal=await coletarInventario();
+const alvo=k=>k==='afty-combate.js::COMBATE_ESTADOS::postura';
+const agregado=k=>k==='afty-combate.js::COMBATE_ESTADOS::@catalogo';
+const itens=new Map(inventario.itens.filter(i=>i.situacao!=='REMOVIDO').map(i=>[i.chave,i]));for(const i of vivoReal.itens)if(alvo(i.chave)||agregado(i.chave))itens.set(i.chave,i);
+const vivo={...vivoReal,itens:[...itens.values()].sort((a,b)=>a.chave.localeCompare(b.chave))};
+const proposta=construirProposta({vivo,inventario,escopo});
+const arquivo='.audit/imitacao-config-proposta-restrita.json';fs.writeFileSync(arquivo,JSON.stringify(proposta,null,2));
+if(process.argv.includes('--aplicar')){
+ for(const ad of proposta.adicionados)proposta.decisoes.adicoes[ad.chave]=ad.proprietarioSugerido;
+ proposta.decisoes.justificativaAtualizacao='Pedido do autor em 2026-10-13: Mestre da Postura aprendido por Imitação deve permitir configurar e usar duas Posturas mesmo sem Assumir Postura. A lista de habilitações do primeiro slot inclui Mestre/Aprender Postura, mantendo o filtro por Posturas escolhidas. A escolha dinâmica só existe na concessão imitada, sem alterar o catálogo da aquisição normal. Reconciliação restrita ao estado postura e seu agregado, preservando identidades e estados dos demais trabalhos.';
+ fs.writeFileSync(arquivo,JSON.stringify(proposta,null,2));const registros=campanha.lotes.map(l=>root+l.lote+'/registro.json').filter(p=>fs.existsSync(p)).map(p=>JSON.parse(fs.readFileSync(p,'utf8')));
+ const r=aplicarProposta({proposta,vivo,inventario,escopo,campanha,registros});
+ const fontes=ler('fontes.json');fontes.itens??={};for(const ad of proposta.adicionados)fontes.itens[ad.chave]??={proprietario:ad.proprietarioSugerido,estado:'NÃO LOCALIZADA',fontes:[],nota:'Identidade registrada. Fonte vigente e páginas da verificação constam em docs/revisao-fang-especializacoes-2026-10-12.md. Reconciliação não aprova regra.'};
+ const rec=ler('reconciliacao.json');(rec.historico??=[]).push({data:new Date().toISOString(),proposta:arquivo,assinatura:proposta.assinatura,justificativa:proposta.decisoes.justificativaAtualizacao,...r.resumo});
+ for(const [p,v] of [['inventario.json',r.inventario],['escopo.json',r.escopo],['campanha.json',r.campanha],['fontes.json',fontes],['reconciliacao.json',rec]])gravar(p,v);
+ for(const reg of r.registros)if(r.resumo.lotesInvalidados.includes(reg.lote))gravar(reg.lote+'/registro.json',reg);
+ console.log(JSON.stringify(r.resumo));
+}else console.log(JSON.stringify({adicoes:proposta.adicionados.length,alterados:proposta.alterados.length,removidos:proposta.removidos.length,erros:vivo.erros}));

@@ -153,6 +153,13 @@ const tAttr = transf("tattr", "duradoura", ["atributo", "atributo", "atributo", 
 const dAttr0 = deriveAfty(ficha([tAttr]));
 t("Transformação só de Atributo, sem alvo escolhido, não é oferecida", estado(dAttr0, LIG("tattr")), undefined);
 
+// Nível sem tabela (0 ou 6): o cálculo sai cedo, mas `efeitos` segue sendo lista, que a tela lê direto.
+for (const nivelFora of [0, 6]) {
+  const calcFora = F.calcularFeiticoTransformacao({ ...transf("tfora", "duradoura", []), nivel: nivelFora }, { nd: 20 });
+  t(`Transformação de Nível ${nivelFora} devolve efeitos vazios`, calcFora.efeitos, []);
+  t(`e avisa que é do Nível 1 ao 5 (Nível ${nivelFora})`, calcFora.avisos.includes("Transformação é do Nível 1 ao 5."), true);
+}
+
 /* ============================================================ */
 /* 4. ESCONDER O INVÁLIDO                                        */
 /* ============================================================ */

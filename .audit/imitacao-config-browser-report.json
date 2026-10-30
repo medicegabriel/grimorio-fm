@@ -1,0 +1,46 @@
+[
+  {
+    "sistema": "afty",
+    "width": 1440,
+    "aprendidasNoCriador": true,
+    "rascunhoAnteriorPreservado": true,
+    "posturasSalvas": true,
+    "duasPosturasAtivadas": true,
+    "assumirPosturaAusente": true,
+    "critico18": true,
+    "errors": []
+  },
+  {
+    "sistema": "afty",
+    "width": 390,
+    "aprendidasNoCriador": true,
+    "rascunhoAnteriorPreservado": true,
+    "posturasSalvas": true,
+    "duasPosturasAtivadas": true,
+    "assumirPosturaAusente": true,
+    "critico18": true,
+    "errors": []
+  },
+  {
+    "sistema": "player",
+    "width": 1440,
+    "aprendidasNoCriador": true,
+    "rascunhoAnteriorPreservado": true,
+    "posturasSalvas": true,
+    "duasPosturasAtivadas": true,
+    "assumirPosturaAusente": true,
+    "critico18": true,
+    "errors": []
+  },
+  {
+    "sistema": "player",
+    "width": 390,
+    "aprendidasNoCriador": true,
+    "rascunhoAnteriorPreservado": true,
+    "posturasSalvas": true,
+    "duasPosturasAtivadas": true,
+    "assumirPosturaAusente": true,
+    "critico18": true,
+    "errors": []
+  }
+]

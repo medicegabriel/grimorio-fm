@@ -63,9 +63,9 @@ t("vazio não quebra", familiaEParte(undefined), { familia: null, parte: "" });
 /* 38 de 63 desde 2026-09-21, com o estado de Fluxo Invencível. 39 de 64 desde
    2026-09-24, com o "Golpe Especial · Longo", que entra na família do Golpe.
    40 de 65 desde 2026-10-07, com o "Golpe Especial · Preciso", pelo mesmo motivo. */
-t("a convenção cobre 40 dos 65",
+t("a convenção cobre 40 dos 68",
   COMBATE_ESTADOS.filter((e) => familiaEParte(e.label).familia).length, 40);
-t("e o catálogo tem 65 estados", COMBATE_ESTADOS.length, 65);
+t("e o catálogo tem 68 estados", COMBATE_ESTADOS.length, 68);
 
 /* ============================================================ */
 /* TODA FAIXA PRECISA DE TETO NO `resolveCombate`                */

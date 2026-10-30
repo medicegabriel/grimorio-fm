@@ -1,0 +1,6 @@
+import fs from 'node:fs';import crypto from 'node:crypto';import {spawnSync} from 'node:child_process';
+const dir='.audit/revisao-codex-pai4-20261020';
+const manifest=fs.readFileSync('.audit/pacotes-aliados-pai4-20261020/hashes-depois.txt','utf8').trim().split(/\r?\n/).map(l=>{const m=l.match(/^([a-f0-9]+)\s+\*?(.*)$/);const name=m[2],path=fs.existsSync(name)?name:'../'+name;const actual=crypto.createHash('sha256').update(fs.readFileSync(path)).digest('hex');return {path,expected:m[1],actual,ok:actual===m[1]};});
+fs.writeFileSync(dir+'/proveniencia.json',JSON.stringify({geradoEm:new Date().toISOString(),manifest},null,2));console.log('Hashes:',manifest.filter(x=>x.ok).length+'/'+manifest.length);
+const tests=['t-pacotes-aliados','t-g2-fonte-compat','t-g2-desempenho','t-g2-preferencias','t-g2-sessao-operacoes','t-g2-virada-registro','t-invocacoes-mesa','t-auxiliar-ligado','t-estilo-sombras-metricas','t-novo-estilo-sombras','t-ordem-modulos','t-revisao-g00'].map(name=>{const r=spawnSync(process.execPath,['asserts/'+name+'.mjs'],{encoding:'utf8',timeout:120000});console.log(name+': '+r.status+' '+(r.stdout+r.stderr).trim().slice(-125));return {name,exit:r.status,output:r.stdout+r.stderr};});
+fs.writeFileSync(dir+'/asserts-focados.json',JSON.stringify(tests,null,2));process.exitCode=tests.some(x=>x.exit!==0)||manifest.some(x=>!x.ok)?1:0;

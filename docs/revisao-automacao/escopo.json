@@ -84,7 +84,12 @@
     "afty-pacto.js": "AD-32",
     "afty-rascunho.js": "M04",
     "creature-schema.js": "M04",
-    "afty-gungnir.js": "AD-74"
+    "afty-gungnir.js": "AD-74",
+    "afty-talentos-estilo.js": "M05",
+    "afty-tecnicas-marciais.js": "FEI-01",
+    "afty-addons-compostos.js": "M05",
+    "afty-addons-lista.js": "M05",
+    "afty-especializacao-config.js": "M02"
   },
   "exports": {
     "afty-invocacoes.js::AFTY_INV_GRAUS": "INV-01",
@@ -272,6 +277,34 @@
     }
   ],
   "modulosAdicionais": {
+    "ficha/abas-g2/rolagem-g2.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Prévia das três abas do G2 (2026-10-21): a etapa sem sorteio do rolar (Especialização, Custo de Vida, arma, cura) e o motivo da recusa, pelas funções existentes; sem catálogo de regra do Livro"
+    },
+    "ficha/abas-g2/rolagens-acoes.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Prévia das três abas do G2 (2026-10-21): os pedidos de rolagem das abas, campo por campo iguais aos da aba clássica; sem catálogo de regra do Livro"
+    },
+    "ficha/abas-g2/mesa-celulas.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Prévia das três abas do G2 (2026-10-21): o resumo dos painéis condicionais em Agora na Mesa, lido do derive e da sessão; sem catálogo de regra do Livro"
+    },
+    "ficha/abas-g2/busca-g2.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Prévia das três abas do G2 (2026-10-21): destinos da busca global (Expansões e Atributos) só no G2; sem catálogo de regra do Livro"
+    },
+    "ficha/abas-g2/rapido-g2.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Prévia das três abas do G2 (2026-10-21): os favoritos do Rápido nas duas listas (habilidades e inventário); sem catálogo de regra do Livro"
+    },
+    "ficha/abas-g2/usar-destaque-g2.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Prévia das três abas do G2 (2026-10-21): rolar até a linha da busca global e realçar; sem catálogo de regra do Livro"
+    },
+    "ui/visibilidade-da-aba.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Prévia das três abas do G2 (2026-10-21): contexto de visibilidade que fecha os painéis de fontes de uma aba oculta, padrão visível; sem catálogo de regra do Livro"
+    },
     "ficha/ficha-sessao.js": {
       "modo": "DADOS",
       "proprietario": "M03",
@@ -330,6 +363,152 @@
     "ui/formato.js": {
       "modo": "INTERFACE",
       "justificativa": "Formatação visual de números e moedas"
+    },
+    "ficha/ficha-especializacoes.js": {
+      "modo": "DADOS",
+      "proprietario": "M03",
+      "justificativa": "Transições de turno e acionamento de efeitos de Especialização na sessão"
+    },
+    "ficha/ficha-opcoes-derive.js": {
+      "modo": "INTERFACE",
+      "justificativa": "As opções do derive que saem da sessão, uma lista só para a Ficha e para o delta dos estados; sem catálogo de regra"
+    },
+    "ficha/usar-delta-dos-estados.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Gancho que roda o delta dos estados em fatias entre quadros; mesma conta de ficha-buffs.js, sem catálogo de regra"
+    },
+    "ficha/fatias.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Corte em fatias dos geradores pesados da Ficha (onde devolver o controle ao navegador); sem catálogo de regra"
+    },
+    "ficha/ficha-recebidos.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Tradução dos registros recebidos (Feitiço de outro aplicador, Outra Origem) em bônus na ficha, igual para o G2, a ficha anterior, o Encontro e o delta dos estados; sem catálogo de regra"
+    },
+    "ficha/ficha-preferencias.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Preferências de apresentação do personagem (estatísticas do cabeçalho); sem catálogo de regra"
+    },
+    "ficha/pacotes-aliados.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Formato, leitura e biblioteca dos Pacotes para Aliados (arquivo JSON versionado, instância de Fonte Externa na sessão); sem catálogo de regra"
+    },
+    "ficha/pacotes-familias.js": {
+      "modo": "DADOS",
+      "proprietario": "M03",
+      "justificativa": "Fontes que um personagem concede a aliados, calculadas pelos resolvedores existentes (Feitiço Auxiliar, auxílio e Aura de Invocação, Novo Estilo das Sombras) e pelos textos de Aura do Bastião, Aura do Comandante e Habilidades de Suporte"
+    },
+    "ficha/efeitos/imitacao-logica.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Imitação no G2 (fechamento funcional, 2026-10-20): operações puras sobre a sessão pelos verbos e pelo catálogo de afty-imitacao.js; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/concedido-logica.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Concedido pelo Mestre no G2 (fechamento funcional, 2026-10-20): busca e verbos sobre a sessão pelo catálogo de afty-concessao.js; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/buff-mesa-logica.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Buff de mesa manual no G2 (fechamento funcional, 2026-10-20): validação do formulário pelo avaliador do DSL e verbos por id sobre sessao.buffs; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/exaustao-logica.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Nível de Exaustão no G2 (fechamento funcional, 2026-10-20): leitura e escrita do contador da sessão; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/efeitos-dados.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/estatisticas.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/exemplos.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/feitico.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/g2-dados.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/g2-golpe.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/g2-linha-do-tempo.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/g2-preparo.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/g2-uso.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/gestor-logica.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/habilidades-logica.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/historico-logica.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/mesa-verbos.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/operacoes.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/pecas-logica.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/ponte.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/preparo-logica.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/recebidos.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/repertorio.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/rolagem-g2.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/sessao-g2.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/useEfeitosG2.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/useModeloG2.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/util.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
     }
   },
   "familiasAddon": {
@@ -2718,6 +2897,158 @@
     "addon::vespa-crabro.json::acrescenta.armas::hwando::props": "AD-74",
     "afty-addons.js::PRIMITIVAS::ressonanciaGungnir": "M05",
     "afty-gungnir.js::GUNGNIR_ID::@valor": "AD-74",
-    "addon::vespa-crabro.json::@pacote::feiticos::lanca_odin": "AD-74"
+    "addon::vespa-crabro.json::@pacote::feiticos::lanca_odin": "AD-74",
+    "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::defesa::exprPessoal": "TEC-01",
+    "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::pericia::exprPessoal": "TEC-01",
+    "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::tr::exprPessoal": "TEC-01",
+    "afty-estilo-sombras-catalogo.js::PROGRESSAO_TECNICAS::intervalo": "TEC-01",
+    "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::acerto::exprPessoal": "TEC-01",
+    "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::cd::exprPessoal": "TEC-01",
+    "addon-herdada::formula-combate-entropica.json::formula-combate-entropica:res_intelectual__res_ataque_extra::efeitos": "RES-07",
+    "addon-herdada::formula-combate-entropica.json::formula-combate-entropica:res_intelectual__res_libertacao_do_destino::escolha": "RES-02",
+    "afty-combate.js::COMBATE_ESTADOS::contraFeiticaria": "M03",
+    "afty-combate.js::COMBATE_ESTADOS::precisaoForcada": "M03",
+    "afty-combate.js::COMBATE_ESTADOS::resAtaqueExtra": "M03",
+    "afty-combate.js::COMBATE_VARS::contra_feiticaria": "M03",
+    "afty-combate.js::COMBATE_VARS::precisao_forcada": "M03",
+    "afty-combate.js::COMBATE_VARS::res_ataque_extra": "M03",
+    "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::res_dadiva_indulgente_a_feiticaria::@3": "RES-01",
+    "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_ataque_extra": "RES-07",
+    "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_ataque_extra::@0": "RES-07",
+    "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_libertacao_do_destino::@2": "RES-02",
+    "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_libertacao_do_destino::@3": "RES-02",
+    "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_libertacao_do_destino::@4": "RES-02",
+    "afty-efeitos.js::HABILIDADE_EFEITOS::res_ataque_extra": "RES-07",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/niveis": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/niveis/@0": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_acido": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_acido/efeitos": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_acido/efeitos/@0": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_chocante": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_chocante/efeitos": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_chocante/efeitos/@0": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_congelante": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_congelante/efeitos": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_congelante/efeitos/@0": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energetico": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energetico/efeitos": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energetico/efeitos/@0": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energia_reversa": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energia_reversa/efeitos": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_energia_reversa/efeitos/@0": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_necrotico": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_necrotico/efeitos": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_necrotico/efeitos/@0": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_psiquico": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_psiquico/efeitos": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_psiquico/efeitos/@0": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_queimante": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_queimante/efeitos": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_queimante/efeitos/@0": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_radiante": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_radiante/efeitos": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_radiante/efeitos/@0": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_sonico": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_sonico/efeitos": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_sonico/efeitos/@0": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_venenoso": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_venenoso/efeitos": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::lut_corpo_supremo::escolha/opcoes/lut_supremo_venenoso/efeitos/@0": "LUT-11",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/niveis": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/niveis/@0": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_acido": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_acido/efeitos": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_acido/efeitos/@0": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_chocante": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_chocante/efeitos": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_chocante/efeitos/@0": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_congelante": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_congelante/efeitos": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_congelante/efeitos/@0": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energetico": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energetico/efeitos": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energetico/efeitos/@0": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energia_reversa": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energia_reversa/efeitos": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_energia_reversa/efeitos/@0": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_necrotico": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_necrotico/efeitos": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_necrotico/efeitos/@0": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_psiquico": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_psiquico/efeitos": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_psiquico/efeitos/@0": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_queimante": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_queimante/efeitos": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_queimante/efeitos/@0": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_radiante": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_radiante/efeitos": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_radiante/efeitos/@0": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_sonico": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_sonico/efeitos": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_sonico/efeitos/@0": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_venenoso": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_venenoso/efeitos": "RES-02",
+    "afty-habilidades.js::AFTY_HABILIDADES::res_libertacao_do_destino::escolha/opcoes/res_destino_venenoso/efeitos/@0": "RES-02",
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_acido": "P01",
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_chocante": "P01",
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_congelante": "P01",
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_energetico": "P01",
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_energia_reversa": "P01",
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_necrotico": "P01",
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_psiquico": "P01",
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_queimante": "P01",
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_radiante": "P01",
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_sonico": "P01",
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_supremo_venenoso": "P01",
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_acido": "P01",
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_chocante": "P01",
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_congelante": "P01",
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_energetico": "P01",
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_energia_reversa": "P01",
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_necrotico": "P01",
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_psiquico": "P01",
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_queimante": "P01",
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_radiante": "P01",
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_sonico": "P01",
+    "afty-habilidades.js::OPCAO_ESCOLHA_NOME::res_destino_venenoso": "P01",
+    "addon::treino-de-tr.json::@pacote": "TRE-03",
+    "addon::treino-de-tr.json::@pacote::acrescenta": "TRE-03",
+    "addon::treino-de-tr.json::@pacote::autor": "TRE-03",
+    "addon::treino-de-tr.json::@pacote::descricao": "TRE-03",
+    "addon::treino-de-tr.json::@pacote::id": "TRE-03",
+    "addon::treino-de-tr.json::@pacote::nome": "TRE-03",
+    "addon::treino-de-tr.json::@pacote::paraRaw": "TRE-03",
+    "addon::treino-de-tr.json::@pacote::versao": "TRE-03",
+    "addon::treino-de-tr.json::acrescenta.treinamentos::tr": "TRE-03",
+    "addon::treino-de-tr.json::acrescenta.treinamentos::tr::alvoTipo": "TRE-03",
+    "addon::treino-de-tr.json::acrescenta.treinamentos::tr::completo": "TRE-03",
+    "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas": "TRE-03",
+    "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@0": "TRE-03",
+    "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@0/efeitos": "TRE-03",
+    "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@0/efeitos/@0": "TRE-03",
+    "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@1": "TRE-03",
+    "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@2": "TRE-03",
+    "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@2/efeitos": "TRE-03",
+    "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@2/efeitos/@0": "TRE-03",
+    "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@3": "TRE-03",
+    "addon::retracao-de-dominio.json::@pacote": "APT-09",
+    "addon::retracao-de-dominio.json::@pacote::acrescenta": "APT-09",
+    "addon::retracao-de-dominio.json::@pacote::autor": "APT-09",
+    "addon::retracao-de-dominio.json::@pacote::descricao": "APT-09",
+    "addon::retracao-de-dominio.json::@pacote::estadosCombate": "APT-09",
+    "addon::retracao-de-dominio.json::@pacote::estadosCombate::retracao_ativa": "APT-09",
+    "addon::retracao-de-dominio.json::@pacote::estadosCombate::retracao_ativa/ampliaRecursos": "APT-09",
+    "addon::retracao-de-dominio.json::@pacote::id": "APT-09",
+    "addon::retracao-de-dominio.json::@pacote::nome": "APT-09",
+    "addon::retracao-de-dominio.json::@pacote::paraRaw": "APT-09",
+    "addon::retracao-de-dominio.json::@pacote::versao": "APT-09",
+    "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio": "APT-09",
+    "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio::efeitos": "APT-09",
+    "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio::requisitos": "APT-09",
+    "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio::requisitos/@0": "APT-09"
   }
 }

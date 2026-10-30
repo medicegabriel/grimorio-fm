@@ -1,0 +1,1821 @@
+{
+  "geradoEm": "2026-10-21T00:36:45.750Z",
+  "base": "http://127.0.0.1:5321",
+  "etapas": [
+    {
+      "nome": "F leiaute 1024",
+      "checks": [
+        {
+          "id": "ima Ativos sem estouro horizontal (1024)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1024
+          }
+        },
+        {
+          "id": "ima: o acesso à Exaustão alcançável (1024)",
+          "ok": true
+        },
+        {
+          "id": "ima: o acesso à Exaustão fica à vista e livre (1024)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "m-botao x-exaustao"
+            }
+          }
+        },
+        {
+          "id": "ima Imitação sem estouro horizontal (1024)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1024
+          }
+        },
+        {
+          "id": "ima Imitação com detalhe sem estouro horizontal (1024)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1024
+          }
+        },
+        {
+          "id": "ima: Confirmar Cópia à vista e sem nada por cima (1024)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "m-botao x-adicionar g2-primario"
+            }
+          }
+        },
+        {
+          "id": "ima: o clique real em Confirmar copia (1024)",
+          "ok": true
+        },
+        {
+          "id": "ima Imitação depois de copiar sem estouro horizontal (1024)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1024
+          }
+        },
+        {
+          "id": "mestre Fonte Externa sem estouro horizontal (1024)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1024
+          }
+        },
+        {
+          "id": "mestre Buff de Mesa sem estouro horizontal (1024)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1024
+          }
+        },
+        {
+          "id": "Buff: [data-campo=\"buff-nome\"] alcançável (1024)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "INPUT",
+              "classe": "afty-campo"
+            }
+          }
+        },
+        {
+          "id": "Buff: [data-campo=\"buff-expr\"] alcançável (1024)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "INPUT",
+              "classe": "afty-campo"
+            }
+          }
+        },
+        {
+          "id": "Buff: [data-campo=\"buff-rodadas\"] alcançável (1024)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "INPUT",
+              "classe": "afty-campo m-campo-num"
+            }
+          }
+        },
+        {
+          "id": "Buff: [data-criar-buff] alcançável (1024)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "g-botao"
+            }
+          }
+        },
+        {
+          "id": "mestre Concedido sem estouro horizontal (1024)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1024
+          }
+        },
+        {
+          "id": "Concedido: [data-remover-concessao] alcançável (1024)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "SPAN",
+              "classe": "k-acao-texto"
+            }
+          }
+        },
+        {
+          "id": "Concedido: [data-campo=\"concedido-familia\"] alcançável (1024)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "SELECT",
+              "classe": "afty-campo"
+            }
+          }
+        },
+        {
+          "id": "Concedido: [data-busca-concedido] alcançável (1024)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "INPUT",
+              "classe": "afty-campo"
+            }
+          }
+        },
+        {
+          "id": "Concedido: o botão Conceder alcançável (1024)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "SPAN",
+              "classe": "k-acao-texto"
+            }
+          }
+        },
+        {
+          "id": "sangrador Ativos sem estouro horizontal (1024)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1024
+          }
+        },
+        {
+          "id": "sangrador detalhe da condição sem estouro horizontal (1024)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1024
+          }
+        },
+        {
+          "id": "Sangrar à vista e sem nada por cima (1024)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "m-botao"
+            }
+          }
+        },
+        {
+          "id": "o clique real em Sangrar perde Vida (1024)",
+          "ok": true
+        },
+        {
+          "id": "o acesso à Exaustão alcançável (1024)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "m-botao x-exaustao"
+            }
+          }
+        },
+        {
+          "id": "Exaustão: [data-exaustao-mais] sem nada por cima (1024)",
+          "ok": true,
+          "dados": {
+            "achou": true,
+            "ok": true,
+            "visivel": true,
+            "dentro": true,
+            "tag": "path",
+            "classe": "[object SVGAnimatedString]"
+          }
+        },
+        {
+          "id": "Exaustão: [data-exaustao-zerar] sem nada por cima (1024)",
+          "ok": true,
+          "dados": {
+            "achou": true,
+            "ok": true,
+            "visivel": true,
+            "dentro": true,
+            "tag": "BUTTON",
+            "classe": "m-link"
+          }
+        },
+        {
+          "id": "sangrador painel de Exaustão sem estouro horizontal (1024)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1024
+          }
+        },
+        {
+          "id": "invocador Buff na invocação sem estouro horizontal (1024)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1024
+          }
+        },
+        {
+          "id": "a escolha de qual invocação alcançável (1024)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "SELECT",
+              "classe": "afty-campo"
+            }
+          }
+        },
+        {
+          "id": "a opção com o nome longo é a do Sapo (1024)",
+          "ok": true
+        },
+        {
+          "id": "invocador seletor de canal aberto sem estouro horizontal (1024)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1024
+          }
+        },
+        {
+          "id": "minamoto cabeçalho sem estouro horizontal (1024)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1024
+          }
+        },
+        {
+          "id": "minamoto: o cabeçalho grudado cabe no orçamento de altura (1024)",
+          "ok": true,
+          "dados": {
+            "cab": 300,
+            "vh": 900,
+            "pct": 33,
+            "limite": 0.4
+          }
+        },
+        {
+          "id": "minamoto Ativos sem estouro horizontal (1024)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1024
+          }
+        },
+        {
+          "id": "minamoto: o acesso à Exaustão fica à vista (1024)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "m-botao x-exaustao"
+            }
+          }
+        },
+        {
+          "id": "player30 cabeçalho sem estouro horizontal (1024)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1024
+          }
+        },
+        {
+          "id": "player30: o cabeçalho grudado cabe no orçamento de altura (1024)",
+          "ok": true,
+          "dados": {
+            "cab": 300,
+            "vh": 900,
+            "pct": 33,
+            "limite": 0.4
+          }
+        },
+        {
+          "id": "player30 Ativos sem estouro horizontal (1024)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1024
+          }
+        },
+        {
+          "id": "player30: o acesso à Exaustão fica à vista (1024)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "m-botao x-exaustao"
+            }
+          }
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "F leiaute 1280",
+      "checks": [
+        {
+          "id": "ima Ativos sem estouro horizontal (1280)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1280
+          }
+        },
+        {
+          "id": "ima: o acesso à Exaustão alcançável (1280)",
+          "ok": true
+        },
+        {
+          "id": "ima: o acesso à Exaustão fica à vista e livre (1280)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "m-botao x-exaustao"
+            }
+          }
+        },
+        {
+          "id": "ima Imitação sem estouro horizontal (1280)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1280
+          }
+        },
+        {
+          "id": "ima Imitação com detalhe sem estouro horizontal (1280)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1280
+          }
+        },
+        {
+          "id": "ima: Confirmar Cópia à vista e sem nada por cima (1280)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "m-botao x-adicionar g2-primario"
+            }
+          }
+        },
+        {
+          "id": "ima: o clique real em Confirmar copia (1280)",
+          "ok": true
+        },
+        {
+          "id": "ima Imitação depois de copiar sem estouro horizontal (1280)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1280
+          }
+        },
+        {
+          "id": "mestre Fonte Externa sem estouro horizontal (1280)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1280
+          }
+        },
+        {
+          "id": "mestre Buff de Mesa sem estouro horizontal (1280)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1280
+          }
+        },
+        {
+          "id": "Buff: [data-campo=\"buff-nome\"] alcançável (1280)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "INPUT",
+              "classe": "afty-campo"
+            }
+          }
+        },
+        {
+          "id": "Buff: [data-campo=\"buff-expr\"] alcançável (1280)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "INPUT",
+              "classe": "afty-campo"
+            }
+          }
+        },
+        {
+          "id": "Buff: [data-campo=\"buff-rodadas\"] alcançável (1280)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "INPUT",
+              "classe": "afty-campo m-campo-num"
+            }
+          }
+        },
+        {
+          "id": "Buff: [data-criar-buff] alcançável (1280)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "g-botao"
+            }
+          }
+        },
+        {
+          "id": "mestre Concedido sem estouro horizontal (1280)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1280
+          }
+        },
+        {
+          "id": "Concedido: [data-remover-concessao] alcançável (1280)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "SPAN",
+              "classe": "k-acao-texto"
+            }
+          }
+        },
+        {
+          "id": "Concedido: [data-campo=\"concedido-familia\"] alcançável (1280)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "SELECT",
+              "classe": "afty-campo"
+            }
+          }
+        },
+        {
+          "id": "Concedido: [data-busca-concedido] alcançável (1280)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "INPUT",
+              "classe": "afty-campo"
+            }
+          }
+        },
+        {
+          "id": "Concedido: o botão Conceder alcançável (1280)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "SPAN",
+              "classe": "k-acao-texto"
+            }
+          }
+        },
+        {
+          "id": "sangrador Ativos sem estouro horizontal (1280)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1280
+          }
+        },
+        {
+          "id": "sangrador detalhe da condição sem estouro horizontal (1280)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1280
+          }
+        },
+        {
+          "id": "Sangrar à vista e sem nada por cima (1280)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "m-botao"
+            }
+          }
+        },
+        {
+          "id": "o clique real em Sangrar perde Vida (1280)",
+          "ok": true
+        },
+        {
+          "id": "o acesso à Exaustão alcançável (1280)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "m-botao x-exaustao"
+            }
+          }
+        },
+        {
+          "id": "Exaustão: [data-exaustao-mais] sem nada por cima (1280)",
+          "ok": true,
+          "dados": {
+            "achou": true,
+            "ok": true,
+            "visivel": true,
+            "dentro": true,
+            "tag": "path",
+            "classe": "[object SVGAnimatedString]"
+          }
+        },
+        {
+          "id": "Exaustão: [data-exaustao-zerar] sem nada por cima (1280)",
+          "ok": true,
+          "dados": {
+            "achou": true,
+            "ok": true,
+            "visivel": true,
+            "dentro": true,
+            "tag": "BUTTON",
+            "classe": "m-link"
+          }
+        },
+        {
+          "id": "sangrador painel de Exaustão sem estouro horizontal (1280)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1280
+          }
+        },
+        {
+          "id": "invocador Buff na invocação sem estouro horizontal (1280)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1280
+          }
+        },
+        {
+          "id": "a escolha de qual invocação alcançável (1280)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "SELECT",
+              "classe": "afty-campo"
+            }
+          }
+        },
+        {
+          "id": "a opção com o nome longo é a do Sapo (1280)",
+          "ok": true
+        },
+        {
+          "id": "invocador seletor de canal aberto sem estouro horizontal (1280)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1280
+          }
+        },
+        {
+          "id": "minamoto cabeçalho sem estouro horizontal (1280)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1280
+          }
+        },
+        {
+          "id": "minamoto: o cabeçalho grudado cabe no orçamento de altura (1280)",
+          "ok": true,
+          "dados": {
+            "cab": 323,
+            "vh": 900,
+            "pct": 36,
+            "limite": 0.4
+          }
+        },
+        {
+          "id": "minamoto Ativos sem estouro horizontal (1280)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1280
+          }
+        },
+        {
+          "id": "minamoto: o acesso à Exaustão fica à vista (1280)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "m-botao x-exaustao"
+            }
+          }
+        },
+        {
+          "id": "player30 cabeçalho sem estouro horizontal (1280)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1280
+          }
+        },
+        {
+          "id": "player30: o cabeçalho grudado cabe no orçamento de altura (1280)",
+          "ok": true,
+          "dados": {
+            "cab": 285,
+            "vh": 900,
+            "pct": 32,
+            "limite": 0.4
+          }
+        },
+        {
+          "id": "player30 Ativos sem estouro horizontal (1280)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1280
+          }
+        },
+        {
+          "id": "player30: o acesso à Exaustão fica à vista (1280)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "m-botao x-exaustao"
+            }
+          }
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "F leiaute 1440",
+      "checks": [
+        {
+          "id": "ima Ativos sem estouro horizontal (1440)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1440
+          }
+        },
+        {
+          "id": "ima: o acesso à Exaustão alcançável (1440)",
+          "ok": true
+        },
+        {
+          "id": "ima: o acesso à Exaustão fica à vista e livre (1440)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "m-botao x-exaustao"
+            }
+          }
+        },
+        {
+          "id": "ima Imitação sem estouro horizontal (1440)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1440
+          }
+        },
+        {
+          "id": "ima Imitação com detalhe sem estouro horizontal (1440)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1440
+          }
+        },
+        {
+          "id": "ima: Confirmar Cópia à vista e sem nada por cima (1440)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "m-botao x-adicionar g2-primario"
+            }
+          }
+        },
+        {
+          "id": "ima: o clique real em Confirmar copia (1440)",
+          "ok": true
+        },
+        {
+          "id": "ima Imitação depois de copiar sem estouro horizontal (1440)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1440
+          }
+        },
+        {
+          "id": "mestre Fonte Externa sem estouro horizontal (1440)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1440
+          }
+        },
+        {
+          "id": "mestre Buff de Mesa sem estouro horizontal (1440)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1440
+          }
+        },
+        {
+          "id": "Buff: [data-campo=\"buff-nome\"] alcançável (1440)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "INPUT",
+              "classe": "afty-campo"
+            }
+          }
+        },
+        {
+          "id": "Buff: [data-campo=\"buff-expr\"] alcançável (1440)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "INPUT",
+              "classe": "afty-campo"
+            }
+          }
+        },
+        {
+          "id": "Buff: [data-campo=\"buff-rodadas\"] alcançável (1440)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "INPUT",
+              "classe": "afty-campo m-campo-num"
+            }
+          }
+        },
+        {
+          "id": "Buff: [data-criar-buff] alcançável (1440)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "g-botao"
+            }
+          }
+        },
+        {
+          "id": "mestre Concedido sem estouro horizontal (1440)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1440
+          }
+        },
+        {
+          "id": "Concedido: [data-remover-concessao] alcançável (1440)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "SPAN",
+              "classe": "k-acao-texto"
+            }
+          }
+        },
+        {
+          "id": "Concedido: [data-campo=\"concedido-familia\"] alcançável (1440)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "SELECT",
+              "classe": "afty-campo"
+            }
+          }
+        },
+        {
+          "id": "Concedido: [data-busca-concedido] alcançável (1440)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "INPUT",
+              "classe": "afty-campo"
+            }
+          }
+        },
+        {
+          "id": "Concedido: o botão Conceder alcançável (1440)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "SPAN",
+              "classe": "k-acao-texto"
+            }
+          }
+        },
+        {
+          "id": "sangrador Ativos sem estouro horizontal (1440)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1440
+          }
+        },
+        {
+          "id": "sangrador detalhe da condição sem estouro horizontal (1440)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1440
+          }
+        },
+        {
+          "id": "Sangrar à vista e sem nada por cima (1440)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "m-botao"
+            }
+          }
+        },
+        {
+          "id": "o clique real em Sangrar perde Vida (1440)",
+          "ok": true
+        },
+        {
+          "id": "o acesso à Exaustão alcançável (1440)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "m-botao x-exaustao"
+            }
+          }
+        },
+        {
+          "id": "Exaustão: [data-exaustao-mais] sem nada por cima (1440)",
+          "ok": true,
+          "dados": {
+            "achou": true,
+            "ok": true,
+            "visivel": true,
+            "dentro": true,
+            "tag": "path",
+            "classe": "[object SVGAnimatedString]"
+          }
+        },
+        {
+          "id": "Exaustão: [data-exaustao-zerar] sem nada por cima (1440)",
+          "ok": true,
+          "dados": {
+            "achou": true,
+            "ok": true,
+            "visivel": true,
+            "dentro": true,
+            "tag": "BUTTON",
+            "classe": "m-link"
+          }
+        },
+        {
+          "id": "sangrador painel de Exaustão sem estouro horizontal (1440)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1440
+          }
+        },
+        {
+          "id": "invocador Buff na invocação sem estouro horizontal (1440)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1440
+          }
+        },
+        {
+          "id": "a escolha de qual invocação alcançável (1440)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "SELECT",
+              "classe": "afty-campo"
+            }
+          }
+        },
+        {
+          "id": "a opção com o nome longo é a do Sapo (1440)",
+          "ok": true
+        },
+        {
+          "id": "invocador seletor de canal aberto sem estouro horizontal (1440)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1440
+          }
+        },
+        {
+          "id": "minamoto cabeçalho sem estouro horizontal (1440)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1440
+          }
+        },
+        {
+          "id": "minamoto: o cabeçalho grudado cabe no orçamento de altura (1440)",
+          "ok": true,
+          "dados": {
+            "cab": 277,
+            "vh": 900,
+            "pct": 31,
+            "limite": 0.34
+          }
+        },
+        {
+          "id": "minamoto Ativos sem estouro horizontal (1440)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1440
+          }
+        },
+        {
+          "id": "minamoto: o acesso à Exaustão fica à vista (1440)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "m-botao x-exaustao"
+            }
+          }
+        },
+        {
+          "id": "player30 cabeçalho sem estouro horizontal (1440)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1440
+          }
+        },
+        {
+          "id": "player30: o cabeçalho grudado cabe no orçamento de altura (1440)",
+          "ok": true,
+          "dados": {
+            "cab": 262,
+            "vh": 900,
+            "pct": 29,
+            "limite": 0.34
+          }
+        },
+        {
+          "id": "player30 Ativos sem estouro horizontal (1440)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1440
+          }
+        },
+        {
+          "id": "player30: o acesso à Exaustão fica à vista (1440)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "m-botao x-exaustao"
+            }
+          }
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "F leiaute 390",
+      "checks": [
+        {
+          "id": "ima Ativos sem estouro horizontal (390)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 390
+          }
+        },
+        {
+          "id": "ima: o acesso à Exaustão alcançável (390)",
+          "ok": true
+        },
+        {
+          "id": "ima: o acesso à Exaustão fica à vista e livre (390)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "m-botao x-exaustao"
+            }
+          }
+        },
+        {
+          "id": "ima Imitação sem estouro horizontal (390)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 390
+          }
+        },
+        {
+          "id": "ima Imitação com detalhe sem estouro horizontal (390)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 390
+          }
+        },
+        {
+          "id": "ima: Confirmar Cópia à vista e sem nada por cima (390)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "m-botao x-adicionar g2-primario"
+            }
+          }
+        },
+        {
+          "id": "ima: o clique real em Confirmar copia (390)",
+          "ok": true
+        },
+        {
+          "id": "ima Imitação depois de copiar sem estouro horizontal (390)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 390
+          }
+        },
+        {
+          "id": "mestre Fonte Externa sem estouro horizontal (390)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 390
+          }
+        },
+        {
+          "id": "mestre Buff de Mesa sem estouro horizontal (390)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 390
+          }
+        },
+        {
+          "id": "Buff: [data-campo=\"buff-nome\"] alcançável (390)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "INPUT",
+              "classe": "afty-campo"
+            }
+          }
+        },
+        {
+          "id": "Buff: [data-campo=\"buff-expr\"] alcançável (390)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "INPUT",
+              "classe": "afty-campo"
+            }
+          }
+        },
+        {
+          "id": "Buff: [data-campo=\"buff-rodadas\"] alcançável (390)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "INPUT",
+              "classe": "afty-campo m-campo-num"
+            }
+          }
+        },
+        {
+          "id": "Buff: [data-criar-buff] alcançável (390)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "g-botao"
+            }
+          }
+        },
+        {
+          "id": "mestre Concedido sem estouro horizontal (390)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 390
+          }
+        },
+        {
+          "id": "Concedido: [data-remover-concessao] alcançável (390)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "SPAN",
+              "classe": "k-acao-texto"
+            }
+          }
+        },
+        {
+          "id": "Concedido: [data-campo=\"concedido-familia\"] alcançável (390)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "SELECT",
+              "classe": "afty-campo"
+            }
+          }
+        },
+        {
+          "id": "Concedido: [data-busca-concedido] alcançável (390)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "INPUT",
+              "classe": "afty-campo"
+            }
+          }
+        },
+        {
+          "id": "Concedido: o botão Conceder alcançável (390)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "SPAN",
+              "classe": "k-acao-texto"
+            }
+          }
+        },
+        {
+          "id": "sangrador Ativos sem estouro horizontal (390)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 390
+          }
+        },
+        {
+          "id": "sangrador detalhe da condição sem estouro horizontal (390)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 390
+          }
+        },
+        {
+          "id": "Sangrar à vista e sem nada por cima (390)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "m-botao"
+            }
+          }
+        },
+        {
+          "id": "o clique real em Sangrar perde Vida (390)",
+          "ok": true
+        },
+        {
+          "id": "o acesso à Exaustão alcançável (390)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "m-botao x-exaustao"
+            }
+          }
+        },
+        {
+          "id": "Exaustão: [data-exaustao-mais] sem nada por cima (390)",
+          "ok": true,
+          "dados": {
+            "achou": true,
+            "ok": true,
+            "visivel": true,
+            "dentro": true,
+            "tag": "path",
+            "classe": "[object SVGAnimatedString]"
+          }
+        },
+        {
+          "id": "Exaustão: [data-exaustao-zerar] sem nada por cima (390)",
+          "ok": true,
+          "dados": {
+            "achou": true,
+            "ok": true,
+            "visivel": true,
+            "dentro": true,
+            "tag": "BUTTON",
+            "classe": "m-link"
+          }
+        },
+        {
+          "id": "sangrador painel de Exaustão sem estouro horizontal (390)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 390
+          }
+        },
+        {
+          "id": "invocador Buff na invocação sem estouro horizontal (390)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 390
+          }
+        },
+        {
+          "id": "a escolha de qual invocação alcançável (390)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "SELECT",
+              "classe": "afty-campo"
+            }
+          }
+        },
+        {
+          "id": "a opção com o nome longo é a do Sapo (390)",
+          "ok": true
+        },
+        {
+          "id": "invocador seletor de canal aberto sem estouro horizontal (390)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 390
+          }
+        },
+        {
+          "id": "minamoto cabeçalho sem estouro horizontal (390)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 390
+          }
+        },
+        {
+          "id": "minamoto: o cabeçalho grudado cabe no orçamento de altura (390)",
+          "ok": true,
+          "dados": {
+            "cab": 408,
+            "vh": 844,
+            "pct": 48,
+            "limite": 0.52
+          }
+        },
+        {
+          "id": "minamoto Ativos sem estouro horizontal (390)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 390
+          }
+        },
+        {
+          "id": "minamoto: o acesso à Exaustão fica à vista (390)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "m-botao x-exaustao"
+            }
+          }
+        },
+        {
+          "id": "player30 cabeçalho sem estouro horizontal (390)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 390
+          }
+        },
+        {
+          "id": "player30: o cabeçalho grudado cabe no orçamento de altura (390)",
+          "ok": true,
+          "dados": {
+            "cab": 387,
+            "vh": 844,
+            "pct": 46,
+            "limite": 0.52
+          }
+        },
+        {
+          "id": "player30 Ativos sem estouro horizontal (390)",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 390
+          }
+        },
+        {
+          "id": "player30: o acesso à Exaustão fica à vista (390)",
+          "ok": true,
+          "dados": {
+            "ok": true,
+            "r": {
+              "achou": true,
+              "ok": true,
+              "visivel": true,
+              "dentro": true,
+              "tag": "BUTTON",
+              "classe": "m-botao x-exaustao"
+            }
+          }
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "F leiaute 1024: 39/39",
+    "F leiaute 1280: 39/39",
+    "F leiaute 1440: 39/39",
+    "F leiaute 390: 39/39"
+  ]
+}

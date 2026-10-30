@@ -119,6 +119,9 @@ Controlador e Invocações").
   - Ações e Características extras com custo são cobradas na entrada, junto da ativação ou do início do combate;
   - o Nível de Aptidão é metade do modificador de Presença do Controlador, para baixo, mínimo 0.
 - **Aura:** não vale na própria invocação, salvo regra específica. Duas auras iguais não acumulam (vale a maior), e auras de efeitos diferentes convivem.
+  Desde 2026-10-19 a linha que o dono recebe leva `origem: invocacao:aura:<tipo>|<alvo>` (`chaveDaAuraDeInvocacao`): uma Aura recebida de
+  outro personagem por um Pacote para Aliados disputa com ela pela mesma chave, e a Aura de Dano maior substitui a menor (um dado só).
+  O auxílio de Aliados recebido soma, e o mesmo auxílio do mesmo emissor vale uma vez. Ver `docs/afty-ficha-final.md`.
 - **Concedidas por regra:** "Trocar Núcleo" e as Ações e Características herdadas não ocupam vaga nem aumentam custo.
 - **Fundamento:** é marca explícita (`fundamento`), e nem todo Shikigami de Técnica é Fundamento.
 - **Ações com Custo:** o limite por grau segue 1, 1, 2, 2, 3.

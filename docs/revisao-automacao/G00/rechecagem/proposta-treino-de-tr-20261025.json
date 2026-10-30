@@ -1,0 +1,352 @@
+{
+  "versao": 1,
+  "shaInventario": "3a9b85e3f7da50ae42b50621c2ef247fa27092ec634fe807f97d1cbdeddd4906",
+  "shaVivo": "8c6c02bf2ae83e637d5cf3e44b03ec5efee7384ba1f0d27286e12e70d1ff6e6a",
+  "shaEscopo": "fbe3688f08cfe64d948de081ed6189f2933510a166ee119fc14774976ee04ab7",
+  "adicionados": [
+    {
+      "chave": "addon::treino-de-tr.json::@pacote",
+      "item": {
+        "chave": "addon::treino-de-tr.json::@pacote",
+        "id": "treino-de-tr",
+        "nome": "Treino de TR",
+        "arquivo": "addons/treino-de-tr.json",
+        "proprietario": null,
+        "tipo": "pacote",
+        "addon": "treino-de-tr.json",
+        "idLocal": "treino-de-tr",
+        "hashDado": "5676897439c45f7c28da9f11f4bace36bc2bb21e97d5260c921844e777e95823"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::treino-de-tr.json::@pacote::acrescenta",
+      "item": {
+        "chave": "addon::treino-de-tr.json::@pacote::acrescenta",
+        "id": "acrescenta",
+        "nome": "acrescenta",
+        "arquivo": "addons/treino-de-tr.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "treino-de-tr.json",
+        "pai": "addon::treino-de-tr.json::@pacote",
+        "hashDado": "65616c138125c3ff35bc573e72d2e3559aba7991e3efbef990c704de99809129"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::treino-de-tr.json::@pacote::autor",
+      "item": {
+        "chave": "addon::treino-de-tr.json::@pacote::autor",
+        "id": "autor",
+        "nome": "autor",
+        "arquivo": "addons/treino-de-tr.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "treino-de-tr.json",
+        "pai": "addon::treino-de-tr.json::@pacote",
+        "hashDado": "6f8d7331be16f4faf5c4e2de472cc95113af6c058396d49204b9539266d06682"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::treino-de-tr.json::@pacote::descricao",
+      "item": {
+        "chave": "addon::treino-de-tr.json::@pacote::descricao",
+        "id": "descricao",
+        "nome": "descricao",
+        "arquivo": "addons/treino-de-tr.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "treino-de-tr.json",
+        "pai": "addon::treino-de-tr.json::@pacote",
+        "hashDado": "87f026b423978927ddb2e5e437816456d8d9f6bee36be02921c005066e36746b"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::treino-de-tr.json::@pacote::id",
+      "item": {
+        "chave": "addon::treino-de-tr.json::@pacote::id",
+        "id": "id",
+        "nome": "id",
+        "arquivo": "addons/treino-de-tr.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "treino-de-tr.json",
+        "pai": "addon::treino-de-tr.json::@pacote",
+        "hashDado": "78200805d399b952f629309648764caf03ae6631ce4421da0d69e135cee5603c"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::treino-de-tr.json::@pacote::nome",
+      "item": {
+        "chave": "addon::treino-de-tr.json::@pacote::nome",
+        "id": "nome",
+        "nome": "nome",
+        "arquivo": "addons/treino-de-tr.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "treino-de-tr.json",
+        "pai": "addon::treino-de-tr.json::@pacote",
+        "hashDado": "b19326f777f12e613d6e483b77a6f5f6b1b81615c92e346b794672397050e530"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::treino-de-tr.json::@pacote::paraRaw",
+      "item": {
+        "chave": "addon::treino-de-tr.json::@pacote::paraRaw",
+        "id": "paraRaw",
+        "nome": "paraRaw",
+        "arquivo": "addons/treino-de-tr.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "treino-de-tr.json",
+        "pai": "addon::treino-de-tr.json::@pacote",
+        "hashDado": "0289ece8033b573da3841cd5eea4bc968504b022915c4bb5174cab838f4f7c02"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::treino-de-tr.json::@pacote::versao",
+      "item": {
+        "chave": "addon::treino-de-tr.json::@pacote::versao",
+        "id": "versao",
+        "nome": "versao",
+        "arquivo": "addons/treino-de-tr.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "treino-de-tr.json",
+        "pai": "addon::treino-de-tr.json::@pacote",
+        "hashDado": "39fe4a40977d0585fd5704359e3685b0ada5cf5ee061e5d97385601d120cd0ec"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::treino-de-tr.json::acrescenta.treinamentos::tr",
+      "item": {
+        "chave": "addon::treino-de-tr.json::acrescenta.treinamentos::tr",
+        "id": "tr",
+        "nome": "Treino de TR",
+        "arquivo": "addons/treino-de-tr.json",
+        "proprietario": null,
+        "tipo": "conteúdo de addon",
+        "addon": "treino-de-tr.json",
+        "familia": "treinamentos",
+        "operacao": "acrescenta",
+        "idLocal": "tr",
+        "hashDado": "bef8da630f277abde0dd104054a82f0694482e007dd622630b306ca3d88bb62c"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::treino-de-tr.json::acrescenta.treinamentos::tr::alvoTipo",
+      "item": {
+        "chave": "addon::treino-de-tr.json::acrescenta.treinamentos::tr::alvoTipo",
+        "id": "alvoTipo",
+        "nome": "alvoTipo",
+        "arquivo": "addons/treino-de-tr.json",
+        "pai": "addon::treino-de-tr.json::acrescenta.treinamentos::tr",
+        "caminho": "alvoTipo",
+        "proprietario": null,
+        "tipo": "domínio dinâmico",
+        "dominio": "alvoTipo:tr",
+        "addon": "treino-de-tr.json",
+        "hashDado": "4fcf2952ba9cbb9a84bb1b3fbd99cee3445eb8c9fd9cb83d1a807d03a97b08c9"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::treino-de-tr.json::acrescenta.treinamentos::tr::completo",
+      "item": {
+        "chave": "addon::treino-de-tr.json::acrescenta.treinamentos::tr::completo",
+        "id": "completo",
+        "nome": "completo",
+        "arquivo": "addons/treino-de-tr.json",
+        "pai": "addon::treino-de-tr.json::acrescenta.treinamentos::tr",
+        "caminho": "completo",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "treino-de-tr.json",
+        "hashDado": "0fca88b29ecd52944ed56144bf5aa07bf2adba94cbb2ec69d9a2c99e59c1e9ca"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas",
+      "item": {
+        "chave": "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas",
+        "id": "etapas",
+        "nome": "etapas",
+        "arquivo": "addons/treino-de-tr.json",
+        "pai": "addon::treino-de-tr.json::acrescenta.treinamentos::tr",
+        "caminho": "etapas",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "treino-de-tr.json",
+        "hashDado": "372546d8b0c9c185c79578c244e89341237efd7df6b90d36c2fb383790a632f8"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@0",
+      "item": {
+        "chave": "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@0",
+        "id": "etapas/@0",
+        "nome": "etapas/@0",
+        "arquivo": "addons/treino-de-tr.json",
+        "pai": "addon::treino-de-tr.json::acrescenta.treinamentos::tr",
+        "caminho": "etapas/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "treino-de-tr.json",
+        "hashDado": "1e0e4aed6e5e3128d3dadce4125f7e7d7c5f1f33f912f5e0feb7527327f542ba"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@0/efeitos",
+      "item": {
+        "chave": "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@0/efeitos",
+        "id": "etapas/@0/efeitos",
+        "nome": "etapas/@0/efeitos",
+        "arquivo": "addons/treino-de-tr.json",
+        "pai": "addon::treino-de-tr.json::acrescenta.treinamentos::tr",
+        "caminho": "etapas/@0/efeitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "treino-de-tr.json",
+        "hashDado": "d651d5bc4a8997df47de0767f1feaf8493dc279539bdec4398b53cd04ed13931"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@0/efeitos/@0",
+      "item": {
+        "chave": "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@0/efeitos/@0",
+        "id": "etapas/@0/efeitos/@0",
+        "nome": "etapas/@0/efeitos/@0",
+        "arquivo": "addons/treino-de-tr.json",
+        "pai": "addon::treino-de-tr.json::acrescenta.treinamentos::tr",
+        "caminho": "etapas/@0/efeitos/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "treino-de-tr.json",
+        "hashDado": "ca81495225b53dd0979143db26a18ca804dd655dfcab6f4de95425460fbf3c7c"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@1",
+      "item": {
+        "chave": "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@1",
+        "id": "etapas/@1",
+        "nome": "etapas/@1",
+        "arquivo": "addons/treino-de-tr.json",
+        "pai": "addon::treino-de-tr.json::acrescenta.treinamentos::tr",
+        "caminho": "etapas/@1",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "treino-de-tr.json",
+        "hashDado": "53d50c729765d5f47d5b4f2dbf61c4d76a95f47efab8860898e59c73ded0b492"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@2",
+      "item": {
+        "chave": "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@2",
+        "id": "etapas/@2",
+        "nome": "etapas/@2",
+        "arquivo": "addons/treino-de-tr.json",
+        "pai": "addon::treino-de-tr.json::acrescenta.treinamentos::tr",
+        "caminho": "etapas/@2",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "treino-de-tr.json",
+        "hashDado": "bd371612d6623bef347785508381cf49f9a4bf839fa16c600448657d8b6870ab"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@2/efeitos",
+      "item": {
+        "chave": "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@2/efeitos",
+        "id": "etapas/@2/efeitos",
+        "nome": "etapas/@2/efeitos",
+        "arquivo": "addons/treino-de-tr.json",
+        "pai": "addon::treino-de-tr.json::acrescenta.treinamentos::tr",
+        "caminho": "etapas/@2/efeitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "treino-de-tr.json",
+        "hashDado": "c68d5f3413e8bbcfc77273e703e6b46e877288a6fff481685d38b763a9747008"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@2/efeitos/@0",
+      "item": {
+        "chave": "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@2/efeitos/@0",
+        "id": "etapas/@2/efeitos/@0",
+        "nome": "etapas/@2/efeitos/@0",
+        "arquivo": "addons/treino-de-tr.json",
+        "pai": "addon::treino-de-tr.json::acrescenta.treinamentos::tr",
+        "caminho": "etapas/@2/efeitos/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "treino-de-tr.json",
+        "hashDado": "2a9383ea0a36003933f7113d8f737f6561899db7248206cce655ce80f40284b0"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@3",
+      "item": {
+        "chave": "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@3",
+        "id": "etapas/@3",
+        "nome": "etapas/@3",
+        "arquivo": "addons/treino-de-tr.json",
+        "pai": "addon::treino-de-tr.json::acrescenta.treinamentos::tr",
+        "caminho": "etapas/@3",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "treino-de-tr.json",
+        "hashDado": "194af626806e877015a2cd922f10ae5401357629ca5b4a2232a266c91982e768"
+      },
+      "proprietarioSugerido": null
+    }
+  ],
+  "removidos": [],
+  "alterados": [],
+  "assinatura": "8fd7c02b23747014accb82d626c5865395570cd44fd514439931d9ef94c13191",
+  "decisoes": {
+    "adicoes": {
+      "addon::treino-de-tr.json::@pacote": "TRE-03",
+      "addon::treino-de-tr.json::@pacote::acrescenta": "TRE-03",
+      "addon::treino-de-tr.json::@pacote::autor": "TRE-03",
+      "addon::treino-de-tr.json::@pacote::descricao": "TRE-03",
+      "addon::treino-de-tr.json::@pacote::id": "TRE-03",
+      "addon::treino-de-tr.json::@pacote::nome": "TRE-03",
+      "addon::treino-de-tr.json::@pacote::paraRaw": "TRE-03",
+      "addon::treino-de-tr.json::@pacote::versao": "TRE-03",
+      "addon::treino-de-tr.json::acrescenta.treinamentos::tr": "TRE-03",
+      "addon::treino-de-tr.json::acrescenta.treinamentos::tr::alvoTipo": "TRE-03",
+      "addon::treino-de-tr.json::acrescenta.treinamentos::tr::completo": "TRE-03",
+      "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas": "TRE-03",
+      "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@0": "TRE-03",
+      "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@0/efeitos": "TRE-03",
+      "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@0/efeitos/@0": "TRE-03",
+      "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@1": "TRE-03",
+      "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@2": "TRE-03",
+      "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@2/efeitos": "TRE-03",
+      "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@2/efeitos/@0": "TRE-03",
+      "addon::treino-de-tr.json::acrescenta.treinamentos::tr::etapas/@3": "TRE-03"
+    },
+    "remocoes": {},
+    "justificativaAtualizacao": "Pedido humano em 2026-10-25: criar Treino de TR exatamente como Treino de Perícia, aplicado a Testes de Resistência. Registro restrito às 20 chaves de addons/treino-de-tr.json. TRE-03 é o lote proprietário do modelo Treino de Perícia, Livro de Regras p. 345. A adaptação para TR é regra da casa, sem aprovação ou revisão semântica atribuída por esta reconciliação. Outros itens e estados permanecem preservados."
+  },
+  "errosColeta": []
+}

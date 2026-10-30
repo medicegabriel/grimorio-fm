@@ -29,7 +29,7 @@ da próxima rodada e no descanso.
 
 Infraestrutura genérica adicionada, sem conteúdo da Lime no código do motor:
 
-- `atributos`: `bonusBase`, `limiteFixo` e `nome` por atributo.
+- `atributos`: `bonusBase`, `limiteFixo` e `nome` por atributo. Desde 2026-10-12 também `rolagem: { baseMax, limite }`, que só vale no Método Rolagem (Atributo Fang).
 - `estilos`: técnicas próprias do pacote, `maxImbuicoes`, `custoImbuicao`,
   `efeitos`, `resultados`, `adendo` e `aviso`. Desde a Expansão do Novo Estilo
   das Sombras (2026-10-04) elas seguem `legacy`: o pacote não declara `regra`,

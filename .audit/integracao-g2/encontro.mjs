@@ -1,0 +1,17 @@
+import { chromium } from "playwright";
+import fs from "node:fs";
+const BASE = "http://127.0.0.1:5310";
+const amostras = JSON.parse(fs.readFileSync("C:/Projetos/Grimorio/prototipos/ficha-final-v2/dados/amostras.json", "utf8")).amostras;
+const a = amostras.find((x) => x.id === "megumi");
+const browser = await chromium.launch({ channel: "chrome", headless: true });
+const page = await (await browser.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
+const erros = [];
+page.on("pageerror", (e) => erros.push(e.message));
+await page.goto(`${BASE}/afty`, { waitUntil: "domcontentloaded" });
+await page.evaluate((f) => localStorage.setItem("fm_creatures_afty_v1", JSON.stringify([f])), { ...a.ficha, id: "g2-enc-megumi" });
+await page.goto(`${BASE}/afty`, { waitUntil: "networkidle" });
+await page.screenshot({ path: "C:/Projetos/Grimorio/grimorio-tracker/.audit/integracao-g2/capturas/dashboard.png" });
+const txt = (await page.locator("body").innerText()).split("\n").map((s) => s.trim()).filter(Boolean);
+console.log(txt.slice(0, 60).join(" | "));
+console.log("erros", JSON.stringify(erros));
+await browser.close();

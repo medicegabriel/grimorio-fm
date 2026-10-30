@@ -72,6 +72,79 @@ O alvo `grupo:espada|grupo:haste` usa o OU já existente para limitar
 `nivelDano` às armas elegíveis. Não há canal, variável ou fórmula nova.
 Aplicação: `addons/vespa-crabro.json`, guia `docs/afty-vespa-crabro.md`.
 
+### Motor da Loja de Catarse (2026-10-25)
+
+Correção posterior à primeira importação do Chrollo, confirmada pelo autor:
+Atributo emite `atributo` e `limiteAtributo`, ambos +6 em Constituição.
+Os dois efeitos manuais idênticos do Funcionamento Básico foram migrados
+para a Loja para evitar duplicação e preservar a soma fora do pool exclusivo.
+
+`compras[].quantidade` agrupa aquisições, com padrão 1. Famílias com canal,
+como `lendarias`, concedem essa quantidade de vagas. Texto com Motor não
+multiplica seus efeitos pela quantidade, pois o valor já está na expressão.
+`anotacao` guarda somente nome e texto, sem Motor ou concessões.
+
+`habilidadesOutraClasse` usa `escolhas: [habilidadeId, ...]`, uma por unidade
+comprada. Concede as escolhidas sem consumir vagas comuns, sem níveis reais,
+sem bases ou treinamentos da classe. Como na Alma Livre, o nível de personagem
+vale para o acesso, escalonamento e opções dessas habilidades. Classes próprias,
+duplicatas, vetos de origem e nível insuficiente não concedem a habilidade.
+Demais requisitos continuam avaliados pelo resolvedor nativo e pelo seletor.
+As escolhas aninhadas ficam na aba da classe em Especializações.
+
+As anotações usam `TecnicaMotorEditor`, com canal, alvo, variáveis conhecidas,
+condição, duração e prévia. A edição continua vindo do rascunho, incluindo
+linhas incompletas. A prévia por compra está em `derived.catarseEfeitos`.
+
+Só os canais de orçamento lidos antes das escolhas ficam no montante. Os
+demais passam pelos estágios comuns: pré-contexto, atributo permanente,
+atributo temporário e stats. Uma Defesa com `mod_constituicao` lê o atributo
+atualizado, e `quando: "em_combate"` acompanha a bancada. Canais presos ao
+montante continuam usando o contexto reduzido das fontes de orçamento.
+
+O saneamento preserva `duracao: "temporaria"` e `semCredito`. Nenhuma linha
+da Loja recebe `exclusivo`, mantendo a soma com Técnica, Feitiço e Shikigami.
+Não há novos canais ou variáveis. Compras e textos também aparecem em
+Habilidades da Ficha de jogo, com busca e fixação no Rápido.
+
+### Retração de Domínio e ampliação de recursos (2026-10-25)
+
+O addon `addons/retracao-de-dominio.json`, versão 1.0.0, acrescenta uma Aptidão
+que requer Dom 3. Após escolhê-la, a ativação manual pelo buff em combate usa
+um estado `bool` com `requerAptidao`, `quando: "dom >= 3"` e
+`ampliaRecursos: { hp: 20, pe: 20 }`.
+
+O `quando` dos estados de addon é avaliado no contexto já com os níveis de
+Aptidão. `ampliaRecursos` aceita somente percentuais numéricos positivos de
+`hp` e/ou `pe`, em estado `bool` de Aptidão em combate. Não é canal novo nem
+expressão de efeito do Motor. A conta entra depois das demais fontes,
+multiplicadores e substituições dos máximos: para cada recurso,
+`floor(max(0, valor) * percentual / 100)`.
+
+Somente a transição desligado para ligado soma a diferença dos máximos aos
+recursos atuais. Repetir ligado não concede novamente. Desligar apara os
+atuais sem descontar a diferença outra vez. Fim de combate e descanso
+encerram o estado. Nova ativação manual recebe a diferença novamente,
+respeitando eventuais restrições de uso do estado. A Retração não declara
+custo, duração em rodadas ou Exaustão, e não altera a Alma.
+
+### Inovar Estilo e Estilo Próprio (2026-10-25)
+
+As variantes declaradas em `acrescenta.opcoesTalento` usam o mesmo Motor e
+as mesmas variáveis. `habilidadeId` concede uma habilidade existente no
+catálogo, paga pela opção de Talento. `requerHabilidade` condiciona a opção
+à posse do alvo. Sem alvo ou pacote próprio, a opção não emite efeitos.
+
+`trocaAtributo: { de, para }` adapta identificadores inteiros de atributo e
+`mod_<atributo>` em `expr` e `quando` dos efeitos da habilidade alvo e de
+suas opções aninhadas. A origem do pai distingue opções com id compartilhado.
+Textos literais, como a marca em `contar("forca")`, continuam intactos.
+O catálogo e os atributos da ficha não são reescritos. Os canais, grupos de
+acúmulo e condições originais continuam válidos, e o hover identifica a inovação.
+
+Esta troca não altera cálculos específicos fora dos efeitos do Motor.
+Contrato e modelo em [afty-talentos-de-estilo.md](afty-talentos-de-estilo.md).
+
 ### Olhinhos Lu no padrão do Vislumbre Celeste (2026-10-12)
 
 A primitiva `olhinhosLu` emite efeitos cumulativos a partir dos estados
@@ -190,6 +263,9 @@ linha sobrando na tela.
 - `<  >  <=  >=  ==  !=` — Comparações (resultam em verdadeiro/falso).
 - `e   ou   nao` — Lógicos (também aceitam `&&`, `||`, `!`).
 - `verdadeiro / falso` — Constantes booleanas (1 / 0).
+- O sinal de MAIS à frente NÃO existe (`+2` não parseia, `validateExpression` diz "Expressão incompleta" e `evalNumber`
+  cai no fallback 0 sem avisar). O de menos à frente existe (`-1`). Campo que o jogador escreve como bônus tira o `+`
+  inicial antes de validar e gravar: o Buff de Mesa do G2 faz isso (`montarBuff`, 2026-10-20).
 
 ## Exemplos
 - `metade(nd)` — Metade do ND — bom pra escalar um buff.
@@ -392,7 +468,9 @@ mestre [...] Caso já fosse mestre, recebe +2"*.
 - ⚠ **No jogador a marcação à mão NÃO conta como outra fonte** (a divergência `trForaDoOrcamento`,
   "NÃO PODE SER ESCOLHIDO DE FORMA LIVRE"). Sem isso, marcar à mão por cima do treino daria o +1 de
   graça. Na criatura ela conta, e é paga: o canal nunca credita no orçamento, como o `semCredito` do
-  Treino de Perícia.
+  Treino de Perícia. ⚠ O Addon `tr-no-limite-de-pericias` (verbo `regrasAfty.trNoLimiteDePericias`,
+  2026-10-25) desfaz a divergência no jogador, e a marcação à mão passa a contar e a ser paga, como na
+  criatura.
 - Ele é fonte para o aviso de TR marcado à mão (`semFonte`), mesmo quando virou número.
 
 ⚠ **O `proficienciaTR` comum SOMA as concessões** (duas de Treinado dão Mestre), e o `prof_tr_*` do
@@ -548,6 +626,15 @@ registro dos gatilhos pelo narrador, +4 dados de Ataque e Existência e
 acúmulo das RDs de Geral e Defesa. A confirmação final definiu Geral
 como dobro do BT e Defesa como BT. Somam `3 * bt`, ou 18 com BT 6.
 Essa decisão substitui os valores de RD do texto original preservado.
+
+## Integridade como alvo de treino (2026-10-25)
+
+Uma linha repetível com `alvoTipo: "tr"` e `incluiIntegridade: true`
+oferece os cinco TR no seletor de Interlúdios. Sem a opção, preserva os
+quatro TR anteriores. O Treino de TR 1.1.0 usa essa opção por pedido do
+autor. Os canais existentes `proficienciaTRCasoJa` e `proficienciaTR`
+já resolvem Integridade, sem fórmula ou variável nova. A concessão e os
+bônus condicionais seguem as mesmas etapas dos demais TR em Afty e Player.
 
 ## Metadados de treino: Reavaliação (2026-10-08)
 
@@ -775,3 +862,133 @@ Vieram com o Golem de Sangue 1.1.0. Detalhes do pacote em `docs/afty-addons.md`.
   Voto pode dá-los. Hoje só a Transformação lê os dois.
 - `regrasAfty.energiaEmVida` e os `contadoresSessao` não são DSL: o primeiro é regra numérica do
   pacote, e os contadores são números de mesa que nenhuma expressão lê.
+
+## Repetição pessoal do Estilo das Sombras (2026-10-12)
+
+Nas Técnicas da Expansão, a segunda compra de efeito ou modificação de Aptidão pode
+gravar `repeticao: "pessoal"` em lugar de `"aliados"`. O grupo conserva uma única
+expressão pessoal: Defesa, TR e Perícia passam de `piso(bt / 2)` para `bt`, Margem
+e Deslocamento dobram o valor base, e os bônus de AU/CL dobram `teto(trilha / 2)`.
+A marca não cria variável DSL nem canal. Compra antiga sem marca conserva aliados.
+
+Acerto e CD aceitam somente duas compras, com `piso(bt / 2)` ou `bt`. A segunda
+compra também pode estender `piso(bt / 2)` aos aliados, mantendo esse valor no usuário.
+Os dois efeitos declaram `repeticaoPadrao: "pessoal"`: duas compras anteriores sem
+marca conservam `bt` pessoal. A extensão para aliados exige escolha explícita.
+As opções pessoais e de aliados no mesmo grupo são incompatíveis.
+Uma Técnica inválida não emite efeitos. `vagasEstilo` continua somando à progressão,
+que agora recebe mais uma Técnica a cada três níveis depois do 4, sem parar no 19.
+
+
+### Especializações e Imitação, 2026-10-13
+
+Roubo usa nivelPorHabilidade e contextosPorHabilidade para as habilidades recebidas e
+suas opções, preservando os níveis globais da ficha. Correção vigente do autor:
+Roubo exige pré-requisitos, inclusive outras habilidades. resolveEscolhasHabilidade
+considera as escolhas de Roubo juntas para avaliar dependências sem depender da ordem,
+bloqueia novas opções sem requisito e informa motivosBloqueio no hover. A escolha
+gravada fica removível e é reportada em inacessiveis se perder seu requisito.
+
+avaliarAcessoHabilidade recebe imitadas para dispensar requisitos apenas da concessão
+da Imitação, incluindo o nível mínimo da habilidade copiada. Essa lista é fornecida
+pelo concessaoImitada e não altera a aquisição normal ou o Roubo. O nível do personagem
+continua alimentando o escalonamento da cópia. Crítico Aperfeiçoado emite
+2 - tem_cmb_critico_melhorado para que a cópia sem a anterior tenha a redução completa
+e a combinação das duas não duplique o resultado.
+
+especializacaoConfig armazena distribuição permanente de Adrenalina, atributo de Defesa
+e concessões de Mente Afiada/Semblante. A ficha antiga mantém a distribuição legada.
+Restrição Definitiva completa treinamento de Mestres físicos no resolvedor de testes.
+Libertação do Destino usa resistenciaDano e Corpo Supremo oferece escolha de rdTipo.
+Indulgente a Feitiçaria exige contra_feiticaria para sua RD e seus TR.
+
+Na sessão, iniciarTurnoEspecializacao/encerrarTurnoEspecializacao acompanham a rodada
+existente da ficha e os turnos da iniciativa em encontros. Custos de Estamina permanecem
+manuais. Precisão Forçada utiliza maximizado no rolador de dano. Semblante usa
+minimoNatural no rolador de testes, preservando naturalOriginal quando houver troca.
+A cura de Ainda de Pé aplica o resultado e registra uso, e Corpo de Aço regenera no
+início do turno. Escolhas opcionais sem acionamento existente ficam discriminadas em
+docs/a-fazer.md. A lista de Imitação filtra idsPossuidosNaImitacao antes de busca,
+contagens e abas por Especialização/Nível, mantendo Aprendidas em seção própria.
+
+
+### Escolhas das habilidades aprendidas por Imitação, 2026-10-13
+
+imitacaoAprendidas guarda os conhecimentos aprendidos e suas escolhas. O estado da
+sessão prevalece, inclusive uma lista vazia após Esquecer. O criador lê essa parcela
+da sessão ao abrir e a sincroniza ao salvar, sem copiar seus vitais ou demais estados
+para a criatura. A cópia temporária continua em combate.imitacao.copia e precisa de
+ativação para fornecer os efeitos. Conhecimento aprendido não concede efeito permanente.
+
+definicaoImitada fornece uma definição por cópia, preservando o catálogo normal.
+escolhasPorHabilidade adapta resolveEscolhasHabilidade somente na concessão imitada.
+Mestre da Postura tem duas opções de Postura nesse contexto. Aprender Postura usa o
+pool e escalonamento de sua concedeEscolha, mesmo sem Assumir Postura. A primeira
+concessão da escolha é disponível sem o nível mínimo da habilidade copiada, e seus
+aumentos posteriores usam o nível do personagem. Opções e efeitos continuam passando
+pelo coletor comum, com fontes e contexto da cópia. A configuração é exposta em
+Habilidades Roubadas junto das realmente roubadas, com marca Imitação e botão Imitar
+para aprendidas. O botão seleciona a cópia, e Salvar aplica a ativação à sessão.
+
+O slot postura aceita Assumir Postura, Mestre da Postura ou Aprender Postura, sempre
+filtrando opções pelas escolhas realmente disponíveis. postura2 continua exigindo
+Mestre da Postura. Isso não concede a habilidade anterior nem dispensa requisito de
+aquisição no Roubo. Sem copiar/ativar a habilidade aprendida, suas Posturas e demais
+efeitos não são concedidos à ficha.
+
+## Pacotes para Aliados: o que o motor passou a ver (2026-10-19)
+
+Nenhum canal, variável ou função nova. Três mudanças aditivas, com prova em
+`asserts/t-pacotes-aliados.mjs`:
+
+- A linha de Aura de invocação que `efeitosDeInvocacao` entrega ao dono passou a
+  levar `origem: "invocacao:<chave>"`, com a chave de `chaveDaAuraDeInvocacao`
+  (`aura:<tipo>|<alvo>`). Antes era `"invocacao"`, que ninguém lia. É por ela que
+  uma Aura recebida de outro personagem disputa com a da própria ficha ("duas auras
+  iguais não acumulam"). O auxílio continua com `origem: "invocacao"`.
+- O registro de Fonte Externa (`ficha/ficha-recebidos.js`) aceita `alvo` e `quando`
+  por benefício. O alvo entra na chave da disputa. A condição viaja até a linha que
+  o motor avalia (Passivo gerado ou buff de sessão gerado). Só `em_combate` é aceita
+  num pacote. Desde 2026-10-20 (PA-I1) ela também decide QUEM disputa no "vale o
+  maior" feito fora do motor: só entra o benefício cuja condição vale agora, pela
+  regra do `aplicarEfeitos` (`evalNumber` do `quando`) com `combateDslVars` do
+  `combate` resolvido do receptor. Antes a disputa rodava sem ela, e um maior de
+  combate cobria o menor fora de combate. Nada mudou no motor.
+- O descanso (`descansar`, ficha-sessao.js) tira também o buff com
+  `terminaNoDescanso`, que a instância de um pacote leva quando o prazo não é
+  permanente.
+- (2026-10-20, PA-I3) `afty-combate-conjurador.js` exporta `efeitosDoAuxiliarPorEfeito`,
+  SÓ LEITURA: os efeitos de um Feitiço separados pelo efeito resolvido de onde cada
+  linha saiu, pelo mesmo `efeitosDoFeiticoLigado` e `efeitosDeAuxiliarResolvido`
+  do `resolveAuxiliaresAtivos`, que não mudou. A união, na ordem, é a lista dele
+  (`t-pacotes-aliados` confere). É o que dá a cada benefício de um pacote o prazo
+  do efeito dele (Defesa de um ataque, TR de uma rodada).
+- (2026-10-20, PA-I3) A virada (`proximaRodada`) desce o contador `rodadas` de cada
+  BENEFÍCIO de um registro recebido que o tenha e tira só o que zera. O registro
+  sai quando não sobra benefício. Registro sem esse contador segue igual.
+- (2026-10-20, PA-I4) Nenhuma mudança no motor. A instância de um pacote nasce com
+  o contador de TODO benefício cujo prazo efetivo (o próprio, ou o da opção) é em
+  rodadas, e não só dos que escrevem o prazo. A virada não mudou: continua
+  descendo só o contador que existe.
+
+## Aliados, Comidas e Ferreiro: escopo de linha e teto por graduação (2026-10-26)
+
+- **`escopoLinha`, campo do EFEITO** (hoje só no canal `dadosNomeados`). O total do canal soma todos os
+  dados do tamanho, e quem monta a linha de dano (`monta`, em `afty-pericias.js`) tira o que NÃO casa
+  com os escopos dela. O valor é um escopo de arma (`atq:corpo`, `atq:distancia`, `cat:corpo`, aceita
+  `a|b`). Efeito sem o campo vale em toda linha, como sempre. O campo viaja até `detalhes`, e o hover
+  da linha só lista a fonte que casa. `casaEscopoDaLinha` (`afty-efeitos.js`) é o comparador. Quem usa
+  é o golpe da rodada do Aliado Combatente (`atq:corpo`) e do Disparador (`atq:distancia`). O
+  Elementalista segue sem escopo, porque o livro cita Feitiço e técnica marcial e a linha de Feitiço
+  não lê `dadosNomeados` (pendência em `docs/a-fazer.md`).
+- **`maxPorOpcao`, campo de estado `multi`** da bancada: `{ estado, tetos: { opcao: n } }`. O teto de
+  seleção sai do valor CRU de outro estado, e o `resolveCombate` o devolve em `maxSelecionados` dentro
+  de `estadosExtras`, que é o que as telas já liam. Graduação ausente ou inválida dá teto zero. Quem
+  usa é a lista de perícias do Aliado Auxiliar (2, 3 e 4 no Iniciante, Veterano e Mestre).
+- **Ferreiro.** A arma melhorada passou de `bonusAcerto` para `acertoArma` com alvo `arma` (só linhas
+  de arma, fora do Ataque Básico e do Acerto de Feitiço), e o escudo melhorado de `rdGeral` para
+  `rdEscudo` (RD Física no jogador, RD Geral na criatura, e só com escudo na mão).
+- **PV Temporário da refeição Revigorante.** A origem `buff:comidas_bancada` entrou em `PV_TEMP`
+  (`ficha/efeitos/exemplos.js`) como concessão por uso, e em `DONO_PV` apontando para o estado raiz
+  `comidas_refeicoes`. O grupo das Comidas não tem item de repertório, então `donoPvDoGrupo` cai no
+  estado raiz quando não há item, e o cartão do grupo passa a encontrar o benefício.

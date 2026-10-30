@@ -5,6 +5,8 @@
   "autor": "Afty",
   "paraRaw": "afty",
   "descricao": "Talento Geral que acumula Ritmo a cada ataque acertado. Cada acúmulo dá +1 em Testes de Acerto e em Reflexos, até 6, e errar um ataque tira um. O contador de Ritmo aparece na Simulação de Combate do criador e no painel de combate da Ficha e do Encontro.",
+  "resumo": "Talento que acumula Ritmo a cada acerto: +1 no acerto e em Reflexos por acúmulo, até 6",
+  "categoria": "talentos",
   "estadosCombate": [
     {
       "id": "ritmo",

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inventário de Chrollo</title>
+<style>
+body{color:#e2e8f0;background:#080d1c;font:15px/1.6 system-ui;margin:0;padding:28px}main{max-width:850px;margin:auto}
+h1{font-size:25px;margin:0 0 4px}h2{font-size:18px}small,.muted{color:#94a3b8}section{background:#111a2c;border:1px solid #263149;border-radius:12px;padding:22px;margin:20px 0}
+button,a{font:inherit}button{border:0;border-radius:8px;background:#a78bfa;color:#100b23;font-weight:700;padding:12px 18px;cursor:pointer}button:disabled{opacity:.4;cursor:default}
+a{color:#c4b5fd}table{width:100%;border-collapse:collapse}td,th{text-align:left;border-bottom:1px solid #263149;padding:9px}td:nth-child(2){width:80px}details{margin:6px 0}summary{cursor:pointer}
+.erro{color:#fda4af;white-space:pre-line}.sucesso{color:#86efac}p{margin:10px 0}.acoes{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+</style></head><body><main>
+<h1>Inventário de Chrollo</h1><div class="muted">Catarse Discord · @aftbah</div>
+<section><h2>22 unidades · 13 itens</h2><p>Constituição +6 e limite +6, duas escolhas de habilidade de outra classe e três vagas adicionais de Habilidade Lendária.</p>
+<p class="muted">Escolha as duas habilidades em Outros &gt; Catarse. As Lendárias ficam em Especializações &gt; Níveis Lendários. Os demais itens conservam nome e descrição.</p>
+<table><thead><tr><th>Item</th><th>Quantidade</th></tr></thead><tbody id="itens"></tbody></table></section>
+<section><h2>Aplicar na ficha existente</h2><p>Use esta página na mesma aba e no mesmo navegador da sua ficha. Feche outras abas de /Player antes de aplicar. A importação guarda uma cópia de segurança e preserva os demais dados, personagens e o saldo atual.</p>
+<p id="estado">Conferindo a ficha...</p><div class="acoes"><button id="aplicar" disabled>Aplicar no Chrollo</button><a href="/Player">Abrir Player</a></div><p id="resultado"></p></section>
+</main><script type="module">
+import {inventario,CHAVE,prepararImportacao,aplicarImportacao} from './importacao-chrollo.js';
+const itens=document.querySelector('#itens');
+for(const item of inventario.itens){
+  const tr=document.createElement('tr');const td=document.createElement('td');const qtd=document.createElement('td');
+  const detalhe=document.createElement('details');const nome=document.createElement('summary');nome.textContent=item.nome;
+  detalhe.append(nome);if(item.texto){const texto=document.createElement('p');texto.textContent=item.texto;detalhe.append(texto)}
+  td.append(detalhe);qtd.textContent=item.quantidade;tr.append(td,qtd);itens.append(tr);
+}
+const estado=document.querySelector('#estado');const botao=document.querySelector('#aplicar');const resultado=document.querySelector('#resultado');
+let esperado;
+try{
+  if(location.hostname!=='localhost'||location.port!=='5173')throw new Error('Abra esta página em http://localhost:5173 para acessar a biblioteca correta.');
+  esperado=localStorage.getItem(CHAVE);const plano=prepararImportacao(JSON.parse(esperado||'[]'),{idEsperado:inventario.fichaId});
+  if(plano.jaAplicado){estado.textContent='O inventário já foi aplicado nesta ficha.';estado.className='sucesso'}
+  else if(plano.conflitos.length)throw new Error(plano.conflitos.join('\n')+'\nA importação não alterou sua ficha.');
+  else{estado.textContent=`Ficha encontrada: ${plano.ficha.name}. Saldo restante: ${plano.saldoAntes} → ${plano.saldoDepois}.`;botao.disabled=false}
+}catch(erro){estado.textContent=erro.message;estado.className='erro'}
+botao.addEventListener('click',()=>{
+  botao.disabled=true;
+  try{const aplicado=aplicarImportacao(localStorage,esperado,{idEsperado:inventario.fichaId});resultado.className='sucesso';
+    resultado.textContent=`Inventário aplicado. Cópia de segurança: ${aplicado.backup ?? 'já existente'}. Abra Player para conferir a ficha.`;
+    estado.textContent='Chrollo atualizado. Constituição e limite +6, duas escolhas de outra classe e três vagas de Lendária.';
+  }catch(erro){resultado.className='erro';resultado.textContent=erro.message}
+});
+</script></body></html>

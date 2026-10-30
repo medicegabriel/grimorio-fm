@@ -175,7 +175,7 @@ export const ESTADOS_ALIADOS = [
     label: "Aliado · Elementalista · Golpe da rodada",
     tipo: "bool",
     requerEstado: "aliados_elementalista",
-    title: "Ligue no ataque de Feitiço/técnica marcial em que você acertou. Adiciona o dado (1d10 / 3d10 / 5d12) na linha de dano. Uma vez por rodada, só no primeiro ataque — desligue depois de aplicar.",
+    title: "Ligue no ataque de Feitiço de Dano ou de Técnica Marcial em que você acertou. Adiciona o dado (1d10, 3d10 ou 5d12) ao primeiro ataque, Após Ataque, e não vale nas linhas de arma. Uma vez por rodada, e desligue depois de aplicar.",
   },
   {
     id: "aliados_auxiliar",
@@ -196,7 +196,11 @@ export const ESTADOS_ALIADOS = [
     tipo: "multi",
     requerEstado: "aliados_auxiliar",
     maxSelecionados: 4,
-    title: "As perícias que o Auxiliar reforça em +2. Marque 2 no Iniciante, 3 no Veterano ou 4 no Mestre. O motor não checa a graduação, respeite o limite.",
+    /* ⚠ O TETO SEGUE A GRADUAÇÃO (2026-10-26). Antes o motor aceitava as quatro
+       em qualquer graduação, e o Iniciante com quatro marcadas somava +2 nas
+       quatro. O `resolveCombate` lê este campo e apara a lista no teto. */
+    maxPorOpcao: { estado: "aliados_auxiliar", tetos: { iniciante: 2, veterano: 3, mestre: 4 } },
+    title: "As perícias que o Auxiliar reforça em +2. Cabem 2 no Iniciante, 3 no Veterano e 4 no Mestre.",
     opcoes: PERICIAS_IDS.map((id) => ({ id, label: PERICIA_LABEL[id] })),
   },
   {
@@ -230,8 +234,21 @@ const temAliado = (tipo) => `aliados_escolhidos_${tipo}`;
    da rodada soma um dado de TAMANHO PRÓPRIO na linha, em vez da MÉDIA
    embutida no `danoBonus` (o mesmo bug corrigido no core em 2026-08-31 para
    Execução Silenciosa/Ataque Furtivo — "1d6 aparecendo como +6"). */
-const golpeDados = (golpeVar, graduacaoVar, dado, qtd, tipo) => ({
+/* ⚠ `escopoLinha` FAZ O DADO ENTRAR SÓ NA LINHA QUE O LIVRO CITA (2026-10-26).
+   O Combatente diz "ataque corpo-a-corpo" e o Disparador "ataque a distância",
+   e sem o escopo os dois somavam o dado em TODAS as linhas, inclusive a do arco
+   para o Combatente.
+
+   ⚠ O ELEMENTALISTA TEM UM ESCOPO QUE NENHUMA LINHA DE ARMA RESPONDE (2026-10-27).
+   O livro cita "um Feitiço ou técnica marcial" (p. 348), e o dado entra só no
+   PRIMEIRO ataque dessas duas coisas, Após Ataque. Com este escopo o
+   `resolveDano` o tira de toda linha de arma sozinho (`foraDaLinha`), e quem o
+   lê é o derive, que o põe no primeiro ataque da Técnica Marcial de Ataque e
+   na primeira rolagem do Feitiço de Dano. */
+export const ESCOPO_PRIMEIRO_ATAQUE = "primeiroAtaque:tecnica";
+const golpeDados =(golpeVar, graduacaoVar, dado, qtd, tipo, escopoLinha = null) => ({
   canal: "dadosNomeados", alvo: dado, duracao: "temporaria",
+  ...(escopoLinha ? { escopoLinha } : {}),
   quando: `${temAliado(tipo)} && ${golpeVar} && ${graduacaoVar}`,
   expr: String(qtd),
 });
@@ -262,17 +279,17 @@ export const RECURSO_BUFF_ALIADOS = {
     golpeDados("aliados_golpe_assassino", "aliados_assassino_veterano", "d6", 1, "assassino"),
     golpeDados("aliados_golpe_assassino", "aliados_assassino_mestre", "d6", 2, "assassino"),
     // Combatente: 1d8 / 2d10 / 3d12.
-    golpeDados("aliados_golpe_combatente", "aliados_combatente_iniciante", "d8", 1, "combatente"),
-    golpeDados("aliados_golpe_combatente", "aliados_combatente_veterano", "d10", 2, "combatente"),
-    golpeDados("aliados_golpe_combatente", "aliados_combatente_mestre", "d12", 3, "combatente"),
+    golpeDados("aliados_golpe_combatente", "aliados_combatente_iniciante", "d8", 1, "combatente", "atq:corpo"),
+    golpeDados("aliados_golpe_combatente", "aliados_combatente_veterano", "d10", 2, "combatente", "atq:corpo"),
+    golpeDados("aliados_golpe_combatente", "aliados_combatente_mestre", "d12", 3, "combatente", "atq:corpo"),
     // Disparador: 1d8 / 2d10 / 3d12.
-    golpeDados("aliados_golpe_disparador", "aliados_disparador_iniciante", "d8", 1, "disparador"),
-    golpeDados("aliados_golpe_disparador", "aliados_disparador_veterano", "d10", 2, "disparador"),
-    golpeDados("aliados_golpe_disparador", "aliados_disparador_mestre", "d12", 3, "disparador"),
+    golpeDados("aliados_golpe_disparador", "aliados_disparador_iniciante", "d8", 1, "disparador", "atq:distancia"),
+    golpeDados("aliados_golpe_disparador", "aliados_disparador_veterano", "d10", 2, "disparador", "atq:distancia"),
+    golpeDados("aliados_golpe_disparador", "aliados_disparador_mestre", "d12", 3, "disparador", "atq:distancia"),
     // Elementalista: 1d10 / 3d10 / 5d12.
-    golpeDados("aliados_golpe_elementalista", "aliados_elementalista_iniciante", "d10", 1, "elementalista"),
-    golpeDados("aliados_golpe_elementalista", "aliados_elementalista_veterano", "d10", 3, "elementalista"),
-    golpeDados("aliados_golpe_elementalista", "aliados_elementalista_mestre", "d12", 5, "elementalista"),
+    golpeDados("aliados_golpe_elementalista", "aliados_elementalista_iniciante", "d10", 1, "elementalista", ESCOPO_PRIMEIRO_ATAQUE),
+    golpeDados("aliados_golpe_elementalista", "aliados_elementalista_veterano", "d10", 3, "elementalista", ESCOPO_PRIMEIRO_ATAQUE),
+    golpeDados("aliados_golpe_elementalista", "aliados_elementalista_mestre", "d12", 5, "elementalista", ESCOPO_PRIMEIRO_ATAQUE),
     ...PERICIAS_IDS.map((id) => ({
       canal: "bonusPericia", alvo: id, duracao: "temporaria",
       expr: `${temAliado("auxiliar")} * 2 * aliados_auxiliar * aliados_auxiliar_pericias_${id}`,
@@ -427,9 +444,16 @@ export const RECURSO_BUFF_COMIDAS = {
  * controle de Bônus de Treinamento, e não num contador que não alimentaria
  * canal nenhum.
  *
- * ⚠ A RD DO ESCUDO É RD GERAL (autor, 2026-08-01, em afty-equipamentos.js), e
- * não RD Física. A melhoria do ferreiro soma no mesmo lugar que a RD do escudo
- * já soma, senão ela viraria uma quarta pilha que ninguém abate.
+ * ⚠ A MELHORIA SOMA NA RD DO ESCUDO, e não numa RD à parte (2026-10-26). O canal
+ * `rdEscudo` manda para onde a RD do escudo mora em cada sistema (RD Geral na
+ * criatura, RD Física no jogador, divergência `rdEscudoFisico`) e só vale com
+ * escudo na mão, que é o "enquanto empunhado" do livro. A versão de 2026-09-17
+ * somava em `rdGeral` e valia até sem escudo equipado.
+ *
+ * ⚠ A ARMA MELHORADA É `acertoArma` com o escopo `arma` (2026-10-26): o +2 é "em
+ * jogadas de ataque realizadas com ela", então entra nas linhas de arma e não no
+ * Acerto de Feitiço nem no do Ataque Básico. A versão antiga usava `bonusAcerto`,
+ * que vale para a jogada de ataque inteira.
  */
 export const ESTADOS_ARMEIRO = [
   {
@@ -460,9 +484,9 @@ export const RECURSO_BUFF_ARMEIRO = {
   nome: "Ferreiro (bancada)",
   descricao: "Melhorias temporárias de arma e escudo feitas com Ferramentas de Ferreiro. Duram até o próximo descanso e só valem com 'Em Combate' ligado.",
   efeitos: [
-    { canal: "bonusAcerto", duracao: "temporaria", expr: "2 * armeiro_melhorias_arma" },
+    { canal: "acertoArma", alvo: "arma", duracao: "temporaria", expr: "2 * armeiro_melhorias_arma" },
     {
-      canal: "rdGeral", duracao: "temporaria",
+      canal: "rdEscudo", duracao: "temporaria",
       expr: "armeiro_melhorias_escudo * piso(armeiro_bt / 2)",
     },
   ],

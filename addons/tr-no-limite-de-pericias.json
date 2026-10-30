@@ -1,0 +1,13 @@
+{
+  "id": "tr-no-limite-de-pericias",
+  "nome": "TR no Limite de Perícias",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Os Testes de Resistência passam a contar no Limite de Perícias e podem ser treinados como uma perícia: Treinado gasta 1 vaga e Mestre gasta 2, e o contador aparece também no card de Testes de Resistência. O TR que vem de fora (Classe, Talentos, Treinos e Habilidades) continua funcionando e chega treinado ou mestre sem gastar vaga. Ele entra no contador como vaga gasta e SOBE o total na mesma medida, com a linha Testes de Resistência Concedidos no detalhamento do total. Marcar à mão um TR que uma fonte já dá não gasta vaga. Na Ficha de Player o livro tira o TR do Limite, e este pacote desfaz isso. Na criatura o TR já gasta vaga, e o pacote só mostra o concedido no contador.",
+  "resumo": "O TR passa a gastar o Limite de Perícias: Treinado custa 1 vaga e Mestre custa 2",
+  "categoria": "regras",
+  "regrasAfty": {
+    "trNoLimiteDePericias": true
+  }
+}

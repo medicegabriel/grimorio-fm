@@ -1,0 +1,17 @@
+import { register } from "node:module";
+register("data:text/javascript,export async function resolve(s,c,n){try{return await n(s,c)}catch(e){if(s.startsWith(\".\")&&!s.endsWith(\".js\"))return n(s+\".js\",c);throw e}}", import.meta.url);
+import fs from "node:fs";
+const R = "../../src/systems/afty/";
+await import(R + "afty-derive.js");
+const { mesclaFichaAfty } = await import(R + "afty-schema.js");
+const { deriveAfty } = await import(R + "afty-derive.js");
+const { aplicarAddons } = await import(R + "afty-addons.js");
+const { linhasDeEstado } = await import(R + "ficha/ficha-buffs.js");
+const id = process.argv[2] ?? "minamoto";
+const a = JSON.parse(fs.readFileSync("C:/Projetos/Grimorio/prototipos/ficha-final-v2/dados/amostras.json", "utf8")).amostras.find((x) => x.id === id);
+const ficha = mesclaFichaAfty(a.ficha);
+aplicarAddons(ficha.addons ?? []);
+const d = deriveAfty({ ...ficha, combate: { ativo: true } }, {});
+const ls = linhasDeEstado(d);
+console.log(ls.length, "estados");
+console.log(ls.filter((e) => e.tipo === "bool").slice(0, 40).map((e) => `${e.id}:${e.label}`).join("\n"));

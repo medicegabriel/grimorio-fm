@@ -5,11 +5,13 @@ import { DicaDeTexto, NumeroComFontes } from "../../ui/fontes";
 import { sinalDe } from "../../ui/formato";
 import { curaNoGasto, rotuloBloco } from "../../afty-cura";
 import { tituloCustoFeitico, TIPO_FEITICO_LABEL } from "../../afty-feiticos";
+import { textoDaEscada, TM_ACAO_LABEL } from "../../afty-tecnicas-marciais";
+import { AFTY_RESISTENCIAS } from "../../afty-schema";
 import { IconeDeTipo } from "../../ui/feitico-tipo";
 import { RITUAL_MELHORIAS } from "../../afty-rituais";
 import { facesDe } from "../ficha-rolagem";
 import { useDestaque } from "../usar-destaque";
-import ItemDeFicha from "../ItemDeFicha";
+import ItemDeFicha, { ContadorDeUsos } from "../ItemDeFicha";
 import TextoRico from "../../ui/TextoRico";
 import ControlesDeArma from "../ControlesDeArma";
 
@@ -104,9 +106,15 @@ function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir, modoDano
         {e.ignoraImunidade && <span className="afty-rotulo text-[10px]">Ignora Imunidade</span>}
         {e.removeResistencia && <span className="afty-rotulo text-[10px] whitespace-nowrap">Remove Resistência</span>}
         {e.margemCritico != null && (
-          <span className="afty-rotulo text-[10px] whitespace-nowrap" title="Margem de Crítico">
-            Crít. {e.margemCritico}
-          </span>
+          <NumeroComFontes
+            className="afty-rotulo text-[10px] whitespace-nowrap"
+            titulo="Margem de Crítico"
+            valor={`Crít. ${e.margemCritico}`}
+            partes={e.partesMargemCritico}
+            total={e.margemCritico}
+            formatar={false}
+            ancora="direita"
+          />
         )}
         {e.alcance && (
           <NumeroComFontes
@@ -326,7 +334,8 @@ const ACAO_RITUAL_LABEL = {
   ritual: "Ritual Estendido",
 };
 
-function ControlesRitual({
+/* Exportado (2026-10-21) só para o detalhe do Feitiço da prévia das abas do G2 reusar os MESMOS controles e verbos do Ritual. Nada muda aqui. */
+export function ControlesRitual({
   f, rolar, onRitual, onDesativarRitual, onIniciarRitualEstendido, onIniciarRitualSemTeste,
   onConcluirPreparacaoRitual, onCancelarRitual, onFinalizarRitual, onEncerrarRitual,
 }) {
@@ -533,6 +542,186 @@ function ControlesRitual({
   );
 }
 
+/**
+ * UM GOLPE da Técnica Marcial de Ataque: o Acerto e o Dano de UM ataque, já com o
+ * que a Técnica soma (acerto, Dano Adicional, RD ignorada), e a marca de que o
+ * golpe acertou. É a mesma rolagem do `LinhaDano` (o crítico do Acerto amarra no
+ * Dano seguinte), sem os controles de arma, que são da linha da arma e não do golpe.
+ */
+function LinhaDeGolpe({ titulo, e, rolar, critico, onCritico, acertou, onAcertou, consomeEstado, modoDano }) {
+  const modoVisual = modoDano !== "normal" ? modoDano : critico ? "critico" : "normal";
+  const danoExibido = modoVisual === "critico"
+    ? e.formulaCritico
+    : modoVisual === "raio_negro" ? e.formulaRaioNegro : (e.formulaNormal ?? e.texto);
+  return (
+    <div className="flex items-center gap-2 flex-wrap px-2 py-1.5" data-afty-golpe={titulo}>
+      <span className="flex-1 min-w-[6rem] text-[12px] font-semibold truncate">{titulo}</span>
+      {e.ignoraRD > 0 && <span className="afty-rotulo text-[10px] whitespace-nowrap">Ignora RD {e.ignoraRD}</span>}
+      {critico && <span className="afty-chip" data-afty-tom="destaque">Crítico</span>}
+      {e.acerto != null && (
+        <span className="afty-rotulo text-[10px] whitespace-nowrap">
+          Acerto{" "}
+          <NumeroComFontes
+            valor={e.acertoTexto ?? e.acerto}
+            formatar={!e.acertoTexto}
+            partes={e.partesAcerto}
+            total={e.acertoTexto ?? sinalDe(e.acerto)}
+            className="afty-valor text-[11px]"
+            ancora="direita"
+            onRolar={() => {
+              const r = rolar({
+                tipo: "teste",
+                rotulo: `${titulo} · Acerto`,
+                bonus: e.acerto,
+                dados: e.acertoDados,
+                margem: e.margemCritico,
+                linhaArma: e,
+              });
+              if (r) onCritico(r.critico);
+            }}
+          />
+        </span>
+      )}
+      <NumeroComFontes
+        valor={danoExibido}
+        partes={e.hoverDano?.partes ?? e.partes}
+        total={modoVisual === "normal" ? (e.hoverDano?.total ?? e.total) : danoExibido}
+        formatar={false}
+        className="afty-valor text-[13px] whitespace-nowrap"
+        ancora="direita"
+        onRolar={() => {
+          const r = rolar({
+            tipo: "dano", rotulo: titulo, grupos: e.gruposDano, modoDano: modoVisual, rerrola: e.rerrola, linhaArma: e,
+            ...(consomeEstado ? { consomeEstado } : {}),
+          });
+          if (r && critico) onCritico(false);
+        }}
+      />
+      <button
+        type="button"
+        className="afty-chip"
+        data-afty-tom={acertou ? "destaque" : undefined}
+        aria-pressed={acertou}
+        onClick={onAcertou}
+      >
+        Acertou
+      </button>
+    </div>
+  );
+}
+
+/**
+ * A TÉCNICA MARCIAL DE ATAQUE na Ficha (Livro, p. 250 e 251). Uma linha própria em
+ * Ações: a arma se escolhe uma vez (o Ataque Básico ou uma equipada), e cada golpe
+ * rola o acerto e o dano da arma JÁ com o que a Técnica soma. O custo é só exibido
+ * (a Ficha não desconta PE sozinha), e a Técnica vale uma vez por rodada.
+ *
+ * ⚠ O CONTADOR DE ACERTOS É MANUAL, e é dele que sai a Condição: um acerto vale
+ * Fraca, dois Média, três Forte e quatro Extrema, o alvo faz UM TR depois do último
+ * ataque, e cada ataque reduzido tira um acerto da conta. A escada vem pronta do
+ * motor (`condicao.escada`), e a tela só escolhe o degrau.
+ *
+ * ⚠ A primeira linha da arma leva os dados Após Ataque do Elementalista e da
+ * Amplificadora ("só no primeiro"), e as demais não.
+ */
+function LinhaTecnicaAtaque({
+  f, info, usos, contadorUsos, rolar, destacado, modoDano, escolhaArma, onEscolhaArma, consomeEstadoNoPrimeiro,
+}) {
+  const raiz = useDestaque(destacado);
+  const [acertos, setAcertos] = useState({});
+  const [criticos, setCriticos] = useState({});
+  const [armaLocal, setArmaLocal] = useState(null);
+  const linhas = info?.linhas ?? [];
+  const escolhida = linhas.find((l) => l.linhaId === (onEscolhaArma ? escolhaArma : armaLocal)) ?? linhas[0] ?? null;
+  const ataque = f.ataque;
+  const total = Object.values(acertos).filter(Boolean).length;
+  const cond = ataque.condicao;
+  const degrau = cond && total > 0 ? cond.escada[Math.min(total, cond.escada.length) - 1] : null;
+  const tr = cond?.tr ? AFTY_RESISTENCIAS.find((r) => r.value === cond.tr) : null;
+  const zerar = () => { setAcertos({}); setCriticos({}); };
+  return (
+    <div ref={raiz} id={`afty-item-feitico:${f.id}`} className="afty-linha px-2.5 py-2" data-afty-alvo={destacado ? "sim" : undefined}>
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="afty-feitico-tipo" title={f.tipoLabel}><IconeDeTipo tipo="ataque" className="w-3.5 h-3.5" /></span>
+        <span className="flex-1 min-w-[6rem] text-[12px] font-semibold truncate" title={f.nome}>{f.nome || "Técnica Sem Nome"}</span>
+        <span className="afty-chip">{f.nivelLabel}</span>
+        <span className="afty-chip">{TM_ACAO_LABEL[ataque.acao]}</span>
+        <span className="afty-chip">{ataque.ataques} {ataque.ataques === 1 ? "Ataque" : "Ataques"}</span>
+        {f.custoPE != null && <span className="afty-feitico-custo" title={tituloCustoFeitico(f)}>{f.custoPE} PE</span>}
+        {f.avisos.length > 0 && (
+          <AlertTriangle
+            className="w-3.5 h-3.5 flex-shrink-0"
+            style={{ color: "var(--afty-aviso)" }}
+            aria-hidden="true"
+            title={f.avisos.join("\n")}
+          />
+        )}
+        {usos && contadorUsos && (
+          <ContadorDeUsos
+            nome={f.nome || "Técnica"}
+            usos={usos}
+            gastos={contadorUsos.gastosDe(usos.chave)}
+            onUso={(delta) => contadorUsos.onUso(usos, delta)}
+          />
+        )}
+      </div>
+
+      {linhas.length === 0 ? (
+        <p className="afty-vazio py-1" role="status">Sem arma para atacar</p>
+      ) : (
+        <>
+          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+            <span className="afty-rotulo text-[10px]">Arma</span>
+            <select
+              className="afty-campo px-1.5 py-1 text-[11px]"
+              aria-label={`Arma de ${f.nome || "Técnica"}`}
+              value={escolhida.linhaId}
+              onChange={(evento) => (onEscolhaArma ? onEscolhaArma(f.id, evento.target.value) : setArmaLocal(evento.target.value))}
+            >
+              {linhas.map((l) => <option key={l.linhaId} value={l.linhaId}>{l.nome}</option>)}
+            </select>
+            <button type="button" className="afty-chip" onClick={zerar} title="Zerar os acertos desta rodada">Zerar</button>
+          </div>
+          <div className="mt-1 divide-y" style={{ borderColor: "var(--afty-borda)" }}>
+            {Array.from({ length: ataque.ataques }, (_, i) => (
+              <LinhaDeGolpe
+                key={`${escolhida.linhaId}:${i}`}
+                titulo={`Golpe ${i + 1} · ${escolhida.nome}`}
+                e={i === 0 ? escolhida.primeiro : escolhida.demais}
+                rolar={rolar}
+                critico={!!criticos[i]}
+                onCritico={(v) => setCriticos((c) => ({ ...c, [i]: v }))}
+                acertou={!!acertos[i]}
+                onAcertou={() => setAcertos((a) => ({ ...a, [i]: !a[i] }))}
+                consomeEstado={i === 0 ? consomeEstadoNoPrimeiro : null}
+                modoDano={modoDano}
+              />
+            ))}
+          </div>
+        </>
+      )}
+
+      {cond && (
+        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+          <span className="afty-rotulo text-[10px]">Acertos</span>
+          <span className="afty-valor text-[12px] tabular-nums">{total}/{ataque.ataques}</span>
+          {degrau ? (
+            <span className="afty-chip" data-afty-tom="destaque">{textoDaEscada(degrau)}</span>
+          ) : (
+            <span className="afty-rotulo text-[10px]">Sem Condição</span>
+          )}
+          {tr && <span className="afty-chip" title="Um único teste, depois do último ataque">TR {tr.label}{cond.cd != null ? ` CD ${cond.cd}` : ""}</span>}
+        </div>
+      )}
+      {f.descricao && (
+        <div className="afty-feitico-efeito mt-1.5">
+          <TextoRico texto={f.descricao} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function LinhaFeitico({
   f: base, rolar, destacado, comLiberacao, conjuracaoBloodfeast, controleTecnicaMaxima,
   onRitual, onDesativarRitual, onIniciarRitualEstendido, onIniciarRitualSemTeste,
@@ -580,7 +769,8 @@ function LinhaFeitico({
     dados: r.dados, faces: r.faces, fixo: r.fixo || 0,
     explosiva: !!r.explosiva,
     custoVidaAtivacao: indice === 0 ? f.custoVidaAtivacao : null,
-    consomeEstado: indice === 0 ? f.consomeEstado : null,
+    // A rolagem da Amplificadora traz o estado dela (2026-10-27), e é a única que o desliga.
+    consomeEstado: r.consomeEstado ?? (indice === 0 ? f.consomeEstado : null),
     feiticoDanoId: indice === 0 && f.tipo === "dano" ? f.id : null,
     finalizaRitualId: indice === 0 && f.ritual?.ativo && f.ritual?.podeResolver
       ? f.id
@@ -1102,6 +1292,10 @@ export default function AbaAcoes({
   onIniciarRitualEstendido, onIniciarRitualSemTeste, onConcluirPreparacaoRitual,
   onCancelarRitual, onFinalizarRitual, onEncerrarRitual,
   onImbuir, onAtaqueBasico = null,
+  /* A arma de cada Técnica Marcial de Ataque (2026-10-27): `armasDaTecnica` é
+     `{ [feiticoId]: linhaId }` da sessão, e `onArmaDaTecnica(feiticoId, linhaId)` a grava.
+     Sem o gravador (o painel de Encontros) a escolha fica na linha, local. */
+  armasDaTecnica = {}, onArmaDaTecnica = null,
   adaptacao = null,
   /* ⚠ NÓ PRONTO, e não os dados da arma. Mesma forma do `adaptacao` logo acima,
      e pelo mesmo motivo: o painel mexe na SESSÃO, e a sessão é de quem monta a
@@ -1133,13 +1327,16 @@ export default function AbaAcoes({
      cobra o dano do Sacrifício, e isso é sessão. */
   golpeEspecial = null,
   gatilhosTreino = [], onGatilhoTreino = null,
-  onArma = null, onAmpla = null, onNovoTurnoArmas = null, turnoArmas = 0, rodadaArmas = 0,
+  onArma = null, onAmpla = null, turnoArmas = 0, rodadaArmas = 0,
   // O contador de usos das habilidades fixadas no Rápido. Ver `ItemDeFicha`.
   contadorUsos = null,
 }) {
   const dano = derived.dano?.entradas ?? [];
   const cura = derived.cura?.linhas ?? [];
-  const feiticos = (derived.feiticos?.lista ?? []).filter((f) => f.tipo !== "passivo");
+  const feiticos = (derived.feiticos?.lista ?? []).filter((f) => f.tipo !== "passivo" && !f.marcial);
+  /* A Técnica Marcial tem a seção dela (2026-10-27). A Passiva marcial vai para a aba
+     Habilidades, como a de Feitiço, e o que sobra aqui é o que se usa no turno. */
+  const tecnicas = (derived.feiticos?.lista ?? []).filter((f) => f.marcial && f.tipo !== "passivo");
   const dominios = derived.dominios?.lista ?? [];
   const dominioAtivo = derived.dominios?.ativoId ?? null;
   const dominioAberto = derived.dominios?.aberta ?? null;
@@ -1208,17 +1405,6 @@ export default function AbaAcoes({
           titulo="Dano"
           controles={(
             <>
-              {onNovoTurnoArmas && <button type="button" className="afty-botao text-[10px]"
-                title="Zera ataques do turno e encerra Aparar e Oscilante. Munições e emperramento permanecem."
-                onClick={() => { setCriticos({}); onNovoTurnoArmas(); }}>Novo turno</button>}
-              {derived.ataquesExtras > 0 && (
-                <span className="afty-chip" title="Ataques Extras adicionais nesta rodada">
-                  Ataques Extras <NumeroComFontes
-                    valor={derived.ataquesExtras}
-                    partes={derived.partes?.ataquesExtras}
-                  />
-                </span>
-              )}
               <button
                 type="button"
                 className="afty-botao text-[10px]"
@@ -1264,6 +1450,34 @@ export default function AbaAcoes({
           {cura.map((l) => (
             <LinhaCura key={l.id} l={l} rolar={rolar} destacado={destaque === `cura:${l.id}`} />
           ))}
+        </Secao>
+      )}
+
+      {tecnicas.length > 0 && (
+        <Secao titulo="Técnicas Marciais">
+          {tecnicas.map((t) => (t.tipo === "ataque" && t.ataque ? (
+            <LinhaTecnicaAtaque
+              key={t.id}
+              f={t}
+              info={derived.tecnicasMarciais?.ataques?.[t.id]}
+              usos={derived.mesa?.[`tecnicaMarcial:${t.id}`]?.usos ?? null}
+              contadorUsos={contadorUsos}
+              rolar={rolar}
+              destacado={destaque === `feitico:${t.id}`}
+              modoDano={modoDanoAtivo}
+              escolhaArma={armasDaTecnica?.[t.id] ?? null}
+              onEscolhaArma={onArmaDaTecnica}
+              consomeEstadoNoPrimeiro={derived.tecnicasMarciais?.consomeEstadoNoPrimeiro ?? null}
+            />
+          ) : (
+            <LinhaFeitico
+              key={t.id}
+              f={t}
+              rolar={rolar}
+              destacado={destaque === `feitico:${t.id}`}
+              comLiberacao={derived.feiticos?.comLiberacao}
+            />
+          )))}
         </Secao>
       )}
 

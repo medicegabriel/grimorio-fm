@@ -66,6 +66,15 @@ import { regraDo } from "./afty-sistema";
 // Do módulo FOLHA: afty-pericias.js importa afty-efeitos.js, que volta até aqui.
 import { AFTY_PERICIAS, avaliarRequisitoDeTreino, conferirRequisitoDeTreino } from "./afty-pericias-catalogo";
 
+const escolhaDeDano = (prefixo, canal, expr, nivel) => ({
+  id: `${prefixo}_tipo`, label: "Tipo de Dano", niveis: [nivel],
+  get opcoes() {
+    return Object.entries(TIPOS_DANO).filter(([id]) => !["alma", "ct", "im", "pf"].includes(id))
+      .map(([id, t]) => ({ id: `${prefixo}_${id}`, nome: typeof t === "string" ? t : t.label,
+        efeitos: [{ canal, alvo: id, expr }] }));
+  },
+});
+
 /**
  * Opções de escolha aninhada geradas a partir de catálogos que já existem, para
  * "escolha um grupo de arma" e "escolha um Teste de Resistência" não virarem
@@ -597,7 +606,8 @@ export const FOCOS_AMALDICOADOS = [
  * Dádivas do Céu (Restringido). Escolha ANINHADA de Restrito pelos Céus: uma
  * a cada 4 níveis a partir do 4°, então `niveis: [4, 8, 12, 16, 20]` (5 das 9
  * até o ND 20). Respeito Celeste (8°) concede mais uma, e pode ser pego outra
- * vez a partir do 12, chegando a 7.
+ * vez a partir do 12, chegando a 7. O Treino de Potencial Físico (4ª etapa) dá
+ * mais uma pelo canal `vagasEscolha`.
  */
 export const DADIVAS_DO_CEU = [
   {
@@ -1651,6 +1661,7 @@ export const AFTY_HABILIDADES = [
       "nível de personagem contra dano cortante, perfurante e de impacto, além de mais um tipo à " +
       "sua escolha, exceto alma. Contra os outros tipos de dano não escolhidos, a redução de dano " +
       "é igual a 1/4 do seu nível.",
+    escolha: escolhaDeDano("lut_supremo", "rdTipo", "piso(nd / 2) - piso(nd / 4)", 16),
     requisitos: [],
   },
   {
@@ -5387,6 +5398,7 @@ export const AFTY_HABILIDADES = [
       "todo tipo de dano físico (cortante, perfurante e de impacto), além de mais um tipo de dano a " +
       "sua escolha, exceto na alma. Você também recebe +5 em rolagens de ataque e soma metade do " +
       "seu nível de personagem no total de dano.",
+    escolha: escolhaDeDano("res_destino", "resistenciaDano", "1", 20),
     requisitos: [],
   },
 
@@ -5629,8 +5641,8 @@ export const AFTY_HABILIDADES = [
       "Você tem uma percepção de como desenvolver as suas ideias de técnicas marciais e manobras, " +
       "expandindo o seu repertório. Você recebe duas técnicas marciais adicionais ao obter essa " +
       "habilidade.",
-    // ⚠ "Técnicas marciais" pertencem ao ESTILO MARCIAL, cujo texto não foi
-    // enviado. Pendência de conteúdo.
+    // As duas técnicas marciais são vaga EXCLUSIVA (canal `vagasMarcial`, em
+    // afty-efeitos-conteudo.js). O Estilo Marcial em si mora em afty-tecnicas-marciais.js.
     requisitos: [],
   },
   {
@@ -5907,11 +5919,14 @@ export const AFTY_HABILIDADES = [
       "Seu poder e desenvolvimento te garantem o respeito dos céus, que concedem a sua benção para " +
       "si. Ao obter essa habilidade, você recebe uma dádiva do céu adicional. A partir do nível 12, " +
       "você pode pegar esta habilidade outra vez.",
-    // +1 Dádiva no 8° e outra no 12°, escolhidas no card do Restrito pelos Céus:
-    // é o mesmo pool, e um segundo card deixaria pegar a mesma duas vezes.
-    // ⚠ Isto vale por "pegar a habilidade duas vezes": as duas concessões vêm
-    // de uma pega só, porque a ficha guarda ids únicos e não conta repetição.
-    concedeEscolha: { habilidade: "res_restrito_pelos_ceus", niveis: [8, 12] },
+    // +1 Dádiva por pega, escolhida no card do Restrito pelos Céus: é o mesmo
+    // pool, e um segundo card deixaria pegar a mesma duas vezes.
+    // ⚠ PEGA POR PEGA desde 2026-10-12 (autor). Até ali uma pega só dava as duas
+    // Dádivas (`niveis: [8, 12]`), porque a ficha guardava ids únicos. Com o
+    // `maxVezes` a 2ª pega existe, abre no 12 e gasta vaga, e o `concedeEscolha`
+    // conta as pegas (`vezes` no `resolveEscolhasHabilidade`).
+    maxVezesExpr: "1 + (nd >= 12)",
+    concedeEscolha: { habilidade: "res_restrito_pelos_ceus", niveis: [8] },
     requisitos: [],
   },
 
@@ -6476,16 +6491,26 @@ export function escolhasMaximas(habilidade, nivelEspec, bt = 0) {
  */
 export function resolveEscolhasHabilidade({
   escolhidasIds = [], niveisPorEspec = {}, niveisEscalonamento = {}, nivelPorHabilidade = {},
-  escolhasHabilidade = {}, bt = 0,
+  escolhasHabilidade = {}, bt = 0, vezes = {}, vagasMotor = {},
+  escolhasPorHabilidade = {},
 } = {}) {
   const porHab = {};
   const mapa = {};
   let vagasExtras = 0;
+  // Todas as escolhas de Roubo qualificam entre si, sem depender da ordem.
+  const roubadasSelecionadas = escolhidasIds
+    .filter((id) => (HERANCA_ORIGEM[id] ?? id) === "res_roubo_de_habilidade")
+    .flatMap((id) => (Array.isArray(escolhasHabilidade[id]) ? escolhasHabilidade[id] : []).filter((op) =>
+      BY_ID[id].escolha.opcoes.some((o) => o.id === op)));
+  const possuidas = expandeHerdadas([...escolhidasIds, ...roubadasSelecionadas]);
+
 
   // Habilidades que só AUMENTAM a escolha de outra: Aprender Postura dá mais
   // Posturas ao Assumir Postura, Acervo Amplo dá mais um Estilo ao Repertório.
   // Somam vaga no pool da dona em vez de abrir um segundo pool, senão daria
   // para escolher a mesma Postura duas vezes, uma em cada card.
+  // A repetível concede por PEGA (`vezes`): o Respeito Celeste pego duas vezes
+  // dá duas Dádivas.
   const concedidas = {};
   for (const habId of escolhidasIds) {
     const c = BY_ID[habId]?.concedeEscolha;
@@ -6493,12 +6518,15 @@ export function resolveEscolhasHabilidade({
     const nivel = nivelPorHabilidade?.[habId]
       ?? niveisPorEspec?.[BY_ID[habId].especializacaoId]
       ?? 0;
+    const pegas = Math.max(1, Math.trunc(Number(vezes?.[habId]) || 1));
     concedidas[c.habilidade] = (concedidas[c.habilidade] || 0)
-      + c.niveis.filter((n) => nivel >= n).length;
+      + c.niveis.filter((n) => nivel >= n).length * pegas;
   }
+  const doMotor = (habId) => vagasDoMotorNaEscolha(habId, vagasMotor);
 
   for (const habId of escolhidasIds) {
-    const hab = BY_ID[habId];
+    const original = BY_ID[habId];
+    const hab = original && { ...original, escolha: escolhasPorHabilidade[habId] ?? original.escolha };
     if (!hab?.escolha) continue;
     const opcoesValidas = new Set(hab.escolha.opcoes.map((o) => o.id));
     const brutas = Array.isArray(escolhasHabilidade?.[habId]) ? escolhasHabilidade[habId] : [];
@@ -6510,18 +6538,33 @@ export function resolveEscolhasHabilidade({
       opcoes.push(id);
     }
     const nivelEspec = nivelPorHabilidade?.[habId] ?? niveisPorEspec?.[hab.especializacaoId] ?? 0;
-    const allowance = escolhasMaximas(hab, nivelEspec, bt) + (concedidas[habId] || 0);
+    const allowance = escolhasMaximas(hab, nivelEspec, bt) + (concedidas[habId] || 0) + doMotor(habId);
     // A Alma Livre dá um nível só, e ele vale também aqui.
     const nivelOpcao = nivelPorHabilidade?.[habId]
       ?? niveisEscalonamento?.[hab.especializacaoId]
       ?? nivelEspec;
-    const bloqueadas = hab.escolha.opcoes
+    const bloqueadasNivel = hab.escolha.opcoes
       .filter((o) => (Number(o.nivelMin) || 0) > nivelOpcao)
       .map((o) => o.id);
+    const motivosBloqueio = {};
+    for (const o of hab.escolha.opcoes) {
+      if (bloqueadasNivel.includes(o.id)) motivosBloqueio[o.id] = `Requer Nível ${o.nivelMin}`;
+      if ((HERANCA_ORIGEM[habId] ?? habId) !== "res_roubo_de_habilidade") continue;
+      const faltantes = (BY_ID[o.id]?.requisitos ?? [])
+        .filter((r) => r.tipo === "habilidade")
+        .map((r) => avaliarRequisitoHabilidade(r, { escolhidas: possuidas }))
+        .filter((r) => !r.ok);
+      if (faltantes.length) motivosBloqueio[o.id] = `Requer ${faltantes.map((r) => r.label).join(", ")}`;
+    }
+    const bloqueadas = Object.keys(motivosBloqueio);
     porHab[habId] = {
       opcoes, allowance, repetivel: !!hab.escolha.repetivel, excedeu: opcoes.length > allowance,
+      // A parte do Motor, para o derive refechar com o agregado final.
+      vagasMotor: doMotor(habId),
       bloqueadas,
-      abaixoDoNivel: opcoes.filter((id) => bloqueadas.includes(id)),
+      motivosBloqueio,
+      abaixoDoNivel: opcoes.filter((id) => bloqueadasNivel.includes(id)),
+      requisitosNaoAtendidos: opcoes.filter((id) => bloqueadas.includes(id) && !bloqueadasNivel.includes(id)),
     };
     mapa[habId] = opcoes;
     // Repetível: a 1ª escolha vem junto da vaga da própria habilidade; cada
@@ -6529,6 +6572,37 @@ export function resolveEscolhasHabilidade({
     if (hab.escolha.repetivel) vagasExtras += Math.max(0, opcoes.length - 1);
   }
   return { porHab, mapa, vagasExtras };
+}
+
+/* ⚠ A VAGA QUE VEM DO MOTOR (canal `vagasEscolha`, 2026-10-12). O
+   `concedeEscolha` só vai de habilidade para habilidade, e o Treino de Potencial
+   Físico 4ª ("uma Dádiva do Céu adicional") não tinha como dizer a vaga. O alvo
+   é o id da DONA da escolha, e a herdeira responde também pelo id da mãe: a
+   etapa do livro cita o Restrito pelos Céus, e a Restrição Intelectual guarda as
+   Dádivas dela no clone. */
+function vagasDoMotorNaEscolha(habId, vagasMotor = {}) {
+  const mae = HERANCA_ORIGEM[habId];
+  const n = (Number(vagasMotor?.[habId]) || 0)
+    + (mae && mae !== habId ? Number(vagasMotor?.[mae]) || 0 : 0);
+  return Math.max(0, Math.trunc(n));
+}
+
+/**
+ * Refecha as vagas de escolha aninhada com o agregado FINAL, pelo mesmo motivo
+ * do `contaOrcamentoHabilidades`: o primeiro fechamento lê só o montante, e um
+ * Feitiço Passivo ou Buff de Mesa com `vagasEscolha` chegaria tarde. A parte do
+ * Motor SUBSTITUI a de cima, porque o agregado já traz o montante. Seguro porque
+ * a vaga só CONTA: nenhuma opção entra ou sai por causa dela.
+ */
+export function refecharVagasEscolha(escolhas, vagasMotor = {}) {
+  if (!escolhas?.porHab) return escolhas;
+  const porHab = {};
+  for (const [habId, e] of Object.entries(escolhas.porHab)) {
+    const vagas = vagasDoMotorNaEscolha(habId, vagasMotor);
+    const allowance = e.allowance - (e.vagasMotor || 0) + vagas;
+    porHab[habId] = { ...e, allowance, vagasMotor: vagas, excedeu: e.opcoes.length > allowance };
+  }
+  return { ...escolhas, porHab };
 }
 
 /**
@@ -6676,20 +6750,25 @@ export function avaliarRequisitoHabilidade(requisito, ctx = {}) {
  */
 export function avaliarAcessoHabilidade(habilidade, ctx = {}) {
   const esp = getEspecializacao(habilidade.especializacaoId);
-  const nivelReal = ctx.niveisPorEspec?.[habilidade.especializacaoId] ?? 0;
-  const pertenceAlmaLivre = ctx.almaLivre?.especializacaoId === habilidade.especializacaoId;
+  const imitada = (ctx.imitadas ?? []).includes(habilidade.id);
+  const nivelReal = ctx.nivelPorHabilidade?.[habilidade.id] ?? ctx.niveisPorEspec?.[habilidade.especializacaoId] ?? 0;
+  const pertenceAlmaLivre = !(ctx.habilidadesOutraClasse ?? []).includes(habilidade.id)
+    && ctx.almaLivre?.especializacaoId === habilidade.especializacaoId;
   const almaLivreOcupada = pertenceAlmaLivre
     && !!ctx.almaLivre?.habilidadeId
     && ctx.almaLivre.habilidadeId !== habilidade.id;
   const nivel = pertenceAlmaLivre && !almaLivreOcupada ? ctx.almaLivre?.nivel ?? 0 : nivelReal;
-  const nivelOk = !almaLivreOcupada && nivel >= habilidade.nivel;
-  const extras = (habilidade.requisitos || []).map((r) => avaliarRequisitoHabilidade(r, ctx));
+  const nivelOk = imitada || (!almaLivreOcupada && nivel >= habilidade.nivel);
+  // Decisão vigente do autor (2026-10-13): só Imitação dispensa requisitos.
+  // Roubo mantém os requisitos, usando Restringido para o nível exigido.
+  const extras = (imitada ? [] : habilidade.requisitos || [])
+    .map((r) => avaliarRequisitoHabilidade(r, ctx));
   return {
     ok: nivelOk && extras.every((e) => e.ok),
     nivelOk,
     almaLivreOcupada,
     // Quanto falta, para a UI dizer "faltam N" (decisão do autor, roadmap).
-    faltam: Math.max(0, habilidade.nivel - nivel),
+    faltam: imitada ? 0 : Math.max(0, habilidade.nivel - nivel),
     label: `${esp?.nome || habilidade.especializacaoId} ${habilidade.nivel}`,
     titulo: `Requer nível ${habilidade.nivel} em ${esp?.nome || habilidade.especializacaoId}`,
     extras,
@@ -7477,11 +7556,16 @@ export function resolveHabilidades(
   vagasTalento = 0,
   {
     nd = 1, almaLivreEspecializacao = null, almaLivreNivelAjuste = 0, concedidasSessao = [],
-    escolhasConcedidasSessao = {}, sistema = undefined,
-    concedidasTreino = [],
+    escolhasConcedidasSessao = {}, sistema = undefined, niveisHabilidadesConcedidas = {}, imitadas = [], escolhasPorHabilidade = {},
+    concedidasTreino = [], concedidasTalento = [], concedidasCatarse = [], vetadas = [], vagasEscolha = {},
   } = {},
 ) {
   const niveisPorEspec = niveisPorEspecializacao(escolhidasEspec);
+  /* A Habilidade que a ORIGEM proíbe (`vetaHabilidades`, 2026-10-12): o Gêmeo
+     Restringido com o irmão vivo "é incapaz de receber a habilidade Restrição
+     Definitiva". Sai das concedidas (a Base automática da Classe) e da lista da
+     ficha, e a pega gravada volta quando o veto sai. */
+  const vetadasSet = new Set(Array.isArray(vetadas) ? vetadas : []);
   // ⚠ A CONCESSÃO DA SESSÃO ENTRA PELO MESMO CANAL das Bases que a
   // Especialização concede, e é de propósito: as duas são "vale para tudo e não
   // gasta vaga", que é exatamente o que `concedidas` sempre significou. A da
@@ -7490,7 +7574,9 @@ export function resolveHabilidades(
     ...habilidadesConcedidasPelasEspecializacoes(escolhidasEspec, sistema, pacotesDaFicha(creature)),
     ...(Array.isArray(concedidasSessao) ? concedidasSessao.filter((id) => BY_ID[id]) : []),
     ...(Array.isArray(concedidasTreino) ? concedidasTreino.filter((id) => BY_ID[id]) : []),
-  ])];
+    ...(Array.isArray(concedidasTalento) ? concedidasTalento.filter((id) => BY_ID[id]) : []),
+    ...(Array.isArray(concedidasCatarse) ? concedidasCatarse.filter((id) => BY_ID[id]) : []),
+  ])].filter((id) => !vetadasSet.has(id));
   const concedidasSet = new Set(concedidas);
   const vistos = new Set();
   const selecionadas = [];
@@ -7507,7 +7593,7 @@ export function resolveHabilidades(
   for (const id of Array.isArray(creature?.habilidades) ? creature.habilidades : []) {
     // Uma ficha antiga pode ter gravado manualmente uma Base que agora é
     // automática. Ela continua efetiva, mas deixa de gastar vaga.
-    if (!BY_ID[id] || concedidasSet.has(id)) continue;
+    if (!BY_ID[id] || concedidasSet.has(id) || vetadasSet.has(id)) continue;
     if (vistos.has(id)) {
       if ((vezes[id] ?? 1) >= maxVezesHabilidade(id, ctxVezes)) continue;
       vezes[id] = (vezes[id] ?? 1) + 1;
@@ -7529,8 +7615,10 @@ export function resolveHabilidades(
     nivel: Math.max(1, Math.trunc(Number(nd) || 1) + Math.trunc(Number(almaLivreNivelAjuste) || 0)),
     excedeu: habilidadesAlmaLivre.length > 1,
   } : null;
-  const nivelPorHabilidade = {};
+  const nivelPorHabilidade = { ...niveisHabilidadesConcedidas };
   if (habilidadeAlmaLivreId) nivelPorHabilidade[habilidadeAlmaLivreId] = almaLivre.nivel;
+  const habilidadesOutraClasse = concedidasCatarse.filter((id) => concedidasSet.has(id));
+  for (const id of habilidadesOutraClasse) nivelPorHabilidade[id] = nd;
   // Pilha COMUM: só o que a Habilidade Geral Especialização concedeu.
   const comum = Math.max(0, Math.trunc(Number(bonusVagas) || 0));
   // Pilha EXCLUSIVA de Talento, que não serve para Habilidade de Especialização.
@@ -7541,7 +7629,8 @@ export function resolveHabilidades(
   for (const [id, lista] of Object.entries(escolhasConcedidasSessao ?? {})) {
     escolhasMescladas[id] = [...new Set([...(escolhasMescladas[id] ?? []), ...(lista ?? [])])];
   }
-  const escolhas = resolveEscolhasHabilidade({
+  let escolhas = resolveEscolhasHabilidade({
+    escolhasPorHabilidade,
     escolhidasIds: escolhidas,
     niveisPorEspec,
     // O nível que trava a OPÇÃO com `nivelMin`. Ver resolveEscolhasHabilidade.
@@ -7550,15 +7639,42 @@ export function resolveHabilidades(
     nivelPorHabilidade,
     escolhasHabilidade: escolhasMescladas,
     bt,
+    vezes,
+    vagasMotor: vagasEscolha,
   });
-  const ctx = { niveisPorEspec, escolhidas, escolhasHabilidade: escolhas.mapa, almaLivre };
   // Roubar concede a habilidade, mas a vaga já foi paga pela escolha do Roubo.
   // Consumidores de combate consultam efetivas, o orçamento mantém escolhidas.
   // A herdeira do Restringido guarda o Roubo sob o id clonado (2026-09-28).
   const roubadas = [...new Set(Object.entries(escolhas.mapa)
     .filter(([habId]) => (HERANCA_ORIGEM[habId] ?? habId) === "res_roubo_de_habilidade")
     .flatMap(([, lista]) => lista ?? []))];
+  // O nível do Roubo vale somente para a habilidade recebida e suas opções.
+  // Não cria níveis em Lutador/Combatente nem concede as bases dessas classes.
+  const contextosPorHabilidade = {};
+  for (const [paiId, lista] of Object.entries(escolhas.mapa)) {
+    if ((HERANCA_ORIGEM[paiId] ?? paiId) !== "res_roubo_de_habilidade") continue;
+    const n = niveisPorEspec[BY_ID[paiId]?.especializacaoId] ?? 0;
+    for (const id of lista) {
+      nivelPorHabilidade[id] = n;
+      contextosPorHabilidade[id] = { esc_lutador: n, esc_combatente: n, nivel_lutador: n, nivel_combatente: n };
+    }
+  }
+  const vagasExtrasDoRoubo = escolhas.vagasExtras;
+  if (roubadas.length) {
+    escolhas = resolveEscolhasHabilidade({
+      escolhasPorHabilidade,
+      escolhidasIds: [...new Set([...escolhidas, ...roubadas])], niveisPorEspec,
+      niveisEscalonamento: Object.fromEntries((escolhidasEspec || [])
+        .map((e) => [e.id, e.nivelEscalonamento ?? e.nivel ?? 0])),
+      nivelPorHabilidade, escolhasHabilidade: escolhasMescladas, bt, vezes, vagasMotor: vagasEscolha,
+    });
+    escolhas.vagasExtras = vagasExtrasDoRoubo;
+    for (const id of roubadas) {
+      for (const oid of escolhas.mapa[id] ?? []) contextosPorHabilidade[oid] = contextosPorHabilidade[id];
+    }
+  }
   const efetivas = [...new Set([...escolhidas, ...roubadas])];
+  const ctx = { niveisPorEspec, escolhidas: efetivas, escolhasHabilidade: escolhas.mapa, almaLivre, imitadas, nivelPorHabilidade, habilidadesOutraClasse };
   // Habilidades escolhidas que a criatura deixou de alcançar (ex.: a
   // multiclasse foi redividida depois da escolha). Reportado, não removido.
   const inacessiveis = escolhidas.filter((id) => !avaliarAcessoHabilidade(BY_ID[id], ctx).ok);
@@ -7583,12 +7699,19 @@ export function resolveHabilidades(
     if (mae) niveisPorEfeito[mae] ??= nivel;
   }
   if (habilidadeAlmaLivreId) niveisPorEfeito[almaLivreEspecializacao] = almaLivre.nivel;
+  for (const id of habilidadesOutraClasse) niveisPorEfeito[BY_ID[id].especializacaoId] = nd;
   return {
     escolhidas,
     selecionadas,
     efetivas,
+    canonicas: expandeHerdadas(efetivas),
     roubadas,
+    imitadas,
+    nivelPorHabilidade,
+    contextosPorHabilidade,
     concedidas,
+    // O que a origem proíbe, para a aba trancar a escolha. Ver `vetadasSet`.
+    vetadas: [...vetadasSet],
     // Quantas pegas de cada id. Alimenta o `coletarEfeitos`, que multiplica o
     // efeito, e o medidor do card. Concedida entra com 1, porque ela nunca
     // repete.
@@ -7604,6 +7727,7 @@ export function resolveHabilidades(
     niveisPorEspec,
     niveisPorEfeito,
     almaLivre,
+    habilidadesOutraClasse,
   };
 }
 

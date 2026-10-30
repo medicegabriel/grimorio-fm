@@ -5,6 +5,8 @@
   "autor": "Afty",
   "paraRaw": "afty",
   "descricao": "Libera o nível de Player acima de 30. Depois do nível 20, continua concedendo 1 Nível de Aptidão a cada 2 níveis. O orçamento de Interlúdios é 1,5 × Nível, arredondado para baixo. Concede 3 pontos de atributo a cada 4 níveis. Treinos Especiais conservam os limites normais do Player.",
+  "resumo": "Nível acima de 30, Interlúdios 1,5 por nível e 3 pontos de atributo a cada 4 níveis",
+  "categoria": "regras",
   "regrasAfty": {
     "nivelJogadorSemTeto": true,
     "aptidaoApos20": true,

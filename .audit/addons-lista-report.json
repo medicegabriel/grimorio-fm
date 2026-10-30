@@ -1,0 +1,20 @@
+[
+  {
+    "largura": 1440,
+    "itens": 88,
+    "busca": true,
+    "categoria": true,
+    "ligar": true,
+    "destaque": true,
+    "erros": []
+  },
+  {
+    "largura": 390,
+    "itens": 88,
+    "busca": true,
+    "categoria": true,
+    "ligar": true,
+    "destaque": true,
+    "erros": []
+  }
+]

@@ -71,10 +71,14 @@ for (const sistema of ["afty", "player"]) {
   /* Progressão estourada: no Nível 4 cabem 2, e a terceira invalida TODAS. */
   const tres = [tecnica("a", [compra("defesa")]), tecnica("b", [compra("dano")]), tecnica("c", [compra("cd")])];
   const dp = da(sistema, tres, { nd: 4, dom: 1 });
-  t(`${sistema}: tres Tecnicas no Nivel 4 sao erro do Estilo`,
+  /* ⚠ SO O PERSONAGEM INVALIDA PELA PROGRESSAO (autor, 2026-10-26): a criatura
+     gasta o contador comum, e o estouro so deixa o contador vermelho. */
+  const propria = sistema === "player";
+  t(`${sistema}: tres Tecnicas no Nivel 4`,
     [dp.estilo.validacao.map((v) => v.texto), dp.estilo.tecnicas.map((x) => x.mecanicamenteValida)],
-    [["Técnicas de Estilo: 3 de 2."], [false, false, false]]);
-  t(`${sistema}: e nem a primeira da Defesa`, ganhoDefesa(sistema, tres, "a", { nd: 4, dom: 1 }), 0);
+    propria ? [["Técnicas de Estilo: 3 de 2."], [false, false, false]] : [[], [true, true, true]]);
+  t(`${sistema}: a primeira da Defesa so some no personagem`,
+    ganhoDefesa(sistema, tres, "a", { nd: 4, dom: 1 }) > 0, !propria);
   t(`${sistema}: com duas, a primeira vale`, ganhoDefesa(sistema, tres.slice(0, 2), "a", { nd: 4, dom: 1 }) > 0, true);
 
   /* AVISO e INFO não bloqueiam. */
@@ -95,7 +99,7 @@ for (const sistema of ["afty", "player"]) {
   });
   t(`${sistema}: o Especial escrevendo vagasEstilo e erro`,
     codigos(da(sistema, [circular]).estilo.tecnicas[0], "erro"), ["canal"]);
-  t(`${sistema}: e a vaga nao sobe`, da(sistema, [circular], { ativa: "circ" }).estilo.progressao.total, 3);
+  t(`${sistema}: e a vaga nao sobe`, da(sistema, [circular], { ativa: "circ" }).estilo.progressao.total, sistema === "player" ? 3 : 0);
 
   /* A Técnica de Estilo Especial (tipo) não tem limite de efeitos nem gatilho
      da borda: ela é aplicação, e não pacote. */

@@ -1,0 +1,33 @@
+{
+  "id": "retracao-de-dominio",
+  "nome": "Retração de Domínio",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Aptidão que requer Dom 3. Quando ativada, o jogador recebe 20% de HP Máximo e PE Máximo, recebendo a diferença no PV e PE atual.",
+  "resumo": "Aptidão de Domínio 3 que dá 20% de PV e PE Máximo ao ser ativada",
+  "categoria": "talentos",
+  "acrescenta": {
+    "aptidoes": [
+      {
+        "id": "retracao_de_dominio",
+        "nome": "Retração de Domínio",
+        "categoria": "dominio",
+        "trilha": "dom",
+        "descricao": "Quando ativada, o jogador recebe 20% de HP Máximo e PE Máximo. Recebendo a diferença no PV e PE atual.",
+        "requisitos": [{ "tipo": "trilha", "trilha": "dom", "valor": 3 }],
+        "efeitos": []
+      }
+    ]
+  },
+  "estadosCombate": [
+    {
+      "id": "retracao_ativa",
+      "label": "Retração de Domínio",
+      "tipo": "bool",
+      "requerAptidao": "retracao_de_dominio",
+      "quando": "dom >= 3",
+      "ampliaRecursos": { "hp": 20, "pe": 20 }
+    }
+  ]
+}

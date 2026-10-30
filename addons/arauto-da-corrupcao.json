@@ -5,6 +5,8 @@
   "autor": "Afty",
   "paraRaw": "afty",
   "descricao": "Origem Arauto da Corrupção. Programados: os 3 pontos de atributo (máximo 2 no mesmo), o PE a cada nível par do Vosso Jardim e a Característica Única Corpo Transbordante (Bônus de Treinamento em Atletismo e +1 PV por nível). O resto depende da Corrupção, que a ficha não conta, e fica como texto. As Características Únicas são marcadas na própria origem, sem gastar vaga.",
+  "resumo": "Origem com 3 pontos de atributo, PE a cada nível par e a característica Corpo Transbordante",
+  "categoria": "origens",
   "acrescenta": {
     "origens": [
       {

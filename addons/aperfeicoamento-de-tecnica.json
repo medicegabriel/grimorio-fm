@@ -5,6 +5,8 @@
   "autor": "Templas",
   "paraRaw": "afty",
   "descricao": "Linha de Treinamento não repetível para quem conjura Habilidades de Técnica (Feitiço). O Completo precisou de uma peça nova no motor (2026-09-15): `completo.escolhaFeiticos` ({ quantidade, reducao }), que generaliza o mesmo desenho da Manipulação Perfeita (marcar N Feitiços do próprio repertório para um desconto de custo), só que reutilizável por qualquer Treino ou Habilidade futura, sem código novo por linha. Fora do Restringido, que não tem Técnica nenhuma.",
+  "resumo": "Treino para conjuradores: o Completo dá desconto de custo em Feitiços marcados do repertório",
+  "categoria": "treinos",
   "acrescenta": {
     "treinamentos": [
       {

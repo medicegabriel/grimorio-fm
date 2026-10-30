@@ -1,0 +1,62 @@
+{
+  "versao": 1,
+  "shaInventario": "693d791d6c29a4f5e2d63294b11cc1f6757cc6880ee6f5fd3580f6b00e70d569",
+  "shaVivo": "4abc044d07a9b6d9006609d89c30f85502e1cc24f1e496f03981b7c3bca7c4be",
+  "shaEscopo": "0252e423315a291846091da1967a710fe363665deae4bc66ed5f2e895c24a0d3",
+  "adicionados": [],
+  "removidos": [],
+  "alterados": [
+    {
+      "chave": "addon::treino-de-tr.json::@pacote",
+      "proprietarioMantido": "TRE-03",
+      "hashAnterior": "5676897439c45f7c28da9f11f4bace36bc2bb21e97d5260c921844e777e95823",
+      "hashNovo": "fce1486d9c686870d37f5fd7dd208ae41954405c44723a5e548d0c4624a39dfd",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::treino-de-tr.json::@pacote::acrescenta",
+      "proprietarioMantido": "TRE-03",
+      "hashAnterior": "65616c138125c3ff35bc573e72d2e3559aba7991e3efbef990c704de99809129",
+      "hashNovo": "6b729a0a140cfacb21e66eed750756d3104d0ee411ef092f923b73ffba90985a",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::treino-de-tr.json::@pacote::descricao",
+      "proprietarioMantido": "TRE-03",
+      "hashAnterior": "87f026b423978927ddb2e5e437816456d8d9f6bee36be02921c005066e36746b",
+      "hashNovo": "072ce9127c166c8ec84f1ba453ec3e5ac48f116e1159a3c3977315e717bfe683",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::treino-de-tr.json::@pacote::versao",
+      "proprietarioMantido": "TRE-03",
+      "hashAnterior": "39fe4a40977d0585fd5704359e3685b0ada5cf5ee061e5d97385601d120cd0ec",
+      "hashNovo": "e7ad5986cf98f45d2d11f5a65f149e95ecc61246dd2fb2427ab59a9033b66456",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::treino-de-tr.json::acrescenta.treinamentos::tr",
+      "proprietarioMantido": "TRE-03",
+      "hashAnterior": "bef8da630f277abde0dd104054a82f0694482e007dd622630b306ca3d88bb62c",
+      "hashNovo": "95c9d4af76bdb8ab67e7b0f3d234a3c160e072ccab88a5a8f9b359afffdb74cc",
+      "campos": [
+        "hashDado"
+      ]
+    }
+  ],
+  "assinatura": "9d0af78b1300f5703b69acb14550ffd469766192143b6361f531737ad04875d4",
+  "decisoes": {
+    "adicoes": {},
+    "remocoes": {},
+    "justificativaAtualizacao": "Correção explícita do autor em 2026-10-25: Faltou Integridade no Treino de TR. Versão 1.1.0 habilita o quinto TR somente nessa linha. Reconciliação restrita ao pacote."
+  },
+  "errosColeta": []
+}

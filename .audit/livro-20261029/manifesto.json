@@ -1,0 +1,30 @@
+{
+  "data": "2026-10-29",
+  "fonte": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+  "headLocal": "68888733deffa9700aa69761fd965a504b9152db",
+  "headRemoto": "2308bc193e9d5e806630d00745e3cc654042d9f7",
+  "asserts": {
+    "aprovados": 234,
+    "total": 236,
+    "pendencias": [
+      "t-prodigio.mjs",
+      "t-reconciliacao-g00.mjs"
+    ]
+  },
+  "build": "aprovado",
+  "eslintAfty": "aprovado",
+  "arquivos": {
+    "src/systems/afty/afty-origens.js": "372306212d5cc388c33e5a5046871a66f6b93d4bddd9974066f400f117135850",
+    "src/systems/afty/afty-anatomias.js": "a8f97ca0f352b1de12d42113015d103bed56786f0da721a455e54f4b62576ae5",
+    "src/systems/afty/afty-efeitos-conteudo.js": "456ac81d35507eaf1ffcea8cd1502137895733daaac0b433791e95dab5068ef1",
+    "src/systems/afty/afty-feiticos.js": "8659d0602b9b3ca8b069143fe8fb13dd93c34f69db2ec5fe33b764e7b5f852c5",
+    "src/systems/afty/afty-equipamentos.js": "ffb350f7aaff405003964f78646546360940d60c3f9df74e8f0709bf0dfaadca",
+    "src/systems/afty/afty-derive.js": "06359b420b3dac18097641d27372643e313d49cb03bdf386f8f2569d2d3f1c29",
+    "src/systems/afty/ficha/ficha-sessao.js": "da763e26e6a563991b1721b31cf152ee4c8819b394a7d75554f7b7d407f30048",
+    "src/systems/afty/ficha/ficha-rolagem.js": "69485d82b98d9419bc90ffab9363fee1735542dbefa17f99ce6d0fda56f607ad",
+    "src/systems/afty/ficha/ficha-opcoes-derive.js": "f17a1432b4acbfe8d6d8b1f7b37351a4f1c0024e99dc6ea32eed903d6dc232f0",
+    "src/systems/afty/ficha/ficha-especializacoes.js": "3e44bec64385f1301b971d7166925adc08a57b0d7a693495daa99ebaa2729bc2",
+    "docs/revisao-livro-regras/10-analise-aprofundada-2026-10-29.md": "b0e72ac2d26b660450aa19e812e76d35447dd727801ccdd00d828690c825cffb",
+    "docs/revisao-livro-regras/11-matriz-talentos-2026-10-29.md": "e0e6b5683a3334fff6000d953aa36f48fc049fb162d698f9a00f7ea4eff66800"
+  }
+}

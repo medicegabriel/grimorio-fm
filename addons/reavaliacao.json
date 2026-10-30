@@ -4,6 +4,9 @@
   "versao": "1.0.0",
   "autor": "Afty",
   "paraRaw": "afty",
+  "descricao": "Treino Meta-Visão, em 4 etapas mais o Completo. Começa com a noção ampla do campo de batalha e o cálculo de rotas de movimento, depois deixa trocar testes de Intuição por Percepção e termina na análise dos detalhes do ambiente e dos oponentes.",
+  "resumo": "Treino Meta-Visão: noção do campo de batalha e Intuição trocada por Percepção",
+  "categoria": "treinos",
   "acrescenta": {
     "treinamentos": [
       {

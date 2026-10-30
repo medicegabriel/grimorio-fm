@@ -1,0 +1,2 @@
+import fs from 'node:fs';
+const files=['src/systems/afty/afty-imitacao.js','src/systems/afty/afty-habilidades.js','src/systems/afty/afty-derive.js','src/systems/afty/AftyCreatureBuilder.jsx','src/systems/afty/ficha/PainelDeImitacao.jsx','src/systems/afty/afty-combate.js'];fs.writeFileSync('.audit/imitacao-config-entrada.json',JSON.stringify(Object.fromEntries(files.map(p=>[p,fs.readFileSync(p,'utf8')]))));

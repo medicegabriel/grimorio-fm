@@ -1,0 +1,9 @@
+import fs from 'node:fs';const p='src/systems/afty/AftyCreatureBuilder.jsx';let s=fs.readFileSync(p,'utf8');s='import { trocarCopiaImitacao } from "./afty-imitacao";\n'+s;
+s=s.replace('  const toggleEscolhaHabilidade = (habId, opcaoId) =>','  const ativarImitacao = (id) => setDraft((d) => {\n    const c = derived.imitacao.configuraveis.find((c) => c.id === id);\n    if (!c) return d;\n    return { ...d, imitacaoAtivarAoSalvar: id, combate: { ...d.combate, ativo: true,\n      ...trocarCopiaImitacao(d.combate, { ...c, escolhas: d.escolhasHabilidade?.[id] ?? c.escolhas, aprendida: true }) } };\n  });\n  const toggleEscolhaHabilidade = (habId, opcaoId) =>');
+s=s.replace('patchEspecializacaoConfig={patchEspecializacaoConfig} />','patchEspecializacaoConfig={patchEspecializacaoConfig} ativarImitacao={ativarImitacao} />');
+s=s.replace('patchTalentosConfig, patchEspecializacaoConfig })','patchTalentosConfig, patchEspecializacaoConfig, ativarImitacao })');
+s=s.replace('      const i = sessao.combate?.imitacao ?? {};','      const i = draft.imitacaoAtivarAoSalvar ? draft.combate.imitacao : sessao.combate?.imitacao ?? {};');
+s=s.replace('salvarSessao(existingCreature.id, { ...sessao, combate: { ...sessao.combate,','salvarSessao(existingCreature.id, { ...sessao, combate: { ...sessao.combate,\n        ...(draft.imitacaoAtivarAoSalvar ? { ativo: true } : {}),');
+s=s.replace('    onSave(creature);','    delete creature.imitacaoAtivarAoSalvar;\n    onSave(creature);');
+s=s.replace('                  extra={efetivas.includes(h.id) ? <>','                  extra={efetivas.includes(h.id) || imitadasConfiguraveis.includes(h.id) ? <>\n                    {imitadasConfiguraveis.includes(h.id) && !roubadas?.includes(h.id) && <button type="button"\n                      className="afty-botao" onClick={() => ativarImitacao(h.id)}>Imitar</button>}');
+fs.writeFileSync(p,s);

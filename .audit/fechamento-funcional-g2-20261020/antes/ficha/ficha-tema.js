@@ -1,0 +1,902 @@
+/**
+ * ============================================================
+ * TEMA DA FICHA — presets, formulário e CSS personalizado
+ * ============================================================
+ * O pedido do autor: cada pessoa formata a aparência da própria ficha, com cor,
+ * imagem e gif, e quem sabe CSS escreve CSS.
+ *
+ * Isto só é possível porque a Ficha é pintada por VARIÁVEL (ver `ficha.css`) e
+ * não por classe de cor do Tailwind. Um tema é, literalmente, um mapa de
+ * `--afty-*`, e um preset é um mapa pronto.
+ *
+ * Quatro camadas, da mais fácil para a mais livre:
+ *   1. PRESET      um clique
+ *   2. FORMULÁRIO  seletor de cor por token nomeado
+ *   3. IMAGEM      url de fundo, com opacidade e encaixe
+ *   4. CSS LIVRE   texto injetado num `<style>` dentro da raiz da Ficha
+ *
+ * ⚠ ONDE O TEMA MORA: em `creature.aparencia`, DENTRO da criatura (autor,
+ * 2026-08-05: *"quero mandar minha ficha bonitinha para os outros"*). Assim ele
+ * viaja no export e no import de graça, porque os dois copiam a criatura
+ * inteira. A chave local do armazenamento sobrou para duas coisas: as fichas
+ * temadas antes dessa mudança e o padrão GLOBAL. Ver `carregarTema`.
+ * ============================================================
+ */
+
+import { sufixoDeChave, sistemaDaFicha } from "../afty-sistema";
+
+const CHAVE_BASE = "fm_ficha_tema_afty_v1";
+const chaveDe = (id) => `${CHAVE_BASE}:${id || "sem-id"}`;
+
+/**
+ * ⚠ O PADRÃO GLOBAL é POR SISTEMA desde 2026-08-30, quando nasceu o `/Player`.
+ * A chave por ficha não precisa disso, porque o id de uma criatura nunca é o de
+ * um personagem. A global precisa: ela é literalmente uma chave só, e "quero
+ * todas as minhas fichas assim" dito no Grimório Afty não pode repintar as
+ * fichas de jogador sem ninguém pedir.
+ *
+ * `sufixoDeChave("afty")` devolve `_afty`, que é o que a chave já gravada usa,
+ * então o padrão global de quem já temou o grimório continua valendo.
+ */
+const chaveGlobal = (sistema) => `fm_ficha_tema${sufixoDeChave(sistema)}_v1:global`;
+
+/** Teto do CSS livre. Acima disto o editor avisa, e não impede. */
+export const CSS_MAX = 64 * 1024;
+
+/* ============================================================ */
+/* TODOS os tokens, com o valor padrão                          */
+/* ============================================================ */
+
+/**
+ * A lista completa das variáveis que a Ficha usa, com o valor de partida e o
+ * que cada uma pinta.
+ *
+ * ⚠ FONTE ÚNICA. Daqui saem três coisas que antes eram três cópias: a cor
+ * inicial do seletor do formulário, o preset Padrão e o prompt para a IA. Um
+ * assert lê o `ficha.css` e reprova se qualquer valor divergir, então esta lista
+ * não tem como envelhecer em silêncio.
+ */
+export const TOKENS_DOC = [
+  { id: "--afty-fundo", valor: "#060910", oque: "fundo da página" },
+  { id: "--afty-fundo-brilho", valor: "radial-gradient(120% 60% at 50% -10%, #7e22ce33, transparent 70%)", oque: "brilho por cima do fundo (aceita gradiente ou none)" },
+  { id: "--afty-card", valor: "#0f172a", oque: "fundo dos cartões e do cabeçalho" },
+  { id: "--afty-poco", valor: "#020617", oque: "fundo das linhas e dos campos, mais escuro que o cartão" },
+  { id: "--afty-borda", valor: "#1e293b", oque: "borda padrão" },
+  { id: "--afty-borda-forte", valor: "#334155", oque: "borda de botão e de chip" },
+  { id: "--afty-texto", valor: "#f1f5f9", oque: "texto principal e números" },
+  { id: "--afty-texto-suave", valor: "#94a3b8", oque: "rótulos e texto de regra" },
+  { id: "--afty-texto-fraco", valor: "#64748b", oque: "texto secundário, o mais apagado" },
+  { id: "--afty-destaque", valor: "#a855f7", oque: "a cor da marca: aba ativa, foco, realce" },
+  { id: "--afty-destaque-texto", valor: "#d8b4fe", oque: "texto sobre o destaque" },
+  { id: "--afty-destaque-fundo", valor: "#581c8766", oque: "fundo do destaque (com transparência)" },
+  { id: "--afty-pv", valor: "#f43f5e", oque: "a barra e o número de Vida" },
+  { id: "--afty-pe", valor: "#38bdf8", oque: "a barra e o número de Energia" },
+  { id: "--afty-pvtemp", valor: "#fbbf24", oque: "o pedaço de PV temporário na barra de Vida" },
+  { id: "--afty-alma", valor: "#e879f9", oque: "a barra e o número de Alma" },
+  { id: "--afty-cura", valor: "#34d399", oque: "os números de cura" },
+  { id: "--afty-aviso", valor: "#fbbf24", oque: "avisos e o triângulo de alerta" },
+  { id: "--afty-veu", valor: "rgb(0 0 0 / 0.55)", oque: "o véu atrás da busca e deste painel" },
+  { id: "--afty-raio", valor: "12px", oque: "arredondamento dos cartões" },
+  { id: "--afty-raio-peq", valor: "8px", oque: "arredondamento das linhas e botões" },
+  { id: "--afty-sombra", valor: "0 2px 10px rgb(0 0 0 / 0.45)", oque: "sombra dos cartões" },
+  { id: "--afty-fonte", valor: "ui-sans-serif, system-ui, \"Segoe UI\", Roboto, sans-serif", oque: "fonte de tudo" },
+  { id: "--afty-fonte-titulo", valor: "var(--afty-fonte)", oque: "fonte do nome da ficha e dos títulos" },
+  { id: "--afty-fonte-num", valor: "ui-monospace, Consolas, monospace", oque: "fonte dos números" },
+  { id: "--afty-imagem", valor: "none", oque: "imagem de fundo, como url(\"...\")" },
+  { id: "--afty-imagem-opacidade", valor: "0.25", oque: "opacidade da imagem de fundo, de 0 a 1" },
+  { id: "--afty-imagem-opacidade-ambiente", valor: "0.125", oque: "opacidade da mesma imagem atrás do corpo" },
+  { id: "--afty-imagem-opacidade-banner", valor: "0.15", oque: "opacidade da mesma imagem atrás do cabeçalho" },
+  { id: "--afty-imagem-encaixe", valor: "cover", oque: "background-size da imagem" },
+  { id: "--afty-imagem-posicao", valor: "center top", oque: "background-position da imagem" },
+];
+
+const PADRAO = Object.fromEntries(TOKENS_DOC.map((t) => [t.id, t.valor]));
+
+/* ============================================================ */
+/* Os tokens que o formulário mostra                            */
+/* ============================================================ */
+
+/**
+ * ⚠ É um RECORTE, e não a lista inteira do `TOKENS_DOC`. São 29 variáveis lá, e
+ * um formulário com 29 seletores de cor não é personalização, é planilha. As que
+ * ficaram de fora continuam alcançáveis pelo CSS livre, que é o lugar delas, e
+ * o prompt para a IA entrega TODAS.
+ */
+export const GRUPOS_DE_TOKEN = [
+  {
+    id: "superficie",
+    label: "Superfícies",
+    tokens: [
+      { id: "--afty-fundo", label: "Fundo" },
+      { id: "--afty-card", label: "Cartão" },
+      { id: "--afty-poco", label: "Poço" },
+      { id: "--afty-borda", label: "Borda" },
+    ],
+  },
+  {
+    id: "texto",
+    label: "Texto e Destaque",
+    tokens: [
+      { id: "--afty-texto", label: "Texto" },
+      { id: "--afty-texto-suave", label: "Texto Suave" },
+      { id: "--afty-destaque", label: "Destaque" },
+      { id: "--afty-destaque-texto", label: "Destaque Claro" },
+    ],
+  },
+  {
+    id: "recursos",
+    label: "Recursos",
+    tokens: [
+      { id: "--afty-pv", label: "Vida" },
+      { id: "--afty-pe", label: "Energia" },
+      { id: "--afty-alma", label: "Alma" },
+      { id: "--afty-cura", label: "Cura" },
+      { id: "--afty-aviso", label: "Aviso" },
+    ],
+  },
+];
+
+export const TOKENS_DE_COR = GRUPOS_DE_TOKEN.flatMap((g) => g.tokens.map((t) => t.id));
+
+export const FONTES = [
+  { id: "ui-sans-serif, system-ui, \"Segoe UI\", Roboto, sans-serif", label: "Do Sistema" },
+  { id: "Georgia, \"Times New Roman\", serif", label: "Serifada" },
+  { id: "ui-monospace, Consolas, monospace", label: "Monoespaçada" },
+  { id: "\"Trebuchet MS\", \"Segoe UI\", sans-serif", label: "Estreita" },
+];
+
+export const ENCAIXES = [
+  { id: "cover", label: "Preencher" },
+  { id: "contain", label: "Caber" },
+  { id: "auto", label: "Tamanho Real" },
+];
+
+/* ============================================================ */
+/* Presets                                                       */
+/* ============================================================ */
+
+/**
+ * ⚠ O preset PADRÃO não tem valores escritos à mão: ele é o recorte do
+ * `TOKENS_DOC` com os tokens que o formulário mostra. Era cópia até
+ * 2026-08-05, e cópia de 13 cores é divergência esperando acontecer.
+ */
+export const PRESETS = [
+  {
+    id: "padrao",
+    nome: "Padrão",
+    vars: Object.fromEntries(TOKENS_DE_COR.map((t) => [t, PADRAO[t]])),
+  },
+  {
+    id: "pergaminho",
+    nome: "Pergaminho",
+    vars: {
+      "--afty-fundo": "#efe6d3",
+      "--afty-fundo-brilho": "radial-gradient(120% 60% at 50% -10%, #c9a97a55, transparent 70%)",
+      "--afty-card": "#f8f2e4",
+      "--afty-poco": "#e7dbc2",
+      "--afty-borda": "#d5c4a1",
+      "--afty-borda-forte": "#b8a179",
+      "--afty-texto": "#2b2116",
+      "--afty-texto-suave": "#6b5a44",
+      "--afty-texto-fraco": "#93816a",
+      "--afty-destaque": "#8b5a2b",
+      "--afty-destaque-texto": "#5d3a17",
+      "--afty-destaque-fundo": "#d8bf9a66",
+      "--afty-pv": "#a52a2a",
+      "--afty-pe": "#2f6f8f",
+      "--afty-alma": "#7b4397",
+      "--afty-cura": "#3f7d3f",
+      "--afty-aviso": "#a86b00",
+      "--afty-veu": "rgb(60 45 25 / 0.45)",
+      "--afty-sombra": "0 2px 10px rgb(90 70 40 / 0.18)",
+      "--afty-fonte": "Georgia, \"Times New Roman\", serif",
+    },
+  },
+  {
+    id: "sangue",
+    nome: "Sangue",
+    vars: {
+      "--afty-fundo": "#0c0405",
+      "--afty-fundo-brilho": "radial-gradient(120% 60% at 50% -10%, #7f1d1d55, transparent 70%)",
+      "--afty-card": "#1a0a0d",
+      "--afty-poco": "#0a0304",
+      "--afty-borda": "#3b1418",
+      "--afty-borda-forte": "#5c1f26",
+      "--afty-texto": "#f7e9ea",
+      "--afty-texto-suave": "#c9a0a4",
+      "--afty-texto-fraco": "#8a6367",
+      "--afty-destaque": "#dc2626",
+      "--afty-destaque-texto": "#fca5a5",
+      "--afty-destaque-fundo": "#7f1d1d66",
+      "--afty-pv": "#ef4444",
+      "--afty-pe": "#f59e0b",
+      "--afty-alma": "#f472b6",
+      "--afty-cura": "#84cc16",
+    },
+  },
+  {
+    id: "abissal",
+    nome: "Abissal",
+    vars: {
+      "--afty-fundo": "#03080f",
+      "--afty-fundo-brilho": "radial-gradient(120% 60% at 50% -10%, #0e749055, transparent 70%)",
+      "--afty-card": "#0a1524",
+      "--afty-poco": "#020610",
+      "--afty-borda": "#14293f",
+      "--afty-borda-forte": "#1f4260",
+      "--afty-texto": "#e2f1ff",
+      "--afty-texto-suave": "#8fb3cc",
+      "--afty-texto-fraco": "#5b7d96",
+      "--afty-destaque": "#22d3ee",
+      "--afty-destaque-texto": "#a5f3fc",
+      "--afty-destaque-fundo": "#0e749066",
+      "--afty-pv": "#fb7185",
+      "--afty-pe": "#38bdf8",
+      "--afty-alma": "#c084fc",
+      "--afty-cura": "#2dd4bf",
+    },
+  },
+  {
+    id: "terminal",
+    nome: "Terminal",
+    vars: {
+      "--afty-fundo": "#050805",
+      "--afty-fundo-brilho": "none",
+      "--afty-card": "#0a120a",
+      "--afty-poco": "#030603",
+      "--afty-borda": "#14301a",
+      "--afty-borda-forte": "#1f4a28",
+      "--afty-texto": "#ccffcc",
+      "--afty-texto-suave": "#7fbf8a",
+      "--afty-texto-fraco": "#4f7a57",
+      "--afty-destaque": "#22c55e",
+      "--afty-destaque-texto": "#86efac",
+      "--afty-destaque-fundo": "#14532d66",
+      "--afty-pv": "#ff5555",
+      "--afty-pe": "#ffd166",
+      "--afty-alma": "#d3a4ff",
+      "--afty-cura": "#22c55e",
+      "--afty-raio": "4px",
+      "--afty-raio-peq": "3px",
+      "--afty-fonte": "ui-monospace, Consolas, monospace",
+    },
+  },
+];
+
+export const getPreset = (id) => PRESETS.find((p) => p.id === id) ?? PRESETS[0];
+
+/**
+ * A cor que o seletor mostra: o que o formulário mudou, senão o que o preset
+ * diz, senão o padrão. A cadeia é a mesma que o `cssDasVars` escreve, então o
+ * seletor nunca mostra uma cor diferente da que está na tela.
+ */
+export function corEfetiva(tema, token) {
+  const t = normalizaTema(tema);
+  return t.vars[token] ?? getPreset(t.presetId).vars[token] ?? PRESETS[0].vars[token] ?? "#000000";
+}
+
+/* ============================================================ */
+/* O tema                                                        */
+/* ============================================================ */
+
+export function temaEmBranco() {
+  return {
+    presetId: "padrao",
+    vars: {},                 // o que o formulário mudou, POR CIMA do preset
+    fonte: null,
+    raio: null,
+    imagem: { url: "", opacidade: 0.25, encaixe: "cover", posicao: "center top" },
+    css: "",
+    ligado: true,
+  };
+}
+
+export function normalizaTema(bruto) {
+  const base = temaEmBranco();
+  if (!bruto || typeof bruto !== "object") return base;
+  const img = bruto.imagem && typeof bruto.imagem === "object" ? bruto.imagem : {};
+  return {
+    ...base,
+    ...bruto,
+    presetId: getPreset(bruto.presetId).id,
+    vars: bruto.vars && typeof bruto.vars === "object" ? bruto.vars : {},
+    css: typeof bruto.css === "string" ? bruto.css : "",
+    ligado: bruto.ligado !== false,
+    imagem: {
+      ...base.imagem,
+      ...img,
+      url: typeof img.url === "string" ? img.url : "",
+      opacidade: Math.min(1, Math.max(0, Number(img.opacidade ?? base.imagem.opacidade) || 0)),
+      posicao: img.posicao === "center" ? "center top" : (img.posicao || base.imagem.posicao),
+    },
+  };
+}
+
+/**
+ * O tema de uma ficha, na ordem: o que está GRAVADO NA CRIATURA, o que sobrou
+ * na chave local (fichas temadas antes de 2026-08-05) e o padrão global.
+ *
+ * ⚠ O TEMA MORA NA CRIATURA desde 2026-08-05, a pedido do autor: *"quero mandar
+ * minha ficha bonitinha para os outros"*. Ele viaja no export e no import de
+ * graça, porque os dois copiam a criatura inteira. O risco que me fez começar
+ * pela chave separada (o Salvar do criador apagar o tema) não existe: o
+ * `update` do armazenamento faz MERGE, então um save que não conhece o campo
+ * `aparencia` preserva o que já estava lá.
+ */
+export function carregarTema(creature, id) {
+  if (creature?.aparencia) return normalizaTema(creature.aparencia);
+  try {
+    const proprio = localStorage.getItem(chaveDe(id));
+    if (proprio) return normalizaTema(JSON.parse(proprio));
+    const global = localStorage.getItem(chaveGlobal(sistemaDaFicha(creature)));
+    if (global) return normalizaTema(JSON.parse(global));
+  } catch { /* modo privado, cota, JSON corrompido: cai no padrão */ }
+  return temaEmBranco();
+}
+
+export function salvarTema(id, tema) {
+  try {
+    localStorage.setItem(chaveDe(id), JSON.stringify(tema));
+    return true;
+  } catch { return false; }
+}
+
+/** "Quero todas as minhas fichas assim." Assim daquele SISTEMA, e só dele. */
+export function salvarTemaGlobal(tema, sistema) {
+  try {
+    localStorage.setItem(chaveGlobal(sistema), JSON.stringify(tema));
+    return true;
+  } catch { return false; }
+}
+
+export function limparTema(id) {
+  try { localStorage.removeItem(chaveDe(id)); } catch { /* nada a quebrar */ }
+}
+
+/* ============================================================ */
+/* DENSIDADE                                                     */
+/* ============================================================ */
+
+/**
+ * Confortável ou compacta. Muda o quanto cada linha respira, e nada mais: nenhum
+ * número, nenhuma linha, nenhum texto some.
+ *
+ * ⚠ A densidade NÃO mora na criatura, ao contrário do tema. Ela é preferência de
+ * APARELHO e não de personagem: a mesma ficha quer compacta no tablet de mesa e
+ * confortável no monitor, e se viajasse no export chegaria imposta na tela dos
+ * outros. Por isso ela é uma chave global, e uma só.
+ */
+export const DENSIDADES = [
+  { id: "confortavel", label: "Confortável" },
+  { id: "compacta", label: "Compacta" },
+];
+
+const CHAVE_DENSIDADE = "fm_ficha_densidade_afty_v1";
+
+export function carregarDensidade() {
+  try {
+    const cru = localStorage.getItem(CHAVE_DENSIDADE);
+    if (DENSIDADES.some((d) => d.id === cru)) return cru;
+  } catch { /* modo privado: cai no padrão */ }
+  return "confortavel";
+}
+
+export function salvarDensidade(id) {
+  try {
+    localStorage.setItem(CHAVE_DENSIDADE, DENSIDADES.some((d) => d.id === id) ? id : "confortavel");
+    return true;
+  } catch { return false; }
+}
+
+/* ============================================================ */
+/* Do tema para o CSS                                            */
+/* ============================================================ */
+
+/**
+ * A url da imagem, saneada. Tira o que quebraria a declaração e permitiria sair
+ * do `url(...)` para escrever CSS por fora. Não é defesa contra atacante (o app
+ * é local e sem backend), é defesa contra url colada com aspas no meio.
+ */
+const urlSegura = (u) => String(u ?? "").trim().replace(/["'()\\;{}\s]/g, "");
+
+/**
+ * O seletor que a Ficha inteira usa. Sai daqui porque três coisas o repetiam (o
+ * bloco de variáveis, o `@scope` do CSS livre e o mapa da página do prompt), e a
+ * terceira cópia é sempre a que envelhece.
+ */
+export const ESCOPO_FICHA = "#afty-ficha";
+
+/**
+ * ⚠ A ÚLTIMA SAÍDA, e ela mora AQUI desde 2026-09-03. CSS livre permite
+ * escrever `* { display: none }` e se trancar para fora, e `?semcss=1` na URL
+ * desliga o tema antes de ele existir, sem depender de nenhum botão continuar
+ * clicável.
+ *
+ * Era um `const` local da `AftyFicha`, e por isso ela cobria só o CSS DA FICHA:
+ * o de cada invocação é montado na `AbaInvocacoes`, que nunca soube do
+ * parâmetro. Um shikigami com o CSS quebrado não tinha escape nenhum, e a aba
+ * ainda é usada pelo painel do Encontro, onde a `AftyFicha` nem entra. Uma
+ * constante de módulo serve os dois lados sem prop atravessando a árvore.
+ */
+export const SEM_CSS = typeof location !== "undefined"
+  && new URLSearchParams(location.search).has("semcss");
+
+/**
+ * O seletor de UM Shikigami dentro da Ficha (2026-08-31).
+ *
+ * ⚠ CADA INVOCAÇÃO TEM TEMA PRÓPRIO, a pedido do autor: *"na Ficha Final, cada
+ * Shikigami terá um CSS Personalizado próprio em sua ficha."* O mecanismo é o
+ * MESMO da ficha do dono, só que ancorado noutro nó: o tema da invocação é um
+ * `creature.aparencia` de bolso, e o `@scope` o prende à subárvore dela.
+ *
+ * Por ser mais específico que `#afty-ficha` e vir DEPOIS na folha, o tema da
+ * invocação ganha do tema do dono sem `!important` nenhum, que é exatamente o
+ * comportamento esperado: quem não temar o shikigami herda a ficha.
+ */
+export const escopoDaInvocacao = (id) => `#afty-inv-${id}`;
+
+/** As variáveis do tema, como um bloco de CSS. Preset primeiro, formulário por cima. */
+export function cssDasVars(tema, seletor = ESCOPO_FICHA) {
+  const t = normalizaTema(tema);
+  const linhas = [];
+  const põe = (k, v) => { if (v) linhas.push(`  ${k}: ${v};`); };
+
+  for (const [k, v] of Object.entries(getPreset(t.presetId).vars)) põe(k, v);
+  for (const [k, v] of Object.entries(t.vars)) põe(k, v);
+  põe("--afty-fonte", t.fonte);
+  põe("--afty-raio", t.raio);
+
+  const url = urlSegura(t.imagem.url);
+  if (url) {
+    const opacidade = t.imagem.opacidade;
+    põe("--afty-imagem", `url("${url}")`);
+    põe("--afty-imagem-opacidade", String(opacidade));
+    põe("--afty-imagem-opacidade-ambiente", String(opacidade * 0.5));
+    põe("--afty-imagem-opacidade-banner", String(opacidade * 0.6));
+    põe("--afty-imagem-encaixe", t.imagem.encaixe === "auto" ? "auto" : t.imagem.encaixe);
+    põe("--afty-imagem-posicao", t.imagem.posicao || "center top");
+  }
+
+  if (!linhas.length) return "";
+  return `${seletor} {\n${linhas.join("\n")}\n}`;
+}
+
+/**
+ * `@scope` isola o CSS do usuário na subárvore da Ficha. Chegou no Chrome, no
+ * Safari e no Firefox em 2024. ⚠ Sem ele o CSS VAZA para a página inteira, e o
+ * editor avisa em vez de fingir isolamento.
+ */
+export function escopoSuportado() {
+  return typeof window !== "undefined" && typeof window.CSSScopeRule !== "undefined";
+}
+
+/**
+ * Sanea o CSS livre. Duas remoções, e só duas:
+ *
+ *   • `@import` é a única regra que busca arquivo remoto por conta própria, e
+ *     ninguém precisa dela para pintar uma ficha.
+ *   • `</style` fecha o elemento e sai para o HTML.
+ *
+ * O resto passa. Isto NÃO é uma caixa de areia: quem escreve CSS na própria
+ * ficha pode se atrapalhar sozinho, e é para isso que existem o interruptor de
+ * desligar e o `?semcss=1`.
+ */
+export function saneiaCss(css) {
+  return String(css ?? "")
+    .replace(/@import[^;]*;?/gi, "")
+    .replace(/<\/style/gi, "");
+}
+
+/** O bloco final, já escopado quando o navegador sabe escopar. */
+export function cssDoUsuario(tema, seletor = ESCOPO_FICHA) {
+  const t = normalizaTema(tema);
+  if (!t.ligado) return "";
+  const limpo = saneiaCss(t.css).trim();
+  if (!limpo) return "";
+  return escopoSuportado() ? `@scope (${seletor}) {\n${limpo}\n}` : limpo;
+}
+
+/**
+ * O bloco inteiro (variáveis + CSS livre) de UMA invocação. Devolve string vazia
+ * para quem não tem tema próprio, que é o caso normal: sem tema, ela herda o da
+ * ficha do dono, e emitir um bloco com o preset padrão a arrancaria de lá.
+ */
+export function cssDaInvocacao(inv) {
+  if (!inv?.aparencia) return "";
+  const seletor = escopoDaInvocacao(inv.id);
+  return [cssDasVarsDaInvocacao(inv.aparencia, seletor), cssDoUsuario(inv.aparencia, seletor)]
+    .filter(Boolean)
+    .join("\n");
+}
+
+/**
+ * As variáveis de UMA INVOCAÇÃO. Parecida com a `cssDasVars`, e diferente numa
+ * coisa que muda tudo: ela emite só o que a invocação ESCOLHEU.
+ *
+ * ⚠ O TEMA DA INVOCAÇÃO É UM DELTA, e o da ficha é o tema inteiro. A ficha do
+ * dono não tem em cima de quem cair, então ela emite o preset resolvido. A
+ * invocação cai em cima da ficha, e emitir o preset resolvido ali significaria
+ * carimbar as 13 cores do padrão em quem só quis mudar uma.
+ *
+ * Achado na revisão de 2026-08-31, e era bug de verdade: a sub-aba Aparência do
+ * criador grava `{ css, ligado }` e mais nada, e o `normalizaTema` preenchia o
+ * `presetId` com "padrao" na leitura. Uma linha de CSS livre num shikigami
+ * arrancava ele do tema verde do dono e o devolvia roxo e ardósia, calado. É a
+ * mesma doença do efeito descartado calado, do outro lado: em vez de sumir, o
+ * valor APARECE sem ninguém ter pedido.
+ *
+ * ⚠ ESCOLHER "PADRÃO" NO PAINEL NÃO É ESCOLHER UM PRESET. O primeiro preset é o
+ * estado "sem preset meu", que é também o que o botão de limpar devolve. Só um
+ * preset NOMEADO e diferente dele carimba a paleta inteira, que é aí sim o
+ * pedido explícito de "quero este shikigami com outra cara".
+ */
+export function cssDasVarsDaInvocacao(bruto, seletor) {
+  const t = normalizaTema(bruto);
+  const linhas = [];
+  const põe = (k, v) => { if (v) linhas.push(`  ${k}: ${v};`); };
+
+  if (t.presetId !== PRESETS[0].id) {
+    for (const [k, v] of Object.entries(getPreset(t.presetId).vars)) põe(k, v);
+  }
+  for (const [k, v] of Object.entries(t.vars)) põe(k, v);
+  põe("--afty-fonte", t.fonte);
+  põe("--afty-raio", t.raio);
+
+  const url = urlSegura(t.imagem.url);
+  if (url) {
+    const opacidade = t.imagem.opacidade;
+    põe("--afty-imagem", `url("${url}")`);
+    põe("--afty-imagem-opacidade", String(opacidade));
+    põe("--afty-imagem-opacidade-ambiente", String(opacidade * 0.5));
+    põe("--afty-imagem-opacidade-banner", String(opacidade * 0.6));
+    põe("--afty-imagem-encaixe", t.imagem.encaixe === "auto" ? "auto" : t.imagem.encaixe);
+    põe("--afty-imagem-posicao", t.imagem.posicao || "center top");
+  }
+
+  if (!linhas.length) return "";
+  return `${seletor} {\n${linhas.join("\n")}\n}`;
+}
+
+/** O tema mexeu em alguma coisa? Decide se o bote salva-vidas aparece. */
+export const temCssLivre = (tema) => !!saneiaCss(tema?.css).trim();
+
+/**
+ * O PROMPT PARA A IA.
+ *
+ * Motivo (autor, 2026-08-05): quem quer a ficha bonita nem sempre sabe CSS, mas
+ * hoje qualquer pessoa tem um Claude ou um ChatGPT à mão. O que falta a essa IA
+ * é o CONTEXTO: ela não sabe que existe uma ficha do Afty, nem quais variáveis e
+ * classes ela pode mirar, e sem isso chuta seletor e escreve CSS que não pega em
+ * nada.
+ *
+ * Este texto entrega o contexto inteiro, e sai da MESMA fonte que a Ficha usa
+ * (`TOKENS_DOC` e `CONTRATO_DE_CLASSES`), então ele nunca descreve uma variável
+ * que deixou de existir.
+ */
+/**
+ * ⚠ `escopo` EXISTE PORQUE O MESMO PAINEL PINTA DUAS COISAS. O tema de um
+ * shikigami usa este painel inteiro (ver `AftyFicha`), e o CSS dele é injetado
+ * em `@scope (#afty-inv-<id>)`. Até 2026-09-03 o prompt dizia a raiz errada
+ * (`:scope#afty-ficha`, que ali dentro não casa com nada) e não citava uma
+ * classe sequer do cartão que a pessoa estava pintando.
+ */
+export function promptParaIA(tema, { escopo = ESCOPO_FICHA, nome = null } = {}) {
+  const t = normalizaTema(tema);
+  const naFicha = escopo === ESCOPO_FICHA;
+  const atual = saneiaCss(t.css).trim();
+  const tokens = TOKENS_DOC.map((x) => `  ${x.id}: ${x.valor};   /* ${x.oque} */`).join("\n");
+  const porGrupo = CONTRATO_DE_CLASSES.reduce((acc, c) => {
+    (acc[c.grupo] ??= []).push(`- \`${c.seletor}\` ${c.oque}`);
+    return acc;
+  }, {});
+  const classes = Object.entries(porGrupo)
+    .map(([grupo, linhas]) => `### ${grupo}\n${linhas.join("\n")}`).join("\n\n");
+  const atributos = ATRIBUTOS_DOC.map((a) => `- \`${a.seletor}\` ${a.oque}`).join("\n");
+
+  const alvo = naFicha
+    ? `É a ficha de personagem do "Grimório do Afty", um sistema de RPG próprio. A página já existe e está
+pronta: você NÃO escreve HTML nem JavaScript, só o CSS que muda a aparência dela.
+
+O CSS que você escrever é injetado dentro de \`@scope (${ESCOPO_FICHA}) { ... }\`, então ele afeta só a
+ficha e nada mais do site. Escreva os seletores normalmente, SEM repetir \`${ESCOPO_FICHA}\` na frente.`
+    : `É a ficha de personagem do "Grimório do Afty", um sistema de RPG próprio, e o alvo aqui é o cartão
+de UMA invocação${nome ? ` (${nome})` : ""} dentro dela. A página já existe e está pronta: você NÃO escreve HTML nem
+JavaScript, só o CSS que muda a aparência desse cartão.
+
+O CSS que você escrever é injetado dentro de \`@scope (${escopo}) { ... }\`, então ele afeta SÓ o cartão
+desta invocação. A ficha do dono, a fileira de cartões de cima e o painel de rolagens continuam com o
+tema que já têm, e um tema claro aqui convive com uma ficha escura em volta. Escreva os seletores
+normalmente, SEM repetir \`${escopo}\` na frente.`;
+
+  return `Você vai escrever CSS para personalizar uma ficha de RPG.
+
+## O contexto
+
+${alvo}
+
+## O mapa da página
+
+\`\`\`
+${MAPA_DA_PAGINA}
+\`\`\`
+
+**IMPORTANTE: o CORPO é a maior parte da ficha, e é onde o jogador passa o tempo.** Um tema que pinta só o
+cabeçalho fica pela metade e é o erro mais comum. Estilize também \`.afty-card\`, \`.afty-card-titulo\`,
+\`.afty-linha\`, \`.afty-valor\`, \`.afty-texto\` e \`.afty-aba\`.
+
+## O jeito CERTO de mudar cor
+
+Quase tudo na ficha é pintado por VARIÁVEL CSS. Trocar a variável repinta de uma vez tudo que a usa,
+no cabeçalho E no corpo. Comece SEMPRE por aqui, e só depois vá para classe específica.
+
+${naFicha
+    ? `**IMPORTANTE: copie o seletor abaixo exatamente como está, com as duas linhas.** Dentro de \`@scope\` um
+\`${ESCOPO_FICHA}\` sozinho NÃO acerta a raiz (o escopo o transforma em "um ${ESCOPO_FICHA} dentro do
+${ESCOPO_FICHA}", que não existe), e \`:scope\` sozinho perde para o painel de Aparência. \`:scope${ESCOPO_FICHA}\`
+acerta e vence; a segunda linha é para o navegador que ainda não tem \`@scope\`.
+
+\`\`\`css
+:scope${ESCOPO_FICHA},
+${ESCOPO_FICHA}${ESCOPO_FICHA} {
+${tokens}
+}
+\`\`\``
+    : `**IMPORTANTE: a raiz do cartão é \`:scope\`, e o \`color\` vai JUNTO das variáveis.** A cor de texto
+padrão é resolvida lá na raiz da ficha, e o que se herda daqui para baixo é a cor já CALCULADA e não a
+variável: trocar \`--afty-texto\` sem escrever \`color\` deixa todo nome de linha na cor antiga, e num
+tema claro eles somem no fundo.
+
+\`\`\`css
+:scope {
+  color: var(--afty-texto);
+${tokens}
+}
+\`\`\``}
+
+**Nesse bloco vão SÓ as variáveis desta lista.** Ele é forte de propósito, e uma variável de componente
+escrita ali (como \`--afty-vital-cor\`) atropelaria a cor que cada recurso define por conta própria.
+
+## Os seletores disponíveis
+
+Estes nomes são um contrato e não mudam. Qualquer outra classe que você veja inspecionando a página
+(as do Tailwind, por exemplo) pode sumir na próxima atualização, então não mire nelas.
+
+${classes}
+
+### Atributos
+${atributos}
+
+## Regras
+
+1. Responda SÓ com o CSS, sem explicação em volta e sem cerca de markdown.
+2. \`@import\` é removido automaticamente e \`@font-face\` não vale dentro de \`@scope\`, então fonte
+   baixada não funciona de jeito nenhum. Use as famílias que já estão no sistema do usuário, e
+   compense na ESCALA: um nome de criatura grande vale mais que uma fonte exótica.
+3. Imagem e gif entram por URL pública: \`background-image: url("https://...")\`. Não use data URI,
+   que estoura o armazenamento do navegador.
+4. Não esconda a ficha inteira, e não mexa em \`position\` do cabeçalho: ele gruda no topo de
+   propósito, e encolhe sozinho ao rolar.
+5. **IMPORTANTE: não ponha \`overflow\` em \`.afty-card\` nem em \`.afty-linha\`.** O painel que explica os
+   números abre a partir de dentro deles, e o corte o decapita. Para arredondar canto, use
+   \`border-radius\` no próprio elemento, que já basta. Pelo mesmo motivo, não ponha \`z-index\` nesses
+   dois, e não ponha \`transform\`, \`filter\`, \`backdrop-filter\`, \`contain\` nem \`will-change\` na raiz
+   \`#afty-ficha\`: qualquer um deles prende o painel e ele passa a abrir no lugar errado.
+6. Cuide do CONTRASTE. Se escurecer o fundo, clareie \`--afty-texto\` e \`--afty-texto-suave\` junto.
+   Repare em \`--afty-texto-fraco\`, que é o mais apagado e é a cor da perícia não treinada.
+7. Não use \`!important\`. Este CSS vence a folha do app sem ele. O que ele NÃO vence é estilo escrito
+   direto no elemento, e alguns pontos da ficha escrevem cor assim: nesses, o único jeito de mudar a
+   cor é trocar a VARIÁVEL que eles usam, e é mais um motivo para começar pelo bloco de tokens.
+8. Não pinte a barra de recurso por \`background\`. \`.afty-vital-barra\` já é um gradiente montado a
+   partir da cor do recurso, e escrever \`background\` ou \`background-image\` nela apaga o gradiente e
+   deixa a barra INVISÍVEL. Para trocar a cor das barras, mexa em \`--afty-pv\`, \`--afty-pe\`,
+   \`--afty-alma\` e \`--afty-pvtemp\`.
+9. Mantenha o resultado abaixo de 64 KB.
+
+## O que eu quero
+
+(Descreva aqui o visual que você quer. Por exemplo: "um tema de vitral gótico, roxo e dourado, com
+bordas grossas e fonte serifada".)
+
+## O CSS que já está na minha ficha
+
+${atual ? `\`\`\`css\n${atual}\n\`\`\`` : "(nenhum, estou começando do zero)"}
+`;
+}
+
+/**
+ * As classes que o CSS do usuário pode mirar. É um CONTRATO: estes nomes não
+ * mudam. Classe do Tailwind não é API, e quem mirar nela assume o risco.
+ *
+ * ⚠ A lista era de 17 entradas até 2026-08-06, quase todas do CABEÇALHO, e o
+ * resultado apareceu na prática: as IAs devolviam CSS que pintava só o topo da
+ * ficha e não descia para as abas. Não era burrice do modelo, era o contrato que
+ * não contava que existia um corpo. Agora ela cobre as 45 classes de verdade,
+ * agrupadas, e o `MAPA_DA_PAGINA` mostra onde cada uma vive.
+ */
+export const CONTRATO_DE_CLASSES = [
+  /* ---------- estrutura ---------- */
+  { grupo: "Estrutura", seletor: "#afty-ficha", oque: "a raiz de tudo" },
+  { grupo: "Estrutura", seletor: ".afty-cabecalho", oque: "a faixa fixa do topo" },
+  { grupo: "Estrutura", seletor: ".afty-abas", oque: "a barra de abas" },
+  { grupo: "Estrutura", seletor: ".afty-aba", oque: "cada aba (a ativa tem aria-selected=\"true\")" },
+
+  /* ---------- cabeçalho ---------- */
+  { grupo: "Cabeçalho", seletor: ".afty-nome", oque: "o nome da ficha" },
+  { grupo: "Cabeçalho", seletor: ".afty-cabecalho-conteudo", oque: "a grade do cabeçalho: o conteúdo à esquerda e o retrato à direita" },
+  { grupo: "Cabeçalho", seletor: ".afty-cabecalho-principal", oque: "a coluna do conteúdo, sem o retrato" },
+  { grupo: "Cabeçalho", seletor: ".afty-retrato-painel", oque: "a moldura vertical do retrato, só em tablet e desktop" },
+  { grupo: "Cabeçalho", seletor: ".afty-retrato", oque: "a imagem do retrato dentro da moldura" },
+  { grupo: "Cabeçalho", seletor: ".afty-chip", oque: "as marcas: Tipo, Patamar, ND, Rodada" },
+  { grupo: "Cabeçalho", seletor: ".afty-controles", oque: "a fileira de botões: densidade, aparência, busca, rodada, descanso, editar" },
+  { grupo: "Cabeçalho", seletor: ".afty-vital", oque: "a caixa de um recurso" },
+  { grupo: "Cabeçalho", seletor: ".afty-vital-icone", oque: "o ícone do recurso" },
+  { grupo: "Cabeçalho", seletor: ".afty-vital-rotulo", oque: "o nome do recurso" },
+  { grupo: "Cabeçalho", seletor: ".afty-vital-numero", oque: "o número grande, que é um campo" },
+  { grupo: "Cabeçalho", seletor: ".afty-vital-max", oque: "o \"/ 210\" ao lado" },
+  { grupo: "Cabeçalho", seletor: ".afty-vital-temp", oque: "o PV temporário" },
+  { grupo: "Cabeçalho", seletor: ".afty-vital-trilho", oque: "o sulco da barra" },
+  { grupo: "Cabeçalho", seletor: ".afty-vital-barra", oque: "o preenchimento da barra" },
+  /* Guarda Inabalável: só existe no Calamidade e no Beyond, então quem pinta um
+     tema para uma criatura Comum nunca vê esta tira. Fica listada mesmo assim,
+     senão o tema do chefe é feito no escuro. */
+  { grupo: "Cabeçalho", seletor: ".afty-guarda", oque: "a tira da Guarda Inabalável (só Calamidade e Beyond)" },
+  { grupo: "Cabeçalho", seletor: ".afty-guarda-valor", oque: "o bônus corrente de CA e TR" },
+  { grupo: "Cabeçalho", seletor: ".afty-guarda-vida", oque: "a Vida Temporária da Guarda" },
+  { grupo: "Cabeçalho", seletor: ".afty-guarda-quebrada", oque: "a palavra \"Quebrada\"" },
+  { grupo: "Cabeçalho", seletor: ".afty-guarda-botao", oque: "os botões Golpe e Raio Negro" },
+  { grupo: "Cabeçalho", seletor: ".afty-stats", oque: "a grade das defesas" },
+  { grupo: "Cabeçalho", seletor: ".afty-stat", oque: "cada célula de defesa" },
+  { grupo: "Cabeçalho", seletor: ".afty-stat-rotulo", oque: "o nome da defesa" },
+  { grupo: "Cabeçalho", seletor: ".afty-stat-valor", oque: "o número da defesa" },
+
+  /* ---------- corpo ---------- */
+  { grupo: "Corpo", seletor: ".afty-card", oque: "cada bloco do corpo, em TODAS as abas" },
+  { grupo: "Corpo", seletor: ".afty-card-titulo", oque: "o título do bloco" },
+  { grupo: "Corpo", seletor: ".afty-atributo", oque: "a célula de um atributo, na aba Perícias" },
+  { grupo: "Corpo", seletor: ".afty-atributo-rotulo", oque: "a abreviação do atributo" },
+  { grupo: "Corpo", seletor: ".afty-atributo-valor", oque: "o valor do atributo" },
+  { grupo: "Corpo", seletor: ".afty-atributo-mod", oque: "o modificador, que é a pastilha que rola" },
+  { grupo: "Corpo", seletor: ".afty-subabas", oque: "a fileira de divisões de um bloco (uma por Especialização, três nos Níveis Lendários)" },
+  { grupo: "Corpo", seletor: ".afty-subaba", oque: "cada divisão. A aberta tem aria-selected=\"true\"" },
+  { grupo: "Corpo", seletor: ".afty-subaba-conta", oque: "quantos itens a divisão tem" },
+  { grupo: "Corpo", seletor: ".afty-linha", oque: "cada linha de lista dentro do bloco" },
+  { grupo: "Corpo", seletor: ".afty-rotulo", oque: "o texto secundário da linha" },
+  { grupo: "Corpo", seletor: ".afty-valor", oque: "todo número derivado" },
+  { grupo: "Corpo", seletor: ".afty-rolavel", oque: "número que ROLA ao clique" },
+  { grupo: "Corpo", seletor: ".afty-texto", oque: "o texto de regra do livro" },
+  { grupo: "Corpo", seletor: ".afty-opcao", oque: "a opção escolhida dentro de uma habilidade" },
+  { grupo: "Corpo", seletor: ".afty-estrela", oque: "o botão de fixar no Rápido" },
+  { grupo: "Corpo", seletor: ".afty-vazio", oque: "o texto de lista vazia" },
+
+  /* ---------- a expansão de domínio ----------
+     ⚠ ENTROU EM 2026-09-11, quando a seção deixou de ser um parágrafo só. O
+     texto de regra dela continua levando `.afty-texto`, e estas são as peças do
+     desenho novo. */
+  { grupo: "Expansão de Domínio", seletor: ".afty-dominio-cabeca", oque: "a linha de uma expansão, e também a da Parede de Barreira" },
+  { grupo: "Expansão de Domínio", seletor: ".afty-dominio-numeros", oque: "o grupo de números à direita da linha" },
+  { grupo: "Expansão de Domínio", seletor: ".afty-dominio-corpo", oque: "o que abre embaixo da linha" },
+  { grupo: "Expansão de Domínio", seletor: ".afty-dominio-efeito-titulo", oque: "o nome de cada efeito da expansão" },
+  { grupo: "Expansão de Domínio", seletor: ".afty-dominio-secao", oque: "os títulos pequenos Aparência e Toda Expansão" },
+  { grupo: "Expansão de Domínio", seletor: ".afty-dominio-base", oque: "a grade dos efeitos de toda expansão" },
+
+  /* ---------- a invocação ----------
+     ⚠ ENTROU EM 2026-09-03, e a falta delas era um buraco de verdade: o painel
+     de Aparência de um SHIKIGAMI é o mesmo painel da ficha, então quem pedia um
+     tema para uma invocação recebia um contrato que não citava uma classe sequer
+     do cartão que ele estava pintando. */
+  { grupo: "Invocação", seletor: ".afty-inv-ficha", oque: "o cartão da invocação selecionada. É a raiz do CSS de um shikigami" },
+  { grupo: "Invocação", seletor: ".afty-inv-cabeca", oque: "a faixa de identidade: retrato, nome, grau, tipo e custo" },
+  { grupo: "Invocação", seletor: ".afty-inv-titulo", oque: "o nome da invocação" },
+  { grupo: "Invocação", seletor: ".afty-inv-cabeca-marcas", oque: "a fileira de grau, tipo e custo, embaixo do nome" },
+  { grupo: "Invocação", seletor: ".afty-inv-retrato-icone", oque: "o retrato quadrado ao lado do nome" },
+  { grupo: "Invocação", seletor: ".afty-inv-corpo", oque: "tudo abaixo da faixa" },
+  { grupo: "Invocação", seletor: ".afty-inv-stats", oque: "a tira de Defesa, Desloc., CD, RD e Tamanho" },
+  { grupo: "Invocação", seletor: ".afty-inv-colunas", oque: "a grade de duas colunas do corpo" },
+  { grupo: "Invocação", seletor: ".afty-inv-coluna", oque: "cada uma das duas colunas" },
+  { grupo: "Invocação", seletor: ".afty-inv-bloco", oque: "cada seção dentro de uma coluna" },
+  { grupo: "Invocação", seletor: ".afty-inv-duplo", oque: "a lista que vira duas colunas quando cabe (testes e características)" },
+  { grupo: "Invocação", seletor: ".afty-inv-bonus", oque: "a linha de um auxílio" },
+  { grupo: "Invocação", seletor: ".afty-inv-bonus-botao", oque: "o auxílio que liga e desliga (o ligado tem data-afty-ligado=\"sim\")" },
+  { grupo: "Invocação", seletor: ".afty-inv-lampada", oque: "o ponto que acende no auxílio ligado" },
+  { grupo: "Invocação", seletor: ".afty-inv-fileira", oque: "a fileira de cartões de cima. FICA FORA do escopo de um shikigami" },
+  { grupo: "Invocação", seletor: ".afty-inv-cartao", oque: "cada cartão da fileira. Também fora do escopo de um shikigami" },
+
+  /* ---------- Espinho (Addon) ---------- */
+  { grupo: "Espinho", seletor: ".afty-espinho", oque: "o card das Almas, na aba Habilidades. Tem paleta PRÓPRIA nos tokens --espinho-* (troque-os aqui), e não lê os --afty-*" },
+  { grupo: "Espinho", seletor: ".afty-espinho-casca", oque: "a caixa do card, que recorta o brilho de dentro" },
+  { grupo: "Espinho", seletor: ".afty-espinho-titulo", oque: "o título vazado" },
+  { grupo: "Espinho", seletor: ".afty-espinho-cristal", oque: "o cristal das Almas Restantes" },
+  { grupo: "Espinho", seletor: ".afty-espinho-marca", oque: "cada compra listada" },
+  { grupo: "Espinho", seletor: ".afty-espinho-rachadura", oque: "as rachaduras que escapam da borda" },
+  /* A Lanterna Coletora de Almas é o MESMO card com a raiz marcada: as classes
+     acima valem nela também, e a paleta azul troca os mesmos --espinho-*. */
+  { grupo: "Espinho", seletor: ".afty-lanterna", oque: "o card quando é a Lanterna Coletora de Almas (a raiz, junto de .afty-espinho). A paleta azul mora aqui, nos mesmos tokens --espinho-*" },
+  { grupo: "Espinho", seletor: ".afty-lanterna-imagem", oque: "a lanterna das Almas Restantes" },
+  { grupo: "Espinho", seletor: ".afty-lanterna-chamas", oque: "as chamas que saem da borda de cima" },
+
+  /* ---------- controles ---------- */
+  { grupo: "Controles", seletor: ".afty-botao", oque: "todo botão de texto" },
+  { grupo: "Controles", seletor: ".afty-passo", oque: "os botões de menos e mais" },
+  { grupo: "Controles", seletor: ".afty-campo", oque: "campo de texto" },
+  { grupo: "Controles", seletor: ".afty-cor", oque: "o seletor de cor" },
+  { grupo: "Controles", seletor: ".afty-canal-gatilho", oque: "o botão que abre a lista de canais, na aba Buffs" },
+  { grupo: "Controles", seletor: ".afty-canal-painel", oque: "a lista de canais aberta, em colunas" },
+  { grupo: "Controles", seletor: ".afty-canal-grupo", oque: "o nome de um grupo de canais" },
+  { grupo: "Controles", seletor: ".afty-canal-item", oque: "cada canal da lista" },
+
+  /* ---------- camadas que flutuam ---------- */
+  { grupo: "Camadas", seletor: ".afty-fontes", oque: "o painel que explica um número" },
+  { grupo: "Camadas", seletor: ".afty-fonte-secao", oque: "o cabeçalho de uma pilha dentro dele, com o subtotal" },
+  { grupo: "Camadas", seletor: ".afty-fonte-linha", oque: "uma parcela dentro dele" },
+  { grupo: "Camadas", seletor: ".afty-fonte-rotulo", oque: "o nome da parcela" },
+  { grupo: "Camadas", seletor: ".afty-fonte-valor", oque: "o valor da parcela" },
+  { grupo: "Camadas", seletor: ".afty-fonte-total", oque: "a linha do total" },
+  { grupo: "Camadas", seletor: ".afty-log", oque: "a barra de rolagens, abaixo das abas" },
+  { grupo: "Camadas", seletor: ".afty-log-topo", oque: "os controles de modo da rolagem" },
+  { grupo: "Camadas", seletor: ".afty-log-ultima", oque: "a última rolagem na barra" },
+  { grupo: "Camadas", seletor: ".afty-log-historico", oque: "o botão que abre o histórico" },
+  { grupo: "Camadas", seletor: ".afty-log-corpo-topo", oque: "o cabeçalho do histórico aberto" },
+  { grupo: "Camadas", seletor: ".afty-log-corpo", oque: "a lista de rolagens" },
+  { grupo: "Camadas", seletor: ".afty-log-modo", oque: "os botões de vantagem" },
+  { grupo: "Camadas", seletor: ".afty-rolagem", oque: "uma rolagem no histórico" },
+  { grupo: "Camadas", seletor: ".afty-rolagem-total", oque: "o resultado dela" },
+  { grupo: "Camadas", seletor: ".afty-dado", oque: "cada dado que caiu" },
+  { grupo: "Camadas", seletor: ".afty-busca-fundo", oque: "o véu da busca" },
+  { grupo: "Camadas", seletor: ".afty-busca", oque: "a caixa da busca" },
+  { grupo: "Camadas", seletor: ".afty-busca-item", oque: "cada resultado" },
+];
+
+/** Os atributos que dão alvo mais fino que a classe. */
+export const ATRIBUTOS_DOC = [
+  { seletor: "[data-afty-vital=\"pv\"]", oque: "a barra de Vida. Também `pe` e `alma`" },
+  { seletor: "[data-afty-nivel=\"critico\"]", oque: "recurso abaixo de um quarto. Também `baixo`" },
+  { seletor: "[data-afty-stat=\"defesa\"]", oque: "uma defesa nomeada: cd, rd-geral, rd-especifica, rd-alma, rd-fisica, movimento, iniciativa, atencao, res-parcial, maestria, preparo" },
+  { seletor: "[data-afty-aba=\"acoes\"]", oque: "uma aba: acoes, habilidades, pericias, equipamentos, invocacoes, buffs" },
+  { seletor: "[data-afty-tom=\"destaque\"]", oque: "variante de chip, botão ou valor. Também `aviso`, `dano`, `cura`, `custo`" },
+  { seletor: "[data-afty-destacada=\"sim\"]", oque: "a linha do Ataque Básico e a perícia de Mestre" },
+  { seletor: "[data-afty-alvo=\"sim\"]", oque: "a linha para onde a busca acabou de navegar" },
+  { seletor: "[data-afty-marca=\"critico\"]", oque: "uma rolagem crítica no histórico. Também `pifia`" },
+  { seletor: "[data-afty-compacto=\"sim\"]", oque: "o cabeçalho depois de rolar a página" },
+  { seletor: "[data-afty-atributo=\"forca\"]", oque: "um atributo: forca, destreza, constituicao, inteligencia, sabedoria, presenca (as chaves não têm acento)" },
+  { seletor: "[data-afty-carga=\"baixo\"]", oque: "o cartão de Carga com a ficha sobrecarregada. Também `critico` acima do máximo" },
+  { seletor: "[data-afty-com-retrato=\"sim\"]", oque: "o cabeçalho de uma ficha QUE TEM retrato" },
+  { seletor: "[data-afty-subaba]", oque: "uma divisão de bloco pelo id dela: a Especialização, ou melhoria, lendaria e apice" },
+  { seletor: "[data-afty-densidade=\"compacta\"]", oque: "a raiz quando o jogador pediu menos respiro. Também `confortavel`" },
+];
+
+/**
+ * O mapa da página, para a IA saber que existe um CORPO.
+ *
+ * ⚠ Sem isto o modelo escreve CSS só para o que ele consegue imaginar, e o que
+ * ele imagina é o topo da ficha, porque é o que o contrato descrevia.
+ */
+export const MAPA_DA_PAGINA = `#afty-ficha                     a raiz
+├── .afty-cabecalho             gruda no topo e ENCOLHE ao rolar
+│   ├── .afty-cabecalho-conteudo   grade: conteúdo à esquerda, retrato à direita
+│   │   ├── .afty-nome + vários .afty-chip
+│   │   └── .afty-retrato-painel > .afty-retrato   (tablet e desktop)
+│   ├── 3 × .afty-vital         Vida, Energia e Alma, lado a lado
+│   │   ├── .afty-vital-icone .afty-vital-rotulo .afty-vital-numero .afty-vital-max
+│   │   └── .afty-vital-trilho > .afty-vital-barra
+│   ├── .afty-guarda            a Guarda Inabalável, só no Calamidade e no Beyond
+│   │   ├── .afty-guarda-valor .afty-guarda-vida .afty-guarda-quebrada
+│   │   └── .afty-guarda-controles > .afty-guarda-botao
+│   ├── .afty-stats             grade de .afty-stat (Defesa, CD, RD, Movimento...)
+│   └── .afty-abas > .afty-aba  Ações · Habilidades · Perícias · Equipamentos ·
+│                                Invocações · Buffs
+│
+├── <main>                      O CORPO. É a maior parte da ficha.
+│   ├── aba AÇÕES         vários .afty-card (Rápido, Dano, Cura, Feitiços, Manobras),
+│   │                     cada um com .afty-card-titulo e muitas .afty-linha
+│   ├── aba HABILIDADES   um .afty-card por grupo (Origem, Especialização, Talentos,
+│   │                     Gerais, Aptidões, Níveis Lendários). A .afty-linha abre e
+│   │                     revela .afty-texto (o texto do livro) e .afty-opcao.
+│   │                     Os grupos grandes têm .afty-subabas > .afty-subaba: uma
+│   │                     por Especialização, e três nos Níveis Lendários
+│   ├── aba PERÍCIAS      .afty-atributo (os seis), depois .afty-card por tipo de
+│   │                     teste, com .afty-linha em duas colunas
+│   ├── aba EQUIPAMENTOS  a Carga, os avisos e o inventário em .afty-subabas
+│   └── aba BUFFS         .afty-card de Estados, Buffs e Condições
+│
+├── .afty-log                   painel de rolagens, fixo no canto de baixo
+└── .afty-fontes                painel flutuante que explica um número`;

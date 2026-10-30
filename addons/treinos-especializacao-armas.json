@@ -5,6 +5,8 @@
   "autor": "Templas",
   "paraRaw": "afty",
   "descricao": "Uma única Linha de Treinamento, generalista: os bônus valem com QUALQUER arma. Soma TODOS os buffs numéricos das 3 linhas originais (Técnicas de Arremesso + Especialista em Perfuração + Vigilância Perfurante) em 4 etapas + Completo — total final: +5 Nível de Dano, +2 de dano fixo, +4 em Acerto, +3 em Percepção, +1 de Margem Crítica.",
+  "resumo": "Treino único para qualquer arma: +5 Nível de Dano, +2 de dano fixo e +4 no acerto",
+  "categoria": "treinos",
   "acrescenta": {
     "treinamentos": [
       {

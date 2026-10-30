@@ -1,0 +1,562 @@
+{
+  "id": "talentos-h-corp",
+  "nome": "Talentos da H Corp",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Os poderes da Origem H Corp como Talentos Gerais, para qualquer ficha que instale o Addon, de qualquer Origem. Boulos (+1 em Força, Destreza e Constituição, mais 2 Pontos nos atributos físicos, escolhidos no card do Talento) e Zodíaco (um dos 12 animais, com o interruptor Zodíaco na Simulação de Combate e na aba Buffs, que leva o atributo do animal a 30, ou a 32 se ele já estiver em 30). O uso por cena e as três rodadas se controlam na mesa. Não precisa do Addon H Corp. Vale nos dois sistemas. Precisa do app com o limite de atributo de combate (2026-10-12).",
+  "resumo": "Boulos e Zodíaco da H Corp como Talentos Gerais, para qualquer origem",
+  "categoria": "talentos",
+  "estadosCombate": [
+    {
+      "id": "zodiaco",
+      "label": "Zodíaco",
+      "tipo": "bool",
+      "title": "Uma vez por cena, como Ação Livre, por três rodadas",
+      "requerEscolha": [
+        "hct_zodiaco_rato",
+        "hct_zodiaco_boi",
+        "hct_zodiaco_tigre",
+        "hct_zodiaco_coelho",
+        "hct_zodiaco_dragao",
+        "hct_zodiaco_serpente",
+        "hct_zodiaco_cavalo",
+        "hct_zodiaco_cabra",
+        "hct_zodiaco_macaco",
+        "hct_zodiaco_galo",
+        "hct_zodiaco_cao",
+        "hct_zodiaco_porco"
+      ]
+    }
+  ],
+  "acrescenta": {
+    "talentos": [
+      {
+        "id": "tal_boulos",
+        "nome": "Boulos",
+        "grupo": "geral",
+        "descricao": "Por ser alguém que teve contato com a singularidade da H Corp, você tem seus valores de Força, Destreza e Constituição aumentados em 1. Além de receber 2 Pontos adicionais para distribuir entre seus atributos físicos.",
+        "efeitos": [
+          {
+            "canal": "atributo",
+            "alvo": "forca",
+            "expr": "1",
+            "nome": "Boulos"
+          },
+          {
+            "canal": "atributo",
+            "alvo": "destreza",
+            "expr": "1",
+            "nome": "Boulos"
+          },
+          {
+            "canal": "atributo",
+            "alvo": "constituicao",
+            "expr": "1",
+            "nome": "Boulos"
+          }
+        ],
+        "escolha": {
+          "id": "hct_boulos_pontos",
+          "label": "Pontos Físicos",
+          "opcoes": [
+            {
+              "id": "hct_boulos_forca",
+              "nome": "Força +2",
+              "descricao": "Os 2 Pontos adicionais vão para Força.",
+              "efeitos": [
+                {
+                  "canal": "atributo",
+                  "alvo": "forca",
+                  "expr": "2",
+                  "nome": "Boulos"
+                }
+              ]
+            },
+            {
+              "id": "hct_boulos_forca_destreza",
+              "nome": "Força +1 e Destreza +1",
+              "descricao": "Os 2 Pontos adicionais vão para Força e Destreza.",
+              "efeitos": [
+                {
+                  "canal": "atributo",
+                  "alvo": "forca",
+                  "expr": "1",
+                  "nome": "Boulos"
+                },
+                {
+                  "canal": "atributo",
+                  "alvo": "destreza",
+                  "expr": "1",
+                  "nome": "Boulos"
+                }
+              ]
+            },
+            {
+              "id": "hct_boulos_forca_constituicao",
+              "nome": "Força +1 e Constituição +1",
+              "descricao": "Os 2 Pontos adicionais vão para Força e Constituição.",
+              "efeitos": [
+                {
+                  "canal": "atributo",
+                  "alvo": "forca",
+                  "expr": "1",
+                  "nome": "Boulos"
+                },
+                {
+                  "canal": "atributo",
+                  "alvo": "constituicao",
+                  "expr": "1",
+                  "nome": "Boulos"
+                }
+              ]
+            },
+            {
+              "id": "hct_boulos_destreza",
+              "nome": "Destreza +2",
+              "descricao": "Os 2 Pontos adicionais vão para Destreza.",
+              "efeitos": [
+                {
+                  "canal": "atributo",
+                  "alvo": "destreza",
+                  "expr": "2",
+                  "nome": "Boulos"
+                }
+              ]
+            },
+            {
+              "id": "hct_boulos_destreza_constituicao",
+              "nome": "Destreza +1 e Constituição +1",
+              "descricao": "Os 2 Pontos adicionais vão para Destreza e Constituição.",
+              "efeitos": [
+                {
+                  "canal": "atributo",
+                  "alvo": "destreza",
+                  "expr": "1",
+                  "nome": "Boulos"
+                },
+                {
+                  "canal": "atributo",
+                  "alvo": "constituicao",
+                  "expr": "1",
+                  "nome": "Boulos"
+                }
+              ]
+            },
+            {
+              "id": "hct_boulos_constituicao",
+              "nome": "Constituição +2",
+              "descricao": "Os 2 Pontos adicionais vão para Constituição.",
+              "efeitos": [
+                {
+                  "canal": "atributo",
+                  "alvo": "constituicao",
+                  "expr": "2",
+                  "nome": "Boulos"
+                }
+              ]
+            }
+          ]
+        },
+        "requisitos": []
+      },
+      {
+        "id": "tal_zodiaco",
+        "nome": "Zodíaco",
+        "grupo": "geral",
+        "descricao": "Você escolhe um animal do Zodíaco Chinês durante a criação. Uma vez por cena, você pode como Ação Livre aumentar um Atributo para 30 por três rodadas. Caso ele já esteja em 30, quebra o limite chegando em 32.",
+        "escolha": {
+          "id": "hct_zodiaco_animal",
+          "label": "Animal do Zodíaco",
+          "opcoes": [
+            {
+              "id": "hct_zodiaco_rato",
+              "nome": "Rato (Inteligência)",
+              "descricao": "Astuto e engenhoso, o Rato acha a saída que ninguém viu. O Zodíaco aumenta a sua Inteligência.",
+              "efeitos": [
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "inteligencia",
+                  "expr": "10",
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Rato"
+                },
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "inteligencia",
+                  "expr": "2 * (inteligencia >= 30)",
+                  "furaTeto": true,
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Rato"
+                },
+                {
+                  "canal": "atributo",
+                  "alvo": "inteligencia",
+                  "expr": "max(30 - inteligencia, 0) + 2 * (inteligencia >= 30)",
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Rato"
+                }
+              ]
+            },
+            {
+              "id": "hct_zodiaco_boi",
+              "nome": "Boi (Constituição)",
+              "descricao": "Paciente e incansável, o Boi aguenta o peso que derruba os outros. O Zodíaco aumenta a sua Constituição.",
+              "efeitos": [
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "constituicao",
+                  "expr": "10",
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Boi"
+                },
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "constituicao",
+                  "expr": "2 * (constituicao >= 30)",
+                  "furaTeto": true,
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Boi"
+                },
+                {
+                  "canal": "atributo",
+                  "alvo": "constituicao",
+                  "expr": "max(30 - constituicao, 0) + 2 * (constituicao >= 30)",
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Boi"
+                }
+              ]
+            },
+            {
+              "id": "hct_zodiaco_tigre",
+              "nome": "Tigre (Força)",
+              "descricao": "Bravo e feroz, o Tigre resolve na força bruta. O Zodíaco aumenta a sua Força.",
+              "efeitos": [
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "forca",
+                  "expr": "10",
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Tigre"
+                },
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "forca",
+                  "expr": "2 * (forca >= 30)",
+                  "furaTeto": true,
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Tigre"
+                },
+                {
+                  "canal": "atributo",
+                  "alvo": "forca",
+                  "expr": "max(30 - forca, 0) + 2 * (forca >= 30)",
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Tigre"
+                }
+              ]
+            },
+            {
+              "id": "hct_zodiaco_coelho",
+              "nome": "Coelho (Destreza)",
+              "descricao": "Ágil e atento, o Coelho escapa antes do golpe chegar. O Zodíaco aumenta a sua Destreza.",
+              "efeitos": [
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "destreza",
+                  "expr": "10",
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Coelho"
+                },
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "destreza",
+                  "expr": "2 * (destreza >= 30)",
+                  "furaTeto": true,
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Coelho"
+                },
+                {
+                  "canal": "atributo",
+                  "alvo": "destreza",
+                  "expr": "max(30 - destreza, 0) + 2 * (destreza >= 30)",
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Coelho"
+                }
+              ]
+            },
+            {
+              "id": "hct_zodiaco_dragao",
+              "nome": "Dragão (Presença)",
+              "descricao": "Imponente e carismático, o Dragão domina o ambiente só por estar nele. O Zodíaco aumenta a sua Presença.",
+              "efeitos": [
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "presenca",
+                  "expr": "10",
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Dragão"
+                },
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "presenca",
+                  "expr": "2 * (presenca >= 30)",
+                  "furaTeto": true,
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Dragão"
+                },
+                {
+                  "canal": "atributo",
+                  "alvo": "presenca",
+                  "expr": "max(30 - presenca, 0) + 2 * (presenca >= 30)",
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Dragão"
+                }
+              ]
+            },
+            {
+              "id": "hct_zodiaco_serpente",
+              "nome": "Serpente (Sabedoria)",
+              "descricao": "Calma e perceptiva, a Serpente lê o que está escondido. O Zodíaco aumenta a sua Sabedoria.",
+              "efeitos": [
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "sabedoria",
+                  "expr": "10",
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Serpente"
+                },
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "sabedoria",
+                  "expr": "2 * (sabedoria >= 30)",
+                  "furaTeto": true,
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Serpente"
+                },
+                {
+                  "canal": "atributo",
+                  "alvo": "sabedoria",
+                  "expr": "max(30 - sabedoria, 0) + 2 * (sabedoria >= 30)",
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Serpente"
+                }
+              ]
+            },
+            {
+              "id": "hct_zodiaco_cavalo",
+              "nome": "Cavalo (Destreza)",
+              "descricao": "Veloz e livre, o Cavalo nunca fica parado no mesmo lugar. O Zodíaco aumenta a sua Destreza.",
+              "efeitos": [
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "destreza",
+                  "expr": "10",
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Cavalo"
+                },
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "destreza",
+                  "expr": "2 * (destreza >= 30)",
+                  "furaTeto": true,
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Cavalo"
+                },
+                {
+                  "canal": "atributo",
+                  "alvo": "destreza",
+                  "expr": "max(30 - destreza, 0) + 2 * (destreza >= 30)",
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Cavalo"
+                }
+              ]
+            },
+            {
+              "id": "hct_zodiaco_cabra",
+              "nome": "Cabra (Constituição)",
+              "descricao": "Tenaz e serena, a Cabra resiste ao terreno mais hostil. O Zodíaco aumenta a sua Constituição.",
+              "efeitos": [
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "constituicao",
+                  "expr": "10",
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Cabra"
+                },
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "constituicao",
+                  "expr": "2 * (constituicao >= 30)",
+                  "furaTeto": true,
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Cabra"
+                },
+                {
+                  "canal": "atributo",
+                  "alvo": "constituicao",
+                  "expr": "max(30 - constituicao, 0) + 2 * (constituicao >= 30)",
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Cabra"
+                }
+              ]
+            },
+            {
+              "id": "hct_zodiaco_macaco",
+              "nome": "Macaco (Inteligência)",
+              "descricao": "Esperto e inventivo, o Macaco resolve qualquer problema com engenho. O Zodíaco aumenta a sua Inteligência.",
+              "efeitos": [
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "inteligencia",
+                  "expr": "10",
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Macaco"
+                },
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "inteligencia",
+                  "expr": "2 * (inteligencia >= 30)",
+                  "furaTeto": true,
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Macaco"
+                },
+                {
+                  "canal": "atributo",
+                  "alvo": "inteligencia",
+                  "expr": "max(30 - inteligencia, 0) + 2 * (inteligencia >= 30)",
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Macaco"
+                }
+              ]
+            },
+            {
+              "id": "hct_zodiaco_galo",
+              "nome": "Galo (Presença)",
+              "descricao": "Confiante e expressivo, o Galo convence com a própria voz. O Zodíaco aumenta a sua Presença.",
+              "efeitos": [
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "presenca",
+                  "expr": "10",
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Galo"
+                },
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "presenca",
+                  "expr": "2 * (presenca >= 30)",
+                  "furaTeto": true,
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Galo"
+                },
+                {
+                  "canal": "atributo",
+                  "alvo": "presenca",
+                  "expr": "max(30 - presenca, 0) + 2 * (presenca >= 30)",
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Galo"
+                }
+              ]
+            },
+            {
+              "id": "hct_zodiaco_cao",
+              "nome": "Cão (Sabedoria)",
+              "descricao": "Leal e vigilante, o Cão pressente o perigo antes de todos. O Zodíaco aumenta a sua Sabedoria.",
+              "efeitos": [
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "sabedoria",
+                  "expr": "10",
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Cão"
+                },
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "sabedoria",
+                  "expr": "2 * (sabedoria >= 30)",
+                  "furaTeto": true,
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Cão"
+                },
+                {
+                  "canal": "atributo",
+                  "alvo": "sabedoria",
+                  "expr": "max(30 - sabedoria, 0) + 2 * (sabedoria >= 30)",
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Cão"
+                }
+              ]
+            },
+            {
+              "id": "hct_zodiaco_porco",
+              "nome": "Porco (Força)",
+              "descricao": "Robusto e determinado, o Porco avança sem recuar. O Zodíaco aumenta a sua Força.",
+              "efeitos": [
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "forca",
+                  "expr": "10",
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Porco"
+                },
+                {
+                  "canal": "limiteAtributo",
+                  "alvo": "forca",
+                  "expr": "2 * (forca >= 30)",
+                  "furaTeto": true,
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Porco"
+                },
+                {
+                  "canal": "atributo",
+                  "alvo": "forca",
+                  "expr": "max(30 - forca, 0) + 2 * (forca >= 30)",
+                  "quando": "talentos_h_corp_zodiaco",
+                  "duracao": "temporaria",
+                  "nome": "Zodíaco: Porco"
+                }
+              ]
+            }
+          ]
+        },
+        "requisitos": []
+      }
+    ]
+  }
+}

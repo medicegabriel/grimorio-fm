@@ -89,6 +89,12 @@ export const CATARSE_FAMILIAS = [
     nota: "Vaga de Habilidade de Especialização, separada do contador de Feitiços e Habilidades Gerais.",
   },
   {
+    id: "habilidadesOutraClasse",
+    label: "Especialização de Outra Classe",
+    canal: null,
+    nota: "Concede uma habilidade de outra classe, usando o nível do personagem e mantendo os demais requisitos.",
+  },
+  {
     id: "melhoriasSuperiores",
     label: "Melhoria Superior",
     canal: "vagasMelhoria",
@@ -114,13 +120,19 @@ export const CATARSE_FAMILIAS = [
     id: "feiticos",
     label: "Feitiço",
     canal: "vagasFeitico",
-    nota: "Vaga de Feitiço, Estilo das Sombras ou Habilidade Marcial.",
+    nota: "Vaga de Feitiço, Estilo das Sombras ou Técnica Marcial.",
   },
   {
     id: "texto",
     label: "Anotação com Motor",
     canal: null,
     nota: "O que não tem entrada de catálogo: a regra escrita mais o efeito, e ela ACUMULA.",
+  },
+  {
+    id: "anotacao",
+    label: "Anotação",
+    canal: null,
+    nota: "Nome e descrição da aquisição.",
   },
 ];
 
@@ -171,6 +183,8 @@ export function normalizaCompraCatarse(bruta) {
         expr: String(e.expr ?? ""),
         ...(e.alvo ? { alvo: String(e.alvo) } : {}),
         ...(e.quando ? { quando: String(e.quando) } : {}),
+        ...(e.duracao === "temporaria" ? { duracao: "temporaria" } : {}),
+        ...(e.semCredito ? { semCredito: true } : {}),
       }))
     : [];
   return {
@@ -178,6 +192,9 @@ export function normalizaCompraCatarse(bruta) {
     familia: familia.id,
     nome: String(bruta.nome ?? ""),
     custo,
+    quantidade: Math.max(1, inteiro(bruta.quantidade) || 1),
+    escolhas: Array.isArray(bruta.escolhas)
+      ? [...new Set(bruta.escolhas.filter((id) => typeof id === "string" && id))] : [],
     texto: String(bruta.texto ?? ""),
     efeitos: familia.id === "texto" ? efeitos : [],
   };
@@ -228,7 +245,7 @@ export function resolveCatarse(creature, opcoes = {}) {
   for (const c of compras) {
     const f = getCatarseFamilia(c.familia);
     if (!f?.canal) continue;
-    porCanal[f.canal] = (porCanal[f.canal] ?? 0) + 1;
+    porCanal[f.canal] = (porCanal[f.canal] ?? 0) + c.quantidade;
   }
 
   /* Os efeitos que entram no Motor. Duas origens diferentes num só lugar:
@@ -286,6 +303,30 @@ export function resolveCatarse(creature, opcoes = {}) {
     avisos,
     precos: opcoes.precos ?? {},
   };
+}
+
+/** Catálogos entram por parâmetro para manter a aba livre de ciclos de imports. */
+export function habilidadesDeOutraClasseDaCatarse(compras, {
+  getHabilidade, classes = [], nivel = 1, possuidas = [], vetadas = [],
+} = {}) {
+  const ids = [];
+  const avisos = [];
+  const classesAtuais = new Set(classes);
+  const vistos = new Set(possuidas);
+  for (const compra of compras ?? []) {
+    if (compra.familia !== "habilidadesOutraClasse") continue;
+    if (compra.escolhas.length > compra.quantidade) avisos.push(`${compra.nome}: escolhas acima da quantidade comprada.`);
+    for (const id of compra.escolhas.slice(0, compra.quantidade)) {
+      const h = getHabilidade?.(id);
+      if (!h || classesAtuais.has(h.especializacaoId) || Number(h.nivel) > nivel || vetadas.includes(id) || vistos.has(id)) {
+        avisos.push(`${compra.nome}: escolha indisponível (${h?.nome ?? id}).`);
+        continue;
+      }
+      vistos.add(id);
+      ids.push(id);
+    }
+  }
+  return { ids, avisos };
 }
 
 /* ============================================================ */

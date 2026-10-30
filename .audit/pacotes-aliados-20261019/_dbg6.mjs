@@ -1,0 +1,10 @@
+import { register } from "node:module";
+register("data:text/javascript,export async function resolve(s,c,n){try{return await n(s,c)}catch(e){if(s.startsWith(\".\")&&!s.endsWith(\".js\"))return n(s+\".js\",c);throw e}}", import.meta.url);
+globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
+const R = new URL("../../src/systems/afty/", import.meta.url).href;
+const { deriveAfty } = await import(R + "afty-derive.js");
+const { createBlankAfty } = await import(R + "afty-schema.js");
+const g = createBlankAfty(); g.rulesVersion = "player"; g.core = { ...g.core, nd: 10 };
+const d = deriveAfty({ ...g, buffsSessao: [{ id: "x", nome: "T", canal: "resistenciaDano", alvo: "acido", expr: "1" }] });
+console.log(Object.keys(d.defesasDano ?? {}));
+console.log(JSON.stringify(d.defesasDano).slice(0, 600));

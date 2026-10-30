@@ -1,0 +1,44 @@
+
+0 PE com renovação paga a manutenção
+  mesma sessão e expirou que a base: true | hash 2798bc155fe5b0fc 2798bc155fe5b0fc
+  saldo líquido de PE: 0 -> 0 (diferença 0)
+  registro: {"renovou":[{"chave":"treino:rodada","de":0,"para":4}],"pagou":[{"id":"invencivelSobOSol","nome":"Invencível sob o Sol","valor":4,"casca":{"treino:rodada":4},"reserva":0}],"encerrou":[],"exaustaoGanha":0}
+  peAtual 0 casca {} exaustao 0 combate.inv true/2/true
+
+sem renovação, Energia suficiente
+  mesma sessão e expirou que a base: true | hash cfab5da477342cda cfab5da477342cda
+  saldo líquido de PE: 20 -> 16 (diferença -4)
+  registro: {"renovou":[],"pagou":[{"id":"invencivelSobOSol","nome":"Invencível sob o Sol","valor":4,"casca":{},"reserva":4}],"encerrou":[],"exaustaoGanha":0}
+  peAtual 16 casca {} exaustao 0 combate.inv true/2/true
+
+renovação parcial e reserva completam
+  mesma sessão e expirou que a base: true | hash b09b93beaa370438 b09b93beaa370438
+  saldo líquido de PE: 11 -> 10 (diferença -1)
+  registro: {"renovou":[{"chave":"treino:rodada","de":1,"para":4}],"pagou":[{"id":"invencivelSobOSol","nome":"Invencível sob o Sol","valor":4,"casca":{"treino:rodada":4},"reserva":0}],"encerrou":[],"exaustaoGanha":0}
+  peAtual 10 casca {} exaustao 0 combate.inv true/3/true
+
+sem Energia suficiente
+  mesma sessão e expirou que a base: true | hash bb873ae2f7b67935 bb873ae2f7b67935
+  saldo líquido de PE: 3 -> 3 (diferença 0)
+  registro: {"renovou":[],"pagou":[],"encerrou":[{"id":"invencivelSobOSol","nome":"Invencível sob o Sol","motivo":"semEnergia"}],"exaustaoGanha":1}
+  peAtual 3 casca {} exaustao 1 combate.inv false/0/false
+
+fim da duração (quarta rodada)
+  mesma sessão e expirou que a base: true | hash c142b14b67f64d38 c142b14b67f64d38
+  saldo líquido de PE: 20 -> 20 (diferença 0)
+  registro: {"renovou":[],"pagou":[],"encerrou":[{"id":"invencivelSobOSol","nome":"Invencível sob o Sol","motivo":"quartaRodada"}],"exaustaoGanha":1}
+  peAtual 20 casca {} exaustao 1 combate.inv false/0/false
+
+Exaustão pendente depois de encerrar à mão
+  mesma sessão e expirou que a base: true | hash aabe020640f4810d aabe020640f4810d
+  saldo líquido de PE: 20 -> 20 (diferença 0)
+  registro: {"renovou":[],"pagou":[],"encerrou":[{"id":"invencivelSobOSol","nome":"Invencível sob o Sol","motivo":"desligadoAMao"}],"exaustaoGanha":1}
+  peAtual 20 casca {} exaustao 1 combate.inv false/0/false
+
+virada sem cobrança
+  mesma sessão e expirou que a base: true | hash 1df41737d10c228e 1df41737d10c228e
+  saldo líquido de PE: 20 -> 20 (diferença 0)
+  registro: {"renovou":[],"pagou":[],"encerrou":[],"exaustaoGanha":0}
+  peAtual 20 casca {} exaustao 0 combate.inv undefined/undefined/undefined
+
+TODOS OS CENÁRIOS IGUAIS À BASE: true

@@ -65,6 +65,15 @@ import {
   regrasDaLiberacao, resolveLiberacao, rodadasExtras, rodadasSemUpkeep,
   rupturaRd, sobrecargaDados, vigorCura,
 } from "./afty-liberacoes";
+// Só o NOME do Teste de Resistência da Condição da Técnica de Ataque. O schema é
+// módulo FOLHA (t-ordem-modulos.mjs), então a seta é de mão única.
+import { AFTY_RESISTENCIAS } from "./afty-schema";
+// As Técnicas Marciais do Restringido. O módulo é FOLHA (t-ordem-modulos.mjs), e
+// as tabelas de Condição, que mudam com Addon, chegam a ele por parâmetro.
+import {
+  calcularTecnicaAtaqueBase, textoDaEscada, TIPO_TECNICA_MARCIAL_LABEL, TM_AUX_VETADOS,
+  TM_PASSIVO_VETADAS,
+} from "./afty-tecnicas-marciais";
 
 /* ---------------------------------------------------------------
    TIPOS de Feitiço.
@@ -459,8 +468,11 @@ export function nivelMaxFeitico(nd, nivelConjurador = 0) {
   return Math.max(comum, adiantado);
 }
 
+/* ⚠ A TÉCNICA MARCIAL TEM A TABELA DE ACESSO PRÓPRIA (1, 5, 9 e 15, p. 124). O
+   derive a entrega pronta em `ctx.acessoNivel`, já com o teto da origem, e todo
+   aviso de "acima do acesso" lê por aqui sem saber de quem é o Feitiço. */
 const nivelMaxFeiticoDoContexto = (ctx = {}) =>
-  nivelMaxFeitico(ctx.nd, ctx.nivelConjurador);
+  (ctx.acessoNivel != null ? ctx.acessoNivel : nivelMaxFeitico(ctx.nd, ctx.nivelConjurador));
 
 /* O PORTÃO DE ACESSO dos calculadores. ⚠ A Técnica Máxima não passa por ele
    (2026-10-08): a LEGACY (`"max"`) nunca passou, e a oficial chega aqui já
@@ -2602,7 +2614,7 @@ export function calcularFeiticoTransformacao(feitico, ctx = {}) {
   }
   if (!TRANSFORMACAO_BASE[nivel]) {
     avisos.push("Transformação é do Nível 1 ao 5.");
-    return { nivel, slots: [], resumo: "-", custoPE: null, avisos, detalhes: {} };
+    return { nivel, slots: [], efeitos: [], resumo: "-", custoPE: null, avisos, detalhes: {} };
   }
   /* CADA EFEITO pode subir de nível por canal (`nivelFeitico`): a Prisão da
      Besta do Golem de Sangue dá "+1 nível" nos efeitos do Frenesi, e o nível
@@ -3444,7 +3456,10 @@ export function efeitosDisponiveisMult(entries, efeitoAtual, umGolpe, ctx = {}) 
      em atributos distintos são duas coisas. O que sobra da regra é a trava por
      ATRIBUTO, que `atributosRepetidos` mede sobre o Feitiço inteiro. */
   usados.delete("atributo");
-  let livres = AUX_EFEITOS.filter((m) => !usados.has(m.value));
+  // O efeito que o slot JÁ TEM fica na lista mesmo vetado (um Aumento de Atributo
+  // migrado), para o seletor não mostrar um valor que não está entre as opções.
+  let livres = AUX_EFEITOS.filter((m) => !usados.has(m.value)
+    && !(efeitoAuxVetado(m.value, ctx) && m.value !== efeitoAtual));
   if (umGolpe) {
     // Feitiço de evento único: só efeitos com evento, e do mesmo lado dos irmãos.
     const grupo = grupoEventoAux(lista.filter((en) => en.efeito !== efeitoAtual));
@@ -3480,10 +3495,49 @@ export function podeEventoUnico(entries) {
 }
 
 // Efeito que um slot NOVO assume: o primeiro ainda livre. null quando acabaram.
-export function primeiroEfeitoLivre(entries) {
+export function primeiroEfeitoLivre(entries, ctx = {}) {
   const usados = new Set((Array.isArray(entries) ? entries : []).map((en) => en.efeito));
-  return AUX_EFEITOS.find((m) => !usados.has(m.value))?.value ?? null;
+  return AUX_EFEITOS.find((m) => !usados.has(m.value) && !efeitoAuxVetado(m.value, ctx))?.value ?? null;
 }
+
+/**
+ * Os efeitos do Auxiliar que o `ctx` PROÍBE. Só a Técnica Marcial proíbe hoje
+ * (`ctx.efeitosAuxVetados`, Aumento de Atributo e Bônus em Alcance Corpo a
+ * Corpo), e a decisão é do motor: o criador só consome esta lista.
+ */
+export const efeitoAuxVetado = (efeito, ctx = {}) =>
+  Array.isArray(ctx?.efeitosAuxVetados) && ctx.efeitosAuxVetados.includes(efeito);
+
+/** A lista de efeitos do Auxiliar que o `ctx` oferece, na ordem do livro. */
+export const efeitosAuxPermitidos = (ctx = {}) => AUX_EFEITOS.filter((m) => !efeitoAuxVetado(m.value, ctx));
+
+/** O mesmo recorte para as categorias da Passiva (`ctx.categoriasPassivoVetadas`). */
+export const categoriaPassivoVetada = (categoria, ctx = {}) =>
+  Array.isArray(ctx?.categoriasPassivoVetadas) && ctx.categoriasPassivoVetadas.includes(categoria);
+
+export const categoriasPassivoPermitidas = (ctx = {}) =>
+  PASSIVO_EFEITOS.filter((c) => !categoriaPassivoVetada(c.value, ctx));
+
+/**
+ * O `ctx` do cálculo de custo SEM as reduções de Feitiço: Dominância e
+ * Manipulação Perfeita são do Conjurador, o treino com `escolhaFeiticos` é de
+ * Feitiço e o canal `custoPE` mira o escopo `feitico`. A Técnica Marcial custa o
+ * da tabela (2, 5, 8 e 12). É a mesma conta da linha da Ficha.
+ */
+export const ctxSemReducoesDeCusto = (ctx = {}) => ({
+  ...ctx,
+  habilidades: [],
+  efeitos: undefined,
+  reducoesCustoFeitico: undefined,
+  linhasEscolhaFeiticos: [],
+  treinoEscolhaFeiticos: undefined,
+});
+
+/** O que o derive manda no `ctx` de um Feitiço marcial: os dois recortes do livro. */
+export const VETOS_TECNICA_MARCIAL = Object.freeze({
+  efeitosAuxVetados: TM_AUX_VETADOS,
+  categoriasPassivoVetadas: TM_PASSIVO_VETADAS,
+});
 
 // Custo de um efeito dentro do orçamento de Múltiplos Efeitos. Nível 0 custa
 // 1 PE (o livro força isso para não caber efeito de nível 0 infinito).
@@ -3656,6 +3710,12 @@ export function calcularEfeitoAux(e, ctx = {}) {
     unidade: meta?.unidade || "", rodadas: null, alvos: 1, notas, avisos,
   };
   if (!meta) { avisos.push(`Efeito auxiliar desconhecido: ${efeitoKey}.`); return out; }
+  /* O guia de Auxiliares vale para a Técnica Marcial MENOS dois efeitos (p. 249).
+     O valor gravado de um item migrado segue na ficha e só deixa de valer. */
+  if (Array.isArray(ctx.efeitosAuxVetados) && ctx.efeitosAuxVetados.includes(efeitoKey)) {
+    avisos.push(`${meta.label} não existe em Técnica Marcial.`);
+    return out;
+  }
 
   // Acesso: o nível não pode passar do máximo da faixa de ND.
   if (foraDoAcesso(nivel, ctx)) {
@@ -4271,6 +4331,26 @@ export function calcularFeiticoPassivo(feitico, ctx = {}) {
   const def = getPassivoEfeito(categoriaDoPassivo(f));
   const avisos = [];
 
+  /* A Passiva da Técnica Marcial não aumenta atributo (p. 249). A escolha gravada
+     de um item migrado fica na ficha, sem valor e com o aviso. */
+  if (def && categoriaPassivoVetada(def.value, ctx)) {
+    return {
+      disponivel: false,
+      efeito: def.value,
+      efeitoLabel: def.label.replace(/ \(permanente\)$/, ""),
+      unidade: "",
+      valor: null,
+      notacao: null,
+      texto: "-",
+      tiposDanoExtra: 0,
+      alvo: null,
+      custoPeMaximo: custoPeMaximoDaPassiva(nivel) || null,
+      custoPeMaximoAtivo: !isentoPeMaximo && regraDo(ctx.sistema, "passivaCustaPeMaximo") === "player",
+      efeitosGerados: [],
+      avisos: [`${def.label.replace(/ \(permanente\)$/, "")} não existe em Técnica Marcial.`],
+    };
+  }
+
   if (nivel === "max") avisos.push("Não existe Feitiço Passivo de Técnica Máxima — o Nível fica preso em 5.");
 
   // Sem categoria a calculadora não sugere nada, e nenhum número aparece.
@@ -4446,6 +4526,26 @@ export function createBlankFeitico() {
 }
 
 /**
+ * Uma Técnica Marcial em branco. É o Feitiço em branco com a marca `marcial` e
+ * os campos da Técnica de Ataque, que nasce Nível 1 em Ação Comum e sem Efeito
+ * Adicional. Os campos de Ataque ficam em qualquer tipo, sem leitor fora dele,
+ * para trocar o chip de tipo não perder o que a pessoa já tinha escolhido.
+ */
+export function createBlankTecnicaMarcial(tipo = "ataque") {
+  return {
+    ...createBlankFeitico(),
+    marcial: true,
+    tipo,
+    nivel: 1,
+    acaoAtaque: "comum",
+    ataquesReduzidos: 0,
+    efeitosAtaque: [],
+    condicoesAtaque: { fraca: "", media: "", forte: "", extrema: "" },
+    trCondicaoAtaque: "",
+  };
+}
+
+/**
  * O RASCUNHO QUE NINGUÉM PREENCHEU: igual ao Feitiço em branco, salvo o id, o
  * Tipo e o Tipo de Especial, que são os cliques de navegação. Serve à porta da
  * Expansão de Domínio em Feitiços → Especial (DA-18, 2026-10-08): o Feitiço
@@ -4552,6 +4652,8 @@ export function textoDasPermutas(calc) {
 /** O calculador daquele tipo de Feitiço, ou null quando o tipo não computa. */
 function calculadorDe(tipo) {
   if (tipo === "dano") return calcularFeiticoDano;
+  // O tipo "ataque" é só da Técnica Marcial (`TIPOS_TECNICA_MARCIAL`).
+  if (tipo === "ataque") return calcularTecnicaAtaque;
   if (tipo === "auxiliar") return calcularFeiticoAuxiliar;
   if (tipo === "curativo") return calcularFeiticoCurativo;
   if (tipo === "especial") return calcularFeiticoEspecial;
@@ -4583,6 +4685,30 @@ function calculadorDe(tipo) {
  * chamasse o calculador cru mostraria a Técnica Máxima na tabela errada.
  */
 export function calcularFeitico(f, ctx = {}) {
+  const calc = calcularFeiticoPelaPorta(f, ctx);
+  /* ⚠ A Técnica Marcial vai do Nível 1 ao 4, e o valor gravado FICA (autor,
+     2026-10-26): um Feitiço do Addon Estilo Marcial pode estar no Nível 0 ou 5, e
+     o cálculo segue com ele, com o aviso pedindo um nível de 1 a 4. */
+  if (!calc || !Array.isArray(ctx.niveisPermitidos) || f?.tipo === "ataque") return calc;
+  if (ctx.niveisPermitidos.includes(f?.nivel)) return calc;
+  return { ...calc, avisos: [...(calc.avisos || []), "Técnicas Marciais vão do Nível 1 ao 4."] };
+}
+
+/**
+ * A Técnica Marcial de Ataque. O cálculo mora na folha
+ * `afty-tecnicas-marciais.js`, e daqui só saem as tabelas que mudam com Addon:
+ * a duração e o catálogo de Condição.
+ */
+export function calcularTecnicaAtaque(f, ctx = {}) {
+  return calcularTecnicaAtaqueBase(f, {
+    cdBase: ctx.cdBase ?? null,
+    duracoes: CONDICAO_DURACAO,
+    condicoes: CONDICOES_CATALOGO,
+    acessoNivel: ctx.acessoNivel ?? null,
+  });
+}
+
+function calcularFeiticoPelaPorta(f, ctx = {}) {
   const calcular = calculadorDe(f?.tipo);
   if (!calcular) return null;
   if (!ehTecnicaMaximaOficial(f)) return calcular(f, ctx);
@@ -5056,8 +5182,67 @@ function propriedadeRitualDoDominio(f, ctx) {
   return melhoria ? [{ id: "ritualDominio", nome: "Ritual da Expansão", valor: melhoria.nome }] : [];
 }
 
-function linhaDoFeitico(f, ctx, creature) {
+/**
+ * O `ctx` de uma Técnica Marcial: o do Feitiço mais o que o derive decidiu só
+ * para ela (`ctx.marcial`: CD, acesso, níveis, o PV Temporário do Curativo) e
+ * os dois vetos do livro. Ritual e Liberação Máxima são do Feitiço (p. 249: não
+ * usa o guia de Especiais, e a Técnica não depende de energia amaldiçoada),
+ * então nenhum dos dois chega até ela.
+ */
+export const ctxDaTecnicaMarcial = (ctx = {}) => ({
+  ...ctx,
+  ...(ctx.marcial ?? {}),
+  ...VETOS_TECNICA_MARCIAL,
+  rituais: {},
+  ritualAtual: null,
+  rituaisSemTeste: false,
+  usosRitualista: 0,
+  limiteRitualista: 0,
+  vagasVariacao: 0,
+});
+
+/**
+ * As rolagens Após Ataque que o primeiro ataque do Feitiço de Dano ganha. A
+ * Amplificadora usa o dado do Feitiço, e a rolagem dela traz `consomeEstado` para
+ * a Ficha desligar o interruptor.
+ */
+function rolagensDoPrimeiroAtaque(extras, calc) {
+  if (!extras) return [];
+  const faces = Math.trunc(calc?.tipoDado) || 6;
+  return [
+    ...(extras.elementalista ?? [])
+      .filter((g) => g.dados > 0)
+      .map((g) => ({
+        rotulo: "Elementalista (Após Ataque)", dados: g.dados, faces: g.faces, fixo: 0, tom: "dano", vezes: 1, aposAtaque: true,
+      })),
+    ...(extras.amplificadoraDados > 0 ? [{
+      rotulo: "Amplificadora (Após Ataque)", dados: extras.amplificadoraDados, faces, fixo: 0, tom: "dano", vezes: 1,
+      aposAtaque: true, consomeEstado: "amplificadora",
+    }] : []),
+  ];
+}
+
+/** As propriedades que só a Técnica de Ataque tem: o que ela soma e a Condição. */
+function propriedadesDoAtaque(calc) {
+  if (!calc || calc.tipo !== "ataque") return [];
+  const condicao = calc.condicao;
+  return [
+    { id: "ataques", nome: "Ataques", valor: String(calc.ataques) },
+    { id: "danoAdicional", nome: "Dano Adicional", valor: calc.danoAdicional > 0 ? `+${calc.danoAdicional} por ataque` : null },
+    { id: "condicaoEscada", nome: "Condição",
+      valor: condicao?.escada?.length ? condicao.escada.map(textoDaEscada).join(" · ") : null },
+    { id: "trCondicao", nome: "Teste de Resistência",
+      valor: condicao?.tr
+        ? `${AFTY_RESISTENCIAS.find((r) => r.value === condicao.tr)?.label ?? condicao.tr}${condicao.cd != null ? `, CD ${condicao.cd}` : ""}`
+        : null },
+    { id: "uso", nome: "Uso", valor: "1 por rodada" },
+  ];
+}
+
+function linhaDoFeitico(f, ctxBruto, creature) {
   {
+    const marcial = f?.marcial === true;
+    const ctx = marcial ? ctxDaTecnicaMarcial(ctxBruto) : ctxBruto;
     // As reduções de custo olham o repertório INTEIRO da criatura, então a
     // lista desce junto com o Feitiço da vez.
     const lista = Array.isArray(creature?.feiticos) ? creature.feiticos : [];
@@ -5082,12 +5267,17 @@ function linhaDoFeitico(f, ctx, creature) {
       ritualistaExtra,
       dispensaTesteRitual,
     }) ?? null;
+    /* ⚠ A TÉCNICA MARCIAL NÃO TEM REDUÇÃO DE CUSTO. Dominância e Manipulação
+       Perfeita são do Conjurador, o treino com `escolhaFeiticos` é de Feitiço, e
+       o canal `custoPE` mira o escopo `feitico`. Sem habilidades e sem efeitos no
+       `ctx`, o custo sai o da tabela (2, 5, 8 e 12). */
     let calc = aplicaReducoesCustoFeitico(f, calculoBase, {
       ...ctx,
+      ...(marcial ? { habilidades: [], efeitos: undefined } : {}),
       feiticos: lista,
-      reducoesCustoFeitico: creature?.reducoesCustoFeitico,
-      linhasEscolhaFeiticos: linhasComEscolhaFeiticos(creature),
-      treinoEscolhaFeiticos: creature?.treinoEscolhaFeiticos,
+      reducoesCustoFeitico: marcial ? undefined : creature?.reducoesCustoFeitico,
+      linhasEscolhaFeiticos: marcial ? [] : linhasComEscolhaFeiticos(creature),
+      treinoEscolhaFeiticos: marcial ? undefined : creature?.treinoEscolhaFeiticos,
     });
     const reducaoSustentacao = Math.max(0, Math.trunc(Number(ctx.reducaoSustentacao) || 0));
     if (calc && reducaoSustentacao > 0) {
@@ -5113,12 +5303,19 @@ function linhaDoFeitico(f, ctx, creature) {
       : f.tipo === "auxiliar" ? formatAuxValor(calc)
       : f.tipo === "curativo" ? calc.cura
       : f.tipo === "especial" ? (calc.dano ?? calc.resumo)
+      : f.tipo === "ataque" ? `${calc.ataques} Ataque${calc.ataques === 1 ? "" : "s"}`
       : null;
     const valorLabel = f.tipo === "dano" ? "Dano"
+      : f.tipo === "ataque" ? "Ataques"
       : f.tipo === "curativo" ? (calc?.ehTemporario ? "PV Temporário" : "Cura")
       : f.tipo === "especial" && ["golpeador", "danoAlma"].includes(f.especialSubtipo) ? "Dano"
       : "Efeito";
-    const rolagens = rolagensDoFeitico(f, calc);
+    const rolagensBase = rolagensDoFeitico(f, calc);
+    /* O Elementalista e a Amplificadora entram só no Feitiço de DANO e só na primeira
+       rolagem (p. 156 e 348), cada um como rolagem à parte, Após Ataque. */
+    const rolagens = f.tipo === "dano" && rolagensBase.length > 0
+      ? [...rolagensBase, ...rolagensDoPrimeiroAtaque(ctx.extrasPrimeiroAtaque, calc)]
+      : rolagensBase;
     const custoVida = custoVidaDaAtivacao(f.custoVidaAtivacao, ctx.vidaAtual);
     const etapaRitual = ritualAtual?.etapa ?? null;
     const ritualPronto = etapaRitual === "pronto";
@@ -5159,20 +5356,32 @@ function linhaDoFeitico(f, ctx, creature) {
          em Feitiços de Shikigami". */
       propriedades: calc ? [
         ...propriedadesResumoFeitico(f, calc, valor, valorLabel),
-        ...propriedadeRitualDoDominio(f, ctx),
+        ...propriedadesDoAtaque(calc),
+        ...(marcial ? [] : propriedadeRitualDoDominio(f, ctx)),
       ] : [],
       variacao: !!f.variacaoDe,
+      /* A Técnica Marcial (2026-10-27): a marca, o rótulo do tipo que ela usa e o
+         `ataque`, que só ela tem. A Ficha separa pela marca, e nunca pelo tipo. */
+      marcial,
+      tipoLabel: marcial ? (TIPO_TECNICA_MARCIAL_LABEL[f.tipo] ?? TIPO_FEITICO_LABEL[f.tipo] ?? f.tipo) : (TIPO_FEITICO_LABEL[f.tipo] ?? f.tipo),
+      /* A Técnica de Ataque leva o que a linha de arma precisa para somar o bônus. */
+      ataque: f.tipo === "ataque" && calc ? {
+        ataques: calc.ataques, reducoes: calc.ataquesReduzidos, acao: calc.acao,
+        bonusAcerto: calc.bonusAcerto, danoAdicional: calc.danoAdicional, rdIgnorada: calc.rdIgnorada,
+        partesAcerto: calc.partesAcerto, partesDano: calc.partesDano, partesRd: calc.partesRd,
+        condicao: calc.condicao, efeitos: calc.efeitos, nivelEfeito: calc.nivelEfeito,
+      } : null,
       /* A Técnica Máxima (2026-10-08): a escala do cálculo e quando a recarga
          começa. A validação e a vaga entram no derive, depois dos Testes. */
-      tecnicaMaxima: calc?.tecnicaMaxima ?? (ehTecnicaMaxima(f)
+      tecnicaMaxima: marcial ? null : (calc?.tecnicaMaxima ?? (ehTecnicaMaxima(f)
         ? {
           identidade: true, oficial: false, legacy: true, escala: NIVEL_TECNICA_MAXIMA,
           inicioRecarga: calc?.inicioRecarga ?? "aoUsar", invocacaoId: calc?.invocacaoId ?? null,
         }
-        : null),
+        : null)),
       // O menu de Liberação Máxima deste Feitiço: o que dá para escolher na
       // hora da conjuração. `null` quando ele não alcança a mecânica.
-      liberacao: infoLiberacao(f, ctx),
+      liberacao: marcial ? null : infoLiberacao(f, ctx),
       consomeEstado,
       ritual: calc?.ritual ? {
         ...calc.ritual,

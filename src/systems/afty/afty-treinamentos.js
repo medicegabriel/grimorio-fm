@@ -37,7 +37,8 @@
  *
  * `alvoTipo` de uma linha repetível: `atributo`, `pericia`, `arma`,
  *   `invocacao`, `acaoInvocacao` e, desde 2026-09-26, `tr` (os quatro Testes de
- *   Resistência treináveis, sem Integridade). Sem tipo conhecido o alvo é texto.
+ *   Resistência treináveis, sem Integridade). `incluiIntegridade: true` na linha
+ *   acrescenta Integridade ao seletor de TR. Sem tipo conhecido o alvo é texto.
  *
  * ⚠ RESOLVIDO em 2026-08-26, na segunda leva da varredura: o autor mandou a
  * Expansão de Domínio LER O MOTOR e deu a fórmula do Conflito. Nasceram sete
@@ -58,8 +59,6 @@
  *   • redução de custo por aptidão nomeada (Energia Reversa 3ª): a Regeneração
  *     Aprimorada não tem canal de custo. A 1ª saiu desta lista em 2026-09-16: o
  *     teto de PER entra em `curaPontos` e o Fluxo Constante lê o mesmo teto.
- *   • vaga extra de escolha aninhada (Potencial Físico 4ª, "uma Dádiva do Céu
- *     adicional"): `concedeEscolha` só vai de habilidade para habilidade.
  *   • procedimento de mesa sem número (Perícia 2ª, 4ª e Completo, Luta Completo,
  *     Energia Reversa 4ª e Completo). Estes NÃO são pendência: são permissão
  *     que o jogador exerce, e não valor que a ficha calcula. ⚠ O Completo de
@@ -103,7 +102,7 @@
  */
 
 import { registrarFamilia, remendarLista, filtraForaDoJogador } from "./afty-addons";
-import { origensQualificadas, origemEstrutural, getCla } from "./afty-origens";
+import { origensQualificadas, origemEstrutural, getCla, tipoDaFicha } from "./afty-origens";
 import { getAptidao, APTIDAO_TRILHAS } from "./afty-aptidoes";
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
 import { AFTY_PERICIAS, catalogoPericiasDaFicha } from "./afty-pericias";
@@ -166,6 +165,8 @@ export const AFTY_TREINAMENTOS = [
     // de Energia, Domínios e Energia Reversa: as cinco linhas são de energia
     // amaldiçoada, e um Restringido não tem energia nenhuma (a Estamina É o PE,
     // com outro nome). Mesmo desenho do corte da Maldição em 2026-08-02.
+    // Desde 2026-10-12 o corte pega TODO Restringido, e não só a origem: o
+    // Gêmeo Restringido e o Tipo Restringido também. Ver `origemDosTreinos`.
     foraDaOrigem: ["restringido"],
     resumo:
       "O treino de barreiras desenvolve a resistência e excelência do ramo de aptidões amaldiçoadas que envolvem as barreiras.",
@@ -391,8 +392,10 @@ export const AFTY_TREINAMENTOS = [
       { n: 3, focos: 1, requisito: null,
         beneficio: "Seu máximo de pontos de estamina aumenta em 4.",
         efeitos: [{ tipo: "pe", valor: 4 }] },
+      // Sem efeito até 2026-10-12: não havia canal de vaga em escolha aninhada.
       { n: 4, focos: 2, requisito: null,
-        beneficio: "Você recebe uma Dádiva do Céu adicional." },
+        beneficio: "Você recebe uma Dádiva do Céu adicional.",
+        efeitos: [{ canal: "vagasEscolha", alvo: "res_restrito_pelos_ceus", expr: "1" }] },
     ],
     completo: {
       beneficio:
@@ -637,7 +640,7 @@ export function encantamentosAdicionaisDeTreino(creature, sistema) {
   const out = {};
   for (const [id, valor] of Object.entries(normalizeTreinamentos(creature?.treinamentos))) {
     const linha = getTreinamento(id);
-    if (!treinoDisponivel(linha, origemEstrutural(creature), origensQualificadas(creature))) continue;
+    if (!treinoDisponivel(linha, origemDosTreinos(creature), origensQualificadas(creature))) continue;
     for (const escolha of linha.escolhas ?? []) {
       if (escolha.pool !== "encantamentos" || Number(valor) < (escolha.etapa ?? 1)) continue;
       const enc = creature.treinamentoEscolhas?.[id]?.[escolha.id];
@@ -655,7 +658,7 @@ export function efeitosRdEquipamentoDeTreino(creature, equip, bt, sistema) {
   for (const [id, valor] of Object.entries(normalizeTreinamentos(creature?.treinamentos))) {
     const linha = getTreinamento(id);
     if (Number(valor) < ETAPAS_POR_LINHA || !linha.completo?.estendeRdEquipamento) continue;
-    if (!treinoDisponivel(linha, origemEstrutural(creature), origensQualificadas(creature))) continue;
+    if (!treinoDisponivel(linha, origemDosTreinos(creature), origensQualificadas(creature))) continue;
     const cfg = linha.completo.estendeRdEquipamento;
     const escolha = linha.escolhas?.find((e) => e.id === cfg.escolha);
     if (!escolha) continue;
@@ -680,7 +683,7 @@ export function efeitosRdEquipamentoDeTreino(creature, equip, bt, sistema) {
 
 /** Habilidades gratuitas de etapas adquiridas, sem ocupar vaga de especialização. */
 export function habilidadesConcedidasPorTreino(creature) {
-  const origemId = origemEstrutural(creature);
+  const origemId = origemDosTreinos(creature);
   const qualificadas = origensQualificadas(creature);
   const ids = new Set();
   for (const [id, valor] of Object.entries(normalizeTreinamentos(creature?.treinamentos))) {
@@ -697,7 +700,7 @@ export function habilidadesConcedidasPorTreino(creature) {
 
 /** Texto integral das etapas adquiridas de linhas que optam por aparecer na ficha. */
 export function beneficiosDeTreinoNaFicha(creature, ctx = {}) {
-  const origemId = origemEstrutural(creature);
+  const origemId = origemDosTreinos(creature);
   const qualificadas = origensQualificadas(creature);
   const out = [];
   for (const [id, valor] of Object.entries(normalizeTreinamentos(creature?.treinamentos))) {
@@ -987,20 +990,44 @@ export function rotuloAlvo(linha, alvo, pericias = AFTY_PERICIAS, armas = null, 
  * (`origensQualificadas`): a copiada em Verdadeiras Origens e a que um Addon
  * libera. Elas só ABREM o `soDaOrigem`, e nunca soltam o `foraDaOrigem`: uma
  * origem que a criatura só EMPRESTA não desfaz o que a origem dela não tem.
+ *
+ * ⚠ Quem passa a ficha passa o `origemId` de `origemDosTreinos`, que pode ser
+ * "restringido" sem a origem ser. Por isso a lista de `qualificadas`, quando
+ * vem, responde o `soDaOrigem` sozinha, até vazia: o Tipo Restringido não abre
+ * o Potencial Físico, que é da ORIGEM.
  */
 export const treinoDisponivel = (linha, origemId, qualificadas = null) => {
   if ((linha?.foraDaOrigem ?? []).includes(origemId)) return false;
   const so = linha?.soDaOrigem;
   if (!so?.length) return true;
-  const tem = qualificadas?.length ? qualificadas : (origemId ? [origemId] : []);
+  const tem = Array.isArray(qualificadas) ? qualificadas : (origemId ? [origemId] : []);
   return so.some((id) => tem.includes(id));
 };
+
+/**
+ * A origem cujo `foraDaOrigem` vale para esta ficha.
+ *
+ * É a `origemEstrutural`, menos para quem é Restringido sem ser da origem: o
+ * Gêmeo Restringido (pela cópia do Físico Abençoado no jogador, pelo Tipo na
+ * criatura) e a criatura de outra origem com o Tipo Restringido. Os cinco
+ * Treinos de energia (Barreiras, Compreensão, Controle de Energia, Domínios e
+ * Energia Reversa) saíam só da origem, e esses três casos os viam (autor,
+ * 2026-10-12: *"Para Restringidos, remova os seguintes Treinos"*, nos dois
+ * sistemas). Vale para toda Linha com `foraDaOrigem: ["restringido"]`, as de
+ * Addon incluídas.
+ *
+ * ⚠ O Não-Feiticeiro também é sem energia e NÃO entra (autor, 2026-10-12): a
+ * pergunta aqui é "é Restringido?", e não "tem energia?".
+ */
+export function origemDosTreinos(creature) {
+  return tipoDaFicha(creature) === "restringido" ? "restringido" : origemEstrutural(creature);
+}
 
 /**
  * As linhas de treino que a origem alcança. Hoje cortam duas: a Maldição não
  * tem Energia Reversa, e o Restringido não tem nenhuma das cinco de energia
  * amaldiçoada (Barreiras, Compreensão, Controle de Energia, Domínios e
- * Energia Reversa).
+ * Energia Reversa). Com a ficha, o `origemId` sai de `origemDosTreinos`.
  */
 /**
  * ⚠ `creature` entrou em 2026-09-01 e é OPCIONAL de propósito: sem ela a lista é
@@ -1025,8 +1052,9 @@ export function efeitosDeTreino(creature, gatilhosAtivos = null, equipamentos = 
      perde a Linha de Energia Reversa como uma Maldição de verdade, e o Foco
      preso nela volta sozinho (autor, 2026-08-29). O `qualificadas` continua
      saindo da origem gravada, porque ele responde outra pergunta: o que a
-     criatura ALCANÇA a mais, e não o que ela É. */
-  const origemId = origemEstrutural(creature);
+     criatura ALCANÇA a mais, e não o que ela É. O Restringido pelo Tipo
+     perde as Linhas de energia do mesmo jeito, ver `origemDosTreinos`. */
+  const origemId = origemDosTreinos(creature);
   const qualificadas = origensQualificadas(creature);
   const pericias = catalogoPericiasDaFicha(creature);
   const armas = catalogoDoTipo("arma", creature);
@@ -1080,7 +1108,7 @@ export function efeitosDeTreino(creature, gatilhosAtivos = null, equipamentos = 
  * em `talentos.inacessiveis`, sem tirar nada.
  */
 export function talentosDeTreino(creature) {
-  const origemId = origemEstrutural(creature);
+  const origemId = origemDosTreinos(creature);
   const qualificadas = origensQualificadas(creature);
   const prog = normalizeTreinamentos(creature?.treinamentos);
   const out = [];
@@ -1116,7 +1144,7 @@ export function talentosDeTreino(creature) {
  * contexto DA PRÓPRIA INVOCAÇÃO (grau, bt, nd...) — outro estágio, outra regra.
  */
 export function efeitosInvocacaoDeTreino(creature) {
-  const origemId = origemEstrutural(creature);
+  const origemId = origemDosTreinos(creature);
   const qualificadas = origensQualificadas(creature);
   const prog = normalizeTreinamentos(creature?.treinamentos);
   const out = [];
@@ -1203,7 +1231,7 @@ export function efeitosInvocacaoDeTreino(creature) {
  * direito a marcar e QUANTO cada marca vale.
  */
 export function linhasComEscolhaFeiticos(creature) {
-  const origemId = origemEstrutural(creature);
+  const origemId = origemDosTreinos(creature);
   const qualificadas = origensQualificadas(creature);
   const prog = normalizeTreinamentos(creature?.treinamentos);
   const out = [];
@@ -1271,8 +1299,9 @@ export function vagasEncantamentoDeTreino(creature) {
      perde a Linha de Energia Reversa como uma Maldição de verdade, e o Foco
      preso nela volta sozinho (autor, 2026-08-29). O `qualificadas` continua
      saindo da origem gravada, porque ele responde outra pergunta: o que a
-     criatura ALCANÇA a mais, e não o que ela É. */
-  const origemId = origemEstrutural(creature);
+     criatura ALCANÇA a mais, e não o que ela É. O Restringido pelo Tipo
+     perde as Linhas de energia do mesmo jeito, ver `origemDosTreinos`. */
+  const origemId = origemDosTreinos(creature);
   const qualificadas = origensQualificadas(creature);
   const prog = normalizeTreinamentos(creature?.treinamentos);
   const out = {};
@@ -1300,7 +1329,7 @@ export function vagasEncantamentoDeTreino(creature) {
  * cálculo, igual à da arma.
  */
 export function vagasEncantamentoEscudoDeTreino(creature) {
-  const origemId = origemEstrutural(creature);
+  const origemId = origemDosTreinos(creature);
   const qualificadas = origensQualificadas(creature);
   const prog = normalizeTreinamentos(creature?.treinamentos);
   let total = 0;

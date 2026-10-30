@@ -47,6 +47,65 @@ registro de rolagem compartilham essa formatação. O motor interno continua
 rolando todos os dados, sem descarte ou mudança no dano fixo. Não há canal
 novo ou alteração na DSL. Regressão: `asserts/t-dano-blocos-100.mjs`.
 
+### Estágios dos efeitos da Loja de Catarse (2026-10-25)
+
+Na correção da ficha Chrollo, o autor definiu que a compra de Atributo
+aumenta valor e limite. Foram preservadas as duas linhas de +6 que já
+estavam no Funcionamento Básico da ficha enviada, migradas para a Catarse
+sem duplicação. O limite permanente resultante é 26. O valor final 28
+inclui as outras fontes já existentes e foi preservado. Não foi somado
+outro +6 sobre o manual que a ficha já continha.
+
+As fórmulas base não mudaram. O texto com Motor da Loja passa pelos estágios
+da Técnica, conservando a soma fora do pool exclusivo. Atributo permanente
+alimenta os modificadores seguintes, temporário fica fora dos pré-requisitos
+e limite de atributo chega antes da aparagem. Concessões de vagas continuam
+no montante, antes das escolhas. Contrato em `docs/automacao-dsl.md` e
+regressões em `asserts/t-catarse.mjs`.
+
+### Retração de Domínio (2026-10-25)
+
+O pacote `addons/retracao-de-dominio.json`, versão 1.0.0, acrescenta uma
+Aptidão que requer Dom 3. É necessário escolher a Aptidão e ativar seu buff
+durante o combate. O estado declara `ampliaRecursos: { hp: 20, pe: 20 }`.
+
+A ampliação entra nos máximos finais de PV e PE, depois de todas as demais
+fontes, multiplicadores e substituições da aba Cálculos. Para cada recurso:
+
+```
+bonus = floor(max(0, maximoFinalSemRetracao) * 20 / 100)
+maximoComRetracao = maximoFinalSemRetracao + bonus
+atualAoAtivar = min(maximoComRetracao, atualAntes + bonus)
+```
+
+Assim, máximos 200 PV e 100 PE passam a 240 PV e 120 PE. A ativação soma
+40 PV e 20 PE aos atuais. Se faltavam 60 PV e 30 PE, continuam faltando
+60 PV e 30 PE. O ganho ocorre somente na transição desligada para ligada,
+sem repetição por novo cálculo ou por ativar o estado já ligado.
+
+Desligar apara os atuais aos máximos restantes, sem descontar o bônus outra
+vez. Fim de combate e descanso encerram o estado. Cada nova ativação manual
+recebe a diferença novamente, pois o pedido não limitou usos. A Alma não
+muda, e a ampliação não volta a alimentar as fórmulas que produziram a base.
+Não há custo, duração em rodadas, Exaustão ou canal novo do Motor.
+
+O contrato `ampliaRecursos` aceita percentuais positivos de `hp` e/ou `pe`
+em estado `bool` de Aptidão em combate. O `quando: "dom >= 3"` é avaliado
+no contexto já com os níveis de Aptidão. O cálculo final e a sessão
+compartilham a mesma base para preservar o ganho mesmo no clique que ainda
+recebe os máximos derivados antes da ativação.
+
+### Fontes da margem de crítico (2026-10-13)
+
+As linhas de dano e TR publicam `partesMargemCritico`, com a base e as
+variações assinadas da margem. O canal fornece redução positiva, por isso
+cada fonte aparece negativa no hover. Armas usam sua margem própria como
+base. Os escopos e fontes suplantadas são os mesmos do cálculo existente.
+Arredondamento e piso de 2 aparecem como parcelas quando aplicados.
+Permutas que devolvem margem acrescentam uma parcela positiva somente
+quando a troca cabe. Os cálculos e canais existentes permanecem iguais.
+Regressões em `asserts/t-critico-fontes.mjs`.
+
 ### Quantidade de Especialização e Aptidões Amaldiçoadas (2026-10-10)
 
 Na criatura Afty, Especialização concede `1 + floor(Maestria / 2)` vagas por
@@ -144,6 +203,10 @@ O que estas fórmulas revelam e que contradiz o esquema v0 (`createBlankAfty`):
    2.5.2"). O mapa célula→treino está tabelado abaixo.
 5. **Inventário** (grau de item equipado) entra em Defesa e RD.
 6. **Maestria == Treinamento** (mesmo valor), derivado do ND.
+   A tabela: 2 até o ND 4, 3 no 5, 4 no 9, 5 no 13, 6 no 17, 7 no 21, 8 no 26, 9 no 31 e 10 no 36. **Depois do 36
+   a Maestria segue subindo um ponto a cada 5 níveis** (`10 + piso((ND - 36) / 5)`: 11 no 41, 12 no 46, 13 no 51),
+   para toda ficha, com ou sem Addon (autor, 2026-10-29). Antes o 10 era o teto. O Player só passa de 30 com o
+   Nível sem Teto (`nivelJogadorSemTeto`), e a criatura não tem teto de ND.
 
 ---
 
@@ -586,3 +649,7 @@ A fórmula final confirmada é `2 * BT + BT`, somando `3 * BT`.
 Geral concede dobro do BT e Defesa concede BT, desde o segundo giro.
 Com BT 6, soma 18 RD. Com BT 8, soma 24 RD. Esses valores substituem
 os do texto original, preservado em `docs/grande-roda-dharma-regras.md`.
+<!-- Talentos de Estilo, 2026-10-25: as fórmulas base não mudaram. A troca
+     de atributo de uma habilidade acontece nas expressões dos efeitos dela,
+     antes da avaliação normal. Ver docs/afty-talentos-de-estilo.md e
+     docs/automacao-dsl.md. A habilidade própria é concedida sem segunda vaga. -->

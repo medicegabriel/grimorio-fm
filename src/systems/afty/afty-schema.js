@@ -335,6 +335,10 @@ export function createBlankAfty() {
       tamanho: TAMANHO_BASE,
       tecnicaAttr: "inteligencia", // atributo da Técnica (CD / RD específico)
       tecnicaDescricao: "",        // Funcionamento Básico / "Descrição da Técnica" (texto livre)
+      // O nome do Estilo Marcial do Restringido (2026-10-26). O Fundamento Marcial é o
+      // Funcionamento principal com outro nome (`tecnicaDescricao` e `tecnicaEfeitos`),
+      // e só o nome do Estilo é campo novo. Vazio mostra "Estilo Marcial".
+      estiloMarcialNome: "",
       // Efeitos do Funcionamento Básico, programados pelo jogador:
       // [{ canal, alvo?, expr }]. A técnica é ÚNICA NO MUNDO por definição, então
       // nenhum catálogo pode cobri-la: é uma das entradas do sistema em que o
@@ -608,6 +612,7 @@ export function createBlankAfty() {
     // qual opção (Estilo de Controle no Apogeu, Melhoria de Controlador...) foi
     // escolhida. Habilidade repetível guarda várias. Ver afty-habilidades.js.
     escolhasHabilidade: {},
+    especializacaoConfig: {},
     // Escolhas aninhadas dos TALENTOS (o atributo do Incremento, a trilha da
     // Aptidão Desenvolvida, o Estilo do Adepto de Combate). Mapa separado do
     // das Habilidades porque os catálogos são separados.
@@ -723,6 +728,10 @@ export function createBlankAfty() {
     // porque os dois copiam a criatura inteira. Ver ./ficha/ficha-tema.js.
     aparencia: null,
 
+    // Preferências de APRESENTAÇÃO da Ficha Final, que moram no personagem pelo mesmo motivo da `aparencia`: viajam no export e no import. Hoje
+    // só `estatisticasCabecalho` ({ versao, ordem, ocultas }, ver ./ficha/ficha-preferencias.js). Nada de orçamento, atributo ou combate aqui.
+    preferenciasFicha: null,
+
     // ADDONS: as regras próprias da mesa que esta criatura usa, como CÓPIA
     // congelada do pacote (e não referência a uma biblioteca).
     // ⚠ Mesma decisão da `aparencia` logo acima, e pelo mesmo motivo: exportar a
@@ -800,6 +809,7 @@ export function funcionamentosDaFicha(creature) {
         nome,
         descricao: String(f?.descricao ?? ""),
         efeitos: Array.isArray(f?.efeitos) ? f.efeitos : [],
+        ...(f?.acumula === true ? { acumula: true } : {}),
       });
     }
   }

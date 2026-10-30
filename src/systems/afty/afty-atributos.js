@@ -25,7 +25,7 @@
  * Três métodos de montar a BASE (o GM escolhe por criatura):
  *   • Compra por Pontos (17 pts, tabela de custo, faixa 8–15)
  *   • Valores Fixos (15,14,13,12,10,8)
- *   • Rolagem (4d6, descarta o menor)
+ *   • Rolagem (4d6, descarta o menor, Base de 3 a 18)
  *
  * Regra adicional: pontos de atributo a cada 4 ND, alocados POR CIMA
  * da base (1:1, cada ponto = +1 no valor), respeitando o limite. Pool
@@ -39,6 +39,7 @@ import { AFTY_ATTRS } from "./afty-schema";
 import { nivelDaFicha } from "./afty-addons";
 import { regrasAftyDaCriatura } from "./afty-regras-addon";
 import { sistemaDaFicha } from "./afty-sistema";
+import { atributosDosAddons } from "./afty-addons-atributos";
 
 export const ATTR_KEYS = ["forca", "destreza", "constituicao", "inteligencia", "sabedoria", "presenca"];
 
@@ -82,6 +83,14 @@ export const roll4d6DropLowest = () => {
 };
 export const rolarAtributos = () =>
   Object.fromEntries(ATTR_KEYS.map((k) => [k, roll4d6DropLowest()]));
+/* A faixa do campo de Base na Rolagem é a do próprio dado (autor, 2026-10-12):
+   antes o campo aceitava até 30, e o teto só existe para um Addon poder subi-lo
+   (Atributo Fang leva a Inteligência a 19). Ficha salva acima do teto continua
+   abrindo, com aviso. */
+export const ROLAGEM_MIN = 3;
+export const ROLAGEM_MAX = 18;
+export const rolagemMaxDe = (creature, key) =>
+  Math.max(ROLAGEM_MAX, atributosDosAddons(creature).baseMaxRolagem(key) ?? ROLAGEM_MAX);
 
 // ---------- Pontos de nível (a cada 4 ND) ----------
 // Comum e Desafio dão 2 por ciclo. Calamidade e Beyond dão 3.
@@ -153,6 +162,12 @@ export function resumoAtributos(creature, limitesEfetivos = null, perdas = null,
     }
   } else if (metodo === "fixos" && !valoresFixosOk(attrs)) {
     warnings.push("Valores Fixos: distribua exatamente 15, 14, 13, 12, 10 e 8.");
+  } else if (metodo === "rolagem") {
+    for (const k of ATTR_KEYS) {
+      const v = attrs[k];
+      const max = rolagemMaxDe(creature, k);
+      if (v < ROLAGEM_MIN || v > max) warnings.push(`${ATTR_LABEL[k] ?? k}: base ${v} fora da faixa ${ROLAGEM_MIN} a ${max}.`);
+    }
   }
 
   if (nivelUsado > nivelTotal) warnings.push(`Pontos de nível: ${nivelUsado} de ${nivelTotal} (excedeu).`);

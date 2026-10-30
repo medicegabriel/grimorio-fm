@@ -1,0 +1,1026 @@
+{
+  "geradoEm": "2026-10-23T00:12:39.117Z",
+  "base": "http://127.0.0.1:5330",
+  "etapas": [
+    {
+      "nome": "altura S1-1280x800-compacta",
+      "checks": [
+        {
+          "id": "primeira linha de Dano dentro da primeira tela",
+          "ok": true,
+          "dados": {
+            "util": 854,
+            "alturaJanela": 800,
+            "cabecalho": 285,
+            "danoTopo": 717,
+            "danoFundo": 769,
+            "mesaAltura": 116,
+            "celulas": [
+              54,
+              54,
+              54,
+              54
+            ],
+            "cortados": [],
+            "elipses": [],
+            "alvoMin": 36,
+            "colunas": 1,
+            "comConteudo": 2,
+            "grade": null,
+            "fonteMin": 13
+          }
+        },
+        {
+          "id": "nenhum nome ou fórmula cortado",
+          "ok": true,
+          "dados": {
+            "cortados": [],
+            "elipses": []
+          }
+        },
+        {
+          "id": "alvos que rolam com 34 px ou mais (40 no toque)",
+          "ok": true,
+          "dados": 36
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "util": 854,
+        "alturaJanela": 800,
+        "cabecalho": 285,
+        "danoTopo": 717,
+        "danoFundo": 769,
+        "mesaAltura": 116,
+        "celulas": [
+          54,
+          54,
+          54,
+          54
+        ],
+        "cortados": [],
+        "elipses": [],
+        "alvoMin": 36,
+        "colunas": 1,
+        "comConteudo": 2,
+        "grade": null,
+        "fonteMin": 13
+      }
+    },
+    {
+      "nome": "altura S1-768x1024-compacta",
+      "checks": [
+        {
+          "id": "primeira linha de Dano dentro da primeira tela",
+          "ok": true,
+          "dados": {
+            "util": 346,
+            "alturaJanela": 1024,
+            "cabecalho": 300,
+            "danoTopo": 863,
+            "danoFundo": 962,
+            "mesaAltura": 240,
+            "celulas": [
+              54,
+              54,
+              54,
+              54
+            ],
+            "cortados": [],
+            "elipses": [],
+            "alvoMin": 36,
+            "colunas": 1,
+            "comConteudo": 2,
+            "grade": null,
+            "fonteMin": 13
+          }
+        },
+        {
+          "id": "nenhum nome ou fórmula cortado",
+          "ok": true,
+          "dados": {
+            "cortados": [],
+            "elipses": []
+          }
+        },
+        {
+          "id": "alvos que rolam com 34 px ou mais (40 no toque)",
+          "ok": true,
+          "dados": 36
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "util": 346,
+        "alturaJanela": 1024,
+        "cabecalho": 300,
+        "danoTopo": 863,
+        "danoFundo": 962,
+        "mesaAltura": 240,
+        "celulas": [
+          54,
+          54,
+          54,
+          54
+        ],
+        "cortados": [],
+        "elipses": [],
+        "alvoMin": 36,
+        "colunas": 1,
+        "comConteudo": 2,
+        "grade": null,
+        "fonteMin": 13
+      }
+    },
+    {
+      "nome": "altura S1-390x844-telefone",
+      "checks": [
+        {
+          "id": "nenhum nome ou fórmula cortado",
+          "ok": true,
+          "dados": {
+            "cortados": [],
+            "elipses": []
+          }
+        },
+        {
+          "id": "alvos que rolam com 34 px ou mais (40 no toque)",
+          "ok": true,
+          "dados": 40
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "util": 366,
+        "alturaJanela": 844,
+        "cabecalho": 414,
+        "danoTopo": 977,
+        "danoFundo": 1092,
+        "mesaAltura": 240,
+        "celulas": [
+          54,
+          54,
+          54,
+          54
+        ],
+        "cortados": [],
+        "elipses": [],
+        "alvoMin": 40,
+        "colunas": 1,
+        "comConteudo": 2,
+        "grade": null,
+        "fonteMin": 13
+      }
+    },
+    {
+      "nome": "altura S2-1280x800-compacta",
+      "checks": [
+        {
+          "id": "nenhum nome ou fórmula cortado",
+          "ok": true,
+          "dados": {
+            "cortados": [],
+            "elipses": []
+          }
+        },
+        {
+          "id": "alvos que rolam com 34 px ou mais (40 no toque)",
+          "ok": true,
+          "dados": 36
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "util": 854,
+        "alturaJanela": 800,
+        "cabecalho": 262,
+        "danoTopo": 1012,
+        "danoFundo": 1064,
+        "mesaAltura": 302,
+        "celulas": [
+          54,
+          54,
+          54,
+          54,
+          54,
+          54,
+          54,
+          54,
+          54
+        ],
+        "cortados": [],
+        "elipses": [],
+        "alvoMin": 36,
+        "colunas": 1,
+        "comConteudo": 2,
+        "grade": null,
+        "fonteMin": 13
+      }
+    },
+    {
+      "nome": "altura S2-1440x900",
+      "checks": [
+        {
+          "id": "nenhum nome ou fórmula cortado",
+          "ok": true,
+          "dados": {
+            "cortados": [],
+            "elipses": []
+          }
+        },
+        {
+          "id": "alvos que rolam com 34 px ou mais (40 no toque)",
+          "ok": true,
+          "dados": 36
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "util": 1244,
+        "alturaJanela": 900,
+        "cabecalho": 262,
+        "danoTopo": 905,
+        "danoFundo": 966,
+        "mesaAltura": 195,
+        "celulas": [
+          71,
+          71,
+          71,
+          71,
+          54,
+          54,
+          54,
+          54,
+          54
+        ],
+        "cortados": [],
+        "elipses": [],
+        "alvoMin": 36,
+        "colunas": 2,
+        "comConteudo": 2,
+        "grade": null,
+        "fonteMin": 13
+      }
+    },
+    {
+      "nome": "altura S2-2560x1440-compacta",
+      "checks": [
+        {
+          "id": "primeira linha de Dano dentro da primeira tela",
+          "ok": true,
+          "dados": {
+            "util": 1724,
+            "alturaJanela": 1440,
+            "cabecalho": 262,
+            "danoTopo": 840,
+            "danoFundo": 892,
+            "mesaAltura": 131,
+            "celulas": [
+              69,
+              69,
+              69,
+              69,
+              69,
+              54,
+              54,
+              54,
+              54
+            ],
+            "cortados": [],
+            "elipses": [],
+            "alvoMin": 36,
+            "colunas": 2,
+            "comConteudo": 2,
+            "grade": null,
+            "fonteMin": 13
+          }
+        },
+        {
+          "id": "nenhum nome ou fórmula cortado",
+          "ok": true,
+          "dados": {
+            "cortados": [],
+            "elipses": []
+          }
+        },
+        {
+          "id": "alvos que rolam com 34 px ou mais (40 no toque)",
+          "ok": true,
+          "dados": 36
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "util": 1724,
+        "alturaJanela": 1440,
+        "cabecalho": 262,
+        "danoTopo": 840,
+        "danoFundo": 892,
+        "mesaAltura": 131,
+        "celulas": [
+          69,
+          69,
+          69,
+          69,
+          69,
+          54,
+          54,
+          54,
+          54
+        ],
+        "cortados": [],
+        "elipses": [],
+        "alvoMin": 36,
+        "colunas": 2,
+        "comConteudo": 2,
+        "grade": null,
+        "fonteMin": 13
+      }
+    },
+    {
+      "nome": "331 tipica-768-compacta-com-barra",
+      "checks": [
+        {
+          "id": "acoes: largura útil de 331 px ou menos (barra real)",
+          "ok": true,
+          "dados": 331
+        },
+        {
+          "id": "acoes: nada cortado",
+          "ok": true,
+          "dados": {
+            "cortados": [],
+            "elipses": []
+          }
+        },
+        {
+          "id": "acoes: alvo mínimo",
+          "ok": true,
+          "dados": 36
+        },
+        {
+          "id": "acoes: fonte mínima 12,5 px",
+          "ok": true,
+          "dados": 13
+        },
+        {
+          "id": "S1: primeira linha de Dano dentro da primeira tela",
+          "ok": true,
+          "dados": {
+            "util": 331,
+            "alturaJanela": 1024,
+            "cabecalho": 300,
+            "danoTopo": 863,
+            "danoFundo": 962,
+            "mesaAltura": 240,
+            "celulas": [
+              54,
+              54,
+              54,
+              54
+            ],
+            "cortados": [],
+            "elipses": [],
+            "alvoMin": 36,
+            "colunas": 1,
+            "comConteudo": 2,
+            "grade": null,
+            "fonteMin": 13
+          }
+        },
+        {
+          "id": "acoes: sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "pericias: largura útil de 331 px ou menos (barra real)",
+          "ok": true,
+          "dados": 331
+        },
+        {
+          "id": "pericias: nada cortado",
+          "ok": true,
+          "dados": {
+            "cortados": [],
+            "elipses": []
+          }
+        },
+        {
+          "id": "pericias: alvo mínimo",
+          "ok": true,
+          "dados": 36
+        },
+        {
+          "id": "pericias: fonte mínima 12,5 px",
+          "ok": true,
+          "dados": 12.5
+        },
+        {
+          "id": "pericias: sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "equipamentos: largura útil de 331 px ou menos (barra real)",
+          "ok": true,
+          "dados": 331
+        },
+        {
+          "id": "equipamentos: nada cortado",
+          "ok": true,
+          "dados": {
+            "cortados": [],
+            "elipses": []
+          }
+        },
+        {
+          "id": "equipamentos: alvo mínimo",
+          "ok": true,
+          "dados": null
+        },
+        {
+          "id": "equipamentos: fonte mínima 12,5 px",
+          "ok": true,
+          "dados": 13
+        },
+        {
+          "id": "equipamentos: sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "acoes": {
+          "util": 331,
+          "danoFundo": 962,
+          "alturaJanela": 1024,
+          "alvoMin": 36,
+          "fonteMin": 13
+        },
+        "pericias": {
+          "util": 331,
+          "danoFundo": null,
+          "alturaJanela": 1024,
+          "alvoMin": 36,
+          "fonteMin": 12.5
+        },
+        "equipamentos": {
+          "util": 331,
+          "danoFundo": null,
+          "alturaJanela": 1024,
+          "alvoMin": null,
+          "fonteMin": 13
+        }
+      }
+    },
+    {
+      "nome": "331 mesa-768-compacta-com-barra",
+      "checks": [
+        {
+          "id": "acoes: largura útil de 331 px ou menos (barra real)",
+          "ok": true,
+          "dados": 331
+        },
+        {
+          "id": "acoes: nada cortado",
+          "ok": true,
+          "dados": {
+            "cortados": [],
+            "elipses": []
+          }
+        },
+        {
+          "id": "acoes: alvo mínimo",
+          "ok": true,
+          "dados": 36
+        },
+        {
+          "id": "acoes: fonte mínima 12,5 px",
+          "ok": true,
+          "dados": 13
+        },
+        {
+          "id": "acoes: sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "pericias: largura útil de 331 px ou menos (barra real)",
+          "ok": true,
+          "dados": 331
+        },
+        {
+          "id": "pericias: nada cortado",
+          "ok": true,
+          "dados": {
+            "cortados": [],
+            "elipses": []
+          }
+        },
+        {
+          "id": "pericias: alvo mínimo",
+          "ok": true,
+          "dados": 36
+        },
+        {
+          "id": "pericias: fonte mínima 12,5 px",
+          "ok": true,
+          "dados": 12.5
+        },
+        {
+          "id": "pericias: sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "equipamentos: largura útil de 331 px ou menos (barra real)",
+          "ok": true,
+          "dados": 331
+        },
+        {
+          "id": "equipamentos: nada cortado",
+          "ok": true,
+          "dados": {
+            "cortados": [],
+            "elipses": []
+          }
+        },
+        {
+          "id": "equipamentos: alvo mínimo",
+          "ok": true,
+          "dados": null
+        },
+        {
+          "id": "equipamentos: fonte mínima 12,5 px",
+          "ok": true,
+          "dados": 13
+        },
+        {
+          "id": "equipamentos: sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "acoes": {
+          "util": 331,
+          "danoFundo": 1435,
+          "alturaJanela": 1024,
+          "alvoMin": 36,
+          "fonteMin": 13
+        },
+        "pericias": {
+          "util": 331,
+          "danoFundo": null,
+          "alturaJanela": 1024,
+          "alvoMin": 36,
+          "fonteMin": 12.5
+        },
+        "equipamentos": {
+          "util": 331,
+          "danoFundo": null,
+          "alturaJanela": 1024,
+          "alvoMin": null,
+          "fonteMin": 13
+        }
+      }
+    },
+    {
+      "nome": "331 arsenal-768-compacta-com-barra",
+      "checks": [
+        {
+          "id": "acoes: largura útil de 331 px ou menos (barra real)",
+          "ok": true,
+          "dados": 331
+        },
+        {
+          "id": "acoes: nada cortado",
+          "ok": true,
+          "dados": {
+            "cortados": [],
+            "elipses": []
+          }
+        },
+        {
+          "id": "acoes: alvo mínimo",
+          "ok": true,
+          "dados": 36
+        },
+        {
+          "id": "acoes: fonte mínima 12,5 px",
+          "ok": true,
+          "dados": 13
+        },
+        {
+          "id": "acoes: sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "pericias: largura útil de 331 px ou menos (barra real)",
+          "ok": true,
+          "dados": 331
+        },
+        {
+          "id": "pericias: nada cortado",
+          "ok": true,
+          "dados": {
+            "cortados": [],
+            "elipses": []
+          }
+        },
+        {
+          "id": "pericias: alvo mínimo",
+          "ok": true,
+          "dados": 36
+        },
+        {
+          "id": "pericias: fonte mínima 12,5 px",
+          "ok": true,
+          "dados": 12.5
+        },
+        {
+          "id": "pericias: sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "equipamentos: largura útil de 331 px ou menos (barra real)",
+          "ok": true,
+          "dados": 331
+        },
+        {
+          "id": "equipamentos: nada cortado",
+          "ok": true,
+          "dados": {
+            "cortados": [],
+            "elipses": []
+          }
+        },
+        {
+          "id": "equipamentos: alvo mínimo",
+          "ok": true,
+          "dados": null
+        },
+        {
+          "id": "equipamentos: fonte mínima 12,5 px",
+          "ok": true,
+          "dados": 13
+        },
+        {
+          "id": "equipamentos: sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "acoes": {
+          "util": 331,
+          "danoFundo": 801,
+          "alturaJanela": 1024,
+          "alvoMin": 36,
+          "fonteMin": 13
+        },
+        "pericias": {
+          "util": 331,
+          "danoFundo": null,
+          "alturaJanela": 1024,
+          "alvoMin": 36,
+          "fonteMin": 12.5
+        },
+        "equipamentos": {
+          "util": 331,
+          "danoFundo": null,
+          "alturaJanela": 1024,
+          "alvoMin": null,
+          "fonteMin": 13
+        }
+      }
+    },
+    {
+      "nome": "331 conjurador-768-compacta-com-barra",
+      "checks": [
+        {
+          "id": "acoes: largura útil de 331 px ou menos (barra real)",
+          "ok": true,
+          "dados": 331
+        },
+        {
+          "id": "acoes: nada cortado",
+          "ok": true,
+          "dados": {
+            "cortados": [],
+            "elipses": []
+          }
+        },
+        {
+          "id": "acoes: alvo mínimo",
+          "ok": true,
+          "dados": 36
+        },
+        {
+          "id": "acoes: fonte mínima 12,5 px",
+          "ok": true,
+          "dados": 13
+        },
+        {
+          "id": "acoes: sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "pericias: largura útil de 331 px ou menos (barra real)",
+          "ok": true,
+          "dados": 331
+        },
+        {
+          "id": "pericias: nada cortado",
+          "ok": true,
+          "dados": {
+            "cortados": [],
+            "elipses": []
+          }
+        },
+        {
+          "id": "pericias: alvo mínimo",
+          "ok": true,
+          "dados": 36
+        },
+        {
+          "id": "pericias: fonte mínima 12,5 px",
+          "ok": true,
+          "dados": 12.5
+        },
+        {
+          "id": "pericias: sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "equipamentos: largura útil de 331 px ou menos (barra real)",
+          "ok": true,
+          "dados": 331
+        },
+        {
+          "id": "equipamentos: nada cortado",
+          "ok": true,
+          "dados": {
+            "cortados": [],
+            "elipses": []
+          }
+        },
+        {
+          "id": "equipamentos: alvo mínimo",
+          "ok": true,
+          "dados": null
+        },
+        {
+          "id": "equipamentos: fonte mínima 12,5 px",
+          "ok": true,
+          "dados": null
+        },
+        {
+          "id": "equipamentos: sem estouro",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "culpados": []
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "acoes": {
+          "util": 331,
+          "danoFundo": 522,
+          "alturaJanela": 1024,
+          "alvoMin": 36,
+          "fonteMin": 13
+        },
+        "pericias": {
+          "util": 331,
+          "danoFundo": null,
+          "alturaJanela": 1024,
+          "alvoMin": 36,
+          "fonteMin": 12.5
+        },
+        "equipamentos": {
+          "util": 331,
+          "danoFundo": null,
+          "alturaJanela": 1024,
+          "alvoMin": null,
+          "fonteMin": null
+        }
+      }
+    },
+    {
+      "nome": "altura S1-1280x800-compacta-com-barra",
+      "checks": [
+        {
+          "id": "primeira linha de Dano dentro da primeira tela",
+          "ok": true,
+          "dados": {
+            "util": 839,
+            "alturaJanela": 800,
+            "cabecalho": 304,
+            "danoTopo": 736,
+            "danoFundo": 788,
+            "mesaAltura": 116,
+            "celulas": [
+              54,
+              54,
+              54,
+              54
+            ],
+            "cortados": [],
+            "elipses": [],
+            "alvoMin": 36,
+            "colunas": 1,
+            "comConteudo": 2,
+            "grade": null,
+            "fonteMin": 13
+          }
+        },
+        {
+          "id": "nenhum nome ou fórmula cortado",
+          "ok": true,
+          "dados": {
+            "cortados": [],
+            "elipses": []
+          }
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "util": 839,
+        "alturaJanela": 800,
+        "cabecalho": 304,
+        "danoTopo": 736,
+        "danoFundo": 788,
+        "mesaAltura": 116,
+        "celulas": [
+          54,
+          54,
+          54,
+          54
+        ],
+        "cortados": [],
+        "elipses": [],
+        "alvoMin": 36,
+        "colunas": 1,
+        "comConteudo": 2,
+        "grade": null,
+        "fonteMin": 13
+      }
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "altura S1-1280x800-compacta: 5/5",
+    "altura S1-768x1024-compacta: 5/5",
+    "altura S1-390x844-telefone: 4/4",
+    "altura S2-1280x800-compacta: 4/4",
+    "altura S2-1440x900: 4/4",
+    "altura S2-2560x1440-compacta: 5/5",
+    "331 tipica-768-compacta-com-barra: 17/17",
+    "331 mesa-768-compacta-com-barra: 16/16",
+    "331 arsenal-768-compacta-com-barra: 16/16",
+    "331 conjurador-768-compacta-com-barra: 16/16",
+    "altura S1-1280x800-compacta-com-barra: 2/2"
+  ]
+}

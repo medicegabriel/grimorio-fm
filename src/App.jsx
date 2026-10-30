@@ -437,6 +437,13 @@ export default function App() {
           onSalvarEspinho={(espinho) => storage.update(activeCreature.id, { espinho })}
           /* A morte do Fundamento (DA-07): a perda da Técnica Inata fica na ficha. */
           onSalvarFundamentosPerdidos={(fundamentosPerdidos) => storage.update(activeCreature.id, { fundamentosPerdidos })}
+          /* As preferências de apresentação da Ficha (hoje: as estatísticas do cabeçalho) moram NA CRIATURA, para viajar no export. O campo vai
+             inteiro, com os outros subcampos, porque o `update` faz merge de chave de primeiro nível. */
+          onSalvarPreferencias={(preferenciasFicha) => storage.update(activeCreature.id, { preferenciasFicha })}
+          /* Pacotes para Aliados (2026-10-19): os pacotes que o suporte prepara e a biblioteca de pacotes recebidos moram na criatura, para
+             sobreviver à recarga e viajar no export. Mesmo merge de chave de primeiro nível das preferências. */
+          onSalvarPacotesAliados={(pacotesAliados) => storage.update(activeCreature.id, { pacotesAliados })}
+          onSalvarRecebidos={(pacotesRecebidos) => storage.update(activeCreature.id, { pacotesRecebidos })}
         />
       );
     },

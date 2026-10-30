@@ -5,6 +5,8 @@
   "autor": "Afty",
   "paraRaw": "afty",
   "descricao": "A variação do Especialista em Técnicas para quem não tem técnica nenhuma. O Sem Técnica não pode ter a Especialização Conjurador, e este pacote abre no lugar dela o Especialista em Estilo, que É o Conjurador com as mesmas 65 habilidades, lidas sobre Aptidões Amaldiçoadas e Técnicas de Estilo em vez de Feitiços. Só o Sem Técnica enxerga, e ela não convive com o Conjurador na mesma ficha.",
+  "resumo": "Especialização para o Sem Técnica: o Conjurador lido sobre Aptidões e Técnicas de Estilo",
+  "categoria": "talentos",
   "permite": ["requisitoAptidao"],
   "acrescenta": {
     "especializacoes": [

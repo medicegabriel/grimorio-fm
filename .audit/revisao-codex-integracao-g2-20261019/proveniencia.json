@@ -1,0 +1,427 @@
+{
+  "geradoEm": "2026-10-19T16:58:06.169Z",
+  "hashes": [
+    {
+      "file": "src/systems/afty/ficha/ficha-buffs.js",
+      "registrado": "4a2da7a6e75d58d2",
+      "atual": "4a2da7a6e75d58d2"
+    },
+    {
+      "file": "src/systems/afty/ficha/ficha-conteudo.js",
+      "registrado": "5556ce8cea2bda52",
+      "atual": "5556ce8cea2bda52"
+    },
+    {
+      "file": "src/systems/afty/ficha/ficha-especializacoes.js",
+      "registrado": "3e44bec64385f130",
+      "atual": "3e44bec64385f130"
+    },
+    {
+      "file": "src/systems/afty/ficha/ficha-estados.js",
+      "registrado": "6db1389953fe9d8e",
+      "atual": "6db1389953fe9d8e"
+    },
+    {
+      "file": "src/systems/afty/ficha/ficha-opcoes-derive.js",
+      "registrado": "f17a1432b4acbfe8",
+      "atual": "f17a1432b4acbfe8"
+    },
+    {
+      "file": "src/systems/afty/ficha/ficha-preferencias.js",
+      "registrado": "7a3ed3c200509b01",
+      "atual": "7a3ed3c200509b01"
+    },
+    {
+      "file": "src/systems/afty/ficha/ficha-rolagem.js",
+      "registrado": "69485d82b98d9419",
+      "atual": "69485d82b98d9419"
+    },
+    {
+      "file": "src/systems/afty/ficha/ficha-sessao.js",
+      "registrado": "70da88cd52f29f8c",
+      "atual": "70da88cd52f29f8c"
+    },
+    {
+      "file": "src/systems/afty/ficha/ficha-tema.js",
+      "registrado": "6149202010a719b2",
+      "atual": "6149202010a719b2"
+    },
+    {
+      "file": "src/systems/afty/ficha/usar-delta-dos-estados.js",
+      "registrado": "1d9108c153c1298b",
+      "atual": "1d9108c153c1298b"
+    },
+    {
+      "file": "src/systems/afty/ficha/usar-destaque.js",
+      "registrado": "f55b8e3e8bad4568",
+      "atual": "f55b8e3e8bad4568"
+    },
+    {
+      "file": "src/systems/afty/ficha/AftyFicha.jsx",
+      "registrado": "5bd1a3eafda476e0",
+      "atual": "5bd1a3eafda476e0"
+    },
+    {
+      "file": "src/systems/afty/ficha/AftyFichaClassica.jsx",
+      "registrado": "dc9ab37a414af70a",
+      "atual": "dc9ab37a414af70a"
+    },
+    {
+      "file": "src/systems/afty/ficha/AftyFichaG2.jsx",
+      "registrado": "9fd41a60fce524d1",
+      "atual": "9fd41a60fce524d1"
+    },
+    {
+      "file": "src/systems/afty/ficha/BotaoDeDescanso.jsx",
+      "registrado": "4ea6ef13c580b3c6",
+      "atual": "4ea6ef13c580b3c6"
+    },
+    {
+      "file": "src/systems/afty/ficha/BuscaGlobal.jsx",
+      "registrado": "c09bdaab5e00349a",
+      "atual": "c09bdaab5e00349a"
+    },
+    {
+      "file": "src/systems/afty/ficha/CanalPicker.jsx",
+      "registrado": "bdbc4869889034fe",
+      "atual": "bdbc4869889034fe"
+    },
+    {
+      "file": "src/systems/afty/ficha/ControleExpansao.jsx",
+      "registrado": "841a536171bfbd3d",
+      "atual": "841a536171bfbd3d"
+    },
+    {
+      "file": "src/systems/afty/ficha/ControleTecnicaMaxima.jsx",
+      "registrado": "ef96de4272553eab",
+      "atual": "ef96de4272553eab"
+    },
+    {
+      "file": "src/systems/afty/ficha/ControlesDeArma.jsx",
+      "registrado": "49e3d675bfb7fb96",
+      "atual": "49e3d675bfb7fb96"
+    },
+    {
+      "file": "src/systems/afty/ficha/GavetaDeCondicoes.jsx",
+      "registrado": "de019203f4b6fa63",
+      "atual": "de019203f4b6fa63"
+    },
+    {
+      "file": "src/systems/afty/ficha/GrupoComSubAbas.jsx",
+      "registrado": "376ee0bca4fb9766",
+      "atual": "376ee0bca4fb9766"
+    },
+    {
+      "file": "src/systems/afty/ficha/ItemDeFicha.jsx",
+      "registrado": "aa45ed9a3dd50144",
+      "atual": "aa45ed9a3dd50144"
+    },
+    {
+      "file": "src/systems/afty/ficha/PainelBloodfeast.jsx",
+      "registrado": "c421089250271d76",
+      "atual": "c421089250271d76"
+    },
+    {
+      "file": "src/systems/afty/ficha/PainelDeAdaptacao.jsx",
+      "registrado": "20fc6e9fa20b8d92",
+      "atual": "20fc6e9fa20b8d92"
+    },
+    {
+      "file": "src/systems/afty/ficha/PainelDeAparencia.jsx",
+      "registrado": "7adcc51e49b2f674",
+      "atual": "7adcc51e49b2f674"
+    },
+    {
+      "file": "src/systems/afty/ficha/PainelDeConcessao.jsx",
+      "registrado": "c58f27e821fc3815",
+      "atual": "c58f27e821fc3815"
+    },
+    {
+      "file": "src/systems/afty/ficha/PainelDeImitacao.jsx",
+      "registrado": "d196a7e9bbdda07c",
+      "atual": "d196a7e9bbdda07c"
+    },
+    {
+      "file": "src/systems/afty/ficha/PainelDeRolagens.jsx",
+      "registrado": "d4a7838fa6a42fa1",
+      "atual": "d4a7838fa6a42fa1"
+    },
+    {
+      "file": "src/systems/afty/ficha/PainelDharma.jsx",
+      "registrado": "f69af08c70768df5",
+      "atual": "f69af08c70768df5"
+    },
+    {
+      "file": "src/systems/afty/ficha/PainelDoGolpeEspecial.jsx",
+      "registrado": "7e4265335a3739ce",
+      "atual": "7e4265335a3739ce"
+    },
+    {
+      "file": "src/systems/afty/ficha/PainelDoVislumbre.jsx",
+      "registrado": "3cdc4c4b1dc74371",
+      "atual": "3cdc4c4b1dc74371"
+    },
+    {
+      "file": "src/systems/afty/ficha/PainelManipulacaoCeu.jsx",
+      "registrado": "c4c52f1cf6ddca9a",
+      "atual": "c4c52f1cf6ddca9a"
+    },
+    {
+      "file": "src/systems/afty/ficha/PainelOlhinhosLu.jsx",
+      "registrado": "f2f164f2155747e5",
+      "atual": "f2f164f2155747e5"
+    },
+    {
+      "file": "src/systems/afty/ficha/PainelOlhosAgulha.jsx",
+      "registrado": "dbbec7439e832940",
+      "atual": "dbbec7439e832940"
+    },
+    {
+      "file": "src/systems/afty/ficha/SubAbas.jsx",
+      "registrado": "ec1c86fafab8a36b",
+      "atual": "ec1c86fafab8a36b"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/CabecalhoG2.jsx",
+      "registrado": "91373077b35d9f41",
+      "atual": "91373077b35d9f41"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/CatalogoG2.jsx",
+      "registrado": "7beed0e228c37dfb",
+      "atual": "7beed0e228c37dfb"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/CompactaG2.jsx",
+      "registrado": "b013a5793c38dc6d",
+      "atual": "b013a5793c38dc6d"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/ConsultaG2.jsx",
+      "registrado": "b641b345cbf33c70",
+      "atual": "b641b345cbf33c70"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/EncerradosG2.jsx",
+      "registrado": "a2ee686e810dd502",
+      "atual": "a2ee686e810dd502"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/EstatisticasConfig.jsx",
+      "registrado": "c291814aef10dac4",
+      "atual": "c291814aef10dac4"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/Gestor.jsx",
+      "registrado": "9ebd26b7e789f2e4",
+      "atual": "9ebd26b7e789f2e4"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/HabilidadesG2.jsx",
+      "registrado": "929e914a8e9153c9",
+      "atual": "929e914a8e9153c9"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/HistoricoSessao.jsx",
+      "registrado": "33ac0f52983af795",
+      "atual": "33ac0f52983af795"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/LinhaDoTempoG2.jsx",
+      "registrado": "c43b856a0b0cbcbf",
+      "atual": "c43b856a0b0cbcbf"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/PecasG2.jsx",
+      "registrado": "a2002b67bb57e07e",
+      "atual": "a2002b67bb57e07e"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/PreparoG2.jsx",
+      "registrado": "30366c67e544e467",
+      "atual": "30366c67e544e467"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/UsoG2.jsx",
+      "registrado": "0ce0530b66d35122",
+      "atual": "0ce0530b66d35122"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/VisaoG2.jsx",
+      "registrado": "96d52c5ba234a98a",
+      "atual": "96d52c5ba234a98a"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/efeitos-dados.js",
+      "registrado": "9de2e26170ff7fb0",
+      "atual": "9de2e26170ff7fb0"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/efeitos-g2.css",
+      "registrado": "ba39fb337d7d6be3",
+      "atual": "ba39fb337d7d6be3"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/estatisticas.js",
+      "registrado": "1e2658974c38ed0f",
+      "atual": "1e2658974c38ed0f"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/exemplos.js",
+      "registrado": "7ad555823eeb9d48",
+      "atual": "7ad555823eeb9d48"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/feitico.js",
+      "registrado": "880ae9cebb4ae64b",
+      "atual": "880ae9cebb4ae64b"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/g2-dados.js",
+      "registrado": "9e8b1fdd9e0067b1",
+      "atual": "9e8b1fdd9e0067b1"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/g2-golpe.js",
+      "registrado": "e53064dfac6f9672",
+      "atual": "e53064dfac6f9672"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/g2-linha-do-tempo.js",
+      "registrado": "21ef5cbb2c2c3243",
+      "atual": "21ef5cbb2c2c3243"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/g2-preparo.js",
+      "registrado": "266bf5b0ead1fb53",
+      "atual": "266bf5b0ead1fb53"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/g2-uso.js",
+      "registrado": "b9c6373deee17f65",
+      "atual": "b9c6373deee17f65"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/gestor-logica.js",
+      "registrado": "aacb53e343ec251f",
+      "atual": "aacb53e343ec251f"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/habilidades-logica.js",
+      "registrado": "6b1f5c7094c81bbd",
+      "atual": "6b1f5c7094c81bbd"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/historico-logica.js",
+      "registrado": "d9c8f5da3de5f684",
+      "atual": "d9c8f5da3de5f684"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/mesa-verbos.js",
+      "registrado": "7e9fa839433a4af7",
+      "atual": "7e9fa839433a4af7"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/operacoes.js",
+      "registrado": "b18ee50eb25e01fa",
+      "atual": "b18ee50eb25e01fa"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/pecas-logica.js",
+      "registrado": "fbe3ac878087a512",
+      "atual": "fbe3ac878087a512"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/pecas.jsx",
+      "registrado": "4438515bebaa1953",
+      "atual": "4438515bebaa1953"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/ponte.js",
+      "registrado": "cf7495447809cb23",
+      "atual": "cf7495447809cb23"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/preparo-logica.js",
+      "registrado": "7d22c53595a12268",
+      "atual": "7d22c53595a12268"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/recebidos.js",
+      "registrado": "f04637d0e8538fcf",
+      "atual": "f04637d0e8538fcf"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/repertorio.js",
+      "registrado": "6f9d52d682db9ae6",
+      "atual": "6f9d52d682db9ae6"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/rolagem-g2.js",
+      "registrado": "e193d9ab9ae691c5",
+      "atual": "e193d9ab9ae691c5"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/sessao-g2.js",
+      "registrado": "883ae39042b3847b",
+      "atual": "883ae39042b3847b"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/ui-fontes.jsx",
+      "registrado": "8f115643c00f18d3",
+      "atual": "8f115643c00f18d3"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/useEfeitosG2.js",
+      "registrado": "5ceead6bcdeb7812",
+      "atual": "5ceead6bcdeb7812"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/useModeloG2.js",
+      "registrado": "6b2762bb4646facf",
+      "atual": "6b2762bb4646facf"
+    },
+    {
+      "file": "src/systems/afty/ficha/efeitos/util.js",
+      "registrado": "3765f46ae2828732",
+      "atual": "3765f46ae2828732"
+    },
+    {
+      "file": "asserts/t-g2-desempenho.mjs",
+      "registrado": "b194befc892c2799",
+      "atual": "b194befc892c2799"
+    },
+    {
+      "file": "asserts/t-g2-preferencias.mjs",
+      "registrado": "76ad7119760cfeec",
+      "atual": "76ad7119760cfeec"
+    },
+    {
+      "file": "asserts/t-g2-sessao-operacoes.mjs",
+      "registrado": "b77dea44429ccc52",
+      "atual": "b77dea44429ccc52"
+    },
+    {
+      "file": "asserts/t-g2-virada-registro.mjs",
+      "registrado": "908e1e49ccf825f0",
+      "atual": "908e1e49ccf825f0"
+    },
+    {
+      "file": "asserts/t-dominio-barreira.mjs",
+      "registrado": "90a55495d0abc486",
+      "atual": "90a55495d0abc486"
+    },
+    {
+      "file": "asserts/t-guarda.mjs",
+      "registrado": "0280d8ba44657599",
+      "atual": "0280d8ba44657599"
+    },
+    {
+      "file": "docs/revisao-automacao/escopo.json",
+      "registrado": "acc9f5b877532936",
+      "atual": "acc9f5b877532936"
+    }
+  ],
+  "divergencias": [],
+  "divergenciasAoFim": []
+}

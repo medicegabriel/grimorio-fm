@@ -1,0 +1,750 @@
+{
+  "geradoEm": "2026-10-19T17:12:05.899Z",
+  "base": "http://127.0.0.1:5311",
+  "casos": [
+    {
+      "id": "perf-calamidade-classica",
+      "checks": [
+        {
+          "id": "três operações reais medidas",
+          "ok": true,
+          "dados": [
+            {
+              "label": "Desligar Um com a Arma",
+              "tempoDOM": 17.80000001192093,
+              "tempoDoPonteiroAteDoisQuadros": 56.30000001192093,
+              "maxIntervaloEntreQuadros": 16.800000000000182,
+              "tarefasLongas": []
+            },
+            {
+              "label": "Desligar Brutalidade",
+              "tempoDOM": 15.699999988079071,
+              "tempoDoPonteiroAteDoisQuadros": 53.09999996423721,
+              "maxIntervaloEntreQuadros": 16.899999999999636,
+              "tarefasLongas": []
+            },
+            {
+              "label": "Desligar Ataque Inconsequente",
+              "tempoDOM": 15.600000023841858,
+              "tempoDoPonteiroAteDoisQuadros": 50.80000001192093,
+              "maxIntervaloEntreQuadros": 16.899999999999636,
+              "tarefasLongas": []
+            }
+          ]
+        },
+        {
+          "id": "sem congelamento de dois segundos na amostra",
+          "ok": true,
+          "dados": [
+            {
+              "label": "Desligar Um com a Arma",
+              "tempoDOM": 17.80000001192093,
+              "tempoDoPonteiroAteDoisQuadros": 56.30000001192093,
+              "maxIntervaloEntreQuadros": 16.800000000000182,
+              "tarefasLongas": []
+            },
+            {
+              "label": "Desligar Brutalidade",
+              "tempoDOM": 15.699999988079071,
+              "tempoDoPonteiroAteDoisQuadros": 53.09999996423721,
+              "maxIntervaloEntreQuadros": 16.899999999999636,
+              "tarefasLongas": []
+            },
+            {
+              "label": "Desligar Ataque Inconsequente",
+              "tempoDOM": 15.600000023841858,
+              "tempoDoPonteiroAteDoisQuadros": 50.80000001192093,
+              "maxIntervaloEntreQuadros": 16.899999999999636,
+              "tarefasLongas": []
+            }
+          ]
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "seed": {
+        "rodada": 3,
+        "ligados": [
+          "ativo",
+          "umComArma",
+          "brutalidade",
+          "ataqueInconsequente",
+          "impactoMisto",
+          "furiaVinganca",
+          "imprudenciaMotivadora",
+          "golpeAtroz",
+          "golpeLetal",
+          "arteExecucaoSilenciosa",
+          "espiritoDeLuta",
+          "auraExcessiva",
+          "auraElemental",
+          "faiscasNegras",
+          "canalizarEmGolpe"
+        ]
+      },
+      "medidas": [
+        {
+          "label": "Desligar Um com a Arma",
+          "tempoDOM": 17.80000001192093,
+          "tempoDoPonteiroAteDoisQuadros": 56.30000001192093,
+          "maxIntervaloEntreQuadros": 16.800000000000182,
+          "tarefasLongas": []
+        },
+        {
+          "label": "Desligar Brutalidade",
+          "tempoDOM": 15.699999988079071,
+          "tempoDoPonteiroAteDoisQuadros": 53.09999996423721,
+          "maxIntervaloEntreQuadros": 16.899999999999636,
+          "tarefasLongas": []
+        },
+        {
+          "label": "Desligar Ataque Inconsequente",
+          "tempoDOM": 15.600000023841858,
+          "tempoDoPonteiroAteDoisQuadros": 50.80000001192093,
+          "maxIntervaloEntreQuadros": 16.899999999999636,
+          "tarefasLongas": []
+        }
+      ],
+      "depois": {
+        "pe": 218,
+        "rodada": 3,
+        "ligados": [
+          "ativo",
+          "impactoMisto",
+          "furiaVinganca",
+          "imprudenciaMotivadora",
+          "golpeAtroz",
+          "golpeLetal",
+          "arteExecucaoSilenciosa",
+          "espiritoDeLuta",
+          "auraExcessiva",
+          "auraElemental",
+          "faiscasNegras",
+          "canalizarEmGolpe"
+        ],
+        "eventos": 0
+      }
+    },
+    {
+      "id": "perf-calamidade-g2",
+      "checks": [
+        {
+          "id": "três operações reais medidas",
+          "ok": true,
+          "dados": [
+            {
+              "label": "Abençoado pelas Faíscas Negras",
+              "tempoDOM": 15.199999988079071,
+              "tempoDoPonteiroAteDoisQuadros": 53.80000001192093,
+              "maxIntervaloEntreQuadros": 50,
+              "tarefasLongas": []
+            },
+            {
+              "label": "ArteExecução SilenciosaArtes do Combate",
+              "tempoDOM": 11.700000047683716,
+              "tempoDoPonteiroAteDoisQuadros": 48.200000047683716,
+              "maxIntervaloEntreQuadros": 50,
+              "tarefasLongas": []
+            },
+            {
+              "label": "Ataque Inconsequente",
+              "tempoDOM": 15.299999952316284,
+              "tempoDoPonteiroAteDoisQuadros": 51,
+              "maxIntervaloEntreQuadros": 33.399999999999636,
+              "tarefasLongas": []
+            }
+          ]
+        },
+        {
+          "id": "sem congelamento de dois segundos na amostra",
+          "ok": true,
+          "dados": [
+            {
+              "label": "Abençoado pelas Faíscas Negras",
+              "tempoDOM": 15.199999988079071,
+              "tempoDoPonteiroAteDoisQuadros": 53.80000001192093,
+              "maxIntervaloEntreQuadros": 50,
+              "tarefasLongas": []
+            },
+            {
+              "label": "ArteExecução SilenciosaArtes do Combate",
+              "tempoDOM": 11.700000047683716,
+              "tempoDoPonteiroAteDoisQuadros": 48.200000047683716,
+              "maxIntervaloEntreQuadros": 50,
+              "tarefasLongas": []
+            },
+            {
+              "label": "Ataque Inconsequente",
+              "tempoDOM": 15.299999952316284,
+              "tempoDoPonteiroAteDoisQuadros": 51,
+              "maxIntervaloEntreQuadros": 33.399999999999636,
+              "tarefasLongas": []
+            }
+          ]
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "seed": {
+        "rodada": 3,
+        "ligados": [
+          "ativo",
+          "umComArma",
+          "brutalidade",
+          "ataqueInconsequente",
+          "impactoMisto",
+          "furiaVinganca",
+          "imprudenciaMotivadora",
+          "golpeAtroz",
+          "golpeLetal",
+          "arteExecucaoSilenciosa",
+          "espiritoDeLuta",
+          "auraExcessiva",
+          "auraElemental",
+          "faiscasNegras",
+          "canalizarEmGolpe"
+        ]
+      },
+      "medidas": [
+        {
+          "label": "Abençoado pelas Faíscas Negras",
+          "tempoDOM": 15.199999988079071,
+          "tempoDoPonteiroAteDoisQuadros": 53.80000001192093,
+          "maxIntervaloEntreQuadros": 50,
+          "tarefasLongas": []
+        },
+        {
+          "label": "ArteExecução SilenciosaArtes do Combate",
+          "tempoDOM": 11.700000047683716,
+          "tempoDoPonteiroAteDoisQuadros": 48.200000047683716,
+          "maxIntervaloEntreQuadros": 50,
+          "tarefasLongas": []
+        },
+        {
+          "label": "Ataque Inconsequente",
+          "tempoDOM": 15.299999952316284,
+          "tempoDoPonteiroAteDoisQuadros": 51,
+          "maxIntervaloEntreQuadros": 33.399999999999636,
+          "tarefasLongas": []
+        }
+      ],
+      "depois": {
+        "pe": 218,
+        "rodada": 3,
+        "ligados": [
+          "ativo",
+          "umComArma",
+          "brutalidade",
+          "impactoMisto",
+          "furiaVinganca",
+          "imprudenciaMotivadora",
+          "golpeAtroz",
+          "golpeLetal",
+          "espiritoDeLuta",
+          "auraExcessiva",
+          "auraElemental",
+          "canalizarEmGolpe"
+        ],
+        "eventos": 0
+      }
+    },
+    {
+      "id": "perf-minamoto-classica",
+      "checks": [
+        {
+          "id": "três operações reais medidas",
+          "ok": true,
+          "dados": [
+            {
+              "label": "Desligar Golpe Especial · Atroz",
+              "tempoDOM": 36.5,
+              "tempoDoPonteiroAteDoisQuadros": 38.90000003576279,
+              "maxIntervaloEntreQuadros": 33.40000000000009,
+              "tarefasLongas": []
+            },
+            {
+              "label": "Desligar Golpe Especial · Letal",
+              "tempoDOM": 33.69999998807907,
+              "tempoDoPonteiroAteDoisQuadros": 36,
+              "maxIntervaloEntreQuadros": 33.400000000000546,
+              "tarefasLongas": []
+            },
+            {
+              "label": "Desligar Golpe Especial · Penetrante",
+              "tempoDOM": 33.5,
+              "tempoDoPonteiroAteDoisQuadros": 36,
+              "maxIntervaloEntreQuadros": 50,
+              "tarefasLongas": []
+            }
+          ]
+        },
+        {
+          "id": "sem congelamento de dois segundos na amostra",
+          "ok": true,
+          "dados": [
+            {
+              "label": "Desligar Golpe Especial · Atroz",
+              "tempoDOM": 36.5,
+              "tempoDoPonteiroAteDoisQuadros": 38.90000003576279,
+              "maxIntervaloEntreQuadros": 33.40000000000009,
+              "tarefasLongas": []
+            },
+            {
+              "label": "Desligar Golpe Especial · Letal",
+              "tempoDOM": 33.69999998807907,
+              "tempoDoPonteiroAteDoisQuadros": 36,
+              "maxIntervaloEntreQuadros": 33.400000000000546,
+              "tarefasLongas": []
+            },
+            {
+              "label": "Desligar Golpe Especial · Penetrante",
+              "tempoDOM": 33.5,
+              "tempoDoPonteiroAteDoisQuadros": 36,
+              "maxIntervaloEntreQuadros": 50,
+              "tarefasLongas": []
+            }
+          ]
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "seed": {
+        "rodada": 3,
+        "ligados": [
+          "ativo",
+          "golpeAtroz",
+          "golpeLetal",
+          "golpePenetrante",
+          "golpeLongo",
+          "golpePreciso",
+          "arteExecucaoSilenciosa",
+          "arteGolpeDescendente",
+          "espiritoDeLuta",
+          "espiritoIncansavel",
+          "arsenalCiclico",
+          "duelando",
+          "lutandoComDuasArmas"
+        ]
+      },
+      "medidas": [
+        {
+          "label": "Desligar Golpe Especial · Atroz",
+          "tempoDOM": 36.5,
+          "tempoDoPonteiroAteDoisQuadros": 38.90000003576279,
+          "maxIntervaloEntreQuadros": 33.40000000000009,
+          "tarefasLongas": []
+        },
+        {
+          "label": "Desligar Golpe Especial · Letal",
+          "tempoDOM": 33.69999998807907,
+          "tempoDoPonteiroAteDoisQuadros": 36,
+          "maxIntervaloEntreQuadros": 33.400000000000546,
+          "tarefasLongas": []
+        },
+        {
+          "label": "Desligar Golpe Especial · Penetrante",
+          "tempoDOM": 33.5,
+          "tempoDoPonteiroAteDoisQuadros": 36,
+          "maxIntervaloEntreQuadros": 50,
+          "tarefasLongas": []
+        }
+      ],
+      "depois": {
+        "pe": 178,
+        "rodada": 3,
+        "ligados": [
+          "ativo",
+          "golpeLongo",
+          "golpePreciso",
+          "arteExecucaoSilenciosa",
+          "arteGolpeDescendente",
+          "espiritoDeLuta",
+          "espiritoIncansavel",
+          "arsenalCiclico",
+          "duelando",
+          "lutandoComDuasArmas"
+        ],
+        "eventos": 0
+      }
+    },
+    {
+      "id": "perf-minamoto-g2",
+      "checks": [
+        {
+          "id": "três operações reais medidas",
+          "ok": true,
+          "dados": [
+            {
+              "label": "Trocou de GrupoArsenal Cíclico",
+              "tempoDOM": 6.899999976158142,
+              "tempoDoPonteiroAteDoisQuadros": 52.89999997615814,
+              "maxIntervaloEntreQuadros": 50,
+              "tarefasLongas": []
+            },
+            {
+              "label": "ArteExecução Silenciosa, Golpe DescendenteArtes do Combate",
+              "tempoDOM": 6.199999988079071,
+              "tempoDoPonteiroAteDoisQuadros": 52.59999996423721,
+              "maxIntervaloEntreQuadros": 50,
+              "tarefasLongas": []
+            },
+            {
+              "label": "Espírito IncansávelEspírito de Luta",
+              "tempoDOM": 5.599999964237213,
+              "tempoDoPonteiroAteDoisQuadros": 50.299999952316284,
+              "maxIntervaloEntreQuadros": 16.900000000000546,
+              "tarefasLongas": []
+            }
+          ]
+        },
+        {
+          "id": "sem congelamento de dois segundos na amostra",
+          "ok": true,
+          "dados": [
+            {
+              "label": "Trocou de GrupoArsenal Cíclico",
+              "tempoDOM": 6.899999976158142,
+              "tempoDoPonteiroAteDoisQuadros": 52.89999997615814,
+              "maxIntervaloEntreQuadros": 50,
+              "tarefasLongas": []
+            },
+            {
+              "label": "ArteExecução Silenciosa, Golpe DescendenteArtes do Combate",
+              "tempoDOM": 6.199999988079071,
+              "tempoDoPonteiroAteDoisQuadros": 52.59999996423721,
+              "maxIntervaloEntreQuadros": 50,
+              "tarefasLongas": []
+            },
+            {
+              "label": "Espírito IncansávelEspírito de Luta",
+              "tempoDOM": 5.599999964237213,
+              "tempoDoPonteiroAteDoisQuadros": 50.299999952316284,
+              "maxIntervaloEntreQuadros": 16.900000000000546,
+              "tarefasLongas": []
+            }
+          ]
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "seed": {
+        "rodada": 3,
+        "ligados": [
+          "ativo",
+          "golpeAtroz",
+          "golpeLetal",
+          "golpePenetrante",
+          "golpeLongo",
+          "golpePreciso",
+          "arteExecucaoSilenciosa",
+          "arteGolpeDescendente",
+          "espiritoDeLuta",
+          "espiritoIncansavel",
+          "arsenalCiclico",
+          "duelando",
+          "lutandoComDuasArmas"
+        ]
+      },
+      "medidas": [
+        {
+          "label": "Trocou de GrupoArsenal Cíclico",
+          "tempoDOM": 6.899999976158142,
+          "tempoDoPonteiroAteDoisQuadros": 52.89999997615814,
+          "maxIntervaloEntreQuadros": 50,
+          "tarefasLongas": []
+        },
+        {
+          "label": "ArteExecução Silenciosa, Golpe DescendenteArtes do Combate",
+          "tempoDOM": 6.199999988079071,
+          "tempoDoPonteiroAteDoisQuadros": 52.59999996423721,
+          "maxIntervaloEntreQuadros": 50,
+          "tarefasLongas": []
+        },
+        {
+          "label": "Espírito IncansávelEspírito de Luta",
+          "tempoDOM": 5.599999964237213,
+          "tempoDoPonteiroAteDoisQuadros": 50.299999952316284,
+          "maxIntervaloEntreQuadros": 16.900000000000546,
+          "tarefasLongas": []
+        }
+      ],
+      "depois": {
+        "pe": 178,
+        "rodada": 3,
+        "ligados": [
+          "ativo",
+          "golpeAtroz",
+          "golpeLetal",
+          "golpePenetrante",
+          "golpeLongo",
+          "golpePreciso",
+          "duelando",
+          "lutandoComDuasArmas"
+        ],
+        "eventos": 0
+      }
+    },
+    {
+      "id": "perf-player30-classica",
+      "checks": [
+        {
+          "id": "três operações reais medidas",
+          "ok": true,
+          "dados": [
+            {
+              "label": "Desligar Golpe Especial · Atroz",
+              "tempoDOM": 16.899999976158142,
+              "tempoDoPonteiroAteDoisQuadros": 50.39999997615814,
+              "maxIntervaloEntreQuadros": 16.90000000000009,
+              "tarefasLongas": []
+            },
+            {
+              "label": "Desligar Golpe Especial · Letal",
+              "tempoDOM": 15,
+              "tempoDoPonteiroAteDoisQuadros": 48,
+              "maxIntervaloEntreQuadros": 16.900000000000546,
+              "tarefasLongas": []
+            },
+            {
+              "label": "Desligar Golpe Especial · Penetrante",
+              "tempoDOM": 14.699999988079071,
+              "tempoDoPonteiroAteDoisQuadros": 51.40000003576279,
+              "maxIntervaloEntreQuadros": 16.900000000000546,
+              "tarefasLongas": []
+            }
+          ]
+        },
+        {
+          "id": "sem congelamento de dois segundos na amostra",
+          "ok": true,
+          "dados": [
+            {
+              "label": "Desligar Golpe Especial · Atroz",
+              "tempoDOM": 16.899999976158142,
+              "tempoDoPonteiroAteDoisQuadros": 50.39999997615814,
+              "maxIntervaloEntreQuadros": 16.90000000000009,
+              "tarefasLongas": []
+            },
+            {
+              "label": "Desligar Golpe Especial · Letal",
+              "tempoDOM": 15,
+              "tempoDoPonteiroAteDoisQuadros": 48,
+              "maxIntervaloEntreQuadros": 16.900000000000546,
+              "tarefasLongas": []
+            },
+            {
+              "label": "Desligar Golpe Especial · Penetrante",
+              "tempoDOM": 14.699999988079071,
+              "tempoDoPonteiroAteDoisQuadros": 51.40000003576279,
+              "maxIntervaloEntreQuadros": 16.900000000000546,
+              "tarefasLongas": []
+            }
+          ]
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "seed": {
+        "rodada": 3,
+        "ligados": [
+          "ativo",
+          "golpeAtroz",
+          "golpeLetal",
+          "golpePenetrante",
+          "golpeLongo",
+          "golpePreciso",
+          "arteExecucaoSilenciosa",
+          "arteGolpeDescendente",
+          "espiritoDeLuta",
+          "espiritoIncansavel",
+          "arsenalCiclico",
+          "arremessosPotentes",
+          "potenciaConcentrada"
+        ]
+      },
+      "medidas": [
+        {
+          "label": "Desligar Golpe Especial · Atroz",
+          "tempoDOM": 16.899999976158142,
+          "tempoDoPonteiroAteDoisQuadros": 50.39999997615814,
+          "maxIntervaloEntreQuadros": 16.90000000000009,
+          "tarefasLongas": []
+        },
+        {
+          "label": "Desligar Golpe Especial · Letal",
+          "tempoDOM": 15,
+          "tempoDoPonteiroAteDoisQuadros": 48,
+          "maxIntervaloEntreQuadros": 16.900000000000546,
+          "tarefasLongas": []
+        },
+        {
+          "label": "Desligar Golpe Especial · Penetrante",
+          "tempoDOM": 14.699999988079071,
+          "tempoDoPonteiroAteDoisQuadros": 51.40000003576279,
+          "maxIntervaloEntreQuadros": 16.900000000000546,
+          "tarefasLongas": []
+        }
+      ],
+      "depois": {
+        "pe": 160,
+        "rodada": 3,
+        "ligados": [
+          "ativo",
+          "golpeLongo",
+          "golpePreciso",
+          "arteExecucaoSilenciosa",
+          "arteGolpeDescendente",
+          "espiritoDeLuta",
+          "espiritoIncansavel",
+          "arsenalCiclico",
+          "arremessosPotentes",
+          "potenciaConcentrada"
+        ],
+        "eventos": 0
+      }
+    },
+    {
+      "id": "perf-player30-g2",
+      "checks": [
+        {
+          "id": "três operações reais medidas",
+          "ok": true,
+          "dados": [
+            {
+              "label": "1 PEArremessos Potentes",
+              "tempoDOM": 7.599999964237213,
+              "tempoDoPonteiroAteDoisQuadros": 50.89999997615814,
+              "maxIntervaloEntreQuadros": 16.90000000000009,
+              "tarefasLongas": []
+            },
+            {
+              "label": "Trocou de GrupoArsenal Cíclico",
+              "tempoDOM": 7.199999988079071,
+              "tempoDoPonteiroAteDoisQuadros": 49.69999998807907,
+              "maxIntervaloEntreQuadros": 17,
+              "tarefasLongas": []
+            },
+            {
+              "label": "ArteExecução Silenciosa, Golpe DescendenteArtes do Combate",
+              "tempoDOM": 6.5,
+              "tempoDoPonteiroAteDoisQuadros": 42.10000002384186,
+              "maxIntervaloEntreQuadros": 17,
+              "tarefasLongas": []
+            }
+          ]
+        },
+        {
+          "id": "sem congelamento de dois segundos na amostra",
+          "ok": true,
+          "dados": [
+            {
+              "label": "1 PEArremessos Potentes",
+              "tempoDOM": 7.599999964237213,
+              "tempoDoPonteiroAteDoisQuadros": 50.89999997615814,
+              "maxIntervaloEntreQuadros": 16.90000000000009,
+              "tarefasLongas": []
+            },
+            {
+              "label": "Trocou de GrupoArsenal Cíclico",
+              "tempoDOM": 7.199999988079071,
+              "tempoDoPonteiroAteDoisQuadros": 49.69999998807907,
+              "maxIntervaloEntreQuadros": 17,
+              "tarefasLongas": []
+            },
+            {
+              "label": "ArteExecução Silenciosa, Golpe DescendenteArtes do Combate",
+              "tempoDOM": 6.5,
+              "tempoDoPonteiroAteDoisQuadros": 42.10000002384186,
+              "maxIntervaloEntreQuadros": 17,
+              "tarefasLongas": []
+            }
+          ]
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "seed": {
+        "rodada": 3,
+        "ligados": [
+          "ativo",
+          "golpeAtroz",
+          "golpeLetal",
+          "golpePenetrante",
+          "golpeLongo",
+          "golpePreciso",
+          "arteExecucaoSilenciosa",
+          "arteGolpeDescendente",
+          "espiritoDeLuta",
+          "espiritoIncansavel",
+          "arsenalCiclico",
+          "arremessosPotentes",
+          "potenciaConcentrada"
+        ]
+      },
+      "medidas": [
+        {
+          "label": "1 PEArremessos Potentes",
+          "tempoDOM": 7.599999964237213,
+          "tempoDoPonteiroAteDoisQuadros": 50.89999997615814,
+          "maxIntervaloEntreQuadros": 16.90000000000009,
+          "tarefasLongas": []
+        },
+        {
+          "label": "Trocou de GrupoArsenal Cíclico",
+          "tempoDOM": 7.199999988079071,
+          "tempoDoPonteiroAteDoisQuadros": 49.69999998807907,
+          "maxIntervaloEntreQuadros": 17,
+          "tarefasLongas": []
+        },
+        {
+          "label": "ArteExecução Silenciosa, Golpe DescendenteArtes do Combate",
+          "tempoDOM": 6.5,
+          "tempoDoPonteiroAteDoisQuadros": 42.10000002384186,
+          "maxIntervaloEntreQuadros": 17,
+          "tarefasLongas": []
+        }
+      ],
+      "depois": {
+        "pe": 160,
+        "rodada": 3,
+        "ligados": [
+          "ativo",
+          "golpeAtroz",
+          "golpeLetal",
+          "golpePenetrante",
+          "golpeLongo",
+          "golpePreciso",
+          "espiritoDeLuta",
+          "espiritoIncansavel",
+          "potenciaConcentrada"
+        ],
+        "eventos": 0
+      }
+    }
+  ],
+  "falhas": []
+}

@@ -1,0 +1,27 @@
+import fs from "node:fs";
+import { chromium } from "playwright";
+const DIR = "C:/Projetos/Grimorio/grimorio-tracker/.audit/pacotes-aliados-20261019";
+const BASE = "http://127.0.0.1:5320";
+const { fichas } = JSON.parse(fs.readFileSync(`${DIR}/fichas.json`, "utf8"));
+const browser = await chromium.launch({ channel: "chrome" });
+const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+const p = await ctx.newPage();
+const erros = [];
+p.on("pageerror", (e) => erros.push(e.message));
+p.on("console", (m) => { if (m.type() === "error") erros.push(`console: ${m.text()}`); });
+await p.goto(`${BASE}/Player`, { waitUntil: "domcontentloaded" });
+await p.evaluate((f) => localStorage.setItem("fm_creatures_player_v1", JSON.stringify([f.suporteA, f.receptor])), fichas);
+await p.goto(`${BASE}/Player?ficha-g2=1`, { waitUntil: "domcontentloaded" });
+await p.getByText(fichas.suporteA.name, { exact: true }).first().click();
+await p.locator("#afty-ficha").waitFor();
+await p.waitForTimeout(1500);
+await p.locator('[data-afty-aba="buffs"]').click();
+await p.waitForTimeout(800);
+await p.screenshot({ path: "C:/Users/gabri/AppData/Local/Temp/claude/c--Projetos-Grimorio/a6045166-d925-4625-a4dc-6dba594f5fc6/scratchpad/dbg1.png" });
+const n = await p.locator("[data-adicionar]").count();
+console.log("adicionar", n);
+if (n) { await p.locator("[data-adicionar]").first().click(); await p.waitForTimeout(800); }
+await p.screenshot({ path: "C:/Users/gabri/AppData/Local/Temp/claude/c--Projetos-Grimorio/a6045166-d925-4625-a4dc-6dba594f5fc6/scratchpad/dbg2.png" });
+console.log("abas", await p.locator('[role="tab"]').allTextContents());
+console.log(JSON.stringify(erros.slice(0, 5)));
+await browser.close();

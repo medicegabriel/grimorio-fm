@@ -5,6 +5,8 @@
   "autor": "Afty",
   "paraRaw": "afty",
   "descricao": "Insere automaticamente o Voto do Santo da Espada na primeira vaga de Voto Mecânico. Enquanto estiver dentro do limite de BT, o PE Máximo final é reduzido pela metade e os Feitiços Passivos da Técnica deixam de consumir PE Máximo.",
+  "resumo": "Voto do Santo da Espada na primeira vaga: PE Máximo pela metade e Passivas sem custo",
+  "categoria": "regras",
   "votoAutomatico": {
     "id": "santo_da_espada",
     "nome": "Restrição Celestial - O Santo da Espada",

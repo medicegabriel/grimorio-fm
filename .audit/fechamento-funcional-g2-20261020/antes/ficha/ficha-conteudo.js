@@ -1,0 +1,763 @@
+/**
+ * ============================================================
+ * CONTEÚDO DA FICHA — tudo que a criatura escolheu, numa lista só
+ * ============================================================
+ * Puro, sem React. Junta os SEIS catálogos onde as escolhas de uma criatura se
+ * espalham e devolve um formato único, que a aba Habilidades exibe e a busca
+ * global varre. Sem isto, cada consumidor reimplementaria a mesma travessia e
+ * eles divergiriam no dia em que um catálogo novo entrasse.
+ *
+ * ⚠ O TEXTO É VERBATIM DO LIVRO e sai daqui sem uma vírgula mexida. É a regra
+ * mais antiga do projeto, e vale mais ainda na Ficha: o jogador lê ISTO na mesa
+ * para saber o que a habilidade dele faz. Nada de resumo, nada de paráfrase.
+ *
+ * ⚠ Nenhum catálogo tem metadado de AÇÃO (se é ação, ação bônus ou reação),
+ * CUSTO ou USOS. É por isso que estes itens não entram na aba Ações: montar
+ * aquela lista a partir daqui exigiria inventar a classificação. Ver a pergunta
+ * D7 em `docs/afty-ficha-final.md`.
+ * ============================================================
+ */
+
+import { getHabilidade } from "../afty-habilidades";
+import { getTalento } from "../afty-talentos";
+import { getAptidao, getCategoriaAptidao } from "../afty-aptidoes";
+import { getHabilidadeGeral } from "../afty-gerais";
+import { getMelhoriaSuperior, getHabilidadeLendaria, getHabilidadeApice } from "../afty-alto-nivel";
+import { sistemaDaFicha } from "../afty-sistema";
+import { getEspecializacao } from "../afty-especializacoes";
+import { caracteristicasEfetivas, getOrigem, getCla, anatomiasEscolhidas } from "../afty-origens";
+import { getAnatomia } from "../afty-anatomias";
+import { AFTY_ATTRS } from "../afty-schema";
+import { TIPOS_DANO } from "../afty-equipamentos";
+import { NIVEL_LABEL } from "../afty-feiticos";
+import { DOMINIO_SIMPLES_APTIDAO } from "../afty-dominio-simples";
+import { numeroBr } from "../ui/formato";
+import {
+  getModificacaoAptidao, DIFICULDADES_PREREQ, CRITICO_MODS,
+} from "../afty-estilo-sombras-catalogo";
+
+/** O nome curto da trilha escolhida para a Durabilidade do Domínio Simples. */
+const TRILHA_ROTULO = { au: "Aura", cl: "Controle e Leitura", bar: "Barreira", er: "Energia Reversa", dom: "Domínio" };
+const sinalBr = (v) => (v > 0 ? `+${numeroBr(v)}` : numeroBr(v));
+
+/**
+ * O rótulo de cada tipo de equipamento. Tipo que não estiver aqui vira uma
+ * sub-aba "Outros" em vez de sumir da tela: o inventário nunca esconde item.
+ */
+export const ROTULO_EQUIPAMENTO = {
+  arma: "Armas",
+  uniforme: "Uniformes",
+  escudo: "Escudos",
+  kit: "Kits",
+  item: "Itens",
+};
+
+/** Os grupos, na ordem em que aparecem na aba. */
+export const GRUPOS = [
+  { id: "corporal", label: "Condições corporais" },
+  { id: "origem", label: "Origem" },
+  { id: "especializacao", label: "Habilidades de Especialização" },
+  { id: "passivo", label: "Passivos e Características" },
+  { id: "estilo", label: "Técnicas de Estilo" },
+  { id: "talento", label: "Talentos" },
+  { id: "geral", label: "Habilidades Gerais" },
+  { id: "aptidao", label: "Aptidões Amaldiçoadas" },
+  { id: "caracteristicaAmaldicoada", label: "Características Amaldiçoadas" },
+  { id: "altoNivel", label: "Níveis Lendários" },
+  { id: "treinamento", label: "Treinamentos" },
+];
+
+/** Sem acento e em minúsculas, que é como a busca compara. */
+export const semAcento = (s) => String(s ?? "")
+  .normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+/**
+ * As opções aninhadas ESCOLHIDAS de um item, já com nome e descrição.
+ *
+ * O mapa da ficha guarda só ids, e o nome de cada opção mora no próprio item do
+ * catálogo (`item.escolha.opcoes`). Uma opção que não existe mais no catálogo é
+ * descartada em silêncio, que é o que o resolver já faz.
+ */
+function opcoesEscolhidas(item, mapa, opcoesPorItem = null) {
+  const ids = mapa?.[item?.id];
+  if (!Array.isArray(ids) || !ids.length || !item?.escolha?.opcoes) return [];
+  const opcoes = opcoesPorItem?.[item.id] ?? item.escolha.opcoes;
+  return ids
+    .map((id) => opcoes.find((o) => o.id === id))
+    .filter(Boolean)
+    .map((o) => ({ id: o.id, nome: o.nome, descricao: o.descricao ?? null }));
+}
+
+/**
+ * As divisões de dentro de um grupo, e a ordem delas.
+ *
+ * ⚠ Só existem porque a lista fica GRANDE em ficha de nível alto (autor,
+ * 2026-08-06). Um multiclasse ND 40 empilha as Habilidades das duas
+ * Especializações numa coluna só, e achar a do Lutador no meio das do Conjurador
+ * é rolar até topar. As Especializações viram sub-aba pelo id da própria
+ * Especialização, então uma classe nova não precisa de nada aqui.
+ *
+ * Nos Níveis Lendários a divisão é fixa, porque são três coisas de natureza
+ * diferente que nunca foram uma lista só de verdade.
+ */
+export const SUBS_ALTO_NIVEL = [
+  { id: "melhoria", label: "Melhorias Superiores" },
+  { id: "lendaria", label: "Habilidades Lendárias" },
+  { id: "apice", label: "Habilidade Ápice" },
+];
+
+/**
+ * Uma marca de linha, normalizada para `{ label, tipo }`.
+ *
+ * ⚠ O `tipo` existe por causa da LARGURA. "Nível 1" e "Nível 20" são textos de
+ * tamanhos diferentes, e como marca eles serrilhavam a coluna da direita: a
+ * fileira virava uma serra, que é o mesmo problema que a grade de defesas teve
+ * no cabeçalho (autor, 2026-08-06). Com o tipo, o CSS dá largura fixa e número
+ * tabular só às marcas que são NÚMERO, sem mexer nas que são palavra.
+ *
+ * Aceita string, porque a maioria das marcas não precisa de tipo nenhum.
+ */
+const marca = (t) => (typeof t === "string" ? { label: t, tipo: null } : { label: t.label, tipo: t.tipo ?? null });
+
+const item = ({ id, chave, nome, texto, grupo, sub = null, tags = [], opcoes = [], aviso = null, usos = null, numeros = [] }) => ({
+  // `chave` é única na Ficha inteira. O `id` sozinho não serve: uma Melhoria
+  // repetível aparece mais de uma vez, e duas listas diferentes podem trazer o
+  // mesmo id (o Ataque Inconsequente existe no Lutador e no Restringido).
+  chave: chave ?? `${grupo}:${id}`,
+  id, nome, texto, grupo, sub, tags: tags.filter(Boolean).map(marca), opcoes, aviso,
+  // O contador de usos: `{ max, recarga, chave }`, e a chave é a da sessão.
+  usos,
+  /* Os números de mesa ("Bônus dos Aliados: 2"), SEPARADOS das marcas: em
+     largura de telefone eles saem da linha fechada e aparecem na aberta, para
+     não espremer o nome até sumir (medido em 390px, 2026-09-28). Ver
+     `.afty-mesa-*` em ficha.css. */
+  numeros: numeros.filter(Boolean),
+  busca: semAcento(`${nome} ${texto} ${opcoes.map((o) => o.nome).join(" ")}`),
+});
+
+/**
+ * Monta a lista inteira.
+ *
+ * @param creature a ficha já mesclada com os defaults
+ * @param derived  o resultado do deriveAfty
+ */
+export function conteudoDaFicha(creature, derived) {
+  const itens = [];
+  if (derived?.olhinhosLu?.tem) itens.push(item({
+    id: "olhinhosLu", nome: derived.olhinhosLu.nome,
+    texto: derived.olhinhosLu.texto, grupo: "corporal",
+  }));
+  for (const beneficio of derived?.beneficiosTreinamento ?? []) {
+    itens.push(item({ ...beneficio, grupo: "treinamento" }));
+  }
+
+  /* ⚠ CONTADOR E NÚMEROS DE MESA (2026-09-28). O derive devolve em `mesa`, pela
+     chave do item, o contador (`usos`, com a chave da sessão já com a recarga) e
+     os `resultados` calculados de toda entrada que os declara. Aqui eles viram
+     o contador da linha e chips "Rótulo: valor", o mesmo formato das Técnicas
+     de Estilo. */
+  const mesa = derived?.mesa ?? {};
+  const usosDeMesa = (chave) => mesa[chave]?.usos ?? null;
+  // O resultado com `textos` mostra o nome ("Patente: Conde"), e não o índice.
+  const numerosDeMesa = (chave) => (mesa[chave]?.resultados ?? []).map((r) => `${r.label}: ${r.texto ?? r.valor}`);
+  /* A OPÇÃO com contador ou número vira LINHA PRÓPRIA, logo abaixo da mãe
+     (autor, 2026-09-28: as Dádivas Intelectuais), e sai da lista de opções da
+     mãe para não aparecer duas vezes. Opção sem nada disso segue como sempre. */
+  const promovida = (paiId, opcaoId) => !!mesa[`opcao:${paiId}:${opcaoId}`];
+  const linhasDeOpcao = (pai, mapa, base) => (Array.isArray(mapa?.[pai?.id]) ? mapa[pai.id] : [])
+    .filter((oid) => promovida(pai.id, oid))
+    .map((oid) => {
+      const o = pai.escolha?.opcoes?.find((x) => x?.id === oid);
+      if (!o) return null;
+      const chave = `opcao:${pai.id}:${oid}`;
+      return item({
+        ...base,
+        id: oid,
+        chave,
+        nome: o.nome,
+        texto: o.descricao ?? "",
+        tags: [pai.escolha?.label ?? pai.nome],
+        numeros: numerosDeMesa(chave),
+        usos: usosDeMesa(chave),
+      });
+    })
+    .filter(Boolean);
+  const semPromovidas = (pai, opcoes) => opcoes.filter((o) => !promovida(pai?.id, o.id));
+
+  /* ---------- Origem ---------- */
+  const origem = getOrigem(creature?.core?.origem?.id);
+  const cla = getCla(creature?.core?.origem?.cla);
+  const mapaOrigem = derived?.origem?.mapa ?? {};
+  /* AS ANATOMIAS ESCOLHIDAS (2026-10-03). Uma linha por Anatomia, logo abaixo da
+     característica que abre o pool (o Físico Amaldiçoado, a Herança de Inari).
+     Até aqui o Motor somava o número delas e a Ficha não dizia que existiam.
+
+     O filtro é o MESMO do Motor (`anatomiasEscolhidas`), então a Ficha nunca
+     mostra uma Anatomia que o Motor não soma. O texto é o do livro
+     (`textoLivro`), e não o resumo que o criador usa (autor, 2026-10-03).
+
+     Sem contador e sem número de mesa: nenhuma Anatomia declara `usos` ou
+     `resultados`, e o derive não registra a chave `anatomia:`. */
+  const anatomias = anatomiasEscolhidas(creature)
+    .map((id) => getAnatomia(id))
+    .filter(Boolean)
+    .map((a) => item({
+      id: a.id,
+      chave: `anatomia:${a.id}`,
+      nome: a.nome,
+      texto: a.textoLivro ?? a.descricao ?? "",
+      grupo: "origem",
+      tags: ["Anatomia"],
+    }));
+  /* ⚠ AS ESCOLHAS NO PLURAL (`escolhas`, 2026-10-09). O `opcoesEscolhidas` lê só a
+     `escolha` única, e a opção escolhida numa característica com várias (as
+     Artimanhas do Não-Feiticeiro, o Caminho até o Fim do Liberto) não aparecia
+     em lugar nenhum da Ficha. Ela entra na lista da característica, e a que tem
+     contador ou número de mesa vira linha própria logo abaixo, como a opção de
+     Habilidade. A chave é `opcao:<escolhaId>:<opcaoId>`. */
+  const escolhidasDoPlural = (c) => (c.escolhas ?? []).flatMap((esc) =>
+    (Array.isArray(mapaOrigem[esc.id]) ? mapaOrigem[esc.id] : [])
+      .map((oid) => ({ esc, o: (esc.opcoes ?? []).find((x) => x?.id === oid) }))
+      .filter((x) => x.o));
+  for (const c of caracteristicasEfetivas(creature)) {
+    const plural = escolhidasDoPlural(c);
+    const promovidaNaOrigem = ({ esc, o }) => !!mesa[`opcao:${esc.id}:${o.id}`];
+    itens.push(item({
+      id: c.id,
+      chave: `origem:${c.id}`,
+      nome: c.nome,
+      texto: c.descricao ?? "",
+      grupo: "origem",
+      tags: [origem?.nome, cla?.nome].filter(Boolean),
+      numeros: numerosDeMesa(`origem:${c.id}`),
+      usos: usosDeMesa(`origem:${c.id}`),
+      opcoes: [
+        /* O mapa da origem é chaveado pelo id da ESCOLHA, e não da
+           característica (2026-10-12). Os dois coincidem na maioria dos pacotes,
+           e onde não coincidem (a Fraqueza Ignorada da Patente do Vampiro) a
+           opção escolhida não aparecia. */
+        ...opcoesEscolhidas(c.escolha?.id ? { ...c, id: c.escolha.id } : c, mapaOrigem),
+        ...plural.filter((x) => !promovidaNaOrigem(x))
+          .map(({ o }) => ({ id: o.id, nome: o.nome, descricao: o.descricao ?? null })),
+      ],
+      /* ⚠ `mesa` NÃO VIRA MAIS AVISO NA FICHA (autor, 2026-09-08: *"Remova os
+         'Resolve na mesa'. Isso é bem feio. Pode tirar de forma geral"*). O
+         campo continua no catálogo e continua verdadeiro, e o chip "Mesa" do
+         CRIADOR continua lá: o que saiu é a etiqueta amarela na tela de jogo,
+         que aparecia em toda característica sem canal e enchia o cabeçalho de
+         alerta para uma coisa que não é problema nenhum.
+
+         `parcial` ficou, e ela é outra coisa: é uma frase escrita à mão que
+         diz QUAL pedaço o Motor não cobre, e some sozinha quando o pedaço
+         entra. */
+      aviso: c.parcial ?? null,
+    }));
+    for (const x of plural.filter(promovidaNaOrigem)) {
+      const chave = `opcao:${x.esc.id}:${x.o.id}`;
+      itens.push(item({
+        id: x.o.id,
+        chave,
+        nome: x.o.nome,
+        texto: x.o.descricao ?? "",
+        grupo: "origem",
+        tags: [x.esc.label ?? c.nome],
+        numeros: numerosDeMesa(chave),
+        usos: usosDeMesa(chave),
+      }));
+    }
+    // `splice` esvazia a lista, e a linha de baixo não as repete.
+    if (c.poolAnatomia) itens.push(...anatomias.splice(0));
+  }
+  /* Se a característica do pool não estiver entre as efetivas, as Anatomias
+     fecham o grupo em vez de sumir: o Motor as soma do mesmo jeito. */
+  itens.push(...anatomias);
+
+  /* ---------- Habilidades de Especialização ---------- */
+  const mapaHab = derived?.habilidades?.escolhas?.mapa ?? {};
+  const inacessiveisHab = new Set(derived?.habilidades?.inacessiveis ?? []);
+  for (const id of derived?.habilidades?.efetivas ?? derived?.habilidades?.escolhidas ?? []) {
+    const h = getHabilidade(id);
+    if (!h) continue;
+    const espec = getEspecializacao(h.especializacaoId);
+    // ⚠ A sub-aba sai da PRÓPRIA Especialização, e não de uma lista escrita à
+    // mão: classe nova entra sozinha. Sem `especializacaoId` (não deveria
+    // acontecer) o item cai numa aba "Outras" em vez de sumir da tela.
+    const sub = { id: h.especializacaoId ?? "outras", label: espec?.nome ?? "Outras" };
+    itens.push(item({
+      id,
+      nome: h.nome,
+      texto: h.descricao ?? "",
+      grupo: "especializacao",
+      sub,
+      tags: [espec?.nome, h.nivel ? { label: `Nível ${h.nivel}`, tipo: "nivel" } : null],
+      numeros: numerosDeMesa(`especializacao:${id}`),
+      opcoes: semPromovidas(h, opcoesEscolhidas(h, mapaHab)),
+      aviso: inacessiveisHab.has(id) ? "Pré-requisito não atendido" : null,
+      // A sessão guarda os gastos pela chave `hab:<id>`. Ver `alteraUso`.
+      usos: derived?.usosHabilidades?.[id]
+        ? { ...derived.usosHabilidades[id], chave: derived.usosHabilidades[id].chave ?? `hab:${id}` }
+        : null,
+    }));
+    itens.push(...linhasDeOpcao(h, mapaHab, { grupo: "especializacao", sub }));
+  }
+
+  /* ---------- Passivos e Características ---------- */
+  /* ⚠ O CUSTO EM PE MÁXIMO SAI DO RESOLVIDO, e não de uma conta aqui. A Passiva
+     tira o dobro do nível dela do PE Máximo na Ficha de Jogador (autor,
+     2026-09-09), e quem decide se cobra é a divergência `passivaCustaPeMaximo`.
+     Refazer a conta nesta linha faria a tela responder por uma regra de sistema,
+     que é exatamente o erro que a tabela de divergências existe para evitar.
+
+     A lista crua continua sendo a de cima, porque é ela que tem `descricao` e a
+     ordem que a pessoa montou. Daqui sai só o número. */
+  const custoPassivaPorId = new Map(
+    (derived?.feiticos?.lista ?? []).map((l) => [l.id, l.custoPeMaximo]),
+  );
+  for (const f of Array.isArray(creature?.feiticos) ? creature.feiticos : []) {
+    if (f?.tipo !== "passivo") continue;
+    const custoPe = custoPassivaPorId.get(f.id) ?? null;
+    itens.push(item({
+      id: f.id,
+      chave: `passivo:${f.id}`,
+      nome: f.nome || "Passivo Sem Nome",
+      texto: f.descricao ?? "",
+      grupo: "passivo",
+      tags: [
+        NIVEL_LABEL[f.nivel] ?? String(f.nivel),
+        /* Sinal na frente porque é o que ela TIRA, e não o que ela gasta por
+           uso. Some na criatura e na Passiva de Nível 0, que custa zero. */
+        custoPe ? { label: `-${custoPe} PE`, tipo: "nivel" } : null,
+      ],
+    }));
+  }
+
+  /* ---------- Técnicas de Estilo (Novo Estilo da Sombra) ---------- */
+  // Sai do RESOLVIDO, e não da ficha crua, porque a Técnica gravada por quem
+  // perdeu o acesso (trocou de origem, ou o ND caiu abaixo de 4) não vale nada
+  // e não pode aparecer na tela de jogo como se valesse.
+  if (derived?.estilo?.disponivel) {
+    const estilo = derived.estilo;
+    for (const t of estilo.conhecidas) {
+      itens.push(item({
+        id: t.id,
+        chave: `estilo:${t.id}`,
+        nome: t.nome,
+        texto: t.descricao ?? "",
+        grupo: "estilo",
+        // A quantidade IMBUÍDA entra como tag porque ela muda no meio do
+        // combate: quem lê a lista precisa ver a combinação que está no ar. Quem
+        // a TROCA é a aba de Estados, onde cada Técnica tem a faixa dela.
+        tags: [
+          t.tipo === "especial" ? "Especial" : null,
+          t.vezes > 0 ? `Imbuída ${t.vezes}×` : null,
+          ...(t.resultadosCalculados ?? []).map((r) => `${r.label}: ${r.valor}`),
+        ].filter(Boolean),
+        // O estouro é da combinação inteira, e não de uma Técnica só, mas o
+        // aviso tem de aparecer onde o jogador está olhando.
+        aviso: t.aviso || (estilo.excedeuVagas
+          ? `${estilo.gastoVagas} imbuições, o Nível de Aptidão em Domínio permite ${estilo.vagas}`
+          : null),
+      }));
+    }
+
+    /* ---- A Expansão (2026-10-04) ----
+       O Funcionamento Básico do Estilo é só texto (sem bônus numérico por
+       construção), e cada Técnica sai com os números já calculados pelo derive.
+       Nada da estrutura interna (uids, regra) aparece na tela. */
+    const func = creature?.estiloFuncionamento;
+    if (String(func?.texto ?? "").trim()) {
+      itens.push(item({
+        id: "estilo_funcionamento",
+        chave: "estilo:funcionamento",
+        nome: "Funcionamento Básico do Estilo",
+        texto: func.texto,
+        grupo: "estilo",
+        tags: [func.durabilidadeTrilha ? `Durabilidade: ${TRILHA_ROTULO[func.durabilidadeTrilha] ?? func.durabilidadeTrilha}` : null]
+          .filter(Boolean),
+      }));
+    }
+    for (const t of estilo.tecnicas ?? []) {
+      const ativa = (estilo.tecnicasAtivas ?? []).includes(t.id);
+      const primeiroErro = (t.validacao ?? []).find((v) => v.nivel === "erro")?.texto
+        ?? (estilo.validacao ?? []).find((v) => v.nivel === "erro")?.texto;
+      itens.push(item({
+        id: t.id,
+        chave: `estilo:${t.id}`,
+        nome: t.nome || "Técnica Sem Nome",
+        texto: [t.descricao, t.especial?.texto, t.gatilho?.texto ? `Gatilho: ${t.gatilho.texto}` : null]
+          .filter((x) => String(x ?? "").trim()).join("\n\n"),
+        grupo: "estilo",
+        tags: [
+          t.tipo === "especial" ? "Especial" : "Modificação",
+          ativa ? "Ativa" : null,
+          t.exaustaoGerada ? `Exaustão ${t.exaustaoGerada}` : null,
+          ativa && t.removeReacao ? "Reação Indisponível" : null,
+        ].filter(Boolean),
+        numeros: [
+          ...(t.numeros ?? []).map((n) => `${n.nome}: ${sinalBr(n.valor)}`),
+          ...(t.aliadosCalculados ?? []).map((a) => `${a.rotulo}: ${sinalBr(a.valor)}`),
+          ...(t.mesaCalculada ?? []).map((m) => `${m.rotulo}: ${numeroBr(m.valor)}`),
+          t.contra ? `Contra-Ataques: ${t.contra.quantidade}` : null,
+        ],
+        usos: usosDeMesa(`estilo:${t.id}`),
+        opcoes: [
+          ...(t.modificacoes ?? []).map((g) => {
+            const mod = getModificacaoAptidao(g.modId);
+            return {
+              id: g.chave,
+              nome: `${mod?.nome ?? g.modId} (${g.nomeAptidao})${g.n > 1 ? ` ×${g.n}` : ""}${g.repeticao.pessoal ? " (Bônus Dobrado)" : ""}`,
+              descricao: mod?.descricao ?? null,
+            };
+          }),
+          ...(t.requisitos ?? []).map((r) => {
+            const d = DIFICULDADES_PREREQ.find((x) => x.value === r.dificuldade);
+            return { id: r.uid, nome: `Pré-Requisito ${d?.label ?? r.dificuldade} (+${d?.bonus ?? 0})`, descricao: r.texto || null };
+          }),
+          ...(t.contra ? [{ id: "contra", nome: `Contra-Ataque (BAR ${t.contra.bar})`, descricao: t.contra.degrau?.texto ?? null }] : []),
+          ...(t.criticoMods ?? []).map((c) => ({
+            id: `critico:${c.id}`, nome: c.nome, descricao: CRITICO_MODS.find((x) => x.id === c.id)?.descricao ?? null,
+          })),
+        ],
+        aviso: t.mecanicamenteValida ? null : (primeiroErro ?? "Técnica inválida"),
+      }));
+    }
+  }
+
+  /* ---------- Talentos ---------- */
+  const mapaTal = derived?.talentos?.escolhas?.mapa ?? {};
+  const inacessiveisTal = new Set(derived?.talentos?.inacessiveis ?? []);
+  /* Um Talento pode ser pego mais de uma vez desde 2026-08-22 (`maxVezes` /
+     `maxVezesExpr`). `escolhidas` é sem repetição e quem conta é `vezes`, então
+     o contador sai daqui, com o mesmo chip das Habilidades Gerais. */
+  const vezesTal = derived?.talentos?.vezes ?? {};
+  for (const id of derived?.talentos?.escolhidas ?? []) {
+    const t = getTalento(id);
+    if (!t) continue;
+    const vezes = vezesTal[id] ?? 1;
+    itens.push(item({
+      id,
+      nome: t.nome,
+      texto: t.descricao ?? "",
+      grupo: "talento",
+      tags: [
+        ...(t.nivel ? [{ label: `Nível ${t.nivel}`, tipo: "nivel" }] : []),
+        ...(vezes > 1 ? [{ label: `${vezes}×`, tipo: "vezes" }] : []),
+      ],
+      numeros: numerosDeMesa(`talento:${id}`),
+      usos: usosDeMesa(`talento:${id}`),
+      opcoes: semPromovidas(t, opcoesEscolhidas(t, mapaTal)),
+      aviso: inacessiveisTal.has(id) ? "Pré-requisito não atendido" : null,
+    }));
+    itens.push(...linhasDeOpcao(t, mapaTal, { grupo: "talento" }));
+  }
+
+  /* ---------- Habilidades Gerais ---------- */
+  // Lista COM repetição: cada pega é uma entrada, e o contador mostra quantas.
+  const contagemGeral = new Map();
+  for (const id of derived?.gerais?.escolhidas ?? []) {
+    contagemGeral.set(id, (contagemGeral.get(id) ?? 0) + 1);
+  }
+  const inacessiveisGer = new Set(derived?.gerais?.inacessiveis ?? []);
+  for (const [id, vezes] of contagemGeral) {
+    const g = getHabilidadeGeral(id);
+    if (!g) continue;
+    itens.push(item({
+      id,
+      nome: g.nome,
+      texto: g.descricao ?? "",
+      grupo: "geral",
+      tags: vezes > 1 ? [{ label: `${vezes}×`, tipo: "vezes" }] : [],
+      aviso: inacessiveisGer.has(id) ? "Pré-requisito não atendido" : null,
+    }));
+  }
+
+  /* ---------- Aptidões Amaldiçoadas ---------- */
+  const opcoesAptidao = creature?.aptidaoOpcoes ?? {};
+  const contagemAptidao = new Map();
+  for (const id of creature?.aptidoesAmaldicoadas ?? []) {
+    contagemAptidao.set(id, (contagemAptidao.get(id) ?? 0) + 1);
+  }
+  // As CONCEDIDAS por nome pela origem entram na mesma lista, com uma tag que
+  // as distingue: elas não foram escolhidas e não gastaram vaga.
+  const concedidasOrigem = new Set(derived?.aptidoesConcedidas ?? []);
+  for (const id of derived?.aptidoesEscolhidas ?? []) {
+    const a = getAptidao(id);
+    if (!a) continue;
+    // A Aptidão não usa escolha aninhada: ela tem `opcoes` no catálogo e a
+    // escolha vira uma booleana do DSL. Ver a Superioridade Física.
+    const escolhida = a.opcoes?.valores?.find((v) => v.id === opcoesAptidao[id]);
+    const vezes = Math.max(contagemAptidao.get(id) ?? 0, concedidasOrigem.has(id) ? 1 : 0);
+    const escolhasRepetidas = a.repetivel
+      ? Array.from({ length: vezes }, (_, indice) => creature?.aptidaoOpcoesRepetidas?.[id]?.[indice] ?? "aumentar").map((valor, indice) => {
+          const def = a.repetivel.opcoes.find((o) => o.id === valor);
+          return {
+            id: `${id}:${indice}`,
+            nome: `${indice + 1}ª aquisição: ${def?.label ?? "Aumentar"}`,
+            descricao: null,
+          };
+        })
+      : [];
+    itens.push(item({
+      id,
+      nome: a.nome,
+      texto: a.descricao ?? "",
+      grupo: "aptidao",
+      tags: [
+        /* O nome CURTO da categoria (autor, 2026-10-03: "Especiais", e não
+           "Aptidões Especiais"). A categoria não tem `nome`: até esta data a
+           linha lia `.nome`, recebia `undefined`, e o `filter(Boolean)` jogava a
+           marca fora sem erro nenhum nas 85 Aptidões. */
+        getCategoriaAptidao(a.categoria)?.tab,
+        /* A concedida diz de ONDE veio. A do Addon leva o nome do item que a
+           dá (2026-09-12): escrever "Origem" nela seria dizer que ela nunca
+           some, e ela some ao desequipar o item. */
+        concedidasOrigem.has(id)
+          ? ((derived?.aptidoesConcedidasEspecializacao ?? []).includes(id) ? "Especialização"
+            : (derived?.aptidoesConcedidasOrigem ?? []).includes(id) ? "Origem"
+              : (derived?.aptidoesConcedidasAddon ?? []).find((c) => c.id === id)?.fonte
+                ?? (derived?.aptidoesConcedidasTalento ?? []).find((c) => c.id === id)?.fonte
+                ?? "Origem")
+          : null,
+        vezes > 1 ? { label: `${vezes}×`, tipo: "vezes" } : null,
+        /* O DOMÍNIO SIMPLES carrega os números dele na própria linha. Eles são
+           o que se paga na mesa, e até 2026-08-28 viviam dentro da prosa: quem
+           erguia o domínio tinha de reler o parágrafo e fazer a conta à mão.
+
+           ⚠ O sustento vem SOMADO (domínio mais Técnicas de Estilo), porque o
+           que o jogador paga no início da rodada é um número só. A repartição
+           com as fontes de cada metade está no card do criador, que tem hover.
+
+           ⚠ E ele só aparece com um Addon que dê sustentação ao Domínio
+           Simples: o livro cru usa Concentração e Durabilidade e não cobra
+           nada por rodada. */
+        ...(id === DOMINIO_SIMPLES_APTIDAO && derived?.dominioSimples?.tem
+          ? [
+            `${numeroBr(derived.dominioSimples.area)}m`,
+            `Erguer ${derived.dominioSimples.custoErguer} PE`,
+            derived.dominioSimples.sustenta
+              ? `Sustentar ${derived.dominioSimples.custoSustentarTotal} PE`
+              : null,
+            /* O que está no ar: "Domínio Simples ativo, Técnica: X". Desde
+               2026-10-11 podem ser várias, e a marca lista todas. */
+            derived?.estilo?.dominioAtivo ? "Ativo" : null,
+            (derived?.estilo?.tecnicasAtivas ?? []).length
+              ? `${derived.estilo.tecnicasAtivas.length > 1 ? "Técnicas" : "Técnica"}: ${derived.estilo.tecnicasAtivas
+                .map((tid) => (derived.estilo.tecnicas ?? []).find((t) => t.id === tid)?.nome || "Técnica Sem Nome")
+                .join(", ")}`
+              : null,
+            derived?.estilo?.reacaoIndisponivel ? "Reação Indisponível" : null,
+          ]
+          : []),
+      ].filter(Boolean),
+      opcoes: [
+        ...(escolhida ? [{ id: escolhida.id, nome: escolhida.nome ?? escolhida.label, descricao: null }] : []),
+        ...escolhasRepetidas,
+      ],
+    }));
+  }
+
+  /* ---------- Características Amaldiçoadas ---------- */
+  /* Só as que o catálogo do addon ainda conhece (`encontrada`): o id órfão de um
+     addon que saiu é linha morta e não tem texto para mostrar. A escolha do
+     jogador (o atributo, o tipo de dano, a perícia) aparece como opção da linha,
+     no mesmo lugar onde a Aptidão mostra a dela, e o que falta escolher vira o
+     aviso, porque sem a resposta o efeito não entra no número. */
+  const rotuloDoAlvo = (alvo) => {
+    if (alvo.tipo === "atributo") return AFTY_ATTRS.find((a) => a.key === alvo.valor)?.label ?? alvo.valor;
+    if (alvo.tipo === "tipoDano") return TIPOS_DANO[alvo.valor] ?? alvo.valor;
+    if (alvo.tipo === "pericia") {
+      return (derived?.testes?.pericias ?? []).find((p) => p.id === alvo.valor)?.nome ?? alvo.valor;
+    }
+    return alvo.valor;
+  };
+  for (const c of derived?.caracteristicasAmaldicoadas?.lista ?? []) {
+    if (!c.encontrada) continue;
+    itens.push(item({
+      id: c.id,
+      chave: `caracteristicaAmaldicoada:${c.id}`,
+      nome: c.nome,
+      texto: c.descricao ?? "",
+      grupo: "caracteristicaAmaldicoada",
+      opcoes: c.alvos
+        .filter((a) => a.valor)
+        .map((a) => ({ id: `${c.id}:${a.id}`, nome: `${a.label}: ${rotuloDoAlvo(a)}`, descricao: null })),
+      aviso: c.pendentes.length ? `Falta escolher ${c.pendentes.join(" e ")}` : (c.parcial ?? null),
+      // O contador e os números de mesa da característica (2026-10-12).
+      usos: usosDeMesa(`caracteristicaAmaldicoada:${c.id}`),
+      numeros: numerosDeMesa(`caracteristicaAmaldicoada:${c.id}`),
+    }));
+  }
+
+  /* ---------- Níveis Lendários ---------- */
+  const mapaAlto = derived?.altoNivel?.escolhas?.mapa ?? {};
+  const opcoesAlto = derived?.altoNivel?.escolhas?.opcoesPorItem ?? {};
+  for (const m of derived?.altoNivel?.melhorias?.escolhidas ?? []) {
+    // O nome e o texto são os do livro desta ficha (Classe de Armadura no jogador).
+    const def = getMelhoriaSuperior(m.id, sistemaDaFicha(creature), creature);
+    if (!def) continue;
+    itens.push(item({
+      id: m.id,
+      chave: `altoNivel:mel:${m.id}`,
+      nome: def.nome,
+      texto: def.descricao ?? "",
+      grupo: "altoNivel",
+      sub: SUBS_ALTO_NIVEL[0],
+      tags: m.vezes > 1 ? [{ label: `${m.vezes}×`, tipo: "vezes" }] : [],
+      opcoes: opcoesEscolhidas(def, mapaAlto, opcoesAlto),
+    }));
+  }
+  const inacessiveisLen = new Set(derived?.altoNivel?.lendarias?.inacessiveis ?? []);
+  for (const id of derived?.altoNivel?.lendarias?.escolhidas ?? []) {
+    const def = getHabilidadeLendaria(id, creature);
+    if (!def) continue;
+    itens.push(item({
+      id,
+      chave: `altoNivel:len:${id}`,
+      nome: def.nome,
+      texto: def.descricao ?? "",
+      grupo: "altoNivel",
+      sub: SUBS_ALTO_NIVEL[1],
+      usos: usosDeMesa("altoNivel:len:" + id),
+      numeros: numerosDeMesa("altoNivel:len:" + id),
+      tags: [],
+      opcoes: opcoesEscolhidas(def, mapaAlto, opcoesAlto),
+      aviso: inacessiveisLen.has(id) ? "Pré-requisito não atendido" : null,
+    }));
+  }
+  const apice = getHabilidadeApice(derived?.altoNivel?.apiceId);
+  if (apice) {
+    itens.push(item({
+      id: apice.id,
+      chave: `altoNivel:api:${apice.id}`,
+      nome: apice.nome,
+      texto: apice.descricao ?? "",
+      grupo: "altoNivel",
+      sub: SUBS_ALTO_NIVEL[2],
+      tags: [],
+    }));
+  }
+
+  return itens;
+}
+
+/**
+ * O INVENTÁRIO, no mesmo formato dos outros itens.
+ *
+ * ⚠ Ele mora numa lista SEPARADA do `conteudoDaFicha`, e não junto, porque o
+ * critério é outro: aquela lista é "o que a criatura ESCOLHEU e sabe fazer", e
+ * esta é "o que ela está CARREGANDO". Misturar as duas faria a aba Habilidades
+ * mostrar espada no meio de Habilidade, e o contador de "193 itens" contaria
+ * bandagem.
+ *
+ * O formato, porém, é o mesmo de propósito: assim o inventário ganha de graça o
+ * texto verbatim, o Rápido, o destaque da busca e o filtro.
+ *
+ * ⚠ NADA aqui é editável. Comprar, equipar e encantar são escolhas de ficha, e
+ * escolha mora no criador. A Ficha carrega e consulta.
+ */
+export function equipamentosDaFicha(derived) {
+  const entradas = derived?.equip?.entradas ?? [];
+  return entradas.map((e, i) => {
+    const def = e.def ?? {};
+    const tipo = e.tipo ?? "item";
+    const tags = [];
+    // ⚠ "Equipado" só aparece no que PODE ser equipado. Num talismã, a ausência
+    // da marca seria lida como "não está usando", e talismã não se equipa.
+    if (e.equipado) tags.push("Equipado");
+    if (e.qtd > 1) tags.push({ label: `${e.qtd}×`, tipo: "vezes" });
+    if (e.fa?.grauLabel) tags.push(e.fa.grauLabel);
+    if (e.espacos) tags.push({ label: `${e.espacos} Esp.`, tipo: "espacos" });
+    return item({
+      id: e.uid ?? `${tipo}:${e.refId}:${i}`,
+      // O `uid` é único por entrada, e é ele que separa duas Katanas iguais com
+      // encantamentos diferentes.
+      chave: `equipamento:${e.uid ?? `${tipo}-${e.refId}-${i}`}`,
+      nome: def.nome ?? e.refId ?? "Item",
+      texto: def.descricao ?? "",
+      grupo: "equipamento",
+      sub: { id: tipo, label: ROTULO_EQUIPAMENTO[tipo] ?? "Outros" },
+      tags,
+      // Os encantamentos da Ferramenta Amaldiçoada aparecem como as opções
+      // aninhadas de uma Habilidade: é a mesma coisa, uma escolha dentro do item.
+      opcoes: (e.fa?.encantamentos ?? [])
+        .map((x) => ({
+          id: x.id,
+          nome: x.enc?.nome ?? x.id,
+          descricao: x.enc?.descricao ?? null,
+        })),
+    });
+  });
+}
+
+/**
+ * Filtra por texto. Termos separados por espaço, e TODOS precisam bater (é o
+ * que deixa "postura sol" achar a Postura do Sol sem trazer as outras sete).
+ */
+export function filtraConteudo(itens, termo) {
+  const partes = semAcento(termo).split(/\s+/).filter(Boolean);
+  if (!partes.length) return itens;
+  return itens.filter((i) => partes.every((p) => i.busca.includes(p)));
+}
+
+/**
+ * O que a busca global varre além do conteúdo: os números que já estão
+ * resolvidos em outras abas. Devolvidos no mesmo formato, com `aba` dizendo
+ * para onde ir.
+ */
+export function alvosDeBusca(derived) {
+  const fora = [];
+  // `extra` entra só na string de busca, sem aparecer na linha do resultado.
+  const add = (aba, grupo, id, nome, detalhe, extra = "") => fora.push({
+    chave: `${grupo}:${id}`, id, nome, aba, grupo,
+    detalhe: detalhe ?? null,
+    busca: semAcento(`${nome} ${detalhe ?? ""} ${extra}`),
+  });
+
+  for (const e of derived?.dano?.entradas ?? []) add("acoes", "dano", e.id, e.nome, e.texto);
+  for (const l of derived?.cura?.linhas ?? []) add("acoes", "cura", l.id, l.nome, l.texto);
+  for (const f of derived?.feiticos?.lista ?? []) {
+    if (f.tipo !== "passivo") add("acoes", "feitico", f.id, f.nome || "Feitiço Sem Nome", f.nivelLabel);
+  }
+  for (const m of derived?.testes?.manobras ?? []) add("acoes", "manobra", m.id, m.nome, m.periciaUsada);
+  /* ⚠ As Invocações tinham a âncora de destaque (`afty-item-invocacao:<id>` em
+     AbaInvocacoes) e NENHUMA fonte: o alvo existia e nada apontava para ele,
+     então a aba inteira era invisível para a busca.
+
+     Os nomes das Ações e Características entram na string de busca em vez de
+     virar linha própria, porque no meio da luta se procura pelo nome do golpe,
+     mas o destino é sempre o card da invocação. Linha própria também repetiria a
+     `chave`, que é o alvo do destaque E a chave de lista do resultado. */
+  for (const i of derived?.invocacoes?.lista ?? []) {
+    const dentro = [...(i.acoes ?? []), ...(i.caracteristicas ?? [])]
+      .map((x) => x.nome).filter(Boolean).join(" ");
+    add("invocacoes", "invocacao", i.id, i.nome || "Invocação Sem Nome", i.grauLabel, dentro);
+  }
+  /* A Quimera tem ficha própria na aba desde 2026-09-23, então a busca também a
+     alcança, pelo id da resolvida (`quimera:<id>`). Os nomes das fundidas entram
+     na busca: quem procura "Nue" acha a Quimera em que o Nue está. */
+  for (const q of derived?.quimeras?.lista ?? []) {
+    const r = q.valido ? q.resolvida : null;
+    if (!r) continue;
+    const dentro = [...(r.acoes ?? []), ...(r.caracteristicas ?? []), ...(q.fundidas ?? [])]
+      .map((x) => x.nome).filter(Boolean).join(" ");
+    add("invocacoes", "invocacao", r.id, r.nome || "Quimera Sem Nome", "Quimera", dentro);
+  }
+  for (const a of derived?.testes?.ataques ?? []) add("pericias", "ataque", a.id, a.nome, null);
+  for (const r of derived?.testes?.resistencias ?? []) add("pericias", "tr", r.value, r.label, null);
+  for (const p of derived?.testes?.pericias ?? []) add("pericias", "pericia", p.id, p.nome, null);
+  return fora;
+}
+
+/** Rótulo do grupo, para a busca mostrar de onde o resultado veio. */
+export const ROTULO_GRUPO = {
+  ...Object.fromEntries(GRUPOS.map((g) => [g.id, g.label])),
+  equipamento: "Equipamentos",
+  dano: "Dano",
+  cura: "Cura",
+  feitico: "Feitiços",
+  manobra: "Manobras",
+  invocacao: "Invocações",
+  ataque: "Jogadas de Ataque",
+  tr: "Testes de Resistência",
+  pericia: "Perícias",
+};

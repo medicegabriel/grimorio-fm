@@ -1,0 +1,191 @@
+[
+  {
+    "nome": "Auxiliar defesa",
+    "pagina": 218,
+    "linha": 5263,
+    "cells": 21,
+    "failures": []
+  },
+  {
+    "nome": "Auxiliar rd",
+    "pagina": 219,
+    "linha": 5284,
+    "cells": 21,
+    "failures": []
+  },
+  {
+    "nome": "Auxiliar atributo",
+    "pagina": 219,
+    "linha": 5304,
+    "cells": 15,
+    "failures": []
+  },
+  {
+    "nome": "Auxiliar tr",
+    "pagina": 220,
+    "linha": 5327,
+    "cells": 21,
+    "failures": []
+  },
+  {
+    "nome": "Auxiliar rolagem",
+    "pagina": 220,
+    "linha": 5347,
+    "cells": 21,
+    "failures": []
+  },
+  {
+    "nome": "Auxiliar movimento",
+    "pagina": 221,
+    "linha": 5371,
+    "cells": 21,
+    "failures": []
+  },
+  {
+    "nome": "Auxiliar danoDurante",
+    "pagina": 221,
+    "linha": 5391,
+    "cells": 21,
+    "failures": []
+  },
+  {
+    "nome": "Auxiliar danoApos",
+    "pagina": 222,
+    "linha": 5412,
+    "cells": 21,
+    "failures": []
+  },
+  {
+    "nome": "Auxiliar danoFixo",
+    "pagina": 222,
+    "linha": 5431,
+    "cells": 21,
+    "failures": []
+  },
+  {
+    "nome": "Auxiliar niveisDano",
+    "pagina": 223,
+    "linha": 5452,
+    "cells": 21,
+    "failures": []
+  },
+  {
+    "nome": "Auxiliar margemCritico",
+    "pagina": 223,
+    "linha": 5473,
+    "cells": 21,
+    "failures": []
+  },
+  {
+    "nome": "Auxiliar negacaoRd",
+    "pagina": 224,
+    "linha": 5497,
+    "cells": 21,
+    "failures": []
+  },
+  {
+    "nome": "Auxiliar cd",
+    "pagina": 224,
+    "linha": 5517,
+    "cells": 21,
+    "failures": []
+  },
+  {
+    "nome": "Auxiliar prejuizoRolagem",
+    "pagina": 225,
+    "linha": 5536,
+    "cells": 21,
+    "failures": []
+  },
+  {
+    "nome": "Auxiliar ataque",
+    "pagina": 225,
+    "linha": 5555,
+    "cells": 21,
+    "failures": []
+  },
+  {
+    "nome": "Auxiliar alcanceCaC",
+    "pagina": 226,
+    "linha": 5575,
+    "cells": 21,
+    "failures": []
+  },
+  {
+    "nome": "Auxiliar alcanceDistancia",
+    "pagina": 227,
+    "linha": 5598,
+    "cells": 21,
+    "failures": []
+  },
+  {
+    "nome": "Dano único TR",
+    "pagina": 205,
+    "linha": 4874,
+    "cells": 7,
+    "failures": []
+  },
+  {
+    "nome": "Dano único Ataque",
+    "pagina": 205,
+    "linha": 4874,
+    "cells": 7,
+    "failures": []
+  },
+  {
+    "nome": "Dano área",
+    "pagina": 206,
+    "linha": 4907,
+    "cells": 6,
+    "failures": []
+  },
+  {
+    "nome": "Alcance",
+    "pagina": 205,
+    "linha": 4891,
+    "cells": 7,
+    "failures": []
+  },
+  {
+    "nome": "Área",
+    "pagina": 206,
+    "linha": 4920,
+    "cells": 6,
+    "failures": []
+  },
+  {
+    "nome": "Cura único",
+    "pagina": 228,
+    "linha": 5629,
+    "cells": 6,
+    "failures": []
+  },
+  {
+    "nome": "Cura área",
+    "pagina": 228,
+    "linha": 5629,
+    "cells": 6,
+    "failures": []
+  },
+  {
+    "nome": "Custo PE",
+    "pagina": 199,
+    "linha": 4720,
+    "cells": 6,
+    "failures": []
+  },
+  {
+    "nome": "Reserva PE Passiva",
+    "pagina": 235,
+    "linha": 5804,
+    "cells": 6,
+    "failures": []
+  },
+  {
+    "nome": "Nível de dano Passivo",
+    "pagina": 236,
+    "linha": 5842,
+    "cells": 4,
+    "failures": []
+  }
+]

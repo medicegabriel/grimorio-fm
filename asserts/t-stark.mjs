@@ -80,9 +80,10 @@ for (const sistema of ["player", "afty"]) {
   };
 
   /* ---------- 2. O Legado do Guerreiro ---------- */
+  /* Na criatura so a vaga exclusiva do Legado conta (sem progressao propria, 2026-10-26). */
   t(tag("o Estilo destrava no Nível 1, com 2 Técnicas"),
     [1, 3, 4, 7].map((nd) => { const d = deriveAfty(ficha({ nd })); return [d.estilo.disponivel, d.estilo.progressao.total]; }),
-    [[true, 2], [true, 2], [true, 3], [true, 4]]);
+    sistema === "player" ? [[true, 2], [true, 2], [true, 3], [true, 4]] : [[true, 2], [true, 2], [true, 1], [true, 1]]);
   const n4 = deriveAfty(ficha({ nd: 4 }));
   t(tag("o Domínio Simples não vem no Nível 4"), n4.aptidoesConcedidasOrigem.includes("dominio_simples"), false);
   t(tag("marcado à mão ele não conta, e a aba o trava"),
@@ -143,8 +144,8 @@ for (const sistema of ["player", "afty"]) {
   const fichaMente = ficha({ estilos: [mente], aptidoes: ["aura_anuladora"] });
   t(tag("e a linha da Ficha tem o contador"),
     !!conteudoDaFicha(fichaMente, deriveAfty(fichaMente)).find((i) => i.id === mente)?.usos, true);
-  t(tag("a marcada à toa passa da progressão e invalida todas"),
-    deriveAfty(ficha({ nd: 1, estilos: [reforco, mente, "stark:cobertura_da_vanguarda"] })).estilo.progressao.excedeu, true);
+  t(tag("a marcada à toa passa da progressão e invalida todas, só no personagem"),
+    deriveAfty(ficha({ nd: 1, estilos: [reforco, mente, "stark:cobertura_da_vanguarda"] })).estilo.progressao.excedeu, sistema === "player");
 
   /* ---------- 5. O Voto pronto Maldição - Instinto Corrompido ---------- */
   const molde = V.votoPadraoDeAddon(ficha());

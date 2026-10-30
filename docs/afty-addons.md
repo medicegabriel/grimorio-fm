@@ -1,5 +1,265 @@
 # Addons do Afty (plano)
 
+## A aba de Addons em lista lateral, com resumo e categoria (2026-10-29)
+
+Com dezenas de pacotes a aba virou uma lista plana de nomes, e só o título não lembra o que cada um faz. O autor escolheu,
+por pergunta: lista lateral com painel de detalhe (a `ListaLateral` de Feitiços e Invocações), dois campos novos em cada
+pacote (`resumo` e `categoria`, rascunhados nos 88) e nenhum campo de mesa. Lógica sem tela em `afty-addons-lista.js`,
+tela em `AftyTabAddons.jsx`, regressões em `asserts/t-addons-lista.mjs` (77) e conferência de navegador em
+`.audit/addons-lista-browser.mjs` (1440 e 390 px).
+
+**Uma lista só.** Os embutidos, a biblioteca desta máquina e o que a ficha carrega entram juntos, cada id uma vez (o embutido
+vence a biblioteca, que vence a cópia da ficha). Os ligados nesta ficha sobem para o primeiro grupo. ⚠ **A linha da lista mostra só o
+nome, a versão e as marcas de ligado e de aviso, sem nenhuma descrição** (autor, 2026-10-29: a descrição logo de cara pesava demais com
+dezenas de pacotes e ela só aparece ao clicar). A busca varre nome, resumo, categoria, autor, o nome das entradas que o pacote
+acrescenta e a descrição inteira, então procurar "Zodíaco" acha o H Corp e uma palavra que só a descrição tem também acha o pacote.
+Os chips filtram por Ligados, Aviso e categoria. Instalar por JSON colado, copiar, guardar na biblioteca, atualizar e remover ficam no
+painel de detalhe, abaixo do interruptor, porque se usam bem menos que ligar e desligar.
+
+**O painel de detalhe** (reformatado no mesmo dia, por pedido do autor: a descrição era um bloco miúdo e cinza) mostra o título, o
+interruptor, os ajustes de um pacote composto, os avisos e, em seções separadas por filete e com rótulo, a Descrição e o que o pacote
+muda (Acrescenta com os nomes das entradas, Remenda, Regras e Libera). Um pacote composto mostra o que muda NESTA ficha. Só o
+`resumo` DECLARADO abre o painel, em corpo maior: sem ele a primeira frase da descrição é o resumo, e mostrá-lo duas vezes era o
+defeito apontado. Com resumo declarado, a primeira frase da descrição que só o repete sai.
+
+**A descrição em blocos de leitura** (`blocosDaDescricao`, sem mudar o texto gravado). 63 das 88 descrições passam de 200 caracteres e
+quase todas são um parágrafo só. A tela as divide por frase (`frases` respeita "Pt.", "ex." e decimais), agrupa em parágrafos de até
+2 frases ou 320 caracteres, cola a frase curta do fim ("Vale nos dois sistemas.") no parágrafo anterior, corta a frase de mais de 420
+caracteres nos ponto e vírgula, e respeita a quebra de linha e a lista com "-" do autor. A primeira leitura mostra até 360 caracteres,
+e o botão "Ver a Descrição Completa" abre o resto. Texto em 12px com entrelinha folgada e largura de leitura limitada.
+**Os campos novos.** `resumo` (uma linha, até 160 caracteres, e o repositório fica em até 110) e `categoria`, uma de `regras`,
+`origens`, `treinos`, `talentos`, `equipamentos`, `tecnicas`, `ferramentas` ou `outros`. Os dois são opcionais: sem `categoria`
+ela sai do que o pacote acrescenta, e sem `resumo` vale a primeira frase da descrição, cortada na palavra. ⚠ Entraram no
+`normalizarPacote`, que apaga em silêncio o campo que não conhece. Os 11 pacotes que não tinham descrição útil ganharam uma.
+
+**Como escrever o resumo.** A régua é a página da Wikipedia "Signs of AI writing", aplicada ao português. Fato direto, verbo
+simples e o número ou o nome concreto ("PV ×3, Expansão maior e +1 ponto de atributo a cada 4 níveis"). Fora: "serve como",
+"oferece", "permite", "garante"; elogio e adjetivo vago ("poderoso", "robusto", "diversos"); "não só X, mas Y"; gerúndio de
+comentário no fim da frase (", garantindo..."); conectivo de abertura ("além disso"); fecho de avaliação; tríade de
+enchimento; travessão, ponto e vírgula, negrito, emoji e aspas curvas. O `t-addons-lista.mjs` reprova esses vícios nos resumos
+do repositório e traz um controle negativo para provar que a guarda pega. Não reescrevi as descrições longas que já existiam:
+várias carregam regra de livro e nota de motor, e trocar o texto delas mudaria o que o livro diz.
+
+**Extensão compatível da `ListaLateral`.** `organizarLista` e o componente ganharam `textoDe`, `predicados`, `destaqueDe`,
+`filtros`, `ordens` e `rotuloTipo`, todos com padrão que não muda Feitiços nem Invocações (o `t-lista-lateral` segue verde).
+
+## Guerra de Feiticeiros: pacote embutido, composto e de atualização automática (2026-10-29)
+
+Pacote [guerra-de-feiticeiros.json](../addons/guerra-de-feiticeiros.json), versão 1.0.0, o conjunto de regras da
+campanha do autor. É o primeiro pacote EMBUTIDO e COMPOSTO. Código em
+`src/systems/afty/afty-addons-compostos.js`, regressões em `asserts/t-guerra-de-feiticeiros.mjs` (158) e
+conferência de navegador em `.audit/guerra-browser.mjs`.
+
+**Embutido.** A fonte viaja dentro do app (import do JSON). Toda vez que a ficha entra no app, a cópia que ela
+carrega é refeita a partir da fonte, então publicar uma versão nova atualiza todas as fichas sem abrir nenhuma.
+É a exceção declarada à regra "atualizar é um botão", e vale só para os pacotes de `EMBUTIDOS`. A atualização
+chega quando o app publicado é recarregado, e a ficha exportada em arquivo se atualiza ao ser aberta. A hidratação
+mora em `hidratarFicha` e roda no topo de `deriveAfty`, em `addonsDaCriatura`, nos `aplicarAddons` do criador,
+da Ficha e da ponte, e na criação do rascunho do criador. Devolve a MESMA ficha quando não há nada a fazer.
+
+**Composto.** Três campos que o pacote comum não tem:
+
+| Campo | Papel |
+|---|---|
+| `ajustes` | o que cada ficha escolhe: `interruptor` ou `inteiro`, com `sistemas` opcional. A escolha mora em `ficha.addonAjustes[id]`, FORA da cópia, para a atualização nunca apagá-la |
+| `porSistema` | blocos que valem só para `player` ou só para `afty` (criatura) |
+| `porAjuste` | blocos que valem só com um ajuste ligado, por sistema |
+
+A composição acontece ao COPIAR para a ficha, e a cópia é um pacote comum com a marca `composicao` (fonte e
+chave de versão, sistema e ajustes). Por isso o motor e os trinta leitores de `creature.addons` não mudaram. Só
+blocos por ficha entram nos overlays: `regrasAfty`, `libera`, `permite`, `incompativeis`, `substitui` e
+`funcionamentos`. O `acrescenta` é catálogo global (o Encontro mistura Player e criatura) e fica na raiz, igual nas
+duas visões. `validarFonteComposta` recusa o resto. Campo novo de pacote precisa entrar no `normalizarPacote`,
+que apaga em silêncio o que não conhece (`composicao` entrou lá).
+
+**Um pacote para os dois sistemas.** A criatura recebe só `trNoLimiteDePericias`, Talentos Iniciais e o conteúdo
+global. O que é do Player (PV ×2 e ×3, Alma como no Afty, Nível sem Teto, Aptidão por BT, os remendos de Melhorias e
+Lendárias, a Épica) fica em `porSistema.player`. Dobrar e triplicar o PV equivalem a Desafio e Calamidade, que a
+criatura já tem pelo Patamar (autor, 2026-10-29). Medido: das 16 regras antigas, só Regras Grimorio, Ascendendo e o
+Alto Nível mexiam em número de criatura.
+
+**Interruptor Progressão Épica** (só Player, caixinha no cartão, qualquer um com a ficha marca): PV ×3 no lugar de ×2
+(Ascendendo), 3 pontos de atributo por ciclo de 4 níveis (`pontosAtributoPorCiclo`, que já equivale ao +1 por ciclo do
+Ascendendo, por isso o 10c não foi duplicado), área da Expansão de Domínio maior, Guarda Alta junto e a Agilidade no
+Campo de Batalha reaberta. O 5c (Interlúdios 1,5 por nível) ficou de fora por decisão do autor.
+
+**Dois verbos novos de motor.** `regrasAfty.aptidaoPorAvancoDeBt`: no Player, um Nível de Aptidão por avanço do BT
+acima de 6 (níveis 21, 26, 31, 36, 41...), no lugar de um a cada dois níveis depois do 20. Vale `max(0, maestria(nd) -
+6)`. E a `maestria(nd)` agora segue subindo depois do 36: `10 + piso((nd - 36) / 5)`, 11 no 41, 12 no 46. Essa
+mudança é GLOBAL (decisão do autor): toda ficha com ND 41 ou mais muda, tenha o Addon ou não.
+
+**Decididos pelo autor em 2026-10-29:** o Treino de TR inclui Integridade, as 3 Lendárias novas aparecem também na criatura
+e os Talentos Iniciais ficam disponíveis nos dois sistemas. O `addons/treino-de-tr.json` antigo subiu para a 1.1.0 com
+`incluiIntegridade`, o que também fecha o `t-treino-de-tr`.
+
+**Mudanças de conteúdo em relação aos pacotes antigos:** Segredos do Artesão da Alma soma `piso(bt / 2)` no TR de
+Integridade (13a). O Treino de TR inclui Integridade (`incluiIntegridade: true`, como o guia da versão 1.1.0 descreve; o
+JSON antigo no disco estava na 1.0.0 sem o campo). O Mente Analítica cita o Talento do próprio pacote.
+
+**Quem liga o Guerra desliga o que conflita (autor, 2026-10-29).** O Guerra declara em `absorve` os 14 pacotes antigos
+que cobre por inteiro e em `migra` o que cada um implica nos ajustes: Épica ligada se a ficha tinha o Ascendendo, e a
+quantidade de Talentos Iniciais copiada. Ao LIGAR (e ao hidratar uma ficha que já o tem), esses pacotes saem da ficha e
+os ids que ela guardou com o prefixo antigo são renomeados (treinos, Lendárias, Talentos e a opção de Inovar Estilo).
+Ficha que só tem pacotes antigos NÃO muda ao abrir: espera alguém ligar o Guerra, e fica intacta enquanto isso, o que
+protege ficha de outra mesa. Só `criacao-de-armas` continua em `incompativeis`, porque é conflito real.
+
+**Pacotes parciais (`parciais`).** Regras Grimorio (falta o 9c, ignorar a redução de PE do Santo da Espada) e Progressão
+Épica (falta o 5c, Interlúdios 1,5 por nível) têm parte que o Guerra não tem. O autor escolheu MANTER o antigo ligado e
+avisar: ele não sai, não é incompatível e soma por cima do Guerra (PV multiplicado de novo, por exemplo). O aviso âmbar
+(`avisosDosEmbutidos`) aparece no card Problemas da aba Addons e diz o que falta. `validarFonteComposta` recusa um parcial
+sem aviso ou que também esteja em `absorve`.
+
+Os 16 arquivos antigos seguem em `addons/`: fichas que não ligaram o Guerra ainda os usam, e os asserts deles testam a
+mecânica de cada verbo. Hoje a biblioteca recusa instalar o id do Guerra (`instalarPacote`), porque a cópia colada perderia os
+campos de composição e a hidratação a trocaria pela fonte do app em silêncio.
+
+**Como atualizar.** Edite `addons/guerra-de-feiticeiros.json` (esse arquivo é o canônico, não há gerador) e publique. A chave de
+atualização leva um hash do conteúdo, então mudar o JSON sem subir a `versao` ainda atualiza as fichas, mas suba a versão para
+o histórico. Chega a cada pessoa quando ela recarrega o site publicado.
+
+⚠ **Ficha com o Guerra desatualizado abre como alterada no criador até salvar.** É a única vez, depois a cópia está em dia.
+
+## Loja de Catarse: compras funcionais do Chrollo (2026-10-25)
+
+Correção autorizada pelo autor após fornecer a ficha original. `quantidade`
+tem padrão 1 e multiplica as vagas das famílias com canal. A família
+`habilidadesOutraClasse` recebe `escolhas`, uma habilidade por unidade,
+sem gastar a pilha comum e sem conceder a classe ou suas bases. Nível e
+escalonamento usam o personagem, como Alma Livre, mantendo demais requisitos.
+O seletor fica em Outros > Catarse. A aba da habilidade em Especializações
+permite configurar suas escolhas próprias.
+
+Na ficha entregue, Atributo é texto com Motor e duas linhas, `atributo` e
+`limiteAtributo`, ambas +6 em Constituição. Especialização de Outra Classe
+tem quantidade 2 e dois seletores. Lendária é da família `lendarias`,
+quantidade 3, resultando em 4/5 escolhas na ficha recebida. Os demais itens
+usam `anotacao`, somente nome e descrição, sem um editor de Motor vazio.
+Nenhuma primitiva ou canal novo. Regressões em `asserts/t-catarse-outra-classe.mjs`.
+
+## Segredos do Artesão da Alma (2026-10-25)
+
+Pacote [segredos-do-artesao-da-alma.json](../addons/segredos-do-artesao-da-alma.json), versão 1.0.0,
+com um Talento Geral de texto do autor (não está no livro). Sem verbo novo: só `acrescenta.talentos`.
+
+- **Requisitos:** Nível 10 (`nd`) e Treinado em Integridade (`resistencia`, que lê a faixa resolvida, então
+  o TR que vem do Alma Inquebrável, da Classe ou de outra fonte serve).
+- **Efeitos:** canal `bonusTR` em `integridade` com `bt` (o BT somado no teste, com o nome do Talento no
+  hover) e canal `rdAlma` com 5, que acumula com a RD a Dano na Alma do Alma Inquebrável.
+- **Sem automação (mesa):** o reparo do núcleo destruído de um Corpo Amaldiçoado Mutante, com os testes de
+  Ofício (Canalizador) e de Integridade contra a CD de 20 + nível do corpo + 2 por dia. O texto fica inteiro
+  na descrição. O livro diz que um núcleo destruído "exige talentos específicos" para ser substituído
+  (origem Corpo Amaldiçoado Mutante), e este é um deles.
+- **Leitura de "recebe seu BT em Integridade":** bônus de BT no Teste de Resistência de Integridade (o
+  livro chama o TR de "bônus em Integridade" ao decidir qual alma testa), e não no valor de Integridade da
+  Alma. Se a intenção for outra, é uma linha só em `efeitos`.
+- Assert em `asserts/t-segredos-artesao-alma.mjs` (28), lendo o JSON de verdade nos dois sistemas.
+
+## TR no Limite de Perícias (2026-10-25)
+
+Pacote [tr-no-limite-de-pericias.json](../addons/tr-no-limite-de-pericias.json), versão 1.0.0, só com
+o verbo novo `regrasAfty.trNoLimiteDePericias` (o mesmo molde do `almaComoAfty`: a Ficha de Player
+volta a ter a regra da criatura). Pedido do autor: os Testes de Resistência contam no Contador de
+Perícias e se treinam como uma perícia, o TR que Classe, Talento, Treino e Habilidade concedem segue
+funcionando, e o contador aumenta nesse caso.
+
+| | Sem o Addon (jogador) | Com o Addon |
+|---|---|---|
+| TR escolhido na aba | possível, mas acusado em âmbar ("Sem Fonte") e sem custo | gasta vaga: Treinado 1, Mestre 2, sem aviso |
+| Contador no card de Testes de Resistência | não aparece | aparece, o mesmo das Perícias |
+| TR concedido de fora | verde, não gasta nada | verde, entra como vaga gasta e **sobe o total na mesma medida** |
+| Hover do total | só as fontes das Perícias | mais a linha Testes de Resistência Concedidos |
+| Marcar à mão o que uma fonte já dá | acusa "Sem Fonte" | não gasta: a Classe e o Motor pagam o degrau que dão |
+| "Caso já seja" de TR | a marcação à mão não conta | a marcação à mão conta, e é paga |
+
+O que sobra para escolher (`orcamento.restante`) **não muda** por causa do concedido: o total e os
+gastos sobem o mesmo tanto (Restringido no 10: Fortitude e Reflexos Mestre, 2 + 2, total 8 para 12).
+Nenhum bônus de TR nem de perícia muda, o Addon só mexe no contador e no custo da escolha.
+
+- **Na criatura o TR já gastava vaga**, então o pacote só passa a mostrar o concedido no contador
+  (sem Classe que dê TR, é zero e nada muda). Vale nos dois sistemas porque a regra é uma só.
+- **Decisão do autor (2026-10-25):** das três leituras de "aumentando o contador" (concedido de
+  graça e total fixo, concedido gasto com total subindo junto, ou bônus fixo no total) ficou a
+  segunda.
+- **Pelo motor:** `resolveTestes` lê `ctx.trNoLimite`, que o `deriveAfty` preenche com
+  `regrasAddon.trNoLimiteDePericias`. Quem decide a divergência `trForaDoOrcamento` é ele, então o
+  `trNoOrcamento` do `orcamento` e a tela (contador no card de TR) seguem sozinhos. O pacote da Classe
+  passa a abater a marcação à mão (`custoLiquido` com `faixaExtra`), como o canal já fazia. O
+  "caso já seja" só entra como concedido quando virou faixa, nunca quando virou +1 ou +2.
+- Assert em `asserts/t-tr-no-limite.mjs`, lendo o JSON de verdade, nos dois sistemas.
+
+## Retração de Domínio (2026-10-25)
+
+Pacote [retracao-de-dominio.json](../addons/retracao-de-dominio.json), versão
+1.0.0. Acrescenta a Aptidão `retracao-de-dominio:retracao_de_dominio`, que
+requer Dom 3. Instale o pacote em Outros > Addons, escolha a Aptidão na ficha
+e ative Retração de Domínio pelo controle de buff durante o combate.
+
+Enquanto ativa, aumenta em 20% os máximos finais de PV e PE, depois das
+demais fontes, multiplicadores e substituições da aba Cálculos. Cada bônus
+arredonda para baixo. Ao passar de desligada para ligada, soma aos recursos
+atuais somente a diferença entre os máximos. PV 200 e PE 100 passam a
+240 e 120, com ganho de 40 PV e 20 PE atuais, preservando os pontos faltantes.
+
+Repetir a ativação enquanto já está ligada não soma recursos. Desligar apara
+os atuais aos máximos sem o bônus, sem descontar a diferença novamente.
+A Retração encerra no fim do combate e no descanso. Cada nova ativação manual
+recebe a diferença outra vez, pois o pedido não limitou usos. A Alma permanece
+inalterada. O pacote não declara custo, duração em rodadas ou Exaustão.
+
+Usa o contrato `estadosCombate[].ampliaRecursos`, documentado abaixo.
+Não acrescenta canal ao Motor de Automação nem altera o sistema base 2.5.2.
+
+## Talentos de Estilo, padrão para novos addons (2026-10-25)
+
+Primeira variante: `addons/mente-analitica.json` 1.0.0. **Mente Analítica**
+entra na seleção de Inovar Estilo, exige Mente Oculta e troca o escalonamento
+do bônus dela em Furtividade de Sabedoria para Inteligência. Usa o contrato
+existente, sem modificar o catálogo do livro ou o atributo base da perícia.
+
+Por pedido do autor, novas Habilidades de Especialização próprias usam as
+opções de **Estilo Próprio**, e modificações de habilidades já possuídas usam
+**Inovar Estilo**. O pacote base é `addons/talentos-de-estilo.json`, com duas
+listas vazias, repetíveis e abertas por padrão. Variantes posteriores entram
+por `acrescenta.opcoesTalento`, sem substituir listas de outros pacotes.
+Este padrão vale para esses pedidos de habilidades e modificações, sem
+converter addons de outras finalidades em Talentos.
+
+Contrato, exemplo, instalação e alcance da automação em
+[afty-talentos-de-estilo.md](afty-talentos-de-estilo.md).
+A família nova religa depois dos Talentos, em ordem 60, e reconstrói os
+índices de opções junto com os seletores. A concessão não cobra outra vaga de
+habilidade. A inovação exige o alvo e acompanha somente os efeitos dele.
+Cada ficha usa seus próprios pacotes, mesmo no catálogo unido do Encontro.
+
+## Treino de TR (2026-10-25)
+
+Pacote [treino-de-tr.json](../addons/treino-de-tr.json), versão 1.1.0:
+acrescenta a linha repetível `treino-de-tr:tr` para Afty e Player.
+Instalar em Outros > Addons, colando o JSON e ativando o pacote na ficha.
+A linha aparece em Interlúdios, uma instância por TR treinável:
+Fortitude, Reflexos, Vontade, Astúcia ou Integridade.
+`incluiIntegridade: true` habilita Integridade somente nessa linha.
+Linhas de TR sem esse campo mantêm as quatro opções anteriores.
+Para atualizar uma ficha que usa a 1.0.0, reinstalar o pacote na biblioteca
+e atualizar sua cópia na ficha.
+
+Segue o Treino de Perícia nativo, com adaptação dos termos para TR:
+custos 1, 1, 1 e 2 Focos, sem requisitos adicionais. A 1ª etapa concede
+Treinado ou +1 se outra fonte já concedia treino. A 3ª concede Mestre
+ou +2 se outra fonte já concedia maestria. Usa `proficienciaTRCasoJa`,
+contando a Classe no Player e respeitando o orçamento da criatura.
+A 2ª (vantagem duas vezes por descanso), a 4ª (sucesso garantido uma vez
+por cena, exceto teste oposto) e o Completo (rerrolar d20 menor que 5,
+mantendo o melhor resultado) são procedimentos de mesa, como na Perícia.
+
+É uma alternativa ao pacote `treino-testes-de-resistencia.json`, que
+conserva sua regra própria. Os ids são distintos e os pacotes podem coexistir,
+com os efeitos de cada linha treinada aplicados pelo motor existente.
+Não acrescenta canais, remendos ou alterações ao sistema base.
+Regressões em `asserts/t-treino-de-tr.mjs`.
+Referência da adaptação: Treino de Perícia, Livro de Regras 2.5.2, p. 345,
+SHA-256 `1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a`.
+
 ## Vespa Crabro (2026-10-25)
 
 `addons/vespa-crabro.json` 1.1.1 reúne o treino, Gungnir e Hwando, duas
@@ -603,7 +863,8 @@ abaixo tem as nove primeiras. As outras sete: `carteiraFocos` e `carteiraNivel` 
 | `gemeosSemTecnica` | o Gêmeo pode copiar **Estudos Dedicados** ou **Empenho Implacável** em Verdadeiras Origens |
 | `qualificaSemTecnica` | a criatura conta como Origem Sem Técnica para pré-requisito de Talento e de Linha de Treinamento |
 | `gemeosMaldicao` | o Gêmeo pode copiar da Maldição, e copiar passa a fazer a criatura seguir a estrutura dela |
-| `feiticosRestritos` | a aba de **Feitiços** para a origem que não conjura, limitada a Passivo e Personalizado |
+| `feiticosRestritos` | a aba de **Feitiços** para a origem que não conjura, limitada a Passivo e Personalizado. Só trabalha no Sem Técnica desde 2026-10-27, porque o Restringido tem as Técnicas Marciais nativas (o alias vale como `tecnicasMarciais` numa ficha sem energia) |
+| `tecnicasMarciais` | abre o Estilo Marcial e as Técnicas Marciais para quem não tem a Especialização Restringido (Não-Feiticeiro), com o teto de Nível da origem |
 | `soPorAddon:gemeos` | devolve a origem Gêmeos à Ficha de Jogador |
 | `soPorAddon:atributo` | devolve a Linha de Treinamento Treino de Atributo à Ficha de Jogador |
 | `soPorAddon:cnj_agilidade_no_campo_de_batalha` | devolve a Habilidade [2.0] homônima à lista do Conjurador |
@@ -1012,6 +1273,11 @@ só no fim, e sozinho já faz o pacote válido. As compras rendem com ou sem o `
 `espinho` só decide quem vê o card (aba Habilidades do criador e da Ficha Final) e o canal novo
 `pontosAtributo` no seletor. Guia completo em `docs/afty-espinho.md`, pacotes em `addons/espinho.json`
 e `addons/alter.json`.
+
+Desde 2026-10-12 o campo também carrega a identidade do card (`nome`, `artigo`, `visual`) e a
+`maestriaAnotada`. É assim que existe a Lanterna Coletora de Almas
+(`addons/lanterna-coletora-de-almas.json`): o mesmo catálogo, com outro nome, outra pele e um campo
+que troca o BT só nos tetos. A identidade vem do primeiro pacote que traz itens.
 
 ### O campo `incompativeis` (2026-09-14)
 
@@ -2194,6 +2460,44 @@ três. ⚠ O `custoPE` de estado continua só exibido, e não descontado: é a r
 estado, nativo ou de addon (só o Invencível sob o Sol cobra). Cobrar é decisão do autor, em
 docs/a-fazer.md.
 
+#### Ampliação ativável de máximos (`ampliaRecursos`, 2026-10-25)
+
+Um estado `bool` de Aptidão pode declarar percentuais positivos de `hp` e/ou
+`pe` em `ampliaRecursos`. Exige `requerAptidao` e uso em combate, sem
+`foraCombate`. Outras chaves, percentuais não numéricos, zero e valores
+negativos são recusados na instalação.
+
+```json
+{
+  "id": "retracao_ativa",
+  "label": "Retração de Domínio",
+  "tipo": "bool",
+  "requerAptidao": "retracao_de_dominio",
+  "quando": "dom >= 3",
+  "ampliaRecursos": { "hp": 20, "pe": 20 }
+}
+```
+
+O id da Aptidão segue a regra de namespace local do pacote. Instalar o addon
+não substitui escolher a Aptidão. O `quando` é avaliado no contexto que já
+contém os níveis de Aptidão, portanto `dom >= 3` lê o nível efetivo disponível.
+
+`deriveAfty` aplica cada percentual sobre os máximos finais, inclusive os
+valores substituídos na aba Cálculos. Para cada recurso, o bônus é
+`floor(max(0, valor) * percentual / 100)`. As fontes aparecem no hover.
+A ampliação não altera a Alma nem volta a alimentar as fórmulas da base.
+
+A sessão reutiliza essa mesma base antes de derivar novamente. Somente a
+transição desligado para ligado soma a diferença positiva dos máximos aos
+atuais. Repetir ligado não concede nada. Desligar apenas apara ao máximo
+restante, sem subtrair a diferença novamente. Fim de combate e descanso
+encerram esses estados. Uma nova ativação manual recebe a diferença outra vez,
+salvo restrição de uso declarada pelo próprio estado. Os controles comuns
+`umaVezPorRodada` e `exclusivoCom` continuam válidos.
+
+O campo é comportamento da sessão e do cálculo final, sem canal novo do Motor.
+Não implica custo, duração em rodadas ou Exaustão.
+
 ### A linha de CURA própria (`fonteCura`, 2026-10-07)
 
 Uma Habilidade, Talento ou Aptidão de pacote pode ganhar a PRÓPRIA linha na seção de Cura, com nome
@@ -2383,12 +2687,55 @@ para Feitiços marcados como variacaoDeTecnica, sem alterar as variações de Li
 
 Pacotes e prévia importável descritos em [afty-player-progressao-epica.md](afty-player-progressao-epica.md).
 
+## Player: Nível sem Teto (2026-10-13)
+
+[addons/player-nivel-sem-teto.json](../addons/player-nivel-sem-teto.json) é a parte de nível da
+Progressão Épica, sozinha: `nivelJogadorSemTeto` e `aptidaoApos20`. O nível de Player passa do 30 e o
+Nível de Aptidão continua a cada 2 níveis depois do 20. Os Interlúdios voltam ao campo digitado e os
+pontos de atributo ao ciclo normal do Player (2 a cada 4 níveis no Comum). Os dois interruptores se
+unem por OR, então instalar junto da Progressão Épica não dobra nada. Assert em
+`asserts/t-player-nivel-sem-teto.mjs`.
+
+## Treino de Habilidade do Afty na Ficha de Jogador (2026-10-13)
+
+[addons/treino-de-habilidade-afty.json](../addons/treino-de-habilidade-afty.json) remenda o
+Treinamento para Habilidade (`tes_habilidade`) com `tetoJogador: null`. Sem a escada, o
+`maxVezesTreinoEspecial` do jogador cai na conta da criatura, `1 + piso(Nível / 10)`: 1 até o 9°,
+2 no 10°, 3 no 20°, 4 no 30°, e sem parar. O remendo também troca o último parágrafo da descrição,
+que dizia o máximo antigo. O teste rolado, a CD e os Interlúdios anotados seguem os do Player
+(divergência `interludioComTeste`), e a criatura não lê `tetoJogador`, então nada muda nela.
+
+⚠ Acima do 30 o teto só sobe junto de um pacote que tire o teto de nível do Player (Nível sem Teto
+ou Progressão Épica). Sozinho, o nível apara no 30 e o Treino para em 4. Assert em
+`asserts/t-treino-de-habilidade-afty.mjs`.
+
 ## Talentos Iniciais (2026-10-05)
 
 regrasAfty.talentosIniciais: inteiro de 1 a 4, que concede vagas exclusivas de Talento. O campo
 **Talentos** aparece no addon ativo em Outros > Addons e grava a quantidade na cópia da ficha.
 Pacote: [talentos-iniciais.json](../addons/talentos-iniciais.json). Uso e contrato em
 [afty-talentos-iniciais.md](afty-talentos-iniciais.md).
+
+## Ascendendo Além dos Céus (2026-10-12)
+
+Continuação do Regras Grimorio, para instalar junto dele:
+[ascendendo-alem-dos-ceus.json](../addons/ascendendo-alem-dos-ceus.json). Assert em
+`asserts/t-ascendendo-alem-dos-ceus.mjs`.
+
+| Benefício | Como |
+|---|---|
+| Expansão +7,5 m × BT, limite 200 m | canal `areaDominio`, `min(7.5 * bt, 200)` |
+| PV de 2x para 3x | `multiplicadorPvFinal: 1.5`, multiplicado pelo ×2 do Regras Grimorio. Sozinho dá ×1,5 (autor) |
+| 1 Ponto de Atributo a cada 4 níveis | canal `pontosAtributo`, `piso(nd / 4)`, no pool livre da aba de Atributos |
+| Guarda Alta (opcional) | `regrasAfty.guardaComoCalamidade`, interruptor **Guarda Alta** no cartão do addon em Outros > Addons |
+
+`guardaComoCalamidade` é verbo novo: na ficha de Player liga a Guarda Inabalável com os números de
+uma Calamidade de mesmo ND (+5 na Defesa e nos TRs, 5 × ND de Vida Temporária), ignorando o Patamar
+da ficha. Na criatura não faz nada, porque ali a Guarda já sai do Patamar. O pacote declara
+`false`, e a cópia da ficha guarda o valor do interruptor.
+
+⚠ O limite de 200 m vale sobre o acréscimo, e não sobre o raio total: o canal não conhece a versão
+da Expansão. Com o BT do jogo o total não chega perto dos 200 m.
 
 ## Alma Livre na Ficha de Jogador (2026-10-05)
 
@@ -2398,6 +2745,34 @@ o Talento em Especializações > Talentos. O requisito permanece nível 10. Ao a
 escolha uma Especialização diferente das atuais, exceto Restringido. A classe emprestada ganha
 uma aba para comprar uma única Habilidade usando uma vaga normal. A liberação funciona sozinha;
 remendos de outro addon, como Flugel, continuam valendo quando esse outro pacote também está ativo.
+
+## Treino de Atributo na Ficha de Jogador (2026-10-12)
+
+[addons/treino-de-atributo.json](../addons/treino-de-atributo.json) libera somente a Linha de
+Treinamento Treino de Atributo para Player por `soPorAddon:atributo`, no molde do Alma Livre. Instale
+e ative em Outros > Addons, e a Linha volta à lista de Interlúdios. A Linha é a mesma do catálogo da
+criatura: +1 no atributo escolhido por etapa, o Completo sobe o limite dele em 2 até 30, uma vez por
+atributo. Desinstalar não confisca: a ficha que já treinou segue vendo e somando a Linha, pela
+terceira porta do `filtraForaDoJogador`. Assert em `asserts/t-treino-de-atributo.mjs`.
+
+## Alma do Grimório Afty na Ficha de Jogador (2026-10-12)
+
+[addons/alma-do-afty.json](../addons/alma-do-afty.json) troca a Alma do jogador pela da criatura:
+"100 Máximo + Outros" (autor). Pacote só com `regrasAfty: { "almaComoAfty": true }`, verbo novo.
+
+| | Sem o Addon (jogador) | Com o Addon (igual à criatura) |
+|---|---|---|
+| Máximo da Alma | o PV | 100 mais o canal `almaMax` |
+| Melhoria de Alma, Consciência Absoluta | somam em pontos na Alma e no PV | somam na Alma, e a Alma multiplica o PV (125 dá ×1,25) |
+| PV | segue a Alma corrente | PV × Alma corrente / 100 |
+| Dano na Alma | desce a Alma e a Vida corrente | desce a Alma, e o máximo cai na proporção |
+| Máximo da Alma que sobe | soma na corrente | não mexe na corrente |
+
+É a conta inteira e não só o número da barra: com a Alma em 100, só a porcentagem mantém o resto
+coerente. O derivado publica `almaPilha` (o regime já resolvido), e os verbos da sessão
+(`aplicaDanoNaAlma`, `aparaSessao`, a migração do `almaLida`) leem ele em vez de perguntar o
+sistema. Na criatura o verbo não faz nada. Instalar no meio da campanha apara a Alma em 100, e
+desinstalar devolve a pilha cheia pelo ganho do máximo. Assert em `asserts/t-alma-do-afty.mjs`.
 
 ## Grande Roda do Dharma (2026-10-07)
 
@@ -2569,6 +2944,7 @@ o Preview só mostram a linha Voo quando ela passa de zero.
 | `nivelMaximo: 10` | origem | o `nd` que todo o derive lê trava no número, e o campo de Nível do criador também |
 | `tetoNivelFeitico: 2` | origem | o acesso a Feitiço não passa do número, em todos os leitores (`acessoFeitico` no derive) |
 | `concedeHabilidades: [{ id, ndMin }]` | característica ou opção | concede a Habilidade pela porta da concessão de sessão: não gasta vaga e não pede a classe dela |
+| `vetaHabilidades: [id]` | característica ou opção | o avesso do de cima (2026-10-12): a Habilidade sai das concedidas, inclusive da Base automática da Classe, e da lista da ficha, e a aba a tranca como "Vetada pela Origem". Nasceu no Gêmeo Restringido com o irmão vivo |
 | `armaEscolhida: { id, nome }` | característica ou opção | abre o seletor "Nome" no card de Dano do criador, que grava `armasDaOrigem[id]`. Os efeitos da origem miram a arma por `alvo: "@<id>"`, e sem arma marcada a linha sai |
 
 E um canal: `treinoArmaCasoJa` (Ataque e Dano, alvo de arma). A arma alvo passa a somar o Bônus de
@@ -2591,8 +2967,9 @@ Duas coisas mudaram para todo pacote de origem:
   `opcoesEscolhidas` só lia a `escolha` única, e a escolhida no plural (as Artimanhas, o Caminho até
   o Fim do Liberto) não aparecia em lugar nenhum da tela de jogo.
 
-⚠ O Estilo e o Fundamento Marcial do Restringido não existem no Afty. O pacote usa a liberação
-`feiticosRestritos` (a mesma do addon Estilo Marcial) com o `tetoNivelFeitico: 2`. O que segue de
+⚠ Em 2026-10-27 o Estilo e o Fundamento Marcial do Restringido passaram a existir (`docs/afty-tecnicas-marciais.md`), e o
+pacote do Não-Feiticeiro (1.2.0) usa a liberação nova `tecnicasMarciais`, com o `tetoNivelFeitico: 2` valendo para a Técnica.
+Antes disso ele usava a liberação `feiticosRestritos` (a mesma do addon Estilo Marcial). O que segue de
 mesa, e está em `docs/a-fazer.md`: os pré-requisitos do ARMA!!! (só a escolha do nível 5 e do 10 o
 oferecem), a Artimanha repetida em duas escolhas, o Arsenal do Restringido e as Habilidades de
 Especialização com Energia Amaldiçoada na narrativa.
@@ -2790,3 +3167,55 @@ Moram em `afty-recursos-addon.js`. Os dois campos de pacote são genéricos e s�
 `energiaEmVida`).
 
 O que segue de mesa e as leituras para o autor estão em `docs/a-fazer.md`. Assert: `t-golem-de-sangue.mjs`.
+
+## H Corp e Morador da Cidade (2026-10-12)
+
+`addons/h-corp.json` (origem própria) e `addons/morador-da-cidade.json`. O
+`asserts/t-h-corp.mjs` lê os dois JSON que a pessoa cola. O `h-corp.json` é gerado por script (os 12
+animais têm a mesma forma), então mexa nele sabendo que cada opção repete três linhas.
+
+| Parte | Como ficou |
+|---|---|
+| Bônus em Atributo | `bonus: { distribuir: 4, maxPorAtributo: 3 }` |
+| Boulos | `bonusAtributos` fixo (+1 em Força, Destreza e Constituição) e uma `alocacao` própria de 2 pontos `entre` os físicos, o mesmo par do Restringido |
+| Zodíaco | escolha de um dos 12 animais no card da Origem, dois por atributo: Tigre e Porco (Força), Coelho e Cavalo (Destreza), Boi e Cabra (Constituição), Rato e Macaco (Inteligência), Serpente e Cão (Sabedoria), Dragão e Galo (Presença). O interruptor `zodiaco` do pacote (`requerEscolha` com os 12 ids) leva o atributo a 30, e a 32 se o PERMANENTE já está em 30. Uso por cena e as três rodadas ficam na mesa |
+| Morador da Cidade | Funcionamento do pacote, sempre ativo, com `pontosAtributo` 2. Vale para toda ficha com o Addon, de qualquer origem |
+
+Cada animal emite três linhas temporárias com `quando: "h_corp_zodiaco"`: `atributo` com
+`max(30 - attr, 0) + 2 * (attr >= 30)`, `limiteAtributo` 10 e `limiteAtributo` `2 * (attr >= 30)`
+com `furaTeto`. A terceira só vale (e só fura) quando o atributo já está em 30.
+
+O Zodíaco pediu três mudanças fora do pacote, todas nos dois sistemas:
+
+1. **Limite de combate desce.** `separarEfeitosDeBancada` prendia todo `limiteAtributo` no
+   montante, onde a bancada vale zero, e o atributo parava no 20 com o interruptor ligado. Agora o
+   que lê a bancada desce ao estágio principal e chega no `limiteAtivoPor`, o caminho do Feitiço
+   Auxiliar. O permanente continua no montante.
+2. **O estágio temporário fura com limite ativo.** O `somarAtributo` do estágio 1b recebe o limite
+   ativo avaliado sobre o `attrPermanente` (é ele que "já esteja em 30" pergunta) e aceita o
+   `furaTeto` das linhas que valeram. O estágio permanente segue sem furar, para nenhuma fonte
+   permanente pegar carona no 32. ⚠ Isto abre o `furaTeto` a linha ativa de Addon, que o
+   `FURA_TETO_PERMITIDO` não confere (ele só olha os mapas do catálogo). A decisão do autor de
+   2026-07-27 ("nada além da Lendária fura") ganhou esta exceção a pedido dele.
+3. **Interruptor de escolha de Origem.** A aba Buffs (`linhasDeEstado`) e a Simulação de Combate
+   conferiam o `requerEscolha` só nas opções de Habilidade e Talento. As da Origem
+   (`derived.origem.mapa`) entraram nas duas listas.
+
+⚠ Motor e pacote vão no mesmo push. No motor velho o pacote instala, e o Zodíaco leva o atributo
+só até o limite atual (20 na maioria das fichas), calado.
+
+### Talentos da H Corp (2026-10-12)
+
+`addons/talentos-h-corp.json`, com `asserts/t-talentos-h-corp.mjs`. Boulos e Zodíaco como Talentos
+Gerais, sem requisito, para qualquer ficha com o Addon. Não depende do pacote da Origem: o gerador
+lê os textos e os 12 animais de `h-corp.json` uma vez, e o pacote sai inteiro.
+
+- **Boulos:** o +1 fixo nos três físicos é `efeitos` do Talento. Os 2 Pontos viraram UMA escolha
+  entre as 6 combinações (Força +2, Força +1 e Destreza +1 e assim por diante), porque a ficha grava
+  ids únicos de opção e "2 no mesmo atributo" não cabe em duas escolhas.
+- **Zodíaco:** as mesmas linhas da Origem, com `quando: "talentos_h_corp_zodiaco"` e ids de opção
+  próprios (`hct_`). Id de opção é cru e global, e o id da Origem acenderia o interruptor dos dois
+  pacotes.
+- ⚠ Não há requisito "não ter a Origem X", então uma ficha da H Corp pode pegar os Talentos e
+  receber Boulos e Zodíaco duas vezes. Os dois interruptores ficam separados e cada um liga só o
+  seu animal.

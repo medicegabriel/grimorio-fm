@@ -4,6 +4,8 @@
   "versao": "1.0.0",
   "paraRaw": "afty",
   "descricao": "Dois modelos de Feitiços Passivos de Nível 5 para aprimorar Cura Aperfeiçoada. Edite nome e descrição depois de copiar os modelos para a ficha.",
+  "resumo": "Dois modelos de Feitiço Passivo de Nível 5 para a Cura Aperfeiçoada",
+  "categoria": "tecnicas",
   "feiticos": [
     {
       "id": "cura_limite_4",

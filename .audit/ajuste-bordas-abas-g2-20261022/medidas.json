@@ -1,0 +1,138 @@
+[
+  {
+    "estouro": 0,
+    "janela": 1280,
+    "secoes": [
+      {
+        "altura": 300,
+        "cabecalho": "11px 11px 0px 0px",
+        "id": "rapido",
+        "largura": 839,
+        "raio": "12px"
+      },
+      {
+        "altura": 156,
+        "cabecalho": "11px 11px 0px 0px",
+        "id": "dano",
+        "largura": 839,
+        "raio": "12px"
+      },
+      {
+        "altura": 150,
+        "cabecalho": "11px 11px 0px 0px",
+        "id": "feiticos",
+        "largura": 839,
+        "raio": "12px"
+      },
+      {
+        "altura": 97,
+        "cabecalho": "11px 11px 0px 0px",
+        "id": "dominio",
+        "largura": 839,
+        "raio": "12px"
+      }
+    ]
+  },
+  {
+    "estouro": 0,
+    "janela": 390,
+    "secoes": [
+      {
+        "altura": 323.625,
+        "cabecalho": "11px 11px 0px 0px",
+        "id": "rapido",
+        "largura": 351,
+        "raio": "12px"
+      },
+      {
+        "altura": 249.6875,
+        "cabecalho": "11px 11px 0px 0px",
+        "id": "dano",
+        "largura": 351,
+        "raio": "12px"
+      },
+      {
+        "altura": 208.84375,
+        "cabecalho": "11px 11px 0px 0px",
+        "id": "feiticos",
+        "largura": 351,
+        "raio": "12px"
+      },
+      {
+        "altura": 141,
+        "cabecalho": "11px 11px 0px 0px",
+        "id": "dominio",
+        "largura": 351,
+        "raio": "12px"
+      }
+    ]
+  },
+  {
+    "estouro": 0,
+    "janela": 2560,
+    "secoes": [
+      {
+        "altura": 300,
+        "cabecalho": "11px 11px 0px 0px",
+        "id": "rapido",
+        "largura": 1724,
+        "raio": "12px"
+      },
+      {
+        "altura": 156,
+        "cabecalho": "11px 11px 0px 0px",
+        "id": "dano",
+        "largura": 855,
+        "raio": "12px"
+      },
+      {
+        "altura": 150,
+        "cabecalho": "11px 11px 0px 0px",
+        "id": "feiticos",
+        "largura": 855,
+        "raio": "12px"
+      },
+      {
+        "altura": 97,
+        "cabecalho": "11px 11px 0px 0px",
+        "id": "dominio",
+        "largura": 855,
+        "raio": "12px"
+      }
+    ]
+  },
+  {
+    "estouro": 0,
+    "janela": 1440,
+    "secoes": [
+      {
+        "altura": 300,
+        "cabecalho": "11px 11px 0px 0px",
+        "id": "rapido",
+        "largura": 1244,
+        "raio": "12px"
+      },
+      {
+        "altura": 173.6875,
+        "cabecalho": "11px 11px 0px 0px",
+        "id": "dano",
+        "largura": 615,
+        "raio": "12px"
+      },
+      {
+        "altura": 150,
+        "cabecalho": "11px 11px 0px 0px",
+        "id": "feiticos",
+        "largura": 615,
+        "raio": "12px"
+      },
+      {
+        "altura": 97,
+        "cabecalho": "11px 11px 0px 0px",
+        "id": "dominio",
+        "largura": 615,
+        "raio": "12px"
+      }
+    ]
+  }
+]

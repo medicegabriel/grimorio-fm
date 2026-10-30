@@ -1,5 +1,5 @@
 import {
-  calcularFeitico, defaultAcaoMult, resolverAcaoAux,
+  calcularFeitico, defaultAcaoMult, resolverAcaoAux, VETOS_TECNICA_MARCIAL,
 } from "./afty-feiticos";
 
 /**
@@ -122,6 +122,8 @@ export function resolveTecnicasCombate(creature, armasCatalogo = [], habilidades
 
 export function feiticoPodeSerImbuido(feitico) {
   if (feitico?.tipo !== "dano") return false;
+  // A Técnica Marcial não se imbui na arma: ela já é o golpe (Livro, p. 250).
+  if (feitico?.marcial === true) return false;
   if (feitico?.alvo === "area") return false;
   if (!["nenhum", "vampirico"].includes(feitico?.subtipo ?? "nenhum")) return false;
   return ["bonus", "comum"].includes(feitico?.acao ?? "comum");
@@ -187,7 +189,12 @@ const TRANSF_SEM_ALVO = new Set(["atributo", "tr"]);
  * `efeitosDeAuxiliarResolvido` lê. O Auxiliar devolve o efeito dele (ou a lista
  * do Múltiplos Efeitos), e a Transformação devolve os espaços dela.
  */
-function efeitosDoFeiticoLigado(f, ctx = {}) {
+function efeitosDoFeiticoLigado(f, ctxBruto = {}) {
+  /* ⚠ O AUXILIAR DA TÉCNICA MARCIAL LIGA COM OS VETOS DO LIVRO (p. 249). Quem
+     chama (os estados, o tradutor e o pacote de aliados) manda o `ctx` do
+     Feitiço, e o veto precisa valer aqui dentro: sem ele um Aumento de Atributo
+     marcial migrado apareceria como utilizável e entraria no Motor. */
+  const ctx = f?.marcial === true ? { ...ctxBruto, ...VETOS_TECNICA_MARCIAL } : ctxBruto;
   if (ehTransformacao(f)) {
     // Pela porta única (2026-10-08): a Técnica Máxima sai na escala dela.
     const calc = calcularFeitico(f, ctx);
@@ -552,6 +559,21 @@ function efeitosDaTabelaDoAuxiliar(sub, config, nome, valor) {
   }
 }
 
+/**
+ * As linhas de um Auxiliar de Técnica Marcial saem com origem `tecnicaMarcial:` e
+ * na família `tecnicaMarcial` do pool (2026-10-27). A origem `feiticoAuxiliar:`
+ * é a que a Exaustão de Técnica suprime, e a Técnica Marcial não depende de
+ * técnica amaldiçoada. A linha da Permuta não leva `exclusivo`, e segue sem.
+ */
+function comOrigemMarcial(efeitos, f) {
+  if (f?.marcial !== true) return efeitos;
+  return efeitos.map((e) => ({
+    ...e,
+    origem: String(e.origem ?? "").replace(/^feiticoAuxiliar:/, "tecnicaMarcial:"),
+    ...(e.exclusivo ? { exclusivo: "tecnicaMarcial" } : {}),
+  }));
+}
+
 export function resolveAuxiliaresAtivos(creature, combate, estados, ctx = {}) {
   const feiticos = lista(creature?.feiticos);
   const ids = idsAuxiliaresAtivos(combate, estados, feiticos);
@@ -575,7 +597,7 @@ export function resolveAuxiliaresAtivos(creature, combate, estados, ctx = {}) {
           canal: e.canal === "bonusAcerto" ? "acertoArma" : e.canal, alvo: f.armaAuxId }));
         resolvido.dados = resolvido.dados.map((d) => ({ ...d, armaAuxId: f.armaAuxId }));
       }
-      efeitos.push(...resolvido.efeitos);
+      efeitos.push(...comOrigemMarcial(resolvido.efeitos, f));
       dados.push(...resolvido.dados);
       for (const m of lista(resolvido.margem)) permutasDeMargem.push({ ...m, feiticoId: id });
     }
@@ -591,6 +613,21 @@ export function resolveAuxiliaresAtivos(creature, combate, estados, ctx = {}) {
     });
   }
   return { ativos, efeitos, dados, permutasDeMargem };
+}
+
+/**
+ * Os efeitos de UM Feitiço, separados pelo efeito resolvido (`sub`) de onde cada linha saiu: o MESMO caminho do `resolveAuxiliaresAtivos`, sem estado
+ * de combate. Só leitura. Existe para quem precisa saber o efeito de cada linha: o prazo próprio de cada benefício num Pacote para Aliados (PA-I3,
+ * 2026-10-20), onde um Múltiplos Efeitos mistura um efeito de um ataque e outro de uma rodada. A união das listas, na ordem, é a lista do
+ * `resolveAuxiliaresAtivos` para este Feitiço (`t-pacotes-aliados` confere).
+ */
+export function efeitosDoAuxiliarPorEfeito(f, ctx = {}) {
+  const { subs, configDe } = efeitosDoFeiticoLigado(f, ctx);
+  const nome = f?.nome || "Feitiço Sem Nome";
+  return subs.map((sub) => {
+    const resolvido = efeitosDeAuxiliarResolvido(sub, configDe(sub), nome);
+    return { sub, ...resolvido, efeitos: comOrigemMarcial(resolvido.efeitos, f) };
+  });
 }
 
 export function aplicarImbuicaoNoDano(dano, creature, combate, habilidades, feiticosResumo) {

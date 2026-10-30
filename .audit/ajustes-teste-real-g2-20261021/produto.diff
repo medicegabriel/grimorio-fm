@@ -1,0 +1,122 @@
+diff --git "a/C:\\Projetos\\Grimorio\\grimorio-tracker\\.audit\\ajustes-teste-real-g2-20261021\\antes\\AftyFichaG2.jsx" b/src/systems/afty/ficha/AftyFichaG2.jsx
+index 3643efc..9ecadd1 100644
+--- "a/C:\\Projetos\\Grimorio\\grimorio-tracker\\.audit\\ajustes-teste-real-g2-20261021\\antes\\AftyFichaG2.jsx"
++++ b/src/systems/afty/ficha/AftyFichaG2.jsx
+@@ -765,7 +765,7 @@ export default function AftyFicha({
+     <PrimitivasDeAddon primitivas={derived.primitivas}>
+     <>
+     <HistoricoCtx.Provider value={ctxHistorico}>
+-    <div ref={raizRef} className="afty-ficha" id="afty-ficha" data-afty-densidade={densidade}>
++    <div ref={raizRef} className="afty-ficha e-ficha-g2" id="afty-ficha" data-afty-densidade={densidade} data-g2-painel={ui.compacta ? "aberto" : undefined}>
+       {/* ⚠ A ORDEM É A REGRA. Os dois blocos são CSS sem camada e de mesma
+           especificidade, então quem vem depois vence: o CSS livre sobrepõe o
+           formulário, que é o que se espera da ferramenta mais avançada das
+@@ -775,7 +775,7 @@ export default function AftyFicha({
+       {usuarioCss && <style>{usuarioCss}</style>}
+ 
+       <header ref={cabecalhoRef} className="afty-cabecalho">
+-        <div className="max-w-7xl mx-auto px-3 sm:px-4">
++        <div className="e-pagina px-3 sm:px-4">
+           {/* ---------- a placa do G2: identidade, recursos, valores e o Agora ----------
+               Vida, Energia, Alma e Preparo operam pelos verbos da Ficha (painel de cada recurso). Guarda e Titã continuam logo abaixo. */}
+           <div className="e-g2">
+@@ -850,14 +850,14 @@ export default function AftyFicha({
+         className="afty-ficha-corpo"
+         data-afty-imagem-encaixe={tema.imagem.encaixe || "cover"}
+       >
+-        <div className="e-layout" data-painel={ui.compacta ? "aberto" : undefined} data-completa={ui.completa ? "sim" : undefined}>
++        <div className="e-layout e-pagina" data-painel={ui.compacta ? "aberto" : undefined} data-completa={ui.completa ? "sim" : undefined}>
+           <div className="e-coluna">
+             <main
+               id="afty-painel"
+               role="tabpanel"
+               aria-labelledby={`afty-aba-${tab}`}
+               data-estagio={ESTAGIO.has(tab) && !(tab === ABA_EFEITOS && apresentacaoAnterior) ? "sim" : undefined}
+-              className="max-w-7xl mx-auto px-3 sm:px-4 py-4"
++              className="px-3 sm:px-4 py-4"
+             >
+               {/* ⚠ LINHA MORTA E MARCADA (decisão 4 do autor, 2026-08-20). A ficha
+                   SEMPRE abre: o que o mundo não tem aparece aqui, marcado, e não
+diff --git "a/C:\\Projetos\\Grimorio\\grimorio-tracker\\.audit\\ajustes-teste-real-g2-20261021\\antes\\efeitos-g2.css" b/src/systems/afty/ficha/efeitos/efeitos-g2.css
+index 2452e27..2903d10 100644
+--- "a/C:\\Projetos\\Grimorio\\grimorio-tracker\\.audit\\ajustes-teste-real-g2-20261021\\antes\\efeitos-g2.css"
++++ b/src/systems/afty/ficha/efeitos/efeitos-g2.css
+@@ -980,6 +980,15 @@
+      - as outras abas seguem rolando pela janela, e o painel compacto, quando aberto, fica grudado ao lado delas;
+      - a consulta é uma gaveta FIXA à direita, abaixo do cabeçalho, e cobre o Confirmar enquanto está aberta (Esc ou Fechar a dispensam).
+    `--afty-ficha-topo` é a altura do cabeçalho grudado, medida pela Ficha (`AftyFicha.jsx`). */
++/* Cabeçalho e corpo compartilham a mesma largura, incluindo o painel lateral.
++   Antes cada max-w-7xl se centralizava num espaço diferente. Em telas grandes
++   a coluna também cresce, sem ampliar fontes nem alterar a ficha clássica. */
++.e-ficha-g2 { --e-coluna-max: 1280px; --e-lateral-w: 0px; --e-pagina-max: calc(var(--e-coluna-max) + var(--e-lateral-w)); --e-borda-pagina: max(0px, calc((100vw - var(--e-pagina-max)) / 2)); }
++.e-ficha-g2[data-g2-painel] { --e-lateral-w: 390px; }
++.e-ficha-g2 .e-pagina { width: 100%; max-width: var(--e-pagina-max); margin-inline: auto; }
++@media (min-width: 1400px) { .e-ficha-g2[data-g2-painel] { --e-lateral-w: 428px; } }
++@media (min-width: 1920px) { .e-ficha-g2 { --e-coluna-max: 1440px; } }
++@media (min-width: 2400px) { .e-ficha-g2 { --e-coluna-max: 1760px; } }
+ .e-layout { display: flex; align-items: flex-start; --e-painel-w: 0px; --e-trilho: 72px; }
+ .e-layout[data-painel] { --e-painel-w: 390px; --e-trilho: 0px; }
+ @media (min-width: 1400px) { .e-layout[data-painel] { --e-painel-w: 428px; } }
+@@ -987,14 +996,24 @@
+ .e-layout > .e-coluna { flex: 1; min-width: 0; }
+ .e-layout > .e-lado { flex: none; position: sticky; top: var(--afty-ficha-topo, 0px); align-self: flex-start; height: calc(100dvh - var(--afty-ficha-topo, 0px)); display: flex; }
+ .e-layout > .e-lado > .g-painel { height: 100%; }
++/* Em uma tela de telefone o painel ocupa o palco enquanto está aberto.
++   A coluna permanece montada para conservar a leitura ao recolher. */
++@media (max-width: 720px) {
++  .e-layout[data-painel] > .e-coluna { display: none; }
++  .e-layout[data-painel] > .e-lado { width: 100%; }
++  .e-layout[data-painel] > .e-lado > .g-painel { width: calc(100% - 24px); margin: 8px 12px 0; }
++}
+ .e-coluna > main[data-estagio] { padding-top: 0; padding-bottom: 0; }
+ .e-g2.e-portal { display: contents; }
+ .e-g2 .e-area { margin-right: var(--e-trilho, 0px); }
+ .e-g2 .e-consulta {
+-  position: fixed; z-index: 30; top: calc(var(--afty-ficha-topo, 0px) + 10px); bottom: 14px; right: calc(var(--e-painel-w, 0px) + var(--e-trilho, 0px) + 16px);
++  position: fixed; z-index: 30; top: calc(var(--afty-ficha-topo, 0px) + 10px); bottom: 14px; right: calc(var(--e-borda-pagina, 0px) + var(--e-painel-w, 0px) + var(--e-trilho, 0px) + 16px);
+   width: min(580px, calc((100vw - var(--e-painel-w, 0px)) * .47));
+ }
+ .e-layout[data-painel] ~ .e-portal .e-consulta, .e-layout[data-painel] .e-portal .e-consulta { width: min(560px, calc((100vw - var(--e-painel-w, 0px)) * .62)); }
++@media (max-width: 720px) {
++  .e-ficha-g2 .e-layout .e-portal .e-consulta { left: 12px; right: 12px; width: auto; }
++}
+ .e-g2 .e-cabeca { margin: 10px 0 0; }
+ .e-g2 .m-pv-fonte { display: flex; justify-content: space-between; gap: 18px; padding: 3px 0; color: var(--e-t2); }
+ .e-g2 .m-pv-fonte b { font-weight: 600; color: var(--e-t1); font-variant-numeric: var(--e-num); }
+diff --git "a/C:\\Projetos\\Grimorio\\grimorio-tracker\\.audit\\ajustes-teste-real-g2-20261021\\antes\\VisaoG2.jsx" b/src/systems/afty/ficha/efeitos/VisaoG2.jsx
+index fa6dd54..85f3432 100644
+--- "a/C:\\Projetos\\Grimorio\\grimorio-tracker\\.audit\\ajustes-teste-real-g2-20261021\\antes\\VisaoG2.jsx"
++++ b/src/systems/afty/ficha/efeitos/VisaoG2.jsx
+@@ -14,7 +14,7 @@
+    Entrega 1: o ciclo do Ataque Concentrado é o conferido (Preparação, custo,
+    confirmar, ajustar, encerrar). Os outros efeitos usam as peças de hoje.
+    ============================================================ */
+-import React, { useLayoutEffect, useRef } from "react";
++import React, { useEffect, useLayoutEffect, useRef } from "react";
+ import { AlertTriangle, BookOpenText, Clock, Dices, Hand, Layers, Minus, Plus, Power, X } from "lucide-react";
+ import { Sessao } from "./ponte";
+ import { Controle } from "./pecas";
+@@ -222,6 +222,23 @@ export function Rodape({ a, m, d, onConsultar }) {
+ 
+ function DetalheG2({ a, g, m, onConsultar }) {
+   const faixa = useRef(null);
++  const mudaTela = g.mudaTela;
++  /* Fechar a leitura não encerra o efeito. Portais pertencem à leitura também:
++     primeiro se dispensa a consulta ou o flutuante, mantendo o rascunho. Um
++     outro cartão resolve sua própria seleção no clique, sem desmontar antes. */
++  useEffect(() => {
++    const fora = (ev) => {
++      const el = faixa.current;
++      if (!el || ev.button !== 0 || el.contains(ev.target)) return;
++      if (ev.target instanceof Element && ev.target.closest("[data-chave-ativo]")) return;
++      const raiz = el.closest("#afty-ficha") ?? document;
++      const sobrepostas = raiz.querySelectorAll('[role="dialog"], [role="tooltip"], [aria-modal="true"]');
++      if ([...sobrepostas].some((p) => p.getClientRects().length)) return;
++      mudaTela({ selecionado: null, revelar: null });
++    };
++    window.addEventListener("pointerdown", fora, true);
++    return () => window.removeEventListener("pointerdown", fora, true);
++  }, [mudaTela]);
+   const d = detalhesDoAtivo(a, m);
+   const { chips, contrib } = consequenciasDaLinha(a, g, m);
+   const pvb = pvDoAtivo(a, g.pv);

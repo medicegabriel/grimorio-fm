@@ -150,16 +150,32 @@ export function organizaEstados(linhas, termo = "") {
   const diretos = new Set(linhas.filter((e) => casaComTermo(e, partes)).map((e) => e.id));
   const manter = new Set(diretos);
   if (partes.length) {
-    for (const e of linhas) {
-      if (diretos.has(e.id) && e.requerEstado) manter.add(e.requerEstado);
+    /* ⚠ A CADEIA É DE ATÉ TRÊS NÍVEIS (2026-10-26): o Aliado é seletor, graduação
+       e Golpe da rodada. Procurar "golpe" tem de trazer a graduação e o seletor
+       dele, e procurar o seletor tem de trazer tudo que pende dele. */
+    const porId = new Map(linhas.map((e) => [e.id, e]));
+    for (const id of diretos) {
+      let x = porId.get(id);
+      for (let i = 0; i < 8 && x?.requerEstado && porId.has(x.requerEstado); i++) {
+        x = porId.get(x.requerEstado);
+        manter.add(x.id);
+      }
     }
-    /* ⚠ Os dois laços leem o `diretos`, e não o `manter`: um pai puxado para a
+    /* ⚠ Os dois laços partem do `diretos`, e não do `manter`: um pai puxado para a
        tela POR UM FILHO não pode puxar os irmãos dele de volta. Procurar
        "pilhas" e receber o "PE Extra" junto é o filtro devolvendo o que não foi
        pedido. */
-    for (const e of linhas) {
-      if (e.requerEstado && diretos.has(e.requerEstado)) manter.add(e.id);
+    const descendentes = new Set(diretos);
+    for (let mudou = true; mudou;) {
+      mudou = false;
+      for (const e of linhas) {
+        if (e.requerEstado && descendentes.has(e.requerEstado) && !descendentes.has(e.id)) {
+          descendentes.add(e.id);
+          mudou = true;
+        }
+      }
     }
+    for (const id of descendentes) manter.add(id);
   }
   const filtradas = linhas.filter((e) => manter.has(e.id));
 
@@ -175,6 +191,18 @@ export function organizaEstados(linhas, termo = "") {
       raizes.push(e);
     }
   }
+
+  /* ⚠ A RAIZ LEVA TODOS OS DESCENDENTES, em ordem de profundidade, e não só os
+     filhos diretos (2026-10-26). Os cinco estados de terceiro nível dos Aliados
+     (o Golpe da rodada de quatro tipos e as perícias do Auxiliar) pendem da
+     graduação, que pende do seletor: com só um nível de filhos, nenhuma raiz os
+     alcançava e eles NUNCA apareciam na aba. A caixa os desenha todos no mesmo
+     recuo, que é o que `GrupoDeEstados` já faz com os filhos. */
+  const descendentesDe = (id, vistos = new Set([id])) => (filhosDe.get(id) ?? []).flatMap((f) => {
+    if (vistos.has(f.id)) return [];
+    vistos.add(f.id);
+    return [f, ...descendentesDe(f.id, vistos)];
+  });
 
   /* As sub-abas. A ordem de CHEGADA é a do catálogo, e depois ela é reordenada
      pela divisão pedida: Técnica primeiro, Outros por último, Especializações e
@@ -223,7 +251,7 @@ export function organizaEstados(linhas, termo = "") {
       // `rotulo` é o que a linha mostra, e `label` continua sendo o do catálogo:
       // o `title` da linha usa o inteiro, e a busca também.
       pai: { ...e, rotulo: agrupa ? parte : e.label },
-      filhos: (filhosDe.get(e.id) ?? []).map((f) => ({ ...f, rotulo: rotuloDoFilho(f, e) })),
+      filhos: descendentesDe(e.id).map((f) => ({ ...f, rotulo: rotuloDoFilho(f, e) })),
     });
   }
 

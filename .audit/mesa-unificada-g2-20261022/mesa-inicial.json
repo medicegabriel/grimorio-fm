@@ -1,0 +1,1945 @@
+{
+  "geradoEm": "2026-10-23T02:36:09.282Z",
+  "base": "http://127.0.0.1:5330",
+  "etapas": [
+    {
+      "nome": "Mesa mesa 1115",
+      "checks": [
+        {
+          "id": "todos os nomes e estados completos, sem sobreposição dos controles",
+          "ok": true,
+          "dados": [
+            {
+              "id": "adaptacao",
+              "nome": "Roda de Adaptação",
+              "alvos": [
+                {
+                  "nome": "Roda de Adaptação",
+                  "h": 38
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "bloodfeast",
+              "nome": "Bloodfeast",
+              "alvos": [
+                {
+                  "nome": "Bloodfeast",
+                  "h": 38
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "vislumbre",
+              "nome": "Vislumbre Celeste",
+              "alvos": [
+                {
+                  "nome": "Vislumbre Celeste",
+                  "h": 38
+                },
+                {
+                  "nome": "Descobrir",
+                  "h": 32
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "olhinhosLu",
+              "nome": "Olhinhos Lu( Corpo Principal )",
+              "alvos": [
+                {
+                  "nome": "Olhinhos Lu( Corpo Principal )",
+                  "h": 56.546875
+                },
+                {
+                  "nome": "Fechar Olhos",
+                  "h": 32
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "olhosAgulha",
+              "nome": "Olhos de Agulha",
+              "alvos": [
+                {
+                  "nome": "Olhos de Agulha",
+                  "h": 38
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "manipulacaoCeu",
+              "nome": "Refletir Imagem",
+              "alvos": [
+                {
+                  "nome": "Refletir Imagem",
+                  "h": 38
+                },
+                {
+                  "nome": "Ligar Aura",
+                  "h": 32
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "armasTransformaveis",
+              "nome": "Azamaru",
+              "alvos": [
+                {
+                  "nome": "Azamaru",
+                  "h": 38
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "golpe",
+              "nome": "Golpe Especial",
+              "alvos": [
+                {
+                  "nome": "Montar Golpe",
+                  "h": 32
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "treinos",
+              "nome": "Treinos",
+              "alvos": [
+                {
+                  "nome": "Escudo erguido",
+                  "h": 32
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            }
+          ]
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        },
+        {
+          "id": "áreas de toque com 40 px e áreas do ponteiro com 32 px ou mais",
+          "ok": true,
+          "dados": [
+            {
+              "nome": "Roda de Adaptação",
+              "h": 38
+            },
+            {
+              "nome": "Bloodfeast",
+              "h": 38
+            },
+            {
+              "nome": "Vislumbre Celeste",
+              "h": 38
+            },
+            {
+              "nome": "Descobrir",
+              "h": 32
+            },
+            {
+              "nome": "Olhinhos Lu( Corpo Principal )",
+              "h": 56.546875
+            },
+            {
+              "nome": "Fechar Olhos",
+              "h": 32
+            },
+            {
+              "nome": "Olhos de Agulha",
+              "h": 38
+            },
+            {
+              "nome": "Refletir Imagem",
+              "h": 38
+            },
+            {
+              "nome": "Ligar Aura",
+              "h": 32
+            },
+            {
+              "nome": "Azamaru",
+              "h": 38
+            },
+            {
+              "nome": "Montar Golpe",
+              "h": 32
+            },
+            {
+              "nome": "Escudo erguido",
+              "h": 32
+            }
+          ]
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "largura": 1064,
+        "altura": 181.546875,
+        "pagina": 0,
+        "itens": [
+          {
+            "id": "adaptacao",
+            "nome": "Roda de Adaptação",
+            "alvos": [
+              {
+                "nome": "Roda de Adaptação",
+                "h": 38
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "bloodfeast",
+            "nome": "Bloodfeast",
+            "alvos": [
+              {
+                "nome": "Bloodfeast",
+                "h": 38
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "vislumbre",
+            "nome": "Vislumbre Celeste",
+            "alvos": [
+              {
+                "nome": "Vislumbre Celeste",
+                "h": 38
+              },
+              {
+                "nome": "Descobrir",
+                "h": 32
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "olhinhosLu",
+            "nome": "Olhinhos Lu( Corpo Principal )",
+            "alvos": [
+              {
+                "nome": "Olhinhos Lu( Corpo Principal )",
+                "h": 56.546875
+              },
+              {
+                "nome": "Fechar Olhos",
+                "h": 32
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "olhosAgulha",
+            "nome": "Olhos de Agulha",
+            "alvos": [
+              {
+                "nome": "Olhos de Agulha",
+                "h": 38
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "manipulacaoCeu",
+            "nome": "Refletir Imagem",
+            "alvos": [
+              {
+                "nome": "Refletir Imagem",
+                "h": 38
+              },
+              {
+                "nome": "Ligar Aura",
+                "h": 32
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "armasTransformaveis",
+            "nome": "Azamaru",
+            "alvos": [
+              {
+                "nome": "Azamaru",
+                "h": 38
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "golpe",
+            "nome": "Golpe Especial",
+            "alvos": [
+              {
+                "nome": "Montar Golpe",
+                "h": 32
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "treinos",
+            "nome": "Treinos",
+            "alvos": [
+              {
+                "nome": "Escudo erguido",
+                "h": 32
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          }
+        ]
+      }
+    },
+    {
+      "nome": "Mesa mesa 1280-compacta",
+      "checks": [
+        {
+          "id": "todos os nomes e estados completos, sem sobreposição dos controles",
+          "ok": true,
+          "dados": [
+            {
+              "id": "adaptacao",
+              "nome": "Roda de Adaptação",
+              "alvos": [
+                {
+                  "nome": "Roda de Adaptação",
+                  "h": 38
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "bloodfeast",
+              "nome": "Bloodfeast",
+              "alvos": [
+                {
+                  "nome": "Bloodfeast",
+                  "h": 38
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "vislumbre",
+              "nome": "Vislumbre Celeste",
+              "alvos": [
+                {
+                  "nome": "Vislumbre Celeste",
+                  "h": 38
+                },
+                {
+                  "nome": "Descobrir",
+                  "h": 32
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "olhinhosLu",
+              "nome": "Olhinhos Lu( Corpo Principal )",
+              "alvos": [
+                {
+                  "nome": "Olhinhos Lu( Corpo Principal )",
+                  "h": 38
+                },
+                {
+                  "nome": "Fechar Olhos",
+                  "h": 32
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "olhosAgulha",
+              "nome": "Olhos de Agulha",
+              "alvos": [
+                {
+                  "nome": "Olhos de Agulha",
+                  "h": 38
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "manipulacaoCeu",
+              "nome": "Refletir Imagem",
+              "alvos": [
+                {
+                  "nome": "Refletir Imagem",
+                  "h": 38
+                },
+                {
+                  "nome": "Ligar Aura",
+                  "h": 32
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "armasTransformaveis",
+              "nome": "Azamaru",
+              "alvos": [
+                {
+                  "nome": "Azamaru",
+                  "h": 38
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "golpe",
+              "nome": "Golpe Especial",
+              "alvos": [
+                {
+                  "nome": "Montar Golpe",
+                  "h": 32
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "treinos",
+              "nome": "Treinos",
+              "alvos": [
+                {
+                  "nome": "Escudo erguido",
+                  "h": 32
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            }
+          ]
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        },
+        {
+          "id": "áreas de toque com 40 px e áreas do ponteiro com 32 px ou mais",
+          "ok": true,
+          "dados": [
+            {
+              "nome": "Roda de Adaptação",
+              "h": 38
+            },
+            {
+              "nome": "Bloodfeast",
+              "h": 38
+            },
+            {
+              "nome": "Vislumbre Celeste",
+              "h": 38
+            },
+            {
+              "nome": "Descobrir",
+              "h": 32
+            },
+            {
+              "nome": "Olhinhos Lu( Corpo Principal )",
+              "h": 38
+            },
+            {
+              "nome": "Fechar Olhos",
+              "h": 32
+            },
+            {
+              "nome": "Olhos de Agulha",
+              "h": 38
+            },
+            {
+              "nome": "Refletir Imagem",
+              "h": 38
+            },
+            {
+              "nome": "Ligar Aura",
+              "h": 32
+            },
+            {
+              "nome": "Azamaru",
+              "h": 38
+            },
+            {
+              "nome": "Montar Golpe",
+              "h": 32
+            },
+            {
+              "nome": "Escudo erguido",
+              "h": 32
+            }
+          ]
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "largura": 839,
+        "altura": 249,
+        "pagina": 0,
+        "itens": [
+          {
+            "id": "adaptacao",
+            "nome": "Roda de Adaptação",
+            "alvos": [
+              {
+                "nome": "Roda de Adaptação",
+                "h": 38
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "bloodfeast",
+            "nome": "Bloodfeast",
+            "alvos": [
+              {
+                "nome": "Bloodfeast",
+                "h": 38
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "vislumbre",
+            "nome": "Vislumbre Celeste",
+            "alvos": [
+              {
+                "nome": "Vislumbre Celeste",
+                "h": 38
+              },
+              {
+                "nome": "Descobrir",
+                "h": 32
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "olhinhosLu",
+            "nome": "Olhinhos Lu( Corpo Principal )",
+            "alvos": [
+              {
+                "nome": "Olhinhos Lu( Corpo Principal )",
+                "h": 38
+              },
+              {
+                "nome": "Fechar Olhos",
+                "h": 32
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "olhosAgulha",
+            "nome": "Olhos de Agulha",
+            "alvos": [
+              {
+                "nome": "Olhos de Agulha",
+                "h": 38
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "manipulacaoCeu",
+            "nome": "Refletir Imagem",
+            "alvos": [
+              {
+                "nome": "Refletir Imagem",
+                "h": 38
+              },
+              {
+                "nome": "Ligar Aura",
+                "h": 32
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "armasTransformaveis",
+            "nome": "Azamaru",
+            "alvos": [
+              {
+                "nome": "Azamaru",
+                "h": 38
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "golpe",
+            "nome": "Golpe Especial",
+            "alvos": [
+              {
+                "nome": "Montar Golpe",
+                "h": 32
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "treinos",
+            "nome": "Treinos",
+            "alvos": [
+              {
+                "nome": "Escudo erguido",
+                "h": 32
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          }
+        ]
+      }
+    },
+    {
+      "nome": "Mesa tipica 1280-compacta",
+      "checks": [
+        {
+          "id": "todos os nomes e estados completos, sem sobreposição dos controles",
+          "ok": true,
+          "dados": [
+            {
+              "id": "vislumbre",
+              "nome": "Vislumbre Celeste",
+              "alvos": [
+                {
+                  "nome": "Vislumbre Celeste",
+                  "h": 38
+                },
+                {
+                  "nome": "Descobrir",
+                  "h": 32
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "armasTransformaveis",
+              "nome": "Azamaru",
+              "alvos": [
+                {
+                  "nome": "Azamaru",
+                  "h": 38
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "golpe",
+              "nome": "Golpe Especial",
+              "alvos": [
+                {
+                  "nome": "Montar Golpe",
+                  "h": 32
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "treinos",
+              "nome": "Treinos",
+              "alvos": [
+                {
+                  "nome": "Escudo erguido",
+                  "h": 32
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            }
+          ]
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        },
+        {
+          "id": "áreas de toque com 40 px e áreas do ponteiro com 32 px ou mais",
+          "ok": true,
+          "dados": [
+            {
+              "nome": "Vislumbre Celeste",
+              "h": 38
+            },
+            {
+              "nome": "Descobrir",
+              "h": 32
+            },
+            {
+              "nome": "Azamaru",
+              "h": 38
+            },
+            {
+              "nome": "Montar Golpe",
+              "h": 32
+            },
+            {
+              "nome": "Escudo erguido",
+              "h": 32
+            }
+          ]
+        },
+        {
+          "id": "Dano continua inteiro na primeira tela de 800 px",
+          "ok": true,
+          "dados": 792.0625
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "largura": 839,
+        "altura": 120,
+        "pagina": 0,
+        "itens": [
+          {
+            "id": "vislumbre",
+            "nome": "Vislumbre Celeste",
+            "alvos": [
+              {
+                "nome": "Vislumbre Celeste",
+                "h": 38
+              },
+              {
+                "nome": "Descobrir",
+                "h": 32
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "armasTransformaveis",
+            "nome": "Azamaru",
+            "alvos": [
+              {
+                "nome": "Azamaru",
+                "h": 38
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "golpe",
+            "nome": "Golpe Especial",
+            "alvos": [
+              {
+                "nome": "Montar Golpe",
+                "h": 32
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "treinos",
+            "nome": "Treinos",
+            "alvos": [
+              {
+                "nome": "Escudo erguido",
+                "h": 32
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          }
+        ]
+      }
+    },
+    {
+      "nome": "Mesa mesa 768-compacta",
+      "checks": [
+        {
+          "id": "todos os nomes e estados completos, sem sobreposição dos controles",
+          "ok": true,
+          "dados": [
+            {
+              "id": "adaptacao",
+              "nome": "Roda de Adaptação",
+              "alvos": [
+                {
+                  "nome": "Roda de Adaptação",
+                  "h": 38
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "bloodfeast",
+              "nome": "Bloodfeast",
+              "alvos": [
+                {
+                  "nome": "Bloodfeast",
+                  "h": 38
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "vislumbre",
+              "nome": "Vislumbre Celeste",
+              "alvos": [
+                {
+                  "nome": "Vislumbre Celeste",
+                  "h": 38
+                },
+                {
+                  "nome": "Descobrir",
+                  "h": 32
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "olhinhosLu",
+              "nome": "Olhinhos Lu( Corpo Principal )",
+              "alvos": [
+                {
+                  "nome": "Olhinhos Lu( Corpo Principal )",
+                  "h": 56.546875
+                },
+                {
+                  "nome": "Fechar Olhos",
+                  "h": 32
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "olhosAgulha",
+              "nome": "Olhos de Agulha",
+              "alvos": [
+                {
+                  "nome": "Olhos de Agulha",
+                  "h": 38
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "manipulacaoCeu",
+              "nome": "Refletir Imagem",
+              "alvos": [
+                {
+                  "nome": "Refletir Imagem",
+                  "h": 38
+                },
+                {
+                  "nome": "Ligar Aura",
+                  "h": 32
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "armasTransformaveis",
+              "nome": "Azamaru",
+              "alvos": [
+                {
+                  "nome": "Azamaru",
+                  "h": 38
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "golpe",
+              "nome": "Golpe Especial",
+              "alvos": [
+                {
+                  "nome": "Montar Golpe",
+                  "h": 32
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "treinos",
+              "nome": "Treinos",
+              "alvos": [
+                {
+                  "nome": "Escudo erguido",
+                  "h": 32
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            }
+          ]
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        },
+        {
+          "id": "áreas de toque com 40 px e áreas do ponteiro com 32 px ou mais",
+          "ok": true,
+          "dados": [
+            {
+              "nome": "Roda de Adaptação",
+              "h": 38
+            },
+            {
+              "nome": "Bloodfeast",
+              "h": 38
+            },
+            {
+              "nome": "Vislumbre Celeste",
+              "h": 38
+            },
+            {
+              "nome": "Descobrir",
+              "h": 32
+            },
+            {
+              "nome": "Olhinhos Lu( Corpo Principal )",
+              "h": 56.546875
+            },
+            {
+              "nome": "Fechar Olhos",
+              "h": 32
+            },
+            {
+              "nome": "Olhos de Agulha",
+              "h": 38
+            },
+            {
+              "nome": "Refletir Imagem",
+              "h": 38
+            },
+            {
+              "nome": "Ligar Aura",
+              "h": 32
+            },
+            {
+              "nome": "Azamaru",
+              "h": 38
+            },
+            {
+              "nome": "Montar Golpe",
+              "h": 32
+            },
+            {
+              "nome": "Escudo erguido",
+              "h": 32
+            }
+          ]
+        },
+        {
+          "id": "a coluna útil tem realmente 331 px",
+          "ok": true,
+          "dados": 331
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "largura": 331,
+        "altura": 439.546875,
+        "pagina": 0,
+        "itens": [
+          {
+            "id": "adaptacao",
+            "nome": "Roda de Adaptação",
+            "alvos": [
+              {
+                "nome": "Roda de Adaptação",
+                "h": 38
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "bloodfeast",
+            "nome": "Bloodfeast",
+            "alvos": [
+              {
+                "nome": "Bloodfeast",
+                "h": 38
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "vislumbre",
+            "nome": "Vislumbre Celeste",
+            "alvos": [
+              {
+                "nome": "Vislumbre Celeste",
+                "h": 38
+              },
+              {
+                "nome": "Descobrir",
+                "h": 32
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "olhinhosLu",
+            "nome": "Olhinhos Lu( Corpo Principal )",
+            "alvos": [
+              {
+                "nome": "Olhinhos Lu( Corpo Principal )",
+                "h": 56.546875
+              },
+              {
+                "nome": "Fechar Olhos",
+                "h": 32
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "olhosAgulha",
+            "nome": "Olhos de Agulha",
+            "alvos": [
+              {
+                "nome": "Olhos de Agulha",
+                "h": 38
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "manipulacaoCeu",
+            "nome": "Refletir Imagem",
+            "alvos": [
+              {
+                "nome": "Refletir Imagem",
+                "h": 38
+              },
+              {
+                "nome": "Ligar Aura",
+                "h": 32
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "armasTransformaveis",
+            "nome": "Azamaru",
+            "alvos": [
+              {
+                "nome": "Azamaru",
+                "h": 38
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "golpe",
+            "nome": "Golpe Especial",
+            "alvos": [
+              {
+                "nome": "Montar Golpe",
+                "h": 32
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "treinos",
+            "nome": "Treinos",
+            "alvos": [
+              {
+                "nome": "Escudo erguido",
+                "h": 32
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          }
+        ]
+      }
+    },
+    {
+      "nome": "Mesa mesa 390",
+      "checks": [
+        {
+          "id": "todos os nomes e estados completos, sem sobreposição dos controles",
+          "ok": true,
+          "dados": [
+            {
+              "id": "adaptacao",
+              "nome": "Roda de Adaptação",
+              "alvos": [
+                {
+                  "nome": "Roda de Adaptação",
+                  "h": 40
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "bloodfeast",
+              "nome": "Bloodfeast",
+              "alvos": [
+                {
+                  "nome": "Bloodfeast",
+                  "h": 40
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "vislumbre",
+              "nome": "Vislumbre Celeste",
+              "alvos": [
+                {
+                  "nome": "Vislumbre Celeste",
+                  "h": 40
+                },
+                {
+                  "nome": "Descobrir",
+                  "h": 40
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "olhinhosLu",
+              "nome": "Olhinhos Lu( Corpo Principal )",
+              "alvos": [
+                {
+                  "nome": "Olhinhos Lu( Corpo Principal )",
+                  "h": 56.546875
+                },
+                {
+                  "nome": "Fechar Olhos",
+                  "h": 40
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "olhosAgulha",
+              "nome": "Olhos de Agulha",
+              "alvos": [
+                {
+                  "nome": "Olhos de Agulha",
+                  "h": 40
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "manipulacaoCeu",
+              "nome": "Refletir Imagem",
+              "alvos": [
+                {
+                  "nome": "Refletir Imagem",
+                  "h": 40
+                },
+                {
+                  "nome": "Ligar Aura",
+                  "h": 40
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "armasTransformaveis",
+              "nome": "Azamaru",
+              "alvos": [
+                {
+                  "nome": "Azamaru",
+                  "h": 40
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "golpe",
+              "nome": "Golpe Especial",
+              "alvos": [
+                {
+                  "nome": "Montar Golpe",
+                  "h": 40
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "treinos",
+              "nome": "Treinos",
+              "alvos": [
+                {
+                  "nome": "Escudo erguido",
+                  "h": 40
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            }
+          ]
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        },
+        {
+          "id": "áreas de toque com 40 px e áreas do ponteiro com 32 px ou mais",
+          "ok": true,
+          "dados": [
+            {
+              "nome": "Roda de Adaptação",
+              "h": 40
+            },
+            {
+              "nome": "Bloodfeast",
+              "h": 40
+            },
+            {
+              "nome": "Vislumbre Celeste",
+              "h": 40
+            },
+            {
+              "nome": "Descobrir",
+              "h": 40
+            },
+            {
+              "nome": "Olhinhos Lu( Corpo Principal )",
+              "h": 56.546875
+            },
+            {
+              "nome": "Fechar Olhos",
+              "h": 40
+            },
+            {
+              "nome": "Olhos de Agulha",
+              "h": 40
+            },
+            {
+              "nome": "Refletir Imagem",
+              "h": 40
+            },
+            {
+              "nome": "Ligar Aura",
+              "h": 40
+            },
+            {
+              "nome": "Azamaru",
+              "h": 40
+            },
+            {
+              "nome": "Montar Golpe",
+              "h": 40
+            },
+            {
+              "nome": "Escudo erguido",
+              "h": 40
+            }
+          ]
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "largura": 366,
+        "altura": 455.546875,
+        "pagina": 0,
+        "itens": [
+          {
+            "id": "adaptacao",
+            "nome": "Roda de Adaptação",
+            "alvos": [
+              {
+                "nome": "Roda de Adaptação",
+                "h": 40
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "bloodfeast",
+            "nome": "Bloodfeast",
+            "alvos": [
+              {
+                "nome": "Bloodfeast",
+                "h": 40
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "vislumbre",
+            "nome": "Vislumbre Celeste",
+            "alvos": [
+              {
+                "nome": "Vislumbre Celeste",
+                "h": 40
+              },
+              {
+                "nome": "Descobrir",
+                "h": 40
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "olhinhosLu",
+            "nome": "Olhinhos Lu( Corpo Principal )",
+            "alvos": [
+              {
+                "nome": "Olhinhos Lu( Corpo Principal )",
+                "h": 56.546875
+              },
+              {
+                "nome": "Fechar Olhos",
+                "h": 40
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "olhosAgulha",
+            "nome": "Olhos de Agulha",
+            "alvos": [
+              {
+                "nome": "Olhos de Agulha",
+                "h": 40
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "manipulacaoCeu",
+            "nome": "Refletir Imagem",
+            "alvos": [
+              {
+                "nome": "Refletir Imagem",
+                "h": 40
+              },
+              {
+                "nome": "Ligar Aura",
+                "h": 40
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "armasTransformaveis",
+            "nome": "Azamaru",
+            "alvos": [
+              {
+                "nome": "Azamaru",
+                "h": 40
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "golpe",
+            "nome": "Golpe Especial",
+            "alvos": [
+              {
+                "nome": "Montar Golpe",
+                "h": 40
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "treinos",
+            "nome": "Treinos",
+            "alvos": [
+              {
+                "nome": "Escudo erguido",
+                "h": 40
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          }
+        ]
+      }
+    },
+    {
+      "nome": "Mesa mesa 2560-compacta",
+      "checks": [
+        {
+          "id": "todos os nomes e estados completos, sem sobreposição dos controles",
+          "ok": true,
+          "dados": [
+            {
+              "id": "adaptacao",
+              "nome": "Roda de Adaptação",
+              "alvos": [
+                {
+                  "nome": "Roda de Adaptação",
+                  "h": 38
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "bloodfeast",
+              "nome": "Bloodfeast",
+              "alvos": [
+                {
+                  "nome": "Bloodfeast",
+                  "h": 38
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "vislumbre",
+              "nome": "Vislumbre Celeste",
+              "alvos": [
+                {
+                  "nome": "Vislumbre Celeste",
+                  "h": 38
+                },
+                {
+                  "nome": "Descobrir",
+                  "h": 32
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "olhinhosLu",
+              "nome": "Olhinhos Lu( Corpo Principal )",
+              "alvos": [
+                {
+                  "nome": "Olhinhos Lu( Corpo Principal )",
+                  "h": 56.546875
+                },
+                {
+                  "nome": "Fechar Olhos",
+                  "h": 32
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "olhosAgulha",
+              "nome": "Olhos de Agulha",
+              "alvos": [
+                {
+                  "nome": "Olhos de Agulha",
+                  "h": 38
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "manipulacaoCeu",
+              "nome": "Refletir Imagem",
+              "alvos": [
+                {
+                  "nome": "Refletir Imagem",
+                  "h": 38
+                },
+                {
+                  "nome": "Ligar Aura",
+                  "h": 32
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "armasTransformaveis",
+              "nome": "Azamaru",
+              "alvos": [
+                {
+                  "nome": "Azamaru",
+                  "h": 38
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "golpe",
+              "nome": "Golpe Especial",
+              "alvos": [
+                {
+                  "nome": "Montar Golpe",
+                  "h": 32
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            },
+            {
+              "id": "treinos",
+              "nome": "Treinos",
+              "alvos": [
+                {
+                  "nome": "Escudo erguido",
+                  "h": 32
+                }
+              ],
+              "cortados": [],
+              "sobreposto": false
+            }
+          ]
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        },
+        {
+          "id": "áreas de toque com 40 px e áreas do ponteiro com 32 px ou mais",
+          "ok": true,
+          "dados": [
+            {
+              "nome": "Roda de Adaptação",
+              "h": 38
+            },
+            {
+              "nome": "Bloodfeast",
+              "h": 38
+            },
+            {
+              "nome": "Vislumbre Celeste",
+              "h": 38
+            },
+            {
+              "nome": "Descobrir",
+              "h": 32
+            },
+            {
+              "nome": "Olhinhos Lu( Corpo Principal )",
+              "h": 56.546875
+            },
+            {
+              "nome": "Fechar Olhos",
+              "h": 32
+            },
+            {
+              "nome": "Olhos de Agulha",
+              "h": 38
+            },
+            {
+              "nome": "Refletir Imagem",
+              "h": 38
+            },
+            {
+              "nome": "Ligar Aura",
+              "h": 32
+            },
+            {
+              "nome": "Azamaru",
+              "h": 38
+            },
+            {
+              "nome": "Montar Golpe",
+              "h": 32
+            },
+            {
+              "nome": "Escudo erguido",
+              "h": 32
+            }
+          ]
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "largura": 1724,
+        "altura": 138.546875,
+        "pagina": 0,
+        "itens": [
+          {
+            "id": "adaptacao",
+            "nome": "Roda de Adaptação",
+            "alvos": [
+              {
+                "nome": "Roda de Adaptação",
+                "h": 38
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "bloodfeast",
+            "nome": "Bloodfeast",
+            "alvos": [
+              {
+                "nome": "Bloodfeast",
+                "h": 38
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "vislumbre",
+            "nome": "Vislumbre Celeste",
+            "alvos": [
+              {
+                "nome": "Vislumbre Celeste",
+                "h": 38
+              },
+              {
+                "nome": "Descobrir",
+                "h": 32
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "olhinhosLu",
+            "nome": "Olhinhos Lu( Corpo Principal )",
+            "alvos": [
+              {
+                "nome": "Olhinhos Lu( Corpo Principal )",
+                "h": 56.546875
+              },
+              {
+                "nome": "Fechar Olhos",
+                "h": 32
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "olhosAgulha",
+            "nome": "Olhos de Agulha",
+            "alvos": [
+              {
+                "nome": "Olhos de Agulha",
+                "h": 38
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "manipulacaoCeu",
+            "nome": "Refletir Imagem",
+            "alvos": [
+              {
+                "nome": "Refletir Imagem",
+                "h": 38
+              },
+              {
+                "nome": "Ligar Aura",
+                "h": 32
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "armasTransformaveis",
+            "nome": "Azamaru",
+            "alvos": [
+              {
+                "nome": "Azamaru",
+                "h": 38
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "golpe",
+            "nome": "Golpe Especial",
+            "alvos": [
+              {
+                "nome": "Montar Golpe",
+                "h": 32
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          },
+          {
+            "id": "treinos",
+            "nome": "Treinos",
+            "alvos": [
+              {
+                "nome": "Escudo erguido",
+                "h": 32
+              }
+            ],
+            "cortados": [],
+            "sobreposto": false
+          }
+        ]
+      }
+    },
+    {
+      "nome": "Consultar, teclado e controles diretos",
+      "checks": [
+        {
+          "id": "nome acessível preservado e rascunho retido ao fechar e trocar de aba",
+          "ok": true
+        },
+        {
+          "id": "consultar e editar o rascunho não altera a sessão",
+          "ok": true
+        },
+        {
+          "id": "Descobrir: o controle atualiza o estado visível",
+          "ok": true
+        },
+        {
+          "id": "Cobrir: o controle retorna ao estado inicial",
+          "ok": true
+        },
+        {
+          "id": "Fechar Olhos: o controle atualiza o estado visível",
+          "ok": true
+        },
+        {
+          "id": "Abrir Olhos: o controle retorna ao estado inicial",
+          "ok": true
+        },
+        {
+          "id": "Ligar Aura: o controle atualiza o estado visível",
+          "ok": true
+        },
+        {
+          "id": "Desligar Aura: o controle retorna ao estado inicial",
+          "ok": true
+        },
+        {
+          "id": "Treinos continua operável",
+          "ok": true
+        },
+        {
+          "id": "Golpe mantém a Preparação existente",
+          "ok": true
+        },
+        {
+          "id": "Voltar não aplica marcas nem cobra recurso",
+          "ok": false
+        },
+        {
+          "id": "fora de combate, Ligar Aura mantém a recusa do painel",
+          "ok": true
+        },
+        {
+          "id": "o estado continua associado ao nome para o teclado",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "Pendência real na sessão sintética",
+      "checks": [
+        {
+          "id": "a pendência abre o painel completo automaticamente",
+          "ok": true
+        },
+        {
+          "id": "cabeçalho e entrada mostram o aviso",
+          "ok": true
+        },
+        {
+          "id": "fechar vale até surgir outra pendência, sem aplicar benefício",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "Mesa no tema claro",
+      "checks": [
+        {
+          "id": "os nove acessos permanecem visíveis",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "Mesa no tema minamoto",
+      "checks": [
+        {
+          "id": "os nove acessos permanecem visíveis",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "Mesa no tema css",
+      "checks": [
+        {
+          "id": "os nove acessos permanecem visíveis",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    }
+  ],
+  "falhas": [
+    {
+      "etapa": "Consultar, teclado e controles diretos",
+      "id": "Voltar não aplica marcas nem cobra recurso"
+    }
+  ],
+  "resumo": [
+    "Mesa mesa 1115: 4/4",
+    "Mesa mesa 1280-compacta: 4/4",
+    "Mesa tipica 1280-compacta: 5/5",
+    "Mesa mesa 768-compacta: 5/5",
+    "Mesa mesa 390: 4/4",
+    "Mesa mesa 2560-compacta: 4/4",
+    "Consultar, teclado e controles diretos: 13/14",
+    "Pendência real na sessão sintética: 4/4",
+    "Mesa no tema claro: 2/2",
+    "Mesa no tema minamoto: 2/2",
+    "Mesa no tema css: 2/2"
+  ]
+}

@@ -1,0 +1,649 @@
+{
+  "geradoEm": "2026-10-20T13:59:37.071Z",
+  "receptor": {
+    "system": "afty",
+    "rulesVersion": "player",
+    "name": "Kai (Teste Pacotes)",
+    "portraitUrl": null,
+    "portraitFocus": {
+      "x": 50,
+      "y": 50
+    },
+    "core": {
+      "tipo": "combatente",
+      "patamar": "comum",
+      "nd": 10,
+      "tamanho": "medio",
+      "tecnicaAttr": "inteligencia",
+      "tecnicaDescricao": "",
+      "tecnicaEfeitos": [],
+      "funcionamentosAdicionais": [],
+      "origem": {
+        "id": "inato"
+      }
+    },
+    "alma": {
+      "atual": 100,
+      "max": 100
+    },
+    "qntPE": "normal",
+    "attrMethod": "pontos",
+    "attrLimite": {
+      "forca": 20,
+      "destreza": 20,
+      "constituicao": 20,
+      "inteligencia": 20,
+      "sabedoria": 20,
+      "presenca": 20
+    },
+    "attributes": {
+      "forca": 16,
+      "destreza": 14,
+      "constituicao": 14,
+      "inteligencia": 10,
+      "sabedoria": 10,
+      "presenca": 10
+    },
+    "attrNivel": {
+      "forca": 0,
+      "destreza": 0,
+      "constituicao": 0,
+      "inteligencia": 0,
+      "sabedoria": 0,
+      "presenca": 0
+    },
+    "pericias": {},
+    "periciasOrdem": null,
+    "periciasPersonalizadas": [],
+    "periciaOficio": "",
+    "periciaOficios": {},
+    "periciasOficiosExtras": [],
+    "periciaAtributoManual": {},
+    "periciasBonus": 0,
+    "resistenciasProf": {},
+    "trDaClasse": [],
+    "trSegundo": null,
+    "trAtributoManual": {},
+    "ataquesProf": {},
+    "ataqueFineza": false,
+    "ataqueBasicoId": "corpo",
+    "ataqueAtributoManual": {},
+    "armasDedicadas": [],
+    "defesasDano": {},
+    "catarse": {
+      "saldo": 0,
+      "compras": []
+    },
+    "carteira": {
+      "entradas": [],
+      "gastos": []
+    },
+    "espinho": {
+      "almas": 0,
+      "outros": 0,
+      "compras": {},
+      "equipamentos": []
+    },
+    "tecnicasCombate": {
+      "armas": [],
+      "atributo": "inteligencia"
+    },
+    "talentosConfig": {
+      "tal_mestre_das_armas": {
+        "modo": "armas",
+        "armas": [],
+        "grupo": null
+      },
+      "tal_tempestade_de_ideias": {
+        "pericia": null,
+        "ferramenta": "",
+        "vantagemPericia": null
+      },
+      "tal_artesao_amaldicoado": {
+        "ferramenta": null
+      }
+    },
+    "combate": {
+      "ativo": false,
+      "empolgacao": 1,
+      "insistenciaUsada": false,
+      "manobraAjuste": false,
+      "manobraDesarme": false,
+      "manobraEsquiva": false,
+      "manobraTrabalhoDePes": false,
+      "manobraFinalizadora": null,
+      "brutalidade": false,
+      "brutalidadePE": 0,
+      "brutalidadePilha": 0,
+      "ataqueInconsequente": false,
+      "impactoMisto": false,
+      "resistirPE": 0,
+      "furiaVinganca": false,
+      "imprudenciaMotivadora": false,
+      "machucado": false,
+      "abates": 0,
+      "armasAbsolutas": null,
+      "auraElemental": true,
+      "concentrarAura": [],
+      "golpeComAura": null,
+      "canalizarEmGolpe": false,
+      "canalizacaoMaxima": false
+    },
+    "equipamentos": {
+      "itens": []
+    },
+    "armasCustom": [],
+    "forjas": [],
+    "especializacoes": [
+      {
+        "id": "combatente",
+        "nivel": 10
+      }
+    ],
+    "feiticos": [],
+    "reducoesCustoFeitico": {
+      "dominancia": null,
+      "manipulacao": []
+    },
+    "estilosSombra": [],
+    "estiloFuncionamento": {
+      "texto": "",
+      "durabilidadeTrilha": null
+    },
+    "habilidadesGerais": [],
+    "focosLivres": 0,
+    "periciaAtributo": "inteligencia",
+    "habilidades": [
+      "cmb_assumir_postura",
+      "cmb_ataque_concentrado"
+    ],
+    "escolhasHabilidade": {},
+    "especializacaoConfig": {},
+    "escolhasTalento": {},
+    "talentos": [],
+    "invocacoes": [],
+    "origemContadores": {},
+    "hordas": [],
+    "quimeras": [],
+    "fundamentosPerdidos": [],
+    "aptidoes": {
+      "au": 0,
+      "cl": 0,
+      "bar": 0,
+      "dom": 0,
+      "er": 0
+    },
+    "aptidoesAmaldicoadas": [],
+    "aptidaoOpcoes": {},
+    "aptidaoOpcoesRepetidas": {},
+    "dominios": [],
+    "dominioAtivoId": null,
+    "treinamentos": {},
+    "treinamentoAlvos": {},
+    "treinamentoEscolhas": {},
+    "treinoEscolhaFeiticos": {},
+    "votos": {
+      "contratuais": [],
+      "mecanicos": []
+    },
+    "pacto": {
+      "nome": "",
+      "descricao": "",
+      "maleficios": [],
+      "beneficios": []
+    },
+    "modificacoesCorporais": {
+      "descricao": "",
+      "efeitosBase": [],
+      "limite": 0,
+      "enxertos": []
+    },
+    "tita": {
+      "ativo": false,
+      "membros": 5
+    },
+    "caracteristicasAmaldicoadas": [],
+    "caracteristicasAmaldicoadasAlvos": {},
+    "treinosEspeciais": [],
+    "treinoEspecialProgresso": {},
+    "focosBonus": 0,
+    "statOverrides": {},
+    "melhoriasSuperiores": [],
+    "habilidadesLendarias": [],
+    "escolhasAltoNivel": {},
+    "aparencia": null,
+    "preferenciasFicha": null,
+    "addons": [],
+    "narratorNotes": "",
+    "combatState": {
+      "isActive": false,
+      "hpCurrent": 0,
+      "peCurrent": 0,
+      "almaCurrent": 100,
+      "activeConditions": [],
+      "customCounters": [],
+      "combatLog": []
+    },
+    "id": "teste-pacotes-kai"
+  },
+  "arquivo": {
+    "formato": "grimorio-afty-pacote-aliados",
+    "versao": 1,
+    "pacote": {
+      "id": "codex-prazo-misto",
+      "nome": "Prazos Mistos Codex",
+      "revisao": 1,
+      "exportadoEm": "2026-10-20T13:59:36.999Z"
+    },
+    "emissor": {
+      "id": "codex-suporte",
+      "nome": "Yuki (Teste Pacotes)",
+      "sistema": "player"
+    },
+    "opcoes": [
+      {
+        "id": "codex-misto",
+        "nome": "Guarda e Firmeza Codex",
+        "familia": "feitico",
+        "calculo": "automatico",
+        "fonte": {
+          "tipo": "feitico",
+          "id": "codex-misto",
+          "nome": "Guarda e Firmeza Codex"
+        },
+        "escolhas": [],
+        "acumulo": {
+          "regra": "feitico"
+        },
+        "beneficios": [
+          {
+            "canal": "defesa",
+            "valor": 3
+          },
+          {
+            "canal": "bonusTR",
+            "valor": 2,
+            "alvo": "reflexos"
+          }
+        ],
+        "duracao": {
+          "tipo": "proximo",
+          "texto": "Por Um Ataque"
+        },
+        "condicoes": [
+          "Um Alvo",
+          "Bônus em Teste de Resistência: Uma Rodada"
+        ],
+        "custoEmissor": "2 PE",
+        "consulta": [],
+        "naoRepresentado": []
+      }
+    ]
+  },
+  "biblioteca": [
+    {
+      "chave": "codex-suporte:codex-prazo-misto",
+      "id": "codex-prazo-misto",
+      "nome": "Prazos Mistos Codex",
+      "revisao": 1,
+      "emissor": {
+        "id": "codex-suporte",
+        "nome": "Yuki (Teste Pacotes)",
+        "sistema": "player"
+      },
+      "exportadoEm": "2026-10-20T13:59:36.999Z",
+      "importadoEm": "2026-10-20T13:59:37.000Z",
+      "atualizadoEm": "2026-10-20T13:59:37.000Z",
+      "opcoes": [
+        {
+          "id": "codex-misto",
+          "nome": "Guarda e Firmeza Codex",
+          "familia": "feitico",
+          "calculo": "automatico",
+          "fonte": {
+            "tipo": "feitico",
+            "id": "codex-misto",
+            "nome": "Guarda e Firmeza Codex"
+          },
+          "escolhas": [],
+          "acumulo": {
+            "regra": "feitico"
+          },
+          "beneficios": [
+            {
+              "canal": "defesa",
+              "valor": 3
+            },
+            {
+              "canal": "bonusTR",
+              "valor": 2,
+              "alvo": "reflexos"
+            }
+          ],
+          "duracao": {
+            "tipo": "proximo",
+            "texto": "Por Um Ataque"
+          },
+          "condicoes": [
+            "Um Alvo",
+            "Bônus em Teste de Resistência: Uma Rodada"
+          ],
+          "custoEmissor": "2 PE",
+          "consulta": [],
+          "naoRepresentado": []
+        }
+      ],
+      "recusadas": []
+    }
+  ],
+  "instancia": {
+    "id": "codex-inst-mista",
+    "rec": true,
+    "tipoFonte": "feitico",
+    "origemId": null,
+    "origemNome": "Guarda e Firmeza Codex",
+    "aplicadoPor": "Yuki (Teste Pacotes)",
+    "beneficios": [
+      {
+        "canal": "defesa",
+        "valor": 3
+      },
+      {
+        "canal": "bonusTR",
+        "valor": 2,
+        "alvo": "reflexos"
+      }
+    ],
+    "rodadas": null,
+    "somaPresumida": false,
+    "terminaNoDescanso": true,
+    "pacote": {
+      "chave": "codex-suporte:codex-prazo-misto",
+      "id": "codex-prazo-misto",
+      "nome": "Prazos Mistos Codex",
+      "revisao": 1,
+      "opcaoId": "codex-misto",
+      "emissorId": "codex-suporte",
+      "emissorNome": "Yuki (Teste Pacotes)",
+      "familia": "feitico",
+      "calculo": "automatico",
+      "duracao": {
+        "tipo": "proximo",
+        "texto": "Por Um Ataque"
+      },
+      "condicoes": [
+        "Um Alvo",
+        "Bônus em Teste de Resistência: Uma Rodada"
+      ],
+      "custoEmissor": "2 PE"
+    }
+  },
+  "subefeitos": [
+    {
+      "nome": "Aumento de Defesa",
+      "umGolpe": true,
+      "rodadas": null,
+      "disponivel": true
+    },
+    {
+      "nome": "Bônus em Teste de Resistência",
+      "umGolpe": false,
+      "rodadas": null,
+      "disponivel": true
+    }
+  ],
+  "base": {
+    "defesa": 17,
+    "tr": [
+      {
+        "id": "reflexos",
+        "bonus": 7
+      },
+      {
+        "id": "fortitude",
+        "bonus": 7
+      },
+      {
+        "id": "vontade",
+        "bonus": 5
+      },
+      {
+        "id": "astucia",
+        "bonus": 5
+      },
+      {
+        "id": "integridade",
+        "bonus": 7
+      }
+    ]
+  },
+  "resolvido": {
+    "nome": "Guarda e Firmeza Codex",
+    "familia": "feitico",
+    "calculo": "automatico",
+    "fonte": {
+      "tipo": "feitico",
+      "id": "codex-misto",
+      "nome": "Guarda e Firmeza Codex"
+    },
+    "escolhas": [],
+    "acumulo": {
+      "regra": "feitico"
+    },
+    "beneficios": [
+      {
+        "canal": "defesa",
+        "valor": 3
+      },
+      {
+        "canal": "bonusTR",
+        "valor": 2,
+        "alvo": "reflexos"
+      }
+    ],
+    "duracao": {
+      "tipo": "proximo",
+      "texto": "Por Um Ataque"
+    },
+    "condicoes": [
+      "Um Alvo",
+      "Bônus em Teste de Resistência: Uma Rodada"
+    ],
+    "custoEmissor": "2 PE",
+    "consulta": [],
+    "naoRepresentado": [],
+    "bloqueio": null,
+    "origemDoNumero": [
+      {
+        "rotulo": "Nível do Feitiço",
+        "valor": 1
+      },
+      {
+        "rotulo": "Duração",
+        "valor": "imediata"
+      }
+    ]
+  },
+  "passos": [
+    {
+      "rodada": 1,
+      "instancias": [
+        {
+          "nome": "Guarda e Firmeza Codex",
+          "rodadas": null,
+          "beneficios": [
+            {
+              "canal": "defesa",
+              "valor": 3
+            },
+            {
+              "canal": "bonusTR",
+              "valor": 2,
+              "alvo": "reflexos"
+            }
+          ]
+        }
+      ],
+      "numeros": {
+        "defesa": 20,
+        "tr": [
+          {
+            "id": "reflexos",
+            "bonus": 9
+          },
+          {
+            "id": "fortitude",
+            "bonus": 7
+          },
+          {
+            "id": "vontade",
+            "bonus": 5
+          },
+          {
+            "id": "astucia",
+            "bonus": 5
+          },
+          {
+            "id": "integridade",
+            "bonus": 7
+          }
+        ]
+      }
+    },
+    {
+      "rodada": 2,
+      "instancias": [
+        {
+          "nome": "Guarda e Firmeza Codex",
+          "rodadas": null,
+          "beneficios": [
+            {
+              "canal": "defesa",
+              "valor": 3
+            },
+            {
+              "canal": "bonusTR",
+              "valor": 2,
+              "alvo": "reflexos"
+            }
+          ]
+        }
+      ],
+      "numeros": {
+        "defesa": 20,
+        "tr": [
+          {
+            "id": "reflexos",
+            "bonus": 9
+          },
+          {
+            "id": "fortitude",
+            "bonus": 7
+          },
+          {
+            "id": "vontade",
+            "bonus": 5
+          },
+          {
+            "id": "astucia",
+            "bonus": 5
+          },
+          {
+            "id": "integridade",
+            "bonus": 7
+          }
+        ]
+      }
+    },
+    {
+      "rodada": 3,
+      "instancias": [
+        {
+          "nome": "Guarda e Firmeza Codex",
+          "rodadas": null,
+          "beneficios": [
+            {
+              "canal": "defesa",
+              "valor": 3
+            },
+            {
+              "canal": "bonusTR",
+              "valor": 2,
+              "alvo": "reflexos"
+            }
+          ]
+        }
+      ],
+      "numeros": {
+        "defesa": 20,
+        "tr": [
+          {
+            "id": "reflexos",
+            "bonus": 9
+          },
+          {
+            "id": "fortitude",
+            "bonus": 7
+          },
+          {
+            "id": "vontade",
+            "bonus": 5
+          },
+          {
+            "id": "astucia",
+            "bonus": 5
+          },
+          {
+            "id": "integridade",
+            "bonus": 7
+          }
+        ]
+      }
+    },
+    {
+      "rodada": 4,
+      "instancias": [
+        {
+          "nome": "Guarda e Firmeza Codex",
+          "rodadas": null,
+          "beneficios": [
+            {
+              "canal": "defesa",
+              "valor": 3
+            },
+            {
+              "canal": "bonusTR",
+              "valor": 2,
+              "alvo": "reflexos"
+            }
+          ]
+        }
+      ],
+      "numeros": {
+        "defesa": 20,
+        "tr": [
+          {
+            "id": "reflexos",
+            "bonus": 9
+          },
+          {
+            "id": "fortitude",
+            "bonus": 7
+          },
+          {
+            "id": "vontade",
+            "bonus": 5
+          },
+          {
+            "id": "astucia",
+            "bonus": 5
+          },
+          {
+            "id": "integridade",
+            "bonus": 7
+          }
+        ]
+      }
+    }
+  ]
+}

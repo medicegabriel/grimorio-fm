@@ -1,0 +1,21 @@
+{
+  "id": "prodigio",
+  "nome": "Prodígio",
+  "versao": "1.0.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Concede +2 PV e +2 PE por Nível. O PE é Ponto de Energia ou Ponto de Estamina conforme a Origem: o Motor guarda os dois na mesma pilha (canal `pe`) e a tela troca o rótulo sozinha, por isso um único efeito serve aos dois. Os efeitos moram num Funcionamento do pacote, sempre ativo, e valem para qualquer ficha que instale o Addon, nos dois sistemas.",
+  "resumo": "+2 PV e +2 PE por Nível",
+  "categoria": "regras",
+  "funcionamentos": [
+    {
+      "id": "prodigio",
+      "nome": "Prodígio",
+      "descricao": "Recebe +2 PV e +2 PE por Nível.",
+      "efeitos": [
+        { "canal": "hp", "expr": "2 * nd", "nome": "Prodígio" },
+        { "canal": "pe", "expr": "2 * nd", "nome": "Prodígio" }
+      ]
+    }
+  ]
+}

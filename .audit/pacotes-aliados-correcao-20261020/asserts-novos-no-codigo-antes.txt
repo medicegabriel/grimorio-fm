@@ -1,0 +1,20 @@
+FALHAS (19):
+  PA-I1: fora de combate vale o +3 (o +5 não cobre), em combate o +5, e fora de novo o +3: [0,5,0] != [3,5,3]
+  PA-I1: a ordem das ativações não muda nada: [0,5] != [3,5]
+  PA-I1: maior inelegível com empate no topo (+3 e +3): +3 fora, +5 em combate: [0,5] != [3,5]
+  PA-I1: a análise fora de combate diz que o +5 está fora pela condição e o +3 soma: ["condicao","repete",null] != ["condicao","soma",3]
+  PA-I1: a condição segue na linha do vencedor até o derive final: [[["defesa","5","em_combate"]],[["defesa","5","em_combate"]]] != [[["defesa","3",null]],[["defesa","5","em_combate"]]]
+  PA-I1, Aura numérica: a de combate (+3) não cobre a de +2 fora de combate: [0,3] != [2,3]
+  PA-I1, auxílio: o mesmo auxílio maior só em combate não apaga o de +4 fora: [0,6] != [4,6]
+  PA-I1, Aura de Dano: o 1d8 de combate não apaga o 1d6 fora, e em combate fica só o 1d8: ["1d8 + 3","1d8 + 3","2d8 + 3"] != ["1d8 + 3","1d8 + 1d6 + 3","2d8 + 3"]
+  PA-I1, Aura de Dano própria (1d4): a recebida de combate só a substitui em combate: [false,false,true,false] != [true,false,true,false]
+  PA-I2: o Feitiço de um ataque tem prazo de uso, e não 1 rodada: [{"tipo":"rodadas","rodadas":1,"texto":"Um Ataque"},[{"canal":"bonusAcerto","valor":3}]] != [{"tipo":"proximo","texto":"Por Um Ataque"},[{"canal":"bonusAcerto","valor":3}]]
+  PA-I2: a Reação de Defesa (por um golpe, sem a marca) também: {"tipo":"rodadas","rodadas":1,"texto":"Um Ataque"} != {"tipo":"proximo","texto":"Por Um Ataque"}
+  PA-I2: Múltiplos Efeitos de Reação lê o efeito resolvido (o campo do Feitiço inteiro é falso): [false,"rodadas"] != [false,"proximo"]
+  PA-I2: Múltiplos Efeitos que mistura os dois: prazo de uso, e a parte de uma rodada vai nas condições: ["rodadas",0] != ["proximo",1]
+  PA-I2: o arquivo e a biblioteca guardam o prazo de uso: [{"tipo":"rodadas","rodadas":1,"texto":"Um Ataque"},{"tipo":"rodadas","rodadas":1,"texto":"Um Ataque"}] != [{"tipo":"proximo","texto":"Por Um Ataque"},{"tipo":"proximo","texto":"Por Um Ataque"}]
+  PA-I2: a instância não tem rodadas, termina no descanso e diz o prazo: [1,true,"1 Rodada"] != [null,true,"Por Um Ataque"]
+  PA-I2: o cartão do G2 mostra o prazo curto Um Ataque, e o que a ficha não conta continua de fora: ["1 Rodada",null] != ["Um Ataque",null]
+  PA-I2: duas viradas sem ataque não encerram o de um ataque, e a de 1 rodada sai na primeira: [[],[]] != [["Precisão de Um Ataque"],["Precisão de Um Ataque"]]
+  PA-I2: o bônus continua na conta depois das viradas: 0 != 3
+  PA-I2: o arquivo de antes do conserto é outro conteúdo (reexportar sobe a revisão): true != false

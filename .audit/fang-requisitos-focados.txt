@@ -1,0 +1,16 @@
+
+> grimorio-tracker@0.0.0 asserts
+> node asserts/rodar.mjs combatente restringido tr-caso repeticao-habilidade requisitos-ficha requisitos-treino vagas
+
+ok   t-combatente-automacoes.mjs 73
+ok   t-combatente-revisao.mjs 80
+ok   t-gemeos-restringido.mjs 31
+ok   t-repeticao-habilidade.mjs 41
+ok   t-requisitos-ficha.mjs   33
+ok   t-requisitos-treino.mjs  37
+ok   t-restringido-variacao.mjs 58
+ok   t-tr-caso-ja-seja-classe.mjs 22
+ok   t-treinos-restringido.mjs 24
+ok   t-vagas-agregado-final.mjs 24
+
+10 arquivos, 423 asserts, todos passaram.

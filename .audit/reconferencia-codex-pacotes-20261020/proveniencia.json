@@ -1,0 +1,203 @@
+{
+  "geradoEm": "2026-10-20T13:54:36.659Z",
+  "manifest": [
+    {
+      "path": "asserts/LEIA.md",
+      "expected": "f7216139b59ba8956bb74063d204431bfd626efbdd0cc8c13163f4fde5e4a2ef",
+      "actual": "f7216139b59ba8956bb74063d204431bfd626efbdd0cc8c13163f4fde5e4a2ef",
+      "ok": true
+    },
+    {
+      "path": "asserts/t-ordem-modulos.mjs",
+      "expected": "a690a103e80efcec22d006482756a8bb67da90b579de2a25a60f1c33e8fcd843",
+      "actual": "a690a103e80efcec22d006482756a8bb67da90b579de2a25a60f1c33e8fcd843",
+      "ok": true
+    },
+    {
+      "path": "asserts/t-pacotes-aliados.mjs",
+      "expected": "be8e2377f59b6e5a8b368c8ba94b76f151c46d48dd253597da58b03c6f293638",
+      "actual": "be8e2377f59b6e5a8b368c8ba94b76f151c46d48dd253597da58b03c6f293638",
+      "ok": true
+    },
+    {
+      "path": "docs/a-fazer.md",
+      "expected": "a6492fa3b2ab97349fe069ed84a2b4bbb5b06b371d3e4becfcbc42d21ccd2880",
+      "actual": "a6492fa3b2ab97349fe069ed84a2b4bbb5b06b371d3e4becfcbc42d21ccd2880",
+      "ok": true
+    },
+    {
+      "path": "docs/afty-ficha-final.md",
+      "expected": "32666efddd89c3c33d9628f697e9db745e9bd216090e2ebc1c0e79e614e1add9",
+      "actual": "32666efddd89c3c33d9628f697e9db745e9bd216090e2ebc1c0e79e614e1add9",
+      "ok": true
+    },
+    {
+      "path": "docs/afty-status.md",
+      "expected": "e9bcd42e7b201e4f2d57d33459cf55735138c08b179e77838ce6b687761200c6",
+      "actual": "e9bcd42e7b201e4f2d57d33459cf55735138c08b179e77838ce6b687761200c6",
+      "ok": true
+    },
+    {
+      "path": "docs/automacao-dsl.md",
+      "expected": "7235bdad4971499e64adaf4a35b5811b7e64b9a566ffa9528f23bbddbeee2e66",
+      "actual": "7235bdad4971499e64adaf4a35b5811b7e64b9a566ffa9528f23bbddbeee2e66",
+      "ok": true
+    },
+    {
+      "path": "docs/afty-invocacoes.md",
+      "expected": "babf04f2505e9fc15336cd8f6d2ffcebb062b14a1954579a58be3a93f0baa2c5",
+      "actual": "babf04f2505e9fc15336cd8f6d2ffcebb062b14a1954579a58be3a93f0baa2c5",
+      "ok": true
+    },
+    {
+      "path": "docs/revisao-automacao/escopo.json",
+      "expected": "bb6e69aba4a34e09a02ea841674b154400f618183607cb7357c8cf8ecf4acbf6",
+      "actual": "bb6e69aba4a34e09a02ea841674b154400f618183607cb7357c8cf8ecf4acbf6",
+      "ok": true
+    },
+    {
+      "path": "src/App.jsx",
+      "expected": "ebd0af3a43dafa2b3094ea4360dca11991cc05381638effc0c924ad107528a0c",
+      "actual": "ebd0af3a43dafa2b3094ea4360dca11991cc05381638effc0c924ad107528a0c",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/AftyCreatureBuilder.jsx",
+      "expected": "99ab1df2c547001a2d10380fd30ff0f87ed0cdfe67902fbbd1d628a478474ff4",
+      "actual": "99ab1df2c547001a2d10380fd30ff0f87ed0cdfe67902fbbd1d628a478474ff4",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/afty-invocacoes.js",
+      "expected": "d1710bf5662278bd903feaa42bf01aa188fc8854a720851208b26a89657ca305",
+      "actual": "d1710bf5662278bd903feaa42bf01aa188fc8854a720851208b26a89657ca305",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/AftyFichaG2.jsx",
+      "expected": "84f5319ae3bb8786ae5001b690d849200fbd79cecaa67ad8382983a253696434",
+      "actual": "84f5319ae3bb8786ae5001b690d849200fbd79cecaa67ad8382983a253696434",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/abas/AbaBuffs.jsx",
+      "expected": "5ad8be4167091bbb7f6d7425abb50bc62871c092201c9b9dfaa5cca48e36fcc7",
+      "actual": "5ad8be4167091bbb7f6d7425abb50bc62871c092201c9b9dfaa5cca48e36fcc7",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/ficha-recebidos.js",
+      "expected": "6f5a46c5f34033533ba1961b786c2a092b9c3c4af803b99c1167bdd39c4f8d3b",
+      "actual": "6f5a46c5f34033533ba1961b786c2a092b9c3c4af803b99c1167bdd39c4f8d3b",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/ficha-sessao.js",
+      "expected": "ffcbe0a021f1b38b3e8cec4adde8fd901479d5a88ace784d99a4cda338c6d926",
+      "actual": "ffcbe0a021f1b38b3e8cec4adde8fd901479d5a88ace784d99a4cda338c6d926",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/pacotes-aliados.js",
+      "expected": "d5fd8f4efd9f7623ed0abbc5b2cd8feaa8acec767a62f442472603fa3faae037",
+      "actual": "d5fd8f4efd9f7623ed0abbc5b2cd8feaa8acec767a62f442472603fa3faae037",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/pacotes-familias.js",
+      "expected": "fa63d92731d1327787062af09c32fcfa87dfb64ab5462e9d86b7207a1aec7b25",
+      "actual": "fa63d92731d1327787062af09c32fcfa87dfb64ab5462e9d86b7207a1aec7b25",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/CatalogoG2.jsx",
+      "expected": "9877e12a652adde135fb56f16bac6fc9d226f6cd7f18be883fb1a082b70fbce6",
+      "actual": "9877e12a652adde135fb56f16bac6fc9d226f6cd7f18be883fb1a082b70fbce6",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/VisaoG2.jsx",
+      "expected": "50fb5862df9ffd733f1d45d0cef523d4c3ef28fc136bbd178d6c0d5cbb34fe9b",
+      "actual": "50fb5862df9ffd733f1d45d0cef523d4c3ef28fc136bbd178d6c0d5cbb34fe9b",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/efeitos-dados.js",
+      "expected": "36d0ebdad0ab45c1075086317e43d6583205143ec44e0459584d822ba5323f0c",
+      "actual": "36d0ebdad0ab45c1075086317e43d6583205143ec44e0459584d822ba5323f0c",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/efeitos-g2.css",
+      "expected": "dbfdadb1c6e24a8df28828e106067a89ae893e2988d45f230b93acf7566ae938",
+      "actual": "dbfdadb1c6e24a8df28828e106067a89ae893e2988d45f230b93acf7566ae938",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/g2-dados.js",
+      "expected": "77a0d66cf3f3e20fc032318938dad8cb0b20be0c7f4d2697be10904db33616a3",
+      "actual": "77a0d66cf3f3e20fc032318938dad8cb0b20be0c7f4d2697be10904db33616a3",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/gestor-logica.js",
+      "expected": "ae2319cef099c3d77c36d47ab9e99b65baed2c29cacfc957532cab1cdfcf98e2",
+      "actual": "ae2319cef099c3d77c36d47ab9e99b65baed2c29cacfc957532cab1cdfcf98e2",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/recebidos.js",
+      "expected": "f03a6966d87a48bce8070b55344cc7567b109832574b0584678da7e0c5d4dcd7",
+      "actual": "f03a6966d87a48bce8070b55344cc7567b109832574b0584678da7e0c5d4dcd7",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/useModeloG2.js",
+      "expected": "0f0868a11fec1d8d5fceb758bbcff78cbed59d9827e38335ccf08f74398b8070",
+      "actual": "0f0868a11fec1d8d5fceb758bbcff78cbed59d9827e38335ccf08f74398b8070",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/util.js",
+      "expected": "449dcad9bdce888cd07ac21908aec28790172afd1180733d88517c11a827db32",
+      "actual": "449dcad9bdce888cd07ac21908aec28790172afd1180733d88517c11a827db32",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/ParaAliadosG2.jsx",
+      "expected": "5f6ae7147ffc48b2f4d1cbd16066502690e17d60e2ec77db06155dbb3f45d04c",
+      "actual": "5f6ae7147ffc48b2f4d1cbd16066502690e17d60e2ec77db06155dbb3f45d04c",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/RecebidosG2.jsx",
+      "expected": "1298999b69cd3d319c2127a8a716540bccee0b3abb6489a092540afbdd2468ae",
+      "actual": "1298999b69cd3d319c2127a8a716540bccee0b3abb6489a092540afbdd2468ae",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/PacotesPecas.jsx",
+      "expected": "75b4b6e74cddff2d81168ea593f30ef598502b4e14e95af185a9ce75baf1cbc0",
+      "actual": "75b4b6e74cddff2d81168ea593f30ef598502b4e14e95af185a9ce75baf1cbc0",
+      "ok": true
+    },
+    {
+      "path": "../PROGRESSO-FICHA-FINAL.md",
+      "expected": "5a22ddd7311fc68b57c0d61afb0a3b9622cb54dc5c97d4abd1525efec7529867",
+      "actual": "5a22ddd7311fc68b57c0d61afb0a3b9622cb54dc5c97d4abd1525efec7529867",
+      "ok": true
+    },
+    {
+      "path": "../RETOMADA-CLAUDE-FICHA-FINAL.md",
+      "expected": "94b960db32fb811c85a53387a17db0733a97ead05e8d50f702abb6701adeec51",
+      "actual": "94b960db32fb811c85a53387a17db0733a97ead05e8d50f702abb6701adeec51",
+      "ok": true
+    },
+    {
+      "path": "../CONTINUIDADE-FICHA-FINAL.md",
+      "expected": "28ad6b3276083a45102e75acbcf06200037a87d585e81cdefa8ed2169c4e934e",
+      "actual": "28ad6b3276083a45102e75acbcf06200037a87d585e81cdefa8ed2169c4e934e",
+      "ok": true
+    }
+  ]
+}

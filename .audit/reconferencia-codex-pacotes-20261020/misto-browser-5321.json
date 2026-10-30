@@ -1,0 +1,1120 @@
+{
+  "geradoEm": "2026-10-20T14:00:52.570Z",
+  "base": "http://127.0.0.1:5321",
+  "etapas": [
+    {
+      "nome": "misto em 1024",
+      "checks": [
+        {
+          "id": "PA-I3: Reflexos de uma rodada deve sair sem encerrar Defesa por ataque",
+          "ok": false,
+          "dados": {
+            "base": "+7",
+            "ligado": "+9",
+            "apos": [
+              "+9",
+              "+9",
+              "+9"
+            ]
+          }
+        },
+        {
+          "id": "PA-I3: classica respeita o prazo de uma rodada do TR",
+          "ok": false,
+          "dados": {
+            "base": "+7",
+            "classica": "+9"
+          }
+        }
+      ],
+      "erros": [],
+      "observado": {
+        "base": "+7",
+        "ligado": "+9",
+        "rodadas": [
+          {
+            "virada": 1,
+            "reflexos": "+9",
+            "sessao": {
+              "bloodfeastRegras": [],
+              "energiaEmVida": 0,
+              "bloodfeast": {
+                "cargas": 0,
+                "hardblood": 0,
+                "bleed": 0,
+                "sanidade": 0,
+                "sangue": 0,
+                "reutilizado": 0,
+                "agua": false,
+                "ativos": {},
+                "ultima": null
+              },
+              "hpAtual": 86,
+              "peAtual": 40,
+              "pvTempFontes": {},
+              "peTempFontes": {},
+              "almaAtual": 86,
+              "almaMaxVisto": 86,
+              "rodada": 1,
+              "propriedadesArmas": {
+                "turno": 1,
+                "oscilante": null,
+                "ultimoAtaque": null,
+                "porArma": {}
+              },
+              "ataqueBasicoId": null,
+              "guardaGolpes": 0,
+              "guardaEncerrada": false,
+              "exaustao": 0,
+              "exaustaoTecnica": null,
+              "combate": {
+                "resAtaqueExtra": false,
+                "ataqueFurtivo": false
+              },
+              "condicoes": [],
+              "buffs": [
+                {
+                  "id": "r670veonf",
+                  "rec": true,
+                  "tipoFonte": "feitico",
+                  "origemId": null,
+                  "origemNome": "Guarda e Firmeza Codex",
+                  "aplicadoPor": "Yuki (Teste Pacotes)",
+                  "beneficios": [
+                    {
+                      "canal": "defesa",
+                      "valor": 3
+                    },
+                    {
+                      "canal": "bonusTR",
+                      "valor": 2,
+                      "alvo": "reflexos"
+                    }
+                  ],
+                  "rodadas": null,
+                  "somaPresumida": false,
+                  "terminaNoDescanso": true,
+                  "pacote": {
+                    "chave": "codex-suporte:codex-prazo-misto",
+                    "id": "codex-prazo-misto",
+                    "nome": "Prazos Mistos Codex",
+                    "revisao": 1,
+                    "opcaoId": "codex-misto",
+                    "emissorId": "codex-suporte",
+                    "emissorNome": "Yuki (Teste Pacotes)",
+                    "familia": "feitico",
+                    "calculo": "automatico",
+                    "duracao": {
+                      "tipo": "proximo",
+                      "texto": "Por Um Ataque"
+                    },
+                    "condicoes": [
+                      "Um Alvo",
+                      "Bônus em Teste de Resistência: Uma Rodada"
+                    ],
+                    "custoEmissor": "2 PE"
+                  }
+                }
+              ],
+              "invocacoes": {},
+              "tita": {
+                "cabeca": null,
+                "membros": []
+              },
+              "preparoAtual": null,
+              "preparoTemp": 0,
+              "golpeEspecial": {},
+              "reservaInvocacao": {
+                "usada": false,
+                "modo": null,
+                "restantes": 0
+              },
+              "quimeraDaCena": null,
+              "lideresDeHordaDissolvida": [],
+              "concedido": [],
+              "adaptacoes": {},
+              "dharma": {
+                "entradas": [],
+                "alvo": "",
+                "fenomeno": "",
+                "existencia": ""
+              },
+              "treinosAtivos": {},
+              "usos": {},
+              "recargas": {},
+              "ultimoFeiticoDanoId": null,
+              "rituais": {},
+              "ritualAtual": null,
+              "favoritos": [],
+              "log": [],
+              "atualizadoEm": 1792504856086,
+              "operacoes": {
+                "eventos": [
+                  {
+                    "id": "z3arsjcv",
+                    "ts": 1792504855478,
+                    "rodada": 1,
+                    "tipo": "rodada",
+                    "nota": {
+                      "rodada": 1,
+                      "expirou": [],
+                      "cobrado": [],
+                      "renovou": [],
+                      "casca": 0,
+                      "encerrou": [],
+                      "exaustao": 0
+                    }
+                  }
+                ],
+                "ativacoes": {},
+                "reusos": {},
+                "pvConcessoes": {},
+                "encerrados": []
+              },
+              "especializacaoSessao": {
+                "turno": 1,
+                "reacoesGastas": 0,
+                "reacoesExtras": 0,
+                "acoesComuns": 0,
+                "pvNegativos": 0,
+                "falhasMorte": 0,
+                "modoMorte": null,
+                "turnoEncerrado": 0,
+                "manterSurto": false
+              }
+            }
+          },
+          {
+            "virada": 2,
+            "reflexos": "+9",
+            "sessao": {
+              "bloodfeastRegras": [],
+              "energiaEmVida": 0,
+              "bloodfeast": {
+                "cargas": 0,
+                "hardblood": 0,
+                "bleed": 0,
+                "sanidade": 0,
+                "sangue": 0,
+                "reutilizado": 0,
+                "agua": false,
+                "ativos": {},
+                "ultima": null
+              },
+              "hpAtual": 86,
+              "peAtual": 40,
+              "pvTempFontes": {},
+              "peTempFontes": {},
+              "almaAtual": 86,
+              "almaMaxVisto": 86,
+              "rodada": 2,
+              "propriedadesArmas": {
+                "turno": 2,
+                "oscilante": null,
+                "ultimoAtaque": null,
+                "porArma": {}
+              },
+              "ataqueBasicoId": null,
+              "guardaGolpes": 0,
+              "guardaEncerrada": false,
+              "exaustao": 0,
+              "exaustaoTecnica": null,
+              "combate": {
+                "resAtaqueExtra": false,
+                "ataqueFurtivo": false
+              },
+              "condicoes": [],
+              "buffs": [
+                {
+                  "id": "r670veonf",
+                  "rec": true,
+                  "tipoFonte": "feitico",
+                  "origemId": null,
+                  "origemNome": "Guarda e Firmeza Codex",
+                  "aplicadoPor": "Yuki (Teste Pacotes)",
+                  "beneficios": [
+                    {
+                      "canal": "defesa",
+                      "valor": 3
+                    },
+                    {
+                      "canal": "bonusTR",
+                      "valor": 2,
+                      "alvo": "reflexos"
+                    }
+                  ],
+                  "rodadas": null,
+                  "somaPresumida": false,
+                  "terminaNoDescanso": true,
+                  "pacote": {
+                    "chave": "codex-suporte:codex-prazo-misto",
+                    "id": "codex-prazo-misto",
+                    "nome": "Prazos Mistos Codex",
+                    "revisao": 1,
+                    "opcaoId": "codex-misto",
+                    "emissorId": "codex-suporte",
+                    "emissorNome": "Yuki (Teste Pacotes)",
+                    "familia": "feitico",
+                    "calculo": "automatico",
+                    "duracao": {
+                      "tipo": "proximo",
+                      "texto": "Por Um Ataque"
+                    },
+                    "condicoes": [
+                      "Um Alvo",
+                      "Bônus em Teste de Resistência: Uma Rodada"
+                    ],
+                    "custoEmissor": "2 PE"
+                  }
+                }
+              ],
+              "invocacoes": {},
+              "tita": {
+                "cabeca": null,
+                "membros": []
+              },
+              "preparoAtual": null,
+              "preparoTemp": 0,
+              "golpeEspecial": {},
+              "reservaInvocacao": {
+                "usada": false,
+                "modo": null,
+                "restantes": 0
+              },
+              "quimeraDaCena": null,
+              "lideresDeHordaDissolvida": [],
+              "concedido": [],
+              "adaptacoes": {},
+              "dharma": {
+                "entradas": [],
+                "alvo": "",
+                "fenomeno": "",
+                "existencia": ""
+              },
+              "treinosAtivos": {},
+              "usos": {},
+              "recargas": {},
+              "ultimoFeiticoDanoId": null,
+              "rituais": {},
+              "ritualAtual": null,
+              "favoritos": [],
+              "log": [],
+              "atualizadoEm": 1792504857064,
+              "operacoes": {
+                "eventos": [
+                  {
+                    "id": "p3q7wwzt",
+                    "ts": 1792504856445,
+                    "rodada": 2,
+                    "tipo": "rodada",
+                    "nota": {
+                      "rodada": 2,
+                      "expirou": [],
+                      "cobrado": [],
+                      "renovou": [],
+                      "casca": 0,
+                      "encerrou": [],
+                      "exaustao": 0
+                    }
+                  },
+                  {
+                    "id": "z3arsjcv",
+                    "ts": 1792504855478,
+                    "rodada": 1,
+                    "tipo": "rodada",
+                    "nota": {
+                      "rodada": 1,
+                      "expirou": [],
+                      "cobrado": [],
+                      "renovou": [],
+                      "casca": 0,
+                      "encerrou": [],
+                      "exaustao": 0
+                    }
+                  }
+                ],
+                "ativacoes": {},
+                "reusos": {},
+                "pvConcessoes": {},
+                "encerrados": []
+              },
+              "especializacaoSessao": {
+                "turno": 2,
+                "reacoesGastas": 0,
+                "reacoesExtras": 0,
+                "acoesComuns": 0,
+                "pvNegativos": 0,
+                "falhasMorte": 0,
+                "modoMorte": null,
+                "turnoEncerrado": 1,
+                "manterSurto": false
+              }
+            }
+          },
+          {
+            "virada": 3,
+            "reflexos": "+9",
+            "sessao": {
+              "bloodfeastRegras": [],
+              "energiaEmVida": 0,
+              "bloodfeast": {
+                "cargas": 0,
+                "hardblood": 0,
+                "bleed": 0,
+                "sanidade": 0,
+                "sangue": 0,
+                "reutilizado": 0,
+                "agua": false,
+                "ativos": {},
+                "ultima": null
+              },
+              "hpAtual": 86,
+              "peAtual": 40,
+              "pvTempFontes": {},
+              "peTempFontes": {},
+              "almaAtual": 86,
+              "almaMaxVisto": 86,
+              "rodada": 3,
+              "propriedadesArmas": {
+                "turno": 3,
+                "oscilante": null,
+                "ultimoAtaque": null,
+                "porArma": {}
+              },
+              "ataqueBasicoId": null,
+              "guardaGolpes": 0,
+              "guardaEncerrada": false,
+              "exaustao": 0,
+              "exaustaoTecnica": null,
+              "combate": {
+                "resAtaqueExtra": false,
+                "ataqueFurtivo": false
+              },
+              "condicoes": [],
+              "buffs": [
+                {
+                  "id": "r670veonf",
+                  "rec": true,
+                  "tipoFonte": "feitico",
+                  "origemId": null,
+                  "origemNome": "Guarda e Firmeza Codex",
+                  "aplicadoPor": "Yuki (Teste Pacotes)",
+                  "beneficios": [
+                    {
+                      "canal": "defesa",
+                      "valor": 3
+                    },
+                    {
+                      "canal": "bonusTR",
+                      "valor": 2,
+                      "alvo": "reflexos"
+                    }
+                  ],
+                  "rodadas": null,
+                  "somaPresumida": false,
+                  "terminaNoDescanso": true,
+                  "pacote": {
+                    "chave": "codex-suporte:codex-prazo-misto",
+                    "id": "codex-prazo-misto",
+                    "nome": "Prazos Mistos Codex",
+                    "revisao": 1,
+                    "opcaoId": "codex-misto",
+                    "emissorId": "codex-suporte",
+                    "emissorNome": "Yuki (Teste Pacotes)",
+                    "familia": "feitico",
+                    "calculo": "automatico",
+                    "duracao": {
+                      "tipo": "proximo",
+                      "texto": "Por Um Ataque"
+                    },
+                    "condicoes": [
+                      "Um Alvo",
+                      "Bônus em Teste de Resistência: Uma Rodada"
+                    ],
+                    "custoEmissor": "2 PE"
+                  }
+                }
+              ],
+              "invocacoes": {},
+              "tita": {
+                "cabeca": null,
+                "membros": []
+              },
+              "preparoAtual": null,
+              "preparoTemp": 0,
+              "golpeEspecial": {},
+              "reservaInvocacao": {
+                "usada": false,
+                "modo": null,
+                "restantes": 0
+              },
+              "quimeraDaCena": null,
+              "lideresDeHordaDissolvida": [],
+              "concedido": [],
+              "adaptacoes": {},
+              "dharma": {
+                "entradas": [],
+                "alvo": "",
+                "fenomeno": "",
+                "existencia": ""
+              },
+              "treinosAtivos": {},
+              "usos": {},
+              "recargas": {},
+              "ultimoFeiticoDanoId": null,
+              "rituais": {},
+              "ritualAtual": null,
+              "favoritos": [],
+              "log": [],
+              "atualizadoEm": 1792504858034,
+              "operacoes": {
+                "eventos": [
+                  {
+                    "id": "b33tvtng",
+                    "ts": 1792504857413,
+                    "rodada": 3,
+                    "tipo": "rodada",
+                    "nota": {
+                      "rodada": 3,
+                      "expirou": [],
+                      "cobrado": [],
+                      "renovou": [],
+                      "casca": 0,
+                      "encerrou": [],
+                      "exaustao": 0
+                    }
+                  },
+                  {
+                    "id": "p3q7wwzt",
+                    "ts": 1792504856445,
+                    "rodada": 2,
+                    "tipo": "rodada",
+                    "nota": {
+                      "rodada": 2,
+                      "expirou": [],
+                      "cobrado": [],
+                      "renovou": [],
+                      "casca": 0,
+                      "encerrou": [],
+                      "exaustao": 0
+                    }
+                  },
+                  {
+                    "id": "z3arsjcv",
+                    "ts": 1792504855478,
+                    "rodada": 1,
+                    "tipo": "rodada",
+                    "nota": {
+                      "rodada": 1,
+                      "expirou": [],
+                      "cobrado": [],
+                      "renovou": [],
+                      "casca": 0,
+                      "encerrou": [],
+                      "exaustao": 0
+                    }
+                  }
+                ],
+                "ativacoes": {},
+                "reusos": {},
+                "pvConcessoes": {},
+                "encerrados": []
+              },
+              "especializacaoSessao": {
+                "turno": 3,
+                "reacoesGastas": 0,
+                "reacoesExtras": 0,
+                "acoesComuns": 0,
+                "pvNegativos": 0,
+                "falhasMorte": 0,
+                "modoMorte": null,
+                "turnoEncerrado": 2,
+                "manterSurto": false
+              }
+            }
+          }
+        ],
+        "classica": "+9"
+      }
+    },
+    {
+      "nome": "misto em 1440",
+      "checks": [
+        {
+          "id": "PA-I3: Reflexos de uma rodada deve sair sem encerrar Defesa por ataque",
+          "ok": false,
+          "dados": {
+            "base": "+7",
+            "ligado": "+9",
+            "apos": [
+              "+9",
+              "+9",
+              "+9"
+            ]
+          }
+        },
+        {
+          "id": "PA-I3: classica respeita o prazo de uma rodada do TR",
+          "ok": false,
+          "dados": {
+            "base": "+7",
+            "classica": "+9"
+          }
+        }
+      ],
+      "erros": [],
+      "observado": {
+        "base": "+7",
+        "ligado": "+9",
+        "rodadas": [
+          {
+            "virada": 1,
+            "reflexos": "+9",
+            "sessao": {
+              "bloodfeastRegras": [],
+              "energiaEmVida": 0,
+              "bloodfeast": {
+                "cargas": 0,
+                "hardblood": 0,
+                "bleed": 0,
+                "sanidade": 0,
+                "sangue": 0,
+                "reutilizado": 0,
+                "agua": false,
+                "ativos": {},
+                "ultima": null
+              },
+              "hpAtual": 86,
+              "peAtual": 40,
+              "pvTempFontes": {},
+              "peTempFontes": {},
+              "almaAtual": 86,
+              "almaMaxVisto": 86,
+              "rodada": 1,
+              "propriedadesArmas": {
+                "turno": 1,
+                "oscilante": null,
+                "ultimoAtaque": null,
+                "porArma": {}
+              },
+              "ataqueBasicoId": null,
+              "guardaGolpes": 0,
+              "guardaEncerrada": false,
+              "exaustao": 0,
+              "exaustaoTecnica": null,
+              "combate": {
+                "resAtaqueExtra": false,
+                "ataqueFurtivo": false
+              },
+              "condicoes": [],
+              "buffs": [
+                {
+                  "id": "ro6xuqbrc",
+                  "rec": true,
+                  "tipoFonte": "feitico",
+                  "origemId": null,
+                  "origemNome": "Guarda e Firmeza Codex",
+                  "aplicadoPor": "Yuki (Teste Pacotes)",
+                  "beneficios": [
+                    {
+                      "canal": "defesa",
+                      "valor": 3
+                    },
+                    {
+                      "canal": "bonusTR",
+                      "valor": 2,
+                      "alvo": "reflexos"
+                    }
+                  ],
+                  "rodadas": null,
+                  "somaPresumida": false,
+                  "terminaNoDescanso": true,
+                  "pacote": {
+                    "chave": "codex-suporte:codex-prazo-misto",
+                    "id": "codex-prazo-misto",
+                    "nome": "Prazos Mistos Codex",
+                    "revisao": 1,
+                    "opcaoId": "codex-misto",
+                    "emissorId": "codex-suporte",
+                    "emissorNome": "Yuki (Teste Pacotes)",
+                    "familia": "feitico",
+                    "calculo": "automatico",
+                    "duracao": {
+                      "tipo": "proximo",
+                      "texto": "Por Um Ataque"
+                    },
+                    "condicoes": [
+                      "Um Alvo",
+                      "Bônus em Teste de Resistência: Uma Rodada"
+                    ],
+                    "custoEmissor": "2 PE"
+                  }
+                }
+              ],
+              "invocacoes": {},
+              "tita": {
+                "cabeca": null,
+                "membros": []
+              },
+              "preparoAtual": null,
+              "preparoTemp": 0,
+              "golpeEspecial": {},
+              "reservaInvocacao": {
+                "usada": false,
+                "modo": null,
+                "restantes": 0
+              },
+              "quimeraDaCena": null,
+              "lideresDeHordaDissolvida": [],
+              "concedido": [],
+              "adaptacoes": {},
+              "dharma": {
+                "entradas": [],
+                "alvo": "",
+                "fenomeno": "",
+                "existencia": ""
+              },
+              "treinosAtivos": {},
+              "usos": {},
+              "recargas": {},
+              "ultimoFeiticoDanoId": null,
+              "rituais": {},
+              "ritualAtual": null,
+              "favoritos": [],
+              "log": [],
+              "atualizadoEm": 1792504862971,
+              "operacoes": {
+                "eventos": [
+                  {
+                    "id": "bkc6a5ce",
+                    "ts": 1792504862351,
+                    "rodada": 1,
+                    "tipo": "rodada",
+                    "nota": {
+                      "rodada": 1,
+                      "expirou": [],
+                      "cobrado": [],
+                      "renovou": [],
+                      "casca": 0,
+                      "encerrou": [],
+                      "exaustao": 0
+                    }
+                  }
+                ],
+                "ativacoes": {},
+                "reusos": {},
+                "pvConcessoes": {},
+                "encerrados": []
+              },
+              "especializacaoSessao": {
+                "turno": 1,
+                "reacoesGastas": 0,
+                "reacoesExtras": 0,
+                "acoesComuns": 0,
+                "pvNegativos": 0,
+                "falhasMorte": 0,
+                "modoMorte": null,
+                "turnoEncerrado": 0,
+                "manterSurto": false
+              }
+            }
+          },
+          {
+            "virada": 2,
+            "reflexos": "+9",
+            "sessao": {
+              "bloodfeastRegras": [],
+              "energiaEmVida": 0,
+              "bloodfeast": {
+                "cargas": 0,
+                "hardblood": 0,
+                "bleed": 0,
+                "sanidade": 0,
+                "sangue": 0,
+                "reutilizado": 0,
+                "agua": false,
+                "ativos": {},
+                "ultima": null
+              },
+              "hpAtual": 86,
+              "peAtual": 40,
+              "pvTempFontes": {},
+              "peTempFontes": {},
+              "almaAtual": 86,
+              "almaMaxVisto": 86,
+              "rodada": 2,
+              "propriedadesArmas": {
+                "turno": 2,
+                "oscilante": null,
+                "ultimoAtaque": null,
+                "porArma": {}
+              },
+              "ataqueBasicoId": null,
+              "guardaGolpes": 0,
+              "guardaEncerrada": false,
+              "exaustao": 0,
+              "exaustaoTecnica": null,
+              "combate": {
+                "resAtaqueExtra": false,
+                "ataqueFurtivo": false
+              },
+              "condicoes": [],
+              "buffs": [
+                {
+                  "id": "ro6xuqbrc",
+                  "rec": true,
+                  "tipoFonte": "feitico",
+                  "origemId": null,
+                  "origemNome": "Guarda e Firmeza Codex",
+                  "aplicadoPor": "Yuki (Teste Pacotes)",
+                  "beneficios": [
+                    {
+                      "canal": "defesa",
+                      "valor": 3
+                    },
+                    {
+                      "canal": "bonusTR",
+                      "valor": 2,
+                      "alvo": "reflexos"
+                    }
+                  ],
+                  "rodadas": null,
+                  "somaPresumida": false,
+                  "terminaNoDescanso": true,
+                  "pacote": {
+                    "chave": "codex-suporte:codex-prazo-misto",
+                    "id": "codex-prazo-misto",
+                    "nome": "Prazos Mistos Codex",
+                    "revisao": 1,
+                    "opcaoId": "codex-misto",
+                    "emissorId": "codex-suporte",
+                    "emissorNome": "Yuki (Teste Pacotes)",
+                    "familia": "feitico",
+                    "calculo": "automatico",
+                    "duracao": {
+                      "tipo": "proximo",
+                      "texto": "Por Um Ataque"
+                    },
+                    "condicoes": [
+                      "Um Alvo",
+                      "Bônus em Teste de Resistência: Uma Rodada"
+                    ],
+                    "custoEmissor": "2 PE"
+                  }
+                }
+              ],
+              "invocacoes": {},
+              "tita": {
+                "cabeca": null,
+                "membros": []
+              },
+              "preparoAtual": null,
+              "preparoTemp": 0,
+              "golpeEspecial": {},
+              "reservaInvocacao": {
+                "usada": false,
+                "modo": null,
+                "restantes": 0
+              },
+              "quimeraDaCena": null,
+              "lideresDeHordaDissolvida": [],
+              "concedido": [],
+              "adaptacoes": {},
+              "dharma": {
+                "entradas": [],
+                "alvo": "",
+                "fenomeno": "",
+                "existencia": ""
+              },
+              "treinosAtivos": {},
+              "usos": {},
+              "recargas": {},
+              "ultimoFeiticoDanoId": null,
+              "rituais": {},
+              "ritualAtual": null,
+              "favoritos": [],
+              "log": [],
+              "atualizadoEm": 1792504863931,
+              "operacoes": {
+                "eventos": [
+                  {
+                    "id": "wwwpm8kq",
+                    "ts": 1792504863317,
+                    "rodada": 2,
+                    "tipo": "rodada",
+                    "nota": {
+                      "rodada": 2,
+                      "expirou": [],
+                      "cobrado": [],
+                      "renovou": [],
+                      "casca": 0,
+                      "encerrou": [],
+                      "exaustao": 0
+                    }
+                  },
+                  {
+                    "id": "bkc6a5ce",
+                    "ts": 1792504862351,
+                    "rodada": 1,
+                    "tipo": "rodada",
+                    "nota": {
+                      "rodada": 1,
+                      "expirou": [],
+                      "cobrado": [],
+                      "renovou": [],
+                      "casca": 0,
+                      "encerrou": [],
+                      "exaustao": 0
+                    }
+                  }
+                ],
+                "ativacoes": {},
+                "reusos": {},
+                "pvConcessoes": {},
+                "encerrados": []
+              },
+              "especializacaoSessao": {
+                "turno": 2,
+                "reacoesGastas": 0,
+                "reacoesExtras": 0,
+                "acoesComuns": 0,
+                "pvNegativos": 0,
+                "falhasMorte": 0,
+                "modoMorte": null,
+                "turnoEncerrado": 1,
+                "manterSurto": false
+              }
+            }
+          },
+          {
+            "virada": 3,
+            "reflexos": "+9",
+            "sessao": {
+              "bloodfeastRegras": [],
+              "energiaEmVida": 0,
+              "bloodfeast": {
+                "cargas": 0,
+                "hardblood": 0,
+                "bleed": 0,
+                "sanidade": 0,
+                "sangue": 0,
+                "reutilizado": 0,
+                "agua": false,
+                "ativos": {},
+                "ultima": null
+              },
+              "hpAtual": 86,
+              "peAtual": 40,
+              "pvTempFontes": {},
+              "peTempFontes": {},
+              "almaAtual": 86,
+              "almaMaxVisto": 86,
+              "rodada": 3,
+              "propriedadesArmas": {
+                "turno": 3,
+                "oscilante": null,
+                "ultimoAtaque": null,
+                "porArma": {}
+              },
+              "ataqueBasicoId": null,
+              "guardaGolpes": 0,
+              "guardaEncerrada": false,
+              "exaustao": 0,
+              "exaustaoTecnica": null,
+              "combate": {
+                "resAtaqueExtra": false,
+                "ataqueFurtivo": false
+              },
+              "condicoes": [],
+              "buffs": [
+                {
+                  "id": "ro6xuqbrc",
+                  "rec": true,
+                  "tipoFonte": "feitico",
+                  "origemId": null,
+                  "origemNome": "Guarda e Firmeza Codex",
+                  "aplicadoPor": "Yuki (Teste Pacotes)",
+                  "beneficios": [
+                    {
+                      "canal": "defesa",
+                      "valor": 3
+                    },
+                    {
+                      "canal": "bonusTR",
+                      "valor": 2,
+                      "alvo": "reflexos"
+                    }
+                  ],
+                  "rodadas": null,
+                  "somaPresumida": false,
+                  "terminaNoDescanso": true,
+                  "pacote": {
+                    "chave": "codex-suporte:codex-prazo-misto",
+                    "id": "codex-prazo-misto",
+                    "nome": "Prazos Mistos Codex",
+                    "revisao": 1,
+                    "opcaoId": "codex-misto",
+                    "emissorId": "codex-suporte",
+                    "emissorNome": "Yuki (Teste Pacotes)",
+                    "familia": "feitico",
+                    "calculo": "automatico",
+                    "duracao": {
+                      "tipo": "proximo",
+                      "texto": "Por Um Ataque"
+                    },
+                    "condicoes": [
+                      "Um Alvo",
+                      "Bônus em Teste de Resistência: Uma Rodada"
+                    ],
+                    "custoEmissor": "2 PE"
+                  }
+                }
+              ],
+              "invocacoes": {},
+              "tita": {
+                "cabeca": null,
+                "membros": []
+              },
+              "preparoAtual": null,
+              "preparoTemp": 0,
+              "golpeEspecial": {},
+              "reservaInvocacao": {
+                "usada": false,
+                "modo": null,
+                "restantes": 0
+              },
+              "quimeraDaCena": null,
+              "lideresDeHordaDissolvida": [],
+              "concedido": [],
+              "adaptacoes": {},
+              "dharma": {
+                "entradas": [],
+                "alvo": "",
+                "fenomeno": "",
+                "existencia": ""
+              },
+              "treinosAtivos": {},
+              "usos": {},
+              "recargas": {},
+              "ultimoFeiticoDanoId": null,
+              "rituais": {},
+              "ritualAtual": null,
+              "favoritos": [],
+              "log": [],
+              "atualizadoEm": 1792504864909,
+              "operacoes": {
+                "eventos": [
+                  {
+                    "id": "4mkyc50d",
+                    "ts": 1792504864285,
+                    "rodada": 3,
+                    "tipo": "rodada",
+                    "nota": {
+                      "rodada": 3,
+                      "expirou": [],
+                      "cobrado": [],
+                      "renovou": [],
+                      "casca": 0,
+                      "encerrou": [],
+                      "exaustao": 0
+                    }
+                  },
+                  {
+                    "id": "wwwpm8kq",
+                    "ts": 1792504863317,
+                    "rodada": 2,
+                    "tipo": "rodada",
+                    "nota": {
+                      "rodada": 2,
+                      "expirou": [],
+                      "cobrado": [],
+                      "renovou": [],
+                      "casca": 0,
+                      "encerrou": [],
+                      "exaustao": 0
+                    }
+                  },
+                  {
+                    "id": "bkc6a5ce",
+                    "ts": 1792504862351,
+                    "rodada": 1,
+                    "tipo": "rodada",
+                    "nota": {
+                      "rodada": 1,
+                      "expirou": [],
+                      "cobrado": [],
+                      "renovou": [],
+                      "casca": 0,
+                      "encerrou": [],
+                      "exaustao": 0
+                    }
+                  }
+                ],
+                "ativacoes": {},
+                "reusos": {},
+                "pvConcessoes": {},
+                "encerrados": []
+              },
+              "especializacaoSessao": {
+                "turno": 3,
+                "reacoesGastas": 0,
+                "reacoesExtras": 0,
+                "acoesComuns": 0,
+                "pvNegativos": 0,
+                "falhasMorte": 0,
+                "modoMorte": null,
+                "turnoEncerrado": 2,
+                "manterSurto": false
+              }
+            }
+          }
+        ],
+        "classica": "+9"
+      }
+    }
+  ],
+  "falhas": [
+    {
+      "etapa": "misto em 1024",
+      "id": "PA-I3: Reflexos de uma rodada deve sair sem encerrar Defesa por ataque",
+      "dados": {
+        "base": "+7",
+        "ligado": "+9",
+        "apos": [
+          "+9",
+          "+9",
+          "+9"
+        ]
+      }
+    },
+    {
+      "etapa": "misto em 1024",
+      "id": "PA-I3: classica respeita o prazo de uma rodada do TR",
+      "dados": {
+        "base": "+7",
+        "classica": "+9"
+      }
+    },
+    {
+      "etapa": "misto em 1440",
+      "id": "PA-I3: Reflexos de uma rodada deve sair sem encerrar Defesa por ataque",
+      "dados": {
+        "base": "+7",
+        "ligado": "+9",
+        "apos": [
+          "+9",
+          "+9",
+          "+9"
+        ]
+      }
+    },
+    {
+      "etapa": "misto em 1440",
+      "id": "PA-I3: classica respeita o prazo de uma rodada do TR",
+      "dados": {
+        "base": "+7",
+        "classica": "+9"
+      }
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+
+> grimorio-tracker@0.0.0 asserts
+> node asserts/rodar.mjs catarse montante bancada vagas-agregado-final ordem-modulos ficha conteudo
+
+ok   t-catarse.mjs            49
+ok   t-estilo-conteudo.mjs    93
+ok   t-ficha-estrangeira.mjs  23
+ok   t-ficha-linhas.mjs       45
+ok   t-montante-bancada.mjs   39
+ok   t-nome-ficha.mjs         25
+ok   t-ordem-modulos.mjs      38
+ok   t-requisitos-ficha.mjs   33
+ok   t-vagas-agregado-final.mjs 24
+
+9 arquivos, 369 asserts, todos passaram.

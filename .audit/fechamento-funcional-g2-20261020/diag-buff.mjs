@@ -1,0 +1,18 @@
+import { fichas, sessoes, contexto, abre, passo, espera, adicionar, externa, sessao, texto, etapa, foto, encerra } from "./lib.mjs";
+const e = passo("buff");
+const f = fichas.invocador;
+const { p } = await contexto({ lista: [f], largura: 1440, sessoesIniciais: sessoes });
+await abre(p, "player", f.name);
+await adicionar(p); await externa(p); await p.locator("[data-abrir-buff-mesa]").click(); await espera(p, 300);
+await p.locator('[data-campo="buff-nome"]').fill("Foco Total");
+await p.locator('[data-campo="buff-expr"]').fill("+++");
+await p.locator("[data-criar-buff]").click(); await espera(p, 300);
+console.log("erro1:", await texto(p.locator("[data-erro-buff]")));
+await p.locator('[data-campo="buff-expr"]').fill("+2");
+console.log("erro depois de editar:", await p.locator("[data-erro-buff]").count());
+await p.locator("[data-criar-buff]").click(); await espera(p, 600);
+console.log("criado:", await p.locator("[data-buff-criado]").count(), "erro:", await p.locator("[data-erro-buff]").count(), await texto(p.locator("[data-erro-buff]")));
+console.log("buffs:", JSON.stringify((await sessao(p, f.id)).buffs.map((b) => [b.id, b.nome])));
+console.log("erros de pagina:", JSON.stringify(e.erros));
+await foto(p, "diag-buff");
+await encerra();

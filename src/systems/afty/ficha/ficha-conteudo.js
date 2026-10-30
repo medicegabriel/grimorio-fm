@@ -27,7 +27,7 @@ import { sistemaDaFicha } from "../afty-sistema";
 import { getEspecializacao } from "../afty-especializacoes";
 import { caracteristicasEfetivas, getOrigem, getCla, anatomiasEscolhidas } from "../afty-origens";
 import { getAnatomia } from "../afty-anatomias";
-import { AFTY_ATTRS } from "../afty-schema";
+import { AFTY_ATTRS, funcionamentosDaFicha } from "../afty-schema";
 import { TIPOS_DANO } from "../afty-equipamentos";
 import { NIVEL_LABEL } from "../afty-feiticos";
 import { DOMINIO_SIMPLES_APTIDAO } from "../afty-dominio-simples";
@@ -58,6 +58,8 @@ export const GRUPOS = [
   { id: "origem", label: "Origem" },
   { id: "especializacao", label: "Habilidades de Especialização" },
   { id: "passivo", label: "Passivos e Características" },
+  // As Passivas da Técnica Marcial do Restringido (2026-10-26), em grupo próprio.
+  { id: "tecnicaMarcial", label: "Técnicas Marciais" },
   { id: "estilo", label: "Técnicas de Estilo" },
   { id: "talento", label: "Talentos" },
   { id: "geral", label: "Habilidades Gerais" },
@@ -65,6 +67,7 @@ export const GRUPOS = [
   { id: "caracteristicaAmaldicoada", label: "Características Amaldiçoadas" },
   { id: "altoNivel", label: "Níveis Lendários" },
   { id: "treinamento", label: "Treinamentos" },
+  { id: "catarse", label: "Loja de Catarse" },
 ];
 
 /** Sem acento e em minúsculas, que é como a busca compara. */
@@ -313,15 +316,20 @@ export function conteudoDaFicha(creature, derived) {
   const custoPassivaPorId = new Map(
     (derived?.feiticos?.lista ?? []).map((l) => [l.id, l.custoPeMaximo]),
   );
+  /* A Passiva da Técnica Marcial vai para o grupo dela (2026-10-26). Quem diz que é
+     marcial é o derive (`tecnicasMarciais.ids`), e não a ficha crua: o Feitiço
+     gravado sem marca, numa ficha sem energia, só vira Técnica lá. A chave segue
+     `passivo:<id>`, que é o alvo do destaque e da busca. */
+  const marciais = new Set(derived?.tecnicasMarciais?.ids ?? []);
   for (const f of Array.isArray(creature?.feiticos) ? creature.feiticos : []) {
     if (f?.tipo !== "passivo") continue;
     const custoPe = custoPassivaPorId.get(f.id) ?? null;
     itens.push(item({
       id: f.id,
       chave: `passivo:${f.id}`,
-      nome: f.nome || "Passivo Sem Nome",
+      nome: f.nome || (marciais.has(f.id) ? "Técnica Sem Nome" : "Passivo Sem Nome"),
       texto: f.descricao ?? "",
-      grupo: "passivo",
+      grupo: marciais.has(f.id) ? "tecnicaMarcial" : "passivo",
       tags: [
         NIVEL_LABEL[f.nivel] ?? String(f.nivel),
         /* Sinal na frente porque é o que ela TIRA, e não o que ela gasta por
@@ -405,7 +413,7 @@ export function conteudoDaFicha(creature, derived) {
             const mod = getModificacaoAptidao(g.modId);
             return {
               id: g.chave,
-              nome: `${mod?.nome ?? g.modId} (${g.nomeAptidao})${g.n > 1 ? ` ×${g.n}` : ""}`,
+              nome: `${mod?.nome ?? g.modId} (${g.nomeAptidao})${g.n > 1 ? ` ×${g.n}` : ""}${g.repeticao.pessoal ? " (Bônus Dobrado)" : ""}`,
               descricao: mod?.descricao ?? null,
             };
           }),
@@ -637,6 +645,22 @@ export function conteudoDaFicha(creature, derived) {
     }));
   }
 
+  // As compras mantêm a regra escrita disponível na ficha de jogo e na busca.
+  // A quantidade é um registro da aquisição, sem repetir seus efeitos aqui.
+  const comprasCatarse = new Map((Array.isArray(creature?.catarse?.compras)
+    ? creature.catarse.compras : []).map((c) => [c?.id, c]));
+  for (const compra of derived?.catarse?.compras ?? []) {
+    const quantidade = Math.max(1, Math.trunc(Number(comprasCatarse.get(compra.id)?.quantidade) || 1));
+    itens.push(item({
+      id: compra.id,
+      chave: `catarse:${compra.id}`,
+      nome: compra.nome || "Compra sem nome",
+      texto: compra.texto,
+      grupo: "catarse",
+      tags: quantidade > 1 ? [{ label: `${quantidade}×`, tipo: "vezes" }] : [],
+    }));
+  }
+
   return itens;
 }
 
@@ -716,7 +740,10 @@ export function alvosDeBusca(derived) {
   for (const e of derived?.dano?.entradas ?? []) add("acoes", "dano", e.id, e.nome, e.texto);
   for (const l of derived?.cura?.linhas ?? []) add("acoes", "cura", l.id, l.nome, l.texto);
   for (const f of derived?.feiticos?.lista ?? []) {
-    if (f.tipo !== "passivo") add("acoes", "feitico", f.id, f.nome || "Feitiço Sem Nome", f.nivelLabel);
+    if (f.tipo !== "passivo") {
+      add("acoes", "feitico", f.id, f.nome || (f.marcial ? "Técnica Sem Nome" : "Feitiço Sem Nome"),
+        f.marcial ? `Técnica Marcial · ${f.nivelLabel}` : f.nivelLabel);
+    }
   }
   for (const m of derived?.testes?.manobras ?? []) add("acoes", "manobra", m.id, m.nome, m.periciaUsada);
   /* ⚠ As Invocações tinham a âncora de destaque (`afty-item-invocacao:<id>` em
@@ -748,6 +775,20 @@ export function alvosDeBusca(derived) {
   for (const r of derived?.testes?.resistencias ?? []) add("pericias", "tr", r.value, r.label, null);
   for (const p of derived?.testes?.pericias ?? []) add("pericias", "pericia", p.id, p.nome, null);
   return fora;
+}
+
+/**
+ * Os Funcionamentos que a aba Habilidades mostra. Na ficha SEM ENERGIA o principal é
+ * o Fundamento Marcial do Estilo Marcial (2026-10-26): o mesmo Funcionamento, no
+ * mesmo armazenamento, com o nome do estilo no título quando a pessoa deu um.
+ */
+export function funcionamentosParaFicha(ficha, derived) {
+  const lista = funcionamentosDaFicha(ficha);
+  if (!derived?.tecnicasMarciais?.fundamento?.mostra) return lista;
+  const nome = String(ficha?.core?.estiloMarcialNome ?? "").trim();
+  return lista.map((f) => (f.principal
+    ? { ...f, nome: nome ? `Fundamento Marcial · ${nome}` : "Fundamento Marcial" }
+    : f));
 }
 
 /** Rótulo do grupo, para a busca mostrar de onde o resultado veio. */

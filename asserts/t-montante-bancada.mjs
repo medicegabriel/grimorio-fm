@@ -97,7 +97,11 @@ const casos = [
   ["nome de função não é variável", { canal: "defesa", expr: "piso(bt / 2)" }, "montante"],
   ["variável do próprio efeito (`contextoDsl`) não desce", { canal: "defesa", expr: "x", contextoDsl: { x: 2 } }, "montante"],
   ["canal de vaga fica mesmo lendo a bancada", { canal: "vagasTalento", quando: "em_combate", expr: "1" }, "montante"],
-  ["e os do pré-contexto também", { canal: "limiteAtributo", alvo: "forca", quando: "em_combate", expr: "1" }, "montante"],
+  ["e os do pré-contexto também", { canal: "nivelAptidao", alvo: "aura", quando: "em_combate", expr: "1" }, "montante"],
+  /* Salvo o `limiteAtributo` (2026-10-12, Zodíaco da H Corp): limite de combate
+     desce ao estágio principal, onde o `limiteAtivoPor` o lê. Ver t-h-corp. */
+  ["o limite de atributo de combate desce", { canal: "limiteAtributo", alvo: "forca", quando: "em_combate", expr: "1" }, "bancada"],
+  ["e o limite de atributo permanente fica", { canal: "limiteAtributo", alvo: "forca", expr: "1" }, "montante"],
 ];
 for (const [nome, efeito, esperado] of casos) t(`separação: ${nome}`, lado(efeito), esperado);
 t("separação: cada efeito vai para UMA lista, na ordem",

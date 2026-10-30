@@ -1,0 +1,9 @@
+
+> grimorio-tracker@0.0.0 asserts
+> node asserts/rodar.mjs guarda vislumbre
+
+ok   t-guarda-lamina-divina.mjs 70
+ok   t-guarda.mjs             107
+ok   t-vislumbre-celeste.mjs  71
+
+3 arquivos, 248 asserts, todos passaram.

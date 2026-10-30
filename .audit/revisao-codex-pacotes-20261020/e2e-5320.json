@@ -1,0 +1,320 @@
+{
+  "geradoEm": "2026-10-20T12:50:16.273Z",
+  "base": "http://127.0.0.1:5320",
+  "etapas": [
+    {
+      "nome": "suporte cria e exporta pacote por clique real",
+      "checks": [
+        {
+          "id": "arquivo baixado tem dez opcoes de quatro familias",
+          "ok": true
+        },
+        {
+          "id": "montagem e exportacao nao gastam energia nem ligam estados",
+          "ok": true
+        },
+        {
+          "id": "um ataque conserva prazo de uso, sem rodada inventada",
+          "ok": false,
+          "dados": {
+            "tipo": "rodadas",
+            "rodadas": 1,
+            "texto": "Um Ataque"
+          }
+        },
+        {
+          "id": "painel do suporte nao vaza em 1024",
+          "ok": true
+        }
+      ],
+      "erros": []
+    },
+    {
+      "nome": "aliado importa e usa, largura 1024",
+      "checks": [
+        {
+          "id": "conferir arquivo nao grava biblioteca ou ativa",
+          "ok": true
+        },
+        {
+          "id": "resumo da importacao lista dez opcoes",
+          "ok": true
+        },
+        {
+          "id": "salvar biblioteca nao muda energia nem numeros",
+          "ok": true
+        },
+        {
+          "id": "clique duplo so cria uma instancia",
+          "ok": true
+        },
+        {
+          "id": "fora de combate maior inelegivel nao apaga menor",
+          "ok": false,
+          "dados": {
+            "base": 17,
+            "atual": 17
+          }
+        },
+        {
+          "id": "em combate vale o maior elegivel",
+          "ok": true
+        },
+        {
+          "id": "classica ve mesmo numero com os dois ativos",
+          "ok": true
+        },
+        {
+          "id": "nove opcoes coexistem sem gasto do aliado",
+          "ok": true
+        },
+        {
+          "id": "familias somam sem duplicar feiticos",
+          "ok": true
+        },
+        {
+          "id": "virada conserva efeito de um ataque ainda nao utilizado",
+          "ok": false,
+          "dados": [
+            [
+              "Aura do Bastião",
+              null
+            ],
+            [
+              "Aura do Comandante",
+              null
+            ],
+            [
+              "Escudo Dourado",
+              1
+            ],
+            [
+              "Nue · Escudo de Raios",
+              null
+            ],
+            [
+              "Nue · Halo",
+              null
+            ],
+            [
+              "Nue · Faíscas",
+              null
+            ],
+            [
+              "Presença Inspiradora",
+              null
+            ]
+          ]
+        },
+        {
+          "id": "fontes de rodadas contam independentemente",
+          "ok": true
+        },
+        {
+          "id": "recarga conserva biblioteca e ativos remanescentes",
+          "ok": true
+        },
+        {
+          "id": "descanso nao remove biblioteca ou religa instancias",
+          "ok": true
+        },
+        {
+          "id": "sem erro de pagina",
+          "ok": true
+        }
+      ],
+      "erros": []
+    },
+    {
+      "nome": "aliado importa e usa, largura 1440",
+      "checks": [
+        {
+          "id": "conferir arquivo nao grava biblioteca ou ativa",
+          "ok": true
+        },
+        {
+          "id": "resumo da importacao lista dez opcoes",
+          "ok": true
+        },
+        {
+          "id": "salvar biblioteca nao muda energia nem numeros",
+          "ok": true
+        },
+        {
+          "id": "clique duplo so cria uma instancia",
+          "ok": true
+        },
+        {
+          "id": "fora de combate maior inelegivel nao apaga menor",
+          "ok": false,
+          "dados": {
+            "base": 17,
+            "atual": 17
+          }
+        },
+        {
+          "id": "em combate vale o maior elegivel",
+          "ok": true
+        },
+        {
+          "id": "classica ve mesmo numero com os dois ativos",
+          "ok": true
+        },
+        {
+          "id": "nove opcoes coexistem sem gasto do aliado",
+          "ok": true
+        },
+        {
+          "id": "familias somam sem duplicar feiticos",
+          "ok": true
+        },
+        {
+          "id": "virada conserva efeito de um ataque ainda nao utilizado",
+          "ok": false,
+          "dados": [
+            [
+              "Aura do Bastião",
+              null
+            ],
+            [
+              "Aura do Comandante",
+              null
+            ],
+            [
+              "Escudo Dourado",
+              1
+            ],
+            [
+              "Nue · Escudo de Raios",
+              null
+            ],
+            [
+              "Nue · Halo",
+              null
+            ],
+            [
+              "Nue · Faíscas",
+              null
+            ],
+            [
+              "Presença Inspiradora",
+              null
+            ]
+          ]
+        },
+        {
+          "id": "fontes de rodadas contam independentemente",
+          "ok": true
+        },
+        {
+          "id": "recarga conserva biblioteca e ativos remanescentes",
+          "ok": true
+        },
+        {
+          "id": "descanso nao remove biblioteca ou religa instancias",
+          "ok": true
+        },
+        {
+          "id": "sem erro de pagina",
+          "ok": true
+        }
+      ],
+      "erros": []
+    }
+  ],
+  "falhas": [
+    {
+      "etapa": "suporte cria e exporta pacote por clique real",
+      "id": "um ataque conserva prazo de uso, sem rodada inventada",
+      "dados": {
+        "tipo": "rodadas",
+        "rodadas": 1,
+        "texto": "Um Ataque"
+      }
+    },
+    {
+      "etapa": "aliado importa e usa, largura 1024",
+      "id": "fora de combate maior inelegivel nao apaga menor",
+      "dados": {
+        "base": 17,
+        "atual": 17
+      }
+    },
+    {
+      "etapa": "aliado importa e usa, largura 1024",
+      "id": "virada conserva efeito de um ataque ainda nao utilizado",
+      "dados": [
+        [
+          "Aura do Bastião",
+          null
+        ],
+        [
+          "Aura do Comandante",
+          null
+        ],
+        [
+          "Escudo Dourado",
+          1
+        ],
+        [
+          "Nue · Escudo de Raios",
+          null
+        ],
+        [
+          "Nue · Halo",
+          null
+        ],
+        [
+          "Nue · Faíscas",
+          null
+        ],
+        [
+          "Presença Inspiradora",
+          null
+        ]
+      ]
+    },
+    {
+      "etapa": "aliado importa e usa, largura 1440",
+      "id": "fora de combate maior inelegivel nao apaga menor",
+      "dados": {
+        "base": 17,
+        "atual": 17
+      }
+    },
+    {
+      "etapa": "aliado importa e usa, largura 1440",
+      "id": "virada conserva efeito de um ataque ainda nao utilizado",
+      "dados": [
+        [
+          "Aura do Bastião",
+          null
+        ],
+        [
+          "Aura do Comandante",
+          null
+        ],
+        [
+          "Escudo Dourado",
+          1
+        ],
+        [
+          "Nue · Escudo de Raios",
+          null
+        ],
+        [
+          "Nue · Halo",
+          null
+        ],
+        [
+          "Nue · Faíscas",
+          null
+        ],
+        [
+          "Presença Inspiradora",
+          null
+        ]
+      ]
+    }
+  ]
+}

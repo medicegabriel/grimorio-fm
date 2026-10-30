@@ -1,0 +1,48 @@
+{
+  "at": "2026-10-21T02:38:28.052Z",
+  "cases": [
+    {
+      "path": "/Player",
+      "status": 302,
+      "location": "/Player?ficha-g2=1",
+      "cache": "no-store"
+    },
+    {
+      "path": "/Afty",
+      "status": 302,
+      "location": "/Afty?ficha-g2=1",
+      "cache": "no-store"
+    },
+    {
+      "path": "/Player?aba=efeitos",
+      "status": 302,
+      "location": "/Player?aba=efeitos&ficha-g2=1",
+      "cache": "no-store"
+    },
+    {
+      "path": "/Player?ficha-g2=1",
+      "status": 200,
+      "location": null,
+      "cache": "no-store"
+    },
+    {
+      "path": "/Player?ficha-g2=0",
+      "status": 200,
+      "location": null,
+      "cache": "no-store"
+    },
+    {
+      "path": "/",
+      "status": 200,
+      "location": null,
+      "cache": "no-store"
+    },
+    {
+      "path": "/assets/index-DBupHr57.js",
+      "status": 200,
+      "location": null,
+      "cache": "no-store"
+    }
+  ],
+  "finalUrl": "http://localhost:5173/Player?ficha-g2=1"
+}

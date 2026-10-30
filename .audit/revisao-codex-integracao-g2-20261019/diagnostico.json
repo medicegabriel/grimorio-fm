@@ -1,0 +1,997 @@
+{
+  "geradoEm": "2026-10-19T17:04:40.351Z",
+  "base": "http://127.0.0.1:5310",
+  "casos": [
+    {
+      "id": "diagnostico-ac",
+      "checks": [
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "before": {
+        "bloodfeastRegras": [],
+        "energiaEmVida": 0,
+        "bloodfeast": {
+          "cargas": 0,
+          "hardblood": 0,
+          "bleed": 0,
+          "sanidade": 0,
+          "sangue": 0,
+          "reutilizado": 0,
+          "agua": false,
+          "ativos": {},
+          "ultima": null
+        },
+        "hpAtual": 541,
+        "peAtual": 178,
+        "pvTempFontes": {},
+        "peTempFontes": {},
+        "almaAtual": 541,
+        "almaMaxVisto": 541,
+        "rodada": 0,
+        "propriedadesArmas": {
+          "turno": 0,
+          "porArma": {},
+          "oscilante": null,
+          "ultimoAtaque": null
+        },
+        "ataqueBasicoId": null,
+        "guardaGolpes": 0,
+        "guardaEncerrada": false,
+        "exaustao": 0,
+        "exaustaoTecnica": null,
+        "combate": {
+          "ativo": true
+        },
+        "condicoes": [],
+        "buffs": [],
+        "invocacoes": {},
+        "tita": {
+          "cabeca": null,
+          "membros": []
+        },
+        "preparoAtual": null,
+        "preparoTemp": 0,
+        "golpeEspecial": {},
+        "reservaInvocacao": {
+          "usada": false,
+          "modo": null,
+          "restantes": 0
+        },
+        "quimeraDaCena": null,
+        "lideresDeHordaDissolvida": [],
+        "concedido": [],
+        "adaptacoes": {},
+        "dharma": {
+          "entradas": [],
+          "alvo": "",
+          "fenomeno": "",
+          "existencia": ""
+        },
+        "treinosAtivos": {},
+        "usos": {},
+        "recargas": {},
+        "ultimoFeiticoDanoId": null,
+        "rituais": {},
+        "ritualAtual": null,
+        "favoritos": [],
+        "log": [],
+        "atualizadoEm": 1792429483791
+      },
+      "after": {
+        "bloodfeastRegras": [],
+        "energiaEmVida": 0,
+        "bloodfeast": {
+          "cargas": 0,
+          "hardblood": 0,
+          "bleed": 0,
+          "sanidade": 0,
+          "sangue": 0,
+          "reutilizado": 0,
+          "agua": false,
+          "ativos": {},
+          "ultima": null
+        },
+        "hpAtual": 541,
+        "peAtual": 175,
+        "pvTempFontes": {},
+        "peTempFontes": {},
+        "almaAtual": 541,
+        "almaMaxVisto": 541,
+        "rodada": 0,
+        "propriedadesArmas": {
+          "turno": 0,
+          "porArma": {},
+          "oscilante": null,
+          "ultimoAtaque": null
+        },
+        "ataqueBasicoId": null,
+        "guardaGolpes": 0,
+        "guardaEncerrada": false,
+        "exaustao": 0,
+        "exaustaoTecnica": null,
+        "combate": {
+          "ativo": true,
+          "ataqueConcentrado": 2
+        },
+        "condicoes": [],
+        "buffs": [],
+        "invocacoes": {},
+        "tita": {
+          "cabeca": null,
+          "membros": []
+        },
+        "preparoAtual": null,
+        "preparoTemp": 0,
+        "golpeEspecial": {},
+        "reservaInvocacao": {
+          "usada": false,
+          "modo": null,
+          "restantes": 0
+        },
+        "quimeraDaCena": null,
+        "lideresDeHordaDissolvida": [],
+        "concedido": [],
+        "adaptacoes": {},
+        "dharma": {
+          "entradas": [],
+          "alvo": "",
+          "fenomeno": "",
+          "existencia": ""
+        },
+        "treinosAtivos": {},
+        "usos": {},
+        "recargas": {},
+        "ultimoFeiticoDanoId": null,
+        "rituais": {},
+        "ritualAtual": null,
+        "favoritos": [],
+        "log": [],
+        "atualizadoEm": 1792429484986,
+        "operacoes": {
+          "eventos": [
+            {
+              "id": "pm9zvuf5",
+              "ts": 1792429484358,
+              "rodada": 0,
+              "tipo": "gasto",
+              "ativacaoId": "qpytsje9",
+              "nome": "Ataque Concentrado · Intensidade 2",
+              "custo": 3,
+              "pago": {
+                "casca": {},
+                "reserva": 3
+              }
+            }
+          ],
+          "ativacoes": {
+            "qpytsje9": {
+              "id": "qpytsje9",
+              "tipo": "gasto",
+              "nome": "Ataque Concentrado · Intensidade 2",
+              "custo": 3,
+              "pago": {
+                "casca": {},
+                "reserva": 3
+              },
+              "rodada": 0,
+              "desfeita": false,
+              "criadaEm": 1792429484358
+            }
+          },
+          "reusos": {},
+          "pvConcessoes": {},
+          "encerrados": []
+        }
+      },
+      "hist": "R0\n14:04:44\nAtaque Concentrado · Intensidade 2 · gastou 3 PE\nEnergia 3\nEstornar PE",
+      "botoes": [
+        {
+          "id": "qpytsje9",
+          "label": "Estornar PE",
+          "disabled": false
+        }
+      ],
+      "refund": {
+        "bloodfeastRegras": [],
+        "energiaEmVida": 0,
+        "bloodfeast": {
+          "cargas": 0,
+          "hardblood": 0,
+          "bleed": 0,
+          "sanidade": 0,
+          "sangue": 0,
+          "reutilizado": 0,
+          "agua": false,
+          "ativos": {},
+          "ultima": null
+        },
+        "hpAtual": 541,
+        "peAtual": 178,
+        "pvTempFontes": {},
+        "peTempFontes": {},
+        "almaAtual": 541,
+        "almaMaxVisto": 541,
+        "rodada": 0,
+        "propriedadesArmas": {
+          "turno": 0,
+          "porArma": {},
+          "oscilante": null,
+          "ultimoAtaque": null
+        },
+        "ataqueBasicoId": null,
+        "guardaGolpes": 0,
+        "guardaEncerrada": false,
+        "exaustao": 0,
+        "exaustaoTecnica": null,
+        "combate": {
+          "ativo": true,
+          "ataqueConcentrado": 2
+        },
+        "condicoes": [],
+        "buffs": [],
+        "invocacoes": {},
+        "tita": {
+          "cabeca": null,
+          "membros": []
+        },
+        "preparoAtual": null,
+        "preparoTemp": 0,
+        "golpeEspecial": {},
+        "reservaInvocacao": {
+          "usada": false,
+          "modo": null,
+          "restantes": 0
+        },
+        "quimeraDaCena": null,
+        "lideresDeHordaDissolvida": [],
+        "concedido": [],
+        "adaptacoes": {},
+        "dharma": {
+          "entradas": [],
+          "alvo": "",
+          "fenomeno": "",
+          "existencia": ""
+        },
+        "treinosAtivos": {},
+        "usos": {},
+        "recargas": {},
+        "ultimoFeiticoDanoId": null,
+        "rituais": {},
+        "ritualAtual": null,
+        "favoritos": [],
+        "log": [],
+        "atualizadoEm": 1792429486072,
+        "operacoes": {
+          "eventos": [
+            {
+              "id": "hzcmxefc",
+              "ts": 1792429485466,
+              "rodada": 0,
+              "tipo": "desfazer",
+              "ativacaoId": "qpytsje9",
+              "nome": "Ataque Concentrado · Intensidade 2",
+              "devolvido": 3,
+              "limites": []
+            },
+            {
+              "id": "pm9zvuf5",
+              "ts": 1792429484358,
+              "rodada": 0,
+              "tipo": "gasto",
+              "ativacaoId": "qpytsje9",
+              "nome": "Ataque Concentrado · Intensidade 2",
+              "custo": 3,
+              "pago": {
+                "casca": {},
+                "reserva": 3
+              }
+            }
+          ],
+          "ativacoes": {
+            "qpytsje9": {
+              "id": "qpytsje9",
+              "tipo": "gasto",
+              "nome": "Ataque Concentrado · Intensidade 2",
+              "custo": 3,
+              "pago": {
+                "casca": {},
+                "reserva": 3
+              },
+              "rodada": 0,
+              "desfeita": true,
+              "criadaEm": 1792429484358,
+              "devolvido": {
+                "reserva": 3,
+                "casca": {}
+              },
+              "limites": []
+            }
+          },
+          "reusos": {},
+          "pvConcessoes": {},
+          "encerrados": []
+        }
+      },
+      "next": {
+        "bloodfeastRegras": [],
+        "energiaEmVida": 0,
+        "bloodfeast": {
+          "cargas": 0,
+          "hardblood": 0,
+          "bleed": 0,
+          "sanidade": 0,
+          "sangue": 0,
+          "reutilizado": 0,
+          "agua": false,
+          "ativos": {},
+          "ultima": null
+        },
+        "hpAtual": 541,
+        "peAtual": 178,
+        "pvTempFontes": {},
+        "peTempFontes": {
+          "combate:Treino de Controle de Energia": 4,
+          "rodada:Treino de Controle de Energia": 4
+        },
+        "almaAtual": 541,
+        "almaMaxVisto": 541,
+        "rodada": 1,
+        "propriedadesArmas": {
+          "turno": 1,
+          "oscilante": null,
+          "ultimoAtaque": null,
+          "porArma": {}
+        },
+        "ataqueBasicoId": null,
+        "guardaGolpes": 0,
+        "guardaEncerrada": false,
+        "exaustao": 0,
+        "exaustaoTecnica": null,
+        "combate": {
+          "ativo": true,
+          "ataqueConcentrado": 2,
+          "resAtaqueExtra": false,
+          "ataqueFurtivo": false
+        },
+        "condicoes": [],
+        "buffs": [],
+        "invocacoes": {},
+        "tita": {
+          "cabeca": null,
+          "membros": []
+        },
+        "preparoAtual": null,
+        "preparoTemp": 0,
+        "golpeEspecial": {},
+        "reservaInvocacao": {
+          "usada": false,
+          "modo": null,
+          "restantes": 0
+        },
+        "quimeraDaCena": null,
+        "lideresDeHordaDissolvida": [],
+        "concedido": [],
+        "adaptacoes": {},
+        "dharma": {
+          "entradas": [],
+          "alvo": "",
+          "fenomeno": "",
+          "existencia": ""
+        },
+        "treinosAtivos": {},
+        "usos": {},
+        "recargas": {},
+        "ultimoFeiticoDanoId": null,
+        "rituais": {},
+        "ritualAtual": null,
+        "favoritos": [],
+        "log": [],
+        "atualizadoEm": 1792429486072,
+        "operacoes": {
+          "eventos": [
+            {
+              "id": "3wfjfauu",
+              "ts": 1792429486388,
+              "rodada": 1,
+              "tipo": "rodada",
+              "nota": {
+                "rodada": 1,
+                "expirou": [],
+                "cobrado": [],
+                "renovou": [
+                  {
+                    "chave": "combate:Treino de Controle de Energia",
+                    "de": 0,
+                    "para": 4
+                  },
+                  {
+                    "chave": "rodada:Treino de Controle de Energia",
+                    "de": 0,
+                    "para": 4
+                  }
+                ],
+                "casca": 8,
+                "encerrou": [],
+                "exaustao": 0
+              }
+            },
+            {
+              "id": "hzcmxefc",
+              "ts": 1792429485466,
+              "rodada": 0,
+              "tipo": "desfazer",
+              "ativacaoId": "qpytsje9",
+              "nome": "Ataque Concentrado · Intensidade 2",
+              "devolvido": 3,
+              "limites": []
+            },
+            {
+              "id": "pm9zvuf5",
+              "ts": 1792429484358,
+              "rodada": 0,
+              "tipo": "gasto",
+              "ativacaoId": "qpytsje9",
+              "nome": "Ataque Concentrado · Intensidade 2",
+              "custo": 3,
+              "pago": {
+                "casca": {},
+                "reserva": 3
+              }
+            }
+          ],
+          "ativacoes": {
+            "qpytsje9": {
+              "id": "qpytsje9",
+              "tipo": "gasto",
+              "nome": "Ataque Concentrado · Intensidade 2",
+              "custo": 3,
+              "pago": {
+                "casca": {},
+                "reserva": 3
+              },
+              "rodada": 0,
+              "desfeita": true,
+              "criadaEm": 1792429484358,
+              "devolvido": {
+                "reserva": 3,
+                "casca": {}
+              },
+              "limites": []
+            }
+          },
+          "reusos": {},
+          "pvConcessoes": {},
+          "encerrados": []
+        },
+        "especializacaoSessao": {
+          "turno": 1,
+          "reacoesGastas": 0,
+          "reacoesExtras": 0,
+          "acoesComuns": 0,
+          "pvNegativos": 0,
+          "falhasMorte": 0,
+          "modoMorte": null,
+          "turnoEncerrado": 0,
+          "manterSurto": false
+        }
+      },
+      "turned": {
+        "bloodfeastRegras": [],
+        "energiaEmVida": 0,
+        "bloodfeast": {
+          "cargas": 0,
+          "hardblood": 0,
+          "bleed": 0,
+          "sanidade": 0,
+          "sangue": 0,
+          "reutilizado": 0,
+          "agua": false,
+          "ativos": {},
+          "ultima": null
+        },
+        "hpAtual": 541,
+        "peAtual": 178,
+        "pvTempFontes": {},
+        "peTempFontes": {
+          "combate:Treino de Controle de Energia": 4,
+          "rodada:Treino de Controle de Energia": 4
+        },
+        "almaAtual": 541,
+        "almaMaxVisto": 541,
+        "rodada": 1,
+        "propriedadesArmas": {
+          "turno": 1,
+          "oscilante": null,
+          "ultimoAtaque": null,
+          "porArma": {}
+        },
+        "ataqueBasicoId": null,
+        "guardaGolpes": 0,
+        "guardaEncerrada": false,
+        "exaustao": 0,
+        "exaustaoTecnica": null,
+        "combate": {
+          "ativo": true,
+          "ataqueConcentrado": 2,
+          "resAtaqueExtra": false,
+          "ataqueFurtivo": false
+        },
+        "condicoes": [],
+        "buffs": [],
+        "invocacoes": {},
+        "tita": {
+          "cabeca": null,
+          "membros": []
+        },
+        "preparoAtual": null,
+        "preparoTemp": 0,
+        "golpeEspecial": {},
+        "reservaInvocacao": {
+          "usada": false,
+          "modo": null,
+          "restantes": 0
+        },
+        "quimeraDaCena": null,
+        "lideresDeHordaDissolvida": [],
+        "concedido": [],
+        "adaptacoes": {},
+        "dharma": {
+          "entradas": [],
+          "alvo": "",
+          "fenomeno": "",
+          "existencia": ""
+        },
+        "treinosAtivos": {},
+        "usos": {},
+        "recargas": {},
+        "ultimoFeiticoDanoId": null,
+        "rituais": {},
+        "ritualAtual": null,
+        "favoritos": [],
+        "log": [],
+        "atualizadoEm": 1792429487054,
+        "operacoes": {
+          "eventos": [
+            {
+              "id": "4zz6hhzl",
+              "ts": 1792429486431,
+              "rodada": 1,
+              "tipo": "rodada",
+              "nota": {
+                "rodada": 1,
+                "expirou": [],
+                "cobrado": [],
+                "renovou": [
+                  {
+                    "chave": "combate:Treino de Controle de Energia",
+                    "de": 0,
+                    "para": 4
+                  },
+                  {
+                    "chave": "rodada:Treino de Controle de Energia",
+                    "de": 0,
+                    "para": 4
+                  }
+                ],
+                "casca": 8,
+                "encerrou": [],
+                "exaustao": 0
+              }
+            },
+            {
+              "id": "hzcmxefc",
+              "ts": 1792429485466,
+              "rodada": 0,
+              "tipo": "desfazer",
+              "ativacaoId": "qpytsje9",
+              "nome": "Ataque Concentrado · Intensidade 2",
+              "devolvido": 3,
+              "limites": []
+            },
+            {
+              "id": "pm9zvuf5",
+              "ts": 1792429484358,
+              "rodada": 0,
+              "tipo": "gasto",
+              "ativacaoId": "qpytsje9",
+              "nome": "Ataque Concentrado · Intensidade 2",
+              "custo": 3,
+              "pago": {
+                "casca": {},
+                "reserva": 3
+              }
+            }
+          ],
+          "ativacoes": {
+            "qpytsje9": {
+              "id": "qpytsje9",
+              "tipo": "gasto",
+              "nome": "Ataque Concentrado · Intensidade 2",
+              "custo": 3,
+              "pago": {
+                "casca": {},
+                "reserva": 3
+              },
+              "rodada": 0,
+              "desfeita": true,
+              "criadaEm": 1792429484358,
+              "devolvido": {
+                "reserva": 3,
+                "casca": {}
+              },
+              "limites": []
+            }
+          },
+          "reusos": {},
+          "pvConcessoes": {},
+          "encerrados": []
+        },
+        "especializacaoSessao": {
+          "turno": 1,
+          "reacoesGastas": 0,
+          "reacoesExtras": 0,
+          "acoesComuns": 0,
+          "pvNegativos": 0,
+          "falhasMorte": 0,
+          "modoMorte": null,
+          "turnoEncerrado": 0,
+          "manterSurto": false
+        }
+      },
+      "classic": {
+        "bloodfeastRegras": [],
+        "energiaEmVida": 0,
+        "bloodfeast": {
+          "cargas": 0,
+          "hardblood": 0,
+          "bleed": 0,
+          "sanidade": 0,
+          "sangue": 0,
+          "reutilizado": 0,
+          "agua": false,
+          "ativos": {},
+          "ultima": null
+        },
+        "hpAtual": 541,
+        "peAtual": 178,
+        "pvTempFontes": {},
+        "peTempFontes": {
+          "combate:Treino de Controle de Energia": 4,
+          "rodada:Treino de Controle de Energia": 4
+        },
+        "almaAtual": 541,
+        "almaMaxVisto": 541,
+        "rodada": 1,
+        "propriedadesArmas": {
+          "turno": 1,
+          "porArma": {},
+          "oscilante": null,
+          "ultimoAtaque": null
+        },
+        "ataqueBasicoId": null,
+        "guardaGolpes": 0,
+        "guardaEncerrada": false,
+        "exaustao": 0,
+        "exaustaoTecnica": null,
+        "combate": {
+          "ativo": true,
+          "ataqueConcentrado": 2,
+          "resAtaqueExtra": false,
+          "ataqueFurtivo": false
+        },
+        "condicoes": [],
+        "buffs": [],
+        "invocacoes": {},
+        "tita": {
+          "cabeca": null,
+          "membros": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        "preparoAtual": null,
+        "preparoTemp": 0,
+        "golpeEspecial": {},
+        "reservaInvocacao": {
+          "usada": false,
+          "modo": null,
+          "restantes": 0
+        },
+        "quimeraDaCena": null,
+        "lideresDeHordaDissolvida": [],
+        "concedido": [],
+        "adaptacoes": {},
+        "dharma": {
+          "entradas": [],
+          "alvo": "",
+          "fenomeno": "",
+          "existencia": ""
+        },
+        "treinosAtivos": {},
+        "usos": {},
+        "recargas": {},
+        "ultimoFeiticoDanoId": null,
+        "rituais": {},
+        "ritualAtual": null,
+        "favoritos": [],
+        "log": [],
+        "atualizadoEm": 1792429488662,
+        "operacoes": {
+          "eventos": [
+            {
+              "id": "4zz6hhzl",
+              "ts": 1792429486431,
+              "rodada": 1,
+              "tipo": "rodada",
+              "nota": {
+                "rodada": 1,
+                "expirou": [],
+                "cobrado": [],
+                "renovou": [
+                  {
+                    "chave": "combate:Treino de Controle de Energia",
+                    "de": 0,
+                    "para": 4
+                  },
+                  {
+                    "chave": "rodada:Treino de Controle de Energia",
+                    "de": 0,
+                    "para": 4
+                  }
+                ],
+                "casca": 8,
+                "encerrou": [],
+                "exaustao": 0
+              }
+            },
+            {
+              "id": "hzcmxefc",
+              "ts": 1792429485466,
+              "rodada": 0,
+              "tipo": "desfazer",
+              "ativacaoId": "qpytsje9",
+              "nome": "Ataque Concentrado · Intensidade 2",
+              "devolvido": 3,
+              "limites": []
+            },
+            {
+              "id": "pm9zvuf5",
+              "ts": 1792429484358,
+              "rodada": 0,
+              "tipo": "gasto",
+              "ativacaoId": "qpytsje9",
+              "nome": "Ataque Concentrado · Intensidade 2",
+              "custo": 3,
+              "pago": {
+                "casca": {},
+                "reserva": 3
+              }
+            }
+          ],
+          "ativacoes": {
+            "qpytsje9": {
+              "id": "qpytsje9",
+              "tipo": "gasto",
+              "nome": "Ataque Concentrado · Intensidade 2",
+              "custo": 3,
+              "pago": {
+                "casca": {},
+                "reserva": 3
+              },
+              "rodada": 0,
+              "desfeita": true,
+              "criadaEm": 1792429484358,
+              "devolvido": {
+                "reserva": 3,
+                "casca": {}
+              },
+              "limites": []
+            }
+          },
+          "reusos": {},
+          "pvConcessoes": {},
+          "encerrados": []
+        },
+        "especializacaoSessao": {
+          "turno": 1,
+          "reacoesGastas": 0,
+          "reacoesExtras": 0,
+          "acoesComuns": 0,
+          "pvNegativos": 0,
+          "falhasMorte": 0,
+          "modoMorte": null,
+          "turnoEncerrado": 0,
+          "manterSurto": false
+        }
+      },
+      "back": {
+        "bloodfeastRegras": [],
+        "energiaEmVida": 0,
+        "bloodfeast": {
+          "cargas": 0,
+          "hardblood": 0,
+          "bleed": 0,
+          "sanidade": 0,
+          "sangue": 0,
+          "reutilizado": 0,
+          "agua": false,
+          "ativos": {},
+          "ultima": null
+        },
+        "hpAtual": 541,
+        "peAtual": 178,
+        "pvTempFontes": {},
+        "peTempFontes": {
+          "combate:Treino de Controle de Energia": 4,
+          "rodada:Treino de Controle de Energia": 4
+        },
+        "almaAtual": 541,
+        "almaMaxVisto": 541,
+        "rodada": 1,
+        "propriedadesArmas": {
+          "turno": 1,
+          "porArma": {},
+          "oscilante": null,
+          "ultimoAtaque": null
+        },
+        "ataqueBasicoId": null,
+        "guardaGolpes": 0,
+        "guardaEncerrada": false,
+        "exaustao": 0,
+        "exaustaoTecnica": null,
+        "combate": {
+          "ativo": true,
+          "ataqueConcentrado": 2,
+          "resAtaqueExtra": false,
+          "ataqueFurtivo": false
+        },
+        "condicoes": [],
+        "buffs": [],
+        "invocacoes": {},
+        "tita": {
+          "cabeca": null,
+          "membros": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        "preparoAtual": null,
+        "preparoTemp": 0,
+        "golpeEspecial": {},
+        "reservaInvocacao": {
+          "usada": false,
+          "modo": null,
+          "restantes": 0
+        },
+        "quimeraDaCena": null,
+        "lideresDeHordaDissolvida": [],
+        "concedido": [],
+        "adaptacoes": {},
+        "dharma": {
+          "entradas": [],
+          "alvo": "",
+          "fenomeno": "",
+          "existencia": ""
+        },
+        "treinosAtivos": {},
+        "usos": {},
+        "recargas": {},
+        "ultimoFeiticoDanoId": null,
+        "rituais": {},
+        "ritualAtual": null,
+        "favoritos": [],
+        "log": [],
+        "atualizadoEm": 1792429491251,
+        "operacoes": {
+          "eventos": [
+            {
+              "id": "4zz6hhzl",
+              "ts": 1792429486431,
+              "rodada": 1,
+              "tipo": "rodada",
+              "nota": {
+                "rodada": 1,
+                "expirou": [],
+                "cobrado": [],
+                "renovou": [
+                  {
+                    "chave": "combate:Treino de Controle de Energia",
+                    "de": 0,
+                    "para": 4
+                  },
+                  {
+                    "chave": "rodada:Treino de Controle de Energia",
+                    "de": 0,
+                    "para": 4
+                  }
+                ],
+                "casca": 8,
+                "encerrou": [],
+                "exaustao": 0
+              }
+            },
+            {
+              "id": "hzcmxefc",
+              "ts": 1792429485466,
+              "rodada": 0,
+              "tipo": "desfazer",
+              "ativacaoId": "qpytsje9",
+              "nome": "Ataque Concentrado · Intensidade 2",
+              "devolvido": 3,
+              "limites": []
+            },
+            {
+              "id": "pm9zvuf5",
+              "ts": 1792429484358,
+              "rodada": 0,
+              "tipo": "gasto",
+              "ativacaoId": "qpytsje9",
+              "nome": "Ataque Concentrado · Intensidade 2",
+              "custo": 3,
+              "pago": {
+                "casca": {},
+                "reserva": 3
+              }
+            }
+          ],
+          "ativacoes": {
+            "qpytsje9": {
+              "id": "qpytsje9",
+              "tipo": "gasto",
+              "nome": "Ataque Concentrado · Intensidade 2",
+              "custo": 3,
+              "pago": {
+                "casca": {},
+                "reserva": 3
+              },
+              "rodada": 0,
+              "desfeita": true,
+              "criadaEm": 1792429484358,
+              "devolvido": {
+                "reserva": 3,
+                "casca": {}
+              },
+              "limites": []
+            }
+          },
+          "reusos": {},
+          "pvConcessoes": {},
+          "encerrados": []
+        },
+        "especializacaoSessao": {
+          "turno": 1,
+          "reacoesGastas": 0,
+          "reacoesExtras": 0,
+          "acoesComuns": 0,
+          "pvNegativos": 0,
+          "falhasMorte": 0,
+          "modoMorte": null,
+          "turnoEncerrado": 0,
+          "manterSurto": false
+        }
+      },
+      "catalogoButtons": [
+        {
+          "name": "Da Ficha",
+          "role": "tab"
+        },
+        {
+          "name": "Fonte Externa",
+          "role": "tab"
+        }
+      ]
+    }
+  ],
+  "falhas": []
+}

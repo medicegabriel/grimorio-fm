@@ -1,0 +1,139 @@
+{
+  "browser": {
+    "reports": 12,
+    "total": 499,
+    "ignoredTautologies": 4,
+    "meaningful": 495,
+    "failures": []
+  },
+  "suite": {
+    "before": [
+      "t-prodigio.mjs",
+      "t-reconciliacao-g00.mjs"
+    ],
+    "after": [
+      "t-prodigio.mjs",
+      "t-reconciliacao-g00.mjs"
+    ],
+    "summary": "2 de 226 arquivos FALHARAM: t-prodigio.mjs, t-reconciliacao-g00.mjs"
+  },
+  "performance": {
+    "five": {
+      "Exaustão mais 1": {
+        "ms": [
+          30,
+          29
+        ],
+        "maximo": 30,
+        "tarefasLongas": 0
+      },
+      "Perda de Vida do Sangramento": {
+        "ms": [
+          36,
+          37
+        ],
+        "maximo": 37,
+        "tarefasLongas": 0
+      },
+      "Confirmar Cópia da Imitação": {
+        "ms": [
+          38,
+          41
+        ],
+        "maximo": 41,
+        "tarefasLongas": 0
+      },
+      "Criar Buff de Mesa": {
+        "ms": [
+          37,
+          39
+        ],
+        "maximo": 39,
+        "tarefasLongas": 0
+      },
+      "Conceder pelo Mestre": {
+        "ms": [
+          43,
+          30
+        ],
+        "maximo": 43,
+        "tarefasLongas": 0
+      }
+    },
+    "packets": [
+      {
+        "cenario": "base",
+        "rotulo": "confirmar Ataque Concentrado",
+        "ms": 31,
+        "longas": []
+      },
+      {
+        "cenario": "oito",
+        "rotulo": "confirmar Ataque Concentrado",
+        "ms": 30,
+        "longas": []
+      },
+      {
+        "cenario": "oito",
+        "rotulo": "ativar opção recebida (oito já ligadas)",
+        "ms": 28,
+        "longas": []
+      },
+      {
+        "cenario": "oito",
+        "rotulo": "duas ativações recebidas em sequência",
+        "ligadas": 2,
+        "longas": []
+      },
+      {
+        "cenario": "base",
+        "rotulo": "clássica: abrir a aba Buffs",
+        "ms": 31,
+        "longas": []
+      },
+      {
+        "cenario": "oito",
+        "rotulo": "clássica: abrir a aba Buffs",
+        "ms": 36,
+        "longas": []
+      },
+      {
+        "cenario": "base",
+        "rotulo": "confirmar Ataque Concentrado",
+        "ms": 31,
+        "longas": []
+      },
+      {
+        "cenario": "oito",
+        "rotulo": "confirmar Ataque Concentrado",
+        "ms": 34,
+        "longas": []
+      },
+      {
+        "cenario": "oito",
+        "rotulo": "ativar opção recebida (oito já ligadas)",
+        "ms": 54,
+        "longas": []
+      },
+      {
+        "cenario": "oito",
+        "rotulo": "duas ativações recebidas em sequência",
+        "ligadas": 2,
+        "longas": []
+      },
+      {
+        "cenario": "base",
+        "rotulo": "clássica: abrir a aba Buffs",
+        "ms": 31,
+        "longas": []
+      },
+      {
+        "cenario": "oito",
+        "rotulo": "clássica: abrir a aba Buffs",
+        "ms": 33,
+        "longas": []
+      }
+    ],
+    "errors": []
+  }
+}

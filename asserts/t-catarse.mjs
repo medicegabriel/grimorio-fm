@@ -30,6 +30,7 @@ const { deriveAfty } = await import(R + "afty-derive.js");
 const { createBlankAfty } = await import(R + "afty-schema.js");
 const { normalizarPacote, validarPacote, precosDeCatarse, PRIMITIVAS } = await import(R + "afty-addons.js");
 const C = await import(R + "afty-catarse.js");
+const { conteudoDaFicha, GRUPOS } = await import(R + "ficha/ficha-conteudo.js");
 
 let ok = 0;
 const bad = [];
@@ -321,6 +322,75 @@ t("saldo vazio ou sujo vira zero no extrato, sem quebrar",
   [deriveAfty({ ...crua, catarse: { saldo: "", compras: [] } }).catarse.ganho,
     deriveAfty({ ...crua, catarse: { saldo: "12", compras: [] } }).catarse.ganho],
   [0, 12]);
+
+/* O texto livre usa os mesmos estágios da Técnica. Somar todo o texto no
+   montante fazia Defesa ler o atributo antigo, zerava trilhas e transformava
+   atributo temporário em permanente. */
+const comEfeitos = (efeitos, extra = {}) => deriveAfty({
+  ...crua,
+  ...extra,
+  addons: [pacote],
+  catarse: { saldo: 50, compras: [{ ...ANOTACAO, efeitos }] },
+});
+const atributoComDefesa = comEfeitos([
+  { canal: "atributo", alvo: "constituicao", expr: "4" },
+  { canal: "defesa", expr: "mod_constituicao" },
+]);
+t("a Defesa da Catarse lê o atributo final, após o estágio permanente",
+  [atributoComDefesa.attrEff.constituicao, atributoComDefesa.defesa - semCampo.defesa], [20, 5]);
+
+const temporario = comEfeitos([{ canal: "atributo", alvo: "constituicao", expr: "4", duracao: "temporaria" }]);
+t("atributo temporário soma na ficha e fica fora dos pré-requisitos",
+  [temporario.attrEff.constituicao, temporario.attrPermanente.constituicao, temporario.attrMotor.constituicao],
+  [20, 16, 0]);
+
+const limiteComAtributo = comEfeitos([
+  { canal: "limiteAtributo", alvo: "constituicao", expr: "2" },
+  { canal: "atributo", alvo: "constituicao", expr: "6" },
+]);
+t("limite de atributo da compra é aplicado antes do valor",
+  [limiteComAtributo.attrLimiteEfetivo.constituicao, limiteComAtributo.attrEff.constituicao], [22, 22]);
+
+const trilhaComDefesa = comEfeitos([
+  { canal: "nivelAptidao", alvo: "cl", expr: "2" },
+  { canal: "defesa", expr: "cl" },
+]);
+t("Defesa lê a trilha concedida pela compra no pré-contexto",
+  [trilhaComDefesa.aptidao.efetivo.cl, trilhaComDefesa.defesa - semCampo.defesa], [2, 2]);
+
+const emCombate = [{ canal: "defesa", expr: "bt", quando: "em_combate" }];
+t("a condição da compra acompanha a bancada de combate",
+  [comEfeitos(emCombate).defesa - semCampo.defesa,
+    comEfeitos(emCombate, { combate: { ativo: true } }).defesa - semCampo.defesa], [0, semCampo.maestria]);
+
+const parcial = comEfeitos([
+  { canal: "", expr: "" },
+  { canal: "atributo", alvo: "constituicao", expr: "4", duracao: "temporaria" },
+]);
+t("a prévia mantém a linha vazia e o alvo da linha seguinte na mesma posição",
+  parcial.catarseEfeitos.cx.map((e) => [e.canal, e.alvoTipo, e.duracao]),
+  [["", null, "permanente"], ["atributo", "atributo", "temporaria"]]);
+
+t("o saneamento preserva duração e concessão sem crédito do editor",
+  C.normalizaCompraCatarse({ ...ANOTACAO, efeitos: [{
+    canal: "proficienciaPericia", alvo: "percepcao", expr: "1", quando: "sempre",
+    duracao: "temporaria", semCredito: true,
+  }] }).efeitos,
+  [{ canal: "proficienciaPericia", expr: "1", alvo: "percepcao", quando: "sempre", duracao: "temporaria", semCredito: true }]);
+
+const fichaComTexto = { ...crua, catarse: { saldo: 50, compras: [
+  { id: "regra-catarse", familia: "texto", nome: "Regra da mesa", custo: 5,
+    texto: "Texto integral da compra.\nSegunda linha.", quantidade: 6, efeitos: [] },
+] } };
+const conteudoCatarse = conteudoDaFicha(fichaComTexto, deriveAfty(fichaComTexto))
+  .filter((e) => e.grupo === "catarse");
+t("a ficha de jogo exibe o texto integral da compra e sua quantidade",
+  conteudoCatarse.map((e) => [e.chave, e.nome, e.texto, e.tags[0]?.label]),
+  [["catarse:regra-catarse", "Regra da mesa", "Texto integral da compra.\nSegunda linha.", "6×"]]);
+t("o grupo da Loja está disponível na ficha de jogo",
+  GRUPOS.find((g) => g.id === "catarse")?.label, "Loja de Catarse");
+t("a ficha sem compras não recebe conteúdo da Loja",
+  conteudoDaFicha(crua, semCampo).filter((e) => e.grupo === "catarse").length, 0);
 
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 process.exitCode = bad.length ? 1 : 0;

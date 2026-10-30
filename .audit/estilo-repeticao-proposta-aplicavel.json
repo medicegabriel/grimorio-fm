@@ -1,0 +1,216 @@
+{
+  "versao": 1,
+  "shaInventario": "27ddce85629c549ef6d55c6dc5fde000d05f6c55b00f1833966979b0eec41947",
+  "shaVivo": "c4a7e142a92203c6905f78243d8a983b82d284b56e02d118345495eb0b8ed5fa",
+  "shaEscopo": "3a6d20a6696dc8ad546cea0d76f037f80a806b37b674b8cd82fa1873d06528ac",
+  "adicionados": [
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::defesa::exprPessoal",
+      "item": {
+        "chave": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::defesa::exprPessoal",
+        "id": "exprPessoal",
+        "nome": "exprPessoal",
+        "arquivo": "src/systems/afty/afty-estilo-sombras-catalogo.js",
+        "export": "EFEITOS_ESTILO",
+        "pai": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::defesa",
+        "caminho": "exprPessoal",
+        "proprietario": "TEC-01",
+        "tipo": "gerador",
+        "hashDado": "1830c5f3a7159a234f037f0f8d94fb9ebe7975f1ce5a8e3c8dd578d2a366144b"
+      },
+      "proprietarioSugerido": "TEC-01"
+    },
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::pericia::exprPessoal",
+      "item": {
+        "chave": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::pericia::exprPessoal",
+        "id": "exprPessoal",
+        "nome": "exprPessoal",
+        "arquivo": "src/systems/afty/afty-estilo-sombras-catalogo.js",
+        "export": "EFEITOS_ESTILO",
+        "pai": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::pericia",
+        "caminho": "exprPessoal",
+        "proprietario": "TEC-01",
+        "tipo": "gerador",
+        "hashDado": "1830c5f3a7159a234f037f0f8d94fb9ebe7975f1ce5a8e3c8dd578d2a366144b"
+      },
+      "proprietarioSugerido": "TEC-01"
+    },
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::tr::exprPessoal",
+      "item": {
+        "chave": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::tr::exprPessoal",
+        "id": "exprPessoal",
+        "nome": "exprPessoal",
+        "arquivo": "src/systems/afty/afty-estilo-sombras-catalogo.js",
+        "export": "EFEITOS_ESTILO",
+        "pai": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::tr",
+        "caminho": "exprPessoal",
+        "proprietario": "TEC-01",
+        "tipo": "gerador",
+        "hashDado": "1830c5f3a7159a234f037f0f8d94fb9ebe7975f1ce5a8e3c8dd578d2a366144b"
+      },
+      "proprietarioSugerido": "TEC-01"
+    },
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::PROGRESSAO_TECNICAS::intervalo",
+      "item": {
+        "chave": "afty-estilo-sombras-catalogo.js::PROGRESSAO_TECNICAS::intervalo",
+        "id": "intervalo",
+        "nome": "intervalo",
+        "arquivo": "src/systems/afty/afty-estilo-sombras-catalogo.js",
+        "export": "PROGRESSAO_TECNICAS",
+        "proprietario": "TEC-01",
+        "tipo": "entrada de tabela",
+        "hashDado": "4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce"
+      },
+      "proprietarioSugerido": "TEC-01"
+    }
+  ],
+  "removidos": [
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::PROGRESSAO_TECNICAS::extras",
+      "proprietario": "TEC-01",
+      "hashAnterior": "1dd47beebf357383f33484a10f7a9049db931a895cdce825e236c0478995bf9a"
+    },
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::PROGRESSAO_TECNICAS::extras::@0",
+      "proprietario": "TEC-01",
+      "hashAnterior": "7902699be42c8a8e46fbbb4501726517e86b22c56a189f7625a6da49081b2451"
+    },
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::PROGRESSAO_TECNICAS::extras::@1",
+      "proprietario": "TEC-01",
+      "hashAnterior": "4a44dc15364204a80fe80e9039455cc1608281820fe2b24f1e5233ade6af1dd5"
+    },
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::PROGRESSAO_TECNICAS::extras::@2",
+      "proprietario": "TEC-01",
+      "hashAnterior": "3fdba35f04dc8c462986c992bcf875546257113072a909c162f7e470e581e278"
+    },
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::PROGRESSAO_TECNICAS::extras::@3",
+      "proprietario": "TEC-01",
+      "hashAnterior": "b17ef6d19c7a5b1ee83b907c595526dcb1eb06db8227d650d5dda0a9f4ce8cd9"
+    },
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::PROGRESSAO_TECNICAS::extras::@4",
+      "proprietario": "TEC-01",
+      "hashAnterior": "9400f1b21cb527d7fa3d3eabba93557a18ebe7a2ca4e471cfe5e4c5b4ca7f767"
+    }
+  ],
+  "alterados": [
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::@catalogo",
+      "proprietarioMantido": "TEC-01",
+      "hashAnterior": "810359cf4d9dd7954378eaae885b585d92b7776b0f4d96eda7db0fbc5a61e8d3",
+      "hashNovo": "11c305e62ce49eb7a1b3a5e02ebd330b22e339979b703851145306b53f87035e",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::acerto",
+      "proprietarioMantido": "TEC-01",
+      "hashAnterior": "d40d7058287fb123d1d4b5c145da93f48a0b7594622f0e8fe21042e241ba4f95",
+      "hashNovo": "bdf20c126ec84b02430f7f431d914a337e7ac4406fc16970d91c7ddff6674371",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::acerto::expr",
+      "proprietarioMantido": "TEC-01",
+      "hashAnterior": "28668ee38a005dbe6c6e6fb16da333d0abc59c7c2b59e2b58d2401ca5b95b307",
+      "hashNovo": "6a22c992c9434278f9bb7628ad41e35134b7f4e604eaf486dfa714f72bf56602",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::cd",
+      "proprietarioMantido": "TEC-01",
+      "hashAnterior": "079464026bf3913c4c684f65e0551f2e328c209ef0fe07f85cb77ebde6790d4f",
+      "hashNovo": "0596b836c970bfc0004153788882d87e41c943a60a53f2b91f5bd36266ab3b2b",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::cd::expr",
+      "proprietarioMantido": "TEC-01",
+      "hashAnterior": "28668ee38a005dbe6c6e6fb16da333d0abc59c7c2b59e2b58d2401ca5b95b307",
+      "hashNovo": "6a22c992c9434278f9bb7628ad41e35134b7f4e604eaf486dfa714f72bf56602",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::defesa",
+      "proprietarioMantido": "TEC-01",
+      "hashAnterior": "ed401d8d37b443e1ac397aeb38a2320bb3b53b42bbe40273210f510e531fe66a",
+      "hashNovo": "15e52ae53a428949b98c98d84cc36b2c9bd977d268c2b83563814933783a6e3d",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::pericia",
+      "proprietarioMantido": "TEC-01",
+      "hashAnterior": "b2e82d6d89ca5b26ec91c0f6b31c2311bf62892f75714b2bba055df94ff167af",
+      "hashNovo": "0cf84500c73a24da1fd9a9aff3f279bd9ac8043fb42cbc34e7abd503f82fc1af",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::tr",
+      "proprietarioMantido": "TEC-01",
+      "hashAnterior": "a5dcafb85d2cb8fdc4307cd616e56ca41a0637a108e16b0cf8dc41bd30e49390",
+      "hashNovo": "8cd0e1b4f53cd0f40642b2e972f872e1ef195d208357b95905ebd8a56365c433",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-estilo-sombras-catalogo.js::PROGRESSAO_TECNICAS::@catalogo",
+      "proprietarioMantido": "TEC-01",
+      "hashAnterior": "6ec83e14601ac7e0c09faf867b0fdf6a4044a129fb0b6c55e005b0384d2a6873",
+      "hashNovo": "868cfed34e4b0a2a4829df29da69a59d8fa61756f39ab75620dc9c998db1ce6c",
+      "campos": [
+        "hashDado"
+      ]
+    }
+  ],
+  "assinatura": "d0d87bda68a2ed448584a21686df34ddf58fdcf19d8b16d3d9f7d1a8c7239633",
+  "decisoes": {
+    "adicoes": {
+      "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::defesa::exprPessoal": "TEC-01",
+      "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::pericia::exprPessoal": "TEC-01",
+      "afty-estilo-sombras-catalogo.js::EFEITOS_ESTILO::tr::exprPessoal": "TEC-01",
+      "afty-estilo-sombras-catalogo.js::PROGRESSAO_TECNICAS::intervalo": "TEC-01"
+    },
+    "remocoes": {
+      "afty-estilo-sombras-catalogo.js::PROGRESSAO_TECNICAS::extras": {
+        "justificativa": "Decisão do autor em 2026-10-12: progressão continua a cada três níveis sem parar no 19. A lista finita extras e suas posições foram substituídas por intervalo: 3. Os marcos anteriores continuam produzindo os mesmos ganhos; registros históricos são conservados."
+      },
+      "afty-estilo-sombras-catalogo.js::PROGRESSAO_TECNICAS::extras::@0": {
+        "justificativa": "Decisão do autor em 2026-10-12: progressão continua a cada três níveis sem parar no 19. A lista finita extras e suas posições foram substituídas por intervalo: 3. Os marcos anteriores continuam produzindo os mesmos ganhos; registros históricos são conservados."
+      },
+      "afty-estilo-sombras-catalogo.js::PROGRESSAO_TECNICAS::extras::@1": {
+        "justificativa": "Decisão do autor em 2026-10-12: progressão continua a cada três níveis sem parar no 19. A lista finita extras e suas posições foram substituídas por intervalo: 3. Os marcos anteriores continuam produzindo os mesmos ganhos; registros históricos são conservados."
+      },
+      "afty-estilo-sombras-catalogo.js::PROGRESSAO_TECNICAS::extras::@2": {
+        "justificativa": "Decisão do autor em 2026-10-12: progressão continua a cada três níveis sem parar no 19. A lista finita extras e suas posições foram substituídas por intervalo: 3. Os marcos anteriores continuam produzindo os mesmos ganhos; registros históricos são conservados."
+      },
+      "afty-estilo-sombras-catalogo.js::PROGRESSAO_TECNICAS::extras::@3": {
+        "justificativa": "Decisão do autor em 2026-10-12: progressão continua a cada três níveis sem parar no 19. A lista finita extras e suas posições foram substituídas por intervalo: 3. Os marcos anteriores continuam produzindo os mesmos ganhos; registros históricos são conservados."
+      },
+      "afty-estilo-sombras-catalogo.js::PROGRESSAO_TECNICAS::extras::@4": {
+        "justificativa": "Decisão do autor em 2026-10-12: progressão continua a cada três níveis sem parar no 19. A lista finita extras e suas posições foram substituídas por intervalo: 3. Os marcos anteriores continuam produzindo os mesmos ganhos; registros históricos são conservados."
+      }
+    },
+    "justificativaAtualizacao": "Decisões do autor em 2026-10-12: continuidade da progressão do Novo Estilo das Sombras e alternativa pessoal na segunda compra, incompatível com aliados. Acerto e CD limitados a duas compras, metade do BT ou BT inteiro. Reconciliação restrita ao TEC-01, sem aprovação de regras ou alteração de estados alheios."
+  },
+  "errosColeta": []
+}

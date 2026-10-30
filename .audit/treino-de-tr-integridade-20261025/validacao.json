@@ -1,0 +1,18 @@
+{
+  "data": "2026-10-25",
+  "addon": "addons/treino-de-tr.json",
+  "versao": "1.1.0",
+  "incluiIntegridade": true,
+  "lint": "PASSOU",
+  "build": "PASSOU",
+  "assertsDoPacote": 107,
+  "assertsFocados": 242,
+  "arquivosFocados": 5,
+  "interface": {
+    "player": { "atualizouDe": "1.0.0", "completo": true, "focosGastos": 5, "bonusFinal": 19 },
+    "afty": { "atualizouDe": "1.0.0", "completo": true, "focosAdicionais": 5, "treinoAnteriorPreservado": true },
+    "errosConsole": [],
+    "captura": "player-integridade.png"
+  },
+  "reconciliacao": { "alterados": 5, "adicionados": 0, "removidos": 0, "itensAlheiosPreservados": true, "campanhaPreservada": true }
+}

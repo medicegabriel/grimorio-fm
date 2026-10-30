@@ -1,0 +1,306 @@
+{
+  "geradoEm": "2026-10-21T00:33:10.119Z",
+  "base": "http://127.0.0.1:5321",
+  "etapas": [
+    {
+      "nome": "A Imitação comum (ima)",
+      "checks": [
+        {
+          "id": "A1 aba visível e título",
+          "ok": true
+        },
+        {
+          "id": "A1 tipos da comum (3 + Aprendidas)",
+          "ok": true,
+          "dados": [
+            "postura",
+            "manobra",
+            "ativa",
+            "aprendidas"
+          ]
+        },
+        {
+          "id": "A2 sem cópia e pede Em Combate",
+          "ok": true
+        },
+        {
+          "id": "A2 selecionar abre só o detalhe",
+          "ok": true
+        },
+        {
+          "id": "A2 confirmar bloqueado fora de combate",
+          "ok": true
+        },
+        {
+          "id": "A2 o bloqueio diz o motivo",
+          "ok": true
+        },
+        {
+          "id": "A2 nada gravou na cópia",
+          "ok": true
+        },
+        {
+          "id": "A2 cancelar fecha o detalhe",
+          "ok": true
+        },
+        {
+          "id": "A3 selecionar em combate NÃO troca a cópia",
+          "ok": true
+        },
+        {
+          "id": "A3 confirmar liberado",
+          "ok": true
+        },
+        {
+          "id": "A3 confirmar troca a cópia (sessão)",
+          "ok": true,
+          "dados": {
+            "tipo": "postura",
+            "id": "cmb_postura_do_sol"
+          }
+        },
+        {
+          "id": "A3 a tela mostra o nome e a origem",
+          "ok": true
+        },
+        {
+          "id": "A3 a cópia sai da lista de candidatas (o motor já a conta como possuída)",
+          "ok": true
+        },
+        {
+          "id": "A3 sem cobrança de PE",
+          "ok": true,
+          "dados": {
+            "antes": "Estamina80/80",
+            "depois": "Estamina80/80"
+          }
+        },
+        {
+          "id": "A4 cancelar deixa a sessão igual",
+          "ok": true
+        },
+        {
+          "id": "A4 a cópia segue a mesma",
+          "ok": true
+        },
+        {
+          "id": "A5 trocar substitui a cópia",
+          "ok": true
+        },
+        {
+          "id": "A5 a anterior volta para a lista e a nova sai",
+          "ok": true
+        },
+        {
+          "id": "A6 a busca filtra",
+          "ok": true
+        },
+        {
+          "id": "A6 ativa pede a confirmação (caixa) e bloqueia",
+          "ok": true
+        },
+        {
+          "id": "A6 marcada a confirmação, libera",
+          "ok": true
+        },
+        {
+          "id": "A6 a ativa vira a cópia",
+          "ok": true,
+          "dados": {
+            "tipo": "ativa",
+            "id": "lut_aparar_ataque"
+          }
+        },
+        {
+          "id": "A6 o detalhe fecha ao confirmar",
+          "ok": true
+        },
+        {
+          "id": "A7 CD inicial 35",
+          "ok": true
+        },
+        {
+          "id": "A7 sem número o botão fica travado",
+          "ok": true
+        },
+        {
+          "id": "A7 resultado baixo falha e baixa a CD em 2",
+          "ok": true
+        },
+        {
+          "id": "A7 falha não aprende",
+          "ok": true
+        },
+        {
+          "id": "A7 resultado alto aprende",
+          "ok": true,
+          "dados": [
+            {
+              "tipo": "ativa",
+              "id": "lut_aparar_ataque"
+            }
+          ]
+        },
+        {
+          "id": "A7 o contador de Aprendidas sobe",
+          "ok": true
+        },
+        {
+          "id": "A8 encerrar tira a cópia e guarda a aprendida",
+          "ok": true
+        },
+        {
+          "id": "A8 a aprendida abre com Esquecer e sem pedir confirmação de tipo",
+          "ok": true
+        },
+        {
+          "id": "A8 reutilizar copia a aprendida sem novo teste",
+          "ok": true
+        },
+        {
+          "id": "A9 depois de recarregar a cópia continua",
+          "ok": true,
+          "dados": "ImitaçãoAparar AtaqueHabilidades AtivasAprendidaEncerrar CópiaAprenderCD 31Tentar Aprender"
+        },
+        {
+          "id": "A10 esquecer tira só a aprendida",
+          "ok": true
+        },
+        {
+          "id": "A11 os números do G2 e da clássica são iguais",
+          "ok": true,
+          "dados": {
+            "g2": {
+              "defesa": "23",
+              "cd": "30",
+              "rd-geral": "0",
+              "movimento": "15m",
+              "iniciativa": "+0",
+              "atencao": "22",
+              "maestria": "+6"
+            },
+            "classica": {
+              "defesa": "23",
+              "cd": "30",
+              "rd-geral": "0",
+              "movimento": "15m",
+              "iniciativa": "+0",
+              "atencao": "22",
+              "maestria": "+6"
+            }
+          }
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "A Escolhas da cópia (ima)",
+      "checks": [
+        {
+          "id": "A12 as escolhas da cópia aparecem",
+          "ok": true,
+          "dados": {
+            "n": 11,
+            "limite": 1
+          }
+        },
+        {
+          "id": "A12 as escolhas respeitam o limite do motor",
+          "ok": true,
+          "dados": {
+            "marcadas": 1,
+            "limite": 1
+          }
+        },
+        {
+          "id": "A12 a sessão guarda no máximo o limite",
+          "ok": true,
+          "dados": {
+            "tipo": "ativa",
+            "id": "lut_corpo_supremo",
+            "escolhas": [
+              "lut_supremo_acido"
+            ]
+          }
+        },
+        {
+          "id": "A12 desligar uma libera a vaga",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "A Imitação Perfeita (perfeita)",
+      "checks": [
+        {
+          "id": "A13 título da Perfeita",
+          "ok": true
+        },
+        {
+          "id": "A13 cinco tipos mais Aprendidas",
+          "ok": true,
+          "dados": [
+            "postura",
+            "manobra",
+            "ativa",
+            "passiva",
+            "estilo",
+            "aprendidas"
+          ]
+        },
+        {
+          "id": "A13 estilo não pede a confirmação de tipo",
+          "ok": true
+        },
+        {
+          "id": "A13 CD do estilo é 40",
+          "ok": true,
+          "dados": "CD 40"
+        },
+        {
+          "id": "A13 aprende o estilo",
+          "ok": true
+        },
+        {
+          "id": "A13 passiva pede a confirmação do tipo",
+          "ok": true
+        },
+        {
+          "id": "A13 CD da passiva é 40",
+          "ok": true
+        },
+        {
+          "id": "A13 a memorização cabe mais de uma aprendida (tipos diferentes)",
+          "ok": true,
+          "dados": [
+            "cmb_estilo_defensivo",
+            "lut_aparar_ataque"
+          ]
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "A Sem Imitação (mestre)",
+      "checks": [
+        {
+          "id": "A14 a aba some para quem não imita",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "A Imitação comum (ima): 35/35",
+    "A Escolhas da cópia (ima): 4/4",
+    "A Imitação Perfeita (perfeita): 8/8",
+    "A Sem Imitação (mestre): 1/1"
+  ]
+}

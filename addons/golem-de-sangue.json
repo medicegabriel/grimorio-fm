@@ -5,6 +5,8 @@
   "autor": "Templas",
   "paraRaw": "afty",
   "descricao": "Versão 1.1.0: a Maldição Carmesim como Funcionamento Básico (o PE Máximo vira PV, 3 por PE), os contadores de sessão Pontos de Sangue, Sangue Guardado e Fome, o Frenesi Incontrolável, e o Frenesi Sanguinário como o Feitiço de Transformação que a ficha liga na aba Origem (o Voto dá +1 nível nos efeitos dele, mesmo acima do acesso, e +BT/2 rodadas). Origem Golem de Sangue (Briar): Bônus de Origem, Corpo Morto, Físico Amaldiçoado (Armas Naturais e as Aprimoradas concedidas, +1 PV por nível, Instinto Sanguinário, Desenvolvimento Físico e Carapaça Mutante), Incompatibilidade com a Feitiçaria (sem Energia Reversa, e as 5 Aptidões Especiais de Maldição no lugar dela) e Artificial. Três Talentos de Origem, o Hemólito de Sangue (ativo só no Frenesi Sanguinário) e o Voto automático Restrição Congênita: Prisão da Besta. Com o Feitiço do Frenesi no ar, o Hemólito ativa e as amarras soltam.",
+  "resumo": "Origem Golem de Sangue: o PE Máximo vira PV, três por PE, com contadores de sangue e o Frenesi",
+  "categoria": "origens",
   "estadosCombate": [
     {
       "id": "alvo_sangue_absorvido",

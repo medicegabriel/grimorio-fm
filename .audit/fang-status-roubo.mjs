@@ -1,0 +1,2 @@
+import fs from 'node:fs';
+const p='docs/afty-status.md';let s=fs.readFileSync(p,'utf8');s=s.replace('recebidas, sem comprar Lutador/Combatente. Corpo Calejado da exportação sobe de 4548 para','recebidas, sem comprar Lutador/Combatente. Requisitos de outras habilidades são dispensados\nno Roubo. Crítico Aperfeiçoado recebe a redução completa de 2 sem Crítico Melhorado,\ne a combinação das duas continua em 2. Corpo Calejado da exportação sobe de 4548 para');fs.writeFileSync(p,s);

@@ -1,0 +1,370 @@
+{
+  "geradoEm": "2026-10-21T00:40:38.853Z",
+  "base": "http://127.0.0.1:5320",
+  "etapas": [
+    {
+      "nome": "C Exaustão desde zero (sangrador, completa)",
+      "checks": [
+        {
+          "id": "C1 o acesso discreto existe nos Ativos",
+          "ok": true
+        },
+        {
+          "id": "C1 sem nível não há cartão vazio nem selo",
+          "ok": true
+        },
+        {
+          "id": "C2 o painel abre com nível 0",
+          "ok": true
+        },
+        {
+          "id": "C2 menos e Zerar travados em zero",
+          "ok": true
+        },
+        {
+          "id": "C2 abrir o controle não muda o contador nem a sessão",
+          "ok": true
+        },
+        {
+          "id": "C3 mais 1 cria o nível 1, o selo e o cartão",
+          "ok": true
+        },
+        {
+          "id": "C3 mais duas vezes dá 3 (inteiro, sem teto de 1 em 1)",
+          "ok": true
+        },
+        {
+          "id": "C4 menos 1 dá 2",
+          "ok": true
+        },
+        {
+          "id": "C4 Zerar volta a zero e o cartão some",
+          "ok": true
+        },
+        {
+          "id": "C4 em zero o menos fica travado de novo (nunca negativo)",
+          "ok": true
+        },
+        {
+          "id": "C5 Esc fecha o painel sem mudar o nível",
+          "ok": true
+        },
+        {
+          "id": "C5 o ajuste do cartão soma ao mesmo contador",
+          "ok": true
+        },
+        {
+          "id": "C5 Zerar do cartão zera o mesmo contador",
+          "ok": true
+        },
+        {
+          "id": "C6 recarregar mantém o nível 3, o selo e o cartão",
+          "ok": true
+        },
+        {
+          "id": "C6 os números do G2 e da clássica são iguais com Exaustão 3",
+          "ok": true,
+          "dados": {
+            "g2": {
+              "defesa": "15",
+              "cd": "23",
+              "rd-geral": "0",
+              "movimento": "9m",
+              "iniciativa": "+2",
+              "atencao": "16",
+              "maestria": "+4"
+            },
+            "classica": {
+              "defesa": "15",
+              "cd": "23",
+              "rd-geral": "0",
+              "movimento": "9m",
+              "iniciativa": "+2",
+              "atencao": "16",
+              "maestria": "+4"
+            }
+          }
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "C Exaustão desde zero (sangrador, compacta)",
+      "checks": [
+        {
+          "id": "C7 o acesso existe na compacta",
+          "ok": true
+        },
+        {
+          "id": "C7 sem nível não há cartão",
+          "ok": true
+        },
+        {
+          "id": "C7 abrir na compacta não muda o contador",
+          "ok": true
+        },
+        {
+          "id": "C8 mais na compacta chega a 2 e o cartão aparece",
+          "ok": true
+        },
+        {
+          "id": "C8 Zerar na compacta tira o cartão",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "D Sangramento (sangrador, completa)",
+      "checks": [
+        {
+          "id": "D1 consultar, selecionar e virar a rodada não perdem Vida",
+          "ok": true,
+          "dados": {
+            "hp0": 102,
+            "hp": 102
+          }
+        },
+        {
+          "id": "D2 faixa 2d6: o botão existe e diz os dados",
+          "ok": true,
+          "dados": "Perda de Vida 2d6"
+        },
+        {
+          "id": "D2 faixa 3d8: o botão existe e diz os dados",
+          "ok": true,
+          "dados": "Perda de Vida 3d8"
+        },
+        {
+          "id": "D2 faixa 4d10: o botão existe e diz os dados",
+          "ok": true,
+          "dados": "Perda de Vida 4d10"
+        },
+        {
+          "id": "D2 faixa 6d10: o botão existe e diz os dados",
+          "ok": true,
+          "dados": "Perda de Vida 6d10"
+        },
+        {
+          "id": "D2 uma condição que não sangra não tem o botão",
+          "ok": true
+        },
+        {
+          "id": "D3 a tela mostra o total e os dados",
+          "ok": true,
+          "dados": "Perdeu 2 de Vida · 2d6 deu 2"
+        },
+        {
+          "id": "D3 a Vida cai exatamente o total rolado",
+          "ok": true,
+          "dados": {
+            "antes": 102,
+            "depois": 100,
+            "total": 2
+          }
+        },
+        {
+          "id": "D3 a casca de PV Temporário (8) fica intacta",
+          "ok": true,
+          "dados": {
+            "g2-teste": 8
+          }
+        },
+        {
+          "id": "D3 a rolagem entra no histórico uma vez, com o mesmo total",
+          "ok": true,
+          "dados": {
+            "id": "rol_mvhdze39_1",
+            "ts": 1792543273749,
+            "tipo": "dano",
+            "tom": "dano",
+            "rotulo": "Sangramento",
+            "detalhe": "Perda de Vida",
+            "formula": "2d6",
+            "dados": [
+              1,
+              1
+            ],
+            "rerrolados": [],
+            "rerrolaFonte": null,
+            "faces": 6,
+            "fixo": 0,
+            "total": 2,
+            "critico": false,
+            "raioNegro": false
+          }
+        },
+        {
+          "id": "D3 um evento de perda, com o mesmo valor, na Vida",
+          "ok": true,
+          "dados": [
+            {
+              "id": "2v1nh9h4",
+              "ts": 1792543273754,
+              "rodada": 1,
+              "tipo": "perda",
+              "nome": "Sangramento",
+              "valor": 2,
+              "dados": 2,
+              "faces": 6,
+              "mudou": {
+                "vida": -2,
+                "casca": 0,
+                "alma": 0
+              }
+            }
+          ]
+        },
+        {
+          "id": "D3 um clique é uma aplicação só (nada de segunda perda depois de esperar)",
+          "ok": true
+        },
+        {
+          "id": "D4 o Histórico da Sessão lista a perda de Vida",
+          "ok": true,
+          "dados": "R121:41:13Sangramento 2 (2d6): Vida −2 · direto na Vida"
+        },
+        {
+          "id": "D5 faixa 3d8: total entre 3 e 24 e Vida cai o total",
+          "ok": true,
+          "dados": {
+            "t": 15,
+            "antes": 100,
+            "depois": 85
+          }
+        },
+        {
+          "id": "D5 faixa 4d10: total entre 4 e 40 e Vida cai o total",
+          "ok": true,
+          "dados": {
+            "t": 29,
+            "antes": 85,
+            "depois": 56
+          }
+        },
+        {
+          "id": "D5 faixa 6d10: total entre 6 e 60 e Vida cai o total",
+          "ok": true,
+          "dados": {
+            "t": 21,
+            "antes": 56,
+            "depois": 35
+          }
+        },
+        {
+          "id": "D6 avançar a rodada depois de sangrar não aplica perda nenhuma",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "D Sangramento (Vida baixa e cadastro manual)",
+      "checks": [
+        {
+          "id": "D7 com 1 de Vida a perda para em zero",
+          "ok": true,
+          "dados": 0
+        },
+        {
+          "id": "D7 a tela diz o que perdeu de verdade",
+          "ok": true,
+          "dados": "Perdeu 1 de Vida · 6d10 deu 36"
+        },
+        {
+          "id": "D7 a casca segue intacta",
+          "ok": true
+        },
+        {
+          "id": "D7 de novo em zero: sem Vida para perder",
+          "ok": true
+        },
+        {
+          "id": "D8 escolher Sangramento pede a faixa, com os dados na opção",
+          "ok": true
+        },
+        {
+          "id": "D8 a condição registrada guarda a faixa escolhida",
+          "ok": true,
+          "dados": [
+            {
+              "id": "cond_1",
+              "nome": "Sangramento",
+              "forca": "fraca",
+              "rodadas": null,
+              "sangramento": "fraco"
+            },
+            {
+              "id": "cond_2",
+              "nome": "Sangramento",
+              "forca": "media",
+              "rodadas": null,
+              "sangramento": "medio"
+            },
+            {
+              "id": "cond_3",
+              "nome": "Sangramento",
+              "forca": "forte",
+              "rodadas": null,
+              "sangramento": "forte"
+            },
+            {
+              "id": "cond_4",
+              "nome": "Sangramento",
+              "forca": "extrema",
+              "rodadas": null,
+              "sangramento": "extremo"
+            },
+            {
+              "id": "cond_5",
+              "nome": "Atordoado",
+              "forca": null,
+              "rodadas": null
+            },
+            {
+              "id": "ga632n1k",
+              "nome": "Sangramento",
+              "forca": "forte",
+              "rodadas": null,
+              "sangramento": "forte"
+            }
+          ]
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "D Sangramento (sangrador, compacta)",
+      "checks": [
+        {
+          "id": "D9 na compacta o botão existe com os dados da faixa",
+          "ok": true,
+          "dados": "Perda de Vida 3d8"
+        },
+        {
+          "id": "D9 a perda na compacta é a mesma operação (Vida cai o total, casca intacta)",
+          "ok": true,
+          "dados": {
+            "t": 12,
+            "antes": 102,
+            "depois": 90
+          }
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "C Exaustão desde zero (sangrador, completa): 15/15",
+    "C Exaustão desde zero (sangrador, compacta): 5/5",
+    "D Sangramento (sangrador, completa): 17/17",
+    "D Sangramento (Vida baixa e cadastro manual): 6/6",
+    "D Sangramento (sangrador, compacta): 2/2"
+  ]
+}

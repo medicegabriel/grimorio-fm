@@ -1,0 +1,18 @@
+[
+  {
+    "sistema": "afty",
+    "rouboBloqueiaSemAnterior": true,
+    "rouboLiberaComAnterior": true,
+    "remocaoReportaRequisito": true,
+    "imitacaoIgnoraAnterior": true,
+    "errors": []
+  },
+  {
+    "sistema": "player",
+    "rouboBloqueiaSemAnterior": true,
+    "rouboLiberaComAnterior": true,
+    "remocaoReportaRequisito": true,
+    "imitacaoIgnoraAnterior": true,
+    "errors": []
+  }
+]

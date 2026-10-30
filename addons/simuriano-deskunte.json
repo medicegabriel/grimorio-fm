@@ -5,6 +5,8 @@
   "autor": "Templas",
   "paraRaw": "afty",
   "descricao": "Nova Origem: os Deskuntianos, guerreiros da tribo Deskunte em Shimuria. Três notas de engenharia: (1) o `efeitos` de uma Característica dentro de `caracteristicas[]` NÃO é lido pelo motor para o efeito numérico principal (só `efeitosInvocacao`, um campo separado, passa por ali) — `coletarEfeitosOrigem` só coleta o `efeitos` do NÍVEL RAIZ da Origem. Por isso os números de Rolloluca e Constituição Guerreira moram no `efeitos` raiz, cada um com `nome` próprio (o campo do efeito vence o rótulo do catálogo), e as Características ficam só com o texto. (2) 'Bônus em Atributo' pede +2 num atributo MENTAL e +1 em outro qualquer, mas o motor só tem UM pool de distribuição livre por criatura (bonus.distribuir/maxPorAtributo, sem como travar só uma PARTE do pool a uma categoria de atributo) — virou distribuir:3, maxPorAtributo:2, sem a restrição de 'mental' no +2 (reserve 2 pontos pra um atributo mental na mesa). (3) 'Herança Deskunte' concede uma Técnica secundária à principal, e o motor não tem sistema de segunda Técnica nenhum — nem o Flugel do próprio livro, que também cita 'Técnica Herdada', tem efeito mecânico pra isso (é só rótulo de pré-requisito, resolvido pelo Clã Akutame). Ficou como texto puro, resolvida na mesa.",
+  "resumo": "Origem dos guerreiros Deskunte de Shimuria",
+  "categoria": "origens",
   "acrescenta": {
     "origens": [
       {

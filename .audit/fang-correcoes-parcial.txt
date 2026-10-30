@@ -1,0 +1,22 @@
+
+> grimorio-tracker@0.0.0 asserts
+> node asserts/rodar.mjs ordem-modulos hpatributo ponta linha-morta propriedades-armas revisao-g00
+
+FALHOU t-hpatributo.mjs
+       FALHAS (2):
+       ficha suja: Cannot read properties of null (reading 'combate')
+       ficha suja: Cannot read properties of undefined (reading 'combate')
+FALHOU t-linha-morta.mjs
+       FALHAS (2):
+       ficha suja: Cannot read properties of null (reading 'combate')
+       ficha suja: Cannot read properties of undefined (reading 'combate')
+ok   t-ordem-modulos.mjs      36
+FALHOU t-ponta.mjs
+       FALHAS (2):
+       ficha suja null: Cannot read properties of null (reading 'combate')
+       ficha suja undefined: Cannot read properties of undefined (reading 'combate')
+ok   t-propriedades-armas.mjs 158
+FALHOU t-revisao-g00.mjs
+       coleta real de addons não recusa silenciosamente pacote: [{"arquivo":"afty-especializacao-config.js","erro":"Módulo novo sem proprietário de controle"},{"arquivo":"ficha/ficha-especializacoes.js","erro":"Módulo de subpasta sem classificação"}] != []
+
+4 de 6 arquivos FALHARAM: t-hpatributo.mjs, t-linha-morta.mjs, t-ponta.mjs, t-revisao-g00.mjs

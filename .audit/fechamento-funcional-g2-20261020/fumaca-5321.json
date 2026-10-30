@@ -1,0 +1,165 @@
+{
+  "geradoEm": "2026-10-20T20:41:20.540Z",
+  "base": "http://127.0.0.1:5321",
+  "etapas": [
+    {
+      "nome": "fumaça 1440",
+      "checks": [
+        {
+          "id": "ima-sem-estouro-1440",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1440
+          }
+        },
+        {
+          "id": "aba-imitacao",
+          "ok": true
+        },
+        {
+          "id": "mestre-sem-estouro-1440",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1440
+          }
+        },
+        {
+          "id": "sangrador-sem-estouro-1440",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1440
+          }
+        },
+        {
+          "id": "invocador-sem-estouro-1440",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1440
+          }
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "fumaça 1024",
+      "checks": [
+        {
+          "id": "ima-sem-estouro-1024",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1024
+          }
+        },
+        {
+          "id": "aba-imitacao",
+          "ok": true
+        },
+        {
+          "id": "mestre-sem-estouro-1024",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1024
+          }
+        },
+        {
+          "id": "sangrador-sem-estouro-1024",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1024
+          }
+        },
+        {
+          "id": "invocador-sem-estouro-1024",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1024
+          }
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "fumaça 390",
+      "checks": [
+        {
+          "id": "ima-sem-estouro-390",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 390
+          }
+        },
+        {
+          "id": "aba-imitacao",
+          "ok": true
+        },
+        {
+          "id": "mestre-sem-estouro-390",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 390
+          }
+        },
+        {
+          "id": "sangrador-sem-estouro-390",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 390
+          }
+        },
+        {
+          "id": "invocador-sem-estouro-390",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 390
+          }
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "fumaça 1440: 5/5",
+    "fumaça 1024: 5/5",
+    "fumaça 390: 5/5"
+  ]
+}

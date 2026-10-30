@@ -1,0 +1,116 @@
+{
+  "geradoEm": "2026-10-20T13:34:52.067Z",
+  "base": "http://127.0.0.1:5321",
+  "amostra": "Player 30 Volumoso",
+  "medidas": [
+    {
+      "cenario": "base",
+      "rotulo": "confirmar Ataque Concentrado",
+      "ms": 30,
+      "longas": []
+    },
+    {
+      "cenario": "oito",
+      "rotulo": "confirmar Ataque Concentrado",
+      "ms": 31,
+      "longas": []
+    },
+    {
+      "cenario": "oito",
+      "rotulo": "ativar opção recebida (oito já ligadas)",
+      "ms": 52,
+      "longas": []
+    },
+    {
+      "cenario": "oito",
+      "rotulo": "duas ativações recebidas em sequência",
+      "ligadas": 2,
+      "longas": []
+    },
+    {
+      "cenario": "base",
+      "rotulo": "clássica: abrir a aba Buffs",
+      "ms": 33,
+      "longas": []
+    },
+    {
+      "cenario": "oito",
+      "rotulo": "clássica: abrir a aba Buffs",
+      "ms": 36,
+      "longas": []
+    },
+    {
+      "cenario": "base",
+      "rotulo": "confirmar Ataque Concentrado",
+      "ms": 33,
+      "longas": []
+    },
+    {
+      "cenario": "oito",
+      "rotulo": "confirmar Ataque Concentrado",
+      "ms": 32,
+      "longas": []
+    },
+    {
+      "cenario": "oito",
+      "rotulo": "ativar opção recebida (oito já ligadas)",
+      "ms": 45,
+      "longas": []
+    },
+    {
+      "cenario": "oito",
+      "rotulo": "duas ativações recebidas em sequência",
+      "ligadas": 2,
+      "longas": []
+    },
+    {
+      "cenario": "base",
+      "rotulo": "clássica: abrir a aba Buffs",
+      "ms": 31,
+      "longas": []
+    },
+    {
+      "cenario": "oito",
+      "rotulo": "clássica: abrir a aba Buffs",
+      "ms": 33,
+      "longas": []
+    },
+    {
+      "cenario": "base",
+      "rotulo": "confirmar Ataque Concentrado",
+      "ms": 31,
+      "longas": []
+    },
+    {
+      "cenario": "oito",
+      "rotulo": "confirmar Ataque Concentrado",
+      "ms": 31,
+      "longas": []
+    },
+    {
+      "cenario": "oito",
+      "rotulo": "ativar opção recebida (oito já ligadas)",
+      "ms": 46,
+      "longas": []
+    },
+    {
+      "cenario": "oito",
+      "rotulo": "duas ativações recebidas em sequência",
+      "ligadas": 2,
+      "longas": []
+    },
+    {
+      "cenario": "base",
+      "rotulo": "clássica: abrir a aba Buffs",
+      "ms": 32,
+      "longas": []
+    },
+    {
+      "cenario": "oito",
+      "rotulo": "clássica: abrir a aba Buffs",
+      "ms": 33,
+      "longas": []
+    }
+  ],
+  "erros": []
+}

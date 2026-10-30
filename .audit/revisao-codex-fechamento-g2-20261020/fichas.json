@@ -1,0 +1,5941 @@
+{
+ "geradoEm": "2026-10-20T20:38:42.603Z",
+ "fichas": {
+  "ima": {
+   "system": "afty",
+   "rulesVersion": "player",
+   "name": "Ima (Teste G2)",
+   "portraitUrl": null,
+   "portraitFocus": {
+    "x": 50,
+    "y": 50
+   },
+   "core": {
+    "tipo": "combatente",
+    "patamar": "comum",
+    "nd": 20,
+    "tamanho": "medio",
+    "tecnicaAttr": "inteligencia",
+    "tecnicaDescricao": "",
+    "tecnicaEfeitos": [],
+    "funcionamentosAdicionais": [],
+    "origem": {
+     "id": "restringido"
+    }
+   },
+   "alma": {
+    "atual": 100,
+    "max": 100
+   },
+   "qntPE": "normal",
+   "attrMethod": "pontos",
+   "attrLimite": {
+    "forca": 20,
+    "destreza": 20,
+    "constituicao": 20,
+    "inteligencia": 20,
+    "sabedoria": 20,
+    "presenca": 20
+   },
+   "attributes": {
+    "forca": 10,
+    "destreza": 10,
+    "constituicao": 10,
+    "inteligencia": 10,
+    "sabedoria": 10,
+    "presenca": 10
+   },
+   "attrNivel": {
+    "forca": 0,
+    "destreza": 0,
+    "constituicao": 0,
+    "inteligencia": 0,
+    "sabedoria": 0,
+    "presenca": 0
+   },
+   "pericias": {},
+   "periciasOrdem": null,
+   "periciasPersonalizadas": [],
+   "periciaOficio": "",
+   "periciaOficios": {},
+   "periciasOficiosExtras": [],
+   "periciaAtributoManual": {},
+   "periciasBonus": 0,
+   "resistenciasProf": {},
+   "trDaClasse": [],
+   "trSegundo": null,
+   "trAtributoManual": {},
+   "ataquesProf": {},
+   "ataqueFineza": false,
+   "ataqueBasicoId": "corpo",
+   "ataqueAtributoManual": {},
+   "armasDedicadas": [],
+   "defesasDano": {},
+   "catarse": {
+    "saldo": 0,
+    "compras": []
+   },
+   "carteira": {
+    "entradas": [],
+    "gastos": []
+   },
+   "espinho": {
+    "almas": 0,
+    "outros": 0,
+    "compras": {},
+    "equipamentos": []
+   },
+   "tecnicasCombate": {
+    "armas": [],
+    "atributo": "inteligencia"
+   },
+   "talentosConfig": {
+    "tal_mestre_das_armas": {
+     "modo": "armas",
+     "armas": [],
+     "grupo": null
+    },
+    "tal_tempestade_de_ideias": {
+     "pericia": null,
+     "ferramenta": "",
+     "vantagemPericia": null
+    },
+    "tal_artesao_amaldicoado": {
+     "ferramenta": null
+    }
+   },
+   "combate": {
+    "ativo": false,
+    "empolgacao": 1,
+    "insistenciaUsada": false,
+    "manobraAjuste": false,
+    "manobraDesarme": false,
+    "manobraEsquiva": false,
+    "manobraTrabalhoDePes": false,
+    "manobraFinalizadora": null,
+    "brutalidade": false,
+    "brutalidadePE": 0,
+    "brutalidadePilha": 0,
+    "ataqueInconsequente": false,
+    "impactoMisto": false,
+    "resistirPE": 0,
+    "furiaVinganca": false,
+    "imprudenciaMotivadora": false,
+    "machucado": false,
+    "abates": 0,
+    "armasAbsolutas": null,
+    "auraElemental": true,
+    "concentrarAura": [],
+    "golpeComAura": null,
+    "canalizarEmGolpe": false,
+    "canalizacaoMaxima": false
+   },
+   "equipamentos": {
+    "itens": []
+   },
+   "armasCustom": [],
+   "forjas": [],
+   "especializacoes": [
+    {
+     "id": "restringido",
+     "nivel": 20
+    }
+   ],
+   "feiticos": [],
+   "reducoesCustoFeitico": {
+    "dominancia": null,
+    "manipulacao": []
+   },
+   "estilosSombra": [],
+   "estiloFuncionamento": {
+    "texto": "",
+    "durabilidadeTrilha": null
+   },
+   "habilidadesGerais": [],
+   "focosLivres": 0,
+   "periciaAtributo": "inteligencia",
+   "habilidades": [
+    "res_imitacao"
+   ],
+   "escolhasHabilidade": {},
+   "especializacaoConfig": {},
+   "escolhasTalento": {},
+   "talentos": [],
+   "invocacoes": [],
+   "origemContadores": {},
+   "hordas": [],
+   "quimeras": [],
+   "fundamentosPerdidos": [],
+   "aptidoes": {
+    "au": 0,
+    "cl": 0,
+    "bar": 0,
+    "dom": 0,
+    "er": 0
+   },
+   "aptidoesAmaldicoadas": [],
+   "aptidaoOpcoes": {},
+   "aptidaoOpcoesRepetidas": {},
+   "dominios": [],
+   "dominioAtivoId": null,
+   "treinamentos": {},
+   "treinamentoAlvos": {},
+   "treinamentoEscolhas": {},
+   "treinoEscolhaFeiticos": {},
+   "votos": {
+    "contratuais": [],
+    "mecanicos": []
+   },
+   "pacto": {
+    "nome": "",
+    "descricao": "",
+    "maleficios": [],
+    "beneficios": []
+   },
+   "modificacoesCorporais": {
+    "descricao": "",
+    "efeitosBase": [],
+    "limite": 0,
+    "enxertos": []
+   },
+   "tita": {
+    "ativo": false,
+    "membros": 5
+   },
+   "caracteristicasAmaldicoadas": [],
+   "caracteristicasAmaldicoadasAlvos": {},
+   "treinosEspeciais": [],
+   "treinoEspecialProgresso": {},
+   "focosBonus": 0,
+   "statOverrides": {},
+   "melhoriasSuperiores": [],
+   "habilidadesLendarias": [],
+   "escolhasAltoNivel": {},
+   "aparencia": null,
+   "preferenciasFicha": null,
+   "addons": [],
+   "narratorNotes": "",
+   "combatState": {
+    "isActive": false,
+    "hpCurrent": 0,
+    "peCurrent": 0,
+    "almaCurrent": 100,
+    "activeConditions": [],
+    "customCounters": [],
+    "combatLog": []
+   },
+   "id": "teste-g2-ima"
+  },
+  "perfeita": {
+   "system": "afty",
+   "rulesVersion": "player",
+   "name": "Perfeita (Teste G2)",
+   "portraitUrl": null,
+   "portraitFocus": {
+    "x": 50,
+    "y": 50
+   },
+   "core": {
+    "tipo": "combatente",
+    "patamar": "comum",
+    "nd": 20,
+    "tamanho": "medio",
+    "tecnicaAttr": "inteligencia",
+    "tecnicaDescricao": "",
+    "tecnicaEfeitos": [],
+    "funcionamentosAdicionais": [],
+    "origem": {
+     "id": "restringido"
+    }
+   },
+   "alma": {
+    "atual": 100,
+    "max": 100
+   },
+   "qntPE": "normal",
+   "attrMethod": "pontos",
+   "attrLimite": {
+    "forca": 20,
+    "destreza": 20,
+    "constituicao": 20,
+    "inteligencia": 20,
+    "sabedoria": 20,
+    "presenca": 20
+   },
+   "attributes": {
+    "forca": 10,
+    "destreza": 10,
+    "constituicao": 10,
+    "inteligencia": 10,
+    "sabedoria": 10,
+    "presenca": 10
+   },
+   "attrNivel": {
+    "forca": 0,
+    "destreza": 0,
+    "constituicao": 0,
+    "inteligencia": 0,
+    "sabedoria": 0,
+    "presenca": 0
+   },
+   "pericias": {},
+   "periciasOrdem": null,
+   "periciasPersonalizadas": [],
+   "periciaOficio": "",
+   "periciaOficios": {},
+   "periciasOficiosExtras": [],
+   "periciaAtributoManual": {},
+   "periciasBonus": 0,
+   "resistenciasProf": {},
+   "trDaClasse": [],
+   "trSegundo": null,
+   "trAtributoManual": {},
+   "ataquesProf": {},
+   "ataqueFineza": false,
+   "ataqueBasicoId": "corpo",
+   "ataqueAtributoManual": {},
+   "armasDedicadas": [],
+   "defesasDano": {},
+   "catarse": {
+    "saldo": 0,
+    "compras": []
+   },
+   "carteira": {
+    "entradas": [],
+    "gastos": []
+   },
+   "espinho": {
+    "almas": 0,
+    "outros": 0,
+    "compras": {},
+    "equipamentos": []
+   },
+   "tecnicasCombate": {
+    "armas": [],
+    "atributo": "inteligencia"
+   },
+   "talentosConfig": {
+    "tal_mestre_das_armas": {
+     "modo": "armas",
+     "armas": [],
+     "grupo": null
+    },
+    "tal_tempestade_de_ideias": {
+     "pericia": null,
+     "ferramenta": "",
+     "vantagemPericia": null
+    },
+    "tal_artesao_amaldicoado": {
+     "ferramenta": null
+    }
+   },
+   "combate": {
+    "ativo": false,
+    "empolgacao": 1,
+    "insistenciaUsada": false,
+    "manobraAjuste": false,
+    "manobraDesarme": false,
+    "manobraEsquiva": false,
+    "manobraTrabalhoDePes": false,
+    "manobraFinalizadora": null,
+    "brutalidade": false,
+    "brutalidadePE": 0,
+    "brutalidadePilha": 0,
+    "ataqueInconsequente": false,
+    "impactoMisto": false,
+    "resistirPE": 0,
+    "furiaVinganca": false,
+    "imprudenciaMotivadora": false,
+    "machucado": false,
+    "abates": 0,
+    "armasAbsolutas": null,
+    "auraElemental": true,
+    "concentrarAura": [],
+    "golpeComAura": null,
+    "canalizarEmGolpe": false,
+    "canalizacaoMaxima": false
+   },
+   "equipamentos": {
+    "itens": []
+   },
+   "armasCustom": [],
+   "forjas": [],
+   "especializacoes": [
+    {
+     "id": "restringido",
+     "nivel": 20
+    }
+   ],
+   "feiticos": [],
+   "reducoesCustoFeitico": {
+    "dominancia": null,
+    "manipulacao": []
+   },
+   "estilosSombra": [],
+   "estiloFuncionamento": {
+    "texto": "",
+    "durabilidadeTrilha": null
+   },
+   "habilidadesGerais": [],
+   "focosLivres": 0,
+   "periciaAtributo": "inteligencia",
+   "habilidades": [
+    "res_imitacao",
+    "res_imitacao_perfeita",
+    "res_tecnicas_de_memorizacao"
+   ],
+   "escolhasHabilidade": {},
+   "especializacaoConfig": {},
+   "escolhasTalento": {},
+   "talentos": [],
+   "invocacoes": [],
+   "origemContadores": {},
+   "hordas": [],
+   "quimeras": [],
+   "fundamentosPerdidos": [],
+   "aptidoes": {
+    "au": 0,
+    "cl": 0,
+    "bar": 0,
+    "dom": 0,
+    "er": 0
+   },
+   "aptidoesAmaldicoadas": [],
+   "aptidaoOpcoes": {},
+   "aptidaoOpcoesRepetidas": {},
+   "dominios": [],
+   "dominioAtivoId": null,
+   "treinamentos": {},
+   "treinamentoAlvos": {},
+   "treinamentoEscolhas": {},
+   "treinoEscolhaFeiticos": {},
+   "votos": {
+    "contratuais": [],
+    "mecanicos": []
+   },
+   "pacto": {
+    "nome": "",
+    "descricao": "",
+    "maleficios": [],
+    "beneficios": []
+   },
+   "modificacoesCorporais": {
+    "descricao": "",
+    "efeitosBase": [],
+    "limite": 0,
+    "enxertos": []
+   },
+   "tita": {
+    "ativo": false,
+    "membros": 5
+   },
+   "caracteristicasAmaldicoadas": [],
+   "caracteristicasAmaldicoadasAlvos": {},
+   "treinosEspeciais": [],
+   "treinoEspecialProgresso": {},
+   "focosBonus": 0,
+   "statOverrides": {},
+   "melhoriasSuperiores": [],
+   "habilidadesLendarias": [],
+   "escolhasAltoNivel": {},
+   "aparencia": null,
+   "preferenciasFicha": null,
+   "addons": [],
+   "narratorNotes": "",
+   "combatState": {
+    "isActive": false,
+    "hpCurrent": 0,
+    "peCurrent": 0,
+    "almaCurrent": 100,
+    "activeConditions": [],
+    "customCounters": [],
+    "combatLog": []
+   },
+   "id": "teste-g2-perfeita"
+  },
+  "mestre": {
+   "system": "afty",
+   "rulesVersion": "player",
+   "name": "Mestre (Teste G2)",
+   "portraitUrl": null,
+   "portraitFocus": {
+    "x": 50,
+    "y": 50
+   },
+   "core": {
+    "tipo": "combatente",
+    "patamar": "comum",
+    "nd": 12,
+    "tamanho": "medio",
+    "tecnicaAttr": "inteligencia",
+    "tecnicaDescricao": "",
+    "tecnicaEfeitos": [],
+    "funcionamentosAdicionais": [],
+    "origem": {
+     "id": "inato"
+    }
+   },
+   "alma": {
+    "atual": 100,
+    "max": 100
+   },
+   "qntPE": "normal",
+   "attrMethod": "pontos",
+   "attrLimite": {
+    "forca": 20,
+    "destreza": 20,
+    "constituicao": 20,
+    "inteligencia": 20,
+    "sabedoria": 20,
+    "presenca": 20
+   },
+   "attributes": {
+    "forca": 16,
+    "destreza": 14,
+    "constituicao": 14,
+    "inteligencia": 10,
+    "sabedoria": 10,
+    "presenca": 10
+   },
+   "attrNivel": {
+    "forca": 0,
+    "destreza": 0,
+    "constituicao": 0,
+    "inteligencia": 0,
+    "sabedoria": 0,
+    "presenca": 0
+   },
+   "pericias": {},
+   "periciasOrdem": null,
+   "periciasPersonalizadas": [],
+   "periciaOficio": "",
+   "periciaOficios": {},
+   "periciasOficiosExtras": [],
+   "periciaAtributoManual": {},
+   "periciasBonus": 0,
+   "resistenciasProf": {},
+   "trDaClasse": [],
+   "trSegundo": null,
+   "trAtributoManual": {},
+   "ataquesProf": {},
+   "ataqueFineza": false,
+   "ataqueBasicoId": "corpo",
+   "ataqueAtributoManual": {},
+   "armasDedicadas": [],
+   "defesasDano": {},
+   "catarse": {
+    "saldo": 0,
+    "compras": []
+   },
+   "carteira": {
+    "entradas": [],
+    "gastos": []
+   },
+   "espinho": {
+    "almas": 0,
+    "outros": 0,
+    "compras": {},
+    "equipamentos": []
+   },
+   "tecnicasCombate": {
+    "armas": [],
+    "atributo": "inteligencia"
+   },
+   "talentosConfig": {
+    "tal_mestre_das_armas": {
+     "modo": "armas",
+     "armas": [],
+     "grupo": null
+    },
+    "tal_tempestade_de_ideias": {
+     "pericia": null,
+     "ferramenta": "",
+     "vantagemPericia": null
+    },
+    "tal_artesao_amaldicoado": {
+     "ferramenta": null
+    }
+   },
+   "combate": {
+    "ativo": false,
+    "empolgacao": 1,
+    "insistenciaUsada": false,
+    "manobraAjuste": false,
+    "manobraDesarme": false,
+    "manobraEsquiva": false,
+    "manobraTrabalhoDePes": false,
+    "manobraFinalizadora": null,
+    "brutalidade": false,
+    "brutalidadePE": 0,
+    "brutalidadePilha": 0,
+    "ataqueInconsequente": false,
+    "impactoMisto": false,
+    "resistirPE": 0,
+    "furiaVinganca": false,
+    "imprudenciaMotivadora": false,
+    "machucado": false,
+    "abates": 0,
+    "armasAbsolutas": null,
+    "auraElemental": true,
+    "concentrarAura": [],
+    "golpeComAura": null,
+    "canalizarEmGolpe": false,
+    "canalizacaoMaxima": false
+   },
+   "equipamentos": {
+    "itens": []
+   },
+   "armasCustom": [],
+   "forjas": [],
+   "especializacoes": [
+    {
+     "id": "combatente",
+     "nivel": 12
+    }
+   ],
+   "feiticos": [],
+   "reducoesCustoFeitico": {
+    "dominancia": null,
+    "manipulacao": []
+   },
+   "estilosSombra": [],
+   "estiloFuncionamento": {
+    "texto": "",
+    "durabilidadeTrilha": null
+   },
+   "habilidadesGerais": [],
+   "focosLivres": 0,
+   "periciaAtributo": "inteligencia",
+   "habilidades": [
+    "cmb_assumir_postura",
+    "cmb_ataque_concentrado"
+   ],
+   "escolhasHabilidade": {},
+   "especializacaoConfig": {},
+   "escolhasTalento": {},
+   "talentos": [],
+   "invocacoes": [],
+   "origemContadores": {},
+   "hordas": [],
+   "quimeras": [],
+   "fundamentosPerdidos": [],
+   "aptidoes": {
+    "au": 0,
+    "cl": 0,
+    "bar": 0,
+    "dom": 0,
+    "er": 0
+   },
+   "aptidoesAmaldicoadas": [],
+   "aptidaoOpcoes": {},
+   "aptidaoOpcoesRepetidas": {},
+   "dominios": [],
+   "dominioAtivoId": null,
+   "treinamentos": {},
+   "treinamentoAlvos": {},
+   "treinamentoEscolhas": {},
+   "treinoEscolhaFeiticos": {},
+   "votos": {
+    "contratuais": [],
+    "mecanicos": []
+   },
+   "pacto": {
+    "nome": "",
+    "descricao": "",
+    "maleficios": [],
+    "beneficios": []
+   },
+   "modificacoesCorporais": {
+    "descricao": "",
+    "efeitosBase": [],
+    "limite": 0,
+    "enxertos": []
+   },
+   "tita": {
+    "ativo": false,
+    "membros": 5
+   },
+   "caracteristicasAmaldicoadas": [],
+   "caracteristicasAmaldicoadasAlvos": {},
+   "treinosEspeciais": [],
+   "treinoEspecialProgresso": {},
+   "focosBonus": 0,
+   "statOverrides": {},
+   "melhoriasSuperiores": [],
+   "habilidadesLendarias": [],
+   "escolhasAltoNivel": {},
+   "aparencia": null,
+   "preferenciasFicha": null,
+   "addons": [
+    {
+     "id": "teste-concessao",
+     "nome": "Concessão de Teste",
+     "acrescenta": {
+      "habilidades": []
+     },
+     "permite": [
+      "concessao"
+     ]
+    }
+   ],
+   "narratorNotes": "",
+   "combatState": {
+    "isActive": false,
+    "hpCurrent": 0,
+    "peCurrent": 0,
+    "almaCurrent": 100,
+    "activeConditions": [],
+    "customCounters": [],
+    "combatLog": []
+   },
+   "id": "teste-g2-mestre"
+  },
+  "sangrador": {
+   "system": "afty",
+   "rulesVersion": "player",
+   "name": "Sangrador (Teste G2)",
+   "portraitUrl": null,
+   "portraitFocus": {
+    "x": 50,
+    "y": 50
+   },
+   "core": {
+    "tipo": "combatente",
+    "patamar": "comum",
+    "nd": 12,
+    "tamanho": "medio",
+    "tecnicaAttr": "inteligencia",
+    "tecnicaDescricao": "",
+    "tecnicaEfeitos": [],
+    "funcionamentosAdicionais": [],
+    "origem": {
+     "id": "inato"
+    }
+   },
+   "alma": {
+    "atual": 100,
+    "max": 100
+   },
+   "qntPE": "normal",
+   "attrMethod": "pontos",
+   "attrLimite": {
+    "forca": 20,
+    "destreza": 20,
+    "constituicao": 20,
+    "inteligencia": 20,
+    "sabedoria": 20,
+    "presenca": 20
+   },
+   "attributes": {
+    "forca": 16,
+    "destreza": 14,
+    "constituicao": 14,
+    "inteligencia": 10,
+    "sabedoria": 10,
+    "presenca": 10
+   },
+   "attrNivel": {
+    "forca": 0,
+    "destreza": 0,
+    "constituicao": 0,
+    "inteligencia": 0,
+    "sabedoria": 0,
+    "presenca": 0
+   },
+   "pericias": {},
+   "periciasOrdem": null,
+   "periciasPersonalizadas": [],
+   "periciaOficio": "",
+   "periciaOficios": {},
+   "periciasOficiosExtras": [],
+   "periciaAtributoManual": {},
+   "periciasBonus": 0,
+   "resistenciasProf": {},
+   "trDaClasse": [],
+   "trSegundo": null,
+   "trAtributoManual": {},
+   "ataquesProf": {},
+   "ataqueFineza": false,
+   "ataqueBasicoId": "corpo",
+   "ataqueAtributoManual": {},
+   "armasDedicadas": [],
+   "defesasDano": {},
+   "catarse": {
+    "saldo": 0,
+    "compras": []
+   },
+   "carteira": {
+    "entradas": [],
+    "gastos": []
+   },
+   "espinho": {
+    "almas": 0,
+    "outros": 0,
+    "compras": {},
+    "equipamentos": []
+   },
+   "tecnicasCombate": {
+    "armas": [],
+    "atributo": "inteligencia"
+   },
+   "talentosConfig": {
+    "tal_mestre_das_armas": {
+     "modo": "armas",
+     "armas": [],
+     "grupo": null
+    },
+    "tal_tempestade_de_ideias": {
+     "pericia": null,
+     "ferramenta": "",
+     "vantagemPericia": null
+    },
+    "tal_artesao_amaldicoado": {
+     "ferramenta": null
+    }
+   },
+   "combate": {
+    "ativo": false,
+    "empolgacao": 1,
+    "insistenciaUsada": false,
+    "manobraAjuste": false,
+    "manobraDesarme": false,
+    "manobraEsquiva": false,
+    "manobraTrabalhoDePes": false,
+    "manobraFinalizadora": null,
+    "brutalidade": false,
+    "brutalidadePE": 0,
+    "brutalidadePilha": 0,
+    "ataqueInconsequente": false,
+    "impactoMisto": false,
+    "resistirPE": 0,
+    "furiaVinganca": false,
+    "imprudenciaMotivadora": false,
+    "machucado": false,
+    "abates": 0,
+    "armasAbsolutas": null,
+    "auraElemental": true,
+    "concentrarAura": [],
+    "golpeComAura": null,
+    "canalizarEmGolpe": false,
+    "canalizacaoMaxima": false
+   },
+   "equipamentos": {
+    "itens": []
+   },
+   "armasCustom": [],
+   "forjas": [],
+   "especializacoes": [
+    {
+     "id": "combatente",
+     "nivel": 12
+    }
+   ],
+   "feiticos": [],
+   "reducoesCustoFeitico": {
+    "dominancia": null,
+    "manipulacao": []
+   },
+   "estilosSombra": [],
+   "estiloFuncionamento": {
+    "texto": "",
+    "durabilidadeTrilha": null
+   },
+   "habilidadesGerais": [],
+   "focosLivres": 0,
+   "periciaAtributo": "inteligencia",
+   "habilidades": [],
+   "escolhasHabilidade": {},
+   "especializacaoConfig": {},
+   "escolhasTalento": {},
+   "talentos": [],
+   "invocacoes": [],
+   "origemContadores": {},
+   "hordas": [],
+   "quimeras": [],
+   "fundamentosPerdidos": [],
+   "aptidoes": {
+    "au": 0,
+    "cl": 0,
+    "bar": 0,
+    "dom": 0,
+    "er": 0
+   },
+   "aptidoesAmaldicoadas": [],
+   "aptidaoOpcoes": {},
+   "aptidaoOpcoesRepetidas": {},
+   "dominios": [],
+   "dominioAtivoId": null,
+   "treinamentos": {},
+   "treinamentoAlvos": {},
+   "treinamentoEscolhas": {},
+   "treinoEscolhaFeiticos": {},
+   "votos": {
+    "contratuais": [],
+    "mecanicos": []
+   },
+   "pacto": {
+    "nome": "",
+    "descricao": "",
+    "maleficios": [],
+    "beneficios": []
+   },
+   "modificacoesCorporais": {
+    "descricao": "",
+    "efeitosBase": [],
+    "limite": 0,
+    "enxertos": []
+   },
+   "tita": {
+    "ativo": false,
+    "membros": 5
+   },
+   "caracteristicasAmaldicoadas": [],
+   "caracteristicasAmaldicoadasAlvos": {},
+   "treinosEspeciais": [],
+   "treinoEspecialProgresso": {},
+   "focosBonus": 0,
+   "statOverrides": {},
+   "melhoriasSuperiores": [],
+   "habilidadesLendarias": [],
+   "escolhasAltoNivel": {},
+   "aparencia": null,
+   "preferenciasFicha": null,
+   "addons": [],
+   "narratorNotes": "",
+   "combatState": {
+    "isActive": false,
+    "hpCurrent": 0,
+    "peCurrent": 0,
+    "almaCurrent": 100,
+    "activeConditions": [],
+    "customCounters": [],
+    "combatLog": []
+   },
+   "id": "teste-g2-sangrador"
+  },
+  "invocador": {
+   "system": "afty",
+   "rulesVersion": "player",
+   "name": "Invocador (Teste G2)",
+   "portraitUrl": null,
+   "portraitFocus": {
+    "x": 50,
+    "y": 50
+   },
+   "core": {
+    "tipo": "combatente",
+    "patamar": "comum",
+    "nd": 12,
+    "tamanho": "medio",
+    "tecnicaAttr": "inteligencia",
+    "tecnicaDescricao": "",
+    "tecnicaEfeitos": [],
+    "funcionamentosAdicionais": [],
+    "origem": {
+     "id": "inato"
+    }
+   },
+   "alma": {
+    "atual": 100,
+    "max": 100
+   },
+   "qntPE": "normal",
+   "attrMethod": "pontos",
+   "attrLimite": {
+    "forca": 20,
+    "destreza": 20,
+    "constituicao": 20,
+    "inteligencia": 20,
+    "sabedoria": 20,
+    "presenca": 20
+   },
+   "attributes": {
+    "forca": 16,
+    "destreza": 14,
+    "constituicao": 14,
+    "inteligencia": 10,
+    "sabedoria": 10,
+    "presenca": 10
+   },
+   "attrNivel": {
+    "forca": 0,
+    "destreza": 0,
+    "constituicao": 0,
+    "inteligencia": 0,
+    "sabedoria": 0,
+    "presenca": 0
+   },
+   "pericias": {},
+   "periciasOrdem": null,
+   "periciasPersonalizadas": [],
+   "periciaOficio": "",
+   "periciaOficios": {},
+   "periciasOficiosExtras": [],
+   "periciaAtributoManual": {},
+   "periciasBonus": 0,
+   "resistenciasProf": {},
+   "trDaClasse": [],
+   "trSegundo": null,
+   "trAtributoManual": {},
+   "ataquesProf": {},
+   "ataqueFineza": false,
+   "ataqueBasicoId": "corpo",
+   "ataqueAtributoManual": {},
+   "armasDedicadas": [],
+   "defesasDano": {},
+   "catarse": {
+    "saldo": 0,
+    "compras": []
+   },
+   "carteira": {
+    "entradas": [],
+    "gastos": []
+   },
+   "espinho": {
+    "almas": 0,
+    "outros": 0,
+    "compras": {},
+    "equipamentos": []
+   },
+   "tecnicasCombate": {
+    "armas": [],
+    "atributo": "inteligencia"
+   },
+   "talentosConfig": {
+    "tal_mestre_das_armas": {
+     "modo": "armas",
+     "armas": [],
+     "grupo": null
+    },
+    "tal_tempestade_de_ideias": {
+     "pericia": null,
+     "ferramenta": "",
+     "vantagemPericia": null
+    },
+    "tal_artesao_amaldicoado": {
+     "ferramenta": null
+    }
+   },
+   "combate": {
+    "ativo": false,
+    "empolgacao": 1,
+    "insistenciaUsada": false,
+    "manobraAjuste": false,
+    "manobraDesarme": false,
+    "manobraEsquiva": false,
+    "manobraTrabalhoDePes": false,
+    "manobraFinalizadora": null,
+    "brutalidade": false,
+    "brutalidadePE": 0,
+    "brutalidadePilha": 0,
+    "ataqueInconsequente": false,
+    "impactoMisto": false,
+    "resistirPE": 0,
+    "furiaVinganca": false,
+    "imprudenciaMotivadora": false,
+    "machucado": false,
+    "abates": 0,
+    "armasAbsolutas": null,
+    "auraElemental": true,
+    "concentrarAura": [],
+    "golpeComAura": null,
+    "canalizarEmGolpe": false,
+    "canalizacaoMaxima": false
+   },
+   "equipamentos": {
+    "itens": []
+   },
+   "armasCustom": [],
+   "forjas": [],
+   "especializacoes": [
+    {
+     "id": "combatente",
+     "nivel": 12
+    }
+   ],
+   "feiticos": [],
+   "reducoesCustoFeitico": {
+    "dominancia": null,
+    "manipulacao": []
+   },
+   "estilosSombra": [],
+   "estiloFuncionamento": {
+    "texto": "",
+    "durabilidadeTrilha": null
+   },
+   "habilidadesGerais": [],
+   "focosLivres": 0,
+   "periciaAtributo": "inteligencia",
+   "habilidades": [],
+   "escolhasHabilidade": {},
+   "especializacaoConfig": {},
+   "escolhasTalento": {},
+   "talentos": [],
+   "invocacoes": [
+    {
+     "id": "g2-inv-a",
+     "nome": "Nue",
+     "tipoMecanico": "shikigami",
+     "grau": "primeiro",
+     "atributos": {
+      "forca": 8,
+      "destreza": 8,
+      "constituicao": 8,
+      "inteligencia": 8,
+      "sabedoria": 8,
+      "presenca": 8
+     },
+     "ataqueTreinado": "corpo",
+     "trProf": {
+      "reflexos": "treinado"
+     },
+     "periciasProf": {},
+     "tamanho": "medio",
+     "marcadores": {},
+     "marcadorOpcoes": {},
+     "marcadorFontes": {},
+     "acoes": [],
+     "caracteristicas": [],
+     "portraitUrl": "",
+     "portraitFocus": {
+      "x": 50,
+      "y": 50
+     },
+     "aparencia": null,
+     "fundamento": false,
+     "oficio": "",
+     "natureza": "",
+     "refeicao": "",
+     "refeicaoTrs": []
+    },
+    {
+     "id": "g2-inv-b",
+     "nome": "Sapo de Teste Com um Nome Bem Comprido",
+     "tipoMecanico": "shikigami",
+     "grau": "terceiro",
+     "atributos": {
+      "forca": 8,
+      "destreza": 8,
+      "constituicao": 8,
+      "inteligencia": 8,
+      "sabedoria": 8,
+      "presenca": 8
+     },
+     "ataqueTreinado": "corpo",
+     "trProf": {
+      "reflexos": "treinado"
+     },
+     "periciasProf": {},
+     "tamanho": "medio",
+     "marcadores": {},
+     "marcadorOpcoes": {},
+     "marcadorFontes": {},
+     "acoes": [],
+     "caracteristicas": [],
+     "portraitUrl": "",
+     "portraitFocus": {
+      "x": 50,
+      "y": 50
+     },
+     "aparencia": null,
+     "fundamento": false,
+     "oficio": "",
+     "natureza": "",
+     "refeicao": "",
+     "refeicaoTrs": []
+    }
+   ],
+   "origemContadores": {},
+   "hordas": [],
+   "quimeras": [],
+   "fundamentosPerdidos": [],
+   "aptidoes": {
+    "au": 0,
+    "cl": 0,
+    "bar": 0,
+    "dom": 0,
+    "er": 0
+   },
+   "aptidoesAmaldicoadas": [],
+   "aptidaoOpcoes": {},
+   "aptidaoOpcoesRepetidas": {},
+   "dominios": [],
+   "dominioAtivoId": null,
+   "treinamentos": {},
+   "treinamentoAlvos": {},
+   "treinamentoEscolhas": {},
+   "treinoEscolhaFeiticos": {},
+   "votos": {
+    "contratuais": [],
+    "mecanicos": []
+   },
+   "pacto": {
+    "nome": "",
+    "descricao": "",
+    "maleficios": [],
+    "beneficios": []
+   },
+   "modificacoesCorporais": {
+    "descricao": "",
+    "efeitosBase": [],
+    "limite": 0,
+    "enxertos": []
+   },
+   "tita": {
+    "ativo": false,
+    "membros": 5
+   },
+   "caracteristicasAmaldicoadas": [],
+   "caracteristicasAmaldicoadasAlvos": {},
+   "treinosEspeciais": [],
+   "treinoEspecialProgresso": {},
+   "focosBonus": 0,
+   "statOverrides": {},
+   "melhoriasSuperiores": [],
+   "habilidadesLendarias": [],
+   "escolhasAltoNivel": {},
+   "aparencia": null,
+   "preferenciasFicha": null,
+   "addons": [],
+   "narratorNotes": "",
+   "combatState": {
+    "isActive": false,
+    "hpCurrent": 0,
+    "peCurrent": 0,
+    "almaCurrent": 100,
+    "activeConditions": [],
+    "customCounters": [],
+    "combatLog": []
+   },
+   "id": "teste-g2-invocador"
+  },
+  "cria": {
+   "system": "afty",
+   "rulesVersion": "afty",
+   "name": "Cria (Teste G2)",
+   "portraitUrl": null,
+   "portraitFocus": {
+    "x": 50,
+    "y": 50
+   },
+   "core": {
+    "tipo": "combatente",
+    "patamar": "comum",
+    "nd": 14,
+    "tamanho": "medio",
+    "tecnicaAttr": "inteligencia",
+    "tecnicaDescricao": "",
+    "tecnicaEfeitos": [],
+    "funcionamentosAdicionais": [],
+    "origem": {
+     "id": "inato"
+    }
+   },
+   "alma": {
+    "atual": 100,
+    "max": 100
+   },
+   "qntPE": "normal",
+   "attrMethod": "pontos",
+   "attrLimite": {
+    "forca": 20,
+    "destreza": 20,
+    "constituicao": 20,
+    "inteligencia": 20,
+    "sabedoria": 20,
+    "presenca": 20
+   },
+   "attributes": {
+    "forca": 18,
+    "destreza": 10,
+    "constituicao": 16,
+    "inteligencia": 10,
+    "sabedoria": 10,
+    "presenca": 10
+   },
+   "attrNivel": {
+    "forca": 0,
+    "destreza": 0,
+    "constituicao": 0,
+    "inteligencia": 0,
+    "sabedoria": 0,
+    "presenca": 0
+   },
+   "pericias": {},
+   "periciasOrdem": null,
+   "periciasPersonalizadas": [],
+   "periciaOficio": "",
+   "periciaOficios": {},
+   "periciasOficiosExtras": [],
+   "periciaAtributoManual": {},
+   "periciasBonus": 0,
+   "resistenciasProf": {},
+   "trDaClasse": [],
+   "trSegundo": null,
+   "trAtributoManual": {},
+   "ataquesProf": {},
+   "ataqueFineza": false,
+   "ataqueBasicoId": "corpo",
+   "ataqueAtributoManual": {},
+   "armasDedicadas": [],
+   "defesasDano": {},
+   "catarse": {
+    "saldo": 0,
+    "compras": []
+   },
+   "carteira": {
+    "entradas": [],
+    "gastos": []
+   },
+   "espinho": {
+    "almas": 0,
+    "outros": 0,
+    "compras": {},
+    "equipamentos": []
+   },
+   "tecnicasCombate": {
+    "armas": [],
+    "atributo": "inteligencia"
+   },
+   "talentosConfig": {
+    "tal_mestre_das_armas": {
+     "modo": "armas",
+     "armas": [],
+     "grupo": null
+    },
+    "tal_tempestade_de_ideias": {
+     "pericia": null,
+     "ferramenta": "",
+     "vantagemPericia": null
+    },
+    "tal_artesao_amaldicoado": {
+     "ferramenta": null
+    }
+   },
+   "combate": {
+    "ativo": false,
+    "empolgacao": 1,
+    "insistenciaUsada": false,
+    "manobraAjuste": false,
+    "manobraDesarme": false,
+    "manobraEsquiva": false,
+    "manobraTrabalhoDePes": false,
+    "manobraFinalizadora": null,
+    "brutalidade": false,
+    "brutalidadePE": 0,
+    "brutalidadePilha": 0,
+    "ataqueInconsequente": false,
+    "impactoMisto": false,
+    "resistirPE": 0,
+    "furiaVinganca": false,
+    "imprudenciaMotivadora": false,
+    "machucado": false,
+    "abates": 0,
+    "armasAbsolutas": null,
+    "auraElemental": true,
+    "concentrarAura": [],
+    "golpeComAura": null,
+    "canalizarEmGolpe": false,
+    "canalizacaoMaxima": false
+   },
+   "equipamentos": {
+    "itens": []
+   },
+   "armasCustom": [],
+   "forjas": [],
+   "especializacoes": [
+    {
+     "id": "combatente",
+     "nivel": 14
+    }
+   ],
+   "feiticos": [],
+   "reducoesCustoFeitico": {
+    "dominancia": null,
+    "manipulacao": []
+   },
+   "estilosSombra": [],
+   "estiloFuncionamento": {
+    "texto": "",
+    "durabilidadeTrilha": null
+   },
+   "habilidadesGerais": [],
+   "focosLivres": 0,
+   "periciaAtributo": "inteligencia",
+   "habilidades": [],
+   "escolhasHabilidade": {},
+   "especializacaoConfig": {},
+   "escolhasTalento": {},
+   "talentos": [],
+   "invocacoes": [
+    {
+     "id": "g2-inv-a",
+     "nome": "Nue",
+     "tipoMecanico": "shikigami",
+     "grau": "primeiro",
+     "atributos": {
+      "forca": 8,
+      "destreza": 8,
+      "constituicao": 8,
+      "inteligencia": 8,
+      "sabedoria": 8,
+      "presenca": 8
+     },
+     "ataqueTreinado": "corpo",
+     "trProf": {
+      "reflexos": "treinado"
+     },
+     "periciasProf": {},
+     "tamanho": "medio",
+     "marcadores": {},
+     "marcadorOpcoes": {},
+     "marcadorFontes": {},
+     "acoes": [],
+     "caracteristicas": [],
+     "portraitUrl": "",
+     "portraitFocus": {
+      "x": 50,
+      "y": 50
+     },
+     "aparencia": null,
+     "fundamento": false,
+     "oficio": "",
+     "natureza": "",
+     "refeicao": "",
+     "refeicaoTrs": []
+    }
+   ],
+   "origemContadores": {},
+   "hordas": [],
+   "quimeras": [],
+   "fundamentosPerdidos": [],
+   "aptidoes": {
+    "au": 0,
+    "cl": 0,
+    "bar": 0,
+    "dom": 0,
+    "er": 0
+   },
+   "aptidoesAmaldicoadas": [],
+   "aptidaoOpcoes": {},
+   "aptidaoOpcoesRepetidas": {},
+   "dominios": [],
+   "dominioAtivoId": null,
+   "treinamentos": {},
+   "treinamentoAlvos": {},
+   "treinamentoEscolhas": {},
+   "treinoEscolhaFeiticos": {},
+   "votos": {
+    "contratuais": [],
+    "mecanicos": []
+   },
+   "pacto": {
+    "nome": "",
+    "descricao": "",
+    "maleficios": [],
+    "beneficios": []
+   },
+   "modificacoesCorporais": {
+    "descricao": "",
+    "efeitosBase": [],
+    "limite": 0,
+    "enxertos": []
+   },
+   "tita": {
+    "ativo": false,
+    "membros": 5
+   },
+   "caracteristicasAmaldicoadas": [],
+   "caracteristicasAmaldicoadasAlvos": {},
+   "treinosEspeciais": [],
+   "treinoEspecialProgresso": {},
+   "focosBonus": 0,
+   "statOverrides": {},
+   "melhoriasSuperiores": [],
+   "habilidadesLendarias": [],
+   "escolhasAltoNivel": {},
+   "aparencia": null,
+   "preferenciasFicha": null,
+   "addons": [
+    {
+     "id": "teste-concessao",
+     "nome": "Concessão de Teste",
+     "acrescenta": {
+      "habilidades": []
+     },
+     "permite": [
+      "concessao"
+     ]
+    }
+   ],
+   "narratorNotes": "",
+   "combatState": {
+    "isActive": false,
+    "hpCurrent": 0,
+    "peCurrent": 0,
+    "almaCurrent": 100,
+    "activeConditions": [],
+    "customCounters": [],
+    "combatLog": []
+   },
+   "id": "teste-g2-cria"
+  },
+  "minamoto": {
+   "system": "afty",
+   "rulesVersion": "player",
+   "name": "Minamoto no Flugel (Teste G2)",
+   "portraitUrl": "https://i.pinimg.com/736x/5a/1d/fe/5a1dfecc3c619587772ffbe7005c2fe0.jpg",
+   "portraitFocus": {
+    "x": 58.88888888888889,
+    "y": 33.00347222222222
+   },
+   "core": {
+    "tipo": "combatente",
+    "patamar": "comum",
+    "nd": 30,
+    "tamanho": "medio",
+    "tecnicaAttr": "sabedoria",
+    "tecnicaDescricao": "# Funcionamento Básico: Bênçãos\nO Santo da Espada é conhecido por ser amado pelos céus, e receber dele suas bênçãos, em momentos de necessidade, ele sempre receberá uma benção única para aquela situação. As bênçãos podem ser concedidas livremente pelo Mestre durante a sessão, podendo ser tanto bênçãos úteis ou inúteis como na Mecânica Única “Bênçãos Inúteis” que será apresentada mais à frente. Além disso, uma vez por sessão, o jogador pode escolher receber uma Benção, que deve ser aceita pelo Mestre do Jogo. \n\nUma benção sempre deve ser adaptada como uma Passiva de Técnica, de nível igual ou inferior ao Nível Máximo de Técnica do Usuário. Bênçãos podem ser mantidas permanentemente, desde que o usuário possua um slot de técnica livre ao final da sessão. Todas as bênçãos recebidas em sessão, devem passar posteriormente por avaliação normalmente.\n\n# Mecânica Única: Bênçãos Inúteis\nNem sempre os céus sabem exatamente do que o usuário precisa, em momentos únicos ou cômicos, o mestre pode conceder uma Benção sem valor mecânico expressivo para o personagem. Como por exemplo, a benção de dormir perfeitamente reto na vertical sem doer as costas. Ou a benção de nunca confundir sal com açúcar. Com essa mecânica, pode armazenar suas bênçãos inúteis de maneira ilimitada, virando um acumulador de tralhas divertidas.",
+    "tecnicaEfeitos": [
+     {
+      "canal": "bonusPericia",
+      "alvo": "oficio",
+      "expr": "BT+10"
+     },
+     {
+      "canal": "bonusPericia",
+      "alvo": "oficio__2",
+      "expr": "BT+10"
+     },
+     {
+      "canal": "bonusPericia",
+      "alvo": "oficio__3",
+      "expr": "BT+10"
+     }
+    ],
+    "funcionamentosAdicionais": [],
+    "origem": {
+     "id": "herdado",
+     "cla": "flugel:cla_akutame",
+     "bonusAtributos": {
+      "constituicao": 2,
+      "sabedoria": 1
+     },
+     "escolhas": {
+      "akutame_mestre": [
+       "akutame_mestre_feiticaria"
+      ]
+     }
+    }
+   },
+   "alma": {
+    "atual": 100,
+    "max": 100
+   },
+   "qntPE": "normal",
+   "attrMethod": "pontos",
+   "attrLimite": {
+    "forca": 20,
+    "destreza": 20,
+    "constituicao": 20,
+    "inteligencia": 20,
+    "sabedoria": 20,
+    "presenca": 20
+   },
+   "attributes": {
+    "forca": 10,
+    "destreza": 14,
+    "constituicao": 14,
+    "inteligencia": 10,
+    "sabedoria": 15,
+    "presenca": 10
+   },
+   "attrNivel": {
+    "forca": 0,
+    "destreza": 4,
+    "constituicao": 4,
+    "inteligencia": 0,
+    "sabedoria": 6,
+    "presenca": 0
+   },
+   "pericias": {
+    "acrobacia": "mestre",
+    "historia": "mestre",
+    "intuicao": "mestre",
+    "ocultismo": "mestre",
+    "intimidacao": "mestre",
+    "oficio": "mestre",
+    "oficio__2": "mestre",
+    "feiticaria": "mestre",
+    "oficio__3": "mestre",
+    "atletismo": "mestre"
+   },
+   "periciasOrdem": [
+    "acrobacia",
+    "atletismo",
+    "direcao",
+    "enganacao",
+    "feiticaria",
+    "furtividade",
+    "historia",
+    "intimidacao",
+    "intuicao",
+    "investigacao",
+    "medicina",
+    "ocultismo",
+    "oficio",
+    "percepcao",
+    "performance",
+    "persuasao",
+    "prestidigitacao",
+    "sobrevivencia",
+    "tecnologia",
+    "teologia"
+   ],
+   "periciasPersonalizadas": [],
+   "periciaOficio": "",
+   "periciaOficios": {
+    "oficio": [
+     "Ferreiro"
+    ],
+    "oficio__2": [
+     "Canalizador"
+    ],
+    "oficio__3": [
+     "Alquimia"
+    ]
+   },
+   "periciasBonus": 0,
+   "resistenciasProf": {
+    "fortitude": "mestre",
+    "reflexos": "treinado"
+   },
+   "ataquesProf": {},
+   "ataqueFineza": true,
+   "armasDedicadas": [],
+   "tecnicasCombate": {
+    "armas": [
+     "arm_espada_longa",
+     "arm_faixas"
+    ],
+    "atributo": "sabedoria"
+   },
+   "combate": {
+    "ativo": true,
+    "empolgacao": 1,
+    "insistenciaUsada": false,
+    "manobraAjuste": false,
+    "manobraDesarme": false,
+    "manobraEsquiva": false,
+    "manobraTrabalhoDePes": false,
+    "manobraFinalizadora": null,
+    "brutalidade": false,
+    "brutalidadePE": 0,
+    "brutalidadePilha": 0,
+    "ataqueInconsequente": false,
+    "impactoMisto": false,
+    "resistirPE": 0,
+    "furiaVinganca": false,
+    "imprudenciaMotivadora": false,
+    "machucado": false,
+    "abates": 0,
+    "armasAbsolutas": null,
+    "auraElemental": true,
+    "concentrarAura": [
+     "aura_lacerante",
+     "aura_redirecionadora",
+     "aura_movedica",
+     "aura_do_bastiao"
+    ],
+    "golpeComAura": null,
+    "canalizarEmGolpe": true,
+    "canalizacaoMaxima": true,
+    "postura": null,
+    "postura2": null,
+    "golpeAtroz": true,
+    "golpeLetal": true,
+    "golpePenetrante": false,
+    "arteGolpeDescendente": true,
+    "espiritoDeLuta": true,
+    "espiritoIncansavel": true,
+    "fluxoPER": 8,
+    "arsenalCiclico": true,
+    "duelando": true,
+    "lutandoComDuasArmas": true,
+    "conhecimentoAplicado": 4,
+    "ataqueConcentrado": 3,
+    "comidas_refeicoes": [
+     "revigorante",
+     "refrescante",
+     "reforcada",
+     "picante",
+     "nutritiva",
+     "leve",
+     "energetica"
+    ],
+    "comidas_bt": 10,
+    "comidas_grau": "especial",
+    "aliados_analista": null,
+    "aliados_protetor": "mestre",
+    "aliados_assassino": null,
+    "invencivelSobOSol": true,
+    "devastacaoPilha": 8
+   },
+   "equipamentos": {
+    "itens": [
+     {
+      "uid": "eq_mtioem81_1",
+      "tipo": "kit",
+      "refId": "kit_ferreiro",
+      "qtd": 1,
+      "equipado": false
+     },
+     {
+      "uid": "eq_mtioeo5r_2",
+      "tipo": "kit",
+      "refId": "kit_canalizador",
+      "qtd": 1,
+      "equipado": false
+     },
+     {
+      "uid": "eq_mtioezs3_3",
+      "tipo": "uniforme",
+      "refId": "unif_revestimento_robusto",
+      "qtd": 1,
+      "equipado": true,
+      "fa": {
+       "grau": "especial",
+       "encantamentos": [
+        "enc_unif_blindado",
+        "enc_unif_propulsor",
+        "enc_unif_impulso",
+        "enc_unif_ajustado"
+       ],
+       "habilidadeUnica": "Você recebe Metade de seu BT em Defesa e enquanto estiver Lendo Intenções do alvo, você recebe um Nível Adicional no Dado de Ler Intenções.",
+       "habilidadeEfeitos": [
+        {
+         "canal": "defesa",
+         "expr": "metade(bt)"
+        }
+       ]
+      }
+     },
+     {
+      "uid": "eq_mtiohq4t_5",
+      "tipo": "item",
+      "refId": "it_aneis_do_conhecimento",
+      "qtd": 1,
+      "equipado": true
+     },
+     {
+      "uid": "eq_mtiohr83_6",
+      "tipo": "item",
+      "refId": "it_faixas_celeres",
+      "qtd": 1,
+      "equipado": true
+     },
+     {
+      "uid": "eq_mtioi7b7_7",
+      "tipo": "item",
+      "refId": "it_laco_da_vida",
+      "qtd": 1,
+      "equipado": false
+     },
+     {
+      "uid": "eq_mtioicbb_8",
+      "tipo": "item",
+      "refId": "it_cinturao_do_inabalavel",
+      "qtd": 1,
+      "equipado": true
+     },
+     {
+      "uid": "eq_mtioijtt_9",
+      "tipo": "item",
+      "refId": "it_ombreiras_do_vigor_superior",
+      "qtd": 1,
+      "equipado": true
+     },
+     {
+      "uid": "eq_mtxctbzs_1",
+      "tipo": "item",
+      "refId": "acsu_mtxccuvh_1",
+      "qtd": 1,
+      "equipado": true
+     },
+     {
+      "uid": "eq_mtxctdmc_3",
+      "tipo": "item",
+      "refId": "acsu_mtxcekk0_2",
+      "qtd": 1,
+      "equipado": true
+     },
+     {
+      "uid": "eq_mtxcte6v_5",
+      "tipo": "item",
+      "refId": "acsu_mtxceuu6_3",
+      "qtd": 1,
+      "equipado": true
+     },
+     {
+      "uid": "eq_mtxctew8_7",
+      "tipo": "item",
+      "refId": "acsu_mtxcf0qa_4",
+      "qtd": 1,
+      "equipado": true
+     },
+     {
+      "uid": "eq_mtxctfre_9",
+      "tipo": "item",
+      "refId": "acsu_mtxcf45f_5",
+      "qtd": 1,
+      "equipado": true
+     },
+     {
+      "uid": "eq_mtxcth5t_11",
+      "tipo": "item",
+      "refId": "acsu_mtxcfc0h_6",
+      "qtd": 1,
+      "equipado": true
+     },
+     {
+      "uid": "eq_mtxcthvx_13",
+      "tipo": "item",
+      "refId": "acsu_mtxcfhne_7",
+      "qtd": 1,
+      "equipado": true
+     },
+     {
+      "uid": "eq_mtxctinv_15",
+      "tipo": "item",
+      "refId": "acsu_mtxcfmkp_8",
+      "qtd": 1,
+      "equipado": true
+     },
+     {
+      "uid": "eq_mtxctj57_17",
+      "tipo": "item",
+      "refId": "acsu_mtxcfreq_9",
+      "qtd": 1,
+      "equipado": true
+     },
+     {
+      "uid": "eq_mtxcu5yu_18",
+      "tipo": "item",
+      "refId": "acsu_mtxcty7g_1",
+      "qtd": 1,
+      "equipado": true
+     },
+     {
+      "uid": "eq_mtxiudfd_1",
+      "tipo": "item",
+      "refId": "acsu_mtxito8o_1",
+      "qtd": 1,
+      "equipado": true
+     },
+     {
+      "uid": "eq_mtypy2ov_1",
+      "tipo": "arma",
+      "refId": "arm_faixas",
+      "qtd": 1,
+      "equipado": true,
+      "fa": {
+       "grau": "especial",
+       "encantamentos": [
+        "enc_arma_sintonizada",
+        "enc_arma_potente",
+        "enc_arma_destruidora",
+        "enc_arma_otimizada",
+        "enc_arma_precisa"
+       ],
+       "habilidadeUnica": "",
+       "habilidadeEfeitos": [
+        {
+         "canal": "nivelDano",
+         "alvo": "basico",
+         "expr": "12"
+        }
+       ],
+       "segundaHabilidadeUnica": "Sif podia ser o Santo da Espada e o melhor espadachim canino que o Japão já presenciou, mas isso nunca significou que suas presas eram simples. Com essa benção, suas mãos conseguem perfurar como presas e aniquilar seus inimigos. Você recebe a Aptidão “Armas Naturais Aprimoradas”, no qual possui Dano Perfurante."
+      }
+     }
+    ]
+   },
+   "armasCustom": [],
+   "especializacoes": [
+    {
+     "id": "combatente",
+     "nivel": 20
+    },
+    {
+     "id": "conjurador",
+     "nivel": 11
+    }
+   ],
+   "feiticos": [
+    {
+     "id": "feit_mtqe7sd6_1",
+     "nome": "Benção da Carga",
+     "tipo": "passivo",
+     "nivel": 5,
+     "conjuracaoTexto": "",
+     "descricao": "",
+     "variacaoDe": null,
+     "resolucao": "tr",
+     "alvo": "unico",
+     "formaArea": "esfera",
+     "acao": "comum",
+     "subtipo": "nenhum",
+     "trocas": {
+      "dados": 0,
+      "acerto": 0,
+      "cd": 0,
+      "alcance": 0,
+      "area": 0,
+      "empurraoDados": 0
+     },
+     "condicoes": [],
+     "sangramento": null,
+     "requisito": null,
+     "focoCondicao": false,
+     "disparos": 2,
+     "continuoModo": "sustentado",
+     "ignorarResistencias": false,
+     "morteDireta": false,
+     "remocao": "nenhuma",
+     "especialSubtipo": "golpeador",
+     "golpesGolpeador": 1,
+     "tecnicaInvisibilidade": false,
+     "fraquezaInvis": "",
+     "itemCusto": 1,
+     "itemGrauTroca": 0,
+     "tecnicaFocoItens": false,
+     "itemNatureza": "consumivel",
+     "itemDescricao": "",
+     "shikigamiInvocacaoId": null,
+     "transfAcao": "comum",
+     "transfDuracao": "sustentada",
+     "transfNivelTroca": 0,
+     "transfCustoVida": false,
+     "transfEfeitos": [],
+     "efeitoAux": "defesa",
+     "alvoAuxAtributo": "forca",
+     "alvoAuxTR": "reflexos",
+     "duracaoAux": "imediata",
+     "rodadasDur": 1,
+     "alvosAux": 1,
+     "concentracaoAux": false,
+     "concUsoAux": "alvos",
+     "acaoAux": "padrao",
+     "umGolpe": false,
+     "tiposDanoExtra": 0,
+     "alcancePropria": false,
+     "multiplosAtivo": false,
+     "duracaoMult": "imediata",
+     "rodadasMult": 1,
+     "acaoMult": "padrao",
+     "alvosMult": 1,
+     "efeitosMult": [],
+     "efeitosPassivo": [
+      {
+       "canal": "espacosCarga",
+       "expr": "20"
+      }
+     ],
+     "acaoPersonalizada": "",
+     "alcanceTexto": "",
+     "alvoTexto": "",
+     "duracaoTexto": "",
+     "resolucaoTexto": "",
+     "comCd": true,
+     "rolagens": []
+    },
+    {
+     "id": "feit_mtqecju2_2",
+     "nome": "Benção da Penalidade de Armadura",
+     "tipo": "passivo",
+     "nivel": 5,
+     "conjuracaoTexto": "",
+     "descricao": "Você diminui sua Penalidade de Armadura em 3. Seu máximo de energia é reduzido em 10.",
+     "variacaoDe": null,
+     "resolucao": "tr",
+     "alvo": "unico",
+     "formaArea": "esfera",
+     "acao": "comum",
+     "subtipo": "nenhum",
+     "trocas": {
+      "dados": 0,
+      "acerto": 0,
+      "cd": 0,
+      "alcance": 0,
+      "area": 0,
+      "empurraoDados": 0
+     },
+     "condicoes": [],
+     "sangramento": null,
+     "requisito": null,
+     "focoCondicao": false,
+     "disparos": 2,
+     "continuoModo": "sustentado",
+     "ignorarResistencias": false,
+     "morteDireta": false,
+     "remocao": "nenhuma",
+     "especialSubtipo": "golpeador",
+     "golpesGolpeador": 1,
+     "tecnicaInvisibilidade": false,
+     "fraquezaInvis": "",
+     "itemCusto": 1,
+     "itemGrauTroca": 0,
+     "tecnicaFocoItens": false,
+     "itemNatureza": "consumivel",
+     "itemDescricao": "",
+     "shikigamiInvocacaoId": null,
+     "transfAcao": "comum",
+     "transfDuracao": "sustentada",
+     "transfNivelTroca": 0,
+     "transfCustoVida": false,
+     "transfEfeitos": [],
+     "efeitoAux": "defesa",
+     "alvoAuxAtributo": "forca",
+     "alvoAuxTR": "reflexos",
+     "duracaoAux": "imediata",
+     "rodadasDur": 1,
+     "alvosAux": 1,
+     "concentracaoAux": false,
+     "concUsoAux": "alvos",
+     "acaoAux": "padrao",
+     "umGolpe": false,
+     "tiposDanoExtra": 0,
+     "alcancePropria": false,
+     "multiplosAtivo": false,
+     "duracaoMult": "imediata",
+     "rodadasMult": 1,
+     "acaoMult": "padrao",
+     "alvosMult": 1,
+     "efeitosMult": [],
+     "efeitosPassivo": [
+      {
+       "canal": "penalidadeArmadura",
+       "expr": "3"
+      }
+     ],
+     "acaoPersonalizada": "",
+     "alcanceTexto": "",
+     "alvoTexto": "",
+     "duracaoTexto": "",
+     "resolucaoTexto": "",
+     "comCd": true,
+     "rolagens": []
+    },
+    {
+     "id": "feit_mtrzavoy_1",
+     "nome": "Sequência de Golpes",
+     "tipo": "especial",
+     "nivel": 5,
+     "conjuracaoTexto": "",
+     "descricao": "Utilizando uma sequência de ataques simples, focando toda sua energia para efetuar a maior quantidade de golpes, fazendo quatro testes de ataque em sequência. Em caso de acerto, cada um causa o dano da arma ou do ataque desarmado utilizado, além de **2d12 de dano pós-ataque**. Para cada ataque após o primeiro, recebe -3 de acerto. E no final da sequência, o alvo deve realizar um **Teste de Vontade**, recebendo a condição **Desorientado por 5 rodadas** em uma falha.",
+     "variacaoDe": null,
+     "resolucao": "tr",
+     "alvo": "unico",
+     "formaArea": "esfera",
+     "acao": "comum",
+     "subtipo": "nenhum",
+     "trocas": {
+      "dados": 0,
+      "acerto": 10,
+      "cd": 0,
+      "alcance": 0,
+      "area": 0,
+      "empurraoDados": 0
+     },
+     "condicoes": [
+      {
+       "nome": "Desorientado",
+       "forca": "fraca"
+      }
+     ],
+     "sangramento": null,
+     "requisito": null,
+     "focoCondicao": false,
+     "disparos": 2,
+     "continuoModo": "sustentado",
+     "ignorarResistencias": false,
+     "morteDireta": false,
+     "remocao": "nenhuma",
+     "especialSubtipo": "golpeador",
+     "golpesGolpeador": 4,
+     "tecnicaInvisibilidade": false,
+     "fraquezaInvis": "",
+     "itemCusto": 1,
+     "itemGrauTroca": 0,
+     "tecnicaFocoItens": false,
+     "itemNatureza": "consumivel",
+     "itemDescricao": "",
+     "shikigamiInvocacaoId": null,
+     "transfAcao": "comum",
+     "transfDuracao": "sustentada",
+     "transfNivelTroca": 0,
+     "transfCustoVida": false,
+     "transfEfeitos": [],
+     "efeitoAux": "defesa",
+     "alvoAuxAtributo": "forca",
+     "alvoAuxTR": "reflexos",
+     "duracaoAux": "imediata",
+     "rodadasDur": 1,
+     "alvosAux": 1,
+     "concentracaoAux": false,
+     "concUsoAux": "alvos",
+     "acaoAux": "padrao",
+     "umGolpe": false,
+     "tiposDanoExtra": 0,
+     "alcancePropria": false,
+     "multiplosAtivo": false,
+     "duracaoMult": "imediata",
+     "rodadasMult": 1,
+     "acaoMult": "padrao",
+     "alvosMult": 1,
+     "efeitosMult": [],
+     "efeitosPassivo": [],
+     "acaoPersonalizada": "",
+     "alcanceTexto": "",
+     "alvoTexto": "",
+     "duracaoTexto": "",
+     "resolucaoTexto": "",
+     "comCd": true,
+     "rolagens": [],
+     "custoVidaAtivacao": null
+    }
+   ],
+   "reducoesCustoFeitico": {
+    "dominancia": null,
+    "manipulacao": []
+   },
+   "estilosSombra": [],
+   "habilidadesGerais": [],
+   "focosLivres": 94,
+   "periciaAtributo": "inteligencia",
+   "habilidades": [
+    "cnj_conhecimento_aplicado",
+    "cnj_reacao_rapida",
+    "cnj_energia_focalizada",
+    "cnj_movimentos_imprevisiveis",
+    "cnj_preparacao_de_tecnicas",
+    "cnj_dominancia_em_feitico",
+    "cmb_assumir_postura",
+    "cmb_espirito_de_luta",
+    "cmb_guarda_estudada",
+    "cmb_ataque_extra",
+    "cmb_critico_melhorado",
+    "cmb_ataque_concentrado",
+    "cmb_indomavel",
+    "cmb_critico_potente",
+    "cmb_surto_de_acao",
+    "cmb_mestre_da_postura",
+    "cnj_correcao",
+    "cmb_espirito_incansavel",
+    "cmb_preparacao_rapida",
+    "cmb_extensao_do_corpo",
+    "cmb_critico_aperfeicoado",
+    "cmb_arsenal_ciclico",
+    "cmb_manejo_especial",
+    "cmb_potencia_antes_de_cair",
+    "cmb_ciclagem_absoluta",
+    "cmb_manejo_unico"
+   ],
+   "escolhasHabilidade": {
+    "cnj_energia_focalizada": [
+     "cnj_focalizada_fortitude"
+    ],
+    "cmb_assumir_postura": [
+     "cmb_postura_do_sol",
+     "cmb_postura_da_terra",
+     "cmb_postura_do_ceu"
+    ],
+    "cmb_guarda_estudada": [
+     "cmb_guarda_fortitude"
+    ],
+    "cmb_repertorio_do_especialista": [
+     "cmb_estilo_defensivo",
+     "cmb_estilo_duplo",
+     "cmb_estilo_do_duelista"
+    ],
+    "cmb_manejo_especial": [
+     "me_enc_arma_elemental"
+    ],
+    "cnj_foco_amaldicoado": [
+     "cnj_foco_economia"
+    ]
+   },
+   "escolhasTalento": {
+    "tal_incremento_de_atributo": [
+     "tal_incremento_destreza",
+     "tal_incremento_sabedoria"
+    ]
+   },
+   "talentos": [
+    "tal_tecnicas_de_reacao_rapida",
+    "tal_incremento_de_atributo",
+    "tal_provocacao_desafiadora",
+    "tal_apaziguador_de_tecnica",
+    "tal_adepto_de_briga"
+   ],
+   "invocacoes": [],
+   "hordas": [],
+   "aptidoes": {
+    "au": 5,
+    "cl": 4,
+    "bar": 0,
+    "dom": 0,
+    "er": 4
+   },
+   "aptidoesAmaldicoadas": [
+    "abencoado_pelas_faiscas_negras",
+    "raio_negro",
+    "energia_reversa",
+    "cura_amplificada",
+    "fluxo_constante",
+    "regeneracao_aprimorada",
+    "liberacao_de_energia_reversa",
+    "cura_em_grupo",
+    "tecnica_maxima",
+    "aura_macica",
+    "aura_reforcada",
+    "aura_elemental",
+    "aura_anuladora",
+    "canalizar_em_golpe",
+    "canalizacao_avancada",
+    "canalizacao_maxima",
+    "cobrir_se",
+    "estimulo_muscular",
+    "estimulo_muscular_avancado",
+    "rastreio_avancado",
+    "emocao_da_petala_decadente",
+    "canalizar_energia_reversa",
+    "concentrar_aura",
+    "aura_redirecionadora",
+    "aura_movedica",
+    "transferencia_de_aura",
+    "aura_do_bastiao",
+    "aura_excessiva",
+    "aura_lacerante"
+   ],
+   "aptidaoOpcoes": {
+    "aura_elemental": "chocante"
+   },
+   "aptidaoOpcoesRepetidas": {},
+   "dominios": [],
+   "dominioAtivoId": null,
+   "treinamentos": {
+    "agilidade": 4,
+    "compreensao": 4,
+    "controle_energia": 4,
+    "energia_reversa": 4,
+    "luta": 4,
+    "resistencia": 4,
+    "flugel:treino_conjuge": 4,
+    "flugel:treino_conjuge_pt_2": 4,
+    "flugel:treino_atributo_nao_congenito": 4,
+    "pericia": [
+     {
+      "alvo": "oficio",
+      "progresso": 4
+     },
+     {
+      "alvo": "oficio__2",
+      "progresso": 4
+     },
+     {
+      "alvo": "intuicao",
+      "progresso": 4
+     },
+     {
+      "alvo": "acrobacia",
+      "progresso": 4
+     },
+     {
+      "alvo": "feiticaria",
+      "progresso": 4
+     },
+     {
+      "alvo": "intimidacao",
+      "progresso": 4
+     },
+     {
+      "alvo": "oficio__3",
+      "progresso": 4
+     },
+     {
+      "alvo": "furtividade",
+      "progresso": 1
+     },
+     {
+      "alvo": "historia",
+      "progresso": 1
+     },
+     {
+      "alvo": "sobrevivencia",
+      "progresso": 1
+     },
+     {
+      "alvo": "prestidigitacao",
+      "progresso": 1
+     },
+     {
+      "alvo": "medicina",
+      "progresso": 1
+     },
+     {
+      "alvo": "investigacao",
+      "progresso": 1
+     },
+     {
+      "alvo": "ocultismo",
+      "progresso": 1
+     },
+     {
+      "alvo": "percepcao",
+      "progresso": 1
+     },
+     {
+      "alvo": "tecnologia",
+      "progresso": 1
+     },
+     {
+      "alvo": "direcao",
+      "progresso": 1
+     },
+     {
+      "alvo": "enganacao",
+      "progresso": 1
+     },
+     {
+      "alvo": "performance",
+      "progresso": 1
+     },
+     {
+      "alvo": "persuasao",
+      "progresso": 1
+     },
+     {
+      "alvo": "teologia",
+      "progresso": 1
+     }
+    ],
+    "flugel:treino_bencao_adaptacao": 4,
+    "manejo_arma": [
+     {
+      "alvo": "arm_faixas",
+      "progresso": 4
+     }
+    ]
+   },
+   "treinosEspeciais": [
+    {
+     "id": "tes_habilidade",
+     "alvo": null
+    },
+    {
+     "id": "tes_habilidade",
+     "alvo": null
+    },
+    {
+     "id": "tes_feitico",
+     "alvo": null
+    },
+    {
+     "id": "tes_feitico",
+     "alvo": null
+    },
+    {
+     "id": "tes_feitico",
+     "alvo": null
+    }
+   ],
+   "focosBonus": 0,
+   "statOverrides": {},
+   "melhoriasSuperiores": [
+    "mel_defesa",
+    "mel_resistencia",
+    "mel_pericia",
+    "mel_movimento",
+    "mel_precisao"
+   ],
+   "habilidadesLendarias": [
+    "len_negar_a_morte",
+    "len_resistencia_lendaria",
+    "len_atingir_apice",
+    "len_preparo_absoluto",
+    "len_consciencia_absoluta_da_alma"
+   ],
+   "escolhasAltoNivel": {
+    "mel_resistencia": [
+     "fortitude"
+    ],
+    "mel_pericia": [
+     "intuicao"
+    ],
+    "len_atingir_apice": [
+     "api_invencivel_sob_o_sol"
+    ]
+   },
+   "aparencia": {
+    "presetId": "padrao",
+    "vars": {},
+    "fonte": null,
+    "raio": null,
+    "imagem": {
+     "url": "",
+     "opacidade": 0.25,
+     "encaixe": "cover",
+     "posicao": "center top"
+    },
+    "css": "/* Minamoto no Flugel — Céu de Íris.\r\n   Mistura a composição clara da referência com as cores do retrato.\r\n   Cole em Aparência > CSS Personalizado. */\r\n\r\n:scope#afty-ficha,\r\n#afty-ficha#afty-ficha {\r\n  --afty-fundo: #e7e5ed;\r\n  --afty-fundo-brilho: radial-gradient(ellipse 82% 42% at 50% -8%, #d9c7e8, transparent 72%), radial-gradient(ellipse 54% 46% at 88% 16%, #d8e8e9, transparent 78%), linear-gradient(180deg, #efedf3, #e7e5ed 66%);\r\n  --afty-card: #fbfafc;\r\n  --afty-poco: #f2eff6;\r\n  --afty-borda: #ded8e7;\r\n  --afty-borda-forte: #bcaecb;\r\n  --afty-texto: #2e2840;\r\n  --afty-texto-suave: #5b526a;\r\n  --afty-texto-fraco: #665d72;\r\n  --afty-destaque: #69458b;\r\n  --afty-destaque-texto: #573878;\r\n  --afty-destaque-fundo: #e8dcf2;\r\n  --afty-pv: #a33f65;\r\n  --afty-pe: #286c7a;\r\n  --afty-pvtemp: #916a36;\r\n  --afty-petemp: #447d84;\r\n  --afty-alma: #71458f;\r\n  --afty-cura: #2d735b;\r\n  --afty-aviso: #916a36;\r\n  --afty-veu: rgb(33 28 51 / 0.48);\r\n  --afty-raio: 15px;\r\n  --afty-raio-peq: 9px;\r\n  --afty-sombra: 0 1px 2px rgb(35 27 50 / 0.05), 0 12px 28px -13px rgb(63 45 88 / 0.22);\r\n  background-color: #e7e5ed;\r\n  background-image: none;\r\n  color: #2e2840;\r\n  color-scheme: light;\r\n  scrollbar-color: #bbaaca transparent;\r\n}\r\n\r\n/* O brilho mora numa camada fixa própria. Como fundo `fixed` da raiz, ele\r\n   obrigava o navegador a redesenhar os três gradientes a cada quadro de rolagem. */\r\n@media screen {\r\n  :scope#afty-ficha::before,\r\n  #afty-ficha#afty-ficha::before {\r\n    content: \"\";\r\n    position: fixed;\r\n    inset: 0;\r\n    z-index: 0;\r\n    pointer-events: none;\r\n    background-image: var(--afty-fundo-brilho);\r\n  }\r\n}\r\n\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) *:focus-visible {\r\n  outline: 2px solid #69458b;\r\n  outline-offset: 2px;\r\n}\r\n\r\n/* Faixa de íris e azul, com controles em porcelana. */\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho {\r\n  --afty-texto: #fff9fd;\r\n  --afty-texto-suave: #f2eaf7;\r\n  --afty-texto-fraco: #ece3f1;\r\n  --afty-destaque: #dfc9f0;\r\n  --afty-destaque-texto: #fff9fd;\r\n  --afty-destaque-fundo: #f3e9fa33;\r\n  --afty-borda: #d9c8e7;\r\n  --afty-borda-forte: #e7dbee;\r\n  --afty-poco: #544574;\r\n  color: #fff9fd;\r\n  background: radial-gradient(ellipse 40% 118% at 82% -30%, #d2b6df55, transparent 68%), radial-gradient(ellipse 28% 110% at 13% 120%, #87b7c744, transparent 72%), linear-gradient(180deg, #71558f 0%, #5b4c82 48%, #365e78 100%);\r\n  border-bottom-color: #b9a9d0;\r\n  box-shadow: 0 11px 25px -12px rgb(39 30 61 / 0.42);\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho::after {\r\n  height: 2px;\r\n  opacity: 0.9;\r\n  background: linear-gradient(90deg, transparent, #dfc9f0 35%, #a9d0d5 70%, #d7bd96 92%, transparent);\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-nome {\r\n  color: #fff9fd;\r\n  font-family: Georgia, \"Times New Roman\", serif;\r\n  font-size: clamp(1.3rem, 2.2vw, 1.7rem);\r\n  font-weight: 600;\r\n  letter-spacing: 0.015em;\r\n  line-height: 1.15;\r\n  text-shadow: 0 1px 12px rgb(31 22 51 / 0.3);\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho .afty-chip {\r\n  background: #faf8fc;\r\n  border-color: #faf8fc;\r\n  color: #513a6e;\r\n  box-shadow: 0 3px 10px -6px rgb(26 20 47 / 0.45);\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho .afty-chip[data-afty-tom=\"destaque\"] {\r\n  background: #f0e7f8;\r\n  color: #573878;\r\n  border-color: #f0e7f8;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho .afty-botao,\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho .afty-passo {\r\n  background: #faf8fc;\r\n  border-color: #faf8fc;\r\n  color: #513a6e;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho .afty-botao:hover,\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho .afty-passo:hover {\r\n  background: #e9f2f3;\r\n  color: #245d6a;\r\n  border-color: #e9f2f3;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-retrato-painel {\r\n  border-color: #f7edf9;\r\n  box-shadow: 0 0 0 3px rgb(246 233 250 / 0.19), 0 10px 22px -8px rgb(25 24 48 / 0.42);\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-retrato-painel::after {\r\n  background: linear-gradient(180deg, transparent 72%, #28243b4d), linear-gradient(90deg, #dbc7e42b, transparent 55%);\r\n}\r\n\r\n/* Porcelana branca e cor concentrada nas barras e números dos recursos. */\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital {\r\n  --afty-texto: #2e2840;\r\n  --afty-texto-suave: #5b526a;\r\n  --afty-texto-fraco: #665d72;\r\n  color: #2e2840;\r\n  background: #fbfafc;\r\n  border-color: #f5f1f8;\r\n  box-shadow: 0 7px 19px -11px rgb(25 22 45 / 0.39);\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital[data-afty-vital=\"pv\"] {\r\n  box-shadow: inset 0 3px 0 #a33f65, 0 7px 19px -11px rgb(25 22 45 / 0.39);\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital[data-afty-vital=\"pe\"] {\r\n  box-shadow: inset 0 3px 0 #286c7a, 0 7px 19px -11px rgb(25 22 45 / 0.39);\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital[data-afty-vital=\"alma\"] {\r\n  box-shadow: inset 0 3px 0 #71458f, 0 7px 19px -11px rgb(25 22 45 / 0.39);\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-rotulo,\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-max {\r\n  color: #5b526a;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-trilho {\r\n  background: #e6e1ec;\r\n  box-shadow: inset 0 1px 2px rgb(40 31 54 / 0.13);\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital .afty-passo {\r\n  background: #f4eff8;\r\n  border-color: #dcd0e5;\r\n  color: #5b526a;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-numero:focus {\r\n  background: #f4eff8;\r\n  border-color: var(--afty-vital-cor);\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-barra {\r\n  background: linear-gradient(90deg, color-mix(in srgb, var(--afty-vital-cor) 70%, white), var(--afty-vital-cor));\r\n  box-shadow: none;\r\n}\r\n\r\n/* Defesa em ouro fosco, CD em íris e os demais números neutros. */\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-stat {\r\n  --afty-texto: #2e2840;\r\n  --afty-texto-fraco: #5b526a;\r\n  background: #fbfafc;\r\n  border-color: #ede6f1;\r\n  box-shadow: 0 4px 12px -10px rgb(22 19 45 / 0.32);\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-stat[data-afty-stat=\"defesa\"] {\r\n  --afty-texto: #916a36;\r\n  --afty-texto-fraco: #715733;\r\n  background: #fff8ec;\r\n  border-color: #dbc297;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-stat[data-afty-stat=\"cd\"] {\r\n  --afty-texto: #69458b;\r\n  background: #f4ecfa;\r\n  border-color: #d9c7e6;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-stat-rotulo {\r\n  font-size: 0.625rem;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-abas {\r\n  gap: 0.35rem;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-aba {\r\n  background: rgb(255 249 253 / 0.16);\r\n  border: 1px solid rgb(255 249 253 / 0.22);\r\n  border-bottom: 2px solid transparent;\r\n  border-radius: 9px 9px 0 0;\r\n  color: #f7eef9;\r\n  font-weight: 650;\r\n  letter-spacing: 0.025em;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-aba:hover {\r\n  background: rgb(255 249 253 / 0.27);\r\n  color: #ffffff;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-aba[aria-selected=\"true\"] {\r\n  background: #fbfafc;\r\n  border-color: #fbfafc;\r\n  border-bottom-color: #fbfafc;\r\n  color: #573878;\r\n  box-shadow: 0 -2px 12px -5px rgb(255 255 255 / 0.65);\r\n}\r\n\r\n/* Corpo claro e macio: mais estrutura, menos massa lilás. */\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-card,\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-inv-ficha,\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-log,\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-fontes,\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-busca {\r\n  color: #2e2840;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-card {\r\n  background: #fbfafc;\r\n  border-color: #ded8e7;\r\n  box-shadow: var(--afty-sombra);\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-card-titulo {\r\n  display: flex;\r\n  align-items: center;\r\n  gap: 0.5rem;\r\n  color: #3f3555;\r\n  font-size: 0.75rem;\r\n  letter-spacing: 0.1em;\r\n  border-bottom: 1px solid #e4deeb;\r\n  padding-bottom: 0.45rem;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-card-titulo::before {\r\n  content: \"\";\r\n  flex: 0 0 auto;\r\n  width: 4px;\r\n  height: 1.05em;\r\n  border-radius: 999px;\r\n  background: linear-gradient(180deg, #a283bc, #69458b);\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-linha {\r\n  background: #f2eff6;\r\n  border-color: #e5dfec;\r\n  color: #2e2840;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-linha:hover {\r\n  background: #ece6f2;\r\n  border-color: #c9b7d7;\r\n  box-shadow: inset 3px 0 0 #69458b;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-linha[data-afty-destacada=\"sim\"] {\r\n  background: #eee6f5;\r\n  border-color: #c7b2d9;\r\n  box-shadow: inset 3px 0 0 #69458b;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-rotulo {\r\n  color: #5b526a;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-valor {\r\n  color: #2e2840;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-rolavel {\r\n  color: #573878;\r\n  background: #ebe2f3;\r\n  border: 1px solid #cbb6dd;\r\n  border-radius: 999px;\r\n  padding: 0.05em 0.45em;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-rolavel:hover {\r\n  color: #fff9fd;\r\n  background: #69458b;\r\n  border-color: #69458b;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-atributo {\r\n  --afty-texto: #2e2840;\r\n  --afty-texto-fraco: #5b526a;\r\n  --afty-destaque-texto: #fff9fd;\r\n  --afty-destaque-fundo: #69458b;\r\n  color: #2e2840;\r\n  background: linear-gradient(180deg, #faf8fc, #f2edf7);\r\n  border-color: #ded3e8;\r\n  box-shadow: 0 5px 13px -12px rgb(44 28 68 / 0.4);\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-atributo-mod {\r\n  background: #69458b;\r\n  color: #fff9fd;\r\n  border-radius: 999px;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-texto {\r\n  color: #4b435c;\r\n  background: #f7f4fa;\r\n  border-left: 3px solid #c8b4d9;\r\n  border-radius: 0 9px 9px 0;\r\n  padding: 0.55rem 0.75rem;\r\n  font-size: 0.875rem;\r\n  line-height: 1.65;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-subaba[aria-selected=\"true\"] {\r\n  background: #69458b;\r\n  border-color: #69458b;\r\n  color: #fff9fd;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-ficha-corpo .afty-botao {\r\n  background: #fbfafc;\r\n  color: #513a6e;\r\n  border-color: #cbbbd9;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-ficha-corpo .afty-botao:hover {\r\n  background: #ede5f4;\r\n  border-color: #8d6ba8;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-fontes,\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-busca,\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-log {\r\n  background: #fbfafc;\r\n  border-color: #d8cde3;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-log-topo {\r\n  background: linear-gradient(100deg, #71558f, #3b617b);\r\n  color: #fff9fd;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-log-topo .afty-log-modo {\r\n  color: #f3e9f7;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-log-topo .afty-log-modo[aria-pressed=\"true\"] {\r\n  color: #573878;\r\n  background: #fbfafc;\r\n  border-color: #fbfafc;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-log-topo .afty-passo {\r\n  color: #fff9fd;\r\n  background: #fff9fd2b;\r\n  border-color: #fff9fd82;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-rolagem {\r\n  background: #f2eff6;\r\n  border-color: #e2d9eb;\r\n  color: #2e2840;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) ::selection {\r\n  background: #d5bce7;\r\n  color: #2e2840;\r\n}\r\n\r\n/* Botões ativos: estado inequívoco em violeta. */\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) button.afty-botao[aria-pressed=\"true\"] {\r\n  color: #fff9fd;\r\n  background: linear-gradient(180deg, #7d58a0, #69458b);\r\n  border-color: #8e69aa;\r\n  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 4px 12px -6px rgb(74 45 101 / 0.65);\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) button.afty-botao[aria-pressed=\"true\"]:hover {\r\n  color: #ffffff;\r\n  background: linear-gradient(180deg, #704a93, #593675);\r\n  border-color: #9a76b5;\r\n}\r\n:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-log-topo .afty-log-modo[aria-pressed=\"true\"] {\r\n  color: #fff9fd;\r\n  background: #69458b;\r\n  border-color: #a98ac0;\r\n  box-shadow: 0 3px 10px -5px rgb(45 27 68 / 0.72);\r\n}\r\n",
+    "ligado": true
+   },
+   "addons": [
+    {
+     "id": "bencao-grao-mestre-forja",
+     "nome": "Benção do Grão Mestre da Forja",
+     "versao": "1.0.0",
+     "autor": "Afty",
+     "descricao": "Ficha de Player: todo item de Grau Especial ganha uma segunda Habilidade Única, que não acumula com Feitiços nem com o Novo Estilo das Sombras. Abre também o card Acessórios Únicos, com acessórios que contam como Grau Especial, pesam 1, não têm custo nem Encantamentos e recebem duas Habilidades Únicas, a segunda com a mesma regra.",
+     "paraRaw": "afty",
+     "permite": [],
+     "libera": [
+      "segundaHabilidadeUnica",
+      "acessoriosUnicos"
+     ],
+     "adaptacoes": [],
+     "funcionamentos": [],
+     "feiticos": [],
+     "estadosCombate": [],
+     "catarse": null,
+     "acrescenta": {},
+     "substitui": {}
+    },
+    {
+     "id": "flugel",
+     "nome": "Flugel",
+     "versao": "1.1.0",
+     "autor": "Afty",
+     "descricao": "",
+     "paraRaw": "afty",
+     "permite": [],
+     "libera": [],
+     "adaptacoes": [],
+     "funcionamentos": [],
+     "feiticos": [],
+     "estadosCombate": [],
+     "catarse": null,
+     "acrescenta": {
+      "origens": [
+       {
+        "id": "orig_caminho_futen",
+        "nome": "Caminho do Futen (風天)",
+        "lore": "O Caminho do Futen pertence àqueles que não se ligam a clãs ou dogmas, sendo conhecidos como os andarilhos e espíritos livres do mundo Jujutsu. Diferente dos feiticeiros tradicionais que buscam refúgio em instituições, o Futen desperta sua energia amaldiçoada através da impermanência do mundo, vivendo de forma errante e deixando-se levar para onde o vento soprar. Por não possuírem amarras, sua percepção da energia é fluida, misteriosa e desapegada das regras convencionais da feitiçaria.\n\nÉ comum que aqueles que seguem o Futen passem anos vagando pelas províncias sem serem detectados por organizaões Jujutsu, muitas vezes confundidos com eremitas, monges ascetas ou meros vagabundos, até que a magnitude de suas habilidades force o mundo a notá-los. Um exemplo histórico desse arquétipo são os antigos monges andarilhos e guerreiros sem mestre do Japão feudal, que encontravam no isolamento das estradas a sua verdadeira força.\n\nA filosofia do Futen está gravada na sua própria existência: a liberdade absoluta. Sua energia amaldiçoada e técnicas se manifestam não pelo treino rígido, mas pela adaptação constante às adversidades da jornada. No entanto, essa total falta de raízes traz uma grande carga de solidão e perigo, já que um andarilho raramente terá o suporte de um grande clã ou a proteção dos altos escalões quando se deparar com maldições além do seu controle.",
+        "caracteristicas": [
+         {
+          "id": "bonus_atributo",
+          "nome": "Bônus em Atributo",
+          "descricao": "Aumenta em 2 a Constituição ou Sabedoria, e em 1 o que não foi escolhido.",
+          "bonus": {
+           "distribuir": 3,
+           "maxPorAtributo": 2,
+           "entre": [
+            "constituicao",
+            "sabedoria"
+           ]
+          }
+         },
+         {
+          "id": "impermanencia_do_mundo",
+          "nome": "Impermanência do Mundo",
+          "descricao": "Você recebe Treinamento em uma perícia a sua escolha (com exceção de Ataques ou TRs). Além disso, você pode alterar permanentemente o atributo-chave padrão dessa perícia para qualquer outro atributo de sua escolha.",
+          "escolhas": [
+           {
+            "id": "futen_pericia",
+            "label": "Perícia",
+            "opcoes": [
+             {
+              "id": "futen_pericia_acrobacia",
+              "nome": "Acrobacia",
+              "periciaId": "acrobacia",
+              "efeitos": [
+               {
+                "canal": "proficienciaPericia",
+                "alvo": "acrobacia",
+                "expr": "1"
+               }
+              ]
+             },
+             {
+              "id": "futen_pericia_atletismo",
+              "nome": "Atletismo",
+              "periciaId": "atletismo",
+              "efeitos": [
+               {
+                "canal": "proficienciaPericia",
+                "alvo": "atletismo",
+                "expr": "1"
+               }
+              ]
+             },
+             {
+              "id": "futen_pericia_enganacao",
+              "nome": "Enganação",
+              "periciaId": "enganacao",
+              "efeitos": [
+               {
+                "canal": "proficienciaPericia",
+                "alvo": "enganacao",
+                "expr": "1"
+               }
+              ]
+             },
+             {
+              "id": "futen_pericia_feiticaria",
+              "nome": "Feitiçaria",
+              "periciaId": "feiticaria",
+              "efeitos": [
+               {
+                "canal": "proficienciaPericia",
+                "alvo": "feiticaria",
+                "expr": "1"
+               }
+              ]
+             },
+             {
+              "id": "futen_pericia_furtividade",
+              "nome": "Furtividade",
+              "periciaId": "furtividade",
+              "efeitos": [
+               {
+                "canal": "proficienciaPericia",
+                "alvo": "furtividade",
+                "expr": "1"
+               }
+              ]
+             },
+             {
+              "id": "futen_pericia_historia",
+              "nome": "História",
+              "periciaId": "historia",
+              "efeitos": [
+               {
+                "canal": "proficienciaPericia",
+                "alvo": "historia",
+                "expr": "1"
+               }
+              ]
+             },
+             {
+              "id": "futen_pericia_intimidacao",
+              "nome": "Intimidação",
+              "periciaId": "intimidacao",
+              "efeitos": [
+               {
+                "canal": "proficienciaPericia",
+                "alvo": "intimidacao",
+                "expr": "1"
+               }
+              ]
+             },
+             {
+              "id": "futen_pericia_intuicao",
+              "nome": "Intuição",
+              "periciaId": "intuicao",
+              "efeitos": [
+               {
+                "canal": "proficienciaPericia",
+                "alvo": "intuicao",
+                "expr": "1"
+               }
+              ]
+             },
+             {
+              "id": "futen_pericia_investigacao",
+              "nome": "Investigação",
+              "periciaId": "investigacao",
+              "efeitos": [
+               {
+                "canal": "proficienciaPericia",
+                "alvo": "investigacao",
+                "expr": "1"
+               }
+              ]
+             },
+             {
+              "id": "futen_pericia_medicina",
+              "nome": "Medicina",
+              "periciaId": "medicina",
+              "efeitos": [
+               {
+                "canal": "proficienciaPericia",
+                "alvo": "medicina",
+                "expr": "1"
+               }
+              ]
+             },
+             {
+              "id": "futen_pericia_ocultismo",
+              "nome": "Ocultismo",
+              "periciaId": "ocultismo",
+              "efeitos": [
+               {
+                "canal": "proficienciaPericia",
+                "alvo": "ocultismo",
+                "expr": "1"
+               }
+              ]
+             },
+             {
+              "id": "futen_pericia_oficio",
+              "nome": "Ofício",
+              "periciaId": "oficio",
+              "efeitos": [
+               {
+                "canal": "proficienciaPericia",
+                "alvo": "oficio",
+                "expr": "1"
+               }
+              ]
+             },
+             {
+              "id": "futen_pericia_percepcao",
+              "nome": "Percepção",
+              "periciaId": "percepcao",
+              "efeitos": [
+               {
+                "canal": "proficienciaPericia",
+                "alvo": "percepcao",
+                "expr": "1"
+               }
+              ]
+             },
+             {
+              "id": "futen_pericia_performance",
+              "nome": "Performance",
+              "periciaId": "performance",
+              "efeitos": [
+               {
+                "canal": "proficienciaPericia",
+                "alvo": "performance",
+                "expr": "1"
+               }
+              ]
+             },
+             {
+              "id": "futen_pericia_persuasao",
+              "nome": "Persuasão",
+              "periciaId": "persuasao",
+              "efeitos": [
+               {
+                "canal": "proficienciaPericia",
+                "alvo": "persuasao",
+                "expr": "1"
+               }
+              ]
+             },
+             {
+              "id": "futen_pericia_prestidigitacao",
+              "nome": "Prestidigitação",
+              "periciaId": "prestidigitacao",
+              "efeitos": [
+               {
+                "canal": "proficienciaPericia",
+                "alvo": "prestidigitacao",
+                "expr": "1"
+               }
+              ]
+             },
+             {
+              "id": "futen_pericia_tecnologia",
+              "nome": "Tecnologia",
+              "periciaId": "tecnologia",
+              "efeitos": [
+               {
+                "canal": "proficienciaPericia",
+                "alvo": "tecnologia",
+                "expr": "1"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "id": "futen_atributo",
+            "label": "Atributo",
+            "opcoes": [
+             {
+              "id": "futen_atributo_forca",
+              "nome": "Força",
+              "atributoId": "forca"
+             },
+             {
+              "id": "futen_atributo_destreza",
+              "nome": "Destreza",
+              "atributoId": "destreza"
+             },
+             {
+              "id": "futen_atributo_constituicao",
+              "nome": "Constituição",
+              "atributoId": "constituicao"
+             },
+             {
+              "id": "futen_atributo_inteligencia",
+              "nome": "Inteligência",
+              "atributoId": "inteligencia"
+             },
+             {
+              "id": "futen_atributo_sabedoria",
+              "nome": "Sabedoria",
+              "atributoId": "sabedoria"
+             },
+             {
+              "id": "futen_atributo_presenca",
+              "nome": "Presença",
+              "atributoId": "presenca"
+             }
+            ]
+           }
+          ],
+          "trocaAtributoPericia": {
+           "escolhaPericia": "futen_pericia",
+           "escolhaAtributo": "futen_atributo"
+          }
+         },
+         {
+          "id": "passos_flutuantes",
+          "nome": "Passos Flutuantes",
+          "descricao": "Seu Deslocamento aumenta em 3 metros e você ignora penalidades de terreno difícil. Além disso, uma quantidade de vezes igual a metade do seu Bônus de Treinamento por Descanso Longo, ao se afastar de um inimigo, você pode evitar um ataque de oportunidade."
+         }
+        ],
+        "efeitos": [
+         {
+          "canal": "movimento",
+          "expr": "3"
+         }
+        ]
+       }
+      ],
+      "clas": [
+       {
+        "id": "cla_akutame",
+        "nome": "Clã Akutame",
+        "lore": "Os Akatume são uma família antiga é muito importante para a sociedade, formados por exímios combatentes e conhecidos no manuseio de espadas e diversos tipos de lâminas, sendo considerados como o ápice máximo na prática de esgrima, também sendo conhecidos por abrigar uma vez por geração aquele chamado \"Santo da Espada\" devido a uma Benção milenar e muito poderosa que existe dentro da família. O Clã Akutame é um clã vassalo ao clã Sugawara, vindo com",
+        "caracteristicas": [
+         {
+          "id": "bonus_atributo",
+          "nome": "Bônus de atributo",
+          "descricao": "Membros dessa família são conhecidos por terem corpos que passam do limite natural de qualquer humano, sendo considerados o ápice do desenvolvimento físico do mundo, recebem 3 pontos de atributo para distribuir entre seus atributos, com limite de 2 em um mesmo.",
+          "bonus": {
+           "distribuir": 3,
+           "maxPorAtributo": 2
+          }
+         },
+         {
+          "id": "treinamento_de_cla",
+          "nome": "Treinamento de clã",
+          "descricao": "Devido ao imenso conhecimento em combate da sua família, você se tornou um exímio combatente mesmo em uma idade bem jovem, recebendo treinamento em Atletismo e Feitiçaria, se tornando mestre em um desses testes no nível 10.",
+          "escolha": {
+           "id": "akutame_mestre",
+           "label": "Perícia",
+           "ndMin": 10,
+           "opcoes": [
+            {
+             "id": "akutame_mestre_atletismo",
+             "nome": "Atletismo",
+             "efeitos": [
+              {
+               "canal": "proficienciaPericia",
+               "alvo": "atletismo",
+               "expr": "1"
+              }
+             ]
+            },
+            {
+             "id": "akutame_mestre_feiticaria",
+             "nome": "Feitiçaria",
+             "efeitos": [
+              {
+               "canal": "proficienciaPericia",
+               "alvo": "feiticaria",
+               "expr": "1"
+              }
+             ]
+            }
+           ]
+          }
+         },
+         {
+          "id": "talento_akutame",
+          "nome": "Talento Akutame",
+          "descricao": "Suas capacidades em um combate são superiores que qualquer outro ser, recebendo Acerto e Defesa em um valor igual à metade do seu Bônus de Treinamento."
+         }
+        ],
+        "efeitos": [
+         {
+          "canal": "proficienciaPericia",
+          "alvo": "atletismo",
+          "expr": "1"
+         },
+         {
+          "canal": "proficienciaPericia",
+          "alvo": "feiticaria",
+          "expr": "1"
+         },
+         {
+          "canal": "bonusAcerto",
+          "expr": "metade(bt)"
+         },
+         {
+          "canal": "defesa",
+          "expr": "metade(bt)"
+         }
+        ]
+       }
+      ],
+      "talentos": [
+       {
+        "id": "tal_heranca_sugawara",
+        "nome": "Herança Sugawara",
+        "grupo": "origem",
+        "descricao": "O contato constante com a genialidade Jujutsu do clã Sugawara permitiu aos Akutame transcender os limites do combate físico. Adaptando os fundamentos de seus senhores à sua própria disciplina marcial. Você recebe 1 Feitiço adicional e mais um nos níveis 5, 10, 15 e 20.",
+        "requisitos": [
+         {
+          "tipo": "cla",
+          "id": "cla_akutame"
+         },
+         {
+          "tipo": "nd",
+          "valor": 6
+         }
+        ],
+        "efeitos": [
+         {
+          "canal": "vagasFeitico",
+          "expr": "1 + (nd >= 5) + (nd >= 10) + (nd >= 15) + (nd >= 20)"
+         }
+        ]
+       },
+       {
+        "id": "tal_postura_matador_yokai",
+        "nome": "Postura do Matador de Yokai",
+        "grupo": "origem",
+        "descricao": "Desde a infância, os membros do Clã Akutame são treinados para enfrentar adversários muito acima da capacidade humana. Seus movimentos são precisos, econômicos e letais, permitindo encontrar brechas onde outros enxergam apenas defesa. Quando realiza a ação Atacar contra um alvo que possua Defesa maior que a sua, recebe + metade do Bônus de Treinamento no teste.",
+        "requisitos": [
+         {
+          "tipo": "cla",
+          "id": "cla_akutame"
+         },
+         {
+          "tipo": "nd",
+          "valor": 6
+         }
+        ]
+       }
+      ],
+      "treinamentos": [
+       {
+        "id": "treino_atributo_nao_congenito",
+        "nome": "Treino de Atributo - Não Congênito",
+        "lore": "Em um mundo, onde diversas pessoas vem ao mundo com benções e maldições congênitas. Você nasceu normal, normal até de mais.  Você não se destaca em nada, sempre ficando para trás na sua maior especialidade. Tentando reverter isso, você começa a treinar de maneira incessante em busca de quebrar essa distância.",
+        "alvos": [
+         {
+          "id": "atributo",
+          "tipo": "atributo",
+          "label": "Atributo"
+         },
+         {
+          "id": "pericia",
+          "tipo": "pericia",
+          "label": "Perícia"
+         }
+        ],
+        "trocaAtributoPericia": {
+         "etapa": 1,
+         "periciaAlvo": "pericia",
+         "atributoAlvo": "atributo"
+        },
+        "etapas": [
+         {
+          "n": 1,
+          "focos": 1,
+          "requisito": {
+           "tipo": "todosAtributos",
+           "valor": 8
+          },
+          "beneficio": "Escolha uma Pericia, ela passa a usar o Atributo Escolhido para o calculo. [Não é possível escolher Acerto ou TRs]",
+          "efeitos": [
+           {
+            "canal": "proficienciaPericia",
+            "alvo": "escolha:pericia",
+            "expr": "1"
+           }
+          ]
+         },
+         {
+          "n": 2,
+          "focos": 1,
+          "requisito": null,
+          "beneficio": "Você recebe +1 Ponto no Atributo Escolhido",
+          "efeitos": [
+           {
+            "canal": "atributo",
+            "alvo": "escolha:atributo",
+            "expr": "1"
+           }
+          ]
+         },
+         {
+          "n": 3,
+          "focos": 1,
+          "requisito": null,
+          "beneficio": "Você recebe +1 de Limite no Atributo Escolhido",
+          "efeitos": [
+           {
+            "canal": "limiteAtributo",
+            "alvo": "escolha:atributo",
+            "expr": "1"
+           }
+          ]
+         },
+         {
+          "n": 4,
+          "focos": 2,
+          "requisito": null,
+          "beneficio": "Você recebe +1 Ponto no Atributo Escolhido",
+          "efeitos": [
+           {
+            "canal": "atributo",
+            "alvo": "escolha:atributo",
+            "expr": "1"
+           }
+          ]
+         }
+        ],
+        "completo": {
+         "beneficio": "Quebra de Limites\nVocê ultrapassa o limite humano no Atributo Escolhido no Treinamento. Aumentando o Limite do Atributo em um valor igual a Metade do seu Bônus de Treinamento.",
+         "efeitos": [
+          {
+           "canal": "limiteAtributo",
+           "alvo": "escolha:atributo",
+           "expr": "metade(bt)"
+          }
+         ]
+        }
+       },
+       {
+        "id": "treino_conjuge",
+        "nome": "Treino Cônjuge",
+        "lore": "Em tempos aonde o medo e desespero reinam, e a insegurança bate a sua porta a cada dia. É difícil imaginar casos aonde o amor consiga desabrochar.\nEsse treino é feito para casais, ao qual treinam para conseguir resistir aos desastres ambulantes que vagam pelo Japão como uma Dupla Empenhada.",
+        "resumo": "Os efeitos desse Treinamento só funcionam, caso ambos os personagens estejam na sessão. O Treinamento é perdido caso um dos personagens morram ou se aposentem.",
+        "gatilhoSessao": {
+         "id": "conjuge",
+         "label": "Cônjuge"
+        },
+        "alvos": [
+         {
+          "id": "pericia",
+          "tipo": "pericia",
+          "label": "Perícia"
+         },
+         {
+          "id": "bonusConjuge",
+          "tipo": "numero",
+          "label": "Bônus do Cônjuge"
+         }
+        ],
+        "escolhas": [
+         {
+          "id": "heranca_conjuge",
+          "label": "Herança",
+          "etapa": 4,
+          "opcoes": [
+           {
+            "id": "feitico",
+            "nome": "Feitiço",
+            "efeitos": [
+             {
+              "canal": "vagasFeitico",
+              "expr": "1"
+             }
+            ]
+           },
+           {
+            "id": "talento",
+            "nome": "Talento",
+            "efeitos": [
+             {
+              "canal": "vagasTalento",
+              "expr": "1"
+             }
+            ]
+           }
+          ]
+         }
+        ],
+        "etapas": [
+         {
+          "n": 1,
+          "focos": 1,
+          "requisito": null,
+          "beneficio": "Escolha uma Pericia, uma quantidade de vezes igual metade do seu BT por descanso longo, pode usar o bônus do seu cônjuge pra fazer um teste de perícia.",
+          "efeitos": [
+           {
+            "canal": "periciaFixa",
+            "alvo": "escolha:pericia",
+            "expr": "escolha:bonusConjuge",
+            "gatilhoSessao": "conjuge"
+           }
+          ]
+         },
+         {
+          "n": 2,
+          "focos": 1,
+          "requisito": null,
+          "beneficio": "Você recebe +2 em sua Defesa, caso esteja a até 120m do seu Cônjuge.",
+          "efeitos": [
+           {
+            "canal": "defesa",
+            "expr": "2",
+            "gatilhoSessao": "conjuge"
+           }
+          ]
+         },
+         {
+          "n": 3,
+          "focos": 1,
+          "requisito": null,
+          "beneficio": "Você recebe +2 em seu Acerto, caso esteja a até 210m do seu Cônjuge.",
+          "efeitos": [
+           {
+            "canal": "bonusAcerto",
+            "expr": "2",
+            "gatilhoSessao": "conjuge"
+           }
+          ]
+         },
+         {
+          "n": 4,
+          "focos": 2,
+          "requisito": null,
+          "beneficio": "Você recebe os efeitos de um Feitiço Passivo de seu cônjuge. Caso ele não possua Feitiços passivos, escolha um Talento no lugar, desde que você também cumpra os Pre-Requisitos."
+         }
+        ],
+        "completo": {
+         "beneficio": "Dupla Empenhada\nA maior Iniciativa entre a dupla recebe Metade do BT de seu parceiro em seu Bônus de Iniciativa.  e caso vocês quando girarem a iniciativa não estiverem um atrás do outro na lista, o que estiver mais longe pode girar o teste novamente para tentar agir antes ou depois do cônjuge.",
+         "efeitos": [
+          {
+           "canal": "iniciativa",
+           "expr": "metade(bt)",
+           "gatilhoSessao": "conjuge"
+          }
+         ]
+        }
+       },
+       {
+        "id": "treino_conjuge_pt_2",
+        "nome": "Treino Cônjuge Pt. 2",
+        "lore": "Esse Treino é a continuação de: ⁠# Treino Cônjuge\nCaso queira fazer um desses, copie a Ideia e faça seu proprio. Esse daqui é exclusivo do meu Casamento e requer particularidades da minha técnica.\nNem todo relacionamento nasce perfeito. As vezes algumas coisas não se encaixam e precisam ser revisadas e reafirmadas para a manutenção da união. Esse Treino é focado em concertar lacunas de distância que todo casal possui.",
+        "resumo": "Os efeitos desse Treinamento só funcionam, caso ambos os personagens estejam na sessão. O Treinamento é perdido caso um dos personagens morram ou se aposentem.",
+        "gatilhoSessao": {
+         "id": "conjuge",
+         "label": "Cônjuge"
+        },
+        "escolhas": [
+         {
+          "id": "heranca_conjuge",
+          "label": "Herança",
+          "etapa": 4,
+          "opcoes": [
+           {
+            "id": "feitico",
+            "nome": "Feitiço",
+            "efeitos": [
+             {
+              "canal": "vagasFeitico",
+              "expr": "1"
+             }
+            ]
+           },
+           {
+            "id": "talento",
+            "nome": "Talento",
+            "efeitos": [
+             {
+              "canal": "vagasTalento",
+              "expr": "1"
+             }
+            ]
+           }
+          ]
+         }
+        ],
+        "etapas": [
+         {
+          "n": 1,
+          "focos": 1,
+          "requisito": {
+           "tipo": "treinamento",
+           "id": "flugel:treino_conjuge",
+           "etapa": 1
+          },
+          "beneficio": "A distância para receber os beneficio dos Treinamentos Cônjuges se torna a Distância de Ataque do parceiro com maior Distância de Ataque."
+         },
+         {
+          "n": 2,
+          "focos": 1,
+          "requisito": {
+           "tipo": "treinamento",
+           "id": "flugel:treino_conjuge",
+           "etapa": 2
+          },
+          "beneficio": "Enquanto no Alcance de seu Cônjuge. Você recebe +2 em sua Percepção.",
+          "efeitos": [
+           {
+            "canal": "bonusPericia",
+            "alvo": "percepcao",
+            "expr": "2",
+            "gatilhoSessao": "conjuge"
+           }
+          ]
+         },
+         {
+          "n": 3,
+          "focos": 1,
+          "requisito": {
+           "tipo": "treinamento",
+           "id": "flugel:treino_conjuge",
+           "etapa": 3
+          },
+          "beneficio": "Enquanto no Alcance de seu Cônjuge. Você recebe +2 em sua Intuição.",
+          "efeitos": [
+           {
+            "canal": "bonusPericia",
+            "alvo": "intuicao",
+            "expr": "2",
+            "gatilhoSessao": "conjuge"
+           }
+          ]
+         },
+         {
+          "n": 4,
+          "focos": 2,
+          "requisito": {
+           "tipo": "treinamento",
+           "id": "flugel:treino_conjuge",
+           "etapa": 4
+          },
+          "beneficio": "Enquanto no Alcance de seu Cônjuge. Você recebe os efeitos de um Feitiço Passivo ou Talento de seu cônjuge, desde que você também cumpra os Pre-Requisitos."
+         }
+        ],
+        "completo": {
+         "beneficio": "Paixão Mútua\nEnquanto no Alcance de seu Cônjuge, você pode usar a ação Apoiar a distância, e uma vez por rodada, você pode Apoiar seu Cônjuge como Ação Livre"
+        }
+       },
+       {
+        "id": "treino_bencao_adaptacao",
+        "nome": "Treinamento de Benção da Adaptação",
+        "lore": "Flugel virou os céus e a terra de ponta cabeça, quebrando e moldando as leis do mundo ao seu próprio egoísmo e arrogância. Porém, mesmo que tenha perdido sua Espada e suas Atuais Bênçãos, ele ainda possui sua técnica e um desejo constante de evolução. Esse treino busca a introduzir e adaptar Flugel ao seu novo contexto, não mais como o Santo da Espada, mas sim como o abençoado que ele sempre foi.",
+        "alvos": [
+         {
+          "id": "pericia",
+          "tipo": "pericia",
+          "label": "Perícia"
+         }
+        ],
+        "trocaAtributoPericia": {
+         "etapa": 1,
+         "periciaAlvo": "pericia",
+         "atributoAlvo": "atributoDaTecnica"
+        },
+        "etapas": [
+         {
+          "n": 1,
+          "focos": 1,
+          "requisito": [
+           {
+            "tipo": "aptidao",
+            "id": "tecnica_maxima"
+           },
+           {
+            "tipo": "cla",
+            "id": "flugel:cla_akutame",
+            "label": "Técnica Herdada: Santo da Espada"
+           }
+          ],
+          "beneficio": "Escolha uma Pericia, ela passa a usar o Atributo de Técnica como seu novo Atributo para o calculo. [Não é possível escolher Acerto ou TRs]"
+         },
+         {
+          "n": 2,
+          "focos": 1,
+          "requisito": null,
+          "beneficio": "Você recebe +2 de Acerto.",
+          "efeitos": [
+           {
+            "canal": "bonusAcerto",
+            "expr": "2"
+           }
+          ]
+         },
+         {
+          "n": 3,
+          "focos": 1,
+          "requisito": null,
+          "beneficio": "Você recebe +1 de Limite no Atributo de Técnica.",
+          "efeitos": [
+           {
+            "canal": "limiteAtributo",
+            "alvo": "atributoDaTecnica",
+            "expr": "1"
+           }
+          ]
+         },
+         {
+          "n": 4,
+          "focos": 2,
+          "requisito": null,
+          "beneficio": "Você recebe +2 Pontos no seu Atributo de Técnica.",
+          "efeitos": [
+           {
+            "canal": "atributo",
+            "alvo": "atributoDaTecnica",
+            "expr": "2"
+           }
+          ]
+         }
+        ],
+        "completo": {
+         "beneficio": "Benção da Adaptação\nVocê recebe acesso a Benção da Adaptação, que se torna sua nova Técnica Máxima após a perda permanente da anterior.",
+         "detalhe": "Desvendando a verdadeira essência da sua técnica, você compreende sua própria existência como uma benção viva, capaz de feitos inacreditáveis, conseguindo manifestar novas capacidades de acordo com a situação para triunfar vitorioso.\n\nUma vez por cena, você pode forçar a ativação completa da sua técnica para receber Uma Nova Benção, a qual irá se adequar a situação e lhe tornar capaz de superar seu maior obstáculo e triunfar independentemente da situação.\n\nAo utilizar essa habilidade, você recebe uma nova habilidade passiva a depender da sua necessidade no momento, a qual dura até o final da cena. Ativar a habilidade é uma ação livre.\n\nAo final da cena, você pode escolher manter a Bênção ou devolvê-la aos céus, caso escolha mantê-la, ela se torna uma nova habilidade passiva. Sendo adaptada e enviada para Avaliação.\n\nOs efeitos da benção devem ser decididos pelo mestre e levam em conta a situação mais prejudicial ao usuário a qual ele precisa se adaptar, funcionando de forma a ajudá-lo a lidar especificamente com o maior problema."
+        }
+       }
+      ]
+     },
+     "substitui": {
+      "talentos": [
+       {
+        "id": "tal_alma_livre",
+        "grupo": "origem",
+        "descricao": "Sua recusa em se prender a uma única doutrina ou estilo de combate permite que seu potencial se manifeste de formas totalmente heterodoxas.\nAo escolher esse Talento, selecione uma Especialização diferente da sua (com exceção de Restringido). Você pode escolher uma habilidade dessa Especialização como se pertencesse a ela (para efeitos de nível na Especialização desse poder, considere seu nível de personagem − 4). Note que você não recebe o poder, apenas o direito de escolhê-lo mais tarde.",
+        "requisitos": [
+         {
+          "tipo": "origem",
+          "id": "flugel:orig_caminho_futen"
+         },
+         {
+          "tipo": "nota",
+          "label": "Mestre em Vontade"
+         },
+         {
+          "tipo": "nd",
+          "valor": 10
+         }
+        ],
+        "nivelAlmaLivreAjuste": -4
+       }
+      ]
+     }
+    },
+    {
+     "id": "carteira-da-guilda",
+     "nome": "Carteira da Guilda",
+     "versao": "1.0.0",
+     "autor": "Afty",
+     "descricao": "Abre a aba Carteira, o livro-caixa das sessões da Guilda. Uma lista para o que entra (Nome, XP, Dinheiro, Interlúdios e o Tipo da sessão, entre Jogada, Mestrado, Domingo, Transferência, Staff e Outros) e outra para o que sai (Nome, Fonte, Tipo e Valor). As duas filtram por tipo e por texto, e as linhas se reordenam arrastando pela pega. No topo ficam os cinco totais, grudados enquanto você rola: XP Total, Interlúdios, Recebido, Retirado e Atual. O XP anotado vira o Nível, pela tabela de progressão da Guilda: zero de XP é o Nível 3, 10 de XP é o 4, e a escada segue até o Nível 30 com 600. Os Interlúdios anotados viram o orçamento de Focos da aba Interlúdios, no lugar do ND ou do campo digitado, e o que uma habilidade ou outro addon conceder continua somando por cima. As duas coisas são liberações separadas (carteiraNivel e carteiraFocos): tire uma e a outra continua valendo, tire as duas e a Carteira vira caderno puro, sem mexer em número nenhum da ficha.",
+     "paraRaw": "afty",
+     "permite": [
+      "carteira"
+     ],
+     "libera": [
+      "carteiraFocos",
+      "carteiraNivel"
+     ],
+     "adaptacoes": [],
+     "funcionamentos": [],
+     "feiticos": [],
+     "estadosCombate": [],
+     "catarse": null,
+     "acrescenta": {},
+     "substitui": {}
+    },
+    {
+     "id": "faixas-de-sif",
+     "nome": "Faixas de Sif",
+     "versao": "1.0.0",
+     "autor": "Afty",
+     "descricao": "Habilidade Única das Faixas, criada com o Narrador. Enquanto as Faixas estiverem equipadas, o portador recebe as Aptidões Amaldiçoadas de Maldição Armas Naturais e Armas Naturais Aprimoradas, mesmo sem ser uma Maldição. As duas entram como concedidas, sem gastar vaga e sem cobrar os pré-requisitos, e saem da ficha ao desequipar as Faixas. Os ataques com Faixas contam como desarmados, então é neles que o dano das Armas Naturais aparece.",
+     "paraRaw": "afty",
+     "permite": [],
+     "libera": [],
+     "concedeAptidoes": [
+      {
+       "aptidoes": [
+        "mal_armas_naturais",
+        "mal_armas_naturais_aprimoradas"
+       ],
+       "enquantoEquipado": "arm_faixas"
+      }
+     ],
+     "adaptacoes": [],
+     "funcionamentos": [],
+     "feiticos": [],
+     "estadosCombate": [],
+     "catarse": null,
+     "acrescenta": {},
+     "substitui": {}
+    }
+   ],
+   "narratorNotes": "",
+   "combatState": {
+    "isActive": false,
+    "hpCurrent": 541,
+    "peCurrent": 178,
+    "almaCurrent": 541,
+    "activeConditions": [],
+    "customCounters": [],
+    "combatLog": []
+   },
+   "stats": {
+    "hpMax": 541,
+    "peMax": 178,
+    "defesa": 106,
+    "cd": 47
+   },
+   "updatedAt": "2026-09-13T04:46:31.481Z",
+   "editLog": [
+    "2026-09-01T14:55:16.033Z",
+    "2026-09-01T16:40:11.805Z",
+    "2026-09-01T16:58:54.264Z",
+    "2026-09-01T17:00:44.481Z",
+    "2026-09-01T20:41:47.693Z",
+    "2026-09-06T22:34:25.390Z",
+    "2026-09-07T01:10:26.727Z",
+    "2026-09-08T01:32:19.318Z",
+    "2026-09-11T18:58:42.586Z",
+    "2026-09-11T19:03:21.176Z",
+    "2026-09-11T19:20:02.588Z",
+    "2026-09-11T19:28:23.159Z",
+    "2026-09-11T23:11:27.726Z",
+    "2026-09-11T23:11:34.510Z",
+    "2026-09-11T23:11:39.850Z",
+    "2026-09-11T23:11:45.784Z",
+    "2026-09-11T23:28:39.237Z",
+    "2026-09-12T02:00:13.480Z",
+    "2026-09-13T02:14:49.324Z",
+    "2026-09-13T04:26:01.792Z"
+   ],
+   "id": "teste-g2-minamoto",
+   "folderId": null,
+   "isBuiltIn": false,
+   "createdAt": "2026-09-01T14:55:16.033Z",
+   "treinamentoAlvos": {
+    "flugel:treino_conjuge": {
+     "pericia": "percepcao"
+    },
+    "flugel:treino_atributo_nao_congenito": {
+     "pericia": "oficio",
+     "atributo": "sabedoria"
+    },
+    "flugel:treino_bencao_adaptacao": {
+     "pericia": "oficio__2"
+    }
+   },
+   "treinamentoEscolhas": {
+    "flugel:treino_conjuge_pt_2": {
+     "heranca_conjuge": "talento"
+    },
+    "flugel:treino_conjuge": {
+     "heranca_conjuge": "talento"
+    }
+   },
+   "formulaOverrides": {},
+   "periciaAtributoManual": {
+    "intimidacao": "sabedoria",
+    "oficio": "sabedoria",
+    "oficio__2": "sabedoria"
+   },
+   "defesasDano": {},
+   "catarse": {
+    "saldo": 0,
+    "compras": []
+   },
+   "carteira": {
+    "entradas": [
+     {
+      "id": "car_b73bq9r6",
+      "nome": "Inicial",
+      "xp": 0,
+      "dinheiro": "500",
+      "interludios": "4",
+      "tipo": "outros"
+     },
+     {
+      "id": "car_f4s3uvn7",
+      "nome": "Mansão / Distrito (8 Semanas)",
+      "xp": 0,
+      "dinheiro": 0,
+      "interludios": "16",
+      "tipo": ""
+     },
+     {
+      "id": "car_909nkebz",
+      "nome": "Domingo - 20/06",
+      "xp": 0,
+      "dinheiro": 0,
+      "interludios": "2",
+      "tipo": "domingo"
+     },
+     {
+      "id": "car_ujhl0te0",
+      "nome": "Domingo - 27/06",
+      "xp": 0,
+      "dinheiro": 0,
+      "interludios": "2",
+      "tipo": "domingo"
+     },
+     {
+      "id": "car_ptqt5duo",
+      "nome": "Domingo - 04/07",
+      "xp": 0,
+      "dinheiro": 0,
+      "interludios": "2",
+      "tipo": "domingo"
+     },
+     {
+      "id": "car_ppygkm46",
+      "nome": "Domingo - 11/07",
+      "xp": 0,
+      "dinheiro": 0,
+      "interludios": "2",
+      "tipo": "domingo"
+     },
+     {
+      "id": "car_lunhe7gs",
+      "nome": "Domingo - 18/07",
+      "xp": 0,
+      "dinheiro": 0,
+      "interludios": "2",
+      "tipo": "domingo"
+     },
+     {
+      "id": "car_inttyl5o",
+      "nome": "Domingo - 25/07",
+      "xp": 0,
+      "dinheiro": 0,
+      "interludios": "2",
+      "tipo": "domingo"
+     },
+     {
+      "id": "car_bulmnek6",
+      "nome": "Domingo - 01/08",
+      "xp": 0,
+      "dinheiro": 0,
+      "interludios": "2",
+      "tipo": "domingo"
+     },
+     {
+      "id": "car_fypzuo1w",
+      "nome": "Domingo - 08/08",
+      "xp": 0,
+      "dinheiro": 0,
+      "interludios": "2",
+      "tipo": "domingo"
+     },
+     {
+      "id": "car_r2v0h8q5",
+      "nome": "Domingo - 15/08",
+      "xp": 0,
+      "dinheiro": 0,
+      "interludios": "2",
+      "tipo": "domingo"
+     },
+     {
+      "id": "car_h4jhztaw",
+      "nome": "Domingo - 22/08",
+      "xp": 0,
+      "dinheiro": 0,
+      "interludios": "2",
+      "tipo": "domingo"
+     },
+     {
+      "id": "car_8ietndmc",
+      "nome": "Domingo - 29/08",
+      "xp": 0,
+      "dinheiro": 0,
+      "interludios": "2",
+      "tipo": "domingo"
+     },
+     {
+      "id": "car_rwfi5bjz",
+      "nome": "Staff - 06/07",
+      "xp": "5",
+      "dinheiro": "1000",
+      "interludios": "4",
+      "tipo": "staff"
+     },
+     {
+      "id": "car_5vwzsl8w",
+      "nome": "Staff - 11/07",
+      "xp": "5",
+      "dinheiro": "1500",
+      "interludios": 0,
+      "tipo": "staff"
+     },
+     {
+      "id": "car_zmqcjbyc",
+      "nome": "Staff - Semana 1",
+      "xp": "6",
+      "dinheiro": "1254",
+      "interludios": 0,
+      "tipo": "staff"
+     },
+     {
+      "id": "car_k8wpvndc",
+      "nome": "Staff - Semana 2",
+      "xp": "5",
+      "dinheiro": 0,
+      "interludios": "4",
+      "tipo": "staff"
+     },
+     {
+      "id": "car_5yvhwymy",
+      "nome": "Staff - Semana 3",
+      "xp": "5",
+      "dinheiro": "1500",
+      "interludios": "4",
+      "tipo": "staff"
+     },
+     {
+      "id": "car_eyg53c0g",
+      "nome": "Staff - Semana 4",
+      "xp": "7",
+      "dinheiro": "1000",
+      "interludios": 0,
+      "tipo": "staff"
+     },
+     {
+      "id": "car_yispxr59",
+      "nome": "Staff - Semana 5",
+      "xp": "10",
+      "dinheiro": 0,
+      "interludios": 0,
+      "tipo": "staff"
+     },
+     {
+      "id": "car_6hqjt4gp",
+      "nome": "Staff - Semana 6",
+      "xp": "8",
+      "dinheiro": "1500",
+      "interludios": 0,
+      "tipo": "staff"
+     },
+     {
+      "id": "car_k1rsxg4m",
+      "nome": "Staff - Semana 7",
+      "xp": "5",
+      "dinheiro": "2000",
+      "interludios": 0,
+      "tipo": "staff"
+     },
+     {
+      "id": "car_4ssavn3f",
+      "nome": "Staff - Semana 8",
+      "xp": "3",
+      "dinheiro": "1500",
+      "interludios": "4",
+      "tipo": "staff"
+     },
+     {
+      "id": "car_uxksoyc0",
+      "nome": "Staff - Semana 9",
+      "xp": "5",
+      "dinheiro": "1000",
+      "interludios": "3",
+      "tipo": "staff"
+     },
+     {
+      "id": "car_d337g1kw",
+      "nome": "Loja de PA - 1154",
+      "xp": "164",
+      "dinheiro": "14400",
+      "interludios": "19",
+      "tipo": "outros"
+     },
+     {
+      "id": "car_qxlju0bm",
+      "nome": "Encontrando a Cadeirante",
+      "xp": "2",
+      "dinheiro": "100",
+      "interludios": 0,
+      "tipo": "jogada"
+     },
+     {
+      "id": "car_nf9bj8ru",
+      "nome": "Carga Explosiva",
+      "xp": "10.5",
+      "dinheiro": "1050",
+      "interludios": "3",
+      "tipo": "jogada"
+     },
+     {
+      "id": "car_dcy1r5ah",
+      "nome": "Sessão Gal",
+      "xp": "10.5",
+      "dinheiro": "1050",
+      "interludios": "3",
+      "tipo": "jogada"
+     },
+     {
+      "id": "car_3nr7a1ln",
+      "nome": "Burēdopasu",
+      "xp": "7.5",
+      "dinheiro": "500",
+      "interludios": "1",
+      "tipo": "jogada"
+     },
+     {
+      "id": "car_96jsms9j",
+      "nome": "Em Busca da Maldição Automatica",
+      "xp": "4.5",
+      "dinheiro": "300",
+      "interludios": 0,
+      "tipo": "jogada"
+     },
+     {
+      "id": "car_ldlx1dey",
+      "nome": "Rumo ao Centro Comercial",
+      "xp": 0,
+      "dinheiro": 0,
+      "interludios": 0,
+      "tipo": "jogada"
+     },
+     {
+      "id": "car_hd3tplur",
+      "nome": "Valley Ywa",
+      "xp": "20.25",
+      "dinheiro": "1350",
+      "interludios": "2",
+      "tipo": "jogada"
+     },
+     {
+      "id": "car_edsjv09r",
+      "nome": "Missão de Caça da Fiore",
+      "xp": "27",
+      "dinheiro": "1350",
+      "interludios": "2",
+      "tipo": "jogada"
+     },
+     {
+      "id": "car_1nehwlpt",
+      "nome": "Criação de Equipe e Visita a Mansão [Encomenda]",
+      "xp": "27",
+      "dinheiro": "900",
+      "interludios": "1",
+      "tipo": "jogada"
+     },
+     {
+      "id": "car_krig9f3n",
+      "nome": "Sessão Yo",
+      "xp": "15",
+      "dinheiro": "5000",
+      "interludios": "3",
+      "tipo": "jogada"
+     },
+     {
+      "id": "car_wmk2duqy",
+      "nome": "Apenas Um Navio",
+      "xp": "21",
+      "dinheiro": "713",
+      "interludios": "1",
+      "tipo": "jogada"
+     },
+     {
+      "id": "car_wuwnnjey",
+      "nome": "Barco a Deriva",
+      "xp": "45",
+      "dinheiro": "5000",
+      "interludios": "3",
+      "tipo": "jogada"
+     },
+     {
+      "id": "car_jw8gdmiy",
+      "nome": "RAID YAMATA",
+      "xp": "112.5",
+      "dinheiro": "4500",
+      "interludios": "4",
+      "tipo": "jogada"
+     },
+     {
+      "id": "car_xkfqsc2e",
+      "nome": "Paz Após o Tormento",
+      "xp": "9",
+      "dinheiro": "900",
+      "interludios": "1",
+      "tipo": "jogada"
+     },
+     {
+      "id": "car_bmao887r",
+      "nome": "Lâminas Cruzadas, Uma Pergunta",
+      "xp": "12",
+      "dinheiro": 0,
+      "interludios": 0,
+      "tipo": "mestrado"
+     },
+     {
+      "id": "car_jnsd6qw5",
+      "nome": "Fuga da Tempestade & Distrito Comercial",
+      "xp": "5",
+      "dinheiro": 0,
+      "interludios": 0,
+      "tipo": "mestrado"
+     },
+     {
+      "id": "car_kguio4qk",
+      "nome": "100 Membros",
+      "xp": "10",
+      "dinheiro": 0,
+      "interludios": 0,
+      "tipo": "outros"
+     },
+     {
+      "id": "car_ugr1monh",
+      "nome": "Brasil x Japão",
+      "xp": 0,
+      "dinheiro": "1000",
+      "interludios": "3",
+      "tipo": "outros"
+     },
+     {
+      "id": "car_9qk3je6u",
+      "nome": "Brasil x Noruega",
+      "xp": 0,
+      "dinheiro": "1000",
+      "interludios": "1",
+      "tipo": "outros"
+     },
+     {
+      "id": "car_15fzjux7",
+      "nome": "Compensação",
+      "xp": "1",
+      "dinheiro": "500",
+      "interludios": "1",
+      "tipo": "outros"
+     },
+     {
+      "id": "car_ww0pd7gy",
+      "nome": "Espanha x França",
+      "xp": "5",
+      "dinheiro": "2000",
+      "interludios": "4",
+      "tipo": "outros"
+     },
+     {
+      "id": "car_zm5wl9e3",
+      "nome": "Busque Comer Cimento",
+      "xp": 0,
+      "dinheiro": "300",
+      "interludios": "2",
+      "tipo": "outros"
+     },
+     {
+      "id": "car_ruc5yixj",
+      "nome": "Dias dos Pais",
+      "xp": "5",
+      "dinheiro": "500",
+      "interludios": "3",
+      "tipo": "outros"
+     },
+     {
+      "id": "car_m5gw3a6f",
+      "nome": "200 Membros",
+      "xp": "10",
+      "dinheiro": "4000",
+      "interludios": "4",
+      "tipo": "outros"
+     },
+     {
+      "id": "car_1h6kvmhe",
+      "nome": "Sla o Nome 17/08",
+      "xp": "2",
+      "dinheiro": "3000",
+      "interludios": "2",
+      "tipo": "outros"
+     },
+     {
+      "id": "car_c8a8olm1",
+      "nome": "Primeira Raid Lendaria",
+      "xp": "10",
+      "dinheiro": 0,
+      "interludios": "3",
+      "tipo": "outros"
+     },
+     {
+      "id": "car_zonwlttk",
+      "nome": "Salario Rimmoa 29/08",
+      "xp": "4",
+      "dinheiro": "1987",
+      "interludios": "2",
+      "tipo": "outros"
+     },
+     {
+      "id": "car_70auz798",
+      "nome": "250 Membros",
+      "xp": 0,
+      "dinheiro": 0,
+      "interludios": 0,
+      "tipo": "outros"
+     },
+     {
+      "id": "car_pf3fpa1j",
+      "nome": "Transfêrencias Mansão (Fiore e Café)",
+      "xp": 0,
+      "dinheiro": "10300",
+      "interludios": 0,
+      "tipo": "transferencia"
+     },
+     {
+      "id": "car_v6faya8n",
+      "nome": "Transfêrencias Distrito (Shaula)",
+      "xp": 0,
+      "dinheiro": 0,
+      "interludios": 0,
+      "tipo": "transferencia"
+     }
+    ],
+    "gastos": [
+     {
+      "id": "gas_r2wafx4h",
+      "nome": "Distrito",
+      "fonte": "Distrito",
+      "tipo": "transacao",
+      "valor": "42000"
+     },
+     {
+      "id": "gas_512pdbu7",
+      "nome": "Mansão",
+      "fonte": "Mansão",
+      "tipo": "transacao",
+      "valor": "30000"
+     },
+     {
+      "id": "gas_kfsc1yz7",
+      "nome": "4 Residências Pequenas",
+      "fonte": "Residências",
+      "tipo": "transacao",
+      "valor": "14000"
+     }
+    ]
+   },
+   "acessoriosUnicos": [
+    {
+     "id": "acsu_mtxccuvh_1",
+     "nome": "Anel da Vitalidade",
+     "habilidadeUnica": "Você recebe +8 em seu Limite de Constituição enquanto portando o anel.",
+     "habilidadeEfeitos": [
+      {
+       "canal": "limiteAtributo",
+       "expr": "8",
+       "alvo": "constituicao"
+      }
+     ],
+     "segundaHabilidadeUnica": "Você recebe +8 em seu Atributo de Constituição enquanto portando o anel.",
+     "segundaHabilidadeEfeitos": [
+      {
+       "canal": "atributo",
+       "alvo": "constituicao",
+       "expr": "8"
+      }
+     ]
+    },
+    {
+     "id": "acsu_mtxcekk0_2",
+     "nome": "Anel da Destreza",
+     "habilidadeUnica": "Você recebe +8 em seu Limite de Destreza enquanto portando o anel.",
+     "habilidadeEfeitos": [
+      {
+       "canal": "limiteAtributo",
+       "alvo": "destreza",
+       "expr": "8"
+      }
+     ],
+     "segundaHabilidadeUnica": "Você recebe +8 em seu Atributo de Destreza enquanto portando o anel.",
+     "segundaHabilidadeEfeitos": [
+      {
+       "canal": "atributo",
+       "alvo": "destreza",
+       "expr": "8"
+      }
+     ]
+    },
+    {
+     "id": "acsu_mtxceuu6_3",
+     "nome": "Anel da Força de Vontade",
+     "habilidadeUnica": "Você se torna Mestre e recebe Vantagem no Teste de Resistência de Vontade enquanto portando o anel.",
+     "habilidadeEfeitos": [
+      {
+       "canal": "proficienciaTR",
+       "alvo": "vontade",
+       "expr": "2"
+      }
+     ],
+     "segundaHabilidadeUnica": "Você recebe +5 em Testes de Vontade enquanto portando o anel.",
+     "segundaHabilidadeEfeitos": [
+      {
+       "canal": "bonusTR",
+       "alvo": "vontade",
+       "expr": "5"
+      }
+     ]
+    },
+    {
+     "id": "acsu_mtxcf0qa_4",
+     "nome": "Anel da Astucia Genial",
+     "habilidadeUnica": "Você se torna Mestre e recebe Vantagem no Teste de Resistência de Astucia enquanto portando o anel.",
+     "habilidadeEfeitos": [
+      {
+       "canal": "proficienciaTR",
+       "alvo": "astucia",
+       "expr": "2"
+      }
+     ],
+     "segundaHabilidadeUnica": "Você recebe +5 em Testes de Astucia enquanto portando o anel.",
+     "segundaHabilidadeEfeitos": [
+      {
+       "canal": "bonusTR",
+       "alvo": "astucia",
+       "expr": "5"
+      }
+     ]
+    },
+    {
+     "id": "acsu_mtxcf45f_5",
+     "nome": "Anel dos Reflexos Ágeis",
+     "habilidadeUnica": "Você se torna Mestre e recebe Vantagem no Teste de Resistência de Reflexos enquanto portando o anel.",
+     "habilidadeEfeitos": [
+      {
+       "canal": "proficienciaTR",
+       "alvo": "reflexos",
+       "expr": "2"
+      }
+     ],
+     "segundaHabilidadeUnica": "Você recebe +5 em Testes de Reflexos enquanto portando o anel.",
+     "segundaHabilidadeEfeitos": [
+      {
+       "canal": "bonusTR",
+       "alvo": "reflexos",
+       "expr": "5"
+      }
+     ]
+    },
+    {
+     "id": "acsu_mtxcfc0h_6",
+     "nome": "Anéis do Discernimento",
+     "habilidadeUnica": "Você recebe imunidade a ser Surpreendido e Desprevenido enquanto portando o anel.",
+     "habilidadeEfeitos": [],
+     "segundaHabilidadeUnica": "Você recebe Vantagem e Metade do seu BT em Testes de Iniciativa enquanto portando o anel.",
+     "segundaHabilidadeEfeitos": [
+      {
+       "canal": "iniciativa",
+       "expr": "metade(bt)"
+      }
+     ]
+    },
+    {
+     "id": "acsu_mtxcfhne_7",
+     "nome": "Anel do Desarme",
+     "habilidadeUnica": "Uma vez por rodada, você pode passar de maneira garantida em um Teste para evitar ser Desarmado enquanto portando o anel.",
+     "habilidadeEfeitos": [],
+     "segundaHabilidadeUnica": "Você recebe seu BT em Testes para evitar ser Desarmado.",
+     "segundaHabilidadeEfeitos": [
+      {
+       "canal": "resistirManobra",
+       "expr": "bt",
+       "alvo": "desarmar"
+      }
+     ]
+    },
+    {
+     "id": "acsu_mtxcfmkp_8",
+     "nome": "Anel da Manobra",
+     "habilidadeUnica": "Uma vez por rodada, você pode passar de maneira garantida em um Teste para evitar ser Agarrado enquanto portando o anel.",
+     "habilidadeEfeitos": [],
+     "segundaHabilidadeUnica": "Você recebe seu BT em Testes para evitar ser Agarrado.",
+     "segundaHabilidadeEfeitos": [
+      {
+       "canal": "resistirManobra",
+       "alvo": "agarrar",
+       "expr": "bt"
+      }
+     ]
+    },
+    {
+     "id": "acsu_mtxcfreq_9",
+     "nome": "Anel da Provocação",
+     "habilidadeUnica": "Você pode realizar Testes de Intimidação para provocar usando seu Atributo de Técnica enquanto portando o anel.",
+     "habilidadeEfeitos": [],
+     "segundaHabilidadeUnica": "Você recebe seu BT em Testes de Intimidação para Provocar.",
+     "segundaHabilidadeEfeitos": [
+      {
+       "canal": "bonusPericia",
+       "alvo": "intimidacao",
+       "expr": "bt"
+      }
+     ]
+    },
+    {
+     "id": "acsu_mtxcty7g_1",
+     "nome": "Anel da Atração em Combate",
+     "habilidadeUnica": "Alvos provocados por você, não recebem Vantagem em Testes de Acerto para te atacar enquanto portando o anel.",
+     "habilidadeEfeitos": [],
+     "segundaHabilidadeUnica": "Alvos provocados por você, ao invés de receberem desvantagem para atacar outras criaturas, só podem realizar ataques contra você até que escape da provocação.",
+     "segundaHabilidadeEfeitos": []
+    },
+    {
+     "id": "acsu_mtxito8o_1",
+     "nome": "Cinturão da Força",
+     "habilidadeUnica": "Você recebe +12 Espaços de Inventario para armazenar itens consumíveis. E uma vez por rodada, pode sacar um como Ação Livre. ",
+     "habilidadeEfeitos": [
+      {
+       "canal": "espacosCarga",
+       "expr": "12"
+      }
+     ],
+     "segundaHabilidadeUnica": "",
+     "segundaHabilidadeEfeitos": [
+      {
+       "canal": "atributo",
+       "expr": "8",
+       "alvo": "forca"
+      }
+     ]
+    }
+   ],
+   "forjas": [
+    {
+     "id": "forj_mtxk75qh_1",
+     "focos": 20,
+     "itens": [
+      {
+       "id": "fitm_txt_mtxk75qh_1_0",
+       "nome": "Faixas de Sif",
+       "tipo": "arma"
+      },
+      {
+       "id": "fitm_txt_mtxk75qh_1_1",
+       "nome": "Uniforme da Previsão",
+       "tipo": "uniforme"
+      },
+      {
+       "id": "fitm_txt_mtxk75qh_1_2",
+       "nome": "Espelho das Emoções",
+       "tipo": "escudo"
+      },
+      {
+       "id": "fitm_mtypng64_1",
+       "nome": "Crossbow do Ultimo Disparo",
+       "tipo": "arma"
+      },
+      {
+       "id": "fitm_mtypngsg_2",
+       "nome": "Uniforme Abençoado",
+       "tipo": "uniforme"
+      },
+      {
+       "id": "fitm_mtypnhbr_3",
+       "nome": ">> Pingente de Casamento <<",
+       "tipo": "ferramenta_amaldicoada"
+      },
+      {
+       "id": "fitm_mtypnhzq_4",
+       "nome": "Anel da Vitalidade",
+       "tipo": "ferramenta_amaldicoada"
+      },
+      {
+       "id": "fitm_mtypnigo_5",
+       "nome": "Anel da Destreza",
+       "tipo": "ferramenta_amaldicoada"
+      },
+      {
+       "id": "fitm_mtypnivd_6",
+       "nome": "Anel da Força de Vontade",
+       "tipo": "ferramenta_amaldicoada"
+      },
+      {
+       "id": "fitm_mtypnj9m_7",
+       "nome": "Anel da Astucia Genial",
+       "tipo": "ferramenta_amaldicoada"
+      },
+      {
+       "id": "fitm_mtypnjqh_8",
+       "nome": "Anel dos Reflexos Agéis",
+       "tipo": "ferramenta_amaldicoada"
+      },
+      {
+       "id": "fitm_mtypsjlp_9",
+       "nome": "Anel do Dicernimento",
+       "tipo": "ferramenta_amaldicoada"
+      },
+      {
+       "id": "fitm_mtypskgt_10",
+       "nome": "Anel do Desarme",
+       "tipo": "ferramenta_amaldicoada"
+      },
+      {
+       "id": "fitm_mtypty3r_11",
+       "nome": "Anel da Manobra",
+       "tipo": "ferramenta_amaldicoada"
+      },
+      {
+       "id": "fitm_mtyptypi_12",
+       "nome": "Anel da Provocação",
+       "tipo": "ferramenta_amaldicoada"
+      },
+      {
+       "id": "fitm_mtyptz71_13",
+       "nome": "Anel da Atração em Combate",
+       "tipo": "ferramenta_amaldicoada"
+      },
+      {
+       "id": "fitm_mtyptzqv_14",
+       "nome": "Cinturão da Força",
+       "tipo": "ferramenta_amaldicoada"
+      },
+      {
+       "id": "fitm_mtypu03l_15",
+       "nome": "",
+       "tipo": null
+      }
+     ]
+    }
+   ]
+  },
+  "player30": {
+   "system": "player",
+   "rulesVersion": "player",
+   "name": "Player 30 Volumoso (Teste G2)",
+   "portraitUrl": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22600%22%20height%3D%22800%22%20viewBox%3D%220%200%20600%20800%22%3E%0A%3Cdefs%3E%0A%20%20%3CradialGradient%20id%3D%22g%22%20cx%3D%2250%25%22%20cy%3D%2235%25%22%20r%3D%2270%25%22%3E%0A%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23cfe0ff%22%2F%3E%3Cstop%20offset%3D%2242%25%22%20stop-color%3D%22%234a63d8%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23080b22%22%2F%3E%0A%20%20%3C%2FradialGradient%3E%0A%20%20%3ClinearGradient%20id%3D%22h%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%0A%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23eaf1ff%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%236f86ff%22%2F%3E%0A%20%20%3C%2FlinearGradient%3E%0A%3C%2Fdefs%3E%0A%3Crect%20width%3D%22600%22%20height%3D%22800%22%20fill%3D%22%23070a1c%22%2F%3E%0A%3Ccircle%20cx%3D%22300%22%20cy%3D%22300%22%20r%3D%22260%22%20fill%3D%22url(%23g)%22%20opacity%3D%220.85%22%2F%3E%0A%3Cpath%20d%3D%22M300%20120%20c40%200%2070%2034%2070%2076%200%2030-16%2050-16%2066%20l58%2030%20c34%2018%2052%2052%2052%2090%20l0%20300%20-328%200%200-300%20c0-38%2018-72%2052-90%20l58-30%20c0-16-16-36-16-66%200-42%2030-76%2070-76z%22%20fill%3D%22url(%23h)%22%20opacity%3D%220.92%22%2F%3E%0A%3Cpath%20d%3D%22M186%20470%20l-70%20250%2060%200%2046-180z%22%20fill%3D%22%23eaf1ff%22%20opacity%3D%220.55%22%2F%3E%0A%3Cpath%20d%3D%22M414%20470%20l70%20250%20-60%200%20-46-180z%22%20fill%3D%22%23eaf1ff%22%20opacity%3D%220.55%22%2F%3E%0A%3C%2Fsvg%3E",
+   "portraitFocus": {
+    "x": 50,
+    "y": 32
+   },
+   "core": {
+    "tipo": "misto",
+    "patamar": "desafio",
+    "nd": 30,
+    "tamanho": "medio",
+    "tecnicaAttr": "inteligencia",
+    "tecnicaDescricao": "",
+    "tecnicaEfeitos": [],
+    "funcionamentosAdicionais": [],
+    "origem": {
+     "id": "inato"
+    }
+   },
+   "alma": {
+    "atual": 214,
+    "max": 260
+   },
+   "qntPE": "normal",
+   "attrMethod": "pontos",
+   "attrLimite": {
+    "forca": 20,
+    "destreza": 20,
+    "constituicao": 20,
+    "inteligencia": 20,
+    "sabedoria": 20,
+    "presenca": 20
+   },
+   "attributes": {
+    "forca": 12,
+    "destreza": 20,
+    "constituicao": 14,
+    "inteligencia": 18,
+    "sabedoria": 18,
+    "presenca": 16
+   },
+   "attrNivel": {
+    "forca": 0,
+    "destreza": 0,
+    "constituicao": 0,
+    "inteligencia": 0,
+    "sabedoria": 0,
+    "presenca": 0
+   },
+   "pericias": {
+    "percepcao": "especialista",
+    "furtividade": "treinado",
+    "acrobacia": "treinado",
+    "feiticaria": "especialista",
+    "intuicao": "treinado",
+    "astucia": "treinado",
+    "luta": "treinado",
+    "pontaria": "treinado",
+    "atletismo": "treinado"
+   },
+   "periciasOrdem": null,
+   "periciasPersonalizadas": [],
+   "periciaOficio": "",
+   "periciaOficios": {},
+   "periciasBonus": 0,
+   "resistenciasProf": {
+    "reflexos": "treinado",
+    "vontade": "especialista"
+   },
+   "ataquesProf": {
+    "corpo": "treinado",
+    "distancia": "treinado"
+   },
+   "ataqueFineza": false,
+   "armasDedicadas": [],
+   "tecnicasCombate": {
+    "armas": [],
+    "atributo": "inteligencia"
+   },
+   "combate": {
+    "ativo": false,
+    "empolgacao": 1,
+    "insistenciaUsada": false,
+    "manobraAjuste": false,
+    "manobraDesarme": false,
+    "manobraEsquiva": false,
+    "manobraTrabalhoDePes": false,
+    "manobraFinalizadora": null,
+    "brutalidade": false,
+    "brutalidadePE": 0,
+    "brutalidadePilha": 0,
+    "ataqueInconsequente": false,
+    "impactoMisto": false,
+    "resistirPE": 0,
+    "furiaVinganca": false,
+    "imprudenciaMotivadora": false,
+    "machucado": false,
+    "abates": 0,
+    "armasAbsolutas": null,
+    "auraElemental": true,
+    "concentrarAura": [],
+    "golpeComAura": null,
+    "canalizarEmGolpe": false,
+    "canalizacaoMaxima": false
+   },
+   "equipamentos": {
+    "itens": [
+     {
+      "id": "EQ1",
+      "nome": "Katana Selada",
+      "categoria": "arma",
+      "grau": "terceiro",
+      "quantidade": 1,
+      "equipado": true
+     },
+     {
+      "id": "EQ2",
+      "nome": "Uniforme de Jujutsu",
+      "categoria": "armadura",
+      "grau": "segundo",
+      "quantidade": 1,
+      "equipado": true
+     }
+    ]
+   },
+   "armasCustom": [],
+   "especializacoes": [
+    {
+     "id": "combatente",
+     "nivel": 20
+    },
+    {
+     "id": "conjurador",
+     "nivel": 10
+    }
+   ],
+   "feiticos": [
+    {
+     "id": "sf13",
+     "nome": "Lâmina de Vento",
+     "tipo": "dano",
+     "nivel": 1,
+     "conjuracaoTexto": "",
+     "descricao": "Texto de teste da amostra sintética (Lâmina de Vento).",
+     "variacaoDe": null,
+     "resolucao": "tr",
+     "alvo": "unico",
+     "formaArea": "esfera",
+     "acao": "comum",
+     "subtipo": "nenhum",
+     "trocas": {
+      "dados": 0,
+      "acerto": 0,
+      "cd": 0,
+      "alcance": 0,
+      "area": 0,
+      "empurraoDados": 0
+     },
+     "condicoes": [],
+     "sangramento": null,
+     "requisito": null,
+     "focoCondicao": false,
+     "disparos": 2,
+     "continuoModo": "sustentado",
+     "ignorarResistencias": false,
+     "morteDireta": false,
+     "remocao": "nenhuma",
+     "especialSubtipo": "golpeador",
+     "golpesGolpeador": 1,
+     "tecnicaInvisibilidade": false,
+     "fraquezaInvis": "",
+     "itemCusto": 1,
+     "itemGrauTroca": 0,
+     "tecnicaFocoItens": false,
+     "itemNatureza": "consumivel",
+     "itemDescricao": "",
+     "shikigamiInvocacaoId": null,
+     "transfAcao": "comum",
+     "transfDuracao": "sustentada",
+     "transfNivelTroca": 0,
+     "transfCustoVida": false,
+     "transfEfeitos": [],
+     "efeitoAux": "defesa",
+     "alvoAuxAtributo": "forca",
+     "alvoAuxTR": "reflexos",
+     "duracaoAux": "imediata",
+     "rodadasDur": 1,
+     "alvosAux": 1,
+     "concentracaoAux": false,
+     "concUsoAux": "alvos",
+     "acaoAux": "padrao",
+     "umGolpe": false,
+     "tiposDanoExtra": 0,
+     "alcancePropria": false,
+     "multiplosAtivo": false,
+     "duracaoMult": "imediata",
+     "rodadasMult": 1,
+     "acaoMult": "padrao",
+     "alvosMult": 1,
+     "efeitosMult": [],
+     "categoriaPassivo": "",
+     "alvoPassivoAtributo": "forca",
+     "alvoPassivoTR": "reflexos",
+     "alvoPassivoPericia": "percepcao",
+     "tiposDanoExtraPassivo": 0,
+     "efeitosPassivo": [],
+     "acaoPersonalizada": "",
+     "alcanceTexto": "",
+     "alvoTexto": "",
+     "duracaoTexto": "",
+     "resolucaoTexto": "",
+     "comCd": true,
+     "rolagens": [],
+     "custoVidaAtivacao": null
+    },
+    {
+     "id": "sf14",
+     "nome": "Chuva de Agulhas",
+     "tipo": "dano",
+     "nivel": 3,
+     "conjuracaoTexto": "",
+     "descricao": "Texto de teste da amostra sintética (Chuva de Agulhas).",
+     "variacaoDe": null,
+     "resolucao": "tr",
+     "alvo": "unico",
+     "formaArea": "esfera",
+     "acao": "comum",
+     "subtipo": "nenhum",
+     "trocas": {
+      "dados": 0,
+      "acerto": 0,
+      "cd": 0,
+      "alcance": 0,
+      "area": 0,
+      "empurraoDados": 0
+     },
+     "condicoes": [],
+     "sangramento": null,
+     "requisito": null,
+     "focoCondicao": false,
+     "disparos": 2,
+     "continuoModo": "sustentado",
+     "ignorarResistencias": false,
+     "morteDireta": false,
+     "remocao": "nenhuma",
+     "especialSubtipo": "golpeador",
+     "golpesGolpeador": 1,
+     "tecnicaInvisibilidade": false,
+     "fraquezaInvis": "",
+     "itemCusto": 1,
+     "itemGrauTroca": 0,
+     "tecnicaFocoItens": false,
+     "itemNatureza": "consumivel",
+     "itemDescricao": "",
+     "shikigamiInvocacaoId": null,
+     "transfAcao": "comum",
+     "transfDuracao": "sustentada",
+     "transfNivelTroca": 0,
+     "transfCustoVida": false,
+     "transfEfeitos": [],
+     "efeitoAux": "defesa",
+     "alvoAuxAtributo": "forca",
+     "alvoAuxTR": "reflexos",
+     "duracaoAux": "imediata",
+     "rodadasDur": 1,
+     "alvosAux": 1,
+     "concentracaoAux": false,
+     "concUsoAux": "alvos",
+     "acaoAux": "padrao",
+     "umGolpe": false,
+     "tiposDanoExtra": 0,
+     "alcancePropria": false,
+     "multiplosAtivo": false,
+     "duracaoMult": "imediata",
+     "rodadasMult": 1,
+     "acaoMult": "padrao",
+     "alvosMult": 1,
+     "efeitosMult": [],
+     "categoriaPassivo": "",
+     "alvoPassivoAtributo": "forca",
+     "alvoPassivoTR": "reflexos",
+     "alvoPassivoPericia": "percepcao",
+     "tiposDanoExtraPassivo": 0,
+     "efeitosPassivo": [],
+     "acaoPersonalizada": "",
+     "alcanceTexto": "",
+     "alvoTexto": "",
+     "duracaoTexto": "",
+     "resolucaoTexto": "",
+     "comCd": true,
+     "rolagens": [],
+     "custoVidaAtivacao": null
+    },
+    {
+     "id": "sf15",
+     "nome": "Tempestade Rubra",
+     "tipo": "dano",
+     "nivel": 5,
+     "conjuracaoTexto": "",
+     "descricao": "Texto de teste da amostra sintética (Tempestade Rubra).",
+     "variacaoDe": null,
+     "resolucao": "tr",
+     "alvo": "unico",
+     "formaArea": "esfera",
+     "acao": "comum",
+     "subtipo": "nenhum",
+     "trocas": {
+      "dados": 0,
+      "acerto": 0,
+      "cd": 0,
+      "alcance": 0,
+      "area": 0,
+      "empurraoDados": 0
+     },
+     "condicoes": [],
+     "sangramento": null,
+     "requisito": null,
+     "focoCondicao": false,
+     "disparos": 2,
+     "continuoModo": "sustentado",
+     "ignorarResistencias": false,
+     "morteDireta": false,
+     "remocao": "nenhuma",
+     "especialSubtipo": "golpeador",
+     "golpesGolpeador": 1,
+     "tecnicaInvisibilidade": false,
+     "fraquezaInvis": "",
+     "itemCusto": 1,
+     "itemGrauTroca": 0,
+     "tecnicaFocoItens": false,
+     "itemNatureza": "consumivel",
+     "itemDescricao": "",
+     "shikigamiInvocacaoId": null,
+     "transfAcao": "comum",
+     "transfDuracao": "sustentada",
+     "transfNivelTroca": 0,
+     "transfCustoVida": false,
+     "transfEfeitos": [],
+     "efeitoAux": "defesa",
+     "alvoAuxAtributo": "forca",
+     "alvoAuxTR": "reflexos",
+     "duracaoAux": "imediata",
+     "rodadasDur": 1,
+     "alvosAux": 1,
+     "concentracaoAux": false,
+     "concUsoAux": "alvos",
+     "acaoAux": "padrao",
+     "umGolpe": false,
+     "tiposDanoExtra": 0,
+     "alcancePropria": false,
+     "multiplosAtivo": false,
+     "duracaoMult": "imediata",
+     "rodadasMult": 1,
+     "acaoMult": "padrao",
+     "alvosMult": 1,
+     "efeitosMult": [],
+     "categoriaPassivo": "",
+     "alvoPassivoAtributo": "forca",
+     "alvoPassivoTR": "reflexos",
+     "alvoPassivoPericia": "percepcao",
+     "tiposDanoExtraPassivo": 0,
+     "efeitosPassivo": [],
+     "acaoPersonalizada": "",
+     "alcanceTexto": "",
+     "alvoTexto": "",
+     "duracaoTexto": "",
+     "resolucaoTexto": "",
+     "comCd": true,
+     "rolagens": [],
+     "custoVidaAtivacao": null
+    },
+    {
+     "id": "sf16",
+     "nome": "Sopro Vital",
+     "tipo": "curativo",
+     "nivel": 2,
+     "conjuracaoTexto": "",
+     "descricao": "Texto de teste da amostra sintética (Sopro Vital).",
+     "variacaoDe": null,
+     "resolucao": "tr",
+     "alvo": "unico",
+     "formaArea": "esfera",
+     "acao": "comum",
+     "subtipo": "nenhum",
+     "trocas": {
+      "dados": 0,
+      "acerto": 0,
+      "cd": 0,
+      "alcance": 0,
+      "area": 0,
+      "empurraoDados": 0
+     },
+     "condicoes": [],
+     "sangramento": null,
+     "requisito": null,
+     "focoCondicao": false,
+     "disparos": 2,
+     "continuoModo": "sustentado",
+     "ignorarResistencias": false,
+     "morteDireta": false,
+     "remocao": "nenhuma",
+     "especialSubtipo": "golpeador",
+     "golpesGolpeador": 1,
+     "tecnicaInvisibilidade": false,
+     "fraquezaInvis": "",
+     "itemCusto": 1,
+     "itemGrauTroca": 0,
+     "tecnicaFocoItens": false,
+     "itemNatureza": "consumivel",
+     "itemDescricao": "",
+     "shikigamiInvocacaoId": null,
+     "transfAcao": "comum",
+     "transfDuracao": "sustentada",
+     "transfNivelTroca": 0,
+     "transfCustoVida": false,
+     "transfEfeitos": [],
+     "efeitoAux": "defesa",
+     "alvoAuxAtributo": "forca",
+     "alvoAuxTR": "reflexos",
+     "duracaoAux": "imediata",
+     "rodadasDur": 1,
+     "alvosAux": 1,
+     "concentracaoAux": false,
+     "concUsoAux": "alvos",
+     "acaoAux": "padrao",
+     "umGolpe": false,
+     "tiposDanoExtra": 0,
+     "alcancePropria": false,
+     "multiplosAtivo": false,
+     "duracaoMult": "imediata",
+     "rodadasMult": 1,
+     "acaoMult": "padrao",
+     "alvosMult": 1,
+     "efeitosMult": [],
+     "categoriaPassivo": "",
+     "alvoPassivoAtributo": "forca",
+     "alvoPassivoTR": "reflexos",
+     "alvoPassivoPericia": "percepcao",
+     "tiposDanoExtraPassivo": 0,
+     "efeitosPassivo": [],
+     "acaoPersonalizada": "",
+     "alcanceTexto": "",
+     "alvoTexto": "",
+     "duracaoTexto": "",
+     "resolucaoTexto": "",
+     "comCd": true,
+     "rolagens": [],
+     "custoVidaAtivacao": null
+    },
+    {
+     "id": "sf17",
+     "nome": "Pele de Ferro",
+     "tipo": "auxiliar",
+     "nivel": 2,
+     "conjuracaoTexto": "",
+     "descricao": "Texto de teste da amostra sintética (Pele de Ferro).",
+     "variacaoDe": null,
+     "resolucao": "tr",
+     "alvo": "unico",
+     "formaArea": "esfera",
+     "acao": "comum",
+     "subtipo": "nenhum",
+     "trocas": {
+      "dados": 0,
+      "acerto": 0,
+      "cd": 0,
+      "alcance": 0,
+      "area": 0,
+      "empurraoDados": 0
+     },
+     "condicoes": [],
+     "sangramento": null,
+     "requisito": null,
+     "focoCondicao": false,
+     "disparos": 2,
+     "continuoModo": "sustentado",
+     "ignorarResistencias": false,
+     "morteDireta": false,
+     "remocao": "nenhuma",
+     "especialSubtipo": "golpeador",
+     "golpesGolpeador": 1,
+     "tecnicaInvisibilidade": false,
+     "fraquezaInvis": "",
+     "itemCusto": 1,
+     "itemGrauTroca": 0,
+     "tecnicaFocoItens": false,
+     "itemNatureza": "consumivel",
+     "itemDescricao": "",
+     "shikigamiInvocacaoId": null,
+     "transfAcao": "comum",
+     "transfDuracao": "sustentada",
+     "transfNivelTroca": 0,
+     "transfCustoVida": false,
+     "transfEfeitos": [],
+     "efeitoAux": "defesa",
+     "alvoAuxAtributo": "forca",
+     "alvoAuxTR": "reflexos",
+     "duracaoAux": "imediata",
+     "rodadasDur": 1,
+     "alvosAux": 1,
+     "concentracaoAux": false,
+     "concUsoAux": "alvos",
+     "acaoAux": "padrao",
+     "umGolpe": false,
+     "tiposDanoExtra": 0,
+     "alcancePropria": false,
+     "multiplosAtivo": false,
+     "duracaoMult": "imediata",
+     "rodadasMult": 1,
+     "acaoMult": "padrao",
+     "alvosMult": 1,
+     "efeitosMult": [],
+     "categoriaPassivo": "",
+     "alvoPassivoAtributo": "forca",
+     "alvoPassivoTR": "reflexos",
+     "alvoPassivoPericia": "percepcao",
+     "tiposDanoExtraPassivo": 0,
+     "efeitosPassivo": [],
+     "acaoPersonalizada": "",
+     "alcanceTexto": "",
+     "alvoTexto": "",
+     "duracaoTexto": "",
+     "resolucaoTexto": "",
+     "comCd": true,
+     "rolagens": [],
+     "custoVidaAtivacao": null
+    },
+    {
+     "id": "sf18",
+     "nome": "Passo Relâmpago",
+     "tipo": "auxiliar",
+     "nivel": 4,
+     "conjuracaoTexto": "",
+     "descricao": "Texto de teste da amostra sintética (Passo Relâmpago).",
+     "variacaoDe": null,
+     "resolucao": "tr",
+     "alvo": "unico",
+     "formaArea": "esfera",
+     "acao": "comum",
+     "subtipo": "nenhum",
+     "trocas": {
+      "dados": 0,
+      "acerto": 0,
+      "cd": 0,
+      "alcance": 0,
+      "area": 0,
+      "empurraoDados": 0
+     },
+     "condicoes": [],
+     "sangramento": null,
+     "requisito": null,
+     "focoCondicao": false,
+     "disparos": 2,
+     "continuoModo": "sustentado",
+     "ignorarResistencias": false,
+     "morteDireta": false,
+     "remocao": "nenhuma",
+     "especialSubtipo": "golpeador",
+     "golpesGolpeador": 1,
+     "tecnicaInvisibilidade": false,
+     "fraquezaInvis": "",
+     "itemCusto": 1,
+     "itemGrauTroca": 0,
+     "tecnicaFocoItens": false,
+     "itemNatureza": "consumivel",
+     "itemDescricao": "",
+     "shikigamiInvocacaoId": null,
+     "transfAcao": "comum",
+     "transfDuracao": "sustentada",
+     "transfNivelTroca": 0,
+     "transfCustoVida": false,
+     "transfEfeitos": [],
+     "efeitoAux": "defesa",
+     "alvoAuxAtributo": "forca",
+     "alvoAuxTR": "reflexos",
+     "duracaoAux": "imediata",
+     "rodadasDur": 1,
+     "alvosAux": 1,
+     "concentracaoAux": false,
+     "concUsoAux": "alvos",
+     "acaoAux": "padrao",
+     "umGolpe": false,
+     "tiposDanoExtra": 0,
+     "alcancePropria": false,
+     "multiplosAtivo": false,
+     "duracaoMult": "imediata",
+     "rodadasMult": 1,
+     "acaoMult": "padrao",
+     "alvosMult": 1,
+     "efeitosMult": [],
+     "categoriaPassivo": "",
+     "alvoPassivoAtributo": "forca",
+     "alvoPassivoTR": "reflexos",
+     "alvoPassivoPericia": "percepcao",
+     "tiposDanoExtraPassivo": 0,
+     "efeitosPassivo": [],
+     "acaoPersonalizada": "",
+     "alcanceTexto": "",
+     "alvoTexto": "",
+     "duracaoTexto": "",
+     "resolucaoTexto": "",
+     "comCd": true,
+     "rolagens": [],
+     "custoVidaAtivacao": null
+    },
+    {
+     "id": "sf19",
+     "nome": "Prisão de Sombras",
+     "tipo": "dano",
+     "nivel": 4,
+     "conjuracaoTexto": "",
+     "descricao": "Texto de teste da amostra sintética (Prisão de Sombras).",
+     "variacaoDe": null,
+     "resolucao": "tr",
+     "alvo": "unico",
+     "formaArea": "esfera",
+     "acao": "comum",
+     "subtipo": "nenhum",
+     "trocas": {
+      "dados": 0,
+      "acerto": 0,
+      "cd": 0,
+      "alcance": 0,
+      "area": 0,
+      "empurraoDados": 0
+     },
+     "condicoes": [],
+     "sangramento": null,
+     "requisito": null,
+     "focoCondicao": false,
+     "disparos": 2,
+     "continuoModo": "sustentado",
+     "ignorarResistencias": false,
+     "morteDireta": false,
+     "remocao": "nenhuma",
+     "especialSubtipo": "golpeador",
+     "golpesGolpeador": 1,
+     "tecnicaInvisibilidade": false,
+     "fraquezaInvis": "",
+     "itemCusto": 1,
+     "itemGrauTroca": 0,
+     "tecnicaFocoItens": false,
+     "itemNatureza": "consumivel",
+     "itemDescricao": "",
+     "shikigamiInvocacaoId": null,
+     "transfAcao": "comum",
+     "transfDuracao": "sustentada",
+     "transfNivelTroca": 0,
+     "transfCustoVida": false,
+     "transfEfeitos": [],
+     "efeitoAux": "defesa",
+     "alvoAuxAtributo": "forca",
+     "alvoAuxTR": "reflexos",
+     "duracaoAux": "imediata",
+     "rodadasDur": 1,
+     "alvosAux": 1,
+     "concentracaoAux": false,
+     "concUsoAux": "alvos",
+     "acaoAux": "padrao",
+     "umGolpe": false,
+     "tiposDanoExtra": 0,
+     "alcancePropria": false,
+     "multiplosAtivo": false,
+     "duracaoMult": "imediata",
+     "rodadasMult": 1,
+     "acaoMult": "padrao",
+     "alvosMult": 1,
+     "efeitosMult": [],
+     "categoriaPassivo": "",
+     "alvoPassivoAtributo": "forca",
+     "alvoPassivoTR": "reflexos",
+     "alvoPassivoPericia": "percepcao",
+     "tiposDanoExtraPassivo": 0,
+     "efeitosPassivo": [],
+     "acaoPersonalizada": "",
+     "alcanceTexto": "",
+     "alvoTexto": "",
+     "duracaoTexto": "",
+     "resolucaoTexto": "",
+     "comCd": true,
+     "rolagens": [],
+     "custoVidaAtivacao": null
+    },
+    {
+     "id": "sf20",
+     "nome": "Renascer",
+     "tipo": "curativo",
+     "nivel": 4,
+     "conjuracaoTexto": "",
+     "descricao": "Texto de teste da amostra sintética (Renascer).",
+     "variacaoDe": null,
+     "resolucao": "tr",
+     "alvo": "unico",
+     "formaArea": "esfera",
+     "acao": "comum",
+     "subtipo": "nenhum",
+     "trocas": {
+      "dados": 0,
+      "acerto": 0,
+      "cd": 0,
+      "alcance": 0,
+      "area": 0,
+      "empurraoDados": 0
+     },
+     "condicoes": [],
+     "sangramento": null,
+     "requisito": null,
+     "focoCondicao": false,
+     "disparos": 2,
+     "continuoModo": "sustentado",
+     "ignorarResistencias": false,
+     "morteDireta": false,
+     "remocao": "nenhuma",
+     "especialSubtipo": "golpeador",
+     "golpesGolpeador": 1,
+     "tecnicaInvisibilidade": false,
+     "fraquezaInvis": "",
+     "itemCusto": 1,
+     "itemGrauTroca": 0,
+     "tecnicaFocoItens": false,
+     "itemNatureza": "consumivel",
+     "itemDescricao": "",
+     "shikigamiInvocacaoId": null,
+     "transfAcao": "comum",
+     "transfDuracao": "sustentada",
+     "transfNivelTroca": 0,
+     "transfCustoVida": false,
+     "transfEfeitos": [],
+     "efeitoAux": "defesa",
+     "alvoAuxAtributo": "forca",
+     "alvoAuxTR": "reflexos",
+     "duracaoAux": "imediata",
+     "rodadasDur": 1,
+     "alvosAux": 1,
+     "concentracaoAux": false,
+     "concUsoAux": "alvos",
+     "acaoAux": "padrao",
+     "umGolpe": false,
+     "tiposDanoExtra": 0,
+     "alcancePropria": false,
+     "multiplosAtivo": false,
+     "duracaoMult": "imediata",
+     "rodadasMult": 1,
+     "acaoMult": "padrao",
+     "alvosMult": 1,
+     "efeitosMult": [],
+     "categoriaPassivo": "",
+     "alvoPassivoAtributo": "forca",
+     "alvoPassivoTR": "reflexos",
+     "alvoPassivoPericia": "percepcao",
+     "tiposDanoExtraPassivo": 0,
+     "efeitosPassivo": [],
+     "acaoPersonalizada": "",
+     "alcanceTexto": "",
+     "alvoTexto": "",
+     "duracaoTexto": "",
+     "resolucaoTexto": "",
+     "comCd": true,
+     "rolagens": [],
+     "custoVidaAtivacao": null
+    },
+    {
+     "id": "sf21",
+     "nome": "Dardo Espiritual",
+     "tipo": "dano",
+     "nivel": 2,
+     "conjuracaoTexto": "",
+     "descricao": "Texto de teste da amostra sintética (Dardo Espiritual).",
+     "variacaoDe": null,
+     "resolucao": "tr",
+     "alvo": "unico",
+     "formaArea": "esfera",
+     "acao": "comum",
+     "subtipo": "nenhum",
+     "trocas": {
+      "dados": 0,
+      "acerto": 0,
+      "cd": 0,
+      "alcance": 0,
+      "area": 0,
+      "empurraoDados": 0
+     },
+     "condicoes": [],
+     "sangramento": null,
+     "requisito": null,
+     "focoCondicao": false,
+     "disparos": 2,
+     "continuoModo": "sustentado",
+     "ignorarResistencias": false,
+     "morteDireta": false,
+     "remocao": "nenhuma",
+     "especialSubtipo": "golpeador",
+     "golpesGolpeador": 1,
+     "tecnicaInvisibilidade": false,
+     "fraquezaInvis": "",
+     "itemCusto": 1,
+     "itemGrauTroca": 0,
+     "tecnicaFocoItens": false,
+     "itemNatureza": "consumivel",
+     "itemDescricao": "",
+     "shikigamiInvocacaoId": null,
+     "transfAcao": "comum",
+     "transfDuracao": "sustentada",
+     "transfNivelTroca": 0,
+     "transfCustoVida": false,
+     "transfEfeitos": [],
+     "efeitoAux": "defesa",
+     "alvoAuxAtributo": "forca",
+     "alvoAuxTR": "reflexos",
+     "duracaoAux": "imediata",
+     "rodadasDur": 1,
+     "alvosAux": 1,
+     "concentracaoAux": false,
+     "concUsoAux": "alvos",
+     "acaoAux": "padrao",
+     "umGolpe": false,
+     "tiposDanoExtra": 0,
+     "alcancePropria": false,
+     "multiplosAtivo": false,
+     "duracaoMult": "imediata",
+     "rodadasMult": 1,
+     "acaoMult": "padrao",
+     "alvosMult": 1,
+     "efeitosMult": [],
+     "categoriaPassivo": "",
+     "alvoPassivoAtributo": "forca",
+     "alvoPassivoTR": "reflexos",
+     "alvoPassivoPericia": "percepcao",
+     "tiposDanoExtraPassivo": 0,
+     "efeitosPassivo": [],
+     "acaoPersonalizada": "",
+     "alcanceTexto": "",
+     "alvoTexto": "",
+     "duracaoTexto": "",
+     "resolucaoTexto": "",
+     "comCd": true,
+     "rolagens": [],
+     "custoVidaAtivacao": null
+    },
+    {
+     "id": "sf22",
+     "nome": "Olhos da Coruja",
+     "tipo": "auxiliar",
+     "nivel": 1,
+     "conjuracaoTexto": "",
+     "descricao": "Texto de teste da amostra sintética (Olhos da Coruja).",
+     "variacaoDe": null,
+     "resolucao": "tr",
+     "alvo": "unico",
+     "formaArea": "esfera",
+     "acao": "comum",
+     "subtipo": "nenhum",
+     "trocas": {
+      "dados": 0,
+      "acerto": 0,
+      "cd": 0,
+      "alcance": 0,
+      "area": 0,
+      "empurraoDados": 0
+     },
+     "condicoes": [],
+     "sangramento": null,
+     "requisito": null,
+     "focoCondicao": false,
+     "disparos": 2,
+     "continuoModo": "sustentado",
+     "ignorarResistencias": false,
+     "morteDireta": false,
+     "remocao": "nenhuma",
+     "especialSubtipo": "golpeador",
+     "golpesGolpeador": 1,
+     "tecnicaInvisibilidade": false,
+     "fraquezaInvis": "",
+     "itemCusto": 1,
+     "itemGrauTroca": 0,
+     "tecnicaFocoItens": false,
+     "itemNatureza": "consumivel",
+     "itemDescricao": "",
+     "shikigamiInvocacaoId": null,
+     "transfAcao": "comum",
+     "transfDuracao": "sustentada",
+     "transfNivelTroca": 0,
+     "transfCustoVida": false,
+     "transfEfeitos": [],
+     "efeitoAux": "defesa",
+     "alvoAuxAtributo": "forca",
+     "alvoAuxTR": "reflexos",
+     "duracaoAux": "imediata",
+     "rodadasDur": 1,
+     "alvosAux": 1,
+     "concentracaoAux": false,
+     "concUsoAux": "alvos",
+     "acaoAux": "padrao",
+     "umGolpe": false,
+     "tiposDanoExtra": 0,
+     "alcancePropria": false,
+     "multiplosAtivo": false,
+     "duracaoMult": "imediata",
+     "rodadasMult": 1,
+     "acaoMult": "padrao",
+     "alvosMult": 1,
+     "efeitosMult": [],
+     "categoriaPassivo": "",
+     "alvoPassivoAtributo": "forca",
+     "alvoPassivoTR": "reflexos",
+     "alvoPassivoPericia": "percepcao",
+     "tiposDanoExtraPassivo": 0,
+     "efeitosPassivo": [],
+     "acaoPersonalizada": "",
+     "alcanceTexto": "",
+     "alvoTexto": "",
+     "duracaoTexto": "",
+     "resolucaoTexto": "",
+     "comCd": true,
+     "rolagens": [],
+     "custoVidaAtivacao": null
+    },
+    {
+     "id": "sf23",
+     "nome": "Colapso Estelar",
+     "tipo": "dano",
+     "nivel": 6,
+     "conjuracaoTexto": "",
+     "descricao": "Texto de teste da amostra sintética (Colapso Estelar).",
+     "variacaoDe": null,
+     "resolucao": "tr",
+     "alvo": "unico",
+     "formaArea": "esfera",
+     "acao": "comum",
+     "subtipo": "nenhum",
+     "trocas": {
+      "dados": 0,
+      "acerto": 0,
+      "cd": 0,
+      "alcance": 0,
+      "area": 0,
+      "empurraoDados": 0
+     },
+     "condicoes": [],
+     "sangramento": null,
+     "requisito": null,
+     "focoCondicao": false,
+     "disparos": 2,
+     "continuoModo": "sustentado",
+     "ignorarResistencias": false,
+     "morteDireta": false,
+     "remocao": "nenhuma",
+     "especialSubtipo": "golpeador",
+     "golpesGolpeador": 1,
+     "tecnicaInvisibilidade": false,
+     "fraquezaInvis": "",
+     "itemCusto": 1,
+     "itemGrauTroca": 0,
+     "tecnicaFocoItens": false,
+     "itemNatureza": "consumivel",
+     "itemDescricao": "",
+     "shikigamiInvocacaoId": null,
+     "transfAcao": "comum",
+     "transfDuracao": "sustentada",
+     "transfNivelTroca": 0,
+     "transfCustoVida": false,
+     "transfEfeitos": [],
+     "efeitoAux": "defesa",
+     "alvoAuxAtributo": "forca",
+     "alvoAuxTR": "reflexos",
+     "duracaoAux": "imediata",
+     "rodadasDur": 1,
+     "alvosAux": 1,
+     "concentracaoAux": false,
+     "concUsoAux": "alvos",
+     "acaoAux": "padrao",
+     "umGolpe": false,
+     "tiposDanoExtra": 0,
+     "alcancePropria": false,
+     "multiplosAtivo": false,
+     "duracaoMult": "imediata",
+     "rodadasMult": 1,
+     "acaoMult": "padrao",
+     "alvosMult": 1,
+     "efeitosMult": [],
+     "categoriaPassivo": "",
+     "alvoPassivoAtributo": "forca",
+     "alvoPassivoTR": "reflexos",
+     "alvoPassivoPericia": "percepcao",
+     "tiposDanoExtraPassivo": 0,
+     "efeitosPassivo": [],
+     "acaoPersonalizada": "",
+     "alcanceTexto": "",
+     "alvoTexto": "",
+     "duracaoTexto": "",
+     "resolucaoTexto": "",
+     "comCd": true,
+     "rolagens": [],
+     "custoVidaAtivacao": null
+    },
+    {
+     "id": "sf24",
+     "nome": "Véu Protetor",
+     "tipo": "auxiliar",
+     "nivel": 3,
+     "conjuracaoTexto": "",
+     "descricao": "Texto de teste da amostra sintética (Véu Protetor).",
+     "variacaoDe": null,
+     "resolucao": "tr",
+     "alvo": "unico",
+     "formaArea": "esfera",
+     "acao": "comum",
+     "subtipo": "nenhum",
+     "trocas": {
+      "dados": 0,
+      "acerto": 0,
+      "cd": 0,
+      "alcance": 0,
+      "area": 0,
+      "empurraoDados": 0
+     },
+     "condicoes": [],
+     "sangramento": null,
+     "requisito": null,
+     "focoCondicao": false,
+     "disparos": 2,
+     "continuoModo": "sustentado",
+     "ignorarResistencias": false,
+     "morteDireta": false,
+     "remocao": "nenhuma",
+     "especialSubtipo": "golpeador",
+     "golpesGolpeador": 1,
+     "tecnicaInvisibilidade": false,
+     "fraquezaInvis": "",
+     "itemCusto": 1,
+     "itemGrauTroca": 0,
+     "tecnicaFocoItens": false,
+     "itemNatureza": "consumivel",
+     "itemDescricao": "",
+     "shikigamiInvocacaoId": null,
+     "transfAcao": "comum",
+     "transfDuracao": "sustentada",
+     "transfNivelTroca": 0,
+     "transfCustoVida": false,
+     "transfEfeitos": [],
+     "efeitoAux": "defesa",
+     "alvoAuxAtributo": "forca",
+     "alvoAuxTR": "reflexos",
+     "duracaoAux": "imediata",
+     "rodadasDur": 1,
+     "alvosAux": 1,
+     "concentracaoAux": false,
+     "concUsoAux": "alvos",
+     "acaoAux": "padrao",
+     "umGolpe": false,
+     "tiposDanoExtra": 0,
+     "alcancePropria": false,
+     "multiplosAtivo": false,
+     "duracaoMult": "imediata",
+     "rodadasMult": 1,
+     "acaoMult": "padrao",
+     "alvosMult": 1,
+     "efeitosMult": [],
+     "categoriaPassivo": "",
+     "alvoPassivoAtributo": "forca",
+     "alvoPassivoTR": "reflexos",
+     "alvoPassivoPericia": "percepcao",
+     "tiposDanoExtraPassivo": 0,
+     "efeitosPassivo": [],
+     "acaoPersonalizada": "",
+     "alcanceTexto": "",
+     "alvoTexto": "",
+     "duracaoTexto": "",
+     "resolucaoTexto": "",
+     "comCd": true,
+     "rolagens": [],
+     "custoVidaAtivacao": null
+    }
+   ],
+   "reducoesCustoFeitico": {
+    "dominancia": null,
+    "manipulacao": []
+   },
+   "estilosSombra": [],
+   "habilidadesGerais": [],
+   "focosLivres": 0,
+   "periciaAtributo": "inteligencia",
+   "habilidades": [
+    "cmb_repertorio_do_especialista",
+    "cmb_artes_do_combate",
+    "cmb_golpe_especial",
+    "cmb_implemento_marcial",
+    "cmb_renovacao_pelo_sangue",
+    "cmb_autossuficiente",
+    "cmb_arremessos_potentes",
+    "cmb_arsenal_ciclico",
+    "cmb_assumir_postura",
+    "cmb_disparos_sincronizados",
+    "cmb_escudeiro_agressivo",
+    "cmb_extensao_do_corpo",
+    "cmb_flanqueador_superior",
+    "cmb_golpe_falso",
+    "cmb_golpes_potentes",
+    "cmb_indomavel",
+    "cmb_pistoleiro_iniciado",
+    "cmb_posicionamento_ameacador",
+    "cmb_precisao_definitiva",
+    "cmb_presenca_suprimida",
+    "cmb_revigorar",
+    "cmb_tiro_falso",
+    "cmb_zona_de_risco",
+    "cmb_aprender_postura",
+    "cmb_armas_escolhidas",
+    "cmb_arremesso_rapido",
+    "cmb_tecnicas_de_avanco",
+    "cmb_buscar_oportunidade",
+    "cmb_compensar_erro",
+    "cmb_especialista_em_escudo",
+    "cmb_espirito_de_luta",
+    "cmb_grupo_favorito",
+    "cmb_guarda_estudada",
+    "cmb_mente_oculta",
+    "cmb_preparo_imediato",
+    "cmb_recarga_rapida",
+    "cmb_uso_rapido",
+    "cmb_acervo_amplo",
+    "cmb_aprimoramento_especializado",
+    "cmb_ataque_extra",
+    "cmb_critico_melhorado",
+    "cmb_critico_potente",
+    "cmb_feiticaria_implementada",
+    "cmb_fluxo_perfeito",
+    "cmb_olhos_de_aguia",
+    "cmb_manejo_especial",
+    "cmb_marcar_inimigo",
+    "cmb_mira_destrutiva",
+    "cmb_preparacao_rapida",
+    "cmb_aptidoes_de_combate",
+    "cmb_tecnicas_da_forca",
+    "cmb_destruicao_dupla",
+    "cmb_espirito_incansavel",
+    "cmb_pistoleiro_avancado",
+    "cmb_ricochete_constante",
+    "cmb_sombra_viva",
+    "cmb_surto_de_acao",
+    "cmb_analise_acelerada",
+    "cmb_armas_perfeitas",
+    "cmb_assassinar",
+    "cmb_ataque_concentrado",
+    "cmb_chuva_de_arremessos",
+    "cmb_potencia_antes_de_cair",
+    "cmb_tecnicas_de_saque",
+    "cmb_ciclagem_absoluta",
+    "cmb_manejo_unico",
+    "cmb_mestre_pistoleiro",
+    "cmb_sincronia_perfeita",
+    "cmb_critico_aperfeicoado",
+    "cmb_mestre_da_postura",
+    "cnj_dominio_dos_fundamentos",
+    "cnj_conjuracao_aprimorada",
+    "cnj_adiantar_a_evolucao",
+    "cnj_foco_amaldicoado",
+    "cnj_abastecido_pelo_sangue",
+    "cnj_conhecimento_aplicado",
+    "cnj_conjuracao_defensiva",
+    "cnj_economia_de_energia",
+    "cnj_explosao_encadeada",
+    "cnj_finta_amaldicoada",
+    "cnj_mente_placida",
+    "cnj_nova_habilidade",
+    "cnj_perturbacao_amaldicoada",
+    "cnj_reacao_rapida",
+    "cnj_reforco_amaldicoado",
+    "cnj_sobrecarregar",
+    "cnj_tecnicas_de_combate",
+    "cnj_zelo_recompensador",
+    "cnj_ate_a_ultima_gota",
+    "cnj_ciclagem_maldita",
+    "cnj_determinacao_energizada",
+    "cnj_energia_focalizada",
+    "cnj_energia_inacabavel",
+    "cnj_epifania_amaldicoada",
+    "cnj_explosao_defensiva",
+    "cnj_feitico_favorito",
+    "cnj_feiticos_refinados",
+    "cnj_movimentos_imprevisiveis",
+    "cnj_naturalidade_com_rituais",
+    "cnj_preparacao_de_tecnicas",
+    "cnj_olhar_preciso",
+    "cnj_sacrificio_pela_energia",
+    "cnj_versatilidade_em_fundamentos",
+    "cnj_agilidade_no_campo_de_batalha",
+    "cnj_bastiao_interior",
+    "cnj_combate_amaldicoado",
+    "cnj_correcao",
+    "cnj_dominancia_em_feitico",
+    "cnj_elevar_aptidao",
+    "cnj_especializacao",
+    "cnj_incapaz_de_falhar",
+    "cnj_mente_repartida",
+    "cnj_nivel_perfeito",
+    "cnj_passo_rapido",
+    "cnj_potencia_concentrada",
+    "cnj_ritualista",
+    "cnj_expansao_dos_fundamentos",
+    "cnj_fisico_amaldicoado_defensivo",
+    "cnj_imbuir_com_tecnica",
+    "cnj_mira_aperfeicoada",
+    "cnj_primeiro_disparo",
+    "cnj_revestimento_constante",
+    "cnj_sustentacao_avancada",
+    "cnj_destruicao_ampla",
+    "cnj_destruicao_focada",
+    "cnj_economia_de_energia_avancada",
+    "cnj_sentidos_agucados"
+   ],
+   "escolhasHabilidade": {},
+   "escolhasTalento": {},
+   "talentos": [
+    "tal_afinidade_com_tecnica",
+    "tal_artesao_amaldicoado",
+    "tal_ataque_infalivel",
+    "tal_atencao_infalivel",
+    "tal_dedicacao_recompensadora",
+    "tal_favorecido_pela_sorte",
+    "tal_guarda_infalivel",
+    "tal_incremento_de_atributo",
+    "tal_investida_aprimorada",
+    "tal_mestre_das_armas",
+    "tal_mestre_defensivo",
+    "tal_perceber_oportunidade",
+    "tal_provocacao_desafiadora",
+    "tal_resiliencia_melhorada"
+   ],
+   "invocacoes": [
+    {
+     "id": "CAODIVINOPRETO",
+     "nome": "Cão Divino Preto",
+     "tipoMecanico": "shikigami",
+     "saborNarrativo": "corpo_amaldicoado",
+     "grau": "terceiro",
+     "atributos": {
+      "forca": 16,
+      "destreza": 12,
+      "constituicao": 10,
+      "inteligencia": 8,
+      "sabedoria": 9,
+      "presenca": 8
+     },
+     "ataqueTreinado": "corpo",
+     "trTreinado": "reflexos",
+     "trMestre": false,
+     "periciasProf": {
+      "furtividade": "treinado"
+     },
+     "tamanho": "medio",
+     "marcadores": {},
+     "marcadorOpcoes": {},
+     "acoes": [
+      {
+       "id": "P_MORDIDA",
+       "nome": "Mordida Rasgadora",
+       "familia": "ataque",
+       "classe": "complexa",
+       "alvo": "unico",
+       "ataqueTipo": "jogada",
+       "atributoChave": "forca",
+       "corpoACorpo": true,
+       "tipoDano": "Cortante",
+       "custoPE": 0,
+       "descricao": ""
+      },
+      {
+       "id": "P_CACADA",
+       "nome": "Caçada Sombria",
+       "familia": "auxilio",
+       "auxilioSub": "acerto",
+       "alvoAuxilio": "aliados",
+       "classe": "simples",
+       "custoPE": 0,
+       "descricao": ""
+      },
+      {
+       "id": "P_COURACA",
+       "nome": "Pelo de Ferro",
+       "familia": "auxilio",
+       "auxilioSub": "rd",
+       "alvoAuxilio": "invocacao",
+       "classe": "simples",
+       "custoPE": 0,
+       "descricao": ""
+      }
+     ],
+     "caracteristicas": [
+      {
+       "id": "P_C1",
+       "nome": "Faro do Caçador",
+       "subtipo": "pericia",
+       "descricao": ""
+      }
+     ],
+     "portraitUrl": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22600%22%20height%3D%22600%22%20viewBox%3D%220%200%20600%20600%22%3E%0A%3Cdefs%3E%3CradialGradient%20id%3D%22p%22%20cx%3D%2250%25%22%20cy%3D%2240%25%22%20r%3D%2270%25%22%3E%0A%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%233a2f6e%22%2F%3E%3Cstop%20offset%3D%2260%25%22%20stop-color%3D%22%23131032%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2305040f%22%2F%3E%0A%3C%2FradialGradient%3E%3C%2Fdefs%3E%0A%3Crect%20width%3D%22600%22%20height%3D%22600%22%20fill%3D%22%2305040f%22%2F%3E%0A%3Ccircle%20cx%3D%22300%22%20cy%3D%22260%22%20r%3D%22250%22%20fill%3D%22url(%23p)%22%2F%3E%0A%3Cpath%20d%3D%22M150%20400%20c0-90%2060-150%20150-150%20s150%2060%20150%20150%20c0%2060-40%20100-90%20110%20l-120%200%20c-50-10-90-50-90-110z%22%20fill%3D%22%230b0919%22%2F%3E%0A%3Cpath%20d%3D%22M196%20268%20l-30-110%2092%2056z%22%20fill%3D%22%230b0919%22%2F%3E%0A%3Cpath%20d%3D%22M404%20268%20l30-110%20-92%2056z%22%20fill%3D%22%230b0919%22%2F%3E%0A%3Ccircle%20cx%3D%22248%22%20cy%3D%22352%22%20r%3D%2217%22%20fill%3D%22%238d6bff%22%2F%3E%0A%3Ccircle%20cx%3D%22352%22%20cy%3D%22352%22%20r%3D%2217%22%20fill%3D%22%238d6bff%22%2F%3E%0A%3Cpath%20d%3D%22M300%20400%20l-24%2022%2024%2020%2024-20z%22%20fill%3D%22%232a2350%22%2F%3E%0A%3C%2Fsvg%3E",
+     "portraitFocus": {
+      "x": 50,
+      "y": 40
+     },
+     "aparencia": null
+    },
+    {
+     "id": "CAODIVINOBRANCO",
+     "nome": "Cão Divino Branco",
+     "tipoMecanico": "shikigami",
+     "saborNarrativo": "corpo_amaldicoado",
+     "grau": "terceiro",
+     "atributos": {
+      "forca": 12,
+      "destreza": 16,
+      "constituicao": 10,
+      "inteligencia": 8,
+      "sabedoria": 9,
+      "presenca": 8
+     },
+     "ataqueTreinado": "corpo",
+     "trTreinado": "reflexos",
+     "trMestre": false,
+     "periciasProf": {
+      "percepcao": "treinado"
+     },
+     "tamanho": "medio",
+     "marcadores": {},
+     "marcadorOpcoes": {},
+     "acoes": [
+      {
+       "id": "B_MORDIDA",
+       "nome": "Mordida Veloz",
+       "familia": "ataque",
+       "classe": "complexa",
+       "alvo": "unico",
+       "ataqueTipo": "jogada",
+       "atributoChave": "destreza",
+       "corpoACorpo": true,
+       "tipoDano": "Cortante",
+       "custoPE": 0,
+       "descricao": ""
+      },
+      {
+       "id": "B_GUARDA",
+       "nome": "Guarda Leal",
+       "familia": "auxilio",
+       "auxilioSub": "defesa",
+       "alvoAuxilio": "aliados",
+       "classe": "simples",
+       "custoPE": 0,
+       "descricao": ""
+      },
+      {
+       "id": "B_URRO",
+       "nome": "Urro de Prata",
+       "familia": "auxilio",
+       "auxilioSub": "defesa",
+       "alvoAuxilio": "invocacao",
+       "classe": "simples",
+       "custoPE": 0,
+       "descricao": ""
+      }
+     ],
+     "caracteristicas": [
+      {
+       "id": "B_C1",
+       "nome": "Vigília Branca",
+       "subtipo": "pericia",
+       "descricao": ""
+      }
+     ],
+     "portraitUrl": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22600%22%20height%3D%22600%22%20viewBox%3D%220%200%20600%20600%22%3E%0A%3Cdefs%3E%3CradialGradient%20id%3D%22b%22%20cx%3D%2250%25%22%20cy%3D%2240%25%22%20r%3D%2270%25%22%3E%0A%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23f4f8ff%22%2F%3E%3Cstop%20offset%3D%2255%25%22%20stop-color%3D%22%239fb6ea%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231a2450%22%2F%3E%0A%3C%2FradialGradient%3E%3C%2Fdefs%3E%0A%3Crect%20width%3D%22600%22%20height%3D%22600%22%20fill%3D%22%230d1330%22%2F%3E%0A%3Ccircle%20cx%3D%22300%22%20cy%3D%22260%22%20r%3D%22250%22%20fill%3D%22url(%23b)%22%2F%3E%0A%3Cpath%20d%3D%22M150%20400%20c0-90%2060-150%20150-150%20s150%2060%20150%20150%20c0%2060-40%20100-90%20110%20l-120%200%20c-50-10-90-50-90-110z%22%20fill%3D%22%23f2f6ff%22%2F%3E%0A%3Cpath%20d%3D%22M196%20268%20l-30-110%2092%2056z%22%20fill%3D%22%23f2f6ff%22%2F%3E%0A%3Cpath%20d%3D%22M404%20268%20l30-110%20-92%2056z%22%20fill%3D%22%23f2f6ff%22%2F%3E%0A%3Ccircle%20cx%3D%22248%22%20cy%3D%22352%22%20r%3D%2217%22%20fill%3D%22%232b3d8c%22%2F%3E%0A%3Ccircle%20cx%3D%22352%22%20cy%3D%22352%22%20r%3D%2217%22%20fill%3D%22%232b3d8c%22%2F%3E%0A%3Cpath%20d%3D%22M300%20400%20l-24%2022%2024%2020%2024-20z%22%20fill%3D%22%23c3d0ef%22%2F%3E%0A%3C%2Fsvg%3E",
+     "portraitFocus": {
+      "x": 50,
+      "y": 40
+     },
+     "aparencia": null
+    },
+    {
+     "id": "I_NUE",
+     "nome": "Nue",
+     "tipoMecanico": "shikigami",
+     "saborNarrativo": "corpo_amaldicoado",
+     "grau": "segundo",
+     "atributos": {
+      "forca": 12,
+      "destreza": 16,
+      "constituicao": 12,
+      "inteligencia": 10,
+      "sabedoria": 10,
+      "presenca": 8
+     },
+     "ataqueTreinado": "distancia",
+     "trTreinado": "reflexos",
+     "trMestre": false,
+     "periciasProf": {},
+     "tamanho": "medio",
+     "marcadores": {},
+     "marcadorOpcoes": {},
+     "acoes": [
+      {
+       "id": "N_RAIO",
+       "nome": "Descarga Elétrica",
+       "familia": "ataque",
+       "classe": "complexa",
+       "alvo": "unico",
+       "ataqueTipo": "tr",
+       "atributoChave": "inteligencia",
+       "corpoACorpo": false,
+       "tipoDano": "Elétrico",
+       "custoPE": 0,
+       "descricao": "",
+       "trTipo": "reflexos"
+      },
+      {
+       "id": "N_ESCUDO",
+       "nome": "Asas de Guarda",
+       "familia": "auxilio",
+       "auxilioSub": "defesa",
+       "alvoAuxilio": "aliados",
+       "classe": "complexa",
+       "custoPE": 0,
+       "descricao": ""
+      },
+      {
+       "id": "N_COURACA",
+       "nome": "Penas de Aço",
+       "familia": "auxilio",
+       "auxilioSub": "rd",
+       "alvoAuxilio": "invocacao",
+       "classe": "simples",
+       "custoPE": 0,
+       "descricao": ""
+      },
+      {
+       "id": "N_MARCA",
+       "nome": "Marca do Trovão",
+       "familia": "auxilio",
+       "auxilioSub": "danoAdicional",
+       "alvoAuxilio": "aliados",
+       "classe": "simples",
+       "custoPE": 0,
+       "descricao": ""
+      }
+     ],
+     "caracteristicas": [],
+     "portraitUrl": "https://placehold.co/400x400/0c4a6e/38bdf8/png?text=Nue",
+     "portraitFocus": {
+      "x": 50,
+      "y": 50
+     },
+     "aparencia": null
+    }
+   ],
+   "hordas": [],
+   "aptidoes": {
+    "au": 4,
+    "cl": 4,
+    "bar": 3,
+    "dom": 3,
+    "er": 3
+   },
+   "aptidoesAmaldicoadas": [
+    "afinidade_ampliada",
+    "aura_controlada",
+    "aura_do_comandante",
+    "aura_elemental",
+    "aura_embacada",
+    "aura_excessiva",
+    "golpe_com_aura",
+    "aura_macabra",
+    "aura_redirecionadora",
+    "canalizar_em_golpe",
+    "cobrir_se",
+    "estimulo_muscular_avancado",
+    "leitura_rapida_de_energia",
+    "projecao_maxima",
+    "emocao_da_petala_decadente",
+    "paredes_resistentes",
+    "cortina",
+    "fluxo_constante",
+    "canalizar_energia_reversa",
+    "abencoado_pelas_faiscas_negras",
+    "tecnica_maxima",
+    "expansao_de_dominio_incompleta"
+   ],
+   "aptidaoOpcoes": {},
+   "aptidaoOpcoesRepetidas": {},
+   "dominios": [],
+   "dominioAtivoId": null,
+   "treinamentos": {},
+   "treinosEspeciais": [],
+   "focosBonus": 0,
+   "statOverrides": {},
+   "melhoriasSuperiores": [
+    "mel_alma",
+    "mel_atencao",
+    "mel_defesa",
+    "mel_classe_de_dificuldade",
+    "mel_dano",
+    "mel_energia"
+   ],
+   "habilidadesLendarias": [
+    "len_agilidade_inigualavel",
+    "len_aperfeicoamento_de_atributo",
+    "len_conhecimento_iluminado",
+    "len_consciencia_absoluta_da_alma",
+    "len_dominancia_em_tecnica"
+   ],
+   "escolhasAltoNivel": {},
+   "aparencia": null,
+   "addons": [],
+   "narratorNotes": "",
+   "combatState": {
+    "isActive": false,
+    "hpCurrent": 0,
+    "peCurrent": 0,
+    "almaCurrent": 100,
+    "activeConditions": [],
+    "customCounters": [],
+    "combatLog": []
+   },
+   "id": "teste-g2-player30"
+  }
+ },
+ "sessoes": {
+  "teste-g2-mestre": {
+   "bloodfeastRegras": [],
+   "energiaEmVida": 0,
+   "bloodfeast": {
+    "cargas": 0,
+    "hardblood": 0,
+    "bleed": 0,
+    "sanidade": 0,
+    "sangue": 0,
+    "reutilizado": 0,
+    "agua": false,
+    "ativos": {},
+    "ultima": null
+   },
+   "hpAtual": 102,
+   "peAtual": 48,
+   "pvTempFontes": {},
+   "peTempFontes": {},
+   "almaAtual": 102,
+   "almaMaxVisto": 102,
+   "rodada": 0,
+   "propriedadesArmas": {
+    "turno": 0,
+    "porArma": {},
+    "oscilante": null,
+    "ultimoAtaque": null
+   },
+   "ataqueBasicoId": null,
+   "guardaGolpes": 0,
+   "guardaEncerrada": false,
+   "exaustao": 0,
+   "exaustaoTecnica": null,
+   "combate": {},
+   "condicoes": [],
+   "buffs": [],
+   "invocacoes": {},
+   "tita": {
+    "cabeca": null,
+    "membros": []
+   },
+   "preparoAtual": null,
+   "preparoTemp": 0,
+   "golpeEspecial": {},
+   "reservaInvocacao": {
+    "usada": false,
+    "modo": null,
+    "restantes": 0
+   },
+   "quimeraDaCena": null,
+   "lideresDeHordaDissolvida": [],
+   "concedido": [
+    {
+     "uid": "cmvh5bic41",
+     "familia": "habilidades",
+     "id": "cmb_critico_melhorado",
+     "alvo": null,
+     "escolhas": [],
+     "em": 1792528722580
+    },
+    {
+     "uid": "cmvh5bic42",
+     "familia": "talentos",
+     "id": "tal_adepto_de_combate",
+     "alvo": null,
+     "escolhas": [],
+     "em": 1792528722580
+    },
+    {
+     "uid": "morta-1",
+     "familia": "habilidades",
+     "id": "habilidade_de_addon_que_saiu",
+     "alvo": null,
+     "escolhas": [],
+     "em": 0
+    }
+   ],
+   "adaptacoes": {},
+   "dharma": {
+    "entradas": [],
+    "alvo": "",
+    "fenomeno": "",
+    "existencia": ""
+   },
+   "treinosAtivos": {},
+   "usos": {},
+   "recargas": {},
+   "ultimoFeiticoDanoId": null,
+   "rituais": {},
+   "ritualAtual": null,
+   "favoritos": [],
+   "log": [],
+   "atualizadoEm": null
+  },
+  "teste-g2-sangrador": {
+   "bloodfeastRegras": [],
+   "energiaEmVida": 0,
+   "bloodfeast": {
+    "cargas": 0,
+    "hardblood": 0,
+    "bleed": 0,
+    "sanidade": 0,
+    "sangue": 0,
+    "reutilizado": 0,
+    "agua": false,
+    "ativos": {},
+    "ultima": null
+   },
+   "hpAtual": 102,
+   "peAtual": 48,
+   "pvTempFontes": {
+    "g2-teste": 8
+   },
+   "peTempFontes": {},
+   "almaAtual": 102,
+   "almaMaxVisto": 102,
+   "rodada": 0,
+   "propriedadesArmas": {
+    "turno": 0,
+    "porArma": {},
+    "oscilante": null,
+    "ultimoAtaque": null
+   },
+   "ataqueBasicoId": null,
+   "guardaGolpes": 0,
+   "guardaEncerrada": false,
+   "exaustao": 0,
+   "exaustaoTecnica": null,
+   "combate": {},
+   "condicoes": [
+    {
+     "id": "cond_1",
+     "nome": "Sangramento",
+     "forca": "fraca",
+     "rodadas": null,
+     "sangramento": "fraco"
+    },
+    {
+     "id": "cond_2",
+     "nome": "Sangramento",
+     "forca": "media",
+     "rodadas": null,
+     "sangramento": "medio"
+    },
+    {
+     "id": "cond_3",
+     "nome": "Sangramento",
+     "forca": "forte",
+     "rodadas": null,
+     "sangramento": "forte"
+    },
+    {
+     "id": "cond_4",
+     "nome": "Sangramento",
+     "forca": "extrema",
+     "rodadas": null,
+     "sangramento": "extremo"
+    },
+    {
+     "id": "cond_5",
+     "nome": "Atordoado",
+     "forca": null,
+     "rodadas": null
+    }
+   ],
+   "buffs": [],
+   "invocacoes": {},
+   "tita": {
+    "cabeca": null,
+    "membros": []
+   },
+   "preparoAtual": null,
+   "preparoTemp": 0,
+   "golpeEspecial": {},
+   "reservaInvocacao": {
+    "usada": false,
+    "modo": null,
+    "restantes": 0
+   },
+   "quimeraDaCena": null,
+   "lideresDeHordaDissolvida": [],
+   "concedido": [],
+   "adaptacoes": {},
+   "dharma": {
+    "entradas": [],
+    "alvo": "",
+    "fenomeno": "",
+    "existencia": ""
+   },
+   "treinosAtivos": {},
+   "usos": {},
+   "recargas": {},
+   "ultimoFeiticoDanoId": null,
+   "rituais": {},
+   "ritualAtual": null,
+   "favoritos": [],
+   "log": [],
+   "atualizadoEm": null
+  },
+  "teste-g2-invocador": {
+   "bloodfeastRegras": [],
+   "energiaEmVida": 0,
+   "bloodfeast": {
+    "cargas": 0,
+    "hardblood": 0,
+    "bleed": 0,
+    "sanidade": 0,
+    "sangue": 0,
+    "reutilizado": 0,
+    "agua": false,
+    "ativos": {},
+    "ultima": null
+   },
+   "hpAtual": 102,
+   "peAtual": 48,
+   "pvTempFontes": {},
+   "peTempFontes": {},
+   "almaAtual": 102,
+   "almaMaxVisto": 102,
+   "rodada": 0,
+   "propriedadesArmas": {
+    "turno": 0,
+    "porArma": {},
+    "oscilante": null,
+    "ultimoAtaque": null
+   },
+   "ataqueBasicoId": null,
+   "guardaGolpes": 0,
+   "guardaEncerrada": false,
+   "exaustao": 3,
+   "exaustaoTecnica": null,
+   "combate": {},
+   "condicoes": [],
+   "buffs": [
+    {
+     "id": "g2-inst1",
+     "rec": true,
+     "tipoFonte": "catalogo",
+     "origemId": "aptidao:aura_do_bastiao",
+     "origemNome": "Aura do Bastião",
+     "aplicadoPor": "Yuki (Teste)",
+     "beneficios": [
+      {
+       "canal": "defesa",
+       "valor": 3
+      }
+     ],
+     "rodadas": null,
+     "somaPresumida": false,
+     "terminaNoDescanso": true,
+     "pacote": {
+      "chave": "emi-g2:pac-g2",
+      "id": "pac-g2",
+      "nome": "Apoio",
+      "revisao": 1,
+      "opcaoId": "o1",
+      "emissorId": "emi-g2",
+      "emissorNome": "Yuki (Teste)",
+      "familia": "aptidaoAura",
+      "calculo": "automatico",
+      "duracao": {
+       "tipo": "alcance"
+      },
+      "condicoes": [],
+      "custoEmissor": null
+     }
+    }
+   ],
+   "invocacoes": {},
+   "tita": {
+    "cabeca": null,
+    "membros": []
+   },
+   "preparoAtual": null,
+   "preparoTemp": 0,
+   "golpeEspecial": {},
+   "reservaInvocacao": {
+    "usada": false,
+    "modo": null,
+    "restantes": 0
+   },
+   "quimeraDaCena": null,
+   "lideresDeHordaDissolvida": [],
+   "concedido": [],
+   "adaptacoes": {},
+   "dharma": {
+    "entradas": [],
+    "alvo": "",
+    "fenomeno": "",
+    "existencia": ""
+   },
+   "treinosAtivos": {},
+   "usos": {},
+   "recargas": {},
+   "ultimoFeiticoDanoId": null,
+   "rituais": {},
+   "ritualAtual": null,
+   "favoritos": [],
+   "log": [],
+   "atualizadoEm": null
+  }
+ }
+}

@@ -1,0 +1,482 @@
+{
+  "formato": "grimorio-afty-pacote-aliados",
+  "versao": 1,
+  "pacote": {
+    "id": "pac_mvh7pifw633415591f5e",
+    "nome": "Apoio do Grupo",
+    "revisao": 1,
+    "exportadoEm": "2026-10-20T21:45:38.324Z"
+  },
+  "emissor": {
+    "id": "emi_mvh7pj3k3932ecfd90ee",
+    "nome": "Yuki (Teste Pacotes)",
+    "sistema": "afty"
+  },
+  "opcoes": [
+    {
+      "id": "op_mvh7pigu9bc80d4b1534",
+      "nome": "Aura do Bastião",
+      "familia": "aptidaoAura",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "aptidao",
+        "id": "aura_do_bastiao",
+        "nome": "Aura do Bastião"
+      },
+      "escolhas": [],
+      "acumulo": {
+        "regra": "catalogo",
+        "origemId": "aptidao:aura_do_bastiao"
+      },
+      "beneficios": [
+        {
+          "canal": "defesa",
+          "valor": 3
+        }
+      ],
+      "duracao": {
+        "tipo": "alcance"
+      },
+      "condicoes": [
+        "Dentro de 4,5 m do Emissor"
+      ],
+      "custoEmissor": null,
+      "consulta": [],
+      "naoRepresentado": []
+    },
+    {
+      "id": "op_mvh7piht3e5111659e70",
+      "nome": "Aura do Comandante Evoluída",
+      "familia": "aptidaoAura",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "aptidao",
+        "id": "aura_do_comandante",
+        "nome": "Aura do Comandante"
+      },
+      "escolhas": [
+        {
+          "rotulo": "Versão",
+          "valor": "Evoluída"
+        }
+      ],
+      "acumulo": {
+        "regra": "catalogo",
+        "origemId": "aptidao:aura_do_comandante"
+      },
+      "beneficios": [
+        {
+          "canal": "danoBonus",
+          "valor": 3,
+          "quando": "em_combate"
+        },
+        {
+          "canal": "bonusPericia",
+          "valor": 3,
+          "quando": "em_combate"
+        },
+        {
+          "canal": "bonusAcerto",
+          "valor": 2
+        },
+        {
+          "canal": "bonusTR",
+          "valor": 2
+        }
+      ],
+      "duracao": {
+        "tipo": "mantida",
+        "texto": "Enquanto o Emissor Mantiver a Aura"
+      },
+      "condicoes": [
+        "Dentro de 4,5 m do Emissor"
+      ],
+      "custoEmissor": "4 PE por Turno",
+      "consulta": [],
+      "naoRepresentado": []
+    },
+    {
+      "id": "op_mvh7piiq0680f668d1b4",
+      "nome": "Escudo Dourado",
+      "familia": "feitico",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "feitico",
+        "id": "tp-f1",
+        "nome": "Escudo Dourado"
+      },
+      "escolhas": [],
+      "acumulo": {
+        "regra": "feitico"
+      },
+      "beneficios": [
+        {
+          "canal": "defesa",
+          "valor": 2
+        }
+      ],
+      "duracao": {
+        "tipo": "rodadas",
+        "rodadas": 2
+      },
+      "condicoes": [
+        "Um Alvo"
+      ],
+      "custoEmissor": "5 PE",
+      "consulta": [],
+      "naoRepresentado": []
+    },
+    {
+      "id": "op_mvh7pijqb1d5071e0fc0",
+      "nome": "Bênção Tripla",
+      "familia": "feitico",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "feitico",
+        "id": "tp-f2",
+        "nome": "Bênção Tripla"
+      },
+      "escolhas": [],
+      "acumulo": {
+        "regra": "feitico"
+      },
+      "beneficios": [
+        {
+          "canal": "defesa",
+          "valor": 2
+        },
+        {
+          "canal": "rdGeral",
+          "valor": 5
+        }
+      ],
+      "duracao": {
+        "tipo": "rodadas",
+        "rodadas": 1
+      },
+      "condicoes": [
+        "Um Alvo"
+      ],
+      "custoEmissor": "8 PE",
+      "consulta": [],
+      "naoRepresentado": []
+    },
+    {
+      "id": "op_mvh7pil2f8b746990ec3",
+      "nome": "Lâmina Viva",
+      "familia": "feitico",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "feitico",
+        "id": "tp-f5",
+        "nome": "Lâmina Viva"
+      },
+      "escolhas": [],
+      "acumulo": {
+        "regra": "feitico"
+      },
+      "beneficios": [],
+      "duracao": {
+        "tipo": "rodadas",
+        "rodadas": 1
+      },
+      "condicoes": [
+        "Um Alvo"
+      ],
+      "custoEmissor": "2 PE",
+      "consulta": [
+        {
+          "rotulo": "Dano Adicional",
+          "texto": "2d6 Durante o Ataque"
+        }
+      ],
+      "naoRepresentado": [
+        "Os Dados de Dano do Feitiço São Rolados à Parte"
+      ]
+    },
+    {
+      "id": "op_mvh7pilz6a3494697646",
+      "nome": "Nue · Escudo de Raios",
+      "familia": "auxilioInvocacao",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "invocacao",
+        "id": "tp-inv1/tp-a1",
+        "nome": "Nue · Escudo de Raios"
+      },
+      "escolhas": [],
+      "acumulo": {
+        "regra": "auxilioInvocacao",
+        "chave": "emi_mvh7pj3k3932ecfd90ee|tp-inv1|tp-a1"
+      },
+      "beneficios": [
+        {
+          "canal": "defesa",
+          "valor": 4
+        }
+      ],
+      "duracao": {
+        "tipo": "mantida",
+        "texto": "Enquanto o Auxílio Estiver Ligado"
+      },
+      "condicoes": [
+        "Invocação em Campo"
+      ],
+      "custoEmissor": null,
+      "consulta": [],
+      "naoRepresentado": []
+    },
+    {
+      "id": "op_mvh7pimw6b4409b48a09",
+      "nome": "Nue · Halo",
+      "familia": "auraInvocacao",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "invocacao",
+        "id": "tp-inv1/tp-c1",
+        "nome": "Nue · Halo"
+      },
+      "escolhas": [],
+      "acumulo": {
+        "regra": "auraInvocacao",
+        "chave": "aura:auraDefesa|",
+        "forca": 2
+      },
+      "beneficios": [
+        {
+          "canal": "defesa",
+          "valor": 2
+        }
+      ],
+      "duracao": {
+        "tipo": "alcance",
+        "texto": "Enquanto Estiver na Aura"
+      },
+      "condicoes": [
+        "Dentro de 4,5 m da Invocação",
+        "Invocação em Campo"
+      ],
+      "custoEmissor": null,
+      "consulta": [],
+      "naoRepresentado": []
+    },
+    {
+      "id": "op_mvh7pint9b4e720ea0a5",
+      "nome": "Nue · Faíscas",
+      "familia": "auraInvocacao",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "invocacao",
+        "id": "tp-inv1/tp-c2",
+        "nome": "Nue · Faíscas"
+      },
+      "escolhas": [],
+      "acumulo": {
+        "regra": "auraInvocacao",
+        "chave": "aura:auraDano|",
+        "forca": 6
+      },
+      "beneficios": [
+        {
+          "canal": "dadosNomeados",
+          "alvo": "d6",
+          "valor": 1
+        }
+      ],
+      "duracao": {
+        "tipo": "alcance",
+        "texto": "Enquanto Estiver na Aura"
+      },
+      "condicoes": [
+        "Dentro de 4,5 m da Invocação",
+        "Invocação em Campo"
+      ],
+      "custoEmissor": null,
+      "consulta": [],
+      "naoRepresentado": []
+    },
+    {
+      "id": "op_mvh7pioqb96f55ac2411",
+      "nome": "Nue · Clareza",
+      "familia": "auraInvocacao",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "invocacao",
+        "id": "tp-inv1/tp-c3",
+        "nome": "Nue · Clareza"
+      },
+      "escolhas": [],
+      "acumulo": {
+        "regra": "auraInvocacao",
+        "chave": "aura:auraPericia|percepcao",
+        "forca": 4
+      },
+      "beneficios": [
+        {
+          "canal": "bonusPericia",
+          "valor": 4,
+          "alvo": "percepcao"
+        }
+      ],
+      "duracao": {
+        "tipo": "alcance",
+        "texto": "Enquanto Estiver na Aura"
+      },
+      "condicoes": [
+        "Dentro de 4,5 m da Invocação",
+        "Invocação em Campo"
+      ],
+      "custoEmissor": null,
+      "consulta": [],
+      "naoRepresentado": []
+    },
+    {
+      "id": "op_mvh7pipp586e5b2d2d9f",
+      "nome": "Presença Inspiradora",
+      "familia": "especializacao",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "habilidade",
+        "id": "sup_presenca_inspiradora",
+        "nome": "Presença Inspiradora"
+      },
+      "escolhas": [
+        {
+          "rotulo": "PE Adicional",
+          "valor": "2"
+        }
+      ],
+      "acumulo": {
+        "regra": "catalogo",
+        "origemId": "habilidade:sup_presenca_inspiradora"
+      },
+      "beneficios": [
+        {
+          "canal": "bonusPericia",
+          "valor": 3
+        }
+      ],
+      "duracao": {
+        "tipo": "cena",
+        "texto": "Durante a Cena"
+      },
+      "condicoes": [
+        "Dentro de 9 m Quando o Emissor Usa"
+      ],
+      "custoEmissor": "4 PE",
+      "consulta": [],
+      "naoRepresentado": []
+    },
+    {
+      "id": "op_mvh7piqmf6ea1b1768d9",
+      "nome": "Inimigo Comum",
+      "familia": "especializacao",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "habilidade",
+        "id": "sup_inimigo_comum",
+        "nome": "Inimigo Comum"
+      },
+      "escolhas": [
+        {
+          "rotulo": "Atributo",
+          "valor": "Presença"
+        }
+      ],
+      "acumulo": {
+        "regra": "catalogo",
+        "origemId": "habilidade:sup_inimigo_comum"
+      },
+      "beneficios": [
+        {
+          "canal": "bonusAcerto",
+          "valor": 2
+        },
+        {
+          "canal": "danoBonus",
+          "valor": 4
+        }
+      ],
+      "duracao": {
+        "tipo": "cena",
+        "texto": "Até o Inimigo Comum Cair"
+      },
+      "condicoes": [
+        "Só ao Atacar o Inimigo Comum",
+        "Atacar Outra Criatura Encerra"
+      ],
+      "custoEmissor": "2 PE",
+      "consulta": [],
+      "naoRepresentado": []
+    },
+    {
+      "id": "op_mvh7piri681fb626a609",
+      "nome": "Táticas Defensivas",
+      "familia": "especializacao",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "habilidade",
+        "id": "sup_taticas_defensivas",
+        "nome": "Táticas Defensivas"
+      },
+      "escolhas": [
+        {
+          "rotulo": "Tipo de Dano",
+          "valor": "Ácido"
+        }
+      ],
+      "acumulo": {
+        "regra": "catalogo",
+        "origemId": "habilidade:sup_taticas_defensivas"
+      },
+      "beneficios": [
+        {
+          "canal": "resistenciaDano",
+          "alvo": "acido",
+          "valor": 1
+        }
+      ],
+      "duracao": {
+        "tipo": "permanente",
+        "texto": "Até o Emissor Trocar no Descanso Longo"
+      },
+      "condicoes": [
+        "Um dos Dois Aliados Escolhidos"
+      ],
+      "custoEmissor": null,
+      "consulta": [],
+      "naoRepresentado": []
+    },
+    {
+      "id": "op_mvh7pisg38419a7097e6",
+      "nome": "Comando Motivador",
+      "familia": "especializacao",
+      "calculo": "automatico",
+      "fonte": {
+        "tipo": "habilidade",
+        "id": "sup_comando_motivador",
+        "nome": "Comando Motivador"
+      },
+      "escolhas": [],
+      "acumulo": {
+        "regra": "catalogo",
+        "origemId": "habilidade:sup_comando_motivador"
+      },
+      "beneficios": [],
+      "duracao": {
+        "tipo": "proximo"
+      },
+      "condicoes": [],
+      "custoEmissor": "2 PE",
+      "consulta": [
+        {
+          "rotulo": "Ação Comandada",
+          "texto": "+5 na Rolagem da Ação"
+        }
+      ],
+      "naoRepresentado": [
+        "Número de Mesa: a Ficha do Aliado Não Muda"
+      ]
+    }
+  ]
+}

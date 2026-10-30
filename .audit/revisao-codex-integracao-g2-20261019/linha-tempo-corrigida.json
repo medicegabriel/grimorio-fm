@@ -1,0 +1,237 @@
+{
+  "geradoEm": "2026-10-19T17:16:05.295Z",
+  "base": "http://127.0.0.1:5310",
+  "casos": [
+    {
+      "id": "linha-tempo",
+      "checks": [
+        {
+          "id": "Invencível ligado com PE principal zero",
+          "ok": true
+        },
+        {
+          "id": "quatro colunas atuais 0",
+          "ok": true,
+          "dados": [
+            {
+              "rodada": 0,
+              "energia": 0,
+              "exaustao": 0
+            },
+            {
+              "rodada": 1,
+              "energia": 4,
+              "exaustao": 1
+            },
+            {
+              "rodada": 2,
+              "energia": 0,
+              "exaustao": 2
+            },
+            {
+              "rodada": 3,
+              "energia": 0,
+              "exaustao": 3
+            }
+          ]
+        },
+        {
+          "id": "próxima coluna prevê recursos 0",
+          "ok": true,
+          "dados": {
+            "coluna": {
+              "rodada": 1,
+              "energia": 4,
+              "exaustao": 1
+            },
+            "esperado": {
+              "rodada": 1,
+              "energia": 4,
+              "exaustao": 1
+            }
+          }
+        },
+        {
+          "id": "virada real coincide e registra cobrança 0",
+          "ok": true,
+          "dados": {
+            "nota": {
+              "rodada": 1,
+              "expirou": [],
+              "cobrado": [
+                {
+                  "nome": "Invencível sob o Sol",
+                  "valor": 4,
+                  "casca": 4,
+                  "reserva": 0
+                }
+              ],
+              "renovou": [
+                {
+                  "chave": "combate:Treino de Controle de Energia",
+                  "de": 0,
+                  "para": 4
+                },
+                {
+                  "chave": "rodada:Treino de Controle de Energia",
+                  "de": 0,
+                  "para": 4
+                }
+              ],
+              "casca": 8,
+              "encerrou": [],
+              "exaustao": 1
+            },
+            "rodada": 1,
+            "inv": 2
+          }
+        },
+        {
+          "id": "quatro colunas atuais 1",
+          "ok": true,
+          "dados": [
+            {
+              "rodada": 1,
+              "energia": 4,
+              "exaustao": 1
+            },
+            {
+              "rodada": 2,
+              "energia": 0,
+              "exaustao": 2
+            },
+            {
+              "rodada": 3,
+              "energia": 0,
+              "exaustao": 3
+            },
+            {
+              "rodada": 4,
+              "energia": 4,
+              "exaustao": 4
+            }
+          ]
+        },
+        {
+          "id": "próxima coluna prevê recursos 1",
+          "ok": true,
+          "dados": {
+            "coluna": {
+              "rodada": 2,
+              "energia": 0,
+              "exaustao": 2
+            },
+            "esperado": {
+              "rodada": 2,
+              "energia": 0,
+              "exaustao": 2
+            }
+          }
+        },
+        {
+          "id": "virada real coincide e registra cobrança 1",
+          "ok": true,
+          "dados": {
+            "nota": {
+              "rodada": 2,
+              "expirou": [],
+              "cobrado": [
+                {
+                  "nome": "Invencível sob o Sol",
+                  "valor": 4,
+                  "casca": 4,
+                  "reserva": 0
+                }
+              ],
+              "renovou": [],
+              "casca": 0,
+              "encerrou": [],
+              "exaustao": 1
+            },
+            "rodada": 2,
+            "inv": 3
+          }
+        },
+        {
+          "id": "quatro colunas atuais 2",
+          "ok": true,
+          "dados": [
+            {
+              "rodada": 2,
+              "energia": 0,
+              "exaustao": 2
+            },
+            {
+              "rodada": 3,
+              "energia": 0,
+              "exaustao": 3
+            },
+            {
+              "rodada": 4,
+              "energia": 4,
+              "exaustao": 4
+            },
+            {
+              "rodada": 5,
+              "energia": 4,
+              "exaustao": 4
+            }
+          ]
+        },
+        {
+          "id": "próxima coluna prevê recursos 2",
+          "ok": true,
+          "dados": {
+            "coluna": {
+              "rodada": 3,
+              "energia": 0,
+              "exaustao": 3
+            },
+            "esperado": {
+              "rodada": 3,
+              "energia": 0,
+              "exaustao": 3
+            }
+          }
+        },
+        {
+          "id": "virada real coincide e registra cobrança 2",
+          "ok": true,
+          "dados": {
+            "nota": {
+              "rodada": 3,
+              "expirou": [],
+              "cobrado": [
+                {
+                  "nome": "Invencível sob o Sol",
+                  "valor": 4,
+                  "casca": 4,
+                  "reserva": 0
+                }
+              ],
+              "renovou": [
+                {
+                  "chave": "rodada:Treino de Controle de Energia",
+                  "de": 0,
+                  "para": 4
+                }
+              ],
+              "casca": 4,
+              "encerrou": [],
+              "exaustao": 1
+            },
+            "rodada": 3,
+            "inv": 4
+          }
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    }
+  ],
+  "falhas": []
+}

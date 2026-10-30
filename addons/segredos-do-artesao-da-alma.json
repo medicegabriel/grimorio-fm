@@ -1,0 +1,28 @@
+{
+  "id": "segredos-do-artesao-da-alma",
+  "nome": "Segredos do Artesão da Alma",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "O Talento Geral Segredos do Artesão da Alma, para o personagem que desvendou parte dos segredos da alma como artesão. Soma o Bônus de Treinamento no Teste de Resistência de Integridade e dá 5 de RD a Dano na Alma, que acumula com a do Alma Inquebrável. Pede Nível 10 e Treinado em Integridade. O reparo do núcleo destruído de um Corpo Amaldiçoado Mutante, com os testes de Ofício (Canalizador) e de Integridade, se resolve na mesa. Vale nos dois sistemas.",
+  "resumo": "Talento Geral: metade do BT no TR de Integridade e 5 de RD a dano na Alma",
+  "categoria": "talentos",
+  "acrescenta": {
+    "talentos": [
+      {
+        "id": "tal_segredos_do_artesao_da_alma",
+        "nome": "Segredos do Artesão da Alma",
+        "grupo": "geral",
+        "descricao": "Se aventurando por conhecimentos proibidos, você desvenda uma parte considerável dos segredos da alma, além de os implementar como um artesão, na arte da criação e do reparo. Você recebe seu BT em Integridade e, recebe 5 de RD a dano na alma e se torna capaz de reparar um núcleo destruído de um Corpo Amaldiçoado Mutante, o qual requer um teste de Ofício (Canalizador) e um teste de Integridade, ambos com CD igual a 20 + nível do corpo amaldiçoado mutante + 2 para cada dia que se passou desde que o núcleo foi destruído.",
+        "requisitos": [
+          { "tipo": "nd", "valor": 10 },
+          { "tipo": "resistencia", "resistencia": "integridade", "nivel": "treinado" }
+        ],
+        "efeitos": [
+          { "canal": "bonusTR", "alvo": "integridade", "expr": "bt", "nome": "Segredos do Artesão da Alma" },
+          { "canal": "rdAlma", "expr": "5", "nome": "Segredos do Artesão da Alma" }
+        ]
+      }
+    ]
+  }
+}

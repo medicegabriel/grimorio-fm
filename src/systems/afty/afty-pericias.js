@@ -42,7 +42,7 @@ export { AFTY_PERICIAS, AFTY_ATAQUES };
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
 import {
   valorCanal, detalhesDoCanal, valorCanalEscopos, detalhesDoCanalEscopos, escoposDaArma,
-  resolverEfeitosDanoFinal,
+  resolverEfeitosDanoFinal, casaEscopoDaLinha,
 } from "./afty-efeitos";
 // Quem separa a régua da criatura da do jogador nos três testes.
 import { regraDo } from "./afty-sistema";
@@ -566,6 +566,19 @@ const ARMA_BY_VALUE = Object.fromEntries(DANO_ADICIONAL_ARMA.map((a) => [a.value
 export const textoDeDano = (dados, dado, fixo) =>
   `${dados}${dado}${fixo > 0 ? `+${fixo}` : fixo < 0 ? `−${Math.abs(fixo)}` : ""}`;
 
+// O canal informa a redução, enquanto o hover mostra a variação da margem.
+function partesDaMargem(base, fontes, total, label = "Margem Base") {
+  const partes = [
+    { label, valor: base, texto: String(base) },
+    ...fontes.map((p) => ({ ...p, valor: -p.valor })),
+  ];
+  const bruto = base - fontes.filter((p) => !p.suplantado).reduce((s, p) => s + p.valor, 0);
+  const arredondado = base - Math.trunc(base - bruto);
+  if (arredondado !== bruto) partes.push({ label: "Arredondamento", valor: arredondado - bruto });
+  if (total !== arredondado) partes.push({ label: "Margem Mínima", valor: total - arredondado });
+  return partes;
+}
+
 /**
  * Uma linha de dano. Todas as fontes usam ESTA conta: o dano listado na tabela
  * da arma e o "1d8" do Corpo Treinado não entram (autor, 2026-07-27). Da arma
@@ -786,8 +799,19 @@ export function resolveDano(creature, ctx = {}) {
      escopado por FONTE de dano; estes dois miram um alvo nomeado, que hoje é o
      tamanho do dado (`d6`) do canal `dadosNomeados`. */
   const bonusDeEfeitoDano = (c, alvo) => (ef ? valorCanal(ef, c, alvo) : 0);
-  const fontesDeDano = (c, alvo) =>
-    (ef ? detalhesDoCanal(ef, c, alvo) : []).map((d) => ({ label: d.nome, valor: d.valor }));
+  /* O dado nomeado com `escopoLinha` (o golpe do Combatente do Aliado) só vale na
+     linha que responde ao escopo dele. O total do canal soma todos, então o que
+     NÃO casa com esta linha sai daqui, e o hover não o lista. */
+  const foraDaLinha = (d, escopos) => !casaEscopoDaLinha(d.escopoLinha, escopos);
+  const fontesDeDano = (c, alvo, escopos = []) =>
+    (ef ? detalhesDoCanal(ef, c, alvo) : []).filter((d) => !foraDaLinha(d, escopos))
+      .map((d) => ({ label: d.nome, valor: d.valor }));
+  const dadosNomeadosDaLinha = (faces, escopos) => Math.trunc(
+    bonusDeEfeitoDano("dadosNomeados", `d${faces}`)
+    - (ef ? detalhesDoCanal(ef, "dadosNomeados", `d${faces}`) : [])
+      .filter((d) => foraDaLinha(d, escopos))
+      .reduce((s, d) => s + (Number(d.valor) || 0), 0),
+  );
   // `true` no fim pede os SUPLANTADOS junto: são os perdedores do pool
   // exclusivo, que o hover mostra riscados. Só o hover os quer, e é por isso que
   // o `canal` logo acima segue sem eles: quem soma não pode contá-los.
@@ -965,6 +989,8 @@ export function resolveDano(creature, ctx = {}) {
       removeResistencia: canal("removeResistencia", escopos) > 0,
       fontes: fontesDe("danoBonus", escopos),
     });
+    linha.partesMargemCritico = partesDaMargem(margemBase, fontesDe("margemCritico", escopos), linha.margemCritico,
+      fonteDado === "Dano da Arma" ? "Margem da Arma" : "Margem Base");
     linha.escoposDano = escopos;
     linha.ignoraTodaRD = canal("ignoraTodaRD", escopos) > 0;
     linha.ignoraImunidade = canal("ignoraImunidade", escopos) > 0;
@@ -1052,10 +1078,10 @@ export function resolveDano(creature, ctx = {}) {
        dobra", e um d6 é dado. Enquanto eles eram média no `danoBonus`, viravam
        fixo e não dobravam: trocar o canal conserta a rolagem E o crítico. */
     const gruposNomeados = FACES_NOMEADAS
-      .map((faces) => ({ faces, qtd: Math.trunc(bonusDeEfeitoDano("dadosNomeados", `d${faces}`)) }))
+      .map((faces) => ({ faces, qtd: dadosNomeadosDaLinha(faces, escopos) }))
       .filter((g) => g.qtd > 0)
       .map((g) => {
-        const fontes = fontesDeDano("dadosNomeados", `d${g.faces}`);
+        const fontes = fontesDeDano("dadosNomeados", `d${g.faces}`, escopos);
         return {
           /* O nome do GRUPO só tem uma vaga, então com duas fontes do mesmo
              tamanho ele fica genérico. Quem nomeia cada uma é o hover, que
@@ -1148,7 +1174,7 @@ export function resolveDano(creature, ctx = {}) {
       linha.partes = [
         ...linha.partes,
         ...gruposNomeados.flatMap((g) => {
-          const fontes = fontesDeDano("dadosNomeados", `d${g.faces}`);
+          const fontes = fontesDeDano("dadosNomeados", `d${g.faces}`, escopos);
           return fontes.length
             ? fontes.map((f) => ({ label: f.label, texto: `${f.valor}d${g.faces}` }))
             : [{ label: g.nome, texto: `${g.dados}d${g.faces}` }];
@@ -1393,6 +1419,7 @@ function aplicarPermutasDeMargem(entrada, permutas) {
     if (!margem || entrada.acerto == null || !Number.isFinite(entrada.margemCritico)) continue;
     if (entrada.margemCritico + margem > 20) continue;
     entrada.margemCritico += margem;
+    entrada.partesMargemCritico = [...(entrada.partesMargemCritico ?? []), { label: p.nome, valor: margem }];
     entrada.acerto += acerto;
     entrada.partesAcerto = [...(entrada.partesAcerto ?? []), { label: p.nome, valor: acerto }];
     entrada.permutasMargem = [...(entrada.permutasMargem ?? []), p];
@@ -1441,7 +1468,9 @@ export function resolveTestes(creature, ctx = {}) {
   const mods = ctx.mods || {};
   const meioNivel = Math.floor(nd / 2);
   const modDe = (attr) => Math.trunc(Number(mods[attr]) || 0);
-  const bonusDe = (attr, prof) => modDe(attr) + meioNivel + bonusProficiencia(bt, prof);
+  const extraMestreFisico = (attr, prof) => ctx.restricaoDefinitiva && prof === "mestre"
+    && ["forca", "destreza", "constituicao"].includes(attr) ? bt - Math.floor(bt / 2) : 0;
+  const bonusDe = (attr, prof) => modDe(attr) + meioNivel + bonusProficiencia(bt, prof) + extraMestreFisico(attr, prof);
 
   // Escalas de nível. `cd` e `defesa` vêm prontas do deriveAfty (são as mesmas
   // da CD e da Defesa, não recalculo aqui), e a `fixa` é INT(ND/1,5), usada
@@ -1518,10 +1547,11 @@ export function resolveTestes(creature, ctx = {}) {
     return prontas ?? [{ label: "Armadura e Escudo", valor: penalidadeEquip, penalidade: true }];
   };
 
-  const parteProficiencia = (prof) => {
+  const parteProficiencia = (prof, attr) => {
     const v = bonusProficiencia(bt, prof);
     if (!prof) return [];
-    return [{ label: prof === "mestre" ? "Maestria (Mestre)" : "Maestria", valor: v }];
+    return [{ label: prof === "mestre" ? "Maestria (Mestre)" : "Maestria", valor: v },
+      ...(extraMestreFisico(attr, prof) ? [{ label: "Restrição Definitiva", valor: extraMestreFisico(attr, prof) }] : [])];
   };
   // Proficiência concedida NUNCA rebaixa a escolhida: fica a maior das duas.
   const FAIXA = { treinado: 1, mestre: 2 };
@@ -1581,9 +1611,14 @@ export function resolveTestes(creature, ctx = {}) {
   };
   /* O que a ficha paga por aquela linha: o preço da faixa escolhida menos o do
      que foi concedido de graça, com piso em zero. */
-  const custoLiquido = (canal, id, escolhida) => Math.max(
+  /* `faixaExtra` é a concessão que não passa pelo canal e também paga o degrau
+     que dá: o pacote da Classe no TR, quando o Addon `trNoLimiteDePericias`
+     põe o TR no caixa. Sem ele a marcação à mão em cima de um TR que a Classe
+     já dá gastaria uma vaga por uma faixa que a ficha já tem. */
+  const custoLiquido = (canal, id, escolhida, faixaExtra = 0) => Math.max(
     0,
-    custoProficiencia(escolhida) - custoProficiencia(NOME_FAIXA[faixaCreditada(canal, id)] ?? null),
+    custoProficiencia(escolhida)
+      - custoProficiencia(NOME_FAIXA[Math.max(faixaCreditada(canal, id), faixaExtra)] ?? null),
   );
 
   // `requerTreinamento` e `complementar` seguem no catálogo (são a tabela do
@@ -1686,6 +1721,7 @@ export function resolveTestes(creature, ctx = {}) {
       atributo,
       atributoPadrao,
       prof,
+      ...(ctx.semblanteCativante && atributo === "presenca" ? { minimoNatural: Math.floor((ctx.valorPresenca ?? (mods.presenca * 2 + 10)) / 2) } : {}),
       // A faixa que a FICHA escolheu, separada da resolvida: é ela que gasta
       // vaga. O treino concedido de fora já foi pago (com Focos, no caso do
       // Treino de Perícia) e não pode cobrar de novo.
@@ -1700,7 +1736,7 @@ export function resolveTestes(creature, ctx = {}) {
            número é o mesmo, e o rótulo passa a bater com o dos TR e dos Ataques,
            que já dizem "Metade do Nível" no jogador. */
         { label: meiaEscala ? "Metade do Nível" : "Metade do ND", valor: meioNivel },
-        ...parteProficiencia(prof),
+        ...parteProficiencia(prof, atributo),
         ...partePenalidade(atributo),
         ...partesPorAtributo("bonusPericia", p.id, atributo),
         ...partesDosDados,
@@ -1722,10 +1758,20 @@ export function resolveTestes(creature, ctx = {}) {
     partesDeEfeito("dadosTR", `d${faces}`).map((x) => ({ label: x.label, texto: `${x.valor}d${faces}` })));
 
   const bonusDoTR = (r, prof) => modDe(r.atributo) + (ESCALA_TR[r.escala] ?? 0)
-    + bonusProficiencia(bt, prof) + bonusPorAtributo("bonusTR", r.value, r.atributo);
+    + bonusProficiencia(bt, prof) + extraMestreFisico(r.atributo, prof) + bonusPorAtributo("bonusTR", r.value, r.atributo);
 
-  // No jogador o TR não gasta vaga. Ver a nota do `gastos`, no fim da função.
-  const trForaDoCaixa = regraDo(ctx.sistema, "trForaDoOrcamento") === "player";
+  /* No jogador o TR não gasta vaga. Ver a nota do `gastos`, no fim da função.
+
+     ⚠ O ADDON DESFAZ ISSO (verbo `regrasAfty.trNoLimiteDePericias`, 2026-10-25):
+     com ele o TR é escolhido na aba e gasta vaga como uma perícia, igual à
+     criatura. O concedido de fora (Classe, Talento, Treino, Habilidade) segue
+     valendo e fica verde, e entra no contador como vaga gasta que SOBE o total
+     na mesma medida, por `faixasDoTR`. */
+  const trNoLimite = ctx.trNoLimite === true;
+  const trForaDoCaixa = regraDo(ctx.sistema, "trForaDoOrcamento") === "player" && !trNoLimite;
+  // Por TR: a faixa que as fontes dão (a que vira "concedido" no contador) e a
+  // parte dela que veio do pacote da Classe (a que abate a marcação à mão).
+  const faixasDoTR = {};
 
   /* O atributo trocado à mão (2026-10-02), lido aqui e não pelo `ctx` porque o
      TR não tem outra fonte de troca para compor com ela. A troca arrasta o
@@ -1765,6 +1811,11 @@ export function resolveTestes(creature, ctx = {}) {
        Teste de Resistência Mestre) e o Motor (Talento, Treinamento, Addon). O
        "caso já seja" é fonte mesmo quando virou número no teste. */
     const faixaDasFontes = Math.max(faixaMotor, faixaPacote, ...casoJa.map((d) => d.faixa));
+    /* ⚠ AQUI O "CASO JÁ SEJA" SÓ CONTA QUANDO VIROU FAIXA. Quando virou +1 ou
+       +2 no teste, a faixa já vem de outra fonte ou da marcação paga (é por
+       isso que ele virou número), e contá-lo de novo como concedido cobraria a
+       mesma faixa duas vezes. */
+    faixasDoTR[r.value] = { concedida: Math.max(faixaMotor, faixaPacote, faixaCasoJa), pacote: faixaPacote };
     const bonusFinal = bonusDoTR(r, prof) + bonusCasoJa;
     return {
       ...r,
@@ -1787,6 +1838,8 @@ export function resolveTestes(creature, ctx = {}) {
       // Melhoria de Resistência e os Treinamentos Completos de Agilidade e
       // Resistência. Piso de 2, igual à margem do ataque.
       margemCritico: Math.max(2, 20 - Math.trunc(bonusDeEfeito("margemCriticoTR", r.value))),
+      partesMargemCritico: partesDaMargem(20, partesDeEfeito("margemCriticoTR", r.value),
+        Math.max(2, 20 - Math.trunc(bonusDeEfeito("margemCriticoTR", r.value)))),
       /* Os dados extras viajam ao lado do bônus, e não dentro dele: o bônus é o
          que soma sempre, e o dado é uma rolagem a mais. Quem mostra junta os
          dois num texto ("+7 + 2d3") e quem rola soma as duas coisas. */
@@ -1797,7 +1850,7 @@ export function resolveTestes(creature, ctx = {}) {
       partes: [
         { label: rotuloAttr(r.atributo), valor: modDe(r.atributo) },
         { label: ESCALA_ROTULO[r.escala] ?? "Escala de Nível", valor: ESCALA_TR[r.escala] ?? 0 },
-        ...parteProficiencia(prof),
+        ...parteProficiencia(prof, r.atributo),
         ...partesPorAtributo("bonusTR", r.value, r.atributo),
         ...casoJaNoTeste.map((d) => ({ label: d.nome, valor: d.faixa })),
         ...partesDosDadosTR,
@@ -1997,6 +2050,15 @@ export function resolveTestes(creature, ctx = {}) {
     if (somaBonus === bonusOutros) partesOrcamento.push(...partesBonus);
     else partesOrcamento.push({ label: "Outros", valor: bonusOutros });
   }
+  /* O TR CONCEDIDO SOBE O TOTAL (Addon `trNoLimiteDePericias`, autor,
+     2026-10-25). Treinado vale 1 e Mestre vale 2, como numa perícia, e a mesma
+     quantia entra nos gastos logo abaixo: o que sobra para escolher não muda
+     por causa do que a Classe, um Talento ou um Treino já deram, e o contador
+     só deixa à vista quanto do TR veio de fora. */
+  const concedidoTR = trNoLimite
+    ? resistencias.reduce((s, r) => s + custoProficiencia(NOME_FAIXA[faixasDoTR[r.value]?.concedida] ?? null), 0)
+    : 0;
+  if (concedidoTR > 0) partesOrcamento.push({ label: "Testes de Resistência Concedidos", valor: concedidoTR });
   const total = partesOrcamento.reduce((acc, x) => acc + (Number(x.valor) || 0), 0);
   // Perícias E Testes de Resistência dividem as mesmas vagas (autor,
   // 2026-07-27). Jogadas de Ataque ficam fora: elas não têm faixa de Mestre e
@@ -2009,14 +2071,18 @@ export function resolveTestes(creature, ctx = {}) {
 
      O gasto continua CALCULADO no jogador, e só não entra na soma. Quem acusa a
      marcação à mão na tela é o `semFonte` de cada TR (2026-09-24). O
-     `trForaDoCaixa` mora lá em cima, junto das resistências. */
+     `trForaDoCaixa` mora lá em cima, junto das resistências.
+
+     ⚠ O Addon `trNoLimiteDePericias` é a exceção escolhida pela mesa: com ele
+     o TR entra na soma como na criatura, e a marcação à mão deixa de ser
+     acusada porque passa a ser uma escolha paga. */
   const gastoPericias = pericias.reduce(
     (s, p) => s + custoLiquido("proficienciaPericia", p.id, p.profEscolhida), 0,
   );
   const gastoResistencias = resistencias.reduce(
-    (s, r) => s + custoLiquido("proficienciaTR", r.value, r.profEscolhida), 0,
+    (s, r) => s + custoLiquido("proficienciaTR", r.value, r.profEscolhida, trNoLimite ? (faixasDoTR[r.value]?.pacote ?? 0) : 0), 0,
   );
-  const gastos = gastoPericias + (trForaDoCaixa ? 0 : gastoResistencias);
+  const gastos = gastoPericias + (trForaDoCaixa ? 0 : gastoResistencias + concedidoTR);
 
   // A troca afeta somente Atenção. As linhas e os orçamentos originais ficam
   // intactos, e os efeitos já avaliados não voltam a ler o próprio resultado.
@@ -2057,6 +2123,8 @@ export function resolveTestes(creature, ctx = {}) {
     orcamento: {
       total, gastos, pericias: gastoPericias, resistencias: gastoResistencias,
       restante: total - gastos, excedeu: gastos > total,
+      // Só com o Addon: quanto do TR veio de fora (já dentro do total e dos gastos).
+      ...(trNoLimite ? { resistenciasConcedidas: concedidoTR } : {}),
       // Uma linha por fonte, para o hover do contador.
       partes: partesOrcamento,
       // A tela precisa saber se deve mostrar o TR dentro do medidor.

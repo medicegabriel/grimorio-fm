@@ -1,0 +1,38 @@
+[
+  {
+    "sistema": "afty",
+    "width": 1440,
+    "fichaAtaques": true,
+    "fichaTR": true,
+    "criadorAtaques": true,
+    "painelDentroDaTela": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "width": 390,
+    "fichaAtaques": true,
+    "fichaTR": false,
+    "criadorAtaques": true,
+    "painelDentroDaTela": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "width": 1440,
+    "fichaAtaques": true,
+    "fichaTR": true,
+    "criadorAtaques": true,
+    "painelDentroDaTela": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "width": 390,
+    "fichaAtaques": true,
+    "fichaTR": false,
+    "criadorAtaques": true,
+    "painelDentroDaTela": true,
+    "erros": []
+  }
+]

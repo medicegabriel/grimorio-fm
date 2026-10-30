@@ -891,10 +891,10 @@ export const HABILIDADE_EFEITOS = {
   /* ---- 16° nível ---- */
 
   // "A margem do seu acerto crítico reduz em dois números, ao invés de um."
-  // SUBSTITUI o Crítico Melhorado (6°), que é pré-requisito, então o que entra
-  // aqui é o degrau de 1 para 2.
+  // Redução total de 2. Com Crítico Melhorado entra apenas o complemento.
+  // Roubo dispensa a anterior, portanto recebe os 2 diretamente.
   cmb_critico_aperfeicoado: [
-    { canal: "margemCritico", expr: "1" },
+    { canal: "margemCritico", expr: "2 - tem_cmb_critico_melhorado" },
   ],
 
   /* ================= RESTRINGIDO ================= */
@@ -952,6 +952,12 @@ export const HABILIDADE_EFEITOS = {
     { canal: "cd", expr: "2 + (esc_restringido >= 8) + (esc_restringido >= 16)" },
   ],
 
+  // "Você recebe duas técnicas marciais adicionais ao obter essa habilidade."
+  // (p. 116). É vaga EXCLUSIVA de Técnica Marcial, que nenhum Feitiço gasta.
+  res_desenvolver_ideias: [
+    { canal: "vagasMarcial", expr: "2" },
+  ],
+
   // "Toda arma que você manejar conta como um nível de dano acima e seu valor
   // de deslocamento aumenta em 3 metros."
   // A vantagem em furtividade contra feiticeiros, o traçado da alma e a imunidade
@@ -974,6 +980,7 @@ export const HABILIDADE_EFEITOS = {
   res_libertacao_do_destino: [
     { canal: "bonusAcerto", expr: "5" },
     { canal: "danoBonus", expr: "piso(nd / 2)" },
+    ...["ct", "im", "pf"].map((alvo) => ({ canal: "resistenciaDano", alvo, expr: "1" })),
   ],
 
   /* ---- 2° nível ---- */
@@ -1156,6 +1163,9 @@ export const HABILIDADE_EFEITOS = {
   // escolha aninhada.
   res_pinaculo_fisico: [
     { canal: "pe", expr: "4" },
+  ],
+  res_ataque_extra: [
+    { canal: "ataquesExtras", quando: "res_ataque_extra", expr: "1", duracao: "temporaria" },
   ],
 
   /* ---- 16° nível ---- */
@@ -1796,9 +1806,10 @@ export const ESCOLHA_EFEITOS = {
   // ⚠ E o bônus vale só "contra efeitos dessas fontes", recorte que a ficha não
   // tem: aqui ele entra cheio.
   res_dadiva_indulgente_a_feiticaria: [
-    { canal: "bonusTR", alvo: "vontade", expr: "1 + (nd >= 10)" },
-    { canal: "bonusTR", alvo: "fortitude", expr: "(1 + (nd >= 10)) * (nd >= 15)" },
-    { canal: "bonusTR", alvo: "reflexos", expr: "(1 + (nd >= 10)) * (nd >= 15)" },
+    { canal: "rdGeral", quando: "contra_feiticaria", expr: "piso(nd / 2)", duracao: "temporaria" },
+    { canal: "bonusTR", alvo: "vontade", quando: "contra_feiticaria", expr: "1 + (nd >= 10)", duracao: "temporaria" },
+    { canal: "bonusTR", alvo: "fortitude", quando: "contra_feiticaria", expr: "(1 + (nd >= 10)) * (nd >= 15)", duracao: "temporaria" },
+    { canal: "bonusTR", alvo: "reflexos", quando: "contra_feiticaria", expr: "(1 + (nd >= 10)) * (nd >= 15)", duracao: "temporaria" },
   ],
 
   // "+2 em testes de perícia ou resistência usando inteligência."
@@ -1938,6 +1949,13 @@ export const ESCOLHA_EFEITOS = {
   ...Object.fromEntries(["forca", "destreza", "constituicao"].map((a) => [
     `res_pinaculo_${a}`, [{ canal: "atributo", alvo: a, expr: "2 + 2 * (esc_restringido >= 16)" }],
   ])),
+
+  /* ---- Força Imparável (8°): dois Testes de Resistência ----
+     "Você se torna treinado em um teste de resistência à sua escolha e mestre
+     em outro TR no qual já seja treinado." As duas escolhas saem do mesmo pool,
+     e o card não sabe qual é qual: a opção decide sozinha olhando a ficha, e
+     concede Mestre onde já havia treino e Treinado onde não havia. */
+  // Os dois papéis têm escolhas separadas em afty-especializacao-config.js.
 
   /* ---- Força Imparável (8°): dois Testes de Resistência ----
      "Você se torna treinado em um teste de resistência à sua escolha e mestre
@@ -2442,8 +2460,6 @@ export const ORIGEM_EFEITOS = {
          não é somar num canal);
        • a redução dos atributos de CD de técnica (pergunta aberta: no Afty
          QUALQUER atributo pode ser o da Técnica, e o livro fala de um conjunto);
-       • a Restrição Definitiva concedida independente do nível (é uma
-         Habilidade, e conceder Habilidade tem caminho próprio);
        • o Lutador Superior sem custo de PE (a habilidade base escolhida vira
          efeito em ORIGEM_ESCOLHA_EFEITOS, e o "sem custo" não tem canal porque
          o ataque de graça do Lutador Superior já ficava de fora do Motor: ver
@@ -2468,9 +2484,13 @@ export const ORIGEM_EFEITOS = {
     { canal: "atributo", alvo: "destreza", expr: "-2 * tipo_restringido * (1 - irmao_morto)", nome: "Gêmeos: Restrição Celestial" },
     // "recebe apenas 2 pontos de vigor por nível" e, depois, "+2 pontos de vigor
     // por nível". A base do Restringido é 4 por nível (ver `peBase`), então a
-    // redução é de 2 por nível e o pós-morte volta ao normal.
+    // redução é de 2 por nível enquanto o irmão vive.
+    // ⚠ O PÓS-MORTE SOMA SOBRE A BASE, e não sobre os 2 do irmão vivo (autor,
+    // 2026-10-12: 6 por nível). É a mesma leitura do ramo dos Feiticeiros, "o
+    // base de sua especialização +2". Até aqui o +2 só desfazia a redução.
     // ⚠ Vigor É o PE: mesma pilha, outro nome. Ver afty-restringido-sem-energia.
     { canal: "pe", expr: "-2 * nd * tipo_restringido * (1 - irmao_morto)", nome: "Gêmeos: Restrição Celestial" },
+    { canal: "pe", expr: "2 * nd * tipo_restringido * irmao_morto", nome: "Gêmeos: Restrição Celestial" },
 
     // ---------- Restrição Celestial · Feiticeiros ----------
     // "Você recebe apenas 2 de energia por nível". A base do Tipo é 6 no

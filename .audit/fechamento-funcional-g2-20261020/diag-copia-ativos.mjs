@@ -1,0 +1,18 @@
+import { fichas, sessoes, contexto, abre, passo, espera, foto, adicionar, emCombate, aosAtivos, texto, encerra } from "./lib.mjs";
+passo("copia-ativos");
+const f = fichas.ima;
+const { p } = await contexto({ lista: [f], largura: 1440, altura: 900, sessoesIniciais: sessoes });
+await abre(p, "player", f.name);
+await emCombate(p);
+await adicionar(p); await p.locator("[data-aba-imitacao]").click(); await espera(p, 300);
+await p.locator('[data-chave-copia="cmb_postura_do_sol"] .k-item').click(); await espera(p, 200);
+await p.locator("[data-confirmar-copia]").click(); await espera(p, 500);
+await p.locator("[data-aba-ficha], .m-seg-op", { hasText: "Da Ficha" }).first().click(); await espera(p, 400);
+console.log("categorias:", JSON.stringify(await p.locator(".k-cat").evaluateAll((l) => l.map((e) => e.textContent.trim()))));
+await p.locator('[data-busca-catalogo]').fill("Sol"); await espera(p, 400);
+console.log("busca Sol:", JSON.stringify(await p.locator(".k-fila").evaluateAll((l) => l.map((e) => e.textContent.trim().replace(/\s+/g, " ")))));
+await foto(p, "diag-copia-dafica");
+await p.locator('[data-voltar-ativos]').click(); await espera(p, 400);
+console.log("ativos:", JSON.stringify(await p.locator("[data-chave-ativo]").evaluateAll((l) => l.map((e) => e.getAttribute("data-chave-ativo") + ": " + e.textContent.trim().replace(/\s+/g, " ")))));
+await foto(p, "diag-copia-ativos");
+await encerra();

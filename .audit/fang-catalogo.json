@@ -1,0 +1,2135 @@
+[
+  {
+    "id": "res_pinaculo_fisico",
+    "catalogo": {
+      "id": "res_pinaculo_fisico",
+      "nome": "Pináculo Físico",
+      "especializacaoId": "restringido",
+      "tipo": "nivel",
+      "nivel": 12,
+      "descricao": "Você recebe +4 pontos de estamina máximos e pode escolher aumentar o valor de dois atributos entre Força, Destreza e Constituição em 2. No nível 16, o valor de ambos os atributos escolhidos aumentam novamente em 2.",
+      "escolha": {
+        "id": "pinaculo_atributo",
+        "label": "Atributo",
+        "niveis": [
+          12,
+          12
+        ],
+        "opcoes": [
+          {
+            "id": "res_pinaculo_forca",
+            "nome": "Força",
+            "descricao": "Seu valor de Força aumenta em 2, e em mais 2 no nível 16."
+          },
+          {
+            "id": "res_pinaculo_destreza",
+            "nome": "Destreza",
+            "descricao": "Seu valor de Destreza aumenta em 2, e em mais 2 no nível 16."
+          },
+          {
+            "id": "res_pinaculo_constituicao",
+            "nome": "Constituição",
+            "descricao": "Seu valor de Constituição aumenta em 2, e em mais 2 no nível 16."
+          }
+        ]
+      },
+      "requisitos": []
+    },
+    "efeitos": [
+      {
+        "canal": "pe",
+        "expr": "4"
+      }
+    ]
+  },
+  {
+    "id": "res_forca_imparavel",
+    "catalogo": {
+      "id": "res_forca_imparavel",
+      "nome": "Força Imparável",
+      "especializacaoId": "restringido",
+      "tipo": "nivel",
+      "nivel": 8,
+      "descricao": "Sempre que você fizer um TR de Reflexos e o resultado natural do dado for menor do que seu modificador de Destreza, você pode gastar 2 pontos de estamina para transformar o resultado natural do dado no seu modificador de Destreza. Você se torna treinado em um teste de resistência à sua escolha e mestre em outro TR no qual já seja treinado.",
+      "escolha": {
+        "id": "imparavel_resistencia",
+        "label": "Teste de Resistência",
+        "niveis": [
+          8,
+          8
+        ],
+        "opcoes": [
+          {
+            "id": "res_imparavel_reflexos",
+            "nome": "Reflexos",
+            "descricao": "Você se torna treinado (ou mestre) em Reflexos."
+          },
+          {
+            "id": "res_imparavel_fortitude",
+            "nome": "Fortitude",
+            "descricao": "Você se torna treinado (ou mestre) em Fortitude."
+          },
+          {
+            "id": "res_imparavel_vontade",
+            "nome": "Vontade",
+            "descricao": "Você se torna treinado (ou mestre) em Vontade."
+          },
+          {
+            "id": "res_imparavel_astucia",
+            "nome": "Astúcia",
+            "descricao": "Você se torna treinado (ou mestre) em Astúcia."
+          },
+          {
+            "id": "res_imparavel_integridade",
+            "nome": "Integridade",
+            "descricao": "Você se torna treinado (ou mestre) em Integridade."
+          }
+        ]
+      },
+      "requisitos": []
+    }
+  },
+  {
+    "id": "res_cacador_de_feiticeiros",
+    "catalogo": {
+      "id": "res_cacador_de_feiticeiros",
+      "nome": "Caçador de Feiticeiros",
+      "especializacaoId": "restringido",
+      "tipo": "nivel",
+      "nivel": 4,
+      "descricao": "Sua especialização é conseguir lidar com feiticeiros, preparando-se para os caçar, tanto resistindo melhor quanto destruindo melhor. No começo de uma cena você pode gastar 2 pontos de estamina para receber 2 de RD, +1 em testes de resistência e ataques, além de causar +1d6 de dano contra todos os feiticeiros presentes na cena. A cada 5 níveis você pode gastar mais 2 pontos para aumentar os bônus; +2 de RD, +1 de bônus e +1d6 de dano para cada 2 pontos adicionais.",
+      "requisitos": []
+    },
+    "efeitos": [
+      {
+        "canal": "rdGeral",
+        "quando": "cacador_feiticeiros",
+        "expr": "2 * cacador_feiticeiros",
+        "duracao": "temporaria"
+      },
+      {
+        "canal": "bonusTR",
+        "quando": "cacador_feiticeiros",
+        "expr": "cacador_feiticeiros",
+        "duracao": "temporaria"
+      },
+      {
+        "canal": "bonusAcerto",
+        "quando": "cacador_feiticeiros",
+        "expr": "cacador_feiticeiros",
+        "duracao": "temporaria"
+      },
+      {
+        "canal": "dadosNomeados",
+        "alvo": "d6",
+        "quando": "cacador_feiticeiros",
+        "expr": "cacador_feiticeiros",
+        "duracao": "temporaria"
+      }
+    ]
+  },
+  {
+    "id": "res_reacao_rapida",
+    "catalogo": {
+      "id": "res_reacao_rapida",
+      "nome": "Reação Rápida",
+      "especializacaoId": "restringido",
+      "tipo": "nivel",
+      "nivel": 8,
+      "descricao": "Com um tempo de reação grandemente desenvolvido, você consegue incitar o seu corpo a reagir com uma rapidez extrema. Caso já tenha gasto a sua reação, você pode pagar 2 pontos de estamina para realizar uma reação adicional, uma vez por rodada.",
+      "requisitos": []
+    }
+  },
+  {
+    "id": "res_instintos_agucados",
+    "catalogo": {
+      "id": "res_instintos_agucados",
+      "nome": "Instintos Aguçados",
+      "especializacaoId": "restringido",
+      "tipo": "nivel",
+      "nivel": 16,
+      "descricao": "Enquanto seus pontos de estamina e de vida excederem metade do máximo deles, você recebe uma reação adicional por rodada.",
+      "requisitos": [
+        {
+          "tipo": "habilidade",
+          "id": "res_reacao_rapida"
+        }
+      ]
+    }
+  },
+  {
+    "id": "res_foco_no_inimigo",
+    "catalogo": {
+      "id": "res_foco_no_inimigo",
+      "nome": "Foco no Inimigo",
+      "especializacaoId": "restringido",
+      "tipo": "nivel",
+      "nivel": 4,
+      "descricao": "Ao iniciar um combate, você pode gastar 2 pontos de estamina e escolher um inimigo para ser seu foco. Ao atacar o inimigo que é seu foco você recebe um bônus de +2 para acertar e causa 1d6 de dano a mais, que aumenta para 1d8 no nível 6, 1d10 no nível 12 e 1d12 no nível 16, além de receber +5 em testes de Percepção para procurar o inimigo e em sua Atenção contra ele. Ao matar o inimigo em que você possui foco, você pode usar sua reação para passar o foco para outro inimigo dentro de 9 metros de você. Caso ataque outra criatura que não seja seu foco, a habilidade se encerra.",
+      "requisitos": []
+    },
+    "efeitos": [
+      {
+        "canal": "bonusAcerto",
+        "quando": "foco_inimigo",
+        "expr": "2",
+        "duracao": "temporaria"
+      },
+      {
+        "canal": "dadosNomeados",
+        "alvo": "d6",
+        "quando": "foco_inimigo && esc_restringido < 6",
+        "expr": "1",
+        "duracao": "temporaria"
+      },
+      {
+        "canal": "dadosNomeados",
+        "alvo": "d8",
+        "quando": "foco_inimigo && esc_restringido >= 6 && esc_restringido < 12",
+        "expr": "1",
+        "duracao": "temporaria"
+      },
+      {
+        "canal": "dadosNomeados",
+        "alvo": "d10",
+        "quando": "foco_inimigo && esc_restringido >= 12 && esc_restringido < 16",
+        "expr": "1",
+        "duracao": "temporaria"
+      },
+      {
+        "canal": "dadosNomeados",
+        "alvo": "d12",
+        "quando": "foco_inimigo && esc_restringido >= 16",
+        "expr": "1",
+        "duracao": "temporaria"
+      },
+      {
+        "canal": "bonusPericia",
+        "alvo": "percepcao",
+        "quando": "foco_inimigo",
+        "expr": "5",
+        "duracao": "temporaria"
+      },
+      {
+        "canal": "atencao",
+        "quando": "foco_inimigo",
+        "expr": "5",
+        "duracao": "temporaria"
+      }
+    ]
+  },
+  {
+    "id": "res_precisao_forcada",
+    "catalogo": {
+      "id": "res_precisao_forcada",
+      "nome": "Precisão Forçada",
+      "especializacaoId": "restringido",
+      "tipo": "nivel",
+      "nivel": 10,
+      "descricao": "Você consegue usar do seu físico impecável para forçar precisão absoluta em um golpe. Uma vez por rodada, quando você faz um ataque corpo-a-corpo, você pode pagar 3 pontos de estamina. Se acertar o ataque, causa dano máximo, sem necessidade de rolar danos.",
+      "requisitos": []
+    }
+  },
+  {
+    "id": "res_roubo_de_habilidade",
+    "catalogo": {
+      "id": "res_roubo_de_habilidade",
+      "nome": "Roubo de Habilidade",
+      "especializacaoId": "restringido",
+      "tipo": "nivel",
+      "nivel": 2,
+      "descricao": "Em busca de se adaptar, você consegue até mesmo roubar as habilidades dos outros. Ao obter essa habilidade, você pode aprender uma habilidade de Especialista em Combate ou Lutador, desde que tal não dependa do uso de energia amaldiçoada. Você usa seus níveis de Restringido para os requisitos. Você pode pegar essa habilidade uma quantidade de vezes igual ao seu bônus de treinamento, roubando habilidades diferentes. Você não pode roubar habilidades base das outras especializações, exceto Golpe Especial.",
+      "escolha": {
+        "id": "roubo_habilidade",
+        "label": "Habilidade Roubada",
+        "niveis": [
+          2
+        ],
+        "opcoes": [
+          {
+            "id": "lut_aparar_ataque",
+            "nome": "Aparar Ataque",
+            "descricao": "Você rebate um ataque com outro ataque, assim conseguindo aparar um golpe. Quando for alvo de um ataque corpo a corpo, você pode gastar 1 PE e sua reação para realizar uma jogada de ataque contra o atacante. Caso seu teste supere o do inimigo, você evita o ataque.",
+            "nivelMin": 2,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_aparar_projeteis",
+            "nome": "Aparar Projéteis",
+            "descricao": "Utilizando de sua agilidade e reflexos, você consegue tentar aparar projéteis em sua direção, reduzindo o dano deles. Quando receber um ataque à distância, você pode gastar 1 PE e sua reação para tentar aparar o projétil, reduzindo o dano recebido em 2d6 + modificador de atributo-chave + bônus de treinamento.",
+            "nivelMin": 2,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_ataque_inconsequente",
+            "nome": "Ataque Inconsequente",
+            "descricao": "Você baixa a guarda para atacar de maneira inconsequente, aumentando seu potencial de dano. Uma vez por rodada, ao realizar um ataque, você pode escolher receber vantagem na jogada de ataque e +5 na rolagem de dano dele. Porém, ao realizar um ataque inconsequente, você fica Desprevenido por 1 rodada.",
+            "nivelMin": 2,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_caminho_da_mao_vazia",
+            "nome": "Caminho da Mão Vazia",
+            "descricao": "Mesmo diante a possibilidade de brandir armas marciais, você decide se ater as mãos vazias e se aperfeiçoar nesse caminho. Todo ataque desarmado que você realizar causa dano adicional igual ao seu bônus de treinamento e você soma metade do seu bônus de treinamento em jogadas de ataque desarmados.",
+            "nivelMin": 2,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_complementacao_marcial",
+            "nome": "Complementação Marcial",
+            "descricao": "Suas habilidades marciais complementam certas manobras, deixando-as mais eficientes. Enquanto estiver desarmado ou empunhando uma arma marcial, você recebe um bônus de +2 em testes para Desarmar, Derrubar ou Empurrar, assim como para resistir a esses efeitos.",
+            "nivelMin": 2,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_deboche_desconcertante",
+            "nome": "Deboche Desconcertante",
+            "descricao": "Cheio de si, você consegue debochar de um inimigo de uma maneira que o desconcerta. Como uma Ação Bônus, escolha uma criatura que possa te ver ou ouvir: realize um teste de Intimidação contra um teste de Vontade dela, no qual você recebe um bônus de +2. Caso você suceda, a criatura recebe uma penalidade igual ao seu bônus de treinamento em todos os testes que ela realizar até o começo do seu próximo turno.",
+            "nivelMin": 2,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_dedicacao_em_arma",
+            "nome": "Dedicação em Arma",
+            "descricao": "Ao invés de contar apenas com seus punhos, você se dedica a certas armas. Escolha três armas para serem suas Armas Dedicadas, as quais não podem possuir as propriedades Duas Mãos ou Pesada, exceto caso já possuam a propriedade Marcial. Suas armas escolhidas passam a ser contadas como marciais, se não forem, e enquanto empunhar uma Arma Dedicada, o dano dela aumenta em 1 nível.",
+            "nivelMin": 2,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_esquiva_rapida",
+            "nome": "Esquiva Rápida",
+            "descricao": "Com agilidade, você se prepara para esquivar de ataques. Como uma Ação Bônus, realize um teste de Acrobacia contra a Atenção de um inimigo dentro do seu alcance corpo a corpo. Caso suceda no teste, o alvo recebe metade do seu modificador de Destreza como penalidade em jogadas de ataque feitas contra você até o começo do seu próximo turno.",
+            "nivelMin": 2,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_finta_melhorada",
+            "nome": "Finta Melhorada",
+            "descricao": "Você desenvolva sua finta para que se torne mais eficiente e se adaptar ao seu corpo. Você pode optar por utilizar Destreza ao invés de Presença em testes de Enganação para fintar. Além disso, acertar um inimigo desprevenido pela sua finta causa um dado de dano adicional.",
+            "nivelMin": 2,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_impacto_misto",
+            "nome": "Impacto Misto",
+            "descricao": "Você consegue misturar o uso de armas adequadas com seus ataques desarmados. Quando acertar uma criatura com um ataque com arma marcial, você recebe +2 em jogadas de ataque e dano desarmados até o começo do seu próximo turno. Nos níveis 5, 10, 15 e 20, o bônus em dano aumenta em +1, enquanto nos níveis 6, 12 e 18 o bônus em jogadas de ataque aumenta em +1.",
+            "nivelMin": 2,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_kiai_intimidador",
+            "nome": "Kiai Intimidador",
+            "descricao": "Sendo a exteriorização da energia e força corporal, um kiai é liberado diante um bom golpe, intimidando com um grito. Uma vez por rodada, quando conseguir um crítico em um ataque corpo a corpo você pode, como uma ação livre, realizar um teste de Intimidação contra Vontade do alvo e, caso suceda, ela fica Abalada por uma rodada. Se aplicar esta habilidade em uma criatura que já está Abalada, ela fica Amedrontada.",
+            "nivelMin": 2,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_maos_amaldicoadas",
+            "nome": "Mãos Amaldiçoadas",
+            "descricao": "Como um feiticeiro, você consegue incorporar o jujutsu em seu combate a curta distância. Quando utilizar um Feitiço ofensivo com alcance de Toque, você pode substituir a jogada de ataque de técnica por uma jogada de ataque corpo a corpo e, também, somar seu modificador de Força ou Destreza no total.",
+            "nivelMin": 2,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_puxar_um_ar",
+            "nome": "Puxar um Ar",
+            "descricao": "Você consegue respirar fundo e puxar as forças guardadas em seu interior para continuar lutando. Você pode, como uma Ação Bônus, realizar uma rolagem do seu dano desarmado e se curar nesse valor. Esta habilidade pode ser usada uma quantidade de vezes igual ao seu bônus de treinamento, por descanso curto ou longo.",
+            "nivelMin": 2,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_quebrando_tudo",
+            "nome": "Quebrando Tudo",
+            "descricao": "O cenário e ambiente ao seu redor conta com várias armas e, lutando para quebrar tudo, você aprimora seu uso de armas improvisadas. Como parte de um ataque, você pode agarrar um objeto pequeno ou menor adjacente a você. Objetos usados de arma improvisada (Página 326) recebem +1d no dano e são considerados armas marciais.",
+            "nivelMin": 2,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_resistir",
+            "nome": "Resistir",
+            "descricao": "Você pode utilizar da energia para fortalecer seu corpo e resistir com mais eficiência. Quando realizar um teste de resistência de Fortitude ou Reflexos, você pode gastar até 2PE para receber um bônus de +2 para cada PE gasto.",
+            "nivelMin": 2,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_acao_agil",
+            "nome": "Ação Ágil",
+            "descricao": "Você otimiza o seu tempo de ação. Uma vez por rodada, você pode gastar 2PE para receber uma Ação Ágil, a qual pode ser utilizada para Andar, Desengajar ou Esconder.",
+            "nivelMin": 4,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_acrobata",
+            "nome": "Acrobata",
+            "descricao": "Ao invés da força, você usa a agilidade para poder saltar. Você passa a utilizar Destreza como atributo para calcular sua distância de pulo, assim como pode utilizar Acrobacia no lugar de Atletismo em testes para aumentar a sua distância de salto.",
+            "nivelMin": 4,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_atacar_e_recuar",
+            "nome": "Atacar e Recuar",
+            "descricao": "Você consegue atacar e aproveitar a brecha do golpe para se afastar do inimigo. Uma vez por turno, quando acertar uma criatura com um ataque, você pode gastar 1 PE para se mover até 4,5 metros para longe da criatura acertada. Este movimento não causa ataques de oportunidade.",
+            "nivelMin": 4,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_brutalidade",
+            "nome": "Brutalidade",
+            "descricao": "Existe uma brutalidade guardada no seu interior, a qual pode ser canalizada como uma fúria para combate. Como uma Ação Livre, você pode gastar 2PE para adentrar no estado de Brutalidade: enquanto nesse estado, você recebe +2 em jogadas de ataque corpo a corpo e dano. Entretanto, enquanto estiver em Brutalidade, você não pode manter a concentração nem utilizar Feitiços ou Técnicas de Estilo. Caso já estivesse se concentrando em algo, a concentração quebra. A Brutalidade se encerra no final do seu turno caso você não tenha atacado ninguém nele ou caso você a encerre como uma Ação Livre. Nos níveis 8, 12, 16 e 20 você pode gastar 2 PE a mais para aumentar o bônus em jogadas de ataque e dano em +1.",
+            "nivelMin": 4,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_defesa_marcial",
+            "nome": "Defesa Marcial",
+            "descricao": "Você é capaz de incorporar a leveza de seus movimentos em sua defesa. Enquanto estiver desarmado ou empunhando uma arma marcial, você soma 1 + metade do seu Bônus de Treinamento à sua Defesa.",
+            "nivelMin": 4,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_devolver_projeteis",
+            "nome": "Devolver Projéteis",
+            "descricao": "Sua capacidade de aparar é aprimorada, abrindo também oportunidades para os devolver. O dado de Aparar Projéteis se torna 3d10 e soma também o seu Nível de Lutador. Caso você use Aparar Projéteis e o dano se torne nulo ou negativo, você pode devolver o projétil como parte da reação, causando no atacante o dano que você receberia.",
+            "nivelMin": 4,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_fluxo",
+            "nome": "Fluxo",
+            "descricao": "Conforme se empolga, você cada vez mais se aproxima de entrar “na zona”, um estado de completo foco e imersão na luta. A cada nível de empolgação que você subir, você recebe +1 em rolagens de dano e, no começo de toda rodada, recebe 4 pontos de vida temporários para cada nível de empolgação acima do primeiro.",
+            "nivelMin": 4,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_furia_da_vinganca",
+            "nome": "Fúria da Vingança",
+            "descricao": "Seus aliados são importantes, e você irá vingá-los caso necessário. Ao ver um personagem aliado (Invocações não são consideradas) chegar a 0 pontos de vida e cair, você recebe os seguintes benefícios durante uma rodada: seus ataques causam 4 de dano adicional; sua Defesa aumenta em 2; você recebe +2 em TRs de Fortitude e Vontade. Os benefícios são aplicados apenas contra o inimigo alvo da vingança e outras criaturas que tentarem o impedir de alcançá-lo.",
+            "nivelMin": 4,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_imprudencia_motivadora",
+            "nome": "Imprudência Motivadora",
+            "descricao": "Em certos momentos, ser imprudente e se desafiar o motiva a triunfar. Ao iniciar uma cena de combate, você pode escolher lutar com uma restrição auto imposta, escolha um dos seus sensos ou membros (como não usar a visão ou não usar uma das pernas), até o final da cena, recebe as mesmas penalidades de perder um membro (Veja Ferimentos Complexos, página 315). Se vencer o combate com a restrição, você recupera uma quantidade de PE igual ao seu nível de personagem; recebe +2 em rolagens de ataque e tem sua margem de crítico reduzida em 1 até o fim da missão atual.",
+            "nivelMin": 4,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_musculos_desenvolvidos",
+            "nome": "Músculos Desenvolvidos",
+            "descricao": "Sua força o fez ter músculos desenvolvidos, os quais por consequência acabaram ficando mais preparados para receber golpes, sendo mais difícil o acertar de maneira efetiva. Ao obter esta habilidade, você pode optar por somar seu Modificador de Força ao invés de Destreza em sua Defesa, modificando o cálculo padrão.",
+            "nivelMin": 4,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_redirecionar_forca",
+            "nome": "Redirecionar Força",
+            "descricao": "Você consegue redirecionar um golpe direcionado a você, mudando o alvo. Quando um inimigo errar um ataque corpo a corpo contra você, você pode gastar 2PE e sua reação para tentar redirecionar o ataque: escolha outra criatura dentro do alcance do golpe e, caso o resultado da jogada de ataque dela seja superior à Defesa do novo alvo, ele recebe o ataque.",
+            "nivelMin": 4,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_segura_pra_mim",
+            "nome": "Segura pra Mim",
+            "descricao": "Uma criatura agarrada pode ser utilizada como escudo. Quando for alvo de um ataque corpo a corpo ou uma habilidade com alvo único, você pode gastar 3 PE para tentar colocar uma criatura que esteja agarrando na frente, faça um teste de Atletismo contra o Atletismo ou Acrobacia da criatura agarrada. Se for bem sucedido, a criatura recebe os efeitos do ataque ou habilidade no seu lugar e você imediatamente para de agarrar ela.",
+            "nivelMin": 4,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_sobrevivente",
+            "nome": "Sobrevivente",
+            "descricao": "Como um lutador, você deve sobreviver, recuperando-se quando sente a vitalidade esvaindo. Enquanto estiver com menos da metade dos seus pontos de vida máximos, sempre que começar seu turno, você recupera 1d6 + seu modificador de Constituição em pontos de vida. Esta habilidade não funciona caso esteja Inconsciente ou nos portões da morte. Nos níveis 8, 12, 16 e 20, a cura aumenta em 1d6.",
+            "nivelMin": 4,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_voadora",
+            "nome": "Voadora",
+            "descricao": "Você consegue investir em uma voadora, acumulando potência conforme a distância aumenta. Quando realizar uma Investida, e estiver desarmado, você pode gastar 3PE para realizar uma Voadora. Caso o faça, você causa 1d8 de dano adicional para cada 3 metros que se deslocar até o alvo, limitado pelo seu modificador de Força ou Destreza.",
+            "nivelMin": 4,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_aprimoramento_marcial",
+            "nome": "Aprimoramento Marcial",
+            "descricao": "Você aprimora suas habilidades marciais para deixar mais difícil resistir as suas técnicas de Lutador. Você passa a somar metade do seu Bônus de Treinamento em sua CD de Especialização.",
+            "nivelMin": 6,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_ataque_extra",
+            "nome": "Ataque Extra",
+            "descricao": "Você consegue atacar mais rápido, otimizando seus golpes. Ao realizar a ação Atacar, você pode gastar 2 PE para atacar duas vezes ao invés de uma.",
+            "nivelMin": 6,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_brutalidade_sanguinaria",
+            "nome": "Brutalidade Sanguinária",
+            "descricao": "Em meio a brutalidade, o sangue pode o renovar. Enquanto no estado de Brutalidade, sempre que tiver um acerto crítico ou reduzir a vida de uma criatura a 0 ou menos, você aumenta o nível de dano dos seus ataques corpo a corpo em 1, acumulando até um limite igual ao seu bônus de treinamento. Esse aumento dura enquanto permanecer com o estado de Brutalidade ativo.",
+            "nivelMin": 6,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_corpo_calejado",
+            "nome": "Corpo Calejado",
+            "descricao": "De tanto combater e receber golpes, todo seu corpo já está calejado e mais resistente. Você passa a adicionar metade do seu Modificador de Constituição na sua Defesa e recebe pontos de vida adicionais igual ao seu nível de Lutador.",
+            "nivelMin": 6,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_eliminar_e_continuar",
+            "nome": "Eliminar e Continuar",
+            "descricao": "Eliminar um inimigo e o ver cair serve apenas como um incentivo para continuar. Sempre que um inimigo ao qual você causou dano cair ou morrer dentro de 9 metros, você recebe 2d6 + nível de personagem + modificador de atributo-chave em PV temporários, os quais acumulam. No nível 8, o valor aumenta para 3d6, no nível 12 aumenta para 4d6, no nível 16 aumenta para 4d8 e no nível 20 aumenta para 4d12.",
+            "nivelMin": 6,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_foguete_sem_re",
+            "nome": "Foguete Sem Ré",
+            "descricao": "Se dedicando a avançar sem olhar para trás, você consegue usar da sua energia para o impulsionar em uma investida direta. Como uma ação completa, você gasta 6 PE para se mover até uma distância igual ao dobro do seu deslocamento; sempre que passar por uma criatura durante essa investida, ela deve realizar um teste de resistência de Reflexos, sofrendo Xd10 + modificador de Força ou Destreza (onde X é o seu bônus de treinamento) de dano de Impacto e não podendo realizar Ataques de Oportunidade contra você em uma falha. Ao terminar seu movimento adjacente a uma criatura, você pode realizar um ataque contra ela.",
+            "nivelMin": 6,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_golpe_da_mao_aberta",
+            "nome": "Golpe da Mão Aberta",
+            "descricao": "Você é capaz de realizar um ataque potente, utilizando a palma da mão. Como uma ação comum, você pode gastar 4 PE para realizar um golpe de mão aberta. Você realiza um ataque desarmado contra um alvo dentro do seu alcance corpo a corpo e, em um acerto, ele deve realizar um teste de resistência de Fortitude e, em um fracasso, ele fica Desorientado, Enjoado e Exposto até o início do seu próximo turno. O Golpe da Mão Aberta conta como um ataque desarmado para propósitos de habilidades que apenas funcionam com ataques e você não pode usar ataque extra com esse golpe.",
+            "nivelMin": 6,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_ignorar_dor",
+            "nome": "Ignorar Dor",
+            "descricao": "Seu desejo por uma boa luta é constante, permitindo-o até mesmo ignorar parte da dor que seja infligida em você. Você recebe redução de danos contra todos os tipos, menos alma, igual ao seu nível de empolgação atual. Contra danos físicos, a redução de dano é dobrada.",
+            "nivelMin": 6,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_manobras_finalizadoras",
+            "nome": "Manobras Finalizadoras",
+            "descricao": "Após toda uma sequência empolgante, você sabe exatamente como finalizar o seu combo com uma manobra ainda mais impactante. Você libera acesso a novas manobras, listadas no final da especialização. Ao realizar um ataque, você pode realizar uma Manobra Finalizadora.\n\nApós obter a habilidade “Manobras Finalizadoras”, você recebe acesso as seguintes manobras adicionais:\n\n• Ataque Circular. Você usa de agilidade para desferir um golpe circular, capaz de atingir vários alvos. Durante esta manobra, seu alcance corpo a corpo aumenta em 3 metros e você realiza um ataque contra todos os inimigos dentro do seu alcance corpo a corpo. Para cada inimigo que seja um alvo, esta manobra causa 5 de dano adicional.\n• Golpe Certeiro. Você deve declarar que está utilizando esta Manobra antes da jogada de ataque. Sua próxima jogada de ataque automaticamente tem o seu resultado tratado como 10 acima do resultado original (10 no dado vira 20, por exemplo).\n• Quebra Crânio. Você ataca com toda potência possível, canalizando a empolgação em um golpe avassalador. Seu próximo ataque causa 2d10 de dano adicional. O alvo desta manobra deve realizar um teste de resistência de Fortitude com CD aumentada em 5, ficando Atordoado até o começo do seu próximo turno em uma falha.\n\nPara realizar uma manobra finalizadora, é necessário estar com nível de empolgação 5. Após utilizar uma, a energia e empolgação acumulada são liberadas, com você retornando ao nível de empolgação 1.",
+            "nivelMin": 6,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_poder_corporal",
+            "nome": "Poder Corporal",
+            "descricao": "Cultivando e priorizando seu próprio corpo, você expande o poder dele. O dano de seus ataques desarmados aumenta em 2 níveis e, uma vez por rodada, ao realizar um ataque desarmado, você pode escolher realizar uma Manobra como parte do ataque, aplicando seu efeito juntamente do dano.",
+            "nivelMin": 6,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_potencia_superior",
+            "nome": "Potência Superior",
+            "descricao": "A potência que você consegue colocar em suas manobras se torna superior. Quando Derrubar um inimigo com sucesso, ele também recebe 2d6 + seu modificador de Força de dano de impacto; quando Empurrar um inimigo, a distância padrão se torna 4,5 metros ao invés de 1,5 metros.",
+            "nivelMin": 6,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_sequencia_inconsequente",
+            "nome": "Sequência Inconsequente",
+            "descricao": "Não se limitando a apenas um ataque, você assume uma postura inconsequente durante todo seu período de atacar. Quando utilizar Ataque Inconsequente, você passa a receber o dano adicional em todos seus ataques realizados durante o turno.",
+            "nivelMin": 6,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_um_com_a_arma",
+            "nome": "Um com a Arma",
+            "descricao": "Você começa a se tornar apenas um com as armas para as quais se dedicou. Uma quantidade de vezes igual a metade do seu nível de Lutador, por descanso curto, suas armas dedicadas conseguem superar resistência ao tipo de dano delas em um ataque. Caso erre o ataque, o uso não é consumido. Uma vez por rodada, ao ser desarmado de uma das suas armas dedicadas, você pode utilizar sua reação para evitar, mantendo-se em posse da arma.",
+            "nivelMin": 6,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_aptidoes_de_luta",
+            "nome": "Aptidões de Luta",
+            "descricao": "Você aprimora suas aptidões de energia necessárias para a luta. Ao obter esta habilidade, você pode aumentar o seu nível de aptidão em Aura ou Controle e Leitura em 1. Você pode pegar esta habilidade duas vezes, uma para cada aptidão.",
+            "nivelMin": 8,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_ataques_ressoantes",
+            "nome": "Ataques Ressoantes",
+            "descricao": "O impacto dos seus ataques ressoa e atinge outros inimigos próximos do seu alvo. Ao realizar um ataque contra um inimigo, você pode gastar 2 pontos de energia amaldiçoada para que todos os inimigos adjacentes ao alvo, com a Defesa inferior ao resultado do seu ataque, recebam dano igual a metade do dano causado no alvo.",
+            "nivelMin": 8,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_brutalidade_aprimorada",
+            "nome": "Brutalidade Aprimorada",
+            "descricao": "Aprimorando no fluxo que você impõe no seu corpo, ele te deixa ainda mais resistente. Ao entrar no estado de brutalidade, você recebe uma quantidade de pontos de vida temporários igual ao seu nível + modificador do atributo para CD de Especialização. O bônus inicial em dano se torna +4 e o aumento no dano por ponto de energia adicional gasto se torna +2.",
+            "nivelMin": 8,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_feitico_e_punho",
+            "nome": "Feitiço e Punho",
+            "descricao": "Com precisão, você consegue agir rapidamente para utilizar do jujutsu e complementar com seu corpo. Uma vez por rodada, quando utilizar um Feitiço de dano com alvo único, você pode gastar 2PE para realizar um ataque corpo a corpo contra o mesmo alvo, desde que ele esteja dentro do seu alcance.",
+            "nivelMin": 8,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_golpear_brecha",
+            "nome": "Golpear Brecha",
+            "descricao": "Você consegue aproveitar de um golpe aparado para atacar a brecha que se abre na defesa do inimigo. Quando utilizar Aparar Ataque e conseguir aparar com sucesso, você pode gastar 2PE adicionais para realizar um ataque contra o inimigo como parte da reação.",
+            "nivelMin": 8,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_oportunista",
+            "nome": "Oportunista",
+            "descricao": "Você sabe aproveitar bem brechas na defesa dos inimigos. Uma vez por rodada, quando um inimigo dentro do seu alcance corpo a corpo é atingido por um ataque de uma criatura o flanqueando, você pode gastar 2 PE para fazer um ataque corpo a corpo contra a criatura.",
+            "nivelMin": 8,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_pancada_desnorteante",
+            "nome": "Pancada Desnorteante",
+            "descricao": "Uma boa pancada deixa qualquer um despreparado para o que vem a seguir. Quando conseguir um acerto crítico em um ataque corpo a corpo, você pode fazer com que o alvo do ataque receba desvantagem contra um TR à sua escolha, até o início do seu próximo turno.",
+            "nivelMin": 8,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_punhos_letais",
+            "nome": "Punhos Letais",
+            "descricao": "Não há necessidade de armas se o seu corpo já é a mais letal entre elas. Enquanto estiver desarmado, sua margem de crítico diminui em 1 e seus ataques ignoram RD igual ao seu bônus de treinamento.",
+            "nivelMin": 8,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_alma_quieta",
+            "nome": "Alma Quieta",
+            "descricao": "Sua alma é imperturbável durante uma boa luta. Você recebe vantagem para resistir às seguintes condições: Condenado, Enfeitiçado e Fragilizado.",
+            "nivelMin": 10,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_corpo_sincronizado",
+            "nome": "Corpo Sincronizado",
+            "descricao": "Seu corpo está sempre em sincronia. Você recebe vantagem para resistir às seguintes condições: Caído e Exposto.",
+            "nivelMin": 10,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_empolgar_se",
+            "nome": "Empolgar-se",
+            "descricao": "Em certos momentos, a própria antecipação que você guarda para uma luta pode se transformar na empolgação necessária. Uma quantidade de vezes igual ao seu Bônus de treinamento, por descanso longo, você pode escolher subir dois níveis de empolgação, ao invés de um, no começo de um turno em que ele aumentaria.",
+            "nivelMin": 10,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_impacto_demolidor",
+            "nome": "Impacto Demolidor",
+            "descricao": "Você consegue colocar tanta força em um golpe que o alvo se torna uma bola de demolição. Como uma Ação Comum, realize uma jogada de ataque corpo a corpo contra um alvo dentro do seu alcance corpo a corpo e, caso acerte, você causa o dano do ataque e realiza a ação Empurrar como parte dele: a distância total que o alvo será empurrado é dobrada e ele quebra todo objeto ou obstáculos em sua parede, como paredes ou contêiners, recebendo o Dano de Fontes Externas (p.327). Não é possível utilizar Ataque Extra nesta ação.",
+            "nivelMin": 10,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_insistencia",
+            "nome": "Insistência",
+            "descricao": "Deixando o seu desejo se ampliar ainda mais, você se torna um lutador insistente e difícil de derrubar. Uma vez por cena, caso você fosse ter os seus pontos de vida reduzidos a 0, você pode escolher retornar ao nível de empolgação 1 para continuar de pé, curando-se em um valor igual a uma rolagem de dano do seu ataque desarmado. Após usar essa habilidade, até que realize um descanso longo, o seu nível máximo de empolgação abaixa em 1.",
+            "nivelMin": 10,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_mente_em_paz",
+            "nome": "Mente em Paz",
+            "descricao": "Sua mente continua em paz mesmo durante o combate. Você recebe vantagem para resistir às seguintes condições Amedrontado, Atordoado e Confuso.",
+            "nivelMin": 10,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_armas_absolutas",
+            "nome": "Armas Absolutas",
+            "descricao": "Sua dominância com as Armas Dedicadas chega ao ápice, tornando-as uma parte íntegra de si mesmo. Enquanto estiver empunhando uma Arma Dedicada, você pode gastar 2PE para receber os seguintes bônus por uma rodada: você escolhe aumentar sua Defesa em 3 ou receber +3 em Jogadas de Ataque e, uma vez por ataque, ao errar com uma arma dedicada, você pode rolar novamente o ataque, ficando com o melhor resultado. Para cada rodada após a primeira, você deve gastar mais 2PE para manter, ou os bônus se encerram.",
+            "nivelMin": 12,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_corpo_arsenal",
+            "nome": "Corpo Arsenal",
+            "descricao": "Você se torna plenamente consciente do complexo arsenal que o seu corpo é, podendo o utilizar ofensivamente de diferentes maneiras. Quando realizar um acerto crítico com um ataque desarmado, você pode optar por infligir o efeito de um grupo adicional entre Bastão, Haste ou Martelo.",
+            "nivelMin": 12,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_seja_agua",
+            "nome": "Seja Água",
+            "descricao": "Não se colocando dentro de uma única forma, você aprende a se mover como a água, adaptando-se e não se prendendo. Seu Deslocamento aumenta em 3 metros, você ignora terreno difícil por fontes físicas (como detritos ou solo destruído) e, uma vez por rodada, pode evitar ser agarrado sem a necessidade de teste.",
+            "nivelMin": 12,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_tempestade_sufocante",
+            "nome": "Tempestade Sufocante",
+            "descricao": "Seus golpes marciais são tão rápidos e potentes que se tornam uma tempestade que sufoca e destrói a guarda dos inimigos. Para cada ataque corpo a corpo desarmado ou com arma marcial que você acertar em um mesmo alvo, ele recebe -1 na Defesa e em Testes de Resistência realizados contra você, acumulando até um máximo igual ao seu bônus de treinamento. O prejuízo dura até o começo do próximo turno da criatura afetada.",
+            "nivelMin": 12,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_corpo_supremo",
+            "nome": "Corpo Supremo",
+            "descricao": "Você alcançou um alto nível como lutador e levou seu corpo ao limite. Você recebe mais 3 metros de movimento adicionais, +4 na sua Defesa e redução de dano igual a metade do seu nível de personagem contra dano cortante, perfurante e de impacto, além de mais um tipo à sua escolha, exceto alma. Contra os outros tipos de dano não escolhidos, a redução de dano é igual a 1/4 do seu nível.",
+            "nivelMin": 16,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "lut_duro_na_queda",
+            "nome": "Duro na Queda",
+            "descricao": "Quando estiver nas portas da morte, você pode escolher receber uma falha garantida para fazer um teste de Vontade contra a CD X, sendo X igual a 15 + 1 para cada 3 pontos de vida negativos. Se passar, você levanta com 1 de vida e recebe 1 ponto de exaustão.",
+            "nivelMin": 16,
+            "especializacaoId": "lutador"
+          },
+          {
+            "id": "cmb_golpe_especial",
+            "nome": "Golpe Especial",
+            "descricao": "Quando realizar um ataque, ou arte do combate que envolva um ataque, você pode o montar como um ataque especial, escolhendo entre as opções abaixo:\n\n• Amplo. O ataque atinge uma criatura a mais. +2PE\n• Atroz. Em um acerto, o ataque causa 1 dado de dano adicional. +1PE\n• Impactante. Empurra o alvo em 1,5 metros para cada 15 pontos de dano causados. Fortitude reduz à metade. +1PE\n• Letal. Diminui em 1 a margem de crítico do ataque. +2PE\n• Longo. Aumenta o alcance da arma em 1,5 metros para corpo-a-corpo ou 9 metros para ataques a distância. +1PE\n• Penetrante. Ignora redução a dano em um valor igual a metade do seu nível de personagem. +2PE\n• Preciso. Recebe vantagem no ataque. Após o primeiro uso na rodada, o custo aumenta para 2PE. +1PE/+2PE\n• Sanguinário. Uma criatura atingida sofre sangramento leve (CD de Especialização). Pode ser pego uma segunda vez para causar sangramento médio ao invés de leve. +2PE\n• Lento. O ataque deve ser usado como ação completa. -2PE\n• Sacrifício. Recebe 15 de dano ao efetuar o ataque. -1PE\n• Desfocado. O ataque recebe uma penalidade de 4 no acerto (cumulativo até três vezes). -1PE\n\nCertas propriedades aumentam ou diminuem o custo e, ao terminar de montar o ataque especial, você paga o seu custo total; um ataque especial deve custar no mínimo 1 ponto de energia amaldiçoada (PE).",
+            "nivelMin": 4,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_arremessos_potentes",
+            "nome": "Arremessos Potentes",
+            "descricao": "Você se torna capaz de arremessar armas com mais potência. Seus ataques com armas de arremesso contam como um nível de dano acima. Além disso, no começo do seu turno, você pode gastar 1PE para fazer com que seus ataques com armas de arremesso ignorem RD igual ao seu bônus de treinamento.",
+            "nivelMin": 2,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_arsenal_ciclico",
+            "nome": "Arsenal Cíclico",
+            "descricao": "Ao invés de se limitar a uma única arma, você mantém uma ciclagem do seu arsenal para golpear com eficiência. Uma vez por rodada, você pode sacar ou trocar um item com uma ação livre. Ao realizar um golpe com um grupo de armas e trocar para outra arma de outro grupo na mesma rodada ou na próxima, você recebe +1d até o fim do seu próximo turno com a arma trocada.",
+            "nivelMin": 2,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_assumir_postura",
+            "nome": "Assumir Postura",
+            "descricao": "A postura que uma pessoa mantém em combate molda suas capacidades, fornecendo grandes benefícios. Ao obter esta habilidade, você aprende uma das oito posturas de combate, às quais influenciam grandemente em suas capacidades.\n\nEntrar em uma postura é uma ação bônus, e ela dura 1 minuto ou até você ser derrubado, ficar incapacitado ou trocar de postura. Você pode ativar suas posturas uma quantidade de vezes igual ao seu bônus de treinamento. Nos níveis 8 e 16 você aprende outra postura a sua escolha.",
+            "nivelMin": 2,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_disparos_sincronizados",
+            "nome": "Disparos Sincronizados",
+            "descricao": "Você consegue sincronizar seus disparos e tiros, fazendo-os parecer um só. Caso esteja manejando duas armas a distância ou de fogo, você pode usar suas ações de ataque juntas para tentar sincronizar os dois tiros. Realize os dois ataques e, caso ambos acertem, você combina o dano em uma única instância, depois adicionando efeitos aplicáveis para ambas as armas, além de aplicar resistências ou fraquezas apenas uma vez.",
+            "nivelMin": 2,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_escudeiro_agressivo",
+            "nome": "Escudeiro Agressivo",
+            "descricao": "Seu uso do escudo é não só defensivo, mas também agressivo. Uma vez por rodada, ao realizar uma ação de ataque e estiver empunhando um escudo, você pode gastar 1 ponto de energia amaldiçoada para fazer um ataque adicional com o escudo.",
+            "nivelMin": 2,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_extensao_do_corpo",
+            "nome": "Extensão do Corpo",
+            "descricao": "Suas armas são praticamente extensões do seu próprio corpo. Seu alcance em ataques com armas corpo a corpo aumenta em 1,5 metros e você recebe um bônus de +2 em jogadas de ataque e em testes para evitar ser desarmado.",
+            "nivelMin": 2,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_flanqueador_superior",
+            "nome": "Flanqueador Superior",
+            "descricao": "Você sabe perfeitamente como manter um flanco perigoso. Enquanto estiver flanqueando uma criatura, a criatura flanqueada recebe -2 em testes de resistência.",
+            "nivelMin": 2,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_golpe_falso",
+            "nome": "Golpe Falso",
+            "descricao": "Você é capaz de fingir desferir um golpe, distraindo seus inimigos para auxiliar aliados. Como reação a um aliado atacando um inimigo dentro do seu alcance de ataque, você realiza o golpe falso. O inimigo deve realizar um TR de Astúcia e, caso falhe, o seu aliado recebe vantagem no teste de ataque.",
+            "nivelMin": 2,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_golpes_potentes",
+            "nome": "Golpes Potentes",
+            "descricao": "Seus golpes se tornam inatamente mais potentes, sendo capaz de manejar armas extraindo seu máximo. Sempre que você estiver usando uma arma com a qual você seja treinado o dano dela aumenta em um nível e suas rolagens de dano recebem um bônus de +2.",
+            "nivelMin": 2,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_indomavel",
+            "nome": "Indomável",
+            "descricao": "Em combate, você não se deixa render, resistindo ao que vier. Uma quantidade de vezes por descanso curto ou longo igual a metade do seu nível de personagem, você pode gastar 1 ponto de energia amaldiçoada para rolar novamente um teste de resistência em que você falhar, ficando com o melhor resultado.",
+            "nivelMin": 2,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_pistoleiro_iniciado",
+            "nome": "Pistoleiro Iniciado",
+            "descricao": "Atirando com volatilidade, você consegue impor mais poder nas suas armas em troca de um risco maior. Quando for realizar um ataque com uma arma de fogo, antes da jogada de ataque, você pode escolher aumentar a margem de Emperrar em 2 e, em troca, você causa 1 dado de dano adicional caso acerte.",
+            "nivelMin": 2,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_posicionamento_ameacador",
+            "nome": "Posicionamento Ameaçador",
+            "descricao": "Você sabe se posicionar de maneira estratégica, fazendo com que um inimigo que possa o ver te reconheça como uma constante ameaça, mesmo distante. A menos que esteja furtivo, você pode conceder os benefícios de Flanco para aliados, mesmo utilizando armas a distância ou de fogo, desde que o alvo do flanco esteja dentro do primeiro alcance da sua arma.",
+            "nivelMin": 2,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_precisao_definitiva",
+            "nome": "Precisão Definitiva",
+            "descricao": "Você se torna capaz de canalizar a energia amaldiçoada na sua arma de maneira a alcançar uma precisão definitiva, seja para acertar ou para destruir. Quando faz um ataque, você pode gastar 1 ponto de energia amaldiçoada para receber +2 na rolagem para acertar. A cada quatro níveis, você pode gastar 1 ponto a mais para aumentar o bônus em +2. Você também pode optar por adicionar esse bônus na rolagem de dano ao invés da de acerto, com um bônus de +4 ao invés de +2 para esse uso.",
+            "nivelMin": 2,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_presenca_suprimida",
+            "nome": "Presença Suprimida",
+            "descricao": "A furtividade e discrição podem ser essenciais em um combate, para se mover de maneira apropriada. Você recebe um bônus de +2 em rolagens de Furtividade. Sua penalidade em furtividade por atacar e fazer outras ações chamativas é reduzida para -5.",
+            "nivelMin": 2,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_revigorar",
+            "nome": "Revigorar",
+            "descricao": "Diante o quão extenso e cansativo um combate pode ser, você é capaz de focar e recuperar seu vigor. Uma quantidade de vezes igual ao seu bônus de treinamento você pode usar sua ação bônus para se curar em um valor igual a 1d10 + o dobro do seu modificador de Constituição + bônus de treinamento, aumentando em um dado a cada 4 níveis. Você recupera todos os usos em um descanso longo ou metade em um descanso curto.",
+            "nivelMin": 2,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_tiro_falso",
+            "nome": "Tiro Falso",
+            "descricao": "Você consegue fingir falsos disparos, distraindo um inimigo. Como reação a um aliado atacando um inimigo dentro do seu alcance de ataque, caso esteja manejando uma arma a distância ou de fogo, você realiza um tiro falso, fingindo que dispararia. O inimigo deve realizar um TR de Astúcia e, caso falhe, o seu aliado recebe vantagem no teste de ataque.",
+            "nivelMin": 2,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_zona_de_risco",
+            "nome": "Zona de Risco",
+            "descricao": "Ter uma arma com o alcance maior o permite criar uma efetiva zona de risco. Uma vez por rodada, se estiver empunhando uma arma corpo-a-corpo com a propriedade Estendida e um inimigo entrar no seu alcance de ataque, você pode gastar 2 pontos de energia amaldiçoada para realizar um ataque contra ele.",
+            "nivelMin": 2,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_aprender_postura",
+            "nome": "Aprender Postura",
+            "descricao": "Você continua seu estudo sobre as posturas utilizadas em combate, expandindo seu repertório. Você aprende uma postura adicional à sua escolha. No 10° nível você aprende outra postura.",
+            "nivelMin": 4,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_armas_escolhidas",
+            "nome": "Armas Escolhidas",
+            "descricao": "Um tipo de arma ressoa de maneira única com você, e ela foi escolhida como seu caminho. Escolha um grupo de arma: seus ataques com armas dele tem o nível de dano aumentado em 3.",
+            "nivelMin": 4,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_arremesso_rapido",
+            "nome": "Arremesso Rápido",
+            "descricao": "Utilizando de armas leves e menores, você consegue as arremessar com velocidade. Uma vez por rodada, ao realizar um ataque com uma arma de arremesso, você pode gastar 1PE para realizar um ataque com arma de arremesso contra outro alvo. Você arremessa outra arma ou a mesma arma utilizada antes, desde que ela possua a propriedade Retorno.",
+            "nivelMin": 4,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_tecnicas_de_avanco",
+            "nome": "Técnicas de Avanço",
+            "descricao": "As técnicas de avanço envolvem a mistura do deslocamento com os golpes. Ao obter esta habilidade, você aprende as duas artes do combate abaixo:\n\n• Avanço Bumerangue. Ao utilizar a ação Atacar, você pode gastar 3 Pontos de Preparo para saltar na direção de um inimigo dentro de 6 metros e, após encerrar a ação, você retorna para o ponto de partida. Nem o avanço nem o retorno causam ataques de oportunidade. Durante o retorno, você pode gastar 1 Ponto de Preparo para realizar um ataque com uma arma de arremesso ou a distância contra o mesmo alvo.\n• Sombra Descendente. Como uma Ação Comum, você pode gastar 3 Pontos de Preparo para avançar rapidamente contra um inimigo dentro de 6 metros e realizar um ataque contra ele. Após realizar o ataque, você o utiliza como apoio e se ergue no ar, podendo escolher cair em outro inimigo dentro de 6 metros e realizar um ataque contra ele, caindo em um lugar desocupado dentro de 3 metros do alvo após isso.",
+            "nivelMin": 4,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_buscar_oportunidade",
+            "nome": "Buscar Oportunidade",
+            "descricao": "Você sabe como encontrar a oportunidade certa para fazer o que é necessário. Como uma Ação Livre, realize um teste de Percepção com CD16 + 2 para cada inimigo em campo. Caso suceda no teste, você pode utilizar Andar, Desengajar ou Esconder como Ação Livre.",
+            "nivelMin": 4,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_compensar_erro",
+            "nome": "Compensar Erro",
+            "descricao": "Você se torna habilidoso o suficiente para compensar erros com a liberação bruta de energia. Uma vez por rodada, quando errar um ataque com uma arma corpo a corpo, você pode gastar até uma quantidade de PE igual ao seu bônus de treinamento para causar dano no alvo do ataque. Para cada ponto gasto, o alvo recebe 1d10 de dano Energético com o seu modificador de força, destreza ou sabedoria sendo somado ao total.",
+            "nivelMin": 4,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_especialista_em_escudo",
+            "nome": "Especialista em Escudo",
+            "descricao": "Você se especializa completamente na defesa e no uso de escudos. Você passa a somar o aumento base em RD do seu escudo em testes de resistência de Reflexos e Fortitude.",
+            "nivelMin": 4,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_espirito_de_luta",
+            "nome": "Espírito de Luta",
+            "descricao": "O combate é um caminho, no qual você nutre um espírito intenso para lutar. Como uma Ação Livre, você pode gastar 1PE para receber um bônus de +2 em jogadas de ataque até o fim da cena. Além disso, ao utilizar esta habilidade, você ganha PV temporários igual ao seu nível de personagem.",
+            "nivelMin": 4,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_grupo_favorito",
+            "nome": "Grupo Favorito",
+            "descricao": "Você descobre como utilizar melhor um certo tipo de armas. Escolha um grupo de armas: você recebe acesso ao efeito de crítico do grupo enquanto manejando uma arma que pertença a ele.",
+            "nivelMin": 4,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_guarda_estudada",
+            "nome": "Guarda Estudada",
+            "descricao": "Sua guarda surge a partir do estudo e da reflexão. Você passa a somar metade do seu modificador de Sabedoria na sua Defesa, limitado pelo seu nível. Além disso, você pode escolher um Teste de Resistência para receber um bônus de +2.",
+            "nivelMin": 4,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_mente_oculta",
+            "nome": "Mente Oculta",
+            "descricao": "Você treinou sua mente para se ocultar, aguçando-a para encontrar os lugares certos. Você passa a adicionar também o seu bônus de sabedoria em rolagens de Furtividade.",
+            "nivelMin": 4,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_preparo_imediato",
+            "nome": "Preparo Imediato",
+            "descricao": "Utilizando do seu preparo, você consegue rapidamente se colocar pronto para agir. Durante uma rolagem de iniciativa, você pode gastar 3 pontos de preparo para utilizar Preparar, mas apenas para uma ação bônus. A partir do 10° nível, você pode optar por gastar 7 pontos de preparo para preparar uma ação comum.",
+            "nivelMin": 4,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_recarga_rapida",
+            "nome": "Recarga Rápida",
+            "descricao": "Você se treinou e preparou para conseguir recarregar rapidamente. O custo em ações para recarregar armas a distância que você empunhar diminui em um nível; custo de ação comum se torna ação bônus e ação bônus se torna ação livre.",
+            "nivelMin": 4,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_uso_rapido",
+            "nome": "Uso Rápido",
+            "descricao": "Para ter mais versatilidade e acessibilidade ao seu inventário de ferramentas, você agiliza o uso delas. Ao utilizar uma ação para usar um item, você pode pagar 1 ponto de energia para usar um item adicional.",
+            "nivelMin": 4,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_acervo_amplo",
+            "nome": "Acervo Amplo",
+            "descricao": "Seu acervo para o combate é amplo, conseguindo internalizar e manifestar qualquer estilo que desejar. Ao obter esta habilidade, você aprende mais um Estilo de Combate. Após meditar por 1 hora, você pode trocar quais estilos de combate você possui.",
+            "nivelMin": 6,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_aprimoramento_especializado",
+            "nome": "Aprimoramento Especializado",
+            "descricao": "Você aprimora suas habilidades de combate para deixar mais difícil resistir as suas técnicas de Especialista em Combate. Você passa a somar metade do modificador do seu atributo chave em sua CD de Especialização.",
+            "nivelMin": 6,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_ataque_extra",
+            "nome": "Ataque Extra",
+            "descricao": "Você consegue atacar mais rápido, otimizando seus golpes. Ao realizar a ação Atacar, você pode gastar 2 PE para atacar duas vezes ao invés de uma.",
+            "nivelMin": 6,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_critico_melhorado",
+            "nome": "Crítico Melhorado",
+            "descricao": "Você aguça o seu olhar para tornar mais fácil encaixar um golpe certeiro. A margem do seu acerto crítico reduz em um número.",
+            "nivelMin": 6,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_critico_potente",
+            "nome": "Crítico Potente",
+            "descricao": "Acertar um golpe certeiro é realmente devastador para você. Ao acertar um ataque crítico, ele causa 1 dado de dano adicional.",
+            "nivelMin": 6,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_feiticaria_implementada",
+            "nome": "Feitiçaria Implementada",
+            "descricao": "O jujutsu é um recurso indispensável, o qual você implementa no seu combate. Uma vez por rodada, quando utilizar um Feitiço de dano, você pode gastar 2PE para realizar um ataque contra uma criatura que tenha sido afetada por ela, como Ação Livre.",
+            "nivelMin": 6,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_fluxo_perfeito",
+            "nome": "Fluxo Perfeito",
+            "descricao": "Em certos momentos, o fluxo do combate é perfeito em sua mente. Caso você acerte todos os seus ataques no turno, no seu próximo turno você ganha 1 ponto de energia amaldiçoada temporária. No 12° nível, esse valor se torna 2.",
+            "nivelMin": 6,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_olhos_de_aguia",
+            "nome": "Olhos de Águia",
+            "descricao": "Seu olhar é afiado e preciso como o de uma águia, permitindo-o mirar mais rapidamente. Você pode gastar 1 PE para usar Mirar como uma ação livre.",
+            "nivelMin": 6,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_manejo_especial",
+            "nome": "Manejo Especial",
+            "descricao": "A maneira a qual você maneja suas armas é única, feita com maestria inerente ao portador. Você pode escolher uma propriedade de ferramenta amaldiçoada para ser aplicada em toda arma que você estiver manejando, se possível.",
+            "nivelMin": 6,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_marcar_inimigo",
+            "nome": "Marcar Inimigo",
+            "descricao": "Após um golpe, você marca um inimigo como seu no campo de batalha, impedindo-o de atacar e retaliando tentativas de o ignorar. Quando acertar uma criatura com um ataque corpo a corpo, você pode escolher marcá-la até o final do seu próximo turno: enquanto a criatura marcada estiver dentro de 4,5 metros de você, ela recebe -4 em jogadas de ataque e, adicionalmente, caso a criatura marcada cause dano em alguém além de você, você pode gastar 1PE para realizar um ataque como Ação Bônus contra ela no seu próximo turno. Você pode realizar este ataque uma quantidade de vezes igual ao seu modificador de Força, Destreza ou Sabedoria por descanso curto. Caso seja incapacitado, desmaiado ou morto, o efeito da habilidade é cancelado.",
+            "nivelMin": 6,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_mira_destrutiva",
+            "nome": "Mira Destrutiva",
+            "descricao": "Ao invés de apenas acertar, você é capaz de mirar para destruir completamente, em um disparo difícil, mas recompensador. Quando utilizar a ação Mirar, você optar por deixar de receber vantagem para mirar em uma parte específica do corpo: escolha entre Olho, Braço, Perna ou Ferida Interna e, no seu próximo ataque, você recebe -15 na jogada de ataque, mas, caso acerte, o alvo recebe a consequência do membro de acordo com a tabela de Ferimentos Complexos durante uma rodada.",
+            "nivelMin": 6,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_preparacao_rapida",
+            "nome": "Preparação Rápida",
+            "descricao": "A arte das posturas já está encravada em sua mente, tornando-se algo rápido e imediato. Entrar em uma postura se torna uma Ação Livre e elas não são canceladas caso você seja empurrado.",
+            "nivelMin": 6,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_aptidoes_de_combate",
+            "nome": "Aptidões de Combate",
+            "descricao": "Você aprimora suas aptidões de energia necessárias para dominar o combate. Ao obter esta habilidade, você pode aumentar o seu nível de aptidão em Aura ou Controle e Leitura em 1. Você pode pegar esta habilidade duas vezes, uma para cada aptidão.",
+            "nivelMin": 8,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_tecnicas_da_forca",
+            "nome": "Técnicas da Força",
+            "descricao": "As técnicas da força permitem uma concentração ainda maior da sua potência e poder. Ao obter esta habilidade, você aprende as duas artes do combate abaixo:\n\n• Nuvens Espirais. Como uma Ação Completa, você inicia uma sequência contra um inimigo dentro do alcance da sua arma: você pode realizar até três ataques, gastando 2 Pontos de Preparo para cada um. A cada ataque, o alvo é empurrado 3 metros para qualquer direção, com você o acompanhando, além de cada ataque causar 2d6 de dano Energético adicional.\n• Onda do Dragão. Quando utilizar a ação Atacar, você pode gastar 5 Pontos de Preparo para receber vantagem neste ataque e, caso acerte, o alvo é empurrado 6 metros para trás, recebe 3d12 de dano Energético adicional e tem metade da sua Redução de Dano ignorada.",
+            "nivelMin": 8,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_destruicao_dupla",
+            "nome": "Destruição Dupla",
+            "descricao": "Duas armas em mãos, o dobro de destruição para seus inimigos. Enquanto estiver lutando com duas armas de grupos diferentes, seu ataque com a segunda arma causa 1 dado de dano adicional e, caso consiga um acerto crítico, você pode gastar 1PE para aplicar o Efeito Crítico do grupo das duas armas que você maneja ao mesmo tempo, caso sejam de grupos diferentes.",
+            "nivelMin": 8,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_espirito_incansavel",
+            "nome": "Espírito Incansável",
+            "descricao": "Nada pode abalar o seu espírito para lutar, o qual se torna ainda mais persistente. Quando utilizar Espírito de Luta, você pode optar por gastar 2PE ao invés de 1, aumentando o bônus em ataques para +5 e fazendo com que os pontos de vida temporários ganhos se tornam o seu bônus de ataque, ao invés do Nível do Personagem, já considerando o bônus da habilidade.",
+            "nivelMin": 8,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_pistoleiro_avancado",
+            "nome": "Pistoleiro Avançado",
+            "descricao": "Suas técnicas como pistoleiro se tornam ainda mais afiadas, conseguindo tomar riscos maiores e encontrar novas oportunidades com as armas. Você pode optar por aumentar o Emperrar em até 6, ao invés de 2, causando 1 dado de dano adicional para cada outros 2 que aumentar. Além disso, caso uma criatura dentro do primeiro alcance da sua arma de fogo tente se mover, você pode gastar sua Reação para realizar um ataque contra ela e, se acertar, ela recebe dano e ela perde 4,5 metros de movimento até o final do turno dela.",
+            "nivelMin": 8,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_ricochete_constante",
+            "nome": "Ricochete Constante",
+            "descricao": "Imbuídas com energia, suas armas de arremesso colidem e explodem em energia, ricocheteando para um próximo alvo. Quando for ativar Arremessos Potentes, você pode pagar 5PE ao invés de 1 para que, até o final do turno, seus ataques com armas de arremesso possam acertar uma criatura à sua escolha dentro de 4,5 metros do alvo do ataque, caso sua jogada de ataque supere a Defesa da outra criatura.",
+            "nivelMin": 8,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_sombra_viva",
+            "nome": "Sombra Viva",
+            "descricao": "Você é como uma sombra, movendo-se rapidamente e de maneira imperceptível. Uma vez por rodada, você pode utilizar Esgueirar e se mover todo o seu movimento, ao invés de apenas metade. Além disso, uma vez por rodada, caso fosse ser encontrado por uma criatura o procurando, você pode utilizar sua Reação para realizar outro teste de Furtividade e, caso o resultado do novo teste supere a Percepção do inimigo o procurando, você continua escondido.",
+            "nivelMin": 8,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_surto_de_acao",
+            "nome": "Surto de Ação",
+            "descricao": "Em momentos cruciais, você consegue se forçar a agir mais, excedendo suas capacidades normais. Uma quantidade de vezes igual a metade do seu bônus de treinamento, por descanso longo, você pode, uma vez por rodada, gastar 5 pontos de energia amaldiçoada para realizar uma ação comum a mais no seu turno.",
+            "nivelMin": 8,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_analise_acelerada",
+            "nome": "Análise Acelerada",
+            "descricao": "Você já se acostumou a analisar o campo de batalha como um reflexo ou instinto. Utilizar a ação de Análise se torna uma ação bônus.",
+            "nivelMin": 10,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_armas_perfeitas",
+            "nome": "Armas Perfeitas",
+            "descricao": "Suas armas escolhidas se tornaram perfeitas, sabendo como contornar fraquezas e defesas. Seus ataques com uma arma do grupo escolhido em Armas Escolhidas ignoram 10 de RD ao tipo de dano dela.",
+            "nivelMin": 10,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_assassinar",
+            "nome": "Assassinar",
+            "descricao": "Durante o primeiro momento, você é capaz de extrair letalidade absoluta, golpeando um inimigo desprevenido com um bote poderoso. Durante a primeira rodada de um combate, ao atacar uma criatura desprevenida a partir da furtividade ou surpresa, seu primeiro ataque é um crítico garantido.",
+            "nivelMin": 10,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_ataque_concentrado",
+            "nome": "Ataque Concentrado",
+            "descricao": "Ao invés de desferir vários golpes, você concentra tudo em um único brandir. Ao utilizar a ação Atacar, você pode gastar PE equivalentes a metade do custo de Ataque Extra e/ou Surto de Ação, até um limite igual ao máximo de vezes que poderia usá-los dentro do seu turno. Para cada vez que o fizer, você adiciona metade dos dados de dano de um ataque (mínimo 1 dado) à rolagem de dano do seu próximo ataque. Ao utilizar esta habilidade, considera-se que ataque extra e/ou Surto de Ação foram utilizados, não podendo os realizar novamente no mesmo turno.",
+            "nivelMin": 10,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_chuva_de_arremessos",
+            "nome": "Chuva de Arremessos",
+            "descricao": "Você consegue extrair rapidez dos seus arremessos, realizando-os em um ritmo absurdo e influenciado pela energia. Como uma ação completa você pode escolher realizar uma quantidade de ataques com armas de arremesso igual ao seu bônus de treinamento. Para cada ataque após o primeiro, você gasta 1 ponto de energia amaldiçoada e você só pode continuar realizando ataques enquanto ainda tenha armas de arremesso em sua posse.",
+            "nivelMin": 10,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_potencia_antes_de_cair",
+            "nome": "Potência Antes de Cair",
+            "descricao": "Ao reconhecer que em breve você irá cair, você consegue impactar grandemente o combate antes dessa queda. Se você for cair para 0 de vida, você pode realizar um turno impedindo o turno atual. Ao ter 0 de vida neste turno, tomar dano resulta em falhas no teste de morte. Quando o turno acaba, você fica inconsciente e recebe um nível de exaustão. Pode ser usada uma vez por descanso longo.",
+            "nivelMin": 10,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_tecnicas_de_saque",
+            "nome": "Técnicas de Saque",
+            "descricao": "As técnicas de saque permitem que o próprio ato de sacar uma arma se torna destrutivo. Ao obter esta habilidade, você aprende as duas artes do combate abaixo:\n\n• Saque Devastador. No final do seu turno, você pode gastar 2 Pontos de Preparo para preparar um saque, o qual dura até o começo do seu próximo turno. Caso seja atacado enquanto estiver com o saque preparado, você pode gastar 4 Pontos de Preparo e sua Reação para realizar um ataque contra a criatura atacante. Caso o resultado da sua Jogada de Ataque seja maior do que a da criatura, você anula o ataque dela e acerta o seu, o qual causa 4d10 de dano adicional do mesmo tipo da arma e ignora Redução de Dano. Caso o seu resultado seja menor, você apenas causa o dano comum de um ataque.\n• Saque Trovão. Como uma Ação Completa, você pode gastar 6 Pontos de Preparo para se mover uma distância igual ao seu Deslocamento e, enquanto se movendo desta maneira, você não recebe ataques de oportunidade e pode realizar um ataque contra todo inimigo que fique dentro de 3 metros de você durante a locomoção.",
+            "nivelMin": 12,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_ciclagem_absoluta",
+            "nome": "Ciclagem Absoluta",
+            "descricao": "O ciclo mantido entre seu arsenal é absoluto, conectando armas diferentes com facilidade. Você passa a poder, durante o seu turno, trocar a arma que esteja manejando toda vez que atacar. Além disso, sempre que trocar para outra arma de outro grupo durante seu turno, você recebe um bônus de +2 na próxima jogada de ataque que realizar.",
+            "nivelMin": 12,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_manejo_unico",
+            "nome": "Manejo Único",
+            "descricao": "Desenvolvendo ainda mais no seu próprio manejo de armas, você alcança um nível especial. Você escolhe mais uma propriedade para ser aplicada em toda arma que estiver manejando e, no começo de uma cena de combate, pode pagar 2 pontos de energia para receber uma propriedade única durante o resto da cena. Essa propriedade pode tanto ser criada pelo jogador, quanto ser uma das já existentes.",
+            "nivelMin": 12,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_mestre_pistoleiro",
+            "nome": "Mestre Pistoleiro",
+            "descricao": "Em suas mãos, as armas podem extrair todo o seu potencial, agora sendo as ferramentas de um mestre. Fazer uma arma emperrada funcionar novamente se torna uma ação de movimento e sua margem de crítico com armas de fogo aumenta em 1.",
+            "nivelMin": 12,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_sincronia_perfeita",
+            "nome": "Sincronia Perfeita",
+            "descricao": "Você está em perfeita sincronia com suas armas, as quais se tornam uma parte do seu corpo, deixando-o ainda mais livre. O alcance adicional concedido por Extensão do Corpo aumenta para 3 metros e recebe vantagem em testes para evitar ser desarmado.",
+            "nivelMin": 12,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_critico_aperfeicoado",
+            "nome": "Crítico Aperfeiçoado",
+            "descricao": "Seu senso de combate se torna ainda mais afiado e letal, encaixando críticos com maior facilidade. A margem do seu acerto crítico reduz em dois números, ao invés de um.",
+            "nivelMin": 16,
+            "especializacaoId": "combatente"
+          },
+          {
+            "id": "cmb_mestre_da_postura",
+            "nome": "Mestre da Postura",
+            "descricao": "Você se torna um mestre completo das posturas, dominando-as de uma maneira que poucos são capazes, até mesmo as mesclando. Quando entrar em postura, você pode assumir duas posturas ao mesmo tempo, recebendo os benefícios de ambas.",
+            "nivelMin": 16,
+            "especializacaoId": "combatente"
+          }
+        ],
+        "repetivel": true,
+        "limite": "bt",
+        "abas": [
+          "especializacao",
+          "nivel"
+        ]
+      },
+      "requisitos": []
+    }
+  },
+  {
+    "id": "res_respeito_celeste",
+    "catalogo": {
+      "id": "res_respeito_celeste",
+      "nome": "Respeito Celeste",
+      "especializacaoId": "restringido",
+      "tipo": "nivel",
+      "nivel": 8,
+      "descricao": "Seu poder e desenvolvimento te garantem o respeito dos céus, que concedem a sua benção para si. Ao obter essa habilidade, você recebe uma dádiva do céu adicional. A partir do nível 12, você pode pegar esta habilidade outra vez.",
+      "maxVezesExpr": "1 + (nd >= 12)",
+      "concedeEscolha": {
+        "habilidade": "res_restrito_pelos_ceus",
+        "niveis": [
+          8
+        ]
+      },
+      "requisitos": []
+    }
+  },
+  {
+    "id": "res_perceber_o_ar",
+    "catalogo": {
+      "id": "res_perceber_o_ar",
+      "nome": "Perceber o Ar",
+      "especializacaoId": "restringido",
+      "tipo": "nivel",
+      "nivel": 10,
+      "descricao": "Sua visão se torna tão apurada que você consegue perceber o próprio ar, usando-o como uma plataforma para se mover e apoiar. Você é imune a danos de queda, conseguindo se apoiar no ar, desde que a altura não seja superior ao dobro do seu movimento. Ao pular você pode realizar outro pulo em seguida, no nível 13 você pode dar dois pulos em seguida, e no nível 17 pode dar três pulos em seguida. Quando for alvo de um ataque, você pode gastar 2 pontos de estamina e sua reação para realizar um teste de acrobacia contra um teste de reflexos do atacante e, caso o resultado do seu teste supere o do atacante, você desvia do ataque.",
+      "requisitos": []
+    }
+  },
+  {
+    "id": "res_ainda_de_pe",
+    "catalogo": {
+      "id": "res_ainda_de_pe",
+      "nome": "Ainda de Pé",
+      "especializacaoId": "restringido",
+      "tipo": "nivel",
+      "nivel": 8,
+      "descricao": "Uma vez por descanso curto ou longo, quando você for chegar a 0 pontos de vida e cair você pode escolher se manter de pé e curar em 3d10 + nível de personagem, aumentando em +1d10 nos níveis 12, 16 e 20. Caso o dano fosse suficiente para ser uma morte instantânea, você apenas resiste e fica com 1 de vida, caindo com uma falha no próximo dano que receber. Se você morrer, você morre de pé.",
+      "requisitos": []
+    },
+    "efeitos": [
+      {
+        "canal": "curaDados",
+        "alvo": "cura_ainda_de_pe",
+        "expr": "3 + (nd >= 12) + (nd >= 16) + (nd >= 20)"
+      },
+      {
+        "canal": "curaFaces",
+        "alvo": "cura_ainda_de_pe",
+        "expr": "10"
+      },
+      {
+        "canal": "curaFixa",
+        "alvo": "cura_ainda_de_pe",
+        "expr": "nd"
+      },
+      {
+        "canal": "curaUsos",
+        "alvo": "cura_ainda_de_pe",
+        "expr": "1"
+      }
+    ]
+  },
+  {
+    "id": "res_rejeitar_a_morte",
+    "catalogo": {
+      "id": "res_rejeitar_a_morte",
+      "nome": "Rejeitar a Morte",
+      "especializacaoId": "restringido",
+      "tipo": "nivel",
+      "nivel": 12,
+      "descricao": "Quando estiver nas portas da morte, você pode escolher receber uma falha garantida para fazer um teste de Fortitude contra a CD X, sendo X igual a 15 + 1 para cada 3 pontos de vida negativos. Se passar, você fica com 1 de vida e recebe 1 ponto de exaustão.",
+      "requisitos": [
+        {
+          "tipo": "habilidade",
+          "id": "res_ainda_de_pe"
+        }
+      ]
+    }
+  },
+  {
+    "id": "res_mesmo_morto",
+    "catalogo": {
+      "id": "res_mesmo_morto",
+      "nome": "Mesmo Morto",
+      "especializacaoId": "restringido",
+      "tipo": "nivel",
+      "nivel": 16,
+      "descricao": "Mesmo se você não tiver mais força vital, é necessário continuar lutando até o limite. Ao cair para 0 de vida, sem possuir um uso de Ainda de Pé, ao invés de ir para as Portas da Morte você continua de pé e realizando seus turnos normalmente; porém, no final de todo turno, você deve realizar um teste de resistência de Fortitude com CD25 + 1 para cada 5 pontos de vida negativos que possuir. Caso falhe no teste, você cai imediatamente, com 1 falha nos testes de morte.",
+      "requisitos": [
+        {
+          "tipo": "habilidade",
+          "id": "res_rejeitar_a_morte"
+        }
+      ]
+    }
+  },
+  {
+    "id": "res_adrenalina_absoluta",
+    "catalogo": {
+      "id": "res_adrenalina_absoluta",
+      "nome": "Adrenalina Absoluta",
+      "especializacaoId": "restringido",
+      "tipo": "nivel",
+      "nivel": 12,
+      "descricao": "Enquanto está em um surto de adrenalina, você se torna absoluto, extraindo ao máximo o seu potencial. Ao iniciar um surto de adrenalina, você pode escolher pagar 4 pontos para ativar e 2 por rodada para manter e, caso o faça, você recebe os seguintes benefícios: enquanto estiver em um surto de adrenalina, o seu ataque extra passa a custar 1 PE, você recebe +3 metros de Deslocamento e a sua DEF aumenta em 2.",
+      "requisitos": []
+    },
+    "efeitos": [
+      {
+        "canal": "movimento",
+        "quando": "adrenalina_absoluta",
+        "expr": "3",
+        "duracao": "temporaria"
+      },
+      {
+        "canal": "defesa",
+        "quando": "adrenalina_absoluta",
+        "expr": "2",
+        "duracao": "temporaria"
+      }
+    ]
+  },
+  {
+    "id": "res_barreira_inamovivel",
+    "catalogo": {
+      "id": "res_barreira_inamovivel",
+      "nome": "Barreira Inamovível",
+      "especializacaoId": "restringido",
+      "tipo": "nivel",
+      "nivel": 8,
+      "descricao": "Sempre que você fizer um teste de resistência de Fortitude e o resultado natural do dado for menor do que seu modificador de Constituição, você pode gastar 2 pontos de estamina para transformar o resultado natural do dado no seu modificador de Constituição. Você não pode ser movido a força e tem vantagem para resistir a ser agarrado.",
+      "requisitos": []
+    }
+  },
+  {
+    "id": "res_imitacao",
+    "catalogo": {
+      "id": "res_imitacao",
+      "nome": "Imitação",
+      "especializacaoId": "restringido",
+      "tipo": "nivel",
+      "nivel": 2,
+      "descricao": "Você consegue imitar técnicas e estilos de combate de outras pessoas, desde que tal não dependa da energia amaldiçoada. Ao ver uma habilidade ativa de especialização marcial, manobra ou postura, você pode escolher a copiar como uma reação, e deve a usar no seu próximo turno, ou perderá a cópia. Você só pode manter uma coisa copiada por vez, e só usa uma vez cada uma delas. Porém, quando copiar algo, você pode tentar aprender aquilo, realizando um teste de percepção com CD35, a qual diminui em 2 para cada vez que você copiar a mesma habilidade e tentar a aprender. Se suceder em aprender, você não precisa ver alguém a usando para poder copiar, necessitando de uma ação bônus, e a quantidade de usos se torna a quantidade padrão da habilidade, ao invés de uma só. Você pode aprender uma habilidade ativa e uma postura ou manobra; durante um interlúdio você pode escolher trocar uma habilidade aprendida por outra que possa ver durante o interlúdio, tentando a copiar com o teste de percepção, o qual é feito com vantagem. Caso o que for copiado gaste energia amaldiçoada, você paga o custo em pontos de estamina.",
+      "requisitos": []
+    }
+  },
+  {
+    "id": "res_tecnicas_de_memorizacao",
+    "catalogo": {
+      "id": "res_tecnicas_de_memorizacao",
+      "nome": "Técnicas de Memorização",
+      "especializacaoId": "restringido",
+      "tipo": "nivel",
+      "nivel": 4,
+      "descricao": "Você estuda e se versa em uma maneira de conseguir memorizar uma quantidade maior de fatores. Ao obter essa habilidade, você pode aprender uma habilidade adicional a partir da Imitação. Caso tenha a habilidade Imitação Perfeita, você pode aprender mais uma habilidade adicional.",
+      "requisitos": [
+        {
+          "tipo": "habilidade",
+          "id": "res_imitacao"
+        }
+      ]
+    }
+  },
+  {
+    "id": "res_imitacao_perfeita",
+    "catalogo": {
+      "id": "res_imitacao_perfeita",
+      "nome": "Imitação Perfeita",
+      "especializacaoId": "restringido",
+      "tipo": "nivel",
+      "nivel": 8,
+      "descricao": "Você desenvolve a habilidade de imitação. Você se torna capaz de copiar habilidades passivas de especializações marciais e estilos de combate. Ao copiá-las, o efeito dura até o final do seu próximo turno. Você passa a poder aprender também uma habilidade passiva e um estilo de combate, mas é mais difícil, por ser algo sutil; a CD é igual a 40, e continua diminuindo em 2 por tentativa na mesma habilidade.",
+      "requisitos": [
+        {
+          "tipo": "habilidade",
+          "id": "res_imitacao"
+        }
+      ]
+    }
+  },
+  {
+    "id": "res_ataque_extra",
+    "catalogo": {
+      "id": "res_ataque_extra",
+      "nome": "Ataque Extra",
+      "especializacaoId": "restringido",
+      "tipo": "nivel",
+      "nivel": 6,
+      "descricao": "Você consegue atacar mais rápido, otimizando seus golpes. Ao realizar a ação Atacar, você pode gastar 2 pontos de estamina para atacar duas vezes ao invés de uma.",
+      "requisitos": []
+    }
+  },
+  {
+    "id": "res_corpo_de_aco",
+    "catalogo": {
+      "id": "res_corpo_de_aco",
+      "nome": "Corpo de Aço",
+      "especializacaoId": "restringido",
+      "tipo": "nivel",
+      "nivel": 6,
+      "descricao": "Seu corpo é tão duro quanto o aço e não se curva, mantendo sua integridade. Seus pontos de vida máximos aumentam em um valor igual ao seu valor de Constituição, e você pode pagar 2 pontos de estamina para, durante uma cena, se curar em um valor igual a 2d8 + seu modificador de constituição no começo de todo turno seu. No nível 10, você pode pagar 1 ponto de estamina adicional para aumentar a cura em 1d8, assim como pode pagar mais 1 ponto no nível 15 para aumentar novamente.",
+      "requisitos": []
+    },
+    "efeitos": [
+      {
+        "canal": "hp",
+        "expr": "constituicao"
+      },
+      {
+        "canal": "regeneracaoDados",
+        "quando": "corpo_de_aco",
+        "expr": "1 + corpo_de_aco",
+        "duracao": "temporaria"
+      },
+      {
+        "canal": "regeneracaoFaces",
+        "quando": "corpo_de_aco",
+        "expr": "8",
+        "duracao": "temporaria"
+      },
+      {
+        "canal": "regeneracaoFixa",
+        "quando": "corpo_de_aco",
+        "expr": "mod_constituicao",
+        "duracao": "temporaria"
+      }
+    ]
+  },
+  {
+    "id": "res_surto_de_adrenalina",
+    "catalogo": {
+      "id": "res_surto_de_adrenalina",
+      "nome": "Surto de Adrenalina",
+      "especializacaoId": "restringido",
+      "tipo": "nivel",
+      "nivel": 2,
+      "descricao": "Como uma ação livre, você pode gastar 3 pontos de estamina para entrar em um estado onde seu corpo está no limite. Enquanto em um surto de adrenalina, você recebe os seguintes benefícios: você recebe redução de dano a todos os tipos de dano igual a metade do seu nível de personagem, você recebe um bônus igual a 1 + metade do seu bônus de treinamento em testes de resistência de fortitude e reflexos, e você recebe um bônus em percepção igual ao seu bônus de treinamento. Um surto dura uma rodada, e você pode gastar 1 ponto de estamina adicional para cada rodada após a primeira que deseje o manter ativo.",
+      "requisitos": []
+    },
+    "efeitos": [
+      {
+        "canal": "rdGeral",
+        "quando": "surto_adrenalina",
+        "expr": "piso(nd / 2)",
+        "duracao": "temporaria"
+      },
+      {
+        "canal": "bonusTR",
+        "alvo": "fortitude",
+        "quando": "surto_adrenalina",
+        "expr": "1 + piso(maestria / 2)",
+        "duracao": "temporaria"
+      },
+      {
+        "canal": "bonusTR",
+        "alvo": "reflexos",
+        "quando": "surto_adrenalina",
+        "expr": "1 + piso(maestria / 2)",
+        "duracao": "temporaria"
+      },
+      {
+        "canal": "bonusPericia",
+        "alvo": "percepcao",
+        "quando": "surto_adrenalina",
+        "expr": "maestria",
+        "duracao": "temporaria"
+      }
+    ]
+  },
+  {
+    "id": "res_resiliencia_pela_adrenalina",
+    "catalogo": {
+      "id": "res_resiliencia_pela_adrenalina",
+      "nome": "Resiliência pela Adrenalina",
+      "especializacaoId": "restringido",
+      "tipo": "nivel",
+      "nivel": 4,
+      "descricao": "A adrenalina pulsando no seu corpo o deixa mais resiliente e resistente. Sempre que você realizar um teste de resistência durante um Surto de Adrenalina, você pode pagar 1 ponto de estamina para adicionar 2d3 ao resultado. Caso seja um teste em que você não seja treinado, e se você falhar, você pode rolar novamente.",
+      "requisitos": [
+        {
+          "tipo": "habilidade",
+          "id": "res_surto_de_adrenalina"
+        }
+      ]
+    },
+    "efeitos": [
+      {
+        "canal": "dadosTR",
+        "alvo": "d3",
+        "quando": "surto_adrenalina",
+        "expr": "2",
+        "duracao": "temporaria"
+      }
+    ]
+  },
+  {
+    "id": "res_adrenalina_intensificadora",
+    "catalogo": {
+      "id": "res_adrenalina_intensificadora",
+      "nome": "Adrenalina Intensificadora",
+      "especializacaoId": "restringido",
+      "tipo": "nivel",
+      "nivel": 4,
+      "descricao": "Sua adrenalina também intensifica o seu corpo e as suas capacidades. Ao entrar em um surto de adrenalina, você pode escolher pagar 2 pontos de estamina adicionais para poder distribuir um bônus de +4 entre as perícias de Atletismo e Acrobacia, da maneira que desejar (+3 em uma e +1 em outra, por exemplo), além de poder pagar 1 ponto de estamina para se conceder vantagem em uma rolagem de Atletismo e Acrobacia, uma vez por cena cada. Ao obter a Restrição Definitiva, o bônus de +4 se torna +8.",
+      "requisitos": []
+    },
+    "efeitos": [
+      {
+        "canal": "bonusPericia",
+        "alvo": "atletismo",
+        "quando": "surto_adrenalina && adrenalina_atletismo",
+        "expr": "adrenalina_atletismo",
+        "duracao": "temporaria"
+      },
+      {
+        "canal": "bonusPericia",
+        "alvo": "acrobacia",
+        "quando": "surto_adrenalina",
+        "expr": "4 + 4 * tem_res_restricao_definitiva - adrenalina_atletismo",
+        "duracao": "temporaria"
+      }
+    ]
+  },
+  {
+    "id": "res_restrito_pelos_ceus",
+    "catalogo": {
+      "id": "res_restrito_pelos_ceus",
+      "nome": "Restrito pelos Céus",
+      "especializacaoId": "restringido",
+      "tipo": "base",
+      "nivel": 1,
+      "descricao": "Para compensar sua falta de energia amaldiçoada, um restringido recebe vários benefícios atrelados ao seu físico maior e aptidão ao combate:\n\n• Você pode escolher adicionar também seu modificador de Força ou de Constituição na sua Defesa, limitado pelo seu nível.\n• Você começa com uma ferramenta amaldiçoada de quarto grau e um meio de ver maldições (óculos ou lente). A partir do segundo nível, você recebe acesso ao Arsenal Amaldiçoado, detalhado no final da especialização.\n• No 4° nível, e depois a cada 4 níveis, você recebe uma Dádiva do Céu, listadas no final desta especialização.\n• Por não ter energia amaldiçoada, você possui Pontos de Estamina, os quais são baseados na sua própria força vital, e são usados por certas habilidades. Você inicia com 4 pontos de estamina, e recebe mais 4 a cada nível. Você os recupera por completo em um descanso longo, ou metade em um descanso curto.\n\nAlém disso, você possui um Estilo Marcial, explicado após as habilidades da especialização.",
+      "escolha": {
+        "id": "dadiva_do_ceu",
+        "label": "Dádiva do Céu",
+        "niveis": [
+          4,
+          8,
+          12,
+          16,
+          20
+        ],
+        "opcoes": [
+          {
+            "id": "res_dadiva_agilidade_exima",
+            "nome": "Agilidade Exímia",
+            "descricao": "Uma leveza anormal e agilidade extrema são traços do seu corpo. Sempre que fizer um teste de perícia ou resistência usando destreza, você recebe um bônus de +2, além de receber 3 metros adicionais de movimento e sempre ignorar terreno difícil."
+          },
+          {
+            "id": "res_dadiva_fisico_robusto",
+            "nome": "Físico Robusto",
+            "descricao": "Seu corpo é naturalmente mais robusto e resistente a todo dano que seja causado nele. Você recebe redução de dano contra todo tipo, cujo valor é igual a metade do seu nível de personagem, além de receber um bônus de +2 em testes de perícia ou resistência usando constituição."
+          },
+          {
+            "id": "res_dadiva_forca_devastadora",
+            "nome": "Força Devastadora",
+            "descricao": "Você foi dotado com uma força extrema, a qual permite que seus golpes sejam ainda mais potentes, assim como a capacidade física dos seus músculos. A distância de todo pulo ou salto que realizar aumenta em 3 metros, a distância padrão que você empurra com a ação Empurrar aumenta em 4,5 metros e recebe +2 em testes de perícia usando Força."
+          },
+          {
+            "id": "res_dadiva_indulgente_a_feiticaria",
+            "nome": "Indulgente a Feitiçaria",
+            "descricao": "Seu corpo recusa a energia amaldiçoada e, consequentemente, as técnicas. Você recebe Redução de Dano contra danos provindo de técnicas ou aptidões amaldiçoadas igual à metade do seu nível de personagem e um bônus de +1 em TRs de Vontade contra efeitos dessas mesmas fontes. No nível 10, o bônus em TRs aumenta em +1 e, no nível 15, passa a contar também para Fortitude e Reflexos."
+          },
+          {
+            "id": "res_dadiva_mente_afiada",
+            "nome": "Mente Afiada",
+            "descricao": "Você tem uma mente afiada que o permite desenvolver habilidades facilmente. Você se torna treinado em duas perícias adicionais e se torna mestre em uma perícia. Você também recebe um bônus de +2 em testes de perícia ou resistência usando inteligência."
+          },
+          {
+            "id": "res_dadiva_percepcao_agucada",
+            "nome": "Percepção Aguçada",
+            "descricao": "Sua percepção e seus instintos são aguçados ao máximo, permitindo-o perceber cada detalhe dos seus arredores. Sua atenção aumenta em um valor igual a metade do seu nível de personagem e você recebe um bônus de +3 em rolagens de percepção. Você também recebe um bônus de +2 em testes de perícia ou resistência usando sabedoria."
+          },
+          {
+            "id": "res_dadiva_reposicao_sanguinaria",
+            "nome": "Reposição Sanguinária",
+            "descricao": "Você consegue repor o seu vigor a partir do sangue derramado. Sempre que um inimigo no qual você causou dano for morto, você recupera 3 pontos de estamina. Você não pode exceder a quantidade de pontos que possuía no início do combate."
+          },
+          {
+            "id": "res_dadiva_semblante_cativante",
+            "nome": "Semblante Cativante",
+            "descricao": "Um semblante mais cativante e chamativo foi lhe concedido, apurando seu carisma e presença. Sempre que realizar um teste de perícia utilizando Presença, caso você tire um resultado inferior a metade do seu valor de Presença, você pode optar por tratar o resultado como metade do seu valor de Presença. Além disso, você se torna mestre em uma perícia de Presença à sua escolha e recebe um bônus de +2 em testes de perícia usando Presença."
+          },
+          {
+            "id": "res_dadiva_vigor_infindavel",
+            "nome": "Vigor Infindável",
+            "descricao": "Você foi dotado de um vigor amplo e infindável e consegue o repor ao triunfar. Seus pontos de vida máximos aumentam em um valor igual ao seu nível de personagem e, a cada 2 níveis, você recebe 1 ponto de estamina máximo adicional."
+          }
+        ]
+      },
+      "requisitos": []
+    },
+    "efeitos": [
+      {
+        "canal": "defesa",
+        "expr": "min(max(mod_forca, mod_constituicao), nd)"
+      }
+    ]
+  },
+  {
+    "id": "res_ataque_furtivo",
+    "catalogo": {
+      "id": "res_ataque_furtivo",
+      "nome": "Ataque Furtivo",
+      "especializacaoId": "restringido",
+      "tipo": "base",
+      "nivel": 2,
+      "descricao": "Uma vez por turno, ao realizar um ataque surpresa ou contra um inimigo desprevenido, você pode adicionar 1d8 ao dano dele. Caso você esteja flanqueando um inimigo, não é necessário ser um ataque surpresa ou um alvo desprevenido para aplicar o dano adicional. No nível 3, o dano se torna 2d8, no nível 6 se torna 3d8, no nível 9 se torna 4d8, no nível 12 se torna 5d8, no nível 15 se torna 6d8.",
+      "requisitos": []
+    },
+    "efeitos": [
+      {
+        "canal": "dadosNomeados",
+        "alvo": "d8",
+        "quando": "ataque_furtivo",
+        "expr": "1 + (esc_restringido >= 3) + (esc_restringido >= 6) + (esc_restringido >= 9) + (esc_restringido >= 12) + (esc_restringido >= 15)",
+        "duracao": "temporaria"
+      }
+    ]
+  },
+  {
+    "id": "res_versatilidade",
+    "catalogo": {
+      "id": "res_versatilidade",
+      "nome": "Versatilidade",
+      "especializacaoId": "restringido",
+      "tipo": "base",
+      "nivel": 2,
+      "descricao": "Você pretende se tornar um pouco mais versátil em tudo. Você recebe +1 em todas as perícias. No 10° nível esse bônus se torna +2.",
+      "requisitos": []
+    },
+    "efeitos": [
+      {
+        "canal": "bonusPericia",
+        "expr": "1 + (esc_restringido >= 10)"
+      }
+    ]
+  },
+  {
+    "id": "res_esquiva_sobre_humana",
+    "catalogo": {
+      "id": "res_esquiva_sobre_humana",
+      "nome": "Esquiva Sobre-humana",
+      "especializacaoId": "restringido",
+      "tipo": "base",
+      "nivel": 3,
+      "descricao": "Você recebe +1 em sua Defesa e em rolagens de Reflexos. No nível 9 e no nível 16, esse bônus aumenta em +1. Além disso, a partir do 10° nível, o valor necessário para obter um sucesso crítico nela reduz em um valor igual a metade do seu bônus de treinamento.",
+      "requisitos": []
+    },
+    "efeitos": [
+      {
+        "canal": "defesa",
+        "expr": "1 + (esc_restringido >= 9) + (esc_restringido >= 16)"
+      },
+      {
+        "canal": "bonusTR",
+        "alvo": "reflexos",
+        "expr": "1 + (esc_restringido >= 9) + (esc_restringido >= 16)"
+      },
+      {
+        "canal": "margemCriticoTR",
+        "alvo": "reflexos",
+        "expr": "piso(maestria / 2) * (esc_restringido >= 10)"
+      }
+    ]
+  },
+  {
+    "id": "res_implemento_celeste",
+    "catalogo": {
+      "id": "res_implemento_celeste",
+      "nome": "Implemento Celeste",
+      "especializacaoId": "restringido",
+      "tipo": "base",
+      "nivel": 4,
+      "descricao": "Você recebe +2 na CD de suas habilidades de restringido e técnicas marciais. Esse bônus aumenta em 1 nos níveis 8° e 16° de Restringido.",
+      "requisitos": []
+    },
+    "efeitos": [
+      {
+        "canal": "cd",
+        "expr": "2 + (esc_restringido >= 8) + (esc_restringido >= 16)"
+      }
+    ]
+  },
+  {
+    "id": "res_restricao_definitiva",
+    "catalogo": {
+      "id": "res_restricao_definitiva",
+      "nome": "Restrição Definitiva",
+      "especializacaoId": "restringido",
+      "tipo": "base",
+      "nivel": 10,
+      "descricao": "Seu nível de energia amaldiçoada alcançou o zero absoluto, rejeitando-a por completo em troca de um físico absoluto. Você recebe os seguintes benefícios:\n\n• Você tem vantagem em testes de furtividade contra qualquer usuário de energia amaldiçoada e eles possuem desvantagem em testes para o perceber.\n• Você passa a ver o traçado da alma (veja página 312), assim como não necessita mais de uma ferramenta amaldiçoada para enxergar maldições.\n• Toda arma que você manejar conta como um nível de dano acima e seu valor de deslocamento aumenta em 3 metros.\n• Se for mestre em uma perícia ou teste de resistência que utilize Força, Destreza ou Constituição você soma seu bônus de treinamento inteiro ao invés de metade dele na perícia.\n• Você se torna imune a expansões de domínio, veja a página 246.",
+      "requisitos": []
+    },
+    "efeitos": [
+      {
+        "canal": "nivelDano",
+        "alvo": "arma",
+        "expr": "1"
+      },
+      {
+        "canal": "movimento",
+        "expr": "3"
+      }
+    ]
+  },
+  {
+    "id": "res_libertacao_do_destino",
+    "catalogo": {
+      "id": "res_libertacao_do_destino",
+      "nome": "Libertação do Destino",
+      "especializacaoId": "restringido",
+      "tipo": "base",
+      "nivel": 20,
+      "descricao": "Subvertendo a sua restrição celeste, você se libertou completamente do destino, alcançando um nível de poder invejável e único para um ser humano como você. Você recebe resistência a todo tipo de dano físico (cortante, perfurante e de impacto), além de mais um tipo de dano a sua escolha, exceto na alma. Você também recebe +5 em rolagens de ataque e soma metade do seu nível de personagem no total de dano.",
+      "escolha": {
+        "id": "res_destino_tipo",
+        "label": "Tipo de Dano",
+        "niveis": [
+          20
+        ],
+        "opcoes": [
+          {
+            "id": "res_destino_acido",
+            "efeitos": [
+              {
+                "canal": "resistenciaDano",
+                "alvo": "acido",
+                "expr": "1"
+              }
+            ]
+          },
+          {
+            "id": "res_destino_congelante",
+            "efeitos": [
+              {
+                "canal": "resistenciaDano",
+                "alvo": "congelante",
+                "expr": "1"
+              }
+            ]
+          },
+          {
+            "id": "res_destino_chocante",
+            "efeitos": [
+              {
+                "canal": "resistenciaDano",
+                "alvo": "chocante",
+                "expr": "1"
+              }
+            ]
+          },
+          {
+            "id": "res_destino_queimante",
+            "efeitos": [
+              {
+                "canal": "resistenciaDano",
+                "alvo": "queimante",
+                "expr": "1"
+              }
+            ]
+          },
+          {
+            "id": "res_destino_sonico",
+            "efeitos": [
+              {
+                "canal": "resistenciaDano",
+                "alvo": "sonico",
+                "expr": "1"
+              }
+            ]
+          },
+          {
+            "id": "res_destino_energia_reversa",
+            "efeitos": [
+              {
+                "canal": "resistenciaDano",
+                "alvo": "energia_reversa",
+                "expr": "1"
+              }
+            ]
+          },
+          {
+            "id": "res_destino_energetico",
+            "efeitos": [
+              {
+                "canal": "resistenciaDano",
+                "alvo": "energetico",
+                "expr": "1"
+              }
+            ]
+          },
+          {
+            "id": "res_destino_psiquico",
+            "efeitos": [
+              {
+                "canal": "resistenciaDano",
+                "alvo": "psiquico",
+                "expr": "1"
+              }
+            ]
+          },
+          {
+            "id": "res_destino_radiante",
+            "efeitos": [
+              {
+                "canal": "resistenciaDano",
+                "alvo": "radiante",
+                "expr": "1"
+              }
+            ]
+          },
+          {
+            "id": "res_destino_necrotico",
+            "efeitos": [
+              {
+                "canal": "resistenciaDano",
+                "alvo": "necrotico",
+                "expr": "1"
+              }
+            ]
+          },
+          {
+            "id": "res_destino_venenoso",
+            "efeitos": [
+              {
+                "canal": "resistenciaDano",
+                "alvo": "venenoso",
+                "expr": "1"
+              }
+            ]
+          }
+        ]
+      },
+      "requisitos": []
+    },
+    "efeitos": [
+      {
+        "canal": "bonusAcerto",
+        "expr": "5"
+      },
+      {
+        "canal": "danoBonus",
+        "expr": "piso(nd / 2)"
+      },
+      {
+        "canal": "resistenciaDano",
+        "alvo": "ct",
+        "expr": "1"
+      },
+      {
+        "canal": "resistenciaDano",
+        "alvo": "im",
+        "expr": "1"
+      },
+      {
+        "canal": "resistenciaDano",
+        "alvo": "pf",
+        "expr": "1"
+      }
+    ]
+  },
+  {
+    "id": "lut_corpo_supremo",
+    "catalogo": {
+      "id": "lut_corpo_supremo",
+      "nome": "Corpo Supremo",
+      "especializacaoId": "lutador",
+      "tipo": "nivel",
+      "nivel": 16,
+      "descricao": "Você alcançou um alto nível como lutador e levou seu corpo ao limite. Você recebe mais 3 metros de movimento adicionais, +4 na sua Defesa e redução de dano igual a metade do seu nível de personagem contra dano cortante, perfurante e de impacto, além de mais um tipo à sua escolha, exceto alma. Contra os outros tipos de dano não escolhidos, a redução de dano é igual a 1/4 do seu nível.",
+      "escolha": {
+        "id": "lut_supremo_tipo",
+        "label": "Tipo de Dano",
+        "niveis": [
+          16
+        ],
+        "opcoes": [
+          {
+            "id": "lut_supremo_acido",
+            "efeitos": [
+              {
+                "canal": "rdTipo",
+                "alvo": "acido",
+                "expr": "piso(nd / 2) - piso(nd / 4)"
+              }
+            ]
+          },
+          {
+            "id": "lut_supremo_congelante",
+            "efeitos": [
+              {
+                "canal": "rdTipo",
+                "alvo": "congelante",
+                "expr": "piso(nd / 2) - piso(nd / 4)"
+              }
+            ]
+          },
+          {
+            "id": "lut_supremo_chocante",
+            "efeitos": [
+              {
+                "canal": "rdTipo",
+                "alvo": "chocante",
+                "expr": "piso(nd / 2) - piso(nd / 4)"
+              }
+            ]
+          },
+          {
+            "id": "lut_supremo_queimante",
+            "efeitos": [
+              {
+                "canal": "rdTipo",
+                "alvo": "queimante",
+                "expr": "piso(nd / 2) - piso(nd / 4)"
+              }
+            ]
+          },
+          {
+            "id": "lut_supremo_sonico",
+            "efeitos": [
+              {
+                "canal": "rdTipo",
+                "alvo": "sonico",
+                "expr": "piso(nd / 2) - piso(nd / 4)"
+              }
+            ]
+          },
+          {
+            "id": "lut_supremo_energia_reversa",
+            "efeitos": [
+              {
+                "canal": "rdTipo",
+                "alvo": "energia_reversa",
+                "expr": "piso(nd / 2) - piso(nd / 4)"
+              }
+            ]
+          },
+          {
+            "id": "lut_supremo_energetico",
+            "efeitos": [
+              {
+                "canal": "rdTipo",
+                "alvo": "energetico",
+                "expr": "piso(nd / 2) - piso(nd / 4)"
+              }
+            ]
+          },
+          {
+            "id": "lut_supremo_psiquico",
+            "efeitos": [
+              {
+                "canal": "rdTipo",
+                "alvo": "psiquico",
+                "expr": "piso(nd / 2) - piso(nd / 4)"
+              }
+            ]
+          },
+          {
+            "id": "lut_supremo_radiante",
+            "efeitos": [
+              {
+                "canal": "rdTipo",
+                "alvo": "radiante",
+                "expr": "piso(nd / 2) - piso(nd / 4)"
+              }
+            ]
+          },
+          {
+            "id": "lut_supremo_necrotico",
+            "efeitos": [
+              {
+                "canal": "rdTipo",
+                "alvo": "necrotico",
+                "expr": "piso(nd / 2) - piso(nd / 4)"
+              }
+            ]
+          },
+          {
+            "id": "lut_supremo_venenoso",
+            "efeitos": [
+              {
+                "canal": "rdTipo",
+                "alvo": "venenoso",
+                "expr": "piso(nd / 2) - piso(nd / 4)"
+              }
+            ]
+          }
+        ]
+      },
+      "requisitos": []
+    },
+    "efeitos": [
+      {
+        "canal": "movimento",
+        "expr": "3"
+      },
+      {
+        "canal": "defesa",
+        "expr": "4"
+      },
+      {
+        "canal": "rdGeral",
+        "expr": "piso(nd / 4)"
+      },
+      {
+        "canal": "rdFisico",
+        "expr": "piso(nd / 2) - piso(nd / 4)"
+      }
+    ]
+  },
+  {
+    "id": "cmb_surto_de_acao",
+    "catalogo": {
+      "id": "cmb_surto_de_acao",
+      "nome": "Surto de Ação",
+      "especializacaoId": "combatente",
+      "tipo": "nivel",
+      "nivel": 8,
+      "descricao": "Em momentos cruciais, você consegue se forçar a agir mais, excedendo suas capacidades normais. Uma quantidade de vezes igual a metade do seu bônus de treinamento, por descanso longo, você pode, uma vez por rodada, gastar 5 pontos de energia amaldiçoada para realizar uma ação comum a mais no seu turno.",
+      "usos": {
+        "expr": "piso(maestria / 2)",
+        "recarga": "longo"
+      },
+      "requisitos": []
+    }
+  },
+  {
+    "id": "lut_corpo_calejado",
+    "catalogo": {
+      "id": "lut_corpo_calejado",
+      "nome": "Corpo Calejado",
+      "especializacaoId": "lutador",
+      "tipo": "nivel",
+      "nivel": 6,
+      "descricao": "De tanto combater e receber golpes, todo seu corpo já está calejado e mais resistente. Você passa a adicionar metade do seu Modificador de Constituição na sua Defesa e recebe pontos de vida adicionais igual ao seu nível de Lutador.",
+      "requisitos": []
+    },
+    "efeitos": [
+      {
+        "canal": "defesa",
+        "expr": "max(1, piso(mod_constituicao / 2))"
+      },
+      {
+        "canal": "hp",
+        "expr": "esc_lutador"
+      }
+    ]
+  },
+  {
+    "id": "cmb_guarda_estudada",
+    "catalogo": {
+      "id": "cmb_guarda_estudada",
+      "nome": "Guarda Estudada",
+      "especializacaoId": "combatente",
+      "tipo": "nivel",
+      "nivel": 4,
+      "descricao": "Sua guarda surge a partir do estudo e da reflexão. Você passa a somar metade do seu modificador de Sabedoria na sua Defesa, limitado pelo seu nível. Além disso, você pode escolher um Teste de Resistência para receber um bônus de +2.",
+      "escolha": {
+        "id": "guarda_resistencia",
+        "label": "Teste de Resistência",
+        "niveis": [
+          4
+        ],
+        "opcoes": [
+          {
+            "id": "cmb_guarda_reflexos",
+            "nome": "Reflexos",
+            "descricao": "Você recebe +2 em Reflexos."
+          },
+          {
+            "id": "cmb_guarda_fortitude",
+            "nome": "Fortitude",
+            "descricao": "Você recebe +2 em Fortitude."
+          },
+          {
+            "id": "cmb_guarda_vontade",
+            "nome": "Vontade",
+            "descricao": "Você recebe +2 em Vontade."
+          },
+          {
+            "id": "cmb_guarda_astucia",
+            "nome": "Astúcia",
+            "descricao": "Você recebe +2 em Astúcia."
+          },
+          {
+            "id": "cmb_guarda_integridade",
+            "nome": "Integridade",
+            "descricao": "Você recebe +2 em Integridade."
+          }
+        ]
+      },
+      "requisitos": []
+    },
+    "efeitos": [
+      {
+        "canal": "defesa",
+        "expr": "min(piso(mod_sabedoria / 2), nd)"
+      }
+    ]
+  },
+  {
+    "id": "cmb_especialista_em_escudo",
+    "catalogo": {
+      "id": "cmb_especialista_em_escudo",
+      "nome": "Especialista em Escudo",
+      "especializacaoId": "combatente",
+      "tipo": "nivel",
+      "nivel": 4,
+      "descricao": "Você se especializa completamente na defesa e no uso de escudos. Você passa a somar o aumento base em RD do seu escudo em testes de resistência de Reflexos e Fortitude.",
+      "requisitos": []
+    },
+    "efeitos": [
+      {
+        "canal": "bonusTR",
+        "alvo": "reflexos",
+        "expr": "rd_escudo"
+      },
+      {
+        "canal": "bonusTR",
+        "alvo": "fortitude",
+        "expr": "rd_escudo"
+      }
+    ]
+  },
+  {
+    "id": "cmb_espirito_de_luta",
+    "catalogo": {
+      "id": "cmb_espirito_de_luta",
+      "nome": "Espírito de Luta",
+      "especializacaoId": "combatente",
+      "tipo": "nivel",
+      "nivel": 4,
+      "descricao": "O combate é um caminho, no qual você nutre um espírito intenso para lutar. Como uma Ação Livre, você pode gastar 1PE para receber um bônus de +2 em jogadas de ataque até o fim da cena. Além disso, ao utilizar esta habilidade, você ganha PV temporários igual ao seu nível de personagem.",
+      "requisitos": []
+    },
+    "efeitos": [
+      {
+        "canal": "bonusAcerto",
+        "quando": "espirito_de_luta",
+        "expr": "2",
+        "duracao": "temporaria"
+      },
+      {
+        "canal": "pvTemporario",
+        "quando": "espirito_de_luta",
+        "expr": "nd",
+        "duracao": "temporaria"
+      }
+    ]
+  },
+  {
+    "id": "cmb_espirito_incansavel",
+    "catalogo": {
+      "id": "cmb_espirito_incansavel",
+      "nome": "Espírito Incansável",
+      "especializacaoId": "combatente",
+      "tipo": "nivel",
+      "nivel": 8,
+      "descricao": "Nada pode abalar o seu espírito para lutar, o qual se torna ainda mais persistente. Quando utilizar Espírito de Luta, você pode optar por gastar 2PE ao invés de 1, aumentando o bônus em ataques para +5 e fazendo com que os pontos de vida temporários ganhos se tornam o seu bônus de ataque, ao invés do Nível do Personagem, já considerando o bônus da habilidade.",
+      "requisitos": [
+        {
+          "tipo": "habilidade",
+          "id": "cmb_espirito_de_luta"
+        }
+      ]
+    },
+    "efeitos": [
+      {
+        "canal": "bonusAcerto",
+        "quando": "espirito_incansavel",
+        "expr": "3",
+        "duracao": "temporaria"
+      },
+      {
+        "canal": "pvTemporario",
+        "quando": "espirito_incansavel",
+        "expr": "escala_ataque + maestria + max(mod_forca, mod_destreza) + 5 - nd",
+        "duracao": "temporaria"
+      }
+    ]
+  }
+]

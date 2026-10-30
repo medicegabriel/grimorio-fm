@@ -5,6 +5,8 @@
   "autor": "Afty",
   "paraRaw": "afty",
   "descricao": "Dobra o PV final sem dobrar a Integridade da Alma. Fontes que consultam o PV Máximo usam o valor anterior à dobra. Feitiços Passivos da Técnica não consomem PE Máximo. Se o Voto do Santo da Espada estiver ativo, somente a redução de PE Máximo pela metade é ignorada.",
+  "resumo": "Dobra o PV final sem dobrar a Alma e isenta as Passivas do custo de PE Máximo",
+  "categoria": "regras",
   "regrasAfty": {
     "multiplicadorPvFinal": 2,
     "passivasSemCustoPeMaximo": true,

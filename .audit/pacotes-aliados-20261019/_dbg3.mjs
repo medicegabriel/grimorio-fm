@@ -1,0 +1,15 @@
+import fs from "node:fs";
+import { chromium } from "playwright";
+const DIR = `${process.cwd()}/.audit/pacotes-aliados-20261019`;
+const browser = await chromium.launch({ channel: "chrome" });
+const p = await (await browser.newContext()).newPage();
+let cargas = 0;
+p.on("load", () => { cargas += 1; });
+await p.goto("http://127.0.0.1:5320/Player", { waitUntil: "load" });
+await p.waitForTimeout(1500);
+const antes = cargas;
+fs.writeFileSync(`${DIR}/_teste-recarga.json`, JSON.stringify({ t: Date.now() }));
+await p.waitForTimeout(2500);
+console.log("cargas antes", antes, "depois", cargas);
+fs.unlinkSync(`${DIR}/_teste-recarga.json`);
+await browser.close();

@@ -1225,6 +1225,10 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
   gap: 0.375rem;
   flex-wrap: wrap;
   min-width: 5.25rem;
+  /* ⚠ O TETO É A LARGURA DA LINHA (2026-10-26). Sem ele, uma lista de vinte
+     opções (as perícias do Aliado Auxiliar) ficava com a largura do conteúdo, por
+     causa do `flex-shrink: 0`, e transbordava o cartão em vez de quebrar. */
+  max-width: 100%;
   flex-shrink: 0;
 }
 

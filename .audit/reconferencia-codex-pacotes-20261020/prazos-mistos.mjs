@@ -1,0 +1,41 @@
+import fs from 'node:fs';
+import {register} from 'node:module';
+register('data:text/javascript,export async function resolve(s,c,n){try{return await n(s,c)}catch(e){if(s.startsWith(".")&&!s.endsWith(".js"))return n(s+".js",c);throw e}}',import.meta.url);
+const raiz=new URL('../../src/systems/afty/',import.meta.url);
+const {deriveAfty}=await import(new URL('afty-derive.js',raiz));
+const {calcularFeitico}=await import(new URL('afty-feiticos.js',raiz));
+const {calcularRecebidos}=await import(new URL('ficha/ficha-recebidos.js',raiz));
+const {opcoesDeriveDaSessao}=await import(new URL('ficha/ficha-opcoes-derive.js',raiz));
+const P=await import(new URL('ficha/pacotes-aliados.js',raiz));
+const F=await import(new URL('ficha/pacotes-familias.js',raiz));
+const S=await import(new URL('ficha/ficha-sessao.js',raiz));
+const dir=new URL('./',import.meta.url);
+const {fichas}=JSON.parse(fs.readFileSync(new URL('fichas.json',dir),'utf8'));
+const feitico={id:'codex-misto',nome:'Guarda e Firmeza Codex',tipo:'auxiliar',nivel:1,multiplosAtivo:true,duracaoMult:'imediata',acaoMult:'reacao',efeitosMult:[{id:'def',efeito:'defesa'},{id:'tr',efeito:'tr'}]};
+const suporte={...fichas.suporteA,feiticos:[feitico]};
+const fontes=F.fontesParaAliados(suporte,deriveAfty(suporte),{emissorId:'codex-suporte'});
+const resolvido=F.resolverItem({fonte:'feitico|codex-misto',escolhas:{}},fontes.porChave);
+const opcao=F.paraArquivo('codex-misto',resolvido);
+const {arquivo}=P.montarArquivo({pacote:{id:'codex-prazo-misto',nome:'Prazos Mistos Codex'},emissorId:'codex-suporte',emissor:{nome:suporte.name,sistema:'player'},opcoes:[opcao],agora:new Date().toISOString()});
+const lido=P.lerArquivoDePacote(arquivo);
+const biblioteca=P.gravarNaBiblioteca([],lido.pacote,lido.recusadas,new Date().toISOString()).biblioteca;
+const entrada=biblioteca[0];
+const instancia=P.instanciaDaOpcao(entrada,entrada.opcoes[0],{id:'codex-inst-mista'});
+const receptor=fichas.receptor;
+const deriveSessao=(f,s)=>deriveAfty({...f,combate:s.combate,buffsSessao:s.buffs},opcoesDeriveDaSessao(s));
+const numero=(s)=>{
+  const d=calcularRecebidos(receptor,s,deriveSessao).derived;
+  return {defesa:d.defesa,tr:d.testes.resistencias.map(x=>({id:x.value,bonus:x.bonus}))};
+};
+const d0=deriveAfty({...receptor,combate:{ativo:true}});
+const base={...S.sessaoEmBranco(d0),combate:{ativo:true},rodada:1};
+let s={...base,buffs:[instancia]};
+const passos=[];
+for(let i=0;i<4;i++){
+  passos.push({rodada:s.rodada,instancias:s.buffs.map(b=>({nome:b.origemNome,rodadas:b.rodadas,beneficios:b.beneficios})),numeros:numero(s)});
+  s=S.proximaRodada(s,calcularRecebidos(receptor,s,deriveSessao).derived).sessao;
+}
+const calc=calcularFeitico(feitico,{nd:14,nivelConjurador:10,habilidades:[]});
+const out={geradoEm:new Date().toISOString(),receptor,arquivo,biblioteca,instancia,subefeitos:calc.efeitos.map(x=>({nome:x.efeitoLabel,umGolpe:x.umGolpe,rodadas:x.rodadas,disponivel:x.disponivel})),base:numero(base),resolvido,passos};
+fs.writeFileSync(new URL('prazos-mistos.json',dir),JSON.stringify(out,null,2));
+console.log(JSON.stringify({subefeitos:out.subefeitos,beneficios:resolvido.beneficios,duracao:resolvido.duracao,condicoes:resolvido.condicoes,base:out.base,passos},null,2));

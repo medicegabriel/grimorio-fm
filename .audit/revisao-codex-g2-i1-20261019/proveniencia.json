@@ -1,0 +1,213 @@
+{
+  "geradoEm": "2026-10-19T21:38:27.494Z",
+  "head": "68888733deffa9700aa69761fd965a504b9152db",
+  "manifest": [
+    {
+      "path": "src/systems/afty/ficha/ficha-recebidos.js",
+      "expected": "369fad100ad6e666",
+      "actual": "369fad100ad6e666",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/fatias.js",
+      "expected": "c452e98af6ea16e8",
+      "actual": "c452e98af6ea16e8",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/recebidos.js",
+      "expected": "6af1750c682e8fb5",
+      "actual": "6af1750c682e8fb5",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/efeitos-dados.js",
+      "expected": "63b789eb9d67cdab",
+      "actual": "63b789eb9d67cdab",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/g2-linha-do-tempo.js",
+      "expected": "a78ec5e8fc34d52e",
+      "actual": "a78ec5e8fc34d52e",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/gestor-logica.js",
+      "expected": "0106ea2dd7ac80b7",
+      "actual": "0106ea2dd7ac80b7",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/LinhaDoTempoG2.jsx",
+      "expected": "81822291ef1254f7",
+      "actual": "81822291ef1254f7",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/usar-delta-dos-estados.js",
+      "expected": "1c40a058ea7431da",
+      "actual": "1c40a058ea7431da",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/ficha-buffs.js",
+      "expected": "92634852dd10b53d",
+      "actual": "92634852dd10b53d",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/AftyFichaClassica.jsx",
+      "expected": "33f3ae726c8856db",
+      "actual": "33f3ae726c8856db",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/encontros/usar-encontro-afty.js",
+      "expected": "299546983abdf069",
+      "actual": "299546983abdf069",
+      "ok": true
+    },
+    {
+      "path": "asserts/t-g2-fonte-compat.mjs",
+      "expected": "f5fe3b8bbd1083a4",
+      "actual": "f5fe3b8bbd1083a4",
+      "ok": true
+    },
+    {
+      "path": "asserts/t-g2-desempenho.mjs",
+      "expected": "7dd4bc0e1e30d6a6",
+      "actual": "7dd4bc0e1e30d6a6",
+      "ok": true
+    },
+    {
+      "path": "docs/revisao-automacao/escopo.json",
+      "expected": "5a7e7b8b659b3ffc",
+      "actual": "5a7e7b8b659b3ffc",
+      "ok": true
+    },
+    {
+      "path": ".audit/correcao-g2-i1-20261019/perf-fonte.mjs",
+      "expected": "9303f675b9125e98",
+      "actual": "9303f675b9125e98",
+      "ok": true
+    },
+    {
+      "path": ".audit/correcao-g2-i1-20261019/perfil-fonte.mjs",
+      "expected": "c110850af2af37cd",
+      "actual": "c110850af2af37cd",
+      "ok": true
+    },
+    {
+      "path": ".audit/correcao-g2-i1-20261019/browser-fonte.mjs",
+      "expected": "12f8612bfee2b093",
+      "actual": "12f8612bfee2b093",
+      "ok": true
+    }
+  ],
+  "conferidoAoFim": "2026-10-19T21:43:31.127Z",
+  "manifestFinal": [
+    {
+      "path": "src/systems/afty/ficha/ficha-recebidos.js",
+      "expected": "369fad100ad6e666",
+      "actual": "369fad100ad6e666",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/fatias.js",
+      "expected": "c452e98af6ea16e8",
+      "actual": "c452e98af6ea16e8",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/recebidos.js",
+      "expected": "6af1750c682e8fb5",
+      "actual": "6af1750c682e8fb5",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/efeitos-dados.js",
+      "expected": "63b789eb9d67cdab",
+      "actual": "63b789eb9d67cdab",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/g2-linha-do-tempo.js",
+      "expected": "a78ec5e8fc34d52e",
+      "actual": "a78ec5e8fc34d52e",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/gestor-logica.js",
+      "expected": "0106ea2dd7ac80b7",
+      "actual": "0106ea2dd7ac80b7",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/efeitos/LinhaDoTempoG2.jsx",
+      "expected": "81822291ef1254f7",
+      "actual": "81822291ef1254f7",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/usar-delta-dos-estados.js",
+      "expected": "1c40a058ea7431da",
+      "actual": "1c40a058ea7431da",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/ficha-buffs.js",
+      "expected": "92634852dd10b53d",
+      "actual": "92634852dd10b53d",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/ficha/AftyFichaClassica.jsx",
+      "expected": "33f3ae726c8856db",
+      "actual": "33f3ae726c8856db",
+      "ok": true
+    },
+    {
+      "path": "src/systems/afty/encontros/usar-encontro-afty.js",
+      "expected": "299546983abdf069",
+      "actual": "299546983abdf069",
+      "ok": true
+    },
+    {
+      "path": "asserts/t-g2-fonte-compat.mjs",
+      "expected": "f5fe3b8bbd1083a4",
+      "actual": "f5fe3b8bbd1083a4",
+      "ok": true
+    },
+    {
+      "path": "asserts/t-g2-desempenho.mjs",
+      "expected": "7dd4bc0e1e30d6a6",
+      "actual": "7dd4bc0e1e30d6a6",
+      "ok": true
+    },
+    {
+      "path": "docs/revisao-automacao/escopo.json",
+      "expected": "5a7e7b8b659b3ffc",
+      "actual": "5a7e7b8b659b3ffc",
+      "ok": true
+    },
+    {
+      "path": ".audit/correcao-g2-i1-20261019/perf-fonte.mjs",
+      "expected": "9303f675b9125e98",
+      "actual": "9303f675b9125e98",
+      "ok": true
+    },
+    {
+      "path": ".audit/correcao-g2-i1-20261019/perfil-fonte.mjs",
+      "expected": "c110850af2af37cd",
+      "actual": "c110850af2af37cd",
+      "ok": true
+    },
+    {
+      "path": ".audit/correcao-g2-i1-20261019/browser-fonte.mjs",
+      "expected": "12f8612bfee2b093",
+      "actual": "12f8612bfee2b093",
+      "ok": true
+    }
+  ]
+}

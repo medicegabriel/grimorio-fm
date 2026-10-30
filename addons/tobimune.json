@@ -5,6 +5,8 @@
   "autor": "Afty",
   "paraRaw": "afty",
   "descricao": "Katana de Técnica de custo 4. O addon substitui Energia Reversa pelas cinco Aptidões de regeneração de Maldição. Pode ser tratada como Ferramenta Amaldiçoada do Quarto Grau até o Grau Especial.",
+  "resumo": "Katana de técnica de custo 4 que troca a Energia Reversa por cinco regenerações",
+  "categoria": "equipamentos",
   "substituiEnergiaReversa": {
     "tab": "Tobimune",
     "aptidoes": [

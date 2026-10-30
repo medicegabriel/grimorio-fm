@@ -1,0 +1,162 @@
+{
+  "geradoEm": "2026-10-21T00:38:37.628Z",
+  "base": "http://127.0.0.1:5321",
+  "etapas": [
+    {
+      "nome": "Codex: Golpe denso e confirmação em 390",
+      "checks": [
+        {
+          "id": "Confirmação liberada para sete propriedades",
+          "ok": true
+        },
+        {
+          "id": "Ponteiro chega ao botão",
+          "ok": true
+        },
+        {
+          "id": "Sem vazamento no montador denso",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 390
+          }
+        },
+        {
+          "id": "Só um golpe gravado",
+          "ok": true,
+          "dados": {
+            "depois": {
+              "especializacao:cmb_golpe_especial": 1
+            }
+          }
+        },
+        {
+          "id": "Sete propriedades no cartão",
+          "ok": true
+        },
+        {
+          "id": "Houve pagamento de PE",
+          "ok": true,
+          "dados": {
+            "antes": 176,
+            "depois": 172
+          }
+        },
+        {
+          "id": "Consultar depois de confirmar não aplica outra vez",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "Codex: Golpe denso e confirmação em 1024",
+      "checks": [
+        {
+          "id": "Confirmação liberada para sete propriedades",
+          "ok": true
+        },
+        {
+          "id": "Ponteiro chega ao botão",
+          "ok": true
+        },
+        {
+          "id": "Sem vazamento no montador denso",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1024
+          }
+        },
+        {
+          "id": "Só um golpe gravado",
+          "ok": true,
+          "dados": {
+            "depois": {
+              "especializacao:cmb_golpe_especial": 1
+            }
+          }
+        },
+        {
+          "id": "Sete propriedades no cartão",
+          "ok": true
+        },
+        {
+          "id": "Houve pagamento de PE",
+          "ok": true,
+          "dados": {
+            "antes": 176,
+            "depois": 172
+          }
+        },
+        {
+          "id": "Consultar depois de confirmar não aplica outra vez",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "Codex: Golpe denso e confirmação em 1440",
+      "checks": [
+        {
+          "id": "Confirmação liberada para sete propriedades",
+          "ok": true
+        },
+        {
+          "id": "Ponteiro chega ao botão",
+          "ok": true
+        },
+        {
+          "id": "Sem vazamento no montador denso",
+          "ok": true,
+          "dados": {
+            "pagina": 0,
+            "raiz": 0,
+            "culpados": [],
+            "largura": 1440
+          }
+        },
+        {
+          "id": "Só um golpe gravado",
+          "ok": true,
+          "dados": {
+            "depois": {
+              "especializacao:cmb_golpe_especial": 1
+            }
+          }
+        },
+        {
+          "id": "Sete propriedades no cartão",
+          "ok": true
+        },
+        {
+          "id": "Houve pagamento de PE",
+          "ok": true,
+          "dados": {
+            "antes": 176,
+            "depois": 172
+          }
+        },
+        {
+          "id": "Consultar depois de confirmar não aplica outra vez",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "Codex: Golpe denso e confirmação em 390: 7/7",
+    "Codex: Golpe denso e confirmação em 1024: 7/7",
+    "Codex: Golpe denso e confirmação em 1440: 7/7"
+  ]
+}

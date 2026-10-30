@@ -1,0 +1,120 @@
+{
+  "geradoEm": "2026-10-19T21:43:31.134Z",
+  "fonteFinal": true,
+  "assertsFocados": [
+    {
+      "name": "t-g2-fonte-compat",
+      "exit": 0,
+      "ms": 1245,
+      "output": "TODOS OS 52 ASSERTS PASSARAM\n"
+    },
+    {
+      "name": "t-g2-desempenho",
+      "exit": 0,
+      "ms": 1180,
+      "output": "TODOS OS 30 ASSERTS PASSARAM\n"
+    },
+    {
+      "name": "t-g2-preferencias",
+      "exit": 0,
+      "ms": 299,
+      "output": "TODOS OS 42 ASSERTS PASSARAM\n"
+    },
+    {
+      "name": "t-g2-sessao-operacoes",
+      "exit": 0,
+      "ms": 359,
+      "output": "TODOS OS 51 ASSERTS PASSARAM\n"
+    },
+    {
+      "name": "t-g2-virada-registro",
+      "exit": 0,
+      "ms": 349,
+      "output": "TODOS OS 57 ASSERTS PASSARAM\n"
+    },
+    {
+      "name": "t-ordem-modulos",
+      "exit": 0,
+      "ms": 1381,
+      "output": "TODOS OS 36 ASSERTS PASSARAM\n"
+    },
+    {
+      "name": "t-revisao-g00",
+      "exit": 0,
+      "ms": 1405,
+      "output": "TODOS OS 35 ASSERTS PASSARAM\n"
+    }
+  ],
+  "browser": {
+    "casos": 7,
+    "checks": 36,
+    "falhas": []
+  },
+  "encontro": {
+    "checks": 21,
+    "falhas": []
+  },
+  "desempenho": [
+    {
+      "base": "http://127.0.0.1:5320",
+      "casos": 5,
+      "checks": 20,
+      "confirmacoes": 7,
+      "encerramentos": 6,
+      "falhas": [],
+      "cliques": [
+        32.10000002384186,
+        45.39999997615814,
+        43.19999998807907,
+        51,
+        43.5,
+        41.80000001192093,
+        31.5
+      ],
+      "tarefasLongas": [
+        67,
+        70,
+        64,
+        60,
+        77,
+        70,
+        93,
+        94,
+        94
+      ]
+    },
+    {
+      "base": "http://127.0.0.1:5321",
+      "casos": 5,
+      "checks": 20,
+      "confirmacoes": 7,
+      "encerramentos": 6,
+      "falhas": [],
+      "cliques": [
+        28.899999976158142,
+        38,
+        35.30000001192093,
+        43,
+        36.39999997615814,
+        33.10000002384186,
+        33.30000001192093
+      ],
+      "tarefasLongas": [
+        71,
+        70,
+        72,
+        55
+      ]
+    }
+  ],
+  "suiteCompleta": {
+    "passaram": 222,
+    "total": 224,
+    "falhas": [
+      "t-prodigio.mjs",
+      "t-reconciliacao-g00.mjs"
+    ],
+    "resumo": "2 de 224 arquivos FALHARAM: t-prodigio.mjs, t-reconciliacao-g00.mjs"
+  },
+  "conclusao": "G2-I1 encerrado, marcos 8 e 9 concluidos na base local, marco 10 do autor pendente"
+}

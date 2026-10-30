@@ -1,0 +1,171 @@
+import React from "react";
+import { ChevronDown, ChevronRight, Star, AlertTriangle } from "lucide-react";
+
+import { useDestaque } from "./usar-destaque";
+
+/**
+ * ============================================================
+ * ITEM DE FICHA — uma Habilidade, Talento, Aptidão ou Melhoria
+ * ============================================================
+ * Fechado é só o nome e as marcas, aberto traz o TEXTO VERBATIM do livro.
+ *
+ * ⚠ Fechado por padrão, e é uma escolha e não preguiça: uma criatura de ND alto
+ * tem 40 itens, e 40 parágrafos abertos de uma vez é uma parede que ninguém lê.
+ * O que resolve o "achar" é a busca, não o texto todo à mostra.
+ *
+ * ⚠ Nada do texto é reescrito, resumido ou cortado. É a regra mais antiga do
+ * projeto, e na Ficha ela vale ainda mais: isto é o que o jogador lê na mesa
+ * para saber o que a habilidade dele faz.
+ *
+ * A ESTRELA fixa o item no Rápido, no topo da aba Ações. Uma ficha de ND 40 tem
+ * 40 itens e o jogador usa seis: fixar é o que faz a diferença entre procurar e
+ * ter à mão.
+ *
+ * O CONTADOR DE USOS aparece na linha da habilidade que declara `usos` (autor,
+ * 2026-09-23: *"Na linha da habilidade"*), e só quando quem desenha passa o
+ * `contadorUsos`, que é o que liga a linha à sessão. Sem ele a linha segue como
+ * sempre foi.
+ * ============================================================
+ */
+
+/** Restantes e máximo, com o menos gastando um uso e o mais devolvendo. O
+    rótulo é "Usos", ou o `rotulo` que a entrada deu ao contador ("Doses"). */
+export function ContadorDeUsos({ nome, usos, gastos, onUso }) {
+  const restantes = Math.max(0, usos.max - gastos);
+  const rotulo = usos.rotulo || "Usos";
+  return (
+    <span className="flex items-center gap-1 flex-shrink-0" data-afty-usos={usos.chave}>
+      <span className="afty-rotulo text-[10px]">{rotulo}</span>
+      <button
+        type="button"
+        className="afty-passo"
+        disabled={restantes === 0}
+        onClick={() => onUso(1)}
+        aria-label={`Gastar um uso de ${nome}`}
+      >−</button>
+      <span className="afty-valor text-[12px] tabular-nums text-center min-w-[2.5rem]">
+        {restantes}/{usos.max}
+      </span>
+      <button
+        type="button"
+        className="afty-passo"
+        disabled={gastos === 0}
+        onClick={() => onUso(-1)}
+        aria-label={`Devolver um uso de ${nome}`}
+      >+</button>
+    </span>
+  );
+}
+
+function ItemDeFicha({ item, aberto, onAberto, favorito, onFavorito, destacado, contadorUsos = null }) {
+  const raiz = useDestaque(destacado);
+
+  return (
+    <div
+      ref={raiz}
+      id={`afty-item-${item.chave}`}
+      className="afty-linha afty-item-lista"
+      data-afty-alvo={destacado ? "sim" : undefined}
+    >
+      <div className="flex items-center gap-2 px-2 py-1.5">
+        <button
+          type="button"
+          className="afty-estrela"
+          data-afty-ativa={favorito ? "sim" : undefined}
+          onClick={() => onFavorito(item.chave)}
+          aria-pressed={!!favorito}
+          title={favorito ? "Tirar do Rápido" : "Fixar no Rápido"}
+          aria-label={favorito ? `Tirar ${item.nome} do Rápido` : `Fixar ${item.nome} no Rápido`}
+        >
+          <Star className="w-3.5 h-3.5" fill={favorito ? "currentColor" : "none"} />
+        </button>
+
+        <button
+          type="button"
+          className="flex-1 min-w-0 flex items-center gap-2 text-left"
+          onClick={() => onAberto(item.chave)}
+          aria-expanded={!!aberto}
+        >
+          {aberto
+            ? <ChevronDown className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
+            : <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />}
+          <span className="text-[12px] font-semibold truncate">{item.nome}</span>
+        </button>
+
+        {item.opcoes.length > 0 && !aberto && (
+          <span className="afty-rotulo text-[10px] truncate max-w-[10rem] hidden sm:block">
+            {item.opcoes.map((o) => o.nome).join(", ")}
+          </span>
+        )}
+        {/* ⚠ O `data-afty-tag` é o que dá LARGURA FIXA às marcas que são
+            número. "Nível 1" e "Nível 20" têm textos de tamanhos diferentes, e
+            sem isso a coluna da direita serrilhava. Ver o `marca()`.
+
+            Em linha estreita as marcas saem daqui e aparecem na linha aberta,
+            junto dos números de mesa (autor, 2026-10-03). Era `hidden
+            sm:inline-flex`, que nunca escondeu nada: o `display` do
+            `.afty-chip`, fora de camada, vencia o `hidden`. Ver
+            `.afty-marca-fechada` em ficha.css. */}
+        {item.tags.map((t) => (
+          <span key={t.label} className="afty-chip afty-marca-fechada" data-afty-tag={t.tipo ?? undefined}>
+            {t.label}
+          </span>
+        ))}
+        {/* Os números de mesa. Em linha estreita eles saem daqui e aparecem
+            dentro da linha aberta (`.afty-mesa-*` em ficha.css). */}
+        {(item.numeros ?? []).map((n) => (
+          <span key={n} className="afty-chip afty-mesa-fechada">{n}</span>
+        ))}
+        {item.aviso && (
+          <span className="afty-chip" data-afty-tom="aviso" title={item.aviso}>
+            <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+            <span className="hidden sm:inline">{item.aviso}</span>
+          </span>
+        )}
+        {item.usos && contadorUsos && (
+          <ContadorDeUsos
+            nome={item.nome}
+            usos={item.usos}
+            gastos={contadorUsos.gastosDe(item.usos.chave)}
+            onUso={(delta) => contadorUsos.onUso(item.usos, delta)}
+          />
+        )}
+      </div>
+
+      {aberto && (
+        <div className="px-2 pb-2 pl-8">
+          {(item.tags.length > 0 || (item.numeros ?? []).length > 0) && (
+            <div className="afty-mesa-aberta flex flex-wrap gap-1.5 mb-1.5">
+              {item.tags.map((t) => (
+                <span key={`marca:${t.label}`} className="afty-chip" data-afty-tag={t.tipo ?? undefined}>{t.label}</span>
+              ))}
+              {(item.numeros ?? []).map((n) => <span key={`mesa:${n}`} className="afty-chip">{n}</span>)}
+            </div>
+          )}
+          {item.texto && <p className="afty-texto">{item.texto}</p>}
+          {item.opcoes.length > 0 && (
+            <div className="mt-2 space-y-1">
+              {item.opcoes.map((o) => (
+                <div key={o.id} className="afty-opcao px-2 py-1.5">
+                  <span className="text-[11px] font-semibold">{o.nome}</span>
+                  {o.descricao && <p className="afty-texto mt-1">{o.descricao}</p>}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ⚠ MEMOIZADO, e por um motivo medido. O conjunto de itens ABERTOS (`abertos`,
+   um Set) mora na raiz da Ficha, então abrir uma linha re-renderizava as outras
+   139 junto, de graça. Nenhum `deriveAfty` roda nesse caminho: o custo era render
+   puro, e é o que o autor sentia ao abrir e fechar card numa ficha de nível alto.
+
+   As props que entram aqui já são estáveis para esse gesto: `onAberto` é o
+   `alternaItem` da Ficha (`useCallback` com deps vazias) e `item` sai da lista
+   memoizada `itens`. `aberto` e `favorito` são booleanos por linha, então só a
+   linha clicada volta a renderizar. */
+export default React.memo(ItemDeFicha);

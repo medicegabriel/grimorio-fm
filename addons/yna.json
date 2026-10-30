@@ -5,6 +5,8 @@
   "autor": "Afty",
   "paraRaw": "afty",
   "descricao": "Pacote da Yna: a Origem Kitsune com a Linhagem Clã Getsurin, o Treino de Cônjuge e o Treino de Desenvolvimento Amaldiçoado. As Caudas são contadas pela ficha (nível 3, cada subida do Bônus de Treinamento, nível 20 e os Marcos que o Narrador libera, até 10), e o segundo efeito da Linhagem liga sozinho em 5 Caudas. A Forma de Raposa é um interruptor de sessão, igual ao do Cônjuge. Ficam no texto: a distância do Saltar e o alcance e a área da Lapidação Prateada.",
+  "resumo": "Origem Kitsune, clã Getsurin e 2 Treinos, com as Caudas contadas pela ficha",
+  "categoria": "origens",
   "contadoresOrigem": [
     {
       "id": "caudas_por_marco",

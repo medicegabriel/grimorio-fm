@@ -1,0 +1,1120 @@
+{
+  "checks": 20,
+  "diagnosticos": {
+    "reproduz export": {
+      "hp": 4548,
+      "pe": 265,
+      "defesa": 95,
+      "cd": 48
+    },
+    "nivel efetivo restringido": {
+      "gravado": [
+        {
+          "id": "restringido",
+          "nivel": 15
+        }
+      ],
+      "efetivo": [
+        {
+          "id": "restringido",
+          "nivel": 30,
+          "nivelEscalonamento": 30
+        }
+      ]
+    },
+    "corpo calejado sem PV": [
+      {
+        "canal": "defesa",
+        "alvo": null,
+        "valor": 5,
+        "origem": "lut_corpo_calejado",
+        "nome": "Corpo Calejado",
+        "furaTeto": false,
+        "semCredito": false,
+        "duracao": "permanente"
+      }
+    ],
+    "simulacao corpo calejado": {
+      "atual": 4548,
+      "comNivelRestringido": 4746,
+      "diferenca": 198
+    },
+    "escolha de guarda roubada ignorada": {
+      "solicitado": [
+        "cmb_guarda_vontade"
+      ],
+      "resolvido": null
+    },
+    "2d3 todos TRs": [
+      {
+        "id": "reflexos",
+        "dados": [
+          {
+            "faces": 3,
+            "qtd": 2
+          }
+        ]
+      },
+      {
+        "id": "fortitude",
+        "dados": [
+          {
+            "faces": 3,
+            "qtd": 2
+          }
+        ]
+      },
+      {
+        "id": "vontade",
+        "dados": [
+          {
+            "faces": 3,
+            "qtd": 2
+          }
+        ]
+      },
+      {
+        "id": "astucia",
+        "dados": [
+          {
+            "faces": 3,
+            "qtd": 2
+          }
+        ]
+      },
+      {
+        "id": "integridade",
+        "dados": [
+          {
+            "faces": 3,
+            "qtd": 2
+          }
+        ]
+      }
+    ],
+    "foco atencao duplicada": {
+      "atencaoCom": 112,
+      "atencaoSem": 102,
+      "delta": 10,
+      "percepcaoDelta": 5
+    },
+    "sem gasto surtoAdrenalina": {
+      "antes": 100,
+      "depois": 100
+    },
+    "sem gasto adrenalinaAbsoluta": {
+      "antes": 100,
+      "depois": 100
+    },
+    "sem gasto adrenalinaAtletismo": {
+      "antes": 100,
+      "depois": 100
+    },
+    "sem gasto cacadorFeiticeiros": {
+      "antes": 100,
+      "depois": 100
+    },
+    "sem gasto focoInimigo": {
+      "antes": 100,
+      "depois": 100
+    },
+    "sem gasto corpoDeAco": {
+      "antes": 100,
+      "depois": 100
+    },
+    "sem gasto espiritoDeLuta": {
+      "antes": 100,
+      "depois": 100
+    },
+    "sem gasto espiritoIncansavel": {
+      "antes": 100,
+      "depois": 100
+    },
+    "corpo de aco nao cura na virada": {
+      "antes": 4448,
+      "depois": 4448,
+      "formula": {
+        "dados": 4,
+        "dado": "d8",
+        "fixo": 10
+      },
+      "peAntes": 100,
+      "peDepois": 100
+    },
+    "nenhuma interceptacao queda": {
+      "hp": 0,
+      "usos": {},
+      "exaustao": 0
+    },
+    "libertacao sem resistencia fisica": {
+      "estados": [
+        {
+          "tipo": "ct",
+          "estados": []
+        },
+        {
+          "tipo": "pf",
+          "estados": []
+        },
+        {
+          "tipo": "im",
+          "estados": []
+        }
+      ],
+      "rdFisico": 21
+    },
+    "surto contador existe": {
+      "max": 4,
+      "recarga": "longo",
+      "chave": "hab:cmb_surto_de_acao"
+    },
+    "imitacao nao expira": {
+      "copia": {
+        "tipo": "passiva",
+        "id": "lut_aprimoramento_marcial"
+      },
+      "memorizacao": 2
+    }
+  },
+  "registros": [
+    {
+      "id": "res_pinaculo_fisico",
+      "nome": "Pináculo Físico",
+      "efeitos": [
+        {
+          "canal": "pe",
+          "alvo": null,
+          "valor": 4,
+          "origem": "res_pinaculo_fisico",
+          "nome": "Pináculo Físico",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "permanente"
+        }
+      ],
+      "usos": null
+    },
+    {
+      "id": "res_forca_imparavel",
+      "nome": "Força Imparável",
+      "efeitos": [],
+      "usos": null
+    },
+    {
+      "id": "res_cacador_de_feiticeiros",
+      "nome": "Caçador de Feiticeiros",
+      "efeitos": [
+        {
+          "canal": "rdGeral",
+          "alvo": null,
+          "valor": 14,
+          "origem": "res_cacador_de_feiticeiros",
+          "nome": "Caçador de Feiticeiros",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "temporaria"
+        },
+        {
+          "canal": "bonusTR",
+          "alvo": null,
+          "valor": 7,
+          "origem": "res_cacador_de_feiticeiros",
+          "nome": "Caçador de Feiticeiros",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "temporaria"
+        },
+        {
+          "canal": "bonusAcerto",
+          "alvo": null,
+          "valor": 7,
+          "origem": "res_cacador_de_feiticeiros",
+          "nome": "Caçador de Feiticeiros",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "temporaria"
+        },
+        {
+          "canal": "dadosNomeados",
+          "alvo": "d6",
+          "valor": 7,
+          "origem": "res_cacador_de_feiticeiros",
+          "nome": "Caçador de Feiticeiros",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "temporaria"
+        }
+      ],
+      "usos": null
+    },
+    {
+      "id": "res_reacao_rapida",
+      "nome": "Reação Rápida",
+      "efeitos": [],
+      "usos": null
+    },
+    {
+      "id": "res_instintos_agucados",
+      "nome": "Instintos Aguçados",
+      "efeitos": [],
+      "usos": null
+    },
+    {
+      "id": "res_foco_no_inimigo",
+      "nome": "Foco no Inimigo",
+      "efeitos": [
+        {
+          "canal": "bonusAcerto",
+          "alvo": null,
+          "valor": 2,
+          "origem": "res_foco_no_inimigo",
+          "nome": "Foco no Inimigo",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "temporaria"
+        },
+        {
+          "canal": "dadosNomeados",
+          "alvo": "d12",
+          "valor": 1,
+          "origem": "res_foco_no_inimigo",
+          "nome": "Foco no Inimigo",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "temporaria"
+        },
+        {
+          "canal": "bonusPericia",
+          "alvo": "percepcao",
+          "valor": 5,
+          "origem": "res_foco_no_inimigo",
+          "nome": "Foco no Inimigo",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "temporaria"
+        },
+        {
+          "canal": "atencao",
+          "alvo": null,
+          "valor": 5,
+          "origem": "res_foco_no_inimigo",
+          "nome": "Foco no Inimigo",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "temporaria"
+        }
+      ],
+      "usos": null
+    },
+    {
+      "id": "res_precisao_forcada",
+      "nome": "Precisão Forçada",
+      "efeitos": [],
+      "usos": null
+    },
+    {
+      "id": "res_roubo_de_habilidade",
+      "nome": "Roubo de Habilidade",
+      "efeitos": [],
+      "usos": null
+    },
+    {
+      "id": "res_respeito_celeste",
+      "nome": "Respeito Celeste",
+      "efeitos": [],
+      "usos": null
+    },
+    {
+      "id": "res_perceber_o_ar",
+      "nome": "Perceber o Ar",
+      "efeitos": [],
+      "usos": null
+    },
+    {
+      "id": "res_ainda_de_pe",
+      "nome": "Ainda de Pé",
+      "efeitos": [
+        {
+          "canal": "curaDados",
+          "alvo": "cura_ainda_de_pe",
+          "valor": 6,
+          "origem": "res_ainda_de_pe",
+          "nome": "Ainda de Pé",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "permanente"
+        },
+        {
+          "canal": "curaFaces",
+          "alvo": "cura_ainda_de_pe",
+          "valor": 10,
+          "origem": "res_ainda_de_pe",
+          "nome": "Ainda de Pé",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "permanente"
+        },
+        {
+          "canal": "curaFixa",
+          "alvo": "cura_ainda_de_pe",
+          "valor": 30,
+          "origem": "res_ainda_de_pe",
+          "nome": "Ainda de Pé",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "permanente"
+        },
+        {
+          "canal": "curaUsos",
+          "alvo": "cura_ainda_de_pe",
+          "valor": 1,
+          "origem": "res_ainda_de_pe",
+          "nome": "Ainda de Pé",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "permanente"
+        }
+      ],
+      "usos": null
+    },
+    {
+      "id": "res_rejeitar_a_morte",
+      "nome": "Rejeitar a Morte",
+      "efeitos": [],
+      "usos": null
+    },
+    {
+      "id": "res_mesmo_morto",
+      "nome": "Mesmo Morto",
+      "efeitos": [],
+      "usos": null
+    },
+    {
+      "id": "res_adrenalina_absoluta",
+      "nome": "Adrenalina Absoluta",
+      "efeitos": [
+        {
+          "canal": "movimento",
+          "alvo": null,
+          "valor": 3,
+          "origem": "res_adrenalina_absoluta",
+          "nome": "Adrenalina Absoluta",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "temporaria"
+        },
+        {
+          "canal": "defesa",
+          "alvo": null,
+          "valor": 2,
+          "origem": "res_adrenalina_absoluta",
+          "nome": "Adrenalina Absoluta",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "temporaria"
+        }
+      ],
+      "usos": null
+    },
+    {
+      "id": "res_barreira_inamovivel",
+      "nome": "Barreira Inamovível",
+      "efeitos": [],
+      "usos": null
+    },
+    {
+      "id": "res_imitacao",
+      "nome": "Imitação",
+      "efeitos": [],
+      "usos": null
+    },
+    {
+      "id": "res_tecnicas_de_memorizacao",
+      "nome": "Técnicas de Memorização",
+      "efeitos": [],
+      "usos": null
+    },
+    {
+      "id": "res_imitacao_perfeita",
+      "nome": "Imitação Perfeita",
+      "efeitos": [],
+      "usos": null
+    },
+    {
+      "id": "res_ataque_extra",
+      "nome": "Ataque Extra",
+      "efeitos": [],
+      "usos": null
+    },
+    {
+      "id": "res_corpo_de_aco",
+      "nome": "Corpo de Aço",
+      "efeitos": [
+        {
+          "canal": "hp",
+          "alvo": null,
+          "valor": 30,
+          "origem": "res_corpo_de_aco",
+          "nome": "Corpo de Aço",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "permanente"
+        },
+        {
+          "canal": "regeneracaoDados",
+          "alvo": null,
+          "valor": 4,
+          "origem": "res_corpo_de_aco",
+          "nome": "Corpo de Aço",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "temporaria"
+        },
+        {
+          "canal": "regeneracaoFaces",
+          "alvo": null,
+          "valor": 8,
+          "origem": "res_corpo_de_aco",
+          "nome": "Corpo de Aço",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "temporaria"
+        },
+        {
+          "canal": "regeneracaoFixa",
+          "alvo": null,
+          "valor": 10,
+          "origem": "res_corpo_de_aco",
+          "nome": "Corpo de Aço",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "temporaria"
+        }
+      ],
+      "usos": null
+    },
+    {
+      "id": "res_surto_de_adrenalina",
+      "nome": "Surto de Adrenalina",
+      "efeitos": [
+        {
+          "canal": "rdGeral",
+          "alvo": null,
+          "valor": 15,
+          "origem": "res_surto_de_adrenalina",
+          "nome": "Surto de Adrenalina",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "temporaria"
+        },
+        {
+          "canal": "bonusTR",
+          "alvo": "fortitude",
+          "valor": 5,
+          "origem": "res_surto_de_adrenalina",
+          "nome": "Surto de Adrenalina",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "temporaria"
+        },
+        {
+          "canal": "bonusTR",
+          "alvo": "reflexos",
+          "valor": 5,
+          "origem": "res_surto_de_adrenalina",
+          "nome": "Surto de Adrenalina",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "temporaria"
+        },
+        {
+          "canal": "bonusPericia",
+          "alvo": "percepcao",
+          "valor": 8,
+          "origem": "res_surto_de_adrenalina",
+          "nome": "Surto de Adrenalina",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "temporaria"
+        }
+      ],
+      "usos": null
+    },
+    {
+      "id": "res_resiliencia_pela_adrenalina",
+      "nome": "Resiliência pela Adrenalina",
+      "efeitos": [
+        {
+          "canal": "dadosTR",
+          "alvo": "d3",
+          "valor": 2,
+          "origem": "res_resiliencia_pela_adrenalina",
+          "nome": "Resiliência pela Adrenalina",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "temporaria"
+        }
+      ],
+      "usos": null
+    },
+    {
+      "id": "res_adrenalina_intensificadora",
+      "nome": "Adrenalina Intensificadora",
+      "efeitos": [
+        {
+          "canal": "bonusPericia",
+          "alvo": "atletismo",
+          "valor": 8,
+          "origem": "res_adrenalina_intensificadora",
+          "nome": "Adrenalina Intensificadora",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "temporaria"
+        }
+      ],
+      "usos": null
+    },
+    {
+      "id": "res_restrito_pelos_ceus",
+      "nome": "Restrito pelos Céus",
+      "efeitos": [
+        {
+          "canal": "defesa",
+          "alvo": null,
+          "valor": 10,
+          "origem": "res_restrito_pelos_ceus",
+          "nome": "Restrito pelos Céus",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "permanente"
+        }
+      ],
+      "usos": null
+    },
+    {
+      "id": "res_ataque_furtivo",
+      "nome": "Ataque Furtivo",
+      "efeitos": [],
+      "usos": null
+    },
+    {
+      "id": "res_versatilidade",
+      "nome": "Versatilidade",
+      "efeitos": [
+        {
+          "canal": "bonusPericia",
+          "alvo": null,
+          "valor": 2,
+          "origem": "res_versatilidade",
+          "nome": "Versatilidade",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "permanente"
+        }
+      ],
+      "usos": null
+    },
+    {
+      "id": "res_esquiva_sobre_humana",
+      "nome": "Esquiva Sobre-humana",
+      "efeitos": [
+        {
+          "canal": "defesa",
+          "alvo": null,
+          "valor": 3,
+          "origem": "res_esquiva_sobre_humana",
+          "nome": "Esquiva Sobre-humana",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "permanente"
+        },
+        {
+          "canal": "bonusTR",
+          "alvo": "reflexos",
+          "valor": 3,
+          "origem": "res_esquiva_sobre_humana",
+          "nome": "Esquiva Sobre-humana",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "permanente"
+        },
+        {
+          "canal": "margemCriticoTR",
+          "alvo": "reflexos",
+          "valor": 4,
+          "origem": "res_esquiva_sobre_humana",
+          "nome": "Esquiva Sobre-humana",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "permanente"
+        }
+      ],
+      "usos": null
+    },
+    {
+      "id": "res_implemento_celeste",
+      "nome": "Implemento Celeste",
+      "efeitos": [
+        {
+          "canal": "cd",
+          "alvo": null,
+          "valor": 4,
+          "origem": "res_implemento_celeste",
+          "nome": "Implemento Celeste",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "permanente"
+        }
+      ],
+      "usos": null
+    },
+    {
+      "id": "res_restricao_definitiva",
+      "nome": "Restrição Definitiva",
+      "efeitos": [
+        {
+          "canal": "nivelDano",
+          "alvo": "arma",
+          "valor": 1,
+          "origem": "res_restricao_definitiva",
+          "nome": "Restrição Definitiva",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "permanente"
+        },
+        {
+          "canal": "movimento",
+          "alvo": null,
+          "valor": 3,
+          "origem": "res_restricao_definitiva",
+          "nome": "Restrição Definitiva",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "permanente"
+        }
+      ],
+      "usos": null
+    },
+    {
+      "id": "res_libertacao_do_destino",
+      "nome": "Libertação do Destino",
+      "efeitos": [
+        {
+          "canal": "bonusAcerto",
+          "alvo": null,
+          "valor": 5,
+          "origem": "res_libertacao_do_destino",
+          "nome": "Libertação do Destino",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "permanente"
+        },
+        {
+          "canal": "danoBonus",
+          "alvo": null,
+          "valor": 15,
+          "origem": "res_libertacao_do_destino",
+          "nome": "Libertação do Destino",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "permanente"
+        }
+      ],
+      "usos": null
+    },
+    {
+      "id": "lut_corpo_supremo",
+      "nome": "Corpo Supremo",
+      "efeitos": [
+        {
+          "canal": "movimento",
+          "alvo": null,
+          "valor": 3,
+          "origem": "lut_corpo_supremo",
+          "nome": "Corpo Supremo",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "permanente"
+        },
+        {
+          "canal": "defesa",
+          "alvo": null,
+          "valor": 4,
+          "origem": "lut_corpo_supremo",
+          "nome": "Corpo Supremo",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "permanente"
+        },
+        {
+          "canal": "rdGeral",
+          "alvo": null,
+          "valor": 7,
+          "origem": "lut_corpo_supremo",
+          "nome": "Corpo Supremo",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "permanente"
+        },
+        {
+          "canal": "rdFisico",
+          "alvo": null,
+          "valor": 8,
+          "origem": "lut_corpo_supremo",
+          "nome": "Corpo Supremo",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "permanente"
+        }
+      ],
+      "usos": null
+    },
+    {
+      "id": "cmb_surto_de_acao",
+      "nome": "Surto de Ação",
+      "efeitos": [],
+      "usos": {
+        "max": 4,
+        "recarga": "longo",
+        "chave": "hab:cmb_surto_de_acao"
+      }
+    },
+    {
+      "id": "lut_corpo_calejado",
+      "nome": "Corpo Calejado",
+      "efeitos": [
+        {
+          "canal": "defesa",
+          "alvo": null,
+          "valor": 5,
+          "origem": "lut_corpo_calejado",
+          "nome": "Corpo Calejado",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "permanente"
+        }
+      ],
+      "usos": null
+    },
+    {
+      "id": "cmb_guarda_estudada",
+      "nome": "Guarda Estudada",
+      "efeitos": [
+        {
+          "canal": "defesa",
+          "alvo": null,
+          "valor": 5,
+          "origem": "cmb_guarda_estudada",
+          "nome": "Guarda Estudada",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "permanente"
+        }
+      ],
+      "usos": null
+    },
+    {
+      "id": "cmb_especialista_em_escudo",
+      "nome": "Especialista em Escudo",
+      "efeitos": [
+        {
+          "canal": "bonusTR",
+          "alvo": "reflexos",
+          "valor": 6,
+          "origem": "cmb_especialista_em_escudo",
+          "nome": "Especialista em Escudo",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "permanente"
+        },
+        {
+          "canal": "bonusTR",
+          "alvo": "fortitude",
+          "valor": 6,
+          "origem": "cmb_especialista_em_escudo",
+          "nome": "Especialista em Escudo",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "permanente"
+        }
+      ],
+      "usos": null
+    },
+    {
+      "id": "cmb_espirito_de_luta",
+      "nome": "Espírito de Luta",
+      "efeitos": [
+        {
+          "canal": "bonusAcerto",
+          "alvo": null,
+          "valor": 2,
+          "origem": "cmb_espirito_de_luta",
+          "nome": "Espírito de Luta",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "temporaria"
+        },
+        {
+          "canal": "pvTemporario",
+          "alvo": null,
+          "valor": 30,
+          "origem": "cmb_espirito_de_luta",
+          "nome": "Espírito de Luta",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "temporaria"
+        }
+      ],
+      "usos": null
+    },
+    {
+      "id": "cmb_espirito_incansavel",
+      "nome": "Espírito Incansável",
+      "efeitos": [
+        {
+          "canal": "bonusAcerto",
+          "alvo": null,
+          "valor": 3,
+          "origem": "cmb_espirito_incansavel",
+          "nome": "Espírito Incansável",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "temporaria"
+        },
+        {
+          "canal": "pvTemporario",
+          "alvo": null,
+          "valor": 8,
+          "origem": "cmb_espirito_incansavel",
+          "nome": "Espírito Incansável",
+          "furaTeto": false,
+          "semCredito": false,
+          "duracao": "temporaria"
+        }
+      ],
+      "usos": null
+    }
+  ],
+  "fontes": [
+    {
+      "nome": "Ataque Extra",
+      "pagina": 57,
+      "linha": 1375
+    },
+    {
+      "nome": "Corpo Calejado",
+      "pagina": 57,
+      "linha": 1381
+    },
+    {
+      "nome": "Corpo Supremo",
+      "pagina": 61,
+      "linha": 1489
+    },
+    {
+      "nome": "Especialista em Escudo",
+      "pagina": 69,
+      "linha": 1722
+    },
+    {
+      "nome": "Espírito de Luta",
+      "pagina": 69,
+      "linha": 1725
+    },
+    {
+      "nome": "Guarda Estudada",
+      "pagina": 69,
+      "linha": 1731
+    },
+    {
+      "nome": "Ataque Extra",
+      "pagina": 71,
+      "linha": 1761
+    },
+    {
+      "nome": "Espírito Incansável",
+      "pagina": 73,
+      "linha": 1808
+    },
+    {
+      "nome": "Surto de Ação",
+      "pagina": 73,
+      "linha": 1820
+    },
+    {
+      "nome": "Reação Rápida",
+      "pagina": 83,
+      "linha": 2065
+    },
+    {
+      "nome": "Versatilidade",
+      "pagina": 85,
+      "linha": 2136
+    },
+    {
+      "nome": "Versatilidade",
+      "pagina": 88,
+      "linha": 2238
+    },
+    {
+      "nome": "Versatilidade",
+      "pagina": 103,
+      "linha": 2581
+    },
+    {
+      "nome": "Restrito pelos Céus",
+      "pagina": 114,
+      "linha": 2868
+    },
+    {
+      "nome": "Ataque Furtivo",
+      "pagina": 115,
+      "linha": 2879
+    },
+    {
+      "nome": "Versatilidade",
+      "pagina": 115,
+      "linha": 2883
+    },
+    {
+      "nome": "Esquiva Sobre-humana",
+      "pagina": 115,
+      "linha": 2887
+    },
+    {
+      "nome": "Implemento Celeste",
+      "pagina": 115,
+      "linha": 2891
+    },
+    {
+      "nome": "Restrição Definitiva",
+      "pagina": 115,
+      "linha": 2899
+    },
+    {
+      "nome": "Libertação do Destino",
+      "pagina": 115,
+      "linha": 2909
+    },
+    {
+      "nome": "Imitação",
+      "pagina": 117,
+      "linha": 2970
+    },
+    {
+      "nome": "Roubo de Habilidade",
+      "pagina": 118,
+      "linha": 2982
+    },
+    {
+      "nome": "Surto de Adrenalina",
+      "pagina": 118,
+      "linha": 2986
+    },
+    {
+      "nome": "Adrenalina Intensificadora",
+      "pagina": 119,
+      "linha": 3001
+    },
+    {
+      "nome": "Caçador de Feiticeiros",
+      "pagina": 119,
+      "linha": 3004
+    },
+    {
+      "nome": "Foco no Inimigo",
+      "pagina": 119,
+      "linha": 3010
+    },
+    {
+      "nome": "Resiliência pela Adrenalina",
+      "pagina": 119,
+      "linha": 3016
+    },
+    {
+      "nome": "Técnicas de Memorização",
+      "pagina": 119,
+      "linha": 3020
+    },
+    {
+      "nome": "Ataque Extra",
+      "pagina": 120,
+      "linha": 3031
+    },
+    {
+      "nome": "Corpo de Aço",
+      "pagina": 120,
+      "linha": 3037
+    },
+    {
+      "nome": "Ainda de Pé",
+      "pagina": 121,
+      "linha": 3056
+    },
+    {
+      "nome": "Barreira Inamovível",
+      "pagina": 121,
+      "linha": 3062
+    },
+    {
+      "nome": "Força Imparável",
+      "pagina": 121,
+      "linha": 3065
+    },
+    {
+      "nome": "Imitação",
+      "pagina": 121,
+      "linha": 3068
+    },
+    {
+      "nome": "Imitação Perfeita",
+      "pagina": 121,
+      "linha": 3068
+    },
+    {
+      "nome": "Reação Rápida",
+      "pagina": 121,
+      "linha": 3074
+    },
+    {
+      "nome": "Respeito Celeste",
+      "pagina": 121,
+      "linha": 3077
+    },
+    {
+      "nome": "Perceber o Ar",
+      "pagina": 122,
+      "linha": 3092
+    },
+    {
+      "nome": "Precisão Forçada",
+      "pagina": 122,
+      "linha": 3096
+    },
+    {
+      "nome": "Adrenalina Absoluta",
+      "pagina": 123,
+      "linha": 3108
+    },
+    {
+      "nome": "Pináculo Físico",
+      "pagina": 123,
+      "linha": 3111
+    },
+    {
+      "nome": "Rejeitar a Morte",
+      "pagina": 123,
+      "linha": 3114
+    },
+    {
+      "nome": "Instintos Aguçados",
+      "pagina": 123,
+      "linha": 3122
+    },
+    {
+      "nome": "Mesmo Morto",
+      "pagina": 123,
+      "linha": 3125
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+import fs from 'node:fs';const p='docs/afty-status.md';let s=fs.readFileSync(p,'utf8').replace('O criador recupera aprendidas e a cópia atual da sessão.','O criador recupera aprendidas e a cópia atual da sessão, inclusive ao restaurar um\nrascunho anterior sem esses campos, preservando os demais dados do trabalho em curso.');fs.writeFileSync(p,s);

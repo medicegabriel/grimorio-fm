@@ -1,0 +1,50 @@
+[
+  {
+    "arquivo": "t-g2-desempenho.mjs",
+    "codigo": 0,
+    "ms": 1112,
+    "resumo": [
+      "TODOS OS 23 ASSERTS PASSARAM"
+    ]
+  },
+  {
+    "arquivo": "t-g2-preferencias.mjs",
+    "codigo": 0,
+    "ms": 324,
+    "resumo": [
+      "TODOS OS 42 ASSERTS PASSARAM"
+    ]
+  },
+  {
+    "arquivo": "t-g2-sessao-operacoes.mjs",
+    "codigo": 0,
+    "ms": 388,
+    "resumo": [
+      "TODOS OS 51 ASSERTS PASSARAM"
+    ]
+  },
+  {
+    "arquivo": "t-g2-virada-registro.mjs",
+    "codigo": 0,
+    "ms": 357,
+    "resumo": [
+      "TODOS OS 57 ASSERTS PASSARAM"
+    ]
+  },
+  {
+    "arquivo": "t-ordem-modulos.mjs",
+    "codigo": 0,
+    "ms": 1447,
+    "resumo": [
+      "TODOS OS 36 ASSERTS PASSARAM"
+    ]
+  },
+  {
+    "arquivo": "t-revisao-g00.mjs",
+    "codigo": 0,
+    "ms": 1555,
+    "resumo": [
+      "TODOS OS 35 ASSERTS PASSARAM"
+    ]
+  }
+]

@@ -1,0 +1,38 @@
+[
+  {
+    "arquivo": "addons/retracao-de-dominio.json",
+    "sha256": "fa3f816d461b9c274349c230b1ced7e40fc989f5c7b1fbdd343ac6c6062104dd"
+  },
+  {
+    "arquivo": "asserts/t-retracao-de-dominio.mjs",
+    "sha256": "47239a0a6134432aa531cdfa84de4df5ea56a61da9e7ef7cd8d940eada2cc125"
+  },
+  {
+    "arquivo": "src/systems/afty/afty-addons.js",
+    "sha256": "87d2e78fec4cabd0894546b77864e195854acec60b42e7ed82474ccc65f5db91"
+  },
+  {
+    "arquivo": "src/systems/afty/afty-derive.js",
+    "sha256": "fd4368ed16bcf952a16ad9de613410bcda8a74fc640b277a761547d0555e4638"
+  },
+  {
+    "arquivo": "src/systems/afty/ficha/ficha-sessao.js",
+    "sha256": "a1d2e7c344ccd35762f2f4823d018b3a87f5e202d184af94662c28e410cb344f"
+  },
+  {
+    "arquivo": "docs/afty-addons.md",
+    "sha256": "6436801b31e7bdfcc64a3cdb6739050fb8704b78835fc75a90ad3eaa1b2cc02d"
+  },
+  {
+    "arquivo": "docs/automacao-dsl.md",
+    "sha256": "1e772ce196e227fdbafe54634470656e331e8d0eb8a512d11e70c6478b32fb6a"
+  },
+  {
+    "arquivo": "docs/afty-formulas-base.md",
+    "sha256": "eca392acecca2df43a17260e11e6e4c6ca34bd6e99b4d84460cbac3691453784"
+  },
+  {
+    "arquivo": "docs/afty-status.md",
+    "sha256": "6a4965e87eb22b9a9526be0beb21317273df9994412ef8c0c0e1374d19e798fb"
+  }
+]

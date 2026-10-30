@@ -1,0 +1,19 @@
+{
+  "id": "treino-de-habilidade-afty",
+  "nome": "Treino de Habilidade do Afty",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Na Ficha de Player, o Treinamento para Habilidade passa a ter o teto do Grimório Afty: 1 até o 9° nível e mais 1 a cada 10 níveis, sem parar (2 no 10°, 3 no 20°, 4 no 30°, 5 no 40° e assim por diante). O teste, a CD e o custo em Interlúdios continuam os do Player. Na ficha de criatura nada muda.",
+  "resumo": "O teto do Treino para Habilidade no Player passa a ser o do Afty: +1 a cada 10 níveis",
+  "categoria": "regras",
+  "substitui": {
+    "treinosEspeciais": [
+      {
+        "id": "tes_habilidade",
+        "tetoJogador": null,
+        "descricao": "O Treinamento já é uma opção presente no Livro Básico. Entretanto, este treinamento adiciona mais uma possibilidade, oferecendo uma nova maneira de desenvolvimento e crescimento.\n\nAo escolher a opção do Treinamento para Habilidade, você deve escolher uma habilidade de especialização cujos requisitos sejam atendidos, transformando-a no objetivo do seu treinamento. Logo após, você deve escolher um dos seus atributos e descrever como é o treino, realizando quatro testes de habilidade com o atributo escolhido. Os testes possuem CD igual a 12 + metade do seu nível, e o personagem deve suceder em pelo menos três deles para completar o seu treinamento.\n\nCaso não consiga completar o treinamento, você mantém os seus sucessos, podendo tentar novamente em outro interlúdio.\n\nUm personagem pode obter apenas uma habilidade adicional a partir desse treinamento até o 9° nível. A partir do 10° nível, pode obter uma habilidade a mais, e mais uma a cada 10 níveis seguintes (20°, 30°, 40° e assim por diante)."
+      }
+    ]
+  }
+}

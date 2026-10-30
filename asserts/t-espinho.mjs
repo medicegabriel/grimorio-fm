@@ -18,6 +18,9 @@
  * 5. O Equipamento marcado vira Grau Especial por derivação, e a Habilidade
  *    Única do Aprimoramento disputa na família da primeira, sem Slot de Feitiço.
  * 6. Sem o pacote nada rende, e tirar só o `permite` não muda número.
+ * 7. A Lanterna Coletora de Almas (2026-10-12) é o MESMO catálogo com outro
+ *    nome e outra pele, o Alter vale nela, e a Maestria anotada troca o BT só
+ *    nos tetos.
  */
 import { register } from "node:module";
 register(
@@ -47,8 +50,9 @@ const t = (nome, real, esp) => {
 const ler = (nome) => JSON.parse(readFileSync(fileURLToPath(new URL(`../addons/${nome}`, import.meta.url)), "utf8"));
 const espinho = A.normalizarPacote(ler("espinho.json"));
 const alter = A.normalizarPacote(ler("alter.json"));
+const lanterna = A.normalizarPacote(ler("lanterna-coletora-de-almas.json"));
 // O Talento Adicional é conteúdo de catálogo, e precisa do registro.
-A.aplicarAddons([espinho, alter]);
+A.aplicarAddons([espinho, alter, lanterna]);
 const TALENTO = "espinho:tal_determinado_a_viver_adicional";
 
 /* ============================================================ */
@@ -101,7 +105,7 @@ const UNIFORME = EQ.catalogoDoTipo("uniforme")[0].id;
 
 const ficha = ({
   sistema = "player", nd = 9, compras = {}, almas = 200, outros = 0,
-  equipamentos = [], itens = [], addons = [espinho], passivo = null,
+  equipamentos = [], itens = [], addons = [espinho], passivo = null, maestria = null,
 } = {}) => {
   const f = createBlankAfty();
   f.rulesVersion = sistema;
@@ -109,7 +113,7 @@ const ficha = ({
   f.especializacoes = [{ id: "lutador", nivel: nd }];
   f.attributes = { forca: 16, destreza: 14, constituicao: 16, inteligencia: 12, sabedoria: 12, presenca: 12 };
   f.addons = addons;
-  f.espinho = { almas, outros, compras, equipamentos };
+  f.espinho = { almas, outros, compras, equipamentos, maestria };
   f.equipamentos = { itens };
   if (passivo != null) {
     f.feiticos = [{ id: "fp1", tipo: "passivo", nome: "Passiva", nivel: 1, efeitosPassivo: [{ canal: "defesa", expr: String(passivo) }] }];
@@ -219,7 +223,7 @@ t("compra de item que o pacote não tem aparece para ser apagada",
   deriveAfty(ficha({ compras: { sumiu: 2 } })).espinho.comprasMortas, [{ id: "sumiu", qtd: 2 }]);
 t("estado sujo vira zero, sem quebrar",
   E.estadoDoEspinho({ espinho: { almas: "x", outros: -3, compras: { a: "2", b: -1 }, equipamentos: [{ uid: "u" }, { uid: "u" }, {}] } }),
-  { almas: 0, outros: 0, compras: { a: 2 }, equipamentos: [{ uid: "u", aprimorado: false }] });
+  { almas: 0, outros: 0, compras: { a: 2 }, equipamentos: [{ uid: "u", aprimorado: false }], maestria: null });
 
 /* ============================================================ */
 /* 6. O TALENTO FORA DO SELETOR                                  */
@@ -321,6 +325,101 @@ const rCom = resumoAtributos(fAtr, null, null, deriveAfty(fAtr).pontosAtributoEx
 t("o pool de nível ganha os pontos extras", rCom.nivelTotal - rSem.nivelTotal, 3);
 t("com as duas parcelas separadas para o hover", [rCom.pontosNivel, rCom.pontosExtras], [rSem.nivelTotal, 3]);
 t("extras sujos viram zero", resumoAtributos(fAtr, null, null, "x").pontosExtras, 0);
+
+/* ============================================================ */
+/* 10. A LANTERNA COLETORA DE ALMAS (2026-10-12)                 */
+/* ============================================================ */
+/* Autor: *"Ele é IDENTICO ao addon do ESPINHO. Só muda a paleta de cores"*, e
+   depois: *"Faça ele também sobre o efeito do Addon Alter"* e *"algum local
+   para anotarmos a Maestria"*. */
+const TALENTO_L = "lanterna-coletora-de-almas:tal_determinado_a_viver_adicional";
+const NOME_L = "Lanterna Coletora de Almas";
+t("a Lanterna valida sem problema", A.validarPacote(lanterna), []);
+t("e pede a MESMA primitiva (é o mesmo card)", lanterna.permite, ["espinho"]);
+
+const cfgL = A.espinhoDaFicha({ addons: [lanterna] });
+t("a identidade é a dela", [cfgL.nome, cfgL.artigo, cfgL.visual, cfgL.maestriaAnotada], [NOME_L, "a", "lanterna", true]);
+t("o Espinho segue com a dele, sem anotação",
+  [cfg.nome, cfg.artigo, cfg.visual, cfg.maestriaAnotada], ["Espinho", "o", "espinho", false]);
+/* ⚠ O CATÁLOGO É O MESMO, campo a campo. Só a descrição pode citar o nome, e o
+   Talento concedido leva o namespace de cada pacote. Este é o assert que
+   pega a Lanterna saindo do Espinho calada, se um preço mudar só num deles. */
+const regra = (i) => ({ ...i, descricao: undefined, concedeTalento: i.concedeTalento ? i.concedeTalento.split(":").pop() : null });
+t("a Lanterna tem o mesmo catálogo do Espinho", cfgL.itens.map(regra), cfg.itens.map(regra));
+t("o Talento dela ganha o namespace dela", cfgL.itens.find((i) => i.id === "determinado").concedeTalento, TALENTO_L);
+t("nenhuma descrição dela fala do Espinho", cfgL.itens.some((i) => /Espinho/.test(i.descricao)), false);
+
+/* Os dois juntos são uma loja só, e a cara é de quem veio primeiro. */
+t("Espinho antes: a cara é do Espinho", A.espinhoDaFicha({ addons: [espinho, lanterna] }).nome, "Espinho");
+t("Lanterna antes: a cara é dela", A.espinhoDaFicha({ addons: [lanterna, espinho] }).nome, NOME_L);
+t("e os itens não dobram", A.espinhoDaFicha({ addons: [lanterna, espinho] }).itens.length, cfg.itens.length);
+t("o Alter na frente não rouba a cara (ele não traz itens)", A.espinhoDaFicha({ addons: [alter, lanterna] }).visual, "lanterna");
+t("a anotação liga com qualquer pacote que a declare",
+  A.espinhoDaFicha({ addons: [espinho, { id: "y", espinho: { maestriaAnotada: true } }] }).maestriaAnotada, true);
+t("visual desconhecido reprova", invalido({ visual: "neon", multiplicadorTeto: 1.5 }).length > 0, true);
+t("artigo fora de o/a reprova", invalido({ artigo: "le", multiplicadorTeto: 1.5 }).length > 0, true);
+t("só a anotação já é um campo válido", invalido({ maestriaAnotada: true }), []);
+
+/* Os tetos são os do Espinho, e o Alter vale nela. */
+for (const nd of [1, 9, 17]) {
+  const ids = ["especializacao", "nivel_aptidao", "treinamento", "lendaria", "melhoria", "determinado", "pericia"];
+  t(`nível ${nd}: a Lanterna tem os tetos do Espinho`,
+    ids.map((id) => item(deriveAfty(ficha({ nd, addons: [lanterna] })), id).teto),
+    ids.map((id) => item(deriveAfty(ficha({ nd })), id).teto));
+  t(`nível ${nd}: e o Alter multiplica igual`,
+    ids.map((id) => item(deriveAfty(ficha({ nd, addons: [lanterna, alter] })), id).teto),
+    ids.map((id) => item(deriveAfty(ficha({ nd, addons: [espinho, alter] })), id).teto));
+}
+
+/* A Maestria anotada. */
+const dReal = deriveAfty(ficha({ nd: 17, addons: [lanterna] }));
+const btAlto = dReal.maestria;
+t("prova: a ficha do nível 17 tem Maestria acima de 2", btAlto > 2, true);
+t("vazio usa a Maestria real", dReal.espinho.maestria, { real: btAlto, anotada: null, usada: btAlto });
+const dAnot = deriveAfty(ficha({ nd: 17, addons: [lanterna], maestria: 2 }));
+t("anotada 2: os tetos que leem o BT descem para 2",
+  ["especializacao", "talento", "treinamento", "lendaria", "melhoria", "alma"].map((id) => item(dAnot, id).teto), [2, 2, 4, 1, 1, 2]);
+t("os tetos fixos não mudam", ["nivel_aptidao", "determinado", "pericia"].map((id) => item(dAnot, id).teto), [2, 1, null]);
+t("o extrato diz a anotada e a real", dAnot.espinho.maestria, { real: btAlto, anotada: 2, usada: 2 });
+t("anotada com o Alter: o 1,5 vem por cima, com um piso só",
+  ["especializacao", "treinamento", "lendaria"].map((id) => item(deriveAfty(ficha({ nd: 17, addons: [lanterna, alter], maestria: 2 })), id).teto),
+  [3, 6, 1]);
+t("anotada acima da real também vale (é o que está escrito)",
+  item(deriveAfty(ficha({ nd: 1, addons: [lanterna], maestria: 9 })), "especializacao").teto, 9);
+t("anotada 0 zera os tetos do BT", item(deriveAfty(ficha({ nd: 17, addons: [lanterna], maestria: 0 })), "talento").teto, 0);
+t("a anotação não mexe no BT da ficha", [dAnot.maestria, dAnot.bonusTreinamento ?? null], [dReal.maestria, dReal.bonusTreinamento ?? null]);
+t("nem nas compras: as vagas rendem igual",
+  numeros(deriveAfty(ficha({ nd: 17, addons: [lanterna], compras: TUDO, maestria: 2 }))),
+  numeros(deriveAfty(ficha({ nd: 17, addons: [lanterna], compras: TUDO }))));
+t("passar do teto anotado avisa e não remove",
+  deriveAfty(ficha({ nd: 17, addons: [lanterna], compras: { talento: 4 }, maestria: 2 })).espinho.avisos.includes("Talento: 4 de 2 (excedeu)."), true);
+t("o Espinho ignora a anotação (o pacote dele não abre o campo)",
+  [item(deriveAfty(ficha({ nd: 17, maestria: 2 })), "talento").teto, deriveAfty(ficha({ nd: 17, maestria: 2 })).espinho.maestria],
+  [btAlto, null]);
+t("estado: vazio é null, número é número, negativo vira zero",
+  ["", "3", -1, undefined].map((m) => E.estadoDoEspinho({ espinho: { maestria: m } }).maestria), [null, 3, 0, null]);
+
+/* O nome dela onde o jogador lê. */
+for (const sistema of ["player", "afty"]) {
+  const S = `[${sistema}]`;
+  const dL = deriveAfty(ficha({ sistema, addons: [lanterna], compras: { atributo: 2 } }));
+  t(`${S} o hover nomeia a Lanterna`, dL.partes.pontosAtributoExtra, [{ label: `${NOME_L} (Aumento de Atributo)`, valor: 2 }]);
+  t(`${S} as compras rendem igual às do Espinho`,
+    numeros(deriveAfty(ficha({ sistema, addons: [lanterna], compras: TUDO }))),
+    numeros(deriveAfty(ficha({ sistema, compras: TUDO }))));
+  t(`${S} o Determinado a Viver dela entra pelo id dela`,
+    deriveAfty(ficha({ sistema, addons: [lanterna], compras: { determinado: 1 } })).talentos.escolhidas.includes(TALENTO_L), true);
+}
+const dEqL = deriveAfty(ficha({ addons: [lanterna], itens: [arma("e1", { espinhoHu: [def(2)] })], equipamentos: [{ uid: "e1", aprimorado: true }] }));
+t("o item marcado leva o nome e a pele dela",
+  [entrada(dEqL, "e1").fa.doEspinho, entrada(dEqL, "e1").fa.espinhoNome, entrada(dEqL, "e1").fa.espinhoArtigo, entrada(dEqL, "e1").fa.espinhoVisual],
+  [true, NOME_L, "a", "lanterna"]);
+t("a Habilidade Única do Aprimoramento diz 'da Lanterna'",
+  dEqL.efeitos.detalhes.some((x) => x.canal === "defesa" && x.nome.includes(`Habilidade Única da ${NOME_L}`)), true);
+t("e nenhuma linha dela diz Espinho",
+  dEqL.efeitos.detalhes.some((x) => /Espinho/.test(x.nome ?? "")), false);
+t("o marcado pelo Espinho segue dizendo Espinho",
+  entrada(deriveAfty(ficha({ itens: [arma("e1")], equipamentos: [{ uid: "e1" }] })), "e1").fa.espinhoNome, "Espinho");
 
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 process.exitCode = bad.length ? 1 : 0;

@@ -90,6 +90,12 @@ const FOLHAS = [
   // Entrou em 2026-10-04: o catálogo do Novo Estilo das Sombras (Expansão), lido
   // pelo afty-estilo-sombras, pelo derive e pelo criador.
   ["afty-estilo-sombras-catalogo.js", "o afty-estilo-sombras o importa, e o criador importa os dois no topo"],
+  // Entrou em 2026-10-27: as tabelas e o cálculo da Técnica Marcial de Ataque, lidos
+  // pelo afty-feiticos e pelo derive. A Condição chega por parâmetro, porque muda com Addon.
+  ["afty-tecnicas-marciais.js", "o afty-feiticos o importa, e o criador importa o afty-feiticos no topo"],
+  // Entrou em 2026-10-19: o formato e a biblioteca dos Pacotes para Aliados, lidos pela
+  // ficha diária (a aba Buffs), pelo G2 e pelos asserts.
+  ["ficha/pacotes-aliados.js", "a aba Buffs da ficha diaria o le, e ela entra cedo"],
   ["afty-schema.js", "todo mundo cria ficha em branco"],
   ["afty-dsl.js", "o avaliador não pode depender de conteúdo"],
   ["afty-sistema.js", "regraDo() é lido de dentro dos catálogos"],

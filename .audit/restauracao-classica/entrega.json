@@ -1,0 +1,16 @@
+{
+  "restauracao": "2026-10-17",
+  "hashes": {
+    "src/systems/afty/ficha/AftyFicha.jsx": "5bd1a3eafda476e028ef777ff4b830bb5d2ec772c7451478f4a81ee9ba2f2217",
+    "src/systems/afty/ficha/AftyFichaClassica.jsx": "80df6dfd79a84799c14decfdf2dd505a554d887f89f7b96ce65265365fce530c",
+    "src/systems/afty/ficha/AftyFichaG2.jsx": "cc01c065c1be0d58155524ab3c6fc5ebdf0f8bf43f5aad9a0b8f183fc6e88d69"
+  },
+  "classicaIdenticaAoBackup": true,
+  "suite": {
+    "arquivos": 222,
+    "falhasAnteriores": [
+      "t-prodigio.mjs",
+      "t-reconciliacao-g00.mjs"
+    ]
+  }
+}

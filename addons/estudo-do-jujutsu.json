@@ -5,6 +5,8 @@
   "autor": "Templas",
   "paraRaw": "afty",
   "descricao": "Linha de Treinamento não repetível, mesmo desenho de Treino de Compreensão e Controle de Energia: energia amaldiçoada, bônus em Feitiçaria e níveis de Aptidão livres (a mesma vocabulário `tipo`/`valor` do livro, sem canal novo). Fora do Restringido, igual às outras cinco linhas de energia, por não ter energia amaldiçoada nenhuma.",
+  "resumo": "Treino que dá energia amaldiçoada, bônus em Feitiçaria e níveis de Aptidão livres",
+  "categoria": "treinos",
   "acrescenta": {
     "treinamentos": [
       {

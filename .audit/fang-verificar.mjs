@@ -1,0 +1,45 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import { register } from 'node:module';
+register('data:text/javascript,export async function resolve(s,c,n){try{return await n(s,c)}catch(e){if(s.startsWith(".")&&!s.endsWith(".js"))return n(s+".js",c);throw e}}', import.meta.url);
+const {deriveAfty}=await import('../src/systems/afty/afty-derive.js');
+const {aplicarAddons}=await import('../src/systems/afty/afty-addons.js');
+const {HABILIDADE_EFEITOS}=await import('../src/systems/afty/afty-efeitos.js');
+const H=await import('../src/systems/afty/afty-habilidades.js');
+const {COMBATE_ESTADOS}=await import('../src/systems/afty/afty-combate.js');
+const S=await import('../src/systems/afty/ficha/ficha-sessao.js');
+const I=await import('../src/systems/afty/afty-imitacao.js');
+const c=JSON.parse(fs.readFileSync('C:/Users/gabri/.codex/attachments/c2c829c0-1dac-444e-9669-ee7e171779dd/Texto colado.txt','utf8')).creatures[0];
+aplicarAddons(c.addons);
+const d=deriveAfty(c);
+const out={};let n=0;
+const check=(nome,cond,valor)=>{assert.ok(cond,nome);n++;out[nome]=valor;};
+check('reproduz export',d.hp===4548&&d.pe===265&&d.defesa===95&&d.cd===48,{hp:d.hp,pe:d.pe,defesa:d.defesa,cd:d.cd});
+check('nivel efetivo restringido',d.contextoDsl.esc_restringido===30&&d.contextoDsl.esc_lutador===0,{gravado:c.especializacoes,efetivo:d.especializacoes.escolhidas});
+const faltante=d.efeitos.detalhes.filter(x=>x.origem==='lut_corpo_calejado');
+check('corpo calejado sem PV',!faltante.some(x=>x.canal==='hp'&&x.valor>0),faltante);
+const linhas=HABILIDADE_EFEITOS.lut_corpo_calejado;HABILIDADE_EFEITOS.lut_corpo_calejado=linhas.map(e=>e.canal==='hp'?{...e,expr:'esc_restringido'}:e);
+const sim=deriveAfty(c);HABILIDADE_EFEITOS.lut_corpo_calejado=linhas;
+check('simulacao corpo calejado',sim.hp===4746,{atual:d.hp,comNivelRestringido:sim.hp,diferenca:sim.hp-d.hp});
+const guarda=structuredClone(c);guarda.escolhasHabilidade.cmb_guarda_estudada=['cmb_guarda_vontade'];
+const dg=deriveAfty(guarda);
+check('escolha de guarda roubada ignorada',!dg.habilidades.escolhas.mapa.cmb_guarda_estudada,{solicitado:guarda.escolhasHabilidade.cmb_guarda_estudada,resolvido:dg.habilidades.escolhas.mapa.cmb_guarda_estudada??null});
+check('2d3 todos TRs',d.testes.resistencias.every(r=>r.dadosExtras.some(e=>e.faces===3&&e.qtd===2)),d.testes.resistencias.map(r=>({id:r.value,dados:r.dadosExtras})));
+const foco=structuredClone(c);foco.combate.focoInimigo=false;const df=deriveAfty(foco);
+check('foco atencao duplicada',d.atencao-df.atencao===10,{atencaoCom:d.atencao,atencaoSem:df.atencao,delta:d.atencao-df.atencao,percepcaoDelta:d.testes.pericias.find(x=>x.id==='percepcao').bonus-df.testes.pericias.find(x=>x.id==='percepcao').bonus});
+const custos={};for(const id of ['surtoAdrenalina','adrenalinaAbsoluta','adrenalinaAtletismo','cacadorFeiticeiros','focoInimigo','corpoDeAco','espiritoDeLuta','espiritoIncansavel']){let s=S.sessaoEmBranco(d);s.combate={ativo:true,surtoAdrenalina:true,espiritoDeLuta:true};s.peAtual=100;s.combate[id]=false;const e=COMBATE_ESTADOS.find(x=>x.id===id);const v=e.tipo==='faixa'?e.max(d):true;const t=S.alteraEstadoCombate(s,e,v,d);custos[id]={antes:s.peAtual,depois:t.peAtual};check('sem gasto '+id,t.peAtual===100,custos[id]);}
+let s=S.sessaoEmBranco(d);s.hpAtual=d.hp-100;s.peAtual=100;s.combate={...c.combate};s.rodada=1;
+const rodada=S.proximaRodada(s,d).sessao;
+check('corpo de aco nao cura na virada',rodada.hpAtual===s.hpAtual,{antes:s.hpAtual,depois:rodada.hpAtual,formula:d.regeneracao,peAntes:s.peAtual,peDepois:rodada.peAtual});
+const morte=S.aplicaDano({...s,hpAtual:1,pvTempFontes:{}},100);
+check('nenhuma interceptacao queda',morte.hpAtual===0,{hp:morte.hpAtual,usos:morte.usos,exaustao:morte.exaustao});
+const tipos=d.defesasDano.porTipo;
+check('libertacao sem resistencia fisica',['ct','pf','im'].every(x=>!tipos[x].estados.includes('resistente')),{estados:['ct','pf','im'].map(x=>({tipo:x,estados:tipos[x].estados})),rdFisico:d.rdFisico});
+check('surto contador existe',d.usosHabilidades.cmb_surto_de_acao.max===4,d.usosHabilidades.cmb_surto_de_acao);
+let si=S.sessaoEmBranco(d);si.combate={ativo:true};const copia=I.trocarCopiaImitacao(si.combate,{tipo:'passiva',id:'lut_aprimoramento_marcial'});si=S.aplicaPatchCombate(si,copia);const di=deriveAfty({...c,combate:si.combate});const prox=S.proximaRodada({...si,rodada:1},di).sessao;
+check('imitacao nao expira',!!prox.combate.imitacao.copia,{copia:prox.combate.imitacao.copia,memorizacao:di.imitacao.memorizacao});
+const registros=d.habilidades.efetivas.map(id=>({id,nome:H.getHabilidade(id).nome,efeitos:d.efeitos.detalhes.filter(x=>x.origem===id),usos:d.usosHabilidades[id]??null}));
+const livro=fs.readFileSync('C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md','utf8').split(/\r?\n/);let pagina=null;const nomes=new Set(registros.map(x=>x.nome));const fontes=[];for(let i=0;i<livro.length;i++){const p=livro[i].match(/<!-- página (\d+) -->/);if(p)pagina=Number(p[1]);for(const nome of nomes)if(livro[i].startsWith('**'+nome+'.**')||livro[i].toLocaleLowerCase('pt-BR').startsWith('### '+nome.toLocaleLowerCase('pt-BR'))||livro[i].toLocaleLowerCase('pt-BR').startsWith('## '+nome.toLocaleLowerCase('pt-BR'))||livro[i].includes('**'+nome+'.'))fontes.push({nome,pagina,linha:i+1});}
+fs.writeFileSync('.audit/fang-evidencias.json',JSON.stringify({checks:n,diagnosticos:out,registros,fontes},null,2));
+console.log(JSON.stringify({checks:n,diagnosticos:out,fontes},null,2));
+

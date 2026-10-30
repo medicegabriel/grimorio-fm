@@ -1,0 +1,467 @@
+{
+  "geradoEm": "2026-10-19T17:06:45.710Z",
+  "base": "http://127.0.0.1:5310",
+  "casos": [
+    {
+      "id": "perf-calamidade-classica",
+      "checks": [],
+      "erros": [],
+      "seed": {
+        "rodada": 3,
+        "ligados": [
+          "ativo",
+          "umComArma",
+          "brutalidade",
+          "ataqueInconsequente",
+          "impactoMisto",
+          "furiaVinganca",
+          "imprudenciaMotivadora",
+          "golpeAtroz",
+          "golpeLetal",
+          "arteExecucaoSilenciosa",
+          "espiritoDeLuta",
+          "auraExcessiva",
+          "auraElemental",
+          "faiscasNegras",
+          "canalizarEmGolpe"
+        ]
+      },
+      "medidas": [],
+      "exception": "page.waitForFunction: Timeout 10000ms exceeded.\n    at C:\\Projetos\\Grimorio\\grimorio-tracker\\.audit\\revisao-codex-integracao-g2-20261019\\desempenho.mjs:41:171\n    at async scenario (C:\\Projetos\\Grimorio\\grimorio-tracker\\.audit\\revisao-codex-integracao-g2-20261019\\desempenho.mjs:19:248)\n    at async file:///C:/Projetos/Grimorio/grimorio-tracker/.audit/revisao-codex-integracao-g2-20261019/desempenho.mjs:33:94"
+    },
+    {
+      "id": "perf-calamidade-g2",
+      "checks": [
+        {
+          "id": "três operações reais medidas",
+          "ok": true,
+          "dados": [
+            {
+              "label": "Abençoado pelas Faíscas Negras",
+              "tempoDOM": 20.69999998807907,
+              "tempoDoPonteiroAteDoisQuadros": 35.30000001192093,
+              "maxIntervaloEntreQuadros": 50,
+              "tarefasLongas": []
+            },
+            {
+              "label": "ArteExecução SilenciosaArtes do Combate",
+              "tempoDOM": 19.19999998807907,
+              "tempoDoPonteiroAteDoisQuadros": 33.09999996423721,
+              "maxIntervaloEntreQuadros": 33.400000000000546,
+              "tarefasLongas": []
+            },
+            {
+              "label": "Ataque Inconsequente",
+              "tempoDOM": 18.600000023841858,
+              "tempoDoPonteiroAteDoisQuadros": 52.60000002384186,
+              "maxIntervaloEntreQuadros": 50.099999999999454,
+              "tarefasLongas": []
+            }
+          ]
+        },
+        {
+          "id": "sem congelamento de dois segundos na amostra",
+          "ok": true,
+          "dados": [
+            {
+              "label": "Abençoado pelas Faíscas Negras",
+              "tempoDOM": 20.69999998807907,
+              "tempoDoPonteiroAteDoisQuadros": 35.30000001192093,
+              "maxIntervaloEntreQuadros": 50,
+              "tarefasLongas": []
+            },
+            {
+              "label": "ArteExecução SilenciosaArtes do Combate",
+              "tempoDOM": 19.19999998807907,
+              "tempoDoPonteiroAteDoisQuadros": 33.09999996423721,
+              "maxIntervaloEntreQuadros": 33.400000000000546,
+              "tarefasLongas": []
+            },
+            {
+              "label": "Ataque Inconsequente",
+              "tempoDOM": 18.600000023841858,
+              "tempoDoPonteiroAteDoisQuadros": 52.60000002384186,
+              "maxIntervaloEntreQuadros": 50.099999999999454,
+              "tarefasLongas": []
+            }
+          ]
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "seed": {
+        "rodada": 3,
+        "ligados": [
+          "ativo",
+          "umComArma",
+          "brutalidade",
+          "ataqueInconsequente",
+          "impactoMisto",
+          "furiaVinganca",
+          "imprudenciaMotivadora",
+          "golpeAtroz",
+          "golpeLetal",
+          "arteExecucaoSilenciosa",
+          "espiritoDeLuta",
+          "auraExcessiva",
+          "auraElemental",
+          "faiscasNegras",
+          "canalizarEmGolpe"
+        ]
+      },
+      "medidas": [
+        {
+          "label": "Abençoado pelas Faíscas Negras",
+          "tempoDOM": 20.69999998807907,
+          "tempoDoPonteiroAteDoisQuadros": 35.30000001192093,
+          "maxIntervaloEntreQuadros": 50,
+          "tarefasLongas": []
+        },
+        {
+          "label": "ArteExecução SilenciosaArtes do Combate",
+          "tempoDOM": 19.19999998807907,
+          "tempoDoPonteiroAteDoisQuadros": 33.09999996423721,
+          "maxIntervaloEntreQuadros": 33.400000000000546,
+          "tarefasLongas": []
+        },
+        {
+          "label": "Ataque Inconsequente",
+          "tempoDOM": 18.600000023841858,
+          "tempoDoPonteiroAteDoisQuadros": 52.60000002384186,
+          "maxIntervaloEntreQuadros": 50.099999999999454,
+          "tarefasLongas": []
+        }
+      ],
+      "depois": {
+        "pe": 218,
+        "rodada": 3,
+        "ligados": [
+          "ativo",
+          "umComArma",
+          "brutalidade",
+          "impactoMisto",
+          "furiaVinganca",
+          "imprudenciaMotivadora",
+          "golpeAtroz",
+          "golpeLetal",
+          "espiritoDeLuta",
+          "auraExcessiva",
+          "auraElemental",
+          "canalizarEmGolpe"
+        ],
+        "eventos": 0
+      }
+    },
+    {
+      "id": "perf-minamoto-classica",
+      "checks": [],
+      "erros": [],
+      "seed": {
+        "rodada": 3,
+        "ligados": [
+          "ativo",
+          "golpeAtroz",
+          "golpeLetal",
+          "golpePenetrante",
+          "golpeLongo",
+          "golpePreciso",
+          "arteExecucaoSilenciosa",
+          "arteGolpeDescendente",
+          "espiritoDeLuta",
+          "espiritoIncansavel",
+          "arsenalCiclico",
+          "duelando",
+          "lutandoComDuasArmas"
+        ]
+      },
+      "medidas": [],
+      "exception": "page.waitForFunction: Timeout 10000ms exceeded.\n    at C:\\Projetos\\Grimorio\\grimorio-tracker\\.audit\\revisao-codex-integracao-g2-20261019\\desempenho.mjs:41:171\n    at async scenario (C:\\Projetos\\Grimorio\\grimorio-tracker\\.audit\\revisao-codex-integracao-g2-20261019\\desempenho.mjs:19:248)\n    at async file:///C:/Projetos/Grimorio/grimorio-tracker/.audit/revisao-codex-integracao-g2-20261019/desempenho.mjs:33:94"
+    },
+    {
+      "id": "perf-minamoto-g2",
+      "checks": [
+        {
+          "id": "três operações reais medidas",
+          "ok": true,
+          "dados": [
+            {
+              "label": "Trocou de GrupoArsenal Cíclico",
+              "tempoDOM": 11.399999976158142,
+              "tempoDoPonteiroAteDoisQuadros": 53.69999998807907,
+              "maxIntervaloEntreQuadros": 50,
+              "tarefasLongas": []
+            },
+            {
+              "label": "ArteExecução Silenciosa, Golpe DescendenteArtes do Combate",
+              "tempoDOM": 11.700000047683716,
+              "tempoDoPonteiroAteDoisQuadros": 57.90000003576279,
+              "maxIntervaloEntreQuadros": 49.900000000000546,
+              "tarefasLongas": []
+            },
+            {
+              "label": "Espírito IncansávelEspírito de Luta",
+              "tempoDOM": 9.699999988079071,
+              "tempoDoPonteiroAteDoisQuadros": 55.39999997615814,
+              "maxIntervaloEntreQuadros": 33.30000000000018,
+              "tarefasLongas": []
+            }
+          ]
+        },
+        {
+          "id": "sem congelamento de dois segundos na amostra",
+          "ok": true,
+          "dados": [
+            {
+              "label": "Trocou de GrupoArsenal Cíclico",
+              "tempoDOM": 11.399999976158142,
+              "tempoDoPonteiroAteDoisQuadros": 53.69999998807907,
+              "maxIntervaloEntreQuadros": 50,
+              "tarefasLongas": []
+            },
+            {
+              "label": "ArteExecução Silenciosa, Golpe DescendenteArtes do Combate",
+              "tempoDOM": 11.700000047683716,
+              "tempoDoPonteiroAteDoisQuadros": 57.90000003576279,
+              "maxIntervaloEntreQuadros": 49.900000000000546,
+              "tarefasLongas": []
+            },
+            {
+              "label": "Espírito IncansávelEspírito de Luta",
+              "tempoDOM": 9.699999988079071,
+              "tempoDoPonteiroAteDoisQuadros": 55.39999997615814,
+              "maxIntervaloEntreQuadros": 33.30000000000018,
+              "tarefasLongas": []
+            }
+          ]
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "seed": {
+        "rodada": 3,
+        "ligados": [
+          "ativo",
+          "golpeAtroz",
+          "golpeLetal",
+          "golpePenetrante",
+          "golpeLongo",
+          "golpePreciso",
+          "arteExecucaoSilenciosa",
+          "arteGolpeDescendente",
+          "espiritoDeLuta",
+          "espiritoIncansavel",
+          "arsenalCiclico",
+          "duelando",
+          "lutandoComDuasArmas"
+        ]
+      },
+      "medidas": [
+        {
+          "label": "Trocou de GrupoArsenal Cíclico",
+          "tempoDOM": 11.399999976158142,
+          "tempoDoPonteiroAteDoisQuadros": 53.69999998807907,
+          "maxIntervaloEntreQuadros": 50,
+          "tarefasLongas": []
+        },
+        {
+          "label": "ArteExecução Silenciosa, Golpe DescendenteArtes do Combate",
+          "tempoDOM": 11.700000047683716,
+          "tempoDoPonteiroAteDoisQuadros": 57.90000003576279,
+          "maxIntervaloEntreQuadros": 49.900000000000546,
+          "tarefasLongas": []
+        },
+        {
+          "label": "Espírito IncansávelEspírito de Luta",
+          "tempoDOM": 9.699999988079071,
+          "tempoDoPonteiroAteDoisQuadros": 55.39999997615814,
+          "maxIntervaloEntreQuadros": 33.30000000000018,
+          "tarefasLongas": []
+        }
+      ],
+      "depois": {
+        "pe": 178,
+        "rodada": 3,
+        "ligados": [
+          "ativo",
+          "golpeAtroz",
+          "golpeLetal",
+          "golpePenetrante",
+          "golpeLongo",
+          "golpePreciso",
+          "duelando",
+          "lutandoComDuasArmas"
+        ],
+        "eventos": 0
+      }
+    },
+    {
+      "id": "perf-player30-classica",
+      "checks": [],
+      "erros": [],
+      "seed": {
+        "rodada": 3,
+        "ligados": [
+          "ativo",
+          "golpeAtroz",
+          "golpeLetal",
+          "golpePenetrante",
+          "golpeLongo",
+          "golpePreciso",
+          "arteExecucaoSilenciosa",
+          "arteGolpeDescendente",
+          "espiritoDeLuta",
+          "espiritoIncansavel",
+          "arsenalCiclico",
+          "arremessosPotentes",
+          "potenciaConcentrada"
+        ]
+      },
+      "medidas": [],
+      "exception": "page.waitForFunction: Timeout 10000ms exceeded.\n    at C:\\Projetos\\Grimorio\\grimorio-tracker\\.audit\\revisao-codex-integracao-g2-20261019\\desempenho.mjs:41:171\n    at async scenario (C:\\Projetos\\Grimorio\\grimorio-tracker\\.audit\\revisao-codex-integracao-g2-20261019\\desempenho.mjs:19:248)\n    at async file:///C:/Projetos/Grimorio/grimorio-tracker/.audit/revisao-codex-integracao-g2-20261019/desempenho.mjs:33:94"
+    },
+    {
+      "id": "perf-player30-g2",
+      "checks": [
+        {
+          "id": "três operações reais medidas",
+          "ok": true,
+          "dados": [
+            {
+              "label": "1 PEArremessos Potentes",
+              "tempoDOM": 12.099999964237213,
+              "tempoDoPonteiroAteDoisQuadros": 48.30000001192093,
+              "maxIntervaloEntreQuadros": 17,
+              "tarefasLongas": []
+            },
+            {
+              "label": "Trocou de GrupoArsenal Cíclico",
+              "tempoDOM": 12,
+              "tempoDoPonteiroAteDoisQuadros": 44.89999997615814,
+              "maxIntervaloEntreQuadros": 16.900000000000546,
+              "tarefasLongas": []
+            },
+            {
+              "label": "ArteExecução Silenciosa, Golpe DescendenteArtes do Combate",
+              "tempoDOM": 11.899999976158142,
+              "tempoDoPonteiroAteDoisQuadros": 43.80000001192093,
+              "maxIntervaloEntreQuadros": 17,
+              "tarefasLongas": []
+            }
+          ]
+        },
+        {
+          "id": "sem congelamento de dois segundos na amostra",
+          "ok": true,
+          "dados": [
+            {
+              "label": "1 PEArremessos Potentes",
+              "tempoDOM": 12.099999964237213,
+              "tempoDoPonteiroAteDoisQuadros": 48.30000001192093,
+              "maxIntervaloEntreQuadros": 17,
+              "tarefasLongas": []
+            },
+            {
+              "label": "Trocou de GrupoArsenal Cíclico",
+              "tempoDOM": 12,
+              "tempoDoPonteiroAteDoisQuadros": 44.89999997615814,
+              "maxIntervaloEntreQuadros": 16.900000000000546,
+              "tarefasLongas": []
+            },
+            {
+              "label": "ArteExecução Silenciosa, Golpe DescendenteArtes do Combate",
+              "tempoDOM": 11.899999976158142,
+              "tempoDoPonteiroAteDoisQuadros": 43.80000001192093,
+              "maxIntervaloEntreQuadros": 17,
+              "tarefasLongas": []
+            }
+          ]
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "seed": {
+        "rodada": 3,
+        "ligados": [
+          "ativo",
+          "golpeAtroz",
+          "golpeLetal",
+          "golpePenetrante",
+          "golpeLongo",
+          "golpePreciso",
+          "arteExecucaoSilenciosa",
+          "arteGolpeDescendente",
+          "espiritoDeLuta",
+          "espiritoIncansavel",
+          "arsenalCiclico",
+          "arremessosPotentes",
+          "potenciaConcentrada"
+        ]
+      },
+      "medidas": [
+        {
+          "label": "1 PEArremessos Potentes",
+          "tempoDOM": 12.099999964237213,
+          "tempoDoPonteiroAteDoisQuadros": 48.30000001192093,
+          "maxIntervaloEntreQuadros": 17,
+          "tarefasLongas": []
+        },
+        {
+          "label": "Trocou de GrupoArsenal Cíclico",
+          "tempoDOM": 12,
+          "tempoDoPonteiroAteDoisQuadros": 44.89999997615814,
+          "maxIntervaloEntreQuadros": 16.900000000000546,
+          "tarefasLongas": []
+        },
+        {
+          "label": "ArteExecução Silenciosa, Golpe DescendenteArtes do Combate",
+          "tempoDOM": 11.899999976158142,
+          "tempoDoPonteiroAteDoisQuadros": 43.80000001192093,
+          "maxIntervaloEntreQuadros": 17,
+          "tarefasLongas": []
+        }
+      ],
+      "depois": {
+        "pe": 160,
+        "rodada": 3,
+        "ligados": [
+          "ativo",
+          "golpeAtroz",
+          "golpeLetal",
+          "golpePenetrante",
+          "golpeLongo",
+          "golpePreciso",
+          "espiritoDeLuta",
+          "espiritoIncansavel",
+          "potenciaConcentrada"
+        ],
+        "eventos": 0
+      }
+    }
+  ],
+  "falhas": [
+    {
+      "caso": "perf-calamidade-classica",
+      "exception": "page.waitForFunction: Timeout 10000ms exceeded."
+    },
+    {
+      "caso": "perf-minamoto-classica",
+      "exception": "page.waitForFunction: Timeout 10000ms exceeded."
+    },
+    {
+      "caso": "perf-player30-classica",
+      "exception": "page.waitForFunction: Timeout 10000ms exceeded."
+    }
+  ]
+}

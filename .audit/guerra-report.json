@@ -1,0 +1,48 @@
+[
+  {
+    "largura": 1440,
+    "sistema": "player",
+    "esperouSerLigado": true,
+    "ligouEDesligouOsAntigos": true,
+    "parciaisComAviso": true,
+    "epicaDesligada": true,
+    "erros": []
+  },
+  {
+    "largura": 1440,
+    "sistema": "afty",
+    "ligouDoZero": true,
+    "semEpica": true,
+    "talentos": 2,
+    "erros": []
+  },
+  {
+    "largura": 1440,
+    "sistema": "afty",
+    "atualizouSozinha": true,
+    "escolhaPreservada": true
+  },
+  {
+    "largura": 390,
+    "sistema": "player",
+    "esperouSerLigado": true,
+    "ligouEDesligouOsAntigos": true,
+    "parciaisComAviso": true,
+    "epicaDesligada": true,
+    "erros": []
+  },
+  {
+    "largura": 390,
+    "sistema": "afty",
+    "ligouDoZero": true,
+    "semEpica": true,
+    "talentos": 2,
+    "erros": []
+  },
+  {
+    "largura": 390,
+    "sistema": "afty",
+    "atualizouSozinha": true,
+    "escolhaPreservada": true
+  }
+]

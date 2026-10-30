@@ -354,12 +354,16 @@ t("o beneficio continua dizendo que concede",
 
    É a mesma história do fontes.jsx, extraído em 2026-08-05 pelo mesmo motivo. */
 const fonte = (caminho) => readFileSync(new URL(`../src/systems/afty/${caminho}`, import.meta.url), "utf8");
-const TELAS = ["ficha/AftyFicha.jsx", "encontros/PainelDeCombatente.jsx"];
-for (const tela of TELAS) {
-  const src = fonte(tela);
-  t(`${tela} importa o Vital compartilhado`, src.includes('import { Vital } from "../ui/vital"'), true);
-  t(`${tela} nao declara um Vital proprio`, src.includes("function Vital({"), false);
+/* ⚠ DESDE A INTEGRAÇÃO DO G2 (2026-10-17) a Ficha desenha os recursos pelo Medidor do cabeçalho (`ficha/efeitos/pecas.jsx`), e não mais pelo Vital: o Vital
+   segue sendo o do Encontro. A regra que o assert guarda é a mesma (nenhuma tela declara uma cópia sua do componente, e a casca SOBREPÕE a barra), e agora
+   são duas verificações: o Encontro continua importando o Vital compartilhado, e o Medidor da Ficha pinta a casca por cima, com a cor do recurso. */
+t("o Encontro importa o Vital compartilhado", fonte("encontros/PainelDeCombatente.jsx").includes('import { Vital } from "../ui/vital"'), true);
+for (const tela of ["ficha/AftyFicha.jsx", "encontros/PainelDeCombatente.jsx"]) {
+  t(`${tela} nao declara um Vital proprio`, fonte(tela).includes("function Vital({"), false);
 }
+const PECAS = fonte("ficha/efeitos/pecas.jsx");
+t("o Medidor da Ficha pinta a casca por cima da barra", PECAS.includes("afty-vital-casca"), true);
+t("a casca do Medidor segue o recurso", PECAS.includes('r.tipo === "pe" ? "var(--afty-petemp)" : "var(--afty-pvtemp)"'), true);
 /* E o compartilhado tem as três coisas que a divergência havia comido. */
 const VITAL = fonte("ui/vital.jsx");
 t("o Vital pinta a casca por cima", VITAL.includes("afty-vital-casca"), true);

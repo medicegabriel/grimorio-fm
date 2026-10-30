@@ -1,7 +1,9 @@
 import React, { useId, useState } from "react";
 import { AlertTriangle } from "lucide-react";
 import { DicaDeTexto, NumeroComFontes } from "./fontes";
+import imagemLanterna from "./lanterna-coletora.webp";
 import "./espinho.css";
+import "./lanterna.css";
 
 /**
  * ============================================================
@@ -23,6 +25,13 @@ import "./espinho.css";
  * ⚠ O HOVER É O FLUTUANTE (`NumeroComFontes`, `DicaDeTexto`), e não o painel
  * preso ao pai: a casca do card tem `overflow: hidden` para recortar o brilho, e
  * cortaria um painel ancorado dentro dela.
+ *
+ * ⚠ DUAS PELES, UM CARD (2026-10-12). A Lanterna Coletora de Almas é o mesmo
+ * card com `extrato.visual === "lanterna"`: o nome vem do `extrato.nome`, a
+ * lanterna (imagem do autor) toma o lugar do cristal, e as chamas que saem da
+ * caixa tomam o lugar das rachaduras, do rasgo e do glitch. As classes
+ * `.afty-espinho*` continuam todas, e `lanterna.css` repinta por cima com
+ * `.afty-lanterna`. Ver docs/afty-espinho.md.
  * ============================================================
  */
 
@@ -141,6 +150,127 @@ function Cristal({ restantes, almas, gastas }) {
   );
 }
 
+/** A lanterna com as Almas Restantes no vidro. Mesmo hover do cristal. */
+function Lanterna({ restantes, almas, gastas }) {
+  return (
+    <div className="afty-espinho-pedra">
+      <div className="afty-lanterna-caixa">
+        <div className="afty-lanterna-aura" aria-hidden="true" />
+        <img className="afty-lanterna-imagem" src={imagemLanterna} alt="" draggable={false} />
+        <div className="afty-lanterna-num">
+          <NumeroComFontes
+            valor={restantes}
+            formatar={false}
+            ancora="direita"
+            className="afty-espinho-num"
+            partes={[{ label: "Almas Totais", valor: almas }, { label: "Gastas", valor: -gastas }]}
+            total={restantes}
+          />
+        </div>
+      </div>
+      <span className="afty-espinho-rotulo">Almas Restantes</span>
+    </div>
+  );
+}
+
+/* As labaredas que saem da borda de cima da caixa, em duas fileiras: a de trás
+   larga e violeta (forma c), a da frente azul com o miolo claro (formas a e b).
+   `x` em porcentagem da largura, `w` e `h` em px, `d` o atraso e `t` a duração
+   da tremulação, `e` o espelho. Fixas, para o card não mudar a cada render. */
+const LABAREDAS_FUNDO = [
+  { x: 3, w: 46, h: 52, d: -0.6, t: 2.6, e: 1 },
+  { x: 15, w: 54, h: 60, d: -1.8, t: 3.1, e: -1 },
+  { x: 27, w: 46, h: 50, d: -0.9, t: 2.8, e: 1 },
+  { x: 39, w: 56, h: 62, d: -2.2, t: 3.3, e: -1 },
+  { x: 51, w: 48, h: 54, d: -0.3, t: 2.7, e: 1 },
+  { x: 63, w: 56, h: 64, d: -1.5, t: 3.2, e: -1 },
+  { x: 75, w: 48, h: 56, d: -2.6, t: 2.9, e: 1 },
+  { x: 87, w: 56, h: 66, d: -1.1, t: 3.4, e: -1 },
+  { x: 97, w: 44, h: 50, d: -0.7, t: 2.6, e: 1 },
+].map((c) => ({ ...c, f: "c", fundo: true }));
+const LABAREDAS_FRENTE = [
+  { x: 1, w: 26, h: 38, d: -0.4, t: 1.9, f: "b", e: -1 },
+  { x: 8, w: 32, h: 50, d: -1.1, t: 2.3, f: "a", e: 1 },
+  { x: 16, w: 26, h: 40, d: -0.2, t: 1.7, f: "b", e: 1 },
+  { x: 23, w: 30, h: 48, d: -1.6, t: 2.1, f: "a", e: -1 },
+  { x: 31, w: 24, h: 36, d: -0.8, t: 1.8, f: "b", e: -1 },
+  { x: 39, w: 32, h: 52, d: -1.3, t: 2.4, f: "a", e: 1 },
+  { x: 47, w: 26, h: 42, d: -0.5, t: 1.9, f: "b", e: 1 },
+  { x: 55, w: 30, h: 50, d: -1.9, t: 2.2, f: "a", e: -1 },
+  { x: 63, w: 24, h: 38, d: -0.3, t: 1.7, f: "b", e: -1 },
+  { x: 71, w: 32, h: 54, d: -1.4, t: 2.5, f: "a", e: 1 },
+  { x: 79, w: 26, h: 44, d: -0.9, t: 2.0, f: "b", e: 1 },
+  { x: 87, w: 32, h: 56, d: -1.7, t: 2.2, f: "a", e: -1 },
+  { x: 94, w: 26, h: 42, d: -0.6, t: 1.9, f: "b", e: 1 },
+  { x: 99, w: 22, h: 34, d: -1.2, t: 2.1, f: "a", e: -1 },
+];
+const LABAREDAS = [...LABAREDAS_FUNDO, ...LABAREDAS_FRENTE];
+const FAISCAS = [
+  { x: 6, d: 0, t: 3.4 }, { x: 19, d: -1.2, t: 4.1 }, { x: 33, d: -2.6, t: 3.7 }, { x: 44, d: -0.4, t: 4.6 },
+  { x: 58, d: -0.7, t: 4.4 }, { x: 69, d: -3.4, t: 3.6 }, { x: 81, d: -1.9, t: 3.9 }, { x: 92, d: -3.1, t: 4.2 },
+];
+
+/** As chamas. Moram FORA da casca, atrás dela, e sobem da borda de cima. */
+function Chamas() {
+  return (
+    <div className="afty-lanterna-chamas" aria-hidden="true">
+      {LABAREDAS.map((c) => (
+        <i
+          key={`${c.f}${c.x}`}
+          className={`afty-lanterna-labareda afty-lanterna-labareda--${c.f}${c.fundo ? " afty-lanterna-labareda--fundo" : ""}`}
+          style={{ "--x": `${c.x}%`, "--w": `${c.w}px`, "--h": `${c.h}px`, "--d": `${c.d}s`, "--t": `${c.t}s`, "--e": c.e }}
+        />
+      ))}
+      {FAISCAS.map((f) => (
+        <b key={f.x} className="afty-lanterna-faisca" style={{ "--x": `${f.x}%`, "--d": `${f.d}s`, "--t": `${f.t}s` }} />
+      ))}
+    </div>
+  );
+}
+
+/**
+ * O título. O do Espinho é uma palavra vazada; um nome comprido (a Lanterna
+ * Coletora de Almas) quebra em duas linhas: a primeira palavra vazada e o resto
+ * embaixo, menor.
+ */
+function Titulo({ nome }) {
+  const [cabeca, ...resto] = String(nome).trim().split(/\s+/);
+  if (resto.length === 0) {
+    return <h2 className="afty-espinho-titulo" data-texto={nome}>{nome}</h2>;
+  }
+  return (
+    <h2 className="afty-espinho-titulo afty-espinho-titulo--duplo">
+      <span className="afty-espinho-titulo-cabeca">{cabeca}</span>{" "}
+      <span className="afty-espinho-titulo-resto">{resto.join(" ")}</span>
+    </h2>
+  );
+}
+
+/**
+ * A Maestria anotada: vazio é a real, que aparece como dica do campo. Separado
+ * do `CampoInteiro` porque aqui vazio é um valor (`null`), e lá vira zero.
+ */
+function CampoMaestria({ anotada, real, onMudar, desabilitado }) {
+  const [texto, setTexto] = useState(null);
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      aria-label="Maestria"
+      className="afty-espinho-input afty-espinho-input--maestria"
+      value={texto ?? (anotada == null ? "" : String(anotada))}
+      placeholder={String(real ?? "")}
+      disabled={desabilitado}
+      onChange={(e) => {
+        const limpo = soDigitos(e.target.value);
+        setTexto(limpo);
+        onMudar(limpo === "" ? null : inteiro(limpo));
+      }}
+      onBlur={() => setTexto(null)}
+    />
+  );
+}
+
 /** Nome do item com a descrição do pacote no hover. */
 function NomeComDica({ item }) {
   return (
@@ -167,17 +297,27 @@ function Passo({ rotulo, qtd, podeMenos, podeMais, onMenos, onMais, edita, child
 export default function EspinhoCard({ extrato, estado, onPatch = null, compacto = false }) {
   if (!extrato?.ativo) return null;
   const edita = typeof onPatch === "function";
+  const nome = extrato.nome ?? "Espinho";
+  const lanterna = extrato.visual === "lanterna";
 
   const almas = inteiro(estado?.almas);
   const outros = inteiro(estado?.outros);
   const compras = estado?.compras && typeof estado.compras === "object" ? estado.compras : {};
   const marcados = Array.isArray(estado?.equipamentos) ? estado.equipamentos : [];
+  // A Maestria anotada vai junto em TODO patch: o card manda o objeto inteiro, e
+  // um patch sem ela apagaria a anotação a cada compra.
+  const maestria = estado?.maestria ?? null;
 
   const gastasCompras = (extrato.almas?.gastas ?? 0) - (extrato.almas?.outros ?? 0);
   const gastas = gastasCompras + outros;
   const restantes = almas - gastas;
 
-  const patch = (mudanca) => onPatch?.({ almas, outros, compras, equipamentos: marcados, ...mudanca });
+  const patch = (mudanca) => onPatch?.({ almas, outros, compras, equipamentos: marcados, maestria, ...mudanca });
+  const classeRaiz = `afty-espinho${lanterna ? " afty-lanterna" : ""}${compacto ? " afty-espinho--compacto" : ""}`;
+  const pedra = lanterna
+    ? <Lanterna restantes={restantes} almas={almas} gastas={gastas} />
+    : <Cristal restantes={restantes} almas={almas} gastas={gastas} />;
+  const decoracao = lanterna ? <Chamas /> : <Rasgos />;
   const mudaCompra = (id, qtd) => {
     const proximo = { ...compras };
     if (qtd > 0) proximo[id] = qtd; else delete proximo[id];
@@ -215,6 +355,19 @@ export default function EspinhoCard({ extrato, estado, onPatch = null, compacto 
           total={gastas}
         />
       </div>
+      {/* A Maestria que os tetos leem (Lanterna, 2026-10-12). Só no criador,
+          que é onde se compra: na Ficha ela não muda número que o card mostre. */}
+      {extrato.maestria && !compacto && (
+        <label className="afty-espinho-campo">
+          <span>Maestria</span>
+          <CampoMaestria
+            anotada={maestria}
+            real={extrato.maestria.real}
+            desabilitado={!edita}
+            onMudar={(n) => patch({ maestria: n })}
+          />
+        </label>
+      )}
     </div>
   );
 
@@ -255,16 +408,16 @@ export default function EspinhoCard({ extrato, estado, onPatch = null, compacto 
   if (compacto) {
     const comprados = compraveis.filter((i) => i.qtd > 0);
     return (
-      <section className="afty-espinho afty-espinho--compacto" data-afty-painel="espinho" aria-label="Espinho">
+      <section className={classeRaiz} data-afty-painel="espinho" aria-label={nome}>
         <div className="afty-espinho-halo" aria-hidden="true" />
         <div className="afty-espinho-casca">
           <div className="afty-espinho-grao" aria-hidden="true" />
           <div className="afty-espinho-conteudo">
             <div className="afty-espinho-topo">
               <div className="afty-espinho-titulo-bloco">
-                <h2 className="afty-espinho-titulo" data-texto="Espinho">Espinho</h2>
+                <Titulo nome={nome} />
               </div>
-              <Cristal restantes={restantes} almas={almas} gastas={gastas} />
+              {pedra}
             </div>
             {faixaDasAlmas}
             <div className="afty-espinho-fenda" />
@@ -295,7 +448,7 @@ export default function EspinhoCard({ extrato, estado, onPatch = null, compacto 
             {listaDeAvisos}
           </div>
         </div>
-        <Rasgos />
+        {decoracao}
       </section>
     );
   }
@@ -314,16 +467,16 @@ export default function EspinhoCard({ extrato, estado, onPatch = null, compacto 
   const desmarcar = (uid) => patch({ equipamentos: marcados.filter((m) => m.uid !== uid) });
 
   return (
-    <section className="afty-espinho" data-afty-painel="espinho" aria-label="Espinho">
+    <section className={classeRaiz} data-afty-painel="espinho" aria-label={nome}>
       <div className="afty-espinho-halo" aria-hidden="true" />
       <div className="afty-espinho-casca">
         <div className="afty-espinho-grao" aria-hidden="true" />
         <div className="afty-espinho-conteudo">
           <div className="afty-espinho-topo">
             <div className="afty-espinho-titulo-bloco">
-              <h2 className="afty-espinho-titulo" data-texto="Espinho">Espinho</h2>
+              <Titulo nome={nome} />
             </div>
-            <Cristal restantes={restantes} almas={almas} gastas={gastas} />
+            {pedra}
           </div>
           {faixaDasAlmas}
 
@@ -445,7 +598,7 @@ export default function EspinhoCard({ extrato, estado, onPatch = null, compacto 
           {listaDeAvisos}
         </div>
       </div>
-      <Rasgos />
+      {decoracao}
     </section>
   );
 }

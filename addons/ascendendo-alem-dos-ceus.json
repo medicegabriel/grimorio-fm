@@ -1,0 +1,26 @@
+{
+  "id": "ascendendo-alem-dos-ceus",
+  "nome": "Ascendendo Além dos Céus",
+  "versao": "1.0.1",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Continuação do Regras Grimorio, para instalar junto dele. O personagem ascende a Calamidade. A área da Expansão de Domínio aumenta em 7,5 metros × Bônus de Treinamento, com limite de 200 metros. O multiplicador de PV passa de 2x para 3x (×1,5 em cima do ×2 do Regras Grimorio, sem mexer na Integridade da Alma). Concede 1 Ponto de Atributo adicional a cada 4 Níveis de Personagem, distribuído livremente dentro dos limites normais. Opcional: o interruptor Guarda Alta no cartão do Addon dá a Guarda Inabalável de uma Calamidade de mesmo ND.",
+  "resumo": "Continua o Regras Grimorio: PV ×3, Expansão maior e +1 ponto de atributo a cada 4 níveis",
+  "categoria": "regras",
+  "regrasAfty": {
+    "multiplicadorPvFinal": 1.5,
+    "guardaComoCalamidade": false
+  },
+  "funcionamentos": [
+    {
+      "id": "calamidade",
+      "acumula": true,
+      "nome": "Calamidade",
+      "descricao": "Expansão de Domínio maior e 1 Ponto de Atributo a cada 4 Níveis de Personagem.",
+      "efeitos": [
+        { "canal": "areaDominio", "expr": "min(7.5 * bt, 200)", "nome": "Ascendendo Além dos Céus" },
+        { "canal": "pontosAtributo", "expr": "piso(nd / 4)", "nome": "Ascendendo Além dos Céus" }
+      ]
+    }
+  ]
+}

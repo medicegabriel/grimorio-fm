@@ -1,6 +1,8 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { sinalDe } from "./formato";
+/* O painel de uma aba OCULTA da prévia do G2 fecha (ver o arquivo). Padrão visível: nenhum outro consumidor muda. */
+import { VisibilidadeDaAba } from "./visibilidade-da-aba";
 
 /**
  * ============================================================
@@ -35,7 +37,7 @@ import { sinalDe } from "./formato";
    `secao` abre uma PILHA com o subtotal dela à direita (o hover de Dano separa
    Critável, Não Critável e Fixo, autor 2026-09-15). As parcelas que vêm depois
    pertencem a ela até a próxima seção. */
-function LinhasDeFonte({ partes, total }) {
+export function LinhasDeFonte({ partes, total }) {
   const lista = (partes || []).filter(Boolean);
   const temSecao = lista.some((p) => p.secao);
   return (
@@ -285,11 +287,14 @@ function PainelFlutuante({ partes, total, retangulo, ancora, gatilho }) {
  * explica.
  */
 function useFlutuante() {
+  const visivel = useContext(VisibilidadeDaAba);
   const [retangulo, setRetangulo] = useState(null);
   const gatilho = useRef(null);
   const timer = useRef(null);
   const abriuNoSegurar = useRef(false);
-  const aberto = !!retangulo;
+  /* Oculto, o painel fecha neste render (ajuste de estado no render, sem efeito): nada de flutuante de aba escondida à vista ou clicável. */
+  if (!visivel && retangulo) setRetangulo(null);
+  const aberto = !!retangulo && visivel;
 
   const abrir = useCallback(() => {
     const r = gatilho.current?.getBoundingClientRect();
@@ -412,8 +417,12 @@ export function DicaDeTexto({ titulo, texto, nota, ancora = "esquerda", children
    Separando em dois, o ramo mudo passa a não ter hook nenhum e a regra dos hooks
    continua respeitada, porque quem tem hook é sempre o `NumeroInterativo`
    inteiro. Nenhum comportamento muda: o interativo é o mesmo de antes. */
+/* `indisponivel`, `descritoPor` e `rotuloAria` são OPCIONAIS (prévia das três abas, 2026-10-21): a operação recusada continua FOCÁVEL
+   (`aria-disabled`, e não `disabled`), o motivo visível na linha fica ligado por `aria-describedby`, e quem chama decide o que o clique faz
+   (na prévia, anunciar o motivo sem rolar). Sem eles, o botão é exatamente o de sempre. */
 export function NumeroComFontes({
   valor, partes, total, ancora = "esquerda", className = "", titulo, formatar = true, onRolar,
+  indisponivel = false, descritoPor, rotuloAria,
 }) {
   const lista = (partes || []).filter(Boolean);
   const texto = formatar && typeof valor === "number" ? sinalDe(valor) : valor;
@@ -430,11 +439,14 @@ export function NumeroComFontes({
       className={className}
       titulo={titulo}
       onRolar={onRolar}
+      indisponivel={indisponivel}
+      descritoPor={descritoPor}
+      rotuloAria={rotuloAria}
     />
   );
 }
 
-function NumeroInterativo({ lista, texto, total, ancora, className, titulo, onRolar }) {
+function NumeroInterativo({ lista, texto, total, ancora, className, titulo, onRolar, indisponivel = false, descritoPor, rotuloAria }) {
   const {
     gatilho, retangulo, aberto, abrir, fechar, segurarComeca, segurarTermina, consumiuToqueLongo,
   } = useFlutuante();
@@ -463,6 +475,10 @@ function NumeroInterativo({ lista, texto, total, ancora, className, titulo, onRo
         onBlur={fechar}
         onContextMenu={(e) => { if (onRolar && lista.length) e.preventDefault(); }}
         aria-expanded={lista.length ? aberto : undefined}
+        aria-disabled={indisponivel || undefined}
+        aria-describedby={descritoPor}
+        aria-label={rotuloAria}
+        data-indisponivel={indisponivel ? "sim" : undefined}
         title={titulo}
         className={`${onRolar ? "afty-rolavel cursor-pointer" : "cursor-help"} text-left ${className}`}
       >

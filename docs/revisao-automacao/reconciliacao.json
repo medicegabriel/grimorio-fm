@@ -60138,6 +60138,106 @@
         "AD-74"
       ],
       "lotesInvalidados": []
+    },
+    {
+      "data": "2026-10-12T22:29:29.218Z",
+      "proposta": ".audit/estilo-repeticao-proposta-aplicavel.json",
+      "assinatura": "d0d87bda68a2ed448584a21686df34ddf58fdcf19d8b16d3d9f7d1a8c7239633",
+      "justificativa": "Decisões do autor em 2026-10-12: continuidade da progressão do Novo Estilo das Sombras e alternativa pessoal na segunda compra, incompatível com aliados. Acerto e CD limitados a duas compras, metade do BT ou BT inteiro. Reconciliação restrita ao TEC-01, sem aprovação de regras ou alteração de estados alheios.",
+      "adicionados": 4,
+      "removidos": 6,
+      "alterados": 9,
+      "lotesAtingidos": [
+        "TEC-01"
+      ],
+      "lotesInvalidados": []
+    },
+    {
+      "data": "2026-10-12T22:39:21.073Z",
+      "proposta": ".audit/estilo-acerto-cd-aliados-proposta-aplicavel.json",
+      "assinatura": "333e0712685987bdde7c15400d8f0cd4394d7c755df6583eb6b6f3b10d5099e6",
+      "justificativa": "Pedido do autor em 2026-10-12: Bônus de Acerto e CD também oferecem Aliados na segunda compra. Limite de duas e exclusão entre opções conservados. Compras anteriores sem marca mantêm BT inteiro pessoal por repeticaoPadrao. Reconciliação restrita ao TEC-01, sem aprovação ou remoção de regras.",
+      "adicionados": 2,
+      "removidos": 0,
+      "alterados": 5,
+      "lotesAtingidos": [
+        "TEC-01"
+      ],
+      "lotesInvalidados": []
+    },
+    {
+      "data": "2026-10-13T03:43:11.037Z",
+      "proposta": ".audit/fang-proposta-restrita.json",
+      "assinatura": "4bced25ec9d9f2752a921e5042cffc5f42d0c5b3a7dcd935a7001601bc4f7ddf",
+      "justificativa": "Pedido do autor de 2026-10-13: nível e escolhas de habilidades roubadas, Crítico Aperfeiçoado completo sem pré-requisito, RD condicional, Resistência e escolhas de tipo, distribuição permanente de Adrenalina. Transições pela rodada existente, sem painel de Restringido. Reconciliação restrita aos itens destas mudanças e seus agregados. Preservadas identidades e estados de alterações anteriores fora deste escopo. Não aprova regras nem registra addons de outras tarefas.",
+      "adicionados": 111,
+      "removidos": 0,
+      "alterados": 24,
+      "lotesAtingidos": [
+        "AD-24-H01",
+        "AD-24-H04",
+        "CMB-15",
+        "LUT-11",
+        "M02",
+        "M03",
+        "P01",
+        "RES-01",
+        "RES-02",
+        "RES-07"
+      ],
+      "lotesInvalidados": []
+    },
+    {
+      "data": "2026-10-13T04:49:11.329Z",
+      "proposta": ".audit/imitacao-config-proposta-restrita.json",
+      "assinatura": "9babfd7d37e173ad7362af0d466b61614d4249f8f55e1d3a939df0f4c36e3559",
+      "justificativa": "Pedido do autor em 2026-10-13: Mestre da Postura aprendido por Imitação deve permitir configurar e usar duas Posturas mesmo sem Assumir Postura. A lista de habilitações do primeiro slot inclui Mestre/Aprender Postura, mantendo o filtro por Posturas escolhidas. A escolha dinâmica só existe na concessão imitada, sem alterar o catálogo da aquisição normal. Reconciliação restrita ao estado postura e seu agregado, preservando identidades e estados dos demais trabalhos.",
+      "adicionados": 0,
+      "removidos": 0,
+      "alterados": 2,
+      "lotesAtingidos": [
+        "M03"
+      ],
+      "lotesInvalidados": []
+    },
+    {
+      "data": "2026-10-25T03:31:27.785Z",
+      "proposta": "docs/revisao-automacao/G00/rechecagem/proposta-treino-de-tr-20261025.json",
+      "assinatura": "8fd7c02b23747014accb82d626c5865395570cd44fd514439931d9ef94c13191",
+      "justificativa": "Pedido humano em 2026-10-25: criar Treino de TR exatamente como Treino de Perícia, aplicado a Testes de Resistência. Registro restrito às 20 chaves de addons/treino-de-tr.json. TRE-03 é o lote proprietário do modelo Treino de Perícia, Livro de Regras p. 345. A adaptação para TR é regra da casa, sem aprovação ou revisão semântica atribuída por esta reconciliação. Outros itens e estados permanecem preservados.",
+      "adicionados": 20,
+      "removidos": 0,
+      "alterados": 0,
+      "lotesAtingidos": [
+        "TRE-03"
+      ],
+      "lotesInvalidados": []
+    },
+    {
+      "data": "2026-10-25T03:55:33.262Z",
+      "proposta": "docs/revisao-automacao/G00/rechecagem/proposta-treino-de-tr-integridade-20261025.json",
+      "assinatura": "9d0af78b1300f5703b69acb14550ffd469766192143b6361f531737ad04875d4",
+      "justificativa": "Correção explícita do autor em 2026-10-25: Faltou Integridade no Treino de TR. Versão 1.1.0 habilita o quinto TR somente nessa linha. Reconciliação restrita ao pacote.",
+      "adicionados": 0,
+      "removidos": 0,
+      "alterados": 5,
+      "lotesAtingidos": [
+        "TRE-03"
+      ],
+      "lotesInvalidados": []
+    },
+    {
+      "data": "2026-10-25T03:56:41.228Z",
+      "proposta": ".audit/retracao-de-dominio-20261025/proposta-chaves-novas-02.json",
+      "assinatura": "3da5d4150b93a62dbe74af80892cb5263c81ead5d86cb5c9f6aa0736e53871eb",
+      "justificativa": "Pedido humano em 2026-10-25: criar Retração de Domínio como Aptidão que requer Dom 3, com ativação manual e ganho de 20% dos máximos de PV e PE, somando a diferença aos atuais. Registro restrito às chaves novas de addons/retracao-de-dominio.json. Proprietário APT-09, Aptidões de Domínio. Regra da casa, sem aprovação de regra, execução ou auditoria. Todos os dados anteriores permanecem preservados.",
+      "adicionados": 15,
+      "removidos": 0,
+      "alterados": 0,
+      "lotesAtingidos": [
+        "APT-09"
+      ],
+      "lotesInvalidados": []
     }
   ],
   "rechecagem": {

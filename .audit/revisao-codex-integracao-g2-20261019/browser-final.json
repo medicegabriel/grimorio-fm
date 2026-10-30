@@ -1,0 +1,332 @@
+{
+  "geradoEm": "2026-10-19T17:05:26.487Z",
+  "base": "http://127.0.0.1:5310",
+  "casos": [
+    {
+      "id": "ac-1024",
+      "checks": [
+        {
+          "id": "confirmar cobra custo público uma vez",
+          "ok": true,
+          "dados": {
+            "custo": 3,
+            "energia": [
+              178,
+              175
+            ]
+          }
+        },
+        {
+          "id": "uma operação paga no histórico",
+          "ok": true
+        },
+        {
+          "id": "estorno uma vez preserva efeito",
+          "ok": true
+        },
+        {
+          "id": "virada com metadados usa sessão real",
+          "ok": true
+        },
+        {
+          "id": "clássica mantém sessão e não carrega CSS do G2",
+          "ok": false
+        },
+        {
+          "id": "voltar à prévia conserva sessão",
+          "ok": true
+        },
+        {
+          "id": "cartão conserva intensidade",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    },
+    {
+      "id": "ac-1440",
+      "checks": [
+        {
+          "id": "confirmar cobra custo público uma vez",
+          "ok": true,
+          "dados": {
+            "custo": 3,
+            "energia": [
+              178,
+              175
+            ]
+          }
+        },
+        {
+          "id": "uma operação paga no histórico",
+          "ok": true
+        },
+        {
+          "id": "estorno uma vez preserva efeito",
+          "ok": true
+        },
+        {
+          "id": "virada com metadados usa sessão real",
+          "ok": true
+        },
+        {
+          "id": "clássica mantém sessão e não carrega CSS do G2",
+          "ok": false
+        },
+        {
+          "id": "voltar à prévia conserva sessão",
+          "ok": true
+        },
+        {
+          "id": "cartão conserva intensidade",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    },
+    {
+      "id": "golpe-1024",
+      "checks": [
+        {
+          "id": "montador dentro do painel e Confirmar alcançável",
+          "ok": true,
+          "dados": {
+            "largura": 300,
+            "painel": 300,
+            "dentro": true,
+            "recebe": true
+          }
+        },
+        {
+          "id": "Golpe paga e aplica Sacrifício uma vez",
+          "ok": true,
+          "dados": {
+            "energia": [
+              178,
+              174
+            ],
+            "vida": [
+              541,
+              526
+            ]
+          }
+        },
+        {
+          "id": "sete propriedades no cartão",
+          "ok": true
+        },
+        {
+          "id": "reativar preserva escolhas e cancelar não muda sessão",
+          "ok": true
+        },
+        {
+          "id": "cancelar reativação não paga de novo",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    },
+    {
+      "id": "golpe-1440",
+      "checks": [
+        {
+          "id": "montador dentro do painel e Confirmar alcançável",
+          "ok": true,
+          "dados": {
+            "largura": 532,
+            "painel": 532,
+            "dentro": true,
+            "recebe": true
+          }
+        },
+        {
+          "id": "Golpe paga e aplica Sacrifício uma vez",
+          "ok": true,
+          "dados": {
+            "energia": [
+              178,
+              174
+            ],
+            "vida": [
+              541,
+              526
+            ]
+          }
+        },
+        {
+          "id": "sete propriedades no cartão",
+          "ok": true
+        },
+        {
+          "id": "reativar preserva escolhas e cancelar não muda sessão",
+          "ok": true
+        },
+        {
+          "id": "cancelar reativação não paga de novo",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    },
+    {
+      "id": "preferencia-megumi",
+      "checks": [
+        {
+          "id": "preferência salva no personagem sem mudar jogo",
+          "ok": true
+        },
+        {
+          "id": "preferência persiste e CD oculta",
+          "ok": true
+        },
+        {
+          "id": "salvar no criador mantém preferência",
+          "ok": true
+        },
+        {
+          "id": "round trip do personagem conserva preferência",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    },
+    {
+      "id": "preferencia-player30",
+      "checks": [
+        {
+          "id": "preferência salva no personagem sem mudar jogo",
+          "ok": true
+        },
+        {
+          "id": "preferência persiste e CD oculta",
+          "ok": true
+        },
+        {
+          "id": "salvar no criador mantém preferência",
+          "ok": true
+        },
+        {
+          "id": "round trip do personagem conserva preferência",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": []
+    },
+    {
+      "id": "fonte-compartilhada",
+      "checks": [
+        {
+          "id": "fonte externa registrada uma vez",
+          "ok": true
+        },
+        {
+          "id": "apresentações conservam o mesmo bônus registrado",
+          "ok": false,
+          "dados": {
+            "antes": "Defesa82",
+            "g2": "Defesa89",
+            "classica": "Defesa82",
+            "buffs": [
+              {
+                "id": "rdls7ifx3",
+                "rec": true,
+                "tipoFonte": "feitico",
+                "origemId": null,
+                "origemNome": "Proteção de teste independente",
+                "aplicadoPor": null,
+                "beneficios": [
+                  {
+                    "canal": "defesa",
+                    "valor": 7
+                  }
+                ],
+                "rodadas": null,
+                "somaPresumida": false
+              }
+            ]
+          }
+        },
+        {
+          "id": "registro não desaparece ao alternar",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "defAntes": "Defesa82",
+      "defG2": "Defesa89",
+      "defClassica": "Defesa82"
+    }
+  ],
+  "falhas": [
+    {
+      "caso": "ac-1024",
+      "id": "clássica mantém sessão e não carrega CSS do G2"
+    },
+    {
+      "caso": "ac-1440",
+      "id": "clássica mantém sessão e não carrega CSS do G2"
+    },
+    {
+      "caso": "fonte-compartilhada",
+      "id": "apresentações conservam o mesmo bônus registrado",
+      "dados": {
+        "antes": "Defesa82",
+        "g2": "Defesa89",
+        "classica": "Defesa82",
+        "buffs": [
+          {
+            "id": "rdls7ifx3",
+            "rec": true,
+            "tipoFonte": "feitico",
+            "origemId": null,
+            "origemNome": "Proteção de teste independente",
+            "aplicadoPor": null,
+            "beneficios": [
+              {
+                "canal": "defesa",
+                "valor": 7
+              }
+            ],
+            "rodadas": null,
+            "somaPresumida": false
+          }
+        ]
+      }
+    }
+  ]
+}

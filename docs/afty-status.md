@@ -1,5 +1,1713 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-10-29: PROMPTS DOS NOVE LOTES COM VERIFICAÇÃO ANTES DO CÓDIGO
+
+A pedido do autor, criados nove prompts completos em `docs/revisao-livro-regras/prompts/`, seis do Codex e
+três do Claude, com índice e links na fila única e no README da revisão. Cada prompt contém contexto,
+escopo, dependências, fronteira de responsabilidade, critérios de teste e entrega para um chat novo.
+
+Antes de programar, os prompts exigem conferir fonte, decisões e código atual, reproduzir os casos em
+configurações válidas e apresentar diagnóstico que distinga correção necessária, recurso já coberto,
+falso positivo, divergência intencional e dependência. Depois seguem as parcelas confirmadas, sem aprovação
+genérica adicional. Dúvidas materiais afetam apenas sua parcela, e decisões anteriores ficam preservadas.
+
+Somente documentação nesta entrega. Nenhum lote iniciado, chat acionado ou código do produto alterado.
+Os estados permanecem em `docs/a-fazer.md`. Resultados da análise anterior continuam históricos.
+
+## SESSÃO DE 2026-10-29: CONSOLIDAÇÃO EM NOVE LOTES GRANDES
+
+A pedido do autor, a divisão anterior de 31 lotes foi substituída por nove: CX1 a CX6 do Codex e CL1 a CL3
+do Claude. Todo o escopo foi absorvido, com mapa de correspondência em `a-fazer.md`. Codex mantém o maior volume
+de correções, conteúdo, interface, integração e verificação. Claude concentra motor de uso/combate, recursos
+vitais/Mutante e os sistemas complexos de invocações/Domínios/Votos. Todos os lotes continuam a iniciar.
+
+README atualizado. Dependências valem por parcela, permitindo entregas incrementais dentro dos lotes maiores.
+Primeiro paralelo: CX1 e CL1 após identificar a base. Arquivos compartilhados continuam com um editor por vez,
+e decisões do autor ficam preservadas. Apenas reorganização documental, sem implementação ou acionamento de chats.
+
+## SESSÃO DE 2026-10-29: DIVISÃO DO FECHAMENTO ENTRE CODEX E CLAUDE
+
+Registro histórico, substituído pela consolidação em nove lotes acima.
+
+Pedido do autor: dividir a análise em lista de trabalho, com maior volume de correções/conteúdo para Codex e
+os mecanismos complexos para Claude. Lista única registrada na seção de Livro de Regras de `docs/a-fazer.md`,
+com 24 lotes CO01 a CO24 e sete lotes CL01 a CL07. Link acrescentado ao README da revisão.
+
+Claude ficou com os núcleos de uso, evento de ataque/reação/concentração, recursos vitais, Mutante de três núcleos,
+invocações, Votos e Domínios/barreiras. Codex ficou com correções, conteúdo, integração e a maior parte das telas,
+incluindo as que consomem esses núcleos, além da verificação final. Cada lote tem dependências e critério de término.
+
+Primeiro paralelo após conferir a base: Claude CL01, Codex CO02 a CO06. Arquivos centrais e documentação só têm
+um editor por vez, com reserva na fila. Decisões antigas bloqueiam apenas suas parcelas. Todos os lotes estão
+a iniciar, sem implementação ou acionamento de outro chat nesta organização. Sem alteração do produto.
+
+## SESSÃO DE 2026-10-29: ANÁLISE APROFUNDADA DO LIVRO E DO FECHAMENTO DO SITE
+
+Pedido do autor: localizar as partes do Livro de Regras criadas na triagem e ampliar a análise do que ainda
+falta programar. Os 12 Markdown anteriores foram localizados em `docs/revisao-livro-regras/`. Foram preservados
+os 27 recortes e seus estados históricos. Novas entregas: `10-analise-aprofundada-2026-10-29.md` e
+`11-matriz-talentos-2026-10-29.md`, com link no README e registro das lacunas novas em `a-fazer.md`.
+
+Fonte externa com o SHA-256 exigido confirmado, sem edição. Consultados o código local com as alterações
+preexistentes, a fila e decisões posteriores. Remoto `2308bc193e9d5e806630d00745e3cc654042d9f7`, sete commits
+além do HEAD local `68888733deffa9700aa69761fd965a504b9152db`. Nenhuma integração, commit ou push.
+
+Achados reproduzidos: origem Mutante vazia, quatro falhas de Anatomia, acúmulo de acessório repetido,
+arredondamento da metade de Sustentada em Passiva, resultado contraditório nos naturais do ataque, PV negativo
+geral/cura, Exaustão comum sem aplicação, PE temporário genérico sem substituição/teto, Regeneração Passiva sem
+efeito, Adepto de Medicina sem cura e retorno após dissipação por dano sem esperar o próximo turno.
+Relatório distingue esses casos de decisões de casa e de falta de verificação integral de catálogo.
+
+Conferência adicional dos valores: 27 comparações de tabelas, 412 células, nenhuma divergência. Essa prova não
+certifica os consumidores ou toda a semântica de cada Feitiço. Matriz individual dos 52 Talentos, das 15 Anatomias
+e detalhamento das demais famílias no relatório. Evidências e scripts reexecutáveis em `.audit/livro-20261029/`.
+
+Validação: `npm run asserts`, 234/236 arquivos aprovados. `t-prodigio` imprime 33 ok e zero falhas, sai zero sozinho,
+mas o lançador recusa sua frase final. `t-reconciliacao-g00` ainda exige exatamente 32 remendos. `npm run build`
+aprovado, `npx eslint src/systems/afty/` aprovado. Sem execução no navegador. Sem mudança no produto, na DSL,
+nas fórmulas ou nos estados de auditoria da campanha. Não declarar site publicado ou catálogo integral aprovado.
+
+## SESSÃO DE 2026-10-27: TÉCNICAS MARCIAIS E ESTILO MARCIAL DO RESTRINGIDO
+
+Pedido do autor: ler as regras de Técnicas Marciais no Livro (p.124, 247 a 251) e adaptar ao site. O plano foi fechado em
+2026-10-26 com 24 decisões por pergunta com opções, e a implementação saiu inteira em 2026-10-27, nos dois sistemas.
+Guia completo: `docs/afty-tecnicas-marciais.md` (regras com página, modelo, motor, orçamento, telas e os pontos provisórios).
+
+- **Motor.** Módulo FOLHA novo `afty-tecnicas-marciais.js` (tabelas do Livro, acesso 1/5/9/15, progressão do personagem,
+  `calcularTecnicaAtaqueBase`, `linhaDeArmaDaTecnica`). A Técnica Marcial mora em `creature.feiticos` com a marca `marcial`, lida
+  por padrão na origem Restringido e na ficha sem energia que não é Sem Técnica (nunca grava). Tipos: Ataque (novo), Auxiliar, Curativo,
+  Passiva e Personalizado. Portão: Especialização Restringido ou herdeira, ou a liberação nova `tecnicasMarciais`.
+- **Orçamento.** Canal novo `vagasMarcial` (Desenvolver Ideias dá +2). No personagem a progressão é a do livro (2, e +1 nos ímpares
+  a partir do 3, sem teto), na criatura gasta o contador comum. Duas divergências novas: `progressaoDeTecnicasMarciais` e
+  `progressaoDoEstilo` (o Novo Estilo das Sombras da criatura também passou para o contador comum, e o estouro só avisa).
+- **Telas.** Criador: ramo Restringido da aba Habilidades com os cards Estilo Marcial (Atributo da CD, Nome, Fundamento, Motor) e
+  Técnicas Marciais. Ficha clássica e G2 (prévia): seção Técnicas Marciais com a linha de ataque (arma da sessão, um Acerto e um Dano por
+  golpe, escada de Condição com TR e CD, uso por rodada). Encontro recebe as mesmas props. Aba Habilidades da Ficha ganhou o grupo
+  Técnicas Marciais para as Passivas.
+- **Addons.** `estilo-marcial.json` 1.1.0 (só o Sem Técnica) e `nao-feiticeiro.json` 1.2.0 (`libera: ["tecnicasMarciais"]`).
+- **Elementalista e Amplificadora** ligados: o dado do Elementalista saiu das linhas de arma e entra no primeiro ataque da Técnica e na
+  primeira rolagem do Feitiço de Dano (Após Ataque). A Amplificadora é um estado da bancada que se desliga no primeiro ataque.
+
+**Verificação.** `npm run asserts`: 231 de 234 passam. As três que falham já falhavam antes (`t-reconciliacao-g00`, `t-treino-de-tr`)
+ou só falham em paralelo (`t-prodigio`, que passa sozinho). Novo `asserts/t-tecnicas-marciais.mjs` (158) e doze asserts atualizados.
+`eslint src/systems/afty` limpo e `npm run build` ok. No navegador (build de produção na 5330 e o executor do G2 na 5341,
+`.audit/tecnicas-marciais-20261027/`): Restringido personagem e criatura, Conjurador comum (sem regressão), Ficha clássica e G2.
+**Sem conferência na tela:** o painel do Encontro, o Gêmeo Restringido, o Não-Feiticeiro e o Sem Técnica com o Addon.
+
+**Árvore suja.** Nada foi commitado. A árvore já tinha mudanças do autor antes (315 arquivos no `git status`), e o `origin/main`
+está 7 commits à frente (GoliasK e Arthur Kyldare), com 31 arquivos mexidos dos dois lados (entre eles `afty-derive.js`, `afty-efeitos.js`,
+`afty-feiticos.js`, `AftyCreatureBuilder.jsx`, `AbaAcoes.jsx`, `ficha-sessao.js` e `PainelDeCombatente.jsx`). Fazer `git fetch` e olhar
+o conflito antes de integrar.
+
+## SESSÃO DE 2026-10-26: COMIDAS, FERREIRO E ALIADOS CONFERIDOS CONTRA O LIVRO
+
+Pedido do autor: revisar como o Kit de Ferramentas de Cozinheiro (p.143), o de Ferreiro (p.143) e os Aliados
+(p.347 e 348) estão programados e comparar com o Livro de Regras (SHA-256 conferido). O código está em
+`afty-extras-nativos.js`. Cinco correções, quatro com as escolhas do autor e uma achada na conferência pela tela:
+
+- **O terceiro nível dos Aliados nunca aparecia na aba Buffs.** O `organizaEstados` dava a cada raiz só os filhos
+  diretos, e o Golpe da rodada (Assassino, Combatente, Disparador, Elementalista) e as perícias do Auxiliar pendem da
+  graduação, que pende do seletor. Eram cinco linhas inalcançáveis: não havia como ligar o golpe nem marcar perícia.
+  Agora a raiz leva todos os descendentes (`descendentesDe`, em `ficha/ficha-estados.js`), e a busca sobe e desce a
+  cadeia inteira. Com a linha das perícias à vista, os 20 botões transbordavam a tela, e a coluna de controle ganhou
+  `max-width: 100%` em `ficha/ficha.css`. Conferido no navegador em 1280 e 390 de largura, sem rolagem horizontal.
+
+- **Ferreiro.** A arma melhorada virou `acertoArma` com alvo `arma` (antes `bonusAcerto`, que vazava +2 para o
+  Acerto de Feitiço). O escudo melhorado virou `rdEscudo` (antes `rdGeral`, que no jogador era a pilha errada,
+  RD Geral em vez de RD Física, e valia até sem escudo na mão).
+- **Auxiliar.** O teto de perícias segue a graduação (2, 3 e 4) pelo campo novo `maxPorOpcao`. Antes o Iniciante
+  com quatro marcadas somava +2 nas quatro.
+- **Golpe da rodada.** Combatente só em linha corpo a corpo e Disparador só em linha a distância, pelo campo novo
+  `escopoLinha` do efeito. Antes o dado entrava em todas as linhas (o Combatente somava 3d12 no arco).
+- **Revigorante.** O PV Temporário entrou em `PV_TEMP` e em `DONO_PV`, com `donoPvDoGrupo` para o grupo sem item.
+  Antes a Ficha o tratava como "Regra de concessão não revisada" e nenhum cartão o mostrava.
+
+Ficou de fora, e está em `docs/a-fazer.md`: o Elementalista (a linha de Feitiço não lê `dadosNomeados`), a escala de
+grau do feiticeiro por ND (o livro dá 5, 8, 14 e 19 como referência na p.45 e o Afty usa 5, 9, 13 e 17), o teto de
+equipamentos melhorados do Ferreiro (BT/2 no descanso curto, BT no longo) e o seletor de Aliados cheio, que não avisa.
+
+Addons: nenhum arquivo de `addons/` trata de Cozinha, Ferreiro ou Aliados. As dez menções achadas são texto de
+habilidade de outros pacotes, e nenhum lê as variáveis da bancada. Não houve o que apagar no repositório. O que o autor
+descreveu (usuários duplicando os buffs com addons antigos) acontece na cópia que cada pessoa guarda no navegador
+(`fm_addons_afty_v1` e `creature.addons`), fora do alcance do repositório.
+
+Validação: `t-extras-nativos.mjs` de 105 para 133 asserts. Suíte inteira antes e depois de mexer: 230 de 233
+arquivos verdes, com `t-prodigio`, `t-reconciliacao-g00` e `t-treino-de-tr` já vermelhos na base. ESLint da área
+Afty limpo, `t-ordem-modulos` passou. Sem commit nem push. `afty-combate.js`, `afty-efeitos.js`, `afty-pericias.js`
+e a pasta `ficha/efeitos/` já tinham mudança local de outra pessoa, e o remoto está sete commits à frente em
+`afty-derive.js` e `afty-efeitos.js`.
+
+## SESSÃO DE 2026-10-25: ADDON SEGREDOS DO ARTESÃO DA ALMA
+
+Pedido humano implementado em `addons/segredos-do-artesao-da-alma.json` 1.0.0: um Talento Geral com texto do
+autor (fora do livro), Nível 10 e Treinado em Integridade. Soma o BT no TR de Integridade (`bonusTR` com `bt`)
+e dá 5 de RD a Dano na Alma (`rdAlma`), acumulando com o Alma Inquebrável. O reparo do núcleo de um Corpo
+Amaldiçoado Mutante (testes de Ofício Canalizador e de Integridade, CD 20 + nível + 2 por dia) fica no texto,
+para a mesa. Sem mudança de motor nem de tela. Duas leituras minhas, avisadas ao autor: "BT em Integridade" é
+bônus no TR e não no valor da Alma, e o nome do pacote segue o título do texto ("da Alma").
+
+Validação: `asserts/t-segredos-artesao-alma.mjs` com 28 asserts nos dois sistemas, e os vizinhos de Talentos e
+Addons passaram (7 arquivos, 368 asserts). No navegador (`/Player`, nível 12): o Talento aparece em Gerais com
+"Nível 10" e "Treinado em Integridade", o botão trava no nível 9 e abre no 12, e a Integridade foi de +13 para
++17 (BT +4). Sem erro de console. Não havia entrada desta demanda em `docs/a-fazer.md`.
+
+## SESSÃO DE 2026-10-25: CORREÇÃO DA FICHA CHROLLO ENVIADA PELO AUTOR
+
+O autor distinguiu os achados corretos da importação incompleta. Confirmou
+três comportamentos: Atributo aumenta valor E limite, Especialização de
+Outra Classe concede uma habilidade de outra classe no modelo de Alma
+Livre, e Lendária concede uma escolha. Os demais itens são nome e descrição.
+Esta correção substitui as pendências de mapeamento da primeira entrega.
+
+Fonte exata: exportação recebida em
+`C:/Users/gabri/.codex/attachments/f786826d-b686-4ec8-b302-4a32858fdd8f/Texto colado.txt`,
+Chrollo id `mtkfm72o-u51uv6n`. Arquivo corrigido entregue em
+`C:/Projetos/Grimorio/outputs/Chrollo-catarse-corrigida.json`, mantendo o id,
+classes, poderes já escolhidos, retrato, demais addons e campos. Saldo 495
+preservado. As duas linhas de Constituição +6, valor e limite, já existiam
+num Funcionamento Básico manual da Loja. Foram migradas para a Catarse,
+removendo só essa duplicação identificada. Valor final 28 e limite permanente
+26 preservados, com as demais fontes da ficha.
+
+Família `habilidadesOutraClasse` acrescentada ao resolvedor e à aba Catarse.
+Quantidade 2 abre duas escolhas reais, sem consumir vagas comuns, sem criar
+classe ou conceder bases. Usa o nível do personagem para a habilidade e suas
+opções, preservando os demais requisitos. Escolhas aparecem na aba da classe
+em Especializações, onde os campos aninhados podem ser configurados.
+Convive com Alma Livre sem disputar a escolha única do Talento.
+
+Compra `lendarias` tem quantidade 3. O Chrollo recebido tinha 4 Lendárias
+marcadas e 2 vagas normais. Agora fica 4/5, uma escolha restante, sem mudar
+as quatro seleções. Os outros dez itens são `anotacao`, sem efeitos ou
+editores de Motor vazios. Quantidade ausente em compra antiga vale 1.
+O importador local anterior foi atualizado para corrigir também uma
+aplicação da versão inicial. A entrega principal é o JSON da ficha fornecida,
+sem alegar gravação na biblioteca pessoal do Chrome.
+
+Validação: 27 regressões novas, 319 asserts focados, conferência integral
+dos campos preservados e testes do importador aprovados. Lint dos arquivos
+alterados e build isolado aprovados. Interface compilada em 5451 com o arquivo
+real importado: dois seletores, classes próprias fora da lista, requisitos
+bloqueados, concessão de Corpo Calejado e Táticas Defensivas em cópia de teste,
+PV 818 para 866 e Defesa 30 para 34, sem gasto de vagas comuns. Opções de
+Táticas Defensivas disponíveis na aba Suporte. Lendárias mostraram 4/5.
+As duas escolhas de teste não foram incluídas no arquivo entregue.
+Evidências em `.audit/loja-catarse-20261025/correcao-ficha/`.
+Suíte completa final: 231 de 233 arquivos aprovados. Falhas fora desta mudança:
+`t-prodigio.mjs` imprime 33 acertos e zero falhas, mas não satisfaz o contrato
+de saída do runner. `t-reconciliacao-g00.mjs` exige uma contagem fixa de 32
+remendos. Registro completo em `asserts-final.txt` na pasta de evidências.
+
+Não houve mudança em `src/components/`, commit, push ou integração do remoto.
+HEAD remoto segue `bcaf978`, local `6888873`. Livro externo com SHA-256
+`1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a`
+conferido, sem nova transcrição. Demais trabalhos simultâneos preservados.
+
+## SESSÃO DE 2026-10-25: ADDON TR NO LIMITE DE PERÍCIAS
+
+Pedido humano implementado em `addons/tr-no-limite-de-pericias.json` 1.0.0. Os Testes de
+Resistência passam a contar no Limite de Perícias e a ser treinados como uma perícia (Treinado 1,
+Mestre 2), sem tirar nada do TR que Classe, Talento, Treino e Habilidade concedem. Pergunta feita ao
+autor: "aumentando o contador" virou o concedido como vaga GASTA e o TOTAL subindo na mesma medida
+(as outras leituras eram concedido de graça com total fixo, ou bônus fixo no total).
+
+Verbo novo `regrasAfty.trNoLimiteDePericias` (molde do `almaComoAfty`, e não `libera`, porque desfaz
+uma divergência numérica do jogador). Arquivos: `afty-regras-addon.js` (chave, normalizador,
+validador, união), `afty-derive.js` (passa `trNoLimite` ao `resolveTestes`) e `afty-pericias.js`
+(`trForaDoCaixa` desligado, `faixasDoTR`, `custoLiquido` com `faixaExtra` para o pacote da Classe
+abater a marcação à mão, parcela Testes de Resistência Concedidos no total, `resistenciasConcedidas`
+no `orcamento`). Comentário novo na divergência `trForaDoOrcamento`, sem mudar o dado dela. A tela
+não precisou mudar: o contador do card de TR já lia `orcamento.trNoOrcamento`.
+
+Efeito: o `restante` não muda por causa do concedido. Na criatura o TR já gastava vaga, então lá só
+aparece o concedido no contador. Nenhum bônus de TR nem de perícia muda.
+
+Validação: `asserts/t-tr-no-limite.mjs` com 59 asserts lendo o JSON de verdade nos dois sistemas.
+Lint do Afty limpo e `t-ordem-modulos` passou. Suíte geral: 229/231 arquivos, as duas falhas são
+as de antes e fora desta demanda (`t-prodigio.mjs`, saída fora do contrato, e `t-reconciliacao-g00.mjs`,
+contagem fixa de 32 remendos, que já falhava antes da mudança). No navegador (`/Player`, Restringido
+nível 10, Chrome com barra de rolagem): contador de 0/8 só nas Perícias para 4/12 nos dois cards,
+Vontade treinada 5/12 e mestre 6/12 sem "Sem Fonte", e o hover do total com Restringido (Pacote) 5,
+Inteligência 3, Testes de Resistência Concedidos 4 e TOTAL 12. Sem erro de console.
+
+⚠ O inventário de revisão (`docs/revisao-automacao`) já estava defasado antes desta mudança (474
+chaves vivas sem fonte individual) e não foi reconciliado: o pacote novo é mais um arquivo a entrar
+nele quando o autor rodar a reconciliação. Não havia entrada desta demanda em `docs/a-fazer.md`.
+
+## SESSÃO DE 2026-10-25: ADDON RETRAÇÃO DE DOMÍNIO
+
+Pedido humano implementado em `addons/retracao-de-dominio.json` 1.0.0.
+Aptidão da categoria Domínio, requer Dom 3 e escolha na ficha. O controle
+Retração de Domínio nos Buffs ativa a ampliação durante o combate.
+PV e PE máximos recebem 20% dos valores finais, com arredondamento para baixo,
+depois das demais fontes, multiplicadores e substituições da aba Cálculos.
+No clique de ativação, a diferença entra nos atuais, preservando os pontos
+faltantes. Exemplo: 200/100 máximos passam a 240/120. Atuais 130/35 passam
+a 170/55, enquanto os atuais cheios passam a 240/120.
+
+Contrato reutilizável `estadosCombate[].ampliaRecursos`, em bool de Aptidão,
+com percentuais positivos de `hp` e/ou `pe`. `quando` filtra o descritor com
+o contexto que já inclui os níveis de Aptidão. O normalizador, o validador,
+o derive e a sessão transportam o contrato. Não há canal novo. A mesma
+conta dos máximos é usada pelo clamp da sessão, conservando o ganho mesmo
+quando o escritor da interface recebe o derive anterior ao clique.
+Controles de exclusividade e uso por rodada continuam sendo respeitados.
+
+Repetir o comando enquanto ativa não concede recursos novamente. Desligar
+apara os atuais ao máximo normal, sem descontar o bônus uma segunda vez.
+Fim de combate e descanso encerram a ampliação, e o próximo combate exige
+ativação manual. Cada nova ativação recebe a diferença, conforme o pedido,
+sem custo, duração em rodadas ou Exaustão adicionais. A Alma não muda.
+As escolhas permanecem isoladas por ficha e `rulesVersion`, sem alterações
+em `src/components/`. Não havia entrada desta demanda em `docs/a-fazer.md`.
+
+Validação: 94 asserts próprios e bateria focada de 304 asserts em 5 arquivos
+aprovados. Lint Afty e build isolado passaram. Suíte geral: 227/230 arquivos
+aprovados, com falhas externas em `t-prodigio.mjs` (saída fora do contrato),
+`t-reconciliacao-g00.mjs` (contagem fixa de remendos) e `t-treino-de-tr.mjs`
+(flag de Integridade modificada por outra tarefa). Esses arquivos não foram
+alterados nesta demanda. Treino de TR e seus registros tiveram alterações
+concorrentes preservadas. A nova coleta de inventário não teve erros.
+
+No navegador, build isolado em `http://127.0.0.1:5459/Player`, personagem
+sintético importado pelo formulário: ganho com recursos gastos, exemplo
+cheio 240/240 e 120/120, persistência após recarga, fim de combate e novo
+combate sem reativação automática. Capturas e resumo em
+`.audit/retracao-de-dominio-20261025/`. O JSON e a documentação do contrato
+ficam em `docs/afty-addons.md`, `docs/automacao-dsl.md` e
+`docs/afty-formulas-base.md`.
+
+Registradas 15 chaves novas em APT-09, fonte DA CASA com pedido humano,
+todas NÃO REVISADO. Preservadas as 13.655 entradas anteriores e a campanha.
+Proposta restrita aplicada e hashes conferidos em
+`.audit/retracao-de-dominio-20261025/proposta-chaves-novas-02.json`.
+Nenhuma auditoria de regra foi atribuída pelo executor.
+
+Fonte desta regra: pedido do autor nesta conversa. Livro externo acessível
+e SHA-256 conferido `1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a`,
+sem transcrição de regra do livro para a Aptidão da casa.
+Remoto consultado: HEAD e main em `bcaf978`, local em `6888873`.
+Há diferenças remotas nos mesmos módulos de suporte. Nenhuma integração,
+commit ou push executado, trabalho local anterior preservado.
+
+## SESSÃO DE 2026-10-25: INOVAR ESTILO, MENTE ANALÍTICA
+
+Criado `addons/mente-analitica.json` 1.0.0 por pedido do autor. A opção
+`mente-analitica:mente_analitica` entra em Inovar Estilo, exige possuir
+Mente Oculta (`cmb_mente_oculta`) e usa `trocaAtributo` de `sabedoria` para
+`inteligencia`. Só o bônus adicional da habilidade em Furtividade muda.
+O atributo normal da perícia e o catálogo do livro permanecem intactos.
+
+Ativar junto de `addons/talentos-de-estilo.json` e selecionar em
+Especializações > Talentos > Inovar Estilo. Sem alvo ou seleção, nenhum
+efeito. Desmarcar ou desativar restaura Sabedoria. Reutiliza o mecanismo
+existente, sem mudança no motor ou na interface.
+
+Validação real via `deriveAfty` nos dois sistemas: Inteligência 18,
+Sabedoria 10, Furtividade 6 antes e 10 depois, retornando a 6 ao remover.
+Conferidos persistência JSON, fonte, atributos preservados e bloqueio sem
+Mente Oculta. Os 113 asserts de Talentos de Estilo passaram. Evidências em
+`.audit/mente-analitica-20261025/`. Contrato atualizado no guia de Talentos.
+
+Regra original na página impressa 69 do Livro de Regras 2.5.2 externo,
+SHA-256 `1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a`.
+A troca é decisão da casa desta sessão. Remoto consultado em `bcaf978`,
+checkout local `6888873`, sem sincronização, commit ou push.
+
+## SESSÃO DE 2026-10-25: MOTOR DA CATARSE E INVENTÁRIO DO CHROLLO
+
+Loja integrada ao `TecnicaMotorEditor` por um envoltório local no builder.
+Canal, alvo, expressão, condição, duração, vocabulário real e prévia substituem
+os campos crus. Linhas incompletas ficam no rascunho. Duração temporária e
+`semCredito` sobrevivem ao saneamento. Só canais de orçamento lidos cedo
+continuam no montante. Demais anotações acompanham os estágios da Técnica,
+sem exclusividade, com atributos e condições no contexto correto. Textos
+e quantidades das compras agora aparecem em Habilidades da Ficha de jogo.
+
+Inventário de Chrollo, @aftbah, conferido em modo somente leitura no banco
+`C:/Projetos/Catarse Discord/data/catarse.sqlite3`, personagem 2. Fonte local
+atualizada em 07/10, SHA-256
+`706f05c2efda18473859a8ec0bca62f8a665beac38f7edfbacab2e0b0d1d4b09`.
+São 16 aquisições ativas, 22 unidades e 13 itens distintos. Compra 6 já
+convertida em Mudar Regra (Gasto) não foi duplicada. Bússola é uma unidade,
+apesar dos dois logs. Os seis pontos vão para Constituição, conforme resposta
+expressa do autor. Três vagas de Lendária usam o Motor e os requisitos normais.
+Especializações de Outra Classe, títulos e poderes condicionais conservam
+seus textos e aguardam escolhas ou procedimentos próprios. Bússola não tem
+descrição na origem.
+
+Importador preparado em `.audit/loja-catarse-20261025/importar-chrollo.html`.
+Exige uma Chrollo Player existente, preserva demais dados/fichas/saldo, guarda
+backup, recusa conflitos e evita reaplicação. Os 120 de custos históricos
+conhecidos ficam na procedência sem nova cobrança ou ganhos inventados.
+Saldo pessoal de 175 não entra na ficha. A anotação vazia de Constituição da
+captura pode ser adotada, mantendo id e custo. Aplicação na ficha real ainda
+pendente: o controle do Chrome foi interrompido por não conseguir verificar
+a URL. Link no navegador habitual, na mesma aba da ficha:
+`http://localhost:5173/.audit/loja-catarse-20261025/importar-chrollo.html`.
+
+Teste completo somente em amostra na biblioteca separada do IAB: importação
+com backup, saldo 495 preservado, Constituição 10 para 16 e todos os 13 itens
+visíveis na Ficha. 49 asserts focados e testes de preservação, idempotência,
+conflitos, saldo e textos passaram. Bateria geral: 226/229 arquivos passaram.
+Falhas externas à Catarse: `t-prodigio` (contrato de saída),
+`t-reconciliacao-g00` (remendos) e `t-revisao-g00` (addon de outra sessão sem
+trilha naquele momento). Mudanças simultâneas de outras sessões preservadas.
+Evidências em `.audit/loja-catarse-20261025/`. Fechamento: lint Afty e build
+isolado aprovados, 369 asserts focados em 9 arquivos. Versão compilada
+conferida em `127.0.0.1:5450/Player`, com condição `sempre`, prévia +6 e
+persistência de expressão/condição após salvar e recarregar. Sem erros de
+console observados. Captura `motor-corrigido-teste.png` usa amostra chamada
+Verificação da Loja, sem representar a ficha real do autor.
+
+Remoto consultado em `bcaf978`, local `6888873`, seis commits à frente com
+sobreposição no builder, derive e documentos. Nada integrado, sem commit ou
+push, sem alterações em `src/components/`. Livro externo conferido por
+SHA-256 `1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a`,
+sem transcrição ou nova regra do livro nesta tarefa.
+
+## SESSÃO DE 2026-10-25: INOVAR ESTILO E ESTILO PRÓPRIO
+
+Pedido do autor implementado em `addons/talentos-de-estilo.json` 1.0.0.
+Dois Talentos Gerais para Afty e Player, inicialmente sem variantes, com
+seleções repetíveis abertas por padrão em Especializações > Talentos.
+Estilo Próprio concede uma Habilidade de Especialização real. Inovar Estilo
+exige a habilidade possuída e pode trocar o atributo nas expressões e
+condições dos efeitos dela, incluindo suas escolhas aninhadas.
+
+Futuras variantes usam `acrescenta.opcoesTalento`, acrescentadas ao mesmo
+seletor sem substituir listas anteriores. Cada variante ocupa uma vaga,
+como Incremento de Atributo. A habilidade concedida não cobra outra vaga.
+Sem alvo, pacote base ou dependência própria, não há concessão nem inovação.
+IDs salvos permanecem para reativação e opções removidas geram aviso.
+Isolamento confirmado no catálogo unido do Encontro. Pools compartilhados
+do raw preservados, inclusive Adepto de Combate. Lime Neds não foi alterado.
+
+Contrato e padrão para pedidos futuros em `docs/afty-talentos-de-estilo.md`
+e no início de `docs/afty-addons.md`. Expressões adaptadas antes da avaliação
+normal, sem alterar o catálogo nem os atributos. Cálculos específicos fora
+dos efeitos do Motor exigem integração própria por variante. Nenhum editor
+livre de habilidade ou DSL foi acrescentado à ficha.
+
+Validação: 113 asserts próprios, lint e build isolado aprovados. Suíte final
+227/229 arquivos, somente as falhas anteriores de `t-prodigio.mjs` (formato
+de saída) e `t-reconciliacao-g00.mjs` (contagem fixa de remendos).
+No navegador de produção: seletores vazios abertos e exemplo sintético
+com Defesa 16, 17 ao conceder a habilidade, 20 com inovação e 16 ao retirar
+o alvo. Exemplo de teste não integra o pacote base entregue.
+Evidências em `.audit/talentos-de-estilo-20261025/`.
+
+Fonte das duas regras: pedido do autor nesta sessão, conteúdo da casa.
+Livro externo conferido por SHA-256
+`1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a`,
+sem transcrição de regra do livro para esses Talentos.
+Remoto consultado: `origin/main` e HEAD remoto em `bcaf978`, checkout local
+em `6888873`. Sem integração do remoto, commit ou push. Alterações locais
+anteriores e trabalho simultâneo em Treino de TR foram preservados.
+
+## SESSÃO DE 2026-10-25: ADDON TREINO DE TR
+
+Correção posterior do autor: faltava Integridade. Pacote atualizado para
+1.1.0 com `incluiIntegridade: true`. O seletor de Interlúdios lê essa opção
+por linha, oferecendo os cinco TR nesse pacote e preservando os quatro do
+addon anterior. Etapas, custos e canais permanecem iguais. A cópia do
+pacote na ficha precisa ser atualizada depois de reinstalar na biblioteca.
+Regressões ampliadas para Integridade: 107 asserts passaram, cobrindo as
+quatro etapas, fontes já treinadas/mestres e transporte em Afty e Player.
+Nenhum arquivo de `src/components/` alterado nesta correção.
+Validação final da correção: lint e build isolado aprovados, 242 asserts
+focados em 5 arquivos passaram. No navegador, atualização da biblioteca e
+da cópia de ficha, Integridade completa por 5 Focos em Player e Afty,
+treino anterior preservado e nenhum erro de console. Captura em
+`.audit/treino-de-tr-integridade-20261025/player-integridade.png`.
+A suíte geral encontrou as falhas anteriores de `t-prodigio.mjs` e
+`t-reconciliacao-g00.mjs`, além de uma falha no teste novo durante uma
+restauração concorrente do JSON à 1.0.0. Reaplicada a 1.1.0, os 107 asserts
+do pacote e a bateria focada passaram. Controle reconciliado somente nos
+5 hashes alterados do pacote, preservando as 20 identidades, campanha,
+estados e itens alheios. Proposta em
+`docs/revisao-automacao/G00/rechecagem/proposta-treino-de-tr-integridade-20261025.json`.
+Arquivo final estabilizado por substituição atômica, com verificação de
+hash por 20 segundos e nova execução dos 107 asserts. Cópia pronta para
+importar em `C:/Projetos/Grimorio/outputs/treino-de-tr-1.1.0.json`.
+
+Pedido do autor: Treino de TR exatamente como o Treino de Perícia, aplicado
+a Testes de Resistência. Criado `addons/treino-de-tr.json` 1.0.0, linha
+`treino-de-tr:tr`, para Afty e Player. Repete por Fortitude, Reflexos,
+Vontade e Astúcia, pelo seletor existente, sem Integridade. Custos 1/1/1/2,
+sem requisito adicional, Treinado na 1ª e Mestre na 3ª. O canal existente
+`proficienciaTRCasoJa` concede a faixa ou soma +1/+2 se outra fonte já a
+concedia, incluindo a Classe no jogador. Vantagem 2x por descanso, sucesso
+garantido por cena (exceto teste oposto) e rerrolagem do d20 menor que 5
+permanecem de mesa, como no Treino de Perícia.
+
+O pacote anterior `treino-testes-de-resistencia.json` tem outra regra e foi
+preservado. Nenhuma alteração de motor ou tela, nenhum arquivo de
+`src/components/` modificado nesta tarefa. Instalação e diferenças registradas
+em `docs/afty-addons.md`. Não havia pendência específica deste pedido na fila.
+Fonte da adaptação: Livro de Regras 2.5.2, p. 345, SHA-256 confirmado
+`1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a`.
+
+Validação: 86 asserts do pacote real em `asserts/t-treino-de-tr.mjs`
+passaram, incluindo as duas fichas, concessões, bônus condicionais,
+instâncias, Focos, transporte da ficha e coexistência com o pacote anterior.
+Lint Afty e build isolado passaram. Bateria focada: 221 asserts em 5 arquivos,
+todos passaram. No navegador, JSON instalado e ativado em Player e Afty,
+quatro opções de TR, Vontade e Astúcia completas por 5 Focos, bônus atualizado
+e rascunho Player restaurado após recarga. Captura em
+`.audit/treino-de-tr-20261025/treino-completo.png`.
+
+A bateria geral foi executada antes de o novo arquivo de asserts entrar na
+listagem: 224 de 228 arquivos passaram. Falharam `t-prodigio.mjs` (33 checks
+sem falha, saída fora do contrato do executor), `t-reconciliacao-g00.mjs` e
+`t-revisao-g00.mjs` (módulo `afty-talentos-estilo.js` sem proprietário naquele
+momento), e `t-revisao-cmb01.mjs` (identidade do pool do Adepto). Causas fora
+do pacote novo, preservadas para as tarefas responsáveis. Registros de
+revisão também estavam sendo alterados por outra sessão.
+
+Remoto consultado: main em `bcaf978`, diferente do HEAD local `6888873`.
+O novo pacote não substitui arquivos do remoto. Os documentos compartilhados
+exigem preservar os registros de ambas as sessões numa integração futura.
+Nenhum commit ou push executado.
+
+Controle de revisão: 20 chaves do pacote registradas em inventário, escopo
+e fontes, sob TRE-03, com fonte DA CASA e pedido humano documentado.
+Proposta restrita em
+`docs/revisao-automacao/G00/rechecagem/proposta-treino-de-tr-20261025.json`.
+Aplicação adicionou somente esses 20 itens, sem remoções ou alterações de
+itens existentes, campanha preservada. As chaves seguem NÃO REVISADO.
+Cobertura final não aponta erros do novo pacote, permanecem 635 erros
+alheios e a revisão pendente da campanha.
+
+## SESSÃO DE 2026-10-23: AGORA NA MESA REORGANIZADA COMO SEÇÃO ÚNICA
+
+Autor pediu repensar a composição e reduzir a poluição. A Mesa agora tem
+uma moldura comum com cabeçalho e divisórias discretas, sem nove cartões
+separados. Nome e estado formam a área que abre o painel. A ação direta
+continua separada à direita, com Golpe destacado. Nenhum acesso ou contador
+foi retirado. Alterados só MesaG2.jsx e abas-g2.css, verbos e fonte de dados
+preservados. Painéis retidos, pendência automática e teclado conferidos.
+Lint/build, 52 asserts, 94 verificações de leiaute, 53 de interação e 50 da
+Mesa passaram. S1 em 792/800 e 928/1024 nos 331 px. Faixa densa de 1064 px
+em 181,55 px de altura, S2 com compacta em 249 px contra 302 antes.
+Evidências em .audit/mesa-unificada-g2-20261022/ (lote iniciado em 22/10).
+Dist diário e demais fontes preservados por hash. Nova avaliação visual com
+o autor, integração sem autorização própria e barra antiga 9/10 intacta.
+
+## SESSÃO DE 2026-10-22: REFINAMENTO VISUAL DE AGORA NA MESA
+
+Autor pediu melhorar a aparência da faixa. Alterado somente abas-g2.css:
+nomes na tipografia das linhas da ficha, cartões mais largos, ações
+centradas à direita de nome e estado, setas ao fim do nome e foco visível.
+Na largura de 1064 px, nove cartões em três colunas, faixa de 192,55 px
+contra 207,09 antes. Sem nova regra ou componente. Operações e rascunho
+conferidos na interface, lint/build aprovados e leiaute focado 94/94.
+S1 preservado em 788/800 e agora 962/1024 nos 331 px. S2 com compacta
+fica mais alto: faixa de 302 px contra 201, ainda abaixo da dobra.
+Evidências em .audit/refino-mesa-abas-g2-20261022/. Dist diário preservado
+por hash, prévia na 5330. Integração sem autorização própria, barra 9/10.
+
+## SESSÃO DE 2026-10-22: BORDAS UNIFORMES NA PRÉVIA
+
+Autor apontou diferenças de curvatura entre Rápido e Dano. As seções das três
+abas agora compartilham raio fixo de 12 px, com 11 px no fundo do cabeçalho
+para acompanhar o interior da borda. Alterado somente abas-g2.css, sem mudar
+alturas, espaçamentos ou operações. Conferido no navegador em 390, 1280 com
+compacta, 1440 e 2560 px, sem estouro lateral. Build isolado e lint aprovados.
+Evidências em .audit/ajuste-bordas-abas-g2-20261022/. Os demais 330 arquivos de
+src e os 14 do dist diário foram preservados por hash. Prévia na 5330.
+Integração segue sem autorização própria, barra antiga 9/10 preservada.
+
+## SESSÃO DE 2026-10-22: RECONFERÊNCIA DOS DOIS AJUSTES ENCERRADA
+
+Reconferência independente concluída pelo Codex em 22/10. Outros em Perícias,
+destinos únicos da busca, filtros, rolagens, foco e callbacks atuais confirmados.
+Linhas de armas com colunas comuns confirmadas, inclusive Raio Negro em amostra
+sintética separada. Nenhuma correção adicional de produto necessária.
+
+Provas próprias: 52 asserts específicos, lint e build isolado aprovados,
+181/181 ajustes, 94/94 leiaute focado, 39/39 complemento e 21/21 temas e
+compatibilidade. Suíte 225/227, somente as duas falhas históricas.
+S1 segue 788/800 e 956/1024 na coluna efetiva de 331 px. Fontes e dist
+diário preservados por hash. Prévia na 5330, 5173 não tocada.
+
+Parecer: C:/Projetos/Grimorio/REVISAO-AJUSTES-PREVIA-TRES-ABAS-20261022.md.
+Evidências: grimorio-tracker/.audit/revisao-codex-ajustes-g2-20261022/.
+Restante já aprovado preservado. Próxima etapa: integração nas rotas normais,
+ainda dependente de autorização própria. Barra antiga 9/10 intacta.
+Sem commit, push, merge ou deploy.
+
+## SESSÃO DE 2026-10-22: CONTINUAÇÃO TRANSFERIDA PARA OUTRO CODEX
+
+Autor informou que o Claude ficou sem tokens e pediu contexto para outro
+chat do Codex continuar o serviço. Os dois ajustes já foram entregues pelo
+Claude, e a reconferência independente permanece pendente. Neste chat
+começou a leitura do relatório, código e roteiro, sem nova execução de
+testes ou navegador para essa versão. Somente documentos foram alterados
+neste encaminhamento, sem ajuste de produto.
+
+Prompt autossuficiente em
+C:/Projetos/Grimorio/PROMPT-CODEX-CONTINUAR-PREVIA-TRES-ABAS-G2-20261022.md.
+Novo Codex assume a reconferência e eventuais correções do lote na prévia,
+sem depender do Claude. Restante aprovado, integração ainda depende de
+autorização própria. Barra antiga 9/10 preservada.
+
+## SESSÃO DE 2026-10-21, NOITE: CLAUDE APLICOU OS DOIS AJUSTES DO ACEITE
+
+Outros (Manobras, Concentração, Fintar, Provocar, Teste de Morte e o que
+o derive entregar) saiu de Ações e virou seção própria em Perícias, fora
+do filtro e da busca local. A segunda coluna de Ações é só Feitiços e
+Domínio. A busca do G2 leva `manobra:` a Perícias por `alvosDaBuscaG2`,
+sem mexer em `alvosDeBusca` da clássica e do Encontro.
+
+As linhas de Dano dividem as colunas da seção (subgrid): nome, metas,
+Acerto e Dano na mesma posição em todas, e o arranjo é da seção pela
+largura real dela. Uma fileira a partir de 720 px, nome sobre metas com
+os alvos ao lado de 560 a 719, e três fileiras abaixo disso. A dupla do
+autor (Ataque Básico e Azamaru, 1440) ficou com 61 e 62 px.
+
+Verificado: 181 checks do lote (`ajustes.mjs`), 52 asserts da prévia,
+suíte 225/227 (só as duas históricas), lint 0, build isolado, leiaute,
+fumaça, armas, abas e temas de novo. S1 em 1280x800 com a compacta e a
+barra real segue 788/800, e 331 px melhorou para 956/1024. Só cinco
+arquivos da prévia mudaram, conferidos por hash. Dist diário idêntico,
+5173 não tocada, sem commit, push ou deploy.
+
+Pendente: reconferência do Codex. Restante já aceito pelo autor.
+Integração segue sem autorização. Barra antiga 9/10 intacta.
+
+## SESSÃO DE 2026-10-21: ACEITE VISUAL COM DOIS AJUSTES
+
+Autor aprovou o restante da prévia e pediu: mover integralmente Outros
+(Manobras, Concentração e demais testes) para Perícias, e uniformizar a
+distribuição das linhas de armas. Na imagem, Azamaru quebra Acerto/Dano
+para uma segunda linha e fica mais alta que Ataque Básico.
+
+Codex conferiu os pontos no código e preparou um lote único para o Claude,
+incluindo destino da busca global exclusivo do G2 e leiaute uniforme por
+largura útil. Prompt em
+C:/Projetos/Grimorio/PROMPT-CLAUDE-AJUSTES-ACEITE-TRES-ABAS-G2.md.
+Pendente: Claude aplicar e Codex reconferir os dois ajustes. O restante
+tem aceite do autor, sem nova rodada de planejamento. Integração continua
+dependendo de autorização própria, barra antiga 9/10 intacta. Somente
+documentos alterados pelo Codex neste encaminhamento.
+
+## SESSÃO DE 2026-10-21: CODEX REVISOU A PRÉVIA DAS TRÊS ABAS
+
+Revisão independente concluída, sem novo bloqueio técnico identificado na
+amostra. Prévia apta ao aceite visual do autor. Integração nas rotas normais
+continua dependendo de autorização própria posterior, barra antiga 9/10 intacta.
+
+Conferidos no navegador: último disparo, Usar/Rolar da Técnica Máxima,
+Liberação com Ritual atual, fontes e foco ao ocultar, três abas montadas,
+busca com filtro, identidade das Katanas, blur do Domo, Golpe com cobrança
+na confirmação, cancelamento de Montar Outro e estorno só do PE.
+S1 medido em 788/800 e 972/1024, com compacta e barra real, e QHD em duas
+colunas. Folga de 12 px e interferência do livro no telefone seguem no aceite.
+
+47 asserts específicos, lint e compilação isolada aprovados. Suíte completa
+225/227, somente t-prodigio e t-reconciliacao-g00 já registradas. Produto
+inalterado pelo Codex, 33 hashes preservados na revisão, dist diário com
+os mesmos 14 arquivos. Evidências em .audit/revisao-codex-abas-g2-20261021/.
+Parecer em C:/Projetos/Grimorio/REVISAO-PREVIA-TRES-ABAS-20261021.md.
+Próximo passo é o aceite visual do autor na 5330. Não repetir a construção.
+
+## SESSÃO DE 2026-10-21: PRÉVIA ISOLADA DAS TRÊS ABAS ENTREGUE PELO CLAUDE
+
+Ações, Perícias e Equipamentos construídas uma vez em
+src/systems/afty/ficha/abas-g2/, atrás da prop `previaAbasG2` do
+AftyFichaG2 (padrão desligado, o App não passa). Decisões 1A, 2A e 3B
+aplicadas. Executor, build e fichas sintéticas em
+.audit/previa-abas-g2-20261021/, servido em http://127.0.0.1:5330/.
+Relatório, capturas e roteiro de aceite em RELATORIO.md da mesma pasta.
+
+Peças comuns tocadas: `rolar` do G2 passa por `prepararRolagem` (a mesma
+sequência, agora pura e consultada pelos botões), `fontes.jsx` lê o
+contexto `VisibilidadeDaAba` (padrão visível) e AbaAcoes/HabilidadesG2
+só exportam uma peça. Clássica, Encontro, criador, motor e
+src/components/ sem mudança, conferidos por hash.
+
+Verificado: lint 0, build isolado, suíte 225/227 (só as duas históricas),
+47 asserts novos, 522 checks de navegador (fumaça, armas, abas, leiaute
+com 331 px e barra real, temas e compatibilidade), desempenho sem tarefa
+longa. Dist diário idêntico por hash, 5173 não tocada, HEAD e origin/main
+locais em 0/6, sem fetch, commit, push ou deploy.
+
+Próximo passo: revisão do Codex e aceite visual do autor. Integração nas
+rotas normais segue sem autorização. Barra antiga 9/10 intacta.
+
+## SESSÃO DE 2026-10-21: AUTOR APROVOU O PLANO E AUTORIZOU A PRÉVIA DAS TRÊS ABAS
+
+Autor respondeu Aprovo à combinação 1A, 2A e 3B e à construção somente da
+prévia isolada pelo Claude. Planejamento encerrado e removido da fila de
+pendências. Composição proposta, Golpe pela Preparação com Montar Outro
+e Rolar fechado só em Feitiço com rolagem única elegível estão aprovados
+para essa etapa. Não pedir nova autorização para cada componente.
+
+Prompt de execução em C:/Projetos/Grimorio/PROMPT-CLAUDE-PREVIA-TRES-ABAS-G2.md.
+Cópia do plano e inventário original preservados na raiz do workspace.
+Abas novas com fonte única em src/systems/afty/, prop desligada no uso
+normal, executor/build/dados isolados na audit e casca real do G2. O
+autor continua repassando mensagens, Codex não enviou a outro chat.
+
+Próximo passo: Claude construir e verificar a prévia, Codex revisar e
+autor avaliar visualmente. Integração nas rotas normais, promoção do G2,
+remoto e alterações na 5173/dados reais continuam fora da autorização.
+Barra anterior 9/10 intacta. Só documentos alterados neste encaminhamento,
+sem código, build, servidor, dados, commit, push, merge ou deploy.
+
+## SESSÃO DE 2026-10-21: REVISÃO TÉCNICA DO PLANO DAS TRÊS ABAS ENCERRADA
+
+Conferidos os trechos finais do plano do Claude. As ressalvas de Técnica
+Máxima (Usar/Rolar), isolamento de abas ocultas e blur do CampoDomo foram
+incorporadas aos contratos e ao aceite. A decisão 3 recomenda rolagem
+única. Não é necessária outra reescrita completa. O plano está apto à
+decisão do autor sobre a prévia isolada, com recomendação 1A, 2A e 3B.
+Ainda não houve escolha expressa do autor nesta conversa. Prévia e
+integração não autorizadas por esta revisão. Parecer atualizado em
+C:/Projetos/Grimorio/REVISAO-PLANO-TRES-ABAS-20261021.md.
+
+Somente registros documentais alterados, sem código, build, servidor ou
+dado de personagem. Sem novos testes de interface ou execução nesta
+conferência textual. A implementação futura precisa provar os critérios.
+Barra anterior 9/10 intacta. Sem commit, push, merge ou deploy.
+
+## SESSÃO DE 2026-10-21: SEGUNDA REVISÃO DO PLANO DAS TRÊS ABAS
+
+Codex leu integralmente o plano consolidado no arquivo de planos do Claude.
+Pedidos principais atendidos no desenho e estratégia: disponibilidade por
+operação, Liberação atual, rascunhos, faixa Mesa, Golpe já ativo, escopo G2
+e fonte única da prévia. Sem necessidade de repetir todo o planejamento.
+Parecer atualizado em C:/Projetos/Grimorio/REVISAO-PLANO-TRES-ABAS-20261021.md.
+
+Correção obrigatória: recarga da Técnica Máxima bloqueia novo Usar, não a
+rolagem do uso já pago. Prova pura com 40 PE, custo 5 e recarga 3 deixou
+35 PE, novo uso recusado e Dano aceito pelo caminho atual. Abas retidas
+também precisam isolar portais, foco e seletores de leitura enquanto
+ocultas. CampoDomo confirma em blur e não pode ser prometido como rascunho
+sempre retido sem gravação. Tudo fica como critério da futura prévia.
+
+Recomendação ao autor: decisões 1A, 2A e 3B. A revisão do Claude ampliou a
+terceira para a primeira rolagem de Feitiços com várias saídas. Codex
+recomenda atalho só para rolagem única elegível. Nenhuma escolha do autor,
+prévia ou implementação aprovada nesta revisão. Barra anterior 9/10 intacta.
+Somente registros documentais alterados, sem build, servidor, dado ou código
+de produto. Sem commit, push, merge ou deploy. Referências locais em 0/6.
+
+## SESSÃO DE 2026-10-21: PLANO DAS TRÊS ABAS REVISTO PELO CODEX
+
+Recebido o plano do Claude para Ações, Perícias e Equipamentos. Inventário
+aproveitável, com revisão consolidada recomendada antes da prévia. Parecer em
+C:/Projetos/Grimorio/REVISAO-PLANO-TRES-ABAS-20261021.md. Nenhum desenho,
+correção funcional ou implementação aprovado. Barra anterior 9/10 preservada.
+
+Prova isolada confirmou que o Acerto com a última munição deixa seu Dano
+permitido e bloqueia novo Acerto. O plano não pode desabilitar ambos pelo
+mesmo aviso Sem Munição. Recarga fora de combate também é permitida hoje.
+Outros ajustes pedidos: Liberação acompanha contexto derivado vigente,
+retenção real dos rascunhos locais, altura do grupo anterior ao Dano,
+classificação dos acessos do Rápido, percurso do Golpe já ativo, escopo só
+G2 recomendado e prévia com uma fonte das abas. A direção e as mudanças de
+interação continuam para decisão do autor, sem sete aprovações por detalhe.
+
+Leitura e prova de funções puras, sem ensaio visual novo, build, servidor,
+dados ou código de produto alterados. Só registros documentais. Referências
+locais permanecem em HEAD 6888873, origin/main bcaf978, 0/6. GitHub inacessível
+por conexão, sem confirmação ao vivo. Sem commit, push, merge ou deploy.
+
+## SESSÃO DE 2026-10-21: PROMPT PARA O PLANO CONJUNTO DAS TRÊS ABAS
+
+Codex leu as instruções, os registros recentes e a implementação de Ações,
+Perícias e Equipamentos, seus consumidores na clássica/Encontro e contratos
+de fontes, sessão, rolagens, temas e Efeitos. Prompt para o Claude em Modo
+Planejamento salvo em
+C:/Projetos/Grimorio/PROMPT-CLAUDE-PLANEJAMENTO-VISUAL-TRES-ABAS.md.
+O próximo passo é receber e revisar o plano. Nenhum desenho, correção
+funcional, prévia ou implementação autorizado por esta entrega. Barra
+anterior 9/10 preservada e escopo novo acompanhado separadamente.
+
+Achado por leitura estática: a estrela do inventário salva favoritos, mas
+itensDoRapido no G2 e na clássica só resolve conteudoDaFicha, sem a lista de
+equipamentos. A lacuna precisa aparecer no plano como correção funcional
+delimitada para decisão do autor, sem ser tratada como fluxo já comprovado.
+Golpe Especial também mantém caminhos diferentes: marcas/Pagar em Ações e
+rascunho/confirmação com histórico em Efeitos. Não os igualar silenciosamente.
+
+Correção da direção da divergência citada no handoff: HEAD 6888873 e referência
+local origin/main bcaf978, com git rev-list HEAD...origin/main em 0/6.
+HEAD está seis commits atrás da referência local, não à frente. Consulta ao
+GitHub falhou por conexão, sem confirmação ao vivo nem integração. Leitura
+HTTP da 5173 e dist/index.html confirmam index-CaOM8unz.js nesta sessão.
+Fonte do livro com SHA-256
+1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a conferida.
+
+Só prompt e registros documentais alterados. Sem edição de produto, build,
+teste de interação novo, alteração de dados, servidor, commit, push, merge
+ou deploy. Não foram repetidos lint/build/asserts em uma entrega de texto.
+
+## SESSÃO DE 2026-10-21: HANDOFF PARA PLANEJAR AÇÕES, PERÍCIAS E EQUIPAMENTOS
+
+Depois dos retoques do teste real, o autor pediu um novo chat do Codex para
+guiar o Claude em Modo Planejamento na refatoração visual de Ações, Perícias
+e Equipamentos. Prompt completo salvo em
+C:/Projetos/Grimorio/PROMPT-CODEX-PLANEJAMENTO-VISUAL-ACOES-PERICIAS-EQUIPAMENTOS.md.
+
+Levantamento de código confirmou que as três abas ainda usam os componentes
+anteriores dentro de AftyFichaG2. A proposta deve inventariar as funções,
+definir as três telas e seus percursos, isolamento da clássica, prévia visual,
+lotes amplos e critérios de aceite. Nenhum desenho foi aprovado. Esta etapa
+não autoriza implementação, alteração de regra ou promoção do G2. A barra
+anterior de 9/10 permanece separada. Nenhum código, build, servidor ou dado
+do autor alterado ao preparar este handoff. Sem commit, push, merge ou deploy.
+
+Referências locais do Git continuam em HEAD 6888873 e origin/main bcaf978,
+seis commits à frente. A consulta atual ao remoto falhou por conexão. Não
+tratar essa referência como confirmação ao vivo nem integrar automaticamente.
+
+## SESSÃO DE 2026-10-21: AJUSTES DO TESTE REAL, QUAD HD E CLIQUE FORA
+
+O autor encontrou o cabeçalho deslocado e estreito em 2560 x 1440, e pediu
+fechar a leitura de um buff clicando fora. Codex aplicou as duas correções
+em AftyFichaG2.jsx, efeitos-g2.css e VisaoG2.jsx. Cabeçalho e corpo usam
+o mesmo contêiner, que inclui a compacta. A coluna cresce para 1440 px a
+partir de 1920, e 1760 px a partir de 2400. Com a compacta em Quad HD, os
+dois contêineres medem 2188 px e têm os mesmos limites laterais. Fontes não
+foram reduzidas. A consulta acompanha a margem do contêiner.
+
+Na completa, clique primário fora do detalhe o recolhe sem encerrar o
+efeito. Controles internos e troca entre cartões continuam funcionando.
+Consulta e flutuantes abertos têm prioridade, para não perder o rascunho.
+Até 720 px a compacta ocupa o palco enquanto aberta, mantendo a coluna
+montada para voltar. A consulta usa a largura disponível no telefone.
+
+Verificação: 20 checks de interação aprovados, 17 medições finais de layout
+em 390, 768, 1024, 1280, 1440, 1920 e 2560 px, sem estouro horizontal na
+amostra. Ficha sintética importada pela interface só no perfil separado do
+navegador interno. As fichas reais do autor não foram manipuladas. A
+clássica explícita continua com sua estrutura anterior. 196 asserts focados
+passaram (124 fechamento, 30 desempenho, 42 preferências), lint de Afty e
+App.jsx limpo, build aprovada. Suíte inteira não repetida neste ajuste de UI.
+
+Build index-CaOM8unz.js servida na 5173 pelo servidor já aberto, sem trocar
+origem, storage ou seletor do produto. Atualizar a página habitual para
+carregar. Evidências e cópias anteriores em
+.audit/ajustes-teste-real-g2-20261021/. Aceite visual segue com o autor,
+barra 9/10. Sem alteração de motor, merge, commit, push ou deploy.
+
+## SESSÃO DE 2026-10-20: G2 DISPONÍVEL NO LOCALHOST HABITUAL PARA TESTE REAL
+
+O autor pediu testar em sessão no endereço habitual, com suas fichas de
+sempre. O chat Restaurar versão antiga do localhost confirma a origem
+http://localhost:5173. A porta estava livre e o Codex iniciou a prévia de
+produção nessa origem, servindo a build revisada index-DBupHr57.js.
+
+Após o autor mostrar a clássica ainda aberta, o servidor local ganhou um
+direcionamento de teste: /Player e /Afty sem parâmetro redirecionam para a
+mesma rota com ?ficha-g2=1, preservando outros parâmetros. O servidor envia
+Cache-Control no-store. ?ficha-g2=0 conserva o acesso explícito à clássica.
+Esse comportamento vale só no servidor de teste habitual, não no seletor
+da aplicação ou na build. A rota / do Grimório 2.5.2 não foi alterada.
+São nove verificações HTTP aprovadas, incluindo o bundle revisado, e a
+navegação visível no navegador confirmou a URL final com ficha-g2=1.
+
+Servidor em .audit/teste-real-localhost-20261020/servidor-g2.mjs. Só a prévia
+5173 iniciada pelo próprio Codex foi substituída. A prova temporária na
+5322 foi encerrada, servidores 5320 e 5321 preservados. Fichas reais já
+abertas precisam de atualização no navegador habitual para carregar o G2.
+
+O navegador interno do Codex foi aberto em
+http://localhost:5173/Player?ficha-g2=1 e mostrou o painel sem personagens.
+Esse perfil tem armazenamento separado do navegador habitual do autor.
+Nenhum personagem, sessão ou amostra foi importado, copiado ou alterado.
+O autor deve usar o mesmo navegador/perfil e a mesma origem de seu uso
+diário para acessar seus dados. Não trocar localhost por 127.0.0.1 nem
+mudar a porta para procurar fichas, pois isso muda a origem de armazenamento.
+
+Não houve edição de produto, promoção a padrão, commit, push, merge ou
+deploy. Teste real e aceite continuam pendentes, barra 9/10 preservada.
+
+## SESSÃO DE 2026-10-20: FECHAMENTO FUNCIONAL RECONFERIDO PELO CODEX
+
+Revisão técnica aprovada na base local, sem novo bloqueio identificado em
+Imitação, Concedido pelo Mestre, Exaustão desde zero, Sangramento e buff de
+mesa. Cinco rotinas operáveis pelo G2, sem exigir a Apresentação Anterior.
+Codex não alterou produto. Relatório em
+`.audit/revisao-codex-fechamento-g2-20261020/REVISAO-CODEX.md`.
+
+986 asserts focados passaram. Suíte completa 224/226, apenas t-prodigio e
+t-reconciliacao-g00, os mesmos nomes da linha de base. Lint e build aprovados,
+bundle index-DBupHr57.js. Interface: 387 checks em produção, 69 em dev, 21
+do complemento próprio do Golpe denso (390/1024/1440) e 22 do roteiro próprio
+de prazos dos Pacotes. Dos 499 executados, quatro tautológicos do layout
+foram descartados como prova: 495 efetivos aprovados, sem erro de página.
+
+552 hashes de fontes/asserts iguais antes/depois, 93 backups conferidos,
+nove backups de fontes também iguais à revisão própria anterior. Nenhum
+diff em src/components, nenhum U+2014 nos trechos novos das 21 fontes.
+Desempenho: duas repetições, cinco ações entre 29 e 43 ms, confirmar com
+oito recebidos 30/34 ms, ativar nona 28/54 ms, duas ativações em sequência
+preservadas em ambas as repetições. 22 medidas/24 operações, sem tarefa longa
+na amostra. Antes não reexecutado, sem inferência causal de melhora.
+
+Resta teste real e aceite visual do autor. Cabeçalho em 390 px ainda é alto
+(407/844 px, aproximadamente 48%), com os controles testados acessíveis.
+Clássica padrão, G2 prévia, barra 9/10. Sete leituras dos Pacotes separadas.
+Sem commit, push, merge ou deploy, servidores 5320/5321 preservados. Consulta
+atual ao GitHub falhou, a referência local mantém seis commits à frente.
+Revalidar após eventual integração. Registros abaixo são históricos.
+
+## SESSÃO DE 2026-10-20 (noite): FECHAMENTO FUNCIONAL DO G2 IMPLEMENTADO, AGUARDA REVISÃO
+
+Claude implementou e verificou o lote de `C:/Projetos/Grimorio/PROMPT-CLAUDE-FECHAMENTO-FUNCIONAL-G2.md`. As cinco
+rotinas rodam no G2, na completa e na compacta quando há ação correspondente, sem abrir a Apresentação Anterior.
+Mesma sessão, mesmos verbos e mesmo motor: nenhum motor, catálogo ou sessão paralela. Revisão independente do Codex e
+teste real do autor pendentes. Marco 10 não declarado, barra 9/10. Clássica padrão, G2 prévia. Sem commit, push,
+merge ou deploy. Relatório único: `grimorio-tracker/.audit/fechamento-funcional-g2-20261020/RELATORIO.md`.
+
+**Onde cada rotina mora**
+
+- Imitação: Efeitos > Adicionar > aba Imitação (só para ficha com `res_imitacao`, a Perfeita inclusive).
+  `ficha/efeitos/ImitacaoG2.jsx` + `imitacao-logica.js`. Selecionar ou consultar NÃO troca a cópia, quem troca é
+  Confirmar Cópia. Cancelar deixa a sessão igual. A cópia ativa sai da lista de candidatas (o motor já a conta como
+  possuída) e volta quando é trocada. Sem cobrança de PE, e o aprendizado é da sessão.
+- Concedido pelo Mestre: Efeitos > Adicionar > Fonte Externa > Concedido pelo Mestre (só com a primitiva `concessao`
+  de addon ou com concessão já existente). `ConcedidoG2.jsx` + `concedido-logica.js`. Entrada cujo addon saiu aparece
+  com Sem Addon e pode ser removida. Família não repetível recusa a segunda pega na camada do G2.
+- Buff de Mesa: Efeitos > Adicionar > Fonte Externa > Buff de Mesa. `BuffDeMesaG2.jsx` + `buff-mesa-logica.js`.
+  Registro `{ id, nome, canal, expr, rodadas, escopo?, invocacaoAlvo? }` em `sessao.buffs`, sem tocar nos outros
+  tipos. Rascunho só na tela, criar é explícito, clique duplo cria um só. O "+" inicial da expressão sai
+  (o DSL não o aceita e o buff valeria 0 calado: o "+2" do campo agora funciona).
+- Exaustão: botão discreto Exaustão no cabeçalho de Ativos (completa) e ícone no cabeçalho do painel compacto.
+  `ExaustaoG2.jsx` + `exaustao-logica.js`. Abrir não muda o contador, sem cartão em zero, inteiro não negativo.
+- Sangramento: Ativos > cartão da condição > Ajustar > Perda de Vida XdY (completa e compacta). `mesa-verbos.js`
+  `perdaPorSangramento`: rola uma vez, registra a rolagem, `aplicaPerdaDeVida` direto na Vida (a casca de PV
+  Temporário fica intacta) e grava um evento `perda` no Histórico. Registrar Manualmente > Condição > Sangramento
+  agora pede a faixa (Fraco 2d6, Médio 3d8, Forte 4d10, Extremo 6d10). Condição sem faixa gravada continua sem o
+  botão, como na tela anterior.
+
+**Outras mudanças**
+
+- `useModeloG2.js` ganhou os verbos novos (criarBuff, tirarBuff, rodadasDoBuff, exaustao, exaustaoMais, imitacao.*,
+  conceder, tirarConcessao, sangrar). Os verbos de buff do gestor agora agem por id sobre a sessão vigente
+  (antes escreviam um snapshot da lista inteira).
+- Em Combate legível: o rótulo ligado usa o texto do tema (`--e-t1`), e a cura fica na borda e no fundo. Contraste
+  medido por captura: Minamoto 1,21 para 6,59 e 5,63 (390 px), e 11,5 a 16 nos cinco presets e em dois temas hostis.
+- Cabeçalho estreito: moldura menor, recursos em duas colunas, Agora e valores na mesma fileira de 721 a 1180 px,
+  barra de rolagens sem a linha vazia. Cabeçalho grudado em 390 px: 481 para 407 px (57% para 48% da altura);
+  600 px: 457 para 382; 768 px: 342 para 300. A clássica não mudou (671, 594 e 412).
+- 390 px: o catálogo (Da Ficha, Imitação, Fonte Externa) vazava 100 px para a direita e escondia o formulário. Agora
+  o trilho vira fita, o detalhe de uma opção toma o lugar da lista e o detalhe de um Ativo empilha as três colunas
+  (contêiner, não janela: o painel ao lado também estreita). Sem estouro horizontal em 1024, 1280, 1440 e 390.
+- CSS todo escopado em `.e-g2` (única exceção `.afty-cabecalho:has(.e-g2)` na barra de rolagens), então clássica,
+  criador e Encontro não mudam. Comentários de `AftyFichaG2.jsx` agora dizem que nenhuma rotina depende da
+  Apresentação Anterior, que continua no menu como comparação.
+
+**Verificação (resumo, tudo no código final)**
+
+- `asserts/t-fechamento-g2.mjs`: 124 asserts, mutação 13 de 13 defeitos plantados pegos. 15 arquivos focados:
+  986 asserts, todos verdes (t-imitacao-configuracoes, t-concessao, t-concessao-sessao, t-condicoes,
+  t-condicoes-efeitos, t-delta-buffs, t-g2-*, t-pacotes-aliados 189, t-ordem-modulos, t-revisao-g00, t-fechamento-g2).
+  Suíte completa 224 de 226: só t-prodigio e t-reconciliacao-g00, as duas históricas, iguais à linha de base.
+- Interface em Chrome real, produção (5321) e dev (5320), 387 conferências por ambiente: Imitação 48, Concedido 22,
+  Exaustão e Sangramento 45, Buff de Mesa 39, consulta/teclado/personagens 21, leiaute 156 (1024, 1280, 1440, 390),
+  tema 32, compacta 24 (Imitação, Concedido e Buff pelo Adicionar do painel, em 1024 e 1440). Regressão dos Pacotes
+  (PA-I1 a PA-I4, exportar/importar/ativar, prazos mistos): 279 em produção e 189
+  em dev, todas verdes. Lint e build limpos.
+- Desempenho em produção (ficha densa Player 30, 3 rodadas, sem pausa antes do clique): Exaustão 31 ms, Sangramento
+  31 a 54, Confirmar Cópia 53 a 57, Criar Buff 31 a 40, Conceder 43 a 44, sem tarefa longa. Confirmar do Pacote
+  53 a 58 ms, com e sem oito recebidos. A diferença entre rodadas não identifica causa sozinha.
+
+**Para o committer**: `origin/main` está 6 commits à frente (Tauropolos, Golem de Sangue, Quimera, Ciel, Frenesi),
+nada integrado. Arquivos tocados por nós e por eles: `asserts/LEIA.md`, `docs/a-fazer.md`, `docs/afty-status.md` e
+`docs/revisao-automacao/escopo.json` (quatro entradas novas de módulos). Nenhum arquivo de `src/` editado por nós
+aparece nos 6 commits, mas o código novo lê `CanalPicker.jsx`, `ficha-sessao.js` e `afty-derive.js`, que o remoto
+altera: depois de integrar, rodar de novo `t-fechamento-g2` e o roteiro de interface. `src/components/` intocado.
+
+**Pendências**: revisão independente do Codex, teste real do autor (roteiro no relatório) e as sete leituras de
+regra dos Pacotes, separadas. Nada precisa mais da Apresentação Anterior nas cinco rotinas.
+
+## SESSÃO DE 2026-10-20: AUTOR ESCOLHEU O FECHAMENTO FUNCIONAL DO G2 (preparação, superada pela sessão acima)
+
+O próximo lote autorizado reúne Imitação, Concedido pelo Mestre, Exaustão
+desde zero, Sangramento e buff de mesa no G2, mais acabamento de cabeçalho,
+Em Combate e acesso aos controles. São operações já existentes na
+Apresentação Anterior, com as regras e os cálculos atuais preservados.
+
+Codex preparou C:/Projetos/Grimorio/PROMPT-CLAUDE-FECHAMENTO-FUNCIONAL-G2.md
+para implementação pelo Claude e revisão independente posterior. Nenhuma
+edição de produto nesta preparação. Implementação, testes e revisão deste
+lote ainda pendentes. A fila registra a decisão de cobertura, não pergunta
+novamente ao autor. PA-I1 a PA-I4 continuam encerrados e as sete leituras
+dos Pacotes ficam separadas. Clássica padrão, G2 prévia, barra 9/10 e teste
+real final do autor pendente. Sem commit, push, merge ou deploy.
+
+## SESSÃO DE 2026-10-20: PA-I4 RECONFERIDO, QUATRO CORREÇÕES ENCERRADAS
+
+Codex encerrou PA-I4: o prazo efetivo próprio/herdado cria o contador na nova
+instância. TR +9 volta a +7 na primeira virada, Defesa por ataque fica, e a
+ordem inversa funciona. Rodadas diferentes, recarga, Encerrar/Reativar e
+instância antiga sem contador conferidos na completa, compacta e clássica.
+Nenhum novo bloqueio encontrado nesta correção. PA-I1/PA-I2/PA-I3 preservados.
+
+750 asserts focados e 98 conferências de interface passaram: nosso roteiro
+original 22/22 em dev e 22/22 em produção, roteiro ampliado da entrega 54/54
+em produção, 1024/1440. Prova original de função agora passa. Lint/build
+aprovados. 36 hashes iguais durante as verificações, 27 cópias de fontes e
+asserts de antes conferem com a revisão própria anterior. Evidências atuais
+em `.audit/revisao-codex-pai4-20261020/REVISAO-CODEX.md`.
+
+Desempenho reexecutado: com oito recebidos, Confirmar 31/32 ms, ativar nona
+49/45 ms, quatro ativações em sequência preservadas, sem tarefa longa na
+amostra. Doze medidas/quatorze operações. Antes não reexecutado, a variação
+de latência entre rodadas não identifica por si só a causa. Suíte completa
+223/225 da entrega não foi reexecutada pelo Codex nesta reconferência.
+
+PA-I1 a PA-I4 saíram da fila de correções, permanecem teste real do autor,
+sete leituras de regra anteriores e cobertura Só Consulta/sem representação.
+A pergunta 8 já está resolvida. Instâncias antigas sem contador não são
+reescritas, encerrar e reativar para obter o contador. Clássica padrão, G2
+prévia, nove marcos técnicos anteriores preservados. Nenhuma edição de
+produto, commit, push, merge ou deploy pelo revisor. Remoto local seis
+commits à frente, consulta atual falhou, revalidar depois de eventual
+integração. Registros abaixo são históricos.
+
+## SESSÃO DE 2026-10-20: PA-I4 IMPLEMENTADO, O PRAZO HERDADO GANHA CONTADOR
+
+Implementação do Claude para a pendência do Codex, à espera da reconferência. Não
+declara revisão nem aceite. Sem commit, push, merge ou deploy. `dist/` refeito
+(`index-DXbM09UQ.js`), servidores 5320 e 5321 os do Codex.
+
+- `instanciaDaOpcao` (`ficha/pacotes-aliados.js`) resolve o prazo EFETIVO de cada
+  benefício (`beneficiosComPrazoEfetivo`: o próprio, ou o herdado da opção) e cria
+  o contador de todo benefício cujo prazo efetivo é em rodadas. O TR que herdava a
+  rodada da opção agora sai na virada, sem levar a Defesa de um ataque, e consumir
+  a Defesa primeiro não tira o TR.
+- O resumo da opção e o da importação dizem o prazo efetivo de cada benefício.
+- Nada é reescrito: a opção da biblioteca fica como veio, e a instância que já
+  estava ativa sem contador segue como está. Para ela, a tela mostra o benefício de
+  rodadas sem contador como parte de encerramento manual (`rodadas|sem contador`,
+  Encerrar Parte), e não diz mais que a ficha o conta.
+- Combinações cobertas: explícito/explícito, próprio/herdado, herdado/próprio,
+  nenhum prazo próprio (o comportamento de antes), rodadas diferentes nos dois
+  sentidos e a opção permanente.
+- Provas: `t-pacotes-aliados` 189, suíte 223 de 225 com as duas falhas antigas,
+  PA-I4 no navegador 54 de 54, PA-I3 43 de 43, devolutiva 48 de 48, percurso da
+  entrega 65 de 65 e os scripts do próprio Codex 22 de 22, em dev e em produção,
+  Fonte Externa manual 47 de 47, prova de função nas duas árvores, desempenho sem
+  tarefa longa. Relatório em `.audit/pacotes-aliados-pai4-20261020/RELATORIO.md`.
+
+## SESSÃO DE 2026-10-20: PA-I3 RECONFERIDO, PA-I4 NO PRAZO HERDADO
+
+Codex reconferiu o fluxo produzido pelo exportador: TR sai na primeira virada,
+Defesa por ataque fica, e a ordem inversa também funciona. Completa, clássica
+e agora compacta exercitadas. 727 asserts focados, 43/43 de PA-I3 por ambiente
+(dev/produção, 1024/1440), 48/48 da regressão em produção, 14/14 da compacta,
+lint/build passando. 36 hashes da entrega iguais durante as verificações.
+As 24 cópias anteriores já cobertas por nosso manifesto prévio conferiram.
+
+Nova pendência PA-I4, P2, em `instanciaDaOpcao`: o formato permite benefício
+sem duração própria, herdando a da opção. Se a opção tem 1 rodada e Defesa tem
+exceção por ataque, o TR herdado fica sem contador e não expira. Arquivo
+aceito sem recusa, Reflexos +7 vira +9 e continua +9 após a virada, G2/clássica,
+duas larguras. O exportador atual explicita os prazos e por isso seu ciclo
+passa. Corrigir a criação do prazo efetivo e contador, não reabrir os três
+consertos anteriores nem a decisão do autor. Quatro reprovações na interface
+representam esse mesmo defeito repetido. Detalhes e arquivo de prova em
+`.audit/revisao-codex-pai3-20261020/REVISAO-CODEX.md`.
+
+Desempenho reexecutado: com oito recebidos, Confirmar 33 a 36 ms, ativar nona
+30 a 48 ms, quatro ativações em sequência preservadas, sem tarefa longa na
+amostra. Duas repetições, produção, doze registros/quatorze operações. A suíte
+inteira 223/225 da entrega não foi reexecutada pelo Codex nesta rodada.
+
+Sem edição de produto, commit, push, merge ou deploy pelo revisor. Clássica
+padrão, G2 prévia, nove marcos anteriores preservados. Teste real do autor e
+sete leituras anteriores continuam pendentes, pergunta 8 já resolvida. Remoto
+local seis commits à frente, consulta atual falhou, integração ainda precisa
+preservar os dois lados e ser revalidada. Notas abaixo são históricas.
+
+## SESSÃO DE 2026-10-20: PA-I3 IMPLEMENTADO, CADA BENEFÍCIO NO PRÓPRIO PRAZO
+
+Implementação do Claude para a decisão do autor, à espera da reconferência do
+Codex. Não declara revisão nem aceite. Sem commit, push, merge ou deploy. `dist/`
+refeito (`index-nJzpcPu0.js`), servidores 5320 e 5321 os do Codex.
+
+- Resolvedor (`ficha/pacotes-familias.js`): cada benefício do Feitiço leva o prazo
+  do EFEITO de onde saiu, quando difere do da opção. A ligação benefício e efeito
+  vem de `efeitosDoAuxiliarPorEfeito` (`afty-combate-conjurador.js`, export novo,
+  só leitura, o mesmo caminho do `resolveAuxiliaresAtivos` separado por efeito). A
+  condição de texto "Uma Rodada" saiu.
+- Formato (`ficha/pacotes-aliados.js`): `duracao` opcional no benefício, lida pela
+  mesma lista branca do prazo da opção. Instância com o contador próprio do de
+  rodadas, `partesDaInstancia` e `semParteDaInstancia`.
+- Virada (`ficha/ficha-sessao.js`): cada benefício com rodadas desce sozinho e sai
+  quando zera, com aviso pelo nome da parte. O registro recebido que expira passa a
+  ter nome no aviso (antes ia sem nome para o Encontro).
+- Telas: no G2, o detalhe lista cada parte com quem encerra, o Encerrar Parte tira
+  só a de um ataque, e a Linha do Tempo tem a barra da parte de rodadas. O resumo
+  da opção diz o prazo de cada benefício. A linha da clássica também.
+- Provas: `t-pacotes-aliados` 166, suíte 223 de 225 com as duas falhas antigas,
+  PA-I3 no navegador 43 de 43, devolutiva 48 de 48 e percurso anterior 65 de 65 em
+  dev e em produção, Fonte Externa manual 47 de 47, prova de função nas duas
+  árvores (antes: Reflexos +9 depois de três viradas, depois: +7 na primeira),
+  desempenho sem tarefa longa. Relatório em
+  `.audit/pacotes-aliados-pai3-20261020/RELATORIO.md`.
+
+## SESSÃO DE 2026-10-20: AUTOR DECIDIU OS PRAZOS DO FEITIÇO MISTO
+
+Resposta expressa à pergunta de PA-I3: "Cada benefício termina no próprio prazo
+(recomendado)". A pergunta 8 dos Pacotes está resolvida. O benefício de uma
+rodada deve expirar na virada apropriada sem tirar a Defesa por ataque ainda
+não usada. Consumir o benefício por ataque também não retira o de rodada ainda
+válido. Não prolongar o conjunto por prazo de uso. A implementação e sua
+reconferência continuam pendentes, PA-I1/PA-I2 continuam encerrados.
+
+Atualizados a fila, a retomada e os critérios em
+C:/Projetos/Grimorio/DEVOLUTIVA-CLAUDE-PACOTES-ALIADOS.md. Sem edição de produto,
+nova bateria ou declaração de implementação neste registro. Sete perguntas
+anteriores continuam abertas, clássica padrão e G2 prévia. Não houve commit,
+push, merge ou deploy. As notas abaixo são o estado antes dessa resposta.
+
+## SESSÃO DE 2026-10-20: RECONFERÊNCIA DOS PACOTES, PA-I1/PA-I2 ENCERRADOS
+
+Codex reconferiu a entrega sem editar produto. 33 hashes iguais antes e depois
+dos testes, antes desta atualização de documentação. PA-I1: fora/em/fora de
+combate dá +3/+5/+3 nas duas apresentações. PA-I2: o prazo de uso sobrevive às
+viradas, recarga e termina por Encerrar/descanso, sem prolongar os Feitiços
+normais de uma e duas rodadas. Cartão e linha clássica conferidos.
+
+706 asserts focados, 48/48 por ambiente no navegador (dev/produção, 1024/1440),
+seis provas de função e lint/build passando. A suíte integral não foi repetida
+pelo revisor. Evidências em `.audit/reconferencia-codex-pacotes-20261020/`.
+
+Pendência nova PA-I3: Múltiplos Efeitos de Reação, Defesa por ataque e TR de uma
+rodada. O prazo único proximo mantém os dois. Reflexos base +7 ficou +9 depois
+de três viradas, na função e no navegador, G2/clássica e duas larguras. Leitura
+8 não aprovada. Foi enviada pergunta ao autor sobre prazos próprios, bloqueio
+temporário desse caso ou manutenção manual. Resposta pendente. Próximo ajuste
+restrito a essa pendência, sem refazer o lote nem reabrir PA-I1/PA-I2.
+
+Benchmark reexecutado, duas repetições, mesma build Player 30: com oito opções
+recebidas Confirmar 31 a 32 ms, ativar nona 54 a 58 ms, quatro ativações em
+sequência preservadas. Sem tarefa longa nesses casos. Sem pacote houve uma
+tarefa longa de 57 ms. Teste real e aceite visual seguem do autor.
+
+Clássica padrão, G2 prévia, nove marcos anteriores preservados. Sem commit,
+push, merge ou deploy. Servidores 5320/5321 preservados. Reexportar o pacote
+antigo, importar revisão nova e encerrar/reativar para usar o prazo corrigido.
+As notas abaixo registram a entrega e a revisão anterior, não reabrem os dois
+defeitos encerrados.
+
+## SESSÃO DE 2026-10-20: PA-I1 E PA-I2 DOS PACOTES CORRIGIDOS
+
+Correção do Claude para a devolutiva do Codex (C:/Projetos/Grimorio/DEVOLUTIVA-CLAUDE-PACOTES-ALIADOS.md),
+à espera da reconferência. Não declara revisão nem aceite. Sem commit, push, merge
+ou deploy. Os servidores 5320 e 5321 são os que o Codex subiu, e o `dist/` foi
+refeito (`index-BeqttLoe.js`).
+
+- PA-I1 (`ficha/ficha-recebidos.js`): o "vale o maior" feito fora do motor
+  (catálogo, auxílio, Aura numérica e Aura de Dano) só põe na disputa o benefício
+  cuja condição vale agora no receptor, pela regra do `aplicarEfeitos` e com o
+  `combateDslVars` do `combate` resolvido do derive de base. A condição segue na
+  linha do vencedor, e o dado próprio que sai leva a mesma condição. Feitiço e
+  Estilo já eram certos (o motor avalia o `quando` antes do pool).
+- PA-I2 (`ficha/pacotes-familias.js`): Feitiço Imediato de um ataque sai com prazo
+  de uso (`proximo`, "Por Um Ataque"), pelo `umGolpe` RESOLVIDO de cada efeito: a
+  marca, a Reação de Defesa e RD, e o Múltiplos Efeitos (onde o campo do Feitiço
+  inteiro é falso). A virada não encerra, o jogador encerra. Múltiplos Efeitos
+  misto: prazo de uso e a parte de uma rodada nas condições (leitura 8 em
+  `docs/a-fazer.md`).
+- Telas: a linha da clássica diz o prazo do pacote ("De Yuki · Por Um Ataque"), e o
+  nome não encolhe atrás do rótulo longo. O cartão do G2 mostra "Um Ataque".
+- Arquivo exportado antes da correção guarda o prazo antigo: reexportar sobe a
+  revisão, e o aliado importa e reativa.
+- Provas: `t-pacotes-aliados` 145 (29 da correção, que falham 19 vezes no código de
+  antes), suíte 223 de 225 com as duas falhas antigas, roteiro da devolutiva 48 de
+  48 em dev e em produção (1024 e 1440), percurso anterior 65 de 65 nos dois,
+  Fonte Externa manual 47 de 47, desempenho sem tarefa longa. Relatório em
+  `.audit/pacotes-aliados-correcao-20261020/RELATORIO.md`.
+
+## SESSÃO DE 2026-10-20: REVISÃO DOS PACOTES E CHAT DUPLICADO
+
+Não houve interferência detectada do outro chat que recebeu o prompt por
+engano. Os 33 hashes finais do Claude conferiram antes e depois da revisão.
+Outro chat idle, histórico importado sem novas ferramentas nativas. Nenhuma
+mensagem enviada a ele, nenhum código de produto ou dado do autor alterado.
+
+Pacotes devolvido por PA-I1, bônus maior inelegível cobre o menor fora de
+combate, e PA-I2, Feitiço de um ataque convertido em uma rodada, expirando
+sem uso. Reprodução por interface com arquivo real, 1024/1440, dev/produção.
+São 677 asserts existentes passando, lint/build aprovados e 54 de 64
+conferências novas passando. Dez falhas repetem os dois defeitos, não são
+dez problemas distintos. Suíte integral e benchmark da entrega não repetidos
+pelo revisor. As sete leituras de regra continuam sem aprovação implícita.
+
+Evidências em .audit/revisao-codex-pacotes-20261020/auditoria.json.
+Devolutiva em C:/Projetos/Grimorio/DEVOLUTIVA-CLAUDE-PACOTES-ALIADOS.md.
+Clássica padrão, G2 prévia, nove marcos anteriores preservados. Servidores
+estavam fora do ar e foram iniciados em 5320 e 5321. Referência local remota
+seis commits à frente, consulta de rede falhou. Sem commit/push/merge/deploy.
+
+## SESSÃO DE 2026-10-19 (NOITE): PACOTES PARA ALIADOS IMPLEMENTADOS
+
+Lote do prompt `C:/Projetos/Grimorio/PROMPT-CLAUDE-PACOTES-BUFFS-ALIADOS.md`, entregue
+para revisão. Escopo novo, sem mexer nos nove marcos do G2. Clássica segue padrão e
+o G2 prévia.
+
+- Suporte: Adicionar ganhou a aba Para Aliados. Pacote em rascunho, fontes da ficha
+  com busca, escolhas, prévia por fonte, Salvar no personagem e Exportar JSON.
+  Montar não liga estado nem gasta recurso. A revisão só sobe quando o conteúdo
+  muda. Fonte sem efeito para aliado (Alcance Próprio, Aura 0, Permutativo) aparece
+  com o motivo e não vai no arquivo.
+- Aliado: Fonte Externa virou Recebidos (por emissor), Importar Pacote (resumo antes
+  de gravar) e Registrar Manualmente (o formulário de sempre). Ativar cria uma
+  instância de Fonte Externa na sessão, com prazo a partir da ativação. A busca e a
+  categoria Recebidos do catálogo também acham as opções.
+- Persistência: `creature.pacotesAliados` (emissor com id estável) e
+  `creature.pacotesRecebidos`, gravados pela Ficha (`App.jsx`). O criador apaga as
+  duas chaves antes de salvar, e o merge conserva o que a Ficha gravou.
+- Famílias com cálculo do Afty: Aura do Bastião, Comandante e Evoluída (mesma
+  origem), Feitiço Auxiliar (resolvedor do motor sobre cópia), auxílio e Aura de
+  invocação (inclusive Aura de Dano como dado), Estilo estendido aos aliados e
+  oito Habilidades de Suporte. Seis de Suporte e os dados de dano de Feitiço vão
+  só como consulta. Definição à mão marcada como tal.
+- Tradução compartilhada (`ficha/ficha-recebidos.js`): alvo e condição por
+  benefício, regras `estilo`, `auxilioInvocacao` e `auraInvocacao`. Conserto: o
+  catálogo com benefício próprio menor somava errado (usava o excedente como valor
+  inteiro). Aura de invocação emite `origem: invocacao:aura:<tipo>|<alvo>`.
+- Descanso tira a instância que não é permanente (`terminaNoDescanso`).
+- Provas: `t-pacotes-aliados` (116), focados do G2 e invocações passando, percurso completo no
+  Chrome com 65 de 65 em dev e em produção no código final, desempenho em produção na Player 30
+  com oito recebidos ligados sem tarefa longa observada. Detalhes, matriz por
+  família e limites em `.audit/pacotes-aliados-20261019/RELATORIO.md`.
+- Pendências e leituras a confirmar em `docs/a-fazer.md`. Sem commit, push ou deploy.
+
+## SESSÃO DE 2026-10-19: PEDIDO DE PACOTES DE BUFFS PARA ALIADOS
+
+Após a reconferência, o autor disse que parece estar funcionando e pediu
+uma ampliação de Fonte Externa: suportes preparam cinco a oito fontes, ou
+mais, exportam JSON e os aliados importam opções permanentes para ligar e
+desligar, com valores calculados pelos atributos do suporte. Exemplos:
+auras de invocações, Bastião, Comandante, especializações de suporte,
+Feitiços e Novo Estilo das Sombras.
+
+Codex inspecionou RegistroExterno, recebidos, interpretação compartilhada,
+auxílios/auras das invocações e resolvedores de Feitiços. O formulário atual
+aceita sete canais numéricos sem alvo e grava diretamente na sessão. Isso
+não representa uma biblioteca permanente nem todos os efeitos citados.
+Preparado lote amplo em
+C:/Projetos/Grimorio/PROMPT-CLAUDE-PACOTES-BUFFS-ALIADOS.md, para Claude
+implementar e Codex revisar depois. Nenhuma fonte de produto foi alterada.
+
+Proposta: separar pacotes do suporte, biblioteca recebida no personagem e
+instâncias ativas na sessão. Exportar benefícios calculados na origem, sem
+reavaliar fórmulas com atributos do aliado, preservando família, alvo,
+condição e acúmulo. Importar não ativa nem inicia prazo. Cada fonte pode
+ser ativada e expirar independentemente, mantendo sua opção na biblioteca.
+Revisões de pacote não duplicam opções ou alteram efeitos ativos
+silenciosamente. Ainda é especificação proposta, não recurso entregue.
+
+Fonte local conferida: F&M 2.5.2 - Livro de Regras.md, SHA-256
+1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a.
+Bastião/Comandante na página 174, Evoluída na 175, Auxiliares na 216.
+Entrada adicionada à fila. O escopo novo não reduz os nove marcos
+concluídos nem promove o G2 a padrão. Referência local remota seis commits
+à frente, consulta ao GitHub falhou novamente, sem merge/commit/push/deploy.
+
+## SESSÃO DE 2026-10-19: RECONFERÊNCIA DO G2-I1 PELO CODEX
+
+G2-I1 encerrado após a correção do Claude. Inspeção da tradução compartilhada
+e dos consumidores, 303 asserts focados, 36 conferências próprias no Chrome
+e 21 conferências próprias das funções do Encontro passaram. Fonte Externa
+conta nas duas apresentações. Acúmulo por origem, combinação, prazo, recarga
+e três confirmações sem pausa passaram. Encontro não foi exercitado pela
+inclusão de registro na interface. Relatório e limites em
+`.audit/revisao-codex-g2-i1-20261019/REVISAO-CODEX.md`.
+
+Mais 26 operações reais com Fonte Externa, em desenvolvimento e produção,
+não reproduziram a pausa de dois segundos nem perderam ativações. Confirmações
+G2 em produção: 29 a 43 ms do pointerdown ao cartão e dois quadros. Houve
+tarefas longas residuais de até 94 ms em dev e 72 ms em produção. A amostra
+densa tem um Feitiço recebido junto dos dois registros de Catálogo. Não
+declarar ausência universal de tarefa longa ou uma única tarefa de 54 ms.
+O antes não foi reexecutado independentemente, o teste real continua do autor.
+
+Os 17 hashes da correção conferem antes e depois. Lint Afty/App e build ok.
+Suíte completa reexecutada: 222 de 224 arquivos passaram, somente as falhas
+prévias `t-prodigio` e `t-reconciliacao-g00`. O primeiro roteiro próprio do
+Encontro teve duas referências erradas após renovação da Guarda da Calamidade.
+Corrigido o verificador, 21 de 21 passaram. Primeira passagem preservada.
+
+Marcos 8 e 9 concluídos na base local, progresso 9/10, marco 10 do autor
+pendente. Clássica segue padrão, G2 prévia. Nenhuma alteração de produto,
+sessão do autor ou src/components pelo Codex. Referências locais indicam
+seis commits remotos à frente, consulta atual ao GitHub falhou, sem merge.
+Servidores em 5320 (dev) e 5321 (produção), host 127.0.0.1. Revalidar após
+a integração remota antes de publicar. Sem commit, push ou deploy.
+
+## SESSÃO DE 2026-10-19: ORGANIZAÇÃO DA ABA DE VOTOS
+
+Pedido do autor: conferir a aparência e a praticidade da aba de Votos no
+Criador de Fichas. A aba agora prioriza Votos Mecânicos, com os botões de
+inclusão nos cabeçalhos e uma lista compacta por nome. Apenas o Voto em edição
+fica aberto, e uma nova entrada ou um modelo de Addon abre imediatamente.
+Contratuais mostram uma prévia do acordo quando recolhidos.
+
+Benefício e Malefício ficam lado a lado em tela larga e empilhados no telefone.
+Saíram as caixas aninhadas, rótulos em caixa alta e placeholders explicativos.
+A Automação de cada lado fica recolhida, com contagem de efeitos, reutilizando
+o mesmo editor e as mesmas linhas resolvidas. Nenhum canal, fórmula, regra,
+texto salvo ou formato de persistência foi alterado. As entradas acima do BT
+e a proteção dos Votos automáticos de Addon continuam preservadas.
+
+Validação: lint Afty e build aprovados. Navegador em Afty e Player, 1440 e
+390 px, conferiu edição, inclusão, remoção, teclado, salvamento, recarga,
+automação com condição e duração, seletor de canal e ausência de rolagem
+horizontal ou erros de execução. O editor aberto mede 388 px em tela larga
+e 513 px no telefone, sem o cabeçalho da entrada. Casos do Stark confirmam
+Voto obrigatório protegido, excedente salvo, limite por BT e modelo disponível
+sem duplicação. Evidências em `.audit/votos-ui/`.
+
+Suíte geral: 223 arquivos, somente as duas falhas anteriores de
+`t-prodigio.mjs` e `t-reconciliacao-g00.mjs`. `t-votos.mjs` (25) e
+`t-stark.mjs` (107) aprovados. Não havia entrada específica desta UI na fila.
+Remoto consultado e referência atualizada: `bcaf978`, seis commits à frente
+do HEAD local `6888873`. As mudanças remotas do criador ficam em outros
+trechos. O topo deste histórico precisa combinar as sessões na integração.
+Trabalho local anterior preservado, inclusive a revisão G2 concorrente.
+Sem alteração em `src/components/`, merge, commit, push ou deploy.
+
+## SESSÃO DE 2026-10-19: REVISÃO INDEPENDENTE DA INTEGRAÇÃO G2
+
+Codex leu o chat Restaurar versão antiga do localhost e preservou a decisão:
+clássica padrão e G2 em prévia até concluir revisão e teste real do autor.
+Não houve implementação de produto, commit, push, merge ou uso da sessão do
+autor nesta revisão. Relatório em
+`.audit/revisao-codex-integracao-g2-20261019/auditoria.json`.
+
+52 de 53 verificações funcionais passaram em oito percursos. A falha G2-I1
+foi reproduzida: Feitiço recebido de Defesa +7 mostra Defesa 89 no G2 e 82
+na clássica, com o mesmo registro salvo. O G2 traduz o registro, a clássica
+o ignora no derive. Entrada de correção na fila, sem decisão nova de regra.
+
+244 asserts focados, build e lint Afty/App passaram. A suíte completa não foi
+reexecutada pelo Codex. O relatório fornecido tem três falhas, a classificação
+nova foi corrigida e passou isolada. As duas anteriores continuam registradas.
+84 hashes da entrega conferem com os arquivos atuais, inclusive ao fim da revisão.
+
+42 operações atuais medidas em Chrome, Calamidade densa, Minamoto e Player 30,
+nas duas apresentações e em dev/produção. Não reproduzida pausa de dois segundos.
+Há tarefas de 73 a 80 ms no Minamoto clássico dev e 58/57 ms na confirmação da
+Calamidade G2 dev/produção. O orçamento do gerador não preempta um derive.
+O antes da correção não foi reexecutado independentemente, e não há aceite de
+performance do autor. Perfil e métricas preservados na pasta da revisão.
+
+Progresso: 7/10 marcos. Compatibilidade (8) devolvida por G2-I1, aprovação da
+revisão (9) e teste real (10) pendentes. A consulta remota falhou por conexão,
+sem atualizar ou integrar os cinco commits à frente no origin/main conhecido.
+
+## SESSÃO DE 2026-10-19 (NOITE): CORREÇÃO DO G2-I1 E FATIAS PREVISIVAS
+
+Atende a devolutiva do Codex. Fonte Externa registrada (Feitiço recebido de Defesa
++7) agora conta igual no G2, na ficha anterior, no Encontro e no delta dos estados,
+por um módulo folha único (`ficha/ficha-recebidos.js`). Antes: Minamoto 89 no G2 e
+82 na clássica. Depois: 47 de 47 verificações no navegador. Defeito extra corrigido: o
+delta creditava o registro a cada estado ligado.
+
+Desempenho: o corte das fatias passou a prever o próximo passo (`ficha/fatias.js`), e os
+dois derives de uma Fonte de Catálogo ganharam passos próprios. Com dois registros de
+Catálogo, de 4 a 5 tarefas de 50 a 67 ms para 1 de cerca de 54 ms. Detalhes e a tabela
+em `docs/afty-ficha-final.md`.
+
+Asserts novos ou ampliados: `t-g2-fonte-compat` (52) e `t-g2-desempenho` (30). Suíte:
+222 de 224, só as falhas da linha de base. Lint e build ok. `escopo.json` classifica
+`ficha-recebidos.js` e `fatias.js` como INTERFACE. Sem commit, push ou deploy. Marcos 9 e
+10 não declarados.
+
+## SESSÃO DE 2026-10-19: INTEGRAÇÃO DO G2 E DESEMPENHO
+
+Fase 2 da Ficha Final. O G2 foi integrado na aplicação (cabeçalho, Habilidades
+e consulta, Efeitos completa e compacta, catálogo, Preparação, Linha do Tempo,
+Histórico) e continua **prévia** em `?ficha-g2=1`: o padrão diário segue sendo
+a ficha anterior, por decisão do autor. Detalhes, arquivos e medidas em
+`docs/afty-ficha-final.md` (seção de 2026-10-19).
+
+- Registro da virada com renovação e cobrança separadas, preferência de
+  estatísticas do cabeçalho com export e import, `operacoes` na sessão.
+- Travadas ao ativar efeitos: derive guardado e três geradores fatiados
+  (consequências, delta dos estados, projeção da Linha do Tempo). Nas medidas,
+  nenhuma tarefa longa nas duas apresentações.
+- Asserts novos: t-g2-virada-registro, t-g2-preferencias, t-g2-sessao-operacoes
+  e t-g2-desempenho. Ajustes em t-dominio-barreira e t-guarda. Suíte: só as
+  falhas da linha de base (t-prodigio e t-reconciliacao-g00).
+- Remoto 5 commits à frente, sobrepondo AftyFicha.jsx, ficha-sessao.js,
+  AbaAcoes, AbaInvocacoes, PainelDeCombatente e afty-derive. Nenhum merge. O
+  conflito de AftyFicha.jsx agora envolve também o seletor.
+- Sem commit, push ou deploy. Marcos 9 e 10 não declarados.
+
+## SESSÃO DE 2026-10-17: RESTAURAÇÃO DA INTERFACE DIÁRIA
+
+O autor relatou que a integração parcial do G2 tornou a ficha diária
+inutilizável e pediu a interface anterior até concluir o rework. A entrada
+`ficha/AftyFicha.jsx` passou a abrir `AftyFichaClassica.jsx`, cópia exata da
+ficha preservada antes da integração em `.audit/integracao-g2/base/`.
+O G2 atual foi preservado integralmente em `AftyFichaG2.jsx`, acessível
+somente por `?ficha-g2=1`. Seu código e CSS são carregados sob demanda.
+Os módulos compartilhados, addons, fichas e sessões foram preservados.
+Nenhuma mudança em `src/components/`, commit ou push.
+
+Remoto consultado por `ls-remote`: HEAD `bcaf978695c3d239b84f0a12ed11479adc428016`.
+HEAD local permanece `6888873`. Nenhuma integração remota nesta tarefa.
+Evidências desta restauração em `.audit/restauracao-classica/`.
+
+Validação: lint do Afty e App e build aprovados. Navegador com Megumi Afty,
+Minamoto e Player 30: seis abas acessíveis, avanço e persistência de rodada,
+recarga, ida ao G2 e retorno à clássica conservando PV, PE e rodada, sem
+erros de execução. O preview de produção registra 404 do Analytics da Vercel
+e imagens externas de estudo abortadas. Não são falhas de execução da ficha.
+As verificações estáticas de Guarda e Vislumbre agora conferem ambas as
+apresentações. Suíte final: 222 arquivos, apenas as duas falhas anteriores
+em `t-prodigio.mjs` e `t-reconciliacao-g00.mjs`. Não foi declarada verde.
+
+Pedido adicional do autor: travadas de cerca de dois segundos por ativação
+no G2, também presentes em menor escala na clássica, bloqueiam o lançamento.
+Registrado na fila e na retomada para diagnóstico e correção com medições.
+Esta sessão restaurou a interface diária, sem declarar a performance resolvida.
+
+## SESSÃO DE 2026-10-13: CLÃ MINAMOTO
+
+Pedido do autor: a origem Herdado Minamoto com os Talentos de Clã do Sugawara e do
+Akutame trocados para Minamoto. Virou o pacote `addons/minamoto.json`, um clã solto da
+família `clas` que entra no Herdado do livro (mesmo caminho do `sugawara.json`), com os
+Talentos no molde do `herdado-era-de-ouro.json`. Nenhuma linha de `src/` mudou.
+
+- Bônus em Atributo: 3 pontos livres, máximo de 2 no mesmo atributo.
+- Potencial Lendário: `pe` com `piso(nd / 2)` e `vagasFeitico` com `1 + piso(nd / 5)`. O
+  Feitiço não para no 20 porque a nota do autor manda escalar de 5 em 5 sem fim.
+- Talento Minamoto: metade do BT em `bonusAcerto` (os três ataques) e em `defesa`.
+- O clã não tem Treinamentos de Clã no texto, então não dá vaga de perícia.
+- Fundamentos Imponentes (clã e nível 6), Compreensão Avançada (clã, nível 9 e a `nota` das
+  aptidões, escolha de 2 trilhas diferentes) e Postura do Matador de Yokai (clã e nível 6, com
+  o interruptor Alvo com Defesa Maior que soma no ataque corpo a corpo e à distância).
+
+Assert novo `t-minamoto.mjs`, 39 aprovados. O pacote é instalado colando o JSON no campo
+Instalar dos Addons.
+
+## SESSÃO DE 2026-10-13: DIAGNÓSTICO DE CRÍTICO APERFEIÇOADO IMITADO EM FANG
+
+Autor enviou exportação de Fang Yuan - Restringido porque Crítico Aperfeiçoado
+aprendido por Imitação não aparecia como fonte da margem. A exportação mantém
+`cmb_critico_aperfeicoado` em `imitacaoAprendidas`, mas a cópia ativa em
+`combate.imitacao.copia` é `lut_manobra_desarme`. O cálculo usa a cópia vigente.
+Aprender permite copiar novamente, sem conceder permanentemente todas as passivas.
+
+Diagnóstico com recorte dos campos de Imitação, Fluxo Invencível e Espada Longa
+da exportação: Ataque Básico 18 e Espada Longa 17 (Fluxo -2 e Certeira -1 na
+arma). Trocando a cópia por Crítico Aperfeiçoado, o hover inclui -2 dessa fonte,
+e as margens passam a 16 e 15. Evidência em
+`.audit/critico-imitacao-fang-diagnostico.json`, seis verificações aprovadas.
+Asserts de fontes e de configurações da Imitação: 88 aprovados.
+
+Regra conferida no Livro de Regras externo, Imitação e Imitação Perfeita
+(página impressa 118 para a segunda). Fonte SHA-256
+`1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a`.
+Remoto consultado, um commit à frente do HEAD como na tarefa anterior.
+Nenhuma mudança de regra, motor, UI ou ficha do autor. Nenhuma pendência nova.
+
+## SESSÃO DE 2026-10-13: HOVER DE FONTES DO CRÍT
+
+Pedido do autor: mostrar no Crít as fontes que reduzem sua margem, na Ficha
+Final e no Criador, tanto em Afty quanto em Player. As linhas de dano e os
+TRs agora recebem `partesMargemCritico`, com margem base ou da arma, fontes
+assinadas e total. As reduções aparecem negativas, fontes suplantadas ficam
+riscadas, arredondamento e piso entram quando necessários, e permutas válidas
+que devolvem margem ganham uma parcela positiva. Nenhuma fórmula foi alterada.
+
+Os gatilhos usam `NumeroComFontes`, com hover, foco e toque. Conferência no
+navegador em 1440 e 390 px nos dois sistemas aprovou Ataque Básico e Espada
+Curta na Ficha Final e no Criador, painel dentro da tela e ausência de erros
+de página. Margem dos TRs verificada em 1440 px. O teste de toque estreito usa
+altura 1400 px para evitar a interceptação do cabeçalho fixo existente durante
+a rolagem automática. Evidências em `.audit/critico-fontes-browser-report.json`.
+
+Validação: 44 asserts novos e 299 asserts focados aprovados, lint do Afty,
+build e diff check aprovados. Suíte geral conserva as duas falhas registradas
+de `t-prodigio.mjs` e `t-reconciliacao-g00.mjs`. Nenhuma entrada correspondente
+ao pedido estava na fila `docs/a-fazer.md`. Guias da Ficha e das fórmulas atualizados.
+
+Remoto consultado: `origin/main` avançou para `c434d4d`, um commit à frente
+do HEAD local `6888873`. As mudanças remotas de código nos arquivos desta tarefa
+estão em trechos diferentes. A documentação de sessão no início do arquivo
+pode precisar combinar ambas as entradas na próxima integração. Trabalho
+local anterior preservado. Sem alterações em `src/components`, commit ou push.
+
+## SESSÃO DE 2026-10-13: IMITAÇÃO NO CRIADOR E ESCOLHAS SEM A HABILIDADE ANTERIOR
+
+Pedido do autor: incluir tudo obtido por Imitação em Habilidades Roubadas e permitir
+configurar/usar Mestre da Postura sem Assumir Postura, além de Crítico Aperfeiçoado.
+O criador recupera aprendidas e a cópia atual da sessão, inclusive ao restaurar um
+rascunho anterior sem esses campos, preservando os demais dados do trabalho em curso. Conhecimentos aprendidos e
+suas escolhas são gravados em imitacaoAprendidas para viajar com a ficha. Ativação e
+duração continuam sendo de sessão, sem conceder todas as passivas permanentemente.
+
+Habilidades Roubadas reúne Roubo e Imitação, com marca de origem. As aprendidas podem
+ser ativadas por Imitar na própria linha aberta. Ao salvar, escolhas e cópia escolhida
+são sincronizadas com a sessão. Editar pela ficha grava a sessão imediatamente, para
+não perder uma aprendizagem feita antes do debounce. Nenhum menu separado foi criado.
+
+Definição imitada pode oferecer escolhas da concessão original mesmo sem possuir sua
+habilidade anterior. Mestre da Postura imitado oferece duas Posturas e habilita ambos
+os slots de Postura na ficha. Assumir Postura não é concedido. Aprender Postura imitado
+configura sua própria concessão. As demais escolhas aninhadas, como Guarda Estudada,
+seguem o resolvedor comum, usando nível do personagem e sem cobrar vaga adicional.
+Crítico Aperfeiçoado imitado continua aplicando redução completa de 2, chegando a 18
+no cenário sem outras alterações da margem, sem Crítico Melhorado. Roubo preserva os
+pré-requisitos definidos na correção anterior. Custos de Estamina permanecem manuais.
+
+Provas: asserts/t-imitacao-configuracoes.mjs (44), regressão de Fang (106) e teste
+próprio de Imitação aprovados. Navegador verifica aprendidas vindas apenas da sessão,
+escolhas salvas, ativação das duas Posturas, ausência de Assumir Postura e crítico 18
+por ativação no criador, em Afty e Player. Relatório em .audit/imitacao-config-browser-report.json.
+Verificação visual em 1440 e 390 px aprovada nos dois sistemas. 526 asserts focados
+em dez arquivos aprovados, incluindo prioridade da configuração mais recente da sessão.
+Lint/build aprovados. Suíte completa conserva somente as duas falhas anteriores de
+t-prodigio e t-reconciliacao-g00. Reconciliação restrita ao estado postura e agregado:
+zero adições/remoções, duas atualizações, sem aprovação de regras. Fonte externa
+reconfirmada pelo SHA-256 1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a.
+Sem alterações em src/components, App, commit ou push.
+
+## SESSÃO DE 2026-10-13: CORREÇÕES E AJUSTES DAS ESPECIALIZAÇÕES DE FANG
+
+Decisões do autor: Foco no Inimigo soma 5 em Percepção e 5 direto em Atenção, total 10.
+Resiliência fica como está até a etapa de Custos e Usos. Distribuição de Adrenalina
+Intensificadora ocorre no criador, junto da habilidade. Surto de Adrenalina e Físico
+Robusto não protegem Alma. Surto de Ação pode ser roubado. Espírito Incansável mantém
+sua fórmula anterior. Custos continuam manuais.
+
+Roubo agora fornece contexto de Restringido para os efeitos e para as escolhas internas
+recebidas, sem comprar Lutador/Combatente. Correção expressa do autor nesta sessão:
+Roubo EXIGE os pré-requisitos das outras habilidades. Crítico Aperfeiçoado só é
+selecionável no Roubo com Crítico Melhorado. O seletor mostra o requisito no hover e
+bloqueia a opção até possuir a anterior. Escolha antiga sem requisito é preservada e
+reportada como inacessível, conforme o contrato de validação das demais habilidades.
+Somente Imitação dispensa requisitos, inclusive nível da habilidade copiada. A cópia
+de Crítico Aperfeiçoado sozinho reduz a margem em 2. Possuir as duas continua em 2. Corpo Calejado da exportação sobe de 4548 para
+4746 PV. Guarda Estudada e Corpo Supremo roubados oferecem escolhas. Libertação do
+Destino concede Resistência física e um tipo adicional. Restrição Definitiva soma BT
+inteiro aos Mestres físicos, sem alterar jogadas de ataque. Mente Afiada e Semblante
+oferecem suas concessões no criador. Semblante aplica piso no d20 de perícias de Presença.
+Indulgente a Feitiçaria tem RD e TR condicionados à fonte, escolhida na aba Buffs.
+Força Imparável conserva a decisão anterior do autor: os dois TR já treinados podem
+virar Mestre. Não se trocou essa decisão pela interpretação de uma escolha de cada faixa.
+
+Imitação mantém seu painel na aba Buffs, acrescenta Manobras e divide habilidades por
+Especialização e Nível, com os mesmos mecanismos de abas usados no Roubo. A lista de
+novas cópias oculta habilidades efetivas, herdadas, roubadas, concedidas, escolhas de
+estilo/postura e aprendidas. Aprendidas continuam na seção própria para reutilização.
+Busca e contagens usam apenas opções disponíveis. O avanço de rodada existente controla
+o começo/fim de turno da ficha individual e a expiração da cópia. No encontro vale o
+controlador de iniciativa. Cura de Ainda de Pé aplica PV e consome seu uso ao rolar a
+linha existente. Corpo de Aço cura no começo do turno. Precisão Forçada maximiza o
+próximo dano corporal e limita a ativação por rodada. Ataque Furtivo é consumido por
+ataque e volta no turno seguinte. O estado Ataque Extra entra pela aba Buffs.
+
+O painel separado de Restringido foi removido após rejeição do autor. Também removidos
+Novo turno e Ataques Extras do cabeçalho Dano. Não foram criadas novas barras de ações.
+Os acionamentos opcionais sem uma interação existente continuam discriminados na fila.
+
+Validação: 84 regressões novas, 511 asserts focados em dez arquivos, teste próprio de
+Imitação, lint e build aprovados. Suíte completa: 212 arquivos e 12386 asserts passaram,
+com duas falhas anteriores de t-prodigio.mjs (formato de saída) e t-reconciliacao-g00.mjs
+(itens de outras alterações locais sem reconciliação). Browser em 1440 e 390 px verificou
+abas, 118 cópias disponíveis no cenário com uma aprendida adicional, filtro de possuídas,
+persistência e duração pelo botão de rodada, sem erros de página ou rolagem horizontal.
+Evidências em .audit/fang-browser-report.json e asserts/t-fang-especializacoes.mjs.
+Reconciliação restrita: 111 identidades e 24 atualizações, preservados donos/estados e
+alterações de outras tarefas. Novos módulos classificados. Sem aprovação de regras,
+commit, push ou edição de src/components.
+
+Validação da correção de requisitos: 106 regressões específicas e 423 asserts focados
+aprovados. Verificação visual de bloqueio/liberação do Roubo e cópia por Imitação em
+Afty e Player registrada em .audit/fang-requisitos-browser-report.json. Base remota
+reconferida: 68888733deffa9700aa69761fd965a504b9152db, igual ao HEAD local.
+
+## SESSÃO DE 2026-10-12: AUDITORIA DAS ESPECIALIZAÇÕES DE FANG YUAN
+
+Pedido do autor: conferir cada Habilidade de Especialização e sua automação na ficha enviada.
+Auditoria das 37 habilidades efetivas e das oito Dádivas em
+`docs/revisao-fang-especializacoes-2026-10-12.md`. Addons da exportação aplicados como na Ficha.
+Reprodução exata: PV 4548, Estamina 265, Defesa 95, CD 48. HEAD local igual ao remoto consultado,
+`68888733deffa9700aa69761fd965a504b9152db`. Trabalho anterior preservado.
+
+Confirmado: Corpo Calejado roubado lê Lutador zero, simulação isolada usando Restringido30
+eleva PV para 4746 (+198 após multiplicadores). Guarda Estudada roubada perde escolha de TR.
+Foco no Inimigo eleva Atenção em 10, não 5. Resiliência injeta 2d3 em todo TR com Surto, e
+Intensificadora não possui opção de recusar a distribuição. Restrição Definitiva não altera
+o BT dos Mestres físicos e Libertação do Destino não concede Resistência física.
+Gastos e manutenção de Estamina, reações, morte, cura recorrente e duração da cópia têm lacunas.
+
+Validação: 20 verificações diagnósticas, 400 asserts existentes em sete arquivos e o teste próprio
+de Imitação aprovados. Diagnóstico aprovado confirma também o defeito descrito. Sem mudança de
+motor, ficha ou UI. Pendências registradas na fila, sem commit/push. Navegador não conferido.
+
+## SESSÃO DE 2026-10-12: ADDON ALMA DO GRIMÓRIO AFTY
+
+Pedido do autor: um Addon que deixa o cálculo da Alma na Ficha de Player igual ao do Grimório
+Afty, "100 Máximo + Outros". Pacote em `addons/alma-do-afty.json`, só com o verbo novo
+`regrasAfty.almaComoAfty`. Guia na seção nova de `docs/afty-addons.md`.
+
+Decisão minha, a conferir com o autor: o verbo troca a conta INTEIRA, e não só o número da barra.
+Com a Alma em 100, a regra "Vida Máxima = Alma Atual" deixaria o PV em 100, então a Alma volta a ser
+porcentagem e multiplica o PV, igual à criatura. Consequências: a Melhoria de Alma e a Consciência
+Absoluta viram ×1,15 e ×1,25 no PV em vez de +15 e +25 pontos, e o Dano na Alma baixa o máximo na
+proporção sem descontar a Vida corrente.
+
+Código: `afty-regras-addon.js` (verbo), `afty-derive.js` (`almaPilha` passa a respeitar o verbo e
+é publicado no derivado), `ficha/ficha-sessao.js` (os três pontos que perguntavam
+`sistema === "player"` agora leem `almaEhPilha(derived)`), o rótulo "Máximo da Alma" do criador
+lendo o `almaPilha`, e a nota na divergência `pvPePorEspecializacao`.
+
+Validação: `t-alma-do-afty.mjs` com 30 asserts; `t-sistema.mjs` ganhou `almaPilha` no mapa de
+campos que diferem; `t-alma-jogador.mjs` (46) segue passando. Suíte: 210 de 212 arquivos; os
+vermelhos são os mesmos de antes, o `t-reconciliacao-g00.mjs` (o pacote soma 8 chaves às pendentes)
+e o `t-prodigio.mjs`, que passa sozinho e imprime fora do formato do lançador. ESLint de
+`src/systems/afty` e build aprovados.
+
+## SESSÃO DE 2026-10-12: TREINOS DE ENERGIA FORA DE TODO RESTRINGIDO
+
+Pedido do autor: *"Para Restringidos, remova os seguintes Treinos: Barreiras, Compreensão,
+Controle de Energia, Domínios, Energia Reversa"*. As cinco já tinham `foraDaOrigem: ["restringido"]`
+desde 2026-08-03, mas a trava lia só a ORIGEM (`origemEstrutural`). Quem é Restringido sem ser da
+origem seguia vendo as cinco: o Gêmeo Restringido (cópia do Físico Abençoado no jogador, Tipo na
+criatura) e a criatura de outra origem com o Tipo Restringido.
+
+Conserto: `origemDosTreinos(creature)` em `afty-treinamentos.js` devolve "restringido" quando
+`tipoDaFicha` diz Restringido, e a `origemEstrutural` no resto. Todo leitor do `foraDaOrigem` passa
+por ela, a aba Interlúdios do criador incluída. O Foco preso numa das cinco volta e o efeito sai.
+Decisões do autor: vale nos dois sistemas, e o Não-Feiticeiro (sem energia, mas não Restringido)
+fica de fora. ⚠ As três Linhas de Addon com a mesma marca (Aperfeiçoamento de Técnica, Estudo do
+Jujutsu e o Desenvolvimento Amaldiçoado da Yna) saem junto. O `soDaOrigem` não mudou: quando a
+ficha passa as `qualificadas`, a lista responde sozinha, então o Tipo Restringido não abre o
+Potencial Físico, que segue da origem.
+
+Validação: `t-treinos-restringido.mjs` com 24 asserts. Suíte: 211 de 213 arquivos; os vermelhos são
+os mesmos de antes, o `t-reconciliacao-g00.mjs` (nenhuma chave nova desta sessão) e o
+`t-prodigio.mjs`, que passa sozinho. ESLint dos dois arquivos tocados e build aprovados.
+
+## SESSÃO DE 2026-10-12: ADDON TREINO DE ATRIBUTO
+
+Pedido do autor: um Addon para o Treinamento de Atributo na Ficha de Player. A Linha saiu do
+jogador em 2026-09-01 (divergência `conteudoSoPorAddon`) e a liberação `soPorAddon:atributo` já
+existia sem nenhum pacote que a usasse. Pacote em `addons/treino-de-atributo.json`, só com
+`libera`, no molde do `alma-livre.json`. Nenhuma linha de código mudou. Guia na seção nova de
+`docs/afty-addons.md`.
+
+Validação: `t-treino-de-atributo.mjs` com 22 asserts, lendo o JSON de verdade (o bloco 12 do
+`t-sistema.mjs` mede o mecanismo com pacote de mentira). Suíte: 209 de 211 arquivos; os vermelhos
+são os mesmos de antes, o `t-reconciliacao-g00.mjs` (o pacote soma 9 chaves às 326 sem dono) e o
+`t-prodigio.mjs`, que passa sozinho (33 de 33) e imprime fora do formato do lançador.
+
+## SESSÃO DE 2026-10-12: ADDON LANTERNA COLETORA DE ALMAS
+
+Pedido do autor: um Addon idêntico ao Espinho, com a paleta e a lanterna da imagem dele no lugar
+do cristal vermelho, chamas saindo da caixa no lugar do pulso e das rachaduras, e o nome trocado.
+No meio do pedido: o Alter vale nela, e um campo para anotar a Maestria que a Lanterna considera.
+
+Feito como pele do mesmo verbo, sem módulo, estado nem primitiva novos: o campo `espinho` do pacote
+ganhou `nome`, `artigo`, `visual` e `maestriaAnotada`. Pacote em
+`addons/lanterna-coletora-de-almas.json`, pele em `ui/lanterna.css` e `ui/lanterna-coletora.webp`,
+guia na seção nova de `docs/afty-espinho.md`. A Maestria anotada substitui o BT só nos tetos, e o
+Alter multiplica por cima. O nome dela chega ao hover, ao selo do item e ao rótulo da Habilidade
+Única. A descrição do `addons/alter.json` passou a citar a Lanterna (cópias já instaladas guardam
+o texto antigo, sem efeito no número).
+
+Validação: `t-espinho.mjs` com 153 asserts (seção 10 nova). Suíte: 208 de 210 arquivos; os
+vermelhos são o `t-reconciliacao-g00.mjs` (já vermelho antes por pacotes de outras sessões; esta
+acrescenta 46 chaves do pacote e 14 de constantes do `afty-espinho.js` à mesma reconciliação
+pendente, que não rodei por ser da campanha) e o `t-prodigio.mjs`, que passa sozinho (33 de 33).
+ESLint dos arquivos tocados e build aprovados. Navegador em /Player, criador e Ficha Final, a 1440
+e 390 px: tetos certos, sem erro de console, sem rolagem lateral, e o Espinho sem mudança visual.
+
+## SESSÃO DE 2026-10-12: ADDON ATRIBUTO FANG
+
+Pedido do autor: um Addon que altera o Método de Rolagem para a Inteligência chegar à Base de 19
+ao invés de 18, e que sobe o Limite de Inteligência sempre em 1, até mesmo acima de 30 (Limite 31,
+ou 33 com Aperfeiçoamento de Atributo). Pacote em `addons/atributo-fang.json`.
+
+Leituras do autor: o 19 é só o teto do campo de Base (a rolagem segue 4d6, descarta o menor); o +1
+no Limite vale só quando a ficha usa o Método Rolagem; e o raw passou a travar a Base da Rolagem
+em 3 a 18 nos dois sistemas (antes o campo aceitava até 30). Ficha salva fora da faixa continua
+abrindo e mostra aviso âmbar.
+
+Motor: o campo `atributos` do pacote ganhou `rolagem: { baseMax, limite }`, lido em
+`atributosDosAddons` só com `attrMethod === "rolagem"`. O `limite` entra depois do teto e sobe
+junto os tetos 30 e 32 (`tetoExtra` no `afty-derive.js`), com parcela nomeada no hover do Limite.
+`ROLAGEM_MIN`, `ROLAGEM_MAX` e `rolagemMaxDe` em `afty-atributos.js`.
+
+Validação: `t-atributo-fang.mjs` com 41 asserts. Suíte: 205 de 206 arquivos; o vermelho é o
+`t-reconciliacao-g00.mjs`, que pede o pacote novo registrado no `fontes.json` da campanha de
+revisão (falha igual com o `h-corp.json` de outra sessão). Build e ESLint dos arquivos tocados
+aprovados. Navegador não conferido.
+
+## SESSÃO DE 2026-10-12: OPÇÃO ALIADOS EM ACERTO E CD DO ESTILO
+
+Pedido do autor: Bônus de Acerto e Bônus de CD também oferecem Aliados na segunda compra.
+Ambos conservam o teto de duas compras e a exclusão entre aliados e aumento pessoal.
+A opção pessoal usa BT inteiro. A extensão mantém metade do BT, arredondada para baixo,
+no usuário e mostra o mesmo bônus para aliados dentro do Domínio Simples. Acerto conserva
+a escolha do tipo de ataque. Os bônus dos aliados continuam como números de mesa, como
+nos demais efeitos do Estilo; não são aplicados automaticamente em outra ficha.
+
+Compatibilidade: os dois efeitos declaram `repeticaoPadrao: "pessoal"`, preservando BT
+inteiro em duas compras anteriores sem marca. Outros efeitos conservam seu padrão de
+aliados. O seletor existente atende os dois novos casos; escolha, normalização e sessão
+seguem o mesmo contrato, sem apagar dados ou regravar fichas automaticamente.
+
+Validação: 32 novas regressões no teste de repetição, incluindo BT ímpar, aliados,
+compatibilidade, normalização e combinação proibida. Suíte completa: 204 arquivos e
+12.025 asserts aprovados. ESLint da área Afty e build aprovados. Navegador em Afty e Player
+a 1440 e 390 px: nove seletores, troca de Acerto/CD entre pessoal e aliados, valores +5/+2,
+salvar e recarregar conservando Aliados, teto de duas compras, sem erro de página ou rolagem
+horizontal. Evidências em `.audit/estilo-acerto-cd-aliados-*`.
+
+Inventário reconciliado somente no TEC-01: duas adições, cinco atualizações e zero remoções.
+Sem aprovação de regras, commit ou push. Trabalho anterior desta conversa preservado.
+
+## SESSÃO DE 2026-10-12: ESTILO DAS SOMBRAS, PROGRESSÃO CONTÍNUA E SEGUNDA COMPRA
+
+Decisões do autor nesta sessão: a progressão de Técnicas continua a cada três níveis depois
+do 19, incluindo 22, 25, 28, 31, 34, 37, 40 e os seguintes. Dois Estilos no 4 e mais um por
+marco, sem gastar Habilidade de Especialização ou Talento. O nível efetivo do Player conserva
+seu teto geral, salvo a liberação épica já existente.
+
+Todo efeito que permitia uma segunda compra para aliados agora permite, nessa mesma compra,
+a alternativa de aumento pessoal. O limite é duas compras no total: base e uma alternativa.
+Aliados e bônus pessoal aumentado são mutuamente exclusivos no mesmo efeito e escolha dentro
+da Técnica. Defesa, TR e Perícia usam BT inteiro na alternativa pessoal, inclusive BT ímpar.
+Deslocamento passa de 4,5 m para 9 m, Margem de -1/-2 para -2/-4, e os bônus numéricos de AU/CL
+dobram depois de arredondar para cima. Acerto e CD também têm teto de duas compras: metade do BT
+arredondada para baixo ou BT inteiro. Dano e Ataque com Gatilho mantêm suas repetições anteriores.
+
+No criador, o grupo com duas compras oferece Aliados ou Dobrar Bônus. A compra adicional grava
+`repeticao: "aliados" | "pessoal"`, também nas modificações de Aptidão. Dados antigos sem essa
+marca conservam a extensão para aliados. O normalizador preserva a escolha, a sessão lê a mesma
+Técnica e a Ficha/Encontro usam os valores resolvidos. Terceira compra nos efeitos limitados,
+combinação das alternativas, opção desconhecida ou reforço sem base invalida a Técnica inteira,
+mantendo os dados. As compras da interface respeitam o teto e os controles cabem no celular.
+
+Validação: novo `t-estilo-sombras-repeticao.mjs`, 150 asserts de números finais, bônus ímpares,
+acúmulo, incompatibilidade, normalização, dados antigos e progressão épica. Teste de progressão
+atualizado para os novos marcos e parcelas do hover. Suíte completa: 204 arquivos e 11.993 asserts,
+todos aprovados. ESLint da área Afty, build e conferência de diff aprovados. Navegador em Afty e
+Player a 1440 e 390 px: sete seletores, troca de opção, limites de Acerto/CD, salvar e recarregar,
+sem erros de página ou rolagem horizontal. Roteiro, relatórios e capturas em `.audit/estilo-repeticao-*`.
+
+Inventário reconciliado somente no TEC-01: quatro adições, seis remoções históricas documentadas
+(a lista finita `extras` foi substituída por `intervalo: 3`) e nove atualizações. Registros e fontes
+históricos preservados. O assert G00 agora verifica cobertura das chaves vivas e exige remoção
+documentada para fontes históricas adicionais, em vez de confundir tombstones com fontes órfãs.
+Sem aprovação de regra, commit ou push. As oito dúvidas anteriores do Estilo continuam na fila.
+
 ## SESSÃO DE 2026-10-25: REMOTO E ERROS DE IMPORTAÇÃO DO VESPA
 
 Autor pediu consultar atualizações, conferir conflitos e fornecer a sequência
@@ -17902,3 +19610,97 @@ Pedido do autor: um Addon chamado "Yna" com a Origem Kitsune, a Linhagem Clã Ge
 **O que mudou:** `calcularFeiticoTransformacao` monta os efeitos pelo nível escrito (quantidade, Ação, Duradoura e troca) e soma o `nivelFeitico` em cada um no fim, até o Máximo. A linha da Ficha mostra "Efeitos: +1 Nível (fonte)", e o card do criador "Nível dos Efeitos +1" com a fonte no hover. A arma de `dano.desarmado` que não é de pugilato (o Hemólito) passou a usar o dado do golpe desarmado da ficha (`dadoBasico`, com a fonte no hover) no lugar do 1d3 genérico: a Briar sai com 1d12 + 3 fora do Frenesi e 2d12 + 1d6 + 3 nele.
 
 **Asserts:** `t-golem-de-sangue.mjs` (116) nos dois sistemas. Contraprova no `HEAD`: 9 falham. Sem commit ou push.
+
+---
+
+## SESSÃO DE 2026-10-29: GUERRA DE FEITICEIROS (PACOTE EMBUTIDO, COMPOSTO E AUTO-ATUALIZADO)
+
+**Pedido do autor:** um Addon só, com o nome da campanha, reunindo as regras da mesa, que se atualize sozinho nas
+fichas (são cerca de 80) e que sirva Player e criatura detectando o sistema da ficha. Guia em `docs/afty-addons.md`.
+
+**Decisões do autor nesta sessão:** a Progressão Épica é um interruptor por ficha (caixinha, sem trava), com o
+Ascendendo e a Guarda Alta junto; a maestria depois do 36 é tabela global; PV ×2 e ×3 são só do Player (equivalem a
+Desafio e Calamidade na criatura); 10c não duplica 5d; 5c fora. Quem liga o Guerra desliga os pacotes antigos que ele
+cobre por inteiro; ficha só com pacotes antigos espera alguém ligar o Guerra; Regras Grimorio e Progressão Épica, que o
+Guerra cobre em parte, ficam ligados com aviso.
+
+**Entregue:** `addons/guerra-de-feiticeiros.json` (1.0.0), `afty-addons-compostos.js` (composição, hidratação, absorção,
+ligar, desligar, avisos), os verbos `aptidaoPorAvancoDeBt` e a maestria acima do 36, o card Addons Embutidos com os
+ajustes e o aviso dos parciais em `AftyTabAddons.jsx`, a hidratação nos pontos de leitura da ficha, `addonAjustes` na
+ficha e a recusa do id embutido na biblioteca.
+
+**Medido antes de mexer:** das 16 regras antigas, só Regras Grimorio (PV ×2), Ascendendo (PV ×1,5 e pontos) e o Alto
+Nível (Atenção, Inesgotável, Um com o Mundo) mudavam número de criatura. Versatilidade Extrema já dava +1 Nível e +1
+no limite da trilha escolhida.
+
+**Verificação:** `t-guerra-de-feiticeiros` com 158 asserts (inclui a aceitação do motor com controle negativo, o 13a no
+número com BT ímpar e a atualização por hash sem subir a versão); os asserts dos pacotes antigos seguem verdes sem
+nenhum interruptor de teste; `t-revisao-g00` exigiu o dono do módulo novo em `escopo.json`; `t-sistema` verde; build e
+eslint de `src/systems/afty` limpos; navegador (`.audit/guerra-browser.mjs`, 1440 e 390 px, console limpo): ligar o Guerra
+numa ficha com cinco pacotes antigos (saem três, ficam os dois parciais com aviso), ligar do zero na criatura, e a
+atualização de uma cópia gravada na versão 0.0.1 com a escolha da ficha preservada. Sem commit ou push.
+
+**Falhas que já existiam e continuam:** `t-reconciliacao-g00` (espera 32 patches), `t-treino-de-tr` (o JSON antigo
+está na 1.0.0 sem `incluiIntegridade`, o guia descreve a 1.1.0) e `t-prodigio` (passa, mas não imprime a frase de
+aprovação que o lançador exige).
+
+---
+
+## SESSÃO DE 2026-10-29 (NOITE): ABA DE ADDONS EM LISTA LATERAL, COM RESUMO E CATEGORIA
+
+**Pedido do autor:** a aba de Addons ficou sobrecarregada, com dezenas de pacotes, e só o título não lembra o que cada um faz.
+Pediu também textos humanizados, com a página da Wikipedia sobre sinais de texto de IA como base. Decisões por pergunta: lista
+lateral com painel de detalhe, campos novos `resumo` e `categoria` rascunhados nos 88, sem campo de mesa. Fechou ainda três
+perguntas do Guerra: o Treino de TR inclui Integridade, as 3 Lendárias novas aparecem na criatura e os Talentos Iniciais ficam
+nos dois sistemas.
+
+**Entregue:** `afty-addons-lista.js` (categorias, resumo e categoria automáticos, itens, busca, "o que muda", plural), a aba
+reescrita em `AftyTabAddons.jsx` sobre a `ListaLateral`, a extensão compatível da `ListaLateral` e de `organizarLista`, `resumo` e
+`categoria` nos 88 JSONs (alteração só aditiva, conferida por `deepStrictEqual` arquivo a arquivo), descrição nova nos 11 que não
+tinham uma útil, `addons/treino-de-tr.json` na 1.1.0 com `incluiIntegridade` (o que também fechou o `t-treino-de-tr`), e a descrição do
+Guerra reescrita para complementar o resumo.
+
+**Verificação:** `t-addons-lista` com 57 asserts, `t-lista-lateral` (32), `t-guerra-de-feiticeiros` (158) e `t-revisao-g00` verdes, com o
+dono do módulo novo registrado em `escopo.json`; eslint de `src/systems/afty` e build limpos; navegador (1440 e 390 px, console limpo):
+88 pacotes na lista, resumo na linha, busca pelo nome de uma entrada e pelo resumo, filtro de categoria, filtro Ligados, o ligado subindo
+para o primeiro grupo, o detalhe com as regras, e os roteiros do Guerra refeitos para a tela nova. Sem commit ou push.
+
+**Achado e consertado no caminho:** a primeira busca de âncora do script de inserção pegou uma `descricao` aninhada num clã do
+`flugel.json` e o `deepStrictEqual` recusou antes de gravar. A âncora passou a ser só o nível raiz.
+
+**Ajuste do mesmo dia (autor, 2026-10-29, com duas capturas da biblioteca real):** (1) a linha da lista não mostra mais descrição nenhuma,
+só nome e versão, porque as cópias antigas da biblioteca não têm `resumo` e a primeira frase da descrição, cortada com reticências, poluía a
+lista; (2) o painel de detalhe repetia essa frase e despejava o resto num bloco miúdo. Agora a descrição é uma seção própria em
+parágrafos curtos, sem repetir o resumo, com recorte e botão para abrir, e a busca varre a descrição inteira. `t-addons-lista` com 77
+asserts e roteiro de navegador com a biblioteca de cópias antigas (sem `resumo`), em 1440 e 390 px. ⚠ A biblioteca de uma máquina guarda
+cópias congeladas: `resumo` e `categoria` só chegam a um pacote reinstalado (colar o JSON de `addons/`). Sem eles a categoria sai do
+conteúdo e o painel não tem abertura, e nada quebra.
+
+---
+
+## SESSÃO DE 2026-10-29 (NOITE): JUNÇÃO COM O REMOTO (7 COMMITS DE GOLIASK E ARTHUR KYLDARE)
+
+**Pedido do autor:** puxar o que os outros colaboradores publicaram, sem causar conflito, para poder subir. A base local era
+`6888873` (12/10) e o `origin/main` estava em `2308bc1` (Camellya, Vespa Crabro, Tauropolos, Golem de Sangue, Quimera de Maldições,
+Ciel). A árvore tinha 163 arquivos modificados e 239 novos. Um `pull` direto era impossível: 31 arquivos mudaram dos dois lados e 18
+conflitavam de verdade.
+
+**Como foi feito:** backup completo fora do repositório (`_backup-sync/antes-do-pull-2026-10-29-b/`), ensaio num `git worktree`
+descartável com lint, build e a suíte, e aplicação em um passo guardado por verificações (stash etiquetado, `merge --ff-only`, cópia do
+resultado ensaiado). Uma primeira tentativa foi interrompida de propósito: outra sessão editava a árvore (revisão do livro de regras) e
+o `CLAUDE.md` manda não mover a base durante a revisão. Aplicado depois que o autor avisou que ela terminou. O stash `pre-pull-2026-10-29-guerra-e-lista`
+guarda o estado de antes e NÃO foi apagado.
+
+**Resoluções que não eram só de texto:** (1) `AftyFicha.jsx` virou invólucro e o código antigo mora no `AftyFichaClassica.jsx`, então as
+mudanças dos colaboradores no arquivo antigo foram portadas por `git merge-file`; (2) o upstream acrescentou a liberação `quimeraDeMaldicoes`
+e o local a `tecnicasMarciais`, então são 19 liberações e os asserts `t-estilo-liberado` e `t-estilo-marcial` passaram de 18 para 19; (3) em
+`afty-derive.js` o `marcaBloqueio` combina a isenção da Técnica Marcial com a trava de arma do Gungnir; (4) os JSON de registro do G00
+foram juntados por chave, com o travessão mantido escapado como `\u2014`; (5) os documentos mantêm os dois blocos, porque a base era vazia.
+Os 6 Addons dos colaboradores ganharam `resumo` e `categoria`, e o `t-addons-lista` passou a só avisar quando falta.
+
+**Verificação na árvore real:** eslint de `src/systems/afty` e build limpos, `t-ordem-modulos` verde e a suíte com 241 de 243 arquivos. As
+falhas são `t-prodigio` (o lançador exige a frase de aprovação) e `t-reconciliacao-g00`, as duas já existentes antes. Sem commit ou push.
+
+**Ainda aberto:** `revisao:cobertura` já dava FALHOU antes da junção e segue dando, agora com 20 chaves sem mapa de fonte do pacote
+Camellya (antes eram as do Herdado: Vaticano). O hash do catálogo `COMBATE_ESTADOS` no `inventario.json` mudou com a junção dos dois lados e vale uma
+proposta de reconciliação do G00.

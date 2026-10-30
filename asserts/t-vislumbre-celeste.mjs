@@ -266,12 +266,14 @@ t("no ramo com Funcionamento Básico ele vem antes dos Feitiços",
 
 /* O painel da Ficha Final: ele mora na aba AÇÕES, e não em Buffs (autor,
    2026-09-09: "para eu não precisar ir para Buffs o tempo inteiro"). */
-const ficha = readFileSync(
-  fileURLToPath(new URL("../src/systems/afty/ficha/AftyFicha.jsx", import.meta.url)),
-  "utf8",
-);
-t("a Ficha monta o painel", ficha.includes("<PainelDoVislumbre"), true);
-t("e o entrega para a aba de Ações", /vislumbre=\{<PainelDoVislumbre/.test(ficha), true);
+for (const tela of ["AftyFichaClassica.jsx", "AftyFichaG2.jsx"]) {
+  const ficha = readFileSync(
+    fileURLToPath(new URL(`../src/systems/afty/ficha/${tela}`, import.meta.url)),
+    "utf8",
+  );
+  t(`${tela} monta o painel`, ficha.includes("<PainelDoVislumbre"), true);
+  t(`${tela} entrega para a aba de Ações`, /vislumbre=\{<PainelDoVislumbre/.test(ficha), true);
+}
 const abaAcoes = readFileSync(
   fileURLToPath(new URL("../src/systems/afty/ficha/abas/AbaAcoes.jsx", import.meta.url)),
   "utf8",

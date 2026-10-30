@@ -1,0 +1,14 @@
+{
+  "id": "player-nivel-sem-teto",
+  "nome": "Player: Nível sem Teto",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Libera o nível de Player acima de 30. Depois do nível 20, continua concedendo 1 Nível de Aptidão a cada 2 níveis. Interlúdios, pontos de atributo e Treinos Especiais seguem as regras normais do Player. É a parte de nível e Aptidão da Progressão Épica, sem o resto dela.",
+  "resumo": "Libera o nível acima de 30 no Player, com 1 Nível de Aptidão a cada 2 níveis depois do 20",
+  "categoria": "regras",
+  "regrasAfty": {
+    "nivelJogadorSemTeto": true,
+    "aptidaoApos20": true
+  }
+}

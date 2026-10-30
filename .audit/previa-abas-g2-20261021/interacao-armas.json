@@ -1,0 +1,244 @@
+{
+  "geradoEm": "2026-10-21T22:55:15.283Z",
+  "base": "http://127.0.0.1:5330",
+  "etapas": [
+    {
+      "nome": "arma de capacidade 1: Acerto, Dano do disparo, recusa e Recarregar fora de combate",
+      "checks": [
+        {
+          "id": "partida: Munição 1/1, Acerto e Dano livres",
+          "ok": true
+        },
+        {
+          "id": "Acerto gasta a última munição",
+          "ok": true
+        },
+        {
+          "id": "o Dano do disparo pendente continua livre",
+          "ok": true
+        },
+        {
+          "id": "o novo Acerto é recusado, com o motivo visível",
+          "ok": true
+        },
+        {
+          "id": "o motivo está ligado ao botão por aria-describedby",
+          "ok": true,
+          "dados": ":r5:-m0"
+        },
+        {
+          "id": "o Dano rola uma vez",
+          "ok": true
+        },
+        {
+          "id": "depois do Dano, o Dano também recusa (bloqueio sem pendente)",
+          "ok": true
+        },
+        {
+          "id": "clicar no Acerto recusado não rola",
+          "ok": true
+        },
+        {
+          "id": "e anuncia o motivo no aviso do G2",
+          "ok": true
+        },
+        {
+          "id": "o Acerto recusado recebe foco pelo Tab",
+          "ok": true
+        },
+        {
+          "id": "saiu de combate",
+          "ok": true
+        },
+        {
+          "id": "Recarregar fora de combate devolve a munição",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "Oscilante: Errou recusa só o Dano, Acertou libera",
+      "checks": [
+        {
+          "id": "Errou: o Dano recusa com o motivo",
+          "ok": true
+        },
+        {
+          "id": "o Acerto segue livre",
+          "ok": true
+        },
+        {
+          "id": "Acertou: o Dano volta",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "Emperrar: a pífia recusa o Dano daquele golpe e o próximo Acerto, até Desemperrar",
+      "checks": [
+        {
+          "id": "Dano do golpe que errou recusado (Errou)",
+          "ok": true
+        },
+        {
+          "id": "próximo Acerto recusado (Arma Emperrada)",
+          "ok": true
+        },
+        {
+          "id": "Desemperrar e Recarregar devolvem o Acerto",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "crítico pendente: Acerto 20, ida aos Efeitos e volta, Dano consome",
+      "checks": [
+        {
+          "id": "o Acerto 20 marca Crítico Pendente",
+          "ok": true
+        },
+        {
+          "id": "depois de Efeitos e Perícias, a marca segue",
+          "ok": true
+        },
+        {
+          "id": "o Dano rola no modo Crítico e consome a marca",
+          "ok": true,
+          "dados": {
+            "rotulo": "Rapieira Modular de Teste",
+            "critico": true,
+            "formula": "4d8 + 3"
+          }
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "fontes: hover e foco abrem sem rolar, Enter rola",
+      "checks": [
+        {
+          "id": "hover abre as fontes",
+          "ok": true
+        },
+        {
+          "id": "hover não rola",
+          "ok": true
+        },
+        {
+          "id": "o foco do teclado abre as fontes",
+          "ok": true
+        },
+        {
+          "id": "foco não rola",
+          "ok": true
+        },
+        {
+          "id": "Esc fecha as fontes sem fechar nada mais",
+          "ok": true
+        },
+        {
+          "id": "Enter rola",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "fontes no toque: toque longo abre, e o clique que vem junto não rola",
+      "checks": [
+        {
+          "id": "o toque longo abriu as fontes",
+          "ok": true
+        },
+        {
+          "id": "e não rolou",
+          "ok": true
+        },
+        {
+          "id": "um toque simples rola",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "Técnica Máxima: Usar paga e abre a recarga, o uso pago rola, novo Usar recusa",
+      "checks": [
+        {
+          "id": "Usar desconta o custo",
+          "ok": true,
+          "dados": {
+            "antes": 121,
+            "depois": 96,
+            "custo": 25
+          }
+        },
+        {
+          "id": "a recarga começou e o Usar mostra o motivo",
+          "ok": true
+        },
+        {
+          "id": "o novo Usar está recusado",
+          "ok": true
+        },
+        {
+          "id": "a rolagem do uso pago NÃO está travada pela recarga",
+          "ok": true
+        },
+        {
+          "id": "rolou uma vez e pagou o Custo de Vida da ativação",
+          "ok": true,
+          "dados": {
+            "log": [
+              0,
+              1
+            ],
+            "hp": [
+              165,
+              83
+            ]
+          }
+        },
+        {
+          "id": "a rolagem não desconta PE",
+          "ok": true
+        },
+        {
+          "id": "com 0 PE, a rolagem segue livre",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "arma de capacidade 1: Acerto, Dano do disparo, recusa e Recarregar fora de combate: 13/13",
+    "Oscilante: Errou recusa só o Dano, Acertou libera: 3/3",
+    "Emperrar: a pífia recusa o Dano daquele golpe e o próximo Acerto, até Desemperrar: 3/3",
+    "crítico pendente: Acerto 20, ida aos Efeitos e volta, Dano consome: 3/3",
+    "fontes: hover e foco abrem sem rolar, Enter rola: 6/6",
+    "fontes no toque: toque longo abre, e o clique que vem junto não rola: 3/3",
+    "Técnica Máxima: Usar paga e abre a recarga, o uso pago rola, novo Usar recusa: 8/8"
+  ]
+}

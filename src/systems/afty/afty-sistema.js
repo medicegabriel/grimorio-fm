@@ -245,7 +245,7 @@ export const DIVERGENCIAS = [
     onde: "afty-derive.js, bloco Guarda Inabalável",
     fonte: "E Guarda, Resistências Parcial e etc deixam de existir na ficha de jogador, sem aparecer nem como zero. (autor, 2026-08-30)",
     afty: "Guarda por Patamar",
-    player: "não existe, e não aparece nem zerada",
+    player: "não existe, e não aparece nem zerada, salvo com o interruptor Guarda Alta do Addon Ascendendo Além dos Céus",
     ativa: true,
   },
   {
@@ -382,7 +382,11 @@ export const DIVERGENCIAS = [
 
        ⚠ A Alma entra AQUI e não em divergência própria, porque "Máximo de Alma
        igual ao PV" faz das duas uma conta só. Separá-las daria duas divergências
-       que nunca podem estar em estados diferentes. */
+       que nunca podem estar em estados diferentes.
+
+       ⚠ A METADE DA ALMA PODE SER DESFEITA POR ADDON (2026-10-12): o verbo
+       `regrasAfty.almaComoAfty` devolve ao jogador a Alma da criatura, e o PV
+       por Classe fica. Quem pergunta o regime lê `almaPilha` no derivado. */
     id: "pvPePorEspecializacao",
     tipo: "regra",
     onde: "afty-derive.js, blocos HP, PE e Alma; ficha/ficha-sessao.js, os verbos da Alma",
@@ -567,7 +571,12 @@ export const DIVERGENCIAS = [
        RECEBEM BÔNUS QUE AFETAM PERICIAS. E não contam para o Limite de Pericias."
 
        São três regras numa frase, e as três divergem da criatura, onde "Perícias
-       E Testes de Resistência gastam deste mesmo caixa" (autor, 2026-07-27). */
+       E Testes de Resistência gastam deste mesmo caixa" (autor, 2026-07-27).
+
+       ⚠ UM ADDON DESFAZ A DIVERGÊNCIA (2026-10-25): o verbo
+       `regrasAfty.trNoLimiteDePericias` põe o TR no caixa do jogador, e a ficha
+       passa a se comportar como a da criatura. Quem pergunta é o
+       `resolveTestes`, pelo `ctx.trNoLimite`. */
     id: "trForaDoOrcamento",
     tipo: "regra",
     onde: "afty-pericias.js, resolveTestes",
@@ -596,7 +605,12 @@ export const DIVERGENCIAS = [
     /* O Grimório Afty prolonga os Níveis de Aptidão depois do ND 20. A Ficha de
        Player segue a tabela do livro: o último marco que concede pontos por
        nível é o 20. Bônus de Habilidades, Treinamentos e Addons continuam valendo
-       nos dois sistemas, pois entram pelo canal `pontosAptidao`. */
+       nos dois sistemas, pois entram pelo canal `pontosAptidao`.
+
+       Um Addon pode devolver a progressão ao jogador de duas maneiras: `aptidaoApos20`
+       (1 a cada 2 níveis, a do Grimório Afty) ou `aptidaoPorAvancoDeBt` (1 por avanço
+       de Bônus de Treinamento acima de 6, no 21, 26, 31...). A segunda vence. Nenhuma
+       das duas muda a criatura, que já tem a dela. */
     id: "aptidaoApos20",
     tipo: "regra",
     onde: "afty-derive.js, orçamento e fontes de Níveis de Aptidão",
@@ -716,10 +730,11 @@ export const DIVERGENCIAS = [
        tinha onde cair, porque o contador único tinha apagado os níveis pares. Ela
        é `automatica`, então todo Conjurador a tem a partir do 1° nível.
 
-       ⚠ O ESTILO DAS SOMBRAS NÃO ENTRA AQUI. O cálculo dele chegou em 2026-10-04
-       (Expansão, DA-03): progressão própria das Técnicas, 2 no Nível 4 e +1 em
-       7, 10, 13, 16 e 19, IGUAL nos dois sistemas. Por isso não é divergência:
-       ver `tecnicasDaProgressao` em afty-estilo-sombras-catalogo.js. */
+       ⚠ O ESTILO DAS SOMBRAS TEM A DIVERGÊNCIA DELE, `progressaoDoEstilo` (2026-10-26).
+       Até então a progressão própria das Técnicas da Expansão (DA-03, 2026-10-04) era
+       igual nos dois sistemas. Hoje só o jogador a tem: ver `tecnicasDaProgressao` em
+       afty-estilo-sombras-catalogo.js. A Técnica Marcial tem a sua em
+       `progressaoDeTecnicasMarciais`. */
     id: "progressaoDeFeiticos",
     tipo: "regra",
     onde: "afty-feiticos.js, totalFeiticosJogador, e afty-derive.js, orcamentoHabilidades",
@@ -951,9 +966,9 @@ export const DIVERGENCIAS = [
        disputam num pool plano (autor, 2026-07-30), e isso segue valendo lá. No
        jogador elas se partem em GRUPOS, e a disputa acontece só dentro do grupo:
 
-         feiticos          Feitiço Passivo, Feitiço Auxiliar, Novo Estilo das
-                           Sombras, Funcionamento Básico e a Segunda Habilidade
-                           Única (Addon). Técnica Marcial entra aqui quando nascer
+         feiticos          Feitiço Passivo, Feitiço Auxiliar, Técnica Marcial
+                           (2026-10-27), Novo Estilo das Sombras, Funcionamento
+                           Básico e a Segunda Habilidade Única (Addon)
          habilidadeUnica   a primeira Habilidade Única de cada item. Não soma com
                            a de outro item, e soma com todo o resto
          shikigami*        cada família de Invocação no próprio grupo. ASSUNÇÃO,
@@ -1012,6 +1027,57 @@ export const DIVERGENCIAS = [
     fonte: "Isso é somente na Ficha de Criatura. Quando uma arma usa o Acerto Amaldiçoado, ela também usa o Atributo de Técnica para o Dano. (autor, 2026-10-02)",
     afty: "a arma no Acerto Amaldiçoado usa o Atributo de Técnica no dano",
     player: "o dano segue o atributo da arma (Força, Destreza ou o maior pela Fineza)",
+    ativa: true,
+  },
+  {
+    /* O jogador não tem o campo Tipo (`pvPePorEspecializacao`), e o ramo da
+       Restrição Celestial dos Gêmeos é decidido pelo Tipo. Sem esta entrada o
+       Gêmeo do jogador caía sempre em Feiticeiros, sem controle nenhum na tela
+       (relato do autor, 2026-10-12: *"Eu não consigo selecionar RESTRINGIDO em
+       Gêmeos. Só Feiticeiros"*). Lido em `tipoDaFicha` (afty-origens.js). */
+    id: "gemeoRestringidoPelaCopia",
+    tipo: "regra",
+    onde: "afty-origens.js, tipoDaFicha",
+    fonte: "Na Ficha de Player, o Gêmeo vira Restringido pela cópia do Físico Abençoado nas Verdadeiras Origens. (autor, 2026-10-12)",
+    afty: "o Gêmeo é Restringido pelo campo Tipo, como toda criatura",
+    player: "o Gêmeo é Restringido se copiou o Físico Abençoado do Restringido nas Verdadeiras Origens, e Feiticeiro se não copiou",
+    ativa: true,
+  },
+  {
+    /* ⚠ AS TÉCNICAS MARCIAIS DO RESTRINGIDO (autor, 2026-10-26). O livro dá a
+       progressão (p. 124 e 248): 2 no início e mais uma nos níveis ímpares de 3 a
+       19. O autor mandou o jogador seguir o livro, sem teto depois do 19, e a
+       criatura gastar os mesmos slots que o resto (o contador comum, o mesmo das
+       Habilidades Gerais e dos Feitiços). Desenvolver Ideias dá 2 vagas EXCLUSIVAS
+       (canal `vagasMarcial`), e elas valem nos dois.
+
+       ⚠ NO JOGADOR O EXCESSO NÃO TRANSBORDA PARA O CONTADOR COMUM, que ali não tem
+       outro dono. É a mesma regra do caixa próprio do Feitiço (`progressaoDeFeiticos`):
+       o excesso vira aviso. */
+    id: "progressaoDeTecnicasMarciais",
+    tipo: "regra",
+    onde: "afty-tecnicas-marciais.js, tecnicasMarciaisDoJogador, e afty-derive.js, orcamentoHabilidades",
+    fonte: "Um restringido começa com 2 técnicas marciais, e recebe mais uma nos níveis 3, 5, 7, 9, 11, 13, 15, 17 e 19. (livro, p. 124) Na ficha de Player igual ao livro, sem parar no 19. Na de Criatura gasta os mesmos slots que o restante, como Especialização, Aptidão, Treinamento. (autor, 2026-10-26)",
+    afty: "contador único da aba, dividido com as Habilidades Gerais e os Feitiços",
+    player: "orçamento próprio: 2 no início, mais 1 em cada nível ímpar a partir do 3, sem teto",
+    ativa: true,
+  },
+  {
+    /* ⚠ O MESMO PEDIDO DO AUTOR (2026-10-26) PARA O NOVO ESTILO DAS SOMBRAS: "O mesmo
+       é válido para Novo Estilo das Sombras". Até aqui as Técnicas da Expansão tinham
+       progressão própria nos DOIS sistemas (DA-03, 2026-10-04, sem divergência). Agora
+       o jogador mantém a progressão e a criatura gasta o contador comum, como as
+       `legacy` sempre gastaram.
+
+       ⚠ NA CRIATURA O ESTOURO SÓ DEIXA O CONTADOR VERMELHO. Nenhuma Técnica perde o
+       efeito por causa dele, e é isso que separa esta regra da progressão do jogador,
+       em que a progressão estourada invalida todas. */
+    id: "progressaoDoEstilo",
+    tipo: "regra",
+    onde: "afty-estilo-sombras.js, resolveEstilos (progressaoPropria), e afty-derive.js, orcamentoHabilidades",
+    fonte: "Na ficha de Player igual ao Livro. Na de Criatura gasta os mesmos slots que o restante, como Especialização, Aptidão, Treinamento e etc. O mesmo é válido para Novo Estilo das Sombras. (autor, 2026-10-26)",
+    afty: "as Técnicas da Expansão gastam o contador comum, e o estouro só avisa",
+    player: "progressão própria: 2 no Nível 4 e +1 a cada três níveis, e a progressão estourada invalida todas",
     ativa: true,
   },
 ];

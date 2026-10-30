@@ -1,0 +1,130 @@
+{
+  "geradoEm": "2026-10-20T21:25:02.229Z",
+  "base": "http://127.0.0.1:5321",
+  "amostra": "Player 30 Volumoso (Perf G2)",
+  "medidas": [
+    {
+      "rotulo": "Exaustão mais 1",
+      "ms": 31,
+      "longas": []
+    },
+    {
+      "rotulo": "Perda de Vida do Sangramento",
+      "ms": 54,
+      "longas": []
+    },
+    {
+      "rotulo": "Confirmar Cópia da Imitação",
+      "ms": 55,
+      "longas": []
+    },
+    {
+      "rotulo": "Criar Buff de Mesa",
+      "ms": 40,
+      "longas": []
+    },
+    {
+      "rotulo": "Conceder pelo Mestre",
+      "ms": 43,
+      "longas": []
+    },
+    {
+      "rotulo": "Exaustão mais 1",
+      "ms": 31,
+      "longas": []
+    },
+    {
+      "rotulo": "Perda de Vida do Sangramento",
+      "ms": 31,
+      "longas": []
+    },
+    {
+      "rotulo": "Confirmar Cópia da Imitação",
+      "ms": 57,
+      "longas": []
+    },
+    {
+      "rotulo": "Criar Buff de Mesa",
+      "ms": 32,
+      "longas": []
+    },
+    {
+      "rotulo": "Conceder pelo Mestre",
+      "ms": 43,
+      "longas": []
+    },
+    {
+      "rotulo": "Exaustão mais 1",
+      "ms": 31,
+      "longas": []
+    },
+    {
+      "rotulo": "Perda de Vida do Sangramento",
+      "ms": 31,
+      "longas": []
+    },
+    {
+      "rotulo": "Confirmar Cópia da Imitação",
+      "ms": 53,
+      "longas": []
+    },
+    {
+      "rotulo": "Criar Buff de Mesa",
+      "ms": 31,
+      "longas": []
+    },
+    {
+      "rotulo": "Conceder pelo Mestre",
+      "ms": 44,
+      "longas": []
+    }
+  ],
+  "erros": [],
+  "resumo": {
+    "Exaustão mais 1": {
+      "ms": [
+        31,
+        31,
+        31
+      ],
+      "maximo": 31,
+      "tarefasLongas": 0
+    },
+    "Perda de Vida do Sangramento": {
+      "ms": [
+        54,
+        31,
+        31
+      ],
+      "maximo": 54,
+      "tarefasLongas": 0
+    },
+    "Confirmar Cópia da Imitação": {
+      "ms": [
+        55,
+        57,
+        53
+      ],
+      "maximo": 57,
+      "tarefasLongas": 0
+    },
+    "Criar Buff de Mesa": {
+      "ms": [
+        40,
+        32,
+        31
+      ],
+      "maximo": 40,
+      "tarefasLongas": 0
+    },
+    "Conceder pelo Mestre": {
+      "ms": [
+        43,
+        43,
+        44
+      ],
+      "maximo": 44,
+      "tarefasLongas": 0
+    }
+  }
+}

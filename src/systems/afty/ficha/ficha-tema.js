@@ -808,6 +808,11 @@ export const CONTRATO_DE_CLASSES = [
   { grupo: "Espinho", seletor: ".afty-espinho-cristal", oque: "o cristal das Almas Restantes" },
   { grupo: "Espinho", seletor: ".afty-espinho-marca", oque: "cada compra listada" },
   { grupo: "Espinho", seletor: ".afty-espinho-rachadura", oque: "as rachaduras que escapam da borda" },
+  /* A Lanterna Coletora de Almas é o MESMO card com a raiz marcada: as classes
+     acima valem nela também, e a paleta azul troca os mesmos --espinho-*. */
+  { grupo: "Espinho", seletor: ".afty-lanterna", oque: "o card quando é a Lanterna Coletora de Almas (a raiz, junto de .afty-espinho). A paleta azul mora aqui, nos mesmos tokens --espinho-*" },
+  { grupo: "Espinho", seletor: ".afty-lanterna-imagem", oque: "a lanterna das Almas Restantes" },
+  { grupo: "Espinho", seletor: ".afty-lanterna-chamas", oque: "as chamas que saem da borda de cima" },
 
   /* ---------- controles ---------- */
   { grupo: "Controles", seletor: ".afty-botao", oque: "todo botão de texto" },

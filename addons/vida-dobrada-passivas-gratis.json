@@ -5,6 +5,8 @@
   "autor": "Templas",
   "paraRaw": "afty",
   "descricao": "Dobra o PV máximo da ficha e isenta TODA Passiva do custo de PE Máximo (a regra do jogador cobra o dobro do nível de cada Passiva). Usa dois canais de motor (`hpMult`, que multiplica o PV final depois da Alma e do Patamar, e `passivaSemCusto`, sinalizador) liberados pela primitiva `pvEPassivas`. Os dois efeitos moram num Funcionamento do pacote, sempre ativo, e por isso valem para qualquer ficha que instale o Addon.",
+  "resumo": "Dobra o PV máximo e isenta as Passivas do custo de PE Máximo",
+  "categoria": "regras",
   "permite": ["pvEPassivas"],
   "funcionamentos": [
     {

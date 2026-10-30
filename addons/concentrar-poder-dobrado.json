@@ -5,6 +5,8 @@
   "autor": "Templas",
   "paraRaw": "afty",
   "descricao": "Dobra os benefícios da habilidade Concentrar Poder (Controlador 6°, liberada pelo Apogeu · Controle Concentrado) na invocação marcada: Pontos de Vida, Defesa, Testes de Resistência, níveis de dano e de cura e o bônus somado ao total, em cada degrau (Inicial, 6, 12 e 18 de Controlador). O efeito mora num Funcionamento do pacote, sempre ativo, que soma uma segunda vez os mesmos valores da tabela do livro. Vale só nas invocações marcadas pelo Concentrar Poder, e só em ficha que tenha a habilidade. O limite de invocações marcadas continua o do livro (metade do Bônus de Treinamento).",
+  "resumo": "Dobra os benefícios do Concentrar Poder na invocação marcada",
+  "categoria": "talentos",
   "funcionamentos": [
     {
       "id": "concentrar_poder_dobrado",

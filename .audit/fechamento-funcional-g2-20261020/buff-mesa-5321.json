@@ -1,0 +1,301 @@
+{
+  "geradoEm": "2026-10-20T21:34:44.067Z",
+  "base": "http://127.0.0.1:5321",
+  "etapas": [
+    {
+      "nome": "E Buff de Mesa na criatura (invocador)",
+      "checks": [
+        {
+          "id": "E1 o formulário abre pela Fonte Externa",
+          "ok": true
+        },
+        {
+          "id": "E1 com invocações, o formulário oferece onde cai",
+          "ok": true
+        },
+        {
+          "id": "E2 trocar de tela do trilho não perde o rascunho",
+          "ok": true
+        },
+        {
+          "id": "E2 o rascunho não criou nada na sessão",
+          "ok": true
+        },
+        {
+          "id": "E3 expressão vazia é recusada com o motivo",
+          "ok": true
+        },
+        {
+          "id": "E3 expressão inválida é recusada",
+          "ok": true
+        },
+        {
+          "id": "E3 recusar não apaga o que foi digitado",
+          "ok": true
+        },
+        {
+          "id": "E4 corrigido, o buff é criado e a tela avisa",
+          "ok": true
+        },
+        {
+          "id": "E4 o registro guarda nome, canal, a expressão sem o + inicial e sem contador",
+          "ok": true,
+          "dados": {
+            "id": "buff_vnskk3c8",
+            "nome": "Foco Total",
+            "canal": "defesa",
+            "expr": "2",
+            "rodadas": null
+          }
+        },
+        {
+          "id": "E4 o formulário esvazia depois de criar",
+          "ok": true
+        },
+        {
+          "id": "E4 a Defesa sobe 2",
+          "ok": true,
+          "dados": {
+            "ini": "21",
+            "agora": "23"
+          }
+        },
+        {
+          "id": "E4 o resto de sessao.buffs fica como estava (pacote intacto)",
+          "ok": true
+        },
+        {
+          "id": "E5 o seletor mostra o canal escolhido",
+          "ok": true,
+          "dados": "Iniciativa"
+        },
+        {
+          "id": "E5 clique duplo cria um buff só",
+          "ok": true,
+          "dados": [
+            {
+              "id": "buff_fimrb11a",
+              "nome": "Relâmpago",
+              "canal": "iniciativa",
+              "expr": "3",
+              "rodadas": 2
+            }
+          ]
+        },
+        {
+          "id": "E5 canal e rodadas gravados",
+          "ok": true,
+          "dados": {
+            "id": "buff_fimrb11a",
+            "nome": "Relâmpago",
+            "canal": "iniciativa",
+            "expr": "3",
+            "rodadas": 2
+          }
+        },
+        {
+          "id": "E5 a Iniciativa sobe 3",
+          "ok": true,
+          "dados": {
+            "ini": "+2",
+            "agora": "+5"
+          }
+        },
+        {
+          "id": "E6 os números do G2 e da clássica são iguais",
+          "ok": true,
+          "dados": {
+            "g2": {
+              "defesa": "23",
+              "cd": "23",
+              "rd-geral": "0",
+              "movimento": "9m",
+              "iniciativa": "+5",
+              "atencao": "16",
+              "maestria": "+4"
+            },
+            "classica": {
+              "defesa": "23",
+              "cd": "23",
+              "rd-geral": "0",
+              "movimento": "9m",
+              "iniciativa": "+5",
+              "atencao": "16",
+              "maestria": "+4"
+            }
+          }
+        },
+        {
+          "id": "E7 a virada desconta uma rodada",
+          "ok": true,
+          "dados": {
+            "id": "buff_fimrb11a",
+            "nome": "Relâmpago",
+            "canal": "iniciativa",
+            "expr": "3",
+            "rodadas": 1
+          }
+        },
+        {
+          "id": "E7 na segunda virada o buff vence e sai",
+          "ok": true
+        },
+        {
+          "id": "E7 a Iniciativa volta",
+          "ok": true
+        },
+        {
+          "id": "E7 o buff sem contador continua depois das viradas",
+          "ok": true
+        },
+        {
+          "id": "E7 o pacote segue intacto depois das viradas",
+          "ok": true
+        },
+        {
+          "id": "E8 Encerrar tira só o buff de mesa",
+          "ok": true
+        },
+        {
+          "id": "E8 a Defesa volta ao início",
+          "ok": true
+        },
+        {
+          "id": "E9 recarregar mantém o buff e o número",
+          "ok": true
+        },
+        {
+          "id": "E9 nada disso tocou a ficha gravada",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "E Buff de Mesa nas invocações (invocador)",
+      "checks": [
+        {
+          "id": "E10 na invocação aparece a escolha de qual",
+          "ok": true
+        },
+        {
+          "id": "E10 o seletor de canal usa o catálogo da invocação",
+          "ok": true
+        },
+        {
+          "id": "E11 todas: guarda o escopo e nenhuma mira",
+          "ok": true,
+          "dados": {
+            "id": "buff_rxqo8fzu",
+            "nome": "Casco",
+            "canal": "defesa",
+            "expr": "1",
+            "rodadas": null,
+            "escopo": "invocacao"
+          }
+        },
+        {
+          "id": "E11 todas: as duas invocações sobem 1",
+          "ok": true,
+          "dados": {
+            "nue0": 23,
+            "nue1": 24,
+            "sapo0": 15,
+            "sapo1": 16
+          }
+        },
+        {
+          "id": "E12 específico: guarda a mira e as rodadas",
+          "ok": true,
+          "dados": {
+            "id": "buff_hywu5aev",
+            "nome": "Só Nue",
+            "canal": "defesa",
+            "expr": "2",
+            "rodadas": 3,
+            "escopo": "invocacao",
+            "invocacaoAlvo": "g2-inv-a"
+          }
+        },
+        {
+          "id": "E12 específico: só a Nue sobe mais 2",
+          "ok": true,
+          "dados": {
+            "nue1": 24,
+            "nue2": 26,
+            "sapo1": 16,
+            "sapo2": 16
+          }
+        },
+        {
+          "id": "E13 voltar para a criatura esconde a mira",
+          "ok": true
+        },
+        {
+          "id": "E13 trocar de escopo zera a mira",
+          "ok": true
+        },
+        {
+          "id": "E14 encerrar o de mira devolve só a Nue",
+          "ok": true
+        },
+        {
+          "id": "E14 o pacote segue intacto",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    },
+    {
+      "nome": "E Buff de Mesa no /Afty (cria)",
+      "checks": [
+        {
+          "id": "E15 /Afty: o buff é criado",
+          "ok": true
+        },
+        {
+          "id": "E15 /Afty: a Iniciativa sobe 4",
+          "ok": true,
+          "dados": {
+            "ini": "+2",
+            "g2": "+6"
+          }
+        },
+        {
+          "id": "E15 /Afty: o número do G2 é o da clássica",
+          "ok": true,
+          "dados": {
+            "g2": {
+              "defesa": "26",
+              "cd": "23",
+              "rd-geral": "18",
+              "movimento": "15m",
+              "iniciativa": "+6",
+              "atencao": "17",
+              "maestria": "+5"
+            },
+            "classica": {
+              "defesa": "26",
+              "cd": "23",
+              "rd-geral": "18",
+              "movimento": "15m",
+              "iniciativa": "+6",
+              "atencao": "17",
+              "maestria": "+5"
+            }
+          }
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "E Buff de Mesa na criatura (invocador): 26/26",
+    "E Buff de Mesa nas invocações (invocador): 10/10",
+    "E Buff de Mesa no /Afty (cria): 3/3"
+  ]
+}

@@ -82,6 +82,26 @@ const botaoPequeno =
   "inline-flex items-center justify-center w-6 h-6 rounded border border-slate-700 text-slate-400 " +
   "hover:border-purple-600 hover:text-purple-200 transition-colors disabled:opacity-40 disabled:pointer-events-none";
 
+const notaDeRepeticao = (def) => [
+  def.notaAutor,
+  def.repeticao === "aliados"
+    ? `A segunda compra escolhe entre estender aos aliados ou ${def.exprPessoal ? "receber BT inteiro" : "dobrar o bônus pessoal"}. As opções não podem ser combinadas.`
+    : null,
+].filter(Boolean).join("\n\n");
+
+function RepeticaoDaCompra({ grupo, nome, onChange }) {
+  return (
+    <div className="w-32">
+      <Select
+        value={grupo.repeticao.pessoal ? "pessoal" : "aliados"}
+        onChange={onChange}
+        options={[{ value: "aliados", label: "Aliados" }, { value: "pessoal", label: "Dobrar Bônus" }]}
+        aria-label={`Repetição de ${nome}`}
+      />
+    </div>
+  );
+}
+
 /** Os efeitos da Modificação: um seletor por efeito e a lista do que já foi comprado. */
 function EfeitosDaTecnica({ resolvida, pericias, onMudar }) {
   const [escolhas, setEscolhas] = useState({});
@@ -114,9 +134,12 @@ function EfeitosDaTecnica({ resolvida, pericias, onMudar }) {
       <div className="grid gap-1.5 sm:grid-cols-2">
         {EFEITOS_ESTILO.map((def) => {
           const opcoes = opcoesEscolha(def.escolha);
+          const alvo = def.escolha ? escolhas[def.id] : null;
+          const grupo = grupos.find((g) => g.efeitoId === def.id && g.escolha === alvo);
+          const noTeto = def.max != null && (grupo?.n ?? 0) >= def.max;
           return (
             <div key={def.id} className="flex items-center gap-1.5 rounded border border-slate-800 bg-slate-950/40 px-2 py-1">
-              <DicaDeTexto titulo={def.nome} texto={def.descricao} nota={def.notaAutor}>
+              <DicaDeTexto titulo={def.nome} texto={def.descricao} nota={notaDeRepeticao(def)}>
                 <span className="text-[11px] font-semibold text-slate-200 flex-1 min-w-0 truncate cursor-help">{def.nome}</span>
               </DicaDeTexto>
               {def.escolha && (
@@ -134,7 +157,8 @@ function EfeitosDaTecnica({ resolvida, pericias, onMudar }) {
                 type="button"
                 className={botaoPequeno}
                 onClick={() => comprar(def)}
-                disabled={!!def.escolha && !escolhas[def.id]}
+                disabled={noTeto || (!!def.escolha && !escolhas[def.id])}
+                title={noTeto ? "Limite de compras atingido" : undefined}
                 aria-label={`Adicionar ${def.nome}`}
               >
                 <Plus className="w-3 h-3" />
@@ -149,9 +173,14 @@ function EfeitosDaTecnica({ resolvida, pericias, onMudar }) {
             const def = EFEITOS_ESTILO.find((e) => e.id === g.efeitoId);
             const nome = def ? (g.nomeEscolha ? `${def.nome} (${g.nomeEscolha})` : def.nome) : g.efeitoId;
             return (
-              <span key={g.chave} className="inline-flex items-center gap-1 text-[11px] pl-2 pr-1 py-0.5 rounded border border-purple-800 bg-purple-950/30 text-purple-100">
-                {nome}
+              <span key={g.chave} className="inline-flex flex-wrap max-w-full items-center gap-1 text-[11px] pl-2 pr-1 py-0.5 rounded border border-purple-800 bg-purple-950/30 text-purple-100">
+                <span className="min-w-0 break-words">{nome}</span>
                 {g.n > 1 && <span className="font-mono text-purple-300">×{g.n}</span>}
+                {def?.repeticao === "aliados" && g.n >= 2 && (
+                  <RepeticaoDaCompra grupo={g} nome={nome} onChange={(repeticao) => onMudar((t) => ({
+                    ...t, efeitos: t.efeitos.map((e) => e.uid === g.uids[1] ? { ...e, repeticao } : e),
+                  }))} />
+                )}
                 <button type="button" className={botaoPequeno} onClick={() => devolver(g.uids[g.uids.length - 1])} aria-label={`Tirar uma compra de ${nome}`}>
                   <Minus className="w-3 h-3" />
                 </button>
@@ -185,9 +214,10 @@ function AptidoesDaTecnica({ resolvida, aptidoesDaFicha, onMudar }) {
       <div className="grid gap-1.5 sm:grid-cols-2">
         {disponiveis.map(({ mod, opcoes }) => {
           const escolhida = escolha[mod.id] ?? (opcoes.length === 1 ? opcoes[0].value : "");
+          const noTeto = grupos.some((g) => g.modId === mod.id && g.aptidaoId === escolhida && g.n >= mod.max);
           return (
             <div key={mod.id} className="flex items-center gap-1.5 rounded border border-slate-800 bg-slate-950/40 px-2 py-1">
-              <DicaDeTexto titulo={mod.nome} texto={mod.descricao}>
+              <DicaDeTexto titulo={mod.nome} texto={mod.descricao} nota={notaDeRepeticao(mod)}>
                 <span className="text-[11px] font-semibold text-slate-200 flex-1 min-w-0 truncate cursor-help">{mod.nome}</span>
               </DicaDeTexto>
               {opcoes.length > 1 && (
@@ -195,7 +225,7 @@ function AptidoesDaTecnica({ resolvida, aptidoesDaFicha, onMudar }) {
                   <Select value={escolhida} onChange={(v) => setEscolha((s) => ({ ...s, [mod.id]: v }))} options={opcoes} placeholder="Aptidão" aria-label={`Aptidão de ${mod.nome}`} />
                 </div>
               )}
-              <button type="button" className={botaoPequeno} disabled={!escolhida} onClick={() => adicionar(mod, escolhida)} aria-label={`Adicionar ${mod.nome}`}>
+              <button type="button" className={botaoPequeno} disabled={!escolhida || noTeto} title={noTeto ? "Limite de compras atingido" : undefined} onClick={() => adicionar(mod, escolhida)} aria-label={`Adicionar ${mod.nome}`}>
                 <Plus className="w-3 h-3" />
               </button>
             </div>
@@ -208,9 +238,14 @@ function AptidoesDaTecnica({ resolvida, aptidoesDaFicha, onMudar }) {
             const mod = MODIFICACOES_APTIDAO.find((m) => m.id === g.modId);
             const nome = `${mod?.nome ?? g.modId} (${g.nomeAptidao})`;
             return (
-              <span key={g.chave} className="inline-flex items-center gap-1 text-[11px] pl-2 pr-1 py-0.5 rounded border border-purple-800 bg-purple-950/30 text-purple-100">
-                {nome}
+              <span key={g.chave} className="inline-flex flex-wrap max-w-full items-center gap-1 text-[11px] pl-2 pr-1 py-0.5 rounded border border-purple-800 bg-purple-950/30 text-purple-100">
+                <span className="min-w-0 break-words">{nome}</span>
                 {g.n > 1 && <span className="font-mono text-purple-300">×{g.n}</span>}
+                {mod?.repeticao === "aliados" && g.n >= 2 && (
+                  <RepeticaoDaCompra grupo={g} nome={nome} onChange={(repeticao) => onMudar((t) => ({
+                    ...t, aptidoes: t.aptidoes.map((a) => a.uid === g.uids[1] ? { ...a, repeticao } : a),
+                  }))} />
+                )}
                 <button type="button" className={botaoPequeno} onClick={() => tirar(g.uids[g.uids.length - 1])} aria-label={`Tirar ${nome}`}>
                   <Minus className="w-3 h-3" />
                 </button>
@@ -487,7 +522,11 @@ export default function NovoEstiloSombrasCard({
   const funcionamento = draft.estiloFuncionamento ?? { texto: "", durabilidadeTrilha: null };
   const tecnicasCruas = (Array.isArray(draft.estilosSombra) ? draft.estilosSombra : []).filter((e) => e?.regra === "expansao");
   const resolvidaDe = (id) => (info.tecnicas ?? []).find((t) => t.id === id);
-  const cheia = prog.usadas >= prog.total;
+  /* ⚠ SÓ O PERSONAGEM TEM PROGRESSÃO PRÓPRIA (autor, 2026-10-26). Na criatura as Técnicas
+     gastam o contador comum de Habilidades, que o criador mostra no cabeçalho do card, então
+     a métrica "Técnicas" some e o botão de criar nunca trava por ela. */
+  const propria = prog.propria !== false;
+  const cheia = propria && prog.usadas >= prog.total;
   const { TextoLongo } = componentes;
 
   return (
@@ -500,7 +539,7 @@ export default function NovoEstiloSombrasCard({
       ) : (
         <div className="space-y-4">
           <div className="flex flex-wrap gap-1.5">
-            <Metrica rotulo="Técnicas" valor={`${prog.usadas} / ${prog.total}`} partes={prog.partes} alerta={prog.excedeu} />
+            {propria && <Metrica rotulo="Técnicas" valor={`${prog.usadas} / ${prog.total}`} partes={prog.partes} alerta={prog.excedeu} />}
             <Metrica rotulo="DOM" valor={ap.dom ?? 0} />
             <Metrica rotulo="AU" valor={ap.au ?? 0} />
             <Metrica rotulo="CL" valor={ap.cl ?? 0} />

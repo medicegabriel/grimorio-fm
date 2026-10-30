@@ -1,0 +1,42 @@
+[
+  {
+    "path": "/C:/Projetos/Grimorio/grimorio-tracker/docs/a-fazer.md",
+    "antes": "7f7d5e258b22119b6fc763e9e8a40715f18f44d8c1433fffd1f5fdfa41fe6661",
+    "depois": "a51277dbbee625990c2747f5c7cd9710271e715f3d9a1b47c4bc29c1e081f3e5"
+  },
+  {
+    "path": "/C:/Projetos/Grimorio/grimorio-tracker/docs/afty-status.md",
+    "antes": "a5ff9db29b12bc5acbaf20ff0fb3c195bf0af6410fe6646bdabe4b8f1ea4d4ca",
+    "depois": "4d4a8b0c63125afbb1cbd6c137c718d1d068533b351928f7fbbfa1be9d4bd8d1"
+  },
+  {
+    "path": "/C:/Projetos/Grimorio/grimorio-tracker/docs/afty-ficha-final.md",
+    "antes": "9a1bba3fad6ac9ec2a5377c244dd2c939014d07d62b016c22dfd8a724d1ffbe1",
+    "depois": "1102b4854584caeb598d971c9e58d5d60d53d5de148c53e9c3af532ed1c1744a"
+  },
+  {
+    "path": "/C:/Projetos/Grimorio/CONTINUIDADE-FICHA-FINAL.md",
+    "antes": "2a6fc7744d8bf022319b03fa770158f4d65ecaa349e3e4dede4bb2a82f0dcce1",
+    "depois": "5791884d5afa016ea58bebf2a46642175f64db428af441f2b048cb26dc377866"
+  },
+  {
+    "path": "/C:/Projetos/Grimorio/RETOMADA-CLAUDE-FICHA-FINAL.md",
+    "antes": "fa0e6657d81a7f215a80ab1d52c58b025bd746257d45d943a2c0683874800dc2",
+    "depois": "fc0a772472a8b6f4ff5db63da7630a061b917c7e6bbbdd16d298e53cc1cb8e2c"
+  },
+  {
+    "path": "/C:/Projetos/Grimorio/PROGRESSO-FICHA-FINAL.md",
+    "antes": "f321e8eeacdb7fdad7ed9948996520e04d5ab52da76f2694fc6e272f2116fb16",
+    "depois": "3fd60571305aaf928e84ce65c238991654046a79e976bec1139aaa0279080aa1"
+  },
+  {
+    "path": "/C:/Projetos/Grimorio/REVISAO-PREVIA-TRES-ABAS-20261021.md",
+    "antes": "ed9af9b08513055db3f90bea83dd7b73f17aff13bc73f36a7e89bc69d0182523",
+    "depois": "b1d0d2ce7cefdf4aa8427469fa8916bdfd863b2f51dd74797afcc23b16f05033"
+  },
+  {
+    "path": "/C:/Projetos/Grimorio/grimorio-tracker/.audit/previa-abas-g2-20261021/RELATORIO.md",
+    "antes": "0d7d13b4d331bc636824165f7b145a83fefcb5767967c08a52f04828a08813f7",
+    "depois": "012366d961d867804b948476144652376bf032ad780dd30f60ed37ccd3870acf"
+  }
+]

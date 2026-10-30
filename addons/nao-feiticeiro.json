@@ -1,11 +1,13 @@
 {
   "id": "nao-feiticeiro",
   "nome": "Não-Feiticeiro",
-  "versao": "1.1.0",
+  "versao": "1.2.0",
   "autor": "Templas",
   "paraRaw": "afty",
-  "descricao": "Regra Opcional do Livro Básico: o Não-Feiticeiro, o civil que nunca despertou e ainda assim luta contra as Maldições. Origem sem Energia Amaldiçoada com qualquer classe (Estamina, nenhuma Aptidão, nenhuma técnica), só as Especializações Combatente, Lutador e Suporte, nível máximo 10. Bônus em Atributo (+2 num Mental e +1 num Físico), as Artimanhas nos níveis 1, 5 e 10 (mais uma com o treino O Espírito Indomável do Ser Humano completo, do addon de mesmo nome) e a Vontade Indomável com contador. O Estilo Marcial e o Fundamento Marcial do Restringido são os Feitiços Passivo e Personalizado, abertos por este pacote (a mesma liberação do addon Estilo Marcial), até o Nível 2. A Arma Masterizada é escolhida no card de Dano. Precisa do app com os campos de origem `semEnergia`, `nivelMaximo`, `tetoNivelFeitico`, `concedeHabilidades` e `armaEscolhida` (2026-10-09).",
-  "libera": ["feiticosRestritos"],
+  "descricao": "Regra Opcional do Livro Básico: o Não-Feiticeiro, o civil que nunca despertou e ainda assim luta contra as Maldições. Origem sem Energia Amaldiçoada com qualquer classe (Estamina, nenhuma Aptidão, nenhuma técnica), só as Especializações Combatente, Lutador e Suporte, nível máximo 10. Bônus em Atributo (+2 num Mental e +1 num Físico), as Artimanhas nos níveis 1, 5 e 10 (mais uma com o treino O Espírito Indomável do Ser Humano completo, do addon de mesmo nome) e a Vontade Indomável com contador. O Estilo Marcial e o Fundamento Marcial do Restringido são o Estilo Marcial e as Técnicas Marciais nativos, abertos por este pacote pela liberação `tecnicasMarciais`, até o Nível 2. A Arma Masterizada é escolhida no card de Dano. Precisa do app com os campos de origem `semEnergia`, `nivelMaximo`, `tetoNivelFeitico`, `concedeHabilidades` e `armaEscolhida` (2026-10-09).",
+  "resumo": "Origem do civil que nunca despertou: sem energia, nível máximo 10 e as Artimanhas",
+  "categoria": "origens",
+  "libera": ["tecnicasMarciais"],
   "acrescenta": {
     "origens": [
       {
@@ -239,7 +241,7 @@
           {
             "id": "nf_estilo_marcial",
             "nome": "Estilo e Fundamento Marcial",
-            "descricao": "Um Não-Feiticeiro recebe um Estilo Marcial e um Fundamento Marcial de Restringido, porém pode apenas adquirir até o Nível 2 dessas Habilidades e não pode mudá-los ao elevar seu nível. [No Afty eles são Feitiços Passivo ou Personalizado, abertos por este pacote, até o Nível 2.]"
+            "descricao": "Um Não-Feiticeiro recebe um Estilo Marcial e um Fundamento Marcial de Restringido, porém pode apenas adquirir até o Nível 2 dessas Habilidades e não pode mudá-los ao elevar seu nível. [No Afty eles são o Estilo Marcial e as Técnicas Marciais, abertos por este pacote, até o Nível 2.]"
           }
         ]
       }

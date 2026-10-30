@@ -26,11 +26,12 @@
 
 import { normalizaConcedido, comConcessao, semConcessao } from "../afty-concessao";
 import { definirAcaoAddon, consumirAcoesAddon, encerrarAcoesAddon } from "../afty-acoes-addon";
+import { maximosRecursosNaSessao } from "../afty-addons";
 import {
   regrasDoTipoValor, ESTADOS_INVOCACAO, ESTADOS_TERMINAIS, ESTADOS_EM_CAMPO, estadoDaLinha,
   FONTE_PV_MECHA, entradaDeMesaDaHorda,
 } from "../afty-invocacoes-tipos";
-import { AFTY_TAMANHOS } from "../afty-schema";
+import { AFTY_TAMANHOS, AFTY_RESISTENCIAS } from "../afty-schema";
 import { normalizaAdaptacoes, avancarAdaptacoesNaRodada } from "../afty-adaptacao";
 import { avancaArmasTransformaveis } from "../afty-armas-transformaveis";
 import { ESTADO_APICE, RODADAS_APICE } from "../afty-talisma-apice";
@@ -48,6 +49,11 @@ import { normalizaDharma, avancarRodadaDharma } from "../afty-dharma";
 import { normalizaGungnir, avancarGungnir } from "../afty-gungnir";
 // As fases da Expansão no ar (2026-10-08). Módulo FOLHA, sem ciclo.
 import { FASES_DOMINIO } from "../afty-dominios";
+import { registrarQuedaEspecializacao, iniciarTurnoEspecializacao, encerrarTurnoEspecializacao,
+  novaRodadaEspecializacao } from "./ficha-especializacoes";
+// O nome da parte que expira de uma instância de pacote (PA-I3). Os três são FOLHA, sem ciclo.
+import { rotuloDoBeneficio } from "./pacotes-aliados";
+import { AFTY_PERICIAS } from "../afty-pericias-catalogo";
 
 const CHAVE_BASE = "fm_ficha_sessao_afty_v1";
 const LOG_MAX = 50;
@@ -116,6 +122,10 @@ export function sessaoEmBranco(derived = null) {
     rodada: 0,
     propriedadesArmas: normalizaPropriedadesArmas(),
     ataqueBasicoId: null, // Herda a escolha da ficha até ser trocada na mesa.
+    /* A arma de cada Técnica Marcial de Ataque (2026-10-27): `{ [feiticoId]: linhaId }`.
+       É escolha de mesa, e não de ficha: o derive entrega as linhas de TODAS as armas, e
+       quem sabe com qual se ataca agora é o jogador. */
+    armasDaTecnica: {},
     /* GUARDA INABALÁVEL: quantos golpes já desgastaram o bônus nesta rodada, e
        se ela foi encerrada antes da hora (Raio Negro ou uma das oito condições).
        O bônus corrente e a Vida não moram aqui: o bônus SAI dos golpes e a Vida
@@ -223,8 +233,7 @@ function almaLida(bruta, base, derived) {
   // sessão velha. O `almaMaxVisto` é gravado para os dois sistemas: quando a
   // regra da criatura for decidida, o número já estará lá e será verdadeiro.
   if (bruta.almaMaxVisto == null) {
-    const jogador = derived?.sistema === "player";
-    return { almaAtual: jogador ? almaMax : gravada, almaMaxVisto: almaMax };
+    return { almaAtual: almaEhPilha(derived) ? almaMax : gravada, almaMaxVisto: almaMax };
   }
   return {
     almaAtual: gravada,
@@ -261,6 +270,8 @@ export function normalizaSessao(bruta, derived = null) {
     rodada: Math.max(0, inteiro(bruta.rodada, 0)),
     propriedadesArmas: normalizaPropriedadesArmas(bruta.propriedadesArmas),
     ataqueBasicoId: ["corpo", "amaldicoado"].includes(bruta.ataqueBasicoId) ? bruta.ataqueBasicoId : null,
+    armasDaTecnica: bruta.armasDaTecnica && typeof bruta.armasDaTecnica === "object" && !Array.isArray(bruta.armasDaTecnica)
+      ? bruta.armasDaTecnica : {},
     guardaGolpes: Math.max(0, inteiro(bruta.guardaGolpes, 0)),
     guardaEncerrada: !!bruta.guardaEncerrada,
     combate: bruta.combate && typeof bruta.combate === "object" ? bruta.combate : {},
@@ -1071,7 +1082,7 @@ function avancaInvocacoesNaRodada(sessao, derived) {
  *     Maldição: "devem ser pagos no início do combate"), se o PE cobrir;
  *   - a contagem de rodadas do Corpo começa do zero.
  */
-function iniciaInvocacoesNoCombate(sessao, derived) {
+function iniciaInvocacoesNoCombate(sessao, derived, registro = null) {
   /* A CENA NOVA (2026-10-01, Etapa 9): a Quimera da cena e os líderes de Horda
      dissipada zeram, as componentes bloqueadas "durante a mesma cena" voltam, e a
      Quimera ou a Horda que acabaram na cena anterior podem ser formadas de novo. */
@@ -1093,7 +1104,9 @@ function iniciaInvocacoesNoCombate(sessao, derived) {
     const auto = (inv.opcoesDeUso ?? []).find((o) => o.id === "autonomia" && Number.isFinite(o.custo));
     const disponivel = Math.max(0, inteiro(out?.peAtual, 0)) + peTempTotal(out);
     if (auto && atual.opcoesDeEntrada?.autonomia && !atual.autonomia && auto.custo <= disponivel) {
+      const antesDePagar = out;
       out = gastaPe(out, auto.custo);
+      registro?.pagou.push({ id: `autonomia:${inv.id}`, nome: `Autonomia${inv.nome ? ` · ${inv.nome}` : ""}`, valor: auto.custo, ...divisaoDoPagamento(antesDePagar, out) });
       const opcoesDeEntrada = { ...atual.opcoesDeEntrada };
       delete opcoesDeEntrada.autonomia;
       Object.assign(parcial, {
@@ -1555,6 +1568,30 @@ export function drenaPeTemp(fontes, quanto) {
  * e quem gastou recebe de volta só a diferença. É o que separa "ganha metade do
  * BT toda rodada" de "acumula metade do BT toda rodada".
  */
+/**
+ * DE ONDE SAIU UM PAGAMENTO DE PE: a casca (por fonte, na ordem em que o `gastaPe` a drena) e a reserva. Compara o ANTES e o DEPOIS
+ * de UM pagamento, e é por isso que é exato: o registro da virada o chama em volta do passo que paga, e nunca sobre a rodada inteira
+ * (onde renovar 4 PE de casca e gastar 4 deixa saldo líquido zero e pareceria que nada foi cobrado).
+ */
+export function divisaoDoPagamento(antes, depois) {
+  const casca = {};
+  for (const [nome, v] of Object.entries(antes?.peTempFontes ?? {})) {
+    const d = v - (depois?.peTempFontes?.[nome] ?? 0);
+    if (d > 0) casca[nome] = d;
+  }
+  return { casca, reserva: Math.max(0, inteiro(antes?.peAtual, 0) - inteiro(depois?.peAtual, 0)) };
+}
+
+/** As fontes de PE temporário que UMA entrega subiu: `[{ chave, de, para }]`. A mesma fonte topa, então só sobe quem estava abaixo do teto. */
+function renovacoesDePe(antes, depois) {
+  const out = [];
+  for (const [chave, para] of Object.entries(depois?.peTempFontes ?? {})) {
+    const de = antes?.peTempFontes?.[chave] ?? 0;
+    if (para > de) out.push({ chave, de, para });
+  }
+  return out;
+}
+
 export function aplicaPeTemporario(sessao, entradas = []) {
   if (!entradas.length) return sessao;
   const fontes = { ...(sessao.peTempFontes ?? {}) };
@@ -1604,8 +1641,9 @@ export function gastaPe(sessao, quanto) {
 export function aparaSessao(sessao, derived) {
   const energiaEmVida = derived?.bloodfeast?.tem ? 3 : 0;
   const bloodfeastRegras = derived?.bloodfeast?.tem ? derived.bloodfeast.ids : [];
-  const hpMax = Math.max(0, derived?.hp ?? 0);
-  const peMax = Math.max(0, derived?.pe ?? 0);
+  const maximos = maximosRecursosNaSessao(derived, sessao.combate);
+  const hpMax = Math.max(0, maximos.hp);
+  const peMax = Math.max(0, maximos.pe);
   const almaMax = Math.max(0, derived?.almaMax ?? 100);
   /* ⚠ O MÁXIMO QUE SOBE LEVA A CORRENTE JUNTO, pela frase do livro citada no
      `almaMaxVisto` do `sessaoEmBranco`. A subida é SOMADA, e não usada para
@@ -1616,7 +1654,7 @@ export function aparaSessao(sessao, derived) {
      pelo autor, então ela segue exatamente como estava. O campo é gravado nos
      dois sistemas, para o dia dessa decisão chegar com o número certo em mão. */
   const visto = Math.max(0, inteiro(sessao.almaMaxVisto, almaMax));
-  const ganho = derived?.sistema === "player" ? Math.max(0, almaMax - visto) : 0;
+  const ganho = almaEhPilha(derived) ? Math.max(0, almaMax - visto) : 0;
   const hpAtual = entre(sessao.hpAtual, 0, hpMax);
   const peAtual = entre(sessao.peAtual, 0, peMax);
   const almaAtual = entre(sessao.almaAtual + ganho, 0, almaMax);
@@ -1779,7 +1817,7 @@ export function removeConcessao(sessao, uid) {
  * O PV TEMPORÁRIO come primeiro, e o que sobra desce no PV. É a regra da casca:
  * ela existe para ser gasta antes da vida.
  */
-export function aplicaDano(sessao, bruto) {
+export function aplicaDano(sessao, bruto, derived = null) {
   const dano = Math.max(0, inteiro(bruto, 0));
   if (!dano) return sessao;
   /* A casca vai primeiro, e a Guarda é a primeira dela (ver `drenaPvTemp`). É
@@ -1787,11 +1825,11 @@ export function aplicaDano(sessao, bruto) {
      passa a devolver `noAr: false` e o bônus some, sem flag nenhuma para manter
      em dia. */
   const { fontes, sobrou } = drenaPvTemp(sessao.pvTempFontes, dano);
-  return {
+  return registrarQuedaEspecializacao({
     ...sessao,
     pvTempFontes: fontes,
     hpAtual: Math.max(0, sessao.hpAtual - sobrou),
-  };
+  }, derived, Math.max(0, sobrou - sessao.hpAtual));
 }
 
 /**
@@ -1879,7 +1917,9 @@ export function aplicaCura(sessao, bruto, hpMax, { externa = false } = {}) {
   if (externa && sessao.energiaEmVida) return sessao;
   const cura = Math.max(0, inteiro(bruto, 0));
   if (!cura) return sessao;
-  return { ...sessao, hpAtual: entre(sessao.hpAtual + cura, 0, Math.max(0, hpMax)) };
+  return { ...sessao, hpAtual: entre(sessao.hpAtual + cura, 0, Math.max(0, hpMax)),
+    ...(sessao.especializacaoSessao ? { especializacaoSessao: { ...sessao.especializacaoSessao,
+      pvNegativos: 0, modoMorte: null, quedaPendente: false, cairNoProximoDano: false } } : {}) };
 }
 
 /* ============================================================ */
@@ -1899,6 +1939,14 @@ export function aplicaCura(sessao, bruto, hpMax, { externa = false } = {}) {
    Descontar o PV corrente na criatura cobraria a mesma perda duas vezes, uma no
    multiplicador e outra aqui. */
 
+/* ⚠ QUEM RESPONDE É O REGIME DA ALMA, e não o sistema (2026-10-12). O jogador
+   com o verbo `almaComoAfty` tem a Alma da criatura, e perguntar
+   `sistema === "player"` descontaria a Vida duas vezes nele. O `?? sistema`
+   cobre derivado montado à mão, sem o campo. */
+function almaEhPilha(derived) {
+  return derived?.almaPilha ?? derived?.sistema === "player";
+}
+
 /**
  * Dano na Alma: no jogador, encolhe a Alma e a Vida juntas.
  *
@@ -1916,7 +1964,7 @@ export function aplicaDanoNaAlma(sessao, bruto, derived) {
   const dano = Math.max(0, inteiro(bruto, 0));
   if (!dano) return sessao;
   const almaAtual = Math.max(0, sessao.almaAtual - dano);
-  if (derived?.sistema !== "player") return { ...sessao, almaAtual };
+  if (!almaEhPilha(derived)) return { ...sessao, almaAtual };
   return { ...sessao, almaAtual, hpAtual: Math.max(0, sessao.hpAtual - dano) };
 }
 
@@ -2152,12 +2200,52 @@ function cenaNovaDoGolpe(sessao) {
  * que some sem aviso é buff que o jogador continua contando na cabeça).
  */
 export function proximaRodada(sessao, derived = null, { preservarTurnoArmas = false } = {}) {
+  // Na ficha individual, avançar a rodada encerra o turno e inicia o próximo.
+  // No encontro, cada turno é encaminhado pelo controlador de iniciativa.
+  if (!preservarTurnoArmas) sessao = encerrarTurnoEspecializacao(sessao, derived);
   const expirou = [];
+  /* ⚠ O REGISTRO DA VIRADA (2026-10-17). A renovação da casca de PE e o pagamento da manutenção são FATOS SEPARADOS, e quem
+     os infere comparando o saldo de antes com o de depois erra justamente no caso comum: renovar 4 PE temporários e pagar 4 de
+     manutenção deixa saldo líquido ZERO, e a nota diria "nada cobrado". Aqui cada um é anotado NO PONTO EM QUE ACONTECE, com o
+     antes e o depois do próprio passo. É observabilidade pura: nenhum valor, ordem ou cobrança mudou, e o retorno só ganhou o
+     campo `registro`.
+       renovou        `[{ chave, de, para }]`  a casca que a virada entregou (a mesma fonte topa, e não soma)
+       pagou          `[{ id, nome, valor, casca, reserva }]`  o que a virada cobrou de PE (a manutenção do Invencível sob o Sol, e a
+                      Autonomia ao começar a cena), e de onde saiu
+       encerrou       `[{ id, nome, motivo }]`  o estado que a virada desligou (foraDeCombate, quartaRodada, semEnergia, desligadoAMao)
+       exaustaoGanha  a Exaustão que a virada entregou (a pendente do Invencível) */
+  const registro = { renovou: [], pagou: [], encerrou: [], exaustaoGanha: 0 };
+  const renova = (s, entradas) => {
+    const depois = aplicaPeTemporario(s, entradas);
+    registro.renovou.push(...renovacoesDePe(s, depois));
+    return depois;
+  };
+  const nomeDoAlvoDaParte = (tipo, id) => (tipo === "pericia" ? AFTY_PERICIAS.find((p) => p.id === id)?.nome
+    : tipo === "tr" ? AFTY_RESISTENCIAS.find((r) => r.value === id)?.label : null) ?? null;
+  /* O registro recebido (`rec`) não tem `nome` no topo: o aviso usa o da opção, e não "undefined". */
+  const comNome = (item) => (item.rec && !item.nome ? { ...item, nome: item.origemNome } : item);
   const desce = (item) => {
     if (item.rodadas == null) return item;              // sem duração, fica
     const restam = item.rodadas - 1;
-    if (restam <= 0) { expirou.push(item); return null; }
+    if (restam <= 0) { expirou.push(comNome(item)); return null; }
     return { ...item, rodadas: restam };
+  };
+  /* ⚠ PRAZO POR BENEFÍCIO (PA-I3, 2026-10-20, autor: "cada benefício termina no próprio prazo"). A instância de um pacote cujo benefício tem
+     `rodadas` próprias: cada um desce sozinho e sai quando zera, sem levar os outros (o de um ataque fica até o jogador encerrar). A instância sai
+     quando não sobra benefício. A parte que sai vai para `expirou` com o nome do benefício, para o aviso dizer o que acabou. */
+  const desceBuff = (item) => {
+    const bens = Array.isArray(item?.beneficios) ? item.beneficios : [];
+    if (!item?.rec || !bens.some((b) => b?.rodadas != null)) return desce(item);
+    const ficam = [];
+    const saem = [];
+    for (const b of bens) {
+      if (b?.rodadas == null) { ficam.push(b); continue; }
+      if (b.rodadas - 1 <= 0) saem.push(b);
+      else ficam.push({ ...b, rodadas: b.rodadas - 1 });
+    }
+    if (!ficam.length) { expirou.push(comNome(item)); return null; }
+    if (saem.length) expirou.push({ ...item, nome: `${item.origemNome} (${saem.map((b) => rotuloDoBeneficio(b, nomeDoAlvoDaParte)).join(", ")})`, beneficios: saem });
+    return desce({ ...item, beneficios: ficam });
   };
   /* ⚠ A casca de PE do gatilho `rodada` volta ao teto AQUI, e não soma: ver
      `aplicaPeTemporario`. Sem `derived` nada acontece, que é o mesmo cuidado do
@@ -2173,7 +2261,7 @@ export function proximaRodada(sessao, derived = null, { preservarTurnoArmas = fa
     rodada: sessao.rodada + 1,
     gungnir: sessao.rodada === 0 ? normalizaGungnir() : avancarGungnir(sessao.gungnir),
     combate: expirarEstadosDaRodada(sessao.combate, derived),
-    buffs: sessao.buffs.map(desce).filter(Boolean),
+    buffs: sessao.buffs.map(desceBuff).filter(Boolean),
     condicoes: sessao.condicoes.map(desce).filter(Boolean),
   });
   /* ⚠ SAIR DA RODADA 0 É COMEÇAR A CENA, e por isso a casca de `combate` entra
@@ -2182,14 +2270,14 @@ export function proximaRodada(sessao, derived = null, { preservarTurnoArmas = fa
      de Controle de Energia 2ª ("quando uma cena de combate iniciar") nunca
      chegariam a quem joga pela Ficha, só a quem joga pela aba de Encontros. */
   const comCena = sessao.rodada === 0
-    ? aplicaPeTemporario(cenaNovaDoGolpe(base), derived?.peTemporario?.combate ?? [])
+    ? renova(cenaNovaDoGolpe(base), derived?.peTemporario?.combate ?? [])
     : base;
   /* ⚠ A GUARDA VOLTA CHEIA AQUI, as duas metades (autor, 2026-08-26). E a
      renovação vem DEPOIS do `desce` das condições: a condição que expirou nesta
      virada já saiu da lista, então a Guarda dela volta agora, e não só na
      rodada seguinte. */
   const comGuarda = renovaGuarda(
-    aplicaPeTemporario(comCena, derived?.peTemporario?.rodada ?? []),
+    renova(comCena, derived?.peTemporario?.rodada ?? []),
     derived,
   );
   const comDharma = sessao.rodada > 0 ? avancarRodadaDharma(comGuarda, derived) : comGuarda;
@@ -2201,16 +2289,26 @@ export function proximaRodada(sessao, derived = null, { preservarTurnoArmas = fa
      (a Autonomia de quem já estava em campo, a contagem do Corpo do zero), e as
      outras viradas contam a duração do Corpo. */
   const comInvocacoes = sessao.rodada === 0
-    ? iniciaInvocacoesNoCombate(comPreparo, derived)
+    ? iniciaInvocacoesNoCombate(comPreparo, derived, registro)
     : avancaInvocacoesNaRodada(comPreparo, derived);
-  let proxima = rodadaBloodfeast(avancaTalismaApice(avancaInvencivelSobOSol(comInvocacoes, derived)), derived);
+  let proxima = rodadaBloodfeast(avancaTalismaApice(avancaInvencivelSobOSol(comInvocacoes, derived, registro)), derived);
   if (derived?.bloodfeast?.tem && derived.bloodfeast.ids.includes("regeneracao") && sessao.hpAtual < derived.hp / 2) {
     const r = rolarDano(preparaRolagemCura({ tipo: "dano", rotulo: "Regeneração Constante", dados: 2, faces: 8, fixo: derived.bloodfeast.modCon, tom: "cura" }, derived.efeitos));
     proxima = aplicaCura(registraRolagem(proxima, r), r.total, derived.hp);
   }
   proxima = consumirAcoesAddon(proxima, (derived?.acoesAddon ?? [])
     .filter((a) => a.tipo === "disparo").map((a) => a.estado));
-  return { sessao: proxima, expirou };
+  proxima = novaRodadaEspecializacao(proxima, { expirarSurto: sessao.rodada > 0 });
+  if (!preservarTurnoArmas) proxima = iniciarTurnoEspecializacao(proxima, derived);
+  return { sessao: proxima, expirou, registro };
+}
+
+export function iniciaTurnoFicha(sessao, derived, rng = Math.random) {
+  return iniciarTurnoEspecializacao(iniciaTurnoArmas(sessao), derived, rng);
+}
+
+export function encerraTurnoFicha(sessao, derived, rng = Math.random) {
+  return encerrarTurnoEspecializacao(sessao, derived, rng);
 }
 
 /* O Talismã do Ápice desligado, com o contador zerado. */
@@ -2230,7 +2328,7 @@ function avancaTalismaApice(sessao) {
 }
 
 /** Fecha a rodada do Ápice, entrega a Exaustão e paga a próxima se continuar. */
-function avancaInvencivelSobOSol(sessao, derived) {
+function avancaInvencivelSobOSol(sessao, derived, registro = null) {
   const combate = sessao.combate ?? {};
   const exaustao = Math.max(0, inteiro(sessao.exaustao, 0))
     + (combate.invencivelPendenteExaustao ? 1 : 0);
@@ -2239,13 +2337,22 @@ function avancaInvencivelSobOSol(sessao, derived) {
     combate: { ...combate, invencivelSobOSol: false,
       invencivelRodadas: 0, invencivelPendenteExaustao: false },
   });
+  /* O registro da virada (ver `proximaRodada`): a Exaustão que este passo entrega e o porquê de ele desligar o estado. */
+  if (registro && combate.invencivelPendenteExaustao) registro.exaustaoGanha += 1;
   if (!combate.ativo || !combate.invencivelSobOSol
     || inteiro(combate.invencivelRodadas, 0) >= 4
     || Math.max(0, inteiro(sessao.peAtual, 0)) + peTempTotal(sessao) < 4) {
-    return combate.invencivelPendenteExaustao || combate.invencivelSobOSol
-      ? encerrar() : sessao;
+    const desliga = combate.invencivelPendenteExaustao || combate.invencivelSobOSol;
+    if (registro && desliga) {
+      registro.encerrou.push({
+        id: "invencivelSobOSol", nome: "Invencível sob o Sol",
+        motivo: !combate.invencivelSobOSol ? "desligadoAMao" : !combate.ativo ? "foraDeCombate" : inteiro(combate.invencivelRodadas, 0) >= 4 ? "quartaRodada" : "semEnergia",
+      });
+    }
+    return desliga ? encerrar() : sessao;
   }
   const pago = gastaPe(sessao, 4);
+  registro?.pagou.push({ id: "invencivelSobOSol", nome: "Invencível sob o Sol", valor: 4, ...divisaoDoPagamento(sessao, pago) });
   const pvTerra = Math.max(0, inteiro(derived?.nd, 0));
   const fonteTerra = "Invencível sob o Sol · Postura da Terra";
   return {
@@ -2301,6 +2408,7 @@ export function descansar(sessao, derived, { marioneteId = null } = {}) {
   const mesa = separaMecha(sessao);
   return {
     ...sessao,
+    especializacaoSessao: {},
     dharma: normalizaDharma(),
     gungnir: normalizaGungnir(),
     energiaEmVida: derived?.bloodfeast?.tem ? 3 : 0,
@@ -2313,10 +2421,10 @@ export function descansar(sessao, derived, { marioneteId = null } = {}) {
     exaustao: Math.max(0, inteiro(sessao.exaustao, 0))
       + (sessao.combate?.invencivelPendenteExaustao ? 1 : 0),
     // A Expansão no ar fecha sem Exaustão: o descanso devolve tudo.
-    combate: expirarEstadosDaRodada(semApice({
+    combate: expirarEstadosDaRodada(semAmpliacoesRecursos(semApice({
       ...(encerraExpansao(sessao, "descanso").combate ?? {}), invencivelSobOSol: false,
       invencivelRodadas: 0, invencivelPendenteExaustao: false,
-    }), derived, { descanso: true }),
+    }), derived), derived, { descanso: true }),
     exaustaoTecnica: null,
     rodada: 0,
     propriedadesArmas: iniciaTurnoArmas(sessao, { novaRodada: true }).propriedadesArmas,
@@ -2350,7 +2458,9 @@ export function descansar(sessao, derived, { marioneteId = null } = {}) {
        A casca da Postura do Céu morre com a cena, como as de PV e PE. */
     preparoAtual: null,
     preparoTemp: 0,
-    buffs: sessao.buffs.filter((b) => b.rodadas == null),
+    /* O descanso fecha a cena: sai o buff com rodadas e a instância de um Pacote para Aliados que não é permanente (`terminaNoDescanso`,
+       ficha/pacotes-aliados.js). A opção continua na biblioteca do personagem, e nada volta ligado sozinho. */
+    buffs: sessao.buffs.filter((b) => b.rodadas == null && !b.terminaNoDescanso),
     condicoes: sessao.condicoes
       .filter((c) => c.rodadas == null)
       .filter((c) => c.id !== CHAVE_CONDICAO_RITUAL_ESTENDIDO),
@@ -2803,6 +2913,7 @@ export function estadoUsadoNestaRodada(sessao, id) {
  */
 export function alteraEstadoCombate(sessao, estado, valor, derived = null) {
   if (!estado?.id) return sessao;
+  if (estado.id === "ataqueFurtivo" && valor && sessao.usos?.["turno:res_ataque_furtivo"]) return sessao;
   /* O SELETOR DA EXPANSÃO NA ABA BUFFS passa pelas mesmas funções da linha da
      Expansão (Etapa 9): abrir paga o PE, fechar cobra a Exaustão de Técnica.
      Sem o derive (quem chama sem ele não sabe o custo), fica o comportamento
@@ -2817,6 +2928,14 @@ export function alteraEstadoCombate(sessao, estado, valor, derived = null) {
   }
   const combate = sessao?.combate && typeof sessao.combate === "object" ? sessao.combate : {};
   const ativando = !!valor && !combate[estado.id];
+  if (ativando && ["espiritoDeLuta", "espiritoIncansavel"].includes(estado.id) && derived) {
+    const ctx = derived.contextoDsl ?? {};
+    const incansavel = estado.id === "espiritoIncansavel" || combate.espiritoIncansavel;
+    const pv = incansavel ? (ctx.escala_ataque ?? 0) + (derived.maestria ?? 0)
+      + Math.max(derived.mods?.forca ?? 0, derived.mods?.destreza ?? 0) + 5 : derived.nd;
+    return { ...sessao, combate: { ...combate, [estado.id]: valor },
+      pvTempFontes: { ...sessao.pvTempFontes, "Espírito de Luta": Math.max(sessao.pvTempFontes?.["Espírito de Luta"] ?? 0, pv) } };
+  }
   if (estado.id === "invencivelSobOSol") {
     if (ativando) {
       if (!combate.ativo || Math.max(0, inteiro(sessao.peAtual, 0)) + peTempTotal(sessao) < 4) {
@@ -2848,6 +2967,29 @@ export function alteraEstadoCombate(sessao, estado, valor, derived = null) {
   const desligados = ativando && Array.isArray(estado.exclusivoCom)
     ? Object.fromEntries(estado.exclusivoCom.map((id) => [id, false]))
     : {};
+  if (estado.ampliaRecursos) {
+    const estados = derived?.recursosAmpliados?.estados ?? [];
+    if (ativando && (!combate.ativo || !estados.some((e) => e.id === estado.id))) return sessao;
+    if (!!valor === !!combate[estado.id]) return sessao;
+    const proximo = { ...combate, ...desligados, [estado.id]: !!valor };
+    // Guarda apenas os ids para encerrar junto do combate, inclusive depois
+    // de salvar e recarregar a sessão, sem depender do catálogo daquele momento.
+    proximo.ampliacoesRecursosAtivas = [...new Set([
+      ...(Array.isArray(combate.ampliacoesRecursosAtivas) ? combate.ampliacoesRecursosAtivas : []),
+      estado.id,
+    ])].filter((id) => proximo[id]);
+    const antes = maximosRecursosNaSessao(derived, combate);
+    const depois = maximosRecursosNaSessao(derived, proximo);
+    return {
+      ...sessao,
+      combate: proximo,
+      hpAtual: entre(sessao.hpAtual + (ativando ? Math.max(0, depois.hp - antes.hp) : 0), 0, Math.max(0, depois.hp)),
+      peAtual: entre(sessao.peAtual + (ativando ? Math.max(0, depois.pe - antes.pe) : 0), 0, Math.max(0, depois.pe)),
+      usos: ativando && estado.umaVezPorRodada
+        ? { ...(sessao.usos || {}), [chaveUsoEstado(estado.id)]: sessao.rodada }
+        : sessao.usos,
+    };
+  }
   return {
     ...sessao,
     combate: { ...combate, ...desligados, [estado.id]: valor },
@@ -2921,6 +3063,15 @@ function alteraDominioDoEstilo(sessao, combate, estado, valor) {
   return sessao;
 }
 
+function semAmpliacoesRecursos(combate, derived = null) {
+  const ids = [...new Set([
+    ...(Array.isArray(combate?.ampliacoesRecursosAtivas) ? combate.ampliacoesRecursosAtivas : []),
+    ...(derived?.recursosAmpliados?.estados ?? []).map((e) => e.id),
+  ])];
+  if (!ids.length) return combate;
+  return { ...combate, ...Object.fromEntries(ids.map((id) => [id, false])), ampliacoesRecursosAtivas: [] };
+}
+
 /** A mudança de combate encerra o Ápice e cobra a Exaustão da rodada aberta. */
 export function aplicaPatchCombate(sessao, parcial) {
   if (parcial?.ativo === false) sessao = { ...sessao, gungnir: normalizaGungnir() };
@@ -2935,8 +3086,8 @@ export function aplicaPatchCombate(sessao, parcial) {
     ...sessao,
     exaustao: Math.max(0, inteiro(sessao.exaustao, 0))
       + (combate.invencivelPendenteExaustao ? 1 : 0),
-    combate: semApice({ ...combate, invencivelSobOSol: false,
-      invencivelRodadas: 0, invencivelPendenteExaustao: false }),
+    combate: semAmpliacoesRecursos(semApice({ ...combate, invencivelSobOSol: false,
+      invencivelRodadas: 0, invencivelPendenteExaustao: false })),
   };
 }
 

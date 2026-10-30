@@ -37,16 +37,28 @@ import { organizarLista, tiposPresentes, vizinhoNaLista } from "../afty-lista-la
  *   onNova         nulo some com o botão (a ficha que perdeu o acesso só lê)
  *   rotuloNovo, rotuloBusca, rotuloVazio
  *   children       o editor
+ *
+ * Opções que a aba de Addons acrescentou (2026-10-29), todas com padrão que não
+ * muda Feitiços nem Invocações:
+ *   textoDeBusca   (item) => texto que a busca varre, no lugar do nome
+ *   filtros        [{ id, rotulo, curto, aplica(item) }], chips ao lado dos de Tipo
+ *   destaqueDe     (item) => boolean, o primeiro grupo da lista
+ *   rotuloDestaque cabeçalho desse grupo
+ *   ordens         [{ value, label }], no lugar de Criação, Nome e Nível
+ *   rotuloTipo     "Tipo" por padrão, nos títulos dos botões
  * ============================================================
  */
 export default function ListaLateral({
   itens, tipos = [], IconeTipo = null, rotuloNivel = "Nível",
   selecionadoId, onSelecionar, renderItem,
   onNova = null, rotuloNovo, rotuloBusca, rotuloVazio,
+  textoDeBusca = null, filtros = [], destaqueDe = null, rotuloDestaque = "Em Destaque",
+  ordens = null, rotuloTipo = "Tipo",
   children,
 }) {
   const [termo, setTermo] = useState("");
   const [tiposAtivos, setTiposAtivos] = useState([]);
+  const [filtrosAtivos, setFiltrosAtivos] = useState([]);
   const [ordem, setOrdem] = useState("criacao");
   const [agrupar, setAgrupar] = useState(true);
   const [aberta, setAberta] = useState(false);
@@ -56,8 +68,12 @@ export default function ListaLateral({
   /* Um filtro ligado num Tipo que deixou de existir na ficha esconderia tudo sem
      chip nenhum aceso para desligar. Só vale o que ainda tem item. */
   const ativosValidos = tiposAtivos.filter((t) => presentes.some((p) => p.value === t));
-  const { grupos, visiveis, total } = organizarLista(itens, { termo, tiposAtivos: ativosValidos, ordem, agrupar, tipos });
-  const filtrando = termo.trim() !== "" || ativosValidos.length > 0;
+  const filtrosVivos = filtros.filter((f) => filtrosAtivos.includes(f.id));
+  const { grupos, visiveis, total } = organizarLista(itens, {
+    termo, tiposAtivos: ativosValidos, ordem, agrupar, tipos,
+    textoDe: textoDeBusca, predicados: filtrosVivos.map((f) => f.aplica), destaqueDe, rotuloDestaque,
+  });
+  const filtrando = termo.trim() !== "" || ativosValidos.length > 0 || filtrosVivos.length > 0;
   const selecionado = itens.find((i) => i.id === selecionadoId) ?? null;
 
   const lista = useRef(null);
@@ -79,6 +95,8 @@ export default function ListaLateral({
     onSelecionar(id);
     setAberta(false);
   };
+  const alternarFiltro = (id) =>
+    setFiltrosAtivos((atual) => (atual.includes(id) ? atual.filter((f) => f !== id) : [...atual, id]));
   const alternarTipo = (value) =>
     setTiposAtivos((atual) => (atual.includes(value) ? atual.filter((t) => t !== value) : [...atual, value]));
   const naSeta = (ev) => {
@@ -90,7 +108,7 @@ export default function ListaLateral({
     linhas.current.get(proximo)?.focus({ preventScroll: true });
   };
 
-  const ORDENS = [
+  const ORDENS = ordens ?? [
     { value: "criacao", label: "Criação" },
     { value: "nome", label: "Nome" },
     { value: "nivel", label: rotuloNivel },
@@ -166,6 +184,25 @@ export default function ListaLateral({
 
           {/* ===== Filtro por Tipo, ordem e grupos ===== */}
           <div className="flex flex-wrap items-center gap-1 px-2 py-1.5 border-b border-slate-800">
+            {filtros.map((f) => {
+              const ligado = filtrosAtivos.includes(f.id);
+              return (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => alternarFiltro(f.id)}
+                  aria-pressed={ligado}
+                  title={f.rotulo}
+                  className={`h-6 min-w-6 px-1.5 inline-flex items-center justify-center rounded border text-[10px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500 ${
+                    ligado
+                      ? "bg-purple-700 border-purple-600 text-white"
+                      : "border-slate-700 text-slate-400 hover:text-white hover:border-slate-600"
+                  }`}
+                >
+                  {f.curto ?? f.rotulo}
+                </button>
+              );
+            })}
             {presentes.length > 1 && presentes.map((t) => {
               const ligado = ativosValidos.includes(t.value);
               return (
@@ -199,8 +236,8 @@ export default function ListaLateral({
                 type="button"
                 onClick={() => setAgrupar((a) => !a)}
                 aria-pressed={agrupar}
-                title="Agrupar por Tipo"
-                aria-label="Agrupar por Tipo"
+                title={`Agrupar por ${rotuloTipo}`}
+                aria-label={`Agrupar por ${rotuloTipo}`}
                 className={`w-6 h-6 flex items-center justify-center rounded border transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500 ${
                   agrupar
                     ? "bg-purple-700 border-purple-600 text-white"

@@ -1,0 +1,53 @@
+{
+  "geradoEm": "2026-10-20T20:49:31.766Z",
+  "base": "http://127.0.0.1:5321",
+  "etapas": [
+    {
+      "nome": "cabeçalho",
+      "checks": [
+        {
+          "id": "minamoto-768-sem-sangria",
+          "ok": true,
+          "dados": {
+            "total": 243,
+            "placa": 157,
+            "ident": 48,
+            "recursos": 53,
+            "faixa": 70,
+            "stats": 21,
+            "agora": 44,
+            "nome": 24,
+            "nomeCortado": false,
+            "vh": 900,
+            "medidores": 4,
+            "sangra": 0
+          }
+        },
+        {
+          "id": "minamoto-1024-sem-sangria",
+          "ok": true,
+          "dados": {
+            "total": 221,
+            "placa": 157,
+            "ident": 50,
+            "recursos": 53,
+            "faixa": 48,
+            "stats": 26,
+            "agora": 44,
+            "nome": 26,
+            "nomeCortado": false,
+            "vh": 900,
+            "medidores": 4,
+            "sangra": 0
+          }
+        }
+      ],
+      "erros": [],
+      "observado": {}
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "cabeçalho: 2/2"
+  ]
+}

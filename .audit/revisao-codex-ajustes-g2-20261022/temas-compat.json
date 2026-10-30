@@ -1,0 +1,232 @@
+{
+  "geradoEm": "2026-10-22T18:39:30.164Z",
+  "base": "http://127.0.0.1:5330",
+  "etapas": [
+    {
+      "nome": "tema escuro",
+      "checks": [
+        {
+          "id": "texto com contraste AA (4,5) nos presets",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "acoes": {
+          "nome": 16.76,
+          "meta": 7.16,
+          "estado": 7.16,
+          "numero": 7.16,
+          "motivo": 10.39,
+          "rotulo": 6.07
+        },
+        "pericias": {
+          "nome": 7.16,
+          "meta": 7.16,
+          "numero": 14.2,
+          "chip": 7.16,
+          "rotulo": 6.07
+        },
+        "equipamentos": {
+          "nome": 16.76,
+          "meta": 7.16
+        }
+      }
+    },
+    {
+      "nome": "tema claro",
+      "checks": [
+        {
+          "id": "texto com contraste AA (4,5) nos presets",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "acoes": {
+          "nome": 13.87,
+          "meta": 5.82,
+          "estado": 5.82,
+          "numero": 5.82,
+          "motivo": 8.87,
+          "rotulo": 5.09
+        },
+        "pericias": {
+          "nome": 5.82,
+          "meta": 5.82,
+          "numero": 12.11,
+          "chip": 5.82,
+          "rotulo": 5.09
+        },
+        "equipamentos": {
+          "nome": 13.87,
+          "meta": 5.82
+        }
+      }
+    },
+    {
+      "nome": "tema minamoto",
+      "checks": [
+        {
+          "id": "texto com contraste AA (4,5) nos presets",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "acoes": {
+          "nome": 11.56,
+          "meta": 6.04,
+          "estado": 6.82,
+          "numero": 7.45,
+          "motivo": 8.23,
+          "rotulo": 5.33
+        },
+        "pericias": {
+          "nome": 6.45,
+          "meta": 6.45,
+          "numero": 7.45,
+          "chip": 6.04,
+          "rotulo": 5.69
+        },
+        "equipamentos": {
+          "nome": 12.35,
+          "meta": 6.45
+        }
+      }
+    },
+    {
+      "nome": "tema css",
+      "checks": [
+        {
+          "id": "o CSS do usuário alcança o número pelo gancho `.afty-valor`",
+          "ok": true,
+          "dados": "rgb(34, 211, 238)"
+        },
+        {
+          "id": "e a seção pelo gancho `.afty-card`",
+          "ok": true,
+          "dados": "rgb(225, 29, 72)"
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "acoes": {
+          "nome": 16.76,
+          "meta": 7.16,
+          "estado": 7.16,
+          "numero": 8.61,
+          "motivo": 10.39,
+          "rotulo": 6.07
+        },
+        "pericias": {
+          "nome": 7.16,
+          "meta": 7.16,
+          "numero": 8.61,
+          "chip": 7.16,
+          "rotulo": 6.07
+        },
+        "equipamentos": {
+          "nome": 16.76,
+          "meta": 7.16
+        }
+      }
+    },
+    {
+      "nome": "compatibilidade classica",
+      "checks": [
+        {
+          "id": "as abas novas não aparecem",
+          "ok": true
+        },
+        {
+          "id": "a aba Ações de sempre aparece (seção Dano da clássica)",
+          "ok": true
+        },
+        {
+          "id": "o painel de fontes abre no hover como sempre",
+          "ok": true
+        },
+        {
+          "id": "o clique rola como sempre",
+          "ok": true
+        },
+        {
+          "id": "trocar de aba desmonta a anterior (uma aba por vez)",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "compatibilidade g2-sem-previa",
+      "checks": [
+        {
+          "id": "as abas novas não aparecem",
+          "ok": true
+        },
+        {
+          "id": "a aba Ações de sempre aparece (seção Dano da clássica)",
+          "ok": true
+        },
+        {
+          "id": "o painel de fontes abre no hover como sempre",
+          "ok": true
+        },
+        {
+          "id": "o clique rola como sempre",
+          "ok": true
+        },
+        {
+          "id": "trocar de aba desmonta a anterior (uma aba por vez)",
+          "ok": true
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "tema escuro: 2/2",
+    "tema claro: 2/2",
+    "tema minamoto: 2/2",
+    "tema css: 3/3",
+    "compatibilidade classica: 6/6",
+    "compatibilidade g2-sem-previa: 6/6"
+  ]
+}

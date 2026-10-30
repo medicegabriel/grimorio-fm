@@ -1,0 +1,44 @@
+[
+  {
+    "name": "t-g2-fonte-compat",
+    "exit": 0,
+    "ms": 1245,
+    "output": "TODOS OS 52 ASSERTS PASSARAM\n"
+  },
+  {
+    "name": "t-g2-desempenho",
+    "exit": 0,
+    "ms": 1180,
+    "output": "TODOS OS 30 ASSERTS PASSARAM\n"
+  },
+  {
+    "name": "t-g2-preferencias",
+    "exit": 0,
+    "ms": 299,
+    "output": "TODOS OS 42 ASSERTS PASSARAM\n"
+  },
+  {
+    "name": "t-g2-sessao-operacoes",
+    "exit": 0,
+    "ms": 359,
+    "output": "TODOS OS 51 ASSERTS PASSARAM\n"
+  },
+  {
+    "name": "t-g2-virada-registro",
+    "exit": 0,
+    "ms": 349,
+    "output": "TODOS OS 57 ASSERTS PASSARAM\n"
+  },
+  {
+    "name": "t-ordem-modulos",
+    "exit": 0,
+    "ms": 1381,
+    "output": "TODOS OS 36 ASSERTS PASSARAM\n"
+  },
+  {
+    "name": "t-revisao-g00",
+    "exit": 0,
+    "ms": 1405,
+    "output": "TODOS OS 35 ASSERTS PASSARAM\n"
+  }
+]

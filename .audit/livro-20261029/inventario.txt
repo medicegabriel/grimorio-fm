@@ -1,0 +1,23 @@
+habilidades: 361
+talentos: 52
+aptidoes: 85
+origens: 9
+inato | Inato | efeitos=2 
+  marca_registrada: A redução de 1 PE espera o motor de Feitiços ler o Motor de Automação.
+derivado | Derivado | efeitos=1 
+  energia_antinatural: A recuperação de PE (2× Maestria, uma vez por dia) é procedimento de mesa.
+herdado | Herdado | efeitos=0 
+restringido | Restringido | efeitos=1 
+  resiliencia_imediata: mesa
+feto_amaldicoado_hibrido | Feto Amaldiçoado Híbrido | efeitos=0 
+  heranca_maldita: mesa
+  vigor_maldito: mesa
+sem_tecnica | Sem Técnica | efeitos=3 
+corpo_amaldicoado_mutante | Corpo Amaldiçoado Mutante | efeitos=0 
+maldicao | Maldição | efeitos=2 
+  existencia_metafisica: mesa
+gemeos | Gêmeos | efeitos=16 
+  restricao_celestial_restringido_morto: A arma da alma do irmão e a característica Vingativo resolvem na mesa
+  resiliencia_imediata: mesa
+clas: 4
+anatomias: 15

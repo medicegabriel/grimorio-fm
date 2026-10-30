@@ -3,7 +3,9 @@
   "nome": "Ciclo de Adaptação do Mahoraga",
   "versao": "1.0.0",
   "autor": "Afty",
-  "descricao": "Roda de adaptação progressiva por rodada.",
+  "descricao": "Roda de adaptação progressiva do Mahoraga, que avança a cada rodada.",
+  "resumo": "Roda de adaptação do Mahoraga, que avança a cada rodada",
+  "categoria": "tecnicas",
   "paraRaw": "afty",
   "permite": [
     "adaptacao"

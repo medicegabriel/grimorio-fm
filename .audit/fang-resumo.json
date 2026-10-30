@@ -1,0 +1,1546 @@
+{
+  "nome": "Fang Yuan - Restringido",
+  "habilidades": {
+    "escolhidas": [
+      "res_pinaculo_fisico",
+      "res_forca_imparavel",
+      "res_cacador_de_feiticeiros",
+      "res_reacao_rapida",
+      "res_instintos_agucados",
+      "res_foco_no_inimigo",
+      "res_precisao_forcada",
+      "res_roubo_de_habilidade",
+      "res_respeito_celeste",
+      "res_perceber_o_ar",
+      "res_ainda_de_pe",
+      "res_rejeitar_a_morte",
+      "res_mesmo_morto",
+      "res_adrenalina_absoluta",
+      "res_barreira_inamovivel",
+      "res_imitacao",
+      "res_tecnicas_de_memorizacao",
+      "res_imitacao_perfeita",
+      "res_ataque_extra",
+      "res_corpo_de_aco",
+      "res_surto_de_adrenalina",
+      "res_resiliencia_pela_adrenalina",
+      "res_adrenalina_intensificadora",
+      "res_restrito_pelos_ceus",
+      "res_ataque_furtivo",
+      "res_versatilidade",
+      "res_esquiva_sobre_humana",
+      "res_implemento_celeste",
+      "res_restricao_definitiva",
+      "res_libertacao_do_destino"
+    ],
+    "selecionadas": [
+      "res_pinaculo_fisico",
+      "res_forca_imparavel",
+      "res_cacador_de_feiticeiros",
+      "res_reacao_rapida",
+      "res_instintos_agucados",
+      "res_foco_no_inimigo",
+      "res_precisao_forcada",
+      "res_roubo_de_habilidade",
+      "res_respeito_celeste",
+      "res_perceber_o_ar",
+      "res_ainda_de_pe",
+      "res_rejeitar_a_morte",
+      "res_mesmo_morto",
+      "res_adrenalina_absoluta",
+      "res_barreira_inamovivel",
+      "res_imitacao",
+      "res_tecnicas_de_memorizacao",
+      "res_imitacao_perfeita",
+      "res_ataque_extra",
+      "res_corpo_de_aco",
+      "res_surto_de_adrenalina",
+      "res_resiliencia_pela_adrenalina",
+      "res_adrenalina_intensificadora"
+    ],
+    "efetivas": [
+      "res_pinaculo_fisico",
+      "res_forca_imparavel",
+      "res_cacador_de_feiticeiros",
+      "res_reacao_rapida",
+      "res_instintos_agucados",
+      "res_foco_no_inimigo",
+      "res_precisao_forcada",
+      "res_roubo_de_habilidade",
+      "res_respeito_celeste",
+      "res_perceber_o_ar",
+      "res_ainda_de_pe",
+      "res_rejeitar_a_morte",
+      "res_mesmo_morto",
+      "res_adrenalina_absoluta",
+      "res_barreira_inamovivel",
+      "res_imitacao",
+      "res_tecnicas_de_memorizacao",
+      "res_imitacao_perfeita",
+      "res_ataque_extra",
+      "res_corpo_de_aco",
+      "res_surto_de_adrenalina",
+      "res_resiliencia_pela_adrenalina",
+      "res_adrenalina_intensificadora",
+      "res_restrito_pelos_ceus",
+      "res_ataque_furtivo",
+      "res_versatilidade",
+      "res_esquiva_sobre_humana",
+      "res_implemento_celeste",
+      "res_restricao_definitiva",
+      "res_libertacao_do_destino",
+      "lut_corpo_supremo",
+      "cmb_surto_de_acao",
+      "lut_corpo_calejado",
+      "cmb_guarda_estudada",
+      "cmb_especialista_em_escudo",
+      "cmb_espirito_de_luta",
+      "cmb_espirito_incansavel"
+    ],
+    "roubadas": [
+      "lut_corpo_supremo",
+      "cmb_surto_de_acao",
+      "lut_corpo_calejado",
+      "cmb_guarda_estudada",
+      "cmb_especialista_em_escudo",
+      "cmb_espirito_de_luta",
+      "cmb_espirito_incansavel"
+    ],
+    "nivelPorHabilidade": {
+      "lut_corpo_supremo": 30,
+      "cmb_surto_de_acao": 30,
+      "lut_corpo_calejado": 30,
+      "cmb_guarda_estudada": 30,
+      "cmb_especialista_em_escudo": 30,
+      "cmb_espirito_de_luta": 30,
+      "cmb_espirito_incansavel": 30
+    },
+    "contextosPorHabilidade": {
+      "lut_corpo_supremo": {
+        "esc_lutador": 30,
+        "esc_combatente": 30,
+        "nivel_lutador": 30,
+        "nivel_combatente": 30
+      },
+      "cmb_surto_de_acao": {
+        "esc_lutador": 30,
+        "esc_combatente": 30,
+        "nivel_lutador": 30,
+        "nivel_combatente": 30
+      },
+      "lut_corpo_calejado": {
+        "esc_lutador": 30,
+        "esc_combatente": 30,
+        "nivel_lutador": 30,
+        "nivel_combatente": 30
+      },
+      "cmb_guarda_estudada": {
+        "esc_lutador": 30,
+        "esc_combatente": 30,
+        "nivel_lutador": 30,
+        "nivel_combatente": 30
+      },
+      "cmb_especialista_em_escudo": {
+        "esc_lutador": 30,
+        "esc_combatente": 30,
+        "nivel_lutador": 30,
+        "nivel_combatente": 30
+      },
+      "cmb_espirito_de_luta": {
+        "esc_lutador": 30,
+        "esc_combatente": 30,
+        "nivel_lutador": 30,
+        "nivel_combatente": 30
+      },
+      "cmb_espirito_incansavel": {
+        "esc_lutador": 30,
+        "esc_combatente": 30,
+        "nivel_lutador": 30,
+        "nivel_combatente": 30
+      }
+    },
+    "concedidas": [
+      "res_restrito_pelos_ceus",
+      "res_ataque_furtivo",
+      "res_versatilidade",
+      "res_esquiva_sobre_humana",
+      "res_implemento_celeste",
+      "res_restricao_definitiva",
+      "res_libertacao_do_destino"
+    ],
+    "vetadas": [],
+    "vezes": {
+      "res_pinaculo_fisico": 1,
+      "res_forca_imparavel": 1,
+      "res_cacador_de_feiticeiros": 1,
+      "res_reacao_rapida": 1,
+      "res_instintos_agucados": 1,
+      "res_foco_no_inimigo": 1,
+      "res_precisao_forcada": 1,
+      "res_roubo_de_habilidade": 1,
+      "res_respeito_celeste": 2,
+      "res_perceber_o_ar": 1,
+      "res_ainda_de_pe": 1,
+      "res_rejeitar_a_morte": 1,
+      "res_mesmo_morto": 1,
+      "res_adrenalina_absoluta": 1,
+      "res_barreira_inamovivel": 1,
+      "res_imitacao": 1,
+      "res_tecnicas_de_memorizacao": 1,
+      "res_imitacao_perfeita": 1,
+      "res_ataque_extra": 1,
+      "res_corpo_de_aco": 1,
+      "res_surto_de_adrenalina": 1,
+      "res_resiliencia_pela_adrenalina": 1,
+      "res_adrenalina_intensificadora": 1,
+      "res_restrito_pelos_ceus": 1,
+      "res_ataque_furtivo": 1,
+      "res_versatilidade": 1,
+      "res_esquiva_sobre_humana": 1,
+      "res_implemento_celeste": 1,
+      "res_restricao_definitiva": 1,
+      "res_libertacao_do_destino": 1
+    },
+    "maxVezes": {
+      "res_pinaculo_fisico": 1,
+      "res_forca_imparavel": 1,
+      "res_cacador_de_feiticeiros": 1,
+      "res_reacao_rapida": 1,
+      "res_instintos_agucados": 1,
+      "res_foco_no_inimigo": 1,
+      "res_precisao_forcada": 1,
+      "res_roubo_de_habilidade": 1,
+      "res_respeito_celeste": 2,
+      "res_perceber_o_ar": 1,
+      "res_ainda_de_pe": 1,
+      "res_rejeitar_a_morte": 1,
+      "res_mesmo_morto": 1,
+      "res_adrenalina_absoluta": 1,
+      "res_barreira_inamovivel": 1,
+      "res_imitacao": 1,
+      "res_tecnicas_de_memorizacao": 1,
+      "res_imitacao_perfeita": 1,
+      "res_ataque_extra": 1,
+      "res_corpo_de_aco": 1,
+      "res_surto_de_adrenalina": 1,
+      "res_resiliencia_pela_adrenalina": 1,
+      "res_adrenalina_intensificadora": 1,
+      "res_restrito_pelos_ceus": 1,
+      "res_ataque_furtivo": 1,
+      "res_versatilidade": 1,
+      "res_esquiva_sobre_humana": 1,
+      "res_implemento_celeste": 1,
+      "res_restricao_definitiva": 1,
+      "res_libertacao_do_destino": 1
+    },
+    "escolhas": {
+      "porHab": {
+        "res_pinaculo_fisico": {
+          "opcoes": [
+            "res_pinaculo_destreza",
+            "res_pinaculo_constituicao"
+          ],
+          "allowance": 2,
+          "repetivel": false,
+          "excedeu": false,
+          "vagasMotor": 0,
+          "bloqueadas": [],
+          "abaixoDoNivel": []
+        },
+        "res_forca_imparavel": {
+          "opcoes": [
+            "res_imparavel_astucia",
+            "res_imparavel_integridade"
+          ],
+          "allowance": 2,
+          "repetivel": false,
+          "excedeu": false,
+          "vagasMotor": 0,
+          "bloqueadas": [],
+          "abaixoDoNivel": []
+        },
+        "res_roubo_de_habilidade": {
+          "opcoes": [
+            "lut_corpo_supremo",
+            "cmb_surto_de_acao",
+            "lut_corpo_calejado",
+            "cmb_guarda_estudada",
+            "cmb_especialista_em_escudo",
+            "cmb_espirito_de_luta",
+            "cmb_espirito_incansavel"
+          ],
+          "allowance": 8,
+          "repetivel": true,
+          "excedeu": false,
+          "vagasMotor": 0,
+          "bloqueadas": [],
+          "abaixoDoNivel": []
+        },
+        "res_restrito_pelos_ceus": {
+          "opcoes": [
+            "res_dadiva_vigor_infindavel",
+            "res_dadiva_mente_afiada",
+            "res_dadiva_percepcao_agucada",
+            "res_dadiva_fisico_robusto",
+            "res_dadiva_agilidade_exima",
+            "res_dadiva_indulgente_a_feiticaria",
+            "res_dadiva_semblante_cativante",
+            "res_dadiva_forca_devastadora"
+          ],
+          "allowance": 8,
+          "repetivel": false,
+          "excedeu": false,
+          "vagasMotor": 1,
+          "bloqueadas": [],
+          "abaixoDoNivel": []
+        },
+        "res_libertacao_do_destino": {
+          "opcoes": [],
+          "allowance": 1,
+          "repetivel": false,
+          "excedeu": false,
+          "vagasMotor": 0,
+          "bloqueadas": [],
+          "abaixoDoNivel": []
+        },
+        "lut_corpo_supremo": {
+          "opcoes": [],
+          "allowance": 1,
+          "repetivel": false,
+          "excedeu": false,
+          "vagasMotor": 0,
+          "bloqueadas": [],
+          "abaixoDoNivel": []
+        },
+        "cmb_guarda_estudada": {
+          "opcoes": [],
+          "allowance": 1,
+          "repetivel": false,
+          "excedeu": false,
+          "vagasMotor": 0,
+          "bloqueadas": [],
+          "abaixoDoNivel": []
+        }
+      },
+      "mapa": {
+        "res_pinaculo_fisico": [
+          "res_pinaculo_destreza",
+          "res_pinaculo_constituicao"
+        ],
+        "res_forca_imparavel": [
+          "res_imparavel_astucia",
+          "res_imparavel_integridade"
+        ],
+        "res_roubo_de_habilidade": [
+          "lut_corpo_supremo",
+          "cmb_surto_de_acao",
+          "lut_corpo_calejado",
+          "cmb_guarda_estudada",
+          "cmb_especialista_em_escudo",
+          "cmb_espirito_de_luta",
+          "cmb_espirito_incansavel"
+        ],
+        "res_restrito_pelos_ceus": [
+          "res_dadiva_vigor_infindavel",
+          "res_dadiva_mente_afiada",
+          "res_dadiva_percepcao_agucada",
+          "res_dadiva_fisico_robusto",
+          "res_dadiva_agilidade_exima",
+          "res_dadiva_indulgente_a_feiticaria",
+          "res_dadiva_semblante_cativante",
+          "res_dadiva_forca_devastadora"
+        ],
+        "res_libertacao_do_destino": [],
+        "lut_corpo_supremo": [],
+        "cmb_guarda_estudada": []
+      },
+      "vagasExtras": 6
+    },
+    "talentosGastos": 14,
+    "gastosHabilidade": 30,
+    "total": 49,
+    "comum": 38,
+    "exclusivasTalento": 11,
+    "exclusivasUsadas": 11,
+    "gastos": 44,
+    "gastosNoComum": 33,
+    "restante": 5,
+    "excedeu": false,
+    "inacessiveis": [],
+    "niveisPorEspec": {
+      "restringido": 30
+    },
+    "niveisPorEfeito": {
+      "restringido": 30
+    },
+    "almaLivre": null
+  },
+  "especializacoes": {
+    "escolhidas": [
+      {
+        "id": "restringido",
+        "nivel": 30,
+        "nivelEscalonamento": 30
+      }
+    ],
+    "total": 30,
+    "max": 3,
+    "obrigatoria": null,
+    "completa": true,
+    "erro": null,
+    "semRequisito": []
+  },
+  "ctx": {
+    "nivel_feitico_max": 5,
+    "constituicao": 30,
+    "mod_constituicao": 10,
+    "surto_adrenalina": 1,
+    "adrenalina_absoluta": 1,
+    "adrenalina_atletismo": 8,
+    "cacador_feiticeiros": 7,
+    "corpo_de_aco": 3,
+    "nivel_lutador": 0,
+    "esc_lutador": 0,
+    "nivel_combatente": 0,
+    "esc_combatente": 0,
+    "nivel_conjurador": 0,
+    "esc_conjurador": 0,
+    "nivel_suporte": 0,
+    "esc_suporte": 0,
+    "nivel_controlador": 0,
+    "esc_controlador": 0,
+    "nivel_restringido": 30,
+    "esc_restringido": 30
+  },
+  "combate": {
+    "empolgacao": 1,
+    "insistenciaUsada": false,
+    "manobraAjuste": false,
+    "manobraDesarme": false,
+    "manobraEsquiva": false,
+    "manobraTrabalhoDePes": false,
+    "manobraFinalizadora": null,
+    "circularAlvos": 1,
+    "umComArma": false,
+    "brutalidade": false,
+    "brutalidadePE": 0,
+    "brutalidadePilha": 0,
+    "ataqueInconsequente": false,
+    "impactoMisto": false,
+    "resistirPE": 0,
+    "furiaVinganca": false,
+    "imprudenciaMotivadora": false,
+    "machucado": false,
+    "abates": 0,
+    "armasAbsolutas": null,
+    "invencivelSobOSol": false,
+    "postura": null,
+    "postura2": null,
+    "devastacaoPilha": 0,
+    "golpeAtroz": false,
+    "golpeLetal": false,
+    "golpePenetrante": false,
+    "golpeLongo": false,
+    "golpeDesfocado": 0,
+    "golpePreciso": false,
+    "arteExecucaoSilenciosa": false,
+    "arteGolpeDescendente": false,
+    "espiritoDeLuta": true,
+    "espiritoIncansavel": true,
+    "precisaoPE": 0,
+    "precisaoModo": null,
+    "arsenalCiclico": false,
+    "arremessosPotentes": false,
+    "pistoleiroEmperrar": 0,
+    "duelando": false,
+    "ataqueConcentrado": 0,
+    "lutandoComDuasArmas": false,
+    "potenciaConcentrada": false,
+    "fluxoInvencivel": true,
+    "surtoAdrenalina": true,
+    "adrenalinaAbsoluta": true,
+    "adrenalinaAtletismo": 8,
+    "ataqueFurtivo": false,
+    "furtivoGarantido": false,
+    "focoInimigo": true,
+    "cacadorFeiticeiros": 7,
+    "golpeImpactante": false,
+    "conhecimentoAplicado": 0,
+    "mentePlacida": 0,
+    "duasArmas": false,
+    "adeptoFeiticariaReducoesUsadas": 0,
+    "tempestadeIdeiasUsos": 0,
+    "corpoDeAco": 3,
+    "auraExcessiva": false,
+    "cobrirSePE": 0,
+    "estimuloTeste": 0,
+    "estimuloEmpurrao": false,
+    "fluxoPER": 0,
+    "dominioAtivo": null,
+    "regeneracaoPE": 0,
+    "h-corp:zodiaco": false,
+    "talentos-h-corp:zodiaco": false,
+    "aliados_escolhidos": [],
+    "aliados_analista": null,
+    "aliados_protetor": null,
+    "aliados_assassino": null,
+    "aliados_golpe_assassino": false,
+    "aliados_combatente": null,
+    "aliados_golpe_combatente": false,
+    "aliados_disparador": null,
+    "aliados_golpe_disparador": false,
+    "aliados_elementalista": null,
+    "aliados_golpe_elementalista": false,
+    "aliados_auxiliar": null,
+    "aliados_auxiliar_pericias": [],
+    "aliados_medico": null,
+    "alma_info": false,
+    "comidas_refeicoes": [
+      "revigorante",
+      "refrescante",
+      "reforcada",
+      "picante",
+      "nutritiva",
+      "leve",
+      "energetica"
+    ],
+    "comidas_grau": "especial",
+    "comidas_bt": 8,
+    "armeiro_melhorias": [
+      "arma",
+      "escudo"
+    ],
+    "armeiro_bt": 8,
+    "ativo": true,
+    "empolgacaoMax": 5,
+    "estadosExtras": [
+      {
+        "id": "h-corp:zodiaco",
+        "label": "Zodíaco",
+        "tipo": "bool",
+        "title": "Uma vez por cena, como Ação Livre, por três rodadas",
+        "requerEscolha": [
+          "hcorp_zodiaco_rato",
+          "hcorp_zodiaco_boi",
+          "hcorp_zodiaco_tigre",
+          "hcorp_zodiaco_coelho",
+          "hcorp_zodiaco_dragao",
+          "hcorp_zodiaco_serpente",
+          "hcorp_zodiaco_cavalo",
+          "hcorp_zodiaco_cabra",
+          "hcorp_zodiaco_macaco",
+          "hcorp_zodiaco_galo",
+          "hcorp_zodiaco_cao",
+          "hcorp_zodiaco_porco"
+        ],
+        "dono": {
+          "id": "addon:h-corp",
+          "label": "H Corp"
+        }
+      },
+      {
+        "id": "talentos-h-corp:zodiaco",
+        "label": "Zodíaco",
+        "tipo": "bool",
+        "title": "Uma vez por cena, como Ação Livre, por três rodadas",
+        "requerEscolha": [
+          "hct_zodiaco_rato",
+          "hct_zodiaco_boi",
+          "hct_zodiaco_tigre",
+          "hct_zodiaco_coelho",
+          "hct_zodiaco_dragao",
+          "hct_zodiaco_serpente",
+          "hct_zodiaco_cavalo",
+          "hct_zodiaco_cabra",
+          "hct_zodiaco_macaco",
+          "hct_zodiaco_galo",
+          "hct_zodiaco_cao",
+          "hct_zodiaco_porco"
+        ],
+        "dono": {
+          "id": "addon:talentos-h-corp",
+          "label": "Talentos da H Corp"
+        }
+      },
+      {
+        "id": "aliados_escolhidos",
+        "label": "Aliados",
+        "tipo": "multi",
+        "maxSelecionados": 3,
+        "title": "Os aliados que acompanham esta criatura. Quarto Grau não pode ter aliados, Terceiro e Segundo podem ter um, Primeiro pode ter dois, Grau Especial pode ter três. A graduação de cada um aparece depois de escolhido.",
+        "opcoes": [
+          {
+            "id": "analista",
+            "label": "Analista"
+          },
+          {
+            "id": "protetor",
+            "label": "Protetor"
+          },
+          {
+            "id": "assassino",
+            "label": "Assassino"
+          },
+          {
+            "id": "combatente",
+            "label": "Combatente"
+          },
+          {
+            "id": "disparador",
+            "label": "Disparador"
+          },
+          {
+            "id": "elementalista",
+            "label": "Elementalista"
+          },
+          {
+            "id": "auxiliar",
+            "label": "Auxiliar"
+          },
+          {
+            "id": "medico",
+            "label": "Médico"
+          }
+        ],
+        "dono": {
+          "id": "outros",
+          "label": "Outros"
+        }
+      },
+      {
+        "id": "aliados_analista",
+        "label": "Analista",
+        "tipo": "opcao",
+        "requerEstado": "aliados_escolhidos",
+        "requerOpcao": "analista",
+        "title": "Focado em analisar os inimigos e encontrar pontos fracos. Iniciante: +2 em rolagens de dano. Veterano: +1 em acerto e +3 em dano. Mestre: +2 em acerto e +4 em dano. Passivo.",
+        "opcoes": [
+          {
+            "id": "iniciante",
+            "label": "Iniciante",
+            "title": "+2 em rolagens de dano."
+          },
+          {
+            "id": "veterano",
+            "label": "Veterano",
+            "title": "+1 em acerto e +3 em dano."
+          },
+          {
+            "id": "mestre",
+            "label": "Mestre",
+            "title": "+2 em acerto e +4 em dano."
+          }
+        ],
+        "dono": {
+          "id": "outros",
+          "label": "Outros"
+        }
+      },
+      {
+        "id": "aliados_protetor",
+        "label": "Protetor",
+        "tipo": "opcao",
+        "requerEstado": "aliados_escolhidos",
+        "requerOpcao": "protetor",
+        "title": "Preparado para proteger e diminuir a chance de que alguém seja acertado. Iniciante: +2 na Defesa. Veterano: +3 na Defesa e +1 em testes de resistência. Mestre: +3 na Defesa e +2 em testes de resistência. Passivo.",
+        "opcoes": [
+          {
+            "id": "iniciante",
+            "label": "Iniciante",
+            "title": "+2 na Defesa."
+          },
+          {
+            "id": "veterano",
+            "label": "Veterano",
+            "title": "+3 na Defesa e +1 em TR."
+          },
+          {
+            "id": "mestre",
+            "label": "Mestre",
+            "title": "+3 na Defesa e +2 em TR."
+          }
+        ],
+        "dono": {
+          "id": "outros",
+          "label": "Outros"
+        }
+      },
+      {
+        "id": "aliados_assassino",
+        "label": "Assassino",
+        "tipo": "opcao",
+        "requerEstado": "aliados_escolhidos",
+        "requerOpcao": "assassino",
+        "title": "Foca em furtividade e letalidade. Permite utilizar o Ataque Furtivo com 1d6, cumulativo com a habilidade. Veterano: benefícios de flanco contra inimigo adjacente, de mesa. Mestre: o Ataque Furtivo passa a 2d6. Ligue 'Golpe da rodada' no ataque que o furtivo acertou.",
+        "opcoes": [
+          {
+            "id": "iniciante",
+            "label": "Iniciante",
+            "title": "Ataque Furtivo 1d6."
+          },
+          {
+            "id": "veterano",
+            "label": "Veterano",
+            "title": "Ataque Furtivo 1d6 mais flanco contra adjacente, de mesa."
+          },
+          {
+            "id": "mestre",
+            "label": "Mestre",
+            "title": "Ataque Furtivo 2d6."
+          }
+        ],
+        "dono": {
+          "id": "outros",
+          "label": "Outros"
+        }
+      },
+      {
+        "id": "aliados_golpe_assassino",
+        "label": "Aliado · Assassino · Golpe da rodada",
+        "tipo": "bool",
+        "requerEstado": "aliados_assassino",
+        "title": "Ligue no ataque em que o Ataque Furtivo do Assassino acertou. Adiciona o dado (1d6 ou 2d6) na linha de dano. Desligue depois de aplicar.",
+        "dono": {
+          "id": "outros",
+          "label": "Outros"
+        }
+      },
+      {
+        "id": "aliados_combatente",
+        "label": "Combatente",
+        "tipo": "opcao",
+        "requerEstado": "aliados_escolhidos",
+        "requerOpcao": "combatente",
+        "title": "Armado e preparado para o combate corpo-a-corpo. Uma vez por rodada, dano adicional numa criatura em que você acerte um ataque corpo-a-corpo: Iniciante 1d8, Veterano 2d10, Mestre 3d12. Dano físico à escolha, Após Ataque. Ligue 'Golpe da rodada' no ataque.",
+        "opcoes": [
+          {
+            "id": "iniciante",
+            "label": "Iniciante",
+            "title": "1d8 Após Ataque, corpo-a-corpo."
+          },
+          {
+            "id": "veterano",
+            "label": "Veterano",
+            "title": "2d10 Após Ataque, corpo-a-corpo."
+          },
+          {
+            "id": "mestre",
+            "label": "Mestre",
+            "title": "3d12 Após Ataque, corpo-a-corpo."
+          }
+        ],
+        "dono": {
+          "id": "outros",
+          "label": "Outros"
+        }
+      },
+      {
+        "id": "aliados_golpe_combatente",
+        "label": "Aliado · Combatente · Golpe da rodada",
+        "tipo": "bool",
+        "requerEstado": "aliados_combatente",
+        "title": "Ligue no ataque corpo-a-corpo em que você acertou. Adiciona o dado (1d8 / 2d10 / 3d12) na linha de dano. Uma vez por rodada — desligue depois de aplicar.",
+        "dono": {
+          "id": "outros",
+          "label": "Outros"
+        }
+      },
+      {
+        "id": "aliados_disparador",
+        "label": "Disparador",
+        "tipo": "opcao",
+        "requerEstado": "aliados_escolhidos",
+        "requerOpcao": "disparador",
+        "title": "Especializado em combate a distância. Uma vez por rodada, dano adicional numa criatura em que você acerte um ataque a distância: Iniciante 1d8, Veterano 2d10, Mestre 3d12. Dano físico à escolha, Após Ataque. Ligue 'Golpe da rodada' no ataque.",
+        "opcoes": [
+          {
+            "id": "iniciante",
+            "label": "Iniciante",
+            "title": "1d8 Após Ataque, a distância."
+          },
+          {
+            "id": "veterano",
+            "label": "Veterano",
+            "title": "2d10 Após Ataque, a distância."
+          },
+          {
+            "id": "mestre",
+            "label": "Mestre",
+            "title": "3d12 Após Ataque, a distância."
+          }
+        ],
+        "dono": {
+          "id": "outros",
+          "label": "Outros"
+        }
+      },
+      {
+        "id": "aliados_golpe_disparador",
+        "label": "Aliado · Disparador · Golpe da rodada",
+        "tipo": "bool",
+        "requerEstado": "aliados_disparador",
+        "title": "Ligue no ataque a distância em que você acertou. Adiciona o dado (1d8 / 2d10 / 3d12) na linha de dano. Uma vez por rodada — desligue depois de aplicar.",
+        "dono": {
+          "id": "outros",
+          "label": "Outros"
+        }
+      },
+      {
+        "id": "aliados_elementalista",
+        "label": "Elementalista",
+        "tipo": "opcao",
+        "requerEstado": "aliados_escolhidos",
+        "requerOpcao": "elementalista",
+        "title": "Versado em técnicas com elementos. Uma vez por rodada, gaste PE ou estamina, de mesa, para dano adicional num alvo a até 9 m em que acerte um Feitiço ou técnica marcial: Iniciante 1 PE dá 1d10, Veterano 3 PE dá 3d10, Mestre 4 PE dá 5d12. Tipo elemental à escolha, Após Ataque. Com vários ataques, só no primeiro. Ligue 'Golpe da rodada'.",
+        "opcoes": [
+          {
+            "id": "iniciante",
+            "label": "Iniciante",
+            "title": "1d10 adicional, custo 1 PE."
+          },
+          {
+            "id": "veterano",
+            "label": "Veterano",
+            "title": "3d10 adicional, custo 3 PE."
+          },
+          {
+            "id": "mestre",
+            "label": "Mestre",
+            "title": "5d12 adicional, custo 4 PE."
+          }
+        ],
+        "dono": {
+          "id": "outros",
+          "label": "Outros"
+        }
+      },
+      {
+        "id": "aliados_golpe_elementalista",
+        "label": "Aliado · Elementalista · Golpe da rodada",
+        "tipo": "bool",
+        "requerEstado": "aliados_elementalista",
+        "title": "Ligue no ataque de Feitiço/técnica marcial em que você acertou. Adiciona o dado (1d10 / 3d10 / 5d12) na linha de dano. Uma vez por rodada, só no primeiro ataque — desligue depois de aplicar.",
+        "dono": {
+          "id": "outros",
+          "label": "Outros"
+        }
+      },
+      {
+        "id": "aliados_auxiliar",
+        "label": "Auxiliar",
+        "tipo": "opcao",
+        "requerEstado": "aliados_escolhidos",
+        "requerOpcao": "auxiliar",
+        "title": "Foco em auxiliar em todas as perícias. Iniciante: +2 em duas perícias. Veterano: +2 em três. Mestre: +2 em quatro. Marque as perícias na linha de baixo, respeitando o limite da graduação.",
+        "opcoes": [
+          {
+            "id": "iniciante",
+            "label": "Iniciante",
+            "title": "+2 em 2 perícias à escolha."
+          },
+          {
+            "id": "veterano",
+            "label": "Veterano",
+            "title": "+2 em 3 perícias à escolha."
+          },
+          {
+            "id": "mestre",
+            "label": "Mestre",
+            "title": "+2 em 4 perícias à escolha."
+          }
+        ],
+        "dono": {
+          "id": "outros",
+          "label": "Outros"
+        }
+      },
+      {
+        "id": "aliados_auxiliar_pericias",
+        "label": "Auxiliar · Perícias (+2)",
+        "tipo": "multi",
+        "requerEstado": "aliados_auxiliar",
+        "maxSelecionados": 4,
+        "title": "As perícias que o Auxiliar reforça em +2. Marque 2 no Iniciante, 3 no Veterano ou 4 no Mestre. O motor não checa a graduação, respeite o limite.",
+        "opcoes": [
+          {
+            "id": "acrobacia",
+            "label": "Acrobacia"
+          },
+          {
+            "id": "atletismo",
+            "label": "Atletismo"
+          },
+          {
+            "id": "direcao",
+            "label": "Direção"
+          },
+          {
+            "id": "enganacao",
+            "label": "Enganação"
+          },
+          {
+            "id": "feiticaria",
+            "label": "Feitiçaria"
+          },
+          {
+            "id": "furtividade",
+            "label": "Furtividade"
+          },
+          {
+            "id": "historia",
+            "label": "História"
+          },
+          {
+            "id": "intimidacao",
+            "label": "Intimidação"
+          },
+          {
+            "id": "intuicao",
+            "label": "Intuição"
+          },
+          {
+            "id": "investigacao",
+            "label": "Investigação"
+          },
+          {
+            "id": "medicina",
+            "label": "Medicina"
+          },
+          {
+            "id": "ocultismo",
+            "label": "Ocultismo"
+          },
+          {
+            "id": "oficio",
+            "label": "Ofício"
+          },
+          {
+            "id": "percepcao",
+            "label": "Percepção"
+          },
+          {
+            "id": "performance",
+            "label": "Performance"
+          },
+          {
+            "id": "persuasao",
+            "label": "Persuasão"
+          },
+          {
+            "id": "prestidigitacao",
+            "label": "Prestidigitação"
+          },
+          {
+            "id": "sobrevivencia",
+            "label": "Sobrevivência"
+          },
+          {
+            "id": "tecnologia",
+            "label": "Tecnologia"
+          },
+          {
+            "id": "teologia",
+            "label": "Teologia"
+          }
+        ],
+        "dono": {
+          "id": "outros",
+          "label": "Outros"
+        }
+      },
+      {
+        "id": "aliados_medico",
+        "label": "Médico (referência)",
+        "tipo": "opcao",
+        "requerEstado": "aliados_escolhidos",
+        "requerOpcao": "medico",
+        "title": "Uma vez por rodada, como Ação Bônus, gaste PE ou estamina para se curar ou curar criatura adjacente: Iniciante 1 PE dá 2d6+4, Veterano 3 PE dá 3d10+8 ou remove condição prejudicial de nível forte ou inferior, Mestre 5 PE dá 5d10+12. Referência: a cura é rolada na mesa, o motor não aplica.",
+        "opcoes": [
+          {
+            "id": "iniciante",
+            "label": "Iniciante",
+            "title": "1 PE, 2d6+4 de cura."
+          },
+          {
+            "id": "veterano",
+            "label": "Veterano",
+            "title": "3 PE, 3d10+8 de cura ou remover uma condição forte ou inferior."
+          },
+          {
+            "id": "mestre",
+            "label": "Mestre",
+            "title": "5 PE, 5d10+12 de cura."
+          }
+        ],
+        "dono": {
+          "id": "outros",
+          "label": "Outros"
+        }
+      },
+      {
+        "id": "alma_info",
+        "label": "Estados da Alma (referência)",
+        "tipo": "bool",
+        "title": "REFERÊNCIA — o que o motor não aplica sozinho, por Estado: Danificado (<75%) custo de energia/estamina das habilidades +2. Instável (<50%) custo +3, condição Exposto. Crítico (<25%) custo +5, desvantagem em tudo, condições Exposto + Fragilizado. Em 0% de Integridade: morte. Os -3/-6/-8 em Perícia, TR e Acerto já entram sozinhos, sem precisar deste interruptor.",
+        "dono": {
+          "id": "outros",
+          "label": "Outros"
+        }
+      },
+      {
+        "id": "comidas_refeicoes",
+        "label": "Refeições consumidas",
+        "tipo": "multi",
+        "maxSelecionados": 7,
+        "title": "As refeições das Ferramentas de Cozinheiro que esta criatura consumiu. Produzir cada uma exige Ofício (Cozinheiro) CD 15, mais 5 por benefício adicional. Duram até o próximo descanso longo. Ligue Em Combate na bancada para os efeitos entrarem, e informe o Grau e o Bônus de Treinamento do cozinheiro, que valem para todas as refeições.",
+        "opcoes": [
+          {
+            "id": "energetica",
+            "label": "Energética",
+            "title": "Energia amaldiçoada temporária igual ao Bônus de Treinamento do cozinheiro. Ligado pelo motor."
+          },
+          {
+            "id": "leve",
+            "label": "Leve",
+            "title": "Deslocamento +3 m por Grau do cozinheiro: 3 no Quarto, 6 no Terceiro, 9 no Segundo, 12 no Primeiro e 15 no Especial. Ligado pelo motor."
+          },
+          {
+            "id": "nutritiva",
+            "label": "Nutritiva",
+            "title": "+2 em um número de Testes de Resistência igual à metade do Bônus de Treinamento do cozinheiro. Limitada por usos, controlada na mesa."
+          },
+          {
+            "id": "picante",
+            "label": "Picante",
+            "title": "+2 em jogadas de ataque. Ligado pelo motor."
+          },
+          {
+            "id": "reforcada",
+            "label": "Reforçada",
+            "title": "+2 na Defesa. Ligado pelo motor."
+          },
+          {
+            "id": "refrescante",
+            "label": "Refrescante",
+            "title": "Um teste com vantagem, e o benefício se encerra. Aplicado na mesa."
+          },
+          {
+            "id": "revigorante",
+            "label": "Revigorante",
+            "title": "5 PV temporários por Grau do cozinheiro: 5 no Quarto, 10 no Terceiro, 15 no Segundo, 20 no Primeiro e 25 no Especial. Ligado pelo motor."
+          }
+        ],
+        "dono": {
+          "id": "interludio",
+          "label": "Interlúdio"
+        }
+      },
+      {
+        "id": "comidas_grau",
+        "label": "Comidas · Grau do cozinheiro",
+        "tipo": "opcao",
+        "requerEstado": "comidas_refeicoes",
+        "title": "O grau do cozinheiro que preparou as refeições. Vale para todas. A Leve soma 3 m de Deslocamento por grau e a Revigorante soma 5 PV temporários por grau. Sem escolha, o grau sai do Nível de Maestria.",
+        "opcoes": [
+          {
+            "id": "quarto",
+            "label": "Quarto",
+            "title": "Leve +3 m, Revigorante 5 PV temporários."
+          },
+          {
+            "id": "terceiro",
+            "label": "Terceiro",
+            "title": "Leve +6 m, Revigorante 10 PV temporários."
+          },
+          {
+            "id": "segundo",
+            "label": "Segundo",
+            "title": "Leve +9 m, Revigorante 15 PV temporários."
+          },
+          {
+            "id": "primeiro",
+            "label": "Primeiro",
+            "title": "Leve +12 m, Revigorante 20 PV temporários."
+          },
+          {
+            "id": "especial",
+            "label": "Especial",
+            "title": "Leve +15 m, Revigorante 25 PV temporários."
+          }
+        ],
+        "dono": {
+          "id": "interludio",
+          "label": "Interlúdio"
+        }
+      },
+      {
+        "id": "comidas_bt",
+        "label": "Comidas · Bônus de Treinamento do cozinheiro",
+        "tipo": "faixa",
+        "requerEstado": "comidas_refeicoes",
+        "min": 0,
+        "max": 8,
+        "passo": 1,
+        "title": "Bônus de Treinamento do cozinheiro. A Energética dá este valor em PE temporário, e a Nutritiva usa a metade dele como número de Testes de Resistência, controlado na mesa.",
+        "dono": {
+          "id": "interludio",
+          "label": "Interlúdio"
+        }
+      },
+      {
+        "id": "armeiro_melhorias",
+        "label": "Ferreiro",
+        "tipo": "multi",
+        "maxSelecionados": 2,
+        "title": "As melhorias que um personagem treinado em ferramentas de ferreiro fez nos seus equipamentos. Duram até o próximo descanso. Informe o Bônus de Treinamento do ferreiro na linha de baixo.",
+        "opcoes": [
+          {
+            "id": "arma",
+            "label": "Arma melhorada",
+            "title": "+2 em jogadas de ataque realizadas com ela."
+          },
+          {
+            "id": "escudo",
+            "label": "Escudo melhorado",
+            "title": "Soma metade do Bônus de Treinamento do ferreiro na RD concedida enquanto empunhado."
+          }
+        ],
+        "dono": {
+          "id": "interludio",
+          "label": "Interlúdio"
+        }
+      },
+      {
+        "id": "armeiro_bt",
+        "label": "Ferreiro · Bônus de Treinamento",
+        "tipo": "faixa",
+        "requerEstado": "armeiro_melhorias",
+        "min": 0,
+        "max": 8,
+        "passo": 1,
+        "title": "Bônus de Treinamento do ferreiro. O escudo melhorado soma metade dele na RD. Ele também é o teto de quantos equipamentos podem ser melhorados: a metade dele num descanso curto, e ele inteiro num descanso longo.",
+        "dono": {
+          "id": "interludio",
+          "label": "Interlúdio"
+        }
+      }
+    ],
+    "invencivelRodadas": 0,
+    "imuneCritico": false,
+    "imuneMovimentoForcado": false,
+    "talismaApiceRodadas": 0,
+    "dadoEmpolgacao": 0,
+    "dadoEmpolgacaoQtd": 0,
+    "dadoEmpolgacaoFaces": 0
+  },
+  "stats": {
+    "hp": 4746,
+    "pe": 265,
+    "defesa": 95,
+    "cd": 48
+  },
+  "partes": {
+    "totalAptidao": [
+      {
+        "label": "Sem energia amaldiçoada",
+        "valor": 0
+      }
+    ],
+    "pontosAtributoExtra": [
+      {
+        "label": "Lanterna Coletora de Almas (Aumento de Atributo)",
+        "valor": 7
+      },
+      {
+        "label": "Morador da Cidade",
+        "valor": 2
+      },
+      {
+        "label": "Calamidade",
+        "valor": 7
+      }
+    ],
+    "penalidadeDestreza": [
+      {
+        "label": "Escudo Pesado",
+        "valor": -4
+      },
+      {
+        "label": "Polido",
+        "valor": 2
+      }
+    ],
+    "hp": [
+      {
+        "label": "Restringido 30 (inicial)",
+        "valor": 219
+      },
+      {
+        "label": "Constituição × Nível",
+        "valor": 300
+      },
+      {
+        "label": "Treino de Resistência",
+        "valor": 4
+      },
+      {
+        "label": "Treino de Resistência",
+        "valor": 6
+      },
+      {
+        "label": "Treino de Resistência",
+        "valor": 10
+      },
+      {
+        "label": "Corpo de Aço",
+        "valor": 30
+      },
+      {
+        "label": "Corpo Calejado",
+        "valor": 30
+      },
+      {
+        "label": "Restrito pelos Céus (Vigor Infindável)",
+        "valor": 30
+      },
+      {
+        "label": "Robustez Aprimorada",
+        "valor": 30
+      },
+      {
+        "label": "Prodígio",
+        "valor": 60
+      },
+      {
+        "label": "Integridade da Alma",
+        "texto": "×2,2"
+      },
+      {
+        "label": "Regras Grimorio",
+        "texto": "×2"
+      },
+      {
+        "label": "Ascendendo Além dos Céus",
+        "texto": "×1,5"
+      }
+    ],
+    "pe": [
+      {
+        "label": "Restringido 30 (inicial)",
+        "valor": 120
+      },
+      {
+        "label": "Treino de Potencial Físico",
+        "valor": 2
+      },
+      {
+        "label": "Treino de Potencial Físico",
+        "valor": 4
+      },
+      {
+        "label": "Gêmeos: Restrição Celestial",
+        "valor": 60
+      },
+      {
+        "label": "Pináculo Físico",
+        "valor": 4
+      },
+      {
+        "label": "Restrito pelos Céus (Vigor Infindável)",
+        "valor": 15
+      },
+      {
+        "label": "Prodígio",
+        "valor": 60
+      },
+      {
+        "label": "Regras Grimorio",
+        "texto": "Passivas sem custo de PE Máximo"
+      },
+      {
+        "label": "Regras Grimorio",
+        "texto": "ignora a redução de PE Máximo dos Votos"
+      }
+    ],
+    "defesa": [
+      {
+        "label": "Base",
+        "valor": 10
+      },
+      {
+        "label": "Metade do Nível",
+        "valor": 15
+      },
+      {
+        "label": "Destreza",
+        "valor": 10
+      },
+      {
+        "label": "Treino de Luta",
+        "valor": 2
+      },
+      {
+        "label": "Voto Paradoxo Imposto Pelo Homem (Benefício)",
+        "valor": 4
+      },
+      {
+        "label": "Adrenalina Absoluta",
+        "valor": 2
+      },
+      {
+        "label": "Restrito pelos Céus",
+        "valor": 10
+      },
+      {
+        "label": "Esquiva Sobre-humana",
+        "valor": 3
+      },
+      {
+        "label": "Corpo Supremo",
+        "valor": 4
+      },
+      {
+        "label": "Corpo Calejado",
+        "valor": 5
+      },
+      {
+        "label": "Guarda Estudada",
+        "valor": 5
+      },
+      {
+        "label": "Melhoria de Classe de Armadura",
+        "valor": 3
+      },
+      {
+        "label": "Melhoria de Classe de Armadura",
+        "valor": 2
+      },
+      {
+        "label": "Fluxo Invencível",
+        "valor": 12
+      },
+      {
+        "label": "Comidas (bancada)",
+        "valor": 2
+      },
+      {
+        "label": "Estilo Defensivo",
+        "valor": 6
+      }
+    ],
+    "cd": [
+      {
+        "label": "Base",
+        "valor": 10
+      },
+      {
+        "label": "Metade do Nível",
+        "valor": 15
+      },
+      {
+        "label": "Mod. da Técnica (Inteligência)",
+        "valor": 11
+      },
+      {
+        "label": "Maestria",
+        "valor": 8
+      },
+      {
+        "label": "Implemento Celeste",
+        "valor": 4
+      }
+    ],
+    "rdGeral": [
+      {
+        "label": "Caçador de Feiticeiros",
+        "valor": 14
+      },
+      {
+        "label": "Surto de Adrenalina",
+        "valor": 15
+      },
+      {
+        "label": "Corpo Supremo",
+        "valor": 7
+      },
+      {
+        "label": "Restrito pelos Céus (Físico Robusto)",
+        "valor": 15
+      },
+      {
+        "label": "Fluxo Invencível",
+        "valor": 30
+      },
+      {
+        "label": "Ferreiro (bancada)",
+        "valor": 4
+      }
+    ],
+    "rdEspecifico": [],
+    "rdAlma": [
+      {
+        "label": "Alma Inquebrável",
+        "valor": 7
+      }
+    ],
+    "ataquesExtras": [
+      {
+        "label": "Fluxo Invencível",
+        "valor": 1
+      }
+    ],
+    "rdFisico": [
+      {
+        "label": "Escudo Pesado",
+        "valor": 6
+      },
+      {
+        "label": "Grau Especial",
+        "valor": 5
+      },
+      {
+        "label": "Corpo Supremo",
+        "valor": 8
+      },
+      {
+        "label": "Escudo Pesado (Reforçado)",
+        "valor": 2
+      }
+    ],
+    "movimento": [
+      {
+        "label": "Base",
+        "valor": 9
+      },
+      {
+        "label": "Treino de Agilidade",
+        "valor": 1.5
+      },
+      {
+        "label": "Treino de Agilidade",
+        "valor": 4.5
+      },
+      {
+        "label": "Adrenalina Absoluta",
+        "valor": 3
+      },
+      {
+        "label": "Restrição Definitiva",
+        "valor": 3
+      },
+      {
+        "label": "Corpo Supremo",
+        "valor": 3
+      },
+      {
+        "label": "Restrito pelos Céus (Agilidade Exímia)",
+        "valor": 3
+      },
+      {
+        "label": "Melhoria de Movimento",
+        "valor": 6
+      },
+      {
+        "label": "Comidas (bancada)",
+        "valor": 15
+      }
+    ],
+    "voo": [],
+    "iniciativa": [
+      {
+        "label": "Destreza",
+        "valor": 10
+      },
+      {
+        "label": "Treino de Agilidade",
+        "valor": 2
+      }
+    ],
+    "pvTemporario": [
+      {
+        "label": "Espírito de Luta",
+        "valor": 30
+      },
+      {
+        "label": "Espírito Incansável",
+        "valor": 8
+      },
+      {
+        "label": "Comidas (bancada)",
+        "valor": 25
+      }
+    ],
+    "pontosPreparo": [],
+    "preparoTemporario": [],
+    "regeneracao": [
+      {
+        "label": "Corpo de Aço",
+        "texto": "4d8"
+      },
+      {
+        "label": "Corpo de Aço",
+        "valor": 10
+      }
+    ],
+    "tamanho": [
+      {
+        "label": "Base",
+        "texto": "Médio"
+      }
+    ],
+    "maestria": [
+      {
+        "label": "Nível 30",
+        "valor": 8
+      }
+    ],
+    "atencao": [
+      {
+        "label": "Base",
+        "valor": 10
+      },
+      {
+        "label": "Percepção",
+        "valor": 67
+      },
+      {
+        "label": "Foco no Inimigo",
+        "valor": 5
+      },
+      {
+        "label": "Restrito pelos Céus (Percepção Aguçada)",
+        "valor": 15
+      },
+      {
+        "label": "Melhoria de Atenção",
+        "valor": 5
+      },
+      {
+        "label": "Um com o Mundo",
+        "valor": 10
+      }
+    ],
+    "guardaBonus": [
+      {
+        "label": "Ascendendo Além dos Céus (Calamidade)",
+        "valor": 5
+      }
+    ],
+    "guardaVida": [
+      {
+        "label": "Ascendendo Além dos Céus (Calamidade), 5 × ND",
+        "valor": 150
+      }
+    ],
+    "guardaAtual": [
+      {
+        "label": "Teto da Rodada",
+        "valor": 5
+      },
+      {
+        "label": "Vida Temporária",
+        "valor": -5
+      }
+    ]
+  }
+}

@@ -1,0 +1,2 @@
+[BABEL] Note: The code generator has deoptimised the styling of C:\Projetos\Grimorio\grimorio-tracker\src\systems\afty\AftyCreatureBuilder.jsx as it exceeds the max of 500KB.
+EXIT 0

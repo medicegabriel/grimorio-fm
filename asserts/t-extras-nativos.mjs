@@ -259,31 +259,195 @@ t("a graduação sem o aliado escolhido NÃO dá bônus nenhum",
 /* Verbatim: *"Uma arma melhorada adiciona +2 em jogadas de ataque realizadas
    com ela; um escudo melhorado adiciona metade do bônus de treinamento do
    ferreiro na RD concedida enquanto empunhado."* */
-const ferreiro = (melhorias, bt) => deriveAfty({
-  ...base,
+/* ⚠ A MELHORIA É DO ITEM (2026-10-26): a arma melhorada é `acertoArma` com o
+   escopo `arma`, e o escudo melhorado é `rdEscudo`. A versão de 2026-09-17 somava
+   +2 em `bonusAcerto` (vazava para o Feitiço) e a metade do BT em `rdGeral` (RD
+   Geral até no jogador, e até sem escudo na mão). */
+const itemNaMao = (tipo, refId) => ({
+  equipamentos: { ...base.equipamentos, itens: [{ uid: "i-" + refId, tipo, refId, qtd: 1, equipado: true, fa: { grau: "quarto", encantamentos: [] } }] },
+});
+const comEscudo = itemNaMao("escudo", "esc_medio");
+const comArma = itemNaMao("arma", "arm_espada_curta");
+const ferreiro = (melhorias, bt, extra = {}) => deriveAfty({
+  ...base, ...extra,
   combate: { ativo: true, armeiro_melhorias: melhorias, ...(bt != null ? { armeiro_bt: bt } : {}) },
 });
-t("arma melhorada dá +2 em jogadas de ataque",
-  acertoDe(ferreiro(["arma"], 6), "amaldicoado") - acertoDe(dentroSemNada, "amaldicoado"), 2);
+const semFerreiro = (extra = {}) => deriveAfty({ ...base, ...extra, combate: { ativo: true } });
+const linhaDe = (d, nome) => d.dano.entradas.find((e) => e.nome === nome);
+t("arma melhorada soma +2 no acerto da linha da arma",
+  linhaDe(ferreiro(["arma"], 6, comArma), "Espada Curta").acerto - linhaDe(semFerreiro(comArma), "Espada Curta").acerto, 2);
 t("e o +2 da arma não depende do Bônus de Treinamento do ferreiro",
-  acertoDe(ferreiro(["arma"]), "amaldicoado") - acertoDe(dentroSemNada, "amaldicoado"), 2);
+  linhaDe(ferreiro(["arma"], null, comArma), "Espada Curta").acerto - linhaDe(semFerreiro(comArma), "Espada Curta").acerto, 2);
+t("o +2 da arma não entra no Ataque Básico",
+  linhaDe(ferreiro(["arma"], 6, comArma), "Ataque Básico").acerto, linhaDe(semFerreiro(comArma), "Ataque Básico").acerto);
+t("o +2 da arma não entra no Acerto Amaldiçoado, o do Feitiço",
+  acertoDe(ferreiro(["arma"], 6, comArma), "amaldicoado"), acertoDe(semFerreiro(comArma), "amaldicoado"));
+t("nem nas jogadas de ataque de corpo a corpo e a distância",
+  [acertoDe(ferreiro(["arma"], 6, comArma), "corpo"), acertoDe(ferreiro(["arma"], 6, comArma), "distancia")],
+  [acertoDe(semFerreiro(comArma), "corpo"), acertoDe(semFerreiro(comArma), "distancia")]);
 for (const [bt, rd] of [[0, 0], [2, 1], [3, 1], [4, 2], [6, 3], [8, 4]]) {
-  t(`escudo melhorado com Bônus de Treinamento ${bt} soma ${rd} de RD Geral`,
-    ferreiro(["escudo"], bt).rdGeral - dentroSemNada.rdGeral, rd);
+  t(`escudo melhorado com Bônus de Treinamento ${bt} soma ${rd} na RD do escudo (RD Geral na criatura)`,
+    ferreiro(["escudo"], bt, comEscudo).rdGeral - semFerreiro(comEscudo).rdGeral, rd);
 }
+t("sem escudo na mão, o escudo melhorado não soma RD nenhuma",
+  [ferreiro(["escudo"], 8).rdGeral, ferreiro(["escudo"], 8).rdFisico],
+  [dentroSemNada.rdGeral, dentroSemNada.rdFisico]);
+const comoJogador = (extra = {}) => ({ ...extra, rulesVersion: "player", system: "player" });
+t("no jogador a melhoria do escudo soma em RD Física, que é onde a RD do escudo mora",
+  [
+    ferreiro(["escudo"], 6, comoJogador(comEscudo)).rdFisico - semFerreiro(comoJogador(comEscudo)).rdFisico,
+    ferreiro(["escudo"], 6, comoJogador(comEscudo)).rdGeral - semFerreiro(comoJogador(comEscudo)).rdGeral,
+  ],
+  [3, 0]);
+t("no jogador, sem escudo na mão, a melhoria não soma nada",
+  ferreiro(["escudo"], 8, comoJogador()).rdFisico, semFerreiro(comoJogador()).rdFisico);
 t("sem melhoria marcada, o ferreiro não muda nada",
-  [ferreiro([], 8).rdGeral, acertoDe(ferreiro([], 8), "amaldicoado")],
-  [dentroSemNada.rdGeral, acertoDe(dentroSemNada, "amaldicoado")]);
+  [ferreiro([], 8, { ...comEscudo, ...comArma }).rdGeral, linhaDe(ferreiro([], 8, comArma), "Espada Curta").acerto],
+  [semFerreiro({ ...comEscudo, ...comArma }).rdGeral, linhaDe(semFerreiro(comArma), "Espada Curta").acerto]);
+const armaEEscudo = { equipamentos: { ...base.equipamentos, itens: [...comArma.equipamentos.itens, ...comEscudo.equipamentos.itens] } };
 t("as duas melhorias juntas valem as duas",
   [
-    ferreiro(["arma", "escudo"], 8).rdGeral - dentroSemNada.rdGeral,
-    acertoDe(ferreiro(["arma", "escudo"], 8), "amaldicoado") - acertoDe(dentroSemNada, "amaldicoado"),
+    ferreiro(["arma", "escudo"], 8, armaEEscudo).rdGeral - semFerreiro(armaEEscudo).rdGeral,
+    linhaDe(ferreiro(["arma", "escudo"], 8, armaEEscudo), "Espada Curta").acerto - linhaDe(semFerreiro(armaEEscudo), "Espada Curta").acerto,
   ],
   [4, 2]);
 /* Fora de combate a bancada zera, como todo estado dela. */
 t("fora de combate o ferreiro não vale",
-  deriveAfty({ ...base, combate: { ativo: false, armeiro_melhorias: ["escudo"], armeiro_bt: 8 } }).rdGeral,
-  foraDeCombate.rdGeral);
+  deriveAfty({ ...base, ...comEscudo, combate: { ativo: false, armeiro_melhorias: ["escudo"], armeiro_bt: 8 } }).rdGeral,
+  deriveAfty({ ...base, ...comEscudo }).rdGeral);
+
+/* ============================================================ */
+/* 12. AUXILIAR: o teto de perícias segue a graduação (2026-10-26) */
+/* ============================================================ */
+/* Verbatim: *"Estar acompanhado por um auxiliar o permite adicionar +2 em duas
+   perícias quaisquer. Um veterano permite adicionar +2 em três perícias
+   quaisquer. Um mestre permite adicionar +2 em quatro perícias."* Antes o motor
+   aceitava as quatro em qualquer graduação. */
+const quatroPericias = ["acrobacia", "atletismo", "furtividade", "percepcao"];
+const auxiliar = (graduacao, pericias) => deriveAfty({
+  ...base,
+  combate: { ativo: true, aliados_escolhidos: ["auxiliar"], aliados_auxiliar: graduacao, aliados_auxiliar_pericias: pericias },
+});
+const quaisSobem = (d) => periciasQueSobem(dentroSemNada, d);
+function periciasQueSobem(antes, depois) {
+  return depois.testes.pericias
+    .filter((p) => p.bonus !== periciaDe(antes, p.id))
+    .map((p) => `${p.id}+${p.bonus - periciaDe(antes, p.id)}`);
+}
+t("Auxiliar Iniciante com quatro marcadas só reforça as duas primeiras",
+  quaisSobem(auxiliar("iniciante", quatroPericias)), ["acrobacia+2", "atletismo+2"]);
+t("Auxiliar Veterano reforça três", quaisSobem(auxiliar("veterano", quatroPericias)).length, 3);
+t("Auxiliar Mestre reforça quatro", quaisSobem(auxiliar("mestre", quatroPericias)).length, 4);
+t("o teto chega à tela: o seletor das perícias declara 2, 3 e 4",
+  ["iniciante", "veterano", "mestre"].map((g) => auxiliar(g, []).combate.estadosExtras
+    .find((e) => e.id === "aliados_auxiliar_pericias").maxSelecionados),
+  [2, 3, 4]);
+t("sem graduação o Auxiliar não reforça perícia nenhuma",
+  quaisSobem(auxiliar(null, quatroPericias)), []);
+t("fora de combate o teto também chega à tela",
+  deriveAfty({ ...base, combate: { ativo: false, aliados_auxiliar: "veterano" } }).combate.estadosExtras
+    .find((e) => e.id === "aliados_auxiliar_pericias").maxSelecionados, 3);
+
+/* ============================================================ */
+/* 13. GOLPE DA RODADA: o dado entra na linha que o livro cita    */
+/* ============================================================ */
+/* Combatente: *"um ataque corpo-a-corpo"*. Disparador: *"um ataque a
+   distância"*. O Elementalista cita Feitiço e técnica marcial e fica em todas as
+   linhas até a linha de Feitiço ler `dadosNomeados` (ver docs/a-fazer.md). */
+const duasArmas = { equipamentos: { ...base.equipamentos, itens: [
+  { uid: "c", tipo: "arma", refId: "arm_espada_curta", qtd: 1, equipado: true, fa: { grau: "quarto", encantamentos: [] } },
+  { uid: "d", tipo: "arma", refId: "arm_arco_curto", qtd: 1, equipado: true, fa: { grau: "quarto", encantamentos: [] } },
+] } };
+const golpe = (tipo, graduacao) => deriveAfty({
+  ...base, ...duasArmas,
+  combate: { ativo: true, aliados_escolhidos: [tipo], [`aliados_${tipo}`]: graduacao, [`aliados_golpe_${tipo}`]: true },
+});
+const textoDe = (d, nome) => linhaDe(d, nome).texto;
+const semGolpe = deriveAfty({ ...base, ...duasArmas, combate: { ativo: true } });
+const combatente = golpe("combatente", "mestre");
+t("o Combatente soma 3d12 na espada e no Ataque Básico, que são corpo a corpo",
+  [textoDe(combatente, "Espada Curta"), textoDe(combatente, "Ataque Básico")],
+  [`${textoDe(semGolpe, "Espada Curta")} + 3d12`, `${textoDe(semGolpe, "Ataque Básico")} + 3d12`]);
+t("e não soma no arco, que é a distância", textoDe(combatente, "Arco Curto"), textoDe(semGolpe, "Arco Curto"));
+const disparador = golpe("disparador", "veterano");
+t("o Disparador soma 2d10 no arco", textoDe(disparador, "Arco Curto"), `${textoDe(semGolpe, "Arco Curto")} + 2d10`);
+t("e não soma na espada nem no Ataque Básico",
+  [textoDe(disparador, "Espada Curta"), textoDe(disparador, "Ataque Básico")],
+  [textoDe(semGolpe, "Espada Curta"), textoDe(semGolpe, "Ataque Básico")]);
+t("o hover da espada lista a fonte do Combatente e o do arco não",
+  [
+    linhaDe(combatente, "Espada Curta").partes.some((p) => p.texto === "3d12"),
+    linhaDe(combatente, "Arco Curto").partes.some((p) => p.texto === "3d12"),
+  ],
+  [true, false]);
+/* ⚠ O ELEMENTALISTA SAIU DAS LINHAS DE ARMA (autor, 2026-10-26): o livro cita um
+   Feitiço ou técnica marcial, não a arma, e o dado entra só no PRIMEIRO ataque
+   dessas duas coisas (medido em t-tecnicas-marciais.mjs, bloco 10). */
+const elementalista = golpe("elementalista", "mestre");
+t("o Elementalista não soma em linha de arma nenhuma",
+  [textoDe(elementalista, "Espada Curta"), textoDe(elementalista, "Arco Curto"), textoDe(elementalista, "Ataque Básico")],
+  [textoDe(semGolpe, "Espada Curta"), textoDe(semGolpe, "Arco Curto"), textoDe(semGolpe, "Ataque Básico")]);
+t("e o hover da espada não lista o dado dele",
+  linhaDe(elementalista, "Espada Curta").partes.some((p) => p.texto === "5d12"), false);
+
+/* ============================================================ */
+/* 14. REVIGORANTE: o PV Temporário entra na tabela de concessões   */
+/* ============================================================ */
+/* Antes a origem `buff:comidas_bancada` não estava em `PV_TEMP`, e a Ficha a
+   tratava como "Regra de concessão não revisada", sem dono, então nenhum cartão
+   a mostrava nem oferecia Registrar na Vida. */
+const { beneficiosPvTemp, pvDoAtivo, donoPvDoGrupo } = await import(R + "ficha/efeitos/efeitos-dados.js");
+const comRevigorante = deriveAfty({
+  ...base, core: { ...base.core, nd: 13 },
+  combate: { ativo: true, comidas_refeicoes: ["revigorante"], comidas_grau: "primeiro" },
+});
+const pvDaRefeicao = [...beneficiosPvTemp({
+  derived: comRevigorante, sessao: { combate: {}, pvTempFontes: {}, rodada: 1 }, mesa: { pvConcessoes: {} },
+}).values()];
+t("a Revigorante concede 20 PV temporários no Primeiro Grau", pvDaRefeicao.map((b) => b.concede), [20]);
+t("a concessão é por uso, tem regra revisada e pode ser registrada na Vida",
+  pvDaRefeicao.map((b) => [b.regra, b.naoRevisada, b.podeRegistrar]), [["uso", false, true]]);
+const grupoDasComidas = { item: null, raiz: { id: "comidas_refeicoes" } };
+t("o dono do benefício é o estado raiz do grupo das Comidas, que não tem item",
+  [donoPvDoGrupo(grupoDasComidas), pvDaRefeicao[0].dono], ["comidas_refeicoes", "comidas_refeicoes"]);
+t("o cartão do grupo das Comidas encontra o benefício, e o de outro grupo não",
+  [
+    !!pvDoAtivo({ grupo: grupoDasComidas }, new Map(pvDaRefeicao.map((b) => [b.beneficio, b]))),
+    !!pvDoAtivo({ grupo: { item: null, raiz: { id: "sintonizada" } } }, new Map(pvDaRefeicao.map((b) => [b.beneficio, b]))),
+  ],
+  [true, false]);
+t("o item de repertório continua mandando quando existe",
+  donoPvDoGrupo({ item: { id: "cmb_espirito_de_luta" }, raiz: { id: "x" } }), "cmb_espirito_de_luta");
+
+/* ============================================================ */
+/* 15. A ABA DESENHA OS TRÊS NÍVEIS DOS ALIADOS (2026-10-26)       */
+/* ============================================================ */
+/* O Aliado é seletor, graduação e Golpe da rodada (ou as perícias do Auxiliar).
+   O `organizaEstados` só dava à raiz os filhos DIRETOS, então os cinco estados
+   do terceiro nível nunca chegavam à tela: não havia como ligar o Golpe da
+   rodada do Combatente, nem marcar as perícias do Auxiliar. */
+const { organizaEstados } = await import(R + "ficha/ficha-estados.js");
+const extrasDoPrimeiroGrau = comNd(13).combate.estadosExtras;
+const grupoDosAliados = (termo = "") => organizaEstados(extrasDoPrimeiroGrau, termo)
+  .blocosDaSub.outros.flatMap((b) => b.grupos).find((g) => g.pai.id === "aliados_escolhidos");
+t("a raiz dos Aliados leva as oito graduações e os cinco estados do terceiro nível, em profundidade",
+  grupoDosAliados().filhos.map((f) => f.id),
+  ["aliados_analista", "aliados_protetor", "aliados_assassino", "aliados_golpe_assassino",
+    "aliados_combatente", "aliados_golpe_combatente", "aliados_disparador", "aliados_golpe_disparador",
+    "aliados_elementalista", "aliados_golpe_elementalista", "aliados_auxiliar", "aliados_auxiliar_pericias",
+    "aliados_medico"]);
+t("procurar \"golpe da rodada\" traz as graduações e o seletor, e só os golpes que casam",
+  grupoDosAliados("golpe da rodada").filhos.map((f) => f.id),
+  ["aliados_assassino", "aliados_golpe_assassino", "aliados_combatente", "aliados_golpe_combatente",
+    "aliados_disparador", "aliados_golpe_disparador", "aliados_elementalista", "aliados_golpe_elementalista"]);
+t("procurar \"perícias\" traz só o Auxiliar e as perícias dele",
+  grupoDosAliados("perícias").filhos.map((f) => f.id), ["aliados_auxiliar", "aliados_auxiliar_pericias"]);
+t("procurar \"combatente\" não puxa os irmãos de outro tipo de aliado",
+  grupoDosAliados("combatente").filhos.map((f) => f.id), ["aliados_combatente", "aliados_golpe_combatente"]);
+t("os estados de dois níveis continuam com a cadeia curta (Comidas)",
+  organizaEstados(extrasDoPrimeiroGrau, "").blocosDaSub.interludio.flatMap((b) => b.grupos)
+    .find((g) => g.pai.id === "comidas_refeicoes").filhos.map((f) => f.id),
+  ["comidas_grau", "comidas_bt"]);
 
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 process.exitCode = bad.length ? 1 : 0;

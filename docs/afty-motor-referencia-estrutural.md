@@ -178,9 +178,10 @@ Expansão usam (`estiloTecnicas`): várias ligadas ao mesmo tempo somam o mesmo 
 total ainda disputa com o Feitiço Auxiliar e o resto do pool. Linha sem bloco disputa sozinha, como
 sempre.
 
-Famílias de hoje (oito, conferidas em 2026-10-07): `habilidadeUnica`, `feiticoAuxiliarPassivo`,
+Famílias de hoje (nove, conferidas em 2026-10-27): `habilidadeUnica`, `feiticoAuxiliarPassivo`,
 `shikigamiCaracteristica`, `feiticoAuxiliarAtivo`, `shikigamiAcao`, `estiloSombra`,
-`funcionamentoBasico` e `segundaHabilidadeUnica` (do addon de Forja). Na criatura o pool é
+`funcionamentoBasico`, `segundaHabilidadeUnica` (do addon de Forja) e `tecnicaMarcial` (a Passiva e o Auxiliar da
+Técnica Marcial do Restringido, `grupoJogador: "feiticos"`). O canal `vagasMarcial` é a vaga exclusiva dela. Na criatura o pool é
 único; no jogador cada família cai no `grupoJogador` dela (divergência `poolExclusivo`).
 
 Fora das famílias existe o `grupoNaoAcumula`: cópias do MESMO benefício de fontes diferentes disputam

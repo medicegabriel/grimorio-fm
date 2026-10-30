@@ -1,0 +1,283 @@
+/**
+ * ============================================================
+ * LANTERNA COLETORA DE ALMAS: a outra pele do card do Espinho
+ * ============================================================
+ * Autor, 2026-10-12: *"Ele é IDENTICO ao addon do ESPINHO. Só muda a paleta de
+ * cores"*, a lanterna da imagem dele no lugar do cristal, e *"ao invés de algo
+ * pulsando e quebrando a tela, faça como se fossem chamas saindo da caixa"*.
+ *
+ * ⚠ ESTA FOLHA SÓ REPINTA. O card é o mesmo componente, com as mesmas classes
+ * `.afty-espinho*`, e a raiz ganha `.afty-lanterna`. Tudo aqui é escrito como
+ * `.afty-lanterna ...` para vencer a regra do Espinho pela especificidade, sem
+ * depender da ordem dos imports. A paleta troca os MESMOS tokens `--espinho-*`,
+ * e o que o espinho.css pinta com cor fixa (brilhos, gradientes) é reescrito
+ * abaixo, um a um.
+ *
+ * ⚠ AS CHAMAS MORAM FORA DA CASCA, atrás dela (`z-index: -1` dentro do
+ * `isolation` da raiz), e a base de cada labareda some sob a borda de cima: é
+ * o que faz parecer que o fogo sai da caixa. O contêiner tem `overflow: hidden`
+ * e a largura do card, sem passar dos lados, pela lição do Espinho: caixa ou
+ * transform que passa da borda direita cria rolagem lateral no celular. O que
+ * sobe acima do card mora na `margin-top` da raiz.
+ *
+ * ⚠ ANIMAÇÃO SÓ EM `transform` E `opacity`, em elemento próprio, pela mesma
+ * razão do espinho.css (a lentidão da Ficha é pintura). Nada de batimento nem
+ * glitch: o que se mexe é a tremulação das labaredas, as faíscas subindo e a
+ * luz atrás da lanterna.
+ */
+
+.afty-espinho.afty-lanterna {
+  --espinho-fundo: #05061a;
+  --espinho-poco: #0a0d2b;
+  --espinho-borda: #26307e;
+  --espinho-brasa: #6a8dff;
+  --espinho-rosa: #a9dcff;
+  --espinho-texto: #e7efff;
+  --espinho-texto-suave: #9ba9dd;
+  --espinho-texto-fraco: #6470ad;
+  --espinho-aviso: #fbbf24;
+
+  /* O espaço das labaredas acima do card, para elas não cobrirem o vizinho de
+     cima nem serem cortadas por um pai com `overflow`. */
+  margin-top: 58px;
+  animation: none;
+}
+.afty-espinho.afty-lanterna.afty-espinho--compacto { margin-top: 42px; }
+
+/* ---------- a casca ---------- */
+.afty-lanterna .afty-espinho-casca {
+  background:
+    radial-gradient(140% 90% at 85% -20%, #17207a 0%, transparent 55%),
+    radial-gradient(120% 80% at 50% 120%, #1b1360 0%, transparent 62%),
+    var(--espinho-fundo);
+}
+/* A luz da lanterna, atrás dela: tremula como chama, e não bate. */
+.afty-lanterna .afty-espinho-casca::before {
+  background: radial-gradient(closest-side, #4f6bff55, #3b2fc92e 45%, transparent 72%);
+  animation: afty-lanterna-tremula 3.4s linear infinite;
+}
+/* As linhas de varredura eram do glitch. */
+.afty-lanterna .afty-espinho-casca::after { display: none; }
+.afty-lanterna .afty-espinho-halo {
+  box-shadow:
+    0 0 0 1px #5b7cff55,
+    0 -6px 22px 2px #4a63ff40,
+    0 0 40px 6px #2b1fa526;
+  animation: afty-lanterna-tremula 4.1s linear infinite;
+}
+.afty-lanterna .afty-espinho-grao {
+  opacity: 0.08;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45  0 0 0 0 .55  0 0 0 0 1  0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------- o título em duas linhas ---------- */
+.afty-lanterna .afty-espinho-titulo {
+  filter: drop-shadow(0 0 3px #5b7cff) drop-shadow(0 0 10px #2a3fd6);
+}
+.afty-lanterna .afty-espinho-titulo::after {
+  bottom: -8px;
+  box-shadow: 0 0 8px #4f6bff;
+}
+.afty-espinho-titulo--duplo .afty-espinho-titulo-cabeca {
+  display: block;
+}
+/* O resto do nome, cheio e menor. O h2 é vazado (cor transparente e contorno),
+   e por isso esta linha devolve a cor e tira o contorno. */
+.afty-espinho-titulo--duplo .afty-espinho-titulo-resto {
+  display: block;
+  margin-top: 7px;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  color: var(--espinho-rosa);
+  -webkit-text-stroke: 0;
+}
+.afty-espinho--compacto .afty-espinho-titulo--duplo .afty-espinho-titulo-resto {
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+/* ---------- a lanterna (no lugar do cristal) ---------- */
+.afty-lanterna-caixa {
+  position: relative;
+  width: 96px;
+  height: 150px;
+}
+.afty-lanterna-imagem {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  /* Pintado uma vez: a imagem não anima, só a aura atrás dela. */
+  filter: drop-shadow(0 0 6px #3b4fe0aa);
+}
+.afty-lanterna-aura {
+  position: absolute;
+  inset: -18% -55%;
+  z-index: -1;
+  background: radial-gradient(closest-side, #6f8cffb3, #3b2fc933 55%, transparent 76%);
+  animation: afty-lanterna-tremula 2.7s linear infinite;
+  pointer-events: none;
+}
+/* O número no vidro, abaixo da trave do meio. */
+.afty-lanterna-num {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  display: grid;
+  place-items: center;
+}
+.afty-lanterna .afty-espinho-num {
+  color: #ffffff;
+  text-shadow: 0 0 2px #0b0a3a, 0 0 3px #0b0a3a, 0 1px 2px #05041c, 0 0 12px #6f8cff;
+}
+.afty-espinho--compacto .afty-lanterna-caixa { width: 60px; height: 94px; }
+
+/* ---------- o resto do card, repintado ---------- */
+.afty-lanterna .afty-espinho-input:focus { box-shadow: 0 0 0 1px var(--espinho-brasa), 0 0 12px #4f6bff55; }
+.afty-espinho-input--maestria { width: 64px; }
+.afty-espinho-input--maestria::placeholder { color: var(--espinho-texto-fraco); opacity: 1; }
+.afty-lanterna .afty-espinho-fenda {
+  background: linear-gradient(90deg, transparent, #5b7cff80 20%, #a9dcff 50%, #5b7cff80 80%, transparent);
+  box-shadow: 0 0 8px #4f6bff88;
+}
+.afty-lanterna .afty-espinho-item:hover { background: linear-gradient(90deg, #4f6bff14, transparent); }
+/* A alma vira uma gota de chama, a ponta para cima. */
+.afty-lanterna .afty-espinho-alma-ico {
+  border-radius: 50% 0 50% 50%;
+  transform: rotate(-45deg);
+  background: linear-gradient(225deg, #d6f2ff, var(--espinho-brasa) 70%);
+  box-shadow: 0 0 6px #4f6bff;
+}
+.afty-lanterna .afty-espinho-passo button:hover:not(:disabled),
+.afty-lanterna .afty-espinho-mini:hover:not(:disabled) { box-shadow: 0 0 10px #4f6bff66; }
+.afty-lanterna .afty-espinho-equip-linha { border-color: #5b7cff1f; background: #4f6bff0a; }
+.afty-lanterna .afty-espinho-chave[aria-pressed="true"] i { background: #1c2380; }
+.afty-lanterna .afty-espinho-marca { border-color: #5b7cff40; background: #4f6bff12; }
+
+/* ============================================================
+   AS CHAMAS (fora da casca, sobem da borda de cima)
+   ============================================================ */
+/* ⚠ A MÁSCARA APAGA A BASE. As labaredas nascem 14 px abaixo da borda de cima,
+   escondidas pela casca, mas nas quinas a borda é curva e a base aparecia
+   pendurada fora dela. A máscara some com os 14 px de baixo, e o fogo começa na
+   linha da borda. O contêiner não passa da largura do card: nada escapa para os
+   lados, então não há rolagem lateral no celular. */
+.afty-lanterna-chamas {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% - 14px);
+  height: 84px;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to top, transparent 8px, #000 18px);
+  mask-image: linear-gradient(to top, transparent 8px, #000 18px);
+  --k: 1;
+}
+.afty-espinho--compacto .afty-lanterna-chamas { height: 64px; --k: 0.72; }
+/* O brilho onde o fogo encontra a caixa. */
+.afty-lanterna-chamas::before {
+  content: "";
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  bottom: 0;
+  height: 30px;
+  background: radial-gradient(60% 100% at 50% 100%, #4f6bff66, #2b1fa522 60%, transparent 80%);
+  animation: afty-lanterna-tremula 3s linear infinite;
+}
+.afty-lanterna-labareda {
+  position: absolute;
+  bottom: 0;
+  left: var(--x);
+  width: calc(var(--w) * var(--k));
+  height: calc(var(--h) * var(--k));
+  margin-left: calc(var(--w) * var(--k) / -2);
+  background: center bottom / 100% 100% no-repeat;
+  transform-origin: 50% 100%;
+  animation: afty-lanterna-labareda var(--t) ease-in-out var(--d) infinite alternate;
+  will-change: transform, opacity;
+}
+.afty-lanterna-labareda--a { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 120' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='1' x2='0' y2='0'%3E%3Cstop offset='0' stop-color='%232a1fb8' stop-opacity='1'/%3E%3Cstop offset='0.3' stop-color='%234058ff' stop-opacity='1'/%3E%3Cstop offset='0.62' stop-color='%236fb6ff' stop-opacity='1'/%3E%3Cstop offset='0.88' stop-color='%23bfe8ff' stop-opacity='0.85'/%3E%3Cstop offset='1' stop-color='%23e6f6ff' stop-opacity='0.15'/%3E%3C/linearGradient%3E%3ClinearGradient id='n' x1='0' y1='1' x2='0' y2='0'%3E%3Cstop offset='0' stop-color='%23ffffff' stop-opacity='1'/%3E%3Cstop offset='0.45' stop-color='%23c6ecff' stop-opacity='0.85'/%3E%3Cstop offset='1' stop-color='%239fdcff' stop-opacity='0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' d='M30 120C12 120 3 106 6 90C9 74 22 66 21 48C20 34 12 24 17 6C26 22 36 30 39 46C41 56 37 64 40 74C45 66 50 60 51 48C58 62 59 82 53 98C48 112 41 120 30 120Z'/%3E%3Cpath fill='url(%23n)' d='M30 118C19 118 14 108 17 96C20 84 28 78 28 64C34 74 40 82 41 94C42 108 38 118 30 118Z'/%3E%3C/svg%3E"); }
+.afty-lanterna-labareda--b { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 120' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='1' x2='0' y2='0'%3E%3Cstop offset='0' stop-color='%232a1fb8' stop-opacity='1'/%3E%3Cstop offset='0.3' stop-color='%234058ff' stop-opacity='1'/%3E%3Cstop offset='0.62' stop-color='%236fb6ff' stop-opacity='1'/%3E%3Cstop offset='0.88' stop-color='%23bfe8ff' stop-opacity='0.85'/%3E%3Cstop offset='1' stop-color='%23e6f6ff' stop-opacity='0.15'/%3E%3C/linearGradient%3E%3ClinearGradient id='n' x1='0' y1='1' x2='0' y2='0'%3E%3Cstop offset='0' stop-color='%23ffffff' stop-opacity='1'/%3E%3Cstop offset='0.45' stop-color='%23c6ecff' stop-opacity='0.85'/%3E%3Cstop offset='1' stop-color='%239fdcff' stop-opacity='0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' d='M28 120C13 120 6 108 10 92C14 78 26 70 30 54C33 42 28 30 36 12C38 6 44 2 50 2C42 10 42 22 44 34C47 52 54 64 52 84C51 104 42 120 28 120Z'/%3E%3Cpath fill='url(%23n)' d='M29 118C20 118 16 108 19 98C22 88 29 82 32 70C37 80 42 90 41 100C40 112 36 118 29 118Z'/%3E%3C/svg%3E"); }
+.afty-lanterna-labareda--c { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 120' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='1' x2='0' y2='0'%3E%3Cstop offset='0' stop-color='%232a1890' stop-opacity='0.9'/%3E%3Cstop offset='0.4' stop-color='%234b3fe0' stop-opacity='0.85'/%3E%3Cstop offset='0.75' stop-color='%236f7dff' stop-opacity='0.6'/%3E%3Cstop offset='1' stop-color='%239fb6ff' stop-opacity='0'/%3E%3C/linearGradient%3E%3ClinearGradient id='n' x1='0' y1='1' x2='0' y2='0'%3E%3Cstop offset='0' stop-color='%239fb6ff' stop-opacity='0.7'/%3E%3Cstop offset='1' stop-color='%237a8cff' stop-opacity='0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' d='M30 120C10 120 0 108 2 92C4 78 14 70 16 56C18 46 14 38 18 28C24 38 28 44 30 52C32 40 38 30 36 16C46 28 52 42 50 56C49 66 56 74 58 88C60 106 48 120 30 120Z'/%3E%3Cpath fill='url(%23n)' d='M30 118C18 118 12 110 14 100C16 90 24 86 26 76C30 84 36 88 40 96C44 106 40 118 30 118Z'/%3E%3C/svg%3E"); }
+/* A fileira de trás: larga, violeta e mais lenta, para dar fundo ao fogo. */
+.afty-lanterna-labareda--fundo { animation-name: afty-lanterna-labareda-fundo; }
+/* As faíscas que sobem com o fogo. */
+.afty-lanterna-faisca {
+  position: absolute;
+  bottom: 8px;
+  left: var(--x);
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #d6f2ff;
+  box-shadow: 0 0 4px 1px #6f8cff;
+  opacity: 0;
+  animation: afty-lanterna-faisca var(--t) ease-out var(--d) infinite;
+  will-change: transform, opacity;
+}
+
+/* ============================================================
+   ANIMAÇÕES: só transform e opacity
+   ============================================================ */
+@keyframes afty-lanterna-labareda {
+  0% { transform: scale(var(--e), 0.84) skewX(-3deg); opacity: 0.8; }
+  30% { transform: scale(var(--e), 1.06) skewX(2deg); opacity: 1; }
+  55% { transform: scale(var(--e), 0.93) skewX(-1deg); opacity: 0.88; }
+  80% { transform: scale(var(--e), 1.1) skewX(3deg); opacity: 1; }
+  100% { transform: scale(var(--e), 0.97) skewX(-2deg); opacity: 0.92; }
+}
+@keyframes afty-lanterna-labareda-fundo {
+  0% { transform: scale(var(--e), 0.9) skewX(2deg); opacity: 0.65; }
+  50% { transform: scale(var(--e), 1.05) skewX(-2deg); opacity: 0.85; }
+  100% { transform: scale(var(--e), 0.96) skewX(1deg); opacity: 0.7; }
+}
+@keyframes afty-lanterna-faisca {
+  0% { transform: translate(0, 0); opacity: 0; }
+  15% { opacity: 1; }
+  70% { opacity: 0.7; }
+  100% { transform: translate(6px, -46px); opacity: 0; }
+}
+/* Luz de chama: irregular, sem o lub-dub do Espinho. */
+@keyframes afty-lanterna-tremula {
+  0%, 100% { opacity: 0.78; }
+  11% { opacity: 0.95; }
+  19% { opacity: 0.8; }
+  33% { opacity: 1; }
+  48% { opacity: 0.84; }
+  63% { opacity: 0.96; }
+  79% { opacity: 0.76; }
+  90% { opacity: 0.9; }
+}
+
+/* Impressão: preto no branco, sem fogo. O movimento reduzido já é coberto pela
+   regra do espinho.css, que pega `.afty-espinho *`. */
+@media print {
+  /* Os tokens de novo, porque os da Lanterna vencem os do espinho.css pela
+     especificidade também na impressão. */
+  .afty-espinho.afty-lanterna {
+    --espinho-fundo: #fff;
+    --espinho-poco: #fff;
+    --espinho-borda: #000;
+    --espinho-texto: #000;
+    --espinho-texto-suave: #333;
+    --espinho-texto-fraco: #555;
+    --espinho-rosa: #000;
+    --espinho-brasa: #000;
+    margin-top: 0;
+  }
+  .afty-lanterna .afty-espinho-casca { background: #fff; }
+  .afty-lanterna .afty-espinho-titulo { filter: none; }
+  .afty-lanterna .afty-espinho-num { color: #000; text-shadow: 0 0 2px #fff, 0 0 3px #fff; }
+  .afty-lanterna-chamas,
+  .afty-lanterna-aura { display: none; }
+  .afty-lanterna-imagem { filter: grayscale(1); }
+}

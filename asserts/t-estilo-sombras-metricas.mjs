@@ -45,8 +45,8 @@ const percepcao = (d) => d.testes.pericias.find((p) => p.id === "percepcao").bon
 t("os onze efeitos", CAT.EFEITOS_ESTILO.map((e) => e.id),
   ["defesa", "tr", "acerto", "margem", "pericia", "dano", "alcance", "deslocamento", "gatilho", "cd", "especial"]);
 t("a repeticao vem do catalogo", Object.fromEntries(CAT.EFEITOS_ESTILO.map((e) => [e.id, e.repeticao])), {
-  defesa: "aliados", tr: "aliados", acerto: "soma", margem: "aliados", pericia: "aliados",
-  dano: "soma", alcance: "unica", deslocamento: "aliados", gatilho: "soma", cd: "soma", especial: "unica",
+  defesa: "aliados", tr: "aliados", acerto: "aliados", margem: "aliados", pericia: "aliados",
+  dano: "soma", alcance: "unica", deslocamento: "aliados", gatilho: "soma", cd: "aliados", especial: "unica",
 });
 t("o Pre-Requisito e proibido so no Ataque com Gatilho",
   CAT.EFEITOS_ESTILO.filter((e) => !e.aceitaBonusPreRequisito).map((e) => e.id), ["gatilho"]);
@@ -79,15 +79,15 @@ for (const sistema of ["afty", "player"]) {
   t(`${sistema}: e nao nos outros`,
     delta(sistema, { estilos: [tr], ativa: "tr" }, (d) => d.testes.resistencias.find((x) => x.value === "vontade").bonus), 0);
 
-  /* Acerto: cada compra soma outra metade do BT. */
+  /* Acerto: duas compras sem marca conservam BT inteiro pessoal. */
   const ac = tecnica("ac", [compra("acerto", { ataque: "corpo" }), compra("acerto", { ataque: "corpo" })]);
-  t(`${sistema}: duas compras de Acerto somam duas metades`, delta(sistema, { estilos: [ac], ativa: "ac" }, acertoCorpo), 2 * metade);
+  t(`${sistema}: duas compras de Acerto usam BT inteiro`, delta(sistema, { estilos: [ac], ativa: "ac" }, acertoCorpo), bt);
 
   /* Perícia, CD, Deslocamento. */
   const pe = tecnica("pe", [compra("pericia", { pericia: "percepcao" })]);
   t(`${sistema}: Pericia soma na escolhida`, delta(sistema, { estilos: [pe], ativa: "pe" }, percepcao), metade);
   const cd = tecnica("cd", [compra("cd"), compra("cd")]);
-  t(`${sistema}: Bonus de CD soma na CD, duas vezes`, delta(sistema, { estilos: [cd], ativa: "cd" }, (d) => d.cd), 2 * metade);
+  t(`${sistema}: Bonus de CD usa BT inteiro com duas compras`, delta(sistema, { estilos: [cd], ativa: "cd" }, (d) => d.cd), bt);
   const mv = tecnica("mv", [compra("deslocamento")]);
   t(`${sistema}: Deslocamento soma 4,5 m`, delta(sistema, { estilos: [mv], ativa: "mv" }, (d) => d.movimento), 4.5);
 

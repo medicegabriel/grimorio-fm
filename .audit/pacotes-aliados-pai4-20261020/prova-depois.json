@@ -1,0 +1,46 @@
+{
+  "raiz": "C:\\Projetos\\Grimorio\\grimorio-tracker",
+  "base": {
+    "defesa": 17,
+    "reflexos": 7
+  },
+  "variantes": {
+    "A proprio/herdado (o caso do Codex)": {
+      "passos": [
+        "ligada: Defesa 20, Reflexos 9, instância [[\"defesa:-\",\"bonusTR:1\"]]",
+        "virada 1: Defesa 20, Reflexos 7, instância [[\"defesa:-\"]]",
+        "virada 2: Defesa 20, Reflexos 7, instância [[\"defesa:-\"]]",
+        "virada 3: Defesa 20, Reflexos 7, instância [[\"defesa:-\"]]"
+      ]
+    },
+    "B herdado/proprio": {
+      "passos": [
+        "ligada: Defesa 20, Reflexos 9, instância [[\"defesa:-\",\"bonusTR:1\"]]",
+        "virada 1: Defesa 20, Reflexos 7, instância [[\"defesa:-\"]]",
+        "virada 2: Defesa 20, Reflexos 7, instância [[\"defesa:-\"]]",
+        "virada 3: Defesa 20, Reflexos 7, instância [[\"defesa:-\"]]"
+      ]
+    },
+    "C explicito/explicito (o que o exportador escreve)": {
+      "passos": [
+        "ligada: Defesa 20, Reflexos 9, instância [[\"defesa:-\",\"bonusTR:1\"]]",
+        "virada 1: Defesa 20, Reflexos 7, instância [[\"defesa:-\"]]",
+        "virada 2: Defesa 20, Reflexos 7, instância [[\"defesa:-\"]]",
+        "virada 3: Defesa 20, Reflexos 7, instância [[\"defesa:-\"]]"
+      ]
+    },
+    "D rodadas diferentes (Defesa 1 propria, TR herda 2)": {
+      "passos": [
+        "ligada: Defesa 20, Reflexos 9, instância [[\"defesa:1\",\"bonusTR:2\"]]",
+        "virada 1: Defesa 17, Reflexos 9, instância [[\"bonusTR:1\"]]",
+        "virada 2: Defesa 17, Reflexos 7, instância []",
+        "virada 3: Defesa 17, Reflexos 7, instância []"
+      ]
+    }
+  },
+  "criterios": {
+    "A proprio/herdado (o caso do Codex)": true,
+    "B herdado/proprio": true,
+    "C explicito/explicito (o que o exportador escreve)": true
+  }
+}

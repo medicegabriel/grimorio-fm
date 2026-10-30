@@ -1,0 +1,129 @@
+{
+  "id": "minamoto",
+  "nome": "Clã Minamoto",
+  "versao": "1.0.0",
+  "autor": "Afty",
+  "paraRaw": "afty",
+  "descricao": "Adiciona o Clã Minamoto ao Herdado, com Bônus em Atributo (3 pontos livres, máximo de 2 no mesmo), Potencial Lendário (1 PE por nível par e 1 Feitiço no nível 1 e a cada 5 níveis, sem teto) e Talento Minamoto (Acerto e Defesa iguais à metade do Bônus de Treinamento). Traz três Talentos de Origem do clã: Fundamentos Imponentes, Compreensão Avançada e Postura do Matador de Yokai, esta com o interruptor Alvo com Defesa Maior na Simulação de Combate. Vale nos dois sistemas.",
+  "resumo": "Clã Minamoto do Herdado, com 3 Talentos de Origem e Potencial Lendário",
+  "categoria": "origens",
+  "estadosCombate": [
+    {
+      "id": "alvo_defesa_maior",
+      "label": "Alvo com Defesa Maior",
+      "tipo": "bool",
+      "title": "Postura do Matador de Yokai",
+      "requerTalento": "tal_postura_do_matador_de_yokai"
+    }
+  ],
+  "acrescenta": {
+    "clas": [
+      {
+        "id": "cla_minamoto",
+        "nome": "Clã Minamoto",
+        "caracteristicas": [
+          {
+            "id": "bonus_atributo",
+            "nome": "Bônus em Atributo",
+            "descricao": "Membros dessa família são conhecidos por terem corpos que passam do limite natural de qualquer humano, sendo considerados o ápice do desenvolvimento físico do mundo, recebem 3 pontos de atributo para distribuir entre seus atributos, com limite de 2 em um mesmo.",
+            "bonus": { "distribuir": 3, "maxPorAtributo": 2 }
+          },
+          {
+            "id": "potencial_lendario",
+            "nome": "Potencial Lendário",
+            "descricao": "Ser parte do clã Minamoto, pelo fundador do mesmo, ter passado uma linhagem abençoada para o Jujutsu, te confere um incrível potencial para ter uma energia extrema, juntamente de uma facilidade para desenvolver feitiços poderosos. Em todo nível par você recebe 1 ponto de energia amaldiçoada adicional. Além disso, você também recebe 1 Feitiço adicional no primeiro nível e mais um nos níveis 5, 10, 15, 20, etc."
+          },
+          {
+            "id": "talento_minamoto",
+            "nome": "Talento Minamoto",
+            "descricao": "Suas capacidades em um combate são superiores que qualquer outro ser, recebendo Acerto e Defesa em um valor igual à metade do seu Bônus de Treinamento."
+          }
+        ],
+        "efeitos": [
+          { "canal": "pe", "expr": "piso(nd / 2)", "nome": "Potencial Lendário" },
+          { "canal": "vagasFeitico", "expr": "1 + piso(nd / 5)", "nome": "Potencial Lendário" },
+          { "canal": "bonusAcerto", "expr": "piso(bt / 2)", "nome": "Talento Minamoto" },
+          { "canal": "defesa", "expr": "piso(bt / 2)", "nome": "Talento Minamoto" }
+        ]
+      }
+    ],
+    "talentos": [
+      {
+        "id": "tal_fundamentos_imponentes",
+        "nome": "Fundamentos Imponentes",
+        "grupo": "origem",
+        "descricao": "Vindo pelo potencial para o Jujutsu, além de um grande conhecimento com as técnicas do clã Minamoto, você aprimora seus feitiços para serem absolutos, manipulando eles e projetando de formas a dificultar a compreensão deles e para resistir aos mesmos, fortalecendo a Potência de Dificuldade de seus Feitiços. Recebe um bônus de CD Amaldiçoado e de Aptidões Amaldiçoada e Acerto Amaldiçoado igual metade do seu Bônus de Treinamento.",
+        "requisitos": [
+          { "tipo": "cla", "id": "cla_minamoto" },
+          { "tipo": "nd", "valor": 6 }
+        ],
+        "efeitos": [
+          { "canal": "cd", "expr": "piso(bt / 2)" },
+          { "canal": "bonusAcerto", "alvo": "amaldicoado", "expr": "piso(bt / 2)" }
+        ]
+      },
+      {
+        "id": "tal_compreensao_avancada",
+        "nome": "Compreensão Avançada",
+        "grupo": "origem",
+        "descricao": "A linhagem dos Minamoto carrega o sangue de um dos maiores gênios da história do Jujutsu. Seus descendentes possuem uma compreensão quase sobrenatural da Energia Amaldiçoada, despertando talentos que outros feiticeiros levariam décadas para alcançar. Conforme seu potencial floresce, os ensinamentos e a genialidade herdados de seus ancestrais tornam-se cada vez mais evidentes. Você recebe +1 Nível de aptidão em 2 aptidões diferentes.",
+        "requisitos": [
+          { "tipo": "cla", "id": "cla_minamoto" },
+          { "tipo": "nota", "texto": "Possuir ao menos 1 nível nas Aptidões selecionadas" },
+          { "tipo": "nd", "valor": 9 }
+        ],
+        "escolha": {
+          "id": "compreensao_avancada",
+          "label": "Aptidão",
+          "niveis": [1, 1],
+          "opcoes": [
+            {
+              "id": "min_compreensao_au",
+              "nome": "Aura",
+              "descricao": "Seu Nível de Aptidão em Aura aumenta em 1.",
+              "efeitos": [{ "canal": "nivelAptidao", "alvo": "au", "expr": "1" }]
+            },
+            {
+              "id": "min_compreensao_cl",
+              "nome": "Controle e Leitura",
+              "descricao": "Seu Nível de Aptidão em Controle e Leitura aumenta em 1.",
+              "efeitos": [{ "canal": "nivelAptidao", "alvo": "cl", "expr": "1" }]
+            },
+            {
+              "id": "min_compreensao_bar",
+              "nome": "Barreira",
+              "descricao": "Seu Nível de Aptidão em Barreira aumenta em 1.",
+              "efeitos": [{ "canal": "nivelAptidao", "alvo": "bar", "expr": "1" }]
+            },
+            {
+              "id": "min_compreensao_dom",
+              "nome": "Domínio",
+              "descricao": "Seu Nível de Aptidão em Domínio aumenta em 1.",
+              "efeitos": [{ "canal": "nivelAptidao", "alvo": "dom", "expr": "1" }]
+            },
+            {
+              "id": "min_compreensao_er",
+              "nome": "Energia Reversa",
+              "descricao": "Seu Nível de Aptidão em Energia Reversa aumenta em 1.",
+              "efeitos": [{ "canal": "nivelAptidao", "alvo": "er", "expr": "1" }]
+            }
+          ]
+        }
+      },
+      {
+        "id": "tal_postura_do_matador_de_yokai",
+        "nome": "Postura do Matador de Yokai",
+        "grupo": "origem",
+        "descricao": "Desde a infância, os membros do Clã Minamoto são treinados para enfrentar adversários muito acima da capacidade humana. Seus movimentos são precisos, econômicos e letais, permitindo encontrar brechas onde outros enxergam apenas defesa. Quando realiza a ação Atacar contra um alvo que possua Defesa maior que a sua, recebe + metade do Bônus de Treinamento no teste.",
+        "requisitos": [
+          { "tipo": "cla", "id": "cla_minamoto" },
+          { "tipo": "nd", "valor": 6 }
+        ],
+        "efeitos": [
+          { "canal": "bonusAcerto", "alvo": "corpo", "expr": "piso(bt / 2)", "quando": "minamoto_alvo_defesa_maior", "duracao": "temporaria" },
+          { "canal": "bonusAcerto", "alvo": "distancia", "expr": "piso(bt / 2)", "quando": "minamoto_alvo_defesa_maior", "duracao": "temporaria" }
+        ]
+      }
+    ]
+  }
+}

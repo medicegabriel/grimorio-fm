@@ -1,0 +1,266 @@
+{
+  "versao": 1,
+  "shaInventario": "9ae0742e409b1f0bb6872264e5ca063f0b7a231e01c96b12424185f675e96733",
+  "shaVivo": "b3d0d7b66866d41cdaea39eaa8f74e1d519eee5494d87e932d081d42a6854c6d",
+  "shaEscopo": "0252e423315a291846091da1967a710fe363665deae4bc66ed5f2e895c24a0d3",
+  "adicionados": [
+    {
+      "chave": "addon::retracao-de-dominio.json::@pacote",
+      "item": {
+        "chave": "addon::retracao-de-dominio.json::@pacote",
+        "id": "retracao-de-dominio",
+        "nome": "Retração de Domínio",
+        "arquivo": "addons/retracao-de-dominio.json",
+        "proprietario": null,
+        "tipo": "pacote",
+        "addon": "retracao-de-dominio.json",
+        "idLocal": "retracao-de-dominio",
+        "hashDado": "d960f76a031fd5908e238741b0aac9bff42c2170d6cd7d714f3ebbe42fa7ba97"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::retracao-de-dominio.json::@pacote::acrescenta",
+      "item": {
+        "chave": "addon::retracao-de-dominio.json::@pacote::acrescenta",
+        "id": "acrescenta",
+        "nome": "acrescenta",
+        "arquivo": "addons/retracao-de-dominio.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "retracao-de-dominio.json",
+        "pai": "addon::retracao-de-dominio.json::@pacote",
+        "hashDado": "bbd1ef308c0cda098de84f2e33d299a670af2b48efcb1ea552c1162929ab87bb"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::retracao-de-dominio.json::@pacote::autor",
+      "item": {
+        "chave": "addon::retracao-de-dominio.json::@pacote::autor",
+        "id": "autor",
+        "nome": "autor",
+        "arquivo": "addons/retracao-de-dominio.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "retracao-de-dominio.json",
+        "pai": "addon::retracao-de-dominio.json::@pacote",
+        "hashDado": "6f8d7331be16f4faf5c4e2de472cc95113af6c058396d49204b9539266d06682"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::retracao-de-dominio.json::@pacote::descricao",
+      "item": {
+        "chave": "addon::retracao-de-dominio.json::@pacote::descricao",
+        "id": "descricao",
+        "nome": "descricao",
+        "arquivo": "addons/retracao-de-dominio.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "retracao-de-dominio.json",
+        "pai": "addon::retracao-de-dominio.json::@pacote",
+        "hashDado": "c5a738f980edb6996be7d27fc7ae2bc91da7969cd059720c7d93ddc1fef6d35c"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::retracao-de-dominio.json::@pacote::estadosCombate",
+      "item": {
+        "chave": "addon::retracao-de-dominio.json::@pacote::estadosCombate",
+        "id": "estadosCombate",
+        "nome": "estadosCombate",
+        "arquivo": "addons/retracao-de-dominio.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "retracao-de-dominio.json",
+        "pai": "addon::retracao-de-dominio.json::@pacote",
+        "hashDado": "7c9d8ce679021b54029f8b124e1de1b1c3c38cd186d8fbf85d99e97cafadc640"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::retracao-de-dominio.json::@pacote::estadosCombate::retracao_ativa",
+      "item": {
+        "chave": "addon::retracao-de-dominio.json::@pacote::estadosCombate::retracao_ativa",
+        "id": "retracao_ativa",
+        "nome": "Retração de Domínio",
+        "arquivo": "addons/retracao-de-dominio.json",
+        "pai": "addon::retracao-de-dominio.json::@pacote::estadosCombate",
+        "caminho": "retracao_ativa",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "retracao-de-dominio.json",
+        "idLocal": "retracao_ativa",
+        "hashDado": "aef9bdd251bd296bde72dd9407e174c50c93d3d3ce62cc312989bcaf707a0046"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::retracao-de-dominio.json::@pacote::estadosCombate::retracao_ativa/ampliaRecursos",
+      "item": {
+        "chave": "addon::retracao-de-dominio.json::@pacote::estadosCombate::retracao_ativa/ampliaRecursos",
+        "id": "retracao_ativa/ampliaRecursos",
+        "nome": "retracao_ativa/ampliaRecursos",
+        "arquivo": "addons/retracao-de-dominio.json",
+        "pai": "addon::retracao-de-dominio.json::@pacote::estadosCombate",
+        "caminho": "retracao_ativa/ampliaRecursos",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "retracao-de-dominio.json",
+        "hashDado": "db6169ff057cad40fce3b740c3d5633469e0a3538532a7025e1d692baae32fd2"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::retracao-de-dominio.json::@pacote::id",
+      "item": {
+        "chave": "addon::retracao-de-dominio.json::@pacote::id",
+        "id": "id",
+        "nome": "id",
+        "arquivo": "addons/retracao-de-dominio.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "retracao-de-dominio.json",
+        "pai": "addon::retracao-de-dominio.json::@pacote",
+        "hashDado": "4bff731a5b3571507287d6d99bda86f8f3c5af3a3c06b883fb88fe3a1a8e5034"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::retracao-de-dominio.json::@pacote::nome",
+      "item": {
+        "chave": "addon::retracao-de-dominio.json::@pacote::nome",
+        "id": "nome",
+        "nome": "nome",
+        "arquivo": "addons/retracao-de-dominio.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "retracao-de-dominio.json",
+        "pai": "addon::retracao-de-dominio.json::@pacote",
+        "hashDado": "8d8b49d564e6f4e054b55abbf39dcfd9386109dfae31fd9cb829af08d4f25367"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::retracao-de-dominio.json::@pacote::paraRaw",
+      "item": {
+        "chave": "addon::retracao-de-dominio.json::@pacote::paraRaw",
+        "id": "paraRaw",
+        "nome": "paraRaw",
+        "arquivo": "addons/retracao-de-dominio.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "retracao-de-dominio.json",
+        "pai": "addon::retracao-de-dominio.json::@pacote",
+        "hashDado": "0289ece8033b573da3841cd5eea4bc968504b022915c4bb5174cab838f4f7c02"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::retracao-de-dominio.json::@pacote::versao",
+      "item": {
+        "chave": "addon::retracao-de-dominio.json::@pacote::versao",
+        "id": "versao",
+        "nome": "versao",
+        "arquivo": "addons/retracao-de-dominio.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "retracao-de-dominio.json",
+        "pai": "addon::retracao-de-dominio.json::@pacote",
+        "hashDado": "39fe4a40977d0585fd5704359e3685b0ada5cf5ee061e5d97385601d120cd0ec"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio",
+      "item": {
+        "chave": "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio",
+        "id": "retracao_de_dominio",
+        "nome": "Retração de Domínio",
+        "arquivo": "addons/retracao-de-dominio.json",
+        "proprietario": null,
+        "tipo": "conteúdo de addon",
+        "addon": "retracao-de-dominio.json",
+        "familia": "aptidoes",
+        "operacao": "acrescenta",
+        "idLocal": "retracao_de_dominio",
+        "hashDado": "406034f397be82c5035ab4e5fddf17349d38bbc377c16e9861983b5a457b3500"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio::efeitos",
+      "item": {
+        "chave": "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio::efeitos",
+        "id": "efeitos",
+        "nome": "efeitos",
+        "arquivo": "addons/retracao-de-dominio.json",
+        "pai": "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio",
+        "caminho": "efeitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "retracao-de-dominio.json",
+        "hashDado": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio::requisitos",
+      "item": {
+        "chave": "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio::requisitos",
+        "id": "requisitos",
+        "nome": "requisitos",
+        "arquivo": "addons/retracao-de-dominio.json",
+        "pai": "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio",
+        "caminho": "requisitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "retracao-de-dominio.json",
+        "hashDado": "aadc96200f7e37ebbfaed6934301def4a65983a3fa42cf4024bb5f7517a03ea8"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio::requisitos/@0",
+      "item": {
+        "chave": "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio::requisitos/@0",
+        "id": "requisitos/@0",
+        "nome": "requisitos/@0",
+        "arquivo": "addons/retracao-de-dominio.json",
+        "pai": "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio",
+        "caminho": "requisitos/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "retracao-de-dominio.json",
+        "hashDado": "04a1d19ec789e2dfd6414360f23b11457de1081a6a73aee57e765456bebf9551"
+      },
+      "proprietarioSugerido": null
+    }
+  ],
+  "removidos": [],
+  "alterados": [],
+  "assinatura": "3da5d4150b93a62dbe74af80892cb5263c81ead5d86cb5c9f6aa0736e53871eb",
+  "decisoes": {
+    "adicoes": {
+      "addon::retracao-de-dominio.json::@pacote": "APT-09",
+      "addon::retracao-de-dominio.json::@pacote::acrescenta": "APT-09",
+      "addon::retracao-de-dominio.json::@pacote::autor": "APT-09",
+      "addon::retracao-de-dominio.json::@pacote::descricao": "APT-09",
+      "addon::retracao-de-dominio.json::@pacote::estadosCombate": "APT-09",
+      "addon::retracao-de-dominio.json::@pacote::estadosCombate::retracao_ativa": "APT-09",
+      "addon::retracao-de-dominio.json::@pacote::estadosCombate::retracao_ativa/ampliaRecursos": "APT-09",
+      "addon::retracao-de-dominio.json::@pacote::id": "APT-09",
+      "addon::retracao-de-dominio.json::@pacote::nome": "APT-09",
+      "addon::retracao-de-dominio.json::@pacote::paraRaw": "APT-09",
+      "addon::retracao-de-dominio.json::@pacote::versao": "APT-09",
+      "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio": "APT-09",
+      "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio::efeitos": "APT-09",
+      "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio::requisitos": "APT-09",
+      "addon::retracao-de-dominio.json::acrescenta.aptidoes::retracao_de_dominio::requisitos/@0": "APT-09"
+    },
+    "remocoes": {},
+    "justificativaAtualizacao": "Pedido humano em 2026-10-25: criar Retração de Domínio como Aptidão que requer Dom 3, com ativação manual e ganho de 20% dos máximos de PV e PE, somando a diferença aos atuais. Registro restrito às chaves novas de addons/retracao-de-dominio.json. Proprietário APT-09, Aptidões de Domínio. Regra da casa, sem aprovação de regra, execução ou auditoria. Todos os dados anteriores permanecem preservados."
+  },
+  "errosColeta": []
+}

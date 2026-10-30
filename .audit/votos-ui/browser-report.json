@@ -1,0 +1,46 @@
+[
+  {
+    "sistema": "afty",
+    "width": 1440,
+    "alturaEditor": 388.421875,
+    "colunas": 2,
+    "edicao": true,
+    "inclusaoRemocao": true,
+    "teclado": true,
+    "persistencia": true,
+    "errors": []
+  },
+  {
+    "sistema": "afty",
+    "width": 390,
+    "alturaEditor": 513.203125,
+    "colunas": 1,
+    "edicao": true,
+    "inclusaoRemocao": true,
+    "teclado": true,
+    "persistencia": true,
+    "errors": []
+  },
+  {
+    "sistema": "player",
+    "width": 1440,
+    "alturaEditor": 388.421875,
+    "colunas": 2,
+    "edicao": true,
+    "inclusaoRemocao": true,
+    "teclado": true,
+    "persistencia": true,
+    "errors": []
+  },
+  {
+    "sistema": "player",
+    "width": 390,
+    "alturaEditor": 513.203125,
+    "colunas": 1,
+    "edicao": true,
+    "inclusaoRemocao": true,
+    "teclado": true,
+    "persistencia": true,
+    "errors": []
+  }
+]

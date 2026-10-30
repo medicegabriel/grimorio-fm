@@ -1,0 +1,17 @@
+{
+  "arquivo": "C:/Projetos/Grimorio/outputs/Chrollo-catarse-corrigida.json",
+  "id": "mtkfm72o-u51uv6n",
+  "constituicao": 28,
+  "limiteConstituicao": 26,
+  "escolhasOutraClasse": 2,
+  "lendarias": {
+    "antes": 2,
+    "total": 5,
+    "escolhidas": 4,
+    "restante": 1
+  },
+  "saldo": 495,
+  "demaisCamposPreservados": true,
+  "compras": 13,
+  "unidades": 22
+}
