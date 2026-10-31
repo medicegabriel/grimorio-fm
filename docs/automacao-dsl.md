@@ -992,3 +992,8 @@ Nenhum canal, variável ou função nova. Três mudanças aditivas, com prova em
   (`ficha/efeitos/exemplos.js`) como concessão por uso, e em `DONO_PV` apontando para o estado raiz
   `comidas_refeicoes`. O grupo das Comidas não tem item de repertório, então `donoPvDoGrupo` cai no
   estado raiz quando não há item, e o cartão do grupo passa a encontrar o benefício.
+
+## Nível de Medo do Demônio Primordial (2026-10-31)
+
+- Variável `demonios_primordiais_nivel_de_medo`: o contador de origem do pacote, sempre presente no contexto (como todo `contadoresOrigem`). O contador agora aceita `inicio`: o valor de quem nunca o mexeu (4 no Demônio Primordial), enquanto o 0 gravado continua 0.
+- Variável `demonios_primordiais_pe_regeneracao`: a faixa de PE da Regeneração Demoníaca na Bancada, lida pelos canais `regeneracaoDados`, `regeneracaoFaces` e `regeneracaoFixa` do Fluxo Sanguíneo Constante.

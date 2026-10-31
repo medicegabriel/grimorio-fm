@@ -9224,7 +9224,7 @@ function OrigemCard({ draft, derived, patch, patchCore, setOrigemId, setOrigemBo
         <div className="mt-4 space-y-2">
           <div className="text-[10px] uppercase tracking-wider text-slate-400">Recursos de Origem</div>
           {contadoresOrigemDeAddon(draft).map((c) => {
-            const valor = valorContadorOrigem(draft, c.id);
+            const valor = valorContadorOrigem(draft, c.id, c);
             const setValor = (novo) => {
               const v = clampContadorOrigem(c, novo);
               patch({ origemContadores: { ...(draft.origemContadores || {}), [c.id]: v } });

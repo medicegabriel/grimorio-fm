@@ -19704,3 +19704,13 @@ falhas são `t-prodigio` (o lançador exige a frase de aprovação) e `t-reconci
 **Ainda aberto:** `revisao:cobertura` já dava FALHOU antes da junção e segue dando, agora com 20 chaves sem mapa de fonte do pacote
 Camellya (antes eram as do Herdado: Vaticano). O hash do catálogo `COMBATE_ESTADOS` no `inventario.json` mudou com a junção dos dois lados e vale uma
 proposta de reconciliação do G00.
+
+## SESSÃO DE 2026-10-31: ADDON DEMÔNIOS PRIMORDIAIS
+
+**Pedido do autor:** *"Faça um addon para adicionar isto pfvr"*, com seis páginas: a origem Demônio Primordial, as Aptidões Demoníacas (Regeneração Demoníaca, Cura Demoníaca Aprimorada e Fluxo Sanguíneo Constante), os Níveis de Medo e a Trilha Demônio Primordial.
+
+**Decisão do autor:** a Regeneração Demoníaca vira linha de cura rolável na Ficha (as outras opções eram só texto).
+
+**O que mudou:** `addons/demonios-primordiais.json` 1.0.0 (detalhes em `docs/afty-addons.md`). No motor, `contadoresOrigem[].inicio` (`afty-contadores-origem.js`, validado em `afty-addons.js`, lido pelo criador e pela DSL) e a `trilha` fora dos campos obrigatórios da Aptidão de addon (`afty-aptidoes.js`).
+
+**Asserts:** `t-demonios-primordiais.mjs` nos dois sistemas. Sem commit ou push.

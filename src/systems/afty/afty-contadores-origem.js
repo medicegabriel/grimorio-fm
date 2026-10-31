@@ -65,6 +65,10 @@ export function contadoresOrigemDeAddon(creature) {
         min: tipo === "bool" ? 0 : Math.trunc(Number(bruto?.min) || 0),
         max: tipo === "bool" ? 1 : (bruto?.max == null ? null : Math.trunc(Number(bruto.max))),
         passo: tipo === "bool" ? 1 : Math.max(1, Math.trunc(Number(bruto?.passo) || 1)),
+        /* O valor de uma ficha que nunca mexeu no contador (2026-10-31, Demônio
+           Primordial: "inicia a campanha com Nível de Medo 4"). Sem `inicio` é o
+           mínimo, como sempre foi. */
+        inicio: tipo === "bool" ? (bruto?.inicio ? 1 : 0) : Math.trunc(Number(bruto?.inicio) || 0),
         requerOrigem,
         dono: { id: `addon:${pacoteId}`, label: String(pacote?.nome ?? pacoteId) },
       });
@@ -73,9 +77,16 @@ export function contadoresOrigemDeAddon(creature) {
   return out;
 }
 
-/** Valor atual de um contador (0 se nunca foi mexido). */
-export function valorContadorOrigem(creature, fullId) {
-  return Math.max(0, Math.trunc(Number(creature?.origemContadores?.[fullId]) || 0));
+/**
+ * Valor atual de um contador. Nunca mexido vale o `inicio` do contador (quando
+ * quem chama o passa) ou 0. Passe o contador sempre que ele estiver à mão.
+ */
+export function valorContadorOrigem(creature, fullId, contador = null) {
+  const gravado = creature?.origemContadores?.[fullId];
+  if (gravado === undefined || gravado === null) {
+    return contador ? clampContadorOrigem(contador, contador.inicio ?? 0) : 0;
+  }
+  return Math.max(0, Math.trunc(Number(gravado) || 0));
 }
 
 /** Aplica min/max do catálogo a um valor novo, antes de gravar. */
@@ -97,7 +108,7 @@ export function clampContadorOrigem(contador, valor) {
 export function origemContadoresDslVars(creature) {
   const out = {};
   for (const c of contadoresOrigemDeAddon(creature)) {
-    out[normalizarVariavel(c.id)] = valorContadorOrigem(creature, c.id);
+    out[normalizarVariavel(c.id)] = valorContadorOrigem(creature, c.id, c);
   }
   return out;
 }

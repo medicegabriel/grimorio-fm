@@ -490,6 +490,20 @@ Material Pesado tem requisito de revestimento Médio/Robusto por ID, sem
 equivalência definida para Lobo Saltitante. Não concede Fortitude até isso.
 **Anotado:** 2026-10-08, limites da automação dos oito equipamentos.
 
+### Demônios Primordiais: o que falta e o que segue de mesa
+**Onde:** `addons/demonios-primordiais.json`
+**Situação:** o autor enviou a origem, as três Aptidões Demoníacas, os Níveis de Medo (só até o Nível 0) e a Trilha Demônio Primordial. Leituras feitas sem ele:
+1. **As Aptidões Demoníacas ficam em Especiais**, presas à origem Demônio Primordial, sem tirar a Energia Reversa (o texto diz "diferente da Energia Reversa", e não que ela some).
+2. **"Origem Demônio ou Contrato de Hibridismo"** (pré-requisito da Regeneração Demoníaca): nenhuma das duas existe no app, então só a Demônio Primordial libera a Aptidão.
+3. **"+2 Pontos em Todos os Atributos"** é fixo (+2 nos seis, respeitando o limite), e não pontos para distribuir.
+4. **"Habilidade de Especialização adicional"** é +1 vaga de Habilidade, e "Aptidão Amaldiçoada adicional" é +1 vaga de Aptidão.
+5. **A faixa de PE do Fluxo** vai de 0 a 2 + metade de CL, e o PE não é descontado sozinho (como a Regeneração Corporal).
+6. **O Nível de Medo 4 inicial** é o valor padrão do contador, que o criador ajusta de 0 a 5.
+
+Ficaram de mesa: a imunidade a Abalado e Amedrontado e o -2 nos TRs dos hostis, a Reação do Nível II, o TR de Vontade do Nível III, a aura do Nível IV, o TR de Vontade e as penalidades do Nível V, o Ciclo Infernal, a condição Esquecido do Nível 0, a cura maximizada pelo sangue fresco e a Reação do Fluxo Sanguíneo Constante.
+**Precisa:** o texto dos Níveis de Medo 1 a 5 (a página do livro parou no Nível 0, e a "Sua Significância" promete benefícios e limitações por nível), outras Trilhas Demoníacas se o autor quiser, e a confirmação de 1 a 6. A revisão G00 (lote de addon) deste pacote ainda não foi aberta.
+**Anotado:** 2026-10-31, ao fazer o addon Demônios Primordiais
+
 ### Golem de Sangue: leituras para confirmar e o que segue de mesa
 **Onde:** `addons/golem-de-sangue.json`
 **Situação:** o autor decidiu em 2026-10-15 a Prisão da Besta como Voto automático, o Corpo Morto em

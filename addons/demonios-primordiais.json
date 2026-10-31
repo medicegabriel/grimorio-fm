@@ -1,0 +1,329 @@
+{
+  "id": "demonios-primordiais",
+  "nome": "Demônios Primordiais",
+  "versao": "1.0.0",
+  "autor": "Templas",
+  "paraRaw": "afty",
+  "descricao": "Origem Demônio Primordial: Nível de Medo (0 a 5, começa em 4 e se ajusta no criador), +2 em todos os atributos, 1 Habilidade de Especialização e 1 Aptidão Amaldiçoada adicionais. Traz a Trilha Demoníaca Demônio Primordial com os cinco estágios (Existência Ancestral, Autoridade Conceitual, Medo Instintivo, Calamidade Viva e Terror Primordial), com os números que dependem do Nível de Medo nos Resultados. As Aptidões Demoníacas (Regeneração Demoníaca, Cura Demoníaca Aprimorada e Fluxo Sanguíneo Constante) entram na aba Especiais: a Regeneração vira uma linha de cura rolável na Ficha, 1 PE por bloco, e o Fluxo tem a faixa PE da Regeneração na Bancada.",
+  "resumo": "Origem Demônio Primordial com Nível de Medo, Trilha Demoníaca e Aptidões de Regeneração Demoníaca",
+  "categoria": "origens",
+  "permite": [],
+  "contadoresOrigem": [
+    {
+      "id": "nivel_de_medo",
+      "label": "Nível de Medo",
+      "tipo": "contador",
+      "min": 0,
+      "max": 5,
+      "inicio": 4,
+      "requerOrigem": "demonio_primordial",
+      "title": "De 0 a 5: o quanto o conceito é conhecido e temido pela humanidade. Cada nível libera um estágio da Trilha Demoníaca. Começa em 4"
+    }
+  ],
+  "estadosCombate": [
+    {
+      "id": "pe_regeneracao",
+      "label": "Regeneração Demoníaca: PE Gasto",
+      "tipo": "faixa",
+      "min": 0,
+      "max": "2 + piso(cl / 2)",
+      "passo": 1,
+      "title": "PE gastos pelo Fluxo Sanguíneo Constante no início do turno",
+      "requerAptidao": "fluxo_sanguineo_constante"
+    }
+  ],
+  "acrescenta": {
+    "origens": [
+      {
+        "id": "demonio_primordial",
+        "nome": "Demônio Primordial",
+        "lore": "Antes da linguagem, da religião ou da própria civilização, já existiam medos que acompanhavam a humanidade. A escuridão, a queda, o envelhecimento e outros terrores instintivos deram origem aos Demônios Primordiais: entidades que não nasceram da cultura, mas sim, da própria natureza humana.\n\nPor representarem medos universais e atemporais, estão entre os seres mais antigos e poderosos do Inferno. Ao escolher este Traço de Origem, seu personagem é considerado um Demônio Primordial e recebe os seguintes benefícios:",
+        "restricoes": [
+          "Por representarem o ápice da hierarquia demoníaca, recomenda-se que exista apenas um Demônio Primordial por campanha, ficando sua utilização a critério do Narrador."
+        ],
+        "bonusAtributos": {
+          "forca": 2,
+          "destreza": 2,
+          "constituicao": 2,
+          "inteligencia": 2,
+          "sabedoria": 2,
+          "presenca": 2
+        },
+        "caracteristicas": [
+          {
+            "id": "beneficios_de_origem",
+            "nome": "Benefícios",
+            "descricao": "- Você inicia a campanha com **Nível de Medo 4**.\n- Recebe **+2 Pontos em Todos os Atributos**.\n- Recebe **1 Habilidade de Especialização adicional**, respeitando seus pré-requisitos.\n- Recebe **1 Aptidão Amaldiçoada adicional**, respeitando seus pré-requisitos."
+          },
+          {
+            "id": "niveis_de_medo",
+            "nome": "Níveis de Medo",
+            "descricao": "Os Demônios existem porque são lembrados. Sua força não depende apenas de sua habilidade individual, mas da forma como seu conceito habita o imaginário coletivo. Quanto maior o medo que a humanidade sente por determinado conceito, maior é a influência desse Demônio sobre o mundo.\n\n**Ciclo Infernal.** Enquanto possuir ao menos 1 Nível de Medo, ao morrer, seu corpo desaparece e sua alma retorna ao Inferno, renascendo em sua forma original, sem as memórias da vida anterior e com uma nova personalidade. Caso morra novamente no Inferno, você renasce aleatoriamente na Terra, podendo vagar livremente ou se apoderar de um cadáver humano, tornando-se um Possesso.\n\n### Sua Significância\n\nO Nível de Medo varia de 0 a 5 e representa o quanto um conceito é conhecido e temido pela humanidade. Cada nível concede benefícios e limitações próprias, e a partir do primeiro nível, você desbloqueia novos estágios da Trilha Demoníaca escolhida pelo personagem.\n\n**Nível 0: Esquecido.** Seu conceito praticamente desapareceu da consciência humana. Você recebe permanentemente a condição especial Esquecido.\n\n- **Esquecido.** Qualquer criatura pode gastar uma Ação Completa para executar ou causar um Ferimento Complexo diretamente em você, sem necessidade de reduzir seus Pontos de Vida a 0.",
+            "resultados": [
+              {
+                "label": "Nível de Medo",
+                "expr": "demonios_primordiais_nivel_de_medo"
+              },
+              {
+                "label": "Condição",
+                "expr": "(demonios_primordiais_nivel_de_medo >= 1)",
+                "textos": [
+                  "Esquecido",
+                  "Sem a Condição Esquecido"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "trilha_demonio_primordial",
+            "nome": "Trilha Demoníaca: Demônio Primordial",
+            "descricao": "Embora todos os Demônios se fortaleçam através do medo, nem todos evoluem da mesma maneira. Alguns tornam-se manipuladores capazes de controlar multidões. Outros transformam seus corpos em armas vivas, desenvolvem adaptações biológicas monstruosas ou alcançam velocidades e poderes incompreensíveis. Essas diferenças são representadas pelas Trilhas Demoníacas.\n\nAo criar um Demônio, escolha uma Trilha Demoníaca. Ela representa a forma como seu conceito se manifesta e determina quais habilidades serão desbloqueadas conforme seu Nível de Medo aumenta. Cada Trilha possui cinco estágios, correspondentes aos Níveis de Medo que possuem mecânicas próprias e pode favorecer estilos completamente diferentes de jogo, como combate físico, manipulação, adaptação biológica, furtividade, controle de campo ou conjuração. Dessa forma, dois Demônios podem possuir o mesmo Nível de Medo, mas desenvolver habilidades completamente distintas.\n\nVocê não nasceu do medo moderno. Seu conceito existe desde os primeiros instintos da vida. Antes da linguagem, antes da civilização e até mesmo antes da racionalidade, sua existência já moldava o comportamento das criaturas vivas. Enquanto outros Demônios crescem através do medo, você apenas desperta fragmentos daquilo que sempre foi.",
+            "mesa": true
+          },
+          {
+            "id": "medo_i_existencia_ancestral",
+            "nome": "Nível de Medo I: Existência Ancestral",
+            "descricao": "Sua presença desperta um medo que palavras não conseguem explicar. Você recebe imunidade às condições Abalado e Amedrontado.\n\nAlém disso, criaturas hostis com ND inferior à metade do seu nível sofrem -2 em Testes de Resistência contra suas habilidades.",
+            "resultados": [
+              {
+                "label": "Estágio",
+                "expr": "(demonios_primordiais_nivel_de_medo >= 1)",
+                "textos": [
+                  "Bloqueado",
+                  "Desbloqueado"
+                ]
+              },
+              {
+                "label": "ND Máximo Afetado",
+                "expr": "(demonios_primordiais_nivel_de_medo >= 1) * piso(nd / 2)"
+              }
+            ]
+          },
+          {
+            "id": "medo_ii_autoridade_conceitual",
+            "nome": "Nível de Medo II: Autoridade Conceitual",
+            "descricao": "Seu conceito impõe sua existência sobre outros poderes.\n\nUma vez por rodada, quando uma criatura utilizar uma habilidade, técnica ou feitiço que possua interação direta com seu conceito, você pode utilizar uma Reação para enfraquecê-la. Escolha um:\n\n- Reduzir sua CD em um valor igual ao seu Nível de Medo;\n- Reduzir seu dano em um número de dados igual ao seu Bônus de Treinamento (mínimo 1);\n\nEssa habilidade não funciona contra Técnicas Máximas.",
+            "resultados": [
+              {
+                "label": "Estágio",
+                "expr": "(demonios_primordiais_nivel_de_medo >= 2)",
+                "textos": [
+                  "Bloqueado",
+                  "Desbloqueado"
+                ]
+              },
+              {
+                "label": "Redução de CD",
+                "expr": "(demonios_primordiais_nivel_de_medo >= 2) * demonios_primordiais_nivel_de_medo"
+              },
+              {
+                "label": "Dados de Dano Reduzidos",
+                "expr": "(demonios_primordiais_nivel_de_medo >= 2) * max(1, bt)"
+              }
+            ]
+          },
+          {
+            "id": "medo_iii_medo_instintivo",
+            "nome": "Nível de Medo III: Medo Instintivo",
+            "descricao": "Sua simples presença desperta o medo primordial existente em todos os seres vivos.\n\nVocê pode, como uma Ação Bônus, fazer todas as criaturas hostis que possam percebê-lo realizar um TR de Vontade. Em caso de falha, até o início do próximo turno elas:\n\n- Ficam Desorientadas e Abaladas;\n- Sofrem -2 em ataques;\n- Possuem deslocamento reduzido pela metade.\n\nUma criatura que obtenha sucesso torna-se imune a esse efeito durante a cena.",
+            "resultados": [
+              {
+                "label": "Estágio",
+                "expr": "(demonios_primordiais_nivel_de_medo >= 3)",
+                "textos": [
+                  "Bloqueado",
+                  "Desbloqueado"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "medo_iv_calamidade_viva",
+            "nome": "Nível de Medo IV: Calamidade Viva",
+            "descricao": "Você deixa de parecer apenas um indivíduo. Sua presença altera a própria realidade ao redor.\n\nEm um raio de 12 metros:\n\n- terreno difícil não afeta você;\n- criaturas hostis não podem receber vantagem em testes de ataque;\n- sempre que uma criatura falhar em um Teste de Resistência contra você, ela sofre dano adicional igual ao seu Nível de Medo + seu modificador de Presença.\n\nAlém disso, efeitos que removeriam condições impostas por você possuem sua CD aumentada em +2.",
+            "resultados": [
+              {
+                "label": "Estágio",
+                "expr": "(demonios_primordiais_nivel_de_medo >= 4)",
+                "textos": [
+                  "Bloqueado",
+                  "Desbloqueado"
+                ]
+              },
+              {
+                "label": "Dano Adicional na Falha",
+                "expr": "(demonios_primordiais_nivel_de_medo >= 4) * (demonios_primordiais_nivel_de_medo + mod_presenca)"
+              }
+            ]
+          },
+          {
+            "id": "medo_v_terror_primordial",
+            "nome": "Nível de Medo V: Terror Primordial",
+            "descricao": "Você manifesta um fragmento daquilo que tornou seu conceito eterno.\n\nNo início de cada rodada, escolha um inimigo que possa percebê-lo. Ele deve realizar um TR de Vontade. Em caso de falha, escolha um dos efeitos:\n\n- Perde sua Ação Bônus até o próximo turno;\n- Perde sua Reação até o próximo turno;\n- Sofre desvantagem no primeiro Teste de Resistência realizado na rodada;\n- Reduz sua RD em um valor igual ao seu Bônus de Treinamento até o início do próximo turno;\n- Caso ele tire 1 no TR, você pode fazer ele perder uma Ação Comum até o próximo turno.\n\nAlém disso, uma vez por cena, quando uma criatura suceder em um Teste de Resistência contra uma de suas habilidades, você poderá obrigá-la a repetir imediatamente esse teste. Ela utiliza o segundo resultado.",
+            "resultados": [
+              {
+                "label": "Estágio",
+                "expr": "(demonios_primordiais_nivel_de_medo >= 5)",
+                "textos": [
+                  "Bloqueado",
+                  "Desbloqueado"
+                ]
+              },
+              {
+                "label": "Redução de RD",
+                "expr": "(demonios_primordiais_nivel_de_medo >= 5) * bt"
+              }
+            ]
+          }
+        ],
+        "efeitos": [
+          {
+            "canal": "vagasHabilidade",
+            "expr": "1",
+            "nome": "Benefícios do Demônio Primordial"
+          },
+          {
+            "canal": "vagasAptidao",
+            "expr": "1",
+            "nome": "Benefícios do Demônio Primordial"
+          }
+        ],
+        "especializacaoExclusivaId": null
+      }
+    ],
+    "aptidoes": [
+      {
+        "id": "regeneracao_demoniaca",
+        "nome": "Regeneração Demoníaca",
+        "categoria": "especiais",
+        "descricao": "O corpo de um Demônio converte Energia Amaldiçoada e sangue diretamente em matéria viva, reconstruindo músculos, órgãos e tecidos de maneira extremamente eficiente. Diferente da Energia Reversa, essa regeneração faz parte da fisiologia natural dos demônios, dispensando técnicas avançadas de manipulação energética.\n\nComo uma Ação Comum, você pode gastar Pontos de Energia (PE) para recuperar seus Pontos de Vida. Para cada 1 PE gasto, você recupera 2d6 + seu modificador de Constituição ou Presença no Total da Cura. Nos níveis 10, 15 e 20, essa cura aumenta em +1d6. Você pode gastar uma quantidade máxima de PE por utilização igual a 2 + metade do seu Nível de Aptidão de Controle e Leitura. Sempre que consumir sangue fresco de uma criatura Pequena ou maior, a próxima utilização de Regeneração Demoníaca realizada até o final do seu próximo turno recebe cura maximizada.\n\nEsta habilidade só pode ser utilizada para curar o próprio corpo. Pré-Requisito: Origem Demônio ou Contrato de Hibridismo.",
+        "requisitos": [
+          {
+            "tipo": "origem",
+            "id": "demonio_primordial"
+          }
+        ],
+        "fonteCura": {
+          "alcance": "Você",
+          "nome": "Regeneração Demoníaca",
+          "unidade": {
+            "rotulo": "PE",
+            "porBloco": 1
+          }
+        },
+        "efeitos": [
+          {
+            "canal": "curaDados",
+            "alvo": "regeneracao_demoniaca",
+            "expr": "2 + (nd >= 10) + (nd >= 15) + (nd >= 20)"
+          },
+          {
+            "canal": "curaFaces",
+            "alvo": "regeneracao_demoniaca",
+            "expr": "6"
+          },
+          {
+            "canal": "curaFixa",
+            "alvo": "regeneracao_demoniaca",
+            "expr": "max(mod_constituicao, mod_presenca)"
+          },
+          {
+            "canal": "curaPontos",
+            "alvo": "regeneracao_demoniaca",
+            "expr": "2 + piso(cl / 2)"
+          }
+        ]
+      },
+      {
+        "id": "cura_demoniaca_aprimorada",
+        "nome": "Cura Demoníaca Aprimorada",
+        "categoria": "especiais",
+        "descricao": "Seu corpo aprende a utilizar o sangue consumido com máxima eficiência, reconstruindo tecidos de forma quase instantânea.\n\nO dado da sua Regeneração Demoníaca aumenta para d8, e você passa a somar o dobro do seu modificador de Constituição ou Carisma à cura.\n\nA quantidade máxima de PE que pode gastar em uma única utilização aumenta para 2 + Nível de Aptidão em Controle e Leitura.\n\nPré-Requisitos: Regeneração Demoníaca, Nível de Aptidão em Controle e Leitura 3 e Nível 10.",
+        "requisitos": [
+          {
+            "tipo": "aptidao",
+            "id": "regeneracao_demoniaca"
+          },
+          {
+            "tipo": "trilha",
+            "trilha": "cl",
+            "valor": 3
+          },
+          {
+            "tipo": "nd",
+            "valor": 10
+          }
+        ],
+        "efeitos": [
+          {
+            "canal": "curaFaces",
+            "alvo": "regeneracao_demoniaca",
+            "expr": "8"
+          },
+          {
+            "canal": "curaFixa",
+            "alvo": "regeneracao_demoniaca",
+            "expr": "max(mod_constituicao, mod_presenca)"
+          },
+          {
+            "canal": "curaPontos",
+            "alvo": "regeneracao_demoniaca",
+            "expr": "cl - piso(cl / 2)"
+          },
+          {
+            "canal": "regeneracaoFaces",
+            "expr": "8",
+            "quando": "demonios_primordiais_pe_regeneracao",
+            "duracao": "temporaria"
+          },
+          {
+            "canal": "regeneracaoFixa",
+            "expr": "max(mod_constituicao, mod_presenca)",
+            "quando": "demonios_primordiais_pe_regeneracao",
+            "duracao": "temporaria"
+          }
+        ]
+      },
+      {
+        "id": "fluxo_sanguineo_constante",
+        "nome": "Fluxo Sanguíneo Constante",
+        "categoria": "especiais",
+        "descricao": "Seu metabolismo demoníaco permanece em constante regeneração, utilizando automaticamente energia e sangue para reparar qualquer dano. No início do seu turno, você pode utilizar Regeneração Demoníaca como uma Ação Livre, seguindo todas as regras normais da aptidão.\n\nCaso não utilize essa cura no início do turno, você pode ativá-la como Reação quando sofrer dano.\n\nPré-Requisitos: Regeneração Demoníaca, Nível de Aptidão em Controle e Leitura 3 e Nível 10.",
+        "requisitos": [
+          {
+            "tipo": "aptidao",
+            "id": "regeneracao_demoniaca"
+          },
+          {
+            "tipo": "trilha",
+            "trilha": "cl",
+            "valor": 3
+          },
+          {
+            "tipo": "nd",
+            "valor": 10
+          }
+        ],
+        "efeitos": [
+          {
+            "canal": "regeneracaoDados",
+            "expr": "demonios_primordiais_pe_regeneracao * (2 + (nd >= 10) + (nd >= 15) + (nd >= 20))",
+            "duracao": "temporaria"
+          },
+          {
+            "canal": "regeneracaoFaces",
+            "expr": "6",
+            "quando": "demonios_primordiais_pe_regeneracao",
+            "duracao": "temporaria"
+          },
+          {
+            "canal": "regeneracaoFixa",
+            "expr": "max(mod_constituicao, mod_presenca)",
+            "quando": "demonios_primordiais_pe_regeneracao",
+            "duracao": "temporaria"
+          }
+        ]
+      }
+    ]
+  }
+}

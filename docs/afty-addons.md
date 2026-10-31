@@ -3219,3 +3219,18 @@ lê os textos e os 12 animais de `h-corp.json` uma vez, e o pacote sai inteiro.
 - ⚠ Não há requisito "não ter a Origem X", então uma ficha da H Corp pode pegar os Talentos e
   receber Boulos e Zodíaco duas vezes. Os dois interruptores ficam separados e cada um liga só o
   seu animal.
+
+## Demônios Primordiais (2026-10-31)
+
+`addons/demonios-primordiais.json` 1.0.0, a origem Demônio Primordial com o Nível de Medo, a Trilha Demoníaca e as Aptidões Demoníacas.
+
+| Parte | Como ficou |
+|---|---|
+| Benefícios | `bonusAtributos` com +2 nos seis atributos, e `vagasHabilidade` e `vagasAptidao` +1 pelos efeitos da origem |
+| Nível de Medo | `contadoresOrigem` de 0 a 5 com `inicio: 4` ("inicia a campanha com Nível de Medo 4"), na aba Origem do criador. A variável é `demonios_primordiais_nivel_de_medo` |
+| Trilha Demônio Primordial | os cinco estágios como características da origem, em texto fiel. O estágio abre pelo Nível de Medo nos Resultados (Bloqueado ou Desbloqueado), com os números que dependem dele: ND máximo afetado (metade do nível), redução de CD (o Nível de Medo) e de dados (BT, mínimo 1), dano adicional (Nível de Medo + mod. de Presença) e redução de RD (BT). A imunidade a condições, as reações, os TRs e a aura ficam de mesa |
+| Regeneração Demoníaca | Aptidão em Especiais com `fonteCura` (1 PE por bloco): 2d6 por PE, +1d6 nos níveis 10, 15 e 20, mod. de Constituição ou Presença uma vez, teto de 2 + metade de CL. A cura maximizada pelo sangue fresco fica de mesa |
+| Cura Demoníaca Aprimorada | d8, o mod. a mais (dobro) e o teto de 2 + CL, somando nas mesmas linhas. O "Carisma" do texto é a Presença do app |
+| Fluxo Sanguíneo Constante | estado de faixa do pacote (PE gasto no turno) e os canais de regeneração do início do turno, espelho do Fluxo Imparável da Maldição. A Reação ao sofrer dano fica de mesa |
+
+**Motor.** Dois ajustes genéricos: `contadoresOrigem[].inicio` (valor de quem nunca mexeu no contador, validado dentro da faixa) e a `trilha` deixou de ser obrigatória numa Aptidão de addon (ela vem da categoria, e Especiais não tem). ⚠ Motor e pacote vão no mesmo push. Assert: `t-demonios-primordiais.mjs`.

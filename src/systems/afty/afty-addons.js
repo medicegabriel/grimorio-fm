@@ -1960,6 +1960,13 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
       && contador.max != null && Math.trunc(Number(contador.max)) < Math.trunc(Number(contador.min) || 0)) {
       problemas.push(`${onde}: faixa inválida.`);
     }
+    if (contador.inicio != null && (contador.tipo ?? "contador") === "contador") {
+      const ini = Number(contador.inicio);
+      const min = Math.trunc(Number(contador.min) || 0);
+      if (!Number.isInteger(ini) || ini < min || (contador.max != null && ini > Math.trunc(Number(contador.max)))) {
+        problemas.push(`${onde}: "inicio" precisa ser inteiro e ficar dentro da faixa.`);
+      }
+    }
   }
 
   /* Os vínculos de Feitiço e os contadores de sessão (2026-10-15). */
