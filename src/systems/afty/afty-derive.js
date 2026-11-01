@@ -307,7 +307,7 @@ const acertoDosEncantamentos = (fa) =>
  * `substitui` de um combatente mudava o número do vizinho. Ver `comEscopoDaFicha`.
  */
 export function deriveAfty(creature, opcoes = {}) {
-  /* Os pacotes embutidos (Guerra de Feiticeiros) entram em dia ANTES de tudo:
+  /* Os pacotes compostos com fonte instalada entram em dia ANTES de tudo:
      a cópia que a ficha guardou pode ser de uma versão velha, e o escopo da
      ficha abaixo já lê o `substitui` dela. Devolve a mesma ficha quando não há
      nada a fazer. Ver afty-addons-compostos.js. */

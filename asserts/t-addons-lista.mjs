@@ -7,6 +7,7 @@ const L = await import(R + "afty-addons-lista.js");
 const LL = await import(R + "afty-lista-lateral.js");
 const AD = await import(R + "afty-addons.js");
 const C = await import(R + "afty-addons-compostos.js");
+const { fonteExemplo, ID_EXEMPLO } = await import("./fonte-composta-exemplo.mjs");
 
 let ok = 0;
 const bad = [];
@@ -33,7 +34,7 @@ t("categoria declarada é uma das conhecidas", pacotes.filter((p) => p.json.cate
 t("nenhum Addon cai em Outros, nem pela categoria automática", pacotes.filter((p) => L.categoriaDe(p.json) === "outros").map((p) => p.arquivo), []);
 t(`todo resumo declarado cabe em ${L.RESUMO_MAX} caracteres`, pacotes.filter((p) => (p.json.resumo ?? "").length > L.RESUMO_MAX).map((p) => p.arquivo), []);
 t("o resumo declarado cabe em uma linha de lista (até 110)", pacotes.filter((p) => (p.json.resumo ?? "").length > 110).map((p) => p.arquivo + " " + p.json.resumo.length), []);
-t("todo pacote continua válido com os campos novos", pacotes.filter((p) => AD.validarPacote(AD.normalizarPacote(p.json)).length > 0 && p.json.id !== "guerra-de-feiticeiros").map((p) => p.arquivo), []);
+t("todo pacote continua válido com os campos novos", pacotes.filter((p) => AD.validarPacote(AD.normalizarPacote(p.json)).length > 0).map((p) => p.arquivo), []);
 t("o normalizador guarda resumo e categoria", pacotes.every((p) => { const n = AD.normalizarPacote(p.json); return n.resumo === (p.json.resumo ?? "") && n.categoria === (p.json.categoria ?? ""); }), true);
 
 /* A GUARDA DE REDAÇÃO. Os sinais de texto de IA da página "Signs of AI writing" da Wikipedia,
@@ -91,22 +92,22 @@ t("resumo declarado acima do teto é cortado", L.resumoDe({ resumo: "x ".repeat(
 /* ------------------------------------------------------------ */
 /* OS ITENS                                                      */
 /* ------------------------------------------------------------ */
-const guerra = C.fonteEmbutida("guerra-de-feiticeiros");
+const exemplo = fonteExemplo();
 const yna = AD.normalizarPacote(pacotes.find((p) => p.json.id === "yna").json);
 const hcorp = AD.normalizarPacote(pacotes.find((p) => p.json.id === "h-corp").json);
 const antigo = AD.normalizarPacote(pacotes.find((p) => p.json.id === "regras-grimorio").json);
-const copiaGuerra = C.compor(guerra, "player", {});
+const copiaExemplo = C.compor(exemplo, "player", {});
 const itens = L.montarItens({
   biblioteca: [yna, hcorp, { ...yna, nome: "Duplicado" }],
-  naFicha: [copiaGuerra, antigo],
-  embutidos: [guerra],
+  naFicha: [copiaExemplo, antigo],
+  compostos: [exemplo],
   estadoDe: { "regras-grimorio": { estado: "só na ficha" }, yna: { estado: "desatualizado", versaoBiblioteca: "2.0.0" } },
   avisosDe: { "regras-grimorio": ["Continua ligado."] },
   barradoDe: (p) => (p.id === "h-corp" ? ["Criação de Armas"] : []),
 });
 const porId = (id) => itens.find((i) => i.id === id);
-t("cada id aparece uma vez", itens.map((i) => i.id), ["guerra-de-feiticeiros", "yna", "h-corp", "regras-grimorio"]);
-t("o embutido usa a fonte do app e vem marcado", [porId("guerra-de-feiticeiros").embutido, porId("guerra-de-feiticeiros").pacote === guerra], [true, true]);
+t("cada id aparece uma vez", itens.map((i) => i.id), [ID_EXEMPLO, "yna", "h-corp", "regras-grimorio"]);
+t("o composto usa a fonte instalada, vem marcado e conta como instalado", [porId(ID_EXEMPLO).composto, porId(ID_EXEMPLO).pacote === exemplo, porId(ID_EXEMPLO).naBiblioteca], [true, true, true]);
 t("ligado é o que a ficha carrega", itens.map((i) => i.ligado), [true, false, false, true]);
 t("a categoria vira o tipo do item", itens.map((i) => i.tipo), ["regras", "origens", "origens", "regras"]);
 t("pacote só na ficha fica fora da biblioteca", [porId("regras-grimorio").foraDaBiblioteca, porId("regras-grimorio").naBiblioteca], [true, false]);
@@ -114,7 +115,7 @@ t("pacote da biblioteca está nela", [porId("yna").naBiblioteca, porId("yna").fo
 t("aviso do parcial chega ao item", porId("regras-grimorio").avisos, ["Continua ligado."]);
 t("desatualizado vira aviso", porId("yna").avisos, ["A biblioteca tem a versão 2.0.0."]);
 t("pacote barrado avisa quem barra e não está ligado", porId("h-corp").avisos, ["Não liga junto com Criação de Armas."]);
-t("o filtro Ligados", itens.filter(FILTROS_PASSA("ligados")).map((i) => i.id), ["guerra-de-feiticeiros", "regras-grimorio"]);
+t("o filtro Ligados", itens.filter(FILTROS_PASSA("ligados")).map((i) => i.id), [ID_EXEMPLO, "regras-grimorio"]);
 t("o filtro Aviso", itens.filter(FILTROS_PASSA("aviso")).map((i) => i.id), ["yna", "h-corp", "regras-grimorio"]);
 function FILTROS_PASSA(id) { return L.FILTROS_DE_ADDON.find((f) => f.id === id).aplica; }
 t("a busca acha pelo nome de uma entrada que o pacote acrescenta", L.textoDeBuscaDoAddon(porId("h-corp")).includes("Zodíaco") || L.textoDeBuscaDoAddon(porId("h-corp")).includes("Boulos"), true);
@@ -125,14 +126,14 @@ t("a busca acha pelo resumo e pela categoria", [L.textoDeBuscaDoAddon(porId("yna
 /* O QUE O PACOTE MUDA                                           */
 /* ------------------------------------------------------------ */
 const rotulos = { familia: (id) => ({ talentos: "Talento", treinamentos: "Linha de Treinamento", melhoriasSuperiores: "Melhoria Superior", lendarias: "Habilidade Lendária", treinosEspeciais: "Treino Especial", opcoesTalento: "Opção de Talento" })[id] ?? id, liberacao: (id) => id, primitiva: (id) => "Prim " + id };
-const secoes = L.oQueMuda(copiaGuerra, rotulos);
-t("seções do Guerra no Player", secoes.map((s) => s.titulo), ["Acrescenta", "Remenda", "Regras", "Libera"]);
+const secoes = L.oQueMuda(copiaExemplo, rotulos);
+t("seções do composto no Player", secoes.map((s) => s.titulo), ["Acrescenta", "Remenda", "Regras", "Libera"]);
 t("a seção Regras traz as regras em português", secoes.find((s) => s.titulo === "Regras").linhas.includes("PV Final ×2"), true);
-t("a seção Acrescenta nomeia as entradas, no plural certo", secoes[0].linhas.some((l) => l.startsWith("3 Talentos: ")), true);
+t("a seção Acrescenta nomeia as entradas, no plural certo", secoes[0].linhas.some((l) => l.startsWith("2 Talentos: ")), true);
 t("singular quando há um só", secoes[0].linhas.some((l) => l.startsWith("1 Linha de Treinamento: ")), true);
-t("plural de rótulo composto", secoes.find((s) => s.titulo === "Remenda").linhas, ["11 Melhorias Superiores", "16 Habilidades Lendárias", "1 Treino Especial"]);
+t("plural de rótulo composto", secoes.find((s) => s.titulo === "Remenda").linhas, ["2 Melhorias Superiores", "2 Habilidades Lendárias", "1 Treino Especial"]);
 t("os ids de reabertura viram nomes", secoes.find((s) => s.titulo === "Libera").linhas.filter((l) => l.startsWith("Reabre")), ["Reabre Versatilidade Extrema", "Reabre Alma Livre", "Reabre Atributo"]);
-t("a criatura não vê as regras de PV", L.oQueMuda(C.compor(guerra, "afty", {}), rotulos).find((s) => s.titulo === "Regras").linhas.some((l) => l.startsWith("PV Final")), false);
+t("a criatura não vê as regras de PV", L.oQueMuda(C.compor(exemplo, "afty", {}), rotulos).find((s) => s.titulo === "Regras").linhas.some((l) => l.startsWith("PV Final")), false);
 t("o que não tem conteúdo não vira seção", L.oQueMuda({ acrescenta: {} }, rotulos), []);
 t("lista com mais de 6 nomes diz quantos faltam", L.oQueMuda({ acrescenta: { talentos: Array.from({ length: 9 }, (_, i) => ({ nome: "T" + i })) } }, rotulos)[0].linhas[0].endsWith("e mais 3"), true);
 t("pluralização das 19 famílias de Addon",

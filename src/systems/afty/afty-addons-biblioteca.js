@@ -22,11 +22,20 @@
  * Chave `fm_addons_afty_v1`, na convenção de isolamento do sistema (a mesma de
  * `fm_creatures_afty_v1`): as duas versões de regra dividem o mesmo
  * `localStorage` e não podem se ver.
+ *
+ * ⚠ Um pacote COMPOSTO (com `ajustes`, `porSistema`, `absorve`...) entra por aqui
+ * como qualquer JSON colado, mas NÃO fica nesta lista: a fonte vai para o
+ * registro de `afty-addons-compostos.js`, que tem chave própria, porque o
+ * normalizador do pacote comum apagaria os campos de composição. É o único tipo
+ * de pacote que as fichas dessa máquina acompanham sozinhas.
  * ============================================================
  */
 
 import { normalizarPacote, validarPacote, PACOTE_MAX } from "./afty-addons";
-import { ehEmbutido } from "./afty-addons-compostos";
+import {
+  temComposicao, validarFonteComposta, compor, ehComposto, fonteComposta,
+  registrarFonteComposta, removerFonteComposta,
+} from "./afty-addons-compostos";
 
 const CHAVE = "fm_addons_afty_v1";
 
@@ -67,21 +76,24 @@ export function gravarBiblioteca(lista) {
  * portão DURO. O outro portão, o da ficha já salva, é a linha morta e marcada,
  * e ele não impede nada: ficha salva sempre abre.
  *
- * Devolve `{ ok, problemas, biblioteca }`.
+ * Devolve `{ ok, problemas, biblioteca }`, e `composto: true` quando o pacote era
+ * composto e foi para o registro de fontes em vez de para a lista.
  */
 export function instalarPacote(cru, { substituir = false } = {}) {
-  const p = normalizarPacote(cru);
   const atual = lerBiblioteca();
-  /* ⚠ PACOTE EMBUTIDO NÃO ENTRA PELA BIBLIOTECA. A cópia colada perderia os campos
-     de composição (o normalizador os descarta) e a hidratação a trocaria pela
-     fonte do app sem avisar. Para mudar o pacote, edita-se o JSON do app. */
-  if (ehEmbutido(p.id)) {
+  /* ⚠ A CÓPIA QUE UMA FICHA CARREGA NÃO SE INSTALA. Ela já veio composta para o
+     sistema da ficha e sem os campos que fazem o pacote ser composto: entrar na
+     lista congelaria uma versão que ninguém atualiza. Quem quer o pacote precisa
+     do JSON completo. */
+  if (cru && typeof cru === "object" && cru.composicao) {
     return {
       ok: false,
-      problemas: [`"${p.nome || p.id}" já vem embutido no app e se atualiza sozinho. Ele não se instala pela biblioteca.`],
+      problemas: [`"${cru.nome || cru.id}" é a cópia que uma ficha carrega. Instale o JSON completo do pacote.`],
       biblioteca: atual,
     };
   }
+  if (temComposicao(cru)) return instalarComposto(cru, atual, { substituir });
+  const p = normalizarPacote(cru);
   const jaTem = atual.find((x) => x.id === p.id);
 
   // Só cobra unicidade quando NÃO é substituição declarada: atualizar um addon
@@ -106,6 +118,42 @@ export function instalarPacote(cru, { substituir = false } = {}) {
   return { ok: true, problemas: [], biblioteca: nova };
 }
 
+const ROTULO_DA_VISAO = { player: "Ficha de Player", afty: "Ficha de criatura" };
+
+/**
+ * Instala um pacote composto: valida a fonte e CADA visão dela (a do Player e a da
+ * criatura têm de ser pacotes válidos), guarda no registro de fontes e tira da
+ * lista comum um pacote de mesmo id que estivesse lá, porque a fonte vale mais que
+ * uma cópia solta. Reinstalar o mesmo id é atualizar: as fichas desta máquina que
+ * já têm o pacote se refazem sozinhas na próxima leitura.
+ */
+function instalarComposto(cru, atual, { substituir }) {
+  const falha = (problemas) => ({ ok: false, problemas, biblioteca: atual });
+  const problemas = validarFonteComposta(cru);
+  if (problemas.length) return falha(problemas);
+  if (ehComposto(cru.id) && !substituir) return falha([`"${cru.nome || cru.id}" já está instalado.`]);
+  for (const sistema of Object.keys(ROTULO_DA_VISAO)) {
+    try {
+      const visao = normalizarPacote(compor(cru, sistema, {}));
+      for (const m of validarPacote(visao, { idsEmUso: new Set() })) problemas.push(`${ROTULO_DA_VISAO[sistema]}: ${m}`);
+    } catch (e) {
+      problemas.push(`${ROTULO_DA_VISAO[sistema]}: não foi possível montar o pacote (${e.message}).`);
+    }
+  }
+  if (problemas.length) return falha(problemas);
+
+  const anterior = fonteComposta(cru.id);
+  if (!registrarFonteComposta(cru).gravou) {
+    // Não deu para gravar: volta ao que havia, para a sessão não mostrar o que sumiria ao recarregar.
+    if (anterior) registrarFonteComposta(anterior, { persistir: false });
+    else removerFonteComposta(cru.id, { persistir: false });
+    return falha(["Não foi possível gravar. O armazenamento do navegador pode estar cheio."]);
+  }
+  const semIgual = atual.filter((x) => x.id !== cru.id);
+  if (semIgual.length !== atual.length) gravarBiblioteca(semIgual);
+  return { ok: true, problemas: [], biblioteca: semIgual, composto: true };
+}
+
 /** Instala a partir do texto JSON colado. Erro de sintaxe vira problema legível. */
 export function instalarDeTexto(texto, opcoes) {
   const t = String(texto ?? "").trim();
@@ -126,8 +174,13 @@ export function instalarDeTexto(texto, opcoes) {
   return instalarPacote(cru, opcoes);
 }
 
-/** Remove pela id. Devolve a biblioteca resultante. */
+/**
+ * Remove pela id, da lista e do registro de fontes compostas. As fichas que já
+ * carregam a cópia ficam com ela, mas deixam de se atualizar nesta máquina.
+ * Devolve a biblioteca resultante.
+ */
 export function removerPacote(id) {
+  removerFonteComposta(id);
   const nova = lerBiblioteca().filter((p) => p.id !== id);
   gravarBiblioteca(nova);
   return nova;

@@ -13,6 +13,12 @@ dist-ssr
 *.local
 addons/*.private.json
 
+# Pacotes, testes, roteiros e notas privados da mesa: ficam so no disco de quem os tem.
+addons/privado/
+asserts/*.private.mjs
+.audit/*.private.*
+docs/*.private.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

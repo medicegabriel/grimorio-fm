@@ -8,12 +8,15 @@ await import(R + "afty-derive.js");
 const { createBlankAfty } = await import(R + "afty-schema.js");
 const AD = await import(R + "afty-addons.js");
 
-// A biblioteca desta máquina com todos os Addons do repositório (menos o embutido)
+// A biblioteca desta máquina com todos os Addons do repositório (menos os compostos). O composto vem da
+// fonte NEUTRA de teste, instalada no registro de fontes como a pessoa instalaria o JSON.
+const { fonteExemplo } = await import("../asserts/fonte-composta-exemplo.mjs");
+const fonteComposta = fonteExemplo();
 const arquivos = (await readdir("addons")).filter((f) => f.endsWith(".json"));
 const biblioteca = [];
 for (const f of arquivos) {
   const cru = JSON.parse(await readFile("addons/" + f, "utf8"));
-  if (cru.id === "guerra-de-feiticeiros") continue;
+  if (["ajustes", "porSistema", "porAjuste", "absorve"].some((k) => k in cru)) continue;
   // Cópias ANTIGAS, como as da biblioteca real do autor: sem resumo e sem categoria
   const copia = AD.normalizarPacote(cru);
   copia.resumo = ""; copia.categoria = "";
@@ -32,7 +35,7 @@ try {
   for (const largura of [1440, 390]) {
     const mobile = largura === 390;
     const ctx = await browser.newContext({ viewport: { width: largura, height: 1000 }, isMobile: mobile, hasTouch: mobile });
-    await ctx.addInitScript((lib) => { try { localStorage.setItem("fm_addons_afty_v1", JSON.stringify(lib)); } catch { /* sem armazenamento */ } }, biblioteca);
+    await ctx.addInitScript(([lib, fonte]) => { try { localStorage.setItem("fm_addons_afty_v1", JSON.stringify(lib)); localStorage.setItem("fm_addons_compostos_afty_v1", JSON.stringify([fonte])); } catch { /* sem armazenamento */ } }, [biblioteca, fonteComposta]);
     const page = await ctx.newPage(); page.setDefaultTimeout(15000);
     const erros = []; page.on("pageerror", (e) => erros.push(e.message));
     await page.goto("http://localhost:5173/Player", { waitUntil: "networkidle" });
@@ -56,8 +59,9 @@ try {
     const busca = page.getByLabel("Buscar Addon");
     const linhas = () => page.locator("button[aria-pressed][title]").filter({ has: page.locator("span.truncate") });
     const total = await linhas().count();
-    assert.equal(total, 88, "a lista mostra os 88 pacotes, o embutido e os 87 da biblioteca");
-    assert.equal(await page.getByText(/^0 ligados de 88$/).count(), 1, "o cabeçalho conta ligados de total");
+    const esperado = biblioteca.length + 1;
+    assert.equal(total, esperado, "a lista mostra o composto instalado e os pacotes da biblioteca");
+    assert.equal(await page.getByText(new RegExp(`^0 ligados de ${esperado}$`)).count(), 1, "o cabeçalho conta ligados de total");
 
     // A linha mostra só o nome e a versão: nenhuma descrição, nem a derivada, nem cortada
     const textos = await linhas().allInnerTexts();
@@ -99,22 +103,22 @@ try {
     await page.locator('button[title^="Origens e Clãs"]').click();
     const origens = await linhas().allInnerTexts();
     assert.equal(origens.length > 10 && origens.length < 40, true, "o filtro de categoria separa as origens");
-    assert.equal(origens.some((x) => x.includes("Guerra de Feiticeiros")), false);
+    assert.equal(origens.some((x) => x.includes("Exemplo Composto")), false);
     await page.locator('button[title^="Origens e Clãs"]').click();
 
-    // Liga o Guerra: ele sobe para o grupo Ligados Nesta Ficha
+    // Liga o composto: ele sobe para o grupo Ligados Nesta Ficha
     await abrirLista();
-    await busca.fill("guerra de feiti");
+    await busca.fill("exemplo comp");
     await linhas().first().click();
     await page.getByRole("button", { name: /^Desligado Neste Personagem/ }).click();
     await abrirLista();
     await busca.fill("");
-    assert.equal(await page.getByText(/^1 ligado de 88$/).count(), 1, "agora há 1 ligado");
+    assert.equal(await page.getByText(new RegExp(`^1 ligado de ${esperado}$`)).count(), 1, "agora há 1 ligado");
     await abrirLista();
     const primeiro = (await linhas().allInnerTexts())[0];
-    assert.equal(primeiro.includes("Guerra de Feiticeiros"), true, "o ligado vem primeiro");
+    assert.equal(primeiro.includes("Exemplo Composto"), true, "o ligado vem primeiro");
     assert.equal(await page.getByText("Ligados Neste Personagem", { exact: true }).count() >= 1, true, "o grupo de ligados tem cabeçalho");
-    assert.equal(await page.getByLabel("Progressão Épica", { exact: false }).count(), 1, "os ajustes aparecem no detalhe");
+    assert.equal(await page.getByLabel("Modo Forte", { exact: false }).count(), 1, "os ajustes aparecem no detalhe");
 
     // Filtro Ligados
     await page.locator('button[title="Ligados Neste Personagem"]').click();

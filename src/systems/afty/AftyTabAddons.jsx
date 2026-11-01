@@ -48,8 +48,8 @@ import {
 } from "./afty-addons-lista";
 import { sistemaDaFicha, palavrasDoSistema } from "./afty-sistema";
 import {
-  EMBUTIDOS, fonteEmbutida, ajustesDoSistema, ajustesEfetivos, ligarEmbutido, desligarEmbutido, definirAjuste,
-  avisosDosEmbutidos, compor,
+  fontesCompostas, fonteComposta, ajustesDoSistema, ajustesEfetivos, ligarComposto, desligarComposto, definirAjuste,
+  avisosDosCompostos, compor, hidratarFicha,
 } from "./afty-addons-compostos";
 
 function Aviso({ children }) {
@@ -177,7 +177,7 @@ function DetalheDoAddon({
         <span className="font-mono text-[10px] tabular-nums text-slate-500">{item.versao}</span>
         <span className="text-[11px] text-slate-500">{categoria}{item.autor ? ` · ${item.autor}` : ""}</span>
         <span className="ml-auto flex items-center gap-1">
-          {item.embutido && <Chip>Atualiza Sozinho</Chip>}
+          {item.composto && <Chip>Atualiza Sozinho</Chip>}
           {item.foraDaBiblioteca && <Chip tom="amber">Fora da Biblioteca</Chip>}
         </span>
       </div>
@@ -299,7 +299,8 @@ function CampoInteiro({ rotulo, min, max, valor, onChange }) {
 
 /* Os ajustes de um pacote composto que esta ficha mostra, com o valor de hoje. */
 function ControlesDoPacoteComposto({ draft, pacote, onAjuste }) {
-  const fonte = fonteEmbutida(pacote.composicao?.fonte);
+  // Sem a fonte instalada nesta máquina a ficha segue com a cópia dela, e não há o que ajustar.
+  const fonte = fonteComposta(pacote.composicao?.fonte);
   if (!fonte) return null;
   const sistema = sistemaDaFicha(draft);
   const valores = ajustesEfetivos(fonte, sistema, draft.addonAjustes?.[fonte.id]);
@@ -347,6 +348,8 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha }) {
     setProblemas(r.problemas);
     if (!r.ok) return;
     setBiblioteca(r.biblioteca);
+    // Fonte composta nova ou atualizada: a ficha aberta, se já tiver o pacote, se refaz agora.
+    if (r.composto) trocarFicha?.((d) => hidratarFicha(d));
     setTexto("");
     setColando(false);
   };
@@ -400,11 +403,11 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha }) {
     if (daBiblioteca) ligar(daBiblioteca);
   };
 
-  /* Os pacotes EMBUTIDOS não passam pela biblioteca: a cópia sai do app, já
-     filtrada pelo sistema desta ficha e pelos ajustes dela. Ver
+  /* Os pacotes COMPOSTOS não são copiados da lista da biblioteca: a cópia sai da fonte
+     instalada, já filtrada pelo sistema desta ficha e pelos ajustes dela. Ver
      afty-addons-compostos.js. As três operações são puras e devolvem a ficha. */
-  const ligarEmbutidoNaFicha = (id) => trocarFicha?.((d) => ligarEmbutido(d, id));
-  const desligarEmbutidoDaFicha = (id) => trocarFicha?.((d) => desligarEmbutido(d, id));
+  const ligarCompostoNaFicha = (id) => trocarFicha?.((d) => ligarComposto(d, id));
+  const desligarCompostoDaFicha = (id) => trocarFicha?.((d) => desligarComposto(d, id));
   const mudarAjuste = (id, ajusteId, valor) => trocarFicha?.((d) => definirAjuste(d, id, ajusteId, valor));
 
   /* Guardar na biblioteca um addon que veio DENTRO de uma ficha de fora.
@@ -439,17 +442,17 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha }) {
      entrada. */
   const relatados = problemasDaAplicacao().flatMap((r) => r.problemas
     .map((texto) => (r.pacote.startsWith("(") ? texto : `${r.pacote}: ${texto}`)));
-  /* Pacote antigo que o embutido cobre só em parte e que continua ligado: soma por
-     cima, e a pessoa precisa saber. Ver `avisosDosEmbutidos`. */
-  const parciais = avisosDosEmbutidos(draft);
+  /* Pacote antigo que o composto cobre só em parte e que continua ligado: soma por
+     cima, e a pessoa precisa saber. Ver `avisosDosCompostos`. */
+  const parciais = avisosDosCompostos(draft);
 
-  /* A lista unificada: embutidos, biblioteca e o que a ficha carrega, cada pacote uma
-     vez. O aviso de parcial vai para o item do pacote antigo que ficou ligado. */
+  /* A lista unificada: compostos instalados, biblioteca e o que a ficha carrega, cada
+     pacote uma vez. O aviso de parcial vai para o item do pacote antigo que ficou ligado. */
   const sistemaDaTela = sistemaDaFicha(draft);
   const avisosDe = {};
   for (const a of parciais) (avisosDe[a.id] ||= []).push(a.texto);
   const itens = montarItens({
-    biblioteca, naFicha, embutidos: EMBUTIDOS, estadoDe, avisosDe,
+    biblioteca, naFicha, compostos: fontesCompostas(), estadoDe, avisosDe,
     barradoDe: (pacote) => incompativeisCom(pacote, naFicha).map((o) => o.nome || o.id),
   });
   const item = itens.find((i) => i.id === escolhido)
@@ -462,13 +465,13 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha }) {
   };
   /* O que o pacote muda NESTA ficha: a cópia que ela carrega, ou, desligado, a que ela
      receberia. Um pacote composto muda de uma ficha para outra. */
-  const pacoteParaExibir = (i) => i.copia ?? (i.embutido ? compor(i.pacote, sistemaDaTela, {}) : i.pacote);
+  const pacoteParaExibir = (i) => i.copia ?? (i.composto ? compor(i.pacote, sistemaDaTela, {}) : i.pacote);
 
   const alternar = (i) => {
     if (i.ligado) {
-      if (i.embutido) desligarEmbutidoDaFicha(i.id);
+      if (i.composto) desligarCompostoDaFicha(i.id);
       else pedirSenhaParaDesligar(i.copia);
-    } else if (i.embutido) ligarEmbutidoNaFicha(i.id);
+    } else if (i.composto) ligarCompostoNaFicha(i.id);
     else ligar(i.pacote);
   };
 
@@ -654,7 +657,7 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha }) {
               onAlternar={() => alternar(item)}
               onAtualizar={() => atualizar(item.id)}
               onGuardar={() => guardar(item.copia)}
-              onCopiar={() => copiar(item.embutido ? item.pacote : (item.copia ?? item.pacote))}
+              onCopiar={() => copiar(item.composto ? item.pacote : (item.copia ?? item.pacote))}
               onRemover={() => remover(item.id)}
               copiado={copiado === item.id}
             />

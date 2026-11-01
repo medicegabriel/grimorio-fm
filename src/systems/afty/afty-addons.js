@@ -1306,7 +1306,7 @@ export function normalizarPacote(cru) {
     regrasAfty: (p.regrasAfty && typeof p.regrasAfty === "object" && !Array.isArray(p.regrasAfty))
       ? clonar(p.regrasAfty)
       : null,
-    /* A marca de um pacote COMPOSTO que a ficha carrega: de que fonte embutida
+    /* A marca de um pacote COMPOSTO que a ficha carrega: de que fonte instalada
        e de que versão, sistema e ajustes ele saiu. É o que a hidratação confere
        para saber se a cópia está em dia. ⚠ Tem de estar aqui, ou o normalizador
        a apaga na instalação. Ver afty-addons-compostos.js. */
@@ -2504,11 +2504,12 @@ export const limparAddons = () => aplicarAddons([]);
  * de registro, URL nem fetch.
  *
  * A biblioteca (`fm_addons_afty_v1`) é a outra morada, e serve para instalar,
- * editar e ATUALIZAR. Quem manda no cálculo é a cópia embutida, e é por isso que
- * o addon mudar não mexe sozinho nas fichas antigas: a ficha avisa que existe
- * versão nova, e atualizar é um botão.
+ * editar e ATUALIZAR. Quem manda no cálculo é a cópia que a ficha carrega, e é por isso
+ * que o addon mudar não mexe sozinho nas fichas antigas: a ficha avisa que existe
+ * versão nova, e atualizar é um botão. A exceção são os pacotes COMPOSTOS cuja
+ * fonte a pessoa instalou: esses se refazem sozinhos (`afty-addons-compostos.js`).
  */
-/** Os pacotes CRUS da ficha, já com os embutidos em dia. Todo leitor desta
+/** Os pacotes CRUS da ficha, já com os compostos em dia. Todo leitor desta
  *  família passa por aqui, para a tela e o motor verem a mesma cópia. */
 function listaDeAddons(creature) {
   const lista = hidratarFicha(creature)?.addons;

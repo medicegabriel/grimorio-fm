@@ -19613,36 +19613,12 @@ Pedido do autor: um Addon chamado "Yna" com a Origem Kitsune, a Linhagem Clã Ge
 
 ---
 
-## SESSÃO DE 2026-10-29: GUERRA DE FEITICEIROS (PACOTE EMBUTIDO, COMPOSTO E AUTO-ATUALIZADO)
+## SESSÃO DE 2026-10-29: PACOTE COMPOSTO (PRIMEIRO USO: UM PACOTE PRIVADO DA MESA)
 
-**Pedido do autor:** um Addon só, com o nome da campanha, reunindo as regras da mesa, que se atualize sozinho nas
-fichas (são cerca de 80) e que sirva Player e criatura detectando o sistema da ficha. Guia em `docs/afty-addons.md`.
-
-**Decisões do autor nesta sessão:** a Progressão Épica é um interruptor por ficha (caixinha, sem trava), com o
-Ascendendo e a Guarda Alta junto; a maestria depois do 36 é tabela global; PV ×2 e ×3 são só do Player (equivalem a
-Desafio e Calamidade na criatura); 10c não duplica 5d; 5c fora. Quem liga o Guerra desliga os pacotes antigos que ele
-cobre por inteiro; ficha só com pacotes antigos espera alguém ligar o Guerra; Regras Grimorio e Progressão Épica, que o
-Guerra cobre em parte, ficam ligados com aviso.
-
-**Entregue:** `addons/guerra-de-feiticeiros.json` (1.0.0), `afty-addons-compostos.js` (composição, hidratação, absorção,
-ligar, desligar, avisos), os verbos `aptidaoPorAvancoDeBt` e a maestria acima do 36, o card Addons Embutidos com os
-ajustes e o aviso dos parciais em `AftyTabAddons.jsx`, a hidratação nos pontos de leitura da ficha, `addonAjustes` na
-ficha e a recusa do id embutido na biblioteca.
-
-**Medido antes de mexer:** das 16 regras antigas, só Regras Grimorio (PV ×2), Ascendendo (PV ×1,5 e pontos) e o Alto
-Nível (Atenção, Inesgotável, Um com o Mundo) mudavam número de criatura. Versatilidade Extrema já dava +1 Nível e +1
-no limite da trilha escolhida.
-
-**Verificação:** `t-guerra-de-feiticeiros` com 158 asserts (inclui a aceitação do motor com controle negativo, o 13a no
-número com BT ímpar e a atualização por hash sem subir a versão); os asserts dos pacotes antigos seguem verdes sem
-nenhum interruptor de teste; `t-revisao-g00` exigiu o dono do módulo novo em `escopo.json`; `t-sistema` verde; build e
-eslint de `src/systems/afty` limpos; navegador (`.audit/guerra-browser.mjs`, 1440 e 390 px, console limpo): ligar o Guerra
-numa ficha com cinco pacotes antigos (saem três, ficam os dois parciais com aviso), ligar do zero na criatura, e a
-atualização de uma cópia gravada na versão 0.0.1 com a escolha da ficha preservada. Sem commit ou push.
-
-**Falhas que já existiam e continuam:** `t-reconciliacao-g00` (espera 32 patches), `t-treino-de-tr` (o JSON antigo
-está na 1.0.0 sem `incluiIntegridade`, o guia descreve a 1.1.0) e `t-prodigio` (passa, mas não imprime a frase de
-aprovação que o lançador exige).
+Entrou o mecanismo de pacote composto (`afty-addons-compostos.js`): um JSON que serve Player e criatura, com ajustes por ficha,
+absorção de pacotes antigos e atualização automática das cópias que as fichas carregam. O primeiro pacote composto foi o da mesa
+do autor. O conteúdo dele, as decisões e as medições ficam FORA do repositório, num documento `docs/*.private.md`.
+Guia do mecanismo em `docs/afty-addons.md`. Sem commit ou push.
 
 ---
 
@@ -19714,3 +19690,39 @@ proposta de reconciliação do G00.
 **O que mudou:** `addons/demonios-primordiais.json` 1.0.0 (detalhes em `docs/afty-addons.md`). No motor, `contadoresOrigem[].inicio` (`afty-contadores-origem.js`, validado em `afty-addons.js`, lido pelo criador e pela DSL) e a `trilha` fora dos campos obrigatórios da Aptidão de addon (`afty-aptidoes.js`).
 
 **Asserts:** `t-demonios-primordiais.mjs` nos dois sistemas. Sem commit ou push.
+
+---
+
+## SESSÃO DE 2026-11-01: PACOTE COMPOSTO PASSA A SER INSTALADO POR JSON (NADA NO APP PUBLICADO)
+
+**Pedido do autor:** puxar as atualizações do Arthur, preparar o envio, e deixar o pacote da mesa privado: ele não pode ficar
+público, só vale e se atualiza para quem tem o JSON.
+
+**Atualização:** `main` avançou até `eda39ab` (addon Demônios Primordiais). Nenhum conflito de código. O conflito de texto foi só neste
+arquivo, resolvido mantendo os dois blocos. O stash `antes do pull 2026-11-01` guarda o trabalho local anterior à atualização.
+
+**Achado:** o repositório é público e o JSON do pacote da mesa estava legível sem login (commit `d6d6dd7`, já em `origin/main`) e dentro
+do build do site, onde qualquer pessoa podia ligá-lo. A fonte era importada pelo app (`EMBUTIDOS`).
+
+**Mudança:** a fonte composta deixou de viajar no app. Ela é instalada pela aba Addons, colando o JSON, e mora no registro de fontes do
+navegador (chave `fm_addons_compostos_afty_v1`, lida só na primeira consulta). `hidratarFicha` não faz nada onde não há fonte
+instalada, e a ficha que chega com a cópia segue funcionando com ela. O registro tem um contador de geração para o cache da hidratação.
+`instalarPacote` roteia o JSON composto para o registro, valida a fonte e cada visão (Player e criatura), recusa a cópia que uma ficha
+carrega e tira da lista um pacote comum de mesmo id. `removerPacote` também tira do registro. Os nomes saíram de "embutido" para
+"composto" (`ligarComposto`, `desligarComposto`, `avisosDosCompostos`, `fonteComposta`, `fontesCompostas`), e `montarItens` recebe
+`compostos`. A aba reidrata a ficha aberta depois de instalar. O parcial ganhou `sistemas`, e o aviso só aparece no sistema dele.
+
+**Privado:** `.gitignore` ganhou `addons/privado/`, `asserts/*.private.mjs`, `.audit/*.private.*` e `docs/*.private.md`. O JSON, o teste
+de conteúdo, o roteiro de navegador e o documento do pacote saíram do git (`git rm --cached`) e ficam no disco. A subpasta
+`addons/privado/` evita que `inventario.mjs` e `t-reconciliacao-g00`, que leem `addons/*.json`, gravem o conteúdo em arquivos rastreados.
+
+**Verificação:** `t-addons-compostos` (132, fonte neutra em `asserts/fonte-composta-exemplo.mjs`, com contraprova do contador de
+geração), `t-addons-lista` (77, agora com a fonte neutra) e o teste privado de conteúdo verdes. Build limpo e, nos arquivos finais, zero
+ocorrências de sete textos que só o pacote tinha (o `dist` de 10-30 tinha todos). Roteiros de navegador em 1440 e 390 px: perfil novo
+não vê o pacote, colar o JSON o instala, ligar funciona, JSON novo com a ficha aberta a refaz na hora, e uma ficha com a cópia abre
+num perfil sem a fonte sem erro e sem ganhar a fonte. Sem commit ou push.
+
+**Decidido pelo autor:** o envio leva só esta tarefa (o trabalho CL e CX pendente fica de fora), a maestria acima do 36 continua
+global, e a versão 1.0.0, que já foi pública, fica no histórico como está.
+
+**Ainda aberto:** ver `docs/a-fazer.md` (o passo de colar o JSON na produção depois do deploy, o 5c e os 16 pacotes antigos).

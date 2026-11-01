@@ -127,17 +127,19 @@ Este mapa conserva o escopo, sem manter os 31 lotes antigos como tarefas ativas.
 | CL2 | CL03 e CL04 |
 | CL3 | CL05, CL06 e CL07 |
 
-## Guerra de Feiticeiros: perguntas ao autor (2026-10-29)
+## Pacote composto privado da mesa: pendências (2026-11-01)
 
-Pacote embutido em `addons/guerra-de-feiticeiros.json`, guia em `docs/afty-addons.md`.
+O pacote da mesa do autor é composto e PRIVADO: não está no app nem no repositório, é instalado por JSON em
+`addons/privado/` (fora do git). O mecanismo está em `docs/afty-addons.md` e o conteúdo, as decisões e as medições em
+um documento `docs/*.private.md` do pacote, que também fica fora do git.
 
-- **Parciais mantidos.** Regras Grimorio e Progressão Épica ficam ligados ao lado do Guerra, com aviso (decisão do autor).
-  Se isso dobrar PV ou Interlúdios de forma indesejada, a saída é trazer o 9c e o 5c para dentro do Guerra e então passar
-  os dois para `absorve`.
-- **Pacotes antigos.** Os 16 arquivos seguem em `addons/` porque fichas que não ligaram o Guerra ainda os usam e os asserts
-  testam a mecânica deles. Apagar só depois que todas as fichas da mesa tiverem o Guerra ligado.
-- **Ficha com o Guerra desatualizado abre como alterada.** A hidratação a deixa diferente da gravada até salvar.
-
+- **Decidido pelo autor em 2026-11-01:** a maestria acima do 36 fica GLOBAL (toda ficha com ND 41 ou mais muda, tenha o
+  pacote ou não), e a versão 1.0.0, que esteve pública desde o commit `d6d6dd7`, fica no histórico do git como está.
+  Não reabrir nenhum dos dois.
+- **Depois do deploy, colar o JSON na produção.** Sem isso as fichas que já tinham o pacote ligado ficam congeladas na
+  cópia antiga (e com um pacote antigo de PV ao lado, o PV dobra).
+- **Pacotes antigos.** Os 16 arquivos seguem em `addons/` porque fichas que não ligaram o composto ainda os usam e os
+  asserts testam a mecânica deles. Apagar só depois que todas as fichas da mesa tiverem o composto ligado.
 ---
 
 ## Ficha Final: avaliação da Mesa e autorização para integrar as três abas do G2

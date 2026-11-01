@@ -1,13 +1,18 @@
 /**
  * ============================================================
- * ADDONS COMPOSTOS E EMBUTIDOS
+ * ADDONS COMPOSTOS
  * ============================================================
- * Um pacote EMBUTIDO viaja dentro do app (addons/guerra-de-feiticeiros.json) e,
- * ao contrário de um pacote da biblioteca, se atualiza sozinho: a cópia que a
- * ficha carrega é REFEITA a partir da fonte embutida toda vez que a ficha entra
- * no app, então publicar uma versão nova atualiza todas as fichas sem abrir
- * nenhuma. É a exceção declarada à regra "atualizar é um botão", e vale só para
- * os pacotes que moram aqui.
+ * Um pacote COMPOSTO é instalado pelo JSON, como qualquer addon, e a fonte mora
+ * SÓ no navegador de quem o instalou (chave própria no `localStorage`, ver
+ * `CHAVE_FONTES`). Nada dele viaja dentro do app publicado: quem não tem o JSON
+ * não vê o pacote, e uma ficha que chega com a cópia dele continua funcionando
+ * com ela, sem atualizar.
+ *
+ * Ao contrário de um pacote comum da biblioteca, quem TEM a fonte instalada vê as
+ * fichas se atualizarem sozinhas: a cópia que a ficha carrega é REFEITA a partir
+ * da fonte instalada toda vez que a ficha entra no app, então reinstalar o JSON
+ * novo atualiza todas as fichas dessa máquina sem abrir nenhuma. É a exceção
+ * declarada à regra "atualizar é um botão", e vale só para as fontes compostas.
  *
  * Um pacote COMPOSTO tem três campos que o pacote comum não tem:
  *
@@ -28,25 +33,97 @@
  * `acrescenta` é catálogo GLOBAL (o Encontro mistura Player e criatura no mesmo
  * mundo), então fica na raiz e é igual nas duas visões.
  *
- * QUEM ATIVA O EMBUTIDO DESATIVA O QUE CONFLITA (autor, 2026-10-29). Os pacotes
+ * QUEM LIGA O COMPOSTO DESLIGA O QUE CONFLITA (autor, 2026-10-29). Os pacotes
  * antigos que ele cobre por inteiro (`absorve`) saem da ficha ao ligar, e as
  * escolhas que a ficha tinha feito com eles ganham o prefixo novo. Os que ele cobre
  * só em parte (`parciais`) ficam ligados, com aviso. Ficha que só tem pacotes
- * antigos espera alguém ligar o embutido, e nada muda nela.
+ * antigos espera alguém ligar o composto, e nada muda nela.
  *
- * ⚠ FOLHA DE IMPORTS: só `afty-sistema` (também folha) e o JSON. Não importe
- * `afty-addons.js` aqui: ele importa este módulo.
+ * ⚠ FOLHA DE IMPORTS: só `afty-sistema` (também folha). Não importe
+ * `afty-addons.js` aqui: ele importa este módulo. A validação que precisa dele
+ * (cada cópia por sistema ser um pacote válido) mora na biblioteca, que é quem
+ * instala.
  */
 import { sistemaDaFicha } from "./afty-sistema";
-import guerraDeFeiticeiros from "../../../addons/guerra-de-feiticeiros.json" with { type: "json" };
 
-/** Os pacotes que viajam dentro do app. */
-export const EMBUTIDOS = Object.freeze([guerraDeFeiticeiros]);
+/* ============================================================ */
+/* AS FONTES INSTALADAS                                          */
+/* ============================================================ */
+/* ⚠ CHAVE PRÓPRIA, e não a da biblioteca (`fm_addons_afty_v1`): o normalizador de
+   pacote comum apaga em silêncio os campos de composição, e a fonte perderia o
+   que a faz ser composta. Na convenção de isolamento do sistema, como a da
+   biblioteca. */
+const CHAVE_FONTES = "fm_addons_compostos_afty_v1";
+const CAMPOS_DE_COMPOSICAO = ["ajustes", "porSistema", "porAjuste", "migra", "absorve", "parciais"];
 
-const POR_ID = new Map(EMBUTIDOS.map((p) => [p.id, p]));
+/** A fonte (JSON cru) carrega algum campo que só um pacote composto tem? */
+export const temComposicao = (cru) => !!cru && typeof cru === "object" && !Array.isArray(cru)
+  && CAMPOS_DE_COMPOSICAO.some((k) => k in cru);
 
-export const ehEmbutido = (id) => POR_ID.has(id);
-export const fonteEmbutida = (id) => POR_ID.get(id) ?? null;
+let fontes = null;
+/* Sobe a cada mudança no conjunto de fontes. A hidratação guarda o resultado por
+   ficha, e sem este número uma fonte instalada no meio da sessão não refaria as
+   fichas que já foram lidas. */
+let geracao = 0;
+
+function lerGravadas() {
+  try {
+    const lista = JSON.parse(globalThis.localStorage?.getItem(CHAVE_FONTES) ?? "[]");
+    // Entrada ilegível ou inválida é descartada: o app não pode morrer por causa de um addon.
+    return Array.isArray(lista) ? lista.filter((f) => f && typeof f === "object" && validarFonteComposta(f).length === 0) : [];
+  } catch {
+    return [];
+  }
+}
+
+function gravarFontes() {
+  try {
+    globalThis.localStorage?.setItem(CHAVE_FONTES, JSON.stringify([...fontes.values()]));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Lê o que está gravado só na primeira vez que alguém pergunta. */
+const garantir = () => (fontes ??= new Map(lerGravadas().map((f) => [f.id, f])));
+
+/** As fontes compostas instaladas nesta máquina. Vazio para quem não tem o JSON. */
+export const fontesCompostas = () => [...garantir().values()];
+export const fonteComposta = (id) => garantir().get(id) ?? null;
+export const ehComposto = (id) => garantir().has(id);
+
+/**
+ * Instala a fonte (ou troca a que tem o mesmo id). Não valida: quem instala pela
+ * tela valida antes, na biblioteca. `persistir: false` é para os testes.
+ * Devolve `{ gravou }`, falso quando o armazenamento recusou (ainda vale na sessão).
+ */
+export function registrarFonteComposta(fonte, { persistir = true } = {}) {
+  garantir().set(fonte.id, clonar(fonte));
+  geracao++;
+  return { gravou: persistir ? gravarFontes() : false };
+}
+
+/** Tira a fonte. As fichas ficam com a cópia que já carregam, sem atualizar mais. */
+export function removerFonteComposta(id, { persistir = true } = {}) {
+  const tinha = garantir().delete(id);
+  if (tinha) {
+    geracao++;
+    if (persistir) gravarFontes();
+  }
+  return tinha;
+}
+
+/** Esquece o que está em memória e lê de novo do armazenamento (outra aba, outro teste). */
+export function recarregarFontesCompostas() {
+  fontes = null;
+  geracao++;
+}
+
+// Outra aba instalou ou removeu uma fonte: esta passa a ver o mesmo conjunto na próxima leitura.
+if (typeof globalThis.addEventListener === "function") {
+  globalThis.addEventListener("storage", (e) => { if (e.key === CHAVE_FONTES || e.key === null) recarregarFontesCompostas(); });
+}
 
 const SISTEMAS = ["player", "afty"];
 const BLOCOS_POR_FICHA = ["regrasAfty", "libera", "permite", "incompativeis", "substitui", "funcionamentos"];
@@ -103,6 +180,7 @@ export function validarFonteComposta(fonte) {
   for (const parcial of fonte.parciais ?? []) {
     if (!parcial?.id || !String(parcial.aviso ?? "").trim()) out.push("parciais: cada item precisa de id e de aviso.");
     else if (absorvidos.has(parcial.id)) out.push(`parciais: "${parcial.id}" não pode estar também em absorve.`);
+    for (const s of parcial?.sistemas ?? []) if (!SISTEMAS.includes(s)) out.push(`parciais: "${parcial.id}" tem o sistema "${s}" desconhecido.`);
   }
   return out;
 }
@@ -230,11 +308,11 @@ function ajustesDosLegados(fonte, legados) {
 }
 
 /**
- * Tira da ficha os pacotes antigos que o embutido cobre POR INTEIRO (`absorve`)
- * e renomeia os ids que a ficha guardou com o prefixo deles para o do embutido.
- * Quem ativa o embutido desativa o que conflita (autor, 2026-10-29). Os pacotes
- * que o embutido cobre só em parte (`parciais`) NÃO saem: ficam ligados, com
- * aviso, porque tirá-los perderia a parte que o embutido não tem.
+ * Tira da ficha os pacotes antigos que o composto cobre POR INTEIRO (`absorve`)
+ * e renomeia os ids que a ficha guardou com o prefixo deles para o do composto.
+ * Quem liga o composto desliga o que conflita (autor, 2026-10-29). Os pacotes
+ * que o composto cobre só em parte (`parciais`) NÃO saem: ficam ligados, com
+ * aviso, porque tirá-los perderia a parte que o composto não tem.
  */
 function absorverAntigos(ficha, fonte) {
   const absorvidos = new Set(fonte.absorve ?? []);
@@ -273,7 +351,7 @@ function comCopia(ficha, fonte, salvos) {
 }
 
 function hidratarUm(ficha, fonte, sistema) {
-  // Ficha que só tem pacotes antigos espera alguém ligar o embutido (autor, 2026-10-29).
+  // Ficha que só tem pacotes antigos espera alguém ligar o composto (autor, 2026-10-29).
   if (!ficha.addons.some((p) => p && p.id === fonte.id)) return ficha;
   const { ficha: base, doLegado } = absorverAntigos(ficha, fonte);
   const atual = base.addons.find((p) => p && p.id === fonte.id);
@@ -287,25 +365,30 @@ function hidratarUm(ficha, fonte, sistema) {
 const cache = new WeakMap();
 
 /**
- * A ficha com os pacotes embutidos em dia: refaz a cópia quando a versão, o
+ * A ficha com os pacotes compostos em dia: refaz a cópia quando a versão, o
  * conteúdo, o sistema ou os ajustes não batem com a marca, e tira os pacotes
- * antigos que o embutido cobre por inteiro. Só mexe em ficha que JÁ TEM o
- * embutido. Devolve a MESMA ficha quando não há nada a fazer, que é o caso comum.
+ * antigos que o composto cobre por inteiro. Só mexe em ficha que JÁ TEM o
+ * composto E em máquina que TEM a fonte instalada: sem a fonte a ficha segue com
+ * a cópia que carrega. Devolve a MESMA ficha quando não há nada a fazer, que é o
+ * caso comum, inclusive para quem não instalou nenhuma fonte.
  */
 export function hidratarFicha(ficha) {
   if (!ficha || typeof ficha !== "object") return ficha;
   const lista = ficha.addons;
   if (!Array.isArray(lista) || lista.length === 0) return ficha;
-  if (!EMBUTIDOS.some((f) => lista.some((p) => p && p.id === f.id))) return ficha;
+  const instaladas = garantir();
+  if (instaladas.size === 0) return ficha;
+  if (!lista.some((p) => p && instaladas.has(p.id))) return ficha;
 
   const visto = cache.get(ficha);
-  if (visto && visto.addons === ficha.addons && visto.ajustes === ficha.addonAjustes && visto.tamanho === lista.length) {
+  if (visto && visto.geracao === geracao && visto.addons === ficha.addons
+    && visto.ajustes === ficha.addonAjustes && visto.tamanho === lista.length) {
     return visto.saida;
   }
   const sistema = sistemaDaFicha(ficha);
   let saida = ficha;
-  for (const fonte of EMBUTIDOS) saida = hidratarUm(saida, fonte, sistema);
-  if (saida !== ficha) cache.set(ficha, { addons: ficha.addons, ajustes: ficha.addonAjustes, tamanho: lista.length, saida });
+  for (const fonte of instaladas.values()) saida = hidratarUm(saida, fonte, sistema);
+  if (saida !== ficha) cache.set(ficha, { geracao, addons: ficha.addons, ajustes: ficha.addonAjustes, tamanho: lista.length, saida });
   return saida;
 }
 
@@ -313,15 +396,19 @@ export function hidratarFicha(ficha) {
 export const addonsDaFicha = (ficha) => hidratarFicha(ficha)?.addons ?? [];
 
 /**
- * Os avisos de um pacote antigo que o embutido só cobre em parte e que a ficha
+ * Os avisos de um pacote antigo que o composto só cobre em parte e que a ficha
  * ainda carrega ligado. Cada item é `{ id, texto }`, para a tela mostrar em âmbar.
+ * O parcial pode declarar `sistemas`: o aviso de uma regra do Player não aparece
+ * na criatura, onde ela não faz nada.
  */
-export function avisosDosEmbutidos(ficha) {
+export function avisosDosCompostos(ficha) {
   const out = [];
   const lista = ficha?.addons ?? [];
-  for (const fonte of EMBUTIDOS) {
+  const sistema = sistemaDaFicha(ficha);
+  for (const fonte of garantir().values()) {
     if (!lista.some((p) => p && p.id === fonte.id)) continue;
     for (const parcial of fonte.parciais ?? []) {
+      if (Array.isArray(parcial.sistemas) && !parcial.sistemas.includes(sistema)) continue;
       const antigo = lista.find((p) => p && p.id === parcial.id);
       if (antigo) out.push({ id: parcial.id, texto: `${antigo.nome || antigo.id} continua ligado e soma por cima de ${fonte.nome}. ${parcial.aviso}` });
     }
@@ -334,25 +421,25 @@ export function avisosDosEmbutidos(ficha) {
 /* ============================================================ */
 
 /**
- * Liga o pacote embutido na ficha, com as escolhas que ela já tinha ou os
+ * Liga o pacote composto na ficha, com as escolhas que ela já tinha ou os
  * padrões. Desliga sozinho os pacotes antigos que ele cobre por inteiro e
- * aproveita o que eles tinham escolhido.
+ * aproveita o que eles tinham escolhido. Sem a fonte instalada, não faz nada.
  */
-export function ligarEmbutido(ficha, id) {
-  const fonte = fonteEmbutida(id);
+export function ligarComposto(ficha, id) {
+  const fonte = fonteComposta(id);
   if (!fonte) return ficha;
   const { ficha: base, doLegado } = absorverAntigos(ficha, fonte);
   return comCopia(base, fonte, escolhasComLegado(doLegado, base?.addonAjustes?.[id] ?? {}));
 }
 
 /** Tira a cópia da ficha. As escolhas ficam guardadas para o caso de ligar de novo. */
-export function desligarEmbutido(ficha, id) {
+export function desligarComposto(ficha, id) {
   return { ...ficha, addons: (ficha.addons ?? []).filter((p) => !(p && p.id === id)) };
 }
 
 /** Muda UM ajuste e refaz a cópia. Valor inválido para o ajuste é ignorado. */
 export function definirAjuste(ficha, id, ajusteId, valor) {
-  const fonte = fonteEmbutida(id);
+  const fonte = fonteComposta(id);
   const ajuste = (fonte?.ajustes ?? []).find((a) => a.id === ajusteId);
   if (!fonte || !ajuste || !valorValido(ajuste, valor)) return ficha;
   return comCopia(ficha, fonte, { ...(ficha.addonAjustes?.[id] ?? {}), [ajusteId]: valor });

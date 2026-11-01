@@ -43,81 +43,74 @@ várias carregam regra de livro e nota de motor, e trocar o texto delas mudaria 
 **Extensão compatível da `ListaLateral`.** `organizarLista` e o componente ganharam `textoDe`, `predicados`, `destaqueDe`,
 `filtros`, `ordens` e `rotuloTipo`, todos com padrão que não muda Feitiços nem Invocações (o `t-lista-lateral` segue verde).
 
-## Guerra de Feiticeiros: pacote embutido, composto e de atualização automática (2026-10-29)
+## Pacotes compostos: instalados por JSON e atualizados nas fichas de quem os tem (2026-11-01)
 
-Pacote [guerra-de-feiticeiros.json](../addons/guerra-de-feiticeiros.json), versão 1.0.0, o conjunto de regras da
-campanha do autor. É o primeiro pacote EMBUTIDO e COMPOSTO. Código em
-`src/systems/afty/afty-addons-compostos.js`, regressões em `asserts/t-guerra-de-feiticeiros.mjs` (158) e
-conferência de navegador em `.audit/guerra-browser.mjs`.
+Um pacote COMPOSTO serve ao Player e à criatura com o mesmo JSON, e as fichas de quem o instalou se atualizam
+sozinhas. Código em `src/systems/afty/afty-addons-compostos.js`, instalação em `afty-addons-biblioteca.js`, regressões em
+`asserts/t-addons-compostos.mjs` (132, com a fonte neutra de `asserts/fonte-composta-exemplo.mjs`) e conferência de
+navegador em `.audit/addons-lista-browser.mjs`.
 
-**Embutido.** A fonte viaja dentro do app (import do JSON). Toda vez que a ficha entra no app, a cópia que ela
-carrega é refeita a partir da fonte, então publicar uma versão nova atualiza todas as fichas sem abrir nenhuma.
-É a exceção declarada à regra "atualizar é um botão", e vale só para os pacotes de `EMBUTIDOS`. A atualização
-chega quando o app publicado é recarregado, e a ficha exportada em arquivo se atualiza ao ser aberta. A hidratação
-mora em `hidratarFicha` e roda no topo de `deriveAfty`, em `addonsDaCriatura`, nos `aplicarAddons` do criador,
-da Ficha e da ponte, e na criação do rascunho do criador. Devolve a MESMA ficha quando não há nada a fazer.
+**Nada viaja no app publicado.** A fonte composta é instalada pela aba Addons, em "Instalar Addon", colando o JSON,
+e mora SÓ no navegador de quem a instalou (chave própria `fm_addons_compostos_afty_v1`, fora da lista da biblioteca
+porque o `normalizarPacote` apagaria os campos de composição). Quem não tem o JSON não vê o pacote, e uma ficha que
+chega com a cópia dele segue funcionando com ela, sem atualizar. Por isso um pacote composto pode ser privado: o
+build não o lê, e dá para provar procurando nos arquivos finais um texto que só ele tem. Os arquivos privados ficam
+fora do git (`addons/privado/`, `asserts/*.private.mjs`, `.audit/*.private.*`, `docs/*.private.md`). A subpasta
+`addons/privado/` é de propósito: os varredores do projeto (`inventario.mjs`, `t-reconciliacao-g00`) leem
+`addons/*.json` e gravariam o conteúdo em arquivos rastreados.
 
-**Composto.** Três campos que o pacote comum não tem:
+**Instalar, atualizar e remover.** `instalarPacote` reconhece o JSON composto pelos campos de composição
+(`temComposicao`). Valida a fonte (`validarFonteComposta`) e CADA visão dela (a do Player e a da criatura precisam ser
+pacotes válidos), guarda no registro e devolve `composto: true`. Reinstalar o mesmo id é atualizar. Um pacote comum de
+mesmo id sai da lista, porque a fonte vale mais que uma cópia solta. A cópia que uma ficha carrega (traz `composicao`)
+NÃO se instala. "Remover" tira da lista e do registro, e as fichas ficam com a cópia. "Copiar" no detalhe copia a
+fonte completa, que é como se passa o pacote a outra pessoa.
+
+**Atualização automática, só para quem tem a fonte.** A cópia que a ficha carrega é refeita a partir da fonte
+instalada toda vez que a ficha entra no app. Reinstalar um JSON novo atualiza todas as fichas daquela máquina, e a
+ficha aberta no criador se refaz na hora (a aba chama `hidratarFicha` depois de instalar). É a exceção declarada à
+regra "atualizar é um botão", e vale só para fontes compostas. A hidratação mora em `hidratarFicha` e roda no topo de
+`deriveAfty`, em `addonsDaCriatura`, nos `aplicarAddons` do criador, da Ficha e da ponte, e na criação do rascunho do
+criador. Devolve a MESMA ficha quando não há nada a fazer, que é o caso de quem não instalou nenhuma fonte.
+⚠ O resultado é guardado por ficha, e o registro tem um contador de geração: sem ele, instalar uma versão nova no meio
+da sessão não refaria a ficha que já tinha sido lida (o teste tem a contraprova).
+
+**Composto.** Campos que o pacote comum não tem:
 
 | Campo | Papel |
 |---|---|
 | `ajustes` | o que cada ficha escolhe: `interruptor` ou `inteiro`, com `sistemas` opcional. A escolha mora em `ficha.addonAjustes[id]`, FORA da cópia, para a atualização nunca apagá-la |
 | `porSistema` | blocos que valem só para `player` ou só para `afty` (criatura) |
 | `porAjuste` | blocos que valem só com um ajuste ligado, por sistema |
+| `absorve` | os pacotes antigos que ele cobre por inteiro: saem da ficha ao ligar |
+| `migra` | o que cada pacote absorvido implica nos ajustes (`ligaSeTem`, `copiaDe`) |
+| `parciais` | os que ele cobre só em parte: ficam ligados, com aviso, e podem declarar `sistemas` |
 
-A composição acontece ao COPIAR para a ficha, e a cópia é um pacote comum com a marca `composicao` (fonte e
-chave de versão, sistema e ajustes). Por isso o motor e os trinta leitores de `creature.addons` não mudaram. Só
-blocos por ficha entram nos overlays: `regrasAfty`, `libera`, `permite`, `incompativeis`, `substitui` e
-`funcionamentos`. O `acrescenta` é catálogo global (o Encontro mistura Player e criatura) e fica na raiz, igual nas
-duas visões. `validarFonteComposta` recusa o resto. Campo novo de pacote precisa entrar no `normalizarPacote`,
-que apaga em silêncio o que não conhece (`composicao` entrou lá).
+A composição acontece ao COPIAR para a ficha, e a cópia é um pacote comum com a marca `composicao` (fonte e chave de
+versão, sistema e ajustes). Por isso o motor e os trinta leitores de `creature.addons` não mudaram. Só blocos por ficha
+entram nos overlays: `regrasAfty`, `libera`, `permite`, `incompativeis`, `substitui` e `funcionamentos`. O `acrescenta`
+é catálogo global (o Encontro mistura Player e criatura) e fica na raiz, igual nas duas visões. `validarFonteComposta`
+recusa o resto. Campo novo de pacote precisa entrar no `normalizarPacote`, que apaga em silêncio o que não conhece
+(`composicao` entrou lá).
 
-**Um pacote para os dois sistemas.** A criatura recebe só `trNoLimiteDePericias`, Talentos Iniciais e o conteúdo
-global. O que é do Player (PV ×2 e ×3, Alma como no Afty, Nível sem Teto, Aptidão por BT, os remendos de Melhorias e
-Lendárias, a Épica) fica em `porSistema.player`. Dobrar e triplicar o PV equivalem a Desafio e Calamidade, que a
-criatura já tem pelo Patamar (autor, 2026-10-29). Medido: das 16 regras antigas, só Regras Grimorio, Ascendendo e o
-Alto Nível mexiam em número de criatura.
+**Quem liga o composto desliga o que conflita.** Ao LIGAR (e ao hidratar uma ficha que já o tem), os pacotes de
+`absorve` saem da ficha e os ids que ela guardou com o prefixo antigo são renomeados (treinos, Lendárias, Talentos e
+opções). Ficha que só tem pacotes antigos NÃO muda ao abrir: espera alguém ligar o composto. O aviso âmbar dos
+`parciais` (`avisosDosCompostos`) aparece no card Problemas e só nas fichas dos `sistemas` declarados.
+`validarFonteComposta` recusa um parcial sem aviso, com sistema desconhecido ou que também esteja em `absorve`.
+Como o motor MULTIPLICA o `multiplicadorPvFinal` entre pacotes, um pacote antigo que multiplica PV e fique ligado ao
+lado do composto dobra o PV: absorva-o.
 
-**Interruptor Progressão Épica** (só Player, caixinha no cartão, qualquer um com a ficha marca): PV ×3 no lugar de ×2
-(Ascendendo), 3 pontos de atributo por ciclo de 4 níveis (`pontosAtributoPorCiclo`, que já equivale ao +1 por ciclo do
-Ascendendo, por isso o 10c não foi duplicado), área da Expansão de Domínio maior, Guarda Alta junto e a Agilidade no
-Campo de Batalha reaberta. O 5c (Interlúdios 1,5 por nível) ficou de fora por decisão do autor.
+**Verbos de motor que vieram com o primeiro composto.** `regrasAfty.aptidaoPorAvancoDeBt`: no Player, um Nível de
+Aptidão por avanço do BT acima de 6 (níveis 21, 26, 31, 36, 41...), no lugar de um a cada dois níveis depois do 20, e
+vale `max(0, maestria(nd) - 6)`. A `maestria(nd)` segue subindo depois do 36 (`10 + piso((nd - 36) / 5)`), e isso é
+GLOBAL: toda ficha com ND 41 ou mais muda, com ou sem pacote.
 
-**Dois verbos novos de motor.** `regrasAfty.aptidaoPorAvancoDeBt`: no Player, um Nível de Aptidão por avanço do BT
-acima de 6 (níveis 21, 26, 31, 36, 41...), no lugar de um a cada dois níveis depois do 20. Vale `max(0, maestria(nd) -
-6)`. E a `maestria(nd)` agora segue subindo depois do 36: `10 + piso((nd - 36) / 5)`, 11 no 41, 12 no 46. Essa
-mudança é GLOBAL (decisão do autor): toda ficha com ND 41 ou mais muda, tenha o Addon ou não.
+⚠ **Ficha com o composto desatualizado abre como alterada no criador até salvar.** É a única vez, depois a cópia está
+em dia.
 
-**Decididos pelo autor em 2026-10-29:** o Treino de TR inclui Integridade, as 3 Lendárias novas aparecem também na criatura
-e os Talentos Iniciais ficam disponíveis nos dois sistemas. O `addons/treino-de-tr.json` antigo subiu para a 1.1.0 com
-`incluiIntegridade`, o que também fecha o `t-treino-de-tr`.
-
-**Mudanças de conteúdo em relação aos pacotes antigos:** Segredos do Artesão da Alma soma `piso(bt / 2)` no TR de
-Integridade (13a). O Treino de TR inclui Integridade (`incluiIntegridade: true`, como o guia da versão 1.1.0 descreve; o
-JSON antigo no disco estava na 1.0.0 sem o campo). O Mente Analítica cita o Talento do próprio pacote.
-
-**Quem liga o Guerra desliga o que conflita (autor, 2026-10-29).** O Guerra declara em `absorve` os 14 pacotes antigos
-que cobre por inteiro e em `migra` o que cada um implica nos ajustes: Épica ligada se a ficha tinha o Ascendendo, e a
-quantidade de Talentos Iniciais copiada. Ao LIGAR (e ao hidratar uma ficha que já o tem), esses pacotes saem da ficha e
-os ids que ela guardou com o prefixo antigo são renomeados (treinos, Lendárias, Talentos e a opção de Inovar Estilo).
-Ficha que só tem pacotes antigos NÃO muda ao abrir: espera alguém ligar o Guerra, e fica intacta enquanto isso, o que
-protege ficha de outra mesa. Só `criacao-de-armas` continua em `incompativeis`, porque é conflito real.
-
-**Pacotes parciais (`parciais`).** Regras Grimorio (falta o 9c, ignorar a redução de PE do Santo da Espada) e Progressão
-Épica (falta o 5c, Interlúdios 1,5 por nível) têm parte que o Guerra não tem. O autor escolheu MANTER o antigo ligado e
-avisar: ele não sai, não é incompatível e soma por cima do Guerra (PV multiplicado de novo, por exemplo). O aviso âmbar
-(`avisosDosEmbutidos`) aparece no card Problemas da aba Addons e diz o que falta. `validarFonteComposta` recusa um parcial
-sem aviso ou que também esteja em `absorve`.
-
-Os 16 arquivos antigos seguem em `addons/`: fichas que não ligaram o Guerra ainda os usam, e os asserts deles testam a
-mecânica de cada verbo. Hoje a biblioteca recusa instalar o id do Guerra (`instalarPacote`), porque a cópia colada perderia os
-campos de composição e a hidratação a trocaria pela fonte do app em silêncio.
-
-**Como atualizar.** Edite `addons/guerra-de-feiticeiros.json` (esse arquivo é o canônico, não há gerador) e publique. A chave de
-atualização leva um hash do conteúdo, então mudar o JSON sem subir a `versao` ainda atualiza as fichas, mas suba a versão para
-o histórico. Chega a cada pessoa quando ela recarrega o site publicado.
-
-⚠ **Ficha com o Guerra desatualizado abre como alterada no criador até salvar.** É a única vez, depois a cópia está em dia.
+⚠ **A ficha exportada carrega o conteúdo.** A cópia composta vai dentro da ficha, então privado quer dizer que o
+pacote não está no app nem no repositório, e não que o conteúdo nunca saia de quem o usa.
 
 ## Loja de Catarse: compras funcionais do Chrollo (2026-10-25)
 

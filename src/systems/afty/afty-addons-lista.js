@@ -91,15 +91,15 @@ export const FILTROS_DE_ADDON = Object.freeze([
  *
  *   biblioteca   pacotes instalados nesta máquina
  *   naFicha      as cópias que a ficha carrega
- *   embutidos    as fontes que viajam dentro do app
+ *   compostos    as fontes compostas instaladas nesta máquina (registro próprio)
  *   estadoDe     `{ [id]: { estado, versaoBiblioteca } }` de `compararComBiblioteca`
  *   avisosDe     `{ [id]: [texto] }`, os avisos que a ficha já tem de cada pacote
  *   barradoDe    `(pacote) => [nomes]`, quem impede de ligar este pacote
  *
- * Cada id aparece UMA vez. O embutido vence a biblioteca, que vence a cópia da ficha,
- * porque a fonte do app é a verdade de um pacote embutido.
+ * Cada id aparece UMA vez. O composto instalado vence a biblioteca, que vence a cópia
+ * da ficha, porque a fonte instalada é a verdade de um pacote composto.
  */
-export function montarItens({ biblioteca = [], naFicha = [], embutidos = [], estadoDe = {}, avisosDe = {}, barradoDe = () => [] } = {}) {
+export function montarItens({ biblioteca = [], naFicha = [], compostos = [], estadoDe = {}, avisosDe = {}, barradoDe = () => [] } = {}) {
   const porId = new Map();
   const naFichaPorId = new Map(lista(naFicha).map((p) => [p.id, p]));
   const idsDaBiblioteca = new Set(lista(biblioteca).map((p) => p.id));
@@ -109,7 +109,7 @@ export function montarItens({ biblioteca = [], naFicha = [], embutidos = [], est
     ordem.push(pacote.id);
     porId.set(pacote.id, { pacote, origem });
   };
-  for (const p of lista(embutidos)) entrar(p, "embutido");
+  for (const p of lista(compostos)) entrar(p, "composto");
   for (const p of lista(biblioteca)) entrar(p, "biblioteca");
   for (const p of lista(naFicha)) entrar(p, "ficha");
 
@@ -134,8 +134,9 @@ export function montarItens({ biblioteca = [], naFicha = [], embutidos = [], est
          mostrá-lo no painel repetiria a descrição logo abaixo. */
       resumoDeclarado: String(pacote?.resumo ?? "").trim() !== "",
       ligado,
-      embutido: origem === "embutido",
-      naBiblioteca: idsDaBiblioteca.has(id),
+      composto: origem === "composto",
+      // Instalar e remover um composto se faz pela mesma tela, então ele conta como instalado aqui.
+      naBiblioteca: idsDaBiblioteca.has(id) || origem === "composto",
       foraDaBiblioteca: origem === "ficha",
       estado,
       barrado,

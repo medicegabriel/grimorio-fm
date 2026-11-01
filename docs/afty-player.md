@@ -384,7 +384,7 @@ Nível acima de 30, Aptidão a cada dois níveis depois de 20, 52 Interlúdios n
 As regras padrão de Player continuam valendo nas fichas sem esses pacotes. Instruções, valores e
 limites estão em [afty-player-progressao-epica.md](afty-player-progressao-epica.md).
 
-Desde 2026-10-29 essas regras, mais Regras Grimorio, Ascendendo Além dos Céus, Alma do Afty e as demais da mesa do
-autor, também vêm reunidas no pacote embutido Guerra de Feiticeiros, que serve Player e criatura, se atualiza sozinho
-e troca o "1 Nível de Aptidão a cada 2 níveis depois do 20" por **1 por avanço de Bônus de Treinamento acima de 6**
-(`aptidaoPorAvancoDeBt`: 21, 26, 31, 36, 41...). Ver `docs/afty-addons.md`.
+Desde 2026-10-29 essas regras podem vir reunidas num pacote COMPOSTO, instalado por JSON, que serve Player e criatura
+e se atualiza sozinho nas fichas de quem tem a fonte instalada. O verbo `regrasAfty.aptidaoPorAvancoDeBt` troca o "1 Nível
+de Aptidão a cada 2 níveis depois do 20" por **1 por avanço de Bônus de Treinamento acima de 6** (21, 26, 31, 36, 41...).
+Ver `docs/afty-addons.md`.
