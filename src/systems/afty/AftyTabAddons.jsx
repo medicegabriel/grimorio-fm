@@ -34,6 +34,7 @@
  */
 
 import { useState } from "react";
+import ServosEditor from "./ui/ServosEditor";
 import { AlertTriangle, Trash2, RefreshCw, Download, Copy, Check, Lock } from "lucide-react";
 import { Card } from "./ui/primitivos";
 import PainelDoCofre from "./ui/PainelDoCofre";
@@ -321,7 +322,7 @@ function ControlesDoPacoteComposto({ draft, pacote, onAjuste }) {
   )));
 }
 
-export default function TabAddons({ draft, derived, setAddons, trocarFicha }) {
+export default function TabAddons({ draft, derived, setAddons, trocarFicha, renderMotor }) {
   const [biblioteca, setBiblioteca] = useState(() => lerBiblioteca());
   const [texto, setTexto] = useState("");
   const [problemas, setProblemas] = useState([]);
@@ -454,7 +455,7 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha }) {
   const itens = montarItens({
     biblioteca, naFicha, compostos: fontesCompostas(), estadoDe, avisosDe,
     barradoDe: (pacote) => incompativeisCom(pacote, naFicha).map((o) => o.nome || o.id),
-  });
+  }).filter((i) => i.id !== "servos-da-guerra" || sistemaDaTela === "afty" || i.ligado);
   const item = itens.find((i) => i.id === escolhido)
     ?? itens.find((i) => i.ligado) ?? itens[0] ?? null;
   const ligados = itens.filter((i) => i.ligado).length;
@@ -480,6 +481,7 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha }) {
   const controlesDe = (i) => {
     if (!i.ligado || !i.copia) return null;
     const p = i.copia;
+    if (p.id === "servos-da-guerra") return <ServosEditor draft={draft} derived={derived} onFicha={trocarFicha} renderMotor={renderMotor} />;
     if (p.composicao) return <ControlesDoPacoteComposto draft={draft} pacote={p} onAjuste={mudarAjuste} />;
     return (
       <>

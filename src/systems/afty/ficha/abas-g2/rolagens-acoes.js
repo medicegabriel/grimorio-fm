@@ -30,13 +30,14 @@ export const pedidoCura = (l, estado) => ({
 });
 
 /** Uma rolagem de Feitiço. Só a PRIMEIRA leva Custo de Vida, consumo de estado, Feitiço de dano e a resolução do Ritual. */
-export function pedidoFeitico(f, r, indice, total) {
+export function pedidoFeitico(f, r, indice, total, modoDano = "normal") {
   return {
     tipo: "dano", tom: r.tom,
     curaDoUsuario: r.curaDoUsuario,
     rotulo: f.nome || "Feitiço Sem Nome",
     detalhe: total > 1 || r.vezes > 1 ? r.rotulo : f.nivelLabel,
-    dados: r.dados, faces: r.faces, fixo: r.fixo || 0,
+    dados: r.dados, faces: r.faces, fixo: r.grupos ? 0 : r.fixo || 0,
+    grupos: r.grupos, custoServo: r.custoServo, ...(r.formulasServo ? { modoDano } : {}),
     explosiva: !!r.explosiva,
     custoVidaAtivacao: indice === 0 ? f.custoVidaAtivacao : null,
     // A rolagem da Amplificadora traz o estado dela (2026-10-27), e é a única que o desliga.
@@ -46,7 +47,7 @@ export function pedidoFeitico(f, r, indice, total) {
   };
 }
 /** A notação de uma rolagem de Feitiço, como a clássica escreve: `3d6!+2`. */
-export const notacaoDoFeitico = (r) => `${r.dados}d${r.faces}${r.explosiva ? "!" : ""}${r.fixo ? `${r.fixo > 0 ? "+" : ""}${r.fixo}` : ""}`;
+export const notacaoDoFeitico = (r, modo = "normal") => r.formulasServo?.[modo] ?? r.formula ?? `${r.dados}d${r.faces}${r.explosiva ? "!" : ""}${r.fixo ? `${r.fixo > 0 ? "+" : ""}${r.fixo}` : ""}`;
 
 /** O Conflito de Domínio: 1d10 mais o bônus. */
 export const pedidoConflito = (c) => ({ tipo: "dano", rotulo: "Conflito de Domínio", dados: c.dados, faces: c.faces, fixo: c.bonus });

@@ -327,6 +327,11 @@ export const EFEITO_CANAIS = [
      escolhido à mão e com a desvantagem da arma é `modoCombinado`, na hora de
      rolar. O Preciso do Golpe Especial é o primeiro cliente. */
   { id: "vantagemAtaque", label: "Vantagem no Ataque", alvo: "fonteDano", nota: "sinalizador. Positivo dá vantagem na jogada de ataque da linha e negativo dá desvantagem. Não acumulam, e uma vantagem e uma desvantagem se anulam" },
+  { id: "peMaxFixo", label: "PE Máximo Fixo", nota: "substitui o máximo calculado de PE" },
+  { id: "danoFinalMult", label: "Multiplicador de Dano Final", nota: "multiplica dados e fixo, incluindo Após Ataque" },
+  { id: "criticoMultBonus", label: "Aumento do Multiplicador de Crítico", nota: "soma ao multiplicador dos dados critáveis" },
+  { id: "acoesMovimento", label: "Ações de Movimento Adicionais", nota: "ações adicionais por rodada" },
+  { id: "alcanceHabilidadeMult", label: "Multiplicador de Alcance de Habilidades", nota: "multiplica o alcance das habilidades" },
   { id: "margemCritico", label: "Margem de Crítico",     alvo: "fonteDano", nota: "quanto a margem DIMINUI, com piso de 2" },
   { id: "ignoraRD",      label: "Ignora RD",             alvo: "fonteDano" },
   { id: "ignoraTodaRD", label: "Ignora Toda RD", alvo: "fonteDano" },
@@ -727,7 +732,7 @@ export const chaveExclusiva = (canal, alvo, valor = 1, grupo = GRUPO_POOL_UNICO)
  */
 const GRUPOS_DE_CANAL = [
   ["Vitalidade e Recursos", [
-    "hp", "hpMult", "pvTemporario", "pe", "peMult", "passivaSemCusto", "peTemporario", "almaMax", "pontosPreparo", "preparoTemporario", "custoPE",
+    "hp", "hpMult", "pvTemporario", "pe", "peMaxFixo", "peMult", "passivaSemCusto", "peTemporario", "almaMax", "pontosPreparo", "preparoTemporario", "custoPE",
     "recargaTecnicaMaxima",
   ]],
   // ⚠ Grupo PRÓPRIO desde 2026-08-03. Os três de Regeneração viviam soltos em
@@ -747,7 +752,7 @@ const GRUPOS_DE_CANAL = [
   ["Ataque e Dano", [
     "cd", "cdFeitico", "bonusAcerto", "acertoArma", "treinoArmaCasoJa", "ataquesExtras", "danoBonus", "nivelDano", "dadosDano", "dadosNomeados",
     "dadosCritico", "rerrolaDano", "dadosAtaque", "vantagemAtaque", "margemCritico", "ignoraRD", "ignoraTodaRD", "ignoraImunidade", "removeResistencia", "propMarcial", "finezaAtaque",
-    "semAtributoDano", "alcanceArma", "alcanceArmaMult",
+    "semAtributoDano", "alcanceArma", "alcanceArmaMult", "alcanceHabilidadeMult", "danoFinalMult", "criticoMultBonus",
   ]],
   // Atributo, limite e nível de trilha: o que a criatura É, em número próprio.
   // `nivelAptidao` entra aqui, e não num grupo de Aptidões, porque ele é
@@ -759,7 +764,7 @@ const GRUPOS_DE_CANAL = [
     "proficienciaTRCasoJa", "margemCriticoTR",
   ]],
   ["Manobras", ["bonusManobra", "resistirManobra", "distanciaEmpurrao"]],
-  ["Movimento e Percepção", ["movimento", "voo", "movimentoMult", "iniciativa", "atencao", "tamanho"]],
+  ["Movimento e Percepção", ["acoesMovimento", "movimento", "voo", "movimentoMult", "iniciativa", "atencao", "tamanho"]],
   // Tudo que é "quantos X você pode ter". ⚠ `espacosCarga` estava em Movimento
   // (2026-07-29) porque sobrecarga derruba o deslocamento. Era consequência, não
   // categoria, e o autor pegou: o canal sobe o LIMITE de espaços de item, então

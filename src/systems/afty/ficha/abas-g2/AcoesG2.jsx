@@ -442,7 +442,7 @@ function LinhaTecnicaAtaque({ f, info, usos, sessao, onSessao, rolar, prova, avi
 /* ---------------------------------------------------------------- */
 /* Feitiços                                                          */
 /* ---------------------------------------------------------------- */
-function LinhaFeitico({
+function LinhaFeitico({ modoServo = "normal",
   f: base, sessao, rolar, prova, avisar, aberto, onAberto, destaque, comLiberacao, controleTecnicaMaxima, conjuracaoBloodfeast, ritual,
 }) {
   const chave = `feitico:${base.id}`;
@@ -471,7 +471,7 @@ function LinhaFeitico({
   const tm = f.tecnicaMaxima ? situacaoDaTecnicaMaxima(sessao, f) : null;
   const etapa = etapaDoRitual(f.ritual);
   const travas = rolagens.map((r, i) => travaDoFeitico(f, base, i));
-  const pedidos = rolagens.map((r, i) => pedidoFeitico(f, r, i, rolagens.length));
+  const pedidos = rolagens.map((r, i) => pedidoFeitico(f, r, i, rolagens.length, modoServo));
   const motivos = pedidos.map((p, i) => travas[i] ?? motivoDaRecusa(prova(p), p));
   const { idDe, nos: textoMotivo } = useMotivos(unica ? [{ texto: motivos[0] }] : []);
   const idDetalhe = `m-detalhe-${chave}`;
@@ -507,7 +507,7 @@ function LinhaFeitico({
         <span className="m-acoes">
           {unica ? (
             <>
-              <Rolar rotulo="Rolar" valor={notacaoDoFeitico(rolagens[0])} partes={rolagens[0].partes} titulo={rolagens[0].rotulo}
+              <Rolar rotulo="Rolar" valor={notacaoDoFeitico(rolagens[0], modoServo)} partes={rolagens[0].partes} titulo={rolagens[0].rotulo}
                 motivo={motivos[0]} idMotivo={idDe(motivos[0])} avisar={avisar} className="m-rolar-feitico"
                 onRolar={() => rolar(pedidos[0])} />
               {rolagens[0].vezes > 1 && <span className="m-chip" title={`${rolagens[0].vezes} ${rolagens[0].rotulo}s`}>×{rolagens[0].vezes}</span>}
@@ -534,7 +534,7 @@ function LinhaFeitico({
                   {rolagens.map((r, i) => (
                     <span key={`${r.rotulo}:${i}`} className="m-saida">
                       <span className="m-rotulo">{rolagens.length > 1 ? r.rotulo : (propriedadeValor?.nome || f.valorLabel)}</span>
-                      <Rolar valor={notacaoDoFeitico(r)} partes={r.partes} titulo={r.rotulo} motivo={motivos[i]} idMotivo={`${idDetalhe}-motivo-${i}`} avisar={avisar}
+                      <Rolar valor={notacaoDoFeitico(r, modoServo)} partes={r.partes} titulo={r.rotulo} motivo={motivos[i]} idMotivo={`${idDetalhe}-motivo-${i}`} avisar={avisar}
                         className="m-rolar-feitico" onRolar={() => rolar(pedidos[i])} />
                       {r.vezes > 1 && <span className="m-chip" title={`${r.vezes} ${r.rotulo}s`}>×{r.vezes}</span>}
                       {motivos[i] && <span id={`${idDetalhe}-motivo-${i}`} className="m-motivo"><AlertTriangle aria-hidden="true" />{motivos[i]}</span>}
@@ -705,6 +705,7 @@ function LinhaExpansao({ d, ativo, fase, partesPvDomo, controle, aberto, onAbert
 /* ---------------------------------------------------------------- */
 /* A aba                                                             */
 /* ---------------------------------------------------------------- */
+import PainelServos from "../PainelServos";
 const MODOS_DANO = [{ id: "normal", rotulo: "Normal" }, { id: "critico", rotulo: "Crítico" }, { id: "raio_negro", rotulo: "Raio Negro" }];
 
 export default function AcoesG2({
@@ -756,6 +757,7 @@ export default function AcoesG2({
 
   return (
     <div ref={raiz} className="e-g2 m-aba m-acoes-aba" data-m-aba="acoes">
+      <PainelServos derived={derived} sessao={sessao} onSessao={onSessao} />
       {indice.length > 1 && (
         <nav className="m-indice" aria-label="Seções de Ações">
           {indice.map((s) => (
@@ -819,7 +821,7 @@ export default function AcoesG2({
                     rolar={rolar} prova={prova} avisar={avisar} modoDano={modoDanoAtivo} destaque={destaque}
                     consomeEstadoNoPrimeiro={derived.tecnicasMarciais?.consomeEstadoNoPrimeiro ?? null} />
                 ) : (
-                  <LinhaFeitico key={t.id} f={t} sessao={sessao} rolar={rolar} prova={prova} avisar={avisar}
+                  <LinhaFeitico modoServo={modoDanoAtivo} key={t.id} f={t} sessao={sessao} rolar={rolar} prova={prova} avisar={avisar}
                     aberto={abertos.has(`feitico:${t.id}`)} onAberto={onAberto} destaque={destaque}
                     comLiberacao={derived.feiticos?.comLiberacao} controleTecnicaMaxima={controleTecnicaMaxima}
                     conjuracaoBloodfeast={conjuracaoBloodfeast} ritual={ritual} />
@@ -830,7 +832,7 @@ export default function AcoesG2({
               <Secao id="feiticos" titulo="Feitiços" contagem={feiticos.length}>
                 {exaustaoTecnica && <div className="m-faixa">{exaustaoTecnica}</div>}
                 {feiticos.map((f) => (
-                  <LinhaFeitico key={f.id} f={f} sessao={sessao} rolar={rolar} prova={prova} avisar={avisar}
+                  <LinhaFeitico modoServo={modoDanoAtivo} key={f.id} f={f} sessao={sessao} rolar={rolar} prova={prova} avisar={avisar}
                     aberto={abertos.has(`feitico:${f.id}`)} onAberto={onAberto} destaque={destaque}
                     comLiberacao={derived.feiticos?.comLiberacao} controleTecnicaMaxima={controleTecnicaMaxima}
                     conjuracaoBloodfeast={conjuracaoBloodfeast} ritual={ritual} />

@@ -20,7 +20,7 @@
  * ============================================================
  */
 
-import { formulaModoDano, grupoMultiplicavel, grupoNoRaioNegro, dadosNoModo } from "../afty-dano";
+import { formulaModoDano, grupoMultiplicavel, grupoNoRaioNegro, dadosNoModo, multiplicadorCriticoDoGrupo, multiplicadorFinalDosGrupos } from "../afty-dano";
 
 let sequencia = 0;
 const novoId = () => `rol_${Date.now().toString(36)}_${(sequencia += 1)}`;
@@ -153,7 +153,7 @@ export function rolarDano(
   let subtotalRaioNegro = 0;
   for (const g of lista) {
     const criticoAtivo = ["critico", "raio_negro"].includes(modo);
-    const multDados = criticoAtivo && grupoMultiplicavel(g) ? 2 : 1;
+    const multDados = criticoAtivo && grupoMultiplicavel(g) ? multiplicadorCriticoDoGrupo(g) : 1;
     const dadosGrupo = (maximizado ? Array.from({ length: Math.max(0, Math.trunc(g.dados * multDados) || 0) }, () => g.faces)
       : rolarDados(g.dados * multDados, g.faces, rng)).map((n, i) => {
       if (n > ateRerrola) return n;
@@ -182,6 +182,7 @@ export function rolarDano(
     // na metade. `piso(x / 2) × 3` perdia 1 ponto em todo subtotal ímpar.
     total += subtotalRaioNegro + Math.floor(subtotalRaioNegro / 2);
   }
+  total = Math.floor(total * multiplicadorFinalDosGrupos(lista));
   const soma = rolados.reduce((s, n) => s + n, 0);
   const ajuste = total - soma;
   const formulaBase = formulaModoDano(lista, modo);

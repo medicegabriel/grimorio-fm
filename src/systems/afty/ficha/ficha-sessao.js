@@ -2259,6 +2259,7 @@ export function proximaRodada(sessao, derived = null, { preservarTurnoArmas = fa
     // A recarga da Técnica Máxima desce uma rodada (DA-08). Ver `avancaRecargas`.
     recargas: avancaRecargas(sessao),
     rodada: sessao.rodada + 1,
+    servosMovimentosUsados: 0,
     gungnir: sessao.rodada === 0 ? normalizaGungnir() : avancarGungnir(sessao.gungnir),
     combate: expirarEstadosDaRodada(sessao.combate, derived),
     buffs: sessao.buffs.map(desceBuff).filter(Boolean),
@@ -3074,7 +3075,7 @@ function semAmpliacoesRecursos(combate, derived = null) {
 
 /** A mudança de combate encerra o Ápice e cobra a Exaustão da rodada aberta. */
 export function aplicaPatchCombate(sessao, parcial) {
-  if (parcial?.ativo === false) sessao = { ...sessao, gungnir: normalizaGungnir() };
+  if (parcial?.ativo === false) sessao = { ...sessao, servosMovimentosUsados: 0, gungnir: normalizaGungnir() };
   if (parcial?.ativo === false) sessao = encerrarAcoesAddon(sessao);
   /* O fim do combate desmancha a Expansão no ar, com a Exaustão de Técnica de
      sempre (Etapa 9): fora de combate a bancada zera o estado, e deixá-la

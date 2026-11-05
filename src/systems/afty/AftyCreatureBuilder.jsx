@@ -61,7 +61,7 @@ import {
   ATTR_LIMITE_PADRAO,
 } from "./afty-atributos";
 import {
-  ETAPAS_POR_LINHA, focosGastos, avaliarRequisito, requisitosDaEtapa, rotuloAlvo, treinamentosDaOrigem, origemDosTreinos,
+  ETAPAS_POR_LINHA, limiteTreinosPorAlvo, focosGastos, avaliarRequisito, requisitosDaEtapa, rotuloAlvo, treinamentosDaOrigem, origemDosTreinos,
   SEP_ALVO_ACAO, linhasComEscolhaFeiticos, atributoDoAlvo,
   definirEscolhaTreino, opcoesDeEscolhaTreino, limiteEscolhaTreino,
 } from "./afty-treinamentos";
@@ -1205,19 +1205,16 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
     setDraft((d) => definirEscolhaTreino(d, lineId, escolhaId, valor, sistema));
 
   // Linha REPETÍVEL: upsert/remove de uma instância (alvo distinto → progresso).
-  const setTreinoInstance = (lineId, alvo, prog) =>
+  const setTreinoInstance = (lineId, alvo, prog, indice = null) =>
     setDraft((d) => {
       const cur = treinosObj(d);
       const list = Array.isArray(cur[lineId]) ? cur[lineId] : [];
       const key = String(alvo).trim().toLowerCase();
-      let nextList;
-      if (prog > 0) {
-        nextList = list.some((it) => String(it.alvo).toLowerCase() === key)
-          ? list.map((it) => (String(it.alvo).toLowerCase() === key ? { ...it, progresso: prog } : it))
-          : [...list, { alvo: String(alvo).trim(), progresso: prog }];
-      } else {
-        nextList = list.filter((it) => String(it.alvo).toLowerCase() !== key);
-      }
+      const iguais = list.filter((it) => String(it.alvo).toLowerCase() === key);
+      if (indice == null && (!prog || iguais.length >= limiteTreinosPorAlvo(lineId, d))) return d;
+      const nextList = indice == null ? [...list, { alvo, progresso: prog }]
+        : prog > 0 ? list.map((it, i) => i === indice ? { ...it, progresso: prog } : it)
+          : list.filter((_, i) => i !== indice);
       const next = { ...cur };
       if (nextList.length) next[lineId] = nextList;
       else delete next[lineId];
@@ -1830,7 +1827,10 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
             />
           )}
           {tabAtiva === "calculos" && <TabCalculos derived={derived} setStatOverride={setStatOverride} patchCombate={patchCombate} gatilhosTreino={derived.gatilhosTreino} onGatilhoTreino={(id, v) => setTreinosAtivos((m) => ({ ...m, [id]: v }))} />}
-          {tabAtiva === "addons" && <TabAddons draft={draft} derived={derived} setAddons={setAddons} trocarFicha={setDraft} />}
+          {tabAtiva === "addons" && <TabAddons draft={draft} derived={derived} setAddons={setAddons} trocarFicha={setDraft}
+            renderMotor={(efeitos, onChange) => <MotorEfeitosEditor efeitos={efeitos} onChange={onChange}
+              rotulo="Efeito no Motor" comModo={false} pericias={derived.testes?.pericias}
+              fontesDano={derived.dano?.entradas} dslContexto={derived.contextoDsl} dslExtras={derived.combate?.estadosExtras} />} />}
           {STUBS[tabAtiva] && <StubCard title={abasVisiveis.find((t) => t.id === tabAtiva)?.label} text={STUBS[tabAtiva]} />}
         </div>
       </div>
@@ -10039,8 +10039,10 @@ const alvoLabelDe = rotuloAlvo;
    que a criatura tem. Vale a arma CARREGADA, e não só a equipada, porque
    treinar não é empunhar. A lista já vem sem repetição, que é o que sobra de
    duas entradas do mesmo modelo (duas Adagas são uma opção só). */
-function opcoesDeAlvo(linha, instances, pericias = AFTY_PERICIAS, armas = [], invocacoes = []) {
-  const usados = new Set(instances.map((i) => i.alvo));
+function opcoesDeAlvo(linha, instances, pericias = AFTY_PERICIAS, armas = [], invocacoes = [], limite = 1) {
+  const contagem = new Map();
+  for (const { alvo } of instances) contagem.set(alvo, (contagem.get(alvo) ?? 0) + 1);
+  const usados = new Set([...contagem].filter(([, n]) => n >= limite).map(([alvo]) => alvo));
   if (linha.alvoTipo === "atributo") {
     return AFTY_ATTRS.filter((a) => !usados.has(a.key)).map((a) => ({ value: a.key, label: a.label }));
   }
@@ -10091,7 +10093,7 @@ function opcoesDeAlvo(linha, instances, pericias = AFTY_PERICIAS, armas = [], in
 /* Uma Linha de Treinamento. Não repetível → uma trilha só. Repetível → várias
    instâncias, cada uma com um alvo distinto (atributo/perícia/arma). */
 function TreinoLinha({
-  linha, valor, attrEff, nd, ctxReq, onSetProgresso, onSetInstance,
+  linha, valor, attrEff, nd, ctxReq, onSetProgresso, onSetInstance, limitePorAlvo = 1,
   pericias, armas, invocacoes, alvosEscolhidos = {}, escolhas = {}, onSetAlvo, onSetEscolha,
 }) {
   const repetivel = !!linha.repetivel;
@@ -10118,7 +10120,7 @@ function TreinoLinha({
   // `null` = alvo de texto livre (nenhuma linha usa mais, mas o caminho fica
   // para uma linha nova nascer sem catálogo). Atributo, Perícia e Arma saem do
   // catálogo, já sem os que a criatura treinou.
-  const alvoOptions = opcoesDeAlvo(linha, instances, pericias, armas, invocacoes);
+  const alvoOptions = opcoesDeAlvo(linha, instances, pericias, armas, invocacoes, limitePorAlvo);
   // Pool vazio tem duas causas, e a mensagem muda: ou tudo já foi treinado, ou
   // não havia o que treinar (nenhuma arma no inventário / nenhuma invocação).
   const poolVazio = linha.alvoTipo === "arma" && (armas?.length ?? 0) === 0
@@ -10256,10 +10258,10 @@ function TreinoLinha({
           {repetivel ? (
             <div className="space-y-2.5">
               {/* instâncias (um treino por alvo) */}
-              {instances.map((inst) => {
+              {instances.map((inst, indice) => {
                 const instCompleta = inst.progresso >= ETAPAS_POR_LINHA;
                 return (
-                  <div key={inst.alvo} className="rounded-md border border-slate-700/80 bg-slate-900/30 p-2">
+                  <div key={inst.alvo + ":" + indice} className="rounded-md border border-slate-700/80 bg-slate-900/30 p-2">
                     {/* cabeçalho da instância: mesma anatomia da linha (alvo + segmentos + estado) */}
                     <div className="flex items-center gap-2 mb-2 pb-1.5 border-b border-slate-800">
                       <span className="text-[11px] font-bold text-purple-200 flex-1 min-w-0 truncate">
@@ -10277,7 +10279,7 @@ function TreinoLinha({
                       )}
                       <button
                         type="button"
-                        onClick={() => onSetInstance(linha.id, inst.alvo, 0)}
+                        onClick={() => onSetInstance(linha.id, inst.alvo, 0, indice)}
                         className="text-slate-600 hover:text-rose-300 p-0.5 rounded flex-shrink-0"
                         title={`Remover treino de ${alvoLabelDe(linha, inst.alvo, pericias, armas, invocacoes)}`}
                         aria-label={`Remover treino de ${alvoLabelDe(linha, inst.alvo, pericias, armas, invocacoes)}`}
@@ -10292,7 +10294,7 @@ function TreinoLinha({
                       nd={nd}
                       // O requisito `atributoDoAlvo` confere o atributo DESTE alvo.
                       ctxReq={{ ...ctxReq, atributoDoAlvo: atributoDoAlvo(linha, inst.alvo, pericias) }}
-                      onSet={(p) => onSetInstance(linha.id, inst.alvo, p)}
+                      onSet={(p) => onSetInstance(linha.id, inst.alvo, p, indice)}
                     />
                   </div>
                 );
@@ -16403,7 +16405,7 @@ function TabInterludios({
   const tetosEspeciais = tetosDeTreinoEspecial(draft);
   // As TRÊS famílias de Interlúdio dividem o mesmo caixa: Linha, Treino
   // Especial e Forja.
-  const gastos = focosGastos(treinos, origemId, qualificadas) + focosDeTreinosEspeciais(draft) + focosDeForja(draft);
+  const gastos = focosGastos(treinos, origemId, qualificadas, draft) + focosDeTreinosEspeciais(draft) + focosDeForja(draft);
   const total = derived.focosTotais;                // = ND + bônus de poderes
   const overBudget = gastos > total;
   /* No jogador o total vira campo. Ver a nota em ContadorFocos.
@@ -16433,6 +16435,7 @@ function TabInterludios({
             <TreinoLinha
               key={linha.id}
               linha={linha}
+              limitePorAlvo={limiteTreinosPorAlvo(linha.id, draft)}
               valor={treinos[linha.id]}
               attrEff={derived.attrEff}
               nd={derived.nd}

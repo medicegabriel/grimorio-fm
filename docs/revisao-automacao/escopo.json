@@ -2,6 +2,9 @@
   "versao": 1,
   "descricao": "Proprietário de controle para catálogos/tabelas adicionais. A regra individual mantém o dono do manifesto. Novos arquivos e exports exigem reconciliação explícita.",
   "modulos": {
+    "afty-servos.js": "M02",
+    "afty-servos-combate.js": "FEI-01",
+    "afty-dominio-inato.js": "TEC-02",
     "afty-dsl.js": "M01",
     "afty-dsl-vocabulario.js": "M01",
     "afty-efeitos.js": "M01",
@@ -277,6 +280,11 @@
     }
   ],
   "modulosAdicionais": {
+    "ficha/ficha-servos.js": {
+      "modo": "DADOS",
+      "proprietario": "M03",
+      "justificativa": "Operações de sessão dos Servos, incluindo PE, movimento por rodada e dias de concentração"
+    },
     "ficha/abas-g2/rolagem-g2.js": {
       "modo": "INTERFACE",
       "justificativa": "Prévia das três abas do G2 (2026-10-21): a etapa sem sorteio do rolar (Especialização, Custo de Vida, arma, cura) e o motivo da recusa, pelas funções existentes; sem catálogo de regra do Livro"

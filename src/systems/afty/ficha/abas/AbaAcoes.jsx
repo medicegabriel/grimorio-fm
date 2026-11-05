@@ -722,7 +722,7 @@ function LinhaTecnicaAtaque({
   );
 }
 
-function LinhaFeitico({
+function LinhaFeitico({ modoServo = "normal",
   f: base, rolar, destacado, comLiberacao, conjuracaoBloodfeast, controleTecnicaMaxima,
   onRitual, onDesativarRitual, onIniciarRitualEstendido, onIniciarRitualSemTeste,
   onConcluirPreparacaoRitual, onCancelarRitual, onFinalizarRitual, onEncerrarRitual,
@@ -766,7 +766,8 @@ function LinhaFeitico({
     curaDoUsuario: r.curaDoUsuario,
     rotulo: f.nome || "Feitiço Sem Nome",
     detalhe: rolagens.length > 1 || r.vezes > 1 ? r.rotulo : f.nivelLabel,
-    dados: r.dados, faces: r.faces, fixo: r.fixo || 0,
+    dados: r.dados, faces: r.faces, fixo: r.grupos ? 0 : r.fixo || 0,
+    grupos: r.grupos, custoServo: r.custoServo, ...(r.formulasServo ? { modoDano: modoServo } : {}),
     explosiva: !!r.explosiva,
     custoVidaAtivacao: indice === 0 ? f.custoVidaAtivacao : null,
     // A rolagem da Amplificadora traz o estado dela (2026-10-27), e é a única que o desliga.
@@ -865,9 +866,9 @@ function LinhaFeitico({
                 </span>
                 <span className="flex items-center gap-1.5">
                   <NumeroComFontes
-                    valor={`${r.dados}d${r.faces}${r.explosiva ? "!" : ""}${r.fixo ? `${r.fixo > 0 ? "+" : ""}${r.fixo}` : ""}`}
+                    valor={r.formulasServo?.[modoServo] ?? r.formula ?? `${r.dados}d${r.faces}${r.explosiva ? "!" : ""}${r.fixo ? `${r.fixo > 0 ? "+" : ""}${r.fixo}` : ""}`}
                     partes={r.partes}
-                    total={`${r.dados}d${r.faces}${r.explosiva ? "!" : ""}${r.fixo ? `${r.fixo > 0 ? "+" : ""}${r.fixo}` : ""}`}
+                    total={r.formulasServo?.[modoServo] ?? r.formula ?? `${r.dados}d${r.faces}${r.explosiva ? "!" : ""}${r.fixo ? `${r.fixo > 0 ? "+" : ""}${r.fixo}` : ""}`}
                     formatar={false}
                     className="afty-valor afty-feitico-saida-num whitespace-nowrap"
                     titulo={r.rotulo}
@@ -1470,7 +1471,7 @@ export default function AbaAcoes({
               consomeEstadoNoPrimeiro={derived.tecnicasMarciais?.consomeEstadoNoPrimeiro ?? null}
             />
           ) : (
-            <LinhaFeitico
+            <LinhaFeitico modoServo={modoDanoAtivo}
               key={t.id}
               f={t}
               rolar={rolar}
@@ -1486,7 +1487,7 @@ export default function AbaAcoes({
       {feiticos.length > 0 && (
         <Secao titulo="Feitiços">
           {feiticos.map((f) => (
-            <LinhaFeitico
+            <LinhaFeitico modoServo={modoDanoAtivo}
               conjuracaoBloodfeast={conjuracaoBloodfeast}
               controleTecnicaMaxima={controleTecnicaMaxima}
               key={f.id}

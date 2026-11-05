@@ -55,6 +55,7 @@
  * ============================================================
  */
 
+import { validarDadosServos } from "./afty-servos";
 import { validarBloodfeast } from "./afty-bloodfeast";
 import { hidratarFicha } from "./afty-addons-compostos";
 import { normalizarMarca, normalizarVariavel, validateExpression } from "./afty-dsl";
@@ -414,6 +415,7 @@ const ID_ENTRADA_OK = /^[a-z0-9][a-z0-9_]{0,63}$/;
  * do projeto é que quem enxerga é quem pediu.
  */
 export const PRIMITIVAS = [
+  { id: "servosGuerra", rotulo: "Servos da Guerra", nota: "Características e classes de Servos, somente no Afty" },
   { id: "ressonanciaGungnir", rotulo: "Ressonância de Gungnir", nota: "Acertos confirmados e ressonância individual por alvo" },
   {
     id: "alcanceArmaMult",
@@ -1064,6 +1066,7 @@ export function primitivasDaCriatura(creature) {
   const out = new Set();
   for (const pacote of lista) {
     for (const id of Array.isArray(pacote?.permite) ? pacote.permite : []) {
+      if (id === "servosGuerra" && creature?.rulesVersion !== "afty") continue;
       if (PRIMITIVA_IDS.has(id)) out.add(id);
     }
   }
@@ -1212,6 +1215,8 @@ export function normalizarPacote(cru) {
     resumo: String(p.resumo ?? "").trim(),
     categoria: String(p.categoria ?? "").trim(),
     paraRaw: String(p.paraRaw ?? "afty").trim(),
+    ...(p.id === "servos-da-guerra" && p.servosGuerra && typeof p.servosGuerra === "object"
+      ? { servosGuerra: clonar(p.servosGuerra) } : {}),
     /* As primitivas que este pacote quer VER na tela. Só isto: o motor já as
        tem, e o campo diz quem as enxerga. Ver `PRIMITIVAS`. */
     permite: Array.isArray(p.permite)
@@ -1482,6 +1487,7 @@ export function estadosCombateDeAddon(creature, nivelMax = 5, { avaliar = null }
   for (const pacote of listaDeAddons(creature)) {
     const pacoteId = String(pacote?.id ?? "").trim();
     if (!pacoteId) continue;
+    if (pacoteId === "servos-da-guerra" && creature?.rulesVersion !== "afty") continue;
     const brutos = Array.isArray(pacote?.estadosCombate) ? pacote.estadosCombate : [];
     const idsLocais = new Set(brutos.map((e) => String(e?.id ?? "").trim()).filter(Boolean));
     /* Os ids que o pacote acrescenta em QUALQUER família, para o `requerTalento`
@@ -1640,6 +1646,7 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
   const p = normalizarPacote(cru);
   const problemas = [];
 
+  if (p.id === "servos-da-guerra") problemas.push(...validarDadosServos(p.servosGuerra));
   if (!p.id) problemas.push("O pacote precisa de um id.");
   else if (!ID_PACOTE_OK.test(p.id)) {
     problemas.push(`id do pacote inválido: "${p.id}". Use minúsculas, números e hífen, de 2 a 40 caracteres.`);

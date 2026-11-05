@@ -138,6 +138,9 @@ import {
 import { resolveOlhosAgulha, efeitosOlhosAgulha } from "./afty-olhos-agulha";
 import { estadosManipulacaoCeu, resolveManipulacaoCeu } from "./afty-manipulacao-ceu";
 import { resolveTestes, resolveDano, catalogoPericiasDaFicha, ehPericiaOficio, atributosDePericiaManuais, FACES_NOMEADAS } from "./afty-pericias";
+import { configuracaoServo, efeitosServos } from "./afty-servos";
+import { resolverDominioInato } from "./afty-dominio-inato";
+import { danoDoServo } from "./afty-servos-combate";
 import { resolveDefesasDano, sanearDefesasDano } from "./afty-defesas-dano";
 import { resolveCondicoes, marcaMovimentoNasLinhas } from "./afty-condicoes";
 import { AFTY_ATAQUES } from "./afty-pericias-catalogo";
@@ -1347,6 +1350,7 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
 
   const bloodfeast = resolveBloodfeast(creature, { bt, nd, modCon: modBase.constituicao, sessao: estadoBloodfeast, aptidoes: aptidoesIds });
   const efeitosTodos = carimbarGrupoExclusivo([
+    ...efeitosServos(creature),
     /* Os do montante que leem a bancada (a Atenção em combate do Instinto
        Sanguinário, e qualquer origem, Treino ou texto livre com estado de
        combate). Saíram da lista de lá, então entram só aqui. */
@@ -1589,12 +1593,16 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
   // lá de cima, por ordem de declaração: seus valores saem das tabelas
   // indexadas pelo DOM, e o `aptidao` só existe aqui. O benefício básico dos
   // níveis de Aptidão já entrou no pré-contexto acima.
-  const efeitosDominio = semEnergia ? [] : efeitosDoDominio(creature, {
+  const dominioInato = resolverDominioInato(creature, {
+    nivel: aptidao.efetivo?.dom ?? 0, estado: opcoes.dominioInato,
+    canalPermitido: canalPermitidoEmExpansao, condicoesValidas: CONDICOES_CATALOGO,
+  });
+  const efeitosDominio = semEnergia ? [] : [...efeitosDoDominio(creature, {
     dom: aptidao.efetivo?.dom ?? 0,
     aptidoesEscolhidas: aptidoesIds,
     // O Motor opcional do Efeito Especial só escreve nos canais permitidos (DA-20).
     canalPermitido: canalPermitidoEmExpansao,
-  });
+  }), ...(dominioInato?.efeitosMotor ?? [])];
   const beneficiosRitualDominio = semEnergia
     ? {}
     : beneficiosRitualDoDominio(creature, aptidoesIds);
@@ -3031,7 +3039,9 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
      ele já converte do jeito dele. O PE negativo não tira vida. */
   const energiaEmVida = bloodfeast.tem ? 0 : regrasAddon.energiaEmVida;
   const peConvertido = energiaEmVida ? Math.max(0, peOriginal) : 0;
-  const pe = bloodfeast.tem || energiaEmVida ? 0 : peOriginal;
+  const fontesPeFixo = detalhesDoCanal(ef, "peMaxFixo").filter((e) => !e.suplantado);
+  const pe = fontesPeFixo.length ? Math.max(0, Math.floor(canal("peMaxFixo")))
+    : bloodfeast.tem || energiaEmVida ? 0 : peOriginal;
   if (bloodfeast.tem) hp += peOriginal * 3 - bloodfeast.custoMaximo;
   if (energiaEmVida) hp += Math.floor(peConvertido * energiaEmVida);
   const efeitosPoderSangue = efeitosPoderDoSangue(bloodfeast, opcoes.vidaAtual, hp);
@@ -3397,7 +3407,16 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
     .filter((d) => d.escopoLinha === ESCOPO_PRIMEIRO_ATAQUE && !d.suplantado)
     .map((d) => ({ nome: "Aliado Elementalista", dados: Math.max(0, Math.trunc(Number(d.valor) || 0)), faces })));
   const amplificadoraDadosDaMesa = amplificadoras.length && combate?.[ESTADO_AMPLIFICADORA] ? Math.floor(bt / 2) : 0;
+  const configServo = configuracaoServo(creature);
+  const servo = configServo?.classe ? {
+    ...configServo, bt, nivelMax: acessoFeitico,
+    multiplicadorDano: Math.max(1, canal("danoFinalMult")),
+    multiplicadorCritico: Math.max(1, 2 + canal("criticoMultBonus")),
+    acoesMovimento: Math.max(0, canal("acoesMovimento")),
+    multiplicadorAlcance: Math.max(1, canal("alcanceHabilidadeMult")),
+  } : null;
   const ctxFeiticos = {
+    servo,
     nd,
     nivelConjurador,
     bonusFeitico,
@@ -4889,6 +4908,11 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
 
   // ---------- overrides de valor final (aba Cálculos) ----------
   const calc = { hp, pe, defesa, cd, rdGeral, rdEspecifico, rdAlma, movimento, atencao, iniciativa };
+  if (servo) {
+    dano.entradas = dano.entradas.map((l) => danoDoServo(l, servo, { nivel: feiticos.nivelMax, combate: creature.combate }));
+
+  }
+  if (fontesPeFixo.length) partes.pe = fontesPeFixo.map((e) => ({ label: e.nome, valor: e.valor }));
   const stats = {};
   for (const k of OVERRIDABLE) stats[k] = ov[k] != null ? ov[k] : calc[k];
   const isOverridden = (k) => ov[k] != null;
@@ -4919,6 +4943,12 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
 
   return {
     ...stats,
+    dominioInato: dominioInato ? { ...dominioInato,
+      nivel: aptidao.efetivo?.dom ?? 0,
+      tiposDano: Object.entries(TIPOS_DANO).map(([id, label]) => ({ id, label })),
+      condicoesCatalogo: CONDICOES_CATALOGO,
+    } : null,
+    servosGuerra: servo,
     gungnir: {
       ativo: temGungnir(creature),
       disponivel: temGungnir(creature) && dano.entradas.some((e) => e.id === GUNGNIR_ID),

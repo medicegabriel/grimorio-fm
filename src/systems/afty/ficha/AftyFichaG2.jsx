@@ -89,6 +89,7 @@ import { sistemaDaFicha } from "../afty-sistema";
 import { cofreTrancado, comTextoAberto, lerAberto } from "../afty-cofre";
 import PainelDoCofre from "../ui/PainelDoCofre";
 import EspinhoCard from "../ui/EspinhoCard";
+import { pagaCustoServo } from "./ficha-servos";
 
 /**
  * ============================================================
@@ -564,6 +565,7 @@ export default function AftyFicha({
       : rolarTeste(descResolvida);
     atualiza((s) => {
       let proxima = registraRolagemArma(registraRolagem(s, r), descResolvida, r);
+      proxima = pagaCustoServo(proxima, descResolvida);
       if (custoVida.pago > 0) proxima = pagaCustoVida(proxima, custoVida.pago).sessao;
       if (desc.consomeEstado) proxima = consomeEstadoCombate(proxima, desc.consomeEstado);
       if (desc.feiticoDanoId) proxima = registraFeiticoDano(proxima, desc.feiticoDanoId);

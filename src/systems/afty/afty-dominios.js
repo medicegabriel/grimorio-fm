@@ -1136,27 +1136,27 @@ export function corpoDoDominio(dominio, { dom = 0, versao, temAcertoGarantido = 
  * ⚠ Só o domínio marcado como ATIVO na ficha entra. Uma criatura pode ter várias
  * expansões escritas, e expandir é uma de cada vez.
  */
-export function efeitosDoDominio(creature, { dom = 0, aptidoesEscolhidas = [], canalPermitido = null } = {}) {
+export function efeitosDoDominio(creature, { dom = 0, aptidoesEscolhidas = [], canalPermitido = null, dominioInato = null } = {}) {
   /* ⚠ A FASE (2026-10-08): o `quando: "dominio_ativo"` das linhas lê só o id
      da bancada, e ligaria tudo durante um Confronto. O portão é este (DA-15). */
-  if (!expansaoDominioNoAr(creature, aptidoesEscolhidas)) return [];
-  const ativo = dominioEmUso(creature, aptidoesEscolhidas);
-  const versao = resolveVersao(ativo, aptidoesEscolhidas);
+  if (!dominioInato && !expansaoDominioNoAr(creature, aptidoesEscolhidas)) return [];
+  const ativo = dominioInato ?? dominioEmUso(creature, aptidoesEscolhidas);
+  const versao = dominioInato ? "completa" : resolveVersao(ativo, aptidoesEscolhidas);
   if (!versao) return [];
 
   const out = [];
   const marca = (canal, expr, nome) => ({
     canal, expr, nome, origem: ativo.id,
-    quando: "dominio_ativo", duracao: "temporaria",
+    ...(!dominioInato ? { quando: "dominio_ativo" } : {}), duracao: "temporaria",
   });
 
   const nomeBase = `${ativo.nome || "Expansão de Domínio"}: Efeito básico`;
-  out.push(marca("movimentoMult", "2", nomeBase));
+  if (!dominioInato) out.push(marca("movimentoMult", "2", nomeBase));
   /* ⚠ O ALVO É OBRIGATÓRIO AQUI desde 2026-09-09, quando o `custoPE` ganhou
      alcance. O texto desta linha é *"O custo dos seus Feitiços dentro da
      expansão é reduzido em um valor igual ao seu Nível de DOM"*, e sem o alvo
      ela passaria a baratear Domínio Simples, Estilo e Invocação junto. */
-  out.push({ ...marca("custoPE", "dom", nomeBase), alvo: "feitico" });
+  if (!dominioInato) out.push({ ...marca("custoPE", "dom", nomeBase), alvo: "feitico" });
 
   for (const efeito of ativo.efeitos) {
     /* O Efeito Especial entra pelas linhas de Motor que a pessoa escreveu (DA-20),
@@ -1233,7 +1233,7 @@ export function amplificacaoDeTecnica(creature, { dom = 0, aptidoesEscolhidas = 
    mesma categoria são legítimos quando forem diferentes (Livro: "É possível
    colocar mais de um efeito do mesmo tipo, mas eles devem ainda ser
    diferentes"). Idêntico é: mesma categoria, mesmo tipo e as mesmas escolhas. */
-function chaveMecanica(e) {
+export function chaveMecanica(e) {
   if (categoriaLivre(e.categoria)) {
     return `${e.categoria}|${String(e.nome ?? "").trim()}|${String(e.descricao ?? "").trim()}`;
   }
@@ -1255,7 +1255,7 @@ function chaveMecanica(e) {
  */
 export function validarDominio(dominio, {
   dom = 0, versao, maxEfeitos = 0, temAcertoGarantido = false, condicoesValidas = null,
-  nomesFeiticos = null, canalPermitido = null,
+  nomesFeiticos = null, canalPermitido = null, repeticoes = 1,
 } = {}) {
   const d = normalizeDominio(dominio);
   const v = versao || d.versao;
@@ -1269,12 +1269,13 @@ export function validarDominio(dominio, {
   const usadas = vagasUsadas(d.efeitos);
   if (usadas > maxEfeitos) erro("limite", `Efeitos de Expansão: ${usadas} de ${maxEfeitos}.`);
 
-  const vistas = new Set();
+  const vistas = new Map();
   let condicoes = 0;
   for (const e of d.efeitos) {
     const chave = chaveMecanica(e);
-    if (vistas.has(chave)) erro("duplicata", `${rotuloDoEfeito(e)} repetido.`);
-    vistas.add(chave);
+    const vezes = (vistas.get(chave) ?? 0) + 1;
+    if (vezes > repeticoes) erro("duplicata", `${rotuloDoEfeito(e)} repetido.`);
+    vistas.set(chave, vezes);
     if (categoriaLivre(e.categoria)) {
       aviso("especial", `${e.nome?.trim() || "Efeito Especial"}: requer aprovação do Narrador.`);
       if (fortalecimentosDe(e)) aviso("fortalecer", `${e.nome?.trim() || "Efeito Especial"}: o fortalecimento é decidido pela mesa.`);
@@ -1302,7 +1303,7 @@ export function validarDominio(dominio, {
       if ((e.condicoes ?? []).length === 0) aviso("condicoes", "Condições: escolha as condições.");
     }
   }
-  if (condicoes > 1) erro("condicoesRepetidas", "O Efeito Ambiental de Condições só entra uma vez.");
+  if (condicoes > repeticoes) erro("condicoesRepetidas", repeticoes === 1 ? "O Efeito Ambiental de Condições só entra uma vez." : "Limite de repetições do Efeito Ambiental de Condições excedido.");
 
   if (d.acertoGarantido?.ativo && v === "incompleta") {
     aviso("acertoIncompleta", "Acerto Garantido indisponível na Expansão Incompleta.");

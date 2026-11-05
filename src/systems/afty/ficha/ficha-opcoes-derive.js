@@ -26,6 +26,7 @@ export function opcoesDeriveDaSessao(sessao) {
     propriedadesArmas: sessao.propriedadesArmas,
     ataqueBasicoId: sessao.ataqueBasicoId,
     bloodfeast: sessao.bloodfeast,
+    ...(sessao.dominioInato ? { dominioInato: sessao.dominioInato } : {}),
     vidaAtual: sessao.hpAtual,
     almaAtual: sessao.almaAtual,
     ultimoFeiticoDanoId: sessao.ultimoFeiticoDanoId,

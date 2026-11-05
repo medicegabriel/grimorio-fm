@@ -1,5 +1,14 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-05: SERVOS DA GUERRA
+
+O pacote único `addons/servos-da-guerra.json` reúne as características de combate, sete classes,
+Treino de Atributo e Domínio Inato. Instalar pela aba Addons, ligar na criatura Afty e escolher a classe.
+As escolhas pertencem à ficha e as operações de jogo pertencem à sessão. Cada aquisição de treino
+tem progresso e gasto de Focos próprios. O Servo admite duas por atributo.
+As decisões de homebrew do autor estão em `docs/afty-formulas-base.md` e `docs/automacao-dsl.md`.
+Regressão específica em `asserts/t-servos-da-guerra.mjs`.
+
 ## SESSÃO DE 2026-10-29: PROMPTS DOS NOVE LOTES COM VERIFICAÇÃO ANTES DO CÓDIGO
 
 A pedido do autor, criados nove prompts completos em `docs/revisao-livro-regras/prompts/`, seis do Codex e

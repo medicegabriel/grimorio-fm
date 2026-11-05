@@ -1,0 +1,78 @@
+{
+  "id": "servos-da-guerra",
+  "nome": "Servos da Guerra",
+  "versao": "1.0.0",
+  "paraRaw": "afty",
+  "categoria": "regras",
+  "resumo": "Classes de Servos, ManaBurst, Escalonamento e Domínio Inato para criaturas Afty",
+  "descricao": "ManaBurst acrescenta dados Após Ataque por 1 PE cada, até BT. Escalonamento acrescenta dados Durante Ataque por 2 PE cada, até o nível da habilidade ou o nível máximo disponível para ataques. As duas características usam a face do ataque.\n\nBerserker multiplica o dano final por 1,5. Lancer dobra o alcance de habilidades. Archer conserva o PE normal. Saber distribui 6 pontos entre atributos e seus limites. Caster cria Domínio Inato. Rider recebe uma ação de movimento adicional por rodada e reduz em 2 a margem de crítico. Assassin aumenta em 1 o multiplicador de crítico.\n\nO máximo de PE dos demais Servos é 3 vezes BT. Cada atributo admite dois treinos. O Domínio Inato custa 20 PE e cresce após cada dia inteiro de concentração.",
+  "permite": [
+    "servosGuerra"
+  ],
+  "estadosCombate": [
+    {
+      "id": "manaburst",
+      "label": "ManaBurst",
+      "tipo": "faixa",
+      "min": 0,
+      "max": "bt"
+    },
+    {
+      "id": "escalonamento",
+      "label": "Escalonamento",
+      "tipo": "faixa",
+      "min": 0,
+      "max": 5
+    }
+  ],
+  "servosGuerra": {
+    "peMaximo": "3 * bt",
+    "classes": {
+      "Berserker": {
+        "efeitos": [
+          {
+            "canal": "danoFinalMult",
+            "expr": "1.5"
+          }
+        ]
+      },
+      "Lancer": {
+        "efeitos": [
+          {
+            "canal": "alcanceHabilidadeMult",
+            "expr": "2"
+          }
+        ]
+      },
+      "Archer": {
+        "preservaPE": true
+      },
+      "Saber": {
+        "pontosAtributo": 6
+      },
+      "Caster": {
+        "dominioInato": true
+      },
+      "Rider": {
+        "efeitos": [
+          {
+            "canal": "margemCritico",
+            "expr": "2"
+          },
+          {
+            "canal": "acoesMovimento",
+            "expr": "1"
+          }
+        ]
+      },
+      "Assassin": {
+        "efeitos": [
+          {
+            "canal": "criticoMultBonus",
+            "expr": "1"
+          }
+        ]
+      }
+    }
+  }
+}

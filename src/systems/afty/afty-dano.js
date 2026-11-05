@@ -18,6 +18,12 @@ export function gruposDaLinha(linha = {}) {
 export const grupoMultiplicavel = (grupo) =>
   grupo?.momento !== "apos" && grupo?.multiplica !== false;
 
+export const multiplicadorCriticoDoGrupo = (grupo) => Math.max(1, inteiro(grupo?.multiplicadorCritico ?? 2));
+export const multiplicadorFinalDosGrupos = (grupos) => {
+  const n = Number(grupos?.[0]?.multiplicadorFinal ?? 1);
+  return Number.isFinite(n) && n > 0 ? n : 1;
+};
+
 /* ⚠ O RAIO NEGRO MULTIPLICA O MESMO CONJUNTO QUE O CRÍTICO DOBRA (autor,
    2026-09-15): *"Raio Negro multiplica por 1.5 somente os DADOS e Danos
    Critáveis."* Até aqui existia uma segunda marca, `entraRaioNegro`, que deixava
@@ -43,7 +49,7 @@ const juntar = (termos) => termos.filter(Boolean).join(" + ").replace(/\+ -/g, "
    fonte por fonte. */
 const dadosDaPilha = (lista, modo, dobrar) =>
   textoDosDados(lista.map((g) => ({
-    dados: dadosNoModo(g, modo) * (dobrar && grupoMultiplicavel(g) ? 2 : 1),
+    dados: dadosNoModo(g, modo) * (dobrar && grupoMultiplicavel(g) ? multiplicadorCriticoDoGrupo(g) : 1),
     faces: facesNoModo(g, modo),
   })));
 
@@ -51,6 +57,8 @@ const fixoDaPilha = (lista) => lista.reduce((s, g) => s + fixoDe(g), 0);
 const textoDoFixo = (fixo) => (fixo ? String(fixo) : "");
 
 export function formulaModoDano(grupos, modo = "normal") {
+  const mult = multiplicadorFinalDosGrupos(grupos);
+  const finalizar = (texto) => mult === 1 ? texto : mult === 1.5 ? `(${texto})/2*3` : `(${texto})*${mult}`;
   const lista = (Array.isArray(grupos) ? grupos : [])
     .filter((g) => ["critico", "raio_negro"].includes(modo) || !g.apenasCritico);
   if (modo === "raio_negro") {
@@ -58,10 +66,10 @@ export function formulaModoDano(grupos, modo = "normal") {
     // TODO grupo e os dados que não são critáveis ficam fora e somam uma vez.
     const dentro = dadosDaPilha(lista.filter(grupoNoRaioNegro), modo, true);
     const fora = dadosDaPilha(lista.filter((g) => !grupoNoRaioNegro(g)), "normal", false);
-    return juntar([dentro ? `(${dentro})/2*3` : "", fora, textoDoFixo(fixoDaPilha(lista))]) || "0";
+    return finalizar(juntar([dentro ? `(${dentro})/2*3` : "", fora, textoDoFixo(fixoDaPilha(lista))]) || "0");
   }
   const dobra = modo === "critico";
-  return juntar([dadosDaPilha(lista, modo, dobra), textoDoFixo(fixoDaPilha(lista))]) || "0";
+  return finalizar(juntar([dadosDaPilha(lista, modo, dobra), textoDoFixo(fixoDaPilha(lista))]) || "0");
 }
 
 /** Soma por face e divide em termos de até 100 dados, sem perder o excedente. */
@@ -145,7 +153,9 @@ export function hoverDoDano(linha = {}) {
   const total = dados
     ? `${dados}${fixoTotal ? ` ${fixoTotal < 0 ? "−" : "+"} ${Math.abs(fixoTotal)}` : ""}`
     : String(fixoTotal);
-  return { partes: saida, total };
+  const mult = multiplicadorFinalDosGrupos(grupos);
+  if (mult !== 1) saida.push({ label: "Multiplicador de Dano Final", texto: `×${mult}` });
+  return { partes: saida, total: mult === 1 ? total : formulaModoDano(grupos) };
 }
 
 export function comFormulasDeDano(linha) {

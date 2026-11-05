@@ -85,6 +85,8 @@ import { getEspecializacao } from "../afty-especializacoes";
 import { cofreTrancado, comTextoAberto, lerAberto } from "../afty-cofre";
 import PainelDoCofre from "../ui/PainelDoCofre";
 import EspinhoCard from "../ui/EspinhoCard";
+import { preparaCustoServo, pagaCustoServo } from "./ficha-servos";
+import PainelServos from "./PainelServos";
 
 /**
  * ============================================================
@@ -229,6 +231,7 @@ export default function AftyFicha({
       adaptacoes: sessaoBruta.adaptacoes,
       dharma: sessaoBruta.dharma,
       gungnir: sessaoBruta.gungnir,
+      dominioInato: sessaoBruta.dominioInato ?? {},
       treinosAtivos: sessaoBruta.treinosAtivos,
       /* A Guarda Inabalável CORRENTE. Vai pelo `opcoes` como a concessão e
          pelo mesmo motivo: é estado de mesa. O derive precisa dela porque o
@@ -560,13 +563,14 @@ export default function AftyFicha({
     const ativacao = preparaAtivacaoComCustoVida(desc, sessao.hpAtual);
     const custoVida = ativacao.custo;
     if (custoVida.config && !custoVida.disponivel) return null;
-    const descResolvida = preparaRolagemCura(preparaRolagemArma(ativacao.desc, modo), derived.efeitos);
+    const descResolvida = preparaCustoServo(preparaRolagemCura(preparaRolagemArma(ativacao.desc, modo), derived.efeitos), sessao);
     if (!descResolvida) return null;
     const r = descResolvida.tipo === "dano"
       ? rolarDano(descResolvida)
       : rolarTeste(descResolvida);
     atualiza((s) => {
       let proxima = consumirAcoesAddon(registraRolagemArma(registraRolagem(s, r), descResolvida, r), desc.consomeAcoesAddon);
+      proxima = pagaCustoServo(proxima, descResolvida);
       if (custoVida.pago > 0) proxima = pagaCustoVida(proxima, custoVida.pago).sessao;
       if (desc.consomeEstado) proxima = consomeEstadoCombate(proxima, desc.consomeEstado);
       if (desc.feiticoDanoId) proxima = registraFeiticoDano(proxima, desc.feiticoDanoId);
@@ -710,6 +714,7 @@ export default function AftyFicha({
         vislumbre={<PainelDoVislumbre derived={derived} sessao={sessao} onSessao={atualiza} />}
         olhinhosLu={<><PainelOlhinhosLu derived={derived} onSessao={atualiza} />
           <PainelAcoesAddon derived={derived} sessao={sessao} onSessao={atualiza} />
+          <PainelServos derived={derived} sessao={sessao} onSessao={atualiza} />
           <PainelContadoresSessao derived={derived} sessao={sessao} onSessao={atualiza} /></>}
         olhosAgulha={<PainelOlhosAgulha derived={derived} sessao={sessao} onSessao={atualiza} />}
         manipulacaoCeu={<PainelManipulacaoCeu derived={derived} onEstado={alteraEstado} />}

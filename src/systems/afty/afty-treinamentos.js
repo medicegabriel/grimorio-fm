@@ -638,7 +638,7 @@ export function definirEscolhaTreino(creature, linhaId, escolhaId, valor, sistem
 /** Encantamentos normais adicionais declarados por etapas de Treinamento. */
 export function encantamentosAdicionaisDeTreino(creature, sistema) {
   const out = {};
-  for (const [id, valor] of Object.entries(normalizeTreinamentos(creature?.treinamentos))) {
+  for (const [id, valor] of Object.entries(normalizeTreinamentos(creature?.treinamentos, creature))) {
     const linha = getTreinamento(id);
     if (!treinoDisponivel(linha, origemDosTreinos(creature), origensQualificadas(creature))) continue;
     for (const escolha of linha.escolhas ?? []) {
@@ -655,7 +655,7 @@ export function encantamentosAdicionaisDeTreino(creature, sistema) {
 export function efeitosRdEquipamentoDeTreino(creature, equip, bt, sistema) {
   if (canalRdEscudo(sistema) !== "rdFisico") return [];
   const out = [];
-  for (const [id, valor] of Object.entries(normalizeTreinamentos(creature?.treinamentos))) {
+  for (const [id, valor] of Object.entries(normalizeTreinamentos(creature?.treinamentos, creature))) {
     const linha = getTreinamento(id);
     if (Number(valor) < ETAPAS_POR_LINHA || !linha.completo?.estendeRdEquipamento) continue;
     if (!treinoDisponivel(linha, origemDosTreinos(creature), origensQualificadas(creature))) continue;
@@ -686,7 +686,7 @@ export function habilidadesConcedidasPorTreino(creature) {
   const origemId = origemDosTreinos(creature);
   const qualificadas = origensQualificadas(creature);
   const ids = new Set();
-  for (const [id, valor] of Object.entries(normalizeTreinamentos(creature?.treinamentos))) {
+  for (const [id, valor] of Object.entries(normalizeTreinamentos(creature?.treinamentos, creature))) {
     const linha = getTreinamento(id);
     if (!linha || !treinoDisponivel(linha, origemId, qualificadas)) continue;
     const progressos = Array.isArray(valor) ? valor.map((v) => v.progresso) : [valor];
@@ -703,7 +703,7 @@ export function beneficiosDeTreinoNaFicha(creature, ctx = {}) {
   const origemId = origemDosTreinos(creature);
   const qualificadas = origensQualificadas(creature);
   const out = [];
-  for (const [id, valor] of Object.entries(normalizeTreinamentos(creature?.treinamentos))) {
+  for (const [id, valor] of Object.entries(normalizeTreinamentos(creature?.treinamentos, creature))) {
     const linha = getTreinamento(id);
     if (!linha?.exibirNaFicha || !treinoDisponivel(linha, origemId, qualificadas)) continue;
     const instancias = Array.isArray(valor) ? valor : [{ progresso: valor, alvo: null }];
@@ -738,7 +738,11 @@ const clampProg = (x) => Math.max(0, Math.min(ETAPAS_POR_LINHA, Math.floor(Numbe
  *                     sem alvos duplicados (comparação case-insensitive).
  * Descarta legados (ids desconhecidos, valores fora de faixa, shape errado).
  */
-export function normalizeTreinamentos(treinos) {
+export function limiteTreinosPorAlvo(linhaId, ficha) {
+  return linhaId === "atributo" && ficha?.rulesVersion === "afty" && ficha.addons?.some((p) => p.id === "servos-da-guerra") ? 2 : 1;
+}
+
+export function normalizeTreinamentos(treinos, ficha = null) {
   if (!treinos || Array.isArray(treinos) || typeof treinos !== "object") return {};
   const out = {};
   for (const [id, val] of Object.entries(treinos)) {
@@ -746,15 +750,16 @@ export function normalizeTreinamentos(treinos) {
     if (!linha) continue;
     if (linha.repetivel) {
       if (!Array.isArray(val)) continue;
-      const seen = new Set();
+      const seen = new Map();
+      const limite = limiteTreinosPorAlvo(id, ficha);
       const list = [];
       for (const it of val) {
         if (!it || typeof it !== "object") continue;
         const alvo = String(it.alvo ?? "").trim();
         const key = alvo.toLowerCase();
-        if (!alvo || seen.has(key)) continue;
+        if (!alvo || (seen.get(key) ?? 0) >= limite) continue;
         const p = clampProg(it.progresso);
-        if (p > 0) { seen.add(key); list.push({ alvo, progresso: p }); }
+        if (p > 0) { seen.set(key, (seen.get(key) ?? 0) + 1); list.push({ alvo, progresso: p }); }
       }
       if (list.length) out[id] = list;
     } else {
@@ -1041,7 +1046,7 @@ export function origemDosTreinos(creature) {
 export const treinamentosDaOrigem = (origemId, qualificadas = null, creature = null) => {
   const daOrigem = AFTY_TREINAMENTOS.filter((l) => treinoDisponivel(l, origemId, qualificadas));
   if (!creature) return daOrigem;
-  const comProgresso = Object.entries(normalizeTreinamentos(creature?.treinamentos) || {})
+  const comProgresso = Object.entries(normalizeTreinamentos(creature?.treinamentos, creature) || {})
     .filter(([, v]) => (Array.isArray(v) ? v.length > 0 : Number(v) > 0))
     .map(([id]) => id);
   return filtraForaDoJogador(daOrigem, creature, comProgresso);
@@ -1058,7 +1063,7 @@ export function efeitosDeTreino(creature, gatilhosAtivos = null, equipamentos = 
   const qualificadas = origensQualificadas(creature);
   const pericias = catalogoPericiasDaFicha(creature);
   const armas = catalogoDoTipo("arma", creature);
-  const prog = normalizeTreinamentos(creature?.treinamentos);
+  const prog = normalizeTreinamentos(creature?.treinamentos, creature);
   const out = [];
   const add = (efeitos, linha, alvo, alvos = {}, nome = null) => {
     for (const ef of efeitos || []) {
@@ -1110,7 +1115,7 @@ export function efeitosDeTreino(creature, gatilhosAtivos = null, equipamentos = 
 export function talentosDeTreino(creature) {
   const origemId = origemDosTreinos(creature);
   const qualificadas = origensQualificadas(creature);
-  const prog = normalizeTreinamentos(creature?.treinamentos);
+  const prog = normalizeTreinamentos(creature?.treinamentos, creature);
   const out = [];
   const add = (lista) => {
     for (const id of lista || []) if (typeof id === "string" && id && !out.includes(id)) out.push(id);
@@ -1146,7 +1151,7 @@ export function talentosDeTreino(creature) {
 export function efeitosInvocacaoDeTreino(creature) {
   const origemId = origemDosTreinos(creature);
   const qualificadas = origensQualificadas(creature);
-  const prog = normalizeTreinamentos(creature?.treinamentos);
+  const prog = normalizeTreinamentos(creature?.treinamentos, creature);
   const out = [];
   /* `invocacaoAlvo`: presente só quando a linha é `alvoTipo: "invocacao"`
      (repetível, uma pega por invocação escolhida — mesmo padrão do Manejo de
@@ -1233,7 +1238,7 @@ export function efeitosInvocacaoDeTreino(creature) {
 export function linhasComEscolhaFeiticos(creature) {
   const origemId = origemDosTreinos(creature);
   const qualificadas = origensQualificadas(creature);
-  const prog = normalizeTreinamentos(creature?.treinamentos);
+  const prog = normalizeTreinamentos(creature?.treinamentos, creature);
   const out = [];
   for (const [id, val] of Object.entries(prog)) {
     const linha = BY_ID[id];
@@ -1251,7 +1256,7 @@ export function linhasComEscolhaFeiticos(creature) {
 
 /** Interruptores de sessão abertos pelas linhas de treinamento escolhidas. */
 export function gatilhosDeTreino(creature) {
-  const prog = normalizeTreinamentos(creature?.treinamentos);
+  const prog = normalizeTreinamentos(creature?.treinamentos, creature);
   const unicos = new Map();
   for (const [id, val] of Object.entries(prog)) {
     const linha = BY_ID[id];
@@ -1263,7 +1268,7 @@ export function gatilhosDeTreino(creature) {
 
 /** Trocas de atributo-chave abertas por uma Linha de Treinamento. */
 export function atributosDePericiaDeTreino(creature) {
-  const prog = normalizeTreinamentos(creature?.treinamentos);
+  const prog = normalizeTreinamentos(creature?.treinamentos, creature);
   const out = {};
   for (const [id, val] of Object.entries(prog)) {
     const linha = BY_ID[id];
@@ -1303,7 +1308,7 @@ export function vagasEncantamentoDeTreino(creature) {
      perde as Linhas de energia do mesmo jeito, ver `origemDosTreinos`. */
   const origemId = origemDosTreinos(creature);
   const qualificadas = origensQualificadas(creature);
-  const prog = normalizeTreinamentos(creature?.treinamentos);
+  const prog = normalizeTreinamentos(creature?.treinamentos, creature);
   const out = {};
   for (const [id, val] of Object.entries(prog)) {
     const linha = BY_ID[id];
@@ -1331,7 +1336,7 @@ export function vagasEncantamentoDeTreino(creature) {
 export function vagasEncantamentoEscudoDeTreino(creature) {
   const origemId = origemDosTreinos(creature);
   const qualificadas = origensQualificadas(creature);
-  const prog = normalizeTreinamentos(creature?.treinamentos);
+  const prog = normalizeTreinamentos(creature?.treinamentos, creature);
   let total = 0;
   for (const [id, val] of Object.entries(prog)) {
     const linha = BY_ID[id];
@@ -1359,8 +1364,8 @@ export function focosDaLinha(linha, progresso) {
  * depois de gastar em qualquer uma das cinco de energia) recebe os Focos de
  * volta, em vez de pagar por um treino que a aba nem mostra mais.
  */
-export function focosGastos(treinos, origemId = null, qualificadas = null) {
-  const prog = normalizeTreinamentos(treinos);
+export function focosGastos(treinos, origemId = null, qualificadas = null, ficha = null) {
+  const prog = normalizeTreinamentos(treinos, ficha);
   let total = 0;
   for (const [id, val] of Object.entries(prog)) {
     const linha = BY_ID[id];

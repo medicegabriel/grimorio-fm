@@ -68,7 +68,7 @@ function Validacao({ itens }) {
 }
 
 /** Um efeito escolhido: categoria, tipo, as escolhas da tabela e o Fortalecer. */
-function EfeitoDominioLinha({ efeito, dom, versao, vagasLivres, tiposDano, condicoesCatalogo, renderMotor, onPatch, onRemove }) {
+export function EfeitoDominioLinha({ efeito, dom, versao, vagasLivres, tiposDano, condicoesCatalogo, renderMotor, onPatch, onRemove }) {
   const [aberto, setAberto] = useState(false);
   const livre = categoriaLivre(efeito.categoria);
   const tipos = tiposDaCategoria(efeito.categoria);

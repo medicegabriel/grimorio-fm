@@ -42,6 +42,8 @@ import PainelDoGolpeEspecial from "../ficha/PainelDoGolpeEspecial";
 import PainelManipulacaoCeu from "../ficha/PainelManipulacaoCeu";
 import AbaBuffs from "../ficha/abas/AbaBuffs";
 import PainelOlhinhosLu from "../ficha/PainelOlhinhosLu";
+import PainelServos from "../ficha/PainelServos";
+import { preparaCustoServo, pagaCustoServo } from "../ficha/ficha-servos";
 import PainelAcoesAddon from "../ficha/PainelAcoesAddon";
 import PainelContadoresSessao from "../ficha/PainelContadoresSessao";
 import { consumirAcoesAddon } from "../afty-acoes-addon";
@@ -156,7 +158,7 @@ export default function PainelDeCombatente({
   const rolar = useCallback((desc) => {
     desc = prepararRolagemEspecializacao(desc, sessao, derived);
     if (!desc) return null;
-    const pronta = preparaRolagemCura(preparaRolagemArma(desc), derived.efeitos);
+    const pronta = preparaCustoServo(preparaRolagemCura(preparaRolagemArma(desc), derived.efeitos), sessao);
     if (!pronta) return null;
     const r = pronta.tipo === "dano" ? rolarDano(pronta) : rolarTeste(pronta);
     onSessao((s) => {
@@ -164,7 +166,7 @@ export default function PainelDeCombatente({
         registrarAtaqueEspecializacao(registraRolagemArma(registraRolagem(s, r), pronta, r), desc, derived), desc, r, derived);
       // A Amplificadora (2026-10-27): rolar o primeiro ataque a descarrega, como na Ficha.
       const comEstado = desc.consomeEstado ? consomeEstadoCombate(registrada, desc.consomeEstado) : registrada;
-      return consumirAcoesAddon(comEstado, desc.consomeAcoesAddon);
+      return pagaCustoServo(consumirAcoesAddon(comEstado, desc.consomeAcoesAddon), pronta);
     });
     return r;
   }, [onSessao, derived, sessao]);
@@ -478,6 +480,7 @@ export default function PainelDeCombatente({
           adaptacao={<PainelDeAdaptacao derived={derived} onSessao={onSessao} />}
           olhosAgulha={<PainelOlhosAgulha derived={derived} sessao={sessao} onSessao={onSessao} />}
           olhinhosLu={<><PainelOlhinhosLu derived={derived} onSessao={onSessao} />
+            <PainelServos derived={derived} sessao={sessao} onSessao={onSessao} />
             <PainelAcoesAddon derived={derived} sessao={sessao} onSessao={onSessao} />
             <PainelContadoresSessao derived={derived} sessao={sessao} onSessao={onSessao} /></>}
           manipulacaoCeu={<PainelManipulacaoCeu derived={derived} onEstado={(estado, valor) => onSessao((s) => alteraEstadoCombate(s, estado, valor))} />}

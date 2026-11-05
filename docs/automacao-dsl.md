@@ -997,3 +997,24 @@ Nenhum canal, variável ou função nova. Três mudanças aditivas, com prova em
 
 - Variável `demonios_primordiais_nivel_de_medo`: o contador de origem do pacote, sempre presente no contexto (como todo `contadoresOrigem`). O contador agora aceita `inicio`: o valor de quem nunca o mexeu (4 no Demônio Primordial), enquanto o 0 gravado continua 0.
 - Variável `demonios_primordiais_pe_regeneracao`: a faixa de PE da Regeneração Demoníaca na Bancada, lida pelos canais `regeneracaoDados`, `regeneracaoFaces` e `regeneracaoFixa` do Fluxo Sanguíneo Constante.
+
+## Servos da Guerra (2026-11-05)
+
+O addon único usa a primitiva `servosGuerra` em fichas Afty. A classe é uma escolha singular da ficha.
+As características do Servo somam com habilidades e ficam fora dos contadores de habilidades e passivas.
+Saber emite `atributo` e `limiteAtributo` para cada destino. Rider usa `margemCritico` e concede uma
+ação de movimento adicional por rodada. Archer conserva o cálculo comum de PE.
+
+| Canal | Uso do pacote |
+|---|---|
+| `peMaxFixo` | Máximo calculado de 3 × BT para as classes exceto Archer |
+| `danoFinalMult` | Berserker multiplica por 1,5 o total da rolagem de ataque |
+| `criticoMultBonus` | Assassin soma 1 ao multiplicador dos dados critáveis |
+| `acoesMovimento` | Rider recebe uma ação adicional que volta na rodada seguinte |
+| `alcanceHabilidadeMult` | Lancer multiplica o alcance das habilidades por 2 |
+
+Os estados `manaburst` e `escalonamento` usam o namespace do pacote. A linha de dano usa a própria face,
+separa os grupos Durante Ataque e Após Ataque e calcula o custo das quantidades efetivas.
+O gasto ocorre na rolagem de dano. O Domínio Inato usa o editor e os efeitos normais de Expansão,
+com presença dentro ou fora, local fixo, dias inteiros de concentração e sem PV.
+A restrição é descrita pela mesa, que indica o efeito ou o aumento de tamanho concedido.

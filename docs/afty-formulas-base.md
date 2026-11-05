@@ -653,3 +653,21 @@ os do texto original, preservado em `docs/grande-roda-dharma-regras.md`.
      de atributo de uma habilidade acontece nas expressões dos efeitos dela,
      antes da avaliação normal. Ver docs/afty-talentos-de-estilo.md e
      docs/automacao-dsl.md. A habilidade própria é concedida sem segunda vaga. -->
+
+## Servos da Guerra (2026-11-05)
+
+Homebrew exclusivo das criaturas Afty com o addon. O PE máximo calculado é 3 × BT, exceto para Archer,
+que mantém o PE normal. Saber distribui 6 pontos e aumenta o limite de cada atributo pela parcela
+recebida. O treino nativo admite até duas aquisições por atributo, cada uma com etapas e custo próprios.
+
+ManaBurst compra até BT dados por 1 PE cada, Após Ataque e fora do crítico. Escalonamento compra
+dados por 2 PE cada, Durante Ataque e critáveis, até o nível da habilidade ou o acesso máximo no ataque
+básico ou com arma. A face vem da fonte. Berserker usa piso do dano final × 1,5, incluindo fixo
+e Após Ataque. Assassin aumenta o multiplicador dos dados critáveis em 1.
+
+O Caster paga 20 PE uma vez na criação. O raio inicial e o ganho por dia inteiro de concentração
+são iguais ao nível de Domínio em metros. O raio máximo é 10 × (nível de Domínio + 1 + aumentos).
+Cada aumento de tamanho concede 10 metros de teto. O raio atual é o menor entre o máximo e
+nível de Domínio × (1 + dias concluídos). A área permanece fixa e sem vida. Efeitos escolhidos
+usam as tabelas de Expansão e admitem duas escolhas iguais dentro do orçamento normal. Restrições
+concedem efeitos ou tamanho extra registrados pela mesa. Dentro aplica os efeitos, Fora os desliga.

@@ -33,6 +33,7 @@
 
 // grauMeta: fonte da verdade dos graus de Invocação (Shikigami usa o motor de
 // Invocações). afty-invocacoes não importa daqui, então não há ciclo.
+import { danoDoServo } from "./afty-servos-combate";
 import { registrarFamilia } from "./afty-addons";
 // Só o `regraDo`, para a Passiva saber se cobra PE Máximo. O afty-sistema é
 // módulo FOLHA (t-ordem-modulos.mjs prende isso), então a seta é de mão única.
@@ -4685,7 +4686,20 @@ function calculadorDe(tipo) {
  * chamasse o calculador cru mostraria a Técnica Máxima na tabela errada.
  */
 export function calcularFeitico(f, ctx = {}) {
-  const calc = calcularFeiticoPelaPorta(f, ctx);
+  let calc = calcularFeiticoPelaPorta(f, ctx);
+  const fontesAlcance = (ctx.efeitos?.detalhes ?? []).filter((e) => e.canal === "alcanceHabilidadeMult" && !e.suplantado && e.valor > 0);
+  const multiplicadorAlcance = fontesAlcance.reduce((n, e) => n * e.valor, 1);
+  if (calc && multiplicadorAlcance !== 1) {
+    calc = { ...calc };
+    for (const chave of ["alcance", "alcanceFinal"]) {
+      if (typeof calc[chave] === "number") calc[chave] *= multiplicadorAlcance;
+    }
+    if (typeof calc.alcanceTexto === "string") {
+      calc.alcanceTexto = calc.alcanceTexto.replace(/(\d+(?:[.,]\d+)?)\s*(m|metros)\b/g,
+        (_, n, unidade) => `${String(Number(n.replace(",", ".")) * multiplicadorAlcance).replace(".", ",")} ${unidade}`);
+    }
+    calc.partesAlcance = [...(calc.partesAlcance ?? []), ...fontesAlcance.map((e) => ({ label: e.nome, texto: `×${e.valor}` }))];
+  }
   /* ⚠ A Técnica Marcial vai do Nível 1 ao 4, e o valor gravado FICA (autor,
      2026-10-26): um Feitiço do Addon Estilo Marcial pode estar no Nível 0 ou 5, e
      o cálculo segue com ele, com o aviso pedindo um nível de 1 a 4. */
@@ -4868,7 +4882,7 @@ export function rolagensDoFeitico(f, calc) {
           rotulo: "Golpe Inicial", dados, faces, fixo: calc.bonusDano || 0,
           partes: calc.partesDano || [], tom: "dano", vezes: 1, explosiva: !!calc.explosiva,
         },
-        { rotulo: "Por Rodada", dados: calc.contDadosPorRodada, faces, fixo: 0, partes: [], tom: "dano", vezes: 1, explosiva: !!calc.explosiva },
+        { rotulo: "Por Rodada", continuacao: true, dados: calc.contDadosPorRodada, faces, fixo: 0, partes: [], tom: "dano", vezes: 1, explosiva: !!calc.explosiva },
       ];
     }
     return [{
@@ -5313,9 +5327,21 @@ function linhaDoFeitico(f, ctxBruto, creature) {
     const rolagensBase = rolagensDoFeitico(f, calc);
     /* O Elementalista e a Amplificadora entram só no Feitiço de DANO e só na primeira
        rolagem (p. 156 e 348), cada um como rolagem à parte, Após Ataque. */
-    const rolagens = f.tipo === "dano" && rolagensBase.length > 0
+    const rolagensNormais = f.tipo === "dano" && rolagensBase.length > 0
       ? [...rolagensBase, ...rolagensDoPrimeiroAtaque(ctx.extrasPrimeiroAtaque, calc)]
       : rolagensBase;
+    const rolagens = !ctx.servo ? rolagensNormais : rolagensNormais.map((r) => {
+      if (r.tom !== "dano") return r;
+      const ataque = calc?.resolucao === "ataque" || !!calc?.golpes;
+      const gruposDano = [{ nome: f.nome || r.rotulo, dados: r.dados, faces: r.faces, fixo: r.fixo || 0,
+        momento: r.aposAtaque ? "apos" : "durante", multiplica: !r.aposAtaque }];
+      const linha = danoDoServo({ ...r, gruposDano, nome: f.nome }, ctx.servo, {
+        nivel: f.nivel, combate: ctx.combate, ataque, adicionais: !r.aposAtaque && !r.continuacao,
+      });
+      return { ...r, grupos: linha.gruposDano, custoServo: linha.custoServo,
+        formula: linha.formulaNormal, formulasServo: ataque ? { normal: linha.formulaNormal, critico: linha.formulaCritico, raio_negro: linha.formulaRaioNegro } : null,
+        partes: linha.hoverDano.partes };
+    });
     const custoVida = custoVidaDaAtivacao(f.custoVidaAtivacao, ctx.vidaAtual);
     const etapaRitual = ritualAtual?.etapa ?? null;
     const ritualPronto = etapaRitual === "pronto";

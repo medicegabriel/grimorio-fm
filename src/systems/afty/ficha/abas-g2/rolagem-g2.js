@@ -13,6 +13,7 @@ import { prepararRolagemEspecializacao } from "../ficha-especializacoes";
 import { preparaAtivacaoComCustoVida } from "../../afty-feiticos";
 import { preparaRolagemCura } from "../../afty-cura";
 import { preparaRolagemArma } from "../../afty-propriedades-armas";
+import { preparaCustoServo } from "../ficha-servos";
 
 /**
  * A preparação inteira, na ordem do `rolar`.
@@ -27,7 +28,8 @@ export function prepararRolagem(pedido, { sessao, derived, modo = "normal" }) {
   if (custoVida.config && !custoVida.disponivel) return { ok: false, etapa: "vida", custoVida };
   const armada = preparaRolagemArma(ativacao.desc, modo);
   if (!armada) return { ok: false, etapa: "arma" };
-  const pronta = preparaRolagemCura(armada, derived.efeitos);
+  const pronta = preparaCustoServo(preparaRolagemCura(armada, derived.efeitos), sessao);
+  if (!pronta && (armada.custoServo || armada.linhaArma?.custoServo)) return { ok: false, etapa: "servo" };
   if (!pronta) return { ok: false, etapa: "cura" };
   return { ok: true, desc, pronta, custoVida };
 }
@@ -39,6 +41,7 @@ const BLOQUEIO_DA_ARMA = { "Arma emperrada": "Arma Emperrada", "Recarregue a arm
 export function motivoDaRecusa(prova, pedido) {
   if (!prova || prova.ok) return null;
   if (prova.etapa === "vida") return "Vida Insuficiente";
+  if (prova.etapa === "servo") return "PE Insuficiente";
   if (prova.etapa === "arma") {
     const info = pedido.linhaArma?.armaPropriedades;
     /* O Dano recusa o golpe que ERROU (o pendente marcado como erro) antes de olhar a munição: o Acerto que gastou a última munição
