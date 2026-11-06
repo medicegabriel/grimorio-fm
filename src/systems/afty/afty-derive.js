@@ -171,7 +171,7 @@ import {
   TALENTO_EFEITOS,
   efeitosInvocacaoDeEntradas,
   coletarEfeitosAptidao,
-  aplicarEfeitos, resolverExclusivos, carimbarGrupoExclusivo, valorCanal, furaTetoEm, efeitosDaTecnica, efeitosDosBuffsNativos, efeitosDosPassivos,
+  aplicarEfeitos, resolverExclusivos, carimbarGrupoExclusivo, atencaoSoPelaPercepcao, valorCanal, furaTetoEm, efeitosDaTecnica, efeitosDosBuffsNativos, efeitosDosPassivos,
   efeitosDaSessao, EFEITO_CANAIS,
   ehAtributoPermanente, ehAtributoTemporario, ehEstagio2, ehPreContexto, ehPosAptidao, efeitoUsaDadosDanoFinal,
   separarEfeitosDeBancada, CANAIS_LIDOS_NO_MONTANTE,
@@ -1349,7 +1349,7 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
   const dedicadas = resolveArmasDedicadas(creature, armasParaDano, habilidades.efetivas);
 
   const bloodfeast = resolveBloodfeast(creature, { bt, nd, modCon: modBase.constituicao, sessao: estadoBloodfeast, aptidoes: aptidoesIds });
-  const efeitosTodos = carimbarGrupoExclusivo([
+  const efeitosBrutos = carimbarGrupoExclusivo([
     ...efeitosServos(creature),
     /* Os do montante que leem a bancada (a Atenção em combate do Instinto
        Sanguinário, e qualquer origem, Treino ou texto livre com estado de
@@ -1440,6 +1440,7 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
       sessaoInvocacoes: opcoes.invocacoes,
     }),
   ], poolEmGrupos);
+  const efeitosTodos = regrasAddon.atencaoSoPercepcao ? atencaoSoPelaPercepcao(efeitosBrutos) : efeitosBrutos;
 
   // Estágio 0b: os canais que ALIMENTAM o contexto principal. Só nível de
   // aptidão por ora, porque `dom/au/cl/bar/er` são variáveis do DSL e uma

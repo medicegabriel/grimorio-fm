@@ -20,6 +20,7 @@ const CHAVES = new Set([
   "guardaComoCalamidade",
   "almaComoAfty",
   "trNoLimiteDePericias",
+  "atencaoSoPercepcao",
 ]);
 
 const objeto = (valor) => valor && typeof valor === "object" && !Array.isArray(valor);
@@ -49,6 +50,7 @@ export function normalizarRegrasAfty(regras) {
   if (regras.guardaComoCalamidade === true) out.guardaComoCalamidade = true;
   if (regras.almaComoAfty === true) out.almaComoAfty = true;
   if (regras.trNoLimiteDePericias === true) out.trNoLimiteDePericias = true;
+  if (regras.atencaoSoPercepcao === true) out.atencaoSoPercepcao = true;
   if (Number.isInteger(regras.talentosIniciais) && regras.talentosIniciais >= 1 && regras.talentosIniciais <= 4) {
     out.talentosIniciais = regras.talentosIniciais;
   }
@@ -70,7 +72,7 @@ export function validarRegrasAfty(regras, onde = "regrasAfty") {
       problemas.push(`${onde}: "${chave}" precisa ser um número maior que zero.`);
     }
   }
-  for (const chave of ["passivasSemCustoPeMaximo", "ignoraMultiplicadorPeMaximoDeVotos", "nivelJogadorSemTeto", "aptidaoApos20", "aptidaoPorAvancoDeBt", "guardaComoCalamidade", "almaComoAfty", "trNoLimiteDePericias"]) {
+  for (const chave of ["passivasSemCustoPeMaximo", "ignoraMultiplicadorPeMaximoDeVotos", "nivelJogadorSemTeto", "aptidaoApos20", "aptidaoPorAvancoDeBt", "guardaComoCalamidade", "almaComoAfty", "trNoLimiteDePericias", "atencaoSoPercepcao"]) {
     if (chave in regras && typeof regras[chave] !== "boolean") {
       problemas.push(`${onde}: "${chave}" precisa ser verdadeiro ou falso.`);
     }
@@ -126,6 +128,11 @@ export function regrasAftyDaCriatura(creature) {
        TR do Limite. Na criatura o TR já gasta vaga, então o que muda lá é só
        como o concedido aparece no contador. */
     trNoLimiteDePericias: false,
+    /* A fonte que dá Percepção E Atenção passa a dar só a Percepção (a Atenção já
+       é 10 + o bônus de Percepção, então no livro o mesmo poder sobe a Atenção
+       duas vezes). A linha de Atenção da fonte é descartada; fonte que dá só
+       Atenção fica como está. */
+    atencaoSoPercepcao: false,
   };
   for (const pacote of Array.isArray(creature?.addons) ? creature.addons : []) {
     const regras = normalizarRegrasAfty(pacote?.regrasAfty);
@@ -134,6 +141,7 @@ export function regrasAftyDaCriatura(creature) {
     out.aptidaoApos20 ||= regras.aptidaoApos20 === true;
     out.aptidaoPorAvancoDeBt ||= regras.aptidaoPorAvancoDeBt === true;
     out.trNoLimiteDePericias ||= regras.trNoLimiteDePericias === true;
+    out.atencaoSoPercepcao ||= regras.atencaoSoPercepcao === true;
     if (regras.guardaComoCalamidade) {
       out.guardaComoCalamidade = true;
       out.fontesGuardaComoCalamidade.push(fonte);
