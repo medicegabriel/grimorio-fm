@@ -51,6 +51,7 @@ import {
 import PainelDeRolagens from "./PainelDeRolagens";
 import BuscaGlobal from "./BuscaGlobal";
 import PainelDeAparencia from "./PainelDeAparencia";
+import { useGravacaoTema } from "./usar-gravacao-tema";
 import PainelBloodfeast, { ConjuracaoBloodfeast } from "./PainelBloodfeast";
 import ControleTecnicaMaxima from "./ControleTecnicaMaxima";
 import ControleExpansao, { PainelExaustaoTecnica } from "./ControleExpansao";
@@ -80,6 +81,7 @@ import { HistoricoPainel } from "./efeitos/HistoricoSessao";
 import CabecalhoG2 from "./efeitos/CabecalhoG2";
 import HabilidadesG2 from "./efeitos/HabilidadesG2";
 import ConsultaG2 from "./efeitos/ConsultaG2";
+import PainelConteudo, { OperacaoConteudoDoItem } from "./PainelConteudo";
 import CompactaG2 from "./efeitos/CompactaG2";
 import { VisaoG2 } from "./efeitos/VisaoG2";
 import { AvisoFlutuante } from "./efeitos/pecas";
@@ -90,6 +92,7 @@ import { cofreTrancado, comTextoAberto, lerAberto } from "../afty-cofre";
 import PainelDoCofre from "../ui/PainelDoCofre";
 import EspinhoCard from "../ui/EspinhoCard";
 import { pagaCustoServo } from "./ficha-servos";
+import CamadasDeCorrupcao from "../ui/CamadasDeCorrupcao";
 
 /**
  * ============================================================
@@ -134,6 +137,7 @@ export default function AftyFicha({
   /* A PRÉVIA ISOLADA das três abas (2026-10-21). Desligada por padrão: o App não a passa, então /Player e /Afty, com ou sem ficha-g2=1,
      seguem com as abas de sempre. Só o executor da prévia em `.audit/` liga. */
   previaAbasG2 = false,
+  abaInicial = "acoes",
 }) {
   const alvoId = creature?.id ?? null;
 
@@ -157,7 +161,7 @@ export default function AftyFicha({
   // `almaAtual` (alma íntegra), que é exatamente o estado de uma ficha que
   // nunca entrou em jogo. O clamp de leitura abaixo acerta o resto.
   const [sessaoBruta, setSessaoBruta] = useState(() => carregarSessao(alvoId, deriveAfty(ficha)));
-  const [tab, setTab] = useState("acoes");
+  const [tab, setTab] = useState(abaInicial);
   /* A apresentação ANTERIOR da aba Efeitos (a antiga aba Buffs), mantida só como comparação e compatibilidade: desde 2026-10-20 o G2 faz sozinho a
      Imitação, o Concedido pelo Mestre, a Exaustão desde zero, o Sangramento e o buff de mesa. O G2 é o padrão e a escolha não é gravada: recarregar
      volta ao G2. Ver docs/afty-ficha-final.md. */
@@ -324,6 +328,15 @@ export default function AftyFicha({
     return () => ro.disconnect();
   }, []);
 
+  /* A faixa de abas rola na horizontal no telefone: ao trocar de aba (ou abrir numa aba da direita) a ativa vem para o meio, em vez de ficar escondida. Só a faixa rola, nunca a página. */
+  useEffect(() => {
+    const faixa = raizRef.current?.querySelector(".afty-abas");
+    const ativa = faixa?.querySelector('[aria-selected="true"]');
+    if (!faixa || !ativa || faixa.scrollWidth <= faixa.clientWidth + 1) return;
+    const dentro = ativa.getBoundingClientRect().left - faixa.getBoundingClientRect().left + faixa.scrollLeft;
+    faixa.scrollTo({ left: Math.max(0, dentro - (faixa.clientWidth - ativa.offsetWidth) / 2), behavior: "smooth" });
+  }, [tab]);
+
   // Persistência por debounce, igual ao rascunho do criador. Sem botão Salvar:
   // sessão não é rascunho, é fato.
   const primeiraGravacao = useRef(true);
@@ -344,12 +357,7 @@ export default function AftyFicha({
      aberta regravava a criatura inteira a cada segundo, para sempre, com um
      derive completo a cada volta. A comparação com o último tema gravado corta o
      laço sem depender da identidade do callback. */
-  const temaGravado = useRef(tema);
-  useEffect(() => {
-    if (tema === temaGravado.current) return undefined;
-    const t = setTimeout(() => { temaGravado.current = tema; onSalvarTema?.(tema); }, 600);
-    return () => clearTimeout(t);
-  }, [tema, onSalvarTema]);
+  useGravacaoTema(tema, onSalvarTema);
 
   /* ⚠ O GRAVADOR VAI POR REFERÊNCIA, e não na lista do efeito: o App o recria a
      cada render, e cada gravação faz o App renderizar de novo. Na lista, isso
@@ -678,6 +686,8 @@ export default function AftyFicha({
   const corpo = {
     roda: () => <PainelDharma derived={derived} sessao={sessao} onSessao={atualiza} />,
     acoes: () => (
+      <>
+      <PainelConteudo derived={derived} sessao={sessao} onSessao={atualiza} />
       <AbaAcoes
         bloodfeast={<PainelBloodfeast derived={derived} sessao={sessao} onSessao={atualiza} />}
         conjuracaoBloodfeast={(f) => <ConjuracaoBloodfeast f={f} derived={derived} sessao={sessao} onSessao={atualiza} />}
@@ -727,6 +737,7 @@ export default function AftyFicha({
         onGatilhoTreino={(id, valor) => atualiza((s) => alteraTreinoAtivo(s, id, valor))}
         contadorUsos={contadorUsos}
       />
+      </>
     ),
     /* ⚠ HABILIDADES É O G2: a lista aprovada (linha de 48 px, busca pelo nome e pelo texto, descrição na consulta). O que a aba antiga dava e continua
        aqui: o contador de usos da sessão, a busca global que navega até a linha, o contador do Espinho (Addon) e o nome que a ficha dá a um grupo
@@ -843,7 +854,9 @@ export default function AftyFicha({
   }) : [];
   const corpoG2 = {
     acoes: () => (
+      <>
       <AcoesG2
+        painelConteudo={<PainelConteudo g2 derived={derived} sessao={sessao} onSessao={atualiza} />}
         derived={derived} sessao={sessao} rolar={rolar} prova={prova} avisar={modelo.avisar} modo={modo}
         turnoArmas={sessao.propriedadesArmas?.turno ?? 0} rodadaArmas={sessao.rodada}
         onSessao={atualiza} onEstado={alteraEstado}
@@ -876,6 +889,7 @@ export default function AftyFicha({
         onAberto={alternaItem}
         destaque={destaqueG2}
       />
+      </>
     ),
     pericias: () => <PericiasG2 derived={derived} rolar={rolar} prova={prova} avisar={modelo.avisar} destaque={destaqueG2} />,
     equipamentos: () => (
@@ -916,7 +930,8 @@ export default function AftyFicha({
     <PrimitivasDeAddon primitivas={derived.primitivas}>
     <>
     <HistoricoCtx.Provider value={ctxHistorico}>
-    <div ref={raizRef} className="afty-ficha e-ficha-g2" id="afty-ficha" data-afty-densidade={densidade} data-g2-painel={ui.compacta ? "aberto" : undefined}>
+    <div ref={raizRef} className="afty-ficha e-ficha-g2" id="afty-ficha" data-afty-estrutura="g2" data-afty-fonte={tema.fonte ? "personalizada" : undefined} data-afty-densidade={densidade} data-g2-painel={ui.compacta ? "aberto" : undefined}>
+      <CamadasDeCorrupcao corrupcao={derived.corrupcao} />
       {/* ⚠ A ORDEM É A REGRA. Os dois blocos são CSS sem camada e de mesma
           especificidade, então quem vem depois vence: o CSS livre sobrepõe o
           formulário, que é o que se espera da ferramenta mais avançada das
@@ -1054,6 +1069,7 @@ export default function AftyFicha({
               <ConsultaG2
                 m={{ ...g.mGeral, resolver: ui.resolverEstudo }} g={g} onAbrirPainel={ui.abrirPainel} pilha={ui.consulta.pilha} ativa={ui.consulta.ativa}
                 onAtivar={ui.ativar} onFecharUma={ui.fecharUma} onFechar={ui.fechar} soRegra={ui.consulta.modo === "regra"} semControles={ui.consulta.modo !== "completa"}
+                renderOperacao={(item) => <OperacaoConteudoDoItem key={item.chave} item={item} derived={derived} sessao={sessao} onSessao={atualiza} onRolar={rolar} />}
               />
             </div>
           )}
@@ -1079,6 +1095,7 @@ export default function AftyFicha({
 
       {aparenciaAberta && (
         <PainelDeAparencia
+          estrutura="g2"
           tema={tema}
           onTema={setTema}
           onFechar={() => setAparenciaAberta(false)}

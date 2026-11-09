@@ -15,6 +15,7 @@ import { semConcessoesDeUso, umaReserva, beneficiosPvTemp } from "./efeitos-dado
 import { PROPRIEDADES, sessaoComMarcas } from "./g2-golpe";
 import { alterarEstado, comEvento, energiaDisponivel, gastoManual } from "./mesa-verbos";
 import { uid } from "./util";
+import { assumePosturaConteudo } from "../ficha-conteudo-posturas";
 
 /* ============================================================
    ESTADOS COM CONFIRMAÇÃO: TUDO OU NADA (Catálogo, 2026-10-15)
@@ -65,6 +66,19 @@ export function aplicaEstados(mm, { lista = [], esperado = [], tirarEncerrado = 
   if (novoUso && reusosAgora !== novoUso.esperado) return { mesa: mm, erro: "A Ficha Mudou Antes de Confirmar" };
   const mudouAntes = confere(mm, esperado, lista);
   if (mudouAntes) return { mesa: mm, erro: mudouAntes };
+  // CX3: Ativar já cobrava o contador. A entrada agora usa também ação e prazo de CL1.
+  // A troca de postura também traz o contador, por decisão do autor em 06/11.
+  if (usos?.itemId?.replace(/^.*__/, "") === "cmb_assumir_postura") {
+    const d = calculo ? calculo(mm.sessao) : derived;
+    const u = d?.usosHabilidades?.[usos.itemId];
+    if (!u || Sessao.usosGastosDe(mm.sessao, u.chave) !== usos.esperado) return { mesa: mm, erro: "A Ficha Mudou Antes de Confirmar" };
+    if (lista.some(({ estado }) => !["postura", "postura2"].includes(estado.id))) return { mesa: mm, erro: "Entrada de Postura Não Permite Ajustes Adicionais" };
+    const valor = (id) => { const pedido = lista.find(({ estado }) => estado.id === id); return pedido ? pedido.valor : mm.sessao.combate?.[id] ?? null; };
+    const r = assumePosturaConteudo(mm.sessao, d, { habilidadeId: usos.itemId, postura: valor("postura"), postura2: valor("postura2") }, { opId: `g2:postura:${uid()}`, registraAcao: true });
+    if (!r.aplicado) return { mesa: mm, erro: r.erro ?? "Postura Não Ativada" };
+    return { mesa: semEncerrado(comEvento({ ...mm, sessao: r.sessao }, { tipo: "uso", nome: r.evento?.nome ?? "Assumir Postura", chave: `habilidade:${usos.itemId}`,
+      usos: { max: u.max, restam: u.max - Sessao.usosGastosDe(r.sessao, u.chave) } }), tirarEncerrado) };
+  }
   /* A trava do Feitiço Permutativo (`bloqueio(derived, ligado)`, do motor) é lida DE NOVO aqui, no derive da mesa que está valendo
      agora, e não no da tela: o que a prévia mostrou como livre pode ter mudado. Nada é aplicado se alguma trava segura. */
   if (travas.length && calculo) {

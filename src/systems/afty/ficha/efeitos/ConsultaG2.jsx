@@ -87,7 +87,7 @@ function Controles({ m, e, g, onAbrirPainel }) {
 
 /* `soRegra`: aberta a partir do gerenciador, a consulta NÃO repete o resumo nem
    os controles que já estão na linha e no detalhe. Fica a regra integral. */
-export default function Consulta({ m, g = null, onAbrirPainel = null, pilha, ativa, onAtivar, onFecharUma, onFechar, soRegra = false, semControles = soRegra }) {
+export default function Consulta({ m, g = null, onAbrirPainel = null, pilha, ativa, onAtivar, onFecharUma, onFechar, soRegra = false, semControles = soRegra, renderOperacao = null }) {
   const corpo = useRef(null);
   const titulo = useRef(null);
   const e = m.resolver(ativa);
@@ -116,7 +116,7 @@ export default function Consulta({ m, g = null, onAbrirPainel = null, pilha, ati
   const nomes = new Map(pilha.map((k) => [k, m.resolver(k)?.nome ?? k]));
 
   return (
-    <aside className="e-consulta" role="dialog" aria-label={`Consulta: ${e.nome}`}>
+    <aside className="e-consulta afty-consulta" role="dialog" aria-label={`Consulta: ${e.nome}`}>
       <div className="e-consulta-topo">
         <div className="e-consulta-abas" role="tablist" aria-label="Consultas abertas">
           {pilha.map((k) => (
@@ -155,6 +155,7 @@ export default function Consulta({ m, g = null, onAbrirPainel = null, pilha, ati
           </section>
         )}
         {!semControles && <Controles m={m} e={e} g={g} onAbrirPainel={onAbrirPainel} />}
+        {!semControles && renderOperacao?.(e)}
         {e.opcoes?.length > 0 && (
           <section className="e-bloco" aria-label="Escolhas">
             <h3 className="e-bloco-titulo">Escolhas</h3>

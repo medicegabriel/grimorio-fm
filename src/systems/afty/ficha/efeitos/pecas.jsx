@@ -115,7 +115,7 @@ export function Valor({ valor, partes, total, titulo, classe = "" }) {
   if (!temFontes) return <span className={`m-valor ${classe}`}>{valor}</span>;
   return (
     <span className={`m-valor ${classe}`}>
-      <button ref={botao} type="button" className="m-valor-botao" {...eventos} aria-haspopup="dialog"
+      <button ref={botao} type="button" className={`m-valor-botao ${classe}`} {...eventos} aria-haspopup="dialog"
         onClick={(e) => { if (toqueLongoConsumido()) return; const alvo = e.currentTarget; setAberto((a) => (a && !a.dica ? null : { ancora: alvo, dica: false })); }}
         aria-label={`${titulo}: ${valor}. Ver fontes`}>{valor}</button>
       {aberto && (
@@ -175,9 +175,9 @@ export function Medidor({ r, m, onAbrir, classe = "" }) {
   return (
     <button type="button" className={`afty-vital m-medidor ${classe}`} data-afty-vital={r.tipo} data-afty-nivel={nivel} data-recurso={r.tipo} data-alerta={nivel === "critico" ? "critico" : undefined} onClick={onAbrir}
       aria-label={`${r.rotulo}: ${r.atual} de ${r.max}${r.temp ? `, mais ${r.temp} temporário` : ""}. Abrir painel`}>
-      <span className="m-medidor-topo">
+      <span className="m-medidor-topo afty-vital-conteudo">
         <span className="afty-vital-rotulo m-medidor-rotulo">{r.rotulo}</span>
-        <span className="m-medidor-num">
+        <span className="m-medidor-num afty-vital-valores">
           <b className="afty-vital-numero">{r.atual}</b><span className="afty-vital-max">/{r.max}</span>
           {r.temp > 0 && <em>+{r.temp}</em>}
         </span>

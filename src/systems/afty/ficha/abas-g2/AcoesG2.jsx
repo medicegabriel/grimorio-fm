@@ -712,7 +712,7 @@ export default function AcoesG2({
   derived, sessao, rolar, prova, avisar, modo = "normal", turnoArmas = 0, rodadaArmas = 0,
   onSessao, onEstado, onGatilhoTreino, onAtaqueBasico, onImbuir, onArma, onAmpla,
   ritual, controleTecnicaMaxima, conjuracaoBloodfeast, controleExpansao, exaustaoTecnica = null,
-  nosDaMesa, golpe = null, rapido = [], abertos, onAberto, destaque = null,
+  nosDaMesa, golpe = null, rapido = [], abertos, onAberto, destaque = null, painelConteudo = null,
 }) {
   const visivel = useContext(VisibilidadeDaAba);
   const dano = derived.dano?.entradas ?? [];
@@ -738,18 +738,21 @@ export default function AcoesG2({
   const salta = (id) => {
     const el = raiz.current?.querySelector(`[data-m-secao="${id}"]`);
     if (!el) return;
-    const topo = parseFloat(getComputedStyle(document.getElementById("afty-ficha") ?? document.documentElement).getPropertyValue("--afty-ficha-topo")) || 0;
+    /* No telefone o cabeçalho tem `top` negativo (a placa sai ao rolar e só as abas e a barra de rolagens ficam presas): o que cobre a tela de fato é a altura menos o recolhido, e não `--afty-ficha-topo`. */
+    const cab = document.querySelector("#afty-ficha header.afty-cabecalho");
+    const recolhido = cab ? Math.max(0, -(parseFloat(getComputedStyle(cab).top) || 0)) : 0;
+    const topo = Math.max(0, (parseFloat(getComputedStyle(document.getElementById("afty-ficha") ?? document.documentElement).getPropertyValue("--afty-ficha-topo")) || 0) - recolhido);
     window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - topo - 10), behavior: "smooth" });
     el.querySelector("h2")?.focus({ preventScroll: true });
   };
   const indice = [
-    celulas.length && { id: "mesa", rotulo: "Mesa", n: celulas.length, extra: pendentesMesa ? (pendentesMesa === 1 ? "1 Pendente" : `${pendentesMesa} Pendentes`) : null },
-    visivel && rapido.length && { id: "rapido", rotulo: "Rápido", n: rapido.length },
-    dano.length && { id: "dano", rotulo: "Dano", n: dano.length },
-    cura.length && { id: "cura", rotulo: "Cura", n: cura.length },
-    tecnicas.length && { id: "tecnicas", rotulo: "Técnicas Marciais", n: tecnicas.length },
-    (feiticos.length || exaustaoTecnica) && { id: "feiticos", rotulo: "Feitiços", n: feiticos.length },
-    temDominio && { id: "dominio", rotulo: "Domínio", n: dominios.length || null },
+    celulas.length && { id: "mesa", rotulo: "Mesa", extra: pendentesMesa ? (pendentesMesa === 1 ? "1 Pendente" : `${pendentesMesa} Pendentes`) : null },
+    visivel && rapido.length && { id: "rapido", rotulo: "Rápido" },
+    dano.length && { id: "dano", rotulo: "Dano" },
+    cura.length && { id: "cura", rotulo: "Cura" },
+    tecnicas.length && { id: "tecnicas", rotulo: "Técnicas Marciais" },
+    (feiticos.length || exaustaoTecnica) && { id: "feiticos", rotulo: "Feitiços" },
+    temDominio && { id: "dominio", rotulo: "Domínio" },
   ].filter(Boolean);
   /* Sem Outros, a segunda coluna é só Feitiços e Domínio: uma ficha só de armas fica numa coluna, com o Dano na largura toda. */
   const colunaA = dano.length > 0 || cura.length > 0;
@@ -758,11 +761,14 @@ export default function AcoesG2({
   return (
     <div ref={raiz} className="e-g2 m-aba m-acoes-aba" data-m-aba="acoes">
       <PainelServos derived={derived} sessao={sessao} onSessao={onSessao} />
-      {indice.length > 1 && (
-        <nav className="m-indice" aria-label="Seções de Ações">
+      {painelConteudo}
+
+      {/* O índice só ajuda quando a aba é longa: com três seções ou menos elas já estão todas à vista. */}
+      {indice.length > 3 && (
+        <nav className="m-seg m-indice" aria-label="Seções de Ações">
           {indice.map((s) => (
-            <button key={s.id} type="button" className="m-indice-item" onClick={() => salta(s.id)}>
-              <span>{s.rotulo}{s.n != null && <small>{s.n}</small>}</span>{s.extra &&<span className="m-pendente"><AlertTriangle aria-hidden="true" />{s.extra}</span>}
+            <button key={s.id} type="button" className="m-seg-op m-indice-item" onClick={() => salta(s.id)}>
+              <span>{s.rotulo}</span>{s.extra && <span className="m-pendente"><AlertTriangle aria-hidden="true" />{s.extra}</span>}
             </button>
           ))}
         </nav>
@@ -773,7 +779,7 @@ export default function AcoesG2({
       {/* O Rápido só existe com a aba à vista: a linha de Habilidades que ele reaproveita tem `data-chave`, que a consulta usa para
           devolver o foco, e uma aba oculta não pode oferecer esse alvo. */}
       {visivel && rapido.length > 0 && (
-        <Secao id="rapido" titulo="Rápido" contagem={rapido.length} className="m-rapido">
+        <Secao id="rapido" titulo="Rápido" className="m-rapido">
           <div className="e-grupo-lista">{rapido}</div>
         </Secao>
       )}
@@ -782,7 +788,7 @@ export default function AcoesG2({
         {colunaA && (
           <div className="m-coluna">
             {dano.length > 0 && (
-              <Secao id="dano" titulo="Dano" contagem={dano.length} className="m-secao-dano" controles={(
+              <Secao id="dano" titulo="Dano" className="m-secao-dano" controles={(
                 <>
                   <span className="m-seg" role="radiogroup" aria-label="Modo do Dano">
                     <span className="m-seg-rotulo" aria-hidden="true">Dano</span>
@@ -805,7 +811,7 @@ export default function AcoesG2({
               </Secao>
             )}
             {cura.length > 0 && (
-              <Secao id="cura" titulo="Cura" contagem={cura.length}>
+              <Secao id="cura" titulo="Cura">
                 {cura.map((l) => <LinhaCura key={l.id} l={l} rolar={rolar} prova={prova} avisar={avisar} destaque={destaque} />)}
               </Secao>
             )}
@@ -814,7 +820,7 @@ export default function AcoesG2({
         {colunaB && (
           <div className="m-coluna">
             {tecnicas.length > 0 && (
-              <Secao id="tecnicas" titulo="Técnicas Marciais" contagem={tecnicas.length}>
+              <Secao id="tecnicas" titulo="Técnicas Marciais">
                 {tecnicas.map((t) => (t.tipo === "ataque" && t.ataque ? (
                   <LinhaTecnicaAtaque key={t.id} f={t} info={derived.tecnicasMarciais?.ataques?.[t.id]}
                     usos={derived.mesa?.[`tecnicaMarcial:${t.id}`]?.usos ?? null} sessao={sessao} onSessao={onSessao}
@@ -829,7 +835,7 @@ export default function AcoesG2({
               </Secao>
             )}
             {(feiticos.length > 0 || exaustaoTecnica) && (
-              <Secao id="feiticos" titulo="Feitiços" contagem={feiticos.length}>
+              <Secao id="feiticos" titulo="Feitiços">
                 {exaustaoTecnica && <div className="m-faixa">{exaustaoTecnica}</div>}
                 {feiticos.map((f) => (
                   <LinhaFeitico modoServo={modoDanoAtivo} key={f.id} f={f} sessao={sessao} rolar={rolar} prova={prova} avisar={avisar}
@@ -840,7 +846,7 @@ export default function AcoesG2({
               </Secao>
             )}
             {temDominio && (
-              <Secao id="dominio" titulo="Expansão de Domínio" contagem={dominios.length || null}>
+              <Secao id="dominio" titulo="Expansão de Domínio">
                 <BarreiraConflito info={derived.dominios} rolar={rolar} prova={prova} avisar={avisar} />
                 {dominios.map((d) => (
                   <LinhaExpansao key={d.id} d={d} ativo={d.id === dominioAtivo} fase={dominioAberto?.id === d.id ? dominioAberto.fase : null}

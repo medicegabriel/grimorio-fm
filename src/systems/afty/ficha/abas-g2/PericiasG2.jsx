@@ -12,6 +12,11 @@
    Outros (aceite do autor, 21/10): as Manobras, Concentração, Fintar, Provocar, Teste de Morte e tudo que `derived.testes.manobras`
    trouxer moram aqui, numa seção própria entre os testes e a lista de perícias. Fica FORA do filtro de treino e da busca local, que são
    só da lista de perícias, então nenhum dos dois esconde um cartão. Os cartões são os que eram de Ações, sem mudança de conta ou verbo.
+
+   REDESENHO (2026-11-07): duas colunas de leitura no desktop (testes à esquerda: Ataques, Resistências e Outros; Perícias à direita) e uma no celular, na
+   mesma ordem do DOM. A linha dá prioridade ao NOME do teste e ao botão de rolagem, em colunas alinhadas. O treino se distingue pelo destaque da linha
+   (`data-treino`) além da forma (○ ● ◆) e da palavra, que fica para leitor de tela: o chip "Mestre" repetido saiu. A margem de Crítico só aparece quando
+   difere de 20 ou tem fonte. Contagens ficam fora dos títulos, salvo "N de M" com filtro ligado.
    ============================================================ */
 import React, { useId, useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
@@ -19,6 +24,7 @@ import { Search, X } from "lucide-react";
 import { NumeroComFontes } from "../../ui/fontes";
 import { sinalDe } from "../../ui/formato";
 import { AFTY_ATTRS } from "../../afty-schema";
+import { mostraJogadasDeAtaque } from "../../afty-sistema";
 import { semAcento } from "../ficha-conteudo";
 import { Motivo, Rolar, Secao, Vazio } from "./pecas-mesa";
 import { useDestaqueG2 } from "./usar-destaque-g2";
@@ -35,15 +41,17 @@ const TREINO = {
 function LinhaTeste({ chave, nome, atributo, atributoPadrao = null, bonus, textoBonus, dados, partes, prof, margem, partesMargemCritico, falha, minimoNatural, ataqueId, rolar, prova, avisar, destaque }) {
   const raiz = useDestaqueG2(destaque?.chave === chave, destaque?.seq);
   const idMotivo = useId();
-  const pedido = pedidoTeste({ nome, bonus, dados, margem, ataqueId, minimoNatural });
+  const pedido = pedidoTeste({ nome, bonus, dados, margem, ataqueId, minimoNatural,
+    ...(chave.startsWith("pericia:") ? { periciaId: chave.slice(8) } : {}) });
   const motivo = motivoDaRecusa(prova(pedido), pedido);
   const treino = TREINO[prof] ?? null;
   const trocado = atributoPadrao && atributo && atributoPadrao !== atributo;
+  const mostraCritico = margem != null && (margem < 20 || partesMargemCritico?.length > 1);
   return (
     <div ref={raiz} id={`afty-item-${chave}`} className="afty-linha m-teste" data-afty-destacada={prof === "mestre" ? "sim" : "nao"}
       data-afty-alvo={destaque?.chave === chave ? "sim" : undefined} data-m-linha={chave} data-treino={prof ?? "nenhum"}>
-      <span className="m-treino" title={treino?.rotulo ?? "Sem Treino"} aria-label={treino?.rotulo ?? "Sem Treino"}>{treino?.marca ?? "○"}</span>
-      <span className="m-teste-nome">{nome}</span>
+      <span className="m-treino" title={treino?.rotulo ?? "Sem Treino"} aria-hidden="true">{treino?.marca ?? "○"}</span>
+      <span className="m-teste-nome">{nome}<span className="m-so-leitor">{`, ${treino?.rotulo ?? "Sem Treino"}`}</span></span>
       <span className="m-teste-metas">
         {atributo && (
           <span className="m-meta m-atributo" data-trocado={trocado ? "sim" : undefined}
@@ -51,10 +59,9 @@ function LinhaTeste({ chave, nome, atributo, atributoPadrao = null, bonus, texto
             {ABREV[atributo]}
           </span>
         )}
-        {prof === "mestre" && <span className="m-chip">Mestre</span>}
         {falha?.length > 0 && <span className="m-chip" data-tom="aviso" title={`Falha automática: ${falha.join(", ")}`}>Falha</span>}
         {minimoNatural != null && <span className="m-chip" title="Mínimo do d20 natural">Mín. {minimoNatural}</span>}
-        {margem != null && (
+        {mostraCritico && (
           <span className="m-meta">
             <NumeroComFontes className="m-meta-num" titulo="Margem de Crítico" valor={`Crít ${margem}`} partes={partesMargemCritico} total={margem} formatar={false} ancora="direita" />
           </span>
@@ -119,9 +126,13 @@ const FILTROS = [
 ];
 
 export default function PericiasG2({ derived, rolar, prova, avisar, destaque = null }) {
-  const { pericias = [], resistencias = [], ataques = [], manobras = [] } = derived.testes ?? {};
+  const { pericias = [], resistencias = [], manobras = [] } = derived.testes ?? {};
+  /* Jogador: o Acerto mora na Arma e no Feitiço, então a lista não aparece (`jogadasDeAtaqueNaTela`). O derive segue calculando os ataques. */
+  const ataques = mostraJogadasDeAtaque(derived.sistema) ? (derived.testes?.ataques ?? []) : [];
   const [termo, setTermo] = useState("");
   const [filtro, setFiltro] = useState("todas");
+  /* Em uma coluna só (aba estreita), a chave Testes / Perícias mostra um grupo por vez. Em duas colunas a chave some e os dois grupos aparecem. */
+  const [grupo, setGrupo] = useState("pericias");
   const indice = useMemo(() => pericias.map((p) => ({ p, busca: semAcento(`${p.nome} ${NOME_ATTR[p.atributo] ?? ""} ${ABREV[p.atributo] ?? ""}`) })), [pericias]);
   const casa = (x) => {
     const partes = semAcento(termo).split(/\s+/).filter(Boolean);
@@ -131,9 +142,13 @@ export default function PericiasG2({ derived, rolar, prova, avisar, destaque = n
   const [seqVisto, setSeqVisto] = useState(0);
   if (destaque?.seq && destaque.seq !== seqVisto) {
     setSeqVisto(destaque.seq);
+    /* A busca global leva ao grupo da linha apontada, para o destaque nunca cair num grupo escondido. */
+    if (destaque.chave?.startsWith("pericia:")) setGrupo("pericias");
+    else if (/^(ataque|tr|manobra):/.test(destaque.chave ?? "")) setGrupo("testes");
     const alvo = indice.find((x) => `pericia:${x.p.id}` === destaque.chave);
     if (alvo && !casa(alvo)) { setTermo(""); setFiltro("todas"); }
   }
+  const duasColunas = pericias.length > 0 && (ataques.length > 0 || resistencias.length > 0 || manobras.length > 0);
   const visiveis = indice.filter(casa).map((x) => x.p);
   const filtrando = !!termo.trim() || filtro !== "todas";
   const contagem = (f) => pericias.filter(f.passa).length;
@@ -142,65 +157,75 @@ export default function PericiasG2({ derived, rolar, prova, avisar, destaque = n
     <div className="e-g2 m-aba m-pericias-aba" data-m-aba="pericias">
       <Atributos derived={derived} rolar={rolar} avisar={avisar} prova={prova} destaque={destaque} />
 
-      <div className="m-testes">
-        {ataques.length > 0 && (
-          <Secao id="ataques" titulo="Jogadas de Ataque" contagem={ataques.length}>
-            {ataques.map((a) => (
-              <LinhaTeste key={a.id} chave={`ataque:${a.id}`} nome={a.nome} ataqueId={a.id} bonus={a.bonus} textoBonus={a.textoBonus} dados={a.dadosExtras}
-                partes={a.partes} prof={a.treinado ? "treinado" : null} rolar={rolar} prova={prova} avisar={avisar} destaque={destaque} />
-            ))}
-          </Secao>
-        )}
-        {resistencias.length > 0 && (
-          <Secao id="resistencias" titulo="Testes de Resistência" contagem={resistencias.length}>
-            {resistencias.map((r) => (
-              <LinhaTeste key={r.value} chave={`tr:${r.value}`} nome={r.label} atributo={r.atributo} bonus={r.bonus} textoBonus={r.textoBonus} dados={r.dadosExtras}
-                partes={r.partes} prof={r.prof} margem={r.margemCritico} partesMargemCritico={r.partesMargemCritico} falha={r.falhaAutomatica}
-                rolar={rolar} prova={prova} avisar={avisar} destaque={destaque} />
-            ))}
-          </Secao>
-        )}
-      </div>
-
-      {manobras.length > 0 && (
-        <Secao id="outros" titulo="Outros" contagem={manobras.length}>
-          <div className="m-grade-cartoes">
-            {manobras.map((m) => <CartaoManobra key={m.id} m={m} rolar={rolar} prova={prova} avisar={avisar} destaque={destaque} />)}
-          </div>
-        </Secao>
+      {duasColunas && (
+        <span className="m-seg m-pericias-troca" role="group" aria-label="Grupo de testes">
+          {[["testes", "Testes"], ["pericias", "Perícias"]].map(([id, rotulo]) => (
+            <button key={id} type="button" className="m-seg-op" aria-pressed={grupo === id} onClick={() => setGrupo(id)}>{rotulo}</button>
+          ))}
+        </span>
       )}
-
-      {pericias.length > 0 && (
-        <Secao id="pericias" titulo="Perícias" contagem={filtrando ? `${visiveis.length} de ${pericias.length}` : pericias.length} controles={(
-          <div className="m-ferramentas">
-            <label className="e-busca m-busca">
-              <Search aria-hidden="true" />
-              <input className="afty-campo" type="search" value={termo} placeholder="Buscar Perícia" aria-label="Buscar perícia pelo nome ou atributo"
-                onChange={(ev) => setTermo(ev.target.value)} onKeyDown={(ev) => { if (ev.key === "Escape" && termo) { ev.stopPropagation(); setTermo(""); } }} />
-              {termo && <button type="button" className="e-limpar" onClick={() => setTermo("")} aria-label="Limpar a busca"><X aria-hidden="true" /></button>}
-            </label>
-            <span className="m-seg" role="radiogroup" aria-label="Filtrar perícias pelo treino">
-              {FILTROS.map((f) => (
-                <button key={f.id} type="button" role="radio" className="m-seg-op" aria-checked={filtro === f.id} onClick={() => setFiltro(f.id)}>
-                  {f.rotulo}<small>{contagem(f)}</small>
-                </button>
+      <div className="m-pericias-corpo" data-grupo={grupo} data-duas={duasColunas ? "sim" : undefined}>
+        <div className="m-coluna m-coluna-testes">
+          {ataques.length > 0 && (
+            <Secao id="ataques" titulo="Jogadas de Ataque">
+              {ataques.map((a) => (
+                <LinhaTeste key={a.id} chave={`ataque:${a.id}`} nome={a.nome} ataqueId={a.id} bonus={a.bonus} textoBonus={a.textoBonus} dados={a.dadosExtras}
+                  partes={a.partes} prof={a.treinado ? "treinado" : null} rolar={rolar} prova={prova} avisar={avisar} destaque={destaque} />
               ))}
-            </span>
-          </div>
-        )}>
-          {visiveis.length > 0 ? (
-            <div className="m-grade-pericias">
-              {visiveis.map((p) => (
-                <LinhaTeste key={p.id} chave={`pericia:${p.id}`} nome={p.nome} atributo={p.atributo} atributoPadrao={p.atributoPadrao} bonus={p.bonus}
-                  textoBonus={p.textoBonus} dados={p.dadosExtras} partes={p.partes} prof={p.prof} minimoNatural={p.minimoNatural}
+            </Secao>
+          )}
+          {resistencias.length > 0 && (
+            <Secao id="resistencias" titulo="Testes de Resistência">
+              {resistencias.map((r) => (
+                <LinhaTeste key={r.value} chave={`tr:${r.value}`} nome={r.label} atributo={r.atributo} bonus={r.bonus} textoBonus={r.textoBonus} dados={r.dadosExtras}
+                  partes={r.partes} prof={r.prof} margem={r.margemCritico} partesMargemCritico={r.partesMargemCritico} falha={r.falhaAutomatica}
                   rolar={rolar} prova={prova} avisar={avisar} destaque={destaque} />
               ))}
-            </div>
-          ) : (
-            <Vazio texto="Nenhuma Perícia Encontrada" acao={<button type="button" className="m-botao" onClick={() => { setTermo(""); setFiltro("todas"); }}>Limpar</button>} />
+            </Secao>
           )}
-        </Secao>
-      )}
+          {manobras.length > 0 && (
+            <Secao id="outros" titulo="Outros">
+              <div className="m-grade-cartoes">
+                {manobras.map((m) => <CartaoManobra key={m.id} m={m} rolar={rolar} prova={prova} avisar={avisar} destaque={destaque} />)}
+              </div>
+            </Secao>
+          )}
+        </div>
+
+        {pericias.length > 0 && (
+          <div className="m-coluna m-coluna-lista">
+            <Secao id="pericias" titulo="Perícias" contagem={filtrando ? `${visiveis.length} de ${pericias.length}` : null} controles={(
+              <div className="m-ferramentas">
+                <label className="e-busca m-busca">
+                  <Search aria-hidden="true" />
+                  <input className="afty-campo" type="search" value={termo} placeholder="Buscar Perícia" aria-label="Buscar perícia pelo nome ou atributo"
+                    onChange={(ev) => setTermo(ev.target.value)} onKeyDown={(ev) => { if (ev.key === "Escape" && termo) { ev.stopPropagation(); setTermo(""); } }} />
+                  {termo && <button type="button" className="e-limpar" onClick={() => setTermo("")} aria-label="Limpar a busca"><X aria-hidden="true" /></button>}
+                </label>
+                <span className="m-seg" role="radiogroup" aria-label="Filtrar perícias pelo treino">
+                  {FILTROS.map((f) => (
+                    <button key={f.id} type="button" role="radio" className="m-seg-op" aria-checked={filtro === f.id} onClick={() => setFiltro(f.id)}>
+                      {f.rotulo}{f.id !== "todas" && <small>{contagem(f)}</small>}
+                    </button>
+                  ))}
+                </span>
+              </div>
+            )}>
+              {visiveis.length > 0 ? (
+                <div className="m-grade-pericias">
+                  {visiveis.map((p) => (
+                    <LinhaTeste key={p.id} chave={`pericia:${p.id}`} nome={p.nome} atributo={p.atributo} atributoPadrao={p.atributoPadrao} bonus={p.bonus}
+                      textoBonus={p.textoBonus} dados={p.dadosExtras} partes={p.partes} prof={p.prof} minimoNatural={p.minimoNatural}
+                      rolar={rolar} prova={prova} avisar={avisar} destaque={destaque} />
+                  ))}
+                </div>
+              ) : (
+                <Vazio texto="Nenhuma Perícia Encontrada" acao={<button type="button" className="m-botao" onClick={() => { setTermo(""); setFiltro("todas"); }}>Limpar</button>} />
+              )}
+            </Secao>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

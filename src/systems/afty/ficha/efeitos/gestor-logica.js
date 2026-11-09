@@ -92,7 +92,10 @@ export function useGestor(m) {
   const mudaTela = (patch) => setTela((t) => ({ ...t, ...(typeof patch === "function" ? patch(t) : patch) }));
   const mudaCatalogo = (patch) => mudaTela((t) => ({ catalogo: { ...t.catalogo, ...(typeof patch === "function" ? patch(t.catalogo) : patch) } }));
   /* `aba` abre o catálogo nela ("ficha" ou "externa"); null fecha e descarta o rascunho. */
-  const abrirCatalogo = (aba) => mudaCatalogo(() => (aba ? { aberto: true, aba } : { aberto: false, preparo: null }));
+  /* Sem nenhum Favorito a categoria inicial abre vazia ("Nenhuma Opção"), então a primeira abertura cai em Todo o Catálogo (auditoria de 2026-11-09). */
+  const abrirCatalogo = (aba) => mudaCatalogo((c) => (aba
+    ? { aberto: true, aba, ...(c.cat === "favoritos" && !(m.sessao?.favoritos ?? []).length ? { cat: "tudo" } : null) }
+    : { aberto: false, preparo: null }));
   /* Do catálogo para o cartão de um efeito que já está ativo. */
   const irAoAtivo = (chaveDaOpcao) => {
     /* A Sustentação é um grupo de vagas: o cartão é o da primeira vaga ocupada (`sust:<vaga>`). */

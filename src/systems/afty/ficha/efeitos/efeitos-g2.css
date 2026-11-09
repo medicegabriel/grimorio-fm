@@ -1,3 +1,5 @@
+/* Aparência contratada: especificidade de uma classe.
+   O CSS do usuário vence pela proximidade do escopo, sem alterar o layout. */
 /* ========== ESTUDO (estudo/estudo.css) ========== */
 /* ============================================================
    ESTUDO DE HABILIDADES · linguagem visual
@@ -20,12 +22,13 @@
 .e-g2 :is(.afty-cabecalho, .afty-card, .afty-vital, .afty-stat, .e-consulta, .m-flutuante) {
   --e-t1: var(--afty-texto);
   --e-t2: var(--afty-texto-suave);
-  --e-t3: color-mix(in oklab, var(--afty-texto-suave) 70%, var(--afty-fundo));
+  --e-t3: color-mix(in oklab, var(--afty-texto-suave) 80%, var(--afty-fundo));
   --e-linha: color-mix(in oklab, var(--afty-texto) 9%, transparent);
   --e-hover: color-mix(in oklab, var(--afty-texto) 4.5%, transparent);
   --e-ctrl: color-mix(in oklab, var(--afty-texto) 7%, transparent);
   --e-ctrl-hover: color-mix(in oklab, var(--afty-texto) 12%, transparent);
-  --e-ctrl-borda: color-mix(in oklab, var(--afty-texto) 16%, transparent);
+  --e-ctrl-borda: color-mix(in oklab, var(--afty-texto) 38%, transparent);
+  --e-chip-borda: color-mix(in oklab, var(--afty-texto) 16%, transparent);
   --e-sel: color-mix(in oklab, var(--afty-destaque) 15%, transparent);
   --e-sel-borda: color-mix(in oklab, var(--afty-destaque) 62%, transparent);
   --e-ativo: var(--afty-destaque-texto);
@@ -39,99 +42,157 @@
   --e-painel: color-mix(in oklab, var(--afty-card) 82%, var(--afty-fundo));
   --e-painel-borda: color-mix(in oklab, var(--afty-texto) 9%, transparent);
   --e-flutuante: color-mix(in oklab, var(--afty-card) 94%, var(--afty-texto));
-  --e-display: "Bahnschrift", "Segoe UI", system-ui, sans-serif;
+  --e-display: var(--afty-fonte-display, "Bahnschrift", "Segoe UI", system-ui, sans-serif);
   --e-num: tabular-nums lining-nums;
 }
 .e-g2 { color: var(--e-t1); font: 14px/1.45 var(--afty-fonte); }
-.e-g2 :focus-visible { outline: 2px solid var(--afty-destaque); outline-offset: 2px; border-radius: 6px; }
+.e-g2 :focus-visible { outline: 2px solid var(--afty-destaque); outline-offset: 2px; border-radius: calc(var(--afty-raio, 12px) * 6 / 12); }
 .e-g2 svg { width: 16px; height: 16px; flex: none; }
-.e-g2 button { font: inherit; color: inherit; }
+.e-g2 :where(button) { font: inherit; color: inherit; }
+.e-g2 :where(h1, h2, h3) { color: inherit; }
 .e-g2 button:disabled { cursor: default; }
 .e-display { font-family: var(--e-display); font-stretch: semi-condensed; }
 
 /* ---------------- placa: identidade, recursos, valores e Agora ---------------- */
+/* O CABEÇALHO DO G2 (redesenho de 2026-11-07). Duas colunas: o RETRATO à esquerda, na altura do corpo inteiro, e o CORPO à direita, com a placa
+   (identidade, recursos, comandos) e a faixa (valores e Agora). A identidade ocupa só a largura do nome, os recursos formam um grupo à direita dela e os
+   comandos ficam no canto. Abaixo de 1120 px os recursos descem para uma segunda fileira da placa, e no telefone o retrato vira uma coluna estreita ao lado
+   do nome. O cabeçalho é grudado: a altura aqui é altura tirada do conteúdo de todas as abas. */
 .e-g2 .e-cabeca {
-  position: relative; margin: 14px 18px 0; padding: 14px 18px 0 16px;
-  border: 1px solid var(--e-painel-borda); border-radius: 18px;
+  --e-ret-w: 112px;
+  position: relative; display: grid; grid-template-columns: var(--e-ret-w) minmax(0, 1fr); column-gap: 14px; align-items: stretch;
+  margin: 6px 0 0; padding: 6px 16px 6px 6px;
+}
+:where(.e-g2) .e-cabeca {
+  border: 1px solid var(--e-painel-borda); border-radius: calc(var(--afty-raio, 12px) * 18 / 12);
   background:
     radial-gradient(120% 140% at 0% 0%, color-mix(in oklab, var(--afty-destaque) 20%, transparent), transparent 55%),
     color-mix(in oklab, var(--afty-card) 88%, var(--afty-fundo));
   box-shadow: 0 16px 36px -24px rgb(0 0 0 / .9);
-}
-.e-g2 .e-placa { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; column-gap: 18px; padding-bottom: 12px; }
-.e-g2 .e-moldura { width: 80px; height: 80px; padding: 3px; border-radius: 50%; background: conic-gradient(from 210deg, var(--afty-destaque), var(--afty-destaque-texto), var(--afty-destaque)); box-shadow: 0 0 0 3px color-mix(in oklab, var(--afty-card) 90%, var(--afty-fundo)), 0 12px 24px -10px rgb(0 0 0 / .8); }
-.e-g2 .e-retrato { display: block; width: 74px; height: 74px; border-radius: 50%; object-fit: cover; }
-.e-g2 .m-retrato-vazio { display: inline-flex; align-items: center; justify-content: center; background: var(--e-ctrl-hover); color: var(--e-t2); font-weight: 700; }
-.e-g2 .e-ident { min-width: 0; }
-.e-g2 .e-nome { margin: 0; font: 600 28px/1.05 var(--e-display); font-stretch: semi-condensed; letter-spacing: .005em; }
-.e-g2 .e-linhagem { margin: 5px 0 0; display: flex; flex-wrap: wrap; font-size: 13.5px; color: var(--e-t2); }
-.e-g2 .e-linhagem span + span::before { content: "·"; margin: 0 7px; color: var(--e-t3); }
+  }
+.e-g2 .e-corpo { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr auto; row-gap: 2px; }
+.e-g2 .e-placa { display: grid; grid-template-columns: auto fit-content(clamp(240px, 31vw, 420px)) minmax(0, 1fr) auto; grid-template-areas: "voltar ident recursos controles"; align-items: center; column-gap: 12px; min-height: 60px; }
+.e-g2 .e-moldura { position: relative; min-width: 0; min-height: 88px; padding: 3px; border-radius: calc(var(--afty-raio, 12px) * 14 / 12); background: conic-gradient(from 210deg, var(--afty-destaque), var(--afty-destaque-texto), var(--afty-destaque)); box-shadow: 0 12px 24px -12px rgb(0 0 0 / .8); }
+/* A imagem preenche a moldura (o `.afty-retrato` da Ficha já é posição absoluta), com os 3 px do anel por fora. */
+.e-g2 .e-retrato { display: block; position: absolute; inset: 3px; width: calc(100% - 6px); height: calc(100% - 6px); object-fit: cover; }
+:where(.e-g2) .e-retrato { border-radius: calc(var(--afty-raio, 12px) * 11 / 12);
+  }
+.e-g2 .m-retrato-vazio { display: inline-flex; align-items: center; justify-content: center; font-size: 28px; letter-spacing: .04em; }
+:where(.e-g2) .m-retrato-vazio { background: color-mix(in oklab, var(--afty-destaque) 16%, var(--afty-poco)); color: var(--afty-destaque-texto); font-weight: 700;
+  }
+.e-g2 .e-ident { min-width: 0; justify-self: start; max-width: 100%; }
+.e-g2 .e-nome { margin: 0; }
+:where(.e-g2) .e-nome { font: 600 26px/1.08 var(--e-display); font-stretch: semi-condensed; letter-spacing: .005em; overflow-wrap: anywhere;
+  }
+.e-g2 .e-linhagem { margin: 4px 0 0; display: flex; flex-wrap: wrap; column-gap: 7px; font-size: 13.5px; color: var(--e-t2); }
+/* O ponto separador fica no FIM do item anterior: quando a linha quebra, ele nunca abre a linha seguinte. */
+.e-g2 .e-linhagem span:not(:last-child)::after { content: "·"; margin-left: 7px; color: var(--e-t3); }
 .e-g2 .e-classe { color: var(--e-ativo); font-weight: 600; }
-.e-g2 .e-recursos { display: flex; gap: 10px; }
-.e-g2 .m-medidor { position: relative; width: 168px; display: grid; gap: 5px; padding: 6px 10px 8px; border: 1px solid transparent; border-radius: 10px; background: color-mix(in oklab, var(--afty-poco) 55%, transparent); color: var(--e-t1); text-align: left; }
-.e-g2 .m-medidor:hover { border-color: var(--e-ctrl-borda); }
-.e-g2 .m-medidor-topo { display: flex; align-items: baseline; gap: 6px; white-space: nowrap; }
-.e-g2 .m-medidor-rotulo { margin-right: auto; font: 600 13px var(--e-display); font-stretch: semi-condensed; color: var(--e-t2); }
-.e-g2 .m-medidor-num { display: inline-flex; align-items: baseline; gap: 1px; font-family: var(--e-display); font-variant-numeric: var(--e-num); }
-.e-g2 .m-medidor-num b { font-size: 23px; font-weight: 700; line-height: 1; }
-.e-g2 .m-medidor-num .afty-vital-max { font-size: 14px; color: var(--e-t2); }
+.e-g2 .e-recursos { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(104px, 168px); justify-content: end; gap: 8px; min-width: 0; }
+.e-g2 .m-medidor { position: relative; min-width: 0; display: grid; gap: 4px; padding: 5px 10px 7px; text-align: left; }
+:where(.e-g2) .m-medidor { border: 1px solid transparent; border-radius: calc(var(--afty-raio, 12px) * 10 / 12); background: color-mix(in oklab, var(--afty-poco) 55%, transparent); color: var(--e-t1);
+  }
+:where(.e-g2 .m-medidor:hover):is(.m-medidor) { border-color: var(--e-ctrl-borda);
+  }
+/* Rótulo sobre o número: o medidor fica estreito (cabem quatro lado a lado) e o número tem a largura toda da célula. */
+.e-g2 .m-medidor-topo { display: flex; flex-direction: column; align-items: flex-start; gap: 0; white-space: nowrap; }
+.e-g2 .m-medidor-rotulo { margin-right: 0; }
+:where(.e-g2) .m-medidor-rotulo { font: 600 13px var(--e-display); font-stretch: semi-condensed; color: var(--e-t2);
+  }
+.e-g2 .m-medidor-num { display: inline-flex; align-items: baseline; gap: 1px; }
+/* O `.afty-vital-numero` da Ficha tem 3,5rem fixos (era um campo). Aqui o número tem a largura do próprio texto e começa na borda esquerda do rótulo. */
+.e-g2 .m-medidor-num .afty-vital-numero { width: auto; text-align: left; }
+:where(.e-g2) .m-medidor-num { font-family: var(--e-display); font-variant-numeric: var(--e-num); }
+:where(.e-g2 .m-medidor-num) .afty-vital-numero { font-size: 22px; font-weight: 700; line-height: 1; }
+:where(.e-g2 .m-medidor-num) .afty-vital-max { font-size: 14px; color: var(--e-t2); }
 .e-g2 .m-medidor-num em { margin-left: 5px; font-style: normal; font-size: 14px; font-weight: 700; color: var(--afty-pvtemp); }
 .e-g2 .m-medidor[data-recurso="pe"] em { color: var(--afty-petemp); }
-.e-g2 .m-barra { position: relative; display: block; height: 6px; border-radius: 3px; overflow: hidden; background: color-mix(in oklab, var(--afty-texto) 12%, transparent); }
-.e-g2 .m-barra-cheia { position: absolute; inset: 0 auto 0 0; border-radius: inherit; }
-.e-g2 .m-barra[data-recurso="pv"] .m-barra-cheia { background: var(--afty-pv); }
-.e-g2 .m-barra[data-recurso="pe"] .m-barra-cheia { background: var(--afty-pe); }
-.e-g2 .m-barra[data-recurso="alma"] .m-barra-cheia { background: var(--afty-alma); }
-.e-g2 .m-barra[data-recurso="preparo"] .m-barra-cheia { background: var(--afty-destaque); }
+.e-g2 .m-barra { position: relative; display: block; height: 6px; overflow: hidden; }
+/* Só nos medidores do cabeçalho a barra é mais fina: o painel de cada recurso mantém a barra de sempre. */
+.e-g2 .e-recursos .m-barra { height: 5px; }
+:where(.e-g2) .m-barra { border-radius: calc(var(--afty-raio, 12px) * 3 / 12); background: color-mix(in oklab, var(--afty-texto) 12%, transparent);
+  }
+.e-g2 .m-barra-cheia { position: absolute; inset: 0 auto 0 0; }
+:where(.e-g2) .m-barra-cheia { border-radius: inherit;
+  }
+:where(.e-g2 .m-barra[data-recurso="pv"]) .m-barra-cheia { background: var(--afty-pv);
+  }
+:where(.e-g2 .m-barra[data-recurso="pe"]) .m-barra-cheia { background: var(--afty-pe);
+  }
+:where(.e-g2 .m-barra[data-recurso="alma"]) .m-barra-cheia { background: var(--afty-alma);
+  }
+:where(.e-g2 .m-barra[data-recurso="preparo"]) .m-barra-cheia { background: var(--afty-destaque);
+  }
 .e-g2 .m-barra .m-barra-temp { position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: var(--afty-vital-cor); box-shadow: none; }
-.e-g2 .m-flash { position: absolute; right: 8px; top: -12px; padding: 0 6px; border-radius: 6px; background: var(--afty-fundo); font-style: normal; font-size: 13px; font-weight: 700; animation: e-sobe 2.4s ease-out forwards; }
+.e-g2 .m-flash { position: absolute; right: 8px; top: -12px; padding: 0 6px; border-radius: calc(var(--afty-raio, 12px) * 6 / 12); background: var(--afty-fundo); font-style: normal; font-size: 13px; font-weight: 700; animation: e-sobe 2.4s ease-out forwards; }
 .e-g2 .m-flash[data-sinal="menos"] { color: var(--afty-pv); }
 .e-g2 .m-flash[data-sinal="mais"] { color: var(--afty-cura); }
 @keyframes e-sobe { from { opacity: 1; } to { opacity: 0; transform: translateY(-6px); } }
-.e-g2 .e-icone { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 9px; background: none; color: var(--e-t2); align-self: start; }
-.e-g2 .e-icone:hover { background: var(--e-ctrl); color: var(--e-t1); }
+.e-g2 .e-icone { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; align-self: start; }
+:where(.e-g2) .e-icone { border: 0; border-radius: calc(var(--afty-raio, 12px) * 9 / 12); background: none; color: var(--e-t2);
+  }
+:where(.e-g2 .e-icone:hover):is(.e-icone) { background: var(--e-ctrl); color: var(--e-t1);
+  }
 
-.e-g2 .e-faixa { display: flex; align-items: center; gap: 18px; min-height: 48px; border-top: 1px solid var(--e-linha); }
+.e-g2 .e-faixa { display: flex; align-items: center; gap: 18px; min-height: 42px; border-top: 1px solid var(--e-linha); }
 .e-g2 .e-stats { flex: 1; display: flex; align-items: baseline; gap: 16px; margin: 0; min-width: 0; overflow: hidden; }
-.e-g2 .e-mais { flex: none; height: 26px; padding: 0 8px; border: 0; border-radius: 7px; background: var(--e-ctrl); color: var(--e-t1); font-size: 13px; font-weight: 600; }
+/* O `overflow: hidden` cortava a área de toque de 24px dos números (o `::after` de `.m-valor-botao`). O respiro vertical entra como padding e sai como margem
+   negativa, então a altura da faixa e a linha de base ficam como estavam. */
+.e-g2 .e-stats { padding-block: 3px; margin-block: -3px; }
+.e-g2 .e-mais { flex: none; height: 26px; padding: 0 8px; border: 0; border-radius: calc(var(--afty-raio, 12px) * 7 / 12); background: var(--e-ctrl); color: var(--e-t1); font-size: 13px; font-weight: 600; }
 .e-g2 .e-stats-mais { display: grid; gap: 8px; margin: 0; }
 .e-g2 .e-stats-mais .e-stat { justify-content: space-between; }
 .e-g2 .e-stat { display: inline-flex; align-items: baseline; gap: 6px; white-space: nowrap; }
-.e-g2 .e-stat dt { font-size: 12.5px; color: var(--e-t2); }
+:where(.e-g2 .e-stat) dt { font-size: 12.5px; color: var(--e-t2); }
 .e-g2 .e-stat dd { margin: 0; }
-.e-g2 .e-stat .m-valor-botao, .e-g2 .e-stat .m-valor { font: 600 17px var(--e-display); font-stretch: semi-condensed; }
-.e-g2 .e-stat[data-efeito] .m-valor-botao { color: var(--e-ativo); }
-.e-g2 .e-stat[data-efeito] .m-valor-botao::before { content: "◆ "; font-size: 10px; vertical-align: 2px; color: var(--afty-destaque); }
-.e-g2 .m-valor { font-variant-numeric: var(--e-num); }
-.e-g2 .m-valor-botao { border: 0; background: none; padding: 0 1px; font-variant-numeric: var(--e-num); color: var(--e-t1); cursor: help; text-decoration: underline dotted transparent; text-underline-offset: 3px; }
-.e-g2 .m-valor-botao:hover { text-decoration-color: var(--e-t3); }
+:where(.e-g2 .e-stat) .m-valor,
+  :where(.e-g2 .e-stat) .m-valor-botao { font: 600 17px var(--e-display); font-stretch: semi-condensed;
+  }
+.e-g2 .e-stat[data-efeito] .m-valor-botao::before { content: "◆ "; font-size: 11px; vertical-align: 2px; color: var(--afty-destaque); }
+:where(.e-g2) .m-valor { font-variant-numeric: var(--e-num);
+  }
+:where(.e-g2) .m-valor-botao { border: 0; background: none; padding: 0 1px; font-variant-numeric: var(--e-num); color: var(--e-t1); cursor: help; text-decoration: underline dotted transparent; text-underline-offset: 3px; }
+:where(.e-g2 .e-stat[data-efeito]) .m-valor-botao { color: var(--e-ativo); }
+/* O número que abre as fontes tem 17 a 28px de largura por 20 de altura. O piso de 24px (WCAG 2.5.8) entra por um `::after` invisível, que não mexe na
+   linha de base do número nem no espaçamento. Fica em `:where` para o CSS do autor continuar vencendo. */
+:where(.e-g2) .m-valor-botao { position: relative; }
+:where(.e-g2) .m-valor-botao::after { content: ""; position: absolute; inset: -3px -4px; }
+:where(.e-g2) .m-valor-botao:where(:hover) { text-decoration-color: var(--e-t3); }
 
-.e-g2 .e-agora { flex: none; margin-left: auto; display: flex; align-items: center; gap: 8px; padding-left: 18px; border-left: 1px solid var(--e-linha); min-height: 48px; }
+.e-g2 .e-agora { flex: none; margin-left: auto; display: flex; align-items: center; gap: 8px; padding-left: 18px; border-left: 1px solid var(--e-linha); min-height: 40px; }
 .e-g2 .e-agora-rotulo { font: 600 13px var(--e-display); font-stretch: semi-condensed; color: var(--e-t2); margin-right: 2px; }
 .e-g2 .e-agora-vazio { font-size: 13px; color: var(--e-t3); }
-.e-g2 .e-combate { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border: 1px solid var(--e-ctrl-borda); border-radius: 8px; background: none; color: var(--e-t2); font-size: 13px; font-weight: 600; white-space: nowrap; }
+.e-g2 .e-combate { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border: 1px solid var(--e-ctrl-borda); border-radius: calc(var(--afty-raio, 12px) * 8 / 12); background: none; color: var(--e-t2); font-size: 13px; font-weight: 600; white-space: nowrap; }
 .e-g2 .e-combate svg { width: 14px; height: 14px; }
 /* O Em Combate ligado lê pelo TEXTO do tema (`--e-t1`), nunca pela cor de cura: um tema escuro com cura escura (o Minamoto) deixava o rótulo a 1,2:1 do fundo.
    A cura continua dizendo "ligado" na borda e no tom do fundo, misturada ao texto para ler em fundo claro e escuro. */
 .e-g2 .e-combate[aria-pressed="true"] { color: var(--e-t1); border-color: color-mix(in oklab, var(--afty-cura) 55%, var(--e-t1)); background: color-mix(in oklab, var(--afty-cura) 16%, transparent); }
-.e-g2 .e-rodada { display: inline-flex; align-items: center; height: 30px; padding-left: 10px; border-radius: 8px; background: var(--e-ctrl); font-size: 13px; color: var(--e-t2); white-space: nowrap; }
+.e-g2 .e-rodada { display: inline-flex; align-items: center; height: 30px; padding-left: 10px; border-radius: calc(var(--afty-raio, 12px) * 8 / 12); background: var(--e-ctrl); font-size: 13px; color: var(--e-t2); white-space: nowrap; }
 .e-g2 .e-rodada b { margin: 0 6px 0 5px; font: 700 15px var(--e-display); color: var(--e-t1); }
-.e-g2 .e-proxima { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-left: 1px solid var(--e-linha); border-radius: 0 8px 8px 0; background: none; color: var(--e-t1); }
+.e-g2 .e-proxima { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-left: 1px solid var(--e-linha); border-radius: 0 calc(var(--afty-raio, 12px) * 8 / 12) calc(var(--afty-raio, 12px) * 8 / 12) 0; background: none; color: var(--e-t1); }
 .e-g2 .e-proxima:hover { background: var(--e-ctrl-hover); }
-.e-g2 .e-cond { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 8px 0 10px; border-radius: 8px; border: 1px solid var(--e-aviso-borda); background: var(--e-aviso-fundo); color: var(--e-aviso); font-size: 13px; font-weight: 700; white-space: nowrap; }
-.e-g2 .e-cond b { min-width: 18px; height: 18px; padding: 0 4px; display: inline-flex; align-items: center; justify-content: center; border-radius: 5px; background: color-mix(in oklab, var(--afty-destaque) 25%, transparent); font-size: 12px; font-variant-numeric: var(--e-num); }
-.e-g2 .m-chip { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 9px; border: 1px solid var(--e-ctrl-borda); border-radius: 8px; background: none; color: var(--e-t2); font-size: 13px; white-space: nowrap; }
-.e-g2 .m-chip svg { width: 13px; height: 13px; }
+.e-g2 .e-cond { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 8px 0 10px; border-radius: calc(var(--afty-raio, 12px) * 8 / 12); border: 1px solid var(--e-aviso-borda); background: var(--e-aviso-fundo); color: var(--e-aviso); font-size: 13px; font-weight: 700; white-space: nowrap; }
+.e-g2 .e-cond b { min-width: 18px; height: 18px; padding: 0 4px; display: inline-flex; align-items: center; justify-content: center; border-radius: calc(var(--afty-raio, 12px) * 5 / 12); background: color-mix(in oklab, var(--afty-destaque) 25%, transparent); font-size: 12px; font-variant-numeric: var(--e-num); }
+/* A base de .m-chip e de .m-passo mora só em abas-g2.css. Aqui ficam apenas os estados. */
 .e-g2 .m-chip[data-estado="ativo"] { border-color: var(--e-sel-borda); background: var(--e-sel); color: var(--e-t1); }
-.e-g2 .m-chip[data-estado="ativo"]::before { content: "◆"; font-size: 9px; color: var(--afty-destaque); }
+.e-g2 .m-chip[data-estado="ativo"]::before { content: "◆"; font-size: 11px; color: var(--afty-destaque); }
 .e-g2 .m-chip-valor { font-weight: 700; color: var(--e-ativo); }
 
 /* ---------------- abas ---------------- */
-.e-g2 .e-abas { display: flex; gap: 2px; margin: 8px 0 0; border-bottom: 1px solid var(--e-linha); overflow-x: auto; scrollbar-width: none; }
-.e-g2 .e-aba { position: relative; height: 44px; padding: 0 14px; border: 0; background: none; color: var(--e-t2); font: 600 16px var(--e-display); font-stretch: semi-condensed; }
-.e-g2 .e-aba[aria-selected="true"] { color: var(--e-t1); }
-.e-g2 .e-aba[aria-selected="true"]::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--afty-destaque); }
-.e-g2 .e-aba[aria-disabled] { color: var(--e-t3); cursor: not-allowed; }
+.e-g2 .e-abas { display: flex; gap: 2px; margin: 8px 0 0; overflow-x: auto; scrollbar-width: none; }
+:where(.e-g2) .e-abas { border-bottom: 1px solid var(--e-linha);
+  }
+.e-g2 .e-aba { position: relative; height: 44px; padding: 0 14px; }
+:where(.e-g2) .e-aba { border: 0; background: none; color: var(--e-t2); font: 600 16px var(--e-display); font-stretch: semi-condensed;
+  }
+:where(.e-g2 .e-aba[aria-selected="true"]):is(.e-aba) { color: var(--e-t1);
+  }
+.e-g2 .e-aba[aria-selected="true"]::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 3px; }
+:where(.e-g2) .e-aba:where([aria-selected="true"])::after { border-radius: calc(var(--afty-raio, 12px) * 3 / 12) calc(var(--afty-raio, 12px) * 3 / 12) 0 0; background: var(--afty-destaque);
+  }
+.e-g2 .e-aba[aria-disabled] { cursor: not-allowed; }
+:where(.e-g2 .e-aba[aria-disabled]):is(.e-aba) { color: var(--e-t3);
+  }
 
 /* ---------------- a área da aba e a lista ---------------- */
 /* A margem da direita é a trilha do botão dos Livros: nada da lista passa por baixo dele. */
@@ -141,50 +202,70 @@
 .e-g2 .e-habilidades[data-rolada] .e-ferramentas { box-shadow: 0 1px 0 var(--e-linha), 0 14px 16px -14px rgb(0 0 0 / .9); }
 .e-g2 .e-busca { position: relative; display: flex; align-items: center; }
 .e-g2 .e-busca > svg { position: absolute; left: 14px; color: var(--e-t2); pointer-events: none; }
-.e-g2 .e-busca .afty-campo { flex: 1; height: 42px; padding: 0 40px 0 42px; border: 1px solid transparent; border-radius: 12px; background: var(--e-ctrl); color: var(--e-t1); font-size: 15px; min-width: 0; }
-.e-g2 .e-busca .afty-campo::placeholder { color: var(--e-t3); }
+.e-g2 .e-busca .afty-campo { flex: 1; height: 38px; padding: 0 40px 0 42px; border: 1px solid transparent; border-radius: var(--afty-raio, 12px); background: var(--e-ctrl); color: var(--e-t1); font-size: 15px; min-width: 0; }
+.e-g2 .e-busca .afty-campo::placeholder { color: var(--e-t2); }
 .e-g2 .e-busca .afty-campo:focus { outline: none; border-color: var(--e-sel-borda); background: var(--e-ctrl-hover); }
 .e-g2 input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
-.e-g2 .e-limpar { position: absolute; right: 6px; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 8px; background: none; color: var(--e-t2); }
+.e-g2 .e-limpar { position: absolute; right: 6px; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: calc(var(--afty-raio, 12px) * 8 / 12); background: none; color: var(--e-t2); }
 .e-g2 .e-limpar:hover { background: var(--e-ctrl-hover); color: var(--e-t1); }
 .e-g2 .e-contagem { margin: 0; display: flex; align-items: baseline; gap: 14px; font-size: 13.5px; color: var(--e-t2); white-space: nowrap; }
 .e-g2 .e-contagem b { color: var(--e-t1); font-variant-numeric: var(--e-num); }
 .e-g2 .e-contagem [data-onde] { display: inline-flex; gap: 5px; align-items: baseline; }
-.e-g2 .e-contagem [data-onde="nome"]::before, .e-g2 .e-onde[data-onde="nome"]::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: var(--afty-destaque); align-self: center; }
-.e-g2 .e-contagem [data-onde="texto"]::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: color-mix(in oklab, var(--afty-aviso) 70%, transparent); align-self: center; }
-.e-g2 .e-efeitos { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.e-g2 .e-efeitos-rotulo { font: 600 13px var(--e-display); font-stretch: semi-condensed; color: var(--e-t3); margin-right: 4px; }
-.e-g2 .e-efeito { height: 30px; padding: 0 12px; border: 1px solid transparent; border-radius: 8px; background: var(--e-ctrl); color: var(--e-t2); font-size: 13.5px; font-weight: 600; }
-.e-g2 .e-efeito:hover { color: var(--e-t1); }
-.e-g2 .e-efeito[aria-checked="true"] { background: var(--e-sel); border-color: var(--e-sel-borda); color: var(--e-t1); }
+.e-g2 .e-contagem [data-onde="nome"]::before, .e-g2 .e-onde[data-onde="nome"]::before { content: ""; width: 8px; height: 8px; border-radius: calc(var(--afty-raio, 12px) * 2 / 12); background: var(--afty-destaque); align-self: center; }
+.e-g2 .e-contagem [data-onde="texto"]::before { content: ""; width: 8px; height: 8px; border-radius: calc(var(--afty-raio, 12px) * 2 / 12); background: color-mix(in oklab, var(--afty-aviso) 70%, transparent); align-self: center; }
+/* O filtro de efeito é o mesmo segmento dos filtros de Perícias (Todas, Treinadas, Mestre): uma caixa só, sem um botão solto por opção. */
+.e-g2 .e-efeitos { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-self: start; gap: 2px; padding: 3px; border-radius: calc(var(--afty-raio, 12px) * 10 / 12); background: var(--e-ctrl); }
+.e-g2 .e-efeitos-rotulo { font: 600 13px var(--e-display); font-stretch: semi-condensed; color: var(--e-t2); padding: 0 6px 0 8px; }
+.e-g2 .e-efeito { height: 30px; padding: 0 12px; border: 0; border-radius: calc(var(--afty-raio, 12px) * 7 / 12); background: none; color: var(--e-t2); font-size: 13.5px; font-weight: 600; }
+.e-g2 .e-efeito:hover { color: var(--e-t1); background: var(--e-hover); }
+.e-g2 .e-efeito[aria-checked="true"] { background: color-mix(in oklab, var(--afty-destaque) 30%, transparent); box-shadow: inset 0 0 0 1px var(--e-sel-borda); color: var(--e-t1); }
+.e-g2 .e-efeitos > .e-efeito:nth-child(2)[aria-checked="true"] { background: var(--e-ctrl-hover); box-shadow: none; }
 
-.e-g2 .e-tecnica { width: 100%; display: flex; align-items: center; gap: 10px; margin: 2px 0 0; padding: 12px 16px; border: 1px solid var(--e-painel-borda); border-radius: 14px; background: var(--e-painel); color: var(--e-t1); text-align: left; flex-wrap: wrap; }
-.e-g2 .e-tecnica:hover { border-color: var(--e-ctrl-borda); }
-.e-g2 .e-tecnica[data-consultada] { border-color: var(--e-sel-borda); background: var(--e-sel); }
+.e-g2 .e-tecnica { width: 100%; display: flex; align-items: center; gap: 10px; margin: 2px 0 0; padding: 12px 16px; text-align: left; flex-wrap: wrap; }
+
+:where(.e-g2) .e-tecnica { border: 1px solid var(--e-painel-borda); border-radius: calc(var(--afty-raio, 12px) * 14 / 12); background: var(--e-painel); color: var(--e-t1);
+  }
+:where(.e-g2 .e-tecnica:hover):is(.e-tecnica) { border-color: var(--e-ctrl-borda);
+  }
+:where(.e-g2 .e-tecnica[data-consultada]):is(.e-tecnica) { border-color: var(--e-sel-borda); background: var(--e-sel);
+  }
 .e-g2 .e-tecnica > svg:first-child { color: var(--e-ativo); }
 .e-g2 .e-tecnica-nome { font: 600 16px var(--e-display); font-stretch: semi-condensed; }
 .e-g2 .e-tecnica-seta { margin-left: auto; color: var(--e-t3); }
 .e-g2 .e-tecnica .e-trecho { flex-basis: 100%; padding-left: 26px; }
 
-.e-g2 .e-grupo { margin-top: 14px; border: 1px solid var(--e-painel-borda); border-radius: 14px; background: var(--e-painel); overflow: hidden; }
-.e-g2 .e-grupo-topo { display: flex; align-items: center; gap: 16px; padding: 11px 16px; background: color-mix(in oklab, var(--afty-texto) 3%, transparent); border-bottom: 1px solid var(--e-linha); }
-.e-g2 .e-grupo-titulo { margin: 0; display: flex; align-items: baseline; gap: 8px; font: 600 17px var(--e-display); font-stretch: semi-condensed; color: var(--e-t1); }
-.e-g2 .e-grupo-titulo small { font-size: 14px; font-weight: 400; color: var(--e-t3); font-variant-numeric: var(--e-num); }
-.e-g2 .e-subabas { display: inline-flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--e-ctrl); }
-.e-g2 .e-subaba { display: inline-flex; align-items: baseline; gap: 6px; height: 30px; padding: 0 12px; border: 0; border-radius: 7px; background: none; color: var(--e-t2); font-size: 13.5px; font-weight: 600; line-height: 30px; }
+.e-g2 .e-grupo { margin-top: 14px; overflow: hidden; }
+
+:where(.e-g2) .e-grupo { border: 1px solid var(--e-painel-borda); border-radius: calc(var(--afty-raio, 12px) * 14 / 12); background: var(--e-painel);
+  }
+.e-g2 .e-grupo-topo { display: flex; align-items: center; gap: 16px; padding: 6px 16px; min-height: 36px; background: color-mix(in oklab, var(--afty-texto) 3%, transparent); border-bottom: 1px solid var(--e-linha); }
+.e-g2 .e-grupo-titulo { margin: 0; display: flex; align-items: baseline; gap: 8px; }
+:where(.e-g2) .e-grupo-titulo { font: 600 17px var(--e-display); font-stretch: semi-condensed; color: var(--e-t1);
+  }
+.e-g2 .e-grupo-titulo small { font-size: 14px; font-weight: 400; color: var(--f-t3); font-variant-numeric: var(--e-num); }
+.e-g2 .e-subabas { display: inline-flex; gap: 2px; padding: 3px; border-radius: calc(var(--afty-raio, 12px) * 10 / 12); background: var(--e-ctrl); }
+.e-g2 .e-subaba { display: inline-flex; align-items: baseline; gap: 6px; height: 30px; padding: 0 12px; border: 0; border-radius: calc(var(--afty-raio, 12px) * 7 / 12); background: none; color: var(--e-t2); font-size: 13.5px; font-weight: 600; line-height: 30px; }
 .e-g2 .e-subaba small { font-weight: 400; color: var(--e-t3); font-variant-numeric: var(--e-num); }
 .e-g2 .e-subaba[aria-selected="true"] { background: color-mix(in oklab, var(--afty-card) 60%, var(--afty-texto) 14%); color: var(--e-t1); }
 
 /* A linha em flex, com prioridade quando falta espaço (lista estreita, painel
    aberto): nome, estado e controles nunca encolhem; encolhem primeiro as
    marcas e os rótulos dos controles, com reticências e o title. */
-.e-g2 .e-linha { position: relative; display: flex; align-items: center; min-height: 48px; padding-right: 16px; border-top: 1px solid var(--e-linha); }
+.e-g2 .e-linha { position: relative; display: flex; align-items: center; min-height: 46px; padding-right: 16px; }
+/* Sem caixa por linha: o `.afty-linha` da Ficha desenha borda nos quatro lados e canto redondo, e aqui a lista é de fios, como a de Perícias. */
+:where(.e-g2) .e-linha { border: 0; border-top: 1px solid var(--e-linha); border-radius: 0; background: none;
+  }
 .e-g2 .e-linha > .e-estrela { flex: none; }
 .e-g2 .e-linha > .e-linha-corpo { flex: 1 1 0; min-width: min-content; }
-.e-g2 .e-grupo-lista .e-linha:first-child { border-top: 0; }
-.e-g2 .e-linha:hover { background: var(--e-hover); }
-.e-g2 .e-linha[data-consultada] { background: var(--e-sel); }
-.e-g2 .e-linha[data-consultada]::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--afty-destaque); }
+:where(.e-g2 .e-grupo-lista .e-linha:first-child):is(.e-linha) { border-top: 0;
+  }
+:where(.e-g2 .e-linha:hover):is(.e-linha) { background: var(--e-hover);
+  }
+:where(.e-g2 .e-linha[data-consultada]):is(.e-linha) { background: var(--e-sel);
+  }
+.e-g2 .e-linha[data-consultada]::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+:where(.e-g2) .e-linha:where([data-consultada])::before { background: var(--afty-destaque);
+  }
 .e-g2 .e-estrela { align-self: stretch; display: inline-flex; align-items: center; justify-content: center; width: 40px; padding: 0; border: 0; background: none; color: transparent; }
 .e-g2 .e-estrela svg { width: 15px; height: 15px; }
 .e-g2 .e-linha:hover .e-estrela, .e-g2 .e-estrela:focus-visible { color: var(--e-t3); }
@@ -199,22 +280,30 @@
 .e-g2 .e-linha-topo > :is(.e-ativo, .e-onde) { flex: none; }
 /* `contain: inline-size`: as marcas não pedem largura, só ocupam a que sobra. Assim
    elas encolhem ANTES dos rótulos dos controles quando a lista estreita. */
-.e-g2 .e-metas { flex: 1 1 auto; min-width: 0; contain: inline-size; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; color: var(--e-t3); }
+.e-g2 .e-metas { flex: 1 1 auto; min-width: 0; contain: inline-size; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; color: var(--e-t2); }
 .e-g2 .e-metas .e-marca + .e-marca { margin-left: 10px; }
 .e-g2 .e-ativo { font-size: 13px; font-weight: 600; color: var(--e-ativo); white-space: nowrap; }
-.e-g2 .e-marca { font-size: 12.5px; color: var(--e-t3); white-space: nowrap; }
+.e-g2 .e-marca { font-size: 12.5px; color: var(--e-t2); white-space: nowrap; }
 /* O ponto separa marcas de texto. Um valor ("−10 PE") vem sem ele, na mesma linha de base. */
 .e-g2 .e-marca + .e-marca:not([data-valor])::before { content: "· "; }
 .e-g2 .e-onde { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--e-t2); white-space: nowrap; }
-.e-g2 .e-onde:not([data-onde="nome"])::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: color-mix(in oklab, var(--afty-aviso) 70%, transparent); }
+.e-g2 .e-onde:not([data-onde="nome"])::before { content: ""; width: 8px; height: 8px; border-radius: calc(var(--afty-raio, 12px) * 2 / 12); background: color-mix(in oklab, var(--afty-aviso) 70%, transparent); }
 .e-g2 .e-desc { max-width: 84ch; font-size: 14px; line-height: 1.45; color: var(--e-t2); }
 .e-g2 .e-trecho { max-width: 90ch; font-size: 13.5px; line-height: 1.5; color: var(--e-t2); }
-.e-g2 mark { background: color-mix(in oklab, var(--afty-aviso) 32%, transparent); color: var(--e-t1); border-radius: 3px; padding: 0 1px; }
+.e-g2 mark { background: color-mix(in oklab, var(--afty-aviso) 32%, transparent); color: var(--e-t1); border-radius: calc(var(--afty-raio, 12px) * 3 / 12); padding: 0 1px; }
 .e-g2 .e-linha-ctrl { flex: 0 1 auto; min-width: 0; display: flex; align-items: center; gap: 14px; padding-left: 14px; white-space: nowrap; }
 .e-g2 .e-ctrl { min-width: 0; display: inline-flex; align-items: center; gap: 8px; }
 .e-g2 .e-ctrl > :not(.e-ctrl-rotulo) { flex: none; }
 .e-g2 .e-ctrl-rotulo { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 12.5px; font-weight: 600; color: var(--e-t2); white-space: nowrap; }
-.e-g2 .e-pe { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 8px; border: 1px dashed var(--e-aviso-borda); border-radius: 7px; background: var(--e-aviso-fundo); color: var(--e-aviso); font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+/* Telefone: a linha da Habilidade quebra. O nome fica na primeira linha e os controles (Usos, Arte, escolhas) descem para a de baixo, alinhados à direita, em vez de
+   o seletor passar da borda do cartão (o Arte media 302 px dentro de 294). Os seletores e passos também quebram dentro do próprio controle. */
+@media (max-width: 720px) {
+  .e-g2 .e-linha { flex-wrap: wrap; padding-right: 12px; }
+  .e-g2 .e-linha > .e-linha-ctrl { flex: 1 1 auto; flex-wrap: wrap; justify-content: flex-end; gap: 6px 14px; padding: 0 0 10px 40px; white-space: normal; }
+  .e-g2 .e-ctrl { flex-wrap: wrap; max-width: 100%; }
+  .e-g2 .e-ctrl .m-seg { flex-wrap: wrap; max-width: 100%; }
+}
+.e-g2 .e-pe { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 8px; border: 1px dashed var(--e-aviso-borda); border-radius: calc(var(--afty-raio, 12px) * 7 / 12); background: var(--e-aviso-fundo); color: var(--e-aviso); font-size: 12.5px; font-weight: 600; white-space: nowrap; }
 .e-g2 .e-pe svg { width: 13px; height: 13px; color: var(--e-aviso-icone); }
 .e-g2 .e-vazio { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 40px 20px; color: var(--e-t2); }
 .e-g2 .e-vazio p { margin: 0; }
@@ -222,31 +311,33 @@
 .e-g2 .e-respiro { height: 72px; }
 
 /* ---------------- consulta sob demanda ---------------- */
-.e-g2 .e-consulta { position: absolute; z-index: 10; top: 10px; right: 0; bottom: 14px; width: min(580px, 47%); display: flex; flex-direction: column; border: 1px solid var(--e-ctrl-borda); border-radius: 16px; background: var(--e-flutuante); box-shadow: -24px 0 60px -28px rgb(0 0 0 / .95), 0 24px 50px -30px rgb(0 0 0 / .9); }
+.e-g2 .e-consulta { position: absolute; z-index: 10; top: 10px; right: 0; bottom: 14px; width: min(580px, 47%); display: flex; flex-direction: column; }
+:where(.e-g2) .e-consulta { border: 1px solid var(--e-ctrl-borda); border-radius: calc(var(--afty-raio, 12px) * 16 / 12); background: var(--e-flutuante); box-shadow: -24px 0 60px -28px rgb(0 0 0 / .95), 0 24px 50px -30px rgb(0 0 0 / .9);
+  }
 .e-g2 .e-consulta-topo { flex: none; display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 10px; border-bottom: 1px solid var(--e-linha); }
 .e-g2 .e-consulta-abas { flex: 1; min-width: 0; display: flex; gap: 4px; overflow: hidden; }
-.e-g2 .e-consulta-aba { min-width: 0; max-width: 200px; display: inline-flex; align-items: center; height: 34px; border-radius: 9px; color: var(--e-t2); }
+.e-g2 .e-consulta-aba { min-width: 0; max-width: 200px; display: inline-flex; align-items: center; height: 34px; border-radius: calc(var(--afty-raio, 12px) * 9 / 12); color: var(--e-t2); }
 .e-g2 .e-consulta-aba > button:first-child { min-width: 0; height: 34px; padding: 0 4px 0 11px; border: 0; background: none; font-size: 13.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .e-g2 .e-consulta-aba:hover { color: var(--e-t1); background: var(--e-hover); }
 .e-g2 .e-consulta-aba[data-ativa] { background: var(--e-ctrl-hover); color: var(--e-t1); }
 .e-g2 .e-consulta-aba-x { flex: none; width: 28px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border: 0; background: none; color: var(--e-t3); }
 .e-g2 .e-consulta-aba-x:hover { color: var(--e-t1); }
 .e-g2 .e-consulta-aba-x svg { width: 13px; height: 13px; }
-.e-g2 .e-fechar { flex: none; display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 10px 0 12px; border: 1px solid var(--e-ctrl-borda); border-radius: 9px; background: none; color: var(--e-t1); font-size: 13.5px; font-weight: 600; }
+.e-g2 .e-fechar { flex: none; display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 10px 0 12px; border: 1px solid var(--e-ctrl-borda); border-radius: calc(var(--afty-raio, 12px) * 9 / 12); background: none; color: var(--e-t1); font-size: 13.5px; font-weight: 600; }
 .e-g2 .e-fechar:hover { background: var(--e-ctrl); }
-.e-g2 .e-fechar kbd { font: 600 11.5px var(--afty-fonte); padding: 1px 5px; border: 1px solid var(--e-ctrl-borda); border-radius: 5px; color: var(--e-t2); }
+.e-g2 .e-fechar kbd { font: 600 11.5px var(--afty-fonte); padding: 1px 5px; border: 1px solid var(--e-ctrl-borda); border-radius: calc(var(--afty-raio, 12px) * 5 / 12); color: var(--e-t2); }
 .e-g2 .e-consulta-corpo { flex: 1; min-height: 0; overflow: auto; padding: 18px 24px 32px; outline: none; scrollbar-width: thin; scrollbar-color: var(--e-ctrl-borda) transparent; }
 .e-g2 .e-consulta-cabeca { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .e-g2 .e-sobre { margin: 0 0 4px; font-size: 13px; color: var(--e-t2); }
 .e-g2 .e-consulta-titulo { margin: 0; font: 600 27px/1.1 var(--e-display); font-stretch: semi-condensed; outline: none; }
 .e-g2 .e-consulta-cabeca .e-ativo { margin: 6px 0 0; }
-.e-g2 .e-fixar { flex: none; display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 11px; border: 0; border-radius: 9px; background: none; color: var(--e-t2); font-size: 13.5px; font-weight: 600; }
+.e-g2 .e-fixar { flex: none; display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 11px; border: 0; border-radius: calc(var(--afty-raio, 12px) * 9 / 12); background: none; color: var(--e-t2); font-size: 13.5px; font-weight: 600; }
 .e-g2 .e-fixar:hover { background: var(--e-ctrl); color: var(--e-t1); }
 .e-g2 .e-fixar[aria-pressed="true"] { color: var(--e-t1); }
 .e-g2 .e-fixar svg { width: 15px; height: 15px; }
 .e-g2 .e-bloco { margin-top: 20px; }
 .e-g2 .e-bloco-titulo { margin: 0 0 8px; font: 600 15px var(--e-display); font-stretch: semi-condensed; color: var(--e-t2); letter-spacing: .01em; }
-.e-g2 .e-resumo { padding: 12px 14px; border-left: 3px solid var(--afty-destaque); border-radius: 0 10px 10px 0; background: color-mix(in oklab, var(--afty-destaque) 9%, transparent); }
+.e-g2 .e-resumo { padding: 12px 14px; border-left: 3px solid var(--afty-destaque); border-radius: 0 calc(var(--afty-raio, 12px) * 10 / 12) calc(var(--afty-raio, 12px) * 10 / 12) 0; background: color-mix(in oklab, var(--afty-destaque) 9%, transparent); }
 .e-g2 .e-resumo .e-bloco-titulo { margin-bottom: 4px; }
 .e-g2 .e-resumo p { margin: 0; font-size: 15px; line-height: 1.5; }
 .e-g2 .e-controle { display: grid; gap: 8px; padding: 10px 0; border-top: 1px solid var(--e-linha); }
@@ -257,7 +348,7 @@
 .e-g2 .e-agora-item { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
 .e-g2 .e-agora-item > span { font-size: 12.5px; font-weight: 600; color: var(--e-t3); }
 .e-g2 .e-fora { margin: 0 0 8px; display: flex; align-items: center; gap: 12px; font-size: 13.5px; color: var(--e-t2); }
-.e-g2 .e-nota-pe { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 8px 10px; margin-top: 10px; padding: 11px 12px; border: 1px solid var(--e-aviso-borda); border-radius: 10px; background: var(--e-aviso-fundo); font-size: 13.5px; line-height: 1.45; }
+.e-g2 .e-nota-pe { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 8px 10px; margin-top: 10px; padding: 11px 12px; border: 1px solid var(--e-aviso-borda); border-radius: calc(var(--afty-raio, 12px) * 10 / 12); background: var(--e-aviso-fundo); font-size: 13.5px; line-height: 1.45; }
 .e-g2 .e-nota-pe > svg { color: var(--e-aviso-icone); margin-top: 2px; }
 .e-g2 .e-nota-pe b { color: var(--e-aviso); }
 .e-g2 .e-nota-pe .afty-botao { grid-column: 2; justify-self: start; }
@@ -280,24 +371,29 @@
 .e-g2 .e-texto .afty-tr-tabela :is(th, td) { padding: 4px 8px; }
 
 /* ---------------- controles (peças compartilhadas) ---------------- */
-.e-g2 .afty-botao.e-botao, .e-g2 .m-botao { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0 12px; border: 1px solid var(--e-ctrl-borda); border-radius: 8px; background: none; color: var(--e-t1); font-size: 13.5px; font-weight: 600; white-space: nowrap; }
-.e-g2 .e-botao:hover:not(:disabled), .e-g2 .m-botao:hover:not(:disabled) { background: var(--e-ctrl); }
+.e-g2 .m-botao { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0 12px; border: 1px solid var(--e-ctrl-borda); border-radius: calc(var(--afty-raio, 12px) * 8 / 12); background: none; color: var(--e-t1); font-size: 13.5px; font-weight: 600; white-space: nowrap; }
+.e-g2 .afty-botao.e-botao { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0 12px; white-space: nowrap; }
+:where(.e-g2 .afty-botao.e-botao):is(.e-botao) { border: 1px solid var(--e-ctrl-borda); border-radius: calc(var(--afty-raio, 12px) * 8 / 12); background: none; color: var(--e-t1); font-size: 13.5px; font-weight: 600;
+  }
+.e-g2 .m-botao:hover:not(:disabled) { background: var(--e-ctrl); }
+:where(.e-g2 .e-botao:hover:not(:disabled)):is(.e-botao) { background: var(--e-ctrl);
+  }
 .e-g2 .m-botao:disabled { color: var(--e-t3); border-color: var(--e-linha); }
 .e-g2 .m-botao-dano { color: var(--afty-pv); }
 .e-g2 .m-botao-cura { color: var(--afty-cura); }
-.e-g2 .afty-campo { height: 34px; min-width: 0; padding: 0 10px; border: 1px solid transparent; border-radius: 8px; background: var(--e-ctrl); color: var(--e-t1); font-size: 14px; }
+.e-g2 .afty-campo { height: 34px; min-width: 0; padding: 0 10px; border: 1px solid transparent; border-radius: calc(var(--afty-raio, 12px) * 8 / 12); background: var(--e-ctrl); color: var(--e-t1); font-size: 14px; }
 .e-g2 .m-campo-num { width: 60px; text-align: center; font-variant-numeric: var(--e-num); }
 .e-g2 .m-rotulo { font-size: 12.5px; font-weight: 600; color: var(--e-t2); }
 .e-g2 .m-link { display: inline-flex; gap: 5px; border: 0; background: none; padding: 2px 0; color: var(--e-ativo); font-size: 13.5px; font-weight: 600; }
 .e-g2 .m-erro { color: var(--e-aviso); font-weight: 600; }
-.e-g2 .m-seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 10px; background: var(--e-ctrl); }
-.e-g2 .m-seg-op { height: 30px; padding: 0 12px; border: 0; border-radius: 7px; background: none; color: var(--e-t2); font-size: 13.5px; font-weight: 600; white-space: nowrap; }
+.e-g2 .m-seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: calc(var(--afty-raio, 12px) * 10 / 12); background: var(--e-ctrl); }
+.e-g2 .m-seg-op { height: 30px; padding: 0 12px; border: 0; border-radius: calc(var(--afty-raio, 12px) * 7 / 12); background: none; color: var(--e-t2); font-size: 13.5px; font-weight: 600; white-space: nowrap; }
 .e-g2 .m-seg-op:hover:not(:disabled) { color: var(--e-t1); background: var(--e-hover); }
 .e-g2 .m-seg-op:is([aria-checked="true"], [aria-pressed="true"]) { background: color-mix(in oklab, var(--afty-destaque) 30%, transparent); color: var(--e-t1); box-shadow: inset 0 0 0 1px var(--e-sel-borda); }
 .e-g2 .m-seg-op:first-child[role="radio"][aria-checked="true"] { background: var(--e-ctrl-hover); box-shadow: none; }
 .e-g2 .m-seg-op:disabled { color: var(--e-t3); }
 .e-g2 .m-chave { display: inline-flex; align-items: center; gap: 9px; height: 30px; border: 0; background: none; padding: 0; color: var(--e-t2); font-size: 13.5px; font-weight: 600; }
-.e-g2 .m-chave-trilho { position: relative; width: 36px; height: 20px; border-radius: 10px; background: var(--e-ctrl-borda); }
+.e-g2 .m-chave-trilho { position: relative; width: 36px; height: 20px; border-radius: calc(var(--afty-raio, 12px) * 10 / 12); background: var(--e-ctrl-borda); }
 .e-g2 .m-chave-trilho span { position: absolute; left: 3px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: var(--e-t2); transition: left .15s; }
 .e-g2 .m-chave[aria-checked="true"] { color: var(--e-t1); }
 .e-g2 .m-chave[aria-checked="true"] .m-chave-trilho { background: var(--afty-destaque); }
@@ -306,8 +402,6 @@
 .e-g2 .m-ctrl { display: inline-flex; align-items: center; gap: 10px; }
 .e-g2 .m-custo { font-size: 13px; font-weight: 600; color: var(--afty-pe); }
 .e-g2 .m-passos { display: inline-flex; align-items: center; gap: 4px; }
-.e-g2 .m-passo { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: 0; border-radius: 8px; background: var(--e-ctrl); color: var(--e-t1); }
-.e-g2 .m-passo:disabled { color: var(--e-t3); }
 .e-g2 .m-passos-valor { min-width: 44px; text-align: center; font: 700 16px var(--e-display); font-variant-numeric: var(--e-num); }
 .e-g2 .m-passos-valor small { font-weight: 400; color: var(--e-t2); }
 .e-g2 .m-select { position: relative; display: inline-flex; align-items: center; }
@@ -319,11 +413,12 @@
 .e-g2 .m-deltas li b { font-weight: 700; font-variant-numeric: var(--e-num); }
 .e-g2 .m-deltas li[data-sinal="mais"] b { color: var(--afty-cura); }
 .e-g2 .m-deltas li[data-sinal="menos"] b { color: var(--afty-pv); }
-.e-g2 .m-flutuante { z-index: 90; overflow: auto; padding: 12px; border: 1px solid var(--e-ctrl-borda); border-radius: 12px; background: var(--e-flutuante); color: var(--e-t1); box-shadow: 0 20px 44px -12px rgb(0 0 0 / .6); }
+.e-g2 .m-flutuante { z-index: 90; overflow: auto; padding: 12px; }
+:where(.e-g2) .m-flutuante { border: 1px solid var(--e-ctrl-borda); border-radius: var(--afty-raio, 12px); background: var(--e-flutuante); color: var(--e-t1); box-shadow: 0 20px 44px -12px rgb(0 0 0 / .6); }
 .e-g2 .m-flutuante[data-dica] { pointer-events: none; }
 .e-g2 .m-chip-painel { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
 .e-g2 .e-menu { display: flex; flex-direction: column; margin: -6px; }
-.e-g2 .e-menu-item { height: 38px; padding: 0 12px; border: 0; border-radius: 8px; background: none; text-align: left; font-size: 14px; color: var(--e-t1); }
+.e-g2 .e-menu-item { height: 38px; padding: 0 12px; border: 0; border-radius: calc(var(--afty-raio, 12px) * 8 / 12); background: none; text-align: left; font-size: 14px; color: var(--e-t1); }
 .e-g2 .e-menu-item:hover { background: var(--e-ctrl); }
 .e-g2 .e-menu-confirma { color: var(--e-aviso); font-weight: 700; }
 .e-g2 .m-painel-vital { display: flex; flex-direction: column; gap: 10px; min-width: 260px; }
@@ -342,7 +437,7 @@
 .e-g2 .pf-fontes-linha span { color: var(--e-t2); }
 .e-g2 .pf-fontes-linha b, .e-g2 .pf-fontes-total b { font-weight: 600; font-variant-numeric: var(--e-num); }
 .e-g2 .pf-fontes-total { font-weight: 700; }
-.e-g2 .m-aviso-flutuante { position: absolute; z-index: 85; left: 50%; bottom: 24px; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; padding: 9px 14px; border: 1px solid var(--e-ctrl-borda); border-radius: 12px; background: var(--e-flutuante); box-shadow: 0 14px 34px -10px rgb(0 0 0 / .6); font-size: 13.5px; }
+.e-g2 .m-aviso-flutuante { position: absolute; z-index: 85; left: 50%; bottom: 24px; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; padding: 9px 14px; border: 1px solid var(--e-ctrl-borda); border-radius: var(--afty-raio, 12px); background: var(--e-flutuante); box-shadow: 0 14px 34px -10px rgb(0 0 0 / .6); font-size: 13.5px; }
 
 /* ========== GESTOR (efeitos/gestor.css) ========== */
 /* ============================================================
@@ -361,11 +456,11 @@
    ============================================================ */
 
 /* ---------------- esqueleto ---------------- */
-.e-g2, .e-g2 :is(.afty-card, .e-consulta, .m-flutuante) { --f-t3: color-mix(in oklab, var(--afty-texto-suave) 86%, var(--afty-fundo)); }
-.e-g2 .f-aba-n { margin-left: 6px; font-size: 13px; font-weight: 400; color: var(--e-t3); font-variant-numeric: var(--e-num); }
+.e-g2, .e-g2 :is(.afty-card, .e-consulta, .m-flutuante) { --f-t3: color-mix(in oklab, var(--afty-texto-suave) 92%, var(--afty-fundo)); }
+.e-g2 .f-aba-n { margin-left: 6px; font-size: 13px; font-weight: 400; color: var(--f-t3); font-variant-numeric: var(--e-num); }
 
 /* O acesso no Agora */
-.e-g2 .f-acesso { display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 10px; border: 1px solid var(--e-ctrl-borda); border-radius: 8px; background: none; color: var(--e-t1); font-size: 13.5px; font-weight: 600; white-space: nowrap; }
+.e-g2 .f-acesso { display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 10px; border: 1px solid var(--e-ctrl-borda); border-radius: calc(var(--afty-raio, 12px) * 8 / 12); background: none; color: var(--e-t1); font-size: 13.5px; font-weight: 600; white-space: nowrap; }
 .e-g2 .f-acesso svg { width: 14px; height: 14px; color: var(--e-t2); }
 .e-g2 .f-acesso b { font: 700 15px var(--e-display); font-variant-numeric: var(--e-num); }
 .e-g2 .f-acesso[aria-pressed="true"] { border-color: var(--e-sel-borda); background: var(--e-sel); }
@@ -413,18 +508,18 @@
 .e-g2 .g-marca[data-tom="atencao"] svg { color: var(--e-aviso-icone); }
 
 /* ---------------- botões ---------------- */
-.e-g2 .g-botao { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 30px; padding: 0 11px; border: 1px solid var(--e-ctrl-borda); border-radius: 8px; background: none; color: var(--e-t1); font-size: 13px; font-weight: 600; white-space: nowrap; }
+.e-g2 .g-botao { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 30px; padding: 0 11px; border: 1px solid var(--e-ctrl-borda); border-radius: calc(var(--afty-raio, 12px) * 8 / 12); background: none; color: var(--e-t1); font-size: 13px; font-weight: 600; white-space: nowrap; }
 .e-g2 .g-botao:hover:not(:disabled) { background: var(--e-ctrl); }
 .e-g2 .g-botao svg { width: 14px; height: 14px; }
 .e-g2 .g-botao[data-primaria] { border-color: var(--e-sel-borda); background: var(--e-sel); }
 .e-g2 .g-botao[data-primaria]:hover:not(:disabled) { background: color-mix(in oklab, var(--afty-destaque) 28%, transparent); }
 .e-g2 .g-botao:disabled { color: var(--f-t3); border-color: var(--e-linha); background: none; }
-.e-g2 .g-icone { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; flex: none; border: 0; border-radius: 8px; background: none; color: var(--e-t2); }
+.e-g2 .g-icone { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; flex: none; border: 0; border-radius: calc(var(--afty-raio, 12px) * 8 / 12); background: none; color: var(--e-t2); }
 .e-g2 .g-icone:hover { background: var(--e-ctrl); color: var(--e-t1); }
-.e-g2 .g-x { margin-left: auto; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; flex: none; border: 0; border-radius: 7px; background: none; color: var(--f-t3); }
+.e-g2 .g-x { margin-left: auto; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; flex: none; border: 0; border-radius: calc(var(--afty-raio, 12px) * 7 / 12); background: none; color: var(--f-t3); }
 .e-g2 .g-x:hover { background: var(--e-ctrl); color: var(--e-t1); }
 .e-g2 .g-x svg { width: 14px; height: 14px; }
-.e-g2 .g-encerrar { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; flex: none; border: 0; border-radius: 8px; background: none; color: var(--e-t2); }
+.e-g2 .g-encerrar { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; flex: none; border: 0; border-radius: calc(var(--afty-raio, 12px) * 8 / 12); background: none; color: var(--e-t2); }
 .e-g2 .g-encerrar:hover { background: var(--e-ctrl); color: var(--e-t1); }
 .e-g2 .g-encerrar svg { width: 15px; height: 15px; }
 
@@ -470,7 +565,7 @@
 .e-g2 .g-pv b { font-variant-numeric: var(--e-num); }
 
 /* O resultado: uma linha abaixo do que foi operado, sem cobrir nada */
-.e-g2 .g-resultado { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 14px; margin: 5px 0 1px; padding: 5px 4px 5px 10px; border-left: 2px solid var(--e-sel-borda); background: color-mix(in oklab, var(--afty-texto) 3.5%, transparent); border-radius: 0 6px 6px 0; animation: g-entra .2s ease-out; }
+.e-g2 .g-resultado { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 14px; margin: 5px 0 1px; padding: 5px 4px 5px 10px; border-left: 2px solid var(--e-sel-borda); background: color-mix(in oklab, var(--afty-texto) 3.5%, transparent); border-radius: 0 calc(var(--afty-raio, 12px) * 6 / 12) calc(var(--afty-raio, 12px) * 6 / 12) 0; animation: g-entra .2s ease-out; }
 .e-g2 .g-resultado[data-tom="nada"] { border-left-color: var(--e-aviso-borda); background: var(--e-aviso-fundo); }
 .e-g2 .g-na-ficha { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
 .e-g2 .g-razao { font-size: 13px; color: var(--e-t1); }
@@ -504,15 +599,15 @@
 .e-g2 .g-ferramentas { display: grid; gap: 8px; margin-bottom: 4px; }
 .e-g2 .g-busca { position: relative; display: flex; align-items: center; }
 .e-g2 .g-busca > svg { position: absolute; left: 12px; color: var(--e-t2); pointer-events: none; }
-.e-g2 .g-busca .afty-campo { flex: 1; height: 38px; padding: 0 36px 0 38px; border-radius: 10px; font-size: 14.5px; }
+.e-g2 .g-busca .afty-campo { flex: 1; height: 38px; padding: 0 36px 0 38px; border-radius: calc(var(--afty-raio, 12px) * 10 / 12); font-size: 14.5px; }
 .e-g2 .g-busca .afty-campo:focus { outline: none; border-color: var(--e-sel-borda); background: var(--e-ctrl-hover); }
-.e-g2 .g-limpar { position: absolute; right: 5px; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 7px; background: none; color: var(--e-t2); }
+.e-g2 .g-limpar { position: absolute; right: 5px; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: calc(var(--afty-raio, 12px) * 7 / 12); background: none; color: var(--e-t2); }
 .e-g2 .g-filtros { display: flex; flex-wrap: wrap; gap: 6px; }
 /* Sem espaço, os menus quebram de linha em vez de cortar o texto. */
 .e-g2 .g-select { flex: 1 1 140px; min-width: 140px; }
 .e-g2 .g-select:first-child { flex-basis: 172px; min-width: 172px; }
 .e-g2 .g-select select { width: 100%; height: 30px; font-size: 13px; }
-.e-g2 .g-alterna { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid transparent; border-radius: 8px; background: var(--e-ctrl); color: var(--e-t2); }
+.e-g2 .g-alterna { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid transparent; border-radius: calc(var(--afty-raio, 12px) * 8 / 12); background: var(--e-ctrl); color: var(--e-t2); }
 .e-g2 .g-alterna[aria-pressed="true"] { border-color: var(--e-sel-borda); background: var(--e-sel); color: var(--e-t1); }
 .e-g2 .g-alterna svg { width: 14px; height: 14px; }
 .e-g2 .g-contagem { margin: 2px 0 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 6px; font-size: 13px; color: var(--e-t2); }
@@ -532,7 +627,7 @@
 .e-g2 .g-ativo-marca::before { content: "● "; font-size: 8px; vertical-align: 2px; color: var(--e-t2); }
 .e-g2 .g-frase { font-size: 14px; line-height: 1.4; color: var(--e-t2); }
 .e-g2 .g-trecho { font-size: 13px; line-height: 1.45; color: var(--e-t2); }
-.e-g2 mark { background: color-mix(in oklab, var(--afty-texto) 16%, transparent); color: var(--e-t1); border-radius: 3px; padding: 0 1px; }
+.e-g2 mark { background: color-mix(in oklab, var(--afty-texto) 16%, transparent); color: var(--e-t1); border-radius: calc(var(--afty-raio, 12px) * 3 / 12); padding: 0 1px; }
 .e-g2 .g-opcao-sub { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 14px; }
 .e-g2 .g-evidencia { font-size: 13px; font-weight: 600; color: var(--e-t1); }
 .e-g2 .g-evidencia[data-prova="regra"] { font-weight: 500; color: var(--e-t2); }
@@ -557,14 +652,14 @@
 .e-g2 .g-campo .afty-campo { width: 100%; font-weight: 500; }
 .e-g2 .g-campo-curto .afty-campo { width: 84px; }
 .e-g2 .g-campo-origem .g-suave { font-weight: 500; }
-.e-g2 .g-sugestoes { position: absolute; z-index: 5; top: 100%; left: 0; right: 0; margin: 4px 0 0; padding: 4px; list-style: none; border: 1px solid var(--e-ctrl-borda); border-radius: 10px; background: var(--e-flutuante); box-shadow: 0 16px 30px -14px rgb(0 0 0 / .8); }
-.e-g2 .g-sugestoes button { width: 100%; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 7px 9px; border: 0; border-radius: 7px; background: none; color: var(--e-t1); text-align: left; font-size: 13.5px; }
+.e-g2 .g-sugestoes { position: absolute; z-index: 5; top: 100%; left: 0; right: 0; margin: 4px 0 0; padding: 4px; list-style: none; border: 1px solid var(--e-ctrl-borda); border-radius: calc(var(--afty-raio, 12px) * 10 / 12); background: var(--e-flutuante); box-shadow: 0 16px 30px -14px rgb(0 0 0 / .8); }
+.e-g2 .g-sugestoes button { width: 100%; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 7px 9px; border: 0; border-radius: calc(var(--afty-raio, 12px) * 7 / 12); background: none; color: var(--e-t1); text-align: left; font-size: 13.5px; }
 .e-g2 .g-sugestoes button:hover, .e-g2 .g-sugestoes button:focus-visible { background: var(--e-ctrl); }
 .e-g2 .g-beneficio { display: flex; gap: 8px; align-items: center; }
 .e-g2 .g-beneficio .m-select { flex: 1; min-width: 0; }
 .e-g2 .g-beneficio .m-select select { width: 100%; }
 .e-g2 .g-campo .g-beneficio .m-campo-num { flex: none; width: 84px; }
-.e-g2 .g-previa { display: grid; gap: 6px; padding: 10px 12px; border-left: 2px solid var(--e-sel-borda); background: color-mix(in oklab, var(--afty-texto) 3.5%, transparent); border-radius: 0 8px 8px 0; }
+.e-g2 .g-previa { display: grid; gap: 6px; padding: 10px 12px; border-left: 2px solid var(--e-sel-borda); background: color-mix(in oklab, var(--afty-texto) 3.5%, transparent); border-radius: 0 calc(var(--afty-raio, 12px) * 8 / 12) calc(var(--afty-raio, 12px) * 8 / 12) 0; }
 .e-g2 .g-presumir { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--e-t1); }
 /* Registrar fica à vista mesmo com o formulário rolado. */
 .e-g2 .g-registro-rodape { position: sticky; bottom: -48px; z-index: 3; display: flex; justify-content: flex-end; padding: 10px 0 12px; margin-bottom: -12px; background: var(--afty-fundo); box-shadow: 0 -10px 12px -10px rgb(0 0 0 / .8); }
@@ -582,8 +677,8 @@
    vira transparência: a lista aparecia por baixo do filtro ao rolar. Aqui a
    faixa inteira (margem de cima incluída) é da cor do fundo, e o segmentado
    dentro dela tem cor própria, também opaca. */
-.e-g2 .g-filtro-compacta { position: sticky; top: -8px; z-index: 2; display: flex; gap: 2px; padding: 3px; margin: 0 0 6px; border-radius: 9px; background: color-mix(in oklab, var(--afty-fundo) 92%, var(--afty-texto)); box-shadow: 0 -8px 0 var(--afty-fundo), 0 6px 0 var(--afty-fundo); }
-.e-g2 .g-segmento { flex: 1; display: inline-flex; align-items: baseline; justify-content: center; gap: 5px; height: 28px; padding: 0 6px; border: 0; border-radius: 7px; background: none; color: var(--e-t2); font-size: 12.5px; font-weight: 600; line-height: 28px; white-space: nowrap; }
+.e-g2 .g-filtro-compacta { position: sticky; top: -8px; z-index: 2; display: flex; gap: 2px; padding: 3px; margin: 0 0 6px; border-radius: calc(var(--afty-raio, 12px) * 9 / 12); background: color-mix(in oklab, var(--afty-fundo) 92%, var(--afty-texto)); box-shadow: 0 -8px 0 var(--afty-fundo), 0 6px 0 var(--afty-fundo); }
+.e-g2 .g-segmento { flex: 1; display: inline-flex; align-items: baseline; justify-content: center; gap: 5px; height: 28px; padding: 0 6px; border: 0; border-radius: calc(var(--afty-raio, 12px) * 7 / 12); background: none; color: var(--e-t2); font-size: 12.5px; font-weight: 600; line-height: 28px; white-space: nowrap; }
 .e-g2 .g-segmento small { font-weight: 400; color: var(--f-t3); font-variant-numeric: var(--e-num); }
 .e-g2 .g-segmento[aria-selected="true"] { background: color-mix(in oklab, var(--afty-card) 60%, var(--afty-texto) 14%); color: var(--e-t1); }
 .e-g2 .g-segmento:disabled { opacity: .45; }
@@ -624,7 +719,7 @@
 .e-g2 .x-neutro { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; line-height: 1.4; color: var(--e-t2); }
 .e-g2 .x-neutro svg { flex: none; width: 14px; height: 14px; color: var(--e-t3); }
 .e-g2 .x-medidor { display: inline-flex; gap: 3px; vertical-align: middle; }
-.e-g2 .x-medidor i { width: 12px; height: 6px; border-radius: 2px; background: var(--e-ctrl-borda); }
+.e-g2 .x-medidor i { width: 12px; height: 6px; border-radius: calc(var(--afty-raio, 12px) * 2 / 12); background: var(--e-ctrl-borda); }
 .e-g2 .x-medidor i[data-on] { background: var(--e-t1); }
 
 /* O conteúdo de um efeito aberto: três colunas e o rodapé */
@@ -639,7 +734,7 @@
 .e-g2 .x-linha { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; font-size: 14px; color: var(--e-t2); }
 .e-g2 .x-texto { font-size: 14.5px; line-height: 1.5; color: var(--e-t1); }
 .e-g2 .x-mesa { font-size: 13px; color: var(--e-t3); }
-.e-g2 .x-atencao-bloco { display: grid; gap: 5px; padding: 10px 14px; border-left: 3px solid var(--e-aviso-borda); border-radius: 0 10px 10px 0; background: var(--e-aviso-fundo); }
+.e-g2 .x-atencao-bloco { display: grid; gap: 5px; padding: 10px 14px; border-left: 3px solid var(--e-aviso-borda); border-radius: 0 calc(var(--afty-raio, 12px) * 10 / 12) calc(var(--afty-raio, 12px) * 10 / 12) 0; background: var(--e-aviso-fundo); }
 .e-g2 .x-ctrl { display: grid; gap: 6px; justify-items: start; }
 .e-g2 .x-ctrl-nome { font-size: 13.5px; font-weight: 600; color: var(--e-t2); }
 .e-g2 .x-ctrl-linha { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
@@ -666,13 +761,13 @@
 /* `dense`: a faixa do detalhe vem logo depois do cartão aberto e ocupa a linha
    inteira; os cartões seguintes voltam para a linha do cartão aberto. */
 .e-g2 .g-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); grid-auto-flow: row dense; gap: 10px; align-items: stretch; }
-.e-g2 .d-exp { grid-column: 1 / -1; position: relative; display: grid; gap: 16px; margin: 2px 0 6px; padding: 16px 20px 14px; border: 1px solid var(--afty-destaque); border-radius: 14px; background: var(--e-painel); }
+.e-g2 .d-exp { grid-column: 1 / -1; position: relative; display: grid; gap: 16px; margin: 2px 0 6px; padding: 16px 20px 14px; border: 1px solid var(--afty-destaque); border-radius: calc(var(--afty-raio, 12px) * 14 / 12); background: var(--e-painel); }
 .e-g2 .d-exp::before { content: ""; position: absolute; top: -8px; left: var(--seta, 40px); width: 14px; height: 14px; transform: rotate(45deg); border-left: 1px solid var(--afty-destaque); border-top: 1px solid var(--afty-destaque); background: var(--e-painel); }
 
 /* ---------- o cartão etiqueta ---------- */
 /* Altura fixa em toda a grade. A etiqueta tem largura fixa (o nome começa sempre
    no mesmo lugar) e só existe quando há estado ou prazo. */
-.e-g2 .g2-cartao { display: grid; grid-template-columns: 166px minmax(0, 1fr); min-width: 0; height: 76px; padding: 0; border: 1px solid transparent; border-radius: 12px; background: color-mix(in oklab, var(--afty-card) 72%, var(--afty-fundo)); color: var(--e-t1); text-align: left; overflow: hidden; cursor: pointer; }
+.e-g2 .g2-cartao { display: grid; grid-template-columns: 166px minmax(0, 1fr); min-width: 0; height: 76px; padding: 0; border: 1px solid transparent; border-radius: var(--afty-raio, 12px); background: color-mix(in oklab, var(--afty-card) 72%, var(--afty-fundo)); color: var(--e-t1); text-align: left; overflow: hidden; cursor: pointer; }
 .e-g2 .g2-cartao:hover { border-color: var(--e-ctrl-borda); }
 .e-g2 .g2-cartao[aria-current="true"] { border-color: var(--afty-destaque); }
 .e-g2 .g2-cartao:focus-visible { outline: 2px solid var(--afty-destaque); outline-offset: 2px; }
@@ -698,7 +793,7 @@
 .e-g2 .g2-nome { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; font-size: 15.5px; font-weight: 600; line-height: 1.3; }
 
 /* ---------- o resultado de uma operação ---------- */
-.e-g2 .g2-resultado { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; padding: 10px 44px 10px 14px; border-radius: 10px; background: color-mix(in oklab, var(--afty-destaque) 9%, transparent); font-size: 14px; }
+.e-g2 .g2-resultado { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; padding: 10px 44px 10px 14px; border-radius: calc(var(--afty-raio, 12px) * 10 / 12); background: color-mix(in oklab, var(--afty-destaque) 9%, transparent); font-size: 14px; }
 .e-g2 .x-rola > .g2-resultado { margin: 4px 0 10px; }
 .e-g2 .g2-resultado[data-tom="nada"] { background: var(--e-aviso-fundo); }
 .e-g2 .g2-resultado[data-tom="nada"] .g2-resultado-verbo svg { color: var(--e-aviso-icone); }
@@ -731,7 +826,7 @@
 .e-g2 .k-busca .afty-campo { height: 46px; font-size: 16px; }
 .e-g2 .k-corpo { min-height: 0; display: grid; grid-template-columns: 220px minmax(0, 540px) minmax(300px, 1fr); gap: 20px; }
 .e-g2 .k-trilho { min-height: 0; overflow: auto; display: grid; align-content: start; gap: 2px; }
-.e-g2 .k-cat { display: flex; align-items: center; gap: 8px; min-height: 38px; padding: 6px 12px; border: 0; border-radius: 9px; background: none; color: var(--e-t2); font-size: 14.5px; font-weight: 600; text-align: left; }
+.e-g2 .k-cat { display: flex; align-items: center; gap: 8px; min-height: 38px; padding: 6px 12px; border: 0; border-radius: calc(var(--afty-raio, 12px) * 9 / 12); background: none; color: var(--e-t2); font-size: 14.5px; font-weight: 600; text-align: left; }
 .e-g2 .k-cat svg { width: 14px; height: 14px; color: var(--e-t2); }
 .e-g2 .k-cat small { margin-left: auto; font-size: 13px; font-weight: 500; color: var(--e-t3); font-variant-numeric: var(--e-num); }
 .e-g2 .k-cat:hover { background: var(--e-hover); color: var(--e-t1); }
@@ -742,10 +837,10 @@
 .e-g2 .k-grupo { margin: 14px 0 6px; display: flex; align-items: baseline; gap: 8px; font: 600 13.5px var(--e-display); font-stretch: semi-condensed; color: var(--e-t3); }
 .e-g2 .k-grupo small { font: 400 13px var(--afty-fonte); }
 /* Toda opção tem a mesma altura: uma linha, nome e no máximo uma ação à direita. */
-.e-g2 .k-fila { display: flex; align-items: center; height: 44px; margin: 0 0 6px; border: 1px solid transparent; border-radius: 10px; background: color-mix(in oklab, var(--afty-card) 72%, var(--afty-fundo)); }
+.e-g2 .k-fila { display: flex; align-items: center; height: 44px; margin: 0 0 6px; border: 1px solid transparent; border-radius: calc(var(--afty-raio, 12px) * 10 / 12); background: color-mix(in oklab, var(--afty-card) 72%, var(--afty-fundo)); }
 .e-g2 .k-fila:hover { border-color: var(--e-ctrl-borda); }
 .e-g2 .k-fila[aria-current="true"] { border-color: var(--afty-destaque); background: var(--e-sel); }
-.e-g2 .k-item { flex: 1; min-width: 0; align-self: stretch; display: flex; align-items: center; padding: 0 12px; border: 0; border-radius: 10px; background: none; color: var(--e-t1); text-align: left; }
+.e-g2 .k-item { flex: 1; min-width: 0; align-self: stretch; display: flex; align-items: center; padding: 0 12px; border: 0; border-radius: calc(var(--afty-raio, 12px) * 10 / 12); background: none; color: var(--e-t1); text-align: left; }
 .e-g2 .k-nome { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 15px; font-weight: 600; line-height: 1.3; }
 .e-g2 .k-texto { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* Toda linha tem a estrela no mesmo lugar: cheia no favorito, vazia nos outros. */
@@ -755,13 +850,13 @@
 .e-g2 .k-fav[data-favorito] svg { fill: currentColor; }
 /* Ativar e Ativo: texto discreto à direita, numa área de mesma largura, com uma
    coluna para o rótulo e outra para a seta (vazia em Ativar). */
-.e-g2 .k-acao { flex: none; align-self: stretch; width: 74px; display: grid; grid-template-columns: minmax(0, 1fr) 15px; align-items: center; column-gap: 2px; padding: 0 8px 0 10px; border: 0; border-radius: 0 10px 10px 0; background: none; color: var(--e-t2); font-size: 13.5px; font-weight: 500; line-height: 1; text-align: left; white-space: nowrap; }
+.e-g2 .k-acao { flex: none; align-self: stretch; width: 74px; display: grid; grid-template-columns: minmax(0, 1fr) 15px; align-items: center; column-gap: 2px; padding: 0 8px 0 10px; border: 0; border-radius: 0 calc(var(--afty-raio, 12px) * 10 / 12) calc(var(--afty-raio, 12px) * 10 / 12) 0; background: none; color: var(--e-t2); font-size: 13.5px; font-weight: 500; line-height: 1; text-align: left; white-space: nowrap; }
 .e-g2 .k-acao-seta { display: flex; width: 15px; height: 15px; }
 .e-g2 .k-acao:hover { color: var(--e-t1); }
 .e-g2 .k-acao:hover .k-acao-texto { text-decoration: underline; text-underline-offset: 3px; }
 .e-g2 .k-acao:focus-visible { outline: 2px solid var(--afty-destaque); outline-offset: -3px; color: var(--e-t1); }
 .e-g2 .k-acao svg { width: 15px; height: 15px; }
-.e-g2 .k-detalhe { align-self: start; max-height: 100%; min-height: 0; overflow: auto; display: grid; gap: 14px; padding: 16px 18px 16px; border: 1px solid var(--e-sel-borda); border-radius: 12px; background: color-mix(in oklab, var(--afty-card) 72%, var(--afty-fundo)); }
+.e-g2 .k-detalhe { align-self: start; max-height: 100%; min-height: 0; overflow: auto; display: grid; gap: 14px; padding: 16px 18px 16px; border: 1px solid var(--e-sel-borda); border-radius: var(--afty-raio, 12px); background: color-mix(in oklab, var(--afty-card) 72%, var(--afty-fundo)); }
 .e-g2 .k-detalhe[data-ativando] { border-color: var(--afty-destaque); }
 .e-g2 .k-detalhe .x-cartao-nome { font-size: 21px; }
 .e-g2 .k-confirmar { display: grid; gap: 10px; justify-items: start; padding: 12px 0; border-top: 1px solid var(--e-linha); border-bottom: 1px solid var(--e-linha); }
@@ -797,12 +892,12 @@
    (nome em cima, estado curto e prazo embaixo) ou um efeito por vez. */
 .e-g2 .c2-filtro { flex: none; display: flex; gap: 2px; margin: 10px 4px 6px 14px; }
 .e-g2 .c2-filtro .m-seg-op { flex: 1 1 auto; min-width: 0; padding: 0 6px; font-size: 12.5px; }
-.e-g2 .c2-filtro .m-seg-op small { margin-left: 4px; font-size: 12.5px; font-weight: 500; color: var(--e-t3); font-variant-numeric: var(--e-num); }
+.e-g2 .c2-filtro .m-seg-op small { margin-left: 4px; font-size: 12.5px; font-weight: 500; color: var(--e-t2); font-variant-numeric: var(--e-num); }
 .e-g2 .c2-corpo { flex: 1; min-height: 0; overflow: auto; padding: 2px 4px 16px 14px; scrollbar-width: thin; scrollbar-color: var(--e-ctrl-borda) transparent; }
 .e-g2 .c2-corpo > .g2-resultado { margin: 4px 0 8px; }
 .e-g2 .c2-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .e-g2 .c2-divisao { margin: 10px 0 0; font: 600 12.5px var(--e-display); font-stretch: semi-condensed; color: var(--e-t3); letter-spacing: .02em; }
-.e-g2 .c2-item { width: 100%; height: 58px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-content: center; column-gap: 8px; row-gap: 2px; padding: 0 10px 0 12px; border: 1px solid transparent; border-radius: 10px; background: color-mix(in oklab, var(--afty-card) 72%, var(--afty-fundo)); color: var(--e-t1); text-align: left; cursor: pointer; }
+.e-g2 .c2-item { width: 100%; height: 58px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-content: center; column-gap: 8px; row-gap: 2px; padding: 0 10px 0 12px; border: 1px solid transparent; border-radius: calc(var(--afty-raio, 12px) * 10 / 12); background: color-mix(in oklab, var(--afty-card) 72%, var(--afty-fundo)); color: var(--e-t1); text-align: left; cursor: pointer; }
 .e-g2 .c2-item:hover { border-color: var(--e-ctrl-borda); }
 .e-g2 .c2-item:focus-visible { outline: 2px solid var(--afty-destaque); outline-offset: 1px; }
 .e-g2 .c2-nome { grid-column: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 600; line-height: 1.3; }
@@ -829,13 +924,13 @@
 /* Acesso discreto ao pé dos Ativos (completa) e da lista (painel), recolhido ao entrar. */
 .e-g2 .e2-encerrados { margin: 22px 0 0; border-top: 1px solid var(--e-linha); padding-top: 10px; }
 .e-g2 .c2-corpo .e2-encerrados { margin-top: 16px; }
-.e-g2 .e2-toggle { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 8px 0 4px; border: 0; border-radius: 8px; background: none; color: var(--e-t2); font: 600 14px var(--e-display); font-stretch: semi-condensed; }
+.e-g2 .e2-toggle { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 8px 0 4px; border: 0; border-radius: calc(var(--afty-raio, 12px) * 8 / 12); background: none; color: var(--e-t2); font: 600 14px var(--e-display); font-stretch: semi-condensed; }
 .e-g2 .e2-toggle:hover { background: var(--e-hover); color: var(--e-t1); }
 .e-g2 .e2-toggle small { margin-left: 4px; font: 500 13px var(--afty-fonte); color: var(--e-t3); font-variant-numeric: var(--e-num); }
 .e-g2 .e2-seta { width: 15px; height: 15px; transition: transform .15s; }
 .e-g2 .e2-toggle[aria-expanded="true"] .e2-seta { transform: rotate(90deg); }
 .e-g2 .e2-lista { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 6px; max-width: 760px; }
-.e-g2 .e2-item { border: 1px solid transparent; border-radius: 10px; background: color-mix(in oklab, var(--afty-card) 60%, var(--afty-fundo)); }
+.e-g2 .e2-item { border: 1px solid transparent; border-radius: calc(var(--afty-raio, 12px) * 10 / 12); background: color-mix(in oklab, var(--afty-card) 60%, var(--afty-fundo)); }
 .e-g2 .e2-item:has([data-reativando], [data-ativando]) { border-color: var(--afty-destaque); }
 .e-g2 .e2-linha { display: flex; align-items: center; min-height: 44px; }
 .e-g2 .e2-nome { flex: 1; min-width: 0; padding: 0 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14.5px; font-weight: 600; color: var(--e-t2); }
@@ -845,25 +940,25 @@
 .e-g2 .e2-volta { color: var(--e-t1); font-weight: 600; }
 
 /* ---------- G2 · Linha do Tempo funcional (portada do modelo estático, com faixas) ---------- */
-.e-g2 .lt-painel { margin: 0 0 4px; padding: 4px 12px 6px; border: 1px solid var(--e-painel-borda); border-radius: 14px; background: var(--e-painel); }
+.e-g2 .lt-painel { margin: 0 0 4px; padding: 4px 12px 6px; border: 1px solid var(--e-painel-borda); border-radius: calc(var(--afty-raio, 12px) * 14 / 12); background: var(--e-painel); }
 .e-g2 .lt-linha { display: grid; grid-template-columns: 190px repeat(4, minmax(0, 1fr)); align-items: start; min-height: 31px; border-top: 1px solid var(--e-linha); }
 .e-g2 .lt-linha.lt-cab { border-top: 0; min-height: 24px; align-items: end; }
 .e-g2 .lt-cab-nome, .e-g2 .lt-cab-r { padding: 0 8px 3px; font: 600 13.5px var(--e-display); font-stretch: semi-condensed; color: var(--e-t3); white-space: nowrap; }
 .e-g2 .lt-cab-r[data-agora] { color: var(--e-t1); }
 .e-g2 .lt-cab-r small { margin-left: 6px; font: 600 12.5px var(--afty-fonte); color: var(--e-t2); }
 /* Faixas: toda célula começa no mesmo ponto, com uma faixa só. */
-.e-g2 .lt-nome { align-self: start; min-height: 32px; display: flex; flex-direction: column; justify-content: center; min-width: 0; padding: 3px 8px; border: 0; border-radius: 8px; background: none; color: var(--e-t1); text-align: left; font-size: 14px; font-weight: 600; line-height: 1.25; cursor: pointer; }
+.e-g2 .lt-nome { align-self: start; min-height: 32px; display: flex; flex-direction: column; justify-content: center; min-width: 0; padding: 3px 8px; border: 0; border-radius: calc(var(--afty-raio, 12px) * 8 / 12); background: none; color: var(--e-t1); text-align: left; font-size: 14px; font-weight: 600; line-height: 1.25; cursor: pointer; }
 .e-g2 .lt-nome:disabled { cursor: default; }
 .e-g2 .lt-nome-texto { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .e-g2 .lt-nome small { font-size: 12.5px; font-weight: 500; color: var(--e-t3); }
 .e-g2 .lt-nome:hover:not(:disabled) { background: var(--e-hover); }
-.e-g2 .lt-linha[data-marcada] { border-radius: 8px; background: var(--e-sel); box-shadow: inset 3px 0 0 var(--afty-destaque); }
+.e-g2 .lt-linha[data-marcada] { border-radius: calc(var(--afty-raio, 12px) * 8 / 12); background: var(--e-sel); box-shadow: inset 3px 0 0 var(--afty-destaque); }
 .e-g2 .lt-celula { align-self: stretch; display: flex; flex-direction: column; justify-content: flex-start; gap: 2px; min-width: 0; padding: 5px 0; border-left: 1px dashed var(--e-linha); }
 .e-g2 .lt-celula[data-agora] { background: color-mix(in oklab, var(--afty-texto) 3%, transparent); }
 .e-g2 .lt-seg { display: flex; align-items: center; height: 22px; padding: 0 10px; background: color-mix(in oklab, var(--afty-texto) 16%, transparent); font-size: 13px; font-weight: 600; color: var(--e-t1); white-space: nowrap; overflow: hidden; cursor: pointer; }
-.e-g2 .lt-seg[data-ini] { margin-left: 5px; border-radius: 6px 0 0 6px; }
-.e-g2 .lt-seg[data-fim] { margin-right: 5px; border-radius: 0 6px 6px 0; }
-.e-g2 .lt-seg[data-ini][data-fim] { border-radius: 6px; }
+.e-g2 .lt-seg[data-ini] { margin-left: 5px; border-radius: calc(var(--afty-raio, 12px) * 6 / 12) 0 0 calc(var(--afty-raio, 12px) * 6 / 12); }
+.e-g2 .lt-seg[data-fim] { margin-right: 5px; border-radius: 0 calc(var(--afty-raio, 12px) * 6 / 12) calc(var(--afty-raio, 12px) * 6 / 12) 0; }
+.e-g2 .lt-seg[data-ini][data-fim] { border-radius: calc(var(--afty-raio, 12px) * 6 / 12); }
 .e-g2 .lt-seg[data-mantido] { background: repeating-linear-gradient(135deg, color-mix(in oklab, var(--afty-texto) 9%, transparent) 0 7px, transparent 7px 12px); color: var(--e-t2); font-weight: 500; }
 /* A faixa: barra e marcadores na mesma altura. Um aviso nunca aumenta a linha.
    O marcador do começo da rodada fica à esquerda, o do fim à direita, e a barra
@@ -878,13 +973,13 @@
 .e-g2 .lt-pinos[data-lado="inicio"] { left: 7px; }
 .e-g2 .lt-pinos[data-lado="fim"] { right: 7px; }
 /* Aviso operacional na cor do tema (roxo). A manutenção opcional fica neutra. */
-.e-g2 .lt-pino { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; padding: 0; border: 1px solid var(--e-aviso-borda); border-radius: 5px; background: color-mix(in oklab, var(--afty-card) 82%, var(--afty-destaque)); color: var(--e-aviso-icone); cursor: help; }
+.e-g2 .lt-pino { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; padding: 0; border: 1px solid var(--e-aviso-borda); border-radius: calc(var(--afty-raio, 12px) * 5 / 12); background: color-mix(in oklab, var(--afty-card) 82%, var(--afty-destaque)); color: var(--e-aviso-icone); cursor: help; }
 .e-g2 .lt-pino svg { width: 12px; height: 12px; }
 .e-g2 .lt-pino:hover, .e-g2 .lt-pino[aria-expanded="true"] { border-color: var(--afty-destaque); background: color-mix(in oklab, var(--afty-card) 62%, var(--afty-destaque)); }
 .e-g2 .lt-pino[data-tom="opcional"] { border-color: color-mix(in oklab, var(--afty-texto) 22%, transparent); background: var(--afty-card); color: var(--e-t2); }
 .e-g2 .lt-pino[data-tom="opcional"]:hover, .e-g2 .lt-pino[data-tom="opcional"][aria-expanded="true"] { border-color: color-mix(in oklab, var(--afty-texto) 45%, transparent); background: var(--e-hover); }
 /* A explicação: posição fixa, fora do fluxo da grade (não muda altura nenhuma). */
-.e-g2 .lt-dica { position: fixed; z-index: 60; width: max-content; max-width: min(300px, calc(100vw - 16px)); padding: 9px 11px 10px; border: 1px solid var(--e-painel-borda); border-radius: 10px; background: var(--afty-card); box-shadow: 0 14px 30px -8px rgb(0 0 0 / .7); font-size: 13px; line-height: 1.35; color: var(--e-t1); text-align: left; white-space: normal; }
+.e-g2 .lt-dica { position: fixed; z-index: 60; width: max-content; max-width: min(300px, calc(100vw - 16px)); padding: 9px 11px 10px; border: 1px solid var(--e-painel-borda); border-radius: calc(var(--afty-raio, 12px) * 10 / 12); background: var(--afty-card); box-shadow: 0 14px 30px -8px rgb(0 0 0 / .7); font-size: 13px; line-height: 1.35; color: var(--e-t1); text-align: left; white-space: normal; }
 .e-g2 .lt-dica[data-tom="atencao"] { border-color: var(--e-aviso-borda); }
 .e-g2 .lt-dica-titulo { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; font-weight: 600; }
 .e-g2 .lt-dica-titulo svg { width: 14px; height: 14px; color: var(--e-t3); }
@@ -934,9 +1029,9 @@
 .e-g2 .h-hist-topo h2 small { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 400 13px var(--afty-fonte); color: var(--e-t3); }
 .e-g2 .h-hist-filtros { display: flex; flex-wrap: wrap; max-width: 100%; justify-self: start; }
 .e-g2 .h-hist-filtros .m-seg-op { height: 28px; padding: 0 9px; font-size: 13px; }
-.e-g2 .h-hist-filtros .m-seg-op small { margin-left: 5px; font-weight: 500; color: var(--e-t3); font-variant-numeric: var(--e-num); }
+.e-g2 .h-hist-filtros .m-seg-op small { margin-left: 5px; font-size: 11.5px; font-weight: 500; color: var(--e-t2); font-variant-numeric: var(--e-num); }
 .e-g2 .h-hist-lista { list-style: none; margin: 0; padding: 0 4px 0 0; max-height: min(56vh, 460px); overflow: auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; scrollbar-width: thin; scrollbar-color: var(--e-ctrl-borda) transparent; }
-.e-g2 .h-hist-item { display: grid; grid-template-columns: 78px minmax(0, 1fr) auto; align-items: start; gap: 4px 10px; padding: 8px 8px 8px 10px; border-radius: 9px; background: color-mix(in oklab, var(--afty-card) 72%, var(--afty-fundo)); }
+.e-g2 .h-hist-item { display: grid; grid-template-columns: 78px minmax(0, 1fr) auto; align-items: start; gap: 4px 10px; padding: 8px 8px 8px 10px; border-radius: calc(var(--afty-raio, 12px) * 9 / 12); background: color-mix(in oklab, var(--afty-card) 72%, var(--afty-fundo)); }
 .e-g2 .h-hist-item[data-estornado] { opacity: .72; }
 .e-g2 .h-hist-meta { display: grid; gap: 1px; font-size: 12.5px; color: var(--e-t3); font-variant-numeric: var(--e-num); }
 .e-g2 .h-hist-meta b { font-weight: 700; color: var(--e-t2); }
@@ -956,7 +1051,7 @@
 .e-g2 .h-estat { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 .e-g2 .h-estat-topo { font: 600 16px var(--e-display); font-stretch: semi-condensed; }
 .e-g2 .h-estat-lista { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; max-height: min(58vh, 460px); overflow: auto; }
-.e-g2 .h-estat-linha { display: flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 2px 0 8px; border-radius: 9px; }
+.e-g2 .h-estat-linha { display: flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 2px 0 8px; border-radius: calc(var(--afty-raio, 12px) * 9 / 12); }
 .e-g2 .h-estat-linha:hover, .e-g2 .h-estat-linha:focus-within { background: var(--e-hover); }
 .e-g2 .h-estat-linha[data-visivel="nao"] .h-estat-nome span { color: var(--e-t3); }
 .e-g2 .h-estat-nome { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; font-size: 14.5px; font-weight: 600; cursor: pointer; }
@@ -1005,7 +1100,14 @@
 }
 .e-coluna > main[data-estagio] { padding-top: 0; padding-bottom: 0; }
 .e-g2.e-portal { display: contents; }
-.e-g2 .e-area { margin-right: var(--e-trilho, 0px); }
+/* Um contrato só para o botão dos Livros, em todas as abas: a coluna perde a trilha só enquanto a margem da página não a dá de graça (a partir de ~1400 px o botão
+   cai na folga ao lado da página). Antes só Habilidades e Efeitos reservavam, e em 390 px isso tirava 72 dos 366 px e cortava controles; nas outras abas o botão
+   cobria o Dano a 1280 px. No telefone a reserva é só embaixo (`.afty-respiro` e o respiro do palco), nunca ao lado. */
+.e-layout > .e-coluna { margin-right: max(0px, calc(var(--e-trilho, 0px) - var(--e-borda-pagina, 0px))); }
+@media (max-width: 720px) {
+  .e-layout { --e-trilho: 0px; }
+  .e-layout > .e-coluna .e-area { padding-bottom: 72px; }
+}
 .e-g2 .e-consulta {
   position: fixed; z-index: 30; top: calc(var(--afty-ficha-topo, 0px) + 10px); bottom: 14px; right: calc(var(--e-borda-pagina, 0px) + var(--e-painel-w, 0px) + var(--e-trilho, 0px) + 16px);
   width: min(580px, calc((100vw - var(--e-painel-w, 0px)) * .47));
@@ -1014,59 +1116,104 @@
 @media (max-width: 720px) {
   .e-ficha-g2 .e-layout .e-portal .e-consulta { left: 12px; right: 12px; width: auto; }
 }
-.e-g2 .e-cabeca { margin: 10px 0 0; }
+
 .e-g2 .m-pv-fonte { display: flex; justify-content: space-between; gap: 18px; padding: 3px 0; color: var(--e-t2); }
 .e-g2 .m-pv-fonte b { font-weight: 600; color: var(--e-t1); font-variant-numeric: var(--e-num); }
 .e-g2 .afty-fontes-titulo { font-weight: 700; margin-bottom: 6px; }
 .e-g2 .afty-fontes-vazio { color: var(--e-t3); }
 .e-g2 .afty-fontes-lista { min-width: 220px; font-size: 13.5px; }
-.e-g2 .e-linhagem-aviso { width: 13px; height: 13px; margin-right: 4px; vertical-align: -2px; color: var(--e-aviso-icone); }
+.e-g2 .e-linhagem-aviso { display: inline-block; width: 13px; height: 13px; margin-right: 4px; vertical-align: -2px; color: var(--e-aviso-icone); }
 .e-g2 .e-linha .e-aviso { display: inline-flex; align-items: center; color: var(--e-aviso-icone); }
 .e-g2 .e-linha .e-aviso svg { width: 14px; height: 14px; }
+.e-g2 .e-linha .e-aviso { gap: 4px; flex: none; }
+.e-g2 .e-aviso-rotulo { font-size: 12px; font-weight: 600; }
+.e-g2 .e-so-leitor { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .e-troca-apresentacao { display: flex; justify-content: flex-end; padding: 4px 0 6px; }
-.e-g2 .e-placa { grid-template-columns: auto auto minmax(0, 1fr) auto auto; column-gap: 14px; }
 .e-g2 .e-voltar { align-self: center; margin-right: -4px; }
-.e-g2 .e-controles { display: flex; align-items: center; gap: 4px; align-self: start; }
-.e-g2 .e-controles .afty-botao { height: 36px; min-width: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 9px; border: 0; background: none; color: var(--e-t2); }
+.e-g2 .e-controles { display: flex; align-items: center; gap: 2px; align-self: center; }
+.e-g2 .e-controles .afty-botao { height: 36px; min-width: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: calc(var(--afty-raio, 12px) * 9 / 12); border: 0; background: none; color: var(--e-t2); }
 .e-g2 .e-controles .afty-botao:hover { background: var(--e-ctrl); color: var(--e-t1); }
-/* O `.afty-retrato` da Ficha é a peça vertical do cabeçalho antigo (posição absoluta que preenche a moldura). Aqui ele mora dentro da moldura redonda. */
-.e-g2 .e-moldura { position: relative; flex: none; }
-.e-g2 .e-retrato, .e-g2 .m-retrato-vazio { position: static; inset: auto; }
+/* O `.afty-retrato` da Ficha é a peça vertical do cabeçalho antigo (posição absoluta que preenche a moldura). Aqui ele continua preenchendo a moldura, que é do G2. */
+.e-g2 .m-retrato-vazio { position: absolute; inset: 3px; width: calc(100% - 6px); height: calc(100% - 6px); }
 /* As estatísticas do cabeçalho do G2 são uma fileira de rótulo e valor na mesma linha. O `.afty-stat` da Ficha é a célula em caixa (rótulo em cima, valor embaixo):
    aqui só o necessário é desfeito, e um tema que pinta `.afty-stat` (fundo, borda, cor) continua mandando, por ter mais especificidade. */
-.e-g2 .e-stat { display: inline-flex; flex-direction: row; align-items: baseline; justify-content: flex-start; gap: 6px; min-height: 0; padding: 0; border: 0; border-radius: 0; background: none; }
-.e-g2 .e-stat dt.afty-stat-rotulo { display: inline; max-width: none; font-size: 12.5px; line-height: inherit; text-transform: none; letter-spacing: 0; color: var(--afty-texto-fraco); overflow: visible; }
+.e-g2 .e-stat { display: inline-flex; flex-direction: row; align-items: baseline; justify-content: flex-start; gap: 6px; min-height: 0; padding: 0; }
+:where(.e-g2) .e-stat { border: 0; border-radius: 0; background: none;
+  }
+:where(.e-g2 .e-stat) .afty-stat-rotulo { display: inline; max-width: none; font-size: 12.5px; line-height: inherit; text-transform: none; letter-spacing: 0; color: var(--afty-texto-fraco); overflow: visible; }
 /* O `index.css` do app fixa a cor dos h1 e h2 (#f3f4f6, o app é sempre escuro) sem camada, e isso vence a herança que o estudo usava. Os títulos dos Efeitos
    herdam a cor do tema, como o resto. */
-.e-g2 :is(h1, h2, h3) { color: inherit; }
 
 /* ---------- a placa em larguras menores ----------
-   Uma fileira só quando cabe (identidade, recursos, controles). Abaixo de 1180 px os recursos descem para uma segunda fileira que divide a largura
-   toda, e abaixo de 720 px a identidade também ganha fileira própria. A faixa de baixo (valores e Agora) quebra no mesmo ponto. */
+   Uma fileira só quando cabe (identidade, recursos, comandos): a partir de 1120 px. Abaixo disso os recursos descem para uma segunda fileira da placa, que
+   divide a largura toda. No telefone (720 px ou menos) o retrato vira uma coluna estreita ao lado do nome e dos comandos, e os quatro recursos ocupam uma
+   fileira só, em rótulo sobre número. A faixa de baixo (valores e Agora) quebra no mesmo ponto. */
 .e-g2 .e-voltar { grid-area: voltar; }
-.e-g2 .e-moldura { grid-area: moldura; }
 .e-g2 .e-ident { grid-area: ident; }
 .e-g2 .e-recursos { grid-area: recursos; }
 .e-g2 .e-controles { grid-area: controles; }
-.e-g2 .e-placa { grid-template-areas: "voltar moldura ident recursos controles"; }
-@media (max-width: 1180px) {
-  .e-g2 .e-placa { grid-template-columns: auto auto minmax(0, 1fr) auto; grid-template-areas: "voltar moldura ident controles" "recursos recursos recursos recursos"; row-gap: 12px; }
-  .e-g2 .e-recursos { flex-wrap: wrap; }
-  .e-g2 .e-recursos > .m-medidor { flex: 1 1 140px; width: auto; min-width: 0; }
+@media (max-width: 1119px) {
+  .e-g2 .e-cabeca { --e-ret-w: 104px; }
+  .e-g2 .e-placa { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "voltar ident controles" "recursos recursos recursos"; row-gap: 10px; align-items: center; }
+  .e-g2 .e-recursos { justify-content: stretch; grid-auto-columns: minmax(0, 1fr); }
   .e-g2 .e-faixa { flex-wrap: wrap; row-gap: 4px; }
   .e-g2 .e-agora { margin-left: auto; padding-left: 0; border-left: 0; min-height: 44px; }
   .e-g2 .e-stats { flex: 1 1 320px; }
 }
 @media (max-width: 720px) {
-  .e-g2 .e-cabeca { padding: 10px 10px 0; border-radius: 14px; }
-  .e-g2 .e-placa { grid-template-columns: auto auto minmax(0, 1fr); grid-template-areas: "voltar moldura controles" "ident ident ident" "recursos recursos recursos"; column-gap: 8px; row-gap: 8px; padding-bottom: 8px; }
-  .e-g2 .e-controles { justify-self: end; }
-  .e-g2 .e-moldura { width: 56px; height: 56px; }
-  .e-g2 .e-retrato { width: 50px; height: 50px; }
-  .e-g2 .e-nome { font-size: 22px; }
-  .e-g2 .e-recursos > .m-medidor { flex: 1 1 calc(50% - 6px); }
+  .e-g2 .e-cabeca {
+    --e-ret-w: 84px; grid-template-columns: var(--e-ret-w) auto minmax(0, 1fr); column-gap: 8px; row-gap: 8px; padding: 8px 10px 0;
+    grid-template-areas: "ret volt cont" "ret ident ident" "recursos recursos recursos" "faixa faixa faixa";
+  }
+  :where(.e-g2) .e-cabeca { border-radius: calc(var(--afty-raio, 12px) * 14 / 12); }
+  .e-g2 :is(.e-corpo, .e-placa) { display: contents; }
+  .e-g2 .e-moldura { grid-area: ret; min-height: 0; }
+  .e-g2 .e-voltar { grid-area: volt; }
+  .e-g2 .e-controles { grid-area: cont; justify-self: end; }
+  .e-g2 .e-ident { grid-area: ident; align-self: start; }
+  /* Flex que quebra, e não grade de quatro: cada medidor tem o piso do próprio conteúdo, então um tema de fonte larga (Alter Lucielos) manda o último
+     para a linha de baixo em vez de cortar o número. Com a fonte padrão os quatro cabem na mesma linha. */
+  .e-g2 .e-recursos { grid-area: recursos; display: flex; flex-wrap: wrap; gap: 6px; }
+  .e-g2 .e-recursos > .m-medidor { flex: 1 1 74px; min-width: min-content; }
+  .e-g2 .e-faixa { grid-area: faixa; }
+  :where(.e-g2) .e-nome { font-size: 21px; }
+  /* Quatro recursos numa fileira: o rótulo sobe e o número ocupa a largura da célula. */
+  .e-g2 .e-recursos > .m-medidor { padding: 4px 4px 6px 6px; gap: 3px; }
+  .e-g2 .e-recursos .m-medidor-topo { gap: 0; }
+  :where(.e-g2 .e-recursos .m-medidor-rotulo) { font-size: 11.5px; }
+  :where(.e-g2 .e-recursos .m-medidor-num) .afty-vital-numero { font-size: 16px; }
+  :where(.e-g2 .e-recursos .m-medidor-num) .afty-vital-max { font-size: 11px; }
+  .e-g2 .e-recursos .m-medidor-num { letter-spacing: -.01em; }
+  /* O cabeçalho é grudado e come cerca de metade do telefone: a barra de rolagens perde o respiro de 8 px acima e abaixo dos botões de 44 px (60 para 48 px). */
+  .e-ficha-g2 .afty-log { padding-block: 2px; }
+  /* A faixa de abas rola na horizontal e não dava pista de que há mais (Invocações e Efeitos ficavam fora). As bordas esmaecem em 14 px, o mesmo respiro do padding da aba, então nenhum
+     texto se perde quando a faixa está no começo ou no fim. */
+  .e-g2.e-abas { -webkit-mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 14px), transparent); mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 14px), transparent); }
+  /* PROTÓTIPO (prévia): no telefone as abas e a barra de rolagens ficam presas e a placa sai ao rolar, o mecanismo que a ficha clássica já usa em tela baixa
+     (`--afty-cabecalho-recolhido`, escrita pelo PainelDeRolagens). Só o `header` externo: a placa interna também é `.afty-cabecalho` e é `position: relative`. */
+  .e-ficha-g2 header.afty-cabecalho { top: calc(-1 * var(--afty-cabecalho-recolhido, 0px)); }
   .e-g2 .e-agora { width: 100%; justify-content: space-between; margin-left: 0; }
   .e-g2 .e-agora-rotulo { display: none; }
+}
+
+/* Fontes escolhidas no editor podem alargar os controles. A composição padrão
+   conserva a fileira aprovada, e só a forma personalizada pode ganhar linha. */
+@media (max-width: 720px) {
+  [data-afty-fonte="personalizada"] .e-g2 .e-agora { min-width: 0; flex-wrap: wrap; row-gap: 6px; }
+}
+@media (max-width: 360px) {
+  .e-g2 .e-agora { min-width: 0; flex-wrap: wrap; row-gap: 6px; }
+}
+/* Entre 361 e 411px a fileira Combate, Rodada e Efeitos passava 22px da seção e 11px do cartão (o Efeitos encostava na borda da tela). Os três acessos
+   ficam mais justos para a fileira caber em 390px, e quem ainda não couber (375px) quebra em vez de vazar. */
+@media (min-width: 361px) and (max-width: 420px) {
+  .e-g2 .e-agora { min-width: 0; flex-wrap: wrap; gap: 6px 2px; }
+  .e-g2 .e-agora .f-acesso { padding-inline: 5px; gap: 5px; }
+}
+
+/* De 421 a 720 px (iPhone Plus e Max, tablet em pé) a fileira também precisa quebrar: com a serifa do tema claro o "Efeitos" passava 6 px do cartão. */
+@media (min-width: 421px) and (max-width: 720px) {
+  .e-g2 .e-agora { min-width: 0; flex-wrap: wrap; gap: 6px 8px; }
 }
 
 /* ========== FECHAMENTO FUNCIONAL DO G2 (2026-10-20) ==========
@@ -1077,7 +1224,7 @@
 .e-g2 .x-exaustao, .e-g2 .c2-exaustao { display: inline-flex; align-items: center; gap: 6px; }
 .e-g2 .x-exaustao b, .e-g2 .c2-exaustao b { font: 700 13px var(--e-display); font-variant-numeric: var(--e-num); color: var(--e-t1); }
 .e-g2 .c2-exaustao { padding: 0 8px; min-width: 34px; justify-content: center; }
-.e-g2 .im-atual { display: grid; gap: 8px; padding: 10px 14px; border: 1px solid var(--e-painel-borda); border-radius: 12px; background: var(--e-painel); }
+.e-g2 .im-atual { display: grid; gap: 8px; padding: 10px 14px; border: 1px solid var(--e-painel-borda); border-radius: var(--afty-raio, 12px); background: var(--e-painel); }
 .e-g2 .im-atual-linha { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; min-height: 32px; }
 .e-g2 .im-rotulo { min-width: 76px; font: 600 13px var(--e-display); font-stretch: semi-condensed; color: var(--e-t3); }
 .e-g2 .im-nome { font: 700 16px var(--e-display); font-stretch: semi-condensed; color: var(--e-t1); overflow-wrap: anywhere; }
@@ -1111,25 +1258,14 @@
 }
 
 /* ---------- o cabeçalho em largura estreita ---------- */
-@media (min-width: 721px) and (max-width: 1180px) {
+@media (min-width: 721px) and (max-width: 1119px) {
   /* Os valores e o Agora dividem a mesma fileira: o que não cabe dos valores já mora no "+N". */
   .e-g2 .e-faixa { flex-wrap: nowrap; }
   .e-g2 .e-stats { flex: 1 1 0; min-width: 0; }
   .e-g2 .e-agora { margin-left: auto; }
-  /* O retrato em moldura menor poupa 16 px da primeira fileira da placa, que é a mais alta. */
-  .e-g2 .e-cabeca { padding-top: 10px; }
-  .e-g2 .e-moldura { width: 64px; height: 64px; padding: 3px; }
-  .e-g2 .e-retrato { width: 58px; height: 58px; }
 }
 @media (max-width: 720px) {
-  .e-g2 .e-cabeca { padding: 8px 10px 0; }
-  .e-g2 .e-placa { row-gap: 6px; padding-bottom: 6px; }
-  .e-g2 .e-moldura { width: 46px; height: 46px; padding: 2px; }
-  .e-g2 .e-retrato { width: 42px; height: 42px; }
-  .e-g2 .e-recursos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
-  .e-g2 .e-recursos > .m-medidor { width: auto; padding: 4px 8px 6px; gap: 3px; }
-  .e-g2 .e-recursos > .m-medidor:nth-child(odd):last-child { grid-column: 1 / -1; }
-  .e-g2 .e-faixa { min-height: 0; row-gap: 0; }
+  .e-g2 .e-faixa { min-height: 0; row-gap: 0; padding-bottom: 2px; }
   .e-g2 .e-agora { min-height: 40px; }
   /* Sem rolagem nenhuma, a barra de dados não gasta uma segunda linha para dizer que não há nada. */
   .afty-cabecalho:has(.e-g2) .afty-log-ultima:has(> .afty-rotulo) { display: none; }
@@ -1151,4 +1287,37 @@
 .e-g2 .d-exp { container: detalhe / inline-size; }
 @container detalhe (max-width: 620px) {
   .e-g2 .x-colunas { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+}
+
+/* O seletor de rolagem (DES, NOR, VAN) é da ficha clássica também e fica como está lá. No G2 ele ganha a legenda "Rolagem", no mesmo degrau das legendas dos
+   segmentos, porque as três siglas sozinhas obrigavam a lembrar o que cada uma era. */
+.e-ficha-g2 .afty-log-modos::before { content: "Rolagem"; align-self: center; margin-right: 6px; padding: 0 10px 0 4px; border-right: 1px solid var(--afty-borda); font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--afty-texto-suave); white-space: nowrap; }
+
+/* A fórmula da última rolagem ("8 + 4") ao lado do dado (fonte monoespaçada) ficava mais baixa em tema de serifa, que usa números de estilo antigo. Na linha com dado ela usa a
+   fonte dos valores do G2, de números alinhados e tabulares, como o resto dos números da ficha. */
+.e-ficha-g2 .afty-log-ultima:has(.afty-dado) .afty-rotulo { font-family: var(--afty-fonte-display, "Bahnschrift", "Segoe UI", system-ui, sans-serif); font-variant-numeric: tabular-nums lining-nums; }
+
+/* No telefone a legenda "Rolagem" toma o lugar do ícone de dados, e o Histórico fica mais justo: em tema de fonte larga (serifa do claro) os três modos, a legenda e o
+   Histórico não cabiam e o "VAN" ficava por baixo do botão. Abaixo de 380 px a legenda sai e o ícone volta. */
+@media (max-width: 720px) {
+  .e-ficha-g2 .afty-log-modos::before { margin-right: 4px; padding-right: 8px; }
+  .e-ficha-g2 .afty-log-historico { padding-inline: 10px; gap: 6px; }
+}
+@media (min-width: 381px) and (max-width: 720px) { .e-ficha-g2 .afty-log-topo > svg { display: none; } }
+@media (max-width: 380px) { .e-ficha-g2 .afty-log-modos::before { display: none; } }
+
+/* ---------- alvos de toque de 44 px (ponteiro grosso) ----------
+   O DESIGN.md promete 44 px em `pointer: coarse`, e o G2 media 30 a 40 px (botões e segmentos de 30 a 32, ícones de 36 de largura, estrela de 40, números
+   de 18 a 24). Só `pointer: coarse` e só `.e-g2`: o mouse segue na escala compacta de 28, 32 e 36, que o orçamento de Dano do desktop usa.
+   Os números e as ajudas que são texto corrido ganham a área de 44 px por `::after`, sem mexer no leiaute nem na linha de base. */
+@media (pointer: coarse) {
+  .e-g2 :is(.m-seg-op, .m-botao, .m-passo, .afty-passo, .e-combate, .e-proxima, .f-acesso, .e-efeito, .e2-toggle, .e-icone) { min-height: 44px; }
+  .e-g2 :is(.m-passo, .afty-passo, .e-proxima, .e-icone, .e-estrela) { min-width: 44px; }
+  /* O "+N" das estatísticas do cabeçalho fica no tamanho da fileira (30 px) e ganha os 44 px por `::after`: com 44 de altura ele esticava a faixa do cabeçalho em 20 px. */
+  .e-g2 .e-mais { position: relative; }
+  .e-g2 .e-mais::after { content: ""; position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; transform: translate(-50%, -50%); }
+  .e-g2 .e-controles .afty-botao { min-width: 44px; min-height: 44px; }
+  .e-g2 :is(.e-busca, .m-busca) .afty-campo { min-height: 44px; }
+  .e-g2 :is(.m-valor-botao, .m-meta-num, .afty-atributo-valor) { position: relative; }
+  .e-g2 :is(.m-valor-botao, .m-meta-num, .afty-atributo-valor)::after { content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, 44px); height: 44px; transform: translate(-50%, -50%); }
 }

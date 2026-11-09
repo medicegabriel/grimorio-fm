@@ -100,7 +100,7 @@ export function HistoricoPainel({ ancora, m, nome, filtro, onFiltro, onFechar })
     setTimeout(() => emCurso.current.delete(id), 500);
   };
   return (
-    <Flutuante ancora={ancoraPresa} onFechar={onFechar} largura={460} rotulo="Histórico da Sessão" classe="h-hist-painel">
+    <Flutuante ancora={ancoraPresa} onFechar={onFechar} largura={460} rotulo="Histórico da Sessão" classe="h-hist-painel afty-historico">
       <section className="h-hist" data-historico aria-label="Histórico da Sessão" data-mesa={m.mesaId}>
         <header className="h-hist-topo">
           <History aria-hidden="true" />

@@ -105,7 +105,8 @@ export function Linha({ e, m, g, porChave, onAbrirPainel, consultada, onAbrir, r
           {est && <span className="e-ativo">◆ {est}</span>}
           {achado && <span className="e-onde" data-onde={achado.onde}>{ONDE[achado.onde]}</span>}
           {marcas.length > 0 && <span className="e-metas" title={marcas.map((t) => t.replace(/^-(?=\d)/, "−")).join(" · ")}>{marcas.map((t) => <Marca key={t} t={t} />)}</span>}
-          {e.aviso && <span className="e-aviso" title={e.aviso}><AlertTriangle aria-hidden="true" /></span>}
+          {/* O triângulo sozinho só tinha `title`, que teclado, leitor de tela e toque não leem: o rótulo "Aviso" fica visível (como no chip de Equipamentos) e o motivo vai ao leitor de tela. */}
+          {e.aviso && <span className="e-aviso" title={e.aviso}><AlertTriangle aria-hidden="true" /><span className="e-aviso-rotulo">Aviso</span><span className="e-so-leitor">{`: ${e.aviso}`}</span></span>}
         </span>
       </button>
       {(cs.length > 0 || roteados.size > 0 || (e.usos && contadorUsos)) && (
@@ -151,7 +152,7 @@ function Grupo({ grupo, lista, m, g, porChave, onAbrirPainel, consultada, onAbri
   return (
     <section className="afty-card e-grupo" aria-label={grupo.label}>
       <header className="e-grupo-topo">
-        <h2 className="afty-card-titulo e-grupo-titulo">{grupo.label}<small>{lista.length}</small></h2>
+        <h2 className="afty-card-titulo e-grupo-titulo">{grupo.label}</h2>
         {subs.length > 0 && !filtrando && (
           <div className="e-subabas" role="tablist" aria-label={`Divisões de ${grupo.label}`}>
             {subs.map((s) => (

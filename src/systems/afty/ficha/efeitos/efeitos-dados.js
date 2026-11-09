@@ -255,6 +255,8 @@ function casosDe(g, combate, derived) {
     const n = Math.trunc(Number(v) || (e.min ?? 0));
     return n < max ? [{ rotulo: n > (e.min ?? 0) ? `Com ${n + 1}` : null, patch: { [e.id]: n + 1 } }] : [];
   }
+  // O seletor cheio (os Aliados pelo Grau) não oferece mais uma escolha (CX6).
+  if (e.tipo === "multi" && e.maxSelecionados != null && (v ?? []).length >= e.maxSelecionados) return [];
   if (e.tipo === "multi") return ops.filter((o) => !(v ?? []).includes(o.id)).map((o) => ({ rotulo: `${(v ?? []).length ? "Somar " : ""}${rotuloOpcao(o.label)}`, patch: { [e.id]: [...(v ?? []), o.id] } }));
   return ops.filter((o) => o.id !== v).map((o) => ({ rotulo: `${v ? "Trocar para " : ""}${rotuloOpcao(o.label)}`, patch: { [e.id]: o.id } }));
 }
@@ -645,6 +647,10 @@ export function detalhesDoAtivo(a, m) {
   }
   if (a.tipo === "grupo") {
     const ex = a.exemplo;
+    if (a.grupo.item?.id?.replace(/^.*__/, "") === "cmb_assumir_postura") {
+      const prazo = m.sessao.uso?.ativos?.cmb_assumir_postura?.duracao;
+      if (prazo?.tipo === "rodadas") out.contador = prazo.restantes === 1 ? "Última Rodada" : `${prazo.restantes} Rodadas`;
+    }
     for (const e of a.grupo.estados) {
       const v = combate[e.id];
       if (!estaLigado(e, v)) continue;

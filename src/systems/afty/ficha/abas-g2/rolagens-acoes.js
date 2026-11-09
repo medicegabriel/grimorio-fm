@@ -26,7 +26,7 @@ export function estadoDaCura(l, blocos) {
 export const pedidoCura = (l, estado) => ({
   tipo: "dano", tom: "cura", fonteCuraId: l.id, rotulo: l.nome,
   detalhe: l.unidade ? `${estado.pontos} ${l.unidade.rotulo}` : null,
-  dados: l.dados, faces: facesDe(l.dado), fixo: estado.fixo, blocos: estado.blocos,
+  dados: l.dados, faces: facesDe(l.dado), fixo: estado.fixo, blocos: estado.blocos, grupos: estado.grupos,
 });
 
 /** Uma rolagem de Feitiço. Só a PRIMEIRA leva Custo de Vida, consumo de estado, Feitiço de dano e a resolução do Ritual. */
@@ -58,8 +58,8 @@ export const pedidoManobra = (m, lado = "executar") => (lado === "resistir"
   : { tipo: "teste", rotulo: m.resistir != null ? `${m.nome} · Executar` : m.nome, bonus: m.executar });
 
 /** Um teste da aba Perícias (Jogada de Ataque, TR ou perícia). */
-export const pedidoTeste = ({ nome, bonus, dados, margem, ataqueId, minimoNatural }) => ({
-  tipo: "teste", rotulo: nome, bonus, dados, margem, ataqueId, minimoNatural,
+export const pedidoTeste = ({ nome, bonus, dados, margem, ataqueId, minimoNatural, periciaId }) => ({
+  tipo: "teste", rotulo: nome, bonus, dados, margem, ataqueId, minimoNatural, ...(periciaId ? { periciaId } : {}),
 });
 
 /** O teste puro de um atributo. */

@@ -56,7 +56,7 @@ export default function MesaG2({ derived, sessao, onSessao, onEstado, onGatilhoT
     <section className="afty-card e-grupo m-mesa" aria-labelledby="m-mesa-titulo" data-m-secao="mesa">
       <header className="e-grupo-topo m-mesa-topo">
         <h2 id="m-mesa-titulo" className="afty-card-titulo e-grupo-titulo m-mesa-titulo" tabIndex={-1}>
-          Agora na Mesa<small>{celulas.length}</small>
+          Agora na Mesa
         </h2>
         {pendentes > 0 && <span className="m-pendente"><AlertTriangle aria-hidden="true" />{pendentes === 1 ? "1 Pendente" : `${pendentes} Pendentes`}</span>}
       </header>

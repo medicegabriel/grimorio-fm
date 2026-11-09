@@ -123,33 +123,36 @@ export default function Cabecalho({
     /* ⚠ A PLACA TAMBÉM É `.afty-cabecalho`. O tema e o CSS personalizado pintam o cabeçalho por essa classe (fundo, texto, fio de luz, chips e botões
        dentro dele), e a placa é a parte do cabeçalho que ficou à vista. Sem a classe, um tema claro com faixa escura deixava a placa clara com texto claro. */
     <div className="e-cabeca afty-cabecalho">
-      <div className="e-placa">
-        <button type="button" className="afty-botao e-icone e-voltar" onClick={onVoltar} aria-label="Voltar"><ChevronLeft aria-hidden="true" /></button>
-        <div className="e-moldura"><Retrato ficha={ficha} classe="e-retrato" /></div>
-        <div className="e-ident">
-          <h1 className="afty-nome e-nome">{ficha.name || "Sem nome"}</h1>
-          <p className="e-linhagem">
-            {id.principal.map((x, i) => <span key={x.texto} className={i === 0 ? "e-classe" : undefined} title={x.title}>{x.texto}</span>)}
-            {id.extra.map((x) => (
-              <span key={x.texto} title={x.title} data-aviso={x.aviso ? "sim" : undefined}>
-                {x.aviso && <AlertTriangle aria-hidden="true" className="e-linhagem-aviso" />}{x.texto}
-              </span>
-            ))}
-          </p>
+      {/* O RETRATO É A ÂNCORA: uma moldura que acompanha a altura do corpo inteiro (placa e faixa), à esquerda. A identidade ocupa só a largura do nome. */}
+      <div className="e-moldura"><Retrato ficha={ficha} classe="e-retrato" /></div>
+      <div className="e-corpo">
+        <div className="e-placa">
+          <button type="button" className="afty-botao e-icone e-voltar" onClick={onVoltar} aria-label="Voltar"><ChevronLeft aria-hidden="true" /></button>
+          <div className="e-ident">
+            <h1 className="afty-nome e-nome">{ficha.name || "Sem nome"}</h1>
+            <p className="e-linhagem">
+              {id.principal.map((x, i) => <span key={x.texto} className={i === 0 ? "e-classe" : undefined} title={x.title}>{x.texto}</span>)}
+              {id.extra.map((x) => (
+                <span key={x.texto} title={x.title} data-aviso={x.aviso ? "sim" : undefined}>
+                  {x.aviso && <AlertTriangle aria-hidden="true" className="e-linhagem-aviso" />}{x.texto}
+                </span>
+              ))}
+            </p>
+          </div>
+          <div className="e-recursos">
+            {recursos(m).map((r) => <Medidor key={r.tipo} r={r} m={m} onAbrir={(e) => setVital({ tipo: r.tipo, ancora: e.currentTarget })} />)}
+          </div>
+          <div className="e-controles">
+            <button type="button" className="afty-botao e-icone" onClick={onBusca} title="Buscar na ficha (Ctrl+K)" aria-label="Buscar na ficha"><Search aria-hidden="true" /></button>
+            <BotaoDeDescanso sessao={m.sessao} derived={derived} onDescansar={(marioneteId) => m.acoes.descansar({ marioneteId })} />
+            <Menu densidade={densidade} onDensidade={onDensidade} cofre={cofre} apresentacaoAnterior={apresentacaoAnterior} onHistorico={onHistorico} onConfigurar={setConfig}
+              onAparencia={onAparencia} onEditar={onEditar} />
+          </div>
         </div>
-        <div className="e-recursos">
-          {recursos(m).map((r) => <Medidor key={r.tipo} r={r} m={m} onAbrir={(e) => setVital({ tipo: r.tipo, ancora: e.currentTarget })} />)}
+        <div className="e-faixa">
+          <Valores m={m} stats={stats} preferencia={preferencia} onConfigurar={setConfig} />
+          <Agora m={m} acesso={acesso} total={total} atencao={atencao} />
         </div>
-        <div className="e-controles">
-          <button type="button" className="afty-botao e-icone" onClick={onBusca} title="Buscar na ficha (Ctrl+K)" aria-label="Buscar na ficha"><Search aria-hidden="true" /></button>
-          <BotaoDeDescanso sessao={m.sessao} derived={derived} onDescansar={(marioneteId) => m.acoes.descansar({ marioneteId })} />
-          <Menu densidade={densidade} onDensidade={onDensidade} cofre={cofre} apresentacaoAnterior={apresentacaoAnterior} onHistorico={onHistorico} onConfigurar={setConfig}
-            onAparencia={onAparencia} onEditar={onEditar} />
-        </div>
-      </div>
-      <div className="e-faixa">
-        <Valores m={m} stats={stats} preferencia={preferencia} onConfigurar={setConfig} />
-        <Agora m={m} acesso={acesso} total={total} atencao={atencao} />
       </div>
       {config && <EstatisticasConfig ancora={config} stats={stats} preferencia={preferencia} onFechar={fechaConfig} onMuda={onPreferencia} />}
       {vital && (

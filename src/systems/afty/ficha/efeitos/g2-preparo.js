@@ -33,6 +33,7 @@ import { energiaDisponivel } from "./mesa-verbos";
 import { mesmoValor } from "./operacoes";
 import { beneficiosPvTemp, compararTudo, derivarCom, detalhesDoAtivo, estaLigado, maxDe, padraoDe, partesDoCusto, pvDoAtivo, verificacoes } from "./efeitos-dados";
 import { custoDe, preparoDe } from "./g2-dados";
+import { posturasPropriasConteudo } from "../ficha-conteudo-posturas";
 
 const inteiro = (v) => Math.max(0, Math.trunc(Number(v) || 0));
 const opcoesDe = (e) => e.opcoesVisiveis ?? e.opcoes ?? [];
@@ -158,11 +159,14 @@ export function planoDoPreparo({ o, valores, m, modo = "ativar", encerrado = nul
   /* USAR NOVAMENTE: o uso novo vale mesmo com o MESMO valor (9 PE de novo), e por isso não pode ser provado pelo
      estado. O contador de usos novos do efeito (`mesa.reusos`) é o que o clique duplo não passa. */
   if (reuso) pedido.novoUso = { chave: o.chave, itemId: gr.item?.id ?? null, esperado: inteiro(m.mesa.reusos?.[o.chave]) };
-  /* Os usos que ATIVAR gasta (o contador real do motor, só quando o descritor diz): conferidos na confirmação e
-     gastos na MESMA operação dos estados. Nada é gasto por rascunho, por abrir a tela ou pela prévia. O Ajustar
-     não gasta (a troca de uma postura por outra é pendência de regra). */
-  const uso = modo === "ativar" && desc.usos ? m.derived.usosHabilidades?.[desc.usos] ?? null : null;
-  const usos = uso ? (() => { const gastos = Sessao.usosGastosDe(m.sessao, uso.chave); return { itemId: desc.usos, chave: uso.chave, max: uso.max, gastos, restam: Math.max(0, uso.max - gastos) }; })() : null;
+  /* Ativar gasta o contador real. Por decisão de 06/11, trocar para outra postura também gasta um uso e a ação de
+     entrada, reiniciando o minuto. O rascunho e a prévia não gastam. Os demais ajustes conservam sua regra. */
+  const fontePostura = desc.usos === "cmb_assumir_postura" ? posturasPropriasConteudo(m.derived, gr.item?.id) : null;
+  const anteriores = [combate.postura, combate.postura2].filter(Boolean);
+  const trocaPostura = modo === "ajuste" && fontePostura && [alvo.postura, alvo.postura2].some((x) => x && !anteriores.includes(x));
+  const itemUsos = fontePostura?.id ?? desc.usos;
+  const uso = (modo === "ativar" || trocaPostura) && itemUsos ? m.derived.usosHabilidades?.[itemUsos] ?? null : null;
+  const usos = uso ? (() => { const gastos = Sessao.usosGastosDe(m.sessao, uso.chave); return { itemId: itemUsos, chave: uso.chave, max: uso.max, gastos, restam: Math.max(0, uso.max - gastos) }; })() : null;
   if (usos) pedido.usos = { itemId: usos.itemId, esperado: usos.gastos };
   const sim = lista.length || reuso ? m.simularEstados(pedido) : { mesa: m.mesa, erro: null };
 
