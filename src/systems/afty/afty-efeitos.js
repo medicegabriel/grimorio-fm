@@ -2588,12 +2588,3 @@ export function validarMapaEfeitos(mapa, nomeDoMapa = "efeitos") {
   return problemas;
 }
 
-// Regra opcional do addon Guerra de Feiticeiros.
-export function atencaoSoPelaPercepcao(efeitos) {
-  if (!Array.isArray(efeitos)) return efeitos;
-  const comPercepcao = new Set(efeitos
-    .filter((e) => e?.origem != null && e.canal === "bonusPericia" && e.alvo === "percepcao")
-    .map((e) => e.origem));
-  if (!comPercepcao.size) return efeitos;
-  return efeitos.filter((e) => !(e?.canal === "atencao" && comPercepcao.has(e.origem)));
-}
