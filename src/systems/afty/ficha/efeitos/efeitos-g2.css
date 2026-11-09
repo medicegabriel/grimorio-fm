@@ -61,7 +61,7 @@
 .e-g2 .e-cabeca {
   --e-ret-w: 112px;
   position: relative; display: grid; grid-template-columns: var(--e-ret-w) minmax(0, 1fr); column-gap: 14px; align-items: stretch;
-  margin: 6px 0 0; padding: 6px 16px 6px 6px;
+  margin: 0; padding: 6px 16px 6px 6px;
 }
 :where(.e-g2) .e-cabeca {
   border: 1px solid var(--e-painel-borda); border-radius: calc(var(--afty-raio, 12px) * 18 / 12);
@@ -1081,8 +1081,8 @@
 .e-ficha-g2 { --e-coluna-max: 1280px; --e-lateral-w: 0px; --e-pagina-max: calc(var(--e-coluna-max) + var(--e-lateral-w)); --e-borda-pagina: max(0px, calc((100vw - var(--e-pagina-max)) / 2)); }
 .e-ficha-g2[data-g2-painel] { --e-lateral-w: 390px; }
 .e-ficha-g2 .e-pagina { width: 100%; max-width: var(--e-pagina-max); margin-inline: auto; }
-/* O respiro de 6px acima da placa fica TRANSPARENTE: o fundo opaco do header só começa abaixo dele, e assim a faixa mostra o fundo do tema em vez de uma cor chapada. */
-.e-ficha-g2 header.afty-cabecalho { background: linear-gradient(to bottom, transparent 6px, var(--afty-fundo) 6px); }
+/* O respiro de 6px acima da placa e PADDING do header, e nao margem da placa: margem de filho colapsa para fora do header e empurra a ficha inteira, e a faixa aparecia com a cor do body. O fundo opaco so comeca abaixo dele. */
+.e-ficha-g2 header.afty-cabecalho { padding-top: 6px; background: linear-gradient(to bottom, transparent 6px, var(--afty-fundo) 6px); }
 @media (min-width: 1400px) { .e-ficha-g2[data-g2-painel] { --e-lateral-w: 428px; } }
 @media (min-width: 1920px) { .e-ficha-g2 { --e-coluna-max: 1440px; } }
 @media (min-width: 2400px) { .e-ficha-g2 { --e-coluna-max: 1760px; } }
