@@ -1291,6 +1291,13 @@ export function normalizarPacote(cru) {
     feiticos: Array.isArray(p.feiticos)
       ? p.feiticos.filter((x) => x && typeof x === "object").map(clonar)
       : [],
+    /* PERÍCIAS NOVAS do pacote (2026-11-09): `[{ id, nome, atributo, atributos? }]`. Campo PRÓPRIO, e não
+       família de `acrescenta`, porque o catálogo do livro é constante de módulo e a perícia do pacote
+       vive NA FICHA, como a personalizada. `atributo` é o padrão e `atributos` limita a troca na tela.
+       Ver `normalizarPericiasPersonalizadas`. */
+    pericias: Array.isArray(p.pericias)
+      ? p.pericias.filter((x) => x && typeof x === "object").map(clonar)
+      : [],
     /* Controles próprios da mesa na Simulação de Combate e na Ficha Final.
        São dados, não código: o pacote declara estados que o motor já sabe
        operar (`bool`, `opcao`, `multi` e `faixa`). */

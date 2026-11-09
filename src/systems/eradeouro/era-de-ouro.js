@@ -64,6 +64,65 @@ export const mesaDaFicha = (ficha) => (ficha?.mesa === MESA_ERA_DE_OURO ? MESA_E
 /** Devolve a ficha carimbada com a mesa. Não muda o `rulesVersion`. */
 export const comMesa = (ficha, mesa) => (mesa === MESA_ERA_DE_OURO ? { ...ficha, mesa } : ficha);
 
+/**
+ * Os addons que são as regras oficiais da Guilda (autor, 2026-11-09). Toda ficha
+ * NOVA da Guilda nasce com eles ligados, e a Guilda não os desliga. Os pacotes
+ * vêm de `addons/` e são carregados por `pacotes-oficiais.js`.
+ *
+ * ⚠ É A MESA QUE TRAVA, e não a rota: o trava vale para a ficha com `mesa`,
+ * onde quer que ela seja aberta. Ficha antiga e ficha importada sem a marca não
+ * ganham os addons nem a trava.
+ */
+export const ADDONS_OFICIAIS_IDS = [
+  "regras-grimorio",
+  "cofre-de-feiticos",
+  "carteira-da-guilda",
+  "alma-livre",
+  "atencao-so-percepcao",
+  "pericias-era-de-ouro",
+];
+
+/**
+ * "Atenção Só Pela Percepção" mora AQUI, e não em `addons/`: é a regra `atencaoSoPercepcao` do motor
+ * (pública), pedida sozinha para a Guilda. Um JSON novo em `addons/` entraria no inventário de revisão e
+ * no teste de reconciliação, que pedem a árvore livre. Mesmo molde do `PACOTE_ALMA_DO_AFTY`.
+ */
+export const PACOTE_ATENCAO_SO_PERCEPCAO = Object.freeze({
+  id: "atencao-so-percepcao",
+  nome: "Atenção Só Pela Percepção",
+  versao: "1.0.0",
+  autor: "Afty",
+  paraRaw: "afty",
+  descricao: "O poder que dá Percepção e Atenção ao mesmo tempo passa a dar só a Percepção. A Atenção da ficha segue vindo da Percepção.",
+  resumo: "O bônus de Percepção não soma de novo na Atenção",
+  categoria: "regras",
+  regrasAfty: Object.freeze({ atencaoSoPercepcao: true }),
+});
+
+/**
+ * "Perícias da Era de Ouro": cria Guerra (Inteligência) e Nobreza (Inteligência ou Presença). Inline pelo mesmo
+ * motivo do pacote acima. O campo `pericias` do pacote é o verbo público do motor. As descrições das duas ainda
+ * não foram enviadas, e a ficha mostra só o nome e o atributo.
+ */
+export const PACOTE_PERICIAS_ERA_DE_OURO = Object.freeze({
+  id: "pericias-era-de-ouro",
+  nome: "Perícias da Era de Ouro",
+  versao: "1.0.0",
+  autor: "Afty",
+  paraRaw: "afty",
+  descricao: "Cria as perícias Guerra e Nobreza. Guerra usa Inteligência. Nobreza usa Inteligência ou Presença, à escolha de quem a treina.",
+  resumo: "Cria as perícias Guerra e Nobreza",
+  categoria: "regras",
+  pericias: Object.freeze([
+    Object.freeze({ id: "guerra", nome: "Guerra", atributo: "inteligencia" }),
+    Object.freeze({ id: "nobreza", nome: "Nobreza", atributo: "inteligencia", atributos: Object.freeze(["inteligencia", "presenca"]) }),
+  ]),
+});
+
+/** Este addon está travado nesta ficha? */
+export const addonTravado = (ficha, idAddon) =>
+  mesaDaFicha(ficha) !== null && ADDONS_OFICIAIS_IDS.includes(idAddon);
+
 /** Ainda sem nenhuma regra própria. Ver o cabeçalho. */
 export const REGRAS_DA_MESA = [];
 

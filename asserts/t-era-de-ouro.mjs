@@ -85,6 +85,47 @@ const r2 = B.sincronizarFundamentosNaBiblioteca(comb, sem);
 t("sem namespace segue o sistema", r2.gravadas[0]?.namespace, undefined);
 t("sem namespace grava no Player", JSON.parse(sem.m.get("fm_creatures_player_v1"))[0].fundamentosPerdidos?.length, 1);
 
+
+/* Os addons oficiais: a lista, a trava (só na ficha com mesa) e o JSON de cada um. */
+t("trava na ficha da Guilda", G.addonTravado({ mesa: "eradeouro" }, "carteira-da-guilda"), true);
+t("sem mesa não trava", G.addonTravado({}, "carteira-da-guilda"), false);
+t("addon de fora não trava", G.addonTravado({ mesa: "eradeouro" }, "alma-do-afty"), false);
+const { readFileSync } = await import("node:fs");
+const { normalizarPacote } = await import(A + "afty-addons.js");
+for (const id of G.ADDONS_OFICIAIS_IDS.filter((x) => !["atencao-so-percepcao", "pericias-era-de-ouro"].includes(x))) {
+  const cru = JSON.parse(readFileSync(new URL("../addons/" + id + ".json", import.meta.url), "utf8"));
+  t("json oficial " + id, normalizarPacote(cru).id, id);
+}
+const atencao = normalizarPacote(JSON.parse(JSON.stringify(G.PACOTE_ATENCAO_SO_PERCEPCAO)));
+t("atencao liga a regra", atencao.regrasAfty?.atencaoSoPercepcao, true);
+
+/* As perícias Guerra e Nobreza, vindas do pacote para dentro da ficha. */
+const P = await import(A + "afty-pericias.js");
+const { aplicarAddons } = await import(A + "afty-addons.js");
+aplicarAddons([]);
+t("seis oficiais", G.ADDONS_OFICIAIS_IDS.length, 6);
+const pacP = normalizarPacote(JSON.parse(JSON.stringify(G.PACOTE_PERICIAS_ERA_DE_OURO)));
+t("pacote guarda as duas perícias", pacP.pericias.map((x) => x.id), ["guerra", "nobreza"]);
+const fp = { ...createBlankAfty(), id: "p1", rulesVersion: "player", mesa: "eradeouro", addons: [pacP] };
+const cat = P.catalogoPericiasDaFicha(fp);
+const guerra = cat.find((x) => x.nome === "Guerra");
+const nobreza = cat.find((x) => x.nome === "Nobreza");
+t("Guerra é de Inteligência", guerra?.atributo, "inteligencia");
+t("Nobreza padrão Inteligência", nobreza?.atributo, "inteligencia");
+t("Nobreza aceita INT ou PRE", nobreza?.atributosPermitidos, ["inteligencia", "presenca"]);
+t("Guerra sem lista de troca", guerra?.atributosPermitidos, undefined);
+t("não são personalizadas editáveis", [guerra?.personalizada, nobreza?.personalizada], [undefined, undefined]);
+t("lista segue par", cat.length % 2, 0);
+t("ficha sem o pacote não tem", P.catalogoPericiasDaFicha({ ...fp, addons: [] }).some((x) => x.nome === "Guerra"), false);
+const d0 = deriveAfty({ ...fp, addons: [] });
+const d1 = deriveAfty(fp);
+const linha = (d, nome) => d.testes?.pericias?.find((x) => x.nome === nome);
+t("Guerra aparece nos testes", !!linha(d1, "Guerra"), true);
+t("Nobreza aparece nos testes", !!linha(d1, "Nobreza"), true);
+const nobPre = deriveAfty({ ...fp, periciaAtributoManual: { [nobreza.id]: "presenca" } });
+t("Nobreza troca para Presença", linha(nobPre, "Nobreza")?.atributo, "presenca");
+t("as outras perícias não mudam", JSON.stringify(d0.testes.pericias.map((x) => [x.id, x.total])) === JSON.stringify(d1.testes.pericias.filter((x) => !/^custom_/.test(x.id)).map((x) => [x.id, x.total])), true);
+
 if (bad.length) {
   console.error(`FALHARAM ${bad.length}:\n` + bad.join("\n"));
   process.exit(1);

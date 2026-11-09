@@ -99,6 +99,25 @@ export function normalizarPericiasPersonalizadas(creature) {
     ids.add(id);
     out.push({ id, nome, atributo, personalizada: true });
   }
+  /* AS DO PACOTE (2026-11-09): vêm de `pericias` dos addons que a ficha carrega. Não são
+     `personalizada` de propósito: a pessoa não renomeia nem remove, quem manda é o pacote. O id leva o
+     pacote na frente e o prefixo `custom_`, que é o que o saneamento do resto do código já aceita. */
+  const addons = Array.isArray(creature?.addons) ? creature.addons : [];
+  for (const pacote of addons) {
+    const dono = String(pacote?.id ?? "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "_");
+    if (!dono || !Array.isArray(pacote?.pericias)) continue;
+    for (const item of pacote.pericias) {
+      const local = String(item?.id ?? "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "_");
+      const nome = textoSeguro(item?.nome);
+      if (!local || !nome) continue;
+      const id = `${CUSTOM_PREFIX}${dono}_${local}`;
+      if (ids.has(id)) continue;
+      ids.add(id);
+      const permitidos = Array.isArray(item.atributos) ? item.atributos.filter((a) => ATTR_KEYS.has(a)) : [];
+      const atributo = ATTR_KEYS.has(item.atributo) ? item.atributo : (permitidos[0] ?? "inteligencia");
+      out.push({ id, nome, atributo, doPacote: dono, ...(permitidos.length > 1 ? { atributosPermitidos: permitidos } : {}) });
+    }
+  }
   return out;
 }
 

@@ -352,7 +352,7 @@ const fichaGravada = (creature) => {
   return ficha;
 };
 
-export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel, sistema: sistemaDaRota = SISTEMA_PADRAO, mesa = null }) {
+export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel, sistema: sistemaDaRota = SISTEMA_PADRAO, mesa = null, addonsIniciais = null }) {
   /* ⚠ `mesa` só vale para ficha NOVA, como `sistema`: editando, a ficha já traz o
      campo dela. Ela carimba a ficha no NASCIMENTO (no `base` abaixo), e não só ao
      salvar, para quem deriva ler a mesa certa antes do primeiro salvamento. O
@@ -378,7 +378,9 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
      não, e a divergência aparecia inteira, do orçamento de perícias ao chip de
      Patamar. Quem deriva lê a FICHA, então é a ficha que tem de dizer. */
   const [copiaParaConfigurar] = useState(() => existingCreature?.id ? carregarSessao(existingCreature.id).combate?.imitacao?.copia : null);
-  const [base] = useState(() => ({ ...fichaGravada(existingCreature), rulesVersion: sistema, ...(!existingCreature && mesa ? { mesa } : {}) }));
+  const [base] = useState(() => ({ ...fichaGravada(existingCreature), rulesVersion: sistema, ...(!existingCreature && mesa ? { mesa } : {}),
+    // Os addons oficiais da mesa nascem ligados, só na ficha NOVA.
+    ...(!existingCreature && addonsIniciais?.length ? { addons: addonsIniciais } : {}) }));
   // ⚠ O rascunho é aplicado AQUI, no inicializador, e não num efeito depois de
   // montar: restaurar depois faria a tela piscar a ficha em branco antes de
   // trocar, e todo `useState` derivado do draft nasceria do valor errado.
@@ -1933,10 +1935,10 @@ function AtributoDoTeste({ atributo, padrao, nome, aberto, onAbrir }) {
    que já morava aqui: seis chips, um por atributo.
    ⚠ O chip do PADRÃO do livro leva um ponto, e não a palavra "padrão": é a
    informação sem virar texto explicativo, e cabe em 6px. */
-function PainelAtributoDoTeste({ atributo, padrao, onEscolher, rotuloPadrao = "o padrão do livro" }) {
+function PainelAtributoDoTeste({ atributo, padrao, onEscolher, rotuloPadrao = "o padrão do livro", permitidos = null }) {
   return (
     <div className="flex flex-wrap gap-1 rounded-lg border border-slate-800 bg-slate-950/60 p-1.5">
-      {AFTY_ATTRS.map((a) => {
+      {AFTY_ATTRS.filter((a) => !permitidos || permitidos.includes(a.key)).map((a) => {
         const ativo = a.key === atributo;
         return (
           <button
@@ -2503,6 +2505,7 @@ function LinhaPericiaOrdenavel({
         <PainelAtributoDoTeste
           atributo={p.atributo}
           padrao={p.atributoPadrao ?? p.atributo}
+          permitidos={p.atributosPermitidos ?? null}
           onEscolher={(chave) => {
             setPericiaAtributo(p.id, chave);
             setAtributoAberto(null);
