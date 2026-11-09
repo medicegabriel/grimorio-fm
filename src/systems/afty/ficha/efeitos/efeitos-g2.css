@@ -61,7 +61,7 @@
 .e-g2 .e-cabeca {
   --e-ret-w: 112px;
   position: relative; display: grid; grid-template-columns: var(--e-ret-w) minmax(0, 1fr); column-gap: 14px; align-items: stretch;
-  margin: 6px 0 0; padding: 6px 16px 6px 6px;
+  margin: 0; padding: 6px 16px 6px 6px;
 }
 :where(.e-g2) .e-cabeca {
   border: 1px solid var(--e-painel-borda); border-radius: calc(var(--afty-raio, 12px) * 18 / 12);
