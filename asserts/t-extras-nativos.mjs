@@ -7,7 +7,8 @@ register(
 const R = new URL("../src/systems/afty/", import.meta.url).href;
 const { deriveAfty, maestria } = await import(R + "afty-derive.js");
 const { createBlankAfty, funcionamentosDaFicha } = await import(R + "afty-schema.js");
-const { RECURSOS_BUFF_NATIVOS, efeitosDaAlmaAtual } = await import(R + "afty-extras-nativos.js");
+const { RECURSOS_BUFF_NATIVOS } = await import(R + "afty-extras-nativos.js");
+const { efeitosDoEstadoDaAlma } = await import(R + "afty-alma-estados.js");
 const { efeitosDaTecnica, efeitosDosBuffsNativos } = await import(R + "afty-efeitos.js");
 
 let ok = 0;
@@ -30,7 +31,7 @@ t("recursos nativos ausentes dos Funcionamentos Basicos",
   funcionamentosDaFicha(base).some((f) => recursosEsperados.includes(f.id)), false);
 t("nenhum efeito nativo entra na tecnica vazia", efeitosDaTecnica(base).length, 0);
 t("a penalidade automatica da Alma tem origem de Buff",
-  efeitosDaAlmaAtual(20, 100)[0]?.origem, "buff:alma_estados_automatico");
+  efeitosDoEstadoDaAlma("critico")[0]?.origem, "buff:alma_estados_automatico");
 const efeitosBuffs = efeitosDosBuffsNativos();
 t("Buffs nativos mantem efeitos mecanicos", efeitosBuffs.length > 0, true);
 t("efeitos nativos tem origem de Buff e nao disputam Funcionamento Basico",
@@ -85,10 +86,13 @@ t("Assassino Mestre soma 2d6", assMestre, `${basicoSem.texto} + 2d6`);
 
 // 7) Estados da Alma: os limites são frações do máximo da ficha, não
 //    valores absolutos. Fora de combate a penalidade continua valendo.
-const almaCheia = deriveAfty(base, { almaAtual: 100 });
-const almaDanificada = deriveAfty(base, { almaAtual: 60 });
-const almaInstavel = deriveAfty(base, { almaAtual: 40 });
-const almaCritica = deriveAfty(base, { almaAtual: 10 });
+// A criatura de 100 de Alma em porcentagem é a ficha ANTIGA (sem a marca do livro, que ganha o Addon já ligado).
+const baseAntiga = { ...base };
+delete baseAntiga.regimeAlma;
+const almaCheia = deriveAfty(baseAntiga, { almaAtual: 100 });
+const almaDanificada = deriveAfty(baseAntiga, { almaAtual: 60 });
+const almaInstavel = deriveAfty(baseAntiga, { almaAtual: 40 });
+const almaCritica = deriveAfty(baseAntiga, { almaAtual: 10 });
 const periciaDe = (d, id) => d.testes.pericias.find((p) => p.id === id)?.bonus;
 const acertoDe = (d, id) => d.testes.ataques.find((a) => a.id === id)?.bonus;
 t("Alma Danificada (<75%) penaliza -3 na Percepção",
@@ -100,7 +104,7 @@ t("Alma Crítica (<25%) penaliza -8 na Percepção",
 t("Alma Crítica (<25%) penaliza -8 no Acerto Amaldiçoado",
   acertoDe(almaCheia, "amaldicoado") - acertoDe(almaCritica, "amaldicoado"), 8);
 t("Fora de combate a Alma continua penalizando",
-  deriveAfty({ ...base, combate: { ativo: false } }, { almaAtual: 10 }).testes.ataques.find((a) => a.id === "amaldicoado").bonus,
+  deriveAfty({ ...baseAntiga, combate: { ativo: false } }, { almaAtual: 10 }).testes.ataques.find((a) => a.id === "amaldicoado").bonus,
   almaCritica.testes.ataques.find((a) => a.id === "amaldicoado").bonus);
 
 // Um Combatente 19 sem bônus de Constituição tem 120 PV e 120 de Alma.
@@ -127,11 +131,11 @@ t("Player crítico também penaliza o TR",
 t("Player crítico também penaliza o Acerto",
   acertoDe(playerAlmaCritica, "amaldicoado") - acertoDe(playerAlmaCheia, "amaldicoado"), -8);
 t("A fonte da penalidade continua no Motor",
-  playerAlmaCritica.efeitos.detalhes.some((e) => e.nome === "Estados da Alma (automático)" && e.canal === "bonusPericia" && e.valor === -8),
+  playerAlmaCritica.efeitos.detalhes.some((e) => e.nome === "Estado da Alma (Crítico)" && e.canal === "bonusPericia" && e.valor === -8),
   true);
 
 // A criatura também pode ter máximo acima de 100. A régua é o máximo real.
-const aftyAlmaMaior = { ...base, alma: { ...base.alma, max: 160 } };
+const aftyAlmaMaior = { ...baseAntiga, alma: { ...baseAntiga.alma, max: 160 } };
 const aftyAlmaCheia = deriveAfty(aftyAlmaMaior, { almaAtual: 160 });
 t("Afty preserva o máximo de Alma 160", aftyAlmaCheia.almaMax, 160);
 for (const [atual, penalidade] of [[120, 0], [119, -3], [79, -6], [39, -8]]) {

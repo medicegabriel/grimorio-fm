@@ -24,6 +24,7 @@ import {
   usosGastosDe, marcaUso, consomeEstadoCombate,
 } from "../ficha/ficha-sessao";
 import { avisoDoVital } from "../ficha/ficha-vital";
+import { avisoDoEstadoDaAlma } from "../afty-alma-estados";
 import { rolarTeste, rolarDano, textoDaRolagem } from "../ficha/ficha-rolagem";
 import { prepararRolagemEspecializacao, registrarAtaqueEspecializacao, aplicarCuraRoladaEspecializacao } from "../ficha/ficha-especializacoes";
 import { preparaRolagemCura } from "../afty-cura";
@@ -394,6 +395,7 @@ export default function PainelDeCombatente({
           <Vital
             tipo="alma" icone={Sparkles} rotulo="Alma"
             atual={sessao.almaAtual} max={derived.almaMax}
+            aviso={avisoDoEstadoDaAlma(derived.almaEstado)}
             /* ⚠ Pelos mesmos verbos da Ficha, e pelo mesmo motivo do PE logo
                acima: as duas telas mexem na MESMA sessão, e o Dano na Alma de um
                jogador desce o PV corrente junto. Divergir aqui faria o mestre e o

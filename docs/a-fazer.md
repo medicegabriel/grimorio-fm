@@ -7,6 +7,20 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 
 ---
 
+## Estados da Alma: leituras adotadas para confirmar (2026-11-09)
+
+Os Estados da Alma estão automáticos (ver "SESSÃO DE 2026-11-09 · ESTADOS DA ALMA" em `docs/afty-status.md`). Três
+leituras minhas esperam o autor:
+
+1. Exatamente em 75%, 50% ou 25% o Estado é o de cima (Estável, Danificado, Instável). O Livro p.312 diz "acima de 75%"
+   para o Estável e "abaixo de 75%" para o Danificado, e deixa a fronteira sem dono.
+2. "Todos os testes e rolagens" é Ataque, Resistência, Perícia, Iniciativa e Teste de Morte (a mesma leitura da
+   Exaustão). Dano, Defesa e CD não levam a penalidade.
+3. Em 0 de Integridade só o Estado Destruído acende. A morte fica com a mesa. Ligar o descanso longo à Alma
+   (`recuperaAlmaPorDescanso`) segue pendente.
+
+---
+
 ## Ficha Final no celular: o botão Livros vira aba na borda (2026-11-08, resolvido na Ficha clássica)
 
 O botão flutuante do Livro de Regras (`PdfFab.jsx`, em `src/components/`, somente-leitura) cobria o bônus da perícia, o custo de PE e o Crítico na borda direita. Resolvido só em CSS, sem tocar o componente: no celular (até 640 px), dentro da Ficha clássica, ele fica fechado como uma aba de 28 px na borda e volta ao lugar de sempre ao abrir a pilha. Em 390x700 e 360x640, nas abas Ações, Habilidades e Perícias, os alvos cobertos pelo botão foram de 0 a 10 por aba para 0, nas duas rotas. A regra se pendura no `aria-label` (`asserts/t-livros-aba.mjs` avisa se ele mudar).

@@ -325,7 +325,7 @@ t("o Grau do cozinheiro também", donoPorId.get("comidas_grau"), "interludio");
 t("o ferreiro é Interlúdio", donoPorId.get("armeiro_melhorias"), "interludio");
 /* Outros: o que não tem casa. */
 t("os aliados caem em Outros", donoPorId.get("aliados_escolhidos"), "outros");
-t("os Estados da Alma também", donoPorId.get("alma_info"), "outros");
+t("os Estados da Alma não têm interruptor", donoPorId.has("alma_info"), false);
 
 /* A ordem final, com as duas Especializações no meio. O Conjurador entra na
    Técnica pelos estados de ativação dele, então a lista tem as seis. */

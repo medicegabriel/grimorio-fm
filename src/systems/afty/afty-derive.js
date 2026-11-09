@@ -171,7 +171,11 @@ import {
   estadosCombateDeAddon, ampliarMaximosRecursos, epocaAddons, comEscopoDaFicha, pacotesDaFicha,
 } from "./afty-addons";
 import { agrupaConcedido, concessoesDaSessao, escolhasDoConcedido } from "./afty-concessao";
-import { estadosNativosExtras, efeitosDaAlmaAtual, ESCOPO_PRIMEIRO_ATAQUE } from "./afty-extras-nativos";
+import { estadosNativosExtras, ESCOPO_PRIMEIRO_ATAQUE } from "./afty-extras-nativos";
+import {
+  estadoDaAlma, estadoDaAlmaImpoe, entradasDeCondicaoDaAlma, efeitosDoEstadoDaAlma,
+} from "./afty-alma-estados";
+import { comAlmaLegada } from "./afty-alma-regime";
 import { efeitosCombateEmAlcateia, tetosDaPosicaoDoControlador } from "./afty-controlador-posicao";
 import { origemContadoresDslVars } from "./afty-contadores-origem";
 import { estadoOlhinhosLu, estadosDosOlhinhosLu, efeitosDosOlhinhosLu, resolveOlhinhosLu } from "./afty-olhinhos-lu";
@@ -327,7 +331,7 @@ export function deriveAfty(creature, opcoes = {}) {
      a cópia que a ficha guardou pode ser de uma versão velha, e o escopo da
      ficha abaixo já lê o `substitui` dela. Devolve a mesma ficha quando não há
      nada a fazer. Ver afty-addons-compostos.js. */
-  creature = hidratarFicha(creature);
+  creature = comAlmaLegada(hidratarFicha(creature));
   return comEscopoDaFicha(creature, () => {
     const id = creature?.core?.origem?.aptidaoAura
       ?? creature?.aptidoesAmaldicoadas?.find((id) => getAptidao(id)?.categoria === "aura");
@@ -370,7 +374,21 @@ export function deriveAfty(creature, opcoes = {}) {
   });
 }
 
-function deriveAftyNoEscopo(creature, opcoes = {}, auraDaOrigem = null, talentosOrigemBloqueados = [], escolhasExcedentes = []) {
+/**
+ * ⚠ O ESTADO DA ALMA É DE DUAS PASSADAS (2026-11-09, Livro p.312). O Estado sai da Integridade corrente sobre o
+ * total, e o total só fecha no fim do cálculo do PV. Só que o que o Estado IMPÕE (penalidades, custo extra de energia
+ * e as Condições Exposto e Fragilizado) precisa entrar na lista de efeitos e de Condições, lá no começo. Então a
+ * primeira passada descobre o Estado e, quando ele muda alguma coisa, a segunda roda com ele em `opcoes.almaEstado`.
+ * Ficha com a Alma íntegra, a maioria, roda uma vez só.
+ */
+function deriveAftyNoEscopo(creature, opcoes = {}, ...resto) {
+  const r = deriveAftyUmaPassada(creature, opcoes, ...resto);
+  const chave = r?.almaEstado?.chave;
+  if (!chave || chave === opcoes.almaEstado || !estadoDaAlmaImpoe(chave)) return r;
+  return deriveAftyUmaPassada(creature, { ...opcoes, almaEstado: chave }, ...resto);
+}
+
+function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talentosOrigemBloqueados = [], escolhasExcedentes = []) {
   creature = comGungnirNaSessao(creature, opcoes.gungnir);
   creature = comArmaBloodfeast(creature, opcoes.bloodfeast);
   const core = creature?.core ?? {};
@@ -486,8 +504,13 @@ function deriveAftyNoEscopo(creature, opcoes = {}, auraDaOrigem = null, talentos
      subir ou descer o Nível nunca deixa Condição velha para trás. As penalidades numéricas entram no Motor logo
      abaixo, e a perda de PV máximo fecha junto do PV. Ver afty-exaustao.js. */
   const nivelExaustao = limitaExaustao(opcoes.exaustao);
-  const condicoesDaMesa = nivelExaustao
+  /* O ESTADO DA ALMA (2026-11-09, Livro p.312) impõe Exposto e Fragilizado pelo mesmo caminho, no fim da lista. O
+     Estado vem de `opcoes.almaEstado`, que a segunda passada do derive preenche (ver `deriveAftyNoEscopo`). */
+  const chaveEstadoAlma = opcoes.almaEstado ?? null;
+  const listaComExaustao = nivelExaustao
     ? [...listaCondicoes, ...entradasDeCondicaoDaExaustao(nivelExaustao)] : listaCondicoes;
+  const condicoesDaMesa = chaveEstadoAlma
+    ? [...listaComExaustao, ...entradasDeCondicaoDaAlma(chaveEstadoAlma)] : listaComExaustao;
   const condicoes = resolveCondicoes(temBloodfeast(creature) && estadoBloodfeast?.agua
     ? [...condicoesDaMesa, { nome: "Exposto" }, { nome: "Abalado" }] : condicoesDaMesa, {
     pericias: catalogoPericiasFicha.map((p) => ({ id: p.id, nome: p.nome })),
@@ -1501,6 +1524,8 @@ function deriveAftyNoEscopo(creature, opcoes = {}, auraDaOrigem = null, talentos
     ...condicoes.efeitos,
     // As penalidades do Nível de Exaustão: -N nas rolagens, na Defesa e na CD, e -1,5 m de Deslocamento por Nível.
     ...efeitosDaExaustao(nivelExaustao),
+    // O Estado da Alma: -3, -6 ou -8 nas rolagens e o custo extra de energia/estamina (+2, +3 ou +5).
+    ...efeitosDoEstadoDaAlma(chaveEstadoAlma),
     ...efeitosDasAdaptacoes(creature, opcoes.adaptacoes),
     ...efeitosDharma(creature, opcoes.dharma),
     // Habilidade Única da Ferramenta equipada, a primeira das cinco fontes do
@@ -2948,7 +2973,9 @@ function deriveAftyNoEscopo(creature, opcoes = {}, auraDaOrigem = null, talentos
      coerente, então o canal volta a ser porcento dentro do `almaMult`, o PV
      deixa de seguir a Alma corrente, e a sessão lê o `almaPilha` publicado no
      fim para deixar de descontar a Vida no Dano na Alma. */
-  const almaPilha = ehJogador("pvPePorEspecializacao") && !regrasAddon.almaComoAfty;
+  /* ⚠ A ALMA SEGUE O LIVRO NOS DOIS SISTEMAS (autor, 2026-11-09): a criatura ganhou a mesma pilha do jogador, e a
+     porcentagem virou o Addon `alma-do-afty`, que as fichas antigas já carregam ligado (ver afty-alma-regime.js). */
+  const almaPilha = !regrasAddon.almaComoAfty;
   const bonusAlma = canal("almaMax");
   const almaMax = almaPilha ? 0 : almaMaxBase + bonusAlma;
   const almaMult = almaPilha
@@ -3060,15 +3087,9 @@ function deriveAftyNoEscopo(creature, opcoes = {}, auraDaOrigem = null, talentos
      efeitos que consultam o PV máximo. Eles alteram somente o PV resultante. */
   let hp = Math.round(hpAntesMultiplicador * regrasAddon.multiplicadorPvFinal);
   const danoNaAlma = hpCheio - hpAntesMultiplicador;
-  // O máximo do Player só é conhecido depois do PV. Os estados da Alma usam
-  // a fração atual desse máximo, inclusive quando o máximo da criatura passa de 100.
-  const efeitosAlma = efeitosDaAlmaAtual(
-    opcoes.almaAtual == null ? almaMaxFinal : almaAtualDsl,
-    almaMaxFinal,
-  );
-  if (efeitosAlma.length) {
-    ef = mesclarEfeitos(ef, aplicarEfeitos(efeitosAlma, montarCtx(attrEff, modByAttr)));
-  }
+  // O total da Alma só é conhecido depois do PV. O Estado usa a fração corrente desse total, e quem o IMPÕE é a
+  // segunda passada do derive (ver `deriveAftyNoEscopo`).
+  const estadoAlma = estadoDaAlma(opcoes.almaAtual == null ? almaMaxFinal : almaAtualDsl, almaMaxFinal);
 
   // O bônus de luta é a jogada normal de Corpo a Corpo, antes do próprio
   // Fluxo (autor, 2026-09-21). Reutilizar o resolver mantém a mesma escala,
@@ -5208,6 +5229,9 @@ function deriveAftyNoEscopo(creature, opcoes = {}, auraDaOrigem = null, talentos
        derivado em mão, e o sistema sozinho não responde mais: o jogador com o
        verbo `almaComoAfty` tem a Alma da criatura. */
     almaPilha,
+    /* O Estado da Alma como o derive o leu: a chave, o rótulo, a fração e o que ele impõe. `desvantagem` acende no
+       Crítico, e o roteador de d20 da Ficha a aplica na rolagem. */
+    almaEstado: estadoAlma,
     modTecnica,
     tecnicaAttr,
     origemEstruturalId: origemEstrutural(creature),

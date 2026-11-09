@@ -2,6 +2,7 @@ import { rolarTeste, rolarDano } from "./ficha-rolagem";
 // O saldo negativo e as falhas de morte moram no estado vital (CL2). Aqui ficam só os MODOS do Restringido. FOLHA.
 import { vitalEmBranco, estabilizado, comFalhas, curaNaSessao } from "./ficha-vital";
 import { avaliarAcessoAltoNivel, getHabilidadeApice } from "../afty-alto-nivel";
+import { modoCombinado } from "../afty-propriedades-armas";
 
 const inteiro = (n) => Math.max(0, Math.trunc(Number(n) || 0));
 const tem = (d, id) => (d?.habilidades?.canonicas ?? d?.habilidades?.efetivas ?? []).includes(id);
@@ -195,6 +196,11 @@ export function prepararRolagemEspecializacao(desc, s, d) {
   if (desc.tipo === "teste" && ((agarrar && tem(d, "res_barreira_inamovivel"))
     || (furtividade && tem(d, "res_restricao_definitiva")))) {
     resultado = { ...resultado, modo: desc.modo === "desvantagem" ? "normal" : "vantagem" };
+  }
+  /* A ALMA CRÍTICA TIRA VANTAGEM E DÁ DESVANTAGEM EM TODO TESTE (Livro p.312). É o MESMO ponto por onde passam a Ficha
+     Clássica, a G2 e o Encontro, e a regra de dois d20 do Motor vale: uma vantagem de outra fonte a anula (p.282). */
+  if (desc.tipo === "teste" && d?.almaEstado?.desvantagem) {
+    resultado = { ...resultado, modo: modoCombinado(resultado.modo ?? "normal", { desvantagem: true }) };
   }
   return resultado;
 }

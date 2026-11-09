@@ -174,7 +174,8 @@ export function Medidor({ r, m, onAbrir, classe = "" }) {
   const nivel = pctAtual <= 25 ? "critico" : pctAtual <= 50 ? "baixo" : "normal";
   return (
     <button type="button" className={`afty-vital m-medidor ${classe}`} data-afty-vital={r.tipo} data-afty-nivel={nivel} data-recurso={r.tipo} data-alerta={nivel === "critico" ? "critico" : undefined} onClick={onAbrir}
-      aria-label={`${r.rotulo}: ${r.atual} de ${r.max}${r.temp ? `, mais ${r.temp} temporário` : ""}. Abrir painel`}>
+      title={r.estado ?? undefined} data-estado={r.estado ?? undefined}
+      aria-label={`${r.rotulo}: ${r.atual} de ${r.max}${r.temp ? `, mais ${r.temp} temporário` : ""}${r.estado ? `, ${r.estado}` : ""}. Abrir painel`}>
       <span className="m-medidor-topo afty-vital-conteudo">
         <span className="afty-vital-rotulo m-medidor-rotulo">{r.rotulo}</span>
         <span className="m-medidor-num afty-vital-valores">

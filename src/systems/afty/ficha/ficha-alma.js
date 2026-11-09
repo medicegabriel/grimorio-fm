@@ -52,7 +52,9 @@ export function testeDeIntegridade(derived, { cd, natural = null, rng = Math.ran
     const sucesso = total >= Math.trunc(dc);
     return { ok: true, tr: { resultado: sucesso ? "sucesso" : "falha", sucessoCritico: sucesso && n >= margem }, natural: n, total, cd: Math.trunc(dc), rolagem: null };
   }
-  const r = rolarTeste({ rotulo: "Integridade", detalhe: "Dano na Alma", bonus: tr.bonus, dados: tr.dadosExtras, margem, cd: Math.trunc(dc) }, rng);
+  // A Alma Crítica dá desvantagem em todos os testes, e o Teste de Integridade é um deles.
+  const modo = derived?.almaEstado?.desvantagem ? "desvantagem" : "normal";
+  const r = rolarTeste({ rotulo: "Integridade", detalhe: "Dano na Alma", bonus: tr.bonus, dados: tr.dadosExtras, margem, cd: Math.trunc(dc), modo }, rng);
   return {
     ok: true, tr: { resultado: r.sucesso ? "sucesso" : "falha", sucessoCritico: !!r.sucesso && !!r.critico },
     natural: r.natural, total: r.total, cd: r.cd, rolagem: r,

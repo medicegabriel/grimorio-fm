@@ -44,6 +44,7 @@ import {
   usosGastosDe, marcaUso,
 } from "./ficha-sessao";
 import { avisoDoVital } from "./ficha-vital";
+import { avisoDoEstadoDaAlma } from "../afty-alma-estados";
 import { prepararRolagemEspecializacao, registrarAtaqueEspecializacao, aplicarCuraRoladaEspecializacao } from "./ficha-especializacoes";
 import { rolarTeste, rolarDano } from "./ficha-rolagem";
 import { preparaRolagemArma, registraRolagemArma, configuraArmaNaSessao, marcaErroDaArma, danoDaAmpla, usaAmpla } from "../afty-propriedades-armas";
@@ -1054,6 +1055,7 @@ export default function AftyFicha({
             <Vital
               tipo="alma" icone={Sparkles} rotulo="Alma"
               atual={sessao.almaAtual} max={derived.almaMax}
+              aviso={avisoDoEstadoDaAlma(derived.almaEstado)}
               /* ⚠ Os dois passam pelos verbos de `ficha-sessao.js`, e não por um
                  `setVital` que escreveria só a Alma. No jogador o delta NEGATIVO
                  é Dano na Alma, e ele desce o PV corrente junto: escrever o campo

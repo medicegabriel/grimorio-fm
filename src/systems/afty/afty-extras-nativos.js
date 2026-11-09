@@ -298,39 +298,15 @@ export const RECURSO_BUFF_ALIADOS = {
 };
 
 /* ============================================================ */
-/* ESTADOS DA ALMA — penalidade automática                      */
+/* ESTADOS DA ALMA: penalidade automática                        */
 /* ============================================================ */
-export const ESTADOS_ALMA = [
-  {
-    id: "alma_info",
-    label: "Estados da Alma (referência)",
-    tipo: "bool",
-    title: "REFERÊNCIA — o que o motor não aplica sozinho, por Estado: Danificado (<75%) custo de energia/estamina das habilidades +2. Instável (<50%) custo +3, condição Exposto. Crítico (<25%) custo +5, desvantagem em tudo, condições Exposto + Fragilizado. Em 0% de Integridade: morte. Os -3/-6/-8 em Perícia, TR e Acerto já entram sozinhos, sem precisar deste interruptor.",
-  },
-];
-
+/* Os Estados da Alma são automáticos e não têm interruptor. A regra mora em afty-alma-estados.js e entra no derive. */
 export const RECURSO_BUFF_ALMA = {
   id: "alma_estados_automatico",
   nome: "Estados da Alma (automático)",
-  descricao: "-3/-6/-8 em Perícia, Teste de Resistência e Acerto quando a Integridade da Alma corrente cai abaixo de 75% / 50% / 25% do máximo. Não precisa de interruptor e vale dentro e fora de combate.",
-  // O máximo do Player é o PV e só fecha depois dos efeitos da técnica.
-  // A penalidade entra no derive após esse cálculo, em efeitosDaAlmaAtual.
+  descricao: "Penalidade em testes e rolagens, custo extra de energia/estamina, Exposto, Fragilizado e desvantagem conforme a Integridade da Alma corrente cai abaixo de 75% / 50% / 25% do total. Vale dentro e fora de combate.",
   efeitos: [],
 };
-
-/** Efeitos da Alma calculados sobre a fração corrente do máximo da ficha. */
-export function efeitosDaAlmaAtual(atual, maximo) {
-  const total = Number(maximo);
-  if (!Number.isFinite(total) || total <= 0) return [];
-  const corrente = atual == null ? total : Math.max(0, Number(atual) || 0);
-  const fracao = corrente / total;
-  const penalidade = fracao < 0.25 ? -8 : fracao < 0.5 ? -6 : fracao < 0.75 ? -3 : 0;
-  if (!penalidade) return [];
-  return ["bonusPericia", "bonusTR", "bonusAcerto"].map((canal) => ({
-    canal, duracao: "temporaria", expr: String(penalidade),
-    origem: "buff:" + RECURSO_BUFF_ALMA.id, nome: RECURSO_BUFF_ALMA.nome,
-  }));
-}
 
 /* ============================================================ */
 /* COMIDAS — Ferramentas de Cozinheiro                           */
@@ -514,7 +490,7 @@ export const RECURSO_BUFF_ARMEIRO = {
 
 /** Controles nativos da bancada, usados como estadosExtras. */
 export const ESTADOS_NATIVOS_EXTRAS = [
-  ...ESTADOS_ALIADOS, ...ESTADOS_ALMA, ...ESTADOS_COMIDAS, ...ESTADOS_ARMEIRO,
+  ...ESTADOS_ALIADOS, ...ESTADOS_COMIDAS, ...ESTADOS_ARMEIRO,
 ];
 
 /**
@@ -534,8 +510,8 @@ export function estadosNativosExtras(rankDeFeiticeiro = 0) {
     ))
     : [];
   /* A sub-aba de cada um, na divisão que o autor pediu em 2026-09-17: Comidas
-     e Ferreiro são Interlúdio (as duas Ferramentas), e Aliados e Alma não têm
-     casa própria, então caem em Outros. O id é o mesmo de `afty-combate.js`, e
+     e Ferreiro são Interlúdio (as duas Ferramentas), e o Aliado não tem
+     casa própria, então cai em Outros. O id é o mesmo de `afty-combate.js`, e
      está escrito aqui em vez de importado para este módulo não ganhar aresta
      nova no grafo (ver asserts/t-ordem-modulos.mjs). */
   const interludio = { id: "interludio", label: "Interlúdio" };
@@ -543,7 +519,6 @@ export function estadosNativosExtras(rankDeFeiticeiro = 0) {
   const com = (lista, dono) => lista.map((e) => (e.dono ? e : { ...e, dono }));
   return [
     ...com(aliados, outros),
-    ...com(ESTADOS_ALMA, outros),
     ...com(ESTADOS_COMIDAS, interludio),
     ...com(ESTADOS_ARMEIRO, interludio),
   ];

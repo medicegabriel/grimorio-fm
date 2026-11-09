@@ -1,5 +1,65 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-09 · ESTADOS DA ALMA AUTOMÁTICOS E A ALMA DA CRIATURA SEGUE O LIVRO
+
+Três pedidos do autor, todos medidos em `asserts/t-alma-estados.mjs` (71) e nos asserts de Alma que mudaram.
+
+**1. O interruptor "Estados da Alma (referência)" saiu.** `ESTADOS_ALMA` e a função `efeitosDaAlmaAtual` foram
+removidos de `afty-extras-nativos.js`. O recurso de Buff `alma_estados_automatico` ficou (é a origem dos efeitos) com a
+descrição atualizada. O grupo Outros da aba Buffs perdeu a linha.
+
+**2. A Alma da criatura segue o livro, igual à do Player.** Antes a criatura era porcentagem sobre 100. Agora a Alma é
+uma pilha do tamanho do PV máximo nos dois sistemas (Livro p.311), e a porcentagem virou o Addon `alma-do-afty`
+(`addons/alma-do-afty.json`, versão 1.1.0, mesmo id do Addon que já existia para o Player).
+- O regime é `almaPilha = !regrasAddon.almaComoAfty` no derive, para os dois sistemas.
+- `src/systems/afty/afty-alma-regime.js` (folha, zero imports): ficha nova nasce com `regimeAlma: "livro"`. Ficha de
+  criatura SEM essa marca é antiga e ganha o Addon já ligado, com a marca `regimeAlma: "migrado"`. A migração roda em
+  `mesclaFichaAfty` (builder, Ficha, ponte) e na entrada do `deriveAfty` (snapshot de Encontro que não passou pela
+  mescla), com cache por ficha. Quem tirar o Addon depois da migração fica no livro e não o ganha de volta.
+- O pacote mora inline em `afty-alma-regime.js` e em `addons/alma-do-afty.json`. O assert `t-alma-do-afty.mjs` compara
+  os dois.
+- Ficha de Player não migra: lá a Alma já era pilha.
+- O afty-schema deixou de ser folha pura e importa só a folha `afty-alma-regime.js` (`t-ordem-modulos.mjs` registra).
+
+**3. Os Estados da Alma foram automatizados por inteiro** (`src/systems/afty/afty-alma-estados.js`, folha):
+
+| Estado | Penalidade | Custo de energia/estamina | Condições | Desvantagem |
+|---|---|---|---|---|
+| Estável | 0 | 0 | nenhuma | não |
+| Danificado (<75%) | -3 | +2 | nenhuma | não |
+| Instável (<50%) | -6 | +3 | Exposto | não |
+| Crítico (<25%) | -8 | +5 | Exposto e Fragilizado | sim |
+| Destruído (0) | só o rótulo | | | |
+
+- O Estado só é conhecido no fim do PV, e o que ele impõe precisa entrar no começo (lista de efeitos e de Condições).
+  Por isso o derive é de DUAS PASSADAS quando o Estado impõe algo: a primeira acha o Estado, a segunda roda com
+  `opcoes.almaEstado`. Ficha com a Alma íntegra roda uma passada só.
+- As penalidades entram como linhas do Motor: bonusPericia, bonusTR, bonusAcerto, iniciativa e Teste de Morte. O custo
+  extra é o canal `custoPE` com valor negativo, o mesmo do Condenado.
+- Exposto e Fragilizado chegam ao derive como Condições impostas, com id `alma:<Nome>` e `via` "Estado da Alma (...)".
+  Não moram na sessão. A aba Buffs as mostra travadas, como as da Exaustão.
+- A desvantagem do Crítico passa pelo ponto comum de preparo de rolagem (`prepararRolagemEspecializacao`, que serve a
+  Ficha Clássica, a G2 e o Encontro) e pelo Teste de Integridade. Vantagem de outra fonte a anula (Livro p.282).
+- O Estado aparece como aviso na barra de Alma ("Alma Danificada" etc., Ficha Clássica e Encontro) e no title do
+  medidor da G2. `derived.almaEstado` traz chave, rótulo, fração e o que o Estado impõe.
+
+**Não entrou:** a morte em 0 de Integridade (só acende o Estado Destruído, como o Nível 6 da Exaustão) e a ligação do
+descanso longo à Alma (`recuperaAlmaPorDescanso` segue sem ligação, pendência já registrada).
+
+**Leituras adotadas, a confirmar com o autor** (também em `docs/a-fazer.md`):
+- Exatamente em 75%, 50% ou 25% o Estado é o de cima (o livro diz "acima" para o Estável e "abaixo" para o Danificado,
+  e a fronteira fica sem dono). É a leitura que o site já usava.
+- "Todos os testes e rolagens" é Ataque, Resistência, Perícia, Iniciativa e Teste de Morte, como na Exaustão. Dano,
+  Defesa e CD não entram.
+- Criatura nova com Melhoria de Alma: o canal `almaMax` agora soma em pontos no PV, como no jogador.
+
+**Asserts que mudaram de sentido** (a criatura de controle virou a antiga, sem a marca): `t-alma-do-afty`,
+`t-alma-jogador`, `t-cl1-combate`, `t-cl2-alma-dados-vida`, `t-espinho`, `t-extras-nativos`, `t-estados-organiza`,
+`t-sistema`. Ficam falhando, já antes desta sessão, `t-reconciliacao-g00` e `t-revisao-g00` (módulos novos sem
+proprietário de controle, dos quais `afty-alma-estados.js` e `afty-alma-regime.js` passam a fazer parte).
+
+---
+
 ## SESSÃO DE 2026-11-09 · O NÍVEL DE EXAUSTÃO PASSA A FAZER ALGUMA COISA
 
 Livro p.324. Até hoje o contador (`sessao.exaustao`) contava e mostrava, e a penalidade era de mesa. O autor

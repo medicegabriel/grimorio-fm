@@ -4,6 +4,8 @@
  * Fórmulas em ../../../docs/afty-formulas-base.md.
  */
 
+import { comAlmaLegada, REGIME_ALMA_LIVRO } from "./afty-alma-regime";
+
 /* ND em que cada trilha de alto nível abre. Moram AQUI, no módulo folha que
    todo mundo importa, e não em afty-alto-nivel.js: afty-gerais.js precisa dos
    dois no corpo do catálogo (tempo de avaliação do módulo) para o pré-requisito
@@ -134,6 +136,9 @@ export const getTamanho = (value) =>
 export function mesclaFichaAfty(existente) {
   const blank = createBlankAfty();
   if (!existente) return blank;
+  /* O REGIME DA ALMA (2026-11-09): ficha de criatura sem a marca `regimeAlma` é de ANTES da mudança, e ganha o Addon
+     `alma-do-afty` já ligado. Tem de vir ANTES da mescla, senão a marca do `blank` (que nasce no livro) a cobriria. */
+  existente = comAlmaLegada(existente);
   /* `periciaOficios` virou um objeto id para lista em 2026-08-30, quando o
      Ofício passou a poder se repetir na ficha. Os dois formatos antigos, a
      lista solta e o `periciaOficio` de nome único, entram como o Ofício do
@@ -740,6 +745,9 @@ export function createBlankAfty() {
     // e por isso o addon mudar na biblioteca não mexe sozinho nas fichas
     // antigas. Ver ./afty-addons.js e docs/afty-addons.md.
     addons: [],
+
+    // O regime da Alma: ficha nova segue o livro (Alma igual ao máximo de PV). Ver ./afty-alma-regime.js.
+    regimeAlma: REGIME_ALMA_LIVRO,
 
     narratorNotes: "",
 

@@ -2806,6 +2806,10 @@ terceira porta do `filtraForaDoJogador`. Assert em `asserts/t-treino-de-atributo
 
 ## Alma do Grimório Afty na Ficha de Jogador (2026-10-12)
 
+⚠ 2026-11-09: a criatura também passou a seguir o livro, e este pacote virou o caminho para a Alma em porcentagem nos
+DOIS sistemas. Toda ficha de criatura anterior à mudança carrega o pacote já ligado (`src/systems/afty/afty-alma-regime.js`,
+marca `regimeAlma`). A tabela abaixo é de 2026-10-12 e a coluna "igual à criatura" vale para a criatura ANTIGA.
+
 [addons/alma-do-afty.json](../addons/alma-do-afty.json) troca a Alma do jogador pela da criatura:
 "100 Máximo + Outros" (autor). Pacote só com `regrasAfty: { "almaComoAfty": true }`, verbo novo.
 

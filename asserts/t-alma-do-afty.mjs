@@ -17,7 +17,8 @@ register(
 const R = new URL("../src/systems/afty/", import.meta.url).href;
 const { deriveAfty } = await import(R + "afty-derive.js");
 const { validarPacote, normalizarPacote } = await import(R + "afty-addons.js");
-const { createBlankAfty } = await import(R + "afty-schema.js");
+const { createBlankAfty, mesclaFichaAfty } = await import(R + "afty-schema.js");
+const { comAlmaLegada, PACOTE_ALMA_DO_AFTY } = await import(R + "afty-alma-regime.js");
 const SE = await import(R + "ficha/ficha-sessao.js");
 
 const ALMA = JSON.parse(readFileSync(new URL("../addons/alma-do-afty.json", import.meta.url), "utf8"));
@@ -119,24 +120,39 @@ t("desinstalar devolve a pilha cheia", [desinstalou.almaAtual, desinstalou.almaM
 /* O máximo que sobe com o Addon segue a criatura: não soma na corrente. */
 const subiu = reabre(SE.normalizaSessao(null, afty), ficha("player", { addon: true, len: LENDA }));
 const subiuCriatura = reabre(
-  SE.normalizaSessao(null, deriveAfty(ficha("afty"))), ficha("afty", { len: LENDA }));
+  SE.normalizaSessao(null, deriveAfty(ficha("afty", { addon: true }))), ficha("afty", { addon: true, len: LENDA }));
 t("com o Addon a Lendária no meio da campanha age como na criatura",
   [subiu.almaAtual, subiu.almaMaxVisto], [subiuCriatura.almaAtual, subiuCriatura.almaMaxVisto]);
 
 /* ============================================================ */
-/* 5. A CRIATURA NÃO MUDA                                        */
+/* 5. A CRIATURA (2026-11-09): O LIVRO É O PADRÃO E O ADDON É O ANTIGO */
 /* ============================================================ */
 const campos = (d) => [d.almaMax, d.almaMult, d.almaPilha, d.hp];
-t("criatura: o Addon não muda nada",
-  campos(deriveAfty(ficha("afty", { addon: true }))), campos(deriveAfty(ficha("afty"))));
-t("criatura: nem com a Lendária",
-  campos(deriveAfty(ficha("afty", { addon: true, len: LENDA }))), campos(deriveAfty(ficha("afty", { len: LENDA }))));
-t("criatura: a Alma segue sendo 100", deriveAfty(ficha("afty")).almaMax, 100);
+t("criatura nova sem o Addon segue o livro: Alma igual ao PV",
+  campos(deriveAfty(ficha("afty"))), [135, 1, true, 135]);
+t("criatura com o Addon: a Alma é 100 e multiplica o PV",
+  campos(deriveAfty(ficha("afty", { addon: true }))), [100, 1, false, 135]);
+t("criatura com o Addon e a Lendária: 125 e multiplica",
+  campos(deriveAfty(ficha("afty", { addon: true, len: LENDA }))), [125, 1.25, false, 169]);
+/* A ficha ANTIGA (sem a marca do livro) ganha o Addon já ligado e deriva como porcentagem. */
+const fichaAntiga = ficha("afty");
+delete fichaAntiga.regimeAlma;
+t("ficha antiga: deriva como a porcentagem", campos(deriveAfty(fichaAntiga)), [100, 1, false, 135]);
+t("ficha antiga: o Addon já está ligado na cópia", comAlmaLegada(fichaAntiga).addons.map((p) => p.id), ["alma-do-afty"]);
+t("ficha antiga: a marca grava junto", comAlmaLegada(fichaAntiga).regimeAlma, "migrado");
+t("ficha antiga migrada uma vez não migra de novo", comAlmaLegada(comAlmaLegada(fichaAntiga)).addons.length, 1);
+t("ficha antiga que já tem o Addon não duplica", comAlmaLegada({ ...fichaAntiga, addons: [ALMA] }).addons.length, 1);
+t("quem tirou o Addon depois da migração fica no livro",
+  campos(deriveAfty({ ...comAlmaLegada(fichaAntiga), addons: [] })), [135, 1, true, 135]);
+t("o Player sem marca não migra", comAlmaLegada((() => { const f = ficha("player"); delete f.regimeAlma; return f; })()).addons, []);
+t("mescla de ficha antiga já traz o Addon", mesclaFichaAfty(fichaAntiga).addons.map((p) => p.id), ["alma-do-afty"]);
+t("mescla de ficha nova não traz", mesclaFichaAfty(ficha("afty")).addons, []);
+t("o JSON distribuído é o pacote inline", JSON.parse(JSON.stringify(PACOTE_ALMA_DO_AFTY)), ALMA);
 
 /* Jogador com o Addon e criatura saem com a MESMA Alma e o MESMO multiplicador. */
 t("jogador com o Addon e criatura: mesma Alma e mesmo multiplicador",
   [aftyLenda.almaMax, aftyLenda.almaMult],
-  [deriveAfty(ficha("afty", { len: LENDA })).almaMax, deriveAfty(ficha("afty", { len: LENDA })).almaMult]);
+  [deriveAfty(ficha("afty", { addon: true, len: LENDA })).almaMax, deriveAfty(ficha("afty", { addon: true, len: LENDA })).almaMult]);
 
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 

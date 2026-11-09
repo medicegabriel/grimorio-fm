@@ -5,6 +5,7 @@ import { estadoVisivel } from "../../afty-combate";
 import { ESTADO_APICE, RODADAS_APICE } from "../../afty-talisma-apice";
 import { fichaDaCondicao, listaComE } from "../../afty-condicoes";
 import { EXAUSTAO_MAXIMA, limitaExaustao, ehCondicaoDeExaustao } from "../../afty-exaustao";
+import { ehCondicaoDeAlma } from "../../afty-alma-estados";
 import { IconeDaCondicao, IconeDoDono } from "../../ui/icones-afty";
 import { getCanal } from "../../afty-efeitos";
 import { AFTY_PERICIAS } from "../../afty-pericias-catalogo";
@@ -1206,11 +1207,11 @@ export default function AbaBuffs({
           // A do Ritual Estendido não sai pelo X: quem a tirou foi o ritual.
           travada: c.id === "ritual:desprevenido",
         }));
-      /* As que o Nível de Exaustão IMPÕE moram no derive, e não na sessão: linha travada, sem X e sem rodadas. A marcada à
+      /* As que o Nível de Exaustão e o Estado da Alma IMPÕEM moram no derive, e não na sessão: linha travada, sem X e sem rodadas. A marcada à
          mão com o mesmo nome já mostra a mesma coisa, então a imposta não repete. */
       const marcadas = new Set(daSessao.map((c) => c.nome));
       const impostas = (derived.condicoes?.lista ?? [])
-        .filter((c) => ehCondicaoDeExaustao(c.id) && !marcadas.has(c.nome))
+        .filter((c) => (ehCondicaoDeExaustao(c.id) || ehCondicaoDeAlma(c.id)) && !marcadas.has(c.nome))
         .map((c) => ({ ...fichaDaCondicao(c.nome, c.forca), ...c, rodadas: null, travada: true, automatica: true }));
       return [...daSessao, ...impostas].sort((a, b) => b.nivel - a.nivel);
     },

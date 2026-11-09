@@ -57,6 +57,8 @@ const ficha = (sistema, { len = [], extra = 0 } = {}) => {
   }
   return f;
 };
+/* A criatura ANTIGA (sem a marca do livro) ganha o Addon já ligado e tem a Alma em porcentagem: é o controle. */
+const antiga = (f) => { delete f.regimeAlma; return f; };
 /* Deriva com a Alma corrente da sessão, que é o que a Ficha Final faz. */
 const comAlma = (f, sessao) => deriveAfty(f, { almaAtual: sessao.almaAtual });
 
@@ -81,7 +83,7 @@ t("as parcelas do PV somam o total, com a Lendária", somaPartes(comLenda), comL
 t("e sem ela também", somaPartes(semLenda), semLenda.hp);
 /* ⚠ CONTRAPROVA: na criatura o mesmo canal é porcentagem e NÃO pode virar uma
    parcela somada, senão ele entraria duas vezes (uma aqui e outra no `almaMult`). */
-const criaturaLenda = deriveAfty(ficha("afty", { len: ["len_consciencia_absoluta_da_alma"] }));
+const criaturaLenda = deriveAfty(antiga(ficha("afty", { len: ["len_consciencia_absoluta_da_alma"] })));
 t("na criatura a Lendária não vira parcela somada do PV",
   criaturaLenda.partes.hp.some((p) => p.label === "Consciência Absoluta da Alma"), false);
 t("na criatura ela vira o multiplicador de sempre",
@@ -202,7 +204,7 @@ t("sessão velha de jogador abre com a Alma cheia", migrada.almaAtual, 187);
 t("e passa a registrar o máximo visto", migrada.almaMaxVisto, 187);
 
 /* ⚠ A CRIATURA NÃO É TOCADA: lá o número gravado é ferida de verdade. */
-const dCriatura = deriveAfty(ficha("afty"));
+const dCriatura = deriveAfty(antiga(ficha("afty")));
 const velhaCriatura = { ...SE.normalizaSessao(null, dCriatura), almaAtual: 60 };
 delete velhaCriatura.almaMaxVisto;
 const migradaC = SE.normalizaSessao(velhaCriatura, dCriatura);
@@ -213,7 +215,7 @@ t("a migração não se repete", SE.normalizaSessao(migrada, comLenda).almaAtual
 /* ============================================================ */
 /* 8. A CRIATURA, DO COMEÇO AO FIM, NÃO MUDOU                    */
 /* ============================================================ */
-const fc = ficha("afty");
+const fc = antiga(ficha("afty"));
 t("criatura: a Alma segue com máximo 100", deriveAfty(fc).almaMax, 100);
 t("criatura: a Alma segue multiplicando o PV",
   [60, 80, 100].map((a) => deriveAfty(fc, { almaAtual: a }).hp), [81, 108, 135]);

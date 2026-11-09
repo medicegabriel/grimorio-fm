@@ -532,6 +532,10 @@ um golpe. `dadosCritico` guarda a quantidade alternativa de um grupo no crítico
 usada tanto nas fórmulas quanto na rolagem.
 
 ### Alma / Integridade
+⚠ DESDE 2026-11-09 a Alma da criatura segue o livro (p.311), igual à do Player: é uma pilha do tamanho do PV máximo.
+A fórmula abaixo (`Alma.Max = 100`, escala o HP) é a do Addon `alma-do-afty`, que as fichas de criatura antigas já
+carregam ligado. Os Estados da Alma (p.312) são automáticos nos dois regimes (`afty-alma-estados.js`).
+
 `Alma.Max = 100`. `Alma.Atual` = valor corrente (0–100). Escala o HP.
 
 ### HP.Max

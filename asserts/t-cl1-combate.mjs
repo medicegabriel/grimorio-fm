@@ -40,6 +40,8 @@ const teste = (natural, bonus, extra = {}) => Rol.rolarTeste({ rotulo: "Ataque",
 const ficha = (sistema, extra = {}) => {
   const c = createBlankAfty();
   c.rulesVersion = sistema;
+  // A criatura deste arquivo é a ANTIGA (Alma em porcentagem, com o Addon já ligado). A nova segue o livro, como o jogador.
+  if (sistema === "afty") delete c.regimeAlma;
   c.core = { ...c.core, nd: 12, tipo: "combatente", patamar: "comum" };
   c.especializacoes = [{ id: "combatente", nivel: 12 }];
   c.attributes = { forca: 12, destreza: 12, constituicao: 12, inteligencia: 10, sabedoria: 10, presenca: 10 };

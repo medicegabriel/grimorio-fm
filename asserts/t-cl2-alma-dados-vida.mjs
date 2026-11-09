@@ -32,6 +32,8 @@ const op = () => ({ opId: `cl2-av-${++contador}` });
 const ficha = (sistema, { classes = [{ id: "combatente", nivel: 10 }], con = 10, er = 0, integridade = null, treinamentos = null, origem = "inato" } = {}) => {
   const f = createBlankAfty();
   f.rulesVersion = sistema;
+  // A criatura deste arquivo é a ANTIGA (Alma em porcentagem, com o Addon já ligado). A nova segue o livro, como o jogador.
+  if (sistema === "afty") delete f.regimeAlma;
   const nivel = classes.reduce((n, c) => n + c.nivel, 0);
   f.core = { ...f.core, nd: nivel, tipo: "misto", patamar: "comum", origem: { id: origem } };
   f.especializacoes = classes;

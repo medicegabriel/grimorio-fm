@@ -281,8 +281,6 @@ const DIFERENCAS_ESPERADAS = {
   especializacoes: "terceiraClasse",
   hp: "pvPePorEspecializacao",
   almaMax: "pvPePorEspecializacao",
-  // O regime da Alma publicado para a sessão: pilha no jogador, porcento na criatura.
-  almaPilha: "pvPePorEspecializacao",
   pe:"pvPePorEspecializacao e quantidadeDePE",
   defesa: "valoresAdicionais",
   cd: "valoresAdicionais",
@@ -443,7 +441,7 @@ for (const campo of ["maestria", "atencao", "grau", "rdAlma"]) {
 t("PV = 12 + 6x7 do Combatente, 5x6 do Conjurador, e 14 x ModCon",
   dPlayer.hp, 12 + 6 * 7 + 5 * 6 + 14 * 2);
 t("e a Alma do jogador e o PV", dPlayer.almaMax, dPlayer.hp);
-t("a Alma da criatura continua sendo 100", dAfty.almaMax, 100);
+t("e a Alma da criatura nova também é o PV (2026-11-09), a porcentagem virou Addon", dAfty.almaMax, dAfty.hp);
 t("Defesa = 10 + metade do nivel + Destreza, sem Maestria", dPlayer.defesa, 10 + 7 + 4);
 /* ⚠ A CD do jogador NÃO é mais a fórmula pura, e isso é correto: as Bases
    concedidas trazem efeito junto, e algumas somam CD. Por isso o que se mede

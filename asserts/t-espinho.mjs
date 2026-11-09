@@ -190,8 +190,14 @@ t("jogador: Aumento de Alma soma 10 na Alma e 10 no PV",
   [almaJ[1].almaMax - almaJ[0].almaMax, almaJ[1].hp - almaJ[0].hp], [10, 10]);
 t("jogador: duas compras somam 20",
   deriveAfty(ficha({ compras: { alma: 2 } })).almaMax - almaJ[0].almaMax, 20);
-const almaC = [deriveAfty(ficha({ sistema: "afty" })), deriveAfty(ficha({ sistema: "afty", compras: { alma: 1 } }))];
-t("criatura: o mesmo canal é porcentagem, 100 vira 110", [almaC[0].almaMax, almaC[1].almaMax], [100, 110]);
+/* A criatura ANTIGA (sem a marca do livro, com o Addon já ligado) segue em porcentagem. */
+const antiga = (f) => { delete f.regimeAlma; return f; };
+const almaC = [deriveAfty(antiga(ficha({ sistema: "afty" }))), deriveAfty(antiga(ficha({ sistema: "afty", compras: { alma: 1 } })))];
+t("criatura antiga: o mesmo canal é porcentagem, 100 vira 110", [almaC[0].almaMax, almaC[1].almaMax], [100, 110]);
+/* A criatura NOVA segue o livro, como o jogador: o canal soma em pontos na Alma e no PV. */
+const almaN = [deriveAfty(ficha({ sistema: "afty" })), deriveAfty(ficha({ sistema: "afty", compras: { alma: 1 } }))];
+t("criatura nova: Aumento de Alma soma 10 na Alma e 10 no PV",
+  [almaN[1].almaMax - almaN[0].almaMax, almaN[1].hp - almaN[0].hp], [10, 10]);
 t("criatura: e o PV sobe 10%", almaC[1].hp, Math.round(almaC[0].hp * 1.1));
 
 /* ============================================================ */

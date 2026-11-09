@@ -386,12 +386,16 @@ export const DIVERGENCIAS = [
 
        ⚠ A METADE DA ALMA PODE SER DESFEITA POR ADDON (2026-10-12): o verbo
        `regrasAfty.almaComoAfty` devolve ao jogador a Alma da criatura, e o PV
-       por Classe fica. Quem pergunta o regime lê `almaPilha` no derivado. */
+       por Classe fica. Quem pergunta o regime lê `almaPilha` no derivado.
+
+       ⚠ DESDE 2026-11-09 A CRIATURA TAMBÉM SEGUE O LIVRO: a Alma dela é igual ao PV, como a do
+       jogador, e a porcentagem sobre 100 virou o Addon `alma-do-afty`. Toda ficha de criatura que
+       já existia ganha o Addon JÁ LIGADO (`afty-alma-regime.js`), então o número dela não mudou. */
     id: "pvPePorEspecializacao",
     tipo: "regra",
     onde: "afty-derive.js, blocos HP, PE e Alma; ficha/ficha-sessao.js, os verbos da Alma",
     fonte: "PV e PE saem da Especialização. O valor de Integridade da Alma de um personagem é igual ao seu máximo de Pontos de Vida. Vida Máxima de Jogador é igual a Alma Atual, e Dano na Alma também é Dano na Vida. (autor e livro, 2026-08-30 e 2026-09-18)",
-    afty: "base e por nível vêm do Tipo, com multiplicador de Patamar, e a Alma é porcentagem sobre 100",
+    afty: "base e por nível vêm do Tipo, com multiplicador de Patamar, e a Alma é igual ao PV (a porcentagem sobre 100 é o Addon Alma do Grimório Afty, já ligado nas fichas antigas)",
     player: "base da classe inicial mais o valor por nível de cada classe, a Alma é uma pilha do tamanho do PV, e o PV máximo segue a Alma corrente",
     ativa: true,
   },

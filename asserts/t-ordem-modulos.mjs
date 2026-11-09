@@ -108,6 +108,8 @@ const FOLHAS = [
   // Entrou em 2026-11-01 (CL3): o estado das paredes e cortinas. A sessão o importa, e as operações de barreira importam a sessão.
   ["ficha/ficha-barreiras-estado.js", "a sessao o importa, e as operacoes de barreira importam a sessao"],
   ["afty-schema.js", "todo mundo cria ficha em branco"],
+  ["afty-alma-regime.js", "o schema o importa para migrar a Alma das fichas antigas"],
+  ["afty-alma-estados.js", "o derive e as telas leem a regra dos Estados da Alma"],
   ["afty-dsl.js", "o avaliador não pode depender de conteúdo"],
   ["afty-sistema.js", "regraDo() é lido de dentro dos catálogos"],
 ];
@@ -116,9 +118,12 @@ const FOLHAS = [
       um módulo sem import não tem como entrar num ciclo. */
 for (const [arquivo, porque] of FOLHAS) {
   const texto = readFileSync(fileURLToPath(R + arquivo), "utf8");
+  // O schema importa UMA folha (a migração da Alma), que por sua vez também é folha e é conferida abaixo.
+  const folhaPermitida = arquivo === "afty-schema.js" ? ["./afty-alma-regime"] : [];
   const imports = texto.split("\n")
     .map((l) => l.trim())
-    .filter((l) => /^import\s/.test(l) || /^\}\s*from\s/.test(l));
+    .filter((l) => /^import\s/.test(l) || /^\}\s*from\s/.test(l))
+    .filter((l) => !folhaPermitida.some((f) => l.includes(`"${f}"`)));
   t(`${arquivo} nao importa nada (${porque})`, imports, []);
 }
 

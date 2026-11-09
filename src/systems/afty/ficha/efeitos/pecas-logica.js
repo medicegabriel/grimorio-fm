@@ -1,6 +1,7 @@
 /* Lógica das peças da aba Efeitos (hooks e funções puras), separada de pecas.jsx para o Fast Refresh. */
 import { useLayoutEffect, useState } from "react";
 import { parseTextoRico } from "../../afty-texto-rico";
+import { avisoDoEstadoDaAlma } from "../../afty-alma-estados";
 import { estaLigado, Sessao, AFTY_TIPOS, AFTY_PATAMARES, ehPlayer, regraDo, sistemaDaFicha, rotuloDoNivel, getEspecializacao, addonsDaCriatura } from "./ponte";
 
 /* O texto tem MARCAÇÃO do Afty (negrito, itálico, sublinhado, riscado, título
@@ -54,7 +55,7 @@ export function recursos(m) {
   return [
     { tipo: "pv", rotulo: "Vida", atual: sessao.hpAtual, max: derived.hp, temp: Sessao.pvTempTotal(sessao) },
     ...(derived.bloodfeast?.tem ? [] : [{ tipo: "pe", rotulo: derived.recursoLabel || "Energia", atual: sessao.peAtual, max: derived.pe, temp: Sessao.peTempTotal(sessao) }]),
-    { tipo: "alma", rotulo: "Alma", atual: sessao.almaAtual, max: derived.almaMax, temp: 0 },
+    { tipo: "alma", rotulo: "Alma", atual: sessao.almaAtual, max: derived.almaMax, temp: 0, estado: avisoDoEstadoDaAlma(derived.almaEstado) },
     ...(derived.pontosPreparo > 0
       ? [{ tipo: "preparo", rotulo: "Preparo", atual: Sessao.preparoDe(sessao, derived.pontosPreparo), max: derived.pontosPreparo, temp: Sessao.preparoTempDe(sessao) }]
       : []),
