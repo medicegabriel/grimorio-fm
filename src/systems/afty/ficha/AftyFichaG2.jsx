@@ -26,7 +26,7 @@ import {
 import { registrarAtaqueEspecializacao, aplicarCuraRoladaEspecializacao } from "./ficha-especializacoes";
 import { rolarTeste, rolarDano } from "./ficha-rolagem";
 import { registraRolagemArma, configuraArmaNaSessao, marcaErroDaArma, danoDaAmpla, usaAmpla } from "../afty-propriedades-armas";
-/* A PRÉVIA DAS TRÊS ABAS (2026-10-21): Ações, Perícias e Equipamentos no G2, ligadas só pela prop `previaAbasG2` (o App não a passa).
+/* A PRÉVIA DAS TRÊS ABAS (2026-10-21): Ações, Perícias e Equipamentos no G2, ligadas pela prop `previaAbasG2` (padrão ligado desde 2026-11-09).
    A etapa da rolagem sem sorteio (`prepararRolagem`) vale para todo o G2: o `rolar` passa por ela, e as abas novas perguntam a ela a
    disponibilidade de cada operação. Ver docs/afty-ficha-final.md. */
 import { prepararRolagem } from "./abas-g2/rolagem-g2";
@@ -134,9 +134,9 @@ const ABAS_RETIDAS = ["acoes", "pericias", "equipamentos"];
 export default function AftyFicha({
   creature, onVoltar, onEditar, onSalvarTema, onSalvarInvocacoes, onSalvarEspinho,
   onSalvarFundamentosPerdidos, onSalvarPreferencias, onSalvarPacotesAliados, onSalvarRecebidos,
-  /* A PRÉVIA ISOLADA das três abas (2026-10-21). Desligada por padrão: o App não a passa, então /Player e /Afty, com ou sem ficha-g2=1,
-     seguem com as abas de sempre. Só o executor da prévia em `.audit/` liga. */
-  previaAbasG2 = false,
+  /* As três abas novas (Ações, Perícias e Equipamentos). LIGADAS por padrão desde 2026-11-09, em /Afty e /Player. O executor da prévia
+     em `.audit/` ainda pode desligar passando `false`. */
+  previaAbasG2 = true,
   abaInicial = "acoes",
 }) {
   const alvoId = creature?.id ?? null;
