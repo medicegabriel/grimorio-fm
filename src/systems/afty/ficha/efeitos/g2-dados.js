@@ -195,7 +195,11 @@ const CONTA_NO_CARTAO = { concentrarAura: (n) => `${n} ${n === 1 ? "Aura" : "Aur
 const ESTILO_NO_CARTAO = { duelando: "Duelando", lutandoComDuasArmas: "Duas Armas" };
 
 export function estadosDoCartao(a, m, { curto = true } = {}) {
-  if (a.tipo === "exaustao") return [{ rotulo: null, valor: `Nível ${a.nivel}` }];
+  if (a.tipo === "exaustao") {
+    // As Condições que o Nível impõe vêm do derive; sem elas (Nível 1) o cartão diz só o Nível.
+    const impostas = (m?.derived?.exaustao?.condicoes ?? []).map((c) => c.nome);
+    return [{ rotulo: null, valor: `Nível ${a.nivel}` }, ...(impostas.length ? [{ rotulo: "Condições", valor: impostas.join(", ") }] : [])];
+  }
   if (a.tipo === "sustentado") return [{ rotulo: null, valor: "Sustentado" }];
   if (a.tipo !== "grupo") return [];
   const gr = a.grupo;

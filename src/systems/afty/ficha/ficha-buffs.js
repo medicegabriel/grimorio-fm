@@ -394,9 +394,10 @@ export function compararSaldo(com, sem) {
 export function saldoDoAgora(ficha, combate, opcoes = {}, atual = null) {
   const { buffs, ...opcoesDerive } = opcoes;
   const temBancada = Object.values(combate ?? {}).some((v) => (Array.isArray(v) ? v.length > 0 : !!v));
-  if (!temBancada && !(buffs?.length) && !(opcoesDerive.condicoes?.length)) return [];
+  // O Nível de Exaustão é parte do "Agora": penalidade e Condições impostas entram no saldo, e a base sai sem elas.
+  if (!temBancada && !(buffs?.length) && !(opcoesDerive.condicoes?.length) && !(opcoesDerive.exaustao > 0)) return [];
   const comTudo = atual ?? derivarParaComparar(ficha, combate, buffs, opcoesDerive);
-  const semNada = deriveAfty({ ...ficha, combate: {}, buffsSessao: [] }, { ...opcoesDerive, condicoes: [] });
+  const semNada = deriveAfty({ ...ficha, combate: {}, buffsSessao: [] }, { ...opcoesDerive, condicoes: [], exaustao: 0 });
   return compararSaldo(comTudo, semNada);
 }
 

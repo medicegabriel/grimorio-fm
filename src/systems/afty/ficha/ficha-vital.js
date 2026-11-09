@@ -211,8 +211,10 @@ export function comFalhas(vital, n = 1) {
  *   tipo                "dano" (padrão) ou "perda". Perda de vida (Sangramento, custo, Dano na Alma) entra nas Portas
  *                       mas não é ataque: não dá falha por si e não dispara Ferimento
  *   massivoAdiado       o Restringido com Ainda de Pé disponível: a morte massiva espera a escolha dele
+ *   falhasAoCair        quantas falhas o corpo já traz ao ENTRAR nas Portas (Exaustão 4: "tratado como se já tivesse duas
+ *                       falhas"). Só sobe o contador, nunca o baixa, e só na queda
  */
-export function registraDano(vital, { hpAntes, hpDepois, sobrou = 0, dano = 0, hpMax = 0, ataqueId = null, tipo = "dano", massivoAdiado = false } = {}) {
+export function registraDano(vital, { hpAntes, hpDepois, sobrou = 0, dano = 0, hpMax = 0, ataqueId = null, tipo = "dano", massivoAdiado = false, falhasAoCair = 0 } = {}) {
   if (vital.estado === "morto") return { vital, caiu: false, morreu: false, falhaPorDano: false, ferimento: false };
   const eDano = tipo !== "perda";
   let v = { ...vital };
@@ -256,6 +258,7 @@ export function registraDano(vital, { hpAntes, hpDepois, sobrou = 0, dano = 0, h
     /* O ataque que derrubou não dá, ele mesmo, a falha por dano: um segundo tipo de dano do MESMO ataque chega com o
        corpo já nas Portas e não pode contar como golpe novo. */
     if (caiu && v.ataque) v.ataque = { ...v.ataque, falhou: true };
+    if (caiu && naoNegativo(falhasAoCair) > v.falhas) v = comFalhas(v, naoNegativo(falhasAoCair) - v.falhas);
     /* Dano massivo: o saldo negativo passando do PV máximo mata sem as Portas, salvo a escolha do Restringido. */
     if (v.estado === "morrendo" && naoNegativo(hpMax) > 0 && v.saldo > naoNegativo(hpMax)) {
       v = massivoAdiado ? { ...v, massivoPendente: true } : morto(v, "massivo");

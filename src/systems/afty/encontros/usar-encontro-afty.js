@@ -81,6 +81,8 @@ const opcoesDoCombatente = (sessao) => (!sessao ? {} : {
   condicoes: sessao.condicoes,
   // A Exaustão de Técnica da Expansão (DA-16), a mesma trava da Ficha.
   exaustaoTecnica: sessao.exaustaoTecnica,
+  // O Nível de Exaustão (Livro p.324): penalidades, Condições impostas e perda de PV máximo.
+  exaustao: sessao.exaustao,
 });
 
 const derivarCombatente = (c) => {
@@ -170,6 +172,7 @@ const chaveDoDerive = (sessao, epoca) => ({
   invocacoes: sessao.invocacoes,
   treinosAtivos: sessao.treinosAtivos,
   condicoes: sessao.condicoes,
+  exaustao: sessao.exaustao,
   guarda: JSON.stringify(entradaDaGuarda(sessao)),
   epoca,
 });

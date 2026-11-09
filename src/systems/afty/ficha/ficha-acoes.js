@@ -21,6 +21,7 @@
  */
 import { recursosDeEspecializacao, usarEfeitoEspecializacao } from "./ficha-especializacoes";
 import { usoDe, comUso } from "./ficha-uso-estado";
+import { exaustaoImpoe } from "../afty-exaustao";
 
 export const TIPOS_DE_ACAO = ["comum", "bonus", "movimento", "reacao", "livre", "completa"];
 
@@ -33,7 +34,9 @@ const semAcento = (v) => String(v ?? "").normalize("NFD").replace(/[̀-ͯ]/g, ""
 
 export function temCondicaoNaSessao(sessao, nome) {
   const alvo = semAcento(nome);
-  return (sessao?.condicoes ?? []).some((c) => semAcento(typeof c === "string" ? c : c?.nome) === alvo);
+  // A Exaustão impõe Condições sem gravá-las na sessão (Enjoado no Nível 5 tira a conversão de ações), e conta aqui.
+  return (sessao?.condicoes ?? []).some((c) => semAcento(typeof c === "string" ? c : c?.nome) === alvo)
+    || exaustaoImpoe(sessao?.exaustao, nome);
 }
 
 const recusa = (sessao, erro, codigo) => ({ sessao, usou: null, convertida: false, erro, codigo });

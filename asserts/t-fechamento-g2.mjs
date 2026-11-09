@@ -222,7 +222,7 @@ t("os passos partem do valor de agora e somam", [EX.nivelDeExaustao(e1), EX.nive
 t("menos passos descem, e o piso é zero (sem negativo)", [EX.nivelDeExaustao(EX.maisExaustao(e2, -1)), EX.nivelDeExaustao(EX.maisExaustao(sZ, -3)), EX.maisExaustao(sZ, -1) === sZ], [1, 0, true]);
 t("zerar volta a zero e o controle pode ser reencontrado e subido de novo", [EX.nivelDeExaustao(EX.comExaustao(e2, 0)), EX.nivelDeExaustao(EX.maisExaustao(EX.comExaustao(e2, 0), 1))], [0, 1]);
 t("o valor é sempre um inteiro não negativo (lixo vira zero, decimal vira inteiro)", [EX.nivelDeExaustao(EX.comExaustao(sZ, "abc")), EX.nivelDeExaustao(EX.comExaustao(sZ, 2.9)), EX.nivelDeExaustao(EX.comExaustao(sZ, -4))], [0, 2, 0]);
-t("não tem teto inventado", EX.nivelDeExaustao(EX.comExaustao(sZ, 40)), 40);
+t("o teto é o do livro (Livro p.324, 2026-11-09): 40 vira 6, e mais um no 6 fica em 6", [EX.nivelDeExaustao(EX.comExaustao(sZ, 40)), EX.nivelDeExaustao(EX.maisExaustao(EX.comExaustao(sZ, 6), 1))], [6, 6]);
 const dEx = g2(comum(), e2);
 t("é o Nível de Exaustão, e não a Exaustão de Técnica (que a virada entrega)", [e2.exaustao, e2.exaustaoTecnica ?? 0, S.proximaRodada(e2, dEx).sessao.exaustao], [2, S.sessaoEmBranco().exaustaoTecnica ?? 0, 2]);
 t("a sessão salva e relida conserva o nível", S.normalizaSessao(JSON.parse(JSON.stringify(e2))).exaustao, 2);

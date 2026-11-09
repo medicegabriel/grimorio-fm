@@ -282,6 +282,8 @@ export function normalizaCondicoes(lista) {
     out.push({
       id, nome,
       forca: typeof bruta.forca === "string" ? bruta.forca : null,
+      // Quem IMPÕE a condição quando ela não foi marcada à mão (a Exaustão): vira o sufixo do hover.
+      via: typeof bruta.via === "string" && bruta.via.trim() ? bruta.via.trim() : null,
       rodadas,
       sangramento: faixaDeSangramento(bruta.sangramento)?.id
         ?? (faixaDeSangramento(bruta.sangramento)?.origem === "criticoArma" ? faixaDeSangramento(bruta.sangramento) : null),
@@ -392,7 +394,7 @@ export function resolveCondicoes(lista, alvos = {}) {
     porNome.set(nome, f);
     fontes.push(f);
   };
-  for (const e of entradas) registra(e.nome, null);
+  for (const e of entradas) registra(e.nome, e.via);
   for (const e of entradas) {
     for (const inc of expandeInclusoes(e.nome).slice(1)) registra(inc, e.nome);
   }
@@ -546,6 +548,7 @@ export function resolveCondicoes(lista, alvos = {}) {
       ...(forcaFaixa ? { forcaId: forcaFaixa.id, forcaLabel: forcaFaixa.label, nivel: forcaFaixa.nivel } : {}),
       id: e.id,
       rodadas: e.rodadas,
+      via: e.via,
       sangramento: faixa,
       inclui: incluidas,
       efeitos: [

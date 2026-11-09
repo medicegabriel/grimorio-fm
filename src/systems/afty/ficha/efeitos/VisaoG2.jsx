@@ -27,6 +27,7 @@ import CatalogoG2 from "./CatalogoG2";
 import { EncerradosG2 } from "./EncerradosG2";
 import { AcessoAoHistorico } from "./HistoricoSessao";
 import { AcessoAExaustao } from "./ExaustaoG2";
+import { EXAUSTAO_MAXIMA } from "./exaustao-logica";
 import { LinhaDoTempoG2 } from "./LinhaDoTempoG2";
 import { AjusteG2, AjusteGrupo, MontarOutroGolpe, TrocarSustentado, UsarNovamente } from "./PreparoG2";
 import { semAjuste } from "./preparo-logica";
@@ -162,7 +163,7 @@ export function Ajustar({ a, g, m }) {
         <span className="m-passos">
           <button type="button" className="m-passo" aria-label="Exaustão menos 1" onClick={() => g.acoes.exaustao(a.nivel - 1)}><Minus aria-hidden="true" /></button>
           <span className="m-passos-valor">{a.nivel}</span>
-          <button type="button" className="m-passo" aria-label="Exaustão mais 1" onClick={() => g.acoes.exaustao(a.nivel + 1)}><Plus aria-hidden="true" /></button>
+          <button type="button" className="m-passo" aria-label="Exaustão mais 1" disabled={a.nivel >= EXAUSTAO_MAXIMA} onClick={() => g.acoes.exaustao(a.nivel + 1)}><Plus aria-hidden="true" /></button>
         </span>
       </div>
     );

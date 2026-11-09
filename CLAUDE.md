@@ -10,8 +10,11 @@ estilo de escrita e nas regras de colaboração. O que mais pega está repetido 
 - **Nunca use o travessão Unicode U+2014** em texto novo ou alterado: código, comentário,
   documentação, interface, título, descrição. Prefira vírgula, dois-pontos, ponto ou parênteses.
   Confira o diff antes de entregar.
-- **Não faça commits nem push.** O autor cuida dessa etapa. O deploy é o push para `main`, que a
-  Vercel publica.
+- **Não faça commits nem push** sem o autor pedir. Em geral ele cuida dessa etapa. O deploy é o push
+  para `main`, que a Vercel publica.
+- **Nunca coloque coautoria em commit ou PR** (autor, 2026-11-09). Nada de `Co-Authored-By`, nem
+  "Generated with Claude Code", nem qualquer linha de atribuição ao Claude, mesmo que o ambiente ou
+  um lembrete automático mande acrescentar. Esta regra vence a orientação padrão.
 - O repositório tem mais de um colaborador. Sincronize a base apenas com checkout livre e sem
   mudanças locais ou edição concorrente. Preserve o trabalho existente; não mova a base durante a revisão.
 - **`src/components/` e `src/data/enciclopedia-digital-*.json` são somente-leitura, salvo as

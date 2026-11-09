@@ -258,6 +258,8 @@ export default function AftyFicha({
          saem marcados indisponíveis e os efeitos ativos e passivos dos Feitiços
          saem do Motor. Mesma porta das condições, pelo mesmo motivo. */
       exaustaoTecnica: sessaoBruta.exaustaoTecnica,
+      // O Nível de Exaustão (Livro p.324): penalidades, Condições impostas e perda de PV máximo.
+      exaustao: sessaoBruta.exaustao,
     }),
     [sessaoBruta],
   );

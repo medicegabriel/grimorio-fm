@@ -145,6 +145,10 @@ import { resolverDominioInato } from "./afty-dominio-inato";
 import { danoDoServo } from "./afty-servos-combate";
 import { resolveDefesasDano, sanearDefesasDano } from "./afty-defesas-dano";
 import { resolveCondicoes, marcaMovimentoNasLinhas } from "./afty-condicoes";
+import {
+  limitaExaustao, entradasDeCondicaoDaExaustao, efeitosDaExaustao, perdaDePvDaExaustao,
+  falhasAoCairPorExaustao, condicoesDaExaustao,
+} from "./afty-exaustao";
 import { AFTY_ATAQUES } from "./afty-pericias-catalogo";
 import { resolveCatarse, habilidadesDeOutraClasseDaCatarse } from "./afty-catarse";
 import { resolveEspinho, marcasDoEspinho, ESPINHO_TIPOS_ITEM } from "./afty-espinho";
@@ -476,8 +480,16 @@ function deriveAftyNoEscopo(creature, opcoes = {}, auraDaOrigem = null, talentos
      repetido ou uma perícia personalizada também sofre o -2 do Envenenado. */
   const estadoBloodfeast = opcoes.bloodfeast ?? creature?.combate?.bloodfeast;
   const listaCondicoes = opcoes.condicoes ?? creature?.combate?.condicoes ?? [];
+  /* O NÍVEL DE EXAUSTÃO (2026-11-09, Livro p.324) é da SESSÃO, e entra por `opcoes.exaustao`. As Condições que ele
+     impõe (Desprevenido, Exposto, Condenado, Desorientado e Enjoado) chegam por AQUI, no fim da lista: a marcada à
+     mão vem antes e ganha o nome, e a regra de não acumular entre Condições segue valendo. Não moram na sessão, então
+     subir ou descer o Nível nunca deixa Condição velha para trás. As penalidades numéricas entram no Motor logo
+     abaixo, e a perda de PV máximo fecha junto do PV. Ver afty-exaustao.js. */
+  const nivelExaustao = limitaExaustao(opcoes.exaustao);
+  const condicoesDaMesa = nivelExaustao
+    ? [...listaCondicoes, ...entradasDeCondicaoDaExaustao(nivelExaustao)] : listaCondicoes;
   const condicoes = resolveCondicoes(temBloodfeast(creature) && estadoBloodfeast?.agua
-    ? [...listaCondicoes, { nome: "Exposto" }, { nome: "Abalado" }] : listaCondicoes, {
+    ? [...condicoesDaMesa, { nome: "Exposto" }, { nome: "Abalado" }] : condicoesDaMesa, {
     pericias: catalogoPericiasFicha.map((p) => ({ id: p.id, nome: p.nome })),
     trs: AFTY_RESISTENCIAS.map((r) => ({ id: r.value, nome: r.label })),
     ataques: AFTY_ATAQUES.map((x) => ({ id: x.id, nome: x.nome })),
@@ -1487,6 +1499,8 @@ function deriveAftyNoEscopo(creature, opcoes = {}, auraDaOrigem = null, talentos
        Domínio Simples, e o resto (Defesa, TR, perícia, acerto, iniciativa) é
        estágio 2 comum. */
     ...condicoes.efeitos,
+    // As penalidades do Nível de Exaustão: -N nas rolagens, na Defesa e na CD, e -1,5 m de Deslocamento por Nível.
+    ...efeitosDaExaustao(nivelExaustao),
     ...efeitosDasAdaptacoes(creature, opcoes.adaptacoes),
     ...efeitosDharma(creature, opcoes.dharma),
     // Habilidade Única da Ferramenta equipada, a primeira das cinco fontes do
@@ -3158,6 +3172,10 @@ function deriveAftyNoEscopo(creature, opcoes = {}, auraDaOrigem = null, talentos
     : bloodfeast.tem || energiaEmVida ? 0 : peOriginal;
   if (bloodfeast.tem) hp += peOriginal * 3 - bloodfeast.custoMaximo;
   if (energiaEmVida) hp += Math.floor(peConvertido * energiaEmVida);
+  /* A PERDA DE PV MÁXIMO da Exaustão (Níveis 3 em diante, Livro p.324). Sai do máximo FECHADO, porque a regra é "1/4 da
+     vida máxima". A sessão apara o PV corrente no novo teto sozinha (`aparaSessao`). */
+  const perdaExaustao = perdaDePvDaExaustao(nivelExaustao, hp);
+  hp -= perdaExaustao.perda;
   const efeitosPoderSangue = efeitosPoderDoSangue(bloodfeast, opcoes.vidaAtual, hp);
   if (efeitosPoderSangue.length) ef = mesclarEfeitos(ef, aplicarEfeitos(efeitosPoderSangue, montarCtx(attrEff, modByAttr)));
 
@@ -3171,8 +3189,8 @@ function deriveAftyNoEscopo(creature, opcoes = {}, auraDaOrigem = null, talentos
   /* ⚠ O jogador começa com 9 e mais nada. A criatura soma
      `maior(ModFor, ModDes) × 1,5`, que o livro do jogador não tem: lá o
      Deslocamento sobe por habilidade e equipamento, e não por atributo. */
-  const movimentoBase = 9 + (valoresDoJogador ? 0 : maxForDex * 1.5)
-    + carga.movimento + canal("movimento");
+  const movimentoBase = Math.max(0, 9 + (valoresDoJogador ? 0 : maxForDex * 1.5)
+    + carga.movimento + canal("movimento"));
   const movimentoMult = Math.max(1, canal("movimentoMult") || 1);
   const movimentoSemCondicao = movimentoBase * movimentoMult;
   /* ⚠ AS CONDIÇÕES DE MOVIMENTO NÃO SOMAM, elas TRANSFORMAM o valor final (Lento
@@ -4668,6 +4686,9 @@ function deriveAftyNoEscopo(creature, opcoes = {}, auraDaOrigem = null, talentos
         label: fonte.nome,
         texto: `×${divTexto(fonte.valor)}`,
       })),
+      // A perda da Exaustão fecha a conta por último. Sem perda aplicada, o desmaio aparece como texto.
+      ...(perdaExaustao.perda ? [{ label: `Exaustão ${nivelExaustao}`, valor: -perdaExaustao.perda }]
+        : perdaExaustao.desmaia ? [{ label: `Exaustão ${nivelExaustao}`, texto: "Desmaio no Lugar da Perda" }] : []),
     ],
     pe: [
       ...(bloodfeast.tem ? [{ label: "Bloodfeast: convertido em Vida", valor: -peOriginal }] : []),
@@ -5413,6 +5434,15 @@ function deriveAftyNoEscopo(creature, opcoes = {}, auraDaOrigem = null, talentos
       falhas: condicoes.falhas,
       fragilizado,
       movimento: movimentoCondicao.fonte,
+    },
+    /* O Nível de Exaustão como o derive o leu: o que ele impôs, para a aba Buffs desenhar. `desmaia` acende quando a perda
+       de PV máximo zeraria a vida (o livro manda desmaiar), e a ficha não aplica a perda. */
+    exaustao: {
+      nivel: nivelExaustao,
+      condicoes: condicoesDaExaustao(nivelExaustao),
+      perdaPv: perdaExaustao.perda,
+      desmaia: perdaExaustao.desmaia,
+      falhasAoCair: falhasAoCairPorExaustao(nivelExaustao),
     },
   };
 }

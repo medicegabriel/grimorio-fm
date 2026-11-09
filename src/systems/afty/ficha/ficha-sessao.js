@@ -41,6 +41,7 @@ import {
 } from "../afty-golpe-especial";
 
 import { rolarDano } from "./ficha-rolagem";
+import { limitaExaustao, condicoesDaExaustao, falhasAoCairPorExaustao } from "../afty-exaustao";
 import { preparaRolagemCura } from "../afty-cura";
 import { normalizaPropriedadesArmas, iniciaTurnoArmas } from "../afty-propriedades-armas";
 import { normalizaBloodfeast, pagaVidaBloodfeast, rodadaBloodfeast } from "../afty-bloodfeast";
@@ -152,10 +153,10 @@ export function sessaoEmBranco(derived = null) {
        ⚠ NÃO É A EXAUSTÃO DE TÉCNICA da Expansão de Domínio (E-16, 2026-10-08).
        Aquela é rodadas de técnica inutilizável, e mora em `exaustaoTecnica`.
 
-       ⚠ O QUE UM NÍVEL FAZ AINDA NÃO TEM FONTE NO AFTY. "Exausto" existe como
-       nome de condição na lista da 2.5.2 e o `CONDICAO_TEXTOS` daqui está vazio,
-       esperando o autor. Até lá o contador CONTA e MOSTRA, e a penalidade é de
-       mesa. Está em docs/a-fazer.md. */
+       O QUE UM NÍVEL FAZ (2026-11-09, Livro p.324) mora em `afty-exaustao.js`: as
+       penalidades dos Níveis 1 a 5, as Condições impostas e o teto de 6
+       (`limitaExaustao`). O derive lê o Nível por `opcoes.exaustao`. O resto da
+       página (morte no 6, descanso longo, gatilhos de dia) é do mestre. */
     exaustao: 0,
     // A Exaustão de Técnica da Expansão (DA-16). Ver `encerraExpansao`.
     exaustaoTecnica: null,
@@ -287,7 +288,7 @@ export function normalizaSessao(bruta, derived = null) {
        meio de uma luta com casca de PV não a perde ao recarregar a página. */
     pvTempFontes: normalizaPvTemp(bruta.pvTempFontes, bruta.pvTempAtual),
     // Sessão gravada antes de 2026-09-09 não tem o campo, e zero é o certo.
-    exaustao: Math.max(0, Math.trunc(Number(bruta.exaustao) || 0)),
+    exaustao: limitaExaustao(bruta.exaustao),
     exaustaoTecnica: normalizaExaustaoTecnica(bruta.exaustaoTecnica),
     peTempFontes: normalizaPeTemp(bruta.peTempFontes),
     ...almaLida(bruta, base, derived),
@@ -1747,6 +1748,10 @@ export function aparaSessao(sessao, derived) {
   const hpAtual = entre(sessao.hpAtual, 0, hpMax);
   const peAtual = entre(sessao.peAtual, 0, peMax);
   const almaAtual = entre(sessao.almaAtual + ganho, 0, almaMax);
+  /* O TETO DE 6 DA EXAUSTÃO (Livro p.324) fecha AQUI, na rede de todo verbo: o Vislumbre, o Bloodfeast, os itens e o
+     campo de digitar somam Níveis por caminhos que não se conhecem, e um módulo FOLHA (ficha-uso-estado) não pode
+     importar o limite. Sessão montada à mão, sem o campo, continua sem ele. */
+  const exaustao = sessao.exaustao == null ? sessao.exaustao : limitaExaustao(sessao.exaustao);
   /* O PV pode ter sido escrito à mão (o campo de digitar), pelo Bloodfeast ou por uma ampliação de recurso, sem passar
      pelos verbos de dano e cura. A conciliação tira da morte e das Portas o corpo que voltou a ter vida, e devolve o
      MESMO objeto quando nada muda. Sessão montada à mão, sem o campo, continua sem ele. */
@@ -1767,11 +1772,13 @@ export function aparaSessao(sessao, derived) {
   const preparoTemp = entre(inteiro(sessao.preparoTemp, 0), 0, Math.max(0, derived?.preparoTemporario ?? 0));
   if (JSON.stringify(bloodfeastRegras) === JSON.stringify(sessao.bloodfeastRegras ?? []) && energiaEmVida === (sessao.energiaEmVida ?? 0) && hpAtual === sessao.hpAtual && peAtual === sessao.peAtual && almaAtual === sessao.almaAtual
     && visto === almaMax && invocacoes === sessao.invocacoes && tita === sessao.tita && vital === sessao.vital
-    && preparoAtual === (sessao.preparoAtual ?? null) && preparoTemp === inteiro(sessao.preparoTemp, 0)) {
+    && preparoAtual === (sessao.preparoAtual ?? null) && preparoTemp === inteiro(sessao.preparoTemp, 0)
+    && exaustao === sessao.exaustao) {
     return sessao;
   }
   return {
     ...sessao, energiaEmVida, bloodfeastRegras, hpAtual, peAtual, almaAtual, almaMaxVisto: almaMax, invocacoes, tita, preparoAtual, preparoTemp,
+    ...(exaustao != null ? { exaustao } : {}),
     ...(vital ? { vital } : {}),
   };
 }
@@ -1942,6 +1949,8 @@ function comQueda(depois, antes, derived, { sobrou = 0, dano = 0, ataqueId = nul
   const massivoAdiado = hpDepois === 0 && !!derived && recursosDeEspecializacao(depois, derived).ainda;
   const r = registraDano(vital, {
     hpAntes: Math.max(0, inteiro(antes.hpAtual, 0)), hpDepois, sobrou, dano, hpMax, ataqueId, tipo, massivoAdiado,
+    // Exaustão 4 em diante: quem cai entra nas Portas "como se já tivesse duas falhas" (Livro p.324).
+    falhasAoCair: falhasAoCairPorExaustao(antes.exaustao),
   });
   return r.vital === (depois.vital ?? undefined) ? depois : { ...depois, vital: r.vital };
 }
@@ -2169,7 +2178,9 @@ const QUEBRAM = new Set(CONDICOES_QUEBRAM_GUARDA.map(semAcento));
 /** A primeira condição ativa que derruba a Guarda, ou null. */
 export function condicaoQueQuebraGuarda(sessao) {
   const lista = Array.isArray(sessao?.condicoes) ? sessao.condicoes : [];
-  return lista.find((c) => QUEBRAM.has(semAcento(c?.nome)))?.nome ?? null;
+  // As Condições que o Nível de Exaustão impõe (Desprevenido, Exposto, Desorientado) também derrubam a Guarda.
+  return lista.find((c) => QUEBRAM.has(semAcento(c?.nome)))?.nome
+    ?? condicoesDaExaustao(sessao?.exaustao).find((c) => QUEBRAM.has(semAcento(c.nome)))?.nome ?? null;
 }
 
 /**
@@ -2480,8 +2491,8 @@ function avancaTalismaApice(sessao) {
 /** Fecha a rodada do Ápice, entrega a Exaustão e paga a próxima se continuar. */
 function avancaInvencivelSobOSol(sessao, derived, registro = null) {
   const combate = sessao.combate ?? {};
-  const exaustao = Math.max(0, inteiro(sessao.exaustao, 0))
-    + (combate.invencivelPendenteExaustao ? 1 : 0);
+  const exaustao = limitaExaustao(Math.max(0, inteiro(sessao.exaustao, 0))
+    + (combate.invencivelPendenteExaustao ? 1 : 0));
   const encerrar = () => ({
     ...sessao, exaustao,
     combate: { ...combate, invencivelSobOSol: false,
@@ -2578,8 +2589,8 @@ export function descansar(sessao, derived, { marioneteId = null } = {}) {
     pvTempFontes: {},
     // A casca de PE morre com a cena, então o descanso a zera junto com a de PV.
     peTempFontes: {},
-    exaustao: Math.max(0, inteiro(sessao.exaustao, 0))
-      + (sessao.combate?.invencivelPendenteExaustao ? 1 : 0),
+    exaustao: limitaExaustao(Math.max(0, inteiro(sessao.exaustao, 0))
+      + (sessao.combate?.invencivelPendenteExaustao ? 1 : 0)),
     // A Expansão no ar fecha sem Exaustão: o descanso devolve tudo.
     combate: expirarEstadosDaRodada(semAmpliacoesRecursos(semApice({
       ...(encerraExpansao(sessao, "descanso").combate ?? {}), invencivelSobOSol: false,
@@ -3212,7 +3223,7 @@ function alteraDominioDoEstilo(sessao, combate, estado, valor) {
     const pontos = ids.reduce((s, id) => s + Math.max(0, inteiro(mapa[id], 0)), 0);
     return {
       ...sessao,
-      exaustao: Math.max(0, inteiro(sessao.exaustao, 0)) + pontos,
+      exaustao: limitaExaustao(Math.max(0, inteiro(sessao.exaustao, 0)) + pontos),
       combate: {
         ...combate,
         [ESTADO_ESTILO_ATIVO]: false,
@@ -3247,8 +3258,8 @@ export function aplicaPatchCombate(sessao, parcial) {
   if (parcial?.ativo !== false) return { ...sessao, combate };
   return {
     ...sessao,
-    exaustao: Math.max(0, inteiro(sessao.exaustao, 0))
-      + (combate.invencivelPendenteExaustao ? 1 : 0),
+    exaustao: limitaExaustao(Math.max(0, inteiro(sessao.exaustao, 0))
+      + (combate.invencivelPendenteExaustao ? 1 : 0)),
     combate: semAmpliacoesRecursos(semApice({ ...combate, invencivelSobOSol: false,
       invencivelRodadas: 0, invencivelPendenteExaustao: false })),
   };

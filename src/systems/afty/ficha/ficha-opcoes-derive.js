@@ -52,5 +52,7 @@ export function opcoesDeriveDaSessao(sessao) {
     condicoes: sessao.condicoes,
     /* A Exaustão de Técnica (DA-16, 2026-10-08) é trava de derive. */
     exaustaoTecnica: sessao.exaustaoTecnica,
+    /* O NÍVEL DE EXAUSTÃO (2026-11-09, Livro p.324): penalidades, Condições impostas e perda de PV máximo. Ver afty-exaustao.js. */
+    exaustao: sessao.exaustao,
   };
 }

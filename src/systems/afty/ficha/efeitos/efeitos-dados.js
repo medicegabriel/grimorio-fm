@@ -395,6 +395,8 @@ function sessaoSem(a, sessao) {
   if (a.tipo === "condicao") return { ...sessao, condicoes: sessao.condicoes.filter((x) => x.id !== a.cond.id) };
   if (a.tipo === "buff") return { ...sessao, buffs: sessao.buffs.filter((x) => x.id !== a.buff.id) };
   if (a.tipo === "registro") return { ...sessao, buffs: sessao.buffs.filter((x) => x.id !== a.reg.id) };
+  // A Exaustão tem número no derive (penalidades, Condições impostas e perda de PV máximo): "sem ela" é o Nível zero.
+  if (a.tipo === "exaustao") return { ...sessao, exaustao: 0 };
   return null;
 }
 

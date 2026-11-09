@@ -562,8 +562,8 @@ criador, Encontro, Feitiços, `t-ordem-modulos.mjs`, `LEIA.md`, guias do Motor,
    de Cura (`afty-cura.js`) pelo `usaItem`, para não haver dois caminhos.
 3. **G00:** classificar os 9 módulos novos em `revisao-automacao/escopo.json`. Hoje
    `t-revisao-g00` está vermelho por isso (snippet em `entregas/CX5.md`). Não enfraquecer o assert. Registrar também os 9 asserts em `asserts/LEIA.md`.
-4. **CX4 (sem entrega):** teto e substituição do PV temporário (Símbolo de Vida Absoluta) e os
-   efeitos dos seis níveis de Exaustão (Adrenalina, Mistura Profana, Laço).
+4. **CX4 (sem entrega):** teto e substituição do PV temporário (Símbolo de Vida Absoluta). Os
+   efeitos dos Níveis de Exaustão foram feitos em 2026-11-09 (ver "LEITURAS ADOTADAS: o que um Nível de Exaustão FAZ").
 5. **Primacial:** o "desde que já seja treinado" só enxerga treino marcado na ficha ou dado pela Magistral, não o de Talento
    (provado com Tempestade de Ideias) nem, talvez, o de Classe. Fechar exige `resolveTestes` ou o derive.
 6. **CX6:** efeito de item e de encantamento em OUTRA ficha (Bloqueador, Expansão de Escudo,
@@ -811,8 +811,7 @@ Abrir no navegador/perfil habitual e atualizar a página para usar os dados
 locais existentes. O interno do Codex tem armazenamento separado. Nove
 verificações HTTP aprovadas, evidências em .audit/teste-real-localhost-20261020/.
 Nenhuma migração, importação de amostras ou alteração de fichas foi feita.
-**Limites conhecidos:** a penalidade de cada nível de Exaustão continua sem
-fonte no Afty (contador apenas). Condição Sangramento sem faixa gravada não
+**Limites conhecidos:** (a penalidade de cada nível de Exaustão passou a existir em 2026-11-09). Condição Sangramento sem faixa gravada não
 ganha o botão de perda, como na tela anterior. A cópia da Imitação sai da
 lista de candidatas enquanto está ativa. O "+" inicial do valor de um buff de
 mesa é descartado (o DSL não o aceita).
@@ -2060,16 +2059,25 @@ alguém jogar um Especialista em Estilo acima do ND 20.
 **Anotado:** 2026-09-07, ao montar a herança de Especialização
 **Nota:** desde 2026-09-28 vale também para a herdeira do Restringido (Addon Fórmula de Combate Entrópica): o Ápice que pede *20 Níveis de Restringido* (`afty-alto-nivel.js`) lê o `niveisPorEspec` pelo id do livro. O nível de EFEITO já responde pela mãe (`niveisPorEfeito`), e o de pré-requisito ficou de fora de propósito, esperando esta decisão.
 
-### PERGUNTA AO AUTOR: o que um Nível de Exaustão FAZ
-**Onde:** `src/systems/afty/ficha/ficha-sessao.js` (`exaustao`), `afty-condicoes.js`
-**Situação:** o contador de Nível de Exaustão nasceu em 2026-09-09, com o Vislumbre Celeste, e é da
-sessão de todo mundo: seis Habilidades Lendárias dizem *"você recebe um ponto de exaustão"* desde
-sempre e não tinham onde marcar. A Expansão de Domínio NÃO entra aqui: ela dá Exaustão de Técnica,
-que é outra coisa e já tem contador próprio (`exaustaoTecnica`, 2026-10-08). O que falta é o EFEITO: "Exausto" existe como
-nome de condição na lista da 2.5.2, e o `CONDICAO_TEXTOS` do Afty está vazio esperando o autor. Hoje
-o contador conta e mostra, e a penalidade é de mesa.
-**Precisa:** o texto do que cada nível impõe, e se há teto. Com ele, o contador vira canal.
-**Anotado:** 2026-09-09, ao fazer o addon Vislumbre Celeste
+### LEITURAS ADOTADAS: o que um Nível de Exaustão FAZ (Livro p.324)
+**Onde:** `src/systems/afty/afty-exaustao.js` (a regra), `afty-derive.js` (`opcoes.exaustao`), `ficha/ficha-sessao.js`
+**Situação:** RESOLVIDA EM 2026-11-09. O autor pediu as penalidades dos Níveis 1 a 5, o teto de 6 e as
+Condições automáticas, e disse que o resto é do mestre e NÃO entra no site: a morte no Nível 6, o descanso
+longo tirar um Nível, os gatilhos de dia (fome, 8 horas sem descanso, cenas de combate) e o desmaio por
+Descansos Longos. Não acrescente nenhum deles sem o autor pedir. Guia em `docs/afty-status.md`.
+**Leituras minhas, sem resposta do autor** (a única pergunta feita foi a do Dano, respondida):
+1. *"Todas as suas rolagens"* é Ataque, Resistência, Perícia, Iniciativa e Teste de Morte. O DANO não entra
+   (resposta do autor).
+2. O Nível 5 SUBSTITUI a perda de PV máximo do 3 (*"ao invés do padrão"*), e não soma. O Nível 6 segue a conta do 5.
+3. A redução de 1,5 m por Nível entra no Motor e vale ANTES das Condições de movimento: com Lento, a metade corta o
+   que sobrou.
+4. Se a perda de PV máximo zeraria a vida, o livro manda desmaiar e não perder PV. A ficha NÃO aplica a perda e
+   acende o aviso Desmaio na aba Buffs. O desmaio em si é do mestre.
+5. As Condições impostas valem como as marcadas à mão e NÃO acumulam com elas. Desprevenido, Exposto e Desorientado
+   derrubam a Guarda Inabalável, e o Enjoado do Nível 5 tira a conversão de ações.
+6. A regra vale para a criatura e para o personagem, porque o contador já era dos dois. Se a criatura deve divergir,
+   a linha entra em `DIVERGENCIAS` (`afty-sistema.js`).
+**Anotado:** 2026-09-09, ao fazer o addon Vislumbre Celeste. **Fechada:** 2026-11-09
 
 ---
 

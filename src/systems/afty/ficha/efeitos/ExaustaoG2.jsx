@@ -4,18 +4,19 @@
    O G2 só mostra o cartão de Exaustão quando o nível já é maior que zero, e o jogador precisava da Apresentação Anterior para começar o contador.
    Este é o acesso discreto: um botão pequeno nos Ativos (e no painel compacto) que abre um painel flutuante com o nível, os passos e o Zerar.
 
-   ⚠ ABRIR O CONTROLE NÃO MUDA O CONTADOR. O nível é da SESSÃO (`sessao.exaustao`, inteiro não negativo, sem teto nem penalidade que o motor não
-   modela) e não é a Exaustão de Técnica (`exaustaoTecnica`), que a virada entrega uma vez só. Os passos agem sobre o valor de AGORA.
+   ⚠ ABRIR O CONTROLE NÃO MUDA O CONTADOR. O nível é da SESSÃO (`sessao.exaustao`, inteiro de 0 a 6, com as penalidades de `afty-exaustao.js`) e não é a
+   Exaustão de Técnica (`exaustaoTecnica`), que a virada entrega uma vez só. Os passos agem sobre o valor de AGORA.
    ============================================================ */
 import React, { useCallback, useState } from "react";
 import { Minus, Plus, Gauge } from "lucide-react";
 import { Flutuante } from "./pecas";
+import { nivelDeExaustao, EXAUSTAO_MAXIMA } from "./exaustao-logica";
 
 export function AcessoAExaustao({ g, m, onde = "completa" }) {
   const [ancora, setAncora] = useState(null);
   /* O `Flutuante` refaz o foco quando o `onFechar` muda: ele tem de ser estável. */
   const fechar = useCallback(() => setAncora(null), []);
-  const n = Math.max(0, Math.trunc(Number(m.sessao.exaustao) || 0));
+  const n = nivelDeExaustao(m.sessao);
   return (
     <>
       <button type="button" className={onde === "compacta" ? "m-botao c2-exaustao" : "m-botao x-exaustao"} aria-haspopup="dialog" aria-expanded={!!ancora}
@@ -29,7 +30,7 @@ export function AcessoAExaustao({ g, m, onde = "completa" }) {
             <span className="m-passos">
               <button type="button" className="m-passo" aria-label="Exaustão menos 1" disabled={n === 0} onClick={() => g.acoes.exaustaoMais(-1)} data-exaustao-menos><Minus aria-hidden="true" /></button>
               <span className="m-passos-valor" aria-live="polite" data-exaustao-valor={n}>{n}</span>
-              <button type="button" className="m-passo" aria-label="Exaustão mais 1" onClick={() => g.acoes.exaustaoMais(1)} data-exaustao-mais><Plus aria-hidden="true" /></button>
+              <button type="button" className="m-passo" aria-label="Exaustão mais 1" disabled={n >= EXAUSTAO_MAXIMA} onClick={() => g.acoes.exaustaoMais(1)} data-exaustao-mais><Plus aria-hidden="true" /></button>
             </span>
             <button type="button" className="m-link" disabled={n === 0} onClick={() => g.acoes.exaustao(0)} data-exaustao-zerar>Zerar</button>
           </div>

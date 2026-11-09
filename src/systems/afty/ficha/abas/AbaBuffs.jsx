@@ -4,6 +4,7 @@ import { Plus, Minus, X, Search, Dices, Check, ChevronDown, ChevronRight, AlertT
 import { estadoVisivel } from "../../afty-combate";
 import { ESTADO_APICE, RODADAS_APICE } from "../../afty-talisma-apice";
 import { fichaDaCondicao, listaComE } from "../../afty-condicoes";
+import { EXAUSTAO_MAXIMA, limitaExaustao, ehCondicaoDeExaustao } from "../../afty-exaustao";
 import { IconeDaCondicao, IconeDoDono } from "../../ui/icones-afty";
 import { getCanal } from "../../afty-efeitos";
 import { AFTY_PERICIAS } from "../../afty-pericias-catalogo";
@@ -79,11 +80,11 @@ const MAX_OPCOES_ABERTAS = 3;
    do Vislumbre Celeste (autor, 2026-09-09: "a ficha conta as duas"), e não fica
    atrás de primitiva nenhuma porque não é do addon.
 
-   ⚠ O QUE UM NÍVEL FAZ ainda não tem fonte no Afty, então ele CONTA e MOSTRA, e
-   a penalidade é de mesa. Exausto não está na lista de condições que o autor
-   mandou em 2026-09-21, e por isso continua sem número. */
-function ContadorDeExaustao({ valor, onValor }) {
-  const n = Math.max(0, Math.trunc(Number(valor) || 0));
+   O QUE UM NÍVEL FAZ (2026-11-09, Livro p.324) mora em `afty-exaustao.js`: o
+   derive aplica as penalidades dos Níveis 1 a 5 e impõe as Condições, e o teto
+   do contador é 6. O desmaio, a morte no 6 e o resto da página são do mestre. */
+function ContadorDeExaustao({ valor, onValor, desmaia = false }) {
+  const n = limitaExaustao(valor);
   return (
     <span className="flex items-center gap-1.5" role="group" aria-label={`Nível de Exaustão: ${n}`}>
       <button
@@ -104,11 +105,18 @@ function ContadorDeExaustao({ valor, onValor }) {
       <button
         type="button"
         className="afty-botao"
-        onClick={() => onValor(n + 1)}
+        onClick={() => onValor(Math.min(EXAUSTAO_MAXIMA, n + 1))}
+        disabled={n >= EXAUSTAO_MAXIMA}
         aria-label="Mais um Nível de Exaustão"
       >
         <Plus className="w-3 h-3" />
       </button>
+      {desmaia && (
+        <span className="afty-delta" data-afty-tom="aviso">
+          <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+          Desmaio
+        </span>
+      )}
     </span>
   );
 }
@@ -843,7 +851,7 @@ function DetalheDoEstado({ estado, valor, opcoes, derived, onValor }) {
    resumo, rodadas), e três condições comiam 248px da aba. A linha diz o nome, o
    degrau, os números e as rodadas, e o resto abre embaixo. */
 function LinhaCondicao({ condicao, aberta, onAbrir, onRemover, onRodadas, destacado }) {
-  const { nome, nivel, forcaLabel, travada, especial, efeitos = [] } = condicao;
+  const { nome, nivel, forcaLabel, travada, automatica, especial, efeitos = [] } = condicao;
   // A linha rola até a tela quando a pastilha do painel do turno a chama.
   const raiz = useDestaque(destacado);
   const visiveis = efeitos.slice(0, MAX_EFEITOS_NA_LINHA);
@@ -879,11 +887,11 @@ function LinhaCondicao({ condicao, aberta, onAbrir, onRemover, onRodadas, destac
         </span>
       )}
       <DegrauDaForca nivel={nivel} forcaLabel={forcaLabel} especial={especial} />
-      <Rodadas nome={nome} rodadas={condicao.rodadas} onRodadas={onRodadas} />
+      {!automatica && <Rodadas nome={nome} rodadas={condicao.rodadas} onRodadas={onRodadas} />}
       <button
         type="button" className="afty-passo flex-shrink-0"
         disabled={travada}
-        title={travada ? "Imposta pelo Ritual Estendido" : "Tirar"}
+        title={automatica ? `Imposta pela ${condicao.via ?? "Exaustão"}` : travada ? "Imposta pelo Ritual Estendido" : "Tirar"}
         onClick={onRemover}
         aria-label={`Remover ${nome}`}
       >
@@ -1189,7 +1197,7 @@ export default function AbaBuffs({
   const condicoesNaCriatura = useMemo(
     () => {
       const resolvidas = new Map((derived.condicoes?.lista ?? []).map((c) => [c.id, c]));
-      return (sessao.condicoes ?? [])
+      const daSessao = (sessao.condicoes ?? [])
         .map((c) => ({
           ...fichaDaCondicao(c.nome, c.forca),
           ...(resolvidas.get(c.id) ?? {}),
@@ -1197,8 +1205,14 @@ export default function AbaBuffs({
           rodadas: c.rodadas ?? null,
           // A do Ritual Estendido não sai pelo X: quem a tirou foi o ritual.
           travada: c.id === "ritual:desprevenido",
-        }))
-        .sort((a, b) => b.nivel - a.nivel);
+        }));
+      /* As que o Nível de Exaustão IMPÕE moram no derive, e não na sessão: linha travada, sem X e sem rodadas. A marcada à
+         mão com o mesmo nome já mostra a mesma coisa, então a imposta não repete. */
+      const marcadas = new Set(daSessao.map((c) => c.nome));
+      const impostas = (derived.condicoes?.lista ?? [])
+        .filter((c) => ehCondicaoDeExaustao(c.id) && !marcadas.has(c.nome))
+        .map((c) => ({ ...fichaDaCondicao(c.nome, c.forca), ...c, rodadas: null, travada: true, automatica: true }));
+      return [...daSessao, ...impostas].sort((a, b) => b.nivel - a.nivel);
     },
     [sessao.condicoes, derived],
   );
@@ -1255,7 +1269,7 @@ export default function AbaBuffs({
         direita={
           <span className="flex items-center gap-2">
             <span className="afty-rotulo text-[11px] uppercase tracking-wider">Exaustão</span>
-            <ContadorDeExaustao valor={sessao?.exaustao} onValor={onExaustao} />
+            <ContadorDeExaustao valor={sessao?.exaustao} onValor={onExaustao} desmaia={!!derived.exaustao?.desmaia} />
           </span>
         }
       >

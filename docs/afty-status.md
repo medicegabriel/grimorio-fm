@@ -1,5 +1,62 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-09 · O NÍVEL DE EXAUSTÃO PASSA A FAZER ALGUMA COISA
+
+Livro p.324. Até hoje o contador (`sessao.exaustao`) contava e mostrava, e a penalidade era de mesa. O autor
+pediu as penalidades dos Níveis 1 a 5, o teto de 6 e as Condições automáticas, e mandou deixar o resto com o
+mestre: morte no 6, descanso longo, gatilhos de dia e desmaio NÃO entram no site. A regra mora em
+`src/systems/afty/afty-exaustao.js` (folha, zero imports) e o derive a lê por `opcoes.exaustao`.
+
+- **Penalidades (Motor):** -N em Defesa, CD, Ataque, TR, Perícia, Iniciativa e Teste de Morte, e -1,5 m de Movimento
+  por Nível. O DANO não muda (resposta do autor). Concentração e Manobras levam o -N UMA vez, pela Fortitude e pelo
+  Atletismo, e por isso não há linha geral de `bonusManobra`.
+- **Condições automáticas:** Nível 2 Desprevenido, 3 Exposto, 4 Condenado e Desorientado, 5 Enjoado, cumulativas.
+  Elas NÃO moram em `sessao.condicoes`: o derive as acrescenta no fim da lista (`entradasDeCondicaoDaExaustao`, id
+  `exaustao:<Nome>`, `via: "Exaustão N"`), então subir ou descer o Nível nunca deixa Condição velha. A marcada à
+  mão vem antes e ganha o nome, e a regra de não acumular vale. A aba Buffs mostra a imposta como linha travada,
+  sem X e sem rodadas.
+- **Testes por nome que precisaram saber:** `temCondicaoNaSessao` (o Enjoado tira a conversão de ações) e
+  `condicaoQueQuebraGuarda` (Desprevenido, Exposto e Desorientado derrubam a Guarda) olham também o Nível.
+- **PV máximo:** Níveis 3 e 4 perdem o maior entre 20 e 1/4, e o 5 em diante perde o maior entre 50 e metade, no
+  lugar da anterior. Fecha no `hp` final, com a parcela "Exaustão N" no hover. A sessão apara o PV corrente sozinha.
+  Se a perda zeraria a vida, o livro manda desmaiar: a ficha não aplica a perda e acende o aviso Desmaio.
+- **Portas da Morte:** do Nível 4 em diante quem cai entra com duas falhas (`falhasAoCair` em `registraDano`).
+- **Teto de 6:** `limitaExaustao` no normalizador, no `aparaSessao` (a rede de todo verbo, porque `ficha-uso-estado`
+  é folha e não importa) e nos escritores diretos. Os botões de mais ficam desabilitados no 6.
+- **Fiação:** `exaustao` entrou nas três listas de opções do derive (`ficha-opcoes-derive.js`, `opcoesDoCombatente`
+  do Encontro e a Ficha Clássica), na chave do cache do Encontro e no baseline do "Agora" (`saldoDoAgora`). No G2 o
+  cartão da Exaustão ganhou a conta "com ele contra sem ele" e as Condições impostas.
+- **`movimentoBase` ganhou piso de 0:** um Movimento negativo não faz sentido, e o Nível 6 sobre um corpo lento o
+  produziria.
+
+`asserts/t-exaustao.mjs` (207 asserts, nos dois sistemas). Leituras minhas, sem resposta, em `a-fazer.md`
+("LEITURAS ADOTADAS: o que um Nível de Exaustão FAZ"). A regra vale para criatura e personagem, como o contador.
+
+## SESSÃO DE 2026-11-09 · CSS DA ARCANE NO G2
+
+`themes/arcane-g2.css` substitui o tema Gelo e Cinábrio da Arcane no editor
+de Aparência. Usa a composição do G2, com o nome claro sobre aço escuro,
+um encaixe angular em cinábrio no aro do retrato. Os traços vermelhos junto
+aos títulos foram retirados para que o cinábrio decorativo marque a identidade.
+Vida mantém coral, Preparo mantém prata e Energia mantém turquesa. O novo
+acabamento foi conferido no Player a 390 e 1440 px.
+
+Os fundos individuais das estatísticas foram removidos da faixa do cabeçalho.
+A navegação ganhou 8 px de respiro entre a placa e as abas. Conferido no
+Player local, com uma cópia da Arcane, em 360, 390, 768 e 1440 px. A faixa
+ficou contínua, as abas seguiram visíveis no recolhimento do cabeçalho e a
+busca, o filtro Mestre e a rolagem de Perícias funcionaram. Tema conferido
+após gravação e reabertura. Capturas em `C:/Projetos/Grimorio/outputs/arcane/`.
+
+Corrigido o alinhamento vertical das estatísticas da Arcane em densidade
+compacta. A altura mínima e o recuo da célula clássica puxavam o texto 9 px
+acima dos controles de combate a 1600 px. Os centros coincidem nas duas
+densidades. A 390 px, as duas fileiras cabem e o botão de mais valores abre.
+
+Na barra de rolagens e no histórico, a face do dado e a soma usam a mesma
+fonte, o mesmo tamanho e a mesma entrelinha. A moldura do dado ficou
+quadrada. Conferido com `8 + 6` em Acrobacia e com dado descartado por vantagem.
+
 ## SESSÃO DE 2026-11-05: SERVOS DA GUERRA
 
 O pacote único `addons/servos-da-guerra.json` reúne as características de combate, sete classes,
