@@ -30516,9 +30516,16 @@
     },
     "afty-aptidoes.js::AFTY_APTIDOES::absorcao_elemental": {
       "proprietario": "APT-02",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 175,
+          "marcadorPagina": "<!-- página 175 -->"
+        }
+      ],
+      "nota": "CX3 (2026-11-07). Localização individual no Livro conferido."
     },
     "afty-aptidoes.js::AFTY_APTIDOES::absorcao_elemental::requisitos": {
       "proprietario": "APT-02",
@@ -30611,9 +30618,16 @@
     },
     "afty-aptidoes.js::AFTY_APTIDOES::anular_tecnica": {
       "proprietario": "APT-09",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 182,
+          "marcadorPagina": "<!-- página 182 -->"
+        }
+      ],
+      "nota": "CX3 (2026-11-07). Localização individual no Livro conferido."
     },
     "afty-aptidoes.js::AFTY_APTIDOES::anular_tecnica::requisitos": {
       "proprietario": "APT-09",
@@ -30820,30 +30834,58 @@
     },
     "afty-aptidoes.js::AFTY_APTIDOES::aura_drenadora": {
       "proprietario": "APT-02",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 175,
+          "marcadorPagina": "<!-- página 175 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-07. Aura Drenadora, morte atribuída de inimigo e PV temporário acumulável. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-aptidoes.js::AFTY_APTIDOES::aura_drenadora::requisitos": {
       "proprietario": "APT-02",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 175,
+          "marcadorPagina": "<!-- página 175 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-aptidoes.js::AFTY_APTIDOES::aura_drenadora",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-07. Aura Drenadora, morte atribuída de inimigo e PV temporário acumulável. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-aptidoes.js::AFTY_APTIDOES::aura_drenadora::requisitos/@0": {
       "proprietario": "APT-02",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 175,
+          "marcadorPagina": "<!-- página 175 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-aptidoes.js::AFTY_APTIDOES::aura_drenadora",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-07. Aura Drenadora, morte atribuída de inimigo e PV temporário acumulável. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-aptidoes.js::AFTY_APTIDOES::aura_drenadora::requisitos/@1": {
       "proprietario": "APT-02",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 175,
+          "marcadorPagina": "<!-- página 175 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-aptidoes.js::AFTY_APTIDOES::aura_drenadora",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-07. Aura Drenadora, morte atribuída de inimigo e PV temporário acumulável. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-aptidoes.js::AFTY_APTIDOES::aura_elemental": {
       "proprietario": "APT-02",
@@ -31075,16 +31117,30 @@
     },
     "afty-aptidoes.js::AFTY_APTIDOES::aura_redirecionadora": {
       "proprietario": "APT-04",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 177,
+          "marcadorPagina": "<!-- página 177 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Aura Redirecionadora, 2 PE antes do projétil/arremesso, outra jogada em alvo a 6 m, bônus 1 + metade de AU e requisito Destreza 16. Autor confirmou primeira falha com gatilhos/contagem e preparo sem outra ação. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-aptidoes.js::AFTY_APTIDOES::aura_redirecionadora::requisitos": {
       "proprietario": "APT-04",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 177,
+          "marcadorPagina": "<!-- página 177 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-aptidoes.js::AFTY_APTIDOES::aura_redirecionadora",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Aura Redirecionadora, 2 PE antes do projétil/arremesso, outra jogada em alvo a 6 m, bônus 1 + metade de AU e requisito Destreza 16. Autor confirmou primeira falha com gatilhos/contagem e preparo sem outra ação. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-aptidoes.js::AFTY_APTIDOES::aura_redirecionadora::requisitos/@0": {
       "proprietario": "APT-04",
@@ -31318,9 +31374,16 @@
     },
     "afty-aptidoes.js::AFTY_APTIDOES::cobertura_avancada": {
       "proprietario": "APT-05",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 178,
+          "marcadorPagina": "<!-- página 178 -->"
+        }
+      ],
+      "nota": "CX3 (2026-11-07). Localização individual no Livro conferido."
     },
     "afty-aptidoes.js::AFTY_APTIDOES::cobertura_avancada::requisitos": {
       "proprietario": "APT-05",
@@ -31352,9 +31415,16 @@
     },
     "afty-aptidoes.js::AFTY_APTIDOES::cobrir_se": {
       "proprietario": "APT-05",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 178,
+          "marcadorPagina": "<!-- página 178 -->"
+        }
+      ],
+      "nota": "CX3 (2026-11-07). Localização individual no Livro conferido."
     },
     "afty-aptidoes.js::AFTY_APTIDOES::cobrir_se::requisitos": {
       "proprietario": "APT-05",
@@ -31365,9 +31435,16 @@
     },
     "afty-aptidoes.js::AFTY_APTIDOES::concentrar_aura": {
       "proprietario": "APT-03",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 176,
+          "marcadorPagina": "<!-- página 176 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-07. Concentrar Aura, Ação Livre, uma rodada e dados de dano Energético. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-aptidoes.js::AFTY_APTIDOES::concentrar_aura::requisitos": {
       "proprietario": "APT-03",
@@ -31432,23 +31509,44 @@
     },
     "afty-aptidoes.js::AFTY_APTIDOES::cura_em_grupo": {
       "proprietario": "APT-10",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 191,
+          "marcadorPagina": "<!-- página 191 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-07. Cura em Grupo, ampliação do teto de PER, alcance e divisão de uma rolagem. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-aptidoes.js::AFTY_APTIDOES::cura_em_grupo::requisitos": {
       "proprietario": "APT-10",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 191,
+          "marcadorPagina": "<!-- página 191 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-aptidoes.js::AFTY_APTIDOES::cura_em_grupo",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-07. Cura em Grupo, ampliação do teto de PER, alcance e divisão de uma rolagem. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-aptidoes.js::AFTY_APTIDOES::cura_em_grupo::requisitos/liberacao_de_energia_reversa": {
       "proprietario": "APT-10",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 191,
+          "marcadorPagina": "<!-- página 191 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-aptidoes.js::AFTY_APTIDOES::cura_em_grupo",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-07. Cura em Grupo, ampliação do teto de PER, alcance e divisão de uma rolagem. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-aptidoes.js::AFTY_APTIDOES::dominio_simples": {
       "proprietario": "APT-11",
@@ -31486,9 +31584,16 @@
     },
     "afty-aptidoes.js::AFTY_APTIDOES::emocao_da_petala_decadente": {
       "proprietario": "APT-06",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 181,
+          "marcadorPagina": "<!-- página 181 -->"
+        }
+      ],
+      "nota": "CX3 (2026-11-07). Localização individual no Livro conferido."
     },
     "afty-aptidoes.js::AFTY_APTIDOES::emocao_da_petala_decadente::requisitos": {
       "proprietario": "APT-06",
@@ -31595,9 +31700,16 @@
     },
     "afty-aptidoes.js::AFTY_APTIDOES::estimulo_muscular": {
       "proprietario": "APT-05",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 179,
+          "marcadorPagina": "<!-- página 179 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-07. Estímulo Muscular, opção de dobrar a distância por 1 PE. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-aptidoes.js::AFTY_APTIDOES::estimulo_muscular_avancado": {
       "proprietario": "APT-05",
@@ -31642,9 +31754,16 @@
     },
     "afty-aptidoes.js::AFTY_APTIDOES::expandir_aura": {
       "proprietario": "APT-05",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 179,
+          "marcadorPagina": "<!-- página 179 -->"
+        }
+      ],
+      "nota": "CX3 (2026-11-07). Localização individual no Livro conferido."
     },
     "afty-aptidoes.js::AFTY_APTIDOES::expandir_aura::requisitos": {
       "proprietario": "APT-05",
@@ -31785,9 +31904,16 @@
     },
     "afty-aptidoes.js::AFTY_APTIDOES::fluxo_constante": {
       "proprietario": "APT-10",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 190,
+          "marcadorPagina": "<!-- página 190 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-07. Fluxo Constante, alternativas de Ação Livre ou Reação para cura própria. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-aptidoes.js::AFTY_APTIDOES::fluxo_constante::requisitos": {
       "proprietario": "APT-10",
@@ -32643,9 +32769,16 @@
     },
     "afty-aptidoes.js::AFTY_APTIDOES::revestimento_de_dominio": {
       "proprietario": "APT-09",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 182,
+          "marcadorPagina": "<!-- página 182 -->"
+        }
+      ],
+      "nota": "CX3 (2026-11-07). Localização individual no Livro conferido."
     },
     "afty-aptidoes.js::AFTY_APTIDOES::revestimento_de_dominio::requisitos": {
       "proprietario": "APT-09",
@@ -34349,10 +34482,17 @@
     },
     "afty-combate.js::COMBATE_ESTADOS::postura::opcoes/dragao": {
       "proprietario": "M03",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 76,
+          "marcadorPagina": "<!-- página 76 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-combate.js::COMBATE_ESTADOS::postura",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-07. Postura do Dragão, inimigos próximos, Fortitude e metade do dano recebido pelo alvo original. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-combate.js::COMBATE_ESTADOS::postura::opcoes/fortuna": {
       "proprietario": "M03",
@@ -34543,9 +34683,16 @@
     },
     "afty-combate.js::COMBATE_VARS::apice_postura_dragao": {
       "proprietario": "M03",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 76,
+          "marcadorPagina": "<!-- página 76 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-07. Postura do Dragão, inimigos próximos, Fortitude e metade do dano recebido pelo alvo original. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-combate.js::COMBATE_VARS::apice_postura_fortuna": {
       "proprietario": "M03",
@@ -34753,9 +34900,16 @@
     },
     "afty-combate.js::COMBATE_VARS::em_postura_dragao": {
       "proprietario": "M03",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 76,
+          "marcadorPagina": "<!-- página 76 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-07. Postura do Dragão, inimigos próximos, Fortitude e metade do dano recebido pelo alvo original. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-combate.js::COMBATE_VARS::em_postura_fortuna": {
       "proprietario": "M03",
@@ -34999,9 +35153,16 @@
     },
     "afty-combate.js::COMBATE_VARS::postura_dragao": {
       "proprietario": "M03",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 76,
+          "marcadorPagina": "<!-- página 76 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-07. Postura do Dragão, inimigos próximos, Fortitude e metade do dano recebido pelo alvo original. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-combate.js::COMBATE_VARS::postura_fortuna": {
       "proprietario": "M03",
@@ -35053,9 +35214,16 @@
     },
     "afty-combate.js::COMBATE_VARS::postura2_dragao": {
       "proprietario": "M03",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 76,
+          "marcadorPagina": "<!-- página 76 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-07. Postura do Dragão, inimigos próximos, Fortitude e metade do dano recebido pelo alvo original. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-combate.js::COMBATE_VARS::postura2_fortuna": {
       "proprietario": "M03",
@@ -41256,17 +41424,31 @@
     },
     "afty-efeitos-conteudo.js::APTIDAO_EFEITOS::cura_em_grupo": {
       "proprietario": "APT-10",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 191,
+          "marcadorPagina": "<!-- página 191 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-aptidoes.js::AFTY_APTIDOES::cura_em_grupo",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-07. Cura em Grupo, ampliação do teto de PER, alcance e divisão de uma rolagem. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-efeitos-conteudo.js::APTIDAO_EFEITOS::cura_em_grupo::@0": {
       "proprietario": "APT-10",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 191,
+          "marcadorPagina": "<!-- página 191 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-efeitos-conteudo.js::APTIDAO_EFEITOS::cura_em_grupo",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-07. Cura em Grupo, ampliação do teto de PER, alcance e divisão de uma rolagem. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-efeitos-conteudo.js::APTIDAO_EFEITOS::energia_reversa": {
       "proprietario": "M02",
@@ -42275,52 +42457,101 @@
     },
     "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::cmb_postura_da_devastacao::@0": {
       "proprietario": "CMB-04",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 76,
+          "marcadorPagina": "<!-- página 76 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::cmb_postura_da_devastacao",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-07. Devastação, +1 no acerto por pilha. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::cmb_postura_da_devastacao::@1": {
       "proprietario": "CMB-04",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 76,
+          "marcadorPagina": "<!-- página 76 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::cmb_postura_da_devastacao",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-07. Devastação, ignora 2 de RD por pilha. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::cmb_postura_da_lua": {
       "proprietario": "CMB-04",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 76,
+          "marcadorPagina": "<!-- página 76 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-habilidades.js::POSTURAS_DE_COMBATE::cmb_postura_da_lua",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Postura da Lua: Defesa e penalidades nativas, Andar e Desengajar como Ação Livre ligados a CL1. A reação de redução de dano ainda depende da janela anterior à consequência. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::cmb_postura_da_lua::@0": {
       "proprietario": "CMB-04",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 76,
+          "marcadorPagina": "<!-- página 76 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::cmb_postura_da_lua",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Postura da Lua: Defesa e penalidades nativas, Andar e Desengajar como Ação Livre ligados a CL1. A reação de redução de dano ainda depende da janela anterior à consequência. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::cmb_postura_da_lua::@1": {
       "proprietario": "CMB-04",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 76,
+          "marcadorPagina": "<!-- página 76 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::cmb_postura_da_lua",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Postura da Lua: Defesa e penalidades nativas, Andar e Desengajar como Ação Livre ligados a CL1. A reação de redução de dano ainda depende da janela anterior à consequência. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::cmb_postura_da_lua::@2": {
       "proprietario": "CMB-04",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 76,
+          "marcadorPagina": "<!-- página 76 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::cmb_postura_da_lua",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Postura da Lua: Defesa e penalidades nativas, Andar e Desengajar como Ação Livre ligados a CL1. A reação de redução de dano ainda depende da janela anterior à consequência. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::cmb_postura_da_terra": {
       "proprietario": "CMB-04",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 76,
+          "marcadorPagina": "<!-- página 76 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-habilidades.js::POSTURAS_DE_COMBATE::cmb_postura_da_terra",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Cláusulas de Terra: Fortitude, PV temporário e imunidade a movimento forçado. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::cmb_postura_da_terra::@0": {
       "proprietario": "CMB-04",
@@ -46291,10 +46522,17 @@
     },
     "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::sup_medicina_infalivel::@0": {
       "proprietario": "SUP-01",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 103,
+          "marcadorPagina": "<!-- página 103 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::sup_medicina_infalivel",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-07. Medicina Infalível, bônus de treinamento já emitido na cura. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::sup_mobilidade_avancada": {
       "proprietario": "SUP-02",
@@ -47153,17 +47391,37 @@
     },
     "afty-efeitos-conteudo.js::TALENTO_EFEITOS::tal_especialista_em_cortes": {
       "proprietario": "TAL-05",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 167,
+          "marcadorPagina": "<!-- página 167 -->"
+        },
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 365,
+          "marcadorPagina": "<!-- página 365 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-talentos.js::AFTY_TALENTOS::tal_especialista_em_cortes",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Especialista em Cortes: atributo Força/Destreza, nível 8, nível de dano corpo a corpo cortante e redução opcional de Movimento após infligir dano cortante. Cópias do mesmo benefício não acumulam, preservando prazos por emissor. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-efeitos-conteudo.js::TALENTO_EFEITOS::tal_especialista_em_cortes::@0": {
       "proprietario": "TAL-05",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 167,
+          "marcadorPagina": "<!-- página 167 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-efeitos-conteudo.js::TALENTO_EFEITOS::tal_especialista_em_cortes",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Especialista em Cortes: atributo Força/Destreza, nível 8, nível de dano corpo a corpo cortante e redução opcional de Movimento após infligir dano cortante. Cópias do mesmo benefício não acumulam, preservando prazos por emissor. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-efeitos-conteudo.js::TALENTO_EFEITOS::tal_especialista_em_perfuracao": {
       "proprietario": "TAL-06",
@@ -47307,17 +47565,31 @@
     },
     "afty-efeitos-conteudo.js::TALENTO_EFEITOS::tal_tecnicas_de_mobilidade": {
       "proprietario": "TAL-06",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 168,
+          "marcadorPagina": "<!-- página 168 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-talentos.js::AFTY_TALENTOS::tal_tecnicas_de_mobilidade",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Técnicas de Mobilidade localizada na p.168: Movimento +3 m, disputa de Reflexos uma vez por rodada ao atacar, proteção contra oportunidades do alvo e requisito de Destreza 14. Decisão do autor: termina no fim do turno em curso, também fora do próprio turno. Localização não aprova regra, operação ou auditoria."
     },
     "afty-efeitos-conteudo.js::TALENTO_EFEITOS::tal_tecnicas_de_mobilidade::@0": {
       "proprietario": "TAL-06",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 168,
+          "marcadorPagina": "<!-- página 168 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-efeitos-conteudo.js::TALENTO_EFEITOS::tal_tecnicas_de_mobilidade",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Técnicas de Mobilidade localizada na p.168: Movimento +3 m, disputa de Reflexos uma vez por rodada ao atacar, proteção contra oportunidades do alvo e requisito de Destreza 14. Decisão do autor: termina no fim do turno em curso, também fora do próprio turno. Localização não aprova regra, operação ou auditoria."
     },
     "afty-efeitos-conteudo.js::TALENTO_EFEITOS::tal_tecnicas_de_ocultamento": {
       "proprietario": "TAL-07",
@@ -47503,10 +47775,17 @@
     },
     "afty-efeitos.js::APTIDAO_EFEITOS::cura_em_grupo": {
       "proprietario": "APT-10",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 191,
+          "marcadorPagina": "<!-- página 191 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-efeitos-conteudo.js::APTIDAO_EFEITOS::cura_em_grupo",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-07. Cura em Grupo, ampliação do teto de PER, alcance e divisão de uma rolagem. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-efeitos.js::APTIDAO_EFEITOS::energia_reversa": {
       "proprietario": "M02",
@@ -49614,10 +49893,17 @@
     },
     "afty-efeitos.js::ESCOLHA_EFEITOS::cmb_postura_da_lua": {
       "proprietario": "CMB-04",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 76,
+          "marcadorPagina": "<!-- página 76 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::cmb_postura_da_lua",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Postura da Lua: Defesa e penalidades nativas, Andar e Desengajar como Ação Livre ligados a CL1. A reação de redução de dano ainda depende da janela anterior à consequência. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-efeitos.js::ESCOLHA_EFEITOS::cmb_postura_da_terra": {
       "proprietario": "CMB-04",
@@ -51642,10 +51928,23 @@
     },
     "afty-efeitos.js::TALENTO_EFEITOS::tal_especialista_em_cortes": {
       "proprietario": "TAL-05",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 167,
+          "marcadorPagina": "<!-- página 167 -->"
+        },
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 365,
+          "marcadorPagina": "<!-- página 365 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-efeitos-conteudo.js::TALENTO_EFEITOS::tal_especialista_em_cortes",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Especialista em Cortes: atributo Força/Destreza, nível 8, nível de dano corpo a corpo cortante e redução opcional de Movimento após infligir dano cortante. Cópias do mesmo benefício não acumulam, preservando prazos por emissor. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-efeitos.js::TALENTO_EFEITOS::tal_especialista_em_perfuracao": {
       "proprietario": "TAL-06",
@@ -51705,10 +52004,17 @@
     },
     "afty-efeitos.js::TALENTO_EFEITOS::tal_tecnicas_de_mobilidade": {
       "proprietario": "TAL-06",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 168,
+          "marcadorPagina": "<!-- página 168 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-efeitos-conteudo.js::TALENTO_EFEITOS::tal_tecnicas_de_mobilidade",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Técnicas de Mobilidade localizada na p.168: Movimento +3 m, disputa de Reflexos uma vez por rodada ao atacar, proteção contra oportunidades do alvo e requisito de Destreza 14. Decisão do autor: termina no fim do turno em curso, também fora do próprio turno. Localização não aprova regra, operação ou auditoria."
     },
     "afty-efeitos.js::TALENTO_EFEITOS::tal_tecnicas_de_ocultamento": {
       "proprietario": "TAL-07",
@@ -66370,16 +66676,30 @@
     },
     "afty-habilidades.js::AFTY_HABILIDADES::cmb_preparacao_rapida": {
       "proprietario": "CMB-11",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 72,
+          "marcadorPagina": "<!-- página 72 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Preparação Rápida, entrada como Ação Livre e postura preservada ao ser empurrado. Requisito Assumir Postura. Autor confirmou o término por Empurrar sem a Habilidade. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-habilidades.js::AFTY_HABILIDADES::cmb_preparacao_rapida::requisitos": {
       "proprietario": "CMB-11",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 72,
+          "marcadorPagina": "<!-- página 72 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-habilidades.js::AFTY_HABILIDADES::cmb_preparacao_rapida",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Preparação Rápida, entrada como Ação Livre e postura preservada ao ser empurrado. Requisito Assumir Postura. Autor confirmou o término por Empurrar sem a Habilidade. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-habilidades.js::AFTY_HABILIDADES::cmb_preparacao_rapida::requisitos/cmb_assumir_postura": {
       "proprietario": "CMB-11",
@@ -67260,9 +67580,16 @@
     },
     "afty-habilidades.js::AFTY_HABILIDADES::cnj_fisico_amaldicoado_defensivo": {
       "proprietario": "CNJ-08",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 87,
+          "marcadorPagina": "<!-- página 87 -->"
+        }
+      ],
+      "nota": "CX3 (2026-11-07). Localização individual no Livro conferido."
     },
     "afty-habilidades.js::AFTY_HABILIDADES::cnj_fisico_amaldicoado_defensivo::requisitos": {
       "proprietario": "CNJ-08",
@@ -68573,22 +68900,55 @@
     },
     "afty-habilidades.js::AFTY_HABILIDADES::lut_acao_agil": {
       "proprietario": "LUT-04",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 55,
+          "marcadorPagina": "<!-- página 55 -->"
+        },
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 365,
+          "marcadorPagina": "<!-- página 365 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Ação Ágil restrita a Andar, Desengajar e Esconder, 2 PE/Estamina, por rodada. Habilidades iguais não duplicam o benefício, vale a cadência disponível mais favorável. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-habilidades.js::AFTY_HABILIDADES::lut_acao_agil::requisitos": {
       "proprietario": "LUT-04",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 55,
+          "marcadorPagina": "<!-- página 55 -->"
+        },
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 365,
+          "marcadorPagina": "<!-- página 365 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-habilidades.js::AFTY_HABILIDADES::lut_acao_agil",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Ação Ágil restrita a Andar, Desengajar e Esconder, 2 PE/Estamina, por rodada. Habilidades iguais não duplicam o benefício, vale a cadência disponível mais favorável. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-habilidades.js::AFTY_HABILIDADES::lut_acrobata": {
       "proprietario": "LUT-05",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 55,
+          "marcadorPagina": "<!-- página 55 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-07. Acrobata, Destreza na distância e escolha de Acrobacia no teste. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-habilidades.js::AFTY_HABILIDADES::lut_acrobata::requisitos": {
       "proprietario": "LUT-05",
@@ -69722,16 +70082,42 @@
     },
     "afty-habilidades.js::AFTY_HABILIDADES::res_acao_agil": {
       "proprietario": "RES-05",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 119,
+          "marcadorPagina": "<!-- página 119 -->"
+        },
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 365,
+          "marcadorPagina": "<!-- página 365 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Ação Ágil restrita a Andar, Desengajar e Esconder, 2 PE/Estamina, por turno. Habilidades iguais não duplicam o benefício, vale a cadência disponível mais favorável. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-habilidades.js::AFTY_HABILIDADES::res_acao_agil::requisitos": {
       "proprietario": "RES-05",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 119,
+          "marcadorPagina": "<!-- página 119 -->"
+        },
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 365,
+          "marcadorPagina": "<!-- página 365 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-habilidades.js::AFTY_HABILIDADES::res_acao_agil",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Ação Ágil restrita a Andar, Desengajar e Esconder, 2 PE/Estamina, por turno. Habilidades iguais não duplicam o benefício, vale a cadência disponível mais favorável. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-habilidades.js::AFTY_HABILIDADES::res_adrenalina_absoluta": {
       "proprietario": "RES-09",
@@ -71404,9 +71790,16 @@
     },
     "afty-habilidades.js::AFTY_HABILIDADES::sup_medicina_infalivel": {
       "proprietario": "SUP-01",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 103,
+          "marcadorPagina": "<!-- página 103 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-07. Medicina Infalível, quota por dado e bônus de treinamento na cura. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-habilidades.js::AFTY_HABILIDADES::sup_medicina_infalivel::requisitos": {
       "proprietario": "SUP-01",
@@ -71673,16 +72066,30 @@
     },
     "afty-habilidades.js::AFTY_HABILIDADES::sup_sintonizacao_vital": {
       "proprietario": "SUP-04",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 107,
+          "marcadorPagina": "<!-- página 107 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Sintonização Vital, cura de outra criatura em 3 m por 3 PE, sem pré-requisito adicional ao nível. Autor confirmou metade antes do teto de PV e nenhuma ação adicional. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-habilidades.js::AFTY_HABILIDADES::sup_sintonizacao_vital::requisitos": {
       "proprietario": "SUP-04",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 107,
+          "marcadorPagina": "<!-- página 107 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-habilidades.js::AFTY_HABILIDADES::sup_sintonizacao_vital",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Sintonização Vital, cura de outra criatura em 3 m por 3 PE, sem pré-requisito adicional ao nível. Autor confirmou metade antes do teto de PV e nenhuma ação adicional. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-habilidades.js::AFTY_HABILIDADES::sup_sobrecura": {
       "proprietario": "SUP-07",
@@ -72148,9 +72555,16 @@
     },
     "afty-habilidades.js::DADIVAS_DO_CEU::res_dadiva_forca_devastadora": {
       "proprietario": "RES-01",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 126,
+          "marcadorPagina": "<!-- página 126 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-07. Força Devastadora, acréscimo de 3 m no salto. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-habilidades.js::DADIVAS_DO_CEU::res_dadiva_indulgente_a_feiticaria": {
       "proprietario": "RES-01",
@@ -73265,9 +73679,16 @@
     },
     "afty-habilidades.js::MANOBRAS_DE_EMPOLGACAO::lut_manobra_esquiva": {
       "proprietario": "LUT-01",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 50,
+          "marcadorPagina": "<!-- página 50 -->"
+        }
+      ],
+      "nota": "CX3 (2026-11-07). Localização individual no Livro conferido."
     },
     "afty-habilidades.js::MANOBRAS_DE_EMPOLGACAO::lut_manobra_trabalho_de_pes": {
       "proprietario": "LUT-01",
@@ -74047,15 +74468,29 @@
     },
     "afty-habilidades.js::OPCAO_ESCOLHA_NOME::cmb_postura_da_fortuna": {
       "proprietario": "P01",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 76,
+          "marcadorPagina": "<!-- página 76 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Postura da Fortuna localizada na p.76, d20 igual ou menor ao BT, mantém maior, metade de BT por rodada, uma vez por dado. Localização não aprova regra, operação ou auditoria."
     },
     "afty-habilidades.js::OPCAO_ESCOLHA_NOME::cmb_postura_da_lua": {
       "proprietario": "P01",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 76,
+          "marcadorPagina": "<!-- página 76 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Postura da Lua: Defesa e penalidades nativas, Andar e Desengajar como Ação Livre ligados a CL1. A reação de redução de dano ainda depende da janela anterior à consequência. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-habilidades.js::OPCAO_ESCOLHA_NOME::cmb_postura_da_tempestade": {
       "proprietario": "P01",
@@ -74077,9 +74512,16 @@
     },
     "afty-habilidades.js::OPCAO_ESCOLHA_NOME::cmb_postura_do_dragao": {
       "proprietario": "P01",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 76,
+          "marcadorPagina": "<!-- página 76 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-07. Postura do Dragão, inimigos próximos, Fortitude e metade do dano recebido pelo alvo original. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-habilidades.js::OPCAO_ESCOLHA_NOME::cmb_postura_do_sol": {
       "proprietario": "P01",
@@ -74617,9 +75059,16 @@
     },
     "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_manobra_esquiva": {
       "proprietario": "P01",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 50,
+          "marcadorPagina": "<!-- página 50 -->"
+        }
+      ],
+      "nota": "CX3 (2026-11-07). Localização individual no Livro conferido."
     },
     "afty-habilidades.js::OPCAO_ESCOLHA_NOME::lut_manobra_trabalho_de_pes": {
       "proprietario": "P01",
@@ -75193,33 +75642,68 @@
     },
     "afty-habilidades.js::POSTURAS_DE_COMBATE::cmb_postura_da_devastacao": {
       "proprietario": "CMB-04",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 76,
+          "marcadorPagina": "<!-- página 76 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-07. Devastação, pilhas por alvo, teto e reset ao trocar. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-habilidades.js::POSTURAS_DE_COMBATE::cmb_postura_da_fortuna": {
       "proprietario": "CMB-04",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 76,
+          "marcadorPagina": "<!-- página 76 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Postura da Fortuna localizada na p.76, d20 igual ou menor ao BT, mantém maior, metade de BT por rodada, uma vez por dado. Localização não aprova regra, operação ou auditoria."
     },
     "afty-habilidades.js::POSTURAS_DE_COMBATE::cmb_postura_da_lua": {
       "proprietario": "CMB-04",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 76,
+          "marcadorPagina": "<!-- página 76 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Postura da Lua: Defesa e penalidades nativas, Andar e Desengajar como Ação Livre ligados a CL1. A reação de redução de dano ainda depende da janela anterior à consequência. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-habilidades.js::POSTURAS_DE_COMBATE::cmb_postura_da_tempestade": {
       "proprietario": "CMB-04",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 76,
+          "marcadorPagina": "<!-- página 76 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-07. Tempestade, TR de Fortitude por acerto e as duas condições. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-habilidades.js::POSTURAS_DE_COMBATE::cmb_postura_da_terra": {
       "proprietario": "CMB-04",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 76,
+          "marcadorPagina": "<!-- página 76 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Texto da Postura da Terra conferido na fonte, com Fortitude, PV temporário e imunidade. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-habilidades.js::POSTURAS_DE_COMBATE::cmb_postura_do_ceu": {
       "proprietario": "CMB-04",
@@ -75229,9 +75713,16 @@
     },
     "afty-habilidades.js::POSTURAS_DE_COMBATE::cmb_postura_do_dragao": {
       "proprietario": "CMB-04",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 76,
+          "marcadorPagina": "<!-- página 76 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-07. Postura do Dragão, inimigos próximos, Fortitude e metade do dano recebido pelo alvo original. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-habilidades.js::POSTURAS_DE_COMBATE::cmb_postura_do_sol": {
       "proprietario": "CMB-04",
@@ -85117,9 +85608,16 @@
     },
     "afty-pericias.js::AFTY_MANOBRAS::provocar": {
       "proprietario": "SIS-02",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 302,
+          "marcadorPagina": "<!-- página 302 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-07. Provocar, 9 m, Intimidação oposta e modo por alvo. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-pericias.js::AFTY_PERICIAS::@catalogo": {
       "proprietario": "SIS-02",
@@ -86733,51 +87231,106 @@
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_especialista_em_cortes": {
       "proprietario": "TAL-05",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 167,
+          "marcadorPagina": "<!-- página 167 -->"
+        },
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 365,
+          "marcadorPagina": "<!-- página 365 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Especialista em Cortes: atributo Força/Destreza, nível 8, nível de dano corpo a corpo cortante e redução opcional de Movimento após infligir dano cortante. Cópias do mesmo benefício não acumulam, preservando prazos por emissor. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_especialista_em_cortes::escolha": {
       "proprietario": "TAL-05",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 167,
+          "marcadorPagina": "<!-- página 167 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-talentos.js::AFTY_TALENTOS::tal_especialista_em_cortes",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Especialista em Cortes: atributo Força/Destreza, nível 8, nível de dano corpo a corpo cortante e redução opcional de Movimento após infligir dano cortante. Cópias do mesmo benefício não acumulam, preservando prazos por emissor. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_especialista_em_cortes::escolha/opcoes": {
       "proprietario": "TAL-05",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 167,
+          "marcadorPagina": "<!-- página 167 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-talentos.js::AFTY_TALENTOS::tal_especialista_em_cortes",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Especialista em Cortes: atributo Força/Destreza, nível 8, nível de dano corpo a corpo cortante e redução opcional de Movimento após infligir dano cortante. Cópias do mesmo benefício não acumulam, preservando prazos por emissor. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_especialista_em_cortes::escolha/opcoes/tal_cortes_destreza": {
       "proprietario": "TAL-05",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 167,
+          "marcadorPagina": "<!-- página 167 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-talentos.js::AFTY_TALENTOS::tal_especialista_em_cortes",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Especialista em Cortes: atributo Força/Destreza, nível 8, nível de dano corpo a corpo cortante e redução opcional de Movimento após infligir dano cortante. Cópias do mesmo benefício não acumulam, preservando prazos por emissor. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_especialista_em_cortes::escolha/opcoes/tal_cortes_forca": {
       "proprietario": "TAL-05",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 167,
+          "marcadorPagina": "<!-- página 167 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-talentos.js::AFTY_TALENTOS::tal_especialista_em_cortes",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Especialista em Cortes: atributo Força/Destreza, nível 8, nível de dano corpo a corpo cortante e redução opcional de Movimento após infligir dano cortante. Cópias do mesmo benefício não acumulam, preservando prazos por emissor. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_especialista_em_cortes::requisitos": {
       "proprietario": "TAL-05",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 167,
+          "marcadorPagina": "<!-- página 167 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-talentos.js::AFTY_TALENTOS::tal_especialista_em_cortes",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Especialista em Cortes: atributo Força/Destreza, nível 8, nível de dano corpo a corpo cortante e redução opcional de Movimento após infligir dano cortante. Cópias do mesmo benefício não acumulam, preservando prazos por emissor. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_especialista_em_cortes::requisitos/@0": {
       "proprietario": "TAL-05",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 167,
+          "marcadorPagina": "<!-- página 167 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-talentos.js::AFTY_TALENTOS::tal_especialista_em_cortes",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Especialista em Cortes: atributo Força/Destreza, nível 8, nível de dano corpo a corpo cortante e redução opcional de Movimento após infligir dano cortante. Cópias do mesmo benefício não acumulam, preservando prazos por emissor. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_especialista_em_perfuracao": {
       "proprietario": "TAL-06",
@@ -86993,9 +87546,16 @@
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_fisico_aperfeicoado": {
       "proprietario": "TAL-01",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 169,
+          "marcadorPagina": "<!-- página 169 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-07. Físico Aperfeiçoado, escolha de aumento da distância do salto. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_fisico_aperfeicoado::escolha": {
       "proprietario": "TAL-01",
@@ -87041,10 +87601,17 @@
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_fisico_aperfeicoado::escolha/opcoes/tal_fisico_pulo": {
       "proprietario": "TAL-01",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 169,
+          "marcadorPagina": "<!-- página 169 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-talentos.js::AFTY_TALENTOS::tal_fisico_aperfeicoado",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-07. Físico Aperfeiçoado, aumento igual à metade da distância. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_fisico_aperfeicoado::requisitos": {
       "proprietario": "TAL-01",
@@ -87435,9 +88002,16 @@
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_provocacao_desafiadora": {
       "proprietario": "TAL-03",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 164,
+          "marcadorPagina": "<!-- página 164 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-07. Provocação Desafiadora, obrigação de atacar e quota de ação livre. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_provocacao_desafiadora::requisitos": {
       "proprietario": "TAL-03",
@@ -87654,9 +88228,16 @@
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_saltador_constante": {
       "proprietario": "TAL-03",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 164,
+          "marcadorPagina": "<!-- página 164 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-07. Saltador Constante, salto livre e ajuste do ataque após aterrissagem. Localização de fonte não aprova regra, execução ou auditoria."
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_saltador_constante::requisitos": {
       "proprietario": "TAL-03",
@@ -87721,23 +88302,44 @@
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_tecnicas_de_mobilidade": {
       "proprietario": "TAL-06",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 168,
+          "marcadorPagina": "<!-- página 168 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Técnicas de Mobilidade localizada na p.168: Movimento +3 m, disputa de Reflexos uma vez por rodada ao atacar, proteção contra oportunidades do alvo e requisito de Destreza 14. Decisão do autor: termina no fim do turno em curso, também fora do próprio turno. Localização não aprova regra, operação ou auditoria."
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_tecnicas_de_mobilidade::requisitos": {
       "proprietario": "TAL-06",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 168,
+          "marcadorPagina": "<!-- página 168 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-talentos.js::AFTY_TALENTOS::tal_tecnicas_de_mobilidade",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Técnicas de Mobilidade localizada na p.168: Movimento +3 m, disputa de Reflexos uma vez por rodada ao atacar, proteção contra oportunidades do alvo e requisito de Destreza 14. Decisão do autor: termina no fim do turno em curso, também fora do próprio turno. Localização não aprova regra, operação ou auditoria."
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_tecnicas_de_mobilidade::requisitos/@0": {
       "proprietario": "TAL-06",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 168,
+          "marcadorPagina": "<!-- página 168 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-talentos.js::AFTY_TALENTOS::tal_tecnicas_de_mobilidade",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Técnicas de Mobilidade localizada na p.168: Movimento +3 m, disputa de Reflexos uma vez por rodada ao atacar, proteção contra oportunidades do alvo e requisito de Destreza 14. Decisão do autor: termina no fim do turno em curso, também fora do próprio turno. Localização não aprova regra, operação ou auditoria."
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_tecnicas_de_ocultamento": {
       "proprietario": "TAL-07",
@@ -87787,36 +88389,71 @@
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_tecnicas_do_sentinela": {
       "proprietario": "TAL-07",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 168,
+          "marcadorPagina": "<!-- página 168 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Técnicas do Sentinela e requisito de Nível 5 localizados na p.168. Acerto de oportunidade reduz Movimento em 4,5 m até o fim do turno do alvo. Reação ao ataque contra outra criatura a 1,5 m é cláusula distinta. Localização não aprova regra, operação ou auditoria."
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_tecnicas_do_sentinela::requisitos": {
       "proprietario": "TAL-07",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 168,
+          "marcadorPagina": "<!-- página 168 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-talentos.js::AFTY_TALENTOS::tal_tecnicas_do_sentinela",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Técnicas do Sentinela e requisito de Nível 5 localizados na p.168. Acerto de oportunidade reduz Movimento em 4,5 m até o fim do turno do alvo. Reação ao ataque contra outra criatura a 1,5 m é cláusula distinta. Localização não aprova regra, operação ou auditoria."
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_tecnicas_do_sentinela::requisitos/@0": {
       "proprietario": "TAL-07",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 168,
+          "marcadorPagina": "<!-- página 168 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-talentos.js::AFTY_TALENTOS::tal_tecnicas_do_sentinela",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Técnicas do Sentinela e requisito de Nível 5 localizados na p.168. Acerto de oportunidade reduz Movimento em 4,5 m até o fim do turno do alvo. Reação ao ataque contra outra criatura a 1,5 m é cláusula distinta. Localização não aprova regra, operação ou auditoria."
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_tecnicas_ofensivas_de_escudo": {
       "proprietario": "TAL-03",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 165,
+          "marcadorPagina": "<!-- página 165 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Cabeçalho e texto de Técnicas Agressivas de Escudo localizados na p.165, sem pré-requisitos nesse bloco. Id antigo preservado. A decisão do autor conserva o empurrão normal ao escolher Caído. Localização não aprova regra, operação ou auditoria."
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_tecnicas_ofensivas_de_escudo::requisitos": {
       "proprietario": "TAL-03",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 165,
+          "marcadorPagina": "<!-- página 165 -->"
+        }
+      ],
       "referenciaDeLocalizacao": "afty-talentos.js::AFTY_TALENTOS::tal_tecnicas_ofensivas_de_escudo",
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "nota": "CX3, 2026-11-06. Cabeçalho e texto de Técnicas Agressivas de Escudo localizados na p.165, sem pré-requisitos nesse bloco. Id antigo preservado. A decisão do autor conserva o empurrão normal ao escolher Caído. Localização não aprova regra, operação ou auditoria."
     },
     "afty-talentos.js::AFTY_TALENTOS::tal_tempestade_de_ideias": {
       "proprietario": "TAL-04",
@@ -88385,9 +89022,16 @@
     },
     "afty-talentos.js::TALENTOS_DE_ESCUDO::tal_tecnicas_ofensivas_de_escudo": {
       "proprietario": "TAL-02",
-      "estado": "NÃO LOCALIZADA",
-      "fontes": [],
-      "nota": "Localizador de família não confirma a fonte deste item. Consultar texto e contexto no lote."
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 165,
+          "marcadorPagina": "<!-- página 165 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Cabeçalho e texto de Técnicas Agressivas de Escudo localizados na p.165, sem pré-requisitos nesse bloco. Id antigo preservado. A decisão do autor conserva o empurrão normal ao escolher Caído. Localização não aprova regra, operação ou auditoria."
     },
     "afty-talisma-apice.js::ESTADO_APICE_DEF::@catalogo": {
       "proprietario": "CRI-04",
@@ -105172,6 +105816,834 @@
         }
       ],
       "nota": "Identidade e pedido humano registrados. Conteúdo NÃO REVISADO, sem aprovação de regra, implementação ou auditoria."
+    },
+    "afty-conteudo-regras.js::CRITICOS_DE_GRUPO::@catalogo": {
+      "proprietario": "TAL-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 308,
+          "marcadorPagina": "<!-- página 308 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Efeito crítico individual do grupo de arma, tabela da página 308. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-conteudo-regras.js::CRITICOS_DE_GRUPO::arco": {
+      "proprietario": "TAL-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 308,
+          "marcadorPagina": "<!-- página 308 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Efeito crítico individual do grupo de arma, tabela da página 308. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-conteudo-regras.js::CRITICOS_DE_GRUPO::bastao": {
+      "proprietario": "TAL-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 308,
+          "marcadorPagina": "<!-- página 308 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Efeito crítico individual do grupo de arma, tabela da página 308. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-conteudo-regras.js::CRITICOS_DE_GRUPO::besta": {
+      "proprietario": "TAL-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 308,
+          "marcadorPagina": "<!-- página 308 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Efeito crítico individual do grupo de arma, tabela da página 308. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-conteudo-regras.js::CRITICOS_DE_GRUPO::chicote": {
+      "proprietario": "TAL-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 308,
+          "marcadorPagina": "<!-- página 308 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Efeito crítico individual do grupo de arma, tabela da página 308. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-conteudo-regras.js::CRITICOS_DE_GRUPO::dardo": {
+      "proprietario": "TAL-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 308,
+          "marcadorPagina": "<!-- página 308 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Efeito crítico individual do grupo de arma, tabela da página 308. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-conteudo-regras.js::CRITICOS_DE_GRUPO::espada": {
+      "proprietario": "TAL-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 308,
+          "marcadorPagina": "<!-- página 308 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Efeito crítico individual do grupo de arma, tabela da página 308. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-conteudo-regras.js::CRITICOS_DE_GRUPO::faca": {
+      "proprietario": "TAL-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 308,
+          "marcadorPagina": "<!-- página 308 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Efeito crítico individual do grupo de arma, tabela da página 308. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-conteudo-regras.js::CRITICOS_DE_GRUPO::haste": {
+      "proprietario": "TAL-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 308,
+          "marcadorPagina": "<!-- página 308 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Efeito crítico individual do grupo de arma, tabela da página 308. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-conteudo-regras.js::CRITICOS_DE_GRUPO::machado": {
+      "proprietario": "TAL-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 308,
+          "marcadorPagina": "<!-- página 308 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Efeito crítico individual do grupo de arma, tabela da página 308. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-conteudo-regras.js::CRITICOS_DE_GRUPO::martelo": {
+      "proprietario": "TAL-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 308,
+          "marcadorPagina": "<!-- página 308 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Efeito crítico individual do grupo de arma, tabela da página 308. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-conteudo-regras.js::CRITICOS_DE_GRUPO::pugilato": {
+      "proprietario": "TAL-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 308,
+          "marcadorPagina": "<!-- página 308 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Efeito crítico individual do grupo de arma, tabela da página 308. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-conteudo-regras.js::CRITICOS_DE_GRUPO::tiro": {
+      "proprietario": "TAL-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 308,
+          "marcadorPagina": "<!-- página 308 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Efeito crítico individual do grupo de arma, tabela da página 308. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-efeitos-conteudo.js::APTIDAO_EFEITOS::aura_impenetravel": {
+      "proprietario": "APT-04",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 177,
+          "marcadorPagina": "<!-- página 177 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Resistência a cortante, perfurante e impacto enquanto Aura Impenetrável estiver ativa. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-efeitos-conteudo.js::APTIDAO_EFEITOS::aura_impenetravel::@0": {
+      "proprietario": "APT-04",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 177,
+          "marcadorPagina": "<!-- página 177 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Resistência a cortante, perfurante e impacto enquanto Aura Impenetrável estiver ativa. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-efeitos-conteudo.js::APTIDAO_EFEITOS::aura_impenetravel::@1": {
+      "proprietario": "APT-04",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 177,
+          "marcadorPagina": "<!-- página 177 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Resistência a cortante, perfurante e impacto enquanto Aura Impenetrável estiver ativa. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-efeitos-conteudo.js::APTIDAO_EFEITOS::aura_impenetravel::@2": {
+      "proprietario": "APT-04",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 177,
+          "marcadorPagina": "<!-- página 177 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Resistência a cortante, perfurante e impacto enquanto Aura Impenetrável estiver ativa. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-efeitos-conteudo.js::TALENTO_EFEITOS::tal_adepto_de_medicina": {
+      "proprietario": "TAL-04",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 102,
+          "marcadorPagina": "<!-- página 102 -->"
+        },
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 165,
+          "marcadorPagina": "<!-- página 165 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Segundo efeito de Suporte em Combate escalonado pelo personagem, com metade dos usos no Adepto. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-efeitos-conteudo.js::TALENTO_EFEITOS::tal_adepto_de_medicina::@0": {
+      "proprietario": "TAL-04",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 102,
+          "marcadorPagina": "<!-- página 102 -->"
+        },
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 165,
+          "marcadorPagina": "<!-- página 165 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Segundo efeito de Suporte em Combate escalonado pelo personagem, com metade dos usos no Adepto. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-efeitos-conteudo.js::TALENTO_EFEITOS::tal_adepto_de_medicina::@1": {
+      "proprietario": "TAL-04",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 102,
+          "marcadorPagina": "<!-- página 102 -->"
+        },
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 165,
+          "marcadorPagina": "<!-- página 165 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Segundo efeito de Suporte em Combate escalonado pelo personagem, com metade dos usos no Adepto. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-efeitos-conteudo.js::TALENTO_EFEITOS::tal_adepto_de_medicina::@2": {
+      "proprietario": "TAL-04",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 102,
+          "marcadorPagina": "<!-- página 102 -->"
+        },
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 165,
+          "marcadorPagina": "<!-- página 165 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Segundo efeito de Suporte em Combate escalonado pelo personagem, com metade dos usos no Adepto. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-efeitos-conteudo.js::TALENTO_EFEITOS::tal_adepto_de_medicina::@3": {
+      "proprietario": "TAL-04",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 102,
+          "marcadorPagina": "<!-- página 102 -->"
+        },
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 165,
+          "marcadorPagina": "<!-- página 165 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Segundo efeito de Suporte em Combate escalonado pelo personagem, com metade dos usos no Adepto. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-efeitos-conteudo.js::TALENTO_EFEITOS::tal_mestre_do_arremesso::@3": {
+      "proprietario": "TAL-06",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 167,
+          "marcadorPagina": "<!-- página 167 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Acréscimo de 6 metros ao alcance das armas de Arremesso. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-efeitos-conteudo.js::TALENTO_EFEITOS::tal_mestre_dos_chicotes::@1": {
+      "proprietario": "TAL-06",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 167,
+          "marcadorPagina": "<!-- página 167 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Acréscimo de 1,5 metro ao alcance de Chicotes. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-efeitos.js::APTIDAO_EFEITOS::aura_impenetravel": {
+      "proprietario": "APT-04",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 177,
+          "marcadorPagina": "<!-- página 177 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Resistência a cortante, perfurante e impacto enquanto Aura Impenetrável estiver ativa. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-efeitos.js::TALENTO_EFEITOS::tal_adepto_de_medicina": {
+      "proprietario": "TAL-04",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 102,
+          "marcadorPagina": "<!-- página 102 -->"
+        },
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 165,
+          "marcadorPagina": "<!-- página 165 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Segundo efeito de Suporte em Combate escalonado pelo personagem, com metade dos usos no Adepto. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::sup_conceder_outra_chance::usos": {
+      "proprietario": "SUP-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 105,
+          "marcadorPagina": "<!-- página 105 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Usos iguais ao BT, recuperação longa ou metade em descanso curto. Mantida a decisão de descanso único. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-talentos.js::AFTY_TALENTOS::tal_adepto_de_medicina::fonteCura": {
+      "proprietario": "TAL-04",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 102,
+          "marcadorPagina": "<!-- página 102 -->"
+        },
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 165,
+          "marcadorPagina": "<!-- página 165 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Declaração própria de cura e contador limitado do Adepto de Medicina. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-talentos.js::AFTY_TALENTOS::tal_adepto_de_medicina::usos": {
+      "proprietario": "TAL-04",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 102,
+          "marcadorPagina": "<!-- página 102 -->"
+        },
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 165,
+          "marcadorPagina": "<!-- página 165 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Declaração própria de cura e contador limitado do Adepto de Medicina. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::escolhas": {
+      "proprietario": "TRE-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 346,
+          "marcadorPagina": "<!-- página 346 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Duas escolhas entre atributos físicos na segunda etapa e Dádiva adicional na quarta etapa de Potencial Físico. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::escolhas/atributo_1": {
+      "proprietario": "TRE-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 346,
+          "marcadorPagina": "<!-- página 346 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Duas escolhas entre atributos físicos na segunda etapa e Dádiva adicional na quarta etapa de Potencial Físico. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::escolhas/atributo_1/opcoes": {
+      "proprietario": "TRE-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 346,
+          "marcadorPagina": "<!-- página 346 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Duas escolhas entre atributos físicos na segunda etapa e Dádiva adicional na quarta etapa de Potencial Físico. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::escolhas/atributo_1/opcoes/constituicao": {
+      "proprietario": "TRE-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 346,
+          "marcadorPagina": "<!-- página 346 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Duas escolhas entre atributos físicos na segunda etapa e Dádiva adicional na quarta etapa de Potencial Físico. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::escolhas/atributo_1/opcoes/constituicao/efeitos": {
+      "proprietario": "TRE-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 346,
+          "marcadorPagina": "<!-- página 346 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Duas escolhas entre atributos físicos na segunda etapa e Dádiva adicional na quarta etapa de Potencial Físico. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::escolhas/atributo_1/opcoes/constituicao/efeitos/@0": {
+      "proprietario": "TRE-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 346,
+          "marcadorPagina": "<!-- página 346 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Duas escolhas entre atributos físicos na segunda etapa e Dádiva adicional na quarta etapa de Potencial Físico. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::escolhas/atributo_1/opcoes/destreza": {
+      "proprietario": "TRE-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 346,
+          "marcadorPagina": "<!-- página 346 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Duas escolhas entre atributos físicos na segunda etapa e Dádiva adicional na quarta etapa de Potencial Físico. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::escolhas/atributo_1/opcoes/destreza/efeitos": {
+      "proprietario": "TRE-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 346,
+          "marcadorPagina": "<!-- página 346 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Duas escolhas entre atributos físicos na segunda etapa e Dádiva adicional na quarta etapa de Potencial Físico. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::escolhas/atributo_1/opcoes/destreza/efeitos/@0": {
+      "proprietario": "TRE-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 346,
+          "marcadorPagina": "<!-- página 346 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Duas escolhas entre atributos físicos na segunda etapa e Dádiva adicional na quarta etapa de Potencial Físico. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::escolhas/atributo_1/opcoes/forca": {
+      "proprietario": "TRE-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 346,
+          "marcadorPagina": "<!-- página 346 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Duas escolhas entre atributos físicos na segunda etapa e Dádiva adicional na quarta etapa de Potencial Físico. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::escolhas/atributo_1/opcoes/forca/efeitos": {
+      "proprietario": "TRE-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 346,
+          "marcadorPagina": "<!-- página 346 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Duas escolhas entre atributos físicos na segunda etapa e Dádiva adicional na quarta etapa de Potencial Físico. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::escolhas/atributo_1/opcoes/forca/efeitos/@0": {
+      "proprietario": "TRE-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 346,
+          "marcadorPagina": "<!-- página 346 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Duas escolhas entre atributos físicos na segunda etapa e Dádiva adicional na quarta etapa de Potencial Físico. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::escolhas/atributo_2": {
+      "proprietario": "TRE-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 346,
+          "marcadorPagina": "<!-- página 346 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Duas escolhas entre atributos físicos na segunda etapa e Dádiva adicional na quarta etapa de Potencial Físico. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::escolhas/atributo_2/opcoes": {
+      "proprietario": "TRE-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 346,
+          "marcadorPagina": "<!-- página 346 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Duas escolhas entre atributos físicos na segunda etapa e Dádiva adicional na quarta etapa de Potencial Físico. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::escolhas/atributo_2/opcoes/constituicao": {
+      "proprietario": "TRE-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 346,
+          "marcadorPagina": "<!-- página 346 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Duas escolhas entre atributos físicos na segunda etapa e Dádiva adicional na quarta etapa de Potencial Físico. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::escolhas/atributo_2/opcoes/constituicao/efeitos": {
+      "proprietario": "TRE-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 346,
+          "marcadorPagina": "<!-- página 346 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Duas escolhas entre atributos físicos na segunda etapa e Dádiva adicional na quarta etapa de Potencial Físico. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::escolhas/atributo_2/opcoes/constituicao/efeitos/@0": {
+      "proprietario": "TRE-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 346,
+          "marcadorPagina": "<!-- página 346 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Duas escolhas entre atributos físicos na segunda etapa e Dádiva adicional na quarta etapa de Potencial Físico. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::escolhas/atributo_2/opcoes/destreza": {
+      "proprietario": "TRE-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 346,
+          "marcadorPagina": "<!-- página 346 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Duas escolhas entre atributos físicos na segunda etapa e Dádiva adicional na quarta etapa de Potencial Físico. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::escolhas/atributo_2/opcoes/destreza/efeitos": {
+      "proprietario": "TRE-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 346,
+          "marcadorPagina": "<!-- página 346 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Duas escolhas entre atributos físicos na segunda etapa e Dádiva adicional na quarta etapa de Potencial Físico. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::escolhas/atributo_2/opcoes/destreza/efeitos/@0": {
+      "proprietario": "TRE-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 346,
+          "marcadorPagina": "<!-- página 346 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Duas escolhas entre atributos físicos na segunda etapa e Dádiva adicional na quarta etapa de Potencial Físico. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::escolhas/atributo_2/opcoes/forca": {
+      "proprietario": "TRE-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 346,
+          "marcadorPagina": "<!-- página 346 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Duas escolhas entre atributos físicos na segunda etapa e Dádiva adicional na quarta etapa de Potencial Físico. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::escolhas/atributo_2/opcoes/forca/efeitos": {
+      "proprietario": "TRE-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 346,
+          "marcadorPagina": "<!-- página 346 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Duas escolhas entre atributos físicos na segunda etapa e Dádiva adicional na quarta etapa de Potencial Físico. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::escolhas/atributo_2/opcoes/forca/efeitos/@0": {
+      "proprietario": "TRE-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 346,
+          "marcadorPagina": "<!-- página 346 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Duas escolhas entre atributos físicos na segunda etapa e Dádiva adicional na quarta etapa de Potencial Físico. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::etapas/@3/efeitos": {
+      "proprietario": "TRE-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 346,
+          "marcadorPagina": "<!-- página 346 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Duas escolhas entre atributos físicos na segunda etapa e Dádiva adicional na quarta etapa de Potencial Físico. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::etapas/@3/efeitos/@0": {
+      "proprietario": "TRE-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 346,
+          "marcadorPagina": "<!-- página 346 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Duas escolhas entre atributos físicos na segunda etapa e Dádiva adicional na quarta etapa de Potencial Físico. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::sup_versatilidade::usos": {
+      "proprietario": "SUP-01",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 103,
+          "marcadorPagina": "<!-- página 103 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Versatilidade tem usos iguais ao modificador de Sabedoria por descanso curto ou longo. O descanso único autorizado é preservado. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-efeitos.js::EFEITO_CANAIS::imunidadeMovimentoForcado": {
+      "proprietario": "M01",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 76,
+          "marcadorPagina": "<!-- página 76 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Sinalizador do Motor para a cláusula de imunidade, também presente em Barreira Inamovível, p.121. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_barreira_inamovivel": {
+      "proprietario": "RES-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 121,
+          "marcadorPagina": "<!-- página 121 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Imunidade a movimento forçado de Barreira Inamovível. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_barreira_inamovivel::@0": {
+      "proprietario": "RES-02",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 121,
+          "marcadorPagina": "<!-- página 121 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Imunidade a movimento forçado de Barreira Inamovível. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-efeitos-conteudo.js::ESCOLHA_EFEITOS::cmb_postura_da_terra::@2": {
+      "proprietario": "CMB-04",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 76,
+          "marcadorPagina": "<!-- página 76 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Imunidade a movimento forçado de Terra. Segundo espaço exige Mestre válido. Localização de fonte não aprova regra, execução ou auditoria."
+    },
+    "afty-efeitos-conteudo.js::APICE_EFEITOS::api_invencivel_sob_o_sol::@12": {
+      "proprietario": "API-03",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "arquivo": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 76,
+          "marcadorPagina": "<!-- página 76 -->"
+        }
+      ],
+      "nota": "CX3, 2026-11-06. Somente a imunidade de Terra concedida pelo Ápice, conforme decisão do autor de 12/09 sobre as oito posturas. Não localiza o restante do Ápice neste livro. Localização de fonte não aprova regra, execução ou auditoria."
     }
   }
 }

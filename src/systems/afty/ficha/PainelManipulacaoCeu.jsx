@@ -19,7 +19,7 @@ export default function PainelManipulacaoCeu({ derived, onEstado }) {
       </div>
 
       <div className="afty-linha px-2.5 py-2 flex items-center gap-2 flex-wrap">
-        <span className="afty-rotulo text-[10px] uppercase tracking-wider">Aura Embaçada</span>
+        <span className="afty-rotulo text-[11px] uppercase tracking-wider">Aura Embaçada</span>
         <button
           type="button"
           className="afty-botao"
@@ -44,7 +44,7 @@ export default function PainelManipulacaoCeu({ derived, onEstado }) {
           </span>
         )}
         <span className="h-5 w-px bg-[var(--afty-borda)] mx-1" aria-hidden="true" />
-        <span className="afty-rotulo text-[10px] uppercase tracking-wider">Cópias</span>
+        <span className="afty-rotulo text-[11px] uppercase tracking-wider">Cópias</span>
         <button
           type="button"
           className="afty-botao"

@@ -58,6 +58,15 @@ vai para o ar.
 
 | Arquivo | O que verifica |
 |---|---|
+| `t-cl1-uso` | o contrato de uso (CL1): identidade da operação e repetição, recusa com motivo devolvendo a mesma sessão, Armas Absolutas de ponta a ponta com o número no derive, política manual e confirmada (casca primeiro), tudo ou nada, duração, limites por rodada/turno/cena, usos, recarga, concentração única, ponte dos estados de combate (`usoDoEstado`), persistência, descanso, lixo no armazenamento e anel com teto, nos dois sistemas |
+| `t-cl1-combate` | o combate do CL1: resultado do ataque com Defesa, cobertura, flanco, camuflagem e desastre, TR, dano na ordem do livro (exemplos das p.309 e 365), conflito de defesas recusado, perda de vida e Dano na Alma distintos, pendências do próximo ataque, Sequência de Ataques pelo exemplo da p.310 lida no derive, ações, hierarquia e reações sem segundo contador, concentração e Ritual Estendido, nos dois sistemas |
+| `t-cl1-mesa` | os adaptadores `{ mesa, erro }` do G2 para o contrato de uso e o combate: recusa devolve a mesma mesa, ativação só quando houve débito, Estornar PE, identidade, eventos legíveis sem a frase "sem abater RD" |
+| `t-cl2-vital` | o núcleo vital do CL2, nos dois sistemas: saldo negativo geral (N09), cura que QUITA a dívida antes de subir o PV (N10), dano massivo (estritamente maior que o máximo, saldo acumulado), falha por dano nas Portas (uma por ATAQUE, não por tipo de dano), teste de morte (1 duas falhas, 2 a 9 uma, 10 a 19 um sucesso, 20 dois), as falhas sobrevivendo à estabilização, Medicina (CD 15 + 1 por 5 negativos), persistência e migração do `pvNegativos`/`falhasMorte` antigos, descanso (falhas caem, Ferimento fica), conciliação com PV escrito à mão, ações bloqueadas nas Portas, Ferimento Complexo (limiar, um por ataque, tabela, Cego/Lento/Destreza -4 pelos mecanismos que já existem, ferida interna, permanência, recuperação) e o Restringido (Ainda de Pé, Rejeitar a Morte, Mesmo Morto) de pé em cima do mesmo estado |
+| `t-cl3-votos` | os Votos de Restrição do CL3: o Voto livre de antes volta byte a byte e emite como sempre, o Voto de Addon é exceção declarada, pesos e legalidade (temporário até Pesado, permanente a partir de Médio, tipo pelo malefício, Leve sem Aptidão, Aptidão possuída, escopo do Próprio, Emergencial um peso acima, limite de BT), Restrição Congênita (só na criação, PE intocável, Defesa e RD não se trocam, resistência com vulnerabilidade, limite do atributo e o balanço de pontos, PV por nível, Valores Fixos, metade dos Feitiços), o ciclo (realizar com ação, quebrar no combate e depois do combate, desfazer, prazo contado uma vez por rodada, fim do combate, interlúdio, identidade da operação), Contratos (aceite, recusa, participante, ruptura com o texto da mesa), persistência no JSON e duas fichas A, B, A |
+| `t-cl3-dominios` | os Domínios e barreiras do CL3: quem vence o Confronto (mesmo DOM com margem de 5, DOM maior, a exceção do DOM menor por 1, o +2 da Expansão ativa, Incompleta, Sem Barreiras com o usuário preso), duas fichas e duas sessões reais do início à reconciliação (reação, Ação Comum perdida, vitória, estendido, dano do usuário ao domo, domo a zero, inconsciente), Contestação (dano por rodada, passagem pela vida do domo, encerramento), paredes e Cortinas (PV do derive, custo, dano, RD, destruição, descanso, persistência), Cesta Oca de Vime (Durabilidade, falha de concentração, selo, Acerto Garantido no turno, quebra) e duas fichas sem vazamento |
+| `t-cl3-invocacoes` | as Invocações na mesa do CL3: prejuízo por múltiplos auxílios (passos por repetição, piso de 1d4, imunidade da Técnica, uso extra da Horda), o interruptor que guarda o prejuízo, o Dano Adicional como disparo na sessão de quem recebe e consumido no ataque elegível, a Forma de Arma com a linha de ataque do dono (tipo e dado da Ação Complexa escolhida, acerto e fixo do dono, margem da arma), a reação do portador sem RD, as variáveis de sessão da Característica Livre e duas fichas com invocações de mesmo id |
+| `t-cl2-alma-dados-vida` | a Alma e os Dados de Vida do CL2, nos dois sistemas: teste de Integridade antes do Dano na Alma (metade no sucesso, nada no crítico, CD exigida), cura de Alma com o requisito de QUEM CURA (treino em Integridade, Energia Reversa 4, traçado declarado) reduzida à metade, recuperação por descanso sem ligação ao botão, a pilha de Dados de Vida por Especialização, o gasto com Constituição, o limite dos Remédios, o dobro do Elixir, o extra do Treino de Resistência, persistência e descanso |
+| `t-mutante-descartado` | o Corpo Amaldiçoado Mutante foi abandonado e excluído do site pelo autor (2026-10-30): a origem não está no catálogo nem nas listas, ficha antiga com o id removido ainda deriva, e o que tem nome parecido (núcleos de invocação, Anatomia Carapaça Mutante, Maldição) segue de pé. Se falhar porque alguém recolocou a origem: desista da ideia e vá fazer outra coisa |
 | `t-cura-aperfeicoada` | rerrolagem de cura mantendo o melhor, sem repetir tentativas, todas as fontes e PER, Vaticano, autoria por canal, limites por alvo, isolamento de dano, PV Temporário e invocações nos dois sistemas |
 | `t-herdado-vaticano` | pacote do clã Vaticano, requisitos de Cura Perfeita, atributos livres, perícias concedidas, nível gratuito de Energia Reversa, cura por dado em várias fontes e desativação em Afty e Player |
 | `t-gerais-progressao` | progressão aprovada de Especialização e Aptidão em todas as faixas de ND, limites e compras, salto de 35 para 36, aparo sem perda de dados, concessões de sessão, Player e Restringido |
@@ -242,3 +251,153 @@ t-reconciliacao-g00: 47 regressões da auditoria, cobrindo propostas obsoletas, 
 - t-pacotes-aliados.mjs (2026-10-19, correções em 2026-10-20): 189 verificações dos Pacotes para Aliados. A seção 11 é PA-I4, o prazo herdado da opção também ganha contador: o arquivo válido que herda o prazo (próprio/herdado, herdado/próprio, nenhum prazo próprio, rodadas diferentes nos dois sentidos, opção permanente), a instância equivalente à do arquivo com um prazo em cada benefício, as viradas, a ordem em que o ataque vem primeiro, o texto, a opção da biblioteca que não é reescrita, clássica, G2 e Encontro iguais, a sessão relida, e a instância antiga sem contador que não é reescrita e aparece como parte manual. A seção 10 é PA-I3, cada benefício no próprio prazo: a separação por efeito igual à lista do resolvedor, o arquivo e a leitura com o prazo de cada benefício (e a recusa do prazo ruim), o arquivo antigo, a instância e as partes, o texto, as duas ordens de término (a virada primeiro, o ataque primeiro), o aviso da virada, clássica, G2 e Encontro iguais, a sessão relida, o descanso, o reativar, a instância antiga não reescrita e o prazo do cartão. A seção 9 é a devolutiva do Codex: PA-I1 (o maior que não vale agora não cobre o menor, fora, em e fora de combate, ordem, empate, fim do maior, análise, a condição na linha do vencedor, clássica, G2 e Encontro, nos ramos de catálogo, Aura numérica, auxílio, Aura de Dano com e sem o dado próprio, e o Feitiço pelo motor) e PA-I2 (o Feitiço de um ataque com prazo de uso, a Reação de Defesa, o Múltiplos Efeitos de Reação e o misto, o arquivo, a biblioteca, a instância, duas viradas, o cartão do G2, o descanso e o arquivo antigo que muda a revisão). O arquivo (lista branca, versão, ids, valor não numérico, infinito, zero, canal e alvo desconhecidos, condição que o motor não avalia, motivo de cada recusa, nada avaliado), a biblioteca (mesmo arquivo duas vezes, revisão nova e antiga, opção removida, dois emissores, mesmo id de outro emissor, releitura defensiva, export da ficha), a instância (prazo a partir da ativação, alcance e manutenção sem rodadas, descanso e virada), os números do emissor por família (Bastião, Comandante e Evoluída, Feitiço com dois benefícios, Alcance Próprio, Permutativo, dados como consulta, auxílio e Aura de invocação, auxílio da Quimera só com fundida, Estilo, Suporte inclusive Apoio Estratégico, Olhar Aguçado e Contra-Ataque, definição à mão, fonte que saiu da ficha), o acúmulo no aliado (origem repetida, maior, empate no topo, benefício próprio maior e menor, fim do maior, Feitiço e Estilo, Aura própria numérica e de dado), alvo e condição de combate, clássica, G2 e Encontro iguais, criatura como receptor e o criador que não escreve os campos novos.
 
 - t-fechamento-g2.mjs (2026-10-20): 124 verificações da lógica pura do fechamento funcional do G2, sobre a sessão e o derive reais, com mutação de 13 defeitos plantados. Imitação (tipos da comum e da Perfeita, o que pede Em Combate e a confirmação do tipo, trocar, encerrar, aprender com a CD que cai de 2 em 2, reutilizar, esquecer só uma, escolhas até o limite do motor), Concedido (catálogo por família, não repetível recusa a segunda pega, repetível aceita e remove por uid, entrada sem addon), Exaustão (inteiro não negativo, a mesma sessão quando nada muda), Sangramento (uma rolagem, perda direto na Vida com a casca intacta, rolagem e evento no histórico, sem Vida para perder) e Buff de Mesa (vazio, inválido, canal e invocação desconhecidos recusados, o + inicial sai, id novo, criar e tirar mexem só no buff de mesa, rodadas e vencimento, escopo e mira na invocação, igualdade do derive com a clássica e com o Encontro, persistência pelo `normalizaSessao`).
+
+- t-cx2-origens.mjs (2026-11-01): 195 verificações em Player e Afty de Marca/Familiaridade,
+  identidade e variações, Foco (incluindo Múltiplos Disparos), Manual, Aura restrita,
+  Carapaça, manutenção real de Auxiliar, usos/ações e recarga diária, Vigor/Reposição,
+  Herança, Veneno, voo, Alma, chance do crítico/furtivo, Resiliência, Devorador,
+  Presença, comando Inumaki e Sangue Tóxico. Inclui recusas, proteção contra repetição,
+  persistência e gravação conjunta de alvos com recusa de pacote obsoleto.
+  Foco: um dado no destino escolhido, variação com destino próprio, seleção
+  ausente/inválida, consumidor ativo, rolagens individuais e concentrado. Em
+  Dano na Alma o dado integra a criação e o alcance dobra integralmente.
+
+- t-cx3-conteudo.mjs: 65 verificações em Player/Afty de curva e usos de Medicina,
+  alcances direcionados, fontes, duas escolhas físicas e dois Ofícios reais.
+- t-cx3-operacoes.mjs: 284 verificações das operações de cura, 12 grupos de
+  crítico, Sangramento tipado persistido, regeneração/custo, Sorte e rerrolagem.
+  Inclui remoção de um veneno real de CX5, preservação dos demais, efeitos,
+  condições compartilhadas e concentração após crítico de Bastão/Haste.
+- t-cx3-excedentes-combate.mjs: 76 verificações de excedente real, categoria,
+  requisito cruzado/veto, retirada da fonte, persistência, temporário, RD
+  elemental, ativação/consumo de canalizações, alvo, sequência, Aura e Estímulos.
+- t-cx3-testes.mjs: 94 verificações de Treino de Perícia/Luta, usos, recarga,
+  sucesso não oposto, rerrolagem de d20 baixo, Tempestade, Guarda e escudo.
+  Versatilidade compara treino temporário com oferta fixa, preserva dados,
+  usos, custo, fontes, orçamento permanente e treino concedido por outra fonte.
+- t-cx3-reversao.mjs: 30 verificações de custo e fonte, variações, vaga
+  exclusiva, retirada da Aptidão, preservação do registro e do orçamento,
+  Passivos e reserva de PE Máximo distinta nos dois sistemas.
+- t-cx3-manobras.mjs: 138 verificações de Chicote, Concussão e Movimentos
+  Acrobáticos, com acerto e alvo reais, TR, limite, tamanho, duração e
+  persistência. Inclui concessão crítica por Grupo Favorito, Manejo e Luta,
+  oportunidades com saldo real de reações e custo de Reação Rápida.
+  Deslocamento efetivo abre concentração, sem teste para zero metros ou
+  resistência bem-sucedida, preservando a resolução no núcleo.
+- t-cx3-classes.mjs: 614 verificações de Puxar um Ar, Revigorar, Surto de Ação,
+  Resistir, Conhecimento Aplicado e Mente Plácida. Cura conserva faces, ação e
+  contador, concentração usa a pendência real. Inclui contraprova de remendo
+  alheio e isolamento de requisitos de Aptidão entre duas fichas. Indomável e
+  Outra Chance conservam o melhor teste, custos e usos, sem reescrever efeitos
+  já resolvidos. Força Imparável, Barreira e Precisão Forçada verificam custo,
+  correção do dado, máximo nativo e consumo da Precisão também no erro.
+  Intervenção cobre os quatro degraus, custo por força, seleção por id,
+  Sangramento variável, exclusões da p.210, ação, cobrança e persistência.
+  Análise Profunda cobre CD pelo alvo, Percepção, ação/custo e limite por
+  criatura/cena, conclusão separada, excedentes, Sorte e persistência.
+  Mobilidade Avançada usa a queda real de CL2, reação, limite da mesma queda,
+  distância derivada, condições impeditivas e persistência.
+- t-cx3-investida.mjs: 190 verificações de Investida e Voadora em Player/Afty,
+  distância pela decisão do autor, ação completa, BT no acerto, prazo próprio
+  da Defesa, dano crítico nativo, alvo confirmado, disputa de Atletismo em
+  duas etapas, reaproveitamento de Treino, Sorte e Outra Chance antes de Caído,
+  recusas sem consumo, identidade e persistência. Voadora cobre Investida
+  comum/Aprimorada, 3 PE, limite de dados pela distância e atributo, crítico
+  e pagamento único.
+- t-cx3-regeneracao.mjs: 164 verificações de Sobrevivente em Player/Afty,
+  níveis 4/8/12/16/20, requisito por atributo permanente final, limiar de PV,
+  estados vitais, início do turno da Ficha e primeiro/próximo no Encontro,
+  persistência sem cura adicional e coexistência com Corpo de Aço.
+- t-cx3-briga.mjs: 72 verificações de Derrubar/Empurrar após acerto desarmado
+  real sem dano, Ação Livre, requisitos, dados/bônus/fontes, escolha da perícia,
+  disputa separada, Sorte, empate, concentração, recusas e persistência.
+- t-cx3-vigor.mjs: 56 verificações de Incitar Vigor na própria ficha e no alvo,
+  custo/ação do Suporte, pilhas de multiclasse e Treino, dados/CON do alvo,
+  estado vital, teto, recusas sem cobrança, descanso e persistência.
+- t-cx3-voto.mjs: 30 verificações de Voto Malevolente, realização nativa e
+  validação com lista acessível, requisitos, reação, limite, escopo/duração,
+  Aptidões, idempotência, histórico e persistência na ficha.
+- t-cx3-renovacao.mjs: 65 verificações de Renovação pelo Sangue com crítico
+  e abate reais, um PE, teto, fontes, identidade, persistência, Base diferente
+  em Afty, aliados, erro, dano zero, requisitos e escopo de remendo.
+- t-cx3-escudo.mjs: 92 verificações de Técnicas Agressivas de Escudo, turno
+  do ataque, gatilho mesmo errando, escudo equipado, Ação Bônus, disputa,
+  Caído com empurrão normal, alternativa +4,5 m, dano normal, concentração,
+  Sorte, identidade e persistência. Dano rolado opcional sem novo sorteio,
+  elegibilidade de Infalível e exclusão de dano de manobra.
+- t-cx3-fortuna.mjs: 128 verificações da Postura da Fortuna em Player/Afty,
+  d20 individual, maior resultado, vantagem/desvantagem, extras, mínimo,
+  crítico, limite nativo por rodada, uma tentativa por dado, recusas,
+  salvamento, Sorte, Treino, Indomável, Imitação e requisitos do Ápice.
+- t-cx3-sentinela.mjs: 92 verificações de oportunidade identificada,
+  redução de Movimento, renovação sem acúmulo, fim do turno do alvo,
+  reação a ataque real contra terceiro, saldo/repetição, requisito,
+  preservação de Perceber, erro, dano zero, alvo, Sorte e salvamento.
+- t-cx3-mobilidade.mjs: 82 verificações de Técnicas de Mobilidade,
+  Reflexos nativos, requisito, ataque que errou, limite por rodada,
+  proteção contra participante específico, recusa de oportunidade sem
+  cobrança, confirmação, Sorte, releitura e decisão do fim do turno em
+  curso. Usa o redutor real para turno próprio/terceiro, remoção, rodada
+  forçada e encerramento de combate.
+- t-cx3-imunidade-movimento.mjs: 150 verificações de Terra, Barreira e
+  Terra do Ápice em Player/Afty. Escolhas, requisitos, segundo espaço,
+  Imitação válida, Addon, fontes e sinal do Motor. Recusas de Chicote,
+  Concussão, Briga Empurrar, Escudo e críticos de Bastão/Haste, sem novo
+  custo, dano, condição ou teste de concentração. Revalida disputa salva,
+  conserva Derrubar e encerra posturas ao cair ou sofrer incapacitação,
+  inclusive em sessão antiga e sem restaurar ao retirar a condição.
+- t-cx3-posturas.mjs: 200 verificações de entrada/troca das posturas próprias,
+  Mestre, Preparação Rápida, ação/uso/prazo nativos, Ativar/Ajustar G2 sem
+  cobrança dupla, contagem de prazo na tela, recusas, Addon, Imitação,
+  cancelamento por Empurrar, queda/incapacitação e persistência.
+- t-cx3-sintonizacao.mjs: 80 verificações de cura aplicada a aliado, valor
+  anterior ao teto, segunda cura em outro destinatário ou no próprio
+  Suporte, 3 PE sem outra ação, contexto de turno, recibo, recusa sem custo,
+  ausência de cascata e persistência.
+- t-cx3-redirecionadora.mjs: 244 verificações de Aura Redirecionadora,
+  arco/pistola/azagaia, aquisição válida, custo e política manual, ausência
+  de outra ação, falha confirmada, desastre e sequência A/B, camuflagem,
+  outro alvo em 6 m, crítico/dano nativo, mesmo projétil com munição única,
+  emperramento preservado, turno global, recusas e persistência.
+- t-cx3-aura-drenadora.mjs: 30 verificações de transição vital real, ataques,
+  Dragão e Escudo, acumulação, supressão e persistência.
+- t-cx3-devastacao.mjs: 28 verificações de acerto por alvo, teto, RD,
+  troca, identidade de postura e persistência.
+- t-cx3-tempestade.mjs: 28 verificações de acerto, Fortitude,
+  Sorte, condição Caído, recusas e persistência.
+- t-cx3-medicina.mjs: 63 verificações de quota, seleção por dado,
+  aplicação única, teto, Sintonização, descarte, persistência e Fluxo.
+- t-cx3-concentrar-aura.mjs: 30 verificações de Ação Livre, passivas
+  elegíveis, dano Energético separado, recarga e bancada manual.
+- t-cx3-provocar.mjs: 64 verificações de alcance, disputa, Sorte, ação
+  livre, quota, modos de ataque, obrigação visível e prazo por emissor.
+- t-cx3-pular.mjs: 70 verificações de faixas, ação, Sorte, queda, Estímulo,
+  salto livre e ajuste de Saltador no primeiro ataque contra o alvo.
+- t-cx3-cura-grupo.mjs: 52 verificações de custo único, alcance, teto de PER,
+  rolagem, parcelas, Herança, persistência e aplicação conjunta.
+- t-cx3-dragao.mjs: 95 verificações de recibo de ataque, Fortitude,
+  múltiplos inimigos, dano tipado, escolha prospectiva de reação,
+  Imitação, Ápice e persistência.
+- t-cx3-lua.mjs: 92 verificações de Andar/Desengajar como ações livres,
+  fontes, identidades, limites/recuperação nativos, recusa sem cobrança,
+  proteção/prazo de oportunidade, persistência, Mestre, Imitação e Ápice.
+- t-cx3-reacao-ataque.mjs: 82 verificações da janela prospectiva, Aparar
+  Ataque, Lua, Cobrir-se, Raio Negro misto, recusa, idempotência,
+  concentração e persistência.
+- t-cx3-expandir-aura.mjs: 54 verificações de acesso, ação livre,
+  pagamento, alcance, manutenção e interação com Concentrar Aura.
+- t-cx3-absorcao-elemental.mjs: 95 verificações de dano elemental,
+  reação, carga, descarte pela declaração nativa e grupo tipado derivado.
+- t-cx3-antidominio-numeros.mjs: 24 verificações de cálculos de Punho
+  Divergente, Anular Técnica, Revestimento de Domínio e Pétala.
+- t-cx3-treino-resistencia.mjs: 57 verificações do cliente isolado
+  do teste de morte de CL2 com a primeira falha da cena ignorada.
+- t-cx3-cortes.mjs: 90 verificações de acerto/dano cortante real, redução
+  opcional, limite por turno em curso, prazo do emissor, não acumulação
+  entre origens, persistência, PV temporário, RD, dano misto, arremesso,
+  reação fora do turno, Terra, Sentinela, remoção e fim do combate.
+- t-cx3-acao-agil.mjs: 169 verificações de Lutador/Restringido, Andar,
+  Desengajar e Esconder, 2 PE/Estamina sem consumir ações normais, cadência
+  nativa distinta, identidade comum para Habilidades iguais, mudança da
+  origem da concessão, Furtividade/Sorte, portão vital, oportunidade
+  recusada antes de reação e ao confirmar, prazo e persistência.

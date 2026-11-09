@@ -715,6 +715,28 @@ export const COMBATE_ESTADOS = [
     },
     requerAptidao: "mal_fluxo_imparavel",
   },
+
+  /* ============================================================ */
+  /* CONTROLADOR: A POSIÇÃO DECLARADA (CX6, 2026-11-06)             */
+  /* ============================================================ */
+  /* A ficha não tem mapa: a mesa declara quantas invocações estão perto e o Motor faz a conta. O teto é o limite em campo. Os efeitos
+     moram em `HABILIDADE_EFEITOS` (Guarda Viva e Rede de Detecção) e em `efeitosCombateEmAlcateia` (Combate em Alcateia). */
+  {
+    id: "invocacoes_a_3m",
+    label: "Invocações a 3 m",
+    tipo: "faixa",
+    min: 0,
+    max: (d) => d?.invocacoes?.controle?.limiteCampo ?? 1,
+    requerHabilidade: ["ctr_guarda_viva", "ctr_rede_de_deteccao"],
+  },
+  {
+    id: "invocacoes_no_alcance",
+    label: "Invocações no Alcance do Alvo",
+    tipo: "faixa",
+    min: 0,
+    max: (d) => d?.invocacoes?.controle?.limiteCampo ?? 1,
+    requerHabilidade: "ctr_combate_em_alcateia",
+  },
 ];
 
 /**
@@ -876,6 +898,9 @@ export function resolveCombate(creature, params = {}) {
     conhecimentoAplicado: params.conhecimentoAplicado ?? 0,
     adeptoFeiticariaReducoesUsadas: params.adeptoFeiticariaReducoesUsadas ?? 0,
     tempestadeIdeiasUsos: params.tempestadeIdeiasUsos ?? 0,
+    // Controlador (CX6): o teto da posição declarada é o limite de invocações em campo.
+    invocacoes_a_3m: params.invocacoes_a_3m ?? 0,
+    invocacoes_no_alcance: params.invocacoes_no_alcance ?? 0,
   };
   /* ⚠ O AVISO ACIMA NÃO ERA TEÓRICO. Ao ligar o Conhecimento Aplicado em
      2026-09-07 eu declarei o `max` no catálogo, esqueci a linha aqui, e o

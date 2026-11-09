@@ -23,6 +23,7 @@ import {
   alteraTreinoAtivo, alteraEstadoCombate, aplicaPatchCombate,
   usosGastosDe, marcaUso, consomeEstadoCombate,
 } from "../ficha/ficha-sessao";
+import { avisoDoVital } from "../ficha/ficha-vital";
 import { rolarTeste, rolarDano, textoDaRolagem } from "../ficha/ficha-rolagem";
 import { prepararRolagemEspecializacao, registrarAtaqueEspecializacao, aplicarCuraRoladaEspecializacao } from "../ficha/ficha-especializacoes";
 import { preparaRolagemCura } from "../afty-cura";
@@ -46,6 +47,11 @@ import PainelServos from "../ficha/PainelServos";
 import { preparaCustoServo, pagaCustoServo } from "../ficha/ficha-servos";
 import PainelAcoesAddon from "../ficha/PainelAcoesAddon";
 import PainelContadoresSessao from "../ficha/PainelContadoresSessao";
+import PainelOrigens from "../ficha/PainelOrigens";
+import PainelConteudo, { OperacaoConteudoDoItem, PainelSobProvocacao, ProvocarDoItem } from "../ficha/PainelConteudo";
+import { ataqueSobProvocacao, provocacoesAtivas } from "../ficha/ficha-conteudo-provocar";
+import { ativacaoDevastacao } from "../ficha/ficha-conteudo-devastacao";
+import { posturaAtivaConteudo } from "../ficha/ficha-conteudo-posturas";
 import { consumirAcoesAddon } from "../afty-acoes-addon";
 import AbaPericias from "../ficha/abas/AbaPericias";
 import AbaHabilidades from "../ficha/abas/AbaHabilidades";
@@ -53,6 +59,7 @@ import AbaEquipamentos from "../ficha/abas/AbaEquipamentos";
 import AbaInvocacoes from "../ficha/abas/AbaInvocacoes";
 import PrimitivasDeAddon from "../ui/PrimitivasDeAddon";
 import EspinhoCard from "../ui/EspinhoCard";
+import CamadasDeCorrupcao from "../ui/CamadasDeCorrupcao";
 
 /**
  * ============================================================
@@ -137,10 +144,13 @@ function DanoRapido({ onDano, onCura }) {
 
 export default function PainelDeCombatente({
   combatente, derived, sessao, onSessao, onFlag, ativo, alvosBloodfeast = [], onAlvoBloodfeast = null,
+  alvosOrigens = [], onOperacaoOrigem = null, onOperacaoGrupo = null, turnoEmCurso = null,
 }) {
   const [aba, setAba] = useState("acoes");
   const [abertos, setAbertos] = useState(() => new Set());
   const [destaque, setDestaque] = useState(null);
+  const [alvoProvocacao, setAlvoProvocacao] = useState(""), [erroProvocacao, setErroProvocacao] = useState(null);
+  const provocado = provocacoesAtivas(sessao).length > 0;
   // As Quimeras em aba própria (primitiva `abaQuimeras`, 2026-10-14).
   const quimerasEmAbaPropria = !!derived.primitivas?.includes("abaQuimeras");
 
@@ -155,21 +165,40 @@ export default function PainelDeCombatente({
 
   /* Rola e registra no log DA SESSÃO daquele combatente. Devolve a rolagem,
      porque a linha de dano usa o crítico do Acerto para dobrar os dados. */
-  const rolar = useCallback((desc) => {
-    desc = prepararRolagemEspecializacao(desc, sessao, derived);
+  const rolar = useCallback((desc, sessaoDoUso = null) => {
+    desc = prepararRolagemEspecializacao(desc, sessaoDoUso ?? sessao, derived);
     if (!desc) return null;
+    if (desc.tipo === "teste" && (desc.linhaArma || desc.ataqueId || desc.tipoTeste === "ataque")) {
+      const ativas = provocacoesAtivas(sessaoDoUso ?? sessao);
+      if (ativas.length) {
+        const id = desc.contextoConteudo?.alvoId || alvoProvocacao;
+        if (!alvosOrigens.some((a) => a.id === id)) { setErroProvocacao("Selecione o Alvo Antes de Rolar"); return null; }
+        desc = ataqueSobProvocacao(desc, ativas, id);
+        setErroProvocacao(null);
+      }
+    }
     const pronta = preparaCustoServo(preparaRolagemCura(preparaRolagemArma(desc), derived.efeitos), sessao);
     if (!pronta) return null;
-    const r = pronta.tipo === "dano" ? rolarDano(pronta) : rolarTeste(pronta);
+    let contextualizada = pronta;
+    if (pronta.tipo === "teste" && pronta.contextoTurno && turnoEmCurso) {
+      const estado = sessaoDoUso ?? sessao;
+      const devastacao = ativacaoDevastacao(estado);
+      const tempestade = posturaAtivaConteudo(estado, derived, "tempestade");
+      contextualizada = { ...pronta, contextoTurno: { ...pronta.contextoTurno, emCurso: turnoEmCurso,
+        ...(devastacao ? { devastacao } : {}), ...(tempestade ? { posturaTempestade: true } : {}) } };
+    }
+    const r = pronta.tipo === "dano" ? rolarDano(pronta) : rolarTeste(contextualizada);
     onSessao((s) => {
+      // O Encontro despacha snapshots. O uso e sua rolagem no mesmo clique
+      // precisam partir da sessão já paga, sem sobrescrever custo ou ação.
       const registrada = aplicarCuraRoladaEspecializacao(
-        registrarAtaqueEspecializacao(registraRolagemArma(registraRolagem(s, r), pronta, r), desc, derived), desc, r, derived);
+        registrarAtaqueEspecializacao(registraRolagemArma(registraRolagem(sessaoDoUso ?? s, r), pronta, r), desc, derived), desc, r, derived);
       // A Amplificadora (2026-10-27): rolar o primeiro ataque a descarrega, como na Ficha.
       const comEstado = desc.consomeEstado ? consomeEstadoCombate(registrada, desc.consomeEstado) : registrada;
       return pagaCustoServo(consumirAcoesAddon(comEstado, desc.consomeAcoesAddon), pronta);
     });
     return r;
-  }, [onSessao, derived, sessao]);
+  }, [onSessao, derived, sessao, turnoEmCurso, alvosOrigens, alvoProvocacao]);
 
   /* Os escritores de invocação, os mesmos seis da Ficha Final. ⚠ Passam pelo
      `onSessao` como todo o resto do painel, então o mestre abate o PV de um
@@ -246,6 +275,10 @@ export default function PainelDeCombatente({
     [combatente.ficha, sessao, derived],
   );
 
+  const renderOperacaoConteudo = useCallback((item) => <OperacaoConteudoDoItem item={item} derived={derived}
+    sessao={sessao} onSessao={onSessao} onRolar={rolar} alvos={alvosOrigens} onOperacaoAlvo={onOperacaoOrigem} onOperacaoGrupo={onOperacaoGrupo} emSeuTurno={ativo} voceId={combatente.id} turnoEmCurso={turnoEmCurso} />,
+  [derived, sessao, onSessao, rolar, alvosOrigens, onOperacaoOrigem, onOperacaoGrupo, ativo, combatente.id, turnoEmCurso]);
+
   // Jogador: nada de ficha, nada de painel. A ficha dele está na mão dele.
   if (!combatente.ficha || !sessao || !derived) {
     // O Encontro mistura os dois sistemas: a palavra sai da FICHA do combatente.
@@ -279,7 +312,7 @@ export default function PainelDeCombatente({
        tela sai da ficha dela. Sem isto, um combatente com addon emprestaria o
        card de concessão para o combatente raw ao lado. */
     <PrimitivasDeAddon primitivas={derived.primitivas}>
-    <div className="space-y-3">
+    <div className={`space-y-3${derived.corrupcao?.ativo && derived.corrupcao.marco > 0 ? " relative" : ""}`}>
       {/* ---------- cabeçalho do combatente ---------- */}
       <section className="afty-card p-3 space-y-3">
         <div className="flex items-center gap-2 flex-wrap">
@@ -341,6 +374,7 @@ export default function PainelDeCombatente({
           <Vital
             tipo="pv" icone={Heart} rotulo="PV"
             atual={sessao.hpAtual} max={derived.hp} temp={pvTempTotal(sessao)}
+            aviso={avisoDoVital(sessao.vital)}
             onSet={(v) => onSessao((s) => ({ ...s, hpAtual: v }))}
             onDelta={(n) => onSessao((s) => n < 0 ? aplicaDano(s, -n, derived) : aplicaCura(s, n, derived.hp))}
           />
@@ -425,7 +459,7 @@ export default function PainelDeCombatente({
           <div className="afty-linha px-2.5 py-1.5 flex items-center gap-2">
             <span className="afty-rotulo text-[10px] flex-shrink-0">Última rolagem</span>
             <span className="flex-1 min-w-0 truncate text-[12px]">{ultima.rotulo}</span>
-            <span className="afty-valor text-[13px]">{textoDaRolagem(ultima)}</span>
+            <span className={ultima.tipo === "info" ? "min-w-0 max-w-[50%] truncate text-[12px]" : "afty-valor text-[13px]"} title={ultima.tipo === "info" ? ultima.detalhe : undefined}>{textoDaRolagem(ultima)}</span>
           </div>
         )}
       </section>
@@ -479,8 +513,14 @@ export default function PainelDeCombatente({
           }}
           adaptacao={<PainelDeAdaptacao derived={derived} onSessao={onSessao} />}
           olhosAgulha={<PainelOlhosAgulha derived={derived} sessao={sessao} onSessao={onSessao} />}
+          operacaoProvocar={sessao.combate?.ativo && onOperacaoOrigem && <ProvocarDoItem sessao={sessao} derived={derived} alvos={alvosOrigens}
+            onOperacaoAlvo={onOperacaoOrigem} emSeuTurno={ativo} voceId={combatente.id} />}
           olhinhosLu={<><PainelOlhinhosLu derived={derived} onSessao={onSessao} />
             <PainelServos derived={derived} sessao={sessao} onSessao={onSessao} />
+            {provocado && <PainelSobProvocacao sessao={sessao} alvos={alvosOrigens} alvo={alvoProvocacao} erro={erroProvocacao}
+              onAlvo={(id) => { setAlvoProvocacao(id); setErroProvocacao(null); }} />}
+            <PainelOrigens derived={derived} sessao={sessao} onSessao={onSessao} alvos={alvosOrigens} onOperacaoAlvo={onOperacaoOrigem} />
+            <PainelConteudo derived={derived} sessao={sessao} onSessao={onSessao} alvos={alvosOrigens} onOperacaoAlvo={onOperacaoOrigem} emSeuTurno={ativo} />
             <PainelAcoesAddon derived={derived} sessao={sessao} onSessao={onSessao} />
             <PainelContadoresSessao derived={derived} sessao={sessao} onSessao={onSessao} /></>}
           manipulacaoCeu={<PainelManipulacaoCeu derived={derived} onEstado={(estado, valor) => onSessao((s) => alteraEstadoCombate(s, estado, valor))} />}
@@ -511,6 +551,7 @@ export default function PainelDeCombatente({
           // o mesmo comentário em AftyFicha.jsx. Aparecem na aba Buffs.
           funcionamentos={funcionamentosParaFicha(combatente.ficha, derived)}
           itens={itens}
+          renderOperacao={renderOperacaoConteudo}
           abertos={abertos}
           onAberto={alternaItem}
           favoritos={[]}
@@ -607,6 +648,7 @@ export default function PainelDeCombatente({
           saldoAgora={saldoAgora}
         />
       )}
+      <CamadasDeCorrupcao corrupcao={derived.corrupcao} modo="recortado" />
     </div>
     </PrimitivasDeAddon>
   );

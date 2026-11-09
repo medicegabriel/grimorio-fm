@@ -18,6 +18,7 @@ import { sistemaDaFicha, regraDo, rotuloDoNivel, palavrasDoSistema } from "../af
 import BotaoDeDescanso from "../ficha/BotaoDeDescanso";
 import PainelDeCombatente from "./PainelDeCombatente";
 import useEncontroAfty from "./usar-encontro-afty";
+import { dadosVidaDoConteudo } from "../ficha/ficha-conteudo-uso";
 import { ENCONTRO_STATUS, LADO, LADO_ROTULO, LOG_TIPOS } from "./afty-encontro";
 
 /**
@@ -699,7 +700,15 @@ function Ativo({ encontro, derivado, acoes, criaturas, pastas, onVoltar, sistema
             {focado ? (
               <PainelDeCombatente
                 key={focado.id}
+                turnoEmCurso={encontro.ativoId ? { id: encontro.ativoId, rodada: encontro.rodada,
+                  turno: encontro.combatentes.find((c) => c.id === encontro.ativoId)?.sessao?.uso?.acoes?.turno ?? 0 } : null}
                 combatente={focado}
+                alvosOrigens={encontro.combatentes.filter((c) => c.id !== focado.id && c.sessao && derivado.derivados[c.id]).map((c) => ({ id: c.id, nome: c.nome, rolagens: c.sessao.log ?? [], condicoes: derivado.derivados[c.id].condicoes.lista,
+                  dadosVida: dadosVidaDoConteudo(c.sessao, derivado.derivados[c.id]), conflitoImpacto: derivado.derivados[c.id].defesasDano.porTipo.im.conflito,
+                  conflitosDano: Object.values(derivado.derivados[c.id].defesasDano.porTipo).filter((d) => d.conflito).map((d) => ({ tipo: d.tipo, label: d.label })),
+                  podeReceberEnergiaReversa: c.sessao.vital?.estado !== "morto" && derivado.derivados[c.id].origemEstruturalId !== "maldicao" }))}
+                onOperacaoOrigem={(id, fn) => acoes.operarComAlvo(focado.id, id, fn)}
+                onOperacaoGrupo={(ids, fn) => acoes.operarComGrupo(focado.id, ids, fn)}
                 alvosBloodfeast={encontro.combatentes.filter((c) => c.id !== focado.id && c.sessao).map((c) => ({ id: c.id, nome: c.nome }))}
                 onAlvoBloodfeast={(id, fn) => acoes.patchSessao(id, fn)}
                 derived={derivado.derivados[focado.id] ?? null}

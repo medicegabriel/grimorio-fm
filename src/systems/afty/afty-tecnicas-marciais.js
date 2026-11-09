@@ -106,6 +106,12 @@ export const TM_PASSIVO_VETADAS = Object.freeze(["atributo"]);
  * de outro jeito (a Liberação Máxima e a Passiva recebida de fora), e herda o
  * que o original é.
  *
+ * ⚠ SÓ O NÍVEL 1 A 4 É LIDO COMO TÉCNICA (autor, 2026-10-29). Feitiço de Nível 0,
+ * Nível 5 ou Técnica Máxima, sem marca, continua Feitiço: a Técnica Marcial não
+ * tem esses níveis, e ler assim acendia o aviso de nível numa ficha que só trocou
+ * a origem para Restringido. A marca gravada (`true`) segue valendo em qualquer
+ * nível, com o aviso.
+ *
  * Devolve a MESMA lista quando nada muda, para quem compara por referência.
  */
 export function marcarTecnicasMarciais(feiticos, padraoMarcial) {
@@ -116,6 +122,7 @@ export function marcarTecnicasMarciais(feiticos, padraoMarcial) {
     if (typeof f.marcial === "boolean") return f;
     if (f.variacaoDe) return f;
     if (!padraoMarcial) return f;
+    if (!TM_NIVEIS.includes(f.nivel)) return f;
     mudou = true;
     return { ...f, marcial: true };
   });

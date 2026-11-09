@@ -479,6 +479,26 @@ export const ESTADOS_ARMEIRO = [
   },
 ];
 
+/**
+ * O TETO DE EQUIPAMENTOS MELHORADOS (p.143): *"em um descanso curto [...] uma quantidade de equipamentos igual a metade do seu
+ * bônus de treinamento; em um descanso longo, essa quantidade é igual ao bônus de treinamento"*. A divisão arredonda para baixo.
+ *
+ * ⚠ QUAL DESCANSO VALE É DECISÃO PENDENTE DO AUTOR (fila, "Aliados, Comidas e Ferreiro" n.3): o botão de descanso é um só. Por isso
+ * o tipo entra COMO PARÂMETRO, e nenhum dos dois é presumido pela ficha. A bancada continua com `maxSelecionados: 2` (arma e
+ * escudo) até a resposta; esta conta serve para a tela avisar quando as melhorias passam do teto do descanso escolhido.
+ */
+export const limiteDeMelhoriasDoFerreiro = (bt, descanso = "longo") => {
+  const n = Math.max(0, Math.trunc(Number(bt)) || 0);
+  return descanso === "curto" ? Math.floor(n / 2) : n;
+};
+
+/** As melhorias ligadas contra o teto: `{ ativas, limite, excede }`. `combate` é o objeto de estados da sessão. */
+export function avaliaMelhoriasDoFerreiro(combate, bt, descanso = "longo") {
+  const ativas = Array.isArray(combate?.armeiro_melhorias) ? combate.armeiro_melhorias.length : 0;
+  const limite = limiteDeMelhoriasDoFerreiro(bt, descanso);
+  return { ativas, limite, excede: ativas > limite };
+}
+
 export const RECURSO_BUFF_ARMEIRO = {
   id: "armeiro_bancada",
   nome: "Ferreiro (bancada)",

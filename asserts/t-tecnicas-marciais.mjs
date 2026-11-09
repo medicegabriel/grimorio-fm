@@ -180,10 +180,10 @@ t("as parcelas do hover têm nome",
 /* 7. A MARCA E A LEITURA PADRÃO                                 */
 /* ============================================================ */
 const lista = [
-  { id: "a", tipo: "passivo" },
-  { id: "b", tipo: "personalizado", marcial: false },
-  { id: "c", tipo: "passivo", marcial: true },
-  { id: "d", tipo: "passivo", variacaoDe: "a" },
+  { id: "a", tipo: "passivo", nivel: 1 },
+  { id: "b", tipo: "personalizado", marcial: false, nivel: 1 },
+  { id: "c", tipo: "passivo", marcial: true, nivel: 1 },
+  { id: "d", tipo: "passivo", variacaoDe: "a", nivel: 1 },
 ];
 const marcados = TM.marcarTecnicasMarciais(lista, true);
 t("o padrão marca o que não tem marca", marcados.find((f) => f.id === "a").marcial, true);
@@ -195,6 +195,19 @@ t("a lista original não é tocada", lista.find((f) => f.id === "a").marcial, un
 t("sem mudança devolve a mesma lista (por referência)",
   (() => { const so = [{ id: "x", marcial: true }]; return TM.marcarTecnicasMarciais(so, true) === so; })(), true);
 t("lista inválida passa direto", TM.marcarTecnicasMarciais(null, true), null);
+const foraDoNivel = [
+  { id: "n0", tipo: "dano", nivel: 0 },
+  { id: "n1", tipo: "dano", nivel: 1 },
+  { id: "n4", tipo: "dano", nivel: 4 },
+  { id: "n5", tipo: "dano", nivel: 5 },
+  { id: "nmax", tipo: "dano", nivel: "max" },
+  { id: "m5", tipo: "dano", nivel: 5, marcial: true },
+];
+const lidos = TM.marcarTecnicasMarciais(foraDoNivel, true);
+t("só o Nível 1 a 4 sem marca vira Técnica",
+  lidos.map((f) => [f.id, f.marcial]), [["n0", undefined], ["n1", true], ["n4", true], ["n5", undefined], ["nmax", undefined], ["m5", true]]);
+t("sem nenhum Nível 1 a 4 devolve a mesma lista",
+  (() => { const so = [{ id: "n5", nivel: 5 }, { id: "nmax", nivel: "max" }]; return TM.marcarTecnicasMarciais(so, true) === so; })(), true);
 
 /* ============================================================ */
 /* 8. OS VETOS DO LIVRO (p. 249), PELO MOTOR                     */
@@ -233,7 +246,9 @@ t("a Passiva comum segue aumentando atributo",
   FE.calcularFeitico(passiva("atributo"), { nd: 15 }).disponivel, true);
 t("a Regeneração por Rodada segue valendo na Passiva marcial (decisão 21)",
   FE.calcularFeitico(passiva("regeneracao", 1), veto).disponivel, true);
-t("a Defesa passiva marcial segue valendo", FE.calcularFeitico(passiva("defesa", 2), veto).disponivel, true);
+t("a Defesa passiva marcial de nível 3 segue valendo", FE.calcularFeitico(passiva("defesa", 3), veto).disponivel, true);
+t("Defesa passiva marcial 2 usa metade de 1 com piso e não emite bônus",
+  [FE.calcularFeitico(passiva("defesa", 2), veto).valor, FE.calcularFeitico(passiva("defesa", 2), veto).efeitosGerados], [0, []]);
 t("a lista de categorias da Passiva marcial não tem atributo",
   FE.categoriasPassivoPermitidas(veto).some((c) => c.value === "atributo"), false);
 
@@ -325,6 +340,20 @@ t("o Feitiço marcado numa ficha comum continua marcial",
   deriveAfty(ficha({ origem: "herdado", tipo: "conjurador", classe: "conjurador", feiticos: [{ ...antigo, marcial: true }] })).tecnicasMarciais.ids, ["f1"]);
 t("a Técnica marcial não bloqueia pela Técnica Inata nem pela Exaustão",
   rMig.tecnicasMarciais.lista[0].bloqueado, undefined);
+/* A troca de origem para Restringido (autor, 2026-10-29): o Feitiço de Nível 0, 5 ou
+   Técnica Máxima não vira Técnica e não acende o aviso de nível. */
+const trocaDeOrigem = deriveAfty(ficha({ feiticos: [
+  { ...antigo, id: "n2", nivel: 2 },
+  { ...antigo, id: "n0", nivel: 0 },
+  { ...antigo, id: "n5", nivel: 5 },
+  { ...antigo, id: "nmax", nivel: "max" },
+] }));
+t("só o Feitiço de Nível 1 a 4 vira Técnica na troca de origem", trocaDeOrigem.tecnicasMarciais.ids, ["n2"]);
+t("e nenhuma Técnica lida carrega o aviso de nível",
+  trocaDeOrigem.tecnicasMarciais.lista.some((r) => (r.avisos ?? []).includes("Técnicas Marciais vão do Nível 1 ao 4.")), false);
+t("os que ficaram Feitiço continuam num card visível",
+  [trocaDeOrigem.feiticos.mostraCard, trocaDeOrigem.feiticos.lista.filter((r) => !r.marcial).map((r) => r.id).sort()],
+  [true, ["n0", "n5", "nmax"]]);
 
 /* 9c. O orçamento. Criatura: contador comum. Personagem: a progressão do livro. */
 const cinco = ["a", "b", "c", "d", "e"].map((id) => passivoMarcial(id));

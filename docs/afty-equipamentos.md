@@ -26,6 +26,15 @@ Mais os **7 Kits de Ferramentas**, todos de custo 1.
 
 ## Inventário e carregamento
 
+Desde CX1 (2026-10-29), duas cópias equipadas do mesmo acessório concedem
+seu benefício uma vez, conforme p.365. Isso inclui PV, CD, atributos,
+perícias, efeitos do Motor e Habilidades Únicas. As duas entradas continuam
+no inventário, equipadas e contabilizadas no custo e na carga. Quantidade
+maior que um também não multiplica o benefício. Cópia guardada não cobre
+a equipada. As Ombreiras do Vigor Superior e os Braceletes continuam
+somando 20 + 10 PV, pois o texto das Ombreiras manda usá-los em conjunto
+(p.148). A regra não agrupa itens distintos apenas por terem nomes parecidos.
+
 Medido em **espaços de item**. Por padrão um item ocupa um espaço, com estas exceções:
 
 | Ocupa | O quê |
@@ -480,9 +489,9 @@ no editor. Aviso de falta de requisito ou de vagas não apaga o equipamento.
 A fila de automações de combate está em `docs/a-fazer.md`.
 
 **Efeitos de perícia de ITEM também foram ligados** na mesma passada, pelo mesmo cano: Sob Medida
-(+2 Acrobacia e Furtividade) e Amuleto do Vislumbre (+2 Percepção). Sobraram as duas Pulseiras
-(Magistral e Primacial), que concedem treino numa perícia **à escolha do jogador** e precisam de uma
-escolha na UI.
+(+2 Acrobacia e Furtividade) e Amuleto do Vislumbre (+2 Percepção). As duas Pulseiras (Magistral e
+Primacial) concedem treino numa perícia **à escolha do jogador** e foram ligadas pelo CX5 (2026-11-06),
+ver a seção "CX5: uso, produção e entrega" abaixo.
 
 **Habilidade Única (Grau Especial):** além do texto (`fa.habilidadeUnica`), tem um **Motor de
 Automação editável pelo jogador** (`fa.habilidadeEfeitos: [{canal, expr}]`), aplicado quando a
@@ -731,8 +740,9 @@ código.
 ⚠ **Item que cura é FLAT**: os canais de cura não entram nele. "Curando-se em 10 pontos de vida" é
 número do talismã, e não uma cura que a criatura realiza.
 
-⚠ Os três **Remédios** e o **Elixir da Vida** ficaram de fora, e o bloqueio é nomeado: os quatro
-gastam **Dados de Vida**, que não existe no Afty.
+⚠ Os três **Remédios** e o **Elixir da Vida** gastam **Dados de Vida**. Os Dados de Vida existem desde
+CL2 (`gastaDadosDeVida`), e o CX5 liga os quatro ao uso do item (seção abaixo). A linha de cura dos
+Símbolos e do Laço continua sendo a do card de Cura, que NÃO baixa o item.
 
 ⚠ **Ordem importa.** Os acessórios de atributo entram DEPOIS do clamp do limite (por isso passam
 dele) e ANTES do cálculo de carga (por isso o Bracelete da Força aumenta o quanto você carrega).
@@ -749,6 +759,115 @@ pode render número.
 A penalidade vale só em **"testes de perícia que utilizam Destreza"**, que é o que o livro escreve:
 não pega Teste de Resistência (nem o de Reflexos) nem Jogada de Ataque. Aparece no hover da perícia
 como a fonte "Armadura e Escudo". As Manobras herdam de graça pela Acrobacia, que é o que elas leem.
+
+---
+
+## CX5: uso, produção e entrega (2026-11-06)
+
+Registro e matriz em `docs/revisao-livro-regras/entregas/CX5.md`. Esta seção é o contrato para quem liga as telas.
+
+### Pulseira Magistral e Pulseira Primacial (p.147, p.149)
+
+A perícia é escolha da ENTRADA do inventário: `equipamentos.itens[i].escolhaPericia` (id da perícia). O catálogo declara
+`efeito.escolhePericia: "treinado" | "mestre"` e o `resolveEquipamentos` emite `proficienciaPericia` pelo Motor, que nunca rebaixa
+o que a ficha já tem. Sem escolha a linha não emite nada e a entrada de `derived.equip.entradas` sai com `faltaEscolha: "pericia"` para o seletor ler. NÃO
+vira aviso na aba Equipamentos enquanto o seletor não existir, porque um aviso que o jogador não consegue resolver vira ruído. A
+Primacial só concede Mestre onde a perícia já tem treino (`quando prof_<perícia> >= 1`, a mesma condição do "Caso já seja" do Treino
+de Perícia, que lê a faixa escolhida na ficha), ou onde a primeira Magistral equipada na mesma perícia dá o treino.
+**LIMITE CONHECIDO** (o autor decidiu em 2026-11-06 que conta TODO treino, então é pendência de integração): a Primacial NÃO enxerga treino concedido por outra fonte, como o Talento Tempestade de Ideias (provado por
+sonda: a perícia treinada pelo Talento continua Treinado com a Primacial). O pacote da Classe do Player não pôde ser sondado, porque a
+ficha de teste não treinou nenhuma perícia por ele. Fechar isso exige `resolveTestes` ou o derive (reservados). Duas cópias do
+mesmo acessório valem uma só (p.365, CX1): a primeira equipada. **Falta a tela**: um seletor de perícia na linha do item, em
+`AftyCreatureBuilder.jsx` (reservado por CX3 no momento do lote).
+
+### Estado de itens na mesa: `sessao.uso.itens`
+
+`{ consumidos: { [uid]: n }, criados: [...] }` em `ficha/ficha-uso-estado.js`. A ficha guarda o que foi comprado (`qtd`), a sessão
+guarda o que já foi gasto, e a quantidade que resta é `qtd - consumidos`. Campo ausente lê zero, então sessão e Encontro antigos
+não mudam. O consumido não volta no descanso. **A Ficha nunca escreve na criatura.** Quem deriva uma ficha de jogo chama antes
+`fichaComItensDaSessao(ficha, sessao)` (`ficha/ficha-itens.js`), que abate o consumido e anexa o que Feitiço criou, e devolve a
+própria ficha quando nada mudou. Carga, bônus e RD continuam saindo do `resolveEquipamentos`.
+
+### Usar o item: `ficha/ficha-itens.js` e `afty-itens-uso.js`
+
+`usaItem(ficha, sessao, derived, { uid, opId, acao?, registraAcao?, rng?, parametros })` compõe o contrato de uso de CL1 (`usa`) com
+os verbos que já existiam: PE e Estamina (o mesmo `peAtual`), cura (`aplicaCura`), Dados de Vida (`gastaDadosDeVida`, com `limite`
+e `multiplicadorCon`), PV temporário pela fonte do item, Buff de Mesa com duração (ou sem prazo, quando o item é manual, como a Injeção Estimulante), paredes de CL3, óleo e veneno de contato
+(`armaProximoAtaque` com `consome: "acerto"` e categoria `arma:<uid>`). Uma `opId` por clique cobre a baixa da unidade e o efeito;
+repetir devolve `repetida` e a mesma sessão; recusa devolve a mesma sessão e a unidade fica. O uso ativo leva o id do ITEM
+(`item:<id do catálogo>`), então duas cópias do mesmo item não somam (p.365).
+
+Itens com operação própria: Laço da Vida (`usaLacoDaVida`, só com o corpo morto ou a morte massiva pendente, recusa com 5 de Exaustão
+e não gasta o laço), Chaveiro Absorsor (`eliminouInimigoComChaveiro`, +2 PE por eliminação elegível confirmada pela mesa) e o veneno
+no ALVO (`aplicaVenenoNoAlvo`, com a CD pela tabela da p.145, o resultado do TR informado pela mesa e o que está entre parênteses
+valendo mesmo no sucesso). Em `ficha/ficha-itens-especiais.js`.
+
+**Ponto de integração (telas):** botão Usar na linha do item (aba Equipamentos da Ficha e do Encontro) lendo `bloqueioDeItem` para
+desabilitar. A linha de cura dos Símbolos e do Laço no card de Cura (`afty-cura.js`, reservado por CX3) cura sem baixar a unidade:
+a tela deve trocar esse botão por `usaItem` para não existirem dois caminhos.
+
+### Cargas e os 16 encantamentos ativos: `ficha/ficha-encantamentos.js` e `afty-encantamentos-ativos.js`
+
+O pool de cargas é UM por ferramenta, vale o BT, é compartilhado entre os encantamentos dela e mora em `sessao.usos["cargas:<uid>"]`,
+que o descanso já zera. `usaEncantamento` confere equipado, pré-requisito, carga, reação ou ação e o "uma vez por turno", gasta tudo
+numa operação e devolve os números (CD, dados, linha de movimento, chance de falha). Os oito de Uniforme e os oito de Escudo estão
+na tabela; os que são gatilho passivo (Escaldante, Revestido com Espinhos, Disco, Bloqueador, Intangível) só têm
+`numerosDoEncantamento`. O efeito em OUTRA criatura é da mesa, e a aplicação em outra ficha é do CX6.
+
+Faltam, por dependerem do derive (reservado): a linha de ataque do escudo nas Ações (`danoDoEscudoAtacando` já devolve o dado e
+`atacaComEscudo` registra que a RD está suspensa até o próximo turno, mas quem soma a RD do escudo precisa ler `escudoSuspenso`),
+e a mão livre do Intangível (`escudoIntangivelEquipado`) nos requisitos de habilidade. O ataque do escudo com níveis de dano é regra
+de ficha de jogador (na criatura o dano é fórmula fechada, divergência `danoPorArma`).
+
+### Feitiço de Criação de Itens: `ficha/ficha-itens-feitico.js`
+
+`criaItensDoFeitico` materializa os itens na sessão (nunca na ficha da criatura). Consumível: uma criação por descanso (chave
+`criacao:<feitiço>` em `sessao.usos`). Permanente: só `qtdBase` existem ao mesmo tempo, e `desfazItemCriado` (ação livre) libera a vaga.
+A troca de quantidade por grau vai para o item escolhido (`grauEm`) como Ferramenta Amaldiçoada de Quarto Grau para cima, só em arma,
+escudo e uniforme. O item criado não entra no orçamento de custo (`custoGasto`), mas ocupa espaço. O Feitiço precisa ter a
+especificação (`itemDescricao`) preenchida. O acesso ao Nível do Feitiço é o do derive (`derived.feiticos.nivelMax`), que antecipa pelo
+nível de Conjurador e respeita o teto da origem.
+
+### Produção de Interlúdio: `afty-producao.js`
+
+Estado na ficha: `creature.producoes` (e `creature.vestigios`). Três tipos: `itens`, `invocacoes` e `adaptacao`. `iniciaProducao`
+(gasta Focos), `registraTentativaDeItem`, `registraTentativaDeInvocacao`, `registraTrocaDeAdaptacao` e `entregaProducao`, todas puras
+de ficha para ficha. O produto entra com `uid` determinístico, então entregar duas vezes ou reabrir a ficha não duplica. O CD vem das
+tabelas do livro (p.336 e 337), o custo máximo do nível (`custoMaximoCriacao`), os limites do Alfaiate (1 acessório até o nível 9 e 2
+a partir do 10, 1 uniforme) contam por interlúdio (campo `interludio` agrupa as produções), a troca por vantagem vale para a próxima
+tentativa do mesmo Ofício, o Mestre da Criação soma 2 testes por foco, e os vestígios guardam falhas de Invocação, UM ESTOQUE POR VIA (`creature.vestigios = { talisma, marionete }`), com vantagem no primeiro e
++2 por vestígio além dele. A Adaptação troca metade do nível (para baixo) de Habilidades da mesma Especialização.
+
+**O Caderno de Forja (`afty-forja.js`) continua SÓ anotação**, por decisão do autor de 2026-09-11. A produção é o procedimento ao lado
+dele. `focosDeProducoes(creature)` é o irmão de `focosDeForja` e precisa entrar no mesmo orçamento de Focos do cabeçalho da aba Interlúdios
+(ponto de integração em `afty-derive.js` e `AftyCreatureBuilder.jsx`, reservados). **A Ferramenta Amaldiçoada** (p.153, duas rolagens e
+limite de falhas) segue sendo outro processo, fora da tabela de custo.
+
+### Equipamento inicial e conjunto de missão: `afty-equipamento-inicial.js`
+
+`aplicaEquipamentoInicial` entrega o uniforme comum, as duas peças de Custo 1 e o kit, uma vez (`inicial_*`), só no Personagem.
+`saldoDoConjunto(creature, grau, { consumidos })` e `recebeConjuntoDeMissao` respeitam o conjunto por grau. Peça permanente E consumível
+carregados reduzem o saldo, uma vaga por unidade (decisão do autor, 2026-11-06), e `consumidos` (`sessao.uso.itens.consumidos`) devolve a
+vaga da unidade já gasta. O kit vem no conjunto (*"todos os kits de ferramentas possuem custo 1"*, p.130) e gasta uma vaga
+de Custo 1, mas o kit carregado não reduz o saldo seguinte. O orçamento da aba segue indicativo. A escala de grau do Player e o tratamento do Intermediário
+(meio espaço por invocação) continuam decisões do autor e estão na fila.
+
+### Conferência dos equipamentos próprios (fonte adicional do projeto, não do Livro)
+
+Criação de Armas e de Equipamentos são regras adicionais do projeto, autorizadas pelo autor em 2026-09-14, e continuam como estão. Os
+trechos que ficaram de fora seguem de fora, e este lote não os implementou: os Itens de Custo com `implementado: false` (cura e PV
+temporário, condição, curar condição, reduzir Exaustão, Tipo de Percepção, Brinco Comunicador, alcance e área) e os três trechos do
+Encantamento de Grau Especial guardados para revisão (Alcance, Tipo de Dano da Técnica, Interação com Aptidões, mais o "Dobrar Usos"
+que é só registro). Vários bloqueios nomeados nessa entrada da fila já caíram (Dados de Vida, o sistema de condições, o contador de
+Exaustão e o canal `alcanceArma`), mas a decisão *"a Cura fica toda para depois"* continua valendo, e o que ela cobre é pergunta ao
+autor. O Modular com várias opções continua pendente de decisão (regra adicional do projeto).
+
+### Outros
+
+`afty-armas-improvisadas.js`: as duas tabelas da p.325 e p.326 e a conta do dano. NÃO entra no seletor da Técnica Marcial (decisão do
+autor). `afty-extras-nativos.js`: `limiteDeMelhoriasDoFerreiro(bt, descanso)`, com o tipo de descanso como parâmetro porque o botão é
+um só e a resposta do autor está pendente. `textoEspecialDaArma(def)`: a arma criada responde pelo próprio texto Especial
+(`especialTexto` e `descricao`), a do livro pelo id do traço.
 
 ---
 
@@ -804,11 +923,10 @@ como a fonte "Armadura e Escudo". As Manobras herdam de graça pela Acrobacia, q
   com efeitos ligados e os 16 que ainda dependem de controles de combate.
 - **RD Física** existe hoje só como número devolvido pelo motor (escudos comuns + grau da Ferramenta +
   Reforçado). O sistema de RD Física em si ainda não foi definido.
-- **Efeitos inertes**, marcados com `aplicado: false` no catálogo, esperando sistema que não existe:
-  Perícias (Sob Medida, Amuleto do Vislumbre, Pulseira Magistral, Pulseira Primacial), Estamina,
-  Dados de Vida, Exaustão e condições. ⚠ As **Perícias existem desde 2026-07-29**, com canal
-  `bonusPericia`: os quatro itens de perícia podem ser ligados a qualquer momento, e ninguém voltou
-  para fazê-lo. É o mesmo envelhecimento calado do requisito `nota` das Aptidões.
+- **Efeitos inertes**, marcados com `aplicado: false` no catálogo: a varredura de 2026-11-06 não achou
+  nenhum item do catálogo do livro com `aplicado: false`. Os quatro itens de perícia (Sob Medida,
+  Amuleto do Vislumbre e as duas Pulseiras) estão ligados. Estamina é o PE, Dados de Vida e Exaustão
+  existem (CL2), e o que o item faz ao ser USADO está em `afty-itens-uso.js`.
 - **Habilidades que cobravam o Inventário** e agora podem ser ligadas: *Otimização de Espaço*
   (espaços adicionais iguais ao BT), *Ajustes em Equipamento*, e o grupo **Pugilato** citado por um
   Talento. Nenhuma foi ligada ainda, porque continua valendo o bloqueio raiz (não existe canal de

@@ -1,0 +1,38 @@
+--- a/src/systems/afty/afty-combate-aptidoes.js
++++ b/src/systems/afty/afty-combate-aptidoes.js
+@@ -2,6 +2,7 @@
+ import { TIPOS_DANO, tiposDeDanoDaCategoria } from "./afty-equipamentos";
+ import { comFormulasDeDano, gruposDaLinha } from "./afty-dano";
+ import { APTIDAO_EFEITOS } from "./afty-efeitos-conteudo";
++import { ESTADO_ABSORCAO_ELEMENTAL, grupoDanoAbsorcaoElemental } from "./afty-conteudo-auras";
+ 
+ const tem = (ids, id) => Array.isArray(ids) && ids.includes(id);
+ const lista = (valor) => (Array.isArray(valor) ? valor : []);
+@@ -41,6 +42,15 @@
+       foraCombate: true,
+     });
+   }
++  if (tem(aptidoesIds, "absorcao_elemental")) {
++    estados.push({
++      id: ESTADO_ABSORCAO_ELEMENTAL,
++      label: "Absorção Elemental",
++      tipo: "opcao",
++      ocultarEmBuffs: true,
++      opcoes: tiposDeDanoDaCategoria("elemental").map((t) => ({ id: t.id, label: t.label })),
++    });
++  }
+   if (tem(aptidoesIds, "concentrar_aura")) {
+     const opcoes = AFTY_APTIDOES
+       .filter((a) => a.categoria === "aura" && a.id !== "concentrar_aura" && tem(aptidoesIds, a.id))
+@@ -199,6 +209,11 @@
+           momento: "durante", multiplica: true, tipoDano: tipoAura,
+         });
+       }
++      const tipoAbsorvido = tem(aptidoesIds, "absorcao_elemental") && typeof combate?.[ESTADO_ABSORCAO_ELEMENTAL] === "string"
++        && tiposDeDanoDaCategoria("elemental").some((t) => t.id === combate[ESTADO_ABSORCAO_ELEMENTAL])
++        ? combate[ESTADO_ABSORCAO_ELEMENTAL] : null;
++      const absorvido = tipoAbsorvido ? grupoDanoAbsorcaoElemental({ au, tipo: tipoAbsorvido }) : null;
++      if (absorvido) gruposDano.push(absorvido);
+       if (tem(aptidoesIds, "afinidade_ampliada") && !desabilitadas.has("afinidade_ampliada")
+         && tipoAfinidade && tipoDano === tipoAfinidade) {
+         gruposDano.push({

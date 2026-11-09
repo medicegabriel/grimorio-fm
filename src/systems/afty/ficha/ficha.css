@@ -19,6 +19,27 @@
  * ============================================================
  */
 
+.afty-aparencia .afty-aparencia-seletor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 4px 12px;
+  padding-block: 4px;
+}
+.afty-aparencia .afty-aparencia-seletor code {
+  background: transparent;
+  color: var(--afty-texto);
+  padding: 0;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.afty-aparencia .afty-aparencia-seletor span {
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 480px) {
+  .afty-aparencia .afty-aparencia-seletor { grid-template-columns: minmax(0, 1fr); }
+}
+
 .afty-ficha {
   /* ---------- superfícies ---------- */
   --afty-fundo: #060910;
@@ -31,7 +52,11 @@
   /* ---------- texto ---------- */
   --afty-texto: #f1f5f9;
   --afty-texto-suave: #94a3b8;
-  --afty-texto-fraco: #64748b;
+  --afty-texto-fraco: #75849b;
+  /* A borda de quem É controle (botão, passo): 3:1 sobre o card, derivada do
+     texto para acompanhar qualquer tema. Divisor e borda de card seguem em
+     `--afty-borda`, mais discretos. */
+  --afty-borda-controle: color-mix(in srgb, var(--afty-texto) 38%, var(--afty-card));
 
   /* ---------- destaque ---------- */
   --afty-destaque: #a855f7;
@@ -511,12 +536,12 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* Passo de 1 nos recursos. Pequeno no mouse e grande no dedo. */
 .afty-passo {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--afty-borda-forte);
+  border: 1px solid var(--afty-borda-controle);
   border-radius: var(--afty-raio-peq);
   color: var(--afty-texto-suave);
   font-size: 0.75rem;
@@ -582,7 +607,7 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 
 .afty-guarda-rotulo {
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--afty-texto-fraco);
@@ -615,7 +640,7 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
    fora (ver o `data-afty-guarda`). Mesmo corpo do rótulo "Guarda" ao lado, para
    os dois lerem como uma linha só. */
 .afty-guarda-quebrada {
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--afty-destaque-texto);
@@ -740,7 +765,7 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 
 .afty-forma-estado {
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--afty-texto-fraco);
@@ -767,7 +792,7 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 
 .afty-forma-numero {
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--afty-texto-fraco);
@@ -914,7 +939,7 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
   display: block;
   max-width: 100%;
   line-height: 1.25;
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--afty-texto-fraco);
@@ -973,9 +998,9 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
   transition: color 140ms ease-out;
 }
 
-.afty-aba:hover { color: var(--afty-texto); }
+.afty-aba:hover:where(:not(.e-g2 *)) { color: var(--afty-texto); }
 
-.afty-aba[aria-selected="true"] {
+.afty-aba[aria-selected="true"]:where(:not(.e-g2 *)) {
   color: var(--afty-destaque-texto);
   border-bottom-color: var(--afty-destaque);
 }
@@ -1001,7 +1026,7 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 .afty-atributo:hover { border-color: var(--afty-borda-forte); }
 
 .afty-atributo-rotulo {
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -1100,7 +1125,7 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 .afty-subaba-conta {
   font-family: var(--afty-fonte-num);
   font-variant-numeric: tabular-nums;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   color: var(--afty-texto-fraco);
 }
 
@@ -1201,7 +1226,7 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
   .afty-mesa-aberta { display: flex; }
 }
 
-.afty-linha[data-afty-destacada="sim"] {
+.afty-linha[data-afty-destacada="sim"]:where(:not(.e-g2 *)) {
   border-color: color-mix(in srgb, var(--afty-destaque) 55%, transparent);
   background: var(--afty-destaque-fundo);
 }
@@ -1249,12 +1274,12 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
    O toque não entra nesta conta: a regra de `pointer: coarse` lá embaixo põe
    todo botão em 44px, e é ela que continua valendo no celular. */
 .afty-estado-linha .afty-botao {
-  height: 1.375rem;
+  height: 1.5rem;
   padding: 0 0.5rem;
   font-size: 0.6875rem;
 }
 
-.afty-estado-linha .afty-passo { width: 1.375rem; height: 1.375rem; }
+.afty-estado-linha .afty-passo { width: 1.5rem; height: 1.5rem; }
 
 @media (pointer: coarse) {
   .afty-estado-linha .afty-botao { height: auto; min-height: 44px; padding-inline: 1rem; }
@@ -1353,7 +1378,7 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 
 .afty-agora-rotulo {
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1375,7 +1400,7 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 .afty-agora-item[data-afty-sinal="menos"] .afty-agora-valor { color: var(--afty-pv); }
 
 .afty-agora-final {
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   color: var(--afty-texto-fraco);
@@ -1436,7 +1461,7 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
   gap: 0.375rem;
   margin: 0 0 0.25rem;
   font-family: var(--afty-fonte-titulo);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -1456,7 +1481,7 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 .afty-ligados-quantos {
   order: 1;
   flex-shrink: 0;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: normal;
   color: var(--afty-texto-fraco);
@@ -1473,7 +1498,7 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .afty-ligados-familia {
   margin: 0.25rem 0 0.0625rem 0.75rem;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1581,7 +1606,7 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .afty-ligada-passo { display: flex; align-items: center; gap: 0.125rem; flex-shrink: 0; }
 
-.afty-ligada .afty-passo { width: 1.25rem; height: 1.25rem; flex-shrink: 0; }
+.afty-ligada .afty-passo { width: 1.5rem; height: 1.5rem; flex-shrink: 0; }
 
 @media (pointer: coarse) {
   .afty-ligada-topo { min-height: 2.5rem; }
@@ -1607,7 +1632,7 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 
 .afty-sofrendo-rotulo {
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1816,7 +1841,7 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
 
 .afty-detalhe-rotulo {
   padding-top: 0.0625rem;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1935,7 +1960,7 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
   padding: 0.3125rem 0.375rem 0.1875rem;
   background: var(--afty-card);
   font-family: var(--afty-fonte-titulo);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -2016,7 +2041,7 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
 
 .afty-det-meta {
   margin: 0.125rem 0 0;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -2030,7 +2055,7 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
    o primeiro entra na conta e o segundo não. */
 .afty-det-rotulo {
   margin: 0 0 0.1875rem;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -2156,7 +2181,7 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
 .afty-forca-degraus > span[data-afty-cheio="sim"] { background: var(--afty-destaque); }
 
 .afty-forca-nome {
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -2177,7 +2202,7 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
   margin: 0.5rem 0 0.125rem;
   padding-left: 0.25rem;
   font-family: var(--afty-fonte-titulo);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -2409,7 +2434,7 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--afty-texto-suave);
@@ -2555,7 +2580,7 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
 }
 
 .afty-dominio-efeito-categoria {
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -2572,7 +2597,7 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
 
 .afty-dominio-secao {
   margin: 0.875rem 0 0.375rem;
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -2617,7 +2642,7 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
 }
 
 .afty-liberacao-categoria {
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -2680,6 +2705,12 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
    precisa existir: sem nada, um número clicável e um número morto ficam
    idênticos, e o jogador não descobre que a ficha rola. */
 .afty-rolavel {
+  /* Área de clique de 28px de altura mesmo num número de 14px. O recuo negativo
+     devolve o espaço, então a linha não engorda. */
+  padding-block: 0.25rem;
+  margin-block: -0.25rem;
+  min-inline-size: 1.5rem;
+  text-align: center;
   text-decoration: underline dotted;
   text-underline-offset: 3px;
   text-decoration-color: color-mix(in srgb, var(--afty-destaque) 60%, transparent);
@@ -2701,7 +2732,7 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
   align-items: center;
   justify-content: center;
   gap: 0.375rem;
-  border: 1px solid var(--afty-borda-forte);
+  border: 1px solid var(--afty-borda-controle);
   border-radius: var(--afty-raio-peq);
   background: var(--afty-card);
   color: var(--afty-texto-suave);
@@ -2730,6 +2761,39 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
 @media (pointer: coarse) {
   .afty-botao { min-height: 44px; padding-inline: 1rem; }
   .afty-aba { padding-block: 0.75rem; }
+}
+
+/* O piso de 24px (WCAG 2.5.8) para o que se aperta e não é botão de verdade: o
+   número que abre as fontes (`DicaDeFontes` é compartilhado com o criador, então
+   o ajuste mora aqui, no escopo da Ficha), o cabeçalho de seção, o número do
+   vital e o filtro. A Guarda Inabalável fica de fora: ela é discreta de
+   propósito, por decisão do autor (2026-08-26). */
+.afty-ficha button.cursor-help:not(.afty-guarda-botao) { min-width: 1.5rem; min-height: 1.5rem; }
+.afty-ficha .afty-secao-botao { min-height: 1.5rem; }
+.afty-ficha .afty-vital-numero { min-height: 1.5rem; }
+.afty-ficha input.afty-campo { min-height: 1.5rem; }
+/* O cabeçalho do item enche a linha, e o alvo vai de 23px à altura dela. */
+.afty-ficha .afty-item-lista button[aria-expanded] { align-self: stretch; }
+
+/* O botão flutuante dos Livros (`PdfFab`, em `src/components/`, somente-leitura)
+   cobria o bônus da perícia, o custo de PE e o Crítico na borda direita. No
+   celular, dentro da Ficha clássica, ele vira uma aba na borda: 28px aparecem e o
+   resto fica fora da tela. Tocar na aba abre a pilha, e aberta ele volta ao lugar
+   de sempre. O gancho é o `aria-label` do botão, porque o componente não tem
+   classe própria. Se o rótulo mudar, a regra deixa de casar e o botão volta ao
+   normal (o `t-livros-aba` avisa). A G2 não entra: ela reserva a trilha dela. */
+@media (max-width: 640px) {
+  body:has(#afty-ficha:not([data-afty-estrutura="g2"])) div:has(> button[aria-label$=" documentos"]):not(:has(> button[aria-expanded="true"])) {
+    right: 0;
+    bottom: 0.75rem;
+  }
+  body:has(#afty-ficha:not([data-afty-estrutura="g2"])) button[aria-label$=" documentos"][aria-expanded="false"] {
+    width: 2.75rem;
+    height: 2.75rem;
+    justify-content: flex-start;
+    padding-inline-start: 0.25rem;
+    transform: translateX(1rem);
+  }
 }
 
 /* ============================================================ */
@@ -2834,7 +2898,7 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
   padding: 0 0.25rem 0.125rem;
   margin-bottom: 0.125rem;
   border-bottom: 1px solid var(--afty-borda);
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -3045,7 +3109,7 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
   padding: 0.125rem 0.375rem;
   border-radius: var(--afty-raio-peq);
   border: 1px solid transparent;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -3113,7 +3177,7 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
   background: var(--afty-poco);
   font-family: var(--afty-fonte-num);
   font-variant-numeric: tabular-nums;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   color: var(--afty-texto-suave);
 }
 
@@ -3202,15 +3266,49 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
   /* A fileira de defesas cabe em quatro colunas antes de virar tira de fita. */
   .afty-stats { gap: 0.25rem; }
   .afty-stat { min-height: 2.5rem; }
-  .afty-stat-rotulo { font-size: 0.5rem; }
+  .afty-stat-rotulo { font-size: 0.6875rem; }
   .afty-stat-valor { font-size: 0.9375rem; }
+
+  /* A fileira de controles: seis botões de ícone e o contador de rodada. Com o
+     respiro de 1rem do toque eles somavam 50px cada e o primeiro saía cortado à
+     esquerda em 360 e em 390. A altura de 44px fica, a largura vai a 40px (o
+     piso do WCAG 2.2 é 24), e em 320px a fileira quebra em vez de cortar. */
+  .afty-controles { flex-wrap: wrap; gap: 0.25rem; }
+  .afty-controles .afty-botao { min-width: 2.5rem; padding-inline: 0; }
 
   /* Rolou: os vitais viram uma faixa de números, sem barra e sem os passos. O
      campo continua lá, e ele é o que importa no meio da luta. */
   .afty-cabecalho[data-afty-compacto="sim"] .afty-vital-trilho { display: none; }
   .afty-cabecalho[data-afty-compacto="sim"] .afty-vital { padding: 0.25rem 0.5rem; }
+  /* Quatro vitais em duas colunas: o cabeçalho grudado devolve a tela ao conteúdo. */
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-cabecalho-principal > .grid:has(> .afty-vital) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  /* Em meia largura o nome não cabe e viraria "V...". O ícone e a cor do recurso
+     ficam, e o nome continua para o leitor de tela. */
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-cabecalho-principal > .grid:has(> .afty-vital) .afty-vital-rotulo {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  /* A Guarda fica numa linha só: Golpe e Raio Negro só aparecem com o cabeçalho aberto. */
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-guarda-controles { display: none; }
   .afty-cabecalho[data-afty-compacto="sim"] .afty-vital-numero { font-size: 1.125rem; }
   .afty-cabecalho[data-afty-compacto="sim"] .afty-passo { display: none; }
+
+  /* Identidade e controles numa linha só. Os chips de Tipo, Patamar e Grau e os
+     botões de Densidade, Aparência, Busca, Descanso e Editar saem: voltam ao
+     rolar para o topo. Ficam o nome, o contador de Rodada com o botão de
+     Próxima Rodada, e qualquer chip ou botão de aviso (Sobrecarregado, Cofre
+     trancado), porque aviso de estado não pode sumir no meio da luta. */
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-nome + div > .afty-chip:not([data-afty-tom="aviso"]) { display: none; }
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-nome + div:not(:has(> .afty-chip[data-afty-tom="aviso"])) { margin-top: 0; }
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-controles { order: 0; width: auto; flex: none; }
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-controles > :is(button, .afty-botao):not([aria-label="Próxima rodada"], [data-afty-tom="aviso"]) { display: none; }
   /* Modos e Histórico na primeira linha; a última rolagem usa a segunda. */
   .afty-log {
     grid-template-columns: minmax(0, 1fr) auto;
@@ -3227,6 +3325,12 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
   .afty-log-corpo { width: 100%; }
 
   .afty-cabecalho[data-afty-compacto="sim"] .afty-log .afty-passo { display: inline-flex; }
+
+  /* Sem rolagem feita, a segunda linha só diria "Sem rolagens". Ela encolhe a
+     zero, e não some (display: none), para a região de aviso continuar na árvore
+     e anunciar a primeira rolagem. */
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-log:has(> .afty-log-ultima > .afty-rotulo) { row-gap: 0; padding-bottom: 0.25rem; }
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-log-ultima:has(> .afty-rotulo) { height: 0; overflow: hidden; border-top: 0; }
 
   .afty-busca-fundo { padding-top: 6vh; }
 }
@@ -3341,7 +3445,7 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
 
 .afty-inv-cartao-grau {
   flex-shrink: 0;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   color: var(--afty-texto-fraco);
 }
 
@@ -3356,7 +3460,7 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
   display: block;
   margin-top: 0.1875rem;
   font-family: var(--afty-fonte-num);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
   color: var(--afty-texto-suave);
 }

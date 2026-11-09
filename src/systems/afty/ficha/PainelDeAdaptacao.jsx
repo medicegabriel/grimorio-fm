@@ -18,7 +18,7 @@ function Mecanica({ mecanica }) {
       {mecanica.ignoraRD > 0 && (
         <span className="afty-valor text-[11px]">Ignora RD {mecanica.ignoraRD}</span>
       )}
-      <span className="afty-rotulo text-[10px]">Feitiço {mecanica.nivelFeitico}</span>
+      <span className="afty-rotulo text-[11px]">Feitiço {mecanica.nivelFeitico}</span>
       {mecanica.melhorias.map((nome) => <span key={nome} className="afty-chip">{nome}</span>)}
     </div>
   );
@@ -96,7 +96,7 @@ function Ciclo({ ciclo, derived, onSessao }) {
       )}
       {ultimo?.nome && (
         <div className="afty-linha px-2.5 py-2 flex items-center gap-2 flex-wrap">
-          <span className="afty-rotulo text-[10px]">Giro {ultimo.giro}</span>
+          <span className="afty-rotulo text-[11px]">Giro {ultimo.giro}</span>
           <span className="text-[12px] font-semibold">{ultimo.nome}</span>
           {ultimo.requisito && <span className="afty-chip">Pré-requisito</span>}
         </div>
@@ -106,7 +106,7 @@ function Ciclo({ ciclo, derived, onSessao }) {
 
       {estado.narrativas.map((item, indice) => (
         <div key={item.id} className="afty-linha px-2.5 py-2">
-          <span className="afty-rotulo text-[10px]">Narrativa {indice + 1}</span>
+          <span className="afty-rotulo text-[11px]">Narrativa {indice + 1}</span>
           {item.texto && <p className="text-[12px] whitespace-pre-wrap mt-1">{item.texto}</p>}
         </div>
       ))}

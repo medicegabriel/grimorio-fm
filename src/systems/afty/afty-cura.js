@@ -63,6 +63,7 @@ import { valorCanal, detalhesDoCanal } from "./afty-efeitos";
 // Mesmo formatador da linha de dano, de propósito: `3d8+5` é a mesma notação
 // nos dois lugares, e uma segunda cópia divergiria na primeira errata.
 import { textoDeDano as textoDeRolagem } from "./afty-pericias";
+import { gruposDaLinha, formulaModoDano } from "./afty-dano";
 // Os alcances aceitos pela linha declarada. O afty-addons só importa folhas.
 import { ALCANCES_DE_CURA } from "./afty-addons";
 
@@ -223,6 +224,7 @@ export function fonteCuraDeclarada(entrada, grupo = "habilidade") {
     ...(unidade ? { unidade } : {}),
     alcance: () => alcance,
     declarada: true,
+    usosLimitados: !!entrada.usos,
   };
 }
 export const getFonteCura = (id) => FONTE_BY_ID[id] ?? null;
@@ -329,6 +331,7 @@ export function curaNoGasto(linha, blocos = 1) {
   if (linha.partesFixas) partes.push(...linha.partesFixas);
   for (const p of parcelasPorDado) partes.push(p);
   const pontos = linha.unidade ? usados * linha.unidade.porBloco : 0;
+  const grupos = linha.gruposCura?.map((g) => ({ ...g, dados: g.dados * usados }));
   return {
     blocos: usados,
     pontos,
@@ -336,7 +339,8 @@ export function curaNoGasto(linha, blocos = 1) {
     dados,
     fixo,
     bonusPorDado,
-    texto: textoDeRolagem(dados, linha.dado, fixo),
+    ...(grupos ? { grupos } : {}),
+    texto: grupos ? formulaModoDano(grupos.map((g, i) => ({ ...g, fixo: i === 0 ? fixo : 0 }))).replace(/ /g, "") : textoDeRolagem(dados, linha.dado, fixo),
     partes,
   };
 }
@@ -351,7 +355,7 @@ export function curaNoGasto(linha, blocos = 1) {
  */
 function montaLinha({
   id, nome, grupo, alcance, dados, faces, fixoBase, usos, pontos, unidade,
-  partesDados, partesFixas, curaPorDado,
+  partesDados, partesFixas, curaPorDado, usosLimitados = false,
 }) {
   const blocos = unidade ? Math.max(1, Math.floor(pontos / unidade.porBloco)) : 1;
   const dadosNoMaximo = dados * blocos;
@@ -359,7 +363,7 @@ function montaLinha({
   const base = {
     id, nome, grupo, alcance,
     dados, dado, fixoBase,
-    usos: usos > 0 ? usos : null,
+    usos: usosLimitados || usos > 0 ? usos : null,
     unidade: unidade ? { ...unidade, pontos, pontosUsaveis: blocos * unidade.porBloco } : null,
     blocos,
     dadosNoMaximo,
@@ -450,17 +454,21 @@ export function resolveCura(ctx = {}) {
     if (f.espelhaDanoBasico) {
       const molde = ctx.danoBasico;
       if (!molde) continue;
+      const grupos = gruposDaLinha(molde).filter((g) => !g.apenasCritico);
+      const dados = grupos.reduce((s, g) => s + g.dados, 0);
+      const fixo = grupos.reduce((s, g) => s + (g.fixo ?? 0), 0);
       const espelhaNome = "Ataque Básico";
       const partesFixas = fontesDe("curaFixa", f.id);
       const curaPorDado = resolveCuraPorDado(ef, f.id);
       const base = {
         id: f.id, nome: f.nome, grupo: f.grupo, alcance,
-        dados: molde.dados, dado: molde.dado,
-        fixoBase: inteiro(molde.fixo) + inteiro(canal("curaFixa", f.id)),
+        dados, dado: molde.dado,
+        gruposCura: grupos.map((g) => ({ dados: g.dados, faces: g.faces, momento: g.momento, multiplica: false })),
+        fixoBase: inteiro(fixo) + inteiro(canal("curaFixa", f.id)),
         usos: usos > 0 ? usos : null,
-        unidade: null, blocos: 1, dadosNoMaximo: molde.dados,
+        unidade: null, blocos: 1, dadosNoMaximo: dados,
         espelhaNome,
-        partesDados: [{ label: espelhaNome, texto: textoDeRolagem(molde.dados, molde.dado, molde.fixo) }],
+        partesDados: [{ label: espelhaNome, texto: formulaModoDano(grupos).replace(/ /g, "") }],
         partesFixas,
         curaPorDado,
       };
@@ -514,7 +522,7 @@ export function resolveCura(ctx = {}) {
       id: f.id, nome: f.nome, grupo: f.grupo, alcance,
       dados, faces,
       fixoBase,
-      usos, pontos, unidade: f.unidade,
+      usos, pontos, unidade: f.unidade, usosLimitados: f.usosLimitados,
       partesDados,
       partesFixas,
       curaPorDado: resolveCuraPorDado(ef, f.id),

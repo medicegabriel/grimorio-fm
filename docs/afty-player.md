@@ -1,5 +1,208 @@
 # Ficha de Player (handoff para chat novo)
 
+CX3 (06/11): imunidade a movimento forçado de Terra, Barreira e Terra do
+Ápice respeitada nas operações de Chicote, Concussão, Briga Empurrar,
+Escudo e críticos de Bastão/Haste. Recusa antes de custo/consequência,
+inclusive depois de salvar uma disputa pendente. O ataque principal e seu
+dano são conservados. Cair ou sofrer incapacitação encerra as posturas
+normais e levantar não as restaura, também na leitura de sessão antiga.
+Concessão manual de PV temporário da Terra preservada. Entrada e duração
+das posturas próprias integradas abaixo. Player/Afty e clássica/G2/Encontro
+verificados, com 150 verificações específicas de lógica e sessão.
+
+CX3 (continuação, 2026-11-06): Chicote, Concussão e Movimentos Acrobáticos têm
+operações dentro do Talento. Puxar um Ar, Revigorar, Surto de Ação, Resistir,
+Conhecimento Aplicado e Mente Plácida usam testes, custos, ações e contadores
+nativos dentro da habilidade. O deslocamento é registrado para a mesa, pois a
+ficha não tem mapa de posições. Puxar um Ar conserva faces diferentes do dano
+de Player, sem trocar a progressão própria de Afty. CX3 continua em andamento.
+
+Outra Chance não gasta ação, decisão do autor de 06/11. Indomável e Outra
+Chance usam o melhor teste ainda sem consequências aplicadas. Perceber
+Oportunidade usa as reações reais. Os opcionais do Restringido permanecem
+dentro da habilidade, com custos conferidos e desconto explícito, incluindo
+Precisão Forçada e seu consumo no erro.
+
+Investida Aprimorada usa ação completa, acerto com BT e Defesa -2 até o
+próximo turno próprio. Decisão do autor: alcance 2 × (Movimento + 3 m),
+portanto 24 m com Movimento 9 m. O controle do Talento também rola o dano
+nativo da arma, conservando o crítico. No Encontro, confirme o acerto contra
+o alvo, role a disputa e aplique o resultado depois de resolver eventuais
+rerrolagens. Os testes podem reaproveitar Atletismo já rolado após o acerto,
+inclusive o benefício de Treino de Luta. O alvo só recebe Caído na falha.
+
+Voadora usa o mesmo controle de Investida da Habilidade, com 3 PE e o dano
+adicional próprio no pedido nativo. Funciona sem o Talento da Aprimorada,
+usando a Investida comum. Mobilidade Avançada oferece a reação após a queda
+real de um aliado, registrando metade do Movimento em direção a ele.
+Sobrevivente cura automaticamente no início do turno quando elegível. No
+Encontro, Começar aciona o primeiro turno e Próximo Turno os seguintes.
+Reabrir ou recarregar a ficha não provoca outra cura.
+
+Adepto de Briga oferece Derrubar/Empurrar depois da confirmação de acerto
+desarmado sem dano. Role a disputa e aplique após resolver Sorte. Agarrar
+ainda aguarda o procedimento vinculado de fuga. Incitar Vigor permite
+escolher uma pilha e quantidade de Dados de Vida próprios ou do destinatário
+em toque no Encontro. O Suporte paga 3 PE e Ação Bônus, o destinatário gasta
+os dados e recebe a cura, preservando os dados extras de Treino.
+
+Técnicas Agressivas de Escudo conserva o id antigo e usa a linha de dano
+do escudo. No Encontro, o ataque do próprio turno libera a Ação Bônus para
+Empurrar, mesmo que erre. Depois da disputa, escolha distância adicional
+de 4,5 m ou Derrubar. Decisão do autor: Derrubar conserva o deslocamento
+normal e aplica Caído. Renovação pelo Sangue recupera um PE pelo crítico
+ou abate real de inimigo, com teto e fonte, sem repetir pela confirmação.
+
+O dano normal já rolado do Escudo pode ser escolhido antes da aplicação,
+sem novo sorteio. Infalível não oferece esse dano de manobra. Fortuna fica
+em Assumir Postura, ou na Habilidade copiada/Ápice correspondente. Escolha
+um teste e o d20 baixo a repetir. O contador é comum por rodada e cada dado
+só permite uma tentativa, preservando o maior resultado e os dados extras.
+Assumir Postura usa Ação Bônus e um uso nativo por entrada, com dez rodadas.
+Preparação Rápida torna a ação Livre. Mestre permite duas escolhas distintas.
+Trocar de postura paga a entrada e outro uso, reiniciando dez rodadas, por
+decisão do autor. Empurrar encerra ambas as posturas sem Preparação Rápida.
+Caído/incapacitação sempre encerram. O Ativar/Ajustar G2 compartilha o uso,
+ação e prazo, sem segundo débito. Cópias temporárias mantêm o fluxo de Imitação.
+
+Sintonização Vital usa uma cura aplicada a aliado no mesmo turno. Metade
+do valor anterior ao teto de PV cura outra criatura em 3 m, inclusive o
+Suporte, por 3 PE e sem outra ação. A cura original recebe uma marca que
+impede repetição. Feitiços ainda precisam publicar o recibo de cura aplicada.
+
+Aura Redirecionadora permite imbuir e rolar a arma por 2 PE, sem outra ação.
+No Encontro, confirme a falha no primeiro alvo antes de redirecionar. Escolha
+outro alvo em 6 m do primeiro, role a nova jogada/dano e confirme contra ele.
+O registro inicial conserva desastre e sequência do primeiro alvo. A arma
+gasta um projétil e mantém seus estados, inclusive emperramento, sem outro
+disparo ou ação na nova jogada. Arremessável em uma linha corpo a corpo
+não a transforma automaticamente em ataque de arremesso.
+
+Postura da Lua oferece Andar e Desengajar como Ação Livre dentro de
+Assumir Postura, inclusive quando vem de Imitação ou do Ápice. Cada ação
+livre tem sua própria identidade por rodada. Desengajar protege de
+oportunidade até o fim do turno, sem mover a ficha ou gastar PE. A reação
+de reduzir dano ainda aguarda a janela anterior à aplicação do dano.
+
+Concentrar Aura fica na própria Aptidão. Selecione as passivas a
+suspender e use Ação Livre. A rodada seguinte restaura as auras.
+Uma seleção manual antiga pode ser limpa na Aptidão. Em Fluxo Constante,
+escolha início do seu turno ou reação após perder PV. Quem usou o Fluxo
+livre no início aguarda o próximo turno para usar a reação de Fluxo.
+
+No Encontro, a Postura da Devastação própria usa a pilha na confirmação
+contra o mesmo alvo. A Postura da Tempestade abre Fortitude no acerto
+contra um alvo de pé. Resolva as rerrolagens antes de aplicar Caído.
+
+Na cura individual com Medicina Infalível, marque a Habilidade antes
+de rolar. Escolha os dados a maximizar e aplique a cura. Cada dado
+escolhido gasta um uso. A mesma rolagem pode ser aplicada sem gastar
+usos se nenhum dado for selecionado.
+
+No Encontro, Provocar fica em Outros na aba Ações. Escolha alvo em até
+9 m, perícia de oposição e, com Provocação Desafiadora, se gasta um uso
+de Ação Livre. Aplique a disputa após as rerrolagens. A ficha provocada
+pede o alvo antes de rolar o ataque. O painel mostra a obrigação do
+Talento até confirmar um ataque contra o provocador.
+
+Pular fica em Ações durante o combate. Declare direção e distância. A
+escolha de teste tenta a faixa superior e a falha aterrissa em Caído.
+Saltador Constante permite Pular como Livre após tocar parede ou objeto,
+pela metade da distância. No Encontro, declare o alvo em alcance corpo
+a corpo ao aterrissar para incluir os bônus na confirmação do primeiro
+ataque contra ele.
+
+Aura Drenadora registra PV temporário ao confirmar morte de inimigo causada
+pelo ataque, Dragão ou Escudo. Os ganhos aparecem no histórico e somam ao
+saldo da aura. A vítima que só entrou nas Portas da Morte ainda não dispara o ganho.
+
+Cura em Grupo fica na própria Aptidão no Encontro. Declare os destinatários
+no alcance e role uma única vez. A mesa informa a parcela de cada um e a
+soma deve conservar o total rolado. A ação e o PER são gastos na rolagem.
+O grupo pode ser concluído após salvar e reabrir a mesa no mesmo turno.
+
+Postura do Dragão usa os ataques confirmados no Encontro. Selecione o ataque
+e um inimigo a até 1,5 m de seu alvo original. Role Fortitude e conclua depois
+das rerrolagens. Na falha, metade do dano recebido pelo alvo original passa
+pelas defesas do inimigo próximo. O teste pode ser retomado após salvar a mesa.
+
+Especialista em Cortes permite reduzir o Movimento do alvo após confirmar
+o acerto e dano cortante efetivo no Encontro. O uso é opcional, uma vez
+por turno, e termina no início do próximo turno de quem o aplicou.
+Cópias de dois emissores não somam a redução de 4,5 m, mas mantêm seus
+prazos separados. PV temporário absorvendo dano não impede o benefício.
+
+Ação Ágil oferece Andar, Desengajar ou Esconder dentro da Habilidade,
+por 2 PE/Estamina. Realiza a ação escolhida sem gastar as ações normais.
+O Lutador usa por rodada, o Restringido por turno. Duas Habilidades com o
+mesmo nome compartilham a cadência melhor disponível. Desengajar bloqueia
+oportunidade até o fim do próprio turno, Esconder rola Furtividade e Andar
+confere a distância contra o Movimento da ficha. Sem nova ação comum extra.
+
+Sentinela oferece oportunidade e reação dentro do Talento. O acerto de
+oportunidade confirmado no Encontro reduz o Movimento do alvo até o fim
+do turno dele. A reação escolhe quem atacou terceiro, o ataque já
+confirmado e a arma, com alcance de 1,5 m declarado. Ela não recebe a
+redução de Movimento. Sem Perceber, a oportunidade não ganha vantagem nem
+a segunda repetição. Todos usam o saldo existente de reações.
+
+Técnicas de Mobilidade oferece a disputa após confirmar o ataque no
+Encontro, inclusive se errou. Role Reflexos e aplique após resolver as
+rerrolagens. A proteção vale apenas contra o oponente vencido e termina
+no fim do turno em curso, decisão do autor, inclusive em ataques de
+reação. O alvo da oportunidade deve ser escolhido antes de rolar no
+Encontro. Se ele estiver protegido contra você, a reação não é gasta.
+
+Intervenção usa o controle da própria Habilidade no Encontro, com aliado em
+toque e seleção da condição por id. Os graus fraco/médio/forte/extremo são
+liberados em 4/6/12/18 e custam 3/6/9/12 PE. A força é a resolvida do alvo,
+inclusive a faixa variável de Sangramento. Não remove Desmembramento, que só
+é tratado como condição por Feitiços na p.210, nem condições apenas incluídas
+por outra marcação.
+
+Versatilidade oferece testes sem treino efetivo, custa 1 PE e usa MOD SAB
+usos pelo descanso único. A alternativa de treinado passa pela comparação
+normal com bônus fixos oferecidos, preservando os dados extras. Não muda o
+treinamento salvo. Análise Profunda paga 1 PE e Ação Comum, usa Percepção
+contra 15 + ND do alvo e admite uma tentativa por criatura/cena. A conclusão
+separada permite resolver Sorte antes da quantidade descoberta. O Narrador
+continua escolhendo as características reveladas.
+
+CX3 (em andamento, 2026-11-03): os clientes de cura, críticos, canalizações,
+Sorte e Treinos usam a mesma sessão da clássica e do Encontro. Potencial
+Físico usa duas escolhas restritas aos físicos. Excedentes permanentes no
+teto concedem escolha da categoria, sem devolver também um nível pago.
+Nenhum desses caminhos decide a regra pela rota.
+
+Decisão do autor: cada Aptidão de Energia Reversa segue seu próprio custo,
+sem estender o teto da cura às demais. Reversão de Técnica pode ser Passiva:
+o adicional igual ao nível entra na reserva de PE Máximo de Player,
+preservando a isenção de Afty. Exemplo de nível 3: 9 PE reservados no Player,
+zero no Afty para um Passivo comum. A vaga concedida por Reversão só serve
+a uma Reversão, não às outras famílias. Histórico, provas e limites em
+`revisao-livro-regras/entregas/CX3.md`. CX3 ainda não está encerrado.
+
+CX2 (2026-11-01): escolhas de Marca Registrada, Familiaridade, Foco Zenin e
+Manual de Técnica ficam nos Feitiços, com propagação às variações. Origem
+oferece a Aura restrita do Derivado e a resistência física da Carapaça no
+nível 10. Recursos de Origem na Ficha clássica e no Encontro usam os estados
+de CL1/CL2 para Vigor, Reposição, Energia Antinatural, voo, dano e cura.
+Usos diários de Alma Maldita e Energia Antinatural básica só voltam por Novo
+Dia. Descansar preserva esses usos, por decisão expressa do autor.
+Mutante permanece excluído. Não houve promoção do G2. Contratos em
+`automacao-dsl.md`, fórmulas em `afty-formulas-base.md` e matriz completa,
+evidência e limites em `revisao-livro-regras/entregas/CX2.md`.
+
+CX1 (2026-10-29): Anatomias nativas oferecem tipo físico de Arma Natural e
+perícia de Corpo Especializado na Origem. As escolhas ficam em
+`core.origem.anatomiasConfig`, viajam no salvamento e alimentam o Ataque Básico
+e a rolagem da perícia. Arma Natural usa mínimo 1d8 ou melhora em um nível
+o desarmado superior. Articulações Extensas acrescenta 1,5 m no corpo a corpo.
+Braços Extras exige a declaração Duas Mãos Livres para Atletismo, desligada
+por padrão na sessão. Prestidigitação conserva +2. O estado funciona fora
+de combate, na Ficha e no Encontro. Contratos em `automacao-dsl.md` e
+evidências em `revisao-livro-regras/entregas/CX1.md`.
+
 Guia da rota **`/Player`**. Escrito em 2026-08-31, quando a Ficha de Player já estava de pé e o
 trabalho passou a ser fechar as divergências uma a uma.
 

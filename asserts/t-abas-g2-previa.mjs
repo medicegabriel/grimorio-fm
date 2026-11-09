@@ -189,5 +189,45 @@ t("Ritual desligado não tem etapa", G.etapaDoRitual({ ativo: false }), null);
   t("os destinos novos da prévia vêm depois (6 Atributos numa ficha sem Expansão)", g2.length - classica.length, 6);
 }
 
+/* ---------- 7b. Jogadas de Ataque (2026-11-07): o jogador não vê a lista, nem a busca aponta para ela; a criatura vê as duas ---------- */
+{
+  const { alvosDeBusca } = await import(R + "ficha/ficha-conteudo.js");
+  const alvosDeAtaque = (rulesVersion) => {
+    const c = createBlankAfty(); c.rulesVersion = rulesVersion;
+    const d = deriveAfty(c);
+    return { derive: (d.testes?.ataques ?? []).length, busca: alvosDeBusca(d).filter((a) => a.chave.startsWith("ataque:")).length };
+  };
+  t("o jogador continua com os ataques calculados, e a busca não os oferece", alvosDeAtaque("player"), { derive: 3, busca: 0 });
+  t("a criatura tem os três ataques no derive e na busca", alvosDeAtaque("afty"), { derive: 3, busca: 3 });
+}
+
+/* ---------- 8. Redesenho do cabeçalho e de Perícias (2026-11-07): os ganchos que os temas pintam e a estrutura nova ---------- */
+{
+  const fs = await import("node:fs");
+  const ler = (rel) => fs.readFileSync(new URL(`../src/systems/afty/ficha/${rel}`, import.meta.url), "utf8");
+  const cab = ler("efeitos/CabecalhoG2.jsx");
+  const per = ler("abas-g2/PericiasG2.jsx");
+  const cssE = ler("efeitos/efeitos-g2.css");
+  const cssA = ler("abas-g2/abas-g2.css");
+  /* O retrato é irmão do corpo e não filho da placa: a moldura acompanha a altura de placa e faixa juntas. */
+  const iMoldura = cab.indexOf('className="e-moldura"');
+  t("o retrato fica fora da placa, antes do corpo", iMoldura > 0 && iMoldura < cab.indexOf('className="e-corpo"') && cab.indexOf('className="e-corpo"') < cab.indexOf('className="e-placa"'), true);
+  t("os ganchos de tema do cabeçalho continuam (nome, ident, moldura, retrato, vital)", ['afty-nome e-nome', 'className="e-ident"', 'className="e-moldura"', 'classe="e-retrato"', 'e-cabeca afty-cabecalho'].every((x) => cab.includes(x)), true);
+  t("a identidade ocupa só a largura do nome", /\.e-g2 \.e-ident \{[^}]*justify-self: start/.test(cssE), true);
+  t("o ponto separador da linhagem não abre linha (vai no fim do item)", cssE.includes('.e-linhagem span:not(:last-child)::after') && !cssE.includes('.e-linhagem span + span::before'), true);
+  t("Perícias tem duas colunas por contêiner e a coluna dos testes vem antes no DOM", per.indexOf('m-coluna-testes') > 0 && per.indexOf('m-coluna-testes') < per.indexOf('m-coluna-lista') && /@container aba \(min-width: 820px\)[^}]*m-pericias-corpo\[data-duas\]/.test(cssA), true);
+  t("o chip Mestre repetido saiu e a palavra do treino ficou para o leitor de tela", !per.includes('<span className="m-chip">Mestre</span>') && per.includes('m-so-leitor'), true);
+  t("o destaque do treino é pintura de baixa especificidade (o tema vence sem !important)", /:where\(\.e-g2\) \.m-teste\[data-treino="mestre"\]/.test(cssA) && /:where\(\.e-g2\) \.m-teste\[data-treino="treinado"\]/.test(cssA), true);
+  t("em coluna única a chave Testes / Perícias esconde um grupo por vez, e a busca global troca o grupo", per.includes('m-pericias-troca') && per.includes('setGrupo("testes")') && /@container aba \(min-width: 820px\) \{ \.e-g2 \.m-pericias-troca \{ display: none; \}/.test(cssA) && /data-grupo="pericias"\] > \.m-coluna-testes \{ display: none/.test(cssA), true);
+  t("a linha de perícia tem 40 px com ponteiro fino e 42 px no toque", /\.m-teste \{[^}]*min-height: 40px/.test(cssA) && /pointer: coarse\) \{ \.e-g2 \.m-teste \{ min-height: 42px/.test(cssA), true);
+  /* Ações e Habilidades no estilo de Perícias (2026-11-08): o Pular é uma seção, a lista é de fios, o índice só aparece com quatro seções. */
+  const acoesG2 = ler("abas-g2/AcoesG2.jsx");
+  const conteudo = ler("PainelConteudo.jsx");
+  t("o Pular do G2 é uma seção com segmentos, no painel de conteúdo, dentro da aba Ações", conteudo.includes('m-pular') && conteudo.includes('g2 = false') && acoesG2.includes('painelConteudo'), true);
+  t("o índice de Ações só aparece com quatro seções ou mais e não leva contagem", acoesG2.includes('indice.length > 3') && !/rotulo: "Dano", n:/.test(acoesG2), true);
+  t("a lista de Habilidades é de fios, sem caixa por linha", /:where\(\.e-g2\) \.e-linha \{ border: 0; border-top: 1px solid var\(--e-linha\); border-radius: 0; background: none;/.test(cssE), true);
+  t("Outros mantém Executar e Resistir pelos mesmos pedidos", per.includes('pedidoManobra(m, "executar")') && per.includes('pedidoManobra(m, "resistir")'), true);
+}
+
 if (bad.length) { console.log(bad.join("\n")); process.exit(1); }
 console.log(`TODOS OS ${ok} ASSERTS PASSARAM`);

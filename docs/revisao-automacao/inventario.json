@@ -180176,8 +180176,10 @@
       "idLocal": "corpo_amaldicoado_mutante",
       "hashDado": "2b890aba8d3cb1f5a673b1acbe835e784b28493f0189114c3b1e109c23fe7712",
       "estado": "NÃO REVISADO",
-      "situacao": "VIVO",
-      "fonteFamilia": "ORI-01"
+      "situacao": "REMOVIDO",
+      "fonteFamilia": "ORI-01",
+      "justificativaRemocao": "Origem Corpo Amaldiçoado Mutante excluída do site em definitivo por decisão do autor em 2026-10-30. Não reimplementar.",
+      "renomeadoPara": null
     },
     {
       "chave": "afty-origens.js::AFTY_ORIGENS_CATALOG::corpo_amaldicoado_mutante::bonusAtributos",
@@ -180191,8 +180193,10 @@
       "tipo": "parcela declarada",
       "hashDado": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
       "estado": "NÃO REVISADO",
-      "situacao": "VIVO",
-      "fonteFamilia": "ORI-01"
+      "situacao": "REMOVIDO",
+      "fonteFamilia": "ORI-01",
+      "justificativaRemocao": "Origem Corpo Amaldiçoado Mutante excluída do site em definitivo por decisão do autor em 2026-10-30. Não reimplementar.",
+      "renomeadoPara": null
     },
     {
       "chave": "afty-origens.js::AFTY_ORIGENS_CATALOG::corpo_amaldicoado_mutante::caracteristicas",
@@ -180206,8 +180210,10 @@
       "tipo": "pool",
       "hashDado": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
       "estado": "NÃO REVISADO",
-      "situacao": "VIVO",
-      "fonteFamilia": "ORI-01"
+      "situacao": "REMOVIDO",
+      "fonteFamilia": "ORI-01",
+      "justificativaRemocao": "Origem Corpo Amaldiçoado Mutante excluída do site em definitivo por decisão do autor em 2026-10-30. Não reimplementar.",
+      "renomeadoPara": null
     },
     {
       "chave": "afty-origens.js::AFTY_ORIGENS_CATALOG::derivado",
@@ -183559,8 +183565,10 @@
       "idLocal": "corpo_amaldicoado_mutante",
       "hashDado": "2aa9f4be52a6e606bac13fd5c6ab254cb2190eeb1253a6f4e6551a95f35469ae",
       "estado": "NÃO REVISADO",
-      "situacao": "VIVO",
-      "fonteFamilia": "ORI-03"
+      "situacao": "REMOVIDO",
+      "fonteFamilia": "ORI-03",
+      "justificativaRemocao": "Origem Corpo Amaldiçoado Mutante excluída do site em definitivo por decisão do autor em 2026-10-30. Não reimplementar.",
+      "renomeadoPara": null
     },
     {
       "chave": "afty-origens.js::AFTY_ORIGENS::derivado",

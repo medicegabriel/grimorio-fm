@@ -238,6 +238,9 @@ for (const [l, a, painel, toque] of [[1280, 800, true, false], [390, 844, false,
   if (painel) await abrePainel(p);
   await aba(p, "pericias");
   const outros = p.locator('[data-aba-g2="pericias"] [data-m-secao="outros"]');
+  /* Desde o redesenho de 2026-11-07, em coluna única Outros fica no grupo Testes: a chave troca de grupo. */
+  const chave = p.locator('[data-aba-g2="pericias"] .m-pericias-troca').first();
+  if (await chave.isVisible()) await chave.getByRole("button", { name: "Testes", exact: true }).click();
   await outros.scrollIntoViewIfNeeded();
   await foto(p, `ajuste-pericias-outros-${l}`);
   const e = await estouro(p);

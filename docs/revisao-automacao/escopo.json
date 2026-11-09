@@ -34,11 +34,17 @@
     "afty-liberacoes.js": "SIS-04",
     "afty-extras-nativos.js": "SIS-05",
     "afty-origens.js": "ORI-01",
+    "afty-origens-feiticos.js": "ORI-01",
+    "afty-origens-uso.js": "ORI-01",
     "afty-treinamentos.js": "TRE-01",
     "afty-treinos-especiais.js": "TRE-04",
     "afty-anatomias.js": "ANA-01",
     "afty-alto-nivel.js": "ALT-01",
     "afty-talentos.js": "TAL-02",
+    "afty-conteudo-regras.js": "TAL-02",
+    "afty-conteudo-feiticos.js": "APT-09",
+    "afty-conteudo-auras.js": "AD-24",
+    "afty-conteudo-antidominio.js": "AD-24",
     "afty-gerais.js": "GER-01",
     "afty-feiticos.js": "FEI-01",
     "afty-dano.js": "FEI-01",
@@ -285,6 +291,30 @@
       "proprietario": "M03",
       "justificativa": "Operações de sessão dos Servos, incluindo PE, movimento por rodada e dias de concentração"
     },
+    "ficha/ficha-conteudo-uso.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CX3 (2026-11-06): clientes de conteúdo de Talentos, cura, crítico, Energia Reversa, Intervenção e Incitar Vigor sobre os contratos CL1/CL2, sem motor ou catálogo paralelo. Dados de Vida pertencem ao destinatário e a cura usa o núcleo existente. Livro p.102, 107, 108, 163 a 168, 190, 210, 308 e 342."
+    },
+    "ficha/ficha-conteudo-combate.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CX3 (2026-11-06): clientes de canalização e confirmação das rolagens nativas com alvo, sobre uso, pendência, ataque, dano e sequência de CL1. Conserva eventos de queda de CL2 para Mobilidade Avançada. Sentinela identifica oportunidade e aplica Movimento pelo prazo nativo no alvo. Técnicas de Mobilidade recusa oportunidade contra participante protegido e preserva o turno real do recibo. Livro p.105, 168, 178, 191 e 307."
+    },
+    "ficha/ficha-conteudo-testes.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CX3 (2026-11-06): escolhas situacionais de Talentos, Treinos e classes, Postura da Fortuna, Versatilidade e Análise Profunda consumindo testes, concentração, contadores e limites de CL1. Efeitos e requisitos são emitidos pelo derive no escopo da ficha. Fortuna usa o cálculo comum do rolador e mantém os dados extras. Livro p.54, 76, 82, 103, 105, 164, 168, 343 e 345."
+    },
+    "ficha/ficha-conteudo-acesso.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CX3 (2026-11-06): leitura da disponibilidade emitida pelo derive após o avaliador nativo de requisitos de Aptidão, no catálogo e atributos permanentes da própria ficha. Leitura dos usos ativos de CL1 para proteção de Técnicas de Mobilidade contra oportunidade de um participante específico, p.168."
+    },
+    "ficha/ficha-conteudo-manobras.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CX3 (2026-11-06): clientes de Mestre dos Chicotes, Concussão, Movimentos Acrobáticos, Briga, Técnicas Agressivas de Escudo, Perceber Oportunidade, Sentinela, Técnicas de Mobilidade, Investida, Voadora e Mobilidade Avançada usando recibos de ataque, disputa, TR, limites, ações, condição, concentração, duração e saldo nativo de reações de CL1. Mobilidade usa marcador ativo e o turno real do Encontro para chamar o encerramento de CL1, sem outro relógio. Dano de Escudo usa CL2. Livro p.56, 105, 164, 165, 167, 168, 293, 300, 301, 304 e 320."
+    },
+    "ficha/ficha-origens.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CX2 (2026-11-01): adapta os contratos de uso, dano e cura de CL1 e CL2 às escolhas das origens e Anatomias, com estado e contadores existentes. Livro p.30 a 36, 145, 169 e 170. Os valores de conteúdo são derivados em afty-origens-uso.js, sem novo catálogo de conteúdo neste módulo."
+    },
     "ficha/abas-g2/rolagem-g2.js": {
       "modo": "INTERFACE",
       "justificativa": "Prévia das três abas do G2 (2026-10-21): a etapa sem sorteio do rolar (Especialização, Custo de Vida, arma, cura) e o motivo da recusa, pelas funções existentes; sem catálogo de regra do Livro"
@@ -351,6 +381,10 @@
     "ficha/ficha-tema.js": {
       "modo": "INTERFACE",
       "justificativa": "Tokens, fontes e CSS de apresentação, sem catálogo de regra"
+    },
+    "ficha/usar-gravacao-tema.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Coordenação com revisão de CSS (2026-11-06): hook React de persistência do tema nas fichas clássica e G2, com gravação ao sair e pagehide, sem catálogo ou cálculo de regra. Implementação inspecionada por CX3."
     },
     "ficha/usar-destaque.js": {
       "modo": "INTERFACE",
@@ -517,6 +551,106 @@
     "ficha/efeitos/util.js": {
       "modo": "INTERFACE",
       "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/operacoes-uso.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CL1 (2026-10-29): adaptadores da camada da mesa do G2 para o contrato de uso e o combate, que só traduzem o retorno dos verbos em evento e ativação; sem catálogo de regra do Livro"
+    },
+    "ficha/ficha-uso-estado.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CL1 (2026-10-29): a forma salva em sessao.uso e as transições de tempo (rodada, turno, combate, descanso) do motor de uso e combate; folha sem imports, sem catálogo de regra do Livro"
+    },
+    "ficha/ficha-uso.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CL1 (2026-10-29): o contrato de uso (validar, conferir custo, aplicar uma vez, duração, manutenção, recarga) sobre a sessão; os números chegam no descritor do cliente; sem catálogo de regra do Livro"
+    },
+    "ficha/ficha-uso-clientes.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CL1 (2026-10-29): descritores de uso no formato do contrato e a ponte dos estados de combate existentes. O descritor de Armas Absolutas (p.61) carrega o custo e as opções do texto como dado do contrato, e os números do efeito seguem nos catálogos de afty-combate.js e afty-efeitos-conteudo.js"
+    },
+    "ficha/ficha-acoes.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CL1 (2026-10-29): ações do turno, hierarquia e reações (p.300 e 301) sobre a sessão, reaproveitando o contador de reação de ficha-especializacoes.js; sem catálogo de regra do Livro"
+    },
+    "ficha/ficha-ataque.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CL1 (2026-10-29): conta pura do resultado de um ataque com alvo declarado e do TR (p.279, 294, 295, 307); os valores do alvo chegam por parâmetro; sem catálogo de regra do Livro"
+    },
+    "ficha/ficha-dano-recebido.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CL1 (2026-10-29): a ordem do dano recebido (p.309, 311, 316, 365) sobre as defesas por tipo que o derive já entrega; termina nos verbos de dano da sessão; sem catálogo de regra do Livro"
+    },
+    "ficha/ficha-combate-eventos.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CL1 (2026-10-29): eventos de ataque, pendências do próximo ataque e Sequência de Ataques (p.310) sobre a sessão; sem catálogo de regra do Livro"
+    },
+    "ficha/ficha-concentracao.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CL1 (2026-10-29): concentração ligada ao efeito, CD por causa e término (p.320 e 322) sobre a sessão; sem catálogo de regra do Livro"
+    },
+    "ficha/ficha-vital.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CL2 (2026-10-30): estado vital da sessão (saldo negativo, Portas da Morte, Ferimentos Complexos, p.313 e 314) como funções puras; a tabela de ferimentos é a do Livro, sem catálogo próprio de regra"
+    },
+    "ficha/ficha-morte.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CL2 (2026-10-30): operações de teste de morte, Medicina e Ferimentos Complexos sobre a sessão (p.313 e 314); sem catálogo de regra do Livro"
+    },
+    "ficha/ficha-alma.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CL2 (2026-10-30): teste de Integridade antes do Dano na Alma, elegibilidade da cura e recuperação por descanso (p.311) sobre a sessão; sem catálogo de regra do Livro"
+    },
+    "ficha/ficha-dados-vida.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CL2 (2026-10-30): pilha de Dados de Vida por Especialização, gasto, rolagem e recuperação (p.20, 46 e 335) sobre a sessão; sem catálogo de regra do Livro"
+    },
+    "ficha/ficha-votos-regras.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CL3 (2026-11-01): vocabulário e validação dos Votos de Restrição (pesos, tipos, escopo, Restrição Congênita, p.350 a 358) como funções puras. O peso é declarado pela mesa e a fonte de cada número está no comentário do módulo, sem catálogo de conteúdo que um addon estenda"
+    },
+    "ficha/ficha-votos.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CL3 (2026-11-01): ciclo de vida dos Votos (realizar, quebrar, desfazer, prazo, fim do combate, interlúdio, contrato) sobre creature.votos (p.351 a 356); sem catálogo de regra do Livro"
+    },
+    "ficha/ficha-barreiras-estado.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CL3 (2026-11-01): estado de mesa das paredes e cortinas erguidas (p.188 e 189); sem catálogo de regra do Livro"
+    },
+    "ficha/ficha-barreiras.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CL3 (2026-11-01): erguer paredes e cortinas, dano e destruição, Cesta Oca de Vime (p.188 e 189) pelo contrato de uso do CL1; sem catálogo de regra do Livro"
+    },
+    "ficha/ficha-dominio-confronto.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CL3 (2026-11-01): Confronto e Contestação de Domínios entre dois participantes, manual assistido (p.185 e 186, DA-19); os números e as fases já existiam em afty-dominios.js"
+    },
+    "ficha/ficha-invocacao-uso.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CL3 (2026-11-01): comandar auxílio com prejuízo por repetição, Dano Adicional no próximo ataque e Forma de Arma (p.257, 267 a 270 e Adicionais) sobre o derive do dono; sem catálogo de regra do Livro"
+    },
+    "ficha/ficha-conteudo-reacoes.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CX3 (2026-11-07): disputa antes do acerto e escolha de reação antes do dano sobre recibos do Encontro. Gasto, prazo e PV temporário seguem CL1. Livro p.50, 53, 76, 87 e 178."
+    },
+    "ficha/ficha-conteudo-dragao.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CX3 (2026-11-07): integra Postura do Dragão ao ataque confirmado, Fortitude e dano secundário por CL1, com reação do destinatário. Livro p.76."
+    },
+    "ficha/ficha-conteudo-expandir-aura.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CX3 (2026-11-07): uso, manutenção e alcances de Expandir Aura sobre CL1. Livro p.174, 177 e 179."
+    },
+    "ficha/ficha-conteudo-absorcao-elemental.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CX3 (2026-11-07): proposta isolada que lê o dano tipado e arma uma pendência nativa de CL1. Integração em jogo ainda pendente. Livro p.175."
+    },
+    "ficha/ficha-conteudo-treino-resistencia.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CX3 (2026-11-07): cliente isolado do Treino de Resistência Completo com teste de morte de CL2 e limite de cena de CL1. Livro p.313 e 346."
+    },
+    "ficha/ficha-conteudo-posturas.js": {
+      "modo": "INTERFACE",
+      "justificativa": "CX3 (2026-11-06): cliente das posturas próprias sobre CL1, escolhas de Assumir/Aprender, Mestre válido, Preparação Rápida, contador derivado e dez rodadas. Decisões do autor: troca paga ação e outro uso, reinicia prazo, Empurrar encerra sem Preparação Rápida. G2 Ativar/Ajustar compartilha a transação. Preserva Imitação temporária e remendos. Livro p.72, 75, 76 e 291. Sem outro motor de ações, duração ou recursos."
     }
   },
   "familiasAddon": {

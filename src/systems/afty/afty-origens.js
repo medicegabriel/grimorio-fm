@@ -39,6 +39,7 @@ import { regraDo, sistemaDaFicha } from "./afty-sistema";
 // que volta até aqui por combate → habilidades → especializações. Ver o
 // cabeçalho de afty-pericias-catalogo.js.
 import { AFTY_PERICIAS, AFTY_ATAQUES } from "./afty-pericias-catalogo";
+import { getAnatomia } from "./afty-anatomias";
 /* ⚠ ESTE ARQUIVO SÓ IMPORTA MÓDULOS FOLHA (afty-schema, afty-pericias-catalogo),
    e é de propósito: meio mundo importa `getOrigem` (especializações, aptidões,
    talentos), e qualquer import pesado aqui fecharia ciclo de inicialização com
@@ -182,14 +183,14 @@ export const CLAS_HERDADO = [
       {
         id: "olhos_de_cobra_e_presas",
         nome: "Olhos de Cobra e Presas",
+        usos: { expr: "bt", recarga: "longo" },
         descricao:
           "Os membros do clã Inumaki possuem uma marca única ao redor de sua boca, a qual tem a forma " +
           "dos olhos de uma cobra e presas. Remetendo à técnica herdada do clã, essa marca já concede " +
           "algum poder às palavras de um Inumaki: uma quantidade de vezes igual ao seu bônus de " +
           "treinamento, você pode dar o comando de uma ação bônus para um aliado, o qual pode a realizar " +
           "como uma reação. Você recupera os usos dessa habilidade após um descanso longo.",
-        // Concede AÇÃO a um aliado. Não há canal para economia de ação de terceiro.
-        mesa: true,
+        // O comando consome a reação do aliado pelo adaptador de sessão de CX2.
       },
     ],
   },
@@ -256,9 +257,8 @@ export const CLAS_HERDADO = [
           "igual ao seu bônus de treinamento. Nos níveis 5, 10, 15 e 20 você pode escolher outro Feitiço " +
           "para ser um Feitiço Focado.",
         // A marcação é POR FEITIÇO e muda um parâmetro da criação dele, então
-        // mora na aba Habilidades / Feitiços, não aqui. Só o CONTADOR sai daqui.
+        // mora na aba Habilidades / Feitiços, não aqui.
         contador: { nome: "Feitiços Focados", niveis: [1, 5, 10, 15, 20] },
-        mesa: true,
       },
     ],
   },
@@ -322,11 +322,8 @@ export const AFTY_ORIGENS_CATALOG = [
         // A VAGA está ligada (canal vagasFeitico, que é a vaga exclusiva de
         // Feitiço e não serve para Habilidade Geral).
         //
-        // ⚠ A REDUÇÃO DE 1 PE não está: ela vale só para AQUELE feitiço, e o
-        // canal `custoPE` não tem alvo. Mais fundo que isso, `afty-feiticos.js`
-        // não lê o Motor (só a CD chega), então nenhum canal alcança o custo de
-        // um feitiço hoje. Entra junto com a passada dos Feitiços.
-        parcial: "A redução de 1 PE espera o motor de Feitiços ler o Motor de Automação.",
+        // Identidade, desconto e variações: afty-origens-feiticos.js e a porta
+        // única de afty-feiticos.js. A escolha fica no próprio Feitiço.
       },
     ],
     especializacaoExclusivaId: null,
@@ -351,20 +348,8 @@ export const AFTY_ORIGENS_CATALOG = [
           "Sua energia deriva de uma fonte anormal. Recebe uma Aptidão Amaldiçoada de Aura (deve atender " +
           "os requisitos). Além disso, uma vez por dia, como Ação Bônus em combate, recupera energia " +
           "amaldiçoada igual ao dobro do seu bônus de treinamento.",
-        // → ORIGEM_EFEITOS.derivado, canal vagasAptidao: 1.
-        //
-        // ⚠ RESOLVE uma pergunta que estava aberta no status desde 2026-07-16
-        // ("essa concessão gasta o orçamento de aptidões ou é grátis?"). É vaga,
-        // e não gasto, por duas razões: o alvo é NOMEADO (a convenção do projeto
-        // é concessão direcionada ser grátis) e, depois que o ND parou de conceder
-        // Aptidão Amaldiçoada, o orçamento sem a Habilidade Geral é ZERO, então
-        // gastar do orçamento faria a característica não fazer nada.
-        //
-        // ⚠ ASSUMIDO: a vaga é genérica, não presa à categoria Aura. Não existe
-        // vaga por categoria, e prender exigiria um canal novo.
-        //
-        // A recuperação de PE (2× Maestria, 1/dia) é recurso de cena, não stat.
-        parcial: "A recuperação de PE (2× Maestria, uma vez por dia) é procedimento de mesa.",
+        // Concessão pelo nome em core.origem.aptidaoAura, validada no derive.
+        // Recuperação, usos e recarga: ficha/ficha-origens.js, sobre CL1.
       },
       {
         id: "desenvolvimento_inesperado",
@@ -457,14 +442,15 @@ export const AFTY_ORIGENS_CATALOG = [
       {
         id: "resiliencia_imediata",
         nome: "Resiliência Imediata",
+        usos: { expr: "bt", recarga: "longo" },
+        resultados: [{ label: "Redução de Dano", expr: "max(1, piso(nd / 2)) * 5" }],
         descricao:
           "Seu corpo é mais resistente do que o padrão humano, permitindo-o encarar a dor facilmente. Uma " +
           "quantidade de vezes igual ao seu bônus de treinamento, ao receber dano, você pode escolher reduzir " +
           "esse dano em um valor igual à metade do seu nível (mínimo 1) multiplicado por 5. Alternativamente, " +
           "você pode escolher gastar um uso dessa habilidade para evitar um desmembramento. Você recupera os " +
           "usos após um descanso longo.",
-        // Reação com usos por descanso, e a redução é de UM golpe, não RD.
-        mesa: true,
+        // Operação de sessão para um golpe ou prevenção de desmembramento.
       },
     ],
     // Vinculada a uma Especialização que SÓ pode ser acessada com esta origem.
@@ -495,8 +481,7 @@ export const AFTY_ORIGENS_CATALOG = [
           "reversa de cura, você pode a utilizar tratando a energia reversa como energia amaldiçoada, curando-se " +
           "o valor completo. Ao invés de 1 ponto de energia reversa, você gasta diretamente 2 pontos de energia " +
           "amaldiçoada.",
-        // Troca a MOEDA de uma cura que ainda não existe como sistema.
-        mesa: true,
+        // Cura recebida e troca de moeda pela linha nativa de Energia Reversa.
       },
       {
         id: "fisico_amaldicoado",
@@ -510,13 +495,14 @@ export const AFTY_ORIGENS_CATALOG = [
       {
         id: "vigor_maldito",
         nome: "Vigor Maldito",
+        usos: { expr: "1 + (nd >= 4) + (nd >= 8) + (nd >= 12)", recarga: "longo" },
+        resultados: [{ label: "Cura por Uso", expr: "5 * (1 + (nd >= 4) + (nd >= 8) + (nd >= 12)) + mod_constituicao + 5 * tem_tal_reposicao_sanguinea" }],
         descricao:
           "Você pode, uma vez por descanso longo, usar uma ação bônus para recuperar uma quantidade de pontos " +
           "de vida igual a 5 + seu mod. de constituição. Nos níveis 4, 8, e 12 você recebe um uso adicional " +
           "desta característica, assim como o valor base da cura aumenta em 5. Caso possua mais de um uso, você " +
           "pode escolher gastar mais usos simultaneamente, aumentando a cura.",
-        // Cura ativa com usos por descanso: recurso de cena, não stat.
-        mesa: true,
+        // Cura ativa e usos sobre os contratos de sessão de CL1 e CL2.
       },
     ],
     especializacaoExclusivaId: null,
@@ -654,15 +640,23 @@ export const AFTY_ORIGENS_CATALOG = [
     ],
     especializacaoExclusivaId: null,
   },
-  {
-    id: "corpo_amaldicoado_mutante",
-    nome: "Corpo Amaldiçoado Mutante",
-    bonusAtributos: {},
-    // ⚠ VAZIA: o texto desta origem nunca foi enviado. Ela aparece na lista e
-    // não concede nada. Não confundir com a Maldição, que é outra origem.
-    caracteristicas: [],
-    especializacaoExclusivaId: null,
-  },
+  /* ⚠ AVISO PARA QUEM FOR PROGRAMAR: O CORPO AMALDIÇOADO MUTANTE (Livro p.39 a 41,
+     os três núcleos) FOI ABANDONADO E EXCLUÍDO DO SITE EM DEFINITIVO. NÃO
+     REIMPLEMENTE, NÃO REABRA, NÃO PERGUNTE DE NOVO. DESISTA DA IDEIA E VÁ FAZER
+     OUTRA COISA.
+
+     Decisão do autor em 2026-10-30, durante o CL2: "Desisto de Corpo Amaldiçoado
+     Mutante, cancela tudo que foi feito e EXCLUI isso do site de maneira
+     permanente. E coloca um aviso para o próximo que tentar programar isso,
+     DESISTIR DA IDEIA E IR FAZER ALGUMA OUTRA COISA. Regra mais estupidamente mal
+     escrita do livro."
+
+     A entrada `corpo_amaldicoado_mutante` saiu do catálogo, e o assert
+     `t-mutante-descartado.mjs` falha se ela voltar. Não confundir com as outras
+     três coisas de nome parecido, que continuam valendo: os `multiplosNucleos` das
+     INVOCAÇÕES (dois núcleos de Corpo, afty-invocacoes.js), a Anatomia Carapaça
+     Mutante e a origem Maldição. Uma ficha antiga que gravou o id removido deriva
+     como uma origem desconhecida, que é o que a entrada vazia já era. */
   {
     id: "maldicao",
     nome: "Maldição",
@@ -918,9 +912,7 @@ export const AFTY_ORIGENS_CATALOG = [
           "esse dano em um valor igual à metade do seu nível (mínimo 1) multiplicado por 5. Alternativamente, " +
           "você pode escolher gastar um uso dessa habilidade para evitar um desmembramento. Você recupera os " +
           "usos após um descanso longo.",
-        // Reação com usos por descanso, e a redução é de UM golpe, não RD. É o
-        // mesmo `mesa: true` que ela tem na origem Restringido.
-        mesa: true,
+        // A mesma operação de sessão da origem Restringido, para um golpe.
       },
       {
         id: "dupla_empenhada",
@@ -1300,7 +1292,15 @@ registrarFamilia("origens", {
   // cru e `getCla` (que já procura pelo id PREFIXADO) nunca acharia. O
   // `especializacaoExclusivaId` entrou em 2026-09-28 pela mesma razão: a
   // variação do Restringido aponta para a classe herdeira do mesmo JSON.
-  caminhosDeId: ["clas[].id", "especializacaoExclusivaId"],
+  /* O `alvo` do efeito entrou em 2026-11-07 (V4): o efeito de Origem que dá
+     vaga a um GRUPO de Talento do próprio pacote precisa do namespace no alvo,
+     e o das opções de escolha também. Alvo que não é id do pacote (atributo,
+     perícia, escopo) fica intocado. */
+  caminhosDeId: [
+    "clas[].id", "especializacaoExclusivaId", "efeitos[].alvo",
+    "caracteristicas[].escolha.opcoes[].efeitos[].alvo",
+    "caracteristicas[].escolhas[].opcoes[].efeitos[].alvo",
+  ],
   aplicar: aplicarExtrasOrigens,
   basicos: () => ORIGENS_BASE,
   validador: validarCatalogoOrigens,
@@ -1371,6 +1371,12 @@ registrarFamilia("clas", {
   rotulo: "Clã do Herdado",
   chave: "id",
   obrigatorios: ["nome"],
+  // Pela mesma razão da família `origens` (V4): o alvo do efeito do clã.
+  caminhosDeId: [
+    "efeitos[].alvo",
+    "caracteristicas[].escolha.opcoes[].efeitos[].alvo",
+    "caracteristicas[].escolhas[].opcoes[].efeitos[].alvo",
+  ],
   aplicar: aplicarExtrasClas,
   basicos: () => CLAS_BASE,
   validador: validarCatalogoClas,
@@ -1564,6 +1570,10 @@ export function gatilhosDeOrigem(creature) {
   const unicos = new Map();
   for (const c of caracteristicasEfetivas(creature)) {
     if (c?.gatilhoSessao?.id) unicos.set(c.gatilhoSessao.id, c.gatilhoSessao);
+  }
+  for (const id of anatomiasEscolhidas(creature)) {
+    const gatilho = getAnatomia(id)?.gatilhoSessao;
+    if (gatilho?.id) unicos.set(gatilho.id, gatilho);
   }
   return [...unicos.values()];
 }
@@ -2022,6 +2032,13 @@ export function atributosDePericiaDaOrigem(creature, escolhas = null) {
   for (const caracteristica of caracteristicasEfetivas(creature)) {
     const troca = caracteristica.trocaAtributoPericia;
     if (!troca) continue;
+    /* A TROCA FIXA (2026-11-07): `{ periciaId, atributoId }` sem escolha nenhuma,
+       para a característica que diz "use Força como atributo-chave de
+       Intimidação". A troca por escolha (Flugel) segue logo abaixo, intacta. */
+    if (troca.periciaId && troca.atributoId) {
+      if (ATTR_LABEL[troca.atributoId]) out[troca.periciaId] = troca.atributoId;
+      continue;
+    }
     const periciaId = porEscolha.get(troca.escolhaPericia)?.opcoes
       ?.find((opcao) => resolvidas.mapa[troca.escolhaPericia]?.includes(opcao.id))?.periciaId;
     const atributoId = porEscolha.get(troca.escolhaAtributo)?.opcoes

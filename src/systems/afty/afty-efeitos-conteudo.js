@@ -913,6 +913,10 @@ export const HABILIDADE_EFEITOS = {
   // no deriveAfty, e Estamina é o próprio PE. Somar aqui daria a pilha dobrada.
   // A ferramenta de quarto grau e o meio de ver maldições são equipamento, e as
   // Dádivas saem pela escolha aninhada.
+  // Livro p.121. O sinal é lido pelos consumidores de deslocamento forçado.
+  res_barreira_inamovivel: [
+    { canal: "imunidadeMovimentoForcado", expr: "1" },
+  ],
   res_restrito_pelos_ceus: [
     { canal: "defesa", expr: "min(max(mod_forca, mod_constituicao), nd)" },
   ],
@@ -1440,6 +1444,16 @@ export const HABILIDADE_EFEITOS = {
     { canal: "curaUsos", alvo: "cura_criar_medicina", expr: "maestria" },
   ],
 
+  // "Para cada Invocação que estiver dentro de 3 metros de você, sua Defesa aumenta em 1." A posição é o contador declarado da bancada (CX6).
+  ctr_guarda_viva: [
+    { canal: "defesa", expr: "invocacoes_a_3m", duracao: "temporaria" },
+  ],
+  // "Para cada invocação dentro de 3 metros de você, você recebe +2 em rolagens de Percepção e seu valor de atenção aumenta em 2."
+  ctr_rede_de_deteccao: [
+    { canal: "bonusPericia", alvo: "percepcao", expr: "2 * invocacoes_a_3m", duracao: "temporaria" },
+    { canal: "atencao", expr: "2 * invocacoes_a_3m", duracao: "temporaria" },
+  ],
+
   // Invocação Às, uma das três capacidades do companheiro amaldiçoado: "Curar a
   // você em 2d10 + seu modificador de Sabedoria ou Presença. Nos níveis 5, 9, 13
   // e 17, a cura aumenta em +1d10. [...] Você pode utilizar cada um dos efeitos
@@ -1709,11 +1723,12 @@ export const ESCOLHA_EFEITOS = {
 
   // "soma seu bônus de treinamento em rolagens de Fortitude e, no começo do seu
   // turno, você recebe pontos de vida temporários igual ao seu nível."
-  // "não pode ser movido a força" é imunidade, não bônus.
+  // "não pode ser movido a força" usa o sinalizador do Motor.
   cmb_postura_da_terra: [
     { canal: "bonusTR", alvo: "fortitude", quando: "em_postura_terra",
       expr: "maestria", duracao: "temporaria" },
     { canal: "pvTemporario", quando: "em_postura_terra", expr: "nd", duracao: "temporaria" },
+    { canal: "imunidadeMovimentoForcado", quando: "postura_terra || (postura2_terra && tem_cmb_mestre_da_postura)", expr: "1", duracao: "temporaria" },
   ],
 
   // "para cada golpe acertado contra o mesmo alvo, você recebe +1 em acerto e
@@ -2058,6 +2073,8 @@ export const APICE_EFEITOS = {
       expr: "2", duracao: "temporaria" },
     { canal: "bonusPericia", quando: "apice_postura_ceu && !em_postura_ceu",
       expr: "2", duracao: "temporaria" },
+    { canal: "imunidadeMovimentoForcado", quando: "apice_postura_terra",
+      expr: "1", duracao: "temporaria" },
   ],
 };
 
@@ -2138,6 +2155,14 @@ export const TALENTO_EFEITOS = {
 
   /* ---- Com pré-requisito ---- */
 
+  // Livro p.165 e 102. Apenas o segundo efeito, escalonado pelo personagem.
+  tal_adepto_de_medicina: [
+    { canal: "curaDados", alvo: "tal_adepto_de_medicina", expr: "2 + (nd >= 8) + 3 * (nd >= 12)" },
+    { canal: "curaFaces", alvo: "tal_adepto_de_medicina", expr: "6 + 6 * (nd >= 4) - 4 * (nd >= 12) + 2 * (nd >= 16)" },
+    { canal: "curaFixa", alvo: "tal_adepto_de_medicina", expr: "mod_pre_ou_sab" },
+    { canal: "curaUsos", alvo: "tal_adepto_de_medicina", expr: "piso(max(0, mod_pre_ou_sab) / 2)" },
+  ],
+
   // "Você se torna treinado em Integridade e recebe Redução de Dano contra Dano
   // na Alma igual a 1/4 do seu Nível de Personagem."
   // A RD Geral vale para todo tipo EXCETO alma, então o autor mandou abrir um
@@ -2165,7 +2190,7 @@ export const TALENTO_EFEITOS = {
   // acertar e +6 no dano."
   // SUBSTITUI os +2/+3 das Técnicas de Arremesso, que é pré-requisito: aqui
   // entra só o degrau (+2 acerto, +3 dano). "um dado" sem tamanho é dado da
-  // LINHA. O alcance +6m não tem canal.
+  // LINHA. O alcance usa o mesmo alvo de arremesso.
   /* Mesmo conserto do acerto que o Técnicas de Arremesso, que é o pré-requisito
      dele. As três linhas são DELTA por cima daquele: "o seu bônus [...] se torna
      +4 para acertar e +6 no dano", e 2 + 2 = 4 e 3 + 3 = 6. */
@@ -2173,12 +2198,14 @@ export const TALENTO_EFEITOS = {
     { canal: "acertoArma", alvo: "cat:arremesso", expr: "2" },
     { canal: "danoBonus", alvo: "cat:arremesso", expr: "3" },
     { canal: "dadosDano", alvo: "cat:arremesso", expr: "1" },
+    { canal: "alcanceArma", alvo: "cat:arremesso", expr: "6" },
   ],
 
   // "Suas rolagens de ataque com chicotes causam +4 de dano e o alcance aumenta
-  // em 1,5 metros." O alcance não tem canal.
+  // em 1,5 metros."
   tal_mestre_dos_chicotes: [
     { canal: "danoBonus", alvo: "grupo:chicote", expr: "4" },
+    { canal: "alcanceArma", alvo: "grupo:chicote", expr: "1.5" },
   ],
 
   // "Seus pontos de vida máximos aumentam em um valor igual ao seu nível ao
@@ -2591,9 +2618,8 @@ export const ORIGEM_EFEITOS = {
   // A recuperação de PE (2× Maestria, 1/dia) é recurso de cena, não stat.
   // O Desenvolvimento Inesperado tem caminho próprio, fora do Motor
   // (`core.origem.desenvolvimento`), porque mexe no LIMITE do atributo.
-  derivado: [
-    { canal: "vagasAptidao", expr: "1" },
-  ],
+  // A escolha restrita de Aura é concedida pelo nome, após validar requisitos.
+  derivado: [],
 
   // "Seu Deslocamento aumenta em 3 metros." O resto do Físico Abençoado é mesa
   // (imunidade a doença, vantagem contra veneno, dados de descanso curto).
@@ -2655,9 +2681,8 @@ export const CLA_EFEITOS = {
     { canal: "vagasFeitico", expr: "1 + (nd >= 5) + (nd >= 10) + (nd >= 15) + (nd >= 20)" },
   ],
 
-  // O Inumaki não aparece de propósito: Olhos de Cobra e Presas concede AÇÃO a
-  // um aliado, e a ficha não conta ações. Chave ausente é como o projeto diz
-  // "esta entrada não tem efeito de ficha".
+  // Inumaki concede uma ação executada como reação pelo aliado. O adaptador
+  // ficha/ficha-origens.js usa os contadores de CL1, sem bônus permanente.
 
   // "Sempre que subir de nível, sua vida máxima aumenta em 1 ponto adicional. A
   // partir do nível 10, você soma o seu modificador de Constituição ao seu total
@@ -2682,14 +2707,17 @@ export const CLA_EFEITOS = {
 };
 
 /**
- * Características de Anatomia do Feto Amaldiçoado Híbrido. 6 das 15 viram
- * número: o resto é condição, chance de dado, economia de ação ou efeito no
- * alvo, e continua valendo na mesa.
+ * Efeitos numéricos das Anatomias. As escolhas de Corpo Especializado passam
+ * pelo coletor de origem, e o dado de Arma Natural pelo resolvedor de dano.
+ * As demais operações continuam com seus escopos próprios.
  */
 export const ANATOMIA_EFEITOS = {
+  articulacoes_extensas: [
+    { canal: "alcanceArma", alvo: "cat:corpo|basico", expr: "1.5" },
+  ],
   // "Você recebe redução de dano contra danos físicos igual ao seu bônus de
-  // treinamento." A resistência a um tipo físico no nível 10 é escolha
-  // permanente, e não existe canal de RD por tipo físico.
+  // treinamento." A resistência física escolhida no nível 10 é emitida pelo
+  // coletor de origem usando o canal resistenciaDano.
   carapaca_mutante: [
     { canal: "rdFisico", expr: "maestria" },
   ],
@@ -2727,11 +2755,10 @@ export const ANATOMIA_EFEITOS = {
 
   // "+2 em testes de prestidigitação e, se tiver pelo menos duas mãos livres,
   // aplica esse bônus em testes de atletismo."
-  // ⚠ ASSUMIDO: o recorte "com duas mãos livres" não existe na ficha, então o
-  // Atletismo entra CHEIO. Mesmo tratamento da Noção e Preparação.
+  // Declaração de mesa na sessão, desligada por padrão (autor, CX1).
   bracos_extras: [
     { canal: "bonusPericia", alvo: "prestidigitacao", expr: "2" },
-    { canal: "bonusPericia", alvo: "atletismo", expr: "2" },
+    { canal: "bonusPericia", alvo: "atletismo", expr: "2", gatilhoSessao: "anatomia_duas_maos_livres" },
   ],
 };
 
@@ -2852,6 +2879,9 @@ export const APTIDAO_EFEITOS = {
   aura_excessiva: [
     { canal: "rdGeral", expr: "dobro(au)", quando: "aura_excessiva", duracao: "temporaria" },
   ],
+  aura_impenetravel: [
+    ...["ct", "pf", "im"].map((alvo) => ({ canal: "resistenciaDano", alvo, expr: "1", quando: "aura_impenetravel", duracao: "temporaria" })),
+  ],
 
   /* ---------- Controle e Leitura: de bancada ---------- */
 
@@ -2971,16 +3001,8 @@ export const APTIDAO_EFEITOS = {
 
   // Reversão de Técnica: "Ao obter esta aptidão, você recebe um Feitiço
   // adicional, a qual obrigatoriamente deve ser uma reversão."
-  // ⚠ Vaga EXCLUSIVA de Feitiço, e não vaga comum (autor, 2026-08-03): quem dá
-  // Feitiço adicional dá vaga que não serve para Habilidade Geral. Estava sem
-  // efeito nenhum até aqui, então a aptidão concedia o Feitiço só no texto.
-  //
-  // O "obrigatoriamente uma reversão" e o custo aumentado pelo nível do Feitiço
-  // ficam de fora: são regra do Feitiço criado, e afty-feiticos.js não lê o
-  // Motor. Entram junto com a passada dos Feitiços.
-  reversao_de_tecnica: [
-    { canal: "vagasFeitico", expr: "1" },
-  ],
+  // Concessão EXCLUSIVA em reversoesDeTecnica (p.194),
+  // não pode financiar Feitiço comum, Estilo ou Técnica Marcial.
 
   // Técnica Máxima: "você recebe um novo Feitiço". ⚠ Estava SEM EFEITO até
   // 2026-10-08, então a Aptidão não concedia nada. A vaga é EXCLUSIVA de Técnica

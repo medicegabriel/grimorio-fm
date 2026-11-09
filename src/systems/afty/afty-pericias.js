@@ -945,7 +945,10 @@ export function resolveDano(creature, ctx = {}) {
        prevê. Aqui ele é degrau de escada, e o livro descreve explicitamente a
        descida ("habilidades, normalmente de inimigos, que podem diminuir o nível
        de dano de uma arma"), com piso em 1 de dano. */
-    const niveisCrus = Math.trunc(canal("nivelDano", escopos));
+    const reducoesIgnoradas = ctx.imuneReducaoNiveisDano
+      ? (ef ? detalhesDoCanalEscopos(ef, "nivelDano", escopos) : []).filter((d) => d.valor < 0).reduce((n, d) => n + d.valor, 0)
+      : 0;
+    const niveisCrus = Math.trunc(canal("nivelDano", escopos) - reducoesIgnoradas);
     /* ⚠ AS ESCADAS DO DESARMADO SÃO DESCONTADAS AQUI. Na criatura elas viram
        degrau de ND porque não há dado base nenhum; no jogador o dado base sai do
        texto da própria habilidade, então contá-las de novo somaria o mesmo ganho
@@ -989,6 +992,11 @@ export function resolveDano(creature, ctx = {}) {
       removeResistencia: canal("removeResistencia", escopos) > 0,
       fontes: fontesDe("danoBonus", escopos),
     });
+    if (ef && detalhesDoCanalEscopos(ef, "nivelDano", escopos).some((d) => d.origem === "arma_natural")) {
+      const parteNivel = linha.partes.find((p) => p.label.startsWith("Níveis de Dano") || p.label.startsWith("Nível "));
+      if (parteNivel) parteNivel.label += " (Arma Natural)";
+    }
+    if (reducoesIgnoradas) linha.partes.push({ label: "Ataque Infalível", texto: "Redução de Níveis de Dano Ignorada" });
     linha.partesMargemCritico = partesDaMargem(margemBase, fontesDe("margemCritico", escopos), linha.margemCritico,
       fonteDado === "Dano da Arma" ? "Margem da Arma" : "Margem Base");
     linha.escoposDano = escopos;
@@ -1307,6 +1315,8 @@ export function resolveDano(creature, ctx = {}) {
   const entradas = [
     // Desarmado não tem margem de crítico listada em lugar nenhum: é 20.
     aplicaCriticoDaArma({ id: "basico", nome: "Ataque Básico", fonte: "basico", ataqueId: ataqueIdBasico,
+      tipoDano: ctx.tipoDanoBasico ?? null,
+      tipoDanoBase: ctx.tipoDanoBasico ?? null,
       alcance: alcanceDe(null, 0, escoposBasico),
       propriedades: ctx.propriedadesBasico ?? [],
       chaveArma: ctx.chaveArmaBasico ?? "basico",
@@ -1690,6 +1700,19 @@ export function resolveTestes(creature, ctx = {}) {
     const partesDosDados = FACES_NOMEADAS.flatMap((faces) =>
       partesDeEfeito("dadosPericia", `${p.id}:d${faces}`)
         .map((x) => ({ label: x.label, texto: `${x.valor}d${faces}` })));
+    // A alternativa temporária usa a mesma conta, inclusive a oferta fixa.
+    // O treino e o orçamento salvos não mudam.
+    const treinoTemporario = ctx.versatilidade && !prof;
+    const bonusTreinado = treinoTemporario ? bonusProprio + bonusProficiencia(bt, "treinado") : 0;
+    const versatilidade = treinoTemporario ? { versatilidade: {
+      bonus: Math.max(bonusTreinado, fixo),
+      partes: fixo > bonusTreinado ? [...partesFixo, ...partesDosDados] : [
+        { label: rotuloAttr(atributo), valor: modDe(atributo) },
+        { label: meiaEscala ? "Metade do Nível" : "Metade do ND", valor: meioNivel },
+        ...parteProficiencia("treinado", atributo), ...partePenalidade(atributo),
+        ...partesPorAtributo("bonusPericia", p.id, atributo), ...partesDosDados,
+      ],
+    } } : {};
     const comDados = (bonus) => (dadosDaPericia.length
       ? {
         dadosExtras: dadosDaPericia,
@@ -1711,6 +1734,7 @@ export function resolveTestes(creature, ctx = {}) {
         concedida: !!prof && prof !== escolhida,
         bonus: fixo,
         partes: [...partesFixo, ...partesDosDados],
+        ...versatilidade,
         ...comDados(fixo),
       };
     }
@@ -1730,6 +1754,7 @@ export function resolveTestes(creature, ctx = {}) {
       // que aquela faixa não é desmarcável ali.
       concedida: !!prof && prof !== escolhida,
       bonus: bonusProprio,
+      ...versatilidade,
       partes: [
         { label: rotuloAttr(atributo), valor: modDe(atributo) },
         /* "ND" é vocabulário de criatura, e a ficha de jogador tem Nível. O

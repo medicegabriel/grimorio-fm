@@ -1,0 +1,45 @@
+--- a/docs/revisao-automacao/escopo.json
++++ b/docs/revisao-automacao/escopo.json
+@@ -621,4 +621,32 @@
+       "justificativa": "CL3 (2026-11-01): comandar auxílio com prejuízo por repetição, Dano Adicional no próximo ataque e Forma de Arma (p.257, 267 a 270 e Adicionais) sobre o derive do dono; sem catálogo de regra do Livro"
+     },
++    "ficha/ficha-cx3-absorcao-prospectiva.js": {
++      "modo": "INTERFACE",
++      "justificativa": "CX3 (2026-11-07): Reação prospectiva, dano preservado e carga de CL1. Livro p.175."
++    },
++    "ficha/ficha-cx3-antidominios.js": {
++      "modo": "INTERFACE",
++      "justificativa": "CX3 (2026-11-07): Clientes de Feitiço, expansão, reação e Concentração. Livro p.181, 182 e 246."
++    },
++    "ficha/ficha-cx3-aptidao-no-gatilho.js": {
++      "modo": "INTERFACE",
++      "justificativa": "CX3 (2026-11-07): Golpe com Aura e Estímulo vinculados ao ataque ou à ação. Livro p.176, 177 e 179."
++    },
++    "ficha/ficha-cx3-auras-na-mesa.js": {
++      "modo": "INTERFACE",
++      "justificativa": "CX3 (2026-11-07): Consulta de área, gatilho de turno, efeito no destinatário e Casulo. Livro p.174 a 179."
++    },
++    "ficha/ficha-cx3-morte-em-etapas.js": {
++      "modo": "INTERFACE",
++      "justificativa": "CX3 (2026-11-07): Escolha anterior à consequência do teste de morte em CL2. Livro p.313 e 346."
++    },
++    "ficha/ficha-cx3-punho-divergente.js": {
++      "modo": "INTERFACE",
++      "justificativa": "CX3 (2026-11-07): Cliente de acerto desarmado, impacto guardado e Fortitude. Livro p.181."
++    },
++    "ficha/ficha-cx3-recibo-prospectivo.js": {
++      "modo": "INTERFACE",
++      "justificativa": "CX3 (2026-11-07): Guarda de identidade, turno e destinatários para clientes de CX3."
++    },
+     "ficha/ficha-conteudo-reacoes.js": {
+       "modo": "INTERFACE",
+--- a/asserts/LEIA.md
++++ b/asserts/LEIA.md
+@@ -385,4 +385,7 @@
+   Ataque, Lua, Cobrir-se, Raio Negro misto, recusa, idempotência,
+   concentração e persistência.
++- t-cx3-aptidoes-prospectivas.mjs: 132 verificações dos contratos de
++  Absorção, Auras, Punho, Anti-Domínios, Estímulo e Morte em Player/Afty.
++  Com --patches, seis verificações adicionais da janela e da redução fixa.
+ - t-cx3-expandir-aura.mjs: 54 verificações de acesso, ação livre,
+   pagamento, alcance, manutenção e interação com Concentrar Aura.

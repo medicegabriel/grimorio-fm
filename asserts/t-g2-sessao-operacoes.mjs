@@ -142,12 +142,13 @@ t("dano zero não faz nada", V.danoOuCura(G.daSessao(sessao0), { valor: 0, tipo:
 const marca = (n) => ({ __marca: n });
 const sentinela = {
   propriedadesArmas: marca(1), ataqueBasicoId: marca(2), bloodfeast: marca(3), hpAtual: 41, almaAtual: 42, ultimoFeiticoDanoId: marca(5), rituais: marca(6),
-  concedido: marca(7), adaptacoes: marca(8), dharma: marca(9), treinosAtivos: marca(10), invocacoes: marca(11), condicoes: marca(12), exaustaoTecnica: marca(13),
+  concedido: marca(7), adaptacoes: marca(8), dharma: marca(9), treinosAtivos: marca(10), invocacoes: marca(11), condicoes: marca(12), exaustaoTecnica: marca(13), uso: { ativos: marca(14) },
 };
 const op = opcoesDeriveDaSessao({ ...S.sessaoEmBranco(derived), ...sentinela, usosRitualistaCru: undefined });
 t("a lista de opções tem exatamente as chaves que a Ficha sempre mandou ao derive",
   Object.keys(op).sort(),
-  ["adaptacoes", "almaAtual", "ataqueBasicoId", "bloodfeast", "concedido", "condicoes", "dharma", "exaustaoTecnica", "guarda", "invocacoes", "propriedadesArmas", "rituais", "ritualAtual", "treinosAtivos", "ultimoFeiticoDanoId", "usosRitualista", "vidaAtual"]);
+  ["adaptacoes", "almaAtual", "ataqueBasicoId", "bloodfeast", "concedido", "condicoes", "dharma", "exaustaoTecnica", "guarda", "invocacoes", "propriedadesArmas", "rituais", "ritualAtual", "treinosAtivos", "ultimoFeiticoDanoId", "usosOrigemAtivos", "usosRitualista", "vidaAtual"]);
+t("voo usa o estado persistido do contrato de uso", op.usosOrigemAtivos, sentinela.uso.ativos);
 t("cada opção vem do campo certo da sessão", [op.vidaAtual, op.almaAtual, op.propriedadesArmas, op.ataqueBasicoId, op.bloodfeast, op.concedido, op.adaptacoes, op.dharma, op.treinosAtivos, op.invocacoes, op.condicoes, op.exaustaoTecnica, op.rituais, op.ultimoFeiticoDanoId],
   [41, 42, marca(1), marca(2), marca(3), marca(7), marca(8), marca(9), marca(10), marca(11), marca(12), marca(13), marca(6), marca(5)]);
 t("a Guarda corrente e os rituais saem pelos verbos da sessão", [op.guarda, op.usosRitualista, op.ritualAtual], [S.entradaDaGuarda(S.sessaoEmBranco(derived)), S.usosRitualista(S.sessaoEmBranco(derived)), S.ritualEmAndamento(S.sessaoEmBranco(derived))]);

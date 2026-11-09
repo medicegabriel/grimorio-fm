@@ -2,6 +2,11 @@ import { useEffect, useMemo, useCallback } from "react";
 
 import { deriveAfty } from "../afty-derive";
 import { encerraTurnoArmas } from "../afty-propriedades-armas";
+import { encerraMobilidadeNoTurnoEmCurso, encerraCortesNoInicioDoTurno } from "../ficha/ficha-conteudo-manobras";
+import { encerraProvocacoesDaFonte } from "../ficha/ficha-conteudo-provocar";
+import { ativacaoDevastacao } from "../ficha/ficha-conteudo-devastacao";
+import { encerraCurasMedicinaDoTurno } from "../ficha/ficha-conteudo-medicina";
+import { encerraCobrirSe } from "../ficha/ficha-conteudo-reacoes";
 import { iniciaTurnoFicha, encerraTurnoFicha } from "../ficha/ficha-sessao";
 import { calcularRecebidos } from "../ficha/ficha-recebidos";
 import { aplicarAddons, unirAddons, epocaAddons } from "../afty-addons";
@@ -92,7 +97,11 @@ const derivarCombatente = (c) => {
     return calcularRecebidos(
       c.ficha,
       c.sessao,
-      (f, s) => deriveAfty({ ...f, combate: s.combate, buffsSessao: s.buffs }, opcoesDoCombatente(s)),
+      (f, s) => {
+        // O Encontro resolve a pilha pelo alvo. A entrada manual continua na ficha avulsa.
+        const combate = ativacaoDevastacao(s) ? { ...s.combate, devastacaoPilha: 0 } : s.combate;
+        return deriveAfty({ ...f, combate, buffsSessao: s.buffs }, opcoesDoCombatente(s));
+      },
     ).derived;
   } catch {
     // Ficha de uma versão antiga que o derive não engole. O encontro continua
@@ -150,6 +159,7 @@ const chaveDoDerive = (sessao, epoca) => ({
   propriedadesArmas: sessao.propriedadesArmas,
   ataqueBasicoId: sessao.ataqueBasicoId,
   combate: sessao.combate,
+  ativacaoDevastacao: ativacaoDevastacao(sessao),
   buffs: sessao.buffs,
   alma: sessao.almaAtual,
   concedido: sessao.concedido,
@@ -175,6 +185,12 @@ const derivarComCache = (c, epoca) => {
   return derived;
 };
 
+const encerraEfeitosDoTurno = (combatentes, turno) =>
+  encerraCurasMedicinaDoTurno(encerraMobilidadeNoTurnoEmCurso(encerraCobrirSe(combatentes, turno.id), turno), turno);
+
+const encerraEfeitosDaFonte = (combatentes, id, motivo) =>
+  encerraProvocacoesDaFonte(encerraCortesNoInicioDoTurno(combatentes, id, motivo), id, motivo);
+
 const comLog = (state, entradas) => ({
   ...state,
   log: [...entradas, ...state.log].slice(0, LOG_MAX),
@@ -199,7 +215,9 @@ const HANDLERS = {
 
   REMOVER: (s, { id }) => ({
     ...s,
-    combatentes: renumerarCopias(s.combatentes.filter((c) => c.id !== id)),
+    combatentes: renumerarCopias(encerraEfeitosDaFonte(s.ativoId === id
+      ? encerraEfeitosDoTurno(s.combatentes, { id, rodada: s.rodada, turno: s.combatentes.find((c) => c.id === id)?.sessao?.uso?.acoes?.turno ?? 0 })
+      : s.combatentes, id, "fonteRemovida").filter((c) => c.id !== id)),
     ativoId: s.ativoId === id ? null : s.ativoId,
   }),
 
@@ -250,6 +268,10 @@ const HANDLERS = {
     ...s,
     combatentes: s.combatentes.map((c) => (c.id === id ? { ...c, sessao } : c)),
   }),
+  PATCH_SESSOES: (s, { sessoes, esperadas }) => {
+    if (Object.entries(esperadas).some(([id, antes]) => s.combatentes.find((c) => c.id === id)?.sessao !== antes)) return s;
+    return { ...s, combatentes: s.combatentes.map((c) => sessoes[c.id] ? { ...c, sessao: sessoes[c.id] } : c) };
+  },
 
   /* A MORTE DO FUNDAMENTO (DA-07, 2026-09-30): a perda da Técnica Inata é gravada
      na ficha DESTE combatente, que é a cópia que o Encontro guarda. A criatura da
@@ -284,11 +306,11 @@ const HANDLERS = {
       // ⚠ E a CENA começa aqui, então a casca de PE entra junto: o `iniciaCombate`
       // entrega a do gatilho `combate` (4 PE do Treino de Controle de Energia 2ª)
       // e já a da primeira rodada, senão o Completo só valeria da segunda em diante.
-      combatentes: s.combatentes.map((c) => (
-        c.sessao
-          ? { ...c, sessao: iniciaCombate({ ...c.sessao, rodada: 1 }, derivados[c.id] ?? null) }
-          : c
-      )),
+      combatentes: encerraEfeitosDaFonte(s.combatentes, primeiro?.id).map((c) => {
+        if (!c.sessao) return c;
+        const d = derivados[c.id] ?? null, sessao = iniciaCombate({ ...c.sessao, rodada: 1 }, d);
+        return { ...c, sessao: c.id === primeiro?.id ? iniciaTurnoFicha(sessao, d) : sessao };
+      }),
     }, [
       entradaDeLog({ rodada: 1, tipo: LOG_TIPOS.RODADA, mensagem: "Combate iniciado. Rodada 1." }),
       ...(primeiro
@@ -303,6 +325,8 @@ const HANDLERS = {
     const entradas = [];
     let combatentes = s.combatentes.map((c) => c.id === s.ativoId && c.sessao
       ? { ...c, sessao: encerraTurnoArmas(encerraTurnoFicha(c.sessao, derivados[c.id] ?? null)) } : c);
+    combatentes = encerraEfeitosDoTurno(combatentes, { id: s.ativoId, rodada: s.rodada,
+      turno: s.combatentes.find((c) => c.id === s.ativoId)?.sessao?.uso?.acoes?.turno ?? 0 });
 
     if (novaRodada) {
       // ⚠ A duração desce para TODOS na virada, e não no turno de cada um. É o
@@ -328,6 +352,7 @@ const HANDLERS = {
     }
 
     if (proximoId) {
+      combatentes = encerraEfeitosDaFonte(combatentes, proximoId);
       combatentes = combatentes.map((c) => c.id === proximoId && c.sessao
         ? { ...c, sessao: iniciaTurnoFicha(c.sessao, derivados[c.id] ?? null) } : c);
       const alvo = combatentes.find((c) => c.id === proximoId);
@@ -343,7 +368,8 @@ const HANDLERS = {
     if (s.status !== ENCONTRO_STATUS.ATIVO) return s;
     const rodada = s.rodada + 1;
     const entradas = [];
-    const combatentes = s.combatentes.map((c) => {
+    const turno = { id: s.ativoId, rodada: s.rodada, turno: s.combatentes.find((c) => c.id === s.ativoId)?.sessao?.uso?.acoes?.turno ?? 0 };
+    const combatentes = encerraCurasMedicinaDoTurno(encerraCobrirSe(s.combatentes, turno.id), turno).map((c) => {
       if (!c.sessao) return c;
       const { sessao, expirou } = proximaRodada(c.sessao, derivados[c.id] ?? null, { preservarTurnoArmas: true });
       for (const item of expirou) {
@@ -362,7 +388,7 @@ const HANDLERS = {
     if (!podeTransicionar(s.status, ENCONTRO_STATUS.FINALIZADO)) return s;
     return comLog(
       { ...s, status: ENCONTRO_STATUS.FINALIZADO, ativoId: null,
-        combatentes: s.combatentes.map((c) => (c.sessao
+        combatentes: encerraCobrirSe(s.combatentes).map((c) => (c.sessao
           ? { ...c, sessao: aplicaPatchCombate(c.sessao, { ativo: false }) } : c)) },
       [entradaDeLog({ rodada: s.rodada, tipo: LOG_TIPOS.RODADA, mensagem: "Combate encerrado." })],
     );
@@ -526,6 +552,32 @@ export default function useEncontroAfty(encontroId, gerenciador, onAtualizarBibl
       const d = derivados[id] ?? null;
       const antes = aparaSessao(alvo.sessao, d);
       despachar({ tipo: "PATCH_SESSAO", id, sessao: aparaSessao(fn(antes), d) });
+    },
+    operarComAlvo: (origemId, alvoId, fn) => {
+      const origem = encontro?.combatentes.find((c) => c.id === origemId);
+      const alvo = encontro?.combatentes.find((c) => c.id === alvoId);
+      if (!origem?.sessao || !alvo?.sessao || origemId === alvoId) return { erro: "Alvo Indisponível" };
+      const emCurso = encontro.status === ENCONTRO_STATUS.ATIVO && encontro.combatentes.find((c) => c.id === encontro.ativoId);
+      const turnoEmCurso = emCurso ? { id: emCurso.id, rodada: encontro.rodada, turno: emCurso.sessao?.uso?.acoes?.turno ?? 0 } : null;
+      const r = fn(origem.sessao, derivados[origemId], alvo.sessao, derivados[alvoId], { origemId, turnoEmCurso });
+      if (!r.aplicado) return r;
+      despachar({ tipo: "PATCH_SESSOES", esperadas: { [origemId]: origem.sessao, [alvoId]: alvo.sessao },
+        sessoes: { [origemId]: aparaSessao(r.sessao, derivados[origemId]), [alvoId]: aparaSessao(r.sessaoAlvo, derivados[alvoId]) } });
+      return r;
+    },
+    operarComGrupo: (origemId, alvoIds, fn) => {
+      const combatentes = new Map(encontro?.combatentes.map((c) => [c.id, c]));
+      const origem = combatentes.get(origemId);
+      const alvos = alvoIds.map((id) => ({ id, sessao: combatentes.get(id)?.sessao, derived: derivados[id] }));
+      if (!origem?.sessao || !derivados[origemId] || alvos.some((a) => !a.sessao || !a.derived)) return { erro: "Destinatários Indisponíveis" };
+      const r = fn(origem.sessao, derivados[origemId], alvos);
+      if (!r.aplicado) return r;
+      const sessoes = Object.fromEntries(Object.entries(r.sessoesAlvo ?? {}).map(([id, s]) => [id, aparaSessao(s, derivados[id])]));
+      sessoes[origemId] = aparaSessao(r.sessao, derivados[origemId]);
+      const esperadas = Object.fromEntries(alvos.map((a) => [a.id, a.sessao]));
+      esperadas[origemId] = origem.sessao;
+      despachar({ tipo: "PATCH_SESSOES", esperadas, sessoes });
+      return r;
     },
   }), [despachar, encontro, derivados, sincronizarFundamentos]);
 

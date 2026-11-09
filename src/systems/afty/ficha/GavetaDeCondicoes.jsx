@@ -281,7 +281,7 @@ export default function GavetaDeCondicoes({ aplicadas, onAplicar, onTirar, onFec
                 <div className="afty-det-pe">
                   {atualSangra && (
                     <label className="afty-det-campo">
-                      <span className="afty-rotulo text-[10px] uppercase tracking-wider">Faixa</span>
+                      <span className="afty-rotulo text-[11px] uppercase tracking-wider">Faixa</span>
                       <select
                         value={faixa}
                         onChange={(e) => setFaixa(e.target.value)}
@@ -298,7 +298,7 @@ export default function GavetaDeCondicoes({ aplicadas, onAplicar, onTirar, onFec
                     </label>
                   )}
                   <label className="afty-det-campo">
-                    <span className="afty-rotulo text-[10px] uppercase tracking-wider">Rodadas</span>
+                    <span className="afty-rotulo text-[11px] uppercase tracking-wider">Rodadas</span>
                     <input
                       type="text" inputMode="numeric" value={rodadas}
                       onChange={(e) => setRodadas(e.target.value.replace(/\D/g, ""))}

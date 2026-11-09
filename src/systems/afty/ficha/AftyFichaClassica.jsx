@@ -43,6 +43,7 @@ import {
   preparoDe, preparoTempDe, alteraPreparo, definePreparo,
   usosGastosDe, marcaUso,
 } from "./ficha-sessao";
+import { avisoDoVital } from "./ficha-vital";
 import { prepararRolagemEspecializacao, registrarAtaqueEspecializacao, aplicarCuraRoladaEspecializacao } from "./ficha-especializacoes";
 import { rolarTeste, rolarDano } from "./ficha-rolagem";
 import { preparaRolagemArma, registraRolagemArma, configuraArmaNaSessao, marcaErroDaArma, danoDaAmpla, usaAmpla } from "../afty-propriedades-armas";
@@ -56,6 +57,7 @@ import BotaoDeDescanso from "./BotaoDeDescanso";
 import PainelDeRolagens from "./PainelDeRolagens";
 import BuscaGlobal from "./BuscaGlobal";
 import PainelDeAparencia from "./PainelDeAparencia";
+import { useGravacaoTema } from "./usar-gravacao-tema";
 import PainelBloodfeast, { ConjuracaoBloodfeast } from "./PainelBloodfeast";
 import ControleTecnicaMaxima from "./ControleTecnicaMaxima";
 import ControleExpansao, { PainelExaustaoTecnica } from "./ControleExpansao";
@@ -66,6 +68,8 @@ import PainelDoVislumbre from "./PainelDoVislumbre";
 import PainelOlhinhosLu from "./PainelOlhinhosLu";
 import PainelAcoesAddon from "./PainelAcoesAddon";
 import PainelContadoresSessao from "./PainelContadoresSessao";
+import PainelOrigens from "./PainelOrigens";
+import PainelConteudo, { OperacaoConteudoDoItem } from "./PainelConteudo";
 import { consumirAcoesAddon } from "../afty-acoes-addon";
 import PainelOlhosAgulha from "./PainelOlhosAgulha";
 import PainelDoGolpeEspecial from "./PainelDoGolpeEspecial";
@@ -87,6 +91,7 @@ import PainelDoCofre from "../ui/PainelDoCofre";
 import EspinhoCard from "../ui/EspinhoCard";
 import { preparaCustoServo, pagaCustoServo } from "./ficha-servos";
 import PainelServos from "./PainelServos";
+import CamadasDeCorrupcao from "../ui/CamadasDeCorrupcao";
 
 /**
  * ============================================================
@@ -349,12 +354,7 @@ export default function AftyFicha({
      aberta regravava a criatura inteira a cada segundo, para sempre, com um
      derive completo a cada volta. A comparação com o último tema gravado corta o
      laço sem depender da identidade do callback. */
-  const temaGravado = useRef(tema);
-  useEffect(() => {
-    if (tema === temaGravado.current) return undefined;
-    const t = setTimeout(() => { temaGravado.current = tema; onSalvarTema?.(tema); }, 600);
-    return () => clearTimeout(t);
-  }, [tema, onSalvarTema]);
+  useGravacaoTema(tema, onSalvarTema);
 
   /* ⚠ O GRAVADOR VAI POR REFERÊNCIA, e não na lista do efeito: o App o recria a
      cada render, e cada gravação faz o App renderizar de novo. Na lista, isso
@@ -695,6 +695,8 @@ export default function AftyFicha({
   // As Quimeras em aba própria (primitiva `abaQuimeras`, 2026-10-14).
   const quimerasEmAbaPropria = !!derived.primitivas?.includes("abaQuimeras");
 
+  const renderOperacaoConteudo = useCallback((item) => <OperacaoConteudoDoItem item={item} derived={derived}
+    sessao={sessao} onSessao={atualiza} onRolar={rolar} alvos={[]} />, [derived, sessao, atualiza, rolar]);
   const corpo = {
     roda: () => <PainelDharma derived={derived} sessao={sessao} onSessao={atualiza} />,
     acoes: () => (
@@ -713,6 +715,8 @@ export default function AftyFicha({
         adaptacao={<PainelDeAdaptacao derived={derived} onSessao={atualiza} />}
         vislumbre={<PainelDoVislumbre derived={derived} sessao={sessao} onSessao={atualiza} />}
         olhinhosLu={<><PainelOlhinhosLu derived={derived} onSessao={atualiza} />
+          <PainelOrigens derived={derived} sessao={sessao} onSessao={atualiza} />
+          <PainelConteudo derived={derived} sessao={sessao} onSessao={atualiza} />
           <PainelAcoesAddon derived={derived} sessao={sessao} onSessao={atualiza} />
           <PainelServos derived={derived} sessao={sessao} onSessao={atualiza} />
           <PainelContadoresSessao derived={derived} sessao={sessao} onSessao={atualiza} /></>}
@@ -762,6 +766,7 @@ export default function AftyFicha({
         // controles que os alimentam (ver AbaBuffs.jsx, CartaoNativo).
         funcionamentos={funcionamentos}
         itens={itens}
+        renderOperacao={renderOperacaoConteudo}
         abertos={abertos}
         onAberto={alternaItem}
         favoritos={sessao.favoritos}
@@ -854,6 +859,7 @@ export default function AftyFicha({
     <PrimitivasDeAddon primitivas={derived.primitivas}>
     <>
     <div className="afty-ficha" id="afty-ficha" data-afty-densidade={densidade}>
+      <CamadasDeCorrupcao corrupcao={derived.corrupcao} />
       {/* ⚠ A ORDEM É A REGRA. Os dois blocos são CSS sem camada e de mesma
           especificidade, então quem vem depois vence: o CSS livre sobrepõe o
           formulário, que é o que se espera da ferramenta mais avançada das
@@ -1024,6 +1030,7 @@ export default function AftyFicha({
               tipo="pv" icone={Heart} rotulo="Vida"
               atual={sessao.hpAtual} max={derived.hp} temp={pvTempTotal(sessao)}
               partes={derived.partes?.hp}
+              aviso={avisoDoVital(sessao.vital)}
               onSet={(v) => setVital("hpAtual", v)}
               /* ⚠ No PV o delta NEGATIVO é dano, e dano come o PV temporário
                  primeiro. Subtrair direto pularia a casca. */

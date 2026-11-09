@@ -133,7 +133,10 @@ export function modoCombinado(modo, { vantagem = false, desvantagem = false } = 
 
 export function preparaRolagemArma(desc, modo = "normal") {
   const linha = desc.linhaArma;
-  if (!linha) return desc.tipo === "teste" ? { ...desc, modo: desc.modo ?? modo } : desc;
+  if (!linha) return desc.tipo === "teste" ? {
+    ...desc, modo: desc.modo ?? modo,
+    ...(desc.ataqueId ? { tipoTeste: "ataque" } : {}),
+  } : desc;
   const info = linha.armaPropriedades;
   if (desc.tipo === "teste" && info?.bloqueio) return null;
   if (desc.tipo === "dano" && (info?.estado.pendente?.errou || (info?.bloqueio && !info.estado.pendente))) return null;
@@ -142,10 +145,11 @@ export function preparaRolagemArma(desc, modo = "normal") {
   const doMotor = linha.vantagemAtaque ?? {};
   return desc.tipo === "teste" ? {
     ...desc,
+    tipoTeste: "ataque",
     modo: modoCombinado(desc.modo ?? modo, {
       vantagem: doMotor.vantagem, desvantagem: !!info?.desvantagem || !!doMotor.desvantagem,
     }),
-    cd: info?.estado.defesaAlvo ?? null,
+    cd: desc.cd ?? info?.estado.defesaAlvo ?? null,
   } : desc;
 }
 
@@ -180,6 +184,16 @@ export function registraRolagemArma(sessao, desc, r) {
         ? chaveDaArma(linha) : null } };
   }
   return proxima;
+}
+
+/** Mesmo projétil, p.177: substitui o acerto pendente sem novo disparo. */
+export function redirecionaRolagemArma(sessao, linha, anteriorId, rolagem) {
+  const estado = normalizaPropriedadesArmas(sessao?.propriedadesArmas);
+  const atual = estadoDaArma(estado, linha);
+  if (!rolagem?.id || rolagem.id === anteriorId || atual.pendente?.id !== anteriorId || estado.ultimoAtaque !== anteriorId) return sessao;
+  const proxima = comArma(sessao, linha, (e) => ({ ...e, pendente: { ...e.pendente,
+    id: rolagem.id, acerto: rolagem.total, errou: rolagem.pifia || rolagem.sucesso === false } }));
+  return { ...proxima, propriedadesArmas: { ...proxima.propriedadesArmas, ultimoAtaque: rolagem.id } };
 }
 
 export function danoDaAmpla(linha, rodada) {

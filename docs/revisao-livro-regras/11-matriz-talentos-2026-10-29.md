@@ -62,3 +62,21 @@ Referências centrais: [catálogo](../../src/systems/afty/afty-talentos.js), [ef
 | Noção e Preparação | Bônus de TR e progressão | Alcance geral do bônus é decisão anterior do autor. Não registrar a ampliação como bug novo |
 
 As linhas com cadastro apenas são lacunas de aplicação, não ausência do texto ou dos pré-requisitos. O trabalho pode ser dividido entre o procedimento comum (ataque, reação, uso, Voto, inventário) e a declaração específica de cada Talento. Não é necessário criar um motor separado por Talento.
+
+## Conferência parcial de 07/11
+
+O array nativo mantém 52 entradas. Destas, 51 correspondem ao recorte do
+Livro nas p.163 a 170. Alma Livre é a entrada adicional nativa. Talentos
+do catálogo de Estilo, suplementos e entradas adicionadas por pacotes
+ficam fora desta contagem.
+
+| Cláusula | Fonte | Consumidor e evidência atual | Estado |
+| --- | --- | --- | --- |
+| Atenção Infalível, +5 | Livro p.163 | Motor em `afty-efeitos-conteudo.js`. `t-atencao-so-percepcao` distingue Atenção de Percepção | Entregue |
+| Atenção Infalível, surpresa consciente | Livro p.163 | A gaveta de condições aplica Surpreso. A cadeia de condições também inclui Surpreso por Cego | Pendente de integrar a proteção às entradas e às condições em sessão |
+| Resiliência Melhorada | Livro p.164 | Seletor e concessão nativos. Reprodução na fila distingue treino manual de treino pela classe | Atribuição do treino manual no Player segue na fila |
+| Adepto de Feitiçaria, redução por cena | Livro p.166 | `adeptoFeiticariaReducoesUsadas` controla a bancada com teto de BT | Falta cobrar, registrar e recarregar no uso real de Feitiço |
+| Determinado a Viver | Livro p.166 | Catálogo e pré-requisitos. A entrada de morte de CL2 resolve consequências vitais | Falta escolher na primeira queda diária e aplicar a vantagem nos testes seguintes |
+| Discurso Motivador | Livro p.167 | Catálogo e pergunta 7 de Pacotes para Aliados | Fórmula de PV temporário aguarda decisão |
+| Empunhadura Dupla e Ocultamento | Livro p.168 | Motor aplica a Defesa da bancada Duas Armas e o bônus de Furtividade | Vínculo por mão e prejuízo nos TRs do alvo continuam pendentes |
+| Físico Aperfeiçoado, salto | Livro p.169 | `ficha-conteudo-salto.js` consome a escolha de Pulo em `t-cx3-pular` | Salto integrado. A aplicação do deslocamento por empurrão segue separada |

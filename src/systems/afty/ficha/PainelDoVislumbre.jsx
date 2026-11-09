@@ -31,7 +31,7 @@ const metros = (n) => `${String(n).replace(".", ",")}m`;
 function Contador({ rotulo, valor, onMenos, onMais, tom, dica, semMenos = false }) {
   return (
     <span className="flex items-center gap-1.5" role="group" aria-label={`${rotulo}: ${valor}`}>
-      <span className="afty-rotulo text-[10px] uppercase tracking-wider">{rotulo}</span>
+      <span className="afty-rotulo text-[11px] uppercase tracking-wider">{rotulo}</span>
       <button
         type="button"
         className="afty-botao"
@@ -95,7 +95,7 @@ export default function PainelDoVislumbre({ derived, sessao, onSessao }) {
         <span className="afty-valor text-[11px]" title="Teste de Feitiçaria ou Percepção">
           Ler Técnica CD {v.cdLerTecnica}
         </span>
-        <span className="afty-rotulo text-[10px]">CL {v.cl}</span>
+        <span className="afty-rotulo text-[11px]">CL {v.cl}</span>
       </div>
 
       {/* ⚠ A FADIGA E A EXAUSTÃO NA MESMA LINHA, e nessa ordem: uma vira a outra.

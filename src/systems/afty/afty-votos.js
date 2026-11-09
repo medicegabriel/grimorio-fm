@@ -13,6 +13,7 @@
  */
 
 import { normalizarRegrasAfty } from "./afty-regras-addon";
+import { camposDoContratual, camposDoLado, camposTipadosDoMecanico, votoEmVigor, votoTipado } from "./ficha/ficha-votos-regras";
 
 let uidCounter = 0;
 const novoId = (tipo) => `voto_${tipo}_${Date.now().toString(36)}_${(uidCounter++).toString(36)}`;
@@ -40,6 +41,7 @@ const sanitizarEfeitos = (efeitos) => Array.isArray(efeitos)
 const sanitizarLado = (lado) => ({
   texto: typeof lado?.texto === "string" ? lado.texto : "",
   efeitos: sanitizarEfeitos(lado?.efeitos),
+  ...camposDoLado(lado),
 });
 
 const sanitizarContratuais = (lista) => Array.isArray(lista)
@@ -48,6 +50,7 @@ const sanitizarContratuais = (lista) => Array.isArray(lista)
     .map((voto) => ({
       id: typeof voto.id === "string" && voto.id ? voto.id : novoId("contratual"),
       texto: typeof voto.texto === "string" ? voto.texto : "",
+      ...camposDoContratual(voto),
     }))
   : [];
 
@@ -65,6 +68,7 @@ const sanitizarMecanicos = (lista) => Array.isArray(lista)
         ...(typeof voto.origemAddon === "string" && voto.origemAddon
           ? { origemAddon: voto.origemAddon }
           : {}),
+        ...camposTipadosDoMecanico(voto),
         ...(Object.keys(regrasAfty).length ? { regrasAfty } : {}),
       };
     })
@@ -177,6 +181,14 @@ export function limiteVotosMecanicos(bt) {
   return Math.max(0, Math.trunc(Number(bt) || 0));
 }
 
+/**
+ * Os Mecânicos que ocupam vaga do limite de BT. Um Voto tipado que foi desfeito, encerrado ou ainda é só uma
+ * proposta libera a vaga (CL3, p.351). Sem tipo ou sem estado ocupa, como sempre ocupou.
+ */
+export const mecanicosQueOcupamVaga = (mecanicos) => mecanicos.filter(
+  (voto) => !votoTipado(voto) || !["proposto", "desfeito", "encerrado"].includes(voto.estado),
+);
+
 /** Regras especiais emitidas somente pelos Votos que cabem no BT atual. */
 export function regrasAftyDeVotosAtivos(creature, bt) {
   const addonsAtivos = new Set(
@@ -190,9 +202,11 @@ export function regrasAftyDeVotosAtivos(creature, bt) {
     fontesMultiplicadorPeMaximo: [],
     fontesPassivasSemCusto: [],
   };
-  const votos = votosDaFicha(creature).mecanicos.slice(0, limiteVotosMecanicos(bt));
+  const votos = mecanicosQueOcupamVaga(votosDaFicha(creature).mecanicos).slice(0, limiteVotosMecanicos(bt));
   for (const voto of votos) {
     if (voto.origemAddon && !addonsAtivos.has(voto.origemAddon)) continue;
+    const vigor = votoEmVigor(voto);
+    if (!vigor.beneficio && !vigor.maleficio) continue;
     const regras = normalizarRegrasAfty(voto.regrasAfty);
     const fonte = { id: voto.id, nome: `Voto ${voto.nome || "sem nome"}` };
     if (regras.multiplicadorPeMaximo != null) {
@@ -218,7 +232,8 @@ export function efeitosDeVotos(creature, bt) {
   const limite = limiteVotosMecanicos(bt);
   const out = [];
 
-  const adicionar = (voto, lado, rotuloLado) => {
+  const adicionar = (voto, lado, rotuloLado, vale = true) => {
+    if (!vale) return;
     const nomeVoto = voto.nome?.trim() || voto.narrativa?.trim()?.slice(0, 40) || "Sem nome";
     for (const efeito of lado.efeitos) {
       const canal = typeof efeito?.canal === "string" ? efeito.canal : "";
@@ -238,9 +253,11 @@ export function efeitosDeVotos(creature, bt) {
     }
   };
 
-  for (const voto of votos.mecanicos.slice(0, limite)) {
-    adicionar(voto, voto.beneficio, "Benefício");
-    adicionar(voto, voto.maleficio, "Malefício");
+  for (const voto of mecanicosQueOcupamVaga(votos.mecanicos).slice(0, limite)) {
+    // CL3: o Voto tipado só emite o lado que vale no estado em que está (quebrado, desfeito, vigente).
+    const vigor = votoEmVigor(voto);
+    adicionar(voto, voto.beneficio, "Benefício", vigor.beneficio);
+    adicionar(voto, voto.maleficio, "Malefício", vigor.maleficio);
   }
   return out;
 }

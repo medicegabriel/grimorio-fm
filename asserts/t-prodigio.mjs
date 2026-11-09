@@ -64,3 +64,4 @@ for (const sistema of ["player", "afty"]) {
 
 console.log(`t-prodigio: ${ok} ok, ${bad.length} falha(s)`);
 if (bad.length) { for (const b of bad) console.log("  ✗ " + b); process.exit(1); }
+console.log(`TODOS OS ${ok} ASSERTS PASSARAM`);

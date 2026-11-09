@@ -205,6 +205,7 @@ const REGRAS = {
   guardaComoCalamidade: () => "Guarda Como a de uma Calamidade",
   almaComoAfty: () => "Alma Como no Grimório Afty",
   trNoLimiteDePericias: () => "TR no Limite de Perícias",
+  atencaoSoPercepcao: () => "Atenção Só Pela Percepção",
 };
 
 /**

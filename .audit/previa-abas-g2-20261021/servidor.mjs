@@ -16,7 +16,10 @@ const servidor = http.createServer((req, res) => {
   if (!arquivo.startsWith(RAIZ)) { res.writeHead(403).end(); return; }
   if (!fs.existsSync(arquivo) || fs.statSync(arquivo).isDirectory()) arquivo = path.join(RAIZ, "index.html");
   res.writeHead(200, { "Content-Type": TIPOS[path.extname(arquivo)] ?? "application/octet-stream", "Cache-Control": "no-store" });
-  fs.createReadStream(arquivo).pipe(res);
+  /* Um build refeito durante a leitura apaga o arquivo no meio da resposta: sem este tratador o processo caía (2026-11-07). */
+  const leitura = fs.createReadStream(arquivo);
+  leitura.on("error", () => { if (!res.headersSent) res.writeHead(404); res.end(); });
+  leitura.pipe(res);
 });
 servidor.on("error", (e) => { console.error(e.code === "EADDRINUSE" ? `Porta ${PORTA} ocupada. Escolha outra livre.` : e.message); process.exit(1); });
 servidor.listen(PORTA, "127.0.0.1", () => console.log(`Prévia das abas: http://127.0.0.1:${PORTA}/`));

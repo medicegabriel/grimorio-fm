@@ -68,6 +68,9 @@ import {
 import {
   normalizarItemEspinho, ESPINHO_TIPOS, ESPINHO_VISUAIS, ESPINHO_ARTIGOS, ESPINHO_IDENTIDADE_PADRAO, identidadeDeclarada,
 } from "./afty-espinho";
+/* A corrupção visual (V8): o pacote declara a marca contada e escolhe uma pele que
+   exista. `afty-corrupcao.js` é FOLHA, então o import é de mão única. */
+import { CORRUPCAO_PELES } from "./afty-corrupcao";
 // Sem risco de ciclo: `afty-sistema.js` não importa nada.
 import { sistemaDaFicha, regraDo, palavrasDoSistema } from "./afty-sistema";
 /* A tabela de progressão da Carteira. O `afty-carteira.js` é FOLHA, então este
@@ -432,6 +435,14 @@ export const PRIMITIVAS = [
     id: "contar",
     rotulo: "Marcas e contar()",
     nota: "A função contar(\"marca\") do DSL, e o grupo Marcas no seletor de variáveis",
+  },
+  /* NASCEU EM 2026-11-07, com o grupo de Talento por Addon, já com o portão
+     junto. A família `gruposTalento` em si é conteúdo e não precisa dele: o que
+     o `permite` esconde é o canal `vagasTalentoGrupo` no seletor de canais. */
+  {
+    id: "gruposTalento",
+    rotulo: "Vagas de Talento por Grupo",
+    nota: "O canal que dá vaga de Talento a um grupo declarado pelo Addon, gasta antes da vaga comum",
   },
   {
     id: "hpAtributo",
@@ -995,6 +1006,23 @@ export function precosDeCatarse(creature) {
 }
 
 /**
+ * A configuração da corrupção visual desta FICHA (V8), ou `null`. Vale o PRIMEIRO
+ * pacote ativo que a declara. Sai da ficha e nunca do mundo unido, pela mesma
+ * razão do `permite`: num Encontro misto o combatente sem o pacote não herda a
+ * corrupção do vizinho. A marca sai normalizada como o `contar()` a enxerga.
+ */
+export function corrupcaoDaFicha(creature) {
+  for (const pacote of listaDeAddons(creature)) {
+    const cfg = pacote?.corrupcao;
+    if (!cfg || typeof cfg !== "object") continue;
+    const marca = normalizarMarca(cfg.marca);
+    if (!marca) continue;
+    return { marca, maximo: cfg.maximo, pele: cfg.pele };
+  }
+  return null;
+}
+
+/**
  * O catálogo do Espinho, unido de todos os addons da criatura.
  *
  * ⚠ É DADO DE PACOTE, pela mesma razão do `precosDeCatarse`: o módulo do
@@ -1297,6 +1325,10 @@ export function normalizarPacote(cru) {
        Alter. Campo PRÓPRIO pela mesma razão da Catarse: é configuração do
        pacote, e não entrada de catálogo. Ver `espinhoDaFicha`. */
     espinho: (p.espinho && typeof p.espinho === "object" && !Array.isArray(p.espinho)) ? clonar(p.espinho) : null,
+    /* A corrupção visual (V8): `{ marca, maximo, pele }`. Campo PRÓPRIO, pela mesma
+       razão do `espinho`: é configuração do pacote, e não entrada de catálogo, e o
+       normalizador apaga em silêncio o que não conhece. Ver `corrupcaoDaFicha`. */
+    corrupcao: (p.corrupcao && typeof p.corrupcao === "object" && !Array.isArray(p.corrupcao)) ? clonar(p.corrupcao) : null,
     /* Campo legado de um Voto pronto. A aba nativa pode converter e copiar o
        molde mesmo sem `permite: ["pacto"]`. O nome do campo fica estável para
        addons e fichas existentes. Ver `afty-votos.js`. */
@@ -2022,6 +2054,19 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     }
   }
 
+  /* A corrupção visual (V8). A instalação é o portão duro: sem marca não há o que
+     contar, o máximo é um inteiro positivo e a pele precisa existir. */
+  if (p.corrupcao) {
+    const cfg = p.corrupcao;
+    if (!normalizarMarca(cfg.marca)) problemas.push('Corrupção: "marca" é obrigatória.');
+    if (cfg.maximo != null && !(Number.isInteger(Number(cfg.maximo)) && Number(cfg.maximo) > 0)) {
+      problemas.push('Corrupção: "maximo" precisa ser um número inteiro maior que zero.');
+    }
+    if (cfg.pele != null && !CORRUPCAO_PELES.includes(cfg.pele)) {
+      problemas.push(`Corrupção: pele desconhecida ("${cfg.pele}"). Existem: ${CORRUPCAO_PELES.join(", ")}.`);
+    }
+  }
+
   /* O catálogo do Espinho (2026-09-30). O motor aproveita o que der de uma ficha
      já salva, mas a instalação é o portão duro: item sem id, custo negativo,
      tipo desconhecido e teto que não compila não entram. */
@@ -2119,6 +2164,7 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     /* O Alter traz só o multiplicador de teto do Espinho, e é pacote de pleno
        direito: ele muda regra na ficha de quem tem o Espinho. */
     && !p.espinho
+    && !p.corrupcao
   ) {
     problemas.push("O pacote não acrescenta, não substitui, não libera, não permite, não concede ou libera Aptidão e não traz Funcionamento Básico, Feitiço, Estado de Combate, Contador de Origem, Voto automático, Regra Afty ou Espinho.");
   }
@@ -2671,12 +2717,24 @@ export function problemasDeAddon(creature) {
  */
 export function marcasDeclaradas() {
   const out = new Map();
+  const somarTags = (e) => {
+    for (const t of Array.isArray(e?.tags) ? e.tags : []) {
+      const k = normalizarMarca(t);
+      if (k) out.set(k, (out.get(k) ?? 0) + 1);
+    }
+  };
   for (const p of pacotesAtivos) {
     for (const lista of [...Object.values(p.acrescenta), ...Object.values(p.substitui)]) {
       for (const e of lista) {
-        for (const t of Array.isArray(e.tags) ? e.tags : []) {
-          const k = normalizarMarca(t);
-          if (k) out.set(k, (out.get(k) ?? 0) + 1);
+        somarTags(e);
+        /* Origem e clã marcam pelas CARACTERÍSTICAS e pelas OPÇÕES das escolhas
+           delas, e não pela entrada inteira. Sem descer aqui, a marca só
+           apareceria no seletor depois de a ficha usá-la. */
+        for (const c of Array.isArray(e?.caracteristicas) ? e.caracteristicas : []) {
+          somarTags(c);
+          for (const esc of [c?.escolha, ...(Array.isArray(c?.escolhas) ? c.escolhas : [])]) {
+            for (const o of Array.isArray(esc?.opcoes) ? esc.opcoes : []) somarTags(o);
+          }
         }
       }
     }

@@ -65,7 +65,7 @@ export const TOKENS_DOC = [
   { id: "--afty-borda-forte", valor: "#334155", oque: "borda de botão e de chip" },
   { id: "--afty-texto", valor: "#f1f5f9", oque: "texto principal e números" },
   { id: "--afty-texto-suave", valor: "#94a3b8", oque: "rótulos e texto de regra" },
-  { id: "--afty-texto-fraco", valor: "#64748b", oque: "texto secundário, o mais apagado" },
+  { id: "--afty-texto-fraco", valor: "#75849b", oque: "texto secundário, o mais apagado" },
   { id: "--afty-destaque", valor: "#a855f7", oque: "a cor da marca: aba ativa, foco, realce" },
   { id: "--afty-destaque-texto", valor: "#d8b4fe", oque: "texto sobre o destaque" },
   { id: "--afty-destaque-fundo", valor: "#581c8766", oque: "fundo do destaque (com transparência)" },
@@ -81,6 +81,7 @@ export const TOKENS_DOC = [
   { id: "--afty-sombra", valor: "0 2px 10px rgb(0 0 0 / 0.45)", oque: "sombra dos cartões" },
   { id: "--afty-fonte", valor: "ui-sans-serif, system-ui, \"Segoe UI\", Roboto, sans-serif", oque: "fonte de tudo" },
   { id: "--afty-fonte-titulo", valor: "var(--afty-fonte)", oque: "fonte do nome da ficha e dos títulos" },
+  { id: "--afty-fonte-display", valor: '"Bahnschrift", "Segoe UI", system-ui, sans-serif', oque: "fonte dos títulos e números do G2" },
   { id: "--afty-fonte-num", valor: "ui-monospace, Consolas, monospace", oque: "fonte dos números" },
   { id: "--afty-imagem", valor: "none", oque: "imagem de fundo, como url(\"...\")" },
   { id: "--afty-imagem-opacidade", valor: "0.25", oque: "opacidade da imagem de fundo, de 0 a 1" },
@@ -177,16 +178,16 @@ export const PRESETS = [
       "--afty-borda": "#d5c4a1",
       "--afty-borda-forte": "#b8a179",
       "--afty-texto": "#2b2116",
-      "--afty-texto-suave": "#6b5a44",
-      "--afty-texto-fraco": "#93816a",
+      "--afty-texto-suave": "#5f4f3a",
+      "--afty-texto-fraco": "#675946",
       "--afty-destaque": "#8b5a2b",
       "--afty-destaque-texto": "#5d3a17",
       "--afty-destaque-fundo": "#d8bf9a66",
       "--afty-pv": "#a52a2a",
-      "--afty-pe": "#2f6f8f",
+      "--afty-pe": "#235773",
       "--afty-alma": "#7b4397",
-      "--afty-cura": "#3f7d3f",
-      "--afty-aviso": "#a86b00",
+      "--afty-cura": "#356935",
+      "--afty-aviso": "#835300",
       "--afty-veu": "rgb(60 45 25 / 0.45)",
       "--afty-sombra": "0 2px 10px rgb(90 70 40 / 0.18)",
       "--afty-fonte": "Georgia, \"Times New Roman\", serif",
@@ -204,7 +205,7 @@ export const PRESETS = [
       "--afty-borda-forte": "#5c1f26",
       "--afty-texto": "#f7e9ea",
       "--afty-texto-suave": "#c9a0a4",
-      "--afty-texto-fraco": "#8a6367",
+      "--afty-texto-fraco": "#9a777b",
       "--afty-destaque": "#dc2626",
       "--afty-destaque-texto": "#fca5a5",
       "--afty-destaque-fundo": "#7f1d1d66",
@@ -226,7 +227,7 @@ export const PRESETS = [
       "--afty-borda-forte": "#1f4260",
       "--afty-texto": "#e2f1ff",
       "--afty-texto-suave": "#8fb3cc",
-      "--afty-texto-fraco": "#5b7d96",
+      "--afty-texto-fraco": "#66879f",
       "--afty-destaque": "#22d3ee",
       "--afty-destaque-texto": "#a5f3fc",
       "--afty-destaque-fundo": "#0e749066",
@@ -248,7 +249,7 @@ export const PRESETS = [
       "--afty-borda-forte": "#1f4a28",
       "--afty-texto": "#ccffcc",
       "--afty-texto-suave": "#7fbf8a",
-      "--afty-texto-fraco": "#4f7a57",
+      "--afty-texto-fraco": "#5f8b67",
       "--afty-destaque": "#22c55e",
       "--afty-destaque-texto": "#86efac",
       "--afty-destaque-fundo": "#14532d66",
@@ -444,7 +445,11 @@ export function cssDasVars(tema, seletor = ESCOPO_FICHA) {
   for (const [k, v] of Object.entries(getPreset(t.presetId).vars)) põe(k, v);
   for (const [k, v] of Object.entries(t.vars)) põe(k, v);
   põe("--afty-fonte", t.fonte);
+  põe("--afty-fonte-titulo", t.fonte);
+  põe("--afty-fonte-num", t.fonte);
+  põe("--afty-fonte-display", t.fonte);
   põe("--afty-raio", t.raio);
+  põe("--afty-raio-peq", t.raio && `calc(${t.raio} * 2 / 3)`);
 
   const url = urlSegura(t.imagem.url);
   if (url) {
@@ -540,7 +545,11 @@ export function cssDasVarsDaInvocacao(bruto, seletor) {
   }
   for (const [k, v] of Object.entries(t.vars)) põe(k, v);
   põe("--afty-fonte", t.fonte);
+  põe("--afty-fonte-titulo", t.fonte);
+  põe("--afty-fonte-num", t.fonte);
+  põe("--afty-fonte-display", t.fonte);
   põe("--afty-raio", t.raio);
+  põe("--afty-raio-peq", t.raio && `calc(${t.raio} * 2 / 3)`);
 
   const url = urlSegura(t.imagem.url);
   if (url) {
@@ -580,18 +589,19 @@ export const temCssLivre = (tema) => !!saneiaCss(tema?.css).trim();
  * (`:scope#afty-ficha`, que ali dentro não casa com nada) e não citava uma
  * classe sequer do cartão que a pessoa estava pintando.
  */
-export function promptParaIA(tema, { escopo = ESCOPO_FICHA, nome = null } = {}) {
+export function promptParaIA(tema, { escopo = ESCOPO_FICHA, nome = null, estrutura = "classica" } = {}) {
   const t = normalizaTema(tema);
   const naFicha = escopo === ESCOPO_FICHA;
   const atual = saneiaCss(t.css).trim();
   const tokens = TOKENS_DOC.map((x) => `  ${x.id}: ${x.valor};   /* ${x.oque} */`).join("\n");
-  const porGrupo = CONTRATO_DE_CLASSES.reduce((acc, c) => {
+  const porGrupo = contratoDaEstrutura(naFicha ? estrutura : "invocacao").reduce((acc, c) => {
     (acc[c.grupo] ??= []).push(`- \`${c.seletor}\` ${c.oque}`);
     return acc;
   }, {});
   const classes = Object.entries(porGrupo)
     .map(([grupo, linhas]) => `### ${grupo}\n${linhas.join("\n")}`).join("\n\n");
-  const atributos = ATRIBUTOS_DOC.map((a) => `- \`${a.seletor}\` ${a.oque}`).join("\n");
+  const atributos = atributosDaEstrutura(naFicha ? estrutura : "invocacao")
+    .map((a) => `- \`${a.seletor}\` ${a.oque}`).join("\n");
 
   const alvo = naFicha
     ? `É a ficha de personagem do "Grimório do Afty", um sistema de RPG próprio. A página já existe e está
@@ -617,7 +627,7 @@ ${alvo}
 ## O mapa da página
 
 \`\`\`
-${MAPA_DA_PAGINA}
+${naFicha ? (estrutura === "g2" ? MAPA_G2 : MAPA_DA_PAGINA) : MAPA_INVOCACAO}
 \`\`\`
 
 **IMPORTANTE: o CORPO é a maior parte da ficha, e é onde o jogador passa o tempo.** Um tema que pinta só o
@@ -683,13 +693,14 @@ ${atributos}
    \`#afty-ficha\`: qualquer um deles prende o painel e ele passa a abrir no lugar errado.
 6. Cuide do CONTRASTE. Se escurecer o fundo, clareie \`--afty-texto\` e \`--afty-texto-suave\` junto.
    Repare em \`--afty-texto-fraco\`, que é o mais apagado e é a cor da perícia não treinada.
-7. Não use \`!important\`. Este CSS vence a folha do app sem ele. O que ele NÃO vence é estilo escrito
+7. Não use \`!important\`. Nas superfícies contratadas do G2, um seletor de classe simples pode alterar
+   a aparência. Classes privadas com prefixo e-, m- e f- não são API. Na clássica, estados específicos
+   podem pedir o atributo junto da classe (por exemplo \`.afty-aba[aria-selected="true"]\`). O CSS não vence estilo escrito
    direto no elemento, e alguns pontos da ficha escrevem cor assim: nesses, o único jeito de mudar a
    cor é trocar a VARIÁVEL que eles usam, e é mais um motivo para começar pelo bloco de tokens.
-8. Não pinte a barra de recurso por \`background\`. \`.afty-vital-barra\` já é um gradiente montado a
-   partir da cor do recurso, e escrever \`background\` ou \`background-image\` nela apaga o gradiente e
-   deixa a barra INVISÍVEL. Para trocar a cor das barras, mexa em \`--afty-pv\`, \`--afty-pe\`,
-   \`--afty-alma\` e \`--afty-pvtemp\`.
+8. Para trocar a cor das barras, prefira \`--afty-pv\`, \`--afty-pe\`, \`--afty-alma\` e
+   \`--afty-pvtemp\`. Preserve a geometria de \`.afty-vital-barra\`. Na clássica, o preenchimento usa
+   um gradiente e sobrescrever \`background\` ou \`background-image\` pode apagar esse preenchimento.
 9. Mantenha o resultado abaixo de 64 KB.
 
 ## O que eu quero
@@ -846,8 +857,49 @@ export const CONTRATO_DE_CLASSES = [
   { grupo: "Camadas", seletor: ".afty-busca-item", oque: "cada resultado" },
 ];
 
+const SO_CLASSICA = new Set([
+  ".afty-cabecalho-conteudo", ".afty-cabecalho-principal", ".afty-retrato-painel",
+  ".afty-controles", ".afty-vital-icone", ".afty-vital-temp", ".afty-atributo-mod",
+  ".afty-subabas", ".afty-subaba", ".afty-subaba-conta",
+]);
+
+const SUPERFICIES_G2 = [
+  { grupo: "Cabeçalho", seletor: ".afty-vital-conteudo", oque: "rótulo e valores do recurso" },
+  { grupo: "Cabeçalho", seletor: ".afty-vital-valores", oque: "valor atual, máximo e temporário do recurso" },
+  { grupo: "G2", seletor: ".afty-consulta", oque: "o painel de consulta aberto" },
+  { grupo: "G2", seletor: ".afty-historico", oque: "o histórico de efeitos aberto" },
+];
+
+/** O contrato descreve o alvo do editor, sem promover classes internas a API. */
+export function contratoDaEstrutura(estrutura = "classica") {
+  if (estrutura === "g2") return [
+    ...CONTRATO_DE_CLASSES.filter(c => !SO_CLASSICA.has(c.seletor)), ...SUPERFICIES_G2,
+  ];
+  if (estrutura === "invocacao") return CONTRATO_DE_CLASSES.filter(c =>
+    c.seletor.startsWith(".afty-inv-") || [".afty-valor", ".afty-rotulo", ".afty-botao", ".afty-texto", ".afty-linha"].includes(c.seletor));
+  return CONTRATO_DE_CLASSES;
+}
+
+const MAPA_G2 = `#afty-ficha
+├── .afty-cabecalho: retrato, .afty-nome, .afty-vital e .afty-stats
+├── .afty-abas > .afty-aba[data-afty-aba][aria-selected]
+├── corpo da aba: .afty-card > .afty-card-titulo e .afty-linha
+│   Ações, Habilidades, Perícias, Equipamentos, Invocações e Buffs
+│   A prévia das três abas possui estrutura própria dentro desses ganchos
+├── .afty-consulta: leitura e controles do item aberto
+├── .afty-historico: histórico de efeitos
+└── .afty-log: rolagens
+As seções condicionais só existem quando a ficha tem o recurso correspondente.
+O G2 não usa a moldura vertical, as subabas ou o cabeçalho encolhido da clássica.`;
+
+const MAPA_INVOCACAO = `:scope.afty-inv-ficha
+├── .afty-inv-cabeca: .afty-inv-titulo e marcas
+└── .afty-inv-corpo: .afty-inv-stats, .afty-inv-colunas e .afty-inv-bloco
+O cartão pode estar na ficha do dono ou no Encontro, sempre com o mesmo escopo próprio.`;
+
 /** Os atributos que dão alvo mais fino que a classe. */
 export const ATRIBUTOS_DOC = [
+  { seletor: '[data-afty-estrutura="g2"]', oque: "a raiz da ficha G2" },
   { seletor: "[data-afty-vital=\"pv\"]", oque: "a barra de Vida. Também `pe` e `alma`" },
   { seletor: "[data-afty-nivel=\"critico\"]", oque: "recurso abaixo de um quarto. Também `baixo`" },
   { seletor: "[data-afty-stat=\"defesa\"]", oque: "uma defesa nomeada: cd, rd-geral, rd-especifica, rd-alma, rd-fisica, movimento, iniciativa, atencao, res-parcial, maestria, preparo" },
@@ -863,6 +915,13 @@ export const ATRIBUTOS_DOC = [
   { seletor: "[data-afty-subaba]", oque: "uma divisão de bloco pelo id dela: a Especialização, ou melhoria, lendaria e apice" },
   { seletor: "[data-afty-densidade=\"compacta\"]", oque: "a raiz quando o jogador pediu menos respiro. Também `confortavel`" },
 ];
+
+export function atributosDaEstrutura(estrutura = "classica") {
+  if (estrutura === "invocacao") return ATRIBUTOS_DOC.filter(a =>
+    /data-afty-(vital|nivel|stat|tom)/.test(a.seletor));
+  if (estrutura === "classica") return ATRIBUTOS_DOC.filter(a => !a.seletor.includes("data-afty-estrutura"));
+  return ATRIBUTOS_DOC.filter(a => !/data-afty-(compacto|com-retrato)/.test(a.seletor));
+}
 
 /**
  * O mapa da página, para a IA saber que existe um CORPO.

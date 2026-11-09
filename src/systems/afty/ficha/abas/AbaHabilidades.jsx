@@ -70,7 +70,7 @@ function CartaoTecnica({ titulo, texto }) {
   );
 }
 
-export default function AbaHabilidades({ funcionamentos = [], itens, abertos, onAberto, favoritos, onFavorito, destaque, contadorUsos = null, espinho = null, rotulosGrupo = {} }) {
+export default function AbaHabilidades({ funcionamentos = [], itens, abertos, onAberto, favoritos, onFavorito, destaque, contadorUsos = null, espinho = null, rotulosGrupo = {}, renderOperacao = null }) {
   const [termo, setTermo] = useState("");
   const [efeitoFiltro, setEfeitoFiltro] = useState("todos");
   const filtrados = useMemo(() => filtraHabilidades(itens, efeitoFiltro, termo), [itens, efeitoFiltro, termo]);
@@ -118,6 +118,7 @@ export default function AbaHabilidades({ funcionamentos = [], itens, abertos, on
           onFavorito={onFavorito}
           destaque={destaque}
           contadorUsos={contadorUsos}
+          renderOperacao={renderOperacao}
         />
       ))}
     </div>

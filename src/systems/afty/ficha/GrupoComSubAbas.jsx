@@ -29,7 +29,7 @@ function subsDe(lista) {
  * global navegar para um item que mora em outra. Sem isso o jogador buscaria uma
  * Habilidade, a Ficha trocaria para esta aba e não mostraria nada.
  */
-export default function GrupoComSubAbas({ grupo, lista, abertos, onAberto, favoritos, onFavorito, destaque, contadorUsos = null }) {
+export default function GrupoComSubAbas({ grupo, lista, abertos, onAberto, favoritos, onFavorito, destaque, contadorUsos = null, renderOperacao = null }) {
   const subs = useMemo(() => subsDe(lista), [lista]);
   // ⚠ A escolha guarda TAMBÉM qual destaque estava valendo quando ela foi feita.
   // É o que deixa a conta abaixo ser de LEITURA: um efeito que escrevesse a
@@ -77,6 +77,7 @@ export default function GrupoComSubAbas({ grupo, lista, abertos, onAberto, favor
             onFavorito={onFavorito}
             destacado={destaque === i.chave}
             contadorUsos={contadorUsos}
+            renderOperacao={renderOperacao}
           />
         ))}
       </div>

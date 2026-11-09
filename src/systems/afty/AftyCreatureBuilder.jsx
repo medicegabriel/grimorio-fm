@@ -17,6 +17,7 @@ import {
   createBlankFuncionamento, nomeParaGravar, funcionamentosDaFicha,
 } from "./afty-schema";
 import { contadoresOrigemDeAddon, valorContadorOrigem, clampContadorOrigem } from "./afty-contadores-origem";
+import { MODOS_FOCO_ZENIN } from "./afty-origens-feiticos";
 import { feiticoServeAoVinculo } from "./afty-recursos-addon";
 // Primitivos compartilhados com a Ficha Final. Eram locais deste arquivo até
 // 2026-08-05, e saíram porque duas cópias divergiriam na primeira errata.
@@ -41,7 +42,7 @@ import FiltroDeHabilidades from "./ui/FiltroDeHabilidades";
 import { filtraHabilidades, filtraGruposDeHabilidade } from "./afty-filtro-habilidades";
 import { estadoInicialComRascunho, useRascunhoAfty, formatarSalvoEm } from "./afty-rascunho";
 import {
-  SISTEMA_PADRAO, sistemaDaFicha, normalizaSistema, regraDo, rotuloDoNivel, palavrasDoSistema,
+  SISTEMA_PADRAO, sistemaDaFicha, normalizaSistema, regraDo, rotuloDoNivel, palavrasDoSistema, mostraJogadasDeAtaque,
 } from "./afty-sistema";
 import {
   origensDoSistema, getOrigem, origemTemDesenvolvimento, origemPoolLimite,
@@ -53,7 +54,7 @@ import {
 } from "./afty-origens";
 // A descrição de cada anatomia agora aparece na própria linha selecionável, em
 // vez de repetida numa lista embaixo: o `getAnatomia` deixou de ser preciso aqui.
-import { ANATOMIAS, anatomiaTotal } from "./afty-anatomias";
+import { ANATOMIAS, anatomiaTotal, TIPOS_ARMA_NATURAL, tipoDaArmaNatural } from "./afty-anatomias";
 import {
   ATTR_METODOS, VALORES_FIXOS, valoresFixosOk, rolarAtributos, resumoAtributos,
   desenvolvimentoTotal, desenvolvimentoUsado, limitePoolTotal, limitePoolUsado,
@@ -89,7 +90,7 @@ import {
   gruposDeHabilidade, avaliarAcessoHabilidade, escolhasConcedidas, abasDeOpcoes,
   expandeHerdadas, AFTY_HABILIDADES, getHabilidade,
 } from "./afty-habilidades";
-import { ALMA_LIVRE_TALENTO_ID, gruposDeTalento, avaliarAcessoTalento, AFTY_TALENTOS } from "./afty-talentos";
+import { ALMA_LIVRE_TALENTO_ID, gruposDeTalento, avaliarAcessoTalento, AFTY_TALENTOS, TALENTO_GRUPOS } from "./afty-talentos";
 import { avaliarAcessoAltoNivel } from "./afty-alto-nivel";
 import { HABILIDADES_GERAIS } from "./afty-gerais";
 import {
@@ -208,6 +209,7 @@ import VislumbreCard from "./ui/VislumbreCard";
 import OlhinhosLuCard from "./ui/OlhinhosLuCard";
 import OlhosAgulhaCard from "./ui/OlhosAgulhaCard";
 import EspinhoCard from "./ui/EspinhoCard";
+import CamadasDeCorrupcao from "./ui/CamadasDeCorrupcao";
 import { habilidadeOcularAgulha } from "./afty-olhos-agulha";
 import {
   orcamentoDaArma, createBlankCriacao, saneiaCriacaoDeArma, custoDeTecnica,
@@ -554,6 +556,11 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
   // Níveis de Aptidão: cada ponto do orçamento sobe 1 nível numa trilha.
   const setAptidaoNivel = (trilha, val) =>
     setDraft((d) => ({ ...d, aptidoes: { ...d.aptidoes, [trilha]: val } }));
+  const setAptidaoExcedente = (trilha, indice, id) => setDraft((d) => {
+    const lista = [...(d.aptidoesExcedentes?.[trilha] ?? [])];
+    lista[indice] = id || null;
+    return { ...d, aptidoesExcedentes: { ...d.aptidoesExcedentes, [trilha]: lista } };
+  });
 
   // Habilidades de Especialização: Base e por Nível gastam o MESMO orçamento,
   // que vem da Habilidade Geral Especialização. Escolher não é bloqueado pelo
@@ -1625,6 +1632,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
        fundas deste arquivo. Ver `ui/usar-primitiva.js`. */
     <PrimitivasDeAddon primitivas={derived.primitivas}>
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950/30 text-white">
+      <CamadasDeCorrupcao corrupcao={derived.corrupcao} />
       {/* ===== HEADER ===== */}
       <header ref={headerRef} className="sticky top-0 z-30 bg-slate-950/95 backdrop-blur border-b border-purple-900/50">
         <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -1788,7 +1796,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
           )}
 {tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} testarGolpeDaArma={testarGolpeDaArma} patch={patch} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} setArmaDaOrigem={setArmaDaOrigem} addFeitico={addFeitico} updateFeitico={updateFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} setTreinoEscolhaFeiticos={setTreinoEscolhaFeiticos} removeEstilo={removeEstilo} patchEstilo={patchEstilo} addFuncionamento={addFuncionamento} removeFuncionamento={removeFuncionamento} patchFuncionamento={patchFuncionamento} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} patchEspinho={patchEspinho} sistema={sistema} estiloApi={estiloApi} />}
           {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} setHabilidadeVezes={setHabilidadeVezes} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} patchTecnicasCombate={patchTecnicasCombate} patchTalentosConfig={patchTalentosConfig} patchEspecializacaoConfig={patchEspecializacaoConfig} ativarImitacao={ativarImitacao} />}
-          {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} setAptidaoVezes={setAptidaoVezes} setAptidaoOpcaoRepetida={setAptidaoOpcaoRepetida} />}
+          {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} setAptidaoExcedente={setAptidaoExcedente} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} setAptidaoVezes={setAptidaoVezes} setAptidaoOpcaoRepetida={setAptidaoOpcaoRepetida} />}
           {tabAtiva === "quimeras" && <TabQuimeras draft={draft} derived={derived} addQuimera={addQuimera} removeQuimera={removeQuimera} patchQuimera={patchQuimera} />}
           {tabAtiva === "invocacoes" && <TabInvocacoes draft={draft} derived={derived} addInvocacao={addInvocacao} removeInvocacao={removeInvocacao} duplicarInvocacao={duplicarInvocacao} moverInvocacao={moverInvocacao} patchInvocacao={patchInvocacao} patchInvocacaoAttr={patchInvocacaoAttr} efeitosApi={efeitosApi} addHorda={addHorda} removeHorda={removeHorda} patchHorda={patchHorda} addQuimera={addQuimera} removeQuimera={removeQuimera} patchQuimera={patchQuimera} addNucleos={addNucleos} removeNucleos={removeNucleos} patchNucleos={patchNucleos} />}
           {tabAtiva === "equipamentos" && <TabEquipamentos draft={draft} derived={derived} addEquipamento={addEquipamento} removeEquipamento={removeEquipamento} patchEquipamento={patchEquipamento} toggleFerramenta={toggleFerramenta} patchFerramenta={patchFerramenta} toggleEncantamento={toggleEncantamento} addArmaCustom={addArmaCustom} patchArmaCustom={patchArmaCustom} removeArmaCustom={removeArmaCustom} addAcessorioUnico={addAcessorioUnico} patchAcessorioUnico={patchAcessorioUnico} removeAcessorioUnico={removeAcessorioUnico} criados={criados} />}
@@ -2176,6 +2184,8 @@ function TabPericias({
 
   return (
     <>
+      {/* O jogador não vê a lista: o Acerto mora na Arma e no Feitiço (divergência `jogadasDeAtaqueNaTela`). O derive segue calculando os ataques. */}
+      {mostraJogadasDeAtaque(derived.sistema) && (
       <Card
         title="Jogadas de Ataque"
         headerRight={
@@ -2192,6 +2202,7 @@ function TabPericias({
         </div>
         <div className="space-y-1 mt-1">{ataquePor("amaldicoado")}</div>
       </Card>
+      )}
 
 
       {/* Layout do autor (2026-07-27): Reflexos e Fortitude à esquerda, Vontade
@@ -3214,6 +3225,7 @@ function ContadorHabilidades({ derived, proprio = false, marcial = false }) {
   const {
     gastosNoComum, comum, partesComum, exclusivasFeitico, exclusivasUsadas,
     exclusivasEstilo, exclusivasEstiloUsadas, exclusivasVariacao, exclusivasVariacaoUsadas, excedeu,
+    exclusivasReversao, exclusivasReversaoUsadas,
     proprioFeitico, proprioFeiticoAtivo, proprioFeiticoPartes, proprioFeiticoUsado, excedeuFeitico,
     exclusivasMarcial, exclusivasMarcialUsadas, proprioMarcial, proprioMarcialAtivo,
     proprioMarcialPartes, proprioMarcialUsado, excedeuMarcial,
@@ -3285,6 +3297,9 @@ function ContadorHabilidades({ derived, proprio = false, marcial = false }) {
           +{exclusivasVariacaoUsadas} / {exclusivasVariacao}
         </span>
       )}
+      {exclusivasReversao > 0 && <span className="font-mono text-[11px] font-bold text-purple-300 tabular-nums" title="Vaga Exclusiva de Reversão de Técnica">
+        +{exclusivasReversaoUsadas} / {exclusivasReversao}
+      </span>}
       {/* O rótulo segue a pilha: no caixa próprio o que se conta são Feitiços, e
           "Habilidades" ali mandaria procurar um contador que não existe. */}
       <span className="text-[9px] uppercase tracking-wider text-slate-400">
@@ -3657,6 +3672,8 @@ function CanalPicker({ value, onChange, grupos: catalogo = EFEITO_CANAL_GRUPOS }
   const vePvPassivas = usePrimitiva("pvEPassivas") || CANAIS_PV_PASSIVAS.includes(value);
   // E o orçamento de Pontos de Atributo, que o Espinho abriu (2026-09-30).
   const vePontosAtributo = usePrimitiva("espinho") || value === "pontosAtributo";
+  // E a vaga de Talento por grupo, que o grupo de Talento por Addon abriu (2026-11-07).
+  const veVagasGrupo = usePrimitiva("gruposTalento") || value === "vagasTalentoGrupo";
 
   const termo = semAcento(busca.trim());
   const grupos = catalogo
@@ -3670,6 +3687,7 @@ function CanalPicker({ value, onChange, grupos: catalogo = EFEITO_CANAL_GRUPOS }
         && (veArmaTransf || !CANAIS_ARMA_TRANSF.includes(c.id))
         && (vePvPassivas || !CANAIS_PV_PASSIVAS.includes(c.id))
         && (vePontosAtributo || c.id !== "pontosAtributo")
+        && (veVagasGrupo || c.id !== "vagasTalentoGrupo")
         && (!termo
         || semAcento(c.label).includes(termo)
         || semAcento(g.label).includes(termo)
@@ -4111,6 +4129,13 @@ function alvoOpcoes(tipo, pericias = AFTY_PERICIAS, fontesDano = [], canal = nul
     return AFTY_HABILIDADES
       .filter((h) => h.escolha && !h.herdadaDe)
       .map((h) => ({ value: h.id, label: `${h.nome}: ${h.escolha.label ?? "Escolha"}` }));
+  }
+  /* O grupo de Talento que o Addon declarou (`vagasTalentoGrupo`). Os dois do
+     livro ficam de fora: a vaga deles já tem canal próprio (`vagasTalento`). */
+  if (tipo === "grupoTalento") {
+    return TALENTO_GRUPOS
+      .filter((g) => g.id !== "geral" && g.id !== "origem")
+      .map((g) => ({ value: g.id, label: g.titulo }));
   }
   return ALVO_OPCOES_BASE[tipo] ?? null;
 }
@@ -5246,6 +5271,8 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
   const fontesDano = fontesDanoDaFicha(draft, derived);
   const ctx = {
     nd: derived.nd,
+    beneficiosOrigem: derived.feiticos.beneficiosOrigem,
+    reversoes: derived.feiticos.reversoes,
     nivelConjurador: derived.feiticos.nivelConjurador,
     cdBase: derived.feiticos.cdBase,
     modTecnica: derived.modTecnica,
@@ -6115,6 +6142,8 @@ function FeiticoCard({ feitico, ctx, nivelMax, resumo, tecnicasMaximas, tiposPer
   /* A Técnica Marcial usa este MESMO card (2026-10-26). Ela calcula com o `ctx`
      dela e custa o da tabela, sem as reduções que só o Feitiço tem. */
   const marcial = feitico.marcial === true;
+  const beneficiosOrigem = ctx.beneficiosOrigem;
+  const beneficioOrigem = beneficiosOrigem?.porFeitico?.[feitico.id];
   const calculoBase = calcularFeitico(feitico, ctx);
   const feiticoEscala = feiticoNaEscala(feitico, ctx);
   const calc = aplicaReducoesCustoFeitico(feitico, calculoBase, marcial ? ctxSemReducoesDeCusto(ctx) : ctx);
@@ -6244,16 +6273,82 @@ function FeiticoCard({ feitico, ctx, nivelMax, resumo, tecnicasMaximas, tiposPer
             Variação de Feitiço (Dominância em Técnica)
           </label>
         )}
+        {!marcial && !feitico.variacaoDe && (ctx.reversoes?.pode || feitico.reversaoTecnica) && <label className="flex items-center gap-2 text-[12px] text-slate-300">
+          <input aria-label="Reversão de Técnica" type="checkbox" checked={!!feitico.reversaoTecnica} onChange={(e) => onPatch({ reversaoTecnica: e.target.checked })} />
+          Reversão de Técnica
+        </label>}
         {!ehTecnicaMaximaOficial(feitico) && (
           <NivelFeiticoPicker
             value={feitico.nivel}
             onChange={(n) => onPatch(patchNivelFeitico(feitico, n))}
-            nivelMax={nivelMax}
+            nivelMax={beneficioOrigem?.manual ? Math.min(5, nivelMax + 1) : nivelMax}
             nivelMin={marcial || feitico.tipo === "curativo" ? 1 : 0}
             niveisSemDado={semDado.niveis}
             niveis={marcial ? niveisDaTecnicaMarcial(feitico.nivel) : undefined}
             rotulo={marcial ? "Nível da Técnica" : undefined}
           />
+        )}
+        {!marcial && !feitico.variacaoDe && !ehTecnicaMaxima(feitico) && beneficiosOrigem && (
+          <div className="flex flex-wrap gap-3 text-[12px] text-slate-300">
+            {beneficiosOrigem.marca && (
+              <label className="space-y-1">
+                <span>Marca Registrada</span>
+                <Select aria-label="Marca Registrada" value={feitico.marcaRegistrada ?? ""}
+                  options={[
+                    { value: "", label: "Nenhuma" },
+                    ...(!beneficiosOrigem.principal || beneficiosOrigem.principal === feitico.id ? [{ value: "inicial", label: "Primeira Marca" }] : []),
+                    ...(beneficiosOrigem.familiaridade && beneficiosOrigem.principal && (beneficiosOrigem.adicionais.includes(feitico.id)
+                      || beneficiosOrigem.adicionais.length < beneficiosOrigem.adicionaisTotal) ? [{ value: "adicional", label: "Marca Adicional" }] : []),
+                  ]}
+                  onChange={(marcaRegistrada) => onPatch({ marcaRegistrada })} />
+              </label>
+            )}
+            {beneficiosOrigem.familiaridade && beneficioOrigem?.baseId === beneficiosOrigem.principal && (
+              <label className="space-y-1">
+                <span>Familiaridade com Técnica</span>
+                <Select aria-label="Familiaridade com Técnica" value={feitico.familiaridadeSustentacao ? "sustentacao" : "custo"}
+                  options={[{ value: "custo", label: "Redução de 2 PE" }, { value: "sustentacao", label: "Redução de 1 PE para Sustentar" }]}
+                  onChange={(v) => onPatch({ familiaridadeSustentacao: v === "sustentacao" })} />
+              </label>
+            )}
+            {beneficiosOrigem.focadosTotal > 0 && (
+              <label className="space-y-1">
+                <span>Feitiço Focado</span>
+                <Select aria-label="Feitiço Focado" value={feitico.focoZenin ?? ""}
+                  options={[{ value: "", label: "Nenhum" },
+                    ...(beneficiosOrigem.focados.includes(feitico.id) || beneficiosOrigem.focados.length < beneficiosOrigem.focadosTotal
+                      ? MODOS_FOCO_ZENIN.filter((m) => m.value === feitico.focoZenin
+                        || (m.value === "dano" && !!calculoBase?.tipoDado && !feitico.focoCondicao)
+                        || (m.value === "dano" && !!calculoBase?.dado)
+                        || (m.value === "dano" && calculoBase?.efeitos?.some((e) => e.disponivel && e.dado?.[0] > 0))
+                        || (m.value === "cura" && feitico.tipo === "curativo")
+                        || (m.value === "cd" && typeof calculoBase?.cd === "number")
+                        || (m.value === "alcance" && typeof calculoBase?.alcance === "number")) : [])]}
+                  onChange={(focoZenin) => onPatch({ focoZenin })} />
+              </label>
+            )}
+            {beneficiosOrigem.manual && !feitico.manualTecnica?.aprendido && beneficiosOrigem.acesso < 5 && (!beneficiosOrigem.manualId || beneficioOrigem?.manual) && (
+              <label className="flex items-center gap-2">
+                <input type="checkbox" checked={!!beneficioOrigem?.manual}
+                  onChange={(e) => onPatch(e.target.checked
+                    ? { ...patchNivelFeitico(feitico, nivelMax + 1), manualTecnica: { acessoCriacao: nivelMax, aprendido: false } }
+                    : { manualTecnica: null })} />
+                Manual de Técnica
+              </label>
+            )}
+            {beneficioOrigem?.aprender && (
+              <button type="button" className="text-purple-300 hover:text-white"
+                onClick={() => onPatch({ manualTecnica: { ...feitico.manualTecnica, aprendido: true } })}>Aprender Feitiço do Manual</button>
+            )}
+          </div>
+        )}
+        {!marcial && calculoBase?.beneficiosOrigem?.destinosFoco?.length > 1 && (
+          <label className="block text-[12px] text-slate-300 space-y-1">
+            <span>Destino de Foco no Poder</span>
+            <Select aria-label="Destino de Foco no Poder" value={calculoBase.beneficiosOrigem.destinoFoco}
+              options={[{ value: "", label: "Escolher Destino" }, ...calculoBase.beneficiosOrigem.destinosFoco]}
+              onChange={(focoZeninDestino) => onPatch({ focoZeninDestino })} />
+          </label>
         )}
       </div>
 
@@ -7073,7 +7168,7 @@ function NotasDoDano({ calc, feitico }) {
       )}
       {calc.disparos && (
         <NotaDeFeitico>
-          {calc.disparos.disparos} disparos de {calc.disparos.porDisparoTexto}, ou {calc.disparos.concentradoTexto} concentrado num alvo
+          {calc.disparos.distribuicaoTexto ?? `${calc.disparos.disparos} disparos de ${calc.disparos.porDisparoTexto}`}, ou {calc.disparos.concentradoTexto} concentrado num alvo
         </NotaDeFeitico>
       )}
       {feitico.subtipo === "cataclismico" && (
@@ -7462,7 +7557,7 @@ function NotasDoEspecial({ calc, kind }) {
     <NotasDeFeitico avisos={calc.avisos}>
       {calc.golpes && (
         <NotaDeFeitico>
-          {calc.golpes.golpes} golpes de {notacaoDano(calc.golpes.porGolpe, calc.tipoDado)}, ou {notacaoDano(calc.golpes.concentradoTotal, calc.tipoDado)} concentrado. Prejuízo de −{calc.golpes.penalidadePorGolpe} no acerto por golpe após o primeiro (cumulativo).
+          {calc.golpes.distribuicaoTexto ?? `${calc.golpes.golpes} golpes de ${notacaoDano(calc.golpes.porGolpe, calc.tipoDado)}`}, ou {notacaoDano(calc.golpes.concentradoTotal, calc.tipoDado)} concentrado. Prejuízo de −{calc.golpes.penalidadePorGolpe} no acerto por golpe após o primeiro (cumulativo).
         </NotaDeFeitico>
       )}
       {kind === "golpeador" && (
@@ -8875,6 +8970,11 @@ function OrigemCard({ draft, derived, patch, patchCore, setOrigemId, setOrigemBo
   // Características de Anatomia (Feto): escolhe 1 + 1 a cada 5 níveis.
   const anatomiasSel = draft.core.origem?.anatomias || [];
   const anatTotal = anatomiaTotal(nd);
+  const anatomiasConfig = draft.core.origem?.anatomiasConfig ?? {};
+  const setAnatomiaConfig = (aid, valor) => patchCore({ origem: {
+    ...draft.core.origem,
+    anatomiasConfig: { ...anatomiasConfig, [aid]: { ...anatomiasConfig[aid], ...valor } },
+  } });
   const toggleAnatomia = (aid) => {
     const cur = anatomiasSel.includes(aid) ? anatomiasSel.filter((x) => x !== aid) : [...anatomiasSel, aid];
     patchCore({ origem: { ...draft.core.origem, anatomias: cur } });
@@ -9152,8 +9252,8 @@ function OrigemCard({ draft, derived, patch, patchCore, setOrigemId, setOrigemBo
                         const sel = anatomiasSel.includes(an.id);
                         const full = anatomiasSel.length >= anatTotal;
                         return (
+                          <React.Fragment key={an.id}>
                           <button
-                            key={an.id}
                             type="button"
                             disabled={!sel && full}
                             onClick={() => toggleAnatomia(an.id)}
@@ -9179,12 +9279,56 @@ function OrigemCard({ draft, derived, patch, patchCore, setOrigemId, setOrigemBo
                               {" "}{an.descricao}
                             </span>
                           </button>
+                          {sel && an.id === "arma_natural" && (
+                            <div className="pl-6">
+                              <Select
+                                aria-label="Tipo de Dano de Arma Natural"
+                                value={tipoDaArmaNatural(draft)}
+                                options={TIPOS_ARMA_NATURAL}
+                                onChange={(tipoDano) => setAnatomiaConfig(an.id, { tipoDano })}
+                              />
+                            </div>
+                          )}
+                          {sel && an.id === "corpo_especializado" && (
+                            <div className="pl-6">
+                              <Select
+                                aria-label="Perícia de Corpo Especializado"
+                                value={anatomiasConfig.corpo_especializado?.pericia ?? ""}
+                                placeholder="Escolher Perícia"
+                                options={(derived.testes?.pericias ?? []).map((p) => ({ value: p.id, label: p.nome }))}
+                                onChange={(pericia) => setAnatomiaConfig(an.id, { pericia })}
+                              />
+                            </div>
+                          )}
+                          {sel && an.id === "carapaca_mutante" && nd >= 10 && (
+                            <div className="pl-6">
+                              <Select aria-label="Resistência de Carapaça Mutante"
+                                value={anatomiasConfig.carapaca_mutante?.tipoDano ?? ""}
+                                placeholder="Escolher Resistência Física"
+                                options={TIPOS_ARMA_NATURAL}
+                                disabled={TIPOS_ARMA_NATURAL.some((t) => t.value === anatomiasConfig.carapaca_mutante?.tipoDano)}
+                                onChange={(tipoDano) => setAnatomiaConfig(an.id, { tipoDano })} />
+                            </div>
+                          )}
+                          </React.Fragment>
                         );
                       })}
                     </div>
                   </div>
                 )}
 
+                {["energia_antinatural", "vo_energia_antinatural"].includes(c.id) && (
+                  <Select aria-label="Aptidão de Aura de Energia Antinatural"
+                    value={derived.aptidaoAuraOrigem?.id ?? ""} placeholder="Escolher Aptidão de Aura"
+                    options={aptidoesDaCategoria("aura").filter((a) => a.id === draft.core.origem?.aptidaoAura
+                      || (a.requisitos ?? []).every((r) => avaliarRequisitoAptidao(r, derived.aptidaoAuraOrigem?.contexto ?? {}).ok))
+                      .map((a) => ({ value: a.id, label: a.nome }))}
+                    onChange={(aptidaoAura) => patchCore({ origem: { ...draft.core.origem, aptidaoAura } })} />
+                )}
+                {["energia_antinatural", "vo_energia_antinatural"].includes(c.id)
+                  && draft.core.origem?.aptidaoAura && !derived.aptidaoAuraOrigem?.valida && (
+                    <span className="flex gap-1.5 items-center text-xs text-amber-400"><AlertTriangle className="w-3 h-3" />Aptidão de Aura Indisponível</span>
+                  )}
                 {/* Característica que o Motor cobre EM PARTE: a parcela que
                     aplica já está no número, e o resto fica dito aqui em vez de
                     passar por automatizado. Substituiu o selo de `grants`, que
@@ -10247,6 +10391,7 @@ function TreinoLinha({
                   {opcoesDeEscolhaTreino(escolha, ctxReq.sistema).find((o) => o.id === escolhas[escolha.id])?.nome ?? escolhas[escolha.id]}
                 </p>
               ) : <Select
+                aria-label={`${linha.nome}: ${escolha.label}`}
                 value={escolhas[escolha.id] || ""}
                 onChange={(v) => onSetEscolha(linha.id, escolha.id, v)}
                 options={opcoesDeEscolhaTreino(escolha, ctxReq.sistema).map((opcao) => ({ value: opcao.id, label: opcao.nome }))}
@@ -10959,6 +11104,8 @@ const FONTE_CONCESSAO_ORIGEM = { rotulo: "Origem", titulo: "Concedida pela orige
 const FONTE_CONCESSAO_ESPECIALIZACAO = { rotulo: "Especialização", titulo: "Concedida pela Especialização" };
 
 function fonteDaConcessao(id, derived) {
+  const excedente = derived.aptidoesConcedidasExcedentes?.find((c) => c.id === id);
+  if (excedente) return { rotulo: excedente.fonte, titulo: excedente.fonte };
   if ((derived.aptidoesConcedidasEspecializacao ?? []).includes(id)) return FONTE_CONCESSAO_ESPECIALIZACAO;
   if ((derived.aptidoesConcedidasOrigem ?? []).includes(id)) return FONTE_CONCESSAO_ORIGEM;
   const addon = (derived.aptidoesConcedidasAddon ?? []).find((c) => c.id === id);
@@ -11671,6 +11818,20 @@ function TalentoConfiguracao({ talento, draft, derived, escolhida, onPatch }) {
   const pericias = (derived?.testes?.pericias ?? []).filter((p) => !ehPericiaOficio(p.id));
   const opcoesPericia = pericias.map((p) => ({ value: p.id, label: p.nome }));
 
+  if (talento.id === "tal_mestre_da_criacao") {
+    const oficios = Array.isArray(config.oficios) ? config.oficios.slice(0, 2) : [];
+    const opcoes = (derived?.testes?.pericias ?? []).filter((p) => ehPericiaOficio(p.id))
+      .map((p) => ({ value: p.id, label: p.oficios?.length ? `${p.nome} (${p.oficios.join(", ")})` : p.nome }));
+    return <div className="mt-2 border-t border-slate-800 pt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+      {[0, 1].map((indice) => <div key={indice}>
+        <FieldLabel>Ofício {indice + 1}</FieldLabel>
+        <Select aria-label={`Ofício ${indice + 1} do Mestre da Criação`} value={oficios[indice] ?? ""} disabled={!escolhida}
+          options={[{ value: "", label: "Nenhum" }, ...opcoes.filter((o) => o.value !== oficios[1 - indice])]}
+          onChange={(v) => { const proxima = [...oficios]; proxima[indice] = v || null; onPatch(talento.id, { oficios: proxima }); }} />
+      </div>)}
+    </div>;
+  }
+
   if (talento.id === "tal_mestre_das_armas") {
     const modo = config.modo === "grupo" ? "grupo" : "armas";
     const armas = Array.isArray(config.armas) ? config.armas.slice(0, 4) : [];
@@ -11718,9 +11879,6 @@ function TalentoConfiguracao({ talento, draft, derived, escolhida, onPatch }) {
               options={[{ value: "", label: "Nenhum" }, ...ARMA_GRUPOS]}
               disabled={!escolhida}
             />
-            <p className="mt-1 text-[10px] text-amber-400" role="status">
-              A tabela dos efeitos de crítico por grupo ainda não foi fornecida.
-            </p>
           </div>
         )}
       </div>
@@ -12622,6 +12780,11 @@ function SimulacaoCombateCard({ derived, patchCombate, gatilhosTreino = [], onGa
                 </BoolChip>
               ) : e.tipo === "multi" ? (
                 <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                  {e.maxSelecionados != null && (
+                    <span className="afty-rotulo text-[12px]" data-afty-teto={e.id}>
+                      {(Array.isArray(valor) ? valor : []).length} / {e.maxSelecionados}
+                    </span>
+                  )}
                   {opcoesDe(e).map((o) => {
                     const atuais = Array.isArray(valor) ? valor : [];
                     const ativo = atuais.includes(o.id);
@@ -12630,6 +12793,8 @@ function SimulacaoCombateCard({ derived, patchCombate, gatilhosTreino = [], onGa
                       <BoolChip
                         key={o.id}
                         ativo={ativo}
+                        bloqueado={!ativo && cheio}
+                        lockTitle="Teto do Grau Atingido"
                         title={o.title}
                         onToggle={() => patchCombate({
                           [e.id]: ativo ? atuais.filter((id) => id !== o.id) : cheio ? atuais : [...atuais, o.id],
@@ -12849,7 +13014,7 @@ function AltoNivel({ derived, setMelhoriaVezes, toggleLendaria, toggleEscolhaAlt
 
 function TabAptidoes({
   draft, derived, setAptidaoNivel, toggleAptidao, setAptidaoOpcao,
-  setAptidaoVezes, setAptidaoOpcaoRepetida,
+  setAptidaoVezes, setAptidaoOpcaoRepetida, setAptidaoExcedente,
 }) {
   // O motor resolve alocado + concedido (e devolve ao orçamento o que
   // não coube junto da concessão). A aba só exibe.
@@ -12980,6 +13145,20 @@ function TabAptidoes({
           ))}
         </div>
 
+        {trilhas.flatMap((trilha) => Array.from({ length: derived.aptidao.excedentes?.[trilha.key] ?? 0 }, (_, indice) => {
+          const valor = draft.aptidoesExcedentes?.[trilha.key]?.[indice] ?? "";
+          const ctxExcedente = { ...derived.aptidao.contextoExcedentes, trilhaDaAptidao: trilha.key,
+            escolhidas: derived.aptidoesEscolhidas.filter((id) => id !== valor) };
+          const opcoes = AFTY_APTIDOES.filter((a) => getCategoriaAptidao(a.categoria)?.trilha === trilha.key
+            && !(derived.aptidoesVetadas ?? []).includes(a.id)
+            && (a.id === valor || !derived.aptidoesEscolhidas.includes(a.id))
+            && (a.requisitos ?? []).every((r) => avaliarRequisitoAptidao(r, ctxExcedente).ok));
+          return <div key={`${trilha.key}:${indice}`} className="mt-3 max-w-sm">
+            <FieldLabel>Aptidão Excedente de {trilha.label} {indice + 1}</FieldLabel>
+            <Select aria-label={`Aptidão Excedente de ${trilha.label} ${indice + 1}`} value={valor} onChange={(id) => setAptidaoExcedente(trilha.key, indice, id)}
+              options={[{ value: "", label: "Nenhuma" }, ...opcoes.map((a) => ({ value: a.id, label: a.nome }))]} />
+          </div>;
+        }))}
         {overBudget && (
           <p className="text-[11px] text-rose-400 mt-3">
             Você gastou mais níveis do que o orçamento permite. Baixe uma trilha ou aumente o ND.

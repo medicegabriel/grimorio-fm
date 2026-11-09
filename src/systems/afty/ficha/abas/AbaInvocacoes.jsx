@@ -11,6 +11,7 @@ import { sinalDe } from "../../ui/formato";
 import { Vital } from "../../ui/vital";
 import { cssDaInvocacao, escopoDaInvocacao, SEM_CSS } from "../ficha-tema";
 import { useDestaque } from "../usar-destaque";
+import { resumoDasEntradas } from "../ficha-invocacao-campo";
 
 /**
  * ============================================================
@@ -279,8 +280,8 @@ function Bonus({ inv, aoAlternar }) {
           const linha = (
             <>
               <span className="flex-1 min-w-0 text-[12px] truncate">{a.nome}</span>
-              <span className="afty-rotulo text-[10px] whitespace-nowrap">{a.subLabel}</span>
-              <span className="afty-rotulo text-[10px] whitespace-nowrap">{a.alvoLabel}</span>
+              <span className="afty-rotulo text-[11px] whitespace-nowrap">{a.subLabel}</span>
+              <span className="afty-rotulo text-[11px] whitespace-nowrap">{a.alvoLabel}</span>
               {a.custoPE > 0 && (
                 <span className="afty-valor text-[11px]" data-afty-tom="custo">{a.custoPE} PE</span>
               )}
@@ -361,8 +362,8 @@ function MesaDaInvocacao({ inv, estado, acoes }) {
           a.caracId, a.ligada, () => acoes.aura(inv.id, a.caracId, !a.ligada),
           <>
             <span className="flex-1 min-w-0 text-[12px] truncate">{a.nome}</span>
-            {a.alvoLabel && <span className="afty-rotulo text-[10px] whitespace-nowrap">{a.alvoLabel}</span>}
-            <span className="afty-rotulo text-[10px] whitespace-nowrap">Na Aura</span>
+            {a.alvoLabel && <span className="afty-rotulo text-[11px] whitespace-nowrap">{a.alvoLabel}</span>}
+            <span className="afty-rotulo text-[11px] whitespace-nowrap">Na Aura</span>
             <span className="afty-valor text-[13px] whitespace-nowrap">
               {a.canalDono === "dadosNomeados" ? `1d${a.valor}` : sinalDe(a.valor)}
             </span>
@@ -373,7 +374,7 @@ function MesaDaInvocacao({ inv, estado, acoes }) {
           fm.id, inv.forma === fm.id, () => acoes.forma(inv.id, inv.forma === fm.id ? null : fm.id),
           <>
             <span className="flex-1 min-w-0 text-[12px] truncate">{fm.rotulo}</span>
-            {fm.detalhe && <span className="afty-rotulo text-[10px] whitespace-nowrap">{fm.detalhe}</span>}
+            {fm.detalhe && <span className="afty-rotulo text-[11px] whitespace-nowrap">{fm.detalhe}</span>}
           </>,
           !inv.emCampo, inv.emCampo ? "Ação Simples" : "Fora de Campo",
         ))}
@@ -454,7 +455,7 @@ function RegrasDoTipo({ inv }) {
               className="afty-valor text-[12px] whitespace-nowrap"
               titulo="Em combate e fora dele"
             />
-            <span className="afty-rotulo text-[10px] whitespace-nowrap">Manutenção {duracao.manutencao} PE</span>
+            <span className="afty-rotulo text-[11px] whitespace-nowrap">Manutenção {duracao.manutencao} PE</span>
           </div>
         )}
         {refeicao && (
@@ -467,9 +468,9 @@ function RegrasDoTipo({ inv }) {
           <div className={linha}>
             <span className="flex-1 min-w-0 text-[12px] truncate">Reparo</span>
             {reparo.vias.length > 0 && (
-              <span className="afty-rotulo text-[10px]">{reparo.vias.join(" ou ")}</span>
+              <span className="afty-rotulo text-[11px]">{reparo.vias.join(" ou ")}</span>
             )}
-            <span className="afty-rotulo text-[10px] whitespace-nowrap">Custo {reparo.custo}</span>
+            <span className="afty-rotulo text-[11px] whitespace-nowrap">Custo {reparo.custo}</span>
             {reparo.cd != null && (
               <NumeroComFontes
                 valor={`CD ${reparo.cd}`}
@@ -503,9 +504,9 @@ function HerancasDaInvocacao({ inv }) {
           <div key={h.id} className="afty-linha px-2.5 py-1 flex items-center gap-2 flex-wrap"
             style={h.profundidade ? { marginLeft: `${h.profundidade * 0.75}rem` } : undefined}>
             <span className="flex-1 min-w-0 text-[12px] truncate">{h.origemNome}</span>
-            {h.bonus && <span className="afty-rotulo text-[10px]">{h.bonus}</span>}
-            {h.acao && <span className="afty-rotulo text-[10px]">{h.acao}</span>}
-            {h.caracteristica && <span className="afty-rotulo text-[10px]">{h.caracteristica}</span>}
+            {h.bonus && <span className="afty-rotulo text-[11px]">{h.bonus}</span>}
+            {h.acao && <span className="afty-rotulo text-[11px]">{h.acao}</span>}
+            {h.caracteristica && <span className="afty-rotulo text-[11px]">{h.caracteristica}</span>}
           </div>
         ))}
       </div>
@@ -531,7 +532,7 @@ function LinhaDeTeste({ nome, bonus, partes, mestre = false, treinado = true, ro
       <span className="flex-1 min-w-0 text-[12px] truncate">{nome}</span>
       {mestre
         ? <span className="afty-chip">Mestre</span>
-        : !treinado && <span className="afty-rotulo text-[10px]">Não Treinado</span>}
+        : !treinado && <span className="afty-rotulo text-[11px]">Não Treinado</span>}
       <NumeroComFontes
         valor={bonus}
         partes={partes}
@@ -601,7 +602,7 @@ function Acao({ a, nomeDono, margemCritico = 20, criticoBrutal = false, rolar })
     ? [...grupos, { dados: 1, faces: Math.max(...grupos.map((g) => g.faces)), apenasCritico: true }]
     : grupos;
   const rotulo = `${nomeDono} · ${a.nome || "Ação"}`;
-  const chip = "afty-rotulo text-[10px] whitespace-nowrap";
+  const chip = "afty-rotulo text-[11px] whitespace-nowrap";
 
   return (
     <div className="afty-linha px-2.5 py-1.5 space-y-1">
@@ -1194,7 +1195,7 @@ function FichaDoShikigami({ inv, estado, rolar, acoes, aoTemar, fusao = null, he
                         {c.nome || "Característica"}
                       </span>
                       {c.requerGatilho && (
-                        <span className="afty-rotulo text-[10px]" title="Exige um gatilho específico">Gatilho</span>
+                        <span className="afty-rotulo text-[11px]" title="Exige um gatilho específico">Gatilho</span>
                       )}
                       {resumoCaracteristica(c) && (
                         <span className="afty-valor text-[12px] whitespace-nowrap">{resumoCaracteristica(c)}</span>
@@ -1229,7 +1230,7 @@ function FichaDoShikigami({ inv, estado, rolar, acoes, aoTemar, fusao = null, he
                       <>
                         <span className="flex-1 min-w-0 text-[12px] truncate">{o.nome}</span>
                         {marcavel && (
-                          <span className="afty-rotulo text-[10px] whitespace-nowrap">
+                          <span className="afty-rotulo text-[11px] whitespace-nowrap">
                             {noInicio ? "No Início do Combate" : "Na Entrada"}
                           </span>
                         )}
@@ -1354,7 +1355,7 @@ function Horda({ h, rolar, estado = null, entrada = null, acoes = null }) {
         {/* `membros` é a lista de ids, e imprimi-la saía como "M1,M2 Membros".
             O número é o `membrosCount`. */}
         {h.membrosCount != null && (
-          <span className="afty-rotulo text-[10px] whitespace-nowrap">{h.membrosCount} Membros</span>
+          <span className="afty-rotulo text-[11px] whitespace-nowrap">{h.membrosCount} Membros</span>
         )}
         {h.custo != null && (
           <span className="afty-valor text-[11px]" data-afty-tom="custo">{h.custo} PE</span>
@@ -1388,7 +1389,7 @@ function Horda({ h, rolar, estado = null, entrada = null, acoes = null }) {
         </div>
       )}
       {h.liderHorda && (
-        <span className="afty-rotulo text-[10px]">
+        <span className="afty-rotulo text-[11px]">
           Líder de Horda: {h.liderHorda.caracNome} ({h.liderHorda.membroNome})
         </span>
       )}
@@ -1538,6 +1539,9 @@ export default function AbaInvocacoes({ derived, rolar, destaque, estadoDe, entr
      limites (autor, 2026-10-03). O estado ainda decide quem está em campo. */
   const emCampo = derived.invocacoes?.emCampo ?? 0;
   const nHordasEmCampo = derived.hordas?.emCampo ?? 0;
+  /* CX6: a conta da ação Invocar. Só avisa (autor, 2026-11-06): quem passa do número que a ação traz vê o chip âmbar. */
+  const linhasDaMesa = [...fileira.map((i) => i.id), ...hordas.map((h) => entradaDeMesaDaHorda(h)?.id ?? h.id)].map((id) => estadoDe(id));
+  const entradasDaRodada = resumoDasEntradas(linhasDaMesa, linhasDaMesa[0]?.rodadaDaSessao ?? 0, controle?.invocarPorAcao);
   /* O Mecha a formar: os pares de Marionetes ativas que a regra aceita. */
   const marionetesAtivas = invocacoes.filter((i) => i.regras?.familia === "marionete"
     && estadoDe(i.id).estado === "ativa" && !estadoDe(i.id).emComposto);
@@ -1597,6 +1601,12 @@ export default function AbaInvocacoes({ derived, rolar, destaque, estadoDe, entr
               <span className="afty-chip" title="Invocações que a ação Invocar traz">
                 Por Invocar {controle.invocarPorAcao}
               </span>
+              {entradasDaRodada.excede && (
+                <span className="afty-chip" data-afty-tom="aviso" title="Invocações que entraram nesta rodada, e quantas a ação Invocar traz">
+                  <AlertTriangle className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+                  Entradas na Rodada {entradasDaRodada.entradas} / {entradasDaRodada.porAcao}
+                </span>
+              )}
               {/* Os comandos separados (2026-09-30): a Ação Comum comanda Complexas e
                   a Bônus, Simples. */}
               <span className="afty-chip" title="Ações Complexas por Ação Comum">

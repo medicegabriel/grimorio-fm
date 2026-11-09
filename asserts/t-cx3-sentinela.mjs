@@ -1,0 +1,124 @@
+import { register } from "node:module";
+register('data:text/javascript,export async function resolve(s,c,n){try{return await n(s,c)}catch(e){if(s.startsWith(".")&&!s.endsWith(".js"))return n(s+".js",c);throw e}}', import.meta.url);
+const R = new URL("../src/systems/afty/", import.meta.url).href;
+const { deriveAfty } = await import(R + "afty-derive.js");
+const { createBlankAfty } = await import(R + "afty-schema.js");
+const { aplicarAddons } = await import(R + "afty-addons.js");
+const { preparaOportunidadeConteudo, preparaReacaoSentinela } = await import(R + "ficha/ficha-conteudo-manobras.js");
+const { confirmaAtaqueConteudo } = await import(R + "ficha/ficha-conteudo-combate.js");
+const { rolarTeste, rolarDano } = await import(R + "ficha/ficha-rolagem.js");
+const { rolaSorte, escolheSorte } = await import(R + "ficha/ficha-conteudo-uso.js");
+const { opcoesDeriveDaSessao } = await import(R + "ficha/ficha-opcoes-derive.js");
+const S = await import(R + "ficha/ficha-sessao.js");
+const { usoDe } = await import(R + "ficha/ficha-uso-estado.js");
+let ok = 0, seq = 0;
+const bad = [], t = (nome, real, esp) => JSON.stringify(real) === JSON.stringify(esp) ? ok++ : bad.push(`${nome}: ${JSON.stringify(real)} != ${JSON.stringify(esp)}`);
+const p = () => ({ opId: `sentinela-${++seq}`, registraAcao: true });
+function ficha(sistema, id, talentos = []) {
+  const c = createBlankAfty(); c.rulesVersion = sistema; c.id = id; c.name = id; c.core.nd = 12; c.attrMethod = "fixos";
+  c.attributes = { forca: 15, destreza: 14, constituicao: 13, inteligencia: 10, sabedoria: 12, presenca: 8 };
+  c.core.origem = { id: "inato", bonusAtributos: { forca: 2, destreza: 1 } }; c.especializacoes = [{ id: "combatente", nivel: 12 }];
+  c.habilidadesGerais = sistema === "afty" ? ["ger_especializacao"] : []; c.pericias = { atletismo: "treinado", feiticaria: "treinado" }; c.talentos = talentos;
+  return c;
+}
+const inicio = (d) => ({ ...S.iniciaCombate(S.sessaoEmBranco(d), d), rodada: 1 });
+const dd = (c, s) => deriveAfty({ ...c, combate: s.combate, buffsSessao: s.buffs }, opcoesDeriveDaSessao(s));
+function rola(s, d, pedido, natural = 17) {
+  const linha = pedido.linhaArma, ataque = rolarTeste(pedido, () => (natural - 1) / 20);
+  const dano = rolarDano({ rotulo: linha.nome, linhaArma: linha, grupos: linha.gruposDano, modoDano: ataque.critico ? "critico" : "normal" }, () => 0);
+  return { s: S.registraRolagem(S.registraRolagem(s, ataque), dano), ataque, dano };
+}
+function ataqueNormal(s, d, sa, da, alvoId, natural = 17) {
+  const l = d.dano.entradas.find((x) => x.id === "basico"), r = rola(s, d, { tipoTeste: "ataque", rotulo: l.nome, bonus: l.acerto, margem: l.margemCritico, linhaArma: l }, natural);
+  const result = confirmaAtaqueConteudo(r.s, d, sa, da, { ataqueId: r.ataque.id, danoId: r.dano.id, alvoId }, p());
+  if (!result.aplicado) throw Error(result.erro); return { ...result, ...r, s: result.sessao };
+}
+aplicarAddons([]);
+for (const sistema of ["player", "afty"]) {
+  const c = ficha(sistema, "sentinela", ["tal_tecnicas_do_sentinela", "tal_favorecido_pela_sorte"]), ca = ficha(sistema, "atacante"), terceiro = ficha(sistema, "terceiro");
+  const d = deriveAfty(c), da = deriveAfty(ca), dt = deriveAfty(terceiro), s = inicio(d), sa = inicio(da), st = inicio(dt);
+  t(`${sistema} orçamento e acesso válidos`, [d.talentos.inacessiveis, d.habilidades.excedeu, d.testes.orcamento.excedeu], [[], false, false]);
+  const e = { fonte: "sentinela", armaId: "basico", chaveArma: d.dano.entradas.find((l) => l.id === "basico").chaveArma, alvoId: ca.id, gatilhoValido: true }, ped = p();
+  const go = preparaOportunidadeConteudo(s, d, e, ped);
+  if (!go.aplicado) throw Error(go.erro);
+  t(`${sistema} GO sem Perceber é normal`, [go.pedidoRolagem.modo, go.pedidoRolagem.contextoConteudo.tipo, go.sessao.especializacaoSessao.reacoesGastas], ["normal", "golpeOportunidade", 1]);
+  t(`${sistema} não paga ação comum nem PE`, [go.sessao.uso.acoes.gastas, go.sessao.peAtual], [s.uso.acoes.gastas, s.peAtual]);
+  t(`${sistema} respeita identidade da preparação`, preparaOportunidadeConteudo(go.sessao, d, e, ped).repetida, true);
+  const saldoExtra = { ...go.sessao, especializacaoSessao: { ...go.sessao.especializacaoSessao, reacoesExtras: 2 } };
+  t(`${sistema} só Sentinela não ganha segunda oportunidade`, preparaOportunidadeConteudo(saldoExtra, d, e, p()).sessao === saldoExtra, true);
+  const r = rola(go.sessao, d, go.pedidoRolagem), entrada = { ataqueId: r.ataque.id, danoId: r.dano.id, alvoId: ca.id }, confirmacao = p();
+  const fim = confirmaAtaqueConteudo(r.s, d, sa, da, entrada, confirmacao);
+  if (!fim.aplicado) throw Error(fim.erro);
+  const af = fim.sessaoAlvo.uso.ativos["tal_tecnicas_do_sentinela:movimento"];
+  t(`${sistema} acerto reduz até o fim do alvo`, [fim.ataque.acertou, af.duracao.tipo, dd(ca, fim.sessaoAlvo).movimento], [true, "fimDoTurno", da.movimento - 4.5]);
+  t(`${sistema} efeito tem fonte nativa`, dd(ca, fim.sessaoAlvo).partes.movimento.some((x) => x.label === "Técnicas do Sentinela" && x.valor === -4.5), true);
+  t(`${sistema} recibo explica a redução`, [fim.sessao.log[0].reducaoMovimento, fim.sessao.log[0].fontesSentinela], [4.5, [{ label: "Técnicas do Sentinela", valor: -4.5 }]]);
+  t(`${sistema} confirmação não duplica`, confirmaAtaqueConteudo(fim.sessao, d, fim.sessaoAlvo, da, entrada, confirmacao).repetida, true);
+  const alvoRelido = S.normalizaSessao(JSON.parse(JSON.stringify(fim.sessaoAlvo)), da);
+  t(`${sistema} efeito persiste ao reabrir`, [dd(ca, alvoRelido).movimento, alvoRelido.uso.ativos[af.id].duracao.tipo], [da.movimento - 4.5, "fimDoTurno"]);
+  const emissorAcabou = S.encerraTurnoFicha(fim.sessao, d);
+  t(`${sistema} fim do emissor não termina prejuízo`, [usoDe(emissorAcabou).ativos[af.id] ?? null, dd(ca, fim.sessaoAlvo).movimento], [null, da.movimento - 4.5]);
+  const alvoAcabou = S.encerraTurnoFicha(alvoRelido, dd(ca, alvoRelido));
+  t(`${sistema} fim do alvo retira buff e uso`, [alvoAcabou.uso.ativos[af.id] ?? null, dd(ca, alvoAcabou).movimento, alvoAcabou.buffs.some((b) => b.nome === "Técnicas do Sentinela")], [null, da.movimento, false]);
+  t(`${sistema} impede trocar alvo preparado`, confirmaAtaqueConteudo(r.s, d, st, dt, { ...entrada, alvoId: terceiro.id }, p()).sessao === r.s, true);
+  const semUso = { ...r.s, uso: { ...r.s.uso, ops: [] } };
+  t(`${sistema} contexto sem operação real recusa`, confirmaAtaqueConteudo(semUso, d, sa, da, entrada, p()).sessao === semUso, true);
+  const velha = S.proximaRodada(r.s, d).sessao;
+  t(`${sistema} oportunidade antiga não aplica`, confirmaAtaqueConteudo(velha, d, sa, da, entrada, p()).sessao === velha, true);
+  const erro = rola(go.sessao, d, go.pedidoRolagem, 1);
+  const errou = confirmaAtaqueConteudo(erro.s, d, sa, da, { ataqueId: erro.ataque.id, alvoId: ca.id }, p());
+  t(`${sistema} erro não reduz Movimento`, [errou.aplicado, errou.ataque.acertou, dd(ca, errou.sessaoAlvo).movimento], [true, false, da.movimento]);
+  const normal = ataqueNormal(s, d, sa, da, ca.id);
+  t(`${sistema} acerto comum não é oportunidade`, dd(ca, normal.sessaoAlvo).movimento, da.movimento);
+  const sem = deriveAfty({ ...c, talentos: [] });
+  t(`${sistema} exige Talento para oferecer GO`, preparaOportunidadeConteudo(s, sem, e, p()).sessao === s, true);
+  const baixoNivel = deriveAfty({ ...c, core: { ...c.core, nd: 4 }, especializacoes: [{ id: "combatente", nivel: 4 }] });
+  t(`${sistema} requisito de nível impede oportunidade`, preparaOportunidadeConteudo(s, baixoNivel, e, p()).sessao === s, true);
+  t(`${sistema} remover Talento impede redução`, dd(ca, confirmaAtaqueConteudo(r.s, sem, sa, da, entrada, p()).sessaoAlvo).movimento, da.movimento);
+  const imune = { ...ca, buffsSessao: [{ id: "rd", nome: "Proteção de Teste", canal: "rdGeral", expr: "1000" }] }, di = deriveAfty(imune), si = inicio(di);
+  const zerado = confirmaAtaqueConteudo(r.s, d, si, di, entrada, p());
+  t(`${sistema} dano zero mantém o acerto e redução`, [zerado.ataque.acertou, zerado.calculos.every((x) => x.final === 0), dd(imune, zerado.sessaoAlvo).movimento], [true, true, di.movimento - 4.5]);
+  const ambos = deriveAfty({ ...c, talentos: [...c.talentos, "tal_perceber_oportunidade"] });
+  const g1 = preparaOportunidadeConteudo(s, ambos, e, p()), g2 = preparaOportunidadeConteudo({ ...g1.sessao, especializacaoSessao: { ...g1.sessao.especializacaoSessao, reacoesExtras: 1 } }, ambos, e, p());
+  t(`${sistema} Perceber conserva vantagem e duas reações`, [g1.pedidoRolagem.modo, g2.aplicado, g2.sessao.especializacaoSessao.reacoesGastas], ["vantagem", true, 2]);
+  const rr = rola(g2.sessao, ambos, g2.pedidoRolagem), renovada = confirmaAtaqueConteudo(rr.s, ambos, fim.sessaoAlvo, dd(ca, fim.sessaoAlvo), { ataqueId: rr.ataque.id, danoId: rr.dano.id, alvoId: ca.id }, p());
+  t(`${sistema} dois acertos não somam prejuízo igual`, [dd(ca, renovada.sessaoAlvo).movimento, renovada.sessaoAlvo.buffs.filter((b) => b.nome === "Técnicas do Sentinela").length], [da.movimento - 4.5, 1]);
+  const sorte = rolaSorte(r.s, d, { id: r.ataque.id, rng: () => 0.99 }, p());
+  t(`${sistema} Sorte pendente não aplica`, confirmaAtaqueConteudo(sorte.sessao, d, sa, da, entrada, p()).sessao === sorte.sessao, true);
+  const escolhida = escolheSorte(sorte.sessao, d, { id: r.ataque.id, escolha: "original" }, p());
+  t(`${sistema} Sorte conserva oportunidade`, confirmaAtaqueConteudo(escolhida.sessao, d, sa, da, entrada, p()).sessaoAlvo.uso.ativos[af.id].duracao.tipo, "fimDoTurno");
+  const ataqueTerceiro = ataqueNormal(sa, da, st, dt, terceiro.id, 1);
+  const eReacao = { voceId: c.id, atacanteId: ca.id, ataqueId: ataqueTerceiro.ataque.id, armaId: "basico", chaveArma: e.chaveArma, emAlcanceEGatilhoAtual: true }, pr = p();
+  const reacao = preparaReacaoSentinela(s, d, ataqueTerceiro.sessao, da, eReacao, pr);
+  if (!reacao.aplicado) throw Error(reacao.erro);
+  t(`${sistema} ataque gatilho pode errar`, ataqueTerceiro.ataque.natural, 1);
+  t(`${sistema} reação gasta saldo real, sem PE/comum`, [reacao.sessao.especializacaoSessao.reacoesGastas, reacao.sessao.uso.acoes.gastas, reacao.sessao.peAtual, reacao.sessaoAlvo === ataqueTerceiro.sessao], [1, s.uso.acoes.gastas, s.peAtual, true]);
+  t(`${sistema} reação não é GO ou recebe vantagem`, [reacao.pedidoRolagem.contextoConteudo.tipo, reacao.pedidoRolagem.modo, reacao.sessao.usos["rodada:uso:golpe-oportunidade"] ?? 0], ["reacaoSentinela", "normal", 0]);
+  const reacaoRolada = rola(reacao.sessao, d, reacao.pedidoRolagem), reacaoFim = confirmaAtaqueConteudo(reacaoRolada.s, d, ataqueTerceiro.sessao, da, { ataqueId: reacaoRolada.ataque.id, danoId: reacaoRolada.dano.id, alvoId: ca.id }, p());
+  t(`${sistema} reação acertada não reduz Movimento`, [reacaoFim.ataque.acertou, dd(ca, reacaoFim.sessaoAlvo).movimento], [true, da.movimento]);
+  t(`${sistema} idempotência da reação`, preparaReacaoSentinela(reacao.sessao, d, ataqueTerceiro.sessao, da, eReacao, pr).repetida, true);
+  const saldo = { ...reacao.sessao, especializacaoSessao: { ...reacao.sessao.especializacaoSessao, reacoesExtras: 2 } };
+  t(`${sistema} mesma reação não repete por outro op`, preparaReacaoSentinela(saldo, d, ataqueTerceiro.sessao, da, eReacao, p()).sessao === saldo, true);
+  const novoAtaque = ataqueNormal(ataqueTerceiro.sessao, da, ataqueTerceiro.sessaoAlvo, dt, terceiro.id);
+  t(`${sistema} outro gatilho não dribla uma reação por rodada`, preparaReacaoSentinela(saldo, d, novoAtaque.sessao, da, { ...eReacao, ataqueId: novoAtaque.ataque.id }, p()).sessao === saldo, true);
+  const relida = S.normalizaSessao(JSON.parse(JSON.stringify(reacao.sessao)), d);
+  t(`${sistema} salvar conserva custo e bloqueio`, [relida.especializacaoSessao.reacoesGastas, preparaReacaoSentinela(relida, d, ataqueTerceiro.sessao, da, eReacao, p()).aplicado], [1, false]);
+  const voce = ataqueNormal(sa, da, s, d, c.id);
+  t(`${sistema} ataque contra você não aciona`, preparaReacaoSentinela(s, d, voce.sessao, da, { ...eReacao, ataqueId: voce.ataque.id }, p()).sessao === s, true);
+  for (const extra of [{ emAlcanceEGatilhoAtual: false }, { voceId: null }, { atacanteId: c.id }, { ataqueId: "ausente" }, { armaId: "ausente" }]) t(`${sistema} recusa ${JSON.stringify(extra)}`, preparaReacaoSentinela(s, d, ataqueTerceiro.sessao, da, { ...eReacao, ...extra }, p()).sessao === s, true);
+  t(`${sistema} sem Talento não reage`, preparaReacaoSentinela(s, sem, ataqueTerceiro.sessao, da, eReacao, p()).sessao === s, true);
+  t(`${sistema} requisito de nível impede reação`, preparaReacaoSentinela(s, baixoNivel, ataqueTerceiro.sessao, da, eReacao, p()).sessao === s, true);
+  const opo = deriveAfty({ ...ca, talentos: ["tal_perceber_oportunidade"] }), foraDoTurno = S.encerraTurnoFicha(inicio(opo), opo);
+  const goOpositor = preparaOportunidadeConteudo(foraDoTurno, opo, { armaId: "basico", chaveArma: e.chaveArma, alvoId: terceiro.id, gatilhoValido: true }, p());
+  const goOpoRolado = rola(goOpositor.sessao, opo, goOpositor.pedidoRolagem), goOpoFim = confirmaAtaqueConteudo(goOpoRolado.s, opo, st, dt, { ataqueId: goOpoRolado.ataque.id, danoId: goOpoRolado.dano.id, alvoId: terceiro.id }, p());
+  t(`${sistema} reação também responde a ataque fora do turno próprio`, preparaReacaoSentinela(s, d, goOpoFim.sessao, opo, { ...eReacao, ataqueId: goOpoRolado.ataque.id }, p()).aplicado, true);
+  t(`${sistema} turno novo do atacante invalida gatilho velho`, preparaReacaoSentinela(s, d, S.iniciaTurnoFicha(ataqueTerceiro.sessao, da), da, eReacao, p()).sessao === s, true);
+  for (const nome of ["Inconsciente", "Desorientado"]) {
+    const impedida = S.defineCondicoes(s, [{ id: "impede", nome }]);
+    t(`${sistema} ${nome} impede reação`, preparaReacaoSentinela(impedida, d, ataqueTerceiro.sessao, da, eReacao, p()).sessao === impedida, true);
+  }
+  const esgotada = { ...s, especializacaoSessao: { ...s.especializacaoSessao, reacoesGastas: 1 } };
+  t(`${sistema} sem reação recusa sem PE ou ação`, preparaReacaoSentinela(esgotada, d, ataqueTerceiro.sessao, da, eReacao, p()).sessao === esgotada, true);
+}
+if (bad.length) { console.error(bad.join("\n")); process.exit(1); }
+console.log(`TODOS OS ${ok} ASSERTS PASSARAM`);

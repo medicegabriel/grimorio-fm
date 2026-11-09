@@ -35,7 +35,7 @@ export function ContadorDeUsos({ nome, usos, gastos, onUso }) {
   const rotulo = usos.rotulo || "Usos";
   return (
     <span className="flex items-center gap-1 flex-shrink-0" data-afty-usos={usos.chave}>
-      <span className="afty-rotulo text-[10px]">{rotulo}</span>
+      <span className="afty-rotulo text-[11px]">{rotulo}</span>
       <button
         type="button"
         className="afty-passo"
@@ -57,7 +57,7 @@ export function ContadorDeUsos({ nome, usos, gastos, onUso }) {
   );
 }
 
-function ItemDeFicha({ item, aberto, onAberto, favorito, onFavorito, destacado, contadorUsos = null }) {
+function ItemDeFicha({ item, aberto, onAberto, favorito, onFavorito, destacado, contadorUsos = null, renderOperacao = null }) {
   const raiz = useDestaque(destacado);
 
   return (
@@ -93,7 +93,7 @@ function ItemDeFicha({ item, aberto, onAberto, favorito, onFavorito, destacado, 
         </button>
 
         {item.opcoes.length > 0 && !aberto && (
-          <span className="afty-rotulo text-[10px] truncate max-w-[10rem] hidden sm:block">
+          <span className="afty-rotulo text-[11px] truncate max-w-[10rem] hidden sm:block">
             {item.opcoes.map((o) => o.nome).join(", ")}
           </span>
         )}
@@ -143,6 +143,7 @@ function ItemDeFicha({ item, aberto, onAberto, favorito, onFavorito, destacado, 
             </div>
           )}
           {item.texto && <p className="afty-texto">{item.texto}</p>}
+          {renderOperacao?.(item)}
           {item.opcoes.length > 0 && (
             <div className="mt-2 space-y-1">
               {item.opcoes.map((o) => (

@@ -28,6 +28,7 @@ export function opcoesDeriveDaSessao(sessao) {
     bloodfeast: sessao.bloodfeast,
     ...(sessao.dominioInato ? { dominioInato: sessao.dominioInato } : {}),
     vidaAtual: sessao.hpAtual,
+    usosOrigemAtivos: sessao.uso?.ativos,
     almaAtual: sessao.almaAtual,
     ultimoFeiticoDanoId: sessao.ultimoFeiticoDanoId,
     rituais: sessao.rituais,

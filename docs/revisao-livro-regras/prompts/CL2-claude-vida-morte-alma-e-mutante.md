@@ -1,4 +1,6 @@
-# CL2: Vida, morte, Alma e Mutante
+# CL2: Vida, morte e Alma (o Mutante foi descartado)
+
+> **⚠ AVISO (autor, 2026-10-30): O CORPO AMALDIÇOADO MUTANTE FOI ABANDONADO E EXCLUÍDO DO SITE EM DEFINITIVO.** Ignore toda parcela deste prompt que o cite (três núcleos, primário, fixas e versáteis, troca por diferença, interface dos núcleos). Não implemente, não reabra e não pergunte de novo: **desista da ideia e vá fazer outra coisa.** O resto do escopo continua valendo. Ver `AGENTS.md`, seção "Itens descartados pelo autor".
 
 Você está num chat novo do Claude. Quero que execute o lote CL2 do fechamento do Livro de Regras no Grimório, começando pela verificação de que o trabalho pedido faz sentido na base atual, antes de programar.
 
@@ -51,26 +53,25 @@ Trabalhe até concluir todo o escopo confirmado e independente. Não declare o l
 
 ## Escopo deste lote
 
-Você ficou com o núcleo vital e o modelo do Corpo Amaldiçoado Mutante:
+Você ficou com o núcleo vital:
 - Saldo negativo geral, Portas da Morte, sucessos/falhas, naturais, estabilização por Medicina/cura, dano enquanto morrendo e morte por dano massivo.
 - Ferimentos Complexos: gatilho, escolha/rolagem, efeito, tratamento, persistência e recuperação.
 - Dano e cura de Alma, elegibilidade e teste de Integridade antes da aplicação.
 - Pilha de Dados de Vida por classe, gasto, rolagem, Constituição e recuperação, separada da rolagem para aumentar PV ao subir de nível.
-- Origem Corpo Amaldiçoado Mutante: forma sintética, três núcleos, primário, atributos redistribuídos, escolhas fixas/versáteis, Feitiços/recursos, limites pelo primário, troca por diferença, dano/destruição e restrição de multiclasse.
 
-Revalide N01, N09 e N10 em fichas válidas e operações reais. Confira se tratamentos especiais do Restringido, invocações ou addons já resolvem parte do problema. Preserve essas exceções ao generalizar o estado.
+Revalide N09 e N10 em fichas válidas e operações reais. Confira se tratamentos especiais do Restringido, invocações ou addons já resolvem parte do problema. Preserve essas exceções ao generalizar o estado.
 
 ## Pontos de partida e dependências
 
-Leia afty-schema.js, afty-origens.js, afty-derive.js, afty-cura.js, ficha/ficha-sessao.js, ficha/ficha-especializacoes.js e os testes de Alma, cura e queda. Leia o contrato real de CL1. A interface do Mutante é principalmente de CX2, e a integração geral é de CX6.
+Leia afty-schema.js, afty-origens.js, afty-derive.js, afty-cura.js, ficha/ficha-sessao.js, ficha/ficha-especializacoes.js e os testes de Alma, cura e queda. Leia o contrato real de CL1. A integração geral é de CX6.
 
 Fontes: Livro p.20, 39 a 41, 46, 47, 228, 311 a 314 e 335. O grupo de dois núcleos de Corpo Amaldiçoado em invocações não é o modelo dos três núcleos do personagem.
 
 ## Restrições específicas e resultado esperado
 
-Não invente um segundo sistema de vida para cada origem. O Mutante deve reutilizar o núcleo vital comum e adicionar somente suas particularidades. Não copie as regras de morte da invocação para o personagem.
+Não invente um segundo sistema de vida para cada origem. Não copie as regras de morte da invocação para o personagem.
 
 A existência de Dados de Vida não autoriza substituir PV fixo por rolado, mudar o botão único de descanso ou aplicar diferenças não decididas do Afty. Mantenha essas decisões isoladas e entregue as operações que já tenham regra e autorização.
 
-Comprove que vida negativa e ferimentos sobrevivem ao salvamento, cura não apaga dívida indevidamente, recursos/tetos do Mutante obedecem ao primário e a troca preserva a diferença correta. Entregue contrato de consumo para CX2, CX3, CX4 e CX5, compatível com fichas antigas e sem exigir que o Codex refaça as regras.
+Comprove que vida negativa e ferimentos sobrevivem ao salvamento, cura não apaga dívida indevidamente. Entregue contrato de consumo para CX2, CX3, CX4 e CX5, compatível com fichas antigas e sem exigir que o Codex refaça as regras.
 

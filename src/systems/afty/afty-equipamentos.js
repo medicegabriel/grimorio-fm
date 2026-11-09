@@ -607,6 +607,17 @@ export const ARMA_ESPECIAIS = [
 const ESPECIAL_BY_ID = Object.fromEntries(ARMA_ESPECIAIS.map((e) => [e.id, e]));
 export const getEspecial = (id) => ESPECIAL_BY_ID[id] ?? null;
 
+/**
+ * O texto do traço Especial de uma arma, venha ela do livro ou da bancada.
+ * A arma do livro responde pelo id de `ARMA_ESPECIAIS`, e a arma criada responde
+ * por si (`especialTexto`), que é o que a bancada guarda. Sem traço, vazio.
+ */
+export function textoEspecialDaArma(def) {
+  if (!def) return "";
+  if (typeof def.especialTexto === "string" && def.especialTexto.trim()) return def.especialTexto.trim();
+  return def.especial ? getEspecial(def.especial)?.descricao ?? "" : "";
+}
+
 /* ============================================================ */
 /* ARMAS · CATÁLOGO                                             */
 /* ============================================================ */
@@ -1081,7 +1092,15 @@ export function saneiaArmaCustom(bruta) {
     // A marca que a UI usa para dar botão de editar e apagar, e para o chip.
     custom: true,
   };
-  return aplicaReceitaNiveis(arma, bruta.niveis);
+  const pronta = aplicaReceitaNiveis(arma, bruta.niveis);
+  /* O traço Especial da arma criada (CX5). O texto era mostrado só na bancada, e
+     a linha do inventário e a Ficha Final leem `descricao`. A arma criada passa
+     a responder por si, como a do livro responde pelo id do traço. O texto da
+     receita do guia tem precedência sobre o da bancada de Pontos de Criação. */
+  const textoEspecial = props.especial
+    ? String(pronta.especialTexto ?? criacao?.especialTexto ?? "").trim()
+    : "";
+  return textoEspecial ? { ...pronta, especialTexto: textoEspecial, descricao: textoEspecial } : pronta;
 }
 
 /**
@@ -1968,7 +1987,9 @@ export const ITENS_ESPECIAIS = [
     descricao: "Um conjunto reforçado de suplementos e substâncias que aumentam a recuperação do vigor físico. Como uma ação bônus, é possível consumir o mix, recuperando 6 pontos de estamina." },
   { id: "it_pulseira_magistral", nome: "Pulseira Magistral", categoria: "acessorio", custo: 2,
     descricao: "Uma pulseira cujas propriedades conseguem extrair mais as capacidades de quem a usa, melhorando uma perícia. Enquanto estiver usando a pulseira magistral, o usuário se torna treinado em uma perícia a sua escolha.",
-    efeito: { periciaTreinada: 1, aplicado: false } },
+    // A perícia é ESCOLHA da entrada do inventário (`escolhaPericia`). Sem a
+    // escolha a linha não emite nada e a aba avisa. Ver `resolveEquipamentos`.
+    efeito: { escolhePericia: "treinado", aplicado: true } },
   { id: "it_remedio_intermediario", nome: "Remédio Intermediário", categoria: "farmaco", custo: 2,
     descricao: "Um remédio mais complexo, capaz de forçar uma reação regenerativa avançada no corpo. Como uma ação comum, é possível consumir o remédio e gastar seus dados de vida para se curar, com um limite igual a oito dados de vida." },
   { id: "it_simbolo_de_vida_florescente", nome: "Símbolo de Vida Florescente", categoria: "talisma", custo: 2,
@@ -2013,7 +2034,9 @@ export const ITENS_ESPECIAIS = [
     efeito: { atributo: { inteligencia: 2 }, superaLimite: true, aplicado: true } },
   { id: "it_pulseira_primacial", nome: "Pulseira Primacial", categoria: "acessorio", custo: 3,
     descricao: "Uma pulseira especial, a qual consegue levar além uma perícia do usuário. Enquanto estiver usando a pulseira primacial, o usuário se torna mestre em uma perícia a sua escolha, desde que já seja treinado nela.",
-    efeito: { periciaMestre: 1, aplicado: false } },
+    // "desde que já seja treinado nela": o Motor só concede a faixa de Mestre
+    // quando a perícia escolhida já tem treino por outra fonte.
+    efeito: { escolhePericia: "mestre", aplicado: true } },
   { id: "it_remedio_complexo", nome: "Remédio Complexo", categoria: "farmaco", custo: 3,
     descricao: "Um remédio de criação complexa. Como uma ação comum, é possível consumir o remédio e gastar seus dados de vida para se curar, com um limite igual a doze dados de vida." },
   { id: "it_terco_de_perolas_carregadas", nome: "Terço de Pérolas Carregadas", categoria: "espiritual", custo: 3,
@@ -2852,6 +2875,9 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
   }
   const conjuntoSagradoAutomatico = tesourosSagrados.size >= 3;
   let temApice = false;
+  // Livro p.365: duas cópias do mesmo acessório são uma fonte de benefício.
+  // Itens diferentes continuam independentes, inclusive conjuntos explícitos.
+  const acessoriosAplicados = new Set();
 
   for (const e of listaEntradas(creature)) {
     // ⚠ A criatura vai junto porque as armas CUSTOM moram nela. Sem isso, uma
@@ -2878,7 +2904,8 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
     const custoUn = custoDoEquipamento(e.tipo, def);
 
     espacosUsados += espacosUn * qtd;
-    if (custoUn >= 1 && custoUn <= 4) custoGasto[custoUn] += qtd;
+    // p.229: *"Itens de custo criados por um Feitiço não entram no seu limite de custo"*. Ocupam espaço, não gastam o orçamento.
+    if (!e.criadoPorFeitico && custoUn >= 1 && custoUn <= 4) custoGasto[custoUn] += qtd;
 
     // Ferramenta Amaldiçoada da entrada (se houver e o tipo permitir). As vagas
     // livres são por ARMA do catálogo, a mesma chave que a Arma Dedicada usa.
@@ -2918,6 +2945,8 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
     }
 
     const equipado = !!e?.equipado;
+    // O que falta ESCOLHER nesta entrada (hoje só a perícia das Pulseiras). A tela do seletor lê; a aba de avisos não o mostra.
+    let faltaEscolha = null;
     /* ⚠ O CRIADO SEM O ADDON NÃO ENTRA EM EFEITO NENHUM: Defesa, RD, penalidade,
        bônus da troca e a Ferramenta. Continua carregado (os espaços e o custo
        acima já foram contados) e continua marcado como equipado na entrada,
@@ -2932,7 +2961,11 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
       conjuntoSagradoAutomatico || !!e?.conjuntoSagradoCompleto
     );
     const solAtivo = temCondicaoSolar && (conjuntoSagradoReunido || !!e?.solDireto);
-    if (equipado && !semAddon) {
+    const acessorioAtivo = equipado && !semAddon && def.categoria === "acessorio"
+      && (!temCondicaoSolar || solAtivo);
+    const beneficioRepetido = acessorioAtivo && acessoriosAplicados.has(def.id);
+    if (acessorioAtivo) acessoriosAplicados.add(def.id);
+    if (equipado && !semAddon && !beneficioRepetido) {
       if (e.tipo === "uniforme") {
         uniformesEquipados += 1;
         // A armadura dá o CUSTO dela de Defesa, mais 1 por grau da Ferramenta
@@ -2989,6 +3022,33 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
             canal: "bonusPericia", alvo: pericia, expr: String(valor),
             origem: e.uid, nome: def.nome, fonte: "item",
           });
+        }
+        /* As Pulseiras (CX5, p.147 e p.149): treino ou maestria numa perícia
+           ESCOLHIDA na entrada do inventário. A faixa viaja pelo canal
+           `proficienciaPericia`, que nunca rebaixa o que a ficha já tem.
+           ⚠ Sem a escolha nada é presumido: a linha não emite e a entrada sai
+           com `faltaEscolha: "pericia"` para o seletor ler. NÃO vira aviso na aba
+           Equipamentos enquanto o seletor não existir (um aviso que o jogador não
+           consegue resolver vira ruído, o mesmo critério de `afty-vital.md`). A Primacial só concede Mestre onde a
+           perícia JÁ é treinada (`quando`), e a Magistral equipada na mesma
+           perícia conta como treino para isso, sem a Primacial ler a si mesma. */
+        if (ef.escolhePericia) {
+          const pericia = typeof e.escolhaPericia === "string" ? e.escolhaPericia.trim() : "";
+          if (!pericia) {
+            faltaEscolha = "pericia";
+          } else {
+            const mestre = ef.escolhePericia === "mestre";
+            // Só a PRIMEIRA Magistral equipada vale (p.365: dois do mesmo acessório
+            // são uma fonte), e é ela que pode servir de treino à Primacial.
+            const magistral = mestre ? listaEntradas(creature).find((o) =>
+              o?.equipado && o?.tipo === "item" && o?.refId === "it_pulseira_magistral") : null;
+            const treinoPorOutroItem = !!magistral && magistral.escolhaPericia === pericia;
+            efeitosEncantamento.push({
+              canal: "proficienciaPericia", alvo: pericia, expr: mestre ? "2" : "1",
+              ...(mestre && !treinoPorOutroItem ? { quando: `${normalizarVariavel(`prof_${pericia}`)} >= 1` } : {}),
+              origem: e.uid, nome: def.nome, fonte: "item",
+            });
+          }
         }
         // Saída GERAL do item para o Motor (2026-08-03), no mesmo caminho dos
         // encantamentos: canal livre, expressão da DSL. Ela existe para o item
@@ -3117,6 +3177,8 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
       custoUn,
       espacos: espacosUn * qtd,
       equipado,
+      ...(beneficioRepetido ? { beneficioRepetido: true } : {}),
+      ...(faltaEscolha ? { faltaEscolha } : {}),
       ...(semAddon ? { semAddon } : {}),
       ...(temCondicaoSolar ? {
         solAtivo,

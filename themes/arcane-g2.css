@@ -1,0 +1,100 @@
+/* Arcane | Gelo e Cinábrio para a ficha G2
+   Cole em Aparência > CSS. Os ajustes de composição miram a estrutura do G2. */
+@media screen {
+  :is(:scope, #afty-ficha)[data-afty-estrutura="g2"] {
+    --arcane-gelo: #e2f1f2;
+    --arcane-tinta: #132937;
+    --arcane-cinabrio: #ed675f;
+    --arcane-vermelho-escuro: #a42e38;
+    --afty-fundo: #0d1720;
+    --afty-fundo-brilho: radial-gradient(ellipse at 18% 0, #223949, transparent 52%);
+    --afty-card: #182836;
+    --afty-poco: #101e29;
+    --afty-borda: #314858;
+    --afty-borda-forte: #648798;
+    --afty-texto: #e6f2f6;
+    --afty-texto-suave: #b8cdd8;
+    --afty-texto-fraco: #9fb7c5;
+    --afty-destaque: #81ddd1;
+    --afty-destaque-texto: #b9f2e9;
+    --afty-destaque-fundo: #22464b;
+    --afty-pv: #fa857b;
+    --afty-pvtemp: #f2c792;
+    --afty-pe: var(--afty-destaque);
+    --afty-petemp: #d1f6ef;
+    --afty-alma: #c3b4f2;
+    --afty-cura: #a6dfbb;
+    --afty-aviso: #f2c792;
+    --afty-veu: rgb(7 15 23 / .84);
+    --afty-raio: 10px;
+    --afty-raio-peq: 6px;
+    --afty-fonte-display: "Bahnschrift", "Trebuchet MS", "Segoe UI", sans-serif;
+    color-scheme: dark;
+
+    & div.afty-cabecalho:has(.afty-nome) {
+      background: linear-gradient(112deg, #213a4b, #142531 68%, #11212d);
+      border-color: #3e5a6b;
+      box-shadow: 0 14px 32px -22px #02070e;
+    }
+
+    & .afty-cabecalho :has(> .afty-nome) {
+      align-self: center;
+      min-width: 0;
+      padding: .65rem .8rem .65rem 1rem;
+      border-left: 3px solid var(--arcane-vermelho-escuro);
+      border-radius: 4px var(--afty-raio-peq) var(--afty-raio-peq) 4px;
+      background: linear-gradient(115deg, #f0f8f8, var(--arcane-gelo) 73%, #bdd9e0);
+      color: var(--arcane-tinta);
+    }
+
+    & .afty-nome {
+      color: var(--arcane-tinta);
+      overflow-wrap: anywhere;
+    }
+
+    & .e-ident :is(.e-linhagem, .e-classe) { color: #335164; }
+
+    & .e-moldura {
+      background: conic-gradient(from 50deg, #a6d2dc 0 76deg, var(--arcane-cinabrio) 76deg 87deg, #476576 87deg 246deg, var(--arcane-cinabrio) 246deg 258deg, #a6d2dc 258deg);
+    }
+
+    & .afty-retrato { background-color: #203a4b; color: var(--arcane-gelo); }
+    & .afty-vital { background: #0f1f2a; border-color: #304959; }
+    & .afty-vital:hover { border-color: var(--afty-borda-forte); }
+
+    & .afty-aba[aria-selected="true"][data-afty-aba] {
+      color: var(--afty-destaque-texto);
+      background: linear-gradient(0deg, rgb(129 221 209 / .12), transparent 90%);
+    }
+
+    & .afty-card {
+      background: var(--afty-card);
+      border-color: var(--afty-borda);
+    }
+
+    & .afty-card > header:has(> .afty-card-titulo) {
+      background: linear-gradient(95deg, #233c4d, #1a2d3b 75%);
+      border-bottom-color: var(--afty-borda);
+    }
+
+    & .afty-card > header > .afty-card-titulo {
+      padding-inline-start: .55rem;
+      border-inline-start: 2px solid var(--arcane-cinabrio);
+      color: var(--afty-texto);
+    }
+
+    & .afty-atributo { background: #142432; border-color: var(--afty-borda); }
+    & .afty-linha { border-top-color: var(--afty-borda); }
+    & .afty-linha:hover { background: rgb(129 221 209 / .07); }
+    & .afty-valor.afty-rolavel { color: var(--afty-destaque-texto); }
+    & .afty-consulta, & .afty-historico { background: #182b39; }
+  }
+}
+
+@media screen and (max-width: 600px) {
+  :is(:scope, #afty-ficha)[data-afty-estrutura="g2"] .e-agora {
+    min-width: 0;
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+}

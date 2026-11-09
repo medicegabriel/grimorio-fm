@@ -53,9 +53,9 @@ const t = (nome, real, esp) => {
    em `t-invocacao-heranca.mjs`. A `bloodfeast` (2026-10-01) é do addon The Crimsom Queen. */
 /* E a `abaQuimeras` (2026-10-14): a aba própria das Quimeras, do addon Quimera de
    Maldições, medida em `t-quimera-de-maldicoes.mjs`. */
-t("sao 30 primitivas", AD.PRIMITIVAS.length, 30);
+t("sao 31 primitivas", AD.PRIMITIVAS.length, 31);
 t("ids esperados", AD.PRIMITIVAS.map((p) => p.id).sort(),
-  ["abaQuimeras", "adaptacao", "alcanceArmaMult", "armaTransformavel", "armasPorNivel", "ataqueAtributo", "bloodfeast", "caracteristicasAmaldicoadas", "carteira", "catarse", "cofre", "concessao", "contar", "criacaoArmas", "encantamentoGuia", "espinho", "heranca", "hpAtributo", "modificacoesCorporais", "olhinhosLu", "olhosDeAgulha", "pacto", "pvEPassivas", "quimera", "requisitoAptidao", "ressonanciaGungnir", "rodaDharma", "servosGuerra", "titaColosso", "vislumbreCeleste"]);
+  ["abaQuimeras", "adaptacao", "alcanceArmaMult", "armaTransformavel", "armasPorNivel", "ataqueAtributo", "bloodfeast", "caracteristicasAmaldicoadas", "carteira", "catarse", "cofre", "concessao", "contar", "criacaoArmas", "encantamentoGuia", "espinho", "gruposTalento", "heranca", "hpAtributo", "modificacoesCorporais", "olhinhosLu", "olhosDeAgulha", "pacto", "pvEPassivas", "quimera", "requisitoAptidao", "ressonanciaGungnir", "rodaDharma", "servosGuerra", "titaColosso", "vislumbreCeleste"]);
 t("toda primitiva tem rotulo", AD.PRIMITIVAS.every((p) => !!p.rotulo), true);
 t("SEM_PRIMITIVAS e vazio", AD.SEM_PRIMITIVAS, []);
 

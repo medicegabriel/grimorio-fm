@@ -288,6 +288,12 @@ function LinhaEstado({ estado, valor, delta, opcoes, onValor, derived, bloqueado
           </button>
         ) : estado.tipo === "multi" ? (
           <span className="flex items-center gap-1 flex-wrap justify-end">
+            {/* O teto do multi (os Aliados pelo Grau), a pedido do autor em 2026-11-06: a contagem aparece e o botão que passaria dele fica desabilitado. */}
+            {estado.maxSelecionados != null && (
+              <span className="afty-rotulo" data-afty-teto={estado.id}>
+                {(Array.isArray(valor) ? valor : []).length} / {estado.maxSelecionados}
+              </span>
+            )}
             {opcoes.map((o) => {
               const atuais = Array.isArray(valor) ? valor : [];
               const ativo = atuais.includes(o.id);
@@ -299,7 +305,8 @@ function LinhaEstado({ estado, valor, delta, opcoes, onValor, derived, bloqueado
                   className="afty-botao"
                   data-afty-tom={ativo ? "destaque" : undefined}
                   aria-pressed={ativo}
-                  title={o.title}
+                  disabled={!ativo && cheio}
+                  title={!ativo && cheio ? "Teto do Grau Atingido" : o.title}
                   onClick={() => onValor(
                     estado,
                     ativo ? atuais.filter((id) => id !== o.id) : cheio ? atuais : [...atuais, o.id],
@@ -802,7 +809,8 @@ function DetalheDoEstado({ estado, valor, opcoes, derived, onValor }) {
                   className="afty-botao"
                   data-afty-tom={ativo ? "destaque" : undefined}
                   aria-pressed={ativo}
-                  title={o.title}
+                  disabled={estado.tipo === "multi" && !ativo && cheio}
+                  title={estado.tipo === "multi" && !ativo && cheio ? "Teto do Grau Atingido" : o.title}
                   onClick={() => onValor(
                     estado,
                     estado.tipo === "multi"
@@ -1246,7 +1254,7 @@ export default function AbaBuffs({
         titulo="Condições"
         direita={
           <span className="flex items-center gap-2">
-            <span className="afty-rotulo text-[10px] uppercase tracking-wider">Exaustão</span>
+            <span className="afty-rotulo text-[11px] uppercase tracking-wider">Exaustão</span>
             <ContadorDeExaustao valor={sessao?.exaustao} onValor={onExaustao} />
           </span>
         }
@@ -1402,7 +1410,7 @@ export default function AbaBuffs({
             {/* O buff da invocação lê o rótulo no catálogo DELA, e diz para
                 quem vai: sem isso um "+2 Defesa" na lista não se distingue do
                 da criatura. */}
-            <span className="afty-rotulo text-[10px] truncate" title={rotuloDoBuff(b, invocacoes)}>{rotuloDoBuff(b, invocacoes)}</span>
+            <span className="afty-rotulo text-[11px] truncate" title={rotuloDoBuff(b, invocacoes)}>{rotuloDoBuff(b, invocacoes)}</span>
             <span className="afty-valor text-[12px] truncate" title={b.rec ? textoDoRegistro(b) : undefined}>{b.rec ? textoDoRegistro(b) : b.expr}</span>
             <Rodadas
               nome={b.nome}

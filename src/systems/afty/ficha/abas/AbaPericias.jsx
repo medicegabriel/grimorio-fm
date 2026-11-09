@@ -3,6 +3,7 @@ import React from "react";
 import { NumeroComFontes } from "../../ui/fontes";
 import { sinalDe } from "../../ui/formato";
 import { AFTY_ATTRS } from "../../afty-schema";
+import { mostraJogadasDeAtaque } from "../../afty-sistema";
 import { useDestaque } from "../usar-destaque";
 
 /**
@@ -44,7 +45,7 @@ function LinhaTeste({ nome, atributo, bonus, textoBonus, dados, partes, prof, ta
         {nome}
       </span>
       {atributo && (
-        <span className="afty-rotulo text-[9px] uppercase tracking-wider flex-shrink-0">{ABREV[atributo] || ""}</span>
+        <span className="afty-rotulo text-[11px] uppercase tracking-wider flex-shrink-0">{ABREV[atributo] || ""}</span>
       )}
       {tag && <span className="afty-chip flex-shrink-0">{tag}</span>}
       {/* FALHA AUTOMÁTICA de condição (Paralisado e Inconsciente, em
@@ -75,7 +76,8 @@ function LinhaTeste({ nome, atributo, bonus, textoBonus, dados, partes, prof, ta
         total={textoBonus ?? sinalDe(bonus)}
         className={`afty-valor text-[13px] text-right ${textoBonus ? "w-20" : "w-10"}`}
         ancora="direita"
-        onRolar={() => rolar({ tipo: "teste", rotulo: nome, bonus, dados, margem, ataqueId, minimoNatural })}
+        onRolar={() => rolar({ tipo: "teste", rotulo: nome, bonus, dados, margem, ataqueId, minimoNatural,
+          ...(chave.startsWith("pericia:") ? { periciaId: chave.slice(8) } : {}) })}
       />
     </div>
   );
@@ -140,7 +142,9 @@ function Secao({ titulo, children, colunas = 1 }) {
 }
 
 export default function AbaPericias({ derived, rolar, destaque }) {
-  const { pericias = [], resistencias = [], ataques = [] } = derived.testes ?? {};
+  const { pericias = [], resistencias = [] } = derived.testes ?? {};
+  /* Jogador: o Acerto mora na Arma e no Feitiço, então a lista não aparece (`jogadasDeAtaqueNaTela`). */
+  const ataques = mostraJogadasDeAtaque(derived.sistema) ? (derived.testes?.ataques ?? []) : [];
 
   return (
     <div className="space-y-3">

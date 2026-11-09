@@ -47,22 +47,11 @@
  * ZERO para as 4 etapas ligadas, o de Barreiras de 1 para 4, e o de Controle de
  * Energia e o de Potencial Físico ganharam a casca de PE.
  *
- * ⚠ AINDA SEM CANAL (vivem só no texto `beneficio`, e entram quando o canal
- * existir). Recontado na varredura de 2026-08-26, e o bloqueio de cada um está
- * nomeado em docs/afty-status.md, na sessão daquele dia:
- *
- *   • efeito crítico de grupo de arma e de pugilato (Manejo de Arma 3ª e Luta
- *     Completo): a tabela de efeitos de crítico nunca foi enviada.
- *   • dados de vida por descanso (Resistência 2ª): a pilha de dados de vida não
- *     é modelada.
- *   • orçamento LIVRE de atributo (Potencial Físico 2ª): ver a etapa.
- *   • redução de custo por aptidão nomeada (Energia Reversa 3ª): a Regeneração
- *     Aprimorada não tem canal de custo. A 1ª saiu desta lista em 2026-09-16: o
- *     teto de PER entra em `curaPontos` e o Fluxo Constante lê o mesmo teto.
- *   • procedimento de mesa sem número (Perícia 2ª, 4ª e Completo, Luta Completo,
- *     Energia Reversa 4ª e Completo). Estes NÃO são pendência: são permissão
- *     que o jogador exerce, e não valor que a ficha calcula. ⚠ O Completo de
- *     Barreiras SAIU desta lista em 2026-08-26: a RD da parede virou canal.
+ * CX3 (03/11): críticos usam a tabela da p.308 e o cliente do Encontro.
+ * Potencial Físico 2 usa duas escolhas direcionadas. Energia Reversa 3 tem
+ * desconto específico na regeneração e 4 permite Fluxo com ferimentos. Perícia
+ * e Luta têm clientes de uso, sem transformar permissões em bônus globais.
+ * Dados de Vida de Resistência 2 são consumidos pela pilha entregue em CL2.
  *
  * `requisito` por etapa (além da etapa anterior):
  *   { tipo:"atributo", attr, valor }  → VERIFICÁVEL (bloqueia).
@@ -328,6 +317,7 @@ export const AFTY_TREINAMENTOS = [
 
   {
     id: "luta",
+    exibirNaFicha: true,
     nome: "Treino de Luta",
     resumo:
       "O treino de luta foca em praticar e dominar meios de conseguir lutar, melhorando os golpes desarmados, guarda e fundamentos da luta.",
@@ -361,6 +351,12 @@ export const AFTY_TREINAMENTOS = [
   {
     id: "potencial_fisico",
     nome: "Treino de Potencial Físico",
+    escolhas: [1, 2].map((n) => ({
+      id: `atributo_${n}`, label: `Ponto de Atributo ${n}`, etapa: 2,
+      opcoes: AFTY_ATTRS.filter((a) => ["forca", "destreza", "constituicao"].includes(a.key))
+        .map((a) => ({ id: a.key, nome: a.label,
+          efeitos: [{ canal: "atributo", alvo: a.key, expr: "1" }] })),
+    })),
     // ⚠ SÓ DO RESTRINGIDO (autor, 2026-08-26). O `resumo` abaixo já dizia
     // *"Este treino só pode ser realizado por Restringidos"* desde a transcrição,
     // e a trava não existia: a linha aparecia para as 13 origens. É o mesmo
@@ -376,17 +372,8 @@ export const AFTY_TREINAMENTOS = [
       { n: 1, focos: 1, requisito: null,
         beneficio: "Seu máximo de pontos de estamina aumenta em 2.",
         efeitos: [{ tipo: "pe", valor: 2 }] },
-      // ⚠ SEM CANAL, e até 2026-08-26 ela FINGIA ter um. A etapa declarava
-      // `{ tipo: "atributo", valor: 2 }`, e o `paraCanal` devolve null nesse tipo
-      // quando não há alvo de instância. Esta linha não é repetível, então nunca
-      // houve alvo: o efeito era descartado calado desde que foi escrito, e o
-      // catálogo parecia automatizado. Medido: PE sobe do 1ª ao 3ª e o atributo
-      // não se move em etapa nenhuma.
-      //
-      // O que falta não é alvo, é CANAL. "2 pontos para distribuir" é orçamento
-      // livre, o irmão do `pontosAptidao` do lado do atributo, e ainda restrito
-      // aos três físicos (`ATRIBUTOS_FISICOS`, em afty-dominios.js). O canal
-      // `atributo` é direcionado e não serve. Ver docs/a-fazer.md.
+      // CX3: as duas escolhas físicas acima direcionam um ponto cada ao canal
+      // nativo atributo. Escolhas persistidas ficam inertes sem esta etapa.
       { n: 2, focos: 1, requisito: { tipo: "nd", valor: 4 },
         beneficio: "Você recebe 2 pontos de atributo para distribuir entre seus atributos físicos." },
       { n: 3, focos: 1, requisito: null,
@@ -468,9 +455,7 @@ export const AFTY_TREINAMENTOS = [
       { n: 2, focos: 1, requisito: null,
         beneficio: "Você recebe um bônus de +1 em jogadas de ataque com a arma escolhida.",
         efeitos: [{ tipo: "acertoArma", valor: 1 }] },
-      // ⚠ SEM CANAL: efeito de crítico por grupo de arma não existe como
-      // sistema (nem o do pugilato, que o Treino de Luta Completo também
-      // concede). Vive no texto até o dia em que a tabela chegar.
+      // CX3: criticoConcedido reconhece a arma desta instância na terceira etapa.
       { n: 3, focos: 1, requisito: null,
         beneficio: "Enquanto estiver manejando a arma escolhida, você recebe acesso ao efeito crítico dela." },
       { n: 4, focos: 2, requisito: null,
@@ -526,6 +511,7 @@ export const AFTY_TREINAMENTOS = [
 
   {
     id: "pericia",
+    exibirNaFicha: true,
     nome: "Treino de Perícia",
     // Repetível: cada vez escolhe uma perícia diferente ainda não treinada.
     repetivel: true,
@@ -724,6 +710,15 @@ export function beneficiosDeTreinoNaFicha(creature, ctx = {}) {
     }
   }
   return out;
+}
+
+/** Parâmetros dos clientes de uso, sob as mesmas travas de origem do treino. */
+export function operacoesDeTreino(creature) {
+  const treinos = normalizeTreinamentos(creature?.treinamentos);
+  const disponivel = (id) => treinoDisponivel(getTreinamento(id), origemDosTreinos(creature), origensQualificadas(creature));
+  return { luta: disponivel("luta") ? treinos.luta ?? 0 : 0,
+    resistencia: disponivel("resistencia") ? treinos.resistencia ?? 0 : 0,
+    pericias: disponivel("pericia") ? treinos.pericia ?? [] : [] };
 }
 
 /** Progresso máximo de uma linha (nº de etapas). */

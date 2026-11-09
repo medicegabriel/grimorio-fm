@@ -881,6 +881,18 @@ export const DIVERGENCIAS = [
     ativa: true,
   },
   {
+    /* ⚠ SÓ DE TELA, e o número não se mexe. O Acerto do jogador mora na Arma e no Feitiço (a proficiência é por arma, ver `proficienciaPorArma`),
+       então a lista "Jogadas de Ataque" (Corpo a Corpo, A Distância e Amaldiçoado) não informa nada ao jogador, nem no criador nem na Ficha Final.
+       `derived.testes.ataques` continua calculado, porque a linha de ataque da arma e o Acerto do Feitiço leem dele. A criatura segue com a lista. */
+    id: "jogadasDeAtaqueNaTela",
+    tipo: "tela",
+    onde: "AftyCreatureBuilder.jsx (aba Perícias), ficha/abas/AbaPericias.jsx, ficha/abas-g2/PericiasG2.jsx e a busca em ficha-conteudo.js",
+    fonte: "na Ficha de Player a aba de \"Jogadas de Ataque\" é irrelevante tanto na criação e tanto na Ficha Final. Já que o Acerto fica na Arma ou no Feitiço. Pode remover. (autor, 2026-11-07)",
+    afty: "a lista Jogadas de Ataque, com o treino por tipo e a Fineza",
+    player: "sem a lista, nem no criador nem na Ficha Final",
+    ativa: true,
+  },
+  {
     /* ⚠ A MARCA DO SISTEMA, só de TELA. O criador do /Player dizia "Editar
        Criatura · Afty" e a aba Cálculos carregava o selo "Afty". O SUBSTANTIVO
        (Criatura, Personagem) não passa por aqui: ele sai de `palavrasDoSistema`,
@@ -1106,6 +1118,9 @@ export const regraDo = (sistema, idDivergencia) => {
  * e um `if` em cada uma envelheceria em quatro ritmos.
  */
 export const rotuloDoNivel = (sistema) => (regraDo(sistema, "rotuloDoNivel") === "player" ? "Nível" : "ND");
+
+/** A lista Jogadas de Ataque aparece? Só na criatura (divergência `jogadasDeAtaqueNaTela`). O derive continua calculando os ataques. */
+export const mostraJogadasDeAtaque = (sistema) => regraDo(sistema, "jogadasDeAtaqueNaTela") !== "player";
 
 /** Sanidade do catálogo acima. */
 export function validarSistemas() {

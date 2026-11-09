@@ -18,7 +18,7 @@ A fila e os estados continuam exclusivamente em [a-fazer.md](../../a-fazer.md#di
 ## Claude
 
 - [CL1: Motor de uso e combate](CL1-claude-motor-de-uso-e-combate.md)
-- [CL2: Vida, morte, Alma e Mutante](CL2-claude-vida-morte-alma-e-mutante.md)
+- [CL2: Vida, morte e Alma (o Mutante foi descartado)](CL2-claude-vida-morte-alma-e-mutante.md)
 - [CL3: Invocações, Domínios e Votos](CL3-claude-invocacoes-dominios-e-votos.md)
 
 ## Ordem de abertura

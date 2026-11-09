@@ -1,0 +1,609 @@
+/* ============================================================
+   CAO DIVINO BRANCO  ·  v1  ·  2026-11-03
+   ------------------------------------------------------------
+   COMO SABER SE ESTE É O CSS QUE ESTÁ VALENDO: procure "v1" na
+   primeira linha do campo de CSS da aba Aparência. Para trocar
+   por uma versão nova, APAGUE o campo antes de colar. Importar
+   a ficha de novo cria uma segunda ficha e não atualiza esta.
+   ------------------------------------------------------------
+   tema de ficha de criatura, o cão que reflete
+   ------------------------------------------------------------
+   Paleta lida das imagens do autor:
+     o texto do cão branco é #fdfdfd com contorno preto sobre um
+     degradê #0b090b a #262626, e a arte dele tem pelagem osso
+     #e7e6e2, olho laranja-brasa #b83816 com pupila amarela e a
+     marca triangular vermelha na testa.
+
+   REGRA 60 / 30 / 10
+     60% CARVÃO .... fundo, cartões e poços, quase neutros e
+                     um degrau mais claros que o cão preto.
+     30% OSSO ...... texto, fios e molduras, do branco puro ao
+                     cinza de lua.
+     10% BRASA ..... SÓ a marca triangular dos títulos e o alvo
+                     da busca. O resto do destaque é osso, e
+                     isso é de propósito: este cão não tem cor.
+
+   Contraste conferido: texto 17.4:1 no cartão, o mais apagado
+   (--afty-texto-fraco) 7.1:1 e a borda de botão 3.1:1.
+   ============================================================ */
+
+/* ============================================================
+   1. OS TOKENS
+   ⚠ O SELETOR TEM DE SER ESTE, com as duas linhas. Dentro de
+   `@scope` um `#afty-ficha` sozinho não acerta a raiz, e `:scope`
+   sozinho perde para o Painel de Aparência.
+   ============================================================ */
+:scope#afty-ficha,
+#afty-ficha#afty-ficha {
+  --afty-fundo: #0b090b;
+  /* Um clarão de lua no alto, e nada mais. Um gradiente só, de propósito:
+     o fundo da raiz é `fixed`, e vários gradientes de tela cheia aqui fazem
+     o navegador redesenhar a tela inteira a cada quadro de rolagem. */
+  --afty-fundo-brilho: radial-gradient(110% 36% at 50% -8%, #ffffff1f, transparent 72%);
+  --afty-card: #1a181a;
+  --afty-poco: #0d0b0d;
+  --afty-borda: #2f2c2f;
+  --afty-borda-forte: #6a6667;
+  --afty-texto: #fdfdfd;
+  --afty-texto-suave: #c9c6c7;
+  --afty-texto-fraco: #a6a3a4;
+  --afty-destaque: #f0eee8;
+  --afty-destaque-texto: #ffffff;
+  --afty-destaque-fundo: #f0eee81a;
+  /* ⚠ O PV VAI PARA O ROSA-CARMIM e o aviso para o OURO DA PUPILA. A brasa
+     do olho fica longe do destaque e dos recursos, senão o rolável parece
+     barra de vida. */
+  --afty-pv: #ff5c7a;
+  --afty-pe: #8ec8f2;
+  --afty-pvtemp: #f2d27c;
+  --afty-alma: #cdb9ee;
+  --afty-cura: #78d9a4;
+  --afty-aviso: #f4c94c;
+  --afty-veu: rgb(5 4 5 / 0.66);
+  /* Canto vivo, como a presa. Nada de cápsula. */
+  --afty-raio: 6px;
+  --afty-raio-peq: 4px;
+  --afty-sombra: 0 4px 16px rgb(0 0 0 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.07);
+  /* O nome e os títulos em sans de peso máximo, como o texto da referência.
+     `--afty-fonte` fica de FORA: ele é o botão de fonte do Painel de Aparência. */
+  --afty-fonte-titulo: "Segoe UI Black", "Arial Black", "Roboto", system-ui, sans-serif;
+}
+
+/* Variáveis minhas, fora do bloco forte. O prefixo `--cd-` não existe em lugar
+   nenhum do app, então não colide com nada. */
+:scope#afty-ficha,
+#afty-ficha#afty-ficha {
+  --cd-osso: #f0eee8;
+  --cd-marca: #d9452a;
+  --cd-contorno: #000000;
+  --cd-nome: #fdfdfd;
+  /* A casca de PE da barra, no mesmo azul de lua e um degrau mais claro. */
+  --afty-petemp: #bfe0f7;
+  /* Faz o `select` nativo, a barra de rolagem e os controles virem escuros. */
+  color-scheme: dark;
+}
+
+/* ============================================================
+   2. CABEÇALHO
+   O fundo é quase sólido de propósito (99%): a 88% dava para ler o
+   texto que passa por baixo com a página rolada.
+   ============================================================ */
+
+.afty-cabecalho {
+  background-color: color-mix(in srgb, var(--afty-card) 99%, transparent);
+  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.05), transparent 60%);
+  border-bottom-color: var(--afty-borda-forte);
+}
+
+/* O fio de luz da base vira fio de osso. */
+.afty-cabecalho::after {
+  background: linear-gradient(90deg, transparent, var(--cd-osso), transparent);
+  opacity: 0.55;
+}
+
+/* Branco com contorno preto, como na referência. `paint-order` pinta o traço
+   ANTES do preenchimento, então só a metade de fora do contorno aparece e a
+   letra não afina. */
+.afty-nome {
+  font-weight: 800;
+  letter-spacing: -0.005em;
+  color: var(--cd-nome);
+  -webkit-text-stroke: 0.06em var(--cd-contorno);
+  paint-order: stroke fill;
+  text-shadow: 0 2px 0 var(--cd-contorno), 0 0 22px rgb(255 255 255 / 0.2);
+}
+
+.afty-chip {
+  background: color-mix(in srgb, var(--afty-poco) 80%, transparent);
+  border-color: var(--afty-borda-forte);
+  border-radius: var(--afty-raio-peq);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.afty-chip[data-afty-tom="destaque"] {
+  border-color: color-mix(in srgb, var(--afty-destaque) 55%, transparent);
+  background: var(--afty-destaque-fundo);
+  color: var(--afty-destaque-texto);
+}
+
+/* ============================================================
+   3. RECURSOS  ·  Vida, Energia e Alma
+   ⚠ A barra NÃO ganha `background`: ela é um gradiente montado da cor do
+   recurso, e escrever `background` nela a deixa invisível.
+   ============================================================ */
+
+.afty-vital {
+  background: var(--afty-card);
+  border-color: color-mix(in srgb, var(--afty-vital-cor) 34%, var(--afty-borda));
+  box-shadow: var(--afty-sombra);
+}
+
+.afty-vital-rotulo {
+  letter-spacing: 0.14em;
+}
+
+.afty-vital-barra {
+  box-shadow: 0 0 8px color-mix(in srgb, var(--afty-vital-cor) 40%, transparent);
+}
+
+.afty-vital-numero {
+  font-weight: 800;
+}
+
+/* ============================================================
+   4. DEFESAS  ·  a fileira de números do cabeçalho
+   ============================================================ */
+
+.afty-stat {
+  background: var(--afty-card);
+  border-color: var(--afty-borda);
+  box-shadow: var(--afty-sombra);
+}
+
+.afty-stat-rotulo {
+  letter-spacing: 0.13em;
+  color: var(--afty-texto-fraco);
+}
+
+.afty-stat-valor {
+  color: var(--afty-texto);
+  font-weight: 800;
+}
+
+/* A Defesa e a CD são os dois números que a mão procura. Levam a moldura de osso. */
+.afty-stat[data-afty-stat="defesa"],
+.afty-stat[data-afty-stat="cd"] {
+  border-color: color-mix(in srgb, var(--cd-osso) 42%, transparent);
+}
+
+/* ============================================================
+   5. RETRATO  ·  moldura de osso, com fio claro por dentro
+   ============================================================ */
+
+.afty-retrato-painel {
+  border: 1px solid var(--afty-borda-forte);
+  box-shadow: var(--afty-sombra), inset 0 0 0 1px rgb(255 255 255 / 0.1);
+}
+
+/* ============================================================
+   6. ABAS
+   ⚠ Sem `box-shadow` na aba e sem fundo chapado em `.afty-abas`. A aba não
+   tem fundo, então a sombra escapa pelos lados e desenha uma barra vertical
+   entre uma aba e a seguinte.
+   ============================================================ */
+
+.afty-aba {
+  letter-spacing: 0.02em;
+}
+
+.afty-aba[aria-selected="true"] {
+  color: var(--afty-destaque-texto);
+  border-bottom-color: var(--afty-destaque);
+}
+
+/* ============================================================
+   7. CARTÕES
+   ============================================================ */
+
+/* ⚠ TRANSLÚCIDO DE PROPÓSITO, a 90%. Numa ficha cheia os cartões cobrem quase
+   a tela toda, e o clarão do fundo (que é `fixed`) só apareceria nos vãos.
+   SEM `backdrop-filter`: ele criaria bloco de contenção e o painel de fontes
+   passaria a abrir no lugar errado. */
+.afty-card {
+  background-color: color-mix(in srgb, var(--afty-card) 90%, transparent);
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio);
+  box-shadow: var(--afty-sombra);
+}
+
+.afty-card-titulo {
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  color: var(--afty-texto);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* A marca da testa dos cães divinos: um triângulo vazado, em brasa. Desenhado por
+   `clip-path` com buraco (`evenodd`), sem imagem e sem data URI. */
+.afty-card-titulo::before {
+  content: "";
+  width: 13px;
+  height: 12px;
+  flex: none;
+  background: var(--cd-marca);
+  clip-path: polygon(evenodd, 50% 0, 100% 100%, 0 100%, 50% 0, 50% 31%, 77.5% 86%, 22.5% 86%, 50% 31%);
+}
+
+/* ⚠ O FILETE DEPOIS DO TÍTULO TEM LARGURA FIXA, e não `flex: 1`. O título nem
+   sempre é o único filho da linha dele (o cartão Dano tem o botão Crítico ao
+   lado), e um filete elástico ficava longo num cartão e virava um tracinho no
+   outro. */
+.afty-card-titulo::after {
+  content: "";
+  width: 2rem;
+  height: 1px;
+  flex: none;
+  background: linear-gradient(90deg, var(--afty-borda-forte), transparent);
+}
+
+/* ============================================================
+   8. LINHAS E VALORES
+   ============================================================ */
+
+.afty-linha {
+  background: var(--afty-poco);
+  border-radius: var(--afty-raio-peq);
+}
+
+.afty-linha:hover {
+  border-color: var(--afty-borda-forte);
+  box-shadow: inset 3px 0 0 var(--cd-osso);
+}
+
+.afty-linha[data-afty-destacada="sim"] {
+  background: var(--afty-destaque-fundo);
+  border-color: color-mix(in srgb, var(--afty-destaque) 40%, transparent);
+}
+
+.afty-linha[data-afty-alvo="sim"] {
+  border-color: var(--cd-marca);
+  background: color-mix(in srgb, var(--cd-marca) 14%, var(--afty-poco));
+}
+
+.afty-rotulo {
+  color: var(--afty-texto-suave);
+}
+
+.afty-valor {
+  color: var(--afty-texto);
+  font-weight: 800;
+}
+
+/* O rolável é osso: sublinhado pontilhado em repouso, pastilha clara no hover. */
+.afty-rolavel {
+  text-decoration-color: color-mix(in srgb, var(--cd-osso) 55%, transparent);
+}
+
+.afty-rolavel:hover {
+  color: var(--afty-destaque-texto);
+  background-color: var(--afty-destaque-fundo);
+}
+
+.afty-texto {
+  color: var(--afty-texto-suave);
+}
+
+.afty-vazio {
+  color: var(--afty-texto-fraco);
+  font-style: italic;
+}
+
+.afty-opcao {
+  color: var(--afty-destaque-texto);
+}
+
+.afty-estrela:hover {
+  color: var(--afty-aviso);
+}
+
+/* ============================================================
+   9. ATRIBUTOS
+   ============================================================ */
+
+.afty-atributo {
+  background: var(--afty-poco);
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio-peq);
+}
+
+.afty-atributo-rotulo {
+  letter-spacing: 0.16em;
+  color: var(--afty-texto-fraco);
+}
+
+.afty-atributo-valor {
+  font-family: var(--afty-fonte-titulo);
+  color: var(--afty-texto);
+}
+
+.afty-atributo-mod {
+  border-radius: var(--afty-raio-peq);
+  background: var(--afty-destaque-fundo);
+  color: var(--afty-destaque-texto);
+  border: 1px solid color-mix(in srgb, var(--afty-destaque) 32%, transparent);
+}
+
+/* ============================================================
+   10. SUB-ABAS
+   ============================================================ */
+
+.afty-subaba {
+  border-radius: var(--afty-raio-peq);
+}
+
+.afty-subaba[aria-selected="true"] {
+  background: var(--afty-destaque-fundo);
+  color: var(--afty-destaque-texto);
+  border-color: color-mix(in srgb, var(--afty-destaque) 42%, transparent);
+}
+
+.afty-subaba-conta {
+  color: var(--afty-texto-fraco);
+}
+
+/* ============================================================
+   11. CONTROLES
+   Inclui o `select` nativo, que a folha do app não alcança.
+   ============================================================ */
+
+.afty-botao,
+.afty-passo,
+select {
+  background: var(--afty-card);
+  border: 1px solid var(--afty-borda-forte);
+  color: var(--afty-texto-suave);
+  border-radius: var(--afty-raio-peq);
+}
+
+.afty-botao:hover,
+.afty-passo:hover,
+select:hover {
+  border-color: var(--afty-destaque);
+  color: var(--afty-destaque-texto);
+}
+
+/* ⚠ O DESTAQUE DESTE TEMA É OSSO, e o app preenche o interruptor ligado da aba
+   Efeitos (prévia G2) com `--afty-destaque` e põe uma bolinha #fff por cima:
+   branco sobre osso, e a bolinha some. Aqui ela fica escura. O `[role="switch"]`
+   existe só para vencer a regra do app em especificidade. */
+.m-chave[role="switch"][aria-checked="true"] .m-chave-trilho span {
+  background: var(--afty-fundo);
+}
+
+/* ⚠ `.afty-campo` NÃO GANHA BORDA NEM FUNDO. Ele é um `input` transparente com
+   padding zero DENTRO de uma caixa que já tem a borda. Quem mostra o foco é o
+   CONTINENTE, logo abaixo. */
+.afty-linha:focus-within {
+  border-color: var(--afty-destaque);
+}
+
+select:focus {
+  border-color: var(--afty-destaque);
+  outline: 2px solid var(--afty-destaque-fundo);
+  outline-offset: 0;
+}
+
+.afty-aba:focus-visible,
+.afty-subaba:focus-visible,
+.afty-botao:focus-visible,
+.afty-passo:focus-visible,
+.afty-rolavel:focus-visible,
+.afty-estrela:focus-visible {
+  outline: 2px solid var(--afty-destaque);
+  outline-offset: 2px;
+  border-radius: var(--afty-raio-peq);
+}
+
+/* ============================================================
+   12. TEXTO RICO  ·  o Funcionamento Básico e a descrição de item
+   ⚠ Cor, borda e fundo destes blocos são escritos NO ELEMENTO pelo
+   TextoRico.jsx, e estilo em linha vence CSS. Aqui fica o que ele não
+   escreve: fonte, espaçamento e o zebrado das linhas. SEM `max-width`,
+   porque o cartão continuaria indo até o fim da tela.
+   ============================================================ */
+
+.afty-tr-h1,
+.afty-tr-h2 {
+  font-family: var(--afty-fonte-titulo);
+  letter-spacing: 0.04em;
+}
+
+.afty-tr-p {
+  line-height: 1.6;
+}
+
+.afty-tr-tabela-caixa {
+  border-radius: var(--afty-raio-peq);
+}
+
+.afty-tr-tabela th {
+  letter-spacing: 0.05em;
+  box-shadow: inset 0 -2px 0 var(--afty-borda-forte);
+}
+
+.afty-tr-tabela tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--afty-poco) 55%, transparent);
+}
+
+/* ============================================================
+   13. CAMADAS FLUTUANTES
+   ============================================================ */
+
+.afty-fontes {
+  background: var(--afty-card);
+  border: 1px solid var(--afty-borda-forte);
+  border-radius: var(--afty-raio);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.6);
+}
+
+.afty-fonte-rotulo {
+  color: var(--afty-texto-suave);
+}
+
+.afty-fonte-total {
+  border-top: 1px solid var(--afty-borda-forte);
+  color: var(--afty-destaque-texto);
+}
+
+.afty-log,
+.afty-busca {
+  background: var(--afty-card);
+  border: 1px solid var(--afty-borda-forte);
+  box-shadow: 0 12px 34px rgb(0 0 0 / 0.65);
+}
+
+.afty-log-topo,
+.afty-rolagem {
+  border-bottom: 1px solid var(--afty-borda);
+}
+
+.afty-rolagem-total {
+  font-family: var(--afty-fonte-num);
+  color: var(--afty-destaque-texto);
+}
+
+.afty-rolagem[data-afty-marca="critico"] .afty-rolagem-total {
+  color: var(--afty-aviso);
+}
+
+.afty-rolagem[data-afty-marca="pifia"] .afty-rolagem-total {
+  color: var(--afty-pv);
+}
+
+.afty-dado {
+  background: var(--afty-poco);
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio-peq);
+}
+
+.afty-busca-item:hover {
+  background: var(--afty-destaque-fundo);
+}
+
+/* ============================================================
+   14. CANAIS  ·  aba Buffs
+   ============================================================ */
+
+.afty-canal-painel {
+  background: var(--afty-card);
+  border: 1px solid var(--afty-borda-forte);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.6);
+}
+
+.afty-canal-grupo {
+  color: var(--afty-destaque-texto);
+  letter-spacing: 0.1em;
+}
+
+.afty-canal-item:hover {
+  background: var(--afty-destaque-fundo);
+}
+
+/* ============================================================
+   15. INVOCAÇÃO  ·  o cartão do shikigami, quando existir
+   ============================================================ */
+
+.afty-inv-cartao,
+.afty-inv-ficha {
+  background: var(--afty-card);
+  border: 1px solid var(--afty-borda);
+  border-radius: var(--afty-raio);
+  box-shadow: var(--afty-sombra);
+}
+
+.afty-inv-cabeca {
+  border-bottom: 1px solid var(--afty-borda-forte);
+}
+
+.afty-inv-titulo {
+  font-family: var(--afty-fonte-titulo);
+  color: var(--afty-texto);
+}
+
+.afty-inv-bloco {
+  background: var(--afty-poco);
+  border-radius: var(--afty-raio-peq);
+}
+
+.afty-inv-bonus-botao[data-afty-ligado="sim"] {
+  border-color: color-mix(in srgb, var(--afty-destaque) 50%, transparent);
+  box-shadow: inset 3px 0 0 var(--cd-osso);
+}
+
+/* ============================================================
+   16. IMPRESSÃO
+   ⚠ O CSS DO TEMA VENCE O `@media print` DO APP. O reset dele mora em
+   `.afty-ficha` (0,1,0) e este tema mora em `:scope#afty-ficha` (1,1,0), e
+   media query não muda especificidade: sem este bloco a ficha sairia da
+   impressora escura e gastaria a tinta toda. Aqui o papel volta a ser papel.
+   ============================================================ */
+
+@media print {
+  :scope#afty-ficha,
+  #afty-ficha#afty-ficha {
+    --afty-fundo: #ffffff;
+    --afty-fundo-brilho: none;
+    --afty-card: #ffffff;
+    --afty-poco: #ffffff;
+    --afty-borda: #cbd5e1;
+    --afty-borda-forte: #94a3b8;
+    --afty-texto: #0f172a;
+    --afty-texto-suave: #334155;
+    --afty-texto-fraco: #64748b;
+    --afty-sombra: none;
+    --afty-imagem: none;
+    /* ⚠ O destaque deste tema é osso, e osso sobre papel branco some (o
+       `--afty-destaque-texto` é #ffffff). Os tokens que o app não reseta na
+       impressão voltam a ter cor de tinta. */
+    --afty-destaque: #334155;
+    --afty-destaque-texto: #0f172a;
+    --afty-destaque-fundo: #e2e8f0;
+    --afty-pv: #be123c;
+    --afty-pe: #0369a1;
+    --afty-pvtemp: #a16207;
+    --afty-alma: #7e22ce;
+    --afty-cura: #15803d;
+    --afty-aviso: #a16207;
+    --cd-nome: #0f172a;
+    --cd-osso: #334155;
+    color-scheme: light;
+    background: #ffffff;
+  }
+
+  .afty-card,
+  .afty-vital,
+  .afty-stat,
+  .afty-linha,
+  .afty-atributo,
+  .afty-retrato-painel {
+    background-color: #ffffff;
+    box-shadow: none;
+  }
+
+  .afty-cabecalho {
+    background-color: #ffffff;
+    background-image: none;
+  }
+
+  .afty-nome {
+    -webkit-text-stroke: 0;
+    text-shadow: none;
+  }
+
+  .afty-card-titulo::after {
+    display: none;
+  }
+}

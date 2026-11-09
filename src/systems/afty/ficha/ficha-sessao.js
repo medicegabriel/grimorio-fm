@@ -50,7 +50,18 @@ import { normalizaGungnir, avancarGungnir } from "../afty-gungnir";
 // As fases da Expansão no ar (2026-10-08). Módulo FOLHA, sem ciclo.
 import { FASES_DOMINIO } from "../afty-dominios";
 import { registrarQuedaEspecializacao, iniciarTurnoEspecializacao, encerrarTurnoEspecializacao,
-  novaRodadaEspecializacao } from "./ficha-especializacoes";
+  novaRodadaEspecializacao, recursosDeEspecializacao } from "./ficha-especializacoes";
+// O estado vital (CL2): saldo negativo, Portas da Morte e Ferimentos Complexos. FOLHA, como o estado de uso logo abaixo.
+import {
+  vitalEmBranco, normalizaVital, registraDano, abreTesteDeMorte, curaNaSessao, conciliaVital, vitalNoDescanso, semReacoesAcabou,
+} from "./ficha-vital";
+// O estado do motor de uso e combate (CL1). FOLHA: as operações dele importam esta sessão, e nunca o contrário.
+import {
+  usoEmBranco, normalizaUso, avancaUsoNaRodada, iniciaTurnoNoUso, encerraTurnoNoUso, fechaCombateNoUso,
+  zeraUsoNoDescanso, abreConcentracaoNaSessao, fechaConcentracaoNaSessao, usoDe, encerraAtivoNaSessao,
+} from "./ficha-uso-estado";
+// As barreiras erguidas (CL3): paredes e cortinas. FOLHA, como o estado de uso acima.
+import { barreirasEmBranco, normalizaBarreiras } from "./ficha-barreiras-estado";
 // O nome da parte que expira de uma instância de pacote (PA-I3). Os três são FOLHA, sem ciclo.
 import { rotuloDoBeneficio } from "./pacotes-aliados";
 import { AFTY_PERICIAS } from "../afty-pericias-catalogo";
@@ -199,6 +210,19 @@ export function sessaoEmBranco(derived = null) {
     // Interruptores manuais de efeitos condicionais abertos por Treinamentos.
     treinosAtivos: {},
     usos: {},
+    /* O motor de uso e combate (CL1, 2026-10-29): o anel das operações aplicadas, os usos com duração ou manutenção, o que
+       está armado para o próximo ataque, a sequência de ataques recebidos, as ações do turno e a concentração. Ver
+       `ficha-uso-estado.js` e docs/afty-motor-uso-combate.md. */
+    uso: usoEmBranco(),
+    // As paredes e cortinas erguidas (CL3, 2026-11-01). Ver ficha-barreiras-estado.js e docs/afty-dominio-confronto.md.
+    barreiras: barreirasEmBranco(),
+    /* O ESTADO VITAL (CL2, 2026-10-30): o saldo de PV negativos, os sucessos e as falhas das Portas da Morte, o teste
+       pendente do turno e os Ferimentos Complexos. Generaliza o que só o Restringido guardava em `especializacaoSessao`.
+       Ver `ficha-vital.js` e docs/afty-vital.md. */
+    vital: vitalEmBranco(),
+    /* A pilha de Dados de Vida GASTOS por Especialização (p.20 e 335): `{ gastos: { [classeId]: n } }`. O total vem do
+       derive e a sessão guarda só o que se gastou, como os usos das habilidades. Ver `ficha-dados-vida.js`. */
+    dadosVida: { gastos: {} },
     // A recarga das Técnicas Máximas, por id do Feitiço (2026-10-08).
     recargas: {},
     // Os contadores de MESA dos pacotes (`contadoresSessao`, 2026-10-15).
@@ -250,7 +274,7 @@ export function normalizaSessao(bruta, derived = null) {
   const base = sessaoEmBranco(derived);
   if (!bruta || typeof bruta !== "object") return base;
   const lista = (v) => (Array.isArray(v) ? v : []);
-  return {
+  return encerraUsoDePosturaDesligada(encerraPosturasPorCondicao({
     ...base,
     ...bruta,
     bloodfeastRegras: base.bloodfeastRegras,
@@ -276,6 +300,14 @@ export function normalizaSessao(bruta, derived = null) {
     guardaEncerrada: !!bruta.guardaEncerrada,
     combate: bruta.combate && typeof bruta.combate === "object" ? bruta.combate : {},
     usos: bruta.usos && typeof bruta.usos === "object" ? bruta.usos : {},
+    uso: normalizaUso(bruta.uso),
+    barreiras: normalizaBarreiras(bruta.barreiras),
+    /* A sessão gravada antes de 2026-10-30 guardava o saldo e as falhas do Restringido em `especializacaoSessao`
+       (`pvNegativos` e `falhasMorte`). O valor MIGRA para o estado vital, e os dois campos saem de lá: um corpo, um contador. */
+    vital: normalizaVital(bruta.vital, bruta.especializacaoSessao),
+    ...(bruta.especializacaoSessao && typeof bruta.especializacaoSessao === "object" && !Array.isArray(bruta.especializacaoSessao)
+      ? { especializacaoSessao: semCamposDoSaldoLegado(bruta.especializacaoSessao) } : {}),
+    dadosVida: normalizaDadosVida(bruta.dadosVida),
     recargas: normalizaRecargas(bruta.recargas),
     contadoresSessao: normalizaContadoresSessao(bruta.contadoresSessao),
     ultimoFeiticoDanoId: typeof bruta.ultimoFeiticoDanoId === "string"
@@ -306,7 +338,24 @@ export function normalizaSessao(bruta, derived = null) {
     lideresDeHordaDissolvida: lista(bruta.lideresDeHordaDissolvida).filter((x) => typeof x === "string"),
     favoritos: lista(bruta.favoritos),
     log: lista(bruta.log).slice(0, LOG_MAX),
-  };
+  }));
+}
+
+/** O `especializacaoSessao` sem os dois campos que migraram para o estado vital. */
+function semCamposDoSaldoLegado(e) {
+  const { pvNegativos: _saldo, falhasMorte: _falhas, ...resto } = e;
+  return resto;
+}
+
+/** Os Dados de Vida gastos, por Especialização. Valor inválido ou zero some, e a sessão antiga abre sem nada gasto. */
+export function normalizaDadosVida(bruto) {
+  const gastos = {};
+  const origem = bruto && typeof bruto === "object" && bruto.gastos && typeof bruto.gastos === "object" ? bruto.gastos : {};
+  for (const [id, n] of Object.entries(origem)) {
+    const q = Math.max(0, inteiro(n, 0));
+    if (id && q > 0) gastos[id] = q;
+  }
+  return { gastos };
 }
 
 /* ============================================================ */
@@ -443,6 +492,8 @@ export function estadoDaInvocacao(sessao, invId) {
     ...linha,
     rotulo: ROTULO_ESTADO_INVOCACAO[linha.estado],
     terminal: ESTADOS_TERMINAIS.has(linha.estado),
+    // A rodada da sessão, para a tela contar as entradas da ação Invocar (CX6). Nunca é gravada.
+    rodadaDaSessao: Math.max(0, inteiro(sessao?.rodada, 0)),
     /* A Bem Treinada em tarefa fora do combate "não é considerada como uma
        Invocação em Campo" (Adicionais). */
     contaNoCampo: ESTADOS_EM_CAMPO.has(linha.estado) && !linha.emTarefa,
@@ -495,6 +546,10 @@ function camposDeIntrinseca(e) {
     autonomia: !!e?.autonomia,
     sobrecargaPv: Math.max(0, inteiro(e?.sobrecargaPv, 0)),
     entradasDesdeDescanso: Math.max(0, inteiro(e?.entradasDesdeDescanso, 0)),
+    /* A espera do retorno (CX6, p.257): o turno do dono (`uso.acoes.turno`) em que a invocação dissipada por dano volta a poder entrar. `null` é livre. */
+    aguardaAteTurno: e?.aguardaAteTurno == null ? null : Math.max(0, inteiro(e.aguardaAteTurno, 0)),
+    /* O Frenesi da Invocação (CX6, p.97): -5 de Defesa e -5 em testes de resistência por uma rodada. A virada da rodada o apaga. */
+    frenesi: !!e?.frenesi,
     /* A duração do Corpo Amaldiçoado (2026-09-30, Etapa 8): as rodadas de combate
        desde que ele entrou (ou desde que o combate começou com ele em campo), e a
        manutenção da rodada que ainda não foi paga. Ver `avancaInvocacoesNaRodada`. */
@@ -521,6 +576,7 @@ const COMPOSTO_DESFEITO = {
   autonomia: false, sobrecargaPv: 0, retorno: null, quedas: 0, exorcismos: 0,
   componentes: [], membrosAtivos: null, pvMaxMetade: false, metadePerdida: false,
   maiorId: null, menorId: null, menorQuebrada: false, rodadasAtiva: 0, manutencaoPendente: false,
+  aguardaAteTurno: null, frenesi: false,
 };
 
 /** As linhas que são de composto que se DESFAZ (Horda, Quimera, Mecha). O Corpo
@@ -590,7 +646,7 @@ export function transicaoDeQueda(regras, atual, pvDepois, max, jaCaida = false) 
   const maximo = Math.max(0, inteiro(max, 0));
   if (pvDepois > 0) return null;
   const passou = -pvDepois > maximo;   // "dano excedente SUPERIOR ao seu máximo de vida"
-  const sai = { auxilios: {}, pvTempFontes: {}, auras: {}, forma: null, autonomia: false, sobrecargaPv: 0 };
+  const sai = { auxilios: {}, pvTempFontes: {}, auras: {}, forma: null, autonomia: false, sobrecargaPv: 0, frenesi: false };
   switch (r.aZero) {
     case "desativada": {
       if (pvDepois <= -maximo) return { ...sai, estado: "destruida", pvAtual: -maximo };
@@ -629,6 +685,15 @@ function pvInicialDe(atual, pvMax) {
 }
 
 /**
+ * A invocação dissipada por dano ainda espera o próximo turno do dono (Livro p.257)? Vale só no combate, e só para a queda que gravou a
+ * espera. O retorno voluntário (`guardada`) nunca espera, e Marionete, Corpo e Maldição seguem as regras do tipo delas.
+ */
+export function aguardandoProximoTurno(sessao, linha) {
+  return linha?.estado === "dissipada" && linha.aguardaAteTurno != null && emCombateNaSessao(sessao)
+    && usoDe(sessao).acoes.turno < linha.aguardaAteTurno;
+}
+
+/**
  * A ENTRADA EM CAMPO (decisão do autor, 2026-09-30): uma função só para invocar e
  * ativar, porque "Ativar uma Invocação também conta como Invocá-la para todos os
  * efeitos" (Mecânicas). Quem quer saber se ela "acabou de ser invocada" lê
@@ -653,6 +718,7 @@ export function entradaDaInvocacao(sessao, inv, { via = "invocar" } = {}) {
   if (atual.bloqueadaAteFimDaCena) return nega("Bloqueada Até o Fim da Cena");
   if (atual.estado === "quebrada" || atual.estado === "recolhida") return nega("Precisa Ser Reconstruída");
   if (atual.estado === "desativada") return nega("Núcleo Desativado");
+  if (aguardandoProximoTurno(sessao, atual)) return nega("Aguarda o Próximo Turno");
   /* OS COMPOSTOS (2026-10-01, Etapa 9). Quem está dentro de um composto ativo não
      entra sozinho, e o composto só entra com todas as componentes livres (nem em
      campo, nem caídas, nem em outro composto, nem perdidas). */
@@ -744,6 +810,7 @@ export function entraEmCampo(sessao, invId, entrada) {
   if (entrada.quimeraDaCena) pago = { ...pago, quimeraDaCena: entrada.quimeraDaCena };
   return comInvocacao(pago, invId, {
     estado: "ativa",
+    aguardaAteTurno: null,
     // A Horda com metade do PV máximo nasce CHEIA dele: o `null` é o máximo novo.
     pvAtual: entrada.pvMaxMetade ? null : entrada.pvInicial,
     componentes: Array.isArray(entrada.componentes) ? entrada.componentes : [],
@@ -810,7 +877,7 @@ export function saiDeCampo(sessao, invId) {
   }
   // O Shikigami de Técnica Máxima dissipado solta a recarga dela (2026-10-08).
   return soltaRecargasDaInvocacao(comInvocacao(sessao, invId, {
-    estado: "guardada", auxilios: {}, pvTempFontes: {}, auras: {}, forma: null, autonomia: false, sobrecargaPv: 0,
+    estado: "guardada", auxilios: {}, pvTempFontes: {}, auras: {}, forma: null, autonomia: false, sobrecargaPv: 0, frenesi: false,
     rodadasAtiva: 0, manutencaoPendente: false,
     // A Quimera (e o grupo de núcleos) guardados soltam as componentes.
     componentes: [],
@@ -1161,8 +1228,10 @@ export function alternaAuxilioInvocacao(sessao, invId, acaoId, ligado) {
   const podeVoltar = !ESTADOS_TERMINAIS.has(atual.estado)
     && !["quebrada", "recolhida", "desativada"].includes(atual.estado);
   if (ligado && atual.estado !== "ativa" && !podeVoltar) return sessao;
+  // O atalho de mesa também respeita a espera do retorno (p.257).
+  if (ligado && aguardandoProximoTurno(sessao, atual)) return sessao;
   return comInvocacao(sessao, invId, ligado && atual.estado !== "ativa"
-    ? { auxilios, estado: "ativa" }
+    ? { auxilios, estado: "ativa", aguardaAteTurno: null }
     : { auxilios });
 }
 
@@ -1175,6 +1244,20 @@ export function alternaAuraInvocacao(sessao, invId, caracId, ligado) {
   if (ligado) auras[caracId] = true;
   else delete auras[caracId];
   return comInvocacao(sessao, invId, { auras });
+}
+
+/** O Frenesi da Invocação ligado ou desligado (CX6). Só quem está em campo entra em frenesi. A regra de uso é de `ficha-controlador.js`. */
+export function defineFrenesiInvocacao(sessao, invId, ligado) {
+  const atual = linhaDaInvocacao(sessao, invId);
+  if (ligado && atual.estado !== "ativa") return sessao;
+  return comInvocacao(sessao, invId, { frenesi: !!ligado });
+}
+
+/** A virada da rodada apaga o Frenesi de toda invocação ("por uma rodada"). */
+function semFrenesiDaRodada(sessao) {
+  const linhas = sessao?.invocacoes || {};
+  if (!Object.values(linhas).some((e) => e?.frenesi)) return sessao;
+  return { ...sessao, invocacoes: Object.fromEntries(Object.entries(linhas).map(([id, e]) => [id, e?.frenesi ? comBooleanos({ ...e, frenesi: false }) : e])) };
 }
 
 /** A Bem Treinada em tarefa (ou não). */
@@ -1225,7 +1308,11 @@ export function aplicaDanoInvocacao(sessao, invId, bruto, pvMax, regras = null) 
   const restante = pv - sobrou;
   if (restante > 0) return comInvocacao(sessao, invId, { pvTempFontes: fontes, pvAtual: restante });
   const queda = transicaoDeQueda(regras, atual, restante, max, pv <= 0);
-  return comInvocacao(sessao, invId, { pvTempFontes: fontes, ...queda });
+  /* "Quando um shikigami é dissipado, ele pode ser invocado novamente no seu próximo turno" (Livro p.257). Só a queda de quem estava em
+     campo e só dentro do combate: fora dele não há turno para esperar. Ver `aguardandoProximoTurno`. */
+  const aguarda = atual.estado === "ativa" && queda.estado === "dissipada" && emCombateNaSessao(sessao)
+    ? { aguardaAteTurno: usoDe(sessao).acoes.turno + 1 } : {};
+  return comInvocacao(sessao, invId, { pvTempFontes: fontes, ...queda, ...aguarda });
 }
 
 /**
@@ -1322,7 +1409,7 @@ function descansaInvocacoes(invocacoes, derived, marioneteId) {
       exorcismos: 0, bloqueadaAteFimDaCena: false,
       auras: {}, forma: null, emTarefa: false,
       opcoesDeEntrada: {}, entradasDesdeDescanso: 0,
-      rodadasAtiva: 0, manutencaoPendente: false,
+      rodadasAtiva: 0, manutencaoPendente: false, aguardaAteTurno: null, frenesi: false,
     });
   }
   return out;
@@ -1609,7 +1696,8 @@ export function aplicaPeTemporario(sessao, entradas = []) {
   }
   if (mudou && sessao.energiaEmVida) {
     const ganho = Object.entries(fontes).reduce((n, [id, valor]) => n + Math.max(0, valor - (sessao.peTempFontes?.[id] ?? 0)), 0);
-    return { ...sessao, hpAtual: sessao.hpAtual + ganho * sessao.energiaEmVida, peTempFontes: fontes };
+    /* Corpo morto não ganha vida de regeneração automática (CL2): o PV só volta por escrita da mesa. */
+    return { ...sessao, hpAtual: sessao.vital?.estado === "morto" ? sessao.hpAtual : sessao.hpAtual + ganho * sessao.energiaEmVida, peTempFontes: fontes };
   }
   return mudou ? { ...sessao, peTempFontes: fontes } : sessao;
 }
@@ -1639,6 +1727,7 @@ export function gastaPe(sessao, quanto) {
  * O PV temporário NÃO é aparado: ele é casca por fora do máximo, por definição.
  */
 export function aparaSessao(sessao, derived) {
+  sessao = encerraUsoDePosturaDesligada(sessao);
   const energiaEmVida = derived?.bloodfeast?.tem ? 3 : 0;
   const bloodfeastRegras = derived?.bloodfeast?.tem ? derived.bloodfeast.ids : [];
   const maximos = maximosRecursosNaSessao(derived, sessao.combate);
@@ -1658,6 +1747,10 @@ export function aparaSessao(sessao, derived) {
   const hpAtual = entre(sessao.hpAtual, 0, hpMax);
   const peAtual = entre(sessao.peAtual, 0, peMax);
   const almaAtual = entre(sessao.almaAtual + ganho, 0, almaMax);
+  /* O PV pode ter sido escrito à mão (o campo de digitar), pelo Bloodfeast ou por uma ampliação de recurso, sem passar
+     pelos verbos de dano e cura. A conciliação tira da morte e das Portas o corpo que voltou a ter vida, e devolve o
+     MESMO objeto quando nada muda. Sessão montada à mão, sem o campo, continua sem ele. */
+  const vital = sessao.vital ? conciliaVital(sessao.vital, hpAtual) : sessao.vital;
   /* As invocações apararam pelo mesmo caminho. Sem isto, tirar uma Característica
      de Vida do shikigami deixava o PV corrente ACIMA do máximo e a barra passava
      de 100%. É o mesmo motivo de o dono ser aparado aqui. A Quimera entra junto,
@@ -1673,12 +1766,13 @@ export function aparaSessao(sessao, derived) {
      nunca passa do valor da fonte, que é o teto dela (topa, não acumula). */
   const preparoTemp = entre(inteiro(sessao.preparoTemp, 0), 0, Math.max(0, derived?.preparoTemporario ?? 0));
   if (JSON.stringify(bloodfeastRegras) === JSON.stringify(sessao.bloodfeastRegras ?? []) && energiaEmVida === (sessao.energiaEmVida ?? 0) && hpAtual === sessao.hpAtual && peAtual === sessao.peAtual && almaAtual === sessao.almaAtual
-    && visto === almaMax && invocacoes === sessao.invocacoes && tita === sessao.tita
+    && visto === almaMax && invocacoes === sessao.invocacoes && tita === sessao.tita && vital === sessao.vital
     && preparoAtual === (sessao.preparoAtual ?? null) && preparoTemp === inteiro(sessao.preparoTemp, 0)) {
     return sessao;
   }
   return {
     ...sessao, energiaEmVida, bloodfeastRegras, hpAtual, peAtual, almaAtual, almaMaxVisto: almaMax, invocacoes, tita, preparoAtual, preparoTemp,
+    ...(vital ? { vital } : {}),
   };
 }
 
@@ -1817,19 +1911,39 @@ export function removeConcessao(sessao, uid) {
  * O PV TEMPORÁRIO come primeiro, e o que sobra desce no PV. É a regra da casca:
  * ela existe para ser gasta antes da vida.
  */
-export function aplicaDano(sessao, bruto, derived = null) {
+export function aplicaDano(sessao, bruto, derived = null, { ataqueId = null } = {}) {
   const dano = Math.max(0, inteiro(bruto, 0));
   if (!dano) return sessao;
+  /* Corpo morto não leva mais dano: a casca e o PV ficam como estavam (CL2). */
+  if (sessao.vital?.estado === "morto") return sessao;
   /* A casca vai primeiro, e a Guarda é a primeira dela (ver `drenaPvTemp`). É
      aqui que a Guarda se quebra sozinha: zerando a fonte dela, o `resolveGuarda`
      passa a devolver `noAr: false` e o bônus some, sem flag nenhuma para manter
      em dia. */
   const { fontes, sobrou } = drenaPvTemp(sessao.pvTempFontes, dano);
-  return registrarQuedaEspecializacao({
-    ...sessao,
-    pvTempFontes: fontes,
-    hpAtual: Math.max(0, sessao.hpAtual - sobrou),
-  }, derived, Math.max(0, sobrou - sessao.hpAtual));
+  const depois = { ...sessao, pvTempFontes: fontes, hpAtual: Math.max(0, sessao.hpAtual - sobrou) };
+  /* O saldo negativo, a falha por dano nas Portas, o dano massivo e o gatilho do Ferimento Complexo (p.313): o estado vital
+     registra a queda, e SÓ DEPOIS o Restringido põe os modos próprios dele em cima. `ataqueId` agrupa os tipos de dano de
+     um mesmo ataque, para uma falha e um Ferimento por golpe. */
+  return registrarQuedaEspecializacao(comQueda(depois, sessao, derived, { sobrou, dano, ataqueId }), derived);
+}
+
+/**
+ * Registra no estado vital o que um verbo de perda de PV acabou de fazer. `antes` e `depois` são a sessão antes e depois do verbo
+ * (o PV já aparado em 0). Só faz algo quando o corpo está em 0, e devolve `depois` intacto nos outros casos.
+ * `sobrou` é a perda que chegou à vida (passa de 0 e vira PV negativo), `dano` o dano inteiro do ataque e `tipo` "dano" ou "perda"
+ * (perda de vida entra nas Portas mas não é ataque: sem falha por si e sem Ferimento).
+ */
+function comQueda(depois, antes, derived, { sobrou = 0, dano = 0, ataqueId = null, tipo = "dano" } = {}) {
+  const hpDepois = Math.max(0, inteiro(depois.hpAtual, 0));
+  const vital = antes.vital ?? depois.vital ?? vitalEmBranco();
+  const hpMax = Math.max(0, inteiro(derived?.hp, 0));
+  /* O Ainda de Pé do Restringido adia a morte massiva para a escolha dele ("você apenas resiste e fica com 1 de vida"). */
+  const massivoAdiado = hpDepois === 0 && !!derived && recursosDeEspecializacao(depois, derived).ainda;
+  const r = registraDano(vital, {
+    hpAntes: Math.max(0, inteiro(antes.hpAtual, 0)), hpDepois, sobrou, dano, hpMax, ataqueId, tipo, massivoAdiado,
+  });
+  return r.vital === (depois.vital ?? undefined) ? depois : { ...depois, vital: r.vital };
 }
 
 /**
@@ -1840,10 +1954,11 @@ export function aplicaDano(sessao, bruto, derived = null) {
  * "perda de vida" dos sistemas de onde o Afty veio, e está em docs/a-fazer.md
  * para o autor confirmar.
  */
-export function aplicaPerdaDeVida(sessao, bruto) {
+export function aplicaPerdaDeVida(sessao, bruto, derived = null) {
   const perda = Math.max(0, inteiro(bruto, 0));
   if (!perda) return sessao;
-  return { ...sessao, hpAtual: Math.max(0, sessao.hpAtual - perda) };
+  if (sessao.vital?.estado === "morto") return sessao;
+  return comQueda({ ...sessao, hpAtual: Math.max(0, sessao.hpAtual - perda) }, sessao, derived, { sobrou: perda, tipo: "perda" });
 }
 
 /** Aplica cura. Nunca passa do máximo, e nunca ressuscita PV temporário. */
@@ -1901,7 +2016,7 @@ export function aplicaAcaoContador(sessao, contadores, contador, acao, hpMax) {
     const pct = acao.pvPercentual[Math.min(acao.pvPercentual.length - 1, Math.max(0, v - contador.min))];
     out = { ...out, hpAtual: Math.floor(max * pct / 100) };
   }
-  if ((acao.pv ?? 0) < 0) out = { ...out, hpAtual: Math.max(0, inteiro(out.hpAtual, 0) + acao.pv) };
+  if ((acao.pv ?? 0) < 0) out = comQueda({ ...out, hpAtual: Math.max(0, inteiro(out.hpAtual, 0) + acao.pv) }, out, null, { sobrou: -acao.pv, tipo: "perda" });
   if ((acao.pv ?? 0) > 0) out = aplicaCura(out, acao.pv, max);
   if (acao.pvPeloValor) out = aplicaCura(out, v, max);
   out = defineContadorSessao(out, contador, v + (acao.delta ?? 0));
@@ -1917,9 +2032,10 @@ export function aplicaCura(sessao, bruto, hpMax, { externa = false } = {}) {
   if (externa && sessao.energiaEmVida) return sessao;
   const cura = Math.max(0, inteiro(bruto, 0));
   if (!cura) return sessao;
-  return { ...sessao, hpAtual: entre(sessao.hpAtual + cura, 0, Math.max(0, hpMax)),
-    ...(sessao.especializacaoSessao ? { especializacaoSessao: { ...sessao.especializacaoSessao,
-      pvNegativos: 0, modoMorte: null, quedaPendente: false, cairNoProximoDano: false } } : {}) };
+  /* A cura QUITA O SALDO NEGATIVO ANTES de subir o PV (p.313: "é necessário curar todo o valor negativo de vida, até
+     retornar ao 0"), e não o apaga. Quitar tudo estabiliza, e o que sobrar sobe o PV. Corpo morto não recebe cura. A regra mora
+     em `curaNaSessao` (ficha-vital.js), que o Corpo de Aço do Restringido também usa. */
+  return curaNaSessao(sessao, cura, hpMax);
 }
 
 /* ============================================================ */
@@ -1963,9 +2079,11 @@ function almaEhPilha(derived) {
 export function aplicaDanoNaAlma(sessao, bruto, derived) {
   const dano = Math.max(0, inteiro(bruto, 0));
   if (!dano) return sessao;
+  if (sessao.vital?.estado === "morto") return sessao;
   const almaAtual = Math.max(0, sessao.almaAtual - dano);
   if (!almaEhPilha(derived)) return { ...sessao, almaAtual };
-  return { ...sessao, almaAtual, hpAtual: Math.max(0, sessao.hpAtual - dano) };
+  /* É perda de vida (p.311): leva o corpo a 0 se for o caso, e então às Portas da Morte. */
+  return comQueda({ ...sessao, almaAtual, hpAtual: Math.max(0, sessao.hpAtual - dano) }, sessao, derived, { sobrou: dano, tipo: "perda" });
 }
 
 /**
@@ -2146,6 +2264,20 @@ export function encerraGuarda(sessao) {
   return { ...sessao, pvTempFontes: fontes, guardaEncerrada: true };
 }
 
+function encerraUsoDePosturaDesligada(sessao) {
+  return !sessao.combate?.postura && !sessao.combate?.postura2 && sessao.uso?.ativos?.cmb_assumir_postura
+    ? encerraAtivoNaSessao(sessao, "cmb_assumir_postura", "desligadoAMao") : sessao;
+}
+
+// Livro p.76. A postura termina, e remover a condição depois não a devolve.
+function encerraPosturasPorCondicao(sessao) {
+  const combate = sessao.combate;
+  if (!combate?.postura && !combate?.postura2 && !sessao.uso?.ativos?.cmb_assumir_postura) return sessao;
+  const encerra = new Set(["caido", "atordoado", "inconsciente", "paralisado", "indefeso"]);
+  if (!sessao.condicoes.some((c) => encerra.has(semAcento(typeof c === "string" ? c : c?.nome)))) return sessao;
+  return encerraAtivoNaSessao({ ...sessao, combate: { ...combate, postura: null, postura2: null } }, "cmb_assumir_postura", "condicao");
+}
+
 /**
  * Grava a lista de condições e aplica o efeito delas sobre a Guarda. As duas
  * telas escrevem condição por aqui, e não direto no campo: se uma escrevesse
@@ -2160,7 +2292,7 @@ export function defineCondicoes(sessao, condicoes) {
   const lista = (Array.isArray(condicoes) ? condicoes : [])
     .filter((c) => !(regras.includes("pureza") && (typeof c === "string" ? c : c.nome) === "Envenenado"))
     .map((c) => regras.includes("pureza_refinada") && typeof c === "object" ? { ...c, rodadas: Math.min(c.rodadas ?? 1, 1) } : c);
-  const proxima = { ...sessao, condicoes: lista };
+  const proxima = encerraPosturasPorCondicao({ ...sessao, condicoes: lista });
   if (condicaoQueQuebraGuarda(proxima) == null) return proxima;
   const fontes = { ...(proxima.pvTempFontes ?? {}) };
   delete fontes[FONTE_GUARDA];
@@ -2215,6 +2347,8 @@ export function proximaRodada(sessao, derived = null, { preservarTurnoArmas = fa
        encerrou       `[{ id, nome, motivo }]`  o estado que a virada desligou (foraDeCombate, quartaRodada, semEnergia, desligadoAMao)
        exaustaoGanha  a Exaustão que a virada entregou (a pendente do Invencível) */
   const registro = { renovou: [], pagou: [], encerrou: [], exaustaoGanha: 0 };
+  // O fim do turno do motor de uso (CL1) cai aqui, com o registro já aberto, para o histórico dizer o que ele encerrou.
+  if (!preservarTurnoArmas) sessao = encerraTurnoNoUso(sessao, registro);
   const renova = (s, entradas) => {
     const depois = aplicaPeTemporario(s, entradas);
     registro.renovou.push(...renovacoesDePe(s, depois));
@@ -2292,7 +2426,7 @@ export function proximaRodada(sessao, derived = null, { preservarTurnoArmas = fa
   const comInvocacoes = sessao.rodada === 0
     ? iniciaInvocacoesNoCombate(comPreparo, derived, registro)
     : avancaInvocacoesNaRodada(comPreparo, derived);
-  let proxima = rodadaBloodfeast(avancaTalismaApice(avancaInvencivelSobOSol(comInvocacoes, derived, registro)), derived);
+  let proxima = rodadaBloodfeast(avancaTalismaApice(avancaInvencivelSobOSol(semFrenesiDaRodada(comInvocacoes), derived, registro)), derived);
   if (derived?.bloodfeast?.tem && derived.bloodfeast.ids.includes("regeneracao") && sessao.hpAtual < derived.hp / 2) {
     const r = rolarDano(preparaRolagemCura({ tipo: "dano", rotulo: "Regeneração Constante", dados: 2, faces: 8, fixo: derived.bloodfeast.modCon, tom: "cura" }, derived.efeitos));
     proxima = aplicaCura(registraRolagem(proxima, r), r.total, derived.hp);
@@ -2300,16 +2434,31 @@ export function proximaRodada(sessao, derived = null, { preservarTurnoArmas = fa
   proxima = consumirAcoesAddon(proxima, (derived?.acoesAddon ?? [])
     .filter((a) => a.tipo === "disparo").map((a) => a.estado));
   proxima = novaRodadaEspecializacao(proxima, { expirarSurto: sessao.rodada > 0 });
-  if (!preservarTurnoArmas) proxima = iniciarTurnoEspecializacao(proxima, derived);
+  /* O motor de uso (CL1): a duração dos usos desce e a manutenção passa a ser DEVIDA, sem débito (`registro.encerrou` e
+     `registro.manutencaoDevida` dizem o que mudou). Na ficha individual o turno também vira aqui, como o das Especializações. */
+  proxima = avancaUsoNaRodada(proxima, registro);
+  if (!preservarTurnoArmas) proxima = iniciaTurnoNoUso(iniciarTurnoEspecializacao(proxima, derived), registro);
   return { sessao: proxima, expirou, registro };
 }
 
 export function iniciaTurnoFicha(sessao, derived, rng = Math.random) {
-  return iniciarTurnoEspecializacao(iniciaTurnoArmas(sessao), derived, rng);
+  return comTurnoVital(iniciaTurnoNoUso(iniciarTurnoEspecializacao(iniciaTurnoArmas(sessao), derived, rng)));
+}
+
+/**
+ * O que o ESTADO VITAL faz no início do turno de quem o vive (p.313): quem está nas Portas da Morte ganha o teste de morte
+ * PENDENTE, que a pessoa rola por `rolaTesteDeMorte` (`ficha-morte.js`). NADA É ROLADO AQUI. Quem está de pé por Mesmo Morto
+ * (Restringido) não está nas Portas e não ganha o teste. A perda das reações da ferida interna (p.314) acaba aqui também.
+ */
+function comTurnoVital(sessao) {
+  const v = sessao.vital;
+  if (!v) return sessao;
+  const proximo = semReacoesAcabou(abreTesteDeMorte(v, { suprime: sessao.especializacaoSessao?.modoMorte === "mesmo_morto" }));
+  return proximo === v ? sessao : { ...sessao, vital: proximo };
 }
 
 export function encerraTurnoFicha(sessao, derived, rng = Math.random) {
-  return encerrarTurnoEspecializacao(sessao, derived, rng);
+  return encerraTurnoNoUso(encerrarTurnoEspecializacao(sessao, derived, rng));
 }
 
 /* O Talismã do Ápice desligado, com o contador zerado. */
@@ -2404,12 +2553,22 @@ export function iniciaCombate(sessao, derived = null) {
  */
 export function descansar(sessao, derived, { marioneteId = null } = {}) {
   if (!derived) return sessao;
+  /* Quem morreu não se levanta descansando (CL2): devolver a vida a um corpo morto é a mesa escrevendo o PV à mão. */
+  if (sessao.vital?.estado === "morto") return sessao;
   sessao = encerrarAcoesAddon(sessao);
   // O Mecha devolve o PV atual às componentes antes de reparar só a escolhida.
   const mesa = separaMecha(sessao);
-  return {
+  // O descanso encerra os usos com duração e a concentração (CL1), e devolve o estado de uso ao branco. O anel de ids fica.
+  return zeraUsoNoDescanso({
     ...sessao,
     especializacaoSessao: {},
+    // O descanso desmancha as paredes e cortinas erguidas (CL3).
+    barreiras: barreirasEmBranco(),
+    /* O descanso longo derruba as falhas de morte (p.313) e tira o corpo das Portas porque o PV volta cheio. Os Ferimentos
+       Complexos NÃO saem (p.314). Os Dados de Vida gastos voltam (p.335, "recupera todos os seus dados de vida gastos"): o
+       botão da Ficha é um só e devolve tudo (a D3 de 2026-09-23). */
+    ...(sessao.vital ? { vital: vitalNoDescanso(sessao.vital) } : {}),
+    dadosVida: { gastos: {} },
     dharma: normalizaDharma(),
     gungnir: normalizaGungnir(),
     energiaEmVida: derived?.bloodfeast?.tem ? 3 : 0,
@@ -2466,7 +2625,7 @@ export function descansar(sessao, derived, { marioneteId = null } = {}) {
       .filter((c) => c.rodadas == null)
       .filter((c) => c.id !== CHAVE_CONDICAO_RITUAL_ESTENDIDO),
     ritualAtual: null,
-  };
+  });
 }
 
 /**
@@ -2647,6 +2806,8 @@ function avancaRecargas(sessao) {
  */
 const CHAVES_DA_EXPANSAO = [
   "dominioFase", "dominioRodadas", "dominioPvDomo", "dominioPvDomoMax", "dominioExaustao", "dominioNome",
+  // CL3: o vínculo do Confronto e da Contestação com o outro participante morre junto com a Expansão.
+  "dominioConfronto", "dominioContestando",
 ];
 
 export function normalizaExaustaoTecnica(bruto) {
@@ -2897,7 +3058,7 @@ export function pagaCustoVida(sessao, bruto) {
   const pedido = Math.max(0, inteiro(bruto, 0));
   const pago = Math.min(atual, pedido);
   return {
-    sessao: pago > 0 ? { ...sessao, hpAtual: atual - pago } : sessao,
+    sessao: pago > 0 ? comQueda({ ...sessao, hpAtual: atual - pago }, sessao, null, { sobrou: pago, tipo: "perda" }) : sessao,
     pago,
   };
 }
@@ -2984,7 +3145,8 @@ export function alteraEstadoCombate(sessao, estado, valor, derived = null) {
     return {
       ...sessao,
       combate: proximo,
-      hpAtual: entre(sessao.hpAtual + (ativando ? Math.max(0, depois.hp - antes.hp) : 0), 0, Math.max(0, depois.hp)),
+      /* Corpo morto não ganha o PV da ampliação (CL2): o aumento do máximo não é cura nem ressuscita. */
+      hpAtual: entre(sessao.hpAtual + (ativando && sessao.vital?.estado !== "morto" ? Math.max(0, depois.hp - antes.hp) : 0), 0, Math.max(0, depois.hp)),
       peAtual: entre(sessao.peAtual + (ativando ? Math.max(0, depois.pe - antes.pe) : 0), 0, Math.max(0, depois.pe)),
       usos: ativando && estado.umaVezPorRodada
         ? { ...(sessao.usos || {}), [chaveUsoEstado(estado.id)]: sessao.rodada }
@@ -3076,7 +3238,7 @@ function semAmpliacoesRecursos(combate, derived = null) {
 /** A mudança de combate encerra o Ápice e cobra a Exaustão da rodada aberta. */
 export function aplicaPatchCombate(sessao, parcial) {
   if (parcial?.ativo === false) sessao = { ...sessao, servosMovimentosUsados: 0, gungnir: normalizaGungnir() };
-  if (parcial?.ativo === false) sessao = encerrarAcoesAddon(sessao);
+  if (parcial?.ativo === false) sessao = encerrarAcoesAddon(fechaCombateNoUso(sessao));
   /* O fim do combate desmancha a Expansão no ar, com a Exaustão de Técnica de
      sempre (Etapa 9): fora de combate a bancada zera o estado, e deixá-la
      "aberta" esconderia a Exaustão que ela deve. */
@@ -3158,6 +3320,16 @@ const removeCondicaoRitualEstendido = (sessao) => ({
   condicoes: (sessao.condicoes ?? []).filter((c) => c.id !== CHAVE_CONDICAO_RITUAL_ESTENDIDO),
 });
 
+/* O Ritual Estendido exige manter a concentração entre o primeiro e o segundo turno (p.322). A concentração é um só
+   espaço por ficha (p.320): se ele já está ocupado por outro efeito, o ritual segue como sempre seguiu, sem registro,
+   e quem quiser recusar o início consulta `bloqueioRitualEstendido` em ficha-concentracao.js. */
+const abreConcentracaoDoRitual = (sessao, feiticoId) => (usoDe(sessao).concentracao
+  ? sessao
+  : abreConcentracaoNaSessao(sessao, { id: `ritual:${feiticoId}`, nome: "Ritual Estendido", ritualFeiticoId: feiticoId }));
+const fechaConcentracaoDoRitual = (sessao, feiticoId) => (usoDe(sessao).concentracao?.ritualFeiticoId === feiticoId
+  ? fechaConcentracaoNaSessao(sessao)
+  : sessao);
+
 const desarmaRitualistaDoFeitico = (sessao, feiticoId) => configuraRitual(
   sessao,
   feiticoId,
@@ -3190,7 +3362,7 @@ export function iniciaRitualEstendido(sessao, feiticoId, usaRitualista = false) 
   const consumido = comRitualistaConsumido(sessao, usaRitualista);
   const semMarcadorAnterior = (consumido.condicoes ?? [])
     .filter((c) => c.id !== CHAVE_CONDICAO_RITUAL_ESTENDIDO);
-  return {
+  return abreConcentracaoDoRitual({
     ...consumido,
     condicoes: [
       ...semMarcadorAnterior,
@@ -3207,7 +3379,7 @@ export function iniciaRitualEstendido(sessao, feiticoId, usaRitualista = false) 
       etapa: "preparando",
       usaRitualista: !!usaRitualista,
     },
-  };
+  }, feiticoId);
 }
 
 /** O botão conclui a preparação estendida ou a continuação escolhida após a falha. */
@@ -3228,7 +3400,7 @@ export function concluiPreparacaoRitual(sessao, feiticoId) {
 export function cancelaRitual(sessao, feiticoId) {
   const atual = ritualEmAndamento(sessao);
   if (!atual || atual.feiticoId !== feiticoId) return sessao;
-  const limpo = removeCondicaoRitualEstendido({ ...sessao, ritualAtual: null });
+  const limpo = fechaConcentracaoDoRitual(removeCondicaoRitualEstendido({ ...sessao, ritualAtual: null }), feiticoId);
   return atual.usaRitualista ? desarmaRitualistaDoFeitico(limpo, feiticoId) : limpo;
 }
 
@@ -3244,10 +3416,10 @@ export function finalizaRitual(sessao, feiticoId) {
   if (!atual || atual.feiticoId !== feiticoId || !ritualProntoParaResolver(sessao, feiticoId)) {
     return sessao;
   }
-  return removeCondicaoRitualEstendido({
+  return fechaConcentracaoDoRitual(removeCondicaoRitualEstendido({
     ...sessao,
     ritualAtual: { ...atual, etapa: "resolvido" },
-  });
+  }), feiticoId);
 }
 
 /** Encerra o Ritual resolvido e libera o botão para outro uso. */

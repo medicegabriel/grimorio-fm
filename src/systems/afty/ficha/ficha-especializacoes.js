@@ -1,47 +1,71 @@
 import { rolarTeste, rolarDano } from "./ficha-rolagem";
+// O saldo negativo e as falhas de morte moram no estado vital (CL2). Aqui ficam só os MODOS do Restringido. FOLHA.
+import { vitalEmBranco, estabilizado, comFalhas, curaNaSessao } from "./ficha-vital";
+import { avaliarAcessoAltoNivel, getHabilidadeApice } from "../afty-alto-nivel";
 
 const inteiro = (n) => Math.max(0, Math.trunc(Number(n) || 0));
 const tem = (d, id) => (d?.habilidades?.canonicas ?? d?.habilidades?.efetivas ?? []).includes(id);
 const estado = (s) => ({ turno: 0, reacoesGastas: 0, reacoesExtras: 0, acoesComuns: 0,
-  pvNegativos: 0, falhasMorte: 0, modoMorte: null, ...s.especializacaoSessao });
+  modoMorte: null, ...s.especializacaoSessao });
+const vitalDe = (s) => s.vital ?? vitalEmBranco();
+const estaMorta = (s) => s.vital?.estado === "morto";
+const comFalhasNaSessao = (s, n) => ({ ...s, vital: comFalhas(vitalDe(s), n) });
 const patch = (s, p) => ({ ...s, especializacaoSessao: { ...estado(s), ...p } });
 const log = (s, r) => ({ ...s, log: [r, ...(s.log ?? [])].slice(0, 50) });
-const recupera = (s, n, max) => patch({ ...s, hpAtual: Math.min(max, inteiro(s.hpAtual) + inteiro(n)) },
-  { pvNegativos: 0, modoMorte: null, quedaPendente: false, cairNoProximoDano: false });
+/* Ainda de Pé e Rejeitar a Morte são EXCEÇÕES à regra geral da cura (que quita o saldo antes de subir o PV): elas põem o
+   PV direto e encerram a queda, e por isso zeram o saldo e os sucessos. As FALHAS ficam, como em toda saída das Portas. */
+const recupera = (s, n, max) => patch({ ...s, hpAtual: Math.min(max, inteiro(s.hpAtual) + inteiro(n)), vital: estabilizado(vitalDe(s)) },
+  { modoMorte: null, quedaPendente: false, cairNoProximoDano: false });
+
+function imunidadeMovimentoForcado(d) {
+  if (!d.efeitos) return tem(d, "res_barreira_inamovivel") || !!d.combate?.imuneMovimentoForcado;
+  let valor = d.efeitos.porCanal?.imunidadeMovimentoForcado ?? 0;
+  const fontesApice = (d.efeitos.detalhes ?? []).filter((e) => e.canal === "imunidadeMovimentoForcado" && e.origem === "api_invencivel_sob_o_sol");
+  if (fontesApice.length && (d.altoNivel?.lendarias?.inacessiveis?.includes("len_atingir_apice")
+    || !avaliarAcessoAltoNivel(getHabilidadeApice("api_invencivel_sob_o_sol"), {
+      nd: d.nd, niveisPorEspec: d.habilidades?.niveisPorEspec,
+      habilidades: (d.habilidades?.efetivas ?? []).filter((id) => !d.habilidades?.inacessiveis?.includes(id)).map((id) => id.replace(/^.*__/, "")),
+    }).ok)) valor -= fontesApice.reduce((soma, e) => soma + e.valor, 0);
+  return valor > 0;
+}
 
 export function recursosDeEspecializacao(s, d) {
   const e = estado(s);
   const instintos = tem(d, "res_instintos_agucados") && s.hpAtual > d.hp / 2 && s.peAtual > d.pe / 2;
   const ainda = tem(d, "res_ainda_de_pe") && inteiro(s.usos?.["hab:res_ainda_de_pe"]) < 1;
   return { ...e, instintos, ainda,
+    /* Os dois nomes antigos continuam publicados, lidos agora do estado vital. */
+    pvNegativos: inteiro(s.vital?.saldo),
+    falhasMorte: inteiro(s.vital?.falhas),
     reacoes: Math.max(0, 1 + Number(instintos) + inteiro(e.reacoesExtras) - inteiro(e.reacoesGastas)),
-    cdRejeitar: 15 + Math.floor(inteiro(e.pvNegativos) / 3),
-    cdMesmoMorto: 25 + Math.floor(inteiro(e.pvNegativos) / 5),
+    cdRejeitar: 15 + Math.floor(inteiro(s.vital?.saldo) / 3),
+    cdMesmoMorto: 25 + Math.floor(inteiro(s.vital?.saldo) / 5),
     custoAtaqueExtra: s.combate?.surtoAdrenalina && s.combate?.adrenalinaAbsoluta ? 1 : 2,
     pulos: tem(d, "res_perceber_o_ar") ? 1 + Number(d.nd >= 13) + Number(d.nd >= 17) : 0,
     quedaImuneAte: tem(d, "res_perceber_o_ar") ? 2 * d.movimento : 0,
     saltoAdicional: d.configuracaoEspecializacao?.forcaDevastadora ? 3 : 0,
-    imuneMovimentoForcado: tem(d, "res_barreira_inamovivel"),
+    imuneMovimentoForcado: imunidadeMovimentoForcado(d),
     ignoraTerrenoDificil: !!d.configuracaoEspecializacao?.agilidadeEximia,
     imuneDominio: tem(d, "res_restricao_definitiva"),
   };
 }
 
-// Chamado depois de descontar a casca e a Vida. Não presume morte instantânea.
-export function registrarQuedaEspecializacao(s, d, excesso) {
+/* Chamado depois de descontar a casca e a Vida, e DEPOIS de o estado vital registrar a queda (o saldo negativo já
+   está lá). Aqui entra só o que é do Restringido: os modos da queda e a falha do "cair no próximo dano". */
+export function registrarQuedaEspecializacao(s, d) {
   if (!d || !["res_ainda_de_pe", "res_rejeitar_a_morte", "res_mesmo_morto"].some((id) => tem(d, id))) return s;
   if (s.hpAtual > 0) return s;
   const e = recursosDeEspecializacao(s, d);
-  const pvNegativos = inteiro(e.pvNegativos) + inteiro(excesso);
-  if (e.cairNoProximoDano) return patch(s, { pvNegativos, falhasMorte: inteiro(e.falhasMorte) + 1,
-    modoMorte: "caido", cairNoProximoDano: false, quedaPendente: false });
+  if (e.cairNoProximoDano) return patch(comFalhasNaSessao(s, 1), { modoMorte: "caido", cairNoProximoDano: false, quedaPendente: false });
   if (!e.ainda && tem(d, "res_mesmo_morto") && e.modoMorte !== "caido") {
-    return patch(s, { pvNegativos, modoMorte: "mesmo_morto", quedaPendente: false });
+    return patch(s, { modoMorte: "mesmo_morto", quedaPendente: false });
   }
-  return patch(s, { pvNegativos, quedaPendente: e.ainda, modoMorte: e.modoMorte ?? "portas_da_morte" });
+  return patch(s, { quedaPendente: e.ainda, modoMorte: e.modoMorte ?? "portas_da_morte" });
 }
 
 export function usarEfeitoEspecializacao(s, d, id, rng = Math.random) {
+  /* Ainda de Pé, Rejeitar a Morte e a falha garantida deste último não valem para um corpo que já morreu (CL2). */
+  if (estaMorta(s) && ["res_ainda_de_pe", "res_ainda_de_pe_letal", "res_rejeitar_a_morte"].includes(id)) return s;
   const e = recursosDeEspecializacao(s, d);
   if (id === "reacao" && e.reacoes > 0) return patch(s, { reacoesGastas: inteiro(e.reacoesGastas) + 1 });
   if (id === "res_reacao_rapida" && tem(d, id) && e.reacoesGastas > 0 && e.rapidaRodada !== s.rodada) {
@@ -72,7 +96,7 @@ export function usarEfeitoEspecializacao(s, d, id, rng = Math.random) {
   if (id === "res_rejeitar_a_morte" && tem(d, id) && s.hpAtual === 0) {
     const tr = d.testes.resistencias.find((x) => x.value === "fortitude");
     const r = rolarTeste({ rotulo: "Rejeitar a Morte", bonus: tr.bonus, dados: tr.dadosExtras, cd: e.cdRejeitar }, rng);
-    const proxima = log(patch(s, { falhasMorte: inteiro(e.falhasMorte) + 1 }), r);
+    const proxima = log(comFalhasNaSessao(s, 1), r);
     return r.sucesso ? { ...recupera(proxima, 1, d.hp), exaustao: inteiro(proxima.exaustao) + 1 } : proxima;
   }
   if (["res_forca_imparavel", "res_barreira_inamovivel"].includes(id) && tem(d, id)) {
@@ -98,10 +122,19 @@ export function iniciarTurnoEspecializacao(s, d, rng = Math.random) {
     usos: Object.fromEntries(Object.entries(proxima.usos ?? {}).filter(([k]) => !k.startsWith("turno:"))) };
   const imitacao = proxima.combate?.imitacao;
   if (imitacao?.copia) proxima.combate = { ...proxima.combate, imitacao: { ...imitacao, esperandoTurno: false } };
-  if (d?.combate?.corpoDeAco && tem(d, "res_corpo_de_aco") && s.combate?.ativo && s.hpAtual < d.hp) {
+  if (d?.combate?.corpoDeAco && tem(d, "res_corpo_de_aco") && s.combate?.ativo && s.hpAtual < d.hp && !estaMorta(s)) {
     const reg = d.regeneracao;
-    const r = rolarDano({ rotulo: "Corpo de Aço", tom: "cura", dados: reg.dados, faces: Number(reg.dado.slice(1)), fixo: reg.fixo }, rng);
-    proxima = recupera(log(proxima, r), r.total, d.hp);
+    const r = rolarDano(d.conteudoRegeneracoes?.res_corpo_de_aco?.pedido
+      ?? { rotulo: "Corpo de Aço", tom: "cura", dados: reg.dados, faces: Number(reg.dado.slice(1)), fixo: reg.fixo }, rng);
+    /* Corpo de Aço é REGENERAÇÃO COMUM, e não uma das exceções da queda: segue a cura da p.313 (quita a dívida antes de subir o
+       PV, e corpo morto não regenera). */
+    proxima = curaNaSessao(log(proxima, r), r.total, d.hp);
+  }
+  const sobrevivente = d.conteudoRegeneracoes?.lut_sobrevivente;
+  if (sobrevivente && s.hpAtual > 0 && s.hpAtual < d.hp / 2 && s.vital?.estado !== "morrendo" && !estaMorta(s)
+    && !(s.condicoes ?? []).some((c) => (typeof c === "string" ? c : c.nome) === "Inconsciente")) {
+    const r = rolarDano(sobrevivente.pedido, rng);
+    proxima = curaNaSessao(log(proxima, r), r.total, d.hp);
   }
   return proxima;
 }
@@ -112,11 +145,14 @@ export function encerrarTurnoEspecializacao(s, d, rng = Math.random) {
   const e = recursosDeEspecializacao(s, d);
   if (e.turnoEncerrado === e.turno) return s;
   proxima = patch(s, { turnoEncerrado: e.turno });
-  if (e.modoMorte === "mesmo_morto" && s.hpAtual === 0 && tem(d, "res_mesmo_morto")) {
+  if (e.modoMorte === "mesmo_morto" && s.hpAtual === 0 && tem(d, "res_mesmo_morto") && !estaMorta(s)) {
     const tr = d.testes.resistencias.find((x) => x.value === "fortitude");
     const r = rolarTeste({ rotulo: "Mesmo Morto", bonus: tr.bonus, dados: tr.dadosExtras, cd: e.cdMesmoMorto }, rng);
     proxima = log(proxima, r);
-    if (!r.sucesso) proxima = patch(proxima, { modoMorte: "caido", falhasMorte: Math.max(1, inteiro(e.falhasMorte)) });
+    if (!r.sucesso) {
+      const v = vitalDe(proxima);
+      proxima = patch({ ...proxima, vital: comFalhas(v, Math.max(0, 1 - v.falhas)) }, { modoMorte: "caido" });
+    }
   }
   const i = proxima.combate?.imitacao;
   if (i?.copia && i.esperandoTurno === false) {
@@ -148,9 +184,12 @@ export function registrarAtaqueEspecializacao(s, desc, d) {
 }
 
 export function prepararRolagemEspecializacao(desc, s, d) {
-  if (desc.fonteCuraId === "cura_ainda_de_pe" && (!recursosDeEspecializacao(s, d).ainda || s.hpAtual > 0)) return null;
+  if (desc.fonteCuraId === "cura_ainda_de_pe" && (!recursosDeEspecializacao(s, d).ainda || s.hpAtual > 0 || estaMorta(s))) return null;
   const corpo = desc.linhaArma?.ataqueId === "corpo" || desc.linhaArma?.categoria === "corpo";
-  let resultado = { ...desc, ...(desc.tipo === "dano" && corpo && s.combate?.precisaoForcada ? { maximizado: true } : {}) };
+  const dragao = d.combate?.postura === "dragao" || d.combate?.postura2 === "dragao" || d.combate?.invencivelSobOSol;
+  let resultado = { ...desc, ...(desc.tipo === "teste" && (desc.tipoTeste === "ataque" || desc.linhaArma)
+    ? { contextoTurno: { rodada: s.rodada, turno: s.uso?.acoes?.turno ?? 0, ...(dragao ? { posturaDragao: true } : {}) } } : {}),
+    ...(desc.tipo === "dano" && corpo && s.combate?.precisaoForcada ? { maximizado: true } : {}) };
   const agarrar = /agarrar/i.test(desc.rotulo ?? "") && /resistir/i.test(desc.rotulo ?? "");
   const furtividade = desc.rotulo === "Furtividade" && s.combate?.furtividadeContraEnergia;
   if (desc.tipo === "teste" && ((agarrar && tem(d, "res_barreira_inamovivel"))
@@ -162,6 +201,6 @@ export function prepararRolagemEspecializacao(desc, s, d) {
 
 export function aplicarCuraRoladaEspecializacao(s, desc, r, d) {
   if (desc.fonteCuraId !== "cura_ainda_de_pe") return s;
-  if (!recursosDeEspecializacao(s, d).ainda || s.hpAtual > 0) return s;
+  if (!recursosDeEspecializacao(s, d).ainda || s.hpAtual > 0 || estaMorta(s)) return s;
   return recupera({ ...s, usos: { ...s.usos, "hab:res_ainda_de_pe": 1 } }, r.total, d.hp);
 }

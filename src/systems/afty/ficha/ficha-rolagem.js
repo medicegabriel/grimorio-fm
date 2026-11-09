@@ -40,6 +40,32 @@ export function rolarDados(quantidade, faces, rng = Math.random) {
   return Array.from({ length: n }, () => umDado(faces, rng));
 }
 
+// Uma troca de dado recompõe o mesmo resultado, sem sortear bônus ou extras.
+function resultadoD20({ d20, modo, bonus, somaExtras, minimoNatural, margem, cd, tipoTeste }) {
+  const dupla = d20.length > 1 && (modo === "vantagem" || modo === "desvantagem");
+  const escolhido = !dupla ? d20[0] : modo === "vantagem" ? Math.max(...d20) : Math.min(...d20);
+  const natural = Math.max(escolhido, Math.trunc(Number(minimoNatural) || 0));
+  const total = natural + bonus + somaExtras;
+  const cdFinal = cd == null ? null : Math.trunc(Number(cd));
+  const ataque = tipoTeste === "ataque";
+  const sucesso = ataque && natural === 20 ? true : ataque && natural === 1 ? false
+    : Number.isFinite(cdFinal) ? total >= cdFinal : null;
+  return {
+    descartado: dupla ? (d20[0] === escolhido ? 1 : 0) : null,
+    natural, ...(natural !== escolhido ? { naturalOriginal: escolhido } : {}), total,
+    cd: Number.isFinite(cdFinal) ? cdFinal : null, sucesso,
+    critico: natural >= Math.max(2, Math.trunc(margem) || 20) && (!ataque || sucesso !== false),
+    pifia: natural === 1,
+  };
+}
+
+/** Reavalia os d20 de um teste existente, conservando seu recibo e os extras. */
+export function recalculaTesteD20(rolagem, d20) {
+  const base = { ...rolagem };
+  delete base.naturalOriginal;
+  return { ...base, d20, ...resultadoD20({ ...base, d20, somaExtras: base.somaExtras ?? 0, margem: base.margemCritico }) };
+}
+
 /**
  * Teste de d20: perícia, Teste de Resistência, Jogada de Ataque, manobra.
  *
@@ -47,7 +73,7 @@ export function rolarDados(quantidade, faces, rng = Math.random) {
  * de 2 aplicado). Sem ela, crítico é só no 20 natural.
  */
 export function rolarTeste(
-  { rotulo, detalhe, bonus = 0, dados = [], modo = "normal", margem = 20, cd = null, minimoNatural = 0 },
+  { rotulo, detalhe, bonus = 0, dados = [], modo = "normal", margem = 20, cd = null, minimoNatural = 0, tipoTeste = "teste", linhaArma = null, periciaId = null, contextoConteudo = null, contextoTurno = null, fontes = null },
   rng = Math.random,
 ) {
   const bonusInt = Math.trunc(Number(bonus) || 0);
@@ -62,38 +88,29 @@ export function rolarTeste(
   const textoExtras = extras.map((d) => `${d.qtd}d${d.faces}`).join(" + ");
   const dupla = modo === "vantagem" || modo === "desvantagem";
   const d20 = rolarDados(dupla ? 2 : 1, 20, rng);
-  const escolhido = !dupla ? d20[0]
-    : modo === "vantagem" ? Math.max(...d20)
-    : Math.min(...d20);
-  // Qual dos dois foi descartado, para o painel poder riscá-lo. Com os dois
-  // iguais não há descarte visível, e o índice 1 serve igual.
-  const descartado = dupla ? (d20[0] === escolhido ? 1 : 0) : null;
-  const naturalTratado = Math.max(escolhido, Math.trunc(Number(minimoNatural) || 0));
-  const total = naturalTratado + bonusInt + somaExtras;
-  const cdFinal = cd == null ? null : Math.trunc(Number(cd));
+  const resultado = resultadoD20({ d20, modo, bonus: bonusInt, somaExtras, minimoNatural, margem, cd, tipoTeste });
   return {
     id: novoId(),
     ts: Date.now(),
     tipo: "teste",
+    tipoTeste,
+    margemCritico: Math.max(2, Math.trunc(margem) || 20),
+    minimoNatural: Math.max(0, Math.trunc(minimoNatural) || 0),
+    ...(periciaId ? { periciaId } : {}),
+    ...(contextoConteudo ? { contextoConteudo } : {}),
+    ...(contextoTurno ? { contextoTurno } : {}),
+    ...(fontes ? { fontes } : {}),
+    ...(linhaArma ? { armaId: linhaArma.id, chaveArma: linhaArma.chaveArma ?? null } : {}),
     rotulo,
     detalhe: detalhe ?? null,
     formula: `d20${bonusInt >= 0 ? "+" : "−"}${Math.abs(bonusInt)}${textoExtras ? ` + ${textoExtras}` : ""}`,
     d20,
-    descartado,
-    natural: naturalTratado,
-    ...(naturalTratado !== escolhido ? { naturalOriginal: escolhido } : {}),
+    ...resultado,
     bonus: bonusInt,
     // O que os dados extras somaram, e o detalhe de cada um, para o log poder
     // mostrar a rolagem em vez de um número que apareceu do nada.
     extras,
     somaExtras,
-    total,
-    cd: Number.isFinite(cdFinal) ? cdFinal : null,
-    sucesso: Number.isFinite(cdFinal) ? total >= cdFinal : null,
-    // ⚠ Crítico do d20 é do ACERTO, e o que ele faz é habilitar o dano dobrado.
-    // Um 1 natural fica marcado também: quem lê o log quer ver a pedra.
-    critico: naturalTratado >= Math.max(2, Math.trunc(margem) || 20),
-    pifia: naturalTratado === 1,
     modo,
   };
 }
@@ -109,7 +126,8 @@ export function rolarTeste(
 export function rolarDano(
   {
     rotulo, detalhe, dados, faces, grupos, fixo = 0, blocos = 1,
-    critico = false, modoDano = null, explosiva = false, tom = "dano", rerrola = null, maximizado = false,
+    critico = false, modoDano = null, explosiva = false, tom = "dano", rerrola = null, maximizado = false, linhaArma = null, fontes = null,
+    detalharDados = false,
   },
   rng = Math.random,
 ) {
@@ -149,6 +167,7 @@ export function rolarDano(
     throw new RangeError("O limite da rerrolagem contínua de cura precisa ser menor que as faces do dado.");
   }
   const rolados = [];
+  const gruposRolados = [];
   let total = 0;
   let subtotalRaioNegro = 0;
   for (const g of lista) {
@@ -170,10 +189,15 @@ export function rolarDano(
     });
     rolados.push(...dadosGrupo);
     const somaDados = dadosGrupo.reduce((s, n) => s + n, 0);
+    const multiplicaNoRaio = modo === "raio_negro" && grupoNoRaioNegro(g);
+    gruposRolados.push({ nome: g.nome, tipoDano: g.tipoDano ?? linhaArma?.tipoDano ?? null,
+      momento: g.momento, total: somaDados + g.fixo,
+      ...(modo === "raio_negro" ? { subtotalRaioNegro: multiplicaNoRaio ? somaDados : 0 } : {}),
+      ...(detalharDados ? { quantidade: dadosGrupo.length, faces: g.faces } : {}) });
     /* ⚠ SÓ OS DADOS CRITÁVEIS vão para o 1,5x do Raio Negro (autor, 2026-09-15).
        O fixo de todo grupo soma uma vez, por fora, e era ele que também subia
        junto até aqui. */
-    if (modo === "raio_negro" && grupoNoRaioNegro(g)) subtotalRaioNegro += somaDados;
+    if (multiplicaNoRaio) subtotalRaioNegro += somaDados;
     else total += somaDados;
     total += g.fixo;
   }
@@ -191,11 +215,18 @@ export function rolarDano(
     ts: Date.now(),
     tipo: "dano",
     tom,
+    ...(fontes ? { fontes } : {}),
+    ...(linhaArma ? { armaId: linhaArma.id, chaveArma: linhaArma.chaveArma ?? null,
+      tipoDano: linhaArma.tipoDano, categoriaArma: linhaArma.categoria,
+      pedidoDano: { rotulo, detalhe, dados, faces, grupos, fixo, blocos, critico, modoDano, explosiva, tom, rerrola, maximizado,
+        linhaArma: { id: linhaArma.id, chaveArma: linhaArma.chaveArma, tipoDano: linhaArma.tipoDano, categoria: linhaArma.categoria } } } : {}),
     rotulo,
     detalhe: detalhe ?? null,
     formula: explosiva ? formulaBase.replace(/d(\d+)/g, "d$1!") : formulaBase,
     // Os dados que ficaram, já com os rolados de novo no lugar dos velhos.
     dados: rolados,
+    // Recibo dos tipos para o consumidor CL1, com os dados elegíveis ao adicional do Raio Negro.
+    gruposRolados,
     rerrolados,
     rerrolaFonte: rerrolados.length ? (rerrola?.fonte ?? null) : null,
     // O `faces` do registro é o do PRIMEIRO grupo. Ele só serve ao painel para
@@ -216,6 +247,7 @@ export function facesDe(dado) {
 
 /** O texto curto de uma rolagem, para o painel: `17 + 21`. */
 export function textoDaRolagem(r) {
+  if (r.tipo === "info") return r.detalhe ?? "";
   if (r.tipo === "teste") {
     return `${r.natural} ${r.bonus >= 0 ? "+" : "−"} ${Math.abs(r.bonus)}`;
   }

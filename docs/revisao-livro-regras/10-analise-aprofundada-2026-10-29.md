@@ -2,6 +2,8 @@
 
 Data da conferência: 2026-10-29. Esta análise complementa LR01 a LR27 e não altera os estados históricos da triagem nem aprova lotes da campanha de automação.
 
+> **Nota de 2026-10-30.** O autor abandonou e excluiu do site o Corpo Amaldiçoado Mutante (N01 e a linha dele nas Origens). Onde esta análise o cita, leia como histórico: **não implementar, desista da ideia e vá fazer outra coisa.** Ver `AGENTS.md`, seção "Itens descartados pelo autor".
+
 ## Resultado
 
 O site já tem uma parte grande das contas, tabelas, catálogos e ferramentas de autoria. O que impede considerá-lo completo é a combinação de benefícios ainda só descritivos, ligações incompletas entre cálculo e sessão, procedimentos sem estado próprio e algumas divergências numéricas reproduzíveis. Não é possível expressar isso como um percentual honesto usando as 27 unidades antigas.
@@ -44,7 +46,7 @@ Estes casos não são inferidos da ausência de uma chave num mapa de efeitos. F
 
 | ID | Problema | Resultado observado | Fonte e ponto de correção |
 |---|---|---|---|
-| N01 | Corpo Amaldiçoado Mutante não concede características | Origem com zero características e bônus de atributo vazio | Livro p.39 a 41. [Catálogo](../../src/systems/afty/afty-origens.js#L658). Implementar a origem e os três núcleos do personagem |
+| N01 | **DESCARTADO em 2026-10-30, não implementar.** Corpo Amaldiçoado Mutante não concede características | Origem com zero características e bônus de atributo vazio | Livro p.39 a 41. [Catálogo](../../src/systems/afty/afty-origens.js#L658). Implementar a origem e os três núcleos do personagem |
 | N02 | Arma Natural não melhora o desarmado superior | Lutador 10: `1d12 + 2` antes e depois da Anatomia. Fineza e Enérgica aparecem, mas o nível de dano adicional não | Livro p.35. [Ligação atual](../../src/systems/afty/afty-derive.js#L1294). Resolver também o dado mínimo e a escolha do tipo físico |
 | N03 | Articulações Extensas não aumenta o alcance | Ataque Básico permanece em 1,5 m | Livro p.35. [Anatomia](../../src/systems/afty/afty-anatomias.js#L38) e [mapa de efeitos](../../src/systems/afty/afty-efeitos-conteudo.js#L2689). O canal `alcanceArma` já existe |
 | N04 | Corpo Especializado não entrega a escolha e o dado | Escolher a Anatomia não altera a perícia nem acrescenta `1d4` | Livro p.35. [Catálogo](../../src/systems/afty/afty-anatomias.js#L58). Criar a escolha de perícia e encaminhar o dado adicional |
@@ -66,7 +68,7 @@ N08 é uma inconsistência da função de teste e do resultado que ela publica. 
 
 | Origem ou conjunto | O que falta para concluir | Evidência e dependência |
 |---|---|---|
-| Corpo Amaldiçoado Mutante | Bônus de atributos, forma sintética, imunidades, três núcleos, primário, redistribuição de atributos, recursos e Feitiços por núcleo, limites pelo primário, troca por diferença, estados de dano/destruição, escolhas fixas/versáteis e veto à multiclasse | Livro p.39 a 41. N01. O sistema de dois núcleos de **invocação** em `afty-invocacoes.js` não implementa essa origem |
+| Corpo Amaldiçoado Mutante (**DESCARTADO em 2026-10-30, não implementar**) | Bônus de atributos, forma sintética, imunidades, três núcleos, primário, redistribuição de atributos, recursos e Feitiços por núcleo, limites pelo primário, troca por diferença, estados de dano/destruição, escolhas fixas/versáteis e veto à multiclasse | Livro p.39 a 41. N01. O sistema de dois núcleos de **invocação** em `afty-invocacoes.js` não implementa essa origem |
 | Inato | Selecionar a Marca Registrada, aplicar desconto individual e propagá-lo às variações | Livro p.27 e 200. Vaga adicional já existe. [Característica](../../src/systems/afty/afty-origens.js#L319) |
 | Familiaridade com Técnica | Melhorar o desconto da primeira Marca, escolher a redução de sustentação e novas Marcas pelo BT | Livro p.169. [Talento](../../src/systems/afty/afty-talentos.js#L795). Depende da identidade da Marca |
 | Clã Zenin | Transformar o contador de Feitiços Focados numa escolha real por Feitiço, com a modalidade do benefício e os cinco marcos | Livro p.31. [Foco no Poder](../../src/systems/afty/afty-origens.js#L249). O contador não aumenta dano/cura, alcance ou CD |
@@ -258,7 +260,7 @@ Fontes: Livro p.350 a 358 e 365 a 366. [Modelo e normalização de Votos](../../
 
 Não é necessário pedir que o autor envie novamente:
 
-- Corpo Amaldiçoado Mutante: p.39 a 41.
+- Corpo Amaldiçoado Mutante: descartado pelo autor em 2026-10-30, não implementar.
 - Efeitos de crítico de todos os grupos de arma: p.308.
 - Exaustão comum e seus seis níveis: p.324.
 - Prosa de Feitiços Auxiliares: p.215 a 227.
@@ -291,7 +293,7 @@ O melhor fechamento reduz dependências repetidas. Esta é uma ordem de implemen
 | 2 | Operação geral de uso | Validar acesso, escolher alvo/parâmetros, conferir recurso, registrar uma vez, cobrar conforme a política autorizada, aplicar e registrar duração/recarga. Aproveitar as rotinas de custo e uso já existentes |
 | 3 | Ataque e reação com alvo declarado | Receber resultado confirmado, tipo de dano e TR. Resolver crítico de grupo, efeitos do Golpe, posturas, talentos e retornos de dano sem pedir ao sistema que conheça o mapa |
 | 4 | Recursos vitais e concentração | Portas da Morte, negativos, cura, ferimentos, Exaustão comum, Dados de Vida e concentração com vínculo ao efeito |
-| 5 | Completar as origens e seus Talentos | Mutante com seus núcleos, Marcas/Focos, recursos de origem e as 15 Anatomias da matriz |
+| 5 | Completar as origens e seus Talentos | Marcas/Focos, recursos de origem e as 15 Anatomias da matriz |
 | 6 | Feitiços, inventário e invocações | Passivas, Transformação, condições, produção, consumo, encantamentos ativos, limite/retorno de invocação, Forma de Arma e auxílios |
 | 7 | Interlúdios e Votos | Focos de produção/adaptação, ligação das etapas restantes, tipos/pesos/prazos/ruptura de Votos |
 | 8 | Fechar a verificação do produto | Integração do remoto, correção dos dois problemas do lançador/reconciliação, regressão de Player e Afty, importação antiga e teste de sessão nas telas clássica, G2 autorizado e Encontro |

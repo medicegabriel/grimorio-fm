@@ -1,0 +1,210 @@
+/* Arcane | Variante para avaliação da guilda
+   Cole o arquivo inteiro em Aparência > CSS da Ficha de Player.
+   Paleta inspirada no retrato da ficha: gelo, aço azul, marinho e coral. */
+
+@media screen {
+  :scope#afty-ficha,
+  #afty-ficha#afty-ficha {
+    --arcane-gelo: #d5f4f5;
+    --arcane-marinho: #162948;
+    --arcane-aco: #5d8394;
+    --afty-fundo: #101923;
+    --afty-fundo-brilho: none;
+    --afty-card: #192734;
+    --afty-poco: #14212e;
+    --afty-borda: #3a4c5e;
+    --afty-borda-forte: var(--arcane-aco);
+    --afty-texto: #eef4ff;
+    --afty-texto-suave: #cedbe6;
+    --afty-texto-fraco: #adbed0;
+    --afty-destaque: #8fdce4;
+    --afty-destaque-texto: var(--arcane-gelo);
+    --afty-destaque-fundo: #25404e;
+    --afty-pv: #ff7e8c;
+    --afty-pe: var(--afty-destaque);
+    --afty-pvtemp: #edc58e;
+    --afty-petemp: #c4f3f5;
+    --afty-alma: #c6b8ea;
+    --afty-cura: #a2dac1;
+    --afty-aviso: #edc58e;
+    --afty-veu: rgb(11 15 22 / 0.8);
+    --afty-raio: 8px;
+    --afty-raio-peq: 5px;
+    --afty-sombra: 0 6px 20px rgb(7 9 14 / 0.2);
+    --afty-fonte: "Segoe UI", system-ui, sans-serif;
+    --afty-fonte-titulo: "Bahnschrift", "Segoe UI", system-ui, sans-serif;
+    --afty-fonte-display: var(--afty-fonte-titulo);
+    color-scheme: dark;
+  }
+
+  /* O fundo do cabeçalho fixo continua opaco durante a rolagem. */
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) header.afty-cabecalho {
+    background-color: var(--afty-fundo);
+    border-color: var(--afty-borda);
+  }
+
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) header.afty-cabecalho::after {
+    background: none;
+  }
+
+  /* A base marinho reúne os recursos e encosta na imagem. */
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) :is(.afty-cabecalho-conteudo, div.afty-cabecalho) {
+    background: linear-gradient(112deg, var(--arcane-marinho), var(--afty-card) 76%);
+    box-shadow: inset 0 1px var(--afty-borda);
+    border-radius: var(--afty-raio);
+  }
+
+  /* Faixa de identificação na Clássica. Os tokens claros terminam na faixa. */
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho-principal > div:has(> div > .afty-nome) {
+    --afty-card: #eaf9fa;
+    --afty-poco: #eaf9fa;
+    --afty-texto: var(--arcane-marinho);
+    --afty-texto-suave: #28465a;
+    --afty-borda-forte: #587987;
+    --afty-destaque: #235c71;
+    --afty-destaque-texto: #173b4c;
+    --afty-destaque-fundo: #bddfe4;
+    --afty-aviso: #734817;
+    margin-block: 0.5rem;
+    padding-inline: 0.55rem;
+    border-radius: var(--afty-raio-peq);
+    background: var(--arcane-gelo);
+    color: var(--afty-texto);
+    color-scheme: light;
+  }
+
+  @media (min-width: 768px) {
+    :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho-conteudo {
+      padding-inline: 0.75rem;
+    }
+
+    :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho-conteudo .afty-vital > div:has(> input.afty-vital-numero) {
+      gap: 0.3rem;
+    }
+
+    :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho-conteudo input.afty-vital-numero {
+      field-sizing: content;
+      width: auto;
+      min-width: 2ch;
+      max-width: 3.5rem;
+    }
+  }
+
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-nome {
+    color: var(--afty-texto);
+    font-size: clamp(1.45rem, 3vw, 2.15rem);
+    font-weight: 650;
+    font-stretch: semi-condensed;
+    line-height: 1.08;
+    letter-spacing: 0.025em;
+  }
+
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) [data-afty-compacto="sim"] .afty-nome {
+    font-size: 1.2rem;
+  }
+
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-retrato-painel {
+    border-color: var(--arcane-aco);
+    border-radius: 3px var(--afty-raio) 3px var(--afty-raio);
+    box-shadow: 0 4px 14px rgb(9 13 21 / 0.4);
+  }
+
+  /* Trilho lateral com a fenda coral do retrato, fora do centro da imagem. */
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-retrato-painel::after {
+    background:
+      linear-gradient(var(--afty-pv), var(--afty-pv)) right 0.4rem top 0.7rem / 2px 0.95rem no-repeat,
+      linear-gradient(var(--afty-destaque), transparent 84%) right top / 3px 100% no-repeat,
+      linear-gradient(180deg, transparent 76%, rgb(16 25 35 / 0.28));
+  }
+
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital[data-afty-vital="preparo"] {
+    --afty-vital-cor: #dce8f2;
+  }
+
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-trilho {
+    box-shadow: none;
+  }
+
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-barra {
+    box-shadow: none;
+  }
+
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-card-titulo {
+    color: var(--afty-texto);
+    font-size: 0.79rem;
+    letter-spacing: 0.075em;
+  }
+
+  /* Divisórias nas linhas comuns. Busca e destaque conservam seus estados. */
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) :is([aria-labelledby="afty-aba-acoes"], [aria-labelledby="afty-aba-pericias"]) .afty-card .afty-linha:not([data-afty-destacada="sim"], [data-afty-alvo="sim"]) {
+    background: transparent;
+    border-color: transparent;
+    border-bottom-color: var(--afty-borda);
+    border-radius: 0;
+  }
+
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) :is([aria-labelledby="afty-aba-acoes"], [aria-labelledby="afty-aba-pericias"]) .afty-card .afty-linha:not([data-afty-destacada="sim"], [data-afty-alvo="sim"]):hover {
+    background: var(--afty-poco);
+  }
+
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) :is([aria-labelledby="afty-aba-acoes"], [aria-labelledby="afty-aba-pericias"]) .afty-linha[data-afty-destacada="sim"]:not([data-afty-alvo="sim"]) {
+    border-color: var(--afty-borda);
+    border-inline-start-color: var(--afty-destaque);
+    background: var(--afty-destaque-fundo);
+  }
+
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha):not([data-afty-estrutura="g2"]) [aria-labelledby="afty-aba-pericias"] .afty-linha > span:first-child {
+    font-size: 0.78rem;
+  }
+
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) [aria-labelledby="afty-aba-pericias"] .afty-linha > .afty-rolavel {
+    min-width: 2rem;
+    min-height: 1.5rem;
+    padding-inline: 0.35rem;
+    background: var(--afty-poco);
+    color: var(--afty-texto);
+    font-size: 0.8rem;
+  }
+
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) [aria-labelledby="afty-aba-pericias"] .afty-linha > .afty-rolavel:is(:hover, :focus-visible) {
+    background: var(--afty-destaque-fundo);
+    color: var(--afty-destaque-texto);
+  }
+
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) [aria-labelledby="afty-aba-pericias"] .afty-atributo:not([data-afty-alvo="sim"]) {
+    padding-block: 0.45rem;
+    border-color: transparent;
+    border-bottom-color: var(--afty-borda);
+  }
+
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) [aria-labelledby="afty-aba-pericias"] .afty-atributo-rotulo {
+    font-size: 0.65rem;
+    color: var(--afty-texto-suave);
+  }
+
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) [aria-labelledby="afty-aba-pericias"] .afty-atributo-mod {
+    border-radius: var(--afty-raio-peq);
+  }
+
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) :is(.afty-aba, .afty-subaba)[aria-selected="true"] {
+    background-color: transparent;
+    border-bottom-color: var(--afty-destaque);
+    color: var(--afty-destaque-texto);
+  }
+
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-botao[data-afty-tom="destaque"] {
+    background: var(--afty-destaque);
+    border-color: var(--afty-destaque);
+    color: var(--afty-fundo);
+  }
+
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-botao[data-afty-tom="destaque"]:hover:not(:disabled) {
+    background: var(--afty-destaque-texto);
+    border-color: var(--afty-destaque-texto);
+  }
+
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) :focus-visible {
+    outline: 2px solid var(--afty-destaque);
+    outline-offset: 2px;
+  }
+}

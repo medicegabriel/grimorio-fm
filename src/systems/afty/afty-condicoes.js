@@ -193,7 +193,15 @@ export const SANGRAMENTO_FAIXAS = [
 ].map((f) => ({ ...f, dados: SANGRAMENTO[f.id][0], faces: SANGRAMENTO[f.id][1], forca: SANGRAMENTO_FORCA[f.id] }));
 
 /** A faixa de Sangramento pelo id, ou `null`. */
-export const faixaDeSangramento = (id) => SANGRAMENTO_FAIXAS.find((f) => f.id === id) ?? null;
+export const faixaDeSangramento = (id) => {
+  // Crítico de arma, p.308: dados e CD próprios, sem equivalência com Leve ou Fraco.
+  if (id && typeof id === "object" && id.origem === "criticoArma"
+    && Number.isInteger(id.dados) && id.dados > 0 && [6, 8].includes(id.faces)
+    && Number.isFinite(id.cd) && id.cd > 0) {
+    return { origem: "criticoArma", dados: id.dados, faces: id.faces, cd: Math.floor(id.cd), label: "Crítico de Arma" };
+  }
+  return SANGRAMENTO_FAIXAS.find((f) => f.id === id) ?? null;
+};
 
 /** Toda condição do catálogo, achatada, com a força de cada uma. */
 function todasAsCondicoes() {
@@ -275,7 +283,8 @@ export function normalizaCondicoes(lista) {
       id, nome,
       forca: typeof bruta.forca === "string" ? bruta.forca : null,
       rodadas,
-      sangramento: faixaDeSangramento(bruta.sangramento)?.id ?? null,
+      sangramento: faixaDeSangramento(bruta.sangramento)?.id
+        ?? (faixaDeSangramento(bruta.sangramento)?.origem === "criticoArma" ? faixaDeSangramento(bruta.sangramento) : null),
     });
   });
   return out;

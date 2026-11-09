@@ -54,6 +54,9 @@ const t = (nome, real, esp) => {
 /* Os módulos que SÃO folha, e a razão de cada um. Acrescentar um aqui é de
    graça; tirar um daqui pede saber por que ele deixou de precisar ser. */
 const FOLHAS = [
+  ["afty-conteudo-regras.js", "CX3: tabela de críticos compartilhada pela derivação e pelas ações"],
+  ["afty-conteudo-auras.js", "CX3: números de Aura compartilhados pelo dano e pelos clientes da sessão"],
+  ["afty-conteudo-antidominio.js", "CX3: cálculos de Punho Divergente e contra Domínios"],
   ["afty-defesas-dano.js", "a aba de Defesas entra cedo no AftyCreatureBuilder"],
   ["afty-catarse.js", "o painel da Loja de Catarse entra cedo no AftyCreatureBuilder"],
   /* ⚠ ELE TEM DOIS MOTIVOS, e o segundo nasceu em 2026-09-08. O primeiro é o de
@@ -96,6 +99,14 @@ const FOLHAS = [
   // Entrou em 2026-10-19: o formato e a biblioteca dos Pacotes para Aliados, lidos pela
   // ficha diária (a aba Buffs), pelo G2 e pelos asserts.
   ["ficha/pacotes-aliados.js", "a aba Buffs da ficha diaria o le, e ela entra cedo"],
+  // Entrou em 2026-10-29 (CL1): o estado do motor de uso e combate. A sessao o importa, e as operacoes dele importam a sessao.
+  ["ficha/ficha-uso-estado.js", "a sessao o importa, e as operacoes de uso e combate importam a sessao"],
+  // Entrou em 2026-10-30 (CL2): o estado vital (saldo negativo, Portas da Morte, Ferimentos Complexos). A sessao e o Restringido o importam.
+  ["ficha/ficha-vital.js", "a sessao e o Restringido o importam, e as operacoes de morte importam a sessao"],
+  // Entrou em 2026-11-01 (CL3): as regras dos Votos de Restrição. O afty-votos as importa, e o derive importa o afty-votos.
+  ["ficha/ficha-votos-regras.js", "o afty-votos o importa, e o derive importa o afty-votos"],
+  // Entrou em 2026-11-01 (CL3): o estado das paredes e cortinas. A sessão o importa, e as operações de barreira importam a sessão.
+  ["ficha/ficha-barreiras-estado.js", "a sessao o importa, e as operacoes de barreira importam a sessao"],
   ["afty-schema.js", "todo mundo cria ficha em branco"],
   ["afty-dsl.js", "o avaliador não pode depender de conteúdo"],
   ["afty-sistema.js", "regraDo() é lido de dentro dos catálogos"],

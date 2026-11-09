@@ -17,6 +17,393 @@ Onde se usa:
 
 ## Variáveis
 
+### CX3: clientes de conteúdo sobre CL1/CL2 (2026-11-03)
+
+Não há um avaliador ou orçamento paralelo. As escolhas físicas de Treino e
+os Ofícios usam os canais direcionados existentes. `alcanceArma` mira
+`cat:arremesso` ou `grupo:chicote`. Aura Elemental Reforçada usa `rdTipo`
+no elemento validado da ficha, com origem própria para o hover e a suspensão
+por Concentrar Aura. Aura Impenetrável usa `resistenciaDano` somente em
+`ct`, `pf` e `im`, condicionada ao estado `aura_impenetravel` e temporária.
+
+Os novos clientes estão em `ficha-conteudo-uso.js`, `ficha-conteudo-combate.js`
+e `ficha-conteudo-testes.js`. Consomem uso, recursos, limites, ações,
+concentração, pendências e eventos dos núcleos reais. A cobrança explícita
+de cura/regeneração usa a operação confirmada. As ativações de bancada
+preservam a cobrança manual, com opção explícita Descontar PE no novo uso.
+Manutenção continua sendo uma operação separada.
+
+O recibo da rolagem passa a guardar a identidade da arma/perícia e os totais
+de cada grupo de dano. Não muda o sorteio ou a conta anterior. Isso permite
+confirmar o ataque contra um alvo depois da rolagem, aplicar instâncias
+tipadas em CL1, consumir o próximo acerto e recuperar Sorte pelo 20 inimigo.
+
+O recibo de Raio Negro grava `subtotalRaioNegro` nos grupos rolados.
+Ele contém só os dados elegíveis ao adicional de 50%. A confirmação
+reúne os subtotais pelo tipo de dano e aplica as parcelas em CL1
+quando a soma conserva o total original.
+O recibo não reparte Raio Negro em tipos, cuja resolução permanece na mesa.
+Registros `info` no histórico representam consequências sem dados, como um
+sucesso garantido ou deslocamento declarado, sem d20 artificial.
+
+Em 07/11, a confirmação no Encontro passou a consultar o dano líquido de
+CL1 antes de decidir a reação. A escolha é vinculada à operação, ao ataque,
+ao alvo e ao turno do recibo. A resolução revalida as defesas, as opções e
+o saldo antes de publicar as duas sessões. Lua e Esquiva atuam como um
+passo nomeado de redução na parcela escolhida. Cobrir-se usa uma fonte
+avulsa de PV temporário do descritor `usa`, retirada pelo encerramento
+nativo no fim do turno da fonte do dano.
+
+Continuação de 06/11: `ficha-conteudo-manobras.js` consome o acerto confirmado
+com alvo, rodada, turno e cálculo de dano por tipo. Chicote e Concussão usam o
+limite nativo por turno, deslocamento é resultado registrado para a mesa.
+Movimentos Acrobáticos usa o escritor de condições, ação livre e buff com
+prazo, sem repetir o teste da mesma queda. `gruposCura` conserva as faces do
+desarmado no espelho de Puxar um Ar e nos pedidos de rolagem clássica e G2.
+
+`conteudoTestes` e `aptidao.disponiveisConteudo` saem do derive no escopo do
+catálogo da ficha. Resistir, Conhecimento Aplicado e Mente Plácida reavaliam
+apenas a contribuição própria com o contexto DSL e o Motor existentes. A
+parcela antiga da bancada é retirada antes da nova, evitando dupla aplicação.
+Mente Plácida passa bônus e redução de CD à resolução de concentração de CL1.
+Surto de Ação chama o verbo da especialização após validar o custo, com retorno
+integral à sessão anterior se a operação não puder ocorrer.
+
+Indomável e Conceder Outra Chance usam `rerrolaTesteDeClasse`, o histórico
+real do participante e `melhorRolagem`. Outra Chance não consome ação, decisão
+do autor de 06/11. O Encontro expõe as rolagens do alvo ao seletor e mantém a
+gravação pelo par de sessões de CX2. Testes que já resolveram consequências
+recebem `consequenciasAplicadas`, e os clientes recusam reescrevê-los. Os
+verbos automáticos de Morte, Ferida Interna, Alma e concentração continuam
+precisando de uma etapa anterior de escolha no núcleo.
+
+Perceber Oportunidade usa o limite de duas repetições e gasta o saldo de
+reações por `gastaAcao`. O pedido é rolado pelo callback de armas da própria
+apresentação, incluindo propriedades e registro. Não é ação Atacar. Reação
+Rápida, Força Imparável e Barreira usam seus verbos nativos envolvidos pelo
+uso com custo de 2 pontos de estamina. Precisão Forçada usa 3, fica pendente
+para a declaração do ataque corpo a corpo e consome no erro também.
+
+Investida Aprimorada usa ação completa e buff de Defesa com prazo
+`inicioDoProximoTurno`. O pedido de ataque carrega `contextoConteudo` com
+operação, turno, alvo e distância. O dano usa o callback e os grupos da arma,
+conservando o crítico do recibo. No Encontro, o callback aceita a sessão do
+uso no segundo argumento: a gravação do ataque conserva o gasto da ação e
+o buff feitos no mesmo clique, sem alterar o redutor de sessões.
+
+`rolaDisputaInvestida` grava os dois testes de Atletismo. A operação separada
+`aplicaDisputaInvestida` lê seus resultados atuais, exige a escolha pendente
+de Sorte resolvida e aplica Caído somente se o alvo falhar. Outro teste
+nativo de Atletismo, feito após o acerto, pode ser reaproveitado, conservando
+vantagem, fontes e contador do Treino. As rerrolagens de classe conservam o
+vínculo da disputa. Depois da aplicação os dois testes ficam marcados com
+consequências, sem segunda tentativa de resolução.
+
+Intervenção usa `derived.condicoes.lista` do destinatário, identificada por id,
+e o degrau de `esc_suporte` da ficha. O uso valida ação/custo antes de chamar
+`defineCondicoes`, salvando o par de sessões. Os valores de condição vêm do
+derive no escopo do participante, sem ler o catálogo global de outro alvo.
+Força desconhecida, força especial e Desmembramento não são removidos.
+
+Versatilidade é alternativa de `resolveTestes`, na linha sem proficiência
+efetiva. A conta de treinado é comparada com `periciaFixa` antes de o cliente
+rolar, sem somar BT à oferta fixa vencedora. O contador de usos vem da
+Habilidade e o treino permanente não muda. Análise Profunda usa limite por
+criatura/cena e metadado do teste. `concluiAnaliseProfunda` lê o resultado
+atual e registra zero na falha ou uma característica mais uma por cinco
+pontos excedentes. A conclusão marca consequências e encerra as rerrolagens.
+
+Voadora usa `contextoConteudo.voadora` na Investida, com o grupo adicional
+nomeado no pedido nativo de dano. O crítico conserva a multiplicação do
+rolador. A confirmação preserva `eventosAlvo` de CL2, permitindo a reação
+de Mobilidade Avançada apenas para uma queda real e ainda atual do aliado.
+
+`conteudoRegeneracoes` emite um pedido próprio de cada fonte de classe,
+avaliado no Motor e preparado pelo núcleo de cura. Sobrevivente e Corpo de
+Aço consomem seus pedidos no hook de início do turno, com elegibilidade
+pelo estado inicial. Não leem a pilha agregada de outra fonte. Os clientes
+de classe usam a disponibilidade final da Habilidade. O Encontro chama
+`iniciaTurnoFicha` para o primeiro combatente ao começar e para os demais
+na passagem de turno, sem outro relógio ou efeito no reload.
+
+Briga consome `testes.manobras` para execução/resistência, os dados da
+perícia escolhida e metade de BT só no teste do atacante. O recibo de
+confirmação deve ter dano final zero em todos os tipos. A conclusão separada
+preserva rerrolagens e só depois escreve Caído ou abre concentração pelo
+empurrão efetivo. A Ação Livre é a mesma do Talento, sob o limite de CL1.
+
+Incitar Vigor chama `gastaDadosDeVida` do destinatário após validar o uso,
+sem gravar custo/ação se o gasto de dados falhar. `conteudoTreinos.resistencia`
+vem do normalizador e disponibilidade de Treino existentes. A leitura de
+pilha é de `resumoDadosDeVida`, incluindo os dados extras nativos. Voto
+Malevolente estende apenas o contexto do validador de CL3 com os Talentos
+acessíveis, sem nova variável DSL ou regra geral de peso.
+
+Novos ataques preparados pela ficha guardam `contextoTurno` no recibo,
+com rodada e turno do relógio de CL1. Não é variável DSL. O cliente de
+Escudo exige esse vínculo e o combatente ativo do Encontro, compartilha
+os testes de manobra com Briga e usa o dano do escudo já derivado. A
+decisão de Caído mantém o deslocamento base com margem. Dano e concentração
+continuam nos núcleos, e a aplicação marca consequências nos testes.
+Renovação pelo Sangue lê o evento real de crítico/acerto ou abate, os
+requisitos finais da própria ficha e o teto de PE. Não recupera PE temporário.
+
+A remoção de veneno por Regeneração Aprimorada lê os usos ativos
+`veneno:<item>` entregues por CX5. O cliente encerra um deles por `encerraUso`
+de CL1, que retira os buffs registrados, e preserva as condições sustentadas
+pelos demais. Marcações avulsas de Envenenado são identificadas por id.
+Deslocamentos de Talentos e dos críticos encaminham a causa e os metros
+a `abreTesteDeConcentracao`, sem novo cálculo de CD no cliente.
+
+`conteudoPosturaFortuna` publica a escolha acessível, postura ativa e limite
+de metade de BT por rodada. A definição copiada por Imitação fornece suas
+opções, inclusive Mestre da Postura. O Ápice usa seus requisitos atuais e
+a decisão já registrada de incluir as oito posturas. `rerrolaFortuna`
+consome o limite nativo e repete apenas um índice de d20. O rolador comum
+recalcula o resultado com os mesmos dados extras, bônus, margem e mínimo,
+sem outro sorteio. O recibo `fortuna` guarda índice e tentativa por dado.
+Uma troca efetiva de dado por Sorte/Treino recebe identidade própria,
+manter o anterior conserva o bloqueio. Consequências já aplicadas recusam.
+Não há canal ou variável DSL nova. Ativação e duração gerais das posturas
+continuam dependendo da bancada atual.
+
+O dano opcional já rolado de Escudo conserva id e resultado e é marcado
+como aplicado uma vez. A elegibilidade compartilhada de Infalível exige
+linha de ataque armado/desarmado, não basta a presença de `armaId`.
+
+`contextoConteudo.tipo` distingue `golpeOportunidade` e `reacaoSentinela`,
+com operação, rodada, turno e alvo quando declarado. A confirmação exige
+o vínculo atual. No acerto de oportunidade, Sentinela usa `usa` no alvo,
+com Movimento -4,5 m e duração `fimDoTurno`. Renova a mesma fonte, sem
+somar duas reduções iguais. O relógio pertence ao destinatário, por isso
+o fim do turno do emissor não encerra o prejuízo. A outra reação usa o
+recibo confirmado da criatura contra terceiro, saldo e limite nativos,
+sem se tornar oportunidade. O callback do Encontro recebe a sessão paga
+no segundo argumento, como nos demais ataques preparados. Não há nova
+variável DSL, canal ou contador de ações.
+
+Técnicas de Mobilidade usa o ataque confirmado e uma disputa nativa de
+Reflexos. O resultado só é aplicado após as escolhas de rerrolagem. O uso
+ativo `tal_tecnicas_de_mobilidade:<oponente>` fica na sessão protegida,
+com origem do Talento, prazo `fimDoTurno` e parâmetros do turno em curso.
+O Encontro passa id, rodada e sequência atuais ao callback de rolagem,
+guardados em `contextoTurno.emCurso` e no recibo de confirmação. Não é
+outro relógio. A passagem de turno chama o adaptador de conteúdo, que usa
+`encerraUso` de CL1 para encerrar os marcadores ligados àquele id/sequência,
+mesmo em outra sessão. Remover o ativo também limpa o vínculo. Uma rodada
+forçada que não termina o turno conserva a proteção até esse fim.
+
+O preparo de oportunidade consulta a sessão real do alvo pelo callback
+existente, antes de cobrar a reação. A confirmação checa novamente o
+vínculo de quem ataca, protegendo os pedidos preparados anteriormente.
+O bloqueio é específico ao oponente e só ao tipo `golpeOportunidade`.
+Não altera acerto ou Defesa, não impede outro participante, nem a reação
+distinta de Sentinela. A decisão do autor de 06/11 determina fim do turno
+em curso, inclusive no uso por ataque de reação fora do próprio turno.
+
+CX3, imunidade a movimento forçado (06/11, Livro p.76 e 121): o canal
+`imunidadeMovimentoForcado`, sem alvo, é um sinalizador positivo no grupo
+Defesa. Terra, Barreira Inamovível e Terra concedida pelo Ápice o produzem
+com suas fontes. A coleta desse canal recusa a habilidade inacessível.
+O segundo espaço de Terra exige Mestre da Postura disponível, inclusive
+pela concessão nativa de Imitação. O sinal pode ser alterado por Addon,
+e o consumidor lê o total do Motor, sem restaurar a regra por id fixo.
+
+`recursosDeEspecializacao.imuneMovimentoForcado` publica a permissão atual,
+revalidando acesso ao Ápice sem descartar outra fonte independente. As
+operações de Chicote, Concussão, Briga Empurrar, Escudo e crítico de
+Bastão/Haste a consultam antes de custo ou consequência, também na
+conclusão de disputa salva. Ataque principal e seu dano não são desfeitos.
+O escritor de condições e a leitura de sessão encerram os dois espaços
+de postura ao cair ou sofrer incapacitação, sem desligar o Ápice ou apagar
+PV temporário já recebido. Retirar a condição não restaura a postura.
+`ficha-conteudo-posturas` liga as posturas próprias ao uso CL1 existente,
+com dez rodadas, contador derivado e ação. Preparação Rápida disponível
+troca Bônus por Livre. Decisões do autor de 06/11: trocar paga outra
+entrada e outro uso, reinicia o prazo, Empurrar encerra sem Preparação
+Rápida. Mestre permite duas posturas numa entrada. O Ativar/Ajustar G2
+chama a mesma transação, sem cobrar o contador duas vezes, e os detalhes
+leem o relógio de CL1. Cópias temporárias conservam o prazo de Imitação.
+
+Sintonização Vital (p.107): `usaCuraConteudo` publica `contextoCura` no
+registro aplicado, com operação, valor anterior ao teto, recuperação real,
+aliado e turno. `curasParaSintonizar` exige vínculo atual com a operação
+de origem. `usaSintonizacaoVital` usa CL1 para 3 PE sem outra ação, e
+`aplicaCura` para a metade com piso e teto próprios. O registro original
+recebe uma marca de consumo persistida. Sem cascata nem aceite de dados
+avulsos. Feitiços e outros provedores precisam publicar a cura aplicada.
+
+Aura Redirecionadora (p.177): o preparo verifica a arma real e paga 2 PE
+antes de retornar o pedido nativo da primeira jogada. A confirmação da
+falha permanece no histórico e na sequência do primeiro alvo. A nova
+jogada exige esse recibo, arma/projétil ainda pendente, turno atual e outro
+alvo em 6 m. `redirecionaRolagemArma` substitui somente o acerto pendente
+e a identidade da última jogada, preservando contagem, munição e estados
+da arma. O dano usa a nova margem/resultado, B é confirmado pelo mesmo
+consumidor CL1/CL2 e a primeira falha não é desfeita. Sem outra ação,
+conforme decisão do autor. Não há terceira tentativa nem contador paralelo.
+O cliente traduz a categoria de arma arremesso em jogada distancia para
+`resolveAtaque`, como a classificação nativa de equipamento já estabelece.
+
+Ação Ágil (p.55/119): `usaAcaoAgilConteudo` realiza somente Andar,
+Desengajar ou Esconder, por 2 PE/Estamina, sem gastar ações base. A
+identidade comum `acao_agil` usa os limites nativos `rodada:` e `turno:`.
+`fonteAcaoAgilConteudo` escolhe a cadência melhor acessível, p.365, e
+marcar ambas as janelas impede recuperar uso ao mudar a origem da
+concessão. Não há outro saldo de ações. Desengajar guarda o comando no
+uso ativo com `fimDoTurno`, consultado antes da oportunidade e de sua
+confirmação. Furtividade continua um teste nativo com Sorte disponível.
+Clientes sem ação adicional usam `impedimentoParaAgirConteudo` para
+respeitar a incapacidade vital de CL2, preservando Mesmo Morto.
+
+Lua (p.76): `posturaAtivaConteudo` lê escolhas acessíveis, segundo espaço
+de Mestre, Imitação e acesso atual ao Ápice nos resolvedores nativos.
+`usaAcaoLuaConteudo` usa `usa` com Ação Livre obrigatória e ids distintos
+de Andar/Desengajar. Não concede saldo de ações ou PE. O segundo comando
+guarda um uso com `fimDoTurno`, lido pelo consumidor de oportunidade.
+Andar registra distância validada contra Movimento e suas fontes.
+Nenhuma alteração do derive ou janela de redução de dano está incluída.
+
+Concentrar Aura (p.176) liga o estado nativo como Ação Livre com uma
+rodada e desliga as mesmas escolhas no encerramento de CL1. O grupo
+de dano preserva o tipo Energético e o momento após ataque.
+Fluxo (p.190) consulta o contador da ação livre antes da reação.
+A cura com Medicina preserva a ação inicial e o turno em curso.
+
+Devastação própria (p.76) guarda a identidade da ativação no uso e na
+jogada. A confirmação usa a pilha do último alvo e registra a próxima.
+Tempestade (p.76) usa o acerto confirmado e o TR pendente da vítima
+para aplicar Caído pelo escritor de condições.
+
+Medicina Infalível (p.103) usa metadados opcionais de faces e quantidades
+do rolador. A cura preparada tem um uso ativo de CL1. Confirmar consome
+esse uso e a quota pelos dados selecionados, antes da aplicação de CL2.
+
+Provocar (p.302) usa oposição e ação de CL1, com recibos dos dois lados.
+O alvo da rolagem de ataque é declarado antes de combinar os modos de
+vantagem e desvantagem (p.282). O efeito expira pelo início de turno do
+provocador. A obrigação de Provocação Desafiadora usa o recibo confirmado.
+
+Pular (p.303) usa ação e teste nativos. O recibo de conclusão do pulo pode
+armar a pendência CL1 de Saltador (p.164) contra um alvo, consumida por
+declaração. A confirmação consulta a ordem dos recibos e aplica o +2 antes
+de comparar Defesa. O adicional fixo passa pelo dano tipado de CL1.
+
+Cura em Grupo (p.191): `rolaCuraEmGrupo` usa a fonte nativa de Energia Reversa
+e deixa o recibo pago pendente no turno. `aplicaCuraEmGrupo` valida a soma,
+aplica `aplicaCura` em cada sessão e marca a mesma rolagem como concluída.
+O Encontro confirma o conjunto por `PATCH_SESSOES`.
+
+Dragão (p.76): `rolaDragaoConteudo` usa o recibo confirmado no turno do ataque
+e abre Fortitude no destinatário. `aplicaDragaoConteudo` resolve esse mesmo
+teste pelo núcleo e repassa o dano tipado a `aplicaDanoRecebido`. Cada
+par ataque/inimigo é único. O vínculo persiste entre a rolagem e a conclusão.
+
+Especialista em Cortes (p.167): `aplicaCorteConteudo` exige o recibo de
+acerto confirmado com dano cortante final positivo no turno em curso.
+O limite de CL1 inclui a identidade/sequência do turno em curso. O uso
+nativo no alvo guarda `fonteId`, tem desfazer e um Buff de Movimento.
+`encerraCortesNoInicioDoTurno` encerra somente instâncias desse emissor no
+começo de seu próximo turno ou em sua remoção. Não usa o início do alvo.
+`efeitosDaSessao` encaminha o `grupoNaoAcumula` já existente no Motor.
+Cópias competem sem perder instâncias/prazos e outras fontes ainda somam.
+Não é movimento forçado nem um novo relógio. Encerrar combate limpa o uso.
+
+### CX2: vínculos e operações de origem (2026-11-01)
+
+Sem canal ou variável DSL nova. `afty-origens-feiticos.js` resolve a identidade
+pela cadeia `variacaoDe`, recusando ciclos e referências ausentes.
+No Feitiço-base: `marcaRegistrada` aceita `inicial` ou `adicional`,
+`familiaridadeSustentacao` escolhe a melhoria da primeira Marca,
+`focoZenin` guarda a modalidade, `focoZeninDestino` guarda o efeito/disparo/golpe
+escolhido e `manualTecnica` guarda `acessoCriacao` e
+`aprendido`. Campos antigos são preservados. Sem característica ou talento
+elegível os vínculos ficam inertes. Variações não consomem outra marca.
+
+Os números passam por `calcularFeitico` e pelo redutor de custo existente.
+O contexto `beneficiosOrigem` chega também ao consumidor de Auxiliares
+sustentados. Decisão do autor em 01/11: Foco fornece **um dado no total**,
+em um destino escolhido. Em Múltiplos Disparos e Golpeador o dado entra depois
+da divisão nativa e em apenas uma rolagem. No concentrado entra uma vez.
+Em Auxiliar Múltiplos Efeitos entra somente no efeito escolhido, inclusive no
+consumidor ativo. Os outros bônus por disparo da p.215 não mudam.
+Destinos: `disparo:N`, `golpe:N` ou `efeito:ID`. Com vários destinos válidos,
+ausência/escolha inválida gera aviso e não aplica o dado. Um único destino
+válido dispensa seleção. Variação herda a escolha da base e pode escolher outra.
+Dados antigos são preservados. No Dano na Alma, o autor confirmou Foco como
+parte da criação: dado e alcance valem inteiros. A metade dos demais aumentos
+externos da p.234 continua aplicada.
+
+`core.origem.aptidaoAura` concede Aura pelo nome, após validar requisitos
+contra uma derivação sem essa concessão. Não concede vaga genérica.
+Em ficha antiga sem o campo, a primeira Aura já escolhida é candidata à
+concessão, sujeita à mesma validação. Não regrava nem apaga a ficha.
+
+Carapaça usa `anatomiasConfig.carapaca_mutante.tipoDano`, limitado a
+`ct`, `pf`, `im`, no nível 10. Emite `resistenciaDano` com fonte pelo coletor
+existente. A escolha fica bloqueada no editor depois de feita.
+
+`ficha/ficha-origens.js` adapta CL1 e CL2. Vigor, Energia Antinatural,
+Resiliência e Inumaki reutilizam `sessao.usos`. Alma Maldita e Energia
+Antinatural básica usam chaves `manual:`, preservadas no Descansar.
+Novo Dia repõe explicitamente esses usos, decisão do autor neste chat.
+Expansão de Reserva usa a recarga longa normal. O voo usa
+`sessao.uso.ativos.anatomia_voo`, com uma rodada pelo relógio de CL1.
+`opcoesDeriveDaSessao` passa esse estado ao derive, inclusive no Encontro.
+
+Anatomia Incompreensível só retira a parcela adicional declarada, após o d4.
+Alma Maldita reduz antes do teste de Integridade. Sangue Tóxico é perda de
+vida no atacante. O dano continua em CL1/CL2. No Encontro, `PATCH_SESSOES`
+grava os dois participantes juntos e recusa se alguma sessão mudou desde o
+cálculo. Presença usa condições com uma rodada e um contador por alvo para
+o primeiro avistamento. O comando Inumaki usa a reação do aliado.
+
+PE temporário consome o escritor existente, com identidade de fonte.
+Devorador acrescenta um por evento de TR bem-sucedido e não repete o mesmo
+evento. Teto e substituição gerais continuam em CX4, sem motor paralelo.
+Testes: `asserts/t-cx2-origens.mjs`. Evidência e limites: entrega CX2.
+
+### CX1: Anatomias, acessórios e rolagem de ataque (2026-10-29)
+
+Sem canal ou variável DSL nova. `articulacoes_extensas` nativa emite
+`alcanceArma` de 1,5 m com alvo `cat:corpo|basico`, seguindo a decisão
+de 03/10. Não altera tamanho ou Feitiços. O addon já usava esse caminho.
+
+`core.origem.anatomiasConfig.corpo_especializado.pericia` identifica uma
+perícia do catálogo ativo da ficha, inclusive personalizada ou Ofício.
+O coletor de origem emite `dadosPericia` com alvo `<id>:d4`, expressão 1
+e fonte Corpo Especializado. Escolha ausente ou inválida não emite efeito.
+O quarto argumento opcional de `coletarEfeitosOrigem` recebe esse catálogo,
+com o catálogo básico como padrão. O derive fornece o catálogo completo.
+
+Braços Extras conserva +2 em Prestidigitação. Seu Atletismo depende de
+`gatilhoSessao: "anatomia_duas_maos_livres"`, declarado pela Anatomia.
+O autor aprovou o controle Duas Mãos Livres, desligado por padrão.
+`gatilhosDeOrigem` inclui os gatilhos das Anatomias elegíveis. O estado usa
+`sessao.treinosAtivos`, com os controles existentes no criador, Ficha e
+Encontro. Não calcula ocupação por mão ou aplica o benefício a outra origem.
+
+Arma Natural usa o dado desarmado resolvido. Quando esse dado supera 1d8,
+emite `nivelDano: 1` para `basico`, fonte Arma Natural. Player usa o mínimo
+1d8 e a escada de dados. Afty conserva a conversão de nível para ND de dano.
+Tipo físico em `anatomiasConfig.arma_natural.tipoDano`: `ct`, `pf` ou `im`.
+Fichas antigas e valores inválidos usam `im`. Fineza e Enérgica continuam
+no mesmo caminho das propriedades do Ataque Básico.
+
+No resolvedor de equipamento, cópias equipadas do mesmo acessório emitem
+uma vez seus benefícios diretos, de perícia, Motor e Habilidade Única.
+A entrada repetida continua equipada e conta carga/custo, com
+`beneficioRepetido: true`. Definições diferentes continuam independentes,
+preservando conjuntos expressos como Ombreiras com Braceletes do Vigor.
+
+O contrato de rolagem é fora da DSL: `tipoTeste: "ataque"` identifica ataque
+em `rolarTeste`. O preparador da arma marca os descritores com `linhaArma`
+ou `ataqueId`, nas três telas. 20 natural retorna sucesso, 1 retorna falha.
+Margem reduzida depende da Defesa e não publica crítico numa falha conhecida.
+Sem Defesa, demais resultados ficam null. Testes genéricos continuam usando
+a comparação pelo total. CL1 deve consumir esse contrato, sem inferir ataque
+pelo rótulo. Regressões em `asserts/t-cx1-base.mjs`.
+
 ### Manejo da Gungnir 1.1.1 (2026-10-25)
 
 O autor confirmou Corpo a Corpo como categoria principal, com alternância
@@ -313,6 +700,11 @@ e `contar("adaptacao")` são a mesma. Marca que ninguém tem devolve 0, e não q
 ⚠ **No estágio MONTANTE o `contar()` devolve 0**, porque ele roda antes de Habilidades,
 Talentos e Aptidões existirem. É a mesma limitação do `tem_*` naquele estágio.
 
+✅ **Desde 2026-11-07 o efeito que lê `contar()` ou `tem_*` desce ao estágio principal**, onde a
+contagem existe, igual a quem lê a bancada. Canal de vaga, pontos de Aptidão e pré-contexto seguem
+presos no montante e lá a contagem vale 0. Característica de Origem ou de Clã e a opção escolhida
+geram marca pelo `tags` escrito, sem marca automática de família.
+
 ---
 
 ## ⚠ No Grimório Afty o vocabulário é MUITO maior
@@ -550,6 +942,10 @@ A atualização de Controlador e Invocações acrescentou estas, com o motivo de
 | `tipo_shikigami_puro`, `tipo_tecnica`, `tipo_maldicao`, `tipo_marionete`, `tipo_corpo` | contexto da invocação | 1 no tipo dela, um sinal por tipo. Código oficial novo usa só estes |
 | `tipo_shikigami` | contexto da invocação | ⚠ LEGACY (DA-05): liga no Shikigami e na Maldição, o sentido antigo. Fica para addon antigo que o escreveu, e código novo não o lê |
 | `marc_concentrar_poder` | contexto da invocação | a marca, e, na mesa, só com UMA invocação no total em campo (DA-15, condição `unicaEmCampo` do marcador). No criador segue acesa |
+| `em_campo`, `em_composto` | contexto da invocação (CL3) | 1 quando a invocação está em campo, ou dentro de uma Horda, Quimera, Mecha ou grupo de núcleos que está. `em_composto` é o segundo caso. Na mesa lê a sessão deste dono pelo id dela. No criador (sem sessão) `em_campo` vale 1, o mesmo critério dos marcadores com condição de mesa |
+| `pv_atual`, `pv_percentual` | contexto da invocação (CL3) | o PV corrente da sessão e a porcentagem do máximo, com piso. PV cheio quando a sessão ainda não o tocou. No criador, cheio e 100 |
+| `forma_arma`, `forma_armadura` | contexto da invocação (CL3) | 1 na Forma ligada. São excludentes. No criador valem 0 |
+| `auxilios_ligados`, `em_tarefa`, `rodadas_em_campo` | contexto da invocação (CL3) | quantos auxílios sustentados estão ligados, se a Bem Treinada está em tarefa e as rodadas de combate desde que entrou. No criador valem 0 |
 | `invocacoes_em_campo` | contexto da criatura | quantas invocações ocupam vaga em campo agora (a Horda, a Quimera e o Corpo de Múltiplos Núcleos contam 1, o Mecha 2). Só existe com mesa: no criador vale 0. É o número do Controle Sintonizado |
 
 ## Notas

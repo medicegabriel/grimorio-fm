@@ -21,11 +21,11 @@
  * bloqueio: o canal `bonusPericia` existe desde 2026-07-29. Se ele está com
  * `aplicado: false`, é esquecimento, e não decisão.
  *
- * ⚠ As duas Pulseiras continuam inertes COM RAZÃO, e é por isso que a regra
- * mira o campo `pericia` e não a palavra "perícia": elas usam `periciaTreinada`
- * e `periciaMestre`, que concedem TREINO numa perícia *à escolha do jogador*, e
- * escolha de item não tem tela em lugar nenhum. Elas são o controle do teste: se
- * um dia alguém as ligar por engano, a última seção fica vermelha.
+ * ⚠ As duas Pulseiras eram inertes COM RAZÃO até o CX5 (2026-11-06), e é por
+ * isso que a regra mira o campo `pericia` e não a palavra "perícia": elas
+ * concedem TREINO numa perícia *à escolha do jogador*. O CX5 deu a escolha à
+ * entrada do inventário e as ligou pelo canal `proficienciaPericia`. A seção 3
+ * agora prende que, sem a escolha, elas não treinam perícia nenhuma.
  */
 import { register } from "node:module";
 register(
@@ -102,18 +102,25 @@ t("Sob Medida soma +2 em Acrobacia", bonusDe("unif_sob_medida", "uniforme", "acr
 t("Sob Medida soma +2 em Furtividade", bonusDe("unif_sob_medida", "uniforme", "furtividade"), 2);
 
 /* ============================================================ */
-/* 3. AS DUAS PULSEIRAS SEGUEM INERTES, E É DE PROPÓSITO         */
+/* 3. AS DUAS PULSEIRAS: LIGADAS PELA ESCOLHA DA ENTRADA (CX5)   */
 /* ============================================================ */
-/* Elas concedem treino numa perícia À ESCOLHA, e item não tem tela de escolha.
-   Ligar uma delas sem construir a escolha faria o motor treinar perícia nenhuma
-   e a ficha prometer o que não entrega. Quando a tela existir, este bloco é o
-   primeiro a mudar. */
+/* Elas concedem treino numa perícia À ESCOLHA. Desde o CX5 a escolha mora na
+   entrada do inventário (`escolhaPericia`) e o treino viaja pelo canal
+   `proficienciaPericia`. O que este bloco continua prendendo é o contrário do
+   bug original: a Pulseira SEM escolha não presume perícia nenhuma. As
+   contas completas estão em `t-cx5-pulseiras.mjs`. */
 
 for (const id of ["it_pulseira_magistral", "it_pulseira_primacial"]) {
   const def = EQ.ITENS_ESPECIAIS.find((i) => i.id === id);
   t(`${id} existe no catálogo`, !!def, true);
-  t(`${id} não nomeia perícia`, !def?.efeito?.pericia, true);
-  t(`${id} continua inerte, esperando a tela de escolha`, def?.efeito?.aplicado ?? false, false);
+  t(`${id} não nomeia perícia fixa`, !def?.efeito?.pericia, true);
+  t(`${id} está ligada e pede a escolha`, !!def?.efeito?.escolhePericia && def?.efeito?.aplicado === true, true);
+  const c = createBlankAfty();
+  c.core.nd = 8;
+  c.equipamentos = { itens: [{ uid: "p1", tipo: "item", refId: id, qtd: 1, equipado: true }] };
+  const d = deriveAfty(c);
+  t(`${id} sem escolha não treina perícia nenhuma`, d.testes.pericias.filter((p) => p.prof).length, 0);
+  t(`${id} sem escolha marca a entrada para o seletor, sem poluir os avisos`, [d.equip.entradas[0].faltaEscolha, d.equip.avisos], ["pericia", []]);
 }
 
 /* ============================================================ */

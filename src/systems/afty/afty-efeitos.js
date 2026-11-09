@@ -99,6 +99,7 @@ import { nivelDaFicha, registrarCanaisDoMotor } from "./afty-addons";
 // Folha: a divergência das Melhorias Superiores do jogador.
 import { regraDo } from "./afty-sistema";
 import { getAnatomia } from "./afty-anatomias";
+import { AFTY_PERICIAS } from "./afty-pericias-catalogo";
 import { CUSTO_PE_MINIMO } from "./afty-dominio-simples";
 // afty-aptidoes só importa afty-origens, que já é dependência daqui: sem ciclo.
 import { getAptidao } from "./afty-aptidoes";
@@ -171,6 +172,7 @@ export const EFEITO_CANAIS = [
   { id: "imunidadeDano", label: "Imunidade a Dano",      alvo: "tipoDano", nota: "sinalizador. O desempate contra Vulnerabilidade não existe ainda: a ficha avisa em vez de escolher" },
   { id: "resistenciaDano", label: "Resistência a Dano",  alvo: "tipoDano", nota: "sinalizador" },
   { id: "vulnerabilidadeDano", label: "Vulnerabilidade a Dano", alvo: "tipoDano", nota: "sinalizador" },
+  { id: "imunidadeMovimentoForcado", label: "Imunidade a Movimento Forçado", nota: "sinalizador positivo impede deslocamento involuntário" },
   { id: "movimento",     label: "Movimento",             nota: "em metros, aceita 1,5" },
   { id: "voo",           label: "Deslocamento de Voo",   nota: "em metros, aceita 1,5. Zero é não voar. As condições e o multiplicador de movimento valem nele, e Caído o zera" },
   { id: "movimentoMult", label: "Multiplicador de Movimento", nota: "multiplica o movimento final. A Expansão de Domínio usa 2" },
@@ -404,6 +406,13 @@ export const EFEITO_CANAIS = [
      Dádiva do Céu adicional") não tinha como dizê-la. O alvo é a habilidade
      DONA da escolha, e a herdeira responde também pelo id da mãe. */
   { id: "vagasEscolha",   label: "Vagas de Escolha de Habilidade", alvo: "escolhaHabilidade", alvoObrigatorio: true, nota: "uma opção a mais no pool de escolha de uma Habilidade de Especialização (Dádiva do Céu, Postura, Estilo). Só rende se a ficha tiver a habilidade dona" },
+  /* A VAGA DE TALENTO DE UM GRUPO (V4). O alvo é o grupo de Talento que o Addon
+     declarou, e a vaga só serve a Talento daquele grupo. Ela é gasta ANTES da
+     vaga comum: o que sobra do grupo cai no comum, salvo no grupo que declara
+     `vagaComum: false`, onde o excedente fica sem pagamento e o contador acusa.
+     Escondido no seletor atrás da primitiva `gruposTalento`, pela lição do
+     `hpAtributo`: canal novo por causa de Addon nasce com o portão. */
+  { id: "vagasTalentoGrupo", label: "Vagas de Talento de um Grupo", alvo: "grupoTalento", alvoObrigatorio: true, nota: "vaga que só serve a Talento do grupo escolhido, gasta antes da vaga comum de Talento. Não pode ler contar() nem tem_*: seria circular, a contagem depende de a vaga já estar gasta" },
   { id: "vagasFeitico",   label: "Vagas de Feitiço",     nota: "vaga EXCLUSIVA de Feitiço (= Habilidade de Técnica, Técnica Marcial ou Estilo das Sombras). Não serve para Habilidade Geral (autor, 2026-07-28)" },
   // ⚠ MAIS ESTREITO que o `vagasFeitico` (autor, 2026-10-26): só a Técnica Marcial
   // do Restringido usa esta vaga. Desenvolver Ideias ("duas técnicas marciais
@@ -686,6 +695,21 @@ export const grupoExclusivo = (familia, emGrupos = false) =>
   (emGrupos ? (FAMILIA_EXCLUSIVA_BY_ID[familia]?.grupoJogador ?? familia) : GRUPO_POOL_UNICO);
 
 /**
+ * Regra de Addon `atencaoSoPercepcao`: a fonte que soma em Percepção E em Atenção
+ * fica só com a Percepção, já que a Atenção é 10 + o bônus de Percepção. Descarta
+ * a linha de `atencao` das origens que também miram a perícia Percepção. Fonte
+ * que dá só Atenção passa intacta.
+ */
+export function atencaoSoPelaPercepcao(efeitos) {
+  if (!Array.isArray(efeitos)) return efeitos;
+  const comPercepcao = new Set(efeitos
+    .filter((e) => e?.origem != null && e.canal === "bonusPericia" && e.alvo === "percepcao")
+    .map((e) => e.origem));
+  if (!comPercepcao.size) return efeitos;
+  return efeitos.filter((e) => !(e?.canal === "atencao" && comPercepcao.has(e.origem)));
+}
+
+/**
  * Carimba o grupo de disputa em cada efeito do pool, antes do `aplicarEfeitos`.
  *
  * ⚠ É CARIMBO NO EFEITO, e não parâmetro da disputa, porque o efeito viaja: a
@@ -747,7 +771,7 @@ const GRUPOS_DE_CANAL = [
   ["Defesa", [
     "defesa", "rdGeral", "rdEspecifico", "rdFisico", "rdEscudo", "rdAlma",
     "rdTipo", "imunidadeDano", "resistenciaDano", "vulnerabilidadeDano",
-    "guardaBonus", "guardaVida",
+    "guardaBonus", "guardaVida", "imunidadeMovimentoForcado",
   ]],
   ["Ataque e Dano", [
     "cd", "cdFeitico", "bonusAcerto", "acertoArma", "treinoArmaCasoJa", "ataquesExtras", "danoBonus", "nivelDano", "dadosDano", "dadosNomeados",
@@ -771,7 +795,7 @@ const GRUPOS_DE_CANAL = [
   // ele é orçamento, irmão das vagas. `pontosAptidao` veio junto pelo mesmo
   // motivo, ele é orçamento de nível de aptidão.
   ["Orçamentos", [
-    "vagasPericia", "vagasHabilidade", "vagasEscolha", "vagasFeitico", "vagasMarcial", "vagasEstilo", "vagasTecnicaMaxima", "vagasTalento", "vagasAptidao",
+    "vagasPericia", "vagasHabilidade", "vagasEscolha", "vagasFeitico", "vagasMarcial", "vagasEstilo", "vagasTecnicaMaxima", "vagasTalento", "vagasTalentoGrupo", "vagasAptidao",
     "vagasCaracteristicaAmaldicoada",
     "reduzNivelAptidao", "ignoraRequisitoTrilha",
     "vagasVariacao", "vagasMelhoria", "vagasLendaria",
@@ -1349,6 +1373,7 @@ export function efeitosDaSessao(creature) {
     };
     if (e.alvo) ef.alvo = e.alvo;
     if (e.quando) ef.quando = String(e.quando).trim();
+    if (typeof e.grupoNaoAcumula === "string" && e.grupoNaoAcumula.trim()) ef.grupoNaoAcumula = e.grupoNaoAcumula.trim();
     out.push(ef);
   }
   return out;
@@ -1482,7 +1507,13 @@ export function coletarEfeitosCriatura({
       catalogos?.altoNivel,
     ),
     ...coletarEfeitos(apiceId, APICE_EFEITOS, catalogos?.altoNivel),
-  ];
+  ].filter((e) => e.canal !== "imunidadeMovimentoForcado"
+    || !habilidades?.inacessiveis?.includes(e.origemPai ?? e.origem))
+    .map((e) => e.canal === "imunidadeMovimentoForcado" && e.origem === "cmb_postura_da_terra"
+      ? { ...e, contextoDsl: { ...e.contextoDsl, tem_cmb_mestre_da_postura: Number(
+        (habilidades?.efetivas ?? habilidades?.escolhidas ?? []).some((id) => id.replace(/^.*__/, "") === "cmb_mestre_da_postura"
+          && !habilidades?.inacessiveis?.includes(id)),
+      ) } } : e);
 }
 
 /**
@@ -1605,11 +1636,13 @@ export function coletarEfeitosMontante(creature, gerais, catalogoGerais = {}) {
  * desligado sai aqui, antes do Motor, igual ao `efeitosDeTreino`. Desligado é
  * o padrão. Ver `gatilhosDeOrigem` em afty-origens.js.
  */
-export function coletarEfeitosOrigem(creature, escolhas = null, gatilhosAtivos = null) {
+export function coletarEfeitosOrigem(creature, escolhas = null, gatilhosAtivos = null, pericias = AFTY_PERICIAS) {
   const origemId = creature?.core?.origem?.id;
   if (!origemId) return [];
   const claId = creature?.core?.origem?.cla;
   const anatomias = anatomiasEscolhidas(creature);
+  const periciaCorpo = creature?.core?.origem?.anatomiasConfig?.corpo_especializado?.pericia;
+  const resistenciaCarapaca = creature?.core?.origem?.anatomiasConfig?.carapaca_mutante?.tipoDano;
   const mapa = escolhas?.mapa || resolveEscolhasOrigem(creature, nivelDaFicha(creature)).mapa;
   const opcoesEscolhidas = Object.values(mapa).flat();
   const opcoesInteiras = opcoesEscolhidasDaOrigem(creature, { mapa });
@@ -1624,6 +1657,14 @@ export function coletarEfeitosOrigem(creature, escolhas = null, gatilhosAtivos =
     ...coletarEfeitos([origemId], ORIGEM_EFEITOS, (id) => getOrigem(id)),
     ...coletarEfeitos(claId ? [claId] : [], CLA_EFEITOS, (id) => getCla(id)),
     ...coletarEfeitos(anatomias, ANATOMIA_EFEITOS, (id) => getAnatomia(id)),
+    ...(anatomias.includes("carapaca_mutante") && nivelDaFicha(creature) >= 10 && ["ct", "im", "pf"].includes(resistenciaCarapaca) ? [{
+      canal: "resistenciaDano", alvo: resistenciaCarapaca, expr: "1",
+      origem: "carapaca_mutante", nome: "Carapaça Mutante",
+    }] : []),
+    ...(anatomias.includes("corpo_especializado") && pericias.some((p) => p.id === periciaCorpo) ? [{
+      canal: "dadosPericia", alvo: `${periciaCorpo}:d4`, expr: "1",
+      origem: "corpo_especializado", nome: "Corpo Especializado",
+    }] : []),
     ...coletarEfeitos(opcoesEscolhidas, ORIGEM_ESCOLHA_EFEITOS, (id) => ({ nome: OPCAO_ORIGEM_NOME[id] })),
     /* O `nome` do próprio efeito vence o da opção (2026-09-21), a mesma regra
        do `efeitos` da raiz. É o que deixa o pacote escrever "Pai (Opção)" no
@@ -2068,7 +2109,7 @@ export const CANAIS_POS_APTIDAO = [
  * dele chegaria com o orçamento já fechado. Ver `separarEfeitosDeBancada`.
  */
 export const CANAIS_LIDOS_NO_MONTANTE = [
-  "pontosAptidao", "vagasHabilidade", "vagasEscolha", "vagasTalento", "vagasMelhoria", "vagasLendaria",
+  "pontosAptidao", "vagasHabilidade", "vagasEscolha", "vagasTalento", "vagasTalentoGrupo", "vagasMelhoria", "vagasLendaria",
   ...CANAIS_PRE_CONTEXTO,
 ];
 
@@ -2105,12 +2146,35 @@ function nomesLidosPor(src) {
 export function efeitoLeBancada(e, ctxReduzido = {}) {
   const extra = e?.contextoDsl && typeof e.contextoDsl === "object" ? e.contextoDsl : {};
   for (const texto of [e?.quando, e?.expr]) {
+    if (leContagemDaFicha(texto)) return true;
     for (const nome of nomesLidosPor(texto)) {
       if (ehVarDaBancada(nome)) return true;
       if (!(nome in ctxReduzido) && !(nome in extra)) return true;
     }
   }
   return false;
+}
+
+/**
+ * A expressão lê o que a ficha TEM, e isso só existe depois de Habilidades,
+ * Talentos e Aptidões serem resolvidos: `contar("marca")` e a booleana `tem_*`.
+ *
+ * ⚠ No montante as duas valem ZERO, calado, e é por isso que elas ficavam de
+ * fora do teste acima: `contar` é função (o `nomesLidosPor` pula função) e
+ * `tem_*` está declarado no contexto reduzido justamente para valer zero. O
+ * efeito de Origem, de Clã ou de Funcionamento que escalava com a contagem de
+ * uma família marcada por tag nunca somava nada. A regra é a mesma de ler a
+ * bancada: quem lê o que a ficha tem desce ao estágio principal.
+ *
+ * Os canais lidos cedo (`CANAIS_LIDOS_NO_MONTANTE`) seguem presos no montante,
+ * e por isso uma VAGA que escale com a contagem continua valendo zero: seria
+ * circular, a contagem depende de a vaga já ter sido gasta.
+ */
+const LE_CONTAGEM = /(^|[^a-zA-Z0-9_À-ſ])contar\s*\(/i;
+function leContagemDaFicha(src) {
+  const semTexto = String(src ?? "").replace(/"[^"]*"|'[^']*'/g, " ");
+  if (LE_CONTAGEM.test(semTexto)) return true;
+  return nomesLidosPor(src).some((nome) => nome.startsWith("tem_"));
 }
 
 /**

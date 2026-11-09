@@ -1,18 +1,14 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { X, RotateCcw, AlertTriangle, Check, Copy } from "lucide-react";
 
 import {
   PRESETS, GRUPOS_DE_TOKEN, FONTES, ENCAIXES, CSS_MAX,
-  corEfetiva, temaEmBranco, escopoSuportado, saneiaCss, CONTRATO_DE_CLASSES,
-  ATRIBUTOS_DOC, promptParaIA,
+  corEfetiva, temaEmBranco, escopoSuportado, saneiaCss, contratoDaEstrutura,
+  atributosDaEstrutura, promptParaIA,
 } from "./ficha-tema";
 
 /* Agrupado na ordem em que os grupos aparecem no contrato. Uma lista corrida de
    45 seletores não se lê. */
-const SELETORES_POR_GRUPO = CONTRATO_DE_CLASSES.reduce((acc, c) => {
-  (acc[c.grupo] ??= []).push(c);
-  return acc;
-}, {});
 
 const ABAS_CSS = [
   { id: "css", label: "CSS" },
@@ -58,15 +54,50 @@ function Secao({ titulo, children, direita }) {
  */
 /* ⚠ `escopo` E `nome` SÓ CHEGAM NO TEMA DE UMA INVOCAÇÃO. Sem eles o prompt
    descreve a ficha inteira, que é o caso normal. Ver `promptParaIA`. */
-export default function PainelDeAparencia({ tema, onTema, onFechar, onGlobal, titulo = "Aparência", escopo, nome }) {
+export default function PainelDeAparencia({ tema, onTema, onFechar, onGlobal, titulo = "Aparência", escopo, nome, estrutura = "classica" }) {
   const [abaCss, setAbaCss] = useState("css");
   const [salvouGlobal, setSalvouGlobal] = useState(false);
   const [copiado, setCopiado] = useState(false);
   const campoPrompt = useRef(null);
+  const painel = useRef(null);
+  const fechar = useRef(onFechar);
+  useLayoutEffect(() => { fechar.current = onFechar; }, [onFechar]);
+  const tituloId = useId();
+  const [restauravel, setRestauravel] = useState(null);
+  const seletores = useMemo(() => contratoDaEstrutura(escopo ? "invocacao" : estrutura).reduce((acc, c) => {
+    (acc[c.grupo] ??= []).push(c);
+    return acc;
+  }, {}), [estrutura, escopo]);
+  const atributos = atributosDaEstrutura(escopo ? "invocacao" : estrutura);
+  useEffect(() => {
+    const anterior = document.activeElement;
+    const caixa = painel.current;
+    caixa?.querySelector('[aria-label="Fechar"]')?.focus();
+    const teclado = (e) => {
+      if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); fechar.current(); }
+      if (e.key !== "Tab") return;
+      const alvos = [...caixa.querySelectorAll('button, input, textarea, select, a[href], [tabindex]')]
+        .filter((el) => !el.disabled && el.tabIndex >= 0 && el.getClientRects().length);
+      const primeiro = alvos[0], ultimo = alvos.at(-1);
+      if (!primeiro) { e.preventDefault(); caixa.focus(); }
+      else if (e.shiftKey && (document.activeElement === primeiro || !caixa.contains(document.activeElement))) {
+        e.preventDefault(); ultimo.focus();
+      } else if (!e.shiftKey && (document.activeElement === ultimo || !caixa.contains(document.activeElement))) {
+        e.preventDefault(); primeiro.focus();
+      }
+    };
+    document.addEventListener("keydown", teclado, true);
+    return () => {
+      document.removeEventListener("keydown", teclado, true);
+      const retorno = anterior?.isConnected ? anterior
+        : document.querySelector('#afty-ficha [aria-label="Mais opções da ficha"]');
+      retorno?.focus();
+    };
+  }, []);
   const cssLimpo = saneiaCss(tema.css);
   const grande = cssLimpo.length > CSS_MAX;
   const semEscopo = !escopoSuportado();
-  const prompt = useMemo(() => promptParaIA(tema, { escopo, nome }), [tema, escopo, nome]);
+  const prompt = useMemo(() => promptParaIA(tema, { escopo, nome, estrutura }), [tema, escopo, nome, estrutura]);
 
   /* ⚠ Duas rotas, porque a área de transferência é bloqueada em contexto não
      seguro e em alguns navegadores de celular. Quando a API falha, o caminho
@@ -92,12 +123,17 @@ export default function PainelDeAparencia({ tema, onTema, onFechar, onGlobal, ti
   return (
     <div className="afty-busca-fundo" onPointerDown={onFechar}>
       <div
-        className="afty-busca"
+        ref={painel}
+        className="afty-busca afty-aparencia"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={tituloId}
+        tabIndex={-1}
         style={{ maxHeight: "82dvh" }}
         onPointerDown={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2 px-3 py-2.5 flex-shrink-0">
-          <h2 className="afty-card-titulo flex-1 truncate">{titulo}</h2>
+          <h2 id={tituloId} className="afty-card-titulo flex-1 truncate">{titulo}</h2>
           <button
             type="button"
             className="afty-botao"
@@ -110,12 +146,15 @@ export default function PainelDeAparencia({ tema, onTema, onFechar, onGlobal, ti
           <button
             type="button"
             className="afty-passo"
-            onClick={() => onTema(temaEmBranco())}
+            onClick={() => { setRestauravel(tema); onTema(temaEmBranco()); }}
             title="Voltar ao tema padrão"
             aria-label="Voltar ao tema padrão"
           >
             <RotateCcw className="w-3 h-3" />
           </button>
+          {restauravel && <button type="button" className="afty-botao" onClick={() => {
+            onTema(restauravel); setRestauravel(null);
+          }}>Restaurar</button>}
           <button type="button" className="afty-passo" onClick={onFechar} aria-label="Fechar">
             <X className="w-3 h-3" />
           </button>
@@ -275,7 +314,7 @@ export default function PainelDeAparencia({ tema, onTema, onFechar, onGlobal, ti
                   aria-label="CSS personalizado"
                 />
                 <div className="flex items-center gap-2 mt-1.5">
-                  <span className="afty-rotulo text-[10px] flex-1 tabular-nums">
+                  <span className="afty-rotulo text-[11px] flex-1 tabular-nums">
                     {cssLimpo.length} / {CSS_MAX}
                   </span>
                   {grande && (
@@ -290,14 +329,14 @@ export default function PainelDeAparencia({ tema, onTema, onFechar, onGlobal, ti
 
             {abaCss === "seletores" && (
               <div className="space-y-2">
-                {Object.entries(SELETORES_POR_GRUPO).map(([grupo, lista]) => (
+                {Object.entries(seletores).map(([grupo, lista]) => (
                   <div key={grupo}>
                     <h4 className="afty-card-titulo mb-1">{grupo}</h4>
                     <div className="space-y-0.5">
                       {lista.map((c) => (
-                        <div key={c.seletor} className="flex items-baseline gap-2">
-                          <code className="afty-valor text-[11px] flex-shrink-0">{c.seletor}</code>
-                          <span className="afty-rotulo text-[10px] truncate">{c.oque}</span>
+                        <div key={c.seletor} className="afty-aparencia-seletor">
+                          <code className="afty-valor">{c.seletor}</code>
+                          <span className="afty-rotulo">{c.oque}</span>
                         </div>
                       ))}
                     </div>
@@ -306,10 +345,10 @@ export default function PainelDeAparencia({ tema, onTema, onFechar, onGlobal, ti
                 <div>
                   <h4 className="afty-card-titulo mb-1">Atributos</h4>
                   <div className="space-y-0.5">
-                    {ATRIBUTOS_DOC.map((a) => (
-                      <div key={a.seletor} className="flex items-baseline gap-2">
-                        <code className="afty-valor text-[11px] flex-shrink-0">{a.seletor}</code>
-                        <span className="afty-rotulo text-[10px] truncate">{a.oque}</span>
+                    {atributos.map((a) => (
+                      <div key={a.seletor} className="afty-aparencia-seletor">
+                        <code className="afty-valor">{a.seletor}</code>
+                        <span className="afty-rotulo">{a.oque}</span>
                       </div>
                     ))}
                   </div>
@@ -334,7 +373,7 @@ export default function PainelDeAparencia({ tema, onTema, onFechar, onGlobal, ti
                     {copiado ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                     {copiado ? "Copiado" : "Copiar Prompt"}
                   </button>
-                  <span className="afty-rotulo text-[10px] tabular-nums">
+                  <span className="afty-rotulo text-[11px] tabular-nums">
                     {prompt.length} caracteres
                   </span>
                 </div>

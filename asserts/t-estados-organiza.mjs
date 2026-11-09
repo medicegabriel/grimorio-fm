@@ -63,9 +63,10 @@ t("vazio não quebra", familiaEParte(undefined), { familia: null, parte: "" });
 /* 38 de 63 desde 2026-09-21, com o estado de Fluxo Invencível. 39 de 64 desde
    2026-09-24, com o "Golpe Especial · Longo", que entra na família do Golpe.
    40 de 65 desde 2026-10-07, com o "Golpe Especial · Preciso", pelo mesmo motivo. */
-t("a convenção cobre 40 dos 68",
+/* 70 desde 2026-11-06 (CX6), com os dois contadores de posição do Controlador, que não entram na convenção (sem família). */
+t("a convenção cobre 40 dos 70",
   COMBATE_ESTADOS.filter((e) => familiaEParte(e.label).familia).length, 40);
-t("e o catálogo tem 68 estados", COMBATE_ESTADOS.length, 68);
+t("e o catálogo tem 70 estados", COMBATE_ESTADOS.length, 70);
 
 /* ============================================================ */
 /* TODA FAIXA PRECISA DE TETO NO `resolveCombate`                */
@@ -264,7 +265,7 @@ t("as sub-abas somam as raízes todas",
    do mesmo peso a ordem de chegada é preservada, porque o `sort` é estável. */
 t("as divisões saem na ordem pedida, com Outros por último",
   tudo.subs.map((s) => s.id),
-  ["lutador", "combatente", "conjurador", "restringido", "aptidao", "outros"]);
+  ["lutador", "combatente", "conjurador", "restringido", "controlador", "aptidao", "outros"]);
 
 /* Nenhum estado se perde no caminho: toda raiz de toda sub-aba, somada aos
    filhos, devolve o catálogo inteiro. É o assert que pega um bloco esquecido. */

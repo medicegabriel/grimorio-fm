@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { construirProposta, aplicarProposta } from "../scripts/revisao-automacao/reconciliar.mjs";
-import { coletarInventario, resolverProprietario, lerJson, CONTROLE } from "../scripts/revisao-automacao/inventario.mjs";
+import { coletarInventario, resolverProprietario, lerJson, CONTROLE, RAIZ } from "../scripts/revisao-automacao/inventario.mjs";
 import { verificarCobertura } from "../scripts/revisao-automacao/cobertura.mjs";
 import { resolve } from "node:path";
+import { readdirSync } from "node:fs";
 let ok=0;
 const t=(nome,f)=>{f();ok++;console.log("ok "+nome);};
 const item=(chave="a",extra={})=>({chave,proprietario:"X",hashDado:"1",estado:"NÃO REVISADO",...extra});
@@ -82,7 +83,18 @@ t("coleta real não tem falha",()=>assert.deepEqual(live.erros,[]));
 t("Guarda inclui fonte escalar",()=>assert.ok(live.itens.some(i=>i.chave==="ficha/ficha-sessao.js::FONTE_GUARDA::@valor")));
 t("Guarda inclui as oito condições",()=>assert.equal(live.itens.filter(i=>i.export==="CONDICOES_QUEBRAM_GUARDA"&&!i.pai&&i.id!=="@catalogo").length,8));
 const patches=live.itens.filter(i=>i.tipo==="remendo");
-t("todos os 32 remendos vinculam alvo e dono original",()=>assert.ok(patches.length===32&&patches.every(i=>i.regraOriginal&&i.proprietarioOriginal&&i.exigeProvaIntegracao)));
+const remendosDeclarados = readdirSync(resolve(RAIZ,"addons")).filter(n=>n.endsWith(".json")).flatMap(arquivo=>{
+  const pacote=lerJson(resolve(RAIZ,"addons",arquivo));
+  return Object.entries(pacote.substitui??{}).flatMap(([familia,lista])=>{
+    const ids=Array.isArray(lista)?lista.map(x=>x.id):Object.keys(lista);
+    return ids.map(id=>"addon::"+arquivo+"::substitui."+familia+"::"+id);
+  });
+});
+t("coleta inclui exatamente os remendos declarados nos arquivos de addon",()=>{
+  assert.ok(remendosDeclarados.length>=32,"conserva a base histórica de remendos");
+  assert.deepEqual(patches.map(i=>i.chave).sort(),remendosDeclarados.sort());
+});
+t("cada remendo vincula alvo e dono original",()=>assert.ok(patches.every(i=>i.regraOriginal&&i.proprietarioOriginal&&i.exigeProvaIntegracao)));
 t("alvos nativos apontam de volta ao remendo",()=>assert.ok(patches.every(i=>live.itens.find(x=>x.chave===i.regraOriginal)?.remendadoPor?.includes(i.chave))));
 t("liberações soPorAddon vinculam a regra nativa",()=>assert.ok(live.itens.filter(i=>i.chave.includes("::LIBERACOES::soPorAddon:")&&!i.pai).every(i=>i.regraOriginal&&i.proprietarioOriginal)));
 t("Roubo conserva 127 referências",()=>assert.equal(live.itens.filter(i=>i.export==="HABILIDADES_ROUBAVEIS"&&i.id!=="@catalogo").length,127));

@@ -1,6 +1,8 @@
 import { AFTY_APTIDOES, getAptidao } from "./afty-aptidoes";
 import { TIPOS_DANO, tiposDeDanoDaCategoria } from "./afty-equipamentos";
 import { comFormulasDeDano, gruposDaLinha } from "./afty-dano";
+import { APTIDAO_EFEITOS } from "./afty-efeitos-conteudo";
+import { ESTADO_ABSORCAO_ELEMENTAL, ID_ABSORCAO_ELEMENTAL, grupoDanoAbsorcaoElemental } from "./afty-conteudo-auras";
 
 const tem = (ids, id) => Array.isArray(ids) && ids.includes(id);
 const lista = (valor) => (Array.isArray(valor) ? valor : []);
@@ -22,6 +24,7 @@ export function aptidoesAuraDesabilitadas(creature, aptidoesIds) {
 
 export function estadosCombateAptidoes({ aptidoesIds = [], au = 0, cl = 0 } = {}) {
   const estados = [];
+  if (tem(aptidoesIds, "aura_impenetravel")) estados.push({ id: "auraImpenetravel", label: "Aura Impenetrável", tipo: "bool", custoPE: 3 });
   if (tem(aptidoesIds, "aura_embacada")) {
     estados.push({
       id: "auraEmbacada",
@@ -39,6 +42,15 @@ export function estadosCombateAptidoes({ aptidoesIds = [], au = 0, cl = 0 } = {}
       foraCombate: true,
     });
   }
+  if (tem(aptidoesIds, ID_ABSORCAO_ELEMENTAL)) {
+    estados.push({
+      id: ESTADO_ABSORCAO_ELEMENTAL,
+      label: "Absorção Elemental",
+      tipo: "opcao",
+      ocultarEmBuffs: true,
+      opcoes: tiposDeDanoDaCategoria("elemental").map((t) => ({ id: t.id, label: t.label })),
+    });
+  }
   if (tem(aptidoesIds, "concentrar_aura")) {
     const opcoes = AFTY_APTIDOES
       .filter((a) => a.categoria === "aura" && a.id !== "concentrar_aura" && tem(aptidoesIds, a.id))
@@ -48,6 +60,7 @@ export function estadosCombateAptidoes({ aptidoesIds = [], au = 0, cl = 0 } = {}
         id: "concentrarAura",
         label: "Concentrar Aura",
         tipo: "multi",
+        ocultarEmBuffs: true,
         opcoes,
         maxSelecionados: 1 + Math.max(0, Math.trunc(Number(au) || 0)),
       });
@@ -133,12 +146,26 @@ const escolhaDano = (creature, id) => {
   return valido ? escolha : null;
 };
 
+/** Livro p.175. O elemento continua sendo uma escolha do catálogo da própria ficha. */
+export function efeitosDeAptidoesConfiguradas(creature, aptidoesIds) {
+  const tipo = escolhaDano(creature, "aura_elemental");
+  if (!tipo || !["aura_elemental", "aura_reforcada", "aura_elemental_reforcada"].every((id) => tem(aptidoesIds, id))) return [];
+  const reforcada = getAptidao("aura_reforcada");
+  const bases = (reforcada?.efeitos ?? APTIDAO_EFEITOS.aura_reforcada).filter((e) => e.canal === "rdFisico");
+  const comum = { canal: "rdTipo", alvo: tipo, origem: "aura_elemental_reforcada", nome: "Aura Elemental Reforçada" };
+  return [...bases.map((e) => ({ ...e, ...comum })), { ...comum, expr: "au" }];
+}
+
 export function aplicarAptidoesNoDano(dano, creature, combate, ctx = {}) {
   const aptidoesIds = ctx.aptidoesIds ?? [];
   const au = Math.max(0, Math.trunc(Number(ctx.au) || 0));
   const cl = Math.max(0, Math.trunc(Number(ctx.cl) || 0));
   const tipoAura = escolhaDano(creature, "aura_elemental");
   const tipoAfinidade = escolhaDano(creature, "afinidade_ampliada");
+  const tipoAbsorvido = combate?.[ESTADO_ABSORCAO_ELEMENTAL];
+  const absorvido = tem(aptidoesIds, ID_ABSORCAO_ELEMENTAL) && tipoAbsorvido
+    && tiposDeDanoDaCategoria("elemental").some((t) => t.id === tipoAbsorvido)
+    ? grupoDanoAbsorcaoElemental({ au, tipo: tipoAbsorvido }) : null;
   const concentradas = lista(combate?.concentrarAura);
   const desabilitadas = new Set(concentradas);
   const auraAtiva = tem(aptidoesIds, "aura_elemental")
@@ -179,6 +206,7 @@ export function aplicarAptidoesNoDano(dano, creature, combate, ctx = {}) {
         });
       }
       const tipoDano = auraAtiva ? tipoAura : entrada.tipoDano;
+      if (absorvido) gruposDano.push(absorvido);
       if (auraAtiva) {
         const faces = au >= 5 ? 10 : au >= 3 ? 8 : au >= 2 ? 6 : 4;
         gruposDano.push({
@@ -196,7 +224,7 @@ export function aplicarAptidoesNoDano(dano, creature, combate, ctx = {}) {
       if (concentradas.length) {
         gruposDano.push({
           nome: "Concentrar Aura", dados: concentradas.length, faces: 8, fixo: 0,
-          momento: "apos", multiplica: false,
+          momento: "apos", multiplica: false, tipoDano: "energetico",
         });
       }
       /* ⚠ CANALIZAR EM GOLPE NÃO É APÓS ATAQUE (autor, 2026-09-15). O texto é

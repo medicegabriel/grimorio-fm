@@ -26,6 +26,9 @@ estilo de escrita e nas regras de colaboração. O que mais pega está repetido 
   outro. Não é bug nem pergunta.
 - Texto de regra do livro é fiel à fonte. Regra ambígua ou faltando vira pergunta em
   `docs/a-fazer.md`, não suposição.
+- **O Corpo Amaldiçoado Mutante foi abandonado e excluído do site em definitivo (autor, 2026-10-30).**
+  Não implemente nem reabra. Se um prompt ou a fila o citar, pule a parcela e vá fazer outra coisa.
+  Detalhes em `AGENTS.md`, seção "Itens descartados pelo autor".
 - Aviso na tela usa o ícone `<AlertTriangle/>` do lucide, nunca o caractere U+26A0. O lint reprova
   esse caractere em JSX e em string dentro de `src/systems/afty/`, e o deixa livre em comentário.
 

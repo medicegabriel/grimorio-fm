@@ -93,7 +93,12 @@ const casos = [
   ["o nome é normalizado como no tokenizer", { canal: "defesa", quando: "EM_COMBATE", expr: "1" }, "bancada"],
   ["estado que o contexto reduzido não conhece desce (estado de Addon)",
     { canal: "defesa", quando: "meu_pacote_estado_ligado", expr: "1" }, "bancada"],
-  ["texto entre aspas não é variável", { canal: "defesa", expr: "contar(\"em_combate\")" }, "montante"],
+  /* O exemplo era `contar("em_combate")` e esperava `montante`. Desde o V2
+     (2026-11-07) quem lê `contar(` ou `tem_*` desce, porque a contagem da ficha
+     só existe no estágio principal. A intenção do caso continua: o texto entre
+     aspas não vira variável, agora provada com uma função que não é `contar`. */
+  ["texto entre aspas não é variável", { canal: "defesa", expr: "piso(\"em_combate\")" }, "montante"],
+  ["contar() desce mesmo com o texto inofensivo", { canal: "defesa", expr: "contar(\"qualquer\")" }, "bancada"],
   ["nome de função não é variável", { canal: "defesa", expr: "piso(bt / 2)" }, "montante"],
   ["variável do próprio efeito (`contextoDsl`) não desce", { canal: "defesa", expr: "x", contextoDsl: { x: 2 } }, "montante"],
   ["canal de vaga fica mesmo lendo a bancada", { canal: "vagasTalento", quando: "em_combate", expr: "1" }, "montante"],

@@ -286,6 +286,15 @@ Nesta campanha, métrica ausente ou ambígua exige decisão do autor antes de um
 | `afty-invocacoes-tipos.js` | `REGRAS_POR_TIPO`, os estados de mesa, `contaInvocacoesEmCampo`. **FOLHA, zero imports** |
 | `afty-invocacoes-caracteristicas.js` | o catálogo de Características de Invocação (Modificadoras, Intrínsecas, Auras). **FOLHA, zero imports** |
 | `ficha/ficha-sessao.js` | a sessão de mesa: estado de cada invocação, entrada em campo com PE, quedas por tipo, compostos, rodadas e descanso |
+| `ficha/ficha-uso-estado.js` | o estado salvo em `sessao.uso` (anel de ids de operação, usos ativos, pendências do próximo ataque, sequência, ações, concentração) e suas transições de tempo. **FOLHA, zero imports**. Guia em `docs/afty-motor-uso-combate.md` |
+| `ficha/ficha-uso.js` | o contrato de uso: `usa`, `avaliaUso`, `pagaManutencao`, `encerraUso`. Identidade por `opId`, recusa com motivo, política de cobrança `manual`/`confirmada`. Descritores em `ficha-uso-clientes.js` |
+| `ficha/ficha-vital.js` | o estado vital em `sessao.vital` (saldo negativo, Portas da Morte, Ferimentos Complexos) como funções puras, a tabela de ferimentos da p.314 e `avisoDoVital`. **FOLHA, zero imports**. Guia em `docs/afty-vital.md` |
+| `ficha/ficha-votos-regras.js` | os Votos de Restrição (p.350 a 358): vocabulário, pesos, `validaVoto`, as contas da Restrição Congênita e a leitura dos campos novos. **FOLHA, zero imports**. Guia em `docs/afty-votos.md` |
+| `ficha/ficha-votos.js` | as operações dos Votos sobre `creature.votos` (realizar, quebrar, desfazer, prazo, fim do combate, interlúdio, Contrato), com `opId` no histórico do Voto |
+| `ficha/ficha-dominio-confronto.js`, `ficha-barreiras-estado.js`, `ficha-barreiras.js` | o Confronto e a Contestação entre dois participantes (manual assistido, DA-19), as paredes e Cortinas em `sessao.barreiras` (a folha de estado é importada pela sessão) e a Cesta Oca de Vime pelo contrato de uso do CL1. Guia em `docs/afty-dominio-confronto.md` |
+| `ficha/ficha-invocacao-uso.js` | comandar auxílio de invocação com prejuízo por repetição, o Dano Adicional como disparo no próximo ataque, a Forma de Arma (linha de ataque do dono, reação do portador). Guia na seção CL3 de `docs/afty-invocacoes.md` |
+| `ficha/ficha-morte.js`, `ficha-alma.js`, `ficha-dados-vida.js` | as operações do CL2 sobre a sessão, no contrato do CL1 (`opId`, recusa com motivo): teste de morte, Medicina e Ferimentos, teste de Integridade antes do Dano na Alma e cura de Alma com requisito de quem cura, pilha de Dados de Vida por Especialização. Guia em `docs/afty-vital.md` |
+| `ficha/ficha-ataque.js`, `ficha-dano-recebido.js`, `ficha-combate-eventos.js`, `ficha-acoes.js`, `ficha-concentracao.js` | ataque com alvo e TR, dano recebido na ordem do livro, eventos e Sequência de Ataques, ações e reações, concentração. Todos sobre a sessão e nenhum importado pelo derive |
 | `AftyCreatureBuilder.jsx` | UI do criador, 13k+ linhas, `SimulacaoCombateCard`, editores de Feitiço |
 | `ficha/AftyFicha.jsx` | Ficha Final (uso em jogo) |
 | `encontros/PainelDeCombatente.jsx` | painel de combatente no Encontro |

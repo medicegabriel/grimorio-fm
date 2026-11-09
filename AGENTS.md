@@ -73,6 +73,10 @@ No registro abaixo, Forma 1 é parâmetro opcional com o padrão preservado e va
 - `docs/afty-status.md` é o histórico de sessões. Afirmações datadas nele não substituem a verificação do código atual.
 - Atualize contagens, caminhos, estados de implementação e instruções de navegação quando o código mudar. Não apresente uma decisão já tomada como pergunta em aberto. Antes de entregar, confira o diff e a resposta para garantir que não foi introduzido nenhum U+2014.
 
+## Itens descartados pelo autor (leia antes de aceitar um prompt ou uma fila)
+
+- **Corpo Amaldiçoado Mutante (Livro p.39 a 41, os três núcleos): ABANDONADO E EXCLUÍDO DO SITE EM DEFINITIVO (autor, 2026-10-30).** Não implemente, não reabra e não pergunte de novo. Se um prompt, uma análise ou a fila citar o Mutante, **desista da ideia, pule a parcela e vá fazer outra coisa.** A entrada saiu de `afty-origens.js` e `asserts/t-mutante-descartado.mjs` falha se ela voltar. Não confundir com o que continua valendo: os `multiplosNucleos` das invocações, a Anatomia Carapaça Mutante e a origem Maldição.
+
 ## Fonte do Livro de Regras (2026-10-05)
 
 - Leia o Livro de Regras 2.5.2 em `C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md`, fora do repositório. Confirme o acesso e o SHA-256 `1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a` e registre esse hash como versão da fonte nos lotes.

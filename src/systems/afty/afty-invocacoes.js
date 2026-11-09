@@ -599,6 +599,9 @@ export const AUXILIO_ROTULO = {
 
 export const ALVO_AUXILIO_ROTULO = { invocacao: "Nela Mesma", aliados: "Aliados" };
 
+/** O Frenesi da Invocação tira 5 da Defesa e dos testes de resistência dela por uma rodada (Livro p.97). */
+export const FRENESI_PENALIDADE = 5;
+
 /** O estado de mesa desta invocação, saneado. Sem sessão, ela está fora de campo. */
 export function sessaoDaInvocacao(dono, invId) {
   const mapa = dono?.sessaoInvocacoes;
@@ -615,6 +618,8 @@ export function sessaoDaInvocacao(dono, invId) {
        Sobrecarregada, que vale enquanto ela está em campo, e a Autonomia paga. */
     sobrecargaPv: Math.max(0, Math.trunc(Number(e?.sobrecargaPv) || 0)),
     autonomia: !!e?.autonomia,
+    // O Frenesi da Invocação (CX6): vale só em campo.
+    frenesi: !!e?.emCampo && !!e?.frenesi,
   };
 }
 
@@ -647,13 +652,19 @@ export function auxiliosLigadosDa(inv, dono = {}) {
     if (!ehAuxilioSustentavel(a) || !auxilioLigado(sess, a.id)) continue;
     const r = resolveAcao(a, inv, dono);
     const canal = AUXILIO_CANAL[r.auxilioSub];
-    const valor = Math.trunc(Number(r.valor) || 0);
+    /* O PREJUÍZO POR MÚLTIPLOS AUXÍLIOS (CL3, 2026-11-01). Quem ligou o auxílio contou os usos da rodada e deixou o
+       número de passos em `auxilios[id] = { prejuizo }` (`true` é o formato de antes e vale zero passos). O valor desce 1 por passo e
+       para em zero (p.268). Ver `ficha/ficha-invocacao-uso.js`. */
+    const marca = sess.auxilios?.[a.id];
+    const passos = marca && typeof marca === "object" ? Math.max(0, Math.trunc(Number(marca.prejuizo) || 0)) : 0;
+    const valor = Math.max(0, Math.trunc(Number(r.valor) || 0) - passos);
     if (!canal || !valor) continue;
+    const rotulo = `${r.nome || "Auxílio"}${passos ? " (Prejuízo por Repetição)" : ""}`;
     if (r.alvoAuxilio === "aliados") {
-      paraAliados.push({ id: a.id, nome: r.nome || "Auxílio", sub: r.auxilioSub, canal, valor });
+      paraAliados.push({ id: a.id, nome: rotulo, sub: r.auxilioSub, canal, valor });
     } else {
       proprio[canal] += valor;
-      proprio.fontes.push({ canal, label: r.nome || "Auxílio", valor });
+      proprio.fontes.push({ canal, label: rotulo, valor });
     }
   }
   return { proprio, paraAliados, sessao: sess };
@@ -1745,6 +1756,50 @@ function tamanhoBrutoDaInvocacao(inv) {
   return c?.tamanho || inv?.tamanho || "medio";
 }
 
+/**
+ * O ESTADO DE MESA DA INVOCAÇÃO, como variáveis do Motor (CL3, 2026-11-01). A Característica Livre escreve o `quando` no
+ * contexto da invocação, e até aqui ele só enxergava o dono e o cadastro. Agora enxerga a sessão DESTE dono:
+ *
+ *   em_campo, em_composto   a invocação está em campo, ou dentro de uma Horda, Quimera, Mecha ou grupo de núcleos que está
+ *   pv_atual, pv_percentual o PV corrente (PV cheio quando a sessão ainda não o tocou) e a porcentagem, com piso
+ *   forma_arma, forma_armadura   a Forma ligada (as duas são excludentes)
+ *   auxilios_ligados, em_tarefa, rodadas_em_campo
+ *
+ * ⚠ SEM SESSÃO (o criador), `dono.sessaoInvocacoes` é ausente: `em_campo` vale 1 e o PV está cheio, e o resto é zero. É o
+ * mesmo critério dos marcadores com condição de mesa (`unicaEmCampo` vale sempre onde não há mesa): o criador mostra o efeito
+ * como ele seria em campo, e não esconde a Característica.
+ *
+ * ⚠ SEM VAZAMENTO ENTRE FICHAS: lê só `dono.sessaoInvocacoes`, que é o mapa da sessão deste dono, pelo id desta invocação (ou
+ * do composto onde ela está). Nenhum estado fica no módulo. Duas fichas com invocações de mesmo id não se enxergam.
+ */
+function varsDaSessaoDaInvocacao(inv, dono, pvMax) {
+  const mapa = dono?.sessaoInvocacoes;
+  const cheio = Math.max(0, Math.trunc(Number(pvMax) || 0));
+  if (!mapa || typeof mapa !== "object") {
+    return {
+      em_campo: 1, em_composto: 0, pv_atual: cheio, pv_percentual: 100,
+      forma_arma: 0, forma_armadura: 0, auxilios_ligados: 0, em_tarefa: 0, rodadas_em_campo: 0,
+    };
+  }
+  const linha = (inv?.id != null && mapa[inv.id] && typeof mapa[inv.id] === "object") ? mapa[inv.id] : null;
+  const emComposto = Object.entries(mapa).some(([id, e]) => id !== inv?.id && e && e.emCampo
+    && Array.isArray(e.componentes) && e.componentes.includes(inv?.id));
+  const pv = linha?.pvAtual == null ? cheio : Math.trunc(Number(linha.pvAtual) || 0);
+  const forma = linha?.forma === "arma" || linha?.forma === "armadura" ? linha.forma : null;
+  const ligados = Object.values((linha?.auxilios && typeof linha.auxilios === "object") ? linha.auxilios : {}).filter(Boolean).length;
+  return {
+    em_campo: (linha?.emCampo || emComposto) ? 1 : 0,
+    em_composto: emComposto ? 1 : 0,
+    pv_atual: pv,
+    pv_percentual: cheio > 0 ? Math.max(0, Math.floor((pv * 100) / cheio)) : 0,
+    forma_arma: forma === "arma" ? 1 : 0,
+    forma_armadura: forma === "armadura" ? 1 : 0,
+    auxilios_ligados: ligados,
+    em_tarefa: linha?.emTarefa ? 1 : 0,
+    rodadas_em_campo: Math.max(0, Math.trunc(Number(linha?.rodadasAtiva) || 0)),
+  };
+}
+
 export function buildInvocacaoDslContext(inv, dono = {}, resolved = {}) {
   const at = inv?.atributos || {};
   const g = grauMeta(inv?.grau);
@@ -1771,6 +1826,7 @@ export function buildInvocacaoDslContext(inv, dono = {}, resolved = {}) {
     mod_inteligencia: mod(at.inteligencia), mod_sabedoria: mod(at.sabedoria), mod_presenca: mod(at.presenca),
     grau: g.rank, grau_num: g.num,
     pv_max: resolved.pv ?? pvInvocacao(inv, dono),
+    ...varsDaSessaoDaInvocacao(inv, dono, resolved.pv ?? pvInvocacao(inv, dono)),
     defesa: resolved.defesa ?? defesaInvocacao(inv, dono),
     deslocamento: resolved.deslocamento ?? deslocamentoInvocacao(),
     /* TIPO MECÂNICO como booleana. Sem isto não dava para escrever efeito que
@@ -3211,6 +3267,19 @@ function opcoesDeUso(inv, dono) {
       out.push({ id: "autonomia", nome: "Autonomia", valor: `${2 * g.rank} PE`, custo: 2 * g.rank, quando: paga });
     }
   }
+  /* PROTEGER INVOCAÇÃO (CX6, p.97 e p.99): a reação que reduz o dano de uma invocação atacada. "Xd6 + seu modificador de Presença ou Sabedoria",
+     X é o bônus de treinamento. A Proteção Avançada troca o d6 por d8, corta o dano que o dono recebe pela metade e deixa a reação sair por 2 PE
+     como Ação Livre. O modificador é escolha da mesa, então os dois valores aparecem (pergunta aberta na fila). */
+  if (dono?.protegerInvocacao) {
+    const x = Math.max(0, Math.trunc(Number(dono.bt) || 0));
+    const face = dono.protecaoAvancada ? 8 : 6;
+    const mp = Math.trunc(Number(dono.modPresenca) || 0);
+    const ms = Math.trunc(Number(dono.modSabedoria) || 0);
+    const soma = (m) => `${x}d${face} ${m < 0 ? "-" : "+"} ${Math.abs(m)}`;
+    out.push({ id: "proteger_reducao", nome: "Proteger Invocação: Reduzir o Dano", valor: mp === ms ? soma(mp) : `${soma(mp)} ou ${soma(ms)}`, quando: "reacao" });
+    out.push({ id: "proteger_sacrificio", nome: "Proteger Invocação: Receber o Dano", valor: dono.protecaoAvancada ? "Metade do Dano" : "Dano Inteiro", quando: "reacao" });
+    if (dono.protecaoAvancada) out.push({ id: "protecao_livre", nome: "Proteção Avançada: Ação Livre", valor: "2 PE", custo: 2, quando: "reacao" });
+  }
   if (dono?.resistenciaSobrecarregada) {
     // "gastar uma quantidade de PE igual a metade do seu bônus de treinamento e,
     // para cada ponto gasto, a invocação tem seus pontos de vida aumentados em 10".
@@ -3301,6 +3370,9 @@ export function resolveInvocacao(invCru, dono = {}) {
      resolve os próprios auxílios. Ver `auxiliosLigadosDa`. */
   const aux = auxiliosLigadosDa(inv, dono);
   if (aux.proprio.bonusAcerto) donoLocal.auxilioAcertoProprio = aux.proprio.bonusAcerto;
+  /* O Frenesi da Invocação (p.97): "ela terá a sua Defesa reduzida em 5 e -5 em testes de resistência" por uma rodada. */
+  const frenesi = aux.sessao.frenesi ? FRENESI_PENALIDADE : 0;
+  if (frenesi) donoLocal.bonusTRHabilidade = (donoLocal.bonusTRHabilidade ?? 0) - frenesi;
   /* As duas listas que o `resolveTestesInvocacao` transforma em parcelas de
      hover: os efeitos de Habilidade aplicados e os auxílios ligados na mesa. */
   donoLocal.detalhesEfeito = efe.detalhes;
@@ -3358,7 +3430,7 @@ export function resolveInvocacao(invCru, dono = {}) {
   const pvAposFusao = pvFixo != null && inv?.pvDoDonoAposFusao ? efe.pvDoDono : 0;
   const arredondamentoPvFusao = pvAposFusao ? Math.floor(pvAposFusao) - pvAposFusao : 0;
   const pv = (pvFixo ?? Math.floor((pvInvocacao(invEf, dono, atributoPv) + efe.pv + caract.pv) * pvMult)) + Math.floor(pvAposFusao) + pvSobrecarga;
-  const defesa = defesaInvocacao(invEf, dono, atributoCombate) + efe.defesa + aux.proprio.defesa;
+  const defesa = defesaInvocacao(invEf, dono, atributoCombate) + efe.defesa + aux.proprio.defesa - frenesi;
   const deslocamento = deslocamentoInvocacao() + efe.deslocamento;
   /* Alado e Nadador (2026-09-30): o deslocamento novo parte do de caminhada
      (decisão do autor, na falta de outro valor na fonte). */
@@ -3458,6 +3530,7 @@ export function resolveInvocacao(invCru, dono = {}) {
       ...partesDefesaInvocacao(invEf, dono, atributoCombate),
       ...parcelasDoCanal(efe.detalhes, "defesa"),
       ...auxDoCanal("defesa"),
+      ...(frenesi ? [{ label: "Frenesi da Invocação", valor: -frenesi }] : []),
     ],
     deslocamento: [
       { label: "Base", valor: deslocamentoInvocacao() },

@@ -223,7 +223,9 @@ t("as divergencias de REGRA ligadas",
    "requisitoMulticlasse", "desenvolvimentoNoNivel"].sort());
 t("e a de TELA ligada e a das abas",
   S.DIVERGENCIAS.filter((d) => d.ativa && d.tipo === "tela").map((d) => d.id),
-  ["abasIdentidade", "rotuloDoNivel", "marcaDoSistema"]);
+  ["abasIdentidade", "rotuloDoNivel", "jogadasDeAtaqueNaTela", "marcaDoSistema"]);
+/* A lista Jogadas de Ataque (2026-11-07): some na ficha de jogador e fica na criatura, e o derive segue calculando os ataques nos dois. */
+t("a lista Jogadas de Ataque some no jogador e fica na criatura", [S.mostraJogadasDeAtaque("afty"), S.mostraJogadasDeAtaque("player"), S.mostraJogadasDeAtaque(undefined)], [true, false, true]);
 /* O vocabulário da ficha (2026-09-10), com a concordância: "personagem" é
    masculino, e trocar só o substantivo deixaria "Esta personagem". */
 t("a palavra da criatura", S.palavrasDoSistema("afty").nome, "criatura");
@@ -496,7 +498,7 @@ t("as divergencias conhecidas estao na lista",
    "passivaCustaPeMaximo",
    "patamarDoJogador", "poolExclusivo", "proficienciaPorArma", "progressaoDeFeiticos", "progressaoDeTecnicasMarciais", "progressaoDoEstilo",
    "pvPePorEspecializacao", "quantidadeDePE", "rdBase", "rdEscudoFisico",
-   "reducaoDeGrau", "requisitoMulticlasse", "danoFixoPorGrau", "rotuloDoNivel", "marcaDoSistema", "interludioComTeste",
+   "reducaoDeGrau", "requisitoMulticlasse", "danoFixoPorGrau", "rotuloDoNivel", "marcaDoSistema", "interludioComTeste", "jogadasDeAtaqueNaTela",
    "terceiraClasse", "tetoDeNivel", "tetoDeTreinoEspecial", "trForaDoOrcamento", "trMestreDoJogador", "treinoDaClasseInicial",
    "vagasPorNivelDeClasse", "valoresAdicionais"].sort());
 

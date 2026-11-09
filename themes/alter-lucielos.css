@@ -316,6 +316,21 @@
   }
 }
 
+/* No G2 o valor é texto, e não o campo de largura fixa da clássica. */
+@media (max-width: 480px) {
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha)[data-afty-estrutura="g2"] .afty-vital-conteudo {
+    flex-wrap: wrap;
+    row-gap: 2px;
+  }
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha)[data-afty-estrutura="g2"] .afty-vital-rotulo {
+    flex: 1 0 100%;
+  }
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha)[data-afty-estrutura="g2"] .afty-vital-numero {
+    width: auto;
+    min-width: 0;
+  }
+}
+
 @media print {
   :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-linha:hover,
   :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-linha[data-afty-destacada="sim"] {

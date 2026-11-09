@@ -9,6 +9,817 @@ tem progresso e gasto de Focos próprios. O Servo admite duas por atributo.
 As decisões de homebrew do autor estão em `docs/afty-formulas-base.md` e `docs/automacao-dsl.md`.
 Regressão específica em `asserts/t-servos-da-guerra.mjs`.
 
+## SESSÃO DE 2026-11-08 · AUDITORIA DA FICHA NO CELULAR E NOS TEMAS (IMPECCABLE)
+
+**Checkup do G2 de Player com o Impeccable (2026-11-09).** Critique inline (placar 25/40, registro em `.impeccable/critique/`) e três correções só em CSS e estado do G2, sem tocar `src/components/`. (1) Os números que abrem as fontes no cabeçalho G2 (Defesa, CD, Mov., Inic., Atenção) tinham 17 a 28 x 20 px e agora têm 25 a 36 x 26 px, medidos por `elementFromPoint` em 1440, 1280, 768, 430, 412, 390, 375 e 360 (`efeitos-g2.css`: `::after` invisível em `.m-valor-botao` e respiro do `.e-stats` como padding com margem negativa, a altura da faixa não muda). (2) Em 390 px o botão Efeitos do cabeçalho passava 22 px da seção e 11 px do cartão: agora a fileira cabe (cabeçalho continua com 378 px), e em 375 e 360 ela quebra em duas linhas (404 px) em vez de vazar. (3) O catálogo de Efeitos abria em Favoritos com "Nenhuma Opção" quando não há favorito: agora a primeira abertura cai em Todo o Catálogo (`gestor-logica.js`, `abrirCatalogo`). Verificação: `t-fechamento-g2` 124, `t-abas-g2-previa` 67, `t-g2-fonte-compat` 52, `t-g2-sessao-operacoes` 52, `t-g2-virada-registro` 57, `t-g2-preferencias` 42, `t-g2-desempenho` 30 e `t-alinhamento` 27 passam, eslint limpo. Não testado: ciclo ativar, ajustar e encerrar de um efeito (o script não conseguiu ativar nenhum), toque em aparelho real.
+
+**Aba dos Livros (mesma data, depois da auditoria).** O botão flutuante dos Livros virou uma aba de 28 px na borda direita no celular, só na Ficha clássica e só fechado (`ficha.css`, bloco depois de "O cabeçalho do item enche a linha"). Medido a cada 150 px de rolagem: alvos cobertos pelo botão em Perícias de 10 de 15 posições para 0 (390x700 e 360x640, `/Afty` e `/Player`). Tocar na aba abre a pilha e tocar de novo volta ao recolhido. Travado por `asserts/t-livros-aba.mjs`.
+
+Rodada de conferência da Ficha Final (clássica, `/Afty` e `/Player`) com o Impeccable 4.8.1 (`doctor` sem achados, `detect` na pasta `ficha/`).
+
+- **Presets de tema:** só o Padrão tinha o `--afty-texto-fraco` novo. Pergaminho, Sangue, Abissal e Terminal redefinem o token, e ele reprovava (de 2,74 a 4,21 contra 4,5). Os quatro foram corrigidos em `ficha-tema.js`, e no Pergaminho também `--afty-texto-suave`, `--afty-pe`, `--afty-cura` e `--afty-aviso`. O valor de `--afty-texto-fraco` em `TOKENS_DOC` (o preset Padrão do formulário) ainda era `#64748b` e passou a `#75849b`, igual ao CSS. Medido pelo contraste do que está pintado, nas seis abas: `/Player` 0 reprovas nos cinco presets, `/Afty` só a Guarda Inabalável (discreta por decisão do autor, 2026-08-26). Item desativado (`opacity-40 pointer-events-none`, os Buffs sem fonte) fica fora da conta.
+- **Cabeçalho grudado no celular** (390x700 com toque emulado): de 391 px (56%) para 296 px (42%), e com uma rolagem na tela 324 px (46%). Em 360x640, de 61% para 46%. Em `max-width: 640px`, com o cabeçalho compacto, os chips de Tipo, Patamar e Grau e os botões de Densidade, Aparência, Busca, Descanso e Editar saem e voltam ao rolar para o topo. Nome, Rodada, Próxima Rodada, os avisos (Sobrecarregado, Cofre) e a Guarda ficam. A linha "Sem rolagens" encolhe a zero (não é `display: none`, para a região `aria-live` anunciar a primeira rolagem).
+- **Fileira de controles cortada à esquerda:** já existia antes (o `padding-inline: 1rem` do toque dava 50 px por botão e o contador de Rodada é de 66 px). Mora em `ficha.css`, não em `src/components/`. Agora os botões têm 40 px de largura no celular e 44 px de altura, o espaço cai a 4 px e a fileira quebra em 320 px em vez de cortar.
+- **Alvos abaixo de 24 px:** o número que abre as fontes (`button.cursor-help`), o cabeçalho de seção, o número do vital, o filtro e o cabeçalho do item de Habilidade ganharam o piso de 24 px no escopo da Ficha (o `DicaDeFontes` é compartilhado com o criador e não foi tocado). Sobram só os três botões da Guarda no desktop, de propósito.
+- **`DESIGN.md` e `design.json`:** a rampa de tipos ganhou o degrau Linha (600, 0.75rem), o `text-[12px]` que a Ficha usa em 70 pontos. As sugestões do detector de tamanho fora da rampa caíram de 89 para 19.
+- **Deixado de propósito:** os cinco avisos `side-tab` de `ficha.css` e os seis do G2 (os do G2 marcam seleção e aviso), sem aval do autor; `t-reconciliacao-g00` e `t-revisao-g00`, que falham por módulos novos sem proprietário.
+
+## SESSÃO DE 2026-11-08 · AÇÕES E HABILIDADES NO ESTILO DE PERÍCIAS, E SKILLS NOVAS
+
+Ações e Habilidades do G2 refeitas no estilo de Perícias, com o Pular como seção e o Golpe Especial da Mesa como ação principal (detalhes em
+`afty-ficha-final.md`). S1 de Dano em 783 e 1021. `t-abas-g2-previa` com 67 asserts e 50 de 50 verificações no navegador.
+Skills instaladas no projeto (`grimorio-tracker/.claude/skills/`, pasta ignorada pelo git): `shadcn` (oficial, de `shadcn-ui/ui`, MIT) e `impeccable`
+(oficial, de `pbakaus/impeccable` 4.8.1, Apache 2.0). Só os arquivos da skill: sem o hook do Impeccable, sem os subagentes e sem `settings.json`. A
+`impeccable` ganhou `disable-model-invocation: true` (só roda por `/impeccable`), como a `frontend-design`. Não há skill oficial de Tailwind.
+
+## SESSÃO DE 2026-11-08 · PERÍCIAS MAIS CURTAS NO G2
+
+Recomendação aplicada na prévia: linha de perícia de 40 px com ponteiro fino (42 no toque) e, no celular, a chave Testes / Perícias, que mostra
+um grupo por vez. Perícias de Player passou de 1293 para 1182 px no desktop e de 2195 para 1380 px no celular. 50 de 50 verificações no navegador,
+`t-abas-g2-previa` com 64 asserts. O servidor da 5330 passou a tratar arquivo apagado durante um build (antes caía). `ajustes.mjs` da prévia clica em
+Testes antes de procurar Outros no telefone.
+
+## SESSÃO DE 2026-11-07 · JOGADAS DE ATAQUE SAEM DA FICHA DE PLAYER
+
+Pedido do autor: na Ficha de Player a lista Jogadas de Ataque é irrelevante na criação e na Ficha Final, porque o Acerto mora na Arma e no Feitiço.
+Divergência de TELA nova, `jogadasDeAtaqueNaTela` em `afty-sistema.js` (com o helper `mostraJogadasDeAtaque`): o Player não vê a lista no criador
+(aba Perícias), na Ficha clássica, no G2, no painel do Encontro nem na busca global. A criatura mantém tudo. O derive não mudou: `derived.testes.ataques`
+segue calculado nos dois sistemas porque a linha de ataque da arma e o Acerto do Feitiço leem dele. O que sumiu da tela do Player é o toque de treino
+por tipo (que no jogador já não valia, a proficiência é por arma), o chip Fineza geral e a troca manual do atributo do ataque, que continuam gravados
+na ficha. `asserts/t-sistema.mjs` (496) e `t-abas-g2-previa.mjs` (62) cobrem. Roteiros em `.audit/redesenho-g2-20261107/` (`criador.mjs`, `jogadas.mjs`).
+
+## SESSÃO DE 2026-11-07 · REDESENHO DO CABEÇALHO E DE PERÍCIAS DO G2
+
+Skill Frontend Design aplicada ao layout base do G2, só na prévia isolada (5330). Retrato como âncora (moldura de 112 px na altura
+do corpo), identidade na largura do nome, recursos agrupados, Perícias em duas colunas de leitura no desktop e uma no celular, linha com
+nome e botão em colunas fixas e treino pelo destaque da linha. Efeitos, Mesa unificada, linhas de armas e `themes/arcane-g2.css`
+preservados. S1 1280x800 com a compacta: fundo da primeira linha de Dano de 859 para 797. 43 de 43 verificações no navegador,
+60 asserts em `t-abas-g2-previa`, lint e build isolado ok. Link: `http://127.0.0.1:5330/?ficha=cmp-densa&tema=escuro&aba=pericias`.
+Relatório com diagnóstico, direção, capturas e pendências em `.audit/redesenho-g2-20261107/RELATORIO.md`. Sem commit, push ou integração.
+
+## SESSÃO DE 2026-11-07 · ARCANE NA PRÉVIA DO G2
+
+Tema `themes/arcane-g2.css` adaptado à ficha nova, com placa de gelo, detalhes
+em cinábrio e turquesa nas rolagens. A prévia isolada na 5330 abre Arcane de
+nível 1 com uma Katana de exemplo em `/?ficha=arcane&tema=arcane`. Build da
+prévia aprovado, três abas conferidas em 320, 390 e 1440 px, e CSS carregado
+no editor de Aparência. Capturas em `C:/Projetos/Grimorio/outputs/arcane/`.
+Retrato indicado pelo autor adicionado à ficha de exemplo e conferido no cabeçalho.
+
+## SESSÃO DE 2026-11-07 · ARCANE, GELO E CINÁBRIO
+
+Revisão avulsa entregue em `C:/Projetos/Grimorio/outputs/arcane/arcane-glacial.css`,
+para substituir o CSS colado no painel de Aparência. O autor pediu os detalhes
+vermelhos da referência: placa de identidade, cantos do retrato e marcadores dos
+grupos de Perícias. Turquesa continua nas seleções e nas rolagens.
+
+A placa clara agora se limita ao nome e às marcas da personagem. Nomes de
+perícias mais legíveis, botões de rolagem com área própria e seletor corrigido
+para o filho de `.afty-fontes-raiz`. Recursos em duas colunas no celular, foco
+de teclado, alvos de toque nas rolagens e respeito à redução de movimento.
+O layout refinado é o da Clássica. A G2 compartilha a paleta.
+
+Conferido no app local com ficha sintética e contexto de navegador isolado:
+colagem e persistência pelo editor, rolagem, ajuste de Vida, foco com Tab,
+impressão branca, toque e ausência de rolagem horizontal. Clássica entre 320 e
+1920 px, G2 em 390 e 1440 px. Prévia e resultados na mesma pasta de entrega.
+Não altera a ficha real, os temas anteriores ou o código da aplicação.
+
+## SESSÃO DE 2026-11-07 · TEMA ARCANE PARA A FICHA DE PLAYER
+
+`themes/arcane.css` é um tema avulso para colar em Aparência > CSS. Usa
+grafite e ardósia nas superfícies, prata lavanda no texto, ciano nos realces
+e na Energia e coral na Vida. O tema se limita à mídia de tela.
+Aplicação pelo editor, gravação, reabertura, fundo de impressão e largura
+da página conferidos na Clássica e na G2 do Player, a 390 e 1440 px.
+
+Revisão após a captura do autor: o brilho foi concentrado na placa de
+identidade, com nome maior e moldura mais clara no retrato. A aba ativa
+ganhou um sublinhado e, em Ações na Clássica, divisórias substituem as
+bordas completas das linhas comuns. Aplicação, gravação, troca de aba e
+largura conferidas nas duas apresentações, a 390 e 1440 px.
+
+## SESSÃO DE 2026-11-07 · MARCAS DE ORIGEM, CONTAGEM NO MONTANTE E GRUPO DE TALENTO POR ADDON
+
+Cinco verbos genéricos do motor, sem conteúdo de mesa nenhum. Todos valem nos dois sistemas.
+
+- **V1, marcas de Origem.** Característica de Origem e de clã, e a opção escolhida dentro dela, geram marca pelo `tags` escrito (`marcasFicha`, `afty-derive.js`). Sem marca automática de família. O seletor `{ }` já oferece a marca antes do uso (`marcasDeclaradas`).
+- **V2, `contar()` e `tem_*` no montante.** O efeito que lê um dos dois desce ao estágio principal (`efeitoLeBancada`). Canais de vaga, pontos de Aptidão e pré-contexto seguem presos no montante. Varredura prévia: nenhum efeito publicado dependia disso, nenhum número se moveu. O caso antigo de `t-montante-bancada` que esperava o contrário foi trocado de propósito.
+- **V3, grupo de Talento por Addon.** Família `gruposTalento` (sub-aba nova, fechada por `soDaOrigem` e `soDoCla`, `vagaComum`). Portão no acesso do Talento, grupo mantido visível se há Talento gravado.
+- **V4, vaga de Talento por grupo.** Canal `vagasTalentoGrupo` (alvo = grupo), gasta antes da vaga comum, fecha duas vezes, atrás da primitiva `gruposTalento`. O `alvo` do efeito de Origem e de clã ganhou o namespace do pacote.
+- **V8, corrupção visual.** Campo `corrupcao` no pacote, módulo folha `afty-corrupcao.js`, `derived.corrupcao` e `ui/CamadasDeCorrupcao.jsx` nas quatro raízes (Criador, Clássica, G2 e combatente do Encontro). Conferido no app: `position: fixed`, sem rolagem lateral nem erro de console, 390 px sem sobra. Detalhe na seção 8.1 de `docs/afty-addons.md`.
+
+Asserts novos: `t-marcas-origem` (22), `t-contagem-no-montante` (20), `t-grupos-talento` (39), `t-corrupcao` (30), todos com pacote neutro, e provados falseáveis por mutação. `t-primitivas` passou de 29 para 30. Guias: `docs/afty-addons.md` (seção 8.1) e `docs/automacao-dsl.md`.
+
+Linha de base antes do trabalho: tudo verde, exceto `t-reconciliacao-g00` e `t-revisao-g00` (módulos novos sem dono no inventário do G00, anteriores a esta sessão). Remoto 2 commits à frente e árvore suja: a base não foi movida. Sem commit ou push.
+
+## SESSÃO DE 2026-11-07 · ENCERRAMENTO DO CX3 PARA A PUBLICAÇÃO
+
+O autor encerrou o CX3 com entrega parcial para seguir com a publicação.
+As integrações, decisões de regra e validações restantes estão na seção
+CX3 depois da publicação, em `docs/a-fazer.md`. Os sete módulos de
+Aptidões e Treinos têm verificação isolada e patches em texto no repasse.
+As reservas de CX3 foram liberadas. A reserva de `afty-derive.js` pertence a CX6.
+
+## SESSÃO DE 2026-11-07 · CX3, APARAR ATAQUE E RECIBOS DE DANO
+
+O Encontro oferece a disputa de Aparar Ataque antes do acerto e Lua ou
+Cobrir-se no dano secundário do Dragão. As escolhas usam o saldo de reação
+de CL1. As consequências são publicadas nas duas sessões juntas.
+O Raio Negro conserva o total e os tipos quando o recibo permite repartir
+o adicional. Restos de arredondamento sem tipo definido seguem para a
+mesa. Evidências, fontes e limites em `entregas/CX3.md`.
+
+## SESSÃO DE 2026-11-07: CX3, REAÇÕES ANTES DO DANO
+
+A confirmação de ataque com alvo no Encontro abre a escolha do defensor
+antes de alterar a sessão. Lua e Esquiva reduzem uma parcela de dano
+corporal líquido. Cobrir-se paga PE, entrega PV temporário avulso e o
+encerra no fim do turno do atacante. O histórico conserva a reação e
+as fontes da redução. Passar aplica o ataque sem gastar reação.
+
+Expandir Aura usa o módulo isolado de Aptidões no Encontro e nas fichas
+clássica e G2. O alcance volta à base com manutenção devida e volta a
+dobrar após o pagamento. A posição continua declarada pela mesa.
+Recibos parciais de Feitiço e Domínio, próximos provedores e decisões
+pendentes estão em `entregas/CX3.md` e na fila.
+
+## SESSÃO DE 2026-11-07: CX3, POSTURA DO DRAGÃO
+
+Dragão usa o ataque confirmado no Encontro. Cada inimigo a até 1,5 m
+do alvo original tem sua Fortitude e o dano passa pelas próprias defesas.
+O recibo separa o teste da consequência e permite retomar após salvar.
+São 87 verificações e navegador Player/Afty em 1440/390, oito fichas e
+quatro Encontros. Corte próprio de 25 arquivos e 3.384 verificações.
+Suíte 292/294 com as duas falhas conhecidas de G00, build e lint aprovados.
+Pendências de distribuição por tipo e Energia Reversa estão na fila.
+
+Cura em Grupo ligada no Encontro. A mesa declara destinatários e parcelas
+de uma rolagem nativa, sem repetir o custo ou a ação ao aplicar. Teto e
+Herança Maldita são por destinatário. São 52 verificações, oito fichas e
+quatro Encontros no navegador. Corte de 26 arquivos, 3.436 verificações
+e 116 fontes localizadas. Suíte 293/295, com as duas falhas conhecidas de G00.
+
+Aura Drenadora concede AU d8 + MOD CON em PV temporário ao confirmar
+morte de inimigo atribuída a ataque, Dragão ou Escudo. Ganhos acumulam na
+reserva da fonte. São 30 verificações e quatro Encontros no navegador.
+Corte de 27 arquivos, 3.466 verificações e 120 fontes. Suíte 294/296,
+com as duas falhas conhecidas de G00. Build, lint Afty e ordem aprovados.
+
+Pular e Saltador ligados em Ações na ficha clássica, G2 e Encontro.
+O salto livre usa metade da distância e depende de parede ou objeto.
+No Encontro, um alvo declarado ao aterrissar recebe o primeiro ataque
+com +2 de acerto e MOD FOR no dano. 70 verificações, oito fichas e quatro
+Encontros. Corte de 28 arquivos, 3.536 verificações e 126 fontes. As faixas
+ausentes da tabela e os provedores sem confirmação de alvo ficam na fila.
+
+Provocar e Provocação Desafiadora no Encontro, com disputa em 9 m,
+Comum ou Livre, quota de descanso, modos de ataque por alvo e prazo pelo
+provocador. A obrigação permanece visível até confirmar um ataque contra
+a fonte. São 64 verificações e quatro Encontros. Corte de 29 arquivos,
+3.600 verificações e 128 fontes. Suíte 296/298, com as duas falhas
+conhecidas de G00. Casos de ataque impossível ficam na fila.
+
+Medicina Infalível passa a maximizar dados selecionados nas curas
+individuais integradas. A rolagem fica pendente até a aplicação, com a
+mesma ação e o mesmo custo. 47 verificações, oito fichas e quatro
+Encontros. Corte de 30 arquivos, 3.647 verificações e 130 fontes.
+Suíte 297/299, com as duas falhas conhecidas de G00.
+
+Devastação própria usa pilha por alvo no Encontro. Trocar o alvo
+zera antes de resolver, mesmo errando. A primeira queda da Tempestade
+usa o acerto confirmado, Fortitude e Caído nativo. São 56 verificações
+e oito Encontros. Corte de 32 arquivos, 3.703 verificações e 134 fontes.
+Suíte 299/301, com as duas falhas conhecidas de G00. O ramo de Imóvel
+da Tempestade e origens sem recibo próprio de Devastação ficam na fila.
+
+Concentrar Aura usa Ação Livre e suspende as passivas selecionadas por
+uma rodada. Dano adicional Energético chega à confirmação. Fluxo
+Constante agora impede Reação depois de usar a cura Livre do turno,
+restringe o alvo ao usuário e permite Medicina na mesma cura.
+Corte de 33 arquivos, 3.751 verificações e 136 fontes.
+
+## SESSÃO DE 2026-11-06: CX3, INVESTIDA E SUPORTE
+
+Lua: Andar e Desengajar ligados como ações livres distintas de CL1,
+sem PE ou ação normal. Desengajar impede oportunidades até o fim do turno.
+O acesso revalida escolha, Mestre, Imitação e Ápice, sem editar o derive.
+São 92 verificações, oito fichas clássica/G2 e quatro Encontros no navegador,
+Player/Afty e 1440/390, com recusa sem reação, salvamento e término.
+Corte próprio: 24 arquivos, 3.297 verificações e 103 fontes localizadas.
+Reação da Lua ainda depende da janela anterior ao dano. Provocação
+Desafiadora: recarga dos usos livres em descanso longo, decisão encerrada.
+
+Especialista em Cortes integrado: acerto com dano cortante final positivo,
+redução opcional de 4,5 m uma vez por turno, inclusive fora do próprio turno,
+até o começo do próximo turno de quem o aplicou. Dois emissores conservam
+instâncias e prazos próprios, competindo no grupo nativo de não acumulação.
+A ponte de Buffs de Mesa agora encaminha esse metadado existente ao Motor.
+São 90 verificações e navegador de oito fichas/quatro Encontros, Player/Afty,
+clássica/G2 e 1440/390, com persistência e término por emissor. Corte atual:
+23 arquivos próprios e 3.205 verificações, 96 fontes localizadas por CX3.
+Suíte completa: 290/292, somente as duas falhas G00. Lint Afty e build
+aprovados. O lote continua em andamento, com as dependências registradas.
+
+Ação Ágil integrada em Lutador e Restringido: Andar, Desengajar ou Esconder
+por 2 PE/Estamina, sem ação comum extra. Cadência nativa de rodada/turno e
+identidade compartilhada, sem duplicar Habilidades iguais ou devolver uso
+por troca de origem, p.365. Desengajar bloqueia oportunidade até o fim do
+turno e Esconder rola Furtividade sem inventar observadores. São 169
+verificações e navegador de 16 fichas e oito Encontros, Player/Afty,
+Lutador/Restringido e 1440/390, com recusa sem reação, prazo e reload.
+
+Clientes sem ação adicional também respeitam o portão vital de CL2, com
+exceção de Mesmo Morto preservada. Sintonização agora 80 e Aura 244
+verificações. Corte próprio: 22 arquivos e 3.115 verificações, fontes
+individuais CX3 86. Lint Afty e build final aprovados, ordem 50 e fontes 24.
+Os cortes anteriores abaixo conservam sua data e seu escopo.
+
+Continuação atual: posturas próprias com entrada/troca, dez rodadas CL1 e
+Preparação Rápida integradas. Trocar paga outra ação de entrada e outro uso,
+reiniciando prazo. Empurrar encerra sem Preparação Rápida. Mestre entra
+em duas posturas por um uso. Ativar/Ajustar G2 usa a mesma transação, sem
+débito duplo, e mostra o relógio real. São 200 verificações e navegador
+de oito fichas e quatro Encontros, mais oito empurrões com/sem Preparação.
+
+Sintonização Vital ligada à cura realmente aplicada a aliado, metade antes
+do teto de PV, por 3 PE e sem outra ação. Segundo destinatário pode ser o
+Suporte ou terceiro em 3 m, diferente do primeiro. Sem cascata, marca no
+evento original e persistência. São 76 verificações e oito fichas/quatro
+Encontros. Feitiços e outros provedores sem recibo permanecem dependentes
+da integração real, sem aceitar dados avulsos como prova de cura.
+
+Aura Redirecionadora ligada ao projétil/arremesso real, 2 PE sem outra ação.
+Falha inicial mantém desastre, gatilhos e contagem para A. Nova jogada
+contra B em 6 m usa o mesmo projétil, sem gastar outra munição nem desfazer
+emperramento. B tem confirmação própria. A tradução de arremesso para a
+categoria de jogada distancia foi corrigida no adaptador. São 220
+verificações e oito fichas/quatro Encontros com salvamento. Preservada a
+Renovação pelo Sangue nativa e sua concessão diferente entre sistemas.
+
+Corte atual: 21 arquivos CX3, 2.918 verificações. Suíte 288/290, somente
+as pendências G00 de reconciliação e módulos de CX5/CX6 sem classificação.
+Lint Afty, build, ordem 50 e fontes 24 aprovados. Fontes específicas CX3
+82. Livro com SHA-256 esperado, base sem mover, HEAD deab72c e remoto
+f6433a8, diferença 0/2. Sem edição de src/components ou publicação.
+
+O autor voltou a permitir perguntas. As decisões de Sintonização, Aura,
+troca/cancelamento de postura e bônus de Saltador estão registradas.
+Saltador só concede os bônus no primeiro ataque contra o alvo após
+qualquer Pular que termine em alcance corpo a corpo. Atacar e Recuar
+e a lacuna da tabela de Pular para MOD -3/-2 ainda aguardam resposta.
+Os cortes anteriores abaixo são históricos.
+
+Imunidade a movimento forçado de Terra, Barreira Inamovível e Terra do Ápice
+ligada ao Motor e aos clientes de Chicote, Concussão, Briga Empurrar, Escudo
+e críticos de Bastão/Haste. A operação recusa antes de gasto ou efeito,
+revalida a disputa salva e conserva o ataque principal. Segundo espaço
+exige Mestre disponível, concessão de Imitação é preservada, e o acesso
+atual ao Ápice é conferido. Addon que retira o efeito é respeitado.
+
+Livro p.76: queda ou incapacitação encerra ambos os espaços de postura
+no escritor de condições e na leitura de sessão antiga. Remover a condição
+não restaura a postura. Conserva Ápice e PV temporário já concedido. A
+concessão manual de PV da Terra já existia, não foi refeita. Ativação com
+ação/usos e duração geral permanecem em aberto, sem edição do derive.
+São 150 verificações específicas, total próprio de 18 arquivos e 2.422.
+Navegador aprovado em oito fichas clássica/G2 e quatro Encontros, Player/Afty,
+1440/390, com aviso, recusa sem consumo, queda, reload e deslocamento depois
+de encerrar a postura. Captura de 390 inspecionada. Suíte 285/287, somente
+G00, fontes específicas 76. Lint Afty, build, ordem e núcleos afetados aprovados.
+
+Técnicas de Mobilidade ligada ao ataque real contra o alvo, mesmo errando,
+disputa de Reflexos em duas etapas e limite comum por rodada. O autor
+decidiu que a proteção termina no fim do turno em curso, também quando o
+ataque for uma reação fora do próprio turno. A confirmação preserva o
+turno atual do Encontro e o uso de CL1 guarda o participante/sequência.
+O encerramento desse turno, ou remoção do participante ativo, encerra a
+proteção mesmo quando ela está na sessão de outro combatente. Rodada
+forçada sem fim de turno não encerra antes, fim de combate limpa o uso.
+
+A oportunidade exige escolha de alvo no Encontro e consulta a proteção
+antes de gastar a reação. A confirmação também recusa quem está impedido.
+Outras criaturas e ataques comuns continuam permitidos. São 82 verificações,
+com 17 arquivos CX3 e 2.272 no corte próprio. Oito apresentações de ficha
+clássica/G2 e oito percursos de Encontro, Player/Afty e 1440/390, passaram
+com proteção específica, recusa sem gasto e persistência. Sentinela e
+Investida foram reexecutados no navegador após a integração. Localizações
+específicas de fonte por CX3: 69, sem aprovação de auditoria.
+
+O autor pediu para guardar as dúvidas restantes para o final. Não foram
+assumidas respostas, e o trabalho independente continua. A decisão de
+Mobilidade está encerrada e saiu das perguntas pendentes.
+
+Continuação de Sentinela: oportunidades preparadas carregam identidade
+e tipo de ataque até a confirmação. Acerto liga Movimento -4,5 m no alvo,
+inclusive com dano zero, pelo prazo nativo até o fim do turno dele. A
+reação contra quem atacou terceiro usa o recibo real, alcance declarado
+de 1,5 m e saldo de reação, sem bônus de Perceber ou redução de Movimento.
+Perceber continua permitindo duas oportunidades com vantagem, enquanto
+Sentinela sozinho usa uma. São 92 verificações e oito percursos de ficha,
+mais oito percursos de Encontro entre oportunidade e reação, Player/Afty
+e 1440/390. Salvamento e término no turno do alvo conferidos.
+
+Corte específico de CX3: 16 arquivos, 2.190 verificações. Suíte completa
+283/285 arquivos, apenas reconciliação/classificação G00 reprovadas.
+Entraram testes concorrentes de CX6 durante a execução, sem certificação
+de seu conteúdo por CX3. Build, eslint Afty e ordem de módulos aprovados.
+Fontes localizadas por CX3: 63, sem aprovação de regra ou auditoria.
+O derive foi liberado temporariamente para a frente concorrente após
+Fortuna. CX3 continua nos seus clientes reservados, sem encerrar o lote.
+
+Continuação de Fortuna: a escolha e postura existentes agora permitem
+repetir um d20 igual ou menor a BT, manter o maior e gastar o limite comum
+de metade de BT por rodada. Cada dado só recebe uma tentativa. Vantagem,
+desvantagem, dados extras, mínimo natural, crítico e fontes conservam o
+cálculo nativo. Também funciona com as escolhas de Imitação e com as oito
+posturas do Ápice, decisão anterior preservada. A duração/ativação geral
+das posturas permanece na bancada. São 128 verificações e navegador nas
+oito combinações Player/Afty, clássica/G2 e 1440/390, mais quatro Encontros.
+Salvamento, quota e ausência de gasto de ação/PE conferidos.
+
+Escudo permite reaproveitar dano normal já rolado após a disputa, mantendo
+um só registro e sem novo sorteio. Infalível não recebe dano de manobra,
+conforme p.163/301. O arquivo de Escudo tem 92 verificações. Corte próprio
+atual: 15 arquivos CX3 e 2.098 verificações. Duas novas localizações de
+Fortuna, 60 específicas no total, sem aprovação de regra ou auditoria.
+O lote segue aberto. Provas e limites em `revisao-livro-regras/entregas/CX3.md`.
+
+Após liberação explícita do CSS/editor, CX3 retomou fila e histórico,
+preservando os ajustes de aparência, gravação de tema e prévia G2. Investida
+Aprimorada foi ligada como ação completa, com acerto BT, Defesa -2 até
+o turno próprio e alcance decidido pelo autor: 2 × (Movimento + 3 m), 24 m
+para Movimento 9 m. A disputa de Atletismo tem rolagem e aplicação separadas,
+aceita Sorte/Outra Chance e reaproveita Treino de Luta. O callback do
+Encontro conserva a sessão do uso ao registrar o ataque no mesmo clique.
+
+Intervenção usa a força e o id da condição do alvo, custo 3/6/9/12 PE e
+Ação Comum, sem remover outras condições. Desmembramento é excluído pela
+p.210, não é condição para essa Habilidade. Versatilidade usa 1 PE, MOD SAB
+usos e uma alternativa de treinado calculada pelo resolvedor nativo antes
+da comparação com ofertas fixas, sem alterar proficiência permanente.
+Análise Profunda usa Percepção contra 15 + ND, 1 PE e Ação Comum, uma vez
+por criatura/cena. A conclusão espera as rerrolagens antes de registrar
+a quantidade de características, sem revelar valores ocultos do alvo.
+
+Os oito arquivos CX3 passaram em 1.315 verificações. Investida e Versatilidade
+passaram na clássica, prévia G2 e Encontro em Player/Afty e 1440/390.
+Intervenção e Análise passaram nos mesmos sistemas/larguras no Encontro,
+incluindo releitura. Saltador Constante aguarda a resposta já registrada.
+São 55 localizações individuais de fonte registradas por CX3, sem aprovação.
+Detalhes e provas em `revisao-livro-regras/entregas/CX3.md`.
+
+O corte pós-Versatilidade capturou 267 arquivos e aprovou 265, com as duas
+falhas G00: fontes individuais e a entrada concorrente de módulos de CX5
+ainda sem classificação. Esse corte é histórico: CX5 acrescentou outros
+módulos e asserts depois. Não foram classificados por suposição nem
+integradas as telas gerais de CX5. A remoção por Energia Reversa já encerra
+o uso ativo de um veneno escolhido, por 4 PER e Ação Bônus, preservando os
+demais. Também trata marcações antigas por id e veneno sem Envenenado.
+Passou em 30 novos testes e no navegador clássico/G2 de Player/Afty em
+1440/390, incluindo efeitos numéricos e reload. Os deslocamentos de
+Chicote/Concussão e críticos de Bastão/Haste abrem a concentração em CL1,
+com a causa correta e a maior CD pendente preservada, 28 testes novos.
+Total específico atual: 1.373. Sem commit, push, merge ou promoção do G2.
+
+Continuação: Mobilidade Avançada consome reação após queda real do aliado,
+Voadora usa a Investida comum ou Aprimorada e seu grupo nomeado de dano,
+Sobrevivente cura no início do turno com a progressão própria. Corpo de Aço
+também usa seu pedido próprio, sem misturar as duas fontes. Disponibilidade
+dos clientes de classe lê os requisitos finais, incluindo atributo de origem.
+O primeiro combatente recebe início de turno ao começar o Encontro, uma vez.
+Nove arquivos CX3: 1.655 verificações aprovadas. Clássica/G2/Encontro,
+Player/Afty e 1440/390 conferidos nos percursos aplicáveis, incluindo
+salvamento sem cura adicional. CL2 vital: 316. Ordem dos módulos: 50.
+Eslint Afty e build aprovados. Suíte completa: 273/275 arquivos, falhas
+apenas de reconciliação e classificação G00. Referência origin/main 0/2,
+HEAD preservado em deab72cc. Lote continua em andamento.
+
+Novas parcelas: Adepto de Briga liga Derrubar/Empurrar à confirmação real
+de acerto sem dano, com disputa separada e Ação Livre nativa. Incitar Vigor
+consome Dados de Vida de CL2 do destinatário, com custo/ação do Suporte e
+reversão integral em recusa. Ambos passaram na clássica, G2 e Encontro,
+Player/Afty, 1440/390 nos percursos aplicáveis. Briga: 72 verificações.
+Vigor: 56. Voto Malevolente dispensa a diferença de peso no Emergencial
+em CL3, lendo Talentos acessíveis da própria ficha, 30 verificações.
+O ciclo de vida de Votos continua sem tela, integração atribuída a CX6.
+Total específico de CX3: 12 arquivos, 1.813 verificações. Sintonização
+Vital aguarda definição de cura original, além das três perguntas
+registradas. Expansão de Reserva/Reposição Sanguínea já têm operações
+de CX2, não foram refeitas. Lote continua aberto.
+
+Decisão recebida de Técnicas Agressivas de Escudo: "Empurrar pela distância
+normal e também aplicar Caído". Pergunta encerrada na fila. O cliente de
+manobras está sendo ligado a essa regra, preservando a escolha alternativa
+de aumentar a distância em 4,5 m. A decisão de Investida de 24 m permanece.
+
+Escudo implementado e conferido em 68 verificações e navegador clássico/G2
+de Player/Afty em 1440/390, com operação no Encontro. Ataque real do próprio
+turno identificado pelo relógio existente no recibo, acerto não obrigatório,
+Ação Bônus, disputa e aplicação separadas, dano normal, empurrão com margem
+e Caído simultâneo pela decisão. A alternativa soma 4,5 m. O controle fica
+indisponível fora do próprio turno e o resultado persiste. Título corrigido
+pela fonte p.165, mantendo o id para fichas antigas. Renovação pelo Sangue
+passou em 65 verificações e no Encontro dos dois sistemas/larguras, um PE
+por crítico ou abate com fonte, teto, identidade e persistência.
+Total CX3: 14 arquivos, 1.946 verificações. Suíte completa: 278/280, apenas
+as falhas G00. Lint/build e ordem de módulos aprovados. São 58 localizações
+individuais de fonte acrescentadas por CX3, sem aprovação ou reconciliação
+global. Restam Saltador, Atacar e Recuar e Sintonização Vital como perguntas
+atuais de CX3, além das dependências e decisões anteriores preservadas.
+
+## SESSÃO DE 2026-11-06: CX5, NÚCLEOS DE INVENTÁRIO, ITENS, ENCANTAMENTOS E INTERLÚDIOS
+
+Lote CX5 executado por Claude sem tocar nos arquivos reservados por CX3 (derive, sessão, opções do
+derive, criador, Encontro, Feitiços, `escopo.json`). Entregues os núcleos, sem tela nova. Lote ABERTO:
+faltam as telas e as ligações nesses arquivos. Registro, matrizes e verificação em
+`docs/revisao-livro-regras/entregas/CX5.md`, contrato em `docs/afty-equipamentos.md` (seção CX5).
+
+Entregue: Pulseira Magistral e Primacial ligadas pelo Motor com a perícia escolhida na entrada do
+inventário. Uso dos Itens Especiais (`ficha/ficha-itens.js`, tabela em `afty-itens-uso.js`): unidade
+baixada uma vez sob `opId`, estado em `sessao.uso.itens`, adaptador `fichaComItensDaSessao` que mantém
+Carga e bônus no `resolveEquipamentos`. Laço da Vida, Chaveiro Absorsor e veneno no alvo. Cargas de
+encantamento (pool por ferramenta, vale o BT) e operações dos 16 encantamentos ativos. Criação de
+Itens por Feitiço com consumível por descanso e permanente simultâneo limitado. Produção de
+Interlúdio (`afty-producao.js`): Criação de Itens com CD, nível, Alfaiate, vantagem e Mestre da
+Criação, Criação de Invocações com vestígios, Adaptação, e entrega sem duplicar. Equipamento inicial
+e conjunto de missão. Armas improvisadas e fontes externas (tabelas da p.325 e 326, fora do seletor
+marcial). Texto Especial da arma criada. O Caderno de Forja segue só anotação.
+
+Verificação: linha de base 264 de 265 arquivos, depois 272 de 274. Os 9 asserts novos `t-cx5-*` (860
+verificações) passam, e três deles foram checados por mutação. `t-reconciliacao-g00` segue como antes.
+`t-revisao-g00` está vermelho porque os 9 módulos novos aguardam classificação em `escopo.json`
+(reservado por CX3, snippet no registro). Eslint Afty e `t-ordem-modulos` aprovados, build aprovado,
+Ficha clássica do Player conferida em 1440 e 390 de largura. `/Afty`, Encontro e G2 não foram abertos
+no navegador, porque nenhum componente deles mudou.
+
+Atenção: `npm run build` gravou em `dist/`. Outro processo já o havia reconstruído às 01:51, e não há
+cópia do conteúdo anterior para restaurar. Nenhum commit, push, pull ou merge. Base local
+`deab72cc`, remoto consultado em `f6433a8a` (dois commits à frente, não integrados).
+
+## SESSÃO DE 2026-11-06: CSS PERSONALIZADO E EDITOR AUTORIZADOS
+
+O autor respondeu Pode ao lote de CSS/editor e autorizou coordenação com o chat
+Lote 03 / 06. CX3 liberou as duas fichas, ConsultaG2, fila e histórico. As operações
+de conteúdo, renderOperacao e onRolar de CX3 foram preservados.
+
+Entregues cascata nas superfícies contratadas do G2, contrato por estrutura,
+fontes/cantos pelo formulário, seletores legíveis, diálogo com Esc/foco,
+reset com Restaurar e gravação da última edição ao sair e recarregar.
+Bahnschrift permanece como padrão. Alter corrigido em 320/390, sem mudar a
+composição padrão aprovada. Detalhes no guia `afty-ficha-final.md` e em
+`.audit/correcao-css-g2-20261106/RELATORIO.md`.
+
+Validações próprias: 91 checks do editor, 12 de saída/reload, 12 de persistência
+com export/import, 5 de padrão global por sistema, 6 de isolamento, 20 de lacunas
+(invocação, painel do Encontro, consulta, histórico e geração de impressão),
+6 de escape/estados, 374 de layout, 53 de interação e 50 da Mesa. Comparação de
+32 telas: 24 do padrão escuro/claro sem diferença de pixels, 8 Minamoto com
+mudanças esperadas de raio/estilo agora obedecido. 1.145 seletores aceitos pelo
+Chrome. Build isolado de produção e eslint Afty aprovados. Corte da suíte:
+264/265 arquivos, somente `t-reconciliacao-g00.mjs`, por fontes individuais de
+regras, falha já separada. Nenhum assert foi enfraquecido.
+
+Fechamento atual: 32 arquivos novos de src, 26 exigidos por imports, incluindo
+`ficha/usar-gravacao-tema.js`, e 6 sem importador. CX3 registrou o hook como
+INTERFACE. O dist diário foi reconstruído por outro processo às 01:51:11,
+detectado pelo hash. Este lote só construiu saídas em .audit e não o restaurou.
+Consulta do remoto por git ls-remote indisponível por conexão, sem mover a base.
+
+Corte informado por CX3: 1.271 verificações específicas, Investida, Intervenção
+e Versatilidade com navegador Player/Afty, clássica/G2/Encontro e 1440/390.
+Saltador Constante depende da resposta específica registrada na fila e já
+enviada ao autor por CX3. CX3 não foi marcado concluído por este lote.
+
+O autor também pediu um disparo único em 5h10: agendamento ativo para
+06/11/2026 às 06:42:29 America/Sao_Paulo, automação
+`retomar-css-e-encaminhar-lotes-03-e-04`, vinculada a este chat. Deve retomar
+trabalho de CSS ainda autorizado, reativar CX3 se parado com trabalho pendente
+ou, se CX3 realmente concluído e sem duplicata, criar Lote 04 / 06 com o prompt
+integral anexado pelo autor. Essa condição não autoriza integração, promoção
+ou publicação do G2. Barra antiga 9/10 preservada, sem commit/push/merge/deploy.
+
+## SESSÃO DE 2026-11-06: GUERRA DE FEITICEIROS PUBLICADO ISOLADAMENTE
+
+Pedido explícito do autor para enviar somente o addon ao GitHub. Publicado na
+main no commit f6433a8a3c11f544c82e5f543738ea56e2920b3b, sobre a base remota
+02a8cdc, sem integrar as alterações locais em andamento. Somente quatro arquivos:
+addons/guerra-de-feiticeiros.json (1.0.4), afty-regras-addon.js, afty-efeitos.js e
+afty-derive.js. Os três módulos recebem exclusivamente o suporte opcional a
+atencaoSoPercepcao. A instalação do amigo é por JSON na aba Addons.
+
+Validação isolada em C:/Projetos/Grimorio/_entrega-guerra/app: 173 verificações do
+addon, 8 da regra, lint dos três módulos e build aprovados. Suíte geral: 246/248
+arquivos aceitos pelo executor. Prodigio tem 33 verificações aprovadas, com saída
+incompatível com o executor. G00 falha na expectativa de 32 remendos também na
+base remota sem a entrega. Testes e documentação ficaram locais após recusa da
+revisão automática por escopo. A primeira recusa do motor foi resolvida provando
+a comparação mínima com a fonte pública. Nenhum outro trabalho foi publicado.
+
+
+## SESSÃO DE 2026-11-06: PARECER SOBRE A REVISÃO DO CSS E G2
+
+Codex confrontou o relatório do Claude com JSONs e implementação, sem nova
+execução de navegador ou edição de produto. Parecer em
+C:/Projetos/Grimorio/DEVOLUTIVA-CODEX-G2-CSS-20261106.md. Recomenda corrigir
+cascata e contrato juntos, editor compartilhado, fontes/cantos personalizáveis
+com padrão preservado e reset reversível. Não publicar todas as classes internas
+como API nem tratar prefixo como solução universal. A seleção do commit deve
+fechar as dependências necessárias, não incluir cegamente todos os arquivos novos.
+Lote de correção proposto aguarda autorização, inclusive pelo alcance na clássica.
+Integração, promoção e publicação continuam separadas. Barra antiga 9/10.
+
+## SESSÃO DE 2026-11-05: REVISÃO DO G2 E DO CSS PERSONALIZADO (Claude)
+
+Investigação e proposta, sem alterar `src/`, sem integrar, promover ou publicar.
+Relatório em C:/Projetos/Grimorio/REVISAO-CLAUDE-G2-CSS-PERSONALIZADO-20261105.md e
+evidências em `.audit/revisao-claude-g2-css-20261105/` (executor próprio na 5341,
+app inteiro na 5343, scripts de navegador, capturas, matriz de novidades). Base:
+HEAD e origin/main locais `deab72cc`, `src/components/` sem alteração, `dist` diário
+reconstruído por outro processo às 00:05:54, não por esta revisão.
+
+Resultado de CSS Personalizado: cores do G2 respondem aos tokens (0 fixas em 2.792
+elementos), mas o CSS do contrato perde para as regras `.e-g2 .x` em 4 de 5 superfícies
+sem `!important`, e o prefixo `.e-g2` ajuda mas não é universal. Fonte de títulos e 44
+raios são fixos no G2. Contrato, Seletores e Prompt IA descrevem só a clássica (126
+classes do G2 fora do contrato). Provados e preservados: salvar e reabrir, exportar e
+importar, isolamento, `?semcss=1`, `×`, Copiar Prompt, painel em 390. Bugs comprovados
+no editor (clássica também): nomes de Seletores com contraste 1,02 nos temas escuros,
+Esc não fecha, reset sem desfazer, edição perdida ao sair antes de 600 ms. Redução da
+especificidade do G2 por reescrita foi testada e reprovada. Pendências na fila.
+
+Verificação: asserts 261 de 262 arquivos (falha só `t-reconciliacao-g00`, a classe de
+fontes individuais já registrada), eslint do Afty limpo, build do app em pasta própria,
+G2 nas 6 fichas sintéticas sem erro de página. Barra anterior em 9/10 preservada. Sem
+aceite visual, integração ou publicação inferidos.
+
+## SESSÃO DE 2026-11-06: CX3, TALENTOS E OPERAÇÕES DAS CLASSES
+
+Novas operações sobre CL1: puxar com Chicote após acerto confirmado e TR,
+Concussão com impacto efetivo e tamanho válido, Movimentos Acrobáticos com
+levantada apenas no sucesso e Defesa por uma rodada. Corrigida a recusa de
+Perfuração em ataque a distância. A confirmação do Ataque Básico lê o tipo do
+escopo nativo quando a linha antiga o deixa vazio, aplicando as defesas de Impacto.
+
+Puxar um Ar conserva a pilha de faces do desarmado, Revigorar usa o mesmo contador
+da habilidade e ambos gastam ação bônus. Surto de Ação paga 5 PE e chama a
+operação de ação extra existente. Resistir e Conhecimento Aplicado recalculam
+apenas sua contribuição pelo Motor. Mente Plácida reduz a CD e resolve a
+concentração pendente, inclusive sua perda. Os clientes conservam a política de
+custo manual com opção explícita de desconto. A preparação de cura agora chega
+também à rerrolagem de Cura Aperfeiçoada.
+
+Efeitos e disponibilidade saem do derive dentro do escopo da ficha. Contraprovas
+com dois participantes demonstram que um remendo não altera o teste ou os
+requisitos da outra ficha. Os sete arquivos de CX3 somam 815 verificações
+específicas aprovadas. Tela dos Talentos passou em Player/Afty, 1440 e 390, com
+salvamento, Ficha e Encontro. Os acionamentos das classes passaram nas mesmas
+rotas e larguras, incluindo Outra Chance no aliado sem consumir ação, conforme
+decisão do autor de 06/11. Perceber Oportunidade conserva o saldo real de
+reações. Os custos de Reação Rápida, Força Imparável e Barreira são 2 pontos de
+estamina, Precisão Forçada custa 3 e consome também no erro do ataque.
+
+Registradas 54 localizações individuais de fonte de CX3. O corte anterior
+mostrou 991 chaves sem fonte e o registro deixa 937 das outras parcelas sem
+localização individual. Isso não reconcilia hashes, remoções ou aprovações da
+campanha G00. A falha do seu assert permanece visível.
+
+Retiradas da fila as entradas obsoletas de Potencial Físico, escolhas aninhadas,
+críticos e Energia Reversa já ligados. Dados de Vida continuam com tela de CX6.
+Produção adicional do Mestre da Criação continua com CX5. Lote CX3 aberto.
+Revisões remotas: main em 02a8cdc no dia 05/11 (Servos da Guerra), e f6433a8 no
+dia 06/11 (Guerra de Feiticeiros e Percepção). Há arquivos em comum. A base
+local deab72c não foi movida nem integrada. Evidências e matriz
+por família em `revisao-livro-regras/entregas/CX3.md`.
+
+Corte de verificação de 06/11: 263 de 264 arquivos de assert aprovados, 17.531
+verificações nos aprovados, incluindo as 815 de CX3. Permanece a reconciliação
+G00. Build e eslint Afty aprovados. Prévia G2 conferida apenas pela URL de
+teste, com cura e oportunidade nos dois sistemas e larguras, sem promoção.
+
+Liberação parcial ao lote de CSS/editor, após autorização humana de coordenação
+verificada no chat Reconferir ajustes da prévia: AftyFichaClassica.jsx e
+AftyFichaG2.jsx, fila e histórico. CX3 encerrou suas edições nesses arquivos e
+preserva os controles já ligados. O lote de regras continua nos módulos livres
+e na sua entrega própria, aguardando liberação antes de voltar a esses arquivos.
+
+## SESSÃO DE 2026-11-05: PROMPT DE REVISÃO DO G2 PARA O CLAUDE
+
+Autor pediu ao Claude investigar novidades posteriores à prévia, propor como
+levá-las ao G2 e revisar antes de publicar. CSS Personalizado recebeu prioridade
+máxima, cobrindo editor, Seletores, Prompt IA, contrato de temas, resultado real
+na nova interface, isolamento e persistência. Prompt pronto para encaminhamento
+em C:/Projetos/Grimorio/PROMPT-CLAUDE-REVISAO-G2-CSS-PERSONALIZADO-20261105.md.
+O mesmo arquivo foi ampliado para servir como primeira mensagem de um chat
+zerado: histórico consolidado, três apresentações da ficha, decisões dadas,
+mapa de leitura, comandos da prévia e limites do armazenamento sintético.
+Pedido de investigação e proposta, com demonstrações isoladas. Nenhuma nova
+implementação, integração ou publicação realizada. Revisão deve consumir os
+contratos CL1 a CL3 e o estado atual de CX1 a CX6, sem reexecutar os núcleos nem
+reabrir o Mutante descartado. Barra antiga 9/10 preservada.
+
+## SESSÃO DE 2026-11-05: RETOMADA DA ENTREGA DA FICHA FINAL
+
+Autor pediu o ponto de parada e quer entregar hoje. Mesa unificada preservada,
+três abas ainda exclusivas da prévia, clássica no uso diário. Reexecutados
+52 asserts específicos e build isolado, ambos aprovados na base atual.
+Prévia da 5330 reativada. Nenhuma edição de produto ou integração. Navegador
+de outubro não foi certificado novamente. Faltam avaliação visual da Mesa,
+autorização própria para integrar e conferência no aplicativo atualizado.
+Evidência em .audit/retomada-g2-20261105/RETOMADA.md. Barra anterior 9/10,
+commit/push com o autor. As frentes de regras posteriores não foram alteradas.
+
+## SESSÃO DE 2026-11-03: CX3, INTEGRAÇÃO EM ANDAMENTO
+
+Diagnóstico inicial de 01/11 preservado em `revisao-livro-regras/entregas/CX3.md`.
+Retomada autorizada depois da liberação de CX2 e CL3, com reserva na fila antes
+do produto. Fonte externa novamente conferida com o SHA-256 exigido. Base não
+movida, trabalho anterior preservado, sem commit ou publicação.
+
+Decisão do autor: "Cada Aptidão segue seu custo". O teto da cura não limita
+Regeneração Aprimorada ou Reversão de Técnica. Regenerar membros/ferimentos
+internos recebe o desconto específico de 2 PER na terceira etapa do Treino,
+veneno continua em 4 PER. Cada PER custa 2 PE, conforme p.190.
+
+Implementados e com provas em Player/Afty: cura e usos do Adepto de Medicina,
+dois Ofícios do Mestre da Criação com +2 direcionado, alcances de Arremesso e
+Chicote, duas escolhas físicas de Potencial Físico, excedentes permanentes da
+categoria sem devolver também o nível pago, críticos dos 12 grupos e suas
+concessões, Sorte/rerrolagens, operações opcionais do Restringido dentro da
+habilidade, cura/regeneração de ER, canalização armada por CL1 e confirmação
+das rolagens nativas com alvo. Também Treino de Perícia/Luta, vantagens de
+Tempestade, TR situacional de Guarda Infalível, reação defensiva de escudo,
+RD Elemental Reforçada, ativações de Aura e Estímulos Musculares.
+
+A primeira conferência de navegador passou em produção local, nas larguras
+1440 e 390, Player/Afty: cura, Sorte, canalização e salvamento na clássica,
+Treino de Perícia, confirmação de ataque e efeito crítico no Encontro. O teste
+encontrou e corrigiu a leitura de registros informativos no histórico, sem
+inventar uma rolagem para um sucesso garantido ou um deslocamento declarado.
+Resultados e imagens em `.audit/cx3-20261102/`.
+
+O lote continua aberto. Fluxo Constante, demais operações de Aura, reações
+de classe e integrações de Técnica ainda estão em revisão. Temporários de
+CX4 e produção de CX5 não foram substituídos. Não interpretar esta sessão
+como certificação das 361 habilidades ou fechamento de CX3.
+
+## SESSÃO DE 2026-11-01: CL3, INVOCAÇÕES, DOMÍNIOS E VOTOS (núcleo entregue)
+
+Fonte externa e SHA-256 conferidos, HEAD igual a `origin/main` (`deab72c`), trabalho concorrente de CL1, CL2, CX1 e CX2 preservado, nada em
+`src/components/`, no derive, nos efeitos nem no criador. Diagnóstico publicado antes do produto. Entregue: os Votos de Restrição com tipos, pesos,
+legalidade, prazo, ruptura, histórico e Restrição Congênita (o Voto livre de antes e o de Addon intactos), o Confronto e a Contestação de Domínios
+entre dois participantes (manual assistido, DA-19) com vitória, empate estendido, supressão, restauração e dano ao domo, paredes e Cortinas
+utilizáveis, a Cesta Oca de Vime com Durabilidade, concentração e selo, o Dano Adicional como disparo no próximo ataque, o prejuízo por múltiplos
+auxílios, a Forma de Arma com a linha de ataque do dono e a reação do portador, e as variáveis de sessão da Característica Livre. Guias:
+`docs/afty-votos.md`, `docs/afty-dominio-confronto.md` e a seção CL3 de `docs/afty-invocacoes.md`. Evidência:
+`revisao-livro-regras/entregas/CL3.md`.
+
+Validação: 399 asserts novos (`t-cl3-votos`, `t-cl3-dominios`, `t-cl3-invocacoes`), as mutações do código derrubam os asserts, a suíte completa passa fora os três
+arquivos de outros lotes registrados na entrega, lint, build e navegador em produção (Player e Afty, 1440 e 390) com os números da página conferidos contra o
+derive. As telas ainda não chamam os verbos novos, que ficam para o Codex (CX6). Limites e perguntas ao autor na fila e na entrega, em especial que a
+Restrição Congênita é validada mas não chega ao derive.
+
+## SESSÃO DE 2026-11-01: CX2, ORIGENS, CLÃS E ANATOMIAS (parcial entregue)
+
+Fonte externa e SHA-256 exigido conferidos. Diagnóstico publicado antes do produto
+em 29/10 e revisto na retomada de 01/11, preservando as mudanças concorrentes.
+HEAD e main remota na retomada: `deab72cc26a93ab39350b6a781fcb0ca052cc0fd`.
+CX2 não moveu a base, não fez commit, push ou publicação e não alterou as áreas
+somente-leitura. A decisão de cancelar o Mutante foi respeitada.
+
+Entregues: identidade e descontos de Marca/Familiaridade com variações e manutenção,
+modalidades e marcos de Foco Zenin, ciclo antecipado/aprendizado de Manual,
+Aura restrita do Derivado, recuperação de Energia Antinatural/Expansão e operações
+de Vigor, Reposição, Herança, Veneno e Resiliência. Anatomias: voo pago por uma rodada,
+escolha permanente de resistência da Carapaça, Alma com usos diários, chance de ignorar
+o adicional de crítico/furtivo, sentidos/terreno, Devorador, Presença e Sangue Tóxico.
+Preservadas as correções de CX1 e as distribuições autorizadas de atributos.
+
+As operações consomem CL1 e CL2 reais, com recusas sem gasto e proteção contra repetição.
+Escolhas no criador e painel na Ficha clássica/Encontro. Comando Inumaki, Presença e
+retorno de Sangue Tóxico usam a sessão do alvo no Encontro, com gravação conjunta.
+Novo Dia repõe manualmente Alma Maldita e Energia Antinatural básica, separado de
+Descansar, conforme resposta direta do autor. Expansão mantém recarga longa.
+Nenhuma promoção do G2 ou mudança na abertura diária.
+
+Validação: 195 asserts de CX2, 52 do contrato de sessão, 186 de CX1 e 48 de ordem de
+módulos aprovados. Suíte completa: 255/256 arquivos aprovados, 16.705 asserts nos
+aprovados. Persiste a rejeição
+global de fontes individuais em `t-reconciliacao-g00`, da mesma classe já observada
+na entrada. O controle não foi enfraquecido nem certificado. Lint de Afty e build
+aprovados. Navegador de produção com dados isolados, Player/Afty em 1440/390 px,
+quatro cenários aprovados, salvamento/releitura e duas sessões de Encontro conferidos.
+
+CX2 permanece parcial: faltam política geral de temporários,
+integração dos demais percursos de cura/descanso e integração própria do addon Era
+de Ouro. Kamo mantém a dependência já existente de PV rolado. Fila única em
+`a-fazer.md`, matriz das 15 Anatomias, características por origem, contratos, arquivos,
+provas e limites em `revisao-livro-regras/entregas/CX2.md`. Reservas liberadas.
+
+**Complemento após respostas do autor:** Foco concede um dado no total, em um
+efeito/disparo/golpe escolhido. A seleção fica no Feitiço, pode mudar na variação
+e chega à rolagem real e ao consumidor de Auxiliar ativo. Destino ausente ou
+inválido em uma escolha múltipla não ganha bônus e gera aviso. Essa decisão
+substitui a interpretação anterior de aplicar Foco em cada disparo. Os demais
+bônus de Múltiplos Disparos foram preservados. Foco em Dano na Alma conta como
+criação: dado integral no pool e alcance dobrado, mantendo a metade dos demais
+aumentos externos. As duas perguntas foram retiradas da fila. Cobertura de CX2
+ampliada de 155 para 195 verificações.
+No navegador, escolha/salvamento/releitura e rolagem conferidos novamente em
+Player/Afty, 1440/390 px, incluindo o disparo escolhido no Encontro. Sem erros
+de página ou transbordamento. Lint e build aprovados. Reservas liberadas.
+
+## SESSÃO DE 2026-10-30: CL2, VIDA, MORTE E ALMA (núcleo entregue, Mutante descartado)
+
+Fonte externa e SHA-256 exigido confirmados. HEAD e main remoto iguais em `d6d6dd77a7999d0df0454eb58d62584c0f46a9a3`, trabalho concorrente de CX1, CL1 e CX2
+preservado, nada em `src/components/`. Diagnóstico publicado antes do produto, com N09 e N10 reproduzidos nos dois sistemas. Evidência, contratos e leituras
+adotadas: `revisao-livro-regras/entregas/CL2.md`. Guia do contrato: `docs/afty-vital.md`.
+
+**Decisão do autor: o Corpo Amaldiçoado Mutante foi abandonado e excluído do site em definitivo.** Nas palavras dele, desistir da ideia e ir fazer outra coisa.
+A origem saiu de `afty-origens.js`, os quatro registros dela no inventário do G00 viraram `REMOVIDO`, e há aviso em `AGENTS.md`, `CLAUDE.md`, na fila, nos prompts
+de CL2, CX2 e CX6 e na memória do projeto. `asserts/t-mutante-descartado.mjs` falha se ela voltar. Não confundir com os `multiplosNucleos` das invocações, a
+Anatomia Carapaça Mutante e a origem Maldição, que seguem. O autor também mandou valer tudo isto para a Criatura (sem `DIVERGENCIAS`).
+
+**Validado:**
+
+- Suíte completa: 251 arquivos, 248 aprovados, 15.866 asserts nos aprovados (linha de base: 248 arquivos, 245 aprovados, 15.388). Falham só os três de sempre, que não são deste lote (`t-cx2-origens`, `t-revisao-g00`, `t-reconciliacao-g00`, com a mesma mensagem da
+  linha de base). `npx eslint src/systems/afty/` sem erros, `npm run build` aprovado, `t-ordem-modulos` (44).
+- Novos: `t-cl2-vital` (316), `t-cl2-alma-dados-vida` (143), `t-mutante-descartado` (15), nos dois sistemas. 43 mutações do código derrubadas (uma sobrevivente corrigida).
+- Revisão independente antes do fechamento: achou o corpo MORTO escapando pelo Corpo de Aço, pelo Ainda de Pé, pelo Rejeitar a Morte, pelo Mesmo Morto, pela ampliação de
+  recurso e pelo Bloodfeast, e a condição do Ferimento escrita sem o `defineCondicoes`. Tudo corrigido com assert e mutação. O aviso do Ferimento pendente saiu da barra
+  enquanto nenhum botão o resolve.
+- Navegador (build de produção, 1440 e 390, ficha de teste isolada): na Ficha clássica e no painel do Encontro, dano 25 com 10 PV mostra "Morrendo, 15 PV Negativos",
+  cura 1 não sobe o PV (14), recarregar conserva, cura 14 mostra "Estabilizado", cura 5 levanta, dano massivo mostra "Morto por Dano Massivo", PV à mão devolve a vida
+  e "Próximo Turno" abre "Teste de Morte Pendente". Sem rolagem horizontal e sem erro de página.
+
+**Implementado:** estado vital geral `sessao.vital` (saldo negativo, Portas da Morte com 1 e 20 naturais, falha por ataque, estabilização por Medicina e por cura, dano massivo,
+Ferimentos Complexos com gatilho, tabela, Cego, Lento e Destreza -4 pelos mecanismos que já existem, ferida interna, permanência e recuperação), o Restringido de pé em
+cima do mesmo estado, o TR de Integridade antes do Dano na Alma, a cura de Alma com o requisito de quem cura, e a pilha de Dados de Vida por Especialização com gasto,
+Constituição, limite dos Remédios, dobro do Elixir e recuperação. O PV continua fixo e o botão de descanso continua único (agora devolve também os dados gastos).
+
+**Falta, com os motivos:**
+
+- As telas de ação (teste de morte, Medicina, escolha do Ferimento, Dados de Vida, Dano na Alma, cura de Alma) e o aviso no cabeçalho da Ficha G2: são do Codex (CX6).
+  Só o aviso na barra de PV da Ficha clássica e do Encontro está ligado.
+- As sete perguntas de CL2 na fila (dano enquanto morrendo, dano massivo, estabilização exata, gatilho do Ferimento, Alma no descanso, tamanho dos dados do Treino de
+  Resistência 2, CD do teste de Integridade). Nenhuma bloqueia o restante e todas têm uma leitura adotada.
+- A Perda por Bleed do Bloodfeast (addon) pode levar a 0 sem registrar as Portas.
+- Lote não encerrado: o fechamento depende da ligação das telas.
+
+## SESSÃO DE 2026-10-29: CX1, CORREÇÕES DE BASE E FECHAMENTO PARCIAL
+
+Fonte externa e SHA-256 exigido confirmados. HEAD e main remoto iguais em
+`d6d6dd77a7999d0df0454eb58d62584c0f46a9a3`. Diagnóstico publicado antes de
+alterar o produto. Alterações locais de Técnicas Marciais preservadas.
+Entrega, evidências e contratos: `revisao-livro-regras/entregas/CX1.md`.
+
+Implementados: piso da metade de Sustentada em Passivas, fonte única para
+cópias do mesmo acessório, discriminação explícita de ataque com 1/20,
+Arma Natural (dado mínimo, melhoria e tipo físico), alcance da Anatomia
+Articulações Extensas, escolha e 1d4 de Corpo Especializado. Braços Extras
+usa a declaração Duas Mãos Livres na sessão, desligada por padrão, decisão
+direta do autor neste chat. Prestidigitação mantém +2.
+
+N08 teve sua reprodução antiga reclassificada: rótulo Ataque numa chamada
+genérica não basta. Aprofundamento confirmou o defeito pelo Bastão com Ampla
+e Defesa do Alvo, controle real existente. O preparador agora marca
+`tipoTeste: ataque`. Testes genéricos conservam a comparação pelo total.
+CL1 recebe esse contrato e `treinosAtivos.anatomia_duas_maos_livres`.
+
+Prodigio passou a imprimir a frase exigida pelo lançador, com 33 asserts.
+A reconciliação verifica os 33 remendos reais por suas identidades e mantém
+todas as recusas. Ela agora alcança uma rejeição correta: 1.235 chaves vivas
+sem fonte individual na campanha, incluindo conteúdo anterior e entradas
+novas de CX1. Não foram inventados donos/fontes ou alterados estados de G00.
+Esse é o impedimento concreto ao encerramento integral de CX1, na fila única.
+
+Validação: 186 asserts novos. Suíte medida com 243/244 arquivos aprovados,
+14.876 asserts nos aprovados, somente `t-reconciliacao-g00` reprovado.
+Ordem de módulos: 40 aprovados. ESLint Afty e build passaram. Contraprova
+de Defesa Passiva em `t-tecnicas-marciais` ajustada para provar zero no
+nível 2 e disponibilidade no nível 3, preservando suas demais alterações.
+
+Chrome em build de produção local: Player/Afty a 1440 e 390 px, criador,
+salvamento, reabertura, Ficha e Encontro. Escolhas, dado real, fontes,
+declaração de mãos, naturais 1/20 e persistência conferidos. Sem rolagem
+horizontal nos percursos de uso. Passiva antiga preservada até Usar este
+valor, depois salva com 3 e aplicada à Defesa. Houve somente 404 da
+telemetria Vercel ausente no preview local, discriminado no relatório.
+
+CL1 iniciou arquivos próprios durante o fechamento. Suas alterações em
+sessão/ordem de módulos e os arquivos novos foram lidos e preservados.
+Suíte repetida em `.audit/cx1-20261029/asserts-com-cl1.txt`, sem certificar
+o trabalho concorrente criado depois do corte do lançador.
+Esse último corte aprovou 242/244 arquivos e 14.843 asserts nos aprovados.
+Reprovaram os dois verificadores G00: além da reconciliação já pendente,
+`t-revisao-g00` detectou módulos novos de CL1 sem classificação no controle.
+Não se removeu essa rejeição correta. Novos asserts de CL1 surgiram após
+a lista inicial desse lançador. A validação 243/244 acima é o corte de CX1
+anterior à entrada desses módulos, preservado como histórico da execução.
+Reservas de CX1 liberadas ao fim desta entrega. Arquivos e limites estão
+no relatório. Nenhuma publicação, commit, push, promoção G2 ou alteração
+da abertura diária. `src/components/` e os dados oficiais sem diff.
+
 ## SESSÃO DE 2026-10-29: PROMPTS DOS NOVE LOTES COM VERIFICAÇÃO ANTES DO CÓDIGO
 
 A pedido do autor, criados nove prompts completos em `docs/revisao-livro-regras/prompts/`, seis do Codex e
@@ -19645,7 +20456,7 @@ reescrita em `AftyTabAddons.jsx` sobre a `ListaLateral`, a extensão compatível
 tinham uma útil, `addons/treino-de-tr.json` na 1.1.0 com `incluiIntegridade` (o que também fechou o `t-treino-de-tr`), e a descrição do
 Guerra reescrita para complementar o resumo.
 
-**Verificação:** `t-addons-lista` com 57 asserts, `t-lista-lateral` (32), `t-guerra-de-feiticeiros` (158) e `t-revisao-g00` verdes, com o
+**Verificação:** `t-addons-lista` com 57 asserts, `t-lista-lateral` (32), o teste de conteúdo do pacote privado (158) e `t-revisao-g00` verdes, com o
 dono do módulo novo registrado em `escopo.json`; eslint de `src/systems/afty` e build limpos; navegador (1440 e 390 px, console limpo):
 88 pacotes na lista, resumo na linha, busca pelo nome de uma entrada e pelo resumo, filtro de categoria, filtro Ligados, o ligado subindo
 para o primeiro grupo, o detalhe com as regras, e os roteiros do Guerra refeitos para a tela nova. Sem commit ou push.
@@ -19702,6 +20513,7 @@ proposta de reconciliação do G00.
 
 ---
 
+
 ## SESSÃO DE 2026-11-01: PACOTE COMPOSTO PASSA A SER INSTALADO POR JSON (NADA NO APP PUBLICADO)
 
 **Pedido do autor:** puxar as atualizações do Arthur, preparar o envio, e deixar o pacote da mesa privado: ele não pode ficar
@@ -19735,3 +20547,4 @@ num perfil sem a fonte sem erro e sem ganhar a fonte. Sem commit ou push.
 global, e a versão 1.0.0, que já foi pública, fica no histórico como está.
 
 **Ainda aberto:** ver `docs/a-fazer.md` (o passo de colar o JSON na produção depois do deploy, o 5c e os 16 pacotes antigos).
+

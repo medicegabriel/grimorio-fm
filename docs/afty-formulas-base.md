@@ -12,6 +12,246 @@ FLOOR, `INT`=parte inteira, `MAIOR(intervalo;k)`=k-ésimo maior, `VERDADEIRO`=TR
 
 ## Correções estruturais ao que estava assumido
 
+### CX3: conteúdo direcionado e custos de ER (2026-11-03)
+
+- Adepto de Medicina declara a própria fonte de cura. Dados por personagem:
+  2d6 antes do nível 4, 2d12 no 4, 3d12 no 8, 6d8 no 12 e 6d10 no 16,
+  mais o maior modificador entre PRE e SAB uma vez. Usos são metade do
+  modificador positivo, com piso, inclusive zero. Não concede o primeiro
+  benefício de Suporte em Combate. Livro p.102 e 165.
+- Mestre da Criação aplica +2 a cada um de dois ids distintos de Ofício do
+  catálogo real, incluindo Ofícios extras. A produção adicional é de CX5.
+  Alcances: +6 m para Arremesso, +1,5 m para Chicote. Livro p.166 e 167.
+- Potencial Físico 2 usa duas escolhas nativas de Treino, um ponto direcionado
+  por escolha a FOR, DES ou CON. Pode repetir o atributo e respeita seus tetos.
+  Escolha de etapa removida ou de origem sem acesso fica inerte. Livro p.346.
+- O excedente da p.366 considera apenas aumentos permanentes recebidos, além
+  do teto atual da trilha. Uma concessão escolhida substitui aquele aumento,
+  mantendo o custo dos níveis alocados. Não concede simultaneamente uma
+  Aptidão gratuita e a devolução de um nível pago. Temporários não geram
+  concessões. Requisitos cruzados resolvem por ponto fixo sem aceitar ciclos.
+- Aura Elemental Reforçada emite RD por Tipo no elemento válido da Aura
+  Elemental: valor declarado de Aura Reforçada mais AU, normalmente 3 AU.
+  Conserva a fonte e as substituições de Addon. Livro p.175.
+- Decisão do autor em 03/11: cada Aptidão de ER segue o próprio custo.
+  O teto é da cura. Cada PER custa 2 PE (p.190). O desconto de 2 PER do
+  Treino 3 é específico de regenerar membro/ferimento interno (p.342).
+  Remover veneno mantém 4 PER. A cura consequente usa metade dos PER gastos,
+  com piso, sem reaplicar o teto de uma cura básica ao custo da regeneração.
+- Reversão de Técnica (p.194) tem marca própria no Feitiço e concede uma vaga
+  exclusiva. O custo ativo recebe o nível efetivo como aumento com fonte,
+  herdado pelas variações. Decisão de 03/11: também pode ser Passiva, somando
+  o nível à reserva de PE Máximo no Player, com a isenção atual de Afty
+  preservada. Passivo comum de nível 3 reserva 9 PE no Player e zero no Afty.
+- Movimentos Acrobáticos: no sucesso, levanta e recebe piso(MOD DES / 2) na
+  Defesa por uma rodada. Chicote puxa até 3 m após falha de Fortitude contra
+  a CD do atacante. Concussão move até 3 m após impacto corpo a corpo efetivo,
+  em espaço desocupado, recusando alvo duas categorias maior. Livro p.167 e 168.
+- Puxar um Ar copia a pilha de dados normal do desarmado e seus valores fixos,
+  preservando faces distintas. Bônus de cura entram uma vez. Revigorar conserva
+  1d10 + 1d10 a cada quatro níveis de escalonamento de Combatente, mais
+  2 MOD CON + BT. Ambos usam ação bônus. Descanso único autorizado preservado.
+- Surto de Ação: 5 PE por ação comum extra, uma vez por rodada e piso(BT / 2)
+  usos por descanso longo, com contador e ação extra nativos. Livro p.73.
+- Resistir: até 2 PE, +2 por PE no teste de Fortitude ou Reflexos. Conhecimento
+  Aplicado: até piso(BT / 2) PE, +2 por PE em TR contra Feitiço. Mente Plácida:
+  1 PE dá +3, 2 PE dão +5, a CD diminui pelo maior MOD entre INT/SAB. A redução
+  de CD também vale sem PE. Os remendos da própria ficha passam pelo Motor.
+  Livro p.54 e 82.
+- Indomável paga 1 PE, mantém o melhor TR falho e usa piso(ND / 2) usos.
+  Outra Chance paga 3 PE, mantém o melhor teste falho do aliado visível a
+  até 6 m e usa BT usos. Não gasta ação, decisão do autor de 06/11. O descanso
+  único autorizado permanece. Livro p.68 e 105.
+- Perceber Oportunidade: vantagem e até duas repetições por rodada, consumindo
+  as reações que a ficha possui. Não concede outra reação. Livro p.164/293.
+  Reação Rápida compra uma reação por 2 pontos de estamina, uma vez por rodada.
+  Força Imparável/Barreira custam 2 para trocar natural baixo por MOD DES/CON
+  no TR correspondente. Precisão Forçada paga 3 pelo dano máximo nativo no
+  ataque corpo a corpo e é consumida também se errar. Livro p.121 e 122.
+- Investida Aprimorada: decisão do autor em 06/11, máximo de avanço igual a
+  2 × (Movimento + 3 m). Com Movimento 9 m, o máximo é 24 m. O acerto usa BT
+  no lugar do +2 da ação comum, Defesa -2 até o próximo turno, com ação completa
+  e sem terreno difícil. No acerto há disputa de Atletismo. Livro p.164 e 304.
+- Intervenção: no nível de escalonamento de Suporte 4/6/12/18 libera condição
+  fraca/média/forte/extrema por 3/6/9/12 PE e Ação Comum. Lê a força resolvida
+  do destinatário, inclusive Sangramento variável. Desmembramento é excluído
+  pela p.210. Análise Profunda: Percepção contra 15 + ND do alvo, uma descoberta
+  no sucesso mais uma por cinco pontos excedentes. Livro p.105 e 107.
+- Versatilidade: o bônus próprio com proficiência treinada é comparado com
+  a oferta fixa antes de escolher. Não soma BT à oferta fixa vencedora.
+  Custa 1 PE e MOD SAB usos pelo descanso único autorizado. Livro p.103.
+- Remover os efeitos de um veneno: 4 PER, Ação Bônus, selecionando um uso
+  ativo de veneno ou uma marcação avulsa. Treino não reduz o custo. Outros
+  venenos mantêm as condições que ainda sustentam. Livro p.190.
+- Concentração após deslocamento efetivo: CD 5 + metros movidos. Empurrão
+  de Bastão usa 10 + bônus de Atletismo do responsável. O núcleo conserva
+  a maior CD pendente e não rola sozinho. Livro p.308 e 320.
+- Voadora: 3 PE, dados adicionais d8 iguais ao piso de distância/3 m,
+  limitados pelo maior modificador entre Força e Destreza, mínimo zero.
+  Usa Investida comum ou Aprimorada e crítico nativo. Livro p.56.
+- Mobilidade Avançada: reação após queda real do aliado, avanço disponível
+  de metade do Movimento atual em direção a ele. Livro p.105.
+- Sobrevivente: abaixo de metade do PV máximo, no início do turno,
+  1d6 + MOD CON, mais 1d6 em 8/12/16/20. Não cura Inconsciente, nas Portas
+  ou morto. Corpo de Aço conserva sua própria pilha, sem misturar dados de
+  outra fonte. Cada elegibilidade lê o começo do turno. Livro p.56 e 120.
+- Adepto de Briga: após acerto desarmado sem dano, Ação Livre e metade de
+  BT no teste de executar Derrubar/Empurrar. A defesa escolhe Atletismo ou
+  Acrobacia e conserva bônus nativo de resistir. Empurrar usa a distância
+  base nativa mais 1,5 m por cinco pontos de margem. Livro p.165/300/301.
+- Incitar Vigor: 3 PE e Ação Bônus do Suporte. Cura usa os dados escolhidos
+  da pilha do destinatário e o MOD CON dele por dado, pelo núcleo de CL2.
+  A quantidade não recebe outro teto inventado pela Habilidade. Livro p.108.
+- Voto Malevolente dispensa somente o peso adicional do Malefício no
+  Emergencial, preservando as regras normais e a reação. Livro p.168/356.
+- Técnicas Agressivas de Escudo: Empurrar nativo após ataque no próprio
+  turno, Ação Bônus, dano MOD FOR d6 + MOD FOR de impacto na vitória.
+  Distância base mais 1,5 m por cinco pontos de margem e, por escolha,
+  mais 4,5 m ou Caído. Decisão do autor: Caído conserva o empurrão normal.
+  Crítico do teste de Atletismo não dobra o dano. Livro p.165/301.
+- Renovação pelo Sangue: um PE por confirmação com crítico acertado em
+  inimigo ou abate real, sem exceder o máximo nem recuperar PE temporário.
+  Crítico e abate no mesmo ataque continuam sendo um gatilho. Livro p.65.
+- Postura da Fortuna: um d20 cru de 1 a BT pode ser repetido uma vez,
+  conservando o maior. Limite conjunto de piso(BT / 2) por rodada. Em
+  vantagem/desvantagem, a troca de um dado recompõe o maior/menor dos dois,
+  preserva os dados extras e só então aplica o mínimo natural. O Ápice
+  compartilha o limite com a postura normal. Livro p.76, decisão do Ápice
+  de 12/09/2026 preservada. Entrada e duração das posturas próprias abaixo.
+- Sentinela: acerto de oportunidade reduz Movimento em 4,5 m até o fim
+  do turno do alvo, sem exigir dano positivo e sem acumular a mesma fonte.
+  A reação contra quem ataca terceiro a 1,5 m é outro tipo de ataque, sem
+  essa redução. Perceber mantém vantagem e duas oportunidades, Sentinela
+  sozinho não as concede. Livro p.164, 168, 293 e 365.
+- Técnicas de Mobilidade conserva +3 m no Motor. Após atacar o alvo,
+  disputa Reflexos com ele uma vez por rodada, sem exigir acerto. No
+  sucesso, só esse alvo fica impedido de usar oportunidade contra a
+  pessoa protegida. Decisão do autor de 06/11: até o fim do turno em curso,
+  também quando atacar como reação fora do próprio turno. Livro p.168.
+- Terra e Barreira Inamovível: total positivo no canal
+  `imunidadeMovimentoForcado` impede deslocamento involuntário nos
+  consumidores de conteúdo, sem reduzir o Movimento numérico. Terra
+  exige escolha/postura, o segundo espaço exige Mestre válido, e o Ápice
+  segue a decisão das oito posturas com acesso atual. Custo e efeitos
+  secundários de Empurrar não são aplicados contra imune. Derrubar sem
+  deslocamento continua permitido. Livro p.76 e 121.
+- Cair ou sofrer incapacitação encerra os dois espaços de postura no
+  escritor de condições e na leitura de sessão antiga. Tirar a condição
+  não restaura a postura. O Ápice e PV temporário já concedido são
+  conservados. Livro p.76.
+- Posturas próprias: entrada com Ação Bônus, ou Livre com Preparação Rápida,
+  e um uso do contador já derivado, por dez rodadas. Mestre permite duas
+  posturas distintas numa entrada. Autor em 06/11: trocar diretamente
+  gasta a ação de entrada e outro uso, reiniciando o prazo. Empurrar
+  efetivo encerra ambas sem Preparação Rápida. Livro p.72, 75, 76 e 291.
+- Sintonização Vital: piso(cura original antes do teto de PV / 2), limitada
+  pelo PV máximo do segundo destinatário. Não exige outra ação, custa
+  3 PE e exige outra criatura em 3 m. Decisões do autor de 06/11. Livro p.107.
+- Aura Redirecionadora: a segunda jogada recebe 1 + piso(AU / 2) no acerto,
+  contra outra criatura em 6 m do primeiro alvo. Imbuir custa 2 PE antes
+  da primeira jogada, sem outra ação. Autor em 06/11: a primeira falha
+  mantém gatilhos e conta como ataque recebido por A. B recebe sua própria
+  confirmação, usando o mesmo projétil e uma única munição. Livro p.177.
+- Ação Ágil: 2 PE/Estamina para um uso de Andar, Desengajar ou Esconder,
+  sem gastar as ações normais. Lutador por rodada, Restringido por turno.
+  Habilidades iguais compartilham o limite e usam a cadência melhor
+  disponível, sem devolver o uso ao mudar a fonte. Andar até Movimento,
+  Desengajar protege de oportunidades até o fim do turno, Esconder rola
+  Furtividade. Livro p.55, 119, 301 a 303 e 365.
+
+- Postura da Lua: Andar e Desengajar como ações livres distintas, uma vez
+  por rodada cada, sem PE ou ação normal, no próprio turno. Andar respeita
+  o Movimento derivado, Desengajar protege de oportunidade até o fim do
+  turno. CL1 conserva a leitura por rodada da lista de Ações da p.300.
+  Escolha, Mestre, Imitação e oito posturas do Ápice são revalidados. p.76.
+- Concentrar Aura suspende até 1 + AU passivas por uma rodada e soma
+  1d8 de dano Energético após acerto por passiva suspensa.
+- Postura da Devastação soma +1 no acerto e ignora 2 de RD por
+  acerto anterior contra o mesmo alvo. Teto de BT no acerto e dobro
+  dele na RD. A troca zera a pilha.
+- Medicina Infalível soma BT ao total da cura. A quota é metade do
+  nível de Suporte arredondada para baixo mais BT. Cada dado
+  maximizado gasta um uso, recuperado no descanso.
+- Provocação Desafiadora concede piso de MOD PRE dividido por 2 em usos
+  de Provocar como Ação Livre. Recarga de descanso longo. Provocar opõe
+  Intimidação a Intuição ou Intimidação em até 9 m.
+- Pular usa a faixa impressa de FOR ou DES com Acrobata. CD 15 permite
+  usar a faixa seguinte. Força Devastadora soma 3 m, Físico Aperfeiçoado
+  acrescenta metade, Estímulo Muscular dobra e o salto livre de Saltador
+  usa metade. A tabela ausente fica sem valor automático.
+- Saltador Constante: +2 no primeiro ataque contra o alvo ao aterrissar.
+  Em acerto, MOD FOR se soma ao dano do tipo-base.
+- Aura Drenadora: AU d8 + MOD CON em PV temporário ao matar um inimigo.
+  Somar ao saldo da mesma fonte. A morte precisa ser atribuída ao dano.
+  Livro p.175.
+- Cura em Grupo: alcance 4,5 + 1,5 × ER e teto de PER da linha nativa de
+  Energia Reversa. Uma Ação Comum, 2 PE por PER e uma rolagem. A divisão
+  declarada conserva o total rolado antes da Herança e dos tetos individuais.
+  Livro p.191.
+- Dragão: na falha em Fortitude, metade do dano final recebido pelo alvo
+  original. Preservar os tipos e aplicar as defesas do inimigo próximo.
+  Se as metades por tipo não somarem a metade arredondada do total, a mesa
+  distribui o resto. Energia Reversa contra secundário de outra origem
+  também aguarda decisão. Livro p.76.
+- Especialista em Cortes: reduzir Movimento em 4,5 m após acerto com dano
+  cortante final positivo, uma vez por turno em curso. Termina no começo
+  do próximo turno de quem aplicou. Duas cópias do mesmo benefício não
+  somam, por `grupoNaoAcumula`, p.365. A restrição corpo a corpo pertence
+  ao aumento de nível de dano, não à redução opcional da frase seguinte.
+  Dano absorvido por PV temporário conta, dano zerado pela RD não. Livro p.167.
+
+### CX2: origens e Anatomias (2026-11-01)
+
+Livro p.27, 31 a 36, 145, 169, 170 e 200. Sem alterar fórmulas base de PV,
+PE, progressão ou divergências de Player/Afty.
+
+- Marca reduz 1 PE no Feitiço-base e variações. Familiaridade melhora a
+  primeira para 2 PE, ou mantém 1 na ativação e reduz 1 na sustentação.
+  Ativação positiva conserva o piso nativo. Sustentação pode chegar a zero.
+  Marcas adicionais: `floor(BT / 2)`.
+- Zenin conserva os marcos 1, 5, 10, 15 e 20. A modalidade fornece dado
+  real, alcance dobrado ou CD aumentada em BT. Decisão do autor em 01/11:
+  **um dado no total**, em um efeito/disparo/golpe escolhido. A divisão nativa
+  ocorre antes desse dado, e apenas a rolagem escolhida o recebe. Concentrado
+  recebe uma vez. Os demais bônus por disparo da p.215 ficam preservados.
+  Foco em Dano na Alma integra a criação: +1 dado no pool ou alcance dobrado,
+  ambos integrais, sem a metade aplicada aos demais aumentos externos da p.234.
+- Manual acrescenta `floor(custoPadrao / 2)` e preserva a redução de recarga
+  da Máxima no acesso 5. Antecipado fica fora do orçamento comum. Aprender
+  passa a entrada ao orçamento normal e libera o próximo Manual.
+- Vigor: usos `1 + [ND >= 4] + [ND >= 8] + [ND >= 12]`. Cada uso cura
+  `5 * usosMaximos + ModCon`, mais 5 com Reposição elegível. Vários usos
+  multiplicam a cura inteira. Passa pelo estado vital de CL2.
+- Energia Antinatural recupera `2 * BT`, limitada ao máximo normal.
+  Expansão de Reserva concede ainda `floor(BT / 2)` PE temporários.
+- Resiliência reduz um dano em `max(1, floor(ND / 2)) * 5`, com usos BT,
+  compartilhados com a prevenção declarada de desmembramento.
+- Voo converte a caminhada durante uma rodada, após pagar 1 PE. Usa a base
+  atual, multiplicador e condições existentes, com fonte própria.
+- Feto soma +2 em Fortitude apenas contra Veneno. Herança reduz cura reversa
+  recebida a `floor(valor / 2)`. A cura reversa própria pela Herança usa a
+  linha nativa inteira, pagando 2 PE por PER empregado.
+
+Kamo conserva as subidas `ND - 1` e Constituição adicional no nível 10.
+Rerrolagem continua dependendo da adoção de PV rolado, que não ocorreu.
+Mutante foi cancelado pelo autor e não voltou.
+
+### CX1: metade de Sustentada e Arma Natural (2026-10-29)
+
+Livro p.235 e 365: categorias de Passiva baseadas em Sustentada usam
+`floor(valorSustentado / 2)`. Defesa 5 passa de 4 para 3. Defesa 2 usa
+metade de 1 e chega a zero, sem emitir bônus. Categorias com tabelas próprias
+não mudaram. O cálculo continua consultivo: efeitos já salvos não são
+reescritos automaticamente. Custo de PE Máximo preserva a divergência vigente.
+
+Arma Natural, p.35: no Player, o dado base mínimo é 1d8. Se o dado desarmado
+resolvido antes da Anatomia supera 1d8, ela acrescenta um nível de dano pelo
+Motor. Lutador 10 passa de 1d12 para 1d12 + 1d4, conservando o dano fixo.
+No empate em 1d8 não há nível adicional. Na criatura Afty o dado impresso
+continua substituído pela fórmula própria, e a melhoria usa o canal
+`nivelDano`, com a conversão para ND de dano já adotada para Corpo Treinado.
+A origem precisa oferecer Anatomias para que essa escolha tenha efeito.
+
 ### Vespa Crabro: consumo de ressonância e Shin (2026-10-25)
 
 Homebrew aprovado pelo autor: cada acerto confirmado de Gungnir gera

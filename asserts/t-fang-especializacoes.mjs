@@ -59,7 +59,7 @@ for(const sistema of ['afty','player']){
  const desc={tipo:'dano',linhaArma:{ataqueId:'corpo'},dados:2,faces:6,fixo:3};const preparado=prepararRolagemEspecializacao(desc,s2,d2);
  igual(rolarDano(preparado,()=>0).total,15);s2=registrarAtaqueEspecializacao(s2,desc,d2);igual(s2.combate.precisaoForcada,false);
  igual(alteraEstadoCombate(s2,estado,true,d2).combate.precisaoForcada,false);
- const ferido=aplicaDano(s2,d2.hp+9,d2);igual(ferido.hpAtual,0);igual(ferido.especializacaoSessao.pvNegativos,9);igual(ferido.especializacaoSessao.quedaPendente,true);
+ const ferido=aplicaDano(s2,d2.hp+9,d2);igual(ferido.hpAtual,0);igual(recursosDeEspecializacao(ferido,d2).pvNegativos,9);igual(ferido.vital.saldo,9);igual(ferido.especializacaoSessao.quedaPendente,true);
 }
 const p=idsPossuidosNaImitacao({habilidades:{efetivas:['addon__lut_corpo_supremo'],canonicas:['lut_corpo_supremo'],escolhas:{mapa:{x:['cmb_estilo_defensivo']}}},talentos:{escolhas:{mapa:{x:['cmb_postura_da_terra']}}}},[{id:'lut_ataque_inconsequente'}]);
 for(const id of ['addon__lut_corpo_supremo','lut_corpo_supremo','cmb_estilo_defensivo','cmb_postura_da_terra','lut_ataque_inconsequente'])igual(p.has(id),true);

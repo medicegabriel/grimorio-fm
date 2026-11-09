@@ -1,0 +1,45 @@
+--- a/src/systems/afty/ficha/ficha-conteudo-reacoes.js
++++ b/src/systems/afty/ficha/ficha-conteudo-reacoes.js
+@@ -1,6 +1,7 @@
+ import { COMBATE_ESTADOS } from "../afty-combate";
+ import { bloqueioDeAcao } from "./ficha-acoes";
+ import { aptidaoDeConteudoDisponivel as temAptidao } from "./ficha-conteudo-acesso";
++import { absorveAntesDoDano, tiposParaAbsorcaoProspectiva } from "./ficha-cx3-absorcao-prospectiva";
+ import { posturaAtivaConteudo } from "./ficha-conteudo-posturas";
+ import { rolarDados, rolarTeste } from "./ficha-rolagem";
+ import { prepararRolagem } from "./abas-g2/rolagem-g2";
+@@ -45,7 +46,7 @@ export function preparaDisputaDeAparar(sessao, derived, linha, { opId }) {
+ }
+ 
+ /** Só uma entrada de dano corporal efetivo abre estas reações. */
+-export function reacoesAoDano(sessao, derived, { origemId, turnoEmCurso, categoria, danos, ignoraReducao }) {
++export function reacoesAoDano(sessao, derived, { origemId, turnoEmCurso, categoria, danos, ignoraReducao, absorcao }) {
+   const tipos = danos.filter((d) => d.modo === "dano" && d.calculo.final > 0).map((d) => ({ tipo: d.tipo, valor: d.calculo.final }));
+   if (!origemId || !turnoEmCurso?.id || !sessao.combate?.ativo || !tipos.length) return [];
+   const opcoes = [];
+@@ -63,6 +64,11 @@ export function reacoesAoDano(sessao, derived, { origemId, turnoEmCurso, categor
+     const maxPe = Math.min(estadoCobrir.max(derived) + bonus, energiaDaSessao(sessao));
+     if (maxPe >= 1) opcoes.push({ id: "cobrir", usoId: COBRIR, nome: "Cobrir-se", maxPe, valor: avancada ? 8 : 4 });
+   }
++  if (absorcao) {
++    const elegiveis = tiposParaAbsorcaoProspectiva(sessao, derived, absorcao.recibo, absorcao.mesa);
++    if (elegiveis.length) opcoes.push({ id: "absorcao", usoId: "absorcao_elemental", nome: "Absorção Elemental",
++      tipos: tipos.filter((d) => elegiveis.includes(d.tipo)) });
++  }
+   return opcoes.filter((r) => !bloqueioDeAcao(sessao, derived, "reacao", { id: r.usoId }));
+ }
+ 
+@@ -75,7 +81,12 @@ function erroDaEscolha(opcao, escolha) {
+   return null;
+ }
+ 
+-function aplicaReacaoAoDano(sessao, derived, opcao, escolha, { origemId, opId, rng }) {
++function aplicaReacaoAoDano(sessao, derived, opcao, escolha, { origemId, opId, rng, absorcao }) {
++  if (opcao.id === "absorcao") {
++    const r = absorveAntesDoDano(sessao, derived, { ...absorcao, tipoDano: escolha.tipo }, { opId });
++    return r.aplicado ? { sessao: r.sessao, reacao: { id: opcao.id, nome: opcao.nome, carga: escolha.tipo, pe: 0 } }
++      : { erro: r.erro ?? "Absorção Elemental Indisponível" };
++  }
+   const pe = Number(escolha.pe ?? 0);
+   const pv = opcao.id === "cobrir" ? pe * opcao.valor : 0;
+   const uso = usa(sessao, derived, {

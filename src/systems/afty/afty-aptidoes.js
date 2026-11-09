@@ -1689,6 +1689,46 @@ export const trilhasDaCriatura = (creature) => {
  * ZERADAS, e não ausentes: meio sistema lê `aptidao.efetivo.er` direto, e uma
  * chave faltando viraria `undefined` num lugar que espera número.
  */
+// Livro p.366. Só aumentos recebidos podem gerar uma concessão, nunca alocação inválida.
+export function excedentesDeAptidao(aptidoes, concedido, limites, trilhas = APTIDAO_TRILHAS) {
+  return Object.fromEntries(trilhas.map((t) => {
+    const teto = Math.max(0, APTIDAO_NIVEL_MAX + Math.trunc(Number(limites?.[t.key]) || 0));
+    const alocado = Math.min(teto, Math.max(0, Math.trunc(Number(aptidoes?.[t.key]) || 0)));
+    const ganho = Math.max(0, Math.trunc(Number(concedido?.[t.key]) || 0));
+    return [t.key, Math.min(ganho, Math.max(0, alocado + ganho - teto))];
+  }));
+}
+
+export function escolhasDeExcedentes(config, quantidades, ctx, indisponiveis = []) {
+  const usados = new Set(ctx.escolhidas ?? []);
+  const vetados = new Set(indisponiveis);
+  const escolhas = [];
+  const pendentes = [];
+  for (const c of APTIDAO_CATEGORIAS.filter((c) => c.trilha)) {
+    const ids = Array.isArray(config?.[c.trilha]) ? config[c.trilha] : [];
+    for (let indice = 0; indice < Math.max(0, quantidades?.[c.trilha] ?? 0); indice++) {
+      const a = getAptidao(ids[indice]);
+      if (!a || a.categoria !== c.id || usados.has(a.id) || vetados.has(a.id)) continue;
+      pendentes.push({ a, c, indice });
+    }
+  }
+  // Uma escolha pode exigir outra concessão válida. O ponto fixo não aceita ciclos
+  // de requisitos nem usa a própria escolha para satisfazer seu pré-requisito.
+  let avancou = true;
+  while (avancou) {
+    avancou = false;
+    for (const { a, c, indice } of pendentes) {
+      if (usados.has(a.id)) continue;
+      const contexto = { ...ctx, escolhidas: [...usados], trilhaDaAptidao: c.trilha };
+      if (!(a.requisitos ?? []).every((r) => avaliarRequisitoAptidao(r, contexto).ok)) continue;
+      usados.add(a.id);
+      escolhas.push({ id: a.id, trilha: c.trilha, indice, fonte: `Nível Excedente de ${c.trilhaLabel}` });
+      avancou = true;
+    }
+  }
+  return escolhas;
+}
+
 export function resolveNiveisAptidao(aptidoes, concedidoRaw, limiteRaw = null, trilhas = APTIDAO_TRILHAS) {
   // Alocação entra SEM teto, pelo mesmo motivo da concessão: o limite da trilha
   // é quem apara, logo abaixo. Aparar no 5 aqui esconderia o 6° nível de quem

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { AlertTriangle } from "lucide-react";
 import { NumeroComFontes } from "./fontes";
 
 /**
@@ -37,7 +38,7 @@ import { NumeroComFontes } from "./fontes";
 export function Vital({
   tipo, icone: Icone, rotulo, atual, max,
   temp = 0, rotuloTemp = "PV Temporário",
-  partes = null, onSet, onDelta,
+  partes = null, aviso = null, onSet, onDelta,
 }) {
   const [rascunho, setRascunho] = useState(null);
   const teto = Math.max(1, max);
@@ -114,6 +115,14 @@ export function Vital({
           />
         )}
       </div>
+      {/* O estado vital (CL2): morrendo, PV negativos, falhas de morte e Ferimentos Complexos. Só resultado e aviso, no
+          âmbar de problema real, com o ícone do lucide (nunca o caractere U+26A0). Sem estado, não ocupa lugar. */}
+      {aviso && (
+        <div className="afty-vital-aviso mt-1 flex items-center gap-1" style={{ color: "var(--afty-aviso)", fontSize: "0.75rem" }} data-afty-vital-aviso>
+          <AlertTriangle className="flex-shrink-0" style={{ width: "0.75rem", height: "0.75rem" }} aria-hidden="true" />
+          <span className="min-w-0 truncate" title={aviso}>{aviso}</span>
+        </div>
+      )}
     </div>
   );
 }

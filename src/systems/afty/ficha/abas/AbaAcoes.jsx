@@ -101,13 +101,13 @@ function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir, modoDano
             <option value="amaldicoado">Amaldiçoado</option>
           </select>
         )}
-        {e.ignoraRD > 0 && <span className="afty-rotulo text-[10px] whitespace-nowrap">Ignora RD {e.ignoraRD}</span>}
-        {e.ignoraTodaRD && <span className="afty-rotulo text-[10px]">Ignora Toda RD</span>}
-        {e.ignoraImunidade && <span className="afty-rotulo text-[10px]">Ignora Imunidade</span>}
-        {e.removeResistencia && <span className="afty-rotulo text-[10px] whitespace-nowrap">Remove Resistência</span>}
+        {e.ignoraRD > 0 && <span className="afty-rotulo text-[11px] whitespace-nowrap">Ignora RD {e.ignoraRD}</span>}
+        {e.ignoraTodaRD && <span className="afty-rotulo text-[11px]">Ignora Toda RD</span>}
+        {e.ignoraImunidade && <span className="afty-rotulo text-[11px]">Ignora Imunidade</span>}
+        {e.removeResistencia && <span className="afty-rotulo text-[11px] whitespace-nowrap">Remove Resistência</span>}
         {e.margemCritico != null && (
           <NumeroComFontes
-            className="afty-rotulo text-[10px] whitespace-nowrap"
+            className="afty-rotulo text-[11px] whitespace-nowrap"
             titulo="Margem de Crítico"
             valor={`Crít. ${e.margemCritico}`}
             partes={e.partesMargemCritico}
@@ -122,7 +122,7 @@ function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir, modoDano
             partes={e.alcance.partes}
             total={e.alcance.texto}
             formatar={false}
-            className="afty-rotulo text-[10px] whitespace-nowrap"
+            className="afty-rotulo text-[11px] whitespace-nowrap"
             ancora="direita"
           />
         )}
@@ -140,7 +140,7 @@ function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir, modoDano
           </DicaDeTexto>
         )}
         {e.acerto != null && (
-          <span className="afty-rotulo text-[10px] whitespace-nowrap" title={e.acertoAtaque}>
+          <span className="afty-rotulo text-[11px] whitespace-nowrap" title={e.acertoAtaque}>
             Acerto{" "}
             <NumeroComFontes
               /* Com dado somado à jogada (Manobra de Ajuste), a linha mostra a
@@ -200,7 +200,7 @@ function LinhaDano({ e, rolar, critico, onCritico, destacado, onImbuir, modoDano
       </div>
       {e.imbuir && (
         <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-          <span className="afty-rotulo text-[10px]">Imbuir</span>
+          <span className="afty-rotulo text-[11px]">Imbuir</span>
           <select
             className="afty-campo bg-transparent outline-none text-[11px]"
             value={feiticoImbuido?.id ?? ""}
@@ -256,19 +256,19 @@ function LinhaCura({ l, rolar, destacado }) {
         {l.nome}
         {l.qtd ? <span className="afty-rotulo"> ×{l.qtd}</span> : null}
       </span>
-      <span className="afty-rotulo text-[10px] whitespace-nowrap">{l.alcance}</span>
+      <span className="afty-rotulo text-[11px] whitespace-nowrap">{l.alcance}</span>
       {l.rerrola && <span className="afty-chip" title={l.rerrola.continua
         ? `${l.rerrola.fonte} + ${l.rerrola.fonteContinua}: repete até sair acima de ${l.rerrola.ate}`
         : `${l.rerrola.fonte}: uma rerrolagem por dado, mantendo o melhor resultado`}>
         Rerrola até {l.rerrola.ate}{l.rerrola.continua ? " (contínua)" : ""}
       </span>}
       {l.espelhaNome && (
-        <span className="afty-rotulo text-[10px] whitespace-nowrap" title={`Rola a mesma coisa que ${l.espelhaNome}`}>
+        <span className="afty-rotulo text-[11px] whitespace-nowrap" title={`Rola a mesma coisa que ${l.espelhaNome}`}>
           {l.espelhaNome}
         </span>
       )}
       {l.usos != null && (
-        <span className="afty-rotulo text-[10px] whitespace-nowrap" title="Usos por descanso">
+        <span className="afty-rotulo text-[11px] whitespace-nowrap" title="Usos por descanso">
           Usos <span className="afty-valor text-[11px]">{l.usos}</span>
         </span>
       )}
@@ -307,7 +307,7 @@ function LinhaCura({ l, rolar, destacado }) {
           fonteCuraId: l.id,
           rotulo: l.nome,
           detalhe: l.unidade ? `${estado.pontos} ${l.unidade.rotulo}` : null,
-          dados: l.dados, faces, fixo: estado.fixo, blocos: estado.blocos,
+          dados: l.dados, faces, fixo: estado.fixo, blocos: estado.blocos, grupos: estado.grupos,
         })}
       />
     </div>
@@ -360,7 +360,7 @@ export function ControlesRitual({
 
   return (
     <details className="w-full mt-1.5">
-      <summary className="cursor-pointer text-[10px] font-semibold">
+      <summary className="cursor-pointer text-[11px] font-semibold">
         Ritual
         {ritual.ativo && (
           <span className="afty-rotulo ml-2">
@@ -423,7 +423,7 @@ export function ControlesRitual({
             </>
           )}
           {ritual.ativo && ritual.teste && (
-            <span className="afty-rotulo text-[10px] whitespace-nowrap">
+            <span className="afty-rotulo text-[11px] whitespace-nowrap">
               Prestidigitação{" "}
               <NumeroComFontes
                 valor={ritual.teste.bonus}
@@ -510,7 +510,7 @@ export function ControlesRitual({
               const valor = ritual.melhorias?.[melhoria.id] || 0;
               return (
                 <div key={melhoria.id} className="flex items-center gap-1.5">
-                  <span className="flex-1 min-w-0 text-[10px] truncate" title={melhoria.descricao}>
+                  <span className="flex-1 min-w-0 text-[11px] truncate" title={melhoria.descricao}>
                     {melhoria.nome}
                   </span>
                   <button
@@ -556,10 +556,10 @@ function LinhaDeGolpe({ titulo, e, rolar, critico, onCritico, acertou, onAcertou
   return (
     <div className="flex items-center gap-2 flex-wrap px-2 py-1.5" data-afty-golpe={titulo}>
       <span className="flex-1 min-w-[6rem] text-[12px] font-semibold truncate">{titulo}</span>
-      {e.ignoraRD > 0 && <span className="afty-rotulo text-[10px] whitespace-nowrap">Ignora RD {e.ignoraRD}</span>}
+      {e.ignoraRD > 0 && <span className="afty-rotulo text-[11px] whitespace-nowrap">Ignora RD {e.ignoraRD}</span>}
       {critico && <span className="afty-chip" data-afty-tom="destaque">Crítico</span>}
       {e.acerto != null && (
-        <span className="afty-rotulo text-[10px] whitespace-nowrap">
+        <span className="afty-rotulo text-[11px] whitespace-nowrap">
           Acerto{" "}
           <NumeroComFontes
             valor={e.acertoTexto ?? e.acerto}
@@ -671,7 +671,7 @@ function LinhaTecnicaAtaque({
       ) : (
         <>
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-            <span className="afty-rotulo text-[10px]">Arma</span>
+            <span className="afty-rotulo text-[11px]">Arma</span>
             <select
               className="afty-campo px-1.5 py-1 text-[11px]"
               aria-label={`Arma de ${f.nome || "Técnica"}`}
@@ -703,12 +703,12 @@ function LinhaTecnicaAtaque({
 
       {cond && (
         <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-          <span className="afty-rotulo text-[10px]">Acertos</span>
+          <span className="afty-rotulo text-[11px]">Acertos</span>
           <span className="afty-valor text-[12px] tabular-nums">{total}/{ataque.ataques}</span>
           {degrau ? (
             <span className="afty-chip" data-afty-tom="destaque">{textoDaEscada(degrau)}</span>
           ) : (
-            <span className="afty-rotulo text-[10px]">Sem Condição</span>
+            <span className="afty-rotulo text-[11px]">Sem Condição</span>
           )}
           {tr && <span className="afty-chip" title="Um único teste, depois do último ataque">TR {tr.label}{cond.cd != null ? ` CD ${cond.cd}` : ""}</span>}
         </div>
@@ -950,7 +950,7 @@ function LinhaFeitico({ modoServo = "normal",
             que declarou sem precisar abrir. */}
         {menu && (
           <details className="w-full mt-1.5" open={melhorias.length > 0}>
-            <summary className="cursor-pointer text-[10px] font-semibold">
+            <summary className="cursor-pointer text-[11px] font-semibold">
               Liberação Máxima
               <span className="afty-rotulo ml-2">
                 {melhorias.length}/{menu.max} · {menu.custoPE} PE
@@ -1239,7 +1239,7 @@ function LinhaDominio({ d, ativo, fase = null, destacado, partesPvDomo, controle
   );
 }
 
-function LinhaManobra({ m, rolar, destacado }) {
+function LinhaManobra({ m, rolar, destacado, operacao = null }) {
   const raiz = useDestaque(destacado);
   return (
     <div
@@ -1250,12 +1250,12 @@ function LinhaManobra({ m, rolar, destacado }) {
     >
       <span className="flex-1 min-w-0 text-[12px] font-semibold truncate">{m.nome}</span>
       {m.periciaUsada && (
-        <span className="afty-rotulo text-[10px] whitespace-nowrap">{m.periciaUsada}</span>
+        <span className="afty-rotulo text-[11px] whitespace-nowrap">{m.periciaUsada}</span>
       )}
       {/* ⚠ SÓ MANOBRA TEM DOIS LADOS. Concentração, Fintar, Provocar e o Teste
           de Morte entraram no mesmo card em 2026-09-15 e têm um número só, então
           a palavra "Executar" sai junto com o lado que não existe. */}
-      <span className="afty-rotulo text-[10px] whitespace-nowrap">
+      <span className="afty-rotulo text-[11px] whitespace-nowrap">
         {m.resistir != null ? "Executar " : ""}
         <NumeroComFontes
           valor={m.executar}
@@ -1263,15 +1263,16 @@ function LinhaManobra({ m, rolar, destacado }) {
           total={sinalDe(m.executar)}
           className="afty-valor text-[11px]"
           ancora="direita"
-          onRolar={() => rolar({
+          onRolar={operacao ? null : () => rolar({
             tipo: "teste",
             rotulo: m.resistir != null ? `${m.nome} · Executar` : m.nome,
             bonus: m.executar,
           })}
         />
       </span>
+      {operacao && <div className="w-full">{operacao}</div>}
       {m.resistir != null && (
-        <span className="afty-rotulo text-[10px] whitespace-nowrap">
+        <span className="afty-rotulo text-[11px] whitespace-nowrap">
           Resistir{" "}
           <NumeroComFontes
             valor={m.resistir}
@@ -1331,6 +1332,7 @@ export default function AbaAcoes({
   onArma = null, onAmpla = null, turnoArmas = 0, rodadaArmas = 0,
   // O contador de usos das habilidades fixadas no Rápido. Ver `ItemDeFicha`.
   contadorUsos = null,
+  operacaoProvocar = null,
 }) {
   const dano = derived.dano?.entradas ?? [];
   const cura = derived.cura?.linhas ?? [];
@@ -1370,7 +1372,7 @@ export default function AbaAcoes({
             <button
               key={gatilho.id}
               type="button"
-              className="afty-botao text-[10px]"
+              className="afty-botao text-[11px]"
               data-afty-tom={gatilho.ativo ? "destaque" : undefined}
               aria-pressed={gatilho.ativo}
               onClick={() => onGatilhoTreino?.(gatilho.id, !gatilho.ativo)}
@@ -1408,7 +1410,7 @@ export default function AbaAcoes({
             <>
               <button
                 type="button"
-                className="afty-botao text-[10px]"
+                className="afty-botao text-[11px]"
                 data-afty-tom={modoDanoAtivo === "critico" ? "destaque" : undefined}
                 aria-pressed={modoDanoAtivo === "critico"}
                 onClick={() => setModoDano(modoDanoAtivo === "critico" ? "normal" : "critico")}
@@ -1418,7 +1420,7 @@ export default function AbaAcoes({
               {temRaioNegro && (
                 <button
                   type="button"
-                  className="afty-botao text-[10px]"
+                  className="afty-botao text-[11px]"
                   data-afty-tom={modoDanoAtivo === "raio_negro" ? "destaque" : undefined}
                   aria-pressed={modoDanoAtivo === "raio_negro"}
                   onClick={() => setModoDano(modoDanoAtivo === "raio_negro" ? "normal" : "raio_negro")}
@@ -1528,7 +1530,8 @@ export default function AbaAcoes({
       {manobras.length > 0 && (
         <Secao titulo="Outros">
           {manobras.map((m) => (
-            <LinhaManobra key={m.id} m={m} rolar={rolar} destacado={destaque === `manobra:${m.id}`} />
+            <LinhaManobra key={m.id} m={m} rolar={rolar} destacado={destaque === `manobra:${m.id}`}
+              operacao={m.id === "provocar" ? operacaoProvocar : null} />
           ))}
         </Secao>
       )}

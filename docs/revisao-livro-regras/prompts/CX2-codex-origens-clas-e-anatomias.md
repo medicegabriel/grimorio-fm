@@ -1,5 +1,7 @@
 # CX2: Origens, clãs e Anatomias
 
+> **⚠ AVISO (autor, 2026-10-30): O CORPO AMALDIÇOADO MUTANTE FOI ABANDONADO E EXCLUÍDO DO SITE EM DEFINITIVO.** Se alguma parcela, análise ou fila citada neste prompt o mencionar, ignore: não implemente, não reabra e não pergunte de novo. **Desista da ideia e vá fazer outra coisa.** O resto do escopo continua valendo. Ver `AGENTS.md`, seção "Itens descartados pelo autor".
+
 Você está num chat novo do Codex. Quero que execute o lote CX2 do fechamento do Livro de Regras no Grimório, começando pela verificação de que o trabalho pedido faz sentido na base atual, antes de programar.
 
 ## Antes de programar: verificar se o pedido faz sentido
@@ -57,7 +59,6 @@ Complete as parcelas confirmadas de:
 - Zenin: Feitiços Focados, modalidade escolhida e marcos. Herdado: ciclo de Manual de Técnica, sem perder a redução de recarga da Máxima já existente.
 - Derivado: concessão restrita a Aura, Energia Antinatural e Expansão de Reserva.
 - Inumaki, Kamo, Resiliência Imediata do Restringido, Vigor/Herança Maldita e Reposição Sanguínea do Feto.
-- Interface e escolhas do Corpo Amaldiçoado Mutante usando o núcleo de três núcleos entregue em CL2.
 
 Para cada origem, percorra característica por característica no livro e na ficha. Uma linha marcada mesa, um comentário antigo ou um benefício parcial não provam que toda a característica está ausente. Preserve decisões próprias, como distribuições de atributos já autorizadas.
 
@@ -65,11 +66,11 @@ Para cada origem, percorra característica por característica no livro e na fic
 
 Leia afty-origens.js, afty-anatomias.js, afty-talentos.js, afty-efeitos-conteudo.js, afty-feiticos.js, afty-cura.js, afty-derive.js, AftyCreatureBuilder.jsx e os leitores das origens na Ficha/Encontro. Leia os contratos reais de CL1, CL2 e CX4 e o resultado de CX1.
 
-CL1 fornece uso/eventos, CL2 fornece vida/Alma e os três núcleos, CX4 fornece temporários. Adiante escolhas, dados e cálculos que independam deles. Não crie outro motor de uso nem outro modelo de Mutante. A rerrolagem de PV do Kamo depende da adoção de PV rolado, não é autorização para mudar a progressão.
+CL1 fornece uso/eventos, CL2 fornece vida/Alma, CX4 fornece temporários. Adiante escolhas, dados e cálculos que independam deles. Não crie outro motor de uso. A rerrolagem de PV do Kamo depende da adoção de PV rolado, não é autorização para mudar a progressão.
 
 Fontes principais: Livro p.27 a 41, 169, 170, 145 e 200.
 
 ## Resultado esperado
 
-Cada benefício aplicável tem escolha válida, cálculo, operação, fontes e persistência, conforme necessário. A interface do Mutante consome o estado de CL2 e não é confundida com os dois núcleos de invocação. Entregue a matriz das 15 Anatomias e das origens com o estado real de cada parcela e o que depender de decisão ou contrato.
+Cada benefício aplicável tem escolha válida, cálculo, operação, fontes e persistência, conforme necessário. Entregue a matriz das 15 Anatomias e das origens com o estado real de cada parcela e o que depender de decisão ou contrato.
 

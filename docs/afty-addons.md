@@ -147,6 +147,16 @@ com um Talento Geral de texto do autor (não está no livro). Sem verbo novo: s�
   Alma. Se a intenção for outra, é uma linha só em `efeitos`.
 - Assert em `asserts/t-segredos-artesao-alma.mjs` (28), lendo o JSON de verdade nos dois sistemas.
 
+## Atenção Só Pela Percepção (2026-11-03)
+
+Verbo `regrasAfty.atencaoSoPercepcao`, hoje ligado pelo Guerra de Feiticeiros (versão 1.0.2). A Atenção
+já é 10 + o bônus de Percepção, então no livro uma fonte que soma em Percepção E em Atenção sobe a
+Atenção duas vezes. Com o verbo, a fonte (mesma `origem` no Motor) que mira a perícia Percepção perde a
+linha de `atencao`, e o valor da Atenção sai só pela Percepção. Fonte que dá só Atenção (Pré-Análise,
+Atenção Infalível, Instinto Sanguinário, Melhoria de Atenção, Feitiço, encantamento) fica como está.
+Vale em Player e criatura. O filtro é `atencaoSoPelaPercepcao` em `afty-efeitos.js`, chamado no
+`afty-derive.js` sobre a lista `efeitosTodos`. Prova em `asserts/t-atencao-so-percepcao.mjs`.
+
 ## TR no Limite de Perícias (2026-10-25)
 
 Pacote [tr-no-limite-de-pericias.json](../addons/tr-no-limite-de-pericias.json), versão 1.0.0, só com
@@ -1535,6 +1545,52 @@ e é inofensivo. Apagar o bloco é uma linha, se o autor não quiser.
 
 ⚠ **No estágio MONTANTE o `contar()` devolve 0**, porque ele roda antes de Habilidades, Talentos e
 Aptidões existirem. Mesma limitação do `tem_*` naquele estágio.
+
+✅ **Desde 2026-11-07 o efeito que lê `contar()` ou `tem_*` DESCE ao estágio principal**, onde a
+contagem existe (`efeitoLeBancada`, em `afty-efeitos.js`). Vale para o efeito de Origem, de Clã, de
+Funcionamento e das demais fontes do montante, e é a mesma regra de quem lê a bancada. Antes, um
+efeito assim valia zero calado. A varredura de 2026-11-07 não achou nenhum efeito publicado nessa
+situação, então nenhum número existente se moveu. O que continua preso no montante são os canais
+de VAGA, pontos de Aptidão e pré-contexto (`CANAIS_LIDOS_NO_MONTANTE`): uma vaga que escalasse com a
+contagem seria circular, e lá a contagem continua valendo zero. Assert: `t-contagem-no-montante.mjs`.
+
+**Marcas de Origem (2026-11-07).** Característica de Origem ou de Clã, e a opção escolhida dentro
+dela, geram marca pelo campo `tags` escrito (`marcasFicha`, em `afty-derive.js`). Não há marca
+automática de família para elas, para não mexer em contagem existente. O seletor `{ }` oferece a
+marca antes do uso (`marcasDeclaradas` desce em `caracteristicas[]` e nas opções das escolhas).
+Assert: `t-marcas-origem.mjs`.
+
+**Grupo de Talento por Addon e vaga por grupo (2026-11-07).** A família `gruposTalento` acrescenta
+uma sub-aba à aba Talentos (e à Ficha Final). Campos: `id`, `titulo` (obrigatório), `soDaOrigem[]` e
+`soDoCla[]` (o grupo fica FECHADO: só quem tem uma dessas Origens ou clãs o vê, a regra é OU entre as
+duas listas), `vagaComum` (padrão verdadeiro) e `visual`. O Talento aponta para o grupo por `grupo`, e
+os dois campos de referência ganham o namespace do pacote quando citam entrada do próprio pacote.
+Detalhes que seguram o desenho:
+
+- O Talento já escolhido mantém o grupo visível (quem trocou de Origem pode tirá-lo), e o Talento de
+  grupo fechado fica **inacessível** para quem não qualifica, com aviso e sem apagar. É o mesmo
+  convênio de acesso perdido do resto do projeto.
+- O canal `vagasTalentoGrupo` (alvo = id do grupo) dá vaga que só serve a Talento daquele grupo e é
+  gasta antes da vaga comum. O que sobra cai no comum, salvo `vagaComum: false`: ali o excedente não
+  tem pagamento e o contador acusa excesso, sem cobrar do comum. É canal LIDO NO MONTANTE (não lê
+  `contar()` nem `tem_*`), e o Talento que dá vaga ao próprio grupo entra pela mesma porta da
+  `vagasTalento`. Fecha duas vezes, como a vaga comum (montante e agregado final).
+- Só aparece no seletor de canais de quem tem Addon com `permite: ["gruposTalento"]`.
+- `efeitos[].alvo` de Origem e de clã (e das opções de escolha) ganhou o namespace, senão o efeito de
+  Origem que dá vaga a um grupo do próprio pacote não achava o grupo.
+- Assert: `t-grupos-talento.mjs`. Funções: `gruposDeTalento`, `grupoLiberado`, `contaVagasPorGrupo`
+  (`afty-talentos.js`).
+
+**Corrupção visual da ficha (V8, 2026-11-07).** O pacote declara `corrupcao: { marca, maximo, pele }` e a ficha avermelha e entra em glitch conforme a contagem daquela marca (`contar()`), de 0 até `maximo` (padrão 21), quando fica tomada. É só apresentação: nenhum número muda.
+
+- **Régua** em `afty-corrupcao.js` (módulo FOLHA): `resolveCorrupcao` devolve `{ ativo, contagem, maximo, nivel, marco, pele }`, publicado em `derived.corrupcao`. Os marcos caem em 1, 4, 7, 10, 13, 17 e 21 (escalam para outro máximo), e o marco 7 só com a corrupção cheia. A contagem é a do `marcasFicha`, a mesma do `contar()`.
+- **Pele é código**: `CORRUPCAO_PELES` (hoje `rubra`), e o pacote só escolhe uma que exista, como o `visual` do Espinho. A instalação recusa marca vazia, máximo que não seja inteiro positivo e pele desconhecida.
+- **Sai da FICHA** (`corrupcaoDaFicha`, o primeiro pacote ativo que a declara), nunca do mundo unido.
+- **Tela** em `ui/CamadasDeCorrupcao.jsx` e `ui/corrupcao.css`, montada nas quatro raízes: Criador, Ficha Clássica, Ficha G2 e o painel do combatente do Encontro (`modo="recortado"`, `position: absolute` recortado, e o pai só vira `relative` com a camada ativa).
+- **Camadas**: o MATIZ tinge a tela com `mix-blend-mode: color`, que preserva a luminância e portanto o contraste do texto, e é IRMÃO das demais porque um blend dentro de um elemento `position: fixed` com `z-index` só mistura com o próprio grupo. Vinheta (marco 1), veias (2), scanlines (3), ruído e rasgos (5), fatias de glitch (6) e halo pulsante (7).
+- **Regras da folha**: só `transform` e `opacity` animam, nada de `filter`, `transform` ou `contain` na raiz da ficha, `prefers-reduced-motion` desliga tudo, a impressão some com tudo, e a 390 px não há rolagem lateral.
+- ⚠ `.afty-ficha > * { position: relative; z-index: 1 }` (`ficha.css`) empata com uma regra de uma classe e vence pela ordem: as regras de posição da camada usam DUAS classes. Sem isso a camada ficava no fluxo e o rasgo criava rolagem lateral.
+- Assert: `t-corrupcao.mjs`. Não há marca automática de título em glitch (o duplo cromático dos títulos do protótipo ficou de fora, porque os títulos do app não carregam o texto num atributo).
 
 ### 8.2 Canal de substituição de atributo em fórmula
 

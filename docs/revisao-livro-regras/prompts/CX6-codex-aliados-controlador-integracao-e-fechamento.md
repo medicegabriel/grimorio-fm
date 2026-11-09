@@ -1,5 +1,7 @@
 # CX6: Aliados, Controlador, telas e fechamento
 
+> **⚠ AVISO (autor, 2026-10-30): O CORPO AMALDIÇOADO MUTANTE FOI ABANDONADO E EXCLUÍDO DO SITE EM DEFINITIVO.** Se alguma parcela, análise ou fila citada neste prompt o mencionar, ignore: não implemente, não reabra e não pergunte de novo. **Desista da ideia e vá fazer outra coisa.** O resto do escopo continua valendo. Ver `AGENTS.md`, seção "Itens descartados pelo autor".
+
 Você está num chat novo do Codex. Quero que execute o lote CX6 do fechamento do Livro de Regras no Grimório, começando pela verificação de que o trabalho pedido faz sentido na base atual, antes de programar.
 
 ## Antes de programar: verificar se o pedido faz sentido
@@ -55,7 +57,7 @@ Integre e confira o produto final, com conteúdo próprio de Aliados e Controlad
 - Seletor de Aliados cheio, Grau confirmado, Pacotes, dados/benefícios que eram apenas consulta, PV temporário e prazo individual por benefício.
 - Limites de invocações em campo/por ação Invocar e espera até o próximo turno após dissipação por dano. Diferencie retorno voluntário e exceções de tipo.
 - Poderes do Controlador dependentes de posição declarada, proteção reativa, Frenesi, Companheiro Avançado, custos e escolhas de Características.
-- Integração final das telas e ações que consomem uso, vida, Mutante, Votos e Domínios. Verifique a entrega da interface do Mutante em CX2 para não refazê-la.
+- Integração final das telas e ações que consomem uso, vida, Votos e Domínios.
 - Conferência das cláusulas de catálogo ainda não auditadas, dos números e suas fontes, da persistência/importação antiga e do funcionamento conjunto de Player/Afty, Ficha clássica, G2 autorizado e Encontro.
 
 Antes de codar, determine se este lote está em fase de integração incremental ou de fechamento final. Não declare concluído com os outros núcleos e consumidores ainda pendentes.

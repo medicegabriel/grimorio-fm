@@ -1,0 +1,125 @@
+import { register } from "node:module";
+register('data:text/javascript,export async function resolve(s,c,n){try{return await n(s,c)}catch(e){if(s.startsWith(".")&&!s.endsWith(".js"))return n(s+".js",c);throw e}}', import.meta.url);
+const R = new URL("../src/systems/afty/", import.meta.url).href;
+const { deriveAfty } = await import(R + "afty-derive.js");
+const { createBlankAfty } = await import(R + "afty-schema.js");
+const { aplicarAddons } = await import(R + "afty-addons.js");
+const { criarEncontro, criarCombatente, definirIniciativa } = await import(R + "encontros/afty-encontro.js");
+const { redutorDeEncontro } = await import(R + "encontros/usar-encontro-afty.js");
+const { rolarTeste, rolarDano } = await import(R + "ficha/ficha-rolagem.js");
+const { prepararRolagemEspecializacao } = await import(R + "ficha/ficha-especializacoes.js");
+const { preparaRolagemArma } = await import(R + "afty-propriedades-armas.js");
+const { confirmaAtaqueConteudo } = await import(R + "ficha/ficha-conteudo-combate.js");
+const M = await import(R + "ficha/ficha-conteudo-manobras.js");
+const { bloqueioDeOportunidadeConteudo } = await import(R + "ficha/ficha-conteudo-acesso.js");
+const { rolaSorte, escolheSorte } = await import(R + "ficha/ficha-conteudo-uso.js");
+const S = await import(R + "ficha/ficha-sessao.js");
+let ok = 0, seq = 0;
+const bad = [], t = (nome, real, esp) => JSON.stringify(real) === JSON.stringify(esp) ? ok++ : bad.push(`${nome}: ${JSON.stringify(real)} != ${JSON.stringify(esp)}`);
+const p = () => ({ opId: `mobilidade-${++seq}`, registraAcao: true });
+function ficha(sistema, nome, mobilidade = false) {
+  const c = createBlankAfty(); c.rulesVersion = sistema; c.name = nome; c.core.nd = 12; c.attrMethod = "fixos";
+  c.attributes = { forca: 15, destreza: 14, constituicao: 13, inteligencia: 10, sabedoria: 12, presenca: 8 };
+  c.core.origem = { id: "inato", bonusAtributos: { forca: 2, destreza: 1 } }; c.especializacoes = [{ id: "combatente", nivel: 12 }];
+  c.habilidadesGerais = sistema === "afty" ? ["ger_especializacao"] : []; c.pericias = { atletismo: "treinado", feiticaria: "treinado" };
+  c.talentos = mobilidade ? ["tal_tecnicas_de_mobilidade", "tal_tecnicas_do_sentinela", "tal_favorecido_pela_sorte"] : ["tal_perceber_oportunidade", "tal_favorecido_pela_sorte"];
+  return c;
+}
+function prepara(sistema, foraDoTurno = false) {
+  const cs = [ficha(sistema, "Móvel", true), ficha(sistema, "Oponente"), ficha(sistema, "Terceiro")], ds = cs.map((c) => deriveAfty(c));
+  let e = criarEncontro({ nome: "Mobilidade" }); e.combatentes = cs.map((c, i) => definirIniciativa(criarCombatente(c, { derived: ds[i] }), (foraDoTurno ? [20, 30, 10] : [30, 20, 10])[i]));
+  const derivados = Object.fromEntries(e.combatentes.map((c, i) => [c.id, ds[i]])); e = redutorDeEncontro(e, { tipo: "COMECAR", derivados });
+  const ativo = e.combatentes.find((c) => c.id === e.ativoId), turno = { id: ativo.id, turno: ativo.sessao.uso.acoes.turno, rodada: e.rodada };
+  return { cs, ds, e, derivados, turno };
+}
+function ataca(s, d, sa, da, alvoId, turno, pedido = null, natural = 1) {
+  const l = d.dano.entradas.find((x) => x.id === "basico");
+  const pronta = preparaRolagemArma(prepararRolagemEspecializacao(pedido ?? { tipo: "teste", rotulo: l.nome, bonus: l.acerto, margem: l.margemCritico, linhaArma: l }, s, d));
+  const ataque = rolarTeste({ ...pronta, contextoTurno: { ...pronta.contextoTurno, emCurso: turno } }, () => (natural - 1) / 20);
+  const dano = rolarDano({ rotulo: l.nome, linhaArma: l, grupos: l.gruposDano, modoDano: ataque.critico ? "critico" : "normal" }, () => 0);
+  const logada = S.registraRolagem(S.registraRolagem(s, ataque), dano);
+  const r = confirmaAtaqueConteudo(logada, d, sa, da, { ataqueId: ataque.id, danoId: dano.id, alvoId }, p());
+  if (!r.aplicado) throw Error(r.erro); return { ...r, ataqueRolado: ataque, dano };
+}
+const atualiza = (e, id, s) => ({ ...e, combatentes: e.combatentes.map((c) => c.id === id ? { ...c, sessao: s } : c) });
+aplicarAddons([]);
+for (const sistema of ["player", "afty"]) {
+  const f = prepara(sistema), { cs, ds, e, turno } = f, [d, da, dt] = ds, [a, b, c] = e.combatentes;
+  t(`${sistema} ficha e orçamento admissíveis`, [d.talentos.inacessiveis, d.habilidades.excedeu, d.testes.orcamento.excedeu], [[], false, false]);
+  const sem = deriveAfty({ ...cs[0], talentos: [] });
+  t(`${sistema} mantém Movimento +3 do Motor`, d.movimento - sem.movimento, 3);
+  const atk = ataca(a.sessao, d, b.sessao, da, b.id, turno), entrada = { ataqueId: atk.ataqueRolado.id, alvoId: b.id, turnoEmCurso: turno, rngAtacante: () => 0.9, rngAlvo: () => 0.1 }, pr = p();
+  t(`${sistema} gatilho admite ataque que errou`, [atk.ataque.acertou, atk.sessao.log[0].turnoEmCurso], [false, turno]);
+  const r = M.rolaDisputaMobilidade(atk.sessao, d, atk.sessaoAlvo, da, entrada, pr);
+  if (!r.aplicado) throw Error(r.erro);
+  t(`${sistema} disputa usa os Reflexos nativos`, [r.atacante.bonus, r.alvo.bonus, r.atacante.resistenciaId, r.alvo.resistenciaId], [d.testes.resistencias.find((x) => x.value === "reflexos").bonus, da.testes.resistencias.find((x) => x.value === "reflexos").bonus, "reflexos", "reflexos"]);
+  t(`${sistema} não paga ação ou PE`, [r.sessao.peAtual, r.sessao.uso.acoes, r.sessao.usos["rodada:uso:tal_tecnicas_de_mobilidade"]], [atk.sessao.peAtual, atk.sessao.uso.acoes, 1]);
+  t(`${sistema} disputa ainda não protege`, bloqueioDeOportunidadeConteudo(r.sessao, b.id), null);
+  t(`${sistema} identidade da disputa`, M.rolaDisputaMobilidade(r.sessao, d, r.sessaoAlvo, da, entrada, pr).repetida, true);
+  t(`${sistema} limite é uma disputa por rodada`, M.rolaDisputaMobilidade(r.sessao, d, r.sessaoAlvo, da, entrada, p()).sessao === r.sessao, true);
+  const pf = p(), fim = M.aplicaDisputaMobilidade(r.sessao, d, r.sessaoAlvo, da, entrada, pf), id = `tal_tecnicas_de_mobilidade:${b.id}`;
+  if (!fim.aplicado) throw Error(fim.erro);
+  t(`${sistema} vitória protege apenas deste oponente`, [fim.resistiu, !!bloqueioDeOportunidadeConteudo(fim.sessao, b.id), bloqueioDeOportunidadeConteudo(fim.sessao, c.id)], [false, true, null]);
+  t(`${sistema} uso nativo guarda turno em curso`, [fim.sessao.uso.ativos[id].duracao.tipo, fim.sessao.uso.ativos[id].parametros.turnoEmCurso, fim.sessao.uso.ativos[id].parametros.sequenciaTurno], ["fimDoTurno", turno.id, turno.turno]);
+  t(`${sistema} aplicação marca os dois testes`, [fim.sessao.log.find((x) => x.id === r.atacante.id).consequenciasAplicadas, fim.sessaoAlvo.log.find((x) => x.id === r.alvo.id).consequenciasAplicadas], [true, true]);
+  t(`${sistema} repetir aplicação não duplica`, M.aplicaDisputaMobilidade(fim.sessao, d, fim.sessaoAlvo, da, entrada, pf).repetida, true);
+  t(`${sistema} outro op não repete consequência`, M.aplicaDisputaMobilidade(fim.sessao, d, fim.sessaoAlvo, da, entrada, p()).sessao === fim.sessao, true);
+  const goEntrada = { voceId: b.id, alvoId: a.id, armaId: "basico", chaveArma: da.dano.entradas.find((l) => l.id === "basico").chaveArma, gatilhoValido: true };
+  const bloqueada = M.preparaOportunidadeConteudo(b.sessao, da, goEntrada, p(), { sessao: fim.sessao, derived: d });
+  t(`${sistema} recusa antes de gastar reação`, [bloqueada.aplicado, bloqueada.sessao === b.sessao, b.sessao.especializacaoSessao?.reacoesGastas ?? 0], [false, true, 0]);
+  const terceiro = M.preparaOportunidadeConteudo(c.sessao, dt, { ...goEntrada, voceId: c.id }, p(), { sessao: fim.sessao, derived: d });
+  t(`${sistema} não bloqueia outra criatura`, [terceiro.aplicado, terceiro.sessao.especializacaoSessao.reacoesGastas], [true, 1]);
+  const semIdentidade = M.preparaOportunidadeConteudo(b.sessao, da, { ...goEntrada, voceId: null }, p(), { sessao: fim.sessao, derived: d });
+  t(`${sistema} não presume quem faz oportunidade`, [semIdentidade.aplicado, semIdentidade.sessao === b.sessao], [false, true]);
+  const goAntes = M.preparaOportunidadeConteudo(b.sessao, da, goEntrada, p());
+  const l = da.dano.entradas.find((x) => x.id === "basico"), testeGO = rolarTeste(goAntes.pedidoRolagem, () => 0.8), danoGO = rolarDano({ rotulo: l.nome, linhaArma: l, grupos: l.gruposDano }, () => 0);
+  const sg = S.registraRolagem(S.registraRolagem(goAntes.sessao, testeGO), danoGO);
+  const impedeConfirmar = confirmaAtaqueConteudo(sg, da, fim.sessao, d, { ataqueId: testeGO.id, danoId: danoGO.id, alvoId: a.id }, p());
+  t(`${sistema} confirmação também verifica proteção`, [impedeConfirmar.aplicado, impedeConfirmar.sessao === sg], [false, true]);
+  t(`${sistema} ataque comum do oponente continua permitido`, ataca(b.sessao, da, fim.sessao, d, a.id, turno, null, 17).aplicado, true);
+  const salva = S.normalizaSessao(JSON.parse(JSON.stringify(fim.sessao)), d), salvaAlvo = S.normalizaSessao(JSON.parse(JSON.stringify(fim.sessaoAlvo)), da);
+  t(`${sistema} salvar mantém alvo, prazo e quota`, [!!bloqueioDeOportunidadeConteudo(salva, b.id), salva.uso.ativos[id].parametros, salva.usos["rodada:uso:tal_tecnicas_de_mobilidade"]], [true, fim.sessao.uso.ativos[id].parametros, 1]);
+  const pendente = S.normalizaSessao(JSON.parse(JSON.stringify(r.sessao)), d), pendenteAlvo = S.normalizaSessao(JSON.parse(JSON.stringify(r.sessaoAlvo)), da);
+  t(`${sistema} conclui disputa após reler`, M.aplicaDisputaMobilidade(pendente, d, pendenteAlvo, da, entrada, p()).aplicado, true);
+  const mesa = atualiza(atualiza(e, a.id, salva), b.id, salvaAlvo), proximo = redutorDeEncontro(mesa, { tipo: "PROXIMO_TURNO", derivados: f.derivados });
+  t(`${sistema} fim do próprio turno remove proteção`, bloqueioDeOportunidadeConteudo(proximo.combatentes[0].sessao, b.id), null);
+  const encerrada = redutorDeEncontro(mesa, { tipo: "ENCERRAR" });
+  t(`${sistema} encerrar combate limpa proteção`, bloqueioDeOportunidadeConteudo(encerrada.combatentes[0].sessao, b.id), null);
+  const empate = M.rolaDisputaMobilidade(atk.sessao, d, atk.sessaoAlvo, da, { ...entrada, rngAtacante: () => 0.5, rngAlvo: () => 0.5 }, p());
+  const empateFim = M.aplicaDisputaMobilidade(empate.sessao, d, empate.sessaoAlvo, da, entrada, p());
+  t(`${sistema} empate conserva alvo sem proteção`, [empateFim.resistiu, bloqueioDeOportunidadeConteudo(empateFim.sessao, b.id)], [true, null]);
+  for (const extra of [{ alvoId: c.id }, { ataqueId: "ausente" }, { turnoEmCurso: { ...turno, turno: turno.turno + 1 } }, { turnoEmCurso: null }]) t(`${sistema} recusa contexto ${JSON.stringify(extra)}`, M.rolaDisputaMobilidade(atk.sessao, d, atk.sessaoAlvo, da, { ...entrada, ...extra }, p()).sessao === atk.sessao, true);
+  t(`${sistema} não usa ataque de turno anterior`, M.aplicaDisputaMobilidade(r.sessao, d, r.sessaoAlvo, da, { ...entrada, turnoEmCurso: { ...turno, id: c.id } }, p()).sessao === r.sessao, true);
+  t(`${sistema} exige talento atual`, M.aplicaDisputaMobilidade(r.sessao, sem, r.sessaoAlvo, da, entrada, p()).sessao === r.sessao, true);
+  const invalida = deriveAfty({ ...cs[0], attributes: { ...cs[0].attributes, destreza: 8 } });
+  t(`${sistema} requisito DES permanente impede`, M.rolaDisputaMobilidade(atk.sessao, invalida, atk.sessaoAlvo, da, entrada, p()).sessao === atk.sessao, true);
+  const inconsciente = S.defineCondicoes(atk.sessao, [{ id: "sem", nome: "Inconsciente" }]);
+  t(`${sistema} inconsciente recusa sem gastar`, M.rolaDisputaMobilidade(inconsciente, d, atk.sessaoAlvo, da, entrada, p()).sessao === inconsciente, true);
+  for (const lado of ["atacante", "alvo"]) {
+    const sort = lado === "atacante" ? rolaSorte(r.sessao, d, { id: r.atacante.id, rng: () => 0 }, p()) : rolaSorte(r.sessaoAlvo, da, { id: r.alvo.id, rng: () => 0 }, p());
+    const ss = lado === "atacante" ? sort.sessao : r.sessao, sa = lado === "alvo" ? sort.sessao : r.sessaoAlvo;
+    t(`${sistema} Sorte pendente ${lado} impede`, M.aplicaDisputaMobilidade(ss, d, sa, da, entrada, p()).sessao === ss, true);
+    const escolha = escolheSorte(sort.sessao, lado === "atacante" ? d : da, { id: sort.rolagem.id, escolha: "original" }, p());
+    t(`${sistema} após Sorte ${lado} conclui`, M.aplicaDisputaMobilidade(lado === "atacante" ? escolha.sessao : r.sessao, d, lado === "alvo" ? escolha.sessao : r.sessaoAlvo, da, entrada, p()).aplicado, true);
+  }
+  const fora = prepara(sistema, true), [aa, bb, cc] = fora.e.combatentes, [dma, dmb, dmc] = fora.ds;
+  const gatilho = ataca(bb.sessao, dmb, cc.sessao, dmc, cc.id, fora.turno);
+  const reacao = M.preparaReacaoSentinela(aa.sessao, dma, gatilho.sessao, dmb, { voceId: aa.id, atacanteId: bb.id, ataqueId: gatilho.ataqueRolado.id, armaId: "basico", chaveArma: dma.dano.entradas.find((l) => l.id === "basico").chaveArma, emAlcanceEGatilhoAtual: true }, p());
+  const foraAtk = ataca(reacao.sessao, dma, gatilho.sessao, dmb, bb.id, fora.turno, reacao.pedidoRolagem);
+  const fe = { ataqueId: foraAtk.ataqueRolado.id, alvoId: bb.id, turnoEmCurso: fora.turno, rngAtacante: () => 0.9, rngAlvo: () => 0 };
+  const fr = M.rolaDisputaMobilidade(foraAtk.sessao, dma, foraAtk.sessaoAlvo, dmb, fe, p()), ff = M.aplicaDisputaMobilidade(fr.sessao, dma, fr.sessaoAlvo, dmb, fe, p());
+  if (!ff.aplicado) throw Error(ff.erro);
+  t(`${sistema} fora do próprio turno usa decisão do autor`, [aa.id !== fora.turno.id, ff.sessao.uso.ativos[`tal_tecnicas_de_mobilidade:${bb.id}`].parametros.turnoEmCurso], [true, bb.id]);
+  let fm = atualiza(atualiza(atualiza(fora.e, aa.id, ff.sessao), bb.id, ff.sessaoAlvo), cc.id, gatilho.sessaoAlvo);
+  const af = redutorDeEncontro(fm, { tipo: "PROXIMO_TURNO", derivados: fora.derivados });
+  t(`${sistema} termina quando acaba o turno em curso de outro`, [af.ativoId, bloqueioDeOportunidadeConteudo(af.combatentes[0].sessao, bb.id)], [aa.id, null]);
+  const removida = redutorDeEncontro(fm, { tipo: "REMOVER", id: bb.id });
+  t(`${sistema} remover o dono do turno não deixa proteção presa`, bloqueioDeOportunidadeConteudo(removida.combatentes.find((c) => c.id === aa.id).sessao, bb.id), null);
+  const rodadaForcada = redutorDeEncontro(fm, { tipo: "NOVA_RODADA", derivados: fora.derivados });
+  t(`${sistema} rodada sem encerrar turno mantém proteção`, !!bloqueioDeOportunidadeConteudo(rodadaForcada.combatentes[0].sessao, bb.id), true);
+  t(`${sistema} fim após rodada forçada ainda encerra`, bloqueioDeOportunidadeConteudo(redutorDeEncontro(rodadaForcada, { tipo: "PROXIMO_TURNO", derivados: fora.derivados }).combatentes[0].sessao, bb.id), null);
+  const outroTurno = M.encerraMobilidadeNoTurnoEmCurso(fm.combatentes, { ...fora.turno, turno: fora.turno.turno + 1 });
+  t(`${sistema} outro relógio não encerra por engano`, outroTurno[0].sessao === ff.sessao, true);
+}
+if (bad.length) { console.error(bad.join("\n")); process.exit(1); }
+console.log(`TODOS OS ${ok} ASSERTS PASSARAM`);

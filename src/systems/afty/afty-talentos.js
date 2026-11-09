@@ -30,7 +30,7 @@
 
 import { registrarFamilia, remendarLista, filtraForaDoJogador } from "./afty-addons";
 import { evalNumber, validateExpression } from "./afty-dsl";
-import { getOrigem, getCla } from "./afty-origens";
+import { getOrigem, getCla, origensQualificadas } from "./afty-origens";
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
 // Requisito de treino em perícia ou TR. Módulo FOLHA, então não há ciclo.
 import {
@@ -55,12 +55,21 @@ export const TALENTOS_DE_ESCUDO = [
 export const OFICIO_TALENTO_ARTESAO = "oficio__9001";
 export const OFICIO_TALENTO_TEMPESTADE = "oficio__9002";
 
-export function efeitosDeTalentosConfigurados(creature) {
+export function efeitosDeTalentosConfigurados(creature, pericias = AFTY_PERICIAS) {
   const escolhidos = new Set(Array.isArray(creature?.talentos) ? creature.talentos : []);
   const config = creature?.talentosConfig && typeof creature.talentosConfig === "object"
     ? creature.talentosConfig
     : {};
   const out = [];
+
+  if (escolhidos.has("tal_mestre_da_criacao")) {
+    const oficios = config.tal_mestre_da_criacao?.oficios;
+    const validos = new Set(pericias.filter((p) => ehPericiaOficio(p.id)).map((p) => p.id));
+    for (const id of [...new Set(Array.isArray(oficios) ? oficios : [])].filter((id) => validos.has(id)).slice(0, 2)) {
+      out.push({ canal: "bonusPericia", alvo: id, expr: "2",
+        origem: "tal_mestre_da_criacao", nome: "Mestre da Criação" });
+    }
+  }
 
   if (escolhidos.has("tal_tempestade_de_ideias")) {
     const tempestade = config.tal_tempestade_de_ideias ?? {};
@@ -164,10 +173,51 @@ const opcoesDeTR = (prefixo, descricao, fora = []) =>
    este módulo ter carregado. */
 const nomeDaAptidao = (id) => AFTY_APTIDOES.find((a) => a.id === id)?.nome;
 
-export const TALENTO_GRUPOS = [
+const GRUPOS_BASE = [
   { id: "geral",  titulo: "Talentos Gerais" },
   { id: "origem", titulo: "Talentos de Origem" },
 ];
+
+/* ⚠ A LISTA DE GRUPOS É VIVA, como os catálogos. Um Addon acrescenta grupo pela
+   família `gruposTalento` (uma sub-aba nova na aba Talentos, e na Ficha Final),
+   e o registro reescreve este array NO LUGAR, de modo que quem importa o nome
+   enxerga o grupo novo sem mudar nada. O grupo do Addon pode ser FECHADO: só as
+   Origens de `soDaOrigem` e os clãs de `soDoCla` o veem (a regra é OU entre as
+   duas listas), e `vagaComum: false` diz que um Talento dele nunca é pago com a
+   vaga comum de Talento, só com a vaga do próprio grupo (canal
+   `vagasTalentoGrupo`). Sem nenhum desses campos o grupo é aberto e comum, que é
+   o que os dois do livro sempre foram. */
+export const TALENTO_GRUPOS = GRUPOS_BASE.map((g) => ({ ...g }));
+
+function aplicarExtrasGrupos(extras = []) {
+  TALENTO_GRUPOS.splice(0, TALENTO_GRUPOS.length,
+    ...GRUPOS_BASE.map((g) => ({ ...g })),
+    ...extras.map((g) => ({ ...g })));
+}
+
+/** O grupo pelo id, ou `null`. Lê a lista VIVA. */
+export const getGrupoDeTalento = (id) => TALENTO_GRUPOS.find((g) => g.id === id) ?? null;
+
+const listaDeIds = (v) => (Array.isArray(v) ? v.filter((x) => typeof x === "string" && x) : []);
+
+/** O grupo é fechado a certas Origens ou clãs? */
+export const grupoEhFechado = (g) => listaDeIds(g?.soDaOrigem).length > 0 || listaDeIds(g?.soDoCla).length > 0;
+
+/**
+ * A criatura enxerga este grupo? Grupo aberto: sempre. Grupo fechado: a Origem
+ * (ou uma das Origens que ela qualifica, caso do Gêmeo) está em `soDaOrigem`, OU
+ * o clã está em `soDoCla`. `origens` pode ser a lista de `origensQualificadas`.
+ *
+ * ⚠ É a mesma pergunta nos dois lugares que a fazem, o seletor e o acesso do
+ * Talento, e por isso mora numa função só: duas leituras do mesmo portão
+ * divergiriam calado.
+ */
+export function grupoLiberado(grupo, { origens = [], claId = null } = {}) {
+  if (!grupoEhFechado(grupo)) return true;
+  const daOrigem = listaDeIds(grupo.soDaOrigem);
+  const doCla = listaDeIds(grupo.soDoCla);
+  return (origens ?? []).some((o) => daOrigem.includes(o)) || (!!claId && doCla.includes(claId));
+}
 
 export const AFTY_TALENTOS = [
   /* ---------------- TALENTOS GERAIS (sem pré-requisito) ---------------- */
@@ -229,6 +279,7 @@ export const AFTY_TALENTOS = [
     id: "tal_favorecido_pela_sorte",
     nome: "Favorecido pela Sorte",
     grupo: "geral",
+    usos: { expr: "3", recarga: "longo", rotulo: "Sorte" },
     descricao:
       "Você tem uma sorte inexplicável, a qual o favorece nos momentos mais críticos. Você tem 3 " +
       "pontos de sorte. Sempre que fizer uma rolagem, você pode gastar um ponto de sorte para " +
@@ -291,7 +342,7 @@ export const AFTY_TALENTOS = [
       "treinado em quatro armas quaisquer à sua escolha ou receber acesso ao efeito de crítico de " +
       "um grupo de armas à sua escolha.",
     // "escolhe aumentar o valor de sua Força ou Destreza em 2". O treino nas
-    // quatro armas vem de `talentosConfig`; o crítico aguarda a tabela do livro.
+    // quatro armas vem de `talentosConfig`, assim como o grupo do crítico.
     escolha: {
       id: "mestre_armas_atributo",
       label: "Atributo",
@@ -374,12 +425,9 @@ export const AFTY_TALENTOS = [
   },
   {
     id: "tal_tecnicas_ofensivas_de_escudo",
-    nome: "Técnicas Ofensivas de Escudo",
+    nome: "Técnicas Agressivas de Escudo",
     grupo: "geral",
-    // ⚠ O CABEÇALHO deste talento se perdeu no PDF (o mesmo artefato de duas
-    // colunas que comeu o de Poder Corporal, no Lutador). O nome vem do irmão
-    // "Técnicas Defensivas de Escudo", que abre com a MESMA frase trocando
-    // "no seu ataque" por "por completo na sua defesa". CONFIRMAR com o autor.
+    // Livro p.165. O id anterior é preservado nas fichas antigas.
     descricao:
       "Você aperfeiçoa o uso do seu escudo para colocá-lo no seu ataque. Ao atacar no seu turno, " +
       "você pode usar sua Ação Bônus para Empurrar com o escudo. Caso o alvo seja empurrado com " +
@@ -411,6 +459,7 @@ export const AFTY_TALENTOS = [
   {
     id: "tal_tecnicas_defensivas_de_escudo",
     nome: "Técnicas Defensivas de Escudo",
+    usos: { expr: "maestria", recarga: "longo" },
     grupo: "geral",
     descricao:
       "Você aperfeiçoa o uso do seu escudo para colocá-lo por completo na sua defesa. Ao invés de " +
@@ -423,6 +472,7 @@ export const AFTY_TALENTOS = [
   {
     id: "tal_tempestade_de_ideias",
     nome: "Tempestade de Ideias",
+    usos: { expr: "piso(maestria / 2)", recarga: "curto" },
     grupo: "geral",
     descricao:
       "Você decide extrair ao máximo o seu potencial, obtendo melhorias e novas maestrias. Aumenta " +
@@ -447,6 +497,8 @@ export const AFTY_TALENTOS = [
     id: "tal_adepto_de_medicina",
     nome: "Adepto de Medicina",
     grupo: "geral",
+    fonteCura: { alcance: "Toque" },
+    usos: { expr: "piso(max(0, mod_pre_ou_sab) / 2)", recarga: "longo" },
     descricao:
       "Estudando em seu tempo livre, você aprendeu sobre primeiros socorros em busca de ajudar sua " +
       "equipe em momentos de desespero. Ao obter este talento, você recebe acesso ao segundo " +
@@ -976,12 +1028,100 @@ registrarFamilia("talentos", {
   /* `efeitos[].alvo` (2026-10-07): o efeito que mira uma entrada DO PRÓPRIO
      pacote (a linha de cura que ela declara, por exemplo) ganha o namespace. Alvo
      que não é id local (atributo, perícia, escopo) fica intocado. */
-  caminhosDeId: ["requisitos[].id", "efeitos[].alvo", "concedeAptidoes[]"],
+  /* `grupo` entra aqui (V3): quando o Talento cita um grupo DO PRÓPRIO pacote,
+     ele ganha o namespace, e quando cita `geral` ou `origem` fica como está. */
+  caminhosDeId: ["requisitos[].id", "efeitos[].alvo", "concedeAptidoes[]", "grupo"],
+  /* Depois dos grupos: a validação de `grupo` precisa da lista já religada. */
+  ordem: 60,
   aplicar: aplicarExtrasTalentos,
   basicos: () => TALENTOS_BASE,
   validador: validarCatalogoTalentos,
   resolver: (id) => getTalento(id),
   idsDaFicha: (c) => (Array.isArray(c?.talentos) ? c.talentos : []),
+});
+
+/**
+ * A conta das vagas de Talento POR GRUPO (V4).
+ *
+ * `talentos` é o resultado do `resolveTalentos` e `vagasPorAlvo` é o mapa do
+ * canal `vagasTalentoGrupo` (grupo -> quantas). Cada Talento de um grupo gasta
+ * primeiro a vaga do próprio grupo. O que sobra cai na vaga comum, salvo no
+ * grupo com `vagaComum: false`: ali o excedente não tem como ser pago, e o
+ * contador acusa em vez de cobrar do comum.
+ *
+ * Devolve `pagosNoGrupo` (sai do gasto comum), `semVaga` (também sai, porque
+ * não pode usar o comum, mas deixa o orçamento em excesso) e o detalhe por
+ * grupo para a tela. Os dois grupos do livro não têm vaga própria: a deles é o
+ * `vagasTalento`, que a conta de sempre já cuida.
+ *
+ * ⚠ Concedido (sessão, Espinho) não gasta vaga de lugar nenhum, e a pega
+ * repetida de um mesmo Talento conta uma vez a mais, igual ao `gastos`.
+ */
+export function contaVagasPorGrupo(talentos, vagasPorAlvo = {}) {
+  const concedidos = new Set(talentos?.concedidos ?? []);
+  const contagem = {};
+  for (const id of talentos?.escolhidas ?? []) {
+    if (concedidos.has(id)) continue;
+    const grupo = BY_ID[id]?.grupo;
+    if (!grupo) continue;
+    contagem[grupo] = (contagem[grupo] ?? 0) + (talentos?.vezes?.[id] ?? 1);
+  }
+  const porGrupo = {};
+  let pagosNoGrupo = 0;
+  let semVaga = 0;
+  const ids = new Set([...Object.keys(contagem), ...Object.keys(vagasPorAlvo ?? {})]);
+  for (const id of ids) {
+    const def = getGrupoDeTalento(id);
+    if (!def || id === "geral" || id === "origem") continue;
+    const vagas = Math.max(0, Math.trunc(Number(vagasPorAlvo?.[id]) || 0));
+    const escolhidos = contagem[id] ?? 0;
+    const usadas = Math.min(escolhidos, vagas);
+    const sobra = escolhidos - usadas;
+    const vagaComum = def.vagaComum !== false;
+    pagosNoGrupo += usadas;
+    if (!vagaComum) semVaga += sobra;
+    porGrupo[id] = { grupo: id, titulo: def.titulo, vagas, escolhidos, usadas, sobra, vagaComum };
+  }
+  return { porGrupo, pagosNoGrupo, semVaga };
+}
+
+/** Erros de conteúdo da lista de grupos (V3). Rodar a cada leva nova. */
+export function validarGruposTalento() {
+  const problemas = [];
+  const vistos = new Set();
+  for (const g of TALENTO_GRUPOS) {
+    if (vistos.has(g.id)) problemas.push(`grupo de talento duplicado: ${g.id}`);
+    vistos.add(g.id);
+    if (!String(g.titulo ?? "").trim()) problemas.push(`${g.id}: grupo sem título`);
+    for (const o of listaDeIds(g.soDaOrigem)) {
+      if (!getOrigem(o)) problemas.push(`${g.titulo ?? g.id}: soDaOrigem aponta para origem inexistente "${o}"`);
+    }
+    for (const c of listaDeIds(g.soDoCla)) {
+      if (!getCla(c)) problemas.push(`${g.titulo ?? g.id}: soDoCla aponta para clã inexistente "${c}"`);
+    }
+    if (g.vagaComum != null && typeof g.vagaComum !== "boolean") {
+      problemas.push(`${g.titulo ?? g.id}: vagaComum precisa ser verdadeiro ou falso`);
+    }
+  }
+  return problemas;
+}
+
+/* A FAMÍLIA DE GRUPOS (V3). `titulo` no lugar de `nome` porque é assim que o
+   seletor sempre chamou o grupo. `soDaOrigem` e `soDoCla` são referências a
+   entradas de OUTRAS famílias, e ganham o namespace quando citam uma do próprio
+   pacote. A ordem 40 religa os grupos antes dos Talentos (ordem 60), que
+   validam o `grupo` contra esta lista. Sem remendo: o grupo do livro não muda. */
+registrarFamilia("gruposTalento", {
+  rotulo: "Grupo de Talento",
+  chave: "id",
+  obrigatorios: ["titulo"],
+  caminhosDeId: ["soDaOrigem[]", "soDoCla[]"],
+  ordem: 40,
+  aplicar: aplicarExtrasGrupos,
+  basicos: () => GRUPOS_BASE,
+  validador: validarGruposTalento,
+  remendavel: false,
+  resolver: (id) => getGrupoDeTalento(id),
 });
 
 export const getTalento = (id) => BY_ID[id] || null;
@@ -1149,7 +1289,16 @@ export function gruposDeTalento(creature = null) {
      escolhido (ficha antiga, import) continua aparecendo para poder ser tirado. */
   const escolhidos = Array.isArray(creature?.talentos) ? creature.talentos : [];
   const escolhivel = (t) => !t.soConcedido || escolhidos.includes(t.id);
+  /* O GRUPO FECHADO SÓ APARECE PARA QUEM QUALIFICA (V3), e o já escolhido entra
+     pela terceira porta: quem trocou de Origem com um Talento do grupo gravado
+     continua vendo o grupo para poder tirá-lo. Sem criatura (catálogo cru) o
+     grupo fechado fica de fora. */
+  const origens = creature ? origensQualificadas(creature) : [];
+  const claId = creature?.core?.origem?.cla ?? null;
+  const temEscolhidoNele = (g) => escolhidos.some((id) => BY_ID[id]?.grupo === g.id);
+  const visivel = (g) => grupoLiberado(g, { origens, claId }) || temEscolhidoNele(g);
   return TALENTO_GRUPOS
+    .filter(visivel)
     .map((g) => ({
       ...g,
       talentos: (creature
@@ -1292,6 +1441,18 @@ export function avaliarRequisitoTalento(requisito, ctx = {}) {
 export function avaliarAcessoTalento(talento, ctx = {}) {
   const contexto = { ...ctx, talentoEmAvaliacao: talento?.id ?? null };
   const extras = (talento?.requisitos || []).map((r) => avaliarRequisitoTalento(r, contexto));
+  /* O PORTÃO DO GRUPO FECHADO (V3). Talento de um grupo que só certas Origens ou
+     clãs veem é inacessível para quem não qualifica, e a ficha avisa em vez de
+     apagá-lo (acesso perdido: o gravado volta quando a Origem volta). */
+  const grupo = getGrupoDeTalento(talento?.grupo);
+  if (grupo && grupoEhFechado(grupo)) {
+    const origens = ctx.origensQualificadas ?? (ctx.origemId ? [ctx.origemId] : []);
+    extras.push({
+      ok: grupoLiberado(grupo, { origens, claId: ctx.claId ?? null }),
+      verificavel: true,
+      label: grupo.titulo,
+    });
+  }
   return { ok: extras.every((e) => e.ok), extras };
 }
 

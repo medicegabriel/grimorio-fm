@@ -56,6 +56,7 @@ import { bonusRitual, resolveRitual, RITUAL_MELHORIA_BY_ID } from "./afty-rituai
 // treinoEscolhaFeiticos`), lida direto onde `creature` já está em mãos.
 import { linhasComEscolhaFeiticos } from "./afty-treinamentos";
 import { bonusDoFeitico } from "./afty-recursos-addon";
+import { beneficioDoFeitico } from "./afty-origens-feiticos";
 // Liberações Máximas. ⚠ `multArea` chega renomeado: o calculador de Dano já tem
 // uma local com esse nome (a do Destrutivo × 1,5 com a da Linha).
 import {
@@ -428,7 +429,7 @@ export const custoPeMaximoDaPassiva = (nivel) =>
  */
 const passivasIsentasNoCtx = (ctx) => !!(ctx?.passivasIsentas || ctx?.passivasSemCustoPeMaximo);
 
-export function peMaximoDasPassivas(feiticos, sistema = undefined, { isenta = false } = {}) {
+export function peMaximoDasPassivas(feiticos, sistema = undefined, { isenta = false, reversoes = null } = {}) {
   /* ⚠ `isenta` vale para TODA Passiva, inclusive a ocular abaixo: as duas
      portas da isenção (o `regrasAfty` de Addon ou Voto e o canal
      `passivaSemCusto`) dizem "as Passivas não custam PE Máximo", sem exceção
@@ -441,13 +442,17 @@ export function peMaximoDasPassivas(feiticos, sistema = undefined, { isenta = fa
     if (!f || f.tipo !== "passivo" || f.variacaoDe) continue;
     // As oculares cobram o custo escrito no texto também na criatura Afty.
     if (!cobraTodas && !habilidadeOcularAgulha(f)) continue;
-    const custo = custoPeMaximoDaPassiva(f.nivel);
+    // Autor, 03/11: Reversão também pode ser Passiva. O adicional fica na
+    // reserva de Player, preservando a isenção de Afty e seus custos anteriores.
+    const reversao = cobraTodas && reversoes?.porFeitico?.[f.id]?.disponivel ? nivelNumericoParaReducao(f.nivel) : 0;
+    const custo = custoPeMaximoDaPassiva(f.nivel) + reversao;
     if (!custo) continue;   // Nível 0 custa 0, e linha de valor zero é ruído.
     linhas.push({
       id: f.id ?? null,
       nome: String(f.nome ?? "").trim() || "Passiva sem nome",
       nivel: f.nivel,
       custo,
+      ...(reversao ? { reversao } : {}),
     });
   }
   return { total: linhas.reduce((soma, l) => soma + l.custo, 0), linhas };
@@ -653,6 +658,8 @@ export function aplicaReducoesCustoFeitico(feitico, calculo, ctx = {}) {
   const baseId = feitico?.variacaoDe || feitico?.id || null;
   const feiticoBase = lista.find((item) => item.id === baseId) || feitico || {};
   const reducoes = [];
+  const beneficio = beneficioDoFeitico(feitico, ctx);
+  if (beneficio?.reducao > 0) reducoes.push({ fonte: "Marca Registrada", valor: beneficio.reducao });
 
   if (habilidades.includes(DOMINANCIA_EM_FEITICO_ID) && escolhas.dominancia === baseId) {
     const valor = Math.ceil(nivelNumericoParaReducao(feiticoBase.nivel) / 2);
@@ -678,6 +685,9 @@ export function aplicaReducoesCustoFeitico(feitico, calculo, ctx = {}) {
   /* ⚠ E O NEGATIVO É AUMENTO (condição Condenado, 2026-09-21), somado DEPOIS do
      piso de 1 PE. Ver `custoEmPe` em afty-efeitos.js. */
   const aumentos = [];
+  const reversao = (ctx.reversoes?.porFeitico?.[feitico?.id] ?? ctx.reversoes?.porFeitico?.[feitico?.variacaoDe])?.disponivel
+    ? nivelNumericoParaReducao(calculo.nivel ?? feitico.nivel) : 0;
+  if (reversao) aumentos.push({ fonte: "Reversão de Técnica", valor: -reversao });
   for (const fonte of detalhesDeCustoPe(ctx.efeitos, "feitico")) {
     const valor = Math.trunc(Number(fonte.valor) || 0);
     if (valor > 0) reducoes.push({ fonte: fonte.nome, valor });
@@ -703,14 +713,15 @@ export function aplicaReducoesCustoFeitico(feitico, calculo, ctx = {}) {
   }
 
   const reducaoTotal = reducoes.reduce((total, reducao) => total + reducao.valor, 0);
+  if (beneficio?.manual && custoBase > 0) aumentos.push({ fonte: "Manual de Técnica", valor: -Math.floor(custoBase / 2) });
   const aumentoTotal = aumentos.reduce((total, aumento) => total - aumento.valor, 0);
-  const custoPE = custoBase > 0 ? Math.max(1, custoBase - reducaoTotal) + aumentoTotal : custoBase;
+  const custoPE = custoBase > 0 ? Math.max(1, custoBase - reducaoTotal) + aumentoTotal : custoBase + reversao;
   return {
     ...calculo,
     custoPE,
     custoPEBase: custoBase,
     // O aumento viaja na mesma lista, com o valor negativo do canal.
-    reducoesCustoPE: custoBase > 0 ? [...reducoes, ...aumentos] : reducoes,
+    reducoesCustoPE: custoBase > 0 ? [...reducoes, ...aumentos] : [...reducoes, ...aumentos.filter((r) => r.fonte === "Reversão de Técnica")],
   };
 }
 
@@ -1136,6 +1147,7 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
      parcelas deixam de somar o número mostrado. */
   const fontesDados = [{ label: NIVEL_LABEL[nivel], dados, base: true }];
   const somarFonte = (label, n) => { if (n) fontesDados.push({ label, dados: n }); };
+  if (ctx.focoZenin === "dano" && subtipo !== "multiplos") { dados += 1; somarFonte("Foco no Poder", 1); }
 
   // 1) Ação (não conta para o limite de trocas).
   const dadosAcao = modDadosPorAcao(acaoEff, nNum);
@@ -1516,14 +1528,16 @@ export function calcularFeiticoDano(feitico, ctx = {}) {
   let danoTexto;
   if (subtipo === "multiplos") {
     const { disparos, porDisparo } = disparosCalculados;
-    const efeitoConcentrado = resolveEfeitoDanoFinal(dados);
-    const dadosConcentrados = dados + efeitoConcentrado.dados;
+    const baseConcentrada = dados;
+    const efeitoConcentrado = resolveEfeitoDanoFinal(baseConcentrada);
+    const dadosConcentrados = baseConcentrada + efeitoConcentrado.dados;
     const bonusConcentrado = bonusConjuracao + bonusMotor + efeitoConcentrado.bonus;
     disparosInfo = {
       disparos,
       porDisparo,
       concentradoTotal: dadosConcentrados,
       bonusPorDisparo: bonusSemRitual,
+      bonusConcentrado,
       bonusRitualDano,
       porDisparoTexto: notacaoDanoComBonus(porDisparo, tipoDado, bonusSemRitual, explosiva),
       primeiroDisparoTexto: notacaoDanoComBonus(porDisparo, tipoDado, bonusDano, explosiva),
@@ -1855,6 +1869,7 @@ export function calcularFeiticoCurativo(feitico, ctx = {}) {
     };
   }
   let [dados, tipoDado] = linha;
+  if (ctx.focoZenin === "cura") dados += 1;
 
   // 1) Ação (não conta para o limite de trocas).
   dados += modDadosPorAcao(acao, nNum);
@@ -2181,7 +2196,7 @@ export function calcularFeiticoGolpeador(feitico, ctx = {}) {
   /* A Expansão no ar (E-10, E-11). Os dados entram no dano adicional e, com
      vários golpes, são divididos junto com ele, como o resto do dano adicional. */
   const dominio = presentesDoDominio(ctx, nivel);
-  let dados = r.dados + dominio.dados;
+  let dados = r.dados + dominio.dados + (ctx.focoZenin === "dano" ? 1 : 0);
 
   // Múltiplos golpes (a partir do Nv3). Divide o dano adicional entre golpes.
   const maxGolpes = maxGolpesGolpeador(nivel);
@@ -2311,11 +2326,15 @@ export function calcularFeiticoDanoAlma(feitico, ctx = {}) {
   poolBase += dadosAcao;
 
   // Alcance base = METADE do alcance de alvo único (piso).
+  // Decisão do autor: Foco integra a criação e não sofre a metade externa.
+  const dadosFoco = ctx.focoZenin === "dano" ? 1 : 0;
+  poolBase += dadosFoco;
   const alcanceBase = Math.floor((ALCANCE_POR_NIVEL[nivel] ?? 0) / 2);
 
   const r = saldoUnicoVariante(f, ctx, {
     nivel, nNum, poolBase, resolucao, alcanceBase, permiteAlcance: true, avisos,
-    fontesPool: [{ label: FEITICO_ACOES.find((a) => a.value === acao)?.label ?? "Conjuração", dados: dadosAcao }],
+    fontesPool: [{ label: FEITICO_ACOES.find((a) => a.value === acao)?.label ?? "Conjuração", dados: dadosAcao },
+      ...(dadosFoco ? [{ label: "Foco no Poder", dados: dadosFoco }] : [])],
   });
 
   // A Expansão no ar, com o dano de fora cortado pela metade (E-10, E-11).
@@ -2334,7 +2353,7 @@ export function calcularFeiticoDanoAlma(feitico, ctx = {}) {
     cd: r.cd == null ? r.cd : r.cd + dominio.cd,
     acertoDelta: r.acertoDelta + dominio.acerto,
     bonusDano: dominio.fixo,
-    partesDano: dominio.partesDano,
+    partesDano: [...dominio.partesDano, ...(dadosFoco ? [linhaDeDados({ label: "Foco no Poder", dados: dadosFoco }, tipoDado)] : [])],
     ritualDominio: dominio.ritual?.nome ?? null,
     empurraoMetros: r.empurraoMetros,
     faltamDados: r.faltamDados,
@@ -3822,6 +3841,7 @@ export function calcularEfeitoAux(e, ctx = {}) {
       qtd += dadosExplosao;
       notas.push(`Explosão Extrema: +${dadosExplosao} dado(s).`);
     }
+    if (ctx.focoZenin === "dano") { qtd += 1; notas.push("Foco no Poder: +1 dado."); }
     out.dado = [qtd, tipo];
     out.valor = mediaDano(qtd, tipo);
     out.notacao = notacaoDano(qtd, tipo);
@@ -4223,7 +4243,7 @@ function ajusteAcaoAux(efeitoKey, valor, { acao, nivel, duracao, umGolpe, notas 
 function metadeSustentada(efeitoAux, nivel) {
   const nNum = nivel === "max" ? 5 : Math.max(0, Math.min(5, Math.trunc(Number(nivel) || 0)));
   const bruto = AUX_TABELAS[efeitoAux]?.[nNum]?.sustentada;
-  return typeof bruto === "number" ? Math.round(bruto / 2) : null;
+  return typeof bruto === "number" ? Math.floor(bruto / 2) : null;
 }
 
 // Tabelas próprias de Passivo, verbatim do livro. Dano em MÉDIA.
@@ -4296,13 +4316,19 @@ export const categoriaDoPassivo = (feitico) =>
  * morta e marcada que o resto do projeto usa pra "a regra existe e o motor
  * não alcança" (ver Regeneração por Rodada em `docs/afty-formulas-base.md`).
  */
+function custoPassivaComReversao(feitico, ctx) {
+  const extra = regraDo(ctx.sistema, "passivaCustaPeMaximo") === "player" && ctx.reversoes?.porFeitico?.[feitico?.id]?.disponivel
+    ? nivelNumericoParaReducao(feitico.nivel) : 0;
+  return custoPeMaximoDaPassiva(feitico?.nivel) + extra;
+}
+
 export function calcularFeiticoPassivo(feitico, ctx = {}) {
   const ocular = habilidadeOcularAgulha(feitico);
   const isentoPeMaximo = passivasIsentasNoCtx(ctx);
   if (ocular) return {
     disponivel: false, efeito: "ocular", efeitoLabel: ocular.nome,
     unidade: "", valor: null, notacao: null, texto: "", tiposDanoExtra: 0, alvo: null,
-    custoPeMaximo: custoPeMaximoDaPassiva(feitico.nivel),
+    custoPeMaximo: custoPassivaComReversao(feitico, ctx),
     custoPeMaximoAtivo: !isentoPeMaximo, efeitosGerados: [], avisos: [],
   };
   const f = feitico || {};
@@ -4319,7 +4345,7 @@ export function calcularFeiticoPassivo(feitico, ctx = {}) {
       texto: "",
       tiposDanoExtra: 0,
       alvo: null,
-      custoPeMaximo: custoPeMaximoDaPassiva(nivel),
+      custoPeMaximo: custoPassivaComReversao(f, ctx),
       custoPeMaximoAtivo: !isentoPeMaximo,
       efeitosGerados: [],
       avisos: [],
@@ -4345,7 +4371,7 @@ export function calcularFeiticoPassivo(feitico, ctx = {}) {
       texto: "-",
       tiposDanoExtra: 0,
       alvo: null,
-      custoPeMaximo: custoPeMaximoDaPassiva(nivel) || null,
+      custoPeMaximo: custoPassivaComReversao(f, ctx) || null,
       custoPeMaximoAtivo: !isentoPeMaximo && regraDo(ctx.sistema, "passivaCustaPeMaximo") === "player",
       efeitosGerados: [],
       avisos: [`${def.label.replace(/ \(permanente\)$/, "")} não existe em Técnica Marcial.`],
@@ -4366,7 +4392,7 @@ export function calcularFeiticoPassivo(feitico, ctx = {}) {
       texto: "-",
       tiposDanoExtra: 0,
       alvo: null,
-      custoPeMaximo: custoPeMaximoDaPassiva(nivel) || null,
+      custoPeMaximo: custoPassivaComReversao(f, ctx) || null,
       custoPeMaximoAtivo: !isentoPeMaximo && regraDo(ctx.sistema, "passivaCustaPeMaximo") === "player",
       efeitosGerados: [],
       avisos,
@@ -4426,7 +4452,7 @@ export function calcularFeiticoPassivo(feitico, ctx = {}) {
     texto: disponivel ? `${valor > 0 ? "+" : ""}${String(valor).replace(".", ",")}${def.unidade ? ` ${def.unidade}` : ""}` : "-",
     tiposDanoExtra: tiposExtra,
     alvo,
-    custoPeMaximo: custoPeMaximoDaPassiva(nivel) || null,
+    custoPeMaximo: custoPassivaComReversao(f, ctx) || null,
     custoPeMaximoAtivo: !isentoPeMaximo && regraDo(ctx.sistema, "passivaCustaPeMaximo") === "player",
     efeitosGerados,
     avisos,
@@ -4449,6 +4475,7 @@ export function createBlankFeitico() {
     descricao: "",             // narrativa do Feitiço
     variacaoDeTecnica: false,  // variação que pode usar vaga exclusiva de Dominância
     variacaoDe: null,          // id do Feitiço base, se for Variação de Liberação
+    reversaoTecnica: false,    // identidade de Reversão, Livro p.194
     // --- campos de Feitiço de Dano ---
     resolucao: "tr",           // tr | ataque
     alvo: "unico",             // unico | area
@@ -4685,8 +4712,83 @@ function calculadorDe(tipo) {
  * aba Invocações, os Sustentados da bancada e o card do criador. Um caminho que
  * chamasse o calculador cru mostraria a Técnica Máxima na tabela errada.
  */
+// Decisão do autor em 01/11: um dado de Foco no total, no destino escolhido.
+// O cálculo nativo divide primeiro. A escolha não altera outros bônus por disparo.
+function destinosDeFoco(calc) {
+  if (calc?.disparos) return Array.from({ length: calc.disparos.disparos }, (_, i) => ({ value: `disparo:${i + 1}`, label: `Disparo ${i + 1}` }));
+  if (calc?.golpes) return Array.from({ length: calc.golpes.golpes }, (_, i) => ({ value: `golpe:${i + 1}`, label: `Golpe ${i + 1}` }));
+  if (calc?.multiplos) return (calc.efeitos ?? []).filter((e) => e.id && e.disponivel && e.dado?.[0] > 0)
+    .map((e) => ({ value: `efeito:${e.id}`, label: e.efeitoLabel }));
+  return [];
+}
+
+function aplicaDadoDeFoco(calc, destino) {
+  const fonte = (faces) => linhaDeDados({ label: "Foco no Poder", dados: 1 }, faces);
+  if (calc.disparos) {
+    const d = calc.disparos;
+    const linhas = Array.from({ length: d.disparos }, (_, i) => ({
+      rotulo: `Disparo ${i + 1}`, dados: d.porDisparo + (destino === `disparo:${i + 1}` ? 1 : 0),
+      fixo: (d.bonusPorDisparo || 0) + (i === 0 ? d.bonusRitualDano || 0 : 0),
+      foco: destino === `disparo:${i + 1}`,
+    }));
+    const dano = linhas.map((l) => notacaoDanoComBonus(l.dados, calc.tipoDado, l.fixo, calc.explosiva)).join(" + ");
+    const disparos = { ...d, linhas, distribuicaoTexto: dano, concentradoTotal: d.concentradoTotal + 1,
+      concentradoTexto: notacaoDanoComBonus(d.concentradoTotal + 1, calc.tipoDado, (d.bonusConcentrado || 0) + (d.bonusRitualDano || 0), calc.explosiva) };
+    return { ...calc, dano, disparos, detalhes: { ...calc.detalhes, multiplos: disparos },
+      hoverDano: calc.hoverDano ? { partes: [...calc.hoverDano.partes, { ...fonte(calc.tipoDado), label: `Foco no Poder (${linhas.find((l) => l.foco).rotulo})` }], total: dano } : null };
+  }
+  if (calc.golpes) {
+    const g = calc.golpes;
+    const linhas = Array.from({ length: g.golpes }, (_, i) => ({
+      rotulo: `Golpe ${i + 1}`, dados: g.porGolpe + (destino === `golpe:${i + 1}` ? 1 : 0),
+      fixo: g.bonusPorGolpe || 0, foco: destino === `golpe:${i + 1}`,
+    }));
+    const dano = linhas.map((l) => notacaoDanoComBonus(l.dados, calc.tipoDado, l.fixo)).join(" + ");
+    return { ...calc, dano, golpes: { ...g, linhas, distribuicaoTexto: dano, concentradoTotal: g.concentradoTotal + 1 } };
+  }
+  let aplicado = false;
+  return { ...calc, efeitos: calc.efeitos.map((e) => {
+    if (aplicado || destino !== `efeito:${e.id}`) return e;
+    aplicado = true;
+    const dado = [e.dado[0] + 1, e.dado[1]];
+    return { ...e, dado, valor: mediaDano(...dado), notacao: notacaoDano(...dado),
+      notas: [...e.notas, "Foco no Poder: +1 dado."], partesFoco: [fonte(dado[1])] };
+  }) };
+}
+
 export function calcularFeitico(f, ctx = {}) {
-  let calc = calcularFeiticoPelaPorta(f, ctx);
+  const beneficio = beneficioDoFeitico(f, ctx);
+  const focoDistribuido = beneficio?.foco === "dano" && ((f.tipo === "auxiliar" && f.multiplosAtivo)
+    || (f.tipo === "dano" && f.subtipo === "multiplos")
+    || (f.tipo === "especial" && f.especialSubtipo === "golpeador" && f.golpesGolpeador > 1));
+  const contexto = beneficio ? { ...ctx, focoZenin: focoDistribuido || (beneficio.foco === "dano" && f.focoCondicao) ? null : beneficio.foco, acessoNivel: beneficio.acesso } : ctx;
+  let calc = calcularFeiticoPelaPorta(f, contexto);
+  if (calc && beneficio) {
+    const destinosFoco = focoDistribuido && !f.focoCondicao ? destinosDeFoco(calc) : [];
+    const destinoFoco = destinosFoco.length === 1 ? destinosFoco[0]
+      : destinosFoco.find((d) => d.value === beneficio.focoDestino);
+    const focoSemDestino = focoDistribuido && destinosFoco.length > 0 && !destinoFoco;
+    if (destinoFoco) calc = aplicaDadoDeFoco(calc, destinoFoco.value);
+    const focoIndisponivel = beneficio.foco === "cd" ? typeof calc.cd !== "number"
+      : beneficio.foco === "alcance" ? typeof calc.alcance !== "number"
+        : beneficio.foco === "cura" ? f.tipo !== "curativo"
+          : beneficio.foco === "dano" ? (focoDistribuido ? !destinosFoco.length : !(calc.tipoDado || calc.dado)) || !!f.focoCondicao : false;
+    const sustentacao = (v) => v > 0 ? Math.max(0, v - beneficio.sustentacao) : v;
+    calc = {
+      ...calc,
+      ...(beneficio.foco === "alcance" && typeof calc.alcance === "number" ? { alcance: calc.alcance * 2 } : {}),
+      ...(beneficio.foco === "cd" && typeof calc.cd === "number" ? { cd: calc.cd + beneficio.bt } : {}),
+      upkeepPE: sustentacao(calc.upkeepPE),
+      sustentacaoPE: sustentacao(calc.sustentacaoPE),
+      ...(calc.detalhes?.continuo ? { detalhes: { ...calc.detalhes, continuo: {
+        ...calc.detalhes.continuo, custoSustentacao: sustentacao(calc.detalhes.continuo.custoSustentacao),
+      } } } : {}),
+      beneficiosOrigem: { ...beneficio, destinosFoco, destinoFoco: destinoFoco?.value ?? "", destinoFocoLabel: destinoFoco?.label ?? null,
+        focoPendente: focoSemDestino || focoIndisponivel },
+      avisos: [...(calc.avisos ?? []), ...(focoSemDestino ? ["Escolha o Destino de Foco no Poder"]
+        : focoIndisponivel ? ["Foco no Poder Indisponível para Este Efeito"] : [])],
+    };
+  }
   const fontesAlcance = (ctx.efeitos?.detalhes ?? []).filter((e) => e.canal === "alcanceHabilidadeMult" && !e.suplantado && e.valor > 0);
   const multiplicadorAlcance = fontesAlcance.reduce((n, e) => n * e.valor, 1);
   if (calc && multiplicadorAlcance !== 1) {
@@ -4700,6 +4802,9 @@ export function calcularFeitico(f, ctx = {}) {
     }
     calc.partesAlcance = [...(calc.partesAlcance ?? []), ...fontesAlcance.map((e) => ({ label: e.nome, texto: `×${e.valor}` }))];
   }
+  const reversao = ctx.reversoes?.porFeitico?.[f.id] ?? ctx.reversoes?.porFeitico?.[f.variacaoDe];
+  if (calc && (f.reversaoTecnica || reversao) && !reversao?.disponivel) calc = { ...calc,
+    avisos: [...(calc.avisos ?? []), "Reversão de Técnica Indisponível"] };
   /* ⚠ A Técnica Marcial vai do Nível 1 ao 4, e o valor gravado FICA (autor,
      2026-10-26): um Feitiço do Addon Estilo Marcial pode estar no Nível 0 ou 5, e
      o cálculo segue com ele, com o aviso pedindo um nível de 1 a 4. */
@@ -4830,7 +4935,10 @@ export function rolagensDoFeitico(f, calc) {
   // porque lá o dano é um efeito entre muitos e não o valor do Feitiço.
   if (f.tipo === "auxiliar") {
     // Múltiplos Efeitos não tem UMA rolagem: cada efeito é o seu.
-    if (calc.multiplos || !Array.isArray(calc.dado)) return [];
+    if (calc.multiplos) return calc.efeitos.filter((e) => e.disponivel && e.dado?.[0] > 0).map((e) => ({
+      rotulo: e.efeitoLabel, dados: e.dado[0], faces: e.dado[1], partes: e.partesFoco ?? [], tom: "dano", vezes: 1,
+    }));
+    if (!Array.isArray(calc.dado)) return [];
     const [qtd, faces] = calc.dado;
     return qtd > 0 && faces > 1 ? [{ rotulo: "Dano", dados: qtd, faces, tom: "dano", vezes: 1 }] : [];
   }
@@ -4856,6 +4964,10 @@ export function rolagensDoFeitico(f, calc) {
     if (f.focoCondicao) return [];
     if (calc.disparos) {
       const d = calc.disparos;
+      if (d.linhas) return d.linhas.map((l, i) => ({ ...l, faces, tom: "dano", vezes: 1, explosiva: !!calc.explosiva,
+        partes: [...(calc.partesDano || []).filter((p) => i === 0 || p.label !== "Aumento de Dano"),
+          ...(l.foco ? [linhaDeDados({ label: "Foco no Poder", dados: 1 }, faces)] : [])],
+      }));
       if (d.bonusRitualDano > 0 && d.disparos > 1) {
         const partesSemRitual = (calc.partesDano || []).filter((p) => p.label !== "Aumento de Dano");
         return [
@@ -4896,6 +5008,9 @@ export function rolagensDoFeitico(f, calc) {
     // Shikigami) não devolvem `dados`, então já caíram fora lá em cima.
     if (calc.golpes) {
       const g = calc.golpes;
+      if (g.linhas) return g.linhas.map((l) => ({ ...l, faces, tom: "dano", vezes: 1,
+        partes: l.foco ? [linhaDeDados({ label: "Foco no Poder", dados: 1 }, faces)] : [],
+      }));
       return [{ rotulo: "Golpe", dados: g.porGolpe, faces, fixo: g.bonusPorGolpe || 0, tom: "dano", vezes: g.golpes }];
     }
     // O fixo é o da Expansão no ar (2026-10-08). Sem ela, zero, como sempre.
@@ -5310,7 +5425,8 @@ function linhaDoFeitico(f, ctxBruto, creature) {
       };
     }
     const avisos = calc
-      ? [...(calc.avisos || []), ...((calc.efeitos || []).flatMap((e) => e.avisos || []))]
+      ? [...(calc.avisos || []), ...((calc.efeitos || []).flatMap((e) => e.avisos || [])),
+        ...(calc.beneficiosOrigem?.aprender ? ["Aprendizado Obrigatório ao Receber um Novo Feitiço"] : [])]
       : [];
     const valor = !calc ? null
       : f.tipo === "dano" ? calc.dano
@@ -5369,6 +5485,7 @@ function linhaDoFeitico(f, ctxBruto, creature) {
       custoPETexto: calc?.custoPETexto ?? null,
       reducoesCustoPE: calc?.reducoesCustoPE ?? [],
       partesCustoPE: partesCustoFeitico(calc),
+      beneficiosOrigem: calc?.beneficiosOrigem ?? null,
       valor: valor ?? null,
       descricao: f.descricao || "",
       conjuracaoTexto: f.conjuracaoTexto || "",
@@ -5383,6 +5500,9 @@ function linhaDoFeitico(f, ctxBruto, creature) {
       propriedades: calc ? [
         ...propriedadesResumoFeitico(f, calc, valor, valorLabel),
         ...propriedadesDoAtaque(calc),
+        ...(calc.beneficiosOrigem?.foco && !calc.beneficiosOrigem.focoPendente ? [{ id: "focoZenin", nome: "Foco no Poder", valor: calc.beneficiosOrigem.foco === "cd" ? `+${calc.beneficiosOrigem.bt} CD`
+          : calc.beneficiosOrigem.foco === "alcance" ? "Alcance ×2"
+            : `+1 Dado${calc.beneficiosOrigem.destinoFocoLabel ? ` (${calc.beneficiosOrigem.destinoFocoLabel})` : ""}` }] : []),
         ...(marcial ? [] : propriedadeRitualDoDominio(f, ctx)),
       ] : [],
       variacao: !!f.variacaoDe,
@@ -5437,7 +5557,7 @@ function linhaDoFeitico(f, ctxBruto, creature) {
          divergem na primeira errata. Zero na criatura, porque a regra é do
          jogador (ver `passivaCustaPeMaximo`). */
       custoPeMaximo: f.tipo === "passivo" && !f.variacaoDe
-        ? (peMaximoDasPassivas([f], ctx.sistema, { isenta: passivasIsentasNoCtx(ctx) }).total || null)
+        ? (peMaximoDasPassivas([f], ctx.sistema, { isenta: passivasIsentasNoCtx(ctx), reversoes: ctx.reversoes }).total || null)
         : null,
       avisos,
     };

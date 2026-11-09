@@ -23,7 +23,7 @@ import { getTalento } from "../afty-talentos";
 import { getAptidao, getCategoriaAptidao } from "../afty-aptidoes";
 import { getHabilidadeGeral } from "../afty-gerais";
 import { getMelhoriaSuperior, getHabilidadeLendaria, getHabilidadeApice } from "../afty-alto-nivel";
-import { sistemaDaFicha } from "../afty-sistema";
+import { sistemaDaFicha, mostraJogadasDeAtaque } from "../afty-sistema";
 import { getEspecializacao } from "../afty-especializacoes";
 import { caracteristicasEfetivas, getOrigem, getCla, anatomiasEscolhidas } from "../afty-origens";
 import { getAnatomia } from "../afty-anatomias";
@@ -199,8 +199,7 @@ export function conteudoDaFicha(creature, derived) {
      mostra uma Anatomia que o Motor não soma. O texto é o do livro
      (`textoLivro`), e não o resumo que o criador usa (autor, 2026-10-03).
 
-     Sem contador e sem número de mesa: nenhuma Anatomia declara `usos` ou
-     `resultados`, e o derive não registra a chave `anatomia:`. */
+     Usos e resultados declarados pela Anatomia usam a chave `anatomia:`. */
   const anatomias = anatomiasEscolhidas(creature)
     .map((id) => getAnatomia(id))
     .filter(Boolean)
@@ -211,6 +210,8 @@ export function conteudoDaFicha(creature, derived) {
       texto: a.textoLivro ?? a.descricao ?? "",
       grupo: "origem",
       tags: ["Anatomia"],
+      usos: usosDeMesa(`anatomia:${a.id}`),
+      numeros: numerosDeMesa(`anatomia:${a.id}`),
     }));
   /* ⚠ AS ESCOLHAS NO PLURAL (`escolhas`, 2026-10-09). O `opcoesEscolhidas` lê só a
      `escolha` única, e a opção escolhida numa característica com várias (as
@@ -771,7 +772,8 @@ export function alvosDeBusca(derived) {
     const aba = derived?.primitivas?.includes("abaQuimeras") ? "quimeras" : "invocacoes";
     add(aba, "invocacao", r.id, r.nome || "Quimera Sem Nome", "Quimera", dentro);
   }
-  for (const a of derived?.testes?.ataques ?? []) add("pericias", "ataque", a.id, a.nome, null);
+  /* Jogador: sem a lista na tela, a busca não aponta para uma linha que não existe (`jogadasDeAtaqueNaTela`). */
+  if (mostraJogadasDeAtaque(derived?.sistema)) for (const a of derived?.testes?.ataques ?? []) add("pericias", "ataque", a.id, a.nome, null);
   for (const r of derived?.testes?.resistencias ?? []) add("pericias", "tr", r.value, r.label, null);
   for (const p of derived?.testes?.pericias ?? []) add("pericias", "pericia", p.id, p.nome, null);
   return fora;

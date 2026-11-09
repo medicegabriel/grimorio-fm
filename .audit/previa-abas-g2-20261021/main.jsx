@@ -17,6 +17,39 @@ const AftyFichaClassica = lazy(() => import("../../src/systems/afty/ficha/AftyFi
 import PdfFab from "../../src/components/PdfFab";
 import dados from "./fichas/fichas.json";
 import cssMinamoto from "../../themes/minamoto-no-flugel.css?raw";
+import cssArcane from "../../themes/arcane-g2.css?raw";
+import cssAlter from "../../themes/alter-lucielos.css?raw";
+/* A ficha REAL do autor (export de 2026-11-08, Arcane de Player), com o retrato e o CSS que vêm nela. */
+import exportReal from "./fichas/arcane-real.json";
+
+const fichas = {
+  ...dados.fichas,
+  arcane: {
+    ...dados.fichas.vazia,
+    id: "previa-arcane-g2-nivel-1",
+    name: "Arcane",
+    portraitUrl: "https://safebooru.org//images/1365/730f474487533331e4753bfdd42c631ffd0bded9.png",
+    portraitFocus: { x: 50, y: 25 },
+    especializacoes: [{ id: "combatente", nivel: 1 }],
+    equipamentos: {
+      itens: [{ uid: "arcane-katana-demo", tipo: "arma", refId: "arm_katana", qtd: 1, equipado: true }],
+    },
+  },
+};
+
+/* COMPARATIVO DO REDESENHO (2026-11-07): a MESMA ficha, com um retrato local (sem rede) de proporção vertical, para a clássica e o G2 lado a lado.
+   "cmp-simples" é a Arcane de nível 1. "cmp-densa" é o Arsenal com mais perícias treinadas, uma Mestre a mais e nomes longos, para expor a densidade. */
+const RETRATO = "data:image/svg+xml;utf8," + encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900"><defs><linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7fd6dc"/><stop offset="1" stop-color="#1c3a52"/></linearGradient></defs><rect width="600" height="900" fill="url(#a)"/><circle cx="300" cy="300" r="120" fill="#f1d7c4"/><path d="M130 900 C130 560 210 470 300 470 C390 470 470 560 470 900Z" fill="#c9524a"/><path d="M170 300 C170 150 430 150 430 300 C400 230 200 230 170 300Z" fill="#162b3a"/></svg>`,
+);
+const CMP_DENSAS = { acrobacia: "treinado", enganacao: "treinado", investigacao: "treinado", historia: "treinado", medicina: "treinado", ocultismo: "mestre", persuasao: "treinado", intimidacao: "treinado", sobrevivencia: "treinado" };
+fichas.real = exportReal.creatures[0];
+fichas["cmp-simples"] = { ...fichas.arcane, id: "previa-cmp-simples", name: "Arcane", portraitUrl: RETRATO, portraitFocus: { x: 50, y: 22 } };
+fichas["cmp-densa"] = {
+  ...dados.fichas.arsenal, id: "previa-cmp-densa", name: "Arsenal Das Constelações Esquecidas", portraitUrl: RETRATO, portraitFocus: { x: 50, y: 22 },
+  pericias: { ...dados.fichas.arsenal.pericias, ...CMP_DENSAS },
+};
+dados.sessoes["previa-cmp-densa"] = dados.sessoes[dados.fichas.arsenal.id];
 
 /* Um CSS personalizado de teste que só mira os ganchos públicos (`.afty-card`, `.afty-linha`, `.afty-valor`, `[data-afty-*]`). */
 const CSS_TESTE = `
@@ -29,9 +62,16 @@ const TEMAS = {
   escuro: { rotulo: "Escuro (Padrão)", aparencia: null },
   claro: { rotulo: "Claro (Pergaminho)", aparencia: { presetId: "pergaminho" } },
   minamoto: { rotulo: "Minamoto (CSS do repositório)", aparencia: { presetId: "padrao", css: cssMinamoto, ligado: true } },
+  arcane: { rotulo: "Arcane G2", aparencia: { presetId: "padrao", css: cssArcane, ligado: true } },
+  alter: { rotulo: "Alter Lucielos (CSS do repositório)", aparencia: { presetId: "padrao", css: cssAlter, ligado: true } },
+  semcss: { rotulo: "Sem o CSS da ficha (tema padrão)", aparencia: { presetId: "padrao", vars: {}, css: "", ligado: false } },
   css: { rotulo: "CSS Personalizado de Teste", aparencia: { presetId: "padrao", css: CSS_TESTE, ligado: true } },
 };
 const CENAS = [
+  { id: "real", resumo: "A ficha real do autor: Arcane de Player com o retrato e o CSS que vêm no export. O tema \"Escuro (Padrão)\" mantém o CSS dela, \"Sem o CSS da ficha\" mostra o tema padrão." },
+  { id: "cmp-simples", resumo: "Comparativo do redesenho: Arcane de nível 1 com retrato local. Use modo=classica para a clássica." },
+  { id: "cmp-densa", resumo: "Comparativo do redesenho: Arsenal com doze perícias treinadas, duas Mestre e nomes longos." },
+  { id: "arcane", resumo: "Arcane de nível 1, ficha de exemplo para avaliar o CSS do G2." },
   { id: "arsenal", resumo: "Armas com Recarga 1 e Emperrar, Oscilante, Ampla, Modular e Aparar, Golpe Especial, duas Katanas com encantamentos diferentes, inventário sobrecarregado, perícia personalizada e Ofícios, Rápido com habilidade, equipamento e chave sem destino." },
   { id: "conjurador", resumo: "Feitiços de rolagem única, contínuo (duas rolagens), disparos, sem rolagem, curativo, Técnica Máxima com Custo de Vida, Ritual e Liberação Máxima; Expansões, Parede, Cortina e Conflito; quatro curas (Energia Reversa em PER)." },
   { id: "mesa", resumo: "Os nove condicionais juntos (Bloodfeast, Adaptação, Vislumbre, Olhinhos, Agulha, Refletir Imagem, Azamaru, Golpe, Treino) e seis favoritos: o caso S2 de altura." },
@@ -44,7 +84,7 @@ const params = new URLSearchParams(location.search);
 
 function Inicio() {
   const reiniciar = (id) => {
-    try { localStorage.removeItem(chaveSessao(dados.fichas[id].id)); } catch { /* sem armazenamento */ }
+    try { localStorage.removeItem(chaveSessao(fichas[id].id)); } catch { /* sem armazenamento */ }
     location.reload();
   };
   return (
@@ -53,7 +93,7 @@ function Inicio() {
       <p style={{ margin: "0 0 20px", color: "#94a3b8" }}>Ações, Perícias e Equipamentos. Fichas sintéticas, armazenamento só desta prévia.</p>
       {CENAS.map((c) => (
         <section key={c.id} style={{ padding: "14px 16px", margin: "0 0 10px", border: "1px solid #1e293b", borderRadius: 12, background: "#0f172a" }}>
-          <h2 style={{ font: "600 18px system-ui", margin: "0 0 4px" }}>{dados.fichas[c.id].name}</h2>
+          <h2 style={{ font: "600 18px system-ui", margin: "0 0 4px" }}>{fichas[c.id].name}</h2>
           <p style={{ margin: "0 0 10px", color: "#94a3b8" }}>{c.resumo}</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {Object.entries(TEMAS).map(([t, def]) => (
@@ -68,7 +108,7 @@ function Inicio() {
 }
 
 function Ficha({ cena, tema }) {
-  const base = dados.fichas[cena];
+  const base = fichas[cena];
   /* A criatura vive em memória: o que a Ficha grava nela (tema, preferências, pacotes) muda aqui e some ao recarregar. */
   const [creature, setCreature] = useState(() => ({ ...base, ...(TEMAS[tema]?.aparencia ? { aparencia: TEMAS[tema].aparencia } : {}) }));
   const grava = useCallback((campo) => (valor) => setCreature((c) => ({ ...c, [campo]: valor })), []);
@@ -78,6 +118,7 @@ function Ficha({ cena, tema }) {
     <Componente
       creature={creature}
       previaAbasG2={modo !== "classica" && modo !== "g2-sem-previa"}
+      abaInicial={params.get("aba") || "acoes"}
       onVoltar={() => { location.href = location.pathname; }}
       onEditar={() => window.alert("O criador não faz parte desta prévia.")}
       onSalvarTema={grava("aparencia")}
@@ -92,18 +133,23 @@ function Ficha({ cena, tema }) {
 }
 
 const cena = params.get("ficha");
-const tema = TEMAS[params.get("tema")] ? params.get("tema") : "escuro";
-if (cena && dados.fichas[cena]) {
-  const f = dados.fichas[cena];
+const tema = TEMAS[params.get("tema")] ? params.get("tema") : (cena === "arcane" ? "arcane" : "escuro");
+if (cena && fichas[cena]) {
+  const f = fichas[cena];
   /* A sessão de partida do cenário só entra quando esta origem ainda não tem uma: recarregar continua de onde parou. */
-  try { if (!localStorage.getItem(chaveSessao(f.id))) localStorage.setItem(chaveSessao(f.id), JSON.stringify(dados.sessoes[f.id])); } catch { /* sem armazenamento */ }
+  try {
+    const sessaoInicial = dados.sessoes[f.id];
+    if (sessaoInicial && !localStorage.getItem(chaveSessao(f.id))) {
+      localStorage.setItem(chaveSessao(f.id), JSON.stringify(sessaoInicial));
+    }
+  } catch { /* sem armazenamento */ }
   aplicarAddons(f.addons ?? []);
   document.title = `${f.name} · Prévia das Abas`;
 }
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    {cena && dados.fichas[cena] ? <Suspense fallback={null}><Ficha cena={cena} tema={tema} /></Suspense> : <Inicio />}
+    {cena && fichas[cena] ? <Suspense fallback={null}><Ficha cena={cena} tema={tema} /></Suspense> : <Inicio />}
     <PdfFab />
   </StrictMode>,
 );

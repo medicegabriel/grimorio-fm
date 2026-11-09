@@ -34,7 +34,8 @@ Personalizado. Não há Dano, Especial nem Arma Improvisada.
 - **Leitura padrão, sem gravar** (`marcarTecnicasMarciais`): na origem Restringido, ou na ficha sem energia que não é
   Sem Técnica, o Feitiço sem a marca é lido como Técnica. Cobre o Restringido, o Não-Feiticeiro e o Gêmeo Restringido,
   e nunca toca item com `variacaoDe` (nem a Passiva recebida de fora). O Sem Técnica tem energia, então os Feitiços do
-  Addon Estilo Marcial seguem Feitiços.
+  Addon Estilo Marcial seguem Feitiços. Só o Nível 1 a 4 sem marca é lido como Técnica (autor, 2026-10-29): Feitiço de
+  Nível 0, Nível 5 ou Técnica Máxima continua Feitiço, para a troca de origem não acender o aviso de nível.
 - **O tipo `ataque` não entra em `TIPOS_FEITICO`** (o Conjurador ganharia o tipo). Existe `TIPOS_TECNICA_MARCIAL` e
   `createBlankTecnicaMarcial(tipo)`. Campos da Técnica de Ataque: `acaoAtaque`, `ataquesReduzidos`, `efeitosAtaque`,
   `condicoesAtaque` (`{ fraca, media, forte, extrema }`) e `trCondicaoAtaque`.
@@ -117,7 +118,8 @@ própria na aba Ações, com seletor de arma. 7. Vários efeitos descem todos ju
 liberação nova. 10. Fundamento: card com nome, texto e Motor livre, e o Atributo da CD. 11. Condição: duração pela
 tabela dos Feitiços com o nível da Técnica, TR escolhido na criação contra a CD da Técnica. 12. Passiva igual à de
 Feitiço, mantendo a Regeneração. 13. Quem recebe: quem tem a Especialização, mais a liberação. 14. Gêmeo Restringido
-passa para a aba do Restringido. 15. Item migrado com Nível 0 ou 5 mantém o nível e avisa. 16. Estouro de vaga só
+passa para a aba do Restringido. 15. Item já marcado como Técnica com Nível 0 ou 5 mantém o nível e avisa, e o Feitiço sem marca nesses níveis não é
+migrado (2026-10-29). 16. Estouro de vaga só
 deixa o contador vermelho. 17. Sem Arma Improvisada: o seletor oferece o Ataque Básico e as armas equipadas.
 
 ## 9. Pontos provisórios (o autor ainda não respondeu)

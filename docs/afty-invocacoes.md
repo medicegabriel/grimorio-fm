@@ -1633,3 +1633,47 @@ O que ainda não cabe no motor, e o que deixou de faltar:
 7. **Domar maldições** (Domador de Maldições e a seção do *Mecânicas*): processo de mesa, com
    rolagens, Voto Contratual, subjugação e traição. A ficha da Maldição Domada resultante é a do
    tipo `maldicao`.
+
+## CL3: AUXÍLIO NA MESA, PREJUÍZO POR REPETIÇÃO, FORMA DE ARMA E ESTADO DE SESSÃO (2026-11-01)
+
+Núcleo entregue em `src/systems/afty/ficha/ficha-invocacao-uso.js`. Evidência em
+`docs/revisao-livro-regras/entregas/CL3.md`. Nenhuma tela chama os verbos ainda (CX6).
+
+| Operação | O que faz |
+|---|---|
+| `usaAuxilioDaInvocacao({ dono, invId, acaoId, alvo, opId, registraAcao, cobranca })` | Comanda um auxílio: gasta o comando do dono (Ação Comum para uma Complexa, Bônus para uma Simples, p.257), o PE e a identidade pelo `usa` do CL1, **conta a repetição na rodada** e aplica o benefício com o prejuízo |
+| `repeticoesNaRodada`, `passosDePrejuizo`, `reduzDanoAdicional`, `auxilioComPrejuizo` | O prejuízo, puro |
+| `transformaEmArma`, `voltaDaForma` | Veste a Forma de Arma (Ação Simples, Bônus) escolhendo a Ação Complexa de ataque. Com mais de uma e sem `acaoId`, devolve `opcoes` e nada muda |
+| `linhaDeFormaArma(sessao, derived, invId)` | A linha de ataque do dono, no formato de `derived.dano.entradas`, com o **dado e o tipo da Ação Complexa**, a margem de crítico da arma e o acerto e o fixo do dono |
+| `reacaoDoPortadorNaForma` | O portador leva o dano completo de um ataque de alvo único à Arma, ignorando as RD dele (uma reação por rodada) |
+
+**Prejuízo por Múltiplos Auxílios (p.268 a 270).** Cada auxílio depois do primeiro que a mesma invocação faz na rodada reduz o
+benefício. Defesa, Acerto e RD descem 1 por passo e param em zero. O Dano Adicional desce 2 níveis por passo e para em 1d4. A
+Cura não tem prejuízo. O Shikigami de Técnica é imune (`imunePrejuizoMultiplos`). A Horda pede 1 uso a mais para cada 2 membros
+(`escala.prejuizoExtra`). A contagem mora em `sessao.usos["rodada:aux:<invId>"]`, que o motor já zera na virada da rodada.
+`CONTAGEM_DO_PREJUIZO` decide se conta qualquer auxílio (`qualquer`, adotado) ou só o mesmo benefício (`mesmo`).
+
+**Defesa, Acerto e RD seguem sustentados** (decisão do autor, 2026-08-31). O interruptor `auxilios[acaoId]` continua `true`, e
+passa a aceitar `{ prejuizo: N }` quando o benefício foi comandado com prejuízo. `auxiliosLigadosDa` desconta os passos, e o hover
+mostra "(Prejuízo por Repetição)". O Pacote para Aliados (`pacotes-familias.js`) ainda lê o valor sem prejuízo.
+
+**Dano Adicional é um disparo.** "Efetivo durante o próximo ataque da criatura afetada" (p.269). Na sessão de **quem recebe** vira
+um Buff de Mesa (`dadosNomeados`, `alvo: "dX"`, o `alvo` agora viaja no Buff do `usa`) e uma pendência do CL1
+(`consome: "declaracao"`). O ataque elegível (`registraAtaqueRealizado`) a consome e o Buff sai junto. Se o alvo do auxílio é a
+própria invocação, vira só um lembrete elegível a ataques da categoria `invocacao:<id>`. A sessão do aliado não recebe nada do
+catálogo da invocação.
+
+**Forma de Arma** (pacote Adicionais, não está no Livro). A escolha da Ação Complexa fica em `sessao.formaArmaAcao[invId]` e só vale
+com `forma === "arma"`. Sem a arma empunhada, a linha usa o Ataque Básico do dono e marca `formaArma.aproximada`.
+
+**Estado de sessão na Característica Livre.** `buildInvocacaoDslContext` ganhou `em_campo`, `em_composto`, `pv_atual`,
+`pv_percentual`, `forma_arma`, `forma_armadura`, `auxilios_ligados`, `em_tarefa` e `rodadas_em_campo`, lidos só do
+`dono.sessaoInvocacoes` deste dono. Variáveis na tabela de `docs/automacao-dsl.md`.
+
+**Gravação pela metade.** Entre dois combatentes, o `opId` vale em cada sessão (`${opId}:dono`, `${opId}:alvo`). Se só o lado do dono persistiu, repetir a mesma
+chamada aplica o lado de quem recebe o Dano Adicional, sem gastar de novo o comando, o PE nem a contagem do dono. O caminho do auxílio
+sustentado só escreve na sessão do dono e não precisa disso.
+
+**Forma de Arma usa o fixo de dano do dono**, e não o bônus de dano da Ação Complexa da invocação (leitura adotada, na fila).
+
+Testes: `asserts/t-cl3-invocacoes.mjs` (117 asserts, com um pacote real carregado só por uma das duas fichas).

@@ -1,5 +1,92 @@
 # Ficha Final do Afty (plano)
 
+## Ações e Habilidades no estilo de Perícias (2026-11-08), na prévia
+
+Pedido do autor: Ações e Habilidades estavam fora do padrão de Perícias, e o Pular e o Golpe Especial estavam feios.
+- **Seções.** Mesmo cabeçalho em todas as listas (título de 17 px, altura mínima de 36 px, sem contagem no título), listas de fios sem caixa por linha
+  (a caixa em Habilidades era o `.afty-linha` da Ficha vencendo o `:where` da correção de 06/11) e meta em tom secundário.
+- **Pular.** Agora é uma seção (`PainelConteudo` com a prop `g2`, renderizado dentro de `AcoesG2` pela prop `painelConteudo`): título à esquerda e, na
+  mesma fileira, a Direção e o Teste em segmentos, o alcance como número com fontes, as opções (Estímulo Muscular, Pulo Livre) como botões ligáveis e
+  Iniciar Pulo como único botão cheio. Em curso mostra a distância e o Concluir Pulo. Estreito, o título e os controles dividem a mesma grade que quebra.
+  Os verbos (`iniciaPulo`, `concluiPulo`) não mudaram, e a clássica segue com a apresentação de sempre.
+- **Golpe Especial e a Mesa.** A linha da Mesa leva nome e estado na mesma fileira e toda ação é o mesmo botão de borda. Montar Golpe é o botão cheio
+  (Abrir Golpe, quando ativo, volta ao de borda).
+- **Índice de Ações.** Virou o mesmo segmento dos filtros de Perícias, sem contagens, e só aparece com quatro seções ou mais.
+- **Habilidades.** O filtro por efeito é um segmento só e a busca tem 38 px.
+- **Altura.** O caso S1 de Dano ficou em 783 (1280x800 com a compacta, limite 800) e 1021 (768x1024, limite 1024).
+- Efeitos não foi tocado.
+
+## Jogadas de Ataque fora da ficha de Player (2026-11-07)
+
+A lista Jogadas de Ataque (Corpo a Corpo, A Distância, Amaldiçoado) não aparece mais na ficha de Player: nem no criador, nem na Ficha Final (clássica e G2),
+nem na busca global. O Acerto do jogador mora na Arma e no Feitiço. Divergência de tela `jogadasDeAtaqueNaTela`, com `mostraJogadasDeAtaque(sistema)`.
+A criatura segue com a lista. O derive não mudou.
+
+## Redesenho do cabeçalho e de Perícias do G2 (2026-11-07), na prévia
+
+Pedido do autor: o G2 tinha o retrato reduzido a um avatar de 80 px, a placa de identidade crescendo além do nome
+(no Arcane, a coluna inteira) e Perícias em Ataques e Resistências lado a lado, Outros e uma grade de Perícias com o nome
+longe do botão. Aplicado só na prévia isolada, na porta 5330. Integração, promoção e publicação seguem sem autorização.
+
+- **Cabeçalho.** `CabecalhoG2.jsx` ganhou `.e-corpo` (placa e faixa) e o retrato (`.e-moldura`) saiu da placa e virou irmão do corpo:
+  uma moldura retangular de 112 px (104 abaixo de 1120 px, 84 no telefone) na altura do corpo inteiro. A identidade (`.e-ident`) tem a
+  largura do nome (`justify-self: start`, coluna `fit-content`), o ponto separador da linhagem vai no fim do item anterior e o ícone de aviso
+  é `inline-block`. Os recursos são um grupo de quatro medidores com rótulo sobre número. Quebras: 1120 px (recursos descem para segunda fileira da
+  placa) e 720 px (retrato estreito ao lado do nome, quatro recursos numa fileira). Nenhum gancho de tema saiu (`.afty-cabecalho`, `.afty-nome`,
+  `.e-ident`, `.e-moldura`, `.afty-retrato`, `.afty-vital`).
+- **Perícias.** Duas colunas de leitura a partir de 820 px de ABA (contêiner, a compacta aberta conta): testes à esquerda (Ataques, Resistências,
+  Outros), Perícias à direita. Uma coluna no celular. A linha é uma grade de colunas fixas (marca, nome, metas, botão). O treino se distingue pelo
+  destaque da linha (`data-treino`: Treinada com barra fina, Mestre com barra grossa), a palavra fica para leitor de tela e o chip "Mestre"
+  repetido saiu. Crít só aparece quando difere de 20 ou tem mais de uma fonte. Contagens saíram dos títulos, exceto "N de M" com filtro.
+  Busca, filtros, fontes dos números e todas as operações de Outros (Executar, Resistir, teste simples) foram preservados.
+- **Altura de Perícias (2026-11-08).** Linha de 40 px com ponteiro fino (42 no toque, botão de 40) e, em coluna única, a chave Testes / Perícias
+  mostra um grupo por vez (a busca global troca o grupo). Em 820 px de aba ou mais a chave some e os dois grupos aparecem. Conteúdo de Perícias em
+  fichas de Player: de 1293 para 1182 px no desktop e de 2195 para 1380 px no celular (Ações, de 300 a 1785 px, e Equipamentos, de 330 a 1200 px).
+- **Altura.** O cabeçalho grudado ficou mais baixo: S1 1280x800 com a compacta, fundo da primeira linha de Dano de 859 para 797 (limite 800).
+- **Pintura em baixa especificidade.** Tudo que é pintura nova usa `:where(.e-g2)`, como na correção de 06/11.
+- Prop opcional `abaInicial` em `AftyFichaG2` (padrão `acoes`), usada só pelo link direto da prévia (`&aba=pericias`).
+- Relatório, comparativos e roteiros em `.audit/redesenho-g2-20261107/`. Asserts: seção 8 de `asserts/t-abas-g2-previa.mjs` (60 asserts).
+
+## CSS Personalizado e editor, entrega autorizada em 06/11
+
+O lote de CSS/editor foi autorizado pelo autor depois do parecer. A aparência
+das superfícies contratadas do G2 usa seletores com especificidade de uma classe.
+As condições ficam em `:where`, preservando o contexto de cada componente.
+O CSS do usuário permanece no seu `@scope` e vence o empate pela proximidade,
+inclusive em números, aba ativa e botão de preparo. Layout mantém seus seletores
+próprios. Não foi criado prefixo obrigatório para o usuário, camada global ou
+reforço generalizado de prioridade. Hover, foco e marcas de seleção preservados.
+
+Seletores e Prompt IA distinguem clássica, G2 e invocação. Os nomes privados
+`e-/m-/f-` continuam internos. O contrato existente ganha apenas:
+
+- `.afty-consulta`, painel de consulta do G2.
+- `.afty-historico`, invólucro do histórico de efeitos.
+- `.afty-vital-conteudo` e `.afty-vital-valores`, conteúdo e valores do medidor G2.
+- `[data-afty-estrutura="g2"]`, raiz da ficha G2.
+
+O gancho de valor do cabeçalho também alcança o botão que mostra o número,
+quando ele abre fontes. O padrão de títulos/números do G2 continua Bahnschrift,
+agora pelo token `--afty-fonte-display`. O seletor de fonte existente grava esse
+token junto de fonte, título e número. O raio do tema escala proporcionalmente
+os cantos, preservando círculos e o desconto de 1 px entre cartão e cabeçalho.
+O formulário também deriva `--afty-raio-peq` do raio escolhido.
+
+O painel compartilhado tem diálogo nomeado, Esc, ciclo de Tab e retorno do foco.
+Seletores têm fundo transparente e quebram linha no telefone. Reset oferece
+Restaurar enquanto o painel permanece aberto. O hook `useGravacaoTema` guarda
+tema e callback atuais por referência, grava após 600 ms e descarrega na saída
+real. Em `pagehide`, `flushSync` permite ao armazenamento do App concluir antes
+da navegação. Limpezas de cada edição apenas cancelam o timer, sem nova gravação.
+O laço antigo de callbacks recriados continua impedido.
+
+Alter deixa de impor largura de campo ao valor textual do G2 e permite duas
+linhas no medidor estreito. Controles do cabeçalho podem quebrar em 320 px ou
+quando a fonte é personalizada, mantendo a fileira padrão em 390 px.
+
+Provas e limites em `.audit/correcao-css-g2-20261106/RELATORIO.md`. Abertura diária,
+rotas, integração das três abas e publicação não foram alteradas. Barra 9/10.
+
 ## Agora na Mesa como seção única, 23/10
 
 O autor pediu repensar o refinamento anterior. A composição atual usa uma

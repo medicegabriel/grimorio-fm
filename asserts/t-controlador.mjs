@@ -63,17 +63,19 @@ const LIGADAS = [
   "ctr_concentrar_poder", "ctr_invocacoes_economicas", "ctr_aptidoes_de_controle",
   "ctr_buchas_de_canhao", "ctr_critico_aprimorado", "ctr_resistencia_sobrecarregada",
   "ctr_fantoche_supremo",
+  // CX6: a posição declarada na bancada (invocacoes_a_3m e invocacoes_no_alcance).
+  "ctr_guarda_viva", "ctr_rede_de_deteccao", "ctr_combate_em_alcateia",
 ];
 
 /* Procedimento de mesa: economia de ação, condição posicional, rolagem do
    inimigo, ou um custo em PE que a ficha não gasta sozinha. */
 const DE_MESA = [
   "ctr_aceleracao", "ctr_camuflagem_aprimorada", "ctr_chamado_destruidor",
-  "ctr_dor_partilhada", "ctr_frenesi_da_invocacao", "ctr_guarda_viva",
-  "ctr_proteger_invocacao", "ctr_rede_de_deteccao",
+  "ctr_dor_partilhada", "ctr_frenesi_da_invocacao",
+  "ctr_proteger_invocacao",
   "ctr_acao_corretiva", "ctr_acompanhamento_amaldicoado", "ctr_ataque_em_conjunto",
   "ctr_companheiro_avancado", "ctr_domador_de_maldicoes", "ctr_invocacao_parcial",
-  "ctr_combate_em_alcateia", "ctr_hoste_amaldicoada",
+  "ctr_hoste_amaldicoada",
   "ctr_protecao_avancada_de_invocacao", "ctr_taticas_de_alcateia",
   "ctr_atacar_e_invocar", "ctr_golpes_ageis", "ctr_tecnicas_de_oportunidade",
   "ctr_mestre_do_controle", "ctr_flanco_avancado",

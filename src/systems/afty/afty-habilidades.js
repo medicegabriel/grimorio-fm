@@ -3732,6 +3732,7 @@ export const AFTY_HABILIDADES = [
     especializacaoId: "suporte",
     tipo: "base",
     nivel: 5,
+    usos: { expr: "mod_sabedoria", recarga: "descanso" },
     descricao:
       "Sempre que realizar uma rolagem com uma perícia na qual você não seja treinado, você pode " +
       "pagar 1 ponto de energia amaldiçoada para considerar como se fosse treinado. Você pode " +
@@ -3856,6 +3857,7 @@ export const AFTY_HABILIDADES = [
       "amaldiçoada para fazer com que ele role novamente, ficando com o melhor resultado. Você " +
       "pode utilizar essa habilidade uma quantidade de vezes igual ao seu bônus de treinamento, " +
       "por descanso longo; em um descanso curto, você recupera metade dos usos.",
+    usos: { expr: "maestria", recarga: "longo" },
     requisitos: [],
   },
   {
@@ -7259,6 +7261,10 @@ export function resolveControleInvocacoes({ escolhidasIds = [], escolhasMapa = {
        custa dar um turno próprio a uma invocação de Segundo Grau. */
     autonomia: ids.includes("ctr_autonomia"),
     resistenciaSobrecarregada: ids.includes("ctr_resistencia_sobrecarregada"),
+    // CX6: a reação de Proteger Invocação (2°), a Proteção Avançada (6°) e o Frenesi da Invocação (2°).
+    protegerInvocacao: ids.includes("ctr_proteger_invocacao"),
+    protecaoAvancada: ids.includes("ctr_protecao_avancada_de_invocacao"),
+    frenesi: ids.includes("ctr_frenesi_da_invocacao"),
     // Crítico Aprimorado (10°): "Um 19 se torna crítico também para suas invocações."
     margemCritico: ids.includes("ctr_critico_aprimorado") ? 19 : 20,
     // Crítico Brutal (4°): "Os acertos críticos da sua invocação causam 1 dado
@@ -7523,7 +7529,7 @@ export function maxVezesHabilidade(id, ctx = {}) {
  * só para as duas é o que impede as duas contas de divergirem.
  */
 export function contaOrcamentoHabilidades({
-  gastosHabilidade = 0, talentos = 0, comum = 0, exclusivasTalento = 0,
+  gastosHabilidade = 0, talentos = 0, comum = 0, exclusivasTalento = 0, semVagaDeGrupo = 0,
 } = {}) {
   const pilhaComum = Math.max(0, Math.trunc(Number(comum) || 0));
   const pilhaTalento = Math.max(0, Math.trunc(Number(exclusivasTalento) || 0));
@@ -7542,8 +7548,11 @@ export function contaOrcamentoHabilidades({
     gastosNoComum,
     restante: total - gastos,
     // O excesso é medido no COMUM: vaga exclusiva de Talento sobrando não
-    // libera Habilidade de Especialização nenhuma.
-    excedeu: gastosNoComum > pilhaComum,
+    // libera Habilidade de Especialização nenhuma. E também é excesso o Talento
+    // de um grupo que não aceita a vaga comum (`vagaComum: false`) e já
+    // gastou toda a vaga do próprio grupo: ele não sai do comum, mas fica sem pagamento.
+    excedeu: gastosNoComum > pilhaComum || Math.max(0, Math.trunc(Number(semVagaDeGrupo) || 0)) > 0,
+    semVagaDeGrupo: Math.max(0, Math.trunc(Number(semVagaDeGrupo) || 0)),
   };
 }
 
@@ -7558,6 +7567,7 @@ export function resolveHabilidades(
     nd = 1, almaLivreEspecializacao = null, almaLivreNivelAjuste = 0, concedidasSessao = [],
     escolhasConcedidasSessao = {}, sistema = undefined, niveisHabilidadesConcedidas = {}, imitadas = [], escolhasPorHabilidade = {},
     concedidasTreino = [], concedidasTalento = [], concedidasCatarse = [], vetadas = [], vagasEscolha = {},
+    talentosSemVaga = 0,
   } = {},
 ) {
   const niveisPorEspec = niveisPorEspecializacao(escolhidasEspec);
@@ -7719,10 +7729,12 @@ export function resolveHabilidades(
     maxVezes: Object.fromEntries(escolhidas.map((id) => [id, maxVezesHabilidade(id, ctxVezes)])),
     escolhas,               // { porHab, mapa, vagasExtras }
     talentosGastos,
+    // O Talento de grupo sem vaga própria e sem direito ao comum (V4).
+    talentosSemVaga,
     // O que as Habilidades gastam sem os Talentos, para o derive refechar a
     // conta com as vagas finais. Ver `contaOrcamentoHabilidades`.
     gastosHabilidade,
-    ...contaOrcamentoHabilidades({ gastosHabilidade, talentos, comum, exclusivasTalento }),
+    ...contaOrcamentoHabilidades({ gastosHabilidade, talentos, comum, exclusivasTalento, semVagaDeGrupo: talentosSemVaga }),
     inacessiveis,
     niveisPorEspec,
     niveisPorEfeito,

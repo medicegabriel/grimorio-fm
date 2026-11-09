@@ -21,11 +21,14 @@
 export const ANATOMIAS = [
   {
     id: "alma_maldita", nome: "Alma Maldita",
+    usos: { expr: "2 + (nd >= 6) + (nd >= 12) + (nd >= 18)", recarga: "manual", rotulo: "Usos Diários" },
+    resultados: [{ label: "Redução do Dano na Alma", expr: "50 + 50 * (nd >= 15)" }],
     descricao: "Dano à sua alma é reduzido à metade antes do teste de Integridade; a partir do nível 15, é anulado. Funciona 2×/dia (3 no nv6, 4 no nv12, 5 no nv18).",
     textoLivro: "Sua alma é impregnada com energia amaldiçoada, assumindo um aspecto maldito e difícil de se alterar. Quando uma criatura for causar dano na sua alma, esse dano é reduzido à metade antes do teste de Integridade; a partir do nível 15, ele é anulado. Essa habilidade funciona 2 vezes por dia, 3 no nível 6, 4 no nível 12 e 5 no nível 18.",
   },
   {
     id: "anatomia_incompreensivel", nome: "Anatomia Incompreensível",
+    resultados: [{ label: "Chance em 1d4", expr: "1 + (nd >= 15)" }],
     descricao: "25% (1 em 1d4) de ignorar o dano adicional de crítico ou furtivo; 50% (1–2 em 1d4) no nível 15.",
     textoLivro: "O seu corpo tem uma forma que é difícil de compreender. Você tem 25% de chance (resultado \"1\" em 1d4) de ignorar o dano adicional de um ataque crítico ou um ataque furtivo. No nível 15, se torna 50% (resultado \"1 ou 2\" em 1d4).",
   },
@@ -41,6 +44,7 @@ export const ANATOMIAS = [
   },
   {
     id: "bracos_extras", nome: "Braços Extras",
+    gatilhoSessao: { id: "anatomia_duas_maos_livres", label: "Duas Mãos Livres" },
     descricao: "+2 em prestidigitação (e atletismo com 2 mãos livres); par de mãos extra (2 armas de 1 mão ou +1 de 2 mãos; agarrar 2 criaturas).",
     textoLivro: "Seu corpo possui um par de braços adicionais. Você recebe +2 em testes de prestidigitação e, se tiver pelo menos duas mãos livres, aplica esse bônus em testes de atletismo. E recebe um par adicional de mãos, permitindo você equipar dois equipamentos de uma mão ou um equipamento de duas mãos adicional, assim como agarrar duas criaturas e outros benefícios à discrição do Narrador.",
   },
@@ -98,6 +102,18 @@ export const ANATOMIAS = [
 
 const BY_ID = Object.fromEntries(ANATOMIAS.map((a) => [a.id, a]));
 export const getAnatomia = (id) => BY_ID[id] ?? null;
+
+export const TIPOS_ARMA_NATURAL = [
+  { value: "ct", label: "Cortante" },
+  { value: "pf", label: "Perfurante" },
+  { value: "im", label: "Impacto" },
+];
+
+// Fichas antigas conservam o tipo padrão do golpe desarmado.
+export function tipoDaArmaNatural(creature) {
+  const tipo = creature?.core?.origem?.anatomiasConfig?.arma_natural?.tipoDano;
+  return TIPOS_ARMA_NATURAL.some((t) => t.value === tipo) ? tipo : "im";
+}
 
 // Quantas anatomias a criatura tem: 1 no início + 1 a cada 5 níveis.
 export const anatomiaTotal = (nd) => 1 + Math.floor((nd ?? 1) / 5);

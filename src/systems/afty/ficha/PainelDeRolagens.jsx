@@ -22,6 +22,10 @@ import { MODOS, textoDaRolagem } from "./ficha-rolagem";
  */
 
 function Rolagem({ r, destaque }) {
+  if (r.tipo === "info") return <div className="afty-rolagem px-2.5 py-1.5" data-afty-nova={destaque ? "sim" : undefined}>
+    <div className="text-[11px] font-semibold truncate" title={r.rotulo}>{r.rotulo}</div>
+    <div className="afty-rotulo text-[11px] truncate" title={r.detalhe}>{r.detalhe}</div>
+  </div>;
   const marca = r.raioNegro ? "critico" : r.critico ? "critico" : r.pifia ? "pifia" : undefined;
   /* Mostra o descartado riscado e o mantido. Na cura pode ficar o original;
      registros de dano antigos continuam descartando o original. */
@@ -46,11 +50,11 @@ function Rolagem({ r, destaque }) {
         {r.critico && <span className="afty-chip" data-afty-tom="destaque">Crítico</span>}
         {r.sucesso === true && <span className="afty-chip" data-afty-tom="destaque">Sucesso</span>}
         {r.sucesso === false && <span className="afty-chip">Falha</span>}
-        {r.cd != null && <span className="afty-rotulo text-[10px]">CD {r.cd}</span>}
+        {r.cd != null && <span className="afty-rotulo text-[11px]">CD {r.cd}</span>}
         <span className="afty-rolagem-total">{r.total}</span>
       </div>
       <div className="flex items-baseline gap-1.5 mt-0.5">
-        <span className="afty-rotulo text-[10px] flex-1 min-w-0 truncate">{r.formula}</span>
+        <span className="afty-rotulo text-[11px] flex-1 min-w-0 truncate">{r.formula}</span>
         {/* Cada dado que caiu. No d20 com vantagem, o descartado fica riscado,
             que é o mesmo vocabulário do perdedor do pool exclusivo. */}
         <span className="flex items-center gap-1 flex-wrap justify-end">
@@ -69,7 +73,7 @@ function Rolagem({ r, destaque }) {
               </span>
             </React.Fragment>
           ))}
-          <span className="afty-rotulo text-[10px] whitespace-nowrap">{textoDaRolagem(r)}</span>
+          <span className="afty-rotulo text-[11px] whitespace-nowrap">{textoDaRolagem(r)}</span>
         </span>
       </div>
     </div>

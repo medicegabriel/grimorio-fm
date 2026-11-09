@@ -1,0 +1,20 @@
+--- a/src/systems/afty/ficha/ficha-dano-recebido.js
++++ b/src/systems/afty/ficha/ficha-dano-recebido.js
+@@ -57,7 +57,7 @@ const passo = (passos, id, label, de, para) => { if (de !== para) passos.push({
+  *   rdIgnorada quanto de RD este ataque ignora (Penetrante, p.65), sem passar de zero
+  * Devolve `{ ok, final, passos, avisos }`, ou `{ ok: false, erro, codigo }`.
+  */
+-export function calculaDanoRecebido({ total, defesa = null, tr = null, desempate = null, rdIgnorada = 0 } = {}) {
++export function calculaDanoRecebido({ total, defesa = null, tr = null, desempate = null, rdIgnorada = 0, reducaoFixa = 0 } = {}) {
+   let valor = naoNegativo(total);
+   const passos = [];
+   const avisos = [];
+@@ -82,6 +82,8 @@ export function calculaDanoRecebido({ total, defesa = null, tr = null, desempate
+   if (estados.includes("vulneravel")) valor = passo(passos, "vulnerabilidade", "Vulnerabilidade", valor, valor + Math.floor(valor / 2));
+   const rd = Math.max(0, naoNegativo(defesa?.rd) - naoNegativo(rdIgnorada));
+   if (rd > 0) valor = passo(passos, "reducao", "Redução de Dano", valor, Math.max(0, valor - rd));
++  const fixa = naoNegativo(reducaoFixa);
++  if (fixa > 0) valor = passo(passos, "revestimento", "Revestimento de Domínio", valor, Math.max(0, valor - fixa));
+   return { ok: true, base, final: valor, passos, avisos };
+ }
+ 
