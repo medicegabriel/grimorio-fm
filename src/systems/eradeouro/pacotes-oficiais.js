@@ -8,22 +8,23 @@
  * isso só o app (Vite) o importa: o Node dos asserts não lê JSON sem atributo.
  *
  * ⚠ A FONTE É O JSON de `addons/`, e a ficha leva uma CÓPIA congelada dele, como
- * em qualquer addon. Revisar um pacote aqui (o Cofre, a Carteira e a Alma Livre
- * estão em revisão) não muda sozinho as fichas que já nasceram: a aba Addons
- * mostra a versão nova e a ficha atualiza por ela.
+ * em qualquer addon. Revisar um pacote aqui (o Cofre e a Alma Livre estão em
+ * revisão) não muda sozinho as fichas que já nasceram: a aba Addons mostra a
+ * versão nova e a ficha atualiza por ela.
+ *
+ * A Carteira da Guilda saiu da lista (2026-11-09): o personagem da Guilda tem a
+ * Carteira embutida, sem addon. Ver `carteiraDaGuilda` em `era-de-ouro.js`.
  * ============================================================
  */
 import { normalizarPacote } from "../afty/afty-addons";
 import { ADDONS_OFICIAIS_IDS, PACOTE_ATENCAO_SO_PERCEPCAO, PACOTE_PERICIAS_ERA_DE_OURO } from "./era-de-ouro";
 import regrasGrimorio from "../../../addons/regras-grimorio.json";
 import cofreDeFeiticos from "../../../addons/cofre-de-feiticos.json";
-import carteiraDaGuilda from "../../../addons/carteira-da-guilda.json";
 import almaLivre from "../../../addons/alma-livre.json";
 
 const FONTES = {
   "regras-grimorio": regrasGrimorio,
   "cofre-de-feiticos": cofreDeFeiticos,
-  "carteira-da-guilda": carteiraDaGuilda,
   "alma-livre": almaLivre,
   "atencao-so-percepcao": PACOTE_ATENCAO_SO_PERCEPCAO,
   "pericias-era-de-ouro": PACOTE_PERICIAS_ERA_DE_OURO,

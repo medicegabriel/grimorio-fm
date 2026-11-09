@@ -76,6 +76,9 @@ import { sistemaDaFicha, regraDo, palavrasDoSistema } from "./afty-sistema";
 /* A tabela de progressão da Carteira. O `afty-carteira.js` é FOLHA, então este
    import é de mão única e não pode fechar ciclo. Ver `nivelDaFicha`. */
 import { nivelDaCarteira } from "./afty-carteira";
+/* A Carteira embutida do personagem da Guilda (rota /EraDeOuro). O `era-de-ouro.js`
+   é FOLHA, então este import também é de mão única. */
+import { carteiraDaGuilda, PROGRESSAO_ERA_DE_OURO } from "../eradeouro/era-de-ouro";
 import { normalizarRegrasAfty, validarRegrasAfty, regrasAftyDaCriatura } from "./afty-regras-addon";
 import { TIPOS_VINCULO } from "./afty-recursos-addon";
 
@@ -962,12 +965,20 @@ export function nivelMaximoDaFicha(creature) {
  * ⚠ E ELA ACEITA O RASCUNHO, de propósito: é a mesma resposta para a ficha
  * salva e para a que está sendo editada, que é o que faz a tela e o derive
  * concordarem.
+ *
+ * ⚠ A CARTEIRA DA GUILDA VEM PRIMEIRO (2026-11-09). O personagem da rota
+ * /EraDeOuro tem a Carteira embutida, com a tabela da Guilda (0 de XP no Nível 1,
+ * até o 20), e ela vence o addon Carteira da Guilda, que a ficha da Guilda pode ter
+ * ganhado antes de a Carteira ser embutida: duas tabelas para o mesmo XP dariam
+ * dois níveis, e a da mesa é a que vale ali.
  */
 export function nivelDaFicha(creature) {
   const bruto = Math.max(1, Math.trunc(Number(creature?.core?.nd) || 1));
-  const nivel = liberacoesDaCriatura(creature).includes("carteiraNivel")
-    ? nivelDaCarteira(creature)
-    : bruto;
+  const nivel = carteiraDaGuilda(creature)
+    ? nivelDaCarteira(creature, PROGRESSAO_ERA_DE_OURO)
+    : liberacoesDaCriatura(creature).includes("carteiraNivel")
+      ? nivelDaCarteira(creature)
+      : bruto;
   const teto = nivelMaximoDaFicha(creature);
   return teto == null ? nivel : Math.min(teto, nivel);
 }

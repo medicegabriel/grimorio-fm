@@ -184,6 +184,13 @@ const inteiro = (v) => {
 /** Duas casas, para o total de dinheiro não virar dízima de ponto flutuante. */
 const centavos = (v) => Math.round(numero(v) * 100) / 100;
 
+/* A MARCA da linha que uma Missão ou um Evento da Guilda preencheu (`guilda`, ver
+   src/systems/eradeouro/era-de-ouro.js). Este módulo só a carrega: os números da
+   linha já vêm gravados nela, e quem sabe o que a marca quer dizer é a Guilda. */
+const marcaDaLinha = (m) => (m && typeof m === "object" && typeof m.tipo === "string" && typeof m.id === "string"
+  ? { tipo: m.tipo, id: m.id, ...(m.fimDeSemana === true ? { fimDeSemana: true } : {}) }
+  : null);
+
 /**
  * Uma sessão saneada, ou `null` quando a linha não é nem objeto.
  *
@@ -194,6 +201,7 @@ const centavos = (v) => Math.round(numero(v) * 100) / 100;
 export function normalizaEntradaCarteira(bruta) {
   if (!bruta || typeof bruta !== "object") return null;
   const tipoCru = String(bruta.tipo ?? "");
+  const marca = marcaDaLinha(bruta.guilda);
   return {
     id: String(bruta.id ?? "") || novoId("car"),
     nome: String(bruta.nome ?? ""),
@@ -204,6 +212,7 @@ export function normalizaEntradaCarteira(bruta) {
     /* O que estava gravado, quando o tipo não é mais um dos conhecidos. A tela
        o mostra no `title` da linha, e os números dela seguem valendo. */
     ...(TIPO_IDS.has(tipoCru) ? {} : { tipoCru }),
+    ...(marca ? { guilda: marca } : {}),
   };
 }
 
@@ -280,6 +289,19 @@ export const CARTEIRA_XP_POR_NIVEL = [
 ];
 
 /**
+ * A tabela acima no formato que o `nivelPorXp` lê: o nível de zero XP (`base`) e
+ * as linhas em ordem.
+ *
+ * ⚠ A TABELA É PARÂMETRO desde 2026-11-09. A Guilda da rota /EraDeOuro tem a
+ * dela (0 de XP no Nível 1, até o 20), e este módulo é FOLHA, então quem escolhe
+ * a tabela é quem chama. Sem o parâmetro vale esta, e nada muda para o addon.
+ */
+export const CARTEIRA_PROGRESSAO_PADRAO = Object.freeze({
+  base: CARTEIRA_NIVEL_BASE,
+  linhas: CARTEIRA_XP_POR_NIVEL,
+});
+
+/**
  * O nível que aquele XP compra.
  *
  * ⚠ A COMPARAÇÃO É `>=`, ou seja, o XP da linha JÁ dá o nível dela: 10 de XP é
@@ -290,10 +312,10 @@ export const CARTEIRA_XP_POR_NIVEL = [
  * não é o ponto que falta. O `>=` já garante isso, e está escrito porque a
  * Carteira aceita decimal e alguém vai perguntar.
  */
-export function nivelPorXp(xp) {
+export function nivelPorXp(xp, progressao = CARTEIRA_PROGRESSAO_PADRAO) {
   const total = numero(xp);
-  let nivel = CARTEIRA_NIVEL_BASE;
-  for (const linha of CARTEIRA_XP_POR_NIVEL) {
+  let nivel = progressao.base;
+  for (const linha of progressao.linhas) {
     if (total < linha.xp) break;
     nivel = linha.nivel;
   }
@@ -307,12 +329,13 @@ export function nivelPorXp(xp) {
  * FOLHA e não importa o `afty-addons`. Quem junta as duas perguntas é o
  * `nivelDaFicha`, lá. Aqui a resposta é sempre "que nível este XP compraria".
  */
-export const nivelDaCarteira = (creature) => nivelPorXp(resolveCarteira(creature).xpTotal);
+export const nivelDaCarteira = (creature, progressao) =>
+  nivelPorXp(resolveCarteira(creature).xpTotal, progressao);
 
 /** A próxima linha da tabela, ou `null` no fim dela. Serve o `title` da tela. */
-export function proximoNivelCarteira(xp) {
+export function proximoNivelCarteira(xp, progressao = CARTEIRA_PROGRESSAO_PADRAO) {
   const total = numero(xp);
-  const linha = CARTEIRA_XP_POR_NIVEL.find((l) => total < l.xp);
+  const linha = progressao.linhas.find((l) => total < l.xp);
   return linha ? { nivel: linha.nivel, xp: linha.xp, falta: centavos(linha.xp - total) } : null;
 }
 
@@ -365,12 +388,16 @@ const semAcento = (s) => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, ""
  * Tipo" tem de trazê-la também: filtrar pelo valor CRU deixaria de fora
  * exatamente a linha que a pessoa está procurando arrumar.
  */
-export function filtraLinhasCarteira(lista, { tipo = "todos", termo = "", tipos = CARTEIRA_TIPOS } = {}) {
+/* O tipo de que o filtro fala. Na Carteira do addon é o `tipo` da linha, e na da
+   Guilda é a marca dela (Missão ou Evento), que a tela passa em `tipoDe`. */
+const TIPO_DA_LINHA = (linha) => linha?.tipo;
+
+export function filtraLinhasCarteira(lista, { tipo = "todos", termo = "", tipos = CARTEIRA_TIPOS, tipoDe = TIPO_DA_LINHA } = {}) {
   const conhecidos = new Set(tipos.map((t) => t.id));
   const busca = semAcento(termo).trim();
   return (Array.isArray(lista) ? lista : []).filter((linha) => {
     if (tipo !== "todos") {
-      const cru = String(linha?.tipo ?? "");
+      const cru = String(tipoDe(linha) ?? "");
       if ((conhecidos.has(cru) ? cru : "") !== tipo) return false;
     }
     if (!busca) return true;
@@ -398,6 +425,10 @@ export function filtraLinhasCarteira(lista, { tipo = "todos", termo = "", tipos 
  * de anotação do jogador, e apagar o gasto mais caro por conta própria seria
  * escolher por ele. É a mesma regra de todo orçamento do projeto: reporta, não
  * remove.
+ *
+ * `opcoes.progressao` troca a tabela do `nivel` (a da Guilda, na rota
+ * /EraDeOuro), e `opcoes.guilda` só viaja no extrato, para a tela desenhar as
+ * Missões e os Eventos. Nenhuma das duas mexe nas somas.
  */
 export function resolveCarteira(creature, opcoes = {}) {
   const bruto = creature?.carteira;
@@ -436,11 +467,12 @@ export function resolveCarteira(creature, opcoes = {}) {
     ganho,
     retirado,
     atual,
-    nivel: nivelPorXp(xpTotal),
-    proximo: proximoNivelCarteira(xpTotal),
+    nivel: nivelPorXp(xpTotal, opcoes.progressao),
+    proximo: proximoNivelCarteira(xpTotal, opcoes.progressao),
     avisos,
     alimentaFocos: !!opcoes.alimentaFocos,
     alimentaNivel: !!opcoes.alimentaNivel,
+    guilda: !!opcoes.guilda,
   };
 }
 

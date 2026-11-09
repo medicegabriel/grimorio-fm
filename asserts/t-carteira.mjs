@@ -542,8 +542,10 @@ t("o resolvedor sanea o que o caminho deixou passar",
 /* A tela filtra por `primitiva`, então o assert prende o par id/primitiva. Sem
    isto, renomear um dos dois deixa a aba invisível para sempre, ou pior, visível
    para quem nunca instalou nada. */
+/* A `mesa` (2026-11-09) é a segunda porta, a da Carteira embutida do personagem
+   da Guilda. Ela é conferida em `t-era-de-ouro.mjs`. */
 t("a aba declara a primitiva certa",
-  /\{ id: "carteira",\s+label: "Carteira", primitiva: "carteira" \}/.test(builder), true);
+  /\{ id: "carteira",\s+label: "Carteira", primitiva: "carteira"(, mesa: "carteiraDaGuilda")? \}/.test(builder), true);
 t("e a tela é renderizada pelo id dela",
   builder.includes('tabAtiva === "carteira" && <TabCarteira'), true);
 

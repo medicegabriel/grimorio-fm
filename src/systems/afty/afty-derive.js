@@ -154,6 +154,8 @@ import { resolveCatarse, habilidadesDeOutraClasseDaCatarse } from "./afty-catars
 import { resolveEspinho, marcasDoEspinho, ESPINHO_TIPOS_ITEM } from "./afty-espinho";
 import { resolveCorrupcao } from "./afty-corrupcao";
 import { resolveCarteira } from "./afty-carteira";
+// O personagem da Guilda (rota /EraDeOuro): Carteira embutida e o nome do grau. FOLHA.
+import { carteiraDaGuilda, PROGRESSAO_ERA_DE_OURO, grauComNomeDaMesa } from "../eradeouro/era-de-ouro";
 import { atributosDosAddons } from "./afty-addons-atributos";
 import { hidratarFicha } from "./afty-addons-compostos";
 import { resolveCura, fonteCuraDeclarada, preparaRolagemCura } from "./afty-cura";
@@ -468,11 +470,16 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
      que perdeu o addon não pode devolver zero e deixar a pessoa achar que as
      linhas dela sumiram. É a mesma razão de a concessão continuar valendo sem a
      primitiva permitida (ver `asserts/t-primitivas.mjs`). */
-  const carteiraAlimentaFocos = liberacoes.includes("carteiraFocos");
-  const carteiraAlimentaNivel = liberacoes.includes("carteiraNivel");
+  /* O personagem da Guilda tem a Carteira EMBUTIDA (2026-11-09): as duas metades
+     do addon valem sem ele, e o nível sai da tabela da Guilda. Quem decide o nível
+     de verdade é o `nivelDaFicha`; a tabela vai aqui para o extrato mostrar o mesmo. */
+  const carteiraGuilda = carteiraDaGuilda(creature);
+  const carteiraAlimentaFocos = carteiraGuilda || liberacoes.includes("carteiraFocos");
+  const carteiraAlimentaNivel = carteiraGuilda || liberacoes.includes("carteiraNivel");
   const carteira = resolveCarteira(creature, {
     alimentaFocos: carteiraAlimentaFocos,
     alimentaNivel: carteiraAlimentaNivel,
+    ...(carteiraGuilda ? { progressao: PROGRESSAO_ERA_DE_OURO, guilda: true } : {}),
   });
   const a = creature?.attributes ?? {};
   const ov = creature?.statOverrides ?? {};
@@ -873,7 +880,8 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
   // Mod. Técnica = modificador do atributo escolhido para a Técnica/CD
   const tecnicaAttr = core.tecnicaAttr || "inteligencia";
 
-  const grau = grauFeiticeiro(nd);                                 // grau do feiticeiro por faixa de ND
+  // Grau do feiticeiro por faixa de ND. O personagem da Guilda chama o 17 de Grau Especial (só o nome).
+  const grau = grauComNomeDaMesa(creature, grauFeiticeiro(nd));
 
   // ---------- ESTÁGIO 0: fontes A MONTANTE do contexto ----------
   // Treinamentos, Habilidades Gerais e os campos "+ OUTROS" da ficha foram

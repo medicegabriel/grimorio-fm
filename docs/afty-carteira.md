@@ -6,7 +6,8 @@ o que já saiu, e os totais. Escrito em 2026-09-08, no dia em que o pedido chego
 > **Addon**: `addons/carteira-da-guilda.json`
 > **Módulo**: `src/systems/afty/afty-carteira.js` (folha, sem imports)
 > **Tela**: `src/systems/afty/AftyTabCarteira.jsx`
-> **Provas**: `asserts/t-carteira.mjs` (136 asserts)
+> **Provas**: `asserts/t-carteira.mjs` (138 asserts) e, para a Guilda, `asserts/t-era-de-ouro.mjs`
+> **Embutida na Guilda**: `src/systems/eradeouro/era-de-ouro.js` (ver a última seção)
 
 ---
 
@@ -332,3 +333,48 @@ Concessão do Mestre, que continua valendo sem a primitiva permitida.
   meio da mesa não tem por onde entrar sem passar pela sessão, e sessão é outro mecanismo.
 * **Vínculo entre a Carteira e a Loja de Catarse.** São duas moedas de mesa diferentes e nenhuma
   compra a outra.
+
+---
+
+## A Carteira da Guilda, embutida no personagem da /EraDeOuro (2026-11-09)
+
+O autor pediu, para a extensão /EraDeOuro, *"um sistema similar ao Addon de carteira já embutido
+seguindo essas tabelas"*. O personagem da Guilda tem esta Carteira SEM addon: a regra da mesa
+`carteiraDaGuilda` (`REGRAS_DA_MESA` em `src/systems/eradeouro/era-de-ouro.js`) abre a aba e liga
+as duas metades do addon, o Nível e os Focos. A Criatura da Guilda não tem (autor: "Só Personagem"),
+e a Carteira da Guilda saiu da lista de addons oficiais da mesa ("Embutir e tirar").
+
+| O quê | Como ficou |
+|---|---|
+| Tabela de nível | `PROGRESSAO_ERA_DE_OURO`: 0 de XP é o Nível 1, e cada nível pede 20 a mais até o 16 (300). Depois 500 no 17, 700 no 18, 900 no 19 e 1250 no 20, que é o teto |
+| Missões | Fácil 1 XP e 100 Ichibuban, Médio 3 e 200, Difícil 5 e 350, Extremo 10, 800 e 1 Foco de Interlúdio. Só a Extrema dá Foco |
+| Eventos | Semanal 20 XP, 1500 Ichibuban e 2 Focos, Lendário 200, 4000 e 4, e o Personalizado, zerado |
+| Fim de Semana | o XP vezes 1,5, nas Missões e nos Eventos. O Ichibuban e os Focos não mudam |
+| Linha de Missão | travada: os números são os da tabela |
+| Linha de Evento | editável: a tabela só preenche |
+| Nomes na tela | Ichibuban no lugar do $, Focos no lugar de Interlúdios, e o saldo atual leva o nome Ichibuban |
+
+⚠ **SÓ A COLUNA DE XP VIROU DADO**, como na tabela antiga. O "+N" e o Grau da tabela do autor já
+batiam com a Maestria e com o grau do feiticeiro, nível a nível. A única coluna que não batia era o
+nome do 17: o Afty diz Semi-Grau Especial e a Guilda diz Grau Especial. Virou a regra de tela
+`grauEspecialNo17`, que troca SÓ o rótulo (`grauComNomeDaMesa`). O `value`, o `rank` e a `ordem`
+seguem os do Semi-Grau Especial, então o conjunto de equipamentos de missão não muda. O
+`t-era-de-ouro.mjs` confere as três colunas contra a tabela escrita à mão.
+
+⚠ **OS NÚMEROS FICAM GRAVADOS NA LINHA.** `linhaDaGuilda(tipo, id, fimDeSemana)` monta a linha já
+com XP, Ichibuban e Focos, mais a marca `guilda: { tipo, id, fimDeSemana }`, que o saneador da
+Carteira carrega. É a regra da Loja de Catarse: mudar a tabela depois não reescreve a missão que já
+foi paga. A trava da Missão é de tela, e a Missão que sumir da tabela destrava.
+
+⚠ **O XP DO FIM DE SEMANA FICA QUEBRADO**, e não vai ao `floor` do resto do Afty. Decisão do autor:
+a Missão Fácil vira 1,5. A Carteira já soma XP decimal, e o nível só sobe com o ponto inteiro
+(treze Fáceis no Fim de Semana são 19,5 de XP, e ainda é o Nível 1).
+
+⚠ **A TABELA DA GUILDA VENCE A DO ADDON.** Uma ficha da Guilda criada antes de a Carteira ser
+embutida tem o addon Carteira da Guilda, agora destravado. O `nivelDaFicha` pergunta primeiro pela
+mesa, então o mesmo XP não vira dois níveis.
+
+O Fim de Semana é estado de tela, como o filtro: vale para as linhas lançadas com ele ligado, e a
+linha guarda a marca (o `×1,5` na coluna Tipo). O filtro da lista da Guilda é pela marca (Missões
+e Eventos), pelo `tipoDe` do `filtraLinhasCarteira`. A tabela do `nivelPorXp` virou parâmetro, com
+a antiga como padrão, e o addon não mudou em nada.

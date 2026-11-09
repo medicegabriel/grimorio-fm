@@ -915,3 +915,16 @@ Cada aumento de tamanho concede 10 metros de teto. O raio atual é o menor entre
 nível de Domínio × (1 + dias concluídos). A área permanece fixa e sem vida. Efeitos escolhidos
 usam as tabelas de Expansão e admitem duas escolhas iguais dentro do orçamento normal. Restrições
 concedem efeitos ou tamanho extra registrados pela mesa. Dentro aplica os efeitos, Fora os desliga.
+
+## Nível do personagem da Guilda (2026-11-09)
+
+Só no personagem com `mesa: "eradeouro"` (rota /EraDeOuro). A Criatura da Guilda segue o ND digitado.
+
+- **Nível** = o maior nível da `PROGRESSAO_ERA_DE_OURO` cujo XP é menor ou igual ao XP total da
+  Carteira. Zero de XP é o Nível 1, e o teto é o 20 (1250). Quem responde é o `nivelDaFicha`, que vem
+  antes da tabela do addon Carteira da Guilda.
+- **XP no Fim de Semana** = XP da Missão ou do Evento vezes 1,5, em duas casas, SEM `floor` (decisão
+  do autor). O Ichibuban e os Focos de Interlúdio não mudam.
+- **Focos** = soma dos Focos de Interlúdio anotados, no lugar do campo do jogador, mais o canal `focos`.
+- **Maestria** e **Grau** seguem as fórmulas de sempre. Do 17 ao 20 o grau se chama Grau Especial, com
+  o mesmo rank do Semi-Grau Especial.

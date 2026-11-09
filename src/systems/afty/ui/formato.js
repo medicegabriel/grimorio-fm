@@ -35,3 +35,12 @@ export const moedaBr = (v) => {
 
 /** `588.75` vira `588,75` e `9` continua `9`. Casa decimal só quando existe. */
 export const decimalBr = (v) => FMT_DECIMAL.format(Number(v) || 0);
+
+/**
+ * `1500` vira `1.500` e `-200` vira `−200`. É o dinheiro da Guilda (Ichibuban),
+ * que não tem cifrão. O sinal é o menos de verdade, como no `moedaBr`.
+ */
+export const quantiaBr = (v) => {
+  const n = Number(v) || 0;
+  return `${n < 0 ? "−" : ""}${FMT_DECIMAL.format(Math.abs(n))}`;
+};

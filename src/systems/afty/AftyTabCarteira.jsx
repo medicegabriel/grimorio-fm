@@ -35,11 +35,23 @@
  * ⚠ Regras de UI do autor valendo: nada de texto explicativo, só resultado e
  * AVISO, e aviso usa `<AlertTriangle/>` e nunca o caractere. Explicação de
  * campo vai no `title`.
+ *
+ * ------------------------------------------------------------
+ * A CARTEIRA DA GUILDA (2026-11-09)
+ * ------------------------------------------------------------
+ * No personagem da rota /EraDeOuro a aba vem EMBUTIDA, sem addon, e o extrato
+ * chega com `guilda: true`. Aí a lista nasce das Missões e dos Eventos da Guilda
+ * (`era-de-ouro.js`), e não do botão de sessão em branco:
+ *   • a linha de Missão é TRAVADA: os números são os da tabela, gravados nela;
+ *   • a linha de Evento é editável, e a tabela só a preenche;
+ *   • o Fim de Semana multiplica o XP das linhas novas por 1,5.
+ * O dinheiro vira Ichibuban e os Interlúdios viram Focos, que é como a Guilda
+ * chama os dois.
  * ============================================================
  */
 
 import { useMemo, useState } from "react";
-import { AlertTriangle, ChevronDown, GripVertical, Plus, Search, Trash2, X } from "lucide-react";
+import { AlertTriangle, ChevronDown, GripVertical, Lock, Plus, Search, Trash2, X } from "lucide-react";
 import {
   DndContext, PointerSensor, TouchSensor, KeyboardSensor,
   useSensor, useSensors, closestCenter,
@@ -49,7 +61,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { BoolChip, Card } from "./ui/primitivos";
-import { moedaBr, decimalBr } from "./ui/formato";
+import { moedaBr, decimalBr, quantiaBr } from "./ui/formato";
 import "./AftyTabCarteira.css";
 import {
   CARTEIRA_TIPOS,
@@ -59,6 +71,17 @@ import {
   filtraLinhasCarteira,
   moverNaCarteira,
 } from "./afty-carteira";
+import {
+  EVENTOS_ERA_DE_OURO,
+  FILTROS_DA_GUILDA,
+  MISSOES_ERA_DE_OURO,
+  MOEDA_ERA_DE_OURO,
+  itemDaGuilda,
+  linhaDaGuilda,
+  linhaTravada,
+  rotuloDaLinhaDaGuilda,
+  xpComFimDeSemana,
+} from "../eradeouro/era-de-ouro";
 
 /* ============================================================ */
 /* AS RÉGUAS DAS DUAS LISTAS                                     */
@@ -233,6 +256,10 @@ function Total({ rotulo, valor, dica, tom = "normal" }) {
    O `-mt-4` come o padding de cima do corpo do card, para a faixa encostar na
    barra do título em vez de flutuar a quatro pixels dela. */
 function FaixaDaCarteira({ extrato }) {
+  // A Guilda conta em Ichibuban, sem cifrão, e chama os Interlúdios de Focos.
+  const guilda = extrato.guilda;
+  const dinheiro = guilda ? quantiaBr : moedaBr;
+  const colunaDinheiro = guilda ? MOEDA_ERA_DE_OURO : "$";
   return (
     <div
       className="faixa-carteira sticky z-10 -mx-4 -mt-4 px-4 pt-4 pb-3 mb-3 bg-slate-900 border-b border-slate-800"
@@ -258,18 +285,20 @@ function FaixaDaCarteira({ extrato }) {
         )}
         <Total rotulo="XP Total" valor={decimalBr(extrato.xpTotal)} dica="Soma da coluna XP de todas as sessões" />
         <Total
-          rotulo="Interlúdios"
+          rotulo={guilda ? "Focos" : "Interlúdios"}
           valor={extrato.interludios}
           tom={extrato.alimentaFocos ? "forte" : "normal"}
-          dica={extrato.alimentaFocos
-            ? "Soma da coluna Interlúdios. Este addon a usa como orçamento de Focos na aba Interlúdios"
-            : "Soma da coluna Interlúdios de todas as sessões"}
+          dica={guilda
+            ? "Soma dos Focos de Interlúdio anotados. É o orçamento de Focos da aba Interlúdios"
+            : extrato.alimentaFocos
+              ? "Soma da coluna Interlúdios. Este addon a usa como orçamento de Focos na aba Interlúdios"
+              : "Soma da coluna Interlúdios de todas as sessões"}
         />
-        <Total rotulo="Recebido" valor={moedaBr(extrato.ganho)} dica="Soma da coluna $ de todas as sessões" />
-        <Total rotulo="Retirado" valor={moedaBr(extrato.retirado)} dica="Soma dos gastos da lista de baixo" />
+        <Total rotulo="Recebido" valor={dinheiro(extrato.ganho)} dica={`Soma da coluna ${colunaDinheiro} de todas as sessões`} />
+        <Total rotulo="Retirado" valor={dinheiro(extrato.retirado)} dica="Soma dos gastos da lista de baixo" />
         <Total
-          rotulo="Atual"
-          valor={moedaBr(extrato.atual)}
+          rotulo={guilda ? MOEDA_ERA_DE_OURO : "Atual"}
+          valor={dinheiro(extrato.atual)}
           tom={extrato.atual < 0 ? "ruim" : "forte"}
           dica="Recebido menos Retirado"
         />
@@ -448,6 +477,118 @@ function LinhaDeEntrada({ entrada, onPatch, onRemove }) {
 }
 
 /* ============================================================ */
+/* UMA LINHA DA GUILDA                                           */
+/* ============================================================ */
+/* Valor de linha TRAVADA: tem a cara do campo, sem ser campo. */
+const VALOR_TRAVADO = "h-7 px-2 rounded border border-slate-800/60 bg-slate-950/30 text-[12px] text-slate-300 font-mono tabular-nums flex items-center justify-center min-w-0 truncate";
+
+/* A linha que uma Missão ou um Evento preencheu. A coluna Tipo diz qual foi, e o
+   ×1,5 marca o Fim de Semana.
+
+   ⚠ A MISSÃO É TRAVADA, e o Evento não (autor, 2026-11-09: só os Eventos têm
+   valores personalizados). Errou a Missão, apaga a linha e lança de novo. Os
+   números da Missão vêm da tabela e ficam gravados na linha, então mudar a tabela
+   depois não reescreve a missão já paga. */
+function LinhaDaGuilda({ entrada, onPatch, onRemove }) {
+  const marca = entrada.guilda;
+  const item = itemDaGuilda(marca);
+  const rotulo = rotuloDaLinhaDaGuilda(marca) ?? "Sem Tipo";
+  const fds = marca?.fimDeSemana === true;
+  const xpDaTabela = item ? `${decimalBr(item.xp)} de XP${fds ? ", vezes 1,5 do Fim de Semana" : ""}` : "";
+  return (
+    <LinhaArrastavel id={entrada.id} grade={GRADE_ENTRADA} rotulo={entrada.nome || rotulo}>
+      <input
+        value={entrada.nome ?? ""}
+        onChange={(e) => onPatch({ nome: e.target.value })}
+        placeholder="Nome"
+        className={`${CAMPO} min-w-0`}
+      />
+      {linhaTravada(marca) ? (
+        <>
+          <span className={VALOR_TRAVADO} title={xpDaTabela}>{decimalBr(entrada.xp)}</span>
+          <span className={VALOR_TRAVADO} title={`${MOEDA_ERA_DE_OURO} da ${rotulo}`}>{quantiaBr(entrada.dinheiro)}</span>
+          <span className={VALOR_TRAVADO} title={`Focos de Interlúdio da ${rotulo}`}>{entrada.interludios}</span>
+        </>
+      ) : (
+        <>
+          <input
+            value={entrada.xp ?? ""}
+            onChange={(e) => onPatch({ xp: e.target.value })}
+            inputMode="decimal"
+            title={fds ? "XP deste evento, lançado no Fim de Semana" : "XP deste evento"}
+            className={`${CAMPO_NUM} min-w-0`}
+          />
+          <input
+            value={entrada.dinheiro ?? ""}
+            onChange={(e) => onPatch({ dinheiro: e.target.value })}
+            inputMode="decimal"
+            title={`${MOEDA_ERA_DE_OURO} deste evento`}
+            className={`${CAMPO_NUM} min-w-0`}
+          />
+          <input
+            type="number"
+            value={entrada.interludios ?? ""}
+            onChange={(e) => onPatch({ interludios: e.target.value })}
+            title="Focos de Interlúdio deste evento"
+            className={`${CAMPO_NUM} min-w-0`}
+          />
+        </>
+      )}
+      <span
+        className="h-7 min-w-0 flex items-center justify-center gap-1 text-[12px] text-slate-300"
+        title={fds ? `${rotulo} no Fim de Semana` : rotulo}
+      >
+        {linhaTravada(marca) && <Lock className="w-3 h-3 flex-shrink-0 text-slate-500" aria-hidden="true" />}
+        <span className="truncate">{rotulo}</span>
+        {fds && <span className="flex-shrink-0 font-mono text-[10px] text-purple-300">×1,5</span>}
+      </span>
+      <button type="button" onClick={onRemove} title="Remover esta linha" className={BOTAO_LIXO}>
+        <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+      </button>
+    </LinhaArrastavel>
+  );
+}
+
+/* ============================================================ */
+/* O LANÇADOR DA GUILDA                                          */
+/* ============================================================ */
+/* Um botão por Missão e por Evento: cada clique acrescenta a linha já preenchida.
+   O Fim de Semana é ESTADO DE TELA, como o filtro: vale para as linhas que se
+   lançam com ele ligado, e a linha guarda a marca. */
+function LancadorDaGuilda({ onLancar }) {
+  const [fimDeSemana, setFimDeSemana] = useState(false);
+  const grupo = (titulo, tipo, itens) => (
+    <div className="flex flex-wrap items-center gap-1.5">
+      <span className={`${CABECALHO} w-14 flex-shrink-0`}>{titulo}</span>
+      {itens.map((i) => (
+        <button
+          key={i.id}
+          type="button"
+          onClick={() => onLancar(tipo, i.id, fimDeSemana)}
+          title={`${decimalBr(xpComFimDeSemana(i.xp, fimDeSemana))} de XP, ${quantiaBr(i.dinheiro)} ${MOEDA_ERA_DE_OURO} e ${i.focos} ${i.focos === 1 ? "Foco" : "Focos"} de Interlúdio`}
+          className={BOTAO_MAIS}
+        >
+          <Plus className="w-3.5 h-3.5" aria-hidden="true" /> {i.label}
+        </button>
+      ))}
+    </div>
+  );
+  return (
+    <div className="mt-3 space-y-2">
+      <BoolChip
+        ativo={fimDeSemana}
+        onToggle={() => setFimDeSemana((v) => !v)}
+        title="O XP das linhas lançadas vale 1,5 vez"
+      >
+        Fim de Semana
+      </BoolChip>
+      {grupo("Missão", "missao", MISSOES_ERA_DE_OURO)}
+      {grupo("Evento", "evento", EVENTOS_ERA_DE_OURO)}
+    </div>
+  );
+}
+
+/* ============================================================ */
 /* UM GASTO                                                      */
 /* ============================================================ */
 function LinhaDeGasto({ gasto, onPatch, onRemove }) {
@@ -501,6 +642,9 @@ export default function TabCarteira({ draft, derived, patchCarteira }) {
      O eslint pegou isso na primeira versão deste arquivo. */
   const entradas = Array.isArray(draft?.carteira?.entradas) ? draft.carteira.entradas : SEM_LINHAS;
   const gastos = Array.isArray(draft?.carteira?.gastos) ? draft.carteira.gastos : SEM_LINHAS;
+  /* A Carteira embutida do personagem da Guilda. Ver o cabeçalho. */
+  const guilda = !!extrato.guilda;
+  const filtrosEntrada = guilda ? FILTROS_DA_GUILDA : CARTEIRA_TIPOS;
 
   const patchEntrada = (id, campo) => patchCarteira({
     entradas: entradas.map((e) => (e.id === id ? { ...e, ...campo } : e)),
@@ -518,9 +662,19 @@ export default function TabCarteira({ draft, derived, patchCarteira }) {
   const [termoGasto, setTermoGasto] = useState("");
 
   const entradasVisiveis = useMemo(
-    () => filtraLinhasCarteira(entradas, { tipo: tipoEntrada, termo: termoEntrada, tipos: CARTEIRA_TIPOS }),
-    [entradas, tipoEntrada, termoEntrada],
+    () => filtraLinhasCarteira(entradas, {
+      tipo: tipoEntrada,
+      termo: termoEntrada,
+      tipos: filtrosEntrada,
+      // Na Guilda o filtro é pela marca (Missão ou Evento), e não pelo tipo de sessão.
+      ...(guilda ? { tipoDe: (l) => l?.guilda?.tipo } : {}),
+    }),
+    [entradas, tipoEntrada, termoEntrada, filtrosEntrada, guilda],
   );
+  const lancar = (tipo, id, fimDeSemana) => {
+    const campos = linhaDaGuilda(tipo, id, fimDeSemana);
+    if (campos) patchCarteira({ entradas: [...entradas, { ...createBlankEntradaCarteira(), ...campos }] });
+  };
   const gastosVisiveis = useMemo(
     () => filtraLinhasCarteira(gastos, { tipo: tipoGasto, termo: termoGasto, tipos: CARTEIRA_GASTO_TIPOS }),
     [gastos, tipoGasto, termoGasto],
@@ -553,7 +707,7 @@ export default function TabCarteira({ draft, derived, patchCarteira }) {
         )}
 
         <BarraDeFiltro
-          tipos={CARTEIRA_TIPOS}
+          tipos={filtrosEntrada}
           tipo={tipoEntrada}
           onTipo={setTipoEntrada}
           termo={termoEntrada}
@@ -575,8 +729,8 @@ export default function TabCarteira({ draft, derived, patchCarteira }) {
             <span />
             <span className={CABECALHO}>Nome</span>
             <span className={`${CABECALHO} text-center`}>XP</span>
-            <span className={`${CABECALHO} text-center`}>$</span>
-            <span className={`${CABECALHO} text-center`}>Inter.</span>
+            <span className={`${CABECALHO} text-center truncate`}>{guilda ? MOEDA_ERA_DE_OURO : "$"}</span>
+            <span className={`${CABECALHO} text-center`}>{guilda ? "Focos" : "Inter."}</span>
             <span className={`${CABECALHO} text-center`}>Tipo</span>
             <span />
           </div>
@@ -595,26 +749,36 @@ export default function TabCarteira({ draft, derived, patchCarteira }) {
           >
             <SortableContext items={entradasVisiveis.map((e) => e.id)} strategy={verticalListSortingStrategy}>
               <div className="space-y-1.5">
-                {entradasVisiveis.map((e) => (
-                  <LinhaDeEntrada
-                    key={e.id}
-                    entrada={e}
-                    onPatch={(campo) => patchEntrada(e.id, campo)}
-                    onRemove={() => patchCarteira({ entradas: entradas.filter((x) => x.id !== e.id) })}
-                  />
-                ))}
+                {entradasVisiveis.map((e) => {
+                  /* A linha com a marca da Guilda se desenha pela marca, em
+                     qualquer Carteira: os números dela já vêm gravados. */
+                  const Linha = e.guilda ? LinhaDaGuilda : LinhaDeEntrada;
+                  return (
+                    <Linha
+                      key={e.id}
+                      entrada={e}
+                      onPatch={(campo) => patchEntrada(e.id, campo)}
+                      onRemove={() => patchCarteira({ entradas: entradas.filter((x) => x.id !== e.id) })}
+                    />
+                  );
+                })}
               </div>
             </SortableContext>
           </DndContext>
         </div>
 
-        <button
-          type="button"
-          onClick={() => patchCarteira({ entradas: [...entradas, createBlankEntradaCarteira()] })}
-          className={`${BOTAO_MAIS} mt-2`}
-        >
-          <Plus className="w-3.5 h-3.5" aria-hidden="true" /> Sessão
-        </button>
+        {/* Na Guilda a linha nasce de uma Missão ou de um Evento, e não em branco. */}
+        {guilda ? (
+          <LancadorDaGuilda onLancar={lancar} />
+        ) : (
+          <button
+            type="button"
+            onClick={() => patchCarteira({ entradas: [...entradas, createBlankEntradaCarteira()] })}
+            className={`${BOTAO_MAIS} mt-2`}
+          >
+            <Plus className="w-3.5 h-3.5" aria-hidden="true" /> Sessão
+          </button>
+        )}
       </Card>
 
       <Card title="Carteira · Gastos">

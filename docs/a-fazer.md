@@ -911,6 +911,13 @@ aprovada com esses limites, o teste real do autor continua pendente.
 
 ## PERGUNTAS AO AUTOR
 
+### Era de Ouro: o conteúdo da aba Propriedades
+**Onde:** `src/systems/eradeouro/era-de-ouro.js` (regra `abaPropriedades`), `AftyCreatureBuilder.jsx` (`TABS`)
+**Situação:** o personagem da Guilda tem a aba Propriedades só com o título, porque as informações dela
+"serão denominadas depois". Ela e a Carteira embutida ficam no menu Outros (decisão do autor, 2026-11-09).
+**Precisa:** o autor mandar o que vai em Propriedades.
+**Anotado:** 2026-11-09, ao embutir a Carteira na Guilda
+
 ### Vespa Crabro: definir o bônus futuro do Novo Estilo das Sombras
 **Onde:** `addons/vespa-crabro.json`, `docs/afty-vespa-crabro.md`.
 **Situação:** pacote 1.1.0 tem treino, duas armas, duas manobras, oito

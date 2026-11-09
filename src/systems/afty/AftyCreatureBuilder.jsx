@@ -44,6 +44,8 @@ import { estadoInicialComRascunho, useRascunhoAfty, formatarSalvoEm } from "./af
 import {
   SISTEMA_PADRAO, sistemaDaFicha, normalizaSistema, regraDo, rotuloDoNivel, palavrasDoSistema, mostraJogadasDeAtaque,
 } from "./afty-sistema";
+// As abas que a mesa da Guilda (rota /EraDeOuro) abre. FOLHA, sem risco de ciclo.
+import { regraDaMesa } from "../eradeouro/era-de-ouro";
 import {
   origensDoSistema, getOrigem, origemTemDesenvolvimento, origemPoolLimite,
   clasDaOrigem, getCla, caracteristicasEfetivas, totalDaAlocacao, usoDaAlocacao,
@@ -266,7 +268,11 @@ const TABS = [
      testes de resistência em Perícias. */
   { id: "defesas",       label: "Resistências", outros: true },
   // Uma tela com primitiva só aparece quando a criatura tem o Addon.
-  { id: "carteira",      label: "Carteira", primitiva: "carteira" },
+  /* `mesa` é a regra da Guilda (era-de-ouro.js) que também abre a aba, sem addon:
+     o personagem da rota /EraDeOuro tem a Carteira embutida (2026-11-09). */
+  { id: "carteira",      label: "Carteira", primitiva: "carteira", mesa: "carteiraDaGuilda" },
+  // Só a mesa abre, e fica em Outros como a Carteira (autor, 2026-11-09). Vazia até o autor mandar o conteúdo.
+  { id: "propriedades",  label: "Propriedades", mesa: "abaPropriedades" },
   { id: "catarse",       label: "Catarse", primitiva: "catarse" },
   { id: "tita",          label: "Titã", primitiva: "titaColosso" },
   { id: "caracteristicasAmaldicoadas", label: "Características Amaldiçoadas", primitiva: "caracteristicasAmaldicoadas" },
@@ -274,20 +280,28 @@ const TABS = [
   { id: "quimeras",      label: "Quimeras", primitiva: "abaQuimeras" },
 ];
 
-// Novas telas liberadas por Addon entram em Outros quando registradas em TABS.
-const abaEmOutros = (aba) => !aba.principal && (aba.outros || !!aba.primitiva);
+// Novas telas liberadas por Addon (ou pela mesa) entram em Outros quando registradas em TABS.
+const abaEmOutros = (aba) => !aba.principal && (aba.outros || !!aba.primitiva || !!aba.mesa);
 
 /* A aba "informacoes" some no Player, e o conteúdo dela sobe para a
    "identidade". A lista é filtrada em vez de duplicada: uma segunda lista
    divergiria na primeira aba nova que alguém somasse a só uma delas. */
 /* `primitivas` é o `derived.primitivas`, a lista que os addons desta criatura
    pedem. Uma aba sem `primitiva` declarada aparece sempre, que é o caso de
-   todas menos a Catarse. */
-const tabsDoSistema = (sistema, primitivas = []) => {
+   todas menos a Catarse.
+
+   ⚠ `ficha` é a ficha (o rascunho), e serve só à aba com `mesa`: ela aparece
+   quando a regra da Guilda vale NESTA ficha, que é o que `regraDaMesa` lê (a
+   mesa e o tipo dela), e nunca a rota. */
+const tabsDoSistema = (sistema, primitivas = [], ficha = null) => {
   const base = regraDo(sistema, "abasIdentidade") === "player"
     ? TABS.filter((t) => t.id !== "informacoes")
     : TABS;
-  return base.filter((t) => !t.primitiva || primitivas.includes(t.primitiva));
+  return base.filter((t) => {
+    if (!t.primitiva && !t.mesa) return true;
+    if (t.primitiva && primitivas.includes(t.primitiva)) return true;
+    return !!t.mesa && regraDaMesa(ficha, t.mesa) !== "base";
+  });
 };
 
 // A aba Habilidades agora é REAL (Feitiços / Estilo das Sombras / Habilidades
@@ -455,9 +469,10 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
   /* A aba das Características Amaldiçoadas leva o nome que a origem dá ao pool
      (2026-10-12): "Características de Anatomia" no Vampiro. */
   const rotuloCaracteristicas = derived.caracteristicasAmaldicoadas?.rotulo ?? null;
-  const abasVisiveis = useMemo(() => tabsDoSistema(sistema, derived.primitivas)
+  const mesaDoRascunho = draft.mesa;
+  const abasVisiveis = useMemo(() => tabsDoSistema(sistema, derived.primitivas, { mesa: mesaDoRascunho, rulesVersion: sistema })
     .map((t) => (t.id === "caracteristicasAmaldicoadas" && rotuloCaracteristicas ? { ...t, label: rotuloCaracteristicas } : t)),
-  [sistema, derived.primitivas, rotuloCaracteristicas]);
+  [sistema, derived.primitivas, rotuloCaracteristicas, mesaDoRascunho]);
   const umaAbaSo = regraDo(sistema, "abasIdentidade") === "player";
   const abaBase = umaAbaSo ? "identidade" : "informacoes";
   // Quem estava numa aba que sumiu (a Aptidões do Restringido, ou a Informações
@@ -1810,6 +1825,8 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
           {tabAtiva === "interludios" && <TabInterludios draft={draft} derived={derived} setTreinoProgresso={setTreinoProgresso} setTreinoInstance={setTreinoInstance} setTreinoAlvo={setTreinoAlvo} setTreinoEscolha={setTreinoEscolha} setTreinoEspecialVezes={setTreinoEspecialVezes} setTreinoEspecialProgresso={setTreinoEspecialProgresso} sistema={sistema} setFocosLivres={setFocosLivres} addForja={addForja} patchForja={patchForja} removeForja={removeForja} />}
           {tabAtiva === "defesas" && <TabDefesas derived={derived} setDefesaEstado={setDefesaEstado} setDefesaRd={setDefesaRd} />}
           {tabAtiva === "carteira" && <TabCarteira draft={draft} derived={derived} patchCarteira={patchCarteira} />}
+          {/* A aba Propriedades da Guilda: só o título até o autor definir o que vai nela. */}
+          {tabAtiva === "propriedades" && <Card title="Propriedades" recolhido />}
           {tabAtiva === "votos" && (
             <TabVotos
               draft={draft}

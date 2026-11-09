@@ -1,5 +1,30 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-09 · A CARTEIRA EMBUTIDA DO PERSONAGEM DA GUILDA
+
+Pedido do autor: a extensão /EraDeOuro segue a base do /Player, com "um sistema similar ao Addon de carteira já embutido" (a tabela de progressão por XP da Guilda, as Missões, os Eventos e o Fim de Semana) e uma aba Propriedades. Decisões dele, por pergunta:
+
+| Pergunta | Resposta |
+|---|---|
+| A Guilda passa a criar só Personagem? | Não, mantém Criatura e Personagem |
+| A Carteira embutida tira o addon Carteira da Guilda dos oficiais? | Sim ("Embutir e tirar") |
+| A tabela de XP e as Missões valem para a Criatura da Guilda? | Não, só para o Personagem |
+| O Fim de Semana (XP vezes 1,5) arredonda? | Não, o XP fica quebrado (a Fácil vira 1,5) |
+| O Fim de Semana vale nos Eventos? | Sim, nas Missões e nos Eventos |
+| O Nível 17 é Grau Especial? | Sim, na Guilda |
+| A linha de Missão é travada? | Sim, só o Evento é editável |
+| A aba Propriedades | Criada agora, vazia |
+| As abas da Guilda sobem para a barra principal? | Não, a Carteira e a Propriedades ficam em Outros |
+
+- **As primeiras regras da mesa**, em `REGRAS_DA_MESA` (`era-de-ouro.js`): `carteiraDaGuilda` (regra), `grauEspecialNo17` (tela) e `abaPropriedades` (tela). Campo novo `sistemas: ["player"]`, que o `regraDaMesa` respeita. A Criatura da Guilda deriva idêntica à do Afty.
+- **Carteira embutida:** a aba abre pela mesa (campo `mesa` no `TABS` do criador, ao lado da `primitiva`), o `deriveAfty` liga as duas metades do addon (Nível e Focos) e o `nivelDaFicha` lê a tabela da Guilda (`PROGRESSAO_ERA_DE_OURO`: 0 de XP no Nível 1, 1250 no 20). Ela vence a do addon quando a ficha tem os dois. `nivelPorXp`, `proximoNivelCarteira` e `nivelDaCarteira` ganharam a tabela como parâmetro, com a antiga como padrão.
+- **Missões e Eventos:** `linhaDaGuilda(tipo, id, fimDeSemana)` monta a linha com os números GRAVADOS (regra da Loja de Catarse) e a marca `guilda`, que o saneador da Carteira carrega. A Missão é travada na tela e o Evento é editável. Ichibuban no lugar do $, Focos no lugar de Interlúdios. Guia em `docs/afty-carteira.md`, última seção.
+- **Grau Especial no 17:** só o rótulo (`grauComNomeDaMesa`), com o `value`, o `rank` e a `ordem` do Semi-Grau Especial. O conjunto de equipamentos de missão não muda.
+- **Aba Propriedades:** só o título até o autor mandar o conteúdo (pergunta em `a-fazer.md`). Ela e a Carteira ficam no menu Outros, por decisão do autor.
+- **Trava dos oficiais:** passou a segurar só o addon LIGADO. Antes ela também impedia ligar um oficial que faltava numa ficha da Guilda.
+- **Ficha da Guilda que nasceu com a Carteira da Guilda** (entre os dois commits da rota): o addon fica, agora destravado, e a tabela da mesa vence a dele.
+- Verificado: `t-era-de-ouro.mjs` (221: a tabela do autor escrita à mão nas três colunas, a equivalência com o nível digitado e a contraprova, a Criatura intacta, as linhas e o Fim de Semana), `t-carteira.mjs` (138), suíte inteira (315 de 317 arquivos, e as duas falhas, `t-reconciliacao-g00` e `t-revisao-g00`, são as mesmas da base `eb75dec`, de inventário de revisão), eslint de `src/systems/afty` e `src/systems/eradeouro`, build e navegador (Missão Extrema, e Fácil e Semanal no Fim de Semana: Nível 3, 41,5 de XP, 3 Focos e 2.400 Ichibuban; o Evento editado para 1000 de XP leva ao Nível 19 com Grau Especial; a Criatura da Guilda e o /Player sem as abas novas). Nada em `src/components/`.
+
 ## SESSÃO DE 2026-11-09 · A ROTA /ERADEOURO (A BASE DA GUILDA)
 
 Terceira rota escondida, `/EraDeOuro`, para uma Guilda do autor. Uma lista com os dois tipos de ficha (criatura e personagem), armazenamento próprio e um gancho vazio para as regras da Guilda.

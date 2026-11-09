@@ -171,7 +171,8 @@ function DetalheDoAddon({
      mostrá-lo duas vezes era o defeito que o autor apontou. */
   const blocos = blocosDaDescricao(item.pacote.descricao, { resumo: item.resumoDeclarado ? item.resumo : "" });
   const { visiveis, resto } = recortaBlocos(blocos);
-  const bloqueado = travado || (!item.ligado && item.barrado.length > 0);
+  // A trava oficial da Guilda segura o addon LIGADO. Desligado, ele pode ligar.
+  const bloqueado = (travado && item.ligado) || (!item.ligado && item.barrado.length > 0);
   return (
     <div className="space-y-4 leading-tight">
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
@@ -471,7 +472,9 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha, rend
   const pacoteParaExibir = (i) => i.copia ?? (i.composto ? compor(i.pacote, sistemaDaTela, {}) : i.pacote);
 
   const alternar = (i) => {
-    if (addonTravado(draft, i.id)) return;
+    /* A trava da Guilda só impede DESLIGAR. O oficial que falta numa ficha da
+       Guilda (a que nasceu antes de ele entrar na lista) precisa poder ligar. */
+    if (i.ligado && addonTravado(draft, i.id)) return;
     if (i.ligado) {
       if (i.composto) desligarCompostoDaFicha(i.id);
       else pedirSenhaParaDesligar(i.copia);
