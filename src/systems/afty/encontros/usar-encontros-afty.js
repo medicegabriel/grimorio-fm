@@ -19,9 +19,9 @@ import { criarEncontro, duplicarEncontro, normalizarEncontro } from "./afty-enco
 
 const CHAVE = "afty_encontros_v1";
 
-const carregar = () => {
+const carregar = (chave = CHAVE) => {
   try {
-    const cru = localStorage.getItem(CHAVE);
+    const cru = localStorage.getItem(chave);
     if (!cru) return [];
     const lista = JSON.parse(cru);
     if (!Array.isArray(lista)) return [];
@@ -33,17 +33,20 @@ const carregar = () => {
   }
 };
 
-const gravar = (lista) => {
+const gravar = (lista, chave = CHAVE) => {
   try {
-    localStorage.setItem(CHAVE, JSON.stringify(lista));
+    localStorage.setItem(chave, JSON.stringify(lista));
     return true;
   } catch {
     return false;
   }
 };
 
-export default function useEncontrosAfty() {
-  const [encontros, setEncontros] = useState(carregar);
+/* `chave` existe para a rota /EraDeOuro ter encontros só dela. Sem argumento é a
+   chave de sempre, compartilhada pelo /Afty e pelo /Player. Ela é fixa durante a
+   vida do componente, como o namespace do armazenamento de fichas. */
+export default function useEncontrosAfty(chave = CHAVE) {
+  const [encontros, setEncontros] = useState(() => carregar(chave));
   // Cota estourada não pode ser silenciosa aqui: um encontro é o trabalho de
   // preparação de uma sessão inteira, e perdê-lo sem aviso é pior que a Ficha
   // perder o PV de uma luta.
@@ -67,9 +70,9 @@ export default function useEncontrosAfty() {
     const proxima = fn(listaRef.current);
     listaRef.current = proxima;
     setEncontros(proxima);
-    setSemGravar(!gravar(proxima));
+    setSemGravar(!gravar(proxima, chave));
     return proxima;
-  }, []);
+  }, [chave]);
 
   const criar = useCallback((opcoes = {}) => {
     const novo = criarEncontro(opcoes);

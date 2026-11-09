@@ -17,6 +17,10 @@ import useEncounterManager from "./useEncounterManager";
 import useDashboardView from "./useDashboardView";
 import useEncontrosAfty from "./systems/afty/encontros/usar-encontros-afty";
 import { vocabularioDoDashboard, sistemaGravado, getSistema } from "./systems/afty/afty-sistema";
+import {
+  MESA_ERA_DE_OURO, NAMESPACE_ERA_DE_OURO, CHAVE_ENCONTROS_ERA_DE_OURO, ERA_DE_OURO,
+  ehRotaEraDeOuro, vocabularioDeFichas,
+} from "./systems/eradeouro/era-de-ouro";
 import { COMPENDIUM, getCompendiumById, isBuiltInId } from "./fm-compendium";
 import { Analytics } from '@vercel/analytics/react';
 
@@ -47,22 +51,33 @@ export default function App() {
   // a chave de sistema. Ver src/systems/afty/afty-sistema.js.
   //
   // `sistemaDaRota` é null fora das duas, e é o que devolve a 2.5.2 intacta.
-  const sistemaDaRota =
+  //
+  // ⚠ A TERCEIRA ROTA, /EraDeOuro (a Guilda), NÃO É UM TERCEIRO SISTEMA. Ela
+  // guarda criatura e personagem numa lista só, com armazenamento próprio. Por
+  // isso existem DOIS valores aqui: `rotaId` é o dono das chaves do localStorage
+  // ("afty", "player" ou "eradeouro"), e `sistemaDaRota` segue sendo o sistema em
+  // que uma ficha sem marca cai ("afty" ou "player"). Na Guilda quem escolhe o
+  // sistema da ficha NOVA é a pessoa, na hora de criar, e a `mesa` carimba a
+  // ficha. Ver src/systems/eradeouro/era-de-ouro.js.
+  const rotaId =
     typeof location === "undefined" ? null
       : /^\/afty\/?$/i.test(location.pathname) ? "afty"
       : /^\/player\/?$/i.test(location.pathname) ? "player"
+      : ehRotaEraDeOuro(location.pathname) ? NAMESPACE_ERA_DE_OURO
       : null;
+  const mesa = rotaId === NAMESPACE_ERA_DE_OURO ? MESA_ERA_DE_OURO : null;
+  const sistemaDaRota = mesa ? "afty" : rotaId;
 
   // Tudo que valia para "está no ambiente privado" continua lendo esta booleana,
-  // e por isso as duas rotas dividem builder, ficha e encontros sem um `if` por
+  // e por isso as rotas dividem builder, ficha e encontros sem um `if` por
   // tela. Quem precisa saber QUAL dos dois lê `sistemaDaRota`.
-  const aftyMode = sistemaDaRota !== null;
+  const aftyMode = rotaId !== null;
 
   const storageDaRota = useCreatureStorage(
-    aftyMode ? { namespace: sistemaDaRota, defaultRulesVersion: sistemaDaRota } : undefined
+    aftyMode ? { namespace: rotaId, defaultRulesVersion: sistemaDaRota } : undefined
   );
   const [folderView, setFolderView] = useDashboardView(
-    sistemaDaRota, storageDaRota.folders, !aftyMode,
+    rotaId, storageDaRota.folders, !aftyMode,
   );
   // A biblioteca relida pelo Encontro também atualiza esta aba inteira.
   // Atualizar só o dono faria o hook regravar as demais fichas desatualizadas.
@@ -72,7 +87,8 @@ export default function App() {
   const removerDaRota = storageDaRota.removeMany;
   const ordenarDaRota = storageDaRota.reorderCreatures;
   const atualizarBibliotecaDoEncontro = useCallback((sistema, biblioteca) => {
-    if (sistema !== sistemaDaRota) return;
+    // `sistema` aqui é o dono da biblioteca gravada: a rota, e não o sistema da ficha.
+    if (sistema !== rotaId) return;
     const ids = biblioteca.map((c) => c.id);
     const idsAtuais = new Set(ids);
     const anteriores = new Map(fichasDaRota.map((c) => [c.id, c]));
@@ -91,16 +107,19 @@ export default function App() {
       atualizarDaRota(ficha.id, { ...apagados, ...atual });
     }
     ordenarDaRota(ids);
-  }, [sistemaDaRota, fichasDaRota, criarDaRota, atualizarDaRota, removerDaRota, ordenarDaRota]);
-  const encounterManager = useEncounterManager(aftyMode ? sistemaDaRota : "");
+  }, [rotaId, fichasDaRota, criarDaRota, atualizarDaRota, removerDaRota, ordenarDaRota]);
+  const encounterManager = useEncounterManager(aftyMode ? rotaId : "");
   // ⚠ Gerenciador PRÓPRIO do Afty, e não o de cima com namespace: o combatente
   // do Afty guarda `ficha` e `sessao`, e o da 2.5.2 guarda `snapshot` e
   // `combatState`. Chave própria (`afty_encontros_v1`), shape próprio. O hook
   // roda nos dois modos porque hook não pode ser condicional; fora do /Afty ele
   // só lê uma chave vazia.
-  const encontrosAfty = useEncontrosAfty();
+  // A Guilda tem encontros só dela. Afty e Player seguem na chave de sempre.
+  const encontrosAfty = useEncontrosAfty(mesa ? CHAVE_ENCONTROS_ERA_DE_OURO : undefined);
 
   const [view, setView] = useState({ name: "dashboard", creatureId: null, encounterId: null });
+  // A Guilda pergunta criatura ou personagem antes de abrir o criador.
+  const [escolhendoTipo, setEscolhendoTipo] = useState(false);
   const [encounterSyncState, setEncounterSyncState] = useState(null);
   const [importeRecusado, setImporteRecusado] = useState(null);
 
@@ -143,9 +162,11 @@ export default function App() {
      e `sistemaGravado` devolve null justamente para as fichas dela. No /Afty e
      no /Player a resposta é a marca exata, então criatura e personagem também
      se recusam um ao outro. */
+  /* Na Guilda a lista mistura os dois sistemas: entra toda ficha com marca de
+     Afty ou de Player, e só a da 2.5.2 fica de fora. */
   const ehDestaRota = useCallback(
-    (ficha) => sistemaGravado(ficha) === sistemaDaRota,
-    [sistemaDaRota],
+    (ficha) => (mesa ? !!sistemaGravado(ficha) : sistemaGravado(ficha) === sistemaDaRota),
+    [mesa, sistemaDaRota],
   );
 
   /* O importador das três rotas, com a porta. Recusa as estrangeiras, importa
@@ -257,7 +278,7 @@ export default function App() {
     setView({ name: "tracker", creatureId: id });
   }, [storage]);
 
-  const goToBuilder = useCallback((id = null) => {
+  const goToBuilder = useCallback((id = null, sistemaNovo = null) => {
     if (id && isBuiltInId(id)) {
       const builtIn = getCompendiumById(id);
       if (!builtIn) return;
@@ -265,7 +286,8 @@ export default function App() {
       setView({ name: "builder", creatureId: clone.id });
       return;
     }
-    setView({ name: "builder", creatureId: id });
+    // `sistemaNovo` só existe na Guilda, e só vale para ficha nova.
+    setView({ name: "builder", creatureId: id, sistemaNovo });
   }, [storage]);
 
   const goToEncounter = useCallback((id) => {
@@ -391,15 +413,15 @@ export default function App() {
            clique rodava a Ficha do Afty sobre uma criatura da 2.5.2, e o lápis
            a clonava para o inventário do Afty. É a porta espelho, e fecha aqui
            pela mesma prop, sem tocar em `src/components/`. */
-        titulo={sistemaDaRota === "player" ? "Jogador" : undefined}
+        titulo={mesa ? ERA_DE_OURO.label : sistemaDaRota === "player" ? "Jogador" : undefined}
         showSystemView={!aftyMode}
         // A lista do /Player é de PERSONAGENS (autor, 2026-09-10: "Uma prop
         // opcional"). Sem a prop, o Dashboard fala de criatura como sempre.
-        vocab={sistemaDaRota === "player" ? vocabularioDoDashboard("player") : undefined}
+        vocab={mesa ? vocabularioDeFichas() : sistemaDaRota === "player" ? vocabularioDoDashboard("player") : undefined}
         encounters={aftyMode ? encontrosAfty.encontros : encounterManager.encounters}
         onOpenCreature={abrirFicha}
         onEditCreature={goToBuilder}
-        onCreateNew={() => goToBuilder(null)}
+        onCreateNew={() => (mesa ? setEscolhendoTipo(true) : goToBuilder(null))}
         onGoToEncounters={goToEncounters}
         onGoToTemplates={goToTemplates}
       />
@@ -455,7 +477,8 @@ export default function App() {
           onCancel={goToDashboard}
           // Só vale para ficha NOVA. Editando, o sistema sai do `rulesVersion`
           // da própria ficha, e não da rota. Ver afty-sistema.js.
-          sistema={sistemaDaRota}
+          sistema={mesa ? (view.sistemaNovo ?? sistemaDaRota) : sistemaDaRota}
+          mesa={mesa}
         />
       ) : (
         <CreatureBuilder
@@ -480,7 +503,8 @@ export default function App() {
             pastas={storage.folders}
             // A lista do Encontro fala a língua do grimório ABERTO (criatura ou
             // personagem), e ela pode estar vazia: não há ficha de onde ler.
-            sistema={sistemaDaRota}
+            sistema={mesa ? "ficha" : sistemaDaRota}
+            namespaceDaBiblioteca={rotaId}
             onVoltar={goToEncounters}
             onDuplicar={handleDuplicateEncounter}
           />
@@ -512,7 +536,7 @@ export default function App() {
         <AftyEncontros
           gerenciador={encontrosAfty}
           pastas={storage.folders}
-          sistema={sistemaDaRota}
+          sistema={mesa ? "ficha" : sistemaDaRota}
           onAbrir={goToEncounter}
           onVoltar={goToDashboard}
         />
@@ -605,6 +629,39 @@ export default function App() {
               >
                 Entendi
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* A pergunta da Guilda: a ficha nova é criatura ou personagem. Só a Guilda
+          a faz, porque as outras rotas já sabem. O sistema escolhido vira o
+          `rulesVersion` da ficha, e a `mesa` a carimba no criador. */}
+      {mesa && escolhendoTipo && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Nova Ficha"
+          onClick={() => setEscolhendoTipo(false)}
+          onKeyDown={(e) => { if (e.key === "Escape") setEscolhendoTipo(false); }}
+        >
+          <div
+            className="w-full max-w-sm rounded-lg border border-slate-700 bg-slate-900 p-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-base font-bold text-white">Nova Ficha</h2>
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              {["afty", "player"].map((id, i) => (
+                <button
+                  key={id}
+                  type="button"
+                  autoFocus={i === 0}
+                  onClick={() => { setEscolhendoTipo(false); goToBuilder(null, id); }}
+                  className="px-4 py-3 rounded bg-slate-800 hover:bg-slate-700 text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-purple-500/60"
+                >
+                  {getSistema(id).substantivo.replace(/^./, (c) => c.toUpperCase())}
+                </button>
+              ))}
             </div>
           </div>
         </div>

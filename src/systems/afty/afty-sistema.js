@@ -151,6 +151,11 @@ export const sufixoDeChave = (valor) => `_${normalizaSistema(valor)}`;
  * pediu a varredura dos restos de criatura na Ficha de Player.
  */
 export function palavrasDoSistema(valor) {
+  /* "ficha" é a palavra neutra da lista que mistura os dois tipos (a rota
+     /EraDeOuro). Não é um sistema: ninguém grava "ficha" em `rulesVersion`. */
+  if (valor === "ficha") {
+    return { nome: "ficha", Nome: "Ficha", plural: "fichas", Plural: "Fichas", g: (_masculino, femininoForma) => femininoForma };
+  }
   const s = getSistema(valor);
   const feminino = s.artigo === "a";
   const maiuscula = (t) => t.charAt(0).toUpperCase() + t.slice(1);

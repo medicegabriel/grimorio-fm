@@ -837,8 +837,8 @@ const POR_STATUS = {
   [ENCONTRO_STATUS.FINALIZADO]: Finalizado,
 };
 
-export default function AftyEncontro({ encontroId, gerenciador, criaturas = [], pastas = [], onVoltar, onDuplicar, sistema, onAtualizarBiblioteca }) {
-  const { encontro, derivado, acoes } = useEncontroAfty(encontroId, gerenciador, onAtualizarBiblioteca);
+export default function AftyEncontro({ encontroId, gerenciador, criaturas = [], pastas = [], onVoltar, onDuplicar, sistema, onAtualizarBiblioteca, namespaceDaBiblioteca }) {
+  const { encontro, derivado, acoes } = useEncontroAfty(encontroId, gerenciador, onAtualizarBiblioteca, namespaceDaBiblioteca);
 
   if (!encontro) {
     return (

@@ -19,7 +19,7 @@ export function juntarFundamentosPerdidos(atuais, novos) {
  * Sem vínculo, com JSON inválido ou sem espaço, a cópia do Encontro permanece
  * válida e a tela recebe a falha para permitir nova tentativa.
  */
-export function sincronizarFundamentosNaBiblioteca(combatentes, armazenamento) {
+export function sincronizarFundamentosNaBiblioteca(combatentes, armazenamento, namespace) {
   const gravadas = [];
   const falhas = [];
   const grupos = new Map();
@@ -41,7 +41,9 @@ export function sincronizarFundamentosNaBiblioteca(combatentes, armazenamento) {
   for (const { sistema, criaturaId, nome, perdas } of grupos.values()) {
     try {
       const storage = armazenamento ?? globalThis.localStorage;
-      const chave = "fm_creatures_" + sistema + "_v1";
+      /* `namespace` é o da ROTA (a /EraDeOuro guarda as fichas dos dois sistemas
+         na mesma biblioteca). Sem ele a biblioteca é a do sistema da ficha. */
+      const chave = "fm_creatures_" + (namespace ?? sistema) + "_v1";
       const lista = JSON.parse(storage.getItem(chave) ?? "[]");
       if (!Array.isArray(lista) || lista.some((c) => !c || typeof c !== "object" || Array.isArray(c) || typeof c.id !== "string" || !c.id)) {
         falhas.push({ nome, motivo: "Biblioteca Inválida" });
@@ -68,7 +70,7 @@ export function sincronizarFundamentosNaBiblioteca(combatentes, armazenamento) {
       const ficha = { ...atual, fundamentosPerdidos, updatedAt: new Date().toISOString() };
       const proxima = lista.map((c, n) => n === i ? ficha : c);
       storage.setItem(chave, JSON.stringify(proxima));
-      gravadas.push({ sistema, ficha, biblioteca: proxima });
+      gravadas.push({ sistema, ...(namespace ? { namespace } : {}), ficha, biblioteca: proxima });
     } catch {
       falhas.push({ nome, motivo: "Não Foi Possível Gravar na Biblioteca" });
     }

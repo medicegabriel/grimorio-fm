@@ -436,7 +436,7 @@ export const redutorDeEncontro = (state, acao) => {
   return h(state, acao);
 };
 
-export default function useEncontroAfty(encontroId, gerenciador, onAtualizarBiblioteca) {
+export default function useEncontroAfty(encontroId, gerenciador, onAtualizarBiblioteca, namespaceDaBiblioteca) {
   const encontro = useMemo(
     () => gerenciador.encontros.find((e) => e.id === encontroId) ?? null,
     [gerenciador.encontros, encontroId],
@@ -511,13 +511,13 @@ export default function useEncontroAfty(encontroId, gerenciador, onAtualizarBibl
     })));
   const falhasDaBiblioteca = JSON.stringify(encontro?.fundamentosSemGravar ?? []);
   const sincronizarFundamentos = useCallback(() => {
-    const resultado = sincronizarFundamentosNaBiblioteca(JSON.parse(perdasDaBiblioteca));
-    const bibliotecas = new Map(resultado.gravadas.map(({ sistema, biblioteca }) => [sistema, biblioteca]));
+    const resultado = sincronizarFundamentosNaBiblioteca(JSON.parse(perdasDaBiblioteca), undefined, namespaceDaBiblioteca);
+    const bibliotecas = new Map(resultado.gravadas.map(({ sistema, namespace, biblioteca }) => [namespace ?? sistema, biblioteca]));
     for (const [sistema, biblioteca] of bibliotecas) onAtualizarBiblioteca?.(sistema, biblioteca);
     if (JSON.stringify(resultado.falhas) !== falhasDaBiblioteca) {
       despachar({ tipo: "RESULTADO_FUNDAMENTOS_BIBLIOTECA", falhas: resultado.falhas });
     }
-  }, [perdasDaBiblioteca, falhasDaBiblioteca, onAtualizarBiblioteca, despachar]);
+  }, [perdasDaBiblioteca, falhasDaBiblioteca, onAtualizarBiblioteca, namespaceDaBiblioteca, despachar]);
   useEffect(() => { sincronizarFundamentos(); }, [sincronizarFundamentos]);
 
   const acoes = useMemo(() => ({

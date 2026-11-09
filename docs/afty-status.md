@@ -1,5 +1,16 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-09 · A ROTA /ERADEOURO (A BASE DA GUILDA)
+
+Terceira rota escondida, `/EraDeOuro`, para uma Guilda do autor. Uma lista com os dois tipos de ficha (criatura e personagem), armazenamento próprio e um gancho vazio para as regras da Guilda.
+
+- **Não é um terceiro sistema.** `SISTEMAS` e `rulesVersion` seguem só com `afty` e `player`. A Guilda é uma MESA: campo `mesa: "eradeouro"` na ficha, carimbado no NASCIMENTO pelo criador (prop `mesa` do `AftyCreatureBuilder`, que entra no `base`) e nunca derivado da rota. A mesa vem da ficha, como o sistema.
+- **Módulo novo:** `src/systems/eradeouro/era-de-ouro.js`. Rota, `mesaDaFicha`, `comMesa`, vocabulário neutro da lista, `REGRAS_DA_MESA` (VAZIA, tabela separada de `DIVERGENCIAS` para não quebrar o `t-sistema.mjs`) e `regraDaMesa(ficha, id)`, no molde de `regraDo`. Regra futura entra como entrada ligada e o módulo lê `regraDaMesa`, nunca um `if` solto.
+- **App.jsx:** `rotaId` (dono das chaves: afty, player ou eradeouro) separado de `sistemaDaRota` (sistema de ficha sem marca). A porta do importador aceita os dois sistemas na Guilda e recusa só a 2.5.2. O botão Nova Ficha abre a escolha Criatura ou Personagem, que vira o `rulesVersion`.
+- **Armazenamento isolado:** `fm_creatures_eradeouro_v1`, pastas, visão do Dashboard, `afty_encontros_eradeouro_v1` e o rascunho da ficha nova (alvo `eradeouro:novo`). Parâmetros opcionais com o padrão de sempre em `useEncontrosAfty(chave)`, `sincronizarFundamentosNaBiblioteca(..., namespace)` (a perda do Fundamento grava na biblioteca da rota, e não na do sistema da ficha), `useEncontroAfty` e `AftyEncontro`. `palavrasDoSistema("ficha")` é a palavra neutra.
+- **Fica COMPARTILHADO, de propósito, e em aberto com o autor:** a biblioteca de Addons (`fm_addons_afty_v1`), o tema global, a sessão da ficha (por id) e a densidade. Importar ficha na Guilda NÃO a carimba com a `mesa`.
+- Verificado: `t-era-de-ouro.mjs` (34), suíte inteira (319 arquivos), eslint, build isolado e navegador (criada uma criatura e um personagem, e nenhuma chave `_afty` ou `_player` nova). Nada em `src/components/`.
+
 ## SESSÃO DE 2026-11-09 · ESTADOS DA ALMA AUTOMÁTICOS E A ALMA DA CRIATURA SEGUE O LIVRO
 
 Três pedidos do autor, todos medidos em `asserts/t-alma-estados.mjs` (71) e nos asserts de Alma que mudaram.
