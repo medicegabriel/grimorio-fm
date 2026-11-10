@@ -1,5 +1,37 @@
 # Addons do Afty (plano)
 
+## Pacotes nativos de mesa, a Guilda (2026-11-09)
+
+O autor pediu que os addons pré-definidos da rota /EraDeOuro virassem nativos ("sem aparecer em addon"). Toda ficha
+com `mesa: "eradeouro"`, criatura ou personagem, carrega oito pacotes (`NATIVOS_DA_GUILDA_IDS` em
+`src/systems/eradeouro/era-de-ouro.js`): Regras Grimorio, Cofre de Feitiços, Alma Livre, Atenção Só Pela Percepção,
+Perícias da Era de Ouro, Treino de Testes de Resistência, Regras da Era de Ouro e Maldição - Era de Ouro.
+
+| Peça | Onde |
+|---|---|
+| As fontes, por `import ... with { type: "json" }` (o atributo deixa o Node dos asserts ler o mesmo JSON que o Vite junta) | `src/systems/eradeouro/pacotes-nativos.js`, folha |
+| A normalização (uma vez só, congelada) e o registro | `registrarNativos` no `afty-addons.js` |
+| A entrada na ficha, na frente da lista, trocando a cópia de mesmo id | `hidratarNativos`, chamada pela `hidratarFicha` (`afty-addons-compostos.js`) |
+| A régua do criador já hidratada, para a ficha da Guilda não abrir como alterada | `base` do `AftyCreatureBuilder` |
+| Fora da aba Addons e da marca de addons da Ficha (clássica e G2) | `addonNativo` e `addonsVisiveisDaCriatura` |
+
+⚠ **A FICHA AINDA LEVA A CÓPIA.** Trinta leitores leem `creature.addons` cru, e um pacote que só existisse no derive
+sumiria deles. A hidratação refaz a cópia a partir da fonte do app toda vez que a ficha entra, então ela não
+envelhece, e a ficha antiga da Guilda ganha o que falta. Isso substitui os addons OFICIAIS do mesmo dia, que nasciam
+como cópia congelada, ligados e travados: o `pacotes-oficiais.js`, a `ADDONS_OFICIAIS_IDS`, o `addonTravado` e o chip
+Oficial saíram.
+
+O pacote novo **Regras da Era de Ouro** (inline em `era-de-ouro.js`) traz o remendo da 4ª etapa do Treino de Perícia
+(`substitui`, metade do BT na perícia escolhida no lugar do sucesso garantido, com as três primeiras etapas copiadas do
+livro) e o Talento **Costas Largas** (geral, livre), que declara `limiteAcessorios: 2`. É campo do Talento, e não canal
+do Motor: o limite de Acessórios decide quais itens dão bônus, e o equipamento é o primeiro passo do derive. Lido por
+`limiteAcessoriosDosTalentos` (`afty-talentos.js`). O `validarPacote` passou a contar `pericias` como conteúdo (as
+Perícias da Era de Ouro eram recusadas como pacote vazio).
+
+As regras de mesa que vieram junto (o limite de 4 Acessórios, o teto de 2 instâncias no Treino de Testes de
+Resistência e a troca da Maldição no seletor de Origem) moram em `REGRAS_DA_MESA`, e não em pacote. Provas em
+`asserts/t-era-de-ouro.mjs`.
+
 ## A aba de Addons em lista lateral, com resumo e categoria (2026-10-29)
 
 Com dezenas de pacotes a aba virou uma lista plana de nomes, e só o título não lembra o que cada um faz. O autor escolheu,

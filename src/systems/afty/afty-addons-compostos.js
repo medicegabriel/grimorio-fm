@@ -364,6 +364,45 @@ function hidratarUm(ficha, fonte, sistema) {
 
 const cache = new WeakMap();
 
+/* ============================================================ */
+/* OS PACOTES NATIVOS DA MESA (2026-11-09)                        */
+/* ============================================================ */
+/* Os pacotes que uma MESA põe em toda ficha dela: a Guilda da rota /EraDeOuro (ver
+   NATIVOS_DA_GUILDA_IDS em src/systems/eradeouro/era-de-ouro.js). Quem sabe quais são
+   e os normaliza é o `afty-addons.js`, que registra a função aqui: este módulo é folha
+   e não pode importá-lo.
+
+   ⚠ A FUNÇÃO DEVOLVE SEMPRE A MESMA LISTA para a mesma mesa. A comparação abaixo é por
+   referência, e uma lista nova a cada leitura refaria a ficha a cada render. */
+const SEM_NATIVOS = Object.freeze([]);
+let nativosDaFicha = () => SEM_NATIVOS;
+const cacheNativos = new WeakMap();
+
+export function registrarNativos(fn) {
+  nativosDaFicha = typeof fn === "function" ? fn : () => SEM_NATIVOS;
+}
+
+/**
+ * A ficha com os pacotes nativos da mesa dela, na frente e em dia. A cópia que a
+ * ficha já carregava com o mesmo id sai (a dos addons oficiais antigos, ou a que
+ * alguém instalou pela biblioteca), para o mesmo pacote não valer duas vezes.
+ * Devolve a MESMA ficha fora de uma mesa e quando já está tudo em dia.
+ */
+export function hidratarNativos(ficha) {
+  if (!ficha || typeof ficha !== "object") return ficha;
+  const nativos = nativosDaFicha(ficha);
+  if (!nativos.length) return ficha;
+  const visto = cacheNativos.get(ficha);
+  if (visto && visto.addons === ficha.addons && visto.nativos === nativos) return visto.saida;
+  const lista = Array.isArray(ficha.addons) ? ficha.addons : [];
+  const ids = new Set(nativos.map((p) => p.id));
+  const nova = [...nativos, ...lista.filter((p) => !(p && ids.has(p.id)))];
+  const emDia = nova.length === lista.length && nova.every((p, i) => p === lista[i]);
+  const saida = emDia ? ficha : { ...ficha, addons: nova };
+  cacheNativos.set(ficha, { addons: ficha.addons, nativos, saida });
+  return saida;
+}
+
 /**
  * A ficha com os pacotes compostos em dia: refaz a cópia quando a versão, o
  * conteúdo, o sistema ou os ajustes não batem com a marca, e tira os pacotes
@@ -371,9 +410,12 @@ const cache = new WeakMap();
  * composto E em máquina que TEM a fonte instalada: sem a fonte a ficha segue com
  * a cópia que carrega. Devolve a MESMA ficha quando não há nada a fazer, que é o
  * caso comum, inclusive para quem não instalou nenhuma fonte.
+ *
+ * Antes dos compostos, os pacotes NATIVOS da mesa da ficha (`hidratarNativos`).
  */
-export function hidratarFicha(ficha) {
-  if (!ficha || typeof ficha !== "object") return ficha;
+export function hidratarFicha(fichaCrua) {
+  if (!fichaCrua || typeof fichaCrua !== "object") return fichaCrua;
+  const ficha = hidratarNativos(fichaCrua);
   const lista = ficha.addons;
   if (!Array.isArray(lista) || lista.length === 0) return ficha;
   const instaladas = garantir();

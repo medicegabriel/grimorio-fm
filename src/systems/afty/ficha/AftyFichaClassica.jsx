@@ -12,7 +12,7 @@ import { deriveAfty } from "../afty-derive";
 import { criaHeranca } from "../afty-invocacoes";
 import { preparaAtivacaoComCustoVida } from "../afty-feiticos";
 import { preparaRolagemCura } from "../afty-cura";
-import { aplicarAddons, addonsDaCriatura } from "../afty-addons";
+import { aplicarAddons, addonsVisiveisDaCriatura } from "../afty-addons";
 import { addonsDaFicha as addonsEmDiaDaFicha } from "../afty-addons-compostos";
 import { NumeroComFontes } from "../ui/fontes";
 import { numeroBr } from "../ui/formato";
@@ -306,7 +306,8 @@ export default function AftyFicha({
   /* Os addons que ESTA ficha carrega, para a marca do cabeçalho. Sai da própria
      criatura (a cópia congelada), e não da biblioteca da máquina: a marca tem de
      valer também para quem recebeu a ficha de fora e não instalou nada. */
-  const addonsDaFicha = useMemo(() => addonsDaCriatura(ficha), [ficha]);
+  // Sem os nativos da mesa (a Guilda): eles valem sempre e não são escolha da ficha.
+  const addonsDaFicha = useMemo(() => addonsVisiveisDaCriatura(ficha), [ficha]);
 
   /* A Classe INICIAL e a lista inteira, para o chip do cabeçalho no jogador.
      `escolhidas[0]` é a inicial em todo o resto do sistema (o `classeNome` de

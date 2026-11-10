@@ -1,5 +1,27 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-09 · OS NATIVOS DA GUILDA, A MALDIÇÃO E AS REGRAS DE ITENS E TREINOS
+
+Pedidos do autor, em sequência: a lista de "Fazeres" da Guilda (a 4ª etapa do Treino de Perícia, as regras para itens, o Talento "Costas lagar" e o Treino de TR "com no maximo de 2 vezes feito"), a Maldição Era de Ouro "como nativo [...] substituindo as maldiçoes existentes", e "todos os Addon que ja sao pre-definidos no site sem aparecer em addon coloque-os nativos". Decisões dele, por pergunta:
+
+| Pergunta | Resposta |
+|---|---|
+| Onde valem as regras novas | Só na Era de Ouro, na criatura e no personagem |
+| "No máximo 2 vezes" no Treino de TR | 2 TRs no total |
+| O quinto Acessório equipado | O criador impede |
+| "Costas lagar" | Costas Largas, Talento geral, livre |
+| Item só estético | Fica fora do inventário: todo Acessório equipado conta |
+| Onde viram nativos os pré-definidos | Só na Era de Ouro |
+| Onde a Maldição Era de Ouro troca a do livro | Só na Era de Ouro |
+
+- **Pacotes nativos:** oito pacotes entram em toda ficha da Guilda pela hidratação (`hidratarNativos`, chamada pela `hidratarFicha`), sempre em dia com o app, fora da aba Addons e da marca de addons da Ficha. Substituem os addons oficiais (cópia congelada, ligada e travada), que saíram com o `pacotes-oficiais.js`, o `addonTravado` e o chip Oficial. A régua do criador nasce hidratada, então a ficha da Guilda não abre como alterada. Detalhes em `docs/afty-addons.md`, primeira seção.
+- **Maldição:** a 2.1.1 do repositório (a colada era a 2.1.0) é nativa na Guilda, e o seletor de Origem tira a Maldição do livro (`maldicaoDaGuilda`, regra de tela). A ficha que já gravou a do livro a mantém. A aba de Características Amaldiçoadas, que a primitiva do pacote abriria em toda ficha da Guilda, só aparece lá com vaga ou com Característica escolhida.
+- **Treino de Perícia:** o pacote nativo Regras da Era de Ouro remenda a Linha (`substitui`) e troca o sucesso garantido da 4ª etapa por `piso(bt / 2)` na perícia escolhida. As três primeiras etapas e o Completo seguem os do livro.
+- **Itens:** no máximo 4 Acessórios equipados (`limiteDeAcessorios`), mais o `limiteAcessorios` dos Talentos (Costas Largas, +2), lido da ficha crua porque o equipamento é o primeiro passo do derive. O botão de equipar trava no limite, e numa ficha antiga o que passa dele fica sem efeito e a bancada avisa. Arma, escudo e uniforme não contam.
+- **Treino de TR:** o Treino de Testes de Resistência vale em no máximo 2 TRs na Guilda (`treinoDeTrDuasVezes`). A instância além do teto não rende efeito nem cobra Foco, e o criador não a deixa nascer.
+- **De passagem:** o `validarPacote` passou a contar `pericias` como conteúdo (as Perícias da Era de Ouro eram recusadas como pacote vazio). E o teste das perícias de `t-era-de-ouro.mjs` comparava `total`, um campo que não existe, então comparava vazio com vazio. Agora compara `bonus`.
+- Verificado: `t-era-de-ouro.mjs` (286), suíte inteira (315 de 317 arquivos, e as duas falhas, `t-reconciliacao-g00` e `t-revisao-g00`, são as mesmas de antes, de inventário de revisão), eslint, build (o Vite aceita o JSON com atributo) e navegador (o quinto Acessório travado e liberado pelo Costas Largas, "Limite de 2 treinos nesta linha.", a 4ª etapa nova, a aba Addons vazia, só a Maldição Era de Ouro no seletor e nenhum erro no console). Nada em `src/components/`.
+
 ## SESSÃO DE 2026-11-09 · A CARTEIRA EMBUTIDA DO PERSONAGEM DA GUILDA
 
 Pedido do autor: a extensão /EraDeOuro segue a base do /Player, com "um sistema similar ao Addon de carteira já embutido" (a tabela de progressão por XP da Guilda, as Missões, os Eventos e o Fim de Semana) e uma aba Propriedades. Decisões dele, por pergunta:

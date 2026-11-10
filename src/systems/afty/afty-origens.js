@@ -34,6 +34,8 @@ import {
 } from "./afty-addons";
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
 import { regraDo, sistemaDaFicha } from "./afty-sistema";
+// A troca da Maldição no seletor da Guilda (rota /EraDeOuro). FOLHA, sem risco de ciclo.
+import { origemForaDoSeletor } from "../eradeouro/era-de-ouro";
 // Do módulo FOLHA, não de ./afty-pericias.js: os geradores de opção abaixo
 // rodam na INICIALIZAÇÃO deste arquivo, e afty-pericias.js puxa afty-efeitos.js,
 // que volta até aqui por combate → habilidades → especializações. Ver o
@@ -1279,6 +1281,9 @@ aplicarExtrasOrigens();
 export function origensDoSistema(creature) {
   const gravada = creature?.core?.origem?.id;
   return filtraForaDoJogador(AFTY_ORIGENS_CATALOG, creature, gravada ? [gravada] : null)
+    /* A Guilda troca a Maldição do livro pela Maldição Era de Ouro, que é nativa nela
+       (2026-11-09). A Origem já gravada continua na lista, para a ficha não perdê-la. */
+    .filter((o) => o.id === gravada || !origemForaDoSeletor(creature, o.id))
     .map((o) => ({ value: o.id, label: o.nome }));
 }
 

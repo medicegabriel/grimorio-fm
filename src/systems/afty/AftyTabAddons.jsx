@@ -48,7 +48,7 @@ import {
   CATEGORIAS_DE_ADDON, FILTROS_DE_ADDON, montarItens, textoDeBuscaDoAddon, oQueMuda, blocosDaDescricao, recortaBlocos,
 } from "./afty-addons-lista";
 import { sistemaDaFicha, palavrasDoSistema } from "./afty-sistema";
-import { addonTravado } from "../eradeouro/era-de-ouro";
+import { addonNativo } from "../eradeouro/era-de-ouro";
 import {
   fontesCompostas, fonteComposta, ajustesDoSistema, ajustesEfetivos, ligarComposto, desligarComposto, definirAjuste,
   avisosDosCompostos, compor, hidratarFicha,
@@ -162,7 +162,7 @@ function BlocosDeTexto({ blocos }) {
    o que ele muda. As ações de biblioteca ficam no fim, porque se usam bem menos que
    ligar e desligar. */
 function DetalheDoAddon({
-  item, pal, secoes, controles, travado, onAlternar, onAtualizar, onGuardar, onCopiar, onRemover, copiado,
+  item, pal, secoes, controles, onAlternar, onAtualizar, onGuardar, onCopiar, onRemover, copiado,
 }) {
   const [aberta, setAberta] = useState(false);
   const categoria = CATEGORIAS_DE_ADDON.find((c) => c.value === item.tipo)?.label ?? "Outros";
@@ -171,8 +171,7 @@ function DetalheDoAddon({
      mostrá-lo duas vezes era o defeito que o autor apontou. */
   const blocos = blocosDaDescricao(item.pacote.descricao, { resumo: item.resumoDeclarado ? item.resumo : "" });
   const { visiveis, resto } = recortaBlocos(blocos);
-  // A trava oficial da Guilda segura o addon LIGADO. Desligado, ele pode ligar.
-  const bloqueado = (travado && item.ligado) || (!item.ligado && item.barrado.length > 0);
+  const bloqueado = !item.ligado && item.barrado.length > 0;
   return (
     <div className="space-y-4 leading-tight">
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
@@ -181,8 +180,7 @@ function DetalheDoAddon({
         <span className="text-[11px] text-slate-500">{categoria}{item.autor ? ` · ${item.autor}` : ""}</span>
         <span className="ml-auto flex items-center gap-1">
           {item.composto && <Chip>Atualiza Sozinho</Chip>}
-          {travado && <Chip>Oficial</Chip>}
-          {item.foraDaBiblioteca && !travado && <Chip tom="amber">Fora da Biblioteca</Chip>}
+          {item.foraDaBiblioteca && <Chip tom="amber">Fora da Biblioteca</Chip>}
         </span>
       </div>
 
@@ -458,7 +456,10 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha, rend
   const itens = montarItens({
     biblioteca, naFicha, compostos: fontesCompostas(), estadoDe, avisosDe,
     barradoDe: (pacote) => incompativeisCom(pacote, naFicha).map((o) => o.nome || o.id),
-  }).filter((i) => i.id !== "servos-da-guerra" || sistemaDaTela === "afty" || i.ligado);
+  }).filter((i) => i.id !== "servos-da-guerra" || sistemaDaTela === "afty" || i.ligado)
+    /* O pacote NATIVO da mesa não aparece (a Guilda, 2026-11-09): ele vale sempre,
+       sempre em dia, e não tem o que ligar, desligar ou atualizar. */
+    .filter((i) => !addonNativo(draft, i.id));
   const item = itens.find((i) => i.id === escolhido)
     ?? itens.find((i) => i.ligado) ?? itens[0] ?? null;
   const ligados = itens.filter((i) => i.ligado).length;
@@ -472,9 +473,6 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha, rend
   const pacoteParaExibir = (i) => i.copia ?? (i.composto ? compor(i.pacote, sistemaDaTela, {}) : i.pacote);
 
   const alternar = (i) => {
-    /* A trava da Guilda só impede DESLIGAR. O oficial que falta numa ficha da
-       Guilda (a que nasceu antes de ele entrar na lista) precisa poder ligar. */
-    if (i.ligado && addonTravado(draft, i.id)) return;
     if (i.ligado) {
       if (i.composto) desligarCompostoDaFicha(i.id);
       else pedirSenhaParaDesligar(i.copia);
@@ -662,7 +660,6 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha, rend
               pal={pal}
               secoes={oQueMuda(pacoteParaExibir(item), rotulos)}
               controles={controlesDe(item)}
-              travado={addonTravado(draft, item.id)}
               onAlternar={() => alternar(item)}
               onAtualizar={() => atualizar(item.id)}
               onGuardar={() => guardar(item.copia)}

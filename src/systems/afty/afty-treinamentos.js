@@ -98,6 +98,8 @@ import { AFTY_PERICIAS, catalogoPericiasDaFicha } from "./afty-pericias";
 import { avaliarRequisitoDeTreino } from "./afty-pericias-catalogo";
 import { catalogoDoTipo, encantamentosDe, tiposDeDanoDaCategoria, canalRdEscudo } from "./afty-equipamentos";
 import { evalNumber } from "./afty-dsl";
+// O teto de instâncias da mesa da Guilda (rota /EraDeOuro). FOLHA, sem risco de ciclo.
+import { maxInstanciasDaMesa } from "../eradeouro/era-de-ouro";
 
 // Texto completo da aptidão concedida pelo Treino de Domínios (Completo).
 const MODIFICACAO_COMPLETA =
@@ -765,10 +767,21 @@ export function normalizeTreinamentos(treinos, ficha = null) {
   return out;
 }
 
+/* O TETO DE INSTÂNCIAS de uma Linha repetível (a Guilda, 2026-11-09: o Treino de
+   Testes de Resistência vale em 2 TRs). Lê a FICHA, pela mesa dela, e é `null` sem
+   teto. As instâncias além dele não rendem efeito nem cobram Foco: o criador não as
+   deixa nascer, e isto só pega ficha antiga ou importada. */
+export const tetoDeInstancias = (linha, ficha) => (linha?.repetivel ? maxInstanciasDaMesa(ficha, linha.id) : null);
+const instanciasQueValem = (linha, val, ficha) => {
+  const lista = Array.isArray(val) ? val : [];
+  const teto = tetoDeInstancias(linha, ficha);
+  return teto == null ? lista : lista.slice(0, teto);
+};
+
 /** Lista de progressos ativos de uma linha (1 para não repetível, N para repetível). */
-function progressosDe(linha, val) {
+function progressosDe(linha, val, ficha = null) {
   if (!linha) return [];
-  if (linha.repetivel) return Array.isArray(val) ? val.map((it) => it.progresso) : [];
+  if (linha.repetivel) return instanciasQueValem(linha, val, ficha).map((it) => it.progresso);
   return [Number(val) || 0];
 }
 
@@ -1082,7 +1095,7 @@ export function efeitosDeTreino(creature, gatilhosAtivos = null, equipamentos = 
     // Treino que a origem não alcança não rende efeito, mesmo gravado na ficha.
     if (!treinoDisponivel(linha, origemId, qualificadas)) continue;
     const instancias = linha.repetivel && Array.isArray(val)
-      ? val
+      ? instanciasQueValem(linha, val, creature)
       : [{ alvo: null, progresso: Number(val) || 0 }];
     for (const inst of instancias) {
       const p = clampProg(inst.progresso);
@@ -1168,7 +1181,7 @@ export function efeitosInvocacaoDeTreino(creature) {
     if (!linha) continue;
     if (!treinoDisponivel(linha, origemId, qualificadas)) continue;
     const instancias = linha.repetivel && Array.isArray(val)
-      ? val
+      ? instanciasQueValem(linha, val, creature)
       : [{ progresso: Number(val) || 0 }];
     for (const inst of instancias) {
       const p = clampProg(inst.progresso);
@@ -1365,7 +1378,7 @@ export function focosGastos(treinos, origemId = null, qualificadas = null, ficha
   for (const [id, val] of Object.entries(prog)) {
     const linha = BY_ID[id];
     if (!treinoDisponivel(linha, origemId, qualificadas)) continue;
-    for (const p of progressosDe(linha, val)) total += focosDaLinha(linha, p);
+    for (const p of progressosDe(linha, val, ficha)) total += focosDaLinha(linha, p);
   }
   return total;
 }

@@ -16,7 +16,7 @@
  * ============================================================
  */
 import { deriveAfty } from "../../afty-derive";
-import { aplicarAddons, addonsDaCriatura } from "../../afty-addons";
+import { aplicarAddons, addonsDaCriatura, addonsVisiveisDaCriatura } from "../../afty-addons";
 import { addonsDaFicha } from "../../afty-addons-compostos";
 import { mesclaFichaAfty, funcionamentosDaFicha, AFTY_TIPOS, AFTY_PATAMARES, AFTY_ATTRS } from "../../afty-schema";
 import { conteudoDaFicha, equipamentosDaFicha, GRUPOS, ROTULO_GRUPO } from "../ficha-conteudo";
@@ -33,7 +33,7 @@ import { curaNoGasto } from "../../afty-cura";
 import { opcoesDeriveDaSessao } from "../ficha-opcoes-derive";
 
 export {
-  deriveAfty, aplicarAddons, addonsDaCriatura, mesclaFichaAfty, funcionamentosDaFicha,
+  deriveAfty, aplicarAddons, addonsDaCriatura, addonsVisiveisDaCriatura, mesclaFichaAfty, funcionamentosDaFicha,
   AFTY_TIPOS, AFTY_PATAMARES, AFTY_ATTRS, conteudoDaFicha, equipamentosDaFicha, GRUPOS, ROTULO_GRUPO,
   Sessao, facesDe, linhasDeEstado, estaLigado, padraoDe, compararSaldo, saldoDoAgora,
   familiaEParte, donoDoEstado, FILTROS_HABILIDADE, correspondeFiltroHabilidade,

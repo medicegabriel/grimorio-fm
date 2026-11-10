@@ -10,7 +10,7 @@ import {
 import { FieldLabel, TextInput, TextArea, Select, NumberInput, StatField, ExpandableText } from "../../components/builder-controls";
 import TabAddons from "./AftyTabAddons";
 import { aplicarAddons, modelosPendentesDeAddon, nivelDaFicha, nivelMaximoDaFicha } from "./afty-addons";
-import { hidratarFicha, addonsDaFicha } from "./afty-addons-compostos";
+import { hidratarFicha, hidratarNativos, addonsDaFicha } from "./afty-addons-compostos";
 import {
   mesclaFichaAfty, AFTY_ATTRS, AFTY_TIPOS, AFTY_PATAMARES, AFTY_QNT_PE,
   AFTY_TECNICA_ATTRS, AFTY_TAMANHOS, AFTY_RESISTENCIAS, getTamanho,
@@ -45,7 +45,7 @@ import {
   SISTEMA_PADRAO, sistemaDaFicha, normalizaSistema, regraDo, rotuloDoNivel, palavrasDoSistema, mostraJogadasDeAtaque,
 } from "./afty-sistema";
 // As abas que a mesa da Guilda (rota /EraDeOuro) abre. FOLHA, sem risco de ciclo.
-import { regraDaMesa } from "../eradeouro/era-de-ouro";
+import { regraDaMesa, mesaDaFicha } from "../eradeouro/era-de-ouro";
 import {
   origensDoSistema, getOrigem, origemTemDesenvolvimento, origemPoolLimite,
   clasDaOrigem, getCla, caracteristicasEfetivas, totalDaAlocacao, usoDaAlocacao,
@@ -66,7 +66,7 @@ import {
 import {
   ETAPAS_POR_LINHA, limiteTreinosPorAlvo, focosGastos, avaliarRequisito, requisitosDaEtapa, rotuloAlvo, treinamentosDaOrigem, origemDosTreinos,
   SEP_ALVO_ACAO, linhasComEscolhaFeiticos, atributoDoAlvo,
-  definirEscolhaTreino, opcoesDeEscolhaTreino, limiteEscolhaTreino,
+  definirEscolhaTreino, opcoesDeEscolhaTreino, limiteEscolhaTreino, tetoDeInstancias, getTreinamento,
 } from "./afty-treinamentos";
 import {
   createBlankVotoContratual, createBlankVotoMecanico, limiteVotosMecanicos, votosProntosDisponiveis,
@@ -392,8 +392,11 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
      não, e a divergência aparecia inteira, do orçamento de perícias ao chip de
      Patamar. Quem deriva lê a FICHA, então é a ficha que tem de dizer. */
   const [copiaParaConfigurar] = useState(() => existingCreature?.id ? carregarSessao(existingCreature.id).combate?.imitacao?.copia : null);
-  const [base] = useState(() => ({ ...fichaGravada(existingCreature), rulesVersion: sistema, ...(!existingCreature && mesa ? { mesa } : {}),
-    // Os addons oficiais da mesa nascem ligados, só na ficha NOVA.
+  /* ⚠ A RÉGUA JÁ NASCE COM OS PACOTES NATIVOS DA MESA (a Guilda, 2026-11-09). O
+     rascunho os ganha pela hidratação logo abaixo, e uma régua sem eles faria toda
+     ficha da Guilda abrir como alterada. Os compostos seguem fora da régua, como antes. */
+  const [base] = useState(() => hidratarNativos({ ...fichaGravada(existingCreature), rulesVersion: sistema, ...(!existingCreature && mesa ? { mesa } : {}),
+    // Addons que nascem ligados na ficha NOVA, quando quem abre o criador os manda.
     ...(!existingCreature && addonsIniciais?.length ? { addons: addonsIniciais } : {}) }));
   // ⚠ O rascunho é aplicado AQUI, no inicializador, e não num efeito depois de
   // montar: restaurar depois faria a tela piscar a ficha em branco antes de
@@ -470,9 +473,15 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
      (2026-10-12): "Características de Anatomia" no Vampiro. */
   const rotuloCaracteristicas = derived.caracteristicasAmaldicoadas?.rotulo ?? null;
   const mesaDoRascunho = draft.mesa;
+  /* ⚠ NA GUILDA A MALDIÇÃO ERA DE OURO É NATIVA EM TODA FICHA (2026-11-09), e a
+     primitiva dela abriria a aba de Características em quem nem é Maldição. Lá a aba
+     só aparece com vaga ou com Característica já escolhida. Fora da Guilda, nada muda. */
+  const semCaracteristicas = mesaDaFicha(draft) !== null
+    && !(derived.caracteristicasAmaldicoadas?.vagas > 0) && !(derived.caracteristicasAmaldicoadas?.usadas > 0);
   const abasVisiveis = useMemo(() => tabsDoSistema(sistema, derived.primitivas, { mesa: mesaDoRascunho, rulesVersion: sistema })
+    .filter((t) => t.id !== "caracteristicasAmaldicoadas" || !semCaracteristicas)
     .map((t) => (t.id === "caracteristicasAmaldicoadas" && rotuloCaracteristicas ? { ...t, label: rotuloCaracteristicas } : t)),
-  [sistema, derived.primitivas, rotuloCaracteristicas, mesaDoRascunho]);
+  [sistema, derived.primitivas, rotuloCaracteristicas, mesaDoRascunho, semCaracteristicas]);
   const umaAbaSo = regraDo(sistema, "abasIdentidade") === "player";
   const abaBase = umaAbaSo ? "identidade" : "informacoes";
   // Quem estava numa aba que sumiu (a Aptidões do Restringido, ou a Informações
@@ -1241,6 +1250,9 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       const key = String(alvo).trim().toLowerCase();
       const iguais = list.filter((it) => String(it.alvo).toLowerCase() === key);
       if (indice == null && (!prog || iguais.length >= limiteTreinosPorAlvo(lineId, d))) return d;
+      // O teto de instâncias da mesa (a Guilda): cheio, não nasce instância nova.
+      const teto = tetoDeInstancias(getTreinamento(lineId), d);
+      if (indice == null && teto != null && list.length >= teto) return d;
       const nextList = indice == null ? [...list, { alvo, progresso: prog }]
         : prog > 0 ? list.map((it, i) => i === indice ? { ...it, progresso: prog } : it)
           : list.filter((_, i) => i !== indice);
@@ -10264,6 +10276,7 @@ function opcoesDeAlvo(linha, instances, pericias = AFTY_PERICIAS, armas = [], in
 function TreinoLinha({
   linha, valor, attrEff, nd, ctxReq, onSetProgresso, onSetInstance, limitePorAlvo = 1,
   pericias, armas, invocacoes, alvosEscolhidos = {}, escolhas = {}, onSetAlvo, onSetEscolha,
+  tetoInstancias = null,
 }) {
   const repetivel = !!linha.repetivel;
   const progresso = repetivel ? 0 : (Number(valor) || 0);
@@ -10289,17 +10302,22 @@ function TreinoLinha({
   // `null` = alvo de texto livre (nenhuma linha usa mais, mas o caminho fica
   // para uma linha nova nascer sem catálogo). Atributo, Perícia e Arma saem do
   // catálogo, já sem os que a criatura treinou.
-  const alvoOptions = opcoesDeAlvo(linha, instances, pericias, armas, invocacoes, limitePorAlvo);
+  /* O teto de instâncias da mesa (a Guilda, 2026-11-09: 2 TRs no Treino de Testes de
+     Resistência). Cheio, não nasce instância nova. */
+  const noTeto = repetivel && tetoInstancias != null && instances.length >= tetoInstancias;
+  const alvoOptions = noTeto ? [] : opcoesDeAlvo(linha, instances, pericias, armas, invocacoes, limitePorAlvo);
   // Pool vazio tem duas causas, e a mensagem muda: ou tudo já foi treinado, ou
   // não havia o que treinar (nenhuma arma no inventário / nenhuma invocação).
-  const poolVazio = linha.alvoTipo === "arma" && (armas?.length ?? 0) === 0
-    ? "Nenhuma arma no inventário."
-    : linha.alvoTipo === "invocacao" && (invocacoes?.length ?? 0) === 0
-      ? "Nenhuma invocação criada."
-      : linha.alvoTipo === "acaoInvocacao"
-        && !(invocacoes || []).some((i) => (i.acoes?.length ?? 0) > 0)
-        ? "Nenhuma invocação com Ação criada."
-        : "Tudo já foi treinado nesta linha.";
+  const poolVazio = noTeto
+    ? `Limite de ${tetoInstancias} ${tetoInstancias === 1 ? "treino" : "treinos"} nesta linha.`
+    : linha.alvoTipo === "arma" && (armas?.length ?? 0) === 0
+      ? "Nenhuma arma no inventário."
+      : linha.alvoTipo === "invocacao" && (invocacoes?.length ?? 0) === 0
+        ? "Nenhuma invocação criada."
+        : linha.alvoTipo === "acaoInvocacao"
+          && !(invocacoes || []).some((i) => (i.acoes?.length ?? 0) > 0)
+          ? "Nenhuma invocação com Ação criada."
+          : "Tudo já foi treinado nesta linha.";
   const textoDup = !!novoTexto.trim() && usados.has(novoTexto.trim().toLowerCase());
   const addTexto = () => {
     const v = novoTexto.trim();
@@ -14559,7 +14577,7 @@ function CaracteristicaAmaldicoadaCard({ caracteristica: c, pericias, onToggle, 
 function LinhaCarregada({
   entrada, onPatch, onRemove, onToggleFerramenta, onPatchFerramenta,
   onToggleEncantamento, pericias, fontesDano, dslContexto, dslExtras,
-  sistemaJogador = false, sistema, feiticos = [],
+  sistemaJogador = false, sistema, feiticos = [], travaEquipar = null,
 }) {
   const { def, tipo, uid, qtd, equipado, fa } = entrada;
   // Arma entrou em 2026-08-01: ela passou a render Acerto por grau, e a linha de
@@ -14604,13 +14622,16 @@ function LinhaCarregada({
         {equipavel ? (
           <button
             type="button"
-            onClick={() => onPatch(uid, { equipado: !equipado })}
+            onClick={() => { if (!travaEquipar) onPatch(uid, { equipado: !equipado }); }}
+            disabled={!!travaEquipar}
             aria-pressed={equipado}
-            title={equipado ? "Desequipar" : "Equipar"}
+            title={travaEquipar || (equipado ? "Desequipar" : "Equipar")}
             className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
               equipado
                 ? "bg-purple-700 border-purple-600 text-white"
-                : "border-slate-600 text-slate-500 hover:border-purple-600 hover:text-purple-300"
+                : travaEquipar
+                  ? "border-slate-800 text-slate-700 cursor-not-allowed"
+                  : "border-slate-600 text-slate-500 hover:border-purple-600 hover:text-purple-300"
             }`}
           >
             {equipado ? <Check className="w-3 h-3" /> : <Shield className="w-2.5 h-2.5" />}
@@ -15738,6 +15759,9 @@ function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, pa
      tabela da arma entra na conta. Ver `danoPorArma` em afty-sistema.js. */
   const sistemaJogador = regraDo(sistemaDaFicha(draft), "danoPorArma") === "player";
   const { equip, carga, grauFeiticeiro: grau } = derived;
+  /* O limite de Acessórios equipados da Guilda (2026-11-09): cheio, o Acessório que
+     está guardado não equipa. `limite` é null fora da Guilda. */
+  const acessoriosLotados = equip.acessorios?.limite != null && equip.acessorios.vestidos >= equip.acessorios.limite;
   const fontesDano = fontesDanoDaFicha(draft, derived);
   // Acessórios Únicos: a lista CRUA da ficha (os campos de texto leem dela) e a
   // liberação que deixa criar. Ver `AcessoriosUnicosCard`.
@@ -16027,6 +16051,8 @@ function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, pa
                       sistemaJogador={sistemaJogador}
                       sistema={sistemaDaFicha(draft)}
                       feiticos={draft.feiticos}
+                      travaEquipar={acessoriosLotados && e.def?.categoria === "acessorio" && !e.equipado
+                        ? `Limite de ${equip.acessorios.limite} Acessórios equipados` : null}
                     />
                   ))}
                 </div>
@@ -16640,6 +16666,7 @@ function TabInterludios({
               key={linha.id}
               linha={linha}
               limitePorAlvo={limiteTreinosPorAlvo(linha.id, draft)}
+              tetoInstancias={tetoDeInstancias(linha, draft)}
               valor={treinos[linha.id]}
               attrEff={derived.attrEff}
               nd={derived.nd}

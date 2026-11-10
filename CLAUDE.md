@@ -257,9 +257,11 @@ O registro reescreve os arrays de catálogo no lugar e manda cada família relig
 memoriza em cima de catálogo precisa de `epocaAddons()` na dependência do `useMemo`, senão não
 recalcula. O addon mora em dois lugares: a BIBLIOTECA (`fm_addons_afty_v1`), onde a pessoa instala e
 edita, e `creature.addons`, a cópia congelada que manda no cálculo. Atualizar é um botão, nunca
-automático, com uma exceção: os pacotes EMBUTIDOS (`afty-addons-compostos.js`, hoje só o Guerra de
-Feiticeiros) se refazem a partir da fonte do app toda vez que a ficha entra, e o mesmo pacote serve Player e criatura. Campos: `permite` muda a tela, `libera` muda a regra, `substitui` remenda uma entrada
-do livro por campo.
+automático, com duas exceções, que se refazem a partir da fonte do app toda vez que a ficha entra. Os
+pacotes EMBUTIDOS (`afty-addons-compostos.js`, hoje só o Guerra de Feiticeiros), em que o mesmo pacote serve
+Player e criatura. E os pacotes NATIVOS de mesa (a Guilda da rota /EraDeOuro, ver
+`src/systems/eradeouro/era-de-ouro.js`), que a hidratação põe em toda ficha da mesa e a aba Addons não mostra.
+Campos: `permite` muda a tela, `libera` muda a regra, `substitui` remenda uma entrada do livro por campo.
 
 ### Estados de bancada de combate
 

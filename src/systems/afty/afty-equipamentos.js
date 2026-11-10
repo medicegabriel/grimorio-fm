@@ -2714,6 +2714,10 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
   };
   // O Revestimento e o Escudo criados só contam com a liberação do tipo deles.
   const criadoVale = (def) => !def?.criado || liberacoes.includes(LIBERACAO_DO_CRIADO[def.criado]);
+  /* O limite de Acessórios equipados (a Guilda, 2026-11-09). `null` é sem limite. */
+  const limiteAcessorios = Number.isFinite(opcoes.limiteAcessorios) ? Math.max(0, Math.trunc(opcoes.limiteAcessorios)) : null;
+  let acessoriosVestidos = 0;
+  let acessoriosAcimaDoLimite = 0;
   const entradas = [];
   const custoGasto = { 1: 0, 2: 0, 3: 0, 4: 0 };
   const attrBonus = { forca: 0, destreza: 0, constituicao: 0, inteligencia: 0, sabedoria: 0, presenca: 0 };
@@ -2961,11 +2965,19 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
       conjuntoSagradoAutomatico || !!e?.conjuntoSagradoCompleto
     );
     const solAtivo = temCondicaoSolar && (conjuntoSagradoReunido || !!e?.solDireto);
-    const acessorioAtivo = equipado && !semAddon && def.categoria === "acessorio"
-      && (!temCondicaoSolar || solAtivo);
+    /* O LIMITE DE ACESSÓRIOS EQUIPADOS da Guilda (2026-11-09, `opcoes.limiteAcessorios`).
+       Conta na ordem do inventário, e o que passa do limite fica sem efeito nenhum,
+       como o criado sem addon: continua marcado como equipado, e a bancada avisa. O
+       criador não deixa equipar além do limite, então isto só pega ficha antiga ou
+       importada. A cópia repetida conta, porque está vestida. */
+    const vestido = equipado && !semAddon && def.categoria === "acessorio";
+    if (vestido) acessoriosVestidos += 1;
+    const acimaDoLimite = vestido && limiteAcessorios != null && acessoriosVestidos > limiteAcessorios;
+    if (acimaDoLimite) acessoriosAcimaDoLimite += 1;
+    const acessorioAtivo = vestido && !acimaDoLimite && (!temCondicaoSolar || solAtivo);
     const beneficioRepetido = acessorioAtivo && acessoriosAplicados.has(def.id);
     if (acessorioAtivo) acessoriosAplicados.add(def.id);
-    if (equipado && !semAddon && !beneficioRepetido) {
+    if (equipado && !semAddon && !beneficioRepetido && !acimaDoLimite) {
       if (e.tipo === "uniforme") {
         uniformesEquipados += 1;
         // A armadura dá o CUSTO dela de Defesa, mais 1 por grau da Ferramenta
@@ -3178,6 +3190,7 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
       espacos: espacosUn * qtd,
       equipado,
       ...(beneficioRepetido ? { beneficioRepetido: true } : {}),
+      ...(acimaDoLimite ? { acimaDoLimite: true } : {}),
       ...(faltaEscolha ? { faltaEscolha } : {}),
       ...(semAddon ? { semAddon } : {}),
       ...(temCondicaoSolar ? {
@@ -3192,9 +3205,14 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
   if (uniformesEquipados > 1) {
     avisos.push("Mais de um uniforme equipado. Só um pode ser vestido por vez.");
   }
+  if (acessoriosAcimaDoLimite > 0) {
+    avisos.push(`${acessoriosAcimaDoLimite} ${acessoriosAcimaDoLimite === 1 ? "Acessório equipado passa" : "Acessórios equipados passam"} do limite de ${limiteAcessorios} e não ${acessoriosAcimaDoLimite === 1 ? "vale" : "valem"}.`);
+  }
 
   return {
     entradas,
+    // O limite de Acessórios equipados (`null` sem limite) e quantos estão vestidos.
+    acessorios: { vestidos: acessoriosVestidos, limite: limiteAcessorios },
     temApice,            // a ficha carrega um Talismã do Ápice (do livro ou criado)
     espacosUsados,
     uniformeDefesa,

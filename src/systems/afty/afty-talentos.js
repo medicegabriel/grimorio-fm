@@ -1128,6 +1128,23 @@ export const getTalento = (id) => BY_ID[id] || null;
 
 export const getOpcaoTalento = (id) => OPCOES_BY_ID[id] || null;
 
+/**
+ * Quanto os Talentos da ficha somam no limite de Acessórios equipados: o campo
+ * `limiteAcessorios` do Talento (2026-11-09, o Costas Largas da Guilda).
+ *
+ * ⚠ CAMPO DO TALENTO, E NÃO CANAL DO MOTOR. O limite decide quais Acessórios dão
+ * bônus, e o equipamento é o PRIMEIRO passo do derive, antes de qualquer efeito.
+ * Lê a ficha crua, como as vagas de encantamento dos Treinos.
+ */
+export function limiteAcessoriosDosTalentos(creature) {
+  let soma = 0;
+  for (const id of new Set(Array.isArray(creature?.talentos) ? creature.talentos : [])) {
+    const n = Math.trunc(Number(getTalento(id)?.limiteAcessorios));
+    if (Number.isFinite(n) && n > 0) soma += n;
+  }
+  return soma;
+}
+
 /* Opções são acréscimos independentes: dois addons alimentam o mesmo seletor
    sem trocar a lista inteira por remendo. A cópia inicial impede acúmulo ao
    reconstruir o mundo e mantém intactas as cópias salvas nos pacotes. */

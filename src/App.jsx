@@ -21,7 +21,6 @@ import {
   MESA_ERA_DE_OURO, NAMESPACE_ERA_DE_OURO, CHAVE_ENCONTROS_ERA_DE_OURO, ERA_DE_OURO,
   ehRotaEraDeOuro, vocabularioDeFichas,
 } from "./systems/eradeouro/era-de-ouro";
-import { pacotesOficiais } from "./systems/eradeouro/pacotes-oficiais";
 import { COMPENDIUM, getCompendiumById, isBuiltInId } from "./fm-compendium";
 import { Analytics } from '@vercel/analytics/react';
 
@@ -480,7 +479,8 @@ export default function App() {
           // da própria ficha, e não da rota. Ver afty-sistema.js.
           sistema={mesa ? (view.sistemaNovo ?? sistemaDaRota) : sistemaDaRota}
           mesa={mesa}
-          addonsIniciais={mesa ? pacotesOficiais() : null}
+          // Os pacotes da Guilda não nascem na ficha: são nativos, e a hidratação
+          // os põe nela em dia (src/systems/eradeouro/era-de-ouro.js).
         />
       ) : (
         <CreatureBuilder

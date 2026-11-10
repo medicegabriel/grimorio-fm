@@ -342,7 +342,7 @@ O autor pediu, para a extensão /EraDeOuro, *"um sistema similar ao Addon de car
 seguindo essas tabelas"*. O personagem da Guilda tem esta Carteira SEM addon: a regra da mesa
 `carteiraDaGuilda` (`REGRAS_DA_MESA` em `src/systems/eradeouro/era-de-ouro.js`) abre a aba e liga
 as duas metades do addon, o Nível e os Focos. A Criatura da Guilda não tem (autor: "Só Personagem"),
-e a Carteira da Guilda saiu da lista de addons oficiais da mesa ("Embutir e tirar").
+e a Carteira da Guilda não está entre os pacotes nativos da Guilda ("Embutir e tirar").
 
 | O quê | Como ficou |
 |---|---|

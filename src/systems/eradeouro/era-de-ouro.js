@@ -26,8 +26,17 @@
  * `t-sistema.mjs` exige que as divergências de criatura e personagem sejam
  * exatamente as ligadas, e uma regra da Guilda ali dentro o quebraria sem ser
  * defeito. A tabela nasceu vazia, e desde 2026-11-09 tem as três regras do
- * PERSONAGEM da Guilda: a Carteira embutida, o Grau Especial no 17 e a aba
- * Propriedades. A Criatura da Guilda segue igual à do Afty.
+ * PERSONAGEM da Guilda (a Carteira embutida, o Grau Especial no 17 e a aba
+ * Propriedades) e as três da Guilda inteira (o limite de Acessórios, o teto do
+ * Treino de TR e a troca da Maldição no seletor).
+ *
+ * ------------------------------------------------------------
+ * OS PACOTES NATIVOS
+ * ------------------------------------------------------------
+ * O conteúdo da Guilda que o Motor já sabe dizer (o remendo do Treino de Perícia,
+ * o Talento Costas Largas, a Maldição Era de Ouro, as regras de addon) mora em
+ * pacotes NATIVOS: toda ficha da Guilda os carrega, sempre em dia com o app, e a
+ * aba Addons não os mostra. Ver `NATIVOS_DA_GUILDA_IDS` e `pacotes-nativos.js`.
  *
  * Cada entrada:
  *   id       chave lida por `regraDaMesa`
@@ -67,25 +76,32 @@ export const mesaDaFicha = (ficha) => (ficha?.mesa === MESA_ERA_DE_OURO ? MESA_E
 export const comMesa = (ficha, mesa) => (mesa === MESA_ERA_DE_OURO ? { ...ficha, mesa } : ficha);
 
 /**
- * Os addons que são as regras oficiais da Guilda (autor, 2026-11-09). Toda ficha
- * NOVA da Guilda nasce com eles ligados, e a Guilda não os desliga. Os pacotes
- * vêm de `addons/` e são carregados por `pacotes-oficiais.js`.
+ * Os pacotes NATIVOS da Guilda, na ordem em que entram na ficha (autor,
+ * 2026-11-09: "todos os Addon que ja sao pre-definidos [...] coloque-os nativos").
+ * Valem na ficha da Guilda, criatura ou personagem, e só nela.
  *
- * ⚠ É A MESA QUE TRAVA, e não a rota: o trava vale para a ficha com `mesa`,
- * onde quer que ela seja aberta. Ficha antiga e ficha importada sem a marca não
- * ganham os addons nem a trava.
+ * ⚠ ELES SUBSTITUEM OS ADDONS OFICIAIS do mesmo dia, que nasciam ligados e
+ * travados como CÓPIA congelada. Agora quem os põe na ficha é a hidratação
+ * (`hidratarFicha`, afty-addons-compostos.js), que refaz a cópia a partir da
+ * fonte do app toda vez que a ficha entra: a ficha antiga da Guilda ganha o que
+ * falta, e ninguém precisa atualizar nada pela aba Addons, que nem os mostra.
  *
- * ⚠ A CARTEIRA DA GUILDA SAIU DAQUI no mesmo dia (autor: "Embutir e tirar"). O
- * addon usa a tabela antiga (0 de XP no Nível 3, até o 30), e a Guilda passou a
- * ter a Carteira EMBUTIDA no personagem, com a tabela dela. Ver `carteiraDaGuilda`
- * mais abaixo. A ficha que nasceu com o addon o mantém, agora sem a trava.
+ * ⚠ A FICHA AINDA LEVA A CÓPIA, de propósito: trinta leitores leem
+ * `creature.addons` direto, e um pacote que só existisse no derive sumiria deles.
+ *
+ * ⚠ A CARTEIRA DA GUILDA NÃO ESTÁ AQUI (autor: "Embutir e tirar"). O addon usa a
+ * tabela antiga (0 de XP no Nível 3, até o 30), e o personagem da Guilda tem a
+ * Carteira embutida, com a tabela dela. Ver `carteiraDaGuilda` mais abaixo.
  */
-export const ADDONS_OFICIAIS_IDS = [
+export const NATIVOS_DA_GUILDA_IDS = [
   "regras-grimorio",
   "cofre-de-feiticos",
   "alma-livre",
   "atencao-so-percepcao",
   "pericias-era-de-ouro",
+  "treino-testes-de-resistencia",
+  "regras-da-era-de-ouro",
+  "maldicao-era-de-ouro",
 ];
 
 /**
@@ -125,9 +141,71 @@ export const PACOTE_PERICIAS_ERA_DE_OURO = Object.freeze({
   ]),
 });
 
-/** Este addon está travado nesta ficha? */
-export const addonTravado = (ficha, idAddon) =>
-  mesaDaFicha(ficha) !== null && ADDONS_OFICIAIS_IDS.includes(idAddon);
+/**
+ * "Regras da Era de Ouro": o que a Guilda muda no livro e acrescenta a ele, e que o
+ * Motor já sabe dizer (autor, 2026-11-09). Inline pelo mesmo motivo dos dois de cima.
+ *
+ *   • A 4ª etapa do Treino de Perícia troca o sucesso garantido por metade do BT na
+ *     perícia escolhida. É REMENDO do livro (`substitui`), e o remendo troca a lista
+ *     INTEIRA de etapas: as três primeiras são cópia fiel das de `afty-treinamentos.js`.
+ *   • O Talento Costas Largas soma 2 no limite de Acessórios equipados da Guilda. O
+ *     número sai do campo `limiteAcessorios` do Talento, e não de um canal do Motor:
+ *     o equipamento é o primeiro passo do derive, antes de qualquer efeito.
+ */
+export const PACOTE_REGRAS_ERA_DE_OURO = Object.freeze({
+  id: "regras-da-era-de-ouro",
+  nome: "Regras da Era de Ouro",
+  versao: "1.0.0",
+  autor: "Templas",
+  paraRaw: "afty",
+  descricao: "A 4ª etapa do Treino de Perícia passa a somar metade do bônus de treinamento nos testes da perícia escolhida, no lugar do sucesso garantido. Acrescenta o Talento Costas Largas, que aumenta em 2 o limite de itens vestidos.",
+  resumo: "Treino de Perícia com metade do BT na 4ª etapa e o Talento Costas Largas",
+  categoria: "regras",
+  substitui: {
+    treinamentos: [
+      {
+        id: "pericia",
+        etapas: [
+          { n: 1, focos: 1, requisito: null,
+            beneficio: "Escolha uma perícia: você se torna treinado nela. Caso já seja, adicione +1 em testes de perícia usando-a.",
+            efeitos: [
+              { tipo: "profPericia", valor: 1, semCredito: true },
+              { tipo: "pericia", valor: 1, quandoProf: 1 },
+            ] },
+          { n: 2, focos: 1, requisito: null,
+            beneficio: "Duas vezes por descanso, você pode escolher realizar um teste da perícia escolhida para o treinamento com vantagem." },
+          { n: 3, focos: 1, requisito: null,
+            beneficio: "Você se torna mestre na perícia escolhida. Caso já seja, adicione +2 em testes de perícia usando-a.",
+            efeitos: [
+              { tipo: "profPericia", valor: 2, semCredito: true },
+              { tipo: "pericia", valor: 2, quandoProf: 2 },
+            ] },
+          { n: 4, focos: 2, requisito: null,
+            beneficio: "Você adiciona metade do seu bônus de treinamento em testes da perícia escolhida.",
+            efeitos: [
+              { canal: "bonusPericia", alvo: "instancia", expr: "piso(bt / 2)" },
+            ] },
+        ],
+      },
+    ],
+  },
+  acrescenta: {
+    talentos: [
+      {
+        id: "costas_largas",
+        nome: "Costas Largas",
+        grupo: "geral",
+        descricao: "Seus ombros e costas largas aguentam o peso de mais relíquias do que o corpo comum, sem que a energia de uma atrapalhe a de outra. O seu limite de itens vestidos aumenta em 2.",
+        requisitos: [],
+        limiteAcessorios: 2,
+      },
+    ],
+  },
+});
+
+/** Este pacote é nativo nesta ficha? A aba Addons não mostra o nativo. */
+export const addonNativo = (ficha, idAddon) =>
+  mesaDaFicha(ficha) !== null && NATIVOS_DA_GUILDA_IDS.includes(idAddon);
 
 /**
  * As regras próprias da Guilda. Ver o cabeçalho para o formato de cada entrada.
@@ -161,6 +239,31 @@ export const REGRAS_DA_MESA = [
     fonte: "Além deste input adicional também terá, uma aba diferente denominada propriedades que as informações serão denominadas depois",
     base: "Sem a aba",
     eradeouro: "A aba Propriedades, ainda vazia",
+    ativa: true,
+  },
+  /* As três de baixo valem na Guilda INTEIRA, criatura e personagem (autor, 2026-11-09). */
+  {
+    id: "limiteDeAcessorios",
+    tipo: "regra",
+    fonte: "Limite de 4 itens: Você pode usar no máximo 4 itens vestidos (como amuletos, anéis, capas, botas, braceletes, etc.) que forneçam bônus numéricos ou mecânicos. [...] Espaços e Empunhadura: Além dos 4 itens vestidos, o personagem pode ter itens empunhados (como armas e escudos) e armadura.",
+    base: "Sem limite de Acessórios equipados",
+    eradeouro: "No máximo 4 Acessórios equipados, mais o que os Talentos somam (Costas Largas, +2). O criador não equipa além do limite, e o que passar dele numa ficha antiga não vale",
+    ativa: true,
+  },
+  {
+    id: "treinoDeTrDuasVezes",
+    tipo: "regra",
+    fonte: "Treino de TR adicionado com no maximo de 2 vezes feito",
+    base: "Uma vez por Teste de Resistência, exceto Integridade (até 4)",
+    eradeouro: "No máximo 2 Testes de Resistência no Treino de Testes de Resistência",
+    ativa: true,
+  },
+  {
+    id: "maldicaoDaGuilda",
+    tipo: "tela",
+    fonte: "Adicionar como nativo estas origens substituindo as maldiçoes existentes",
+    base: "A Maldição do livro no seletor de Origem",
+    eradeouro: "Só a Maldição Era de Ouro no seletor. A ficha que já é Maldição do livro continua sendo",
     ativa: true,
   },
 ];
@@ -288,6 +391,40 @@ export const grauComNomeDaMesa = (ficha, grau) =>
   (grau?.value === "semiEspecial" && regraDaMesa(ficha, "grauEspecialNo17") !== "base"
     ? { ...grau, label: "Grau Especial" }
     : grau);
+
+/* ============================================================ */
+/* ITENS, TREINO DE TR E A MALDIÇÃO (autor, 2026-11-09)            */
+/* ============================================================ */
+/**
+ * Os Acessórios equipados que a Guilda permite ANTES do que os Talentos somam
+ * (`limiteAcessorios` do Talento, Costas Largas). `null` fora da Guilda: sem limite.
+ *
+ * ⚠ CONTA O ACESSÓRIO, e só ele. Arma, escudo e uniforme são os "itens empunhados
+ * e armadura" que o texto deixa fora, e o item só estético não entra no inventário
+ * (autor: "Fora do inventário"). As cópias repetidas contam, porque estão vestidas,
+ * mesmo que o bônus delas já não some (livro p.365).
+ */
+export const LIMITE_DE_ACESSORIOS_DA_GUILDA = 4;
+export const limiteBaseDeAcessorios = (ficha) =>
+  (regraDaMesa(ficha, "limiteDeAcessorios") !== "base" ? LIMITE_DE_ACESSORIOS_DA_GUILDA : null);
+
+/**
+ * O teto de instâncias de uma Linha de Treinamento repetível na Guilda, pelo id que a
+ * Linha tem no catálogo (já com o namespace do pacote). `null` quando não há teto.
+ */
+export const LIMITES_DE_TREINO_DA_GUILDA = Object.freeze({
+  "treino-testes-de-resistencia:testes_de_resistencia": 2,
+});
+export const maxInstanciasDaMesa = (ficha, linhaId) =>
+  (regraDaMesa(ficha, "treinoDeTrDuasVezes") !== "base" ? (LIMITES_DE_TREINO_DA_GUILDA[linhaId] ?? null) : null);
+
+/**
+ * A Origem do livro que a Guilda tira do seletor: a Maldição dá lugar à Maldição Era
+ * de Ouro, que é nativa nela. A ficha que já gravou a Maldição do livro a mantém.
+ */
+const ORIGENS_TROCADAS_NA_GUILDA = Object.freeze(["maldicao"]);
+export const origemForaDoSeletor = (ficha, origemId) =>
+  regraDaMesa(ficha, "maldicaoDaGuilda") !== "base" && ORIGENS_TROCADAS_NA_GUILDA.includes(origemId);
 
 /** Os textos da lista de fichas (o Dashboard) na língua da Guilda. */
 export function vocabularioDeFichas() {

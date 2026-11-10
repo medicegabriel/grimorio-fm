@@ -2,7 +2,7 @@
 import { useLayoutEffect, useState } from "react";
 import { parseTextoRico } from "../../afty-texto-rico";
 import { avisoDoEstadoDaAlma } from "../../afty-alma-estados";
-import { estaLigado, Sessao, AFTY_TIPOS, AFTY_PATAMARES, ehPlayer, regraDo, sistemaDaFicha, rotuloDoNivel, getEspecializacao, addonsDaCriatura } from "./ponte";
+import { estaLigado, Sessao, AFTY_TIPOS, AFTY_PATAMARES, ehPlayer, regraDo, sistemaDaFicha, rotuloDoNivel, getEspecializacao, addonsVisiveisDaCriatura } from "./ponte";
 
 /* O texto tem MARCAÇÃO do Afty (negrito, itálico, sublinhado, riscado, título
    ou tabela)? Quem decide é o parser do próprio motor (`afty-texto-rico.js`),
@@ -25,7 +25,8 @@ export function linhaDeIdentidade(ficha, derived) {
   const escolhidas = derived.especializacoes?.escolhidas ?? [];
   const nomeDe = (e) => getEspecializacao(e.id)?.nome ?? e.id;
   const classe = escolhidas[0];
-  const addons = addonsDaCriatura(ficha);
+  // Sem os nativos da mesa (a Guilda): a marca mostra o que a ficha escolheu.
+  const addons = addonsVisiveisDaCriatura(ficha);
   const nivel = rotuloDoNivel(sistema);
   return {
     principal: [

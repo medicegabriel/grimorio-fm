@@ -11,6 +11,10 @@ const { createBlankAfty } = await import(A + "afty-schema.js");
 const S = await import(A + "afty-sistema.js");
 const B = await import(A + "encontros/fundamento-biblioteca.js");
 const G = await import(E + "era-de-ouro.js");
+const CP = await import(A + "afty-addons-compostos.js");
+const { aplicarAddons } = await import(A + "afty-addons.js");
+/* Como o criador e a Ficha fazem: o mundo recebe os addons da ficha, nativos inclusive. */
+const derivarNoMundo = (f) => { aplicarAddons(CP.addonsDaFicha(f)); return deriveAfty(f); };
 
 let ok = 0;
 const bad = [];
@@ -37,24 +41,38 @@ t("comMesa carimba e não troca o sistema", G.comMesa({ rulesVersion: "player" }
   { rulesVersion: "player", mesa: "eradeouro" });
 t("comMesa sem mesa não mexe", G.comMesa({ rulesVersion: "afty" }, null), { rulesVersion: "afty" });
 
-/* A tabela de regras: as três do personagem da Guilda (2026-11-09), e nada mais. */
-t("três regras da mesa", G.REGRAS_DA_MESA.map((r) => r.id), ["carteiraDaGuilda", "grauEspecialNo17", "abaPropriedades"]);
+/* A tabela de regras: três do personagem da Guilda e três da Guilda inteira (2026-11-09). */
+t("as regras da mesa", G.REGRAS_DA_MESA.map((r) => r.id), [
+  "carteiraDaGuilda", "grauEspecialNo17", "abaPropriedades", "limiteDeAcessorios", "treinoDeTrDuasVezes", "maldicaoDaGuilda",
+]);
 t("tabela válida", G.validarRegrasDaMesa(), []);
-t("as três são só do personagem", G.REGRAS_DA_MESA.map((r) => r.sistemas), [["player"], ["player"], ["player"]]);
+t("as três primeiras são só do personagem, e as outras valem nos dois",
+  G.REGRAS_DA_MESA.map((r) => r.sistemas ?? null), [["player"], ["player"], ["player"], null, null, null]);
 t("regra desconhecida é base", G.regraDaMesa({ mesa: "eradeouro" }, "qualquer"), "base");
 for (const id of ["carteiraDaGuilda", "grauEspecialNo17", "abaPropriedades"]) {
   t(`${id}: personagem da Guilda`, G.regraDaMesa({ mesa: "eradeouro", rulesVersion: "player" }, id), "eradeouro");
   t(`${id}: criatura da Guilda é base`, G.regraDaMesa({ mesa: "eradeouro", rulesVersion: "afty" }, id), "base");
   t(`${id}: personagem sem mesa é base`, G.regraDaMesa({ rulesVersion: "player" }, id), "base");
 }
+for (const id of ["limiteDeAcessorios", "treinoDeTrDuasVezes", "maldicaoDaGuilda"]) {
+  t(`${id}: personagem da Guilda`, G.regraDaMesa({ mesa: "eradeouro", rulesVersion: "player" }, id), "eradeouro");
+  t(`${id}: criatura da Guilda`, G.regraDaMesa({ mesa: "eradeouro", rulesVersion: "afty" }, id), "eradeouro");
+  t(`${id}: sem mesa é base`, G.regraDaMesa({ rulesVersion: "afty" }, id), "base");
+}
 t("rulesVersion em maiúscula ainda é personagem", G.carteiraDaGuilda({ mesa: "eradeouro", rulesVersion: "Player" }), true);
 
-/* A CRIATURA da Guilda deriva IDÊNTICO a uma sem a marca: as regras da mesa são só do personagem. */
+/* A CRIATURA da Guilda deriva IGUAL a uma criatura de fora com os MESMOS pacotes: o que a
+   Guilda muda nela são os nativos, e nenhuma regra de personagem. */
 {
   const f = createBlankAfty();
   f.rulesVersion = "afty"; f.id = "x"; f.core.nd = 12; f.core.nivel = 12;
   const g = G.comMesa(f, "eradeouro");
-  t("deriva igual com mesa (afty)", JSON.stringify(deriveAfty(g)) === JSON.stringify(deriveAfty(f)), true);
+  const foraComOsMesmos = { ...f, addons: CP.hidratarFicha(g).addons };
+  /* O limite de Acessórios é regra da mesa, e é a única diferença: vai à parte. */
+  const semLimite = (d) => JSON.stringify({ ...d, equip: { ...d.equip, acessorios: null } });
+  t("deriva igual com mesa (afty)", semLimite(derivarNoMundo(g)) === semLimite(derivarNoMundo(foraComOsMesmos)), true);
+  t("e o limite de Acessórios é o da Guilda", [derivarNoMundo(g).equip.acessorios.limite, derivarNoMundo(foraComOsMesmos).equip.acessorios.limite], [4, null]);
+  t("contraprova: sem os nativos deriva diferente", semLimite(derivarNoMundo(g)) === semLimite(derivarNoMundo(f)), false);
   t("sistema segue o rulesVersion (afty)", S.sistemaDaFicha(g), "afty");
 }
 /* O PERSONAGEM da Guilda tira o Nível do XP: sem XP nenhum é o Nível 1, mesmo com 12 digitado. */
@@ -102,27 +120,53 @@ t("sem namespace segue o sistema", r2.gravadas[0]?.namespace, undefined);
 t("sem namespace grava no Player", JSON.parse(sem.m.get("fm_creatures_player_v1"))[0].fundamentosPerdidos?.length, 1);
 
 
-/* Os addons oficiais: a lista, a trava (só na ficha com mesa) e o JSON de cada um.
-   A Carteira da Guilda SAIU da lista (2026-11-09): o personagem tem a embutida. */
-t("trava na ficha da Guilda", G.addonTravado({ mesa: "eradeouro" }, "cofre-de-feiticos"), true);
-t("sem mesa não trava", G.addonTravado({}, "cofre-de-feiticos"), false);
-t("a Carteira da Guilda não é mais oficial", G.ADDONS_OFICIAIS_IDS.includes("carteira-da-guilda"), false);
-t("nem travada", G.addonTravado({ mesa: "eradeouro" }, "carteira-da-guilda"), false);
-t("addon de fora não trava", G.addonTravado({ mesa: "eradeouro" }, "alma-do-afty"), false);
-const { readFileSync } = await import("node:fs");
-const { normalizarPacote } = await import(A + "afty-addons.js");
-for (const id of G.ADDONS_OFICIAIS_IDS.filter((x) => !["atencao-so-percepcao", "pericias-era-de-ouro"].includes(x))) {
-  const cru = JSON.parse(readFileSync(new URL("../addons/" + id + ".json", import.meta.url), "utf8"));
-  t("json oficial " + id, normalizarPacote(cru).id, id);
-}
+/* Os pacotes NATIVOS da Guilda (2026-11-09). Substituem os addons oficiais, que nasciam
+   como cópia congelada, ligados e travados. A Carteira da Guilda não está entre eles. */
+const { readFileSync, existsSync } = await import("node:fs");
+const { normalizarPacote, validarPacote, addonsVisiveisDaCriatura } = await import(A + "afty-addons.js");
+const lerPacote = (id) => JSON.parse(readFileSync(new URL("../addons/" + id + ".json", import.meta.url), "utf8"));
+t("os oito nativos, na ordem", G.NATIVOS_DA_GUILDA_IDS, [
+  "regras-grimorio", "cofre-de-feiticos", "alma-livre", "atencao-so-percepcao", "pericias-era-de-ouro",
+  "treino-testes-de-resistencia", "regras-da-era-de-ouro", "maldicao-era-de-ouro",
+]);
+t("a Carteira da Guilda não é nativa", G.NATIVOS_DA_GUILDA_IDS.includes("carteira-da-guilda"), false);
+t("nativo na ficha da Guilda", G.addonNativo({ mesa: "eradeouro" }, "cofre-de-feiticos"), true);
+t("sem mesa não é nativo", G.addonNativo({}, "cofre-de-feiticos"), false);
+t("addon de fora não é nativo", G.addonNativo({ mesa: "eradeouro" }, "alma-do-afty"), false);
+t("os addons oficiais saíram", ["ADDONS_OFICIAIS_IDS", "addonTravado"].filter((k) => k in G), []);
+t("o pacotes-oficiais.js saiu", existsSync(new URL("../src/systems/eradeouro/pacotes-oficiais.js", import.meta.url)), false);
 const atencao = normalizarPacote(JSON.parse(JSON.stringify(G.PACOTE_ATENCAO_SO_PERCEPCAO)));
 t("atencao liga a regra", atencao.regrasAfty?.atencaoSoPercepcao, true);
 
+/* A hidratação põe os nativos na ficha da Guilda, criatura e personagem, e só nela. */
+const guildaP = { ...createBlankAfty(), id: "n1", rulesVersion: "player", mesa: "eradeouro" };
+const guildaC = { ...createBlankAfty(), id: "n2", rulesVersion: "afty", mesa: "eradeouro" };
+const foraDaMesa = { ...createBlankAfty(), id: "n3", rulesVersion: "player" };
+const idsHidratados = (f) => (CP.hidratarFicha(f).addons ?? []).map((p) => p.id);
+t("o personagem da Guilda ganha os nativos", idsHidratados(guildaP), G.NATIVOS_DA_GUILDA_IDS);
+t("a criatura da Guilda também", idsHidratados(guildaC), G.NATIVOS_DA_GUILDA_IDS);
+t("fora da Guilda nada entra", idsHidratados(foraDaMesa), []);
+t("a mesma ficha devolve a mesma hidratação", CP.hidratarFicha(guildaP) === CP.hidratarFicha(guildaP), true);
+t("hidratar o hidratado não muda nada", CP.hidratarFicha(CP.hidratarFicha(guildaP)) === CP.hidratarFicha(guildaP), true);
+t("a régua do criador também os tem", CP.hidratarNativos(guildaP).addons.length, G.NATIVOS_DA_GUILDA_IDS.length);
+for (const p of CP.hidratarFicha(guildaP).addons) t(`o nativo ${p.id} é um pacote válido`, validarPacote(p), []);
+{
+  /* A ficha que nasceu com os oficiais (cópia congelada) e com o addon que a pessoa ligou. */
+  const velha = { ...guildaP, addons: [
+    { ...normalizarPacote(lerPacote("cofre-de-feiticos")), versao: "0.0.1" },
+    normalizarPacote(lerPacote("carteira-da-guilda")),
+  ] };
+  const hv = CP.hidratarFicha(velha).addons;
+  t("a cópia velha do nativo sai, e a em dia entra", hv.filter((p) => p.id === "cofre-de-feiticos").map((p) => p.versao),
+    [lerPacote("cofre-de-feiticos").versao]);
+  t("os nativos ficam na frente", hv.slice(0, G.NATIVOS_DA_GUILDA_IDS.length).map((p) => p.id), G.NATIVOS_DA_GUILDA_IDS);
+  t("o addon que a ficha escolheu fica", hv.at(-1)?.id, "carteira-da-guilda");
+  t("a marca da Ficha mostra só o escolhido", addonsVisiveisDaCriatura(velha).map((p) => p.id), ["carteira-da-guilda"]);
+}
+
 /* As perícias Guerra e Nobreza, vindas do pacote para dentro da ficha. */
 const P = await import(A + "afty-pericias.js");
-const { aplicarAddons } = await import(A + "afty-addons.js");
 aplicarAddons([]);
-t("cinco oficiais", G.ADDONS_OFICIAIS_IDS.length, 5);
 const pacP = normalizarPacote(JSON.parse(JSON.stringify(G.PACOTE_PERICIAS_ERA_DE_OURO)));
 t("pacote guarda as duas perícias", pacP.pericias.map((x) => x.id), ["guerra", "nobreza"]);
 const fp = { ...createBlankAfty(), id: "p1", rulesVersion: "player", mesa: "eradeouro", addons: [pacP] };
@@ -136,14 +180,18 @@ t("Guerra sem lista de troca", guerra?.atributosPermitidos, undefined);
 t("não são personalizadas editáveis", [guerra?.personalizada, nobreza?.personalizada], [undefined, undefined]);
 t("lista segue par", cat.length % 2, 0);
 t("ficha sem o pacote não tem", P.catalogoPericiasDaFicha({ ...fp, addons: [] }).some((x) => x.nome === "Guerra"), false);
-const d0 = deriveAfty({ ...fp, addons: [] });
-const d1 = deriveAfty(fp);
+/* Com e sem o pacote, numa ficha FORA da Guilda: dentro dela as duas são nativas. */
+const fpFora = { ...fp };
+delete fpFora.mesa;
+const d0 = deriveAfty({ ...fpFora, addons: [] });
+const d1 = deriveAfty(fpFora);
 const linha = (d, nome) => d.testes?.pericias?.find((x) => x.nome === nome);
+t("na Guilda as duas vêm nativas, mesmo sem o pacote na lista", !!linha(deriveAfty({ ...fp, addons: [] }), "Guerra"), true);
 t("Guerra aparece nos testes", !!linha(d1, "Guerra"), true);
 t("Nobreza aparece nos testes", !!linha(d1, "Nobreza"), true);
 const nobPre = deriveAfty({ ...fp, periciaAtributoManual: { [nobreza.id]: "presenca" } });
 t("Nobreza troca para Presença", linha(nobPre, "Nobreza")?.atributo, "presenca");
-t("as outras perícias não mudam", JSON.stringify(d0.testes.pericias.map((x) => [x.id, x.total])) === JSON.stringify(d1.testes.pericias.filter((x) => !/^custom_/.test(x.id)).map((x) => [x.id, x.total])), true);
+t("as outras perícias não mudam", JSON.stringify(d0.testes.pericias.map((x) => [x.id, x.bonus])) === JSON.stringify(d1.testes.pericias.filter((x) => !/^custom_/.test(x.id)).map((x) => [x.id, x.bonus])), true);
 
 /* ============================================================ */
 /* A CARTEIRA EMBUTIDA DO PERSONAGEM DA GUILDA (2026-11-09)       */
@@ -189,8 +237,10 @@ t("o Grau Especial da Guilda é só o nome", [g17.value, g17.rank, g17.ordem], [
 
 /* Equivalência: o Nível 12 pelo XP deriva IGUAL ao Nível 12 digitado, fora o extrato.
    E a contraprova, senão dois derives iguais por acaso passariam. */
-const semExtrato = (d) => JSON.stringify({ ...d, carteira: null });
-const digitado = { ...createBlankAfty(), id: "g1", rulesVersion: "player" };
+// O limite de Acessórios também é regra da mesa, e é conferido à parte.
+const semExtrato = (d) => JSON.stringify({ ...d, carteira: null, equip: { ...d.equip, acessorios: null } });
+/* O digitado leva os MESMOS pacotes (os nativos): a única diferença é de onde vem o nível. */
+const digitado = { ...createBlankAfty(), id: "g1", rulesVersion: "player", addons: CP.hidratarFicha(comXp(220)).addons };
 digitado.core = { ...digitado.core, nd: 12 };
 t("o XP da Guilda vale o mesmo que o nível digitado", semExtrato(deriveAfty(comXp(220))) === semExtrato(deriveAfty(digitado)), true);
 t("contraprova: o Nível 1 não é o 12", semExtrato(deriveAfty(comXp(0))) === semExtrato(deriveAfty(digitado)), false);
@@ -281,8 +331,107 @@ t("a aba Carteira abre também pela mesa",
 t("a aba Propriedades abre só pela mesa",
   /\{ id: "propriedades",\s+label: "Propriedades", mesa: "abaPropriedades" \}/.test(builder), true);
 t("e a aba Propriedades é desenhada", builder.includes('tabAtiva === "propriedades"'), true);
-const oficiaisFonte = readFileSync(new URL("../src/systems/eradeouro/pacotes-oficiais.js", import.meta.url), "utf8");
-t("os oficiais não carregam mais a Carteira da Guilda", oficiaisFonte.includes("carteira-da-guilda.json"), false);
+const nativosFonte = readFileSync(new URL("../src/systems/eradeouro/pacotes-nativos.js", import.meta.url), "utf8");
+t("os nativos não carregam a Carteira da Guilda", nativosFonte.includes("carteira-da-guilda.json"), false);
+const appFonte = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
+t("o App não manda mais cópia de addon na ficha nova", /addonsIniciais=|pacotesOficiais/.test(appFonte), false);
+
+/* ============================================================ */
+/* TREINO DE PERÍCIA, ITENS, TREINO DE TR E A MALDIÇÃO (2026-11-09) */
+/* ============================================================ */
+const TRE = await import(A + "afty-treinamentos.js");
+const ORI = await import(A + "afty-origens.js");
+const TAL = await import(A + "afty-talentos.js");
+
+/* A 4ª etapa do Treino de Perícia: metade do BT na Guilda, o sucesso garantido fora dela.
+   Nível 9 (BT 4) nos dois: na Guilda pelo XP da Carteira, fora pelo campo. */
+const fichaPericia = (naGuilda, progresso) => {
+  const f = { ...createBlankAfty(), id: "tp", rulesVersion: "player" };
+  f.core = { ...f.core, nd: 9 };
+  f.treinamentos = { pericia: [{ alvo: "atletismo", progresso }] };
+  if (naGuilda) {
+    f.mesa = "eradeouro";
+    f.carteira = { entradas: [{ id: "e", nome: "", xp: 160, dinheiro: 0, interludios: 0, tipo: "" }], gastos: [] };
+  }
+  return f;
+};
+const atletismo = (f) => derivarNoMundo(f).testes.pericias.find((x) => x.id === "atletismo")?.bonus;
+t("os dois no Nível 9", [derivarNoMundo(fichaPericia(true, 4)).nd, derivarNoMundo(fichaPericia(false, 4)).nd], [9, 9]);
+t("na Guilda a 4ª etapa soma metade do BT", atletismo(fichaPericia(true, 4)) - atletismo(fichaPericia(true, 3)), 2);
+t("fora da Guilda ela segue sem número", atletismo(fichaPericia(false, 4)) - atletismo(fichaPericia(false, 3)), 0);
+aplicarAddons([]);
+const periciaDoLivro = JSON.parse(JSON.stringify(TRE.getTreinamento("pericia")));
+aplicarAddons(CP.addonsDaFicha(guildaP));
+const periciaDaGuilda = TRE.getTreinamento("pericia");
+t("o catálogo da Guilda mostra a etapa nova", periciaDaGuilda.etapas[3].beneficio,
+  "Você adiciona metade do seu bônus de treinamento em testes da perícia escolhida.");
+t("as três primeiras etapas são as do livro", JSON.stringify(periciaDaGuilda.etapas.slice(0, 3)) === JSON.stringify(periciaDoLivro.etapas.slice(0, 3)), true);
+t("o Completo é o do livro", periciaDaGuilda.completo.beneficio, periciaDoLivro.completo.beneficio);
+t("e a linha diz quem a remendou", periciaDaGuilda.remendadoPor?.length > 0, true);
+aplicarAddons([]);
+t("fora da Guilda o catálogo é o do livro", TRE.getTreinamento("pericia").etapas[3].beneficio.startsWith("Uma vez por cena"), true);
+
+/* O Talento Costas Largas e o limite de 4 Acessórios equipados. */
+const ID_COSTAS = "regras-da-era-de-ouro:costas_largas";
+aplicarAddons(CP.addonsDaFicha(guildaP));
+t("o Costas Largas existe na Guilda", [TAL.getTalento(ID_COSTAS)?.nome, TAL.getTalento(ID_COSTAS)?.grupo], ["Costas Largas", "geral"]);
+t("ele é livre", TAL.getTalento(ID_COSTAS)?.requisitos, []);
+t("ele soma 2 no limite", TAL.limiteAcessoriosDosTalentos({ talentos: [ID_COSTAS] }), 2);
+t("a descrição sem travessão nem ponto e vírgula", new RegExp("[\u2014;]").test(TAL.getTalento(ID_COSTAS)?.descricao ?? ";"), false);
+aplicarAddons([]);
+t("fora da Guilda ele não existe", TAL.getTalento(ID_COSTAS), null);
+const ACESSORIOS = ["it_brinco_da_comunicacao", "it_chaveiro_canalizador", "it_amuleto_do_vislumbre", "it_faixa_de_foco", "it_bracelete_do_vigor"];
+const comAcessorios = (base, quantos = 5, talentos = []) => ({
+  ...base, talentos,
+  equipamentos: { ...(base.equipamentos ?? {}), itens: ACESSORIOS.slice(0, quantos).map((refId, i) => ({ uid: `u${i}`, tipo: "item", refId, qtd: 1, equipado: true })) },
+});
+const d5 = derivarNoMundo(comAcessorios(guildaC));
+t("conta os vestidos e o limite", d5.equip.acessorios, { vestidos: 5, limite: 4 });
+t("o quinto passa do limite", d5.equip.entradas.filter((e) => e.acimaDoLimite).map((e) => e.refId), ["it_bracelete_do_vigor"]);
+t("e não vale: o Bracelete do Vigor não dá PV", d5.hp, derivarNoMundo(comAcessorios(guildaC, 4)).hp);
+t("a bancada avisa", d5.equip.avisos.some((a) => a.startsWith("1 Acessório equipado passa do limite de 4")), true);
+const d5c = derivarNoMundo(comAcessorios(guildaC, 5, [ID_COSTAS]));
+t("com Costas Largas o limite é 6", d5c.equip.acessorios, { vestidos: 5, limite: 6 });
+t("e o Bracelete do Vigor vale", d5c.hp > d5.hp && !d5c.equip.entradas.some((e) => e.acimaDoLimite), true);
+const dFora = derivarNoMundo(comAcessorios(foraDaMesa));
+t("fora da Guilda não há limite", [dFora.equip.acessorios.limite, dFora.equip.entradas.some((e) => e.acimaDoLimite)], [null, false]);
+t("o personagem da Guilda também tem o limite", derivarNoMundo(comAcessorios(guildaP)).equip.acessorios.limite, 4);
+const guardado = comAcessorios(guildaC);
+guardado.equipamentos.itens[4].equipado = false;
+t("o Acessório guardado não conta", derivarNoMundo(guardado).equip.acessorios.vestidos, 4);
+
+/* O Treino de Testes de Resistência em no máximo 2 TRs na Guilda. */
+const ID_TR = "treino-testes-de-resistencia:testes_de_resistencia";
+const tresTRs = (base) => ({ ...base, treinamentos: { [ID_TR]: [
+  { alvo: "fortitude", progresso: 1 }, { alvo: "reflexos", progresso: 1 }, { alvo: "vontade", progresso: 1 },
+] } });
+const pacoteTR = normalizarPacote(lerPacote("treino-testes-de-resistencia"));
+const foraComTR = { ...foraDaMesa, addons: [pacoteTR] };
+aplicarAddons(CP.addonsDaFicha(guildaP));
+t("o teto da Guilda é 2", TRE.tetoDeInstancias(TRE.getTreinamento(ID_TR), guildaP), 2);
+t("na criatura da Guilda também", TRE.tetoDeInstancias(TRE.getTreinamento(ID_TR), guildaC), 2);
+t("fora da Guilda não há teto", TRE.tetoDeInstancias(TRE.getTreinamento(ID_TR), foraDaMesa), null);
+t("outra Linha repetível não ganha teto", TRE.tetoDeInstancias(TRE.getTreinamento("pericia"), guildaP), null);
+t("na Guilda só 2 cobram Foco", TRE.focosGastos(tresTRs(guildaP).treinamentos, null, null, tresTRs(guildaP)), 2);
+t("fora as 3 cobram", TRE.focosGastos(tresTRs(foraComTR).treinamentos, null, null, tresTRs(foraComTR)), 3);
+const prof = (d, id) => d.testes.resistencias.find((r) => r.value === id)?.prof;
+const dTR = derivarNoMundo(tresTRs(guildaP));
+const dSemTR = derivarNoMundo(guildaP);
+t("na Guilda as duas primeiras treinam", [prof(dTR, "fortitude"), prof(dTR, "reflexos")], ["treinado", "treinado"]);
+t("e a terceira não vale", prof(dTR, "vontade"), prof(dSemTR, "vontade"));
+t("contraprova: fora da Guilda a terceira treina", prof(derivarNoMundo(tresTRs(foraComTR)), "vontade"), "treinado");
+
+/* A Maldição: na Guilda só a Era de Ouro, que é nativa. O seletor lê a ficha hidratada, como o criador. */
+aplicarAddons(CP.addonsDaFicha(guildaP));
+const ID_MALDICAO_EDO = "maldicao-era-de-ouro:maldicao_era_de_ouro";
+const origensDe = (f) => ORI.origensDoSistema(CP.hidratarFicha(f)).map((o) => o.value);
+t("na Guilda a Maldição do livro sai do seletor", origensDe(guildaP).includes("maldicao"), false);
+t("e a Maldição Era de Ouro entra", origensDe(guildaP).includes(ID_MALDICAO_EDO), true);
+t("na criatura da Guilda também", [origensDe(guildaC).includes("maldicao"), origensDe(guildaC).includes(ID_MALDICAO_EDO)], [false, true]);
+const jaMaldicao = { ...guildaP, core: { ...guildaP.core, origem: { id: "maldicao" } } };
+t("a ficha da Guilda que já é Maldição do livro a mantém", origensDe(jaMaldicao).includes("maldicao"), true);
+aplicarAddons([]);
+t("fora da Guilda a do livro segue", origensDe(foraDaMesa).includes("maldicao"), true);
 
 const textosDaGuilda = JSON.stringify([G.MISSOES_ERA_DE_OURO, G.EVENTOS_ERA_DE_OURO, G.FILTROS_DA_GUILDA, G.MOEDA_ERA_DE_OURO]);
 t("textos da Carteira da Guilda sem travessão nem ponto e vírgula", new RegExp("[\u2014;]").test(textosDaGuilda), false);

@@ -98,6 +98,7 @@ import {
 import {
   resolveTalentos, resolveTreinoEscudo, getTalento, OPCAO_TALENTO_NOME, AFTY_TALENTOS,
   avaliarAcessoTalento, efeitosDeTalentosConfigurados, aptidoesConcedidasPorTalentos, contaVagasPorGrupo,
+  limiteAcessoriosDosTalentos,
 } from "./afty-talentos";
 import { habilidadesDasOpcoesTalento, inovacoesDasOpcoesTalento } from "./afty-talentos-estilo";
 import {
@@ -155,7 +156,7 @@ import { resolveEspinho, marcasDoEspinho, ESPINHO_TIPOS_ITEM } from "./afty-espi
 import { resolveCorrupcao } from "./afty-corrupcao";
 import { resolveCarteira } from "./afty-carteira";
 // O personagem da Guilda (rota /EraDeOuro): Carteira embutida e o nome do grau. FOLHA.
-import { carteiraDaGuilda, PROGRESSAO_ERA_DE_OURO, grauComNomeDaMesa } from "../eradeouro/era-de-ouro";
+import { carteiraDaGuilda, PROGRESSAO_ERA_DE_OURO, grauComNomeDaMesa, limiteBaseDeAcessorios } from "../eradeouro/era-de-ouro";
 import { atributosDosAddons } from "./afty-addons-atributos";
 import { hidratarFicha } from "./afty-addons-compostos";
 import { resolveCura, fonteCuraDeclarada, preparaRolagemCura } from "./afty-cura";
@@ -770,7 +771,13 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
      os itens que ele marca viram Grau Especial, e o equipamento é o primeiro
      passo do derive. Sem o pacote a configuração é vazia e nada é marcado. */
   const configEspinho = espinhoDaFicha(creature);
+  /* O limite de Acessórios equipados da Guilda (2026-11-09): o da mesa mais o que os
+     Talentos somam. Fora da Guilda é `null`, e não há limite. Ficha crua, pela ordem. */
+  const limiteBaseAcessorios = limiteBaseDeAcessorios(creature);
+  const limiteAcessorios = limiteBaseAcessorios == null
+    ? null : limiteBaseAcessorios + limiteAcessoriosDosTalentos(creature);
   const equip = resolveEquipamentos(creature, bt, {
+    limiteAcessorios,
     definicaoArma: (def) => entradaGungnirNoModo({ def }, creature, opcoes.gungnir).def,
     vagasEncantamento: vagasEncantamentoDeTreino(creature),
     // As do ESCUDO (Treino de Escudo do pacote Stark, 2026-10-11).

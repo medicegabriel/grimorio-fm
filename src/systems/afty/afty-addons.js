@@ -57,7 +57,7 @@
 
 import { validarDadosServos } from "./afty-servos";
 import { validarBloodfeast } from "./afty-bloodfeast";
-import { hidratarFicha } from "./afty-addons-compostos";
+import { hidratarFicha, registrarNativos } from "./afty-addons-compostos";
 import { normalizarMarca, normalizarVariavel, validateExpression } from "./afty-dsl";
 // Folha (zero imports): o formato da Técnica de Estilo da Expansão nos pacotes.
 import {
@@ -78,7 +78,9 @@ import { sistemaDaFicha, regraDo, palavrasDoSistema } from "./afty-sistema";
 import { nivelDaCarteira } from "./afty-carteira";
 /* A Carteira embutida do personagem da Guilda (rota /EraDeOuro). O `era-de-ouro.js`
    é FOLHA, então este import também é de mão única. */
-import { carteiraDaGuilda, PROGRESSAO_ERA_DE_OURO } from "../eradeouro/era-de-ouro";
+import { carteiraDaGuilda, PROGRESSAO_ERA_DE_OURO, mesaDaFicha, addonNativo } from "../eradeouro/era-de-ouro";
+/* As fontes dos pacotes nativos da Guilda. Também folha (só JSON e o módulo acima). */
+import { fontesNativasDaGuilda } from "../eradeouro/pacotes-nativos";
 import { normalizarRegrasAfty, validarRegrasAfty, regrasAftyDaCriatura } from "./afty-regras-addon";
 import { TIPOS_VINCULO } from "./afty-recursos-addon";
 
@@ -2183,8 +2185,11 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
        direito: ele muda regra na ficha de quem tem o Espinho. */
     && !p.espinho
     && !p.corrupcao
+    /* As perícias novas (`pericias`, 2026-11-09) também são conteúdo: as Perícias da
+       Era de Ouro só trazem Guerra e Nobreza, e eram recusadas como pacote vazio. */
+    && p.pericias.length === 0
   ) {
-    problemas.push("O pacote não acrescenta, não substitui, não libera, não permite, não concede ou libera Aptidão e não traz Funcionamento Básico, Feitiço, Estado de Combate, Contador de Origem, Voto automático, Regra Afty ou Espinho.");
+    problemas.push("O pacote não acrescenta, não substitui, não libera, não permite, não concede ou libera Aptidão e não traz Funcionamento Básico, Feitiço, Estado de Combate, Contador de Origem, Voto automático, Regra Afty, Espinho ou Perícia.");
   }
 
   const vistos = new Set();
@@ -2580,6 +2585,16 @@ export const limparAddons = () => aplicarAddons([]);
  * versão nova, e atualizar é um botão. A exceção são os pacotes COMPOSTOS cuja
  * fonte a pessoa instalou: esses se refazem sozinhos (`afty-addons-compostos.js`).
  */
+/* Os pacotes NATIVOS da Guilda (rota /EraDeOuro), entregues à hidratação da ficha.
+   Normalizados UMA vez e congelados na lista: a hidratação compara por referência, e
+   uma cópia nova a cada leitura refaria a ficha a cada render. Ver `hidratarNativos`. */
+let nativosDaGuilda = null;
+registrarNativos((ficha) => {
+  if (!mesaDaFicha(ficha)) return SEM_PRIMITIVAS;
+  nativosDaGuilda ??= Object.freeze(fontesNativasDaGuilda().map(normalizarPacote));
+  return nativosDaGuilda;
+});
+
 /** Os pacotes CRUS da ficha, já com os compostos em dia. Todo leitor desta
  *  família passa por aqui, para a tela e o motor verem a mesma cópia. */
 function listaDeAddons(creature) {
@@ -2591,6 +2606,11 @@ export function addonsDaCriatura(creature) {
   const lista = hidratarFicha(creature)?.addons;
   return Array.isArray(lista) ? lista.map(normalizarPacote) : [];
 }
+
+/** Os mesmos, sem os NATIVOS da mesa da ficha: é o que a marca de addons da Ficha
+ *  mostra. O nativo da Guilda vale sempre e não é escolha de ninguém. */
+export const addonsVisiveisDaCriatura = (creature) =>
+  addonsDaCriatura(creature).filter((p) => !addonNativo(creature, p.id));
 
 /* ============================================================ */
 /* PACOTES QUE NÃO LIGAM JUNTOS                                  */

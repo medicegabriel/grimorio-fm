@@ -916,6 +916,18 @@ nível de Domínio × (1 + dias concluídos). A área permanece fixa e sem vida.
 usam as tabelas de Expansão e admitem duas escolhas iguais dentro do orçamento normal. Restrições
 concedem efeitos ou tamanho extra registrados pela mesa. Dentro aplica os efeitos, Fora os desliga.
 
+## Itens e treinos na Guilda (2026-11-09)
+
+Na ficha com `mesa: "eradeouro"`, criatura e personagem.
+
+- **Limite de Acessórios equipados** = 4 + soma do `limiteAcessorios` dos Talentos da ficha (Costas Largas, +2).
+  Conta os Acessórios equipados na ordem do inventário, as cópias repetidas inclusive. Arma, escudo e uniforme ficam
+  fora. O que passa do limite não dá efeito nenhum.
+- **Treino de Testes de Resistência**: no máximo 2 instâncias (2 TRs). As instâncias além do teto não rendem efeito
+  nem cobram Foco.
+- **4ª etapa do Treino de Perícia** = `piso(bt / 2)` na perícia escolhida, no lugar do sucesso garantido (remendo do
+  pacote nativo Regras da Era de Ouro).
+
 ## Nível do personagem da Guilda (2026-11-09)
 
 Só no personagem com `mesa: "eradeouro"` (rota /EraDeOuro). A Criatura da Guilda segue o ND digitado.
