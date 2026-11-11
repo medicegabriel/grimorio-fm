@@ -1,5 +1,23 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-11 · OS CLÃS UCHIHA E HYUUGA NO HERDADO DA GUILDA
+
+Pedido do autor: "Coloque estas daus origens na origem Herdado como parte dos Clas Oficiais", com os textos de Uchiha, Sharingan, Evolução Maldita, Olho Emprestado, Mangekyou, Mangekyou Eterno, Hyuuga e Byakugan. Decisões dele, por pergunta:
+
+| Pergunta | Resposta |
+|---|---|
+| Pontaria não é perícia do site | Só Furtividade e Percepção |
+| Como o Sharingan e o Byakugan funcionam na ficha | Desperto (marcado quando o mestre liberar) mais o interruptor Ativo no combate |
+| Mangekyou, Eterno e Olho Emprestado | Texto de mesa |
+
+- **Onde:** os dois clãs entram pela família `clas` do pacote nativo Regras da Era de Ouro (1.1.0), então aparecem no seletor do Herdado do livro, ao lado de Gojo, Inumaki, Kamo e Zenin, e só na ficha da Guilda (criatura e personagem, como os outros nativos). Ids `regras-da-era-de-ouro:cla_uchiha` e `regras-da-era-de-ouro:cla_hyuuga`.
+- **Maestria de Clã:** a escolha com custo dos clãs do livro. Uchiha: treinado em Furtividade e Percepção, ou especialista em uma. Hyuuga: treinado em Percepção e Medicina, Mestre em uma, ou metade do BT em todos os Acertos no lugar das perícias.
+- **Sharingan:** a escolha Sharingan abre no Nível 4 com a opção Sharingan Desperto. Marcada, ela faz aparecer o interruptor Sharingan Ativo na Simulação de Combate (`requerEscolha`), e os números moram na opção: +2 de Defesa e de TR de Reflexos por tomoe, com tomoes 1, 2 e 3 nos Níveis 4, 8 e 10. Desmarcar o despertar desliga tudo, mesmo com o interruptor gravado ligado.
+- **Byakugan:** o mesmo molde (Byakugan Desperto, Byakugan Ativo), com metade do Nível em Percepção e no Acerto Corpo a Corpo.
+- **Texto:** Evolução Maldita, Olho Emprestado, Mangekyou e Eterno são características de mesa do Uchiha. O Suspiro das Pétalas não precisou de mecanismo, porque a Emoção da Pétala Decadente pede a origem Herdado. Os travessões curtos e o ponto e vírgula do texto do Mangekyou viraram parênteses e vírgula. O que ainda é só texto está em `docs/a-fazer.md`.
+- **Criador:** o botão do clã aceita `resumo` (o Uchiha mostraria "Mangekyou Sharingan Eterno", a última característica, e mostra "Sharingan"), e a descrição de característica no card da Origem respeita quebra de parágrafo (`whitespace-pre-line`, que o outro card de característica já tinha).
+- Verificado: `t-era-de-ouro.mjs` (316), suíte inteira (315 de 317, as mesmas duas de inventário de revisão), eslint, build e navegador (Uchiha e Hyuuga no seletor do Herdado da Guilda, o card do Uchiha com "Sharingan", parágrafos separados, o Sharingan Desperto fazendo aparecer o interruptor, e no ND 20 o Sharingan Ativo levando a Defesa de 32 a 38 e Reflexos de +16 a +22, sem erro no console). Nada em `src/components/`.
+
 ## SESSÃO DE 2026-11-09 · OS NATIVOS DA GUILDA, A MALDIÇÃO E AS REGRAS DE ITENS E TREINOS
 
 Pedidos do autor, em sequência: a lista de "Fazeres" da Guilda (a 4ª etapa do Treino de Perícia, as regras para itens, o Talento "Costas lagar" e o Treino de TR "com no maximo de 2 vezes feito"), a Maldição Era de Ouro "como nativo [...] substituindo as maldiçoes existentes", e "todos os Addon que ja sao pre-definidos no site sem aparecer em addon coloque-os nativos". Decisões dele, por pergunta:

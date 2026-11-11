@@ -433,6 +433,86 @@ t("a ficha da Guilda que já é Maldição do livro a mantém", origensDe(jaMald
 aplicarAddons([]);
 t("fora da Guilda a do livro segue", origensDe(foraDaMesa).includes("maldicao"), true);
 
+/* ============================================================ */
+/* OS CLÃS UCHIHA E HYUUGA DO HERDADO (2026-11-11)                 */
+/* ============================================================ */
+const UCHIHA = "regras-da-era-de-ouro:cla_uchiha";
+const HYUUGA = "regras-da-era-de-ouro:cla_hyuuga";
+const SHARINGAN = "regras-da-era-de-ouro:sharingan_ativo";
+const BYAKUGAN = "regras-da-era-de-ouro:byakugan_ativo";
+const herdeiro = (cla, escolhas = {}, combate = {}, nd = 10) => ({
+  ...guildaC,
+  core: { ...guildaC.core, nd, origem: { id: "herdado", cla, escolhas } },
+  combate: { ...guildaC.combate, ativo: true, ...combate },
+});
+aplicarAddons(CP.addonsDaFicha(guildaP));
+t("na Guilda o Herdado tem os quatro do livro e os dois novos", ORI.clasDaOrigem("herdado").map((c) => c.id),
+  ["cla_gojo", "cla_inumaki", "cla_kamo", "cla_zenin", UCHIHA, HYUUGA]);
+t("os clãs passam no validador", ORI.validarCatalogoClas(), []);
+t("o Uchiha", ORI.getCla(UCHIHA)?.nome, "Clã Uchiha");
+t("o Hyuuga", ORI.getCla(HYUUGA)?.nome, "Clã Hyuuga");
+t("o card do Uchiha diz Sharingan, e não a última característica", ORI.getCla(UCHIHA)?.resumo, "Sharingan");
+t("o criador lê o resumo do clã", builder.includes("const resumoDoCla = (c) => c.resumo ??"), true);
+t("os dois dão 3 pontos livres com máximo 2", [UCHIHA, HYUUGA].map((id) => ORI.getCla(id).caracteristicas[0].bonus),
+  [{ distribuir: 3, maxPorAtributo: 2 }, { distribuir: 3, maxPorAtributo: 2 }]);
+t("textos dos clãs sem travessão", new RegExp("\\u2014").test(JSON.stringify([ORI.getCla(UCHIHA), ORI.getCla(HYUUGA)])), false);
+t("a Maestria do Uchiha não tem Pontaria",
+  ORI.getCla(UCHIHA).caracteristicas[1].escolhas[0].opcoes.map((o) => o.nome),
+  ["Furtividade", "Percepção", "Furtividade (Especialista)", "Percepção (Especialista)"]);
+aplicarAddons([]);
+t("fora da Guilda o Herdado é o do livro", ORI.clasDaOrigem("herdado").map((c) => c.id), ["cla_gojo", "cla_inumaki", "cla_kamo", "cla_zenin"]);
+
+const per = (d, id) => d.testes.pericias.find((p) => p.id === id);
+const atq = (d) => Object.fromEntries(d.testes.ataques.map((a) => [a.id, a.bonus]));
+const reflexos = (d) => d.testes.resistencias.find((r) => r.value === "reflexos")?.bonus;
+const defesa = (d) => d.defesa?.total ?? d.defesa;
+
+const uTreino = derivarNoMundo(herdeiro(UCHIHA, { edo_uchiha_maestria: ["edo_uchiha_tr_furtividade", "edo_uchiha_tr_percepcao"] }));
+t("Uchiha treinado em Furtividade e Percepção", [per(uTreino, "furtividade").prof, per(uTreino, "percepcao").prof], ["treinado", "treinado"]);
+const uEsp = derivarNoMundo(herdeiro(UCHIHA, { edo_uchiha_maestria: ["edo_uchiha_ms_percepcao"] }));
+t("ou especialista em uma só", [per(uEsp, "percepcao").prof, per(uEsp, "furtividade").prof], ["mestre", null]);
+
+/* O Sharingan: só desperto (Nível 4+) e ativo, com +2 por tomoe (1 no 4, 2 no 8, 3 no 10). */
+const DESPERTO_U = { edo_uchiha_sharingan: ["edo_uchiha_sharingan_desperto"] };
+const ganhoSharingan = (nd, escolhas = DESPERTO_U, ligado = true) => {
+  const sem = derivarNoMundo(herdeiro(UCHIHA, escolhas, {}, nd));
+  const com = derivarNoMundo(herdeiro(UCHIHA, escolhas, { [SHARINGAN]: ligado }, nd));
+  return [defesa(com) - defesa(sem), reflexos(com) - reflexos(sem)];
+};
+t("Sharingan no Nível 4: 1 tomoe", ganhoSharingan(4), [2, 2]);
+t("Nível 7 ainda 1 tomoe", ganhoSharingan(7), [2, 2]);
+t("Nível 8: 2 tomoes", ganhoSharingan(8), [4, 4]);
+t("Nível 10: 3 tomoes", ganhoSharingan(10), [6, 6]);
+t("Nível 15 segue em 3", ganhoSharingan(15), [6, 6]);
+t("sem despertar o interruptor não soma", ganhoSharingan(10, {}), [0, 0]);
+t("desperto e desligado não soma", ganhoSharingan(10, DESPERTO_U, false), [0, 0]);
+t("abaixo do Nível 4 o despertar não vale", ganhoSharingan(3), [0, 0]);
+const fora = derivarNoMundo({ ...herdeiro(UCHIHA, DESPERTO_U, { [SHARINGAN]: true }), combate: { ...guildaC.combate, ativo: false, [SHARINGAN]: true } });
+t("fora de combate o Sharingan não soma", defesa(fora), defesa(derivarNoMundo(herdeiro(UCHIHA, DESPERTO_U, {}, 10))));
+const estadosU = (escolhas, nd = 10) => (derivarNoMundo(herdeiro(UCHIHA, escolhas, {}, nd)).combate?.estadosExtras ?? [])
+  .filter((e) => e.id === SHARINGAN).map((e) => e.requerEscolha);
+t("o interruptor tem dono: a opção Desperto", estadosU(DESPERTO_U), ["edo_uchiha_sharingan_desperto"]);
+t("e as partes dizem Sharingan", derivarNoMundo(herdeiro(UCHIHA, DESPERTO_U, { [SHARINGAN]: true }))
+  .testes.resistencias.find((r) => r.value === "reflexos").partes.some((p) => p.label === "Sharingan" && p.valor === 6), true);
+
+/* O Hyuuga: Maestria de três saídas e o Byakugan com metade do Nível. */
+const hTreino = derivarNoMundo(herdeiro(HYUUGA, { edo_hyuuga_maestria: ["edo_hyuuga_tr_percepcao", "edo_hyuuga_tr_medicina"] }, {}, 9));
+t("Hyuuga treinado em Percepção e Medicina", [per(hTreino, "percepcao").prof, per(hTreino, "medicina").prof], ["treinado", "treinado"]);
+const hMestre = derivarNoMundo(herdeiro(HYUUGA, { edo_hyuuga_maestria: ["edo_hyuuga_ms_medicina"] }, {}, 9));
+t("ou Mestre em Medicina", per(hMestre, "medicina").prof, "mestre");
+const hSem = derivarNoMundo(herdeiro(HYUUGA, {}, {}, 9));
+const hAcertos = derivarNoMundo(herdeiro(HYUUGA, { edo_hyuuga_maestria: ["edo_hyuuga_acertos"] }, {}, 9));
+t("ou metade do BT (4) em todos os Acertos", Object.keys(atq(hSem)).map((k) => atq(hAcertos)[k] - atq(hSem)[k]), [2, 2, 2]);
+t("e então sem as perícias", per(hAcertos, "percepcao").prof, null);
+const DESPERTO_H = { edo_hyuuga_byakugan: ["edo_hyuuga_byakugan_desperto"] };
+const hDesp = derivarNoMundo(herdeiro(HYUUGA, DESPERTO_H, {}, 9));
+const hAtivo = derivarNoMundo(herdeiro(HYUUGA, DESPERTO_H, { [BYAKUGAN]: true }, 9));
+t("Byakugan no Nível 9: +4 em Percepção", per(hAtivo, "percepcao").bonus - per(hDesp, "percepcao").bonus, 4);
+t("e +4 só no Corpo a Corpo", Object.keys(atq(hDesp)).map((k) => atq(hAtivo)[k] - atq(hDesp)[k]), [4, 0, 0]);
+const hSemDespertar = derivarNoMundo(herdeiro(HYUUGA, {}, { [BYAKUGAN]: true }, 9));
+t("sem despertar não soma", per(hSemDespertar, "percepcao").bonus, per(hSem, "percepcao").bonus);
+aplicarAddons([]);
+
 const textosDaGuilda = JSON.stringify([G.MISSOES_ERA_DE_OURO, G.EVENTOS_ERA_DE_OURO, G.FILTROS_DA_GUILDA, G.MOEDA_ERA_DE_OURO]);
 t("textos da Carteira da Guilda sem travessão nem ponto e vírgula", new RegExp("[\u2014;]").test(textosDaGuilda), false);
 
