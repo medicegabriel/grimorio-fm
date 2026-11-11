@@ -7,6 +7,7 @@ import AftyCreatureBuilder from "./systems/afty/AftyCreatureBuilder";
 import AftyFicha from "./systems/afty/ficha/AftyFicha";
 import AftyEncontros from "./systems/afty/encontros/AftyEncontros";
 import AftyEncontro from "./systems/afty/encontros/AftyEncontro";
+import MesaDoMestre from "./systems/eradeouro/MesaDoMestre";
 import EncounterTracker from "./components/EncounterTracker";
 import EncountersDashboard from "./components/EncountersDashboard";
 import TemplateLibrary from "./components/TemplateLibrary";
@@ -424,7 +425,16 @@ export default function App() {
         onCreateNew={() => (mesa ? setEscolhendoTipo(true) : goToBuilder(null))}
         onGoToEncounters={goToEncounters}
         onGoToTemplates={goToTemplates}
+        // A Mesa do Mestre existe só na Guilda (autor, 2026-11-11).
+        onGoToMestre={mesa ? () => setView({ name: "mestre" }) : undefined}
       />
+    ),
+    /* A Mesa do Mestre da Guilda. Recebe a lista que os Encontros recebem (só
+       ficha do Afty e do Player), e a Vida e o PE dela são a sessão da Ficha Final. */
+    mestre: () => (
+      mesa ? (
+        <MesaDoMestre fichasDaLista={criaturasDoLivro} onVoltar={goToDashboard} />
+      ) : views.dashboard()
     ),
     tracker: () => {
       if (!activeCreature) {

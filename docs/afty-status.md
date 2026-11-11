@@ -1,5 +1,24 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-11 · A MESA DO MESTRE DA GUILDA
+
+Pedido do autor: "Crie uma aba de Mestre no Era de Ouro que e capaz de importar as fichas e deixa-las separadas, com vida e PE claros alem de poder selecionar as criaturas [...] para o mestre conseguir subtrair vida e PE de suas criatruras e dos players sem adentrar na ficha, faça uma pesquisa de ultilidade e coisas legais de adicionar [...] tem que ter como retirar as fichas facilmente tbm". Decisões dele, por pergunta:
+
+| Pergunta | Resposta |
+|---|---|
+| Onde fica a entrada | Botão Mestre no cabeçalho da Guilda (exceção Forma 1 no `Dashboard.jsx`, registrada no AGENTS.md) |
+| A Vida e o PE de uma criatura da lista | O mesmo valor da Ficha Final |
+| Extras, da pesquisa | Dano pela Metade, Descanso da Mesa e Atualizar Ficha Importada. Desfazer e Histórico ficaram de fora |
+
+- **Onde:** `src/systems/eradeouro/` em três arquivos. `mesa-do-mestre.js` é o modelo puro (chave `fm_mesa_mestre_eradeouro_v1`), `mesa-do-mestre-sessao.js` aplica as ações com os verbos da Ficha, e `MesaDoMestre.jsx` é a tela. Rota interna `mestre` no `App.jsx`, só com `mesa`.
+- **Duas origens de ficha:** "Adicionar da Lista" aponta para a ficha da Guilda pelo id, e a Vida e o PE são a sessão da Ficha Final (`fm_ficha_sessao_afty_v1:<id>`). Dano dado na mesa aparece ao abrir a Ficha, e o contrário. "Importar Fichas" lê um ou mais arquivos exportados e guarda CÓPIAS só na mesa, separadas da lista, com id novo (`mesa_...`) e sessão própria. A porta do livro vale: ficha da 2.5.2 fica de fora, com aviso.
+- **A tela:** Jogadores e Criaturas em grupos, cada card com Nível ou ND, Defesa, a barra de PV (com PV Temporário e o aviso do estado vital) e a de PE, as mesmas `Vital` do Painel de Combatente (digitar `-12` tira, `+5` devolve, número seco fixa). Caído com 0 de PV (só se a Vida máxima passa de 0) e Morto pelo estado vital.
+- **Seleção:** clicar no card seleciona, Selecionar Todos por grupo, e a barra de baixo aplica nos selecionados: Dano, Dano pela Metade (arredonda para baixo), Cura, Gastar PE, Recuperar PE (sem passar do máximo), Descansar, Tirar da Mesa. Enter no valor aplica Dano, Esc limpa a seleção.
+- **Tirar:** o X do card, Tirar da Mesa nos selecionados, ou Limpar Mesa (com confirmação). A ficha da lista continua na lista, e a importada é apagada com a sessão dela. Ficha apagada da lista sai da mesa sozinha.
+- **Atualizar Ficha:** o botão de seta da importada lê o arquivo novo do jogador e troca a ficha mantendo o id, e com ele a Vida e o PE correntes.
+- **Pesquisa:** os rastreadores de mesa (Fantasy Grounds, apps de iniciativa, DnDino) juntam a lista do grupo fora do combate, PV e PV temporário por personagem e alvo múltiplo para aplicar dano de uma vez, e os mestres pedem tela simples. A iniciativa já é do Encontro e não foi repetida aqui.
+- Verificado: `t-mesa-do-mestre.mjs` (38), `t-era-de-ouro.mjs` (316), suíte inteira (316 de 318, as duas de inventário de revisão de sempre), eslint, build e navegador (botão Mestre na Guilda, dois Ogros da lista e um jogador importado com a ficha da 2.5.2 recusada, dano de 30 e pela metade com 10 de PE nos dois selecionados com as contas certas, Descansar, Atualizar Ficha, Tirar da Mesa sem mexer na lista, a Ficha Final abrindo com a Vida que a mesa gravou, e 375 px sem rolagem lateral). `src/components/` mudou só no `Dashboard.jsx`, pela exceção registrada.
+
 ## SESSÃO DE 2026-11-11 · OS CLÃS UCHIHA E HYUUGA NO HERDADO DA GUILDA
 
 Pedido do autor: "Coloque estas daus origens na origem Herdado como parte dos Clas Oficiais", com os textos de Uchiha, Sharingan, Evolução Maldita, Olho Emprestado, Mangekyou, Mangekyou Eterno, Hyuuga e Byakugan. Decisões dele, por pergunta:

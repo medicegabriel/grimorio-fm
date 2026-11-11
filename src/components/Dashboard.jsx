@@ -3,7 +3,7 @@ import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import {
   Search, Plus, Upload, Download, Trash2, Copy, Edit3,
   X, AlertTriangle, MoreVertical, Users, Image,
-  FolderInput, Swords, Menu, Lock, Check, ChevronDown, Filter, CheckSquare, Library
+  FolderInput, Swords, Menu, Lock, Check, ChevronDown, Filter, CheckSquare, Library, Crown
 } from "lucide-react";
 import {
   DndContext,
@@ -795,6 +795,9 @@ export default function Dashboard({
   // O App pode conservar a pasta entre telas; sem as props, a seleção é local.
   folderView,
   onFolderViewChange,
+  /* A Mesa do Mestre da Guilda (autor, 2026-11-11). Sem a prop o botão não existe,
+     e só o /EraDeOuro a passa. A tela mora em src/systems/eradeouro/. */
+  onGoToMestre,
 }) {
   const [localView, setLocalView] = useState({ type: "all", folderId: null });
   const view = folderView ?? localView;
@@ -1149,6 +1152,17 @@ export default function Dashboard({
 
               <div className="flex-1" />
 
+              {onGoToMestre && (
+                <button
+                  type="button"
+                  onClick={onGoToMestre}
+                  className="inline-flex items-center justify-center gap-1.5 h-9 w-9 lg:w-auto lg:px-3 shrink-0 rounded bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500/60"
+                  title="Mestre"
+                >
+                  <Crown className="w-4 h-4 shrink-0" />
+                  <span className="hidden lg:inline">Mestre</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={onGoToEncounters}

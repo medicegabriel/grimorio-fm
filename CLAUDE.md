@@ -297,6 +297,7 @@ A interface do Afty está em quatro lugares, e saber qual poupa uma busca:
 | `AftyTab*.jsx` (raiz do afty) | as abas de criação que ficaram grandes demais para o builder: Addons, Carteira, Catarse, Defesas |
 | `ficha/` e `ficha/abas/` | a Ficha Final, suas abas de jogo (Ações, Buffs, Equipamentos, Habilidades, Invocações, Perícias) e os painéis `PainelDe*.jsx` |
 | `ui/` | o que criador e ficha compartilham: `fontes.jsx` monta o painel de fontes do hover, mais `vital.jsx`, `TextoRico.jsx` e as bancadas |
+| `src/systems/eradeouro/MesaDoMestre.jsx` | a Mesa do Mestre da Guilda (botão Mestre do `/EraDeOuro`): fichas da lista e importadas, Vida e PE pela sessão da Ficha Final, ações em grupo |
 
 Uma aba da Ficha também é renderizada dentro do Encontro, então ela tem dois donos e mede por
 `@container`, não por largura de janela.
