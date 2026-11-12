@@ -1,5 +1,9 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-12 · ANÁLISE, PLANO E NORMAS DO PROJETO
+
+Pedido do autor: análise do projeto, melhorias, arte e normas para o futuro. Saiu `docs/plano-do-projeto.md`, que é PROPOSTA: medidas de 2026-11-12, o que está forte, onde dói (sem identidade própria, três linguagens visuais, 4,5 MB de enciclopédia em toda rota, o criador de 21 mil linhas, `.audit/` versionada, dados só no navegador, dois vermelhos permanentes), sete etapas, a proposta de arte e as normas. Nada foi aplicado no código, e as seis decisões que dependem do autor estão na seção 7 de lá.
+
 ## SESSÃO DE 2026-11-11 · A MESA DO MESTRE DA GUILDA
 
 Pedido do autor: "Crie uma aba de Mestre no Era de Ouro que e capaz de importar as fichas e deixa-las separadas, com vida e PE claros alem de poder selecionar as criaturas [...] para o mestre conseguir subtrair vida e PE de suas criatruras e dos players sem adentrar na ficha, faça uma pesquisa de ultilidade e coisas legais de adicionar [...] tem que ter como retirar as fichas facilmente tbm". Decisões dele, por pergunta:
