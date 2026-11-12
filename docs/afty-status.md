@@ -1,5 +1,9 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-12 · NORMAS DE ADDONS, DO SITE E DE DESIGN
+
+Pedido do autor: "Gostaria que sua pesquise focasse em criar normas e orientaçoes para criaçao de addons e do site, e também no design instrua a partir de normas e regras para criaçao e idealizaçao". Saíram três documentos de norma, com regras numeradas para citar em revisão: `docs/normas-addons.md` (A-01 a A-94: princípios, a ordem da ideia ao pacote, identidade, texto, ids, efeitos, verificação, documentação, entrega, quando o motor cresce, pacotes nativos e os erros que já aconteceram), `docs/normas-site.md` (S-01 a S-86: antes do código, onde cada coisa mora, forma, dados, motor, comentários, testes, a lista de entrega, registro, git, o relatório e o que é proibido) e `docs/normas-design.md` (D-01 a D-104: os cinco princípios, as sete perguntas da idealização, estrutura, cor por significado, tipografia e escrita, peças, os cinco estados, celular, movimento, tema e a revisão de doze perguntas). Só documentação: nenhum código mudou. Os fatos citados foram conferidos no código (classes, componentes, categorias, o teto de 160 do resumo, o formato dos ids). O `CLAUDE.md` e o `docs/plano-do-projeto.md` apontam para os três.
+
 ## SESSÃO DE 2026-11-12 · ANÁLISE, PLANO E NORMAS DO PROJETO
 
 Pedido do autor: análise do projeto, melhorias, arte e normas para o futuro. Saiu `docs/plano-do-projeto.md`, que é PROPOSTA: medidas de 2026-11-12, o que está forte, onde dói (sem identidade própria, três linguagens visuais, 4,5 MB de enciclopédia em toda rota, o criador de 21 mil linhas, `.audit/` versionada, dados só no navegador, dois vermelhos permanentes), sete etapas, a proposta de arte e as normas. Nada foi aplicado no código, e as seis decisões que dependem do autor estão na seção 7 de lá.

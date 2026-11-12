@@ -168,6 +168,10 @@ fizeram continuam valendo.
 
 As regras de AGENTS.md e CLAUDE.md seguem valendo. Estas se somam a elas.
 
+As normas completas e numeradas saíram em três documentos (2026-11-12): `docs/normas-addons.md`,
+`docs/normas-site.md` e `docs/normas-design.md`. O resumo abaixo fica como visão geral, e em caso de
+diferença valem os três.
+
 ### 6.1 Como uma mudança é pensada
 1. **Primeiro a pergunta de alcance:** vale para a criatura, para o personagem, para a Guilda, ou para todos?
    Sem resposta, não se começa.

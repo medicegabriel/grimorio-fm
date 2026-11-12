@@ -342,6 +342,10 @@ abaixo é só o que não segue essa regra, ou o que se lê antes de tudo.
   (`afty-player`, `afty-ficha-final`, `afty-carteira`, `afty-invocacoes`, `afty-equipamentos`,
   `afty-criacao-equipamentos`, `afty-cofre`).
 
+- `docs/normas-addons.md`, `docs/normas-site.md` e `docs/normas-design.md`: as normas numeradas (A, S e D) de
+  como um pacote, uma mudança no site e uma tela são pensados, feitos, verificados e entregues. Leia a da
+  área antes de começar. `docs/plano-do-projeto.md` é a análise e o plano por etapas, ainda proposta.
+
 Ao mudar o código, atualize contagem, caminho e estado de implementação nos guias. Não apresente
 como pergunta em aberto uma decisão já tomada.
 
