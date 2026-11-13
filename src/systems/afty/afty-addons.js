@@ -71,6 +71,8 @@ import {
 /* A corrupção visual (V8): o pacote declara a marca contada e escolhe uma pele que
    exista. `afty-corrupcao.js` é FOLHA, então o import é de mão única. */
 import { CORRUPCAO_PELES } from "./afty-corrupcao";
+/* As órbitas do retrato: o mesmo desenho da corrupção, só para a Ficha Final. FOLHA. */
+import { ORBITAS_PELES } from "./afty-orbitas";
 // Sem risco de ciclo: `afty-sistema.js` não importa nada.
 import { sistemaDaFicha, regraDo, palavrasDoSistema } from "./afty-sistema";
 /* A tabela de progressão da Carteira. O `afty-carteira.js` é FOLHA, então este
@@ -1036,6 +1038,22 @@ export function corrupcaoDaFicha(creature) {
 }
 
 /**
+ * A configuração das órbitas do retrato desta FICHA, ou `null`. Vale o PRIMEIRO
+ * pacote ativo que a declara, e sai da ficha, nunca do mundo unido, pela mesma
+ * razão da `corrupcaoDaFicha`.
+ */
+export function orbitasDaFicha(creature) {
+  for (const pacote of listaDeAddons(creature)) {
+    const cfg = pacote?.orbitas;
+    if (!cfg || typeof cfg !== "object") continue;
+    const marca = normalizarMarca(cfg.marca);
+    if (!marca) continue;
+    return { marca, maximo: cfg.maximo, pele: cfg.pele };
+  }
+  return null;
+}
+
+/**
  * O catálogo do Espinho, unido de todos os addons da criatura.
  *
  * ⚠ É DADO DE PACOTE, pela mesma razão do `precosDeCatarse`: o módulo do
@@ -1349,6 +1367,9 @@ export function normalizarPacote(cru) {
        razão do `espinho`: é configuração do pacote, e não entrada de catálogo, e o
        normalizador apaga em silêncio o que não conhece. Ver `corrupcaoDaFicha`. */
     corrupcao: (p.corrupcao && typeof p.corrupcao === "object" && !Array.isArray(p.corrupcao)) ? clonar(p.corrupcao) : null,
+    /* As órbitas do retrato: `{ marca, maximo, pele }`. Campo PRÓPRIO pelo mesmo
+       motivo da corrupção, e o normalizador apaga o que não conhece. */
+    orbitas: (p.orbitas && typeof p.orbitas === "object" && !Array.isArray(p.orbitas)) ? clonar(p.orbitas) : null,
     /* Campo legado de um Voto pronto. A aba nativa pode converter e copiar o
        molde mesmo sem `permite: ["pacto"]`. O nome do campo fica estável para
        addons e fichas existentes. Ver `afty-votos.js`. */
@@ -2087,6 +2108,18 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
     }
   }
 
+  /* As órbitas do retrato. Mesmo portão duro da corrupção. */
+  if (p.orbitas) {
+    const cfg = p.orbitas;
+    if (!normalizarMarca(cfg.marca)) problemas.push('Órbitas: "marca" é obrigatória.');
+    if (cfg.maximo != null && !(Number.isInteger(Number(cfg.maximo)) && Number(cfg.maximo) > 0)) {
+      problemas.push('Órbitas: "maximo" precisa ser um número inteiro maior que zero.');
+    }
+    if (cfg.pele != null && !ORBITAS_PELES.includes(cfg.pele)) {
+      problemas.push(`Órbitas: pele desconhecida ("${cfg.pele}"). Existem: ${ORBITAS_PELES.join(", ")}.`);
+    }
+  }
+
   /* O catálogo do Espinho (2026-09-30). O motor aproveita o que der de uma ficha
      já salva, mas a instalação é o portão duro: item sem id, custo negativo,
      tipo desconhecido e teto que não compila não entram. */
@@ -2185,6 +2218,7 @@ export function validarPacote(cru, { idsEmUso = new Set() } = {}) {
        direito: ele muda regra na ficha de quem tem o Espinho. */
     && !p.espinho
     && !p.corrupcao
+    && !p.orbitas
     /* As perícias novas (`pericias`, 2026-11-09) também são conteúdo: as Perícias da
        Era de Ouro só trazem Guerra e Nobreza, e eram recusadas como pacote vazio. */
     && p.pericias.length === 0

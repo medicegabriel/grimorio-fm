@@ -1,0 +1,6 @@
+{
+  "comando": "npx eslint src/systems/afty",
+  "codigo": 0,
+  "inicio": "2026-10-05T19:34:25.0572680Z",
+  "fim": "2026-10-05T19:34:43.9614032Z"
+}

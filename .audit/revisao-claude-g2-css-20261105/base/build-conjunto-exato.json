@@ -1,0 +1,25 @@
+{
+ "geradoEm": "2026-11-06T03:47:45.152Z",
+ "resultados": {
+  "soExigidos": {
+   "arquivosNovosIncluidos": 25,
+   "ok": true,
+   "erro": null
+  },
+  "todosOs31": {
+   "arquivosNovosIncluidos": 31,
+   "ok": true,
+   "erro": null
+  },
+  "semUmExigido": {
+   "removido": "src/systems/afty/afty-conteudo-regras.js",
+   "ok": false,
+   "erro": "\u001b[31m✗\u001b[39m Build failed in 900ms"
+  },
+  "nenhumNovo": {
+   "arquivosNovosIncluidos": 0,
+   "ok": false,
+   "erro": "\u001b[31m✗\u001b[39m Build failed in 711ms"
+  }
+ }
+}

@@ -1,0 +1,110 @@
+[
+  {
+    "par": "regressao-arsenal-acoes-1440",
+    "n": 34,
+    "total": 1440000,
+    "caixa": [
+      1226,
+      667,
+      1309,
+      673
+    ],
+    "maxd": 145
+  },
+  {
+    "par": "regressao-arsenal-acoes-390",
+    "n": 42,
+    "total": 390000,
+    "caixa": [
+      264,
+      767,
+      339,
+      774
+    ],
+    "maxd": 577
+  },
+  {
+    "par": "regressao-arsenal-habilidades-1440",
+    "n": 34,
+    "total": 1440000,
+    "caixa": [
+      1143,
+      760,
+      1226,
+      766
+    ],
+    "maxd": 145
+  },
+  {
+    "par": "regressao-arsenal-habilidades-390",
+    "n": 15,
+    "total": 390000,
+    "caixa": [
+      227,
+      889,
+      234,
+      890
+    ],
+    "maxd": 577
+  },
+  {
+    "par": "regressao-criatura-acoes-1440",
+    "n": 64330,
+    "total": 1440000,
+    "caixa": [
+      92,
+      498,
+      1333,
+      549
+    ],
+    "maxd": 72
+  },
+  {
+    "par": "regressao-criatura-acoes-390",
+    "n": 34274,
+    "total": 390000,
+    "caixa": [
+      13,
+      600,
+      361,
+      698
+    ],
+    "maxd": 72
+  },
+  {
+    "par": "regressao-mesa-acoes-1440",
+    "n": 36864,
+    "total": 1440000,
+    "caixa": [
+      92,
+      627,
+      1310,
+      951
+    ],
+    "maxd": 167
+  },
+  {
+    "par": "regressao-mesa-habilidades-1440",
+    "n": 52,
+    "total": 1440000,
+    "caixa": [
+      1143,
+      724,
+      1227,
+      731
+    ],
+    "maxd": 546
+  },
+  {
+    "par": "regressao-mesa-habilidades-390",
+    "n": 8,
+    "total": 390000,
+    "caixa": [
+      247,
+      949,
+      254,
+      949
+    ],
+    "maxd": 258
+  }
+]

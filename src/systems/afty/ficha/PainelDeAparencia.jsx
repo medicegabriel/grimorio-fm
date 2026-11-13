@@ -1,11 +1,12 @@
 import React, { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { X, RotateCcw, AlertTriangle, Check, Copy } from "lucide-react";
+import { X, RotateCcw, AlertTriangle, Check, Copy, ClipboardPaste } from "lucide-react";
 
 import {
-  PRESETS, GRUPOS_DE_TOKEN, FONTES, ENCAIXES, CSS_MAX,
-  corEfetiva, temaEmBranco, escopoSuportado, saneiaCss, contratoDaEstrutura,
-  atributosDaEstrutura, promptParaIA,
+  PRESETS, GRUPOS_DE_TOKEN, FONTES, FONTES_WEB, ENCAIXES, CSS_MAX,
+  corEfetiva, temaEmBranco, normalizaTema, escopoSuportado, saneiaCss, contratoDaEstrutura,
+  atributosDaEstrutura, promptParaIA, auditaCss,
 } from "./ficha-tema";
+import { useFontesDaPrevia } from "./useFontesWeb";
 
 /* Agrupado na ordem em que os grupos aparecem no contrato. Uma lista corrida de
    45 seletores não se lê. */
@@ -64,6 +65,9 @@ export default function PainelDeAparencia({ tema, onTema, onFechar, onGlobal, ti
   useLayoutEffect(() => { fechar.current = onFechar; }, [onFechar]);
   const tituloId = useId();
   const [restauravel, setRestauravel] = useState(null);
+  /* As fontes da internet só no tema da Ficha G2, que é quem as baixa (`useFontesWeb`): a clássica e o cartão da invocação não as carregam. */
+  const comFontesWeb = estrutura === "g2" && !escopo;
+  useFontesDaPrevia(comFontesWeb);
   const seletores = useMemo(() => contratoDaEstrutura(escopo ? "invocacao" : estrutura).reduce((acc, c) => {
     (acc[c.grupo] ??= []).push(c);
     return acc;
@@ -96,6 +100,7 @@ export default function PainelDeAparencia({ tema, onTema, onFechar, onGlobal, ti
   }, []);
   const cssLimpo = saneiaCss(tema.css);
   const grande = cssLimpo.length > CSS_MAX;
+  const problemasDoCss = useMemo(() => auditaCss(tema.css), [tema.css]);
   const semEscopo = !escopoSuportado();
   const prompt = useMemo(() => promptParaIA(tema, { escopo, nome, estrutura }), [tema, escopo, nome, estrutura]);
 
@@ -116,6 +121,25 @@ export default function PainelDeAparencia({ tema, onTema, onFechar, onGlobal, ti
     }
   };
 
+  /* COPIAR E COLAR TEMA (2026-11-10): o tema inteiro (preset, cores, fonte, imagem e CSS) vai e volta como um texto JSON, para passar de uma ficha para
+     outra sem Exportar e Importar (o import cria uma SEGUNDA ficha e não atualiza a que já existe). Colar é desfazível pelo Restaurar. */
+  const [aviso, setAviso] = useState(null);
+  const avisa = (texto) => { setAviso(texto); setTimeout(() => setAviso((a) => (a === texto ? null : a)), 2200); };
+  const copiarTema = async () => {
+    try { await navigator.clipboard.writeText(JSON.stringify(normalizaTema(tema))); avisa("Tema Copiado"); }
+    catch { avisa("Não Copiou"); }
+  };
+  const colarTema = async () => {
+    try {
+      const bruto = JSON.parse(await navigator.clipboard.readText());
+      const ehTema = bruto && typeof bruto === "object" && !Array.isArray(bruto)
+        && ["presetId", "vars", "css", "imagem", "fonte", "raio"].some((k) => k in bruto);
+      if (!ehTema) { avisa("Não É um Tema"); return; }
+      setRestauravel(tema);
+      onTema(normalizaTema(bruto));
+      avisa("Tema Colado");
+    } catch { avisa("Não É um Tema"); }
+  };
   const troca = (parcial) => onTema({ ...tema, ...parcial });
   const trocaVar = (token, valor) => troca({ vars: { ...tema.vars, [token]: valor } });
   const trocaImagem = (parcial) => troca({ imagem: { ...tema.imagem, ...parcial } });
@@ -152,6 +176,9 @@ export default function PainelDeAparencia({ tema, onTema, onFechar, onGlobal, ti
           >
             <RotateCcw className="w-3 h-3" />
           </button>
+          {aviso && <span className="afty-rotulo text-[11px]" role="status">{aviso}</span>}
+          <button type="button" className="afty-passo" onClick={copiarTema} title="Copiar o tema" aria-label="Copiar o tema"><Copy className="w-3 h-3" /></button>
+          <button type="button" className="afty-passo" onClick={colarTema} title="Colar um tema" aria-label="Colar um tema"><ClipboardPaste className="w-3 h-3" /></button>
           {restauravel && <button type="button" className="afty-botao" onClick={() => {
             onTema(restauravel); setRestauravel(null);
           }}>Restaurar</button>}
@@ -216,6 +243,23 @@ export default function PainelDeAparencia({ tema, onTema, onFechar, onGlobal, ti
                   {f.label}
                 </button>
               ))}
+              {comFontesWeb && (
+                <span className="flex flex-wrap items-center gap-1.5 w-full" role="group" aria-label="Fontes da Internet" data-fontes-web>
+                  {FONTES_WEB.map((f) => (
+                    <button
+                      key={f.familia}
+                      type="button"
+                      className="afty-botao"
+                      data-afty-tom={tema.fonte === f.id ? "destaque" : undefined}
+                      data-fonte-web={f.familia}
+                      style={{ fontFamily: f.id }}
+                      onClick={() => troca({ fonte: tema.fonte === f.id ? null : f.id })}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </span>
+              )}
               <span className="flex items-center gap-1.5 ml-auto">
                 <input
                   type="range"
@@ -324,6 +368,17 @@ export default function PainelDeAparencia({ tema, onTema, onFechar, onGlobal, ti
                     </span>
                   )}
                 </div>
+                {/* Os avisos do auditor: o que no CSS escrito costuma dar errado. Não impedem nada. */}
+                {problemasDoCss.length > 0 && (
+                  <ul className="mt-1.5 space-y-1" aria-label="Avisos do CSS" data-avisos-css>
+                    {problemasDoCss.map((t) => (
+                      <li key={t} className="afty-rotulo text-[11px] flex items-start gap-1" style={{ color: "var(--afty-aviso)" }}>
+                        <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-px" aria-hidden="true" />
+                        <span>{t}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </>
             )}
 

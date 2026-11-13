@@ -1,0 +1,12 @@
+[
+  "afty-efeitos-conteudo.js::TALENTO_EFEITOS::tal_especialista_em_cortes",
+  "afty-efeitos-conteudo.js::TALENTO_EFEITOS::tal_especialista_em_cortes::@0",
+  "afty-efeitos.js::TALENTO_EFEITOS::tal_especialista_em_cortes",
+  "afty-talentos.js::AFTY_TALENTOS::tal_especialista_em_cortes",
+  "afty-talentos.js::AFTY_TALENTOS::tal_especialista_em_cortes::escolha",
+  "afty-talentos.js::AFTY_TALENTOS::tal_especialista_em_cortes::escolha/opcoes",
+  "afty-talentos.js::AFTY_TALENTOS::tal_especialista_em_cortes::escolha/opcoes/tal_cortes_destreza",
+  "afty-talentos.js::AFTY_TALENTOS::tal_especialista_em_cortes::escolha/opcoes/tal_cortes_forca",
+  "afty-talentos.js::AFTY_TALENTOS::tal_especialista_em_cortes::requisitos",
+  "afty-talentos.js::AFTY_TALENTOS::tal_especialista_em_cortes::requisitos/@0"
+]

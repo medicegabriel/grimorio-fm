@@ -1,0 +1,30 @@
+
+> grimorio-tracker@0.0.0 build
+> vite build
+
+vite v8.0.8 building client environment for production...
+[2K
+transforming...✓ 1811 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                      1.03 kB │ gzip:   0.56 kB
+dist/assets/lanterna-coletora-BtjSWi8x.webp         29.13 kB
+dist/assets/usar-delta-dos-estados-B6J1HarD.css     77.72 kB │ gzip:  13.97 kB
+dist/assets/AftyFichaG2-Dkqtejh4.css               106.51 kB │ gzip:  18.04 kB
+dist/assets/index-Do2-yEn-.css                     152.70 kB │ gzip:  22.15 kB
+dist/assets/AftyFichaG2-DDmkMXbZ.js                389.26 kB │ gzip: 108.97 kB
+dist/assets/usar-delta-dos-estados-5pEV2Hml.js   1,967.54 kB │ gzip: 577.05 kB
+dist/assets/index-CehOeyzC.js                    4,440.62 kB │ gzip: 874.61 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[PLUGIN_TIMINGS] Warning: Your build spent significant time in plugins. Here is a breakdown:
+  - vite:css (50%)
+  - @tailwindcss/vite:generate:build (32%)
+  - vite:asset (11%)
+See https://rolldown.rs/options/checks#plugintimings for more details.
+
+✓ built in 3.07s

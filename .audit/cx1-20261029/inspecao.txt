@@ -1,0 +1,150 @@
+CX1 Isolada
+Lutador
+Nível 15
+Primeiro Grau
+Rodada 0
+Editar
+VIDA
+/ 126
+−
++
+ENERGIA
+/ 60
+−
++
+ALMA
+/ 126
+−
++
+DEFESA
+19
+CD
+26
+RD GERAL
+7
+MOVIMENTO
+9m
+INICIATIVA
++2
+ATENÇÃO
+18
+MAESTRIA
++5
+Ações
+Habilidades
+Perícias
+Equipamentos
+Invocações
+Buffs
+DES
+NOR
+VAN
+Sem rolagens
+Histórico
+Duas Mãos Livres
+DANO
+Crítico
+Ataque Básico
+Corpo a Corpo
+Amaldiçoado
+Crít. 20
+3m
+Impacto
+Acerto 
++18
+1d12 + 1d6 + 5
+Enérgica
+Golpe no turno
+Enérgica +0 de dano
+Enérgica
+Fineza
+Bastão
+Crít. 19
+3m
+Impacto
+Acerto 
++18
+1d6 + 5
+Propriedades em combate
+Ampla
+Dupla
+Marcial
+Versátil
+OUTROS
+Agarrar
+Atletismo
+Executar 
++9
+Resistir 
++9
+Derrubar
+Atletismo
+Executar 
++9
+Resistir 
++9
+Desarmar
+Atletismo
+Executar 
++9
+Resistir 
++9
+Empurrar
+Atletismo
+Executar 
++9
+Resistir 
++9
+Concentração
+Fortitude
++12
+Fintar
+Enganação
++7
+Provocar
+Intimidação
++7
+Teste de Morte
++0
+[
+  { text: '', title: '', aria: 'Voltar' },
+  {
+    text: '',
+    title: 'Descanso: devolve os recursos e zera a rodada',
+    aria: 'Descanso'
+  },
+  { text: 'Editar', title: 'Editar no criador', aria: null },
+  { text: 'Equipamentos', title: '', aria: null }
+]
+CRIADOR Jogador
+Encontros
+Modelos
+Importar
+Exportar
+Novo Personagem
+Uso de Memória: 10KB / 10.0MB
+0%
+Todas
+1
+Sem Pasta
+1
+PASTAS
+NOVA
+Nenhuma pasta criada ainda.
+Todos os Personagens
+1 PERSONAGEM· ARRASTE PARA REORDENAR
+Selecionar tudo
+Selecionar
+CX1 Isolada
+Dica: Shift + Clique para selecionar um intervalo
+Nível 15
+BOTOES [
+  '',         'Encontros',
+  'Modelos',  'Importar',
+  'Exportar', 'Novo Personagem',
+  'Todas1',   'Sem Pasta1',
+  ' Nova',    '',
+  '',         'Selecionar',
+  '',         '',
+  ''
+]

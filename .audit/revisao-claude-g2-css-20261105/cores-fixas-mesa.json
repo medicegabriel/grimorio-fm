@@ -1,0 +1,959 @@
+{
+  "porTipo": {
+    "fonte": 24,
+    "raio": 44,
+    "borda": 7
+  },
+  "lista": [
+    {
+      "tipo": "fonte",
+      "seletor": "button.afty-rolavel.afty-valor.m-rolar-num",
+      "n": 72,
+      "estados": [
+        "aba:acoes",
+        "aba:pericias",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "Bahnschrift, \"Segoe UI\", system-ui, sans"
+    },
+    {
+      "tipo": "fonte",
+      "seletor": "button.afty-aba.e-aba",
+      "n": 54,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos",
+        "aba:invocacoes",
+        "aba:buffs",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "Bahnschrift, \"Segoe UI\", system-ui, sans"
+    },
+    {
+      "tipo": "fonte",
+      "seletor": "button.m-valor-botao",
+      "n": 45,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos",
+        "aba:invocacoes",
+        "aba:buffs",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "Bahnschrift, \"Segoe UI\", system-ui, sans"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "span.m-rolar.m-rolar-teste",
+      "n": 30,
+      "estados": [
+        "aba:pericias"
+      ],
+      "valor": "9px"
+    },
+    {
+      "tipo": "fonte",
+      "seletor": "small",
+      "n": 28,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "Bahnschrift, \"Segoe UI\", system-ui, sans"
+    },
+    {
+      "tipo": "borda",
+      "seletor": "button.afty-vital.m-medidor",
+      "n": 27,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos",
+        "aba:invocacoes",
+        "aba:buffs",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "rgba(0, 0, 0, 0)"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "button.afty-vital.m-medidor",
+      "n": 27,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos",
+        "aba:invocacoes",
+        "aba:buffs",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "10px"
+    },
+    {
+      "tipo": "fonte",
+      "seletor": "span.afty-vital-rotulo.m-medidor-rotulo",
+      "n": 27,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos",
+        "aba:invocacoes",
+        "aba:buffs",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "Bahnschrift, \"Segoe UI\", system-ui, sans"
+    },
+    {
+      "tipo": "borda",
+      "seletor": "b.afty-vital-numero",
+      "n": 27,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos",
+        "aba:invocacoes",
+        "aba:buffs",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "rgba(0, 0, 0, 0)"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "span.afty-vital-trilho.m-barra",
+      "n": 27,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos",
+        "aba:invocacoes",
+        "aba:buffs",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "3px"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "span.afty-vital-barra.m-barra-cheia",
+      "n": 27,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos",
+        "aba:invocacoes",
+        "aba:buffs",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "3px"
+    },
+    {
+      "tipo": "fonte",
+      "seletor": "span.m-meta.m-atributo",
+      "n": 27,
+      "estados": [
+        "aba:pericias"
+      ],
+      "valor": "Bahnschrift, \"Segoe UI\", system-ui, sans"
+    },
+    {
+      "tipo": "fonte",
+      "seletor": "h2.afty-card-titulo.e-grupo-titulo",
+      "n": 26,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "Bahnschrift, \"Segoe UI\", system-ui, sans"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "button.m-seg-op",
+      "n": 25,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "7px"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "span.m-rolar",
+      "n": 24,
+      "estados": [
+        "aba:acoes",
+        "aba:pericias",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "9px"
+    },
+    {
+      "tipo": "fonte",
+      "seletor": "span",
+      "n": 21,
+      "estados": [
+        "aba:acoes",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "Bahnschrift, \"Segoe UI\", system-ui, sans"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "header.e-grupo-topo.m-secao-topo",
+      "n": 21,
+      "estados": [
+        "aba:acoes",
+        "aba:pericias",
+        "aba:equipamentos",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "11px"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "button.m-indice-item",
+      "n": 20,
+      "estados": [
+        "aba:acoes",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "9px"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "button.afty-botao.e-icone",
+      "n": 18,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos",
+        "aba:invocacoes",
+        "aba:buffs",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "9px"
+    },
+    {
+      "tipo": "fonte",
+      "seletor": "span.m-valor.afty-stat-valor",
+      "n": 18,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos",
+        "aba:invocacoes",
+        "aba:buffs",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "Bahnschrift, \"Segoe UI\", system-ui, sans"
+    },
+    {
+      "tipo": "fonte",
+      "seletor": "b",
+      "n": 18,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos",
+        "aba:invocacoes",
+        "aba:buffs",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "Bahnschrift, \"Segoe UI\", system-ui, sans"
+    },
+    {
+      "tipo": "borda",
+      "seletor": "button.afty-log-modo",
+      "n": 18,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos",
+        "aba:invocacoes",
+        "aba:buffs",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "rgba(0, 0, 0, 0)"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "button.m-botao.m-celula-acao",
+      "n": 16,
+      "estados": [
+        "aba:acoes",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "6px"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "section.afty-card.e-grupo.m-secao",
+      "n": 13,
+      "estados": [
+        "aba:acoes",
+        "aba:pericias",
+        "aba:equipamentos",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "12px"
+    },
+    {
+      "tipo": "borda",
+      "seletor": "button.m-botao.m-celula-acao",
+      "n": 12,
+      "estados": [
+        "aba:acoes",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "rgba(0, 0, 0, 0)"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "button.afty-botao.e-botao.e-ativar-preparo",
+      "n": 10,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "8px"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "span.m-seg",
+      "n": 10,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "10px"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "div.e-cabeca.afty-cabecalho",
+      "n": 9,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos",
+        "aba:invocacoes",
+        "aba:buffs",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "18px"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "button.afty-botao.e-icone.e-voltar",
+      "n": 9,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos",
+        "aba:invocacoes",
+        "aba:buffs",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "9px"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "div.e-moldura",
+      "n": 9,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos",
+        "aba:invocacoes",
+        "aba:buffs",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "50%"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "span.afty-retrato.m-retrato.m-retrato-vazio.e-retrato",
+      "n": 9,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos",
+        "aba:invocacoes",
+        "aba:buffs",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "50%"
+    },
+    {
+      "tipo": "fonte",
+      "seletor": "h1.afty-nome.e-nome",
+      "n": 9,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos",
+        "aba:invocacoes",
+        "aba:buffs",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "Bahnschrift, \"Segoe UI\", system-ui, sans"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "button.afty-botao",
+      "n": 9,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos",
+        "aba:invocacoes",
+        "aba:buffs",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "9px"
+    },
+    {
+      "tipo": "fonte",
+      "seletor": "span.e-agora-rotulo",
+      "n": 9,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos",
+        "aba:invocacoes",
+        "aba:buffs",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "Bahnschrift, \"Segoe UI\", system-ui, sans"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "button.e-combate",
+      "n": 9,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos",
+        "aba:invocacoes",
+        "aba:buffs",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "8px"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "span.e-rodada",
+      "n": 9,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos",
+        "aba:invocacoes",
+        "aba:buffs",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "8px"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "button.f-acesso",
+      "n": 9,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos",
+        "aba:invocacoes",
+        "aba:buffs",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "8px"
+    },
+    {
+      "tipo": "fonte",
+      "seletor": "small.f-aba-n",
+      "n": 9,
+      "estados": [
+        "aba:acoes",
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos",
+        "aba:invocacoes",
+        "aba:buffs",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "Bahnschrift, \"Segoe UI\", system-ui, sans"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "span.m-rolar.m-rolar-dano",
+      "n": 8,
+      "estados": [
+        "aba:acoes",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "9px"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "button.e-efeito",
+      "n": 6,
+      "estados": [
+        "aba:habilidades"
+      ],
+      "valor": "8px"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "span.afty-atributo.m-atributo-celula",
+      "n": 6,
+      "estados": [
+        "aba:pericias"
+      ],
+      "valor": "10px"
+    },
+    {
+      "tipo": "fonte",
+      "seletor": "span.afty-atributo-rotulo.m-atributo-rotulo",
+      "n": 6,
+      "estados": [
+        "aba:pericias"
+      ],
+      "valor": "Bahnschrift, \"Segoe UI\", system-ui, sans"
+    },
+    {
+      "tipo": "fonte",
+      "seletor": "button.afty-atributo-valor.m-atributo-valor",
+      "n": 6,
+      "estados": [
+        "aba:pericias"
+      ],
+      "valor": "Bahnschrift, \"Segoe UI\", system-ui, sans"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "span.m-rolar.m-rolar-mod",
+      "n": 6,
+      "estados": [
+        "aba:pericias"
+      ],
+      "valor": "9px"
+    },
+    {
+      "tipo": "borda",
+      "seletor": "button.e-efeito",
+      "n": 5,
+      "estados": [
+        "aba:habilidades"
+      ],
+      "valor": "rgba(0, 0, 0, 0)"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "section.afty-card.e-grupo",
+      "n": 5,
+      "estados": [
+        "aba:habilidades"
+      ],
+      "valor": "14px"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "button.m-botao",
+      "n": 5,
+      "estados": [
+        "aba:buffs",
+        "compacta"
+      ],
+      "valor": "8px"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "button.e-menu-item",
+      "n": 5,
+      "estados": [
+        "menu-cabecalho"
+      ],
+      "valor": "8px"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "section.afty-card.e-grupo.m-mesa",
+      "n": 4,
+      "estados": [
+        "aba:acoes",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "12px"
+    },
+    {
+      "tipo": "fonte",
+      "seletor": "h2.afty-card-titulo.e-grupo-titulo.m-mesa-titulo",
+      "n": 4,
+      "estados": [
+        "aba:acoes",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "Bahnschrift, \"Segoe UI\", system-ui, sans"
+    },
+    {
+      "tipo": "borda",
+      "seletor": "button.m-seg-op.m-gatilho",
+      "n": 4,
+      "estados": [
+        "aba:acoes",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "rgba(0, 0, 0, 0)"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "button.m-seg-op.m-gatilho",
+      "n": 4,
+      "estados": [
+        "aba:acoes",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "6px"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "section.afty-card.e-grupo.m-secao.m-rapido",
+      "n": 4,
+      "estados": [
+        "aba:acoes",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "12px"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "section.afty-card.e-grupo.m-secao.m-secao-dano",
+      "n": 4,
+      "estados": [
+        "aba:acoes",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "12px"
+    },
+    {
+      "tipo": "fonte",
+      "seletor": "span.m-seg-rotulo",
+      "n": 4,
+      "estados": [
+        "aba:acoes",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "Bahnschrift, \"Segoe UI\", system-ui, sans"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "span.m-rolar.m-rolar-feitico",
+      "n": 4,
+      "estados": [
+        "aba:acoes",
+        "compacta",
+        "menu-cabecalho",
+        "hover-fontes"
+      ],
+      "valor": "9px"
+    },
+    {
+      "tipo": "borda",
+      "seletor": "input.afty-campo",
+      "n": 3,
+      "estados": [
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos"
+      ],
+      "valor": "rgba(0, 0, 0, 0)"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "input.afty-campo",
+      "n": 3,
+      "estados": [
+        "aba:habilidades",
+        "aba:pericias",
+        "aba:equipamentos"
+      ],
+      "valor": "12px"
+    },
+    {
+      "tipo": "fonte",
+      "seletor": "span.afty-fonte-valor",
+      "n": 3,
+      "estados": [
+        "hover-fontes"
+      ],
+      "valor": "ui-monospace, SFMono-Regular, Menlo, Mon"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "button.e-subaba",
+      "n": 2,
+      "estados": [
+        "aba:habilidades"
+      ],
+      "valor": "7px"
+    },
+    {
+      "tipo": "fonte",
+      "seletor": "h2",
+      "n": 2,
+      "estados": [
+        "aba:buffs",
+        "compacta"
+      ],
+      "valor": "Bahnschrift, \"Segoe UI\", system-ui, sans"
+    },
+    {
+      "tipo": "fonte",
+      "seletor": "button",
+      "n": 2,
+      "estados": [
+        "aba:buffs",
+        "compacta"
+      ],
+      "valor": "Bahnschrift, \"Segoe UI\", system-ui, sans"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "button",
+      "n": 2,
+      "estados": [
+        "aba:buffs",
+        "compacta"
+      ],
+      "valor": "8px"
+    },
+    {
+      "tipo": "fonte",
+      "seletor": "span.e-efeitos-rotulo",
+      "n": 1,
+      "estados": [
+        "aba:habilidades"
+      ],
+      "valor": "Bahnschrift, \"Segoe UI\", system-ui, sans"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "button.afty-card.e-tecnica",
+      "n": 1,
+      "estados": [
+        "aba:habilidades"
+      ],
+      "valor": "14px"
+    },
+    {
+      "tipo": "fonte",
+      "seletor": "span.e-tecnica-nome",
+      "n": 1,
+      "estados": [
+        "aba:habilidades"
+      ],
+      "valor": "Bahnschrift, \"Segoe UI\", system-ui, sans"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "div.e-subabas",
+      "n": 1,
+      "estados": [
+        "aba:habilidades"
+      ],
+      "valor": "10px"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "section.afty-card.m-atributos",
+      "n": 1,
+      "estados": [
+        "aba:pericias"
+      ],
+      "valor": "14px"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "section.afty-card.m-carga",
+      "n": 1,
+      "estados": [
+        "aba:equipamentos"
+      ],
+      "valor": "14px"
+    },
+    {
+      "tipo": "fonte",
+      "seletor": "span.m-carga-rotulo",
+      "n": 1,
+      "estados": [
+        "aba:equipamentos"
+      ],
+      "valor": "Bahnschrift, \"Segoe UI\", system-ui, sans"
+    },
+    {
+      "tipo": "fonte",
+      "seletor": "span.m-carga-num",
+      "n": 1,
+      "estados": [
+        "aba:equipamentos"
+      ],
+      "valor": "Bahnschrift, \"Segoe UI\", system-ui, sans"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "div.afty-vital-trilho.m-carga-trilho",
+      "n": 1,
+      "estados": [
+        "aba:equipamentos"
+      ],
+      "valor": "9999px"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "span.afty-vital-barra",
+      "n": 1,
+      "estados": [
+        "aba:equipamentos"
+      ],
+      "valor": "9999px"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "div.m-seg",
+      "n": 1,
+      "estados": [
+        "compacta"
+      ],
+      "valor": "10px"
+    },
+    {
+      "tipo": "raio",
+      "seletor": "div.m-flutuante",
+      "n": 1,
+      "estados": [
+        "menu-cabecalho"
+      ],
+      "valor": "12px"
+    }
+  ]
+}

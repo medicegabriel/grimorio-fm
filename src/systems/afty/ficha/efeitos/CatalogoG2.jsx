@@ -13,14 +13,20 @@
    o custo e a ação de hoje do gerenciador.
    ============================================================ */
 import React, { useEffect, useMemo, useRef } from "react";
-import { AlertTriangle, BookOpenText, ChevronLeft, ChevronRight, Hand, Search, Star, X, Zap } from "lucide-react";
+import { AlertTriangle, BookOpenText, ChevronLeft, ChevronRight, Hand, Power, Search, Star, X, Zap } from "lucide-react";
 import { buscar } from "./repertorio";
-import { custoAntes, verificacoes } from "./efeitos-dados";
+import { custoAntes, detalhesDoAtivo, pvDoAtivo, verificacoes } from "./efeitos-dados";
 import { ControlesDoGrupo } from "./Gestor";
-import { finalidadeCurta } from "./gestor-logica";
+import { consequenciasDaLinha, finalidadeCurta } from "./gestor-logica";
+import { Agora } from "./AgoraG2";
+import { TextoRegra } from "./pecas";
 import { mapaDe, useRolagemPorChave } from "./rolagem-g2";
 import { CATEGORIAS, categoriaDe, classeENivel, ehGolpe, ehPiloto, ehRecebidoDePacote, ehSustentacao, rotuloCategoria, simples, temPreparo } from "./g2-dados";
-import { opcaoAtivavel } from "../pacotes-aliados";
+import { acaoDaLinha, ativarOpcao, comVagaLivre, ordenaPorAcao, porNome } from "./catalogo-logica";
+
+/* O resultado da última operação é desta opção? A Sustentação responde pela vaga que recebeu o Feitiço (`sust:<vaga>`), e não pela chave
+   da opção nem pela primeira vaga ocupada: sem isto, confirmar a segunda vaga no catálogo não mostrava resultado nem custo (revisão de 2026-11-10). */
+const resultadoDaOpcao = (r, o) => !!r && (r.alvo === o.chave || (ehSustentacao(o) && String(r.alvo ?? "").startsWith("sust:")));
 import RecebidosG2, { DetalheRecebido } from "./RecebidosG2";
 import ParaAliadosG2 from "./ParaAliadosG2";
 import ImitacaoG2 from "./ImitacaoG2";
@@ -32,10 +38,6 @@ import { RegistrarUso } from "./UsoG2";
 import { rascunhoDoCatalogo } from "./g2-preparo";
 import { rascunhoDoGolpe } from "./g2-golpe";
 
-const porNome = (a, b) => a.nome.localeCompare(b.nome, "pt-BR");
-/* A Sustentação é um grupo de vagas: com uma vaga ocupada e outra livre, ainda se ativa (outro Feitiço numa vaga livre). */
-const comVagaLivre = (o, m) => ehSustentacao(o) && o.grupo.estados.some((e) => !m.sessao.combate?.[e.id]);
-
 function itensDaCategoria(g, m, cat) {
   const fav = m.sessao.favoritos ?? [];
   if (cat === "favoritos") return g.opcoes.filter((o) => fav.includes(o.chave));
@@ -45,30 +47,27 @@ function itensDaCategoria(g, m, cat) {
 }
 
 /* Uma linha só: a estrela (cheia no favorito), o nome inteiro no title e, à
-   direita, Ativar ou Ativo. Sem ação não quer dizer passivo. Quem tem a
-   Preparação comum (`temPreparo`) também tem Ativar: pode ser ativada. */
-function Linha({ o, g, m, atual, aoEscolher, aoAtivar }) {
+   direita, a ação. Quem tem a Preparação comum (`temPreparo`) também tem Ativar. */
+const ROTULO_DA_ACAO = { ativar: "Ativar", usar: "Usar", abrir: "Abrir" };
+export function LinhaDeOpcao({ o, g, m, atual, aoEscolher, aoAtivar }) {
   const fav = (m.sessao.favoritos ?? []).includes(o.chave);
-  const ativo = g.ligado(o);
-  const livre = comVagaLivre(o, m);
-  /* A opção recebida de um pacote: Ativar abre o detalhe com a prévia, e quem só tem consulta não tem Ativar. */
-  const ativavel = (!ativo || livre) && (simples(o) || temPreparo(o) || ehGolpe(o) || (ehRecebidoDePacote(o) && opcaoAtivavel(o.pacoteRecebido.opcao)));
+  const acao = acaoDaLinha(o, g, m);
   return (
-    <div className="k-fila" aria-current={atual} data-chave-opcao={o.chave}>
+    <div className="k-fila afty-catalogo-linha" aria-current={atual} data-chave-opcao={o.chave} data-acao={acao ?? undefined}>
       <button type="button" className="k-item" title={o.nome} aria-current={atual} onClick={aoEscolher}>
         <span className="k-nome">
           <span className="k-fav" data-favorito={fav ? "" : undefined} aria-label={fav ? "Favorito" : undefined} aria-hidden={fav ? undefined : "true"}><Star aria-hidden="true" /></span>
           <span className="k-texto">{o.nome}</span>
         </span>
       </button>
-      {ativo && !livre && (
+      {acao === "ativo" && (
         <button type="button" className="k-acao" data-tom="ativo" title="Abrir nos Ativos" aria-label={`Abrir ${o.nome} nos Ativos`} onClick={() => g.irAoAtivo(o.chave)}>
           <span className="k-acao-texto">Ativo</span><span className="k-acao-seta"><ChevronRight aria-hidden="true" /></span>
         </button>
       )}
-      {ativavel && (
-        <button type="button" className="k-acao" data-tom="ativar" aria-label={`Ativar ${o.nome}`} onClick={aoAtivar}>
-          <span className="k-acao-texto">Ativar</span><span className="k-acao-seta" aria-hidden="true" />
+      {acao && acao !== "ativo" && (
+        <button type="button" className="k-acao" data-tom="ativar" aria-label={`${ROTULO_DA_ACAO[acao]} ${o.nome}`} onClick={acao === "ativar" ? aoAtivar : aoEscolher}>
+          <span className="k-acao-texto">{ROTULO_DA_ACAO[acao]}</span><span className="k-acao-seta" aria-hidden="true" />
         </button>
       )}
     </div>
@@ -76,42 +75,71 @@ function Linha({ o, g, m, atual, aoEscolher, aoAtivar }) {
 }
 
 function Lista({ g, m, itens, cat, busca, opcao, escolher, ativar }) {
-  const linha = (o) => <Linha key={o.chave} o={o} g={g} m={m} atual={opcao === o.chave} aoEscolher={() => escolher(o)} aoAtivar={() => ativar(o)} />;
+  const linha = (o) => <LinhaDeOpcao key={o.chave} o={o} g={g} m={m} atual={opcao === o.chave} aoEscolher={() => escolher(o)} aoAtivar={() => ativar(o)} />;
   if (busca) return itens.map(linha);
-  if (cat === "favoritos" || cat === "ativos") return [...itens].sort(porNome).map(linha);
+  if (cat === "favoritos" || cat === "ativos") return ordenaPorAcao(itens, g, m).map(linha);
+  /* O QUE SE ATIVA VEM PRIMEIRO (autor, 2026-11-09), num bloco só e por nome. O resto fica embaixo, nos grupos de sempre. */
+  const com = itens.filter((o) => acaoDaLinha(o, g, m)).sort(porNome);
+  const sem = com.length ? itens.filter((o) => !acaoDaLinha(o, g, m)) : itens;
   const grupos = new Map();
   const ordem = cat === "tudo" ? CATEGORIAS.filter(Boolean).map((x) => x.rotulo) : null;
   const chave = (o) => (cat === "tudo" ? rotuloCategoria(categoriaDe(o)) : classeENivel(o).subgrupo ?? "");
   const nivel = (o) => classeENivel(o).nivel ?? 0;
-  for (const o of [...itens].sort((a, b) => nivel(a) - nivel(b) || porNome(a, b))) {
+  for (const o of [...sem].sort((x, y) => nivel(x) - nivel(y) || porNome(x, y))) {
     const k = chave(o);
     if (!grupos.has(k)) grupos.set(k, []);
     grupos.get(k).push(o);
   }
-  const ks = [...grupos.keys()].sort((a, b) => (ordem ? ordem.indexOf(a) - ordem.indexOf(b) : a.localeCompare(b, "pt-BR")));
-  return ks.map((k) => (
-    <React.Fragment key={k || "sem"}>
-      {k && <h3 className="k-grupo">{k}<small>{grupos.get(k).length}</small></h3>}
-      {grupos.get(k).map(linha)}
-    </React.Fragment>
-  ));
+  const ks = [...grupos.keys()].sort((x, y) => (ordem ? ordem.indexOf(x) - ordem.indexOf(y) : x.localeCompare(y, "pt-BR")));
+  return (
+    <>
+      {com.length > 0 && <h3 className="k-bloco" data-bloco="ativar">Para Ativar<small>{com.length}</small></h3>}
+      {com.map(linha)}
+      {com.length > 0 && sem.length > 0 && <h3 className="k-bloco" data-bloco="demais">Demais Opções<small>{sem.length}</small></h3>}
+      {ks.map((k) => (
+        <React.Fragment key={k || "sem"}>
+          {k && <h3 className="k-grupo">{k}<small>{grupos.get(k).length}</small></h3>}
+          {grupos.get(k).map(linha)}
+        </React.Fragment>
+      ))}
+    </>
+  );
+}
+
+/* O EFEITO JÁ ATIVO, ABERTO PELO CATÁLOGO (autor, 2026-11-09): o que ele vale agora e o Encerrar ficam aqui mesmo. Antes o painel só mandava
+   para os Ativos, sem dizer nada do efeito. O resultado da última operação aparece aqui também, porque confirmar não sai mais do catálogo. */
+function AtivoNoCatalogo({ o, g, m }) {
+  const a = g.ativoDaOpcao(o.chave);
+  const abrir = <button type="button" className="m-botao" onClick={() => g.irAoAtivo(o.chave)} data-abrir-ativo><ChevronRight aria-hidden="true" />Abrir nos Ativos</button>;
+  if (!a) return <div className="k-confirmar"><span className="x-linha">{abrir}</span></div>;
+  const d = detalhesDoAtivo(a, m);
+  const { chips, contrib } = consequenciasDaLinha(a, g, m);
+  const pvb = pvDoAtivo(a, g.pv);
+  const r = g.resultado;
+  const doAlvo = !!r && (r.alvo === a.chave || resultadoDaOpcao(r, o));
+  return (
+    <div className="k-confirmar" data-ativo-no-catalogo={a.chave}>
+      {d.atencao.map((t) => <span key={t} className="x-atencao"><AlertTriangle aria-hidden="true" />{t}</span>)}
+      {/* Logo depois de ligar, o resultado da operação já diz o que mudou (e traz o Descontar do custo à mão): o Agora não o repete. */}
+      {doAlvo ? <ResultadoG2 r={r} g={g} m={m} pvb={pvb} />
+        : <div className="x-col" data-col="agora"><Agora a={a} g={g} m={m} chips={chips} contrib={contrib} pvb={pvb} /></div>}
+      <span className="x-linha">
+        <button type="button" className="m-botao" onClick={() => g.acoes.encerrar(a)} data-encerrar={a.chave}><Power aria-hidden="true" />Encerrar</button>
+        {abrir}
+      </span>
+    </div>
+  );
 }
 
 /* O que fazer com a opção, com o custo SEMPRE antes da ação.
-   `onde` e `depois`: aberto pelo Adicionar da compacta, confirmar volta à
-   compacta com o efeito aberto (autor, 2026-10-15), também no piloto. */
-function Acao({ o, g, m, onde = "completa", depois = null }) {
+   `onde`: aberto pelo Adicionar da compacta ou pela completa. Desde 2026-11-09 confirmar NÃO sai do catálogo em nenhum dos dois casos
+   (autor: ligar vários efeitos seguidos não pode pedir reabrir o Adicionar). Quem volta é o botão do topo. */
+function Acao({ o, g, m, onde = "completa" }) {
   const v = verificacoes(o, m);
   const custo = custoAntes(o);
   const usos = g.usosDe(o.chave);
-  const voltaSeConfirmou = (ok) => { if (ok) depois?.(); return ok; };
-  if (g.ligado(o) && !comVagaLivre(o, m)) {
-    return (
-      <div className="k-confirmar">
-        <span className="x-linha"><button type="button" className="m-botao x-adicionar g2-primario" onClick={() => g.irAoAtivo(o.chave)} data-abrir-ativo><ChevronRight aria-hidden="true" />Abrir nos Ativos</button></span>
-      </div>
-    );
-  }
+  const voltaSeConfirmou = (ok) => ok;
+  if (g.ligado(o) && !comVagaLivre(o, m)) return <AtivoNoCatalogo o={o} g={g} m={m} />;
   /* A Preparação comum: Concentrar Aura, Conhecimento Aplicado e Invencível sob o Sol. */
   if (temPreparo(o)) {
     const prep = g.tela.catalogo.preparo;
@@ -120,7 +148,7 @@ function Acao({ o, g, m, onde = "completa", depois = null }) {
         <PreparoGrupo o={o} m={m} valores={prep.valores}
           onValores={(valores) => g.mudaCatalogo((c) => ({ preparo: { ...c.preparo, valores } }))}
           onCancelar={() => g.mudaCatalogo({ preparo: null })}
-          onConfirmar={(valores) => voltaSeConfirmou(g.acoes.confirmarPreparo(o, valores, { onde }))} />
+          onConfirmar={(valores) => voltaSeConfirmou(g.acoes.confirmarPreparo(o, valores, { onde, doCatalogo: true }))} />
       );
     }
     return (
@@ -140,7 +168,7 @@ function Acao({ o, g, m, onde = "completa", depois = null }) {
         <PreparoGolpe o={o} m={m} valores={prep.valores}
           onValores={(valores) => g.mudaCatalogo((c) => ({ preparo: { ...c.preparo, valores } }))}
           onCancelar={() => g.mudaCatalogo({ preparo: null })}
-          onConfirmar={(valores) => voltaSeConfirmou(g.acoes.confirmarGolpe(o, valores, { onde }))} />
+          onConfirmar={(valores) => voltaSeConfirmou(g.acoes.confirmarGolpe(o, valores, { onde, doCatalogo: true }))} />
       );
     }
     return (
@@ -153,7 +181,7 @@ function Acao({ o, g, m, onde = "completa", depois = null }) {
     );
   }
   if (ehPiloto(o)) {
-    if (g.tela.catalogo.preparo?.chave === o.chave) return <PreparoG2 o={o} g={g} m={m} onConfirmar={(n) => voltaSeConfirmou(g.acoes.confirmarAtivacao(o, n, { onde }))} />;
+    if (g.tela.catalogo.preparo?.chave === o.chave) return <PreparoG2 o={o} g={g} m={m} onConfirmar={(n) => voltaSeConfirmou(g.acoes.confirmarAtivacao(o, n, { onde, doCatalogo: true }))} />;
     const f = faixaDoPiloto(o.grupo, m.derived);
     const custos = f.passos.map((n) => f.custo(n));
     return (
@@ -174,6 +202,8 @@ function Acao({ o, g, m, onde = "completa", depois = null }) {
   else if (o.grupo) corpo = <ControlesDoGrupo gr={o.grupo} m={g.mPara()} />;
   else if (o.como === "usar") botao = <button type="button" className="m-botao x-adicionar g2-primario" disabled={bloqueado} onClick={() => g.acoes.usar(o)}>Usar</button>;
   else if (o.como === "registrar") botao = <button type="button" className="m-botao" onClick={() => g.acoes.registrarUso(o)}>Registrar Uso</button>;
+  /* Sem custo, sem bloqueio e sem controle não há o que dizer aqui: a regra da opção vem logo abaixo, no próprio painel. */
+  if (!custo && o.como !== "sempre" && !v.nao.length && !corpo && !botao) return null;
   return (
     <div className="k-confirmar">
       {custo && <CustoG2 custo={custo} m={m} nome={o.nome} />}
@@ -181,25 +211,39 @@ function Acao({ o, g, m, onde = "completa", depois = null }) {
       {v.nao.map((t) => <span key={t} className="x-atencao"><AlertTriangle aria-hidden="true" />{t}</span>)}
       {corpo}
       {botao && <span className="x-linha">{botao}{usos > 0 && <span className="x-mesa">Usado {usos}×</span>}</span>}
-      {!botao && !corpo && o.como !== "sempre" && <span className="x-instrucao"><Hand aria-hidden="true" />Para Usar, Siga a Regra Completa</span>}
     </div>
   );
 }
 
-function DetalheOpcao({ o, g, m, onConsultar, onVoltar = null }) {
+function DetalheOpcao({ o, g, m, onConsultar, onVoltar = null, renderOperacao = null }) {
   if (ehRecebidoDePacote(o)) return <DetalheRecebido o={o} g={g} m={m} onFechar={() => g.mudaCatalogo({ opcao: null, preparo: null })} />;
-  return <DetalheDaFicha o={o} g={g} m={m} onConsultar={onConsultar} onVoltar={onVoltar} />;
+  return <DetalheDaFicha o={o} g={g} m={m} onConsultar={onConsultar} onVoltar={onVoltar} renderOperacao={renderOperacao} />;
 }
 
-function DetalheDaFicha({ o, g, m, onConsultar, onVoltar = null }) {
+/* O item da ficha por trás da opção, com o texto da regra. O estado sem item próprio traz o texto no `title` (como na consulta). */
+function itemDaOpcao(o, m) {
+  const chave = o.item?.chave ?? o.chave;
+  const e = m.resolver?.(chave) ?? null;
+  if (e?.tipo !== "estado") return e;
+  return { ...e, texto: m.pacote?.estados.find((x) => `estado:${x.id}` === chave)?.title ?? "" };
+}
+
+function DetalheDaFicha({ o, g, m, onConsultar, onVoltar = null, renderOperacao = null }) {
   const fav = (m.sessao.favoritos ?? []).includes(o.chave);
+  /* A REGRA NO PRÓPRIO PAINEL (autor, 2026-11-09): quem não tem ação na linha mostra a regra aqui, sem pedir outro clique. A operação
+     do item (escolher a Postura, canalizar) também entra aqui: a consulta aberta pelo catálogo não traz controles. */
+  const item = itemDaOpcao(o, m);
+  const semAcao = !acaoDaLinha(o, g, m);
+  const regraAqui = semAcao && !!item?.texto;
+  /* Só para quem não tem ação na linha: um grupo com Preparação não ganha um segundo caminho ao lado dela. */
+  const operacao = semAcao && item && typeof item.id === "string" && item.grupo ? renderOperacao?.(item) : null;
   const { classe, nivel, subgrupo } = classeENivel(o);
   const meta = [rotuloCategoria(categoriaDe(o)), classe ?? subgrupo, nivel ? `Nível ${nivel}` : null, g.ligado(o) ? "Ativo" : null].filter(Boolean);
   const frase = finalidadeCurta(o);
   const r = g.resultado;
   const preparando = g.tela.catalogo.preparo?.chave === o.chave;
   return (
-    <article className="k-detalhe" data-ativando={preparando ? "" : undefined} aria-label={o.nome} data-detalhe-opcao={o.chave}>
+    <article className="k-detalhe afty-catalogo-painel" data-ativando={preparando ? "" : undefined} aria-label={o.nome} data-detalhe-opcao={o.chave}>
       <div className="x-cartao-topo">
         <div><h2 className="x-cartao-nome">{o.nome}</h2><p className="x-cartao-meta">{meta.map((t) => <span key={t}>{t}</span>)}</p></div>
         <span className="x-cartao-acoes">
@@ -211,15 +255,19 @@ function DetalheDaFicha({ o, g, m, onConsultar, onVoltar = null }) {
       </div>
       {frase && <p className="x-texto" style={{ margin: 0 }}>{frase}</p>}
       {o.exemplo?.condicao && <span className="x-neutro"><Hand aria-hidden="true" />{o.exemplo.condicao}</span>}
-      <Acao o={o} g={g} m={m} onde={onVoltar ? "compacta" : "completa"} depois={onVoltar} />
-      {r && r.alvo === o.chave && !g.ligado(o) && <ResultadoG2 r={r} g={g} m={m} />}
-      <button type="button" className="m-link" style={{ justifySelf: "start" }} onClick={() => onConsultar(o.item?.chave ?? o.chave, "resumo")} data-regra-opcao={o.chave}><BookOpenText aria-hidden="true" />Regra Completa</button>
+      <Acao o={o} g={g} m={m} onde={onVoltar ? "compacta" : "completa"} />
+      {/* Quem está ativo e sem vaga livre mostra o resultado no `AtivoNoCatalogo`. A Sustentação com vaga livre continua aqui. */}
+      {resultadoDaOpcao(r, o) && !(g.ligado(o) && !comVagaLivre(o, m)) && <ResultadoG2 r={r} g={g} m={m} />}
+      {operacao && <div className="k-operacao" data-operacao-opcao={o.chave}>{operacao}</div>}
+      {regraAqui
+        ? <section className="k-regra" aria-label="Regra" data-regra-no-painel={o.chave}><TextoRegra texto={item.texto} rico={item.rico} classe="e-texto" /></section>
+        : <button type="button" className="m-link" style={{ justifySelf: "start" }} onClick={() => onConsultar(o.item?.chave ?? o.chave, "resumo")} data-regra-opcao={o.chave}><BookOpenText aria-hidden="true" />Regra Completa</button>}
     </article>
   );
 }
 
 /* `onVoltar`: aberto pelo Adicionar do painel compacto, o catálogo volta para lá ("Voltar"), e não para os Ativos da completa. */
-export default function CatalogoG2({ g, m, onConsultar, focoBusca, onVoltar = null }) {
+export default function CatalogoG2({ g, m, onConsultar, focoBusca, onVoltar = null, renderOperacao = null }) {
   const fechar = onVoltar ?? (() => g.abrirCatalogo(null));
   /* A Imitação é uma aba só para quem pode copiar: sem ela, uma aba guardada como "imitacao" cai em Da Ficha. */
   const temImitacao = imitacaoDisponivel(m.derived);
@@ -261,13 +309,14 @@ export default function CatalogoG2({ g, m, onConsultar, focoBusca, onVoltar = nu
     return () => window.removeEventListener("keydown", aoTeclar);
   });
 
-  const escolher = (x) => g.mudaCatalogo((c) => ({ opcao: c.opcao === x.chave ? null : x.chave, preparo: null }));
-  /* Ativar na linha: o Ataque Concentrado e as opções da Preparação comum abrem a
-     Preparação. As outras abrem o detalhe com o custo e a ação de hoje. */
-  const ativar = (x) => g.mudaCatalogo({
-    opcao: x.chave,
-    preparo: ehPiloto(x) ? { chave: x.chave, valor: 1 } : temPreparo(x) ? { chave: x.chave, valores: rascunhoDoCatalogo(x, m) } : ehGolpe(x) ? { chave: x.chave, valores: rascunhoDoGolpe(m) } : null,
-  });
+  /* `voltar` só vale para a Preparação aberta pelos Favoritos dos Ativos: qualquer escolha feita aqui dentro o desfaz. */
+  const escolher = (x) => g.mudaCatalogo((c) => ({ opcao: c.opcao === x.chave ? null : x.chave, preparo: null, voltar: false }));
+  /* Ativar na linha: quem liga sem escolha nem custo liga na hora, e o painel mostra o que passou a valer. O Ataque Concentrado, a
+     Preparação comum e o Golpe abrem a Preparação. As outras abrem o detalhe com o custo ou o bloqueio antes da ação. */
+  const ativar = (x) => {
+    const ligou = ativarOpcao(x, g, m, (o, preparo) => g.mudaCatalogo({ opcao: o.chave, preparo, voltar: false }));
+    if (ligou) g.mudaCatalogo({ opcao: x.chave, preparo: null, voltar: false });
+  };
 
   const topo = (
     <div className="k-topo">
@@ -309,7 +358,7 @@ export default function CatalogoG2({ g, m, onConsultar, focoBusca, onVoltar = nu
           {itens.length ? <Lista g={g} m={m} itens={itens} cat={cat.cat} busca={!!achados} opcao={cat.opcao} escolher={escolher} ativar={ativar} />
             : <p className="x-mesa">Nenhuma Opção</p>}
         </section>
-        {o ? <DetalheOpcao o={o} g={g} m={m} onConsultar={onConsultar} onVoltar={onVoltar} /> : <div />}
+        {o ? <DetalheOpcao o={o} g={g} m={m} onConsultar={onConsultar} onVoltar={onVoltar} renderOperacao={renderOperacao} /> : <div />}
       </div>
     </div>
   );

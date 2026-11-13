@@ -1,0 +1,40 @@
+{
+ "src\\systems\\afty\\afty-origens-feiticos.js": [
+  "src/systems/afty/AftyCreatureBuilder.jsx",
+  "src/systems/afty/afty-derive.js",
+  "src/systems/afty/afty-feiticos.js"
+ ],
+ "src\\systems\\afty\\afty-conteudo-regras.js": [
+  "src/systems/afty/afty-derive.js"
+ ],
+ "src\\systems\\afty\\afty-conteudo-feiticos.js": [
+  "src/systems/afty/afty-derive.js"
+ ],
+ "src\\systems\\afty\\afty-origens-uso.js": [
+  "src/systems/afty/afty-derive.js"
+ ],
+ "src\\systems\\afty\\ficha\\ficha-votos-regras.js": [
+  "src/systems/afty/afty-votos.js"
+ ],
+ "src\\systems\\afty\\ficha\\ficha-vital.js": [
+  "src/systems/afty/encontros/PainelDeCombatente.jsx",
+  "src/systems/afty/ficha/AftyFichaClassica.jsx",
+  "src/systems/afty/ficha/ficha-especializacoes.js",
+  "src/systems/afty/ficha/ficha-sessao.js"
+ ],
+ "src\\systems\\afty\\ficha\\PainelOrigens.jsx": [
+  "src/systems/afty/encontros/PainelDeCombatente.jsx",
+  "src/systems/afty/ficha/AftyFichaClassica.jsx"
+ ],
+ "src\\systems\\afty\\ficha\\PainelConteudo.jsx": [
+  "src/systems/afty/encontros/PainelDeCombatente.jsx",
+  "src/systems/afty/ficha/AftyFichaClassica.jsx",
+  "src/systems/afty/ficha/AftyFichaG2.jsx"
+ ],
+ "src\\systems\\afty\\ficha\\ficha-uso-estado.js": [
+  "src/systems/afty/ficha/ficha-sessao.js"
+ ],
+ "src\\systems\\afty\\ficha\\ficha-barreiras-estado.js": [
+  "src/systems/afty/ficha/ficha-sessao.js"
+ ]
+}

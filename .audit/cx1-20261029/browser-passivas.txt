@@ -1,0 +1,318 @@
+HABILIDADES player Voltar
+Editar Personagem
+Salvar Alterações
+Identidade
+Perícias
+Habilidades
+Especializações
+Aptidões
+Invocações
+Equipamentos
+Interlúdios
+Outros
+Preview
+CX1 Passiva Salva
+Nível 20
+Semi-Grau Especial
+VIDA
+105
+ENERGIA
+110
+DEFESA
+24
+CD
+31
+RD GERAL
+0
+RD ESPEC.
+0
+MOVIMENTO
+9m
+TAMANHO
+Médio · 1,5m
+INICIATIVA
++0
+ATENÇÃO
+20
+MAESTRIA
++6
+DANO
+Ataque Básico
++16
+1d12
+RESISTÊNCIAS
+Reflexos
++10
+Fortitude
++10
+Vontade
++10
+Astúcia
++10
+Integridade
++10
+ATAQUE
+CORPO A CORPO
++10
+A DISTÂNCIA
++10
+AMALDIÇOADO
++21
+FEITIÇOS
+Defesa CX1
+Nível 5
+Perfil Amaldiçoado
+ATRIBUTO DA TÉCNICA
+Força
+Destreza
+Constituição
+Inteligência
+Sabedoria
+Presença
+FUNCIONAMENTO BÁSICO
+B
+U
+S
+I
+H1
+H2
+Motor de Automação
+Adicionar efeito
+Funcionamento Básico
+Feitiços
+1 / 23
++0 / 1
+FEITIÇOS
+Criação
+Nome
+Nível
+PASSIVO
+1
+Defesa CX1
+Nível 5
+Dano
+Auxiliar
+Curativo
+Especial
+Passivo / Característica
+Personalizado
+0
+1
+2
+3
+4
+5
+AUMENTO DE DEFESA
++3 DEF
+PE MÁXIMO
+-10 PE
+CATEGORIA DO PASSIVO
+-
+Aumento de Defesa
+Redução de Dano
+Aumento de Atributo (permanente)
+Bônus em Teste de Resistência
+Bônus em Perícia
+Aumento de Movimento
+Dano Adicional (Durante Ataque)
+Dano Adicional (Após Ataque)
+Dano Adicional (Fixo)
+Nível de Dano Adicional
+Aumento de Iniciativa (sem tabela no livro)
+Aumento de Atenção (sem tabela no livro)
+Regeneração por Rodada (referência — sem canal)
+Personalizado
+Valor calculado
++3 DEF
+Usar este valor
+Efeitos da Passiva (Motor de Automação)
+1 de 1 ativos
+Defesa
+vale
++4
+enquanto
+e dura
+Permanente
+Temporária
+Adicionar efeito
+DESCRIÇÃO
+B
+U
+S
+I
+H1
+H2
+Dano
+Ataque Básico
+Corpo a Corpo
+Amaldiçoado
+FOR
+Crít. 20
+1,5m
+Acerto +16
+1d12
+HABILIDADES afty Voltar
+Editar Criatura · Afty
+Salvar Alterações
+Identidade
+Informações
+Perícias
+Habilidades
+Especializações
+Aptidões
+Invocações
+Equipamentos
+Interlúdios
+Outros
+Preview
+CX1 Passiva Salva
+Combatente
+Comum
+ND 20
+Semi-Grau Especial
+VIDA
+126
+ENERGIA
+80
+DEFESA
+36
+CD
+27
+RD GERAL
+20
+RD ESPEC.
+0
+MOVIMENTO
+9m
+TAMANHO
+Médio · 1,5m
+INICIATIVA
++3
+ATENÇÃO
+20
+MAESTRIA
++6
+DANO
+Ataque Básico
++13
+1d8 + 36
+RESISTÊNCIAS
+Reflexos
++16
+Fortitude
++16
+Vontade
++11
+Astúcia
++11
+Integridade
++13
+ATAQUE
+CORPO A CORPO
++13
+A DISTÂNCIA
++13
+AMALDIÇOADO
++19
+FEITIÇOS
+Defesa CX1
+Nível 5
+Perfil Amaldiçoado
+ATRIBUTO DA TÉCNICA
+Força
+Destreza
+Constituição
+Inteligência
+Sabedoria
+Presença
+FUNCIONAMENTO BÁSICO
+B
+U
+S
+I
+H1
+H2
+Motor de Automação
+Adicionar efeito
+Funcionamento Básico
+Feitiços
+0 / 12
++1 / 1
+HABILIDADES
+Criação
+Nome
+Nível
+PASSIVO
+1
+Defesa CX1
+Nível 5
+Dano
+Auxiliar
+Curativo
+Especial
+Passivo / Característica
+Personalizado
+0
+1
+2
+3
+4
+5
+AUMENTO DE DEFESA
++3 DEF
+CATEGORIA DO PASSIVO
+-
+Aumento de Defesa
+Redução de Dano
+Aumento de Atributo (permanente)
+Bônus em Teste de Resistência
+Bônus em Perícia
+Aumento de Movimento
+Dano Adicional (Durante Ataque)
+Dano Adicional (Após Ataque)
+Dano Adicional (Fixo)
+Nível de Dano Adicional
+Aumento de Iniciativa (sem tabela no livro)
+Aumento de Atenção (sem tabela no livro)
+Regeneração por Rodada (referência — sem canal)
+Personalizado
+Valor calculado
++3 DEF
+Usar este valor
+Efeitos da Passiva (Motor de Automação)
+1 de 1 ativos
+Defesa
+vale
++4
+enquanto
+e dura
+Permanente
+Temporária
+Adicionar efeito
+DESCRIÇÃO
+B
+U
+S
+I
+H1
+H2
+Dano
+Ataque Básico
+Corpo a Corpo
+Amaldiçoado
+FOR
+Crít. 20
+1,5m
+Acerto +13
+1d8 + 36
+Habilidades Gerais
+0 / 12
++1 / 1
+HABILIDADES
+Especialização
+Aptidão
+Melhoria Superior
+Nível 21
+Habilidade Lendária
+Nível 22
+Treinamentos

@@ -1,0 +1,10 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+page.waitForFunction: Timeout 30000ms exceeded.
+    at C:\Projetos\Grimorio\grimorio-tracker\.audit\cx3-20261102\browser-renovacao.mjs:33:14 {
+  name: 'TimeoutError'
+}
+
+Node.js v24.14.0

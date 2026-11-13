@@ -1,0 +1,4 @@
+player 1440 Provocar OK
+player 390 Provocar OK
+afty 1440 Provocar OK
+afty 390 Provocar OK

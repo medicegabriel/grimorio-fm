@@ -1,0 +1,84 @@
+{
+  "geradoEm": "2026-11-06T03:33:51.139Z",
+  "base": "http://127.0.0.1:5341",
+  "etapas": [
+    {
+      "nome": "receita :is(.e-g2, :scope)",
+      "checks": [
+        {
+          "id": "seções (.afty-card.e-grupo)",
+          "ok": true,
+          "dados": [
+            "rgb(225, 29, 72)",
+            "rgb(225, 29, 72)",
+            "rgb(225, 29, 72)",
+            "rgb(225, 29, 72)",
+            "rgb(225, 29, 72)"
+          ]
+        },
+        {
+          "id": "números (.afty-valor)",
+          "ok": false,
+          "dados": [
+            "rgb(34, 211, 238)",
+            "rgb(241, 245, 249)"
+          ]
+        },
+        {
+          "id": "aba ativa",
+          "ok": true,
+          "dados": [
+            "rgb(34, 211, 238)"
+          ]
+        },
+        {
+          "id": "nome da ficha",
+          "ok": true,
+          "dados": [
+            "rgb(34, 211, 238)"
+          ]
+        },
+        {
+          "id": ".afty-botao: os 7 botões visíveis, sob .e-g2 ou fora dele",
+          "ok": false,
+          "dados": {
+            "sob": 6,
+            "fora": 1,
+            "erradas": 5
+          }
+        },
+        {
+          "id": ".afty-abas.e-g2 (mesmo elemento)",
+          "ok": true,
+          "dados": [
+            "rgb(225, 29, 72)"
+          ]
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    }
+  ],
+  "falhas": [
+    {
+      "etapa": "receita :is(.e-g2, :scope)",
+      "id": "números (.afty-valor)",
+      "dados": [
+        "rgb(34, 211, 238)",
+        "rgb(241, 245, 249)"
+      ]
+    },
+    {
+      "etapa": "receita :is(.e-g2, :scope)",
+      "id": ".afty-botao: os 7 botões visíveis, sob .e-g2 ou fora dele",
+      "dados": {
+        "sob": 6,
+        "fora": 1,
+        "erradas": 5
+      }
+    }
+  ],
+  "resumo": [
+    "receita :is(.e-g2, :scope): 4/6"
+  ]
+}

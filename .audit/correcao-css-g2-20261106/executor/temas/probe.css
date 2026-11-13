@@ -1,0 +1,6 @@
+:scope#afty-ficha, #afty-ficha#afty-ficha {
+  --afty-fundo:#ff00ff; --afty-fundo-brilho:none; --afty-card:#00ff00; --afty-poco:#ffff00; --afty-borda:#ff8800; --afty-borda-forte:#00ffff;
+  --afty-texto:#0000ff; --afty-texto-suave:#ff0000; --afty-texto-fraco:#880000; --afty-destaque:#8800ff; --afty-destaque-texto:#ff0088;
+  --afty-destaque-fundo:#00880066; --afty-pv:#aa0000; --afty-pe:#0000aa; --afty-pvtemp:#aaaa00; --afty-alma:#00aaaa; --afty-cura:#00aa00;
+  --afty-aviso:#aa5500; --afty-raio:0px; --afty-raio-peq:0px; --afty-fonte: Georgia, serif; --afty-fonte-titulo: Georgia, serif; --afty-fonte-num: "Courier New", monospace;
+}

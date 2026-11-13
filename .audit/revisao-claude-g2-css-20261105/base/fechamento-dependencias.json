@@ -1,0 +1,113 @@
+{
+ "novos": 31,
+ "exigidos": [
+  {
+   "arquivo": "src/systems/afty/ficha/ficha-vital.js",
+   "importadoPrimeiroPor": "src/systems/afty/ficha/ficha-sessao.js"
+  },
+  {
+   "arquivo": "src/systems/afty/ficha/ficha-uso-estado.js",
+   "importadoPrimeiroPor": "src/systems/afty/ficha/ficha-sessao.js"
+  },
+  {
+   "arquivo": "src/systems/afty/ficha/ficha-barreiras-estado.js",
+   "importadoPrimeiroPor": "src/systems/afty/ficha/ficha-sessao.js"
+  },
+  {
+   "arquivo": "src/systems/afty/afty-origens-feiticos.js",
+   "importadoPrimeiroPor": "src/systems/afty/afty-feiticos.js"
+  },
+  {
+   "arquivo": "src/systems/afty/afty-conteudo-regras.js",
+   "importadoPrimeiroPor": "src/systems/afty/afty-derive.js"
+  },
+  {
+   "arquivo": "src/systems/afty/afty-conteudo-feiticos.js",
+   "importadoPrimeiroPor": "src/systems/afty/afty-derive.js"
+  },
+  {
+   "arquivo": "src/systems/afty/afty-origens-uso.js",
+   "importadoPrimeiroPor": "src/systems/afty/afty-derive.js"
+  },
+  {
+   "arquivo": "src/systems/afty/ficha/ficha-votos-regras.js",
+   "importadoPrimeiroPor": "src/systems/afty/afty-votos.js"
+  },
+  {
+   "arquivo": "src/systems/afty/ficha/PainelConteudo.jsx",
+   "importadoPrimeiroPor": "src/systems/afty/ficha/AftyFichaG2.jsx"
+  },
+  {
+   "arquivo": "src/systems/afty/ficha/ficha-uso.js",
+   "importadoPrimeiroPor": "src/systems/afty/ficha/PainelConteudo.jsx"
+  },
+  {
+   "arquivo": "src/systems/afty/ficha/ficha-conteudo-combate.js",
+   "importadoPrimeiroPor": "src/systems/afty/ficha/PainelConteudo.jsx"
+  },
+  {
+   "arquivo": "src/systems/afty/ficha/ficha-conteudo-testes.js",
+   "importadoPrimeiroPor": "src/systems/afty/ficha/PainelConteudo.jsx"
+  },
+  {
+   "arquivo": "src/systems/afty/ficha/ficha-conteudo-manobras.js",
+   "importadoPrimeiroPor": "src/systems/afty/ficha/PainelConteudo.jsx"
+  },
+  {
+   "arquivo": "src/systems/afty/ficha/ficha-conteudo-acesso.js",
+   "importadoPrimeiroPor": "src/systems/afty/ficha/PainelConteudo.jsx"
+  },
+  {
+   "arquivo": "src/systems/afty/ficha/ficha-conteudo-uso.js",
+   "importadoPrimeiroPor": "src/systems/afty/ficha/PainelConteudo.jsx"
+  },
+  {
+   "arquivo": "src/systems/afty/ficha/ficha-dano-recebido.js",
+   "importadoPrimeiroPor": "src/systems/afty/ficha/ficha-conteudo-uso.js"
+  },
+  {
+   "arquivo": "src/systems/afty/ficha/ficha-morte.js",
+   "importadoPrimeiroPor": "src/systems/afty/ficha/ficha-conteudo-uso.js"
+  },
+  {
+   "arquivo": "src/systems/afty/ficha/ficha-concentracao.js",
+   "importadoPrimeiroPor": "src/systems/afty/ficha/ficha-dano-recebido.js"
+  },
+  {
+   "arquivo": "src/systems/afty/ficha/ficha-acoes.js",
+   "importadoPrimeiroPor": "src/systems/afty/ficha/ficha-concentracao.js"
+  },
+  {
+   "arquivo": "src/systems/afty/ficha/ficha-ataque.js",
+   "importadoPrimeiroPor": "src/systems/afty/ficha/ficha-conteudo-testes.js"
+  },
+  {
+   "arquivo": "src/systems/afty/ficha/ficha-uso-clientes.js",
+   "importadoPrimeiroPor": "src/systems/afty/ficha/ficha-conteudo-combate.js"
+  },
+  {
+   "arquivo": "src/systems/afty/ficha/ficha-combate-eventos.js",
+   "importadoPrimeiroPor": "src/systems/afty/ficha/ficha-conteudo-combate.js"
+  },
+  {
+   "arquivo": "src/systems/afty/ficha/PainelOrigens.jsx",
+   "importadoPrimeiroPor": "src/systems/afty/ficha/AftyFichaClassica.jsx"
+  },
+  {
+   "arquivo": "src/systems/afty/ficha/ficha-origens.js",
+   "importadoPrimeiroPor": "src/systems/afty/ficha/PainelOrigens.jsx"
+  },
+  {
+   "arquivo": "src/systems/afty/ficha/ficha-alma.js",
+   "importadoPrimeiroPor": "src/systems/afty/ficha/ficha-origens.js"
+  }
+ ],
+ "opcionais": [
+  "src/systems/afty/ficha/efeitos/operacoes-uso.js",
+  "src/systems/afty/ficha/ficha-barreiras.js",
+  "src/systems/afty/ficha/ficha-dados-vida.js",
+  "src/systems/afty/ficha/ficha-dominio-confronto.js",
+  "src/systems/afty/ficha/ficha-invocacao-uso.js",
+  "src/systems/afty/ficha/ficha-votos.js"
+ ]
+}

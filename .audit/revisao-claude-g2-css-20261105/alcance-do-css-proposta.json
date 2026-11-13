@@ -1,0 +1,430 @@
+{
+  "geradoEm": "2026-11-06T02:54:12.925Z",
+  "base": "http://127.0.0.1:5342",
+  "etapas": [
+    {
+      "nome": "alcance, tema escuro",
+      "checks": [
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "alcance, tema teste-important",
+      "checks": [
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "alcance, tema teste",
+      "checks": [
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "alcance, comparação",
+      "checks": [
+        {
+          "id": "card (.afty-card): o CSS SEM !important altera o computado",
+          "ok": true,
+          "dados": {
+            "padrao": [
+              "oklab(0.968254 -0.00253484 -0.00633037 / 0.09)"
+            ],
+            "sem": [
+              "rgb(225, 29, 72)"
+            ]
+          }
+        },
+        {
+          "id": "valor (.afty-valor): o CSS SEM !important altera o computado",
+          "ok": true,
+          "dados": {
+            "padrao": [
+              "rgb(241, 245, 249)"
+            ],
+            "sem": [
+              "rgb(34, 211, 238)",
+              "rgb(241, 245, 249)"
+            ]
+          }
+        },
+        {
+          "id": "aba ativa: o CSS SEM !important altera o computado",
+          "ok": true,
+          "dados": {
+            "padrao": [
+              "rgb(241, 245, 249)"
+            ],
+            "sem": [
+              "rgb(34, 211, 238)"
+            ]
+          }
+        },
+        {
+          "id": "numero da Mesa (.m-rolar-num): o CSS SEM !important altera o computado",
+          "ok": true,
+          "dados": {
+            "padrao": [
+              "rgb(241, 245, 249)"
+            ],
+            "sem": [
+              "rgb(34, 211, 238)",
+              "rgb(241, 245, 249)"
+            ]
+          }
+        },
+        {
+          "id": "secao de Acoes (.m-secao): o CSS SEM !important altera o computado",
+          "ok": true,
+          "dados": {
+            "padrao": [
+              "oklab(0.968254 -0.00253484 -0.00633037 / 0.09)"
+            ],
+            "sem": [
+              "rgb(225, 29, 72)"
+            ]
+          }
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "card (.afty-card)": {
+          "padrao": [
+            "oklab(0.968254 -0.00253484 -0.00633037 / 0.09)"
+          ],
+          "comImportant": [
+            "rgb(225, 29, 72)"
+          ],
+          "semImportant": [
+            "rgb(225, 29, 72)"
+          ],
+          "n": 5
+        },
+        "valor (.afty-valor)": {
+          "padrao": [
+            "rgb(241, 245, 249)"
+          ],
+          "comImportant": [
+            "rgb(34, 211, 238)"
+          ],
+          "semImportant": [
+            "rgb(34, 211, 238)",
+            "rgb(241, 245, 249)"
+          ],
+          "n": 7
+        },
+        "aba ativa": {
+          "padrao": [
+            "rgb(241, 245, 249)"
+          ],
+          "comImportant": [
+            "rgb(34, 211, 238)"
+          ],
+          "semImportant": [
+            "rgb(34, 211, 238)"
+          ],
+          "n": 1
+        },
+        "numero da Mesa (.m-rolar-num)": {
+          "padrao": [
+            "rgb(241, 245, 249)"
+          ],
+          "comImportant": [
+            "rgb(34, 211, 238)"
+          ],
+          "semImportant": [
+            "rgb(34, 211, 238)",
+            "rgb(241, 245, 249)"
+          ],
+          "n": 6
+        },
+        "secao de Acoes (.m-secao)": {
+          "padrao": [
+            "oklab(0.968254 -0.00253484 -0.00633037 / 0.09)"
+          ],
+          "comImportant": [
+            "rgb(225, 29, 72)"
+          ],
+          "semImportant": [
+            "rgb(225, 29, 72)"
+          ],
+          "n": 5
+        }
+      }
+    },
+    {
+      "nome": "inventário do contrato no DOM vivo",
+      "checks": [],
+      "erros": [],
+      "medidas": {
+        "G2 com as três abas novas (mesa)": {
+          "abas": [
+            "acoes",
+            "habilidades",
+            "pericias",
+            "equipamentos",
+            "invocacoes",
+            "buffs"
+          ],
+          "presentes": 46,
+          "total": 117,
+          "ausentes": [
+            ".afty-cabecalho-conteudo",
+            ".afty-cabecalho-principal",
+            ".afty-retrato-painel",
+            ".afty-controles",
+            ".afty-vital-icone",
+            ".afty-vital-temp",
+            ".afty-guarda",
+            ".afty-guarda-valor",
+            ".afty-guarda-vida",
+            ".afty-guarda-quebrada",
+            ".afty-guarda-botao",
+            ".afty-atributo-mod",
+            ".afty-subabas",
+            ".afty-subaba",
+            ".afty-subaba-conta",
+            ".afty-texto",
+            ".afty-opcao",
+            ".afty-estrela",
+            ".afty-dominio-cabeca",
+            ".afty-dominio-numeros",
+            ".afty-dominio-corpo",
+            ".afty-dominio-efeito-titulo",
+            ".afty-dominio-secao",
+            ".afty-dominio-base",
+            ".afty-inv-ficha",
+            ".afty-inv-cabeca",
+            ".afty-inv-titulo",
+            ".afty-inv-cabeca-marcas",
+            ".afty-inv-retrato-icone",
+            ".afty-inv-corpo",
+            ".afty-inv-stats",
+            ".afty-inv-colunas",
+            ".afty-inv-coluna",
+            ".afty-inv-bloco",
+            ".afty-inv-duplo",
+            ".afty-inv-bonus",
+            ".afty-inv-bonus-botao",
+            ".afty-inv-lampada",
+            ".afty-inv-fileira",
+            ".afty-inv-cartao",
+            ".afty-espinho",
+            ".afty-espinho-casca",
+            ".afty-espinho-titulo",
+            ".afty-espinho-cristal",
+            ".afty-espinho-marca",
+            ".afty-espinho-rachadura",
+            ".afty-lanterna",
+            ".afty-lanterna-imagem",
+            ".afty-lanterna-chamas",
+            ".afty-cor",
+            ".afty-canal-gatilho",
+            ".afty-canal-painel",
+            ".afty-canal-grupo",
+            ".afty-canal-item",
+            ".afty-fontes",
+            ".afty-fonte-secao",
+            ".afty-fonte-linha",
+            ".afty-fonte-rotulo",
+            ".afty-fonte-valor",
+            ".afty-fonte-total",
+            ".afty-rolagem",
+            ".afty-rolagem-total",
+            ".afty-dado",
+            ".afty-busca-fundo",
+            ".afty-busca",
+            ".afty-busca-item",
+            "[data-afty-alvo]",
+            "[data-afty-marca]",
+            "[data-afty-compacto]",
+            "[data-afty-com-retrato]",
+            "[data-afty-subaba]"
+          ],
+          "classesEMF": 126
+        },
+        "G2 sem a prévia (mesa)": {
+          "abas": [
+            "acoes",
+            "habilidades",
+            "pericias",
+            "equipamentos",
+            "invocacoes",
+            "buffs"
+          ],
+          "presentes": 50,
+          "total": 117,
+          "ausentes": [
+            ".afty-cabecalho-conteudo",
+            ".afty-cabecalho-principal",
+            ".afty-retrato-painel",
+            ".afty-controles",
+            ".afty-vital-icone",
+            ".afty-vital-temp",
+            ".afty-guarda",
+            ".afty-guarda-valor",
+            ".afty-guarda-vida",
+            ".afty-guarda-quebrada",
+            ".afty-guarda-botao",
+            ".afty-subabas",
+            ".afty-subaba",
+            ".afty-subaba-conta",
+            ".afty-texto",
+            ".afty-opcao",
+            ".afty-dominio-corpo",
+            ".afty-dominio-efeito-titulo",
+            ".afty-dominio-secao",
+            ".afty-dominio-base",
+            ".afty-inv-ficha",
+            ".afty-inv-cabeca",
+            ".afty-inv-titulo",
+            ".afty-inv-cabeca-marcas",
+            ".afty-inv-retrato-icone",
+            ".afty-inv-corpo",
+            ".afty-inv-stats",
+            ".afty-inv-colunas",
+            ".afty-inv-coluna",
+            ".afty-inv-bloco",
+            ".afty-inv-duplo",
+            ".afty-inv-bonus",
+            ".afty-inv-bonus-botao",
+            ".afty-inv-lampada",
+            ".afty-inv-fileira",
+            ".afty-inv-cartao",
+            ".afty-espinho",
+            ".afty-espinho-casca",
+            ".afty-espinho-titulo",
+            ".afty-espinho-cristal",
+            ".afty-espinho-marca",
+            ".afty-espinho-rachadura",
+            ".afty-lanterna",
+            ".afty-lanterna-imagem",
+            ".afty-lanterna-chamas",
+            ".afty-cor",
+            ".afty-canal-gatilho",
+            ".afty-canal-painel",
+            ".afty-canal-grupo",
+            ".afty-canal-item",
+            ".afty-fontes",
+            ".afty-fonte-secao",
+            ".afty-fonte-linha",
+            ".afty-fonte-rotulo",
+            ".afty-fonte-valor",
+            ".afty-fonte-total",
+            ".afty-rolagem",
+            ".afty-rolagem-total",
+            ".afty-dado",
+            ".afty-busca-fundo",
+            ".afty-busca",
+            ".afty-busca-item",
+            "[data-afty-alvo]",
+            "[data-afty-marca]",
+            "[data-afty-compacto]",
+            "[data-afty-com-retrato]",
+            "[data-afty-subaba]"
+          ],
+          "classesEMF": 41
+        },
+        "clássica (mesa)": {
+          "abas": [
+            "acoes",
+            "habilidades",
+            "pericias",
+            "equipamentos",
+            "invocacoes",
+            "buffs"
+          ],
+          "presentes": 59,
+          "total": 117,
+          "ausentes": [
+            ".afty-retrato-painel",
+            ".afty-retrato",
+            ".afty-vital-temp",
+            ".afty-guarda",
+            ".afty-guarda-valor",
+            ".afty-guarda-vida",
+            ".afty-guarda-quebrada",
+            ".afty-guarda-botao",
+            ".afty-texto",
+            ".afty-opcao",
+            ".afty-dominio-corpo",
+            ".afty-dominio-efeito-titulo",
+            ".afty-dominio-secao",
+            ".afty-dominio-base",
+            ".afty-inv-ficha",
+            ".afty-inv-cabeca",
+            ".afty-inv-titulo",
+            ".afty-inv-cabeca-marcas",
+            ".afty-inv-retrato-icone",
+            ".afty-inv-corpo",
+            ".afty-inv-stats",
+            ".afty-inv-colunas",
+            ".afty-inv-coluna",
+            ".afty-inv-bloco",
+            ".afty-inv-duplo",
+            ".afty-inv-bonus",
+            ".afty-inv-bonus-botao",
+            ".afty-inv-lampada",
+            ".afty-inv-fileira",
+            ".afty-inv-cartao",
+            ".afty-espinho",
+            ".afty-espinho-casca",
+            ".afty-espinho-titulo",
+            ".afty-espinho-cristal",
+            ".afty-espinho-marca",
+            ".afty-espinho-rachadura",
+            ".afty-lanterna",
+            ".afty-lanterna-imagem",
+            ".afty-lanterna-chamas",
+            ".afty-cor",
+            ".afty-canal-gatilho",
+            ".afty-canal-painel",
+            ".afty-canal-grupo",
+            ".afty-canal-item",
+            ".afty-fontes",
+            ".afty-fonte-secao",
+            ".afty-fonte-linha",
+            ".afty-fonte-rotulo",
+            ".afty-fonte-valor",
+            ".afty-fonte-total",
+            ".afty-rolagem",
+            ".afty-rolagem-total",
+            ".afty-dado",
+            ".afty-busca-fundo",
+            ".afty-busca",
+            ".afty-busca-item",
+            "[data-afty-alvo]",
+            "[data-afty-marca]"
+          ],
+          "classesEMF": 1
+        }
+      }
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "alcance, tema escuro: 1/1",
+    "alcance, tema teste-important: 1/1",
+    "alcance, tema teste: 1/1",
+    "alcance, comparação: 5/5",
+    "inventário do contrato no DOM vivo: 0/0"
+  ]
+}

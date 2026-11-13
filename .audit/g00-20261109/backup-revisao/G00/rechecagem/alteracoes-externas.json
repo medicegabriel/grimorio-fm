@@ -1,0 +1,30 @@
+{
+  "data": "2026-10-05T20:55:25.287Z",
+  "nota": "Mudanças detectadas desde a entrada, ocorridas às 20:19 UTC. Arquivos do aplicativo e addons mantêm os hashes da entrada.",
+  "arquivos": [
+    {
+      "arquivo": "AGENTS.md",
+      "hashEntrada": "ff2799e61eb774e8b5352488dc91a341572751a49c30a4e07974f1ea145256f5",
+      "hashDetectado": "3f4505f6a26fcb47059f15c558e78d4df4fa2932fabaf3006ef6042ee54291f4",
+      "copia": "docs/revisao-automacao/G00/rechecagem/alteracoes-externas/1-AGENTS.md",
+      "modificadoEm": "2026-10-05T20:19:44.364Z",
+      "tratamento": "Preservar os bytes atuais; mudança não foi feita por este executor."
+    },
+    {
+      "arquivo": "docs/revisao-automacao/G00/atualizacao-fonte-2026-10-05.json",
+      "hashEntrada": "8b1c5ef4f7a00ea2ebb6a36f2f5f934873fda7b959d4922744889113f33c9486",
+      "hashDetectado": "750b32dac601f4469255e5821806bb5fe5e1e38efd76c11c9d7a64685102ca76",
+      "copia": "docs/revisao-automacao/G00/rechecagem/alteracoes-externas/2-atualizacao-fonte-2026-10-05.json",
+      "modificadoEm": "2026-10-05T20:19:49.476Z",
+      "tratamento": "Preservar os bytes atuais; mudança não foi feita por este executor."
+    },
+    {
+      "arquivo": "docs/revisao-automacao/G00/entrega-sha256.json",
+      "hashEntrada": "e2b177f6c8f9854bf778bf0ff2bb2fa391d39027bff064ec996a01c68e3d639b",
+      "hashDetectado": "0fcf9a601b357b4388c4a8d6d333e47bca4d56605130d343e46e90842f8356d8",
+      "copia": "docs/revisao-automacao/G00/rechecagem/alteracoes-externas/3-entrega-sha256.json",
+      "modificadoEm": "2026-10-05T20:19:49.482Z",
+      "tratamento": "Manifesto histórico preservado; será substituído apenas pelo pacote final desta rechecagem."
+    }
+  ]
+}

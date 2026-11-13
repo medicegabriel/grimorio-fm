@@ -1,0 +1,138 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "encontro": true,
+    "saltos": [
+      [
+        3,
+        true
+      ],
+      [
+        12,
+        false
+      ]
+    ],
+    "recarga": true,
+    "saltador": {
+      "acerto": 2,
+      "dano": 3
+    }
+  },
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "ficha": "classica",
+    "comum": 6,
+    "livre": 3
+  },
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "ficha": "g2",
+    "comum": 6,
+    "livre": 3
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "encontro": true,
+    "saltos": [
+      [
+        3,
+        true
+      ],
+      [
+        12,
+        false
+      ]
+    ],
+    "recarga": true,
+    "saltador": {
+      "acerto": 2,
+      "dano": 3
+    }
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "ficha": "classica",
+    "comum": 6,
+    "livre": 3
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "ficha": "g2",
+    "comum": 6,
+    "livre": 3
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "encontro": true,
+    "saltos": [
+      [
+        3,
+        true
+      ],
+      [
+        12,
+        false
+      ]
+    ],
+    "recarga": true,
+    "saltador": {
+      "acerto": 2,
+      "dano": 3
+    }
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "ficha": "classica",
+    "comum": 6,
+    "livre": 3
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "ficha": "g2",
+    "comum": 6,
+    "livre": 3
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "encontro": true,
+    "saltos": [
+      [
+        3,
+        true
+      ],
+      [
+        12,
+        false
+      ]
+    ],
+    "recarga": true,
+    "saltador": {
+      "acerto": 2,
+      "dano": 3
+    }
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "ficha": "classica",
+    "comum": 6,
+    "livre": 3
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "ficha": "g2",
+    "comum": 6,
+    "livre": 3
+  }
+]

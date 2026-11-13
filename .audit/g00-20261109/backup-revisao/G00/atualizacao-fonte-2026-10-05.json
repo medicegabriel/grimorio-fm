@@ -1,0 +1,57 @@
+{
+  "data": "2026-10-05T20:17:28.858Z",
+  "solicitacao": "Autor definiu o Markdown corrigido como fonte primária.",
+  "fonteLivroRegras": {
+    "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+    "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a"
+  },
+  "acessoLocal": "Confirmado por leitura e hash; acesso dos processos de assistentes consta no teste de integração do controlador.",
+  "paginasImpressas": 367,
+  "promptsAtualizados": 516,
+  "referenciasNoMapa": 163,
+  "fonteAnterior": {
+    "docs/revisao-automacao/LEIA.md": "615bd2b2eeb46d06cb21f501c967fd8f6da050b6791c134f5e0a9c348f38cc6e",
+    "docs/revisao-automacao/fontes.json": "6dc3631fdf12a91580565a3c7127653658810154fb9b05218e198794ba26a8e3",
+    "docs/revisao-automacao/schema-registro.json": "2837b2f90c185aa92a48f8826e4f70ef900788380bde7b1716591cd76a6f01a8",
+    "docs/revisao-automacao/G00/pedido.md": "c13a5dbcb6a387936dc244fc5c92df2a6a785d3c873d162f8b72d8a19f421aaf",
+    "docs/revisao-automacao/G00/revisao.md": "1e7523d1be5d1d3d62239a6c7effc39b259d4979571e99c684aebee455814fbe",
+    "docs/revisao-automacao/G00/registro.json": "35627bd3d345e8c6ebb2e5f38b131f3e2712fc220e5bc16205f2f6ede2804250",
+    "docs/revisao-automacao/G00/entrega-sha256.json": "ca30da13c95e12f8e4cb7cb00bf8175b99088d606f520e4ee84c3cc582876406",
+    "scripts/revisao-automacao/cobertura.mjs": "fa62e5338976c652455da573a5e560d6292b344b10c099ac7ec73acfa128b5e1"
+  },
+  "historicoEntregaAnterior": "C:/Projetos/Grimorio/revisao-noturna/execucoes/atualizacao-fonte-2026-10-05/docs/revisao-automacao/G00/entrega-sha256.json",
+  "arquivosAlterados": [
+    "docs/revisao-automacao/LEIA.md",
+    "docs/revisao-automacao/fontes.json",
+    "docs/revisao-automacao/schema-registro.json",
+    "docs/revisao-automacao/G00/pedido.md",
+    "docs/revisao-automacao/G00/revisao.md",
+    "scripts/revisao-automacao/cobertura.mjs",
+    "scripts/revisao-automacao/fontes.mjs",
+    "asserts/t-fontes-revisao.mjs",
+    "docs/revisao-automacao/fonte-livro-regras.json",
+    "AGENTS.md",
+    "CLAUDE.md"
+  ],
+  "auditoria": "NÃO EXECUTADA",
+  "criterio": "Atualiza protocolo e rastreabilidade sem converter as consultas anteriores ao PDF em leitura do Markdown nem aprovar conteúdo.",
+  "validacao": {
+    "assertsFonte": 24,
+    "assertsG00": 35,
+    "testesControlador": 21,
+    "lintEscopo": "PASSOU",
+    "suíteCompleta": {
+      "estado": "PASSOU",
+      "arquivos": 155,
+      "asserts": 9097,
+      "log": "C:/Projetos/Grimorio/revisao-noturna/execucoes/atualizacao-fonte-2026-10-05/asserts.log"
+    }
+  },
+  "acessoAssistentes": {
+    "ambienteAtual": true,
+    "claude": true,
+    "codexControlador": false,
+    "limite": "A ferramenta exec_command falhou antes da execução: helper_sandbox_lock_failed, SetNamedSecurityInfoW, erro 5. Nenhum arquivo foi lido ou gravado; conteúdo, linha e hash permanecem indisponíveis.",
+    "teste": "C:/Projetos/Grimorio/revisao-noturna/estado/teste-integracao.json"
+  }
+}

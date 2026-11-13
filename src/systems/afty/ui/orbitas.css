@@ -1,0 +1,43 @@
+/* ÓRBITAS DO RETRATO (2026-11-10). Ver `OrbitasDoRetrato.jsx` e `afty-orbitas.js`.
+   Só `offset-distance` anima, ela mora num elemento dedicado e não toca a raiz da ficha.
+   Duas classes na posição: `.e-g2 .e-moldura` e as regras da ficha empatam com uma classe só. */
+
+.e-g2 .e-orbitas {
+  --orb-volta: 26s;
+  --orb-gema: 13px;
+  position: absolute; inset: 0; z-index: 2; display: block; pointer-events: none;
+}
+.e-g2 .e-orbitas .e-orbitas-gema {
+  position: absolute; top: 0; left: 0; display: block;
+  width: var(--orb-gema); height: var(--orb-gema);
+  offset-path: inset(0 round calc(var(--afty-raio, 12px) * 14 / 12));
+  offset-anchor: 50% 50%;
+  offset-rotate: 0deg;
+  offset-distance: calc(100% * var(--i) / var(--n));
+}
+.e-g2 .e-orbitas .e-orbitas-gema svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+.e-g2 .e-orbitas[data-pele="carmim"] .e-gema-corpo { fill: #c4122f; stroke: #5c0714; stroke-width: 1.4; stroke-linejoin: round; }
+.e-g2 .e-orbitas[data-pele="carmim"] .e-gema-faceta { fill: none; stroke: #ff6b82; stroke-width: .9; stroke-linejoin: round; opacity: .7; }
+.e-g2 .e-orbitas[data-pele="carmim"] .e-gema-brilho { fill: none; stroke: #fff; stroke-width: 1.6; stroke-linecap: round; opacity: .85; }
+
+@supports (offset-path: inset(0)) {
+  .e-g2 .e-orbitas .e-orbitas-gema {
+    animation: e-orbita var(--orb-volta) linear infinite;
+    animation-delay: calc(var(--orb-volta) * var(--i) / var(--n) * -1);
+  }
+}
+@supports not (offset-path: inset(0)) {
+  .e-g2 .e-orbitas { display: none; }
+}
+@keyframes e-orbita { to { offset-distance: 100%; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .e-g2 .e-orbitas .e-orbitas-gema { animation: none; }
+}
+@media print {
+  .e-g2 .e-orbitas { display: none; }
+}
+@media (max-width: 640px) {
+  .e-g2 .e-orbitas { --orb-gema: 10px; }
+}

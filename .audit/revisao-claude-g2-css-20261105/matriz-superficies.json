@@ -1,0 +1,581 @@
+{
+  "geradoEm": "2026-11-06T02:51:25.607Z",
+  "linhas": [
+    {
+      "lote": "CL1",
+      "modulo": "ficha/ficha-uso.js",
+      "existe": true,
+      "jsx": {
+        "Classica": [
+          "PainelConteudo.jsx",
+          "PainelOrigens.jsx"
+        ]
+      },
+      "viaJs": [
+        "ficha/efeitos/operacoes-uso.js",
+        "ficha/ficha-barreiras.js",
+        "ficha/ficha-conteudo-combate.js",
+        "ficha/ficha-conteudo-manobras.js",
+        "ficha/ficha-conteudo-testes.js",
+        "ficha/ficha-conteudo-uso.js"
+      ],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CL1",
+      "modulo": "ficha/ficha-uso-estado.js",
+      "existe": true,
+      "jsx": {},
+      "viaJs": [
+        "ficha/ficha-acoes.js",
+        "ficha/ficha-alma.js",
+        "ficha/ficha-barreiras.js",
+        "ficha/ficha-combate-eventos.js",
+        "ficha/ficha-concentracao.js",
+        "ficha/ficha-conteudo-combate.js"
+      ],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CL1",
+      "modulo": "ficha/ficha-uso-clientes.js",
+      "existe": true,
+      "jsx": {},
+      "viaJs": [
+        "ficha/ficha-conteudo-combate.js"
+      ],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CL1",
+      "modulo": "ficha/ficha-acoes.js",
+      "existe": true,
+      "jsx": {},
+      "viaJs": [
+        "ficha/ficha-concentracao.js",
+        "ficha/ficha-dominio-confronto.js",
+        "ficha/ficha-invocacao-uso.js",
+        "ficha/ficha-origens.js",
+        "ficha/ficha-uso.js",
+        "ficha/ficha-votos.js"
+      ],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CL1",
+      "modulo": "ficha/ficha-ataque.js",
+      "existe": true,
+      "jsx": {},
+      "viaJs": [
+        "ficha/ficha-conteudo-combate.js"
+      ],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CL1",
+      "modulo": "ficha/ficha-combate-eventos.js",
+      "existe": true,
+      "jsx": {},
+      "viaJs": [
+        "ficha/efeitos/operacoes-uso.js",
+        "ficha/ficha-conteudo-combate.js",
+        "ficha/ficha-invocacao-uso.js"
+      ],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CL1",
+      "modulo": "ficha/ficha-concentracao.js",
+      "existe": true,
+      "jsx": {},
+      "viaJs": [
+        "ficha/efeitos/operacoes-uso.js",
+        "ficha/ficha-dano-recebido.js"
+      ],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CL1",
+      "modulo": "ficha/ficha-dano-recebido.js",
+      "existe": true,
+      "jsx": {},
+      "viaJs": [
+        "ficha/efeitos/operacoes-uso.js",
+        "ficha/ficha-alma.js",
+        "ficha/ficha-conteudo-combate.js",
+        "ficha/ficha-conteudo-uso.js",
+        "ficha/ficha-invocacao-uso.js",
+        "ficha/ficha-origens.js"
+      ],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CL1",
+      "modulo": "ficha/ficha-conteudo-uso.js",
+      "existe": true,
+      "jsx": {
+        "Classica": [
+          "PainelConteudo.jsx"
+        ]
+      },
+      "viaJs": [
+        "ficha/ficha-conteudo-combate.js"
+      ],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CL1",
+      "modulo": "ficha/ficha-conteudo-combate.js",
+      "existe": true,
+      "jsx": {
+        "Classica": [
+          "PainelConteudo.jsx"
+        ]
+      },
+      "viaJs": [],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CL1",
+      "modulo": "ficha/ficha-conteudo-testes.js",
+      "existe": true,
+      "jsx": {
+        "Classica": [
+          "PainelConteudo.jsx"
+        ]
+      },
+      "viaJs": [],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CL1",
+      "modulo": "ficha/ficha-conteudo-acesso.js",
+      "existe": true,
+      "jsx": {},
+      "viaJs": [
+        "ficha/ficha-conteudo-combate.js",
+        "ficha/ficha-conteudo-testes.js",
+        "ficha/ficha-conteudo-uso.js"
+      ],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CL2",
+      "modulo": "ficha/ficha-vital.js",
+      "existe": true,
+      "jsx": {
+        "Encontro": [
+          "PainelDeCombatente.jsx"
+        ],
+        "Classica": [
+          "AftyFichaClassica.jsx"
+        ]
+      },
+      "viaJs": [
+        "ficha/ficha-especializacoes.js",
+        "ficha/ficha-morte.js",
+        "ficha/ficha-sessao.js"
+      ],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CL2",
+      "modulo": "ficha/ficha-morte.js",
+      "existe": true,
+      "jsx": {},
+      "viaJs": [
+        "ficha/ficha-conteudo-uso.js"
+      ],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CL2",
+      "modulo": "ficha/ficha-alma.js",
+      "existe": true,
+      "jsx": {},
+      "viaJs": [
+        "ficha/ficha-origens.js"
+      ],
+      "alcancaG2": false,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CL2",
+      "modulo": "ficha/ficha-dados-vida.js",
+      "existe": true,
+      "jsx": {},
+      "viaJs": [],
+      "alcancaG2": false,
+      "alcancaClassica": false,
+      "alcancaEncontro": false
+    },
+    {
+      "lote": "CL2",
+      "modulo": "afty-cura.js",
+      "existe": true,
+      "jsx": {
+        "Criador": [
+          "AftyCreatureBuilder.jsx"
+        ],
+        "Encontro": [
+          "PainelDeCombatente.jsx"
+        ],
+        "Classica": [
+          "AbaAcoes.jsx",
+          "AftyFichaClassica.jsx",
+          "PainelBloodfeast.jsx"
+        ]
+      },
+      "viaJs": [
+        "afty-derive.js",
+        "ficha/abas-g2/rolagem-g2.js",
+        "ficha/abas-g2/rolagens-acoes.js",
+        "ficha/efeitos/ponte.js",
+        "ficha/ficha-conteudo-uso.js",
+        "ficha/ficha-origens.js"
+      ],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CL2",
+      "modulo": "ui/vital.jsx",
+      "existe": true,
+      "jsx": {
+        "Encontro": [
+          "PainelDeCombatente.jsx"
+        ],
+        "Classica": [
+          "AbaInvocacoes.jsx",
+          "AftyFichaClassica.jsx"
+        ],
+        "ui compartilhada": [
+          "tita.jsx"
+        ]
+      },
+      "viaJs": [],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CL3",
+      "modulo": "ficha/ficha-votos.js",
+      "existe": true,
+      "jsx": {},
+      "viaJs": [],
+      "alcancaG2": false,
+      "alcancaClassica": false,
+      "alcancaEncontro": false
+    },
+    {
+      "lote": "CL3",
+      "modulo": "ficha/ficha-votos-regras.js",
+      "existe": true,
+      "jsx": {},
+      "viaJs": [
+        "afty-votos.js",
+        "ficha/ficha-votos.js"
+      ],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CL3",
+      "modulo": "ficha/ficha-dominio-confronto.js",
+      "existe": true,
+      "jsx": {},
+      "viaJs": [],
+      "alcancaG2": false,
+      "alcancaClassica": false,
+      "alcancaEncontro": false
+    },
+    {
+      "lote": "CL3",
+      "modulo": "ficha/ficha-invocacao-uso.js",
+      "existe": true,
+      "jsx": {},
+      "viaJs": [],
+      "alcancaG2": false,
+      "alcancaClassica": false,
+      "alcancaEncontro": false
+    },
+    {
+      "lote": "CL3",
+      "modulo": "ficha/ficha-barreiras.js",
+      "existe": true,
+      "jsx": {},
+      "viaJs": [],
+      "alcancaG2": false,
+      "alcancaClassica": false,
+      "alcancaEncontro": false
+    },
+    {
+      "lote": "CL3",
+      "modulo": "ficha/ficha-barreiras-estado.js",
+      "existe": true,
+      "jsx": {},
+      "viaJs": [
+        "ficha/ficha-barreiras.js",
+        "ficha/ficha-sessao.js"
+      ],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CL3",
+      "modulo": "afty-votos.js",
+      "existe": true,
+      "jsx": {
+        "Criador": [
+          "AftyCreatureBuilder.jsx"
+        ]
+      },
+      "viaJs": [
+        "afty-derive.js",
+        "ficha/ficha-votos.js"
+      ],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CX2",
+      "modulo": "ficha/ficha-origens.js",
+      "existe": true,
+      "jsx": {
+        "Classica": [
+          "PainelOrigens.jsx"
+        ]
+      },
+      "viaJs": [],
+      "alcancaG2": false,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CX2",
+      "modulo": "ficha/PainelOrigens.jsx",
+      "existe": true,
+      "jsx": {
+        "Encontro": [
+          "PainelDeCombatente.jsx"
+        ],
+        "Classica": [
+          "AftyFichaClassica.jsx"
+        ]
+      },
+      "viaJs": [],
+      "alcancaG2": false,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CX2",
+      "modulo": "afty-origens-uso.js",
+      "existe": true,
+      "jsx": {},
+      "viaJs": [
+        "afty-derive.js"
+      ],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CX2",
+      "modulo": "afty-origens-feiticos.js",
+      "existe": true,
+      "jsx": {
+        "Criador": [
+          "AftyCreatureBuilder.jsx"
+        ]
+      },
+      "viaJs": [
+        "afty-conteudo-feiticos.js",
+        "afty-derive.js",
+        "afty-feiticos.js"
+      ],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CX3",
+      "modulo": "ficha/PainelConteudo.jsx",
+      "existe": true,
+      "jsx": {
+        "Encontro": [
+          "PainelDeCombatente.jsx"
+        ],
+        "Classica": [
+          "AftyFichaClassica.jsx"
+        ],
+        "G2": [
+          "AftyFichaG2.jsx"
+        ]
+      },
+      "viaJs": [],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CX3",
+      "modulo": "afty-conteudo-regras.js",
+      "existe": true,
+      "jsx": {},
+      "viaJs": [
+        "afty-derive.js"
+      ],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CX3",
+      "modulo": "afty-conteudo-feiticos.js",
+      "existe": true,
+      "jsx": {},
+      "viaJs": [
+        "afty-derive.js"
+      ],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "CX3",
+      "modulo": "ficha/efeitos/operacoes-uso.js",
+      "existe": true,
+      "jsx": {},
+      "viaJs": [],
+      "alcancaG2": false,
+      "alcancaClassica": false,
+      "alcancaEncontro": false
+    },
+    {
+      "lote": "base",
+      "modulo": "ficha/ficha-sessao.js",
+      "existe": true,
+      "jsx": {
+        "Criador": [
+          "AftyCreatureBuilder.jsx"
+        ],
+        "Encontro": [
+          "PainelDeCombatente.jsx"
+        ],
+        "Classica": [
+          "AbaBuffs.jsx",
+          "AftyFichaClassica.jsx",
+          "BotaoDeDescanso.jsx",
+          "ControleExpansao.jsx",
+          "ControleTecnicaMaxima.jsx",
+          "PainelAcoesAddon.jsx",
+          "PainelBloodfeast.jsx",
+          "PainelContadoresSessao.jsx",
+          "PainelConteudo.jsx",
+          "PainelDoGolpeEspecial.jsx",
+          "PainelOrigens.jsx"
+        ],
+        "G2": [
+          "AcoesG2.jsx",
+          "AftyFichaG2.jsx"
+        ],
+        "ui compartilhada": [
+          "armas-transformaveis.jsx"
+        ]
+      },
+      "viaJs": [
+        "encontros/afty-encontro.js",
+        "encontros/usar-encontro-afty.js",
+        "ficha/abas-g2/mesa-celulas.js",
+        "ficha/efeitos/concedido-logica.js",
+        "ficha/efeitos/imitacao-logica.js",
+        "ficha/efeitos/mesa-verbos.js"
+      ],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "base",
+      "modulo": "ficha/ficha-rolagem.js",
+      "existe": true,
+      "jsx": {
+        "Encontro": [
+          "PainelDeCombatente.jsx"
+        ],
+        "Classica": [
+          "AbaAcoes.jsx",
+          "AftyFichaClassica.jsx",
+          "PainelBloodfeast.jsx",
+          "PainelDeRolagens.jsx",
+          "PainelOrigens.jsx"
+        ],
+        "G2": [
+          "AftyFichaG2.jsx"
+        ]
+      },
+      "viaJs": [
+        "afty-gungnir.js",
+        "ficha/abas-g2/rolagens-acoes.js",
+        "ficha/efeitos/ponte.js",
+        "ficha/efeitos/useModeloG2.js",
+        "ficha/ficha-alma.js",
+        "ficha/ficha-concentracao.js"
+      ],
+      "alcancaG2": true,
+      "alcancaClassica": true,
+      "alcancaEncontro": true
+    },
+    {
+      "lote": "base",
+      "modulo": "ficha/ficha-opcoes-derive.js",
+      "existe": true,
+      "jsx": {
+        "G2": [
+          "AftyFichaG2.jsx"
+        ]
+      },
+      "viaJs": [
+        "ficha/efeitos/ponte.js"
+      ],
+      "alcancaG2": true,
+      "alcancaClassica": false,
+      "alcancaEncontro": false
+    }
+  ]
+}

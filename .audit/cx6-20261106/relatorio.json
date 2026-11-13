@@ -1,0 +1,26 @@
+[
+  {
+    "largura": 1440,
+    "temTeto": true,
+    "textoTeto": "1/1",
+    "analistaAtivo": "true",
+    "analistaDesabilitado": false,
+    "protetorDesabilitado": true,
+    "temContador3m": true,
+    "temProteger": true,
+    "semRolagemHorizontal": true,
+    "erros": []
+  },
+  {
+    "largura": 390,
+    "temTeto": true,
+    "textoTeto": "1/1",
+    "analistaAtivo": "true",
+    "analistaDesabilitado": false,
+    "protetorDesabilitado": true,
+    "temContador3m": true,
+    "temProteger": true,
+    "semRolagemHorizontal": true,
+    "erros": []
+  }
+]

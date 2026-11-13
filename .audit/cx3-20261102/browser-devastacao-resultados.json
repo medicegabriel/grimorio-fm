@@ -1,0 +1,34 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "recarga": true,
+    "acerto": 1,
+    "rdIgnorada": 2,
+    "troca": true
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "recarga": true,
+    "acerto": 1,
+    "rdIgnorada": 2,
+    "troca": true
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "recarga": true,
+    "acerto": 1,
+    "rdIgnorada": 2,
+    "troca": true
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "recarga": true,
+    "acerto": 1,
+    "rdIgnorada": 2,
+    "troca": true
+  }
+]

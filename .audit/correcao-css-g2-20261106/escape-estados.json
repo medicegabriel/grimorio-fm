@@ -1,0 +1,26 @@
+[
+  {
+    "nome": "CSS quebrado esconde o cabeçalho",
+    "ok": true
+  },
+  {
+    "nome": "escape externo recupera a ficha",
+    "ok": true
+  },
+  {
+    "nome": "semcss recupera a ficha",
+    "ok": true
+  },
+  {
+    "nome": "indicador da aba preservado",
+    "ok": true
+  },
+  {
+    "nome": "foco do controle de rolagem preservado",
+    "ok": true
+  },
+  {
+    "nome": "sonda CSS conserva cor da estatística alterada",
+    "ok": true
+  }
+]

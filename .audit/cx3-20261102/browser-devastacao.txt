@@ -1,0 +1,4 @@
+player 1440 Devastação OK
+player 390 Devastação OK
+afty 1440 Devastação OK
+afty 390 Devastação OK

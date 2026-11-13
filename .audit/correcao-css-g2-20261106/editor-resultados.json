@@ -1,0 +1,570 @@
+{
+  "resultados": [
+    {
+      "nome": "g2/1440 modal acessível",
+      "ok": true
+    },
+    {
+      "nome": "g2/1440 Tab fica no painel",
+      "ok": true
+    },
+    {
+      "nome": "g2/1440 fonte escolhida chega ao nome",
+      "ok": true,
+      "dados": "Georgia, \"Times New Roman\", serif"
+    },
+    {
+      "nome": "g2/1440 fonte chega aos números",
+      "ok": true,
+      "dados": [
+        "Georgia, \"Times New Roman\", serif",
+        "Georgia, \"Times New Roman\", serif",
+        "Georgia, \"Times New Roman\", serif",
+        "Georgia, \"Times New Roman\", serif"
+      ]
+    },
+    {
+      "nome": "g2/1440 cantos respondem ao formulário",
+      "ok": true,
+      "dados": "0px"
+    },
+    {
+      "nome": "g2/1440 CSS simples muda nome",
+      "ok": true,
+      "dados": "rgb(255, 0, 170)"
+    },
+    {
+      "nome": "g2/1440 CSS chega ao número real do cabeçalho",
+      "ok": true,
+      "dados": [
+        "rgb(220, 33, 142)",
+        "rgb(220, 33, 142)",
+        "rgb(220, 33, 142)",
+        "rgb(220, 33, 142)",
+        "rgb(220, 33, 142)"
+      ]
+    },
+    {
+      "nome": "g2/1440 CSS simples muda números",
+      "ok": true,
+      "dados": [
+        "rgb(18, 171, 52)",
+        "rgb(18, 171, 52)",
+        "rgb(18, 171, 52)",
+        "rgb(18, 171, 52)",
+        "rgb(18, 171, 52)",
+        "rgb(18, 171, 52)"
+      ]
+    },
+    {
+      "nome": "g2/1440 CSS simples muda aba ativa",
+      "ok": true,
+      "dados": "rgb(0, 170, 238)"
+    },
+    {
+      "nome": "g2/1440 CSS simples muda seções",
+      "ok": true,
+      "dados": [
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)"
+      ]
+    },
+    {
+      "nome": "g2/1440 há controle de preparo para provar três níveis",
+      "ok": true
+    },
+    {
+      "nome": "g2/1440 CSS simples vence botão de três níveis",
+      "ok": true,
+      "dados": [
+        "rgb(52, 86, 120)",
+        "rgb(52, 86, 120)"
+      ]
+    },
+    {
+      "nome": "g2/1440 seções em habilidades após revelar",
+      "ok": true,
+      "dados": [
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)"
+      ]
+    },
+    {
+      "nome": "g2/1440 seções em pericias após revelar",
+      "ok": true,
+      "dados": [
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)"
+      ]
+    },
+    {
+      "nome": "g2/1440 seções em equipamentos após revelar",
+      "ok": true,
+      "dados": [
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)"
+      ]
+    },
+    {
+      "nome": "g2/1440 seções em acoes após revelar",
+      "ok": true,
+      "dados": [
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)"
+      ]
+    },
+    {
+      "nome": "g2/1440 reset limpa",
+      "ok": true
+    },
+    {
+      "nome": "g2/1440 Restaurar recupera CSS",
+      "ok": true
+    },
+    {
+      "nome": "g2/1440 seletores legíveis e sem corte",
+      "ok": true,
+      "dados": [
+        {
+          "cor": "rgb(241, 245, 249)",
+          "bg": "rgba(0, 0, 0, 0)",
+          "w": 314,
+          "c": 314
+        },
+        {
+          "cor": "rgb(241, 245, 249)",
+          "bg": "rgba(0, 0, 0, 0)",
+          "w": 314,
+          "c": 314
+        }
+      ]
+    },
+    {
+      "nome": "g2/1440 prompt descreve a estrutura",
+      "ok": true
+    },
+    {
+      "nome": "g2/1440 contrato exclui moldura antiga",
+      "ok": true
+    },
+    {
+      "nome": "g2/1440 Esc fecha",
+      "ok": true
+    },
+    {
+      "nome": "g2/1440 foco retorna",
+      "ok": true
+    },
+    {
+      "nome": "g2/1440 não há laço de gravação",
+      "ok": true,
+      "dados": {
+        "n": 1,
+        "agora": 1
+      }
+    },
+    {
+      "nome": "g2/390 modal acessível",
+      "ok": true
+    },
+    {
+      "nome": "g2/390 Tab fica no painel",
+      "ok": true
+    },
+    {
+      "nome": "g2/390 fonte escolhida chega ao nome",
+      "ok": true,
+      "dados": "Georgia, \"Times New Roman\", serif"
+    },
+    {
+      "nome": "g2/390 fonte chega aos números",
+      "ok": true,
+      "dados": [
+        "Georgia, \"Times New Roman\", serif",
+        "Georgia, \"Times New Roman\", serif",
+        "Georgia, \"Times New Roman\", serif",
+        "Georgia, \"Times New Roman\", serif"
+      ]
+    },
+    {
+      "nome": "g2/390 cantos respondem ao formulário",
+      "ok": true,
+      "dados": "0px"
+    },
+    {
+      "nome": "g2/390 CSS simples muda nome",
+      "ok": true,
+      "dados": "rgb(255, 0, 170)"
+    },
+    {
+      "nome": "g2/390 CSS chega ao número real do cabeçalho",
+      "ok": true,
+      "dados": [
+        "rgb(220, 33, 142)",
+        "rgb(220, 33, 142)",
+        "rgb(220, 33, 142)"
+      ]
+    },
+    {
+      "nome": "g2/390 CSS simples muda números",
+      "ok": true,
+      "dados": [
+        "rgb(18, 171, 52)",
+        "rgb(18, 171, 52)",
+        "rgb(18, 171, 52)",
+        "rgb(18, 171, 52)",
+        "rgb(18, 171, 52)",
+        "rgb(18, 171, 52)"
+      ]
+    },
+    {
+      "nome": "g2/390 CSS simples muda aba ativa",
+      "ok": true,
+      "dados": "rgb(0, 170, 238)"
+    },
+    {
+      "nome": "g2/390 CSS simples muda seções",
+      "ok": true,
+      "dados": [
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)"
+      ]
+    },
+    {
+      "nome": "g2/390 há controle de preparo para provar três níveis",
+      "ok": true
+    },
+    {
+      "nome": "g2/390 CSS simples vence botão de três níveis",
+      "ok": true,
+      "dados": [
+        "rgb(52, 86, 120)",
+        "rgb(52, 86, 120)"
+      ]
+    },
+    {
+      "nome": "g2/390 seções em habilidades após revelar",
+      "ok": true,
+      "dados": [
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)"
+      ]
+    },
+    {
+      "nome": "g2/390 seções em pericias após revelar",
+      "ok": true,
+      "dados": [
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)"
+      ]
+    },
+    {
+      "nome": "g2/390 seções em equipamentos após revelar",
+      "ok": true,
+      "dados": [
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)"
+      ]
+    },
+    {
+      "nome": "g2/390 seções em acoes após revelar",
+      "ok": true,
+      "dados": [
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)",
+        "rgb(18, 52, 86)"
+      ]
+    },
+    {
+      "nome": "g2/390 reset limpa",
+      "ok": true
+    },
+    {
+      "nome": "g2/390 Restaurar recupera CSS",
+      "ok": true
+    },
+    {
+      "nome": "g2/390 seletores legíveis e sem corte",
+      "ok": true,
+      "dados": [
+        {
+          "cor": "rgb(241, 245, 249)",
+          "bg": "rgba(0, 0, 0, 0)",
+          "w": 302,
+          "c": 302
+        },
+        {
+          "cor": "rgb(241, 245, 249)",
+          "bg": "rgba(0, 0, 0, 0)",
+          "w": 302,
+          "c": 302
+        }
+      ]
+    },
+    {
+      "nome": "g2/390 prompt descreve a estrutura",
+      "ok": true
+    },
+    {
+      "nome": "g2/390 contrato exclui moldura antiga",
+      "ok": true
+    },
+    {
+      "nome": "g2/390 Esc fecha",
+      "ok": true
+    },
+    {
+      "nome": "g2/390 foco retorna",
+      "ok": true
+    },
+    {
+      "nome": "g2/390 não há laço de gravação",
+      "ok": true,
+      "dados": {
+        "n": 1,
+        "agora": 1
+      }
+    },
+    {
+      "nome": "classica/1440 modal acessível",
+      "ok": true
+    },
+    {
+      "nome": "classica/1440 Tab fica no painel",
+      "ok": true
+    },
+    {
+      "nome": "classica/1440 fonte escolhida chega ao nome",
+      "ok": true,
+      "dados": "Georgia, \"Times New Roman\", serif"
+    },
+    {
+      "nome": "classica/1440 cantos respondem ao formulário",
+      "ok": true,
+      "dados": "0px"
+    },
+    {
+      "nome": "classica/1440 CSS simples muda nome",
+      "ok": true,
+      "dados": "rgb(255, 0, 170)"
+    },
+    {
+      "nome": "classica/1440 reset limpa",
+      "ok": true
+    },
+    {
+      "nome": "classica/1440 Restaurar recupera CSS",
+      "ok": true
+    },
+    {
+      "nome": "classica/1440 seletores legíveis e sem corte",
+      "ok": true,
+      "dados": [
+        {
+          "cor": "rgb(241, 245, 249)",
+          "bg": "rgba(0, 0, 0, 0)",
+          "w": 314,
+          "c": 314
+        },
+        {
+          "cor": "rgb(241, 245, 249)",
+          "bg": "rgba(0, 0, 0, 0)",
+          "w": 314,
+          "c": 314
+        }
+      ]
+    },
+    {
+      "nome": "classica/1440 prompt descreve a estrutura",
+      "ok": true
+    },
+    {
+      "nome": "classica/1440 Esc fecha",
+      "ok": true
+    },
+    {
+      "nome": "classica/1440 foco retorna",
+      "ok": true
+    },
+    {
+      "nome": "classica/1440 não há laço de gravação",
+      "ok": true,
+      "dados": {
+        "n": 1,
+        "agora": 1
+      }
+    },
+    {
+      "nome": "classica/390 modal acessível",
+      "ok": true
+    },
+    {
+      "nome": "classica/390 Tab fica no painel",
+      "ok": true
+    },
+    {
+      "nome": "classica/390 fonte escolhida chega ao nome",
+      "ok": true,
+      "dados": "Georgia, \"Times New Roman\", serif"
+    },
+    {
+      "nome": "classica/390 cantos respondem ao formulário",
+      "ok": true,
+      "dados": "0px"
+    },
+    {
+      "nome": "classica/390 CSS simples muda nome",
+      "ok": true,
+      "dados": "rgb(255, 0, 170)"
+    },
+    {
+      "nome": "classica/390 reset limpa",
+      "ok": true
+    },
+    {
+      "nome": "classica/390 Restaurar recupera CSS",
+      "ok": true
+    },
+    {
+      "nome": "classica/390 seletores legíveis e sem corte",
+      "ok": true,
+      "dados": [
+        {
+          "cor": "rgb(241, 245, 249)",
+          "bg": "rgba(0, 0, 0, 0)",
+          "w": 302,
+          "c": 302
+        },
+        {
+          "cor": "rgb(241, 245, 249)",
+          "bg": "rgba(0, 0, 0, 0)",
+          "w": 302,
+          "c": 302
+        }
+      ]
+    },
+    {
+      "nome": "classica/390 prompt descreve a estrutura",
+      "ok": true
+    },
+    {
+      "nome": "classica/390 Esc fecha",
+      "ok": true
+    },
+    {
+      "nome": "classica/390 foco retorna",
+      "ok": true
+    },
+    {
+      "nome": "classica/390 não há laço de gravação",
+      "ok": true,
+      "dados": {
+        "n": 1,
+        "agora": 1
+      }
+    },
+    {
+      "nome": "Alter/320/acoes cabe",
+      "ok": true
+    },
+    {
+      "nome": "Alter/320/habilidades cabe",
+      "ok": true
+    },
+    {
+      "nome": "Alter/320/pericias cabe",
+      "ok": true
+    },
+    {
+      "nome": "Alter/320/equipamentos cabe",
+      "ok": true
+    },
+    {
+      "nome": "Alter/320/invocacoes cabe",
+      "ok": true
+    },
+    {
+      "nome": "Alter/320/buffs cabe",
+      "ok": true
+    },
+    {
+      "nome": "Alter/390/acoes cabe",
+      "ok": true
+    },
+    {
+      "nome": "Alter/390/habilidades cabe",
+      "ok": true
+    },
+    {
+      "nome": "Alter/390/pericias cabe",
+      "ok": true
+    },
+    {
+      "nome": "Alter/390/equipamentos cabe",
+      "ok": true
+    },
+    {
+      "nome": "Alter/390/invocacoes cabe",
+      "ok": true
+    },
+    {
+      "nome": "Alter/390/buffs cabe",
+      "ok": true
+    },
+    {
+      "nome": "Alter/1440/acoes cabe",
+      "ok": true
+    },
+    {
+      "nome": "Alter/1440/habilidades cabe",
+      "ok": true
+    },
+    {
+      "nome": "Alter/1440/pericias cabe",
+      "ok": true
+    },
+    {
+      "nome": "Alter/1440/equipamentos cabe",
+      "ok": true
+    },
+    {
+      "nome": "Alter/1440/invocacoes cabe",
+      "ok": true
+    },
+    {
+      "nome": "Alter/1440/buffs cabe",
+      "ok": true
+    },
+    {
+      "nome": "sem erros de página",
+      "ok": true,
+      "dados": []
+    }
+  ],
+  "erros": []
+}

@@ -1,0 +1,1038 @@
+diff --git a/asserts/t-ordem-modulos.mjs b/asserts/t-ordem-modulos.mjs
+index 2236b69..6d11e00 100644
+--- a/asserts/t-ordem-modulos.mjs
++++ b/asserts/t-ordem-modulos.mjs
+@@ -96,6 +96,8 @@ const FOLHAS = [
+   // Entrou em 2026-10-19: o formato e a biblioteca dos Pacotes para Aliados, lidos pela
+   // ficha diária (a aba Buffs), pelo G2 e pelos asserts.
+   ["ficha/pacotes-aliados.js", "a aba Buffs da ficha diaria o le, e ela entra cedo"],
++  // Entrou em 2026-10-29 (CL1): o estado do motor de uso e combate. A sessao o importa, e as operacoes dele importam a sessao.
++  ["ficha/ficha-uso-estado.js", "a sessao o importa, e as operacoes de uso e combate importam a sessao"],
+   ["afty-schema.js", "todo mundo cria ficha em branco"],
+   ["afty-dsl.js", "o avaliador não pode depender de conteúdo"],
+   ["afty-sistema.js", "regraDo() é lido de dentro dos catálogos"],
+diff --git a/asserts/t-prodigio.mjs b/asserts/t-prodigio.mjs
+index 8b589c1..43439d6 100644
+--- a/asserts/t-prodigio.mjs
++++ b/asserts/t-prodigio.mjs
+@@ -64,3 +64,4 @@ for (const sistema of ["player", "afty"]) {
+ 
+ console.log(`t-prodigio: ${ok} ok, ${bad.length} falha(s)`);
+ if (bad.length) { for (const b of bad) console.log("  ✗ " + b); process.exit(1); }
++console.log(`TODOS OS ${ok} ASSERTS PASSARAM`);
+diff --git a/asserts/t-reconciliacao-g00.mjs b/asserts/t-reconciliacao-g00.mjs
+index 0e95ca7..c0a077f 100644
+--- a/asserts/t-reconciliacao-g00.mjs
++++ b/asserts/t-reconciliacao-g00.mjs
+@@ -1,8 +1,9 @@
+ import assert from "node:assert/strict";
+ import { construirProposta, aplicarProposta } from "../scripts/revisao-automacao/reconciliar.mjs";
+-import { coletarInventario, resolverProprietario, lerJson, CONTROLE } from "../scripts/revisao-automacao/inventario.mjs";
++import { coletarInventario, resolverProprietario, lerJson, CONTROLE, RAIZ } from "../scripts/revisao-automacao/inventario.mjs";
+ import { verificarCobertura } from "../scripts/revisao-automacao/cobertura.mjs";
+ import { resolve } from "node:path";
++import { readdirSync } from "node:fs";
+ let ok=0;
+ const t=(nome,f)=>{f();ok++;console.log("ok "+nome);};
+ const item=(chave="a",extra={})=>({chave,proprietario:"X",hashDado:"1",estado:"NÃO REVISADO",...extra});
+@@ -82,7 +83,18 @@ t("coleta real não tem falha",()=>assert.deepEqual(live.erros,[]));
+ t("Guarda inclui fonte escalar",()=>assert.ok(live.itens.some(i=>i.chave==="ficha/ficha-sessao.js::FONTE_GUARDA::@valor")));
+ t("Guarda inclui as oito condições",()=>assert.equal(live.itens.filter(i=>i.export==="CONDICOES_QUEBRAM_GUARDA"&&!i.pai&&i.id!=="@catalogo").length,8));
+ const patches=live.itens.filter(i=>i.tipo==="remendo");
+-t("todos os 32 remendos vinculam alvo e dono original",()=>assert.ok(patches.length===32&&patches.every(i=>i.regraOriginal&&i.proprietarioOriginal&&i.exigeProvaIntegracao)));
++const remendosDeclarados = readdirSync(resolve(RAIZ,"addons")).filter(n=>n.endsWith(".json")).flatMap(arquivo=>{
++  const pacote=lerJson(resolve(RAIZ,"addons",arquivo));
++  return Object.entries(pacote.substitui??{}).flatMap(([familia,lista])=>{
++    const ids=Array.isArray(lista)?lista.map(x=>x.id):Object.keys(lista);
++    return ids.map(id=>"addon::"+arquivo+"::substitui."+familia+"::"+id);
++  });
++});
++t("coleta inclui exatamente os remendos declarados nos arquivos de addon",()=>{
++  assert.ok(remendosDeclarados.length>=32,"conserva a base histórica de remendos");
++  assert.deepEqual(patches.map(i=>i.chave).sort(),remendosDeclarados.sort());
++});
++t("cada remendo vincula alvo e dono original",()=>assert.ok(patches.every(i=>i.regraOriginal&&i.proprietarioOriginal&&i.exigeProvaIntegracao)));
+ t("alvos nativos apontam de volta ao remendo",()=>assert.ok(patches.every(i=>live.itens.find(x=>x.chave===i.regraOriginal)?.remendadoPor?.includes(i.chave))));
+ t("liberações soPorAddon vinculam a regra nativa",()=>assert.ok(live.itens.filter(i=>i.chave.includes("::LIBERACOES::soPorAddon:")&&!i.pai).every(i=>i.regraOriginal&&i.proprietarioOriginal)));
+ t("Roubo conserva 127 referências",()=>assert.equal(live.itens.filter(i=>i.export==="HABILIDADES_ROUBAVEIS"&&i.id!=="@catalogo").length,127));
+diff --git a/asserts/t-tecnicas-marciais.mjs b/asserts/t-tecnicas-marciais.mjs
+index e1180b1..a4ca3b4 100644
+--- a/asserts/t-tecnicas-marciais.mjs
++++ b/asserts/t-tecnicas-marciais.mjs
+@@ -180,10 +180,10 @@ t("as parcelas do hover têm nome",
+ /* 7. A MARCA E A LEITURA PADRÃO                                 */
+ /* ============================================================ */
+ const lista = [
+-  { id: "a", tipo: "passivo" },
+-  { id: "b", tipo: "personalizado", marcial: false },
+-  { id: "c", tipo: "passivo", marcial: true },
+-  { id: "d", tipo: "passivo", variacaoDe: "a" },
++  { id: "a", tipo: "passivo", nivel: 1 },
++  { id: "b", tipo: "personalizado", marcial: false, nivel: 1 },
++  { id: "c", tipo: "passivo", marcial: true, nivel: 1 },
++  { id: "d", tipo: "passivo", variacaoDe: "a", nivel: 1 },
+ ];
+ const marcados = TM.marcarTecnicasMarciais(lista, true);
+ t("o padrão marca o que não tem marca", marcados.find((f) => f.id === "a").marcial, true);
+@@ -195,6 +195,19 @@ t("a lista original não é tocada", lista.find((f) => f.id === "a").marcial, un
+ t("sem mudança devolve a mesma lista (por referência)",
+   (() => { const so = [{ id: "x", marcial: true }]; return TM.marcarTecnicasMarciais(so, true) === so; })(), true);
+ t("lista inválida passa direto", TM.marcarTecnicasMarciais(null, true), null);
++const foraDoNivel = [
++  { id: "n0", tipo: "dano", nivel: 0 },
++  { id: "n1", tipo: "dano", nivel: 1 },
++  { id: "n4", tipo: "dano", nivel: 4 },
++  { id: "n5", tipo: "dano", nivel: 5 },
++  { id: "nmax", tipo: "dano", nivel: "max" },
++  { id: "m5", tipo: "dano", nivel: 5, marcial: true },
++];
++const lidos = TM.marcarTecnicasMarciais(foraDoNivel, true);
++t("só o Nível 1 a 4 sem marca vira Técnica",
++  lidos.map((f) => [f.id, f.marcial]), [["n0", undefined], ["n1", true], ["n4", true], ["n5", undefined], ["nmax", undefined], ["m5", true]]);
++t("sem nenhum Nível 1 a 4 devolve a mesma lista",
++  (() => { const so = [{ id: "n5", nivel: 5 }, { id: "nmax", nivel: "max" }]; return TM.marcarTecnicasMarciais(so, true) === so; })(), true);
+ 
+ /* ============================================================ */
+ /* 8. OS VETOS DO LIVRO (p. 249), PELO MOTOR                     */
+@@ -233,7 +246,9 @@ t("a Passiva comum segue aumentando atributo",
+   FE.calcularFeitico(passiva("atributo"), { nd: 15 }).disponivel, true);
+ t("a Regeneração por Rodada segue valendo na Passiva marcial (decisão 21)",
+   FE.calcularFeitico(passiva("regeneracao", 1), veto).disponivel, true);
+-t("a Defesa passiva marcial segue valendo", FE.calcularFeitico(passiva("defesa", 2), veto).disponivel, true);
++t("a Defesa passiva marcial de nível 3 segue valendo", FE.calcularFeitico(passiva("defesa", 3), veto).disponivel, true);
++t("Defesa passiva marcial 2 usa metade de 1 com piso e não emite bônus",
++  [FE.calcularFeitico(passiva("defesa", 2), veto).valor, FE.calcularFeitico(passiva("defesa", 2), veto).efeitosGerados], [0, []]);
+ t("a lista de categorias da Passiva marcial não tem atributo",
+   FE.categoriasPassivoPermitidas(veto).some((c) => c.value === "atributo"), false);
+ 
+@@ -325,6 +340,20 @@ t("o Feitiço marcado numa ficha comum continua marcial",
+   deriveAfty(ficha({ origem: "herdado", tipo: "conjurador", classe: "conjurador", feiticos: [{ ...antigo, marcial: true }] })).tecnicasMarciais.ids, ["f1"]);
+ t("a Técnica marcial não bloqueia pela Técnica Inata nem pela Exaustão",
+   rMig.tecnicasMarciais.lista[0].bloqueado, undefined);
++/* A troca de origem para Restringido (autor, 2026-10-29): o Feitiço de Nível 0, 5 ou
++   Técnica Máxima não vira Técnica e não acende o aviso de nível. */
++const trocaDeOrigem = deriveAfty(ficha({ feiticos: [
++  { ...antigo, id: "n2", nivel: 2 },
++  { ...antigo, id: "n0", nivel: 0 },
++  { ...antigo, id: "n5", nivel: 5 },
++  { ...antigo, id: "nmax", nivel: "max" },
++] }));
++t("só o Feitiço de Nível 1 a 4 vira Técnica na troca de origem", trocaDeOrigem.tecnicasMarciais.ids, ["n2"]);
++t("e nenhuma Técnica lida carrega o aviso de nível",
++  trocaDeOrigem.tecnicasMarciais.lista.some((r) => (r.avisos ?? []).includes("Técnicas Marciais vão do Nível 1 ao 4.")), false);
++t("os que ficaram Feitiço continuam num card visível",
++  [trocaDeOrigem.feiticos.mostraCard, trocaDeOrigem.feiticos.lista.filter((r) => !r.marcial).map((r) => r.id).sort()],
++  [true, ["n0", "n5", "nmax"]]);
+ 
+ /* 9c. O orçamento. Criatura: contador comum. Personagem: a progressão do livro. */
+ const cinco = ["a", "b", "c", "d", "e"].map((id) => passivoMarcial(id));
+diff --git a/docs/a-fazer.md b/docs/a-fazer.md
+index e7af4a2..33e454d 100644
+--- a/docs/a-fazer.md
++++ b/docs/a-fazer.md
+@@ -13,14 +13,11 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
+ [matriz dos Talentos](revisao-livro-regras/11-matriz-talentos-2026-10-29.md), evidências em
+ `.audit/livro-20261029/`. A análise não altera os estados dos lotes da campanha de automação.
+ 
+-**Situação:** análise do código local, sem implementação. Cenários N01 a N15 reproduzidos nas funções reais.
++**Situação:** análise histórica de 29/10, com parcelas de CX1 implementadas e verificadas nesta sessão.
++Entrega e contratos: [CX1](revisao-livro-regras/entregas/CX1.md). As demais lacunas continuam ativas.
+ Pendências novas ou detalhadas que não devem ficar escondidas no histórico:
+ 
+ - Origem Corpo Amaldiçoado Mutante vazia. A fonte completa já está no Livro, p.39 a 41. Não confundir com os núcleos de invocação.
+-- Arma Natural sem o aumento de dano quando o desarmado é superior, Articulações Extensas sem alcance, Corpo Especializado sem escolha/dado e Atletismo de Braços Extras incondicional (p.35).
+-- Duas cópias equipadas de Bracelete do Vigor somam o mesmo benefício, contra o acúmulo da p.365.
+-- Passiva de Defesa 5 usa `Math.round(7 / 2)` e retorna 4, enquanto p.235 e 365 indicam metade com piso, 3.
+-- Resultado de ataque publicado como sucesso/falha só pelo total, mesmo com 1/20 naturais. Requer distinguir ataque dos outros testes (p.307).
+ - Portas da Morte sem saldo negativo geral, e cura comum apagando o saldo negativo registrado com qualquer quantidade de cura (p.313).
+ - Adepto de Medicina sem linha de cura e usos, Mestre da Criação sem escolhas de Ofício e procedimento adicional, benefícios de clãs e origens discriminados na matriz.
+ - Regeneração Passiva calculada sem operação de rodada. Dano Passivo convertido em média fixa sem preservar Durante/Após e dados. Confirmar a simplificação ou ligar a rolagem fiel.
+@@ -34,14 +31,30 @@ O canal `pontosAtributo` também já existe, mas a segunda etapa de Potencial F
+ precisa restringir a alocação aos físicos. As entradas antigas sobre essas dependências precisam de atualização
+ quando a implementação correspondente for assumida.
+ 
+-**Verificação da base:** 234/236 arquivos de asserts aprovados, build e eslint Afty aprovados. Restam o padrão de
+-saída de `t-prodigio` (33 verificações passam sozinho) e a expectativa fixa de 32 remendos em `t-reconciliacao-g00`.
+-O remoto está sete commits à frente do HEAD local. Não houve integração nem alteração de regra nesta demanda.
++**Verificação CX1:** base local e remoto iguais em `d6d6dd77`. Linha inicial 241/243 arquivos aprovados.
++Resultado atual: 243/244 arquivos e 14.876 asserts nos arquivos aprovados, build e eslint Afty aprovados.
++O lançador de Prodigio e a expectativa obsoleta de 32 remendos foram corrigidos. Existem 33 remendos.
++
++**Pendência de fechamento CX1, reconciliação G00:** o assert agora alcança uma rejeição correta:
++1.235 chaves vivas sem fonte individual em `docs/revisao-automacao/fontes.json`, 863 delas em
++addons/heranças. Inclui conteúdo anterior e as entradas novas de CX1. Coleta sem erros.
++Reconciliar inventário, donos e fontes pelo protocolo vigente, preservando estados e histórico,
++antes de encerrar CX1. Não remover a exigência do assert nem atribuir fontes genéricas para passá-lo.
++Evidência detalhada em `.audit/cx1-20261029/fontes-pendentes.json` e na entrega de CX1.
++
++**Último corte concorrente:** após a entrada dos módulos de CL1, a repetição listou 244 arquivos
++e aprovou 242, com 14.843 asserts nos aprovados. Além de `t-reconciliacao-g00`, falhou
++`t-revisao-g00`: os novos `ficha/ficha-acoes.js`, `ficha-uso-estado.js` e `ficha-uso.js`
++ainda estavam sem classificação no controle G00. Não foram editados por CX1. O resultado
++243/244 acima identifica a conferência de CX1 anterior a essa entrada, não a árvore inteira
++de CL1 em andamento. Novos asserts de CL1 surgiram depois da lista inicial do lançador.
+ 
+ ### Divisão de execução: Codex e Claude (2026-10-29)
+ 
+ **Plano vigente: nove lotes grandes, seis do Codex e três do Claude.** Substitui a divisão anterior de 31 lotes,
+-reduzida a pedido do autor. Todo o escopo anterior foi preservado dentro dos blocos abaixo. Todos estão **a iniciar**.
++reduzida a pedido do autor. Todo o escopo anterior foi preservado dentro dos blocos abaixo.
++CX1 está implementado e validado nas parcelas de produto, com fechamento dependente da reconciliação acima.
++CL1 está **em andamento**, conforme sua entrega parcial. Os demais continuam **a iniciar**.
+ 
+ **Prompts para chats novos:** [índice dos nove prompts completos](revisao-livro-regras/prompts/README.md).
+ Antes de programar, cada responsável deve confrontar o pedido com livro, decisões e implementação atual,
+@@ -61,7 +74,7 @@ Fonte do livro: SHA-256 `1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce3588746
+ 
+ | ID | Lote | Escopo e entrega | Dependências |
+ |---|---|---|---|
+-| CL1 | Motor de uso e combate | Requisitos, parâmetros, custos, usos, cargas, duração, manutenção e recargas. Ataques com alvo, confirmação de acerto/erro, crítico, TR, dano tipado, ações, reações, sequência e concentração. Entregar operações reutilizáveis, com recusa sem efeito e proteção contra cobrança/aplicação repetida | Conferência inicial da base em CX1. Compartilhar cedo o contrato de uso, sem esperar o lote inteiro |
++| CL1 | Motor de uso e combate, em andamento | Requisitos, parâmetros, custos, usos, cargas, duração, manutenção e recargas. Ataques com alvo, confirmação de acerto/erro, crítico, TR, dano tipado, ações, reações, sequência e concentração. Entregar operações reutilizáveis, com recusa sem efeito e proteção contra cobrança/aplicação repetida | Base e contratos de ataque/mãos observados em CX1. Entrega parcial em `entregas/CL1.md`, sem certificação por CX1 |
+ | CL2 | Vida, morte, Alma e Mutante | Saldo negativo, Portas da Morte, estabilização, dano massivo, ferimentos, Alma e Dados de Vida por classe. Modelo completo do Corpo Amaldiçoado Mutante com seus três núcleos, primário, escolhas fixas/versáteis, recursos e troca por diferença | Operações de uso de CL1. O Mutante deve reutilizar o mesmo núcleo vital, sem outra implementação de queda/Alma |
+ | CL3 | Invocações, Domínios e Votos | Ligações entre dono/invocação, Forma de Arma, auxílios, repetição e contexto da sessão. Confronto/contestação, domo, barreiras, Cortinas e Cesta Oca. Tipos/pesos, prazo, ruptura e validação de Votos. Preservar os sistemas já implementados | Eventos e duração de CL1, recursos vitais de CL2 quando necessários. Pode liberar primeiro Votos ou contratos independentes |
+ 
+@@ -73,7 +86,7 @@ outro mecanismo equivalente. Decisões pendentes não impedem liberar as partes
+ 
+ | ID | Lote | Escopo e entrega | Dependências |
+ |---|---|---|---|
+-| CX1 | Base e correções comprovadas | Conferir remoto, preservar alterações locais, coordenar arquivos compartilhados e corrigir os problemas antigos dos testes. Arredondamento de Passivas, acessórios repetidos, 1/20 natural nos ataques, Arma Natural, Articulações Extensas, Corpo Especializado e Braços Extras | Começa imediatamente. Reutilizar estados de mãos de CL1 se já disponíveis |
++| CX1 | Base e correções comprovadas, fechamento parcial | Correções de produto, contratos de ataque/mãos, testes e navegador entregues. Restante: reconciliação de fontes de G00, sem suprimir sua rejeição correta | Protocolo de reconciliação e donos/fontes confirmados. Entrega em `entregas/CX1.md` |
+ | CX2 | Origens, clãs e Anatomias | Completar as 15 Anatomias, Marca Registrada/Familiaridade, Foco Zenin/Manual de Técnica, Derivado/Reserva, Inumaki, Kamo, Resiliência, Vigor/Herança Maldita e Reposição. Construir a interface dos três núcleos usando o motor do Claude | CL1 para usos/eventos, CL2 para vida/Mutante e CX4 para temporários, conforme a parcela. Escolhas e contas independentes podem ser adiantadas |
+ | CX3 | Talentos, Especializações, Aptidões e Treinos | Completar a matriz dos 52 Talentos e as parcelas restantes das seis classes. Sorte, rerrolagens, curas, alcances, críticos dos 12 grupos, Golpe Especial, Estilos e posturas. Auras, canalizações, estímulos, Energia Reversa, concessões por categoria/excedentes, Potencial Físico e demais benefícios de Treino | Contratos de CL1/CL2, escolhas de CX2. CL3 só para parcelas de Voto, Domínio ou invocação. Não refazer os núcleos |
+ | CX4 | Feitiços e recursos temporários | Transformações com escolhas de atributo/TR, Regeneração Passiva, dano Durante/Após, aplicação/cura de condições e histórico de edição por nível. Penalidades dos seis níveis de Exaustão, PV/PE temporários, teto, substituição, exceções e expiração. Integrar cura, Dados de Vida e descanso aos percursos autorizados | CL1 e CL2. Dano Passivo, controle de edição, PV rolado, descanso e desconto de Shikigami obedecem às decisões específicas |
+@@ -98,6 +111,29 @@ já entregue e verificada. Também não marcar o lote inteiro como concluído qu
+ 
+ #### Coordenação e decisões preservadas
+ 
++**CX1: reservas liberadas em 2026-10-29.** Parcelas de produto entregues,
++fechamento dependente somente da reconciliação acima. Lista de arquivos reservados,
++alterados e liberados em `revisao-livro-regras/entregas/CX1.md`. Base observada:
++`d6d6dd77a7999d0df0454eb58d62584c0f46a9a3`, sem mover HEAD.
++Alterações preexistentes de Técnicas Marciais preservadas, com ajuste estreito
++da contraprova de Passiva no assert, documentado na entrega.
++
++**CL1: em andamento.** Reservas declaradas em `revisao-livro-regras/entregas/CL1.md`
++durante a reserva desta fila pelo CX1: módulos próprios `ficha/ficha-uso-estado.js`,
++`ficha-uso.js`, `ficha-ataque.js`, `ficha-dano-recebido.js`, `ficha-acoes.js`,
++`ficha-concentracao.js`, seus asserts, guia `afty-motor-uso-combate.md`, entrega
++CL1, integrações aditivas em `ficha/ficha-sessao.js`, `asserts/LEIA.md` e a folha
++em `asserts/t-ordem-modulos.mjs`. Não editar esses arquivos enquanto reservados.
++
++**CX2: em andamento, 2026-10-29.** Diagnóstico do conjunto antes do produto.
++Reservados: `afty-origens.js`, `afty-anatomias.js`, `afty-talentos.js`,
++`afty-efeitos-conteudo.js`, `afty-feiticos.js`, `afty-cura.js`, `afty-derive.js`,
++`AftyCreatureBuilder.jsx`, leitores de origem em `ficha/` e `encontros/`
++(excluídos todos os arquivos reservados por CL1), módulos próprios `afty-origens-*.js`,
++`asserts/t-cx2-*.mjs`, esta fila, `afty-status.md`, `afty-player.md`,
++`automacao-dsl.md`, `afty-formulas-base.md` e `entregas/CX2.md`.
++CL2 e CX4 sem entrega local neste corte, dependências serão discriminadas por parcela.
++
+ - Antes de editar, registrar nesta entrada o lote em andamento e os arquivos reservados. Arquivos centrais e
+   documentação têm um editor por vez. Não editar o mesmo arquivo simultaneamente, mesmo em regiões diferentes.
+ - Claude concentra os núcleos em módulos próprios quando adequado e documenta entradas, saídas, estados salvos,
+@@ -828,7 +864,7 @@ uma é **NOVA DECISÃO NECESSÁRIA**. Enquanto não houver resposta, o ponto fic
+ **Onde:** `addons/maldicao-era-de-ouro.json` (`acrescenta.caracteristicasAmaldicoadas` e o Tipo De Medo) e `src/systems/afty/afty-efeitos.js` (os canais)
+ **Situação:** das 18 do pool, 10 têm número no Motor e 8 se declaram `mesa` (a marca "Mesa" na tela, e um assert em `asserts/t-maldicao-era-de-ouro.mjs` cobra que nenhuma fique muda). As de mesa ficam assim por falta de mecanismo, e cada uma pede uma decisão de desenho antes de virar número. Nenhuma foi suposta.
+ 1. **Capacidade de Voo e de Nado** (*"transformar seu deslocamento de caminhada em deslocamento de voo"*, uma vez por rodada, ação livre). O `movimento` é um número só. Proposta: um estado de bancada "Voando" e "Nadando" que apenas rotula o deslocamento já calculado, sem canal novo. Falta o autor dizer se voo e nado têm cálculo próprio (multiplicador, teto) ou se vale o número da caminhada, como o texto diz.
+-2. **Braços Extras, o "+2 em Atletismo se tiver pelo menos duas mãos livres"**. Não há estado de mãos livres. Proposta: um interruptor de mesa "Mãos Livres" na aba de Estados (`gatilhoSessao`) que liga o +2. Falta confirmar se um interruptor serve para um bônus que depende do inventário.
++2. **Braços Extras, o "+2 em Atletismo se tiver pelo menos duas mãos livres"**. O autor aprovou em CX1 a declaração manual Duas Mãos Livres, desligada por padrão na sessão. A Anatomia nativa está integrada com `gatilhoSessao: anatomia_duas_maos_livres`. Falta integrar a característica do addon em CX2, reutilizando o mesmo estado, sem reabrir essa decisão.
+ 3. **Alma Maldita** (dano na alma pela metade, anulado no 15°, 2/3/4/5 usos por dia). O `rdAlma` é RD fixa, e o texto é uma fração mais usos por descanso. Proposta: um contador de usos por descanso (a peça que a `curaUsos` já usa) mais a marca Mesa para a metade. Falta o autor dizer se o Afty tem "usos por dia" genérico para característica de origem.
+ 4. **Guia Espiritual** (*"recebe um aliado seguindo as regras da página 348"*). O Afty tem o teto de aliados por Grau (`limiteDeAliados`). Falta o autor dizer se o Guia é UM ALIADO A MAIS que o teto, ou só o direito de ter um dentro dele.
+ 5. **Anatomia Incompreensível, Devorador de Energia, Energia Tóxica e Presença Nefasta** são reações e testes de mesa (chance de 1 em 1d4, 1 PE temporário cumulativo, perda de vida igual ao modificador de Constituição, teste de Vontade contra a CD Amaldiçoada). O Motor não modela reação. Ficam em Mesa até o autor pedir uma "Ação de Reação" nativa na Ficha.
+diff --git a/docs/afty-equipamentos.md b/docs/afty-equipamentos.md
+index 9cc1bb2..c9337d7 100644
+--- a/docs/afty-equipamentos.md
++++ b/docs/afty-equipamentos.md
+@@ -26,6 +26,15 @@ Mais os **7 Kits de Ferramentas**, todos de custo 1.
+ 
+ ## Inventário e carregamento
+ 
++Desde CX1 (2026-10-29), duas cópias equipadas do mesmo acessório concedem
++seu benefício uma vez, conforme p.365. Isso inclui PV, CD, atributos,
++perícias, efeitos do Motor e Habilidades Únicas. As duas entradas continuam
++no inventário, equipadas e contabilizadas no custo e na carga. Quantidade
++maior que um também não multiplica o benefício. Cópia guardada não cobre
++a equipada. As Ombreiras do Vigor Superior e os Braceletes continuam
++somando 20 + 10 PV, pois o texto das Ombreiras manda usá-los em conjunto
++(p.148). A regra não agrupa itens distintos apenas por terem nomes parecidos.
++
+ Medido em **espaços de item**. Por padrão um item ocupa um espaço, com estas exceções:
+ 
+ | Ocupa | O quê |
+diff --git a/docs/afty-formulas-base.md b/docs/afty-formulas-base.md
+index 77c40c7..e7663f6 100644
+--- a/docs/afty-formulas-base.md
++++ b/docs/afty-formulas-base.md
+@@ -12,6 +12,22 @@ FLOOR, `INT`=parte inteira, `MAIOR(intervalo;k)`=k-ésimo maior, `VERDADEIRO`=TR
+ 
+ ## Correções estruturais ao que estava assumido
+ 
++### CX1: metade de Sustentada e Arma Natural (2026-10-29)
++
++Livro p.235 e 365: categorias de Passiva baseadas em Sustentada usam
++`floor(valorSustentado / 2)`. Defesa 5 passa de 4 para 3. Defesa 2 usa
++metade de 1 e chega a zero, sem emitir bônus. Categorias com tabelas próprias
++não mudaram. O cálculo continua consultivo: efeitos já salvos não são
++reescritos automaticamente. Custo de PE Máximo preserva a divergência vigente.
++
++Arma Natural, p.35: no Player, o dado base mínimo é 1d8. Se o dado desarmado
++resolvido antes da Anatomia supera 1d8, ela acrescenta um nível de dano pelo
++Motor. Lutador 10 passa de 1d12 para 1d12 + 1d4, conservando o dano fixo.
++No empate em 1d8 não há nível adicional. Na criatura Afty o dado impresso
++continua substituído pela fórmula própria, e a melhoria usa o canal
++`nivelDano`, com a conversão para ND de dano já adotada para Corpo Treinado.
++A origem precisa oferecer Anatomias para que essa escolha tenha efeito.
++
+ ### Vespa Crabro: consumo de ressonância e Shin (2026-10-25)
+ 
+ Homebrew aprovado pelo autor: cada acerto confirmado de Gungnir gera
+diff --git a/docs/afty-player.md b/docs/afty-player.md
+index 70550dd..c2dadb6 100644
+--- a/docs/afty-player.md
++++ b/docs/afty-player.md
+@@ -1,5 +1,15 @@
+ # Ficha de Player (handoff para chat novo)
+ 
++CX1 (2026-10-29): Anatomias nativas oferecem tipo físico de Arma Natural e
++perícia de Corpo Especializado na Origem. As escolhas ficam em
++`core.origem.anatomiasConfig`, viajam no salvamento e alimentam o Ataque Básico
++e a rolagem da perícia. Arma Natural usa mínimo 1d8 ou melhora em um nível
++o desarmado superior. Articulações Extensas acrescenta 1,5 m no corpo a corpo.
++Braços Extras exige a declaração Duas Mãos Livres para Atletismo, desligada
++por padrão na sessão. Prestidigitação conserva +2. O estado funciona fora
++de combate, na Ficha e no Encontro. Contratos em `automacao-dsl.md` e
++evidências em `revisao-livro-regras/entregas/CX1.md`.
++
+ Guia da rota **`/Player`**. Escrito em 2026-08-31, quando a Ficha de Player já estava de pé e o
+ trabalho passou a ser fechar as divergências uma a uma.
+ 
+diff --git a/docs/afty-status.md b/docs/afty-status.md
+index bcd39a1..989052d 100644
+--- a/docs/afty-status.md
++++ b/docs/afty-status.md
+@@ -1,5 +1,59 @@
+ # Status do Grimório Afty (handoff para chat novo)
+ 
++## SESSÃO DE 2026-10-29: CX1, CORREÇÕES DE BASE E FECHAMENTO PARCIAL
++
++Fonte externa e SHA-256 exigido confirmados. HEAD e main remoto iguais em
++`d6d6dd77a7999d0df0454eb58d62584c0f46a9a3`. Diagnóstico publicado antes de
++alterar o produto. Alterações locais de Técnicas Marciais preservadas.
++Entrega, evidências e contratos: `revisao-livro-regras/entregas/CX1.md`.
++
++Implementados: piso da metade de Sustentada em Passivas, fonte única para
++cópias do mesmo acessório, discriminação explícita de ataque com 1/20,
++Arma Natural (dado mínimo, melhoria e tipo físico), alcance da Anatomia
++Articulações Extensas, escolha e 1d4 de Corpo Especializado. Braços Extras
++usa a declaração Duas Mãos Livres na sessão, desligada por padrão, decisão
++direta do autor neste chat. Prestidigitação mantém +2.
++
++N08 teve sua reprodução antiga reclassificada: rótulo Ataque numa chamada
++genérica não basta. Aprofundamento confirmou o defeito pelo Bastão com Ampla
++e Defesa do Alvo, controle real existente. O preparador agora marca
++`tipoTeste: ataque`. Testes genéricos conservam a comparação pelo total.
++CL1 recebe esse contrato e `treinosAtivos.anatomia_duas_maos_livres`.
++
++Prodigio passou a imprimir a frase exigida pelo lançador, com 33 asserts.
++A reconciliação verifica os 33 remendos reais por suas identidades e mantém
++todas as recusas. Ela agora alcança uma rejeição correta: 1.235 chaves vivas
++sem fonte individual na campanha, incluindo conteúdo anterior e entradas
++novas de CX1. Não foram inventados donos/fontes ou alterados estados de G00.
++Esse é o impedimento concreto ao encerramento integral de CX1, na fila única.
++
++Validação: 186 asserts novos. Suíte medida com 243/244 arquivos aprovados,
++14.876 asserts nos aprovados, somente `t-reconciliacao-g00` reprovado.
++Ordem de módulos: 40 aprovados. ESLint Afty e build passaram. Contraprova
++de Defesa Passiva em `t-tecnicas-marciais` ajustada para provar zero no
++nível 2 e disponibilidade no nível 3, preservando suas demais alterações.
++
++Chrome em build de produção local: Player/Afty a 1440 e 390 px, criador,
++salvamento, reabertura, Ficha e Encontro. Escolhas, dado real, fontes,
++declaração de mãos, naturais 1/20 e persistência conferidos. Sem rolagem
++horizontal nos percursos de uso. Passiva antiga preservada até Usar este
++valor, depois salva com 3 e aplicada à Defesa. Houve somente 404 da
++telemetria Vercel ausente no preview local, discriminado no relatório.
++
++CL1 iniciou arquivos próprios durante o fechamento. Suas alterações em
++sessão/ordem de módulos e os arquivos novos foram lidos e preservados.
++Suíte repetida em `.audit/cx1-20261029/asserts-com-cl1.txt`, sem certificar
++o trabalho concorrente criado depois do corte do lançador.
++Esse último corte aprovou 242/244 arquivos e 14.843 asserts nos aprovados.
++Reprovaram os dois verificadores G00: além da reconciliação já pendente,
++`t-revisao-g00` detectou módulos novos de CL1 sem classificação no controle.
++Não se removeu essa rejeição correta. Novos asserts de CL1 surgiram após
++a lista inicial desse lançador. A validação 243/244 acima é o corte de CX1
++anterior à entrada desses módulos, preservado como histórico da execução.
++Reservas de CX1 liberadas ao fim desta entrega. Arquivos e limites estão
++no relatório. Nenhuma publicação, commit, push, promoção G2 ou alteração
++da abertura diária. `src/components/` e os dados oficiais sem diff.
++
+ ## SESSÃO DE 2026-10-29: PROMPTS DOS NOVE LOTES COM VERIFICAÇÃO ANTES DO CÓDIGO
+ 
+ A pedido do autor, criados nove prompts completos em `docs/revisao-livro-regras/prompts/`, seis do Codex e
+diff --git a/docs/afty-tecnicas-marciais.md b/docs/afty-tecnicas-marciais.md
+index 5960807..59e3e86 100644
+--- a/docs/afty-tecnicas-marciais.md
++++ b/docs/afty-tecnicas-marciais.md
+@@ -34,7 +34,8 @@ Personalizado. Não há Dano, Especial nem Arma Improvisada.
+ - **Leitura padrão, sem gravar** (`marcarTecnicasMarciais`): na origem Restringido, ou na ficha sem energia que não é
+   Sem Técnica, o Feitiço sem a marca é lido como Técnica. Cobre o Restringido, o Não-Feiticeiro e o Gêmeo Restringido,
+   e nunca toca item com `variacaoDe` (nem a Passiva recebida de fora). O Sem Técnica tem energia, então os Feitiços do
+-  Addon Estilo Marcial seguem Feitiços.
++  Addon Estilo Marcial seguem Feitiços. Só o Nível 1 a 4 sem marca é lido como Técnica (autor, 2026-10-29): Feitiço de
++  Nível 0, Nível 5 ou Técnica Máxima continua Feitiço, para a troca de origem não acender o aviso de nível.
+ - **O tipo `ataque` não entra em `TIPOS_FEITICO`** (o Conjurador ganharia o tipo). Existe `TIPOS_TECNICA_MARCIAL` e
+   `createBlankTecnicaMarcial(tipo)`. Campos da Técnica de Ataque: `acaoAtaque`, `ataquesReduzidos`, `efeitosAtaque`,
+   `condicoesAtaque` (`{ fraca, media, forte, extrema }`) e `trCondicaoAtaque`.
+@@ -117,7 +118,8 @@ própria na aba Ações, com seletor de arma. 7. Vários efeitos descem todos ju
+ liberação nova. 10. Fundamento: card com nome, texto e Motor livre, e o Atributo da CD. 11. Condição: duração pela
+ tabela dos Feitiços com o nível da Técnica, TR escolhido na criação contra a CD da Técnica. 12. Passiva igual à de
+ Feitiço, mantendo a Regeneração. 13. Quem recebe: quem tem a Especialização, mais a liberação. 14. Gêmeo Restringido
+-passa para a aba do Restringido. 15. Item migrado com Nível 0 ou 5 mantém o nível e avisa. 16. Estouro de vaga só
++passa para a aba do Restringido. 15. Item já marcado como Técnica com Nível 0 ou 5 mantém o nível e avisa, e o Feitiço sem marca nesses níveis não é
++migrado (2026-10-29). 16. Estouro de vaga só
+ deixa o contador vermelho. 17. Sem Arma Improvisada: o seletor oferece o Ataque Básico e as armas equipadas.
+ 
+ ## 9. Pontos provisórios (o autor ainda não respondeu)
+diff --git a/docs/automacao-dsl.md b/docs/automacao-dsl.md
+index 95a69b6..b71f37f 100644
+--- a/docs/automacao-dsl.md
++++ b/docs/automacao-dsl.md
+@@ -17,6 +17,47 @@ Onde se usa:
+ 
+ ## Variáveis
+ 
++### CX1: Anatomias, acessórios e rolagem de ataque (2026-10-29)
++
++Sem canal ou variável DSL nova. `articulacoes_extensas` nativa emite
++`alcanceArma` de 1,5 m com alvo `cat:corpo|basico`, seguindo a decisão
++de 03/10. Não altera tamanho ou Feitiços. O addon já usava esse caminho.
++
++`core.origem.anatomiasConfig.corpo_especializado.pericia` identifica uma
++perícia do catálogo ativo da ficha, inclusive personalizada ou Ofício.
++O coletor de origem emite `dadosPericia` com alvo `<id>:d4`, expressão 1
++e fonte Corpo Especializado. Escolha ausente ou inválida não emite efeito.
++O quarto argumento opcional de `coletarEfeitosOrigem` recebe esse catálogo,
++com o catálogo básico como padrão. O derive fornece o catálogo completo.
++
++Braços Extras conserva +2 em Prestidigitação. Seu Atletismo depende de
++`gatilhoSessao: "anatomia_duas_maos_livres"`, declarado pela Anatomia.
++O autor aprovou o controle Duas Mãos Livres, desligado por padrão.
++`gatilhosDeOrigem` inclui os gatilhos das Anatomias elegíveis. O estado usa
++`sessao.treinosAtivos`, com os controles existentes no criador, Ficha e
++Encontro. Não calcula ocupação por mão ou aplica o benefício a outra origem.
++
++Arma Natural usa o dado desarmado resolvido. Quando esse dado supera 1d8,
++emite `nivelDano: 1` para `basico`, fonte Arma Natural. Player usa o mínimo
++1d8 e a escada de dados. Afty conserva a conversão de nível para ND de dano.
++Tipo físico em `anatomiasConfig.arma_natural.tipoDano`: `ct`, `pf` ou `im`.
++Fichas antigas e valores inválidos usam `im`. Fineza e Enérgica continuam
++no mesmo caminho das propriedades do Ataque Básico.
++
++No resolvedor de equipamento, cópias equipadas do mesmo acessório emitem
++uma vez seus benefícios diretos, de perícia, Motor e Habilidade Única.
++A entrada repetida continua equipada e conta carga/custo, com
++`beneficioRepetido: true`. Definições diferentes continuam independentes,
++preservando conjuntos expressos como Ombreiras com Braceletes do Vigor.
++
++O contrato de rolagem é fora da DSL: `tipoTeste: "ataque"` identifica ataque
++em `rolarTeste`. O preparador da arma marca os descritores com `linhaArma`
++ou `ataqueId`, nas três telas. 20 natural retorna sucesso, 1 retorna falha.
++Margem reduzida depende da Defesa e não publica crítico numa falha conhecida.
++Sem Defesa, demais resultados ficam null. Testes genéricos continuam usando
++a comparação pelo total. CL1 deve consumir esse contrato, sem inferir ataque
++pelo rótulo. Regressões em `asserts/t-cx1-base.mjs`.
++
+ ### Manejo da Gungnir 1.1.1 (2026-10-25)
+ 
+ O autor confirmou Corpo a Corpo como categoria principal, com alternância
+diff --git a/src/systems/afty/AftyCreatureBuilder.jsx b/src/systems/afty/AftyCreatureBuilder.jsx
+index 1e25232..746ebea 100644
+--- a/src/systems/afty/AftyCreatureBuilder.jsx
++++ b/src/systems/afty/AftyCreatureBuilder.jsx
+@@ -53,7 +53,7 @@ import {
+ } from "./afty-origens";
+ // A descrição de cada anatomia agora aparece na própria linha selecionável, em
+ // vez de repetida numa lista embaixo: o `getAnatomia` deixou de ser preciso aqui.
+-import { ANATOMIAS, anatomiaTotal } from "./afty-anatomias";
++import { ANATOMIAS, anatomiaTotal, TIPOS_ARMA_NATURAL, tipoDaArmaNatural } from "./afty-anatomias";
+ import {
+   ATTR_METODOS, VALORES_FIXOS, valoresFixosOk, rolarAtributos, resumoAtributos,
+   desenvolvimentoTotal, desenvolvimentoUsado, limitePoolTotal, limitePoolUsado,
+@@ -8875,6 +8875,11 @@ function OrigemCard({ draft, derived, patch, patchCore, setOrigemId, setOrigemBo
+   // Características de Anatomia (Feto): escolhe 1 + 1 a cada 5 níveis.
+   const anatomiasSel = draft.core.origem?.anatomias || [];
+   const anatTotal = anatomiaTotal(nd);
++  const anatomiasConfig = draft.core.origem?.anatomiasConfig ?? {};
++  const setAnatomiaConfig = (aid, valor) => patchCore({ origem: {
++    ...draft.core.origem,
++    anatomiasConfig: { ...anatomiasConfig, [aid]: { ...anatomiasConfig[aid], ...valor } },
++  } });
+   const toggleAnatomia = (aid) => {
+     const cur = anatomiasSel.includes(aid) ? anatomiasSel.filter((x) => x !== aid) : [...anatomiasSel, aid];
+     patchCore({ origem: { ...draft.core.origem, anatomias: cur } });
+@@ -9152,8 +9157,8 @@ function OrigemCard({ draft, derived, patch, patchCore, setOrigemId, setOrigemBo
+                         const sel = anatomiasSel.includes(an.id);
+                         const full = anatomiasSel.length >= anatTotal;
+                         return (
++                          <React.Fragment key={an.id}>
+                           <button
+-                            key={an.id}
+                             type="button"
+                             disabled={!sel && full}
+                             onClick={() => toggleAnatomia(an.id)}
+@@ -9179,6 +9184,28 @@ function OrigemCard({ draft, derived, patch, patchCore, setOrigemId, setOrigemBo
+                               {" "}{an.descricao}
+                             </span>
+                           </button>
++                          {sel && an.id === "arma_natural" && (
++                            <div className="pl-6">
++                              <Select
++                                aria-label="Tipo de Dano de Arma Natural"
++                                value={tipoDaArmaNatural(draft)}
++                                options={TIPOS_ARMA_NATURAL}
++                                onChange={(tipoDano) => setAnatomiaConfig(an.id, { tipoDano })}
++                              />
++                            </div>
++                          )}
++                          {sel && an.id === "corpo_especializado" && (
++                            <div className="pl-6">
++                              <Select
++                                aria-label="Perícia de Corpo Especializado"
++                                value={anatomiasConfig.corpo_especializado?.pericia ?? ""}
++                                placeholder="Escolher Perícia"
++                                options={(derived.testes?.pericias ?? []).map((p) => ({ value: p.id, label: p.nome }))}
++                                onChange={(pericia) => setAnatomiaConfig(an.id, { pericia })}
++                              />
++                            </div>
++                          )}
++                          </React.Fragment>
+                         );
+                       })}
+                     </div>
+diff --git a/src/systems/afty/afty-anatomias.js b/src/systems/afty/afty-anatomias.js
+index 4dcaeb9..bedeb14 100644
+--- a/src/systems/afty/afty-anatomias.js
++++ b/src/systems/afty/afty-anatomias.js
+@@ -41,6 +41,7 @@ export const ANATOMIAS = [
+   },
+   {
+     id: "bracos_extras", nome: "Braços Extras",
++    gatilhoSessao: { id: "anatomia_duas_maos_livres", label: "Duas Mãos Livres" },
+     descricao: "+2 em prestidigitação (e atletismo com 2 mãos livres); par de mãos extra (2 armas de 1 mão ou +1 de 2 mãos; agarrar 2 criaturas).",
+     textoLivro: "Seu corpo possui um par de braços adicionais. Você recebe +2 em testes de prestidigitação e, se tiver pelo menos duas mãos livres, aplica esse bônus em testes de atletismo. E recebe um par adicional de mãos, permitindo você equipar dois equipamentos de uma mão ou um equipamento de duas mãos adicional, assim como agarrar duas criaturas e outros benefícios à discrição do Narrador.",
+   },
+@@ -99,5 +100,17 @@ export const ANATOMIAS = [
+ const BY_ID = Object.fromEntries(ANATOMIAS.map((a) => [a.id, a]));
+ export const getAnatomia = (id) => BY_ID[id] ?? null;
+ 
++export const TIPOS_ARMA_NATURAL = [
++  { value: "ct", label: "Cortante" },
++  { value: "pf", label: "Perfurante" },
++  { value: "im", label: "Impacto" },
++];
++
++// Fichas antigas conservam o tipo padrão do golpe desarmado.
++export function tipoDaArmaNatural(creature) {
++  const tipo = creature?.core?.origem?.anatomiasConfig?.arma_natural?.tipoDano;
++  return TIPOS_ARMA_NATURAL.some((t) => t.value === tipo) ? tipo : "im";
++}
++
+ // Quantas anatomias a criatura tem: 1 no início + 1 a cada 5 níveis.
+ export const anatomiaTotal = (nd) => 1 + Math.floor((nd ?? 1) / 5);
+diff --git a/src/systems/afty/afty-derive.js b/src/systems/afty/afty-derive.js
+index 548d9a3..1c0a791 100644
+--- a/src/systems/afty/afty-derive.js
++++ b/src/systems/afty/afty-derive.js
+@@ -127,8 +127,9 @@ import {
+   marcarTecnicasMarciais, ehTecnicaMarcial, nivelMaxTecnicaMarcial, tecnicasMarciaisDoJogador,
+   TIPOS_TECNICA_MARCIAL, TM_NIVEIS, linhaDeArmaDaTecnica, maiorDadoDosGrupos, gruposDoPrimeiroAtaque,
+ } from "./afty-tecnicas-marciais";
+-// O dado do golpe desarmado da ficha de jogador. Na criatura nada disto roda.
++// Dado do desarmado do Player e comparação de Arma Natural nos dois sistemas.
+ import { dadoDesarmado } from "./afty-niveis-dano";
++import { tipoDaArmaNatural } from "./afty-anatomias";
+ import { resolveEstilos, efeitosDoEstilo, variaveisDasTecnicas } from "./afty-estilo-sombras";
+ import { resolveDominioSimples, DOMINIO_SIMPLES_APTIDAO } from "./afty-dominio-simples";
+ import {
+@@ -916,7 +917,7 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
+       // família (Interlúdio) e emite a mesma classe de coisa: VAGA de orçamento,
+       // lida antes de os stats existirem. Hoje só `vagasFeitico`.
+       ...efeitosDeTreinoEspecial(creature, concedido.treinosEspeciais),
+-      ...coletarEfeitosOrigem(creature, escolhasOrigem, opcoes.treinosAtivos),
++      ...coletarEfeitosOrigem(creature, escolhasOrigem, opcoes.treinosAtivos, catalogoPericiasFicha),
+       ...coletarEfeitosMontante(creature, gerais, GERAL_BY_ID),
+       // As vagas da Loja precisam existir antes de resolver as escolhas.
+       // As anotações não levam exclusivo e acumulam com as demais fontes.
+@@ -1308,6 +1309,15 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
+   const fontesAcertoBasico = pugilato?.fa?.fontesAcerto ?? [];
+   const propriedadesBasico = pugilato ? propriedadesDaArma(pugilato.def, pugilato.fa) : [];
+   const anatomiaArmaNatural = anatomiasEscolhidas(creature).includes("arma_natural");
++  const desarmadoBase = dadoDesarmado({
++    nivel: nd,
++    nivelLutador: nivelEspec.lutador?.escalonamento ?? 0,
++    // A variação intelectual não recebe a escada física do Restringido.
++    restringido: semEnergia && !variacaoDoRestringido,
++    nivelRestringido: nivelEspec.restringido?.escalonamento ?? nd,
++    tem: (id) => habilidades.efetivas.includes(id) || aptidoesIds.includes(id),
++  });
++  const melhoraArmaNatural = anatomiaArmaNatural && desarmadoBase.max > 8;
+   const propriedadesNaturais = {
+     ...(anatomiaArmaNatural || aptidoesIds.includes("mal_armas_naturais") ? { fineza: true } : {}),
+     ...(anatomiaArmaNatural ? { energica: true } : {}),
+@@ -1347,6 +1357,10 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
+ 
+   const bloodfeast = resolveBloodfeast(creature, { bt, nd, modCon: modBase.constituicao, sessao: estadoBloodfeast, aptidoes: aptidoesIds });
+   const efeitosTodos = carimbarGrupoExclusivo([
++    ...(melhoraArmaNatural ? [{
++      canal: "nivelDano", alvo: "basico", expr: "1",
++      origem: "arma_natural", nome: "Arma Natural",
++    }] : []),
+     /* Os do montante que leem a bancada (a Atenção em combate do Instinto
+        Sanguinário, e qualquer origem, Treino ou texto livre com estado de
+        combate). Saíram da lista de lá, então entram só aqui. */
+@@ -3879,21 +3893,13 @@ function deriveAftyNoEscopo(creature, opcoes = {}) {
+        multiclasse. O nível REAL segue valendo para o pré-requisito, que é quem
+        decide se a habilidade chega. */
+     ...(() => {
+-      const d = dadoDesarmado({
+-        nivel: nd,
+-        nivelLutador: nivelEspec.lutador?.escalonamento ?? 0,
+-        /* "Caso seja um Restringido, ele segue o mesmo aumento de um Lutador." O
+-           `semEnergia` é quem já responde "esta ficha é Restringida" nos dois
+-           sistemas (Especialização no jogador, Tipo na criatura). */
+-        /* ⚠ A VARIAÇÃO DO RESTRINGIDO NÃO RECEBE A ESCADA (autor, 2026-09-28, sobre
+-           a Restrição Intelectual: "por não ser um restringido focado em força").
+-           É conteúdo do Restringido do livro, e a variação herda identidade. */
+-        restringido: semEnergia && !variacaoDoRestringido,
+-        nivelRestringido: nivelEspec.restringido?.escalonamento ?? nd,
+-        tem: (id) => habilidades.efetivas.includes(id) || aptidoesIds.includes(id),
+-      });
++      // A criatura conserva sua fórmula de dano. O dado base é lido pelo
++      // Player, e a melhoria da Anatomia usa nivelDano nos dois sistemas.
++      const d = anatomiaArmaNatural && desarmadoBase.max < 8
++        ? { dado: "1d8", fonte: "Arma Natural" } : desarmadoBase;
+       return { dadoBasico: d.dado, fonteDadoBasico: d.fonte ?? "Golpe Desarmado" };
+     })(),
++    tipoDanoBasico: anatomiaArmaNatural ? tipoDaArmaNatural(creature) : null,
+     efeitosLinhaDano: efeitosLinhaDano.filter((e) => !efeitosConcentrados.includes(e)),
+     contextoDsl: ctxTecnica,
+     origensDaFonte: (id) => expandeHerdadas([id]),
+diff --git a/src/systems/afty/afty-efeitos-conteudo.js b/src/systems/afty/afty-efeitos-conteudo.js
+index b912033..f5d13b4 100644
+--- a/src/systems/afty/afty-efeitos-conteudo.js
++++ b/src/systems/afty/afty-efeitos-conteudo.js
+@@ -2682,11 +2682,14 @@ export const CLA_EFEITOS = {
+ };
+ 
+ /**
+- * Características de Anatomia do Feto Amaldiçoado Híbrido. 6 das 15 viram
+- * número: o resto é condição, chance de dado, economia de ação ou efeito no
+- * alvo, e continua valendo na mesa.
++ * Efeitos numéricos das Anatomias. As escolhas de Corpo Especializado passam
++ * pelo coletor de origem, e o dado de Arma Natural pelo resolvedor de dano.
++ * As demais operações continuam com seus escopos próprios.
+  */
+ export const ANATOMIA_EFEITOS = {
++  articulacoes_extensas: [
++    { canal: "alcanceArma", alvo: "cat:corpo|basico", expr: "1.5" },
++  ],
+   // "Você recebe redução de dano contra danos físicos igual ao seu bônus de
+   // treinamento." A resistência a um tipo físico no nível 10 é escolha
+   // permanente, e não existe canal de RD por tipo físico.
+@@ -2727,11 +2730,10 @@ export const ANATOMIA_EFEITOS = {
+ 
+   // "+2 em testes de prestidigitação e, se tiver pelo menos duas mãos livres,
+   // aplica esse bônus em testes de atletismo."
+-  // ⚠ ASSUMIDO: o recorte "com duas mãos livres" não existe na ficha, então o
+-  // Atletismo entra CHEIO. Mesmo tratamento da Noção e Preparação.
++  // Declaração de mesa na sessão, desligada por padrão (autor, CX1).
+   bracos_extras: [
+     { canal: "bonusPericia", alvo: "prestidigitacao", expr: "2" },
+-    { canal: "bonusPericia", alvo: "atletismo", expr: "2" },
++    { canal: "bonusPericia", alvo: "atletismo", expr: "2", gatilhoSessao: "anatomia_duas_maos_livres" },
+   ],
+ };
+ 
+diff --git a/src/systems/afty/afty-efeitos.js b/src/systems/afty/afty-efeitos.js
+index 992cf93..e5b2644 100644
+--- a/src/systems/afty/afty-efeitos.js
++++ b/src/systems/afty/afty-efeitos.js
+@@ -99,6 +99,7 @@ import { nivelDaFicha, registrarCanaisDoMotor } from "./afty-addons";
+ // Folha: a divergência das Melhorias Superiores do jogador.
+ import { regraDo } from "./afty-sistema";
+ import { getAnatomia } from "./afty-anatomias";
++import { AFTY_PERICIAS } from "./afty-pericias-catalogo";
+ import { CUSTO_PE_MINIMO } from "./afty-dominio-simples";
+ // afty-aptidoes só importa afty-origens, que já é dependência daqui: sem ciclo.
+ import { getAptidao } from "./afty-aptidoes";
+@@ -1600,11 +1601,12 @@ export function coletarEfeitosMontante(creature, gerais, catalogoGerais = {}) {
+  * desligado sai aqui, antes do Motor, igual ao `efeitosDeTreino`. Desligado é
+  * o padrão. Ver `gatilhosDeOrigem` em afty-origens.js.
+  */
+-export function coletarEfeitosOrigem(creature, escolhas = null, gatilhosAtivos = null) {
++export function coletarEfeitosOrigem(creature, escolhas = null, gatilhosAtivos = null, pericias = AFTY_PERICIAS) {
+   const origemId = creature?.core?.origem?.id;
+   if (!origemId) return [];
+   const claId = creature?.core?.origem?.cla;
+   const anatomias = anatomiasEscolhidas(creature);
++  const periciaCorpo = creature?.core?.origem?.anatomiasConfig?.corpo_especializado?.pericia;
+   const mapa = escolhas?.mapa || resolveEscolhasOrigem(creature, nivelDaFicha(creature)).mapa;
+   const opcoesEscolhidas = Object.values(mapa).flat();
+   const opcoesInteiras = opcoesEscolhidasDaOrigem(creature, { mapa });
+@@ -1619,6 +1621,10 @@ export function coletarEfeitosOrigem(creature, escolhas = null, gatilhosAtivos =
+     ...coletarEfeitos([origemId], ORIGEM_EFEITOS, (id) => getOrigem(id)),
+     ...coletarEfeitos(claId ? [claId] : [], CLA_EFEITOS, (id) => getCla(id)),
+     ...coletarEfeitos(anatomias, ANATOMIA_EFEITOS, (id) => getAnatomia(id)),
++    ...(anatomias.includes("corpo_especializado") && pericias.some((p) => p.id === periciaCorpo) ? [{
++      canal: "dadosPericia", alvo: `${periciaCorpo}:d4`, expr: "1",
++      origem: "corpo_especializado", nome: "Corpo Especializado",
++    }] : []),
+     ...coletarEfeitos(opcoesEscolhidas, ORIGEM_ESCOLHA_EFEITOS, (id) => ({ nome: OPCAO_ORIGEM_NOME[id] })),
+     /* O `nome` do próprio efeito vence o da opção (2026-09-21), a mesma regra
+        do `efeitos` da raiz. É o que deixa o pacote escrever "Pai (Opção)" no
+diff --git a/src/systems/afty/afty-equipamentos.js b/src/systems/afty/afty-equipamentos.js
+index 38feca4..8e89be0 100644
+--- a/src/systems/afty/afty-equipamentos.js
++++ b/src/systems/afty/afty-equipamentos.js
+@@ -2852,6 +2852,9 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
+   }
+   const conjuntoSagradoAutomatico = tesourosSagrados.size >= 3;
+   let temApice = false;
++  // Livro p.365: duas cópias do mesmo acessório são uma fonte de benefício.
++  // Itens diferentes continuam independentes, inclusive conjuntos explícitos.
++  const acessoriosAplicados = new Set();
+ 
+   for (const e of listaEntradas(creature)) {
+     // ⚠ A criatura vai junto porque as armas CUSTOM moram nela. Sem isso, uma
+@@ -2932,7 +2935,11 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
+       conjuntoSagradoAutomatico || !!e?.conjuntoSagradoCompleto
+     );
+     const solAtivo = temCondicaoSolar && (conjuntoSagradoReunido || !!e?.solDireto);
+-    if (equipado && !semAddon) {
++    const acessorioAtivo = equipado && !semAddon && def.categoria === "acessorio"
++      && (!temCondicaoSolar || solAtivo);
++    const beneficioRepetido = acessorioAtivo && acessoriosAplicados.has(def.id);
++    if (acessorioAtivo) acessoriosAplicados.add(def.id);
++    if (equipado && !semAddon && !beneficioRepetido) {
+       if (e.tipo === "uniforme") {
+         uniformesEquipados += 1;
+         // A armadura dá o CUSTO dela de Defesa, mais 1 por grau da Ferramenta
+@@ -3117,6 +3124,7 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
+       custoUn,
+       espacos: espacosUn * qtd,
+       equipado,
++      ...(beneficioRepetido ? { beneficioRepetido: true } : {}),
+       ...(semAddon ? { semAddon } : {}),
+       ...(temCondicaoSolar ? {
+         solAtivo,
+diff --git a/src/systems/afty/afty-feiticos.js b/src/systems/afty/afty-feiticos.js
+index fedac07..2ffb054 100644
+--- a/src/systems/afty/afty-feiticos.js
++++ b/src/systems/afty/afty-feiticos.js
+@@ -4222,7 +4222,7 @@ function ajusteAcaoAux(efeitoKey, valor, { acao, nivel, duracao, umGolpe, notas
+ function metadeSustentada(efeitoAux, nivel) {
+   const nNum = nivel === "max" ? 5 : Math.max(0, Math.min(5, Math.trunc(Number(nivel) || 0)));
+   const bruto = AUX_TABELAS[efeitoAux]?.[nNum]?.sustentada;
+-  return typeof bruto === "number" ? Math.round(bruto / 2) : null;
++  return typeof bruto === "number" ? Math.floor(bruto / 2) : null;
+ }
+ 
+ // Tabelas próprias de Passivo, verbatim do livro. Dano em MÉDIA.
+diff --git a/src/systems/afty/afty-origens.js b/src/systems/afty/afty-origens.js
+index 36008e5..fdbc06a 100644
+--- a/src/systems/afty/afty-origens.js
++++ b/src/systems/afty/afty-origens.js
+@@ -39,6 +39,7 @@ import { regraDo, sistemaDaFicha } from "./afty-sistema";
+ // que volta até aqui por combate → habilidades → especializações. Ver o
+ // cabeçalho de afty-pericias-catalogo.js.
+ import { AFTY_PERICIAS, AFTY_ATAQUES } from "./afty-pericias-catalogo";
++import { getAnatomia } from "./afty-anatomias";
+ /* ⚠ ESTE ARQUIVO SÓ IMPORTA MÓDULOS FOLHA (afty-schema, afty-pericias-catalogo),
+    e é de propósito: meio mundo importa `getOrigem` (especializações, aptidões,
+    talentos), e qualquer import pesado aqui fecharia ciclo de inicialização com
+@@ -1565,6 +1566,10 @@ export function gatilhosDeOrigem(creature) {
+   for (const c of caracteristicasEfetivas(creature)) {
+     if (c?.gatilhoSessao?.id) unicos.set(c.gatilhoSessao.id, c.gatilhoSessao);
+   }
++  for (const id of anatomiasEscolhidas(creature)) {
++    const gatilho = getAnatomia(id)?.gatilhoSessao;
++    if (gatilho?.id) unicos.set(gatilho.id, gatilho);
++  }
+   return [...unicos.values()];
+ }
+ 
+diff --git a/src/systems/afty/afty-pericias.js b/src/systems/afty/afty-pericias.js
+index 27c0424..7930d2f 100644
+--- a/src/systems/afty/afty-pericias.js
++++ b/src/systems/afty/afty-pericias.js
+@@ -989,6 +989,10 @@ export function resolveDano(creature, ctx = {}) {
+       removeResistencia: canal("removeResistencia", escopos) > 0,
+       fontes: fontesDe("danoBonus", escopos),
+     });
++    if (ef && detalhesDoCanalEscopos(ef, "nivelDano", escopos).some((d) => d.origem === "arma_natural")) {
++      const parteNivel = linha.partes.find((p) => p.label.startsWith("Níveis de Dano") || p.label.startsWith("Nível "));
++      if (parteNivel) parteNivel.label += " (Arma Natural)";
++    }
+     linha.partesMargemCritico = partesDaMargem(margemBase, fontesDe("margemCritico", escopos), linha.margemCritico,
+       fonteDado === "Dano da Arma" ? "Margem da Arma" : "Margem Base");
+     linha.escoposDano = escopos;
+@@ -1307,6 +1311,8 @@ export function resolveDano(creature, ctx = {}) {
+   const entradas = [
+     // Desarmado não tem margem de crítico listada em lugar nenhum: é 20.
+     aplicaCriticoDaArma({ id: "basico", nome: "Ataque Básico", fonte: "basico", ataqueId: ataqueIdBasico,
++      tipoDano: ctx.tipoDanoBasico ?? null,
++      tipoDanoBase: ctx.tipoDanoBasico ?? null,
+       alcance: alcanceDe(null, 0, escoposBasico),
+       propriedades: ctx.propriedadesBasico ?? [],
+       chaveArma: ctx.chaveArmaBasico ?? "basico",
+diff --git a/src/systems/afty/afty-propriedades-armas.js b/src/systems/afty/afty-propriedades-armas.js
+index 1ce6986..8358b90 100644
+--- a/src/systems/afty/afty-propriedades-armas.js
++++ b/src/systems/afty/afty-propriedades-armas.js
+@@ -133,7 +133,10 @@ export function modoCombinado(modo, { vantagem = false, desvantagem = false } =
+ 
+ export function preparaRolagemArma(desc, modo = "normal") {
+   const linha = desc.linhaArma;
+-  if (!linha) return desc.tipo === "teste" ? { ...desc, modo: desc.modo ?? modo } : desc;
++  if (!linha) return desc.tipo === "teste" ? {
++    ...desc, modo: desc.modo ?? modo,
++    ...(desc.ataqueId ? { tipoTeste: "ataque" } : {}),
++  } : desc;
+   const info = linha.armaPropriedades;
+   if (desc.tipo === "teste" && info?.bloqueio) return null;
+   if (desc.tipo === "dano" && (info?.estado.pendente?.errou || (info?.bloqueio && !info.estado.pendente))) return null;
+@@ -142,10 +145,11 @@ export function preparaRolagemArma(desc, modo = "normal") {
+   const doMotor = linha.vantagemAtaque ?? {};
+   return desc.tipo === "teste" ? {
+     ...desc,
++    tipoTeste: "ataque",
+     modo: modoCombinado(desc.modo ?? modo, {
+       vantagem: doMotor.vantagem, desvantagem: !!info?.desvantagem || !!doMotor.desvantagem,
+     }),
+-    cd: info?.estado.defesaAlvo ?? null,
++    cd: desc.cd ?? info?.estado.defesaAlvo ?? null,
+   } : desc;
+ }
+ 
+diff --git a/src/systems/afty/afty-tecnicas-marciais.js b/src/systems/afty/afty-tecnicas-marciais.js
+index 92c39fd..03e87a5 100644
+--- a/src/systems/afty/afty-tecnicas-marciais.js
++++ b/src/systems/afty/afty-tecnicas-marciais.js
+@@ -106,6 +106,12 @@ export const TM_PASSIVO_VETADAS = Object.freeze(["atributo"]);
+  * de outro jeito (a Liberação Máxima e a Passiva recebida de fora), e herda o
+  * que o original é.
+  *
++ * ⚠ SÓ O NÍVEL 1 A 4 É LIDO COMO TÉCNICA (autor, 2026-10-29). Feitiço de Nível 0,
++ * Nível 5 ou Técnica Máxima, sem marca, continua Feitiço: a Técnica Marcial não
++ * tem esses níveis, e ler assim acendia o aviso de nível numa ficha que só trocou
++ * a origem para Restringido. A marca gravada (`true`) segue valendo em qualquer
++ * nível, com o aviso.
++ *
+  * Devolve a MESMA lista quando nada muda, para quem compara por referência.
+  */
+ export function marcarTecnicasMarciais(feiticos, padraoMarcial) {
+@@ -116,6 +122,7 @@ export function marcarTecnicasMarciais(feiticos, padraoMarcial) {
+     if (typeof f.marcial === "boolean") return f;
+     if (f.variacaoDe) return f;
+     if (!padraoMarcial) return f;
++    if (!TM_NIVEIS.includes(f.nivel)) return f;
+     mudou = true;
+     return { ...f, marcial: true };
+   });
+diff --git a/src/systems/afty/ficha/ficha-rolagem.js b/src/systems/afty/ficha/ficha-rolagem.js
+index 867a856..01275a5 100644
+--- a/src/systems/afty/ficha/ficha-rolagem.js
++++ b/src/systems/afty/ficha/ficha-rolagem.js
+@@ -47,7 +47,7 @@ export function rolarDados(quantidade, faces, rng = Math.random) {
+  * de 2 aplicado). Sem ela, crítico é só no 20 natural.
+  */
+ export function rolarTeste(
+-  { rotulo, detalhe, bonus = 0, dados = [], modo = "normal", margem = 20, cd = null, minimoNatural = 0 },
++  { rotulo, detalhe, bonus = 0, dados = [], modo = "normal", margem = 20, cd = null, minimoNatural = 0, tipoTeste = "teste" },
+   rng = Math.random,
+ ) {
+   const bonusInt = Math.trunc(Number(bonus) || 0);
+@@ -71,10 +71,17 @@ export function rolarTeste(
+   const naturalTratado = Math.max(escolhido, Math.trunc(Number(minimoNatural) || 0));
+   const total = naturalTratado + bonusInt + somaExtras;
+   const cdFinal = cd == null ? null : Math.trunc(Number(cd));
++  // Livro p.307: só o ataque garante acerto no 20 e erro no 1. Uma margem
++  // reduzida pode habilitar crítico, mas continua exigindo acerto pela Defesa.
++  const ataque = tipoTeste === "ataque";
++  const sucesso = ataque && naturalTratado === 20 ? true
++    : ataque && naturalTratado === 1 ? false
++      : Number.isFinite(cdFinal) ? total >= cdFinal : null;
+   return {
+     id: novoId(),
+     ts: Date.now(),
+     tipo: "teste",
++    tipoTeste,
+     rotulo,
+     detalhe: detalhe ?? null,
+     formula: `d20${bonusInt >= 0 ? "+" : "−"}${Math.abs(bonusInt)}${textoExtras ? ` + ${textoExtras}` : ""}`,
+@@ -89,10 +96,10 @@ export function rolarTeste(
+     somaExtras,
+     total,
+     cd: Number.isFinite(cdFinal) ? cdFinal : null,
+-    sucesso: Number.isFinite(cdFinal) ? total >= cdFinal : null,
++    sucesso,
+     // ⚠ Crítico do d20 é do ACERTO, e o que ele faz é habilitar o dano dobrado.
+     // Um 1 natural fica marcado também: quem lê o log quer ver a pedra.
+-    critico: naturalTratado >= Math.max(2, Math.trunc(margem) || 20),
++    critico: naturalTratado >= Math.max(2, Math.trunc(margem) || 20) && (!ataque || sucesso !== false),
+     pifia: naturalTratado === 1,
+     modo,
+   };
+diff --git a/src/systems/afty/ficha/ficha-sessao.js b/src/systems/afty/ficha/ficha-sessao.js
+index 2de56d7..8cfdf6d 100644
+--- a/src/systems/afty/ficha/ficha-sessao.js
++++ b/src/systems/afty/ficha/ficha-sessao.js
+@@ -51,6 +51,11 @@ import { normalizaGungnir, avancarGungnir } from "../afty-gungnir";
+ import { FASES_DOMINIO } from "../afty-dominios";
+ import { registrarQuedaEspecializacao, iniciarTurnoEspecializacao, encerrarTurnoEspecializacao,
+   novaRodadaEspecializacao } from "./ficha-especializacoes";
++// O estado do motor de uso e combate (CL1). FOLHA: as operações dele importam esta sessão, e nunca o contrário.
++import {
++  usoEmBranco, normalizaUso, avancaUsoNaRodada, iniciaTurnoNoUso, encerraTurnoNoUso, fechaCombateNoUso,
++  zeraUsoNoDescanso, abreConcentracaoNaSessao, fechaConcentracaoNaSessao, usoDe,
++} from "./ficha-uso-estado";
+ // O nome da parte que expira de uma instância de pacote (PA-I3). Os três são FOLHA, sem ciclo.
+ import { rotuloDoBeneficio } from "./pacotes-aliados";
+ import { AFTY_PERICIAS } from "../afty-pericias-catalogo";
+@@ -199,6 +204,10 @@ export function sessaoEmBranco(derived = null) {
+     // Interruptores manuais de efeitos condicionais abertos por Treinamentos.
+     treinosAtivos: {},
+     usos: {},
++    /* O motor de uso e combate (CL1, 2026-10-29): o anel das operações aplicadas, os usos com duração ou manutenção, o que
++       está armado para o próximo ataque, a sequência de ataques recebidos, as ações do turno e a concentração. Ver
++       `ficha-uso-estado.js` e docs/afty-motor-uso-combate.md. */
++    uso: usoEmBranco(),
+     // A recarga das Técnicas Máximas, por id do Feitiço (2026-10-08).
+     recargas: {},
+     // Os contadores de MESA dos pacotes (`contadoresSessao`, 2026-10-15).
+@@ -276,6 +285,7 @@ export function normalizaSessao(bruta, derived = null) {
+     guardaEncerrada: !!bruta.guardaEncerrada,
+     combate: bruta.combate && typeof bruta.combate === "object" ? bruta.combate : {},
+     usos: bruta.usos && typeof bruta.usos === "object" ? bruta.usos : {},
++    uso: normalizaUso(bruta.uso),
+     recargas: normalizaRecargas(bruta.recargas),
+     contadoresSessao: normalizaContadoresSessao(bruta.contadoresSessao),
+     ultimoFeiticoDanoId: typeof bruta.ultimoFeiticoDanoId === "string"
+@@ -2202,7 +2212,7 @@ function cenaNovaDoGolpe(sessao) {
+ export function proximaRodada(sessao, derived = null, { preservarTurnoArmas = false } = {}) {
+   // Na ficha individual, avançar a rodada encerra o turno e inicia o próximo.
+   // No encontro, cada turno é encaminhado pelo controlador de iniciativa.
+-  if (!preservarTurnoArmas) sessao = encerrarTurnoEspecializacao(sessao, derived);
++  if (!preservarTurnoArmas) sessao = encerraTurnoNoUso(encerrarTurnoEspecializacao(sessao, derived));
+   const expirou = [];
+   /* ⚠ O REGISTRO DA VIRADA (2026-10-17). A renovação da casca de PE e o pagamento da manutenção são FATOS SEPARADOS, e quem
+      os infere comparando o saldo de antes com o de depois erra justamente no caso comum: renovar 4 PE temporários e pagar 4 de
+@@ -2299,16 +2309,19 @@ export function proximaRodada(sessao, derived = null, { preservarTurnoArmas = fa
+   proxima = consumirAcoesAddon(proxima, (derived?.acoesAddon ?? [])
+     .filter((a) => a.tipo === "disparo").map((a) => a.estado));
+   proxima = novaRodadaEspecializacao(proxima, { expirarSurto: sessao.rodada > 0 });
+-  if (!preservarTurnoArmas) proxima = iniciarTurnoEspecializacao(proxima, derived);
++  /* O motor de uso (CL1): a duração dos usos desce e a manutenção passa a ser DEVIDA, sem débito (`registro.encerrou` e
++     `registro.manutencaoDevida` dizem o que mudou). Na ficha individual o turno também vira aqui, como o das Especializações. */
++  proxima = avancaUsoNaRodada(proxima, registro);
++  if (!preservarTurnoArmas) proxima = iniciaTurnoNoUso(iniciarTurnoEspecializacao(proxima, derived), registro);
+   return { sessao: proxima, expirou, registro };
+ }
+ 
+ export function iniciaTurnoFicha(sessao, derived, rng = Math.random) {
+-  return iniciarTurnoEspecializacao(iniciaTurnoArmas(sessao), derived, rng);
++  return iniciaTurnoNoUso(iniciarTurnoEspecializacao(iniciaTurnoArmas(sessao), derived, rng));
+ }
+ 
+ export function encerraTurnoFicha(sessao, derived, rng = Math.random) {
+-  return encerrarTurnoEspecializacao(sessao, derived, rng);
++  return encerraTurnoNoUso(encerrarTurnoEspecializacao(sessao, derived, rng));
+ }
+ 
+ /* O Talismã do Ápice desligado, com o contador zerado. */
+@@ -2406,7 +2419,8 @@ export function descansar(sessao, derived, { marioneteId = null } = {}) {
+   sessao = encerrarAcoesAddon(sessao);
+   // O Mecha devolve o PV atual às componentes antes de reparar só a escolhida.
+   const mesa = separaMecha(sessao);
+-  return {
++  // O descanso encerra os usos com duração e a concentração (CL1), e devolve o estado de uso ao branco. O anel de ids fica.
++  return zeraUsoNoDescanso({
+     ...sessao,
+     especializacaoSessao: {},
+     dharma: normalizaDharma(),
+@@ -2465,7 +2479,7 @@ export function descansar(sessao, derived, { marioneteId = null } = {}) {
+       .filter((c) => c.rodadas == null)
+       .filter((c) => c.id !== CHAVE_CONDICAO_RITUAL_ESTENDIDO),
+     ritualAtual: null,
+-  };
++  });
+ }
+ 
+ /**
+@@ -3075,7 +3089,7 @@ function semAmpliacoesRecursos(combate, derived = null) {
+ /** A mudança de combate encerra o Ápice e cobra a Exaustão da rodada aberta. */
+ export function aplicaPatchCombate(sessao, parcial) {
+   if (parcial?.ativo === false) sessao = { ...sessao, gungnir: normalizaGungnir() };
+-  if (parcial?.ativo === false) sessao = encerrarAcoesAddon(sessao);
++  if (parcial?.ativo === false) sessao = encerrarAcoesAddon(fechaCombateNoUso(sessao));
+   /* O fim do combate desmancha a Expansão no ar, com a Exaustão de Técnica de
+      sempre (Etapa 9): fora de combate a bancada zera o estado, e deixá-la
+      "aberta" esconderia a Exaustão que ela deve. */
+@@ -3157,6 +3171,16 @@ const removeCondicaoRitualEstendido = (sessao) => ({
+   condicoes: (sessao.condicoes ?? []).filter((c) => c.id !== CHAVE_CONDICAO_RITUAL_ESTENDIDO),
+ });
+ 
++/* O Ritual Estendido exige manter a concentração entre o primeiro e o segundo turno (p.322). A concentração é um só
++   espaço por ficha (p.320): se ele já está ocupado por outro efeito, o ritual segue como sempre seguiu, sem registro,
++   e quem quiser recusar o início consulta `bloqueioRitualEstendido` em ficha-concentracao.js. */
++const abreConcentracaoDoRitual = (sessao, feiticoId) => (usoDe(sessao).concentracao
++  ? sessao
++  : abreConcentracaoNaSessao(sessao, { id: `ritual:${feiticoId}`, nome: "Ritual Estendido", ritualFeiticoId: feiticoId }));
++const fechaConcentracaoDoRitual = (sessao, feiticoId) => (usoDe(sessao).concentracao?.ritualFeiticoId === feiticoId
++  ? fechaConcentracaoNaSessao(sessao)
++  : sessao);
++
+ const desarmaRitualistaDoFeitico = (sessao, feiticoId) => configuraRitual(
+   sessao,
+   feiticoId,
+@@ -3189,7 +3213,7 @@ export function iniciaRitualEstendido(sessao, feiticoId, usaRitualista = false)
+   const consumido = comRitualistaConsumido(sessao, usaRitualista);
+   const semMarcadorAnterior = (consumido.condicoes ?? [])
+     .filter((c) => c.id !== CHAVE_CONDICAO_RITUAL_ESTENDIDO);
+-  return {
++  return abreConcentracaoDoRitual({
+     ...consumido,
+     condicoes: [
+       ...semMarcadorAnterior,
+@@ -3206,7 +3230,7 @@ export function iniciaRitualEstendido(sessao, feiticoId, usaRitualista = false)
+       etapa: "preparando",
+       usaRitualista: !!usaRitualista,
+     },
+-  };
++  }, feiticoId);
+ }
+ 
+ /** O botão conclui a preparação estendida ou a continuação escolhida após a falha. */
+@@ -3227,7 +3251,7 @@ export function concluiPreparacaoRitual(sessao, feiticoId) {
+ export function cancelaRitual(sessao, feiticoId) {
+   const atual = ritualEmAndamento(sessao);
+   if (!atual || atual.feiticoId !== feiticoId) return sessao;
+-  const limpo = removeCondicaoRitualEstendido({ ...sessao, ritualAtual: null });
++  const limpo = fechaConcentracaoDoRitual(removeCondicaoRitualEstendido({ ...sessao, ritualAtual: null }), feiticoId);
+   return atual.usaRitualista ? desarmaRitualistaDoFeitico(limpo, feiticoId) : limpo;
+ }
+ 
+@@ -3243,10 +3267,10 @@ export function finalizaRitual(sessao, feiticoId) {
+   if (!atual || atual.feiticoId !== feiticoId || !ritualProntoParaResolver(sessao, feiticoId)) {
+     return sessao;
+   }
+-  return removeCondicaoRitualEstendido({
++  return fechaConcentracaoDoRitual(removeCondicaoRitualEstendido({
+     ...sessao,
+     ritualAtual: { ...atual, etapa: "resolvido" },
+-  });
++  }), feiticoId);
+ }
+ 
+ /** Encerra o Ritual resolvido e libera o botão para outro uso. */

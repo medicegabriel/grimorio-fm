@@ -1,0 +1,30 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "cd": 23,
+    "recarga": true,
+    "caido": true
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "cd": 23,
+    "recarga": true,
+    "caido": true
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "cd": 20,
+    "recarga": true,
+    "caido": true
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "cd": 20,
+    "recarga": true,
+    "caido": true
+  }
+]

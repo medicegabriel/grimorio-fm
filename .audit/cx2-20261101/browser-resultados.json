@@ -1,0 +1,46 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "carapaca": true,
+    "voo": true,
+    "marca": true,
+    "zenin": true,
+    "aura": true,
+    "retornoSalvo": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "carapaca": true,
+    "voo": true,
+    "marca": true,
+    "zenin": true,
+    "aura": true,
+    "retornoSalvo": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "carapaca": true,
+    "voo": true,
+    "marca": true,
+    "zenin": true,
+    "aura": true,
+    "retornoSalvo": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "carapaca": true,
+    "voo": true,
+    "marca": true,
+    "zenin": true,
+    "aura": true,
+    "retornoSalvo": true,
+    "erros": []
+  }
+]

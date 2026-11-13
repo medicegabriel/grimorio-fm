@@ -1,0 +1,98 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "g2": false,
+    "andar": true,
+    "desengajar": true,
+    "livreNativa": true,
+    "custoZero": true,
+    "persistencia": true,
+    "prazo": true,
+    "oportunidadeNoEncontro": true
+  },
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "g2": true,
+    "andar": true,
+    "desengajar": true,
+    "livreNativa": true,
+    "custoZero": true,
+    "persistencia": true,
+    "prazo": true,
+    "oportunidadeNoEncontro": false
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "g2": false,
+    "andar": true,
+    "desengajar": true,
+    "livreNativa": true,
+    "custoZero": true,
+    "persistencia": true,
+    "prazo": true,
+    "oportunidadeNoEncontro": true
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "g2": true,
+    "andar": true,
+    "desengajar": true,
+    "livreNativa": true,
+    "custoZero": true,
+    "persistencia": true,
+    "prazo": true,
+    "oportunidadeNoEncontro": false
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "g2": false,
+    "andar": true,
+    "desengajar": true,
+    "livreNativa": true,
+    "custoZero": true,
+    "persistencia": true,
+    "prazo": true,
+    "oportunidadeNoEncontro": true
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "g2": true,
+    "andar": true,
+    "desengajar": true,
+    "livreNativa": true,
+    "custoZero": true,
+    "persistencia": true,
+    "prazo": true,
+    "oportunidadeNoEncontro": false
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "g2": false,
+    "andar": true,
+    "desengajar": true,
+    "livreNativa": true,
+    "custoZero": true,
+    "persistencia": true,
+    "prazo": true,
+    "oportunidadeNoEncontro": true
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "g2": true,
+    "andar": true,
+    "desengajar": true,
+    "livreNativa": true,
+    "custoZero": true,
+    "persistencia": true,
+    "prazo": true,
+    "oportunidadeNoEncontro": false
+  }
+]

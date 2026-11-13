@@ -1,0 +1,67 @@
+{
+  "versao": 1,
+  "shaInventario": "cd560c58fa8e4c13afd1cb8c052e68654ef494173a35188cbbd72a844ee23b53",
+  "shaVivo": "b74391875ab8c71304a4ddcffb1db11a9fa0fc85dfbd20aced99f46db43820e0",
+  "shaEscopo": "8fe90f988d3cf2d133a154ed22d6027c841d87758669d33902a6da4cd73e5357",
+  "adicionados": [
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::feiticos::lanca_odin",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::feiticos::lanca_odin",
+        "id": "lanca_odin",
+        "nome": "Gungnir: a Lança de Odin",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote::feiticos",
+        "caminho": "lanca_odin",
+        "proprietario": "AD-74",
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "idLocal": "lanca_odin",
+        "hashDado": "dd02d62e7876c8145ebe5588e8fcc864ee2e1da7cd1aacaf98ddd10008b0478d",
+        "nivel": 5
+      },
+      "proprietarioSugerido": "AD-74"
+    }
+  ],
+  "removidos": [
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::feiticos::gungnir",
+      "proprietario": "AD-74",
+      "hashAnterior": "f838be417ca22f9ef4d2704e88f41d43b9d38b7d840a19b8413b681609d4cde1"
+    }
+  ],
+  "alterados": [
+    {
+      "chave": "addon::vespa-crabro.json::@pacote",
+      "proprietarioMantido": "AD-74",
+      "hashAnterior": "248a8811c678a8478c406ae5f1a9b79cf7211bd91cb76a566f8be31c690e8e1f",
+      "hashNovo": "65c5d1a09d8ef13be54fd6123ce2bae9a7f17834bb6835296e39a4499d1bca69",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::feiticos",
+      "proprietarioMantido": "AD-74",
+      "hashAnterior": "ced9fca10f630240f4d45b09baf7fcec0247f3e4e0ef946f90d34e54f3e1dd33",
+      "hashNovo": "ec4696bfc660519cb05bc4de76734f2687366f3b0db496138a1918f966d6ed06",
+      "campos": [
+        "hashDado"
+      ]
+    }
+  ],
+  "assinatura": "d50de36df08529ab54ccc60fe5a37d1610b265d92e8ee98e0abb0e135b3b7e2f",
+  "decisoes": {
+    "adicoes": {
+      "addon::vespa-crabro.json::@pacote::feiticos::lanca_odin": "AD-74"
+    },
+    "remocoes": {
+      "addon::vespa-crabro.json::@pacote::feiticos::gungnir": {
+        "justificativa": "Separar o id do Feitiço do id de alvo da arma Gungnir para impedir colisão de escopos no Motor.",
+        "renomeadoPara": "addon::vespa-crabro.json::@pacote::feiticos::lanca_odin"
+      }
+    },
+    "justificativaAtualizacao": "Ajuste de identidade antes da entrega Vespa 1.1.0: Feitiço Gungnir usa lanca_odin, arma mantém gungnir. Números e comportamento preservados. Sem alteração de outros addons."
+  },
+  "errosColeta": []
+}

@@ -17,6 +17,7 @@ import { statsDaFicha, aplicaPreferencia } from "./estatisticas";
 import { Retrato, Medidor, PainelVital, Flutuante, Valor } from "./pecas";
 import { recursos, linhaDeIdentidade, useQuantosCabem } from "./pecas-logica";
 import EstatisticasConfig from "./EstatisticasConfig";
+import OrbitasDoRetrato from "../../ui/OrbitasDoRetrato";
 import BotaoDeDescanso from "../BotaoDeDescanso";
 
 function Stat({ s, m }) {
@@ -124,7 +125,7 @@ export default function Cabecalho({
        dentro dele), e a placa é a parte do cabeçalho que ficou à vista. Sem a classe, um tema claro com faixa escura deixava a placa clara com texto claro. */
     <div className="e-cabeca afty-cabecalho">
       {/* O RETRATO É A ÂNCORA: uma moldura que acompanha a altura do corpo inteiro (placa e faixa), à esquerda. A identidade ocupa só a largura do nome. */}
-      <div className="e-moldura"><Retrato ficha={ficha} classe="e-retrato" /></div>
+      <div className="e-moldura"><Retrato ficha={ficha} classe="e-retrato" /><OrbitasDoRetrato orbitas={derived.orbitas} /></div>
       <div className="e-corpo">
         <div className="e-placa">
           <button type="button" className="afty-botao e-icone e-voltar" onClick={onVoltar} aria-label="Voltar"><ChevronLeft aria-hidden="true" /></button>

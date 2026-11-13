@@ -1,0 +1,602 @@
+[
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 :focus-visible",
+    "antes": "6px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.5)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ":where(.e-g2 .e-cabeca):is(.e-cabeca)",
+    "antes": "18px",
+    "depois": "calc(var(--afty-raio, 12px) * 1.5)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ":where(.e-g2 .m-medidor):is(.m-medidor)",
+    "antes": "10px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.8333333333333334)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ":where(.e-g2 .m-barra):is(.m-barra)",
+    "antes": "3px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.25)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .m-flash",
+    "antes": "6px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.5)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ":where(.e-g2 .e-icone):is(.e-icone)",
+    "antes": "9px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.75)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .e-mais",
+    "antes": "7px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.5833333333333334)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .e-combate",
+    "antes": "8px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.6666666666666666)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .e-rodada",
+    "antes": "8px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.6666666666666666)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .e-proxima",
+    "antes": "0 8px 8px 0",
+    "depois": "0 calc(var(--afty-raio, 12px) * 0.6666666666666666) calc(var(--afty-raio, 12px) * 0.6666666666666666) 0"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .e-cond",
+    "antes": "8px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.6666666666666666)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .e-cond b",
+    "antes": "5px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.4166666666666667)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .m-chip",
+    "antes": "8px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.6666666666666666)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ":where(.e-g2 .e-aba[aria-selected=\"true\"]::after):is(.e-aba)",
+    "antes": "3px 3px 0 0",
+    "depois": "calc(var(--afty-raio, 12px) * 0.25) calc(var(--afty-raio, 12px) * 0.25) 0 0"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .e-busca .afty-campo",
+    "antes": "12px",
+    "depois": "var(--afty-raio, 12px)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .e-limpar",
+    "antes": "8px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.6666666666666666)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .e-contagem [data-onde=\"nome\"]::before, .e-g2 .e-onde[data-onde=\"nome\"]::before",
+    "antes": "2px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.16666666666666666)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .e-contagem [data-onde=\"texto\"]::before",
+    "antes": "2px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.16666666666666666)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .e-efeito",
+    "antes": "8px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.6666666666666666)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ":where(.e-g2 .e-tecnica):is(.e-tecnica)",
+    "antes": "14px",
+    "depois": "calc(var(--afty-raio, 12px) * 1.1666666666666667)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ":where(.e-g2 .e-grupo):is(.e-grupo)",
+    "antes": "14px",
+    "depois": "calc(var(--afty-raio, 12px) * 1.1666666666666667)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .e-subabas",
+    "antes": "10px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.8333333333333334)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .e-subaba",
+    "antes": "7px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.5833333333333334)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .e-onde:not([data-onde=\"nome\"])::before",
+    "antes": "2px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.16666666666666666)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 mark",
+    "antes": "3px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.25)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .e-pe",
+    "antes": "7px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.5833333333333334)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ":where(.e-g2 .e-consulta):is(.e-consulta)",
+    "antes": "16px",
+    "depois": "calc(var(--afty-raio, 12px) * 1.3333333333333333)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .e-consulta-aba",
+    "antes": "9px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.75)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .e-fechar",
+    "antes": "9px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.75)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .e-fechar kbd",
+    "antes": "5px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.4166666666666667)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .e-fixar",
+    "antes": "9px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.75)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .e-resumo",
+    "antes": "0 10px 10px 0",
+    "depois": "0 calc(var(--afty-raio, 12px) * 0.8333333333333334) calc(var(--afty-raio, 12px) * 0.8333333333333334) 0"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .e-nota-pe",
+    "antes": "10px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.8333333333333334)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .m-botao",
+    "antes": "8px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.6666666666666666)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ":where(.e-g2 .afty-botao.e-botao):is(.e-botao)",
+    "antes": "8px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.6666666666666666)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .afty-campo",
+    "antes": "8px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.6666666666666666)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .m-seg",
+    "antes": "10px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.8333333333333334)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .m-seg-op",
+    "antes": "7px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.5833333333333334)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .m-chave-trilho",
+    "antes": "10px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.8333333333333334)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .m-passo",
+    "antes": "8px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.6666666666666666)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .m-flutuante",
+    "antes": "12px",
+    "depois": "var(--afty-raio, 12px)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .e-menu-item",
+    "antes": "8px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.6666666666666666)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .m-aviso-flutuante",
+    "antes": "12px",
+    "depois": "var(--afty-raio, 12px)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .f-acesso",
+    "antes": "8px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.6666666666666666)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .g-botao",
+    "antes": "8px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.6666666666666666)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .g-icone",
+    "antes": "8px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.6666666666666666)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .g-x",
+    "antes": "7px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.5833333333333334)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .g-encerrar",
+    "antes": "8px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.6666666666666666)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .g-resultado",
+    "antes": "0 6px 6px 0",
+    "depois": "0 calc(var(--afty-raio, 12px) * 0.5) calc(var(--afty-raio, 12px) * 0.5) 0"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .g-busca .afty-campo",
+    "antes": "10px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.8333333333333334)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .g-limpar",
+    "antes": "7px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.5833333333333334)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .g-alterna",
+    "antes": "8px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.6666666666666666)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 mark",
+    "antes": "3px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.25)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .g-sugestoes",
+    "antes": "10px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.8333333333333334)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .g-sugestoes button",
+    "antes": "7px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.5833333333333334)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .g-previa",
+    "antes": "0 8px 8px 0",
+    "depois": "0 calc(var(--afty-raio, 12px) * 0.6666666666666666) calc(var(--afty-raio, 12px) * 0.6666666666666666) 0"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .g-filtro-compacta",
+    "antes": "9px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.75)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .g-segmento",
+    "antes": "7px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.5833333333333334)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .x-medidor i",
+    "antes": "2px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.16666666666666666)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .x-atencao-bloco",
+    "antes": "0 10px 10px 0",
+    "depois": "0 calc(var(--afty-raio, 12px) * 0.8333333333333334) calc(var(--afty-raio, 12px) * 0.8333333333333334) 0"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .d-exp",
+    "antes": "14px",
+    "depois": "calc(var(--afty-raio, 12px) * 1.1666666666666667)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .g2-cartao",
+    "antes": "12px",
+    "depois": "var(--afty-raio, 12px)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .g2-resultado",
+    "antes": "10px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.8333333333333334)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .k-cat",
+    "antes": "9px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.75)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .k-fila",
+    "antes": "10px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.8333333333333334)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .k-item",
+    "antes": "10px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.8333333333333334)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .k-acao",
+    "antes": "0 10px 10px 0",
+    "depois": "0 calc(var(--afty-raio, 12px) * 0.8333333333333334) calc(var(--afty-raio, 12px) * 0.8333333333333334) 0"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .k-detalhe",
+    "antes": "12px",
+    "depois": "var(--afty-raio, 12px)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .c2-item",
+    "antes": "10px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.8333333333333334)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .e2-toggle",
+    "antes": "8px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.6666666666666666)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .e2-item",
+    "antes": "10px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.8333333333333334)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .lt-painel",
+    "antes": "14px",
+    "depois": "calc(var(--afty-raio, 12px) * 1.1666666666666667)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .lt-nome",
+    "antes": "8px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.6666666666666666)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .lt-linha[data-marcada]",
+    "antes": "8px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.6666666666666666)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .lt-seg[data-ini]",
+    "antes": "6px 0 0 6px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.5) 0 0 calc(var(--afty-raio, 12px) * 0.5)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .lt-seg[data-fim]",
+    "antes": "0 6px 6px 0",
+    "depois": "0 calc(var(--afty-raio, 12px) * 0.5) calc(var(--afty-raio, 12px) * 0.5) 0"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .lt-seg[data-ini][data-fim]",
+    "antes": "6px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.5)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .lt-pino",
+    "antes": "5px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.4166666666666667)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .lt-dica",
+    "antes": "10px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.8333333333333334)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .h-hist-item",
+    "antes": "9px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.75)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .h-estat-linha",
+    "antes": "9px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.75)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .e-controles .afty-botao",
+    "antes": "9px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.75)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ":where(.e-g2 .e-cabeca):is(.e-cabeca)",
+    "antes": "14px",
+    "depois": "calc(var(--afty-raio, 12px) * 1.1666666666666667)"
+  },
+  {
+    "arquivo": "efeitos/efeitos-g2.css",
+    "seletor": ".e-g2 .im-atual",
+    "antes": "12px",
+    "depois": "var(--afty-raio, 12px)"
+  },
+  {
+    "arquivo": "abas-g2/abas-g2.css",
+    "seletor": ".e-g2.m-aba .m-secao-topo",
+    "antes": "calc(var(--m-raio-secao) - 1px) calc(var(--m-raio-secao) - 1px) 0 0",
+    "depois": "calc(var(--m-raio-secao) - calc(var(--afty-raio, 12px) * 0.08333333333333333)) calc(var(--m-raio-secao) - calc(var(--afty-raio, 12px) * 0.08333333333333333)) 0 0"
+  },
+  {
+    "arquivo": "abas-g2/abas-g2.css",
+    "seletor": ".e-g2 .m-indice-item",
+    "antes": "9px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.75)"
+  },
+  {
+    "arquivo": "abas-g2/abas-g2.css",
+    "seletor": ":where(.e-g2 .m-mesa):is(.m-mesa)",
+    "antes": "12px",
+    "depois": "var(--afty-raio, 12px)"
+  },
+  {
+    "arquivo": "abas-g2/abas-g2.css",
+    "seletor": ".e-g2 .m-celula-nome:focus-visible",
+    "antes": "4px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.3333333333333333)"
+  },
+  {
+    "arquivo": "abas-g2/abas-g2.css",
+    "seletor": ".e-g2 .m-celula :is(.m-celula-acao, .m-gatilho)",
+    "antes": "6px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.5)"
+  },
+  {
+    "arquivo": "abas-g2/abas-g2.css",
+    "seletor": ".e-g2 .m-corpo:not([hidden])",
+    "antes": "12px",
+    "depois": "var(--afty-raio, 12px)"
+  },
+  {
+    "arquivo": "abas-g2/abas-g2.css",
+    "seletor": ".e-g2 .m-chip",
+    "antes": "7px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.5833333333333334)"
+  },
+  {
+    "arquivo": "abas-g2/abas-g2.css",
+    "seletor": ".e-g2 .m-rolar",
+    "antes": "9px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.75)"
+  },
+  {
+    "arquivo": "abas-g2/abas-g2.css",
+    "seletor": ".e-g2 .m-detalhe:not([hidden])",
+    "antes": "0 10px 10px 0",
+    "depois": "0 calc(var(--afty-raio, 12px) * 0.8333333333333334) calc(var(--afty-raio, 12px) * 0.8333333333333334) 0"
+  },
+  {
+    "arquivo": "abas-g2/abas-g2.css",
+    "seletor": ".e-g2 .m-aviso-chip",
+    "antes": "7px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.5833333333333334)"
+  },
+  {
+    "arquivo": "abas-g2/abas-g2.css",
+    "seletor": ".e-g2 .m-passo",
+    "antes": "8px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.6666666666666666)"
+  },
+  {
+    "arquivo": "abas-g2/abas-g2.css",
+    "seletor": ".e-g2.m-aba .m-corpo input[type=\"number\"]:not(.afty-campo)",
+    "antes": "7px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.5833333333333334)"
+  },
+  {
+    "arquivo": "abas-g2/abas-g2.css",
+    "seletor": ":where(.e-g2 .m-atributos):is(.m-atributos)",
+    "antes": "14px",
+    "depois": "calc(var(--afty-raio, 12px) * 1.1666666666666667)"
+  },
+  {
+    "arquivo": "abas-g2/abas-g2.css",
+    "seletor": ":where(.e-g2 .m-atributo-celula):is(.m-atributo-celula)",
+    "antes": "10px",
+    "depois": "calc(var(--afty-raio, 12px) * 0.8333333333333334)"
+  },
+  {
+    "arquivo": "abas-g2/abas-g2.css",
+    "seletor": ":where(.e-g2 .m-carga):is(.m-carga)",
+    "antes": "14px",
+    "depois": "calc(var(--afty-raio, 12px) * 1.1666666666666667)"
+  },
+  {
+    "arquivo": "abas-g2/abas-g2.css",
+    "seletor": ":where(.e-g2 .m-avisos-equip):is(.m-avisos-equip)",
+    "antes": "12px",
+    "depois": "var(--afty-raio, 12px)"
+  }
+]

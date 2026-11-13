@@ -1,0 +1,14 @@
+warning: in the working copy of 'asserts/t-g2-sessao-operacoes.mjs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/revisao-automacao/fontes.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/systems/afty/afty-addons-lista.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/systems/afty/ficha/AftyFichaG2.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/systems/afty/ficha/abas-g2/PericiasG2.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/systems/afty/ficha/abas-g2/abas-g2.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/systems/afty/ficha/abas-g2/rolagens-acoes.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/systems/afty/ficha/efeitos/ConsultaG2.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/systems/afty/ficha/efeitos/HistoricoSessao.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/systems/afty/ficha/efeitos/efeitos-dados.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/systems/afty/ficha/efeitos/efeitos-g2.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/systems/afty/ficha/efeitos/pecas.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/systems/afty/ficha/ficha-opcoes-derive.js', LF will be replaced by CRLF the next time Git touches it
+docs/afty-status.md:20282: new blank line at EOF.

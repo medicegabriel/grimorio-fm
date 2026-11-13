@@ -1,0 +1,687 @@
+{
+  "lote": "M03",
+  "data": "2026-10-07",
+  "executor": "Claude Opus 5.5 (Claude Code), executor do bloco G00, M01 a M05, P01, CMB-01 e CMB-02",
+  "estado": "PARCIAL",
+  "base": {
+    "commit": "a0cefc29f32f6bd05e1617fc98014dbda2980483",
+    "alteracoesPreexistentes": [
+      " M AGENTS.md",
+      " M CLAUDE.md",
+      " M asserts/LEIA.md",
+      " M asserts/t-ataque-concentrado.mjs",
+      " M asserts/t-bases-lut-cmb.mjs",
+      " M asserts/t-carteira.mjs",
+      " M asserts/t-dano-acerto-amaldicoado.mjs",
+      " M asserts/t-sistema.mjs",
+      " M asserts/t-treinos-especiais.mjs",
+      " M asserts/t-uniforme-escudo.mjs",
+      " M docs/a-fazer.md",
+      " M docs/afty-addons.md",
+      " M docs/afty-efeitos-criatura.md",
+      " M docs/afty-equipamentos.md",
+      " M docs/afty-formulas-base.md",
+      " M docs/afty-motor-referencia-estrutural.md",
+      " M docs/afty-player.md",
+      " M docs/afty-status.md",
+      " M package.json",
+      " M src/App.jsx",
+      " M src/components/Dashboard.jsx",
+      " M src/systems/afty/AftyCreatureBuilder.jsx",
+      " M src/systems/afty/AftyTabAddons.jsx",
+      " M src/systems/afty/afty-addons.js",
+      " M src/systems/afty/afty-alto-nivel.js",
+      " M src/systems/afty/afty-atributos.js",
+      " M src/systems/afty/afty-combate-aptidoes.js",
+      " M src/systems/afty/afty-combate-conjurador.js",
+      " M src/systems/afty/afty-dano.js",
+      " M src/systems/afty/afty-derive.js",
+      " M src/systems/afty/afty-efeitos-conteudo.js",
+      " M src/systems/afty/afty-efeitos.js",
+      " M src/systems/afty/afty-equipamentos.js",
+      " M src/systems/afty/afty-especializacoes.js",
+      " M src/systems/afty/afty-feiticos.js",
+      " M src/systems/afty/afty-pericias.js",
+      " M src/systems/afty/afty-regras-addon.js",
+      " M src/systems/afty/afty-schema.js",
+      " M src/systems/afty/afty-sistema.js",
+      " M src/systems/afty/afty-treinos-especiais.js",
+      " M src/systems/afty/encontros/PainelDeCombatente.jsx",
+      " M src/systems/afty/encontros/usar-encontro-afty.js",
+      " M src/systems/afty/ficha/AftyFicha.jsx",
+      " M src/systems/afty/ficha/abas/AbaAcoes.jsx",
+      " M src/systems/afty/ficha/abas/AbaPericias.jsx",
+      " M src/systems/afty/ficha/ficha-conteudo.js",
+      " M src/systems/afty/ficha/ficha-rolagem.js",
+      " M src/systems/afty/ficha/ficha-sessao.js",
+      "?? .audit/alma-livre-browser.mjs",
+      "?? .audit/alma-livre-ficha.json",
+      "?? .audit/alma-livre-report.json",
+      "?? .audit/alma-livre-shots/",
+      "?? .audit/energica-critico-asserts.txt",
+      "?? .audit/energica-critico-browser.mjs",
+      "?? .audit/energica-critico-ficha-anexada.json",
+      "?? .audit/energica-critico-report.json",
+      "?? .audit/energica-critico-shots/",
+      "?? .audit/energica-durante-asserts.txt",
+      "?? .audit/energica-durante-browser.mjs",
+      "?? .audit/energica-durante-report.json",
+      "?? .audit/energica-durante-shots/",
+      "?? .audit/energica-visivel-browser.mjs",
+      "?? .audit/energica-visivel-report.json",
+      "?? .audit/energica-visivel-shots/",
+      "?? .audit/gojo-player-baseline-asserts.txt",
+      "?? .audit/gojo-player-browser.mjs",
+      "?? .audit/gojo-player-check.json",
+      "?? .audit/gojo-player-check.mjs",
+      "?? .audit/gojo-player-final-asserts.txt",
+      "?? .audit/gojo-player-lint.txt",
+      "?? .audit/gojo-player-primeira-validacao.txt",
+      "?? .audit/gojo-player-report.json",
+      "?? .audit/gojo-player-shots/",
+      "?? .audit/implemento-marcial-baseline/",
+      "?? .audit/implemento-marcial-browser.mjs",
+      "?? .audit/implemento-marcial-report.json",
+      "?? .audit/implemento-marcial-shots/",
+      "?? .audit/propriedades-armas-browser.mjs",
+      "?? .audit/propriedades-armas-encontro-report.json",
+      "?? .audit/propriedades-armas-encontro.mjs",
+      "?? .audit/propriedades-armas-report.json",
+      "?? .audit/propriedades-armas-shots/",
+      "?? .audit/resiliente-baseline/",
+      "?? .audit/resiliente-browser-report.json",
+      "?? .audit/resiliente-browser.mjs",
+      "?? .audit/resiliente-diff-asserts__LEIA.md.txt",
+      "?? .audit/resiliente-diff-asserts__t-uniforme-escudo.mjs.txt",
+      "?? .audit/resiliente-diff-docs__a-fazer.md.txt",
+      "?? .audit/resiliente-diff-docs__afty-equipamentos.md.txt",
+      "?? .audit/resiliente-diff-docs__afty-status.md.txt",
+      "?? .audit/resiliente-diff-src__systems__afty__AftyCreatureBuilder.jsx.txt",
+      "?? .audit/resiliente-diff-src__systems__afty__afty-equipamentos.js.txt",
+      "?? .audit/resiliente-shots/",
+      "?? .audit/talentos-iniciais-afty.json",
+      "?? .audit/talentos-iniciais-asserts.txt",
+      "?? .audit/talentos-iniciais-browser.mjs",
+      "?? .audit/talentos-iniciais-player.json",
+      "?? .audit/talentos-iniciais-report.json",
+      "?? .audit/talentos-iniciais-shots/",
+      "?? .audit/terceira-classe-browser.mjs",
+      "?? .audit/terceira-classe-report.json",
+      "?? .audit/terceira-classe-shots/",
+      "?? .audit/treinamento-aptidao-browser.mjs",
+      "?? .audit/treinamento-aptidao-report.json",
+      "?? .audit/treinamento-aptidao-shots/",
+      "?? .audit/ultima-pasta-asserts.txt",
+      "?? .audit/ultima-pasta-browser.mjs",
+      "?? .audit/ultima-pasta-report.json",
+      "?? .audit/ultima-pasta-shots/",
+      "?? addons/player-alto-nivel-afty.json",
+      "?? addons/player-progressao-epica.json",
+      "?? addons/talentos-iniciais.json",
+      "?? asserts/t-fontes-revisao.mjs",
+      "?? asserts/t-player-progressao-epica.mjs",
+      "?? asserts/t-propriedades-armas.mjs",
+      "?? asserts/t-reconciliacao-g00.mjs",
+      "?? asserts/t-revisao-g00.mjs",
+      "?? asserts/t-talentos-iniciais.mjs",
+      "?? docs/afty-player-progressao-epica.md",
+      "?? docs/afty-talentos-iniciais.md",
+      "?? docs/revisao-automacao/",
+      "?? previas/",
+      "?? scripts/",
+      "?? src/systems/afty/afty-ataque-concentrado.js",
+      "?? src/systems/afty/afty-propriedades-armas.js",
+      "?? src/systems/afty/ficha/ControlesDeArma.jsx",
+      "?? src/systems/afty/ui/EscolhaTipoEncantamento.jsx",
+      "?? src/useDashboardView.js"
+    ],
+    "hashesIniciais": {
+      "src/systems/afty/afty-combate.js": "7a809359fec3258e7ddb09e95621faeeb1783933f06e9ffd57940c16691a7050",
+      "src/systems/afty/afty-golpe-especial.js": "1e0873b4836e4f02e0ea378b23ab069fa12eff7dd6b4fd3e868fc307b257628d",
+      "src/systems/afty/afty-addons.js": "d4b746d5228f2e6f7a1a14cf30fde2ee35603e2939f6e2be051b758d1d2636a7",
+      "asserts/t-estados-organiza.mjs": "9ac2616a28147eb80da9f764c4d4aa3b2f6a658e001f96785d07569b7aa14fe8",
+      "asserts/t-revisao-m04.mjs": "AUSENTE (arquivo novo desta entrega)",
+      "asserts/t-revisao-cmb02.mjs": "AUSENTE (arquivo novo desta entrega)",
+      "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a"
+    },
+    "hashesFinais": {
+      "asserts/LEIA.md": "f671186e58de3142f2259403843a9acb4d273e2bd2ea8ace4c415884dfd86a41",
+      "asserts/t-estados-organiza.mjs": "b64504fafd32df0f89eafde26cdec78922143609099a33c09ac063c55107f755",
+      "asserts/t-revisao-cmb02.mjs": "18c78ec6125b31f8d6d8f0bab1605aa4d4107c58e8b355f0934a0c4f31a97dfd",
+      "asserts/t-revisao-m04.mjs": "b3352ea51341fb992821655169ea0cfbdaa991b994d7fc06fcab80327924cc0c",
+      "docs/a-fazer.md": "7ddebec5e5a84e4dde9d3b5b69e31b7c9f2635274428cb2ec67a2f5c3274a8fa",
+      "docs/afty-status.md": "b6cb256ee3ddf59a06abef18f34eb9b3927ec9a4d34b7001f11d07d8516343a7",
+      "docs/revisao-automacao/M03/revisao.md": "d9c89e7f447db3a2c1991fe44fcdacaa6216ab4d0682686201005b9d8b1e909c",
+      "docs/revisao-automacao/bloco-2026-10-07/antes/aut4-antes.log": "6d4bda35fe02eabf2bf2733f32d01cb43e5ef5445af797a224a685e067b59b76",
+      "docs/revisao-automacao/bloco-2026-10-07/antes/ge1-antes.log": "33f1f32a1d06be76d52f9b62f70c2c4646c91638a24bd3b03bd164c54bd9f1a8",
+      "docs/revisao-automacao/bloco-2026-10-07/antes/ge1-antes.mjs": "e9c0fadeec598035376601946082950792f1ac89d266ea64ec16f705f835763e",
+      "docs/revisao-automacao/bloco-2026-10-07/antes/repro-antes.log": "eaae27580e4b06ec4aa33ed1a36d3deb375bf89b0edc000f3e3026f1eff05a96",
+      "docs/revisao-automacao/bloco-2026-10-07/antes/repro-antes.mjs": "7feef5d6972f1332f2c33d761b217b476463746d9e96eb5d89170491a360beb8",
+      "docs/revisao-automacao/bloco-2026-10-07/entrada/arquivos-sujos.txt": "7d4d30dad123551f1d54f4c01c9f526a23927a6eb96c5016edc157b6fed005d3",
+      "docs/revisao-automacao/bloco-2026-10-07/entrada/diffstat.txt": "3aab3bae01bbabec441861a48cb01cd0a9342feff167032f5230e48d11bdb57d",
+      "docs/revisao-automacao/bloco-2026-10-07/entrada/head.txt": "5969dacf8d27ccfb130f5c98c7cc2ed69f30c725e4f18da3c05899dded737337",
+      "docs/revisao-automacao/bloco-2026-10-07/entrada/hora-entrada.txt": "309526148fed9ab88fe8c340211d7bd0005bf30841d4fc62fda04378d2aa3e6f",
+      "docs/revisao-automacao/bloco-2026-10-07/entrada/sha-entrada.txt": "8332f72e4849969e006ea888680e12aa63bbf4b9a6b58d7fc79a57f239311c79",
+      "docs/revisao-automacao/bloco-2026-10-07/entrada/status.txt": "af1d6a059a5dfc19ec1a66c63180b7cd178a0d2a0187a4e6e5334bab836bfea0",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-asserts.log": "b3b242b8fae06bb31aa12f1d6f950435d5a1a04318ab7bb6c5d347a94da7d6d9",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-build.log": "ffc520c686f028ec94a4c0663dfebf42c0872267f92203e53f8aed4e4b9646d8",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-filtro.log": "c709ace873f67ab8bf5b82d8150a8e5377fc333fd1310ad3c137fede34d54bc5",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-imitacao.log": "a6602d57b0fa98902d00f793b22869016c08e2668c205f00e7d35f46d9175ed6",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-lint-afty.log": "a1a3c45b5f8afd4e4a0ea923d76332d819c6e550c42bede8977590c7f12efd7a",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-lint-campanha.log": "418a5c17f33c70e99b0cc0a07fce69191489cfedc94164bfa903785777c5bd4b",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-lint-padrao-resumo.log": "c20f9046f1b2b5fba58086655b35a65d96d0ba4e1c79d24cc2f8f9858f1ad984",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-lint-sem-audit.log": "05d3bb49bdbd6d730fa53a97e06062c1da986ec2b25efee8ee2aa9f89852556d",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-lint-testes-novos.log": "418a5c17f33c70e99b0cc0a07fce69191489cfedc94164bfa903785777c5bd4b",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-ordem.log": "2edc57bee731aaa77484778482d76895f0e583ce0e9ce7c36a0fe73d7d1bd0ab",
+      "docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-asserts.log": "b01271534b9cf687bd3181e08b477c25497bcd0f3f5fc752fba2b6544e182384",
+      "docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-cobertura.log": "0b971e7d602275b20df7730c5d1081c26d4b5deb296a24b9b54916b373f9a6d2",
+      "docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-filtro.log": "c709ace873f67ab8bf5b82d8150a8e5377fc333fd1310ad3c137fede34d54bc5",
+      "docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-imitacao.log": "a6602d57b0fa98902d00f793b22869016c08e2668c205f00e7d35f46d9175ed6",
+      "docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-inventario.log": "acb72fdbdd7da29046a473e5260d16a2433ede102c21eca5fcddc5bbc460c9f4",
+      "docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-lint-afty.log": "a1a3c45b5f8afd4e4a0ea923d76332d819c6e550c42bede8977590c7f12efd7a",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/cura-afty-390.png": "8f185e4f67eb5ada63495a941dbb24fdd4b174a58942c6f09bfb55ce5c70d401",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/cura-player-1440.png": "d30038ddd4e0c7a03bee4f4dc87dd29abca89529d3ec8ae7de4cc37118aeaf4d",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/dados-pericia-afty-390.png": "c873e18e94057d3e503c96301105b91aef5f9578b48037b4ef66ed23a84d3aa3",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/dados-pericia-player-1440.png": "0cd7f01588ad28d90e68a2d525afa50238be60040695e0133ba7375bb52d81ff",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/multi-baixa-player-1440.png": "224b1212c6defe7f2823ef12a87be2e43b557664b1c560d87711cdb2861e0694",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/multi-baixa-player-390.png": "2d5fb8c94e7970ded91ef384b290e52f129c80d5b64298f5ba06b206164468e5",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/multi-ja-afty-1440.png": "20b97b2601f308c5687d02fc197f4e5c33742ed34d05c7909187b9796be8b441",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/multi-ja-player-1440.png": "b4f8802956031585e43eacc9f979da51e851a754116b68dec5d4dfb153e858d9",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/nav-cura.mjs": "435e49dd649c29c5faf4e19387fdc1913abd75a9986abafd382665ae797558c6",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/nav-motor.mjs": "b740b95bf3b564c42cdeb5e96a0357c33e1ca81f58729569bd7d9d7afd27ce18",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/nav-preciso.mjs": "a4b39b16007d593e2725b9df3aefad4101202a3a2801387d495bbb47194fa9d0",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/preciso-encontro-afty-390.png": "c4244da070cc05db3c09ffbf7fa2a4745788869a8fe0ce5a772b1e7c7a6b8cf7",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/preciso-encontro-player-1440.png": "56910ea7baacd19b606c4a3c37e820453fe273ccdef4b020148dab1c682b0515",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/preciso-ficha-afty-1440.png": "bf69400acd375d07c9d408343ca8bd8a5f4a1035887d4e1d4c6e28a11d45a2b4",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/preciso-ficha-player-1440.png": "34a26ad2d0268583486ca90015f8587d664c7b03240184dcf0b8949866ca0862",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/relatorio-cura.json": "efe412ccbf4117990d58c900551d15be8eebc8aa22a4ae1033bfc08f725c5ace",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/relatorio-preciso.json": "8feefd06ff2dddeafbe6701175650a696754597c253169e3872627f88b86b994",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/relatorio.json": "893b551c1ba7f4c8a5055ea59efaeee3fdf48774ef4d6b0f55adcaa7686686b7",
+      "src/systems/afty/afty-addons.js": "49c9cb3807f031759cdbda184919eccbda588375d036cd959730e78ad20a77f5",
+      "src/systems/afty/afty-combate.js": "3a3224319adbe65069366c58f81db3581aabcf1d76ac951940dcbc72b7f4cf38",
+      "src/systems/afty/afty-golpe-especial.js": "85fa38d950a51760501291a1fe8b1d8febcf2b2f5527225b91c541ebbf23b07c",
+      "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a"
+    },
+    "hashesConsultados": {
+      "AGENTS.md": "3f4505f6a26fcb47059f15c558e78d4df4fa2932fabaf3006ef6042ee54291f4",
+      "CLAUDE.md": "8b7edb4c79428cac22a4fc33b2f576032dae956d1ac5cab70dd4e261059e121a",
+      "docs/revisao-automacao/LEIA.md": "ee5be39540d1d61b7a26999b2ee931aa452fde07529c78659830b017a62ca5b3",
+      "docs/revisao-automacao/schema-registro.json": "ebaefd0b0e3021f81aae31634b62e07a43a2a8542e060307385f9b584e35e513",
+      "docs/revisao-automacao/campanha.json": "090357cf8236d766c63ac4974174c4b5539dde532289180732b043ca2974c2e3",
+      "docs/revisao-automacao/inventario.json": "cf546434eca6c45c6534d9225164c4ac1625be3332e73cd336d458d34166c26d",
+      "docs/revisao-automacao/fontes.json": "6d6b9c42cd42b40aa9b0c408d60623e44556891eeee4d1e60e6d2f253829b4e9",
+      "docs/revisao-automacao/fonte-livro-regras.json": "c5c560f4c02d520700aacda5eb382011467805b3822a16c21000a65a5cf32fcd",
+      "asserts/rodar.mjs": "70ed6da2f09ca5219b0ab3c22fcd89defe7b9fc10efd43ed28cb412914f414f4",
+      "C:/Projetos/Grimorio/_backup-livro/correcoes.md": "86e4d7d18f86c1dfa69dbbe21e4fcbcb85d0a9611cbf94a338091798e0aeaeb6"
+    },
+    "arquivosEntregues": [
+      "asserts/LEIA.md",
+      "asserts/t-estados-organiza.mjs",
+      "asserts/t-revisao-cmb02.mjs",
+      "asserts/t-revisao-m04.mjs",
+      "docs/a-fazer.md",
+      "docs/afty-status.md",
+      "docs/revisao-automacao/M03/registro.json",
+      "docs/revisao-automacao/M03/revisao.md",
+      "docs/revisao-automacao/bloco-2026-10-07/antes/aut4-antes.log",
+      "docs/revisao-automacao/bloco-2026-10-07/antes/ge1-antes.log",
+      "docs/revisao-automacao/bloco-2026-10-07/antes/ge1-antes.mjs",
+      "docs/revisao-automacao/bloco-2026-10-07/antes/repro-antes.log",
+      "docs/revisao-automacao/bloco-2026-10-07/antes/repro-antes.mjs",
+      "docs/revisao-automacao/bloco-2026-10-07/entrada/arquivos-sujos.txt",
+      "docs/revisao-automacao/bloco-2026-10-07/entrada/diffstat.txt",
+      "docs/revisao-automacao/bloco-2026-10-07/entrada/head.txt",
+      "docs/revisao-automacao/bloco-2026-10-07/entrada/hora-entrada.txt",
+      "docs/revisao-automacao/bloco-2026-10-07/entrada/sha-entrada.txt",
+      "docs/revisao-automacao/bloco-2026-10-07/entrada/status.txt",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-asserts.log",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-build.log",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-filtro.log",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-imitacao.log",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-lint-afty.log",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-lint-campanha.log",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-lint-padrao-resumo.log",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-lint-sem-audit.log",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-lint-testes-novos.log",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-ordem.log",
+      "docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-asserts.log",
+      "docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-cobertura.log",
+      "docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-filtro.log",
+      "docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-imitacao.log",
+      "docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-inventario.log",
+      "docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-lint-afty.log",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/cura-afty-390.png",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/cura-player-1440.png",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/dados-pericia-afty-390.png",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/dados-pericia-player-1440.png",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/multi-baixa-player-1440.png",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/multi-baixa-player-390.png",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/multi-ja-afty-1440.png",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/multi-ja-player-1440.png",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/nav-cura.mjs",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/nav-motor.mjs",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/nav-preciso.mjs",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/preciso-encontro-afty-390.png",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/preciso-encontro-player-1440.png",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/preciso-ficha-afty-1440.png",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/preciso-ficha-player-1440.png",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/relatorio-cura.json",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/relatorio-preciso.json",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/relatorio.json",
+      "src/systems/afty/afty-addons.js",
+      "src/systems/afty/afty-combate.js",
+      "src/systems/afty/afty-golpe-especial.js"
+    ],
+    "classificacao": "hashesFinais guarda os artefatos entregues (o registro fica no manifesto, sem autorreferência) e a fonte absoluta. hashesIniciais vem do snapshot de entrada; 'AUSENTE' marca arquivo novo. Evidências comuns do bloco em docs/revisao-automacao/bloco-2026-10-07."
+  },
+  "itens": [
+    {
+      "chave": "afty-combate.js::COMBATE_ESTADOS::@catalogo",
+      "id": "COMBATE_ESTADOS",
+      "nome": "Estados de combate",
+      "proprietario": "M03"
+    },
+    {
+      "chave": "afty-combate.js::COMBATE_ESTADOS::armasAbsolutas",
+      "id": "armasAbsolutas",
+      "nome": "Armas Absolutas (estado)",
+      "proprietario": "M03"
+    },
+    {
+      "chave": "afty-combate.js::COMBATE_ESTADOS::invencivelSobOSol",
+      "id": "invencivelSobOSol",
+      "nome": "Invencível sob o Sol (estado)",
+      "proprietario": "M03"
+    },
+    {
+      "chave": "afty-combate.js::COMBATE_ESTADOS::golpePreciso",
+      "id": "golpePreciso",
+      "nome": "Golpe Especial · Preciso (estado)",
+      "proprietario": "M03"
+    },
+    {
+      "chave": "afty-combate.js::COMBATE_VARS::golpe_preciso",
+      "id": "golpe_preciso",
+      "nome": "Variável golpe_preciso",
+      "proprietario": "M03"
+    }
+  ],
+  "parcelas": [
+    {
+      "sistemas": [
+        "afty",
+        "player"
+      ],
+      "dependencias": [],
+      "pendencias": [
+        "A aba Buffs com estado de addon nessas marcas não foi exercitada no navegador."
+      ],
+      "evidencia": "NÃO VERIFICADA",
+      "chaveItem": "afty-combate.js::COMBATE_ESTADOS::@catalogo",
+      "parcela": "controles de estado de addon (M03-D07 e M04-A03)",
+      "fontes": [
+        {
+          "caminho": "docs/afty-addons.md",
+          "versao": "SHA-256 final desta entrega",
+          "local": "Os três controles que o estado nativo já tinha"
+        }
+      ],
+      "esperado": "umaVezPorRodada, exclusivoCom e custoPE escritos no pacote chegam ao estado derivado e a sessão os consome como no nativo.",
+      "observado": "Antes: descartados. Depois: transportados, validados e consumidos por alteraEstadoCombate; custoPE exibido.",
+      "regra": "CONFIRMADA",
+      "execucao": "COMPLETA",
+      "motor": "INTEGRADO",
+      "autoria": "ADDON",
+      "percurso": [
+        {
+          "etapa": "descritor",
+          "arquivo": "src/systems/afty/afty-addons.js",
+          "funcao": "estadosCombateDeAddon"
+        },
+        {
+          "etapa": "portão",
+          "arquivo": "src/systems/afty/afty-addons.js",
+          "funcao": "validarPacote (estadosCombate)"
+        },
+        {
+          "etapa": "sessão",
+          "arquivo": "src/systems/afty/ficha/ficha-sessao.js",
+          "funcao": "alteraEstadoCombate"
+        },
+        {
+          "etapa": "tela",
+          "arquivo": "src/systems/afty/ficha/abas/AbaBuffs.jsx",
+          "funcao": "bloqueado por umaVezPorRodada; custo exibido"
+        }
+      ],
+      "provas": [
+        {
+          "cenario": "estados foco e reserva com custos 2 e '1 + 2', e 4 e 0, nos dois sistemas: descritor, exclusividade, segunda ativação, nova rodada, PE não descontado, validação",
+          "esperado": "paridade com o nativo",
+          "observado": "como esperado",
+          "estado": "PASSOU",
+          "comandoOuPassos": "node asserts/t-revisao-m04.mjs",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/final/final-asserts.log"
+          ]
+        }
+      ],
+      "provaAutoria": "estadosCombate no JSON do pacote, instalado em Outros > Addons."
+    },
+    {
+      "sistemas": [
+        "afty",
+        "player"
+      ],
+      "dependencias": [],
+      "pendencias": [
+        "Pergunta 3 de BLOCO-2026-10-07-perguntas e entrada M03-D01-transacao-de-uso.",
+        "Eventos com alvo (crítico, abate, reação): entrada 'Resolver no Encontro os efeitos de alvo das oito posturas do Ápice'.",
+        "Contador de usos das outras classes e fim de turno do Vislumbre: entradas preexistentes da fila."
+      ],
+      "evidencia": "NÃO VERIFICADA",
+      "chaveItem": "afty-combate.js::COMBATE_ESTADOS::@catalogo",
+      "parcela": "transação genérica de usar uma habilidade (M03-D01)",
+      "fontes": [
+        {
+          "caminho": "docs/a-fazer.md",
+          "versao": "SHA-256 final desta entrega",
+          "local": "M03-D01-transacao-de-uso"
+        }
+      ],
+      "esperado": "Validar aquisição e recursos, cobrar uma vez, aplicar e registrar por um resolvedor único.",
+      "observado": "Operações separadas; cobrança só por ramo de id (Invencível, Talismã); custoPE de estado só exibido por decisão vigente.",
+      "regra": "AGUARDA AUTOR",
+      "execucao": "PARCIAL",
+      "motor": "CAPACIDADE AUSENTE",
+      "autoria": "ADDON",
+      "percurso": [
+        {
+          "etapa": "sessão",
+          "arquivo": "src/systems/afty/ficha/ficha-sessao.js",
+          "funcao": "alteraEstadoCombate / gastaPe / marcaUso"
+        }
+      ],
+      "provas": [
+        {
+          "cenario": "leitura de código e suíte existente de custo",
+          "esperado": "documentar",
+          "observado": "conforme descrito",
+          "estado": "NÃO EXECUTADO",
+          "comandoOuPassos": "node asserts/t-custo-pe.mjs",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/final/final-asserts.log"
+          ]
+        }
+      ]
+    },
+    {
+      "sistemas": [
+        "afty",
+        "player"
+      ],
+      "dependencias": [],
+      "pendencias": [
+        "Pergunta 3 de BLOCO-2026-10-07-perguntas.",
+        "Localização da fonte no controle: LUT10-armas-absolutas-fonte."
+      ],
+      "evidencia": "NÃO VERIFICADA",
+      "chaveItem": "afty-combate.js::COMBATE_ESTADOS::armasAbsolutas",
+      "parcela": "custo, manutenção e expiração",
+      "fontes": [
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "local": "ARMAS ABSOLUTAS: 2 PE por uma rodada; 2 PE por rodada para manter, senão encerra",
+          "paginaImpressa": 61,
+          "marcadorPagina": "<!-- página 61 -->"
+        }
+      ],
+      "esperado": "Depende do autor: cobrar e expirar como o Invencível, ou exibir o custo com a marca de PE não descontado.",
+      "observado": "Bônus pelo Motor; sem custoPE declarado, sem manutenção e sem expiração.",
+      "regra": "AGUARDA AUTOR",
+      "execucao": "PARCIAL",
+      "motor": "PARCIAL",
+      "autoria": "INACESSÍVEL",
+      "percurso": [
+        {
+          "etapa": "estado",
+          "arquivo": "src/systems/afty/afty-combate.js",
+          "funcao": "COMBATE_ESTADOS.armasAbsolutas"
+        },
+        {
+          "etapa": "efeitos",
+          "arquivo": "src/systems/afty/afty-efeitos-conteudo.js",
+          "funcao": "HABILIDADE_EFEITOS.lut_armas_absolutas"
+        }
+      ],
+      "provas": [
+        {
+          "cenario": "leitura de código",
+          "esperado": "documentar",
+          "observado": "conforme descrito",
+          "estado": "NÃO EXECUTADO",
+          "comandoOuPassos": "leitura",
+          "evidencias": []
+        }
+      ]
+    },
+    {
+      "sistemas": [
+        "afty",
+        "player"
+      ],
+      "dependencias": [],
+      "pendencias": [
+        "Nota de 2026-10-07 em 'Condições: leituras para confirmar', item 6."
+      ],
+      "evidencia": "NÃO VERIFICADA",
+      "chaveItem": "afty-combate.js::COMBATE_ESTADOS::invencivelSobOSol",
+      "parcela": "Condenado no custo de ativação e manutenção",
+      "fontes": [
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "local": "Condenado: o custo em PE de todas as suas habilidades aumenta",
+          "paginaImpressa": 318,
+          "marcadorPagina": "<!-- página 318 -->"
+        }
+      ],
+      "esperado": "Depende do autor (a fonte do Ápice não está no Livro).",
+      "observado": "Ativação e manutenção cobram 4 PE fixos por gastaPe, fora do custoEmPe.",
+      "regra": "AGUARDA AUTOR",
+      "execucao": "PARCIAL",
+      "motor": "LÓGICA ESPECÍFICA",
+      "autoria": "INACESSÍVEL",
+      "percurso": [
+        {
+          "etapa": "ativação",
+          "arquivo": "src/systems/afty/ficha/ficha-sessao.js",
+          "funcao": "alteraEstadoCombate (invencivelSobOSol)"
+        },
+        {
+          "etapa": "manutenção",
+          "arquivo": "src/systems/afty/ficha/ficha-sessao.js",
+          "funcao": "avancaInvencivelSobOSol"
+        }
+      ],
+      "provas": [
+        {
+          "cenario": "leitura de código",
+          "esperado": "documentar",
+          "observado": "conforme descrito",
+          "estado": "NÃO EXECUTADO",
+          "comandoOuPassos": "leitura",
+          "evidencias": []
+        }
+      ]
+    },
+    {
+      "sistemas": [
+        "afty",
+        "player"
+      ],
+      "dependencias": [],
+      "pendencias": [
+        "O teto de 20 raízes de t-estados-organiza virou 21, com um assert novo de 20 caixas de primeiro nível; a auditoria deve conferir a troca."
+      ],
+      "evidencia": "NÃO VERIFICADA",
+      "chaveItem": "afty-combate.js::COMBATE_ESTADOS::golpePreciso",
+      "parcela": "Preciso como estado de bancada",
+      "fontes": [
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "local": "Preciso: recebe vantagem no ataque",
+          "paginaImpressa": 65,
+          "marcadorPagina": "<!-- página 65 -->"
+        }
+      ],
+      "esperado": "Marcar Preciso no montador liga golpePreciso em sessao.combate, e o Motor lê golpe_preciso.",
+      "observado": "Implementado; a caixa Golpe Especial da aba Buffs tem seis membros; a sub-aba Combatente tem 21 raízes e 14 caixas.",
+      "regra": "CONFIRMADA",
+      "execucao": "COMPLETA",
+      "motor": "INTEGRADO",
+      "autoria": "INTERFACE",
+      "percurso": [
+        {
+          "etapa": "estado",
+          "arquivo": "src/systems/afty/afty-combate.js",
+          "funcao": "COMBATE_ESTADOS.golpePreciso"
+        },
+        {
+          "etapa": "marca",
+          "arquivo": "src/systems/afty/afty-golpe-especial.js",
+          "funcao": "PROPRIEDADES_GOLPE.preciso.estado"
+        },
+        {
+          "etapa": "sessão",
+          "arquivo": "src/systems/afty/ficha/ficha-sessao.js",
+          "funcao": "marcaPropriedadeGolpe"
+        }
+      ],
+      "provas": [
+        {
+          "cenario": "ANTES da correção: marcar Preciso",
+          "esperado": "grava em combate",
+          "observado": "gravava em golpeEspecial, rolagem normal",
+          "estado": "FALHOU",
+          "comandoOuPassos": "node bloco-2026-10-07/antes/repro-antes.mjs (árvore de entrada)",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/antes/ge1-antes.log"
+          ]
+        },
+        {
+          "cenario": "marcaPropriedadeGolpe e o catálogo de estados",
+          "esperado": "estado ligado; contagem do catálogo 65",
+          "observado": "como esperado",
+          "estado": "PASSOU",
+          "comandoOuPassos": "node asserts/t-revisao-cmb02.mjs e node asserts/t-estados-organiza.mjs",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/final/final-asserts.log"
+          ]
+        },
+        {
+          "cenario": "Navegador: botão Preciso no montador da Ficha",
+          "esperado": "golpePreciso true na sessão",
+          "observado": "como esperado nos quatro casos",
+          "estado": "PASSOU",
+          "comandoOuPassos": "node bloco-2026-10-07/navegador/nav-preciso.mjs",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/navegador/relatorio-preciso.json"
+          ]
+        }
+      ],
+      "provaAutoria": "Montador do Golpe Especial na aba Ações da Ficha Final."
+    },
+    {
+      "sistemas": [
+        "afty",
+        "player"
+      ],
+      "dependencias": [],
+      "pendencias": [],
+      "evidencia": "NÃO VERIFICADA",
+      "chaveItem": "afty-combate.js::COMBATE_VARS::golpe_preciso",
+      "parcela": "variável da DSL",
+      "fontes": [
+        {
+          "caminho": "docs/automacao-dsl.md",
+          "versao": "SHA-256 final desta entrega",
+          "local": "Estados de combate do Afty viram variáveis snake_case"
+        }
+      ],
+      "esperado": "golpe_preciso existe a zero e vale 1 com a marca em combate.",
+      "observado": "Gerada pelo catálogo, como golpe_atroz.",
+      "regra": "CONFIRMADA",
+      "execucao": "COMPLETA",
+      "motor": "INTEGRADO",
+      "autoria": "INTERFACE",
+      "percurso": [
+        {
+          "etapa": "contexto",
+          "arquivo": "src/systems/afty/afty-combate.js",
+          "funcao": "combateDslVars"
+        }
+      ],
+      "provas": [
+        {
+          "cenario": "derive com e sem a marca",
+          "esperado": "vantagem só com a marca",
+          "observado": "como esperado",
+          "estado": "PASSOU",
+          "comandoOuPassos": "node asserts/t-revisao-cmb02.mjs",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/final/final-asserts.log"
+          ]
+        }
+      ],
+      "provaAutoria": "Variável visível no seletor { } do editor, grupo de combate."
+    }
+  ],
+  "validacao": {
+    "linhaDeBase": [
+      "2026-10-07T03:44Z: node asserts/rodar.mjs, 156 arquivos e 9144 asserts, todos passaram (docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-asserts.log)",
+      "t-filtro-habilidades e t-imitacao passaram; eslint src/systems/afty limpo; inventário 11900 chaves, cobertura PASSOU (docs/revisao-automacao/bloco-2026-10-07/linha-de-base)"
+    ],
+    "resultadoFinal": [
+      "node asserts/rodar.mjs: 163 arquivos e 9469 asserts, todos passaram (docs/revisao-automacao/bloco-2026-10-07/final/final-asserts.log)",
+      "t-filtro-habilidades, t-imitacao e t-ordem-modulos (34) passaram; npm run build concluiu; eslint src/systems/afty limpo; eslint das ferramentas da campanha e dos sete testes novos limpo; lint padrão 748 problemas e 22 sem .audit, iguais à linha de base (docs/revisao-automacao/bloco-2026-10-07/final)",
+      "Reconciliação G00/rechecagem/proposta-02.json aplicada: 10 adições, 49 atualizações, nenhum lote aprovado invalidado; t-reconciliacao-g00 passou",
+      "Navegador (Chrome, contextos isolados): nav-motor, nav-preciso e nav-cura PASSOU em Player e Afty, 1440 e 390 px (docs/revisao-automacao/bloco-2026-10-07/navegador)"
+    ],
+    "naoVerificado": [
+      "Matriz completa das 347 chaves do M03.",
+      "Reabertura, autosave e desfazer da sessão.",
+      "Descanso e fim de combate para os estados novos."
+    ],
+    "intervalo": "2026-10-07T03:43:51Z (entrada) a 2026-10-07 (manifesto); validação final iniciada 2026-10-07T16:3x"
+  },
+  "auditoria": {
+    "estado": "NÃO EXECUTADA",
+    "hashesExaminados": {},
+    "achados": []
+  },
+  "fonteLivroRegras": {
+    "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+    "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+    "data": "2026-10-07"
+  },
+  "entregaEstavel": {
+    "aguardaAuditoria": true,
+    "manifesto": "M03/entrega-sha256.json",
+    "criterio": "Achados conhecidos tratados e entregues para auditoria independente. Estado PARCIAL: a matriz completa do inventário do lote não foi feita, e parcelas aguardam o autor ou capacidade."
+  },
+  "pendenciasNaFila": [
+    "docs/a-fazer.md: BLOCO-2026-10-07-perguntas",
+    "docs/a-fazer.md: M03-D01-transacao-de-uso",
+    "docs/a-fazer.md: LUT10-armas-absolutas-fonte",
+    "docs/a-fazer.md: O contador de usos cobre só o Combatente",
+    "docs/a-fazer.md: O ponto de Fadiga do Vislumbre não entra sozinho no fim do turno",
+    "docs/a-fazer.md: Resolver no Encontro os efeitos de alvo das oito posturas do Ápice"
+  ],
+  "diagnosticosAnteriores": "C:/Projetos/Grimorio/revisao-noturna/execucoes (fila.json, modo auditoria): executor e auditor somente leitura, parecer INCONCLUSIVO; preservados."
+}

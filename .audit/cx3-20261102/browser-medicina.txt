@@ -1,0 +1,8 @@
+player 1440 Clássica e Encontro Medicina OK
+player 1440 G2 Medicina OK
+player 390 Clássica e Encontro Medicina OK
+player 390 G2 Medicina OK
+afty 1440 Clássica e Encontro Medicina OK
+afty 1440 G2 Medicina OK
+afty 390 Clássica e Encontro Medicina OK
+afty 390 G2 Medicina OK

@@ -1,0 +1,54 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "oficios": true,
+    "potencial": true,
+    "excedente": true,
+    "regeneracao": true,
+    "fluxo": true,
+    "auraControlada": true,
+    "auraImpenetravel": true,
+    "estimulo": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "oficios": true,
+    "potencial": true,
+    "excedente": true,
+    "regeneracao": true,
+    "fluxo": true,
+    "auraControlada": true,
+    "auraImpenetravel": true,
+    "estimulo": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "oficios": true,
+    "potencial": true,
+    "excedente": true,
+    "regeneracao": true,
+    "fluxo": true,
+    "auraControlada": true,
+    "auraImpenetravel": true,
+    "estimulo": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "oficios": true,
+    "potencial": true,
+    "excedente": true,
+    "regeneracao": true,
+    "fluxo": true,
+    "auraControlada": true,
+    "auraImpenetravel": true,
+    "estimulo": true,
+    "erros": []
+  }
+]

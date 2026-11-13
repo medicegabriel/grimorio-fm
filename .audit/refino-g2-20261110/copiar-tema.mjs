@@ -1,0 +1,16 @@
+import { monta, BASE } from "./base.mjs";
+const { p, saida, fim } = await monta({ tamanho: "1440x900", ficha: "mesa", aba: "acoes", tema: "arcane", prefixo: "ct" });
+await p.context().grantPermissions(["clipboard-read", "clipboard-write"], { origin: BASE });
+await p.getByRole("button", { name: "Mais opções da ficha" }).click();
+await p.getByRole("menuitem", { name: "Aparência" }).click(); await p.waitForTimeout(400);
+await p.getByRole("button", { name: "Copiar o tema" }).click(); await p.waitForTimeout(300);
+const txt = await p.evaluate(() => navigator.clipboard.readText());
+saida[txt.includes("presetId") ? "OK    copiou JSON do tema" : "FALHA copiou"] = txt.length;
+await p.getByRole("button", { name: "Voltar ao tema padrão" }).click(); await p.waitForTimeout(300);
+await p.getByRole("button", { name: "Colar um tema" }).click(); await p.waitForTimeout(400);
+saida.aviso = await p.locator('[role=status]').first().textContent().catch(() => null);
+saida[(await p.getByRole("button", { name: "Restaurar" }).count()) ? "OK    Restaurar disponível" : "FALHA sem Restaurar"] = "";
+await p.evaluate(() => navigator.clipboard.writeText("não é json"));
+await p.getByRole("button", { name: "Colar um tema" }).click(); await p.waitForTimeout(300);
+saida.avisoInvalido = await p.locator('[role=status]').first().textContent().catch(() => null);
+await fim();

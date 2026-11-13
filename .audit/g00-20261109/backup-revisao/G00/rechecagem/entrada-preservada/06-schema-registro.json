@@ -1,0 +1,389 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Registro padronizado de revisão do Motor de Automação",
+  "type": "object",
+  "required": [
+    "lote",
+    "data",
+    "estado",
+    "base",
+    "itens",
+    "parcelas",
+    "validacao",
+    "auditoria"
+  ],
+  "properties": {
+    "lote": {
+      "type": "string",
+      "minLength": 1
+    },
+    "data": {
+      "type": "string",
+      "format": "date"
+    },
+    "executor": {
+      "type": "string"
+    },
+    "auditor": {
+      "type": "string"
+    },
+    "estado": {
+      "type": "string",
+      "enum": [
+        "NÃO REVISADO",
+        "EM REVISÃO",
+        "PARCIAL",
+        "AGUARDA AUTOR",
+        "IMPLEMENTADO, AGUARDA AUDITORIA",
+        "AUDITADO COM PENDÊNCIAS",
+        "APROVADO"
+      ]
+    },
+    "base": {
+      "type": "object",
+      "required": [
+        "commit",
+        "alteracoesPreexistentes",
+        "hashesIniciais",
+        "hashesFinais"
+      ],
+      "properties": {
+        "commit": {
+          "type": "string"
+        },
+        "alteracoesPreexistentes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hashesIniciais": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "hashesFinais": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "itens": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "chave",
+          "id",
+          "nome",
+          "proprietario"
+        ],
+        "properties": {
+          "chave": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "proprietario": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "parcelas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "chaveItem",
+          "parcela",
+          "sistemas",
+          "fontes",
+          "esperado",
+          "observado",
+          "regra",
+          "execucao",
+          "motor",
+          "autoria",
+          "evidencia",
+          "percurso",
+          "provas",
+          "dependencias",
+          "pendencias"
+        ],
+        "properties": {
+          "chaveItem": {
+            "type": "string"
+          },
+          "parcela": {
+            "type": "string"
+          },
+          "sistemas": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "enum": [
+                "afty",
+                "player"
+              ]
+            }
+          },
+          "fontes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "caminho",
+                "versao",
+                "local"
+              ],
+              "properties": {
+                "caminho": {
+                  "type": "string"
+                },
+                "versao": {
+                  "type": "string"
+                },
+                "local": {
+                  "type": "string"
+                },
+                "decisao": {
+                  "type": "string"
+                },
+                "sha256": {
+                  "type": "string"
+                },
+                "paginaImpressa": {},
+                "marcadorPagina": {},
+                "uso": {
+                  "type": "string"
+                },
+                "motivoDesempate": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "esperado": {
+            "type": "string"
+          },
+          "observado": {
+            "type": "string"
+          },
+          "regra": {
+            "type": "string",
+            "enum": [
+              "CONFIRMADA",
+              "AGUARDA AUTOR",
+              "DIVERGÊNCIA"
+            ]
+          },
+          "execucao": {
+            "type": "string",
+            "enum": [
+              "COMPLETA",
+              "PARCIAL",
+              "AUSENTE",
+              "MANUAL INTENCIONAL"
+            ]
+          },
+          "motor": {
+            "type": "string",
+            "enum": [
+              "INTEGRADO",
+              "PARCIAL",
+              "LÓGICA ESPECÍFICA",
+              "CAPACIDADE AUSENTE"
+            ]
+          },
+          "autoria": {
+            "type": "string",
+            "enum": [
+              "INTERFACE",
+              "ADDON",
+              "INACESSÍVEL"
+            ]
+          },
+          "evidencia": {
+            "type": "string",
+            "enum": [
+              "NÃO VERIFICADA",
+              "APROVADA",
+              "FALHOU"
+            ]
+          },
+          "percurso": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "etapa",
+                "arquivo",
+                "funcao"
+              ],
+              "properties": {
+                "etapa": {
+                  "type": "string"
+                },
+                "arquivo": {
+                  "type": "string"
+                },
+                "funcao": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "provas": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "cenario",
+                "esperado",
+                "observado",
+                "estado"
+              ],
+              "properties": {
+                "cenario": {
+                  "type": "string"
+                },
+                "esperado": {
+                  "type": "string"
+                },
+                "observado": {
+                  "type": "string"
+                },
+                "estado": {
+                  "type": "string",
+                  "enum": [
+                    "PASSOU",
+                    "FALHOU",
+                    "NÃO EXECUTADO"
+                  ]
+                },
+                "comandoOuPassos": {
+                  "type": "string"
+                },
+                "evidencias": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "dependencias": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "pendencias": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "justificativaManual": {
+            "type": "string"
+          },
+          "provaAutoria": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "validacao": {
+      "type": "object",
+      "required": [
+        "linhaDeBase",
+        "resultadoFinal",
+        "naoVerificado"
+      ],
+      "properties": {
+        "linhaDeBase": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "resultadoFinal": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "naoVerificado": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "auditoria": {
+      "type": "object",
+      "required": [
+        "estado",
+        "hashesExaminados",
+        "achados"
+      ],
+      "properties": {
+        "estado": {
+          "type": "string",
+          "enum": [
+            "NÃO EXECUTADA",
+            "PRELIMINAR",
+            "APROVADO",
+            "REPROVADO",
+            "INCONCLUSIVO"
+          ]
+        },
+        "hashesExaminados": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "achados": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "type": "string"
+        }
+      }
+    },
+    "fonteLivroRegras": {
+      "type": "object",
+      "required": [
+        "caminho",
+        "sha256"
+      ],
+      "properties": {
+        "caminho": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "data": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "description": "Estrutura do registro, sem substituir os critérios semânticos de aprovação. Fonte vazia, ausência de prova ou manual intencional sem justificativa impedem declarar a parcela aprovada."
+}

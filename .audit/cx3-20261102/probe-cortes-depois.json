@@ -1,0 +1,32 @@
+[
+  {
+    "sistema": "player",
+    "arma": "Espada Curta",
+    "talentosInacessiveis": [],
+    "acerto": true,
+    "danoCortanteFinal": [
+      14
+    ],
+    "movimentoAposAtaque": 9,
+    "movimentoComDuasCopiasAgrupadas": 4.5,
+    "gruposEncaminhadosAoMotor": [
+      "tal_especialista_em_cortes",
+      "tal_especialista_em_cortes"
+    ]
+  },
+  {
+    "sistema": "afty",
+    "arma": "Espada Curta",
+    "talentosInacessiveis": [],
+    "acerto": true,
+    "danoCortanteFinal": [
+      43
+    ],
+    "movimentoAposAtaque": 13.5,
+    "movimentoComDuasCopiasAgrupadas": 9,
+    "gruposEncaminhadosAoMotor": [
+      "tal_especialista_em_cortes",
+      "tal_especialista_em_cortes"
+    ]
+  }
+]

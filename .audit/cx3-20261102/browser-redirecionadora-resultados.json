@@ -1,0 +1,90 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "g2": false,
+    "preparoSemOutraAcao": true,
+    "muniçãoUnica": true,
+    "falhaMantida": true,
+    "segundoAlvo": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "g2": true,
+    "preparoSemOutraAcao": true,
+    "muniçãoUnica": true,
+    "falhaMantida": false,
+    "segundoAlvo": false,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "g2": false,
+    "preparoSemOutraAcao": true,
+    "muniçãoUnica": true,
+    "falhaMantida": true,
+    "segundoAlvo": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "g2": true,
+    "preparoSemOutraAcao": true,
+    "muniçãoUnica": true,
+    "falhaMantida": false,
+    "segundoAlvo": false,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "g2": false,
+    "preparoSemOutraAcao": true,
+    "muniçãoUnica": true,
+    "falhaMantida": true,
+    "segundoAlvo": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "g2": true,
+    "preparoSemOutraAcao": true,
+    "muniçãoUnica": true,
+    "falhaMantida": false,
+    "segundoAlvo": false,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "g2": false,
+    "preparoSemOutraAcao": true,
+    "muniçãoUnica": true,
+    "falhaMantida": true,
+    "segundoAlvo": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "g2": true,
+    "preparoSemOutraAcao": true,
+    "muniçãoUnica": true,
+    "falhaMantida": false,
+    "segundoAlvo": false,
+    "persistencia": true,
+    "erros": []
+  }
+]

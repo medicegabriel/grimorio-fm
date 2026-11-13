@@ -1,0 +1,290 @@
+[
+  {
+    "ficha": "mesa",
+    "query": "tema=escuro",
+    "aba": "acoes",
+    "largura": 1440,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "mesa",
+    "query": "tema=escuro",
+    "aba": "acoes",
+    "largura": 390,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "mesa",
+    "query": "tema=escuro",
+    "aba": "pericias",
+    "largura": 1440,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "mesa",
+    "query": "tema=escuro",
+    "aba": "pericias",
+    "largura": 390,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "mesa",
+    "query": "tema=escuro",
+    "aba": "equipamentos",
+    "largura": 1440,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "mesa",
+    "query": "tema=escuro",
+    "aba": "equipamentos",
+    "largura": 390,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "mesa",
+    "query": "tema=escuro",
+    "aba": "habilidades",
+    "largura": 1440,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "mesa",
+    "query": "tema=escuro",
+    "aba": "habilidades",
+    "largura": 390,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "mesa",
+    "query": "tema=claro",
+    "aba": "acoes",
+    "largura": 1440,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "mesa",
+    "query": "tema=claro",
+    "aba": "acoes",
+    "largura": 390,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "mesa",
+    "query": "tema=claro",
+    "aba": "pericias",
+    "largura": 1440,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "mesa",
+    "query": "tema=claro",
+    "aba": "pericias",
+    "largura": 390,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "mesa",
+    "query": "tema=claro",
+    "aba": "equipamentos",
+    "largura": 1440,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "mesa",
+    "query": "tema=claro",
+    "aba": "equipamentos",
+    "largura": 390,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "mesa",
+    "query": "tema=claro",
+    "aba": "habilidades",
+    "largura": 1440,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "mesa",
+    "query": "tema=claro",
+    "aba": "habilidades",
+    "largura": 390,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "arsenal",
+    "query": "tema=minamoto",
+    "aba": "acoes",
+    "largura": 1440,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "arsenal",
+    "query": "tema=minamoto",
+    "aba": "acoes",
+    "largura": 390,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "arsenal",
+    "query": "tema=minamoto",
+    "aba": "pericias",
+    "largura": 1440,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "arsenal",
+    "query": "tema=minamoto",
+    "aba": "pericias",
+    "largura": 390,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "arsenal",
+    "query": "tema=minamoto",
+    "aba": "equipamentos",
+    "largura": 1440,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "arsenal",
+    "query": "tema=minamoto",
+    "aba": "equipamentos",
+    "largura": 390,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "arsenal",
+    "query": "tema=minamoto",
+    "aba": "habilidades",
+    "largura": 1440,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "arsenal",
+    "query": "tema=minamoto",
+    "aba": "habilidades",
+    "largura": 390,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "criatura",
+    "query": "tema=escuro",
+    "aba": "acoes",
+    "largura": 1440,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "criatura",
+    "query": "tema=escuro",
+    "aba": "acoes",
+    "largura": 390,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "criatura",
+    "query": "tema=escuro",
+    "aba": "pericias",
+    "largura": 1440,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "criatura",
+    "query": "tema=escuro",
+    "aba": "pericias",
+    "largura": 390,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "criatura",
+    "query": "tema=escuro",
+    "aba": "equipamentos",
+    "largura": 1440,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "criatura",
+    "query": "tema=escuro",
+    "aba": "equipamentos",
+    "largura": 390,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "criatura",
+    "query": "tema=escuro",
+    "aba": "habilidades",
+    "largura": 1440,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  },
+  {
+    "ficha": "criatura",
+    "query": "tema=escuro",
+    "aba": "habilidades",
+    "largura": 390,
+    "iguais": false,
+    "difPixels": null,
+    "total": null
+  }
+]

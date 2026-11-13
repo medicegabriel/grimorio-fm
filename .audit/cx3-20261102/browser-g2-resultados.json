@@ -1,0 +1,42 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "previaSomente": true,
+    "consulta": true,
+    "cura": true,
+    "oportunidade": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "previaSomente": true,
+    "consulta": true,
+    "cura": true,
+    "oportunidade": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "previaSomente": true,
+    "consulta": true,
+    "cura": true,
+    "oportunidade": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "previaSomente": true,
+    "consulta": true,
+    "cura": true,
+    "oportunidade": true,
+    "persistencia": true,
+    "erros": []
+  }
+]

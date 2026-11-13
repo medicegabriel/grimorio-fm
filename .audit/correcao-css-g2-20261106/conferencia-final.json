@@ -1,0 +1,23 @@
+{
+  "arquivos": [
+    "src/systems/afty/ficha/AftyFichaG2.jsx",
+    "src/systems/afty/ficha/AftyFichaClassica.jsx",
+    "src/systems/afty/ficha/PainelDeAparencia.jsx",
+    "src/systems/afty/ficha/usar-gravacao-tema.js",
+    "src/systems/afty/ficha/ficha-tema.js",
+    "src/systems/afty/ficha/ficha.css",
+    "src/systems/afty/ficha/efeitos/efeitos-g2.css",
+    "src/systems/afty/ficha/abas-g2/abas-g2.css",
+    "src/systems/afty/ficha/efeitos/pecas.jsx",
+    "src/systems/afty/ficha/efeitos/ConsultaG2.jsx",
+    "src/systems/afty/ficha/efeitos/HistoricoSessao.jsx",
+    "themes/alter-lucielos.css",
+    "docs/a-fazer.md",
+    "docs/afty-status.md",
+    "docs/afty-ficha-final.md"
+  ],
+  "problemas": [],
+  "componentes": "",
+  "hashDistFinal": "4b9219dcc8dbba0b59c41066685150d8d462268d8677b6c76538b879085e5456",
+  "geradoEm": "2026-11-06T05:00:51.577Z"
+}

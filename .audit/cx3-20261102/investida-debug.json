@@ -1,0 +1,830 @@
+{
+  "texto": "Investida Aprimorada\n\nVocê domina a arte de realizar uma investida, otimizando-a para extrair o potencial máximo da ação. Ao realizar uma ação de investida, seu movimento aumenta em 3 metros durante ela; o bônus de acerto aumenta de +2 para um valor igual ao seu bônus de treinamento e, caso acerte o ataque, o alvo deve realizar um teste de Atletismo contra o seu, sendo derrubado em uma falha.\n\nSelecione a Arma\nAtaque Básico\nSelecione o Alvo\nCX3 Alvo\nAvanço \nMáximo \n24m\nNormal\nVantagem\nDesvantagem\nLinha Reta sem Terreno Difícil\nRealizar Investida\nSelecione o Acerto Confirmado\nSeu Atletismo \nRolar Agora\nAtletismo do Alvo \nRolar Agora\nRolar Disputa\nAplicar Resultado",
+  "encontro": {
+    "id": "enc_mw4hbvk8_r0x42f",
+    "nome": "CX3 Investida na Mesa",
+    "pastaId": null,
+    "criadoEm": 1793939617160,
+    "atualizadoEm": 1793939621414,
+    "status": "ativo",
+    "rodada": 1,
+    "ativoId": "cmb_mw4hbvkl_q6il6f",
+    "combatentes": [
+      {
+        "id": "cmb_mw4hbvkl_q6il6f",
+        "criaturaId": "CX3 Investida",
+        "nome": "CX3 Investida",
+        "ficha": {
+          "system": "afty",
+          "rulesVersion": "player",
+          "name": "CX3 Investida",
+          "portraitUrl": null,
+          "portraitFocus": {
+            "x": 50,
+            "y": 50
+          },
+          "core": {
+            "tipo": "combatente",
+            "patamar": "comum",
+            "nd": 20,
+            "tamanho": "medio",
+            "tecnicaAttr": "inteligencia",
+            "tecnicaDescricao": "",
+            "estiloMarcialNome": "",
+            "tecnicaEfeitos": [],
+            "funcionamentosAdicionais": [],
+            "origem": {
+              "id": "inato",
+              "bonusAtributos": {
+                "forca": 2,
+                "destreza": 1
+              }
+            }
+          },
+          "alma": {
+            "atual": 100,
+            "max": 100
+          },
+          "qntPE": "normal",
+          "attrMethod": "fixos",
+          "attrLimite": {
+            "forca": 20,
+            "destreza": 20,
+            "constituicao": 20,
+            "inteligencia": 20,
+            "sabedoria": 20,
+            "presenca": 20
+          },
+          "attributes": {
+            "forca": 15,
+            "destreza": 14,
+            "constituicao": 13,
+            "inteligencia": 12,
+            "sabedoria": 10,
+            "presenca": 8
+          },
+          "attrNivel": {
+            "forca": 3,
+            "destreza": 0,
+            "constituicao": 0,
+            "inteligencia": 0,
+            "sabedoria": 0,
+            "presenca": 0
+          },
+          "pericias": {
+            "atletismo": "treinado",
+            "feiticaria": "treinado"
+          },
+          "periciasOrdem": null,
+          "periciasPersonalizadas": [],
+          "periciaOficio": "",
+          "periciaOficios": {},
+          "periciasOficiosExtras": [],
+          "periciaAtributoManual": {},
+          "periciasBonus": 0,
+          "resistenciasProf": {},
+          "trDaClasse": [],
+          "trSegundo": null,
+          "trAtributoManual": {},
+          "ataquesProf": {},
+          "ataqueFineza": false,
+          "ataqueBasicoId": "corpo",
+          "ataqueAtributoManual": {},
+          "armasDedicadas": [],
+          "defesasDano": {},
+          "catarse": {
+            "saldo": 0,
+            "compras": []
+          },
+          "carteira": {
+            "entradas": [],
+            "gastos": []
+          },
+          "espinho": {
+            "almas": 0,
+            "outros": 0,
+            "compras": {},
+            "equipamentos": []
+          },
+          "tecnicasCombate": {
+            "armas": [],
+            "atributo": "inteligencia"
+          },
+          "talentosConfig": {
+            "tal_mestre_das_armas": {
+              "modo": "armas",
+              "armas": [],
+              "grupo": null
+            },
+            "tal_tempestade_de_ideias": {
+              "pericia": null,
+              "ferramenta": "",
+              "vantagemPericia": null
+            },
+            "tal_artesao_amaldicoado": {
+              "ferramenta": null
+            }
+          },
+          "combate": {
+            "ativo": false,
+            "empolgacao": 1,
+            "insistenciaUsada": false,
+            "manobraAjuste": false,
+            "manobraDesarme": false,
+            "manobraEsquiva": false,
+            "manobraTrabalhoDePes": false,
+            "manobraFinalizadora": null,
+            "brutalidade": false,
+            "brutalidadePE": 0,
+            "brutalidadePilha": 0,
+            "ataqueInconsequente": false,
+            "impactoMisto": false,
+            "resistirPE": 0,
+            "furiaVinganca": false,
+            "imprudenciaMotivadora": false,
+            "machucado": false,
+            "abates": 0,
+            "armasAbsolutas": null,
+            "auraElemental": true,
+            "concentrarAura": [],
+            "golpeComAura": null,
+            "canalizarEmGolpe": false,
+            "canalizacaoMaxima": false
+          },
+          "equipamentos": {
+            "itens": []
+          },
+          "armasCustom": [],
+          "forjas": [],
+          "especializacoes": [
+            {
+              "id": "combatente",
+              "nivel": 20
+            }
+          ],
+          "feiticos": [],
+          "reducoesCustoFeitico": {
+            "dominancia": null,
+            "manipulacao": []
+          },
+          "estilosSombra": [],
+          "estiloFuncionamento": {
+            "texto": "",
+            "durabilidadeTrilha": null
+          },
+          "habilidadesGerais": [],
+          "focosLivres": 0,
+          "periciaAtributo": "inteligencia",
+          "habilidades": [],
+          "escolhasHabilidade": {},
+          "especializacaoConfig": {},
+          "escolhasTalento": {},
+          "talentos": [
+            "tal_investida_aprimorada"
+          ],
+          "invocacoes": [],
+          "origemContadores": {},
+          "hordas": [],
+          "quimeras": [],
+          "fundamentosPerdidos": [],
+          "aptidoes": {
+            "au": 0,
+            "cl": 0,
+            "bar": 0,
+            "dom": 0,
+            "er": 0
+          },
+          "aptidoesAmaldicoadas": [],
+          "aptidaoOpcoes": {},
+          "aptidaoOpcoesRepetidas": {},
+          "dominios": [],
+          "dominioAtivoId": null,
+          "treinamentos": {},
+          "treinamentoAlvos": {},
+          "treinamentoEscolhas": {},
+          "treinoEscolhaFeiticos": {},
+          "votos": {
+            "contratuais": [],
+            "mecanicos": []
+          },
+          "pacto": {
+            "nome": "",
+            "descricao": "",
+            "maleficios": [],
+            "beneficios": []
+          },
+          "modificacoesCorporais": {
+            "descricao": "",
+            "efeitosBase": [],
+            "limite": 0,
+            "enxertos": []
+          },
+          "tita": {
+            "ativo": false,
+            "membros": 5
+          },
+          "caracteristicasAmaldicoadas": [],
+          "caracteristicasAmaldicoadasAlvos": {},
+          "treinosEspeciais": [],
+          "treinoEspecialProgresso": {},
+          "focosBonus": 0,
+          "statOverrides": {},
+          "melhoriasSuperiores": [],
+          "habilidadesLendarias": [],
+          "escolhasAltoNivel": {},
+          "aparencia": null,
+          "preferenciasFicha": null,
+          "addons": [],
+          "narratorNotes": "",
+          "combatState": {
+            "isActive": false,
+            "hpCurrent": 0,
+            "peCurrent": 0,
+            "almaCurrent": 100,
+            "activeConditions": [],
+            "customCounters": [],
+            "combatLog": []
+          },
+          "id": "CX3 Investida"
+        },
+        "iniciativa": {
+          "rolagem": 18,
+          "mod": 2,
+          "total": 20,
+          "manual": false
+        },
+        "sessao": {
+          "bloodfeastRegras": [],
+          "energiaEmVida": 0,
+          "bloodfeast": {
+            "cargas": 0,
+            "hardblood": 0,
+            "bleed": 0,
+            "sanidade": 0,
+            "sangue": 0,
+            "reutilizado": 0,
+            "agua": false,
+            "ativos": {},
+            "ultima": null
+          },
+          "hpAtual": 146,
+          "peAtual": 80,
+          "pvTempFontes": {},
+          "peTempFontes": {},
+          "almaAtual": 146,
+          "almaMaxVisto": 146,
+          "rodada": 1,
+          "propriedadesArmas": {
+            "turno": 1,
+            "porArma": {
+              "basico": {
+                "ataques": 1,
+                "gastos": 0,
+                "emperrada": false,
+                "aparando": false,
+                "desprevenido": false,
+                "tipoDano": null,
+                "defesaAlvo": null,
+                "defesaAmpla": null,
+                "adjacente": false,
+                "amplaRodada": null,
+                "pendente": {
+                  "numero": 1,
+                  "acerto": 47,
+                  "errou": false,
+                  "id": "rol_mw4hbyue_1"
+                },
+                "ultimo": null
+              }
+            },
+            "oscilante": null,
+            "ultimoAtaque": "rol_mw4hbyue_1"
+          },
+          "ataqueBasicoId": null,
+          "armasDaTecnica": {},
+          "guardaGolpes": 0,
+          "guardaEncerrada": false,
+          "exaustao": 0,
+          "exaustaoTecnica": null,
+          "combate": {
+            "ativo": true
+          },
+          "condicoes": [],
+          "buffs": [],
+          "invocacoes": {},
+          "tita": {
+            "cabeca": null,
+            "membros": []
+          },
+          "preparoAtual": null,
+          "preparoTemp": 0,
+          "golpeEspecial": {},
+          "reservaInvocacao": {
+            "usada": false,
+            "modo": null,
+            "restantes": 0
+          },
+          "quimeraDaCena": null,
+          "lideresDeHordaDissolvida": [],
+          "concedido": [],
+          "adaptacoes": {},
+          "dharma": {
+            "entradas": [],
+            "alvo": "",
+            "fenomeno": "",
+            "existencia": ""
+          },
+          "gungnir": {
+            "alvos": [],
+            "modo": "corpo",
+            "posicao": "maos",
+            "cravadaEm": "",
+            "eventos": [],
+            "acerto": null,
+            "zumbidoRodada": null
+          },
+          "treinosAtivos": {},
+          "usos": {},
+          "uso": {
+            "ops": [],
+            "ativos": {},
+            "pendencias": [],
+            "sequencia": {
+              "ataques": 0
+            },
+            "acoes": {
+              "turno": 0,
+              "gastas": {
+                "comum": 0,
+                "bonus": 0,
+                "movimento": 0
+              },
+              "reacoes": {},
+              "livres": {}
+            },
+            "concentracao": null,
+            "teste": null
+          },
+          "barreiras": {
+            "paredes": [],
+            "cortinas": []
+          },
+          "vital": {
+            "estado": "vivo",
+            "saldo": 0,
+            "sucessos": 0,
+            "falhas": 0,
+            "testePendente": false,
+            "causa": null,
+            "massivoPendente": false,
+            "ultimoTeste": null,
+            "ataque": null,
+            "ferimentosPendentes": 0,
+            "semReacoes": false,
+            "ferimentos": []
+          },
+          "dadosVida": {
+            "gastos": {}
+          },
+          "recargas": {},
+          "contadoresSessao": {},
+          "ultimoFeiticoDanoId": null,
+          "rituais": {},
+          "ritualAtual": null,
+          "favoritos": [],
+          "log": [
+            {
+              "id": "rol_mw4hbyue_1",
+              "ts": 1793939621414,
+              "tipo": "teste",
+              "tipoTeste": "ataque",
+              "margemCritico": 20,
+              "minimoNatural": 0,
+              "contextoConteudo": {
+                "tipo": "investida",
+                "operacaoId": "op_mw4hbyud_1_leu0",
+                "rodada": 1,
+                "turno": 0,
+                "alvoId": "cmb_mw4hbvkv_w0uvhg",
+                "distancia": 24,
+                "maximo": 24
+              },
+              "armaId": "basico",
+              "chaveArma": "basico",
+              "rotulo": "Ataque Básico · Acerto",
+              "detalhe": "Investida Aprimorada",
+              "formula": "d20+27",
+              "d20": [
+                20
+              ],
+              "descartado": null,
+              "natural": 20,
+              "bonus": 27,
+              "extras": [],
+              "somaExtras": 0,
+              "total": 47,
+              "cd": null,
+              "sucesso": true,
+              "critico": true,
+              "pifia": false,
+              "modo": "normal"
+            }
+          ],
+          "atualizadoEm": null
+        },
+        "flags": {
+          "abatido": false,
+          "oculto": false,
+          "lado": "inimigo"
+        }
+      },
+      {
+        "id": "cmb_mw4hbvkv_w0uvhg",
+        "criaturaId": "CX3 Alvo",
+        "nome": "CX3 Alvo",
+        "ficha": {
+          "system": "afty",
+          "rulesVersion": "player",
+          "name": "CX3 Alvo",
+          "portraitUrl": null,
+          "portraitFocus": {
+            "x": 50,
+            "y": 50
+          },
+          "core": {
+            "tipo": "combatente",
+            "patamar": "comum",
+            "nd": 20,
+            "tamanho": "medio",
+            "tecnicaAttr": "inteligencia",
+            "tecnicaDescricao": "",
+            "estiloMarcialNome": "",
+            "tecnicaEfeitos": [],
+            "funcionamentosAdicionais": [],
+            "origem": {
+              "id": "inato",
+              "bonusAtributos": {
+                "forca": 2,
+                "destreza": 1
+              }
+            }
+          },
+          "alma": {
+            "atual": 100,
+            "max": 100
+          },
+          "qntPE": "normal",
+          "attrMethod": "fixos",
+          "attrLimite": {
+            "forca": 20,
+            "destreza": 20,
+            "constituicao": 20,
+            "inteligencia": 20,
+            "sabedoria": 20,
+            "presenca": 20
+          },
+          "attributes": {
+            "forca": 8,
+            "destreza": 14,
+            "constituicao": 13,
+            "inteligencia": 12,
+            "sabedoria": 10,
+            "presenca": 15
+          },
+          "attrNivel": {
+            "forca": 3,
+            "destreza": 0,
+            "constituicao": 0,
+            "inteligencia": 0,
+            "sabedoria": 0,
+            "presenca": 0
+          },
+          "pericias": {
+            "acrobacia": "treinado",
+            "feiticaria": "treinado"
+          },
+          "periciasOrdem": null,
+          "periciasPersonalizadas": [],
+          "periciaOficio": "",
+          "periciaOficios": {},
+          "periciasOficiosExtras": [],
+          "periciaAtributoManual": {},
+          "periciasBonus": 0,
+          "resistenciasProf": {},
+          "trDaClasse": [],
+          "trSegundo": null,
+          "trAtributoManual": {},
+          "ataquesProf": {},
+          "ataqueFineza": false,
+          "ataqueBasicoId": "corpo",
+          "ataqueAtributoManual": {},
+          "armasDedicadas": [],
+          "defesasDano": {},
+          "catarse": {
+            "saldo": 0,
+            "compras": []
+          },
+          "carteira": {
+            "entradas": [],
+            "gastos": []
+          },
+          "espinho": {
+            "almas": 0,
+            "outros": 0,
+            "compras": {},
+            "equipamentos": []
+          },
+          "tecnicasCombate": {
+            "armas": [],
+            "atributo": "inteligencia"
+          },
+          "talentosConfig": {
+            "tal_mestre_das_armas": {
+              "modo": "armas",
+              "armas": [],
+              "grupo": null
+            },
+            "tal_tempestade_de_ideias": {
+              "pericia": null,
+              "ferramenta": "",
+              "vantagemPericia": null
+            },
+            "tal_artesao_amaldicoado": {
+              "ferramenta": null
+            }
+          },
+          "combate": {
+            "ativo": false,
+            "empolgacao": 1,
+            "insistenciaUsada": false,
+            "manobraAjuste": false,
+            "manobraDesarme": false,
+            "manobraEsquiva": false,
+            "manobraTrabalhoDePes": false,
+            "manobraFinalizadora": null,
+            "brutalidade": false,
+            "brutalidadePE": 0,
+            "brutalidadePilha": 0,
+            "ataqueInconsequente": false,
+            "impactoMisto": false,
+            "resistirPE": 0,
+            "furiaVinganca": false,
+            "imprudenciaMotivadora": false,
+            "machucado": false,
+            "abates": 0,
+            "armasAbsolutas": null,
+            "auraElemental": true,
+            "concentrarAura": [],
+            "golpeComAura": null,
+            "canalizarEmGolpe": false,
+            "canalizacaoMaxima": false
+          },
+          "equipamentos": {
+            "itens": []
+          },
+          "armasCustom": [],
+          "forjas": [],
+          "especializacoes": [
+            {
+              "id": "combatente",
+              "nivel": 20
+            }
+          ],
+          "feiticos": [],
+          "reducoesCustoFeitico": {
+            "dominancia": null,
+            "manipulacao": []
+          },
+          "estilosSombra": [],
+          "estiloFuncionamento": {
+            "texto": "",
+            "durabilidadeTrilha": null
+          },
+          "habilidadesGerais": [],
+          "focosLivres": 0,
+          "periciaAtributo": "inteligencia",
+          "habilidades": [],
+          "escolhasHabilidade": {},
+          "especializacaoConfig": {},
+          "escolhasTalento": {},
+          "talentos": [],
+          "invocacoes": [],
+          "origemContadores": {},
+          "hordas": [],
+          "quimeras": [],
+          "fundamentosPerdidos": [],
+          "aptidoes": {
+            "au": 0,
+            "cl": 0,
+            "bar": 0,
+            "dom": 0,
+            "er": 0
+          },
+          "aptidoesAmaldicoadas": [],
+          "aptidaoOpcoes": {},
+          "aptidaoOpcoesRepetidas": {},
+          "dominios": [],
+          "dominioAtivoId": null,
+          "treinamentos": {},
+          "treinamentoAlvos": {},
+          "treinamentoEscolhas": {},
+          "treinoEscolhaFeiticos": {},
+          "votos": {
+            "contratuais": [],
+            "mecanicos": []
+          },
+          "pacto": {
+            "nome": "",
+            "descricao": "",
+            "maleficios": [],
+            "beneficios": []
+          },
+          "modificacoesCorporais": {
+            "descricao": "",
+            "efeitosBase": [],
+            "limite": 0,
+            "enxertos": []
+          },
+          "tita": {
+            "ativo": false,
+            "membros": 5
+          },
+          "caracteristicasAmaldicoadas": [],
+          "caracteristicasAmaldicoadasAlvos": {},
+          "treinosEspeciais": [],
+          "treinoEspecialProgresso": {},
+          "focosBonus": 0,
+          "statOverrides": {},
+          "melhoriasSuperiores": [],
+          "habilidadesLendarias": [],
+          "escolhasAltoNivel": {},
+          "aparencia": null,
+          "preferenciasFicha": null,
+          "addons": [],
+          "narratorNotes": "",
+          "combatState": {
+            "isActive": false,
+            "hpCurrent": 0,
+            "peCurrent": 0,
+            "almaCurrent": 100,
+            "activeConditions": [],
+            "customCounters": [],
+            "combatLog": []
+          },
+          "id": "CX3 Alvo"
+        },
+        "iniciativa": {
+          "rolagem": 10,
+          "mod": 2,
+          "total": 12,
+          "manual": false
+        },
+        "sessao": {
+          "bloodfeastRegras": [],
+          "energiaEmVida": 0,
+          "bloodfeast": {
+            "cargas": 0,
+            "hardblood": 0,
+            "bleed": 0,
+            "sanidade": 0,
+            "sangue": 0,
+            "reutilizado": 0,
+            "agua": false,
+            "ativos": {},
+            "ultima": null
+          },
+          "hpAtual": 146,
+          "peAtual": 80,
+          "pvTempFontes": {},
+          "peTempFontes": {},
+          "almaAtual": 146,
+          "almaMaxVisto": 146,
+          "rodada": 1,
+          "propriedadesArmas": {
+            "turno": 1,
+            "oscilante": null,
+            "ultimoAtaque": null,
+            "porArma": {}
+          },
+          "ataqueBasicoId": null,
+          "armasDaTecnica": {},
+          "guardaGolpes": 0,
+          "guardaEncerrada": false,
+          "exaustao": 0,
+          "exaustaoTecnica": null,
+          "combate": {
+            "ativo": true
+          },
+          "condicoes": [],
+          "buffs": [],
+          "invocacoes": {},
+          "tita": {
+            "cabeca": null,
+            "membros": []
+          },
+          "preparoAtual": null,
+          "preparoTemp": 0,
+          "golpeEspecial": {},
+          "reservaInvocacao": {
+            "usada": false,
+            "modo": null,
+            "restantes": 0
+          },
+          "quimeraDaCena": null,
+          "lideresDeHordaDissolvida": [],
+          "concedido": [],
+          "adaptacoes": {},
+          "dharma": {
+            "entradas": [],
+            "alvo": "",
+            "fenomeno": "",
+            "existencia": ""
+          },
+          "gungnir": {
+            "alvos": [],
+            "modo": "corpo",
+            "posicao": "maos",
+            "cravadaEm": "",
+            "eventos": [],
+            "acerto": null,
+            "zumbidoRodada": null
+          },
+          "treinosAtivos": {},
+          "usos": {},
+          "uso": {
+            "ops": [],
+            "ativos": {},
+            "pendencias": [],
+            "sequencia": {
+              "ataques": 0
+            },
+            "acoes": {
+              "turno": 0,
+              "gastas": {
+                "comum": 0,
+                "bonus": 0,
+                "movimento": 0
+              },
+              "reacoes": {},
+              "livres": {}
+            },
+            "concentracao": null,
+            "teste": null
+          },
+          "barreiras": {
+            "paredes": [],
+            "cortinas": []
+          },
+          "vital": {
+            "estado": "vivo",
+            "saldo": 0,
+            "sucessos": 0,
+            "falhas": 0,
+            "testePendente": false,
+            "causa": null,
+            "massivoPendente": false,
+            "ultimoTeste": null,
+            "ataque": null,
+            "ferimentosPendentes": 0,
+            "semReacoes": false,
+            "ferimentos": []
+          },
+          "dadosVida": {
+            "gastos": {}
+          },
+          "recargas": {},
+          "contadoresSessao": {},
+          "ultimoFeiticoDanoId": null,
+          "rituais": {},
+          "ritualAtual": null,
+          "favoritos": [],
+          "log": [],
+          "atualizadoEm": null
+        },
+        "flags": {
+          "abatido": false,
+          "oculto": false,
+          "lado": "inimigo"
+        }
+      }
+    ],
+    "log": [
+      {
+        "id": "log_mw4hbyl3_ltkj06",
+        "rodada": 1,
+        "em": 1793939621079,
+        "tipo": "rodada",
+        "mensagem": "Combate iniciado. Rodada 1.",
+        "combatenteId": null
+      },
+      {
+        "id": "log_mw4hbyl3_990gdf",
+        "rodada": 1,
+        "em": 1793939621079,
+        "tipo": "turno",
+        "mensagem": "Turno de CX3 Investida.",
+        "combatenteId": "cmb_mw4hbvkl_q6il6f"
+      }
+    ]
+  }
+}

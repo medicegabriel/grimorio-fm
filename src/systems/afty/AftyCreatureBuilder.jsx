@@ -148,6 +148,7 @@ import {
   FA_ENCANT_GANHO, FA_IDENTIFICACAO_CD, FA_GRAU_ESPECIAL_EXEMPLO,
   getEncantamento, encantamentosDe, canalRdEscudo,
   avaliarRequisitoEncantamento, SINTONIZADA_ID, tiposDaSintonizada,
+  podeAplicarEngenhoSuperior,
 } from "./afty-equipamentos";
 import { evalNumber as evalNumberDsl, validateExpression } from "./afty-dsl";
 import { deriveAfty } from "./afty-derive";
@@ -9603,6 +9604,8 @@ function AttributesCard({ draft, derived, patch, patchCore, patchAttr, patchNive
   const resumo = resumoAtributos(
     draft, derived.attrLimiteEfetivo, derived.attrPerda,
     (derived.pontosAtributoExtra ?? 0) + (derived.attrNivelExtra ?? 0),
+    Object.fromEntries(AFTY_ATTRS.map((a) => [a.key,
+      Math.max(0, -(derived.attrBonus?.[a.key] || 0)) + Math.max(0, -(derived.attrMotor?.[a.key] || 0))])),
   );
   const nivelRestante = resumo.nivelTotal - resumo.nivelUsado;
   const somaBase = AFTY_ATTRS.reduce((s, a) => s + (draft.attributes[a.key] || 0), 0);
@@ -9621,7 +9624,7 @@ function AttributesCard({ draft, derived, patch, patchCore, patchAttr, patchNive
 
   // Pool de LIMITE (Maldição): sobe só o teto, e não o valor. O contador conta
   // ESCOLHAS, e cada uma vale o degrau declarado na origem.
-  const poolLim = origemPoolLimite(draft.core.origem?.id);
+  const poolLim = origemPoolLimite(draft.core.origem?.id, draft.core.origem?.cla);
   const limites = draft.core.origem?.limites || {};
   const limTotal = poolLim ? limitePoolTotal(derived?.nd ?? 1, poolLim.porNivel) : 0;
   const limUsado = limitePoolUsado(limites);
@@ -14577,7 +14580,7 @@ function CaracteristicaAmaldicoadaCard({ caracteristica: c, pericias, onToggle, 
 function LinhaCarregada({
   entrada, onPatch, onRemove, onToggleFerramenta, onPatchFerramenta,
   onToggleEncantamento, pericias, fontesDano, dslContexto, dslExtras,
-  sistemaJogador = false, sistema, feiticos = [], travaEquipar = null,
+  sistemaJogador = false, sistema, feiticos = [], travaEquipar = null, permiteEngenho = false,
 }) {
   const { def, tipo, uid, qtd, equipado, fa } = entrada;
   // Arma entrou em 2026-08-01: ela passou a render Acerto por grau, e a linha de
@@ -14619,6 +14622,22 @@ function LinhaCarregada({
       : "border-slate-800 bg-slate-950/40"
     }`}>
       <div className="flex items-center gap-2 px-2.5 h-9">
+        {permiteEngenho && qtd === 1 && !entrada.engenhoRecebido && (
+          <button
+            type="button"
+            className="afty-chip shrink-0"
+            aria-pressed={entrada.engenhoSuperior === true}
+            onClick={() => onPatch(uid, { engenhoSuperior: entrada.engenhoSuperior !== true })}
+          >Engenho Superior</button>
+        )}
+        {qtd === 1 && !entrada.engenhoSuperior && (
+          <button
+            type="button"
+            className="afty-chip shrink-0"
+            aria-pressed={entrada.engenhoRecebido === true}
+            onClick={() => onPatch(uid, { engenhoRecebido: entrada.engenhoRecebido !== true })}
+          >Engenho Recebido</button>
+        )}
         {equipavel ? (
           <button
             type="button"
@@ -16040,6 +16059,7 @@ function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, pa
                       key={e.uid}
                       entrada={e}
                       onPatch={patchEquipamento}
+                      permiteEngenho={podeAplicarEngenhoSuperior(draft)}
                       onRemove={removeEquipamento}
                       onToggleFerramenta={toggleFerramenta}
                       onPatchFerramenta={patchFerramenta}

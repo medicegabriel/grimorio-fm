@@ -1,0 +1,4946 @@
+{
+  "remendos": 33,
+  "ausentes": [
+    {
+      "chave": "addon-herdada::formula-combate-entropica.json::formula-combate-entropica:res_intelectual__res_desenvolver_ideias::efeitos",
+      "proprietario": "RES-05"
+    },
+    {
+      "chave": "addon::aberracao-humanizada.json::@pacote::categoria",
+      "proprietario": "AD-01"
+    },
+    {
+      "chave": "addon::aberracao-humanizada.json::@pacote::resumo",
+      "proprietario": "AD-01"
+    },
+    {
+      "chave": "addon::alma-do-afty.json::@pacote",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::alma-do-afty.json::@pacote::autor",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::alma-do-afty.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::alma-do-afty.json::@pacote::descricao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::alma-do-afty.json::@pacote::id",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::alma-do-afty.json::@pacote::nome",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::alma-do-afty.json::@pacote::paraRaw",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::alma-do-afty.json::@pacote::regrasAfty",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::alma-do-afty.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::alma-do-afty.json::@pacote::versao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::alma-livre.json::@pacote::categoria",
+      "proprietario": "AD-02"
+    },
+    {
+      "chave": "addon::alma-livre.json::@pacote::resumo",
+      "proprietario": "AD-02"
+    },
+    {
+      "chave": "addon::alter.json::@pacote::categoria",
+      "proprietario": "AD-03"
+    },
+    {
+      "chave": "addon::alter.json::@pacote::resumo",
+      "proprietario": "AD-03"
+    },
+    {
+      "chave": "addon::aperfeicoamento-de-tecnica.json::@pacote::categoria",
+      "proprietario": "AD-04"
+    },
+    {
+      "chave": "addon::aperfeicoamento-de-tecnica.json::@pacote::resumo",
+      "proprietario": "AD-04"
+    },
+    {
+      "chave": "addon::arauto-da-corrupcao.json::@pacote::categoria",
+      "proprietario": "AD-05"
+    },
+    {
+      "chave": "addon::arauto-da-corrupcao.json::@pacote::resumo",
+      "proprietario": "AD-05"
+    },
+    {
+      "chave": "addon::arsenal-de-ryuma.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::arsenal-de-ryuma.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::ascendendo-alem-dos-ceus.json::@pacote",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::ascendendo-alem-dos-ceus.json::@pacote::autor",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::ascendendo-alem-dos-ceus.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::ascendendo-alem-dos-ceus.json::@pacote::descricao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::ascendendo-alem-dos-ceus.json::@pacote::funcionamentos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::ascendendo-alem-dos-ceus.json::@pacote::funcionamentos::calamidade",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::ascendendo-alem-dos-ceus.json::@pacote::funcionamentos::calamidade/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::ascendendo-alem-dos-ceus.json::@pacote::funcionamentos::calamidade/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::ascendendo-alem-dos-ceus.json::@pacote::funcionamentos::calamidade/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::ascendendo-alem-dos-ceus.json::@pacote::id",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::ascendendo-alem-dos-ceus.json::@pacote::nome",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::ascendendo-alem-dos-ceus.json::@pacote::paraRaw",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::ascendendo-alem-dos-ceus.json::@pacote::regrasAfty",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::ascendendo-alem-dos-ceus.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::ascendendo-alem-dos-ceus.json::@pacote::versao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::atributo-fang.json::@pacote",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::atributo-fang.json::@pacote::atributos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::atributo-fang.json::@pacote::atributos::inteligencia",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::atributo-fang.json::@pacote::atributos::inteligencia/rolagem",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::atributo-fang.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::atributo-fang.json::@pacote::descricao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::atributo-fang.json::@pacote::id",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::atributo-fang.json::@pacote::nome",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::atributo-fang.json::@pacote::paraRaw",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::atributo-fang.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::atributo-fang.json::@pacote::versao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::azamaru.json::@pacote::categoria",
+      "proprietario": "AD-06"
+    },
+    {
+      "chave": "addon::azamaru.json::@pacote::resumo",
+      "proprietario": "AD-06"
+    },
+    {
+      "chave": "addon::bencao-grao-mestre-forja.json::@pacote::categoria",
+      "proprietario": "AD-07"
+    },
+    {
+      "chave": "addon::bencao-grao-mestre-forja.json::@pacote::resumo",
+      "proprietario": "AD-07"
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::carteira-da-guilda.json::@pacote::categoria",
+      "proprietario": "AD-08"
+    },
+    {
+      "chave": "addon::carteira-da-guilda.json::@pacote::resumo",
+      "proprietario": "AD-08"
+    },
+    {
+      "chave": "addon::ciclo-adaptacao-mahoraga.json::@pacote::categoria",
+      "proprietario": "AD-09"
+    },
+    {
+      "chave": "addon::ciclo-adaptacao-mahoraga.json::@pacote::resumo",
+      "proprietario": "AD-09"
+    },
+    {
+      "chave": "addon::ciel-lucielus.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::ciel-lucielus.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::cofre-de-feiticos.json::@pacote::categoria",
+      "proprietario": "AD-10"
+    },
+    {
+      "chave": "addon::cofre-de-feiticos.json::@pacote::resumo",
+      "proprietario": "AD-10"
+    },
+    {
+      "chave": "addon::concentrar-poder-dobrado.json::@pacote::categoria",
+      "proprietario": "AD-11"
+    },
+    {
+      "chave": "addon::concentrar-poder-dobrado.json::@pacote::resumo",
+      "proprietario": "AD-11"
+    },
+    {
+      "chave": "addon::consumir-cinzas.json::@pacote::categoria",
+      "proprietario": "AD-12"
+    },
+    {
+      "chave": "addon::consumir-cinzas.json::@pacote::resumo",
+      "proprietario": "AD-12"
+    },
+    {
+      "chave": "addon::criacao-de-armas.json::@pacote::categoria",
+      "proprietario": "AD-13"
+    },
+    {
+      "chave": "addon::criacao-de-armas.json::@pacote::resumo",
+      "proprietario": "AD-13"
+    },
+    {
+      "chave": "addon::criacao-de-equipamentos.json::@pacote::categoria",
+      "proprietario": "AD-14"
+    },
+    {
+      "chave": "addon::criacao-de-equipamentos.json::@pacote::resumo",
+      "proprietario": "AD-14"
+    },
+    {
+      "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::cura-aperfeicoada-feiticos.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::dancarino-das-laminas.json::@pacote::categoria",
+      "proprietario": "AD-15"
+    },
+    {
+      "chave": "addon::dancarino-das-laminas.json::@pacote::resumo",
+      "proprietario": "AD-15"
+    },
+    {
+      "chave": "addon::era-da-cesta-oca.json::@pacote::categoria",
+      "proprietario": "AD-16"
+    },
+    {
+      "chave": "addon::era-da-cesta-oca.json::@pacote::resumo",
+      "proprietario": "AD-16"
+    },
+    {
+      "chave": "addon::especialista-em-estilo.json::@pacote::categoria",
+      "proprietario": "AD-17"
+    },
+    {
+      "chave": "addon::especialista-em-estilo.json::@pacote::resumo",
+      "proprietario": "AD-17"
+    },
+    {
+      "chave": "addon::espinho.json::@pacote::categoria",
+      "proprietario": "AD-18"
+    },
+    {
+      "chave": "addon::espinho.json::@pacote::resumo",
+      "proprietario": "AD-18"
+    },
+    {
+      "chave": "addon::espirito-indomavel.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::espirito-indomavel.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::estilo-marcial.json::@pacote::categoria",
+      "proprietario": "AD-19"
+    },
+    {
+      "chave": "addon::estilo-marcial.json::@pacote::resumo",
+      "proprietario": "AD-19"
+    },
+    {
+      "chave": "addon::estilo-sombras-corporal.json::@pacote::categoria",
+      "proprietario": "AD-20"
+    },
+    {
+      "chave": "addon::estilo-sombras-corporal.json::@pacote::resumo",
+      "proprietario": "AD-20"
+    },
+    {
+      "chave": "addon::estudo-do-jujutsu.json::@pacote::categoria",
+      "proprietario": "AD-21"
+    },
+    {
+      "chave": "addon::estudo-do-jujutsu.json::@pacote::resumo",
+      "proprietario": "AD-21"
+    },
+    {
+      "chave": "addon::faixas-de-sif.json::@pacote::categoria",
+      "proprietario": "AD-22"
+    },
+    {
+      "chave": "addon::faixas-de-sif.json::@pacote::resumo",
+      "proprietario": "AD-22"
+    },
+    {
+      "chave": "addon::flugel.json::@pacote::categoria",
+      "proprietario": "AD-23"
+    },
+    {
+      "chave": "addon::flugel.json::@pacote::descricao",
+      "proprietario": "AD-23"
+    },
+    {
+      "chave": "addon::flugel.json::@pacote::resumo",
+      "proprietario": "AD-23"
+    },
+    {
+      "chave": "addon::formula-combate-entropica.json::@pacote::categoria",
+      "proprietario": "AD-24"
+    },
+    {
+      "chave": "addon::formula-combate-entropica.json::@pacote::resumo",
+      "proprietario": "AD-24"
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::golem-de-sangue.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::grande-roda-dharma.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::grande-roda-dharma.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guarda-da-lamina-divina.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guarda-da-lamina-divina.json::@pacote::descricao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guarda-da-lamina-divina.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::absorve",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::absorve::alma-do-afty",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::absorve::alma-livre",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::absorve::ascendendo-alem-dos-ceus",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::absorve::criacao-de-equipamentos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::absorve::mente-analitica",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::absorve::player-alto-nivel-afty",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::absorve::player-nivel-sem-teto",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::absorve::segredos-do-artesao-da-alma",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::absorve::talentos-de-estilo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::absorve::talentos-iniciais",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::absorve::tr-no-limite-de-pericias",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::absorve::treino-de-atributo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::absorve::treino-de-habilidade-afty",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::absorve::treino-de-tr",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::acrescenta",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::ajustes",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::ajustes::progressaoEpica",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::ajustes::progressaoEpica/sistemas",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::ajustes::progressaoEpica/sistemas/player",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::ajustes::talentosIniciais",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::autor",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::descricao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::id",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::incompativeis",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::incompativeis::criacao-de-armas",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::libera",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::libera::escudosCriados",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::libera::itensDeCusto",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::libera::revestimentosCriados",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::migra",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::migra::progressaoEpica",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::migra::progressaoEpica/ligaSeTem",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::migra::progressaoEpica/ligaSeTem/ascendendo-alem-dos-ceus",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::migra::talentosIniciais",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::nome",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::paraRaw",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::parciais",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::parciais::player-progressao-epica",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::parciais::regras-grimorio",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::permite",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::permite::armasPorNivel",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::permite::encantamentoGuia",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porAjuste",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porAjuste::progressaoEpica",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porAjuste::progressaoEpica/player",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porAjuste::progressaoEpica/player/funcionamentos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porAjuste::progressaoEpica/player/funcionamentos/calamidade",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porAjuste::progressaoEpica/player/funcionamentos/calamidade/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porAjuste::progressaoEpica/player/funcionamentos/calamidade/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porAjuste::progressaoEpica/player/libera",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porAjuste::progressaoEpica/player/libera/soPorAddon:cnj_agilidade_no_campo_de_batalha",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porAjuste::progressaoEpica/player/regrasAfty",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::afty",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/libera",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/libera/soPorAddon:atributo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/libera/soPorAddon:len_versatilidade_extrema",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/libera/soPorAddon:tal_alma_livre",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/regrasAfty",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_agilidade_inigualavel",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_agilidade_inigualavel/resultados",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_agilidade_inigualavel/resultados/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_aperfeicoamento_de_atributo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_conhecimento_iluminado",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_conhecimento_iluminado/escolha",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_conhecimento_iluminado/escolha/fonteOpcoes",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_conhecimento_iluminado/escolha/opcoes",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_consciencia_absoluta_da_alma",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_dominancia_em_tecnica",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_dominancia_em_tecnica/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_dominancia_em_tecnica/escolha",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_dominancia_em_tecnica/escolha/opcoes",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_dominancia_em_tecnica/escolha/opcoes/tecnicas",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_dominancia_em_tecnica/escolha/opcoes/tecnicas/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_dominancia_em_tecnica/escolha/opcoes/tecnicas/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_dominancia_em_tecnica/escolha/opcoes/variacoes",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_dominancia_em_tecnica/escolha/opcoes/variacoes/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_dominancia_em_tecnica/escolha/opcoes/variacoes/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_favorecido_pela_energia",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_favorecido_pela_energia/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_favorecido_pela_energia/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_inesgotavel",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_inesgotavel/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_inesgotavel/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_inquebravel",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_intocavel",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_motivacao_constante",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_motivacao_constante/resultados",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_motivacao_constante/resultados/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_negar_a_morte",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_negar_a_morte/resultados",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_negar_a_morte/resultados/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_negar_a_morte/usos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_preparo_absoluto",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_resistencia_lendaria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_resistencia_lendaria/resultados",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_resistencia_lendaria/resultados/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_resistencia_lendaria/usos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_um_com_o_mundo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_um_com_o_mundo/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_um_com_o_mundo/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_um_com_o_mundo/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_versatilidade_extrema",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_versatilidade_extrema/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_versatilidade_extrema/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_visar_o_sucesso",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_visar_o_sucesso/resultados",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/lendarias/len_visar_o_sucesso/resultados/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_alma",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_alma/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_alma/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_atencao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_atencao/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_atencao/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_classe_de_dificuldade",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_classe_de_dificuldade/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_classe_de_dificuldade/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_dano",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_dano/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_dano/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_dano/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_defesa",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_defesa/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_defesa/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_energia",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_energia/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_energia/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_movimento",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_movimento/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_movimento/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_pericia",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_pericia/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_pericia/efeitosAlvo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_pericia/efeitosAlvo/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_precisao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_precisao/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_precisao/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_resistencia",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_resistencia/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_resistencia/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_resistencia/efeitosAlvo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_resistencia/efeitosAlvo/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_vida",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_vida/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/melhoriasSuperiores/mel_vida/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/treinosEspeciais",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::porSistema::player/substitui/treinosEspeciais/tes_habilidade",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::regrasAfty",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::@pacote::versao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.lendarias::len_incansavel",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.lendarias::len_incansavel::requisitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.lendarias::len_incansavel::resultados",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.lendarias::len_incansavel::resultados/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.lendarias::len_invencivel",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.lendarias::len_invencivel::efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.lendarias::len_invencivel::efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.lendarias::len_invencivel::efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.lendarias::len_invencivel::requisitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.lendarias::len_invencivel::requisitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.lendarias::len_invencivel::requisitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.lendarias::len_invencivel::requisitos/@1/ids",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.lendarias::len_invencivel::requisitos/@1/ids/len_inquebravel",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.lendarias::len_invencivel::requisitos/@1/ids/len_intocavel",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.lendarias::len_manipulacao_avancada_de_energia",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.lendarias::len_manipulacao_avancada_de_energia::efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.lendarias::len_manipulacao_avancada_de_energia::efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.lendarias::len_manipulacao_avancada_de_energia::requisitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.lendarias::len_manipulacao_avancada_de_energia::requisitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.lendarias::len_manipulacao_avancada_de_energia::requisitos/@0/ids",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.lendarias::len_manipulacao_avancada_de_energia::requisitos/@0/ids/len_favorecido_pela_energia",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.lendarias::len_manipulacao_avancada_de_energia::requisitos/@0/ids/len_inesgotavel",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.opcoesTalento::mente_analitica",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.opcoesTalento::mente_analitica::trocaAtributo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.talentos::tal_estilo_proprio",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.talentos::tal_estilo_proprio::escolha",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.talentos::tal_estilo_proprio::escolha/opcoes",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.talentos::tal_estilo_proprio::requisitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.talentos::tal_inovar_estilo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.talentos::tal_inovar_estilo::escolha",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.talentos::tal_inovar_estilo::escolha/opcoes",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.talentos::tal_inovar_estilo::requisitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.talentos::tal_segredos_do_artesao_da_alma",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.talentos::tal_segredos_do_artesao_da_alma::efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.talentos::tal_segredos_do_artesao_da_alma::efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.talentos::tal_segredos_do_artesao_da_alma::efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.talentos::tal_segredos_do_artesao_da_alma::requisitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.talentos::tal_segredos_do_artesao_da_alma::requisitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.talentos::tal_segredos_do_artesao_da_alma::requisitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.treinamentos::tr",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.treinamentos::tr::alvoTipo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.treinamentos::tr::completo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.treinamentos::tr::etapas",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.treinamentos::tr::etapas/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.treinamentos::tr::etapas/@0/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.treinamentos::tr::etapas/@0/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.treinamentos::tr::etapas/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.treinamentos::tr::etapas/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.treinamentos::tr::etapas/@2/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.treinamentos::tr::etapas/@2/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::guerra-de-feiticeiros.json::acrescenta.treinamentos::tr::etapas/@3",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::@pacote",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::@pacote::acrescenta",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::@pacote::autor",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::@pacote::descricao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::@pacote::estadosCombate",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::@pacote::estadosCombate::zodiaco",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha/hcorp_zodiaco_boi",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha/hcorp_zodiaco_cabra",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha/hcorp_zodiaco_cao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha/hcorp_zodiaco_cavalo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha/hcorp_zodiaco_coelho",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha/hcorp_zodiaco_dragao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha/hcorp_zodiaco_galo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha/hcorp_zodiaco_macaco",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha/hcorp_zodiaco_porco",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha/hcorp_zodiaco_rato",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha/hcorp_zodiaco_serpente",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha/hcorp_zodiaco_tigre",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::@pacote::id",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::@pacote::nome",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::@pacote::paraRaw",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::@pacote::versao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::bonusAtributos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_bonus_atributo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_bonus_atributo/bonus",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_boulos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_boulos/alocacao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_boulos/alocacao/entre",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_boulos/alocacao/entre/constituicao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_boulos/alocacao/entre/destreza",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_boulos/alocacao/entre/forca",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_boi",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_boi/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_boi/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_boi/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_boi/efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_cabra",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_cabra/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_cabra/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_cabra/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_cabra/efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_cao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_cao/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_cao/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_cao/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_cao/efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_cavalo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_cavalo/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_cavalo/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_cavalo/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_cavalo/efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_coelho",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_coelho/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_coelho/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_coelho/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_coelho/efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_dragao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_dragao/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_dragao/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_dragao/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_dragao/efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_galo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_galo/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_galo/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_galo/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_galo/efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_macaco",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_macaco/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_macaco/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_macaco/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_macaco/efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_porco",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_porco/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_porco/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_porco/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_porco/efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_rato",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_rato/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_rato/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_rato/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_rato/efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_serpente",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_serpente/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_serpente/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_serpente/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_serpente/efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_tigre",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_tigre/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_tigre/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_tigre/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::h-corp.json::acrescenta.origens::h_corp::caracteristicas/hcorp_zodiaco/escolhas/hcorp_zodiaco_animal/opcoes/hcorp_zodiaco_tigre/efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::habilidades-tauropolos.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::habilidades-tauropolos.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::herdado-era-de-ouro.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::herdado-era-de-ouro.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::herdado-vaticano.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::herdeiro-celeste.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::herdeiro-celeste.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::acrescenta",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::autor",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::descricao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/alma",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/alma/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/alma/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/aprimoramento",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/aptidao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/aptidao/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/aptidao/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/atributo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/atributo/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/atributo/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/determinado",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/equipamento",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/especializacao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/especializacao/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/especializacao/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/lendaria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/lendaria/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/lendaria/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/melhoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/melhoria/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/melhoria/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/nivel_aptidao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/nivel_aptidao/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/nivel_aptidao/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/pericia",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/pericia/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/pericia/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/talento",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/talento/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/talento/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/treinamento",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/treinamento/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::espinho::itens/treinamento/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::id",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::nome",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::paraRaw",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::permite",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::permite::espinho",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::@pacote::versao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lanterna-coletora-de-almas.json::acrescenta.talentos::tal_determinado_a_viver_adicional",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::lime-neds.json::@pacote::categoria",
+      "proprietario": "AD-25"
+    },
+    {
+      "chave": "addon::lime-neds.json::@pacote::descricao",
+      "proprietario": "AD-25"
+    },
+    {
+      "chave": "addon::lime-neds.json::@pacote::resumo",
+      "proprietario": "AD-25"
+    },
+    {
+      "chave": "addon::maldicao-era-de-ouro.json::@pacote::categoria",
+      "proprietario": "AD-26"
+    },
+    {
+      "chave": "addon::maldicao-era-de-ouro.json::@pacote::resumo",
+      "proprietario": "AD-26"
+    },
+    {
+      "chave": "addon::manipulacao-do-ceu.json::@pacote::categoria",
+      "proprietario": "AD-27"
+    },
+    {
+      "chave": "addon::manipulacao-do-ceu.json::@pacote::resumo",
+      "proprietario": "AD-27"
+    },
+    {
+      "chave": "addon::mente-analitica.json::@pacote",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::mente-analitica.json::@pacote::acrescenta",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::mente-analitica.json::@pacote::autor",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::mente-analitica.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::mente-analitica.json::@pacote::descricao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::mente-analitica.json::@pacote::id",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::mente-analitica.json::@pacote::nome",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::mente-analitica.json::@pacote::paraRaw",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::mente-analitica.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::mente-analitica.json::@pacote::versao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::mente-analitica.json::acrescenta.opcoesTalento::mente_analitica",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::mente-analitica.json::acrescenta.opcoesTalento::mente_analitica::trocaAtributo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::milenar.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::milenar.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::@pacote",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::@pacote::acrescenta",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::@pacote::autor",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::@pacote::descricao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::@pacote::estadosCombate",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::@pacote::estadosCombate::alvo_defesa_maior",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::@pacote::id",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::@pacote::nome",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::@pacote::paraRaw",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::@pacote::versao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.clas::cla_minamoto",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.clas::cla_minamoto::caracteristicas",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.clas::cla_minamoto::caracteristicas/bonus_atributo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.clas::cla_minamoto::caracteristicas/bonus_atributo/bonus",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.clas::cla_minamoto::caracteristicas/potencial_lendario",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.clas::cla_minamoto::caracteristicas/talento_minamoto",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.clas::cla_minamoto::efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.clas::cla_minamoto::efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.clas::cla_minamoto::efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.clas::cla_minamoto::efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.clas::cla_minamoto::efeitos/@3",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_compreensao_avancada",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_compreensao_avancada::escolha",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_compreensao_avancada::escolha/niveis",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_compreensao_avancada::escolha/niveis/@0=@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_compreensao_avancada::escolha/niveis/@1=@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_compreensao_avancada::escolha/opcoes",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_compreensao_avancada::escolha/opcoes/min_compreensao_au",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_compreensao_avancada::escolha/opcoes/min_compreensao_au/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_compreensao_avancada::escolha/opcoes/min_compreensao_au/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_compreensao_avancada::escolha/opcoes/min_compreensao_bar",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_compreensao_avancada::escolha/opcoes/min_compreensao_bar/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_compreensao_avancada::escolha/opcoes/min_compreensao_bar/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_compreensao_avancada::escolha/opcoes/min_compreensao_cl",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_compreensao_avancada::escolha/opcoes/min_compreensao_cl/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_compreensao_avancada::escolha/opcoes/min_compreensao_cl/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_compreensao_avancada::escolha/opcoes/min_compreensao_dom",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_compreensao_avancada::escolha/opcoes/min_compreensao_dom/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_compreensao_avancada::escolha/opcoes/min_compreensao_dom/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_compreensao_avancada::escolha/opcoes/min_compreensao_er",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_compreensao_avancada::escolha/opcoes/min_compreensao_er/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_compreensao_avancada::escolha/opcoes/min_compreensao_er/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_compreensao_avancada::requisitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_compreensao_avancada::requisitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_compreensao_avancada::requisitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_compreensao_avancada::requisitos/cla_minamoto",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_fundamentos_imponentes",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_fundamentos_imponentes::efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_fundamentos_imponentes::efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_fundamentos_imponentes::efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_fundamentos_imponentes::requisitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_fundamentos_imponentes::requisitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_fundamentos_imponentes::requisitos/cla_minamoto",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_postura_do_matador_de_yokai",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_postura_do_matador_de_yokai::efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_postura_do_matador_de_yokai::efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_postura_do_matador_de_yokai::efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_postura_do_matador_de_yokai::requisitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_postura_do_matador_de_yokai::requisitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::minamoto.json::acrescenta.talentos::tal_postura_do_matador_de_yokai::requisitos/cla_minamoto",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::modificacoes-corporais.json::@pacote::categoria",
+      "proprietario": "AD-28"
+    },
+    {
+      "chave": "addon::modificacoes-corporais.json::@pacote::resumo",
+      "proprietario": "AD-28"
+    },
+    {
+      "chave": "addon::morador-da-cidade.json::@pacote",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::morador-da-cidade.json::@pacote::autor",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::morador-da-cidade.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::morador-da-cidade.json::@pacote::descricao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::morador-da-cidade.json::@pacote::funcionamentos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::morador-da-cidade.json::@pacote::funcionamentos::morador_da_cidade",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::morador-da-cidade.json::@pacote::funcionamentos::morador_da_cidade/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::morador-da-cidade.json::@pacote::funcionamentos::morador_da_cidade/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::morador-da-cidade.json::@pacote::id",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::morador-da-cidade.json::@pacote::nome",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::morador-da-cidade.json::@pacote::paraRaw",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::morador-da-cidade.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::morador-da-cidade.json::@pacote::versao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::nao-feiticeiro.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::nao-feiticeiro.json::@pacote::libera::tecnicasMarciais",
+      "proprietario": "AD-61"
+    },
+    {
+      "chave": "addon::nao-feiticeiro.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::nascido-dos-sonhos.json::@pacote::categoria",
+      "proprietario": "AD-29"
+    },
+    {
+      "chave": "addon::nascido-dos-sonhos.json::@pacote::resumo",
+      "proprietario": "AD-29"
+    },
+    {
+      "chave": "addon::obedecendo-a-ignia.json::@pacote",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::obedecendo-a-ignia.json::@pacote::autor",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::obedecendo-a-ignia.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::obedecendo-a-ignia.json::@pacote::descricao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::obedecendo-a-ignia.json::@pacote::id",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::obedecendo-a-ignia.json::@pacote::nome",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::obedecendo-a-ignia.json::@pacote::paraRaw",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::obedecendo-a-ignia.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::obedecendo-a-ignia.json::@pacote::versao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::obedecendo-a-ignia.json::@pacote::votoAutomatico",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::obedecendo-a-ignia.json::@pacote::votoAutomatico::beneficio",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::obedecendo-a-ignia.json::@pacote::votoAutomatico::beneficio/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::obedecendo-a-ignia.json::@pacote::votoAutomatico::beneficio/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::obedecendo-a-ignia.json::@pacote::votoAutomatico::maleficio",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::obedecendo-a-ignia.json::@pacote::votoAutomatico::maleficio/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::olhinhos-lu.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::olhinhos-lu.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::olhos-de-agulha.json::@pacote::categoria",
+      "proprietario": "AD-30"
+    },
+    {
+      "chave": "addon::olhos-de-agulha.json::@pacote::resumo",
+      "proprietario": "AD-30"
+    },
+    {
+      "chave": "addon::pacto-do-receptaculo.json::@pacote::categoria",
+      "proprietario": "AD-31"
+    },
+    {
+      "chave": "addon::pacto-do-receptaculo.json::@pacote::resumo",
+      "proprietario": "AD-31"
+    },
+    {
+      "chave": "addon::pacto.json::@pacote::categoria",
+      "proprietario": "AD-32"
+    },
+    {
+      "chave": "addon::pacto.json::@pacote::resumo",
+      "proprietario": "AD-32"
+    },
+    {
+      "chave": "addon::passiva-sistema.json::@pacote::categoria",
+      "proprietario": "AD-33"
+    },
+    {
+      "chave": "addon::passiva-sistema.json::@pacote::resumo",
+      "proprietario": "AD-33"
+    },
+    {
+      "chave": "addon::player-alto-nivel-afty.json::@pacote::categoria",
+      "proprietario": "AD-34"
+    },
+    {
+      "chave": "addon::player-alto-nivel-afty.json::@pacote::resumo",
+      "proprietario": "AD-34"
+    },
+    {
+      "chave": "addon::player-nivel-sem-teto.json::@pacote",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::player-nivel-sem-teto.json::@pacote::autor",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::player-nivel-sem-teto.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::player-nivel-sem-teto.json::@pacote::descricao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::player-nivel-sem-teto.json::@pacote::id",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::player-nivel-sem-teto.json::@pacote::nome",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::player-nivel-sem-teto.json::@pacote::paraRaw",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::player-nivel-sem-teto.json::@pacote::regrasAfty",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::player-nivel-sem-teto.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::player-nivel-sem-teto.json::@pacote::versao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::player-progressao-epica.json::@pacote::categoria",
+      "proprietario": "AD-35"
+    },
+    {
+      "chave": "addon::player-progressao-epica.json::@pacote::resumo",
+      "proprietario": "AD-35"
+    },
+    {
+      "chave": "addon::prodigio.json::@pacote",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::prodigio.json::@pacote::autor",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::prodigio.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::prodigio.json::@pacote::descricao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::prodigio.json::@pacote::funcionamentos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::prodigio.json::@pacote::funcionamentos::prodigio",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::prodigio.json::@pacote::funcionamentos::prodigio/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::prodigio.json::@pacote::funcionamentos::prodigio/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::prodigio.json::@pacote::funcionamentos::prodigio/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::prodigio.json::@pacote::id",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::prodigio.json::@pacote::nome",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::prodigio.json::@pacote::paraRaw",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::prodigio.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::prodigio.json::@pacote::versao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::quimera-de-maldicoes.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::quimera-de-maldicoes.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::quimera.json::@pacote::categoria",
+      "proprietario": "AD-36"
+    },
+    {
+      "chave": "addon::quimera.json::@pacote::resumo",
+      "proprietario": "AD-36"
+    },
+    {
+      "chave": "addon::reavaliacao.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::reavaliacao.json::@pacote::descricao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::reavaliacao.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::reencarnacao-das-terras-impuras.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::reencarnacao-das-terras-impuras.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::regras-grimorio.json::@pacote::categoria",
+      "proprietario": "AD-37"
+    },
+    {
+      "chave": "addon::regras-grimorio.json::@pacote::resumo",
+      "proprietario": "AD-37"
+    },
+    {
+      "chave": "addon::restricao-celestial-santo-da-espada.json::@pacote::categoria",
+      "proprietario": "AD-38"
+    },
+    {
+      "chave": "addon::restricao-celestial-santo-da-espada.json::@pacote::resumo",
+      "proprietario": "AD-38"
+    },
+    {
+      "chave": "addon::retracao-de-dominio.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::retracao-de-dominio.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::segredos-do-artesao-da-alma.json::@pacote",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::segredos-do-artesao-da-alma.json::@pacote::acrescenta",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::segredos-do-artesao-da-alma.json::@pacote::autor",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::segredos-do-artesao-da-alma.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::segredos-do-artesao-da-alma.json::@pacote::descricao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::segredos-do-artesao-da-alma.json::@pacote::id",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::segredos-do-artesao-da-alma.json::@pacote::nome",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::segredos-do-artesao-da-alma.json::@pacote::paraRaw",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::segredos-do-artesao-da-alma.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::segredos-do-artesao-da-alma.json::@pacote::versao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::segredos-do-artesao-da-alma.json::acrescenta.talentos::tal_segredos_do_artesao_da_alma",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::segredos-do-artesao-da-alma.json::acrescenta.talentos::tal_segredos_do_artesao_da_alma::efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::segredos-do-artesao-da-alma.json::acrescenta.talentos::tal_segredos_do_artesao_da_alma::efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::segredos-do-artesao-da-alma.json::acrescenta.talentos::tal_segredos_do_artesao_da_alma::efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::segredos-do-artesao-da-alma.json::acrescenta.talentos::tal_segredos_do_artesao_da_alma::requisitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::segredos-do-artesao-da-alma.json::acrescenta.talentos::tal_segredos_do_artesao_da_alma::requisitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::segredos-do-artesao-da-alma.json::acrescenta.talentos::tal_segredos_do_artesao_da_alma::requisitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::sem-tecnica-liberto.json::@pacote::categoria",
+      "proprietario": "AD-39"
+    },
+    {
+      "chave": "addon::sem-tecnica-liberto.json::@pacote::resumo",
+      "proprietario": "AD-39"
+    },
+    {
+      "chave": "addon::simuriano-deskunte.json::@pacote::categoria",
+      "proprietario": "AD-40"
+    },
+    {
+      "chave": "addon::simuriano-deskunte.json::@pacote::resumo",
+      "proprietario": "AD-40"
+    },
+    {
+      "chave": "addon::stark.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::stark.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::sugawara.json::@pacote::categoria",
+      "proprietario": "AD-41"
+    },
+    {
+      "chave": "addon::sugawara.json::@pacote::resumo",
+      "proprietario": "AD-41"
+    },
+    {
+      "chave": "addon::talentos-de-estilo.json::@pacote",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-de-estilo.json::@pacote::acrescenta",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-de-estilo.json::@pacote::autor",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-de-estilo.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-de-estilo.json::@pacote::descricao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-de-estilo.json::@pacote::id",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-de-estilo.json::@pacote::nome",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-de-estilo.json::@pacote::paraRaw",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-de-estilo.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-de-estilo.json::@pacote::versao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-de-estilo.json::acrescenta.talentos::tal_estilo_proprio",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-de-estilo.json::acrescenta.talentos::tal_estilo_proprio::escolha",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-de-estilo.json::acrescenta.talentos::tal_estilo_proprio::escolha/opcoes",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-de-estilo.json::acrescenta.talentos::tal_estilo_proprio::requisitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-de-estilo.json::acrescenta.talentos::tal_inovar_estilo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-de-estilo.json::acrescenta.talentos::tal_inovar_estilo::escolha",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-de-estilo.json::acrescenta.talentos::tal_inovar_estilo::escolha/opcoes",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-de-estilo.json::acrescenta.talentos::tal_inovar_estilo::requisitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::@pacote",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::@pacote::acrescenta",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::@pacote::autor",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::@pacote::descricao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::@pacote::estadosCombate",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::@pacote::estadosCombate::zodiaco",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha/hct_zodiaco_boi",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha/hct_zodiaco_cabra",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha/hct_zodiaco_cao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha/hct_zodiaco_cavalo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha/hct_zodiaco_coelho",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha/hct_zodiaco_dragao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha/hct_zodiaco_galo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha/hct_zodiaco_macaco",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha/hct_zodiaco_porco",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha/hct_zodiaco_rato",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha/hct_zodiaco_serpente",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::@pacote::estadosCombate::zodiaco/requerEscolha/hct_zodiaco_tigre",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::@pacote::id",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::@pacote::nome",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::@pacote::paraRaw",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::@pacote::versao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::escolha",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::escolha/opcoes",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::escolha/opcoes/hct_boulos_constituicao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::escolha/opcoes/hct_boulos_constituicao/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::escolha/opcoes/hct_boulos_constituicao/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::escolha/opcoes/hct_boulos_destreza",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::escolha/opcoes/hct_boulos_destreza_constituicao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::escolha/opcoes/hct_boulos_destreza_constituicao/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::escolha/opcoes/hct_boulos_destreza_constituicao/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::escolha/opcoes/hct_boulos_destreza_constituicao/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::escolha/opcoes/hct_boulos_destreza/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::escolha/opcoes/hct_boulos_destreza/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::escolha/opcoes/hct_boulos_forca",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::escolha/opcoes/hct_boulos_forca_constituicao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::escolha/opcoes/hct_boulos_forca_constituicao/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::escolha/opcoes/hct_boulos_forca_constituicao/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::escolha/opcoes/hct_boulos_forca_constituicao/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::escolha/opcoes/hct_boulos_forca_destreza",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::escolha/opcoes/hct_boulos_forca_destreza/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::escolha/opcoes/hct_boulos_forca_destreza/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::escolha/opcoes/hct_boulos_forca_destreza/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::escolha/opcoes/hct_boulos_forca/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::escolha/opcoes/hct_boulos_forca/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_boulos::requisitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_boi",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_boi/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_boi/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_boi/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_boi/efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_cabra",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_cabra/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_cabra/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_cabra/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_cabra/efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_cao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_cao/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_cao/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_cao/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_cao/efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_cavalo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_cavalo/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_cavalo/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_cavalo/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_cavalo/efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_coelho",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_coelho/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_coelho/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_coelho/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_coelho/efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_dragao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_dragao/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_dragao/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_dragao/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_dragao/efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_galo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_galo/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_galo/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_galo/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_galo/efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_macaco",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_macaco/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_macaco/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_macaco/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_macaco/efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_porco",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_porco/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_porco/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_porco/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_porco/efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_rato",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_rato/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_rato/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_rato/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_rato/efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_serpente",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_serpente/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_serpente/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_serpente/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_serpente/efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_tigre",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_tigre/efeitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_tigre/efeitos/@0",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_tigre/efeitos/@1",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::escolha/opcoes/hct_zodiaco_tigre/efeitos/@2",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-h-corp.json::acrescenta.talentos::tal_zodiaco::requisitos",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::talentos-iniciais.json::@pacote::categoria",
+      "proprietario": "AD-42"
+    },
+    {
+      "chave": "addon::talentos-iniciais.json::@pacote::resumo",
+      "proprietario": "AD-42"
+    },
+    {
+      "chave": "addon::the-crimsom-queen.json::@pacote::categoria",
+      "proprietario": "AD-43"
+    },
+    {
+      "chave": "addon::the-crimsom-queen.json::@pacote::resumo",
+      "proprietario": "AD-43"
+    },
+    {
+      "chave": "addon::tita.json::@pacote::categoria",
+      "proprietario": "AD-44"
+    },
+    {
+      "chave": "addon::tita.json::@pacote::resumo",
+      "proprietario": "AD-44"
+    },
+    {
+      "chave": "addon::tobimune.json::@pacote::categoria",
+      "proprietario": "AD-45"
+    },
+    {
+      "chave": "addon::tobimune.json::@pacote::resumo",
+      "proprietario": "AD-45"
+    },
+    {
+      "chave": "addon::tr-no-limite-de-pericias.json::@pacote",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::tr-no-limite-de-pericias.json::@pacote::autor",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::tr-no-limite-de-pericias.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::tr-no-limite-de-pericias.json::@pacote::descricao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::tr-no-limite-de-pericias.json::@pacote::id",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::tr-no-limite-de-pericias.json::@pacote::nome",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::tr-no-limite-de-pericias.json::@pacote::paraRaw",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::tr-no-limite-de-pericias.json::@pacote::regrasAfty",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::tr-no-limite-de-pericias.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::tr-no-limite-de-pericias.json::@pacote::versao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treinamento-de-invocacao.json::@pacote::categoria",
+      "proprietario": "AD-46"
+    },
+    {
+      "chave": "addon::treinamento-de-invocacao.json::@pacote::resumo",
+      "proprietario": "AD-46"
+    },
+    {
+      "chave": "addon::treino-de-atributo.json::@pacote",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-atributo.json::@pacote::autor",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-atributo.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-atributo.json::@pacote::descricao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-atributo.json::@pacote::id",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-atributo.json::@pacote::libera",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-atributo.json::@pacote::libera::soPorAddon:atributo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-atributo.json::@pacote::nome",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-atributo.json::@pacote::paraRaw",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-atributo.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-atributo.json::@pacote::versao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-cacada.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-cacada.json::@pacote::descricao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-cacada.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-escudos.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-escudos.json::@pacote::descricao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-escudos.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-habilidade-afty.json::@pacote",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-habilidade-afty.json::@pacote::autor",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-habilidade-afty.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-habilidade-afty.json::@pacote::descricao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-habilidade-afty.json::@pacote::id",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-habilidade-afty.json::@pacote::nome",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-habilidade-afty.json::@pacote::paraRaw",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-habilidade-afty.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-habilidade-afty.json::@pacote::substitui",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-habilidade-afty.json::@pacote::versao",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-habilidade-afty.json::substitui.treinosEspeciais::tes_habilidade",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-tr.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-de-tr.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::treino-testes-de-resistencia.json::@pacote::categoria",
+      "proprietario": "AD-47"
+    },
+    {
+      "chave": "addon::treino-testes-de-resistencia.json::@pacote::resumo",
+      "proprietario": "AD-47"
+    },
+    {
+      "chave": "addon::treinos-especializacao-armas.json::@pacote::categoria",
+      "proprietario": "AD-48"
+    },
+    {
+      "chave": "addon::treinos-especializacao-armas.json::@pacote::resumo",
+      "proprietario": "AD-48"
+    },
+    {
+      "chave": "addon::vampiro-mascara-de-pedra.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::vampiro-mascara-de-pedra.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::categoria",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::resumo",
+      "proprietario": null
+    },
+    {
+      "chave": "addon::vida-dobrada-passivas-gratis.json::@pacote::categoria",
+      "proprietario": "AD-49"
+    },
+    {
+      "chave": "addon::vida-dobrada-passivas-gratis.json::@pacote::resumo",
+      "proprietario": "AD-49"
+    },
+    {
+      "chave": "addon::vislumbre-celeste.json::@pacote::categoria",
+      "proprietario": "AD-50"
+    },
+    {
+      "chave": "addon::vislumbre-celeste.json::@pacote::resumo",
+      "proprietario": "AD-50"
+    },
+    {
+      "chave": "addon::yna.json::@pacote::categoria",
+      "proprietario": "AD-51"
+    },
+    {
+      "chave": "addon::yna.json::@pacote::resumo",
+      "proprietario": "AD-51"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::@catalogo",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::absorve",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::absorve/alma-do-afty",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::absorve/alma-livre",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::absorve/ascendendo-alem-dos-ceus",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::absorve/criacao-de-equipamentos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::absorve/mente-analitica",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::absorve/player-alto-nivel-afty",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::absorve/player-nivel-sem-teto",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::absorve/segredos-do-artesao-da-alma",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::absorve/talentos-de-estilo",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::absorve/talentos-iniciais",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::absorve/tr-no-limite-de-pericias",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::absorve/treino-de-atributo",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::absorve/treino-de-habilidade-afty",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::absorve/treino-de-tr",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/lendarias",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/lendarias/len_incansavel",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/lendarias/len_incansavel/requisitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/lendarias/len_incansavel/resultados",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/lendarias/len_incansavel/resultados/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/lendarias/len_invencivel",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/lendarias/len_invencivel/efeitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/lendarias/len_invencivel/efeitos/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/lendarias/len_invencivel/efeitos/@1",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/lendarias/len_invencivel/requisitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/lendarias/len_invencivel/requisitos/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/lendarias/len_invencivel/requisitos/@1",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/lendarias/len_invencivel/requisitos/@1/ids",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/lendarias/len_invencivel/requisitos/@1/ids/len_inquebravel",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/lendarias/len_invencivel/requisitos/@1/ids/len_intocavel",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/lendarias/len_manipulacao_avancada_de_energia",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/lendarias/len_manipulacao_avancada_de_energia/efeitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/lendarias/len_manipulacao_avancada_de_energia/efeitos/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/lendarias/len_manipulacao_avancada_de_energia/requisitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/lendarias/len_manipulacao_avancada_de_energia/requisitos/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/lendarias/len_manipulacao_avancada_de_energia/requisitos/@0/ids",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/lendarias/len_manipulacao_avancada_de_energia/requisitos/@0/ids/len_favorecido_pela_energia",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/lendarias/len_manipulacao_avancada_de_energia/requisitos/@0/ids/len_inesgotavel",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/opcoesTalento",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/opcoesTalento/mente_analitica",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/opcoesTalento/mente_analitica/trocaAtributo",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/talentos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/talentos/tal_estilo_proprio",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/talentos/tal_estilo_proprio/escolha",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/talentos/tal_estilo_proprio/escolha/opcoes",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/talentos/tal_estilo_proprio/requisitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/talentos/tal_inovar_estilo",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/talentos/tal_inovar_estilo/escolha",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/talentos/tal_inovar_estilo/escolha/opcoes",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/talentos/tal_inovar_estilo/requisitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/talentos/tal_segredos_do_artesao_da_alma",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/talentos/tal_segredos_do_artesao_da_alma/efeitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/talentos/tal_segredos_do_artesao_da_alma/efeitos/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/talentos/tal_segredos_do_artesao_da_alma/efeitos/@1",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/talentos/tal_segredos_do_artesao_da_alma/requisitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/talentos/tal_segredos_do_artesao_da_alma/requisitos/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/talentos/tal_segredos_do_artesao_da_alma/requisitos/@1",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/treinamentos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/treinamentos/tr",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/treinamentos/tr/alvoTipo",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/treinamentos/tr/completo",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/treinamentos/tr/etapas",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/treinamentos/tr/etapas/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/treinamentos/tr/etapas/@0/efeitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/treinamentos/tr/etapas/@0/efeitos/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/treinamentos/tr/etapas/@1",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/treinamentos/tr/etapas/@2",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/treinamentos/tr/etapas/@2/efeitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/treinamentos/tr/etapas/@2/efeitos/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::acrescenta/treinamentos/tr/etapas/@3",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::ajustes",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::ajustes/progressaoEpica",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::ajustes/progressaoEpica/sistemas",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::ajustes/progressaoEpica/sistemas/player",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::ajustes/talentosIniciais",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::incompativeis",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::incompativeis/criacao-de-armas",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::libera",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::libera/escudosCriados",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::libera/itensDeCusto",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::libera/revestimentosCriados",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::migra",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::migra/progressaoEpica",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::migra/progressaoEpica/ligaSeTem",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::migra/progressaoEpica/ligaSeTem/ascendendo-alem-dos-ceus",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::migra/talentosIniciais",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::parciais",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::parciais/player-progressao-epica",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::parciais/regras-grimorio",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::permite",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::permite/armasPorNivel",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::permite/encantamentoGuia",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porAjuste",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porAjuste/progressaoEpica",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porAjuste/progressaoEpica/player",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porAjuste/progressaoEpica/player/funcionamentos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porAjuste/progressaoEpica/player/funcionamentos/calamidade",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porAjuste/progressaoEpica/player/funcionamentos/calamidade/efeitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porAjuste/progressaoEpica/player/funcionamentos/calamidade/efeitos/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porAjuste/progressaoEpica/player/libera",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porAjuste/progressaoEpica/player/libera/soPorAddon:cnj_agilidade_no_campo_de_batalha",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porAjuste/progressaoEpica/player/regrasAfty",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/afty",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/libera",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/libera/soPorAddon:atributo",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/libera/soPorAddon:len_versatilidade_extrema",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/libera/soPorAddon:tal_alma_livre",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/regrasAfty",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_agilidade_inigualavel",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_agilidade_inigualavel/resultados",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_agilidade_inigualavel/resultados/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_aperfeicoamento_de_atributo",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_conhecimento_iluminado",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_conhecimento_iluminado/escolha",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_conhecimento_iluminado/escolha/fonteOpcoes",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_conhecimento_iluminado/escolha/opcoes",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_consciencia_absoluta_da_alma",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_dominancia_em_tecnica",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_dominancia_em_tecnica/efeitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_dominancia_em_tecnica/escolha",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_dominancia_em_tecnica/escolha/opcoes",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_dominancia_em_tecnica/escolha/opcoes/tecnicas",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_dominancia_em_tecnica/escolha/opcoes/tecnicas/efeitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_dominancia_em_tecnica/escolha/opcoes/tecnicas/efeitos/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_dominancia_em_tecnica/escolha/opcoes/variacoes",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_dominancia_em_tecnica/escolha/opcoes/variacoes/efeitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_dominancia_em_tecnica/escolha/opcoes/variacoes/efeitos/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_favorecido_pela_energia",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_favorecido_pela_energia/efeitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_favorecido_pela_energia/efeitos/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_inesgotavel",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_inesgotavel/efeitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_inesgotavel/efeitos/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_inquebravel",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_intocavel",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_motivacao_constante",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_motivacao_constante/resultados",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_motivacao_constante/resultados/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_negar_a_morte",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_negar_a_morte/resultados",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_negar_a_morte/resultados/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_negar_a_morte/usos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_preparo_absoluto",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_resistencia_lendaria",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_resistencia_lendaria/resultados",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_resistencia_lendaria/resultados/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_resistencia_lendaria/usos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_um_com_o_mundo",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_um_com_o_mundo/efeitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_um_com_o_mundo/efeitos/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_um_com_o_mundo/efeitos/@1",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_versatilidade_extrema",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_versatilidade_extrema/efeitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_versatilidade_extrema/efeitos/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_visar_o_sucesso",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_visar_o_sucesso/resultados",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/lendarias/len_visar_o_sucesso/resultados/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_alma",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_alma/efeitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_alma/efeitos/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_atencao",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_atencao/efeitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_atencao/efeitos/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_classe_de_dificuldade",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_classe_de_dificuldade/efeitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_classe_de_dificuldade/efeitos/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_dano",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_dano/efeitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_dano/efeitos/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_dano/efeitos/@1",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_defesa",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_defesa/efeitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_defesa/efeitos/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_energia",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_energia/efeitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_energia/efeitos/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_movimento",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_movimento/efeitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_movimento/efeitos/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_pericia",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_pericia/efeitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_pericia/efeitosAlvo",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_pericia/efeitosAlvo/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_precisao",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_precisao/efeitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_precisao/efeitos/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_resistencia",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_resistencia/efeitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_resistencia/efeitos/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_resistencia/efeitosAlvo",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_resistencia/efeitosAlvo/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_vida",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_vida/efeitos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/melhoriasSuperiores/mel_vida/efeitos/@0",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/treinosEspeciais",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::porSistema/player/substitui/treinosEspeciais/tes_habilidade",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-compostos.js::EMBUTIDOS::guerra-de-feiticeiros::regrasAfty",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-lista.js::CATEGORIAS_DE_ADDON::@catalogo",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-lista.js::CATEGORIAS_DE_ADDON::equipamentos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-lista.js::CATEGORIAS_DE_ADDON::ferramentas",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-lista.js::CATEGORIAS_DE_ADDON::origens",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-lista.js::CATEGORIAS_DE_ADDON::outros",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-lista.js::CATEGORIAS_DE_ADDON::regras",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-lista.js::CATEGORIAS_DE_ADDON::talentos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-lista.js::CATEGORIAS_DE_ADDON::tecnicas",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-lista.js::CATEGORIAS_DE_ADDON::treinos",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-lista.js::FILTROS_DE_ADDON::@catalogo",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-lista.js::FILTROS_DE_ADDON::aviso",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-lista.js::FILTROS_DE_ADDON::aviso::aplica",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-lista.js::FILTROS_DE_ADDON::ligados",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-lista.js::FILTROS_DE_ADDON::ligados::aplica",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons-lista.js::RESUMO_MAX::@valor",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-addons.js::LIBERACOES::tecnicasMarciais",
+      "proprietario": "M05"
+    },
+    {
+      "chave": "afty-anatomias.js::ANATOMIAS::bracos_extras::gatilhoSessao",
+      "proprietario": "ANA-01"
+    },
+    {
+      "chave": "afty-anatomias.js::TIPOS_ARMA_NATURAL::@catalogo",
+      "proprietario": "ANA-01"
+    },
+    {
+      "chave": "afty-anatomias.js::TIPOS_ARMA_NATURAL::ct",
+      "proprietario": "ANA-01"
+    },
+    {
+      "chave": "afty-anatomias.js::TIPOS_ARMA_NATURAL::im",
+      "proprietario": "ANA-01"
+    },
+    {
+      "chave": "afty-anatomias.js::TIPOS_ARMA_NATURAL::pf",
+      "proprietario": "ANA-01"
+    },
+    {
+      "chave": "afty-atributos.js::ROLAGEM_MAX::@valor",
+      "proprietario": "P01"
+    },
+    {
+      "chave": "afty-atributos.js::ROLAGEM_MIN::@valor",
+      "proprietario": "P01"
+    },
+    {
+      "chave": "afty-catarse.js::CATARSE_FAMILIAS::anotacao",
+      "proprietario": "SIS-04"
+    },
+    {
+      "chave": "afty-catarse.js::CATARSE_FAMILIAS::habilidadesOutraClasse",
+      "proprietario": "SIS-04"
+    },
+    {
+      "chave": "afty-combate.js::COMBATE_ESTADOS::postura::requerHabilidade",
+      "proprietario": "M03"
+    },
+    {
+      "chave": "afty-combate.js::COMBATE_ESTADOS::postura::requerHabilidade/cmb_aprender_postura",
+      "proprietario": "M03"
+    },
+    {
+      "chave": "afty-combate.js::COMBATE_ESTADOS::postura::requerHabilidade/cmb_assumir_postura",
+      "proprietario": "M03"
+    },
+    {
+      "chave": "afty-combate.js::COMBATE_ESTADOS::postura::requerHabilidade/cmb_mestre_da_postura",
+      "proprietario": "M03"
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::ANATOMIA_EFEITOS::articulacoes_extensas",
+      "proprietario": "ANA-01"
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::ANATOMIA_EFEITOS::articulacoes_extensas::@0",
+      "proprietario": "ANA-01"
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_desenvolver_ideias",
+      "proprietario": "RES-05"
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::HABILIDADE_EFEITOS::res_desenvolver_ideias::@0",
+      "proprietario": "RES-05"
+    },
+    {
+      "chave": "afty-efeitos-conteudo.js::ORIGEM_EFEITOS::gemeos::@15",
+      "proprietario": "M02"
+    },
+    {
+      "chave": "afty-efeitos.js::ANATOMIA_EFEITOS::articulacoes_extensas",
+      "proprietario": "ANA-01"
+    },
+    {
+      "chave": "afty-efeitos.js::CANAIS_LIDOS_NO_MONTANTE::vagasEscolha",
+      "proprietario": "M01"
+    },
+    {
+      "chave": "afty-efeitos.js::CANAIS_VETADOS_NA_PASSIVA_MARCIAL::@catalogo",
+      "proprietario": "M01"
+    },
+    {
+      "chave": "afty-efeitos.js::CANAIS_VETADOS_NA_PASSIVA_MARCIAL::atributo",
+      "proprietario": "M01"
+    },
+    {
+      "chave": "afty-efeitos.js::CANAIS_VETADOS_NA_PASSIVA_MARCIAL::limiteAtributo",
+      "proprietario": "M01"
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAIS::vagasEscolha",
+      "proprietario": "M01"
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAIS::vagasMarcial",
+      "proprietario": "M01"
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@8::itens/vagasEscolha",
+      "proprietario": "M01"
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAL_GRUPOS::@8::itens/vagasMarcial",
+      "proprietario": "M01"
+    },
+    {
+      "chave": "afty-efeitos.js::FAMILIAS_EXCLUSIVAS::tecnicaMarcial",
+      "proprietario": "M02"
+    },
+    {
+      "chave": "afty-efeitos.js::HABILIDADE_EFEITOS::res_desenvolver_ideias",
+      "proprietario": "RES-05"
+    },
+    {
+      "chave": "afty-equipamentos.js::AMPLIFICADORA_ID::@valor",
+      "proprietario": "EQU-00"
+    },
+    {
+      "chave": "afty-equipamentos.js::ESTADO_AMPLIFICADORA::@valor",
+      "proprietario": "EQU-00"
+    },
+    {
+      "chave": "afty-espinho.js::ESPINHO_ARTIGOS::@catalogo",
+      "proprietario": "AD-18"
+    },
+    {
+      "chave": "afty-espinho.js::ESPINHO_ARTIGOS::a",
+      "proprietario": "AD-18"
+    },
+    {
+      "chave": "afty-espinho.js::ESPINHO_ARTIGOS::o",
+      "proprietario": "AD-18"
+    },
+    {
+      "chave": "afty-espinho.js::ESPINHO_IDENTIDADE_PADRAO::@catalogo",
+      "proprietario": "AD-18"
+    },
+    {
+      "chave": "afty-espinho.js::ESPINHO_IDENTIDADE_PADRAO::artigo",
+      "proprietario": "AD-18"
+    },
+    {
+      "chave": "afty-espinho.js::ESPINHO_IDENTIDADE_PADRAO::nome",
+      "proprietario": "AD-18"
+    },
+    {
+      "chave": "afty-espinho.js::ESPINHO_IDENTIDADE_PADRAO::visual",
+      "proprietario": "AD-18"
+    },
+    {
+      "chave": "afty-espinho.js::ESPINHO_SEM_CONFIG::artigo",
+      "proprietario": "AD-18"
+    },
+    {
+      "chave": "afty-espinho.js::ESPINHO_SEM_CONFIG::maestriaAnotada",
+      "proprietario": "AD-18"
+    },
+    {
+      "chave": "afty-espinho.js::ESPINHO_SEM_CONFIG::nome",
+      "proprietario": "AD-18"
+    },
+    {
+      "chave": "afty-espinho.js::ESPINHO_SEM_CONFIG::visual",
+      "proprietario": "AD-18"
+    },
+    {
+      "chave": "afty-espinho.js::ESPINHO_VISUAIS::@catalogo",
+      "proprietario": "AD-18"
+    },
+    {
+      "chave": "afty-espinho.js::ESPINHO_VISUAIS::espinho",
+      "proprietario": "AD-18"
+    },
+    {
+      "chave": "afty-espinho.js::ESPINHO_VISUAIS::lanterna",
+      "proprietario": "AD-18"
+    },
+    {
+      "chave": "afty-extras-nativos.js::ESCOPO_PRIMEIRO_ATAQUE::@valor",
+      "proprietario": "SIS-05"
+    },
+    {
+      "chave": "afty-extras-nativos.js::ESTADOS_ALIADOS::aliados_auxiliar_pericias::maxPorOpcao",
+      "proprietario": "SIS-05"
+    },
+    {
+      "chave": "afty-extras-nativos.js::ESTADOS_ALIADOS::aliados_auxiliar_pericias::maxPorOpcao/tetos",
+      "proprietario": "SIS-05"
+    },
+    {
+      "chave": "afty-feiticos.js::VETOS_TECNICA_MARCIAL::@catalogo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-feiticos.js::VETOS_TECNICA_MARCIAL::categoriasPassivoVetadas",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-feiticos.js::VETOS_TECNICA_MARCIAL::categoriasPassivoVetadas::atributo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-feiticos.js::VETOS_TECNICA_MARCIAL::efeitosAuxVetados",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-feiticos.js::VETOS_TECNICA_MARCIAL::efeitosAuxVetados::alcanceCaC",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-feiticos.js::VETOS_TECNICA_MARCIAL::efeitosAuxVetados::atributo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-lista-lateral.js::TIPO_DESTAQUE::@valor",
+      "proprietario": "M04"
+    },
+    {
+      "chave": "afty-origens.js::AFTY_ORIGENS_CATALOG::gemeos::caracteristicas/restricao_celestial_restringido_morto/concedeHabilidades",
+      "proprietario": "ORI-01"
+    },
+    {
+      "chave": "afty-origens.js::AFTY_ORIGENS_CATALOG::gemeos::caracteristicas/restricao_celestial_restringido_morto/concedeHabilidades/res_restricao_definitiva",
+      "proprietario": "ORI-01"
+    },
+    {
+      "chave": "afty-origens.js::AFTY_ORIGENS_CATALOG::gemeos::caracteristicas/restricao_celestial_restringido/vetaHabilidades",
+      "proprietario": "ORI-01"
+    },
+    {
+      "chave": "afty-origens.js::AFTY_ORIGENS_CATALOG::gemeos::caracteristicas/restricao_celestial_restringido/vetaHabilidades/res_restricao_definitiva",
+      "proprietario": "ORI-01"
+    },
+    {
+      "chave": "afty-sistema.js::DIVERGENCIAS::gemeoRestringidoPelaCopia",
+      "proprietario": "M02"
+    },
+    {
+      "chave": "afty-sistema.js::DIVERGENCIAS::progressaoDeTecnicasMarciais",
+      "proprietario": "M02"
+    },
+    {
+      "chave": "afty-sistema.js::DIVERGENCIAS::progressaoDoEstilo",
+      "proprietario": "M02"
+    },
+    {
+      "chave": "afty-talentos.js::AFTY_OPCOES_TALENTO::@catalogo",
+      "proprietario": "TAL-02"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TIPO_TECNICA_MARCIAL_LABEL::@catalogo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TIPO_TECNICA_MARCIAL_LABEL::ataque",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TIPO_TECNICA_MARCIAL_LABEL::auxiliar",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TIPO_TECNICA_MARCIAL_LABEL::curativo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TIPO_TECNICA_MARCIAL_LABEL::passivo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TIPO_TECNICA_MARCIAL_LABEL::personalizado",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TIPOS_TECNICA_MARCIAL::@catalogo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TIPOS_TECNICA_MARCIAL::ataque",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TIPOS_TECNICA_MARCIAL::auxiliar",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TIPOS_TECNICA_MARCIAL::curativo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TIPOS_TECNICA_MARCIAL::passivo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TIPOS_TECNICA_MARCIAL::personalizado",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_ACAO_LABEL::@catalogo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_ACAO_LABEL::bonus",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_ACAO_LABEL::completa",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_ACAO_LABEL::comum",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_ACERTO_POR_REDUCAO::@valor",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_ACERTO::@catalogo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_ACERTO::1",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_ACERTO::2",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_ACERTO::3",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_ACERTO::4",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_ACESSO::@catalogo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_ACESSO::1",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_ACESSO::2",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_ACESSO::3",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_ACESSO::4",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_ACOES::@catalogo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_ACOES::bonus",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_ACOES::completa",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_ACOES::comum",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_ATAQUES::@catalogo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_ATAQUES::1",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_ATAQUES::2",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_ATAQUES::3",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_ATAQUES::4",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_AUX_VETADOS::@catalogo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_AUX_VETADOS::alcanceCaC",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_AUX_VETADOS::atributo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_CUSTO_PE::@catalogo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_CUSTO_PE::1",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_CUSTO_PE::2",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_CUSTO_PE::3",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_CUSTO_PE::4",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_DANO::@catalogo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_DANO::1",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_DANO::2",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_DANO::3",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_DANO::4",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_EFEITOS_ATAQUE::@catalogo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_EFEITOS_ATAQUE::acerto",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_EFEITOS_ATAQUE::condicao",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_EFEITOS_ATAQUE::dano",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_EFEITOS_ATAQUE::rd",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_FORCA_LABEL::@catalogo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_FORCA_LABEL::extrema",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_FORCA_LABEL::forte",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_FORCA_LABEL::fraca",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_FORCA_LABEL::media",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_FORCAS::@catalogo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_FORCAS::extrema",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_FORCAS::forte",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_FORCAS::fraca",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_FORCAS::media",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_NIVEIS::@0",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_NIVEIS::@1",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_NIVEIS::@2",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_NIVEIS::@3",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_NIVEIS::@catalogo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_NIVEL_LABEL::@catalogo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_NIVEL_LABEL::1",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_NIVEL_LABEL::2",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_NIVEL_LABEL::3",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_NIVEL_LABEL::4",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_PASSIVO_VETADAS::@catalogo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_PASSIVO_VETADAS::atributo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_RD_POR_REDUCAO::@valor",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_RD::@catalogo",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_RD::1",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_RD::2",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_RD::3",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-tecnicas-marciais.js::TM_RD::4",
+      "proprietario": "FEI-01"
+    },
+    {
+      "chave": "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::etapas/@3/efeitos",
+      "proprietario": "TRE-02"
+    },
+    {
+      "chave": "afty-treinamentos.js::AFTY_TREINAMENTOS::potencial_fisico::etapas/@3/efeitos/@0",
+      "proprietario": "TRE-02"
+    },
+    {
+      "chave": "ficha/ficha-conteudo.js::GRUPOS::catarse",
+      "proprietario": "M04"
+    },
+    {
+      "chave": "ficha/ficha-conteudo.js::GRUPOS::tecnicaMarcial",
+      "proprietario": "M04"
+    },
+    {
+      "chave": "ficha/ficha-conteudo.js::ROTULO_GRUPO::catarse",
+      "proprietario": "M04"
+    },
+    {
+      "chave": "ficha/ficha-conteudo.js::ROTULO_GRUPO::tecnicaMarcial",
+      "proprietario": "M04"
+    }
+  ],
+  "erros": []
+}

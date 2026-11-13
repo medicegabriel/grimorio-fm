@@ -1,0 +1,131 @@
+{
+  "e-cabeca": [
+    "afty-cabecalho"
+  ],
+  "e-icone": [
+    "afty-botao"
+  ],
+  "e-voltar": [
+    "afty-botao"
+  ],
+  "m-retrato": [
+    "afty-retrato"
+  ],
+  "m-retrato-vazio": [
+    "afty-retrato"
+  ],
+  "e-retrato": [
+    "afty-retrato"
+  ],
+  "e-nome": [
+    "afty-nome"
+  ],
+  "m-medidor": [
+    "afty-vital"
+  ],
+  "m-medidor-rotulo": [
+    "afty-vital-rotulo"
+  ],
+  "m-barra": [
+    "afty-vital-trilho"
+  ],
+  "m-barra-cheia": [
+    "afty-vital-barra"
+  ],
+  "m-0!": [
+    "afty-card-titulo"
+  ],
+  "e-stats": [
+    "afty-stats"
+  ],
+  "e-stat": [
+    "afty-stat"
+  ],
+  "m-valor": [
+    "afty-stat-valor"
+  ],
+  "e-g2": [
+    "afty-abas"
+  ],
+  "e-abas": [
+    "afty-abas"
+  ],
+  "e-aba": [
+    "afty-aba"
+  ],
+  "e-grupo": [
+    "afty-card"
+  ],
+  "m-mesa": [
+    "afty-card"
+  ],
+  "e-grupo-titulo": [
+    "afty-card-titulo"
+  ],
+  "m-mesa-titulo": [
+    "afty-card-titulo"
+  ],
+  "m-secao": [
+    "afty-card"
+  ],
+  "m-rapido": [
+    "afty-card"
+  ],
+  "e-linha": [
+    "afty-linha"
+  ],
+  "e-botao": [
+    "afty-botao"
+  ],
+  "e-ativar-preparo": [
+    "afty-botao"
+  ],
+  "m-item": [
+    "afty-linha"
+  ],
+  "m-secao-dano": [
+    "afty-card"
+  ],
+  "m-linha": [
+    "afty-linha"
+  ],
+  "m-rolar-num": [
+    "afty-rolavel+afty-valor"
+  ],
+  "m-feitico": [
+    "afty-linha"
+  ],
+  "e-tecnica": [
+    "afty-card"
+  ],
+  "m-atributos": [
+    "afty-card"
+  ],
+  "m-atributo-celula": [
+    "afty-atributo"
+  ],
+  "m-atributo-rotulo": [
+    "afty-atributo-rotulo"
+  ],
+  "m-atributo-valor": [
+    "afty-atributo-valor"
+  ],
+  "m-teste": [
+    "afty-linha"
+  ],
+  "m-cartao": [
+    "afty-linha"
+  ],
+  "m-carga": [
+    "afty-card"
+  ],
+  "m-carga-trilho": [
+    "afty-vital-trilho"
+  ],
+  "m-avisos": [
+    "afty-card"
+  ],
+  "m-avisos-equip": [
+    "afty-card"
+  ]
+}

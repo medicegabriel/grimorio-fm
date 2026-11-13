@@ -90,8 +90,11 @@ export default function PainelDeRolagens({ log, modo, onModo, aberto, onAberto, 
     const cabecalho = painel.closest("header");
     const ajustarAltura = () => {
       if (cabecalho) {
+        /* No G2 as abas e a barra dividem a `.e-linha-abas`: o que sai ao rolar é tudo acima dela. Na clássica, a barra vem abaixo das abas. */
+        const linha = painel.closest(".e-linha-abas");
         const abas = cabecalho.querySelector(".afty-abas");
-        cabecalho.style.setProperty("--afty-cabecalho-recolhido", `${Math.max(0, painel.offsetTop - (abas?.offsetHeight ?? 0))}px`);
+        const recolhido = linha ? linha.offsetTop : painel.offsetTop - (abas?.offsetHeight ?? 0);
+        cabecalho.style.setProperty("--afty-cabecalho-recolhido", `${Math.max(0, recolhido)}px`);
       }
       const disponivel = window.innerHeight - painel.getBoundingClientRect().bottom - 24;
       painel.style.setProperty("--afty-log-altura", `${Math.max(48, disponivel)}px`);

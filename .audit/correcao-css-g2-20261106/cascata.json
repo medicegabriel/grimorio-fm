@@ -1,0 +1,202 @@
+{
+  ".afty-nome": {
+    "classes": "afty-nome e-nome",
+    "color": "rgb(255, 0, 170)",
+    "r": [
+      {
+        "ctx": "",
+        "sel": ".afty-nome",
+        "color": "var(--afty-texto)",
+        "bg": ""
+      },
+      {
+        "ctx": "",
+        "sel": "h1, h2",
+        "color": "rgb(243, 244, 246)",
+        "bg": ""
+      },
+      {
+        "ctx": "",
+        "sel": ".e-g2 :where(h1, h2, h3)",
+        "color": "inherit",
+        "bg": ""
+      },
+      {
+        "ctx": "@scope (#afty-ficha) ",
+        "sel": ".afty-nome",
+        "color": "rgb(255, 0, 170)",
+        "bg": ""
+      }
+    ]
+  },
+  ".m-rolar-num": {
+    "classes": "afty-rolavel cursor-pointer text-left afty-valor m-rolar-num",
+    "color": "rgb(18, 171, 52)",
+    "r": [
+      {
+        "ctx": "",
+        "sel": ".afty-valor",
+        "color": "var(--afty-texto)",
+        "bg": ""
+      },
+      {
+        "ctx": "@layer base ",
+        "sel": "button, input, select, optgroup, textarea",
+        "color": "inherit",
+        "bg": ""
+      },
+      {
+        "ctx": "",
+        "sel": ".e-g2 :where(button)",
+        "color": "inherit",
+        "bg": ""
+      },
+      {
+        "ctx": "",
+        "sel": ".e-g2 .m-rolar button.afty-rolavel",
+        "color": "",
+        "bg": "0px 0px"
+      },
+      {
+        "ctx": "",
+        "sel": ":where(.e-g2) .m-rolar-num",
+        "color": "var(--e-t1)",
+        "bg": ""
+      },
+      {
+        "ctx": "@scope (#afty-ficha) ",
+        "sel": ".afty-valor",
+        "color": "rgb(18, 171, 52)",
+        "bg": ""
+      }
+    ]
+  },
+  "[data-afty-aba=\"acoes\"]": {
+    "classes": "afty-aba e-aba",
+    "color": "rgb(1, 170, 238)",
+    "r": [
+      {
+        "ctx": "",
+        "sel": ".afty-aba",
+        "color": "var(--afty-texto-suave)",
+        "bg": ""
+      },
+      {
+        "ctx": "@layer base ",
+        "sel": "button, input, select, optgroup, textarea",
+        "color": "inherit",
+        "bg": ""
+      },
+      {
+        "ctx": "",
+        "sel": ".e-g2 :where(button)",
+        "color": "inherit",
+        "bg": ""
+      },
+      {
+        "ctx": "",
+        "sel": ":where(.e-g2) .e-aba",
+        "color": "var(--e-t2)",
+        "bg": "0px 0px"
+      },
+      {
+        "ctx": "",
+        "sel": ":where(.e-g2 .e-aba[aria-selected=\"true\"]).e-aba",
+        "color": "var(--e-t1)",
+        "bg": ""
+      },
+      {
+        "ctx": "@scope (#afty-ficha) ",
+        "sel": ".afty-aba",
+        "color": "rgb(0, 170, 238)",
+        "bg": ""
+      }
+    ]
+  },
+  ".m-celula": {
+    "classes": "m-celula",
+    "color": "rgb(241, 245, 249)",
+    "r": [
+      {
+        "ctx": "",
+        "sel": ".e-g2 .m-celula",
+        "color": "",
+        "bg": "0px 0px"
+      }
+    ]
+  },
+  "cards": [
+    {
+      "classes": "afty-card p-4",
+      "style": "width: min(28rem, -2rem + 100vw); max-height: calc(100dvh - 2rem); overflow-y: auto; margin: auto; color: var(--afty-texto);",
+      "bg": "rgb(18, 52, 86)",
+      "visivel": false
+    },
+    {
+      "classes": "afty-card e-grupo m-mesa",
+      "style": null,
+      "bg": "rgb(18, 52, 86)",
+      "visivel": true
+    },
+    {
+      "classes": "afty-card p-3 space-y-2",
+      "style": null,
+      "bg": "rgba(0, 0, 0, 0)",
+      "visivel": false
+    },
+    {
+      "classes": "afty-card p-3 space-y-2",
+      "style": null,
+      "bg": "rgba(0, 0, 0, 0)",
+      "visivel": false
+    },
+    {
+      "classes": "afty-card p-3 space-y-2",
+      "style": null,
+      "bg": "rgba(0, 0, 0, 0)",
+      "visivel": false
+    },
+    {
+      "classes": "afty-card p-3 space-y-2",
+      "style": null,
+      "bg": "rgba(0, 0, 0, 0)",
+      "visivel": false
+    },
+    {
+      "classes": "afty-card p-3 space-y-2",
+      "style": null,
+      "bg": "rgba(0, 0, 0, 0)",
+      "visivel": false
+    },
+    {
+      "classes": "afty-card p-3 space-y-2",
+      "style": null,
+      "bg": "rgba(0, 0, 0, 0)",
+      "visivel": false
+    },
+    {
+      "classes": "afty-card e-grupo m-secao m-rapido",
+      "style": null,
+      "bg": "rgb(18, 52, 86)",
+      "visivel": true
+    },
+    {
+      "classes": "afty-card e-grupo m-secao m-secao-dano",
+      "style": null,
+      "bg": "rgb(18, 52, 86)",
+      "visivel": true
+    },
+    {
+      "classes": "afty-card e-grupo m-secao ",
+      "style": null,
+      "bg": "rgb(18, 52, 86)",
+      "visivel": true
+    },
+    {
+      "classes": "afty-card e-grupo m-secao ",
+      "style": null,
+      "bg": "rgb(18, 52, 86)",
+      "visivel": true
+    }
+  ]
+}

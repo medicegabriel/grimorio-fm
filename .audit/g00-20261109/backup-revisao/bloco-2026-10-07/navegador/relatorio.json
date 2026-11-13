@@ -1,0 +1,441 @@
+[
+ {
+  "caso": "motor",
+  "sistema": "player",
+  "largura": 1440,
+  "erros": [],
+  "semScroll": true,
+  "canaisAntes": 2,
+  "pericaPadrao": "acrobacia",
+  "dadoPadrao": "4",
+  "opcoes": {
+   "Dados de Dano (tamanho próprio)": {
+    "valor": "d3",
+    "opcoes": [
+     "escolher...",
+     "d3",
+     "d4",
+     "d6",
+     "d8",
+     "d10",
+     "d12"
+    ]
+   },
+   "RD por Tipo": {
+    "valor": "",
+    "opcoes": [
+     "todos",
+     "Cortante",
+     "Impacto",
+     "Perfurante",
+     "Ácido",
+     "Congelante",
+     "Chocante",
+     "Queimante",
+     "Sônico",
+     "Dano na Alma",
+     "Energia Reversa",
+     "Energético",
+     "Psíquico",
+     "Radiante",
+     "Necrótico",
+     "Venenoso"
+    ]
+   },
+   "PE Temporário": {
+    "valor": "combate",
+    "opcoes": [
+     "escolher...",
+     "Uma Vez no Combate",
+     "Toda Rodada"
+    ]
+   },
+   "Custo em PE": {
+    "valor": "",
+    "opcoes": [
+     "todos",
+     "Feitiço",
+     "Domínio",
+     "Estilo das Sombras",
+     "Invocação",
+     "Aptidão"
+    ]
+   }
+  },
+  "gravado": [
+   {
+    "canal": "proficienciaPericia",
+    "alvo": "percepcao",
+    "expr": "1",
+    "semCredito": true
+   },
+   {
+    "canal": "defesa",
+    "expr": "1"
+   },
+   {
+    "canal": "dadosPericia",
+    "alvo": "atletismo:d6",
+    "expr": "1"
+   }
+  ],
+  "dadosAtletismo": [
+   {
+    "faces": 6,
+    "qtd": 1
+   }
+  ]
+ },
+ {
+  "caso": "motor",
+  "sistema": "player",
+  "largura": 390,
+  "erros": [],
+  "semScroll": true,
+  "canaisAntes": 2,
+  "pericaPadrao": "acrobacia",
+  "dadoPadrao": "4",
+  "opcoes": {
+   "Dados de Dano (tamanho próprio)": {
+    "valor": "d3",
+    "opcoes": [
+     "escolher...",
+     "d3",
+     "d4",
+     "d6",
+     "d8",
+     "d10",
+     "d12"
+    ]
+   },
+   "RD por Tipo": {
+    "valor": "",
+    "opcoes": [
+     "todos",
+     "Cortante",
+     "Impacto",
+     "Perfurante",
+     "Ácido",
+     "Congelante",
+     "Chocante",
+     "Queimante",
+     "Sônico",
+     "Dano na Alma",
+     "Energia Reversa",
+     "Energético",
+     "Psíquico",
+     "Radiante",
+     "Necrótico",
+     "Venenoso"
+    ]
+   },
+   "PE Temporário": {
+    "valor": "combate",
+    "opcoes": [
+     "escolher...",
+     "Uma Vez no Combate",
+     "Toda Rodada"
+    ]
+   },
+   "Custo em PE": {
+    "valor": "",
+    "opcoes": [
+     "todos",
+     "Feitiço",
+     "Domínio",
+     "Estilo das Sombras",
+     "Invocação",
+     "Aptidão"
+    ]
+   }
+  },
+  "gravado": [
+   {
+    "canal": "proficienciaPericia",
+    "alvo": "percepcao",
+    "expr": "1",
+    "semCredito": true
+   },
+   {
+    "canal": "defesa",
+    "expr": "1"
+   },
+   {
+    "canal": "dadosPericia",
+    "alvo": "atletismo:d6",
+    "expr": "1"
+   }
+  ],
+  "dadosAtletismo": [
+   {
+    "faces": 6,
+    "qtd": 1
+   }
+  ]
+ },
+ {
+  "caso": "motor",
+  "sistema": "afty",
+  "largura": 1440,
+  "erros": [],
+  "semScroll": true,
+  "canaisAntes": 2,
+  "pericaPadrao": "acrobacia",
+  "dadoPadrao": "4",
+  "opcoes": {
+   "Dados de Dano (tamanho próprio)": {
+    "valor": "d3",
+    "opcoes": [
+     "escolher...",
+     "d3",
+     "d4",
+     "d6",
+     "d8",
+     "d10",
+     "d12"
+    ]
+   },
+   "RD por Tipo": {
+    "valor": "",
+    "opcoes": [
+     "todos",
+     "Cortante",
+     "Impacto",
+     "Perfurante",
+     "Ácido",
+     "Congelante",
+     "Chocante",
+     "Queimante",
+     "Sônico",
+     "Dano na Alma",
+     "Energia Reversa",
+     "Energético",
+     "Psíquico",
+     "Radiante",
+     "Necrótico",
+     "Venenoso"
+    ]
+   },
+   "PE Temporário": {
+    "valor": "combate",
+    "opcoes": [
+     "escolher...",
+     "Uma Vez no Combate",
+     "Toda Rodada"
+    ]
+   },
+   "Custo em PE": {
+    "valor": "",
+    "opcoes": [
+     "todos",
+     "Feitiço",
+     "Domínio",
+     "Estilo das Sombras",
+     "Invocação",
+     "Aptidão"
+    ]
+   }
+  },
+  "gravado": [
+   {
+    "canal": "proficienciaPericia",
+    "alvo": "percepcao",
+    "expr": "1",
+    "semCredito": true
+   },
+   {
+    "canal": "defesa",
+    "expr": "1"
+   },
+   {
+    "canal": "dadosPericia",
+    "alvo": "atletismo:d6",
+    "expr": "1"
+   }
+  ],
+  "dadosAtletismo": [
+   {
+    "faces": 6,
+    "qtd": 1
+   }
+  ]
+ },
+ {
+  "caso": "motor",
+  "sistema": "afty",
+  "largura": 390,
+  "erros": [],
+  "semScroll": true,
+  "canaisAntes": 2,
+  "pericaPadrao": "acrobacia",
+  "dadoPadrao": "4",
+  "opcoes": {
+   "Dados de Dano (tamanho próprio)": {
+    "valor": "d3",
+    "opcoes": [
+     "escolher...",
+     "d3",
+     "d4",
+     "d6",
+     "d8",
+     "d10",
+     "d12"
+    ]
+   },
+   "RD por Tipo": {
+    "valor": "",
+    "opcoes": [
+     "todos",
+     "Cortante",
+     "Impacto",
+     "Perfurante",
+     "Ácido",
+     "Congelante",
+     "Chocante",
+     "Queimante",
+     "Sônico",
+     "Dano na Alma",
+     "Energia Reversa",
+     "Energético",
+     "Psíquico",
+     "Radiante",
+     "Necrótico",
+     "Venenoso"
+    ]
+   },
+   "PE Temporário": {
+    "valor": "combate",
+    "opcoes": [
+     "escolher...",
+     "Uma Vez no Combate",
+     "Toda Rodada"
+    ]
+   },
+   "Custo em PE": {
+    "valor": "",
+    "opcoes": [
+     "todos",
+     "Feitiço",
+     "Domínio",
+     "Estilo das Sombras",
+     "Invocação",
+     "Aptidão"
+    ]
+   }
+  },
+  "gravado": [
+   {
+    "canal": "proficienciaPericia",
+    "alvo": "percepcao",
+    "expr": "1",
+    "semCredito": true
+   },
+   {
+    "canal": "defesa",
+    "expr": "1"
+   },
+   {
+    "canal": "dadosPericia",
+    "alvo": "atletismo:d6",
+    "expr": "1"
+   }
+  ],
+  "dadosAtletismo": [
+   {
+    "faces": 6,
+    "qtd": 1
+   }
+  ]
+ },
+ {
+  "caso": "multiclasse",
+  "sistema": "player",
+  "largura": 1440,
+  "erros": [],
+  "baixa": {
+   "desligado": true,
+   "title": "Requisito de Multiclasse (INT ou SAB 16)"
+  },
+  "alta": {
+   "desligado": false,
+   "gravadas": [
+    "lutador",
+    "conjurador"
+   ]
+  },
+  "ja": {
+   "avisos": 1,
+   "texto": "Conjurador sem o Requisito de Multiclasse (INT ou SAB 16)."
+  },
+  "semScroll": true
+ },
+ {
+  "caso": "multiclasse",
+  "sistema": "player",
+  "largura": 390,
+  "erros": [],
+  "baixa": {
+   "desligado": true,
+   "title": "Requisito de Multiclasse (INT ou SAB 16)"
+  },
+  "alta": {
+   "desligado": false,
+   "gravadas": [
+    "lutador",
+    "conjurador"
+   ]
+  },
+  "ja": {
+   "avisos": 1,
+   "texto": "Conjurador sem o Requisito de Multiclasse (INT ou SAB 16)."
+  },
+  "semScroll": true
+ },
+ {
+  "caso": "multiclasse",
+  "sistema": "afty",
+  "largura": 1440,
+  "erros": [],
+  "baixa": {
+   "desligado": false,
+   "title": null
+  },
+  "alta": {
+   "desligado": false,
+   "gravadas": [
+    "lutador",
+    "conjurador"
+   ]
+  },
+  "ja": {
+   "avisos": 0,
+   "texto": null
+  },
+  "semScroll": true
+ },
+ {
+  "caso": "multiclasse",
+  "sistema": "afty",
+  "largura": 390,
+  "erros": [],
+  "baixa": {
+   "desligado": false,
+   "title": null
+  },
+  "alta": {
+   "desligado": false,
+   "gravadas": [
+    "lutador",
+    "conjurador"
+   ]
+  },
+  "ja": {
+   "avisos": 0,
+   "texto": null
+  },
+  "semScroll": true
+ },
+ {
+  "resultado": "PASSOU"
+ }
+]

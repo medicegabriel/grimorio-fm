@@ -691,6 +691,7 @@ export function equipamentosDaFicha(derived) {
     if (e.equipado) tags.push("Equipado");
     if (e.qtd > 1) tags.push({ label: `${e.qtd}×`, tipo: "vezes" });
     if (e.fa?.grauLabel) tags.push(e.fa.grauLabel);
+    if (e.engenhoAtivo && e.engenhoRecebido) tags.push("Vantagem na Primeira Rolagem");
     if (e.espacos) tags.push({ label: `${e.espacos} Esp.`, tipo: "espacos" });
     return item({
       id: e.uid ?? `${tipo}:${e.refId}:${i}`,
@@ -700,6 +701,9 @@ export function equipamentosDaFicha(derived) {
       nome: def.nome ?? e.refId ?? "Item",
       texto: def.descricao ?? "",
       grupo: "equipamento",
+      usos: e.engenhoAtivo && e.engenhoRecebido
+        ? { max: 1, recarga: "unica", chave: `manual:engenho:${e.uid}` }
+        : null,
       sub: { id: tipo, label: ROTULO_EQUIPAMENTO[tipo] ?? "Outros" },
       tags,
       // Os encantamentos da Ferramenta Amaldiçoada aparecem como as opções

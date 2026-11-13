@@ -1,0 +1,7 @@
+{
+  "arquivosAprovados": 255,
+  "assertsAprovados": 16665,
+  "falhas": [
+    "t-reconciliacao-g00.mjs"
+  ]
+}

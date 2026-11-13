@@ -1,0 +1,361 @@
+{
+  "versao": 1,
+  "shaInventario": "caa3d525f75f2869557ee8943efbcdca60e0ef0e1a55ed8bf11dbd22cb86ac5a",
+  "shaVivo": "46f0627ef9f2cb45d697cd377ec3eb7a9aecaac46fe0ae31f24536fafc68be5c",
+  "shaEscopo": "fbaad7a03f47bd04a916d5c9f131832dd2d6c9dbfaae3e3645d8996d51b5fd33",
+  "adicionados": [
+    {
+      "chave": "addon::camellya.json::@pacote::feiticos::chicote",
+      "item": {
+        "chave": "addon::camellya.json::@pacote::feiticos::chicote",
+        "id": "chicote",
+        "nome": "Chicote Carmesim",
+        "arquivo": "addons/camellya.json",
+        "pai": "addon::camellya.json::@pacote::feiticos",
+        "caminho": "chicote",
+        "proprietario": "AD-73",
+        "tipo": "parcela declarada",
+        "addon": "camellya.json",
+        "idLocal": "chicote",
+        "hashDado": "ea875f281281f6e97a36025128a3c47911232e0c271959c2cccb90f2c6f82d56",
+        "nivel": 5
+      },
+      "proprietarioSugerido": "AD-73"
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::feiticos::chicote/rolagens",
+      "item": {
+        "chave": "addon::camellya.json::@pacote::feiticos::chicote/rolagens",
+        "id": "chicote/rolagens",
+        "nome": "chicote/rolagens",
+        "arquivo": "addons/camellya.json",
+        "pai": "addon::camellya.json::@pacote::feiticos",
+        "caminho": "chicote/rolagens",
+        "proprietario": "AD-73",
+        "tipo": "pool",
+        "addon": "camellya.json",
+        "hashDado": "9f2e9470c4c9a6ed90ae3ca14ac8255e43dfde645ded6c686e023160ce9e8397"
+      },
+      "proprietarioSugerido": "AD-73"
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::feiticos::chicote/rolagens/@0",
+      "item": {
+        "chave": "addon::camellya.json::@pacote::feiticos::chicote/rolagens/@0",
+        "id": "chicote/rolagens/@0",
+        "nome": "chicote/rolagens/@0",
+        "arquivo": "addons/camellya.json",
+        "pai": "addon::camellya.json::@pacote::feiticos",
+        "caminho": "chicote/rolagens/@0",
+        "proprietario": "AD-73",
+        "tipo": "parcela declarada",
+        "addon": "camellya.json",
+        "hashDado": "dd2b0bbd68db79aad2eae2dea3da28100c0b55381a2e69b184f80d7840ed0ed9"
+      },
+      "proprietarioSugerido": "AD-73"
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::feiticos::marca",
+      "item": {
+        "chave": "addon::camellya.json::@pacote::feiticos::marca",
+        "id": "marca",
+        "nome": "Marca da Germinação",
+        "arquivo": "addons/camellya.json",
+        "pai": "addon::camellya.json::@pacote::feiticos",
+        "caminho": "marca",
+        "proprietario": "AD-73",
+        "tipo": "parcela declarada",
+        "addon": "camellya.json",
+        "idLocal": "marca",
+        "hashDado": "81517ae9075dda1cfcb50a0dcd6c0a2fe79d8ebfa91d261ff57ddc78a865beaf",
+        "nivel": 0
+      },
+      "proprietarioSugerido": "AD-73"
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::feiticos::marca/efeitosPassivo",
+      "item": {
+        "chave": "addon::camellya.json::@pacote::feiticos::marca/efeitosPassivo",
+        "id": "marca/efeitosPassivo",
+        "nome": "marca/efeitosPassivo",
+        "arquivo": "addons/camellya.json",
+        "pai": "addon::camellya.json::@pacote::feiticos",
+        "caminho": "marca/efeitosPassivo",
+        "proprietario": "AD-73",
+        "tipo": "pool",
+        "addon": "camellya.json",
+        "hashDado": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "proprietarioSugerido": "AD-73"
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::feiticos::vinha",
+      "item": {
+        "chave": "addon::camellya.json::@pacote::feiticos::vinha",
+        "id": "vinha",
+        "nome": "Vinha Secundária",
+        "arquivo": "addons/camellya.json",
+        "pai": "addon::camellya.json::@pacote::feiticos",
+        "caminho": "vinha",
+        "proprietario": "AD-73",
+        "tipo": "parcela declarada",
+        "addon": "camellya.json",
+        "idLocal": "vinha",
+        "hashDado": "c2577506ca937a4ae48f9922b9f4e7c3bb5bdc7ca0c5f9a91ba685b4b94555c2",
+        "nivel": 0
+      },
+      "proprietarioSugerido": "AD-73"
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::feiticos::vinha/rolagens",
+      "item": {
+        "chave": "addon::camellya.json::@pacote::feiticos::vinha/rolagens",
+        "id": "vinha/rolagens",
+        "nome": "vinha/rolagens",
+        "arquivo": "addons/camellya.json",
+        "pai": "addon::camellya.json::@pacote::feiticos",
+        "caminho": "vinha/rolagens",
+        "proprietario": "AD-73",
+        "tipo": "pool",
+        "addon": "camellya.json",
+        "hashDado": "ff243a42aaf6a2e0909033eefb38ec868d42cd0ab555edd4971e6b2a11770a41"
+      },
+      "proprietarioSugerido": "AD-73"
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::feiticos::vinha/rolagens/@0",
+      "item": {
+        "chave": "addon::camellya.json::@pacote::feiticos::vinha/rolagens/@0",
+        "id": "vinha/rolagens/@0",
+        "nome": "vinha/rolagens/@0",
+        "arquivo": "addons/camellya.json",
+        "pai": "addon::camellya.json::@pacote::feiticos",
+        "caminho": "vinha/rolagens/@0",
+        "proprietario": "AD-73",
+        "tipo": "parcela declarada",
+        "addon": "camellya.json",
+        "hashDado": "3ba489ff16948874feebafb121496f92061ff5e768f03ec478e2e4ba0d775cd4"
+      },
+      "proprietarioSugerido": "AD-73"
+    }
+  ],
+  "removidos": [
+    {
+      "chave": "addon::camellya.json::@pacote::funcionamentos::calice",
+      "proprietario": "AD-73",
+      "hashAnterior": "6e8b2a402360d13c977cbbf487bbb6e05b7a88284668227217f07396c0984795"
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::funcionamentos::chicote",
+      "proprietario": "AD-73",
+      "hashAnterior": "08e575b712ee584d05378119973a9064fbc2757c8095cdbf62deab0e7251909b"
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::funcionamentos::floracao",
+      "proprietario": "AD-73",
+      "hashAnterior": "4c051a913db76ec5db01f565566752f017939f1f9e71cc46bb227c330ca963a5"
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::funcionamentos::germinacao",
+      "proprietario": "AD-73",
+      "hashAnterior": "d925563e4ade41af011803a0b4e4b8ffb68699b062c383809c36953cc2e5ce19"
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::funcionamentos::identidade",
+      "proprietario": "AD-73",
+      "hashAnterior": "e7d370448a72593ff529589c2d14cc88a6cdafe49c8ea8ea00446970d8b9b05b"
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::funcionamentos::jardim",
+      "proprietario": "AD-73",
+      "hashAnterior": "3bcc52fd51e367ef8f76ce9b91ee3c185c5fbed8d3fe2873e6d6514f2bc0752f"
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::funcionamentos::marca",
+      "proprietario": "AD-73",
+      "hashAnterior": "e00f360a318387f7915cad4f179b17d04f2ab826e271388b46c438779638f6ff"
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::funcionamentos::transformacao",
+      "proprietario": "AD-73",
+      "hashAnterior": "10a383a9790af98719a176e024fb11d77755c6c09fa2599410a668b60b7aee5c"
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::funcionamentos::vinha",
+      "proprietario": "AD-73",
+      "hashAnterior": "376de683acb6502032441e207d228ed54a8dc176172e04af38058e2f7e6fd9a5"
+    }
+  ],
+  "alterados": [
+    {
+      "chave": "addon::camellya.json::@pacote",
+      "proprietarioMantido": "AD-73",
+      "hashAnterior": "2b6226cde7ffc8cd5ceaa27fb99c118fd6a91da88367b8acafcf01a3aa26550c",
+      "hashNovo": "d7d47eba2c0985b4e240f36fcfaacf403397bb53029e04dbda4ed0b8e61e1e02",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::acoesMotor",
+      "proprietarioMantido": "AD-73",
+      "hashAnterior": "550b37aff158069e038a54404d0d41699e82ec3d45105cdace3ff252f55c7a9f",
+      "hashNovo": "5565e29ad22900d76bdb6b7a086db703213063c2c09189ca1f94fed8ac053058",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::acoesMotor::jardim",
+      "proprietarioMantido": "AD-73",
+      "hashAnterior": "c3b7f5592ed056ab6761484d8a7d18a8ba04ff8479cbc2df71384b635a22edb3",
+      "hashNovo": "9aa4da0df3b597253f7ccc1bfca2bb306b16d2854cf92f3298625be5e8d86027",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::acoesMotor::sementes",
+      "proprietarioMantido": "AD-73",
+      "hashAnterior": "1013551e603bacf1634cbd57f0fb66632a94dc06e25c7061889d2fe4f859c2f3",
+      "hashNovo": "31eb0d5101b7a6823759d6b6c0be7793107fff8536de0d3fb12abc2572fbd0ed",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::acoesMotor::transformacao",
+      "proprietarioMantido": "AD-73",
+      "hashAnterior": "4f53bfbea52eaa1963624290c6c9fc923caced795041b42c448977e9295c61d0",
+      "hashNovo": "1360f3f557a92097965e9555b9637325ac99c52a78318cb02b16a6e0b0b8ad3a",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::feiticos",
+      "proprietarioMantido": "AD-73",
+      "hashAnterior": "cce6b510f670a62fb393fe7af201034c472fe08ee4d06fcf20c8cefa22147ac1",
+      "hashNovo": "656437ca6629dc9b87c4125263966e574398e726bc8405ffddba5a8a09b859a2",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::feiticos::calice",
+      "proprietarioMantido": "AD-73",
+      "hashAnterior": "c4617bf45b3e7f2a10ff6bd6a1783b25afb6a41291722c8a7cc61fd487ef14d8",
+      "hashNovo": "013c2092c58e1c24625d71b24d541036c88645191318a39b901b933131b533c5",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::feiticos::floracao",
+      "proprietarioMantido": "AD-73",
+      "hashAnterior": "503615ed1a35b83e931eb26857beb9e9c635d1ffb20d70d2ce0bdda84527fd26",
+      "hashNovo": "82b8684cbcd205124cfba6b8923ce16481a5f9f58df93b497cc1e1b286b1632f",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::feiticos::germinacao",
+      "proprietarioMantido": "AD-73",
+      "hashAnterior": "c5bd31bbc1ae9b7d11139d7f078cb61d8b308bdb5f696af26fa2eb046964e755",
+      "hashNovo": "5551691ff0ea13b0eb38a28d21707bba405a10d9ce7273d69b7b0729ddc5b70b",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::feiticos::jardim",
+      "proprietarioMantido": "AD-73",
+      "hashAnterior": "beb90041a2581e670e749e231a866f20d79b494f0cbfb9d988610277f9ae1918",
+      "hashNovo": "3f89509a5382432bd157eb63df09a5e8acdfda5751e9a8a0c50043cb26810cd9",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::feiticos::transformacao",
+      "proprietarioMantido": "AD-73",
+      "hashAnterior": "4eb5dfc10833cbeb5e2198a36025dec61ac9ba5ce7831d92c3db7ecd151b6516",
+      "hashNovo": "92658eca82e5025fb9de3d3990c436f7161bd920241c470ce923350b44f1e6c4",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::funcionamentos",
+      "proprietarioMantido": "AD-73",
+      "hashAnterior": "44ca67591402846b01ed2b59f9ec917f4e20c1be03ec8272aab54f409847fd91",
+      "hashNovo": "9ce6e895f0434d5d33f24504c3e684be5bacb5dbefacd5b04b17711502b5cbe0",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::funcionamentos::tecnica",
+      "proprietarioMantido": "AD-73",
+      "hashAnterior": "39ddd4cfbab282d26681b09d70bed655fe998bc00768ac1a323cc0cbe72d450d",
+      "hashNovo": "13c4090f2da039e57218b5c92a504c52cbf9eaef2ee7c4daca6c199563f64361",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::camellya.json::@pacote::versao",
+      "proprietarioMantido": "AD-73",
+      "hashAnterior": "39fe4a40977d0585fd5704359e3685b0ada5cf5ee061e5d97385601d120cd0ec",
+      "hashNovo": "e7ad5986cf98f45d2d11f5a65f149e95ecc61246dd2fb2427ab59a9033b66456",
+      "campos": [
+        "hashDado"
+      ]
+    }
+  ],
+  "assinatura": "5ad309cdce643dfc03f60d8b5adc3d8600a364777883b86beaf2e9a886273e40",
+  "decisoes": {
+    "adicoes": {
+      "addon::camellya.json::@pacote::feiticos::chicote": "AD-73",
+      "addon::camellya.json::@pacote::feiticos::chicote/rolagens": "AD-73",
+      "addon::camellya.json::@pacote::feiticos::chicote/rolagens/@0": "AD-73",
+      "addon::camellya.json::@pacote::feiticos::marca": "AD-73",
+      "addon::camellya.json::@pacote::feiticos::marca/efeitosPassivo": "AD-73",
+      "addon::camellya.json::@pacote::feiticos::vinha": "AD-73",
+      "addon::camellya.json::@pacote::feiticos::vinha/rolagens": "AD-73",
+      "addon::camellya.json::@pacote::feiticos::vinha/rolagens/@0": "AD-73"
+    },
+    "remocoes": {
+      "addon::camellya.json::@pacote::funcionamentos::calice": {
+        "justificativa": "Conteúdo retirado do Perfil Amaldiçoado por pedido do autor. Habilidades transferidas para modelos de Feitiços. Identidade e biografia excluídas do addon."
+      },
+      "addon::camellya.json::@pacote::funcionamentos::chicote": {
+        "justificativa": "Conteúdo retirado do Perfil Amaldiçoado por pedido do autor. Habilidades transferidas para modelos de Feitiços. Identidade e biografia excluídas do addon."
+      },
+      "addon::camellya.json::@pacote::funcionamentos::floracao": {
+        "justificativa": "Conteúdo retirado do Perfil Amaldiçoado por pedido do autor. Habilidades transferidas para modelos de Feitiços. Identidade e biografia excluídas do addon."
+      },
+      "addon::camellya.json::@pacote::funcionamentos::germinacao": {
+        "justificativa": "Conteúdo retirado do Perfil Amaldiçoado por pedido do autor. Habilidades transferidas para modelos de Feitiços. Identidade e biografia excluídas do addon."
+      },
+      "addon::camellya.json::@pacote::funcionamentos::identidade": {
+        "justificativa": "Conteúdo retirado do Perfil Amaldiçoado por pedido do autor. Habilidades transferidas para modelos de Feitiços. Identidade e biografia excluídas do addon."
+      },
+      "addon::camellya.json::@pacote::funcionamentos::jardim": {
+        "justificativa": "Conteúdo retirado do Perfil Amaldiçoado por pedido do autor. Habilidades transferidas para modelos de Feitiços. Identidade e biografia excluídas do addon."
+      },
+      "addon::camellya.json::@pacote::funcionamentos::marca": {
+        "justificativa": "Conteúdo retirado do Perfil Amaldiçoado por pedido do autor. Habilidades transferidas para modelos de Feitiços. Identidade e biografia excluídas do addon."
+      },
+      "addon::camellya.json::@pacote::funcionamentos::transformacao": {
+        "justificativa": "Conteúdo retirado do Perfil Amaldiçoado por pedido do autor. Habilidades transferidas para modelos de Feitiços. Identidade e biografia excluídas do addon."
+      },
+      "addon::camellya.json::@pacote::funcionamentos::vinha": {
+        "justificativa": "Conteúdo retirado do Perfil Amaldiçoado por pedido do autor. Habilidades transferidas para modelos de Feitiços. Identidade e biografia excluídas do addon."
+      }
+    },
+    "justificativaAtualizacao": "Autor em 2026-10-22: somente Funcionamento Básico no perfil, habilidades em Feitiços, sem biografia ou instruções editoriais. Chicote no maior nível comum, mantendo custo e dano fornecidos. Controles existentes preservados. Sem aprovação de auditoria."
+  },
+  "errosColeta": []
+}

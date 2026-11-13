@@ -15,15 +15,17 @@
    confirmar, ajustar, encerrar). Os outros efeitos usam as peças de hoje.
    ============================================================ */
 import React, { useEffect, useLayoutEffect, useRef } from "react";
-import { AlertTriangle, BookOpenText, Clock, Dices, Hand, Layers, Minus, Plus, Power, X } from "lucide-react";
+import { AlertTriangle, BookOpenText, Clock, Dices, Hand, Minus, Plus, Power, X } from "lucide-react";
 import { Sessao } from "./ponte";
 import { Controle } from "./pecas";
 import { mapaDe, useRolagemPorChave } from "./rolagem-g2";
-import { COBERTO_PELA_PROPRIA, detalhesDoAtivo, pvDoAtivo } from "./efeitos-dados";
-import { ControlesDoGrupo, PvBeneficio } from "./Gestor";
+import { detalhesDoAtivo, pvDoAtivo } from "./efeitos-dados";
+import { ControlesDoGrupo } from "./Gestor";
 import { consequenciasDaLinha } from "./gestor-logica";
-import { fraseDoBeneficio, origemPorId, rotuloCanal, TIPOS_FONTE } from "./recebidos";
-import CatalogoG2 from "./CatalogoG2";
+import { origemPorId, TIPOS_FONTE } from "./recebidos";
+import { Agora } from "./AgoraG2";
+import CatalogoG2, { LinhaDeOpcao } from "./CatalogoG2";
+import { ativarOpcao, ordenaPorAcao } from "./catalogo-logica";
 import { EncerradosG2 } from "./EncerradosG2";
 import { AcessoAoHistorico } from "./HistoricoSessao";
 import { AcessoAExaustao } from "./ExaustaoG2";
@@ -31,10 +33,8 @@ import { EXAUSTAO_MAXIMA } from "./exaustao-logica";
 import { LinhaDoTempoG2 } from "./LinhaDoTempoG2";
 import { AjusteG2, AjusteGrupo, MontarOutroGolpe, TrocarSustentado, UsarNovamente } from "./PreparoG2";
 import { semAjuste } from "./preparo-logica";
-import { ehGolpe, ehPiloto, estadosDoCartao, foraDosNumeros, prazoCurto, prazoRelevante, preparoDe, temPreparo, terminaDe } from "./g2-dados";
-import { CustoG2, GanhaPerde, Instrucao, Passos, ResultadoG2, SemNumeros } from "./PecasG2";
-
-const sinal = (v) => `${v > 0 ? "+" : "−"}${Math.abs(v)}`;
+import { ehGolpe, ehPiloto, estadosDoCartao, prazoCurto, prazoRelevante, preparoDe, temPreparo, terminaDe } from "./g2-dados";
+import { CustoG2, Instrucao, Passos, ResultadoG2 } from "./PecasG2";
 
 /* ---------------- o cartão ---------------- */
 function CartaoG2({ a, m, aberto, onAbrir }) {
@@ -47,7 +47,7 @@ function CartaoG2({ a, m, aberto, onAbrir }) {
   const atencao = d.atencao.length > 0;
   const etiqueta = estados.length > 0 || !!prazo;
   return (
-    <button type="button" className="g2-cartao" data-chave-ativo={a.chave} aria-current={aberto} aria-expanded={aberto} onClick={onAbrir} data-sem-etiqueta={etiqueta ? undefined : ""}>
+    <button type="button" className="g2-cartao afty-efeito" data-chave-ativo={a.chave} aria-current={aberto} aria-expanded={aberto} onClick={onAbrir} data-sem-etiqueta={etiqueta ? undefined : ""}>
       {etiqueta && (
         <span className="g2-zona">
           {estados.length > 0 && (
@@ -74,35 +74,7 @@ function CartaoG2({ a, m, aberto, onAbrir }) {
 }
 
 /* ---------------- o detalhe ---------------- */
-export function Agora({ a, g, m, chips, contrib, pvb }) {
-  const coberto = contrib.coberto ?? g.cobertos.get(a.chave);
-  const cobertura = coberto ? (coberto === COBERTO_PELA_PROPRIA ? "Coberto pela Sua Própria" : `${contrib.coberto ? "Coberto por" : "Incluído em"} ${coberto}`) : null;
-  const disputas = g.disputas.get(a.chave) ?? [];
-  const an = a.tipo === "registro" ? g.analise[a.reg.id] ?? {} : null;
-  const frases = an ? Object.entries(an).map(([canal, x]) => fraseDoBeneficio(canal, x)).filter(Boolean) : [];
-  const d = detalhesDoAtivo(a, m);
-  const partes = [];
-  if (chips.length) partes.push(<GanhaPerde key="nums" chips={chips} />);
-  if (pvb) partes.push(<div key="pv" className="g2-pv"><PvBeneficio b={pvb} g={g} /><span className="x-mesa">{pvb.textoRegra}</span></div>);
-  if (cobertura) partes.push(<span key="cob" className="x-neutro"><Layers aria-hidden="true" />{cobertura}</span>);
-  for (const p of disputas) {
-    partes.push(<span key={`${p.canal}|${p.alvo ?? ""}`} className="x-neutro">{p.status === "empata"
-      ? `Empata com ${p.com.nome} (${sinal(p.com.valor)}): a ${rotuloCanal(p.canal)} recebe ${sinal(p.valor)} uma vez só.`
-      : `Não soma na ${rotuloCanal(p.canal)}: ${p.vencedor ? `${p.vencedor.nome} dá ${sinal(p.vencedor.valor)}.` : "outra fonte do mesmo grupo vale mais."}`}</span>);
-  }
-  for (const f of frases) partes.push(<span key={f.texto} className={f.tom === "atencao" ? "x-atencao" : "x-neutro"}>{f.tom === "atencao" && <AlertTriangle aria-hidden="true" />}{f.texto}</span>);
-  if (a.tipo === "condicao" && a.ficha?.resumo) partes.push(<p key="res" className="x-texto" style={{ margin: 0 }}>{a.ficha.resumo}</p>);
-  if (a.tipo === "buff" && a.buff.nota) partes.push(<p key="nota" className="x-texto" style={{ margin: 0 }}>{a.buff.nota}</p>);
-  if (a.exemplo?.condicao) partes.push(<span key="cond" className="x-neutro" data-condicao><Hand aria-hidden="true" />{a.exemplo.condicao}</span>);
-  /* O benefício que o comparador não cobre é DECLARADO, mesmo com a condição escrita: nada de silêncio nem de "Sem Mudança". */
-  if (!chips.length && !pvb && foraDosNumeros(a.exemplo)) partes.unshift(<SemNumeros key="fora" exemplo={a.exemplo} />);
-  if (!partes.length) {
-    const t = a.semNumero ? "A Ficha Não Calcula Este Efeito" : a.tipo === "registro" && d.atencao.length ? "Ainda Fora da Conta"
-      : a.tipo === "grupo" && !m.combate ? "Fora de Combate" : "Sem Mudança nos Seus Números";
-    partes.push(t === "Sem Mudança nos Seus Números" ? <SemNumeros key="nada" exemplo={a.exemplo} /> : <span key="nada" className="x-mesa">{t}</span>);
-  }
-  return partes;
-}
+export { Agora };
 
 /* A perda de Vida do Sangramento, no detalhe da condição que sangra (e só nela). Uma ação explícita, uma rolagem: consultar, abrir o detalhe, selecionar
    o cartão ou avançar a rodada NUNCA a disparam. O dado é o da faixa que o derive resolveu, e a perda vai direto na Vida (sem a casca de PV Temporário). */
@@ -132,16 +104,16 @@ export function Ajustar({ a, g, m }) {
        Cobrir-se não tem ajuste do uso atual (autor, 2026-10-16): tem USAR NOVAMENTE, um uso novo pela Preparação. */
     if (temPreparo(a)) {
       if (preparoDe(a).reuso) return <UsarNovamente a={a} g={g} m={m} />;
-      return semAjuste(a) ? <span className="x-mesa">Sem Ajuste na Ficha</span> : <AjusteGrupo a={a} g={g} m={m} />;
+      return semAjuste(a) ? <span className="x-mesa" data-vazio="">Sem Ajuste na Ficha</span> : <AjusteGrupo a={a} g={g} m={m} />;
     }
     const c0 = gr.controles[0];
     const multiplos = gr.controles.length > 1 || gr.filhos.length > 0 || c0.partes || ["opcao", "multi"].includes(c0.estados[0].tipo);
     if (multiplos) return <ControlesDoGrupo gr={gr} m={g.mPara()} />;
     if (c0.estados[0].tipo === "faixa") return <div className="x-ctrl"><span className="x-ctrl-nome">{c0.rotulo ?? c0.estados[0].label}</span><Controle c={c0} m={g.mPara()} /></div>;
-    return <span className="x-mesa">Sem Ajuste na Ficha</span>;
+    return <span className="x-mesa" data-vazio="">Sem Ajuste na Ficha</span>;
   }
   /* A instância de um Pacote para Aliados com prazo que a ficha não conta (alcance, manutenção, cena, uso): sem contagem de rodadas inventada. */
-  if (a.tipo === "registro" && a.reg.pacote && (a.reg.pacote.duracao?.tipo !== "rodadas" || a.partes?.length)) return <span className="x-mesa">Sem Ajuste na Ficha</span>;
+  if (a.tipo === "registro" && a.reg.pacote && (a.reg.pacote.duracao?.tipo !== "rodadas" || a.partes?.length)) return <span className="x-mesa" data-vazio="">Sem Ajuste na Ficha</span>;
   if (a.tipo === "condicao" || a.tipo === "buff" || a.tipo === "registro") {
     return (
       <div className="x-ctrl">
@@ -168,7 +140,7 @@ export function Ajustar({ a, g, m }) {
       </div>
     );
   }
-  return <span className="x-mesa">Sem Ajuste na Ficha</span>;
+  return <span className="x-mesa" data-vazio="">Sem Ajuste na Ficha</span>;
 }
 
 export function Termina({ a, d, m, g = null }) {
@@ -176,7 +148,7 @@ export function Termina({ a, d, m, g = null }) {
   const usoId = preparoDe(a)?.usos;
   const u = usoId && m ? m.derived.usosHabilidades?.[usoId] ?? null : null;
   const t = terminaDe(a, d, u ? { max: u.max, restam: Math.max(0, u.max - Sessao.usosGastosDe(m.sessao, u.chave)) } : null);
-  if (!t.length) return <span className="x-mesa">Sem Duração na Ficha</span>;
+  if (!t.length) return <span className="x-mesa" data-vazio="">Sem Duração na Ficha</span>;
   return t.map((x, i) => (
     <React.Fragment key={i}>
       <span className="x-texto" data-termina>{x.texto}</span>
@@ -260,7 +232,7 @@ function DetalheG2({ a, g, m, onConsultar }) {
   const meta = [...estados.map((x) => [x.rotulo, x.valor].filter(Boolean).join(" ")), prazo?.texto, a.origem?.curta].filter(Boolean);
   const fechar = () => g.mudaTela({ selecionado: null });
   return (
-    <div ref={faixa} className="d-exp" role="region" aria-label={a.nome} data-exp={a.chave}>
+    <div ref={faixa} className="d-exp afty-efeito-detalhe" role="region" aria-label={a.nome} data-exp={a.chave}>
       <div className="x-cartao-topo">
         <div><h2 className="x-cartao-nome">{a.nome}</h2>{meta.length > 0 && <p className="x-cartao-meta">{meta.map((t) => <span key={t}>{t}</span>)}</p>}</div>
         <span className="x-cartao-acoes">
@@ -277,6 +249,28 @@ function DetalheG2({ a, g, m, onConsultar }) {
       </div>
       <Rodape a={a} m={m} d={d} onConsultar={onConsultar} />
     </div>
+  );
+}
+
+/* ---------------- os Favoritos, na tela dos Ativos ----------------
+   Autor, 2026-11-09: ligar um favorito não pede abrir o Adicionar. A linha é a mesma do catálogo. Quem liga sem escolha nem custo liga
+   aqui mesmo, e quem tem Preparação abre o catálogo já nela e volta para os Ativos ao confirmar. Quem não se ativa fica embaixo. */
+function FavoritosG2({ g, m }) {
+  const fav = m.sessao.favoritos ?? [];
+  const itens = ordenaPorAcao(g.opcoes.filter((o) => fav.includes(o.chave)), g, m);
+  if (!itens.length) return null;
+  const abrir = (o, preparo = null) => g.mudaTela((t) => ({
+    catalogo: { ...t.catalogo, aberto: true, aba: "ficha", cat: "favoritos", termo: "", opcao: o.chave, preparo, voltar: !!preparo },
+  }));
+  return (
+    <section aria-label="Favoritos" data-favoritos-ativos>
+      <h3 className="d-secao">Favoritos</h3>
+      <div className="g2-favoritos">
+        {itens.map((o) => (
+          <LinhaDeOpcao key={o.chave} o={o} g={g} m={m} atual={false} aoEscolher={() => abrir(o)} aoAtivar={() => ativarOpcao(o, g, m, abrir)} />
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -334,16 +328,17 @@ function AtivosG2({ g, m, onConsultar }) {
           </div>
         </section>
       ))}
+      <FavoritosG2 g={g} m={m} />
       <EncerradosG2 g={g} m={m} onde="completa" />
       <AcessoAoHistorico onde="completa" />
     </div>
   );
 }
 
-export function VisaoG2({ g, m, onConsultar, focoBusca, onVoltarDoCatalogo = null }) {
+export function VisaoG2({ g, m, onConsultar, focoBusca, onVoltarDoCatalogo = null, renderOperacao = null }) {
   return (
     <div className="g2-raiz" data-g2>
-      {g.tela.catalogo.aberto ? <CatalogoG2 g={g} m={m} onConsultar={onConsultar} focoBusca={focoBusca} onVoltar={onVoltarDoCatalogo} /> : <AtivosG2 g={g} m={m} onConsultar={onConsultar} />}
+      {g.tela.catalogo.aberto ? <CatalogoG2 g={g} m={m} onConsultar={onConsultar} focoBusca={focoBusca} onVoltar={onVoltarDoCatalogo} renderOperacao={renderOperacao} /> : <AtivosG2 g={g} m={m} onConsultar={onConsultar} />}
     </div>
   );
 }

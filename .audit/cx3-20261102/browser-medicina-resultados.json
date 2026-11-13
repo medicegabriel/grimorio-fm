@@ -1,0 +1,118 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "g2": false,
+    "ficha": {
+      "total": 35,
+      "usos": 2,
+      "pv": 35
+    }
+  },
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "mesa": {
+      "total": 35,
+      "usos": 2,
+      "pv": 6
+    }
+  },
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "g2": true,
+    "ficha": {
+      "total": 35,
+      "usos": 2,
+      "pv": 35
+    }
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "g2": false,
+    "ficha": {
+      "total": 35,
+      "usos": 2,
+      "pv": 35
+    }
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "mesa": {
+      "total": 35,
+      "usos": 2,
+      "pv": 6
+    }
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "g2": true,
+    "ficha": {
+      "total": 35,
+      "usos": 2,
+      "pv": 35
+    }
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "g2": false,
+    "ficha": {
+      "total": 35,
+      "usos": 2,
+      "pv": 35
+    }
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "mesa": {
+      "total": 35,
+      "usos": 2,
+      "pv": 6
+    }
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "g2": true,
+    "ficha": {
+      "total": 35,
+      "usos": 2,
+      "pv": 35
+    }
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "g2": false,
+    "ficha": {
+      "total": 35,
+      "usos": 2,
+      "pv": 35
+    }
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "mesa": {
+      "total": 35,
+      "usos": 2,
+      "pv": 6
+    }
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "g2": true,
+    "ficha": {
+      "total": 35,
+      "usos": 2,
+      "pv": 35
+    }
+  }
+]

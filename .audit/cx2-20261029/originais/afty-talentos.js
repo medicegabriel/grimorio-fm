@@ -1,0 +1,1546 @@
+/**
+ * Catálogo de TALENTOS + resolvers puros.
+ *
+ * Regras confirmadas pelo autor (2026-07-22):
+ *
+ * 1. **Talentos são pegos NO LUGAR de Habilidades de Especialização**, então
+ *    dividem o MESMO orçamento, que desde 2026-07-27 vem só da Habilidade
+ *    Geral Especialização (ver ./afty-gerais.js) e não mais do ND. Também
+ *    podem vir de outras fontes (origens, treinamentos), que ainda não
+ *    concedem nenhum.
+ * 2. **Qualquer especialização pode pegar qualquer talento.** Não há
+ *    `especializacaoId` aqui: o acesso não depende de classe.
+ * 3. **"Nível N" nos pré-requisitos é o ND**, não o nível de classe. É a
+ *    diferença central para as Habilidades, que sempre contam o nível NAQUELA
+ *    especialização (ver `avaliarAcessoHabilidade`).
+ * 4. Na UI, Talentos é uma **aba ao lado das especializações** (Lutador,
+ *    Combatente...). Numa ficha Restringido aparecem "Restringido" e
+ *    "Talento" lado a lado.
+ *
+ * ⚠ Ids levam prefixo `tal_`, mesma convenção de `cmb_`/`lut_`/`mal_`. Os
+ * nomes REPETEM de propósito com habilidades de especialização (ex.: "Técnicas
+ * de Combate"), então o prefixo é o que os separa.
+ *
+ * ⚠ Ordem do array = ordem do livro, NÃO alfabética (convenção do projeto).
+ * O livro lista primeiro os talentos SEM pré-requisito e depois recomeça a
+ * ordem alfabética com os que TÊM, dentro do mesmo grupo "Gerais".
+ *
+ * ⚠ Texto VERBATIM do livro, com os erros dele preservados.
+ */
+
+import { registrarFamilia, remendarLista, filtraForaDoJogador } from "./afty-addons";
+import { evalNumber, validateExpression } from "./afty-dsl";
+import { getOrigem, getCla } from "./afty-origens";
+import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
+// Requisito de treino em perícia ou TR. Módulo FOLHA, então não há ciclo.
+import {
+  AFTY_PERICIAS, avaliarRequisitoDeTreino, conferirRequisitoDeTreino, ehPericiaOficio,
+} from "./afty-pericias-catalogo";
+import { APTIDAO_TRILHAS, AFTY_APTIDOES } from "./afty-aptidoes";
+import { AFTY_ESPECIALIZACOES, treinamentosDasEspecializacoes } from "./afty-especializacoes";
+// O Adepto de Combate empresta o pool de Estilos do Combatente. Sem ciclo:
+// afty-habilidades.js não importa daqui.
+import { ESTILOS_DE_COMBATE, MUDANCAS_DE_FUNDAMENTO, getHabilidade } from "./afty-habilidades";
+
+export const ALMA_LIVRE_TALENTO_ID = "tal_alma_livre";
+const ALMA_LIVRE_OPCAO_PREFIXO = "tal_alma_livre_esp_";
+
+/** Talentos que envolvem escudos e contam como uma fonte de treino. */
+export const TALENTOS_DE_ESCUDO = [
+  "tal_mestre_defensivo",
+  "tal_tecnicas_ofensivas_de_escudo",
+  "tal_tecnicas_defensivas_de_escudo",
+];
+
+export const OFICIO_TALENTO_ARTESAO = "oficio__9001";
+export const OFICIO_TALENTO_TEMPESTADE = "oficio__9002";
+
+export function efeitosDeTalentosConfigurados(creature) {
+  const escolhidos = new Set(Array.isArray(creature?.talentos) ? creature.talentos : []);
+  const config = creature?.talentosConfig && typeof creature.talentosConfig === "object"
+    ? creature.talentosConfig
+    : {};
+  const out = [];
+
+  if (escolhidos.has("tal_tempestade_de_ideias")) {
+    const tempestade = config.tal_tempestade_de_ideias ?? {};
+    const pericia = AFTY_PERICIAS.find((p) => p.id === tempestade.pericia && !ehPericiaOficio(p.id));
+    if (pericia) {
+      out.push({
+        canal: "proficienciaPericia", alvo: pericia.id, expr: "1",
+        origem: "tal_tempestade_de_ideias", nome: "Tempestade de Ideias",
+      });
+    }
+    if (String(tempestade.ferramenta ?? "").trim()) {
+      out.push({
+        canal: "proficienciaPericia", alvo: OFICIO_TALENTO_TEMPESTADE, expr: "1",
+        origem: "tal_tempestade_de_ideias", nome: "Tempestade de Ideias",
+      });
+    }
+  }
+
+  if (escolhidos.has("tal_artesao_amaldicoado")) {
+    const artesao = config.tal_artesao_amaldicoado ?? {};
+    const ferramenta = ["Ferreiro", "Canalizador"].includes(artesao.ferramenta)
+      ? artesao.ferramenta
+      : null;
+    if (ferramenta) {
+      const nomesTreinados = new Set();
+      const oficios = creature?.periciaOficios && typeof creature.periciaOficios === "object"
+        ? creature.periciaOficios
+        : {};
+      for (const [id, nomes] of Object.entries(oficios)) {
+        if (!["treinado", "mestre"].includes(creature?.pericias?.[id])) continue;
+        for (const nome of Array.isArray(nomes) ? nomes : []) nomesTreinados.add(String(nome).trim().toLowerCase());
+      }
+      const nivel = nomesTreinados.has("ferreiro") && nomesTreinados.has("canalizador") ? 2 : 1;
+      out.push({
+        canal: "proficienciaPericia", alvo: OFICIO_TALENTO_ARTESAO, expr: String(nivel),
+        origem: "tal_artesao_amaldicoado", nome: "Artesão Amaldiçoado",
+      });
+    }
+  }
+
+  return out;
+}
+
+/**
+ * Resolve as fontes de treino em escudos sem guardar resultado na ficha.
+ * Uma Especialização treinada conta como a primeira fonte. Cada Talento de
+ * escudo escolhido conta como outra. A segunda fonte ativa efeitos escritos
+ * como "Caso já seja treinado", entre eles a RD do Mestre Defensivo.
+ */
+export function resolveTreinoEscudo(especializacoes = [], talentos = []) {
+  const base = treinamentosDasEspecializacoes(especializacoes);
+  const escolhidos = new Set(Array.isArray(talentos) ? talentos : []);
+  const talentosDeEscudo = TALENTOS_DE_ESCUDO.filter((id) => escolhidos.has(id));
+  const fontes = (base.escudos.length > 0 ? 1 : 0) + talentosDeEscudo.length;
+  return {
+    base: base.escudos,
+    talentos: talentosDeEscudo,
+    fontes,
+    treinado: fontes > 0,
+    redundante: fontes >= 2,
+  };
+}
+
+const ALMA_LIVRE_ESPECIALIZACOES = AFTY_ESPECIALIZACOES
+  .filter((e) => e.id !== "restringido")
+  .map((e) => ({
+    id: `${ALMA_LIVRE_OPCAO_PREFIXO}${e.id}`,
+    nome: e.nome,
+    descricao: "",
+    especializacaoId: e.id,
+  }));
+
+export function especializacaoDeAlmaLivre(opcoes = []) {
+  const opcao = Array.isArray(opcoes) ? opcoes[0] : null;
+  if (typeof opcao !== "string" || !opcao.startsWith(ALMA_LIVRE_OPCAO_PREFIXO)) return null;
+  const id = opcao.slice(ALMA_LIVRE_OPCAO_PREFIXO.length);
+  return ALMA_LIVRE_ESPECIALIZACOES.some((e) => e.especializacaoId === id) ? id : null;
+}
+
+/**
+ * Opções de escolha aninhada geradas dos catálogos que já existem, para
+ * "escolha um atributo", "escolha uma aptidão" e "escolha um Teste de
+ * Resistência" não virarem lista copiada à mão.
+ *
+ * O id leva o prefixo do que a escolha SIGNIFICA, porque ele é a chave do
+ * ESCOLHA_EFEITOS: dois efeitos diferentes não podem dividir a mesma chave.
+ */
+const opcoesDeAtributo = (prefixo, descricao, chaves = null) =>
+  AFTY_ATTRS
+    .filter((a) => !chaves || chaves.includes(a.key))
+    .map((a) => ({ id: `${prefixo}_${a.key}`, nome: a.label, descricao: descricao(a.label) }));
+const opcoesDeTrilha = (prefixo, descricao) =>
+  APTIDAO_TRILHAS.map((t) => ({ id: `${prefixo}_${t.key}`, nome: t.label, descricao: descricao(t.label) }));
+const opcoesDeTR = (prefixo, descricao, fora = []) =>
+  AFTY_RESISTENCIAS
+    .filter((r) => !fora.includes(r.value))
+    .map((r) => ({ id: `${prefixo}_${r.value}`, nome: r.label, descricao: descricao(r.label) }));
+
+/* Nome da Aptidão para o chip de requisito. Procurado na hora, e não
+   memorizado num índice, porque um Addon pode acrescentar aptidão depois de
+   este módulo ter carregado. */
+const nomeDaAptidao = (id) => AFTY_APTIDOES.find((a) => a.id === id)?.nome;
+
+export const TALENTO_GRUPOS = [
+  { id: "geral",  titulo: "Talentos Gerais" },
+  { id: "origem", titulo: "Talentos de Origem" },
+];
+
+export const AFTY_TALENTOS = [
+  /* ---------------- TALENTOS GERAIS (sem pré-requisito) ---------------- */
+  {
+    id: "tal_afinidade_com_tecnica",
+    nome: "Afinidade com Técnica",
+    grupo: "geral",
+    descricao:
+      "Com uma afinidade superior com a sua técnica amaldiçoada, você consegue a desenvolver " +
+      "melhor, criando mais extensões dela. Ao obter esse talento, você recebe um Feitiço " +
+      "adicional. Nos níveis 5, 10, 15 e 20 você recebe mais um Feitiço adicional.",
+    requisitos: [],
+  },
+  {
+    id: "tal_artesao_amaldicoado",
+    nome: "Artesão Amaldiçoado",
+    grupo: "geral",
+    descricao:
+      "A criação de ferramentas amaldiçoadas é um ofício no qual você busca se especializar. Ao " +
+      "obter este talento, você se torna capaz de criar Ferramentas Amaldiçoadas, de acordo com o " +
+      "guia na página 153. Além disso, você se torna treinado em Ofício (Ferreiro) ou Ofício " +
+      "(Canalizador), caso não seja treinado; caso já seja treinado em ambas, você se torna mestre " +
+      "em uma delas à sua escolha.",
+    requisitos: [],
+  },
+  {
+    id: "tal_ataque_infalivel",
+    nome: "Ataque Infalível",
+    grupo: "geral",
+    descricao:
+      "Uma vez por rodada, após a rolagem de dano de um ataque armado ou desarmado, você pode " +
+      "escolher a repetir, ficando com o novo resultado obrigatoriamente. Além disso, você não " +
+      "pode ter os níveis de dano da sua arma reduzidos.",
+    requisitos: [],
+  },
+  {
+    id: "tal_atencao_infalivel",
+    nome: "Atenção Infalível",
+    grupo: "geral",
+    descricao:
+      "Sua atenção para os arredores nunca falha, mantendo seus sentidos afiados. Você recebe um " +
+      "bônus de +5 em sua Atenção e não pode ser surpreendido caso consciente.",
+    requisitos: [],
+  },
+  {
+    id: "tal_dedicacao_recompensadora",
+    nome: "Dedicação Recompensadora",
+    grupo: "geral",
+    descricao:
+      "Você se dedica mais do que o normal em suas missões, imagem e desempenho, e recebe melhores " +
+      "recompensas, em troca. No quarto grau, você recebe dois itens de custo 1 a mais; no " +
+      "terceiro grau, você recebe dois itens de custo 2 a mais; no segundo grau, você recebe um " +
+      "item de custo 2 a mais e 2 de custo 3 a mais; no primeiro grau, você recebe dois itens de " +
+      "custo 3 a mais e um item de custo 4 a mais e, no grau especial, você recebe dois itens de " +
+      "custo 4 a mais. Os aumentos de itens não são cumulativos.",
+    requisitos: [],
+  },
+  {
+    id: "tal_favorecido_pela_sorte",
+    nome: "Favorecido pela Sorte",
+    grupo: "geral",
+    descricao:
+      "Você tem uma sorte inexplicável, a qual o favorece nos momentos mais críticos. Você tem 3 " +
+      "pontos de sorte. Sempre que fizer uma rolagem, você pode gastar um ponto de sorte para " +
+      "rolar outro d20, podendo escolher usar qualquer um dos dois resultados. Você pode escolher " +
+      "rolar o outro dado após ver o resultado da primeira rolagem, mas antes de ver as " +
+      "consequências. Quando um inimigo conseguir um 20 em uma jogada de ataque para o acertar, " +
+      "você recupera 1 ponto de sorte. Você recupera seus pontos de sorte após um descanso longo.",
+    requisitos: [],
+  },
+  {
+    id: "tal_guarda_infalivel",
+    nome: "Guarda Infalível",
+    grupo: "geral",
+    descricao:
+      "Você nunca baixa a sua guarda, mesmo em uma situação que pode ser vista como catastrófica. " +
+      "Em caso de um desastre em um teste de ataque, você não causa um ataque como reação. Caso um " +
+      "efeito imposto sobre você tente reduzir sua Defesa ou impor modificadores negativos em " +
+      "testes de resistência, você terá +3 para resistir.",
+    requisitos: [],
+  },
+  {
+    id: "tal_incremento_de_atributo",
+    nome: "Incremento de Atributo",
+    grupo: "geral",
+    descricao:
+      "Buscando se tornar mais forte, você aumenta um de seus atributos através do treino e " +
+      "esforço. Ao obter esse talento, você aumenta o valor e o limite de um atributo à sua " +
+      "escolha em 2. Você pode pegar este talento várias vezes, mas apenas uma vez para cada " +
+      "atributo.",
+    // "Várias vezes, uma por atributo" vira escolha REPETÍVEL: a ficha guarda
+    // ids únicos, então repetir o TALENTO não é representável, mas repetir a
+    // ESCOLHA é, e cada pega além da primeira custa uma vaga (vagasExtras).
+    escolha: {
+      id: "incremento_atributo",
+      label: "Atributo",
+      repetivel: true,
+      opcoes: opcoesDeAtributo("tal_incremento", (n) => `Seu valor e seu limite de ${n} aumentam em 2.`),
+    },
+    requisitos: [],
+  },
+  {
+    id: "tal_investida_aprimorada",
+    nome: "Investida Aprimorada",
+    grupo: "geral",
+    descricao:
+      "Você domina a arte de realizar uma investida, otimizando-a para extrair o potencial máximo " +
+      "da ação. Ao realizar uma ação de investida, seu movimento aumenta em 3 metros durante ela; " +
+      "o bônus de acerto aumenta de +2 para um valor igual ao seu bônus de treinamento e, caso " +
+      "acerte o ataque, o alvo deve realizar um teste de Atletismo contra o seu, sendo derrubado " +
+      "em uma falha.",
+    requisitos: [],
+  },
+  {
+    id: "tal_mestre_das_armas",
+    nome: "Mestre das Armas",
+    grupo: "geral",
+    descricao:
+      "Você desenvolve suas capacidades e potencial para manejar armas. Ao obter este talento, " +
+      "você escolhe aumentar o valor de sua Força ou Destreza em 2 e pode escolher entre se tornar " +
+      "treinado em quatro armas quaisquer à sua escolha ou receber acesso ao efeito de crítico de " +
+      "um grupo de armas à sua escolha.",
+    // "escolhe aumentar o valor de sua Força ou Destreza em 2". O treino nas
+    // quatro armas vem de `talentosConfig`; o crítico aguarda a tabela do livro.
+    escolha: {
+      id: "mestre_armas_atributo",
+      label: "Atributo",
+      opcoes: opcoesDeAtributo("tal_mestre_armas", (n) => `Seu valor de ${n} aumenta em 2.`, ["forca", "destreza"]),
+    },
+    requisitos: [],
+  },
+  {
+    id: "tal_mestre_defensivo",
+    nome: "Mestre Defensivo",
+    grupo: "geral",
+    descricao:
+      "Você desenvolve suas capacidades de defesa e resistência. Ao obter este talento, você " +
+      "escolhe aumentar o valor de sua Força ou Constituição em 2 e se torna treinado em escudos. " +
+      "Caso já seja treinado, você recebe Redução de Dano adicional com o escudo igual a metade do " +
+      "valor base de RD dele (um Escudo Pesado concederia 9 ao invés de 6).",
+    // "escolhe aumentar o valor de sua Força ou Constituição em 2".
+    escolha: {
+      id: "mestre_defensivo_atributo",
+      label: "Atributo",
+      opcoes: opcoesDeAtributo("tal_mestre_defensivo", (n) => `Seu valor de ${n} aumenta em 2.`, ["forca", "constituicao"]),
+    },
+    requisitos: [],
+  },
+  {
+    id: "tal_perceber_oportunidade",
+    nome: "Perceber Oportunidade",
+    grupo: "geral",
+    descricao:
+      "Você possui uma facilidade sem igual para realizar golpes oportunos, sendo quase como uma " +
+      "segunda natureza para você. Você ignora a regra de repetição de reação para Golpes de " +
+      "Oportunidade, podendo repeti-lo duas vezes por rodada ao invés do comum. Todo golpe de " +
+      "oportunidade que você realiza possui vantagem.",
+    requisitos: [],
+  },
+  {
+    id: "tal_provocacao_desafiadora",
+    nome: "Provocação Desafiadora",
+    grupo: "geral",
+    descricao:
+      "Não só provocar, mas você é capaz de se transformar no centro da atenção daquele que você " +
+      "deseja desafiar. Uma criatura que seja afetada por uma ação de Provocar sua, além de " +
+      "receber desvantagem para atacar outras criaturas, deve sempre realizar pelo menos um ataque " +
+      "contra você. Além disso, uma quantidade de vezes igual a metade do seu modificador de " +
+      "Presença, você pode utilizar Provocar como uma Ação Livre.",
+    requisitos: [],
+  },
+  {
+    id: "tal_resiliencia_melhorada",
+    nome: "Resiliência Melhorada",
+    grupo: "geral",
+    descricao:
+      "Você refina suas estratégicas e habilidade para resistir a um nicho específico de ameaças. " +
+      "Ao obter este talento, escolha um teste de resistência, exceto Integridade: você se torna " +
+      "treinado nele ou, caso já seja treinado, se torna mestre. O valor do atributo usado no TR " +
+      "escolhido aumenta em 1.",
+    // "treinado nele ou, caso já seja treinado, se torna mestre": a opção olha
+    // o que a ficha marcou e decide sozinha, igual à Força Imparável.
+    escolha: {
+      id: "resiliencia_tr",
+      label: "Teste de Resistência",
+      opcoes: opcoesDeTR("tal_resiliencia",
+        (n) => `Você se torna treinado (ou mestre) em ${n}, e o atributo dele aumenta em 1.`,
+        ["integridade"]),
+    },
+    requisitos: [],
+  },
+  {
+    id: "tal_saltador_constante",
+    nome: "Saltador Constante",
+    grupo: "geral",
+    descricao:
+      "Você é extremamente acostumado a saltar, movendo-se mais através de pulos do que correndo. " +
+      "Ao pular, caso você esteja no alcance toque de uma parede ou objeto no fim do seu " +
+      "movimento, você pode utilizar a ação pular mais uma vez como ação livre, cortando seu pulo " +
+      "pela metade, ao terminar o movimento com um alvo dentro do seu alcance corpo a corpo, caso " +
+      "realize um ataque contra ele, você recebe +2 na jogada de ataque e, caso acerte, causa dano " +
+      "adicional igual ao seu modificador de Força.",
+    requisitos: [],
+  },
+  {
+    id: "tal_tecnicas_ofensivas_de_escudo",
+    nome: "Técnicas Ofensivas de Escudo",
+    grupo: "geral",
+    // ⚠ O CABEÇALHO deste talento se perdeu no PDF (o mesmo artefato de duas
+    // colunas que comeu o de Poder Corporal, no Lutador). O nome vem do irmão
+    // "Técnicas Defensivas de Escudo", que abre com a MESMA frase trocando
+    // "no seu ataque" por "por completo na sua defesa". CONFIRMAR com o autor.
+    descricao:
+      "Você aperfeiçoa o uso do seu escudo para colocá-lo no seu ataque. Ao atacar no seu turno, " +
+      "você pode usar sua Ação Bônus para Empurrar com o escudo. Caso o alvo seja empurrado com " +
+      "sucesso, ele recebe Xd6 + seu Modificador de Força de dano de impacto, onde X é igual ao " +
+      "seu Modificador de Força. Além disso, você pode escolher aumentar a distância que a " +
+      "criatura é empurrada em 4,5 metros ou a derrubar.",
+    requisitos: [],
+  },
+  {
+    id: "tal_tecnicas_de_arremesso",
+    nome: "Técnicas de Arremesso",
+    grupo: "geral",
+    descricao:
+      "Você se aprofunda em técnicas para manusear armas de arremesso no seu potencial máximo e " +
+      "evitar desperdiçar uma delas. Sempre que atacar com uma arma de arremesso, você recebe um " +
+      "bônus de +2 para acertar e +3 no dano.",
+    requisitos: [],
+  },
+  {
+    id: "tal_tecnicas_de_reacao_rapida",
+    nome: "Técnicas de Reação Rápida",
+    grupo: "geral",
+    descricao:
+      "Preparado para agir sob pressão e urgência, você sabe como reagir o mais rápido possível. " +
+      "Você recebe +5 de Iniciativa. Após a rolagem de iniciativa, caso você não seja o primeiro, " +
+      "você pode rolar novamente, ficando com o melhor resultado.",
+    requisitos: [],
+  },
+  {
+    id: "tal_tecnicas_defensivas_de_escudo",
+    nome: "Técnicas Defensivas de Escudo",
+    grupo: "geral",
+    descricao:
+      "Você aperfeiçoa o uso do seu escudo para colocá-lo por completo na sua defesa. Ao invés de " +
+      "receber penalidade, você adiciona o bônus padrão do escudo em TRs de Reflexos. Além disso, " +
+      "uma quantidade de vezes igual ao seu Bônus de Treinamento, por descanso longo, você pode, " +
+      "antes de saber o resultado de um TR de Reflexos, escolher usar sua Reação para reduzir o " +
+      "valor necessário para um sucesso crítico em 3.",
+    requisitos: [],
+  },
+  {
+    id: "tal_tempestade_de_ideias",
+    nome: "Tempestade de Ideias",
+    grupo: "geral",
+    descricao:
+      "Você decide extrair ao máximo o seu potencial, obtendo melhorias e novas maestrias. Aumenta " +
+      "um atributo a sua escolha em 1. Você se torna treinado em uma perícia e uma ferramenta à " +
+      "sua escolha. Além disso, escolha uma perícia na qual seja treinado: uma quantidade de vezes " +
+      "igual a metade do seu bônus de treinamento, por descanso curto, você pode escolher receber " +
+      "vantagem em um teste com ela.",
+    // "Aumenta um atributo a sua escolha em 1." Perícia e ferramenta entram por
+    // `talentosConfig`; a perícia da vantagem e seus usos também ficam salvos.
+    escolha: {
+      id: "tempestade_atributo",
+      label: "Atributo",
+      opcoes: opcoesDeAtributo("tal_tempestade", (n) => `Seu valor de ${n} aumenta em 1.`),
+    },
+    requisitos: [],
+  },
+
+  /* ---------------- TALENTOS GERAIS (com pré-requisito) ----------------
+     O livro recomeça a ordem alfabética aqui, ainda dentro de "Gerais".
+     ⚠ Adepto de Medicina vem antes de Adepto de Briga na lista do autor. */
+  {
+    id: "tal_adepto_de_medicina",
+    nome: "Adepto de Medicina",
+    grupo: "geral",
+    descricao:
+      "Estudando em seu tempo livre, você aprendeu sobre primeiros socorros em busca de ajudar sua " +
+      "equipe em momentos de desespero. Ao obter este talento, você recebe acesso ao segundo " +
+      "efeito da habilidade Suporte em Combate, de Suporte (p.102), com o valor da cura sendo " +
+      "baseado em seu nível de personagem, mas a quantidade de usos é reduzida pela metade.",
+    requisitos: [
+      { tipo: "pericia", pericia: "medicina", nivel: "mestre" },
+      { tipo: "maxComNome", prefixo: "Adepto", max: 2 },
+    ],
+  },
+  {
+    id: "tal_adepto_de_briga",
+    nome: "Adepto de Briga",
+    grupo: "geral",
+    descricao:
+      "Para sempre ter uma opção, você treinou seus punhos o suficiente para ajudar nas situações " +
+      "mais precárias. Enquanto não estiver com nenhum equipamento do grupo Pugilato, você recebe " +
+      "+3 em jogadas de ataque desarmado e o dano de seus golpes desarmados aumenta em 2 níveis. " +
+      "Além disso, caso acerte um ataque desarmado mas não cause nenhum dano, você pode Agarrar, " +
+      "Derrubar ou Empurrar o alvo como uma Ação Livre, recebendo um bônus igual a metade do seu " +
+      "Bônus de Treinamento no teste.",
+    requisitos: [
+      { tipo: "pericia", pericia: "atletismo", nivel: "mestre" },
+      { tipo: "maxComNome", prefixo: "Adepto", max: 2 },
+    ],
+  },
+  {
+    id: "tal_adepto_de_combate",
+    nome: "Adepto de Combate",
+    grupo: "geral",
+    descricao:
+      "Estudando e refletindo, você consegue adotar um estilo de combate específico, compreendendo " +
+      "e incorporando seus detalhes. Ao obter este talento você aprende um dos estilos de combate " +
+      "da especialização Especialista em Combate, o qual considera seu Nível de Personagem para os " +
+      "efeitos.",
+    // O pool é o MESMO dos Estilos de Combate do Combatente, e o id da opção é
+    // o mesmo: quem pega os dois não recebe em dobro, porque o efeito é
+    // chaveado pela opção e a coleta não repete id.
+    // ⚠ "considera seu Nível de Personagem para os efeitos": os degraus dos
+    // Estilos leem `max(esc_combatente, nd * tem_tal_adepto_de_combate)`, que
+    // resolve os dois casos com uma expressão só (ver ESCOLHA_EFEITOS).
+    escolha: {
+      id: "adepto_estilo",
+      label: "Estilo de Combate",
+      opcoes: ESTILOS_DE_COMBATE,
+    },
+    requisitos: [
+      { tipo: "pericia", pericia: "intuicao", nivel: "mestre" },
+      { tipo: "maxComNome", prefixo: "Adepto", max: 2 },
+    ],
+  },
+  {
+    id: "tal_adepto_de_feiticaria",
+    nome: "Adepto de Feitiçaria",
+    grupo: "geral",
+    descricao:
+      "Com um treinado mais focado em técnica e como a utilizar de maneira melhor, você descobre " +
+      "mais sobre a feitiçaria como um todo. Ao obter este talento, você recebe uma Mudança de " +
+      "Fundamento da habilidade Domínio dos Fundamentos de Especialista em Técnica (p.78), com " +
+      "exceção de Técnica Rápida. Você pode reduzir o custo da Mudança de Fundamento em 1 uma " +
+      "quantidade de vezes igual ao seu bônus de treinamento por cena.",
+    escolha: {
+      id: "adepto_fundamento",
+      label: "Mudança de Fundamento",
+      opcoes: MUDANCAS_DE_FUNDAMENTO.filter((o) => o.id !== "cnj_fundamento_feitico_rapido"),
+    },
+    requisitos: [
+      { tipo: "pericia", pericia: "feiticaria", nivel: "mestre" },
+      { tipo: "feiticos", quantidade: 1 },
+      { tipo: "maxComNome", prefixo: "Adepto", max: 2 },
+    ],
+  },
+  {
+    id: "tal_alma_inquebravel",
+    nome: "Alma Inquebrável",
+    grupo: "geral",
+    descricao:
+      "Sua alma é mais resistente do que o normal, com sua consciência e perseverança tornando-a " +
+      "difícil de se quebrar. Você se torna treinado em Integridade e recebe Redução de Dano " +
+      "contra Dano na Alma igual a 1/4 do seu Nível de Personagem.",
+    requisitos: [{ tipo: "atributo", attr: "constituicao", valor: 14 }],
+  },
+  {
+    id: ALMA_LIVRE_TALENTO_ID,
+    nome: "Alma Livre",
+    // ⚠ FORA DA FICHA DE JOGADOR (autor, 2026-09-01). Continua inteira na ficha
+    // de criatura, e uma mesa a devolve ao jogador com um Addon que declare a
+    // liberação dela. Ver a divergência `conteudoSoPorAddon`.
+    foraDoJogador: true,
+    grupo: "geral",
+    descricao:
+      "Sua recusa em se prender a uma única doutrina ou estilo de combate permite que seu potencial se manifeste de formas totalmente heterodoxas.\n" +
+      "Ao escolher esse Talento, selecione uma Especialização diferente da sua (com exceção de Restringido). Você pode escolher uma habilidade dessa Especialização como se pertencesse a ela (para efeitos de nível na Especialização desse poder, considere seu nível de personagem ). Note que você não recebe o poder, apenas o direito de escolhê-lo mais tarde",
+    escolha: {
+      id: "alma_livre_especializacao",
+      label: "Especialização",
+      opcoes: ALMA_LIVRE_ESPECIALIZACOES,
+    },
+    requisitos: [{ tipo: "nd", valor: 10 }],
+  },
+  {
+    id: "tal_apaziguador_de_tecnica",
+    nome: "Apaziguador de Técnica",
+    grupo: "geral",
+    descricao:
+      "Preparado para impedir seus inimigos de utilizarem técnicas no meio de combate, você sabe o " +
+      "momento perfeito para esgueirar golpes entre conjurações. Ao ver um inimigo usar uma " +
+      "técnica com a conjuração de Ação Comum ou maior em seu alcance corpo-a-corpo, você pode " +
+      "realizar um golpe de oportunidade contra ela, forçando-a a fazer um teste de concentração. " +
+      "Caso a criatura falhe, ela perde 5 em rolagens de acerto/CD caso seja um Feitiço de dano, " +
+      "tem os benefícios do Feitiço cortados pela metade caso seja auxiliar ou tem o Feitiço " +
+      "completamente anulado caso seja especial ou não se encaixe em nenhum dos outros parâmetros. " +
+      "Caso o Feitiço seja anulado, o alvo recupera a ação e não gasta o PE, mas não pode realizar " +
+      "o Feitiço anulado.",
+    requisitos: [{ tipo: "resistencia", resistencia: "astucia", nivel: "treinado" }, { tipo: "nd", valor: 8 }],
+  },
+  {
+    id: "tal_aptidao_desenvolvida",
+    nome: "Aptidão Desenvolvida",
+    grupo: "geral",
+    descricao:
+      "Você desenvolve uma de suas aptidões e capacidade de uso da energia amaldiçoada. Ao obter " +
+      "este talento, escolha uma aptidão amaldiçoada para ter o seu nível de aptidão aumentado em " +
+      "1. Você pode pegar esse talento múltiplas vezes, mas apenas uma vez para cada Aptidão.",
+    // Mesmo shape do Incremento de Atributo: repetível, uma por trilha.
+    escolha: {
+      id: "aptidao_desenvolvida",
+      label: "Aptidão",
+      repetivel: true,
+      opcoes: opcoesDeTrilha("tal_aptidao", (n) => `Seu Nível de Aptidão em ${n} aumenta em 1.`),
+    },
+    requisitos: [{ tipo: "nd", valor: 4 }],
+  },
+  {
+    id: "tal_determinado_a_viver",
+    nome: "Determinado a Viver",
+    grupo: "geral",
+    descricao:
+      "Mesmo de frente a perigos e ameaças sem limites, você mantém sua vontade de viver e seguir " +
+      "em frente. Uma vez por dia, na primeira vez que fosse para os testes de morte, você pode " +
+      "escolher ficar com 1 de vida ao invés disso. Todo teste de morte que você realiza, a partir " +
+      "do segundo, possui vantagem.",
+    // ⚠ O livro repete "Pré-Requisito:" duas vezes neste. Erro de digitação.
+    requisitos: [
+      { tipo: "resistencia", resistencia: "vontade", nivel: "treinado" },
+      { tipo: "atributo", attr: "constituicao", valor: 16 },
+    ],
+  },
+  {
+    id: "tal_discurso_motivador",
+    nome: "Discurso Motivador",
+    grupo: "geral",
+    descricao:
+      "Você pode gastar 10 minutos, fora de combate, ou gastar uma Ação Completa ,dentro de " +
+      "combate, para inspirar seus aliados: todas as criaturas amigáveis na cena, que possam te " +
+      "ouvir, recebem HP temporário igual ao dobro do seu nível + seu modificador de Presença " +
+      "multiplicado pela metade do seu bônus de treinamento, arredondado para cima. Uma criatura " +
+      "só pode receber esse bônus uma vez por descanso curto ou longo.",
+    requisitos: [{ tipo: "periciaAtributo", attr: "presenca", nivel: "treinado" }],
+  },
+  {
+    id: "tal_especialista_em_concussao",
+    nome: "Especialista em Concussão",
+    grupo: "geral",
+    descricao:
+      "Seu valor de força ou constituição aumenta em 1. Sempre que causar Dano de Impacto em um " +
+      "ataque corpo a corpo, ele é aumentado em um nível. Uma vez por turno, ao acertar uma " +
+      "criatura e infligir dano de impacto, você pode mover ela até 3 metros para um espaço " +
+      "desocupado, desde que o alvo não seja duas categorias de tamanho acima de você.",
+    // "Seu valor de força ou constituição aumenta em 1."
+    escolha: {
+      id: "concussao_atributo",
+      label: "Atributo",
+      opcoes: opcoesDeAtributo("tal_concussao", (n) => `Seu valor de ${n} aumenta em 1.`, ["forca", "constituicao"]),
+    },
+    requisitos: [{ tipo: "nd", valor: 8 }],
+  },
+  {
+    id: "tal_especialista_em_cortes",
+    nome: "Especialista em Cortes",
+    grupo: "geral",
+    descricao:
+      "Seu valor de força ou destreza aumenta em 1. Sempre que causar Dano Cortante em um ataque " +
+      "corpo a corpo, ele é aumentado em um nível. Uma vez por turno, ao acertar uma criatura e " +
+      "infligir dano cortante, você pode reduzir o movimento dela em 4,5 metros até o começo do " +
+      "seu próximo turno.",
+    // "Seu valor de força ou destreza aumenta em 1."
+    escolha: {
+      id: "cortes_atributo",
+      label: "Atributo",
+      opcoes: opcoesDeAtributo("tal_cortes", (n) => `Seu valor de ${n} aumenta em 1.`, ["forca", "destreza"]),
+    },
+    requisitos: [{ tipo: "nd", valor: 8 }],
+  },
+  {
+    id: "tal_especialista_em_perfuracao",
+    nome: "Especialista em Perfuração",
+    grupo: "geral",
+    descricao:
+      "Seu valor de força ou destreza aumenta em 1. Sempre que causar Dano Perfurante em um ataque " +
+      "corpo a corpo, ele é aumentado em um nível. Uma vez por turno, ao acertar uma criatura e " +
+      "infligir dano perfurante você pode rolar novamente os dados de dano, usando o melhor " +
+      "resultado total.",
+    // "Seu valor de força ou destreza aumenta em 1."
+    escolha: {
+      id: "perfuracao_atributo",
+      label: "Atributo",
+      opcoes: opcoesDeAtributo("tal_perfuracao", (n) => `Seu valor de ${n} aumenta em 1.`, ["forca", "destreza"]),
+    },
+    requisitos: [{ tipo: "nd", valor: 8 }],
+  },
+  {
+    id: "tal_mestre_da_criacao",
+    nome: "Mestre da Criação",
+    grupo: "geral",
+    descricao:
+      "Praticando e estudando, você consegue otimizar o seu tempo para poder produzir mais itens " +
+      "em menos tempo. Quando escolher o foco Criação de Itens durante um interlúdio, você pode " +
+      "criar 2 itens adicionais. Caso escolha o foco Criação de Itens mais de uma vez no mesmo " +
+      "interlúdio, você recebe as oportunidades adicionais para cada foco. Além disso, você recebe " +
+      "um bônus de +2 em duas perícias de ofício a sua escolha.",
+    requisitos: [{ tipo: "oficios", quantidade: 2, nivel: "treinado" }, { tipo: "nd", valor: 4 }],
+  },
+  {
+    id: "tal_mestre_do_arremesso",
+    nome: "Mestre do Arremesso",
+    grupo: "geral",
+    descricao:
+      "Dominando ainda mais as armas de arremesso, você consegue as levar até o seu limite, " +
+      "tornando-se um efetivo mestre dos arremessos. Toda arma de arremesso que você utilizar tem " +
+      "o seu dano aumentado em um dado; o seu bônus em ataques com armas de arremesso se torna +4 " +
+      "para acertar e +6 no dano, e o alcance de ataques com armas de arremesso aumenta em 6 " +
+      "metros.",
+    requisitos: [{ tipo: "talento", id: "tal_tecnicas_de_arremesso" }, { tipo: "nd", valor: 8 }],
+  },
+  {
+    id: "tal_mestre_dos_chicotes",
+    nome: "Mestre dos Chicotes",
+    grupo: "geral",
+    descricao:
+      "Os chicotes são um tipo de arma exótico e único, recompensando aqueles que dominam o seu " +
+      "manejo com um novo potencial. Suas rolagens de ataque com chicotes causam +4 de dano e o " +
+      "alcance aumenta em 1,5 metros. Além disso, uma vez ao turno, quando acertar uma criatura " +
+      "com um ataque com chicote, você pode a forçar a realizar um TR de Fortitude e, caso falhe, " +
+      "você pode a puxar até 3 metros para sua direção.",
+    requisitos: [{ tipo: "nd", valor: 5 }],
+  },
+  {
+    id: "tal_movimentos_acrobaticos",
+    nome: "Movimentos Acrobáticos",
+    grupo: "geral",
+    descricao:
+      "Não é hora de ficar parado no chão! Você se move agilmente sempre, e não para no lugar! Ao " +
+      "ser derrubado ou receber a condição caído, você pode fazer um teste de acrobacia contra o " +
+      "atletismo da criatura que te derrubou ou CD da criatura que aplicou a condição caso seja " +
+      "uma técnica, caso isso aconteça, você pode se levantar como uma ação livre, sem gastar sua " +
+      "ação de movimento e se mover 3m sem ativar golpes de oportunidade. Ao fazer isso, você " +
+      "também recebe um bônus de metade do seu modificador de destreza na Defesa por 1 rodada.",
+    requisitos: [{ tipo: "pericia", pericia: "acrobacia", nivel: "treinado" }],
+  },
+  {
+    id: "tal_robustez_aprimorada",
+    nome: "Robustez Aprimorada",
+    grupo: "geral",
+    descricao:
+      "Seus pontos de vida máximos aumentam em um valor igual ao seu nível ao obter esse talento. " +
+      "Sempre que subir de nível e tiver esse talento, você recebe +1 ponto de vida máximo. Além " +
+      "disso, você recebe +2 em testes de Fortitude.",
+    requisitos: [{ tipo: "atributo", attr: "constituicao", valor: 14 }],
+  },
+  {
+    id: "tal_tecnicas_de_empunhadura_dupla",
+    nome: "Técnicas de Empunhadura Dupla",
+    grupo: "geral",
+    descricao:
+      "Você recebe um bônus de +1 na sua Defesa quando estiver empunhando uma arma em cada mão. " +
+      "Você pode lutar com duas armas mesmo que as armas não sejam leves, desde que não possuam a " +
+      "propriedade pesada ou duas mãos. Você pode utilizar a ação Sacar para sacar duas armas " +
+      "gastando apenas metade do movimento da sua próxima ação de Andar.",
+    requisitos: [{ tipo: "atributoOr", attrs: ["forca", "destreza"], valor: 14 }],
+  },
+  {
+    id: "tal_tecnicas_de_mobilidade",
+    nome: "Técnicas de Mobilidade",
+    grupo: "geral",
+    descricao:
+      "Seu movimento aumenta em 3 metros. Uma vez por rodada, ao atacar uma criatura, você pode " +
+      "realizar um teste de Reflexos contra um teste de Reflexos do alvo e, caso suceda, o alvo " +
+      "não pode realizar ataques de oportunidade contra você pelo resto do seu turno.",
+    requisitos: [{ tipo: "atributo", attr: "destreza", valor: 14 }],
+  },
+  {
+    id: "tal_tecnicas_de_ocultamento",
+    nome: "Técnicas de Ocultamento",
+    grupo: "geral",
+    descricao:
+      "Você recebe um bônus adicional em testes de Furtividade igual ao seu Bônus de Treinamento " +
+      "e, quando deixar uma criatura Desprevenida através de um ataque surpresa, o prejuízo é " +
+      "aplicado em todos os Testes de Resistência ao invés de apenas Reflexos.",
+    requisitos: [{ tipo: "pericia", pericia: "furtividade", nivel: "treinado" }],
+  },
+  {
+    id: "tal_tecnicas_do_sentinela",
+    nome: "Técnicas do Sentinela",
+    grupo: "geral",
+    descricao:
+      "Ao acertar uma criatura com um ataque de oportunidade, o movimento dela é reduzido em 4,5 " +
+      "metros até o final do turno dela. Quando uma criatura a 1,5 metros de você faz um ataque " +
+      "contra um alvo além de você, você pode como uma reação realizar um ataque contra essa " +
+      "criatura.",
+    requisitos: [{ tipo: "nd", valor: 5 }],
+  },
+  {
+    id: "tal_wrestling",
+    nome: "Wrestling",
+    grupo: "geral",
+    descricao:
+      "Você sabe técnicas de agarramento melhor do que ninguém, fazendo com que os agarrados nunca " +
+      "escapem de suas garras. Ao agarrar um alvo, caso ele tente escapar de um agarrão que você " +
+      "esteja fazendo, você pode forçá-lo, ao invés de fazer um teste de perícia normal contra " +
+      "você, fazer um teste de modificador de força contra o seu teste de modificador de força, " +
+      "uma vez por rodada. Ao realizar uma Jogada de Ataque, você pode escolher soltar o alvo do " +
+      "agarrão como parte do ataque para causar metade do valor de força em dano adicional, " +
+      "fazendo o alvo ficar caído, sem necessidade de teste. Você pode escolher, ao invés de " +
+      "deixá-lo caído, joga-lo, arremessando-o em uma distância de 3m*MOD de For, se ele atingir " +
+      "algo, ele recebe dano de fonte variável (p.327) de Objeto Pesado ou de Extremamente Pesado, " +
+      "a depender de onde ele acertar, a escolha do Narrador.",
+    requisitos: [{ tipo: "nd", valor: 4 }],
+  },
+  {
+    id: "tal_voto_malevolente",
+    nome: "Voto Malevolente",
+    grupo: "geral",
+    descricao:
+      "Você sabe como manter sua cabeça fria mesmo nos momentos mais tensos, lembrando-se da " +
+      "malícia ao criar votos. Ao realizar votos emergenciais, o voto não precisa ter um maleficio " +
+      "maior que o beneficio, sendo realizado normalmente.",
+    requisitos: [{ tipo: "nd", valor: 12 }],
+  },
+
+  /* ---------------- TALENTOS DE ORIGEM ----------------
+     "Certos talentos estão atrelados a origens específicas... Estes talentos
+     podem ser pegos da mesma maneira que um talento comum, mas limitados a
+     certas origens." Ordem do livro (agrupada por origem, não alfabética). */
+  {
+    id: "tal_familiaridade_com_tecnica",
+    nome: "Familiaridade com Técnica",
+    grupo: "origem",
+    descricao:
+      "Com a sua técnica amaldiçoada sendo parte da sua individualidade, você se torna cada vez " +
+      "mais e mais familiar com ela, otimizando-a em custo ou poder. Seu Feitiço escolhido " +
+      "primeiro como Marca Registrada tem a redução de custo em PE aumentada de 1 para 2 ou, caso " +
+      "seja Sustentada, você pode escolher reduzir o custo para sustentar em 1. Além disso, você " +
+      "pode escolher uma quantidade de Feitiços adicionais como Marca Registrada igual a metade do " +
+      "seu bônus de treinamento.",
+    requisitos: [{ tipo: "origem", id: "inato" }, { tipo: "nd", valor: 12 }],
+  },
+  {
+    id: "tal_manual_de_tecnica",
+    nome: "Manual de Técnica",
+    grupo: "origem",
+    descricao:
+      "Sua técnica já está registrada há muito tempo, com direito a um manual explicando seu " +
+      "funcionamento e uso. Ao obter este talento, você pode criar um Feitiço de um nível acima ao " +
+      "maior que você possui acesso, mas ele tem o custo aumentado em 50% (metade do custo padrão " +
+      "a mais). Quando você receber acesso ao nível do Feitiço criado com o Manual, você deve " +
+      "obrigatoriamente o aprender quando ganhar um novo Feitiço e, após isso, pode criar outro " +
+      "Feitiço de nível superior com Manual de Técnica. Caso você já possua acesso a Feitiços de " +
+      "Nível 5, o tempo de recarga da sua Técnica Máxima é reduzido em 1 rodada.",
+    requisitos: [
+      { tipo: "origem", id: "herdado" },
+      { tipo: "periciaOr", pericias: ["historia", "ocultismo"], nivel: "treinado" },
+      { tipo: "nd", valor: 5 },
+    ],
+  },
+  {
+    id: "tal_expansao_de_reserva",
+    nome: "Expansão de Reserva",
+    grupo: "origem",
+    descricao:
+      "Você expande a sua reserva de energia, a qual fica oculta em seu ser, apenas aguardando seu " +
+      "uso. Sua característica energia antinatural recebe as seguintes melhorias: recuperar " +
+      "energia da sua reserva se torna uma ação livre e, ao recuperar, você também recebe uma " +
+      "quantidade de pontos de energia temporários igual a metade do seu bônus de treinamento. " +
+      "Além disso, você passa a poder utilizar a característica uma vez por descanso longo ao " +
+      "invés de por dia.",
+    requisitos: [{ tipo: "origem", id: "derivado" }, { tipo: "nd", valor: 8 }],
+  },
+  {
+    id: "tal_quebra_de_limites",
+    nome: "Quebra de Limites",
+    grupo: "origem",
+    descricao:
+      "Você continua quebrando os seus limites a partir de um desenvolvimento fora da curva " +
+      "ordinária. Ao obter este talento, você aumenta o valor de dois atributos diferentes à sua " +
+      "escolha em 2, com exceção do seu atributo com maior limite. Além disso, o limite dos dois " +
+      "atributos escolhidos é aumentado em 2.",
+    // DOIS atributos: `niveis: [1, 1]` conta duas concessões desde o começo (o
+    // pré-requisito de ND já trava o acesso). O resolvedor remove do pool todos
+    // os atributos empatados no maior limite antes de aceitar as escolhas.
+    escolha: {
+      id: "quebra_atributo",
+      label: "Atributo",
+      niveis: [1, 1],
+      opcoes: opcoesDeAtributo("tal_quebra", (n) => `Seu valor e seu limite de ${n} aumentam em 2.`),
+    },
+    requisitos: [{ tipo: "origem", id: "derivado" }, { tipo: "nd", valor: 6 }],
+  },
+  {
+    id: "tal_fisico_aperfeicoado",
+    nome: "Físico Aperfeiçoado",
+    grupo: "origem",
+    descricao:
+      "O seu corpo se torna específico e desenvolvido para uma área em peculiar, ligando-se mais " +
+      "firmemente a certos aspectos. Ao adquirir este talento, escolha um dos efeitos abaixo para " +
+      "receber:\n\n" +
+      "• Seu Deslocamento aumenta em 4,5 metros.\n" +
+      "• Você recebe um bônus de +2 em testes de Acrobacia ou Atletismo, escolhendo um entre eles.\n" +
+      "• Caso empurre uma criatura ou arremesse um objeto (Desarmar ou Empurrar), a distância é " +
+      "aumentada em 3 metros.\n" +
+      "• A distância de todo pulo que você realizar aumenta em um valor igual a metade da " +
+      "distância total.",
+    // Uma entre quatro. A do bônus em perícia é ela mesma um "ou", então virou
+    // duas opções separadas: escolher Acrobacia e escolher Atletismo.
+    // ⚠ O pulo continua sem canal (a ficha não tem distância de salto).
+    escolha: {
+      id: "fisico_aperfeicoado",
+      label: "Efeito",
+      opcoes: [
+        { id: "tal_fisico_deslocamento", nome: "Deslocamento",
+          descricao: "Seu Deslocamento aumenta em 4,5 metros." },
+        { id: "tal_fisico_acrobacia", nome: "Acrobacia",
+          descricao: "Você recebe um bônus de +2 em testes de Acrobacia." },
+        { id: "tal_fisico_atletismo", nome: "Atletismo",
+          descricao: "Você recebe um bônus de +2 em testes de Atletismo." },
+        { id: "tal_fisico_empurrao", nome: "Empurrão",
+          descricao: "Ao empurrar uma criatura ou arremessar um objeto, a distância aumenta em 3 metros." },
+        { id: "tal_fisico_pulo", nome: "Pulo",
+          descricao: "A distância de todo pulo que você realizar aumenta em metade da distância total." },
+      ],
+    },
+    requisitos: [{ tipo: "origem", id: "feto_amaldicoado_hibrido" }, { tipo: "nd", valor: 6 }],
+  },
+  {
+    id: "tal_reposicao_sanguinea",
+    nome: "Reposição Sanguínea",
+    grupo: "origem",
+    descricao:
+      "Além de um vigor maldito, ele se desenvolve para uma capacidade única de repor o seu sangue " +
+      "e saúde. Sua cura do Vigor Maldito passa a poder ser utilizada tanto como ação bônus quanto " +
+      "reação ao receber dano, além de aumentar em 5.",
+    requisitos: [{ tipo: "origem", id: "feto_amaldicoado_hibrido" }, { tipo: "nd", valor: 6 }],
+  },
+  {
+    id: "tal_estudo_amaldicoado",
+    nome: "Estudo Amaldiçoado",
+    grupo: "origem",
+    descricao:
+      "Você estuda sobre a energia amaldiçoada ao máximo, conseguindo descobrir uma nova maneira " +
+      "de a utilizar. Ao obter este talento, você pode escolher dois Níveis de Aptidão diferentes " +
+      "para serem aumentados em 1.",
+    escolha: {
+      id: "estudo_aptidao",
+      label: "Aptidão",
+      niveis: [1, 1],
+      opcoes: opcoesDeTrilha("tal_estudo", (n) => `Seu Nível de Aptidão em ${n} aumenta em 1.`),
+    },
+    requisitos: [{ tipo: "origem", id: "sem_tecnica" }, { tipo: "nd", valor: 8 }],
+  },
+  {
+    id: "tal_nocao_e_preparacao",
+    nome: "Noção e Preparação",
+    grupo: "origem",
+    descricao:
+      "Embora você esteja privado do acesso a uma técnica e certas aplicações da energia, você tem " +
+      "noção e preparação suficiente para o proteger diante certos problemas. Você recebe um bônus " +
+      "de +2 para testes de resistências contra efeitos de aptidões amaldiçoadas. Nos níveis 8, 12 " +
+      "e 16 o bônus aumenta em +1.",
+    requisitos: [{ tipo: "origem", id: "sem_tecnica" }, { tipo: "nd", valor: 4 }],
+  },
+];
+
+/* ============================================================ */
+/* ADDONS                                                        */
+/* ============================================================ */
+/* Segunda família ligada ao registro (2026-08-20). Bem mais simples que a de
+   Habilidades: aqui a única estrutura derivada do catálogo é o índice, porque
+   `talentosDoGrupo` e `gruposDeTalento` filtram na hora da chamada. */
+
+let BY_ID = {};
+let OPCOES_BY_ID = {};
+
+export const AFTY_OPCOES_TALENTO = [];
+export const OPCAO_TALENTO_NOME = {};
+
+const TALENTOS_BASE = AFTY_TALENTOS.slice();
+let talentosSemOpcoesAdicionais = [];
+
+const copiarEscolhaDoTalento = (talento) => talento.escolha
+  ? { ...talento, escolha: { ...talento.escolha, opcoes: [...(talento.escolha.opcoes ?? [])] } }
+  : talento;
+
+function religarIndicesTalentos() {
+  BY_ID = Object.fromEntries(AFTY_TALENTOS.map((t) => [t.id, t]));
+  for (const id of Object.keys(OPCAO_TALENTO_NOME)) delete OPCAO_TALENTO_NOME[id];
+  for (const talento of AFTY_TALENTOS) {
+    for (const opcao of talento.escolha?.opcoes ?? []) {
+      if (opcao?.id && !OPCAO_TALENTO_NOME[opcao.id]) OPCAO_TALENTO_NOME[opcao.id] = opcao.nome ?? opcao.id;
+    }
+  }
+}
+
+function aplicarExtrasTalentos(extras = [], remendos = null) {
+  talentosSemOpcoesAdicionais = [...remendarLista(TALENTOS_BASE, remendos), ...extras];
+  AFTY_TALENTOS.splice(0, AFTY_TALENTOS.length, ...talentosSemOpcoesAdicionais);
+  AFTY_OPCOES_TALENTO.splice(0, AFTY_OPCOES_TALENTO.length);
+  OPCOES_BY_ID = {};
+  religarIndicesTalentos();
+}
+
+aplicarExtrasTalentos();
+
+registrarFamilia("talentos", {
+  rotulo: "Talento",
+  chave: "id",
+  obrigatorios: ["nome", "descricao", "grupo"],
+  /* `efeitos[].alvo` (2026-10-07): o efeito que mira uma entrada DO PRÓPRIO
+     pacote (a linha de cura que ela declara, por exemplo) ganha o namespace. Alvo
+     que não é id local (atributo, perícia, escopo) fica intocado. */
+  caminhosDeId: ["requisitos[].id", "efeitos[].alvo", "concedeAptidoes[]"],
+  aplicar: aplicarExtrasTalentos,
+  basicos: () => TALENTOS_BASE,
+  validador: validarCatalogoTalentos,
+  resolver: (id) => getTalento(id),
+  idsDaFicha: (c) => (Array.isArray(c?.talentos) ? c.talentos : []),
+});
+
+export const getTalento = (id) => BY_ID[id] || null;
+
+export const getOpcaoTalento = (id) => OPCOES_BY_ID[id] || null;
+
+/* Opções são acréscimos independentes: dois addons alimentam o mesmo seletor
+   sem trocar a lista inteira por remendo. A cópia inicial impede acúmulo ao
+   reconstruir o mundo e mantém intactas as cópias salvas nos pacotes. */
+function aplicarExtrasOpcoesTalento(extras = []) {
+  AFTY_OPCOES_TALENTO.splice(0, AFTY_OPCOES_TALENTO.length,
+    ...extras.map((opcao) => JSON.parse(JSON.stringify(opcao))));
+  OPCOES_BY_ID = Object.fromEntries(AFTY_OPCOES_TALENTO.map((o) => [o.id, o]));
+  const talentos = talentosSemOpcoesAdicionais.slice();
+  const porId = Object.fromEntries(talentos.map((t) => [t.id, t]));
+  const copiados = new Set();
+  for (const opcao of AFTY_OPCOES_TALENTO) {
+    let talento = porId[opcao.talentoId];
+    if (!talento?.escolha) continue;
+    if (!copiados.has(talento.id)) {
+      const indice = talentos.indexOf(talento);
+      talento = copiarEscolhaDoTalento(talento);
+      talentos[indice] = talento;
+      porId[talento.id] = talento;
+      copiados.add(talento.id);
+    }
+    talento.escolha.opcoes.push({ ...opcao });
+  }
+  AFTY_TALENTOS.splice(0, AFTY_TALENTOS.length, ...talentos);
+  religarIndicesTalentos();
+}
+
+/** Validação compartilhada pelo portão de instalação e pelo catálogo unido. */
+export function validarOpcaoTalento(opcao, { talentos = [], habilidades = [] } = {}) {
+  const problemas = [];
+  const onde = `Opção de Talento "${opcao?.nome || opcao?.id || "?"}"`;
+  if (!opcao || typeof opcao !== "object" || Array.isArray(opcao)) return [`${onde}: precisa ser um objeto.`];
+  const extraPorId = (lista, id) => Array.isArray(lista) ? lista.find((e) => e?.id === id) : null;
+  const talento = extraPorId(talentos, opcao.talentoId) ?? getTalento(opcao.talentoId);
+  if (!String(opcao.talentoId ?? "").trim()) problemas.push(`${onde}: falta o campo "talentoId".`);
+  else if (!talento && !String(opcao.talentoId).includes(":")) {
+    problemas.push(`${onde}: Talento inexistente "${opcao.talentoId}".`);
+  } else if (talento && !talento.escolha) problemas.push(`${onde}: o Talento não possui escolha.`);
+  for (const campo of ["habilidadeId", "requerHabilidade"]) {
+    if (opcao[campo] == null) continue;
+    const id = String(opcao[campo]).trim();
+    if (!id) problemas.push(`${onde}: "${campo}" vazio.`);
+    else if (!extraPorId(habilidades, id) && !getHabilidade(id) && !id.includes(":")) {
+      problemas.push(`${onde}: Habilidade inexistente em "${campo}" ("${id}").`);
+    }
+  }
+  if (opcao.trocaAtributo != null) {
+    const troca = opcao.trocaAtributo;
+    const atributos = new Set(AFTY_ATTRS.map((a) => a.key));
+    if (!troca || typeof troca !== "object" || Array.isArray(troca)
+      || !atributos.has(troca.de) || !atributos.has(troca.para) || troca.de === troca.para) {
+      problemas.push(`${onde}: "trocaAtributo" precisa de atributos diferentes e válidos em "de" e "para".`);
+    }
+    if (!String(opcao.requerHabilidade ?? "").trim()) {
+      problemas.push(`${onde}: "trocaAtributo" requer o campo "requerHabilidade".`);
+    }
+  }
+  if (opcao.efeitos != null && !Array.isArray(opcao.efeitos)) {
+    problemas.push(`${onde}: "efeitos" precisa ser uma lista.`);
+  }
+  for (const [i, efeito] of (Array.isArray(opcao.efeitos) ? opcao.efeitos : []).entries()) {
+    const fonte = `${onde}, efeito #${i + 1}`;
+    if (!efeito || typeof efeito !== "object" || !String(efeito.canal ?? "").trim()) {
+      problemas.push(`${fonte}: falta o campo "canal".`);
+      continue;
+    }
+    for (const campo of ["expr", "quando"]) {
+      if (campo === "quando" && efeito[campo] == null) continue;
+      const expr = String(efeito[campo] ?? "").trim();
+      const validacao = validateExpression(expr);
+      if (!expr || !validacao.ok) problemas.push(`${fonte}: "${campo}" inválido.`);
+    }
+  }
+  return problemas;
+}
+
+function validarCatalogoOpcoesTalento() {
+  const problemas = [];
+  const ids = new Set();
+  for (const opcao of AFTY_OPCOES_TALENTO) {
+    if (ids.has(opcao.id)) problemas.push(`id duplicado de opção de Talento: ${opcao.id}`);
+    ids.add(opcao.id);
+    problemas.push(...validarOpcaoTalento(opcao));
+  }
+  return problemas;
+}
+
+registrarFamilia("opcoesTalento", {
+  rotulo: "Opção de Talento",
+  chave: "id",
+  obrigatorios: ["nome", "descricao", "talentoId"],
+  caminhosDeId: ["talentoId", "habilidadeId", "requerHabilidade", "efeitos[].alvo"],
+  ordem: 60,
+  aplicar: aplicarExtrasOpcoesTalento,
+  validador: validarCatalogoOpcoesTalento,
+  validarEntrada: (opcao, pacote) => validarOpcaoTalento(opcao, {
+    talentos: pacote.acrescenta.talentos ?? [],
+    habilidades: pacote.acrescenta.habilidades ?? [],
+  }),
+  validarEfeitos: true,
+  resolver: getOpcaoTalento,
+  idsDaFicha: (c) => Object.entries(c?.escolhasTalento ?? {}).flatMap(([talentoId, ids]) =>
+    (Array.isArray(ids) ? ids : []).filter((id) => !!getOpcaoTalento(id)
+      || (getTalento(talentoId)?.escolha?.aceitaOpcoesAddon && typeof id === "string" && id.includes(":")))),
+  remendavel: false,
+});
+
+/**
+ * As Aptidões que os Talentos da ficha CONCEDEM PELO NOME, com
+ * `concedeAptidoes: ["id"]` na entrada do Talento.
+ *
+ * Nasceu em 2026-10-11 com o Desabrochar do Conhecimento Herdado (Herdado da
+ * Era de Ouro): *"Recebe a Aptidão Amaldiçoada Emoção da Pétala Decadente
+ * ignorando os pré requisitos normais"*. O motor já concedia Aptidão pelo nome
+ * pela origem, pela Especialização, pela sessão e pelo Addon, e faltava o
+ * Talento dizer QUAL.
+ *
+ * Segue as regras das outras concessões: ignora o pré-requisito da Aptidão, não
+ * gasta vaga e conta para o requisito de terceiros. Vale enquanto o Talento
+ * estiver na ficha, escolhido ou concedido, como o resto do que ele faz: com o
+ * pré-requisito do Talento faltando, ele sai marcado inacessível e nada é tirado.
+ *
+ * ⚠ FICA FORA DO MOTOR DE EFEITOS pelo motivo das outras: a lista de Aptidões
+ * fecha antes de `coletarEfeitosAptidao`, e um canal chegaria tarde.
+ *
+ * Devolve `[{ id, fonte, talentoId }]`, uma linha por Aptidão. `fonte` é o nome
+ * do Talento, que a tela escreve ao lado da Aptidão.
+ */
+export function aptidoesConcedidasPorTalentos(talentosIds = []) {
+  const out = [];
+  const vistos = new Set();
+  for (const talId of Array.isArray(talentosIds) ? talentosIds : []) {
+    const tal = BY_ID[talId];
+    for (const id of Array.isArray(tal?.concedeAptidoes) ? tal.concedeAptidoes : []) {
+      if (typeof id !== "string" || !id || vistos.has(id)) continue;
+      vistos.add(id);
+      out.push({ id, fonte: tal.nome, talentoId: talId });
+    }
+  }
+  return out;
+}
+
+/** Talentos de um grupo, na ordem do catálogo. */
+export const talentosDoGrupo = (grupoId) => AFTY_TALENTOS.filter((t) => t.grupo === grupoId);
+
+/**
+ * Grupos de exibição (Gerais, de Origem), pulando os vazios.
+ *
+ * ⚠ `creature` entrou em 2026-09-01 e é OPCIONAL: sem ela a lista é a do livro
+ * inteiro. Quem monta o SELETOR passa a ficha, e aí o Talento `Alma Livre` some
+ * no jogador. Ver a divergência `conteudoSoPorAddon`.
+ *
+ * O Talento JÁ ESCOLHIDO entra pela terceira porta do filtro, e um grupo que
+ * fique vazio some junto, como já acontecia.
+ */
+export function gruposDeTalento(creature = null) {
+  /* ⚠ TALENTO `soConcedido` NÃO SE ESCOLHE (2026-09-30): ele só entra na ficha
+     concedido pelo nome, que é o caso do Determinado a Viver Adicional do
+     Espinho. No seletor ele pagaria uma vaga comum pelo que o Espinho vende. O já
+     escolhido (ficha antiga, import) continua aparecendo para poder ser tirado. */
+  const escolhidos = Array.isArray(creature?.talentos) ? creature.talentos : [];
+  const escolhivel = (t) => !t.soConcedido || escolhidos.includes(t.id);
+  return TALENTO_GRUPOS
+    .map((g) => ({
+      ...g,
+      talentos: (creature
+        ? filtraForaDoJogador(
+          talentosDoGrupo(g.id),
+          creature,
+          Array.isArray(creature?.talentos) ? creature.talentos : null,
+        )
+        : talentosDoGrupo(g.id)).filter(escolhivel),
+    }))
+    .filter((g) => g.talentos.length > 0);
+}
+
+const ATTR_LABEL = {
+  forca: "Força",
+  destreza: "Destreza",
+  constituicao: "Constituição",
+  inteligencia: "Inteligência",
+  sabedoria: "Sabedoria",
+  presenca: "Presença",
+};
+
+/**
+ * Avalia UM pré-requisito de talento.
+ *
+ * ctx = { nd, attrEff, origemId, talentos: [id] }.
+ * Espelha avaliarRequisitoHabilidade / avaliarRequisitoAptidao.
+ *
+ * ⚠ `nd` aqui é o ND da criatura, NÃO o nível de uma especialização: talento
+ * é acessível a qualquer classe (regra do autor, 2026-07-22).
+ */
+export function avaliarRequisitoTalento(requisito, ctx = {}) {
+  const nd = Math.max(1, Math.trunc(Number(ctx.nd) || 1));
+
+  /* ⚠ TREINO EM PERÍCIA OU TR VEM DO AVALIADOR COMPARTILHADO (2026-09-01), pela
+     mesma razão das Habilidades: eram `nota` e o autor mandou fechá-los. Os
+     Talentos trazem as três formas mais largas, e é por causa deles que o
+     avaliador tem mais que o `pericia` simples: "alguma perícia de Presença"
+     (Discurso Motivador), "dois Ofícios" (Mestre da Criação) e "História ou
+     Ocultismo" (Manual de Técnica). */
+  const treino = avaliarRequisitoDeTreino(requisito, ctx);
+  if (treino) return treino;
+
+  if (requisito?.tipo === "nd") {
+    return { ok: nd >= requisito.valor, verificavel: true, label: `Nível ${requisito.valor}` };
+  }
+  if (requisito?.tipo === "atributo") {
+    const atual = ctx.attrEff?.[requisito.attr] ?? 0;
+    return {
+      ok: atual >= requisito.valor,
+      verificavel: true,
+      label: `${ATTR_LABEL[requisito.attr] || requisito.attr} ${requisito.valor}`,
+    };
+  }
+  if (requisito?.tipo === "atributoOr") {
+    const attrs = requisito.attrs || [];
+    const ok = attrs.some((a) => (ctx.attrEff?.[a] ?? 0) >= requisito.valor);
+    const nomes = attrs.map((a) => ATTR_LABEL[a] || a).join(" ou ");
+    return { ok, verificavel: true, label: `${nomes} ${requisito.valor}` };
+  }
+  if (requisito?.tipo === "origem") {
+    const alvo = getOrigem(requisito.id);
+    if (!alvo) return { ok: true, verificavel: false, label: requisito.id };
+    // ⚠ Pode ser MAIS DE UMA origem. O Gêmeo com Verdadeiras Origens *"considera
+    // a origem escolhida como sua para todos os fins de qualificação"*, e é
+    // justamente aqui que "todos os fins" cobra: os Talentos de Origem
+    // exclusivos daquela origem. `origemId` continua valendo como o caso de um.
+    const tem = ctx.origensQualificadas ?? (ctx.origemId ? [ctx.origemId] : []);
+    // Algumas origens de addon liberam Talentos de Origem de outra origem
+    // sem herdar suas Linhas de Treinamento ou Especializações.
+    const adicionais = BY_ID[ctx.talentoEmAvaliacao]?.grupo === "origem"
+      ? getOrigem(ctx.origemId)?.qualificaTalentosDeOrigem
+      : null;
+    const liberado = Array.isArray(adicionais) && adicionais.includes(requisito.id);
+    return { ok: tem.includes(requisito.id) || liberado, verificavel: true, label: `Origem ${alvo.nome}` };
+  }
+  /* ⚠ `cla` entrou em 2026-08-31, com a Estrela dos Zenin. Os Talentos de Origem
+     dela pertencem a UM CLÃ do Herdado, e não ao Herdado inteiro: por `origem`
+     um Gojo os pegaria. A `origensQualificadas` de propósito não vale aqui, que
+     é a lição de `origemEstrutural`: ela ABRE portas, e clã é o que a criatura
+     É. */
+  if (requisito?.tipo === "cla") {
+    const alvo = getCla(requisito.id);
+    if (!alvo) return { ok: true, verificavel: false, label: requisito.id };
+    return { ok: ctx.claId === requisito.id, verificavel: true, label: `Clã ${alvo.nome}` };
+  }
+  /* ⚠ `aptidao` entrou em 2026-08-22, com a Expansão de Estilo, que pede o
+     Domínio Simples. Antes disso todo Talento que citava aptidão o fazia por
+     `nota`, que só exibe. Mesmo nome e mesmo shape de `avaliarRequisitoAptidao`
+     e do requisito de etapa de Treinamento, para não haver dois vocabulários
+     para a mesma pergunta.
+
+     Sem `ctx.aptidoes` o requisito cai para NÃO VERIFICÁVEL em vez de reprovar:
+     falta de contexto não é falta de aptidão. */
+  if (requisito?.tipo === "aptidao") {
+    const nome = nomeDaAptidao(requisito.id) ?? requisito.id;
+    if (!Array.isArray(ctx.aptidoes)) return { ok: true, verificavel: false, label: nome };
+    return { ok: ctx.aptidoes.includes(requisito.id), verificavel: true, label: nome };
+  }
+  if (requisito?.tipo === "talento") {
+    const alvo = BY_ID[requisito.id];
+    if (!alvo) return { ok: true, verificavel: false, label: requisito.id };
+    return { ok: (ctx.talentos || []).includes(requisito.id), verificavel: true, label: alvo.nome };
+  }
+  if (requisito?.tipo === "feiticos") {
+    const quantidade = Math.max(1, Math.trunc(Number(requisito.quantidade) || 1));
+    if (!Array.isArray(ctx.feiticos)) {
+      return { ok: true, verificavel: false, label: "Possuir Feitiços" };
+    }
+    const total = ctx.feiticos.filter(Boolean).length;
+    return { ok: total >= quantidade, verificavel: true, label: "Possuir Feitiços" };
+  }
+  // "não possuir mais que dois talentos com o nome Adepto". A lista completa é
+  // usada tanto no card quanto na reavaliação final, então o talento atual deve
+  // sair da contagem. Sem isso, dois Adeptos escolhidos invalidavam os dois.
+  if (requisito?.tipo === "maxComNome") {
+    const n = (ctx.talentos || []).filter((id) => (
+      id !== ctx.talentoEmAvaliacao && BY_ID[id]?.nome.startsWith(requisito.prefixo)
+    )).length;
+    return {
+      ok: n < requisito.max,
+      verificavel: true,
+      label: `no máximo ${requisito.max} talentos "${requisito.prefixo}"`,
+    };
+  }
+  // Requisito de sistema ainda não construído (perícias, feitiços): só exibe.
+  if (requisito?.tipo === "nota") {
+    return { ok: true, verificavel: false, label: requisito.texto };
+  }
+  return { ok: true, verificavel: true, label: null };
+}
+
+/**
+ * Avalia o acesso a um talento. Ao contrário das Habilidades, NÃO há
+ * requisito implícito de nível: talento não pertence a especialização e o
+ * "Nível N" que alguns pedem é um requisito explícito do tipo `nd`.
+ *
+ * Retorna { ok, extras }.
+ */
+export function avaliarAcessoTalento(talento, ctx = {}) {
+  const contexto = { ...ctx, talentoEmAvaliacao: talento?.id ?? null };
+  const extras = (talento?.requisitos || []).map((r) => avaliarRequisitoTalento(r, contexto));
+  return { ok: extras.every((e) => e.ok), extras };
+}
+
+/**
+ * Resolve os Talentos da ficha.
+ *
+ * Saneia a lista (ids existentes, sem duplicata). O ORÇAMENTO não vive aqui:
+ * talentos são pegos no lugar de Habilidades de Especialização, então quem
+ * soma os dois gastos é `resolveHabilidades` (afty-habilidades.js).
+ *
+ * ctx = { nd, attrEff, origemId }.
+ * Retorna { escolhidas, gastos, inacessiveis }.
+ */
+/**
+ * Quantas vezes o Talento pode ser pego.
+ *
+ * ⚠ NÃO CONFUNDIR COM `escolha.repetivel`, que é a OUTRA repetição e continua
+ * valendo. Ela é "pegue de novo, para outro alvo" (Incremento de Atributo, uma
+ * vez por atributo), e a ficha a representa repetindo a ESCOLHA. Esta aqui é
+ * "pegue de novo, e ganhe a mesma coisa outra vez", e a ficha a representa
+ * repetindo o ID. Um Talento usa uma ou outra, nunca as duas.
+ *
+ * O teto vem do catálogo como número (`maxVezes`) ou como expressão do DSL
+ * (`maxVezesExpr`), avaliada com `{ nd, maestria, bt }`. A expressão existe
+ * porque o primeiro caso é "uma quantidade de vezes igual ao seu bônus de
+ * maestria", e um número fixo não sabe dizer isso. Addon escreve DADO, e uma
+ * expressão de DSL é dado.
+ */
+export function maxVezesTalento(id, ctx = {}) {
+  const def = BY_ID[id];
+  if (!def) return 0;
+  if (def.maxVezesExpr) {
+    const nd = Math.max(1, Math.trunc(Number(ctx.nd) || 1));
+    const maestria = Math.max(0, Math.trunc(Number(ctx.maestria) || 0));
+    return Math.max(1, Math.trunc(evalNumber(def.maxVezesExpr, { nd, maestria, bt: maestria }, 1)));
+  }
+  return Math.max(1, Math.trunc(Number(def.maxVezes) || 1));
+}
+
+export function resolveTalentos(creature, ctx = {}) {
+  const vistos = new Set();
+  const escolhidas = [];
+  const addonsAtivos = Array.isArray(ctx.addonsAtivos) || ctx.addonsAtivos instanceof Set
+    ? new Set(ctx.addonsAtivos) : null;
+  const paiDisponivel = (id) => {
+    const talento = BY_ID[id];
+    return talento && (!talento.escolha?.aceitaOpcoesAddon || !talento.addonId
+      || !addonsAtivos || addonsAtivos.has(talento.addonId));
+  };
+  /* ⚠ A LISTA DA FICHA ACEITA REPETIÇÃO desde 2026-08-22, e `escolhidas`
+     continua SEM ela. Os dois são usados para coisas diferentes: `escolhidas`
+     responde "a criatura tem este Talento?" (pré-requisito, efeito, tela), e
+     `vezes` responde "quantas". Juntar os dois quebraria todo `includes(id)`
+     que já existe. Mesmo desenho do `resolveGerais`, e o aparo no teto também é
+     de LEITURA: baixar o ND devolve a pega excedente em vez de apagá-la. */
+  const vezes = {};
+  for (const id of Array.isArray(creature?.talentos) ? creature.talentos : []) {
+    if (!paiDisponivel(id)) continue;
+    if (vistos.has(id)) {
+      if ((vezes[id] ?? 1) >= maxVezesTalento(id, ctx)) continue;
+      vezes[id] = (vezes[id] ?? 1) + 1;
+      continue;
+    }
+    vistos.add(id);
+    vezes[id] = 1;
+    escolhidas.push(id);
+  }
+  const pegasExtras = Object.values(vezes).reduce((soma, n) => soma + (n - 1), 0);
+  // Concessão vinda da sessão (Addons 8.3): vale para tudo e NÃO gasta vaga.
+  // Por isso ela é contada à parte e sai de fora do `gastos`, e não porque o
+  // Talento tenha caixa próprio. Ver `afty-concessao.js`.
+  const concedidos = [];
+  for (const id of Array.isArray(ctx.concedidos) ? ctx.concedidos : []) {
+    if (!paiDisponivel(id) || vistos.has(id)) continue;
+    vistos.add(id);
+    vezes[id] = 1;
+    concedidos.push(id);
+    escolhidas.push(id);
+  }
+  // Um talento nunca é pré-requisito de si mesmo, então avaliar contra a
+  // lista inteira é seguro e deixa a ordem de escolha irrelevante.
+  const full = { ...ctx, talentos: escolhidas };
+  const inacessiveis = escolhidas.filter((id) => !avaliarAcessoTalento(BY_ID[id], full).ok);
+  const escolhas = resolveEscolhasTalento(
+    escolhidas,
+    creature?.escolhasTalento,
+    ctx.nd ?? 1,
+    ctx.especializacoes,
+    ctx,
+  );
+  return {
+    escolhidas,
+    concedidos,
+    // A vaga extra da repetível entra no MESMO caixa: "você pode pegar este
+    // talento várias vezes" é uma escolha a mais, e cada uma custa uma vaga.
+    // O concedido pela sessão sai da conta: ele é ganho de combate, não compra.
+    gastos: escolhidas.length - concedidos.length + escolhas.vagasExtras + pegasExtras,
+    inacessiveis,
+    escolhas,
+    // Quantas pegas de cada id. Alimenta o `coletarEfeitos`, que multiplica o
+    // efeito, e o medidor do card.
+    vezes,
+    maxVezes: Object.fromEntries(escolhidas.map((id) => [id, maxVezesTalento(id, ctx)])),
+    almaLivreEspecializacao: especializacaoDeAlmaLivre(escolhas.mapa[ALMA_LIVRE_TALENTO_ID]),
+  };
+}
+
+/**
+ * Escolhas aninhadas dos Talentos. Irmã da resolveEscolhasHabilidade, com duas
+ * diferenças que vêm do próprio catálogo:
+ *
+ *   • o nível que conta é o **ND**, e não o nível de uma especialização
+ *     (talento não pertence a classe nenhuma);
+ *   • a repetível é o jeito de representar "você pode pegar este talento
+ *     várias vezes, mas apenas uma vez para cada atributo" (Incremento de
+ *     Atributo, Aptidão Desenvolvida). A ficha guarda ids únicos, então
+ *     repetir o TALENTO não é representável: repetir a ESCOLHA é.
+ *
+ * Guarda escolhas, nunca resultados, e não remove excedente: reporta em
+ * `excedeu`, que é o padrão do projeto.
+ */
+export function resolveEscolhasTalento(
+  escolhidasIds = [],
+  escolhasTalento = {},
+  nd = 1,
+  especializacoes = [],
+  ctx = {},
+) {
+  const porTal = {};
+  const mapa = {};
+  let vagasExtras = 0;
+  const especializacoesAtuais = new Set(
+    (Array.isArray(especializacoes) ? especializacoes : []).map((e) => typeof e === "string" ? e : e?.id),
+  );
+  const habilidadesEfetivas = new Set(Array.isArray(ctx.habilidadesEfetivas) ? ctx.habilidadesEfetivas : []);
+  const addonsAtivos = Array.isArray(ctx.addonsAtivos) || ctx.addonsAtivos instanceof Set
+    ? new Set(ctx.addonsAtivos)
+    : null;
+  for (const talId of escolhidasIds) {
+    const tal = BY_ID[talId];
+    if (!tal?.escolha) continue;
+    const limites = ctx.limitesAtributo && typeof ctx.limitesAtributo === "object"
+      ? ctx.limitesAtributo
+      : null;
+    const maiorLimite = limites
+      ? Math.max(...AFTY_ATTRS.map((a) => Number(limites[a.key])).filter(Number.isFinite))
+      : null;
+    const disponiveis = tal.escolha.opcoes.filter((o) => {
+      if (tal.addonId && addonsAtivos && !addonsAtivos.has(tal.addonId)) return false;
+      if (o.addonId && addonsAtivos && !addonsAtivos.has(o.addonId)) return false;
+      if (o.habilidadeId) {
+        const concedida = getHabilidade(o.habilidadeId);
+        if (!concedida || (concedida.addonId && addonsAtivos && !addonsAtivos.has(concedida.addonId))) return false;
+      }
+      if (talId === ALMA_LIVRE_TALENTO_ID && especializacoesAtuais.has(o.especializacaoId)) return false;
+      if (talId !== "tal_quebra_de_limites" || !Number.isFinite(maiorLimite)) return true;
+      const atributo = o.id.replace(/^tal_quebra_/, "");
+      return Number(limites[atributo]) !== maiorLimite;
+    });
+    const validas = new Set(disponiveis.map((o) => o.id));
+    const bloqueadas = disponiveis.filter((o) => o.requerHabilidade && (
+      !habilidadesEfetivas.has(o.requerHabilidade)
+      || (getHabilidade(o.requerHabilidade)?.addonId && addonsAtivos
+        && !addonsAtivos.has(getHabilidade(o.requerHabilidade).addonId))))
+      .map((o) => o.id);
+    const bloqueadasSet = new Set(bloqueadas);
+    const motivosBloqueio = Object.fromEntries(disponiveis
+      .filter((o) => bloqueadasSet.has(o.id))
+      .map((o) => [o.id, `Requer ${getHabilidade(o.requerHabilidade)?.nome ?? o.requerHabilidade}`]));
+    const brutas = Array.isArray(escolhasTalento?.[talId]) ? escolhasTalento[talId] : [];
+    const vistos = new Set();
+    const opcoes = [];
+    for (const id of brutas) {
+      if (!validas.has(id) || vistos.has(id)) continue;
+      vistos.add(id);
+      opcoes.push(id);
+    }
+    const allowance = tal.escolha.repetivel
+      ? disponiveis.length
+      : (tal.escolha.niveis ?? [1]).filter((n) => nd >= n).length;
+    porTal[talId] = {
+      opcoes,
+      disponiveis: disponiveis.map((o) => o.id),
+      allowance,
+      repetivel: !!tal.escolha.repetivel,
+      excedeu: opcoes.length > allowance,
+      bloqueadas,
+      motivosBloqueio,
+    };
+    mapa[talId] = opcoes.filter((id) => !bloqueadasSet.has(id));
+    if (tal.escolha.repetivel) vagasExtras += Math.max(0, opcoes.length - 1);
+  }
+  return { porTal, mapa, vagasExtras };
+}
+
+/** Erros de conteúdo do catálogo. Rodar a cada leva nova. */
+export function validarCatalogoTalentos() {
+  const problemas = [];
+  const ids = new Set();
+  const nomes = new Set();
+  const gruposValidos = new Set(TALENTO_GRUPOS.map((g) => g.id));
+
+  for (const t of AFTY_TALENTOS) {
+    if (ids.has(t.id)) problemas.push(`id duplicado: ${t.id}`);
+    ids.add(t.id);
+
+    const chave = t.nome.toLowerCase();
+    if (nomes.has(chave)) problemas.push(`nome duplicado: ${t.nome}`);
+    nomes.add(chave);
+
+    if (!gruposValidos.has(t.grupo)) problemas.push(`${t.nome}: grupo inválido (${t.grupo})`);
+    if (!t.descricao?.trim()) problemas.push(`${t.nome}: sem descrição`);
+
+    for (const r of t.requisitos || []) {
+      // Perícia, Ofício e Teste de Resistência: o id existe no catálogo?
+      const erroTreino = conferirRequisitoDeTreino(r);
+      if (erroTreino) problemas.push(`${t.nome}: ${erroTreino}`);
+      if (r?.tipo === "atributo" && !ATTR_LABEL[r.attr]) {
+        problemas.push(`${t.nome}: requisito aponta para atributo inexistente "${r.attr}"`);
+      }
+      if (r?.tipo === "atributoOr") {
+        for (const a of r.attrs || []) {
+          if (!ATTR_LABEL[a]) problemas.push(`${t.nome}: atributoOr inexistente "${a}"`);
+        }
+      }
+      if (r?.tipo === "origem" && !getOrigem(r.id)) {
+        problemas.push(`${t.nome}: requisito aponta para origem inexistente "${r.id}"`);
+      }
+      if (r?.tipo === "cla" && !getCla(r.id)) {
+        problemas.push(`${t.nome}: requisito aponta para clã inexistente "${r.id}"`);
+      }
+      if (r?.tipo === "talento" && !BY_ID[r.id]) {
+        problemas.push(`${t.nome}: requisito aponta para talento inexistente "${r.id}"`);
+      }
+      if (r?.tipo === "nd" && (!Number.isInteger(r.valor) || r.valor < 1)) {
+        problemas.push(`${t.nome}: requisito nd inválido (${r.valor})`);
+      }
+    }
+    if (t.concedeAptidoes != null) {
+      if (!Array.isArray(t.concedeAptidoes)) {
+        problemas.push(`${t.nome}: concedeAptidoes deve ser uma lista`);
+      } else {
+        for (const id of t.concedeAptidoes) {
+          if (!AFTY_APTIDOES.some((a) => a.id === id)) {
+            problemas.push(`${t.nome}: concedeAptidoes aponta para Aptidão inexistente "${id}"`);
+          }
+        }
+      }
+    }
+  }
+  return problemas;
+}

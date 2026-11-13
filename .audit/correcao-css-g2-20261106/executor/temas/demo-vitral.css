@@ -1,0 +1,60 @@
+/* DEMO VITRAL v1 (revisão G2, 2026-11-05): identidade escura, índigo profundo com ouro e fonte serifada. Sem !important.
+   Segue a receita do G2: tokens no bloco forte, depois cada seletor com o prefixo .e-g2 para empatar a especificidade das regras do G2. */
+:scope#afty-ficha,
+#afty-ficha#afty-ficha {
+  --afty-fundo: #0a0820;
+  --afty-fundo-brilho: radial-gradient(90% 55% at 50% -8%, #6d3fd455, transparent 70%);
+  --afty-card: #15113a;
+  --afty-poco: #0c0a28;
+  --afty-borda: #3b2f78;
+  --afty-borda-forte: #6a56c4;
+  --afty-texto: #f4eefc;
+  --afty-texto-suave: #b9aee0;
+  --afty-texto-fraco: #8f84bd;
+  --afty-destaque: #e6b84a;
+  --afty-destaque-texto: #ffd978;
+  --afty-destaque-fundo: #5b46108c;
+  --afty-pv: #ff5d73;
+  --afty-pe: #6fd3ff;
+  --afty-alma: #d78cff;
+  --afty-cura: #5fe3a8;
+  --afty-aviso: #ffcc4d;
+  --afty-raio: 4px;
+  --afty-raio-peq: 3px;
+  --afty-fonte: Georgia, "Times New Roman", serif;
+  --afty-fonte-num: "Palatino Linotype", Georgia, serif;
+}
+:scope { color: var(--afty-texto); color-scheme: dark; }
+
+/* a fonte de títulos e números do G2 nasce de --e-display, que ainda não é um token documentado */
+.e-g2 { --e-display: Georgia, "Times New Roman", serif; }
+
+/* cabeçalho e placa: moldura dourada fina */
+.e-g2 .e-cabeca { border: 1px solid var(--afty-borda-forte); border-radius: 4px; box-shadow: 0 0 0 3px #0a0820, 0 0 0 4px #e6b84a55; }
+.e-g2 .afty-nome { color: var(--afty-destaque-texto); letter-spacing: .02em; font-weight: 700; }
+
+/* cartões: borda com fio dourado em cima, cantos retos */
+.e-g2 .afty-card { border: 1px solid var(--afty-borda); border-top: 2px solid var(--afty-destaque); border-radius: 4px; background: color-mix(in srgb, var(--afty-card) 92%, transparent); }
+.e-g2 .afty-card-titulo { color: var(--afty-destaque-texto); text-transform: uppercase; letter-spacing: .14em; font-size: 12px; }
+.e-g2 .afty-linha { border-radius: 3px; }
+
+/* números: dourado só nos que rolam, para o resto continuar legível */
+.e-g2 .afty-rolavel { color: var(--afty-destaque-texto); }
+
+/* abas: sublinhado em ouro */
+.e-g2 .afty-aba { letter-spacing: .06em; }
+.e-g2 .afty-aba[aria-selected="true"] { color: var(--afty-destaque-texto); box-shadow: inset 0 -2px 0 var(--afty-destaque); }
+
+/* o Agora na Mesa e o Rápido, que não estão no contrato */
+.e-g2 .e-agora { border-radius: 4px; }
+.e-g2 .f-acesso[aria-pressed="true"] { background: var(--afty-destaque-fundo); border-color: var(--afty-destaque); }
+
+/* impressão: o reset do app NÃO cobre destaque nem recursos, então cada tema escuro refaz os seus */
+@media print {
+  :scope#afty-ficha, #afty-ficha#afty-ficha {
+    --afty-fundo: #fff; --afty-fundo-brilho: none; --afty-card: #fff; --afty-poco: #f4f1ea; --afty-borda: #999; --afty-borda-forte: #666;
+    --afty-texto: #000; --afty-texto-suave: #333; --afty-texto-fraco: #555;
+    --afty-destaque: #7a5a00; --afty-destaque-texto: #4a3600; --afty-destaque-fundo: #eee;
+    --afty-pv: #a00; --afty-pe: #005b99; --afty-alma: #6b2d91; --afty-cura: #0a6b3f; --afty-aviso: #7a5a00;
+  }
+}

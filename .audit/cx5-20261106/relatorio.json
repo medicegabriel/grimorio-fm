@@ -1,0 +1,18 @@
+[
+  {
+    "largura": 1440,
+    "avisoDaMagistral": false,
+    "temPulseiras": true,
+    "temPerola": true,
+    "semRolagemHorizontal": true,
+    "erros": []
+  },
+  {
+    "largura": 390,
+    "avisoDaMagistral": false,
+    "temPulseiras": true,
+    "temPerola": true,
+    "semRolagemHorizontal": true,
+    "erros": []
+  }
+]

@@ -1,0 +1,34 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "distanciaEscolhida": 1.5,
+    "concentracaoPendente": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "distanciaEscolhida": 1.5,
+    "concentracaoPendente": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "distanciaEscolhida": 1.5,
+    "concentracaoPendente": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "distanciaEscolhida": 1.5,
+    "concentracaoPendente": true,
+    "persistencia": true,
+    "erros": []
+  }
+]

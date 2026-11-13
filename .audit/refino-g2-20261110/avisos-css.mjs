@@ -1,0 +1,12 @@
+import { monta } from "./base.mjs";
+const { p, saida, fim } = await monta({ tamanho: "1440x900", ficha: "mesa", aba: "acoes", prefixo: "av" });
+await p.getByRole("button", { name: "Mais opções da ficha" }).click();
+await p.getByRole("menuitem", { name: "Aparência" }).click(); await p.waitForTimeout(400);
+await p.getByRole("button", { name: "Copiar o tema" }).waitFor();
+await p.locator('textarea[aria-label="CSS personalizado"]').fill(".afty-card { overflow: hidden; color: red !important; }");
+await p.waitForTimeout(300);
+const itens = await p.locator("[data-avisos-css] li").allTextContents();
+saida[itens.length === 2 ? "OK    o editor lista os 2 avisos" : "FALHA avisos"] = itens.join(" | ");
+await p.locator('textarea[aria-label="CSS personalizado"]').fill(".afty-card { border-color: #f0f; }"); await p.waitForTimeout(300);
+saida[(await p.locator("[data-avisos-css]").count()) === 0 ? "OK    CSS limpo não mostra avisos" : "FALHA avisos sobraram"] = "";
+await fim();

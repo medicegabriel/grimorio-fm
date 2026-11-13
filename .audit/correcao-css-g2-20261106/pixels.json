@@ -1,0 +1,234 @@
+[
+  {
+    "caso": "arsenal-minamoto-1440-acoes",
+    "pixels": 46712,
+    "total": 1440000,
+    "caixa": [
+      71,
+      3,
+      1354,
+      999
+    ]
+  },
+  {
+    "caso": "arsenal-minamoto-1440-equipamentos",
+    "pixels": 27808,
+    "total": 1440000,
+    "caixa": [
+      71,
+      3,
+      1354,
+      999
+    ]
+  },
+  {
+    "caso": "arsenal-minamoto-1440-habilidades",
+    "pixels": 19235,
+    "total": 1440000,
+    "caixa": [
+      76,
+      3,
+      1349,
+      970
+    ]
+  },
+  {
+    "caso": "arsenal-minamoto-1440-pericias",
+    "pixels": 57665,
+    "total": 1440000,
+    "caixa": [
+      71,
+      3,
+      1354,
+      999
+    ]
+  },
+  {
+    "caso": "arsenal-minamoto-390-acoes",
+    "pixels": 21563,
+    "total": 390000,
+    "caixa": [
+      0,
+      3,
+      374,
+      999
+    ]
+  },
+  {
+    "caso": "arsenal-minamoto-390-equipamentos",
+    "pixels": 16023,
+    "total": 390000,
+    "caixa": [
+      0,
+      3,
+      374,
+      999
+    ]
+  },
+  {
+    "caso": "arsenal-minamoto-390-habilidades",
+    "pixels": 9932,
+    "total": 390000,
+    "caixa": [
+      0,
+      3,
+      374,
+      953
+    ]
+  },
+  {
+    "caso": "arsenal-minamoto-390-pericias",
+    "pixels": 25823,
+    "total": 390000,
+    "caixa": [
+      0,
+      3,
+      374,
+      999
+    ]
+  },
+  {
+    "caso": "criatura-escuro-1440-acoes",
+    "pixels": 0,
+    "total": 1440000,
+    "caixa": null
+  },
+  {
+    "caso": "criatura-escuro-1440-equipamentos",
+    "pixels": 0,
+    "total": 1440000,
+    "caixa": null
+  },
+  {
+    "caso": "criatura-escuro-1440-habilidades",
+    "pixels": 0,
+    "total": 1440000,
+    "caixa": null
+  },
+  {
+    "caso": "criatura-escuro-1440-pericias",
+    "pixels": 0,
+    "total": 1440000,
+    "caixa": null
+  },
+  {
+    "caso": "criatura-escuro-390-acoes",
+    "pixels": 0,
+    "total": 390000,
+    "caixa": null
+  },
+  {
+    "caso": "criatura-escuro-390-equipamentos",
+    "pixels": 0,
+    "total": 390000,
+    "caixa": null
+  },
+  {
+    "caso": "criatura-escuro-390-habilidades",
+    "pixels": 0,
+    "total": 390000,
+    "caixa": null
+  },
+  {
+    "caso": "criatura-escuro-390-pericias",
+    "pixels": 0,
+    "total": 390000,
+    "caixa": null
+  },
+  {
+    "caso": "mesa-claro-1440-acoes",
+    "pixels": 0,
+    "total": 1440000,
+    "caixa": null
+  },
+  {
+    "caso": "mesa-claro-1440-equipamentos",
+    "pixels": 0,
+    "total": 1440000,
+    "caixa": null
+  },
+  {
+    "caso": "mesa-claro-1440-habilidades",
+    "pixels": 0,
+    "total": 1440000,
+    "caixa": null
+  },
+  {
+    "caso": "mesa-claro-1440-pericias",
+    "pixels": 0,
+    "total": 1440000,
+    "caixa": null
+  },
+  {
+    "caso": "mesa-claro-390-acoes",
+    "pixels": 0,
+    "total": 390000,
+    "caixa": null
+  },
+  {
+    "caso": "mesa-claro-390-equipamentos",
+    "pixels": 0,
+    "total": 390000,
+    "caixa": null
+  },
+  {
+    "caso": "mesa-claro-390-habilidades",
+    "pixels": 0,
+    "total": 390000,
+    "caixa": null
+  },
+  {
+    "caso": "mesa-claro-390-pericias",
+    "pixels": 0,
+    "total": 390000,
+    "caixa": null
+  },
+  {
+    "caso": "mesa-escuro-1440-acoes",
+    "pixels": 0,
+    "total": 1440000,
+    "caixa": null
+  },
+  {
+    "caso": "mesa-escuro-1440-equipamentos",
+    "pixels": 0,
+    "total": 1440000,
+    "caixa": null
+  },
+  {
+    "caso": "mesa-escuro-1440-habilidades",
+    "pixels": 0,
+    "total": 1440000,
+    "caixa": null
+  },
+  {
+    "caso": "mesa-escuro-1440-pericias",
+    "pixels": 0,
+    "total": 1440000,
+    "caixa": null
+  },
+  {
+    "caso": "mesa-escuro-390-acoes",
+    "pixels": 0,
+    "total": 390000,
+    "caixa": null
+  },
+  {
+    "caso": "mesa-escuro-390-equipamentos",
+    "pixels": 0,
+    "total": 390000,
+    "caixa": null
+  },
+  {
+    "caso": "mesa-escuro-390-habilidades",
+    "pixels": 0,
+    "total": 390000,
+    "caixa": null
+  },
+  {
+    "caso": "mesa-escuro-390-pericias",
+    "pixels": 0,
+    "total": 390000,
+    "caixa": null
+  }
+]

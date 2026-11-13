@@ -1,0 +1,54 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "medicina": true,
+    "sorte": true,
+    "canalizacao": true,
+    "salvamento": true,
+    "treino": true,
+    "reversao": true,
+    "ataqueAlvo": true,
+    "criticoAlvo": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "medicina": true,
+    "sorte": true,
+    "canalizacao": true,
+    "salvamento": true,
+    "treino": true,
+    "reversao": true,
+    "ataqueAlvo": true,
+    "criticoAlvo": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "medicina": true,
+    "sorte": true,
+    "canalizacao": true,
+    "salvamento": true,
+    "treino": true,
+    "reversao": true,
+    "ataqueAlvo": true,
+    "criticoAlvo": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "medicina": true,
+    "sorte": true,
+    "canalizacao": true,
+    "salvamento": true,
+    "treino": true,
+    "reversao": true,
+    "ataqueAlvo": true,
+    "criticoAlvo": true,
+    "erros": []
+  }
+]

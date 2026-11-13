@@ -30,7 +30,8 @@ const A = await import(R + "afty-addons.js");
 const O = await import(R + "afty-origens.js");
 const H = await import(R + "afty-habilidades.js");
 const S = await import(R + "ficha/ficha-sessao.js");
-const { conteudoDaFicha } = await import(R + "ficha/ficha-conteudo.js");
+const { conteudoDaFicha, equipamentosDaFicha } = await import(R + "ficha/ficha-conteudo.js");
+const { resolveEquipamentos } = await import(R + "afty-equipamentos.js");
 const { linhasDeEstado } = await import(R + "ficha/ficha-buffs.js");
 
 const BRUTO = JSON.parse(readFileSync(new URL("../addons/formula-combate-entropica.json", import.meta.url), "utf8"));
@@ -97,6 +98,26 @@ const basico = (d) => (d.dano?.entradas ?? []).find((e) => e.id === "basico");
 const pericia = (d, id) => (d.testes?.pericias ?? []).find((p) => p.id === id);
 
 for (const sistema of ["afty", "player"]) {
+  const escudo = { uid: "escudo-teste", tipo: "escudo", refId: "esc_medio", qtd: 1, equipado: true };
+  const rdEscudo = (engenhoSuperior) => resolveEquipamentos(ficha(12, sistema, {
+    equipamentos: { itens: [{ ...escudo, engenhoSuperior }] },
+  })).entradas[0]?.def.rdEscudo;
+  t(`${sistema}: escudo do catálogo modificado recebe RD 6`, rdEscudo(true), 6);
+  t(`${sistema}: escudo sem marca conserva RD 4`, rdEscudo(false), 4);
+  const recebido = createBlankAfty();
+  recebido.rulesVersion = sistema;
+  recebido.equipamentos = { itens: [{ ...escudo, engenhoRecebido: true }] };
+  const recebidoDerivado = deriveAfty(recebido);
+  const [linha] = equipamentosDaFicha(recebidoDerivado);
+  t(`${sistema}: aliado recebe o escudo com RD 6`, recebidoDerivado.equip.entradas[0]?.def.rdEscudo, 6);
+  t(`${sistema}: aliado tem uma vantagem manual`, linha?.usos?.max, 1);
+  const arma = {
+    uid: "arma-teste", tipo: "arma", refId: "arm_adaga", qtd: 1, equipado: true,
+    engenhoSuperior: true,
+    fa: { grau: "especial", encantamentos: ["enc_arma_afiada", "enc_arma_balanceada", "enc_arma_certeira"] },
+  };
+  const fa = resolveEquipamentos(ficha(12, sistema, { equipamentos: { itens: [arma] } })).entradas[0]?.fa;
+  t(`${sistema}: Engenho limita os encantamentos efetivos a dois`, fa?.escolhidos?.length, 2);
   const tag = `[${sistema}]`;
   const d = deriveAfty(ficha(12, sistema));
 

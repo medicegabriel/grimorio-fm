@@ -1,0 +1,8 @@
+player 1440 Clássica e Encontro Concentrar Aura OK
+player 1440 G2 Concentrar Aura OK
+player 390 Clássica e Encontro Concentrar Aura OK
+player 390 G2 Concentrar Aura OK
+afty 1440 Clássica e Encontro Concentrar Aura OK
+afty 1440 G2 Concentrar Aura OK
+afty 390 Clássica e Encontro Concentrar Aura OK
+afty 390 G2 Concentrar Aura OK

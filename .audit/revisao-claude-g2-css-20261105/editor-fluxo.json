@@ -1,0 +1,383 @@
+{
+  "geradoEm": "2026-11-06T02:49:22.246Z",
+  "base": "http://127.0.0.1:5341",
+  "etapas": [
+    {
+      "nome": "E1 abrir o painel e aplicar CSS ao vivo",
+      "checks": [
+        {
+          "id": "o painel cabe na janela de 900 de altura",
+          "ok": true,
+          "dados": {
+            "x": 370.5,
+            "y": 108,
+            "width": 684,
+            "height": 738
+          }
+        },
+        {
+          "id": "CSS com .afty-nome muda a cor do nome do G2 (o contrato diz que muda)",
+          "ok": false,
+          "dados": {
+            "antes": "rgb(241, 245, 249)",
+            "depois": "rgb(241, 245, 249)"
+          }
+        },
+        {
+          "id": "e a classe própria do G2 (.e-nome) também muda, mas não está no contrato",
+          "ok": false,
+          "dados": "rgb(241, 245, 249)"
+        },
+        {
+          "id": "CSS com .afty-card pinta o fundo das seções do G2",
+          "ok": false,
+          "dados": [
+            "oklab(0.195446 -0.00274798 -0.0355423)",
+            "oklab(0.195446 -0.00274798 -0.0355423)",
+            "oklab(0.195446 -0.00274798 -0.0355423)",
+            "oklab(0.195446 -0.00274798 -0.0355423)",
+            "oklab(0.195446 -0.00274798 -0.0355423)"
+          ]
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "painel1440": {
+          "x": 370.5,
+          "y": 108,
+          "width": 684,
+          "height": 738
+        }
+      }
+    },
+    {
+      "nome": "E2 o que Desligado desliga",
+      "checks": [
+        {
+          "id": "Desligado remove só o CSS livre: o bloco de variáveis do preset continua",
+          "ok": true,
+          "dados": {
+            "estilos": [
+              511
+            ],
+            "tokenFundo": "#0c0405"
+          }
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "desligado": {
+          "estilosInjetados": [
+            511
+          ],
+          "fundoPreset": "rgb(231, 229, 237)",
+          "fundoDepois": "rgb(12, 4, 5)",
+          "tokenFundo": "#0c0405"
+        }
+      }
+    },
+    {
+      "nome": "E3 reset apaga o texto salvo, sem desfazer",
+      "checks": [
+        {
+          "id": "o reset zera o CSS no ato, com um clique e sem confirmação",
+          "ok": true,
+          "dados": {
+            "antes": 12054,
+            "depois": 0
+          }
+        },
+        {
+          "id": "e a criatura recebe o tema vazio (a perda chega ao armazenamento)",
+          "ok": true,
+          "dados": [
+            {
+              "presetId": "padrao",
+              "cssLen": 0,
+              "ligado": true
+            }
+          ]
+        },
+        {
+          "id": "não há como desfazer na tela",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "reset": {
+          "antes": 12054,
+          "depois": 0,
+          "salvos": [
+            {
+              "presetId": "padrao",
+              "cssLen": 0,
+              "ligado": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "nome": "E4 teclado: Esc, Tab, foco ao fechar",
+      "checks": [
+        {
+          "id": "Esc fecha o painel de Aparência",
+          "ok": false,
+          "dados": {
+            "aindaAberto": 1
+          }
+        },
+        {
+          "id": "o foco volta ao botão que abriu (Mais opções)",
+          "ok": false,
+          "dados": "BODY."
+        },
+        {
+          "id": "o painel declara role=dialog e aria-modal",
+          "ok": false,
+          "dados": "null|null"
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "foco": {
+          "aoAbrir": "BUTTON.Mais opções da ficha",
+          "aposFechar": "BODY."
+        },
+        "tabNoTextarea": "BUTTON:"
+      }
+    },
+    {
+      "nome": "E5 o CSS que mira a caixa de busca esconde o editor",
+      "checks": [
+        {
+          "id": "o contrato lista .afty-busca-fundo/.afty-busca como a busca, e o editor usa as MESMAS classes: mirar a busca esconde o editor",
+          "ok": true,
+          "dados": {
+            "visivel": false
+          }
+        },
+        {
+          "id": "o salva-vidas × aparece fora da raiz",
+          "ok": true,
+          "dados": true
+        },
+        {
+          "id": "e nenhum CSS escopado cobre o ×",
+          "ok": true,
+          "dados": true
+        },
+        {
+          "id": "clicar no × desliga o CSS e o editor reaparece",
+          "ok": true,
+          "dados": true
+        },
+        {
+          "id": "o texto do CSS foi preservado (só ficou Desligado)",
+          "ok": true,
+          "dados": {
+            "ligadoTexto": "Desligado",
+            "cssPreservado": ".afty-busca-fundo { display: none; }"
+          }
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "E6 CSS que esconde cabeçalho e corpo: recuperação",
+      "checks": [
+        {
+          "id": "com a ficha escondida pelo CSS, o × continua visível e clicável",
+          "ok": true,
+          "dados": {
+            "cab": false
+          }
+        },
+        {
+          "id": "depois do ×, a ficha volta",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "E7 ?semcss=1",
+      "checks": [
+        {
+          "id": "a ficha com CSS quebrado abre inteira em ?semcss=1",
+          "ok": true
+        },
+        {
+          "id": "nenhum <style> do tema foi injetado e o × não aparece (nada a salvar)",
+          "ok": true,
+          "dados": {
+            "estilos": 0,
+            "botao": 0
+          }
+        },
+        {
+          "id": "o texto salvo continua no editor (não foi perdido)",
+          "ok": true,
+          "dados": ".afty-busca, .afty-busca-fundo { display: none; } .afty-cabe"
+        },
+        {
+          "id": "sem o parâmetro o CSS volta a valer",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "E8 celular 390x844",
+      "checks": [
+        {
+          "id": "o painel cabe na largura de 390",
+          "ok": true,
+          "dados": {
+            "caixa": {
+              "x": 16,
+              "y": 50.625,
+              "width": 358,
+              "height": 692.078125
+            },
+            "estouro": {
+              "pagina": 0,
+              "painel": 0
+            }
+          }
+        },
+        {
+          "id": "na lista de Seletores a explicação não é cortada (truncate)",
+          "ok": false,
+          "dados": {
+            "cortados": 60
+          }
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "painel390": {
+          "caixa": {
+            "x": 16,
+            "y": 50.625,
+            "width": 358,
+            "height": 692.078125
+          },
+          "estouro": {
+            "pagina": 0,
+            "painel": 0
+          }
+        },
+        "alturaCampoCss390": 128,
+        "seletoresCortadosNoCelular": 60
+      }
+    },
+    {
+      "nome": "E9 Prompt IA: copiar e conteúdo",
+      "checks": [
+        {
+          "id": "Copiar Prompt coloca o texto na área de transferência",
+          "ok": true,
+          "dados": 15678
+        },
+        {
+          "id": "o botão confirma (Copiado)",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "prompt": {
+          "caracteres": 15678
+        }
+      }
+    },
+    {
+      "nome": "E10 gravação do tema (600 ms) e perda ao sair antes",
+      "checks": [
+        {
+          "id": "o tema é gravado pela Ficha cerca de 600 ms depois da edição",
+          "ok": true,
+          "dados": {
+            "logo": 0,
+            "depois": 1
+          }
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    }
+  ],
+  "falhas": [
+    {
+      "etapa": "E1 abrir o painel e aplicar CSS ao vivo",
+      "id": "CSS com .afty-nome muda a cor do nome do G2 (o contrato diz que muda)",
+      "dados": {
+        "antes": "rgb(241, 245, 249)",
+        "depois": "rgb(241, 245, 249)"
+      }
+    },
+    {
+      "etapa": "E1 abrir o painel e aplicar CSS ao vivo",
+      "id": "e a classe própria do G2 (.e-nome) também muda, mas não está no contrato",
+      "dados": "rgb(241, 245, 249)"
+    },
+    {
+      "etapa": "E1 abrir o painel e aplicar CSS ao vivo",
+      "id": "CSS com .afty-card pinta o fundo das seções do G2",
+      "dados": [
+        "oklab(0.195446 -0.00274798 -0.0355423)",
+        "oklab(0.195446 -0.00274798 -0.0355423)",
+        "oklab(0.195446 -0.00274798 -0.0355423)",
+        "oklab(0.195446 -0.00274798 -0.0355423)",
+        "oklab(0.195446 -0.00274798 -0.0355423)"
+      ]
+    },
+    {
+      "etapa": "E4 teclado: Esc, Tab, foco ao fechar",
+      "id": "Esc fecha o painel de Aparência",
+      "dados": {
+        "aindaAberto": 1
+      }
+    },
+    {
+      "etapa": "E4 teclado: Esc, Tab, foco ao fechar",
+      "id": "o foco volta ao botão que abriu (Mais opções)",
+      "dados": "BODY."
+    },
+    {
+      "etapa": "E4 teclado: Esc, Tab, foco ao fechar",
+      "id": "o painel declara role=dialog e aria-modal",
+      "dados": "null|null"
+    },
+    {
+      "etapa": "E8 celular 390x844",
+      "id": "na lista de Seletores a explicação não é cortada (truncate)",
+      "dados": {
+        "cortados": 60
+      }
+    }
+  ],
+  "resumo": [
+    "E1 abrir o painel e aplicar CSS ao vivo: 2/5",
+    "E2 o que Desligado desliga: 1/1",
+    "E3 reset apaga o texto salvo, sem desfazer: 3/3",
+    "E4 teclado: Esc, Tab, foco ao fechar: 0/3",
+    "E5 o CSS que mira a caixa de busca esconde o editor: 5/5",
+    "E6 CSS que esconde cabeçalho e corpo: recuperação: 2/2",
+    "E7 ?semcss=1: 4/4",
+    "E8 celular 390x844: 1/2",
+    "E9 Prompt IA: copiar e conteúdo: 2/2",
+    "E10 gravação do tema (600 ms) e perda ao sair antes: 1/1"
+  ]
+}

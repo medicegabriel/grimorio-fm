@@ -1,0 +1,9 @@
+{
+  "html": "<div class=\"flex items-center gap-2 flex-wrap\"><span class=\"flex-1 min-w-[7rem] text-[12px] font-semibold truncate\" title=\"Ataque Básico\">Ataque Básico</span><select aria-label=\"Ataque do Ataque Básico\" class=\"afty-campo px-1.5 py-1 text-[11px]\"><option value=\"corpo\">Corpo a Corpo</option><option value=\"amaldicoado\">Amaldiçoado</option></select><span class=\"afty-fontes-raiz relative inline-flex\"><button type=\"button\" aria-expanded=\"false\" title=\"Margem de Crítico\" class=\"cursor-help text-left afty-rotulo text-[10px] whitespace-nowrap\">Crít. 20</button></span><span class=\"afty-fontes-raiz relative inline-flex\"><button type=\"button\" aria-expanded=\"false\" class=\"cursor-help text-left afty-rotulo text-[10px] whitespace-nowrap\">1,5m</button></span><span class=\"afty-rotulo text-[10px] whitespace-nowrap\" title=\"Corpo a Corpo\">Acerto <span class=\"afty-fontes-raiz relative inline-flex\"><button type=\"button\" aria-expanded=\"false\" class=\"afty-rolavel cursor-pointer text-left afty-valor text-[11px]\">+13</button></span></span><span class=\"afty-fontes-raiz relative inline-flex\"><button type=\"button\" aria-expanded=\"false\" class=\"afty-rolavel cursor-pointer text-left afty-valor text-[13px] whitespace-nowrap\">1d8 + 3</button></span></div>",
+  "botoes": [
+    "Crít. 20",
+    "1,5m",
+    "+13",
+    "1d8 + 3"
+  ]
+}

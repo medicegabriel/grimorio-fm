@@ -1,0 +1,38 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "escolhasSalvas": 3,
+    "rolagensConferidas": 4,
+    "almaIntegral": true,
+    "encontro": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "escolhasSalvas": 3,
+    "rolagensConferidas": 4,
+    "almaIntegral": true,
+    "encontro": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "escolhasSalvas": 3,
+    "rolagensConferidas": 4,
+    "almaIntegral": true,
+    "encontro": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "escolhasSalvas": 3,
+    "rolagensConferidas": 4,
+    "almaIntegral": true,
+    "encontro": true,
+    "erros": []
+  }
+]

@@ -1,0 +1,348 @@
+{
+  "version": "2.0",
+  "exportedAt": "2026-11-08T22:32:51.644Z",
+  "system": "Feiticeiros & Maldições 2.5",
+  "count": 1,
+  "creatures": [
+    {
+      "system": "afty",
+      "rulesVersion": "player",
+      "name": "Arcane",
+      "portraitUrl": "https://safebooru.org//images/1365/730f474487533331e4753bfdd42c631ffd0bded9.png",
+      "portraitFocus": {
+        "x": 51.11111111111111,
+        "y": 37.11805555555556
+      },
+      "core": {
+        "tipo": "combatente",
+        "patamar": "comum",
+        "nd": 1,
+        "tamanho": "medio",
+        "tecnicaAttr": "inteligencia",
+        "tecnicaDescricao": "",
+        "estiloMarcialNome": "",
+        "tecnicaEfeitos": [],
+        "funcionamentosAdicionais": [],
+        "origem": {
+          "id": "sem_tecnica",
+          "escolhas": {
+            "empenho_1": [
+              "st_n1_talento"
+            ]
+          },
+          "bonusAtributos": {
+            "destreza": 3,
+            "sabedoria": 1
+          }
+        }
+      },
+      "alma": {
+        "atual": 100,
+        "max": 100
+      },
+      "qntPE": "normal",
+      "attrMethod": "pontos",
+      "attrLimite": {
+        "forca": 20,
+        "destreza": 20,
+        "constituicao": 20,
+        "inteligencia": 20,
+        "sabedoria": 20,
+        "presenca": 20
+      },
+      "attributes": {
+        "forca": 10,
+        "destreza": 15,
+        "constituicao": 10,
+        "inteligencia": 12,
+        "sabedoria": 15,
+        "presenca": 10
+      },
+      "attrNivel": {
+        "forca": 0,
+        "destreza": 0,
+        "constituicao": 0,
+        "inteligencia": 0,
+        "sabedoria": 0,
+        "presenca": 0
+      },
+      "pericias": {
+        "oficio__2": "treinado",
+        "custom_e8c2228c_4301_46b4_b15b_bdb24716150a": "mestre",
+        "feiticaria": "mestre",
+        "furtividade": "mestre",
+        "percepcao": "mestre",
+        "custom_b3dcddf3_4dc6_4c12_bd59_ee37122a327c": "mestre"
+      },
+      "periciasOrdem": [
+        "acrobacia",
+        "atletismo",
+        "direcao",
+        "enganacao",
+        "feiticaria",
+        "furtividade",
+        "historia",
+        "intimidacao",
+        "intuicao",
+        "investigacao",
+        "medicina",
+        "ocultismo",
+        "oficio",
+        "percepcao",
+        "performance",
+        "persuasao",
+        "prestidigitacao",
+        "sobrevivencia",
+        "tecnologia",
+        "teologia",
+        "custom_e8c2228c_4301_46b4_b15b_bdb24716150a",
+        "custom_b3dcddf3_4dc6_4c12_bd59_ee37122a327c"
+      ],
+      "periciasPersonalizadas": [
+        {
+          "id": "custom_e8c2228c_4301_46b4_b15b_bdb24716150a",
+          "nome": "Tática",
+          "atributo": "inteligencia"
+        },
+        {
+          "id": "custom_b3dcddf3_4dc6_4c12_bd59_ee37122a327c",
+          "nome": "Nobreza",
+          "atributo": "inteligencia"
+        }
+      ],
+      "periciaOficio": "",
+      "periciaOficios": {
+        "oficio": [],
+        "oficio__2": [
+          "Cozinheiro"
+        ],
+        "oficio__3": []
+      },
+      "periciasOficiosExtras": [],
+      "periciaAtributoManual": {},
+      "periciasBonus": 0,
+      "resistenciasProf": {},
+      "trDaClasse": [
+        "reflexos"
+      ],
+      "trSegundo": null,
+      "trAtributoManual": {},
+      "ataquesProf": {
+        "distancia": true
+      },
+      "ataqueFineza": false,
+      "ataqueBasicoId": "corpo",
+      "ataqueAtributoManual": {},
+      "armasDedicadas": [],
+      "defesasDano": {},
+      "catarse": {
+        "saldo": 0,
+        "compras": []
+      },
+      "carteira": {
+        "entradas": [],
+        "gastos": []
+      },
+      "espinho": {
+        "almas": 0,
+        "outros": 0,
+        "compras": {},
+        "equipamentos": []
+      },
+      "tecnicasCombate": {
+        "armas": [],
+        "atributo": "inteligencia"
+      },
+      "talentosConfig": {
+        "tal_mestre_das_armas": {
+          "modo": "armas",
+          "armas": [],
+          "grupo": null
+        },
+        "tal_tempestade_de_ideias": {
+          "pericia": null,
+          "ferramenta": "",
+          "vantagemPericia": null
+        },
+        "tal_artesao_amaldicoado": {
+          "ferramenta": null
+        }
+      },
+      "combate": {
+        "ativo": false,
+        "empolgacao": 1,
+        "insistenciaUsada": false,
+        "manobraAjuste": false,
+        "manobraDesarme": false,
+        "manobraEsquiva": false,
+        "manobraTrabalhoDePes": false,
+        "manobraFinalizadora": null,
+        "brutalidade": false,
+        "brutalidadePE": 0,
+        "brutalidadePilha": 0,
+        "ataqueInconsequente": false,
+        "impactoMisto": false,
+        "resistirPE": 0,
+        "furiaVinganca": false,
+        "imprudenciaMotivadora": false,
+        "machucado": false,
+        "abates": 0,
+        "armasAbsolutas": null,
+        "auraElemental": true,
+        "concentrarAura": [],
+        "golpeComAura": null,
+        "canalizarEmGolpe": false,
+        "canalizacaoMaxima": false
+      },
+      "equipamentos": {
+        "itens": [
+          {
+            "uid": "eq_mw70vf14_1",
+            "tipo": "arma",
+            "refId": "arm_arco_longo",
+            "qtd": 1,
+            "equipado": true
+          },
+          {
+            "uid": "eq_mw70whvb_3",
+            "tipo": "kit",
+            "refId": "kit_cozinheiro",
+            "qtd": 1,
+            "equipado": false
+          }
+        ]
+      },
+      "armasCustom": [],
+      "forjas": [],
+      "especializacoes": [
+        {
+          "id": "combatente",
+          "nivel": 20
+        }
+      ],
+      "feiticos": [],
+      "reducoesCustoFeitico": {
+        "dominancia": null,
+        "manipulacao": []
+      },
+      "estilosSombra": [],
+      "estiloFuncionamento": {
+        "texto": "",
+        "durabilidadeTrilha": null
+      },
+      "habilidadesGerais": [],
+      "focosLivres": 3,
+      "periciaAtributo": "inteligencia",
+      "habilidades": [],
+      "escolhasHabilidade": {
+        "cmb_repertorio_do_especialista": [
+          "cmb_estilo_distante"
+        ]
+      },
+      "especializacaoConfig": {},
+      "escolhasTalento": {},
+      "talentos": [
+        "tal_tecnicas_de_reacao_rapida"
+      ],
+      "invocacoes": [],
+      "origemContadores": {},
+      "hordas": [],
+      "quimeras": [],
+      "fundamentosPerdidos": [],
+      "aptidoes": {
+        "au": 0,
+        "cl": 0,
+        "bar": 0,
+        "dom": 0,
+        "er": 0
+      },
+      "aptidoesAmaldicoadas": [],
+      "aptidaoOpcoes": {},
+      "aptidaoOpcoesRepetidas": {},
+      "dominios": [],
+      "dominioAtivoId": null,
+      "treinamentos": {
+        "agilidade": 3
+      },
+      "treinamentoAlvos": {},
+      "treinamentoEscolhas": {},
+      "treinoEscolhaFeiticos": {},
+      "votos": {
+        "contratuais": [],
+        "mecanicos": []
+      },
+      "pacto": {
+        "nome": "",
+        "descricao": "",
+        "maleficios": [],
+        "beneficios": []
+      },
+      "modificacoesCorporais": {
+        "descricao": "",
+        "efeitosBase": [],
+        "limite": 0,
+        "enxertos": []
+      },
+      "tita": {
+        "ativo": false,
+        "membros": 5
+      },
+      "caracteristicasAmaldicoadas": [],
+      "caracteristicasAmaldicoadasAlvos": {},
+      "treinosEspeciais": [],
+      "treinoEspecialProgresso": {},
+      "focosBonus": 0,
+      "statOverrides": {},
+      "melhoriasSuperiores": [],
+      "habilidadesLendarias": [],
+      "escolhasAltoNivel": {},
+      "aparencia": {
+        "presetId": "padrao",
+        "vars": {},
+        "fonte": null,
+        "raio": null,
+        "imagem": {
+          "url": "",
+          "opacidade": 0.25,
+          "encaixe": "cover",
+          "posicao": "center top"
+        },
+        "css": "/* ARCANE | Gelo e cinábrio\n   Substitua todo o CSS anterior em Aparência > CSS da Ficha.\n   Identidade: gelo #e5f3f5, grafite #101a25, aço #1a2b3b,\n   turquesa #79d9d0, vermelho #ed5b57 e violeta #baaff0.\n   Sem fontes externas. O tema se aplica somente à tela.\n   Paleta compartilhada pelas duas fichas. Layout refinado para a Clássica.\n*/\n\n@media screen {\n  :scope#afty-ficha,\n  #afty-ficha#afty-ficha {\n    --arcane-gelo: #e5f3f5;\n    --arcane-tinta: #172b3b;\n    --arcane-vermelho: #ed5b57;\n    --arcane-vermelho-escuro: #b7353e;\n    --arcane-superficie: #203546;\n    --arcane-divisoria: #304354;\n    --afty-fundo: #101a25;\n    --afty-fundo-brilho: none;\n    --afty-card: #1a2b3b;\n    --afty-poco: #142230;\n    --afty-borda: #354c5f;\n    --afty-borda-forte: #658598;\n    --afty-texto: #e5f3f5;\n    --afty-texto-suave: #c0d2df;\n    --afty-texto-fraco: #a7bdcf;\n    --afty-destaque: #79d9d0;\n    --afty-destaque-texto: #c4f5ed;\n    --afty-destaque-fundo: #24434d;\n    --afty-pv: #ff8887;\n    --afty-pe: #79d9d0;\n    --afty-pvtemp: #ebc58b;\n    --afty-petemp: #d4faf2;\n    --afty-alma: #baaff0;\n    --afty-cura: #9ddab5;\n    --afty-aviso: #ebc58b;\n    --afty-veu: rgb(8 15 23 / 0.82);\n    --afty-raio: 10px;\n    --afty-raio-peq: 5px;\n    --afty-sombra: 0 3px 12px rgb(5 12 20 / 0.16);\n    --afty-fonte: \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif;\n    --afty-fonte-titulo: \"Bahnschrift\", \"Trebuchet MS\", \"Segoe UI\", sans-serif;\n    --afty-fonte-display: var(--afty-fonte-titulo);\n    --afty-fonte-num: \"Cascadia Mono\", Consolas, \"Liberation Mono\", monospace;\n    color-scheme: dark;\n  }\n\n  /* Cabeçalho opaco: o conteúdo nunca atravessa a leitura durante a rolagem. */\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) header.afty-cabecalho {\n    background: var(--afty-fundo);\n    border-bottom-color: var(--afty-borda);\n  }\n\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) header.afty-cabecalho::after {\n    background: none;\n  }\n\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho-conteudo {\n    background: var(--afty-poco);\n    border-radius: 0 0 var(--afty-raio) var(--afty-raio);\n    box-shadow: inset 0 2px var(--arcane-divisoria);\n    padding-inline: 0.65rem;\n  }\n\n  /* A placa clara ocupa a identidade, não a fileira inteira de controles.\n     Os pigmentos claros ficam limitados à placa. */\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho-principal > div:has(> div > .afty-nome) {\n    column-gap: 0.6rem;\n    padding-block: 0.6rem;\n  }\n\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho-principal > div > div:has(> .afty-nome) {\n    --afty-texto: var(--arcane-tinta);\n    --afty-texto-suave: #38556a;\n    --afty-texto-fraco: #476477;\n    --afty-card: #edf7f8;\n    --afty-poco: #edf7f8;\n    --afty-borda: #9ab8c3;\n    --afty-borda-forte: #7899a8;\n    --afty-destaque: #25685f;\n    --afty-destaque-texto: #1a554f;\n    --afty-destaque-fundo: #cae5e2;\n    --afty-aviso: #805018;\n    position: relative;\n    padding: 0.45rem 1.1rem 0.5rem 0.8rem;\n    border-inline-start: 4px solid var(--arcane-vermelho);\n    border-radius: 2px 8px 2px 8px;\n    background: var(--arcane-gelo);\n    color: var(--arcane-tinta);\n    color-scheme: light;\n  }\n\n  /* A incisão vermelha ecoa os detalhes do rosto e do traje. */\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho-principal > div > div:has(> .afty-nome)::after {\n    content: \"\";\n    position: absolute;\n    inset-block-start: 0;\n    inset-inline-end: 0.5rem;\n    width: 0.4rem;\n    height: 1.15rem;\n    background: var(--arcane-vermelho-escuro);\n    clip-path: polygon(0 0, 100% 0, 75% 100%, 0 72%);\n    pointer-events: none;\n  }\n\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-nome {\n    color: var(--afty-texto);\n    font-family: var(--afty-fonte-titulo);\n    font-size: clamp(1.55rem, 2.5vw, 2rem);\n    font-weight: 650;\n    letter-spacing: 0.015em;\n    line-height: 1.12;\n  }\n\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) [data-afty-compacto=\"sim\"] .afty-nome {\n    font-size: 1.25rem;\n  }\n\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-retrato-painel {\n    border: 1px solid var(--afty-borda-forte);\n    border-radius: 3px 10px 3px 10px;\n    box-shadow: none;\n  }\n\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-retrato-painel::after {\n    background:\n      linear-gradient(var(--arcane-vermelho), var(--arcane-vermelho)) right 0.5rem top 0.5rem / 3px 2.4rem no-repeat,\n      linear-gradient(var(--arcane-vermelho), var(--arcane-vermelho)) right 0.5rem top 0.5rem / 1.15rem 3px no-repeat,\n      linear-gradient(var(--afty-destaque), var(--afty-destaque)) left 0.5rem bottom 0.5rem / 1.7rem 2px no-repeat,\n      linear-gradient(180deg, transparent 70%, rgb(16 26 37 / 0.3));\n  }\n\n  /* Vitais: leitura direta, sem brilho artificial. Mantém a casca temporária. */\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital {\n    background: var(--afty-card);\n    border-radius: 7px;\n  }\n\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital[data-afty-vital=\"preparo\"] {\n    --afty-vital-cor: #d4e3ef;\n  }\n\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-rotulo {\n    letter-spacing: 0.065em;\n  }\n\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-trilho {\n    box-shadow: none;\n    background: var(--afty-fundo);\n  }\n\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-vital-barra {\n    background: var(--afty-vital-cor);\n    box-shadow: none;\n  }\n\n  /* Sem largura dinâmica experimental: até quatro dígitos continuam editáveis. */\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho-conteudo .afty-vital-numero {\n    width: 4ch;\n    min-width: 3ch;\n    font-variant-numeric: tabular-nums;\n  }\n\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-stat {\n    border-color: var(--arcane-divisoria);\n    background: var(--afty-poco);\n  }\n\n  /* A navegação continua turquesa. Vermelho é identidade, não seleção. */\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) :is(.afty-aba, .afty-subaba)[aria-selected=\"true\"] {\n    background-color: var(--afty-destaque-fundo);\n    border-bottom-color: var(--afty-destaque);\n    color: var(--afty-destaque-texto);\n    border-radius: 5px 5px 0 0;\n  }\n\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-card-titulo {\n    color: var(--afty-texto);\n    font-size: 0.8rem;\n    font-weight: 650;\n    letter-spacing: 0.07em;\n    line-height: 1.4;\n  }\n\n  /* Recorte vermelho discreto nos quatro grupos de consulta da Clássica. */\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha):not([data-afty-estrutura=\"g2\"]) [aria-labelledby=\"afty-aba-pericias\"] .afty-card > .afty-card-titulo {\n    border-inline-start: 3px solid var(--arcane-vermelho);\n    padding-inline-start: 0.55rem;\n    margin-block-end: 0.65rem;\n  }\n\n  /* Linhas abertas mantêm fontes e painéis visíveis. Nunca usar overflow aqui. */\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha):not([data-afty-estrutura=\"g2\"]) :is([aria-labelledby=\"afty-aba-acoes\"], [aria-labelledby=\"afty-aba-pericias\"]) .afty-card .afty-linha:not([data-afty-destacada=\"sim\"], [data-afty-alvo=\"sim\"]) {\n    background: transparent;\n    border-color: transparent;\n    border-bottom-color: var(--arcane-divisoria);\n    border-radius: 3px;\n  }\n\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha):not([data-afty-estrutura=\"g2\"]) :is([aria-labelledby=\"afty-aba-acoes\"], [aria-labelledby=\"afty-aba-pericias\"]) .afty-linha[data-afty-destacada=\"sim\"]:not([data-afty-alvo=\"sim\"]) {\n    border-color: var(--afty-borda);\n    border-inline-start: 3px solid var(--afty-destaque);\n    background: var(--afty-destaque-fundo);\n    border-radius: 5px;\n  }\n\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha):not([data-afty-estrutura=\"g2\"]) [aria-labelledby=\"afty-aba-pericias\"] .afty-linha {\n    min-height: 2.35rem;\n    padding: 0.3rem 0.55rem;\n    gap: 0.45rem;\n  }\n\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha):not([data-afty-estrutura=\"g2\"]) [aria-labelledby=\"afty-aba-pericias\"] .afty-linha > span:first-child {\n    font-size: 0.8125rem;\n    line-height: 1.35;\n    font-weight: 600;\n    white-space: normal;\n    overflow-wrap: anywhere;\n  }\n\n  /* O botão fica DENTRO de .afty-fontes-raiz, não diretamente na linha. */\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha):not([data-afty-estrutura=\"g2\"]) [aria-labelledby=\"afty-aba-pericias\"] .afty-linha > .afty-fontes-raiz > .afty-rolavel {\n    min-width: 2.65rem;\n    min-height: 1.75rem;\n    padding: 0.2rem 0.4rem;\n    border: 1px solid var(--afty-borda-forte);\n    background: var(--afty-poco);\n    color: var(--afty-texto);\n    border-radius: 5px;\n    font-size: 0.8125rem;\n    text-align: center;\n    text-decoration: none;\n    white-space: nowrap;\n  }\n\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha):not([data-afty-estrutura=\"g2\"]) [aria-labelledby=\"afty-aba-pericias\"] .afty-atributo:not([data-afty-alvo=\"sim\"]) {\n    padding-block: 0.5rem;\n    gap: 0.25rem;\n    background: var(--afty-poco);\n    border-color: var(--arcane-divisoria);\n    border-radius: 6px;\n  }\n\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-atributo-rotulo {\n    color: var(--afty-texto-suave);\n    font-size: 0.675rem;\n    letter-spacing: 0.09em;\n  }\n\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-atributo-mod {\n    min-width: 2.25rem;\n    min-height: 1.5rem;\n    text-align: center;\n    border-radius: 4px;\n  }\n\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-botao[data-afty-tom=\"destaque\"] {\n    background: var(--afty-destaque);\n    color: var(--afty-fundo);\n    border-color: var(--afty-destaque);\n  }\n\n  /* Foco independente de cor e sem deslocar os controles. */\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) :focus-visible {\n    outline: 2px solid var(--afty-destaque);\n    outline-offset: 3px;\n  }\n\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha) :is(.afty-aba, .afty-subaba):focus-visible {\n    outline-offset: -3px;\n  }\n\n  @media (hover: hover) {\n    :is(:scope#afty-ficha, #afty-ficha#afty-ficha):not([data-afty-estrutura=\"g2\"]) :is([aria-labelledby=\"afty-aba-acoes\"], [aria-labelledby=\"afty-aba-pericias\"]) .afty-linha:not([data-afty-alvo=\"sim\"]):hover {\n      background: var(--arcane-superficie);\n      border-bottom-color: var(--afty-borda-forte);\n    }\n\n    :is(:scope#afty-ficha, #afty-ficha#afty-ficha):not([data-afty-estrutura=\"g2\"]) [aria-labelledby=\"afty-aba-pericias\"] .afty-linha > .afty-fontes-raiz > .afty-rolavel:hover {\n      border-color: var(--afty-destaque);\n      background: var(--afty-destaque-fundo);\n      color: var(--afty-destaque-texto);\n    }\n\n    :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-botao[data-afty-tom=\"destaque\"]:hover:not(:disabled) {\n      background: var(--afty-destaque-texto);\n      border-color: var(--afty-destaque-texto);\n    }\n  }\n\n  @media (min-width: 1100px) {\n    :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho-principal > div > div:has(> .afty-nome) {\n      flex: 0 1 21rem;\n    }\n\n    :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-controles {\n      margin-inline-start: auto;\n    }\n  }\n\n  @media (min-width: 768px) {\n    :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho-conteudo .afty-vital > div:has(> input.afty-vital-numero) {\n      column-gap: 0.25rem;\n      flex-wrap: wrap;\n    }\n  }\n\n  @media (max-width: 767px) {\n    :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho-conteudo {\n      padding-inline: 0.35rem;\n    }\n\n    :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-stat-rotulo {\n      font-size: 0.6rem;\n      letter-spacing: 0.035em;\n    }\n\n    /* Dois recursos por fileira liberam espaço para a ficha no celular. */\n    :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho-principal > div:has(> .afty-vital) {\n      grid-template-columns: repeat(2, minmax(0, 1fr));\n      gap: 0.4rem;\n    }\n\n    :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho-conteudo .afty-vital {\n      padding: 0.4rem;\n      min-width: 0;\n    }\n\n    :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho-conteudo .afty-vital > div:has(> input.afty-vital-numero) {\n      display: grid;\n      grid-template-columns: minmax(0, 1fr) auto auto;\n      align-items: center;\n      gap: 0.25rem;\n    }\n\n    :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho-conteudo .afty-vital-icone {\n      grid-area: 1 / 1;\n      width: 0.85rem;\n      height: 0.85rem;\n      align-self: center;\n    }\n\n    :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho-conteudo .afty-vital-rotulo {\n      grid-area: 1 / 1 / 2 / -1;\n      padding-inline-start: 1.1rem;\n      font-size: 0.625rem;\n    }\n\n    :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho-conteudo .afty-vital-numero {\n      grid-area: 2 / 1;\n      min-width: 0;\n      width: 100%;\n      font-size: 1.25rem;\n      text-align: start;\n    }\n\n    :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho-conteudo .afty-vital .afty-base > :is(.afty-fontes-raiz, .afty-vital-max) {\n      grid-area: 2 / 2;\n    }\n\n    :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho-conteudo .afty-vital .afty-base > span:has(> .afty-passo) {\n      grid-area: 2 / 3;\n    }\n\n    :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho-conteudo .afty-vital-temp {\n      grid-column: 1 / -1;\n      justify-self: end;\n    }\n  }\n\n  /* A densidade compacta reduz espaço, sem sacrificar os nomes. */\n  :is(:scope#afty-ficha, #afty-ficha#afty-ficha)[data-afty-densidade=\"compacta\"]:not([data-afty-estrutura=\"g2\"]) [aria-labelledby=\"afty-aba-pericias\"] .afty-linha {\n    min-height: 2rem;\n    padding-block: 0.15rem;\n  }\n\n  /* Em telas muito estreitas, os passos ganham uma fileira própria.\n     O campo numérico conserva espaço para valores de três ou quatro dígitos. */\n  @media (max-width: 359px) and (pointer: coarse) {\n    :is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-cabecalho-conteudo .afty-vital .afty-base > span:has(> .afty-passo) {\n      grid-area: 3 / 1 / 4 / -1;\n      justify-self: end;\n    }\n  }\n\n  @media (pointer: coarse) {\n    :is(:scope#afty-ficha, #afty-ficha#afty-ficha):not([data-afty-estrutura=\"g2\"]) [aria-labelledby=\"afty-aba-pericias\"] :is(.afty-linha > .afty-fontes-raiz > .afty-rolavel, .afty-atributo-mod) {\n      min-width: 44px;\n      min-height: 44px;\n    }\n  }\n\n  @media (prefers-reduced-motion: reduce) {\n    :is(:scope#afty-ficha, #afty-ficha#afty-ficha) *,\n    :is(:scope#afty-ficha, #afty-ficha#afty-ficha) *::before,\n    :is(:scope#afty-ficha, #afty-ficha#afty-ficha) *::after {\n      animation: none !important;\n      transition: none !important;\n      scroll-behavior: auto !important;\n    }\n  }\n}\n",
+        "ligado": true
+      },
+      "preferenciasFicha": null,
+      "addons": [],
+      "narratorNotes": "",
+      "combatState": {
+        "isActive": false,
+        "hpCurrent": 12,
+        "peCurrent": 4,
+        "almaCurrent": 12,
+        "activeConditions": [],
+        "customCounters": [],
+        "combatLog": []
+      },
+      "stats": {
+        "hpMax": 12,
+        "peMax": 4,
+        "defesa": 14,
+        "cd": 13
+      },
+      "updatedAt": "2026-11-08T00:06:47.659Z",
+      "editLog": [
+        "2026-11-07T23:07:31.232Z",
+        "2026-11-07T23:19:51.737Z",
+        "2026-11-07T23:25:08.446Z",
+        "2026-11-07T23:25:11.692Z",
+        "2026-11-07T23:31:02.160Z",
+        "2026-11-08T00:06:47.659Z"
+      ],
+      "id": "mw70k7q8-3h7b0ig",
+      "folderId": null,
+      "isBuiltIn": false,
+      "createdAt": "2026-11-07T23:07:31.232Z",
+      "formulaOverrides": {}
+    }
+  ],
+  "folders": []
+}

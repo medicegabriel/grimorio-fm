@@ -1,0 +1,4 @@
+/* Mesma folha do app (src/index.css, que traz o Tailwind) mais a fonte de classes: a raiz do Vite aqui é a pasta do executor, e sem
+   `@source` o Tailwind 4 não varre src/ e gera quase nenhuma utilidade (o primeiro build saiu com 6 kB contra 152 kB do app). */
+@import "../../../src/index.css";
+@source "../../../src";

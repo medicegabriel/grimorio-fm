@@ -1,0 +1,4 @@
+{"sistema":"player","width":1440,"antesDoPatch":true,"perda":8,"calculos":[{"ok":true,"base":8,"final":8,"passos":[],"avisos":[],"tipoDano":"ct"}],"reacao":null}
+{"sistema":"player","width":390,"antesDoPatch":true,"perda":8,"calculos":[{"ok":true,"base":8,"final":8,"passos":[],"avisos":[],"tipoDano":"ct"}],"reacao":null}
+{"sistema":"afty","width":1440,"antesDoPatch":true,"perda":22,"calculos":[{"ok":true,"base":37,"final":22,"passos":[{"id":"reducao","label":"Redução de Dano","de":37,"para":22}],"avisos":[],"tipoDano":"ct"}],"reacao":null}
+{"sistema":"afty","width":390,"antesDoPatch":true,"perda":22,"calculos":[{"ok":true,"base":37,"final":22,"passos":[{"id":"reducao","label":"Redução de Dano","de":37,"para":22}],"avisos":[],"tipoDano":"ct"}],"reacao":null}

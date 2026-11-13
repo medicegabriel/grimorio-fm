@@ -1,0 +1,9 @@
+{
+  "head": "deab72cc26a93ab39350b6a781fcb0ca052cc0fd",
+  "livroSha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+  "protegidos": "",
+  "conflitos": false,
+  "novasLinhasComTravessao": [],
+  "arquivosNovosComTravessao": [],
+  "diffCheck": "docs/afty-status.md:20406: new blank line at EOF."
+}

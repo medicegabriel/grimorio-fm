@@ -712,7 +712,7 @@ export default function AcoesG2({
   derived, sessao, rolar, prova, avisar, modo = "normal", turnoArmas = 0, rodadaArmas = 0,
   onSessao, onEstado, onGatilhoTreino, onAtaqueBasico, onImbuir, onArma, onAmpla,
   ritual, controleTecnicaMaxima, conjuracaoBloodfeast, controleExpansao, exaustaoTecnica = null,
-  nosDaMesa, golpe = null, rapido = [], abertos, onAberto, destaque = null, painelConteudo = null,
+  nosDaMesa, golpe = null, rapido = [], abertos, onAberto, destaque = null, painelConteudo = null, painelPular = null,
 }) {
   const visivel = useContext(VisibilidadeDaAba);
   const dano = derived.dano?.entradas ?? [];
@@ -753,6 +753,7 @@ export default function AcoesG2({
     tecnicas.length && { id: "tecnicas", rotulo: "Técnicas Marciais" },
     (feiticos.length || exaustaoTecnica) && { id: "feiticos", rotulo: "Feitiços" },
     temDominio && { id: "dominio", rotulo: "Domínio" },
+    painelPular && sessao.combate?.ativo && { id: "pular", rotulo: "Pular" },
   ].filter(Boolean);
   /* Sem Outros, a segunda coluna é só Feitiços e Domínio: uma ficha só de armas fica numa coluna, com o Dano na largura toda. */
   const colunaA = dano.length > 0 || cura.length > 0;
@@ -811,7 +812,7 @@ export default function AcoesG2({
               </Secao>
             )}
             {cura.length > 0 && (
-              <Secao id="cura" titulo="Cura">
+              <Secao id="cura" titulo="Cura" className="m-secao-colunas">
                 {cura.map((l) => <LinhaCura key={l.id} l={l} rolar={rolar} prova={prova} avisar={avisar} destaque={destaque} />)}
               </Secao>
             )}
@@ -820,7 +821,7 @@ export default function AcoesG2({
         {colunaB && (
           <div className="m-coluna">
             {tecnicas.length > 0 && (
-              <Secao id="tecnicas" titulo="Técnicas Marciais">
+              <Secao id="tecnicas" titulo="Técnicas Marciais" className="m-secao-colunas">
                 {tecnicas.map((t) => (t.tipo === "ataque" && t.ataque ? (
                   <LinhaTecnicaAtaque key={t.id} f={t} info={derived.tecnicasMarciais?.ataques?.[t.id]}
                     usos={derived.mesa?.[`tecnicaMarcial:${t.id}`]?.usos ?? null} sessao={sessao} onSessao={onSessao}
@@ -835,7 +836,7 @@ export default function AcoesG2({
               </Secao>
             )}
             {(feiticos.length > 0 || exaustaoTecnica) && (
-              <Secao id="feiticos" titulo="Feitiços">
+              <Secao id="feiticos" titulo="Feitiços" className="m-secao-colunas">
                 {exaustaoTecnica && <div className="m-faixa">{exaustaoTecnica}</div>}
                 {feiticos.map((f) => (
                   <LinhaFeitico modoServo={modoDanoAtivo} key={f.id} f={f} sessao={sessao} rolar={rolar} prova={prova} avisar={avisar}
@@ -846,7 +847,7 @@ export default function AcoesG2({
               </Secao>
             )}
             {temDominio && (
-              <Secao id="dominio" titulo="Expansão de Domínio">
+              <Secao id="dominio" titulo="Expansão de Domínio" className="m-secao-colunas">
                 <BarreiraConflito info={derived.dominios} rolar={rolar} prova={prova} avisar={avisar} />
                 {dominios.map((d) => (
                   <LinhaExpansao key={d.id} d={d} ativo={d.id === dominioAtivo} fase={dominioAberto?.id === d.id ? dominioAberto.fase : null}
@@ -858,6 +859,9 @@ export default function AcoesG2({
           </div>
         )}
       </div>
+
+      {/* O Pular fecha a aba (autor, 2026-11-09): é a ação mais rara, e o alto da aba fica para a Mesa e o Dano. O índice salta até ele. */}
+      {painelPular}
     </div>
   );
 }

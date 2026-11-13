@@ -1,0 +1,403 @@
+{
+  "geradoEm": "2026-11-08T23:07:12.555Z",
+  "base": "http://127.0.0.1:5330",
+  "checks": [
+    {
+      "id": "teclado: ordem Resistências, Outros, Perícias (sem Jogadas de Ataque no Player)",
+      "ok": true,
+      "dados": {
+        "iAtq": -1,
+        "iTr": 0,
+        "iMan": 5,
+        "iPer": 17,
+        "amostra": [
+          "tr:reflexos",
+          "tr:fortitude",
+          "tr:vontade",
+          "tr:astucia",
+          "tr:integridade",
+          "manobra:agarrar"
+        ]
+      }
+    },
+    {
+      "id": "teclado: cada foco em linha mostra contorno (do botão ou da pastilha)",
+      "ok": true,
+      "dados": {
+        "n": 38,
+        "semContorno": []
+      }
+    },
+    {
+      "id": "sem estouro horizontal acoes 331",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": null
+      }
+    },
+    {
+      "id": "sem estouro horizontal pericias 331",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": 40
+      }
+    },
+    {
+      "id": "alvo de rolagem >= 34 px 331",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": 40
+      }
+    },
+    {
+      "id": "sem estouro horizontal equipamentos 331",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": null
+      }
+    },
+    {
+      "id": "sem estouro horizontal acoes 390",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": null
+      }
+    },
+    {
+      "id": "sem estouro horizontal pericias 390",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": 40
+      }
+    },
+    {
+      "id": "alvo de rolagem >= 34 px 390",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": 40
+      }
+    },
+    {
+      "id": "sem estouro horizontal equipamentos 390",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": null
+      }
+    },
+    {
+      "id": "sem estouro horizontal acoes 768",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": null
+      }
+    },
+    {
+      "id": "sem estouro horizontal pericias 768",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": 36
+      }
+    },
+    {
+      "id": "alvo de rolagem >= 34 px 768",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": 36
+      }
+    },
+    {
+      "id": "sem estouro horizontal equipamentos 768",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": null
+      }
+    },
+    {
+      "id": "sem estouro horizontal acoes 1024",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": null
+      }
+    },
+    {
+      "id": "sem estouro horizontal pericias 1024",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": 36
+      }
+    },
+    {
+      "id": "alvo de rolagem >= 34 px 1024",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": 36
+      }
+    },
+    {
+      "id": "sem estouro horizontal equipamentos 1024",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": null
+      }
+    },
+    {
+      "id": "sem estouro horizontal acoes 1280",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": null
+      }
+    },
+    {
+      "id": "sem estouro horizontal pericias 1280",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": 36
+      }
+    },
+    {
+      "id": "alvo de rolagem >= 34 px 1280",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": 36
+      }
+    },
+    {
+      "id": "sem estouro horizontal equipamentos 1280",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": null
+      }
+    },
+    {
+      "id": "sem estouro horizontal acoes 1440",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": null
+      }
+    },
+    {
+      "id": "sem estouro horizontal pericias 1440",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": 36
+      }
+    },
+    {
+      "id": "alvo de rolagem >= 34 px 1440",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": 36
+      }
+    },
+    {
+      "id": "sem estouro horizontal equipamentos 1440",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": null
+      }
+    },
+    {
+      "id": "sem estouro horizontal acoes 1920",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": null
+      }
+    },
+    {
+      "id": "sem estouro horizontal pericias 1920",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": 36
+      }
+    },
+    {
+      "id": "alvo de rolagem >= 34 px 1920",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": 36
+      }
+    },
+    {
+      "id": "sem estouro horizontal equipamentos 1920",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "menorAlvo": null
+      }
+    },
+    {
+      "id": "compacta aberta 1280: sem estouro",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "largura": 854,
+        "colunas": 2
+      }
+    },
+    {
+      "id": "compacta aberta 1024: sem estouro",
+      "ok": true,
+      "dados": {
+        "estouro": 0,
+        "largura": 602,
+        "colunas": 1
+      }
+    },
+    {
+      "id": "Perícias: duas colunas em 1280",
+      "ok": true
+    },
+    {
+      "id": "Perícias: uma coluna em 390",
+      "ok": true
+    },
+    {
+      "id": "destaque: três linhas distintas",
+      "ok": true,
+      "dados": {
+        "nenhum": {
+          "fundo": "rgba(0, 0, 0, 0)",
+          "sombra": "none",
+          "peso": "500",
+          "texto": ", Sem Treino"
+        },
+        "treinado": {
+          "fundo": "oklab(0.826751 0.0642348 -0.0871123 / 0.05)",
+          "sombra": "rgb(216, 180, 254) 2px 0px 0px 0px inset",
+          "peso": "600",
+          "texto": ", Treinada"
+        },
+        "mestre": {
+          "fundo": "oklab(0.626834 0.129728 -0.192994 / 0.14)",
+          "sombra": "rgb(168, 85, 247) 3px 0px 0px 0px inset",
+          "peso": "700",
+          "texto": ", Mestre"
+        }
+      }
+    },
+    {
+      "id": "palavra do treino para leitor de tela",
+      "ok": true,
+      "dados": {
+        "nenhum": {
+          "fundo": "rgba(0, 0, 0, 0)",
+          "sombra": "none",
+          "peso": "500",
+          "texto": ", Sem Treino"
+        },
+        "treinado": {
+          "fundo": "oklab(0.826751 0.0642348 -0.0871123 / 0.05)",
+          "sombra": "rgb(216, 180, 254) 2px 0px 0px 0px inset",
+          "peso": "600",
+          "texto": ", Treinada"
+        },
+        "mestre": {
+          "fundo": "oklab(0.626834 0.129728 -0.192994 / 0.14)",
+          "sombra": "rgb(168, 85, 247) 3px 0px 0px 0px inset",
+          "peso": "700",
+          "texto": ", Mestre"
+        }
+      }
+    },
+    {
+      "id": "o chip Mestre repetido saiu da lista",
+      "ok": true,
+      "dados": {
+        "chips": 0
+      }
+    },
+    {
+      "id": "busca local filtra a lista",
+      "ok": true
+    },
+    {
+      "id": "título mostra N de M com filtro",
+      "ok": true
+    },
+    {
+      "id": "filtro Mestre mostra só Mestre",
+      "ok": true
+    },
+    {
+      "id": "Outros mantém Executar e Resistir",
+      "ok": true,
+      "dados": {
+        "antes": 12
+      }
+    },
+    {
+      "id": "Outros rola (resultado na barra de dados)",
+      "ok": true
+    },
+    {
+      "id": "celular: a chave Testes / Perícias aparece",
+      "ok": true
+    },
+    {
+      "id": "celular: abre em Perícias, com os testes escondidos",
+      "ok": true
+    },
+    {
+      "id": "celular: Testes mostra Resistências e Outros e esconde Perícias",
+      "ok": true
+    },
+    {
+      "id": "celular: cada grupo cabe em menos de 1500 px",
+      "ok": true,
+      "dados": {
+        "alt": 1032
+      }
+    },
+    {
+      "id": "celular: Perícias cabe em menos de 1500 px",
+      "ok": true,
+      "dados": {
+        "alt2": 1380
+      }
+    },
+    {
+      "id": "desktop: a chave some e os dois grupos aparecem",
+      "ok": true
+    },
+    {
+      "id": "desktop: linha de perícia de 40 a 42 px",
+      "ok": true,
+      "dados": {
+        "hLinha": 40
+      }
+    },
+    {
+      "id": "sem erro de página nem de console",
+      "ok": true,
+      "dados": []
+    }
+  ],
+  "erros": []
+}

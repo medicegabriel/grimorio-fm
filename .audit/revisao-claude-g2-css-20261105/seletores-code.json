@@ -1,0 +1,147 @@
+{
+  "geradoEm": "2026-11-06T02:52:28.199Z",
+  "base": "http://127.0.0.1:5341",
+  "etapas": [
+    {
+      "nome": "Seletores, G2 escuro",
+      "checks": [
+        {
+          "id": "o nome do seletor tem contraste AA (>= 4,5): 1.02",
+          "ok": false,
+          "dados": {
+            "cor": "rgb(241, 245, 249)",
+            "fundo": "rgb(244, 243, 236)",
+            "fonte": "15px",
+            "pad": "4px 8px",
+            "texto": "#afty-ficha"
+          }
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "cor": "rgb(241, 245, 249)",
+        "fundo": "rgb(244, 243, 236)",
+        "fonte": "15px",
+        "pad": "4px 8px",
+        "texto": "#afty-ficha",
+        "contraste": 1.02
+      }
+    },
+    {
+      "nome": "Seletores, G2 Abissal",
+      "checks": [
+        {
+          "id": "o nome do seletor tem contraste AA (>= 4,5): 1.03",
+          "ok": false,
+          "dados": {
+            "cor": "rgb(226, 241, 255)",
+            "fundo": "rgb(244, 243, 236)",
+            "fonte": "15px",
+            "pad": "4px 8px",
+            "texto": "#afty-ficha"
+          }
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "cor": "rgb(226, 241, 255)",
+        "fundo": "rgb(244, 243, 236)",
+        "fonte": "15px",
+        "pad": "4px 8px",
+        "texto": "#afty-ficha",
+        "contraste": 1.03
+      }
+    },
+    {
+      "nome": "Seletores, G2 Pergaminho",
+      "checks": [
+        {
+          "id": "o nome do seletor tem contraste AA (>= 4,5): 14.17",
+          "ok": true,
+          "dados": {
+            "cor": "rgb(43, 33, 22)",
+            "fundo": "rgb(244, 243, 236)",
+            "fonte": "15px",
+            "pad": "4px 8px",
+            "texto": "#afty-ficha"
+          }
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "cor": "rgb(43, 33, 22)",
+        "fundo": "rgb(244, 243, 236)",
+        "fonte": "15px",
+        "pad": "4px 8px",
+        "texto": "#afty-ficha",
+        "contraste": 14.17
+      }
+    },
+    {
+      "nome": "Seletores, Clássica escuro",
+      "checks": [
+        {
+          "id": "o nome do seletor tem contraste AA (>= 4,5): 1.02",
+          "ok": false,
+          "dados": {
+            "cor": "rgb(241, 245, 249)",
+            "fundo": "rgb(244, 243, 236)",
+            "fonte": "15px",
+            "pad": "4px 8px",
+            "texto": "#afty-ficha"
+          }
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "cor": "rgb(241, 245, 249)",
+        "fundo": "rgb(244, 243, 236)",
+        "fonte": "15px",
+        "pad": "4px 8px",
+        "texto": "#afty-ficha",
+        "contraste": 1.02
+      }
+    }
+  ],
+  "falhas": [
+    {
+      "etapa": "Seletores, G2 escuro",
+      "id": "o nome do seletor tem contraste AA (>= 4,5): 1.02",
+      "dados": {
+        "cor": "rgb(241, 245, 249)",
+        "fundo": "rgb(244, 243, 236)",
+        "fonte": "15px",
+        "pad": "4px 8px",
+        "texto": "#afty-ficha"
+      }
+    },
+    {
+      "etapa": "Seletores, G2 Abissal",
+      "id": "o nome do seletor tem contraste AA (>= 4,5): 1.03",
+      "dados": {
+        "cor": "rgb(226, 241, 255)",
+        "fundo": "rgb(244, 243, 236)",
+        "fonte": "15px",
+        "pad": "4px 8px",
+        "texto": "#afty-ficha"
+      }
+    },
+    {
+      "etapa": "Seletores, Clássica escuro",
+      "id": "o nome do seletor tem contraste AA (>= 4,5): 1.02",
+      "dados": {
+        "cor": "rgb(241, 245, 249)",
+        "fundo": "rgb(244, 243, 236)",
+        "fonte": "15px",
+        "pad": "4px 8px",
+        "texto": "#afty-ficha"
+      }
+    }
+  ],
+  "resumo": [
+    "Seletores, G2 escuro: 0/1",
+    "Seletores, G2 Abissal: 0/1",
+    "Seletores, G2 Pergaminho: 1/1",
+    "Seletores, Clássica escuro: 0/1"
+  ]
+}

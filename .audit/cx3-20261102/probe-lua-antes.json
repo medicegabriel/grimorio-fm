@@ -1,0 +1,69 @@
+[
+  {
+    "sistema": "player",
+    "inacessiveis": [],
+    "excedeu": false,
+    "orcamento": false,
+    "movimento": 9,
+    "lua": [
+      {
+        "nome": "Assumir Postura (Postura da Lua)",
+        "origem": "cmb_postura_da_lua",
+        "canal": "defesa",
+        "valor": 3
+      },
+      {
+        "nome": "Assumir Postura (Postura da Lua)",
+        "origem": "cmb_postura_da_lua",
+        "canal": "bonusAcerto",
+        "valor": -4
+      },
+      {
+        "nome": "Assumir Postura (Postura da Lua)",
+        "origem": "cmb_postura_da_lua",
+        "canal": "semAtributoDano",
+        "valor": 1
+      }
+    ],
+    "mapa": {
+      "cmb_assumir_postura": [
+        "cmb_postura_da_lua",
+        "cmb_postura_do_sol"
+      ],
+      "cmb_repertorio_do_especialista": []
+    }
+  },
+  {
+    "sistema": "afty",
+    "inacessiveis": [],
+    "excedeu": false,
+    "orcamento": false,
+    "movimento": 13.5,
+    "lua": [
+      {
+        "nome": "Assumir Postura (Postura da Lua)",
+        "origem": "cmb_postura_da_lua",
+        "canal": "defesa",
+        "valor": 3
+      },
+      {
+        "nome": "Assumir Postura (Postura da Lua)",
+        "origem": "cmb_postura_da_lua",
+        "canal": "bonusAcerto",
+        "valor": -4
+      },
+      {
+        "nome": "Assumir Postura (Postura da Lua)",
+        "origem": "cmb_postura_da_lua",
+        "canal": "semAtributoDano",
+        "valor": 1
+      }
+    ],
+    "mapa": {
+      "cmb_assumir_postura": [
+        "cmb_postura_da_lua",
+        "cmb_postura_do_sol"
+      ]
+    }
+  }
+]

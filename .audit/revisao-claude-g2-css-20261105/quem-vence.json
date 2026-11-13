@@ -1,0 +1,407 @@
+[
+  {
+    "id": "card",
+    "sel": ".afty-card",
+    "prop": "border-top-color",
+    "aba": "acoes",
+    "achou": true,
+    "regras": [
+      {
+        "ordem": 0,
+        "seletor": "dialog",
+        "camada": "(sem camada)",
+        "escopo": "",
+        "origem": "user-agent",
+        "folha": "?",
+        "decl": "border-top-width:medium; border-right-width:medium; border-bottom-width:medium; border-left-width:medium; border-top-sty"
+      },
+      {
+        "ordem": 3,
+        "seletor": "*, ::after, ::before, ::backdrop",
+        "camada": "base",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "index-DeD3bKau.css",
+        "decl": "border:0 solid; border-top-width:0px; border-right-width:0px; border-bottom-width:0px; border-left-width:0px; border-top"
+      },
+      {
+        "ordem": 4,
+        "seletor": ".afty-card",
+        "camada": "(sem camada)",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "EspinhoCard-D6ZtfUT1.css",
+        "decl": "border:1px solid var(--afty-borda); border-radius:var(--afty-raio); border-top-color:; border-top-style:; border-top-wid"
+      },
+      {
+        "ordem": 5,
+        "seletor": ".afty-card",
+        "camada": "(sem camada)",
+        "escopo": "(#afty-ficha)",
+        "origem": "regular",
+        "folha": "?",
+        "decl": "border-color:#e11d48; border-top-color:rgb(225, 29, 72); border-right-color:rgb(225, 29, 72); border-bottom-color:rgb(22"
+      }
+    ]
+  },
+  {
+    "id": "aba ativa",
+    "sel": "[data-afty-aba=\"acoes\"][aria-selected=\"true\"]",
+    "prop": "color",
+    "aba": "acoes",
+    "achou": true,
+    "regras": [
+      {
+        "ordem": 1,
+        "seletor": "input, textarea, select, button",
+        "camada": "(sem camada)",
+        "escopo": "",
+        "origem": "user-agent",
+        "folha": "?",
+        "decl": "color:fieldtext"
+      },
+      {
+        "ordem": 3,
+        "seletor": "input[type=\"button\" i], input[type=\"submit\" i], input[type=\"reset\" i], input[type=\"file\" i]::-webkit-file-upload-button, button",
+        "camada": "(sem camada)",
+        "escopo": "",
+        "origem": "user-agent",
+        "folha": "?",
+        "decl": "color:buttontext"
+      },
+      {
+        "ordem": 4,
+        "seletor": "*, ::after, ::before, ::backdrop",
+        "camada": "base",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "index-DeD3bKau.css",
+        "decl": "border:0 solid"
+      },
+      {
+        "ordem": 5,
+        "seletor": "button, input, select, optgroup, textarea",
+        "camada": "base",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "index-DeD3bKau.css",
+        "decl": "color:inherit; color:inherit"
+      },
+      {
+        "ordem": 7,
+        "seletor": ".afty-aba",
+        "camada": "(sem camada)",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "EspinhoCard-D6ZtfUT1.css",
+        "decl": "color:var(--afty-texto-suave); color:var(--afty-texto-suave)"
+      },
+      {
+        "ordem": 8,
+        "seletor": ".e-g2 button",
+        "camada": "(sem camada)",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "AftyFichaG2-BeAIPXjg.css",
+        "decl": "color:inherit; color:inherit"
+      },
+      {
+        "ordem": 9,
+        "seletor": ".afty-aba:hover",
+        "camada": "(sem camada)",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "EspinhoCard-D6ZtfUT1.css",
+        "decl": "color:var(--afty-texto); color:var(--afty-texto)"
+      },
+      {
+        "ordem": 10,
+        "seletor": ".afty-aba[aria-selected=\"true\"]",
+        "camada": "(sem camada)",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "EspinhoCard-D6ZtfUT1.css",
+        "decl": "color:var(--afty-destaque-texto); color:var(--afty-destaque-texto)"
+      },
+      {
+        "ordem": 11,
+        "seletor": ".e-g2 .e-aba",
+        "camada": "(sem camada)",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "AftyFichaG2-BeAIPXjg.css",
+        "decl": "color:var(--e-t2); border:0; color:var(--e-t2)"
+      },
+      {
+        "ordem": 12,
+        "seletor": "[data-afty-aba=\"acoes\"][aria-selected=\"true\"]",
+        "camada": "(sem camada)",
+        "escopo": "(#afty-ficha)",
+        "origem": "regular",
+        "folha": "?",
+        "decl": "color:#22d3ee; color:rgb(34, 211, 238)"
+      },
+      {
+        "ordem": 13,
+        "seletor": ".e-g2 .e-aba[aria-selected=\"true\"]",
+        "camada": "(sem camada)",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "AftyFichaG2-BeAIPXjg.css",
+        "decl": "color:var(--e-t1); color:var(--e-t1)"
+      }
+    ]
+  },
+  {
+    "id": "numero da Mesa",
+    "sel": ".m-rolar-num",
+    "prop": "color",
+    "aba": "acoes",
+    "achou": true,
+    "regras": [
+      {
+        "ordem": 1,
+        "seletor": "input, textarea, select, button",
+        "camada": "(sem camada)",
+        "escopo": "",
+        "origem": "user-agent",
+        "folha": "?",
+        "decl": "color:fieldtext"
+      },
+      {
+        "ordem": 3,
+        "seletor": "input[type=\"button\" i], input[type=\"submit\" i], input[type=\"reset\" i], input[type=\"file\" i]::-webkit-file-upload-button, button",
+        "camada": "(sem camada)",
+        "escopo": "",
+        "origem": "user-agent",
+        "folha": "?",
+        "decl": "color:buttontext"
+      },
+      {
+        "ordem": 4,
+        "seletor": "*, ::after, ::before, ::backdrop",
+        "camada": "base",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "index-DeD3bKau.css",
+        "decl": "border:0 solid"
+      },
+      {
+        "ordem": 5,
+        "seletor": "button, input, select, optgroup, textarea",
+        "camada": "base",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "index-DeD3bKau.css",
+        "decl": "color:inherit; color:inherit"
+      },
+      {
+        "ordem": 7,
+        "seletor": ".afty-valor",
+        "camada": "(sem camada)",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "EspinhoCard-D6ZtfUT1.css",
+        "decl": "color:var(--afty-texto); color:var(--afty-texto)"
+      },
+      {
+        "ordem": 9,
+        "seletor": ".afty-valor",
+        "camada": "(sem camada)",
+        "escopo": "(#afty-ficha)",
+        "origem": "regular",
+        "folha": "?",
+        "decl": "color:#22d3ee; color:rgb(34, 211, 238)"
+      },
+      {
+        "ordem": 10,
+        "seletor": ".e-g2 button",
+        "camada": "(sem camada)",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "AftyFichaG2-BeAIPXjg.css",
+        "decl": "color:inherit; color:inherit"
+      },
+      {
+        "ordem": 11,
+        "seletor": ".e-g2 .m-rolar-num",
+        "camada": "(sem camada)",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "AftyFichaG2-BeAIPXjg.css",
+        "decl": "color:var(--e-t1); color:var(--e-t1)"
+      },
+      {
+        "ordem": 12,
+        "seletor": ".e-g2 .m-rolar button.afty-rolavel",
+        "camada": "(sem camada)",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "AftyFichaG2-BeAIPXjg.css",
+        "decl": "border:0"
+      }
+    ]
+  },
+  {
+    "id": "secao de Acoes",
+    "sel": "[data-m-secao]",
+    "prop": "border-top-color",
+    "aba": "acoes",
+    "achou": true,
+    "regras": [
+      {
+        "ordem": 2,
+        "seletor": "*, ::after, ::before, ::backdrop",
+        "camada": "base",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "index-DeD3bKau.css",
+        "decl": "border:0 solid; border-top-width:0px; border-right-width:0px; border-bottom-width:0px; border-left-width:0px; border-top"
+      },
+      {
+        "ordem": 3,
+        "seletor": ".afty-card",
+        "camada": "(sem camada)",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "EspinhoCard-D6ZtfUT1.css",
+        "decl": "border:1px solid var(--afty-borda); border-radius:var(--afty-raio); border-top-color:; border-top-style:; border-top-wid"
+      },
+      {
+        "ordem": 4,
+        "seletor": ".afty-card",
+        "camada": "(sem camada)",
+        "escopo": "(#afty-ficha)",
+        "origem": "regular",
+        "folha": "?",
+        "decl": "border-color:#e11d48; border-top-color:rgb(225, 29, 72); border-right-color:rgb(225, 29, 72); border-bottom-color:rgb(22"
+      },
+      {
+        "ordem": 6,
+        "seletor": ".e-g2 .e-grupo",
+        "camada": "(sem camada)",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "AftyFichaG2-BeAIPXjg.css",
+        "decl": "border:1px solid var(--e-painel-borda); border-radius:14px; border-top-color:; border-top-style:; border-top-width:; bor"
+      },
+      {
+        "ordem": 8,
+        "seletor": ".e-g2 .m-mesa",
+        "camada": "(sem camada)",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "AftyFichaG2-BeAIPXjg.css",
+        "decl": "border-radius:12px; border-top-left-radius:12px; border-top-right-radius:12px; border-bottom-right-radius:12px; border-b"
+      }
+    ]
+  },
+  {
+    "id": "valor",
+    "sel": ".afty-valor",
+    "prop": "color",
+    "aba": "acoes",
+    "achou": true,
+    "regras": [
+      {
+        "ordem": 0,
+        "seletor": "*, ::after, ::before, ::backdrop",
+        "camada": "base",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "index-DeD3bKau.css",
+        "decl": "border:0 solid"
+      },
+      {
+        "ordem": 1,
+        "seletor": ".afty-valor",
+        "camada": "(sem camada)",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "EspinhoCard-D6ZtfUT1.css",
+        "decl": "color:var(--afty-texto); color:var(--afty-texto)"
+      },
+      {
+        "ordem": 2,
+        "seletor": ".afty-valor",
+        "camada": "(sem camada)",
+        "escopo": "(#afty-ficha)",
+        "origem": "regular",
+        "folha": "?",
+        "decl": "color:#22d3ee; color:rgb(34, 211, 238)"
+      }
+    ]
+  },
+  {
+    "id": "card de Perícias",
+    "sel": ".afty-card",
+    "prop": "border-top-color",
+    "aba": "pericias",
+    "achou": true,
+    "regras": [
+      {
+        "ordem": 0,
+        "seletor": "dialog",
+        "camada": "(sem camada)",
+        "escopo": "",
+        "origem": "user-agent",
+        "folha": "?",
+        "decl": "border-top-width:medium; border-right-width:medium; border-bottom-width:medium; border-left-width:medium; border-top-sty"
+      },
+      {
+        "ordem": 3,
+        "seletor": "*, ::after, ::before, ::backdrop",
+        "camada": "base",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "index-DeD3bKau.css",
+        "decl": "border:0 solid; border-top-width:0px; border-right-width:0px; border-bottom-width:0px; border-left-width:0px; border-top"
+      },
+      {
+        "ordem": 4,
+        "seletor": ".afty-card",
+        "camada": "(sem camada)",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "EspinhoCard-D6ZtfUT1.css",
+        "decl": "border:1px solid var(--afty-borda); border-radius:var(--afty-raio); border-top-color:; border-top-style:; border-top-wid"
+      },
+      {
+        "ordem": 5,
+        "seletor": ".afty-card",
+        "camada": "(sem camada)",
+        "escopo": "(#afty-ficha)",
+        "origem": "regular",
+        "folha": "?",
+        "decl": "border-color:#e11d48; border-top-color:rgb(225, 29, 72); border-right-color:rgb(225, 29, 72); border-bottom-color:rgb(22"
+      }
+    ]
+  },
+  {
+    "id": "linha de Perícias",
+    "sel": ".afty-linha",
+    "prop": "border-top-color",
+    "aba": "pericias",
+    "achou": true,
+    "regras": [
+      {
+        "ordem": 2,
+        "seletor": "*, ::after, ::before, ::backdrop",
+        "camada": "base",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "index-DeD3bKau.css",
+        "decl": "border:0 solid; border-top-width:0px; border-right-width:0px; border-bottom-width:0px; border-left-width:0px; border-top"
+      },
+      {
+        "ordem": 3,
+        "seletor": ".afty-linha",
+        "camada": "(sem camada)",
+        "escopo": "",
+        "origem": "regular",
+        "folha": "EspinhoCard-D6ZtfUT1.css",
+        "decl": "border:1px solid var(--afty-borda); border-radius:var(--afty-raio-peq); border-top-color:; border-top-style:; border-top"
+      }
+    ]
+  }
+]

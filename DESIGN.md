@@ -167,7 +167,9 @@ Azul-ardósia quase preto como chão, branco-azulado frio como texto, e um roxo 
 **Body Font:** ui-sans-serif, system-ui, Segoe UI, Roboto
 **Label/Mono Font:** ui-monospace, Consolas, para números de vital e contagens
 
-**Character:** Sistema de fontes nativas, sem fonte baixada. A única personalidade vem de tipografia numérica: Bahnschrift semicondensada para valores no G2 e monoespaçada tabular para vitais, para que colunas de número não balancem.
+**Character:** Sistema de fontes nativas no tema padrão, sem fonte baixada. A única personalidade vem de tipografia numérica: Bahnschrift semicondensada para valores no G2 e monoespaçada tabular para vitais, para que colunas de número não balancem.
+
+**Fontes da internet, só por escolha do tema (autor, 2026-11-10).** O painel de Aparência da Ficha G2 oferece uma lista fechada de doze famílias do Google Fonts (Inter, Lora, Merriweather, Playfair Display, Cormorant Garamond, Cinzel, Oswald, Barlow Condensed, Chakra Petch, Shippori Mincho, JetBrains Mono e Caveat), em `FONTES_WEB` (`ficha-tema.js`). A família só baixa quando o tema a pede, pelo painel ou pelo nome num `font-family` do CSS livre, por um `<link>` no `<head>` (`useFontesWeb.js`), e cada pilha traz a reserva do sistema para quando não há internet. O endereço sai da tabela, nunca de texto do tema, e um tema recebido de outra pessoa só consegue pedir família da lista. A clássica e o cartão da invocação seguem só com as fontes do sistema.
 
 ### Hierarchy
 - **Vital** (700, 1.5rem, 1.1): o número grande de PV, PE e Alma, em Consolas tabular.
@@ -177,6 +179,16 @@ Azul-ardósia quase preto como chão, branco-azulado frio como texto, e um roxo 
 - **Linha** (600, 0.75rem): nome de item e de linha de lista (`text-[12px]`), o degrau entre Micro e Label que a Ficha já usa em dezenas de pontos.
 - **Micro** (600, 0.6875rem): chips e marcas de valor fixo.
 - **Título de Seção** (700, 0.6875rem, caixa alta, 0.09em): `.afty-card-titulo`, sempre em Texto Suave.
+
+### Escala do G2 (2026-11-10, espera aprovação do autor)
+A Ficha Final G2 usa seis degraus, num bloco só na raiz `.e-ficha-g2` (`efeitos-g2.css`), no lugar de 17 tamanhos soltos. Cada uso é `var(--e-fs-x, Npx)`, com o padrão do degrau junto, então apagar o bloco não quebra nada. Um tema do usuário reajusta o degrau com `:scope { --e-fs-corpo: 15px }`.
+- **`--e-fs-micro`** (11,5 px): marcas, contagens, texto de apoio.
+- **`--e-fs-meta`** (12,5 px): rótulo de dado, como o `dt` de um stat.
+- **`--e-fs-corpo`** (13,5 px): o texto corrente da aba e dos botões.
+- **`--e-fs-leitura`** (15 px): texto de leitura e valor de linha.
+- **`--e-fs-titulo`** (16,5 px): título de lista e valor do cabeçalho.
+- **`--e-fs-destaque`** (22 px): o número grande do recurso.
+Os números dos recursos (26 a 28 px) ficam fora da escala. O piso de 11 px abaixo continua valendo.
 
 ### Named Rules
 **A Regra da Linha de Base.** Número ao lado de texto alinha pela base, não pelo centro (`.afty-base`). Quem não tem base de verdade, como ícone, imagem, botão e rótulo aparado, volta ao centro com `data-afty-alinha="centro"`. O `t-alinhamento.mjs` trava isso.
@@ -190,6 +202,8 @@ Azul-ardósia quase preto como chão, branco-azulado frio como texto, e um roxo 
 Largura é responsiva por contêiner, não por janela: as abas do G2 usam `container: aba / inline-size`, porque a ficha compacta aberta estreita a aba sem mudar a janela. Os pontos de corte observados na Ficha são 480 px, 640 px, 768 px, 1024 px, e o Grimório 2.5.2 usa 1024 px.
 
 O cabeçalho da Ficha é grudado (`position: sticky`, `top: 0`, z 40), de fundo opaco, e dita o orçamento de altura de tudo o que rola abaixo. As seções são cards com topo (título e controles) e corpo, em coluna única com 12 px entre elas, e as listas usam linhas de 42 a 48 px com divisor leve de 9% do texto. A grade de células se organiza em colunas automáticas de no mínimo 340 px.
+
+Em tela larga as abas e a barra de rolagens dividem a `.e-linha-abas`: as abas à esquerda, no tamanho natural, e à direita o modo da rolagem, a última rolagem e o Histórico (`.afty-log`, de 560 a 600 px). Quando as duas não cabem juntas (de 721 a uns 1280 px) a barra quebra para a linha de baixo, à direita, em vez de encolher. A faixa própria de 60 px sob as abas saiu. No celular a barra continua abaixo das abas, e o cabeçalho rolado vira uma faixa fina com nome e os mesmos recursos do cabeçalho em número (`FinaG2.jsx`, fora do fluxo, com histerese). Abaixo de 380 px, com quatro recursos, o nome sai.
 
 O ritmo de espaçamento é de 4, 8, 12 e 16 px. Controles em ponteiro grosso (`pointer: coarse`) sobem para 44 px de altura mínima.
 
@@ -249,6 +263,14 @@ Todos os componentes são contidos e precisos: borda fina, raio de 8 a 12 px, e 
 - **Abas (`.afty-aba`):** texto, sem caixa, sublinhado de 2 px. Em repouso Texto Suave, selecionada Lilás com o sublinhado em Roxo de Destaque. Rolagem horizontal sem barra.
 - **Sub-abas (`.afty-subaba`):** cápsula pequena, 0.75rem, com a contagem de itens ao lado em Consolas. Selecionada usa Véu Roxo.
 - **Mobile:** a barra de abas rola na horizontal e o alvo sobe a 44 px em ponteiro grosso.
+
+### Efeitos (contrato de tema, 2026-11-10)
+Quatro classes estáveis na aba Efeitos, que o CSS do usuário pode pintar sem `!important` (a cor do app mora em `:where(.e-g2)`):
+- **`.afty-efeito`:** o cartão de um efeito ativo, só com o nome. O aberto tem `aria-current="true"`.
+- **`.afty-efeito-detalhe`:** a faixa que abre logo abaixo do cartão, com o que o efeito vale agora. Colunas sem conteúdo somem (`data-vazio`).
+- **`.afty-catalogo-linha`:** a linha de uma opção no Adicionar e nos Favoritos. A escolhida tem `aria-current="true"`. O catálogo separa "Para Ativar" de "Demais Opções".
+- **`.afty-catalogo-painel`:** o painel da opção escolhida, com a regra, a operação do item e o Confirmar.
+A lista viva está em `ficha-tema.js` (catálogo de seletores do Prompt IA).
 
 ### Vital (assinatura)
 Card com borda tingida pela cor do recurso (28% sobre a Borda, 55% no hover), ícone, rótulo, número grande em Consolas tabular na cor do recurso, máximo ao lado e trilho de barra embaixo. A cor vem de `--afty-vital-cor` e muda por `data-afty-vital` (pv, pe, pvtemp, alma).

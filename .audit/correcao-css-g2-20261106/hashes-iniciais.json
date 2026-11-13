@@ -1,0 +1,712 @@
+[
+  {
+    "Algorithm": "SHA256",
+    "Hash": "5BD1A3EAFDA476E028EF777FF4B830BB5D2EC772C7451478F4A81EE9BA2F2217",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\AftyFicha.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "CE80D0B2F699D50706986BB9291DC31FA90E0B7368404B351B4C6807E2C175C9",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\AftyFichaClassica.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "702354073590DFA6282B74DC19C585073CC8FFC142AC4E1FCBCDAE07ADE92B47",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\AftyFichaG2.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "B62931F9F5853C7480F970F9C067151C4F50BF5EA2245880B2E7E8596B55A5AD",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\BotaoDeDescanso.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "C09BDAAB5E00349A2289AA80047F0BFE7CE06FAA276BBE75625B575563D37E18",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\BuscaGlobal.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "BE8182C8D4A0BB3F490AA671393CA5BA3879F86BDAFC6AD44B7A0DC63F191C0C",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\CanalPicker.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "841A536171BFBD3D0EE072D18278AAB6BDF7EA78EB8D1F86C27F465B7F914D18",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ControleExpansao.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "A4304D7232B2F5095F900934136C611078A17EA18308022CA4D4FE5FCE5FC7CC",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ControlesDeArma.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "EF96DE4272553EAB695C1F888CB61B0E26173C3DC189A58EEF99FD6654ADF77D",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ControleTecnicaMaxima.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "C452E98AF6EA16E836A7C3D156CAEE614681B270E1977E5F15FF3FAC632874FB",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\fatias.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "A6DAD121CF35A31E23BCC1C3CECE2457685DD9A29823498166EBD81A38B3A37F",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-acoes.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "1DF5B1C0F19550B30144B66BC236A7B0AB1FFF9E5B242BCE814544DE0EDD3873",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-alma.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "0054E6596CF28D57B43916A377A69EB103961380D25881395BC96B2B368B12DF",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-ataque.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "E2A12655CAB3001071A9A23D45B54FB0069614C3DB83ACBE1D0404AFC3CCE9D5",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-barreiras-estado.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "53FA9556ED2F7BFC729753527BF451B1AF3765423487F2471FC5E8FAE55F5B2B",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-barreiras.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "7F996EFB5E660059F70392349EAA2E32A67136A530F21134BBFF9CEFEB24B945",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-buffs.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "9ABED1B9DFEFC2ACAD93691DBEA9BC75725CADD374367F4753E1C85E4324C1A3",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-combate-eventos.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "392A097875125D2FF02A8792DE9325CA98BA8FFC12B90E47B52138CBD047A346",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-concentracao.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "F8B6EECAE77D300AA3988C3896922BA1EEDD3097A49B9DFCD3D2B2011DF4D387",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-conteudo-acesso.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "10946FC3936C7D2F79071775714FEE973F1CEF73EE0017704CAD4EBEC57E2FFA",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-conteudo-combate.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "CAD5FD8C46066EBEF2D8B33AC95E926EAD6DC8004C65486490F7350A30B95BCE",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-conteudo-manobras.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "97532FE6666910D2654C9DC886A7D1AA68718230CA9745CC1971545CE26069CA",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-conteudo-testes.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "055EDF0AFD6A068E08C386D5AAC608DD2EB4D9395B9DC244AD410B884A39CA02",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-conteudo-uso.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "2E6A44B49CFE6906977E075C7F859BFC43D526E22450E3A52510345D12ACC878",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-conteudo.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "3802F259611B2BA1CE9EBC81DA51D864066D907A7E61516D8CFB34DED9B19CBF",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-dados-vida.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "FC8668F49B106C7A4A5CBD7344ECF667A840AF06383F44CF2A29B6D9515DCF18",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-dano-recebido.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "843B59034F364D1E58AE65D36CE3FF6400C7367BF8ACF6E1F9817ED6B3AB2909",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-dominio-confronto.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "AB90AB4141BFEE662058420D91B5AC7E3AD7063E941ECAC551D1987F1F48853D",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-especializacoes.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "63E3EF7DBDCC134DBA4D662F1CC1F5430D97328A23943E4A16F3B5B62D21DC2E",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-estados.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "42E10BD957663D7FBE58AB0D7AA99F017C7E699D5E5A1DD9470F846B2B9AC021",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-invocacao-uso.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "DD28449DEF6B2191778C016AFB02E069D87737FF39DDCDE82E6756DD57B5E908",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-morte.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "1AD27E12D43A52D49D3F847F847540D4BF8923F33E20907F09C3BECCFBDE6EDA",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-opcoes-derive.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "15090254B0791C1FC0AA1B0DDEF3E0A9AC433A6447FE8CB0C02E4F72339C766E",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-origens.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "7A3ED3C200509B01C25DD1684E7228FAC34FF694782F9309FBD4A63CC25F3125",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-preferencias.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "6F5A46C5F34033533BA1961B786C2A092B9C3C4AF803B99C1167BDD39C4F8D3B",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-recebidos.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "0A69712E51BEE6D480CDF942701ECB784A91C02D3A41BE5A55E2CEA822851E5F",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-rolagem.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "E15BF2F86F9DF515E7465FFBDFF945F2B0BB2EDB6C45BB5408B9CDA5C37FBF5D",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-sessao.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "6149202010A719B2675E25F055580AD0911D3D3B04A9BBBB92A0DC02EF88957D",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-tema.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "F3E47F1ACF71555B6063215DAC8450E8D06898B46D6C6AC05503F69DF65FCD9A",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-uso-clientes.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "08F5B0ADCBB26303AD28B795715B0959867E5B12B885A845B651A3254F632965",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-uso-estado.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "29C914DB64D1C70EED5B30F417A5DED166E99272528DE8372161C1809DA706A3",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-uso.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "B8C3B6DA0C2B80321B56BE13CB683635870D21A1E5A3C5F3D95DC6292AE79C7D",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-vital.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "ED0E3B58B3506DBE3E92AC803900D14FC5E7982CD17FBEEE0933D1A7060195AF",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-votos-regras.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "06BF05F72AC4B810EFD9D6481CB79E208CFE28F42A5A3CB285869B6107135889",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha-votos.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "F94FB84272E0B9A200584D71F557C32F660836E1EBD321B1EA2FCB9747593BE0",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ficha.css"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "F900AAEA08D57FFE8AA067637C9DA09F300AAE91766083E6786E55005BD080B9",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\GavetaDeCondicoes.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "637F3915A799950505758A20FE138367DA1D83697D533812670904C0F1976F10",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\GrupoComSubAbas.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "640E1016B57BC1E2B0FDBB3598ED1F1F6D22502567A17C5D64C5554324A262C8",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\ItemDeFicha.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "5113CAE9DD798C2531CB30D356C9B2C897C0AA882CAC1555430E566BA584D65D",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\pacotes-aliados.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "8D2213A21DAD2446B046E313E7762CA08C48788DAA87A721AD772AA0546DBF4D",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\pacotes-familias.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "8F28811D52859566842CA44ADE2B7651A9C8E0BCB421FCE79EBEAB51B6761E69",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\PainelAcoesAddon.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "C421089250271D7622894C8F83171467B41F5CCFC779AB202EE6FA612DBED840",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\PainelBloodfeast.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "754A8CA27EC59D4B13E6FE8C5DFC5CC151E6E7E3BB2AD8D5007A21903555F301",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\PainelContadoresSessao.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "13EF3980232C7C2431919BE1E51D5484D03388A933F988D5F62326004691B717",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\PainelConteudo.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "20FC6E9FA20B8D922C0CC315157D4DE4DC503AFAD55FB58D6D85300CDFAEE04C",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\PainelDeAdaptacao.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "7ADCC51E49B2F67428C0C9ACACE1E0054B088A6B69A4C756B5B8612DE518D45D",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\PainelDeAparencia.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "03430EB5E79B9A0C8B32D462E22F7B453F2DE988C05B603487AEA316AB4937A4",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\PainelDeConcessao.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "D196A7E9BBDDA07CD4F1D07F8283E86E3D714F080816215B99B091AD10BB89E3",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\PainelDeImitacao.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "3036A228785D3E2BDBA271457F09C9DC83382B6B5DD4E9415CAEC0D59AD5610D",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\PainelDeRolagens.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "F69AF08C70768DF51EB56C163CB22CB696B8010B9FBFD48972FFB9EA59FF8269",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\PainelDharma.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "7E4265335A3739CEB6B71F8152E78998F7604D9AD66DFB5CA03B6FD4DF19A4ED",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\PainelDoGolpeEspecial.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "87C949C4846018C53D1B956EA0965288644FEE651D1AC6764CE7F47B772012DD",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\PainelDoVislumbre.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "CB8E668F9491FD7DC3782DED20A7355BBDE2AB37202588BB6F1287CE90A656D9",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\PainelGungnir.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "6480A9B8A1DFC50D7A4D141C37A1DD5AD56C2A9CE0105A91BF5EE7511B14907F",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\PainelManipulacaoCeu.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "F2F164F2155747E5C3CCF7AB38F0731DF7AE61EEBA2E93C2188B83360FF4CCF3",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\PainelOlhinhosLu.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "E2A86BBCF8998264FB9F9585DD5853A1386318F006E57EDC02DA49834FE43307",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\PainelOlhosAgulha.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "89CCDCE5E00CE6E54FC63AEC2C7C75DA4295C1EA91B359AD71A1F4328ADD7D58",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\PainelOrigens.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "358075618584DA358278981F550D58110F048D914111A33D5E4E61762CD62E64",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\SubAbas.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "1C40A058EA7431DAC4231CE20DBD3B3DA9590B04C16412DF19841D15666A6F82",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\usar-delta-dos-estados.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "B3CE71913C80B4963125CD3BE069D48C317DA9BD8B888583D79C67A08A807D27",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\usar-destaque.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "02454657F648213515E9AB9C88C020F3B6BD656F7560F5B9B29A764B47167456",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas\\AbaAcoes.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "F4557AB5C4D0F0BADC1DE94635BB7859D07A0BE724924002CBBA3CF6C385B9EA",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas\\AbaBuffs.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "9A664B4D29EFE1880040073FAD6668A6C2C57210CA2C082C1FD7D40D5C8B3CFE",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas\\AbaEquipamentos.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "843E73F4E314B3FC86E9ABEB840940751F227DA046023AE1CA481B4A0BFA4167",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas\\AbaHabilidades.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "CD06A9C739AAE4C58B2FEBA3B7D3E358E69313DE38054A1FC8B89121F4993DE4",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas\\AbaInvocacoes.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "51DCD9C2C53EE20E905B1C0633EF420B2DC3B7C1DC69AAD1FE21573E634B3775",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas\\AbaPericias.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "0DD39EFD793EDACFD5926017D31725BD49946A6CA5E9E54036E0519BCE649B0A",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\aba-congelada.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "6DC7571167D697BF48FA3828910FD7C44971AE415AF2A326C9C066C49E71E4BE",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\abas-g2.css"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "F066D60665096300FA209928EB75A3FDDF388C0A31B00B2C0E370B267B2D4FCB",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\AcoesG2.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "2B9BC6D7499A4050A9BFF4673CDF61D0BB0BB8DB9FC71F557F86A9D2C7178252",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\busca-g2.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "1F78C0F505B861B64D964C27AEA13B0244D52FAC39B12468D59CF55C152FD471",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\EquipamentosG2.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "46ECAE5BC53A575DEE98CB24D71E0E29FE1298D24FA308E7B8AD2A4C951B993C",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\mesa-celulas.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "3FF289A27D341608C0FD4C915C21E455DED8631487850EF028B205C6061B3ECA",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\MesaG2.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "7DEAFEE4C94F462CB809995C2E9932D508E524AD0BAB4A6AD9B96235860AEF87",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\pecas-mesa.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "50809DEBBE5AC305BE191B24F8C1F1E7B460CEFE618A2747514016BFC1976A32",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\PericiasG2.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "CA593C28571272DB99A3102B3C782772D860BAFB2EB244E44453B8ED12AA0CF8",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\rapido-g2.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "FFD77830BEB74698546C002EECECFE6546C6C67A3DAE2ECC8BD5C8FDA90CBC4A",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\rolagem-g2.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "19A1043371318520C9BAFE765C921DEDC0A1AAC4BF151B891591E9134CBF0D83",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\rolagens-acoes.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "3BC66DBA8297532D444AB224DB040938C5406DA4FD275A0310D8DA51796B98A6",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\abas-g2\\usar-destaque-g2.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "E3864156CB343298B5DD940101748D125E92836C5614DF728E0305B705A6793B",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\buff-mesa-logica.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "A58CB908E3FD8C5E7A5525D329002B9F28A7F1BE927E8A895F53FC61575713FE",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\BuffDeMesaG2.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "91373077B35D9F41820753D886FA680D219BCD9A3B88D55A19C776DED46DFEF5",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\CabecalhoG2.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "368902A52019E41BF5169F732D41442EA247F0D707A4108830B1CA65C3C48D69",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\CatalogoG2.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "E61AB2F741B552AC032EBC8A12A3CCC727AB8002B4DE780C4C83A6961C891CD6",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\CompactaG2.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "993401CFB37C420FA9733EDFFDB42BFB62708FB3ED0867704D47408E41B03463",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\concedido-logica.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "A48B7765B7FD78798FD2039448DAD4D7097099DA1886DBE06E046C418A6FC808",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\ConcedidoG2.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "3B4CD4098D5C6FAE0DDC0F861AFC15595754115DC15C339DCECC37D42D187B91",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\ConsultaG2.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "5342018BE0142AA31D37B1540BC8CDCD2C8D8A18EA4F16E4724FD07846F02FD9",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\efeitos-dados.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "FB884D72E5924C1B8CE99FFEFA56759698F2BE81E434CD52E35CE1F3FEFD476D",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\efeitos-g2.css"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "A2EE686E810DD5024516667BA73B4D718E827528ADDFB8716EDE62640B72B98A",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\EncerradosG2.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "1E2658974C38ED0FF735CE6F092B92AD275D15383A6CB3AE148390860E825EF3",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\estatisticas.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "C291814AEF10DAC441E4D056D906C1ED803E4E19CA68213432AB7902A76ECA72",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\EstatisticasConfig.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "A5CCD32E730BD8581236F39C97B7C4E3A0A22549AF6246D378068C473F5BB8EC",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\exaustao-logica.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "B2623125B437BA5E8A062F2057A2A3CB1E905B1BF8B72E3AC19DE61481965648",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\ExaustaoG2.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "A6090B08F2CB28D3B18EEBB22787B28DC0FF9D656A28BF0D3259C046645A33C8",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\exemplos.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "880AE9CEBB4AE64B81A81B3245F64BB85619E632D1A4C7273AA3B77BA07E3BFC",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\feitico.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "0A18186B2BDC8566A88B7AF3365C5D5C210D3235B0EA44EAB23353CDD94909C7",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\g2-dados.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "E53064DFAC6F967294CB36FAF47EFE1CF60FD4AAD119B7CA073B22F7162055FD",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\g2-golpe.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "B09688E94E928C71B5379FFAC574F3E290FC709678747FAE8DC14581E819E62D",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\g2-linha-do-tempo.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "266BF5B0EAD1FB5359440691A7D9FC7DE5CB387E42B95127E17192F32FCD50E3",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\g2-preparo.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "B9C6373DEEE17F65C058A3EBA5562FB4689B3BDFB88A1A3780B88B289ABA47C2",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\g2-uso.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "D3B13F2487EBB8E53A5609C8DAB47C6FEE0F6E73178D50B25BB5C42B36F248FD",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\gestor-logica.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "7454FACB9AB0472507B8B66E268A853E59D3BEAE4CE46B0DA30974575D7F635E",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\Gestor.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "6B1F5C7094C81BBD2378A4082EDC12A4567B2A96211E5681CE25E95A7DBB4487",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\habilidades-logica.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "265F1EA9EE7620284A979C1102B1B1FC0D9227EDCACC0C06EF22C2BBB7F4559F",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\HabilidadesG2.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "9F4C1E8D1519304E34F50EA1254186F8E22ACAC4685372BCFDF44C5E5DEAA596",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\historico-logica.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "E059AB89ED4BECC45CA6282C29E1532402A960B5585AEDD97E654A8CEB6B7E11",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\HistoricoSessao.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "BA552B74FA07DE56E1D7FB15D2787D7321D53F279E7CA2ACA156DF3FD2C13B7C",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\imitacao-logica.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "A12DD1F7AB099F71843CAFC2C6FC2F3CBA1F4768D261CAF932E54BBF0AE919A8",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\ImitacaoG2.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "81822291EF1254F71C996C677C1B4C1D08B102DEB3572D564DBEB7C82B82B120",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\LinhaDoTempoG2.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "B90B9B12C5155584BBE4B9A05CACB826D4A596A31510B4581483504210DCF19E",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\mesa-verbos.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "529EE93F12969AD43B8D7943DE338C8B61F4EBE1B0784D4799410AC8D7C3DAF4",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\operacoes-uso.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "B18EE50EB25E01FAF3A15D14297836DCFCB8394D042C5A175B5AB7332870500D",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\operacoes.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "7193D265FCE84BD2D7C90B6F18DAF296C0AC3047ECD52734F75076895B29BE1B",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\PacotesPecas.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "5F6AE7147FFC48B2F4D1CBD16066502690E17D60E2EC77DB06155DBB3F45D04C",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\ParaAliadosG2.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "FBE3AC878087A512FA48E5EA1BA8CC534DA3EFE980EEE51BEE7C48463EBB20CE",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\pecas-logica.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "4438515BEBAA19531BFA3D6B667F1AB35226F56CE10051B717982B8654C595C6",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\pecas.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "A2002B67BB57E07EA00D0CFBE6D87DC7B779C3A2DE3199B5653E77509F3C0D71",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\PecasG2.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "00A5B475626CDFD8FB3851FB64DAF2586617D86FFFFE349D314B18B271ED79AF",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\ponte.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "7D22C53595A12268AEAC711C7CFB3B5298A004CB07427FF965CC7B3479B1E060",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\preparo-logica.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "30366C67E544E467BF90B2140FDBE22914AA03C3BA7F7524500C97F237A5A668",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\PreparoG2.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "F34BE6D1BE8CA71517FC4587AF72A571052D125685CA56345138BB499B5293EB",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\recebidos.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "8D7E2A4693A33EE6D25DFD0FCF0359DBB30A845667F57FADE098A54766B0CF03",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\RecebidosG2.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "6F9D52D682DB9AE69A266A269E058C20589FE980A9C67F596F47F3D3E464D66F",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\repertorio.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "E193D9AB9AE691C516325A6626A5176B3B35861338E341BD57D98D9D824E04AF",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\rolagem-g2.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "883AE39042B3847B5D76594C406F12F74D2EDAF138A8B6AB3D34BA3656665429",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\sessao-g2.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "8F115643C00F18D3EFF38120A8A956C94D854AE3AC7D961ADD99D533BCDB37ED",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\ui-fontes.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "5CEEAD6BCDEB7812C63B5835F1FD9C5D47921184EB6F7791CA2375182C6DAE94",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\useEfeitosG2.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "03195507944CBB22A16AF2F730FE4D76E957F8D4B01750F96C711FEC97F01FFC",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\useModeloG2.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "0CE0530B66D35122F6E2082904B30A72C68A3AD897C4A204770B341615B0BF56",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\UsoG2.jsx"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "449DCAD9BDCE888CD07AC21908AEC28790172AFD1180733D88517C11A827DB32",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\util.js"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "37FC3CDB4E26111F471F70670FCB40ADDDA0A4747251C3E5B3507300F13AC2AD",
+    "Path": "C:\\Projetos\\Grimorio\\grimorio-tracker\\src\\systems\\afty\\ficha\\efeitos\\VisaoG2.jsx"
+  }
+]

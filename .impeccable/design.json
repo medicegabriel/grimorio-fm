@@ -1,0 +1,470 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-08T23:46:36.973Z",
+  "title": "Design System: Grimório Tracker",
+  "extensions": {
+    "colorMeta": {
+      "fundo": {
+        "role": "neutral",
+        "displayName": "Chão",
+        "canonical": "#060910",
+        "tonalRamp": [
+          "#1c2231",
+          "#23345d",
+          "#314982",
+          "#3f5ea7",
+          "#5877c0",
+          "#889fd2",
+          "#bcc9e6",
+          "#eff1f6"
+        ]
+      },
+      "card": {
+        "role": "neutral",
+        "displayName": "Card",
+        "canonical": "#0f172a",
+        "tonalRamp": [
+          "#1b2231",
+          "#22335e",
+          "#2f4884",
+          "#3c5da9",
+          "#5676c3",
+          "#879ed4",
+          "#bbc8e7",
+          "#eff1f6"
+        ]
+      },
+      "poco": {
+        "role": "neutral",
+        "displayName": "Poço",
+        "canonical": "#020617",
+        "tonalRamp": [
+          "#131a3a",
+          "#0a1f75",
+          "#0e2ba4",
+          "#1237d3",
+          "#2c51ed",
+          "#6983f2",
+          "#abb9f8",
+          "#eceef9"
+        ]
+      },
+      "borda": {
+        "role": "neutral",
+        "displayName": "Borda",
+        "canonical": "#1e293b",
+        "tonalRamp": [
+          "#1f242e",
+          "#2b3b55",
+          "#3c5276",
+          "#4d6a98",
+          "#6783b2",
+          "#93a7c8",
+          "#c2cde0",
+          "#f0f2f5"
+        ]
+      },
+      "borda-forte": {
+        "role": "neutral",
+        "displayName": "Borda Forte",
+        "canonical": "#334155",
+        "tonalRamp": [
+          "#21252c",
+          "#303d50",
+          "#435570",
+          "#566e8f",
+          "#7087a9",
+          "#99aac2",
+          "#c6cfdd",
+          "#f0f2f4"
+        ]
+      },
+      "texto": {
+        "role": "neutral",
+        "displayName": "Texto",
+        "canonical": "#f1f5f9",
+        "tonalRamp": [
+          "#1d262f",
+          "#264059",
+          "#36597d",
+          "#4573a1",
+          "#5e8cba",
+          "#8dadce",
+          "#bfd1e3",
+          "#eff2f5"
+        ]
+      },
+      "texto-suave": {
+        "role": "neutral",
+        "displayName": "Texto Suave",
+        "canonical": "#94a3b8",
+        "tonalRamp": [
+          "#22252b",
+          "#333e4d",
+          "#47566b",
+          "#5c6f8a",
+          "#7588a3",
+          "#9dabbe",
+          "#c8d0da",
+          "#f1f2f4"
+        ]
+      },
+      "texto-fraco": {
+        "role": "neutral",
+        "displayName": "Texto Fraco",
+        "canonical": "#75849b",
+        "tonalRamp": [
+          "#23252a",
+          "#363e4a",
+          "#4b5668",
+          "#606f85",
+          "#7a889f",
+          "#a0abba",
+          "#cad0d8",
+          "#f1f2f3"
+        ]
+      },
+      "destaque": {
+        "role": "primary",
+        "displayName": "Roxo de Destaque",
+        "canonical": "#a855f7",
+        "tonalRamp": [
+          "#27113b",
+          "#41067a",
+          "#5b08aa",
+          "#750adb",
+          "#8f24f5",
+          "#af63f8",
+          "#d2a7fb",
+          "#f2ebf9"
+        ]
+      },
+      "destaque-texto": {
+        "role": "primary",
+        "displayName": "Lilás de Texto",
+        "canonical": "#d8b4fe",
+        "tonalRamp": [
+          "#26103d",
+          "#3e027e",
+          "#5702b0",
+          "#7003e2",
+          "#891dfc",
+          "#ab5efd",
+          "#d0a4fe",
+          "#f2ebfa"
+        ]
+      },
+      "destaque-fundo": {
+        "role": "primary",
+        "displayName": "Véu Roxo",
+        "canonical": "#581c8766",
+        "tonalRamp": [
+          "#281735",
+          "#45166a",
+          "#601f94",
+          "#7c27be",
+          "#9541d8",
+          "#b478e3",
+          "#d5b3ef",
+          "#f3edf7"
+        ]
+      },
+      "pv": {
+        "role": "secondary",
+        "displayName": "Rosa de Vida",
+        "canonical": "#f43f5e",
+        "tonalRamp": [
+          "#3b1219",
+          "#79071a",
+          "#a90a25",
+          "#d90c2f",
+          "#f32649",
+          "#f6657e",
+          "#faa8b6",
+          "#f9ebee"
+        ]
+      },
+      "pe": {
+        "role": "secondary",
+        "displayName": "Azul de Energia",
+        "canonical": "#38bdf8",
+        "tonalRamp": [
+          "#112e3c",
+          "#04577b",
+          "#0679ac",
+          "#089cde",
+          "#21b5f7",
+          "#61cbf9",
+          "#a6e2fc",
+          "#ebf5f9"
+        ]
+      },
+      "pe-temp": {
+        "role": "secondary",
+        "displayName": "Ciano de PE Temporário",
+        "canonical": "#67e8f9",
+        "tonalRamp": [
+          "#11373b",
+          "#056d7b",
+          "#0799ac",
+          "#09c4dd",
+          "#22def6",
+          "#62e7f9",
+          "#a7f2fc",
+          "#ebf8f9"
+        ]
+      },
+      "alma": {
+        "role": "secondary",
+        "displayName": "Magenta de Alma",
+        "canonical": "#e879f9",
+        "tonalRamp": [
+          "#36113b",
+          "#6b057a",
+          "#9508ab",
+          "#c00adc",
+          "#d923f5",
+          "#e463f8",
+          "#f0a7fb",
+          "#f7ebf9"
+        ]
+      },
+      "cura": {
+        "role": "secondary",
+        "displayName": "Verde de Cura",
+        "canonical": "#34d399",
+        "tonalRamp": [
+          "#17352a",
+          "#17694b",
+          "#209369",
+          "#29bd87",
+          "#42d6a0",
+          "#79e2bc",
+          "#b4efd9",
+          "#edf7f4"
+        ]
+      },
+      "aviso": {
+        "role": "tertiary",
+        "displayName": "Âmbar de Aviso",
+        "canonical": "#fbbf24",
+        "tonalRamp": [
+          "#3c3010",
+          "#7d5b02",
+          "#af7f03",
+          "#e1a404",
+          "#fbbd1e",
+          "#fcd05f",
+          "#fde5a5",
+          "#faf6eb"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "body": {
+        "displayName": "Body",
+        "purpose": "Texto de linha e descrição de Habilidade."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Botões, abas e campos."
+      },
+      "row": {
+        "displayName": "Linha",
+        "purpose": "Nome de item e de linha de lista."
+      },
+      "micro": {
+        "displayName": "Micro",
+        "purpose": "Chips e marcas de valor fixo."
+      },
+      "section-title": {
+        "displayName": "Título de Seção",
+        "purpose": "Título de card em caixa alta pequena."
+      },
+      "value": {
+        "displayName": "Valor",
+        "purpose": "Valores derivados no G2."
+      },
+      "vital-number": {
+        "displayName": "Número de Vital",
+        "purpose": "PV, PE e Alma em Consolas tabular."
+      }
+    },
+    "shadows": [
+      {
+        "name": "card",
+        "value": "0 2px 10px rgb(0 0 0 / 0.45)",
+        "purpose": "Cards de seção e vitais."
+      },
+      {
+        "name": "veu",
+        "value": "rgb(0 0 0 / 0.55)",
+        "purpose": "Fundo atrás de busca e painel de aparência."
+      }
+    ],
+    "motion": [
+      {
+        "name": "hover-controle",
+        "value": "140ms",
+        "purpose": "Cor de texto e borda em botão, aba e passo."
+      },
+      {
+        "name": "hover-vital",
+        "value": "160ms",
+        "purpose": "Borda do vital."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "xs",
+        "value": "480px"
+      },
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Superfície de seção da Ficha Final.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-titulo\">Defesas</div><div class=\"ds-card-corpo\">Conteúdo da seção</div></div>",
+      "css": ".ds-card{border:1px solid #1e293b;border-radius:12px;background:#0f172a;box-shadow:0 2px 10px rgb(0 0 0 / .45);padding:12px 16px;color:#f1f5f9;font-family:ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;font-size:14px}.ds-card-titulo{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:#94a3b8;margin-bottom:6px}"
+    },
+    {
+      "name": "Botão",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Ação comum. O hover só troca a cor da borda e do texto.",
+      "html": "<button class=\"ds-botao\">Rolar Dano</button>",
+      "css": ".ds-botao{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid #656b79;border-radius:8px;background:#0f172a;color:#94a3b8;font:600 13px ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;padding:6px 12px;cursor:pointer;transition:color 140ms,border-color 140ms,background-color 140ms}.ds-botao:hover{color:#f1f5f9;border-color:#a855f7}.ds-botao:focus-visible{outline:2px solid #a855f7;outline-offset:2px}"
+    },
+    {
+      "name": "Botão de Destaque",
+      "kind": "button",
+      "refersTo": "button-highlight",
+      "description": "Ação ativa ou principal do momento.",
+      "html": "<button class=\"ds-botao-destaque\">Usar Habilidade</button>",
+      "css": ".ds-botao-destaque{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid rgb(168 85 247 / .55);border-radius:8px;background:rgb(88 28 135 / .4);color:#d8b4fe;font:600 13px ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;padding:6px 12px;cursor:pointer;transition:color 140ms,border-color 140ms}.ds-botao-destaque:hover{border-color:#a855f7;color:#f1f5f9}.ds-botao-destaque:focus-visible{outline:2px solid #a855f7;outline-offset:2px}"
+    },
+    {
+      "name": "Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Rótulo curto de valor fixo. Nunca para frase.",
+      "html": "<span class=\"ds-chip\">Nível 20</span>",
+      "css": ".ds-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:9999px;border:1px solid #334155;background:#020617;color:#94a3b8;font:600 11px ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;white-space:nowrap}"
+    },
+    {
+      "name": "Chip de Destaque",
+      "kind": "chip",
+      "refersTo": "chip-highlight",
+      "description": "Rótulo curto ativo ou selecionado.",
+      "html": "<span class=\"ds-chip-destaque\">Ativo</span>",
+      "css": ".ds-chip-destaque{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:9999px;border:1px solid rgb(168 85 247 / .55);background:rgb(88 28 135 / .4);color:#d8b4fe;font:600 11px ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;white-space:nowrap}"
+    },
+    {
+      "name": "Abas",
+      "kind": "nav",
+      "refersTo": "tab",
+      "description": "Navegação principal da Ficha: texto com sublinhado de 2 px.",
+      "html": "<div class=\"ds-abas\"><button class=\"ds-aba\">Ações</button><button class=\"ds-aba\" aria-selected=\"true\">Perícias</button><button class=\"ds-aba\">Habilidades</button></div>",
+      "css": ".ds-abas{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}.ds-aba{padding:8px 14px;border:0;border-bottom:2px solid transparent;background:none;color:#94a3b8;font:600 13px ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;white-space:nowrap;cursor:pointer;transition:color 140ms ease-out}.ds-aba:hover{color:#f1f5f9}.ds-aba[aria-selected=\"true\"]{color:#d8b4fe;border-bottom-color:#a855f7}.ds-aba:focus-visible{outline:2px solid #a855f7;outline-offset:-2px}"
+    },
+    {
+      "name": "Campo",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Entrada de texto afundada em Poço.",
+      "html": "<input class=\"ds-campo\" placeholder=\"Buscar\" />",
+      "css": ".ds-campo{border:1px solid #334155;border-radius:8px;background:#020617;color:#f1f5f9;font:13px ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;padding:6px 10px;outline:none;transition:border-color 140ms}.ds-campo::placeholder{color:#75849b}.ds-campo:focus-visible{border-color:#a855f7}"
+    },
+    {
+      "name": "Vital",
+      "kind": "custom",
+      "refersTo": "vital",
+      "description": "Card de PV, PE, PV Temporário ou Alma, com a cor do recurso na borda e no número.",
+      "html": "<div class=\"ds-vital\"><span class=\"ds-vital-rotulo\">PV</span><span class=\"ds-vital-numero\">142</span><span class=\"ds-vital-max\">/ 180</span></div>",
+      "css": ".ds-vital{--cor:#f43f5e;display:flex;align-items:baseline;gap:8px;border:1px solid color-mix(in srgb,var(--cor) 28%,#1e293b);border-radius:12px;background:#0f172a;padding:10px 12px;transition:border-color 160ms}.ds-vital:hover{border-color:color-mix(in srgb,var(--cor) 55%,#1e293b)}.ds-vital-rotulo{font:700 11px ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;letter-spacing:.09em;color:#94a3b8}.ds-vital-numero{font:700 24px/1.1 ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums;color:var(--cor)}.ds-vital-max{font:12px ui-monospace,Consolas,monospace;color:#75849b}"
+    }
+  ],
+  "narrative": {
+    "northStar": "A Mesa de Conferência",
+    "overview": "O app existe para conferir número contra o livro. O visual é escuro, denso e sóbrio, com camadas de azul-ardósia sobre um fundo quase preto. O roxo é a única cor de marca, e as outras cores só aparecem quando significam recurso ou estado. O criador calcula, ele não ensina.",
+    "keyCharacteristics": [
+      "Tema escuro fixo, sem versão clara do app.",
+      "Alta densidade, alvos de 44 px só em ponteiro grosso.",
+      "Roxo raro. PV, PE, Alma, cura e aviso são cores com significado fixo.",
+      "Contornos finos no lugar de sombras pesadas, raio de 8 a 12 px.",
+      "Número em fonte própria, alinhado pela linha de base do texto vizinho.",
+      "Cada número derivado revela suas parcelas no hover."
+    ],
+    "rules": [
+      {
+        "name": "A Regra do Roxo Raro",
+        "body": "Roxo marca seleção, foco e o que está ativo agora. Se uma tela inteira fica roxa, o destaque perdeu o sentido.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra da Cor com Significado",
+        "body": "PV é rosa, PE é azul, Alma é magenta, cura é verde, aviso é âmbar. Nenhuma dessas cores serve de decoração.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra do Token",
+        "body": "Na Ficha Final cor, borda, raio, sombra, fundo e fonte saem de --afty-*. Utilidade de cor do Tailwind só no criador.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra da Linha de Base",
+        "body": "Número ao lado de texto alinha pela base, não pelo centro.",
+        "section": "typography"
+      },
+      {
+        "name": "A Regra do Piso de 11 px",
+        "body": "Nenhum texto da Ficha Final fica abaixo de 11 px.",
+        "section": "typography"
+      },
+      {
+        "name": "A Regra do Title Case",
+        "body": "Rótulos, chips e toggles escrevem em Title Case com conectores curtos em minúscula.",
+        "section": "typography"
+      },
+      {
+        "name": "A Regra do Chão Barato",
+        "body": "Efeito que re-pinta a tela a cada quadro não entra em área grudada nem em área que rola.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do pintar a Ficha Final só com --afty-* e usar Tailwind nela apenas para layout.",
+      "Do mostrar o resultado e o aviso de problema real em âmbar, com o ícone AlertTriangle.",
+      "Do alinhar número e texto pela linha de base.",
+      "Do usar Title Case em rótulos, chips e toggles.",
+      "Do reservar o roxo para seleção, foco e o que está ativo.",
+      "Do manter alvos de 44 px em pointer: coarse e respeitar prefers-reduced-motion.",
+      "Do tratar campo de texto livre como marcação, nunca como HTML."
+    ],
+    "donts": [
+      "Don't usar travessão (U+2014) nem ponto e vírgula em texto de tela.",
+      "Don't escrever texto explicativo solto no criador.",
+      "Don't usar cápsula de raio total em frase.",
+      "Don't usar backdrop-filter nem background-attachment: fixed em área grudada ou rolável.",
+      "Don't usar o caractere U+26A0 como aviso.",
+      "Don't dar a PV, PE, Alma, cura ou aviso uma cor diferente da sua.",
+      "Don't editar src/index.css nem src/components/.",
+      "Don't usar o title nativo para descrição de catálogo."
+    ]
+  }
+}

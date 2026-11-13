@@ -1,0 +1,128 @@
+ M AGENTS.md
+ M CLAUDE.md
+ M asserts/LEIA.md
+ M asserts/t-ataque-concentrado.mjs
+ M asserts/t-bases-lut-cmb.mjs
+ M asserts/t-carteira.mjs
+ M asserts/t-dano-acerto-amaldicoado.mjs
+ M asserts/t-sistema.mjs
+ M asserts/t-treinos-especiais.mjs
+ M asserts/t-uniforme-escudo.mjs
+ M docs/a-fazer.md
+ M docs/afty-addons.md
+ M docs/afty-efeitos-criatura.md
+ M docs/afty-equipamentos.md
+ M docs/afty-formulas-base.md
+ M docs/afty-motor-referencia-estrutural.md
+ M docs/afty-player.md
+ M docs/afty-status.md
+ M package.json
+ M src/App.jsx
+ M src/components/Dashboard.jsx
+ M src/systems/afty/AftyCreatureBuilder.jsx
+ M src/systems/afty/AftyTabAddons.jsx
+ M src/systems/afty/afty-addons.js
+ M src/systems/afty/afty-alto-nivel.js
+ M src/systems/afty/afty-atributos.js
+ M src/systems/afty/afty-combate-aptidoes.js
+ M src/systems/afty/afty-combate-conjurador.js
+ M src/systems/afty/afty-dano.js
+ M src/systems/afty/afty-derive.js
+ M src/systems/afty/afty-efeitos-conteudo.js
+ M src/systems/afty/afty-efeitos.js
+ M src/systems/afty/afty-equipamentos.js
+ M src/systems/afty/afty-especializacoes.js
+ M src/systems/afty/afty-feiticos.js
+ M src/systems/afty/afty-pericias.js
+ M src/systems/afty/afty-regras-addon.js
+ M src/systems/afty/afty-schema.js
+ M src/systems/afty/afty-sistema.js
+ M src/systems/afty/afty-treinos-especiais.js
+ M src/systems/afty/encontros/PainelDeCombatente.jsx
+ M src/systems/afty/encontros/usar-encontro-afty.js
+ M src/systems/afty/ficha/AftyFicha.jsx
+ M src/systems/afty/ficha/abas/AbaAcoes.jsx
+ M src/systems/afty/ficha/abas/AbaPericias.jsx
+ M src/systems/afty/ficha/ficha-conteudo.js
+ M src/systems/afty/ficha/ficha-rolagem.js
+ M src/systems/afty/ficha/ficha-sessao.js
+?? .audit/alma-livre-browser.mjs
+?? .audit/alma-livre-ficha.json
+?? .audit/alma-livre-report.json
+?? .audit/alma-livre-shots/
+?? .audit/energica-critico-asserts.txt
+?? .audit/energica-critico-browser.mjs
+?? .audit/energica-critico-ficha-anexada.json
+?? .audit/energica-critico-report.json
+?? .audit/energica-critico-shots/
+?? .audit/energica-durante-asserts.txt
+?? .audit/energica-durante-browser.mjs
+?? .audit/energica-durante-report.json
+?? .audit/energica-durante-shots/
+?? .audit/energica-visivel-browser.mjs
+?? .audit/energica-visivel-report.json
+?? .audit/energica-visivel-shots/
+?? .audit/gojo-player-baseline-asserts.txt
+?? .audit/gojo-player-browser.mjs
+?? .audit/gojo-player-check.json
+?? .audit/gojo-player-check.mjs
+?? .audit/gojo-player-final-asserts.txt
+?? .audit/gojo-player-lint.txt
+?? .audit/gojo-player-primeira-validacao.txt
+?? .audit/gojo-player-report.json
+?? .audit/gojo-player-shots/
+?? .audit/implemento-marcial-baseline/
+?? .audit/implemento-marcial-browser.mjs
+?? .audit/implemento-marcial-report.json
+?? .audit/implemento-marcial-shots/
+?? .audit/propriedades-armas-browser.mjs
+?? .audit/propriedades-armas-encontro-report.json
+?? .audit/propriedades-armas-encontro.mjs
+?? .audit/propriedades-armas-report.json
+?? .audit/propriedades-armas-shots/
+?? .audit/resiliente-baseline/
+?? .audit/resiliente-browser-report.json
+?? .audit/resiliente-browser.mjs
+?? .audit/resiliente-diff-asserts__LEIA.md.txt
+?? .audit/resiliente-diff-asserts__t-uniforme-escudo.mjs.txt
+?? .audit/resiliente-diff-docs__a-fazer.md.txt
+?? .audit/resiliente-diff-docs__afty-equipamentos.md.txt
+?? .audit/resiliente-diff-docs__afty-status.md.txt
+?? .audit/resiliente-diff-src__systems__afty__AftyCreatureBuilder.jsx.txt
+?? .audit/resiliente-diff-src__systems__afty__afty-equipamentos.js.txt
+?? .audit/resiliente-shots/
+?? .audit/talentos-iniciais-afty.json
+?? .audit/talentos-iniciais-asserts.txt
+?? .audit/talentos-iniciais-browser.mjs
+?? .audit/talentos-iniciais-player.json
+?? .audit/talentos-iniciais-report.json
+?? .audit/talentos-iniciais-shots/
+?? .audit/terceira-classe-browser.mjs
+?? .audit/terceira-classe-report.json
+?? .audit/terceira-classe-shots/
+?? .audit/treinamento-aptidao-browser.mjs
+?? .audit/treinamento-aptidao-report.json
+?? .audit/treinamento-aptidao-shots/
+?? .audit/ultima-pasta-asserts.txt
+?? .audit/ultima-pasta-browser.mjs
+?? .audit/ultima-pasta-report.json
+?? .audit/ultima-pasta-shots/
+?? addons/player-alto-nivel-afty.json
+?? addons/player-progressao-epica.json
+?? addons/talentos-iniciais.json
+?? asserts/t-fontes-revisao.mjs
+?? asserts/t-player-progressao-epica.mjs
+?? asserts/t-propriedades-armas.mjs
+?? asserts/t-reconciliacao-g00.mjs
+?? asserts/t-revisao-g00.mjs
+?? asserts/t-talentos-iniciais.mjs
+?? docs/afty-player-progressao-epica.md
+?? docs/afty-talentos-iniciais.md
+?? docs/revisao-automacao/
+?? previas/
+?? scripts/
+?? src/systems/afty/afty-ataque-concentrado.js
+?? src/systems/afty/afty-propriedades-armas.js
+?? src/systems/afty/ficha/ControlesDeArma.jsx
+?? src/systems/afty/ui/EscolhaTipoEncantamento.jsx
+?? src/useDashboardView.js

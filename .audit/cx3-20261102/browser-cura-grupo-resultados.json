@@ -1,0 +1,66 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "g2": false,
+    "catalogo": true,
+    "encontro": true,
+    "persistenciaDaRolagem": true
+  },
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "g2": true,
+    "catalogo": true,
+    "encontro": false,
+    "persistenciaDaRolagem": false
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "g2": false,
+    "catalogo": true,
+    "encontro": true,
+    "persistenciaDaRolagem": true
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "g2": true,
+    "catalogo": true,
+    "encontro": false,
+    "persistenciaDaRolagem": false
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "g2": false,
+    "catalogo": true,
+    "encontro": true,
+    "persistenciaDaRolagem": true
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "g2": true,
+    "catalogo": true,
+    "encontro": false,
+    "persistenciaDaRolagem": false
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "g2": false,
+    "catalogo": true,
+    "encontro": true,
+    "persistenciaDaRolagem": true
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "g2": true,
+    "catalogo": true,
+    "encontro": false,
+    "persistenciaDaRolagem": false
+  }
+]

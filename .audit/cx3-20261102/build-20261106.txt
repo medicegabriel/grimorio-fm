@@ -1,0 +1,24 @@
+
+> grimorio-tracker@0.0.0 build
+> vite build
+
+vite v8.0.8 building client environment for production...
+[2K
+transforming...✓ 1810 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                      1.03 kB │ gzip:   0.56 kB
+dist/assets/lanterna-coletora-BtjSWi8x.webp         29.13 kB
+dist/assets/usar-delta-dos-estados-B40buZFK.css     77.21 kB │ gzip:  13.86 kB
+dist/assets/AftyFichaG2-BeAIPXjg.css               100.90 kB │ gzip:  17.45 kB
+dist/assets/index-CQozQmoE.css                     152.65 kB │ gzip:  22.14 kB
+dist/assets/AftyFichaG2-_vPo88im.js                390.47 kB │ gzip: 109.43 kB
+dist/assets/usar-delta-dos-estados-MrqlNaVd.js   1,941.17 kB │ gzip: 570.68 kB
+dist/assets/index-DeZCANfK.js                    4,440.68 kB │ gzip: 874.58 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 2.68s

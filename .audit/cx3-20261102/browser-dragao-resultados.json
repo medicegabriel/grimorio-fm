@@ -1,0 +1,66 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "g2": false,
+    "ativacao": true,
+    "encontro": true,
+    "persistenciaEntreTRDano": true
+  },
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "g2": true,
+    "ativacao": true,
+    "encontro": false,
+    "persistenciaEntreTRDano": false
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "g2": false,
+    "ativacao": true,
+    "encontro": true,
+    "persistenciaEntreTRDano": true
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "g2": true,
+    "ativacao": true,
+    "encontro": false,
+    "persistenciaEntreTRDano": false
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "g2": false,
+    "ativacao": true,
+    "encontro": true,
+    "persistenciaEntreTRDano": true
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "g2": true,
+    "ativacao": true,
+    "encontro": false,
+    "persistenciaEntreTRDano": false
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "g2": false,
+    "ativacao": true,
+    "encontro": true,
+    "persistenciaEntreTRDano": true
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "g2": true,
+    "ativacao": true,
+    "encontro": false,
+    "persistenciaEntreTRDano": false
+  }
+]

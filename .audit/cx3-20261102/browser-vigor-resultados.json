@@ -1,0 +1,90 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "g2": false,
+    "propriaFicha": true,
+    "custoAcao": true,
+    "destinatarioEncontro": true,
+    "dadosTreino": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "g2": true,
+    "propriaFicha": true,
+    "custoAcao": true,
+    "destinatarioEncontro": false,
+    "dadosTreino": false,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "g2": false,
+    "propriaFicha": true,
+    "custoAcao": true,
+    "destinatarioEncontro": true,
+    "dadosTreino": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "g2": true,
+    "propriaFicha": true,
+    "custoAcao": true,
+    "destinatarioEncontro": false,
+    "dadosTreino": false,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "g2": false,
+    "propriaFicha": true,
+    "custoAcao": true,
+    "destinatarioEncontro": true,
+    "dadosTreino": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "g2": true,
+    "propriaFicha": true,
+    "custoAcao": true,
+    "destinatarioEncontro": false,
+    "dadosTreino": false,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "g2": false,
+    "propriaFicha": true,
+    "custoAcao": true,
+    "destinatarioEncontro": true,
+    "dadosTreino": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "g2": true,
+    "propriaFicha": true,
+    "custoAcao": true,
+    "destinatarioEncontro": false,
+    "dadosTreino": false,
+    "persistencia": true,
+    "erros": []
+  }
+]

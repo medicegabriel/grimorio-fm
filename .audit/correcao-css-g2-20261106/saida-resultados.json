@@ -1,0 +1,74 @@
+[
+  {
+    "nome": "G2 voltar preserva edição antes de 600ms",
+    "ok": true,
+    "dados": {
+      "ms": 130,
+      "css": ".afty-nome{color:#ff00aa}/*true-voltar*/"
+    }
+  },
+  {
+    "nome": "G2 voltar reabre com tema",
+    "ok": true
+  },
+  {
+    "nome": "G2 pagehide preserva edição antes de 600ms",
+    "ok": true,
+    "dados": {
+      "ms": 17,
+      "css": ".afty-nome{color:#ff00aa}/*true-pagehide*/"
+    }
+  },
+  {
+    "nome": "G2 pagehide reabre com tema",
+    "ok": true
+  },
+  {
+    "nome": "G2 recarregar preserva edição antes de 600ms",
+    "ok": true,
+    "dados": {
+      "ms": 119,
+      "css": ".afty-nome{color:#ff00aa}/*true-recarregar*/"
+    }
+  },
+  {
+    "nome": "G2 recarregar reabre com tema",
+    "ok": true
+  },
+  {
+    "nome": "clássica voltar preserva edição antes de 600ms",
+    "ok": true,
+    "dados": {
+      "ms": 80,
+      "css": ".afty-nome{color:#ff00aa}/*false-voltar*/"
+    }
+  },
+  {
+    "nome": "clássica voltar reabre com tema",
+    "ok": true
+  },
+  {
+    "nome": "clássica pagehide preserva edição antes de 600ms",
+    "ok": true,
+    "dados": {
+      "ms": 14,
+      "css": ".afty-nome{color:#ff00aa}/*false-pagehide*/"
+    }
+  },
+  {
+    "nome": "clássica pagehide reabre com tema",
+    "ok": true
+  },
+  {
+    "nome": "clássica recarregar preserva edição antes de 600ms",
+    "ok": true,
+    "dados": {
+      "ms": 116,
+      "css": ".afty-nome{color:#ff00aa}/*false-recarregar*/"
+    }
+  },
+  {
+    "nome": "clássica recarregar reabre com tema",
+    "ok": true
+  }
+]

@@ -353,6 +353,8 @@ export function PreparoGrupo({ o, m, valores, onValores, onCancelar, onConfirmar
       <span ref={botoes} className="x-linha">
         <button type="button" className="m-botao x-adicionar g2-primario" disabled={plano.bloqueios.length > 0 || !plano.mudou} onClick={confirmar} data-confirmar>{rotuloConfirmar}</button>
         <button type="button" className="m-botao" onClick={onCancelar} data-voltar-preparo>Voltar</button>
+        {/* O motivo do botão apagado enquanto o rascunho está vazio, dito sem tom de aviso (2026-11-09). */}
+        {!plano.mudou && plano.bloqueios.includes("Nenhuma Escolha") && <span className="x-mesa" data-motivo>Escolha uma Opção</span>}
       </span>
     </div>
   );
@@ -465,6 +467,8 @@ export function PreparoGolpe({ o, m, valores, onValores, onCancelar, onConfirmar
       <span ref={botoes} className="x-linha">
         <button type="button" className="m-botao x-adicionar g2-primario" disabled={plano.bloqueios.length > 0 || !plano.mudou} onClick={confirmar} data-confirmar>{rotuloConfirmar}</button>
         <button type="button" className="m-botao" onClick={onCancelar} data-voltar-preparo>Voltar</button>
+        {/* O motivo do botão apagado enquanto o rascunho está vazio, dito sem tom de aviso (2026-11-09). */}
+        {!plano.mudou && plano.bloqueios.includes("Nenhuma Propriedade") && <span className="x-mesa" data-motivo>Escolha uma Propriedade</span>}
       </span>
     </div>
   );

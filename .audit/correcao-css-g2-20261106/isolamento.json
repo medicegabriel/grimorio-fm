@@ -1,0 +1,59 @@
+[
+  {
+    "id": "o CSS vale dentro da ficha A (controle)",
+    "ok": true,
+    "d": "rgb(255, 0, 0)"
+  },
+  {
+    "id": "body e #root, fora de #afty-ficha, NÃO foram pintados (@scope isola a raiz)",
+    "ok": true,
+    "d": {
+      "base": {
+        "bg": "rgb(15, 23, 42)",
+        "cor": "rgb(107, 99, 117)",
+        "ol": "none"
+      },
+      "naFicha": {
+        "bg": "rgb(15, 23, 42)",
+        "cor": "rgb(107, 99, 117)",
+        "ol": "none"
+      }
+    }
+  },
+  {
+    "id": "irmãos da ficha na página (selo, Livro de Regras) sem o magenta",
+    "ok": true,
+    "d": [
+      "rgba(0, 0, 0, 0)"
+    ]
+  },
+  {
+    "id": "de volta ao Dashboard nada ficou pintado",
+    "ok": true,
+    "d": {
+      "base": {
+        "bg": "rgb(15, 23, 42)",
+        "cor": "rgb(107, 99, 117)",
+        "ol": "none"
+      },
+      "depois": {
+        "bg": "rgb(15, 23, 42)",
+        "cor": "rgb(107, 99, 117)",
+        "ol": "none"
+      }
+    }
+  },
+  {
+    "id": "a ficha B, aberta depois, NÃO herda o CSS da ficha A",
+    "ok": true,
+    "d": "rgb(30, 41, 59)"
+  },
+  {
+    "id": "protótipo: --afty-fonte-display muda a fonte do nome do G2 (hoje ela é fixa)",
+    "ok": true,
+    "d": {
+      "f0": "Bahnschrift, \"Segoe UI\", syste",
+      "f1": "Georgia, serif"
+    }
+  }
+]

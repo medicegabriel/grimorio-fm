@@ -1,0 +1,16 @@
+{
+  "geradoEm": "2026-11-06T02:44:20.375Z",
+  "base": "http://127.0.0.1:5341",
+  "etapas": [
+    {
+      "nome": "quem vence",
+      "checks": [],
+      "erros": [],
+      "medidas": {}
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "quem vence: 0/0"
+  ]
+}

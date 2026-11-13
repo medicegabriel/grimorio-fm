@@ -154,6 +154,7 @@ import { AFTY_ATAQUES } from "./afty-pericias-catalogo";
 import { resolveCatarse, habilidadesDeOutraClasseDaCatarse } from "./afty-catarse";
 import { resolveEspinho, marcasDoEspinho, ESPINHO_TIPOS_ITEM } from "./afty-espinho";
 import { resolveCorrupcao } from "./afty-corrupcao";
+import { resolveOrbitas } from "./afty-orbitas";
 import { resolveCarteira } from "./afty-carteira";
 // O personagem da Guilda (rota /EraDeOuro): Carteira embutida e o nome do grau. FOLHA.
 import { carteiraDaGuilda, PROGRESSAO_ERA_DE_OURO, grauComNomeDaMesa, limiteBaseDeAcessorios } from "../eradeouro/era-de-ouro";
@@ -170,7 +171,7 @@ import { efeitoDeAtaqueConcentrado, aplicarAtaqueConcentradoNoDano } from "./aft
 import { aplicarPropriedadesNoDano, defesaDeAparar, tipoDanoDaArma, aplicarOscilanteNosTestes } from "./afty-propriedades-armas";
 import {
   problemasDeAddon, marcasDeclaradas, primitivasDaCriatura, liberacoesDaCriatura, precosDeCatarse, espinhoDaFicha,
-  corrupcaoDaFicha, nivelDaFicha, aptidoesConcedidasPorAddon, substituicaoEnergiaReversaPorAddon,
+  corrupcaoDaFicha, orbitasDaFicha, nivelDaFicha, aptidoesConcedidasPorAddon, substituicaoEnergiaReversaPorAddon,
   estadosCombateDeAddon, ampliarMaximosRecursos, epocaAddons, comEscopoDaFicha, pacotesDaFicha,
 } from "./afty-addons";
 import { agrupaConcedido, concessoesDaSessao, escolhasDoConcedido } from "./afty-concessao";
@@ -2180,9 +2181,12 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
       const h = getHabilidade(id);
       return h && { tags: h.tags, familia: "habilidade", especializacaoId: h.especializacaoId };
     }),
-    ...(talentosPre.escolhidas ?? []).map((id) => {
+    /* ⚠ CADA PEGA CONTA (2026-11-10). `escolhidas` não repete o id, e a repetível
+       (`maxVezes`) guarda as pegas em `vezes`. Sem isto "um por pega" contava um só. */
+    ...(talentosPre.escolhidas ?? []).flatMap((id) => {
       const t = getTalento(id);
-      return t && { tags: t.tags, familia: "talento" };
+      if (!t) return [];
+      return Array.from({ length: Math.max(1, talentosPre.vezes?.[id] ?? 1) }, () => ({ tags: t.tags, familia: "talento" }));
     }),
     ...aptidoesIds.map((id) => {
       const a = getAptidao(id);
@@ -2354,10 +2358,23 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
      "já esteja em 30" pergunta, e o `furaTeto` das linhas ativas que valeram.
      O estágio permanente segue como era: o limite ativo sobe o teto até o 30
      e nunca fura, para nenhuma fonte permanente pegar carona no 32. */
-  const somarAtributo = (partida, res, limAtivo = null) => {
+  const somarAtributo = (partida, res, limAtivo = null, absorve = false) => {
     const out = {};
     for (const k of Object.keys(partida)) {
-      const total = valorCanal(res, "atributo", k);
+      let total = valorCanal(res, "atributo", k);
+      /* ⚠ PERDA PERMANENTE COME O EXCEDENTE ANTES DO LIMITE (autor, 2026-11-10:
+         Presença 14 + 20 de nível, -2 de Origem e -12 de perda dava 8, quando
+         o certo é 20). O estágio 0 já cortou no limite o que passou dele, e o
+         Motor subtraía a perda do valor JÁ cortado, perdendo o excedente duas
+         vezes. A perda negativa agora gasta primeiro esse excedente, e só o que
+         sobra desce o valor. Vale só no estágio permanente. */
+      if (absorve && total < 0) {
+        const absorvido = Math.min(-total, Math.max(0, perdaNoLimite[k] || 0));
+        if (absorvido) {
+          perdaNoLimite[k] -= absorvido;
+          total += absorvido;
+        }
+      }
       const limiteAtivo = limAtivo ? (limAtivo.porAlvo.limiteAtributo?.[k] || 0) : (limiteAtivoPor[k] || 0);
       const tetoSistema = limAtivo && furaTetoEm(limAtivo, k)
         ? Math.min(atributosAddon.limite(k), ATTR_LIMITE_ABSOLUTO + tetoExtra(k))
@@ -2383,7 +2400,7 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
   // Este é o atributo que os PRÉ-REQUISITOS enxergam.
   /* Parte do `attrBaseFinal`, e não do `attrBase`: o segundo ainda está aparado
      pelo limite de estágio 0. Ver a nota do `attrBaseFinal`. */
-  const attrPermanente = somarAtributo(attrBaseFinal, efAttrPerm);
+  const attrPermanente = somarAtributo(attrBaseFinal, efAttrPerm, null, true);
   const modPermanente = Object.fromEntries(Object.entries(attrPermanente).map(([k, v]) => [k, mod(v)]));
 
   // Talentos de novo, agora com o atributo permanente: só o `inacessiveis` muda.
@@ -5186,6 +5203,9 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
        o `contar()` lê, então o que escala os poderes e o que avermelha a tela são
        a mesma conta. */
     corrupcao: resolveCorrupcao(corrupcaoDaFicha(creature), marcasFicha),
+    /* As ÓRBITAS DO RETRATO: uma gema por entrada da marca que o pacote escolheu,
+       só na Ficha Final. Mesma contagem do `contar()`, e nenhum número muda. */
+    orbitas: resolveOrbitas(orbitasDaFicha(creature), marcasFicha),
     /* Os Pontos de Atributo que o Motor dá por cima dos pontos de nível (canal
        `pontosAtributo`, Espinho). A aba de Atributos soma no pool dela. */
     pontosAtributoExtra: canal("pontosAtributo"),

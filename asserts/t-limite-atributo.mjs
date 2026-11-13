@@ -134,5 +134,31 @@ t("os outros cinco ficam onde estavam",
   ["forca", "destreza", "constituicao", "sabedoria", "presenca"]
     .filter((k) => cru.attrEff[k] !== seis.attrEff[k]), []);
 
+/* ============================================================ */
+/* 7. PERDA PERMANENTE GASTA O EXCEDENTE ANTES DO LIMITE         */
+/* ============================================================ */
+/* Presença 14 + 20 de nível = 34, limite 20. Uma perda permanente de 12 sai do
+   excedente (14 pontos que o limite comeria), e o valor fecha em 20. Antes ela
+   descia do valor já cortado e dava 8. */
+const comPerda = (perda, extra = {}) => {
+  const f = createBlankAfty();
+  f.rulesVersion = "player";
+  f.core = { ...f.core, nd: 20, tipo: "misto" };
+  f.attributes = { forca: 10, destreza: 12, constituicao: 14, inteligencia: 15, sabedoria: 10, presenca: 14 };
+  f.attrNivel = { presenca: 20 };
+  f.especializacoes = [{ id: "conjurador", nivel: 20 }];
+  f.feiticos = [{
+    id: "fp_perda", nome: "Perda", tipo: "passivo",
+    efeitosPassivo: [{ canal: "atributo", alvo: "presenca", expr: String(-perda), duracao: "permanente" }],
+  }];
+  return deriveAfty({ ...f, ...extra });
+};
+const p12 = comPerda(12);
+t("perda de 12 sobre 34 fecha no limite 20", p12.attrEff.presenca, 20);
+t("a perda partida não deixa ponto 'perdido' além do que sobrou", p12.attrPerda.presenca, 2);
+const p20 = comPerda(20);
+t("perda maior que o excedente desce o resto", p20.attrEff.presenca, 14);
+t("e nada fica perdido no limite", p20.attrPerda.presenca, 0);
+
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 process.exitCode = bad.length ? 1 : 0;

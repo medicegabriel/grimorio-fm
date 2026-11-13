@@ -3716,8 +3716,13 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
 @media print {
   /* Fundo escuro em papel gasta a tinta toda e sai cinza. A impressão é preta no
      branco, independente do tema, e as variáveis são reescritas para o CSS do
-     usuário sair junto em vez de brigar. */
-  .afty-ficha {
+     usuário sair junto em vez de brigar.
+     ⚠ O SELETOR SOBE DE ESPECIFICIDADE DE PROPÓSITO (2026-11-10). O tema do usuário mora em `#afty-ficha` (variáveis do formulário e preset) e em
+     `:scope#afty-ficha` (CSS livre), ambos acima de `.afty-ficha`, e media query não muda especificidade: uma ficha de tema escuro imprimia ESCURA
+     e comia a tinta toda. Antes cada tema tinha de repetir este reset no próprio `@media print`, e o Prompt IA nunca avisava. Com os três
+     ids a regra vence os dois caminhos e o tema não precisa mais fazer nada. A invocação com tema próprio (`#afty-inv-<id>`) segue o dela. */
+  .afty-ficha,
+  #afty-ficha#afty-ficha#afty-ficha {
     --afty-fundo: #ffffff;
     --afty-fundo-brilho: none;
     --afty-card: #ffffff;

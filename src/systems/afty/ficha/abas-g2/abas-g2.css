@@ -8,7 +8,7 @@
    personalizado alcançam as abas pelos mesmos ganchos (`.afty-card`, `.afty-linha`, `.afty-valor`, `[data-afty-*]`).
    O leiaute responde à largura da ABA (contêiner), e não da janela: a compacta aberta estreita a aba.
    ============================================================ */
-.e-g2.m-aba { container: aba / inline-size; display: flex; flex-direction: column; gap: 12px; font-size: 14px; }
+.e-g2.m-aba { container: aba / inline-size; display: flex; flex-direction: column; gap: 12px; font-size: var(--e-fs-corpo, 13.5px); }
 .e-g2.m-aba .e-grupo { margin-top: 0; }
 .e-g2.m-aba :is(.m-secao-topo, .m-mesa-topo) { min-height: 36px; padding: 6px 16px; }
 .e-g2.m-aba .m-secao-topo { flex-wrap: wrap; row-gap: 8px; border-radius: calc(var(--m-raio-secao) - calc(var(--afty-raio, 12px) * 1 / 12)) calc(var(--m-raio-secao) - calc(var(--afty-raio, 12px) * 1 / 12)) 0 0; }
@@ -33,7 +33,7 @@
   .e-g2 .m-indice { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
   .e-g2 .m-indice-item { flex: none; }
 }
-.e-g2 .m-pendente { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 700; color: var(--e-aviso); white-space: nowrap; }
+.e-g2 .m-pendente { display: inline-flex; align-items: center; gap: 5px; font-size: var(--e-fs-meta, 12.5px); font-weight: 700; color: var(--e-aviso); white-space: nowrap; }
 .e-g2 .m-pendente svg { width: 13px; height: 13px; color: var(--e-aviso-icone); }
 
 /* ---------- Agora na Mesa ---------- */
@@ -58,12 +58,12 @@
 .e-g2 .m-celula-nome:focus-visible { outline: 2px solid var(--afty-destaque); outline-offset: 2px; border-radius: calc(var(--afty-raio, 12px) * 4 / 12); }
 /* Nome e estado na mesma linha (o estado quebra para baixo só quando falta largura): a linha da Mesa fica do tamanho das de Perícias. */
 .e-g2 .m-celula-leitura { min-width: 0; display: flex; flex-flow: row wrap; align-items: baseline; column-gap: 10px; overflow-wrap: anywhere; }
-.e-g2 .m-celula-titulo { font-size: 15px; font-weight: 600; line-height: 1.3; }
+.e-g2 .m-celula-titulo { font-size: var(--e-fs-leitura, 15px); font-weight: 600; line-height: 1.3; }
 .e-g2 .m-celula-seta { width: 14px; height: 14px; flex: none; color: var(--e-t3); transition: transform .15s; transform: rotate(-90deg); }
 .e-g2 .m-celula[data-aberta] .m-celula-seta { transform: none; }
-.e-g2 .m-celula-estado { min-width: 0; font-size: 12.5px; font-weight: 400; line-height: 1.35; color: var(--e-t2); overflow-wrap: anywhere; }
+.e-g2 .m-celula-estado { min-width: 0; font-size: var(--e-fs-meta, 12.5px); font-weight: 400; line-height: 1.35; color: var(--e-t2); overflow-wrap: anywhere; }
 /* Toda ação da Mesa é o mesmo botão: borda leve, 30 px, rótulo em 600. A principal (montar o Golpe) leva a cor de seleção. */
-.e-g2 .m-celula :is(.m-celula-acao, .m-gatilho) { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border: 1px solid var(--e-ctrl-borda); border-radius: calc(var(--afty-raio, 12px) * 8 / 12); background: var(--e-ctrl); color: var(--e-t1); font-size: 13.5px; font-weight: 600; white-space: nowrap; }
+.e-g2 .m-celula :is(.m-celula-acao, .m-gatilho) { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border: 1px solid var(--e-ctrl-borda); border-radius: calc(var(--afty-raio, 12px) * 8 / 12); background: var(--e-ctrl); color: var(--e-t1); font-size: var(--e-fs-corpo, 13.5px); font-weight: 600; white-space: nowrap; }
 .e-g2 .m-celula :is(.m-celula-acao, .m-gatilho):hover:not(:disabled) { background: var(--e-ctrl-hover); color: var(--e-t1); }
 .e-g2 .m-celula :is(.m-celula-acao, .m-gatilho)[aria-pressed="true"] { background: var(--e-sel); border-color: var(--e-sel-borda); color: var(--e-t1); }
 .e-g2 .m-celula :is(.m-celula-acao, .m-gatilho):focus-visible { outline: 2px solid var(--afty-destaque); outline-offset: 1px; }
@@ -89,24 +89,24 @@
 .e-g2 .m-linha-topo { min-height: 40px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
 .e-g2 .m-linha-nome { flex: 1 1 180px; min-width: 0; display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0; border: 0; background: none; color: var(--e-t1); text-align: left; cursor: pointer; }
 .e-g2 .m-linha-nome-fixo { cursor: default; padding-left: 4px; }
-.e-g2 .m-nome { font-size: 15px; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+.e-g2 .m-nome { font-size: var(--e-fs-leitura, 15px); font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
 .e-g2 .m-qtd { font-weight: 400; color: var(--e-t2); }
 .e-g2 .m-seta { width: 16px; height: 16px; flex: none; color: var(--e-t3); transform: rotate(-90deg); transition: transform .15s; }
 .e-g2 [aria-expanded="true"] > .m-seta { transform: none; }
 .e-g2 .m-tipo { display: inline-flex; color: var(--e-ativo); }
-.e-g2 .m-metas { flex: 1 1 200px; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: 13px; color: var(--e-t2); }
+.e-g2 .m-metas { flex: 1 1 200px; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: var(--e-fs-corpo, 13.5px); color: var(--e-t2); }
 .e-g2 .m-meta { white-space: nowrap; }
 .e-g2 .m-meta-num { font-variant-numeric: var(--e-num); color: var(--e-t1); }
 .e-g2 .m-custo { color: var(--afty-pe); font-weight: 600; }
 .e-g2 .m-custo-vida { color: var(--afty-pv); font-weight: 600; }
-.e-g2 .m-chip { display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 8px; border: 1px solid var(--e-chip-borda); border-radius: calc(var(--afty-raio, 12px) * 8 / 12); background: none; font-size: 12.5px; font-weight: 600; color: var(--e-t2); white-space: nowrap; }
+.e-g2 .m-chip { display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 8px; border: 1px solid var(--e-chip-borda); border-radius: calc(var(--afty-raio, 12px) * 8 / 12); background: none; font-size: var(--e-fs-meta, 12.5px); font-weight: 600; color: var(--e-t2); white-space: nowrap; }
 .e-g2 .m-chip[data-tom="destaque"] { border-color: var(--e-sel-borda); background: var(--e-sel); color: var(--e-t1); }
 .e-g2 .m-chip[data-tom="aviso"] { border-color: var(--e-aviso-borda); background: var(--e-aviso-fundo); color: var(--e-aviso); }
 .e-g2 .m-chip svg { width: 13px; height: 13px; }
 .e-g2 .m-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .e-g2 .m-acoes { flex: 0 1 auto; margin-left: auto; display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; min-width: 0; }
 .e-g2 .m-valor { overflow-wrap: anywhere; }
-:where(.e-g2 .m-valor:not(.e-stat .m-valor)):is(.m-valor) { font: 600 15px var(--e-display); font-stretch: semi-condensed; color: var(--e-t1); font-variant-numeric: var(--e-num); }
+:where(.e-g2 .m-valor:not(.e-stat .m-valor)):is(.m-valor) { font: 600 var(--e-fs-leitura, 15px) var(--e-display); font-stretch: semi-condensed; color: var(--e-t1); font-variant-numeric: var(--e-num); }
 /* O cabeçalho mantém os algarismos proporcionais da composição aprovada. */
 :where(.e-g2 .e-stat) :is(.m-valor, .m-valor-botao) { font-variant-numeric: normal; }
 
@@ -121,9 +121,9 @@
 .e-g2 .m-rolar .afty-fontes-raiz { position: static; min-width: 0; }
 .e-g2 .m-rolar button.afty-rolavel { position: static; padding: 0; border: 0; background: none; outline: none; }
 .e-g2 .m-rolar button.afty-rolavel::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
-.e-g2 .m-rolar-rotulo { font-size: 12.5px; font-weight: 600; color: var(--e-t2); white-space: nowrap; }
+.e-g2 .m-rolar-rotulo { font-size: var(--e-fs-meta, 12.5px); font-weight: 600; color: var(--e-t2); white-space: nowrap; }
 .e-g2 .m-rolar-num { overflow-wrap: anywhere; text-align: left; }
-:where(.e-g2) .m-rolar-num { font: 700 15px var(--e-display); font-stretch: semi-condensed; color: var(--e-t1); font-variant-numeric: var(--e-num); }
+:where(.e-g2) .m-rolar-num { font: 700 var(--e-fs-leitura, 15px) var(--e-display); font-stretch: semi-condensed; color: var(--e-t1); font-variant-numeric: var(--e-num); }
 :where(.e-g2 .m-rolar-dano) .m-rolar-num { color: var(--e-t1); }
 :where(.e-g2 .m-rolar-cura) .m-rolar-num { color: var(--afty-cura); }
 .e-g2 .m-rolar[data-indisponivel] { background: none; border-style: dashed; }
@@ -133,7 +133,7 @@
 @media (pointer: coarse) { .e-g2 .m-rolar, .e-g2 .m-linha-nome, .e-g2 .m-indice-item { min-height: 44px; } }
 
 .e-g2 .m-motivos { display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 2px 0 2px 28px; }
-.e-g2 .m-motivo { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; color: var(--e-aviso); }
+.e-g2 .m-motivo { display: inline-flex; align-items: center; gap: 5px; font-size: var(--e-fs-meta, 12.5px); font-weight: 600; color: var(--e-aviso); }
 .e-g2 .m-motivo svg { width: 13px; height: 13px; flex: none; color: var(--e-aviso-icone); }
 
 /* ---------- linhas de Dano: colunas comuns ----------
@@ -172,56 +172,88 @@
   .e-g2 .m-secao-dano .m-acoes > .m-rolar { grid-row: 3; }
 }
 
+/* ---------- linhas de Cura, Técnicas, Feitiços e Domínio: as mesmas colunas do Dano ----------
+   Antes cada linha era um flex com quebra própria: o Alcance de uma ficava num x e o da vizinha em outro, e os botões terminavam em
+   larguras diferentes (um tinha o seletor de blocos, o outro não). Agora a seção é uma grade [nome][metas][acoes] e cada linha a herda
+   (subgrid). As ações (passos, Usos, Rolar) vão juntas numa coluna só, alinhada à direita, então o botão termina no mesmo x em toda linha.
+   Mesmos três arranjos do Dano, pela largura da seção (contêiner `colunas`). */
+.e-g2 .m-secao-colunas { container: colunas / inline-size; }
+.e-g2 .m-secao-colunas > .m-secao-corpo { display: grid; column-gap: 12px; grid-template-columns: [nome] minmax(9rem, 1fr) [metas] auto [passos] auto [acoes] auto [extra] auto [fim]; }
+.e-g2 .m-secao-colunas > .m-secao-corpo > .m-faixa { grid-column: 1 / -1; }
+.e-g2 .m-secao-colunas .m-linha { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; grid-template-rows: minmax(40px, auto); align-items: center; row-gap: 4px; }
+.e-g2 .m-secao-colunas .m-linha-topo { display: contents; }
+.e-g2 .m-secao-colunas .m-linha-nome { grid-row: 1; grid-column: nome; }
+.e-g2 .m-secao-colunas .m-linha-topo > .m-metas { grid-row: 1; grid-column: metas; }
+.e-g2 .m-secao-colunas .m-linha-topo > .m-acoes { display: contents; }
+.e-g2 .m-secao-colunas .m-acoes > * { grid-row: 1; grid-column: extra; }
+.e-g2 .m-secao-colunas .m-acoes > .m-passos { grid-column: passos; justify-self: end; }
+.e-g2 .m-secao-colunas .m-acoes > .m-rolar { grid-column: acoes; justify-content: center; }
+.e-g2 .m-secao-colunas .m-acoes > .m-rolar:has(.m-rolar-rotulo) { justify-content: space-between; }
+.e-g2 .m-secao-colunas .m-linha > :is(.m-motivos, .m-detalhe, .m-expansao-controle, .m-sem-detalhe) { grid-column: 1 / -1; }
+@container colunas (max-width: 719px) {
+  .e-g2 .m-secao-colunas > .m-secao-corpo { grid-template-columns: [nome metas] minmax(0, 1fr) [passos] auto [acoes] auto [extra] auto [fim]; }
+  .e-g2 .m-secao-colunas .m-linha { grid-template-rows: auto auto; row-gap: 2px; }
+  .e-g2 .m-secao-colunas .m-linha-nome { grid-column: nome; min-height: 28px; }
+  .e-g2 .m-secao-colunas .m-linha-topo > .m-metas { grid-row: 2; grid-column: metas; padding-left: 24px; }
+  .e-g2 .m-secao-colunas .m-acoes > * { grid-row: 1 / span 2; }
+  @media (pointer: coarse) { .e-g2 .m-secao-colunas .m-linha-nome { min-height: 44px; } }
+}
+@container colunas (max-width: 559px) {
+  .e-g2 .m-secao-colunas .m-linha-nome { grid-column: nome / fim; }
+  .e-g2 .m-secao-colunas .m-linha-topo > .m-metas { grid-column: metas / fim; }
+  .e-g2 .m-secao-colunas .m-acoes > * { grid-row: 3; }
+}
+
 /* O detalhe no lugar. */
 .e-g2 .m-detalhe:not([hidden]) { display: grid; gap: 12px; margin: 6px 0 6px 26px; padding: 12px 14px; border-left: 2px solid var(--e-sel-borda); border-radius: 0 calc(var(--afty-raio, 12px) * 10 / 12) calc(var(--afty-raio, 12px) * 10 / 12) 0; background: color-mix(in oklab, var(--afty-texto) 3%, transparent); }
 .e-g2 .m-bloco { display: grid; gap: 8px; min-width: 0; }
-.e-g2 .m-bloco-titulo { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font: 600 14.5px var(--e-display); font-stretch: semi-condensed; color: var(--e-t2); }
-.e-g2 .m-bloco-titulo small { font: 400 13px var(--afty-fonte); color: var(--f-t3); }
+.e-g2 .m-bloco-titulo { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font: 600 var(--e-fs-leitura, 15px) var(--e-display); font-stretch: semi-condensed; color: var(--e-t2); }
+.e-g2 .m-bloco-titulo small { font: 400 var(--e-fs-corpo, 13.5px) var(--afty-fonte); color: var(--f-t3); }
 .e-g2 .m-controles { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
-.e-g2 .m-campo { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--e-t2); }
+.e-g2 .m-campo { display: inline-flex; align-items: center; gap: 8px; font-size: var(--e-fs-corpo, 13.5px); font-weight: 600; color: var(--e-t2); }
 .e-g2 .m-campo .afty-campo { height: 32px; }
-.e-g2 .m-aviso-chip { display: inline-flex; align-items: center; gap: 5px; margin: 0; min-height: 26px; padding: 0 8px; border: 1px solid var(--e-aviso-borda); border-radius: calc(var(--afty-raio, 12px) * 7 / 12); background: var(--e-aviso-fundo); color: var(--e-aviso); font-size: 12.5px; font-weight: 600; }
+.e-g2 .m-aviso-chip { display: inline-flex; align-items: center; gap: 5px; margin: 0; min-height: 26px; padding: 0 8px; border: 1px solid var(--e-aviso-borda); border-radius: calc(var(--afty-raio, 12px) * 7 / 12); background: var(--e-aviso-fundo); color: var(--e-aviso); font-size: var(--e-fs-meta, 12.5px); font-weight: 600; }
 .e-g2 .m-aviso-chip svg { width: 13px; height: 13px; }
 .e-g2 .m-avisos { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
-:where(.e-g2) .m-avisos { font-size: 13px; color: var(--e-aviso); }
+:where(.e-g2) .m-avisos { font-size: var(--e-fs-corpo, 13.5px); color: var(--e-aviso); }
 .e-g2 .m-avisos li { display: flex; align-items: flex-start; gap: 6px; }
 .e-g2 .m-avisos svg { width: 14px; height: 14px; flex: none; margin-top: 2px; color: var(--e-aviso-icone); }
 .e-g2 .m-saidas { display: flex; flex-wrap: wrap; gap: 10px 16px; }
 .e-g2 .m-saida { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.e-g2 .m-valor-grande { margin: 0; font: 700 16px var(--e-display); font-stretch: semi-condensed; }
-.e-g2 .m-propriedades { margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px 18px; font-size: 13.5px; }
+.e-g2 .m-valor-grande { margin: 0; font: 700 var(--e-fs-titulo, 16.5px) var(--e-display); font-stretch: semi-condensed; }
+.e-g2 .m-propriedades { margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px 18px; font-size: var(--e-fs-corpo, 13.5px); }
 .e-g2 .m-propriedades-texto { grid-template-columns: minmax(0, 1fr); }
 .e-g2 .m-propriedade { display: flex; flex-wrap: wrap; gap: 4px 8px; min-width: 0; }
 .e-g2 .m-propriedade dt { font-weight: 600; color: var(--e-t2); }
 .e-g2 .m-propriedade dt::after { content: ":"; }
 .e-g2 .m-propriedade dd { margin: 0; color: var(--e-t1); overflow-wrap: anywhere; }
-.e-g2 .m-texto { margin: 0; max-width: 84ch; font-size: 14px; line-height: 1.55; color: var(--e-t1); white-space: pre-line; }
-.e-g2 .m-regra .e-texto { font-size: 14.5px; }
+.e-g2 .m-texto { margin: 0; max-width: 84ch; font-size: var(--e-fs-corpo, 13.5px); line-height: 1.55; color: var(--e-t1); white-space: pre-line; }
+.e-g2 .m-regra .e-texto { font-size: var(--e-fs-leitura, 15px); }
 .e-g2 .m-liberacao-grupo { display: grid; gap: 6px; }
 .e-g2 .m-opcao { border: 1px solid var(--e-ctrl-borda); }
-.e-g2 .m-sem-detalhe { margin: 0; font-size: 13px; color: var(--e-t3); }
+.e-g2 .m-sem-detalhe { margin: 0; font-size: var(--e-fs-corpo, 13.5px); color: var(--e-t3); }
 .e-g2 .m-efeito { display: grid; gap: 4px; }
 .e-g2 .m-expansao-controle { margin: 4px 0 2px 26px; }
 /* O controle de mesa da Expansão vem num `.afty-linha` próprio: aqui ele não é outra caixa dentro da linha. */
 .e-g2 .m-expansao-controle > .afty-linha { border: 0; background: none; padding: 2px 0; }
 .e-g2 .m-faixa { padding: 8px 10px; border-bottom: 1px solid var(--e-linha); }
 .e-g2 .m-passos { display: inline-flex; align-items: center; gap: 6px; }
-.e-g2 .m-passo { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--e-ctrl-borda); border-radius: calc(var(--afty-raio, 12px) * 8 / 12); background: none; color: var(--e-t1); font-size: 16px; }
+.e-g2 .m-passo { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--e-ctrl-borda); border-radius: calc(var(--afty-raio, 12px) * 8 / 12); background: none; color: var(--e-t1); font-size: var(--e-fs-titulo, 16.5px); }
 .e-g2 .m-passo:disabled { color: var(--e-t3); border-color: var(--e-linha); }
-.e-g2 .m-passos-valor { min-width: 54px; text-align: center; font: 600 14px var(--e-display); font-variant-numeric: var(--e-num); color: var(--e-t1); }
-.e-g2 .m-seg-pequeno .m-seg-op { height: 28px; padding: 0 10px; font-size: 13px; }
+.e-g2 .m-passos-valor { min-width: 54px; text-align: center; font: 600 var(--e-fs-corpo, 13.5px) var(--e-display); font-variant-numeric: var(--e-num); color: var(--e-t1); }
+.e-g2 .m-seg-pequeno .m-seg-op { height: 28px; padding: 0 10px; font-size: var(--e-fs-corpo, 13.5px); }
 /* O rótulo do grupo ("Dano", "Efeito") parecia uma opção desabilitada: vira legenda, no degrau Título de Seção do DESIGN.md (700, 11 px, caixa alta), com um fio separando das opções. */
-.e-g2 .m-seg-rotulo { align-self: center; margin-right: 4px; padding: 0 10px 0 8px; border-right: 1px solid var(--e-linha); font: 700 11px var(--afty-fonte); letter-spacing: .09em; text-transform: uppercase; color: var(--e-t2); }
+.e-g2 .m-seg-rotulo { align-self: center; margin-right: 4px; padding: 0 10px 0 8px; border-right: 1px solid var(--e-linha); font: 700 var(--e-fs-micro, 11.5px) var(--afty-fonte); letter-spacing: .09em; text-transform: uppercase; color: var(--e-t2); }
 /* A contagem mora sobre o fundo do controle (7% do texto) e sobre a opção selecionada: `--e-t3` ali dava 3,6:1 e 2,5:1. O `small` sem tamanho caía em 10,8 px. */
-.e-g2 .m-seg .m-seg-op small { margin-left: 6px; font-size: 11.5px; font-weight: 400; color: var(--e-t2); font-variant-numeric: var(--e-num); }
+.e-g2 .m-seg .m-seg-op small { margin-left: 6px; font-size: var(--e-fs-micro, 11.5px); font-weight: 400; color: var(--e-t2); font-variant-numeric: var(--e-num); }
 .e-g2 :is(.m-seg, .c2-filtro, .h-hist-filtros) .m-seg-op:is([aria-checked="true"], [aria-pressed="true"]) small { color: var(--e-t1); }
 
 /* As peças existentes que entram no detalhe (Ritual, Técnica Máxima, Expansão, Bloodfeast): tamanho de leitura do G2, sem reescrevê-las. */
-.e-g2.m-aba :is(.m-detalhe, .m-expansao-controle, .m-faixa, .m-corpo) :is(.afty-chip, .afty-botao, .afty-rotulo, .afty-valor) { font-size: 13px; }
-.e-g2.m-aba :is(.m-detalhe, .m-expansao-controle, .m-faixa, .m-corpo) .text-xs { font-size: 13px; }
-.e-g2.m-aba :is(.m-detalhe, .m-expansao-controle, .m-faixa, .m-corpo) :is(.text-\[10px\], .text-\[11px\]) { font-size: 12.5px; }
+.e-g2.m-aba :is(.m-detalhe, .m-expansao-controle, .m-faixa, .m-corpo) :is(.afty-chip, .afty-botao, .afty-rotulo, .afty-valor) { font-size: var(--e-fs-corpo, 13.5px); }
+.e-g2.m-aba :is(.m-detalhe, .m-expansao-controle, .m-faixa, .m-corpo) .text-xs { font-size: var(--e-fs-corpo, 13.5px); }
+.e-g2.m-aba :is(.m-detalhe, .m-expansao-controle, .m-faixa, .m-corpo) :is(.text-\[10px\], .text-\[11px\]) { font-size: var(--e-fs-meta, 12.5px); }
 .e-g2.m-aba :is(.m-detalhe, .m-expansao-controle, .m-faixa, .m-corpo) .afty-botao { min-height: 30px; }
-.e-g2.m-aba :is(.m-detalhe, .m-expansao-controle, .m-faixa, .m-corpo) details > summary { font-size: 13.5px; padding: 4px 0; }
+.e-g2.m-aba :is(.m-detalhe, .m-expansao-controle, .m-faixa, .m-corpo) details > summary { font-size: var(--e-fs-corpo, 13.5px); padding: 4px 0; }
 /* Cores fixas dos painéis compartilhados: no G2 o aviso segue o tema, sem tocar os arquivos (a clássica fica como está). */
 .e-g2.m-aba .text-amber-400 { color: var(--e-aviso); }
 .e-g2.m-aba .bg-slate-950 { background: var(--e-ctrl); color: var(--e-t1); }
@@ -242,8 +274,8 @@
 :where(.e-g2) .m-cartao { border: 0; border-top: 1px solid var(--e-linha); border-radius: 0; background: none; }
 :where(.e-g2 .m-grade-cartoes > .m-cartao:first-child):is(.m-cartao) { border-top: 0; }
 :where(.e-g2 .m-cartao:hover):is(.m-cartao) { background: var(--e-hover); }
-.e-g2 .m-cartao-nome { flex: 1 1 7.5rem; min-width: 0; font-size: 15px; font-weight: 600; line-height: 1.3; color: var(--e-t1); overflow-wrap: anywhere; }
-.e-g2 .m-cartao > .m-meta { flex: 0 1 auto; font-size: 12.5px; color: var(--e-t2); }
+.e-g2 .m-cartao-nome { flex: 1 1 7.5rem; min-width: 0; font-size: var(--e-fs-leitura, 15px); font-weight: 600; line-height: 1.3; color: var(--e-t1); overflow-wrap: anywhere; }
+.e-g2 .m-cartao > .m-meta { flex: 0 1 auto; font-size: var(--e-fs-meta, 12.5px); color: var(--e-t2); }
 .e-g2 .m-cartao .m-acoes { flex: 0 1 auto; margin-left: auto; justify-content: flex-end; gap: 8px; }
 /* Estreito, mas com 340 px ou mais: o nome e a perícia usada empilham à esquerda e as operações ficam ao lado, numa linha só por manobra. */
 @container aba (min-width: 340px) and (max-width: 599px) {
@@ -251,6 +283,25 @@
   .e-g2 .m-cartao-nome { grid-area: nome; align-self: end; }
   .e-g2 .m-cartao > .m-meta { grid-area: meta; align-self: start; }
   .e-g2 .m-cartao .m-acoes { grid-area: acoes; margin-left: 0; }
+}
+/* Com 460 px ou mais na própria seção (a medida é dela, não da aba: em duas colunas a seção tem a metade): colunas comuns a todas as linhas,
+   [nome][perícia][Executar][Resistir]. A manobra de um botão só (teste simples) fica na última coluna, sob o Resistir, e a de dois usa as duas.
+   Antes cada cartão era um flex solto: a perícia usada e os botões terminavam em x diferentes entre as linhas. */
+.e-g2 [data-m-secao="outros"] > .m-secao-corpo { container: cartoes / inline-size; }
+@container cartoes (max-width: 459px) {
+  .e-g2 .m-grade-cartoes > .m-cartao { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "nome acoes" "meta acoes"; align-items: center; column-gap: 8px; row-gap: 0; }
+  .e-g2 .m-grade-cartoes .m-cartao-nome { grid-area: nome; align-self: end; }
+  .e-g2 .m-grade-cartoes .m-cartao > .m-meta { grid-area: meta; align-self: start; }
+  .e-g2 .m-grade-cartoes .m-cartao .m-acoes { grid-area: acoes; margin-left: 0; flex-wrap: nowrap; }
+}
+@container cartoes (min-width: 460px) {
+  .e-g2 .m-grade-cartoes { grid-template-columns: [nome] minmax(7.5rem, 1fr) [meta] auto [exec] auto [resist] auto [fim]; column-gap: 12px; }
+  .e-g2 .m-grade-cartoes > .m-cartao { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; grid-template-areas: none; align-items: center; row-gap: 0; }
+  .e-g2 .m-grade-cartoes .m-cartao-nome { grid-area: auto; grid-column: nome; align-self: center; }
+  .e-g2 .m-grade-cartoes .m-cartao > .m-meta { grid-area: auto; grid-column: meta; align-self: center; }
+  .e-g2 .m-grade-cartoes .m-cartao .m-acoes { display: contents; }
+  .e-g2 .m-grade-cartoes .m-cartao .m-acoes > .m-rolar:first-child { grid-column: exec; }
+  .e-g2 .m-grade-cartoes .m-cartao .m-acoes > .m-rolar:last-child { grid-column: resist; }
 }
 
 /* ---------- Rápido: a linha de Habilidades do G2, com o nome inteiro ---------- */
@@ -270,8 +321,8 @@
 .e-g2 .m-atributo-celula > :nth-child(2) { grid-area: valor; align-self: start; }
 .e-g2 .m-atributo-celula > .m-rolar-mod { grid-area: rolar; }
 :where(.e-g2) .m-atributo-celula { border: 1px solid var(--e-linha); border-radius: calc(var(--afty-raio, 12px) * 10 / 12); background: none; }
-:where(.e-g2) .m-atributo-rotulo { font: 600 12.5px var(--e-display); letter-spacing: .06em; color: var(--e-t2); }
-:where(.e-g2) .m-atributo-valor { font: 700 22px/1.1 var(--e-display); font-variant-numeric: var(--e-num); color: var(--e-t1); }
+:where(.e-g2) .m-atributo-rotulo { font: 600 var(--e-fs-meta, 12.5px) var(--e-display); letter-spacing: .06em; color: var(--e-t2); }
+:where(.e-g2) .m-atributo-valor { font: 700 var(--e-fs-destaque, 22px)/1.1 var(--e-display); font-variant-numeric: var(--e-num); color: var(--e-t1); }
 .e-g2 .m-rolar-mod { padding: 4px 10px; }
 @container aba (max-width: 599px) {
   .e-g2 .m-atributos { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 6px; }
@@ -306,14 +357,14 @@
 /* O destaque da linha: Treinada ganha uma barra fina e um fundo leve, Mestre uma barra grossa e um fundo mais firme. Sem treino fica neutra. */
 :where(.e-g2) .m-teste[data-treino="treinado"] { background: color-mix(in oklab, var(--e-ativo) 5%, transparent); box-shadow: inset 2px 0 0 var(--e-ativo); }
 :where(.e-g2) .m-teste[data-treino="mestre"] { background: color-mix(in oklab, var(--afty-destaque) 14%, transparent); box-shadow: inset 3px 0 0 var(--afty-destaque); }
-.e-g2 .m-treino { grid-area: marca; text-align: center; font-size: 13px; line-height: 1; color: var(--e-t3); }
+.e-g2 .m-treino { grid-area: marca; text-align: center; font-size: var(--e-fs-corpo, 13.5px); line-height: 1; color: var(--e-t3); }
 .e-g2 .m-teste[data-treino="treinado"] .m-treino { color: var(--e-ativo); }
 .e-g2 .m-teste[data-treino="mestre"] .m-treino { color: var(--afty-destaque); }
-.e-g2 .m-teste-nome { grid-area: nome; min-width: 0; font-size: 15px; font-weight: 500; line-height: 1.3; color: var(--e-t2); overflow-wrap: anywhere; }
+.e-g2 .m-teste-nome { grid-area: nome; min-width: 0; font-size: var(--e-fs-leitura, 15px); font-weight: 500; line-height: 1.3; color: var(--e-t2); overflow-wrap: anywhere; }
 .e-g2 .m-teste[data-treino="treinado"] .m-teste-nome { font-weight: 600; color: var(--e-t1); }
 .e-g2 .m-teste[data-treino="mestre"] .m-teste-nome { font-weight: 700; color: var(--e-t1); }
-.e-g2 .m-teste-metas { grid-area: metas; display: inline-flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 4px 8px; font-size: 12.5px; color: var(--e-t2); }
-.e-g2 .m-atributo { font: 600 12.5px var(--e-display); letter-spacing: .06em; text-transform: uppercase; }
+.e-g2 .m-teste-metas { grid-area: metas; display: inline-flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 4px 8px; font-size: var(--e-fs-meta, 12.5px); color: var(--e-t2); }
+.e-g2 .m-atributo { font: 600 var(--e-fs-meta, 12.5px) var(--e-display); letter-spacing: .06em; text-transform: uppercase; }
 .e-g2 .m-atributo[data-trocado] { color: var(--e-ativo); text-decoration: underline dotted; text-underline-offset: 3px; }
 .e-g2 .m-teste .m-rolar-teste { grid-area: rolar; justify-self: end; min-width: 64px; justify-content: center; }
 .e-g2 .m-teste .m-motivo { grid-area: motivo; padding-bottom: 2px; }
@@ -328,7 +379,7 @@
   .e-g2 .m-ferramentas { flex: 1 1 100%; }
 }
 .e-g2 .m-busca { flex: 1 1 220px; min-width: 0; }
-.e-g2 .m-busca .afty-campo { height: 36px; font-size: 14px; }
+.e-g2 .m-busca .afty-campo { height: 36px; font-size: var(--e-fs-corpo, 13.5px); }
 @container aba (max-width: 599px) {
   .e-g2 .m-teste { column-gap: 8px; padding-right: 8px; }
   .e-g2 .m-teste-metas { gap: 2px 6px; }
@@ -338,12 +389,12 @@
 .e-g2 .m-carga { display: grid; gap: 8px; padding: 12px 14px; }
 :where(.e-g2) .m-carga { border: 1px solid var(--e-painel-borda); border-radius: calc(var(--afty-raio, 12px) * 14 / 12); background: var(--e-painel); }
 .e-g2 .m-carga-topo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
-.e-g2 .m-carga-rotulo { font: 600 17px var(--e-display); font-stretch: semi-condensed; color: var(--e-t1); }
-.e-g2 .m-carga-num { font: 700 17px var(--e-display); font-variant-numeric: var(--e-num); color: var(--e-t1); }
-.e-g2 .m-carga-num small { font-size: 14px; font-weight: 400; color: var(--e-t2); }
-.e-g2 .m-penalidade { margin-left: auto; font-size: 13px; color: var(--e-t2); }
+.e-g2 .m-carga-rotulo { font: 600 var(--e-fs-titulo, 16.5px) var(--e-display); font-stretch: semi-condensed; color: var(--e-t1); }
+.e-g2 .m-carga-num { font: 700 var(--e-fs-titulo, 16.5px) var(--e-display); font-variant-numeric: var(--e-num); color: var(--e-t1); }
+.e-g2 .m-carga-num small { font-size: var(--e-fs-corpo, 13.5px); font-weight: 400; color: var(--e-t2); }
+.e-g2 .m-penalidade { margin-left: auto; font-size: var(--e-fs-corpo, 13.5px); color: var(--e-t2); }
 .e-g2 .m-carga-trilho { display: flex; height: 8px; }
-.e-g2 .m-carga-penalidades { margin: 0; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; font-weight: 600; color: var(--e-aviso); }
+.e-g2 .m-carga-penalidades { margin: 0; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: var(--e-fs-corpo, 13.5px); font-weight: 600; color: var(--e-aviso); }
 .e-g2 .m-avisos-equip { padding: 10px 14px; }
 :where(.e-g2) .m-avisos-equip { border: 1px solid var(--e-aviso-borda); border-radius: var(--afty-raio, 12px); background: var(--e-aviso-fundo); }
 /* As linhas do inventário e do Rápido seguem as linhas de Ações: separadas por fio, sem caixa por linha. */
@@ -362,10 +413,10 @@
 .e-g2 .m-inventario-detalhe { display: none; }
 .e-g2 .m-item-detalhe { display: grid; gap: 10px; min-width: 0; }
 .e-g2 .m-item-detalhe-topo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.e-g2 .m-item-detalhe-nome { flex: 1 1 160px; margin: 0; font: 600 20px/1.2 var(--e-display); font-stretch: semi-condensed; color: var(--e-t1); overflow-wrap: anywhere; }
-.e-g2 .m-item-marcas { margin: 0; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 13px; color: var(--e-t2); }
+.e-g2 .m-item-detalhe-nome { flex: 1 1 160px; margin: 0; font: 600 var(--e-fs-destaque, 22px)/1.2 var(--e-display); font-stretch: semi-condensed; color: var(--e-t1); overflow-wrap: anywhere; }
+.e-g2 .m-item-marcas { margin: 0; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: var(--e-fs-corpo, 13.5px); color: var(--e-t2); }
 .e-g2 .m-encantamento { display: grid; gap: 4px; padding: 8px 0 8px 12px; border-left: 2px solid var(--e-linha); }
-.e-g2 .m-encantamento-nome { font-size: 14.5px; font-weight: 600; }
+.e-g2 .m-encantamento-nome { font-size: var(--e-fs-leitura, 15px); font-weight: 600; }
 @container aba (min-width: 900px) {
   .e-g2 .m-inventario[data-com-detalhe] { grid-template-columns: minmax(0, 58fr) minmax(0, 42fr); }
   .e-g2 .m-inventario-detalhe { display: block; position: sticky; top: calc(var(--afty-ficha-topo, 0px) + 10px); align-self: start; max-height: calc(100dvh - var(--afty-ficha-topo, 0px) - 24px); overflow: auto; padding: 14px 16px; border-left: 1px solid var(--e-linha); }
@@ -390,7 +441,7 @@
 .e-g2 .m-pular .m-secao-controles { flex: 1 1 auto; justify-content: flex-end; gap: 8px 10px; }
 .e-g2 .m-pular .m-seg { flex-wrap: wrap; }
 .e-g2 .m-pular-alcance { padding: 0 4px; white-space: nowrap; }
-:where(.e-g2) .m-pular-alcance { font: 700 15px var(--e-display); font-stretch: semi-condensed; font-variant-numeric: var(--e-num); color: var(--e-t1); }
+:where(.e-g2) .m-pular-alcance { font: 700 var(--e-fs-leitura, 15px) var(--e-display); font-stretch: semi-condensed; font-variant-numeric: var(--e-num); color: var(--e-t1); }
 /* A ação principal de uma fileira (Iniciar Pulo, Montar Golpe) é o único botão cheio: o resto são segmentos e botões de borda. */
 :where(.e-g2) .m-botao[data-m-primario] { border-color: var(--afty-destaque); background: var(--afty-destaque); color: var(--afty-fundo); }
 :where(.e-g2) .m-botao[data-m-primario]:hover:not(:disabled) { background: var(--afty-destaque-texto); border-color: var(--afty-destaque-texto); }
@@ -402,8 +453,8 @@
 }
 .e-g2 .m-pular .m-faixa { border-top: 1px solid var(--e-linha); border-bottom: 0; }
 /* Os campos nativos que o Pular e o cartão de conteúdo ainda usam (Alvo, Distância, Crítico): o mesmo campo de 32 px. */
-.e-g2 :is(.m-pular, .m-conteudo-g2) :is(select, input:not([type="checkbox"])) { height: 32px; min-width: 0; max-width: 100%; padding: 0 10px; border: 1px solid var(--e-ctrl-borda); border-radius: calc(var(--afty-raio, 12px) * 8 / 12); background: var(--e-ctrl); color: var(--e-t1); font-size: 13.5px; }
+.e-g2 :is(.m-pular, .m-conteudo-g2) :is(select, input:not([type="checkbox"])) { height: 32px; min-width: 0; max-width: 100%; padding: 0 10px; border: 1px solid var(--e-ctrl-borda); border-radius: calc(var(--afty-raio, 12px) * 8 / 12); background: var(--e-ctrl); color: var(--e-t1); font-size: var(--e-fs-corpo, 13.5px); }
 .e-g2 .m-pular input[type="number"] { width: 84px; }
-.e-g2 .m-conteudo-g2 { font-size: 13.5px; }
+.e-g2 .m-conteudo-g2 { font-size: var(--e-fs-corpo, 13.5px); }
 :where(.e-g2) .m-conteudo-g2 { border: 1px solid var(--e-painel-borda); border-radius: calc(var(--afty-raio, 12px) * 14 / 12); background: var(--e-painel); }
-.e-g2 .m-conteudo-g2 .afty-botao { height: 32px; padding: 0 12px; font-size: 13.5px; font-weight: 600; }
+.e-g2 .m-conteudo-g2 .afty-botao { height: 32px; padding: 0 12px; font-size: var(--e-fs-corpo, 13.5px); font-weight: 600; }

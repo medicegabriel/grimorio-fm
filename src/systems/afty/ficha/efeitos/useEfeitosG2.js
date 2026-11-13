@@ -128,9 +128,14 @@ export function useEfeitosG2({ tab, setTab, m, g, raiz }) {
      mostra a descrição e os controles: fica só o texto integral). */
   const abrirConsulta = useCallback((chave, modo = "completa") => {
     const volta = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    setConsulta((c) => ({ pilha: [chave, ...c.pilha.filter((k) => k !== chave)].slice(0, 3), ativa: chave, volta: c.volta ?? volta, modo }));
+    /* UMA POR VEZ, E O RECLIQUE FECHA (autor, 2026-11-09): abrir outra troca o conteúdo, e pedir de novo a que já está aberta, no mesmo modo,
+       fecha. Antes cada clique somava uma aba ao leitor (até três) e a linha não fechava a própria consulta. */
+    setConsulta((c) => {
+      if (c.ativa === chave && c.modo === modo) { devolverFoco(c); return { pilha: [], ativa: null, volta: null, modo: "completa" }; }
+      return { pilha: [chave], ativa: chave, volta: c.volta ?? volta, modo };
+    });
     if (!chave.startsWith("condicao:")) selecionar(chave, { empurra: false });
-  }, [selecionar]);
+  }, [selecionar]); // eslint-disable-line react-hooks/exhaustive-deps
   const consultarRegra = useCallback((chave, modo = "regra") => abrirConsulta(chave, modo), [abrirConsulta]);
   const ativar = (chave) => { setConsulta((c) => ({ ...c, ativa: chave })); if (!chave.startsWith("condicao:")) selecionar(chave, { empurra: false }); };
   const fechar = useCallback(() => { setConsulta((c) => { devolverFoco(c); return { pilha: [], ativa: null, volta: null, modo: "completa" }; }); }, []); // eslint-disable-line react-hooks/exhaustive-deps

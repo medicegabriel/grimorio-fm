@@ -1,0 +1,4 @@
+player 1440 Fluxo e Medicina OK
+player 390 Fluxo e Medicina OK
+afty 1440 Fluxo e Medicina OK
+afty 390 Fluxo e Medicina OK

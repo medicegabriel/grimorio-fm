@@ -1,0 +1,15 @@
+import { register } from "node:module";
+register("data:text/javascript,export async function resolve(s,c,n){try{return await n(s,c)}catch(e){if(s.startsWith(\".\")&&!s.endsWith(\".js\"))return n(s+\".js\",c);throw e}}", import.meta.url);
+const R = "file:///C:/Projetos/Grimorio/grimorio-tracker/src/systems/afty/";
+const { deriveAfty } = await import(R + "afty-derive.js");
+const S = await import(R + "ficha/ficha-sessao.js");
+const PA = await import(R + "afty-propriedades-armas.js");
+const { createBlankAfty } = await import(R + "afty-schema.js");
+const f = createBlankAfty(); f.rulesVersion = "player"; f.core = { ...f.core, nd: 8, tipo: "combatente", patamar: "comum" };
+f.especializacoes = [{ id: "combatente", nivel: 8 }]; f.habilidades = ["cmb_golpe_especial"];
+f.equipamentos = { itens: [{ id: "e0", tipo: "arma", refId: "arm_espada_curta", qtd: 1, equipado: true }] };
+const marcada = S.marcaPropriedadeGolpe({ combate: { ativo: true } }, "preciso", true);
+f.combate = { ...marcada.combate };
+const d = deriveAfty(f);
+const linha = d.dano.entradas.find((x) => x.id === "arm_espada_curta");
+console.log("ANTES marca Preciso grava em", JSON.stringify(marcada), "| modo da rolagem com o modo normal:", PA.preparaRolagemArma({ tipo: "teste", rotulo: "A", bonus: 1, linhaArma: linha }, "normal").modo);

@@ -87,7 +87,7 @@ function Controles({ m, e, g, onAbrirPainel }) {
 
 /* `soRegra`: aberta a partir do gerenciador, a consulta NÃO repete o resumo nem
    os controles que já estão na linha e no detalhe. Fica a regra integral. */
-export default function Consulta({ m, g = null, onAbrirPainel = null, pilha, ativa, onAtivar, onFecharUma, onFechar, soRegra = false, semControles = soRegra, renderOperacao = null }) {
+export default function Consulta({ m, g = null, onAbrirPainel = null, ativa, onFechar, soRegra = false, semControles = soRegra, renderOperacao = null }) {
   const corpo = useRef(null);
   const titulo = useRef(null);
   const e = m.resolver(ativa);
@@ -113,19 +113,12 @@ export default function Consulta({ m, g = null, onAbrirPainel = null, pilha, ati
     : e.tipo === "estado" ? ["Estado", ...(e.marcas ?? [])]
       : e.tipo === "feitico" ? ["Feitiço", ...(e.marcas ?? [])]
         : !e.grupo ? ["Técnica"] : marcas.length ? marcas : [GRUPOS.find((g) => g.id === e.grupo)?.label].filter(Boolean);
-  const nomes = new Map(pilha.map((k) => [k, m.resolver(k)?.nome ?? k]));
 
   return (
     <aside className="e-consulta afty-consulta" role="dialog" aria-label={`Consulta: ${e.nome}`}>
       <div className="e-consulta-topo">
-        <div className="e-consulta-abas" role="tablist" aria-label="Consultas abertas">
-          {pilha.map((k) => (
-            <span key={k} className="e-consulta-aba" data-ativa={k === ativa ? "sim" : undefined}>
-              <button type="button" role="tab" aria-selected={k === ativa} onClick={() => onAtivar(k)} title={nomes.get(k)}>{nomes.get(k)}</button>
-              <button type="button" className="e-consulta-aba-x" onClick={() => onFecharUma(k)} aria-label={`Fechar ${nomes.get(k)}`}><X aria-hidden="true" /></button>
-            </span>
-          ))}
-        </div>
+        {/* Uma consulta por vez desde 2026-11-09: a fileira de abas acumuladas saiu, e o espaço só empurra o Fechar para a direita. */}
+        <span className="e-consulta-abas" aria-hidden="true" />
         <button type="button" className="e-fechar" onClick={onFechar} aria-label="Fechar a consulta e voltar à lista">
           <X aria-hidden="true" />Fechar<kbd>Esc</kbd>
         </button>

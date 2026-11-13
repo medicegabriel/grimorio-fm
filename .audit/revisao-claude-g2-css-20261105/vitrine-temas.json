@@ -1,0 +1,699 @@
+{
+  "geradoEm": "2026-11-06T03:04:51.400Z",
+  "base": "http://127.0.0.1:5341",
+  "etapas": [
+    {
+      "nome": "padrao 1440",
+      "checks": [
+        {
+          "id": "padrao 1440: texto com contraste AA (4,5)",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "padrao 1440: sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pag": 0
+          }
+        },
+        {
+          "id": "padrao 1440: sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "acoes": {
+          "nome": 16.59,
+          "meta": 7.16,
+          "numero": 14.2,
+          "titulo": 15.62,
+          "aba": 7.77,
+          "rotulo": 6.07
+        },
+        "pericias": {
+          "nome": 7.16,
+          "meta": 7.16,
+          "numero": 14.2,
+          "titulo": 15.62,
+          "aba": 7.77,
+          "rotulo": 6.07
+        },
+        "equipamentos": {
+          "nome": 16.59,
+          "meta": 7.16,
+          "titulo": 15.62,
+          "aba": 7.77
+        },
+        "habilidades": {
+          "nome": 16.59,
+          "titulo": 15.62,
+          "aba": 7.77
+        }
+      }
+    },
+    {
+      "nome": "padrao 390",
+      "checks": [
+        {
+          "id": "padrao 390: texto com contraste AA (4,5)",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "padrao 390: sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pag": 0
+          }
+        },
+        {
+          "id": "padrao 390: sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "acoes": {
+          "nome": 16.59,
+          "meta": 7.16,
+          "numero": 14.2,
+          "titulo": 15.62,
+          "aba": 7.77,
+          "rotulo": 6.07
+        },
+        "pericias": {
+          "nome": 7.16,
+          "meta": 7.16,
+          "numero": 14.2,
+          "titulo": 15.62,
+          "aba": 7.77,
+          "rotulo": 6.07
+        },
+        "equipamentos": {
+          "nome": 16.59,
+          "meta": 7.16,
+          "titulo": 15.62,
+          "aba": 7.77
+        },
+        "habilidades": {
+          "nome": 16.59,
+          "titulo": 15.62,
+          "aba": 7.77
+        }
+      }
+    },
+    {
+      "nome": "pergaminho 1440",
+      "checks": [
+        {
+          "id": "pergaminho 1440: texto com contraste AA (4,5)",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "pergaminho 1440: sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pag": 0
+          }
+        },
+        {
+          "id": "pergaminho 1440: sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "acoes": {
+          "nome": 13.87,
+          "meta": 4.87,
+          "numero": 12.11,
+          "titulo": 13.07,
+          "aba": 5.34,
+          "rotulo": 5.09
+        },
+        "pericias": {
+          "nome": 5.82,
+          "meta": 5.82,
+          "numero": 12.11,
+          "titulo": 13.07,
+          "aba": 5.34,
+          "rotulo": 5.09
+        },
+        "equipamentos": {
+          "nome": 13.87,
+          "meta": 5.82,
+          "titulo": 13.07,
+          "aba": 5.34
+        },
+        "habilidades": {
+          "nome": 13.99,
+          "titulo": 13.07,
+          "aba": 5.34
+        }
+      }
+    },
+    {
+      "nome": "pergaminho 390",
+      "checks": [
+        {
+          "id": "pergaminho 390: texto com contraste AA (4,5)",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "pergaminho 390: sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pag": 0
+          }
+        },
+        {
+          "id": "pergaminho 390: sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "acoes": {
+          "nome": 13.87,
+          "meta": 4.87,
+          "numero": 12.11,
+          "titulo": 13.07,
+          "aba": 5.34,
+          "rotulo": 5.09
+        },
+        "pericias": {
+          "nome": 5.82,
+          "meta": 5.82,
+          "numero": 12.11,
+          "titulo": 13.07,
+          "aba": 5.34,
+          "rotulo": 5.09
+        },
+        "equipamentos": {
+          "nome": 13.87,
+          "meta": 5.82,
+          "titulo": 13.07,
+          "aba": 5.34
+        },
+        "habilidades": {
+          "nome": 13.99,
+          "titulo": 13.07,
+          "aba": 5.34
+        }
+      }
+    },
+    {
+      "nome": "minamoto 1440",
+      "checks": [
+        {
+          "id": "minamoto 1440: texto com contraste AA (4,5)",
+          "ok": false,
+          "dados": [
+            "acoes.nome=1.2",
+            "acoes.aba=1.07",
+            "pericias.nome=1.2",
+            "pericias.aba=1.07",
+            "equipamentos.nome=1.2",
+            "equipamentos.aba=1.07",
+            "habilidades.nome=1.2",
+            "habilidades.aba=1.07"
+          ]
+        },
+        {
+          "id": "minamoto 1440: sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pag": 0
+          }
+        },
+        {
+          "id": "minamoto 1440: sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "acoes": {
+          "nome": 1.2,
+          "meta": 5.25,
+          "numero": 7.45,
+          "titulo": 10.27,
+          "aba": 1.07,
+          "rotulo": 5.33
+        },
+        "pericias": {
+          "nome": 1.2,
+          "meta": 6.45,
+          "numero": 7.45,
+          "titulo": 10.27,
+          "aba": 1.07,
+          "rotulo": 5.69
+        },
+        "equipamentos": {
+          "nome": 1.2,
+          "meta": 6.45,
+          "titulo": 10.27,
+          "aba": 1.07
+        },
+        "habilidades": {
+          "nome": 1.2,
+          "titulo": 10.27,
+          "aba": 1.07
+        }
+      }
+    },
+    {
+      "nome": "minamoto 390",
+      "checks": [
+        {
+          "id": "minamoto 390: texto com contraste AA (4,5)",
+          "ok": false,
+          "dados": [
+            "acoes.nome=1.2",
+            "acoes.aba=1.07",
+            "pericias.nome=1.2",
+            "pericias.aba=1.07",
+            "equipamentos.nome=1.2",
+            "equipamentos.aba=1.07",
+            "habilidades.nome=1.2",
+            "habilidades.aba=1.07"
+          ]
+        },
+        {
+          "id": "minamoto 390: sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pag": 0
+          }
+        },
+        {
+          "id": "minamoto 390: sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "acoes": {
+          "nome": 1.2,
+          "meta": 5.25,
+          "numero": 7.45,
+          "titulo": 10.27,
+          "aba": 1.07,
+          "rotulo": 5.33
+        },
+        "pericias": {
+          "nome": 1.2,
+          "meta": 6.45,
+          "numero": 7.45,
+          "titulo": 10.27,
+          "aba": 1.07,
+          "rotulo": 5.69
+        },
+        "equipamentos": {
+          "nome": 1.2,
+          "meta": 6.45,
+          "titulo": 10.27,
+          "aba": 1.07
+        },
+        "habilidades": {
+          "nome": 1.2,
+          "titulo": 10.27,
+          "aba": 1.07
+        }
+      }
+    },
+    {
+      "nome": "alter 1440",
+      "checks": [
+        {
+          "id": "alter 1440: texto com contraste AA (4,5)",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "alter 1440: sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pag": 0
+          }
+        },
+        {
+          "id": "alter 1440: sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "acoes": {
+          "nome": 14.93,
+          "meta": 8.71,
+          "numero": 12.4,
+          "titulo": 5.01,
+          "aba": 9.82,
+          "rotulo": 7.24
+        },
+        "pericias": {
+          "nome": 9.71,
+          "meta": 9.71,
+          "numero": 13.04,
+          "titulo": 5.01,
+          "aba": 9.82,
+          "rotulo": 8.27
+        },
+        "equipamentos": {
+          "nome": 16.64,
+          "meta": 9.71,
+          "titulo": 5.01,
+          "aba": 9.82
+        },
+        "habilidades": {
+          "nome": 16.82,
+          "titulo": 5.01,
+          "aba": 9.82
+        }
+      }
+    },
+    {
+      "nome": "alter 390",
+      "checks": [
+        {
+          "id": "alter 390: texto com contraste AA (4,5)",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "alter 390: sem estouro horizontal",
+          "ok": false,
+          "dados": {
+            "pag": 28
+          }
+        },
+        {
+          "id": "alter 390: sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "acoes": {
+          "nome": 14.93,
+          "meta": 8.71,
+          "numero": 12.4,
+          "titulo": 5.01,
+          "aba": 9.82,
+          "rotulo": 7.24
+        },
+        "pericias": {
+          "nome": 9.71,
+          "meta": 9.71,
+          "numero": 13.04,
+          "titulo": 5.01,
+          "aba": 9.82,
+          "rotulo": 8.27
+        },
+        "equipamentos": {
+          "nome": 16.64,
+          "meta": 9.71,
+          "titulo": 5.01,
+          "aba": 9.82
+        },
+        "habilidades": {
+          "nome": 16.82,
+          "titulo": 5.01,
+          "aba": 9.82
+        }
+      }
+    },
+    {
+      "nome": "vitral 1440",
+      "checks": [
+        {
+          "id": "vitral 1440: texto com contraste AA (4,5)",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "vitral 1440: sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pag": 0
+          }
+        },
+        {
+          "id": "vitral 1440: sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "acoes": {
+          "nome": 13.33,
+          "meta": 8.77,
+          "numero": 11.27,
+          "titulo": 12.47,
+          "aba": 9.54,
+          "rotulo": 7.44
+        },
+        "pericias": {
+          "nome": 8.77,
+          "meta": 8.77,
+          "numero": 11.27,
+          "titulo": 12.47,
+          "aba": 9.54,
+          "rotulo": 7.56
+        },
+        "equipamentos": {
+          "nome": 13.33,
+          "meta": 8.77,
+          "titulo": 12.47,
+          "aba": 9.54
+        },
+        "habilidades": {
+          "nome": 13.33,
+          "titulo": 12.47,
+          "aba": 9.54
+        }
+      }
+    },
+    {
+      "nome": "vitral 390",
+      "checks": [
+        {
+          "id": "vitral 390: texto com contraste AA (4,5)",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "vitral 390: sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pag": 0
+          }
+        },
+        {
+          "id": "vitral 390: sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "acoes": {
+          "nome": 13.33,
+          "meta": 8.77,
+          "numero": 11.27,
+          "titulo": 12.47,
+          "aba": 9.54,
+          "rotulo": 7.44
+        },
+        "pericias": {
+          "nome": 8.77,
+          "meta": 8.77,
+          "numero": 11.27,
+          "titulo": 12.47,
+          "aba": 9.54,
+          "rotulo": 7.56
+        },
+        "equipamentos": {
+          "nome": 13.33,
+          "meta": 8.77,
+          "titulo": 12.47,
+          "aba": 9.54
+        },
+        "habilidades": {
+          "nome": 13.33,
+          "titulo": 12.47,
+          "aba": 9.54
+        }
+      }
+    },
+    {
+      "nome": "papel 1440",
+      "checks": [
+        {
+          "id": "papel 1440: texto com contraste AA (4,5)",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "papel 1440: sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pag": 0
+          }
+        },
+        {
+          "id": "papel 1440: sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "acoes": {
+          "nome": 16.17,
+          "meta": 6.42,
+          "numero": 6.96,
+          "titulo": 7.54,
+          "aba": 6.84,
+          "rotulo": 6.54
+        },
+        "pericias": {
+          "nome": 7.52,
+          "meta": 7.52,
+          "numero": 6.85,
+          "titulo": 7.54,
+          "aba": 6.84,
+          "rotulo": 6.44
+        },
+        "equipamentos": {
+          "nome": 16.17,
+          "meta": 7.52,
+          "titulo": 7.54,
+          "aba": 6.84
+        },
+        "habilidades": {
+          "nome": 16.17,
+          "titulo": 7.54,
+          "aba": 6.84
+        }
+      }
+    },
+    {
+      "nome": "papel 390",
+      "checks": [
+        {
+          "id": "papel 390: texto com contraste AA (4,5)",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "papel 390: sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "pag": 0
+          }
+        },
+        {
+          "id": "papel 390: sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "acoes": {
+          "nome": 16.17,
+          "meta": 6.42,
+          "numero": 6.96,
+          "titulo": 7.54,
+          "aba": 6.84,
+          "rotulo": 6.54
+        },
+        "pericias": {
+          "nome": 7.52,
+          "meta": 7.52,
+          "numero": 6.85,
+          "titulo": 7.54,
+          "aba": 6.84,
+          "rotulo": 6.44
+        },
+        "equipamentos": {
+          "nome": 16.17,
+          "meta": 7.52,
+          "titulo": 7.54,
+          "aba": 6.84
+        },
+        "habilidades": {
+          "nome": 16.17,
+          "titulo": 7.54,
+          "aba": 6.84
+        }
+      }
+    }
+  ],
+  "falhas": [
+    {
+      "etapa": "minamoto 1440",
+      "id": "minamoto 1440: texto com contraste AA (4,5)",
+      "dados": [
+        "acoes.nome=1.2",
+        "acoes.aba=1.07",
+        "pericias.nome=1.2",
+        "pericias.aba=1.07",
+        "equipamentos.nome=1.2",
+        "equipamentos.aba=1.07",
+        "habilidades.nome=1.2",
+        "habilidades.aba=1.07"
+      ]
+    },
+    {
+      "etapa": "minamoto 390",
+      "id": "minamoto 390: texto com contraste AA (4,5)",
+      "dados": [
+        "acoes.nome=1.2",
+        "acoes.aba=1.07",
+        "pericias.nome=1.2",
+        "pericias.aba=1.07",
+        "equipamentos.nome=1.2",
+        "equipamentos.aba=1.07",
+        "habilidades.nome=1.2",
+        "habilidades.aba=1.07"
+      ]
+    },
+    {
+      "etapa": "alter 390",
+      "id": "alter 390: sem estouro horizontal",
+      "dados": {
+        "pag": 28
+      }
+    }
+  ],
+  "resumo": [
+    "padrao 1440: 3/3",
+    "padrao 390: 3/3",
+    "pergaminho 1440: 3/3",
+    "pergaminho 390: 3/3",
+    "minamoto 1440: 2/3",
+    "minamoto 390: 2/3",
+    "alter 1440: 3/3",
+    "alter 390: 2/3",
+    "vitral 1440: 3/3",
+    "vitral 390: 3/3",
+    "papel 1440: 3/3",
+    "papel 390: 3/3"
+  ]
+}

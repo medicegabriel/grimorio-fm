@@ -1,0 +1,90 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "encontro": true,
+    "energetico": 10,
+    "recarga": true,
+    "prazo": true
+  },
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "g2": false,
+    "ficha": true,
+    "prazo": true
+  },
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "g2": true,
+    "ficha": true,
+    "prazo": true
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "encontro": true,
+    "energetico": 10,
+    "recarga": true,
+    "prazo": true
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "g2": false,
+    "ficha": true,
+    "prazo": true
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "g2": true,
+    "ficha": true,
+    "prazo": true
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "encontro": true,
+    "energetico": 10,
+    "recarga": true,
+    "prazo": true
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "g2": false,
+    "ficha": true,
+    "prazo": true
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "g2": true,
+    "ficha": true,
+    "prazo": true
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "encontro": true,
+    "energetico": 10,
+    "recarga": true,
+    "prazo": true
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "g2": false,
+    "ficha": true,
+    "prazo": true
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "g2": true,
+    "ficha": true,
+    "prazo": true
+  }
+]

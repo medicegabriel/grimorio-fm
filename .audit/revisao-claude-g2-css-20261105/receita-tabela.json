@@ -1,0 +1,718 @@
+{
+  "acum": {
+    "#afty-ficha": [
+      1,
+      0,
+      0
+    ],
+    ".afty-cabecalho": [
+      2,
+      1,
+      0
+    ],
+    ".afty-abas": [
+      2,
+      0,
+      1
+    ],
+    ".afty-aba": [
+      9,
+      6,
+      0
+    ],
+    ".afty-nome": [
+      1,
+      1,
+      0
+    ],
+    ".afty-cabecalho-conteudo": [
+      0,
+      0,
+      0
+    ],
+    ".afty-cabecalho-principal": [
+      0,
+      0,
+      0
+    ],
+    ".afty-retrato-painel": [
+      0,
+      0,
+      0
+    ],
+    ".afty-retrato": [
+      1,
+      1,
+      0
+    ],
+    ".afty-chip": [
+      8,
+      8,
+      0
+    ],
+    ".afty-controles": [
+      0,
+      0,
+      0
+    ],
+    ".afty-vital": [
+      4,
+      4,
+      0
+    ],
+    ".afty-vital-icone": [
+      0,
+      0,
+      0
+    ],
+    ".afty-vital-rotulo": [
+      4,
+      4,
+      0
+    ],
+    ".afty-vital-numero": [
+      4,
+      4,
+      0
+    ],
+    ".afty-vital-max": [
+      4,
+      4,
+      0
+    ],
+    ".afty-vital-temp": [
+      0,
+      0,
+      0
+    ],
+    ".afty-vital-trilho": [
+      5,
+      5,
+      0
+    ],
+    ".afty-vital-barra": [
+      5,
+      5,
+      0
+    ],
+    ".afty-guarda": [
+      0,
+      0,
+      0
+    ],
+    ".afty-guarda-valor": [
+      0,
+      0,
+      0
+    ],
+    ".afty-guarda-vida": [
+      0,
+      0,
+      0
+    ],
+    ".afty-guarda-quebrada": [
+      0,
+      0,
+      0
+    ],
+    ".afty-guarda-botao": [
+      0,
+      0,
+      0
+    ],
+    ".afty-stats": [
+      1,
+      1,
+      0
+    ],
+    ".afty-stat": [
+      7,
+      7,
+      0
+    ],
+    ".afty-stat-rotulo": [
+      7,
+      7,
+      0
+    ],
+    ".afty-stat-valor": [
+      7,
+      7,
+      0
+    ],
+    ".afty-card": [
+      19,
+      19,
+      0
+    ],
+    ".afty-card-titulo": [
+      26,
+      17,
+      0
+    ],
+    ".afty-atributo": [
+      6,
+      6,
+      0
+    ],
+    ".afty-atributo-rotulo": [
+      6,
+      6,
+      0
+    ],
+    ".afty-atributo-valor": [
+      6,
+      6,
+      0
+    ],
+    ".afty-atributo-mod": [
+      0,
+      0,
+      0
+    ],
+    ".afty-subabas": [
+      0,
+      0,
+      0
+    ],
+    ".afty-subaba": [
+      0,
+      0,
+      0
+    ],
+    ".afty-subaba-conta": [
+      0,
+      0,
+      0
+    ],
+    ".afty-linha": [
+      83,
+      83,
+      0
+    ],
+    ".afty-rotulo": [
+      25,
+      9,
+      0
+    ],
+    ".afty-valor": [
+      69,
+      68,
+      0
+    ],
+    ".afty-rolavel": [
+      59,
+      59,
+      0
+    ],
+    ".afty-texto": [
+      0,
+      0,
+      0
+    ],
+    ".afty-opcao": [
+      0,
+      0,
+      0
+    ],
+    ".afty-estrela": [
+      0,
+      0,
+      0
+    ],
+    ".afty-vazio": [
+      1,
+      0,
+      0
+    ],
+    ".afty-dominio-cabeca": [
+      0,
+      0,
+      0
+    ],
+    ".afty-dominio-numeros": [
+      0,
+      0,
+      0
+    ],
+    ".afty-dominio-corpo": [
+      0,
+      0,
+      0
+    ],
+    ".afty-dominio-efeito-titulo": [
+      0,
+      0,
+      0
+    ],
+    ".afty-dominio-secao": [
+      0,
+      0,
+      0
+    ],
+    ".afty-dominio-base": [
+      0,
+      0,
+      0
+    ],
+    ".afty-inv-ficha": [
+      0,
+      0,
+      0
+    ],
+    ".afty-inv-cabeca": [
+      0,
+      0,
+      0
+    ],
+    ".afty-inv-titulo": [
+      0,
+      0,
+      0
+    ],
+    ".afty-inv-cabeca-marcas": [
+      0,
+      0,
+      0
+    ],
+    ".afty-inv-retrato-icone": [
+      0,
+      0,
+      0
+    ],
+    ".afty-inv-corpo": [
+      0,
+      0,
+      0
+    ],
+    ".afty-inv-stats": [
+      0,
+      0,
+      0
+    ],
+    ".afty-inv-colunas": [
+      0,
+      0,
+      0
+    ],
+    ".afty-inv-coluna": [
+      0,
+      0,
+      0
+    ],
+    ".afty-inv-bloco": [
+      0,
+      0,
+      0
+    ],
+    ".afty-inv-duplo": [
+      0,
+      0,
+      0
+    ],
+    ".afty-inv-bonus": [
+      0,
+      0,
+      0
+    ],
+    ".afty-inv-bonus-botao": [
+      0,
+      0,
+      0
+    ],
+    ".afty-inv-lampada": [
+      0,
+      0,
+      0
+    ],
+    ".afty-inv-fileira": [
+      0,
+      0,
+      0
+    ],
+    ".afty-inv-cartao": [
+      0,
+      0,
+      0
+    ],
+    ".afty-espinho": [
+      0,
+      0,
+      0
+    ],
+    ".afty-espinho-casca": [
+      0,
+      0,
+      0
+    ],
+    ".afty-espinho-titulo": [
+      0,
+      0,
+      0
+    ],
+    ".afty-espinho-cristal": [
+      0,
+      0,
+      0
+    ],
+    ".afty-espinho-marca": [
+      0,
+      0,
+      0
+    ],
+    ".afty-espinho-rachadura": [
+      0,
+      0,
+      0
+    ],
+    ".afty-lanterna": [
+      0,
+      0,
+      0
+    ],
+    ".afty-lanterna-imagem": [
+      0,
+      0,
+      0
+    ],
+    ".afty-lanterna-chamas": [
+      0,
+      0,
+      0
+    ],
+    ".afty-botao": [
+      40,
+      28,
+      0
+    ],
+    ".afty-passo": [
+      5,
+      2,
+      0
+    ],
+    ".afty-campo": [
+      4,
+      2,
+      0
+    ],
+    ".afty-cor": [
+      13,
+      0,
+      0
+    ],
+    ".afty-canal-gatilho": [
+      0,
+      0,
+      0
+    ],
+    ".afty-canal-painel": [
+      0,
+      0,
+      0
+    ],
+    ".afty-canal-grupo": [
+      0,
+      0,
+      0
+    ],
+    ".afty-canal-item": [
+      0,
+      0,
+      0
+    ],
+    ".afty-fontes": [
+      0,
+      0,
+      0
+    ],
+    ".afty-fonte-secao": [
+      0,
+      0,
+      0
+    ],
+    ".afty-fonte-linha": [
+      0,
+      0,
+      0
+    ],
+    ".afty-fonte-rotulo": [
+      0,
+      0,
+      0
+    ],
+    ".afty-fonte-valor": [
+      0,
+      0,
+      0
+    ],
+    ".afty-fonte-total": [
+      0,
+      0,
+      0
+    ],
+    ".afty-log": [
+      1,
+      0,
+      0
+    ],
+    ".afty-log-topo": [
+      1,
+      0,
+      0
+    ],
+    ".afty-log-ultima": [
+      1,
+      0,
+      0
+    ],
+    ".afty-log-historico": [
+      1,
+      0,
+      0
+    ],
+    ".afty-log-corpo-topo": [
+      1,
+      0,
+      0
+    ],
+    ".afty-log-corpo": [
+      1,
+      0,
+      0
+    ],
+    ".afty-log-modo": [
+      3,
+      0,
+      0
+    ],
+    ".afty-rolagem": [
+      0,
+      0,
+      0
+    ],
+    ".afty-rolagem-total": [
+      0,
+      0,
+      0
+    ],
+    ".afty-dado": [
+      0,
+      0,
+      0
+    ],
+    ".afty-busca-fundo": [
+      1,
+      0,
+      0
+    ],
+    ".afty-busca": [
+      1,
+      0,
+      0
+    ],
+    ".afty-busca-item": [
+      0,
+      0,
+      0
+    ],
+    "[data-afty-vital]": [
+      5,
+      5,
+      0
+    ],
+    "[data-afty-nivel]": [
+      4,
+      4,
+      0
+    ],
+    "[data-afty-stat]": [
+      7,
+      7,
+      0
+    ],
+    "[data-afty-aba]": [
+      6,
+      6,
+      0
+    ],
+    "[data-afty-tom]": [
+      4,
+      2,
+      0
+    ],
+    "[data-afty-destacada]": [
+      35,
+      35,
+      0
+    ],
+    "[data-afty-alvo]": [
+      0,
+      0,
+      0
+    ],
+    "[data-afty-marca]": [
+      0,
+      0,
+      0
+    ],
+    "[data-afty-compacto]": [
+      0,
+      0,
+      0
+    ],
+    "[data-afty-atributo]": [
+      6,
+      6,
+      0
+    ],
+    "[data-afty-carga]": [
+      1,
+      1,
+      0
+    ],
+    "[data-afty-com-retrato]": [
+      0,
+      0,
+      0
+    ],
+    "[data-afty-subaba]": [
+      0,
+      0,
+      0
+    ],
+    "[data-afty-densidade]": [
+      1,
+      0,
+      0
+    ]
+  },
+  "cls": {
+    "prefixa": [
+      ".afty-nome",
+      ".afty-retrato",
+      ".afty-chip",
+      ".afty-vital",
+      ".afty-vital-rotulo",
+      ".afty-vital-numero",
+      ".afty-vital-max",
+      ".afty-vital-trilho",
+      ".afty-vital-barra",
+      ".afty-stats",
+      ".afty-stat",
+      ".afty-stat-rotulo",
+      ".afty-stat-valor",
+      ".afty-card",
+      ".afty-atributo",
+      ".afty-atributo-rotulo",
+      ".afty-atributo-valor",
+      ".afty-linha",
+      ".afty-rolavel",
+      "[data-afty-vital]",
+      "[data-afty-nivel]",
+      "[data-afty-stat]",
+      "[data-afty-aba]",
+      "[data-afty-destacada]",
+      "[data-afty-atributo]",
+      "[data-afty-carga]"
+    ],
+    "mista": [
+      ".afty-cabecalho (1 de 2 sob .e-g2)",
+      ".afty-aba (6 de 9 sob .e-g2)",
+      ".afty-card-titulo (17 de 26 sob .e-g2)",
+      ".afty-rotulo (9 de 25 sob .e-g2)",
+      ".afty-valor (68 de 69 sob .e-g2)",
+      ".afty-botao (28 de 40 sob .e-g2)",
+      ".afty-passo (2 de 5 sob .e-g2)",
+      ".afty-campo (2 de 4 sob .e-g2)",
+      "[data-afty-tom] (2 de 4 sob .e-g2)"
+    ],
+    "semPrefixo": [
+      "#afty-ficha",
+      ".afty-vazio",
+      ".afty-cor",
+      ".afty-log",
+      ".afty-log-topo",
+      ".afty-log-ultima",
+      ".afty-log-historico",
+      ".afty-log-corpo-topo",
+      ".afty-log-corpo",
+      ".afty-log-modo",
+      ".afty-busca-fundo",
+      ".afty-busca",
+      "[data-afty-densidade]"
+    ],
+    "mesmoElemento": [
+      ".afty-abas"
+    ],
+    "ausente": [
+      ".afty-cabecalho-conteudo",
+      ".afty-cabecalho-principal",
+      ".afty-retrato-painel",
+      ".afty-controles",
+      ".afty-vital-icone",
+      ".afty-vital-temp",
+      ".afty-guarda",
+      ".afty-guarda-valor",
+      ".afty-guarda-vida",
+      ".afty-guarda-quebrada",
+      ".afty-guarda-botao",
+      ".afty-atributo-mod",
+      ".afty-subabas",
+      ".afty-subaba",
+      ".afty-subaba-conta",
+      ".afty-texto",
+      ".afty-opcao",
+      ".afty-estrela",
+      ".afty-dominio-cabeca",
+      ".afty-dominio-numeros",
+      ".afty-dominio-corpo",
+      ".afty-dominio-efeito-titulo",
+      ".afty-dominio-secao",
+      ".afty-dominio-base",
+      ".afty-inv-ficha",
+      ".afty-inv-cabeca",
+      ".afty-inv-titulo",
+      ".afty-inv-cabeca-marcas",
+      ".afty-inv-retrato-icone",
+      ".afty-inv-corpo",
+      ".afty-inv-stats",
+      ".afty-inv-colunas",
+      ".afty-inv-coluna",
+      ".afty-inv-bloco",
+      ".afty-inv-duplo",
+      ".afty-inv-bonus",
+      ".afty-inv-bonus-botao",
+      ".afty-inv-lampada",
+      ".afty-inv-fileira",
+      ".afty-inv-cartao",
+      ".afty-espinho",
+      ".afty-espinho-casca",
+      ".afty-espinho-titulo",
+      ".afty-espinho-cristal",
+      ".afty-espinho-marca",
+      ".afty-espinho-rachadura",
+      ".afty-lanterna",
+      ".afty-lanterna-imagem",
+      ".afty-lanterna-chamas",
+      ".afty-canal-gatilho",
+      ".afty-canal-painel",
+      ".afty-canal-grupo",
+      ".afty-canal-item",
+      ".afty-fontes",
+      ".afty-fonte-secao",
+      ".afty-fonte-linha",
+      ".afty-fonte-rotulo",
+      ".afty-fonte-valor",
+      ".afty-fonte-total",
+      ".afty-rolagem",
+      ".afty-rolagem-total",
+      ".afty-dado",
+      ".afty-busca-item",
+      "[data-afty-alvo]",
+      "[data-afty-marca]",
+      "[data-afty-compacto]",
+      "[data-afty-com-retrato]",
+      "[data-afty-subaba]"
+    ]
+  }
+}

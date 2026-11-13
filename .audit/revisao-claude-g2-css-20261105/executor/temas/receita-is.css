@@ -1,0 +1,7 @@
+/* A receita universal: prefixo :is(.e-g2, :scope), que casa qualquer descendente da raiz, com ou sem ancestral .e-g2, e vale (0,2,0). */
+:is(.e-g2, :scope) .afty-card { border-color: #e11d48; }
+:is(.e-g2, :scope) .afty-valor { color: #22d3ee; }
+:is(.e-g2, :scope) .afty-aba[aria-selected="true"] { color: #22d3ee; }
+:is(.e-g2, :scope) .afty-nome { color: #22d3ee; }
+:is(.e-g2, :scope) .afty-botao { border-color: #e11d48; }
+.afty-abas.e-g2 { border-bottom: 2px solid #e11d48; }

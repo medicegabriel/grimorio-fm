@@ -14,7 +14,7 @@ deste documento, na seção **Fonte**, e é ela a fonte de verdade: o PDF pode s
 | 0 | Fonte, mapa e perguntas | feita (este documento) |
 | 1 | Motor: Restringido aceita variação | feita em 2026-09-28 (`asserts/t-restringido-variacao.mjs`, 52) |
 | 2 | Núcleo do Addon: origem, Talentos de Origem, classe herdeira, Dádivas | feita em 2026-09-28 (`addons/formula-combate-entropica.json`, `asserts/t-formula-entropica.mjs`, 102) |
-| 2b | Engenho Superior ligado à Criação de Equipamentos (decisão 14) | não começada, pede leituras próprias |
+| 2b | Engenho Superior ligado à Criação de Equipamentos (decisão 14) | inventário, bônus numéricos, limite e vantagem manual implementados. Revisar dados de dano e efeitos fora dos canais cobertos |
 | 3 | Doutrina da Guerra Matemática e Técnicas Marciais | não começada |
 | 4 | Arsenal: card de Preparação de Terreno, M.E.D.U.S.A., Bomba Atômica | não começada |
 | 5 | Veículos como Invocação de ficha fixa | não começada |
@@ -167,8 +167,14 @@ resposta, nada disto é decidido por suposição.
 
 **Origem (fase 2)**
 5. ~~5 pontos ou 4?~~ Respondida: 4 no total, um deles livre (decisão 10).
-6. O que são *"1.5x mais eficiência"* e *"até 2 efeitos especiais de grau"* no Engenho Superior?
-   O autor decidiu ligar à Criação de Equipamentos (decisão 14), e as leituras vêm na etapa 2b.
+6. **Engenho Superior (fase 2b).** O multiplicador de 1,5 vale para os valores base e os bônus
+   dos efeitos. Por exemplo, um escudo com RD 4 e bônus de +2 em uma perícia passa a ter RD 6
+   e bônus de +3. O limite é de dois efeitos especiais de grau no total. A vantagem na primeira
+   rolagem com o item terá um uso manual na ficha do aliado.
+
+   O Engenho Superior também pode modificar uma unidade do catálogo base. O registro fica
+   na entrada do inventário, com o identificador do equipamento de origem. Isso permite que
+   duas cópias do mesmo item tenham efeitos diferentes e que o aliado receba a cópia modificada.
 7. ~~A Análise de Campo é uma vez por combate?~~ Respondida: sim (decisão 15).
 
 **Dádivas (fase 2)**

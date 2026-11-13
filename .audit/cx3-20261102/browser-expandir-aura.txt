@@ -1,0 +1,12 @@
+player 1440 clássica: ativação, alcance, recarga, manutenção e encerramento
+player 1440 G2: ativação, alcance, recarga, manutenção e encerramento
+player 1440 Encontro: ativação, alcance, recarga, manutenção e encerramento
+player 390 clássica: ativação, alcance, recarga, manutenção e encerramento
+player 390 G2: ativação, alcance, recarga, manutenção e encerramento
+player 390 Encontro: ativação, alcance, recarga, manutenção e encerramento
+afty 1440 clássica: ativação, alcance, recarga, manutenção e encerramento
+afty 1440 G2: ativação, alcance, recarga, manutenção e encerramento
+afty 1440 Encontro: ativação, alcance, recarga, manutenção e encerramento
+afty 390 clássica: ativação, alcance, recarga, manutenção e encerramento
+afty 390 G2: ativação, alcance, recarga, manutenção e encerramento
+afty 390 Encontro: ativação, alcance, recarga, manutenção e encerramento

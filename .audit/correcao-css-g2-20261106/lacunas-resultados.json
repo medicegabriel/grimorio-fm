@@ -1,0 +1,145 @@
+{
+  "checks": [
+    {
+      "nome": "g2 tema próprio de invocação",
+      "ok": true
+    },
+    {
+      "nome": "g2 tema não repinta o dono",
+      "ok": true,
+      "dados": "#060910"
+    },
+    {
+      "nome": "g2 prompt usa escopo da invocação",
+      "ok": true
+    },
+    {
+      "nome": "g2 Esc fecha editor da invocação",
+      "ok": true
+    },
+    {
+      "nome": "classica tema próprio de invocação",
+      "ok": true
+    },
+    {
+      "nome": "classica tema não repinta o dono",
+      "ok": true,
+      "dados": "#060910"
+    },
+    {
+      "nome": "classica prompt usa escopo da invocação",
+      "ok": true
+    },
+    {
+      "nome": "classica Esc fecha editor da invocação",
+      "ok": true
+    },
+    {
+      "nome": "encontro tema próprio de invocação",
+      "ok": true
+    },
+    {
+      "nome": "encontro tema não repinta o dono",
+      "ok": true,
+      "dados": "#060910"
+    },
+    {
+      "nome": "Encontro não oferece editor sem gravação",
+      "ok": true
+    },
+    {
+      "nome": "consulta/1440 recebe CSS simples",
+      "ok": true
+    },
+    {
+      "nome": "histórico/1440 recebe CSS simples",
+      "ok": true
+    },
+    {
+      "nome": "consulta/390 recebe CSS simples",
+      "ok": true
+    },
+    {
+      "nome": "histórico/390 recebe CSS simples",
+      "ok": true
+    },
+    {
+      "nome": "impressão/escuro ficha visível",
+      "ok": true,
+      "dados": {
+        "display": "block",
+        "color": "rgb(241, 245, 249)",
+        "rect": {
+          "x": 223,
+          "y": 38.015625,
+          "width": 548,
+          "height": 29.390625,
+          "top": 38.015625,
+          "right": 771,
+          "bottom": 67.40625,
+          "left": 223
+        }
+      }
+    },
+    {
+      "nome": "impressão/claro ficha visível",
+      "ok": true,
+      "dados": {
+        "display": "block",
+        "color": "rgb(43, 33, 22)",
+        "rect": {
+          "x": 223,
+          "y": 38.015625,
+          "width": 548,
+          "height": 29.390625,
+          "top": 38.015625,
+          "right": 771,
+          "bottom": 67.40625,
+          "left": 223
+        }
+      }
+    },
+    {
+      "nome": "impressão/minamoto ficha visível",
+      "ok": true,
+      "dados": {
+        "display": "block",
+        "color": "rgb(255, 249, 253)",
+        "rect": {
+          "x": 223,
+          "y": 35.125,
+          "width": 548,
+          "height": 35.171875,
+          "top": 35.125,
+          "right": 771,
+          "bottom": 70.296875,
+          "left": 223
+        }
+      }
+    },
+    {
+      "nome": "impressão/alter ficha visível",
+      "ok": true,
+      "dados": {
+        "display": "block",
+        "color": "rgb(35, 33, 45)",
+        "rect": {
+          "x": 223,
+          "y": 38.015625,
+          "width": 548,
+          "height": 29.390625,
+          "top": 38.015625,
+          "right": 771,
+          "bottom": 67.40625,
+          "left": 223
+        }
+      }
+    },
+    {
+      "nome": "sem erros de página nas lacunas",
+      "ok": true,
+      "dados": []
+    }
+  ],
+  "erros": []
+}

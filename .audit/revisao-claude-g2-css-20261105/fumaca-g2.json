@@ -1,0 +1,765 @@
+{
+  "geradoEm": "2026-11-06T03:16:43.052Z",
+  "base": "http://127.0.0.1:5341",
+  "etapas": [
+    {
+      "nome": "arsenal (player) G2 com as três abas 1440",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "arsenal (player) G2 com as três abas 390",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "arsenal (player) G2 sem a prévia 1440",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "arsenal (player) G2 sem a prévia 390",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "arsenal (player) clássica 1440",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "arsenal (player) clássica 390",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "conjurador (player) G2 com as três abas 1440",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "conjurador (player) G2 com as três abas 390",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "conjurador (player) G2 sem a prévia 1440",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "conjurador (player) G2 sem a prévia 390",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "conjurador (player) clássica 1440",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "conjurador (player) clássica 390",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "mesa (player) G2 com as três abas 1440",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "mesa (player) G2 com as três abas 390",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "mesa (player) G2 sem a prévia 1440",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "mesa (player) G2 sem a prévia 390",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "mesa (player) clássica 1440",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "mesa (player) clássica 390",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "tipica (player) G2 com as três abas 1440",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "tipica (player) G2 com as três abas 390",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "tipica (player) G2 sem a prévia 1440",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "tipica (player) G2 sem a prévia 390",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "tipica (player) clássica 1440",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "tipica (player) clássica 390",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "vazia (player) G2 com as três abas 1440",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "vazia (player) G2 com as três abas 390",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "vazia (player) G2 sem a prévia 1440",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "vazia (player) G2 sem a prévia 390",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "vazia (player) clássica 1440",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "vazia (player) clássica 390",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "criatura (afty) G2 com as três abas 1440",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "criatura (afty) G2 com as três abas 390",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "criatura (afty) G2 sem a prévia 1440",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "criatura (afty) G2 sem a prévia 390",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "criatura (afty) clássica 1440",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    },
+    {
+      "nome": "criatura (afty) clássica 390",
+      "checks": [
+        {
+          "id": "abas percorridas sem erro de página",
+          "ok": true,
+          "dados": []
+        },
+        {
+          "id": "sem estouro horizontal",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "abas": 6,
+        "estouro": 0
+      }
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "arsenal (player) G2 com as três abas 1440: 2/2",
+    "arsenal (player) G2 com as três abas 390: 2/2",
+    "arsenal (player) G2 sem a prévia 1440: 2/2",
+    "arsenal (player) G2 sem a prévia 390: 2/2",
+    "arsenal (player) clássica 1440: 2/2",
+    "arsenal (player) clássica 390: 2/2",
+    "conjurador (player) G2 com as três abas 1440: 2/2",
+    "conjurador (player) G2 com as três abas 390: 2/2",
+    "conjurador (player) G2 sem a prévia 1440: 2/2",
+    "conjurador (player) G2 sem a prévia 390: 2/2",
+    "conjurador (player) clássica 1440: 2/2",
+    "conjurador (player) clássica 390: 2/2",
+    "mesa (player) G2 com as três abas 1440: 2/2",
+    "mesa (player) G2 com as três abas 390: 2/2",
+    "mesa (player) G2 sem a prévia 1440: 2/2",
+    "mesa (player) G2 sem a prévia 390: 2/2",
+    "mesa (player) clássica 1440: 2/2",
+    "mesa (player) clássica 390: 2/2",
+    "tipica (player) G2 com as três abas 1440: 2/2",
+    "tipica (player) G2 com as três abas 390: 2/2",
+    "tipica (player) G2 sem a prévia 1440: 2/2",
+    "tipica (player) G2 sem a prévia 390: 2/2",
+    "tipica (player) clássica 1440: 2/2",
+    "tipica (player) clássica 390: 2/2",
+    "vazia (player) G2 com as três abas 1440: 2/2",
+    "vazia (player) G2 com as três abas 390: 2/2",
+    "vazia (player) G2 sem a prévia 1440: 2/2",
+    "vazia (player) G2 sem a prévia 390: 2/2",
+    "vazia (player) clássica 1440: 2/2",
+    "vazia (player) clássica 390: 2/2",
+    "criatura (afty) G2 com as três abas 1440: 2/2",
+    "criatura (afty) G2 com as três abas 390: 2/2",
+    "criatura (afty) G2 sem a prévia 1440: 2/2",
+    "criatura (afty) G2 sem a prévia 390: 2/2",
+    "criatura (afty) clássica 1440: 2/2",
+    "criatura (afty) clássica 390: 2/2"
+  ]
+}

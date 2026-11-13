@@ -1,0 +1,273 @@
+Você vai escrever CSS para personalizar uma ficha de RPG.
+
+## O contexto
+
+É a ficha de personagem do "Grimório do Afty", um sistema de RPG próprio. A página já existe e está
+pronta: você NÃO escreve HTML nem JavaScript, só o CSS que muda a aparência dela.
+
+O CSS que você escrever é injetado dentro de `@scope (#afty-ficha) { ... }`, então ele afeta só a
+ficha e nada mais do site. Escreva os seletores normalmente, SEM repetir `#afty-ficha` na frente.
+
+## O mapa da página
+
+```
+#afty-ficha                     a raiz
+├── .afty-cabecalho             gruda no topo e ENCOLHE ao rolar
+│   ├── .afty-cabecalho-conteudo   grade: conteúdo à esquerda, retrato à direita
+│   │   ├── .afty-nome + vários .afty-chip
+│   │   └── .afty-retrato-painel > .afty-retrato   (tablet e desktop)
+│   ├── 3 × .afty-vital         Vida, Energia e Alma, lado a lado
+│   │   ├── .afty-vital-icone .afty-vital-rotulo .afty-vital-numero .afty-vital-max
+│   │   └── .afty-vital-trilho > .afty-vital-barra
+│   ├── .afty-guarda            a Guarda Inabalável, só no Calamidade e no Beyond
+│   │   ├── .afty-guarda-valor .afty-guarda-vida .afty-guarda-quebrada
+│   │   └── .afty-guarda-controles > .afty-guarda-botao
+│   ├── .afty-stats             grade de .afty-stat (Defesa, CD, RD, Movimento...)
+│   └── .afty-abas > .afty-aba  Ações · Habilidades · Perícias · Equipamentos ·
+│                                Invocações · Buffs
+│
+├── <main>                      O CORPO. É a maior parte da ficha.
+│   ├── aba AÇÕES         vários .afty-card (Rápido, Dano, Cura, Feitiços, Manobras),
+│   │                     cada um com .afty-card-titulo e muitas .afty-linha
+│   ├── aba HABILIDADES   um .afty-card por grupo (Origem, Especialização, Talentos,
+│   │                     Gerais, Aptidões, Níveis Lendários). A .afty-linha abre e
+│   │                     revela .afty-texto (o texto do livro) e .afty-opcao.
+│   │                     Os grupos grandes têm .afty-subabas > .afty-subaba: uma
+│   │                     por Especialização, e três nos Níveis Lendários
+│   ├── aba PERÍCIAS      .afty-atributo (os seis), depois .afty-card por tipo de
+│   │                     teste, com .afty-linha em duas colunas
+│   ├── aba EQUIPAMENTOS  a Carga, os avisos e o inventário em .afty-subabas
+│   └── aba BUFFS         .afty-card de Estados, Buffs e Condições
+│
+├── .afty-log                   painel de rolagens, fixo no canto de baixo
+└── .afty-fontes                painel flutuante que explica um número
+```
+
+**IMPORTANTE: o CORPO é a maior parte da ficha, e é onde o jogador passa o tempo.** Um tema que pinta só o
+cabeçalho fica pela metade e é o erro mais comum. Estilize também `.afty-card`, `.afty-card-titulo`,
+`.afty-linha`, `.afty-valor`, `.afty-texto` e `.afty-aba`.
+
+## O jeito CERTO de mudar cor
+
+Quase tudo na ficha é pintado por VARIÁVEL CSS. Trocar a variável repinta de uma vez tudo que a usa,
+no cabeçalho E no corpo. Comece SEMPRE por aqui, e só depois vá para classe específica.
+
+**IMPORTANTE: copie o seletor abaixo exatamente como está, com as duas linhas.** Dentro de `@scope` um
+`#afty-ficha` sozinho NÃO acerta a raiz (o escopo o transforma em "um #afty-ficha dentro do
+#afty-ficha", que não existe), e `:scope` sozinho perde para o painel de Aparência. `:scope#afty-ficha`
+acerta e vence; a segunda linha é para o navegador que ainda não tem `@scope`.
+
+```css
+:scope#afty-ficha,
+#afty-ficha#afty-ficha {
+  --afty-fundo: #060910;   /* fundo da página */
+  --afty-fundo-brilho: radial-gradient(120% 60% at 50% -10%, #7e22ce33, transparent 70%);   /* brilho por cima do fundo (aceita gradiente ou none) */
+  --afty-card: #0f172a;   /* fundo dos cartões e do cabeçalho */
+  --afty-poco: #020617;   /* fundo das linhas e dos campos, mais escuro que o cartão */
+  --afty-borda: #1e293b;   /* borda padrão */
+  --afty-borda-forte: #334155;   /* borda de botão e de chip */
+  --afty-texto: #f1f5f9;   /* texto principal e números */
+  --afty-texto-suave: #94a3b8;   /* rótulos e texto de regra */
+  --afty-texto-fraco: #64748b;   /* texto secundário, o mais apagado */
+  --afty-destaque: #a855f7;   /* a cor da marca: aba ativa, foco, realce */
+  --afty-destaque-texto: #d8b4fe;   /* texto sobre o destaque */
+  --afty-destaque-fundo: #581c8766;   /* fundo do destaque (com transparência) */
+  --afty-pv: #f43f5e;   /* a barra e o número de Vida */
+  --afty-pe: #38bdf8;   /* a barra e o número de Energia */
+  --afty-pvtemp: #fbbf24;   /* o pedaço de PV temporário na barra de Vida */
+  --afty-alma: #e879f9;   /* a barra e o número de Alma */
+  --afty-cura: #34d399;   /* os números de cura */
+  --afty-aviso: #fbbf24;   /* avisos e o triângulo de alerta */
+  --afty-veu: rgb(0 0 0 / 0.55);   /* o véu atrás da busca e deste painel */
+  --afty-raio: 12px;   /* arredondamento dos cartões */
+  --afty-raio-peq: 8px;   /* arredondamento das linhas e botões */
+  --afty-sombra: 0 2px 10px rgb(0 0 0 / 0.45);   /* sombra dos cartões */
+  --afty-fonte: ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;   /* fonte de tudo */
+  --afty-fonte-titulo: var(--afty-fonte);   /* fonte do nome da ficha e dos títulos */
+  --afty-fonte-num: ui-monospace, Consolas, monospace;   /* fonte dos números */
+  --afty-imagem: none;   /* imagem de fundo, como url("...") */
+  --afty-imagem-opacidade: 0.25;   /* opacidade da imagem de fundo, de 0 a 1 */
+  --afty-imagem-opacidade-ambiente: 0.125;   /* opacidade da mesma imagem atrás do corpo */
+  --afty-imagem-opacidade-banner: 0.15;   /* opacidade da mesma imagem atrás do cabeçalho */
+  --afty-imagem-encaixe: cover;   /* background-size da imagem */
+  --afty-imagem-posicao: center top;   /* background-position da imagem */
+}
+```
+
+**Nesse bloco vão SÓ as variáveis desta lista.** Ele é forte de propósito, e uma variável de componente
+escrita ali (como `--afty-vital-cor`) atropelaria a cor que cada recurso define por conta própria.
+
+## Os seletores disponíveis
+
+Estes nomes são um contrato e não mudam. Qualquer outra classe que você veja inspecionando a página
+(as do Tailwind, por exemplo) pode sumir na próxima atualização, então não mire nelas.
+
+### Estrutura
+- `#afty-ficha` a raiz de tudo
+- `.afty-cabecalho` a faixa fixa do topo
+- `.afty-abas` a barra de abas
+- `.afty-aba` cada aba (a ativa tem aria-selected="true")
+
+### Cabeçalho
+- `.afty-nome` o nome da ficha
+- `.afty-cabecalho-conteudo` a grade do cabeçalho: o conteúdo à esquerda e o retrato à direita
+- `.afty-cabecalho-principal` a coluna do conteúdo, sem o retrato
+- `.afty-retrato-painel` a moldura vertical do retrato, só em tablet e desktop
+- `.afty-retrato` a imagem do retrato dentro da moldura
+- `.afty-chip` as marcas: Tipo, Patamar, ND, Rodada
+- `.afty-controles` a fileira de botões: densidade, aparência, busca, rodada, descanso, editar
+- `.afty-vital` a caixa de um recurso
+- `.afty-vital-icone` o ícone do recurso
+- `.afty-vital-rotulo` o nome do recurso
+- `.afty-vital-numero` o número grande, que é um campo
+- `.afty-vital-max` o "/ 210" ao lado
+- `.afty-vital-temp` o PV temporário
+- `.afty-vital-trilho` o sulco da barra
+- `.afty-vital-barra` o preenchimento da barra
+- `.afty-guarda` a tira da Guarda Inabalável (só Calamidade e Beyond)
+- `.afty-guarda-valor` o bônus corrente de CA e TR
+- `.afty-guarda-vida` a Vida Temporária da Guarda
+- `.afty-guarda-quebrada` a palavra "Quebrada"
+- `.afty-guarda-botao` os botões Golpe e Raio Negro
+- `.afty-stats` a grade das defesas
+- `.afty-stat` cada célula de defesa
+- `.afty-stat-rotulo` o nome da defesa
+- `.afty-stat-valor` o número da defesa
+
+### Corpo
+- `.afty-card` cada bloco do corpo, em TODAS as abas
+- `.afty-card-titulo` o título do bloco
+- `.afty-atributo` a célula de um atributo, na aba Perícias
+- `.afty-atributo-rotulo` a abreviação do atributo
+- `.afty-atributo-valor` o valor do atributo
+- `.afty-atributo-mod` o modificador, que é a pastilha que rola
+- `.afty-subabas` a fileira de divisões de um bloco (uma por Especialização, três nos Níveis Lendários)
+- `.afty-subaba` cada divisão. A aberta tem aria-selected="true"
+- `.afty-subaba-conta` quantos itens a divisão tem
+- `.afty-linha` cada linha de lista dentro do bloco
+- `.afty-rotulo` o texto secundário da linha
+- `.afty-valor` todo número derivado
+- `.afty-rolavel` número que ROLA ao clique
+- `.afty-texto` o texto de regra do livro
+- `.afty-opcao` a opção escolhida dentro de uma habilidade
+- `.afty-estrela` o botão de fixar no Rápido
+- `.afty-vazio` o texto de lista vazia
+
+### Expansão de Domínio
+- `.afty-dominio-cabeca` a linha de uma expansão, e também a da Parede de Barreira
+- `.afty-dominio-numeros` o grupo de números à direita da linha
+- `.afty-dominio-corpo` o que abre embaixo da linha
+- `.afty-dominio-efeito-titulo` o nome de cada efeito da expansão
+- `.afty-dominio-secao` os títulos pequenos Aparência e Toda Expansão
+- `.afty-dominio-base` a grade dos efeitos de toda expansão
+
+### Invocação
+- `.afty-inv-ficha` o cartão da invocação selecionada. É a raiz do CSS de um shikigami
+- `.afty-inv-cabeca` a faixa de identidade: retrato, nome, grau, tipo e custo
+- `.afty-inv-titulo` o nome da invocação
+- `.afty-inv-cabeca-marcas` a fileira de grau, tipo e custo, embaixo do nome
+- `.afty-inv-retrato-icone` o retrato quadrado ao lado do nome
+- `.afty-inv-corpo` tudo abaixo da faixa
+- `.afty-inv-stats` a tira de Defesa, Desloc., CD, RD e Tamanho
+- `.afty-inv-colunas` a grade de duas colunas do corpo
+- `.afty-inv-coluna` cada uma das duas colunas
+- `.afty-inv-bloco` cada seção dentro de uma coluna
+- `.afty-inv-duplo` a lista que vira duas colunas quando cabe (testes e características)
+- `.afty-inv-bonus` a linha de um auxílio
+- `.afty-inv-bonus-botao` o auxílio que liga e desliga (o ligado tem data-afty-ligado="sim")
+- `.afty-inv-lampada` o ponto que acende no auxílio ligado
+- `.afty-inv-fileira` a fileira de cartões de cima. FICA FORA do escopo de um shikigami
+- `.afty-inv-cartao` cada cartão da fileira. Também fora do escopo de um shikigami
+
+### Espinho
+- `.afty-espinho` o card das Almas, na aba Habilidades. Tem paleta PRÓPRIA nos tokens --espinho-* (troque-os aqui), e não lê os --afty-*
+- `.afty-espinho-casca` a caixa do card, que recorta o brilho de dentro
+- `.afty-espinho-titulo` o título vazado
+- `.afty-espinho-cristal` o cristal das Almas Restantes
+- `.afty-espinho-marca` cada compra listada
+- `.afty-espinho-rachadura` as rachaduras que escapam da borda
+- `.afty-lanterna` o card quando é a Lanterna Coletora de Almas (a raiz, junto de .afty-espinho). A paleta azul mora aqui, nos mesmos tokens --espinho-*
+- `.afty-lanterna-imagem` a lanterna das Almas Restantes
+- `.afty-lanterna-chamas` as chamas que saem da borda de cima
+
+### Controles
+- `.afty-botao` todo botão de texto
+- `.afty-passo` os botões de menos e mais
+- `.afty-campo` campo de texto
+- `.afty-cor` o seletor de cor
+- `.afty-canal-gatilho` o botão que abre a lista de canais, na aba Buffs
+- `.afty-canal-painel` a lista de canais aberta, em colunas
+- `.afty-canal-grupo` o nome de um grupo de canais
+- `.afty-canal-item` cada canal da lista
+
+### Camadas
+- `.afty-fontes` o painel que explica um número
+- `.afty-fonte-secao` o cabeçalho de uma pilha dentro dele, com o subtotal
+- `.afty-fonte-linha` uma parcela dentro dele
+- `.afty-fonte-rotulo` o nome da parcela
+- `.afty-fonte-valor` o valor da parcela
+- `.afty-fonte-total` a linha do total
+- `.afty-log` a barra de rolagens, abaixo das abas
+- `.afty-log-topo` os controles de modo da rolagem
+- `.afty-log-ultima` a última rolagem na barra
+- `.afty-log-historico` o botão que abre o histórico
+- `.afty-log-corpo-topo` o cabeçalho do histórico aberto
+- `.afty-log-corpo` a lista de rolagens
+- `.afty-log-modo` os botões de vantagem
+- `.afty-rolagem` uma rolagem no histórico
+- `.afty-rolagem-total` o resultado dela
+- `.afty-dado` cada dado que caiu
+- `.afty-busca-fundo` o véu da busca
+- `.afty-busca` a caixa da busca
+- `.afty-busca-item` cada resultado
+
+### Atributos
+- `[data-afty-vital="pv"]` a barra de Vida. Também `pe` e `alma`
+- `[data-afty-nivel="critico"]` recurso abaixo de um quarto. Também `baixo`
+- `[data-afty-stat="defesa"]` uma defesa nomeada: cd, rd-geral, rd-especifica, rd-alma, rd-fisica, movimento, iniciativa, atencao, res-parcial, maestria, preparo
+- `[data-afty-aba="acoes"]` uma aba: acoes, habilidades, pericias, equipamentos, invocacoes, buffs
+- `[data-afty-tom="destaque"]` variante de chip, botão ou valor. Também `aviso`, `dano`, `cura`, `custo`
+- `[data-afty-destacada="sim"]` a linha do Ataque Básico e a perícia de Mestre
+- `[data-afty-alvo="sim"]` a linha para onde a busca acabou de navegar
+- `[data-afty-marca="critico"]` uma rolagem crítica no histórico. Também `pifia`
+- `[data-afty-compacto="sim"]` o cabeçalho depois de rolar a página
+- `[data-afty-atributo="forca"]` um atributo: forca, destreza, constituicao, inteligencia, sabedoria, presenca (as chaves não têm acento)
+- `[data-afty-carga="baixo"]` o cartão de Carga com a ficha sobrecarregada. Também `critico` acima do máximo
+- `[data-afty-com-retrato="sim"]` o cabeçalho de uma ficha QUE TEM retrato
+- `[data-afty-subaba]` uma divisão de bloco pelo id dela: a Especialização, ou melhoria, lendaria e apice
+- `[data-afty-densidade="compacta"]` a raiz quando o jogador pediu menos respiro. Também `confortavel`
+
+## Regras
+
+1. Responda SÓ com o CSS, sem explicação em volta e sem cerca de markdown.
+2. `@import` é removido automaticamente e `@font-face` não vale dentro de `@scope`, então fonte
+   baixada não funciona de jeito nenhum. Use as famílias que já estão no sistema do usuário, e
+   compense na ESCALA: um nome de criatura grande vale mais que uma fonte exótica.
+3. Imagem e gif entram por URL pública: `background-image: url("https://...")`. Não use data URI,
+   que estoura o armazenamento do navegador.
+4. Não esconda a ficha inteira, e não mexa em `position` do cabeçalho: ele gruda no topo de
+   propósito, e encolhe sozinho ao rolar.
+5. **IMPORTANTE: não ponha `overflow` em `.afty-card` nem em `.afty-linha`.** O painel que explica os
+   números abre a partir de dentro deles, e o corte o decapita. Para arredondar canto, use
+   `border-radius` no próprio elemento, que já basta. Pelo mesmo motivo, não ponha `z-index` nesses
+   dois, e não ponha `transform`, `filter`, `backdrop-filter`, `contain` nem `will-change` na raiz
+   `#afty-ficha`: qualquer um deles prende o painel e ele passa a abrir no lugar errado.
+6. Cuide do CONTRASTE. Se escurecer o fundo, clareie `--afty-texto` e `--afty-texto-suave` junto.
+   Repare em `--afty-texto-fraco`, que é o mais apagado e é a cor da perícia não treinada.
+7. Não use `!important`. Este CSS vence a folha do app sem ele. O que ele NÃO vence é estilo escrito
+   direto no elemento, e alguns pontos da ficha escrevem cor assim: nesses, o único jeito de mudar a
+   cor é trocar a VARIÁVEL que eles usam, e é mais um motivo para começar pelo bloco de tokens.
+8. Não pinte a barra de recurso por `background`. `.afty-vital-barra` já é um gradiente montado a
+   partir da cor do recurso, e escrever `background` ou `background-image` nela apaga o gradiente e
+   deixa a barra INVISÍVEL. Para trocar a cor das barras, mexa em `--afty-pv`, `--afty-pe`,
+   `--afty-alma` e `--afty-pvtemp`.
+9. Mantenha o resultado abaixo de 64 KB.
+
+## O que eu quero
+
+(Descreva aqui o visual que você quer. Por exemplo: "um tema de vitral gótico, roxo e dourado, com
+bordas grossas e fonte serifada".)
+
+## O CSS que já está na minha ficha
+
+(nenhum, estou começando do zero)

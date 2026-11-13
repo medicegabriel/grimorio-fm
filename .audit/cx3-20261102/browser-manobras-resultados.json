@@ -1,0 +1,58 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "acrobacia": true,
+    "chicote": true,
+    "concussao": true,
+    "outraChance": true,
+    "intervencao": true,
+    "versatilidade": true,
+    "analiseProfunda": true,
+    "mobilidadeAvancada": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "acrobacia": true,
+    "chicote": true,
+    "concussao": true,
+    "outraChance": true,
+    "intervencao": true,
+    "versatilidade": true,
+    "analiseProfunda": true,
+    "mobilidadeAvancada": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "acrobacia": true,
+    "chicote": true,
+    "concussao": true,
+    "outraChance": true,
+    "intervencao": true,
+    "versatilidade": true,
+    "analiseProfunda": true,
+    "mobilidadeAvancada": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "acrobacia": true,
+    "chicote": true,
+    "concussao": true,
+    "outraChance": true,
+    "intervencao": true,
+    "versatilidade": true,
+    "analiseProfunda": true,
+    "mobilidadeAvancada": true,
+    "persistencia": true,
+    "erros": []
+  }
+]

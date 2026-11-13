@@ -71,7 +71,7 @@ function Carga({ carga }) {
 }
 
 export default function AbaEquipamentos({
-  derived, itens, abertos, onAberto, favoritos, onFavorito, destaque,
+  derived, itens, abertos, onAberto, favoritos, onFavorito, destaque, contadorUsos,
 }) {
   const [termo, setTermo] = useState("");
   const filtrados = useMemo(() => filtraConteudo(itens, termo), [itens, termo]);
@@ -148,6 +148,7 @@ export default function AbaEquipamentos({
           favoritos={favoritos}
           onFavorito={onFavorito}
           destaque={destaque}
+          contadorUsos={contadorUsos}
         />
       )}
     </div>

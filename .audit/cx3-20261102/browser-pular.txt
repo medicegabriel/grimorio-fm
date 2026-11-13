@@ -1,0 +1,8 @@
+player 1440 classica e encontro OK
+player 1440 g2 OK
+player 390 classica e encontro OK
+player 390 g2 OK
+afty 1440 classica e encontro OK
+afty 1440 g2 OK
+afty 390 classica e encontro OK
+afty 390 g2 OK

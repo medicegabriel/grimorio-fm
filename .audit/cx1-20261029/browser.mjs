@@ -1,0 +1,121 @@
+import { register } from 'node:module';
+register('data:text/javascript,export async function resolve(s,c,n){try{return await n(s,c)}catch(e){if(s.startsWith(".")&&!s.endsWith(".js"))return n(s+".js",c);throw e}}', import.meta.url);
+import { chromium } from 'playwright';
+import { writeFile } from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const R = new URL('../../src/systems/afty/', import.meta.url).href;
+const { deriveAfty } = await import(R + 'afty-derive.js');
+const { createBlankAfty } = await import(R + 'afty-schema.js');
+const { aplicarAddons } = await import(R + 'afty-addons.js');
+const { criarEncontro, criarCombatente } = await import(R + 'encontros/afty-encontro.js');
+aplicarAddons([]);
+const browser = await chromium.launch({ channel: 'chrome', ignoreDefaultArgs: ['--hide-scrollbars'] });
+const resultados = [];
+try {
+ for (const sistema of ['player', 'afty']) for (const largura of [1440, 390]) {
+  const c = createBlankAfty();
+  c.id = 'cx1-browser'; c.name = 'CX1 Isolada'; c.rulesVersion = sistema;
+  c.core.nd = 15; c.core.patamar = 'comum'; c.core.tipo = 'combatente';
+  c.core.origem = { id: 'feto_amaldicoado_hibrido', anatomias: ['arma_natural', 'articulacoes_extensas', 'corpo_especializado', 'bracos_extras'] };
+  c.especializacoes = [{ id: 'lutador', nivel: 15 }];
+  if (sistema === 'afty') c.habilidades = ['lut_corpo_treinado'];
+  c.attributes = { forca: 14, destreza: 14, constituicao: 14, inteligencia: 12, sabedoria: 12, presenca: 10 };
+  c.equipamentos.itens = [{ uid: 'cx1-bastao', tipo: 'arma', refId: 'arm_bastao', qtd: 1, equipado: true },
+    ...[1,2].map(i => ({ uid: `cx1-bracelete-${i}`, tipo: 'item', refId: 'it_bracelete_do_vigor', qtd: 1, equipado: true }))];
+  const encontro = criarEncontro({ nome: 'CX1 Encontro' });
+  const ce = structuredClone(c);
+  ce.core.origem.anatomiasConfig = { arma_natural: { tipoDano: 'ct' }, corpo_especializado: { pericia: 'atletismo' } };
+  encontro.combatentes = [criarCombatente(ce, { derived: deriveAfty(ce) })];
+  const context = await browser.newContext({ viewport: { width: largura, height: 1000 }, isMobile: largura === 390, hasTouch: largura === 390 });
+  await context.addInitScript(({ c, sistema, encontro }) => {
+    if (!localStorage.getItem('cx1-seeded')) {
+      localStorage.setItem(`fm_creatures_${sistema}_v1`, JSON.stringify([c]));
+      localStorage.setItem('afty_encontros_v1', JSON.stringify([encontro]));
+      localStorage.setItem('cx1-seeded', '1');
+    }
+  }, { c, sistema, encontro });
+  const page = await context.newPage();
+  const erros = [];
+  const recursos = [];
+  page.on('pageerror', e => erros.push(e.message));
+  page.on('console', m => { if (m.type() === 'error') erros.push(m.text() + ' ' + m.location().url); });
+  page.on('response', r => { if (r.status() >= 400) recursos.push({ status: r.status(), url: r.url() }); });
+  await page.goto(`http://127.0.0.1:5188/${sistema}`, { waitUntil: 'networkidle' });
+  await page.getByText(c.name, { exact: true }).click();
+  await page.getByTitle('Editar no criador', { exact: true }).press('Enter');
+  await page.getByRole('tab', { name: 'Identidade', exact: true }).click();
+  await page.getByRole('combobox', { name: 'Tipo de Dano de Arma Natural', exact: true }).selectOption('ct');
+  await page.getByRole('combobox', { name: 'Perícia de Corpo Especializado', exact: true }).selectOption('atletismo');
+  await page.getByRole('combobox', { name: 'Perícia de Corpo Especializado', exact: true }).scrollIntoViewIfNeeded();
+  await page.screenshot({ path: `.audit/cx1-20261029/${sistema}-${largura}-criador.png` });
+  await page.getByRole('button', { name: 'Salvar Alterações', exact: true }).press('Enter');
+  const gravada = await page.evaluate(sistema => JSON.parse(localStorage.getItem(`fm_creatures_${sistema}_v1`))[0], sistema);
+  assert.deepEqual(gravada.core.origem.anatomiasConfig, ce.core.origem.anatomiasConfig);
+  await page.reload({ waitUntil: 'networkidle' });
+  await page.getByText(c.name, { exact: true }).click();
+  const basico = page.locator('[id="afty-item-dano:basico"]');
+  assert.match(await basico.innerText(), /Cortante/);
+  assert.match(await basico.innerText(), /3m/);
+  if (sistema === 'player') assert.match(await basico.innerText(), /1d12 \+ 1d6/);
+  await page.getByRole('button', { name: 'Duas Mãos Livres', exact: true }).press('Enter');
+  await page.getByRole('tab', { name: 'Perícias', exact: true }).click();
+  const atletismo = page.locator('[id="afty-item-pericia:atletismo"]');
+  const antes = periciaEsperada(gravada, true);
+  assert.match(await atletismo.innerText(), new RegExp(`\\+${antes} \\+ 1d4`));
+  await atletismo.locator('button.afty-rolavel').press('Enter');
+  await page.waitForFunction(() => JSON.parse(localStorage.getItem('fm_ficha_sessao_afty_v1:cx1-browser'))?.log?.[0]?.rotulo === 'Atletismo');
+  const sessao = await page.evaluate(() => JSON.parse(localStorage.getItem('fm_ficha_sessao_afty_v1:cx1-browser')));
+  assert.equal(sessao.log[0].somaExtras >= 1 && sessao.log[0].somaExtras <= 4, true);
+  assert.equal(sessao.treinosAtivos.anatomia_duas_maos_livres, true);
+  await atletismo.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: `.audit/cx1-20261029/${sistema}-${largura}-pericias.png` });
+  await page.reload({ waitUntil: 'networkidle' });
+  await page.getByText(c.name, { exact: true }).click();
+  assert.equal(await page.getByRole('button', { name: 'Duas Mãos Livres', exact: true }).getAttribute('aria-pressed'), 'true');
+  const bastao = page.locator('[id="afty-item-dano:arm_bastao"]');
+  await bastao.getByText('Propriedades em combate', { exact: true }).click();
+  await bastao.getByRole('spinbutton', { name: 'Defesa do alvo de Bastão', exact: true }).fill('1000');
+  await page.evaluate(() => { window.cx1Random = Math.random; Math.random = () => 0.99999; });
+  await bastao.locator('button.afty-rolavel').first().press('Enter');
+  await page.waitForFunction(() => JSON.parse(localStorage.getItem('fm_ficha_sessao_afty_v1:cx1-browser'))?.log?.[0]?.tipoTeste === 'ataque');
+  await page.evaluate(() => { Math.random = window.cx1Random; });
+  const ataque = await page.evaluate(() => JSON.parse(localStorage.getItem('fm_ficha_sessao_afty_v1:cx1-browser')).log[0]);
+  assert.deepEqual([ataque.natural, ataque.tipoTeste, ataque.sucesso], [20, 'ataque', true]);
+  await bastao.getByRole('spinbutton', { name: 'Defesa do alvo de Bastão', exact: true }).fill('1');
+  await page.evaluate(() => { Math.random = () => 0; });
+  await bastao.locator('button.afty-rolavel').first().press('Enter');
+  await page.waitForFunction(() => JSON.parse(localStorage.getItem('fm_ficha_sessao_afty_v1:cx1-browser'))?.log?.[0]?.natural === 1);
+  await page.evaluate(() => { Math.random = window.cx1Random; });
+  const desastre = await page.evaluate(() => JSON.parse(localStorage.getItem('fm_ficha_sessao_afty_v1:cx1-browser')).log[0]);
+  assert.deepEqual([desastre.natural, desastre.tipoTeste, desastre.sucesso], [1, 'ataque', false]);
+  await page.screenshot({ path: `.audit/cx1-20261029/${sistema}-${largura}-ataque.png` });
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'Ficha sem rolagem horizontal');
+  await page.getByRole('button', { name: 'Voltar', exact: true }).press('Enter');
+  await page.getByRole('button', { name: 'Encontros', exact: true }).click();
+  await page.getByText('CX1 Encontro', { exact: true }).click();
+  await page.getByRole('button', { name: 'Rolar Tudo', exact: true }).click();
+  await page.getByRole('button', { name: 'Começar', exact: true }).click();
+  await page.getByRole('button', { name: 'Duas Mãos Livres', exact: true }).press('Enter');
+  await page.getByRole('tab', { name: 'Perícias', exact: true }).click();
+  assert.match(await page.locator('[id="afty-item-pericia:atletismo"]').innerText(), /1d4/);
+  await page.waitForFunction(() => JSON.parse(localStorage.getItem('afty_encontros_v1'))?.[0]?.combatentes?.[0]?.sessao?.treinosAtivos?.anatomia_duas_maos_livres === true);
+  const enc = await page.evaluate(() => JSON.parse(localStorage.getItem('afty_encontros_v1'))[0]);
+  assert.equal(enc.combatentes[0].sessao.treinosAtivos.anatomia_duas_maos_livres, true);
+  await page.locator('[id="afty-item-pericia:atletismo"]').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: `.audit/cx1-20261029/${sistema}-${largura}-encontro.png` });
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'Encontro sem rolagem horizontal');
+  const telemetriaLocal = erros.filter(e => e === 'Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:5188/_vercel/insights/script.js');
+  const errosAplicacao = erros.filter(e => !telemetriaLocal.includes(e));
+  assert.deepEqual(errosAplicacao, []);
+  assert.ok(recursos.every(r => r.status === 404 && r.url === 'http://127.0.0.1:5188/_vercel/insights/script.js'));
+  resultados.push({ sistema, largura, escolhasSalvas: true, dadoPericia: true, maosPersistidas: true, ataque20: true, ataque1: true, encontro: true, errosAplicacao, telemetriaLocal404: telemetriaLocal.length });
+  await context.close();
+ }
+} finally {
+ await writeFile('.audit/cx1-20261029/browser-resultados.json', JSON.stringify(resultados, null, 2));
+ await browser.close();
+}
+function periciaEsperada(c, livre) {
+  const d = deriveAfty(c, { treinosAtivos: { anatomia_duas_maos_livres: livre } });
+  return d.testes.pericias.find(p => p.id === 'atletismo').bonus;
+}

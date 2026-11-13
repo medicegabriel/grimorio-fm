@@ -1,0 +1,1209 @@
+{
+  "lote": "M01",
+  "data": "2026-10-07",
+  "executor": "Claude Opus 5.5 (Claude Code), executor do bloco G00, M01 a M05, P01, CMB-01 e CMB-02",
+  "estado": "PARCIAL",
+  "base": {
+    "commit": "a0cefc29f32f6bd05e1617fc98014dbda2980483",
+    "alteracoesPreexistentes": [
+      " M AGENTS.md",
+      " M CLAUDE.md",
+      " M asserts/LEIA.md",
+      " M asserts/t-ataque-concentrado.mjs",
+      " M asserts/t-bases-lut-cmb.mjs",
+      " M asserts/t-carteira.mjs",
+      " M asserts/t-dano-acerto-amaldicoado.mjs",
+      " M asserts/t-sistema.mjs",
+      " M asserts/t-treinos-especiais.mjs",
+      " M asserts/t-uniforme-escudo.mjs",
+      " M docs/a-fazer.md",
+      " M docs/afty-addons.md",
+      " M docs/afty-efeitos-criatura.md",
+      " M docs/afty-equipamentos.md",
+      " M docs/afty-formulas-base.md",
+      " M docs/afty-motor-referencia-estrutural.md",
+      " M docs/afty-player.md",
+      " M docs/afty-status.md",
+      " M package.json",
+      " M src/App.jsx",
+      " M src/components/Dashboard.jsx",
+      " M src/systems/afty/AftyCreatureBuilder.jsx",
+      " M src/systems/afty/AftyTabAddons.jsx",
+      " M src/systems/afty/afty-addons.js",
+      " M src/systems/afty/afty-alto-nivel.js",
+      " M src/systems/afty/afty-atributos.js",
+      " M src/systems/afty/afty-combate-aptidoes.js",
+      " M src/systems/afty/afty-combate-conjurador.js",
+      " M src/systems/afty/afty-dano.js",
+      " M src/systems/afty/afty-derive.js",
+      " M src/systems/afty/afty-efeitos-conteudo.js",
+      " M src/systems/afty/afty-efeitos.js",
+      " M src/systems/afty/afty-equipamentos.js",
+      " M src/systems/afty/afty-especializacoes.js",
+      " M src/systems/afty/afty-feiticos.js",
+      " M src/systems/afty/afty-pericias.js",
+      " M src/systems/afty/afty-regras-addon.js",
+      " M src/systems/afty/afty-schema.js",
+      " M src/systems/afty/afty-sistema.js",
+      " M src/systems/afty/afty-treinos-especiais.js",
+      " M src/systems/afty/encontros/PainelDeCombatente.jsx",
+      " M src/systems/afty/encontros/usar-encontro-afty.js",
+      " M src/systems/afty/ficha/AftyFicha.jsx",
+      " M src/systems/afty/ficha/abas/AbaAcoes.jsx",
+      " M src/systems/afty/ficha/abas/AbaPericias.jsx",
+      " M src/systems/afty/ficha/ficha-conteudo.js",
+      " M src/systems/afty/ficha/ficha-rolagem.js",
+      " M src/systems/afty/ficha/ficha-sessao.js",
+      "?? .audit/alma-livre-browser.mjs",
+      "?? .audit/alma-livre-ficha.json",
+      "?? .audit/alma-livre-report.json",
+      "?? .audit/alma-livre-shots/",
+      "?? .audit/energica-critico-asserts.txt",
+      "?? .audit/energica-critico-browser.mjs",
+      "?? .audit/energica-critico-ficha-anexada.json",
+      "?? .audit/energica-critico-report.json",
+      "?? .audit/energica-critico-shots/",
+      "?? .audit/energica-durante-asserts.txt",
+      "?? .audit/energica-durante-browser.mjs",
+      "?? .audit/energica-durante-report.json",
+      "?? .audit/energica-durante-shots/",
+      "?? .audit/energica-visivel-browser.mjs",
+      "?? .audit/energica-visivel-report.json",
+      "?? .audit/energica-visivel-shots/",
+      "?? .audit/gojo-player-baseline-asserts.txt",
+      "?? .audit/gojo-player-browser.mjs",
+      "?? .audit/gojo-player-check.json",
+      "?? .audit/gojo-player-check.mjs",
+      "?? .audit/gojo-player-final-asserts.txt",
+      "?? .audit/gojo-player-lint.txt",
+      "?? .audit/gojo-player-primeira-validacao.txt",
+      "?? .audit/gojo-player-report.json",
+      "?? .audit/gojo-player-shots/",
+      "?? .audit/implemento-marcial-baseline/",
+      "?? .audit/implemento-marcial-browser.mjs",
+      "?? .audit/implemento-marcial-report.json",
+      "?? .audit/implemento-marcial-shots/",
+      "?? .audit/propriedades-armas-browser.mjs",
+      "?? .audit/propriedades-armas-encontro-report.json",
+      "?? .audit/propriedades-armas-encontro.mjs",
+      "?? .audit/propriedades-armas-report.json",
+      "?? .audit/propriedades-armas-shots/",
+      "?? .audit/resiliente-baseline/",
+      "?? .audit/resiliente-browser-report.json",
+      "?? .audit/resiliente-browser.mjs",
+      "?? .audit/resiliente-diff-asserts__LEIA.md.txt",
+      "?? .audit/resiliente-diff-asserts__t-uniforme-escudo.mjs.txt",
+      "?? .audit/resiliente-diff-docs__a-fazer.md.txt",
+      "?? .audit/resiliente-diff-docs__afty-equipamentos.md.txt",
+      "?? .audit/resiliente-diff-docs__afty-status.md.txt",
+      "?? .audit/resiliente-diff-src__systems__afty__AftyCreatureBuilder.jsx.txt",
+      "?? .audit/resiliente-diff-src__systems__afty__afty-equipamentos.js.txt",
+      "?? .audit/resiliente-shots/",
+      "?? .audit/talentos-iniciais-afty.json",
+      "?? .audit/talentos-iniciais-asserts.txt",
+      "?? .audit/talentos-iniciais-browser.mjs",
+      "?? .audit/talentos-iniciais-player.json",
+      "?? .audit/talentos-iniciais-report.json",
+      "?? .audit/talentos-iniciais-shots/",
+      "?? .audit/terceira-classe-browser.mjs",
+      "?? .audit/terceira-classe-report.json",
+      "?? .audit/terceira-classe-shots/",
+      "?? .audit/treinamento-aptidao-browser.mjs",
+      "?? .audit/treinamento-aptidao-report.json",
+      "?? .audit/treinamento-aptidao-shots/",
+      "?? .audit/ultima-pasta-asserts.txt",
+      "?? .audit/ultima-pasta-browser.mjs",
+      "?? .audit/ultima-pasta-report.json",
+      "?? .audit/ultima-pasta-shots/",
+      "?? addons/player-alto-nivel-afty.json",
+      "?? addons/player-progressao-epica.json",
+      "?? addons/talentos-iniciais.json",
+      "?? asserts/t-fontes-revisao.mjs",
+      "?? asserts/t-player-progressao-epica.mjs",
+      "?? asserts/t-propriedades-armas.mjs",
+      "?? asserts/t-reconciliacao-g00.mjs",
+      "?? asserts/t-revisao-g00.mjs",
+      "?? asserts/t-talentos-iniciais.mjs",
+      "?? docs/afty-player-progressao-epica.md",
+      "?? docs/afty-talentos-iniciais.md",
+      "?? docs/revisao-automacao/",
+      "?? previas/",
+      "?? scripts/",
+      "?? src/systems/afty/afty-ataque-concentrado.js",
+      "?? src/systems/afty/afty-propriedades-armas.js",
+      "?? src/systems/afty/ficha/ControlesDeArma.jsx",
+      "?? src/systems/afty/ui/EscolhaTipoEncantamento.jsx",
+      "?? src/useDashboardView.js"
+    ],
+    "hashesIniciais": {
+      "src/systems/afty/afty-dsl.js": "599c391de04976b456eb2a51939dff94c91a5c0c1e66b4f79f9b30b15992c49d",
+      "src/systems/afty/afty-addons.js": "d4b746d5228f2e6f7a1a14cf30fde2ee35603e2939f6e2be051b758d1d2636a7",
+      "src/systems/afty/afty-efeitos.js": "fa21116505715150b04d94d34c7966589d4787fb204e14e27d11b248408f21fb",
+      "src/systems/afty/afty-derive.js": "f1578aadbb5d354aff8a95b122cd1d9aabeb5c52d3718fc1bff75f8d29236e6b",
+      "src/systems/afty/afty-invocacoes.js": "069807d38366db4a28e7708a5e171e897b8e44ba11234fb45552550ffa601e95",
+      "src/systems/afty/AftyCreatureBuilder.jsx": "18e2a8881937f66dedc5118dbf5da6e47183ea4557b2b92b3b39f6877c82789e",
+      "asserts/t-revisao-m01.mjs": "AUSENTE (arquivo novo desta entrega)",
+      "docs/automacao-dsl.md": "e36a72014ec2d7d9c6a4fa5738c8b4ccb6de74802ac548308b76e91660c5e5eb",
+      "docs/afty-addons.md": "df47b0770f44300a683917e54f64f7639a4845fc76b5343dccace71bee02a1b3",
+      "docs/afty-motor-referencia-estrutural.md": "b19d8e1172cc7d79d134045df87f26f9be1a2a66912a3ff9c2372f2c707a49bc",
+      "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a"
+    },
+    "hashesFinais": {
+      "asserts/LEIA.md": "f671186e58de3142f2259403843a9acb4d273e2bd2ea8ace4c415884dfd86a41",
+      "asserts/t-revisao-m01.mjs": "d93fe17bf4964ba4e943f3d7f8c06856cd14f684060fab5b7457c79550b0591f",
+      "docs/a-fazer.md": "7ddebec5e5a84e4dde9d3b5b69e31b7c9f2635274428cb2ec67a2f5c3274a8fa",
+      "docs/afty-addons.md": "fc012dde8dfd3cf0028efd8c203a9f3a102b7d91b1860a80afa269533af31ef5",
+      "docs/afty-motor-referencia-estrutural.md": "34d5eb698a5f2c04d0486f26e67af46462165820356231a99aecbe1a10893070",
+      "docs/afty-status.md": "b6cb256ee3ddf59a06abef18f34eb9b3927ec9a4d34b7001f11d07d8516343a7",
+      "docs/automacao-dsl.md": "afad90571833c9c8765e09a5111e283850b734d8266e09e3b44032bd26d2d6f8",
+      "docs/revisao-automacao/M01/revisao.md": "adeb453189de1d9d40dcf5b69b9b4d8ea6d95d99b11076d54adfcf92118af397",
+      "docs/revisao-automacao/bloco-2026-10-07/antes/aut4-antes.log": "6d4bda35fe02eabf2bf2733f32d01cb43e5ef5445af797a224a685e067b59b76",
+      "docs/revisao-automacao/bloco-2026-10-07/antes/ge1-antes.log": "33f1f32a1d06be76d52f9b62f70c2c4646c91638a24bd3b03bd164c54bd9f1a8",
+      "docs/revisao-automacao/bloco-2026-10-07/antes/ge1-antes.mjs": "e9c0fadeec598035376601946082950792f1ac89d266ea64ec16f705f835763e",
+      "docs/revisao-automacao/bloco-2026-10-07/antes/repro-antes.log": "eaae27580e4b06ec4aa33ed1a36d3deb375bf89b0edc000f3e3026f1eff05a96",
+      "docs/revisao-automacao/bloco-2026-10-07/antes/repro-antes.mjs": "7feef5d6972f1332f2c33d761b217b476463746d9e96eb5d89170491a360beb8",
+      "docs/revisao-automacao/bloco-2026-10-07/entrada/arquivos-sujos.txt": "7d4d30dad123551f1d54f4c01c9f526a23927a6eb96c5016edc157b6fed005d3",
+      "docs/revisao-automacao/bloco-2026-10-07/entrada/diffstat.txt": "3aab3bae01bbabec441861a48cb01cd0a9342feff167032f5230e48d11bdb57d",
+      "docs/revisao-automacao/bloco-2026-10-07/entrada/head.txt": "5969dacf8d27ccfb130f5c98c7cc2ed69f30c725e4f18da3c05899dded737337",
+      "docs/revisao-automacao/bloco-2026-10-07/entrada/hora-entrada.txt": "309526148fed9ab88fe8c340211d7bd0005bf30841d4fc62fda04378d2aa3e6f",
+      "docs/revisao-automacao/bloco-2026-10-07/entrada/sha-entrada.txt": "8332f72e4849969e006ea888680e12aa63bbf4b9a6b58d7fc79a57f239311c79",
+      "docs/revisao-automacao/bloco-2026-10-07/entrada/status.txt": "af1d6a059a5dfc19ec1a66c63180b7cd178a0d2a0187a4e6e5334bab836bfea0",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-asserts.log": "b3b242b8fae06bb31aa12f1d6f950435d5a1a04318ab7bb6c5d347a94da7d6d9",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-build.log": "ffc520c686f028ec94a4c0663dfebf42c0872267f92203e53f8aed4e4b9646d8",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-filtro.log": "c709ace873f67ab8bf5b82d8150a8e5377fc333fd1310ad3c137fede34d54bc5",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-imitacao.log": "a6602d57b0fa98902d00f793b22869016c08e2668c205f00e7d35f46d9175ed6",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-lint-afty.log": "a1a3c45b5f8afd4e4a0ea923d76332d819c6e550c42bede8977590c7f12efd7a",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-lint-campanha.log": "418a5c17f33c70e99b0cc0a07fce69191489cfedc94164bfa903785777c5bd4b",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-lint-padrao-resumo.log": "c20f9046f1b2b5fba58086655b35a65d96d0ba4e1c79d24cc2f8f9858f1ad984",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-lint-sem-audit.log": "05d3bb49bdbd6d730fa53a97e06062c1da986ec2b25efee8ee2aa9f89852556d",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-lint-testes-novos.log": "418a5c17f33c70e99b0cc0a07fce69191489cfedc94164bfa903785777c5bd4b",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-ordem.log": "2edc57bee731aaa77484778482d76895f0e583ce0e9ce7c36a0fe73d7d1bd0ab",
+      "docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-asserts.log": "b01271534b9cf687bd3181e08b477c25497bcd0f3f5fc752fba2b6544e182384",
+      "docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-cobertura.log": "0b971e7d602275b20df7730c5d1081c26d4b5deb296a24b9b54916b373f9a6d2",
+      "docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-filtro.log": "c709ace873f67ab8bf5b82d8150a8e5377fc333fd1310ad3c137fede34d54bc5",
+      "docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-imitacao.log": "a6602d57b0fa98902d00f793b22869016c08e2668c205f00e7d35f46d9175ed6",
+      "docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-inventario.log": "acb72fdbdd7da29046a473e5260d16a2433ede102c21eca5fcddc5bbc460c9f4",
+      "docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-lint-afty.log": "a1a3c45b5f8afd4e4a0ea923d76332d819c6e550c42bede8977590c7f12efd7a",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/cura-afty-390.png": "8f185e4f67eb5ada63495a941dbb24fdd4b174a58942c6f09bfb55ce5c70d401",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/cura-player-1440.png": "d30038ddd4e0c7a03bee4f4dc87dd29abca89529d3ec8ae7de4cc37118aeaf4d",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/dados-pericia-afty-390.png": "c873e18e94057d3e503c96301105b91aef5f9578b48037b4ef66ed23a84d3aa3",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/dados-pericia-player-1440.png": "0cd7f01588ad28d90e68a2d525afa50238be60040695e0133ba7375bb52d81ff",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/multi-baixa-player-1440.png": "224b1212c6defe7f2823ef12a87be2e43b557664b1c560d87711cdb2861e0694",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/multi-baixa-player-390.png": "2d5fb8c94e7970ded91ef384b290e52f129c80d5b64298f5ba06b206164468e5",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/multi-ja-afty-1440.png": "20b97b2601f308c5687d02fc197f4e5c33742ed34d05c7909187b9796be8b441",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/multi-ja-player-1440.png": "b4f8802956031585e43eacc9f979da51e851a754116b68dec5d4dfb153e858d9",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/nav-cura.mjs": "435e49dd649c29c5faf4e19387fdc1913abd75a9986abafd382665ae797558c6",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/nav-motor.mjs": "b740b95bf3b564c42cdeb5e96a0357c33e1ca81f58729569bd7d9d7afd27ce18",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/nav-preciso.mjs": "a4b39b16007d593e2725b9df3aefad4101202a3a2801387d495bbb47194fa9d0",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/preciso-encontro-afty-390.png": "c4244da070cc05db3c09ffbf7fa2a4745788869a8fe0ce5a772b1e7c7a6b8cf7",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/preciso-encontro-player-1440.png": "56910ea7baacd19b606c4a3c37e820453fe273ccdef4b020148dab1c682b0515",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/preciso-ficha-afty-1440.png": "bf69400acd375d07c9d408343ca8bd8a5f4a1035887d4e1d4c6e28a11d45a2b4",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/preciso-ficha-player-1440.png": "34a26ad2d0268583486ca90015f8587d664c7b03240184dcf0b8949866ca0862",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/relatorio-cura.json": "efe412ccbf4117990d58c900551d15be8eebc8aa22a4ae1033bfc08f725c5ace",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/relatorio-preciso.json": "8feefd06ff2dddeafbe6701175650a696754597c253169e3872627f88b86b994",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/relatorio.json": "893b551c1ba7f4c8a5055ea59efaeee3fdf48774ef4d6b0f55adcaa7686686b7",
+      "src/systems/afty/AftyCreatureBuilder.jsx": "80f22abdf999c67c4dadbce241a9ba70b55aa9519d01a540281b2a7d1c02ee69",
+      "src/systems/afty/afty-addons.js": "49c9cb3807f031759cdbda184919eccbda588375d036cd959730e78ad20a77f5",
+      "src/systems/afty/afty-derive.js": "849f3c3490940a48651105640d220eba0febecdf5ea1d0702ee73d25d7682c30",
+      "src/systems/afty/afty-dsl.js": "bf22e8d0eb744f6c8ddb6172ee83f6b5e71951040c267911f4e3935453c04bca",
+      "src/systems/afty/afty-efeitos.js": "ff7e160d540d1cef2188a4820261da7547200e3987b291c7c7074dc160870f15",
+      "src/systems/afty/afty-invocacoes.js": "2e78dab8aaf0c1d9f80b3d86bdd6184ec797c9e39dd82b8a0a6d7d3adf5039d8",
+      "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a"
+    },
+    "hashesConsultados": {
+      "AGENTS.md": "3f4505f6a26fcb47059f15c558e78d4df4fa2932fabaf3006ef6042ee54291f4",
+      "CLAUDE.md": "8b7edb4c79428cac22a4fc33b2f576032dae956d1ac5cab70dd4e261059e121a",
+      "docs/revisao-automacao/LEIA.md": "ee5be39540d1d61b7a26999b2ee931aa452fde07529c78659830b017a62ca5b3",
+      "docs/revisao-automacao/schema-registro.json": "ebaefd0b0e3021f81aae31634b62e07a43a2a8542e060307385f9b584e35e513",
+      "docs/revisao-automacao/campanha.json": "090357cf8236d766c63ac4974174c4b5539dde532289180732b043ca2974c2e3",
+      "docs/revisao-automacao/inventario.json": "cf546434eca6c45c6534d9225164c4ac1625be3332e73cd336d458d34166c26d",
+      "docs/revisao-automacao/fontes.json": "6d6b9c42cd42b40aa9b0c408d60623e44556891eeee4d1e60e6d2f253829b4e9",
+      "docs/revisao-automacao/fonte-livro-regras.json": "c5c560f4c02d520700aacda5eb382011467805b3822a16c21000a65a5cf32fcd",
+      "asserts/rodar.mjs": "70ed6da2f09ca5219b0ab3c22fcd89defe7b9fc10efd43ed28cb412914f414f4",
+      "C:/Projetos/Grimorio/_backup-livro/correcoes.md": "86e4d7d18f86c1dfa69dbbe21e4fcbcb85d0a9611cbf94a338091798e0aeaeb6"
+    },
+    "arquivosEntregues": [
+      "asserts/LEIA.md",
+      "asserts/t-revisao-m01.mjs",
+      "docs/a-fazer.md",
+      "docs/afty-addons.md",
+      "docs/afty-motor-referencia-estrutural.md",
+      "docs/afty-status.md",
+      "docs/automacao-dsl.md",
+      "docs/revisao-automacao/M01/registro.json",
+      "docs/revisao-automacao/M01/revisao.md",
+      "docs/revisao-automacao/bloco-2026-10-07/antes/aut4-antes.log",
+      "docs/revisao-automacao/bloco-2026-10-07/antes/ge1-antes.log",
+      "docs/revisao-automacao/bloco-2026-10-07/antes/ge1-antes.mjs",
+      "docs/revisao-automacao/bloco-2026-10-07/antes/repro-antes.log",
+      "docs/revisao-automacao/bloco-2026-10-07/antes/repro-antes.mjs",
+      "docs/revisao-automacao/bloco-2026-10-07/entrada/arquivos-sujos.txt",
+      "docs/revisao-automacao/bloco-2026-10-07/entrada/diffstat.txt",
+      "docs/revisao-automacao/bloco-2026-10-07/entrada/head.txt",
+      "docs/revisao-automacao/bloco-2026-10-07/entrada/hora-entrada.txt",
+      "docs/revisao-automacao/bloco-2026-10-07/entrada/sha-entrada.txt",
+      "docs/revisao-automacao/bloco-2026-10-07/entrada/status.txt",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-asserts.log",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-build.log",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-filtro.log",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-imitacao.log",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-lint-afty.log",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-lint-campanha.log",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-lint-padrao-resumo.log",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-lint-sem-audit.log",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-lint-testes-novos.log",
+      "docs/revisao-automacao/bloco-2026-10-07/final/final-ordem.log",
+      "docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-asserts.log",
+      "docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-cobertura.log",
+      "docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-filtro.log",
+      "docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-imitacao.log",
+      "docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-inventario.log",
+      "docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-lint-afty.log",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/cura-afty-390.png",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/cura-player-1440.png",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/dados-pericia-afty-390.png",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/dados-pericia-player-1440.png",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/multi-baixa-player-1440.png",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/multi-baixa-player-390.png",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/multi-ja-afty-1440.png",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/multi-ja-player-1440.png",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/nav-cura.mjs",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/nav-motor.mjs",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/nav-preciso.mjs",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/preciso-encontro-afty-390.png",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/preciso-encontro-player-1440.png",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/preciso-ficha-afty-1440.png",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/preciso-ficha-player-1440.png",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/relatorio-cura.json",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/relatorio-preciso.json",
+      "docs/revisao-automacao/bloco-2026-10-07/navegador/relatorio.json",
+      "src/systems/afty/AftyCreatureBuilder.jsx",
+      "src/systems/afty/afty-addons.js",
+      "src/systems/afty/afty-derive.js",
+      "src/systems/afty/afty-dsl.js",
+      "src/systems/afty/afty-efeitos.js",
+      "src/systems/afty/afty-invocacoes.js"
+    ],
+    "classificacao": "hashesFinais guarda os artefatos entregues (o registro fica no manifesto, sem autorreferência) e a fonte absoluta. hashesIniciais vem do snapshot de entrada; 'AUSENTE' marca arquivo novo. Evidências comuns do bloco em docs/revisao-automacao/bloco-2026-10-07."
+  },
+  "itens": [
+    {
+      "chave": "afty-dsl.js::NOMES_DE_FUNCAO::@catalogo",
+      "id": "NOMES_DE_FUNCAO",
+      "nome": "Funções e linguagem da DSL",
+      "proprietario": "M01"
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAIS::@catalogo",
+      "id": "EFEITO_CANAIS",
+      "nome": "Catálogo de canais do Motor",
+      "proprietario": "M01"
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAIS::vantagemAtaque",
+      "id": "vantagemAtaque",
+      "nome": "Vantagem no Ataque",
+      "proprietario": "M01"
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAIS::dadosPericia",
+      "id": "dadosPericia",
+      "nome": "Dados em Perícia",
+      "proprietario": "M01"
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAIS::dadosNomeados",
+      "id": "dadosNomeados",
+      "nome": "Dados de Dano (tamanho próprio)",
+      "proprietario": "M01"
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAIS::dadosTR",
+      "id": "dadosTR",
+      "nome": "Dados em Resistência",
+      "proprietario": "M01"
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAIS::dadosAtaque",
+      "id": "dadosAtaque",
+      "nome": "Dados em Jogada de Ataque",
+      "proprietario": "M01"
+    },
+    {
+      "chave": "afty-efeitos.js::EFEITO_CANAIS::peTemporario",
+      "id": "peTemporario",
+      "nome": "PE Temporário",
+      "proprietario": "M01"
+    },
+    {
+      "chave": "dominio-contextual::alvos-motor",
+      "id": "alvos-motor",
+      "nome": "Vocabulários de alvo do Motor",
+      "proprietario": "M01"
+    }
+  ],
+  "parcelas": [
+    {
+      "sistemas": [
+        "afty",
+        "player"
+      ],
+      "dependencias": [],
+      "pendencias": [],
+      "evidencia": "NÃO VERIFICADA",
+      "chaveItem": "afty-dsl.js::NOMES_DE_FUNCAO::@catalogo",
+      "parcela": "literal numérico malformado (M01-VAL-01)",
+      "fontes": [
+        {
+          "caminho": "docs/automacao-dsl.md",
+          "versao": "SHA-256 final desta entrega",
+          "local": "Revisão do Motor de 2026-10-07",
+          "decisao": "Contrato do projeto: expressão inválida vira diagnóstico e fallback."
+        }
+      ],
+      "esperado": "'1.2.3' é erro de sintaxe no editor e cai no fallback na avaliação.",
+      "observado": "Antes: tokenizado como 1.2, aceito calado. Depois: 'Número malformado', fallback.",
+      "regra": "CONFIRMADA",
+      "execucao": "COMPLETA",
+      "motor": "INTEGRADO",
+      "autoria": "INTERFACE",
+      "percurso": [
+        {
+          "etapa": "linguagem",
+          "arquivo": "src/systems/afty/afty-dsl.js",
+          "funcao": "tokenize"
+        },
+        {
+          "etapa": "validação do editor",
+          "arquivo": "src/systems/afty/afty-dsl.js",
+          "funcao": "validateExpression"
+        },
+        {
+          "etapa": "avaliação",
+          "arquivo": "src/systems/afty/afty-dsl.js",
+          "funcao": "evalNumber"
+        }
+      ],
+      "provas": [
+        {
+          "cenario": "ANTES da correção: validateExpression('1.2.3')",
+          "esperado": "ok false",
+          "observado": "ok true, valor 1.2",
+          "estado": "FALHOU",
+          "comandoOuPassos": "node bloco-2026-10-07/antes/repro-antes.mjs (árvore de entrada)",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/antes/repro-antes.log"
+          ]
+        },
+        {
+          "cenario": "validateExpression e evalNumber com '1.2.3', '1.5 * 2' e '.5 + 1'",
+          "esperado": "reprova o malformado e conserva os decimais válidos",
+          "observado": "como esperado",
+          "estado": "PASSOU",
+          "comandoOuPassos": "node asserts/t-revisao-m01.mjs",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/final/final-asserts.log"
+          ]
+        }
+      ],
+      "provaAutoria": "O editor de expressão (CampoExpressao) chama validateExpression; a regra vale para qualquer expressão escrita pelo jogador."
+    },
+    {
+      "sistemas": [
+        "afty",
+        "player"
+      ],
+      "dependencias": [],
+      "pendencias": [],
+      "evidencia": "NÃO VERIFICADA",
+      "chaveItem": "afty-dsl.js::NOMES_DE_FUNCAO::@catalogo",
+      "parcela": "valor não finito no contexto (M01-NUM-01)",
+      "fontes": [
+        {
+          "caminho": "docs/automacao-dsl.md",
+          "versao": "SHA-256 final desta entrega",
+          "local": "Revisão do Motor de 2026-10-07"
+        }
+      ],
+      "esperado": "Infinity em variável cai no fallback em evalNumber e evalBoolean, inclusive em comparação; zero válido segue zero.",
+      "observado": "Antes: evalBoolean(Infinity) era true. Depois: fallback nos dois; NaN segue zero.",
+      "regra": "CONFIRMADA",
+      "execucao": "COMPLETA",
+      "motor": "INTEGRADO",
+      "autoria": "INTERFACE",
+      "percurso": [
+        {
+          "etapa": "variável",
+          "arquivo": "src/systems/afty/afty-dsl.js",
+          "funcao": "evaluate (case var)"
+        },
+        {
+          "etapa": "booleano",
+          "arquivo": "src/systems/afty/afty-dsl.js",
+          "funcao": "evalBoolean"
+        }
+      ],
+      "provas": [
+        {
+          "cenario": "ANTES da correção: evalBoolean('x', {x: Infinity}, false)",
+          "esperado": "false",
+          "observado": "true",
+          "estado": "FALHOU",
+          "comandoOuPassos": "node bloco-2026-10-07/antes/repro-antes.mjs (árvore de entrada)",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/antes/repro-antes.log"
+          ]
+        },
+        {
+          "cenario": "Infinity e -Infinity em comparação, evalBoolean com fallback, NaN e zero válido",
+          "esperado": "fallback no não finito, 0 no zero válido",
+          "observado": "como esperado",
+          "estado": "PASSOU",
+          "comandoOuPassos": "node asserts/t-revisao-m01.mjs",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/final/final-asserts.log"
+          ]
+        }
+      ],
+      "provaAutoria": "Sem configuração própria: é a semântica da linguagem para toda expressão."
+    },
+    {
+      "sistemas": [
+        "afty",
+        "player"
+      ],
+      "dependencias": [],
+      "pendencias": [],
+      "evidencia": "NÃO VERIFICADA",
+      "chaveItem": "afty-dsl.js::NOMES_DE_FUNCAO::@catalogo",
+      "parcela": "variável opt_ de Aptidão de addon (M01-VAR-01)",
+      "fontes": [
+        {
+          "caminho": "docs/automacao-dsl.md",
+          "versao": "SHA-256 final desta entrega",
+          "local": "Revisão do Motor de 2026-10-07; opt_<aptidao>_<valor>"
+        }
+      ],
+      "esperado": "A escolha de uma Aptidão de pacote vira opt_<id normalizado>_<valor> e liga a condição.",
+      "observado": "Antes: opt_mesa:foco_eco, intokenizável. Depois: opt_mesa_x_foco_eco declarado a zero e ligado pela escolha.",
+      "regra": "CONFIRMADA",
+      "execucao": "COMPLETA",
+      "motor": "INTEGRADO",
+      "autoria": "ADDON",
+      "percurso": [
+        {
+          "etapa": "contexto",
+          "arquivo": "src/systems/afty/afty-efeitos.js",
+          "funcao": "buildCriaturaDslContext (opt_)"
+        },
+        {
+          "etapa": "vocabulário",
+          "arquivo": "src/systems/afty/afty-derive.js",
+          "funcao": "vocabularioDoMundo"
+        }
+      ],
+      "provas": [
+        {
+          "cenario": "Aptidão 'foco' do pacote 'mesa-x' com opções eco e grito; efeito quando opt_mesa_x_foco_eco, valores 4 e 6, nos dois sistemas",
+          "esperado": "liga só com eco, com o valor de cada efeito",
+          "observado": "4, 6 e 0 como esperado",
+          "estado": "PASSOU",
+          "comandoOuPassos": "node asserts/t-revisao-m01.mjs",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/final/final-asserts.log"
+          ]
+        }
+      ],
+      "provaAutoria": "Pacote de addon com Aptidão e opções, instalado por aplicarAddons; a escolha da opção é a da aba Aptidões."
+    },
+    {
+      "sistemas": [
+        "afty",
+        "player"
+      ],
+      "dependencias": [],
+      "pendencias": [
+        "Tela: o relato aparece na lista de problemas da aba Addons; não conferido no navegador nesta execução."
+      ],
+      "evidencia": "NÃO VERIFICADA",
+      "chaveItem": "afty-dsl.js::NOMES_DE_FUNCAO::@catalogo",
+      "parcela": "colisão de variável depois da normalização (M01-VAR-02)",
+      "fontes": [
+        {
+          "caminho": "docs/automacao-dsl.md",
+          "versao": "SHA-256 final desta entrega",
+          "local": "Revisão do Motor de 2026-10-07"
+        }
+      ],
+      "esperado": "Dois ids que viram a mesma variável são relatados, sem recusar o pacote.",
+      "observado": "Antes: nenhum relato. Depois: problema '(variáveis da DSL)' na aplicação; os 51 addons do repositório não colidem.",
+      "regra": "CONFIRMADA",
+      "execucao": "COMPLETA",
+      "motor": "INTEGRADO",
+      "autoria": "ADDON",
+      "percurso": [
+        {
+          "etapa": "aplicação",
+          "arquivo": "src/systems/afty/afty-addons.js",
+          "funcao": "aplicarAddons / colisoesDeVariavel"
+        }
+      ],
+      "provas": [
+        {
+          "cenario": "ab-cd:ef contra ab:cd_ef, e pacote 'lut' com corpo_treinado contra o livro",
+          "esperado": "relato nos dois, pacotes aplicados",
+          "observado": "como esperado",
+          "estado": "PASSOU",
+          "comandoOuPassos": "node asserts/t-revisao-m01.mjs",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/final/final-asserts.log"
+          ]
+        }
+      ],
+      "provaAutoria": "O relato aparece em problemasDaAplicacao, lido pela aba Addons."
+    },
+    {
+      "sistemas": [
+        "afty",
+        "player"
+      ],
+      "dependencias": [],
+      "pendencias": [],
+      "evidencia": "NÃO VERIFICADA",
+      "chaveItem": "afty-efeitos.js::EFEITO_CANAIS::@catalogo",
+      "parcela": "portão de instalação de efeito de pacote (M01-VAL-02 e M04-A01)",
+      "fontes": [
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "local": "FUNCIONAMENTO BÁSICO: descrição e consequências mecânicas configuráveis",
+          "paginaImpressa": 197,
+          "marcadorPagina": "<!-- página 197 -->"
+        },
+        {
+          "caminho": "docs/afty-addons.md",
+          "versao": "SHA-256 final desta entrega",
+          "local": "Funcionamento Básico próprio do pacote; o portão confere cada efeito"
+        }
+      ],
+      "esperado": "Canal inexistente, expr e quando fora da sintaxe recusam o pacote; variável desconhecida não recusa; escopo invocação usa os canais de invocação.",
+      "observado": "Antes: só presença de canal e expr. Depois: conferência completa, também na Técnica de Estilo; 51 addons aceitos.",
+      "regra": "CONFIRMADA",
+      "execucao": "COMPLETA",
+      "motor": "INTEGRADO",
+      "autoria": "ADDON",
+      "percurso": [
+        {
+          "etapa": "registro de canais",
+          "arquivo": "src/systems/afty/afty-efeitos.js",
+          "funcao": "registrarCanaisDoMotor (load)"
+        },
+        {
+          "etapa": "registro de canais de invocação",
+          "arquivo": "src/systems/afty/afty-invocacoes.js",
+          "funcao": "registrarCanaisDoMotor (load)"
+        },
+        {
+          "etapa": "portão",
+          "arquivo": "src/systems/afty/afty-addons.js",
+          "funcao": "validarPacote / problemasDoEfeito"
+        },
+        {
+          "etapa": "instalação",
+          "arquivo": "src/systems/afty/afty-addons-biblioteca.js",
+          "funcao": "instalarPacote"
+        }
+      ],
+      "provas": [
+        {
+          "cenario": "ANTES da correção: Funcionamento com canal 'canal_inexistente'",
+          "esperado": "recusado",
+          "observado": "aceito",
+          "estado": "FALHOU",
+          "comandoOuPassos": "node bloco-2026-10-07/antes/repro-antes.mjs (árvore de entrada)",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/antes/repro-antes.log"
+          ]
+        },
+        {
+          "cenario": "canal inexistente, expr 'nd +', quando 'nd >', efeito válido, canal de invocação com e sem escopo, Técnica de Estilo",
+          "esperado": "recusa os inválidos, aceita os válidos",
+          "observado": "como esperado",
+          "estado": "PASSOU",
+          "comandoOuPassos": "node asserts/t-revisao-m01.mjs",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/final/final-asserts.log"
+          ]
+        }
+      ],
+      "provaAutoria": "Instalação por JSON colado em Outros > Addons > Instalar (instalarDeTexto -> instalarPacote -> validarPacote)."
+    },
+    {
+      "sistemas": [
+        "afty",
+        "player"
+      ],
+      "dependencias": [],
+      "pendencias": [],
+      "evidencia": "NÃO VERIFICADA",
+      "chaveItem": "afty-efeitos.js::EFEITO_CANAIS::@catalogo",
+      "parcela": "persistência do editor de efeitos (M01-PERSIST-01)",
+      "fontes": [
+        {
+          "caminho": "docs/afty-motor-referencia-estrutural.md",
+          "versao": "SHA-256 final desta entrega",
+          "local": "Motor de Automação; campos de dado do efeito"
+        }
+      ],
+      "esperado": "Editar uma linha preserva semCredito, quando e duracao das outras.",
+      "observado": "Antes: o Funcionamento perdia semCredito e a Habilidade Única perdia também quando e duracao. Depois: lista única em efeitoGravavel.",
+      "regra": "CONFIRMADA",
+      "execucao": "COMPLETA",
+      "motor": "INTEGRADO",
+      "autoria": "INTERFACE",
+      "percurso": [
+        {
+          "etapa": "gravação",
+          "arquivo": "src/systems/afty/afty-efeitos.js",
+          "funcao": "efeitoGravavel"
+        },
+        {
+          "etapa": "editor do Funcionamento",
+          "arquivo": "src/systems/afty/AftyCreatureBuilder.jsx",
+          "funcao": "TecnicaMotorEditor / bruto"
+        },
+        {
+          "etapa": "editor da Habilidade Única",
+          "arquivo": "src/systems/afty/AftyCreatureBuilder.jsx",
+          "funcao": "MotorEfeitosEditor / bruto"
+        },
+        {
+          "etapa": "ida pelo derive",
+          "arquivo": "src/systems/afty/afty-derive.js",
+          "funcao": "resolverEfeitosEditaveis"
+        }
+      ],
+      "provas": [
+        {
+          "cenario": "efeitoGravavel com semCredito, quando, duracao, modo e mira em Ação",
+          "esperado": "conserva os de dado e tira os resolvidos",
+          "observado": "como esperado",
+          "estado": "PASSOU",
+          "comandoOuPassos": "node asserts/t-revisao-m01.mjs",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/final/final-asserts.log"
+          ]
+        },
+        {
+          "cenario": "Navegador: ficha com linha semCredito, acrescentar outra linha pelo editor e salvar, Player e Afty, 1440 e 390 px",
+          "esperado": "semCredito conservado no armazenamento",
+          "observado": "semCredito true nos quatro casos",
+          "estado": "PASSOU",
+          "comandoOuPassos": "node bloco-2026-10-07/navegador/nav-motor.mjs",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/navegador/relatorio.json"
+          ]
+        }
+      ],
+      "provaAutoria": "Editor do Funcionamento Básico na aba Habilidades do criador."
+    },
+    {
+      "sistemas": [
+        "afty",
+        "player"
+      ],
+      "dependencias": [],
+      "pendencias": [],
+      "evidencia": "NÃO VERIFICADA",
+      "chaveItem": "afty-efeitos.js::EFEITO_CANAIS::dadosPericia",
+      "parcela": "alvo obrigatório e seletor no editor visual (M01-UI-01 e M04-A02)",
+      "fontes": [
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "local": "Corpo Especializado: dado fixo de 1d4 na perícia escolhida",
+          "paginaImpressa": 35,
+          "marcadorPagina": "<!-- página 35 -->"
+        },
+        {
+          "caminho": "docs/automacao-dsl.md",
+          "versao": "SHA-256 final desta entrega",
+          "local": "Alvo obrigatório e vocabulários do editor"
+        }
+      ],
+      "esperado": "O alvo é o dado ou o gatilho: o editor não oferece 'todos', escolhe o primeiro alvo ao trocar de canal e grava o alvo no formato do consumidor.",
+      "observado": "Antes: canal selecionável sem controle de alvo. Depois: seletor duplo (perícia e dado), grava percepcao:d4 e o derive soma {faces 6, qtd 1} em Atletismo.",
+      "regra": "CONFIRMADA",
+      "execucao": "COMPLETA",
+      "motor": "INTEGRADO",
+      "autoria": "INTERFACE",
+      "percurso": [
+        {
+          "etapa": "catálogo",
+          "arquivo": "src/systems/afty/afty-efeitos.js",
+          "funcao": "EFEITO_CANAIS.dadosPericia.alvoObrigatorio"
+        },
+        {
+          "etapa": "derive para o editor",
+          "arquivo": "src/systems/afty/afty-derive.js",
+          "funcao": "resolverEfeitosEditaveis (alvoObrigatorio)"
+        },
+        {
+          "etapa": "editor",
+          "arquivo": "src/systems/afty/AftyCreatureBuilder.jsx",
+          "funcao": "alvoOpcoes / alvoPadrao / AlvoPericiaDado"
+        }
+      ],
+      "provas": [
+        {
+          "cenario": "getCanal marca os cinco canais e não marca atributo, rdTipo e custoPE; o derive publica alvoTipo e alvoObrigatorio",
+          "esperado": "marcas corretas",
+          "observado": "como esperado",
+          "estado": "PASSOU",
+          "comandoOuPassos": "node asserts/t-revisao-m01.mjs",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/final/final-asserts.log"
+          ]
+        },
+        {
+          "cenario": "Navegador: escolher o canal no editor e ler as opções do alvo, Player e Afty, 1440 e 390 px",
+          "esperado": "dois seletores e alvo atletismo:d6 gravado",
+          "observado": "como esperado",
+          "estado": "PASSOU",
+          "comandoOuPassos": "node bloco-2026-10-07/navegador/nav-motor.mjs",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/navegador/relatorio.json",
+            "docs/revisao-automacao/bloco-2026-10-07/navegador/dados-pericia-player-1440.png"
+          ]
+        }
+      ],
+      "provaAutoria": "Editor do Funcionamento Básico e da Habilidade Única, no criador."
+    },
+    {
+      "sistemas": [
+        "afty",
+        "player"
+      ],
+      "dependencias": [],
+      "pendencias": [],
+      "evidencia": "NÃO VERIFICADA",
+      "chaveItem": "afty-efeitos.js::EFEITO_CANAIS::dadosNomeados",
+      "parcela": "alvo obrigatório e seletor no editor visual (M01-UI-01 e M04-A02)",
+      "fontes": [
+        {
+          "caminho": "docs/automacao-dsl.md",
+          "versao": "SHA-256 final desta entrega",
+          "local": "Alvo obrigatório e vocabulários do editor"
+        }
+      ],
+      "esperado": "O alvo é o dado ou o gatilho: o editor não oferece 'todos', escolhe o primeiro alvo ao trocar de canal e grava o alvo no formato do consumidor.",
+      "observado": "Antes: canal selecionável sem controle de alvo. Depois: seletor sem 'todos', primeiro alvo ao trocar de canal.",
+      "regra": "CONFIRMADA",
+      "execucao": "COMPLETA",
+      "motor": "INTEGRADO",
+      "autoria": "INTERFACE",
+      "percurso": [
+        {
+          "etapa": "catálogo",
+          "arquivo": "src/systems/afty/afty-efeitos.js",
+          "funcao": "EFEITO_CANAIS.dadosNomeados.alvoObrigatorio"
+        },
+        {
+          "etapa": "derive para o editor",
+          "arquivo": "src/systems/afty/afty-derive.js",
+          "funcao": "resolverEfeitosEditaveis (alvoObrigatorio)"
+        },
+        {
+          "etapa": "editor",
+          "arquivo": "src/systems/afty/AftyCreatureBuilder.jsx",
+          "funcao": "alvoOpcoes / alvoPadrao / AlvoPericiaDado"
+        }
+      ],
+      "provas": [
+        {
+          "cenario": "getCanal marca os cinco canais e não marca atributo, rdTipo e custoPE; o derive publica alvoTipo e alvoObrigatorio",
+          "esperado": "marcas corretas",
+          "observado": "como esperado",
+          "estado": "PASSOU",
+          "comandoOuPassos": "node asserts/t-revisao-m01.mjs",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/final/final-asserts.log"
+          ]
+        },
+        {
+          "cenario": "Navegador: escolher o canal no editor e ler as opções do alvo, Player e Afty, 1440 e 390 px",
+          "esperado": "sem 'todos' e primeiro alvo escolhido",
+          "observado": "como esperado",
+          "estado": "PASSOU",
+          "comandoOuPassos": "node bloco-2026-10-07/navegador/nav-motor.mjs",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/navegador/relatorio.json",
+            "docs/revisao-automacao/bloco-2026-10-07/navegador/relatorio.json"
+          ]
+        }
+      ],
+      "provaAutoria": "Editor do Funcionamento Básico e da Habilidade Única, no criador."
+    },
+    {
+      "sistemas": [
+        "afty",
+        "player"
+      ],
+      "dependencias": [],
+      "pendencias": [],
+      "evidencia": "NÃO VERIFICADA",
+      "chaveItem": "afty-efeitos.js::EFEITO_CANAIS::dadosTR",
+      "parcela": "alvo obrigatório e seletor no editor visual (M01-UI-01 e M04-A02)",
+      "fontes": [
+        {
+          "caminho": "docs/automacao-dsl.md",
+          "versao": "SHA-256 final desta entrega",
+          "local": "Alvo obrigatório e vocabulários do editor"
+        }
+      ],
+      "esperado": "O alvo é o dado ou o gatilho: o editor não oferece 'todos', escolhe o primeiro alvo ao trocar de canal e grava o alvo no formato do consumidor.",
+      "observado": "Antes: canal selecionável sem controle de alvo. Depois: seletor sem 'todos', primeiro alvo ao trocar de canal.",
+      "regra": "CONFIRMADA",
+      "execucao": "COMPLETA",
+      "motor": "INTEGRADO",
+      "autoria": "INTERFACE",
+      "percurso": [
+        {
+          "etapa": "catálogo",
+          "arquivo": "src/systems/afty/afty-efeitos.js",
+          "funcao": "EFEITO_CANAIS.dadosTR.alvoObrigatorio"
+        },
+        {
+          "etapa": "derive para o editor",
+          "arquivo": "src/systems/afty/afty-derive.js",
+          "funcao": "resolverEfeitosEditaveis (alvoObrigatorio)"
+        },
+        {
+          "etapa": "editor",
+          "arquivo": "src/systems/afty/AftyCreatureBuilder.jsx",
+          "funcao": "alvoOpcoes / alvoPadrao / AlvoPericiaDado"
+        }
+      ],
+      "provas": [
+        {
+          "cenario": "getCanal marca os cinco canais e não marca atributo, rdTipo e custoPE; o derive publica alvoTipo e alvoObrigatorio",
+          "esperado": "marcas corretas",
+          "observado": "como esperado",
+          "estado": "PASSOU",
+          "comandoOuPassos": "node asserts/t-revisao-m01.mjs",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/final/final-asserts.log"
+          ]
+        },
+        {
+          "cenario": "Navegador: escolher o canal no editor e ler as opções do alvo, Player e Afty, 1440 e 390 px",
+          "esperado": "sem 'todos' e primeiro alvo escolhido",
+          "observado": "como esperado",
+          "estado": "PASSOU",
+          "comandoOuPassos": "node bloco-2026-10-07/navegador/nav-motor.mjs",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/navegador/relatorio.json",
+            "docs/revisao-automacao/bloco-2026-10-07/navegador/relatorio.json"
+          ]
+        }
+      ],
+      "provaAutoria": "Editor do Funcionamento Básico e da Habilidade Única, no criador."
+    },
+    {
+      "sistemas": [
+        "afty",
+        "player"
+      ],
+      "dependencias": [],
+      "pendencias": [],
+      "evidencia": "NÃO VERIFICADA",
+      "chaveItem": "afty-efeitos.js::EFEITO_CANAIS::dadosAtaque",
+      "parcela": "alvo obrigatório e seletor no editor visual (M01-UI-01 e M04-A02)",
+      "fontes": [
+        {
+          "caminho": "docs/automacao-dsl.md",
+          "versao": "SHA-256 final desta entrega",
+          "local": "Alvo obrigatório e vocabulários do editor"
+        }
+      ],
+      "esperado": "O alvo é o dado ou o gatilho: o editor não oferece 'todos', escolhe o primeiro alvo ao trocar de canal e grava o alvo no formato do consumidor.",
+      "observado": "Antes: canal selecionável sem controle de alvo. Depois: seletor sem 'todos', primeiro alvo ao trocar de canal.",
+      "regra": "CONFIRMADA",
+      "execucao": "COMPLETA",
+      "motor": "INTEGRADO",
+      "autoria": "INTERFACE",
+      "percurso": [
+        {
+          "etapa": "catálogo",
+          "arquivo": "src/systems/afty/afty-efeitos.js",
+          "funcao": "EFEITO_CANAIS.dadosAtaque.alvoObrigatorio"
+        },
+        {
+          "etapa": "derive para o editor",
+          "arquivo": "src/systems/afty/afty-derive.js",
+          "funcao": "resolverEfeitosEditaveis (alvoObrigatorio)"
+        },
+        {
+          "etapa": "editor",
+          "arquivo": "src/systems/afty/AftyCreatureBuilder.jsx",
+          "funcao": "alvoOpcoes / alvoPadrao / AlvoPericiaDado"
+        }
+      ],
+      "provas": [
+        {
+          "cenario": "getCanal marca os cinco canais e não marca atributo, rdTipo e custoPE; o derive publica alvoTipo e alvoObrigatorio",
+          "esperado": "marcas corretas",
+          "observado": "como esperado",
+          "estado": "PASSOU",
+          "comandoOuPassos": "node asserts/t-revisao-m01.mjs",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/final/final-asserts.log"
+          ]
+        },
+        {
+          "cenario": "Navegador: escolher o canal no editor e ler as opções do alvo, Player e Afty, 1440 e 390 px",
+          "esperado": "sem 'todos' e primeiro alvo escolhido",
+          "observado": "como esperado",
+          "estado": "PASSOU",
+          "comandoOuPassos": "node bloco-2026-10-07/navegador/nav-motor.mjs",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/navegador/relatorio.json",
+            "docs/revisao-automacao/bloco-2026-10-07/navegador/relatorio.json"
+          ]
+        }
+      ],
+      "provaAutoria": "Editor do Funcionamento Básico e da Habilidade Única, no criador."
+    },
+    {
+      "sistemas": [
+        "afty",
+        "player"
+      ],
+      "dependencias": [],
+      "pendencias": [],
+      "evidencia": "NÃO VERIFICADA",
+      "chaveItem": "afty-efeitos.js::EFEITO_CANAIS::peTemporario",
+      "parcela": "alvo obrigatório e seletor no editor visual (M01-UI-01 e M04-A02)",
+      "fontes": [
+        {
+          "caminho": "docs/automacao-dsl.md",
+          "versao": "SHA-256 final desta entrega",
+          "local": "Alvo obrigatório e vocabulários do editor"
+        }
+      ],
+      "esperado": "O alvo é o dado ou o gatilho: o editor não oferece 'todos', escolhe o primeiro alvo ao trocar de canal e grava o alvo no formato do consumidor.",
+      "observado": "Antes: canal selecionável sem controle de alvo. Depois: seletor sem 'todos', primeiro alvo ao trocar de canal.",
+      "regra": "CONFIRMADA",
+      "execucao": "COMPLETA",
+      "motor": "INTEGRADO",
+      "autoria": "INTERFACE",
+      "percurso": [
+        {
+          "etapa": "catálogo",
+          "arquivo": "src/systems/afty/afty-efeitos.js",
+          "funcao": "EFEITO_CANAIS.peTemporario.alvoObrigatorio"
+        },
+        {
+          "etapa": "derive para o editor",
+          "arquivo": "src/systems/afty/afty-derive.js",
+          "funcao": "resolverEfeitosEditaveis (alvoObrigatorio)"
+        },
+        {
+          "etapa": "editor",
+          "arquivo": "src/systems/afty/AftyCreatureBuilder.jsx",
+          "funcao": "alvoOpcoes / alvoPadrao / AlvoPericiaDado"
+        }
+      ],
+      "provas": [
+        {
+          "cenario": "getCanal marca os cinco canais e não marca atributo, rdTipo e custoPE; o derive publica alvoTipo e alvoObrigatorio",
+          "esperado": "marcas corretas",
+          "observado": "como esperado",
+          "estado": "PASSOU",
+          "comandoOuPassos": "node asserts/t-revisao-m01.mjs",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/final/final-asserts.log"
+          ]
+        },
+        {
+          "cenario": "Navegador: escolher o canal no editor e ler as opções do alvo, Player e Afty, 1440 e 390 px",
+          "esperado": "sem 'todos' e primeiro alvo escolhido",
+          "observado": "como esperado",
+          "estado": "PASSOU",
+          "comandoOuPassos": "node bloco-2026-10-07/navegador/nav-motor.mjs",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/navegador/relatorio.json",
+            "docs/revisao-automacao/bloco-2026-10-07/navegador/relatorio.json"
+          ]
+        }
+      ],
+      "provaAutoria": "Editor do Funcionamento Básico e da Habilidade Única, no criador."
+    },
+    {
+      "sistemas": [
+        "afty",
+        "player"
+      ],
+      "dependencias": [],
+      "pendencias": [
+        "O Feitiço com jogada de ataque rola por outro caminho e não lê o canal; depende da pergunta 7 de BLOCO-2026-10-07-perguntas.",
+        "Autoria do canal pelo editor visual não exercitada no navegador; o percurso do Motor foi provado pelo Preciso."
+      ],
+      "evidencia": "NÃO VERIFICADA",
+      "chaveItem": "afty-efeitos.js::EFEITO_CANAIS::vantagemAtaque",
+      "parcela": "canal novo de vantagem e desvantagem na jogada de ataque",
+      "fontes": [
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "local": "VANTAGEM E DESVANTAGEM: não acumulam, e uma de cada se anulam",
+          "paginaImpressa": 282,
+          "marcadorPagina": "<!-- página 282 -->"
+        },
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "versao": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "local": "Golpe Especial, Preciso: recebe vantagem no ataque",
+          "paginaImpressa": 65,
+          "marcadorPagina": "<!-- página 65 -->"
+        }
+      ],
+      "esperado": "Sinalizador por linha de dano (arma, Básico); positivo dá vantagem, negativo desvantagem; não acumulam e se anulam; a rolagem combina com o modo à mão e a desvantagem da arma.",
+      "observado": "Implementado: canal, consumidor por linha (vantagemAtaque com fontes), modoCombinado na rolagem, chip na linha. Primeiro cliente: Preciso.",
+      "regra": "CONFIRMADA",
+      "execucao": "COMPLETA",
+      "motor": "INTEGRADO",
+      "autoria": "INTERFACE",
+      "percurso": [
+        {
+          "etapa": "catálogo",
+          "arquivo": "src/systems/afty/afty-efeitos.js",
+          "funcao": "EFEITO_CANAIS.vantagemAtaque"
+        },
+        {
+          "etapa": "consumidor",
+          "arquivo": "src/systems/afty/afty-pericias.js",
+          "funcao": "resolveDano / monta (linha.vantagemAtaque)"
+        },
+        {
+          "etapa": "rolagem",
+          "arquivo": "src/systems/afty/afty-propriedades-armas.js",
+          "funcao": "modoCombinado / preparaRolagemArma"
+        },
+        {
+          "etapa": "tela",
+          "arquivo": "src/systems/afty/ficha/abas/AbaAcoes.jsx",
+          "funcao": "chip Vantagem/Desvantagem"
+        }
+      ],
+      "provas": [
+        {
+          "cenario": "modoCombinado nas quatro combinações e preparaRolagemArma com e sem modo",
+          "esperado": "regra da página 282",
+          "observado": "como esperado",
+          "estado": "PASSOU",
+          "comandoOuPassos": "node asserts/t-revisao-cmb02.mjs",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/final/final-asserts.log"
+          ]
+        },
+        {
+          "cenario": "Navegador: Preciso marcado, chip e rolagem do Acerto na Ficha e no Encontro, Player e Afty, 1440 e 390 px",
+          "esperado": "modo vantagem, dois d20",
+          "observado": "como esperado",
+          "estado": "PASSOU",
+          "comandoOuPassos": "node bloco-2026-10-07/navegador/nav-preciso.mjs",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/navegador/relatorio-preciso.json",
+            "docs/revisao-automacao/bloco-2026-10-07/navegador/preciso-ficha-player-1440.png"
+          ]
+        }
+      ],
+      "provaAutoria": "O canal aparece no seletor do editor (grupo Ataque e Dano), com alvo de fonte de dano; também por addon."
+    },
+    {
+      "sistemas": [
+        "afty",
+        "player"
+      ],
+      "dependencias": [],
+      "pendencias": [],
+      "evidencia": "NÃO VERIFICADA",
+      "chaveItem": "dominio-contextual::alvos-motor",
+      "parcela": "vocabulários de alvo tipoDano, dadoNomeado, gatilho e custo no editor (M01-UI-01 e M04-A02)",
+      "fontes": [
+        {
+          "caminho": "docs/automacao-dsl.md",
+          "versao": "SHA-256 final desta entrega",
+          "local": "Revisão do Motor de 2026-10-07: o editor visual alcança os cinco tipos"
+        }
+      ],
+      "esperado": "O editor oferece os mesmos vocabulários que os consumidores leem.",
+      "observado": "Tipos de dano (15, com 'todos'), d3 a d12 (sem 'todos'), Uma Vez no Combate e Toda Rodada (sem 'todos'), os cinco gastos (com 'todos').",
+      "regra": "CONFIRMADA",
+      "execucao": "COMPLETA",
+      "motor": "INTEGRADO",
+      "autoria": "INTERFACE",
+      "percurso": [
+        {
+          "etapa": "editor",
+          "arquivo": "src/systems/afty/AftyCreatureBuilder.jsx",
+          "funcao": "alvoOpcoes (tipoDano, dadoNomeado, gatilho, custo)"
+        }
+      ],
+      "provas": [
+        {
+          "cenario": "Navegador: RD por Tipo, Dados de Dano, PE Temporário e Custo em PE, Player e Afty, 1440 e 390 px",
+          "esperado": "listas certas",
+          "observado": "como esperado",
+          "estado": "PASSOU",
+          "comandoOuPassos": "node bloco-2026-10-07/navegador/nav-motor.mjs",
+          "evidencias": [
+            "docs/revisao-automacao/bloco-2026-10-07/navegador/relatorio.json"
+          ]
+        }
+      ],
+      "provaAutoria": "Editor do Funcionamento Básico no criador."
+    }
+  ],
+  "validacao": {
+    "linhaDeBase": [
+      "2026-10-07T03:44Z: node asserts/rodar.mjs, 156 arquivos e 9144 asserts, todos passaram (docs/revisao-automacao/bloco-2026-10-07/linha-de-base/base-asserts.log)",
+      "t-filtro-habilidades e t-imitacao passaram; eslint src/systems/afty limpo; inventário 11900 chaves, cobertura PASSOU (docs/revisao-automacao/bloco-2026-10-07/linha-de-base)"
+    ],
+    "resultadoFinal": [
+      "node asserts/rodar.mjs: 163 arquivos e 9469 asserts, todos passaram (docs/revisao-automacao/bloco-2026-10-07/final/final-asserts.log)",
+      "t-filtro-habilidades, t-imitacao e t-ordem-modulos (34) passaram; npm run build concluiu; eslint src/systems/afty limpo; eslint das ferramentas da campanha e dos sete testes novos limpo; lint padrão 748 problemas e 22 sem .audit, iguais à linha de base (docs/revisao-automacao/bloco-2026-10-07/final)",
+      "Reconciliação G00/rechecagem/proposta-02.json aplicada: 10 adições, 49 atualizações, nenhum lote aprovado invalidado; t-reconciliacao-g00 passou",
+      "Navegador (Chrome, contextos isolados): nav-motor, nav-preciso e nav-cura PASSOU em Player e Afty, 1440 e 390 px (docs/revisao-automacao/bloco-2026-10-07/navegador)"
+    ],
+    "naoVerificado": [
+      "Matriz semântica completa das 345 chaves do M01 (canais, grupos, referências, estágios e escopos): só as parcelas acima foram examinadas nesta execução.",
+      "Paridade fm-dsl da 2.5.2 para os casos novos: a 2.5.2 segue com o avaliador dela e não foi alterada (somente leitura)."
+    ],
+    "intervalo": "2026-10-07T03:43:51Z (entrada) a 2026-10-07 (manifesto); validação final iniciada 2026-10-07T16:3x"
+  },
+  "auditoria": {
+    "estado": "NÃO EXECUTADA",
+    "hashesExaminados": {},
+    "achados": []
+  },
+  "fonteLivroRegras": {
+    "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+    "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+    "data": "2026-10-07"
+  },
+  "entregaEstavel": {
+    "aguardaAuditoria": true,
+    "manifesto": "M01/entrega-sha256.json",
+    "criterio": "Achados conhecidos tratados e entregues para auditoria independente. Estado PARCIAL: a matriz completa do inventário do lote não foi feita, e parcelas aguardam o autor ou capacidade."
+  },
+  "pendenciasNaFila": [
+    "docs/a-fazer.md: BLOCO-2026-10-07-perguntas"
+  ],
+  "diagnosticosAnteriores": "C:/Projetos/Grimorio/revisao-noturna/execucoes (fila.json, modo auditoria): executor e auditor somente leitura, parecer INCONCLUSIVO; preservados."
+}

@@ -3319,3 +3319,12 @@ lê os textos e os 12 animais de `h-corp.json` uma vez, e o pacote sai inteiro.
 | Fluxo Sanguíneo Constante | estado de faixa do pacote (PE gasto no turno) e os canais de regeneração do início do turno, espelho do Fluxo Imparável da Maldição. A Reação ao sofrer dano fica de mesa |
 
 **Motor.** Dois ajustes genéricos: `contadoresOrigem[].inicio` (valor de quem nunca mexeu no contador, validado dentro da faixa) e a `trilha` deixou de ser obrigatória numa Aptidão de addon (ela vem da categoria, e Especiais não tem). ⚠ Motor e pacote vão no mesmo push. Assert: `t-demonios-primordiais.mjs`.
+
+**Órbitas do retrato (2026-11-10).** O pacote declara `orbitas: { marca, maximo, pele }` e a moldura do retrato da Ficha Final G2 ganha uma gema circulando a borda para cada entrada daquela marca (`contar()`). É só apresentação: nenhum número muda.
+
+- **Régua** em `afty-orbitas.js` (módulo FOLHA): `resolveOrbitas` devolve `{ ativo, contagem, gemas, maximo, pele }`, publicado em `derived.orbitas`. O desenho apara no `maximo` (padrão 20, teto duro 30) e a contagem segue inteira.
+- **Pele é código**: `ORBITAS_PELES` (hoje `carmim`). A instalação recusa marca vazia, máximo que não seja inteiro positivo e pele desconhecida.
+- **Sai da FICHA** (`orbitasDaFicha`, o primeiro pacote ativo que a declara), nunca do mundo unido.
+- **Tela** em `ui/OrbitasDoRetrato.jsx` e `ui/orbitas.css`, montada só no `CabecalhoG2`. As gemas andam por `offset-path` na borda da moldura, igualmente espaçadas (`i / n` da volta). Sem `offset-path` o recurso some, reduzir movimento deixa as gemas paradas e a impressão as esconde.
+- ⚠ **Cada pega de um Talento repetível conta uma vez na marca** (`maxVezes`). Antes `marcasFicha` lia só `escolhidas`, que não repete o id, e "uma por pega" contava uma só.
+- Assert: `t-orbitas.mjs`.

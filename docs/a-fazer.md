@@ -2637,3 +2637,24 @@ Sangue 1.1.0, com a remoção do `frenesi_sanguinario`). Foi apagada à mão.
 **Situação:** cálculos, escolhas roubadas, proficiências físicas, Resistência, Imitação e ajustes de interface corrigidos em 2026-10-13. O autor recusou painel separado de Restringido, Novo turno e Ataques Extras em Dano. Custos/Usos são planejados em outro chat e Resiliência fica como está. As funções de reação, Força Imparável/Barreira, alternativa letal de Ainda de Pé e Rejeitar a Morte existem no motor de sessão, mas o acionamento opcional não deve depender do painel removido. O teste de Mesmo Morto e as curas por turno acompanham a rodada existente.
 **Precisa:** integrar os acionamentos opcionais às interações existentes, sem recriar painel ou barra de ações. Alvo de Foco, reação de desvio e circunstâncias de queda ainda exigem informação de mesa. Preservar gastos manuais. Decisões já fechadas: RD de Surto/Físico não cobre Alma, Surto de Ação pode ser roubado, Espírito Incansável está certo, Foco concede +10 Atenção, Roubo exige pré-requisitos de outras habilidades, e apenas Imitação os dispensa.
 **Anotado:** 2026-10-13, escopo ajustado pelo autor
+
+### Ficha G2 · Efeitos: Grau Especial e Canalização (feedback de 2026-11-09)
+**Chave:** G2-2026-11-09-feedback-itens-canalizacao
+**Onde:** `ficha/abas-g2/EquipamentosG2.jsx` (DetalheDoItem) e `ficha/PainelConteudo.jsx` (CanalizacaoDoItem)
+**Situação:** a Canalização não entra no catálogo de Efeitos por decisão (é quantidade, não liga e desliga). Ela mora na consulta da aba Habilidades, pela operação do item. Um jogador reclamou de não achar a ativação da Canalização Máxima. Outro ponto do mesmo feedback: o item de Grau Especial não mostra o efeito que aplica, e a linha do inventário diz só "1 Encantamento" sem o nome. Não houve ficha de teste com item de Grau Especial para reproduzir.
+**Precisa:** conferir com uma ficha que tenha a Aptidão e o item, e decidir se a Canalização ganha uma entrada no catálogo que leve ao controle e se a linha do item mostra o nome do encantamento.
+**Anotado:** 2026-11-09
+
+### Ficha Clássica · fontes da internet do tema
+**Chave:** G2-2026-11-10-fontes-web-classica
+**Onde:** `ficha/AftyFichaClassica.jsx` e `ficha/PainelDeAparencia.jsx`
+**Situação:** as doze famílias de `FONTES_WEB` só baixam na Ficha G2 (`useFontesWeb` no `AftyFichaG2`). A clássica não chama o carregador porque o arquivo tinha trabalho de outra pessoa na árvore em 2026-11-10. Uma ficha com fonte da internet escolhida no G2 abre na clássica com a reserva do sistema, e o painel da clássica não marca botão nenhum como escolhido.
+**Precisa:** chamar `useFontesWeb(tema, SEM_CSS)` na clássica e mostrar a fileira no painel dela (`comFontesWeb`), ou decidir que a clássica fica só com as fontes do sistema.
+**Anotado:** 2026-11-10
+
+### Impressão · texto sobre o destaque
+**Chave:** G2-2026-11-10-impressao-destaque-texto
+**Onde:** `ficha/ficha.css`, `@media print`
+**Situação:** o reset de impressão reescreve fundo, cartão, borda e texto, mas não `--afty-destaque-texto`. No tema padrão ele é lilás claro (`#d8b4fe`), que sai fraco no papel branco onde for usado. Anterior a esta rodada.
+**Precisa:** decidir se o reset também escurece o texto sobre o destaque, sem mexer nas cores de Vida, Energia e Alma.
+**Anotado:** 2026-11-10

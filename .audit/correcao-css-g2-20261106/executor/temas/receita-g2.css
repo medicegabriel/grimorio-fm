@@ -1,0 +1,6 @@
+/* A receita: o MESMO CSS do teste, sem !important, com o prefixo .e-g2 em cada seletor para empatar a especificidade das regras do G2. */
+.e-g2 .afty-card { border-color: #e11d48; }
+.e-g2 .afty-valor { color: #22d3ee; }
+.e-g2 .afty-aba[aria-selected="true"] { color: #22d3ee; }
+.e-g2 .afty-nome { color: #22d3ee; }
+.e-g2 .afty-cabecalho { border-color: #e11d48; }

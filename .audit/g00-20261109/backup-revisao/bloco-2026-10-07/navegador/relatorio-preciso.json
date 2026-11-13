@@ -1,0 +1,101 @@
+[
+ {
+  "caso": "ficha",
+  "sistema": "player",
+  "largura": 1440,
+  "erros": [],
+  "chipAntes": 0,
+  "chipDepois": 1,
+  "chaveDaSessao": "fm_ficha_sessao_afty_v1:teste-preciso",
+  "marcaNoCombate": true,
+  "rolagem": {
+   "rotulo": "Espada Curta · Acerto",
+   "modo": "vantagem",
+   "d20": [
+    5,
+    9
+   ]
+  },
+  "semScroll": true,
+  "encontroChip": 1,
+  "encontroRolagem": {
+   "rotulo": "Espada Curta · Acerto",
+   "modo": "vantagem"
+  }
+ },
+ {
+  "caso": "ficha",
+  "sistema": "player",
+  "largura": 390,
+  "erros": [],
+  "chipAntes": 0,
+  "chipDepois": 1,
+  "chaveDaSessao": "fm_ficha_sessao_afty_v1:teste-preciso",
+  "marcaNoCombate": true,
+  "rolagem": {
+   "rotulo": "Espada Curta · Acerto",
+   "modo": "vantagem",
+   "d20": [
+    9,
+    3
+   ]
+  },
+  "semScroll": true,
+  "encontroChip": 1,
+  "encontroRolagem": {
+   "rotulo": "Espada Curta · Acerto",
+   "modo": "vantagem"
+  }
+ },
+ {
+  "caso": "ficha",
+  "sistema": "afty",
+  "largura": 1440,
+  "erros": [],
+  "chipAntes": 0,
+  "chipDepois": 1,
+  "chaveDaSessao": "fm_ficha_sessao_afty_v1:teste-preciso",
+  "marcaNoCombate": true,
+  "rolagem": {
+   "rotulo": "Espada Curta · Acerto",
+   "modo": "vantagem",
+   "d20": [
+    12,
+    18
+   ]
+  },
+  "semScroll": true,
+  "encontroChip": 1,
+  "encontroRolagem": {
+   "rotulo": "Espada Curta · Acerto",
+   "modo": "vantagem"
+  }
+ },
+ {
+  "caso": "ficha",
+  "sistema": "afty",
+  "largura": 390,
+  "erros": [],
+  "chipAntes": 0,
+  "chipDepois": 1,
+  "chaveDaSessao": "fm_ficha_sessao_afty_v1:teste-preciso",
+  "marcaNoCombate": true,
+  "rolagem": {
+   "rotulo": "Espada Curta · Acerto",
+   "modo": "vantagem",
+   "d20": [
+    17,
+    13
+   ]
+  },
+  "semScroll": true,
+  "encontroChip": 1,
+  "encontroRolagem": {
+   "rotulo": "Espada Curta · Acerto",
+   "modo": "vantagem"
+  }
+ },
+ {
+  "resultado": "PASSOU"
+ }
+]

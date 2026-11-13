@@ -2483,3 +2483,50 @@ Asserts em `asserts/t-combatente-automacoes.mjs`.
 O alcance de cada arma e do Ataque Básico abre seu painel de fontes pelo hover, toque ou teclado. `alcance.partes` vem do `alcanceDe` em `afty-pericias.js`, e `LinhaDano` em `abas/AbaAcoes.jsx` usa `NumeroComFontes`. O painel mostra a base, Estendida quando houver, cada fonte do Motor e o multiplicador. Auxiliares suplantados continuam visíveis, riscados.
 
 Nos dois sistemas, Alcance Corpo a Corpo do Auxiliar, Ataque Circular e Articulações Extensas somam em armas corpo a corpo e Ataque Básico. O Auxiliar de Distância soma nos alcances curto e longo de armas de distância e arremesso. O Circular requer a manobra ligada com Empolgação pelo menos 5. Articulações Extensas soma 1,5 m pela versão 2.1.1 do addon Maldição Era de Ouro. Esses bônus não alteram o Espaço/Alcance do Tamanho nem o alcance de Feitiços.
+
+
+## Refinamento do G2: uso, escala de texto e motor de tema (2026-11-09 e 10)
+
+Rumo decidido pelo autor depois do feedback de um jogador: sem nova identidade visual, refinar o G2 que existe. Três lotes, todos no código e sem commit. O registro por data está em `docs/afty-status.md`, na seção "Ficha Final G2: lotes de uso, escala de texto e motor de tema". Os três lotes não mudam regra, só uso, tamanho de texto e a superfície que o tema alcança.
+
+### Lote 1, uso
+
+**Aba Efeitos** (`ficha/efeitos/`):
+
+- **Favoritos abaixo dos Ativos** (`FavoritosG2` em `VisaoG2.jsx`, CSS `.g2-favoritos`). Quem liga sem escolha nem custo liga ali. Quem tem Preparação abre o catálogo nela, com `catalogo.voltar`, e volta aos Ativos ao confirmar.
+- **Catálogo em dois blocos**, "Para Ativar" e "Demais Opções" (`Lista` em `CatalogoG2.jsx`, CSS `.k-bloco`). A ordem vem de `ordenaPorAcao`.
+- **O Ativar da linha liga direto** quando `ligaDireto` deixa (`catalogo-logica.js`, módulo novo com `acaoDaLinha`, `ordenaPorAcao` e `ativarOpcao`). Efeito com custo, bloqueio, Preparação ou vindo de pacote NÃO liga direto: passa pelo painel. A linha ganhou "Usar" e "Abrir" para quem tem ação só no painel.
+- **Confirmar uma Preparação fica no catálogo** (`depoisDeConfirmar` em `gestor-logica.js`). O favorito com Preparação volta aos Ativos.
+- **Efeito ativo aberto pelo catálogo** mostra o Agora ou o resultado e o Encerrar (`AtivoNoCatalogo`). O `Agora` saiu do `VisaoG2` para `AgoraG2.jsx`.
+- **Opção sem ação mostra a regra no painel** (`.k-regra`) e a operação do item (`.k-operacao`, pelo `renderOperacao` que o `AftyFichaG2` passa ao `VisaoG2`). Isso dá acesso à escolha de Postura e à Canalização pelo catálogo. A frase "Para Usar, Siga a Regra Completa" saiu.
+- **O motivo escrito no Confirmar apagou** ("Escolha uma Propriedade", "Escolha uma Opção", agora só `data-motivo` em `PreparoG2.jsx`).
+- **O detalhe do ativo não tem colunas vazias** (`data-vazio` mais `:has()` em `efeitos-g2.css`).
+
+**Resto da ficha:**
+
+- **Pular no fim da aba Ações**, com atalho no índice. `PainelConteudo` ganhou a prop `parte` ("pular" ou "resto") e o `AcoesG2` põe o Pular depois das colunas.
+- **Leitor de Habilidades uma consulta por vez**, e o reclique fecha. A fileira de abas da consulta (`.e-consulta-aba`) saiu, ficam o título e o Fechar. A busca global não usa `abrirConsulta`.
+- **Barra de rolagens na linha das abas** em tela larga (`.e-linha-abas` em `AftyFichaG2.jsx`). A faixa própria de 60 px sob as abas saiu. As classes `.afty-log*` não mudaram, e o `PainelDeRolagens` calcula o recolhido pela linha quando ela existe. Revisão de 2026-11-10: a linha QUEBRA em vez de encolher. As abas ficam no tamanho natural e a barra tem piso de 560 px, então de 721 a uns 1280 px a barra desce para a linha de baixo, à direita, e de 1280 em diante divide a linha com as abas. Antes as duas encolhiam sem piso: a 768 px a última rolagem ficava com 1 px, e até uns 1150 px a aba Efeitos saía de vista.
+- **Faixa fina do celular** (`efeitos/FinaG2.jsx`): fora do fluxo, com histerese, nome e os recursos em número ao rolar. Mostra os mesmos recursos do cabeçalho, inclusive o Preparo com Energia (eram só os três primeiros). Abaixo de 380 px, com quatro recursos, o nome sai para os números caberem.
+- **Canalização** NÃO está em `g.opcoes`, mora na consulta da aba Habilidades. Registrado em `docs/a-fazer.md` junto com o Grau Especial.
+
+**Decisões revogadas por este lote:**
+
+1. **"Confirmar vai ao cartão"** (2026-10-15). Confirmar uma Preparação agora fica no catálogo.
+2. **"Voltar à compacta com o efeito aberto"** (2026-10-15), para quem confirma de dentro do catálogo. Quem confirma de outro lugar segue o fluxo antigo.
+
+### Lote 2, escala de texto e contrato de Efeitos
+
+- **Escala de seis degraus** num bloco só, na raiz `.e-ficha-g2` de `efeitos-g2.css`: `--e-fs-micro` 11,5, `--e-fs-meta` 12,5, `--e-fs-corpo` 13,5, `--e-fs-leitura` 15, `--e-fs-titulo` 16,5 e `--e-fs-destaque` 22 px. O uso é `var(--e-fs-x, Npx)`, e o padrão do degrau vai junto, então apagar o bloco não quebra nada. Tamanhos distintos medidos nas seis abas em 1440 px: 17 antes, 12 depois. Os números dos recursos (26 a 28 px) ficam fora da escala. A escala ESPERA aprovação do autor, com a página de antes e depois em `prototipos/ficha-final-escala/index.html`.
+- **Contrato novo de Efeitos para o tema:** `.afty-efeito` (cartão, o aberto tem `aria-current="true"`), `.afty-efeito-detalhe`, `.afty-catalogo-linha` (a escolhida tem `aria-current="true"`) e `.afty-catalogo-painel`. A cor mora em `:where(.e-g2)`, então um tema pinta sem `!important`. A lista está em `ficha-tema.js`, no catálogo de seletores.
+
+### Lote 3, motor de tema
+
+- **Impressão pelo app.** O reset de `@media print` do `ficha.css` subiu de especificidade (`#afty-ficha#afty-ficha#afty-ficha`): um tema escuro de usuário deixa de imprimir escuro sem repetir o reset. Vale para a ficha clássica e para a aba dentro do Encontro. Uma invocação com tema próprio ainda imprime pelo tema dela.
+- **Copiar e Colar Tema** no painel de Aparência (JSON do tema inteiro). O Colar é desfazível pelo Restaurar.
+- **Avisos do auditor no editor de CSS** (`auditaCss`, as nove regras de `design.local/auditar-tema.mjs`), com o assert `t-audita-css`.
+- **Fontes da internet por lista fechada** (aprovadas pelo autor em 2026-11-10): doze famílias do Google Fonts em `FONTES_WEB` (`ficha-tema.js`), uma fileira própria no painel de Aparência do G2. A família baixa só quando o tema a pede, pelo painel ou pelo nome num `font-family` do CSS livre (`fontesWebDoTema` lê só o valor das declarações de fonte), por um `<link>` no `<head>` (`useFontesWeb.js`), e a pilha traz a reserva do sistema. O endereço sai da tabela. `normalizaTema` aceita só fonte das listas, e o bloco de variáveis descarta valor com `;`, chave ou `<`, que antes deixava um tema colado escrever `@font-face` com URL livre fora do `@scope`. O Prompt IA do G2 cita a lista, os degraus `--e-fs-*` e diz que a impressão é do app. Assert `t-fontes-web`. A clássica não carrega as famílias (pendência em `docs/a-fazer.md`).
+
+### Como conferir
+
+Os roteiros desta rodada estão em `.audit/refino-g2-20261110/` com o `LEIA.md`. Os roteiros antigos que esperam o comportamento revogado estão listados em `C:\Projetos\Grimorio\ROTEIROS-A-ATUALIZAR-G2.md` e NÃO foram reescritos.

@@ -1,0 +1,16 @@
+{
+  "geradoEm": "2026-11-06T02:59:31.230Z",
+  "base": "http://127.0.0.1:5341",
+  "etapas": [
+    {
+      "nome": "pares g2 x contrato",
+      "checks": [],
+      "erros": [],
+      "medidas": {}
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "pares g2 x contrato: 0/0"
+  ]
+}

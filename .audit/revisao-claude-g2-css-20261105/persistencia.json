@@ -1,0 +1,97 @@
+{
+  "geradoEm": "2026-11-06T03:15:17.930Z",
+  "base": "http://127.0.0.1:5343",
+  "checks": [
+    {
+      "id": "a ficha sintética abre no G2 pelo app inteiro (?ficha-g2=1)",
+      "ok": true,
+      "dados": 2
+    },
+    {
+      "id": "o tema chega ao armazenamento da criatura (aparencia.css e preset)",
+      "ok": true,
+      "dados": {
+        "css": 61,
+        "preset": "pergaminho"
+      }
+    },
+    {
+      "id": "o CSS vale na tela",
+      "ok": true,
+      "dados": "rgb(255, 0, 170)"
+    },
+    {
+      "id": "o CSS salvo vale ao reabrir a ficha",
+      "ok": true,
+      "dados": "rgb(255, 0, 170)"
+    },
+    {
+      "id": "e o preset também",
+      "ok": true,
+      "dados": "#efe6d3"
+    },
+    {
+      "id": "Exportar JSON baixa um arquivo",
+      "ok": true
+    },
+    {
+      "id": "o arquivo exportado carrega aparencia.css e o preset",
+      "ok": true,
+      "dados": {
+        "css": 61,
+        "preset": "pergaminho"
+      }
+    },
+    {
+      "id": "o contexto de destino começa vazio",
+      "ok": true,
+      "dados": "[]"
+    },
+    {
+      "id": "Importar o arquivo cria a ficha",
+      "ok": true
+    },
+    {
+      "id": "a ficha importada traz o CSS e o preset",
+      "ok": true,
+      "dados": {
+        "css": 61,
+        "preset": "pergaminho"
+      }
+    },
+    {
+      "id": "e o CSS importado vale na ficha aberta no G2",
+      "ok": true,
+      "dados": "rgb(255, 0, 170)"
+    },
+    {
+      "id": "sair da ficha logo depois de editar mantém a edição",
+      "ok": false,
+      "dados": null
+    }
+  ],
+  "erros": [
+    "Unexpected token '<'",
+    "Unexpected token '<'",
+    "Unexpected token '<'",
+    "Unexpected token '<'",
+    "Unexpected token '<'",
+    "Unexpected token '<'"
+  ],
+  "botoesDoDashboard": [
+    "Abrir menu de pastas",
+    "Encontros",
+    "Biblioteca de Modelos",
+    "Importar",
+    "Exportar personagens da visualização atual",
+    "Criar novo personagem",
+    "Todas1",
+    "Sem Pasta1",
+    "Nova pasta",
+    "Filtros avançados",
+    "Ativar seleção em massa",
+    "Menu de ações",
+    "Abrir documentos"
+  ],
+  "resumo": "11/12, erros de página 6"
+}

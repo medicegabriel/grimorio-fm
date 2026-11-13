@@ -1,0 +1,90 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "g2": false,
+    "curaNoTurno": true,
+    "umaCura": true,
+    "primeiroTurnoEncontro": true,
+    "proximoTurnoEncontro": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "g2": true,
+    "curaNoTurno": true,
+    "umaCura": true,
+    "primeiroTurnoEncontro": false,
+    "proximoTurnoEncontro": false,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "g2": false,
+    "curaNoTurno": true,
+    "umaCura": true,
+    "primeiroTurnoEncontro": true,
+    "proximoTurnoEncontro": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "g2": true,
+    "curaNoTurno": true,
+    "umaCura": true,
+    "primeiroTurnoEncontro": false,
+    "proximoTurnoEncontro": false,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "g2": false,
+    "curaNoTurno": true,
+    "umaCura": true,
+    "primeiroTurnoEncontro": true,
+    "proximoTurnoEncontro": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "g2": true,
+    "curaNoTurno": true,
+    "umaCura": true,
+    "primeiroTurnoEncontro": false,
+    "proximoTurnoEncontro": false,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "g2": false,
+    "curaNoTurno": true,
+    "umaCura": true,
+    "primeiroTurnoEncontro": true,
+    "proximoTurnoEncontro": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "g2": true,
+    "curaNoTurno": true,
+    "umaCura": true,
+    "primeiroTurnoEncontro": false,
+    "proximoTurnoEncontro": false,
+    "persistencia": true,
+    "erros": []
+  }
+]

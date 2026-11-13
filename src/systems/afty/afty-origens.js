@@ -1897,9 +1897,14 @@ export function resolveDesenvolvimento(creature) {
   return creature?.core?.origem?.desenvolvimento || {};
 }
 
-/** Configuração do pool de LIMITE da origem, ou null. Hoje só a Maldição tem. */
-export const origemPoolLimite = (id) =>
-  getOrigem(id)?.caracteristicas?.find((c) => c.poolLimite)?.poolLimite ?? null;
+/**
+ * Configuração do pool de LIMITE da origem, ou null. A Maldição tem na origem, e
+ * uma Distinção pode ter no clã (`claId`), com o mesmo formato.
+ */
+export const origemPoolLimite = (id, claId = null) =>
+  getOrigem(id)?.caracteristicas?.find((c) => c.poolLimite)?.poolLimite
+  ?? (claId ? getCla(claId)?.caracteristicas?.find((c) => c.poolLimite)?.poolLimite : null)
+  ?? null;
 
 /**
  * Quanto a origem SOBE O LIMITE de cada atributo (Maldição, "a cada 4 níveis
@@ -1911,7 +1916,7 @@ export const origemPoolLimite = (id) =>
  * para o contador da UI contar escolhas e a ficha somar pontos de limite.
  */
 export function resolveLimitePoolOrigem(creature) {
-  const cfg = origemPoolLimite(creature?.core?.origem?.id);
+  const cfg = origemPoolLimite(creature?.core?.origem?.id, creature?.core?.origem?.cla);
   if (!cfg) return {};
   const escolhas = creature?.core?.origem?.limites || {};
   const out = {};

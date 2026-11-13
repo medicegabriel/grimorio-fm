@@ -51,6 +51,7 @@ import {
 import PainelDeRolagens from "./PainelDeRolagens";
 import BuscaGlobal from "./BuscaGlobal";
 import PainelDeAparencia from "./PainelDeAparencia";
+import { useFontesWeb } from "./useFontesWeb";
 import { useGravacaoTema } from "./usar-gravacao-tema";
 import PainelBloodfeast, { ConjuracaoBloodfeast } from "./PainelBloodfeast";
 import ControleTecnicaMaxima from "./ControleTecnicaMaxima";
@@ -79,6 +80,7 @@ import { useGestor } from "./efeitos/gestor-logica";
 import { HistoricoCtx } from "./efeitos/historico-logica";
 import { HistoricoPainel } from "./efeitos/HistoricoSessao";
 import CabecalhoG2 from "./efeitos/CabecalhoG2";
+import FinaG2 from "./efeitos/FinaG2";
 import HabilidadesG2 from "./efeitos/HabilidadesG2";
 import ConsultaG2 from "./efeitos/ConsultaG2";
 import PainelConteudo, { OperacaoConteudoDoItem } from "./PainelConteudo";
@@ -759,6 +761,7 @@ export default function AftyFicha({
     pericias: () => <AbaPericias derived={derived} rolar={rolar} destaque={destaque} />,
     equipamentos: () => (
       <AbaEquipamentos
+        contadorUsos={contadorUsos}
         derived={derived}
         itens={equipamentos}
         abertos={abertos}
@@ -788,7 +791,8 @@ export default function AftyFicha({
     buffs: () => (!apresentacaoAnterior ? (
       <div className="e-g2">
         <div className="e-area" data-consultando={ui.consulta.ativa ? "sim" : undefined}>
-          <VisaoG2 g={g} m={modelo} onConsultar={ui.consultarRegra} focoBusca={ui.focoBusca} onVoltarDoCatalogo={ui.voltarDoCatalogo} />
+          <VisaoG2 g={g} m={modelo} onConsultar={ui.consultarRegra} focoBusca={ui.focoBusca} onVoltarDoCatalogo={ui.voltarDoCatalogo}
+            renderOperacao={(item) => <OperacaoConteudoDoItem key={item.chave} item={item} derived={derived} sessao={sessao} onSessao={atualiza} onRolar={rolar} />} />
         </div>
       </div>
     ) : (
@@ -856,7 +860,8 @@ export default function AftyFicha({
     acoes: () => (
       <>
       <AcoesG2
-        painelConteudo={<PainelConteudo g2 derived={derived} sessao={sessao} onSessao={atualiza} />}
+        painelConteudo={<PainelConteudo g2 parte="resto" derived={derived} sessao={sessao} onSessao={atualiza} />}
+        painelPular={<PainelConteudo g2 parte="pular" derived={derived} sessao={sessao} onSessao={atualiza} />}
         derived={derived} sessao={sessao} rolar={rolar} prova={prova} avisar={modelo.avisar} modo={modo}
         turnoArmas={sessao.propriedadesArmas?.turno ?? 0} rodadaArmas={sessao.rodada}
         onSessao={atualiza} onEstado={alteraEstado}
@@ -921,6 +926,8 @@ export default function AftyFicha({
      as duas folhas eram remontadas em string a cada render da Ficha, inclusive
      ao abrir um card ou cruzar o limiar da rolagem. */
   const varsCss = useMemo(() => (SEM_CSS ? "" : cssDasVars(tema)), [tema]);
+  /* A família da lista fechada que o tema pede, baixada por um `<link>` no `<head>` (2026-11-10). O `?semcss=1` desliga junto. */
+  useFontesWeb(tema, SEM_CSS);
   const usuarioCss = useMemo(() => (SEM_CSS ? "" : cssDoUsuario(tema)), [tema]);
 
   return (
@@ -982,7 +989,10 @@ export default function AftyFicha({
             onSetMembro={(i, v) => atualiza((s) => defineVitalTitaMembro(s, i, v, derived.titaColosso?.membroMax))}
           />
 
-          {/* ---------- abas ---------- */}
+          {/* ---------- abas e rolagens, na mesma linha (autor, 2026-11-09) ----------
+              Em tela larga a barra de rolagens divide a linha com as abas e deixa de gastar uma faixa de 60 px em toda aba. No telefone as
+              duas continuam empilhadas. A linha é o que define quanto do cabeçalho sai ao rolar (`--afty-cabecalho-recolhido`). */}
+          <div className="e-linha-abas">
           <div className="afty-abas e-g2 e-abas" role="tablist" aria-label="Seções da ficha">
             {[...TABS, ...(derived.dharma?.ativo ? [{ id: "roda", label: "Roda" }] : [])].map((t) => (
               <button
@@ -1009,6 +1019,8 @@ export default function AftyFicha({
             onAberto={setLogAberto}
             onLimpar={() => atualiza((s) => ({ ...s, log: [] }))}
           />
+          </div>
+          <FinaG2 m={g.mGeral} />
         </div>
       </header>
 

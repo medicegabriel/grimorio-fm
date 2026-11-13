@@ -130,7 +130,7 @@ export const limitePoolUsado = (mapa = {}) =>
  * avisava errado em toda ficha de Restringido (limite 30 nos físicos) e em toda
  * ficha com Incremento de Atributo. Sem o mapa, cai no 20 padrão.
  */
-export function resumoAtributos(creature, limitesEfetivos = null, perdas = null, extras = 0) {
+export function resumoAtributos(creature, limitesEfetivos = null, perdas = null, extras = 0, descontos = null) {
   const metodo = creature?.attrMethod || "pontos";
   const attrs = creature?.attributes || {};
   const nivel = creature?.attrNivel || {};
@@ -175,7 +175,11 @@ export function resumoAtributos(creature, limitesEfetivos = null, perdas = null,
   for (const k of ATTR_KEYS) {
     const alocado = (attrs[k] || 0) + (nivel[k] || 0);
     const lim = limiteDe(k);
-    if (alocado > lim) warnings.push(`${ATTR_LABEL[k] ?? k}: alocado ${alocado} passa do limite ${lim}.`);
+    /* O que a ficha TIRA do atributo (a perda de Presença da Origem, por exemplo)
+       sai do valor final, então o alocado pode passar do limite na mesma medida:
+       Presença 22 com -2 fecha em 20. O limite mostrado continua o mesmo. */
+    const desconto = Math.max(0, descontos?.[k] || 0);
+    if (alocado - desconto > lim) warnings.push(`${ATTR_LABEL[k] ?? k}: alocado ${alocado} passa do limite ${lim}.`);
   }
 
   // Ponto DESPERDIÇADO no limite. Diferente do aviso de cima: ali a alocação

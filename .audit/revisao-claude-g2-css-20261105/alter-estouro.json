@@ -1,0 +1,23 @@
+{
+  "geradoEm": "2026-11-06T03:19:26.291Z",
+  "base": "http://127.0.0.1:5341",
+  "etapas": [
+    {
+      "nome": "alter 390 G2",
+      "checks": [],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "alter 390 clássica",
+      "checks": [],
+      "erros": [],
+      "medidas": {}
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "alter 390 G2: 0/0",
+    "alter 390 clássica: 0/0"
+  ]
+}

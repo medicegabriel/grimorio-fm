@@ -1,0 +1,35 @@
+{
+  "proveniencia": "Primeira execução observada no chat antes do patch. Valores recuperados dessa saída após a reexecução da sonda ter sobrescrito o JSON. A saída posterior está em probe-cortes-depois.json.",
+  "resultados": [
+    {
+      "sistema": "player",
+      "arma": "Espada Curta",
+      "talentosInacessiveis": [],
+      "acerto": true,
+      "danoCortanteFinal": [
+        14
+      ],
+      "movimentoAposAtaque": 9,
+      "movimentoComDuasCopiasAgrupadas": 0,
+      "gruposEncaminhadosAoMotor": [
+        null,
+        null
+      ]
+    },
+    {
+      "sistema": "afty",
+      "arma": "Espada Curta",
+      "talentosInacessiveis": [],
+      "acerto": true,
+      "danoCortanteFinal": [
+        43
+      ],
+      "movimentoAposAtaque": 13.5,
+      "movimentoComDuasCopiasAgrupadas": 4.5,
+      "gruposEncaminhadosAoMotor": [
+        null,
+        null
+      ]
+    }
+  ]
+}

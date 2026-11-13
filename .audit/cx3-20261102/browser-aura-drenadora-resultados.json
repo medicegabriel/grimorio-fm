@@ -1,0 +1,30 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "ganho": 11,
+    "saldo": 22,
+    "gravacao": true
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "ganho": 11,
+    "saldo": 22,
+    "gravacao": true
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "ganho": 11,
+    "saldo": 22,
+    "gravacao": true
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "ganho": 11,
+    "saldo": 22,
+    "gravacao": true
+  }
+]

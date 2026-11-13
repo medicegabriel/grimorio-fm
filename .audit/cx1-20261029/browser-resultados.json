@@ -1,0 +1,50 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "escolhasSalvas": true,
+    "dadoPericia": true,
+    "maosPersistidas": true,
+    "ataque20": true,
+    "ataque1": true,
+    "encontro": true,
+    "errosAplicacao": [],
+    "telemetriaLocal404": 3
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "escolhasSalvas": true,
+    "dadoPericia": true,
+    "maosPersistidas": true,
+    "ataque20": true,
+    "ataque1": true,
+    "encontro": true,
+    "errosAplicacao": [],
+    "telemetriaLocal404": 3
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "escolhasSalvas": true,
+    "dadoPericia": true,
+    "maosPersistidas": true,
+    "ataque20": true,
+    "ataque1": true,
+    "encontro": true,
+    "errosAplicacao": [],
+    "telemetriaLocal404": 3
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "escolhasSalvas": true,
+    "dadoPericia": true,
+    "maosPersistidas": true,
+    "ataque20": true,
+    "ataque1": true,
+    "encontro": true,
+    "errosAplicacao": [],
+    "telemetriaLocal404": 3
+  }
+]

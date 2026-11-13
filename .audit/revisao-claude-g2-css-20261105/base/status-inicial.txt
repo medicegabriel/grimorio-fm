@@ -1,0 +1,127 @@
+ M AGENTS.md
+ M CLAUDE.md
+ M asserts/LEIA.md
+ M asserts/t-fang-especializacoes.mjs
+ M asserts/t-g2-sessao-operacoes.mjs
+ M asserts/t-ordem-modulos.mjs
+ M asserts/t-prodigio.mjs
+ M asserts/t-reconciliacao-g00.mjs
+ M asserts/t-talentos.mjs
+ M asserts/t-tecnicas-marciais.mjs
+ M docs/a-fazer.md
+ M docs/afty-addons.md
+ M docs/afty-equipamentos.md
+ M docs/afty-formulas-base.md
+ M docs/afty-invocacoes.md
+ M docs/afty-motor-referencia-estrutural.md
+ M docs/afty-player.md
+ M docs/afty-status.md
+ M docs/afty-tecnicas-marciais.md
+ M docs/automacao-dsl.md
+ M docs/revisao-automacao/escopo.json
+ M docs/revisao-automacao/inventario.json
+ M docs/revisao-livro-regras/10-analise-aprofundada-2026-10-29.md
+ M docs/revisao-livro-regras/prompts/CL2-claude-vida-morte-alma-e-mutante.md
+ M docs/revisao-livro-regras/prompts/CX2-codex-origens-clas-e-anatomias.md
+ M docs/revisao-livro-regras/prompts/CX6-codex-aliados-controlador-integracao-e-fechamento.md
+ M docs/revisao-livro-regras/prompts/README.md
+ M src/systems/afty/AftyCreatureBuilder.jsx
+ M src/systems/afty/afty-addons-lista.js
+ M src/systems/afty/afty-anatomias.js
+ M src/systems/afty/afty-aptidoes.js
+ M src/systems/afty/afty-combate-aptidoes.js
+ M src/systems/afty/afty-condicoes.js
+ M src/systems/afty/afty-cura.js
+ M src/systems/afty/afty-derive.js
+ M src/systems/afty/afty-efeitos-conteudo.js
+ M src/systems/afty/afty-efeitos.js
+ M src/systems/afty/afty-equipamentos.js
+ M src/systems/afty/afty-feiticos.js
+ M src/systems/afty/afty-invocacoes.js
+ M src/systems/afty/afty-origens.js
+ M src/systems/afty/afty-pericias.js
+ M src/systems/afty/afty-propriedades-armas.js
+ M src/systems/afty/afty-regras-addon.js
+ M src/systems/afty/afty-talentos.js
+ M src/systems/afty/afty-tecnicas-marciais.js
+ M src/systems/afty/afty-treinamentos.js
+ M src/systems/afty/afty-votos.js
+ M src/systems/afty/encontros/AftyEncontro.jsx
+ M src/systems/afty/encontros/PainelDeCombatente.jsx
+ M src/systems/afty/encontros/usar-encontro-afty.js
+ M src/systems/afty/ficha/AftyFichaClassica.jsx
+ M src/systems/afty/ficha/AftyFichaG2.jsx
+ M src/systems/afty/ficha/GrupoComSubAbas.jsx
+ M src/systems/afty/ficha/ItemDeFicha.jsx
+ M src/systems/afty/ficha/PainelDeRolagens.jsx
+ M src/systems/afty/ficha/abas-g2/PericiasG2.jsx
+ M src/systems/afty/ficha/abas-g2/rolagens-acoes.js
+ M src/systems/afty/ficha/abas/AbaHabilidades.jsx
+ M src/systems/afty/ficha/abas/AbaPericias.jsx
+ M src/systems/afty/ficha/efeitos/ConsultaG2.jsx
+ M src/systems/afty/ficha/ficha-conteudo.js
+ M src/systems/afty/ficha/ficha-especializacoes.js
+ M src/systems/afty/ficha/ficha-opcoes-derive.js
+ M src/systems/afty/ficha/ficha-rolagem.js
+ M src/systems/afty/ficha/ficha-sessao.js
+ M src/systems/afty/ui/vital.jsx
+?? .audit/cx1-20261029/
+?? .audit/cx2-20261029/
+?? .audit/cx2-20261101/
+?? .audit/cx3-20261102/
+?? .audit/retomada-g2-20261105/
+?? .audit/revisao-claude-g2-css-20261105/
+?? asserts/t-atencao-so-percepcao.mjs
+?? asserts/t-cl1-combate.mjs
+?? asserts/t-cl1-mesa.mjs
+?? asserts/t-cl1-uso.mjs
+?? asserts/t-cl2-alma-dados-vida.mjs
+?? asserts/t-cl2-vital.mjs
+?? asserts/t-cl3-dominios.mjs
+?? asserts/t-cl3-invocacoes.mjs
+?? asserts/t-cl3-votos.mjs
+?? asserts/t-cx1-base.mjs
+?? asserts/t-cx2-origens.mjs
+?? asserts/t-cx3-conteudo.mjs
+?? asserts/t-cx3-excedentes-combate.mjs
+?? asserts/t-cx3-operacoes.mjs
+?? asserts/t-cx3-reversao.mjs
+?? asserts/t-cx3-testes.mjs
+?? asserts/t-mutante-descartado.mjs
+?? docs/afty-dominio-confronto.md
+?? docs/afty-motor-uso-combate.md
+?? docs/afty-vital.md
+?? docs/afty-votos.md
+?? docs/revisao-livro-regras/entregas/
+?? docs/tema-cao-divino-branco.css
+?? docs/tema-cao-divino-preto.css
+?? src/systems/afty/afty-conteudo-feiticos.js
+?? src/systems/afty/afty-conteudo-regras.js
+?? src/systems/afty/afty-origens-feiticos.js
+?? src/systems/afty/afty-origens-uso.js
+?? src/systems/afty/ficha/PainelConteudo.jsx
+?? src/systems/afty/ficha/PainelOrigens.jsx
+?? src/systems/afty/ficha/efeitos/operacoes-uso.js
+?? src/systems/afty/ficha/ficha-acoes.js
+?? src/systems/afty/ficha/ficha-alma.js
+?? src/systems/afty/ficha/ficha-ataque.js
+?? src/systems/afty/ficha/ficha-barreiras-estado.js
+?? src/systems/afty/ficha/ficha-barreiras.js
+?? src/systems/afty/ficha/ficha-combate-eventos.js
+?? src/systems/afty/ficha/ficha-concentracao.js
+?? src/systems/afty/ficha/ficha-conteudo-acesso.js
+?? src/systems/afty/ficha/ficha-conteudo-combate.js
+?? src/systems/afty/ficha/ficha-conteudo-testes.js
+?? src/systems/afty/ficha/ficha-conteudo-uso.js
+?? src/systems/afty/ficha/ficha-dados-vida.js
+?? src/systems/afty/ficha/ficha-dano-recebido.js
+?? src/systems/afty/ficha/ficha-dominio-confronto.js
+?? src/systems/afty/ficha/ficha-invocacao-uso.js
+?? src/systems/afty/ficha/ficha-morte.js
+?? src/systems/afty/ficha/ficha-origens.js
+?? src/systems/afty/ficha/ficha-uso-clientes.js
+?? src/systems/afty/ficha/ficha-uso-estado.js
+?? src/systems/afty/ficha/ficha-uso.js
+?? src/systems/afty/ficha/ficha-vital.js
+?? src/systems/afty/ficha/ficha-votos-regras.js
+?? src/systems/afty/ficha/ficha-votos.js

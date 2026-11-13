@@ -1,0 +1,99 @@
+{
+  "escuro": {
+    "card (.afty-card)": {
+      "n": 5,
+      "valores": [
+        "oklab(0.968254 -0.00253484 -0.00633037 / 0.09)"
+      ]
+    },
+    "valor (.afty-valor)": {
+      "n": 7,
+      "valores": [
+        "rgb(241, 245, 249)"
+      ]
+    },
+    "aba ativa": {
+      "n": 1,
+      "valores": [
+        "rgb(241, 245, 249)"
+      ]
+    },
+    "numero da Mesa (.m-rolar-num)": {
+      "n": 6,
+      "valores": [
+        "rgb(241, 245, 249)"
+      ]
+    },
+    "secao de Acoes (.m-secao)": {
+      "n": 5,
+      "valores": [
+        "oklab(0.968254 -0.00253484 -0.00633037 / 0.09)"
+      ]
+    }
+  },
+  "teste-important": {
+    "card (.afty-card)": {
+      "n": 5,
+      "valores": [
+        "rgb(225, 29, 72)"
+      ]
+    },
+    "valor (.afty-valor)": {
+      "n": 7,
+      "valores": [
+        "rgb(34, 211, 238)"
+      ]
+    },
+    "aba ativa": {
+      "n": 1,
+      "valores": [
+        "rgb(34, 211, 238)"
+      ]
+    },
+    "numero da Mesa (.m-rolar-num)": {
+      "n": 6,
+      "valores": [
+        "rgb(34, 211, 238)"
+      ]
+    },
+    "secao de Acoes (.m-secao)": {
+      "n": 5,
+      "valores": [
+        "rgb(225, 29, 72)"
+      ]
+    }
+  },
+  "teste": {
+    "card (.afty-card)": {
+      "n": 5,
+      "valores": [
+        "oklab(0.968254 -0.00253484 -0.00633037 / 0.09)"
+      ]
+    },
+    "valor (.afty-valor)": {
+      "n": 7,
+      "valores": [
+        "rgb(34, 211, 238)",
+        "rgb(241, 245, 249)"
+      ]
+    },
+    "aba ativa": {
+      "n": 1,
+      "valores": [
+        "rgb(241, 245, 249)"
+      ]
+    },
+    "numero da Mesa (.m-rolar-num)": {
+      "n": 6,
+      "valores": [
+        "rgb(241, 245, 249)"
+      ]
+    },
+    "secao de Acoes (.m-secao)": {
+      "n": 5,
+      "valores": [
+        "oklab(0.968254 -0.00253484 -0.00633037 / 0.09)"
+      ]
+    }
+  }
+}

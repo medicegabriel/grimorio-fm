@@ -1,0 +1,849 @@
+{
+  "versao": 1,
+  "shaInventario": "80c4c15793c097828166c5f0651bb23fbb3796131a2e152e7870164e148991fe",
+  "shaVivo": "2706c77b4adf412714fd358ddafb15af22c78473cff70ce7042d6e299c18739d",
+  "shaEscopo": "38879bab28a6feb8517b5704d09ff0a1ba32b6652c6886886aae26ed65a1bf73",
+  "adicionados": [
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::acoesMotor",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::acoesMotor",
+        "id": "acoesMotor",
+        "nome": "acoesMotor",
+        "arquivo": "addons/vespa-crabro.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote",
+        "hashDado": "c2bc3ee178430915e61e5e3c4af80fc29813c4197190066f11782dc5990da01c"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::acoesMotor::harpoon_recall",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::acoesMotor::harpoon_recall",
+        "id": "harpoon_recall",
+        "nome": "Harpoon Recall: Retorno do Arpão",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote::acoesMotor",
+        "caminho": "harpoon_recall",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "idLocal": "harpoon_recall",
+        "hashDado": "483ddcc520956819db730b3cbf3296ed21f2fc0187f4e8c8e6bf903267f2ab78"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::acoesMotor::harpoon_throw",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::acoesMotor::harpoon_throw",
+        "id": "harpoon_throw",
+        "nome": "Harpoon Throw: Arremesso do Arpão",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote::acoesMotor",
+        "caminho": "harpoon_throw",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "idLocal": "harpoon_throw",
+        "hashDado": "bb99497cd51364d7746f958be1f9e796d31e818674b8c2eab9757bea27b71537"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::descricao",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::descricao",
+        "id": "descricao",
+        "nome": "descricao",
+        "arquivo": "addons/vespa-crabro.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote",
+        "hashDado": "ee851157fd828e7f6d8fb9ba879330f7f24fb55c9cb3afc319c18cf474f172eb"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::feiticos",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::feiticos",
+        "id": "feiticos",
+        "nome": "feiticos",
+        "arquivo": "addons/vespa-crabro.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote",
+        "hashDado": "ced9fca10f630240f4d45b09baf7fcec0247f3e4e0ef946f90d34e54f3e1dd33"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::feiticos::arte",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::feiticos::arte",
+        "id": "arte",
+        "nome": "Apic Flashburst Blade Art: Arte da Lâmina Relâmpago",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote::feiticos",
+        "caminho": "arte",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "idLocal": "arte",
+        "hashDado": "0e0d9874cd1f6fe62e585062ce573a0431d1e4aa14be2d78274b290c799e9696",
+        "nivel": 5
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::feiticos::beesting",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::feiticos::beesting",
+        "id": "beesting",
+        "nome": "Nested Harpoon: Beesting",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote::feiticos",
+        "caminho": "beesting",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "idLocal": "beesting",
+        "hashDado": "deb2e87284e642a6d5027ac29db73b9549a48ee34465f4b607ab1c6e6291b390",
+        "nivel": 5
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::feiticos::beesting/condicoes",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::feiticos::beesting/condicoes",
+        "id": "beesting/condicoes",
+        "nome": "beesting/condicoes",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote::feiticos",
+        "caminho": "beesting/condicoes",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "vespa-crabro.json",
+        "hashDado": "43406d8978033bc97bc9b3f2cdf3db036f435708a4c7ce444cdf2280a64c3b26"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::feiticos::beesting/condicoes/@0",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::feiticos::beesting/condicoes/@0",
+        "id": "beesting/condicoes/@0",
+        "nome": "Lento",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote::feiticos",
+        "caminho": "beesting/condicoes/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "hashDado": "33de461ddf26d3670d1451d964e58403605c70c470f3d658eab8a4d3973e58f1"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::feiticos::gungnir",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::feiticos::gungnir",
+        "id": "gungnir",
+        "nome": "Gungnir: a Lança de Odin",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote::feiticos",
+        "caminho": "gungnir",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "idLocal": "gungnir",
+        "hashDado": "f838be417ca22f9ef4d2704e88f41d43b9d38b7d840a19b8413b681609d4cde1",
+        "nivel": 5
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::feiticos::rend_space",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::feiticos::rend_space",
+        "id": "rend_space",
+        "nome": "Rend Space: Apic Flashburst Blade",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote::feiticos",
+        "caminho": "rend_space",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "idLocal": "rend_space",
+        "hashDado": "6e129e01648e88f6cfcc576c2e25c1f7b77af085e9f6b67b5995a02d94c69b11",
+        "nivel": 5
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::feiticos::shin",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::feiticos::shin",
+        "id": "shin",
+        "nome": "Shin (心)",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote::feiticos",
+        "caminho": "shin",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "idLocal": "shin",
+        "hashDado": "33752874f03bba7a1c6770b569661029e04dbf2c1672e50f597cb0e21f288c66",
+        "nivel": 5
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::feiticos::shin/transfEfeitos",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::feiticos::shin/transfEfeitos",
+        "id": "shin/transfEfeitos",
+        "nome": "shin/transfEfeitos",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote::feiticos",
+        "caminho": "shin/transfEfeitos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "vespa-crabro.json",
+        "hashDado": "66a205eafc873466cb519ccbd2c75a1453f2f2340b2ef54bbad3a78e3ec5f580"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::feiticos::shin/transfEfeitos/ataque",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::feiticos::shin/transfEfeitos/ataque",
+        "id": "shin/transfEfeitos/ataque",
+        "nome": "shin/transfEfeitos/ataque",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote::feiticos",
+        "caminho": "shin/transfEfeitos/ataque",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "vespa-crabro.json",
+        "hashDado": "bbdbd6f24cf45cad03157b8e526e15a94eadf32e523b99d58d8638e26a4e0e74"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::feiticos::shin/transfEfeitos/defesa",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::feiticos::shin/transfEfeitos/defesa",
+        "id": "shin/transfEfeitos/defesa",
+        "nome": "shin/transfEfeitos/defesa",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote::feiticos",
+        "caminho": "shin/transfEfeitos/defesa",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "vespa-crabro.json",
+        "hashDado": "70c3dfb95fab80d9fdfa3b6d356eef3bf2101d8e2bc2ef3acf16843903f510ac"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::feiticos::shin/transfEfeitos/rd",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::feiticos::shin/transfEfeitos/rd",
+        "id": "shin/transfEfeitos/rd",
+        "nome": "shin/transfEfeitos/rd",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote::feiticos",
+        "caminho": "shin/transfEfeitos/rd",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "vespa-crabro.json",
+        "hashDado": "4a6a64c8f91090d7fad1ed6af0694a5ee296af8b158236e4314e3e7188c4aaac"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::feiticos::waspsting",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::feiticos::waspsting",
+        "id": "waspsting",
+        "nome": "Nested Harpoon: Waspsting",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote::feiticos",
+        "caminho": "waspsting",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "idLocal": "waspsting",
+        "hashDado": "bbff1e1b7f4c9bc6e79726235b8f399000fd8600ea04053cf2699b3d49540fef",
+        "nivel": 5
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::feiticos::waspsting/condicoes",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::feiticos::waspsting/condicoes",
+        "id": "waspsting/condicoes",
+        "nome": "waspsting/condicoes",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote::feiticos",
+        "caminho": "waspsting/condicoes",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "vespa-crabro.json",
+        "hashDado": "986a22cb2ee68e042ef29b90232fd2f40d588368f9146da1fec96073607b9546"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::feiticos::waspsting/condicoes/@0",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::feiticos::waspsting/condicoes/@0",
+        "id": "waspsting/condicoes/@0",
+        "nome": "Imóvel",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote::feiticos",
+        "caminho": "waspsting/condicoes/@0",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "hashDado": "03df5c5868ab21975e4e1e8c845ce34470e7b64c86c86625f26cd0c368fe4bd4"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::feiticos::yellow",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::feiticos::yellow",
+        "id": "yellow",
+        "nome": "Yellow Apic Stinger: Ferrão Amarelo",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote::feiticos",
+        "caminho": "yellow",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "idLocal": "yellow",
+        "hashDado": "18e43e74524a3134d512f0a2fe69e76465921a26472f27cc7d9d564e2a697a3f",
+        "nivel": 5
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::feiticos::zumbido",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::feiticos::zumbido",
+        "id": "zumbido",
+        "nome": "Gungnir’s Droning: Zumbido de Gungnir",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote::feiticos",
+        "caminho": "zumbido",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "idLocal": "zumbido",
+        "hashDado": "0c52860f4bdcc3a27b446b87751c37be96bf358e727a95b8d09e1cc4cf67fd2b",
+        "nivel": 5
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::feiticos::zumbido/efeitosPassivo",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::feiticos::zumbido/efeitosPassivo",
+        "id": "zumbido/efeitosPassivo",
+        "nome": "zumbido/efeitosPassivo",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote::feiticos",
+        "caminho": "zumbido/efeitosPassivo",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "vespa-crabro.json",
+        "hashDado": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::funcionamentos",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::funcionamentos",
+        "id": "funcionamentos",
+        "nome": "funcionamentos",
+        "arquivo": "addons/vespa-crabro.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote",
+        "hashDado": "26bcdb655b977ce1bc84ba0755ef059e2ceef78a0c5ea01c843cf2d8e5e47a97"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::funcionamentos::tecnica",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::funcionamentos::tecnica",
+        "id": "tecnica",
+        "nome": "Ressonância de Gungnir",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote::funcionamentos",
+        "caminho": "tecnica",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "idLocal": "tecnica",
+        "hashDado": "92283ab84ebfae1e5c73268e27ed117a7cabdd25121e892a9f089e0057dd90af"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::libera",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::libera",
+        "id": "libera",
+        "nome": "libera",
+        "arquivo": "addons/vespa-crabro.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote",
+        "hashDado": "a0c26415317bcbed6fb073bb0766ce978f290dc75c3110ae6e2645815bf97bb1"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::libera::feiticosRestritos",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::libera::feiticosRestritos",
+        "id": "feiticosRestritos",
+        "nome": "feiticosRestritos",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote::libera",
+        "caminho": "feiticosRestritos",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "vespa-crabro.json",
+        "hashDado": "c1a4d6b19a76eec4c7547de9d442c9a64be4c57909362b18211e2dfd8adf3027"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::permite",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::permite",
+        "id": "permite",
+        "nome": "permite",
+        "arquivo": "addons/vespa-crabro.json",
+        "proprietario": null,
+        "tipo": "chave de pacote",
+        "addon": "vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote",
+        "hashDado": "57ca7520bb1d246ce729e8e4c12def6c48ae43c5e6d76ac3be59e8d3d704f0e6"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::permite::ressonanciaGungnir",
+      "item": {
+        "chave": "addon::vespa-crabro.json::@pacote::permite::ressonanciaGungnir",
+        "id": "ressonanciaGungnir",
+        "nome": "ressonanciaGungnir",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::@pacote::permite",
+        "caminho": "ressonanciaGungnir",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "vespa-crabro.json",
+        "hashDado": "1265815af65efdfefb6e28b2e006cbfb3d2804728a13b9d05d581bab0d8e8ef4"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.armas::gungnir",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.armas::gungnir",
+        "id": "gungnir",
+        "nome": "Gungnir, a Lança de Odin",
+        "arquivo": "addons/vespa-crabro.json",
+        "proprietario": null,
+        "tipo": "conteúdo de addon",
+        "addon": "vespa-crabro.json",
+        "familia": "armas",
+        "operacao": "acrescenta",
+        "idLocal": "gungnir",
+        "hashDado": "e5ec6655840991fce7f4e7552fb39884ba87a8c4e6a42541d71acdda9469b130"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.armas::gungnir::dano",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.armas::gungnir::dano",
+        "id": "dano",
+        "nome": "dano",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.armas::gungnir",
+        "caminho": "dano",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "hashDado": "bb3948fa988eacf3edc9ace0bc466b2b485c5cb49b77d5c81c3b765d95fb419e"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.armas::gungnir::faPadrao",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.armas::gungnir::faPadrao",
+        "id": "faPadrao",
+        "nome": "faPadrao",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.armas::gungnir",
+        "caminho": "faPadrao",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "hashDado": "4b28389c6e5cc367e694d74b45cad78079ca298406cd619dc6793467a2eb7559"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.armas::gungnir::faPadrao/encantamentos",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.armas::gungnir::faPadrao/encantamentos",
+        "id": "faPadrao/encantamentos",
+        "nome": "faPadrao/encantamentos",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.armas::gungnir",
+        "caminho": "faPadrao/encantamentos",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "vespa-crabro.json",
+        "hashDado": "90ce692f4ccd7b7d29b16f88f32e75d172f8517e0d8fcde3b5a5983aa7b5b618"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.armas::gungnir::faPadrao/encantamentos/enc_arma_penetrante",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.armas::gungnir::faPadrao/encantamentos/enc_arma_penetrante",
+        "id": "faPadrao/encantamentos/enc_arma_penetrante",
+        "nome": "faPadrao/encantamentos/enc_arma_penetrante",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.armas::gungnir",
+        "caminho": "faPadrao/encantamentos/enc_arma_penetrante",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "vespa-crabro.json",
+        "hashDado": "6cf3009d41b8a90a49696ae95a373e5901b0760342924a02152a0e3345d765ce"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.armas::gungnir::faPadrao/encantamentos/enc_arma_potente",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.armas::gungnir::faPadrao/encantamentos/enc_arma_potente",
+        "id": "faPadrao/encantamentos/enc_arma_potente",
+        "nome": "faPadrao/encantamentos/enc_arma_potente",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.armas::gungnir",
+        "caminho": "faPadrao/encantamentos/enc_arma_potente",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "vespa-crabro.json",
+        "hashDado": "e5e9d5d14a5c1499703d1d7da5cc9c91218b75b119092b3a83fe4b71aaef1877"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.armas::gungnir::faPadrao/encantamentos/enc_arma_retorno",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.armas::gungnir::faPadrao/encantamentos/enc_arma_retorno",
+        "id": "faPadrao/encantamentos/enc_arma_retorno",
+        "nome": "faPadrao/encantamentos/enc_arma_retorno",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.armas::gungnir",
+        "caminho": "faPadrao/encantamentos/enc_arma_retorno",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "vespa-crabro.json",
+        "hashDado": "b3053360737b7c6b68f5f4b98d4f60355df29392f77ea7cb28ec3b4786570a21"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.armas::gungnir::niveis",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.armas::gungnir::niveis",
+        "id": "niveis",
+        "nome": "niveis",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.armas::gungnir",
+        "caminho": "niveis",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "hashDado": "3648ce7ddb9abe0ca03530d2a6ade0ab2ef1c3d28705bb5a398bb81cd163fdae"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.armas::gungnir::props",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.armas::gungnir::props",
+        "id": "props",
+        "nome": "props",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.armas::gungnir",
+        "caminho": "props",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "hashDado": "30895581e87bf97bc9e41f3488ece3093337d7b10f6254f038d35e52ec3eb6b5"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.armas::gungnir::props/arremessavel",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.armas::gungnir::props/arremessavel",
+        "id": "props/arremessavel",
+        "nome": "props/arremessavel",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.armas::gungnir",
+        "caminho": "props/arremessavel",
+        "proprietario": null,
+        "tipo": "pool",
+        "addon": "vespa-crabro.json",
+        "hashDado": "98f9795e52ce3b8c9a2687bb73b031e27077959acbe41ee1ce9c5d25552453e7"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.armas::gungnir::props/arremessavel/@0",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.armas::gungnir::props/arremessavel/@0",
+        "id": "props/arremessavel/@0",
+        "nome": "props/arremessavel/@0",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.armas::gungnir",
+        "caminho": "props/arremessavel/@0",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "vespa-crabro.json",
+        "hashDado": "670671cd97404156226e507973f2ab8330d3022ca96e0c93bdbdb320c41adcaf"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.armas::gungnir::props/arremessavel/@1",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.armas::gungnir::props/arremessavel/@1",
+        "id": "props/arremessavel/@1",
+        "nome": "props/arremessavel/@1",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.armas::gungnir",
+        "caminho": "props/arremessavel/@1",
+        "proprietario": null,
+        "tipo": "valor de domínio",
+        "addon": "vespa-crabro.json",
+        "hashDado": "76a50887d8f1c2e9301755428990ad81479ee21c25b43215cf524541e0503269"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.armas::hwando",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.armas::hwando",
+        "id": "hwando",
+        "nome": "Hwando",
+        "arquivo": "addons/vespa-crabro.json",
+        "proprietario": null,
+        "tipo": "conteúdo de addon",
+        "addon": "vespa-crabro.json",
+        "familia": "armas",
+        "operacao": "acrescenta",
+        "idLocal": "hwando",
+        "hashDado": "d4bbb78d5831a5f76476c02292ded2a139262bd4907141e06ffbd680ac4f5e75"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.armas::hwando::dano",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.armas::hwando::dano",
+        "id": "dano",
+        "nome": "dano",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.armas::hwando",
+        "caminho": "dano",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "hashDado": "56ed04f1df3049b620d5c769c78c8d70439aa20b77af417ca626020add15c44c"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.armas::hwando::niveis",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.armas::hwando::niveis",
+        "id": "niveis",
+        "nome": "niveis",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.armas::hwando",
+        "caminho": "niveis",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "hashDado": "3648ce7ddb9abe0ca03530d2a6ade0ab2ef1c3d28705bb5a398bb81cd163fdae"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "addon::vespa-crabro.json::acrescenta.armas::hwando::props",
+      "item": {
+        "chave": "addon::vespa-crabro.json::acrescenta.armas::hwando::props",
+        "id": "props",
+        "nome": "props",
+        "arquivo": "addons/vespa-crabro.json",
+        "pai": "addon::vespa-crabro.json::acrescenta.armas::hwando",
+        "caminho": "props",
+        "proprietario": null,
+        "tipo": "parcela declarada",
+        "addon": "vespa-crabro.json",
+        "hashDado": "f796b91c2172f760f8e87de2e01c84a96d70ed9b1350159552c1c578af657dc5"
+      },
+      "proprietarioSugerido": null
+    },
+    {
+      "chave": "afty-addons.js::PRIMITIVAS::ressonanciaGungnir",
+      "item": {
+        "chave": "afty-addons.js::PRIMITIVAS::ressonanciaGungnir",
+        "id": "ressonanciaGungnir",
+        "nome": "ressonanciaGungnir",
+        "arquivo": "src/systems/afty/afty-addons.js",
+        "export": "PRIMITIVAS",
+        "proprietario": "M05",
+        "tipo": "entrada",
+        "idLocal": "ressonanciaGungnir",
+        "hashDado": "1f8dc44ab872c0520003f4570855a6321b0d9d2bd31fc6dde28203cea0c74b51"
+      },
+      "proprietarioSugerido": "M05"
+    },
+    {
+      "chave": "afty-gungnir.js::GUNGNIR_ID::@valor",
+      "item": {
+        "chave": "afty-gungnir.js::GUNGNIR_ID::@valor",
+        "id": "@valor",
+        "nome": "vespa-crabro:gungnir",
+        "arquivo": "src/systems/afty/afty-gungnir.js",
+        "export": "GUNGNIR_ID",
+        "proprietario": "AD-74",
+        "tipo": "constante",
+        "hashDado": "a818e325cc19aa63b08c8eda73d72b34b8d12a2c0723b76a40cd5e6e67eca82b"
+      },
+      "proprietarioSugerido": "AD-74"
+    }
+  ],
+  "removidos": [],
+  "alterados": [
+    {
+      "chave": "addon::vespa-crabro.json::@pacote",
+      "proprietarioMantido": "AD-74",
+      "hashAnterior": "2feef6e7ffa1e7076eba902d8c55c8266e77072a0590b0ec9370e6f3b33e626b",
+      "hashNovo": "248a8811c678a8478c406ae5f1a9b79cf7211bd91cb76a566f8be31c690e8e1f",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::acrescenta",
+      "proprietarioMantido": "AD-74",
+      "hashAnterior": "95a218362937ec95eb04c893510ed4762bba63e39cfc6ab4828bb0306a1ba041",
+      "hashNovo": "aa8b8d9ed1de572526ccb6b61a97b9fdedeb6ee1750762c8c3a99b9298f972c9",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "addon::vespa-crabro.json::@pacote::versao",
+      "proprietarioMantido": "AD-74",
+      "hashAnterior": "39fe4a40977d0585fd5704359e3685b0ada5cf5ee061e5d97385601d120cd0ec",
+      "hashNovo": "e7ad5986cf98f45d2d11f5a65f149e95ecc61246dd2fb2427ab59a9033b66456",
+      "campos": [
+        "hashDado"
+      ]
+    },
+    {
+      "chave": "afty-addons.js::PRIMITIVAS::@catalogo",
+      "proprietarioMantido": "M05",
+      "hashAnterior": "937c5b9f5d48390cc5c8f789ac764f744059e032f45ad8788cc5b43bfce279ca",
+      "hashNovo": "593c37ce5d36fff60f7951c7b6ffb4813d03476d72ee7122c4233be7e8ab5d9c",
+      "campos": [
+        "hashDado"
+      ]
+    }
+  ],
+  "assinatura": "57483ee58dd297f28beaaf0d1d79e4874d6b7f3570a918b7c401250b5ab53cf9",
+  "decisoes": {
+    "adicoes": {
+      "addon::vespa-crabro.json::@pacote::acoesMotor": "AD-74",
+      "addon::vespa-crabro.json::@pacote::acoesMotor::harpoon_recall": "AD-74",
+      "addon::vespa-crabro.json::@pacote::acoesMotor::harpoon_throw": "AD-74",
+      "addon::vespa-crabro.json::@pacote::descricao": "AD-74",
+      "addon::vespa-crabro.json::@pacote::feiticos": "AD-74",
+      "addon::vespa-crabro.json::@pacote::feiticos::arte": "AD-74",
+      "addon::vespa-crabro.json::@pacote::feiticos::beesting": "AD-74",
+      "addon::vespa-crabro.json::@pacote::feiticos::beesting/condicoes": "AD-74",
+      "addon::vespa-crabro.json::@pacote::feiticos::beesting/condicoes/@0": "AD-74",
+      "addon::vespa-crabro.json::@pacote::feiticos::gungnir": "AD-74",
+      "addon::vespa-crabro.json::@pacote::feiticos::rend_space": "AD-74",
+      "addon::vespa-crabro.json::@pacote::feiticos::shin": "AD-74",
+      "addon::vespa-crabro.json::@pacote::feiticos::shin/transfEfeitos": "AD-74",
+      "addon::vespa-crabro.json::@pacote::feiticos::shin/transfEfeitos/ataque": "AD-74",
+      "addon::vespa-crabro.json::@pacote::feiticos::shin/transfEfeitos/defesa": "AD-74",
+      "addon::vespa-crabro.json::@pacote::feiticos::shin/transfEfeitos/rd": "AD-74",
+      "addon::vespa-crabro.json::@pacote::feiticos::waspsting": "AD-74",
+      "addon::vespa-crabro.json::@pacote::feiticos::waspsting/condicoes": "AD-74",
+      "addon::vespa-crabro.json::@pacote::feiticos::waspsting/condicoes/@0": "AD-74",
+      "addon::vespa-crabro.json::@pacote::feiticos::yellow": "AD-74",
+      "addon::vespa-crabro.json::@pacote::feiticos::zumbido": "AD-74",
+      "addon::vespa-crabro.json::@pacote::feiticos::zumbido/efeitosPassivo": "AD-74",
+      "addon::vespa-crabro.json::@pacote::funcionamentos": "AD-74",
+      "addon::vespa-crabro.json::@pacote::funcionamentos::tecnica": "AD-74",
+      "addon::vespa-crabro.json::@pacote::libera": "AD-74",
+      "addon::vespa-crabro.json::@pacote::libera::feiticosRestritos": "AD-74",
+      "addon::vespa-crabro.json::@pacote::permite": "AD-74",
+      "addon::vespa-crabro.json::@pacote::permite::ressonanciaGungnir": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.armas::gungnir": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.armas::gungnir::dano": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.armas::gungnir::faPadrao": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.armas::gungnir::faPadrao/encantamentos": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.armas::gungnir::faPadrao/encantamentos/enc_arma_penetrante": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.armas::gungnir::faPadrao/encantamentos/enc_arma_potente": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.armas::gungnir::faPadrao/encantamentos/enc_arma_retorno": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.armas::gungnir::niveis": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.armas::gungnir::props": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.armas::gungnir::props/arremessavel": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.armas::gungnir::props/arremessavel/@0": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.armas::gungnir::props/arremessavel/@1": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.armas::hwando": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.armas::hwando::dano": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.armas::hwando::niveis": "AD-74",
+      "addon::vespa-crabro.json::acrescenta.armas::hwando::props": "AD-74",
+      "afty-addons.js::PRIMITIVAS::ressonanciaGungnir": "M05",
+      "afty-gungnir.js::GUNGNIR_ID::@valor": "AD-74"
+    },
+    "remocoes": {},
+    "justificativaAtualizacao": "Vespa 1.1.0 aprovado em 2026-10-25: duas armas pelo guia, duas manobras, oito modelos nativos, Shin manual e ressonância por alvo com números confirmados. Registro restrito ao AD-74 e à primitiva M05, preservando Oda e alterações anteriores. Sem aprovação de auditoria."
+  },
+  "errosColeta": []
+}

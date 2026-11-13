@@ -786,6 +786,7 @@ export default function AftyFicha({
     pericias: () => <AbaPericias derived={derived} rolar={rolar} destaque={destaque} />,
     equipamentos: () => (
       <AbaEquipamentos
+        contadorUsos={contadorUsos}
         derived={derived}
         itens={equipamentos}
         abertos={abertos}

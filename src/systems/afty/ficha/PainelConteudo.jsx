@@ -1241,7 +1241,7 @@ function PularDoItem({ sessao, derived, onSessao, emSeuTurno, alvos, g2 = false 
 }
 
 /** Efeitos adicionais concedidos na arma e testes do Sangramento resultante. */
-export default function PainelConteudo({ derived, sessao, onSessao, alvos = [], onOperacaoAlvo = null, emSeuTurno = true, g2 = false }) {
+export default function PainelConteudo({ derived, sessao, onSessao, alvos = [], onOperacaoAlvo = null, emSeuTurno = true, g2 = false, parte = null }) {
   const [ataqueId, setAtaqueId] = useState(""), [danoId, setDanoId] = useState(""), [alvo, setAlvo] = useState(""),
     [acertou, setAcertou] = useState(false), [superficie, setSuperficie] = useState(false), [erro, setErro] = useState(null), [distancia, setDistancia] = useState(3);
   const criticos = (sessao.log ?? []).filter((r) => r.tipoTeste === "ataque" && r.critico && derived.dano.entradas.some((l) => l.id === r.armaId && l.efeitoCritico));
@@ -1251,9 +1251,11 @@ export default function PainelConteudo({ derived, sessao, onSessao, alvos = [], 
   if (!criticos.length && !sangramentos.length && !temAtaque && !sessao.combate?.ativo) return null;
   /* G2: o Pular é a própria seção. O que sobra (confirmação, Efeito de Crítico, Sangramento) fica no cartão de sempre, só quando existe. */
   const pularG2 = g2 && sessao.combate?.ativo ? <PularDoItem g2 derived={derived} sessao={sessao} onSessao={onSessao} emSeuTurno={emSeuTurno} alvos={alvos} /> : null;
-  if (g2 && !criticos.length && !sangramentos.length && !temAtaque) return pularG2;
+  /* `parte` (só no G2, 2026-11-09): a aba Ações põe o Pular no FIM e o resto no alto, então pede cada metade num lugar. Sem `parte`, as duas juntas. */
+  if (parte === "pular") return pularG2;
+  if (g2 && !criticos.length && !sangramentos.length && !temAtaque) return parte === "resto" ? null : pularG2;
   return <>
-    {pularG2}
+    {parte !== "resto" && pularG2}
   <section className={g2 ? "afty-card m-conteudo-g2 p-3 space-y-2" : "afty-card p-3 space-y-2"}>
     {!g2 && sessao.combate?.ativo && <div className="space-y-2"><h2 className="afty-card-titulo">Pular</h2><PularDoItem derived={derived} sessao={sessao} onSessao={onSessao} emSeuTurno={emSeuTurno} alvos={alvos} /></div>}
     <ConfirmacaoAtaque derived={derived} sessao={sessao} alvos={alvos} onOperacaoAlvo={onOperacaoAlvo} />

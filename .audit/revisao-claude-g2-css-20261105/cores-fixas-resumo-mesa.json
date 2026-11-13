@@ -1,0 +1,23 @@
+{
+  "geradoEm": "2026-11-06T03:27:11.113Z",
+  "base": "http://127.0.0.1:5341",
+  "etapas": [
+    {
+      "nome": "cores fixas na ficha mesa",
+      "checks": [],
+      "erros": [],
+      "medidas": {
+        "elementosComparados": 2792,
+        "tiposDistintosFixos": {
+          "fonte": 24,
+          "raio": 44,
+          "borda": 7
+        }
+      }
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "cores fixas na ficha mesa: 0/0"
+  ]
+}

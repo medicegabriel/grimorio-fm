@@ -1,0 +1,51 @@
+/* DEMO PAPEL DE ARROZ v1 (revisão G2, 2026-11-05): identidade clara, papel quente com tinta e vermelhão, cantos retos e números em mono.
+   Sem !important. Mesma receita do G2: tokens no bloco forte e cada seletor com o prefixo .e-g2. */
+:scope#afty-ficha,
+#afty-ficha#afty-ficha {
+  --afty-fundo: #f3ecdc;
+  --afty-fundo-brilho: none;
+  --afty-card: #fbf7ec;
+  --afty-poco: #ece3cd;
+  --afty-borda: #cfc3a4;
+  --afty-borda-forte: #2b2418;
+  --afty-texto: #1f1a10;
+  --afty-texto-suave: #5a4f38;
+  --afty-texto-fraco: #7d7156;
+  --afty-destaque: #c0391b;
+  --afty-destaque-texto: #8f2610;
+  --afty-destaque-fundo: #f0c9bd99;
+  --afty-pv: #b3261e;
+  --afty-pe: #1d5f8a;
+  --afty-alma: #6a3c8f;
+  --afty-cura: #2f6f3a;
+  --afty-aviso: #9a5b00;
+  --afty-veu: rgb(40 30 15 / 0.4);
+  --afty-sombra: none;
+  --afty-raio: 0px;
+  --afty-raio-peq: 0px;
+  --afty-fonte: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --afty-fonte-num: ui-monospace, Consolas, monospace;
+}
+:scope { color: var(--afty-texto); color-scheme: light; }
+
+.e-g2 { --e-display: ui-monospace, Consolas, "Courier New", monospace; }
+
+/* a placa e os cartões: traço de tinta, sem sombra, sem canto */
+.e-g2 .e-cabeca { border: 2px solid var(--afty-borda-forte); border-radius: 0; box-shadow: 4px 4px 0 var(--afty-borda-forte); background: var(--afty-card); }
+.e-g2 .afty-nome { color: var(--afty-texto); font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+.e-g2 .afty-card { border: 1.5px solid var(--afty-borda-forte); border-radius: 0; background: var(--afty-card); }
+.e-g2 .afty-card-titulo { color: var(--afty-destaque-texto); border-bottom: 2px solid var(--afty-destaque); display: inline-block; padding-bottom: 2px; }
+.e-g2 .afty-linha { border-radius: 0; border-color: var(--afty-borda); }
+
+/* números: mono, e o vermelhão marca só o que rola */
+.e-g2 .afty-valor { font-family: var(--afty-fonte-num); }
+.e-g2 .afty-rolavel { color: var(--afty-destaque-texto); }
+
+/* abas como etiquetas de arquivo */
+.e-g2 .afty-aba { text-transform: uppercase; letter-spacing: .08em; font-size: 12px; }
+.e-g2 .afty-aba[aria-selected="true"] { color: var(--afty-texto); background: var(--afty-destaque-fundo); box-shadow: inset 0 -3px 0 var(--afty-destaque); }
+
+/* botões e acessos */
+.e-g2 .afty-botao { border: 1.5px solid var(--afty-borda-forte); border-radius: 0; }
+.e-g2 .f-acesso { border-radius: 0; }
+.e-g2 .e-agora { border-radius: 0; }

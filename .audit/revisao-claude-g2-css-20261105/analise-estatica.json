@@ -1,0 +1,501 @@
+{
+  "contrato": {
+    "classesESeletores": 103,
+    "atributos": 14,
+    "tokens": 31
+  },
+  "contratoNoG2": {
+    "soNaClassica": [
+      ".afty-abas",
+      ".afty-aba",
+      ".afty-cabecalho-conteudo",
+      ".afty-cabecalho-principal",
+      ".afty-retrato-painel",
+      ".afty-chip",
+      ".afty-controles",
+      ".afty-vital-icone",
+      ".afty-vital-temp",
+      ".afty-guarda",
+      ".afty-guarda-valor",
+      ".afty-guarda-vida",
+      ".afty-guarda-quebrada",
+      ".afty-guarda-botao",
+      ".afty-atributo-mod",
+      ".afty-subabas",
+      ".afty-subaba",
+      ".afty-subaba-conta",
+      ".afty-rotulo",
+      ".afty-rolavel",
+      ".afty-opcao",
+      ".afty-estrela",
+      ".afty-vazio",
+      ".afty-dominio-cabeca",
+      ".afty-dominio-numeros",
+      ".afty-dominio-corpo",
+      ".afty-dominio-efeito-titulo",
+      ".afty-dominio-secao",
+      ".afty-dominio-base",
+      ".afty-inv-ficha",
+      ".afty-inv-cabeca",
+      ".afty-inv-titulo",
+      ".afty-inv-cabeca-marcas",
+      ".afty-inv-retrato-icone",
+      ".afty-inv-corpo",
+      ".afty-inv-stats",
+      ".afty-inv-colunas",
+      ".afty-inv-coluna",
+      ".afty-inv-bloco",
+      ".afty-inv-duplo",
+      ".afty-inv-bonus",
+      ".afty-inv-bonus-botao",
+      ".afty-inv-lampada",
+      ".afty-inv-fileira",
+      ".afty-inv-cartao",
+      ".afty-espinho",
+      ".afty-espinho-casca",
+      ".afty-espinho-titulo",
+      ".afty-espinho-cristal",
+      ".afty-espinho-marca",
+      ".afty-espinho-rachadura",
+      ".afty-lanterna",
+      ".afty-lanterna-imagem",
+      ".afty-lanterna-chamas",
+      ".afty-passo",
+      ".afty-cor",
+      ".afty-canal-gatilho",
+      ".afty-canal-painel",
+      ".afty-canal-grupo",
+      ".afty-canal-item",
+      ".afty-fontes",
+      ".afty-fonte-secao",
+      ".afty-fonte-linha",
+      ".afty-fonte-rotulo",
+      ".afty-fonte-valor",
+      ".afty-fonte-total",
+      ".afty-log",
+      ".afty-log-topo",
+      ".afty-log-ultima",
+      ".afty-log-historico",
+      ".afty-log-corpo-topo",
+      ".afty-log-corpo",
+      ".afty-log-modo",
+      ".afty-rolagem",
+      ".afty-rolagem-total",
+      ".afty-dado",
+      ".afty-busca",
+      ".afty-busca-item"
+    ],
+    "nuncaUsadaEmLugarNenhum": [],
+    "nSoNaClassica": 78
+  },
+  "atributosPresenca": [
+    {
+      "seletor": "[data-afty-vital=\"pv\"]",
+      "nome": "data-afty-vital",
+      "g2Jsx": true,
+      "classicaJsx": true
+    },
+    {
+      "seletor": "[data-afty-nivel=\"critico\"]",
+      "nome": "data-afty-nivel",
+      "g2Jsx": true,
+      "classicaJsx": true
+    },
+    {
+      "seletor": "[data-afty-stat=\"defesa\"]",
+      "nome": "data-afty-stat",
+      "g2Jsx": true,
+      "classicaJsx": true
+    },
+    {
+      "seletor": "[data-afty-aba=\"acoes\"]",
+      "nome": "data-afty-aba",
+      "g2Jsx": true,
+      "classicaJsx": true
+    },
+    {
+      "seletor": "[data-afty-tom=\"destaque\"]",
+      "nome": "data-afty-tom",
+      "g2Jsx": false,
+      "classicaJsx": true
+    },
+    {
+      "seletor": "[data-afty-destacada=\"sim\"]",
+      "nome": "data-afty-destacada",
+      "g2Jsx": true,
+      "classicaJsx": true
+    },
+    {
+      "seletor": "[data-afty-alvo=\"sim\"]",
+      "nome": "data-afty-alvo",
+      "g2Jsx": true,
+      "classicaJsx": true
+    },
+    {
+      "seletor": "[data-afty-marca=\"critico\"]",
+      "nome": "data-afty-marca",
+      "g2Jsx": false,
+      "classicaJsx": true
+    },
+    {
+      "seletor": "[data-afty-compacto=\"sim\"]",
+      "nome": "data-afty-compacto",
+      "g2Jsx": false,
+      "classicaJsx": true
+    },
+    {
+      "seletor": "[data-afty-atributo=\"forca\"]",
+      "nome": "data-afty-atributo",
+      "g2Jsx": true,
+      "classicaJsx": true
+    },
+    {
+      "seletor": "[data-afty-carga=\"baixo\"]",
+      "nome": "data-afty-carga",
+      "g2Jsx": true,
+      "classicaJsx": true
+    },
+    {
+      "seletor": "[data-afty-com-retrato=\"sim\"]",
+      "nome": "data-afty-com-retrato",
+      "g2Jsx": false,
+      "classicaJsx": true
+    },
+    {
+      "seletor": "[data-afty-subaba]",
+      "nome": "data-afty-subaba",
+      "g2Jsx": false,
+      "classicaJsx": true
+    },
+    {
+      "seletor": "[data-afty-densidade=\"compacta\"]",
+      "nome": "data-afty-densidade",
+      "g2Jsx": false,
+      "classicaJsx": true
+    }
+  ],
+  "classesDoG2ForaDoContrato": {
+    "e-": 87,
+    "m-": 159,
+    "f-": 2,
+    "afty-": 5,
+    "outra-": 211
+  },
+  "amostraClassesE": [
+    [
+      "e-icone",
+      14
+    ],
+    [
+      "e-busca",
+      8
+    ],
+    [
+      "e-limpar",
+      8
+    ],
+    [
+      "e-g2",
+      5
+    ],
+    [
+      "e-bloco",
+      4
+    ],
+    [
+      "e-bloco-titulo",
+      4
+    ],
+    [
+      "e-botao",
+      4
+    ],
+    [
+      "e-ativo",
+      4
+    ],
+    [
+      "e-pe",
+      3
+    ],
+    [
+      "e-grupo-lista",
+      3
+    ],
+    [
+      "e-grupo",
+      3
+    ],
+    [
+      "e-grupo-topo",
+      3
+    ],
+    [
+      "e-grupo-titulo",
+      3
+    ],
+    [
+      "e-controle",
+      3
+    ],
+    [
+      "e-controle-nome",
+      3
+    ],
+    [
+      "e-ctrl",
+      3
+    ],
+    [
+      "e-fixar",
+      2
+    ],
+    [
+      "e-fechar",
+      2
+    ],
+    [
+      "e-linha",
+      2
+    ],
+    [
+      "e-estrela",
+      2
+    ],
+    [
+      "e-vazio",
+      2
+    ],
+    [
+      "e-onde",
+      2
+    ],
+    [
+      "e-portal",
+      2
+    ],
+    [
+      "e-texto",
+      1
+    ],
+    [
+      "e-stat",
+      1
+    ]
+  ],
+  "amostraClassesM": [
+    [
+      "m-botao",
+      72
+    ],
+    [
+      "m-meta",
+      41
+    ],
+    [
+      "m-chip",
+      27
+    ],
+    [
+      "m-seg-op",
+      26
+    ],
+    [
+      "m-seg",
+      19
+    ],
+    [
+      "m-passo",
+      18
+    ],
+    [
+      "m-bloco",
+      14
+    ],
+    [
+      "m-bloco-titulo",
+      11
+    ],
+    [
+      "m-select",
+      10
+    ],
+    [
+      "m-passos",
+      9
+    ],
+    [
+      "m-passos-valor",
+      9
+    ],
+    [
+      "m-campo-num",
+      8
+    ],
+    [
+      "m-nome",
+      8
+    ],
+    [
+      "m-metas",
+      8
+    ],
+    [
+      "m-meta-num",
+      8
+    ],
+    [
+      "m-linha-topo",
+      7
+    ],
+    [
+      "m-linha-nome",
+      7
+    ],
+    [
+      "m-custo",
+      6
+    ],
+    [
+      "m-linha",
+      6
+    ],
+    [
+      "m-acoes",
+      6
+    ],
+    [
+      "m-texto",
+      6
+    ],
+    [
+      "m-link",
+      6
+    ],
+    [
+      "m-aviso-chip",
+      5
+    ],
+    [
+      "m-rotulo",
+      5
+    ],
+    [
+      "m-detalhe",
+      5
+    ]
+  ],
+  "aftyUsadasNoG2ForaDoContrato": [
+    "afty-leitor-titulo",
+    "afty-vital-casca",
+    "afty-fontes-lista",
+    "afty-fontes-titulo",
+    "afty-fontes-vazio"
+  ],
+  "cores": {
+    "abas-g2/abas-g2.css": {
+      "declaracoes": 789,
+      "hex": 0,
+      "rgba": 0,
+      "hsl": 0,
+      "corFixaTotal": 0,
+      "important": 3,
+      "usosDeVarAfty": 16,
+      "redefinicoesDeTokenAfty": 0,
+      "redefinidos": [],
+      "tokensProprios": 1
+    },
+    "efeitos/efeitos-g2.css": {
+      "declaracoes": 3193,
+      "hex": 1,
+      "rgba": 10,
+      "hsl": 0,
+      "corFixaTotal": 11,
+      "important": 7,
+      "usosDeVarAfty": 141,
+      "redefinicoesDeTokenAfty": 0,
+      "redefinidos": [],
+      "tokensProprios": 27
+    },
+    "ficha.css": {
+      "declaracoes": 1783,
+      "hex": 37,
+      "rgba": 4,
+      "hsl": 0,
+      "corFixaTotal": 41,
+      "important": 1,
+      "usosDeVarAfty": 452,
+      "redefinicoesDeTokenAfty": 52,
+      "redefinidos": [
+        "--afty-fundo",
+        "--afty-fundo-brilho",
+        "--afty-card",
+        "--afty-poco",
+        "--afty-borda",
+        "--afty-borda-forte",
+        "--afty-texto",
+        "--afty-texto-suave",
+        "--afty-texto-fraco",
+        "--afty-destaque",
+        "--afty-destaque-texto",
+        "--afty-destaque-fundo",
+        "--afty-pv",
+        "--afty-pe",
+        "--afty-pvtemp",
+        "--afty-petemp",
+        "--afty-alma",
+        "--afty-cura",
+        "--afty-aviso",
+        "--afty-veu",
+        "--afty-raio",
+        "--afty-raio-peq",
+        "--afty-sombra",
+        "--afty-fonte",
+        "--afty-fonte-titulo",
+        "--afty-fonte-num",
+        "--afty-imagem",
+        "--afty-imagem-opacidade",
+        "--afty-imagem-opacidade-ambiente",
+        "--afty-imagem-opacidade-banner",
+        "--afty-imagem-encaixe",
+        "--afty-imagem-posicao",
+        "--afty-vital-cor",
+        "--afty-cond-cor"
+      ],
+      "tokensProprios": 0
+    }
+  },
+  "tokensDoc": {
+    "total": 31,
+    "divergentesDoFichaCss": [],
+    "usadosNaoDocumentados": [
+      "--afty-vital-cor",
+      "--afty-petemp",
+      "--afty-cond-cor",
+      "--afty-log-altura",
+      "--afty-cabecalho-recolhido",
+      "--afty-ficha-topo"
+    ]
+  },
+  "portaisFicha": [
+    {
+      "arquivo": "efeitos/pecas.jsx",
+      "alvo": ""
+    },
+    {
+      "arquivo": "GavetaDeCondicoes.jsx",
+      "alvo": "?"
+    }
+  ],
+  "portaisUi": [
+    {
+      "arquivo": "src/systems/afty/ui/fontes.jsx",
+      "usos": 2,
+      "alvo": [
+        "alvo,"
+      ]
+    }
+  ],
+  "tabsG2": "const TABS = [ { id: \"acoes\", label: \"Ações\" }, { id: \"habilidades\", label: \"Habilidades\" }, { id: \"pericias\", label: \"Perícias\" }, { id: \"equipamentos\", label: \"Equipamentos\" }, { id: \"invocacoes\", label: \"Invocações\" }, /* O id continua `buffs` (gancho de tema `[data-afty-aba=\"buffs\"]` e navegação antiga), e o rótulo é Efeitos desde a integração do G2. */ { id: \"buffs\", label: \"Efeitos\" }, ];",
+  "tabsClassica": "const TABS = [ { id: \"acoes\", label: \"Ações\" }, { id: \"habilidades\", label: \"Habilidades\" }, { id: \"pericias\", label: \"Perícias\" }, { id: \"equipamentos\", label: \"Equipamentos\" }, { id: \"invocacoes\", label: \"Invocações\" }, { id: \"buffs\", label: \"Buffs\" }, ];"
+}

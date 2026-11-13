@@ -81,7 +81,7 @@ export function useGestor(m) {
      vista depois de uma operação. */
   const [tela, setTela] = useState({
     selecionado: null, filtro: "tudo", termo: "", paraId: null, como: null, origem: "todas", soFav: false, mostrarTudo: {}, aberta: null, lado: null,
-    catalogo: { aberto: false, aba: "ficha", cat: "favoritos", termo: "", opcao: null, preparo: null }, revelar: null,
+    catalogo: { aberto: false, aba: "ficha", cat: "favoritos", termo: "", opcao: null, preparo: null, voltar: false }, revelar: null,
     /* G2: o efeito aberto no painel compacto, os Encerrados (recolhidos ao
        entrar) e o rascunho de uma reativação ({ chave, valor }). */
     compactaAberto: null, encerradosAberto: false, reativando: null,
@@ -94,18 +94,37 @@ export function useGestor(m) {
   /* `aba` abre o catálogo nela ("ficha" ou "externa"); null fecha e descarta o rascunho. */
   /* Sem nenhum Favorito a categoria inicial abre vazia ("Nenhuma Opção"), então a primeira abertura cai em Todo o Catálogo (auditoria de 2026-11-09). */
   const abrirCatalogo = (aba) => mudaCatalogo((c) => (aba
-    ? { aberto: true, aba, ...(c.cat === "favoritos" && !(m.sessao?.favoritos ?? []).length ? { cat: "tudo" } : null) }
-    : { aberto: false, preparo: null }));
-  /* Do catálogo para o cartão de um efeito que já está ativo. */
-  const irAoAtivo = (chaveDaOpcao) => {
+    ? { aberto: true, aba, voltar: false, ...(c.cat === "favoritos" && !(m.sessao?.favoritos ?? []).length ? { cat: "tudo" } : null) }
+    : { aberto: false, preparo: null, voltar: false }));
+  /* A chave do cartão de um efeito que já está ativo, a partir da opção do catálogo. */
+  const chaveDoAtivo = (chaveDaOpcao) => {
     /* A Sustentação é um grupo de vagas: o cartão é o da primeira vaga ocupada (`sust:<vaga>`). */
     const vagas = ativos.filter((a) => a.tipo === "sustentado").sort((x, y) => x.estado.id.localeCompare(y.estado.id));
     /* A opção recebida de um pacote: o cartão é o da instância dela (`rec:<id>`). */
     const recebida = recebidas.find((o) => o.chave === chaveDaOpcao);
     const inst = recebida ? instanciaAtivaDe(m.sessao, recebida.pacoteRecebido.entrada.chave, recebida.pacoteRecebido.opcao.id) : null;
-    const chave = inst ? `rec:${inst.id}` : chaveDaOpcao === "estado:sustentacao" ? vagas[0]?.chave ?? chaveDaOpcao : chaveDaOpcao;
-    mudaTela((t) => ({ selecionado: chave, revelar: chave, catalogo: { ...t.catalogo, aberto: false, preparo: null } }));
+    return inst ? `rec:${inst.id}` : chaveDaOpcao === "estado:sustentacao" ? vagas[0]?.chave ?? chaveDaOpcao : chaveDaOpcao;
   };
+  const ativoDaOpcao = (chaveDaOpcao) => { const chave = chaveDoAtivo(chaveDaOpcao); return ativos.find((a) => a.chave === chave) ?? null; };
+  /* Do catálogo para o cartão de um efeito que já está ativo. */
+  const irAoAtivo = (chaveDaOpcao) => {
+    const chave = chaveDoAtivo(chaveDaOpcao);
+    mudaTela((t) => ({ selecionado: chave, revelar: chave, catalogo: { ...t.catalogo, aberto: false, preparo: null, voltar: false } }));
+  };
+  /* DEPOIS DE CONFIRMAR (autor, 2026-11-09): com o catálogo aberto a tela FICA nele, com a linha em Ativo e o painel mostrando o que passou
+     a valer, para ligar o próximo efeito sem reabrir o Adicionar. Sai do catálogo e abre o cartão só quem veio dos Favoritos dos Ativos
+     (`catalogo.voltar`) ou quem confirmou de fora dele (Habilidades, compacta, Encerrados). Revoga a ida ao cartão de 2026-10-15.
+     ⚠ QUEM DECIDE É A ORIGEM DO CONFIRMAR (`doCatalogo`), e não o catálogo estar aberto (revisão de 2026-11-10): o catálogo esquecido aberto
+     na aba Efeitos segurava ali quem confirmava pela compacta ou pelos Encerrados, sem abrir o cartão. `onde` não separa os casos, porque o
+     catálogo aberto pelo Adicionar da compacta também passa "compacta". */
+  const depoisDeConfirmar = (chave, onde, doCatalogo = false) => mudaTela((t) => {
+    const fica = doCatalogo && t.catalogo.aberto && !t.catalogo.voltar;
+    return {
+      ...(fica ? {} : { selecionado: chave, revelar: chave }), reativando: null, preparoC2: null,
+      compactaAberto: onde === "compacta" ? chave : t.compactaAberto,
+      catalogo: { ...t.catalogo, aberto: fica, preparo: null, voltar: false },
+    };
+  });
 
   const [querSimular, setQuerSimular] = useState(false);
   const [simulacao, setSimulacao] = useState(null);
@@ -365,14 +384,14 @@ export function useGestor(m) {
        Desde 2026-10-15: confirma só sobre o estado de PARTIDA (desligado), e sai
        dos Encerrados na mesma operação. O segundo clique de um clique duplo não
        cobra de novo. Navega só depois do sucesso, e devolve se passou. */
-    confirmarAtivacao(o, valor, { onde = "completa" } = {}) {
+    confirmarAtivacao(o, valor, { onde = "completa", doCatalogo = false } = {}) {
       const c = o.grupo.controles[0];
       const e = c.estados[0];
       const custo = Math.max(0, Math.trunc(Number(custoDe(e, valor)) || 0));
       const ok = operar({ verbo: "Ativado", nome: o.nome, alvo: o.chave, custo: custo ? { texto: `${custo} PE`, cobra: true } : null },
         () => m.estadoPagando(e, valor, custo, `${o.nome} · ${rotuloDaFaixa(e, o.grupo)} ${valor}`, c.id, { esperado: padraoDe(e), tirarEncerrado: o.chave }));
       if (!ok) return false;
-      mudaTela((t) => ({ selecionado: o.chave, revelar: o.chave, reativando: null, preparoC2: null, compactaAberto: onde === "compacta" ? o.chave : t.compactaAberto, catalogo: { ...t.catalogo, aberto: false, preparo: null } }));
+      depoisDeConfirmar(o.chave, onde, doCatalogo);
       return true;
     },
     /* Subir cobra só a diferença do acumulado. Descer não devolve: o PE de uma
@@ -394,7 +413,7 @@ export function useGestor(m) {
        chama `gastoManual`. O custo à mão continua à mão (o resultado traz o
        Descontar), e a ficha cobra só o que o motor já cobra (o Invencível).
        Sair dos Encerrados vai na mesma operação. Navegar, só depois. */
-    confirmarPreparo(o, valores, { onde = "completa", verbo = "Ativado", encerrado = null } = {}) {
+    confirmarPreparo(o, valores, { onde = "completa", verbo = "Ativado", encerrado = null, doCatalogo = false } = {}) {
       const plano = planoDoPreparo({ o, valores, m, encerrado });
       if (plano.bloqueios.length || !plano.mudou) {
         if (plano.bloqueios.length) m.avisar(plano.bloqueios[0]);
@@ -411,20 +430,20 @@ export function useGestor(m) {
       const ok = operar({ verbo: verboFinal, nome: nomeCartao, alvo: alvoCartao, custo, fora: foraDosNumeros(o.exemplo), usos: plano.usos ? { max: plano.usos.max, restam: Math.max(0, plano.usos.restam - 1) } : undefined },
         () => m.aplicarEstados(plano.pedido));
       if (!ok) return false;
-      mudaTela((t) => ({ selecionado: alvoCartao, revelar: alvoCartao, reativando: null, preparoC2: null, compactaAberto: onde === "compacta" ? alvoCartao : t.compactaAberto, catalogo: { ...t.catalogo, aberto: false, preparo: null } }));
+      depoisDeConfirmar(alvoCartao, onde, doCatalogo);
       return true;
     },
     /* O MONTADOR DO GOLPE ESPECIAL (consolidação ampliada, 2026-10-16): cada confirmação é UM golpe novo, e quem paga é a função
        da ficha (`pagaGolpeEspecial`, pelo `aplicaGolpe`): a ficha desconta, e o resultado diz quanto saiu da Energia. É a exceção
        do montador pelo contrato da função, e não a regra de confirmar. Devolve se passou. */
-    confirmarGolpe(o, valores, { onde = "completa", verbo = "Montado" } = {}) {
+    confirmarGolpe(o, valores, { onde = "completa", verbo = "Montado", doCatalogo = false } = {}) {
       const plano = planoDoGolpe({ valores, m, simula: m.simularGolpe });
       if (plano.bloqueios.length) { m.avisar(plano.bloqueios[0]); return false; }
       const custo = { texto: `${plano.custo.aPagar} PE`, cobra: true };
       const ok = operar({ verbo, nome: o.nome, alvo: o.chave, custo, fora: foraDosNumeros(o.exemplo) }, () => m.aplicarGolpe(plano.pedido));
       if (!ok) return false;
       tiraEncerrado(o.chave);
-      mudaTela((t) => ({ selecionado: o.chave, revelar: o.chave, reativando: null, preparoC2: null, compactaAberto: onde === "compacta" ? o.chave : t.compactaAberto, catalogo: { ...t.catalogo, aberto: false, preparo: null } }));
+      depoisDeConfirmar(o.chave, onde, doCatalogo);
       return true;
     },
     /* O ACESSO DE HABILIDADES (consolidação ampliada, 2026-10-16): a linha e a consulta não ativam por um caminho imediato. Abrir a
@@ -473,7 +492,7 @@ export function useGestor(m) {
 
   return {
     grupos, opcoes, ativos, efeitoDe: cons.porAtivo, cobertos: cons.cobertos, disputas, pv, emGrupos, analise: m.calculo?.analise ?? {},
-    simulacao, pedirSimulacao: () => setQuerSimular(true), tela, mudaTela, mudaCatalogo, abrirCatalogo, irAoAtivo, custoDeReativar, grupoDoEstado,
+    simulacao, pedirSimulacao: () => setQuerSimular(true), tela, mudaTela, mudaCatalogo, abrirCatalogo, irAoAtivo, ativoDaOpcao, custoDeReativar, grupoDoEstado,
     resultado, fecharResultado: () => setResultado(null), encerrados, acoes, mPara, mGeral, usosDe, ligado: ligadosComSustentacao,
   };
 }

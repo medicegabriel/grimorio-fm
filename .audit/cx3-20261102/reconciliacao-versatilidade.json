@@ -1,0 +1,11 @@
+{
+  "erros": [],
+  "total": 15007,
+  "semFonte": 937,
+  "versatilidade": [],
+  "orfasCX3": [
+    "afty-efeitos-conteudo.js::APTIDAO_EFEITOS::reversao_de_tecnica",
+    "afty-efeitos-conteudo.js::APTIDAO_EFEITOS::reversao_de_tecnica::@0",
+    "afty-efeitos.js::APTIDAO_EFEITOS::reversao_de_tecnica"
+  ]
+}

@@ -1,0 +1,16 @@
+player lutador 1440 clássica/Encontro: aprovado
+player lutador 1440 G2: aprovado
+player lutador 390 clássica/Encontro: aprovado
+player lutador 390 G2: aprovado
+player restringido 1440 clássica/Encontro: aprovado
+player restringido 1440 G2: aprovado
+player restringido 390 clássica/Encontro: aprovado
+player restringido 390 G2: aprovado
+afty lutador 1440 clássica/Encontro: aprovado
+afty lutador 1440 G2: aprovado
+afty lutador 390 clássica/Encontro: aprovado
+afty lutador 390 G2: aprovado
+afty restringido 1440 clássica/Encontro: aprovado
+afty restringido 1440 G2: aprovado
+afty restringido 390 clássica/Encontro: aprovado
+afty restringido 390 G2: aprovado

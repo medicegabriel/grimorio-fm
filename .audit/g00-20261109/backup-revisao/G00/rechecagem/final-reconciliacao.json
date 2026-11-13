@@ -1,0 +1,6 @@
+{
+  "fim": "2026-10-05T21:02:41.5268014Z",
+  "comando": "node asserts/t-reconciliacao-g00.mjs",
+  "codigo": 0,
+  "inicio": "2026-10-05T21:02:40.7197064Z"
+}

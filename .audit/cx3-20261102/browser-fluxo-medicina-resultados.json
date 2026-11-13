@@ -1,0 +1,38 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "reacao": true,
+    "livre": true,
+    "recarga": true,
+    "bloqueio": true,
+    "usosMedicina": 2
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "reacao": true,
+    "livre": true,
+    "recarga": true,
+    "bloqueio": true,
+    "usosMedicina": 2
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "reacao": true,
+    "livre": true,
+    "recarga": true,
+    "bloqueio": true,
+    "usosMedicina": 2
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "reacao": true,
+    "livre": true,
+    "recarga": true,
+    "bloqueio": true,
+    "usosMedicina": 2
+  }
+]

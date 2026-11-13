@@ -1,0 +1,16 @@
+[
+  {
+    "sistema": "player",
+    "antigoPreservado": true,
+    "calculadora": 3,
+    "efeitoSalvo": 3,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "antigoPreservado": true,
+    "calculadora": 3,
+    "efeitoSalvo": 3,
+    "erros": []
+  }
+]

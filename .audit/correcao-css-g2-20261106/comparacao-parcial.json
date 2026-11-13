@@ -1,0 +1,7216 @@
+[
+  {
+    "ficha": "mesa",
+    "tema": "escuro",
+    "largura": 1440,
+    "aba": "acoes",
+    "dif": [
+      {
+        "i": 19,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 21,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 27,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 29,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 35,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 37,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 61,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 66,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 75,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 80,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 85,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      }
+    ]
+  },
+  {
+    "ficha": "mesa",
+    "tema": "escuro",
+    "largura": 1440,
+    "aba": "habilidades",
+    "dif": [
+      {
+        "i": 19,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 21,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 27,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 29,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 35,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 37,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 61,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 66,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 75,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 80,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 85,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      }
+    ]
+  },
+  {
+    "ficha": "mesa",
+    "tema": "escuro",
+    "largura": 1440,
+    "aba": "pericias",
+    "dif": [
+      {
+        "i": 19,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 21,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 27,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 29,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 35,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 37,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 61,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 66,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 75,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 80,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 85,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      }
+    ]
+  },
+  {
+    "ficha": "mesa",
+    "tema": "escuro",
+    "largura": 1440,
+    "aba": "equipamentos",
+    "dif": [
+      {
+        "i": 19,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 21,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 27,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 29,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 35,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 37,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 61,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 66,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 75,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 80,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 85,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      }
+    ]
+  },
+  {
+    "ficha": "mesa",
+    "tema": "escuro",
+    "largura": 390,
+    "aba": "acoes",
+    "dif": [
+      {
+        "i": 19,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 21,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 27,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 29,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 35,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 37,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 61,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 66,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 75,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      }
+    ]
+  },
+  {
+    "ficha": "mesa",
+    "tema": "escuro",
+    "largura": 390,
+    "aba": "habilidades",
+    "dif": [
+      {
+        "i": 19,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 21,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 27,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 29,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 35,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 37,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 61,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 66,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 75,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      }
+    ]
+  },
+  {
+    "ficha": "mesa",
+    "tema": "escuro",
+    "largura": 390,
+    "aba": "pericias",
+    "dif": [
+      {
+        "i": 19,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 21,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 27,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 29,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 35,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 37,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 61,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 66,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 75,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      }
+    ]
+  },
+  {
+    "ficha": "mesa",
+    "tema": "escuro",
+    "largura": 390,
+    "aba": "equipamentos",
+    "dif": [
+      {
+        "i": 19,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 21,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 27,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 29,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 35,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 37,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 61,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 66,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 75,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      }
+    ]
+  },
+  {
+    "ficha": "mesa",
+    "tema": "claro",
+    "largura": 1440,
+    "aba": "acoes",
+    "dif": [
+      {
+        "i": 19,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 21,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 27,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 29,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 35,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 37,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 61,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 66,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 75,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 80,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 85,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      }
+    ]
+  },
+  {
+    "ficha": "mesa",
+    "tema": "claro",
+    "largura": 1440,
+    "aba": "habilidades",
+    "dif": [
+      {
+        "i": 19,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 21,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 27,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 29,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 35,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 37,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 61,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 66,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 75,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 80,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 85,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      }
+    ]
+  },
+  {
+    "ficha": "mesa",
+    "tema": "claro",
+    "largura": 1440,
+    "aba": "pericias",
+    "dif": [
+      {
+        "i": 19,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 21,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 27,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 29,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 35,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 37,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 61,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 66,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 75,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 80,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 85,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      }
+    ]
+  },
+  {
+    "ficha": "mesa",
+    "tema": "claro",
+    "largura": 1440,
+    "aba": "equipamentos",
+    "dif": [
+      {
+        "i": 19,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 21,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 27,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 29,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 35,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 37,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 61,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 66,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 75,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 80,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 85,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      }
+    ]
+  },
+  {
+    "ficha": "mesa",
+    "tema": "claro",
+    "largura": 390,
+    "aba": "acoes",
+    "dif": [
+      {
+        "i": 19,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 21,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 27,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 29,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 35,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 37,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 61,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 66,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 75,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      }
+    ]
+  },
+  {
+    "ficha": "mesa",
+    "tema": "claro",
+    "largura": 390,
+    "aba": "habilidades",
+    "dif": [
+      {
+        "i": 19,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 21,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 27,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 29,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 35,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 37,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 61,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 66,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 75,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      }
+    ]
+  },
+  {
+    "ficha": "mesa",
+    "tema": "claro",
+    "largura": 390,
+    "aba": "pericias",
+    "dif": [
+      {
+        "i": 19,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 21,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 27,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 29,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 35,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 37,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 61,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 66,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 75,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      }
+    ]
+  },
+  {
+    "ficha": "mesa",
+    "tema": "claro",
+    "largura": 390,
+    "aba": "equipamentos",
+    "dif": [
+      {
+        "i": 19,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 21,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 27,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 29,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 35,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 37,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 61,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 66,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 75,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      }
+    ]
+  },
+  {
+    "ficha": "arsenal",
+    "tema": "minamoto",
+    "largura": 1440,
+    "aba": "acoes",
+    "dif": [
+      {
+        "i": 3,
+        "classes": "e-cabeca afty-cabecalho",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "18px",
+            "22.5px"
+          ]
+        }
+      },
+      {
+        "i": 5,
+        "classes": "afty-botao e-icone e-voltar",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 22,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 23,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 25,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 28,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 29,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 30,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 31,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 33,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 36,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 37,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 38,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 39,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 41,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 44,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 45,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 46,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 47,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 49,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 52,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 53,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 55,
+        "classes": "afty-botao e-icone",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 59,
+        "classes": "afty-botao",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 62,
+        "classes": "afty-botao e-icone",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 73,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 78,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 87,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 92,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 97,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 104,
+        "classes": "e-combate",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 114,
+        "classes": "e-rodada",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 116,
+        "classes": "e-proxima",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "0px 8px 8px 0px",
+            "0px 10px 10px 0px"
+          ]
+        }
+      },
+      {
+        "i": 119,
+        "classes": "f-acesso",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 165,
+        "classes": "m-indice-item",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 168,
+        "classes": "m-indice-item",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 171,
+        "classes": "m-indice-item",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 174,
+        "classes": "afty-card e-grupo m-mesa",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "12px",
+            "15px"
+          ]
+        }
+      },
+      {
+        "i": 184,
+        "classes": "m-botao m-celula-acao",
+        "texto": "Montar Golpe",
+        "v": {
+          "borderRadius": [
+            "6px",
+            "7.5px"
+          ]
+        }
+      },
+      {
+        "i": 185,
+        "classes": "afty-card e-grupo m-secao m-rapido",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "12px",
+            "15px"
+          ]
+        }
+      },
+      {
+        "i": 186,
+        "classes": "e-grupo-topo m-secao-topo",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "11px 11px 0px 0px",
+            "13.75px 13.75px 0px 0px"
+          ]
+        }
+      },
+      {
+        "i": 208,
+        "classes": "afty-botao e-botao e-ativar-preparo",
+        "texto": "Ativar",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 240,
+        "classes": "afty-card e-grupo m-secao m-secao-dano",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "12px",
+            "15px"
+          ]
+        }
+      },
+      {
+        "i": 241,
+        "classes": "e-grupo-topo m-secao-topo",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "11px 11px 0px 0px",
+            "13.75px 13.75px 0px 0px"
+          ]
+        }
+      },
+      {
+        "i": 245,
+        "classes": "m-seg",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 247,
+        "classes": "m-seg-op",
+        "texto": "Normal",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 248,
+        "classes": "m-seg-op",
+        "texto": "Crítico",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 263,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 267,
+        "classes": "m-rolar m-rolar-dano",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 285,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 289,
+        "classes": "m-rolar m-rolar-dano",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 306,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 310,
+        "classes": "m-rolar m-rolar-dano",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 327,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 331,
+        "classes": "m-rolar m-rolar-dano",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 348,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 352,
+        "classes": "m-rolar m-rolar-dano",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "ficha": "arsenal",
+    "tema": "minamoto",
+    "largura": 1440,
+    "aba": "habilidades",
+    "dif": [
+      {
+        "i": 3,
+        "classes": "e-cabeca afty-cabecalho",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "18px",
+            "22.5px"
+          ]
+        }
+      },
+      {
+        "i": 5,
+        "classes": "afty-botao e-icone e-voltar",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 22,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 23,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 25,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 28,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 29,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 30,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 31,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 33,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 36,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 37,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 38,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 39,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 41,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 44,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 45,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 46,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 47,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 49,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 52,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 53,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 55,
+        "classes": "afty-botao e-icone",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 59,
+        "classes": "afty-botao",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 62,
+        "classes": "afty-botao e-icone",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 73,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 78,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 87,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 92,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 97,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 104,
+        "classes": "e-combate",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 114,
+        "classes": "e-rodada",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 116,
+        "classes": "e-proxima",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "0px 8px 8px 0px",
+            "0px 10px 10px 0px"
+          ]
+        }
+      },
+      {
+        "i": 119,
+        "classes": "f-acesso",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 170,
+        "classes": "afty-campo",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "12px",
+            "15px"
+          ]
+        }
+      },
+      {
+        "i": 173,
+        "classes": "e-efeito",
+        "texto": "Todos",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 174,
+        "classes": "e-efeito",
+        "texto": "Acerto",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 175,
+        "classes": "e-efeito",
+        "texto": "Dano",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 176,
+        "classes": "e-efeito",
+        "texto": "Defesa",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 177,
+        "classes": "e-efeito",
+        "texto": "Furtividade",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 178,
+        "classes": "e-efeito",
+        "texto": "Atenção",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 179,
+        "classes": "afty-card e-grupo",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "14px",
+            "17.5px"
+          ]
+        }
+      },
+      {
+        "i": 211,
+        "classes": "afty-card e-grupo",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "14px",
+            "17.5px"
+          ]
+        }
+      },
+      {
+        "i": 250,
+        "classes": "afty-botao e-botao e-ativar-preparo",
+        "texto": "Ativar",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 274,
+        "classes": "m-seg",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 275,
+        "classes": "m-seg-op",
+        "texto": "Execução Silenciosa",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 276,
+        "classes": "m-seg-op",
+        "texto": "Golpe Descendente",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 289,
+        "classes": "afty-botao e-botao e-ativar-preparo",
+        "texto": "Ativar",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "ficha": "arsenal",
+    "tema": "minamoto",
+    "largura": 1440,
+    "aba": "pericias",
+    "dif": [
+      {
+        "i": 3,
+        "classes": "e-cabeca afty-cabecalho",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "18px",
+            "22.5px"
+          ]
+        }
+      },
+      {
+        "i": 5,
+        "classes": "afty-botao e-icone e-voltar",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 22,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 23,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 25,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 28,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 29,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 30,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 31,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 33,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 36,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 37,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 38,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 39,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 41,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 44,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 45,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 46,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 47,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 49,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 52,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 53,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 55,
+        "classes": "afty-botao e-icone",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 59,
+        "classes": "afty-botao",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 62,
+        "classes": "afty-botao e-icone",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 73,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 78,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 87,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 92,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 97,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 104,
+        "classes": "e-combate",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 114,
+        "classes": "e-rodada",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 116,
+        "classes": "e-proxima",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "0px 8px 8px 0px",
+            "0px 10px 10px 0px"
+          ]
+        }
+      },
+      {
+        "i": 119,
+        "classes": "f-acesso",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 164,
+        "classes": "afty-card m-atributos",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "14px",
+            "17.5px"
+          ]
+        }
+      },
+      {
+        "i": 165,
+        "classes": "afty-atributo m-atributo-celula",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 169,
+        "classes": "m-rolar m-rolar-mod",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 172,
+        "classes": "afty-atributo m-atributo-celula",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 176,
+        "classes": "m-rolar m-rolar-mod",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 179,
+        "classes": "afty-atributo m-atributo-celula",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 183,
+        "classes": "m-rolar m-rolar-mod",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 186,
+        "classes": "afty-atributo m-atributo-celula",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 190,
+        "classes": "m-rolar m-rolar-mod",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 193,
+        "classes": "afty-atributo m-atributo-celula",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 197,
+        "classes": "m-rolar m-rolar-mod",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 200,
+        "classes": "afty-atributo m-atributo-celula",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 204,
+        "classes": "m-rolar m-rolar-mod",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 208,
+        "classes": "afty-card e-grupo m-secao ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "12px",
+            "15px"
+          ]
+        }
+      },
+      {
+        "i": 209,
+        "classes": "e-grupo-topo m-secao-topo",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "11px 11px 0px 0px",
+            "13.75px 13.75px 0px 0px"
+          ]
+        }
+      },
+      {
+        "i": 217,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 224,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 231,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 234,
+        "classes": "afty-card e-grupo m-secao ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "12px",
+            "15px"
+          ]
+        }
+      },
+      {
+        "i": 235,
+        "classes": "e-grupo-topo m-secao-topo",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "11px 11px 0px 0px",
+            "13.75px 13.75px 0px 0px"
+          ]
+        }
+      },
+      {
+        "i": 247,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 258,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 269,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 280,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 291,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 294,
+        "classes": "afty-card e-grupo m-secao ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "12px",
+            "15px"
+          ]
+        }
+      },
+      {
+        "i": 295,
+        "classes": "e-grupo-topo m-secao-topo",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "11px 11px 0px 0px",
+            "13.75px 13.75px 0px 0px"
+          ]
+        }
+      },
+      {
+        "i": 304,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 308,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 316,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 320,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 328,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 332,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 340,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 344,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 352,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 359,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 366,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 372,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 375,
+        "classes": "afty-card e-grupo m-secao ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "12px",
+            "15px"
+          ]
+        }
+      },
+      {
+        "i": 376,
+        "classes": "e-grupo-topo m-secao-topo",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "11px 11px 0px 0px",
+            "13.75px 13.75px 0px 0px"
+          ]
+        }
+      },
+      {
+        "i": 385,
+        "classes": "afty-campo",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "12px",
+            "15px"
+          ]
+        }
+      },
+      {
+        "i": 386,
+        "classes": "m-seg",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 387,
+        "classes": "m-seg-op",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 389,
+        "classes": "m-seg-op",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 391,
+        "classes": "m-seg-op",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 400,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 408,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 416,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 424,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 432,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 440,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 448,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 456,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 464,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 472,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 480,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 488,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 496,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 504,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 512,
+        "classes": "m-chip",
+        "texto": "Mestre",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 513,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 521,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 529,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 537,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 545,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 553,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 561,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 569,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "ficha": "arsenal",
+    "tema": "minamoto",
+    "largura": 1440,
+    "aba": "equipamentos",
+    "dif": [
+      {
+        "i": 3,
+        "classes": "e-cabeca afty-cabecalho",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "18px",
+            "22.5px"
+          ]
+        }
+      },
+      {
+        "i": 5,
+        "classes": "afty-botao e-icone e-voltar",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 22,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 23,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 25,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 28,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 29,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 30,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 31,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 33,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 36,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 37,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 38,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 39,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 41,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 44,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 45,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 46,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 47,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 49,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 52,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 53,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 55,
+        "classes": "afty-botao e-icone",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 59,
+        "classes": "afty-botao",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 62,
+        "classes": "afty-botao e-icone",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 73,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 78,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 87,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 92,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 97,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 104,
+        "classes": "e-combate",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 114,
+        "classes": "e-rodada",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 116,
+        "classes": "e-proxima",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "0px 8px 8px 0px",
+            "0px 10px 10px 0px"
+          ]
+        }
+      },
+      {
+        "i": 119,
+        "classes": "f-acesso",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 164,
+        "classes": "afty-card m-carga",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "14px",
+            "17.5px"
+          ]
+        }
+      },
+      {
+        "i": 182,
+        "classes": "afty-card m-avisos m-avisos-equip",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "12px",
+            "15px"
+          ]
+        }
+      },
+      {
+        "i": 188,
+        "classes": "afty-card e-grupo m-secao ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "12px",
+            "15px"
+          ]
+        }
+      },
+      {
+        "i": 189,
+        "classes": "e-grupo-topo m-secao-topo",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "11px 11px 0px 0px",
+            "13.75px 13.75px 0px 0px"
+          ]
+        }
+      },
+      {
+        "i": 198,
+        "classes": "afty-campo",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "12px",
+            "15px"
+          ]
+        }
+      },
+      {
+        "i": 199,
+        "classes": "m-seg m-categorias",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 200,
+        "classes": "m-seg-op",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 202,
+        "classes": "m-seg-op",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 204,
+        "classes": "m-seg-op",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 206,
+        "classes": "m-seg-op",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 208,
+        "classes": "m-seg-op",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "ficha": "arsenal",
+    "tema": "minamoto",
+    "largura": 390,
+    "aba": "acoes",
+    "dif": [
+      {
+        "i": 3,
+        "classes": "e-cabeca afty-cabecalho",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "14px",
+            "17.5px"
+          ]
+        }
+      },
+      {
+        "i": 5,
+        "classes": "afty-botao e-icone e-voltar",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 22,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 23,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 25,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 28,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 29,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 30,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 31,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 33,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 36,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 37,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 38,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 39,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 41,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 44,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 45,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 46,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 47,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 49,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 52,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 53,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 55,
+        "classes": "afty-botao e-icone",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 59,
+        "classes": "afty-botao",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 62,
+        "classes": "afty-botao e-icone",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 73,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 78,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 87,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 88,
+        "classes": "e-mais",
+        "texto": "+3",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 90,
+        "classes": "e-combate",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 100,
+        "classes": "e-rodada",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 102,
+        "classes": "e-proxima",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "0px 8px 8px 0px",
+            "0px 10px 10px 0px"
+          ]
+        }
+      },
+      {
+        "i": 105,
+        "classes": "f-acesso",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 149,
+        "classes": "m-indice-item",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 152,
+        "classes": "m-indice-item",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 155,
+        "classes": "m-indice-item",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 158,
+        "classes": "afty-card e-grupo m-mesa",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "12px",
+            "15px"
+          ]
+        }
+      },
+      {
+        "i": 168,
+        "classes": "m-botao m-celula-acao",
+        "texto": "Montar Golpe",
+        "v": {
+          "borderRadius": [
+            "6px",
+            "7.5px"
+          ]
+        }
+      },
+      {
+        "i": 169,
+        "classes": "afty-card e-grupo m-secao m-rapido",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "12px",
+            "15px"
+          ]
+        }
+      },
+      {
+        "i": 170,
+        "classes": "e-grupo-topo m-secao-topo",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "11px 11px 0px 0px",
+            "13.75px 13.75px 0px 0px"
+          ]
+        }
+      },
+      {
+        "i": 192,
+        "classes": "afty-botao e-botao e-ativar-preparo",
+        "texto": "Ativar",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 224,
+        "classes": "afty-card e-grupo m-secao m-secao-dano",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "12px",
+            "15px"
+          ]
+        }
+      },
+      {
+        "i": 225,
+        "classes": "e-grupo-topo m-secao-topo",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "11px 11px 0px 0px",
+            "13.75px 13.75px 0px 0px"
+          ]
+        }
+      },
+      {
+        "i": 229,
+        "classes": "m-seg",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 231,
+        "classes": "m-seg-op",
+        "texto": "Normal",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 232,
+        "classes": "m-seg-op",
+        "texto": "Crítico",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 247,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 251,
+        "classes": "m-rolar m-rolar-dano",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 269,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 273,
+        "classes": "m-rolar m-rolar-dano",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 290,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 294,
+        "classes": "m-rolar m-rolar-dano",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 311,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 315,
+        "classes": "m-rolar m-rolar-dano",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 332,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 336,
+        "classes": "m-rolar m-rolar-dano",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "ficha": "arsenal",
+    "tema": "minamoto",
+    "largura": 390,
+    "aba": "habilidades",
+    "dif": [
+      {
+        "i": 3,
+        "classes": "e-cabeca afty-cabecalho",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "14px",
+            "17.5px"
+          ]
+        }
+      },
+      {
+        "i": 5,
+        "classes": "afty-botao e-icone e-voltar",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 22,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 23,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 25,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 28,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 29,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 30,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 31,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 33,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 36,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 37,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 38,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 39,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 41,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 44,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 45,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 46,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 47,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 49,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 52,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 53,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 55,
+        "classes": "afty-botao e-icone",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 59,
+        "classes": "afty-botao",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 62,
+        "classes": "afty-botao e-icone",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 73,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 78,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 87,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 88,
+        "classes": "e-mais",
+        "texto": "+3",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 90,
+        "classes": "e-combate",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 100,
+        "classes": "e-rodada",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 102,
+        "classes": "e-proxima",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "0px 8px 8px 0px",
+            "0px 10px 10px 0px"
+          ]
+        }
+      },
+      {
+        "i": 105,
+        "classes": "f-acesso",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 154,
+        "classes": "afty-campo",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "12px",
+            "15px"
+          ]
+        }
+      },
+      {
+        "i": 157,
+        "classes": "e-efeito",
+        "texto": "Todos",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 158,
+        "classes": "e-efeito",
+        "texto": "Acerto",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 159,
+        "classes": "e-efeito",
+        "texto": "Dano",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 160,
+        "classes": "e-efeito",
+        "texto": "Defesa",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 161,
+        "classes": "e-efeito",
+        "texto": "Furtividade",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 162,
+        "classes": "e-efeito",
+        "texto": "Atenção",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 163,
+        "classes": "afty-card e-grupo",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "14px",
+            "17.5px"
+          ]
+        }
+      },
+      {
+        "i": 195,
+        "classes": "afty-card e-grupo",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "14px",
+            "17.5px"
+          ]
+        }
+      },
+      {
+        "i": 234,
+        "classes": "afty-botao e-botao e-ativar-preparo",
+        "texto": "Ativar",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 258,
+        "classes": "m-seg",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 259,
+        "classes": "m-seg-op",
+        "texto": "Execução Silenciosa",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 260,
+        "classes": "m-seg-op",
+        "texto": "Golpe Descendente",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 273,
+        "classes": "afty-botao e-botao e-ativar-preparo",
+        "texto": "Ativar",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "ficha": "arsenal",
+    "tema": "minamoto",
+    "largura": 390,
+    "aba": "pericias",
+    "dif": [
+      {
+        "i": 3,
+        "classes": "e-cabeca afty-cabecalho",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "14px",
+            "17.5px"
+          ]
+        }
+      },
+      {
+        "i": 5,
+        "classes": "afty-botao e-icone e-voltar",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 22,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 23,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 25,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 28,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 29,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 30,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 31,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 33,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 36,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 37,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 38,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 39,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 41,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 44,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 45,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 46,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 47,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 49,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 52,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 53,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 55,
+        "classes": "afty-botao e-icone",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 59,
+        "classes": "afty-botao",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 62,
+        "classes": "afty-botao e-icone",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 73,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 78,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 87,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 88,
+        "classes": "e-mais",
+        "texto": "+3",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 90,
+        "classes": "e-combate",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 100,
+        "classes": "e-rodada",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 102,
+        "classes": "e-proxima",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "0px 8px 8px 0px",
+            "0px 10px 10px 0px"
+          ]
+        }
+      },
+      {
+        "i": 105,
+        "classes": "f-acesso",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 148,
+        "classes": "afty-card m-atributos",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "14px",
+            "17.5px"
+          ]
+        }
+      },
+      {
+        "i": 149,
+        "classes": "afty-atributo m-atributo-celula",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 153,
+        "classes": "m-rolar m-rolar-mod",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 156,
+        "classes": "afty-atributo m-atributo-celula",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 160,
+        "classes": "m-rolar m-rolar-mod",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 163,
+        "classes": "afty-atributo m-atributo-celula",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 167,
+        "classes": "m-rolar m-rolar-mod",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 170,
+        "classes": "afty-atributo m-atributo-celula",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 174,
+        "classes": "m-rolar m-rolar-mod",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 177,
+        "classes": "afty-atributo m-atributo-celula",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 181,
+        "classes": "m-rolar m-rolar-mod",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 184,
+        "classes": "afty-atributo m-atributo-celula",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 188,
+        "classes": "m-rolar m-rolar-mod",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 192,
+        "classes": "afty-card e-grupo m-secao ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "12px",
+            "15px"
+          ]
+        }
+      },
+      {
+        "i": 193,
+        "classes": "e-grupo-topo m-secao-topo",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "11px 11px 0px 0px",
+            "13.75px 13.75px 0px 0px"
+          ]
+        }
+      },
+      {
+        "i": 201,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 208,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 215,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 218,
+        "classes": "afty-card e-grupo m-secao ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "12px",
+            "15px"
+          ]
+        }
+      },
+      {
+        "i": 219,
+        "classes": "e-grupo-topo m-secao-topo",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "11px 11px 0px 0px",
+            "13.75px 13.75px 0px 0px"
+          ]
+        }
+      },
+      {
+        "i": 231,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 242,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 253,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 264,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 275,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 278,
+        "classes": "afty-card e-grupo m-secao ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "12px",
+            "15px"
+          ]
+        }
+      },
+      {
+        "i": 279,
+        "classes": "e-grupo-topo m-secao-topo",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "11px 11px 0px 0px",
+            "13.75px 13.75px 0px 0px"
+          ]
+        }
+      },
+      {
+        "i": 288,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 292,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 300,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 304,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 312,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 316,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 324,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 328,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 336,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 343,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 350,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 356,
+        "classes": "m-rolar ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 359,
+        "classes": "afty-card e-grupo m-secao ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "12px",
+            "15px"
+          ]
+        }
+      },
+      {
+        "i": 360,
+        "classes": "e-grupo-topo m-secao-topo",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "11px 11px 0px 0px",
+            "13.75px 13.75px 0px 0px"
+          ]
+        }
+      },
+      {
+        "i": 369,
+        "classes": "afty-campo",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "12px",
+            "15px"
+          ]
+        }
+      },
+      {
+        "i": 370,
+        "classes": "m-seg",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 371,
+        "classes": "m-seg-op",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 373,
+        "classes": "m-seg-op",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 375,
+        "classes": "m-seg-op",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 384,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 392,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 400,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 408,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 416,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 424,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 432,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 440,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 448,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 456,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 464,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 472,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 480,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 488,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 496,
+        "classes": "m-chip",
+        "texto": "Mestre",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 497,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 505,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 513,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 521,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 529,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 537,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 545,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 553,
+        "classes": "m-rolar m-rolar-teste",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "ficha": "arsenal",
+    "tema": "minamoto",
+    "largura": 390,
+    "aba": "equipamentos",
+    "dif": [
+      {
+        "i": 3,
+        "classes": "e-cabeca afty-cabecalho",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "14px",
+            "17.5px"
+          ]
+        }
+      },
+      {
+        "i": 5,
+        "classes": "afty-botao e-icone e-voltar",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 22,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 23,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 25,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 28,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 29,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 30,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 31,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 33,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 36,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 37,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 38,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 39,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 41,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 44,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 45,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 46,
+        "classes": "afty-vital m-medidor ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 47,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 49,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 52,
+        "classes": "afty-vital-trilho m-barra ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 53,
+        "classes": "afty-vital-barra m-barra-cheia",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "3px",
+            "3.75px"
+          ]
+        }
+      },
+      {
+        "i": 55,
+        "classes": "afty-botao e-icone",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 59,
+        "classes": "afty-botao",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 62,
+        "classes": "afty-botao e-icone",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "9px",
+            "11.25px"
+          ]
+        }
+      },
+      {
+        "i": 73,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 78,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 87,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 88,
+        "classes": "e-mais",
+        "texto": "+3",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 90,
+        "classes": "e-combate",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 100,
+        "classes": "e-rodada",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 102,
+        "classes": "e-proxima",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "0px 8px 8px 0px",
+            "0px 10px 10px 0px"
+          ]
+        }
+      },
+      {
+        "i": 105,
+        "classes": "f-acesso",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "8px",
+            "10px"
+          ]
+        }
+      },
+      {
+        "i": 148,
+        "classes": "afty-card m-carga",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "14px",
+            "17.5px"
+          ]
+        }
+      },
+      {
+        "i": 166,
+        "classes": "afty-card m-avisos m-avisos-equip",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "12px",
+            "15px"
+          ]
+        }
+      },
+      {
+        "i": 172,
+        "classes": "afty-card e-grupo m-secao ",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "12px",
+            "15px"
+          ]
+        }
+      },
+      {
+        "i": 173,
+        "classes": "e-grupo-topo m-secao-topo",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "11px 11px 0px 0px",
+            "13.75px 13.75px 0px 0px"
+          ]
+        }
+      },
+      {
+        "i": 182,
+        "classes": "afty-campo",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "12px",
+            "15px"
+          ]
+        }
+      },
+      {
+        "i": 183,
+        "classes": "m-seg m-categorias",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "10px",
+            "12.5px"
+          ]
+        }
+      },
+      {
+        "i": 184,
+        "classes": "m-seg-op",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 186,
+        "classes": "m-seg-op",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 188,
+        "classes": "m-seg-op",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 190,
+        "classes": "m-seg-op",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      },
+      {
+        "i": 192,
+        "classes": "m-seg-op",
+        "texto": "",
+        "v": {
+          "borderRadius": [
+            "7px",
+            "8.75px"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "ficha": "criatura",
+    "tema": "escuro",
+    "largura": 1440,
+    "aba": "acoes",
+    "dif": [
+      {
+        "i": 19,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 21,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 27,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 29,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 35,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 37,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 43,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 45,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 69,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 74,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 79,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 84,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 89,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 94,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      }
+    ]
+  },
+  {
+    "ficha": "criatura",
+    "tema": "escuro",
+    "largura": 1440,
+    "aba": "habilidades",
+    "dif": [
+      {
+        "i": 19,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 21,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 27,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 29,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 35,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 37,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 43,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 45,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 69,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 74,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 79,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 84,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 89,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 94,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      }
+    ]
+  },
+  {
+    "ficha": "criatura",
+    "tema": "escuro",
+    "largura": 1440,
+    "aba": "pericias",
+    "dif": [
+      {
+        "i": 19,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 21,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 27,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 29,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 35,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 37,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 43,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 45,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 69,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 74,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 79,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 84,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 89,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 94,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      }
+    ]
+  },
+  {
+    "ficha": "criatura",
+    "tema": "escuro",
+    "largura": 1440,
+    "aba": "equipamentos",
+    "dif": [
+      {
+        "i": 19,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 21,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 27,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 29,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 35,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 37,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 43,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 45,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 69,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 74,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 79,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 84,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 89,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 94,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      }
+    ]
+  },
+  {
+    "ficha": "criatura",
+    "tema": "escuro",
+    "largura": 390,
+    "aba": "acoes",
+    "dif": [
+      {
+        "i": 19,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 21,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 27,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 29,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 35,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 37,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 43,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 45,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 69,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 74,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 79,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      }
+    ]
+  },
+  {
+    "ficha": "criatura",
+    "tema": "escuro",
+    "largura": 390,
+    "aba": "habilidades",
+    "dif": [
+      {
+        "i": 19,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 21,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 27,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 29,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 35,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 37,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 43,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 45,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 69,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 74,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 79,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      }
+    ]
+  },
+  {
+    "ficha": "criatura",
+    "tema": "escuro",
+    "largura": 390,
+    "aba": "pericias",
+    "dif": [
+      {
+        "i": 19,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 21,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 27,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 29,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 35,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 37,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 43,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 45,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 69,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 74,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 79,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      }
+    ]
+  },
+  {
+    "ficha": "criatura",
+    "tema": "escuro",
+    "largura": 390,
+    "aba": "equipamentos",
+    "dif": [
+      {
+        "i": 19,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 21,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 27,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 29,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 35,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 37,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 43,
+        "dom": [
+          "m-medidor-topo",
+          "m-medidor-topo afty-vital-conteudo"
+        ]
+      },
+      {
+        "i": 45,
+        "dom": [
+          "m-medidor-num",
+          "m-medidor-num afty-vital-valores"
+        ]
+      },
+      {
+        "i": 69,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 74,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      },
+      {
+        "i": 79,
+        "dom": [
+          "m-valor-botao",
+          "m-valor-botao afty-stat-valor"
+        ]
+      }
+    ]
+  }
+]

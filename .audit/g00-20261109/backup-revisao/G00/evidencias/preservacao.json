@@ -1,0 +1,39 @@
+{
+  "criterio": "SHA-256 dos 706 arquivos da entrada, excluindo caches/build/previas. Mudanças pontuais autorizadas abaixo; os outros conservam bytes idênticos à entrada.",
+  "total": 706,
+  "identicos": 700,
+  "mudancas": [
+    {
+      "arquivo": "asserts/LEIA.md",
+      "hashInicial": "8427c42f6fb6678c3dd41bfcb8009c69935ffd7c2bebb472394eda4f6c86bda5",
+      "hashFinal": "35a9963eeba039044186a67babac205a9aaa2230facd0a64a2b4cb7c1f1b3b0f"
+    },
+    {
+      "arquivo": "CLAUDE.md",
+      "hashInicial": "47bd2fe51052dcceea2be8a10b91f5897994d41af3eaf8dea574df0752721513",
+      "hashFinal": "b397361e8bbeb3ebdf7114e7953ad1379e80ba2f6f5f78bddbee67e1f25fe65c"
+    },
+    {
+      "arquivo": "docs/a-fazer.md",
+      "hashInicial": "34c6acffeff043b6c1f90c45f45dd025ad58645020d8dad9c403b7b31f7a3f3f",
+      "hashFinal": "ae88ab6a0777c53e6629e64901e5b2450df4629baaf6c6414736569466fda59d"
+    },
+    {
+      "arquivo": "docs/afty-motor-referencia-estrutural.md",
+      "hashInicial": "ef25e9484f47d81524a96b6cc938291a23027ec9012585e2b8c15f787f4987cf",
+      "hashFinal": "b19d8e1172cc7d79d134045df87f26f9be1a2a66912a3ff9c2372f2c707a49bc"
+    },
+    {
+      "arquivo": "docs/afty-player.md",
+      "hashInicial": "4c7cbaaf6ffec13a7dccb6c4d6eccae954244e752e8f5f99199bacf9df51919a",
+      "hashFinal": "001b4eb24fdd1e243fa79b6b7b1f82803243a162706b4894aa778f9fe31d83d5"
+    },
+    {
+      "arquivo": "package.json",
+      "hashInicial": "bb1c8f413d743568b95302c09336e3e598d4268fda5fa8d1895f92f20e162491",
+      "hashFinal": "ec3a679bac1d9a2f81960f080212cb11fe83c06e8cbe892223e59c8c161665a8"
+    }
+  ],
+  "faltantes": [],
+  "verificacao": "2026-10-05T19:49:18.984Z"
+}

@@ -79,7 +79,7 @@ export const TOKENS_DOC = [
   { id: "--afty-raio", valor: "12px", oque: "arredondamento dos cartões" },
   { id: "--afty-raio-peq", valor: "8px", oque: "arredondamento das linhas e botões" },
   { id: "--afty-sombra", valor: "0 2px 10px rgb(0 0 0 / 0.45)", oque: "sombra dos cartões" },
-  { id: "--afty-fonte", valor: "ui-sans-serif, system-ui, \"Segoe UI\", Roboto, sans-serif", oque: "fonte de tudo" },
+  { id: "--afty-fonte", valor: "ui-sans-serif, system-ui, \"Segoe UI\", Roboto, sans-serif", oque: "fonte de tudo: do sistema ou, no G2, uma família da lista fechada" },
   { id: "--afty-fonte-titulo", valor: "var(--afty-fonte)", oque: "fonte do nome da ficha e dos títulos" },
   { id: "--afty-fonte-display", valor: '"Bahnschrift", "Segoe UI", system-ui, sans-serif', oque: "fonte dos títulos e números do G2" },
   { id: "--afty-fonte-num", valor: "ui-monospace, Consolas, monospace", oque: "fonte dos números" },
@@ -145,6 +145,53 @@ export const FONTES = [
   { id: "ui-monospace, Consolas, monospace", label: "Monoespaçada" },
   { id: "\"Trebuchet MS\", \"Segoe UI\", sans-serif", label: "Estreita" },
 ];
+
+/**
+ * AS FONTES DA INTERNET, UMA LISTA FECHADA (autor, 2026-11-10). Doze famílias do Google Fonts, baixadas só quando o tema pede uma delas (pelo
+ * painel ou pelo nome num `font-family` do CSS livre). Sem internet, cada pilha cai na reserva do sistema que vem junto.
+ *
+ * ⚠ NADA DE URL VINDA DO TEMA. O endereço é montado só a partir desta tabela (`google`), e um tema recebido de outra pessoa só consegue pedir
+ * uma família daqui: `normalizaTema` descarta a fonte que não está nas listas. O `@font-face` continua sem valer dentro do `@scope`, e o
+ * `<link>` mora no `<head>`, fora dele (`useFontesWeb`).
+ */
+export const FONTES_WEB = [
+  { familia: "Inter", label: "Inter", id: "\"Inter\", ui-sans-serif, system-ui, sans-serif", google: "Inter:wght@400;500;600;700" },
+  { familia: "Lora", label: "Lora", id: "\"Lora\", Georgia, serif", google: "Lora:wght@400;500;600;700" },
+  { familia: "Merriweather", label: "Merriweather", id: "\"Merriweather\", Georgia, serif", google: "Merriweather:wght@400;700" },
+  { familia: "Playfair Display", label: "Playfair", id: "\"Playfair Display\", Georgia, serif", google: "Playfair+Display:wght@400;600;700" },
+  { familia: "Cormorant Garamond", label: "Cormorant", id: "\"Cormorant Garamond\", Georgia, serif", google: "Cormorant+Garamond:wght@400;500;600;700" },
+  { familia: "Cinzel", label: "Cinzel", id: "\"Cinzel\", Georgia, serif", google: "Cinzel:wght@400;600;700" },
+  { familia: "Oswald", label: "Oswald", id: "\"Oswald\", \"Arial Narrow\", sans-serif", google: "Oswald:wght@400;500;600;700" },
+  { familia: "Barlow Condensed", label: "Barlow", id: "\"Barlow Condensed\", \"Arial Narrow\", sans-serif", google: "Barlow+Condensed:wght@400;500;600;700" },
+  { familia: "Chakra Petch", label: "Chakra Petch", id: "\"Chakra Petch\", ui-sans-serif, sans-serif", google: "Chakra+Petch:wght@400;500;600;700" },
+  { familia: "Shippori Mincho", label: "Shippori Mincho", id: "\"Shippori Mincho\", Georgia, serif", google: "Shippori+Mincho:wght@400;600;700" },
+  { familia: "JetBrains Mono", label: "JetBrains Mono", id: "\"JetBrains Mono\", ui-monospace, Consolas, monospace", google: "JetBrains+Mono:wght@400;600;700" },
+  { familia: "Caveat", label: "Caveat", id: "\"Caveat\", \"Segoe Print\", cursive", google: "Caveat:wght@400;600;700" },
+];
+
+const FONTES_ACEITAS = new Set([...FONTES, ...FONTES_WEB].map((f) => f.id));
+
+/**
+ * As famílias da lista fechada que este tema usa: a do painel e as que o CSS livre ligado cita pelo nome (`font-family: "Cinzel"`). É o que
+ * decide se o `<link>` existe. Devolve as entradas da tabela, nunca texto do tema.
+ */
+export function fontesWebDoTema(tema) {
+  const t = normalizaTema(tema);
+  /* Só o VALOR das declarações de fonte (`font-family`, `font` e as variáveis de fonte), sem comentários, e o nome com fronteira dos dois
+     lados: casar o texto inteiro baixava a Inter por causa de `cursor: pointer` e a Lora por um comentário com "explora". */
+  const css = t.ligado ? saneiaCss(t.css).replace(/\/\*[\s\S]*?\*\//g, "").toLowerCase() : "";
+  const valores = [...css.matchAll(/(?:^|[;{\s])(?:font-family|font|--afty-fonte[\w-]*|--e-display)\s*:\s*([^;{}]+)/g)].map((m) => ` ${m[1]} `).join(" ");
+  const cita = (nome) => new RegExp(`[\\s"',]${nome.toLowerCase().replace(/ /g, "\\s+")}[\\s"',]`).test(valores);
+  return FONTES_WEB.filter((f) => t.fonte === f.id || (valores && cita(f.familia)));
+}
+
+/** O endereço do Google Fonts para estas entradas, ou "" sem nenhuma. `texto` baixa só os caracteres pedidos (a prévia dos botões do painel). */
+export function urlDasFontesWeb(lista, texto = "") {
+  const specs = [...new Set((lista ?? []).map((f) => FONTES_WEB.find((x) => x.familia === f?.familia)?.google).filter(Boolean))].sort();
+  if (!specs.length) return "";
+  const extra = texto ? `&text=${encodeURIComponent(texto)}` : "&display=swap";
+  return `https://fonts.googleapis.com/css2?${specs.map((s) => `family=${s}`).join("&")}${extra}`;
+}
 
 export const ENCAIXES = [
   { id: "cover", label: "Preencher" },
@@ -302,6 +349,9 @@ export function normalizaTema(bruto) {
     presetId: getPreset(bruto.presetId).id,
     vars: bruto.vars && typeof bruto.vars === "object" ? bruto.vars : {},
     css: typeof bruto.css === "string" ? bruto.css : "",
+    /* Só fonte das listas (revisão de 2026-11-10): a fonte vai crua para o bloco de variáveis, FORA do `@scope`, e um texto com chave fechava
+       o bloco e escrevia um `@font-face` com URL livre. Desconhecida cai na do sistema. */
+    fonte: FONTES_ACEITAS.has(bruto.fonte) ? bruto.fonte : null,
     ligado: bruto.ligado !== false,
     imagem: {
       ...base.imagem,
@@ -437,10 +487,15 @@ export const SEM_CSS = typeof location !== "undefined"
 export const escopoDaInvocacao = (id) => `#afty-inv-${id}`;
 
 /** As variáveis do tema, como um bloco de CSS. Preset primeiro, formulário por cima. */
+/* ⚠ O bloco de variáveis fica FORA do `@scope` (revisão de 2026-11-10). Valor com `;`, chave ou `<` sairia da declaração e escreveria regra
+   própria ali fora (um `@font-face` com URL livre, por exemplo), então é descartado. Gradiente, `rgb()` e `url("...")` não usam nenhum deles. */
+const valorSeguro = (v) => typeof v === "string" && v.trim() !== "" && !/[;{}<]/.test(v);
+const nomeSeguro = (k) => /^--afty-[\w-]+$/.test(k);
+
 export function cssDasVars(tema, seletor = ESCOPO_FICHA) {
   const t = normalizaTema(tema);
   const linhas = [];
-  const põe = (k, v) => { if (v) linhas.push(`  ${k}: ${v};`); };
+  const põe = (k, v) => { if (v && nomeSeguro(k) && valorSeguro(String(v))) linhas.push(`  ${k}: ${v};`); };
 
   for (const [k, v] of Object.entries(getPreset(t.presetId).vars)) põe(k, v);
   for (const [k, v] of Object.entries(t.vars)) põe(k, v);
@@ -538,7 +593,7 @@ export function cssDaInvocacao(inv) {
 export function cssDasVarsDaInvocacao(bruto, seletor) {
   const t = normalizaTema(bruto);
   const linhas = [];
-  const põe = (k, v) => { if (v) linhas.push(`  ${k}: ${v};`); };
+  const põe = (k, v) => { if (v && nomeSeguro(k) && valorSeguro(String(v))) linhas.push(`  ${k}: ${v};`); };
 
   if (t.presetId !== PRESETS[0].id) {
     for (const [k, v] of Object.entries(getPreset(t.presetId).vars)) põe(k, v);
@@ -564,6 +619,39 @@ export function cssDasVarsDaInvocacao(bruto, seletor) {
 
   if (!linhas.length) return "";
   return `${seletor} {\n${linhas.join("\n")}\n}`;
+}
+
+/**
+ * O AUDITOR DO CSS LIVRE (2026-11-10): as regras que o Prompt IA manda seguir, conferidas no próprio texto. Antes só existia como roteiro de bancada
+ * (`design.local/auditar-tema.mjs`), e quem escrevia CSS só descobria o erro quando o painel de fontes abria cortado ou a ficha perdia a barra de recurso.
+ * Devolve a lista de problemas, cada um com o texto curto da tela. Não impede nada: o CSS é do usuário, e o aviso diz o que provavelmente vai dar errado.
+ *
+ * ⚠ A propriedade é casada INTEIRA: `background-position` contém "position" e acusava o cabeçalho de quebrar a regra de `position`.
+ * ⚠ `url(` externa é PERMITIDA (imagem e gif entram por URL). Só o `data:` é problema, porque estoura o armazenamento.
+ */
+export function auditaCss(css) {
+  const t = saneiaCss(css);
+  if (!t.trim()) return [];
+  const corpoDe = (trecho) => {
+    let out = "";
+    /* Só as regras mais internas (corpo sem chaves): `@scope` e `@media` escritos pelo usuário embrulham as regras sem engoli-las. */
+    for (const m of t.matchAll(/([^{}]+)\{([^{}]*)\}/g)) if (m[1].includes(trecho)) out += `${m[2]}\n`;
+    return out;
+  };
+  const declara = (corpo, prop) => new RegExp(`(^|[;{\\s])${prop}\\s*:`, "m").test(corpo);
+  const card = corpoDe(".afty-card");
+  const linha = corpoDe(".afty-linha");
+  const raiz = corpoDe("#afty-ficha#afty-ficha") + corpoDe(":scope#afty-ficha");
+  const achados = [];
+  if (/!important/.test(t)) achados.push("Usa !important: um seletor de classe simples basta nas superfícies do contrato");
+  if (/@import|@font-face/i.test(String(css))) achados.push("@import é removido e @font-face não vale no escopo: use as fontes do sistema ou as da lista do painel");
+  if (/data:/i.test(t)) achados.push("Imagem em data URI estoura o armazenamento: use uma URL pública");
+  if (declara(corpoDe(".afty-cabecalho"), "position")) achados.push("O cabeçalho tem position própria: ele gruda no topo de propósito");
+  if (declara(card, "overflow") || declara(linha, "overflow")) achados.push("overflow em .afty-card ou .afty-linha corta o painel de fontes");
+  if (declara(card, "z-index") || declara(linha, "z-index")) achados.push("z-index em .afty-card ou .afty-linha prende o painel de fontes");
+  if (["transform", "filter", "backdrop-filter", "contain", "will-change"].some((p) => declara(raiz, p))) achados.push("transform, filter, contain ou will-change na raiz desloca o painel de fontes");
+  if (declara(corpoDe(".afty-vital-barra"), "background")) achados.push("background em .afty-vital-barra pode apagar o preenchimento da barra");
+  return achados;
 }
 
 /** O tema mexeu em alguma coisa? Decide se o bote salva-vidas aparece. */
@@ -602,6 +690,25 @@ export function promptParaIA(tema, { escopo = ESCOPO_FICHA, nome = null, estrutu
     .map(([grupo, linhas]) => `### ${grupo}\n${linhas.join("\n")}`).join("\n\n");
   const atributos = atributosDaEstrutura(naFicha ? estrutura : "invocacao")
     .map((a) => `- \`${a.seletor}\` ${a.oque}`).join("\n");
+  /* AS FONTES DA LISTA E A ESCALA SÃO DO G2 (revisão de 2026-11-10): é a Ficha G2 que baixa a família citada (`useFontesWeb`) e que tem os
+     degraus `--e-fs-*`. A clássica e o cartão da invocação seguem com as fontes do sistema. */
+  const g2 = naFicha && estrutura === "g2";
+  const regraDaFonte = g2
+    ? `2. \`@import\` é removido automaticamente e \`@font-face\` não vale dentro de \`@scope\`. Fonte de fora
+   só entra por esta lista fechada: cite a família pelo nome em \`font-family\` e o app a baixa sozinho,
+   com uma reserva do sistema depois (por exemplo \`font-family: "Cinzel", Georgia, serif\`). Nenhuma
+   outra família baixa.
+${FONTES_WEB.map((f) => `   - ${f.id}`).join("\n")}`
+    : `2. \`@import\` é removido automaticamente e \`@font-face\` não vale dentro de \`@scope\`, então fonte
+   baixada não funciona aqui. Use as famílias que já estão no sistema do usuário, e
+   compense na ESCALA: um nome de criatura grande vale mais que uma fonte exótica.`;
+  const escala = g2
+    ? `11. O tamanho do texto do G2 sai de seis degraus, definidos na raiz: \`--e-fs-micro\` (11.5px),
+   \`--e-fs-meta\` (12.5px), \`--e-fs-corpo\` (13.5px), \`--e-fs-leitura\` (15px), \`--e-fs-titulo\`
+   (16.5px) e \`--e-fs-destaque\` (22px). Para o texto todo crescer ou encolher junto, troque os degraus
+   no bloco da raiz, ao lado das variáveis de cor, em vez de escrever \`font-size\` classe por classe.
+   Os números grandes dos recursos ficam fora da escala.`
+    : "";
 
   const alvo = naFicha
     ? `É a ficha de personagem do "Grimório do Afty", um sistema de RPG próprio. A página já existe e está
@@ -679,9 +786,7 @@ ${atributos}
 ## Regras
 
 1. Responda SÓ com o CSS, sem explicação em volta e sem cerca de markdown.
-2. \`@import\` é removido automaticamente e \`@font-face\` não vale dentro de \`@scope\`, então fonte
-   baixada não funciona de jeito nenhum. Use as famílias que já estão no sistema do usuário, e
-   compense na ESCALA: um nome de criatura grande vale mais que uma fonte exótica.
+${regraDaFonte}
 3. Imagem e gif entram por URL pública: \`background-image: url("https://...")\`. Não use data URI,
    que estoura o armazenamento do navegador.
 4. Não esconda a ficha inteira, e não mexa em \`position\` do cabeçalho: ele gruda no topo de
@@ -702,7 +807,9 @@ ${atributos}
    \`--afty-pvtemp\`. Preserve a geometria de \`.afty-vital-barra\`. Na clássica, o preenchimento usa
    um gradiente e sobrescrever \`background\` ou \`background-image\` pode apagar esse preenchimento.
 9. Mantenha o resultado abaixo de 64 KB.
-
+10. Não escreva \`@media print\`. A impressão sai preta no branco sozinha, com qualquer tema: o app
+   reescreve as cores de fundo, cartão, borda e texto no papel e esconde o que só serve para clicar.
+${escala}
 ## O que eu quero
 
 (Descreva aqui o visual que você quer. Por exemplo: "um tema de vitral gótico, roxo e dourado, com
@@ -842,7 +949,7 @@ export const CONTRATO_DE_CLASSES = [
   { grupo: "Camadas", seletor: ".afty-fonte-rotulo", oque: "o nome da parcela" },
   { grupo: "Camadas", seletor: ".afty-fonte-valor", oque: "o valor da parcela" },
   { grupo: "Camadas", seletor: ".afty-fonte-total", oque: "a linha do total" },
-  { grupo: "Camadas", seletor: ".afty-log", oque: "a barra de rolagens, abaixo das abas" },
+  { grupo: "Camadas", seletor: ".afty-log", oque: "a barra de rolagens: abaixo das abas, e no G2 em tela larga na linha delas (quebra para baixo quando não cabe)" },
   { grupo: "Camadas", seletor: ".afty-log-topo", oque: "os controles de modo da rolagem" },
   { grupo: "Camadas", seletor: ".afty-log-ultima", oque: "a última rolagem na barra" },
   { grupo: "Camadas", seletor: ".afty-log-historico", oque: "o botão que abre o histórico" },
@@ -868,6 +975,11 @@ const SUPERFICIES_G2 = [
   { grupo: "Cabeçalho", seletor: ".afty-vital-valores", oque: "valor atual, máximo e temporário do recurso" },
   { grupo: "G2", seletor: ".afty-consulta", oque: "o painel de consulta aberto" },
   { grupo: "G2", seletor: ".afty-historico", oque: "o histórico de efeitos aberto" },
+  /* A aba Efeitos (2026-11-09). A cor desses quatro fica em especificidade zero, então um seletor de classe simples basta, sem !important. */
+  { grupo: "Efeitos", seletor: ".afty-efeito", oque: "o cartão de um efeito ativo, na aba Efeitos. O aberto tem aria-current=\"true\"" },
+  { grupo: "Efeitos", seletor: ".afty-efeito-detalhe", oque: "a faixa que abre logo abaixo do cartão, com o que o efeito vale agora" },
+  { grupo: "Efeitos", seletor: ".afty-catalogo-linha", oque: "a linha de uma opção no Adicionar e nos Favoritos. A escolhida tem aria-current=\"true\"" },
+  { grupo: "Efeitos", seletor: ".afty-catalogo-painel", oque: "o painel da opção escolhida no Adicionar" },
 ];
 
 /** O contrato descreve o alvo do editor, sem promover classes internas a API. */
@@ -885,6 +997,9 @@ const MAPA_G2 = `#afty-ficha
 ├── .afty-abas > .afty-aba[data-afty-aba][aria-selected]
 ├── corpo da aba: .afty-card > .afty-card-titulo e .afty-linha
 │   Ações, Habilidades, Perícias, Equipamentos, Invocações e Buffs
+│   Efeitos: .afty-efeito (cartão) e .afty-efeito-detalhe; no Adicionar,
+│   .afty-catalogo-linha e .afty-catalogo-painel
+├── .afty-abas e .afty-log dividem a linha das abas em tela larga, e a barra quebra para baixo quando não cabe
 │   A prévia das três abas possui estrutura própria dentro desses ganchos
 ├── .afty-consulta: leitura e controles do item aberto
 ├── .afty-historico: histórico de efeitos

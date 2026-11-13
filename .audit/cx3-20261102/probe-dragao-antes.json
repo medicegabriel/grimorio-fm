@@ -1,0 +1,182 @@
+[
+  {
+    "sistema": "player",
+    "origem": "inato",
+    "nd": 12,
+    "habilidadesInacessiveis": [],
+    "excedeu": false,
+    "orcamento": false,
+    "postura": "dragao",
+    "ataque": true,
+    "tipos": [
+      {
+        "tipo": "ct",
+        "final": 11
+      }
+    ],
+    "eventos": {
+      "id": "confirmacao-cortes:registro",
+      "ts": 1794017471054,
+      "tipo": "info",
+      "rotulo": "Ataque Confirmado",
+      "rodada": 1,
+      "turno": 1,
+      "detalhe": "Espada Curta: Acertou",
+      "ataqueId": "rol_mw5rok0c_1",
+      "ataque": {
+        "ok": true,
+        "acertou": true,
+        "critico": true,
+        "desastre": false,
+        "motivo": "natural20",
+        "defesa": 18,
+        "ajustes": [],
+        "oportunidades": [],
+        "categoria": "corpo",
+        "categorias": [
+          "arma",
+          "corpo"
+        ],
+        "alvo": {
+          "id": "alvo"
+        }
+      },
+      "calculos": [
+        {
+          "ok": true,
+          "base": 11,
+          "final": 11,
+          "passos": [],
+          "avisos": [],
+          "tipoDano": "ct"
+        }
+      ],
+      "eventosAlvo": [
+        {
+          "tipo": "dano",
+          "tipoDano": "ct",
+          "base": 11,
+          "final": 11,
+          "passos": [],
+          "mudou": {
+            "vida": -11,
+            "casca": 0,
+            "alma": 0
+          },
+          "abateu": false
+        }
+      ],
+      "abateu": false,
+      "estadoVitalAlvo": "vivo",
+      "consumidas": [],
+      "eventos": [
+        {
+          "tipo": "ataque"
+        },
+        {
+          "tipo": "acerto"
+        },
+        {
+          "tipo": "critico"
+        }
+      ]
+    }
+  },
+  {
+    "sistema": "afty",
+    "origem": "inato",
+    "nd": 12,
+    "habilidadesInacessiveis": [],
+    "excedeu": false,
+    "orcamento": false,
+    "postura": "dragao",
+    "ataque": true,
+    "tipos": [
+      {
+        "tipo": "ct",
+        "final": 34
+      }
+    ],
+    "eventos": {
+      "id": "confirmacao-cortes:registro",
+      "ts": 1794017471069,
+      "tipo": "info",
+      "rotulo": "Ataque Confirmado",
+      "rodada": 1,
+      "turno": 1,
+      "detalhe": "Espada Curta: Acertou",
+      "ataqueId": "rol_mw5rok0t_3",
+      "ataque": {
+        "ok": true,
+        "acertou": true,
+        "critico": true,
+        "desastre": false,
+        "motivo": "natural20",
+        "defesa": 25,
+        "ajustes": [],
+        "oportunidades": [],
+        "categoria": "corpo",
+        "categorias": [
+          "arma",
+          "corpo"
+        ],
+        "alvo": {
+          "id": "alvo"
+        }
+      },
+      "calculos": [
+        {
+          "ok": true,
+          "base": 49,
+          "final": 34,
+          "passos": [
+            {
+              "id": "reducao",
+              "label": "Redução de Dano",
+              "de": 49,
+              "para": 34
+            }
+          ],
+          "avisos": [],
+          "tipoDano": "ct"
+        }
+      ],
+      "eventosAlvo": [
+        {
+          "tipo": "dano",
+          "tipoDano": "ct",
+          "base": 49,
+          "final": 34,
+          "passos": [
+            {
+              "id": "reducao",
+              "label": "Redução de Dano",
+              "de": 49,
+              "para": 34
+            }
+          ],
+          "mudou": {
+            "vida": -34,
+            "casca": 0,
+            "alma": 0
+          },
+          "abateu": false
+        }
+      ],
+      "abateu": false,
+      "estadoVitalAlvo": "vivo",
+      "consumidas": [],
+      "eventos": [
+        {
+          "tipo": "ataque"
+        },
+        {
+          "tipo": "acerto"
+        },
+        {
+          "tipo": "critico"
+        }
+      ]
+    }
+  }
+]

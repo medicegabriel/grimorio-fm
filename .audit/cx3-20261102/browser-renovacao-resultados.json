@@ -1,0 +1,38 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "criticoEAbate": true,
+    "recuperouUm": true,
+    "fonte": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "criticoEAbate": true,
+    "recuperouUm": true,
+    "fonte": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "criticoEAbate": true,
+    "recuperouUm": true,
+    "fonte": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "criticoEAbate": true,
+    "recuperouUm": true,
+    "fonte": true,
+    "persistencia": true,
+    "erros": []
+  }
+]

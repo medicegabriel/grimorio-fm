@@ -1,0 +1,90 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "rapida": false,
+    "g2": false,
+    "controle": true,
+    "gatilhoRealNoEncontro": true,
+    "disputaSeparada": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "rapida": true,
+    "g2": false,
+    "controle": true,
+    "gatilhoRealNoEncontro": true,
+    "disputaSeparada": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "rapida": false,
+    "g2": false,
+    "controle": true,
+    "gatilhoRealNoEncontro": true,
+    "disputaSeparada": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "rapida": true,
+    "g2": false,
+    "controle": true,
+    "gatilhoRealNoEncontro": true,
+    "disputaSeparada": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "rapida": false,
+    "g2": false,
+    "controle": true,
+    "gatilhoRealNoEncontro": true,
+    "disputaSeparada": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "rapida": true,
+    "g2": false,
+    "controle": true,
+    "gatilhoRealNoEncontro": true,
+    "disputaSeparada": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "rapida": false,
+    "g2": false,
+    "controle": true,
+    "gatilhoRealNoEncontro": true,
+    "disputaSeparada": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "rapida": true,
+    "g2": false,
+    "controle": true,
+    "gatilhoRealNoEncontro": true,
+    "disputaSeparada": true,
+    "persistencia": true,
+    "erros": []
+  }
+]

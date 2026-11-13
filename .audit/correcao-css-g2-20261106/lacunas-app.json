@@ -1,0 +1,42 @@
+{
+  "checks": [
+    {
+      "id": "a ficha A ficou Pergaminho",
+      "ok": true,
+      "d": "#efe6d3"
+    },
+    {
+      "id": "outra ficha do Player, sem tema próprio, herda o padrão global",
+      "ok": true,
+      "d": "#efe6d3"
+    },
+    {
+      "id": "uma criatura de /afty, sem tema próprio, NÃO herda o padrão do Player",
+      "ok": true,
+      "d": "#060910"
+    },
+    {
+      "id": "a ficha aberta é a clássica (sem .e-g2)",
+      "ok": true,
+      "d": 0
+    },
+    {
+      "id": "sair da ficha clássica logo depois de editar mantém a edição",
+      "ok": true,
+      "d": {
+        "presetId": "padrao",
+        "vars": {},
+        "fonte": null,
+        "raio": null,
+        "imagem": {
+          "url": "",
+          "opacidade": 0.25,
+          "encaixe": "cover",
+          "posicao": "center top"
+        },
+        "css": ".afty-nome { color: #00ffaa; }",
+        "ligado": true
+      }
+    }
+  ]
+}

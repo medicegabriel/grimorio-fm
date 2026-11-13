@@ -1,0 +1,41 @@
+[
+ {
+  "caso": "fonteCura",
+  "sistema": "player",
+  "largura": 1440,
+  "erros": [],
+  "alvoNoEditor": true,
+  "linhaNaFicha": "Retomar o Vigor Você Usos 3 3d8+9",
+  "semScroll": true
+ },
+ {
+  "caso": "fonteCura",
+  "sistema": "player",
+  "largura": 390,
+  "erros": [],
+  "alvoNoEditor": true,
+  "linhaNaFicha": "Retomar o Vigor Você Usos 3 3d8+9",
+  "semScroll": true
+ },
+ {
+  "caso": "fonteCura",
+  "sistema": "afty",
+  "largura": 1440,
+  "erros": [],
+  "alvoNoEditor": true,
+  "linhaNaFicha": "Retomar o Vigor Você Usos 3 3d8+9",
+  "semScroll": true
+ },
+ {
+  "caso": "fonteCura",
+  "sistema": "afty",
+  "largura": 390,
+  "erros": [],
+  "alvoNoEditor": true,
+  "linhaNaFicha": "Retomar o Vigor Você Usos 3 3d8+9",
+  "semScroll": true
+ },
+ {
+  "resultado": "PASSOU"
+ }
+]

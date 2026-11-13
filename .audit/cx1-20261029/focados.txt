@@ -1,0 +1,75 @@
+
+> grimorio-tracker@0.0.0 asserts
+> node asserts/rodar.mjs feiticos-passivos propriedades-armas prodigio reconciliacao-g00
+
+ok   t-feiticos-passivos.mjs  56
+ok   t-prodigio.mjs           33
+ok   t-propriedades-armas.mjs 158
+FALHOU t-reconciliacao-g00.mjs
+       ok proposta intacta não inventa atualização
+       ok novo conteúdo sem dono fica sem sugestão
+       ok aplicação exige dono confirmado
+       ok adição conserva dono e estado anteriores
+       ok adição confirmada começa não revisada
+       ok dono confirmado torna-se explícito no escopo
+       ok proposta obsoleta é recusada
+       ok editar payload da proposta é recusado
+       ok remoção exige motivo
+       ok renomeação exige destino vivo
+       ok remoção preserva tombstone e justificativa
+       ok dado alterado invalida aprovação
+       ok auditoria antiga fica no histórico
+       ok lote e parcelas voltam para revisão
+       ok novo item invalida a aprovação do lote inteiro
+       ok estado parcial e dono são preservados
+       ok reconciliação é estável após ida e volta JSON
+       ok adição referenciada recusa dono incompatível antes de gravar
+       ok dono existente não muda silenciosamente
+       ok erro de coleta não desaparece na reconciliação
+       ok nova habilidade não herda P01 do módulo
+       ok arquivo consultado mudou sem falhar estrutura
+       ok consulta divergente gera revalidação
+       ok artefato divergente bloqueia entrega aguardando auditoria
+       ok entrega histórica divergente vira revalidação
+       ok manifesto externo detecta alteração no próprio registro
+       ok manifesto ausente é diagnóstico estruturado
+       ok fonte ausente conserva verificação de inventário
+       ok manual intencional continua exigindo motor
+       ok manual intencional continua exigindo autoria
+       ok manual com motor e autoria pode cumprir critérios
+       ok fonte adiada impede aprovação
+       ok regra da casa exige decisão
+       ok decisão explícita cumpre requisito da casa
+       ok regra remendada exige prova de integração
+       ok prova precisa cobrir as chaves vinculadas
+       ok coleta real não tem falha
+       ok Guarda inclui fonte escalar
+       ok Guarda inclui as oito condições
+       ok coleta inclui exatamente os remendos declarados nos arquivos de addon
+       ok cada remendo vincula alvo e dono original
+       ok alvos nativos apontam de volta ao remendo
+       ok liberações soPorAddon vinculam a regra nativa
+       ok Roubo conserva 127 referências
+       ok herança conserva 118 integrações
+       node:internal/modules/run_main:107
+           triggerUncaughtException(
+           ^
+       
+       AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+       
+         assert.ok(live.itens.every(i=>Object.hasOwn(mapa.itens,i.chave)))
+       
+           at file:///C:/Projetos/Grimorio/grimorio-tracker/asserts/t-reconciliacao-g00.mjs:102:77
+           at t (file:///C:/Projetos/Grimorio/grimorio-tracker/asserts/t-reconciliacao-g00.mjs:8:20)
+           at file:///C:/Projetos/Grimorio/grimorio-tracker/asserts/t-reconciliacao-g00.mjs:102:1 {
+         generatedMessage: true,
+         code: 'ERR_ASSERTION',
+         actual: false,
+         expected: true,
+         operator: '==',
+         diff: 'simple'
+       }
+       
+       Node.js v24.14.0
+
+1 de 4 arquivos FALHARAM: t-reconciliacao-g00.mjs

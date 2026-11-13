@@ -1,0 +1,82 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "g2": false,
+    "venenoEscolhido": true,
+    "custoQuatroPER": true,
+    "outroVenenoPreservado": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "g2": true,
+    "venenoEscolhido": true,
+    "custoQuatroPER": true,
+    "outroVenenoPreservado": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "g2": false,
+    "venenoEscolhido": true,
+    "custoQuatroPER": true,
+    "outroVenenoPreservado": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "g2": true,
+    "venenoEscolhido": true,
+    "custoQuatroPER": true,
+    "outroVenenoPreservado": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "g2": false,
+    "venenoEscolhido": true,
+    "custoQuatroPER": true,
+    "outroVenenoPreservado": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "g2": true,
+    "venenoEscolhido": true,
+    "custoQuatroPER": true,
+    "outroVenenoPreservado": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "g2": false,
+    "venenoEscolhido": true,
+    "custoQuatroPER": true,
+    "outroVenenoPreservado": true,
+    "persistencia": true,
+    "erros": []
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "g2": true,
+    "venenoEscolhido": true,
+    "custoQuatroPER": true,
+    "outroVenenoPreservado": true,
+    "persistencia": true,
+    "erros": []
+  }
+]

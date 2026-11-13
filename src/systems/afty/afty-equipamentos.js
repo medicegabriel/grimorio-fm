@@ -2398,6 +2398,41 @@ const listaEntradas = (creature) => {
   return Array.isArray(itens) ? itens : [];
 };
 
+export function podeAplicarEngenhoSuperior(creature) {
+  return creature?.core?.origem?.id === "formula-combate-entropica:restricao_intelectual"
+    && (creature.addons ?? []).some((pacote) => pacote?.id === "formula-combate-entropica");
+}
+
+const eficienciaDoEngenho = (valor) =>
+  typeof valor === "number" && valor > 0 ? Math.floor(valor * 1.5) : valor;
+
+const CANAIS_ENGENHO = new Set([
+  "hp", "cd", "atributo", "bonusPericia", "bonusTR", "bonusAcerto", "acertoArma",
+  "defesa", "rdFisico", "rdGeral", "rdTipo", "danoFixo", "movimento",
+]);
+
+function equipamentoComEngenho(def, tipo) {
+  const copia = { ...def };
+  if (tipo === "escudo") copia.rdEscudo = eficienciaDoEngenho(def.rdEscudo);
+  if (tipo === "uniforme") {
+    copia.defesa = eficienciaDoEngenho(def.defesa);
+    copia.defesaCriatura = eficienciaDoEngenho(def.defesaCriatura ?? def.custo);
+  }
+  if (def.efeito) {
+    const efeito = { ...def.efeito };
+    for (const chave of ["hpMax", "cd"]) {
+      if (chave in efeito) efeito[chave] = eficienciaDoEngenho(efeito[chave]);
+    }
+    for (const chave of ["atributo", "pericia"]) {
+      if (efeito[chave]) efeito[chave] = Object.fromEntries(
+        Object.entries(efeito[chave]).map(([id, valor]) => [id, eficienciaDoEngenho(valor)]),
+      );
+    }
+    copia.efeito = efeito;
+  }
+  return copia;
+}
+
 /**
  * Os itens EQUIPADOS da ficha, com o nome de catálogo: `[{ refId, tipo, nome }]`.
  *
@@ -2444,19 +2479,29 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
   const tipo = entrada.tipo;
   const grauValue = fa.grau ?? "quarto";
   const grauMeta = AFTY_GRAUS.find((g) => g.value === grauValue) ?? AFTY_GRAUS[0];
-  const idsEscolhidos = Array.isArray(fa.encantamentos) ? fa.encantamentos : [];
+  const idsGravados = Array.isArray(fa.encantamentos) ? fa.encantamentos : [];
+  const engenho = entrada.engenhoAtivo === true;
+  const idsEscolhidos = engenho ? [...new Set(idsGravados)].slice(0, 2) : idsGravados;
   const encantamentoTipos = Object.fromEntries([...new Set([...Object.keys(fa.encantamentoTipos ?? {}), ...idsEscolhidos])]
     .filter((id) => getEncantamento(id)?.escolhaTipo)
     .map((id) => [id, escolhasDeTiposEncantamento(id, fa.encantamentoTipos?.[id])]));
   // O Isolante repetido grava tipos no mesmo item e conta uma vaga por tipo.
-  const escolhidos = idsEscolhidos.flatMap((id) =>
+  const todasEscolhas = idsEscolhidos.flatMap((id) =>
     getEncantamento(id)?.repetivel ? Array(encantamentoTipos[id].length).fill(id) : [id]);
+  const escolhidos = engenho ? todasEscolhas.slice(0, 2) : todasEscolhas;
+  if (engenho) {
+    for (const id of idsEscolhidos) {
+      if (getEncantamento(id)?.repetivel) {
+        encantamentoTipos[id] = encantamentoTipos[id].slice(0, escolhidos.filter((x) => x === id).length);
+      }
+    }
+  }
   // Vaga LIVRE: encantamento a mais que a arma pode ter E que não cobra o grau
   // (Completo do Treino de Manejo de Arma). Ela soma no permitido e sai da
   // conta da redução, que é o que significa "não perder Acerto e Dano Fixo do
   // Grau" (autor, 2026-08-07).
   const livres = Math.max(0, Math.trunc(Number(vagasLivres) || 0));
-  const permitidos = faEncantamentosPermitidos(tipo, grauValue) + livres + vagasAdicionais;
+  const permitidos = engenho ? 2 : faEncantamentosPermitidos(tipo, grauValue) + livres + vagasAdicionais;
 
   /* Grau PARA CÁLCULO: cada encantamento escolhido desce um degrau (ver
      grauRankCalculo), fora os que ocupam vaga livre. O `permitidos` acima segue
@@ -2553,7 +2598,9 @@ export function resolveFerramenta(entrada, def, bt = 2, ctxBase = null, vagasLiv
       // O catálogo pode fornecer dados finais já contendo Potente. Mantém o
       // encantamento e seus requisitos, sem acrescentar o mesmo dado novamente.
       if (ef.canal === "dadosDano" && def?.dano?.encantamentosIncluidos?.includes(x.id)) continue;
-      const valor = evalNumber(ef.expr, ctx) * dobraDe(x.id);
+      const calculado = evalNumber(ef.expr, ctx) * dobraDe(x.id);
+      const valor = engenho && CANAIS_ENGENHO.has(ef.canal)
+        ? eficienciaDoEngenho(calculado) : calculado;
       // Efeito que resolve em zero não vira linha: é o caso do Ajustado num
       // uniforme que já tem penalidade, cuja metade de Furtividade não vale.
       if (!valor) continue;
@@ -2900,6 +2947,12 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
       const adicional = evalNumber(def.rdEscudoAdicionalExpr, ctxBase);
       def = { ...def, rdEscudo: (def.rdEscudo ?? 0) + adicional };
     }
+    const engenhoAtivo = Number(e.qtd ?? 1) === 1 && (
+      e.engenhoRecebido === true || (e.engenhoSuperior === true && podeAplicarEngenhoSuperior(creature))
+    );
+    if (engenhoAtivo) {
+      def = equipamentoComEngenho(def, e.tipo);
+    }
     // Relíquia única também é aparada na leitura. A UI já não oferece o botão
     // de quantidade, mas uma ficha importada ou editada à mão ainda poderia
     // chegar com `qtd` maior que 1.
@@ -2928,7 +2981,7 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
       ...entradaFa.fa, encantamentos: [...(entradaFa.fa.encantamentos ?? []), ...novosEncantamentos],
     } };
     const vagasLivres = (vagasEncantamento[def.id] ?? 0) + (e?.tipo === "escudo" ? vagasEscudo : 0);
-    const fa = resolveFerramenta(entradaFa, def, bt, ctxBase, vagasLivres,
+    const fa = resolveFerramenta({ ...entradaFa, engenhoAtivo }, def, bt, ctxBase, vagasLivres,
       marcaEspinho, novosEncantamentos.length);
     /* O Feitiço da Técnica Inata (Criação de Equipamentos, fase 4): *"podendo ser
        conjurado uma quantidade de vezes igual a metade do seu BT"*. Resolvido
@@ -3070,7 +3123,9 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
         for (const ex of ef.motor ?? []) {
           // O `rankCalculo` é o grau JÁ REBAIXADO por encantamento, que é o que
           // vale em toda conta do item desde 2026-08-01.
-          const valor = evalNumber(ex.expr, { ...ctxBase, ...dslItemVars(def, fa?.rankCalculo ?? 0) });
+          const calculado = evalNumber(ex.expr, { ...ctxBase, ...dslItemVars(def, fa?.rankCalculo ?? 0) });
+          const valor = engenhoAtivo && CANAIS_ENGENHO.has(ex.canal)
+            ? eficienciaDoEngenho(calculado) : calculado;
           // Efeito que resolve em zero não vira linha, igual aos encantamentos.
           if (!valor) continue;
           efeitosEncantamento.push({
@@ -3182,6 +3237,7 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
 
     entradas.push({
       ...e,
+      engenhoAtivo,
       qtd,
       def,
       fa,

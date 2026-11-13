@@ -1,0 +1,46 @@
+[
+  {
+    "sistema": "player",
+    "largura": 1440,
+    "recarga": true,
+    "modos": [
+      "desvantagem",
+      "vantagem"
+    ],
+    "prazo": true,
+    "obrigacao": true
+  },
+  {
+    "sistema": "player",
+    "largura": 390,
+    "recarga": true,
+    "modos": [
+      "desvantagem",
+      "vantagem"
+    ],
+    "prazo": true,
+    "obrigacao": true
+  },
+  {
+    "sistema": "afty",
+    "largura": 1440,
+    "recarga": true,
+    "modos": [
+      "desvantagem",
+      "vantagem"
+    ],
+    "prazo": true,
+    "obrigacao": true
+  },
+  {
+    "sistema": "afty",
+    "largura": 390,
+    "recarga": true,
+    "modos": [
+      "desvantagem",
+      "vantagem"
+    ],
+    "prazo": true,
+    "obrigacao": true
+  }
+]

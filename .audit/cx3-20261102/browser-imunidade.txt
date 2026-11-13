@@ -1,0 +1,16 @@
+{"sistema":"player","largura":1440,"g2":false,"url":"http://127.0.0.1:5193/player","abas":["Ações","Habilidades","Perícias","Equipamentos","Invocações","Buffs"],"estrutura":null}
+player 1440 clássica/Encontro: aprovado
+{"sistema":"player","largura":1440,"g2":true,"url":"http://127.0.0.1:5193/player?ficha-g2=1","abas":[],"estrutura":"g2"}
+player 1440 G2: aprovado
+{"sistema":"player","largura":390,"g2":false,"url":"http://127.0.0.1:5193/player","abas":["Ações","Habilidades","Perícias","Equipamentos","Invocações","Buffs"],"estrutura":null}
+player 390 clássica/Encontro: aprovado
+{"sistema":"player","largura":390,"g2":true,"url":"http://127.0.0.1:5193/player?ficha-g2=1","abas":[],"estrutura":"g2"}
+player 390 G2: aprovado
+{"sistema":"afty","largura":1440,"g2":false,"url":"http://127.0.0.1:5193/afty","abas":["Ações","Habilidades","Perícias","Equipamentos","Invocações","Buffs"],"estrutura":null}
+afty 1440 clássica/Encontro: aprovado
+{"sistema":"afty","largura":1440,"g2":true,"url":"http://127.0.0.1:5193/afty?ficha-g2=1","abas":[],"estrutura":"g2"}
+afty 1440 G2: aprovado
+{"sistema":"afty","largura":390,"g2":false,"url":"http://127.0.0.1:5193/afty","abas":["Ações","Habilidades","Perícias","Equipamentos","Invocações","Buffs"],"estrutura":null}
+afty 390 clássica/Encontro: aprovado
+{"sistema":"afty","largura":390,"g2":true,"url":"http://127.0.0.1:5193/afty?ficha-g2=1","abas":[],"estrutura":"g2"}
+afty 390 G2: aprovado

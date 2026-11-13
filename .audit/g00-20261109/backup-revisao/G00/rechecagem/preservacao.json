@@ -1,0 +1,149 @@
+{
+  "data": "2026-10-05T21:07:01.474Z",
+  "arquivosDaEntrada": 772,
+  "identicos": 748,
+  "modificados": [
+    {
+      "arquivo": "AGENTS.md",
+      "hashEntrada": "ff2799e61eb774e8b5352488dc91a341572751a49c30a4e07974f1ea145256f5",
+      "origem": "mudança externa preservada"
+    },
+    {
+      "arquivo": "asserts/LEIA.md",
+      "hashEntrada": "35a9963eeba039044186a67babac205a9aaa2230facd0a64a2b4cb7c1f1b3b0f",
+      "origem": "correção deste executor"
+    },
+    {
+      "arquivo": "asserts/t-fontes-revisao.mjs",
+      "hashEntrada": "874ecf97b4886d1d71d49b9dc988e9bc10a982eeecc88bcb154f834a06fe3d51",
+      "origem": "correção deste executor"
+    },
+    {
+      "arquivo": "CLAUDE.md",
+      "hashEntrada": "b397361e8bbeb3ebdf7114e7953ad1379e80ba2f6f5f78bddbee67e1f25fe65c",
+      "origem": "correção deste executor"
+    },
+    {
+      "arquivo": "docs/a-fazer.md",
+      "hashEntrada": "ae88ab6a0777c53e6629e64901e5b2450df4629baaf6c6414736569466fda59d",
+      "origem": "correção deste executor"
+    },
+    {
+      "arquivo": "docs/revisao-automacao/campanha.json",
+      "hashEntrada": "54a2289d9fe5dde03b7a51e345f85b40f3e6ba5c028043365f15fa5f8744a99a",
+      "origem": "correção deste executor"
+    },
+    {
+      "arquivo": "docs/revisao-automacao/escopo.json",
+      "hashEntrada": "d7b5cf7458391096da5c0af7fb6c1e1087eee61b38f874de430974e7d2ddd704",
+      "origem": "correção deste executor"
+    },
+    {
+      "arquivo": "docs/revisao-automacao/fontes.json",
+      "hashEntrada": "0cf54d87cb9f23a133fedf5a8725e9e29c2493ce36eabb10c5ddf318ace4dc4d",
+      "origem": "correção deste executor"
+    },
+    {
+      "arquivo": "docs/revisao-automacao/G00/arquivos-examinados.json",
+      "hashEntrada": "a14ee740321b64f8b691a95c30568af4565adfa7274304fbeeb53222590f83d1",
+      "origem": "correção deste executor"
+    },
+    {
+      "arquivo": "docs/revisao-automacao/G00/atualizacao-fonte-2026-10-05.json",
+      "hashEntrada": "8b1c5ef4f7a00ea2ebb6a36f2f5f934873fda7b959d4922744889113f33c9486",
+      "origem": "mudança externa preservada"
+    },
+    {
+      "arquivo": "docs/revisao-automacao/G00/entrega-sha256.json",
+      "hashEntrada": "e2b177f6c8f9854bf778bf0ff2bb2fa391d39027bff064ec996a01c68e3d639b",
+      "origem": "correção deste executor"
+    },
+    {
+      "arquivo": "docs/revisao-automacao/G00/pedido.md",
+      "hashEntrada": "9fd666f81cfc24f63d515f34dd86cbee63e153b0ad7eb694c6b1ab6461a7eb31",
+      "origem": "correção deste executor"
+    },
+    {
+      "arquivo": "docs/revisao-automacao/G00/registro.json",
+      "hashEntrada": "9a7f5db0f02f24e9967b37af95497d97e999f9ea93c3330011d659eab52c014f",
+      "origem": "correção deste executor"
+    },
+    {
+      "arquivo": "docs/revisao-automacao/G00/revisao.md",
+      "hashEntrada": "3912f720ca8fd3b5920fb2fd46fc8cce4a911d8e15ab9264d159205c27b5a79d",
+      "origem": "correção deste executor"
+    },
+    {
+      "arquivo": "docs/revisao-automacao/inventario-vivo.json",
+      "hashEntrada": "c10bcbc6442767e6acbd9933476f75f2b6bc4b9a85cd8f51e561ecc7dbe448e3",
+      "origem": "correção deste executor"
+    },
+    {
+      "arquivo": "docs/revisao-automacao/inventario.json",
+      "hashEntrada": "2e5eeeb7849075028094bc06d5d291dd8840d07c7116bf29fd7d31fbcb362121",
+      "origem": "correção deste executor"
+    },
+    {
+      "arquivo": "docs/revisao-automacao/LEIA.md",
+      "hashEntrada": "29b4a60de34d67720a734ee7a82e79aede61041d6a7a0f8f828c216a7518f0a7",
+      "origem": "correção deste executor"
+    },
+    {
+      "arquivo": "docs/revisao-automacao/reconciliacao.json",
+      "hashEntrada": "e400bae2cc9be02633967c86589500d8e0ac5f67c8cc90ee827311d3dffceb9c",
+      "origem": "correção deste executor"
+    },
+    {
+      "arquivo": "docs/revisao-automacao/schema-registro.json",
+      "hashEntrada": "a0ea242a42bf6dd9aff009f7b7ac61e506f3b39d751b1543969db46ad3f11676",
+      "origem": "correção deste executor"
+    },
+    {
+      "arquivo": "package.json",
+      "hashEntrada": "ec3a679bac1d9a2f81960f080212cb11fe83c06e8cbe892223e59c8c161665a8",
+      "origem": "correção deste executor"
+    },
+    {
+      "arquivo": "scripts/revisao-automacao/cobertura.mjs",
+      "hashEntrada": "28962fb15fe848786f7b074e327b4e001619c78b98721545cddbb5e239f0b076",
+      "origem": "correção deste executor"
+    },
+    {
+      "arquivo": "scripts/revisao-automacao/fontes.mjs",
+      "hashEntrada": "64acb4259821c248a9674faacfad0b417325e65a31682e1652828cf3846ba8ee",
+      "origem": "correção deste executor"
+    },
+    {
+      "arquivo": "scripts/revisao-automacao/inventario.mjs",
+      "hashEntrada": "c355483b2504c5db91da6fcfb8804ee17859005365b895f6703171c6db614a7b",
+      "origem": "correção deste executor"
+    },
+    {
+      "arquivo": "scripts/revisao-automacao/LEIA.md",
+      "hashEntrada": "3f667e8e75860fa53b100c54e1efb3f7b036d426230a22b138ac9dafddf26090",
+      "origem": "correção deste executor"
+    }
+  ],
+  "ausentes": [],
+  "inesperados": [],
+  "codigoAplicativoAlterado": [],
+  "lintDiagnosticosIdenticos": true,
+  "alteracoesExternas": [
+    {
+      "arquivo": "AGENTS.md",
+      "hashDetectado": "3f4505f6a26fcb47059f15c558e78d4df4fa2932fabaf3006ef6042ee54291f4",
+      "modificadoEm": "2026-10-05T20:19:44.364Z"
+    },
+    {
+      "arquivo": "docs/revisao-automacao/G00/atualizacao-fonte-2026-10-05.json",
+      "hashDetectado": "750b32dac601f4469255e5821806bb5fe5e1e38efd76c11c9d7a64685102ca76",
+      "modificadoEm": "2026-10-05T20:19:49.476Z"
+    },
+    {
+      "arquivo": "docs/revisao-automacao/G00/entrega-sha256.json",
+      "hashDetectado": "0fcf9a601b357b4388c4a8d6d333e47bca4d56605130d343e46e90842f8356d8",
+      "modificadoEm": "2026-10-05T20:19:49.482Z"
+    }
+  ],
+  "nota": "Hashes finais de arquivos do próprio controle são guardados somente no manifesto externo para evitar ciclos de autorreferência."
+}

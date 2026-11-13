@@ -1,0 +1,300 @@
+{
+  "geradoEm": "2026-11-06T03:32:43.389Z",
+  "base": "http://127.0.0.1:5341",
+  "etapas": [
+    {
+      "nome": "L1 tabela da receita .e-g2",
+      "checks": [
+        {
+          "id": "a tabela foi montada",
+          "ok": true
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "prefixa": 26,
+        "mista": 9,
+        "semPrefixo": 13,
+        "mesmoElemento": 1,
+        "ausente": 68
+      }
+    },
+    {
+      "nome": "L2 imagem de fundo no G2",
+      "checks": [
+        {
+          "id": "o endereço da imagem chega às variáveis do tema",
+          "ok": true,
+          "dados": {
+            "--afty-imagem": "url(\"http://127.0.0.1:5341/fundo-teste.png\")",
+            "--afty-imagem-opacidade": "1",
+            "--afty-imagem-opacidade-ambiente": "0.5",
+            "--afty-imagem-opacidade-banner": "0.6",
+            "--afty-imagem-encaixe": "contain"
+          }
+        },
+        {
+          "id": "a imagem é pedida de verdade",
+          "ok": true,
+          "dados": 1
+        },
+        {
+          "id": "alguma camada do G2 pinta a imagem",
+          "ok": true,
+          "dados": [
+            {
+              "sel": "div.afty-ficha-corpo::before",
+              "opac": "0.5",
+              "tam": "cover",
+              "w": 1425,
+              "h": 938
+            },
+            {
+              "sel": "div.afty-ficha-corpo::after",
+              "opac": "0.6",
+              "tam": "contain",
+              "w": 1425,
+              "h": 938
+            }
+          ]
+        },
+        {
+          "id": "data URI não chega como data URI (o ponto e vírgula é removido)",
+          "ok": true,
+          "dados": "url(\"data:image/pngbase64,AAAA\")"
+        },
+        {
+          "id": "sem erro de página",
+          "ok": true,
+          "dados": []
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "vars": {
+          "--afty-imagem": "url(\"http://127.0.0.1:5341/fundo-teste.png\")",
+          "--afty-imagem-opacidade": "1",
+          "--afty-imagem-opacidade-ambiente": "0.5",
+          "--afty-imagem-opacidade-banner": "0.6",
+          "--afty-imagem-encaixe": "contain"
+        },
+        "pinta": [
+          {
+            "sel": "div.afty-ficha-corpo::before",
+            "opac": "0.5",
+            "tam": "cover",
+            "w": 1425,
+            "h": 938
+          },
+          {
+            "sel": "div.afty-ficha-corpo::after",
+            "opac": "0.6",
+            "tam": "contain",
+            "w": 1425,
+            "h": 938
+          }
+        ],
+        "pedidos": 1,
+        "placaMostraAImagem": false,
+        "dataUri": "url(\"data:image/pngbase64,AAAA\")"
+      }
+    },
+    {
+      "nome": "L3 saneiaCss no G2",
+      "checks": [
+        {
+          "id": "@import some do <style> injetado",
+          "ok": true,
+          "dados": [
+            "#afty-ficha {\n  --afty-fundo: #060910;\n  --afty-card: #0f172a;\n  --afty-poco: #0",
+            "@scope (#afty-ficha) {\n.e-g2 .afty-nome { color: #0f0; }\n><b id=\"xss\">x</b>\n}"
+          ]
+        },
+        {
+          "id": "</style> não escapa para o HTML (nenhum <b id=xss>)",
+          "ok": true,
+          "dados": false
+        },
+        {
+          "id": "o resto do CSS continua valendo",
+          "ok": true,
+          "dados": "rgb(0, 255, 0)"
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "estilos": [
+          348,
+          77
+        ],
+        "xss": false,
+        "cor": "rgb(0, 255, 0)"
+      }
+    },
+    {
+      "nome": "L4 S1 1280x800 com a compacta e a barra real",
+      "checks": [
+        {
+          "id": "padrao: primeira linha de Dano dentro da primeira tela (792 de 800)",
+          "ok": true,
+          "dados": {
+            "danoFundo": 792,
+            "janela": 800,
+            "util": 839,
+            "pagina": 0
+          }
+        },
+        {
+          "id": "padrao: sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "danoFundo": 792,
+            "janela": 800,
+            "util": 839,
+            "pagina": 0
+          }
+        },
+        {
+          "id": "vitral: primeira linha de Dano dentro da primeira tela (792 de 800)",
+          "ok": true,
+          "dados": {
+            "danoFundo": 792,
+            "janela": 800,
+            "util": 839,
+            "pagina": 0
+          }
+        },
+        {
+          "id": "vitral: sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "danoFundo": 792,
+            "janela": 800,
+            "util": 839,
+            "pagina": 0
+          }
+        },
+        {
+          "id": "papel: primeira linha de Dano dentro da primeira tela (800 de 800)",
+          "ok": true,
+          "dados": {
+            "danoFundo": 800,
+            "janela": 800,
+            "util": 839,
+            "pagina": 0
+          }
+        },
+        {
+          "id": "papel: sem estouro horizontal",
+          "ok": true,
+          "dados": {
+            "danoFundo": 800,
+            "janela": 800,
+            "util": 839,
+            "pagina": 0
+          }
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "padrao": {
+          "danoFundo": 792,
+          "janela": 800,
+          "util": 839,
+          "pagina": 0
+        },
+        "vitral": {
+          "danoFundo": 792,
+          "janela": 800,
+          "util": 839,
+          "pagina": 0
+        },
+        "papel": {
+          "danoFundo": 800,
+          "janela": 800,
+          "util": 839,
+          "pagina": 0
+        }
+      }
+    },
+    {
+      "nome": "L5 Esc e foco na clássica",
+      "checks": [
+        {
+          "id": "Esc fecha o painel de Aparência na clássica",
+          "ok": false,
+          "dados": {
+            "aberto": 1
+          }
+        },
+        {
+          "id": "o painel declara role=dialog na clássica",
+          "ok": false,
+          "dados": null
+        }
+      ],
+      "erros": [],
+      "medidas": {}
+    },
+    {
+      "nome": "L6 fixtures com invocações",
+      "checks": [
+        {
+          "id": "alguma fixture tem invocações (senão a aparência de invocação fica declarada como não testada)",
+          "ok": false,
+          "dados": {
+            "arsenal": 0,
+            "conjurador": 0,
+            "mesa": 0,
+            "tipica": 0,
+            "vazia": 0,
+            "criatura": 0
+          }
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "arsenal": 0,
+        "conjurador": 0,
+        "mesa": 0,
+        "tipica": 0,
+        "vazia": 0,
+        "criatura": 0
+      }
+    }
+  ],
+  "falhas": [
+    {
+      "etapa": "L5 Esc e foco na clássica",
+      "id": "Esc fecha o painel de Aparência na clássica",
+      "dados": {
+        "aberto": 1
+      }
+    },
+    {
+      "etapa": "L5 Esc e foco na clássica",
+      "id": "o painel declara role=dialog na clássica",
+      "dados": null
+    },
+    {
+      "etapa": "L6 fixtures com invocações",
+      "id": "alguma fixture tem invocações (senão a aparência de invocação fica declarada como não testada)",
+      "dados": {
+        "arsenal": 0,
+        "conjurador": 0,
+        "mesa": 0,
+        "tipica": 0,
+        "vazia": 0,
+        "criatura": 0
+      }
+    }
+  ],
+  "resumo": [
+    "L1 tabela da receita .e-g2: 1/1",
+    "L2 imagem de fundo no G2: 5/5",
+    "L3 saneiaCss no G2: 3/3",
+    "L4 S1 1280x800 com a compacta e a barra real: 6/6",
+    "L5 Esc e foco na clássica: 0/2",
+    "L6 fixtures com invocações: 0/1"
+  ]
+}

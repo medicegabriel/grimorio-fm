@@ -1,0 +1,67 @@
+{
+  "geradoEm": "2026-11-06T03:26:40.038Z",
+  "base": "http://127.0.0.1:5341",
+  "etapas": [
+    {
+      "nome": "receita .e-g2 (build atual)",
+      "checks": [
+        {
+          "id": "seção de Ações (.afty-card): a receita .e-g2 vence sem !important",
+          "ok": true,
+          "dados": [
+            "rgb(225, 29, 72)"
+          ]
+        },
+        {
+          "id": "número da Mesa (.afty-valor): a receita .e-g2 vence sem !important",
+          "ok": true,
+          "dados": [
+            "rgb(34, 211, 238)",
+            "rgb(241, 245, 249)"
+          ]
+        },
+        {
+          "id": "aba ativa: a receita .e-g2 vence sem !important",
+          "ok": true,
+          "dados": [
+            "rgb(34, 211, 238)"
+          ]
+        },
+        {
+          "id": "nome da ficha: a receita .e-g2 vence sem !important",
+          "ok": true,
+          "dados": [
+            "rgb(34, 211, 238)"
+          ]
+        },
+        {
+          "id": "cabeçalho (placa): a receita .e-g2 vence sem !important",
+          "ok": true,
+          "dados": [
+            "rgb(225, 29, 72)"
+          ]
+        },
+        {
+          "id": "Perícias: .afty-card",
+          "ok": true,
+          "dados": [
+            "rgb(225, 29, 72)"
+          ]
+        },
+        {
+          "id": "todo elemento alvo tem um ancestral .e-g2 (o prefixo alcança)",
+          "ok": true,
+          "dados": 0
+        }
+      ],
+      "erros": [],
+      "medidas": {
+        "semAncestralEg2": 0
+      }
+    }
+  ],
+  "falhas": [],
+  "resumo": [
+    "receita .e-g2 (build atual): 7/7"
+  ]
+}

@@ -1,0 +1,4 @@
+player 1440 Tempestade OK
+player 390 Tempestade OK
+afty 1440 Tempestade OK
+afty 390 Tempestade OK

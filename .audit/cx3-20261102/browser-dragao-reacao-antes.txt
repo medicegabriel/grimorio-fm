@@ -1,0 +1,20 @@
+player 1440 clássica/Encontro: aprovado
+player 390 clássica/Encontro: aprovado
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+0 !== -5
+
+    at file:///C:/Projetos/Grimorio/grimorio-tracker/.audit/cx3-20261102/browser-dragao-reacao.mjs:135:11 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 0,
+  expected: -5,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.14.0

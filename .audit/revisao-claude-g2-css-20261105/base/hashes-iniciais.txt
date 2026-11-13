@@ -1,0 +1,13 @@
+6149202010a719b2675e25f055580ad0911d3d3b04a9bbbb92a0dc02ef88957d *src/systems/afty/ficha/ficha-tema.js
+7adcc51e49b2f67428c0c9acace1e0054b088a6b69a4c756b5b8612de518d45d *src/systems/afty/ficha/PainelDeAparencia.jsx
+f94fb84272e0b9a200584d71f557c32f660836e1ebd321b1ea2fcb9747593be0 *src/systems/afty/ficha/ficha.css
+fb884d72e5924c1b8ce99ffefa56759698f2be81e434cd52e35ce1f3fefd476d *src/systems/afty/ficha/efeitos/efeitos-g2.css
+6dc7571167d697bf48fa3828910fd7c44971ae415af2a326c9c066c49e71e4be *src/systems/afty/ficha/abas-g2/abas-g2.css
+5fa75ce06d69aeff446a0420e3a864765104d9fa444d2f0dabe5b4dc0ada16f8 *src/systems/afty/ficha/AftyFichaG2.jsx
+79d7c2172849f6f9d1d45296961df373f3d7b785fa12fa0941b8275f4547aae4 *src/systems/afty/ficha/AftyFichaClassica.jsx
+cd06a9c739aae4c58b2feba3b7d3e358e69313de38054a1fc8b89121f4993de4 *src/systems/afty/ficha/abas/AbaInvocacoes.jsx
+dc25b5e92f4217e6dd1c5ea6363b20a50319c4093cc51be79e46ee838e47255e *docs/a-fazer.md
+ad0be5ca514b91fc66d81842fce5cbfef5673f28dbe0c28512b4fe26ebc24f46 *docs/afty-status.md
+77d295e29ba3d2f30a3719d08e87f88ce2c7c1c4ddae2aa4c64dbcf27b226632 *themes/minamoto-no-flugel.css
+e3af0f1f117b8bc8d0aa7f09913620cc5aa99fcf2111b2880dfda42b3735b984 *themes/alter-lucielos.css
+1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a *../F&M 2.5.2 - Livro de Regras.md

@@ -1,0 +1,26 @@
+{"sistema":"player","width":1440,"antesDoPatch":false,"cenario":"aparar","perda":0,"calculos":[],"reacao":{"id":"lut_aparar_ataque","pe":1,"totalDoAtacante":31,"rolagem":{"id":"rol_mw6rdbig_3","ts":1794077413000,"tipo":"teste","tipoTeste":"ataque","margemCritico":19,"minimoNatural":0,"contextoTurno":{"rodada":1,"turno":1},"fontes":[{"label":"Força","valor":3},{"label":"Metade do Nível","valor":6},{"label":"Maestria (Treinado na Arma)","valor":4},{"label":"Gosto pela Luta","valor":4}],"armaId":"arm_espada_curta","chaveArma":"espada","rotulo":"Aparar Ataque","detalhe":null,"formula":"d20+17","d20":[20],"descartado":null,"natural":20,"total":37,"cd":null,"sucesso":true,"critico":true,"pifia":false,"bonus":17,"extras":[],"somaExtras":0,"modo":"normal"},"aparou":true}}
+{"sistema":"player","width":1440,"antesDoPatch":false,"cenario":"passar-aparar","perda":2,"calculos":[{"ok":true,"base":8,"final":2,"passos":[{"id":"reducao","label":"Redução de Dano","de":8,"para":2}],"avisos":[],"tipoDano":"ct"}],"reacao":null}
+{"sistema":"player","width":1440,"antesDoPatch":false,"cenario":"falhar-aparar","perda":2,"calculos":[{"ok":true,"base":8,"final":2,"passos":[{"id":"reducao","label":"Redução de Dano","de":8,"para":2}],"avisos":[],"tipoDano":"ct"}],"reacao":{"id":"lut_aparar_ataque","pe":1,"totalDoAtacante":31,"rolagem":{"id":"rol_mw6rdmh6_3","ts":1794077427210,"tipo":"teste","tipoTeste":"ataque","margemCritico":19,"minimoNatural":0,"contextoTurno":{"rodada":1,"turno":1},"fontes":[{"label":"Força","valor":3},{"label":"Metade do Nível","valor":6},{"label":"Maestria (Treinado na Arma)","valor":4},{"label":"Gosto pela Luta","valor":4}],"armaId":"arm_espada_curta","chaveArma":"espada","rotulo":"Aparar Ataque","detalhe":null,"formula":"d20+17","d20":[1],"descartado":null,"natural":1,"total":18,"cd":null,"sucesso":false,"critico":false,"pifia":true,"bonus":17,"extras":[],"somaExtras":0,"modo":"normal"},"aparou":false}}
+{"sistema":"player","width":390,"antesDoPatch":false,"cenario":"aparar","perda":0,"calculos":[],"reacao":{"id":"lut_aparar_ataque","pe":1,"totalDoAtacante":31,"rolagem":{"id":"rol_mw6rdpwy_3","ts":1794077431666,"tipo":"teste","tipoTeste":"ataque","margemCritico":19,"minimoNatural":0,"contextoTurno":{"rodada":1,"turno":1},"fontes":[{"label":"Força","valor":3},{"label":"Metade do Nível","valor":6},{"label":"Maestria (Treinado na Arma)","valor":4},{"label":"Gosto pela Luta","valor":4}],"armaId":"arm_espada_curta","chaveArma":"espada","rotulo":"Aparar Ataque","detalhe":null,"formula":"d20+17","d20":[20],"descartado":null,"natural":20,"total":37,"cd":null,"sucesso":true,"critico":true,"pifia":false,"bonus":17,"extras":[],"somaExtras":0,"modo":"normal"},"aparou":true}}
+{"sistema":"player","width":390,"antesDoPatch":false,"cenario":"passar-aparar","perda":2,"calculos":[{"ok":true,"base":8,"final":2,"passos":[{"id":"reducao","label":"Redução de Dano","de":8,"para":2}],"avisos":[],"tipoDano":"ct"}],"reacao":null}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for getByRole('button', { name: 'Começar', exact: true })
+    - locator resolved to <button type="button" class="afty-botao" title="Começar combate" data-afty-tom="destaque">…</button>
+  - attempting click action
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - waiting for" http://127.0.0.1:5196/player" navigation to finish...
+    - navigated to "http://127.0.0.1:5196/player"
+
+    at C:\Projetos\Grimorio\grimorio-tracker\.audit\cx3-20261102\browser-aparar-ataque.mjs:67:70 {
+  name: 'TimeoutError'
+}
+
+Node.js v24.14.0

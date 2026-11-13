@@ -1,0 +1,23 @@
+{
+  "head": "d6d6dd77a7999d0df0454eb58d62584c0f46a9a3",
+  "fonteLivro": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+  "arquivos": {
+    "src/systems/afty/AftyCreatureBuilder.jsx": "5745b18eb17f1b7b08f81dedc9fa62ade59f31a8b8326f476c3d4d64e16a3fcf",
+    "src/systems/afty/afty-anatomias.js": "4873df2074a30b6f58fb499f9b7636552de98eed617cfb0c1fcc7b9d6beb738a",
+    "src/systems/afty/afty-derive.js": "c04dda79a2fa73c46fe5d422f4f70b12006f358589cfcdbfc0462c90d53a6b3d",
+    "src/systems/afty/afty-efeitos-conteudo.js": "025d9c72908b5ab56877591a2dec0cc0c09d1f135a76d41194bba5283cf3e40e",
+    "src/systems/afty/afty-efeitos.js": "1d58b4925de6de16dc850b7b346f7603841ec86b8d2202c7b5c8579611cecc4c",
+    "src/systems/afty/afty-equipamentos.js": "0c4ae571c909a4e5c98ffb4d9fd1b0d15ed3a29b95379ad023af17d09531d9f9",
+    "src/systems/afty/afty-feiticos.js": "5b05b8dd886d34e48ec4d15d1ca2c78f2e49102729bc5d4bbe19974f4912fac7",
+    "src/systems/afty/afty-origens.js": "c7b36c0681a4798facca150cfd151b514152c154503f598ec9011c23e618783a",
+    "src/systems/afty/afty-pericias.js": "dc54be45640453c56927f144018c1dbafdde3048bd1070dcc24dea49080243c4",
+    "src/systems/afty/afty-propriedades-armas.js": "20dd1e2aab7c4480d064f3fe31ad7cce86aece46032285e8ff0303c212f0b41d",
+    "src/systems/afty/ficha/ficha-rolagem.js": "cbc625b415a5ebc00fe710f8f419e58aba53081ac512e424e66d1655b8da2009",
+    "asserts/t-cx1-base.mjs": "11b0aaec7cfbda65498dd3625fe7950654395e6f4aa1321bc8ea49c8861bfc23",
+    "asserts/t-prodigio.mjs": "d2aac3399a7f170e3fa607a118dbe6a217e6f87fa92e19a8b9a2f9bf91c0845d",
+    "asserts/t-reconciliacao-g00.mjs": "cb9e3de8948b448f6bd3664c4479799eac8f0a8d7120978c5a9097c50b2addb3",
+    "asserts/t-tecnicas-marciais.mjs": "7daf6b2e21b772d966d8728f980f04c745c7d671ca5579a9aca0eca37c0befcb",
+    "docs/revisao-livro-regras/entregas/CX1.md": "c73723e44d3d0cd4b54b27f841bfc5cf30fa09b685b10e19c3fea4dcd0fc7823"
+  },
+  "nota": "Árvore concorrente, hashes dos artefatos de CX1. O assert de Técnicas Marciais inclui mudanças preexistentes preservadas."
+}

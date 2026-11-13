@@ -69,6 +69,9 @@ const FOLHAS = [
      Espinho entra cedo no builder, e o `afty-addons.js` o importa para sanear o
      catálogo do pacote em `espinhoDaFicha`. */
   ["afty-espinho.js", "o card entra cedo no builder E o afty-addons o importa"],
+  /* ⚠ ENTROU EM 2026-11-10: o `afty-addons.js` o importa para validar a pele e o
+     derive o importa para a régua das órbitas do retrato. */
+  ["afty-orbitas.js", "o afty-addons e o derive o importam, um import novo aqui fecharia ciclo"],
   /* ⚠ ENTROU EM 2026-09-09, quando a criação de armas passou a ler a escada de
      Níveis de Dano em vez de espelhá-la. Ele já era folha e agora é folha
      CARREGADA: o `afty-criacao-armas` depende dele e o `afty-equipamentos`

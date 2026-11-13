@@ -1,0 +1,244 @@
+{
+  "data": "2026-10-05T20:44:30.849Z",
+  "criterio": "Faixas por lote são localizadores de família, nunca atribuição de fonte a todos os itens. fontes.itens registra a localização individual ou a ausência; referências não aprovam integração nem regra. Catálogos e addons são objetos auditados, não fonte independente.",
+  "caracteristicas": {
+    "LOCALIZADA": 4,
+    "ADIADA": 40,
+    "DA CASA": 1
+  },
+  "aptidoesMal": [
+    {
+      "chave": "afty-aptidoes.js::AFTY_APTIDOES::mal_absorcao_amaldicoada",
+      "proprietario": "APT-13",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Fonte individual não localizada. Não atribuir a faixa 66 a 71 do Grimório por semelhança da família."
+    },
+    {
+      "chave": "afty-aptidoes.js::AFTY_APTIDOES::mal_absorcao_elemental",
+      "proprietario": "APT-12",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Fonte individual não localizada. Não atribuir a faixa 66 a 71 do Grimório por semelhança da família."
+    },
+    {
+      "chave": "afty-aptidoes.js::AFTY_APTIDOES::mal_armas_naturais",
+      "proprietario": "APT-12",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Fonte individual não localizada. Não atribuir a faixa 66 a 71 do Grimório por semelhança da família."
+    },
+    {
+      "chave": "afty-aptidoes.js::AFTY_APTIDOES::mal_armas_naturais_aprimoradas",
+      "proprietario": "APT-12",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Fonte individual não localizada. Não atribuir a faixa 66 a 71 do Grimório por semelhança da família."
+    },
+    {
+      "chave": "afty-aptidoes.js::AFTY_APTIDOES::mal_composicao_elemental",
+      "proprietario": "APT-12",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Fonte individual não localizada. Não atribuir a faixa 66 a 71 do Grimório por semelhança da família."
+    },
+    {
+      "chave": "afty-aptidoes.js::AFTY_APTIDOES::mal_crescimento_corporal",
+      "proprietario": "APT-12",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Fonte individual não localizada. Não atribuir a faixa 66 a 71 do Grimório por semelhança da família."
+    },
+    {
+      "chave": "afty-aptidoes.js::AFTY_APTIDOES::mal_estoque_ampliado",
+      "proprietario": "APT-13",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Fonte individual não localizada. Não atribuir a faixa 66 a 71 do Grimório por semelhança da família."
+    },
+    {
+      "chave": "afty-aptidoes.js::AFTY_APTIDOES::mal_extracao_de_potencial",
+      "proprietario": "APT-13",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Fonte individual não localizada. Não atribuir a faixa 66 a 71 do Grimório por semelhança da família."
+    },
+    {
+      "chave": "afty-aptidoes.js::AFTY_APTIDOES::mal_fluxo_imparavel",
+      "proprietario": "APT-14",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Fonte individual não localizada. Não atribuir a faixa 66 a 71 do Grimório por semelhança da família."
+    },
+    {
+      "chave": "afty-aptidoes.js::AFTY_APTIDOES::mal_olhos_adicionais",
+      "proprietario": "APT-12",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Fonte individual não localizada. Não atribuir a faixa 66 a 71 do Grimório por semelhança da família."
+    },
+    {
+      "chave": "afty-aptidoes.js::AFTY_APTIDOES::mal_protecao_constante",
+      "proprietario": "APT-13",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Fonte individual não localizada. Não atribuir a faixa 66 a 71 do Grimório por semelhança da família."
+    },
+    {
+      "chave": "afty-aptidoes.js::AFTY_APTIDOES::mal_regeneracao_ampliada",
+      "proprietario": "APT-14",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Fonte individual não localizada. Não atribuir a faixa 66 a 71 do Grimório por semelhança da família."
+    },
+    {
+      "chave": "afty-aptidoes.js::AFTY_APTIDOES::mal_regeneracao_corporal",
+      "proprietario": "APT-14",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "caminho": "public/docs/F&M 2.5.2 - Grimório das Maldições.pdf",
+          "sha256": "b9b7799e6101e702e5a1514c8ac4651b6b14319cad4004ab6c63da33c7567952",
+          "versao": "1, F&M 2.5",
+          "paginaImpressa": 70,
+          "paginaPdf": 70,
+          "local": "Regeneração Corporal, conferida no texto original"
+        }
+      ],
+      "nota": "Localização confirmada. A regra e o motor continuam não revisados."
+    },
+    {
+      "chave": "afty-aptidoes.js::AFTY_APTIDOES::mal_regeneracao_de_membros",
+      "proprietario": "APT-14",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Fonte individual não localizada. Não atribuir a faixa 66 a 71 do Grimório por semelhança da família."
+    },
+    {
+      "chave": "afty-aptidoes.js::AFTY_APTIDOES::mal_regeneracao_maxima",
+      "proprietario": "APT-14",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Fonte individual não localizada. Não atribuir a faixa 66 a 71 do Grimório por semelhança da família."
+    },
+    {
+      "chave": "afty-aptidoes.js::AFTY_APTIDOES::mal_revestimento",
+      "proprietario": "APT-12",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Fonte individual não localizada. Não atribuir a faixa 66 a 71 do Grimório por semelhança da família."
+    },
+    {
+      "chave": "afty-aptidoes.js::AFTY_APTIDOES::mal_revestimento_evoluido",
+      "proprietario": "APT-12",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Fonte individual não localizada. Não atribuir a faixa 66 a 71 do Grimório por semelhança da família."
+    },
+    {
+      "chave": "afty-aptidoes.js::AFTY_APTIDOES::mal_superioridade_fisica",
+      "proprietario": "APT-12",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Fonte individual não localizada. Não atribuir a faixa 66 a 71 do Grimório por semelhança da família."
+    }
+  ],
+  "itensEspeciais": {
+    "afty-equipamentos.js::ARMA_PROPRIEDADES::estabilidade": {
+      "proprietario": "PRO-02",
+      "estado": "NÃO LOCALIZADA",
+      "fontes": [],
+      "nota": "Não localizada nas páginas 131 a 139. Não presumir regra da casa nem atribuir página inexistente."
+    },
+    "afty-equipamentos.js::ITENS_ESPECIAIS::evento_yamata_pingente_amaterasu": {
+      "proprietario": "ITE-06",
+      "estado": "DA CASA",
+      "fontes": [],
+      "nota": "Item de evento. Classificação identifica a origem local, sem aprovar regra ou comportamento."
+    },
+    "afty-habilidades.js::AFTY_HABILIDADES::cnj_agilidade_no_campo_de_batalha": {
+      "proprietario": "CNJ-07",
+      "estado": "ADIADA",
+      "fontes": [],
+      "nota": "Entrada marcada [2.0]. Fonte externa adiada pelo autor. Não atribuir páginas 78 a 89 do livro 2.5.2.",
+      "origemDeclarada": "F&M 2.0"
+    },
+    "afty-talentos.js::AFTY_TALENTOS::tal_alma_livre": {
+      "proprietario": "TAL-05",
+      "estado": "ADIADA",
+      "fontes": [],
+      "nota": "Fonte própria externa não localizada, adiada. Remendos e liberações preservam os vínculos à entrada nativa, sem servir de prova independente.",
+      "origemDeclarada": "Addon Alma Livre"
+    }
+  },
+  "tabelasLivro": {
+    "afty-invocacoes-caracteristicas.js::CARACTERISTICAS_INVOCACAO::vida": {
+      "proprietario": "INC-01",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "versao": "2.5.2; sha256=1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 272,
+          "marcadorPagina": "<!-- página 272 -->",
+          "local": "Tabela de Aumento de Vida",
+          "linha": 6915
+        }
+      ],
+      "nota": "Tabela conferida no contexto das páginas 271 a 273. Localização não aprova dados nem comportamento do catálogo.",
+      "origemDeclarada": "livro"
+    },
+    "afty-invocacoes-caracteristicas.js::CARACTERISTICAS_INVOCACAO::teste": {
+      "proprietario": "INC-01",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "versao": "2.5.2; sha256=1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 272,
+          "marcadorPagina": "<!-- página 272 -->",
+          "local": "Tabela de Bônus em Teste",
+          "linha": 6927
+        }
+      ],
+      "nota": "Tabela conferida no contexto das páginas 271 a 273. Localização não aprova dados nem comportamento do catálogo.",
+      "origemDeclarada": "livro"
+    },
+    "afty-invocacoes-caracteristicas.js::CARACTERISTICAS_INVOCACAO::rd": {
+      "proprietario": "INC-01",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "versao": "2.5.2; sha256=1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 272,
+          "marcadorPagina": "<!-- página 272 -->",
+          "local": "Tabela de Redução de Dano",
+          "linha": 6941
+        }
+      ],
+      "nota": "Tabela conferida no contexto das páginas 271 a 273. Localização não aprova dados nem comportamento do catálogo.",
+      "origemDeclarada": "livro"
+    },
+    "afty-invocacoes-caracteristicas.js::CARACTERISTICAS_INVOCACAO::tamanho": {
+      "proprietario": "INC-01",
+      "estado": "LOCALIZADA",
+      "fontes": [
+        {
+          "caminho": "C:/Projetos/Grimorio/F&M 2.5.2 - Livro de Regras.md",
+          "sha256": "1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "versao": "2.5.2; sha256=1d0713d52c818a9ab9f47b883d9887a0d227d174d30ffcce358874669a7a733a",
+          "paginaImpressa": 273,
+          "marcadorPagina": "<!-- página 273 -->",
+          "local": "Tabela de Tamanho",
+          "linha": 6957
+        }
+      ],
+      "nota": "Tabela conferida no contexto das páginas 271 a 273. Localização não aprova dados nem comportamento do catálogo.",
+      "origemDeclarada": "livro"
+    }
+  }
+}
