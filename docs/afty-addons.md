@@ -1289,6 +1289,11 @@ Quatro pegadinhas, todas pagas com bug:
 
 Opcionais na origem: `clasRotulo` (o nome do seletor, padrão "Clã") e `clasArtigo` (padrão "um").
 
+Opcional no clã: `resumo`, o subtítulo do botão do clã. Sem ele o botão mostra o nome da ÚLTIMA
+característica, que no livro é sempre a herança. O Clã Uchiha da Guilda termina em textos de mesa
+(Mangekyou), e declara `resumo: "Sharingan"` (2026-11-11). A descrição de característica respeita quebra de
+linha (`\n\n` separa parágrafos) no card da Origem.
+
 ⚠ **O clã declarado na origem é DELA (consertado em 2026-10-11).** A família `clas` escreve toda
 definição em `CLAS_HERDADO`, e a entrada `herdado` do livro aponta para esse array. De 2026-09-22 a
 2026-10-11 os 5 Tipos da Maldição Era de Ouro apareciam no seletor de clãs do Herdado do livro, e o

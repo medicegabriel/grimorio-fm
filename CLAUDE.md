@@ -297,6 +297,7 @@ A interface do Afty está em quatro lugares, e saber qual poupa uma busca:
 | `AftyTab*.jsx` (raiz do afty) | as abas de criação que ficaram grandes demais para o builder: Addons, Carteira, Catarse, Defesas |
 | `ficha/` e `ficha/abas/` | a Ficha Final, suas abas de jogo (Ações, Buffs, Equipamentos, Habilidades, Invocações, Perícias) e os painéis `PainelDe*.jsx` |
 | `ui/` | o que criador e ficha compartilham: `fontes.jsx` monta o painel de fontes do hover, mais `vital.jsx`, `TextoRico.jsx` e as bancadas |
+| `src/systems/eradeouro/MesaDoMestre.jsx` | a Mesa do Mestre da Guilda (botão Mestre do `/EraDeOuro`): fichas da lista e importadas, Vida e PE pela sessão da Ficha Final, ações em grupo |
 
 Uma aba da Ficha também é renderizada dentro do Encontro, então ela tem dois donos e mede por
 `@container`, não por largura de janela.
@@ -340,6 +341,10 @@ abaixo é só o que não segue essa regra, ou o que se lê antes de tudo.
   `docs/afty-formulas-base.md` para as fórmulas confirmadas pelo autor, e um guia por área
   (`afty-player`, `afty-ficha-final`, `afty-carteira`, `afty-invocacoes`, `afty-equipamentos`,
   `afty-criacao-equipamentos`, `afty-cofre`).
+
+- `docs/normas-addons.md`, `docs/normas-site.md` e `docs/normas-design.md`: as normas numeradas (A, S e D) de
+  como um pacote, uma mudança no site e uma tela são pensados, feitos, verificados e entregues. Leia a da
+  área antes de começar. `docs/plano-do-projeto.md` é a análise e o plano por etapas, ainda proposta.
 
 Ao mudar o código, atualize contagem, caminho e estado de implementação nos guias. Não apresente
 como pergunta em aberto uma decisão já tomada.

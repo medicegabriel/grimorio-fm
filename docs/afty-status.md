@@ -1,5 +1,50 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-12 · NORMAS DE ADDONS, DO SITE E DE DESIGN
+
+Pedido do autor: "Gostaria que sua pesquise focasse em criar normas e orientaçoes para criaçao de addons e do site, e também no design instrua a partir de normas e regras para criaçao e idealizaçao". Saíram três documentos de norma, com regras numeradas para citar em revisão: `docs/normas-addons.md` (A-01 a A-94: princípios, a ordem da ideia ao pacote, identidade, texto, ids, efeitos, verificação, documentação, entrega, quando o motor cresce, pacotes nativos e os erros que já aconteceram), `docs/normas-site.md` (S-01 a S-86: antes do código, onde cada coisa mora, forma, dados, motor, comentários, testes, a lista de entrega, registro, git, o relatório e o que é proibido) e `docs/normas-design.md` (D-01 a D-104: os cinco princípios, as sete perguntas da idealização, estrutura, cor por significado, tipografia e escrita, peças, os cinco estados, celular, movimento, tema e a revisão de doze perguntas). Só documentação: nenhum código mudou. Os fatos citados foram conferidos no código (classes, componentes, categorias, o teto de 160 do resumo, o formato dos ids). O `CLAUDE.md` e o `docs/plano-do-projeto.md` apontam para os três.
+
+## SESSÃO DE 2026-11-12 · ANÁLISE, PLANO E NORMAS DO PROJETO
+
+Pedido do autor: análise do projeto, melhorias, arte e normas para o futuro. Saiu `docs/plano-do-projeto.md`, que é PROPOSTA: medidas de 2026-11-12, o que está forte, onde dói (sem identidade própria, três linguagens visuais, 4,5 MB de enciclopédia em toda rota, o criador de 21 mil linhas, `.audit/` versionada, dados só no navegador, dois vermelhos permanentes), sete etapas, a proposta de arte e as normas. Nada foi aplicado no código, e as seis decisões que dependem do autor estão na seção 7 de lá.
+
+## SESSÃO DE 2026-11-11 · A MESA DO MESTRE DA GUILDA
+
+Pedido do autor: "Crie uma aba de Mestre no Era de Ouro que e capaz de importar as fichas e deixa-las separadas, com vida e PE claros alem de poder selecionar as criaturas [...] para o mestre conseguir subtrair vida e PE de suas criatruras e dos players sem adentrar na ficha, faça uma pesquisa de ultilidade e coisas legais de adicionar [...] tem que ter como retirar as fichas facilmente tbm". Decisões dele, por pergunta:
+
+| Pergunta | Resposta |
+|---|---|
+| Onde fica a entrada | Botão Mestre no cabeçalho da Guilda (exceção Forma 1 no `Dashboard.jsx`, registrada no AGENTS.md) |
+| A Vida e o PE de uma criatura da lista | O mesmo valor da Ficha Final |
+| Extras, da pesquisa | Dano pela Metade, Descanso da Mesa e Atualizar Ficha Importada. Desfazer e Histórico ficaram de fora |
+
+- **Onde:** `src/systems/eradeouro/` em três arquivos. `mesa-do-mestre.js` é o modelo puro (chave `fm_mesa_mestre_eradeouro_v1`), `mesa-do-mestre-sessao.js` aplica as ações com os verbos da Ficha, e `MesaDoMestre.jsx` é a tela. Rota interna `mestre` no `App.jsx`, só com `mesa`.
+- **Duas origens de ficha:** "Adicionar da Lista" aponta para a ficha da Guilda pelo id, e a Vida e o PE são a sessão da Ficha Final (`fm_ficha_sessao_afty_v1:<id>`). Dano dado na mesa aparece ao abrir a Ficha, e o contrário. "Importar Fichas" lê um ou mais arquivos exportados e guarda CÓPIAS só na mesa, separadas da lista, com id novo (`mesa_...`) e sessão própria. A porta do livro vale: ficha da 2.5.2 fica de fora, com aviso.
+- **A tela:** Jogadores e Criaturas em grupos, cada card com Nível ou ND, Defesa, a barra de PV (com PV Temporário e o aviso do estado vital) e a de PE, as mesmas `Vital` do Painel de Combatente (digitar `-12` tira, `+5` devolve, número seco fixa). Caído com 0 de PV (só se a Vida máxima passa de 0) e Morto pelo estado vital.
+- **Seleção:** clicar no card seleciona, Selecionar Todos por grupo, e a barra de baixo aplica nos selecionados: Dano, Dano pela Metade (arredonda para baixo), Cura, Gastar PE, Recuperar PE (sem passar do máximo), Descansar, Tirar da Mesa. Enter no valor aplica Dano, Esc limpa a seleção.
+- **Tirar:** o X do card, Tirar da Mesa nos selecionados, ou Limpar Mesa (com confirmação). A ficha da lista continua na lista, e a importada é apagada com a sessão dela. Ficha apagada da lista sai da mesa sozinha.
+- **Atualizar Ficha:** o botão de seta da importada lê o arquivo novo do jogador e troca a ficha mantendo o id, e com ele a Vida e o PE correntes.
+- **Pesquisa:** os rastreadores de mesa (Fantasy Grounds, apps de iniciativa, DnDino) juntam a lista do grupo fora do combate, PV e PV temporário por personagem e alvo múltiplo para aplicar dano de uma vez, e os mestres pedem tela simples. A iniciativa já é do Encontro e não foi repetida aqui.
+- Verificado: `t-mesa-do-mestre.mjs` (38), `t-era-de-ouro.mjs` (316), suíte inteira (316 de 318, as duas de inventário de revisão de sempre), eslint, build e navegador (botão Mestre na Guilda, dois Ogros da lista e um jogador importado com a ficha da 2.5.2 recusada, dano de 30 e pela metade com 10 de PE nos dois selecionados com as contas certas, Descansar, Atualizar Ficha, Tirar da Mesa sem mexer na lista, a Ficha Final abrindo com a Vida que a mesa gravou, e 375 px sem rolagem lateral). `src/components/` mudou só no `Dashboard.jsx`, pela exceção registrada.
+
+## SESSÃO DE 2026-11-11 · OS CLÃS UCHIHA E HYUUGA NO HERDADO DA GUILDA
+
+Pedido do autor: "Coloque estas daus origens na origem Herdado como parte dos Clas Oficiais", com os textos de Uchiha, Sharingan, Evolução Maldita, Olho Emprestado, Mangekyou, Mangekyou Eterno, Hyuuga e Byakugan. Decisões dele, por pergunta:
+
+| Pergunta | Resposta |
+|---|---|
+| Pontaria não é perícia do site | Só Furtividade e Percepção |
+| Como o Sharingan e o Byakugan funcionam na ficha | Desperto (marcado quando o mestre liberar) mais o interruptor Ativo no combate |
+| Mangekyou, Eterno e Olho Emprestado | Texto de mesa |
+
+- **Onde:** os dois clãs entram pela família `clas` do pacote nativo Regras da Era de Ouro (1.1.0), então aparecem no seletor do Herdado do livro, ao lado de Gojo, Inumaki, Kamo e Zenin, e só na ficha da Guilda (criatura e personagem, como os outros nativos). Ids `regras-da-era-de-ouro:cla_uchiha` e `regras-da-era-de-ouro:cla_hyuuga`.
+- **Maestria de Clã:** a escolha com custo dos clãs do livro. Uchiha: treinado em Furtividade e Percepção, ou especialista em uma. Hyuuga: treinado em Percepção e Medicina, Mestre em uma, ou metade do BT em todos os Acertos no lugar das perícias.
+- **Sharingan:** a escolha Sharingan abre no Nível 4 com a opção Sharingan Desperto. Marcada, ela faz aparecer o interruptor Sharingan Ativo na Simulação de Combate (`requerEscolha`), e os números moram na opção: +2 de Defesa e de TR de Reflexos por tomoe, com tomoes 1, 2 e 3 nos Níveis 4, 8 e 10. Desmarcar o despertar desliga tudo, mesmo com o interruptor gravado ligado.
+- **Byakugan:** o mesmo molde (Byakugan Desperto, Byakugan Ativo), com metade do Nível em Percepção e no Acerto Corpo a Corpo.
+- **Texto:** Evolução Maldita, Olho Emprestado, Mangekyou e Eterno são características de mesa do Uchiha. O Suspiro das Pétalas não precisou de mecanismo, porque a Emoção da Pétala Decadente pede a origem Herdado. Os travessões curtos e o ponto e vírgula do texto do Mangekyou viraram parênteses e vírgula. O que ainda é só texto está em `docs/a-fazer.md`.
+- **Criador:** o botão do clã aceita `resumo` (o Uchiha mostraria "Mangekyou Sharingan Eterno", a última característica, e mostra "Sharingan"), e a descrição de característica no card da Origem respeita quebra de parágrafo (`whitespace-pre-line`, que o outro card de característica já tinha).
+- Verificado: `t-era-de-ouro.mjs` (316), suíte inteira (315 de 317, as mesmas duas de inventário de revisão), eslint, build e navegador (Uchiha e Hyuuga no seletor do Herdado da Guilda, o card do Uchiha com "Sharingan", parágrafos separados, o Sharingan Desperto fazendo aparecer o interruptor, e no ND 20 o Sharingan Ativo levando a Defesa de 32 a 38 e Reflexos de +16 a +22, sem erro no console). Nada em `src/components/`.
+
 ## SESSÃO DE 2026-11-09 · OS NATIVOS DA GUILDA, A MALDIÇÃO E AS REGRAS DE ITENS E TREINOS
 
 Pedidos do autor, em sequência: a lista de "Fazeres" da Guilda (a 4ª etapa do Treino de Perícia, as regras para itens, o Talento "Costas lagar" e o Treino de TR "com no maximo de 2 vezes feito"), a Maldição Era de Ouro "como nativo [...] substituindo as maldiçoes existentes", e "todos os Addon que ja sao pre-definidos no site sem aparecer em addon coloque-os nativos". Decisões dele, por pergunta:

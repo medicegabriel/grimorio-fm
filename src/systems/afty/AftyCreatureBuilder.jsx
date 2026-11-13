@@ -8929,8 +8929,9 @@ const ATTR_ABBR = Object.fromEntries(AFTY_ATTRS.map((a) => [a.key, a.abbr]));
 
 /* Subtítulo do bloco de clã: o nome da HERANÇA dele, que é o que diferencia um
    clã do outro (bônus e treinamentos todo clã tem). É sempre a última
-   característica, pela ordem do livro. */
-const resumoDoCla = (c) => c.caracteristicas?.[c.caracteristicas.length - 1]?.nome ?? "";
+   característica, pela ordem do livro. O clã cuja herança não é a última (o
+   Uchiha da Guilda, que termina nos textos de mesa do Mangekyou) declara `resumo`. */
+const resumoDoCla = (c) => c.resumo ?? c.caracteristicas?.[c.caracteristicas.length - 1]?.nome ?? "";
 
 /* Chip pequeno, o tijolo do cabeçalho da origem. */
 function OrigemChip({ children, tom = "slate", title }) {
@@ -9171,7 +9172,7 @@ function OrigemCard({ draft, derived, patch, patchCore, setOrigemId, setOrigemBo
                 estado={uma ? `${uma.gasto} de ${uma.vagas}` : null}
                 estadoAlerta={uma?.excedeu}
               >
-                <p className="text-[11px] text-slate-400 leading-relaxed">{c.descricao}</p>
+                <p className="text-[11px] text-slate-400 leading-relaxed whitespace-pre-line">{c.descricao}</p>
 
                 {/* Bônus de atributo é SEMPRE o alocador (autor, 2026-07-29).
                     Os dois dropdowns "+2 em / +1 em" saíram: o alocador mostra

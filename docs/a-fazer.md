@@ -918,6 +918,28 @@ aprovada com esses limites, o teste real do autor continua pendente.
 **Precisa:** o autor mandar o que vai em Propriedades.
 **Anotado:** 2026-11-09, ao embutir a Carteira na Guilda
 
+### Era de Ouro: o que dos Clãs Uchiha e Hyuuga ainda é texto
+**Onde:** `src/systems/eradeouro/era-de-ouro.js` (`CLA_UCHIHA`, `CLA_HYUUGA`, pacote nativo Regras da Era de Ouro)
+**Situação:** os dois clãs entraram no Herdado da Guilda (2026-11-11). Têm número de verdade o bônus de
+atributo, a Maestria de Clã, o Sharingan (Desperto do Nível 4 em diante, interruptor Sharingan Ativo, +2 de
+Defesa e de TR de Reflexos por tomoe, tomoes 1, 2 e 3 nos Níveis 4, 8 e 10) e o Byakugan (Desperto do Nível 4
+em diante, interruptor Byakugan Ativo, metade do Nível em Percepção e no Acerto Corpo a Corpo). O resto é texto:
+1. **Habilidades Oculares:** não têm catálogo. O texto do 1 Tomoe diz "até nível 1" e logo depois "2
+   habilidades oculares de nível 2", e as quantidades dos outros tomoes dependem do Nível de Aptidão em
+   Controle e Leitura e do bônus de maestria.
+2. **Custo de ativação do Sharingan:** "para cada tomoe, o custo de ativação aumenta em 2PE, e o de manter em
+   1PE", sem dizer o custo base. Não há cobrança na ficha.
+3. **Tomoe pelo Nível:** o texto pede também acesso a técnicas de nível 2 (1 tomoe) e 3 (2 e 3 tomoes). A
+   ficha conta só o Nível.
+4. **Mangekyou, Eterno e Olho Emprestado:** texto de mesa (decisão do autor). Faltam os números do Choku
+   Tomoe ("amplificando ainda mais os benefícios"), o Despertar da Agonia e o limite de rodadas do Olho
+   Emprestado.
+5. **Byakugan:** a vantagem contra Desprevenido e Desorientado, a imunidade a Invisibilidade e Camuflagem e a
+   Fadiga e Exaustão por rodadas ficam no texto. O custo (4 PE, 1 PE para manter) não é cobrado.
+6. **Pontaria:** saiu da Maestria do Uchiha, porque não é perícia do site (decisão do autor).
+**Precisa:** o autor mandar o catálogo das Habilidades Oculares e os números que faltam, se quiser na ficha.
+**Anotado:** 2026-11-11, ao pôr os Clãs Uchiha e Hyuuga no Herdado da Guilda
+
 ### Vespa Crabro: definir o bônus futuro do Novo Estilo das Sombras
 **Onde:** `addons/vespa-crabro.json`, `docs/afty-vespa-crabro.md`.
 **Situação:** pacote 1.1.0 tem treino, duas armas, duas manobras, oito

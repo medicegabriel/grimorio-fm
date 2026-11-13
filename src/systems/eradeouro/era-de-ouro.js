@@ -141,6 +141,225 @@ export const PACOTE_PERICIAS_ERA_DE_OURO = Object.freeze({
   ]),
 });
 
+/* ============================================================ */
+/* OS CLÃS UCHIHA E HYUUGA DO HERDADO (autor, 2026-11-11)          */
+/* ============================================================ */
+/*
+ * "Coloque estas duas origens na origem Herdado como parte dos Clãs Oficiais."
+ * Entram pela família `clas` do pacote nativo, a mesma do Herdado do Vaticano: o
+ * clã vai para o seletor do Herdado do LIVRO, ao lado de Gojo, Inumaki, Kamo e
+ * Zenin, e só na ficha da Guilda (é lá que o pacote existe).
+ *
+ *   • A Maestria de Clã é a escolha com custo dos clãs do livro: treinado custa 1,
+ *     especialista (ou Mestre) custa as 2 vagas. O Uchiha perdeu a Pontaria, que não
+ *     é perícia do site (autor: "Só Furtividade e Percepção"). O Hyuuga tem a terceira
+ *     saída do texto, abdicar das perícias por metade do BT em todo Acerto.
+ *   • O Sharingan e o Byakugan despertam por decisão do mestre (autor: "Desperto +
+ *     Interruptor"). A partir do Nível 4 o card do clã abre a opção Desperto, e
+ *     marcada ela faz aparecer o interruptor Ativo da bancada de combate, que é quem
+ *     liga os números. Os números ficam na OPÇÃO, e não no clã: desmarcar o despertar
+ *     desliga tudo, mesmo que o interruptor tenha ficado gravado ligado.
+ *   • Tomoes pelo Nível (1 no 4, 2 no 8, 3 no 10), +2 de Defesa e de TR de Reflexos
+ *     por tomoe. O requisito de nível de técnica que o texto cita junto não entra.
+ *   • Mangekyou, Eterno e Olho Emprestado são texto de mesa (autor: "Texto de Mesa"),
+ *     e as Habilidades Oculares ainda não têm catálogo. Ver docs/a-fazer.md.
+ *   • O Suspiro das Pétalas não precisa de mecanismo: a Emoção da Pétala Decadente
+ *     pede a origem Herdado, e o Hyuuga já é Herdado.
+ */
+const opcaoDePericia = (prefixo, id, nome, nivel, rotulo) => ({
+  id: `${prefixo}_${nivel === 2 ? "ms" : "tr"}_${id}`,
+  nome: nivel === 2 ? `${nome} (${rotulo})` : nome,
+  descricao: nivel === 2
+    ? `Você se torna ${rotulo.toLowerCase()} em ${nome}, no lugar de dois treinamentos.`
+    : `Você se torna treinado em ${nome}.`,
+  custo: nivel,
+  efeitos: [{ canal: "proficienciaPericia", alvo: id, expr: String(nivel), nome: "Maestria de Clã" }],
+});
+const opcoesDeMaestria = (prefixo, pericias, rotulo) => [
+  ...pericias.map(([id, nome]) => opcaoDePericia(prefixo, id, nome, 1, rotulo)),
+  ...pericias.map(([id, nome]) => opcaoDePericia(prefixo, id, nome, 2, rotulo)),
+];
+const BONUS_DE_CLA_LIVRE = { distribuir: 3, maxPorAtributo: 2 };
+const TOMOES = "(1 + (nd >= 8) + (nd >= 10))";
+const SHARINGAN_ATIVO = "regras_da_era_de_ouro_sharingan_ativo";
+const BYAKUGAN_ATIVO = "regras_da_era_de_ouro_byakugan_ativo";
+
+const CLA_UCHIHA = {
+  id: "cla_uchiha",
+  nome: "Clã Uchiha",
+  resumo: "Sharingan",
+  caracteristicas: [
+    {
+      id: "bonus_atributo",
+      nome: "Bônus em Atributo",
+      descricao: "Um membro do Clã Uchiha recebe 3 pontos de atributo para distribuir livremente, com um limite de 2 em um único atributo.",
+      bonus: BONUS_DE_CLA_LIVRE,
+    },
+    {
+      id: "maestria_de_cla",
+      nome: "Maestria de Clã",
+      descricao: "Você recebe maestria em 2 perícias entre Furtividade ou Percepção. Ao invés de receber maestria em 2 perícias, você pode escolher se tornar especialista em uma.",
+      escolhas: [{
+        id: "edo_uchiha_maestria",
+        label: "Maestria de Clã",
+        vagas: 2,
+        opcoes: opcoesDeMaestria("edo_uchiha", [["furtividade", "Furtividade"], ["percepcao", "Percepção"]], "Especialista"),
+      }],
+    },
+    {
+      id: "heranca_do_odio",
+      nome: "Herdeiro do Ódio",
+      descricao: "Herdando o poder da linhagem Uchiha, você herda o ódio de seus antepassados junto de seus poderes. A partir do nível de personagem 4, você estará passivo a despertar seu Sharingan.",
+    },
+    {
+      id: "sharingan",
+      nome: "Sharingan",
+      descricao:
+        "Os olhos capazes de ler os movimentos de seus oponentes, o Sharingan é conhecido e temido por todo o mundo, sendo comparados aos Seis Olhos quando se trata de ser um jujutsu ocular poderoso, superando o mesmo em alguns pontos, pois diferente do jujutsu ocular do Clã Gojo, o Sharingan não só aumenta a eficácia de seu usuário enquanto utilizando energia amaldiçoada, mas também melhora seus atributos físicos em um geral, aumentando sua capacidade de desviar de ataques, assim como aumenta a capacidade de desferir ataques.\n\n" +
+        "Para despertar seu Sharingan, o membro do Clã Uchiha deve passar por uma situação de extremo estresse ou um trauma muito grande, o qual faz seu sangue borbulhar e traz átona a Maldição do Ódio. O processo do despertar do Sharingan só pode ser iniciado a partir do nível 4, com o seu despertar sendo decidido por seu mestre, pois para despertar o mesmo, um Uchiha deve passar por momentos de grande estresse, como o de uma luta muito difícil, a perda de alguém próximo e diversas outras situações possíveis, porém não sendo um processo alcançado por treino.\n\n" +
+        "Ao passar por uma situação de extremo estresse, você desperta seu Sharingan, o qual inicia com 1 tomoe, sendo considerado uma técnica de nível 2, tendo seu custo de ativação como uma ação bônus. Em seu despertar, você não precisa gastar PE e nem ações, por conta de ser seu despertar e você não poder controlar o momento de sua ativação.\n\n" +
+        "Para cada tomoe que possuir, sua DEF e seu TR de Reflexos receberão um aumento de +2, mostrando a capacidade reflexiva que o mesmo lhe proporciona. Além disso, enquanto com o Sharingan ativo, seu usuário recebe acesso as Habilidades Oculares, técnicas exclusivas do Sharingan, o qual envolvem de ilusões até o aprimoramento de combate de seu usuário.\n\n" +
+        "Seu Sharingan possui uma evolução, chamada de Mangekyou Sharingan, o qual só pode ser atingida ao presenciar a morte de um de seus amados, ou... os matando. O uso prolongado de seu Mangekyou Sharingan pode causar danos irreversíveis ao seu usuário, e para conseguir uma nova luz, um membro do Clã Uchiha deve arrancar os olhos de um outro Uchiha e implantar em si mesmo, que com o tempo, seu corpo irá se acostumar e então seus olhos ficarão completamente recuperados.",
+      escolhas: [{
+        id: "edo_uchiha_sharingan",
+        label: "Sharingan",
+        vagas: 1,
+        ndMin: 4,
+        opcoes: [{
+          id: "edo_uchiha_sharingan_desperto",
+          nome: "Sharingan Desperto",
+          descricao: "Seu Sharingan despertou. Com ele ativo, sua DEF e seu TR de Reflexos recebem +2 para cada tomoe.",
+          efeitos: [
+            { canal: "defesa", expr: `2 * ${TOMOES}`, quando: SHARINGAN_ATIVO, duracao: "temporaria", nome: "Sharingan" },
+            { canal: "bonusTR", alvo: "reflexos", expr: `2 * ${TOMOES}`, quando: SHARINGAN_ATIVO, duracao: "temporaria", nome: "Sharingan" },
+          ],
+        }],
+      }],
+    },
+    {
+      id: "evolucao_maldita",
+      nome: "Evolução Maldita",
+      mesa: true,
+      descricao:
+        "A evolução do Sharingan é a principal maldição dos Uchihas, os eventos traumáticos o qual seu usuário precisa passar para o evoluir, aumentam cada vez mais o ódio em seu coração.\n\n" +
+        "1 Tomoe: Para receber acesso ao Sharingan, assim como descrito na seção anterior, seu usuário deverá ter nível 4 de personagem e acesso a técnicas de nível 2, sendo esta a forma mais fraca e básica do Sharingan, o qual dá acesso a apenas Habilidades Oculares de até nível 1 para seu usuário, por conta da liberação mínima de seu poder, possuído acesso a 2 habilidades oculares de nível 2.\n\n" +
+        "2 Tomoe: Ao nível de personagem 8 e ao possuir acesso a habilidades de técnica de nível 3, seu usuário recebe acesso ao segundo tomoe de seu Sharingan, agora já evoluído e próximo a sua mais forte liberação, liberando acesso as Habilidades Oculares de nível 2 para seu usuário, assim como liberando acesso a uma quantidade de técnicas de nível 3 igual ao seu Nível de Aptidão em Controle e Leitura.\n\n" +
+        "3 Tomoe: No nível de personagem 10 e ao possuir acesso a habilidades de técnica de nível 3, você recebe o terceiro tomoe de seu sharingan, fazendo com que seus reflexos estejam mais aprimorados que nunca. Seu usuário recebe acesso a Habilidades Oculares de nível 3, assim como uma quantidade de Habilidades Oculares de Nível 4 igual ao seu bônus de maestria.\n\n" +
+        "Ativação: Ativar seu Sharingan é considerado uma ação bônus dentro de um combate, e ação livre em cenas comuns. Para cada tomoe, o custo de ativação do Sharingan aumenta em 2PE, assim como o custo para o manter aumenta em 1PE.",
+    },
+    {
+      id: "olho_emprestado",
+      nome: "Olho Emprestado",
+      mesa: true,
+      descricao:
+        "Assim como o ninja que copia, feiticeiros não Uchihas ainda sim podem possuir o Sharingan, porém sendo um processo não natural e muito arriscado, visto que para este processo, o Uchiha precisa abdicar de seu próprio olho.\n\n" +
+        "Enquanto com o Sharingan ativo, um Uchiha pode arrancar o próprio olho e assim o oferecer a outro feiticeiro, fazendo com que o mesmo tenha de arrancar o próprio olho e colocar o Sharingan como uma prótese em seu lugar. Sendo este um Sharingan emprestado, por conta disso, seu novo usuário não pode desativa-lo e nem o evoluir, porém caso seu usuário original evolua o mesmo, então aquele que possuir o Sharingan emprestado evoluirá junto, com exceção de possuir o Mangekyou Sharingan Eterno, pois se trata de um processo diferente das comuns evoluções.\n\n" +
+        "Um feiticeiro com um Sharingan emprestado não pode o desativa-lo, fazendo com que o mesmo fique ativo a todo o momento, porém, por não ser um Uchiha, seu corpo não é capaz de suportar tal poder a todo o momento, fazendo com que o número máximo de rodadas o qual você pode utilizar de seu Sharingan seja uma quantidade igual ao seu bônus de maestria, o qual ao ultrapassar esta quantidade, você passa a receber 1 ponto de exaustão para cada rodada subsequente.\n\n" +
+        "Seu usuário seguirá os mesmos parâmetros do Sharingan comum, como a aquisição de Habilidades Oculares e aumento de CA e em seu TR de Reflexos.",
+    },
+    {
+      id: "mangekyou_sharingan",
+      nome: "Mangekyou Sharingan",
+      mesa: true,
+      descricao:
+        "O Sharingan, a lendária técnica ocular do clã Uchiha, é tanto um símbolo de sua força devastadora quanto da maldição que assombra sua linhagem. Porém, nos momentos mais sombrios de desespero e dor, essa habilidade atinge um novo patamar de poder e mistério: o Mangekyou Sharingan.\n\n" +
+        "Essa evolução não é fruto de treinamento árduo ou de determinação inabalável, mas do impacto avassalador de um trauma emocional extremo. A perda de um ente querido, uma traição insuportável ou um sacrifício irreparável são os gatilhos que despertam essa forma sombria e poderosa. Cada evento esculpe uma marca indelével na alma do Uchiha, revelando a essência mais profunda (e muitas vezes trágica) de sua linhagem amaldiçoada.\n\n" +
+        "O Mangekyou Sharingan é mais do que uma demonstração de poder, é um reflexo da dor que molda o portador. Único para cada Uchiha, ele personifica a individualidade de seu despertar e manifesta habilidades exclusivas que desafiam a lógica e a compreensão. Desde a manipulação do espaço-tempo até o domínio de chamas eternas ou a criação de ilusões inescapáveis, as técnicas do Mangekyou são tão fascinantes quanto aterradoras.\n\n" +
+        "Para que o Sharingan evolua para o Mangekyou, o portador deve vivenciar um momento de dor tão profundo que abale sua própria essência. Não é necessariamente a morte de alguém querido que desencadeia essa transformação, mas qualquer trauma intenso o suficiente para transformar permanentemente a personalidade do Uchiha. Em termos de mecânica de jogo, o Mangekyou Sharingan pode ser despertado apenas quando o personagem atinge o nível 12. O momento exato de seu despertar é único e subjetivo, variando de acordo com a narrativa e as experiências do personagem. Por isso, a decisão final sobre o momento e as circunstâncias do despertar deve ser acordada com o Mestre, garantindo que o evento seja uma parte significativa da história do Uchiha e de sua evolução.\n\n" +
+        "Despertar da Agonia: Com o despertar de seu Mangekyou Sharingan, o ódio comina pelo amago de sua alma, liberando um poder imenso ao seu corpo, o qual explode em uma fúria imparável. Ao despertar seu Mangekyou Sharingan, o usuário do mesmo recebe acesso as Habilidades Oculares de nível 5, alcançando assim o ápice que o Sharingan pode proporcionar ao seu usuário, tanto em Genjutsus, quanto em habilidades destrutivas.\n\n" +
+        "Um Mangekyou Sharingan pode ser idealizado e criado a vontade de um jogador, porém, como base, um Mangekyou e sua Habilidade Especial devem ser decididas pelo jogador juntamente de seu mestre, fazendo assim com que sua habilidade especial retrate perfeitamente o trauma alojado no coração do Uchiha.\n\n" +
+        "Primariamente, existem dois tipos de Mangekyou, o Choku Tomoe, e o Supairaru Tomoe, sendo o Choku Tomoe uma manifestação extremamente rara de um Mangekyou Sharingan visto que o Choku Tomoe aumenta as capacidades de combate gerais de seu usuário, amplificando ainda mais os benefícios que o Sharingan comum proporciona ao seu usuário. Já o Supairaru Tomoe é o tipo mais comum de um Mangekyou se manifestar, e sua capacidade se prioriza na utilização das Habilidades Especiais do Mangekyou, se diversificando do Choku Tomoe.",
+    },
+    {
+      id: "mangekyou_sharingan_eterno",
+      nome: "Mangekyou Sharingan Eterno",
+      mesa: true,
+      descricao:
+        "Um poder que pouquíssimos Uchihas acabam por alcançar, o Mangekyou Sharingan Eterno é a manifestação mais pura e completa do poder do Mangekyou Sharingan, o qual deixa de causar danos aos olhos de seu usuário, agora podendo ser utilizado sem qualquer restrição, porém com um grande custo emocional ao seu usuário.\n\n" +
+        "Para possuir acesso ao Mangekyou Sharingan Eterno é necessário que o usuário do Mangekyou Sharingan transplante em si mesmo um Mangekyou Sharingan de um parente próximo, sendo considerados parentes próximos aqueles que derivam diretamente de sua linhagem sanguínea. Seu usuário precisa arrancar os próprios olhos e no lugar, colocar os olhos de seu parente, que irão se adaptar ao seu corpo, curando assim sua cegueira e alcançando um novo nível no patamar do Sharingan. O processo para se acostumar com os seus novos olhos deve ser definido pela staff, tendo como base um interlúdio ou para personagens com um menor valor de Constituição, dois interlúdios.\n\n" +
+        "Vale ressaltar que, para conseguir o Mangekyou Sharingan Eterno, é necessário que no momento da transplantação, seu usuário deve ainda possuir acesso ao seu Mangekyou, caso esteja completamente cego, o processo já não pode mais ser feito, visto que durante o transplante o Mangekyou daquele que estará recebendo os olhos deverá estar ativo. Além disso, não é possível ter apenas 1 Mangekyou Sharingan Eterno, necessitando que seu usuário possua ambos os olhos de seu parente para realizar este transplante de maneira correta.\n\n" +
+        "Diferente do Mangekyou Sharingan, para ativar seu Mangekyou Sharingan Eterno o seu usuário não necessita da utilização de uma Habilidade Especial de Mangekyou, podendo o ativar como uma Ação Bônus e gastando 10 PE, pagando 2 PE por turno para manter o mesmo. Os benefícios concedidos pelo Mangekyou Sharingan Eterno ao seu usuário são os mesmo que o Mangekyou Sharingan concede, com a única diferença sendo justamente não ser mais passivo a cegueira do Mangekyou, além de pôr os olhos agora presentes em seu corpo não serem seus, você acaba absorvendo as habilidades daquele olho, fazendo assim com que você possua acesso as Habilidades Especiais de Mangekyou o qual os olhos transplantados concediam a seu antigo usuário, além de manter suas próprias Habilidades Especiais de Mangekyou.\n\n" +
+        "Por mais que seja em casos raros, um Uchiha pode sim transplantar olhos que não sejam de parentes próximos para a aquisição de um Mangekyou Sharingan Eterno, porém sendo este um processo de alto risco e muito complexo de se realizar, por conta disso, para realizar este processo o Uchiha necessita de um personagem com a especialização de Suporte ao seu lado, o qual precisará passar em 3 testes de Medicina para que o processo possa ser concluído, necessitando de especialização nesta pericia, e o Uchiha precisará passar em 3 testes de Fortitude para resistir as dores intensas, sendo as CDs dos testes:\n\n" +
+        "Teste 1: CD = 15 + nível do Uchiha.\nTeste 2: CD = 20 + nível do Uchiha.\nTeste 3: CD = 20 + nível do Uchiha + bônus de maestria do Uchiha\n\n" +
+        "Em uma falha, o processo falha e o olho o qual estava sendo transplantado é danificado, não podendo mais ser utilizado para transplantar.",
+    },
+  ],
+};
+
+const CLA_HYUUGA = {
+  id: "cla_hyuuga",
+  nome: "Clã Hyuuga",
+  caracteristicas: [
+    {
+      id: "bonus_atributo",
+      nome: "Bônus em Atributo",
+      descricao: "Um membro do Clã Hyuuga recebe 3 Pontos de Atributo para distribuir livremente, com um limite de 2 em um único Atributo.",
+      bonus: BONUS_DE_CLA_LIVRE,
+    },
+    {
+      id: "maestria_de_cla",
+      nome: "Maestria de Clã",
+      descricao: "Você recebe Treinamento em 2 Perícias entre Percepção ou Medicina. Ao invés de receber Treinamento em 2 Perícias, você pode escolher se tornar Mestre em uma. É possivel abdicar das Perícias para receber metade do Bônus de Treinamento em Todos Acertos.",
+      escolhas: [{
+        id: "edo_hyuuga_maestria",
+        label: "Maestria de Clã",
+        vagas: 2,
+        opcoes: [
+          ...opcoesDeMaestria("edo_hyuuga", [["percepcao", "Percepção"], ["medicina", "Medicina"]], "Mestre"),
+          {
+            id: "edo_hyuuga_acertos",
+            nome: "Metade do BT em Todos os Acertos",
+            descricao: "Você abdica das perícias e recebe metade do Bônus de Treinamento em todos os Acertos.",
+            custo: 2,
+            efeitos: [{ canal: "bonusAcerto", expr: "piso(bt / 2)", nome: "Maestria de Clã" }],
+          },
+        ],
+      }],
+    },
+    {
+      id: "herdeiro_da_visao_divina",
+      nome: "Herdeiro da Visão Divina",
+      descricao: "Herdeiro do poder do Byakugan, você possui um potencial único para despertar a visão do clã. A partir do Nível 4 de Personagem, você estará apto a despertar seu Byakugan.",
+    },
+    {
+      id: "suspiro_das_petalas",
+      nome: "Suspiro das Pétalas",
+      descricao: "O Clã Hyuuga detém diversas informações secretas, assim como técnicas exclusivas e encobertas dos outros. Um membro do Clã Hyuuga pode aprender a Aptidão Especial de Domínio, Emoção da Pétala Decadente.",
+    },
+    {
+      id: "byakugan",
+      nome: "Byakugan",
+      descricao:
+        "Os olhos conhecidos como \"Visão Celestial\", o Byakugan é uma das habilidades oculares mais respeitadas e temidas do mundo, reverenciado por sua precisão e versatilidade. Esses olhos lendários concedem a seus portadores uma visão quase divina, permitindo enxergar em 360º ao seu redor (com exceção de um pequeno ponto cego) e ver o fluxo de energia nos corpos vivos, além de detectar presenças escondidas ou invisíveis.\n\n" +
+        "O Byakugan é um poder que aprimora significativamente as habilidades de combate, permitindo que seu usuário ataque pontos vitais para enfraquecer ou incapacitar o inimigo. Com ele, membros do Clã Hyuuga podem dominar artes marciais únicas, como o Estilo Punho Gentil, que combina precisão cirúrgica e manipulação de energia para anular as capacidades de seus oponentes.\n\n" +
+        "Diferente de outras técnicas oculares, o Byakugan é uma habilidade inata para todos os membros do Clã Hyuuga, mas sua verdadeira potencialidade só pode ser plenamente desbloqueada através de treinamento intenso e uma forte conexão emocional ou espiritual.\n\n" +
+        "Para atingir o pleno poder do Byakugan, o membro do clã deve passar por um momento de profunda introspecção ou uma experiência significativa que o conecte com a herança ancestral de sua linhagem.\n\n" +
+        "Esse processo pode ser iniciado a partir do Nível 4 e é guiado pelo mestre da campanha. O despertar completo do Byakugan não ocorre apenas pelo treinamento físico ou pelo tempo, mas sim pela necessidade de um evento que desperte a força interior do personagem, como precisar a todo custo vencer uma batalha impossível, um momento de auto compreensão profundo ou precisar proteger alguém importante para o Hyuuga.\n\n" +
+        "Ativar o Byakugan é considerado uma Ação Bônus, necessitando pagar 4 PE para sua ativação, e 1 PE para mantê-lo ativo, enquanto com ele ativo, seu usuário recebe:\n" +
+        "• Metade de seu Nível em testes de Percepção e Jogadas de Ataque Corpo a Corpo.\n" +
+        "• Possui vantagem contra Condição Desprevenido e Desorientado, tendo uma visão de 359,99 graus, com o único ponto cego sendo bem atrás de seu pescoço.\n" +
+        "• Se torna Imune a Invisibilidades e a Camuflagens, podendo ver atráves de estruturas e pessoas, compreendendo completamente o fluxo de Energia Amaldiçoada que flue por elas.\n\n" +
+        "Porém, ao atingir uma quantidade de Rodadas com seu Byakugan ativo igual a metade de seu Bônus de Treinamento, por conta do grande cansaço que a utilização deste poder ocular gera, seu usuário receberá 1 Ponto de Fadiga, que ao chegar em Pontos de Fadiga igual a metade de seu Bônus de Treinamento, então seu usuário receberá 1 Ponto de Exaustão.\n" +
+        "Ao possuir acesso as aptidões de energia reversa \"Regeneração Aprimorada\" e \"Fluxo Constante\", seu usuário poderá gastar PE equivalente a metade do PE necessário para recuperar um membro, assim negando o Ponto de Exaustão que iria receber, necessitando curar novamente para continuar a não receber.",
+      escolhas: [{
+        id: "edo_hyuuga_byakugan",
+        label: "Byakugan",
+        vagas: 1,
+        ndMin: 4,
+        opcoes: [{
+          id: "edo_hyuuga_byakugan_desperto",
+          nome: "Byakugan Desperto",
+          descricao: "Seu Byakugan despertou. Com ele ativo, você soma metade do seu Nível em testes de Percepção e em Jogadas de Ataque Corpo a Corpo.",
+          efeitos: [
+            { canal: "bonusPericia", alvo: "percepcao", expr: "piso(nd / 2)", quando: BYAKUGAN_ATIVO, duracao: "temporaria", nome: "Byakugan" },
+            { canal: "bonusAcerto", alvo: "corpo", expr: "piso(nd / 2)", quando: BYAKUGAN_ATIVO, duracao: "temporaria", nome: "Byakugan" },
+          ],
+        }],
+      }],
+    },
+  ],
+};
+
 /**
  * "Regras da Era de Ouro": o que a Guilda muda no livro e acrescenta a ele, e que o
  * Motor já sabe dizer (autor, 2026-11-09). Inline pelo mesmo motivo dos dois de cima.
@@ -155,11 +374,11 @@ export const PACOTE_PERICIAS_ERA_DE_OURO = Object.freeze({
 export const PACOTE_REGRAS_ERA_DE_OURO = Object.freeze({
   id: "regras-da-era-de-ouro",
   nome: "Regras da Era de Ouro",
-  versao: "1.0.0",
+  versao: "1.1.0",
   autor: "Templas",
   paraRaw: "afty",
-  descricao: "A 4ª etapa do Treino de Perícia passa a somar metade do bônus de treinamento nos testes da perícia escolhida, no lugar do sucesso garantido. Acrescenta o Talento Costas Largas, que aumenta em 2 o limite de itens vestidos.",
-  resumo: "Treino de Perícia com metade do BT na 4ª etapa e o Talento Costas Largas",
+  descricao: "A 4ª etapa do Treino de Perícia passa a somar metade do bônus de treinamento nos testes da perícia escolhida, no lugar do sucesso garantido. Acrescenta o Talento Costas Largas, que aumenta em 2 o limite de itens vestidos, e os Clãs Uchiha e Hyuuga ao Herdado, com o Sharingan e o Byakugan.",
+  resumo: "Treino de Perícia com metade do BT na 4ª etapa, o Talento Costas Largas e os Clãs Uchiha e Hyuuga",
   categoria: "regras",
   substitui: {
     treinamentos: [
@@ -189,7 +408,12 @@ export const PACOTE_REGRAS_ERA_DE_OURO = Object.freeze({
       },
     ],
   },
+  estadosCombate: [
+    { id: "sharingan_ativo", label: "Sharingan Ativo", tipo: "bool", title: "Sharingan", requerEscolha: "edo_uchiha_sharingan_desperto" },
+    { id: "byakugan_ativo", label: "Byakugan Ativo", tipo: "bool", title: "Byakugan", requerEscolha: "edo_hyuuga_byakugan_desperto" },
+  ],
   acrescenta: {
+    clas: [CLA_UCHIHA, CLA_HYUUGA],
     talentos: [
       {
         id: "costas_largas",
