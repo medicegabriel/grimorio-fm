@@ -21,6 +21,8 @@ import { MODOS, textoDaRolagem } from "./ficha-rolagem";
  * ============================================================
  */
 
+const LIMITE_DADOS_BARRA = 12;
+
 function Rolagem({ r, destaque }) {
   if (r.tipo === "info") return <div className="afty-rolagem px-2.5 py-1.5" data-afty-nova={destaque ? "sim" : undefined}>
     <div className="text-[11px] font-semibold truncate" title={r.rotulo}>{r.rotulo}</div>
@@ -35,6 +37,11 @@ function Rolagem({ r, destaque }) {
     anteriores.push(x.descartado ?? x.de);
     velhosEm.set(x.indice, anteriores);
   }
+  /* A barra mostra no máximo LIMITE_DADOS_BARRA dados. Um dano de 190 dados esticava a linha das abas do G2 em 800 px e empurrava a ficha para fora da
+     tela. O histórico aberto rola por dentro, então ali todos aparecem. */
+  const listaDados = r.tipo === "teste" ? r.d20 : r.dados;
+  const limiteDados = destaque ? LIMITE_DADOS_BARRA : Infinity;
+  const excedente = Math.max(0, listaDados.length - limiteDados);
   return (
     <div className="afty-rolagem px-2.5 py-1.5" data-afty-marca={marca} data-afty-nova={destaque ? "sim" : undefined}>
       <div className="flex items-baseline gap-2">
@@ -59,7 +66,7 @@ function Rolagem({ r, destaque }) {
             que é o mesmo vocabulário do perdedor do pool exclusivo. */}
         <span className="flex items-center gap-1 flex-wrap justify-end">
           {(r.tipo === "teste" ? r.d20 : r.dados).map((n, i) => (
-            <React.Fragment key={i}>
+            i >= limiteDados ? null : <React.Fragment key={i}>
               {(velhosEm.get(i) ?? []).map((velho, tentativa) => (
                 <span key={tentativa} className="afty-dado" data-afty-descartado="sim" title={r.rerrolaFonte ?? undefined}>
                   {velho}
@@ -73,6 +80,9 @@ function Rolagem({ r, destaque }) {
               </span>
             </React.Fragment>
           ))}
+          {excedente > 0 && (
+            <span className="afty-dado" title={`Mais ${excedente} dados, todos no histórico`}>+{excedente}</span>
+          )}
           <span className="afty-rotulo text-[11px] whitespace-nowrap">{textoDaRolagem(r)}</span>
         </span>
       </div>
