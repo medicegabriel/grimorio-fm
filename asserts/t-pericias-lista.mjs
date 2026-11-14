@@ -320,6 +320,38 @@ t("e o formato novo passa inteiro",
     - porId.fintar.executar, 2);
 }
 
+// A canetinha salva o mapa inteiro, incluindo as linhas concedidas por Talento.
+for (const talentos of [["tal_artesao_amaldicoado"], ["tal_tempestade_de_ideias"],
+  ["tal_artesao_amaldicoado", "tal_tempestade_de_ideias"]]) {
+  let f = ficha({ talentos, talentosConfig: {
+    tal_artesao_amaldicoado: { ferramenta: "Ferreiro" },
+    tal_tempestade_de_ideias: { ferramenta: "Caligrafia", pericia: "medicina" },
+  } });
+  const iniciais = idsDe(f);
+  for (const nome of ["Cozinheiro", "Alfaiate", "Cozinheiro"]) {
+    const d = deriveAfty(f);
+    f = { ...f, periciaOficios: { ...d.periciaOficios, oficio: [nome] } };
+    const ids = idsDe(f);
+    t(`${talentos}: editar ${nome} conserva as linhas`, ids, iniciais);
+    t(`${talentos}: ids unicos`, new Set(ids).size, ids.length);
+    t(`${talentos}: grade par`, ids.length % 2, 0);
+    const depois = deriveAfty(f);
+    if (talentos.includes("tal_artesao_amaldicoado")) {
+      const ferreiros = depois.testes.pericias.filter((p) => p.oficios?.includes("Ferreiro"));
+      t("Ferreiro aparece uma vez apos a canetinha", ferreiros.map((p) => p.id), ["oficio__9001"]);
+      t("treino do Artesao preservado", depois.periciaProf.oficio__9001, "treinado");
+    }
+  }
+  const adicao = P.adicionarOficioExtra(f);
+  t("Novo Oficio conserva os ids unicos com talentos",
+    new Set(idsDe({ ...f, ...adicao })).size, idsDe({ ...f, ...adicao }).length);
+  t("remover talentos nao deixa suas linhas salvas como comuns",
+    idsDe({ ...f, talentos: [] }).some((id) => ["oficio__9001", "oficio__9002"].includes(id)), false);
+}
+t("ids reservados nao entram como Oficios manuais",
+  P.oficiosExtrasDaFicha(ficha({ periciasOficiosExtras: ["oficio__2", "oficio__9001", "oficio__9002"] })),
+  ["oficio__2"]);
+
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 
 /* sai diferente de zero quando falha, para o lancador e o CI enxergarem */

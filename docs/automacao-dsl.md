@@ -17,6 +17,15 @@ Onde se usa:
 
 ## Variáveis
 
+### Ofícios concedidos por Talento (2026-11-14)
+
+As linhas reservadas `oficio__9001` (Artesão Amaldiçoado) e `oficio__9002`
+(Tempestade de Ideias) entram uma única vez no catálogo de perícias, mesmo
+quando `periciaOficios` ou `pericias` guardam esses ids após uma edição.
+Não são extras manuais e contam para manter a grade par. As concessões de
+`proficienciaPericia` e suas escolhas permanecem iguais, sem canal ou fórmula
+DSL novos. A canetinha continua salvando as escolhas no mapa da ficha.
+
 ### CX3: clientes de conteúdo sobre CL1/CL2 (2026-11-03)
 
 Não há um avaliador ou orçamento paralelo. As escolhas físicas de Treino e

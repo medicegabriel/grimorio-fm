@@ -239,6 +239,7 @@ const OFICIO_EXTRA_ID = /^oficio__(\d+)$/;
 // ciclo com Habilidades e Combate durante a inicialização.
 const OFICIO_TALENTO_ARTESAO = "oficio__9001";
 const OFICIO_TALENTO_TEMPESTADE = "oficio__9002";
+const oficioDeTalento = (id) => id === OFICIO_TALENTO_ARTESAO || id === OFICIO_TALENTO_TEMPESTADE;
 
 /* ⚠ O `ehPericiaOficio` MUDOU DE CASA em 2026-09-01, e quem importava daqui
    continua importando daqui. Ele desceu para o afty-pericias-catalogo.js, que é
@@ -281,6 +282,7 @@ export function oficiosExtrasDaFicha(creature) {
     : [];
   const ids = new Map();
   for (const id of bruto) {
+    if (oficioDeTalento(id)) continue;
     const match = OFICIO_EXTRA_ID.exec(String(id ?? ""));
     const numero = Number(match?.[1]);
     if (Number.isInteger(numero) && numero >= 2) ids.set(`oficio__${numero}`, numero);
@@ -306,6 +308,7 @@ const numerosGuardados = (creature) => {
       ? Object.keys(creature.periciaOficios) : []),
   ]);
   return [...ids]
+    .filter((id) => !oficioDeTalento(id))
     .filter((id) => oficioExtraOcupado(creature, id))
     .map(numeroDoOficio)
     .filter((n) => Number.isInteger(n) && n >= 2);
@@ -353,7 +356,7 @@ export function catalogoPericiasDaFicha(creature) {
      lista sempre par, o clique soma DUAS: ver `adicionarOficioExtra`. O
      desempate é o número seguinte ao maior, para nascer no fim dos Ofícios. */
   let desempate = null;
-  if ((lista.length + numeros.size) % 2 === 1) {
+  if ((lista.length + numeros.size + oficiosTalento.length) % 2 === 1) {
     desempate = Math.max(1, ...numeros) + 1;
     numeros.add(desempate);
   }

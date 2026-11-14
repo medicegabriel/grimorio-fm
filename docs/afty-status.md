@@ -1,5 +1,54 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-14: OFÍCIO DUPLICADO PELA CANETINHA
+
+Corrigido o catálogo de perícias: os ids reservados de Artesão Amaldiçoado
+(`oficio__9001`) e Tempestade de Ideias (`oficio__9002`) não entram novamente
+como Ofícios comuns quando a canetinha salva o mapa `periciaOficios` completo.
+Também ficam fora dos extras manuais e entram na contagem da grade par.
+Dados salvos, escolhas manuais e concessões de treino foram preservados.
+A correção atua na leitura das fichas, sem apagar Ofícios preenchidos.
+
+Regressão em `asserts/t-pericias-lista.mjs`: edições repetidas, ids únicos,
+grade par, treinamento, remoção de talentos e Novo Ofício. Os 397 asserts
+específicos de perícias e talentos passaram, assim como ESLint e build.
+Suíte geral: 319 de 321 arquivos passaram. Falharam `t-reconciliacao-g00`
+e `t-revisao-g00`, por módulos sem proprietário/classificação no inventário,
+as mesmas pendências já registradas na sessão de integração de 2026-11-11.
+Log desta execução: `tmp/artesao-asserts.log`. Diff específico sem erros.
+Conferência visual indisponível: Playwright ausente e navegador integrado
+retornou `net::ERR_CONNECTION_TIMED_OUT` para o servidor local.
+Consulta ao remoto falhou com `getaddrinfo() thread failed to start`.
+HEAD e referência local origin/main estão em 373e242, sem comprovação do
+estado remoto atual. Nenhuma entrada específica deste bug na fila para
+retirar. Trabalho anterior preservado, sem mudança em `src/components/`,
+sem commit ou push.
+
+### Integração e preparação do commit (2026-11-14)
+
+Após o erro de rede inicial, fetch executado com acesso ampliado confirmou
+7 commits novos. Main avançada por fast-forward de 373e242 para 9766655.
+Backup preservado no stash `codex-backup-antes-integracao-2026-11-14`,
+SHA 085b2fefe69a2c9299bc7f26b633a92689819f5b. Os arquivos não rastreados
+não foram removidos nem incluídos nesse stash e não colidiram com o remoto.
+
+A simulação apontou 6 possíveis conflitos. Na reaplicação real, o builder
+mesclou automaticamente e restaram 5: afty-status e os registros escopo,
+fontes, inventario e reconciliacao. Histórico conservado dos dois lados.
+JSONs unidos por chave estável e diferenças em relação à base, sem conflitos
+semânticos, descarte de registros ou aprovação adicional de regras.
+Não há marcadores de conflito nem diff em src/components.
+
+Commit preparado somente com a correção de Ofícios, seus asserts e os
+trechos correspondentes de afty-status e automacao-dsl. Trabalho anterior
+permanece fora do stage. Nenhum git commit ou push executado.
+Validação após integração: ESLint e build aprovados. Suíte completa com
+323 de 325 arquivos aprovados, incluindo os 139 asserts da lista de perícias.
+Persistem falhas em t-reconciliacao-g00 e t-revisao-g00. A coleta atual aponta
+afty-orbitas.js, ficha/efeitos/catalogo-logica.js e ficha/useFontesWeb.js
+sem proprietário/classificação. Não foram classificados por esta tarefa.
+Log: tmp/integracao-20261114-asserts.log. Diff sem erros de espaço.
+
 ## SESSÃO DE 2026-11-12 · NORMAS DE ADDONS, DO SITE E DE DESIGN
 
 Pedido do autor: "Gostaria que sua pesquise focasse em criar normas e orientaçoes para criaçao de addons e do site, e também no design instrua a partir de normas e regras para criaçao e idealizaçao". Saíram três documentos de norma, com regras numeradas para citar em revisão: `docs/normas-addons.md` (A-01 a A-94: princípios, a ordem da ideia ao pacote, identidade, texto, ids, efeitos, verificação, documentação, entrega, quando o motor cresce, pacotes nativos e os erros que já aconteceram), `docs/normas-site.md` (S-01 a S-86: antes do código, onde cada coisa mora, forma, dados, motor, comentários, testes, a lista de entrega, registro, git, o relatório e o que é proibido) e `docs/normas-design.md` (D-01 a D-104: os cinco princípios, as sete perguntas da idealização, estrutura, cor por significado, tipografia e escrita, peças, os cinco estados, celular, movimento, tema e a revisão de doze perguntas). Só documentação: nenhum código mudou. Os fatos citados foram conferidos no código (classes, componentes, categorias, o teto de 160 do resumo, o formato dos ids). O `CLAUDE.md` e o `docs/plano-do-projeto.md` apontam para os três.
