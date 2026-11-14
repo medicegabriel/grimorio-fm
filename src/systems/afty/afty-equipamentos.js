@@ -2409,6 +2409,7 @@ const eficienciaDoEngenho = (valor) =>
 const CANAIS_ENGENHO = new Set([
   "hp", "cd", "atributo", "bonusPericia", "bonusTR", "bonusAcerto", "acertoArma",
   "defesa", "rdFisico", "rdGeral", "rdTipo", "danoFixo", "movimento",
+  "bonusManobra", "resistirManobra", "margemCritico", "danoBonus", "iniciativa", "ignoraRD", "rdEscudo", "curaPorDado",
 ]);
 
 function equipamentoComEngenho(def, tipo) {

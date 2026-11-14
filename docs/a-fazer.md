@@ -7,6 +7,10 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 
 ---
 
+## Ficha Final: o G2 e o CSS Personalizado, achados do tema da Ignia (2026-11-12)
+
+Onze problemas do app (barras grudadas que viram retângulos sobre fundo não chapado, a barra de rolagem cobrindo o fio do cabeçalho, `.afty-cabecalho` que não repinta o cabeçalho do G2 e existe em dobro, fonte das abas que derruba a rolagem para a linha de baixo, barra de título quadrada em Habilidades, Guarda colada na placa, e lacunas do contrato e do Prompt IA), mais as pendências do tema e da bancada. O registro completo, com arquivo e linha, e os prompts prontos para o Opus (correções do G2) e para o Sonnet (contrato, bancada e conferência) estão em `docs/tema-g2-problemas.md`. Nada foi corrigido no app: o tema `docs/tema-ignia.css` contorna tudo por CSS, três vezes com classe interna.
+
 ## Estados da Alma: leituras adotadas para confirmar (2026-11-09)
 
 Os Estados da Alma estão automáticos (ver "SESSÃO DE 2026-11-09 · ESTADOS DA ALMA" em `docs/afty-status.md`). Três
@@ -1434,7 +1438,7 @@ uma é **NOVA DECISÃO NECESSÁRIA**. Enquanto não houver resposta, o ponto fic
 
 ### Fórmula de Combate Entrópica: as leituras do PDF que faltam, antes de cada fase
 **Onde:** `docs/afty-formula-entropica.md`, seção "Perguntas em aberto" (a lista inteira e numerada mora SÓ lá, para não haver duas cópias)
-**Situação:** o Addon da Restrição Intelectual (homebrew de Dr. Xeno) foi planejado em 5 fases em 2026-09-28. As Fases 0, 1 e 2 estão feitas, e as leituras delas foram respondidas. Faltam as das etapas seguintes: o Engenho Superior ligado à Criação de Equipamentos (2b), quantas Técnicas Marciais ele conhece e os nomes das duas de Nível 4 ("aaaaaaaaaaaaaaaaaaa") (3), quatro dispositivos sem Modo de Instalação e Acionamento e a Mina Terrestre repetida com números diferentes (4), e as Características do Avião copiadas do Tanque (5). Mais uma observação da Fase 2: com o contador de falhas ligado a Atenção sobe junto, porque o bônus vale em toda perícia e a Atenção sai da Percepção.
+**Situação (2026-11-14):** a Fase 2c refez a classe: sem herdeira, a origem escolhe Conjurador e/ou Suporte (INT), as Dádivas do Céu do livro entram. As respostas da Fase 3 vieram e ela está liberada. A 2b será REDESENHADA (editar os Itens Base do sistema com 1,5x, sem a Criação de Equipamentos). As Fases 4 e 5 foram ADIADAS pelo autor. Ficam as perguntas em aberto: a Estamina da classe (6 e 5 por nível, e não os 4 do Restringido), as Bases do Conjurador que só servem a Feitiço aparecendo sem efeito, e a ficha antiga com a herdeira `res_intelectual` que perde a classe ao atualizar o pacote, e a vaga extra de Dádiva do Treino de Potencial Físico (4ª etapa), que chega pelo `vagasEscolha` da escolha `dadiva_do_ceu` da Habilidade e não alcança a escolha `dadiva_intelectual` da origem. Antes: o Addon foi planejado em 5 fases em 2026-09-28, e as Fases 0, 1 e 2 estavam feitas. Mais uma observação da Fase 2: com o contador de falhas ligado a Atenção sobe junto, porque o bônus vale em toda perícia e a Atenção sai da Percepção.
 **Precisa:** o autor (ou Dr. Xeno, por ele) responder as perguntas de cada fase ANTES de ela começar. Elas vão por pergunta com opções, em lotes por fase.
 **Anotado:** 2026-09-28, no planejamento do Addon
 

@@ -65,6 +65,8 @@ const POR_NOME = [
       ["presenca", "Valor de Presença"], ["mod_presenca", "Modificador de Presença"],
       ["mod_int_ou_sab", "O maior entre os modificadores de Inteligência e Sabedoria"],
       ["mod_pre_ou_sab", "O maior entre os modificadores de Presença e Sabedoria"],
+      ["mod_suporte", "O atributo das habilidades do Suporte: o maior entre Presença e Sabedoria, ou o atributo que a origem põe no lugar"],
+      ["mod_suporte_presenca", "O atributo do Suporte nas habilidades que citam só Presença, ou o atributo que a origem põe no lugar"],
     ],
   },
   {

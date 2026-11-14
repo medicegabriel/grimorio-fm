@@ -68,7 +68,7 @@
  */
 
 import { registrarFamilia, remendarLista, nivelDaFicha } from "./afty-addons";
-import { getOrigem, origensQualificadas, origemMae } from "./afty-origens";
+import { getOrigem, origensQualificadas, origemMae, atributoSuporteDaOrigem } from "./afty-origens";
 import { AFTY_TIPOS, AFTY_RESISTENCIAS } from "./afty-schema";
 import { regraDo, sistemaDaFicha } from "./afty-sistema";
 
@@ -824,15 +824,36 @@ export function treinamentosDasEspecializacoes(especializacoes = []) {
 function exclusivaDaOrigem(origemId) {
   const propria = AFTY_ESPECIALIZACOES.find((e) => e.exclusivaOrigemId === origemId);
   if (propria || !origemId) return propria ?? null;
+  // A variação que declara a LISTA PRÓPRIA de classes não segue a trava da mãe.
+  if (permitidasDaOrigem(origemId)) return null;
   const mae = origemMae(origemId);
   return mae !== origemId
     ? AFTY_ESPECIALIZACOES.find((e) => e.exclusivaOrigemId === mae) ?? null
     : null;
 }
 
+/**
+ * `especializacoesPermitidas` (2026-11-14): a lista fechada de classes que a
+ * origem alcança, ou null. Nasceu com a Restrição Intelectual, que é variação do
+ * Restringido (sem energia, Estamina) mas escolhe Especialista em Técnica E/OU
+ * Suporte em vez do Restringido. Diferente do `exclusivaOrigemId`, que prende a
+ * UMA classe e proíbe multiclasse, esta permite várias e as deixa se dividirem.
+ * Diferente do `especializacoesVetadas`, ela fecha também as classes que um
+ * outro Addon trouxer depois.
+ */
+function permitidasDaOrigem(origemId) {
+  const lista = getOrigem(origemId)?.especializacoesPermitidas;
+  return Array.isArray(lista) && lista.length ? lista : null;
+}
+
 export function especializacoesDisponiveis(origemId, extras = []) {
   const exclusiva = exclusivaDaOrigem(origemId);
   if (exclusiva) return [exclusiva];
+  const permitidas = permitidasDaOrigem(origemId);
+  if (permitidas) {
+    const vetadas = new Set(getOrigem(origemId)?.especializacoesVetadas ?? []);
+    return AFTY_ESPECIALIZACOES.filter((e) => permitidas.includes(e.id) && !vetadas.has(e.id));
+  }
   const abertas = extras.filter((x) => x && x !== origemId);
   /* As origens que a criatura CONTA como suas, para o `restritaOrigemIds`. A
      extra entra aqui porque ela só ABRE, que é a mesma regra do
@@ -1028,11 +1049,15 @@ export function especializacoesRecusadas(creature) {
  * o que todo pré-requisito enxerga. `multiclasse: null` (Restringido) não passa
  * por aqui: a proibição dele é a trava de incompatibilidade.
  */
-export function faltaRequisitoMulticlasse(id, atributos) {
+export function faltaRequisitoMulticlasse(id, atributos, origemId = null) {
   const req = BY_ID[id]?.caracteristicas?.multiclasse;
   if (!req || !Array.isArray(req.attrs) || !req.attrs.length || !Number.isFinite(req.valor)) return null;
-  const atende = req.attrs.some((k) => (Number(atributos?.[k]) || 0) >= req.valor);
-  return atende ? null : { attrs: [...req.attrs], valor: req.valor };
+  /* A origem que põe um atributo no lugar de Presença e Sabedoria no Suporte
+     (`atributoSuporte`) pede esse atributo no requisito do Suporte. */
+  const trocado = id === "suporte" ? atributoSuporteDaOrigem(origemId) : null;
+  const attrs = trocado ? [trocado] : req.attrs;
+  const atende = attrs.some((k) => (Number(atributos?.[k]) || 0) >= req.valor);
+  return atende ? null : { attrs: [...attrs], valor: req.valor };
 }
 
 /**
@@ -1041,9 +1066,9 @@ export function faltaRequisitoMulticlasse(id, atributos) {
  * ficha guarda a escolha e continua abrindo, e quem trava a entrada é o seletor
  * do criador. Quem decide se vale é a divergência `requisitoMulticlasse`.
  */
-export function multiclassesSemRequisito(escolhidas, atributos) {
+export function multiclassesSemRequisito(escolhidas, atributos, origemId = null) {
   return (Array.isArray(escolhidas) ? escolhidas : []).slice(1)
-    .map((e) => ({ id: e?.id, falta: faltaRequisitoMulticlasse(e?.id, atributos) }))
+    .map((e) => ({ id: e?.id, falta: faltaRequisitoMulticlasse(e?.id, atributos, origemId) }))
     .filter((x) => x.falta)
     .map((x) => ({ id: x.id, nome: BY_ID[x.id]?.nome ?? x.id, ...x.falta }));
 }

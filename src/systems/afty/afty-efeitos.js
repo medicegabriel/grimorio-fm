@@ -1041,6 +1041,14 @@ export function buildCriaturaDslContext(base = {}) {
     // MAIOR dos dois, não uma escolha gravada na ficha. Fecha o item C3.
     mod_int_ou_sab: Math.max(md.inteligencia ?? 0, md.sabedoria ?? 0),
     mod_pre_ou_sab: Math.max(md.presenca ?? 0, md.sabedoria ?? 0),
+    /* O atributo do SUPORTE (2026-11-14). As habilidades da classe leem estas
+       duas e não o `mod_pre_ou_sab`, que o Talento Adepto de Medicina e a
+       Aptidão também leem e que seguem como o livro escreveu. Sem origem que
+       troque o atributo (`atributoSuporte`), valem Presença ou Sabedoria e só
+       Presença, que é o que cada habilidade dizia. Com ela, a Inteligência
+       substitui os dois. */
+    mod_suporte: base.atributoSuporte ? (md[base.atributoSuporte] ?? 0) : Math.max(md.presenca ?? 0, md.sabedoria ?? 0),
+    mod_suporte_presenca: base.atributoSuporte ? (md[base.atributoSuporte] ?? 0) : (md.presenca ?? 0),
 
     // Níveis de aptidão por trilha (efetivo = alocado + concedido)
     dom: apt.dom ?? 0, au: apt.au ?? 0, cl: apt.cl ?? 0, bar: apt.bar ?? 0, er: apt.er ?? 0,
@@ -1669,7 +1677,12 @@ export function coletarEfeitosOrigem(creature, escolhas = null, gatilhosAtivos =
     /* O `nome` do próprio efeito vence o da opção (2026-09-21), a mesma regra
        do `efeitos` da raiz. É o que deixa o pacote escrever "Pai (Opção)" no
        hover sem trocar o rótulo do botão da escolha. */
-    ...opcoesInteiras.flatMap((opcao) => (opcao.efeitos || []).map((efeito) => ({
+    /* ⚠ A OPÇÃO DA ORIGEM QUE É UMA OPÇÃO DO LIVRO (2026-11-14): a Restrição
+       Intelectual oferece as Dádivas do Céu do Restringido ao lado das dela, com o
+       mesmo id. O efeito mora no mapa do livro (`ESCOLHA_EFEITOS`, por id de
+       opção) e não se copia para o pacote, que envelheceria calado. O efeito
+       ESCRITO na opção vence, como na escolha de Habilidade. */
+    ...opcoesInteiras.flatMap((opcao) => (Array.isArray(opcao.efeitos) ? opcao.efeitos : (ESCOLHA_EFEITOS[opcao.id] ?? [])).map((efeito) => ({
       ...efeito,
       origem: opcao.id,
       nome: efeito.nome ?? opcao.nome ?? opcao.id,

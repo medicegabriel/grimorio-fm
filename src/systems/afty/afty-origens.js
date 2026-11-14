@@ -1696,6 +1696,14 @@ export function armasEscolhidasDaOrigem(creature) {
 /** A origem diz que a ficha NÃO TEM Energia Amaldiçoada (`semEnergia`), seja qual for a classe. */
 export const origemSemEnergia = (creature) => !!getOrigem(creature?.core?.origem?.id)?.semEnergia;
 
+/**
+ * O atributo que a origem põe NO LUGAR de Presença e Sabedoria nas habilidades
+ * do Suporte (2026-11-14, Restrição Intelectual: *"os poderes de Suporte
+ * escalando com Inteligência"*), ou null. Só o Suporte lê: o Talento e a
+ * Aptidão que citam "Presença ou Sabedoria" seguem como o livro escreveu.
+ */
+export const atributoSuporteDaOrigem = (origemId) => getOrigem(origemId)?.atributoSuporte ?? null;
+
 /** O nível máximo que a origem permite (`nivelMaximo`), ou `null`. */
 export function nivelMaximoDaOrigem(creature) {
   const n = Math.trunc(Number(getOrigem(creature?.core?.origem?.id)?.nivelMaximo));
@@ -2013,7 +2021,12 @@ export function resolveEscolhasOrigem(creature, nd = 1) {
       opcoes.push(id);
     }
     const gasto = opcoes.reduce((s, id) => s + custoDe[id], 0);
-    const vagas = esc.vagas ?? 1;
+    /* ⚠ `niveis` NA ESCOLHA DA ORIGEM (2026-11-14): uma vaga por degrau já
+       alcançado, o mesmo calendário que a escolha de Habilidade usa (as Dádivas
+       a cada 4 níveis). Sem ele vale o `vagas` fixo de sempre. */
+    const vagas = Array.isArray(esc.niveis)
+      ? esc.niveis.filter((n) => nd >= n).length
+      : (esc.vagas ?? 1);
     porEscolha[esc.id] = {
       id: esc.id, label: esc.label, vagas, gasto, opcoes,
       caracteristicaId: esc.caracteristica?.id ?? null,
@@ -2265,6 +2278,15 @@ export function validarCatalogoOrigens() {
       } else if (!VARIACOES_ACEITAS.includes(o.variacaoDe)) {
         problemas.push(`${o.nome}: variacaoDe ainda não aceita ${o.variacaoDe}, só ${VARIACOES_ACEITAS.join(", ")}`);
       }
+    }
+    // Os dois campos da Restrição Intelectual (2026-11-14).
+    if (o.especializacoesPermitidas != null
+      && !(Array.isArray(o.especializacoesPermitidas) && o.especializacoesPermitidas.length
+        && o.especializacoesPermitidas.every((id) => typeof id === "string" && id))) {
+      problemas.push(`${o.nome}: especializacoesPermitidas deve ser uma lista de ids`);
+    }
+    if (o.atributoSuporte != null && !attrValidos.has(o.atributoSuporte)) {
+      problemas.push(`${o.nome}: atributo inválido em atributoSuporte (${o.atributoSuporte})`);
     }
     // Os três campos do Não-Feiticeiro (2026-10-09).
     if (o.semEnergia != null && typeof o.semEnergia !== "boolean") problemas.push(`${o.nome}: semEnergia deve ser verdadeiro ou falso`);

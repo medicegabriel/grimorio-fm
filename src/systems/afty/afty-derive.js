@@ -47,7 +47,7 @@ import {
   resolveOrigemAttrBonus, resolveDesenvolvimento, origemTemDesenvolvimento, resolveEscolhasOrigem,
   limiteAtributoDaOrigem, resolveLimitePoolOrigem, origensQualificadas,
   fatorSlotsHabilidade, aptidoesConcedidasPelaOrigem, caracteristicasEfetivas,
-  atributosDePericiaDaOrigem, origemMae, ehVariacaoDoRestringido, gatilhosDeOrigem, anatomiasEscolhidas,
+  atributosDePericiaDaOrigem, origemMae, ehVariacaoDoRestringido, atributoSuporteDaOrigem, gatilhosDeOrigem, anatomiasEscolhidas,
   habilidadesConcedidasPelaOrigem, habilidadesVetadasPelaOrigem, armasEscolhidasDaOrigem, origemSemEnergia, tipoDaFicha,
   nivelMaximoDaOrigem, tetoNivelFeiticoDaOrigem, estiloNdMinimoDaOrigem, aptidoesVetadasDaOrigem,
   escolhasDaOrigem, rotuloCaracteristicasDaOrigem, origemEstrutural, opcoesEscolhidasDaOrigem,
@@ -927,6 +927,7 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
   const ctxMontante = buildCriaturaDslContext({
     nd, bt, escalaAtaque, grauRank: grau.rank, patamar, tipo, almaAtual: almaAtualDsl,
     nivelFeiticoMax: acessoFeitico,
+    atributoSuporte: atributoSuporteDaOrigem(creature?.core?.origem?.id ?? null),
     origemContadoresVars,
     opcoesOrigem: opcoesOrigemDsl,
     irmaoMorto: !!creature?.core?.origem?.irmaoMorto,
@@ -2249,6 +2250,7 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
   const montarCtx = (attrs, mods) => buildCriaturaDslContext({
     nd, bt, escalaAtaque, grauRank: grau.rank, patamar, tipo, almaAtual: almaAtualDsl, invocacoesEmCampo,
     nivelFeiticoMax: acessoFeitico,
+    atributoSuporte: atributoSuporteDaOrigem(creature?.core?.origem?.id ?? null),
     origemContadoresVars,
     opcoesOrigem: opcoesOrigemDsl,
     // `<pacote>_<id>_ligado`: o Feitiço vinculado está no ar (2026-10-15).
@@ -3470,8 +3472,10 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
     partesContador.push(...partesSegundaUnica);
   }
   /* ⚠ O PORTÃO DAS TÉCNICAS MARCIAIS (2026-10-26): quem tem a Especialização
-     Restringido (ou uma herdeira dela, que a mãe `restringido` pega, como a
-     Restrição Intelectual) OU a liberação `tecnicasMarciais`. O Addon Estilo
+     Restringido (ou uma herdeira dela, que a mãe `restringido` pega) OU a
+     liberação `tecnicasMarciais`. Desde 2026-11-14 também a ORIGEM que é
+     variação do Restringido (a Restrição Intelectual não tem classe Restringido,
+     escolhe Conjurador e/ou Suporte). O Addon Estilo
      Marcial antigo (`feiticosRestritos`) vale como a liberação nova numa ficha
      sem energia, para o pacote do Não-Feiticeiro que já estava congelado na ficha
      não perder o Estilo. Sem nenhuma das duas o card existe TRANCADO na origem
@@ -3479,7 +3483,8 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
 
      ⚠ NO PERSONAGEM O CAIXA É PRÓPRIO, e vale mesmo com o portão fechado, com total
      zero: o contador comum do jogador não tem outro dono e absorveria o excesso. */
-  const classeRestringido = especializacoes.escolhidas
+  const classeRestringido = ehVariacaoDoRestringido(creature?.core?.origem?.id ?? null)
+    || especializacoes.escolhidas
     .some((e) => especializacaoMae(e.id) === "restringido");
   const marcialLiberada = liberacoes.includes("tecnicasMarciais")
     || (padraoMarcial && liberacoes.includes("feiticosRestritos"));
@@ -5414,7 +5419,7 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
     especializacoes: {
       ...especializacoes,
       semRequisito: regraDo(sistema, "requisitoMulticlasse") === "player"
-        ? multiclassesSemRequisito(especializacoes.escolhidas, attrPermanente)
+        ? multiclassesSemRequisito(especializacoes.escolhidas, attrPermanente, creature?.core?.origem?.id ?? null)
         : [],
     },
     treinamentosEquipamento,

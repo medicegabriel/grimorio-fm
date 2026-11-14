@@ -15,9 +15,11 @@ deste documento, na seção **Fonte**, e é ela a fonte de verdade: o PDF pode s
 | 1 | Motor: Restringido aceita variação | feita em 2026-09-28 (`asserts/t-restringido-variacao.mjs`, 52) |
 | 2 | Núcleo do Addon: origem, Talentos de Origem, classe herdeira, Dádivas | feita em 2026-09-28 (`addons/formula-combate-entropica.json`, `asserts/t-formula-entropica.mjs`, 102) |
 | 2b | Engenho Superior ligado à Criação de Equipamentos (decisão 14) | inventário, bônus numéricos, limite e vantagem manual implementados. Revisar dados de dano e efeitos fora dos canais cobertos |
-| 3 | Doutrina da Guerra Matemática e Técnicas Marciais | não começada |
-| 4 | Arsenal: card de Preparação de Terreno, M.E.D.U.S.A., Bomba Atômica | não começada |
-| 5 | Veículos como Invocação de ficha fixa | não começada |
+| 2c | Sem herdeira: Conjurador e/ou Suporte (INT), origem dona de tudo, Dádivas do Céu do livro | feita em 2026-11-14 (pacote 2.0.0, `asserts/t-formula-entropica.mjs`, 144) |
+| 2b | Engenho Superior sobre os Itens Base, sem a Criação de Equipamentos | feita em 2026-11-14: o botão da linha do item base do inventário, 1,5x só nos bônus numéricos (o dado de dano da arma não muda), teto de 2 encantamentos |
+| 3 | Doutrina da Guerra Matemática e Técnicas Marciais | feita em 2026-11-14 (pacote 2.1.0, `asserts/t-formula-entropica.mjs`, 172) |
+| 4 | Arsenal: card de Preparação de Terreno, M.E.D.U.S.A., Bomba Atômica | ADIADA (autor, 2026-11-14) |
+| 5 | Veículos como Invocação de ficha fixa | ADIADA (autor, 2026-11-14) |
 
 Cada fase termina com uma parada para o autor testar. As perguntas de regra de cada fase são feitas
 antes de ela começar.
@@ -62,7 +64,71 @@ antes de ela começar.
 17. **Dádiva com contador ou número calculado vira linha própria na Ficha Final**, logo abaixo da mãe.
 18. **O bônus contra o mesmo inimigo vale em ataque, TR e perícias** (os dois contadores).
 
+## A Fase 2c: sem herdeira (2026-11-14)
+
+O autor reverteu o desenho da classe. Quem tem a Restrição Intelectual **não pega a Especialização
+Restringido**: escolhe **Especialista em Técnica (`conjurador`) e/ou Suporte**, e os poderes do Suporte
+escalam com **Inteligência** no lugar de Sabedoria ou Presença. As Dádivas do Céu continuam sendo
+recebidas. Respostas dele à rodada de perguntas:
+
+- **Segue sem energia**: Estamina, nenhum Feitiço e nenhuma Aptidão, com as Técnicas Marciais.
+- **As peças da herdeira vão para a origem**: a Restrição Congênita (efeitos na raiz da origem) e a
+  Restrição Definitiva Intelectual (característica com 1 uso por rodada a partir do 10).
+- **Dádivas do Céu do livro também**: a escolha da origem junta as 11 Intelectuais e as 9 do Céu, no
+  calendário 4, 8, 12, 16 e 20. O Respeito Celeste e as outras Bases do Restringido saem com a classe.
+- **A INT SUBSTITUI Presença e Sabedoria no Suporte**, e o requisito de Multiclasse do Suporte pede INT 16.
+
+Verbos de motor: ver "A variação SEM herdeira" em `docs/afty-addons.md`.
+
+Leituras que ficaram por conta do Motor e valem confirmar: (1) a Estamina é a soma da classe (Conjurador
+6, Suporte 5 por nível), como no Não-Feiticeiro, e não os 4 por nível do Restringido; (2) as Bases do
+Conjurador que só servem a Feitiço (Domínio dos Fundamentos, Conjuração Aprimorada, Foco Amaldiçoado)
+seguem aparecendo, sem efeito, porque ele não tem Feitiços; (3) as habilidades do Suporte que citam
+Presença ou Sabedoria mas ainda não têm número no Motor continuam só no texto do livro.
+
+## Respostas da Fase 3 (2026-11-14)
+
+- "Pontos de Vigor" da Doutrina é a **Estamina**.
+- As Técnicas Marciais saem **na mesma medida que o Restringido** (`tecnicasMarciaisDoJogador`).
+- Os nomes das duas Técnicas de Nível 4 ("aaaaaaaaaaaaaaaaaaa") ficam por minha conta: inventar um nome.
+- O Alvo Previsível pode virar bônus DELE contra o alvo.
+- A Técnica Marcial usa o sistema nativo (`docs/afty-tecnicas-marciais.md`).
+
+## A 2b redesenhada: Engenho Superior sobre os Itens Base (2026-11-14)
+
+O autor trocou a decisão 14: o Engenho **não usa mais a Criação de Equipamentos**. Ele edita o item BASE do
+catálogo, que já era o que o código fazia (o botão "Engenho Superior" na linha do item no inventário, só para
+quem tem a origem, «sem o item criado»). O trabalho foi fechar o que ficava de fora, por resposta dele:
+
+- **Só bônus numéricos sobem 1,5x** (para baixo, só valor positivo). O **dado de dano da arma não muda**.
+- Passaram a subir: Manobra e resistência a Manobra (Balanceada, Reluzente, Marcial, Faixa de Foco), Margem de
+  Crítico, Dano Bônus (Cruel, Poderosa), Iniciativa (Otimizada), RD Ignorada (Penetrante), a RD do Reforçado e a
+  Cura por Dado (Apanhador de Saúde). Já subiam: RD do escudo, Defesa do uniforme, atributo, perícia, TR, CD, PV,
+  movimento, dano fixo e acerto de encantamento.
+- **Seguem sem subir**: o bônus de grau da Ferramenta (acerto, RD e Defesa do grau), o teto da Cura por Dado,
+  o Potente (dado) e o Polido e o Ajustado (redução de penalidade).
+- O teto de **2 efeitos especiais de grau** e a **vantagem manual** do aliado ("Engenho Recebido") ficam como estavam.
+
+## O que a Fase 3 entregou (2026-11-14)
+
+- **Doutrina da Guerra Matemática**: característica da origem, com 1 instrução por rodada e os números prontos
+  (prejuízo do alvo, máximo de Leitura, custo da instrução em Estamina, bônus do aliado). Três estados de
+  combate, só para quem tem a origem (`requerOrigem`): **Alvo Previsível** (o prejuízo do alvo virou bônus
+  DELE, metade do BT em acerto e Defesa), **Leitura Tática** (faixa de 0 até o BT) e **Leitura Tática em Teste de
+  Resistência** (quantos dos acúmulos foram para o TR: o resto vai para o ataque, e o TR nunca passa do total).
+- **As 12 Técnicas Marciais** como `feiticos` do pacote, `tipo: "personalizado"` com a marca `marcial`, texto
+  fiel do PDF, 3 por nível. O custo (2, 5, 8 e 12) e o acesso (níveis 1, 5, 9 e 15) vêm do sistema nativo, e a
+  quantidade que o personagem conhece é a do Restringido (comparada por assert). Aparecem em "Modelos do Addon" no
+  card Técnicas Marciais, que passou a oferecer modelos marciais (o card de Feitiços os filtra).
+- **Nomes inventados** para as duas Técnicas de Nível 4 sem título: **Salva de Precisão** (Ação Bônus) e
+  **Interrupção de Padrão** (Reação). O título "Campo deDesvio" ficou "Campo de Desvio".
+- Os efeitos dos modelos são texto: os números do PDF (+1, +2, +4) não seguem a tabela nativa do Auxiliar, então
+  a Técnica não vira número de ficha sozinha. O bônus que o usuário recebe da Doutrina, sim.
+- Fica de fora: o Desenvolver Ideias do Restringido (+2 Técnicas, é habilidade da classe que a origem não tem).
+
 ## O que a Fase 2 entregou
+
+> Esta seção descreve o desenho ANTERIOR à Fase 2c: a herdeira `res_intelectual` não existe mais.
 
 O pacote `addons/formula-combate-entropica.json` (autor Dr. Xeno), que é o que se cola na aba Addons.
 

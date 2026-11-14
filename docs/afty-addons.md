@@ -2164,6 +2164,30 @@ de Restringido") segue lendo o nível REAL, e a herdeira não o alcança. Ver `d
 O `asserts/t-restringido-variacao.mjs` mede o verbo com um pacote mínimo, nos dois sistemas, e confere
 que o Restringido do livro deriva igual com e sem o pacote instalado.
 
+#### A variação SEM herdeira, 2026-11-14
+
+A Restrição Intelectual perdeu a herdeira (autor, item 6): quem tem a origem não pega o Restringido, e
+sim **Especialista em Técnica (Conjurador) e/ou Suporte**, segue sem energia (Estamina), com as Dádivas
+do Céu do livro e as Intelectuais. A origem passou a ser a dona de tudo. Cinco verbos genéricos:
+
+| Verbo | Onde | O que faz |
+|---|---|---|
+| `especializacoesPermitidas: [ids]` na origem | `afty-especializacoes.js` | a lista fechada de classes da origem. Várias podem dividir a ficha (o `exclusivaOrigemId` prende a UMA e proíbe multiclasse), e uma classe que outro Addon traga depois fica de fora. A variação que a declara não segue a trava da mãe |
+| `atributoSuporte: "inteligencia"` na origem | `afty-origens.js`, `afty-efeitos.js` | as variáveis `mod_suporte` e `mod_suporte_presenca` do DSL. As habilidades do Suporte leem essas, que valem Presença ou Sabedoria (ou só Presença) sem a origem e o atributo dela com ela. O `mod_pre_ou_sab` não mudou, porque o Talento Adepto de Medicina e a Aptidão também o leem. O requisito de Multiclasse do Suporte também pede o atributo |
+| `niveis` na escolha da origem | `resolveEscolhasOrigem` | uma vaga por degrau alcançado, o calendário das Dádivas (4, 8, 12, 16 e 20) |
+| opção de origem com o id de uma opção do livro | `coletarEfeitosOrigem` | sem `efeitos` escritos, o efeito vem do `ESCOLHA_EFEITOS`. É assim que as 9 Dádivas do Céu entram na escolha da origem sem copiar efeito |
+| `requerOrigem` no estado de Addon | `estadosCombateDeAddon` | a quinta porta de dono: o estado só existe para a ficha cuja origem é uma das listadas |
+
+A origem também declara `semEnergia: true` (o verbo do Não-Feiticeiro) e o pacote `libera:
+["tecnicasMarciais"]`. Para a variação do Restringido, o portão da Técnica Marcial passou a ler a ORIGEM,
+já que não há classe Restringido (`classeRestringido` em `afty-derive.js`).
+
+Desde a 2.1.0 o pacote também traz `feiticos` com a marca `marcial` (as 12 Técnicas): o card Técnicas
+Marciais lista os modelos marciais, e o card de Feitiços os esconde.
+
+⚠ **Ficha gravada com a herdeira (`res_intelectual`) perde a classe** ao atualizar o pacote: o id deixa
+de existir e a Especialização cai na normalização. O pacote foi para a 2.0.0 por isso.
+
 ### O que a Fórmula de Combate Entrópica acrescentou ao motor, 2026-09-28
 
 O pacote `addons/formula-combate-entropica.json` é quase todo de regra que age em aliado ou inimigo,

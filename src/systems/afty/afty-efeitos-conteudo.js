@@ -1346,7 +1346,7 @@ export const HABILIDADE_EFEITOS = {
   // "Você adiciona seu modificador de Presença a Iniciativa." A metade que vai
   // para os aliados é efeito no outro.
   sup_pronto_para_agir: [
-    { canal: "iniciativa", expr: "mod_presenca" },
+    { canal: "iniciativa", expr: "mod_suporte_presenca" },
   ],
 
   // "seu valor de atenção recebe um bônus de +5". Não poder ser surpreendido é
@@ -1396,8 +1396,8 @@ export const HABILIDADE_EFEITOS = {
       expr: "2 + (esc_suporte >= 8) + 3 * (esc_suporte >= 12)" },
     { canal: "curaFaces", alvo: "cura_suporte_em_combate",
       expr: "6 + 6 * (esc_suporte >= 4) - 4 * (esc_suporte >= 12) + 2 * (esc_suporte >= 16)" },
-    { canal: "curaFixa", alvo: "cura_suporte_em_combate", expr: "mod_pre_ou_sab" },
-    { canal: "curaUsos", alvo: "cura_suporte_em_combate", expr: "mod_pre_ou_sab" },
+    { canal: "curaFixa", alvo: "cura_suporte_em_combate", expr: "mod_suporte" },
+    { canal: "curaUsos", alvo: "cura_suporte_em_combate", expr: "mod_suporte" },
   ],
 
   // "você soma o seu bônus de treinamento no total de toda cura que realizar."
@@ -1421,8 +1421,8 @@ export const HABILIDADE_EFEITOS = {
   // Avançada sobre o Cobrir-se). A CD de especialização do Suporte usa Presença
   // ou Sabedoria: `mod_pre_ou_sab` na cura também (autor, 2026-10-03, nos dois).
   sup_suporte_absoluto: [
-    { canal: "curaUsos", alvo: "cura_suporte_em_combate", expr: "mod_pre_ou_sab" },
-    { canal: "curaFixa", expr: "mod_pre_ou_sab" },
+    { canal: "curaUsos", alvo: "cura_suporte_em_combate", expr: "mod_suporte" },
+    { canal: "curaFixa", expr: "mod_suporte" },
   ],
 
   // "o seu Bônus de Treinamento é adicionado ao número de usos da sua cura."
@@ -1475,7 +1475,7 @@ export const HABILIDADE_EFEITOS = {
   // é negativa quando a Constituição é a melhor: o texto manda trocar, não
   // escolher o maior.
   sup_fisico_controlado: [
-    { canal: "hp", expr: "nd * (min(mod_pre_ou_sab, 4) - mod_constituicao)" },
+    { canal: "hp", expr: "nd * (min(mod_suporte, 4) - mod_constituicao)" },
   ],
 };
 

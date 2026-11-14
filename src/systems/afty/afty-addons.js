@@ -1584,6 +1584,17 @@ export function estadosCombateDeAddon(creature, nivelMax = 5, { avaliar = null }
       const nivelTeto = bruto?.nivelMax == null ? 5 : Math.trunc(Number(bruto.nivelMax));
       if (!idLocal || nivel < nivelMin || nivel > nivelTeto) continue;
       if (bruto.quando && !(typeof avaliar === "function" && avaliar(bruto.quando))) continue;
+      /* ⚠ A QUINTA PORTA, `requerOrigem` (2026-11-14): o estado só existe para a
+         ficha cuja ORIGEM é uma das listadas. Nasceu com a Restrição Intelectual,
+         que perdeu a herdeira (a habilidade que era dona do contador de falhas) e
+         passou a ter a origem como dona de tudo. Fica aqui, no catálogo de estados
+         de Addon, e não nas telas: todas leem o `estadosExtras` que sai daqui. */
+      if (bruto.requerOrigem) {
+        const aceitas = (Array.isArray(bruto.requerOrigem) ? bruto.requerOrigem : [bruto.requerOrigem])
+          .map((x) => String(x ?? "").trim()).filter(Boolean)
+          .map((x) => (idsDoPacote.has(x) ? comPrefixo(pacoteId, x) : x));
+        if (!aceitas.includes(creature?.core?.origem?.id ?? null)) continue;
+      }
       const id = comPrefixo(pacoteId, idLocal);
       if (vistos.has(id)) continue;
 

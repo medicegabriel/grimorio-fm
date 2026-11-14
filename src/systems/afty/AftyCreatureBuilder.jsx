@@ -3177,6 +3177,7 @@ function TabHabilidades({ draft, derived, testarGolpeDaArma, patch, patchCore, t
       draft={draft}
       derived={derived}
       addFeitico={addFeitico}
+      updateFeitico={updateFeitico}
       removeFeitico={removeFeitico}
       patchFeitico={patchFeitico}
       duplicarFeitico={duplicarFeitico}
@@ -5265,9 +5266,10 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
     : { dominancia: null, manipulacao: [] };
   const idsBase = new Set(feiticosBase.map((feitico) => feitico.id));
   // O modelo de Técnica Máxima só com vaga livre, e a cópia nasce oficial (DA-02).
+  // O modelo marcial mora no card das Técnicas Marciais, e não neste.
   const modelosAddon = modelosPendentesDeAddon(draft, nivelMax, feiticosBase, {
     tecnicasMaximasLivres: derived.feiticos?.tecnicasMaximas?.livres ?? 0,
-  });
+  }).filter((modelo) => !modelo.marcial);
   const dominancia = idsBase.has(reducoes.dominancia) ? reducoes.dominancia : null;
   const manipulacao = Array.isArray(reducoes.manipulacao)
     ? [...new Set(reducoes.manipulacao)].filter((id) => idsBase.has(id)).slice(0, limiteManipulacao)
@@ -5691,10 +5693,15 @@ const CANAL_GRUPOS_DA_PASSIVA_MARCIAL = EFEITO_CANAL_GRUPOS
    ⚠ A LISTA SAI DOS IDS DO MOTOR (`derived.tecnicasMarciais.ids`), e não de um
    filtro na ficha: o Feitiço gravado sem marca, numa ficha sem energia, só vira
    Técnica no derive. */
-function TecnicasMarciaisCard({ draft, derived, addFeitico, removeFeitico, patchFeitico, duplicarFeitico }) {
+function TecnicasMarciaisCard({ draft, derived, addFeitico, updateFeitico, removeFeitico, patchFeitico, duplicarFeitico }) {
   const info = derived.tecnicasMarciais;
   const ids = new Set(info.ids);
   const lista = (Array.isArray(draft.feiticos) ? draft.feiticos : []).filter((f) => ids.has(f.id));
+  /* Os MODELOS DO ADDON marciais (2026-11-14, as 12 Técnicas da Restrição
+     Intelectual): o mesmo bloco do card de Feitiços, só com os que levam a marca
+     `marcial`, até o nível que a ficha alcança. */
+  const modelosAddon = modelosPendentesDeAddon(draft, info.nivelMax, lista, { tecnicasMaximasLivres: 0 })
+    .filter((modelo) => modelo.marcial === true);
   const tiposPermitidos = info.tiposPermitidos;
   const podeCriar = tiposPermitidos.length > 0;
   const dslGrupos = useDslGrupos(derived);
@@ -5750,6 +5757,32 @@ function TecnicasMarciaisCard({ draft, derived, addFeitico, removeFeitico, patch
         <p className="text-[11px] text-rose-400 mb-3">
           Você tem mais Técnicas Marciais do que recebeu. Remova uma ou suba de nível.
         </p>
+      )}
+      {modelosAddon.length > 0 && info.tiposPermitidos.length > 0 && (
+        <div className="mb-3 space-y-1.5 border-b border-slate-800 pb-3">
+          <FieldLabel>Modelos do Addon</FieldLabel>
+          <div className="flex flex-wrap gap-1.5">
+            {modelosAddon.map((modelo) => (
+              <button
+                key={modelo.id}
+                type="button"
+                onClick={() => {
+                  const criada = modelo.situacaoModelo === "desatualizado" ? updateFeitico(modelo) : addFeitico(modelo);
+                  if (criada?.id) setEscolhidoId(criada.id);
+                }}
+                title={modelo.situacaoModelo === "desatualizado"
+                  ? `Atualizar para ${modelo.addonVersao}`
+                  : `${modelo.addonNome} · Nível ${modelo.nivel}`}
+                className="inline-flex items-center gap-1 rounded border border-purple-800/60 bg-purple-950/30 px-2 py-1 text-[11px] text-purple-200 hover:border-purple-600"
+              >
+                {modelo.situacaoModelo === "desatualizado"
+                  ? <RefreshCw className="w-3 h-3" aria-hidden="true" />
+                  : <Plus className="w-3 h-3" aria-hidden="true" />}
+                {modelo.nome}
+              </button>
+            ))}
+          </div>
+        </div>
       )}
       {lista.length === 0 ? (
         <div className="text-center py-8 border border-dashed border-slate-700 rounded-lg">
@@ -11423,7 +11456,7 @@ function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilida
      requisito vêm do derive, para o aviso. */
   const cobraRequisito = regraDo(sistemaDaFicha(draft), "requisitoMulticlasse") === "player";
   const faltaParaEntrar = (id) => (cobraRequisito && escolhidas.length > 0
-    ? faltaRequisitoMulticlasse(id, derived.attrPermanente) : null);
+    ? faltaRequisitoMulticlasse(id, derived.attrPermanente, draft?.core?.origem?.id ?? null) : null);
   const textoDoRequisito = (falta) => `Requisito de Multiclasse (${falta.attrs
     .map((k) => AFTY_ATTRS.find((a) => a.key === k)?.abbr ?? k).join(" ou ")} ${falta.valor})`;
   const semRequisito = derived.especializacoes?.semRequisito ?? [];
