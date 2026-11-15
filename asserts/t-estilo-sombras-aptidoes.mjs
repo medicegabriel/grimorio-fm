@@ -63,6 +63,25 @@ for (const sistema of ["afty", "player"]) {
       da(sistema, { aptidoes: ["aura_reforcada"], niveis: { au: 3 }, estilos: [dobrada] }).estilo.tecnicas[0].aliadosCalculados],
     [2, [{ efeitoId: "au_bonus_numerico", rotulo: "Bônus dos Aliados no Domínio (Aura Reforçada)", valor: 2 }]]);
 
+  /* Buff de Aptidão SOMA com buff comum, e entre buffs de Aptidão fica o maior
+     (autor, 2026-11-14). Aura Maciça dá Defesa, AU 3: o extra é +2. */
+  const compraDefesa = (uid) => ({ uid, efeitoId: "defesa" });
+  const macica = (id, comDefesa = false, comMod = true) => tecnica(id,
+    comMod ? [mod("au_bonus_numerico", "aura_macica")] : [], comDefesa ? { efeitos: [compraDefesa(`d${id}`)] } : {});
+  const defesaCom = (estilos, ativa) => {
+    const o = { aptidoes: ["aura_macica"], niveis: { au: 3 }, estilos };
+    return da(sistema, { ...o, ativa }).defesa - da(sistema, o).defesa;
+  };
+  const meioBt = Math.floor(da(sistema, {}).maestria / 2);
+  t(`${sistema}: Aumento de Defesa soma com o extra da Aura Macica na mesma Tecnica`,
+    defesaCom([macica("mx", true)], ["mx"]), meioBt + 2);
+  t(`${sistema}: dois extras de Aptidao no mesmo numero ficam com o maior`,
+    defesaCom([macica("ma"), macica("mb")], ["ma", "mb"]), 2);
+  t(`${sistema}: e o Aumento de Defesa de duas Tecnicas continua somando`,
+    defesaCom([macica("da", true, false), macica("db", true, false)], ["da", "db"]), 2 * meioBt);
+  t(`${sistema}: tudo junto: dois Aumentos de Defesa mais o maior extra`,
+    defesaCom([macica("ta", true), macica("tb", true)], ["ta", "tb"]), 2 * meioBt + 2);
+
   /* Controle e Leitura: Cobrir-se só ganha o extra quando é usado. */
   const cobrir = tecnica("cob", [mod("cl_bonus_numerico", "cobrir_se")]);
   const pvTemp = (pe, ativa) => da(sistema, {
@@ -79,7 +98,17 @@ for (const sistema of ["afty", "player"]) {
   const errada = da(sistema, { aptidoes: ["cortina"], estilos: [tecnica("e", [mod("aura_embacada", "cortina")])] }).estilo.tecnicas[0];
   t(`${sistema}: modificacao de outra Aptidao e erro`, codigos(errada), ["aptidao_invalida"]);
   const semNumero = da(sistema, { aptidoes: ["aura_anuladora"], estilos: [tecnica("n", [mod("au_bonus_numerico", "aura_anuladora")])] }).estilo.tecnicas[0];
-  t(`${sistema}: bonus numerico em Aptidao sem numero e erro`, codigos(semNumero), ["aptidao_sem_numero"]);
+  /* Aptidão sem linha no Motor (autor, 2026-11-14): o bônus vira número de mesa,
+     a Técnica vale, e nenhum canal recebe nada. */
+  t(`${sistema}: bonus numerico em Aptidao sem linha vira numero de mesa`,
+    [codigos(semNumero), semNumero.mecanicamenteValida, semNumero.mesaCalculada.map((m) => m.rotulo), semNumero.numeros,
+      semNumero.validacao.filter((v) => v.nivel === "info").map((v) => v.codigo).includes("aptidao_mesa")],
+    [[], true, ["Bônus de Aura Anuladora"], [], true]);
+  const comandante = da(sistema, { aptidoes: ["aura_do_comandante"], estilos: [tecnica("cmd", [mod("au_bonus_numerico", "aura_do_comandante"), mod("au_bonus_numerico", "aura_do_comandante")])] }).estilo.tecnicas[0];
+  t(`${sistema}: a Aura do Comandante entra, e a segunda compra estende aos aliados`,
+    [codigos(comandante), comandante.mesaCalculada.map((m) => m.rotulo), comandante.aliadosCalculados.map((a) => a.rotulo),
+      comandante.mesaCalculada[0].valor === comandante.aliadosCalculados[0].valor],
+    [[], ["Bônus de Aura do Comandante"], ["Bônus dos Aliados no Domínio (Aura do Comandante)"], true]);
 
   /* Energia Reversa ofensiva: pede Projetar (ou Canalizar) E Energia Reversa. */
   const ofensiva = [tecnica("o", [mod("er_ofensiva", "projetar_energia")])];

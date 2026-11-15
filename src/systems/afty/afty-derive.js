@@ -1810,6 +1810,7 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
     categoriaDaAptidao: (id) => getAptidao(id)?.categoria ?? null,
     efeitosDaAptidao: (id) => APTIDAO_EFEITOS[id] ?? getAptidao(id)?.efeitos ?? [],
     nomeDaAptidao: (id) => getAptidao(id)?.nome ?? id,
+    nomeDaPericia: (id) => catalogoPericiasFicha.find((p) => p.id === id)?.nome ?? id,
     niveis: aptidao.efetivo ?? {},
     // O Nível em que o Estilo destrava, quando a origem o baixa (o Legado do
     // Guerreiro do pacote Stark, 2026-10-11). Sem o campo, o 4 do livro.

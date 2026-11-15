@@ -46,7 +46,7 @@ t("os onze efeitos", CAT.EFEITOS_ESTILO.map((e) => e.id),
   ["defesa", "tr", "acerto", "margem", "pericia", "dano", "alcance", "deslocamento", "gatilho", "cd", "especial"]);
 t("a repeticao vem do catalogo", Object.fromEntries(CAT.EFEITOS_ESTILO.map((e) => [e.id, e.repeticao])), {
   defesa: "aliados", tr: "aliados", acerto: "aliados", margem: "aliados", pericia: "aliados",
-  dano: "soma", alcance: "unica", deslocamento: "aliados", gatilho: "soma", cd: "aliados", especial: "unica",
+  dano: "soma", alcance: "unica", deslocamento: "aliados", gatilho: "soma", cd: "aliados", especial: "soma",
 });
 t("o Pre-Requisito e proibido so no Ataque com Gatilho",
   CAT.EFEITOS_ESTILO.filter((e) => !e.aceitaBonusPreRequisito).map((e) => e.id), ["gatilho"]);

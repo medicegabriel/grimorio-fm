@@ -93,6 +93,33 @@ for (const sistema of ["afty", "player"]) {
       da(sistema, [especial], { ativa: "esp" }).iniciativa - da(sistema, [especial]).iniciativa],
     [Math.floor(da(sistema, []).maestria / 2), 1]);
 
+  /* Mais de um Efeito Especial (autor, 2026-11-14): um por compra, cada um com
+     texto e linhas próprios, e cada compra ocupa uma vaga. */
+  const c1 = compra("especial");
+  const c2 = compra("especial");
+  const dois = tecnica("dois", [c1, c2], {
+    especiais: [
+      { uid: c1.uid, texto: "Lua Nebulosa", linhas: [{ canal: "iniciativa", expr: "1" }] },
+      { uid: c2.uid, texto: "Saque", linhas: [{ canal: "defesa", expr: "2" }] },
+    ],
+  });
+  const rd = da(sistema, [dois]).estilo.tecnicas[0];
+  t(`${sistema}: dois Efeitos Especiais ocupam duas vagas e nao sao erro`,
+    [rd.usados, codigos(rd, "erro"), rd.especiais.map((e) => e.texto), rd.especial.texto],
+    [2, [], ["Lua Nebulosa", "Saque"], "Lua Nebulosa\n\nSaque"]);
+  t(`${sistema}: e as linhas dos dois valem juntas`,
+    [da(sistema, [dois], { ativa: "dois" }).iniciativa - da(sistema, [dois]).iniciativa, ganhoDefesa(sistema, [dois], "dois")], [1, 2]);
+  /* O campo antigo (um objeto só) vale como o PRIMEIRO enquanto a lista não é gravada. */
+  t(`${sistema}: o especial antigo e lido como o primeiro da lista`,
+    EST.especiaisDaTecnica(especial).map((e) => [e.texto, e.linhas.length]), [["Lâmina de energia", 1]]);
+  /* Sem a compra, a Modificação não tem Efeito Especial, mesmo com texto guardado. */
+  t(`${sistema}: sem compra nao ha Efeito Especial`,
+    EST.especiaisDaTecnica(tecnica("sem", [compra("defesa")], { especial: { texto: "x", linhas: [] } })), []);
+  /* O rótulo da Perícia escolhida sai com o nome, e não com o id. */
+  const per = tecnica("per", [compra("pericia", { pericia: "prestidigitacao" })]);
+  t(`${sistema}: a Pericia escolhida aparece pelo nome`,
+    da(sistema, [per]).estilo.tecnicas[0].grupos[0].nomeEscolha, "Prestidigitação");
+
   /* A linha do Especial não pode escrever a vaga do próprio Estilo. */
   const circular = tecnica("circ", [compra("especial")], {
     especial: { texto: "", linhas: [{ canal: "vagasEstilo", expr: "5" }], confirmacoes: {} },

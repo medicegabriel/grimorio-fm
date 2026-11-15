@@ -265,9 +265,10 @@ export const EFEITOS_ESTILO = [
       "consumíveis. Efeitos especiais não podem conceder Transformação. Efeitos especiais não podem " +
       "utilizar Feitiços Golpeadores como base. Além disso, respeite também a seção \"Feitiços " +
       "Inviáveis\", encontrada na página 238.",
-    // O conteúdo mora em `tecnica.especial` (texto e linhas de Motor), e a
-    // aprovação do Narrador é AVISO, nunca bloqueio.
-    custo: 1, repeticao: "unica", max: 1, escolha: null,
+    // O conteúdo mora em `tecnica.especiais`, um por compra (texto e linhas de
+    // Motor), e a aprovação do Narrador é AVISO, nunca bloqueio. A Técnica pode
+    // ter mais de um, e cada um ocupa uma vaga (autor, 2026-11-14).
+    custo: 1, repeticao: "soma", max: null, escolha: null,
     canal: null, especial: true,
     leAptidao: null, aceitaBonusPreRequisito: true, automacao: "P",
   },
@@ -286,7 +287,9 @@ export const EFEITOS_ESTILO = [
      aptidoes     a modificação é DE uma Aptidão certa (qualquer uma da lista)
      categoria    a modificação vale para qualquer Aptidão da categoria, e a
                   pessoa escolhe qual (o `aptidaoId` gravado)
-     exigeNumerico  a Aptidão escolhida precisa ter bônus numérico no Motor
+     exigeNumerico  o bônus soma nas linhas numéricas da Aptidão no Motor. A
+                  Aptidão sem linha (o bônus é dos aliados, ou de mesa) sai
+                  como número de mesa, com aviso de regra no hover
      requerUmaDe  além da Aptidão, a ficha precisa de UMA destas
      requerTrilha a ficha precisa deste Nível de Aptidão
      bonus        "au" | "cl": soma `teto(trilha / 2)` em cada canal numérico da

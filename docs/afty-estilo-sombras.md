@@ -99,11 +99,21 @@ legacy, e o que sobrar segue para as legacy como antes.
 | Deslocamento Adicional | +4,5 m | a 2ª estende aos aliados ou passa o bônus pessoal a +9 m |
 | Ataque com Gatilho | 1 ataque por rodada por compra (número de mesa) | soma |
 | Bônus de CD | CD + metade do BT | a 2ª estende aos aliados ou passa a BT inteiro, limite de duas |
-| Efeito Especial | texto e linhas de Motor, aprovado pelo Narrador | uma compra |
+| Efeito Especial | texto com formatação e linhas de Motor, aprovado pelo Narrador | soma: cada compra é um Efeito Especial próprio e ocupa 1 vaga (autor, 2026-11-14) |
 
 - Metade do BT é `piso(bt / 2)`. O limite de efeitos é DOM + `imbuicoesEstilo` + Exaustão.
 - O valor dos aliados é número de mesa na ficha do usuário. Ele nunca é somado em outra ficha.
 - A Técnica liga pela variável `estilo_tecnica_<id>`, com o Domínio no ar (`estilo_ativo`).
+- **Vários Efeitos Especiais (2026-11-14).** O conteúdo mora em `tecnica.especiais`, uma entrada
+  `{ uid, texto, linhas, confirmacoes }` por compra do efeito, com o `uid` da compra.
+  `especiaisDaTecnica` devolve a lista, e a Técnica normalizada continua expondo `especial` como a
+  SOMA deles (textos juntados, linhas concatenadas), que é o que o Motor, a validação e a Ficha leem.
+  O campo antigo `especial` (um objeto só) segue lido como o primeiro enquanto a Técnica não grava a
+  lista nova, e Addon antigo não precisa mudar.
+- **O tipo não se troca depois de criado (2026-11-14).** O seletor "Modificação / Especial" saiu do
+  cabeçalho da Técnica: o Efeito Especial já mora dentro da Modificação. A Técnica de Estilo Especial
+  continua existindo e nasce pelo botão próprio.
+- O nome da Perícia escolhida chega pelo `ctx` (`nomeDaPericia`, do derive), como o da Aptidão.
 
 ### Segunda compra: Aliados ou Dobrar Bônus (2026-10-12)
 
@@ -147,6 +157,22 @@ cada modificação ocupa 1 vaga.
 - As Aptidões de Domínio (a categoria inteira) não podem ser modificadas.
 - O Bônus Numérico só vale enquanto a linha da Aptidão está valendo: o Cobrir-se sem PE gasto não
   ganha nada.
+- **Extra de Aptidão soma com efeito comum, e entre extras fica o maior (autor, 2026-11-14).** No
+  mesmo número: "Aura do Bastião + Aura Maciça + Maior Buff Entre os Dois + Aumento de Defesa". Todo
+  extra de Bônus Numérico sai no bloco das Técnicas com a origem única `ORIGEM_APTIDOES_ESTILO`,
+  então os extras disputam entre si, de qualquer Técnica ligada, e o vencedor soma com os efeitos
+  comuns, que seguem na origem da Técnica. Antes o extra perdia para o efeito comum da própria
+  Técnica no mesmo canal, e dois extras de Técnicas diferentes somavam. O extra que sai como número
+  de mesa (Aptidão sem linha) não entra na disputa: a mesa aplica o maior.
+- **Efeito Especial no mesmo canal fica com o maior (autor, 2026-11-14).** A linha de um Efeito
+  Especial segue na origem da Técnica: contra um efeito comum da mesma Técnica, ou contra outro
+  Efeito Especial dela, no mesmo canal, vale só o maior. O autor foi perguntado e manteve.
+- **Aptidão sem linha no Motor vira número de mesa (autor, 2026-11-14).** A Aura do Comandante dá o
+  bônus aos aliados, então não tem linha, e o Bônus Numérico a recusava com erro. Eram 17 das 27
+  Auras e 7 de Controle e Leitura. Agora o extra sai em `mesa` como "Bônus de <Aptidão>", com o
+  mesmo valor (`teto(trilha / 2)`, dobrado na segunda compra pessoal), não soma em canal nenhum, e a
+  validação registra a INFO `aptidao_mesa` no hover. A segunda compra continua podendo estender aos
+  aliados.
 - Bônus Numérico de Controle e Leitura também escolhe entre aliados e bônus pessoal dobrado
   na segunda compra, com as mesmas restrições de Aura.
 

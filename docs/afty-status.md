@@ -1,5 +1,62 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-14: REDESENHO DO CARD DO NOVO ESTILO DAS SOMBRAS
+
+Pedido do autor depois de feedback de uso: a tela estava feia, pouco intuitiva e com tamanhos
+desalinhados. Só leiaute, em `AftyEstiloSombras.jsx`, valendo para criatura e personagem (decisão
+do autor). Nenhuma regra, nenhum dado e nenhum import mudou.
+
+- **Efeitos em lista única.** Cada linha compra e devolve no mesmo lugar, com contador (tira,
+  quantidade, põe). Os chips roxos de baixo saíram. A linha comprada acende no lugar e NÃO muda de
+  posição, para o botão não fugir do cursor.
+- **Efeito com escolha compra ao escolher.** O seletor lista só o que ainda não foi comprado, e
+  cada escolha vira uma sublinha com contador próprio. O botão `+` que ficava apagado até escolher
+  deixou de existir. As Modificações de Aptidão seguem o mesmo desenho.
+- **Uma altura só nos controles da lista** (`h-7`), com `SelectCompacto` e `Contador` locais. O
+  `Select` e o `NumberInput` do `builder-controls` têm 36px e largura cheia, e a mistura com o botão
+  de 24px era a causa das linhas tortas.
+- **Cartão da Técnica.** Tipo em controle segmentado, resultado calculado logo abaixo do nome
+  (aparece também com a Técnica fechada), "Efeitos N / M" no título da seção Efeitos, Usa Reação
+  na linha do Gatilho, e Exaustão, Contra-Ataques e Crítico da Arma numa linha só.
+- Os roteiros `.audit/estilo-repeticao-browser.mjs` e `.audit/estilo-acerto-cd-aliados-browser.mjs`
+  foram atualizados e passam nos dois sistemas. O botão conferido agora é
+  `Adicionar Bônus de Acerto (Corpo a Corpo)`, na sublinha, e o passo que escolhia no seletor um
+  alvo já comprado saiu. Os rótulos `Repetição de ...` e `Escolha de ...` foram mantidos.
+  Três defasagens ANTERIORES ao redesenho foram consertadas junto: o criador abre pelo menu
+  "Mais opções da ficha" (o botão "Editar no criador" é só da apresentação clássica), a base aceita
+  `AFTY_URL` (as portas 5298 e 5299 eram de prévias que não existem mais), e o primeiro roteiro
+  contava 7 seletores de repetição quando a ficha de teste tem 9 (as duas Modificações de Aptidão).
+
+Conferido no navegador em `/afty` e `/player`, 1440 e 390 de largura: sem erro de console e sem
+rolagem horizontal.
+
+**Segunda rodada, no mesmo dia, a pedido do autor:**
+
+- **Aumento de Perícia mostrava o id cru** ("tecnologia", "prestidigitacao"). O `nomeDaEscolha` não
+  conhecia Perícia, porque `afty-estilo-sombras.js` não importa o catálogo delas. O nome agora chega
+  pelo `ctx` (`nomeDaPericia`, do derive), e conserta junto o rótulo do resultado e o do buff.
+- **Vários Efeitos Especiais por Técnica.** O efeito `especial` passou de compra única a `soma`, sem
+  teto, e cada compra ocupa 1 vaga e tem texto (agora com formatação) e linhas de Motor próprios, em
+  `tecnica.especiais`. Desenho em `docs/afty-estilo-sombras.md`. O campo antigo `especial` continua
+  lido, então ficha e Addon gravados não mudam.
+- **O seletor "Modificação / Especial" saiu do cabeçalho.** O tipo nasce no botão de criar.
+- Asserts: `t-estilo-sombras-metricas` trocou a repetição esperada do Especial para `soma`, e
+  `t-estilo-sombras-validacao` ganhou cinco casos por sistema (duas compras, soma dos textos, campo
+  antigo, sem compra, nome da Perícia).
+- **Bônus Numérico em Aptidão sem linha no Motor vira número de mesa** (decisão do autor). O erro
+  `aptidao_sem_numero` deixou de existir, e no lugar entra a INFO `aptidao_mesa`. Um Estilo focado
+  em Aura do Comandante agora é válido e mostra "Bônus de Aura do Comandante +N". Dois casos novos
+  por sistema em `t-estilo-sombras-aptidoes`. Conferido só por assert, não no navegador.
+- **Extra de Aptidão soma com efeito comum, e entre extras fica o maior** (regra dita pelo autor).
+  O motor errava nos dois sentidos, medido antes de mexer: Aumento de Defesa engolia o extra da Aura
+  Maciça na mesma Técnica (dava 2, o certo é 4), e dois extras de Técnicas diferentes somavam (dava
+  4, o certo é 2). Conserto em `efeitosDoEstilo`: os extras ganharam a origem
+  `ORIGEM_APTIDOES_ESTILO` dentro do bloco. Quatro casos novos por sistema em
+  `t-estilo-sombras-aptidoes`.
+- ⚠ `t-reconciliacao-g00.mjs` falha em "herança conserva 118 integrações" (deu 65). Não foi
+  investigado nesta sessão: o `docs/revisao-automacao/escopo.json` já estava alterado na árvore antes
+  dela, e o caso conta integrações herdadas, não o Estilo.
+
 ## SESSÃO DE 2026-11-14: OFÍCIO DUPLICADO PELA CANETINHA
 
 Corrigido o catálogo de perícias: os ids reservados de Artesão Amaldiçoado

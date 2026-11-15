@@ -185,6 +185,25 @@ export function tecnicasNoAr(combate) {
 export const BLOCO_TECNICAS_ESTILO = "estiloTecnicas";
 
 /**
+ * ⚠ O EXTRA DE APTIDÃO TEM ORIGEM PRÓPRIA NO BLOCO (autor, 2026-11-14).
+ *
+ * Dentro do bloco, o pool fica com a MELHOR linha de cada `origem` e soma as
+ * origens. O autor: "Buff de Aptidões somam com Buffs normais", e entre dois
+ * buffs de Aptidão "só fica o maior". Exemplo dele, no mesmo número:
+ *
+ *   Aura do Bastião + Aura Maciça + o MAIOR extra entre os dois + Aumento de Defesa
+ *
+ * Por isso todo extra de Modificação de Aptidão, de qualquer Técnica ligada,
+ * sai com esta origem única: eles disputam entre si (vale o maior) e o vencedor
+ * soma com os efeitos comuns, que seguem na origem da Técnica.
+ *
+ * Antes, o extra saía na origem da Técnica e PERDIA para o efeito comum dela no
+ * mesmo canal (Aumento de Defesa engolia o extra da Aura Maciça), e dois extras
+ * de Técnicas diferentes somavam.
+ */
+export const ORIGEM_APTIDOES_ESTILO = "estilo:aptidoes";
+
+/**
  * A faixa de imbuição de uma Técnica. O id vira variável do DSL pelo
  * `varDoEstado` de afty-combate.js, que só troca maiúscula por underscore, e
  * por isso a chave já sai em minúsculas daqui.
@@ -475,6 +494,40 @@ const texto = (v) => String(v ?? "");
 const lista = (v) => (Array.isArray(v) ? v : []);
 
 /**
+ * Os Efeitos Especiais de uma Técnica, um por um (autor, 2026-11-14: a Técnica
+ * pode ter mais de um). `[{ uid, texto, linhas, confirmacoes }]`.
+ *
+ *   Modificação  um por COMPRA do efeito "especial", na ordem das compras, e o
+ *                `uid` é o da compra. Sem compra não há Efeito Especial.
+ *   Especial     a lista gravada (a Técnica inteira é o efeito).
+ *
+ * ⚠ O campo antigo `especial` (um objeto só) continua sendo lido enquanto a
+ * Técnica não gravar `especiais`: ele vale como o PRIMEIRO. Quem grava a lista
+ * nova zera o antigo junto, ou a primeira compra herdaria texto velho.
+ *
+ * Aceita a Técnica crua, porque a tela edita o cru.
+ */
+export function especiaisDaTecnica(b) {
+  const um = (e, uid) => ({
+    uid, texto: texto(e?.texto), linhas: lista(e?.linhas), confirmacoes: objeto(e?.confirmacoes) ?? {},
+  });
+  const gravados = Array.isArray(b?.especiais)
+    ? b.especiais.map(objeto).filter((e) => e && texto(e.uid).trim())
+    : null;
+  const antigo = objeto(b?.especial);
+  if (b?.tipo === TIPO_ESPECIAL) {
+    if (gravados?.length) return gravados.map((e) => um(e, texto(e.uid)));
+    return antigo ? [um(antigo, "especial")] : [];
+  }
+  return lista(b?.efeitos).map(objeto)
+    .filter((c) => c && texto(c.efeitoId) === "especial" && texto(c.uid).trim())
+    .map((c, i) => um(
+      gravados ? gravados.find((e) => texto(e.uid) === texto(c.uid)) : (i === 0 ? antigo : null),
+      texto(c.uid),
+    ));
+}
+
+/**
  * Normaliza uma Técnica da Expansão gravada. Lixo some, campo ausente ganha o
  * valor neutro, e nenhum campo é inventado a partir do texto.
  */
@@ -484,7 +537,7 @@ export function normalizaTecnicaEstilo(b) {
   const comUid = (arr, campos) => lista(arr)
     .map((x) => objeto(x))
     .filter((x) => x && texto(x.uid).trim() && campos.every((c) => texto(x[c]).trim()));
-  const esp = objeto(b.especial);
+  const especiais = especiaisDaTecnica(b);
   const crit = objeto(b.critico) ?? {};
   const contra = inteiro(objeto(b.contraAtaque)?.quantidade, 0, 99);
   return {
@@ -508,8 +561,15 @@ export function normalizaTecnicaEstilo(b) {
     requisitos: comUid(b.requisitos, ["dificuldade"])
       .map((r) => ({ uid: texto(r.uid), dificuldade: texto(r.dificuldade), alvoUid: texto(r.alvoUid), texto: texto(r.texto) })),
     exaustao: inteiro(b.exaustao, 0, 99),
-    especial: esp
-      ? { texto: texto(esp.texto), linhas: lista(esp.linhas), confirmacoes: objeto(esp.confirmacoes) ?? {} }
+    especiais,
+    // A soma dos Efeitos Especiais, que é o que o Motor, a validação e a Ficha
+    // leem. Numa Modificação sem a compra do efeito, é `null`.
+    especial: especiais.length
+      ? {
+        texto: especiais.map((e) => e.texto).filter((x) => x.trim()).join("\n\n"),
+        linhas: especiais.flatMap((e) => e.linhas),
+        confirmacoes: Object.assign({}, ...especiais.map((e) => e.confirmacoes)),
+      }
       : null,
     critico: {
       aumentarCD: !!crit.aumentarCD,
@@ -546,8 +606,9 @@ export const tecnicasCruasDaExpansao = (creature) =>
   lista(creature?.estilosSombra).filter((b) => objeto(b) && regraDaTecnica(b) === REGRA_EXPANSAO);
 
 /** O nome de uma escolha, para o rótulo ("Aumento de TR (Reflexos)"). */
-const nomeDaEscolha = (tipo, id) => {
+const nomeDaEscolha = (tipo, id, nomeDaPericia = (x) => x) => {
   if (!id) return null;
+  if (tipo === "pericia") return nomeDaPericia(id) ?? id;
   if (tipo === "ataque") return ESCOLHA_ATAQUE.find((x) => x.id === id)?.nome ?? id;
   if (tipo === "tr") return ESCOLHA_TR.find((x) => x.id === id)?.nome ?? id;
   return id;
@@ -557,7 +618,7 @@ const nomeDaEscolha = (tipo, id) => {
  * Junta as compras iguais (mesmo efeito e mesma escolha) num grupo com `n`.
  * É o `n` que o catálogo lê para somar, estender aos aliados ou contar.
  */
-export function gruposDeCompras(tecnica) {
+export function gruposDeCompras(tecnica, nomeDaPericia = (id) => id) {
   const grupos = new Map();
   for (const c of tecnica?.efeitos ?? []) {
     const def = getEfeitoEstilo(c.efeitoId);
@@ -568,7 +629,7 @@ export function gruposDeCompras(tecnica) {
         chave,
         efeitoId: c.efeitoId,
         escolha,
-        nomeEscolha: def?.escolha ? nomeDaEscolha(def.escolha, escolha) : null,
+        nomeEscolha: def?.escolha ? nomeDaEscolha(def.escolha, escolha, nomeDaPericia) : null,
         uids: [], compras: [],
       });
     }
@@ -627,6 +688,9 @@ const linhaNumerica = (e) => !!String(e?.canal ?? "").trim() && !!String(e?.expr
 export function resolveTecnicaExpansao(t, {
   dom = 0, imbuicoesExtras = 0, partesImbuicao = [],
   nomeDaAptidao = (id) => id, efeitosDaAptidao = () => [], niveis = {},
+  // O nome da Perícia escolhida vem do derive: este módulo não importa o
+  // catálogo de Perícias, e sem isto o rótulo saía com o id cru ("tecnologia").
+  nomeDaPericia = (id) => id,
 } = {}) {
   /* Pré-Requisitos: o bônus no Nível de Aptidão considerado, POR ALVO. Somar os
      de um mesmo alvo é NOVA DECISÃO NECESSÁRIA, e a validação avisa. */
@@ -651,7 +715,7 @@ export function resolveTecnicaExpansao(t, {
       ...(t.exaustao ? [{ label: "Exaustão", valor: t.exaustao }] : []),
     ],
   };
-  const grupos = t.tipo === TIPO_MODIFICACAO ? gruposDeCompras(t) : [];
+  const grupos = t.tipo === TIPO_MODIFICACAO ? gruposDeCompras(t, nomeDaPericia) : [];
   const pessoais = [];
   const aliados = [];
   let ataquesComGatilho = 0;
@@ -704,7 +768,14 @@ export function resolveTecnicaExpansao(t, {
     if (mod.bonus) {
       const metade = `teto(${trilhaCom(mod.bonus, b)} / 2)`;
       const expr = g.repeticao.pessoal ? `2 * (${metade})` : metade;
-      for (const linha of (efeitosDaAptidao(g.aptidaoId) ?? []).filter(linhaNumerica)) {
+      const linhas = (efeitosDaAptidao(g.aptidaoId) ?? []).filter(linhaNumerica);
+      /* ⚠ APTIDÃO SEM LINHA NO MOTOR VIRA NÚMERO DE MESA (autor, 2026-11-14).
+         A Aura do Comandante dá o bônus aos ALIADOS, então não tem linha, e o
+         Bônus Numérico a recusava como "não concede bônus numérico". Eram 17 das
+         27 Auras e 7 de Controle e Leitura. Agora o extra sai como número de
+         mesa, com o nome da Aptidão, e não soma em canal nenhum. */
+      if (!linhas.length) mesa.push({ efeitoId: mod.id, rotulo: `Bônus de ${g.nomeAptidao}`, expr });
+      for (const linha of linhas) {
         pessoais.push({
           efeitoId: mod.id,
           nome: rotulo,
@@ -713,6 +784,9 @@ export function resolveTecnicaExpansao(t, {
           ...(String(linha.quando ?? "").trim() ? { quando: linha.quando } : {}),
           expr: `${expr} * ((${linha.expr}) != 0)`,
           n: g.n,
+          // O extra de Aptidão disputa com os outros extras de Aptidão, e não
+          // com os efeitos comuns. Ver `ORIGEM_APTIDOES_ESTILO`.
+          deAptidao: true,
         });
       }
       if (g.repeticao.aliados) aliados.push({ efeitoId: mod.id, rotulo: `Bônus dos Aliados no Domínio (${g.nomeAptidao})`, expr: metade });
@@ -840,8 +914,9 @@ export function validarTecnica(r, {
         ? mod.aptidoes.includes(g.aptidaoId)
         : categoriaDaAptidao(g.aptidaoId) === mod.categoria;
       if (!serve) erro("aptidao_invalida", `${mod.nome}: não vale para ${quem}.`, g.uids[0]);
+      // Sem linha no Motor o bônus é número de mesa, e a regra vai para o hover.
       if (serve && mod.exigeNumerico && !(efeitosDaAptidao(g.aptidaoId) ?? []).some(linhaNumerica)) {
-        erro("aptidao_sem_numero", `${mod.nome}: ${quem} não concede bônus numérico.`, g.uids[0]);
+        info("aptidao_mesa", `${mod.nome}: o bônus de ${quem} é aplicado na mesa.`);
       }
       if (mod.requerTrilha && (Number(niveis?.[mod.requerTrilha.trilha]) || 0) < mod.requerTrilha.min) {
         erro("requisito", `${mod.nome}: pede Nível de Aptidão ${mod.requerTrilha.min} em ${mod.requerTrilha.trilha.toUpperCase()}.`, g.uids[0]);
@@ -1008,7 +1083,7 @@ export function resolveEstilos(
     // As Aptidões da ficha, para as modificações. Vêm do derive porque este
     // módulo não importa o catálogo de Aptidões (ciclo).
     aptidoesPossuidas = [], categoriaDaAptidao = () => null, efeitosDaAptidao = () => [],
-    nomeDaAptidao = (id) => id, niveis = {},
+    nomeDaAptidao = (id) => id, nomeDaPericia = (id) => id, niveis = {},
     // O Nível em que o Estilo destrava. 4 pelo livro, e a origem de Addon pode
     // baixar (`estiloNdMinimo`, o Legado do Guerreiro do pacote Stark).
     ndMinimo = ESTILO_ND_MINIMO,
@@ -1086,7 +1161,7 @@ export function resolveEstilos(
   // As Técnicas da Expansão. Não entram na imbuição nem no contador de
   // Habilidades: o orçamento delas é a progressão própria.
   const tecnicasCru = [...tecnicasDaFicha(creature), ...deAddonExpansao]
-    .map((t) => resolveTecnicaExpansao(t, { dom, imbuicoesExtras, partesImbuicao, nomeDaAptidao, efeitosDaAptidao, niveis }));
+    .map((t) => resolveTecnicaExpansao(t, { dom, imbuicoesExtras, partesImbuicao, nomeDaAptidao, nomeDaPericia, efeitosDaAptidao, niveis }));
   const ctxValidacao = {
     aptidoesPossuidas, categoriaDaAptidao, efeitosDaAptidao, niveis,
     habilidadesPossuidas, nomeDaAptidao, nomeDaHabilidade,
@@ -1376,6 +1451,7 @@ export function efeitosDoEstilo(creature, ctx = {}) {
         canal: p.canal,
         ...(p.alvo ? { alvo: p.alvo } : {}),
         expr: p.expr,
+        ...(p.deAptidao ? { origem: ORIGEM_APTIDOES_ESTILO } : {}),
         // A modificação de Aptidão herda a condição da linha da própria Aptidão.
         ...(p.quando ? { quando: `${porta} && (${p.quando})` } : {}),
         nome: `${nomeTecnica}: ${p.nome}`,

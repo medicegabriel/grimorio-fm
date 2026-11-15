@@ -19,10 +19,10 @@
  */
 import React, { useState } from "react";
 import { AlertTriangle, ChevronDown, Info, Lock, Minus, Plus, Trash2, RefreshCw } from "lucide-react";
-import { FieldLabel, TextInput, TextArea, Select, NumberInput } from "../../components/builder-controls";
+import { FieldLabel, TextInput, Select } from "../../components/builder-controls";
 import { Card, BoolChip } from "./ui/primitivos";
 import { PainelDeFontes, DicaDeTexto } from "./ui/fontes";
-import { novoUidEstilo } from "./afty-estilo-sombras";
+import { novoUidEstilo, especiaisDaTecnica } from "./afty-estilo-sombras";
 import {
   EFEITOS_ESTILO, MODIFICACOES_APTIDAO, ESCOLHA_ATAQUE, ESCOLHA_TR, DIFICULDADES_PREREQ,
   CRITICO_MODS, TIPO_MODIFICACAO, TIPO_ESPECIAL, ALVO_CONTRA_ATAQUE, alvoDoCritico,
@@ -79,8 +79,75 @@ function PainelValidacao({ itens = [] }) {
 }
 
 const botaoPequeno =
-  "inline-flex items-center justify-center w-6 h-6 rounded border border-slate-700 text-slate-400 " +
-  "hover:border-purple-600 hover:text-purple-200 transition-colors disabled:opacity-40 disabled:pointer-events-none";
+  "inline-flex items-center justify-center w-9 h-9 flex-shrink-0 rounded border border-slate-700 text-slate-400 " +
+  "hover:border-purple-600 hover:text-purple-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed";
+
+const rotuloDeSecao = "text-xs font-semibold text-slate-300 uppercase tracking-wider";
+const botaoDeSecao =
+  "inline-flex items-center gap-1 h-7 text-[12px] font-semibold px-2.5 rounded border border-slate-700 text-slate-300 " +
+  "hover:border-purple-600 hover:text-purple-200 transition-colors";
+const ESPECIAL_EM_BRANCO = { texto: "", linhas: [], confirmacoes: {} };
+
+/* ============================================================
+   OS CONTROLES DA LISTA (2026-11-14)
+   ============================================================
+   ⚠ UMA ALTURA SÓ, 28px (`h-7`), para seletor, contador e linha. O `Select` e o
+   `NumberInput` do `builder-controls` têm 36px e largura cheia, e era a mistura
+   deles com o botão de 24px que deixava as linhas com seletor mais altas que as
+   vizinhas. O `builder-controls` é da 2.5.2 e não se mexe, então os compactos
+   moram aqui.
+   ============================================================ */
+
+function SelectCompacto({ value, onChange, options, placeholder, largura = "w-32", ...rest }) {
+  return (
+    <span className={`relative inline-flex flex-shrink-0 ${largura}`}>
+      <select
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value)}
+        {...rest}
+        className="w-full h-7 bg-slate-950 border border-slate-700 rounded pl-2 pr-6 text-[12px] text-white appearance-none focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+      >
+        {placeholder && <option value="">{placeholder}</option>}
+        {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+      <ChevronDown className="w-3 h-3 absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" aria-hidden="true" />
+    </span>
+  );
+}
+
+/** O contador de uma linha: tira, quantidade, põe. */
+function Contador({ valor, onMenos, onMais, semMenos = false, semMais = false, tituloMais, rotuloMenos, rotuloMais }) {
+  const botao =
+    "w-7 flex items-center justify-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors " +
+    "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-purple-500 " +
+    "disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent";
+  return (
+    <span className="inline-flex items-stretch h-7 flex-shrink-0 rounded border border-slate-700 overflow-hidden">
+      <button type="button" className={botao} onClick={onMenos} disabled={semMenos} aria-label={rotuloMenos}>
+        <Minus className="w-3 h-3" />
+      </button>
+      <span className={`w-7 flex items-center justify-center border-x border-slate-700 bg-slate-950 font-mono text-[12px] font-bold ${valor > 0 ? "text-white" : "text-slate-500"}`}>
+        {valor}
+      </span>
+      <button type="button" className={botao} onClick={onMais} disabled={semMais} title={semMais ? tituloMais : undefined} aria-label={rotuloMais}>
+        <Plus className="w-3 h-3" />
+      </button>
+    </span>
+  );
+}
+
+/** Uma seção da Técnica: régua em cima, título à esquerda, o que conta à direita. */
+function Secao({ titulo, direita = null, children }) {
+  return (
+    <section className="border-t border-slate-800 pt-3 space-y-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 min-h-7">
+        <span className={rotuloDeSecao}>{titulo}</span>
+        {direita}
+      </div>
+      {children}
+    </section>
+  );
+}
 
 const notaDeRepeticao = (def) => [
   def.notaAutor,
@@ -91,170 +158,282 @@ const notaDeRepeticao = (def) => [
 
 function RepeticaoDaCompra({ grupo, nome, onChange }) {
   return (
-    <div className="w-32">
-      <Select
-        value={grupo.repeticao.pessoal ? "pessoal" : "aliados"}
-        onChange={onChange}
-        options={[{ value: "aliados", label: "Aliados" }, { value: "pessoal", label: "Dobrar Bônus" }]}
-        aria-label={`Repetição de ${nome}`}
-      />
+    <SelectCompacto
+      value={grupo.repeticao?.pessoal ? "pessoal" : "aliados"}
+      onChange={onChange}
+      options={[{ value: "aliados", label: "Aliados" }, { value: "pessoal", label: "Dobrar Bônus" }]}
+      largura="w-28"
+      aria-label={`Repetição de ${nome}`}
+    />
+  );
+}
+
+/** O nome de uma linha, com a regra no hover quando há. O invólucro é que
+    estica: o `DicaDeTexto` embrulha num `inline-flex` que não cresce sozinho. */
+function NomeDaLinha({ nome, dica, comprada }) {
+  const texto = (
+    <span className={`text-[12px] leading-tight break-words ${dica ? "cursor-help" : ""} ${comprada ? "font-semibold text-purple-100" : "text-slate-300"}`}>
+      {nome}
+    </span>
+  );
+  return (
+    <span className="flex-1 min-w-0 flex items-center">
+      {dica ? <DicaDeTexto titulo={dica.titulo} texto={dica.texto} nota={dica.nota}>{texto}</DicaDeTexto> : texto}
+    </span>
+  );
+}
+
+/** Uma linha comprável: o nome, a repetição quando cabe, e o contador. A linha
+    comprada acende no lugar, sem mudar de posição (o botão não foge do cursor). */
+function LinhaDeCompra({ nome, dica, n, sub = false, children, contador }) {
+  return (
+    <div className={`flex items-center gap-2 min-h-9 py-1 pr-1 rounded ${sub ? "pl-5" : "pl-2"} ${n > 0 ? "bg-purple-950/40" : ""}`}>
+      <NomeDaLinha nome={nome} dica={dica} comprada={n > 0} />
+      {children}
+      {contador}
     </div>
   );
 }
 
-/** Os efeitos da Modificação: um seletor por efeito e a lista do que já foi comprado. */
+const blocoDaLista = "break-inside-avoid border-b border-slate-800/60 py-0.5";
+const colunasDaLista = "sm:columns-2 gap-x-6";
+
+/** Os efeitos da Modificação numa lista só: cada linha compra e devolve no
+    mesmo lugar. O efeito que pede escolha compra ao escolher, e cada escolha
+    comprada vira uma linha própria logo abaixo. */
 function EfeitosDaTecnica({ resolvida, pericias, onMudar }) {
-  const [escolhas, setEscolhas] = useState({});
   const opcoesEscolha = (tipo) => {
     if (tipo === "tr") return ESCOLHA_TR.map((x) => ({ value: x.id, label: x.nome }));
     if (tipo === "ataque") return ESCOLHA_ATAQUE.map((x) => ({ value: x.id, label: x.nome }));
     if (tipo === "pericia") return (pericias ?? []).map((p) => ({ value: p.id, label: p.nome ?? p.label ?? p.id }));
     return [];
   };
-  const comprar = (def) => {
-    const alvo = def.escolha ? escolhas[def.id] : null;
-    if (def.escolha && !alvo) return;
-    onMudar((t) => ({
+  const comprar = (def, alvo = null) => onMudar((t) => {
+    const uid = novoUidEstilo("ef");
+    return {
       ...t,
-      efeitos: [...(t.efeitos ?? []), {
-        uid: novoUidEstilo("ef"), efeitoId: def.id, ...(alvo ? { escolha: { [def.escolha]: alvo } } : {}),
-      }],
-    }));
-  };
+      efeitos: [...(t.efeitos ?? []), { uid, efeitoId: def.id, ...(alvo ? { escolha: { [def.escolha]: alvo } } : {}) }],
+      // Cada compra do Efeito Especial nasce com o conteúdo dela, e a lista
+      // nova zera o campo antigo (ver `especiaisDaTecnica`).
+      ...(def.especial ? { especial: null, especiais: [...especiaisDaTecnica(t), { ...ESPECIAL_EM_BRANCO, uid }] } : {}),
+    };
+  });
   const devolver = (uid) => onMudar((t) => ({
     ...t,
     efeitos: (t.efeitos ?? []).filter((e) => e.uid !== uid),
+    ...(Array.isArray(t.especiais) ? { especiais: t.especiais.filter((e) => e.uid !== uid) } : {}),
     // Pré-Requisito apontando para a compra removida perde o alvo, e a
     // validação mostra. Nada é apagado por tabela.
   }));
+  const repetir = (g) => (repeticao) => onMudar((t) => ({
+    ...t, efeitos: t.efeitos.map((e) => (e.uid === g.uids[1] ? { ...e, repeticao } : e)),
+  }));
   const grupos = resolvida?.grupos ?? [];
+  const orfaos = grupos.filter((g) => !EFEITOS_ESTILO.some((e) => e.id === g.efeitoId));
+
+  const contadorDe = (def, g, nome, alvo) => {
+    const n = g?.n ?? 0;
+    return (
+      <Contador
+        valor={n}
+        onMenos={() => g && devolver(g.uids[g.uids.length - 1])}
+        onMais={() => comprar(def, alvo)}
+        semMenos={n === 0}
+        semMais={!def || (def.max != null && n >= def.max)}
+        tituloMais="Limite de Compras Atingido"
+        rotuloMenos={`Tirar uma compra de ${nome}`}
+        rotuloMais={`Adicionar ${nome}`}
+      />
+    );
+  };
 
   return (
-    <div className="space-y-2">
-      <div className="grid gap-1.5 sm:grid-cols-2">
-        {EFEITOS_ESTILO.map((def) => {
-          const opcoes = opcoesEscolha(def.escolha);
-          const alvo = def.escolha ? escolhas[def.id] : null;
-          const grupo = grupos.find((g) => g.efeitoId === def.id && g.escolha === alvo);
-          const noTeto = def.max != null && (grupo?.n ?? 0) >= def.max;
+    <div className={colunasDaLista}>
+      {EFEITOS_ESTILO.map((def) => {
+        const dica = { titulo: def.nome, texto: def.descricao, nota: notaDeRepeticao(def) };
+        if (!def.escolha) {
+          const g = grupos.find((x) => x.efeitoId === def.id);
           return (
-            <div key={def.id} className="flex items-center gap-1.5 rounded border border-slate-800 bg-slate-950/40 px-2 py-1">
-              <DicaDeTexto titulo={def.nome} texto={def.descricao} nota={notaDeRepeticao(def)}>
-                <span className="text-[11px] font-semibold text-slate-200 flex-1 min-w-0 truncate cursor-help">{def.nome}</span>
-              </DicaDeTexto>
-              {def.escolha && (
-                <div className="w-28 flex-shrink-0">
-                  <Select
-                    value={escolhas[def.id] ?? ""}
-                    onChange={(v) => setEscolhas((s) => ({ ...s, [def.id]: v }))}
-                    options={opcoes}
-                    placeholder="Escolher"
-                    aria-label={`Escolha de ${def.nome}`}
-                  />
-                </div>
-              )}
-              <button
-                type="button"
-                className={botaoPequeno}
-                onClick={() => comprar(def)}
-                disabled={noTeto || (!!def.escolha && !escolhas[def.id])}
-                title={noTeto ? "Limite de compras atingido" : undefined}
-                aria-label={`Adicionar ${def.nome}`}
-              >
-                <Plus className="w-3 h-3" />
-              </button>
+            <div key={def.id} className={blocoDaLista}>
+              <LinhaDeCompra nome={def.nome} dica={dica} n={g?.n ?? 0} contador={contadorDe(def, g, def.nome, null)}>
+                {def.repeticao === "aliados" && g?.n >= 2 && <RepeticaoDaCompra grupo={g} nome={def.nome} onChange={repetir(g)} />}
+              </LinhaDeCompra>
             </div>
           );
-        })}
-      </div>
-      {grupos.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {grupos.map((g) => {
-            const def = EFEITOS_ESTILO.find((e) => e.id === g.efeitoId);
-            const nome = def ? (g.nomeEscolha ? `${def.nome} (${g.nomeEscolha})` : def.nome) : g.efeitoId;
-            return (
-              <span key={g.chave} className="inline-flex flex-wrap max-w-full items-center gap-1 text-[11px] pl-2 pr-1 py-0.5 rounded border border-purple-800 bg-purple-950/30 text-purple-100">
-                <span className="min-w-0 break-words">{nome}</span>
-                {g.n > 1 && <span className="font-mono text-purple-300">×{g.n}</span>}
-                {def?.repeticao === "aliados" && g.n >= 2 && (
-                  <RepeticaoDaCompra grupo={g} nome={nome} onChange={(repeticao) => onMudar((t) => ({
-                    ...t, efeitos: t.efeitos.map((e) => e.uid === g.uids[1] ? { ...e, repeticao } : e),
-                  }))} />
-                )}
-                <button type="button" className={botaoPequeno} onClick={() => devolver(g.uids[g.uids.length - 1])} aria-label={`Tirar uma compra de ${nome}`}>
-                  <Minus className="w-3 h-3" />
-                </button>
-              </span>
-            );
-          })}
+        }
+        const comprados = grupos.filter((x) => x.efeitoId === def.id);
+        const livres = opcoesEscolha(def.escolha).filter((o) => !comprados.some((g) => g.escolha === o.value));
+        return (
+          <div key={def.id} className={blocoDaLista}>
+            <LinhaDeCompra nome={def.nome} dica={dica} n={comprados.length}>
+              {livres.length > 0 && (
+                <SelectCompacto
+                  value=""
+                  onChange={(v) => v && comprar(def, v)}
+                  options={livres}
+                  placeholder="Escolher"
+                  aria-label={`Escolha de ${def.nome}`}
+                />
+              )}
+            </LinhaDeCompra>
+            {comprados.map((g) => {
+              const nome = `${def.nome} (${g.nomeEscolha ?? g.escolha})`;
+              return (
+                <LinhaDeCompra key={g.chave} sub nome={g.nomeEscolha ?? g.escolha} n={g.n} contador={contadorDe(def, g, nome, g.escolha)}>
+                  {def.repeticao === "aliados" && g.n >= 2 && <RepeticaoDaCompra grupo={g} nome={nome} onChange={repetir(g)} />}
+                </LinhaDeCompra>
+              );
+            })}
+          </div>
+        );
+      })}
+      {orfaos.map((g) => (
+        <div key={g.chave} className={blocoDaLista}>
+          <LinhaDeCompra nome={g.efeitoId} n={g.n} contador={contadorDe(null, g, g.efeitoId, null)} />
         </div>
-      )}
+      ))}
     </div>
   );
 }
 
 /** As modificações de Aptidão: só as Aptidões que a ficha tem, nunca as de Domínio. */
 function AptidoesDaTecnica({ resolvida, aptidoesDaFicha, onMudar }) {
-  const [escolha, setEscolha] = useState({});
   const opcoesDe = (mod) => aptidoesDaFicha
     .filter((a) => a.categoria !== CATEGORIA_PROIBIDA_NO_ESTILO)
     .filter((a) => (mod.aptidoes ? mod.aptidoes.includes(a.id) : a.categoria === mod.categoria))
     .map((a) => ({ value: a.id, label: a.nome }));
-  const disponiveis = MODIFICACOES_APTIDAO.map((mod) => ({ mod, opcoes: opcoesDe(mod) })).filter((x) => x.opcoes.length);
+  const grupos = resolvida?.modificacoes ?? [];
+  const itens = MODIFICACOES_APTIDAO
+    .map((mod) => ({ mod, opcoes: opcoesDe(mod), comprados: grupos.filter((g) => g.modId === mod.id) }))
+    .filter((x) => x.opcoes.length || x.comprados.length);
   const adicionar = (mod, aptidaoId) => onMudar((t) => ({
     ...t, aptidoes: [...(t.aptidoes ?? []), { uid: novoUidEstilo("ap"), modId: mod.id, aptidaoId }],
   }));
   const tirar = (uid) => onMudar((t) => ({ ...t, aptidoes: (t.aptidoes ?? []).filter((a) => a.uid !== uid) }));
-  const grupos = resolvida?.modificacoes ?? [];
+  const repetir = (g) => (repeticao) => onMudar((t) => ({
+    ...t, aptidoes: t.aptidoes.map((a) => (a.uid === g.uids[1] ? { ...a, repeticao } : a)),
+  }));
+  const contadorDe = (mod, g, nome, aptidaoId) => {
+    const n = g?.n ?? 0;
+    return (
+      <Contador
+        valor={n}
+        onMenos={() => g && tirar(g.uids[g.uids.length - 1])}
+        onMais={() => adicionar(mod, aptidaoId)}
+        semMenos={n === 0}
+        semMais={mod.max != null && n >= mod.max}
+        tituloMais="Limite de Compras Atingido"
+        rotuloMenos={`Tirar ${nome}`}
+        rotuloMais={`Adicionar ${nome}`}
+      />
+    );
+  };
 
-  if (!disponiveis.length && !grupos.length) return null;
+  if (!itens.length) return null;
   return (
-    <div className="space-y-2">
-      <FieldLabel>Modificações de Aptidão</FieldLabel>
-      <div className="grid gap-1.5 sm:grid-cols-2">
-        {disponiveis.map(({ mod, opcoes }) => {
-          const escolhida = escolha[mod.id] ?? (opcoes.length === 1 ? opcoes[0].value : "");
-          const noTeto = grupos.some((g) => g.modId === mod.id && g.aptidaoId === escolhida && g.n >= mod.max);
+    <div className="space-y-1 pt-1">
+      <span className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Modificações de Aptidão</span>
+      <div className={colunasDaLista}>
+        {itens.map(({ mod, opcoes, comprados }) => {
+          const dica = { titulo: mod.nome, texto: mod.descricao, nota: notaDeRepeticao(mod) };
+          const unica = opcoes.length === 1 && comprados.every((g) => g.aptidaoId === opcoes[0].value);
+          if (unica) {
+            const g = comprados[0];
+            return (
+              <div key={mod.id} className={blocoDaLista}>
+                <LinhaDeCompra nome={mod.nome} dica={dica} n={g?.n ?? 0} contador={contadorDe(mod, g, mod.nome, opcoes[0].value)}>
+                  {mod.repeticao === "aliados" && g?.n >= 2 && <RepeticaoDaCompra grupo={g} nome={`${mod.nome} (${g.nomeAptidao})`} onChange={repetir(g)} />}
+                </LinhaDeCompra>
+              </div>
+            );
+          }
+          const livres = opcoes.filter((o) => !comprados.some((g) => g.aptidaoId === o.value));
           return (
-            <div key={mod.id} className="flex items-center gap-1.5 rounded border border-slate-800 bg-slate-950/40 px-2 py-1">
-              <DicaDeTexto titulo={mod.nome} texto={mod.descricao} nota={notaDeRepeticao(mod)}>
-                <span className="text-[11px] font-semibold text-slate-200 flex-1 min-w-0 truncate cursor-help">{mod.nome}</span>
-              </DicaDeTexto>
-              {opcoes.length > 1 && (
-                <div className="w-32 flex-shrink-0">
-                  <Select value={escolhida} onChange={(v) => setEscolha((s) => ({ ...s, [mod.id]: v }))} options={opcoes} placeholder="Aptidão" aria-label={`Aptidão de ${mod.nome}`} />
-                </div>
-              )}
-              <button type="button" className={botaoPequeno} disabled={!escolhida || noTeto} title={noTeto ? "Limite de compras atingido" : undefined} onClick={() => adicionar(mod, escolhida)} aria-label={`Adicionar ${mod.nome}`}>
-                <Plus className="w-3 h-3" />
-              </button>
+            <div key={mod.id} className={blocoDaLista}>
+              <LinhaDeCompra nome={mod.nome} dica={dica} n={comprados.length}>
+                {livres.length > 0 && (
+                  <SelectCompacto
+                    value=""
+                    onChange={(v) => v && adicionar(mod, v)}
+                    options={livres}
+                    placeholder="Aptidão"
+                    aria-label={`Aptidão de ${mod.nome}`}
+                  />
+                )}
+              </LinhaDeCompra>
+              {comprados.map((g) => {
+                const nome = `${mod.nome} (${g.nomeAptidao})`;
+                return (
+                  <LinhaDeCompra key={g.chave} sub nome={g.nomeAptidao} n={g.n} contador={contadorDe(mod, g, nome, g.aptidaoId)}>
+                    {mod.repeticao === "aliados" && g.n >= 2 && <RepeticaoDaCompra grupo={g} nome={nome} onChange={repetir(g)} />}
+                  </LinhaDeCompra>
+                );
+              })}
             </div>
           );
         })}
       </div>
-      {grupos.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {grupos.map((g) => {
-            const mod = MODIFICACOES_APTIDAO.find((m) => m.id === g.modId);
-            const nome = `${mod?.nome ?? g.modId} (${g.nomeAptidao})`;
-            return (
-              <span key={g.chave} className="inline-flex flex-wrap max-w-full items-center gap-1 text-[11px] pl-2 pr-1 py-0.5 rounded border border-purple-800 bg-purple-950/30 text-purple-100">
-                <span className="min-w-0 break-words">{nome}</span>
-                {g.n > 1 && <span className="font-mono text-purple-300">×{g.n}</span>}
-                {mod?.repeticao === "aliados" && g.n >= 2 && (
-                  <RepeticaoDaCompra grupo={g} nome={nome} onChange={(repeticao) => onMudar((t) => ({
-                    ...t, aptidoes: t.aptidoes.map((a) => a.uid === g.uids[1] ? { ...a, repeticao } : a),
-                  }))} />
-                )}
-                <button type="button" className={botaoPequeno} onClick={() => tirar(g.uids[g.uids.length - 1])} aria-label={`Tirar ${nome}`}>
-                  <Minus className="w-3 h-3" />
-                </button>
-              </span>
-            );
-          })}
-        </div>
-      )}
     </div>
+  );
+}
+
+/** Os Efeitos Especiais, um bloco por compra: texto com formatação e as linhas
+    de Motor. Na Técnica de Estilo Especial (`avulsa`) o bloco é um só e não sai. */
+function EfeitosEspeciais({ tecnica, avulsa = false, componentes, motorProps, onMudar }) {
+  const { MotorEditor, TextoLongo } = componentes;
+  const gravados = especiaisDaTecnica(tecnica);
+  const blocos = gravados.length || !avulsa ? gravados : [{ ...ESPECIAL_EM_BRANCO, uid: "especial" }];
+  const mudar = (uid, parte) => onMudar((t) => {
+    const atual = especiaisDaTecnica(t);
+    return {
+      ...t, especial: null,
+      especiais: (atual.length ? atual : blocos).map((e) => (e.uid === uid ? { ...e, ...parte } : e)),
+    };
+  });
+  const adicionar = () => onMudar((t) => {
+    const uid = novoUidEstilo("ef");
+    return {
+      ...t, especial: null,
+      efeitos: [...(t.efeitos ?? []), { uid, efeitoId: "especial" }],
+      especiais: [...especiaisDaTecnica(t), { ...ESPECIAL_EM_BRANCO, uid }],
+    };
+  });
+  const remover = (uid) => onMudar((t) => ({
+    ...t, especial: null,
+    efeitos: (t.efeitos ?? []).filter((e) => e.uid !== uid),
+    especiais: especiaisDaTecnica(t).filter((e) => e.uid !== uid),
+  }));
+
+  if (!blocos.length) return null;
+  return (
+    <Secao
+      titulo={avulsa ? "Efeito Especial" : "Efeitos Especiais"}
+      direita={avulsa ? null : (
+        <button type="button" className={botaoDeSecao} onClick={adicionar}>
+          <Plus className="w-3 h-3" /> Efeito Especial
+        </button>
+      )}
+    >
+      {blocos.map((e, i) => (
+        <div key={e.uid} className="rounded border border-slate-800 bg-slate-950/30 p-2 space-y-2">
+          {!avulsa && (
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[12px] font-semibold text-purple-100">{`Efeito Especial ${i + 1}`}</span>
+              <button
+                type="button"
+                className="inline-flex items-center justify-center w-7 h-7 rounded text-slate-500 hover:text-red-400 hover:bg-red-950/40 transition-colors"
+                onClick={() => remover(e.uid)}
+                aria-label={`Remover Efeito Especial ${i + 1}`}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+          <TextoLongo value={e.texto} onChange={(v) => mudar(e.uid, { texto: v })} minRows={2} formatacao />
+          <MotorEditor efeitos={e.linhas} onChange={(v) => mudar(e.uid, { linhas: v })} {...motorProps} />
+        </div>
+      ))}
+    </Secao>
   );
 }
 
@@ -278,17 +457,18 @@ function PreRequisitosDaTecnica({ tecnica, resolvida, onMudar }) {
     ...t, requisitos: (t.requisitos ?? []).map((r) => (r.uid === uid ? { ...r, ...partial } : r)),
   }));
   return (
-    <div className="space-y-1.5">
-      <div className="flex items-center justify-between">
-        <FieldLabel>Pré-Requisitos</FieldLabel>
+    <Secao
+      titulo="Pré-Requisitos"
+      direita={(
         <button
           type="button"
-          className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded border border-slate-700 text-slate-300 hover:border-purple-600"
+          className={botaoDeSecao}
           onClick={() => onMudar((t) => ({ ...t, requisitos: [...(t.requisitos ?? []), { uid: novoUidEstilo("pr"), dificuldade: "facil", alvoUid: "", texto: "" }] }))}
         >
           <Plus className="w-3 h-3" /> Pré-Requisito
         </button>
-      </div>
+      )}
+    >
       {lista.map((r) => {
         const bonus = DIFICULDADES_PREREQ.find((d) => d.value === r.dificuldade)?.bonus ?? 0;
         return (
@@ -307,12 +487,12 @@ function PreRequisitosDaTecnica({ tecnica, resolvida, onMudar }) {
               onClick={() => onMudar((t) => ({ ...t, requisitos: (t.requisitos ?? []).filter((x) => x.uid !== r.uid) }))}
               aria-label="Remover Pré-Requisito"
             >
-              <Trash2 className="w-3 h-3" />
+              <Trash2 className="w-3.5 h-3.5" />
             </button>
           </div>
         );
       })}
-    </div>
+    </Secao>
   );
 }
 
@@ -341,43 +521,55 @@ function NumerosDaTecnica({ r }) {
 /** Uma Técnica de Estilo da Expansão. */
 function TecnicaEstiloCard({ tecnica, resolvida, derived, aptidoesDaFicha, componentes, motorProps, onPatch, onRemove }) {
   const [aberta, setAberta] = useState(true);
-  const { MotorEditor, TextoLongo } = componentes;
+  const { TextoLongo } = componentes;
   const mod = tecnica.tipo === TIPO_MODIFICACAO;
   const r = resolvida ?? {};
   const bar = derived?.aptidao?.efetivo?.bar ?? 0;
-  const usaEspecial = !mod || (tecnica.efeitos ?? []).some((e) => e.efeitoId === "especial");
   const invalida = r.mecanicamenteValida === false;
   const mudar = (fn) => onPatch(fn);
+
+  const contra = tecnica.contraAtaque?.quantidade ?? 0;
+  const metricaDeEfeitos = mod ? (
+    <Metrica rotulo="Efeitos" valor={`${r.usados ?? 0} / ${r.limite?.total ?? 0}`} partes={r.limite?.partes} alerta={(r.usados ?? 0) > (r.limite?.total ?? 0)} />
+  ) : null;
 
   return (
     <div className={`rounded-lg border p-3 space-y-3 ${invalida ? "border-red-900/70 bg-red-950/10" : "border-purple-900/50 bg-purple-950/10"}`}>
       <div className="flex flex-wrap items-center gap-2">
-        <button type="button" onClick={() => setAberta((a) => !a)} aria-expanded={aberta} aria-label="Abrir ou fechar a Técnica" className="text-slate-500">
+        <button
+          type="button"
+          onClick={() => setAberta((a) => !a)}
+          aria-expanded={aberta}
+          aria-label="Abrir ou fechar a Técnica"
+          className="inline-flex items-center justify-center w-7 h-9 flex-shrink-0 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+        >
           <ChevronDown className={`w-4 h-4 transition-transform ${aberta ? "" : "-rotate-90"}`} />
         </button>
         <div className="flex-1 min-w-[160px]">
           <TextInput value={tecnica.nome ?? ""} onChange={(v) => onPatch({ nome: v })} placeholder="Nome da Técnica de Estilo" />
         </div>
-        <BoolChip ativo={mod} onToggle={() => onPatch({ tipo: TIPO_MODIFICACAO })}>Modificação</BoolChip>
-        <BoolChip ativo={!mod} onToggle={() => onPatch({ tipo: TIPO_ESPECIAL })}>Especial</BoolChip>
-        {mod && (
-          <Metrica rotulo="Efeitos" valor={`${r.usados ?? 0} / ${r.limite?.total ?? 0}`} partes={r.limite?.partes} alerta={(r.usados ?? 0) > (r.limite?.total ?? 0)} />
-        )}
+        {/* O tipo nasce no botão de criar e não se troca aqui (autor, 2026-11-14):
+            o Efeito Especial já mora dentro da Modificação. */}
+        {!mod && <span className="text-[12px] font-semibold text-slate-400">Especial</span>}
+        {!aberta && metricaDeEfeitos}
         {invalida && <span className="text-[11px] font-semibold px-2 py-0.5 rounded border border-red-800 text-red-300">Inválida</span>}
         <button
           type="button"
           onClick={onRemove}
-          className="inline-flex items-center justify-center w-7 h-7 rounded text-slate-500 hover:text-red-400 hover:bg-red-950/40 transition-colors"
+          className="inline-flex items-center justify-center w-9 h-9 flex-shrink-0 rounded text-slate-500 hover:text-red-400 hover:bg-red-950/40 transition-colors"
           aria-label="Remover Técnica de Estilo"
         >
-          <Trash2 className="w-3.5 h-3.5" />
+          <Trash2 className="w-4 h-4" />
         </button>
       </div>
+
+      {/* O que a Técnica entrega fica logo abaixo do nome, aberta ou fechada:
+          é o resumo dela, e fechada ela não mostrava nada. */}
+      <NumerosDaTecnica r={r} />
 
       {aberta && (
         <>
           <PainelValidacao itens={r.validacao} />
-          <NumerosDaTecnica r={r} />
 
           <div>
             <FieldLabel>Descrição</FieldLabel>
@@ -388,8 +580,8 @@ function TecnicaEstiloCard({ tecnica, resolvida, derived, aptidoesDaFicha, compo
             <>
               <div>
                 <FieldLabel>Gatilho</FieldLabel>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[11px] px-2 py-1 rounded border border-slate-700 text-slate-300">Borda do Domínio Simples</span>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <span className="text-[12px] text-slate-400">Borda do Domínio Simples</span>
                   <div className="flex-1 min-w-[180px]">
                     <TextInput
                       value={tecnica.gatilho?.texto ?? ""}
@@ -397,112 +589,105 @@ function TecnicaEstiloCard({ tecnica, resolvida, derived, aptidoesDaFicha, compo
                       placeholder="Gatilho Específico"
                     />
                   </div>
+                  <BoolChip ativo={!!tecnica.usaReacao} onToggle={() => onPatch({ usaReacao: !tecnica.usaReacao })}>Usa Reação</BoolChip>
                 </div>
               </div>
 
-              <div>
-                <FieldLabel>Efeitos</FieldLabel>
+              <Secao titulo="Efeitos" direita={metricaDeEfeitos}>
                 <EfeitosDaTecnica resolvida={r} pericias={derived?.testes?.pericias} onMudar={mudar} />
-              </div>
+                <AptidoesDaTecnica resolvida={r} aptidoesDaFicha={aptidoesDaFicha} onMudar={mudar} />
+              </Secao>
 
-              <AptidoesDaTecnica resolvida={r} aptidoesDaFicha={aptidoesDaFicha} onMudar={mudar} />
+              <EfeitosEspeciais tecnica={tecnica} componentes={componentes} motorProps={motorProps} onMudar={mudar} />
 
-              <div className="grid gap-3 sm:grid-cols-2">
+              <section className="border-t border-slate-800 pt-3 grid gap-x-6 gap-y-3 sm:grid-cols-[auto_auto_1fr]">
                 <div>
                   <FieldLabel>Exaustão</FieldLabel>
-                  <NumberInput value={tecnica.exaustao ?? 0} onChange={(v) => onPatch({ exaustao: v })} min={0} max={20} aria-label="Pontos de Exaustão" />
+                  <Contador
+                    valor={tecnica.exaustao ?? 0}
+                    onMenos={() => onPatch({ exaustao: Math.max(0, (tecnica.exaustao ?? 0) - 1) })}
+                    onMais={() => onPatch({ exaustao: Math.min(20, (tecnica.exaustao ?? 0) + 1) })}
+                    semMenos={(tecnica.exaustao ?? 0) <= 0}
+                    semMais={(tecnica.exaustao ?? 0) >= 20}
+                    rotuloMenos="Diminuir Pontos de Exaustão"
+                    rotuloMais="Aumentar Pontos de Exaustão"
+                  />
                 </div>
                 <div>
                   <DicaDeTexto titulo="Contra-Ataque" texto={TEXTO_CONTRA_ATAQUE}>
                     <span className="cursor-help"><FieldLabel>{`Contra-Ataques (BAR ${bar})`}</FieldLabel></span>
                   </DicaDeTexto>
-                  <NumberInput
-                    value={tecnica.contraAtaque?.quantidade ?? 0}
-                    onChange={(v) => onPatch({ contraAtaque: v > 0 ? { quantidade: v } : null })}
-                    min={0}
-                    max={Math.max(bar, tecnica.contraAtaque?.quantidade ?? 0)}
-                    aria-label="Contra-Ataques"
-                  />
-                  {r.contra?.degrau && (
-                    <DicaDeTexto titulo={`BAR ${r.contra.bar}`} texto={r.contra.degrau.texto} nota={r.contra.bar5 ? TEXTO_BAR5_REFLEXOS : undefined}>
-                      <span className="inline-block mt-1 text-[11px] px-2 py-0.5 rounded border border-slate-700 text-slate-300 cursor-help">
-                        {ROTULO_DEGRAU[r.contra.degrau.resultado]}
-                      </span>
-                    </DicaDeTexto>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Contador
+                      valor={contra}
+                      onMenos={() => onPatch({ contraAtaque: contra - 1 > 0 ? { quantidade: contra - 1 } : null })}
+                      onMais={() => onPatch({ contraAtaque: { quantidade: contra + 1 } })}
+                      semMenos={contra <= 0}
+                      semMais={contra >= bar}
+                      tituloMais="Limite pela Barreira"
+                      rotuloMenos="Diminuir Contra-Ataques"
+                      rotuloMais="Aumentar Contra-Ataques"
+                    />
+                    {r.contra?.degrau && (
+                      <DicaDeTexto titulo={`BAR ${r.contra.bar}`} texto={r.contra.degrau.texto} nota={r.contra.bar5 ? TEXTO_BAR5_REFLEXOS : undefined}>
+                        <span className="text-[12px] text-slate-300 cursor-help">{ROTULO_DEGRAU[r.contra.degrau.resultado]}</span>
+                      </DicaDeTexto>
+                    )}
+                  </div>
+                </div>
+                <div className="min-w-0">
+                  <DicaDeTexto titulo="Aplicando Condições" texto={TEXTO_CONDICOES}>
+                    <span className="cursor-help"><FieldLabel>Crítico da Arma</FieldLabel></span>
+                  </DicaDeTexto>
+                  <div className="flex flex-wrap gap-1.5">
+                    {CRITICO_MODS.map((c) => {
+                      const ativo = c.id === "condicao" ? !!tecnica.critico?.condicao : !!tecnica.critico?.[c.id];
+                      return (
+                        <DicaDeTexto key={c.id} titulo={c.nome} texto={c.descricao}>
+                          <BoolChip
+                            ativo={ativo}
+                            onToggle={() => onPatch({
+                              critico: {
+                                aumentarCD: false, alvoExtra: false, condicao: null, ...(tecnica.critico ?? {}),
+                                [c.id]: c.id === "condicao" ? (ativo ? null : { modo: "aumentar" }) : !ativo,
+                              },
+                            })}
+                          >
+                            {c.nome}
+                          </BoolChip>
+                        </DicaDeTexto>
+                      );
+                    })}
+                  </div>
+                  {tecnica.critico?.condicao && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      <SelectCompacto
+                        value={tecnica.critico.condicao.modo ?? "aumentar"}
+                        onChange={(v) => onPatch({ critico: { ...tecnica.critico, condicao: { ...tecnica.critico.condicao, modo: v } } })}
+                        options={[{ value: "aumentar", label: "Aumentar a Condição" }, { value: "trocar", label: "Mudar a Condição" }]}
+                        largura="w-44"
+                        aria-label="Modo da Condição"
+                      />
+                      <SelectCompacto
+                        value={tecnica.critico.condicao.para ?? ""}
+                        onChange={(v) => onPatch({ critico: { ...tecnica.critico, condicao: { ...tecnica.critico.condicao, para: v || null } } })}
+                        options={[
+                          { value: "fraca", label: "Fraca" }, { value: "media", label: "Média" },
+                          { value: "forte", label: "Forte" }, { value: "extrema", label: "Extrema" },
+                        ]}
+                        placeholder="Força Final"
+                        aria-label="Força Final da Condição"
+                      />
+                    </div>
                   )}
                 </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <DicaDeTexto titulo="Aplicando Condições" texto={TEXTO_CONDICOES}>
-                  <span className="cursor-help"><FieldLabel>Crítico da Arma</FieldLabel></span>
-                </DicaDeTexto>
-                <div className="flex flex-wrap gap-1.5">
-                  {CRITICO_MODS.map((c) => {
-                    const ativo = c.id === "condicao" ? !!tecnica.critico?.condicao : !!tecnica.critico?.[c.id];
-                    return (
-                      <DicaDeTexto key={c.id} titulo={c.nome} texto={c.descricao}>
-                        <BoolChip
-                          ativo={ativo}
-                          onToggle={() => onPatch({
-                            critico: {
-                              aumentarCD: false, alvoExtra: false, condicao: null, ...(tecnica.critico ?? {}),
-                              [c.id]: c.id === "condicao" ? (ativo ? null : { modo: "aumentar" }) : !ativo,
-                            },
-                          })}
-                        >
-                          {c.nome}
-                        </BoolChip>
-                      </DicaDeTexto>
-                    );
-                  })}
-                </div>
-                {tecnica.critico?.condicao && (
-                  <div className="grid gap-1.5 sm:grid-cols-2">
-                    <Select
-                      value={tecnica.critico.condicao.modo ?? "aumentar"}
-                      onChange={(v) => onPatch({ critico: { ...tecnica.critico, condicao: { ...tecnica.critico.condicao, modo: v } } })}
-                      options={[{ value: "aumentar", label: "Aumentar a Condição" }, { value: "trocar", label: "Mudar a Condição" }]}
-                      aria-label="Modo da Condição"
-                    />
-                    <Select
-                      value={tecnica.critico.condicao.para ?? ""}
-                      onChange={(v) => onPatch({ critico: { ...tecnica.critico, condicao: { ...tecnica.critico.condicao, para: v || null } } })}
-                      options={[
-                        { value: "fraca", label: "Fraca" }, { value: "media", label: "Média" },
-                        { value: "forte", label: "Forte" }, { value: "extrema", label: "Extrema" },
-                      ]}
-                      placeholder="Força Final"
-                      aria-label="Força Final da Condição"
-                    />
-                  </div>
-                )}
-              </div>
+              </section>
 
               <PreRequisitosDaTecnica tecnica={tecnica} resolvida={r} onMudar={mudar} />
-
-              <div>
-                <BoolChip ativo={!!tecnica.usaReacao} onToggle={() => onPatch({ usaReacao: !tecnica.usaReacao })}>Usa Reação</BoolChip>
-              </div>
             </>
           )}
 
-          {usaEspecial && (
-            <div className="space-y-2">
-              <FieldLabel>Efeito Especial</FieldLabel>
-              <TextArea
-                value={tecnica.especial?.texto ?? ""}
-                onChange={(v) => onPatch({ especial: { linhas: [], confirmacoes: {}, ...(tecnica.especial ?? {}), texto: v } })}
-                rows={2}
-                placeholder="O efeito único aprovado pelo Narrador"
-              />
-              <MotorEditor
-                efeitos={tecnica.especial?.linhas ?? []}
-                onChange={(v) => onPatch({ especial: { texto: "", confirmacoes: {}, ...(tecnica.especial ?? {}), linhas: v } })}
-                {...motorProps}
-              />
-            </div>
-          )}
+          {!mod && <EfeitosEspeciais tecnica={tecnica} avulsa componentes={componentes} motorProps={motorProps} onMudar={mudar} />}
         </>
       )}
     </div>
@@ -564,9 +749,9 @@ export default function NovoEstiloSombrasCard({
               minRows={2}
               formatacao
             />
-            <div className="sm:max-w-xs">
-              <FieldLabel>Durabilidade pela Aptidão</FieldLabel>
-              <Select
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span className={rotuloDeSecao}>Durabilidade pela Aptidão</span>
+              <SelectCompacto
                 value={funcionamento.durabilidadeTrilha ?? ""}
                 onChange={(v) => estiloApi.patchFuncionamento({ durabilidadeTrilha: v || null })}
                 options={[
@@ -574,11 +759,14 @@ export default function NovoEstiloSombrasCard({
                   { value: "bar", label: "Barreira" }, { value: "er", label: "Energia Reversa" },
                 ]}
                 placeholder="Padrão do Domínio Simples"
+                largura="w-56"
+                aria-label="Durabilidade pela Aptidão"
               />
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-3 border-t border-slate-800 pt-3">
+            <span className={`block ${rotuloDeSecao}`}>Técnicas de Estilo</span>
             {tecnicasCruas.map((t) => (
               <TecnicaEstiloCard
                 key={t.id}
@@ -643,7 +831,7 @@ export default function NovoEstiloSombrasCard({
                 onClick={() => estiloApi.addTecnica(tipo)}
                 disabled={cheia}
                 title={cheia ? "Técnicas de Estilo no limite" : undefined}
-                className="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded border border-purple-700 bg-purple-800/40 text-purple-200 hover:bg-purple-700/50 transition-colors disabled:opacity-40 disabled:pointer-events-none"
+                className="inline-flex items-center gap-1.5 h-9 text-[12px] font-semibold px-3 rounded border border-slate-700 text-slate-200 hover:border-purple-600 hover:text-purple-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Plus className="w-3 h-3" /> {rotulo}
               </button>
