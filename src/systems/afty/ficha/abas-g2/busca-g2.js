@@ -18,6 +18,13 @@ export function alvosExtrasDaBusca(derived) {
     const valor = derived?.attrEff?.[a.key];
     fora.push({ chave: `atributo:${a.key}`, id: a.key, nome: a.label, aba: "pericias", grupo: "Atributos", detalhe: valor != null ? String(valor) : null, busca: semAcento(`${a.label} ${a.abbr} atributo`) });
   }
+  /* Resistências por Tipo de Dano (2026-11-14): "Queimante" leva à linha do tipo em Perícias, com a RD no detalhe. */
+  const ROTULO_ESTADO = { imune: "Imune", resistente: "Resistente", vulneravel: "Vulnerável" };
+  for (const l of derived?.defesasDano?.linhas ?? []) {
+    const estados = l.estados.map((e) => ROTULO_ESTADO[e]).filter(Boolean);
+    fora.push({ chave: `defesa:${l.tipo}`, id: l.tipo, nome: l.label, aba: "pericias", grupo: "Resistências por Tipo de Dano",
+      detalhe: [`RD ${l.rd}`, ...estados].join(", "), busca: semAcento(`${l.label} rd resistencia imunidade vulnerabilidade dano ${estados.join(" ")}`) });
+  }
   return fora;
 }
 

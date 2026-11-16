@@ -10,7 +10,7 @@
    - Fixados são REFERÊNCIAS às mesmas entradas e não somam ao total;
    - Feitiços passivos moram na seção Feitiços e em nenhum outro lugar.
    ============================================================ */
-import { conteudoDaFicha, equipamentosDaFicha, funcionamentosDaFicha, linhasDeEstado, familiaEParte } from "./ponte";
+import { conteudoDaFicha, equipamentosDaFicha, funcionamentosDaFicha, linhasDeEstado, familiaEParte, GRUPOS, ROTULO_GRUPO } from "./ponte";
 import { semAcento, termosDe, trechoLiteral } from "./util";
 
 const TIPO_FEITICO = {
@@ -102,12 +102,17 @@ export function montarRepertorio(ficha, derived) {
   }
   for (const [id, g] of porClasse) pushSecao(`esp:${id}`, g.rotulo, g.itens);
 
-  for (const grupo of ["estilo", "talento", "geral", "aptidao", "altoNivel", "origem"]) {
+  /* ⚠ OS GRUPOS DO FIM vinham faltando (2026-11-14): a aba Habilidades desenha todo grupo de `GRUPOS`, mas só recebia os seis primeiros.
+     Treinamentos, Votos, Condições Corporais, Técnicas Marciais, Características Amaldiçoadas e Loja de Catarse nunca chegavam à tela, e
+     os jogadores abriam o criador para reler o Treino de Energia Reversa. Os seis de antes ficam na frente, na ordem de sempre. */
+  const FIXOS = ["estilo", "talento", "geral", "aptidao", "altoNivel", "origem"];
+  const DE_FORA = new Set(["passivo", "especializacao", ...FIXOS]);
+  for (const grupo of [...FIXOS, ...GRUPOS.map((g) => g.id).filter((id) => !DE_FORA.has(id))]) {
     const itens = conteudo.filter((x) => x.grupo === grupo).map((i) => ({
       ...i, tipo: "habilidade", secao: grupo,
       marcas: [grupo === "altoNivel" ? i.sub?.label : null, ...i.tags.map((t) => t.label)].filter(Boolean),
     }));
-    pushSecao(grupo, ROTULOS_SECAO[grupo], itens);
+    pushSecao(grupo, ROTULOS_SECAO[grupo] ?? ROTULO_GRUPO[grupo], itens);
   }
 
   const itensEquip = equipamentosDaFicha(derived).map((i) => ({

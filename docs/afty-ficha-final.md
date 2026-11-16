@@ -87,6 +87,67 @@ quando a fonte é personalizada, mantendo a fileira padrão em 390 px.
 Provas e limites em `.audit/correcao-css-g2-20261106/RELATORIO.md`. Abertura diária,
 rotas, integração das três abas e publicação não foram alteradas. Barra 9/10.
 
+### Tema de duas faces e recurso próprio (2026-11-16)
+
+Só a estrutura G2, em `/Afty` e `/Player`. Detalhe na sessão do dia em `docs/afty-status.md`.
+
+- **Duas faces.** Um CSS livre que cita `[data-afty-face` faz a raiz levar `data-afty-face="1|2"` e o cabeçalho ganhar o botão
+  `.afty-face-botao`. A face mora em `aparencia.face`. Com o token `--afty-face-virada` (por exemplo `2800ms`) a troca tem duração: a raiz
+  leva `data-afty-virando="saindo"` e depois `"chegando"`, e a camada `.afty-virada` (tela cheia, por cima de tudo, sem estilo do app) existe
+  nesse intervalo. A face troca no meio. Sem o token, ou com menos movimento no sistema, é imediata. Exemplo: `docs/tema-dehya.css`.
+- **Recurso próprio.** `creature.recursoProprio = { nome, max }` é uma barra a mais, sempre a última, editada em Mais Opções, Recurso
+  Próprio. O corrente é da sessão (`proprioAtual`), gasta e recupera só pelo painel da barra, e nenhum descanso mexe nele. Ganchos de tema:
+  `[data-afty-vital="proprio"]`, `[data-afty-proprio="<nome>"]` e o token `--afty-proprio`.
+
+### Tema sobre fundo não chapado (2026-11-14, A1 a A7 de `docs/tema-g2-problemas.md`)
+
+Correções que o tema da Ignia revelou. Só a estrutura G2 (`efeitos-g2.css`, `ficha-tema.js` e
+cinco JSX do G2): a clássica, o criador e o Encontro não mudaram. Vale para `/Afty` e `/Player`,
+que dividem o código (pergunta ao autor registrada no fim do relatório). Nenhuma classe nem token
+foi renomeado ou retirado (D-103): tudo entrou somando.
+
+- **Fundo do cabeçalho repintável (A3).** O degradê de 6 px transparentes em cima mora em
+  `.afty-cabecalho:where(.e-ficha-g2 > header)`, uma classe de especificidade, e o
+  `.afty-cabecalho` do tema vence pela proximidade do escopo. Consequência visível: os temas que já
+  pintavam `.afty-cabecalho` e eram ignorados no G2 passaram a aparecer (Hora Azul, os dois Cão
+  Divino e o Abe no Seimei).
+- **A barra de rolagem não pinta fundo no G2 (A2).** `.afty-log:where(.e-ficha-g2 *)` é
+  transparente e mostra o fundo do cabeçalho. Com isso o fio do `::after` grosso ou com brilho passa
+  inteiro, e no preset Pergaminho a sombra da placa deixou de ser cortada por um retângulo claro
+  atrás da barra. O `z-index: 45` ficou, por causa do histórico que desce dela.
+- **Barras grudadas (A1).** Classe de contrato nova `.afty-barra-grudada` na busca de Habilidades
+  (`.e-ferramentas`), no título "Ativos" (`.x-rola > .x-cabeca`) e nos dois rodapés de registro.
+  Dois tokens, fora do `TOKENS_DOC` (não entram no formulário, vivem com reserva no CSS):
+  `--afty-fundo-grudado` (fundo da faixa, padrão `--afty-fundo`) e `--afty-peca-grudada` (base
+  opaca do campo, do filtro e dos botões dentro dela, padrão transparente). Receita para fundo com
+  figura, a escolhida pelo autor: o véu,
+  `--afty-fundo-grudado: color-mix(in srgb, var(--afty-fundo) 85%, transparent)` com
+  `--afty-peca-grudada: var(--afty-card)` (a lista rolada fica apagada por baixo). A faixa
+  `transparent` (pedaços da lista nos vãos entre as peças) só quando o autor do tema pedir. No
+  tema padrão a faixa segue opaca. O fundo da faixa fica
+  em `.afty-barra-grudada:where(.e-g2 *)`, uma classe de especificidade, e a classe sozinha no tema
+  o repinta. A cor
+  própria de cada peça virou imagem por cima da base, então o hover continua. O `.g-filtro-compacta`
+  não tem quem o use no JSX (CSS morto), e ficou de fora.
+- **Placa com nome próprio (A4).** A placa ganhou `.afty-placa` e manteve `.afty-cabecalho` (o
+  autor decidiu manter as duas). O `MAPA_G2` mostra o aninhamento e a regra 15 do prompt ensina a
+  separar as duas. O fio do `::after` só a faixa do topo desenha: na placa ele está escondido por
+  `.afty-placa:where(.e-ficha-g2 *)::after { display: none }`.
+- **Orçamento das abas (A5).** `.afty-log` na linha das abas é `flex: 1 1 560px; max-width: 600px`:
+  a quebra decide pela base de 560, e a barra cresce até os 600 de antes. O orçamento das abas numa
+  coluna de 1244 px subiu de cerca de 630 para cerca de 670 px.
+- **A6 não reproduz.** Os cartões de Habilidades têm `overflow: hidden` e cortam o canto da barra do
+  título. O `overflow: clip` lido pela sonda era do cartão de Dano da aba Ações (`.m-secao`), que
+  também corta no raio.
+- **Guarda descolada da placa (A7).** `.afty-guarda:where(.e-ficha-g2 *)`: vão de 8px até a placa,
+  canto `calc(var(--afty-raio, 12px) * 10 / 12)` e `position: relative`, que a põe acima da sombra
+  da placa. Só o G2; a clássica segue colada. Classe de especificidade, então o `.afty-guarda` de
+  um tema a repinta (a Ignia mantém a flâmula).
+
+Prompt para IA: regras 13 e 14 revistas (orçamento de 670 px e a receita dos tokens), regra 15 nova
+(os dois cabeçalhos). Bancada nova: `design.local/g2-tema.mjs` (qualquer tema, `--listras`,
+`--todas`, `--rolagem`, `--alvo=`), `g2-lote.sh` e `g2-compara.mjs` (antes e depois pixel a pixel).
+
 ## Agora na Mesa como seção única, 23/10
 
 O autor pediu repensar o refinamento anterior. A composição atual usa uma

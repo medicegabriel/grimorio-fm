@@ -472,6 +472,8 @@ export default function App() {
           /* As preferências de apresentação da Ficha (hoje: as estatísticas do cabeçalho) moram NA CRIATURA, para viajar no export. O campo vai
              inteiro, com os outros subcampos, porque o `update` faz merge de chave de primeiro nível. */
           onSalvarPreferencias={(preferenciasFicha) => storage.update(activeCreature.id, { preferenciasFicha })}
+          /* O recurso próprio da ficha (2026-11-16): nome e máximo de uma barra a mais, `null` para tirar. Mora na criatura e viaja no export. */
+          onSalvarRecursoProprio={(recursoProprio) => storage.update(activeCreature.id, { recursoProprio })}
           /* Pacotes para Aliados (2026-10-19): os pacotes que o suporte prepara e a biblioteca de pacotes recebidos moram na criatura, para
              sobreviver à recarga e viajar no export. Mesmo merge de chave de primeiro nível das preferências. */
           onSalvarPacotesAliados={(pacotesAliados) => storage.update(activeCreature.id, { pacotesAliados })}

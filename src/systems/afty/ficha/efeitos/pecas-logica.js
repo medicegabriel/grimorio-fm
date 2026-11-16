@@ -53,6 +53,8 @@ export function linhaDeIdentidade(ficha, derived) {
  *  quem tem as Artes do Combate, o Preparo. Cada um opera pelo verbo próprio dele, e não tudo como Energia. */
 export function recursos(m) {
   const { derived, sessao } = m;
+  /* O recurso próprio da ficha (2026-11-16): nome e máximo digitados, sempre a última barra. `id` é o gancho de tema (`data-afty-proprio`). */
+  const proprio = Sessao.recursoProprioDe(m.ficha);
   return [
     { tipo: "pv", rotulo: "Vida", atual: sessao.hpAtual, max: derived.hp, temp: Sessao.pvTempTotal(sessao) },
     ...(derived.bloodfeast?.tem ? [] : [{ tipo: "pe", rotulo: derived.recursoLabel || "Energia", atual: sessao.peAtual, max: derived.pe, temp: Sessao.peTempTotal(sessao) }]),
@@ -60,6 +62,7 @@ export function recursos(m) {
     ...(derived.pontosPreparo > 0
       ? [{ tipo: "preparo", rotulo: "Preparo", atual: Sessao.preparoDe(sessao, derived.pontosPreparo), max: derived.pontosPreparo, temp: Sessao.preparoTempDe(sessao) }]
       : []),
+    ...(proprio ? [{ tipo: "proprio", rotulo: proprio.nome, atual: Sessao.proprioDe(sessao, proprio.max), max: proprio.max, temp: 0, proprio: proprio.id }] : []),
   ];
 }
 

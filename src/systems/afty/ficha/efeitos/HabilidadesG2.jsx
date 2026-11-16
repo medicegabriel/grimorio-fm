@@ -199,7 +199,7 @@ export default function Habilidades({ m, g, consultada, onAbrir, onAbrirPainel, 
   return (
     <div className="e-habilidades" onKeyDown={navegarLista(".e-linha-corpo")} data-lista data-rolavel="lista"
       onScroll={(ev) => ev.currentTarget.toggleAttribute("data-rolada", ev.currentTarget.scrollTop > 2)}>
-      <div className="e-ferramentas">
+      <div className="e-ferramentas afty-barra-grudada">
         <label className="e-busca">
           <Search aria-hidden="true" />
           <input className="afty-campo" type="search" value={termo} data-filtro placeholder={`Buscar em ${total} habilidades, pelo nome ou pelo texto`}

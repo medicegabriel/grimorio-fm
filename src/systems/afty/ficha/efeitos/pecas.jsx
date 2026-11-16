@@ -173,7 +173,7 @@ export function Medidor({ r, m, onAbrir, classe = "" }) {
   const pctAtual = r.max > 0 ? (r.atual / r.max) * 100 : 100;
   const nivel = pctAtual <= 25 ? "critico" : pctAtual <= 50 ? "baixo" : "normal";
   return (
-    <button type="button" className={`afty-vital m-medidor ${classe}`} data-afty-vital={r.tipo} data-afty-nivel={nivel} data-recurso={r.tipo} data-alerta={nivel === "critico" ? "critico" : undefined} onClick={onAbrir}
+    <button type="button" className={`afty-vital m-medidor ${classe}`} data-afty-vital={r.tipo} data-afty-nivel={nivel} data-recurso={r.tipo} data-afty-proprio={r.proprio} data-alerta={nivel === "critico" ? "critico" : undefined} onClick={onAbrir}
       title={r.estado ?? undefined} data-estado={r.estado ?? undefined}
       aria-label={`${r.rotulo}: ${r.atual} de ${r.max}${r.temp ? `, mais ${r.temp} temporário` : ""}${r.estado ? `, ${r.estado}` : ""}. Abrir painel`}>
       <span className="m-medidor-topo afty-vital-conteudo">
@@ -197,15 +197,18 @@ export function PainelVital({ tipo, m, onFechar }) {
   const [erro, setErro] = useState(null);
   const n = Math.max(0, Math.trunc(Number(valor) || 0));
   /* Cada recurso tem o verbo dele. Energia e Preparo se GASTAM e se recuperam; Vida e Alma levam dano e cura. */
-  const gasta = tipo === "pe" || tipo === "preparo";
-  const max = { pv: derived.hp, pe: derived.pe, alma: derived.almaMax, preparo: derived.pontosPreparo }[tipo];
-  const atual = { pv: sessao.hpAtual, pe: sessao.peAtual, alma: sessao.almaAtual, preparo: Sessao.preparoDe(sessao, derived.pontosPreparo) }[tipo];
+  /* O recurso próprio da ficha (as Calorias da Dehya): gasta e recupera como o Preparo, e o máximo é número digitado, sem fontes. */
+  const proprio = tipo === "proprio" ? Sessao.recursoProprioDe(m.ficha) : null;
+  const gasta = tipo === "pe" || tipo === "preparo" || tipo === "proprio";
+  const max = { pv: derived.hp, pe: derived.pe, alma: derived.almaMax, preparo: derived.pontosPreparo, proprio: proprio?.max ?? 0 }[tipo];
+  const atual = { pv: sessao.hpAtual, pe: sessao.peAtual, alma: sessao.almaAtual, preparo: Sessao.preparoDe(sessao, derived.pontosPreparo), proprio: Sessao.proprioDe(sessao, proprio?.max ?? 0) }[tipo];
   const fontes = tipo === "pv" ? sessao.pvTempFontes : tipo === "pe" ? sessao.peTempFontes : null;
   const partes = derived.partes?.[{ pv: "hp", pe: "pe", alma: "almaMax", preparo: "pontosPreparo" }[tipo]] ?? null;
-  const rotulo = { pv: "Vida", pe: derived.recursoLabel || "Energia", alma: "Alma", preparo: "Preparo" }[tipo];
+  const rotulo = { pv: "Vida", pe: derived.recursoLabel || "Energia", alma: "Alma", preparo: "Preparo", proprio: proprio?.nome ?? "Recurso" }[tipo];
   const faz = (fn) => { const r = fn(); if (r?.erro) setErro(r.erro); else { setErro(null); setValor(""); } };
-  const principal = () => (tipo === "pe" ? acoes.gastar(n, comMotivo ? motivo : null) : tipo === "preparo" ? acoes.gastarPreparo(n) : acoes.dano(n, tipo === "alma"));
-  const recupera = () => (tipo === "preparo" ? acoes.recuperarPreparo(n) : acoes.recuperarPe(n));
+  const principal = () => (tipo === "pe" ? acoes.gastar(n, comMotivo ? motivo : null) : tipo === "preparo" ? acoes.gastarPreparo(n)
+    : tipo === "proprio" ? acoes.gastarProprio(n) : acoes.dano(n, tipo === "alma"));
+  const recupera = () => (tipo === "preparo" ? acoes.recuperarPreparo(n) : tipo === "proprio" ? acoes.recuperarProprio(n) : acoes.recuperarPe(n));
   return (
     <div className="m-painel-vital">
       <div className="m-pv-titulo"><b>{rotulo}</b><span className="m-pv-numero">{atual}<small>/{max}</small></span></div>
@@ -238,10 +241,12 @@ export function PainelVital({ tipo, m, onFechar }) {
           {Object.entries(fontes).map(([nome, v]) => <div key={nome} className="m-pv-fonte"><span>{nome}</span><b>{v}</b></div>)}
         </div>
       )}
-      <div className="m-pv-bloco">
-        <div className="m-rotulo">Máximo</div>
-        <ListaDeFontes partes={partes} total={max} />
-      </div>
+      {tipo !== "proprio" && (
+        <div className="m-pv-bloco">
+          <div className="m-rotulo">Máximo</div>
+          <ListaDeFontes partes={partes} total={max} />
+        </div>
+      )}
       <div className="m-pv-rodape"><button type="button" className="afty-botao m-botao" onClick={onFechar}>Fechar</button></div>
     </div>
   );

@@ -88,6 +88,7 @@
     "afty-armas-improvisadas.js": "EQU-00",
     "afty-controlador-posicao.js": "M03",
     "afty-corrupcao.js": "M05",
+    "afty-orbitas.js": "M05",
     "afty-encantamentos-ativos.js": "EQU-00",
     "afty-equipamento-inicial.js": "EQU-00",
     "afty-exaustao.js": "SIS-01",
@@ -553,6 +554,14 @@
     "ficha/efeitos/estatisticas.js": {
       "modo": "INTERFACE",
       "justificativa": "Camada de apresentação e operação da aba Efeitos (G2), lida da sessão da Ficha; sem catálogo de regra do Livro"
+    },
+    "ficha/efeitos/catalogo-logica.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Ação de uma opção do catálogo da aba Efeitos (G2, 2026-11-09): ordem e Ativar direto sobre o catálogo existente; sem catálogo de regra do Livro"
+    },
+    "ficha/useFontesWeb.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Link das fontes da internet da Ficha (2026-11-10), lido de FONTES_WEB em ficha-tema.js; sem catálogo de regra do Livro"
     },
     "ficha/efeitos/exemplos.js": {
       "modo": "INTERFACE",

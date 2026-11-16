@@ -371,6 +371,17 @@
 .e-g2 .m-grade-pericias { display: grid; grid-template-columns: minmax(0, 1fr); }
 :where(.e-g2 .m-grade-pericias) > .m-teste { border-top: 1px solid var(--e-linha); }
 :where(.e-g2 .m-grade-pericias) > .m-teste:first-child { border-top: 0; }
+/* Resistências por Tipo de Dano (2026-11-14): a linha do teste sem rolagem. A RD ocupa a coluna do botão, na mesma largura mínima, e o
+   número é só consulta (fontes no hover). Vulnerável usa a cor da Vida, a da perda. */
+.e-g2 .m-grade-defesas { display: grid; grid-template-columns: minmax(0, 1fr); }
+:where(.e-g2 .m-grade-defesas) > .m-teste { border-top: 1px solid var(--e-linha); }
+:where(.e-g2 .m-grade-defesas) > .m-teste:first-child { border-top: 0; }
+.e-g2 .m-defesa .m-defesa-rd { grid-area: rolar; justify-self: end; min-width: 64px; text-align: center; }
+:where(.e-g2 .m-defesa) .m-defesa-num { font: 700 var(--e-fs-leitura, 15px) var(--e-display); font-stretch: semi-condensed; color: var(--e-t1); font-variant-numeric: var(--e-num); }
+.e-g2 .m-defesa[data-estado="nenhum"] .m-teste-nome { color: var(--e-t2); }
+.e-g2 .m-defesa:not([data-estado="nenhum"]) .m-teste-nome { font-weight: 600; color: var(--e-t1); }
+.e-g2 .m-chip[data-tom="perda"] { border-color: color-mix(in oklab, var(--afty-pv) 55%, transparent); background: color-mix(in oklab, var(--afty-pv) 12%, transparent); color: var(--e-t1); }
+.e-g2 .m-defesa[data-conflito] { box-shadow: inset 2px 0 0 var(--e-aviso-icone); }
 .e-g2 .m-ferramentas { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; max-width: 100%; }
 /* Os filtros de categoria quebram em vez de empurrar a busca para fora do cartão (a 390 px a fileira medida em Equipamentos passava 62 px à esquerda). */
 .e-g2 .m-ferramentas .m-seg { flex-wrap: wrap; max-width: 100%; }

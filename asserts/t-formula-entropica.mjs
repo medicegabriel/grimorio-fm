@@ -125,6 +125,10 @@ for (const sistema of ["afty", "player"]) {
   const recebido = createBlankAfty();
   recebido.rulesVersion = sistema;
   recebido.equipamentos = { itens: [{ ...escudo, engenhoRecebido: true }] };
+  // Sem o Addon da Fórmula o Engenho Recebido não vale.
+  const semAddon = deriveAfty(recebido).equip.entradas[0]?.def.rdEscudo;
+  t(`${sistema}: Engenho Recebido sem o Addon conserva RD 4`, semAddon, 4);
+  recebido.addons = [{ id: "formula-combate-entropica" }];
   const recebidoDerivado = deriveAfty(recebido);
   const [linha] = equipamentosDaFicha(recebidoDerivado);
   t(`${sistema}: aliado recebe o escudo com RD 6`, recebidoDerivado.equip.entradas[0]?.def.rdEscudo, 6);

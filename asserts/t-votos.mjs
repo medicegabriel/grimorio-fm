@@ -116,6 +116,20 @@ criatura.votos.mecanicos = [{
 }];
 const comVoto = deriveAfty(criatura);
 t("efeito do Voto chega ao derivado", comVoto.rdGeral - semVoto.rdGeral, 5);
+{
+  const todos = createBlankAfty();
+  todos.core.nd = 20;
+  const antes = deriveAfty(todos).attrEff;
+  todos.votos.mecanicos = [{ id: "todos", nome: "BT em Todos", narrativa: "", beneficio: { texto: "", efeitos: [{ canal: "atributo", expr: "bt" }] }, maleficio: { texto: "", efeitos: [] } }];
+  const depois = deriveAfty(todos);
+  t("Voto sem alvo soma o BT em todos os atributos", Object.keys(antes).map((a) => depois.attrEff[a] - antes[a]), Object.keys(antes).map(() => depois.maestria));
+}
+{
+  const lim = createBlankAfty();
+  lim.core.nd = 20;
+  lim.votos.mecanicos = [{ id: "lim", nome: "Limite em Todos", narrativa: "", beneficio: { texto: "", efeitos: [{ canal: "limiteAtributo", expr: "8" }] }, maleficio: { texto: "", efeitos: [] } }];
+  t("Voto sem alvo sobe o limite de todos os atributos", Object.values(deriveAfty(lim).attrLimiteEfetivo), [28, 28, 28, 28, 28, 28]);
+}
 t("a ficha expõe o BT usado como limite", comVoto.maestria > 0, true);
 t("editor recebe valor, condição e duração resolvidos", {
   valor: comVoto.votosEfeitos.motor.beneficio[0].valor,

@@ -7,9 +7,35 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 
 ---
 
+## Recurso próprio e tema de duas faces: o que ficou aberto (2026-11-16)
+
+Feito na sessão do dia (ver `docs/afty-status.md`). Ficou de fora:
+
+1. **Custo do recurso próprio cobrado pela habilidade.** O autor pediu que cada habilidade declare o custo em Calorias e que o uso cobre
+   sozinho. Hoje o gasto é manual, pelo painel da barra. É trabalho de motor: onde o custo é declarado (criador de Habilidade e de Feitiço),
+   quem cobra (os verbos de uso da mesa, com `opId` e estorno) e o que acontece sem saldo.
+2. **Recurso próprio fora do G2.** Não aparece no painel de combatente do Encontro, na ficha clássica nem no criador (a definição só se
+   edita pelo menu da Ficha).
+3. **Asserts.** `recursoProprioDe`, `proprioDe`, `alteraProprio`, `temDuasFaces` e `duracaoDaVirada` não têm assert.
+4. **Pergunta ao autor:** mais de um recurso próprio por ficha? Hoje é um só (`creature.recursoProprio`).
+
+## Ficha Final: o que a consulta de Interlúdios, Votos e Resistências deixou aberto (2026-11-14)
+
+A leitura entrou (ver a sessão do dia em `docs/afty-status.md`). Do plano aprovado ficaram de fora:
+
+1. **Operações dos Votos na Ficha.** Realizar, quebrar, desfazer, cumprir contrato e responder participante existem em
+   `ficha/ficha-votos.js` (com `opId`) e nenhuma tela os chama. O desenho proposto era uma aba Votos que só aparece com
+   Voto na ficha, com o Voto realizado também como cartão nos Ativos de Efeitos.
+2. **Botão de Interlúdio ao lado do Descanso.** Um painel no formato do `BotaoDeDescanso.jsx` com o progresso dos
+   treinos e da Forja, a produção de itens (núcleos do CX5) e os Votos que vencem "até o próximo interlúdio"
+   (`votosNoInterludio`).
+3. **A Forja na consulta.** A aba Interlúdios do criador tem a Forja e a Ficha ainda não mostra os itens forjados.
+
 ## Ficha Final: o G2 e o CSS Personalizado, achados do tema da Ignia (2026-11-12)
 
 Onze problemas do app (barras grudadas que viram retângulos sobre fundo não chapado, a barra de rolagem cobrindo o fio do cabeçalho, `.afty-cabecalho` que não repinta o cabeçalho do G2 e existe em dobro, fonte das abas que derruba a rolagem para a linha de baixo, barra de título quadrada em Habilidades, Guarda colada na placa, e lacunas do contrato e do Prompt IA), mais as pendências do tema e da bancada. O registro completo, com arquivo e linha, e os prompts prontos para o Opus (correções do G2) e para o Sonnet (contrato, bancada e conferência) estão em `docs/tema-g2-problemas.md`. Nada foi corrigido no app: o tema `docs/tema-ignia.css` contorna tudo por CSS, três vezes com classe interna.
+
+**Atualização de 2026-11-14 (Opus):** A1 a A5 e A7 corrigidos no app, A6 não reproduz. O autor respondeu as seis perguntas (registro em `docs/tema-g2-problemas.md`, "Respostas do autor") e o A7 foi aplicado no app. Continuam abertos A11 e as pendências do tema (Parte B).
 
 ## Estados da Alma: leituras adotadas para confirmar (2026-11-09)
 

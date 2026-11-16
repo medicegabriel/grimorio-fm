@@ -186,6 +186,8 @@ export function sessaoEmBranco(derived = null) {
        Titã: quem não é Combatente nunca escreve aqui, e quem é nasce cheio sem
        a sessão precisar saber o máximo. Ver `alteraPreparo`. */
     preparoAtual: null,
+    // O corrente do recurso próprio da ficha (as Calorias da Dehya). `null` é cheio. Ver `recursoProprioDe`.
+    proprioAtual: null,
     // A casca de Preparo temporário (Postura do Céu), topada a cada rodada.
     preparoTemp: 0,
     /* As marcas do Golpe Especial que não viram número (Amplo, Impactante,
@@ -333,6 +335,8 @@ export function normalizaSessao(bruta, derived = null) {
     // Sessão gravada antes de 2026-09-23 não tem o campo, e cheio é o certo.
     preparoAtual: bruta.preparoAtual == null ? null : Math.max(0, inteiro(bruta.preparoAtual, 0)),
     preparoTemp: Math.max(0, inteiro(bruta.preparoTemp, 0)),
+    // O recurso próprio da ficha (`recursoProprioDe`). `null` é cheio.
+    proprioAtual: bruta.proprioAtual == null ? null : Math.max(0, inteiro(bruta.proprioAtual, 0)),
     golpeEspecial: normalizaGolpeEspecial(bruta.golpeEspecial),
     reservaInvocacao: normalizaReserva(bruta.reservaInvocacao),
     quimeraDaCena: typeof bruta.quimeraDaCena === "string" ? bruta.quimeraDaCena : null,
@@ -1844,6 +1848,43 @@ function topaPreparoTemp(sessao, derived) {
 export function definePreparo(sessao, valor, max) {
   const teto = Math.max(0, inteiro(max, 0));
   return { ...sessao, preparoAtual: entre(inteiro(valor, 0), 0, teto) };
+}
+
+/* ============================================================ */
+/* O RECURSO PRÓPRIO (autor, 2026-11-16)                         */
+/* ============================================================ */
+/* Uma barra a mais no cabeçalho, com o nome e o máximo que a mesa quiser (as Calorias da Dehya). A definição mora NA CRIATURA
+   (`creature.recursoProprio = { nome, max }`), para viajar no export, e a sessão só guarda o corrente em `proprioAtual`, com `null` lido como
+   cheio, igual ao Preparo. O máximo é número digitado, sem fórmula. Nenhum descanso mexe nele: gasta e recupera só pelo painel da barra
+   (decisões do autor). Vale para `/Afty` e `/Player`, só na Ficha G2. */
+
+/** A definição saneada do recurso próprio da ficha, ou `null` para quem não tem. `id` é o nome sem acento e em minúsculas, o gancho de tema. */
+export function recursoProprioDe(ficha) {
+  const r = ficha?.recursoProprio;
+  if (!r || typeof r !== "object") return null;
+  const nome = String(r.nome ?? "").trim().slice(0, 24);
+  const max = Math.max(0, inteiro(r.max, 0));
+  if (!nome || max <= 0) return null;
+  const id = nome.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "proprio";
+  return { nome, max, id };
+}
+
+/** O corrente do recurso próprio, com `null` lido como cheio. */
+export function proprioDe(sessao, max) {
+  const teto = Math.max(0, inteiro(max, 0));
+  return sessao?.proprioAtual == null ? teto : entre(inteiro(sessao.proprioAtual, 0), 0, teto);
+}
+
+/** Gasta (delta negativo) ou recupera (positivo). Nunca passa do máximo nem desce de zero. */
+export function alteraProprio(sessao, delta, max) {
+  const teto = Math.max(0, inteiro(max, 0));
+  return { ...sessao, proprioAtual: entre(proprioDe(sessao, teto) + inteiro(delta, 0), 0, teto) };
+}
+
+/** Escreve o recurso próprio direto, pelo campo da barra. */
+export function defineProprio(sessao, valor, max) {
+  const teto = Math.max(0, inteiro(max, 0));
+  return { ...sessao, proprioAtual: entre(inteiro(valor, 0), 0, teto) };
 }
 
 /** Apara a Cabeça e cada Membro do Titã contra o máximo resolvido de hoje, e

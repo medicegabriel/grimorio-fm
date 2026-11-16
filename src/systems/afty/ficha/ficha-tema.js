@@ -73,6 +73,7 @@ export const TOKENS_DOC = [
   { id: "--afty-pe", valor: "#38bdf8", oque: "a barra e o número de Energia" },
   { id: "--afty-pvtemp", valor: "#fbbf24", oque: "o pedaço de PV temporário na barra de Vida" },
   { id: "--afty-alma", valor: "#e879f9", oque: "a barra e o número de Alma" },
+  { id: "--afty-proprio", valor: "#fb923c", oque: "a barra do recurso próprio da ficha, a de nome livre" },
   { id: "--afty-cura", valor: "#34d399", oque: "os números de cura" },
   { id: "--afty-aviso", valor: "#fbbf24", oque: "avisos e o triângulo de alerta" },
   { id: "--afty-veu", valor: "rgb(0 0 0 / 0.55)", oque: "o véu atrás da busca e deste painel" },
@@ -336,7 +337,38 @@ export function temaEmBranco() {
     imagem: { url: "", opacidade: 0.25, encaixe: "cover", posicao: "center top" },
     css: "",
     ligado: true,
+    face: "1",                // qual das duas faces do CSS livre está valendo. Ver `temDuasFaces`
   };
+}
+
+/* ============================================================ */
+/* AS DUAS FACES (autor, 2026-11-16)                             */
+/* ============================================================ */
+
+/**
+ * Um tema pode ter DUAS FACES: o mesmo CSS livre descreve as duas, e a raiz da Ficha G2 diz qual vale em `data-afty-face` ("1" ou "2"). O botão
+ * do cabeçalho alterna, e a escolha mora no tema (`aparencia.face`), então viaja no export junto com o CSS que a lê.
+ *
+ * ⚠ QUEM DECLARA É O PRÓPRIO CSS. O tema tem duas faces quando o CSS livre ligado cita `[data-afty-face`, e só então o botão e o atributo
+ * existem. Sem interruptor no painel: uma ficha sem face dupla não ganha botão morto, e colar o CSS basta para o botão nascer.
+ */
+export const temDuasFaces = (tema) => {
+  const t = normalizaTema(tema);
+  return t.ligado && /\[data-afty-face/.test(saneiaCss(t.css).replace(/\/\*[\s\S]*?\*\//g, ""));
+};
+
+/** A outra face. */
+export const outraFace = (face) => (face === "2" ? "1" : "2");
+
+/**
+ * Quanto dura a virada, em milissegundos, lido do token `--afty-face-virada` que o tema escreve na raiz (`2600ms` ou `2.6s`). Zero, ausente ou
+ * ilegível vira troca imediata. O teto de 8 segundos existe porque a ficha fica coberta pela camada `.afty-virada` enquanto vira.
+ */
+export function duracaoDaVirada(texto) {
+  const m = /^\s*([\d.]+)\s*(ms|s)\s*$/i.exec(String(texto ?? ""));
+  if (!m) return 0;
+  const n = Number(m[1]) * (m[2].toLowerCase() === "s" ? 1000 : 1);
+  return Number.isFinite(n) && n > 0 ? Math.min(8000, Math.round(n)) : 0;
 }
 
 export function normalizaTema(bruto) {
@@ -353,6 +385,7 @@ export function normalizaTema(bruto) {
        o bloco e escrevia um `@font-face` com URL livre. Desconhecida cai na do sistema. */
     fonte: FONTES_ACEITAS.has(bruto.fonte) ? bruto.fonte : null,
     ligado: bruto.ligado !== false,
+    face: bruto.face === "2" ? "2" : "1",
     imagem: {
       ...base.imagem,
       ...img,
@@ -709,6 +742,45 @@ ${FONTES_WEB.map((f) => `   - ${f.id}`).join("\n")}`
    no bloco da raiz, ao lado das variáveis de cor, em vez de escrever \`font-size\` classe por classe.
    Os números grandes dos recursos ficam fora da escala.`
     : "";
+  /* Regras de G2 sobre movimento, largura das abas, fundo e os dois cabeçalhos (A10, A5, A1 e A4 de docs/tema-g2-problemas.md, 2026-11-14).
+     A 13 e a 14 foram revistas no mesmo dia, quando o app passou a corrigir A5 e A1 em vez de só avisar. */
+  const regrasG2 = g2
+    ? `
+12. Movimento: anime só \`transform\` e \`opacity\`, em camada própria. Nenhuma cor corre em menos de 12
+   segundos e nenhum pulso bate em menos de 2,5 segundos. Não multiplique a velocidade por estado: a
+   Vida baixa cresce em tamanho e brilho, quase sem acelerar. Nada de linha fina de alto contraste
+   girando. Termine o tema com um bloco \`@media (prefers-reduced-motion: reduce)\` que desliga toda
+   animação e transição.
+13. Largura das abas: as seis abas dividem a linha com a barra de rolagem, que encolhe de 600px até
+   560px antes de descer. Numa tela larga (coluna de 1244px) as abas têm um orçamento de cerca de 670px,
+   e o padrão ocupa 581px. Fonte mais larga, espaçamento entre letras ou preenchimento maior passam disso
+   e a barra de rolagem cai para a linha de baixo. Um contador grande em "Efeitos" também conta.
+14. Fundo que não seja chapado: as barras que grudam ao rolar (\`.afty-barra-grudada\`: a busca e os
+   filtros de Habilidades, o título "Ativos" da aba Efeitos e o rodapé dos registros) pintam
+   \`--afty-fundo-grudado\`, que vale \`--afty-fundo\`. Com degradê, imagem ou figura atrás, ponha no bloco
+   da raiz, ao lado das variáveis de cor, o véu:
+   \`--afty-fundo-grudado: color-mix(in srgb, var(--afty-fundo) 85%, transparent)\` e
+   \`--afty-peca-grudada: var(--afty-card)\`. A faixa deixa a figura passar de leve, a lista que rola
+   por baixo fica apagada e as peças de dentro (campo de busca, filtro e botões) ficam opacas. Só use
+   \`--afty-fundo-grudado: transparent\` se o autor do tema pedir a faixa sumida. A sombra da barra
+   sai com \`.afty-barra-grudada { box-shadow: none }\`. A barra de rolagem (\`.afty-log\`) não tem fundo próprio:
+   ela mostra o fundo do cabeçalho, então repintar \`.afty-cabecalho\` basta.
+15. Há DOIS \`.afty-cabecalho\`: a faixa que gruda no topo e, dentro dela, a placa (\`.afty-placa\`, com
+   retrato, nome e recursos), que leva as duas classes. Uma regra em \`.afty-cabecalho\` pinta as duas,
+   inclusive o fio do \`::after\`. Para separar, mire a placa em \`.afty-placa\` e a faixa em
+   \`.afty-cabecalho:not(.afty-placa)\`.
+16. Duas faces (opcional): um tema pode ter duas aparências que o jogador alterna por um botão do
+   cabeçalho (dia e noite, forma selada e liberada). Escreva a primeira face normalmente e a segunda
+   em blocos com \`[data-afty-face="2"]\` na raiz, por exemplo
+   \`:is(:scope#afty-ficha, #afty-ficha#afty-ficha)[data-afty-face="2"] { --afty-fundo: ...; }\`.
+   Citar \`[data-afty-face\` no CSS é o que faz o botão (\`.afty-face-botao\`) aparecer. Para a troca
+   ter duração, ponha \`--afty-face-virada: 2400ms\` no bloco da raiz: durante esse tempo existe a
+   camada \`.afty-virada\`, de tela cheia e por cima de tudo, e a raiz leva
+   \`[data-afty-virando="saindo"]\` na primeira metade (face antiga) e \`"chegando"\` na segunda (face
+   nova). Anime só a opacidade da camada: ela cobre a tela no fim da primeira metade, que é quando
+   as cores trocam, e descobre na segunda. Sem o token a troca é imediata. Não troque de fonte nem
+   de tamanho entre as faces, só cor, luz e ornamento, para o leiaute não pular.`
+    : "";
 
   const alvo = naFicha
     ? `É a ficha de personagem do "Grimório do Afty", um sistema de RPG próprio. A página já existe e está
@@ -739,7 +811,10 @@ ${naFicha ? (estrutura === "g2" ? MAPA_G2 : MAPA_DA_PAGINA) : MAPA_INVOCACAO}
 
 **IMPORTANTE: o CORPO é a maior parte da ficha, e é onde o jogador passa o tempo.** Um tema que pinta só o
 cabeçalho fica pela metade e é o erro mais comum. Estilize também \`.afty-card\`, \`.afty-card-titulo\`,
-\`.afty-linha\`, \`.afty-valor\`, \`.afty-texto\` e \`.afty-aba\`.
+\`.afty-linha\`, \`.afty-valor\`, \`.afty-texto\` e \`.afty-aba\`.${g2
+    ? ` No G2, \`.afty-linha\` é uma faixa de borda a borda colada na barra do título: borda e canto
+arredondado nela abrem um vão entre o título e a primeira linha. Prefira cor e fundo a borda e raio.`
+    : ""}
 
 ## O jeito CERTO de mudar cor
 
@@ -771,7 +846,10 @@ ${tokens}
 \`\`\``}
 
 **Nesse bloco vão SÓ as variáveis desta lista.** Ele é forte de propósito, e uma variável de componente
-escrita ali (como \`--afty-vital-cor\`) atropelaria a cor que cada recurso define por conta própria.
+escrita ali (como \`--afty-vital-cor\`) atropelaria a cor que cada recurso define por conta própria.${g2
+    ? ` As únicas exceções são os degraus de texto da regra 11 e os dois tokens das barras grudadas da
+regra 14 (\`--afty-fundo-grudado\` e \`--afty-peca-grudada\`), que também moram nesse bloco.`
+    : ""}
 
 ## Os seletores disponíveis
 
@@ -795,7 +873,11 @@ ${regraDaFonte}
    números abre a partir de dentro deles, e o corte o decapita. Para arredondar canto, use
    \`border-radius\` no próprio elemento, que já basta. Pelo mesmo motivo, não ponha \`z-index\` nesses
    dois, e não ponha \`transform\`, \`filter\`, \`backdrop-filter\`, \`contain\` nem \`will-change\` na raiz
-   \`#afty-ficha\`: qualquer um deles prende o painel e ele passa a abrir no lugar errado.
+   \`#afty-ficha\`: qualquer um deles prende o painel e ele passa a abrir no lugar errado.${g2
+    ? ` Isso vale para a raiz em si: o \`::before\` dela (o brilho, uma camada fixa) pode ser redesenhado, e o
+   \`::after\` pode servir de segunda camada fixa, atrás ou na frente do conteúdo, porque pseudo-elemento
+   não prende o painel.`
+    : ""}
 6. Cuide do CONTRASTE. Se escurecer o fundo, clareie \`--afty-texto\` e \`--afty-texto-suave\` junto.
    Repare em \`--afty-texto-fraco\`, que é o mais apagado e é a cor da perícia não treinada.
 7. Não use \`!important\`. Nas superfícies contratadas do G2, um seletor de classe simples pode alterar
@@ -809,7 +891,7 @@ ${regraDaFonte}
 9. Mantenha o resultado abaixo de 64 KB.
 10. Não escreva \`@media print\`. A impressão sai preta no branco sozinha, com qualquer tema: o app
    reescreve as cores de fundo, cartão, borda e texto no papel e esconde o que só serve para clicar.
-${escala}
+${escala}${regrasG2}
 ## O que eu quero
 
 (Descreva aqui o visual que você quer. Por exemplo: "um tema de vitral gótico, roxo e dourado, com
@@ -971,7 +1053,10 @@ const SO_CLASSICA = new Set([
 ]);
 
 const SUPERFICIES_G2 = [
+  /* A4 e A1 de docs/tema-g2-problemas.md (2026-11-14): as duas entraram SOMANDO classe, sem tirar nenhuma, para não quebrar tema que já mira `.afty-cabecalho`. */
+  { grupo: "Cabeçalho", seletor: ".afty-placa", oque: "a placa dentro da faixa do topo: retrato, nome, recursos, valores e o Agora. Também leva .afty-cabecalho" },
   { grupo: "Cabeçalho", seletor: ".afty-vital-conteudo", oque: "rótulo e valores do recurso" },
+  { grupo: "G2", seletor: ".afty-barra-grudada", oque: "cada faixa que gruda ao rolar: a busca e os filtros de Habilidades, o título Ativos da aba Efeitos e o rodapé dos registros. O fundo vem de --afty-fundo-grudado" },
   { grupo: "Cabeçalho", seletor: ".afty-vital-valores", oque: "valor atual, máximo e temporário do recurso" },
   { grupo: "G2", seletor: ".afty-consulta", oque: "o painel de consulta aberto" },
   { grupo: "G2", seletor: ".afty-historico", oque: "o histórico de efeitos aberto" },
@@ -980,6 +1065,9 @@ const SUPERFICIES_G2 = [
   { grupo: "Efeitos", seletor: ".afty-efeito-detalhe", oque: "a faixa que abre logo abaixo do cartão, com o que o efeito vale agora" },
   { grupo: "Efeitos", seletor: ".afty-catalogo-linha", oque: "a linha de uma opção no Adicionar e nos Favoritos. A escolhida tem aria-current=\"true\"" },
   { grupo: "Efeitos", seletor: ".afty-catalogo-painel", oque: "o painel da opção escolhida no Adicionar" },
+  /* As duas faces (2026-11-16). Só existem em ficha cujo CSS cita `[data-afty-face`. */
+  { grupo: "Duas Faces", seletor: ".afty-face-botao", oque: "o botão do cabeçalho que troca a face. Só existe em tema de duas faces" },
+  { grupo: "Duas Faces", seletor: ".afty-virada", oque: "camada de tela cheia, por cima de tudo, que só existe enquanto a face vira. Sem estilo próprio: é a cortina do tema" },
 ];
 
 /** O contrato descreve o alvo do editor, sem promover classes internas a API. */
@@ -993,7 +1081,10 @@ export function contratoDaEstrutura(estrutura = "classica") {
 }
 
 const MAPA_G2 = `#afty-ficha
-├── .afty-cabecalho: retrato, .afty-nome, .afty-vital e .afty-stats
+├── .afty-cabecalho             a faixa que gruda no topo
+│   ├── .afty-placa.afty-cabecalho   a placa: retrato, .afty-nome, .afty-vital e .afty-stats
+│   ├── .afty-guarda             só no Calamidade e no Beyond
+│   └── .afty-abas e .afty-log   a linha das abas
 ├── .afty-abas > .afty-aba[data-afty-aba][aria-selected]
 ├── corpo da aba: .afty-card > .afty-card-titulo e .afty-linha
 │   Ações, Habilidades, Perícias, Equipamentos, Invocações e Buffs
@@ -1005,7 +1096,11 @@ const MAPA_G2 = `#afty-ficha
 ├── .afty-historico: histórico de efeitos
 └── .afty-log: rolagens
 As seções condicionais só existem quando a ficha tem o recurso correspondente.
-O G2 não usa a moldura vertical, as subabas ou o cabeçalho encolhido da clássica.`;
+O G2 não usa a moldura vertical, as subabas ou o cabeçalho encolhido da clássica.
+No G2, .afty-linha é uma faixa de borda a borda do cartão, colada na barra do título. Borda e canto arredondado nela abrem um vão entre o título e a primeira linha.
+No G2, .afty-stat é texto solto na faixa do cabeçalho, sem caixa. Fundo nele vira remendo.
+O campo de busca de Habilidades tem fundo próprio, mesmo que .afty-campo não receba fundo na clássica.
+A raiz tem uma camada fixa em ::before (o brilho), e todo filho direto dela fica em z-index 1.`;
 
 const MAPA_INVOCACAO = `:scope.afty-inv-ficha
 ├── .afty-inv-cabeca: .afty-inv-titulo e marcas
@@ -1015,7 +1110,8 @@ O cartão pode estar na ficha do dono ou no Encontro, sempre com o mesmo escopo 
 /** Os atributos que dão alvo mais fino que a classe. */
 export const ATRIBUTOS_DOC = [
   { seletor: '[data-afty-estrutura="g2"]', oque: "a raiz da ficha G2" },
-  { seletor: "[data-afty-vital=\"pv\"]", oque: "a barra de Vida. Também `pe` e `alma`" },
+  { seletor: "[data-afty-vital=\"pv\"]", oque: "a barra de Vida. Também `pe`, `alma`, `preparo` e `proprio` (o recurso de nome livre da ficha)" },
+  { seletor: "[data-afty-proprio=\"calorias\"]", oque: "o recurso próprio pelo nome que a ficha deu, em minúsculas, sem acento e com hífen no lugar do espaço" },
   { seletor: "[data-afty-nivel=\"critico\"]", oque: "recurso abaixo de um quarto. Também `baixo`" },
   { seletor: "[data-afty-stat=\"defesa\"]", oque: "uma defesa nomeada: cd, rd-geral, rd-especifica, rd-alma, rd-fisica, movimento, iniciativa, atencao, res-parcial, maestria, preparo" },
   { seletor: "[data-afty-aba=\"acoes\"]", oque: "uma aba: acoes, habilidades, pericias, equipamentos, invocacoes, buffs" },
@@ -1029,14 +1125,18 @@ export const ATRIBUTOS_DOC = [
   { seletor: "[data-afty-com-retrato=\"sim\"]", oque: "o cabeçalho de uma ficha QUE TEM retrato" },
   { seletor: "[data-afty-subaba]", oque: "uma divisão de bloco pelo id dela: a Especialização, ou melhoria, lendaria e apice" },
   { seletor: "[data-afty-densidade=\"compacta\"]", oque: "a raiz quando o jogador pediu menos respiro. Também `confortavel`" },
+  { seletor: "[data-afty-face=\"2\"]", oque: "a raiz na segunda face do tema. Também `1`. Citar este atributo no CSS é o que cria o botão de troca" },
+  { seletor: "[data-afty-virando=\"saindo\"]", oque: "a raiz na primeira metade da virada, ainda na face antiga. Também `chegando`, a segunda metade, já na face nova" },
 ];
 
 export function atributosDaEstrutura(estrutura = "classica") {
   if (estrutura === "invocacao") return ATRIBUTOS_DOC.filter(a =>
     /data-afty-(vital|nivel|stat|tom)/.test(a.seletor));
-  if (estrutura === "classica") return ATRIBUTOS_DOC.filter(a => !a.seletor.includes("data-afty-estrutura"));
+  if (estrutura === "classica") return ATRIBUTOS_DOC.filter(a => !SO_G2.test(a.seletor));
   return ATRIBUTOS_DOC.filter(a => !/data-afty-(compacto|com-retrato)/.test(a.seletor));
 }
+/* As duas faces são do G2: a clássica e a invocação não têm o botão nem o atributo. */
+const SO_G2 = /data-afty-(estrutura|face|virando)/;
 
 /**
  * O mapa da página, para a IA saber que existe um CORPO.

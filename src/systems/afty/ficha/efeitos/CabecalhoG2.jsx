@@ -12,10 +12,11 @@
    ao lado.
    ============================================================ */
 import React, { useCallback, useRef, useState } from "react";
-import { AlertTriangle, ChevronLeft, ChevronRight, MoreHorizontal, Search, Sparkles, Swords } from "lucide-react";
+import { AlertTriangle, ChevronLeft, ChevronRight, MoreHorizontal, Search, Sparkles, SunMoon, Swords } from "lucide-react";
 import { statsDaFicha, aplicaPreferencia } from "./estatisticas";
 import { Retrato, Medidor, PainelVital, Flutuante, Valor } from "./pecas";
 import { recursos, linhaDeIdentidade, useQuantosCabem } from "./pecas-logica";
+import { Sessao } from "./ponte";
 import EstatisticasConfig from "./EstatisticasConfig";
 import OrbitasDoRetrato from "../../ui/OrbitasDoRetrato";
 import BotaoDeDescanso from "../BotaoDeDescanso";
@@ -55,7 +56,39 @@ function Valores({ m, stats, preferencia, onConfigurar }) {
   );
 }
 
-function Menu({ densidade, onDensidade, cofre, apresentacaoAnterior, onHistorico, onConfigurar, onAparencia, onEditar }) {
+/* O RECURSO PRÓPRIO (autor, 2026-11-16): a barra a mais da ficha, com nome e máximo digitados (as Calorias da Dehya). A definição grava na criatura
+   (`recursoProprio`), e Remover a apaga. O corrente é da sessão e não passa por aqui. */
+function RecursoProprioConfig({ ancora, atual, onSalvar, onFechar }) {
+  const [nome, setNome] = useState(atual?.nome ?? "");
+  const [max, setMax] = useState(atual ? String(atual.max) : "");
+  const n = Math.max(0, Math.trunc(Number(max) || 0));
+  const pronto = nome.trim() !== "" && n > 0;
+  const grava = () => { if (pronto) { onSalvar({ nome: nome.trim(), max: n }); onFechar(); } };
+  return (
+    <Flutuante ancora={ancora} onFechar={onFechar} largura={300} rotulo="Recurso Próprio" classe="h-estat-painel">
+      <div className="m-painel-vital" data-recurso-proprio-config>
+        <div className="m-pv-titulo"><b>Recurso Próprio</b></div>
+        <label className="m-pv-linha">
+          <span className="m-rotulo">Nome</span>
+          <input className="afty-campo m-campo-texto" value={nome} maxLength={24} onChange={(e) => setNome(e.target.value)} aria-label="Nome do recurso"
+            onKeyDown={(e) => { if (e.key === "Enter") grava(); }} />
+        </label>
+        <label className="m-pv-linha">
+          <span className="m-rotulo">Máximo</span>
+          <input className="afty-campo m-campo-num" inputMode="numeric" value={max} onChange={(e) => setMax(e.target.value.replace(/[^\d]/g, ""))} aria-label="Máximo do recurso"
+            placeholder="0" onKeyDown={(e) => { if (e.key === "Enter") grava(); }} />
+        </label>
+        <div className="m-pv-rodape h-proprio-rodape">
+          {atual && <button type="button" className="afty-botao m-botao" onClick={() => { onSalvar(null); onFechar(); }}>Remover</button>}
+          <button type="button" className="afty-botao m-botao" onClick={onFechar}>Fechar</button>
+          <button type="button" className="afty-botao m-botao g2-primario" disabled={!pronto} onClick={grava}>Salvar</button>
+        </div>
+      </div>
+    </Flutuante>
+  );
+}
+
+function Menu({ densidade, onDensidade, cofre, apresentacaoAnterior, onHistorico, onConfigurar, onAparencia, onEditar, onRecursoProprio }) {
   const [menu, setMenu] = useState(null);
   const fecha = () => setMenu(null);
   const item = (rotulo, aoClicar, extra = {}) => (
@@ -72,6 +105,7 @@ function Menu({ densidade, onDensidade, cofre, apresentacaoAnterior, onHistorico
             {item("Histórico da Sessão", onHistorico, { "data-menu-historico": "" })}
             {item("Estatísticas do Cabeçalho", onConfigurar, { "data-menu-estatisticas": "" })}
             {item(densidade === "compacta" ? "Densidade Confortável" : "Densidade Compacta", onDensidade, { "aria-pressed": densidade === "compacta", "data-menu-densidade": "" })}
+            {onRecursoProprio && item("Recurso Próprio", onRecursoProprio, { "data-menu-recurso-proprio": "" })}
             {item("Aparência", onAparencia)}
             {/* A antiga aba Buffs, mantida enquanto os Efeitos novos não cobrem tudo que ela fazia (Imitação, Concessão do mestre, Exaustão, Sangramento e o buff de mesa). */}
             {apresentacaoAnterior && item(apresentacaoAnterior.ativa ? "Usar os Efeitos Novos" : "Usar a Apresentação Anterior", apresentacaoAnterior.alterna, { "data-menu-apresentacao": "" })}
@@ -111,7 +145,9 @@ export default function Cabecalho({
   m, acesso, total, atencao, onHistorico = () => {}, preferencia = null, onPreferencia = () => {}, acoesDaFicha,
 }) {
   const { ficha, derived } = m;
-  const { onVoltar, onBusca, onEditar, onAparencia, densidade, onDensidade, cofre, apresentacaoAnterior } = acoesDaFicha;
+  const { onVoltar, onBusca, onEditar, onAparencia, densidade, onDensidade, cofre, apresentacaoAnterior, face = null, onSalvarRecursoProprio = null } = acoesDaFicha;
+  const [proprioConfig, setProprioConfig] = useState(null);
+  const fechaProprio = useCallback(() => setProprioConfig(null), []);
   const [vital, setVital] = useState(null);
   /* O painel de configuração das estatísticas (a âncora é o botão que o abriu). A preferência é do personagem. */
   const [config, setConfig] = useState(null);
@@ -122,8 +158,10 @@ export default function Cabecalho({
   const stats = statsDaFicha(derived);
   return (
     /* ⚠ A PLACA TAMBÉM É `.afty-cabecalho`. O tema e o CSS personalizado pintam o cabeçalho por essa classe (fundo, texto, fio de luz, chips e botões
-       dentro dele), e a placa é a parte do cabeçalho que ficou à vista. Sem a classe, um tema claro com faixa escura deixava a placa clara com texto claro. */
-    <div className="e-cabeca afty-cabecalho">
+       dentro dele), e a placa é a parte do cabeçalho que ficou à vista. Sem a classe, um tema claro com faixa escura deixava a placa clara com texto claro.
+       `.afty-placa` (A4 de docs/tema-g2-problemas.md, 2026-11-14) é o nome de contrato SÓ da placa, para o tema mirar nela sem o `.afty-cabecalho .afty-cabecalho`.
+       O fundo da placa mora em `:where` (`efeitos-g2.css`), então `.afty-placa` sozinho repinta. */
+    <div className="e-cabeca afty-cabecalho afty-placa">
       {/* O RETRATO É A ÂNCORA: uma moldura que acompanha a altura do corpo inteiro (placa e faixa), à esquerda. A identidade ocupa só a largura do nome. */}
       <div className="e-moldura"><Retrato ficha={ficha} classe="e-retrato" /><OrbitasDoRetrato orbitas={derived.orbitas} /></div>
       <div className="e-corpo">
@@ -144,10 +182,15 @@ export default function Cabecalho({
             {recursos(m).map((r) => <Medidor key={r.tipo} r={r} m={m} onAbrir={(e) => setVital({ tipo: r.tipo, ancora: e.currentTarget })} />)}
           </div>
           <div className="e-controles">
+            {/* A troca de face só existe em tema de duas faces (`temDuasFaces`). O ícone é do app e o tema pode trocá-lo por `.afty-face-botao`. */}
+            {face && (
+              <button type="button" className="afty-botao e-icone afty-face-botao" data-afty-face-atual={face.atual} onClick={face.alterna}
+                aria-pressed={face.atual === "2"} title="Alternar Face" aria-label="Alternar Face"><SunMoon aria-hidden="true" /></button>
+            )}
             <button type="button" className="afty-botao e-icone" onClick={onBusca} title="Buscar na ficha (Ctrl+K)" aria-label="Buscar na ficha"><Search aria-hidden="true" /></button>
             <BotaoDeDescanso sessao={m.sessao} derived={derived} onDescansar={(marioneteId) => m.acoes.descansar({ marioneteId })} />
             <Menu densidade={densidade} onDensidade={onDensidade} cofre={cofre} apresentacaoAnterior={apresentacaoAnterior} onHistorico={onHistorico} onConfigurar={setConfig}
-              onAparencia={onAparencia} onEditar={onEditar} />
+              onAparencia={onAparencia} onEditar={onEditar} onRecursoProprio={onSalvarRecursoProprio ? setProprioConfig : null} />
           </div>
         </div>
         <div className="e-faixa">
@@ -155,6 +198,7 @@ export default function Cabecalho({
           <Agora m={m} acesso={acesso} total={total} atencao={atencao} />
         </div>
       </div>
+      {proprioConfig && <RecursoProprioConfig ancora={proprioConfig} atual={Sessao.recursoProprioDe(ficha)} onSalvar={onSalvarRecursoProprio} onFechar={fechaProprio} />}
       {config && <EstatisticasConfig ancora={config} stats={stats} preferencia={preferencia} onFechar={fechaConfig} onMuda={onPreferencia} />}
       {vital && (
         <Flutuante ancora={vital.ancora} onFechar={fechaVital} largura={320} rotulo={`Painel de ${vital.tipo}`}>

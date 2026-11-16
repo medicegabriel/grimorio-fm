@@ -1,5 +1,91 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-16 · TEMA DE DUAS FACES, RECURSO PRÓPRIO E O TEMA DA DEHYA
+
+Pedido do autor: um CSS Personalizado para a Dehya (ficha de `/Player`, G2), com um modo de inverter entre Sekhmet (dia) e Hator (noite), e a
+quinta barra da personagem, as Calorias. As escolhas vieram por perguntas com opções. Vale para `/Afty` e `/Player`, só na Ficha G2 (a clássica
+e as invocações ficaram de fora).
+
+**1. Tema de duas faces (mecanismo genérico).**
+- O tema declara a segunda face citando `[data-afty-face` no CSS livre (`temDuasFaces` em `ficha/ficha-tema.js`). Só então a raiz leva
+  `data-afty-face="1|2"` e o cabeçalho ganha o botão `.afty-face-botao` (ícone SunMoon, "Alternar Face"). Sem interruptor no painel.
+- A face mora no tema (`aparencia.face`, "1" por padrão em `normalizaTema`) e grava com ele, então viaja no export.
+- A virada: o token `--afty-face-virada` (ms ou s, teto de 8s, `duracaoDaVirada`) diz quanto dura. Na primeira metade a raiz leva
+  `data-afty-virando="saindo"` com a face antiga, no meio a face troca, e a segunda metade é `chegando`. Nesse intervalo existe
+  `.afty-virada`, filha direta da raiz, fixa, de tela cheia, `z-index: 1300`, sem clique e sem estilo próprio (`ficha.css`). Sem o token, ou
+  com `prefers-reduced-motion`, a troca é imediata. Lógica em `alternaFace` (`AftyFichaG2.jsx`).
+- Contrato: `.afty-face-botao` e `.afty-virada` em `SUPERFICIES_G2`, `[data-afty-face]` e `[data-afty-virando]` em `ATRIBUTOS_DOC` (só no
+  prompt do G2), e a regra 16 do Prompt IA.
+
+**2. Recurso próprio (a barra de nome livre).**
+- `creature.recursoProprio = { nome, max }` (nulo por padrão em `afty-schema.js`), gravado por `onSalvarRecursoProprio` no `App.jsx`. Edita-se
+  na Ficha, em Mais Opções, Recurso Próprio (`RecursoProprioConfig` em `CabecalhoG2.jsx`), com Salvar e Remover.
+- O corrente mora na sessão (`proprioAtual`, `null` lido como cheio). Verbos em `ficha-sessao.js`: `recursoProprioDe`, `proprioDe`,
+  `alteraProprio`, `defineProprio`. Decisões do autor: máximo é número digitado, e nenhum descanso mexe nele (só o painel da barra).
+- No cabeçalho é sempre a última barra (`recursos` em `pecas-logica.js`), com `data-afty-vital="proprio"` e `data-afty-proprio="<nome sem
+  acento, em minúsculas>"`. Painel com Gastar, Recuperar e Definir, sem a lista de fontes do máximo. Cor no token novo `--afty-proprio`
+  (`#fb923c`, em `ficha.css` e `TOKENS_DOC`). Também aparece na faixa fina do celular.
+- Cinco recursos não cabiam na fileira única da placa (a grade vazava por cima da linhagem). Em `efeitos-g2.css`, com cinco barras a
+  identidade cede espaço, cada barra tem pelo menos a largura do próprio número, e entre 1120 e 1279 px os recursos descem para a segunda
+  fileira. Com quatro ou menos nada muda.
+
+**3. `docs/tema-dehya.css` (v1, e v2 logo abaixo).** Sekhmet em brasa escura (vinho, areia, ouro e sangue), Hator em índigo e ouro pálido. Atrás dos cartões,
+o disco solar e brasas que sobem, que viram a lua entre os chifres e um céu de estrelas. A virada dura 2,8s com cortina de crepúsculo (ida) e
+de aurora (volta). A Vida baixa aumenta o sol e o avermelha em Sekhmet e acende a lua em Hator, sem acelerar nada. As Calorias são uma barra
+de fogo. Inter no corpo e Cinzel nos títulos, a mesma nas duas faces.
+
+**v2 no mesmo dia, depois do retorno do autor.** A virada da v1 (uma cortina chapada que só esmaecia) ficou "estranha". Agora `.afty-virada`
+é o céu: fecha depressa e, dentro dela, o astro da face que sai (o mesmo desenho do fundo, pela variável `--dy-corpo`, no mesmo lugar) desce
+até sumir no horizonte, que acende. No meio as cores trocam, e o astro da face que chega sobe até pousar em cima do de trás enquanto o céu se
+abre. Duração de 3,6s. O botão de face virou uma joia com o sol em Sekhmet e a lua crescente em Hator (o ícone do app some). As barras de
+recurso ficaram mais altas (8px) e com brilho de vidro, e as Calorias ganharam caixa de brasa. O emblema do título perdeu a barra ao lado do
+olho, e o primeiro filho de todo cartão acompanha o canto de cima (a barra do título de Habilidades saía reta). Refeito em tela: a virada
+quadro a quadro na ida e na volta, contraste nas duas faces e na Vida crítica, 390 e 1200 de largura, menos movimento e impressão.
+
+**Verificado em tela** (Chrome do sistema contra o dev, `design.local/dehya.mjs`, ficha de teste com `rulesVersion: "player"` em `/Player`):
+as duas faces em 1440, a virada no meio de cada metade, a face gravada na criatura, Vida crítica nas duas faces, as seis abas, 1200, 1280 e
+390 de largura, impressão, menos movimento (troca imediata), o painel de Calorias (gastar 1200 de 3000) e o painel de configuração. Contraste
+computado sem reprovação nas duas faces e na Vida crítica. Abas em 578px, na mesma linha da rolagem a partir de 1200. Sem tema, a ficha não
+ganha botão nem atributo. `auditar-tema.mjs`: as 9 regras passam. Asserts: 1 de 325 falha, o mesmo `t-reconciliacao-g00.mjs` de antes.
+Eslint de `src/systems/afty` e `src/App.jsx` sem erro. `src/components/` intocado.
+
+**Não verificado:** o contraste no PIXEL por cima do miolo do disco (o medidor não enxerga pseudo-elemento, e o cartão está em 84% de
+opacidade), desempenho em build de produção, o Encontro (o recurso próprio não aparece no painel de combatente), toque no celular de verdade
+e a criação pelo painel partindo de uma ficha sem recurso (só a edição foi fotografada). Não há assert novo para `recursoProprioDe` nem para
+`temDuasFaces`.
+
+**Aberto, em `docs/a-fazer.md`:** o custo de Calorias cobrado pela habilidade (o autor pediu, é trabalho de motor) e o recurso próprio no
+Encontro e na ficha clássica.
+
+## SESSÃO DE 2026-11-14: INTERLÚDIOS, VOTOS E RESISTÊNCIAS PARA CONSULTA NA FICHA FINAL
+
+Pedido do autor depois de queixa dos jogadores: eles abriam Editar só para reler o Treino de Energia Reversa, os
+próprios Votos e a RD contra um tipo de dano. Tudo é SÓ LEITURA na Ficha Final (G2) e vale para criatura e personagem
+(autor, 2026-11-14). Criar e editar continua no criador.
+
+- **Mudança de formato em relação ao plano aprovado:** Votos e Treinos viraram grupos de leitura dentro de Habilidades, e
+  não uma aba e um botão, porque a queixa era de CONSULTA e a lista de Habilidades já tem busca e a consulta do texto.
+  As operações e o botão de Interlúdio ficaram em `docs/a-fazer.md`.
+
+- **Defeito de fundo: a aba Habilidades do G2 recebia só seis grupos.** `montarRepertorio` (`ficha/efeitos/repertorio.js`)
+  passava só Estilo, Talento, Geral, Aptidão, Níveis Lendários e Origem, embora a aba desenhe todo grupo de `GRUPOS`.
+  Treinamentos, Condições Corporais, Técnicas Marciais, Características Amaldiçoadas e Loja de Catarse nunca chegavam à
+  tela do G2. Agora todo grupo de `GRUPOS` entra, com os seis antigos na frente e na mesma ordem.
+- **Treinamentos:** `beneficiosDeTreinoNaFicha` mostra TODA linha de treino. A regra virou o inverso: só some a linha com
+  `exibirNaFicha: false` (antes só entravam as com `true`: Luta, Perícia e as de Addon). Os Treinos Especiais entram no
+  mesmo grupo, uma linha por treino com as vezes (`treinoEspecial:<id>`).
+- **Votos:** grupo novo `voto` em `GRUPOS` (`ficha-conteudo.js`, `itensDeVotos`). Mecânicos primeiro (narrativa,
+  Benefício e Malefício na consulta), depois os Contratuais (texto, Participantes, Consequência da Ruptura). Mecânico
+  além do limite de BT leva o aviso "Fora do Limite de BT", como no criador. Os verbos de `ficha-votos.js` (realizar,
+  quebrar) continuam sem tela.
+- **Resistências por Tipo de Dano:** seção nova em Perícias (`PericiasG2.jsx`, coluna dos testes, logo abaixo dos Testes
+  de Resistência). Os quinze tipos com Imune, Resistente ou Vulnerável e a RD EFETIVA, com as fontes no hover. Conflito
+  de estados mostra o aviso do `resolveDefesasDano`. A busca global (Ctrl+K) leva a cada tipo (`defesa:<tipo>`, em
+  `busca-g2.js`).
+
+`asserts/t-ficha-consulta.mjs` (novo, 30 asserts, os dois sistemas). `t-abas-g2-previa.mjs` atualizado: a prévia agora
+acrescenta 6 Atributos mais um destino por tipo de dano. Conferido no navegador em 1366 e 375 px.
+
 ## SESSÃO DE 2026-11-14: REDESENHO DO CARD DO NOVO ESTILO DAS SOMBRAS
 
 Pedido do autor depois de feedback de uso: a tela estava feia, pouco intuitiva e com tamanhos
@@ -105,6 +191,43 @@ Persistem falhas em t-reconciliacao-g00 e t-revisao-g00. A coleta atual aponta
 afty-orbitas.js, ficha/efeitos/catalogo-logica.js e ficha/useFontesWeb.js
 sem proprietário/classificação. Não foram classificados por esta tarefa.
 Log: tmp/integracao-20261114-asserts.log. Diff sem erros de espaço.
+## SESSÃO DE 2026-11-14 · G2 ACEITA TEMA SOBRE FUNDO NÃO CHAPADO (A1 A A7)
+
+O tema da Ignia mostrou que o G2 só aceitava tema de fundo chapado. Correções no app, todas presas a
+`.e-ficha-g2` ou `.e-g2`, sem renomear classe nem token (D-103), com o tema padrão igual no pixel
+salvo antialiasing. Detalhe e fotos em `docs/tema-g2-problemas.md` (relatório de A1 a A7) e em
+`docs/afty-ficha-final.md` ("Tema sobre fundo não chapado").
+
+- A3: o fundo do header passou para uma classe de especificidade
+  (`.afty-cabecalho:where(.e-ficha-g2 > header)`), porque a regra antiga de duas classes e um
+  elemento vencia o `.afty-cabecalho` do tema, contra o que o prompt promete.
+- A2: `.afty-log` sem fundo no G2. O fio de 1px padrão não era cortado, mas o fundo opaco da barra
+  recortava qualquer fio mais grosso e, no Pergaminho, a sombra da placa.
+- A1: classe `.afty-barra-grudada` e os tokens `--afty-fundo-grudado` e `--afty-peca-grudada`, para
+  um tema com figura atrás tirar a faixa e deixar só as peças opacas, sem mirar classe interna.
+- A4: a placa ganhou `.afty-placa` e manteve `.afty-cabecalho`, para não quebrar tema existente.
+- A5: a barra de rolagem encolhe de 600 até 560px antes de descer (orçamento das abas de cerca de
+  630 para cerca de 670px).
+- A6 não reproduz. A7 ficou como proposta em `design.local/proposta-a7.css`.
+- Prompt para IA: regras 13 e 14 revistas, regra 15 nova. Bancada nova em `design.local/`
+  (`g2-tema.mjs`, `g2-lote.sh`, `g2-compara.mjs`, `g2-pixel.mjs`).
+- Efeito colateral visível: a Hora Azul, os dois Cão Divino e o Abe no Seimei passaram a mostrar no G2 o
+  fundo da faixa do topo que já escreviam em `.afty-cabecalho`.
+- Suíte: 1 de 324 falha antes e depois (`t-reconciliacao-g00`). Eslint limpo, build isolado passa.
+- Respostas do autor, mesma data: vale para `/Afty` e `/Player`, a clássica fica; os quatro temas
+  antigos ficam como estão; a placa mantém as duas classes; o fio do `::after` na placa foi escondido
+  no app (`.afty-placa:where(.e-ficha-g2 *)::after`, fotografado no padrão e no Pergaminho); a faixa
+  grudada segue opaca no padrão e a regra 14 recomenda o véu de 85% para tema com figura. O A7 foi
+  aplicado depois das fotos: `.afty-guarda:where(.e-ficha-g2 *)` com vão de 8px, canto de 10 de 12
+  e acima da sombra da placa, medido nos 5 presets e na Hora Azul em 1440 e 390 (a Ignia mantém a
+  flâmula dela).
+
+## SESSÃO DE 2026-11-14 · CONTRATO DE TEMA DO G2 E BANCADA
+
+- `ficha-tema.js` (só estrutura G2, vale para `/Afty` e `/Player`, autorizado pelo autor): o `MAPA_G2` descreve `.afty-linha` (faixa de borda a borda), `.afty-stat` (sem caixa), o campo de busca com fundo próprio e o `::before` da raiz. A regra 5 libera `::before` e `::after` da raiz e continua proibindo `transform` e `filter` na raiz. Regras 12 a 14 novas: movimento, orçamento de largura das abas e barras grudadas sobre fundo não chapado. Os dois últimos são só aviso, a correção é de A1 e A5 (Opus). Clássica e invocação não mudaram.
+- Bancada (`design.local/`, fora do git): regra 5c do `auditar-tema.mjs` não acusa mais pseudo-elementos da raiz, 14 roteiros antigos usam o Chrome do sistema, e entraram `ignia-pixel.mjs`, `ignia-perf.mjs` e um rascunho `ignia-efeitos.mjs`.
+- Conferência do tema da Ignia e o que falta: relatório datado no fim de `docs/tema-g2-problemas.md`. Falha real achada: "Nenhum Efeito Ativo" no celular com Vida crítica dá 3,79 de contraste no pixel.
+- Segunda rodada de conferências (mesma data, bancada fora do git): `ignia-efeitos.mjs` com lista cheia (`--n=`), `ignia-toque.mjs`, `ignia-404.mjs` e `ignia-pixel.mjs` com o fundo sob o texto. Resultado em `docs/tema-g2-problemas.md`: contador de dois dígitos cabe, o toque longo abre colado ao número, o 404 é o script de analytics da Vercel, os dois asserts G00 falham por três módulos sem classificação, o título "Ativos" some atrás do cabeçalho e o contraste de 3,79 vem de `--afty-texto-suave` com o fundo da Vida crítica.
 
 ## SESSÃO DE 2026-11-12 · NORMAS DE ADDONS, DO SITE E DE DESIGN
 

@@ -96,6 +96,7 @@ export function useModeloG2({ alvoId, ficha, sessao, derived, calculo, atualiza,
       pe: mudou.pe ? { valor: mudou.pe, ts } : null,
       alma: mudou.alma ? { valor: mudou.alma, ts } : null,
       preparo: mudou.preparo ? { valor: mudou.preparo, ts } : null,
+      proprio: mudou.proprio ? { valor: mudou.proprio, ts } : null,
     });
   };
   useEffect(() => {
@@ -167,8 +168,12 @@ export function useModeloG2({ alvoId, ficha, sessao, derived, calculo, atualiza,
       else if (tipo === "pe") atualiza((s) => ({ ...s, peAtual: v }));
       else if (tipo === "alma") atualiza((s) => Sessao.defineAlma(s, v, derived));
       else if (tipo === "preparo") atualiza((s) => Sessao.definePreparo(s, v, derived.pontosPreparo));
+      else if (tipo === "proprio") atualiza((s) => Sessao.defineProprio(s, v, Sessao.recursoProprioDe(ficha)?.max));
       return {};
     },
+    /* O recurso próprio da ficha (as Calorias da Dehya): gasta e recupera só por aqui, e nenhum descanso mexe nele. */
+    gastarProprio: (n) => { atualiza((s) => Sessao.alteraProprio(s, -n, Sessao.recursoProprioDe(ficha)?.max)); flashDe({ proprio: -n }); return {}; },
+    recuperarProprio: (n) => { atualiza((s) => Sessao.alteraProprio(s, n, Sessao.recursoProprioDe(ficha)?.max)); flashDe({ proprio: n }); return {}; },
     /* O Preparo corrente (Combatente): gasta e recupera pelos verbos dele, sem tratar como Energia. */
     gastarPreparo: (n) => { atualiza((s) => Sessao.alteraPreparo(s, -n, derived.pontosPreparo)); flashDe({ preparo: -n }); return {}; },
     recuperarPreparo: (n) => { atualiza((s) => Sessao.alteraPreparo(s, n, derived.pontosPreparo)); flashDe({ preparo: n }); return {}; },

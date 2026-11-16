@@ -2959,9 +2959,10 @@ Três campos genéricos acrescentados ao sistema de Treinamentos:
   verificam novamente requisitos de aquisição a cada derive.
 - `requisito: { tipo: "atencao", valor: N }`: o criador verifica Atenção final,
   incluindo override. Contexto ausente não autoriza treinar a etapa.
-- `exibirNaFicha: true`: etapas adquiridas viram texto integral no grupo
-  Treinamentos da aba Habilidades e na busca da ficha. Sem o campo, a linha
-  conserva a apresentação anterior. `completo.nome` dá o título específico e
+- `exibirNaFicha`: desde 2026-11-14 toda linha mostra as etapas adquiridas
+  como texto integral no grupo Treinamentos da aba Habilidades e na busca da
+  ficha. `exibirNaFicha: false` esconde a linha. O `true` dos pacotes antigos
+  continua válido e não muda nada. `completo.nome` dá o título específico e
   `completo.requisito` controla a disponibilidade do texto do Completo e seu
   destaque no criador. Esse campo não adiciona uma quinta etapa paga.
 
@@ -2982,7 +2983,7 @@ Etapa 1: +2 no recurso de Estamina, canal `pe` existente. Etapa 2: Percepção
 usa Destreza. Etapa 3: +2 Percepção. Etapa 4: +3 Acrobacia, exigindo Mestre
 em Intuição, Treinado em Percepção e Nível 13. Completo: uma vaga exclusiva
 de Talento, canal `vagasTalento`, sem acrescentar vaga comum de Habilidade.
-Texto adquirido aparece na ficha por `exibirNaFicha`, como em Reavaliação.
+Texto adquirido aparece na ficha, como toda linha de treino.
 
 `trocaAtributoPericia` agora aceita ids fixos por `pericia` e `atributo`,
 além dos campos de seleção existentes `periciaAlvo` e `atributoAlvo`. Exemplo:

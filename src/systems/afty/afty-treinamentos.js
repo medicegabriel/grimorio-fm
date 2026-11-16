@@ -686,14 +686,18 @@ export function habilidadesConcedidasPorTreino(creature) {
   return [...ids];
 }
 
-/** Texto integral das etapas adquiridas de linhas que optam por aparecer na ficha. */
+/** Texto integral das etapas adquiridas, para consulta na Ficha Final.
+ *
+ * ⚠ TODA LINHA APARECE desde 2026-11-14 (autor: os jogadores abriam o criador só para reler o Treino de Energia Reversa). Até ali
+ * só as linhas com `exibirNaFicha: true` (Luta, Perícia e as de Addon) entravam. Agora a regra é o inverso: some só a linha que
+ * declarar `exibirNaFicha: false`. */
 export function beneficiosDeTreinoNaFicha(creature, ctx = {}) {
   const origemId = origemDosTreinos(creature);
   const qualificadas = origensQualificadas(creature);
   const out = [];
   for (const [id, valor] of Object.entries(normalizeTreinamentos(creature?.treinamentos, creature))) {
     const linha = getTreinamento(id);
-    if (!linha?.exibirNaFicha || !treinoDisponivel(linha, origemId, qualificadas)) continue;
+    if (!linha || linha.exibirNaFicha === false || !treinoDisponivel(linha, origemId, qualificadas)) continue;
     const instancias = Array.isArray(valor) ? valor : [{ progresso: valor, alvo: null }];
     for (const inst of instancias) {
       const nome = inst.alvo ? `${linha.nome} (${rotuloAlvo(linha, inst.alvo)})` : linha.nome;

@@ -149,6 +149,7 @@ import {
   getEncantamento, encantamentosDe, canalRdEscudo,
   avaliarRequisitoEncantamento, SINTONIZADA_ID, tiposDaSintonizada,
   podeAplicarEngenhoSuperior,
+  temFormulaEntropica,
 } from "./afty-equipamentos";
 import { evalNumber as evalNumberDsl, validateExpression } from "./afty-dsl";
 import { deriveAfty } from "./afty-derive";
@@ -14614,7 +14615,7 @@ function CaracteristicaAmaldicoadaCard({ caracteristica: c, pericias, onToggle, 
 function LinhaCarregada({
   entrada, onPatch, onRemove, onToggleFerramenta, onPatchFerramenta,
   onToggleEncantamento, pericias, fontesDano, dslContexto, dslExtras,
-  sistemaJogador = false, sistema, feiticos = [], travaEquipar = null, permiteEngenho = false,
+  sistemaJogador = false, sistema, feiticos = [], travaEquipar = null, permiteEngenho = false, permiteEngenhoRecebido = false,
 }) {
   const { def, tipo, uid, qtd, equipado, fa } = entrada;
   // Arma entrou em 2026-08-01: ela passou a render Acerto por grau, e a linha de
@@ -14664,7 +14665,7 @@ function LinhaCarregada({
             onClick={() => onPatch(uid, { engenhoSuperior: entrada.engenhoSuperior !== true })}
           >Engenho Superior</button>
         )}
-        {qtd === 1 && !entrada.engenhoSuperior && (
+        {permiteEngenhoRecebido && qtd === 1 && !entrada.engenhoSuperior && (
           <button
             type="button"
             className="afty-chip shrink-0"
@@ -16094,6 +16095,7 @@ function TabEquipamentos({ draft, derived, addEquipamento, removeEquipamento, pa
                       entrada={e}
                       onPatch={patchEquipamento}
                       permiteEngenho={podeAplicarEngenhoSuperior(draft)}
+                      permiteEngenhoRecebido={temFormulaEntropica(draft)}
                       onRemove={removeEquipamento}
                       onToggleFerramenta={toggleFerramenta}
                       onPatchFerramenta={patchFerramenta}

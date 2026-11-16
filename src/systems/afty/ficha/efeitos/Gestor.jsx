@@ -373,7 +373,7 @@ export function RegistroExterno({ g, m, onFechar }) {
           )}
         </div>
       )}
-      <div className="g-registro-rodape">
+      <div className="g-registro-rodape afty-barra-grudada">
         <button type="submit" className="g-botao" data-primaria="sim" disabled={!pronto}>Registrar</button>
       </div>
     </form>

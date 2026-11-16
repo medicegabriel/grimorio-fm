@@ -123,6 +123,12 @@
   }
 :where(.e-g2 .m-barra[data-recurso="preparo"]) .m-barra-cheia { background: var(--afty-destaque);
   }
+/* O recurso próprio da ficha (2026-11-16). A cor é o token --afty-proprio, e o tema pode mirar um recurso pelo nome em [data-afty-proprio]. */
+:where(.e-g2 .m-barra[data-recurso="proprio"]) .m-barra-cheia { background: var(--afty-proprio); }
+.e-g2 .m-campo-texto { flex: 1 1 120px; min-width: 0; }
+.e-g2 .h-proprio-rodape { gap: 6px; }
+.e-g2 [data-recurso-proprio-config] .m-pv-linha { align-items: center; flex-wrap: nowrap; gap: 10px; }
+.e-g2 [data-recurso-proprio-config] .m-rotulo { flex: 0 0 56px; }
 .e-g2 .m-barra .m-barra-temp { position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: var(--afty-vital-cor); box-shadow: none; }
 .e-g2 .m-flash { position: absolute; right: 8px; top: -12px; padding: 0 6px; border-radius: calc(var(--afty-raio, 12px) * 6 / 12); background: var(--afty-fundo); font-style: normal; font-size: var(--e-fs-corpo, 13.5px); font-weight: 700; animation: e-sobe 2.4s ease-out forwards; }
 .e-g2 .m-flash[data-sinal="menos"] { color: var(--afty-pv); }
@@ -198,8 +204,8 @@
 /* A margem da direita é a trilha do botão dos Livros: nada da lista passa por baixo dele. */
 .e-g2 .e-area { position: relative; min-height: 0; margin: 0; display: flex; height: calc(100dvh - var(--afty-ficha-topo, 0px) - 8px); }
 .e-g2 .e-habilidades { flex: 1; min-width: 0; overflow: auto; padding: 0 0 28px; scrollbar-width: thin; scrollbar-color: var(--e-ctrl-borda) transparent; }
-.e-g2 .e-ferramentas { position: sticky; top: 0; z-index: 3; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px 16px; padding: 14px 0 12px; background: var(--afty-fundo); transition: box-shadow .15s; }
-.e-g2 .e-habilidades[data-rolada] .e-ferramentas { box-shadow: 0 1px 0 var(--e-linha), 0 14px 16px -14px rgb(0 0 0 / .9); }
+.e-g2 .e-ferramentas { position: sticky; top: 0; z-index: 3; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px 16px; padding: 14px 0 12px; transition: box-shadow .15s; }
+:where(.e-g2 .e-habilidades[data-rolada]) .e-ferramentas { box-shadow: 0 1px 0 var(--e-linha), 0 14px 16px -14px rgb(0 0 0 / .9); }
 .e-g2 .e-busca { position: relative; display: flex; align-items: center; }
 .e-g2 .e-busca > svg { position: absolute; left: 14px; color: var(--e-t2); pointer-events: none; }
 .e-g2 .e-busca .afty-campo { flex: 1; height: 38px; padding: 0 40px 0 42px; border: 1px solid transparent; border-radius: var(--afty-raio, 12px); background: var(--e-ctrl); color: var(--e-t1); font-size: var(--e-fs-leitura, 15px); min-width: 0; }
@@ -668,7 +674,8 @@
 .e-g2 .g-previa { display: grid; gap: 6px; padding: 10px 12px; border-left: 2px solid var(--e-sel-borda); background: color-mix(in oklab, var(--afty-texto) 3.5%, transparent); border-radius: 0 calc(var(--afty-raio, 12px) * 8 / 12) calc(var(--afty-raio, 12px) * 8 / 12) 0; }
 .e-g2 .g-presumir { display: flex; align-items: center; gap: 8px; font-size: var(--e-fs-corpo, 13.5px); color: var(--e-t1); }
 /* Registrar fica à vista mesmo com o formulário rolado. */
-.e-g2 .g-registro-rodape { position: sticky; bottom: -48px; z-index: 3; display: flex; justify-content: flex-end; padding: 10px 0 12px; margin-bottom: -12px; background: var(--afty-fundo); box-shadow: 0 -10px 12px -10px rgb(0 0 0 / .8); }
+.e-g2 .g-registro-rodape { position: sticky; bottom: -48px; z-index: 3; display: flex; justify-content: flex-end; padding: 10px 0 12px; margin-bottom: -12px; }
+:where(.e-g2) .g-registro-rodape { box-shadow: 0 -10px 12px -10px rgb(0 0 0 / .8); }
 
 /* ---------------- a compacta ---------------- */
 .e-g2 .g-painel { flex: none; width: 372px; min-height: 0; margin: 8px 18px 0 0; display: flex; flex-direction: column; border-left: 1px solid var(--e-painel-borda); }
@@ -715,7 +722,29 @@
 .e-g2 .x-rola { flex: 1; min-width: 0; min-height: 0; overflow: auto; padding: 16px 6px 56px 0; scrollbar-width: thin; scrollbar-color: var(--e-ctrl-borda) transparent; }
 .e-g2 .x-cabeca { display: flex; align-items: center; gap: 12px; min-height: 36px; margin: 0 0 6px; }
 /* O título e o Adicionar ficam à vista com a lista rolada. */
-.e-g2 .x-rola > .x-cabeca { position: sticky; top: -16px; z-index: 5; margin: -16px 0 6px; padding: 16px 0 6px; background: var(--afty-fundo); }
+.e-g2 .x-rola > .x-cabeca { position: sticky; top: -16px; z-index: 5; margin: -16px 0 6px; padding: 16px 0 6px; }
+
+/* ---------- AS BARRAS QUE GRUDAM (A1 de docs/tema-g2-problemas.md, 2026-11-14) ----------
+   A busca de Habilidades, o "Ativos" da aba Efeitos e o rodapé dos registros grudam ao rolar e pintam um fundo, para a lista não passar legível por
+   baixo. Esse fundo era `--afty-fundo` opaco na largura da coluna, e com degradê, imagem ou figura atrás virava um retângulo. Agora são dois tokens,
+   que o tema troca no bloco da raiz, e a classe de contrato `.afty-barra-grudada` nas três faixas:
+     --afty-fundo-grudado  o fundo da faixa. Padrão: `--afty-fundo`, o mesmo de antes.
+     --afty-peca-grudada   a base opaca das peças de dentro (campo de busca, filtro de Efeito e botões). Padrão: transparente, o mesmo de antes.
+   Um tema de fundo não chapado escreve `--afty-fundo-grudado: transparent` e `--afty-peca-grudada: var(--afty-card)`: a faixa some, a luz passa em
+   volta, e as peças ficam opacas por cima da lista rolada (o desenho que o autor aprovou no tema da Ignia).
+   A cor própria de cada peça (o tom do campo, o realce do botão, o hover) vira IMAGEM por cima da base, para os dois se somarem sem uma peça perder o
+   hover. Fora das barras nada muda. A especificidade dobrada nos botões é para vencer o hover de `.m-botao` e `.g-botao[data-primaria]`, que tem
+   quatro e cinco classes. O fundo da faixa fica em especificidade de uma classe, então `.afty-barra-grudada` no tema basta. */
+/* ⚠ Pela classe de contrato, e não por `:is(.e-ferramentas, .x-rola > .x-cabeca, ...)`: o `:is` pega a especificidade do argumento mais forte (duas
+   classes) e o `.afty-barra-grudada` do tema perdia. */
+.afty-barra-grudada:where(.e-g2 *) { background: var(--afty-fundo-grudado, var(--afty-fundo)); }
+.e-g2 .e-ferramentas :is(.e-busca .afty-campo, .e-efeitos) { background: linear-gradient(var(--e-ctrl), var(--e-ctrl)) var(--afty-peca-grudada, transparent); }
+.e-g2 .e-ferramentas .e-busca .afty-campo:focus { background: linear-gradient(var(--e-ctrl-hover), var(--e-ctrl-hover)) var(--afty-peca-grudada, transparent); }
+.e-g2.e-g2.e-g2 :is(.x-rola > .x-cabeca, .g-registro-rodape) :is(.m-botao, .g-botao) { --e-tinta: transparent; background: linear-gradient(var(--e-tinta), var(--e-tinta)) var(--afty-peca-grudada, transparent); }
+.e-g2.e-g2.e-g2 :is(.x-rola > .x-cabeca, .g-registro-rodape) :is(.x-adicionar, .g-botao[data-primaria]) { --e-tinta: var(--e-sel); }
+.e-g2.e-g2.e-g2 :is(.x-rola > .x-cabeca, .g-registro-rodape) :is(.m-botao, .g-botao):hover:not(:disabled) { --e-tinta: var(--e-ctrl); }
+.e-g2.e-g2.e-g2 :is(.x-rola > .x-cabeca, .g-registro-rodape) .g-botao[data-primaria]:hover:not(:disabled) { --e-tinta: color-mix(in oklab, var(--afty-destaque) 28%, transparent); }
+.e-g2.e-g2.e-g2 :is(.x-rola > .x-cabeca, .g-registro-rodape) :is(.g-botao[data-primaria], .g-botao):disabled { --e-tinta: transparent; }
 .e-g2 .x-titulo { margin: 0; font: 600 var(--e-fs-destaque, 22px) var(--e-display); font-stretch: semi-condensed; }
 .e-g2 .x-adicionar { margin-left: auto; border-color: var(--e-sel-borda); background: var(--e-sel); }
 .e-g2 .x-adicionar svg, .e-g2 .m-botao svg { width: 15px; height: 15px; }
@@ -1110,7 +1139,25 @@
 .e-ficha-g2[data-g2-painel] { --e-lateral-w: 390px; }
 .e-ficha-g2 .e-pagina { width: 100%; max-width: var(--e-pagina-max); margin-inline: auto; }
 /* O respiro de 6px acima da placa e PADDING do header, e nao margem da placa: margem de filho colapsa para fora do header e empurra a ficha inteira, e a faixa aparecia com a cor do body. O fundo opaco so comeca abaixo dele. */
-.e-ficha-g2 header.afty-cabecalho { padding-top: 6px; background: linear-gradient(to bottom, transparent 6px, var(--afty-fundo) 6px); }
+/* O FUNDO fica em especificidade de UMA classe (A3 de docs/tema-g2-problemas.md, 2026-11-14): `.afty-cabecalho` escrito pelo tema do usuário repinta a
+   faixa, como nas outras superfícies contratadas do G2. O `:where` mira só o header de fora, e não a placa, que também é `.afty-cabecalho` (A4).
+   Esta regra vem depois do `ficha.css` e vence o `.afty-cabecalho` de lá pela ordem, e o tema, que é escopado, vence esta pela proximidade do escopo. */
+.e-ficha-g2 header.afty-cabecalho { padding-top: 6px; }
+.afty-cabecalho:where(.e-ficha-g2 > header) { background: linear-gradient(to bottom, transparent 6px, var(--afty-fundo) 6px); }
+/* A placa também é .afty-cabecalho e herdava o fio do ::after, uma segunda
+   linha na base dela. Só a faixa do topo desenha o fio (autor, 2026-11-14).
+   Um tema que queira o fio na placa escreve .afty-placa::after. */
+.afty-placa:where(.e-ficha-g2 *)::after { display: none; }
+/* A7, A GUARDA DESCOLADA DA PLACA (autor, 2026-11-14). No G2 a Guarda vinha
+   colada na base da placa, com canto de 8px contra os 18 dela, e a sombra da
+   placa passava por cima. Agora há um vão de 8px, o canto segue o raio do
+   cartão (10 de 12) e o position relative a põe acima da sombra. Classe de
+   especificidade: o .afty-guarda do tema vence pela proximidade do escopo. */
+.afty-guarda:where(.e-ficha-g2 *) {
+  position: relative;
+  margin-top: 8px;
+  border-radius: calc(var(--afty-raio, 12px) * 10 / 12);
+}
 @media (min-width: 1400px) { .e-ficha-g2[data-g2-painel] { --e-lateral-w: 428px; } }
 @media (min-width: 1920px) { .e-ficha-g2 { --e-coluna-max: 1440px; } }
 @media (min-width: 2400px) { .e-ficha-g2 { --e-coluna-max: 1760px; } }
@@ -1182,6 +1229,15 @@
 .e-g2 .e-ident { grid-area: ident; }
 .e-g2 .e-recursos { grid-area: recursos; }
 .e-g2 .e-controles { grid-area: controles; }
+/* CINCO RECURSOS (o recurso próprio, 2026-11-16). A quinta barra não cabia na fileira única: a grade vazava para a esquerda, por cima da linhagem, e
+   um número de quatro dígitos saía da caixa. Com cinco, cada barra tem pelo menos a largura do próprio número, a identidade cede espaço, e abaixo
+   de 1280 px os recursos descem para a segunda fileira, como já acontece com quatro abaixo de 1120 px. Com quatro ou menos, nada muda. */
+.e-g2 .e-placa:has(.e-recursos > :nth-child(5)) { grid-template-columns: auto fit-content(clamp(180px, 20vw, 260px)) minmax(0, 1fr) auto; }
+.e-g2 .e-recursos:has(> :nth-child(5)) { grid-auto-columns: minmax(max-content, 168px); }
+@media (min-width: 1120px) and (max-width: 1279px) {
+  .e-g2 .e-placa:has(.e-recursos > :nth-child(5)) { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "voltar ident controles" "recursos recursos recursos"; row-gap: 10px; align-items: center; }
+  .e-g2 .e-recursos:has(> :nth-child(5)) { justify-content: stretch; grid-auto-columns: minmax(0, 1fr); }
+}
 @media (max-width: 1119px) {
   .e-g2 .e-cabeca { --e-ret-w: 104px; }
   .e-g2 .e-placa { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "voltar ident controles" "recursos recursos recursos"; row-gap: 10px; align-items: center; }
@@ -1330,8 +1386,15 @@
 @media (min-width: 721px) {
   .e-ficha-g2 .e-linha-abas { display: flex; flex-wrap: wrap; align-items: center; column-gap: 14px; row-gap: 0; border-bottom: 1px solid var(--e-linha); }
   .e-ficha-g2 .e-linha-abas > .e-abas { flex: 0 1 auto; max-width: 100%; min-width: 0; margin: 0; border-bottom: 0; }
-  .e-ficha-g2 .e-linha-abas > .afty-log { flex: 0 1 600px; min-width: min(100%, 560px); margin-left: auto; padding-block: 0; }
+  /* ORÇAMENTO DAS ABAS (A5, 2026-11-14). A quebra do flex decide pela base, e não pelo piso: com `flex: 0 1 600px` a barra caía assim que as abas
+     passavam de 600 px de folga, embora coubesse em 560. A base agora é o piso e a barra CRESCE até 600: no tema padrão continua com 600 px, e um
+     tema de fonte mais larga ganha cerca de 40 px antes de a barra descer. */
+  .e-ficha-g2 .e-linha-abas > .afty-log { flex: 1 1 560px; max-width: 600px; min-width: min(100%, 560px); margin-left: auto; padding-block: 0; }
 }
+/* A BARRA DE ROLAGENS NÃO PINTA FUNDO NO G2 (A2, 2026-11-14). Ela mora dentro do cabeçalho, que já é opaco, e o fundo próprio (o `--afty-fundo` do
+   `ficha.css`) só aparecia quando o tema repintava a faixa ou engrossava o fio de baixo: virava um retângulo de 600 px por cima dos dois. O
+   `z-index: 45` fica, porque o histórico aberto desce dela. Uma classe só de especificidade, para o `.afty-log` do tema continuar mandando. */
+.afty-log:where(.e-ficha-g2 *) { background: transparent; }
 
 /* A faixa fina do telefone (`FinaG2.jsx`): nome e números dos recursos, presa logo abaixo do cabeçalho quando a placa saiu de vista. Fora do fluxo, então
    aparecer não muda a altura de nada. */
@@ -1346,6 +1409,7 @@
   .e-fina-rec[data-tipo="pe"] b { color: var(--afty-pe); }
   .e-fina-rec[data-tipo="alma"] b { color: var(--afty-alma); }
   .e-fina-rec[data-tipo="preparo"] b { color: var(--e-ativo); }
+  .e-fina-rec[data-tipo="proprio"] b { color: var(--afty-proprio); }
 }
 @media (max-width: 379px) {
   .e-ficha-g2 .e-fina[data-n="4"] { gap: 10px; justify-content: space-between; }

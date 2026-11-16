@@ -1628,7 +1628,9 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
   // "o valor E o limite" (Incremento de Atributo, Quebra de Limites e o
   // Aperfeiçoamento de Atributo).
   const limiteMotorDe = (key) =>
-    (efMontante.porAlvo.limiteAtributo?.[key] || 0) + (efPreContexto.porAlvo.limiteAtributo?.[key] || 0);
+    (efMontante.porAlvo.limiteAtributo?.[key] || 0) + (efPreContexto.porAlvo.limiteAtributo?.[key] || 0)
+    // Sem alvo vale para todos e mora no `porCanal` (o Voto "Todos os Atributos").
+    + (efMontante.porCanal?.limiteAtributo || 0) + (efPreContexto.porCanal?.limiteAtributo || 0);
   // Teto do sistema por atributo: 30 para todo mundo, 32 onde o Aperfeiçoamento
   // de Atributo bateu. É o ÚNICO `furaTeto` do sistema, e ele vale tanto para o
   // limite quanto para o valor (o autor confirmou em 2026-07-29 que a Lendária
@@ -2348,7 +2350,9 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
     efeitosAtivos.filter((e) => e?.canal === "limiteAtributo"),
     ctx,
   ));
-  const limiteAtivoPor = limiteAtivoCom(montarCtx(attrBase, modBase)).porAlvo.limiteAtributo || {};
+  const limiteAtivoRes = limiteAtivoCom(montarCtx(attrBase, modBase));
+  const limiteAtivoPor = limiteAtivoRes.porAlvo.limiteAtributo || {};
+  const limiteAtivoGeral = limiteAtivoRes.porCanal.limiteAtributo || 0;
 
   /* O teto que cada atributo REALMENTE usou, para o hover não mentir. Sem ele o
      rótulo "Perdido no limite 20" apareceria numa Força que chegou a 30, que é
@@ -2378,7 +2382,9 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
           total += absorvido;
         }
       }
-      const limiteAtivo = limAtivo ? (limAtivo.porAlvo.limiteAtributo?.[k] || 0) : (limiteAtivoPor[k] || 0);
+      const limiteAtivo = limAtivo
+        ? (limAtivo.porAlvo.limiteAtributo?.[k] || 0) + (limAtivo.porCanal.limiteAtributo || 0)
+        : (limiteAtivoPor[k] || 0) + limiteAtivoGeral;
       const tetoSistema = limAtivo && furaTetoEm(limAtivo, k)
         ? Math.min(atributosAddon.limite(k), ATTR_LIMITE_ABSOLUTO + tetoExtra(k))
         : tetoSistemaDe(k);
@@ -2397,7 +2403,13 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
   // efeito de atributo não vê o irmão, o que evita o laço A→B→A. O Treino de
   // Atributo (estágio 0) entra aqui junto, porque também é permanente.
   const efAttrPerm = resolverExclusivos(mesclarEfeitos(
-    { porAlvo: { atributo: efMontante.porAlvo.atributo || {} } },
+    {
+      /* O efeito SEM alvo ("Todos os Atributos", como o Voto que dá o BT em
+         todos) mora no `porCanal`, e não no `porAlvo`. Levar só o segundo o
+         perdia calado. */
+      porCanal: { atributo: efMontante.porCanal?.atributo || 0 },
+      porAlvo: { atributo: efMontante.porAlvo.atributo || {} },
+    },
     aplicarEfeitos(efeitosAtivos.filter(ehAtributoPermanente), montarCtx(attrBase, modBase)),
   ));
   // Este é o atributo que os PRÉ-REQUISITOS enxergam.
@@ -2467,8 +2479,11 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
   // `efMontante` entra inteiro no agregado para os `detalhes` da UI mostrarem a
   // linha de treino como origem. O canal de atributo dele já foi consumido no
   // estágio 1a, então sai daqui para não somar duas vezes.
-  const efMontanteSemAtributo = { ...efMontante, porAlvo: { ...efMontante.porAlvo } };
+  const efMontanteSemAtributo = {
+    ...efMontante, porCanal: { ...efMontante.porCanal }, porAlvo: { ...efMontante.porAlvo },
+  };
   delete efMontanteSemAtributo.porAlvo.atributo;
+  delete efMontanteSemAtributo.porCanal.atributo;
   // Os quatro primeiros já voltaram do `resolverExclusivos` com a lista vazia e
   // os vencedores somados, então a disputa que sobra aqui é só a do estágio 2. E
   // ela não precisa do `aplicado` dos estágios anteriores: `atributo` é o único

@@ -2398,9 +2398,15 @@ const listaEntradas = (creature) => {
   return Array.isArray(itens) ? itens : [];
 };
 
+/** O Addon da Fórmula de Combate Entrópica está na ficha. Tudo do Engenho
+    (Superior e Recebido) só existe com ele. */
+export function temFormulaEntropica(creature) {
+  return (creature?.addons ?? []).some((pacote) => pacote?.id === "formula-combate-entropica");
+}
+
 export function podeAplicarEngenhoSuperior(creature) {
   return creature?.core?.origem?.id === "formula-combate-entropica:restricao_intelectual"
-    && (creature.addons ?? []).some((pacote) => pacote?.id === "formula-combate-entropica");
+    && temFormulaEntropica(creature);
 }
 
 const eficienciaDoEngenho = (valor) =>
@@ -2949,7 +2955,7 @@ export function resolveEquipamentos(creature, bt = 2, opcoes = {}) {
       def = { ...def, rdEscudo: (def.rdEscudo ?? 0) + adicional };
     }
     const engenhoAtivo = Number(e.qtd ?? 1) === 1 && (
-      e.engenhoRecebido === true || (e.engenhoSuperior === true && podeAplicarEngenhoSuperior(creature))
+      (e.engenhoRecebido === true && temFormulaEntropica(creature)) || (e.engenhoSuperior === true && podeAplicarEngenhoSuperior(creature))
     );
     if (engenhoAtivo) {
       def = equipamentoComEngenho(def, e.tipo);

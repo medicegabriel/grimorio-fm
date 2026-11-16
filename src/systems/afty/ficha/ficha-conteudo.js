@@ -32,6 +32,9 @@ import { TIPOS_DANO } from "../afty-equipamentos";
 import { NIVEL_LABEL } from "../afty-feiticos";
 import { DOMINIO_SIMPLES_APTIDAO } from "../afty-dominio-simples";
 import { numeroBr } from "../ui/formato";
+import { getTreinoEspecial, vezesPorTreinoEspecial } from "../afty-treinos-especiais";
+import { limiteVotosMecanicos, mecanicosQueOcupamVaga, votosDaFicha } from "../afty-votos";
+import { votoTipado } from "./ficha-votos-regras";
 import {
   getModificacaoAptidao, DIFICULDADES_PREREQ, CRITICO_MODS,
 } from "../afty-estilo-sombras-catalogo";
@@ -67,6 +70,8 @@ export const GRUPOS = [
   { id: "caracteristicaAmaldicoada", label: "Características Amaldiçoadas" },
   { id: "altoNivel", label: "Níveis Lendários" },
   { id: "treinamento", label: "Treinamentos" },
+  // Os Votos de Restrição, só para leitura (2026-11-14): criar e editar continua no criador.
+  { id: "voto", label: "Votos" },
   { id: "catarse", label: "Loja de Catarse" },
 ];
 
@@ -138,6 +143,38 @@ const item = ({ id, chave, nome, texto, grupo, sub = null, tags = [], opcoes = [
   busca: semAcento(`${nome} ${texto} ${opcoes.map((o) => o.nome).join(" ")}`),
 });
 
+const ROTULO_ESTADO_VOTO = { proposto: "Proposto", vigente: "Vigente", quebrado: "Quebrado", desfeito: "Desfeito", encerrado: "Encerrado" };
+const juntaTexto = (partes) => partes.filter(([, t]) => typeof t === "string" && t.trim())
+  .map(([titulo, t]) => (titulo ? `**${titulo}**\n${t.trim()}` : t.trim())).join("\n\n");
+
+/**
+ * Os Votos da ficha para LEITURA na aba Habilidades (2026-11-14). Mecânicos primeiro, na ordem da ficha, e o que passa do limite de
+ * BT leva aviso, como no criador. O Contratual não tem nome, então leva o número dele. As operações (realizar, quebrar) ainda não
+ * têm tela: os verbos estão em `ficha-votos.js`.
+ */
+function itensDeVotos(creature, derived) {
+  const { mecanicos, contratuais } = votosDaFicha(creature);
+  const ativos = new Set(mecanicosQueOcupamVaga(mecanicos).slice(0, limiteVotosMecanicos(derived?.maestria)).map((v) => v.id));
+  const estado = (v) => (votoTipado(v) && ROTULO_ESTADO_VOTO[v.estado] ? ROTULO_ESTADO_VOTO[v.estado] : null);
+  return [
+    ...mecanicos.map((v) => item({
+      id: v.id, chave: `voto:${v.id}`, nome: v.nome?.trim() || "Voto Sem Nome", grupo: "voto",
+      texto: juntaTexto([[null, v.narrativa], ["Benefício", v.beneficio?.texto], ["Malefício", v.maleficio?.texto]]),
+      tags: ["Mecânico", estado(v)],
+      aviso: ativos.has(v.id) || ["proposto", "desfeito", "encerrado"].includes(v.estado) ? null : "Fora do Limite de BT",
+    })),
+    ...contratuais.map((v, i) => item({
+      id: v.id, chave: `voto:${v.id}`, nome: `Voto Contratual ${i + 1}`, grupo: "voto",
+      texto: juntaTexto([
+        [null, v.texto],
+        ["Participantes", (v.participantes ?? []).map((p) => p.nome).join(", ")],
+        ["Consequência da Ruptura", v.ruptura?.consequencia],
+      ]),
+      tags: ["Contratual", ROTULO_ESTADO_VOTO[v.estado] ?? null],
+    })),
+  ];
+}
+
 /**
  * Monta a lista inteira.
  *
@@ -153,6 +190,16 @@ export function conteudoDaFicha(creature, derived) {
   for (const beneficio of derived?.beneficiosTreinamento ?? []) {
     itens.push(item({ ...beneficio, grupo: "treinamento" }));
   }
+  /* Os Treinos Especiais (Interlúdios Adicionais) entram no mesmo grupo, uma linha por treino, com as vezes que foram pegos. */
+  for (const [id, vezes] of Object.entries(vezesPorTreinoEspecial(creature))) {
+    const def = getTreinoEspecial(id);
+    if (!def || !vezes) continue;
+    itens.push(item({
+      id, chave: `treinoEspecial:${id}`, nome: def.nome, texto: def.descricao ?? "", grupo: "treinamento",
+      tags: vezes > 1 ? [{ label: `${vezes}×`, tipo: "vezes" }] : [],
+    }));
+  }
+  itens.push(...itensDeVotos(creature, derived));
 
   /* ⚠ CONTADOR E NÚMEROS DE MESA (2026-09-28). O derive devolve em `mesa`, pela
      chave do item, o contador (`usos`, com a chave da sessão já com a recarga) e

@@ -119,6 +119,45 @@ function CartaoManobra({ m, rolar, prova, avisar, destaque }) {
   );
 }
 
+/* RESISTÊNCIAS POR TIPO DE DANO (2026-11-14): a leitura da aba Resistências do criador. Os quinze tipos, cada um com o estado
+   (Imunidade, Resistência, Vulnerabilidade) e a RD EFETIVA contra ele, que já soma a Geral, a Física e a da Alma onde cada uma alcança.
+   As fontes ficam no hover e no toque longo. Nada aqui edita: o estado e a RD da ficha são do criador. */
+const ESTADO_DEFESA = {
+  imune: { rotulo: "Imune", tom: "destaque" },
+  resistente: { rotulo: "Resistente", tom: null },
+  vulneravel: { rotulo: "Vulnerável", tom: "perda" },
+};
+function LinhaDefesa({ l, destaque }) {
+  const chave = `defesa:${l.tipo}`;
+  const raiz = useDestaqueG2(destaque?.chave === chave, destaque?.seq);
+  const estados = l.estados.map((id) => ESTADO_DEFESA[id]).filter(Boolean);
+  return (
+    <div ref={raiz} id={`afty-item-${chave}`} className="afty-linha m-teste m-defesa" data-m-linha={chave} data-afty-alvo={destaque?.chave === chave ? "sim" : undefined}
+      data-conflito={l.conflito ? "sim" : undefined} data-estado={l.estados[0] ?? "nenhum"}>
+      <span className="m-treino" aria-hidden="true" />
+      <span className="m-teste-nome">{l.label}</span>
+      <span className="m-teste-metas">
+        {estados.map((e) => <span key={e.rotulo} className="m-chip" data-tom={e.tom ?? undefined}>{e.rotulo}</span>)}
+      </span>
+      <span className="m-defesa-rd">
+        <NumeroComFontes valor={`RD ${l.rd}`} partes={l.partes} total={l.rd} formatar={false} className="afty-valor m-defesa-num" titulo={`RD contra ${l.label}`} ancora="direita" />
+      </span>
+    </div>
+  );
+}
+function DefesasPorTipo({ defesas, destaque }) {
+  const { linhas = [], avisos = [] } = defesas ?? {};
+  if (!linhas.length) return null;
+  return (
+    <Secao id="defesas" titulo="Resistências por Tipo de Dano">
+      {avisos.length > 0 && <div className="m-motivos">{avisos.map((a) => <Motivo key={a.tipo} texto={a.texto} />)}</div>}
+      <div className="m-grade-defesas">
+        {linhas.map((l) => <LinhaDefesa key={l.tipo} l={l} destaque={destaque} />)}
+      </div>
+    </Secao>
+  );
+}
+
 const FILTROS = [
   { id: "todas", rotulo: "Todas", passa: () => true },
   { id: "treinadas", rotulo: "Treinadas", passa: (p) => p.prof === "treinado" || p.prof === "mestre" },
@@ -144,11 +183,12 @@ export default function PericiasG2({ derived, rolar, prova, avisar, destaque = n
     setSeqVisto(destaque.seq);
     /* A busca global leva ao grupo da linha apontada, para o destaque nunca cair num grupo escondido. */
     if (destaque.chave?.startsWith("pericia:")) setGrupo("pericias");
-    else if (/^(ataque|tr|manobra):/.test(destaque.chave ?? "")) setGrupo("testes");
+    else if (/^(ataque|tr|manobra|defesa):/.test(destaque.chave ?? "")) setGrupo("testes");
     const alvo = indice.find((x) => `pericia:${x.p.id}` === destaque.chave);
     if (alvo && !casa(alvo)) { setTermo(""); setFiltro("todas"); }
   }
-  const duasColunas = pericias.length > 0 && (ataques.length > 0 || resistencias.length > 0 || manobras.length > 0);
+  const temDefesas = (derived.defesasDano?.linhas ?? []).length > 0;
+  const duasColunas = pericias.length > 0 && (ataques.length > 0 || resistencias.length > 0 || manobras.length > 0 || temDefesas);
   const visiveis = indice.filter(casa).map((x) => x.p);
   const filtrando = !!termo.trim() || filtro !== "todas";
   const contagem = (f) => pericias.filter(f.passa).length;
@@ -183,6 +223,7 @@ export default function PericiasG2({ derived, rolar, prova, avisar, destaque = n
               ))}
             </Secao>
           )}
+          <DefesasPorTipo defesas={derived.defesasDano} destaque={destaque} />
           {manobras.length > 0 && (
             <Secao id="outros" titulo="Outros">
               <div className="m-grade-cartoes">

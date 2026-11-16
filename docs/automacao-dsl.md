@@ -1055,8 +1055,8 @@ para habilidades do próprio pacote e mantém ids raw, como `sup_analise_profund
 Desfazer a etapa ou remover o addon desfaz a concessão.
 
 O requisito `{ "tipo": "atencao", "valor": 85 }` bloqueia aquisição da
-etapa no criador quando Atenção final não alcança o valor. Para linhas com
-`exibirNaFicha: true`, o requisito em `completo.requisito` controla a
+etapa no criador quando Atenção final não alcança o valor. Para linhas que
+aparecem na ficha (todas, salvo `exibirNaFicha: false`), o requisito em `completo.requisito` controla a
 disponibilidade do texto do Completo na ficha e seu destaque no criador.
 O Completo de Reavaliação não tem efeitos numéricos, exige etapa 4 e Atenção
 100, sem custo adicional. Não há recuperação automática para os usos de BT

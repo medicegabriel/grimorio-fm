@@ -73,6 +73,8 @@
      dela (ciano por cima do roxo). */
   --afty-petemp: #67e8f9;
   --afty-alma: #e879f9;
+  /* O recurso próprio da ficha, a barra de nome livre (2026-11-16). */
+  --afty-proprio: #fb923c;
   --afty-cura: #34d399;
   --afty-aviso: #fbbf24;
 
@@ -227,6 +229,18 @@
 .afty-ficha > * {
   position: relative;
   z-index: 1;
+}
+
+/* A CORTINA DA VIRADA (2026-11-16). Só existe enquanto um tema de duas faces troca de face (`alternaFace` em `AftyFichaG2.jsx`). O app dá o
+   lugar, de tela cheia e por cima de tudo, e não pinta nada: a cor e a animação são do tema. Não recebe clique e não sai no papel. */
+.afty-ficha > .afty-virada {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  pointer-events: none;
+}
+@media print {
+  .afty-ficha > .afty-virada { display: none; }
 }
 
 /* ============================================================ */
@@ -415,6 +429,7 @@ button.afty-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 .afty-vital[data-afty-vital="pe"]     { --afty-vital-cor: var(--afty-pe); }
 .afty-vital[data-afty-vital="pvtemp"] { --afty-vital-cor: var(--afty-pvtemp); }
 .afty-vital[data-afty-vital="alma"]   { --afty-vital-cor: var(--afty-alma); }
+.afty-vital[data-afty-vital="proprio"] { --afty-vital-cor: var(--afty-proprio); }
 
 .afty-vital-icone {
   width: 1rem;

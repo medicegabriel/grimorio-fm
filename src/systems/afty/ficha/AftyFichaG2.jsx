@@ -46,7 +46,7 @@ import PrimitivasDeAddon from "../ui/PrimitivasDeAddon";
 import { conteudoDaFicha, equipamentosDaFicha, alvosDeBusca } from "./ficha-conteudo";
 import {
   carregarTema, salvarTemaGlobal, cssDasVars, cssDoUsuario, temCssLivre, carregarDensidade, salvarDensidade,
-  normalizaTema, escopoDaInvocacao, SEM_CSS,
+  normalizaTema, escopoDaInvocacao, SEM_CSS, temDuasFaces, outraFace, duracaoDaVirada,
 } from "./ficha-tema";
 import PainelDeRolagens from "./PainelDeRolagens";
 import BuscaGlobal from "./BuscaGlobal";
@@ -135,7 +135,7 @@ const ABAS_RETIDAS = ["acoes", "pericias", "equipamentos"];
 
 export default function AftyFicha({
   creature, onVoltar, onEditar, onSalvarTema, onSalvarInvocacoes, onSalvarEspinho,
-  onSalvarFundamentosPerdidos, onSalvarPreferencias, onSalvarPacotesAliados, onSalvarRecebidos,
+  onSalvarFundamentosPerdidos, onSalvarPreferencias, onSalvarPacotesAliados, onSalvarRecebidos, onSalvarRecursoProprio,
   /* As três abas novas (Ações, Perícias e Equipamentos). LIGADAS por padrão desde 2026-11-09, em /Afty e /Player. O executor da prévia
      em `.audit/` ainda pode desligar passando `false`. */
   previaAbasG2 = true,
@@ -930,6 +930,28 @@ export default function AftyFicha({
   useFontesWeb(tema, SEM_CSS);
   const usuarioCss = useMemo(() => (SEM_CSS ? "" : cssDoUsuario(tema)), [tema]);
 
+  /* AS DUAS FACES (autor, 2026-11-16). O tema declara a segunda face citando `[data-afty-face` no CSS livre, e só então o botão e o atributo
+     existem. A face mora no tema (`aparencia.face`) e grava com ele. A virada dura o que o token `--afty-face-virada` disser: na primeira metade
+     a raiz leva `data-afty-virando="saindo"` com a face antiga, no meio a face troca, e a segunda metade é `chegando`. A camada `.afty-virada`
+     existe só nesse intervalo, e é o tema que a pinta. Sem o token, ou com "menos movimento" no sistema, a troca é imediata. */
+  const duasFaces = useMemo(() => !SEM_CSS && temDuasFaces(tema), [tema]);
+  const [virando, setVirando] = useState(null);
+  const viradaRef = useRef([]);
+  useEffect(() => () => viradaRef.current.forEach(clearTimeout), []);
+  const alternaFace = useCallback(() => {
+    if (viradaRef.current.length) return;
+    const troca = () => setTema((t) => ({ ...t, face: outraFace(normalizaTema(t).face) }));
+    const raiz = raizRef.current;
+    const parado = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const ms = raiz && !parado ? duracaoDaVirada(getComputedStyle(raiz).getPropertyValue("--afty-face-virada")) : 0;
+    if (!ms) { troca(); return; }
+    setVirando("saindo");
+    viradaRef.current = [
+      setTimeout(() => { troca(); setVirando("chegando"); }, ms / 2),
+      setTimeout(() => { setVirando(null); viradaRef.current = []; }, ms),
+    ];
+  }, []);
+
   return (
     /* As primitivas de Addon que ESTA criatura enxerga. Sem provedor, ninguém
        enxerga nada, que é o certo para quem só usa o raw. Ver
@@ -937,8 +959,10 @@ export default function AftyFicha({
     <PrimitivasDeAddon primitivas={derived.primitivas}>
     <>
     <HistoricoCtx.Provider value={ctxHistorico}>
-    <div ref={raizRef} className="afty-ficha e-ficha-g2" id="afty-ficha" data-afty-estrutura="g2" data-afty-fonte={tema.fonte ? "personalizada" : undefined} data-afty-densidade={densidade} data-g2-painel={ui.compacta ? "aberto" : undefined}>
+    <div ref={raizRef} className="afty-ficha e-ficha-g2" id="afty-ficha" data-afty-estrutura="g2" data-afty-fonte={tema.fonte ? "personalizada" : undefined} data-afty-densidade={densidade} data-g2-painel={ui.compacta ? "aberto" : undefined}
+      data-afty-face={duasFaces ? tema.face : undefined} data-afty-virando={duasFaces && virando ? virando : undefined}>
       <CamadasDeCorrupcao corrupcao={derived.corrupcao} />
+      {duasFaces && virando && <div className="afty-virada" aria-hidden="true" />}
       {/* ⚠ A ORDEM É A REGRA. Os dois blocos são CSS sem camada e de mesma
           especificidade, então quem vem depois vence: o CSS livre sobrepõe o
           formulário, que é o que se espera da ferramenta mais avançada das
@@ -959,6 +983,9 @@ export default function AftyFicha({
                 onVoltar, onBusca: () => setBuscaAberta(true), onAparencia: () => setAparenciaAberta(true),
                 onEditar: () => { salvarSessao(alvoId, sessao); onEditar(); },
                 densidade, onDensidade: trocaDensidade,
+                face: duasFaces ? { atual: tema.face, alterna: alternaFace } : null,
+                /* O recurso próprio grava na criatura, como as preferências. Sem o gravador (ficha aberta fora da rota), o item do menu não existe. */
+                onSalvarRecursoProprio: onSalvarRecursoProprio ?? null,
                 cofre: cofreTrancado(ficha) ? { aberto: !!cofreAberto, onAbrir: () => setCofrePainel(true) } : null,
                 apresentacaoAnterior: tab === ABA_EFEITOS ? { ativa: apresentacaoAnterior, alterna: () => setApresentacaoAnterior((a) => !a) } : null,
               }}

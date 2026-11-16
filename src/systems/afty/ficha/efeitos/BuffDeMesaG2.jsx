@@ -82,7 +82,7 @@ export function BuffDeMesaG2({ g, m, onFechar }) {
           <button type="button" className="m-botao" onClick={() => g.irAoAtivo(`buff:${criado.id}`)} data-abrir-buff>Abrir nos Ativos</button>
         </div>
       )}
-      <div className="g-registro-rodape">
+      <div className="g-registro-rodape afty-barra-grudada">
         <button type="submit" className="g-botao" data-primaria="sim" data-criar-buff>Criar Buff</button>
       </div>
     </form>

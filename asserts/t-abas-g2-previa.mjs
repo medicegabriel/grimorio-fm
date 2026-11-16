@@ -186,7 +186,8 @@ t("Ritual desligado não tem etapa", G.etapaDoRitual({ ativo: false }), null);
   t("no G2, cada Manobra do derive é destino em Perícias, com a chave de sempre", manobrasG2.map((a) => [a.nome, a.aba, a.chave.startsWith("manobra:")]), nomes.map((n) => [n, "pericias", true]));
   t("a busca da clássica continua levando Manobras a Ações", [...new Set(classica.filter((a) => a.grupo === "manobra").map((a) => a.aba))], ["acoes"]);
   t("os outros destinos não mudam de aba", g2.slice(0, classica.length).filter((a) => a.grupo !== "manobra").map((a) => a.aba), classica.filter((a) => a.grupo !== "manobra").map((a) => a.aba));
-  t("os destinos novos da prévia vêm depois (6 Atributos numa ficha sem Expansão)", g2.length - classica.length, 6);
+  /* Desde 2026-11-14 entram também os tipos de dano das Resistências por Tipo de Dano (Perícias), um destino por tipo. */
+  t("os destinos novos da prévia vêm depois (6 Atributos e os tipos de dano numa ficha sem Expansão)", g2.length - classica.length, 6 + d.defesasDano.linhas.length);
 }
 
 /* ---------- 7b. Jogadas de Ataque (2026-11-07): o jogador não vê a lista, nem a busca aponta para ela; a criatura vê as duas ---------- */

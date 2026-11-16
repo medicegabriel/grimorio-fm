@@ -737,6 +737,10 @@ export function createBlankAfty() {
     // só `estatisticasCabecalho` ({ versao, ordem, ocultas }, ver ./ficha/ficha-preferencias.js). Nada de orçamento, atributo ou combate aqui.
     preferenciasFicha: null,
 
+    // O recurso próprio da ficha (2026-11-16): `{ nome, max }`, uma barra a mais no cabeçalho do G2 (as Calorias da Dehya). O corrente mora na
+    // sessão. Ver `recursoProprioDe` em ./ficha/ficha-sessao.js.
+    recursoProprio: null,
+
     // ADDONS: as regras próprias da mesa que esta criatura usa, como CÓPIA
     // congelada do pacote (e não referência a uma biblioteca).
     // ⚠ Mesma decisão da `aparencia` logo acima, e pelo mesmo motivo: exportar a

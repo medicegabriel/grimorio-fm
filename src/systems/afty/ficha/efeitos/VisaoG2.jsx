@@ -305,7 +305,7 @@ function AtivosG2({ g, m, onConsultar }) {
   const abrir = (chave) => g.mudaTela((t) => ({ selecionado: t.selecionado === chave ? null : chave, revelar: t.selecionado === chave ? null : chave }));
   return (
     <div ref={rola} className="x-rola g2-ativos" data-rolavel="ativos">
-      <div className="x-cabeca">
+      <div className="x-cabeca afty-barra-grudada">
         <h2 className="x-titulo">Ativos</h2>
         <span className="x-cabeca-acoes">
           <AcessoAExaustao g={g} m={m} onde="completa" />
