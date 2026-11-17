@@ -1146,7 +1146,8 @@ export default function Dashboard({
         <header ref={headerRef} className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-purple-900/50">
           <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
             {/* Linha principal: navegação + ações */}
-            <div className="flex items-center gap-2 sm:gap-3">
+            {/* `mb-3` afasta a linha do medidor, espaço que antes vinha da margem do h1 global. */}
+            <div className="flex items-center gap-2 sm:gap-3 mb-3">
               <button
                 type="button"
                 onClick={() => setMobileSidebarOpen(true)}
@@ -1158,7 +1159,7 @@ export default function Dashboard({
 
               {/* O `!` vence o h1 global do index.css (56px, margem de 32px), que
                   deixava o título torto em relação aos botões. Autor, 2026-11-17. */}
-              <h1 className="m-0! text-xl! sm:text-2xl! leading-none! tracking-normal! font-bold text-white truncate">{titulo}</h1>
+              <h1 className="m-0! text-xl! sm:text-2xl! leading-tight! tracking-normal! font-bold text-white truncate">{titulo}</h1>
               {cabecalhoTitulo && <div className="hidden sm:flex shrink-0">{cabecalhoTitulo}</div>}
 
               <div className="flex-1" />
@@ -1234,7 +1235,7 @@ export default function Dashboard({
                 `cabecalhoAcoes` vão junto, senão a linha principal transborda e o
                 título some. */}
             {cabecalhoTitulo && (
-              <div className="sm:hidden flex items-center justify-between gap-2 mt-2">
+              <div className="sm:hidden flex items-center justify-between gap-2 mb-3">
                 {cabecalhoTitulo}
                 {cabecalhoAcoes}
               </div>
