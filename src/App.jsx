@@ -24,6 +24,9 @@ import {
 } from "./systems/eradeouro/era-de-ouro";
 import { COMPENDIUM, getCompendiumById, isBuiltInId } from "./fm-compendium";
 import { Analytics } from '@vercel/analytics/react';
+import AlternadorSistema from "./nuvem/AlternadorSistema";
+import ContaNuvem from "./nuvem/ContaNuvem";
+import AvisoMudanca from "./nuvem/AvisoMudanca";
 
 // Helper para achar a criatura seja no compêndio ou no localstorage
 const findCreatureAnywhere = (id, storageList, compendium) =>
@@ -73,6 +76,13 @@ export default function App() {
   // e por isso as rotas dividem builder, ficha e encontros sem um `if` por
   // tela. Quem precisa saber QUAL dos dois lê `sistemaDaRota`.
   const aftyMode = rotaId !== null;
+
+  /* Lançamento público (autor, 2026-11-16). As duas rotas abertas a todos são o
+     Grimório 2.5.2 (`/`) e a Ficha de Player (`/Player`): só elas ganham o
+     alternador, e os Encontros das duas ficam com cadeado até a revisão
+     ("Nas duas rotas públicas"). /Afty e /EraDeOuro seguem como estão. */
+  const rotaPublica = rotaId === null || rotaId === "player";
+  const encontrosBloqueados = rotaPublica;
 
   const storageDaRota = useCreatureStorage(
     aftyMode ? { namespace: rotaId, defaultRulesVersion: sistemaDaRota } : undefined
@@ -427,6 +437,9 @@ export default function App() {
         onGoToTemplates={goToTemplates}
         // A Mesa do Mestre existe só na Guilda (autor, 2026-11-11).
         onGoToMestre={mesa ? () => setView({ name: "mestre" }) : undefined}
+        encontrosBloqueados={encontrosBloqueados}
+        cabecalhoTitulo={rotaPublica ? <AlternadorSistema atual={rotaId === "player" ? "player" : "criatura"} /> : null}
+        cabecalhoAcoes={<ContaNuvem />}
       />
     ),
     /* A Mesa do Mestre da Guilda. Recebe a lista que os Encontros recebem (só
@@ -503,6 +516,7 @@ export default function App() {
       )
     ),
     encounter: () => {
+      if (encontrosBloqueados) return views.dashboard();
       if (!view.encounterId) {
         goToEncounters();
         return null;
@@ -546,7 +560,7 @@ export default function App() {
       );
     },
     encounters: () => (
-      aftyMode ? (
+      encontrosBloqueados ? views.dashboard() : aftyMode ? (
         <AftyEncontros
           gerenciador={encontrosAfty}
           pastas={storage.folders}
@@ -588,6 +602,13 @@ export default function App() {
         <div className="flex-1">
           {views[view.name] ? views[view.name]() : views.dashboard()}
         </div>
+        {rotaPublica && view.name === "dashboard" && (
+          <footer className="bg-slate-950 px-4 py-3 text-center text-sm text-slate-300">
+            <a href="/privacidade.html" className="underline underline-offset-4 hover:text-white">
+              Política de Privacidade
+            </a>
+          </footer>
+        )}
       </div>
       {/* ⚠ A RECUSA DO IMPORTADOR PRECISA APARECER. Ficha que some sem dizer
           por que é o defeito que o projeto chama de calado, e seria pior que o
@@ -690,6 +711,7 @@ export default function App() {
         />
       )}
       <PdfFab />
+      <AvisoMudanca />
       {/* ⚠ O SELO FIXO DO AMBIENTE PRIVADO SAIU em 2026-09-09, a pedido do autor
          (*"Remova isso. É meio feio."*). Era uma cápsula `position: fixed` no
          canto superior esquerdo, roxa no /Afty e azul no /Player, escrita a

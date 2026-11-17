@@ -1,5 +1,10 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-16 · POLÍTICA DE PRIVACIDADE DO FICHA F&M
+
+- Página pública em `/privacidade.html`, com link nos painéis de `/` e `/Player`. Cobre armazenamento local, login com Google ou Discord, sincronização via Supabase e métricas da Vercel.
+- O cliente Google está configurado no Supabase. O Google Auth Platform ainda exige completar o Branding para publicar. A URL de privacidade depende do deploy e da validação do domínio.
+
 ## SESSÃO DE 2026-11-16 · TEMA DE DUAS FACES, RECURSO PRÓPRIO E O TEMA DA DEHYA
 
 Pedido do autor: um CSS Personalizado para a Dehya (ficha de `/Player`, G2), com um modo de inverter entre Sekhmet (dia) e Hator (noite), e a

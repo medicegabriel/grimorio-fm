@@ -7,6 +7,16 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 
 ---
 
+## Lançamento público: domínio, nuvem e Encontros (2026-11-16)
+
+O código está pronto e inerte. Guia em `docs/nuvem-supabase.md`, esquema em `supabase/esquema.sql`.
+
+- **Autor:** comprar o domínio, criar o projeto Supabase, rodar o esquema, criar os apps OAuth do Google e do Discord, liberar os endereços de retorno e pôr `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` e `VITE_DOMINIO_NOVO` na Vercel.
+- **Não redirecionar** `grimorio-fm.vercel.app` para o domínio novo: o aviso dele leva as fichas por `postMessage`.
+- **Testar de ponta a ponta** com o Supabase de verdade: login nos dois provedores, ficha editada em dois aparelhos, ficha apagada num e aberta no outro, e o botão "Levar Minhas Fichas" entre os dois endereços. Nada disso foi exercitado ainda, só a mesclagem pura (`asserts/t-nuvem.mjs`).
+- **Encontros com cadeado** em `/` e `/Player` (`encontrosBloqueados` no `App.jsx`). O botão some, os dados ficam. Salvar uma criatura da 2.5.2 que já está num encontro antigo ainda abre o `EncounterSyncModal`. Tirar o cadeado quando os Encontros forem revistos.
+- No celular o título do cabeçalho do Dashboard já cortava ("Jo...") antes do alternador. Fica para uma revisão do cabeçalho.
+
 ## Recurso próprio e tema de duas faces: o que ficou aberto (2026-11-16)
 
 Feito na sessão do dia (ver `docs/afty-status.md`). Ficou de fora:

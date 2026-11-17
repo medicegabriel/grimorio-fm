@@ -798,6 +798,14 @@ export default function Dashboard({
   /* A Mesa do Mestre da Guilda (autor, 2026-11-11). Sem a prop o botão não existe,
      e só o /EraDeOuro a passa. A tela mora em src/systems/eradeouro/. */
   onGoToMestre,
+  /* Lançamento público (autor, 2026-11-16). As três são opcionais e o padrão é o
+     cabeçalho de sempre. `encontrosBloqueados` troca o ícone do botão Encontros
+     por um cadeado e o desliga. `cabecalhoTitulo` entra logo depois do título
+     (o alternador Criatura e Player) e `cabecalhoAcoes` antes dos botões (a
+     Conta da nuvem). Quem decide os valores é o `src/App.jsx`. */
+  encontrosBloqueados = false,
+  cabecalhoTitulo = null,
+  cabecalhoAcoes = null,
 }) {
   const [localView, setLocalView] = useState({ type: "all", folderId: null });
   const view = folderView ?? localView;
@@ -1149,8 +1157,13 @@ export default function Dashboard({
               </button>
 
               <h1 className="text-xl sm:text-2xl font-bold text-white truncate">{titulo}</h1>
+              {cabecalhoTitulo && <div className="hidden sm:flex shrink-0">{cabecalhoTitulo}</div>}
 
               <div className="flex-1" />
+
+              {cabecalhoAcoes && (
+                <div className={cabecalhoTitulo ? "hidden sm:flex shrink-0" : "flex shrink-0"}>{cabecalhoAcoes}</div>
+              )}
 
               {onGoToMestre && (
                 <button
@@ -1165,11 +1178,14 @@ export default function Dashboard({
               )}
               <button
                 type="button"
-                onClick={onGoToEncounters}
-                className="inline-flex items-center justify-center gap-1.5 h-9 w-9 lg:w-auto lg:px-3 shrink-0 rounded bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500/60"
-                title="Encontros"
+                onClick={encontrosBloqueados ? undefined : onGoToEncounters}
+                disabled={encontrosBloqueados}
+                className="inline-flex items-center justify-center gap-1.5 h-9 w-9 lg:w-auto lg:px-3 shrink-0 rounded bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500/60"
+                title={encontrosBloqueados ? "Encontros em Revisão" : "Encontros"}
               >
-                <Swords className="w-4 h-4 shrink-0" />
+                {encontrosBloqueados
+                  ? <Lock className="w-4 h-4 shrink-0" />
+                  : <Swords className="w-4 h-4 shrink-0" />}
                 <span className="hidden lg:inline">Encontros</span>
               </button>
               <button
@@ -1211,6 +1227,16 @@ export default function Dashboard({
                 <span className="hidden lg:inline">{v.nova}</span>
               </button>
             </div>
+
+            {/* No celular o `cabecalhoTitulo` desce para uma linha própria, e as
+                `cabecalhoAcoes` vão junto, senão a linha principal transborda e o
+                título some. */}
+            {cabecalhoTitulo && (
+              <div className="sm:hidden flex items-center justify-between gap-2 mt-2">
+                {cabecalhoTitulo}
+                {cabecalhoAcoes}
+              </div>
+            )}
 
             {/* Linha do medidor de armazenamento */}
             <StorageMeter

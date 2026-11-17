@@ -62,6 +62,7 @@ No registro abaixo, Forma 1 é parâmetro opcional com o padrão preservado e va
   - `Dashboard.jsx`: `vocab` (2026-09-10). Forma 1.
   - `Dashboard.jsx`: `folderView` e `onFolderViewChange` (2026-10-04), opcionais com seleção local por padrão. O `App.jsx` conserva e salva a última pasta nas três rotas, a pedido do autor. Forma 1.
   - `Dashboard.jsx`: `onGoToMestre` (2026-11-11), o botão Mestre do cabeçalho, desenhado só quando a prop vem. Só o `/EraDeOuro` a passa, e abre a Mesa do Mestre (`src/systems/eradeouro/MesaDoMestre.jsx`). Autor consultado antes ("Botão Mestre no Cabeçalho"). Forma 1.
+  - `Dashboard.jsx`: `encontrosBloqueados`, `cabecalhoTitulo` e `cabecalhoAcoes` (2026-11-16), opcionais com o cabeçalho de sempre por padrão. O `App.jsx` passa o cadeado dos Encontros em `/` e `/Player`, o alternador Criatura e Player nas duas e a Conta da nuvem nas quatro rotas. Autor consultado antes ("Dentro do cabeçalho", "Nas duas rotas públicas"). Forma 1.
   - `PdfFab.jsx` e `PdfViewerModal.jsx`: a janela do Livro de Regras virou flutuante, arrastável, redimensionável e minimizável, em `z-[120]` (2026-10-02). Forma 3.
   - `io-utils.js`: o `parseImportText` dá "Sem nome" à ficha sem nome em vez de derrubar o pacote inteiro (2026-10-03). Forma 3.
 - `src/systems/afty/` concentra o motor, as telas e os catálogos compartilhados por `/Afty` e `/Player`. A regra de uma ficha vem de `creature.rulesVersion`, não da rota em que ela foi aberta.
