@@ -1156,7 +1156,9 @@ export default function Dashboard({
                 <Menu className="w-4 h-4" />
               </button>
 
-              <h1 className="text-xl sm:text-2xl font-bold text-white truncate">{titulo}</h1>
+              {/* O `!` vence o h1 global do index.css (56px, margem de 32px), que
+                  deixava o título torto em relação aos botões. Autor, 2026-11-17. */}
+              <h1 className="m-0! text-xl! sm:text-2xl! leading-none! tracking-normal! font-bold text-white truncate">{titulo}</h1>
               {cabecalhoTitulo && <div className="hidden sm:flex shrink-0">{cabecalhoTitulo}</div>}
 
               <div className="flex-1" />
