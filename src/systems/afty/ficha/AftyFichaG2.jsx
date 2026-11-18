@@ -11,7 +11,7 @@ import { criaHeranca } from "../afty-invocacoes";
 import { Guarda } from "../ui/guarda";
 import { PainelTita } from "../ui/tita";
 import {
-  carregarSessao, salvarSessao, aparaSessao, aplicaPerdaDeVida, pagaCustoVida, registraRolagem,
+  aparaSessao, aplicaPerdaDeVida, pagaCustoVida, registraRolagem,
   sofreGolpeNaGuarda, desfazGolpeNaGuarda, encerraGuarda, defineCondicoes, alteraEstadoCombate,
   aplicaPatchCombate, consomeEstadoCombate, registraFeiticoDano, alteraTreinoAtivo, configuraRitual,
   iniciaRitualComum, iniciaRitualSemTeste, iniciaRitualEstendido, concluiPreparacaoRitual, cancelaRitual,
@@ -23,6 +23,10 @@ import {
   aplicaCuraTitaCabeca, defineVitalTitaCabeca, aplicaDanoTitaMembro, aplicaCuraTitaMembro,
   defineVitalTitaMembro, usosGastosDe, marcaUso,
 } from "./ficha-sessao";
+// A loja viva da sessão (2026-11-17): a mesma chave, lida e gravada sem passar por cima do que vem de outra aba.
+import {
+  useSessaoDaLoja, atualizar as atualizarNaLoja, descarregar as descarregarDaLoja, definirAparo as definirAparoDaLoja,
+} from "./sessao-loja";
 import { registrarAtaqueEspecializacao, aplicarCuraRoladaEspecializacao } from "./ficha-especializacoes";
 import { rolarTeste, rolarDano } from "./ficha-rolagem";
 import { registraRolagemArma, configuraArmaNaSessao, marcaErroDaArma, danoDaAmpla, usaAmpla } from "../afty-propriedades-armas";
@@ -140,8 +144,18 @@ export default function AftyFicha({
      em `.audit/` ainda pode desligar passando `false`. */
   previaAbasG2 = true,
   abaInicial = "acoes",
+  /* O MODO EMBUTIDO (2026-11-17, para o Encontro da etapa 6a): quem monta a Ficha entrega a sessão e recebe cada mudança como função
+     (`onSessao((s) => proxima)`, a mesma forma do `PainelDeCombatente`). Com `sessao` presente, a Ficha não lê nem grava a chave da sessão.
+     Sem as duas, é a Ficha de sempre, lendo e gravando pela loja. */
+  sessao: sessaoDeFora,
+  onSessao: onSessaoDeFora,
+  /* NA SALA ONLINE (2026-11-18, etapa 7c): a Ficha do jogador segue a de sempre (loja, tema, Voltar, Editar, Aparência), mas o
+     turno e o combate passam a ser do Mestre. O Encerrar Meu Turno some do "Agora" e o Em Combate fica só como indicador. O
+     Encerrar Meu Turno de quem joga mora na faixa da luta (`FaixaDaLuta`). */
+  naSala = false,
 }) {
   const alvoId = creature?.id ?? null;
+  const embutida = sessaoDeFora != null;
 
   /* ⚠ O TEXTO DESTRANCADO ENTRA AQUI, NA MONTAGEM DA FICHA DE TELA, e em lugar
      nenhum mais. `cofreAberto` sai da memória de módulo do `afty-cofre.js`, que
@@ -162,7 +176,11 @@ export default function AftyFicha({
   // que só existem depois de derivar. O derive da montagem roda sem
   // `almaAtual` (alma íntegra), que é exatamente o estado de uma ficha que
   // nunca entrou em jogo. O clamp de leitura abaixo acerta o resto.
-  const [sessaoBruta, setSessaoBruta] = useState(() => carregarSessao(alvoId, deriveAfty(ficha)));
+  /* ⚠ A SESSÃO VEM DA LOJA (`sessao-loja.js`), e não de um `useState` lido uma vez: outra aba (e, depois, o Encontro e a Sala) muda a mesma
+     chave, e a Ficha aberta passa a ver. O derive da montagem só roda na primeira leitura da chave, como no `useState` de antes. O gancho
+     roda nos dois modos (ordem fixa de ganchos) e, embutido, não lê nem ouve nada. */
+  const sessaoDaLoja = useSessaoDaLoja(alvoId, () => deriveAfty(ficha), !embutida);
+  const sessaoBruta = embutida ? sessaoDeFora : sessaoDaLoja;
   const [tab, setTab] = useState(abaInicial);
   /* A apresentação ANTERIOR da aba Efeitos (a antiga aba Buffs), mantida só como comparação e compatibilidade: desde 2026-10-20 o G2 faz sozinho a
      Imitação, o Concedido pelo Mestre, a Exaustão desde zero, o Sangramento e o buff de mesa. O G2 é o padrão e a escolha não é gravada: recarregar
@@ -254,9 +272,13 @@ export default function AftyFicha({
 
   // Todo escritor passa por aqui, e o valor entra JÁ aparado nos dois sentidos:
   // a função recebe a sessão válida e o resultado dela é aparado de novo.
+  /* A loja guarda a FUNÇÃO, e não só o resultado: se outra aba gravar antes dos 600 ms, a edição é reaplicada sobre a versão de lá. Embutida,
+     a mesma função vai para quem montou a Ficha. */
   const atualiza = useCallback((fn) => {
-    setSessaoBruta((s) => aparaSessao(fn(aparaSessao(s, derived)), derived));
-  }, [derived]);
+    const passo = (s) => aparaSessao(fn(aparaSessao(s, derived)), derived);
+    if (embutida) onSessaoDeFora?.(passo);
+    else atualizarNaLoja(alvoId, passo);
+  }, [derived, embutida, onSessaoDeFora, alvoId]);
 
   /* ---------- A ABA EFEITOS (G2) ----------
      O MODELO é o adaptador entre a sessão desta Ficha e as telas dos Efeitos: lê a MESMA sessão e opera pelo MESMO `atualiza` (uma sessão só, sem
@@ -289,6 +311,8 @@ export default function AftyFicha({
   /* PRÉVIA DAS TRÊS ABAS: quem SAI de uma aba retida guarda a posição da janela, e o foco que estiver dentro dela sai ANTES de ocultar
      (o blur confirma o que já confirma no blur hoje, como o PV do domo). O foco vai para o botão da aba de destino. */
   const posicaoDaJanela = useRef({});
+  /* EMBUTIDA, QUEM ROLA É A COLUNA DO ENCONTRO (`[data-afty-rolagem]`), e não a janela (etapa 6a). Sozinha, `null` e vale a janela. */
+  const roladorDaFicha = () => (embutida ? raizRef.current?.closest("[data-afty-rolagem]") ?? null : null);
   const focarAba = useRef(null);
   const restaurarJanela = useRef(true);
   const irParaAba = (id) => {
@@ -296,7 +320,7 @@ export default function AftyFicha({
       const caixa = raizRef.current?.querySelector(`[data-aba-g2="${tab}"]`);
       const ativo = typeof document !== "undefined" ? document.activeElement : null;
       if (caixa && ativo instanceof HTMLElement && caixa.contains(ativo)) { ativo.blur(); focarAba.current = id; }
-      if (ABAS_RETIDAS.includes(tab)) posicaoDaJanela.current[tab] = window.scrollY;
+      if (ABAS_RETIDAS.includes(tab)) posicaoDaJanela.current[tab] = roladorDaFicha()?.scrollTop ?? window.scrollY;
     }
     ui.irPara(id === ABA_EFEITOS ? "efeitos" : id);
   };
@@ -341,12 +365,14 @@ export default function AftyFicha({
 
   // Persistência por debounce, igual ao rascunho do criador. Sem botão Salvar:
   // sessão não é rascunho, é fato.
-  const primeiraGravacao = useRef(true);
+  /* A loja grava 600 ms depois da última edição, aparada pelo derive VIVO (o de depois da edição, como o efeito antigo gravava). Sair da
+     Ficha antes dos 600 ms grava na hora, em vez de perder a edição. Embutida, quem grava é quem montou. */
   useEffect(() => {
-    if (primeiraGravacao.current) { primeiraGravacao.current = false; return undefined; }
-    const t = setTimeout(() => salvarSessao(alvoId, sessao), 600);
-    return () => clearTimeout(t);
-  }, [alvoId, sessao]);
+    if (embutida) return undefined;
+    definirAparoDaLoja(alvoId, (s) => aparaSessao(s, derived));
+    return undefined;
+  }, [embutida, alvoId, derived]);
+  useEffect(() => (embutida ? undefined : () => { descarregarDaLoja(alvoId); }), [embutida, alvoId]);
 
   // ⚠ O tema é gravado NA CRIATURA, e não em chave própria como a sessão: ele
   // precisa viajar no export para a ficha chegar bonita na mão dos outros
@@ -398,9 +424,12 @@ export default function AftyFicha({
       const n = Number(e.key);
       if (n >= 1 && n <= TABS.length) irParaAbaRef.current(TABS[n - 1].id);
     };
-    window.addEventListener("keydown", aoTeclar);
-    return () => window.removeEventListener("keydown", aoTeclar);
-  }, []);
+    /* EMBUTIDA, O TECLADO É SÓ DO PAINEL (etapa 6a): com o foco na lista de iniciativa, as teclas 1 a 6 e o Ctrl+K não mexem na Ficha. */
+    const alvo = embutida ? raizRef.current : window;
+    if (!alvo) return undefined;
+    alvo.addEventListener("keydown", aoTeclar);
+    return () => alvo.removeEventListener("keydown", aoTeclar);
+  }, [embutida]);
 
   /* OS SHIKIGAMIS NA MESA (2026-08-31). Um objeto só de escritores, porque a aba
      precisa dos seis e passá-los como seis props faria a assinatura dela crescer
@@ -913,28 +942,34 @@ export default function AftyFicha({
     if (!previaAbasG2) return;
     if (ABAS_RETIDAS.includes(tab) && restaurarJanela.current) {
       const y = posicaoDaJanela.current[tab];
-      if (y != null) window.scrollTo(0, y);
+      if (y != null) {
+        const r = embutida ? raizRef.current?.closest("[data-afty-rolagem]") : null;
+        if (r) r.scrollTop = y; else window.scrollTo(0, y);
+      }
     }
     restaurarJanela.current = true;
     if (focarAba.current === tab) {
       document.getElementById(`afty-aba-${tab}`)?.focus({ preventScroll: true });
       focarAba.current = null;
     }
-  }, [previaAbasG2, tab]);
+  }, [previaAbasG2, tab, embutida]);
 
   /* Memoizados porque só dependem do tema, e o tema quase nunca muda: sem isto
      as duas folhas eram remontadas em string a cada render da Ficha, inclusive
      ao abrir um card ou cruzar o limiar da rolagem. */
-  const varsCss = useMemo(() => (SEM_CSS ? "" : cssDasVars(tema)), [tema]);
+  /* EMBUTIDA, A FICHA SAI NO TEMA PADRÃO (autor, 2026-11-17, "Padrão para Todos"): na tela do Mestre a cara não troca a cada clique na
+     iniciativa. Tema, CSS livre e fontes da internet ficam desligados. A ficha sozinha segue com o tema dela. */
+  const semTema = SEM_CSS || embutida;
+  const varsCss = useMemo(() => (semTema ? "" : cssDasVars(tema)), [tema, semTema]);
   /* A família da lista fechada que o tema pede, baixada por um `<link>` no `<head>` (2026-11-10). O `?semcss=1` desliga junto. */
-  useFontesWeb(tema, SEM_CSS);
-  const usuarioCss = useMemo(() => (SEM_CSS ? "" : cssDoUsuario(tema)), [tema]);
+  useFontesWeb(tema, semTema);
+  const usuarioCss = useMemo(() => (semTema ? "" : cssDoUsuario(tema)), [tema, semTema]);
 
   /* AS DUAS FACES (autor, 2026-11-16). O tema declara a segunda face citando `[data-afty-face` no CSS livre, e só então o botão e o atributo
      existem. A face mora no tema (`aparencia.face`) e grava com ele. A virada dura o que o token `--afty-face-virada` disser: na primeira metade
      a raiz leva `data-afty-virando="saindo"` com a face antiga, no meio a face troca, e a segunda metade é `chegando`. A camada `.afty-virada`
      existe só nesse intervalo, e é o tema que a pinta. Sem o token, ou com "menos movimento" no sistema, a troca é imediata. */
-  const duasFaces = useMemo(() => !SEM_CSS && temDuasFaces(tema), [tema]);
+  const duasFaces = useMemo(() => !semTema && temDuasFaces(tema), [tema, semTema]);
   const [virando, setVirando] = useState(null);
   const viradaRef = useRef([]);
   useEffect(() => () => viradaRef.current.forEach(clearTimeout), []);
@@ -959,7 +994,7 @@ export default function AftyFicha({
     <PrimitivasDeAddon primitivas={derived.primitivas}>
     <>
     <HistoricoCtx.Provider value={ctxHistorico}>
-    <div ref={raizRef} className="afty-ficha e-ficha-g2" id="afty-ficha" data-afty-estrutura="g2" data-afty-fonte={tema.fonte ? "personalizada" : undefined} data-afty-densidade={densidade} data-g2-painel={ui.compacta ? "aberto" : undefined}
+    <div ref={raizRef} className="afty-ficha e-ficha-g2" id="afty-ficha" data-afty-estrutura="g2" data-afty-embutida={embutida ? "sim" : undefined} data-afty-fonte={tema.fonte ? "personalizada" : undefined} data-afty-densidade={densidade} data-g2-painel={ui.compacta ? "aberto" : undefined}
       data-afty-face={duasFaces ? tema.face : undefined} data-afty-virando={duasFaces && virando ? virando : undefined}>
       <CamadasDeCorrupcao corrupcao={derived.corrupcao} />
       {duasFaces && virando && <div className="afty-virada" aria-hidden="true" />}
@@ -980,8 +1015,12 @@ export default function AftyFicha({
               m={g.mGeral} acesso={ui.acesso} total={g.ativos.length} atencao={ui.atencao} onHistorico={ui.abrirHistorico}
               preferencia={estatisticasPref} onPreferencia={definirEstatisticas}
               acoesDaFicha={{
-                onVoltar, onBusca: () => setBuscaAberta(true), onAparencia: () => setAparenciaAberta(true),
-                onEditar: () => { salvarSessao(alvoId, sessao); onEditar(); },
+                /* EMBUTIDA (autor, 2026-11-17, "Só a Busca Fica"): sem Voltar, sem Editar, sem Aparência e sem o Encerrar Meu Turno da Ficha,
+                   que dentro da luta desceria tudo de todos. Quem passa o turno é o Encontro. */
+                embutida: embutida || naSala,
+                onVoltar: embutida ? null : onVoltar, onBusca: () => setBuscaAberta(true),
+                onAparencia: embutida ? null : () => setAparenciaAberta(true),
+                onEditar: embutida ? null : () => { descarregarDaLoja(alvoId); onEditar(); },
                 densidade, onDensidade: trocaDensidade,
                 face: duasFaces ? { atual: tema.face, alterna: alternaFace } : null,
                 /* O recurso próprio grava na criatura, como as preferências. Sem o gravador (ficha aberta fora da rota), o item do menu não existe. */
@@ -1199,7 +1238,7 @@ export default function AftyFicha({
         livre ligado: um botão permanente seria sujeira para os 99% que nunca
         vão abrir o editor. A saída final, essa sim à prova de tudo, é o
         `?semcss=1` na URL. */}
-    {!SEM_CSS && tema.ligado && temCssLivre(tema) && (
+    {!semTema && tema.ligado && temCssLivre(tema) && (
       <button
         type="button"
         onClick={() => setTema({ ...tema, ligado: false })}

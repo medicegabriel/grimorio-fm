@@ -489,6 +489,62 @@
       "modo": "INTERFACE",
       "justificativa": "Hook React e encaminhamento para consumidores de sessão"
     },
+    "encontros/modelo.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Encontro Unificado, etapa 3 (2026-11-17): forma do Encontro e do combatente (motor, tipo, visão, dono), sem catálogo de regra do Livro"
+    },
+    "encontros/operacoes.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Encontro Unificado, etapa 3 (2026-11-17): operação tipada, delta, pedidos, histórico e Desfazer sobre os verbos da sessão; sem catálogo de regra do Livro"
+    },
+    "encontros/redutor.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Encontro Unificado, etapa 3 (2026-11-17): redutor puro do Encontro novo, encaminha aos motores; sem catálogo de regra do Livro"
+    },
+    "encontros/listas.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Encontro Unificado, etapa 3 (2026-11-17): as três listas de Encontros e a leitura dos inventários por chave; sem catálogo de regra"
+    },
+    "encontros/migracao.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Encontro Unificado, etapa 3 (2026-11-17): migração idempotente dos Encontros antigos para o formato novo; sem catálogo de regra"
+    },
+    "encontros/motores/interface.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Encontro Unificado, etapa 3 (2026-11-17): lista de verbos do adaptador de motor e o erro de motor pendente. FOLHA"
+    },
+    "encontros/motores/afty.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Encontro Unificado, etapa 3 (2026-11-17): adaptador do motor do Afty sobre os verbos de ficha-sessao.js, sem regra própria"
+    },
+    "encontros/motores/m252.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Encontro Unificado, etapa 4 (2026-11-17): adaptador da 2.5.2 sobre m252-vital.js, sem regra própria do Afty"
+    },
+    "encontros/motores/m252-vital.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Encontro Unificado, etapa 4 (2026-11-17): cópia fiel da conta da 2.5.2 (CombatantPanel, EncounterTracker, useEncounter) com a origem anotada; regra do livro 2.5.2, fora do catálogo do Afty"
+    },
+    "encontros/motores/index.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Encontro Unificado, etapa 3 (2026-11-17): registro dos motores do Encontro"
+    },
+    "encontros/pastas.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Encontro Unificado, etapa 6a (2026-11-17): pastas próprias de cada lista de Encontros, sem regra do Livro"
+    },
+    "encontros/usar-lista-encontros.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Encontro Unificado, etapa 6a (2026-11-17): hook React da lista de Encontros (gravação, migração do site, pastas)"
+    },
+    "encontros/usar-encontro.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Encontro Unificado, etapa 6a (2026-11-17): hook React que monta o mundo pela loja da sessão e despacha o redutor e as operações"
+    },
+    "encontros/telas/pecas-dados.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Encontro Unificado, etapa 6a (2026-11-17): rótulos, ícones e o gancho de largura das telas do Encontro"
+    },
     "ui/usar-primitiva.js": {
       "modo": "INTERFACE",
       "justificativa": "Contexto React; as primitivas são catalogadas nos módulos nativos"
@@ -521,6 +577,10 @@
     "ficha/ficha-preferencias.js": {
       "modo": "INTERFACE",
       "justificativa": "Preferências de apresentação do personagem (estatísticas do cabeçalho); sem catálogo de regra"
+    },
+    "ficha/sessao-loja.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Encontro Unificado, etapa 2 (2026-11-17): a loja viva da sessão (leitura, gravação, outras abas, porta da Sala) sobre a chave e o aparo de ficha-sessao.js; sem catálogo de regra do Livro"
     },
     "ficha/pacotes-aliados.js": {
       "modo": "INTERFACE",

@@ -1368,7 +1368,7 @@ Nenhum canal, variável ou função nova. Três mudanças aditivas, com prova em
   do `resolveAuxiliaresAtivos`, que não mudou. A união, na ordem, é a lista dele
   (`t-pacotes-aliados` confere). É o que dá a cada benefício de um pacote o prazo
   do efeito dele (Defesa de um ataque, TR de uma rodada).
-- (2026-10-20, PA-I3) A virada (`proximaRodada`) desce o contador `rodadas` de cada
+- (2026-10-20, PA-I3) A virada (`proximaRodada`, na Ficha sozinha, e no Encontro o fim do turno de quem aplicou desde 2026-11-17) desce o contador `rodadas` de cada
   BENEFÍCIO de um registro recebido que o tenha e tira só o que zera. O registro
   sai quando não sobra benefício. Registro sem esse contador segue igual.
 - (2026-10-20, PA-I4) Nenhuma mudança no motor. A instância de um pacote nasce com

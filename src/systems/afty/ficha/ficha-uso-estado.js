@@ -56,6 +56,36 @@ const texto = (v, padrao = "") => (typeof v === "string" ? v : padrao);
 const lista = (v) => (Array.isArray(v) ? v : []);
 
 /* ============================================================ */
+/* QUEM APLICOU (Encontro Unificado, etapa 5, 2026-11-17)        */
+/* ============================================================ */
+/**
+ * A regra nova da duração (autor, 2026-11-17): no Encontro, o que tem rodadas (Efeito, condição, uso) desce no FIM DO
+ * TURNO DE QUEM APLICOU, e não mais para todos na virada. Cada entrada com rodadas pode trazer:
+ *   aplicadorId         o id do combatente que aplicou. Ausente (toda entrada gravada antes) lê como `"proprio"`: quem
+ *                       carrega. ⚠ NÃO é o `aplicadoPor` dos recebidos, que é o NOME mostrado ("De Yuki") e continua
+ *                       como estava (autor, 2026-11-17, "Campo Novo aplicadorId")
+ *   aguardaFimDoTurno   a entrada entrou DURANTE o turno de quem aplicou. O fim desse mesmo turno só tira a marca, e a
+ *                       primeira descida é no fim do próximo (autor, 2026-11-17, "Não, Começa no Próximo")
+ * Os dois campos só existem quando valem: entrada própria aplicada fora do turno fica com a forma de sempre.
+ * Moram aqui porque este módulo é FOLHA e a sessão, o motor de uso e o Encontro importam dele.
+ */
+export const APLICADOR_PROPRIO = "proprio";
+export const aplicadorDe = (item) => (
+  item && typeof item === "object" && typeof item.aplicadorId === "string" && item.aplicadorId ? item.aplicadorId : APLICADOR_PROPRIO
+);
+/** A entrada sem a marca do turno (a mesma, se não tinha). */
+export function semMarcaDoTurno(item) {
+  if (!item || typeof item !== "object" || !("aguardaFimDoTurno" in item)) return item;
+  const { aguardaFimDoTurno: _marca, ...resto } = item;
+  return resto;
+}
+/** Os dois campos de quem aplicou, só os que valem, para a normalização não os apagar. */
+const camposDoAplicador = (bruto) => ({
+  ...(aplicadorDe(bruto) !== APLICADOR_PROPRIO ? { aplicadorId: bruto.aplicadorId } : {}),
+  ...(bruto?.aguardaFimDoTurno ? { aguardaFimDoTurno: true } : {}),
+});
+
+/* ============================================================ */
 /* A FORMA                                                       */
 /* ============================================================ */
 const acoesEmBranco = () => ({ turno: 0, gastas: { comum: 0, bonus: 0, movimento: 0 }, reacoes: {}, livres: {} });
@@ -149,6 +179,8 @@ function normalizaAtivo(bruto, chave) {
     efeitos: normalizaEfeitos(bruto.efeitos),
     concentracao: !!bruto.concentracao,
     parametros: objeto(bruto.parametros) ?? {},
+    // Etapa 5: quem aplicou e a marca do turno sobrevivem à leitura (ver `aplicadorDe`).
+    ...(tipo === "rodadas" ? camposDoAplicador(bruto) : {}),
   };
 }
 
@@ -350,12 +382,15 @@ export function comSequencia(sessao, ataques) {
  * para o histórico). Cada manutenção passa a ser DEVIDA: a ficha não debita nem desliga (custo de estado
  * só é exibido, decisão vigente), só marca o que a pessoa ainda precisa descontar.
  */
-export function avancaUsoNaRodada(sessao, registro = null) {
+export function avancaUsoNaRodada(sessao, registro = null, { descerDuracoes = true } = {}) {
   let out = sincronizaUso(sessao, registro);
   for (const a of Object.values(usoDe(sessao).ativos)) {
     if (a.duracao.tipo === "rodadas") {
+      /* Etapa 5: no Encontro a duração em rodadas desce no fim do turno de quem usou (`desceUsoDe`), e a virada só cobra a
+         manutenção e limpa as pendências. Na Ficha sozinha (`descerDuracoes` ligado) tudo segue como sempre. */
+      if (!descerDuracoes) continue;
       if (a.duracao.restantes - 1 <= 0) { out = encerraAtivoNaSessao(out, a.id, "duracao", registro); continue; }
-      out = comUso(out, (u) => ({ ...u, ativos: { ...u.ativos, [a.id]: { ...a, duracao: { tipo: "rodadas", restantes: a.duracao.restantes - 1 } } } }));
+      out = comUso(out, (u) => ({ ...u, ativos: { ...u.ativos, [a.id]: { ...semMarcaDoTurno(a), duracao: { tipo: "rodadas", restantes: a.duracao.restantes - 1 } } } }));
     } else if (a.duracao.tipo === "manutencao" && a.manutencao && a.manutencao.pe > 0) {
       const devidas = a.manutencao.devidas + 1;
       out = comUso(out, (u) => ({ ...u, ativos: { ...u.ativos, [a.id]: { ...a, manutencao: { ...a.manutencao, devidas } } } }));
@@ -367,6 +402,26 @@ export function avancaUsoNaRodada(sessao, registro = null) {
   // Pendência "até a rodada virar" cai aqui. As de turno caem nas transições de turno.
   const pendencias = uso.pendencias.filter((p) => p.expira !== "rodada");
   if (pendencias.length !== uso.pendencias.length) out = { ...out, uso: { ...uso, pendencias } };
+  return out;
+}
+
+/**
+ * A duração em rodadas dos usos de UM aplicador (etapa 5): `vale(aplicadorId)` diz quais entram. Cada um desce um, o que
+ * zera é encerrado (motivo `duracao`, como na virada), e o que tem a marca do turno só a perde. Sem nada a descer devolve a
+ * MESMA sessão: o Encontro chama isto em todo combatente a cada fim de turno.
+ */
+export function desceUsoDe(sessao, registro = null, vale = null) {
+  const toca = (a) => a.duracao.tipo === "rodadas" && (!vale || vale(aplicadorDe(a)));
+  if (!Object.values(usoDe(sessao).ativos).some(toca)) return sessao;
+  let out = sincronizaUso(sessao, registro);
+  for (const a of Object.values(usoDe(out).ativos).filter(toca)) {
+    if (a.aguardaFimDoTurno) {
+      out = comUso(out, (u) => ({ ...u, ativos: { ...u.ativos, [a.id]: semMarcaDoTurno(a) } }));
+      continue;
+    }
+    if (a.duracao.restantes - 1 <= 0) { out = encerraAtivoNaSessao(out, a.id, "duracao", registro); continue; }
+    out = comUso(out, (u) => ({ ...u, ativos: { ...u.ativos, [a.id]: { ...a, duracao: { tipo: "rodadas", restantes: a.duracao.restantes - 1 } } } }));
+  }
   return out;
 }
 

@@ -3318,12 +3318,12 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
   /* Identidade e controles numa linha só. Os chips de Tipo, Patamar e Grau e os
      botões de Densidade, Aparência, Busca, Descanso e Editar saem: voltam ao
      rolar para o topo. Ficam o nome, o contador de Rodada com o botão de
-     Próxima Rodada, e qualquer chip ou botão de aviso (Sobrecarregado, Cofre
+     Encerrar Meu Turno, e qualquer chip ou botão de aviso (Sobrecarregado, Cofre
      trancado), porque aviso de estado não pode sumir no meio da luta. */
   .afty-cabecalho[data-afty-compacto="sim"] .afty-nome + div > .afty-chip:not([data-afty-tom="aviso"]) { display: none; }
   .afty-cabecalho[data-afty-compacto="sim"] .afty-nome + div:not(:has(> .afty-chip[data-afty-tom="aviso"])) { margin-top: 0; }
   .afty-cabecalho[data-afty-compacto="sim"] .afty-controles { order: 0; width: auto; flex: none; }
-  .afty-cabecalho[data-afty-compacto="sim"] .afty-controles > :is(button, .afty-botao):not([aria-label="Próxima rodada"], [data-afty-tom="aviso"]) { display: none; }
+  .afty-cabecalho[data-afty-compacto="sim"] .afty-controles > :is(button, .afty-botao):not([aria-label="Encerrar Meu Turno"], [data-afty-tom="aviso"]) { display: none; }
   /* Modos e Histórico na primeira linha; a última rolagem usa a segunda. */
   .afty-log {
     grid-template-columns: minmax(0, 1fr) auto;

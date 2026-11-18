@@ -106,11 +106,11 @@ function Menu({ densidade, onDensidade, cofre, apresentacaoAnterior, onHistorico
             {item("Estatísticas do Cabeçalho", onConfigurar, { "data-menu-estatisticas": "" })}
             {item(densidade === "compacta" ? "Densidade Confortável" : "Densidade Compacta", onDensidade, { "aria-pressed": densidade === "compacta", "data-menu-densidade": "" })}
             {onRecursoProprio && item("Recurso Próprio", onRecursoProprio, { "data-menu-recurso-proprio": "" })}
-            {item("Aparência", onAparencia)}
+            {onAparencia && item("Aparência", onAparencia)}
             {/* A antiga aba Buffs, mantida enquanto os Efeitos novos não cobrem tudo que ela fazia (Imitação, Concessão do mestre, Exaustão, Sangramento e o buff de mesa). */}
             {apresentacaoAnterior && item(apresentacaoAnterior.ativa ? "Usar os Efeitos Novos" : "Usar a Apresentação Anterior", apresentacaoAnterior.alterna, { "data-menu-apresentacao": "" })}
             {cofre && item(cofre.aberto ? "Cofre Aberto Nesta Aba" : "Texto Protegido por Senha", cofre.onAbrir, { "data-menu-cofre": "" })}
-            {item("Editar no Criador", onEditar, { "data-menu-editar": "" })}
+            {onEditar && item("Editar no Criador", onEditar, { "data-menu-editar": "" })}
           </div>
         </Flutuante>
       )}
@@ -120,16 +120,19 @@ function Menu({ densidade, onDensidade, cofre, apresentacaoAnterior, onHistorico
 
 /* As condições não têm mais chip próprio aqui (autor, 2026-10-14): moram em Efeitos, com a duração e o que mudam na conta, e o acesso "Efeitos"
    leva até elas. */
-function Agora({ m, acesso, total, atencao }) {
+function Agora({ m, acesso, total, atencao, embutida = false }) {
   return (
     <section className="e-agora" aria-label="Agora">
       <span className="e-agora-rotulo">Agora</span>
-      <button type="button" className="e-combate" aria-pressed={m.combate} onClick={m.acoes.alternaCombate}>
+      {/* Embutida no Encontro, quem abre e fecha o combate é o Encontro (etapa 6a): o estado aparece, sem o interruptor. */}
+      <button type="button" className="e-combate" aria-pressed={m.combate} onClick={m.acoes.alternaCombate} disabled={embutida}>
         <Swords aria-hidden="true" />{m.combate ? "Em Combate" : "Fora de Combate"}
       </button>
       <span className="e-rodada">
         Rodada <b aria-live="polite">{m.sessao.rodada}</b>
-        <button type="button" className="e-proxima" onClick={m.acoes.proximaRodada} aria-label="Próxima rodada" title="Próxima Rodada"><ChevronRight aria-hidden="true" /></button>
+        {/* Etapa 5 (2026-11-17): o nome passou a ser Encerrar Meu Turno, com o mesmo efeito (a rodada da Ficha sobe e tudo desce).
+            Embutida não existe: o turno é do Encontro (autor, "Só a Busca Fica"). */}
+        {!embutida && <button type="button" className="e-proxima" onClick={m.acoes.proximaRodada} aria-label="Encerrar Meu Turno" title="Encerrar Meu Turno"><ChevronRight aria-hidden="true" /></button>}
       </span>
       <button type="button" className="f-acesso" aria-pressed={acesso.pressionado} aria-controls={acesso.controla} onClick={acesso.onClick}
         title={acesso.dica} aria-label={`${acesso.rotulo}: ${total} ativos${atencao ? `, ${atencao} pedem atenção` : ""}. ${acesso.dica ?? ""}`}>
@@ -145,7 +148,7 @@ export default function Cabecalho({
   m, acesso, total, atencao, onHistorico = () => {}, preferencia = null, onPreferencia = () => {}, acoesDaFicha,
 }) {
   const { ficha, derived } = m;
-  const { onVoltar, onBusca, onEditar, onAparencia, densidade, onDensidade, cofre, apresentacaoAnterior, face = null, onSalvarRecursoProprio = null } = acoesDaFicha;
+  const { onVoltar, onBusca, onEditar, onAparencia, densidade, onDensidade, cofre, apresentacaoAnterior, face = null, onSalvarRecursoProprio = null, embutida = false } = acoesDaFicha;
   const [proprioConfig, setProprioConfig] = useState(null);
   const fechaProprio = useCallback(() => setProprioConfig(null), []);
   const [vital, setVital] = useState(null);
@@ -166,7 +169,7 @@ export default function Cabecalho({
       <div className="e-moldura"><Retrato ficha={ficha} classe="e-retrato" /><OrbitasDoRetrato orbitas={derived.orbitas} /></div>
       <div className="e-corpo">
         <div className="e-placa">
-          <button type="button" className="afty-botao e-icone e-voltar" onClick={onVoltar} aria-label="Voltar"><ChevronLeft aria-hidden="true" /></button>
+          {onVoltar && <button type="button" className="afty-botao e-icone e-voltar" onClick={onVoltar} aria-label="Voltar"><ChevronLeft aria-hidden="true" /></button>}
           <div className="e-ident">
             <h1 className="afty-nome e-nome">{ficha.name || "Sem nome"}</h1>
             <p className="e-linhagem">
@@ -195,7 +198,7 @@ export default function Cabecalho({
         </div>
         <div className="e-faixa">
           <Valores m={m} stats={stats} preferencia={preferencia} onConfigurar={setConfig} />
-          <Agora m={m} acesso={acesso} total={total} atencao={atencao} />
+          <Agora m={m} acesso={acesso} total={total} atencao={atencao} embutida={embutida} />
         </div>
       </div>
       {proprioConfig && <RecursoProprioConfig ancora={proprioConfig} atual={Sessao.recursoProprioDe(ficha)} onSalvar={onSalvarRecursoProprio} onFechar={fechaProprio} />}

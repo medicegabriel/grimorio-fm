@@ -1,5 +1,16 @@
 # Ficha de Player (handoff para chat novo)
 
+**O personagem no Encontro e na Sala (2026-11-18).** O `/Player` usa o Encontro unificado (`docs/afty-encontros.md`) na lista do site, a mesma do `/`
+(`afty_encontros_site_v1`), aberta a todos desde 2026-11-18 (o cadeado saiu depois da revisão final).
+- O personagem entra **ligado** à ficha: a sessão do Encontro é a da própria Ficha (`fm_ficha_sessao_afty_v1:<id>`), pela loja da sessão. Não é mais cópia. Um Encontro antigo
+  com o personagem copiado é convertido na primeira abertura (a sessão da cópia fica em `copiaAntiga`, só para consulta).
+- A Ficha dentro do Encontro é a **G2 embutida** (props `sessao` e `onSessao`), no tema padrão e só com a Busca no cabeçalho, no lugar das abas antigas. Na **Sala** ela leva a prop
+  `naSala`: some o Encerrar Meu Turno da Ficha (o jogador usa o da faixa da luta) e o Em Combate fica só como indicador.
+- **Duração**: na Ficha sozinha o botão de virar a rodada se chama **Encerrar Meu Turno** e desce tudo como antes. No Encontro só as durações em rodadas descem, no fim do turno de
+  quem aplicou (`aplicadorId`).
+- **Na Sala** o jogador cuida da própria ficha e o Mestre muda os valores de jogo nela (Vida, PE, Alma, condições, Efeitos). Toda mudança de outra pessoa entra em `sessao.historico` e
+  o dono pode Desfazer. Dano e cura em criatura ou colega saem como pedido. Guia: `docs/nuvem-supabase.md`, "Como usar a Sala".
+
 CX3 (06/11): imunidade a movimento forçado de Terra, Barreira e Terra do
 Ápice respeitada nas operações de Chicote, Concussão, Briga Empurrar,
 Escudo e críticos de Bastão/Haste. Recusa antes de custo/consequência,
@@ -220,7 +231,7 @@ Não são dois apps, não são dois motores, não são duas cópias do catálogo
 os separa é uma **chave de sistema** que vem da FICHA (`creature.rulesVersion`), nunca da rota.
 
 ⚠ **Nunca leia a URL para decidir uma regra.** Uma ficha de jogador aberta dentro de um Encontro do
-mestre continua sendo ficha de jogador, e a rota ali é `/Afty`. Quem responde é
+mestre continua sendo ficha de jogador, e a rota ali pode ser `/Afty`, `/` ou `/Sala/<código>`. Quem responde é
 `sistemaDaFicha(creature)`, em `afty-sistema.js`.
 
 ---
@@ -469,9 +480,9 @@ Não são hipóteses. Cada uma virou bug real, e a maioria era **silenciosa**.
 
 ### O componente é o mesmo nas três telas
 
-`AbaInvocacoes.jsx` (e as outras abas) renderizam na Ficha do Player, na Ficha do Afty **e no painel
-de Encontros**. Toda prop nova que a aba passe a exigir quebra o painel de Encontros, e **assert não
-pega**, porque assert não renderiza. Depois de mexer numa aba, abra o Encontro.
+`AbaInvocacoes.jsx` (e as outras abas) renderizam na Ficha do Player, na Ficha do Afty **e dentro do Encontro**
+(a Ficha G2 embutida, na luta do Mestre e na Sala). Toda prop nova que a aba passe a exigir quebra o Encontro, e **assert não
+pega**, porque assert não renderiza. Depois de mexer numa aba, abra o Encontro (e a Sala, se der).
 
 ### Manutenção pega os dois lados por padrão
 
@@ -574,7 +585,8 @@ Valem em todo chat, e são as que mais se quebram.
 | `afty-equipamentos.js` | itens, uniformes, encantamentos |
 | `afty-addons.js` | a camada de conteúdo da mesa, 15 famílias |
 | `ficha/` | a Ficha Final: abas, tema, sessão, rolagens |
-| `encontros/` | o painel do mestre, que reusa as abas da Ficha |
+| `encontros/` | o Encontro unificado (modelo, operações, motores e telas), que embute a Ficha G2 |
+| `src/nuvem/sala-*.js`, `sala-ui/` | a Sala online: cliente e telas |
 | `docs/afty-ficha-final.md` | a tela de jogo, e a seção 24 com as dúvidas vivas |
 | `docs/afty-addons.md` | o sistema de Addons, com as decisões do autor datadas |
 | `docs/automacao-dsl.md` | a DSL do Motor de Automação |

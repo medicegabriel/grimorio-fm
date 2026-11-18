@@ -145,7 +145,9 @@ transbordamento, tire a flag antes de concluir que o bug sumiu.
 
 ## Arquitetura
 
-SPA em Vite mais React 18, Tailwind 4, sem backend. Tudo mora no `localStorage`.
+SPA em Vite mais React 18, Tailwind 4. O `localStorage` é a cópia de trabalho de tudo. O único backend é o Supabase, e é opcional: sem as variáveis
+`VITE_SUPABASE_*` o site é só local. Com conta (Google ou Discord) a nuvem pessoal sincroniza fichas e chaves (`src/nuvem/nuvem-sync.js`), e a **Sala online**
+(`src/nuvem/sala-*.js`, banco em `supabase/salas.sql`) liga Mestre e jogadores num Encontro. Guia da nuvem e da Sala em `docs/nuvem-supabase.md`.
 
 ### Três sistemas, um código só
 
@@ -154,12 +156,14 @@ SPA em Vite mais React 18, Tailwind 4, sem backend. Tudo mora no `localStorage`.
 | `/` | Grimório 2.5.2, o livro oficial, somente-leitura | `fm_*_v1` |
 | `/Afty` | criatura do mestre | `fm_*_afty_v1` |
 | `/Player` | personagem do jogador, o MESMO código com uma chave de sistema | `fm_*_player_v1` |
+| `/EraDeOuro` | a Guilda: `mesa` na ficha, storage isolado (`docs/afty-status.md`) | `fm_*_eradeouro_v1` |
+| `/Sala/<código>` | a Sala online de um Encontro (login, senha, tela do jogador) | `sala_cache_v1:<id>` (fora da nuvem pessoal) |
 
 A lei está em caixa alta no cabeçalho de `afty-sistema.js`: **o sistema vem da FICHA, não da rota.**
 A rota decide só em que sistema uma ficha NOVA nasce, e daí em diante quem responde é
-`creature.rulesVersion`. Isso não é preciosismo: os encontros são compartilhados entre as duas
-rotas, o combatente guarda a ficha inteira, e a mesma tela renderiza fichas dos dois sistemas ao
-mesmo tempo. Um contexto global preso à rota daria a resposta errada para metade da lista, e daria
+`creature.rulesVersion`. Isso não é preciosismo: os encontros são compartilhados entre as rotas, o
+personagem entra ligado à ficha e a criatura como cópia, e a mesma tela renderiza fichas dos dois
+sistemas ao mesmo tempo. Um contexto global preso à rota daria a resposta errada para metade da lista, e daria
 calada. Por isso `deriveAfty(creature)` não recebe parâmetro de sistema.
 
 Como o código é um só, toda mudança em `src/systems/afty/` pega os dois sistemas por padrão, sem
@@ -284,12 +288,24 @@ e não por classe de cor do Tailwind, o que é o que torna o tema possível. O t
 `creature.aparencia`, dentro da criatura, para viajar de graça no export. Quatro camadas: preset,
 formulário, imagem, CSS livre. Ver `ficha/ficha-tema.js` e os exemplos em `themes/`.
 
-O Encontro do Afty tem gerenciador próprio (`encontros/`, chave `afty_encontros_v1`): o combatente
-guarda `ficha` e `sessao`, enquanto o da 2.5.2 guarda `snapshot` e `combatState`.
+### Encontros e Sala
+
+Há UM Encontro só, em `src/systems/afty/encontros/` (guia em `docs/afty-encontros.md`, leia antes de mexer). Ele junta a 2.5.2 e o Afty num modelo único: o combatente
+tem `motor` (`afty` ou `252`) e `tipo` (personagem, criatura, marcador), e um **adaptador por motor** (`motores/`) fala com a conta de cada livro. O personagem entra
+**ligado** à ficha (a sessão é a da Ficha, pela loja `ficha/sessao-loja.js`), e a criatura entra como cópia (`ficha` mais `sessao`, ou `snapshot` mais `combatState`).
+Toda mudança é uma **operação** (`operacoes.js`) com delta, pedido e Desfazer, aplicada pelo `redutor.js`. São três listas (`site` para `/` e `/Player`, `afty` e `eradeouro`),
+cada uma com chave própria (`afty_encontros_site_v1`, `afty_encontros_v1`, `afty_encontros_eradeouro_v1`). O Encontro antigo da 2.5.2 (`fm_encounters_v1`) é migrado por cópia e
+nunca apagado. Regra de duração (2026-11-17): no Encontro, só as durações em rodadas descem, no fim do turno de quem aplicou (`aplicadorId`).
+
+Os Encontros de `/` e `/Player` e a Sala estão abertos a todos desde 2026-11-18 (o cadeado saiu depois da revisão final, a pedido do autor).
+
+A **Sala** (`src/nuvem/`) é um Encontro com várias contas: o Mestre abre pelo botão Abrir Sala, os jogadores entram por `/Sala/<código>` com senha. Todo corte do que cada um pode
+ver é feito NO BANCO (RLS e RPCs em `supabase/salas.sql`, espelho puro em `sala-projecao.js`), nunca só na tela. Toda escrita é RPC. Nunca rode o SQL no banco: o autor cola.
+Guia de banco, cliente, telas e manutenção em `docs/nuvem-supabase.md`. ⚠ Com um `.env.local` o `npm run dev` fala com o Supabase de PRODUÇÃO (o arquivo não existe hoje).
 
 ### Onde procurar uma tela
 
-A interface do Afty está em quatro lugares, e saber qual poupa uma busca:
+A interface do Afty está em alguns lugares, e saber qual poupa uma busca:
 
 | Onde | O que é |
 |---|---|
@@ -297,10 +313,11 @@ A interface do Afty está em quatro lugares, e saber qual poupa uma busca:
 | `AftyTab*.jsx` (raiz do afty) | as abas de criação que ficaram grandes demais para o builder: Addons, Carteira, Catarse, Defesas |
 | `ficha/` e `ficha/abas/` | a Ficha Final, suas abas de jogo (Ações, Buffs, Equipamentos, Habilidades, Invocações, Perícias) e os painéis `PainelDe*.jsx` |
 | `ui/` | o que criador e ficha compartilham: `fontes.jsx` monta o painel de fontes do hover, mais `vital.jsx`, `TextoRico.jsx` e as bancadas |
-| `src/systems/eradeouro/MesaDoMestre.jsx` | a Mesa do Mestre da Guilda (botão Mestre do `/EraDeOuro`): fichas da lista e importadas, Vida e PE pela sessão da Ficha Final, ações em grupo |
+| `encontros/telas/` | as telas do Encontro (lista, planejamento, luta do Mestre, painel da criatura 2.5.2) e `encontro-g2.css` |
+| `src/nuvem/sala-ui/` | as telas da Sala (Abrir Sala, Controles, entrada, tela do jogador, painel) e `sala-ui.css` |
 
-Uma aba da Ficha também é renderizada dentro do Encontro, então ela tem dois donos e mede por
-`@container`, não por largura de janela.
+A Ficha G2 também é renderizada dentro do Encontro (modo embutido, props `sessao` e `onSessao`, e `naSala` na Sala), então ela tem dois donos e mede por
+`@container` ou pela largura da própria coluna, não por largura de janela.
 
 ### Arquivos-chave
 
@@ -325,7 +342,9 @@ abaixo é só o que não segue essa regra, ou o que se lê antes de tudo.
 | `afty-sistema.js` | `regraDo()`, `DIVERGENCIAS`, Afty contra Player. FOLHA |
 | `AftyCreatureBuilder.jsx` | o criador, mais de 18 mil linhas |
 | `ficha/AftyFicha.jsx` | a Ficha Final |
-| `encontros/PainelDeCombatente.jsx` | o combatente dentro do Encontro |
+| `encontros/modelo.js`, `operacoes.js`, `redutor.js`, `motores/` | o Encontro: combatente, operações, redutor e os adaptadores de motor |
+| `src/nuvem/sala-cliente.js`, `sala-encontro.js`, `sala-espelho.js` | o cliente da Sala (tempo real, ligação do Mestre, espelho do jogador) |
+| `supabase/salas.sql` | o banco da Sala: tabelas, RLS e RPCs |
 
 ## Documentação
 
@@ -337,6 +356,7 @@ abaixo é só o que não segue essa regra, ou o que se lê antes de tudo.
   inteiro.
 - `docs/afty-motor-referencia-estrutural.md`: corte transversal do motor, sem data. É o documento
   para colar no início de uma sessão que vai mexer em `src/systems/afty/*.js`.
+- `docs/afty-encontros.md` (o Encontro unificado e as telas da Sala) e `docs/nuvem-supabase.md` (nuvem pessoal e Sala online: banco, cliente, como usar, manutenção).
 - `docs/afty-addons.md` para autoria de addon, `docs/automacao-dsl.md` para a linguagem,
   `docs/afty-formulas-base.md` para as fórmulas confirmadas pelo autor, e um guia por área
   (`afty-player`, `afty-ficha-final`, `afty-carteira`, `afty-invocacoes`, `afty-equipamentos`,

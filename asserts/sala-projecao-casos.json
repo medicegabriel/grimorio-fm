@@ -1,0 +1,279 @@
+{
+  "_sobre": "Casos dos cortes da Sala online (etapa 7a, 2026-11-17). Os MESMOS casos provam o JavaScript (src/nuvem/sala-projecao.js, pelo asserts/t-sala-projecao.mjs) e o SQL (as funções sala_interno de supabase/salas.sql, pelo roteiro de docs/nuvem-supabase.md). O completo de cada combatente passa pelo saneamento antes do uso, nos dois lados.",
+  "autor": { "conta": "00000000-0000-4000-8000-0000000000a1", "papel": "mestre" },
+  "jogador": { "conta": "00000000-0000-4000-8000-0000000000b1", "papel": "jogador" },
+  "combatentes": [
+    { "id": "lia", "tipo": "personagem", "visao": null, "nome": "Lia", "completo": { "pv": 30, "pvMax": 40, "pe": 10, "peMax": 20, "alma": 100, "almaMax": 100, "condicoes": [], "efeitos": ["Bênção"] } },
+    { "id": "rui", "tipo": "personagem", "visao": null, "nome": "Rui", "completo": { "pv": 25, "pvMax": 25 } },
+    { "id": "gobO", "tipo": "criatura", "visao": "oculta", "nome": "Goblin Oculto", "completo": { "pv": 50, "pvMax": 50 } },
+    { "id": "gobN", "tipo": "criatura", "visao": "nome", "nome": "Goblin #1", "completo": { "pv": 20, "pvMax": 40 } },
+    { "id": "gobB", "tipo": "criatura", "visao": "barra", "nome": "Goblin #2", "completo": { "pv": 40, "pvMax": 40 } },
+    { "id": "gobA", "tipo": "criatura", "visao": "aberta", "nome": "Ogro", "completo": { "pv": 90, "pvMax": 120 } },
+    { "id": "sombra", "tipo": "criatura", "visao": "barra", "nome": "Sombra", "completo": null },
+    { "id": "ana", "tipo": "marcador", "visao": "nome", "nome": "Ana", "completo": null }
+  ],
+  "publicasConhecidas": { "op_1": "11111111-1111-4111-8111-111111111111" },
+  "faixas": [
+    [40, 40, "inteira"], [41, 40, "inteira"], [39, 40, "acima_da_metade"], [21, 40, "acima_da_metade"],
+    [20, 40, "ate_a_metade"], [11, 40, "ate_a_metade"], [10, 40, "ate_um_quarto"], [1, 40, "ate_um_quarto"],
+    [0, 40, "caida"], [-5, 40, "caida"], [5, 0, null], [5, null, null], [1, 3, "ate_a_metade"], [2, 3, "acima_da_metade"],
+    [1, 1, "inteira"], [1, 4, "ate_um_quarto"]
+  ],
+  "saneados": [
+    {
+      "nome": "campos estranhos, texto vazio, número em texto e Vida negativa",
+      "entrada": { "pv": -12.7, "pvMax": "40", "pvTemp": -3, "pe": 5, "peMax": 10, "peTemp": 0, "alma": 100, "almaMax": 100,
+        "condicoes": ["Caído", "", 4, "X"], "efeitos": "nao", "caido": "true", "morto": true, "extra": 1 },
+      "esperado": { "pv": -12, "pvMax": 0, "pvTemp": 0, "pe": 5, "peMax": 10, "peTemp": 0, "alma": 100, "almaMax": 100,
+        "condicoes": ["Caído", "X"], "efeitos": [], "caido": false, "morto": true }
+    },
+    {
+      "nome": "nada vira tudo zero",
+      "entrada": null,
+      "esperado": { "pv": 0, "pvMax": 0, "pvTemp": 0, "pe": 0, "peMax": 0, "peTemp": 0, "alma": 0, "almaMax": 0,
+        "condicoes": [], "efeitos": [], "caido": false, "morto": false }
+    },
+    {
+      "nome": "teto do inteiro",
+      "entrada": { "pv": 5000000000000, "pvMax": 5000000000000 },
+      "esperado": { "pv": 1000000000, "pvMax": 1000000000, "pvTemp": 0, "pe": 0, "peMax": 0, "peTemp": 0, "alma": 0, "almaMax": 0,
+        "condicoes": [], "efeitos": [], "caido": false, "morto": false }
+    },
+    {
+      "nome": "nome comprido com emoji corta por caractere",
+      "entrada": { "condicoes": ["🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥"] },
+      "esperado": { "pv": 0, "pvMax": 0, "pvTemp": 0, "pe": 0, "peMax": 0, "peTemp": 0, "alma": 0, "almaMax": 0,
+        "condicoes": ["🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥"], "efeitos": [], "caido": false, "morto": false }
+    }
+  ],
+  "resumos": [
+    { "nome": "personagem mostra tudo", "completo": { "pv": 20, "pvMax": 40 }, "tipo": "personagem", "visao": null, "inteiro": true },
+    { "nome": "Aberta mostra tudo", "completo": { "pv": 20, "pvMax": 40 }, "tipo": "criatura", "visao": "aberta", "inteiro": true },
+    { "nome": "Barra mostra só a faixa", "completo": { "pv": 20, "pvMax": 40 }, "tipo": "criatura", "visao": "barra", "esperado": { "faixa": "ate_a_metade" } },
+    { "nome": "Barra sem máximo tem faixa nula", "completo": { "pv": 20, "pvMax": 0 }, "tipo": "criatura", "visao": "barra", "esperado": { "faixa": null } },
+    { "nome": "Só Nome não mostra nada", "completo": { "pv": 20, "pvMax": 40 }, "tipo": "criatura", "visao": "nome", "esperado": {} },
+    { "nome": "Oculta não mostra nada", "completo": { "pv": 20, "pvMax": 40 }, "tipo": "criatura", "visao": "oculta", "esperado": {} },
+    { "nome": "marcador não mostra nada", "completo": { "pv": 20, "pvMax": 40 }, "tipo": "marcador", "visao": "aberta", "esperado": {} },
+    { "nome": "sem completo publicado não mostra nada", "completo": null, "tipo": "criatura", "visao": "aberta", "esperado": {} }
+  ],
+  "envolvidos": [
+    { "especie": "operacao", "dados": { "alvo": "a", "autor": { "combatente": "b" }, "entrada": { "aplicadorId": "c" } }, "esperado": ["a", "b", "c"] },
+    { "especie": "pedido", "dados": { "alvo": "a", "autor": { "combatente": "a" }, "entrada": { "aplicadorId": "proprio" } }, "esperado": ["a"] },
+    { "especie": "operacao", "dados": { "alvo": "a", "autor": [1], "entrada": "x" }, "esperado": ["a"] },
+    { "especie": "operacao", "dados": { "alvo": "", "autor": { "combatente": "b" } }, "esperado": ["b"] },
+    { "especie": "rolagem", "dados": { "combatente": "x" }, "esperado": ["x"] },
+    { "especie": "rolagem", "dados": {}, "esperado": [] },
+    { "especie": "sistema", "dados": { "combatente": 5 }, "esperado": [] },
+    { "especie": "chat", "dados": { "alvo": "a", "combatente": "b" }, "esperado": [] }
+  ],
+  "publicas": [
+    {
+      "nome": "dano em Barra: valor rolado e faixas, nunca a Vida",
+      "registro": { "especie": "operacao", "dados": { "id": "op_10", "tipo": "dano", "alvo": "gobB", "autor": "$autor", "entrada": { "valor": 12 },
+        "delta": [{ "caminho": ["hpAtual"], "antes": 40, "depois": 30, "soma": -10 }] } },
+      "esperado": { "especie": "operacao", "autor": "$autor", "tipo": "dano", "alvo": { "id": "gobB", "nome": "Goblin #2" }, "valor": 12,
+        "vida": { "antes": "inteira", "depois": "acima_da_metade" } }
+    },
+    {
+      "nome": "dano em Só Nome: só o valor rolado",
+      "registro": { "especie": "operacao", "dados": { "id": "op_11", "tipo": "dano", "alvo": "gobN", "autor": "$autor", "entrada": { "valor": 12 },
+        "delta": [{ "caminho": ["hpAtual"], "antes": 20, "depois": 8 }] } },
+      "esperado": { "especie": "operacao", "autor": "$autor", "tipo": "dano", "alvo": { "id": "gobN", "nome": "Goblin #1" }, "valor": 12 }
+    },
+    {
+      "nome": "dano em Oculta não existe",
+      "registro": { "especie": "operacao", "dados": { "id": "op_12", "tipo": "dano", "alvo": "gobO", "autor": "$autor", "entrada": { "valor": 12 },
+        "delta": [{ "caminho": ["hpAtual"], "antes": 50, "depois": 38 }] } },
+      "esperado": null
+    },
+    {
+      "nome": "Oculta que age num personagem não existe",
+      "registro": { "especie": "operacao", "dados": { "id": "op_13", "tipo": "dano", "alvo": "lia", "autor": { "conta": "00000000-0000-4000-8000-0000000000a1", "papel": "mestre", "combatente": "gobO" },
+        "entrada": { "valor": 9 }, "delta": [{ "caminho": ["hpAtual"], "antes": 30, "depois": 21 }] } },
+      "esperado": null
+    },
+    {
+      "nome": "combatente que não está na Sala conta como Oculto",
+      "registro": { "especie": "operacao", "dados": { "id": "op_14", "tipo": "cura", "alvo": "gobB", "autor": "$autor",
+        "entrada": { "valor": 3, "aplicadorId": "fantasma" }, "delta": [] } },
+      "esperado": null
+    },
+    {
+      "nome": "Só Nome que age num personagem: o nome de quem agiu e a Vida do personagem",
+      "registro": { "especie": "operacao", "dados": { "id": "op_15", "tipo": "dano", "alvo": "lia", "autor": { "conta": "00000000-0000-4000-8000-0000000000a1", "papel": "mestre", "combatente": "gobN" },
+        "entrada": { "valor": 15 }, "delta": [{ "caminho": ["hpAtual"], "antes": 30, "depois": 15 }] } },
+      "esperado": { "especie": "operacao", "autor": { "conta": "00000000-0000-4000-8000-0000000000a1", "papel": "mestre", "combatente": { "id": "gobN", "nome": "Goblin #1" } },
+        "tipo": "dano", "alvo": { "id": "lia", "nome": "Lia" }, "valor": 15, "vida": { "antes": 30, "depois": 15 } }
+    },
+    {
+      "nome": "Gastar PE em Barra: sem número",
+      "registro": { "especie": "operacao", "dados": { "id": "op_16", "tipo": "gastarPe", "alvo": "gobB", "autor": "$autor", "entrada": { "valor": 10 },
+        "delta": [{ "caminho": ["peAtual"], "antes": 30, "depois": 20 }] } },
+      "esperado": { "especie": "operacao", "autor": "$autor", "tipo": "gastarPe", "alvo": { "id": "gobB", "nome": "Goblin #2" } }
+    },
+    {
+      "nome": "Gastar PE em Aberta: com número",
+      "registro": { "especie": "operacao", "dados": { "id": "op_17", "tipo": "gastarPe", "alvo": "gobA", "autor": "$autor", "entrada": { "valor": 10 },
+        "delta": [{ "caminho": ["peAtual"], "antes": 30, "depois": 20 }] } },
+      "esperado": { "especie": "operacao", "autor": "$autor", "tipo": "gastarPe", "alvo": { "id": "gobA", "nome": "Ogro" }, "valor": 10 }
+    },
+    {
+      "nome": "Alma em Aberta: valor e modo",
+      "registro": { "especie": "operacao", "dados": { "id": "op_18", "tipo": "alma", "alvo": "gobA", "autor": "$autor", "entrada": { "valor": 5, "modo": "cura" }, "delta": [] } },
+      "esperado": { "especie": "operacao", "autor": "$autor", "tipo": "alma", "alvo": { "id": "gobA", "nome": "Ogro" }, "valor": 5, "modo": "cura" }
+    },
+    {
+      "nome": "Alma em Barra: só o tipo",
+      "registro": { "especie": "operacao", "dados": { "id": "op_19", "tipo": "alma", "alvo": "gobB", "autor": "$autor", "entrada": { "valor": 5, "modo": "x" }, "delta": [] } },
+      "esperado": { "especie": "operacao", "autor": "$autor", "tipo": "alma", "alvo": { "id": "gobB", "nome": "Goblin #2" } }
+    },
+    {
+      "nome": "Condição em Aberta: o nome dela",
+      "registro": { "especie": "operacao", "dados": { "id": "op_20", "tipo": "condicao", "alvo": "gobA", "autor": "$autor",
+        "entrada": { "modo": "adicionar", "condicao": { "nome": "Caído", "rodadas": 2 } }, "delta": [] } },
+      "esperado": { "especie": "operacao", "autor": "$autor", "tipo": "condicao", "alvo": { "id": "gobA", "nome": "Ogro" }, "modo": "adicionar", "condicoes": ["Caído"] }
+    },
+    {
+      "nome": "Condições definidas num personagem: os nomes válidos",
+      "registro": { "especie": "operacao", "dados": { "id": "op_21", "tipo": "condicao", "alvo": "lia", "autor": "$autor",
+        "entrada": { "modo": "definir", "condicoes": ["Atordoado", { "nome": "Cego" }, "", 3, { "nome": 4 }] }, "delta": [] } },
+      "esperado": { "especie": "operacao", "autor": "$autor", "tipo": "condicao", "alvo": { "id": "lia", "nome": "Lia" }, "modo": "definir", "condicoes": ["Atordoado", "Cego"] }
+    },
+    {
+      "nome": "Condição em Barra: só o tipo",
+      "registro": { "especie": "operacao", "dados": { "id": "op_22", "tipo": "condicao", "alvo": "gobB", "autor": "$autor",
+        "entrada": { "modo": "adicionar", "condicao": "Caído" }, "delta": [] } },
+      "esperado": { "especie": "operacao", "autor": "$autor", "tipo": "condicao", "alvo": { "id": "gobB", "nome": "Goblin #2" } }
+    },
+    {
+      "nome": "mudança na Ficha de personagem: sem valor, com a Vida",
+      "registro": { "especie": "operacao", "dados": { "id": "op_23", "tipo": "sessao", "alvo": "lia", "autor": "$autor", "entrada": {},
+        "delta": [{ "caminho": ["buffs"], "antes": [], "depois": [{ "nome": "Fúria" }] }, { "caminho": ["hpAtual"], "antes": 30, "depois": 25 }] } },
+      "esperado": { "especie": "operacao", "autor": "$autor", "tipo": "sessao", "alvo": { "id": "lia", "nome": "Lia" }, "vida": { "antes": 30, "depois": 25 } }
+    },
+    {
+      "nome": "Desfazer em Barra: o id público da desfeita e as faixas",
+      "registro": { "especie": "operacao", "dados": { "id": "op_24", "tipo": "desfazer", "desfaz": "op_1", "alvo": "gobB", "autor": "$autor",
+        "entrada": { "tipoDesfeito": "dano" }, "delta": [{ "caminho": ["hpAtual"], "antes": 30, "depois": 40 }] } },
+      "esperado": { "especie": "operacao", "autor": "$autor", "tipo": "desfazer", "alvo": { "id": "gobB", "nome": "Goblin #2" },
+        "tipoDesfeito": "dano", "desfaz": "11111111-1111-4111-8111-111111111111", "vida": { "antes": "acima_da_metade", "depois": "inteira" } }
+    },
+    {
+      "nome": "Desfazer de operação sem versão pública",
+      "registro": { "especie": "operacao", "dados": { "id": "op_25", "tipo": "desfazer", "desfaz": "op_x", "alvo": "gobA", "autor": "$autor",
+        "entrada": { "tipoDesfeito": "desfazer" }, "delta": [] } },
+      "esperado": { "especie": "operacao", "autor": "$autor", "tipo": "desfazer", "alvo": { "id": "gobA", "nome": "Ogro" }, "tipoDesfeito": null, "desfaz": null }
+    },
+    {
+      "nome": "Barra sem completo: faixas nulas",
+      "registro": { "especie": "operacao", "dados": { "id": "op_26", "tipo": "dano", "alvo": "sombra", "autor": "$autor", "entrada": { "valor": 3 },
+        "delta": [{ "caminho": ["hpAtual"], "antes": 10, "depois": 5 }] } },
+      "esperado": { "especie": "operacao", "autor": "$autor", "tipo": "dano", "alvo": { "id": "sombra", "nome": "Sombra" }, "valor": 3, "vida": { "antes": null, "depois": null } }
+    },
+    {
+      "nome": "pedido do jogador: quem pede e o valor rolado",
+      "registro": { "especie": "pedido", "dados": { "id": "op_27", "tipo": "dano", "alvo": "gobB", "autor": { "conta": "00000000-0000-4000-8000-0000000000b1", "papel": "jogador", "combatente": "lia" },
+        "entrada": { "valor": 20, "aplicadorId": "proprio" }, "delta": [] } },
+      "esperado": { "especie": "pedido", "autor": { "conta": "00000000-0000-4000-8000-0000000000b1", "papel": "jogador", "combatente": { "id": "lia", "nome": "Lia" } },
+        "tipo": "dano", "alvo": { "id": "gobB", "nome": "Goblin #2" }, "valor": 20 }
+    },
+    {
+      "nome": "Dano pela Metade em Só Nome: o valor rolado",
+      "registro": { "especie": "operacao", "dados": { "id": "op_28", "tipo": "danoMetade", "alvo": "gobN", "autor": "$autor", "entrada": { "valor": 25 }, "delta": [] } },
+      "esperado": { "especie": "operacao", "autor": "$autor", "tipo": "danoMetade", "alvo": { "id": "gobN", "nome": "Goblin #1" }, "valor": 25 }
+    },
+    {
+      "nome": "Cura negativa vira zero, faixas de baixo",
+      "registro": { "especie": "operacao", "dados": { "id": "op_29", "tipo": "cura", "alvo": "gobB", "autor": "$autor", "entrada": { "valor": -5 },
+        "delta": [{ "caminho": ["hpAtual"], "antes": 10, "depois": 15 }] } },
+      "esperado": { "especie": "operacao", "autor": "$autor", "tipo": "cura", "alvo": { "id": "gobB", "nome": "Goblin #2" }, "valor": 0,
+        "vida": { "antes": "ate_um_quarto", "depois": "ate_a_metade" } }
+    },
+    {
+      "nome": "Vida da 2.5.2 (hpCurrent) em Aberta, números truncados",
+      "registro": { "especie": "operacao", "dados": { "id": "op_30", "tipo": "dano", "alvo": "gobA", "autor": "$autor", "entrada": { "valor": 21.5 },
+        "delta": [{ "caminho": ["lastDamage"], "antes": 0, "depois": 21 }, { "caminho": ["hpCurrent"], "antes": 120.7, "depois": 99.2 }] } },
+      "esperado": { "especie": "operacao", "autor": "$autor", "tipo": "dano", "alvo": { "id": "gobA", "nome": "Ogro" }, "valor": 21, "vida": { "antes": 120, "depois": 99 } }
+    },
+    {
+      "nome": "caminho de Vida mais fundo não conta",
+      "registro": { "especie": "operacao", "dados": { "id": "op_31", "tipo": "dano", "alvo": "gobA", "autor": "$autor", "entrada": {},
+        "delta": [{ "caminho": ["vital", "hpAtual"], "antes": 1, "depois": 2 }] } },
+      "esperado": { "especie": "operacao", "autor": "$autor", "tipo": "dano", "alvo": { "id": "gobA", "nome": "Ogro" } }
+    },
+    {
+      "nome": "rolagem livre do Mestre: os campos da lista branca, nunca a CD",
+      "registro": { "especie": "rolagem", "dados": { "id": "r_1", "autor": "$autor",
+        "rolagem": { "tipo": "teste", "rotulo": "Percepção", "formula": "d20+5", "total": 17, "natural": 12, "d20": [12], "dados": [], "critico": false, "cd": 15, "sucesso": true, "fontes": ["x"] } } },
+      "esperado": { "especie": "rolagem", "autor": "$autor", "tipo": "teste", "total": 17, "rotulo": "Percepção", "formula": "d20+5", "natural": 12, "d20": [12], "dados": [], "critico": false }
+    },
+    {
+      "nome": "rolagem de criatura em Barra: só o tipo e o total",
+      "registro": { "especie": "rolagem", "dados": { "id": "r_2", "autor": "$autor", "combatente": "gobB",
+        "rolagem": { "tipo": "dano", "rotulo": "Garra Venenosa", "formula": "2d6+4", "total": 11, "dados": [3, 4], "critico": true } } },
+      "esperado": { "especie": "rolagem", "autor": "$autor", "combatente": { "id": "gobB", "nome": "Goblin #2" }, "tipo": "dano", "total": 11 }
+    },
+    {
+      "nome": "rolagem escondida não existe",
+      "registro": { "especie": "rolagem", "escondida": true, "dados": { "id": "r_3", "autor": "$autor", "rolagem": { "tipo": "teste", "total": 3 } } },
+      "esperado": null
+    },
+    {
+      "nome": "rolagem de Oculta não existe",
+      "registro": { "especie": "rolagem", "dados": { "id": "r_4", "autor": "$autor", "combatente": "gobO", "rolagem": { "tipo": "teste", "total": 3 } } },
+      "esperado": null
+    },
+    {
+      "nome": "rolagem de personagem com campos estranhos",
+      "registro": { "especie": "rolagem", "dados": { "id": "r_5", "autor": "$autor", "combatente": "lia",
+        "rolagem": { "tipo": "x", "total": "18", "rotulo": 3, "d20": [7.9, "a", 15, 2, 9, 1], "dados": "nao", "critico": "true" } } },
+      "esperado": { "especie": "rolagem", "autor": "$autor", "combatente": { "id": "lia", "nome": "Lia" }, "tipo": null, "total": 0,
+        "rotulo": "", "formula": "", "natural": 0, "d20": [7, 15, 2, 9], "dados": [], "critico": false }
+    },
+    {
+      "nome": "chat",
+      "registro": { "especie": "chat", "dados": { "id": "c_1", "autor": "$autor", "texto": "Olá, mesa" } },
+      "esperado": { "especie": "chat", "autor": "$autor", "texto": "Olá, mesa" }
+    },
+    {
+      "nome": "turno de quem está em Só Nome",
+      "registro": { "especie": "sistema", "dados": { "id": "s_1", "autor": "$autor", "evento": "turno", "rodada": 3, "combatente": "gobN" } },
+      "esperado": { "especie": "sistema", "autor": "$autor", "evento": "turno", "rodada": 3, "combatente": { "id": "gobN", "nome": "Goblin #1" } }
+    },
+    {
+      "nome": "turno de Oculta não existe",
+      "registro": { "especie": "sistema", "dados": { "id": "s_2", "autor": "$autor", "evento": "turno", "rodada": 3, "combatente": "gobO" } },
+      "esperado": null
+    },
+    {
+      "nome": "começo sem combatente",
+      "registro": { "especie": "sistema", "dados": { "id": "s_3", "autor": "$autor", "evento": "comecar", "rodada": 1 } },
+      "esperado": { "especie": "sistema", "autor": "$autor", "evento": "comecar", "rodada": 1 }
+    }
+  ],
+  "ordens": [
+    {
+      "nome": "Oculta na vez: ninguém visível na vez, posição sem buraco, repetido conta a primeira",
+      "ordem": ["lia", "gobO", "gobB", "rui", "gobA", "ana", "gobN", "lia", "fantasma", "sombra"],
+      "vez": "gobO",
+      "esperado": [
+        { "combatente": "lia", "posicao": 1, "naVez": false }, { "combatente": "gobB", "posicao": 2, "naVez": false },
+        { "combatente": "rui", "posicao": 3, "naVez": false }, { "combatente": "gobA", "posicao": 4, "naVez": false },
+        { "combatente": "ana", "posicao": 5, "naVez": false }, { "combatente": "gobN", "posicao": 6, "naVez": false },
+        { "combatente": "sombra", "posicao": 7, "naVez": false }
+      ]
+    },
+    {
+      "nome": "visível na vez",
+      "ordem": ["gobO", "gobB", "lia"],
+      "vez": "gobB",
+      "esperado": [{ "combatente": "gobB", "posicao": 1, "naVez": true }, { "combatente": "lia", "posicao": 2, "naVez": false }]
+    },
+    {
+      "nome": "ninguém na vez",
+      "ordem": ["rui", "gobO"],
+      "vez": null,
+      "esperado": [{ "combatente": "rui", "posicao": 1, "naVez": false }]
+    }
+  ]
+}

@@ -1,5 +1,207 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-18 · REVISÃO FINAL (ENCONTRO UNIFICADO, ETAPA 8B)
+
+Revisão de código (esforço alto) da entrega inteira, a verificação padrão e o roteiro de duas contas. Detalhe em `C:\Projetos\Grimorio\PROGRESSO-ENCONTRO-UNIFICADO-SALA.md`.
+
+- **Corrigido, decisões do autor (AskUserQuestion, "Corrigir Agora" e "Mais Nova Vence"):**
+  - A sessão de toda criatura do Mestre sobe para a Sala com o **Apelido Opaco** (`sessaoQueSobe` em `sala-encontro.js`). Antes, a condição com Aplicado Por de uma Oculta numa
+    criatura Aberta subia com o id real, e todo membro lia. A base da mesclagem fica na vista do Mestre, e a versão do co-Mestre é traduzida de volta.
+  - O **Tentar de Novo** do Mestre refaz a sessão de personagem de jogador que desistiu (`sessaoDoJogadorQueSobe`, passos guardados). Antes, a ação ficava no Registro e a sessão não mudava.
+  - **Mais Nova Vence** na recuperação do ausente (`salaMaisNova` em `sala-fechamento.js`): a sessão final da Sala só entra na Ficha se a do aparelho não foi gravada depois da
+    última gravação na Sala e do fechamento. A da Sala fica no Finalizado.
+- **Corrigido, erro claro:** o espelho do jogador lia as fichas por uma referência do React que o evento `storage` ainda não tinha atualizado, e a ficha editada noutra aba não
+  subia (regressão da 7c). Agora lê o inventário na hora (`TelaDoJogador.jsx`). Um U+2014 literal num assert novo e o AGENTS.md chamando `sala-telas.js` de FOLHA.
+- **Anotado** em `docs/a-fazer.md`: dois cuidados para a Fase 2 (a origem nas operações de `operarComAlvo` e o detalhe da rolagem de criatura Só Nome), a RPC repetida na ligação do
+  Mestre e a ficha editada na mesma aba da Sala.
+- SQL sem mudança: nada para colar de novo.
+- **O cadeado saiu no mesmo dia** (autor: "Pode retirar o cadeado e fazer o Push"). Saíram juntos `encontrosBloqueados`, `SALA_COM_CADEADO`, a chave de aparelho
+  `dev_sala_teste` e a faixa de exemplo (`?faixa=exemplo`) do `App.jsx`. A prop `encontrosBloqueados` do `Dashboard.jsx` ficou sem uso (anotado no `AGENTS.md`).
+  Os Encontros de `/` e `/Player`, `/Sala/<código>`, o botão Abrir Sala e a recuperação do ausente valem para todos.
+
+## SESSÃO DE 2026-11-18 · DOCUMENTAÇÃO, PRIVACIDADE E CADEADO (ENCONTRO UNIFICADO, ETAPA 8A)
+
+Registro da entrega do Encontro Unificado e da Sala Online (etapas 1 a 7c). Detalhe de cada etapa em `C:\Projetos\Grimorio\PROGRESSO-ENCONTRO-UNIFICADO-SALA.md`.
+
+- **O que foi entregue** (nada commitado, nada no ar): a loja viva da sessão e a G2 embutível (2), o modelo unificado de combatente por motor, operações, pedidos, histórico,
+  Desfazer relativo, três listas e migração (3), o porte da conta da 2.5.2 (4), a duração por quem aplicou (5), as telas do Encontro no visual do G2 e a saída do Dano Rápido
+  (6a), os consertos, a saída da Mesa do Mestre e o Atualizar da Ficha (6b), o banco da Sala com RLS e RPCs (7a, no ar desde 2026-11-18), o cliente (7b) e as telas (7c).
+  Guias: `docs/afty-encontros.md` (Encontro e telas da Sala) e `docs/nuvem-supabase.md` (banco, cliente, como usar, manutenção).
+- **Documentação conferida contra o código**: o guia dos Encontros ganhou o estado atual (cadeado, código morto, o que ainda não existe), `docs/nuvem-supabase.md` virou um guia só da
+  Sala (banco, cliente, telas, passo a passo de Mestre e jogador, manutenção, aviso de que o `.env.local` aponta para a produção), o `CLAUDE.md` e o `AGENTS.md` incluem Encontros, Sala e
+  `/Sala`, e o `docs/afty-player.md` trouxe o personagem ligado e a duração por quem aplicou. Os docs que contavam "a duração desce na virada" ganharam a nota da regra nova.
+- **Privacidade**: `public/privacidade.html` (atualizada em 18 de novembro de 2026) ganhou a seção "Salas de jogo online" com o que os outros membros veem, o que o Mestre vê e altera,
+  quanto tempo cada dado fica no servidor e o Encontro Finalizado nas listas de todos. Texto aprovado pelo autor antes de gravar.
+- **Decisões do autor** (AskUserQuestion): **Gravar Como Está** (texto de privacidade), **Só Depois da 8b** (o cadeado de `/` e `/Player` e o desvio da Sala NÃO saíram nesta etapa),
+  **Remover Tudo** (quando o cadeado sair, saem junto a chave `dev_sala_teste`, `SALA_COM_CADEADO` e a faixa de exemplo) e **Apagar** o `.env.local` (o dev volta a rodar só com
+  localStorage). O arquivo foi apagado.
+- ⚠ **O cadeado segue posto.** Tirar só depois da revisão final (8b), conferindo num perfil limpo sem a chave. A lista do que sai e do que conferir está em `docs/a-fazer.md`.
+- Pendências que saíram da fila porque agora estão no guia: mudança de assinatura de RPC (`drop function`, em "Manutenção" de `docs/nuvem-supabase.md`). Entraram na fila a Fase 2
+  (automação) e a Fase 3 (VTT).
+
+## SESSÃO DE 2026-11-18 · AS TELAS DA SALA ONLINE (ENCONTRO UNIFICADO, ETAPA 7C, APROVADA PELO AUTOR)
+
+Telas em `src/nuvem/sala-ui/` por cima do cliente da 7b: Abrir Sala, Controles do Mestre, entrada (senha, papel, fichas e iniciativa), a Ficha G2 do jogador com a faixa da
+luta e o painel da Sala, o espectador, o Registro com chat e rolagem escondida, e o Encontro Finalizado com o Registro. Decisões do autor: os avisos do jogador ao Mestre
+(iniciativa e Encerrar Meu Turno) viajam como linha de rolagem, só as rolagens da Ficha entram no Registro, e a Ficha do jogador na Sala mantém tudo do cabeçalho menos o
+turno. Guia: `docs/afty-encontros.md`, "As telas da Sala". Capturas com as duas contas reais em `C:\Projetos\Grimorio\outputs\capturas-etapa-7c\index.html`, aprovadas pelo autor.
+
+## SESSÃO DE 2026-11-18 · O CLIENTE DA SALA ONLINE (ENCONTRO UNIFICADO, ETAPA 7B)
+
+Detalhe completo em `C:\Projetos\Grimorio\PROGRESSO-ENCONTRO-UNIFICADO-SALA.md` (seção 7b) e no guia `docs/nuvem-supabase.md` ("O cliente da Sala").
+
+- **O `salas.sql` está no ar** (o autor colou em 2026-11-18). Conferido no projeto: o canal privado `sala:<id>` com as `postgres_changes` e o
+  Presence juntos entra com "Allow public access" desligado (a primeira inscrição pode cair com "MissingPartition" e a segunda entra).
+- **Cliente** em `src/nuvem/`: `sala-rede.js` (RPCs e leituras), `sala-cliente.js` (retrato, tempo real, Presence, releitura pela versão,
+  reconexão, escrita com versão), `sala-espelho.js` (a sessão da Sala na loja do jogador e a edição dele subindo como diferença),
+  `sala-encontro.js` (o Encontro do Mestre ligado à Sala), `sala-oculto.js` (FOLHA, Apelido Opaco), `sala-fechamento.js` (Finalizado e
+  ausente), `SalaPagina.jsx` (tela mínima). Rota `/Sala/<código>` no `App.jsx`, só com `dev_sala_teste` enquanto o cadeado estiver posto.
+- **Decisões do autor**: Apelido Opaco para o id da criatura Oculta na sessão do jogador, e o co-Mestre mexe nas fichas (turno e iniciativa
+  ficam no aparelho de quem criou).
+- **Achados**: a mesclagem gravava o valor final de um lado nos números (o dano dos dois lados virava um só), e agora soma nos relativos do
+  motor; o espelho tomava a normalização da loja por edição do jogador e desfazia o começo do combate; o personagem que chega com a luta
+  começada agora começa o combate; o fechamento espera as escritas da luta antes de fechar a Sala.
+- Prova com duas contas (Playwright, dev): as catorze conferências passaram, com o jogador ausente e presente no fechamento. Asserts: 332 arquivos verdes e 23.972 asserts (mais 75 do
+  `t-sala-cliente`), e o vermelho conhecido `t-reconciliacao-g00`.
+
+## SESSÃO DE 2026-11-17 · O BANCO DA SALA ONLINE (ENCONTRO UNIFICADO, ETAPA 7A)
+
+Detalhe completo em `C:\Projetos\Grimorio\PROGRESSO-ENCONTRO-UNIFICADO-SALA.md` (seção 7a) e no guia `docs/nuvem-supabase.md` ("Sala Online").
+
+- **`supabase/salas.sql`**, para o autor colar no SQL Editor (nada foi rodado no projeto): nove tabelas da Sala em `public` e quatro em
+  `sala_interno`, RLS em todas, só SELECT para o `authenticated`, toda escrita por RPC security definer com `search_path` vazio. O modelo de
+  ameaça está no topo do arquivo. O resumo cortado, a versão pública da operação e a ordem do jogador são calculados NO BANCO, da visão gravada lá.
+- **Decisões do autor**: tetos de 8 pessoas por Sala, 2 Salas abertas por Mestre, 6 horas paradas até fechar e 14 dias guardada. Barra de Vida
+  em cinco faixas. Em Só Nome e Barra, só o valor rolado de Dano e Cura. Rolagem escondida sem linha pública. Todo mundo com conta. A tabela
+  `salas` fora da publicação do tempo real.
+- **Achado do tempo real**: DELETE não passa pela RLS e iria para todo assinante da tabela. A publicação `supabase_realtime` passou a publicar só
+  insert e update, e as chaves primárias publicadas são uuid aleatório.
+- **`src/nuvem/sala-projecao.js`** (FOLHA): o espelho dos cortes. `asserts/t-sala-projecao.mjs` (151) prende o JavaScript e o SQL juntos pelos casos
+  de `asserts/sala-projecao-casos.json` e pelas constantes.
+- **Prova local** `supabase/prova-salas-pglite.mjs` (PGlite, fora das dependências): o SQL rodado duas vezes e cada papel, 351 conferências. Ela pegou
+  um furo antes de sair: comparação com dono nulo dentro de `if not (...)` deixava o jogador gravar a ficha da criatura do Mestre. Agora toda
+  conferência de dono é `is not distinct from`, e o assert reprova o `=`.
+- **Revisão no fim da etapa**: o dono do alvo passou a ler o pedido completo que um colega faz nele (sem isso não tinha o id nem a intenção para
+  responder), e para quem não é Mestre o id Oculto e o id que não existe dão o mesmo erro em toda RPC (`resumo_visivel`), sem oráculo de existência.
+- Asserts: 331 arquivos verdes e 23.897 asserts, mais o vermelho conhecido `t-reconciliacao-g00`.
+
+## SESSÃO DE 2026-11-17 · CONSERTOS, MESA DO MESTRE E PARIDADE DO / (ENCONTRO UNIFICADO, ETAPA 6B)
+
+Detalhe completo em `C:\Projetos\Grimorio\PROGRESSO-ENCONTRO-UNIFICADO-SALA.md` (seção 6b) e no guia `docs/afty-encontros.md` ("As telas, etapa 6b").
+
+- **A Mesa do Mestre da Guilda saiu** (tela, módulos e assert). O `App.jsx` não passa mais `onGoToMestre`, e o `AGENTS.md` anota a exceção sem uso. O
+  `t-encontro-unificado` guarda os seis verbos de grupo como valores literais.
+- **Atualizar da Ficha** por combatente (criatura da 2.5.2 e cópia do Afty, autor, 2026-11-17), no lugar do `EncounterSyncModal`. Salvar uma criatura
+  deixou de reescrever `fm_encounters_v1`.
+- **Painel da criatura da 2.5.2:** Habilidades Ativáveis, Reações, modificador manual, Ajustes de Combate e aviso de condição imune.
+- **Conferido no navegador** com Jogo, Hanami e Choso do compêndio: ativar e desativar regra, descida dos modificadores no fim do turno de quem
+  aplicou, Guarda, Resistência Parcial e Total, Desafiando a Morte, imunidade, Atualizar da Ficha nas duas rotas.
+- Asserts: 330 arquivos verdes e 23.746 asserts (o `t-mesa-do-mestre` saiu com 38, o `t-encontro-atualizar-ficha` entrou com 45), mais o vermelho conhecido
+  `t-reconciliacao-g00`.
+
+## SESSÃO DE 2026-11-17 · AS TELAS DO ENCONTRO NOVO (ENCONTRO UNIFICADO, ETAPA 6A)
+
+As telas do Encontro unificado, no visual do G2, ligadas nas três listas. Capturas aprovadas pelo autor. Detalhe completo em
+`C:\Projetos\Grimorio\PROGRESSO-ENCONTRO-UNIFICADO-SALA.md` (seção 6a) e no guia `docs/afty-encontros.md` ("As telas").
+
+- **Telas** em `src/systems/afty/encontros/telas/`: lista de Encontros (pastas próprias, busca, status, arrastar para ordenar, seleção de
+  vários), planejamento (inventário do grupo em três abas, escalação por lado com visão por criatura), luta do Mestre em três colunas (Ordem,
+  Ficha G2 embutida ou painel novo da 2.5.2, Registro com Pedidos e Histórico com Desfazer), Configurações (Aceitar Sozinho), Finalizado e a
+  faixa da luta do jogador com dados de exemplo.
+- **Ganchos** `usar-lista-encontros.js` (migração do site uma vez por página antes de qualquer leitura, em qualquer rota) e `usar-encontro.js`
+  (mundo pela loja da sessão, escrita pela loja com `reaplicarSobre`, nunca pelo `salvarSessao`).
+- **`App.jsx`**: `/` e `/Player` abrem a lista do site (`afty_encontros_site_v1`), `/Afty` e a Guilda as delas, no formato novo. O cadeado de
+  `/` e `/Player` segue, e a chave de aparelho `dev_sala_teste = "1"` destranca para teste (autor). Nada mudou em `src/components/`.
+- **Decisões do autor**: Pastas Próprias por lista, tema padrão na G2 embutida da tela do Mestre, só a Busca no cabeçalho dela, e **sem Dano
+  Rápido por linha** ("fica efetivamente bem feia"): o dano vai pela seleção com a barra de grupo ou por "-12" na Vida. Revoga o "Dano Rápido por
+  linha" do plano.
+- ⚠ A largura da Luta é medida por `ResizeObserver`, e não `@container`: o painel de fontes da G2 é `fixed` e ficaria preso num contêiner.
+- Verificação: 330 arquivos verdes e 23.739 asserts (igual à etapa 5), o vermelho conhecido de sempre (`t-reconciliacao-g00`), lint limpo, build
+  isolado, capturas em 1440 e 375 px sem estouro.
+
+## SESSÃO DE 2026-11-17 · DURAÇÃO NO FIM DO TURNO DE QUEM APLICOU (ENCONTRO UNIFICADO, ETAPA 5)
+
+- ⚠ **DECISÃO REVOGADA: "a duração desce para todos na virada da rodada"** (registrada na sessão do Encontro do Afty, mais abaixo, e no
+  comentário do `PROXIMO_TURNO` de `usar-encontro-afty.js`). Regra nova do autor, nas rotas todas: no Encontro, só as durações em rodadas
+  (Efeitos, condições, usos, e na criatura da 2.5.2 condições e modificadores) descem, no FIM DO TURNO DE QUEM APLICOU. O que é por rodada
+  segue na virada. A tabela do que é cada coisa está em `docs/afty-encontros.md`, "A duração por quem aplicou".
+- Decisões do autor nesta etapa (AskUserQuestion): **Campo Novo aplicadorId** (o `aplicadoPor` dos recebidos já era o NOME mostrado e ficou
+  como estava), **Não, Começa no Próximo** (o que entra no turno de quem aplicou só desce a partir do turno seguinte dele, pela marca
+  `aguardaFimDoTurno`), **Encerra os Turnos que Faltam** (Nova Rodada forçado), **Do Receptor, até a Fase 2** (Pacote para Aliados),
+  **Duração** para Exaustão de Técnica, Invencível sob o Sol e Talismã do Ápice, **Duração** para os usos próprios em rodadas e **Do Alvo,
+  Salvo Escolha** (sem combatente autor).
+- `ficha-sessao.js`: `desceDuracoesDe`, `marcaAplicador`, `repassaAplicador`, e a `proximaRodada` com `{ descerDuracoes }` (ligado por padrão).
+  As descidas de lista (`desce`, `desceBuff`) saíram de dentro da `proximaRodada` para `descidasDe`, as mesmas nos dois caminhos.
+  `ficha-uso-estado.js` (FOLHA): `APLICADOR_PROPRIO`, `aplicadorDe`, `semMarcaDoTurno`, `desceUsoDe`, e o `normalizaAtivo` guarda quem aplicou.
+- **Ficha sozinha igual a hoje**: o botão de virar a rodada se chama **Encerrar Meu Turno** na G2 e na clássica (`aria-label` e `title`, e o
+  seletor do cabeçalho compacto em `ficha.css`), com o mesmo efeito. Conferido byte a byte contra a saída de antes em dez sessões ricas.
+- Encontro novo: três verbos na interface dos motores (`desceDuracoesDe`, `marcarAplicador`, `repassarAplicador`). O redutor desce, a cada
+  fim de turno, as entradas daquele aplicador em todos os combatentes, dispara a descida de cada posição pulada (Abatido, Fora da Ordem), vira
+  a rodada sem duração e repassa as entradas de quem sai da luta. As operações carimbam `aplicadorId` e a marca do turno (`comAplicador`).
+  A criatura da 2.5.2: `descerDuracoes252` agora desce condições e modificadores por aplicador, e a virada e o começo do turno não descem nada.
+- Os próprios verbos de turno também marcam o que criam (`verboDoTurno` no redutor): a condição que um gatilho `turn_start` ou `turn_end`
+  da 2.5.2 põe na criatura não some no mesmo fim de turno.
+- Asserts: `t-duracao-turno.mjs` (59, novo). Vermelhos de propósito, atualizados com o comentário "REGRA MUDOU EM 2026-11-17":
+  `t-encontro-252-porte.mjs` (9 casos, 161 para 164). `t-encontro-unificado.mjs` não ficou vermelho porque a luta que ele compara pelos dois redutores
+  não tem duração nenhuma (só dano). A cobertura da duração é o `t-duracao-turno.mjs`. O Encontro de hoje (`usar-encontro-afty.js`) não mudou e segue com a regra antiga até a etapa 6.
+- O Desfazer fechava logo depois do fim do turno de quem aplicou (a marca saía e a lista mudava). Decisão do autor: **Ignorar a Marca**. A
+  conferência do Desfazer e da pré-condição ignora a marca do turno, e o valor que volta herda o estado de agora da marca (`semMarcasConsumidas`). A rodada que desce ainda fecha.
+- ⚠ Da etapa 5 em diante nada sobe para `main` antes da etapa 8: esta já muda a Ficha pública do `/Player` (o nome do botão).
+
+## SESSÃO DE 2026-11-17 · PORTE DA CONTA DA 2.5.2 (ENCONTRO UNIFICADO, ETAPA 4)
+
+- `encontros/motores/m252-vital.js` (novo) e `m252.js` (completo): a criatura da 2.5.2 agora nasce, opera e passa pelo turno no Encontro novo.
+  O que é puro e exportado na 2.5.2 é importado como está. A conta que morava nos handlers do `CombatantPanel.jsx` (RD, Guarda, PV e PE
+  temporário por fonte, Alma, Ignorar RD, Resistência, Suscetível, ativar regra), no `EncounterTracker.jsx` (Desafiando a Morte) e no
+  reducer privado do `useEncounter.js` (começo, turno, virada, Nova Rodada) foi COPIADA, sem corrigir nada, com arquivo e linhas de origem.
+- Decisões do autor nesta etapa: o travessão das frases do Registro virou **dois-pontos**, e **Descansar é o Reset** do painel.
+- O derivado da 2.5.2 é o objeto `derivarVivo` (stats AO VIVO, `snapshot`, `combatSettings`). Sem ele os verbos lançam "Ficha sem
+  Cálculo". `aparar` e `normalizarEstado` são identidade: o PV temporário é o excedente da Vida acima do máximo.
+- A descida das durações está isolada em `descerDuracoes252`, a função que a etapa 5 troca. Hoje vale a regra da 2.5.2.
+- Pequenos acréscimos aos módulos da etapa 3, todos aditivos (o Afty os ignora): terceiro argumento dos verbos de turno (`opcoesDe` no
+  redutor, com `avisar` para o Registro), abate pelo contador de erros depois de operação, `registroNoFim` e `sempreDerivado` em
+  `operacoes.js` (o `combatLog` da 2.5.2 cresce pelo fim e a segunda ativação seguida perdia o registro), e `limite` com o valor de ANTES
+  como quarto argumento e `soltosNoDesfazer` no Desfazer.
+- Asserts: `t-encontro-252-porte.mjs` (161, novo). `t-encontro-unificado.mjs` foi atualizado (220): os casos que esperavam `MotorPendente`
+  viraram casos da criatura rodando, e a regra de import passou a permitir só o motor da 2.5.2. Guia em `docs/afty-encontros.md`.
+
+## SESSÃO DE 2026-11-17 · MODELO PURO DO ENCONTRO (ENCONTRO UNIFICADO, ETAPA 3)
+
+- Módulos novos em `encontros/`, ao lado dos antigos e sem tocá-los: `modelo.js`, `operacoes.js`, `redutor.js`, `listas.js`,
+  `migracao.js` e `motores/` (`interface.js` FOLHA, `afty.js`, `m252.js`, `index.js`). Nenhuma tela usa o modelo ainda: as telas de hoje
+  seguem iguais. Guia novo `docs/afty-encontros.md`.
+- Combatente por motor (`afty`, `252`) e tipo (personagem ligado ou cópia, criatura, marcador), `foraDaOrdem` no lugar do `oculto`,
+  `visao` (criatura nasce Oculta) e `dono`. O personagem ligado guarda só `fichaRef`, e a sessão é a da Ficha.
+- Operação em JSON com autor, alvo, entrada (rolagem já feita) e delta estrutural (`antes` e `depois` por caminho, `AUSENTE` para chave
+  que some). Duas fases: medir fora do redutor com o derivado, aplicar no redutor com pré-condição por valor. A genérica (`sessao`)
+  carrega o que a G2 embutida muda pelo `onSessao`.
+- Decisões do autor nesta etapa: Desfazer **relativo nos números** (Vida, PE, Alma e cascas voltam pelo delta se couberem entre 0 e o
+  máximo, o resto só se não mudou, conflito cancela tudo com aviso), histórico **Personagem por Papel** sem Sala, teto de **500**, e o
+  personagem que era cópia num Encontro antigo **liga e guarda a cópia** (`copiaAntiga`).
+- Pedidos pendente, aceito e recusado, com o delta medido no aceite, e Aceitar Sozinho por Encontro. As seis ações em grupo da Mesa do
+  Mestre viraram uma operação por alvo (copiadas, sem import).
+- Três listas: `afty_encontros_site_v1` (nova, `/` e `/Player`), `afty_encontros_v1` e `afty_encontros_eradeouro_v1`. Fronteira pela chave
+  do inventário, lido direto. `gravarLista` recusa as duas chaves das telas antigas até a etapa 6.
+- Migração idempotente com id estável (`site252_<id>`, `siteafty_<id>`) e registro em `afty_encontros_site_migracao_v1`. Nenhuma chave
+  antiga é apagada ou regravada.
+- Asserts novos `t-encontro-unificado.mjs` (218) e `t-encontro-migracao.mjs` (72). Os nove módulos entraram em
+  `docs/revisao-automacao/escopo.json` como INTERFACE. Pendências em `docs/a-fazer.md`.
+
+## SESSÃO DE 2026-11-17 · LOJA VIVA DA SESSÃO E G2 EMBUTÍVEL (ENCONTRO UNIFICADO, ETAPA 2)
+
+- `ficha/sessao-loja.js` (novo): `ler`, `atualizar`, `gravar`, `ouvir`, `descarregar`, `definirAparo`, `aplicarRemoto` (porta da Sala, etapa
+  7b) e o gancho `useSessaoDaLoja` (`useSyncExternalStore`). Mesma chave (`chaveDaSessao`, exportada de `ficha-sessao.js`) e mesmo aparo
+  do `carregarSessao`. Outras abas chegam pelo evento `storage`.
+- A edição local é uma fila de funções (`atualiza((s) => ...)`). Versão de fora que chega antes da gravação vira a base e a fila é
+  reaplicada em cima. Antes de gravar, a loja relê a chave e reaplica se o texto mudou: nunca grava por cima de versão mais nova. A
+  versão é o texto gravado, não o `atualizadoEm`.
+- G2 e clássica leem e gravam pela loja. Mesmo atraso de 600 ms, gravação aparada pelo derive vivo, e agora sair da Ficha (Voltar, Editar,
+  fechar a aba) grava na hora em vez de perder a edição dos últimos 600 ms.
+- G2 com modo embutido: `sessao` e `onSessao` opcionais (`onSessao(fn)`, a forma do `PainelDeCombatente`). Sem eles, comportamento de sempre.
+- Conferido no navegador: a mesma ficha em duas abas, em `/Player`, `/Afty`, `/EraDeOuro` e na clássica, mostra numa a mudança da outra
+  sem recarregar. Duas edições simultâneas (uma em cada aba) ficam as duas.
+- Assert novo `t-sessao-loja.mjs` (69). O módulo entrou em `docs/revisao-automacao/escopo.json` como INTERFACE.
+
 ## SESSÃO DE 2026-11-16 · POLÍTICA DE PRIVACIDADE DO FICHA F&M
 
 - Página pública em `/privacidade.html`, com link nos painéis de `/` e `/Player`. Cobre armazenamento local, login com Google ou Discord, sincronização via Supabase e métricas da Vercel.
@@ -15604,6 +15806,11 @@ ganchos criaria um segundo motor fantasma. A virada de rodada faz o que a Ficha 
 ⚠ **A duração desce para TODOS na virada**, e não no turno de cada um como na 2.5.2. É o que a Ficha
 já faz, e as duas telas precisam contar as mesmas rodadas: um buff de 3 rodadas não pode durar mais
 na mesa do mestre do que na ficha do jogador.
+
+⚠ **REVOGADA EM 2026-11-17** (Encontro Unificado, etapa 5): no Encontro, a duração desce no fim do turno de quem
+aplicou, e na Ficha sozinha o botão virou Encerrar Meu Turno com o mesmo efeito. Ver a sessão de 2026-11-17 no topo
+e `docs/afty-encontros.md`, "A duração por quem aplicou". O Encontro de hoje (`usar-encontro-afty.js`) segue com a
+regra antiga até a etapa 6 trocar as telas.
 
 **Ficaram de fora, de propósito:** arrastar-e-soltar para reordenar (`@dnd-kit`), seleção múltipla com
 Shift e o medidor de armazenamento. Os três resolvem o problema de quem tem centenas de encontros, e

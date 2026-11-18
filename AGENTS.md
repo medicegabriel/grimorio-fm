@@ -17,7 +17,7 @@ Antes de iniciar qualquer tarefa, leia os seguintes documentos nesta ordem:
 - **NÃO TOQUE NO GRIMÓRIO 2.5.2:** O sistema base está em produção e é estritamente **somente-leitura**.
 - Tudo dentro de `src/components/` (incluindo `builder-controls.jsx`, `AutomationBuilder.jsx`, `fm-dsl.js` e as pastas `sections/`) pode ser importado, mas é **somente-leitura**, salvo as exceções autorizadas na seção 6.
 - Se precisar de algo do 2.5.2 que não pode ser importado, copie para o lado do Afty e documente no código a origem do arquivo.
-- **Isolamento do Afty:** Todo o sistema Afty (motor, telas, catálogos) vive **exclusivamente** em `src/systems/afty/`. A rota correspondente é `/Afty`, que é escondida e possui storage isolado.
+- **Isolamento do Afty:** Todo o sistema Afty (motor, telas, catálogos) vive **exclusivamente** em `src/systems/afty/`. A rota correspondente é `/Afty`, que é escondida e possui storage isolado. A nuvem pessoal e a **Sala online** (Encontro com várias contas) vivem em `src/nuvem/` e `supabase/`, ao lado do Afty: o Encontro (`src/systems/afty/encontros/`) só importa de `src/nuvem/` um módulo puro (`sala-telas.js`, que por sua vez só importa as FOLHAS `sala-projecao.js` e `sala-frases.js`). Guias: `docs/afty-encontros.md` e `docs/nuvem-supabase.md`. O SQL da Sala o autor cola no Supabase, o agente nunca roda.
 - A regra de qual ficha usar vem sempre de `creature.rulesVersion`, não da rota onde ela foi aberta.
 - **Validação de isolamento:** Confira o diff em `src/components/`. Ele deve conter somente alterações já autorizadas na seção 6, preservando trabalho local anterior à tarefa.
 
@@ -61,8 +61,8 @@ No registro abaixo, Forma 1 é parâmetro opcional com o padrão preservado e va
   - `Dashboard.jsx`: `titulo` e `showSystemView` (2026-09-09). Forma 1.
   - `Dashboard.jsx`: `vocab` (2026-09-10). Forma 1.
   - `Dashboard.jsx`: `folderView` e `onFolderViewChange` (2026-10-04), opcionais com seleção local por padrão. O `App.jsx` conserva e salva a última pasta nas três rotas, a pedido do autor. Forma 1.
-  - `Dashboard.jsx`: `onGoToMestre` (2026-11-11), o botão Mestre do cabeçalho, desenhado só quando a prop vem. Só o `/EraDeOuro` a passa, e abre a Mesa do Mestre (`src/systems/eradeouro/MesaDoMestre.jsx`). Autor consultado antes ("Botão Mestre no Cabeçalho"). Forma 1.
-  - `Dashboard.jsx`: `encontrosBloqueados`, `cabecalhoTitulo` e `cabecalhoAcoes` (2026-11-16), opcionais com o cabeçalho de sempre por padrão. O `App.jsx` passa o cadeado dos Encontros em `/` e `/Player`, o alternador Criatura e Player nas duas e a Conta da nuvem nas quatro rotas. Autor consultado antes ("Dentro do cabeçalho", "Nas duas rotas públicas"). Forma 1.
+  - `Dashboard.jsx`: `onGoToMestre` (2026-11-11), o botão Mestre do cabeçalho, desenhado só quando a prop vem. Só o `/EraDeOuro` a passava, e abria a Mesa do Mestre. **A Mesa do Mestre saiu em 2026-11-17 (Encontro Unificado, etapa 6b) e o `App.jsx` deixou de passar a prop: a exceção ficou SEM USO.** O código dela segue no `Dashboard.jsx` porque `src/components/` é somente-leitura, e fica ali, sem efeito, até o autor decidir tirá-la. Autor consultado antes ("Botão Mestre no Cabeçalho"). Forma 1.
+  - `Dashboard.jsx`: `encontrosBloqueados`, `cabecalhoTitulo` e `cabecalhoAcoes` (2026-11-16), opcionais com o cabeçalho de sempre por padrão. O `App.jsx` passa o cadeado dos Encontros em `/` e `/Player`, o alternador Criatura e Player nas duas e a Conta da nuvem nas quatro rotas. Autor consultado antes ("Dentro do cabeçalho", "Nas duas rotas públicas"). Forma 1. **O cadeado saiu em 2026-11-18** (depois da revisão final do Encontro Unificado, a pedido do autor): o `App.jsx` deixou de passar a prop `encontrosBloqueados`, que ficou SEM USO, como a `onGoToMestre`. O código dela segue no `Dashboard.jsx`, sem efeito, até o autor decidir tirá-la.
   - `Dashboard.jsx`: o `h1` do título do cabeçalho ganhou `m-0!`, `text-xl!`, `sm:text-2xl!`, `leading-tight!` e `tracking-normal!`, e a linha principal e a linha do alternador no celular (que trocou `mt-2` por `mb-3`) ganharam `mb-3` para não encostar no medidor (2026-11-17), porque o `h1` global do `index.css` vencia o tamanho pedido e deixava o título torto em relação aos botões. Autor consultado antes ("Nas quatro rotas", "O que o código pede"). Forma 3.
   - `PdfFab.jsx` e `PdfViewerModal.jsx`: a janela do Livro de Regras virou flutuante, arrastável, redimensionável e minimizável, em `z-[120]` (2026-10-02). Forma 3.
   - `io-utils.js`: o `parseImportText` dá "Sem nome" à ficha sem nome em vez de derrubar o pacote inteiro (2026-10-03). Forma 3.
@@ -73,6 +73,7 @@ No registro abaixo, Forma 1 é parâmetro opcional com o padrão preservado e va
 ## Documentação
 
 - `docs/a-fazer.md` é a fila atual. Ao concluir uma entrada, retire-a da fila e registre a decisão ou a implementação no guia correspondente ou em `docs/afty-status.md`.
+- `docs/afty-encontros.md` é o guia do Encontro unificado e das telas da Sala, e `docs/nuvem-supabase.md` o da nuvem pessoal e do banco, cliente, uso e manutenção da Sala. Mudou o que a Sala envia ou guarda, mude também `public/privacidade.html`.
 - `docs/afty-status.md` é o histórico de sessões. Afirmações datadas nele não substituem a verificação do código atual.
 - Atualize contagens, caminhos, estados de implementação e instruções de navegação quando o código mudar. Não apresente uma decisão já tomada como pergunta em aberto. Antes de entregar, confira o diff e a resposta para garantir que não foi introduzido nenhum U+2014.
 

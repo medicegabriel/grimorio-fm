@@ -498,7 +498,7 @@ Múltiplos Efeitos Imediato pode misturar um efeito de um ataque (a Reação de
 Defesa) com outro de uma rodada (TR). Cada benefício leva o prazo do efeito de onde
 saiu (`efeitosDoAuxiliarPorEfeito`, só leitura, a união é a lista do resolvedor),
 no campo `duracao` do benefício, quando difere do prazo da opção. A instância
-guarda a cópia e, no de rodadas, o contador dele: a virada desce cada um e tira só
+guarda a cópia e, no de rodadas, o contador dele: a virada desce cada um (no Encontro, o fim do turno de quem aplicou, regra de 2026-11-17 em `docs/afty-encontros.md`) e tira só
 o que zera, e a instância sai quando não sobra benefício (`partesDaInstancia`,
 `semParteDaInstancia`). No G2, o detalhe lista cada parte com quem encerra, o
 Encerrar Parte tira só a de um ataque, o Encerrar tira o Feitiço inteiro, e a

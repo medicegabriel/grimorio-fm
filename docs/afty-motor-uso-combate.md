@@ -235,12 +235,12 @@ negativo e as Portas da Morte são do CL2. Receber dano com a ficha concentrada 
 | Quem consome | Onde | O que acontece |
 |---|---|---|
 | Sessão | `normalizaSessao`, `sessaoEmBranco` | O campo `uso` nasce, é saneado e viaja |
-| Virada de rodada | `proximaRodada` | Duração desce, manutenção fica devida, `registro.encerrou` e `registro.manutencaoDevida` |
+| Virada de rodada | `proximaRodada` | Duração desce, manutenção fica devida, `registro.encerrou` e `registro.manutencaoDevida`. ⚠ Só na Ficha sozinha (botão Encerrar Meu Turno). No Encontro a duração desce no fim do turno de quem aplicou (`desceDuracoesDe`, regra de 2026-11-17 em `docs/afty-encontros.md`) e a virada chama `proximaRodada` com `descerDuracoes: false` |
 | Início e fim de turno | `iniciaTurnoFicha`, `encerraTurnoFicha`, e a virada da ficha individual | Ações voltam, sequência fecha, o que era "até o próximo turno" cai |
 | Fim do combate | `aplicaPatchCombate({ ativo: false })` | Cai o que era "até a cena" ou `emCombate`, limpa pendências e teste |
 | Descanso | `descansar` | Encerra os usos e desfaz o que ligaram, zera o estado e conserva o anel de ids |
 | Ritual Estendido | `iniciaRitualEstendido` e fechamentos | Abre e fecha a concentração |
-| Encontro | os mesmos `iniciaTurnoFicha`, `encerraTurnoFicha`, `proximaRodada` | Cada combatante já usa |
+| Encontro | o adaptador de motor (`encontros/motores/afty.js`) por cima dos mesmos `iniciaTurnoFicha`, `encerraTurnoFicha` e `proximaRodada`, mais `desceDuracoesDe` | Cada combatante usa pelo adaptador. A duração em rodadas desce no fim do turno de quem aplicou |
 | Camada da mesa do G2 | `efeitos/operacoes-uso.js` | Adaptadores `{ mesa, erro }` com evento e ativação |
 
 ### Um ataque entre dois combatentes (ordem das chamadas)

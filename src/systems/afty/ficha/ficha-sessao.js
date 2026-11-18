@@ -60,6 +60,7 @@ import {
 import {
   usoEmBranco, normalizaUso, avancaUsoNaRodada, iniciaTurnoNoUso, encerraTurnoNoUso, fechaCombateNoUso,
   zeraUsoNoDescanso, abreConcentracaoNaSessao, fechaConcentracaoNaSessao, usoDe, encerraAtivoNaSessao,
+  desceUsoDe, APLICADOR_PROPRIO, aplicadorDe, semMarcaDoTurno,
 } from "./ficha-uso-estado";
 // As barreiras erguidas (CL3): paredes e cortinas. FOLHA, como o estado de uso acima.
 import { barreirasEmBranco, normalizaBarreiras } from "./ficha-barreiras-estado";
@@ -71,6 +72,8 @@ const CHAVE_BASE = "fm_ficha_sessao_afty_v1";
 const LOG_MAX = 50;
 
 const chaveDe = (id) => `${CHAVE_BASE}:${id || "sem-id"}`;
+/* A mesma chave, para a loja viva da sessão (`sessao-loja.js`) não copiar a regra do "sem-id". */
+export const chaveDaSessao = chaveDe;
 
 const inteiro = (v, padrao = 0) => {
   const n = Math.trunc(Number(v));
@@ -2378,12 +2381,203 @@ function cenaNovaDoGolpe(sessao) {
   return devolveUsos(sessao, (k) => k === CHAVE_GOLPE_SEIS || k.startsWith("cena:"));
 }
 
+/* ============================================================ */
+/* A DURAÇÃO POR QUEM APLICOU (Encontro Unificado, etapa 5)      */
+/* ============================================================ */
+/*
+ * ⚠ REGRA NOVA (autor, 2026-11-17), que REVOGA "a duração desce para todos na virada da rodada". No Encontro, só as
+ * DURAÇÕES descem, e no FIM DO TURNO DE QUEM APLICOU (`desceDuracoesDe`). O que é POR RODADA segue na virada
+ * (`proximaRodada` com `descerDuracoes: false`). A classificação, com as quatro respostas do autor do mesmo dia:
+ *
+ *   DURAÇÃO (desce no fim do turno do aplicador)       POR RODADA (segue na virada)
+ *   buffs[].rodadas, e beneficios[].rodadas (PA-I3)    Guarda, cascas de PV e PE temporário (`rodada`, `combate`)
+ *   condicoes[].rodadas                                contadores `rodada:` e `estado:X:rodada`, estados `expiraNaRodada`
+ *   uso.ativos[] com duracao rodadas (Postura, ...)    a Expansão (`dominioRodadas`), recargas da Técnica Máxima
+ *   exaustaoTecnica (autor: "Duração")                 invocações (Corpo, Autonomia), Dharma, Bloodfeast, Gungnir
+ *   Invencível sob o Sol e Talismã do Ápice, com a     manutenção devida e pendências "até a rodada virar"
+ *   cobrança que acompanha (autor: "Duração")          adaptações, armas transformáveis, Preparo, Frenesi, Surto
+ *
+ * Quem aplicou mora na entrada (`aplicadorId`, ver ficha-uso-estado.js), e a ausência lê como `"proprio"`. Os três últimos
+ * da coluna da esquerda são sempre da própria ficha, e a marca do turno deles fica em `sessao.aguardaFimDoTurno` (lista de
+ * chaves), porque não são entradas de lista.
+ *
+ * NA FICHA SOZINHA NADA MUDA: o botão (agora Encerrar Meu Turno) chama `proximaRodada`, que desce tudo, de todos os
+ * aplicadores, nos mesmos pontos de sempre. A única diferença é que a marca do turno some nessa descida.
+ */
+export { APLICADOR_PROPRIO, aplicadorDe };
+
+const CHAVES_DE_TURNO = ["exaustaoTecnica", "invencivelSobOSol", ESTADO_APICE];
+
+const nomeDoAlvoDaParte = (tipo, id) => (tipo === "pericia" ? AFTY_PERICIAS.find((p) => p.id === id)?.nome
+  : tipo === "tr" ? AFTY_RESISTENCIAS.find((r) => r.value === id)?.label : null) ?? null;
+/* O registro recebido (`rec`) não tem `nome` no topo: o aviso usa o da opção, e não "undefined". */
+const comNome = (item) => (item.rec && !item.nome ? { ...item, nome: item.origemNome } : item);
+
+/** `null` (todos), um id, uma lista de ids ou uma função `(aplicadorId) => boolean`. */
+function seletorDeAplicador(quem) {
+  if (quem == null) return null;
+  if (typeof quem === "function") return quem;
+  const ids = new Set(Array.isArray(quem) ? quem : [quem]);
+  return (a) => ids.has(a);
+}
+
+/**
+ * As duas descidas de lista, a `desce` e a `desceBuff` de sempre. Com `vale` nulo (a Ficha) descem tudo, como antes. Com
+ * `vale`, só as entradas daquele aplicador, e a que tem a marca do turno só a perde.
+ */
+function descidasDe(expirou, vale) {
+  const toca = (item) => !vale || vale(aplicadorDe(item));
+  const desce = (item) => {
+    if (item.rodadas == null) return item;              // sem duração, fica
+    if (!toca(item)) return item;
+    if (vale && item.aguardaFimDoTurno) return semMarcaDoTurno(item);
+    const base = semMarcaDoTurno(item);
+    const restam = base.rodadas - 1;
+    if (restam <= 0) { expirou.push(comNome(base)); return null; }
+    return { ...base, rodadas: restam };
+  };
+  /* ⚠ PRAZO POR BENEFÍCIO (PA-I3, 2026-10-20, autor: "cada benefício termina no próprio prazo"). A instância de um pacote cujo benefício tem
+     `rodadas` próprias: cada um desce sozinho e sai quando zera, sem levar os outros (o de um ataque fica até o jogador encerrar). A instância sai
+     quando não sobra benefício. A parte que sai vai para `expirou` com o nome do benefício, para o aviso dizer o que acabou. */
+  const desceBuff = (bruto) => {
+    const bens0 = Array.isArray(bruto?.beneficios) ? bruto.beneficios : [];
+    if (!bruto?.rec || !bens0.some((b) => b?.rodadas != null)) return desce(bruto);
+    if (!toca(bruto)) return bruto;
+    if (vale && bruto.aguardaFimDoTurno) return semMarcaDoTurno(bruto);
+    const item = semMarcaDoTurno(bruto);
+    const bens = item.beneficios;
+    const ficam = [];
+    const saem = [];
+    for (const b of bens) {
+      if (b?.rodadas == null) { ficam.push(b); continue; }
+      if (b.rodadas - 1 <= 0) saem.push(b);
+      else ficam.push({ ...b, rodadas: b.rodadas - 1 });
+    }
+    if (!ficam.length) { expirou.push(comNome(item)); return null; }
+    if (saem.length) expirou.push({ ...item, nome: `${item.origemNome} (${saem.map((b) => rotuloDoBeneficio(b, nomeDoAlvoDaParte)).join(", ")})`, beneficios: saem });
+    return desce({ ...item, beneficios: ficam });
+  };
+  return { desce, desceBuff };
+}
+
+/** A lista com cada entrada passada por `fn` (que devolve `null` para tirar). Sem mudança nenhuma, a MESMA lista. */
+function listaDescida(lista, fn) {
+  const fonte = Array.isArray(lista) ? lista : [];
+  const nova = fonte.map(fn);
+  return nova.every((x, i) => x === fonte[i]) ? lista : nova.filter(Boolean);
+}
+
+/** A marca do turno de uma das três chaves da própria ficha: está posta? */
+const marcadaNoTurno = (sessao, chave) => Array.isArray(sessao?.aguardaFimDoTurno) && sessao.aguardaFimDoTurno.includes(chave);
+
+function semMarcaDeSessao(sessao, chave = null) {
+  if (!Array.isArray(sessao?.aguardaFimDoTurno)) return sessao;
+  const resta = chave ? sessao.aguardaFimDoTurno.filter((k) => k !== chave) : [];
+  if (resta.length) return { ...sessao, aguardaFimDoTurno: resta };
+  const { aguardaFimDoTurno: _marca, ...semMarca } = sessao;
+  return semMarca;
+}
+
+/** A Exaustão de Técnica que já corria desce um, e a que chega a zero sai. O mesmo passo do `avancaExpansaoNaRodada`. */
+function desceExaustaoTecnica(sessao) {
+  const exaustao = exaustaoTecnicaDe(sessao);
+  if (!exaustao) return sessao;
+  return { ...sessao, exaustaoTecnica: exaustao.restantes > 1 ? { ...exaustao, restantes: exaustao.restantes - 1 } : null };
+}
+
+/**
+ * O FIM DO TURNO DE QUEM APLICOU (etapa 5): desce as durações em rodadas cujo aplicador `quem` aceita (um id, uma lista ou
+ * uma função, ver `seletorDeAplicador`). O Encontro chama isto em TODO combatente a cada fim de turno, com o id de quem
+ * encerrou, e na própria ficha dele também com `"proprio"`. As três chaves da própria ficha (Exaustão de Técnica,
+ * Invencível sob o Sol e Talismã do Ápice) só descem quando `"proprio"` entra.
+ *
+ * Devolve `{ sessao, expirou, registro }`, a mesma forma da `proximaRodada`. Sem nada a descer, `sessao` é a MESMA.
+ */
+export function desceDuracoesDe(sessao, quem = APLICADOR_PROPRIO, { derived = null } = {}) {
+  const vale = seletorDeAplicador(quem) ?? (() => true);
+  const expirou = [];
+  const registro = { renovou: [], pagou: [], encerrou: [], exaustaoGanha: 0 };
+  const { desce, desceBuff } = descidasDe(expirou, vale);
+  let s = sessao;
+  const buffs = listaDescida(s.buffs, desceBuff);
+  const condicoes = listaDescida(s.condicoes, desce);
+  if (buffs !== s.buffs || condicoes !== s.condicoes) s = { ...s, buffs, condicoes };
+  if (vale(APLICADOR_PROPRIO)) {
+    // A Exaustão de Técnica, o Invencível sob o Sol e o Talismã do Ápice: o mesmo passo da virada, agora no fim do turno.
+    s = marcadaNoTurno(s, "exaustaoTecnica") ? semMarcaDeSessao(s, "exaustaoTecnica") : desceExaustaoTecnica(s);
+    s = marcadaNoTurno(s, "invencivelSobOSol") ? semMarcaDeSessao(s, "invencivelSobOSol") : avancaInvencivelSobOSol(s, derived, registro);
+    s = marcadaNoTurno(s, ESTADO_APICE) ? semMarcaDeSessao(s, ESTADO_APICE) : avancaTalismaApice(s);
+  }
+  s = desceUsoDe(s, registro, vale);
+  return { sessao: s, expirou, registro };
+}
+
+/**
+ * Carimba quem aplicou nas entradas com rodadas que NASCERAM entre `antes` e `depois` (a operação do Encontro mede as duas
+ * versões). `aplicadorId` é o combatente que aplicou (`"proprio"` quando é a própria ficha), e `noTurno` diz que entrou
+ * durante o turno dele: a entrada ganha a marca, e o fim desse turno não a desce. Entrada que já existia não muda.
+ * Sem aplicador de fora e fora do turno, devolve `depois` como está.
+ */
+export function marcaAplicador(antes, depois, { aplicadorId = APLICADOR_PROPRIO, noTurno = false } = {}) {
+  const proprio = !aplicadorId || aplicadorId === APLICADOR_PROPRIO;
+  if (!depois || typeof depois !== "object" || (proprio && !noTurno)) return depois;
+  const carimba = (item) => ({ ...item, ...(proprio ? {} : { aplicadorId }), ...(noTurno ? { aguardaFimDoTurno: true } : {}) });
+  const chave = (c) => (c && typeof c === "object" ? (c.id != null ? `id:${c.id}` : JSON.stringify(c)) : null);
+  let out = depois;
+  const idsBuffs = new Set((antes?.buffs ?? []).map((b) => b?.id));
+  const temRodadas = (b) => b?.rodadas != null || (Array.isArray(b?.beneficios) && b.beneficios.some((x) => x?.rodadas != null));
+  const buffs = listaDescida(out.buffs, (b) => (b && typeof b === "object" && !idsBuffs.has(b.id) && temRodadas(b) ? carimba(b) : b));
+  const chavesCond = new Set((antes?.condicoes ?? []).map(chave));
+  const condicoes = listaDescida(out.condicoes, (c) => (c && typeof c === "object" && c.rodadas != null && !chavesCond.has(chave(c)) ? carimba(c) : c));
+  if (buffs !== out.buffs || condicoes !== out.condicoes) out = { ...out, buffs, condicoes };
+  const ativosAntes = usoDe(antes).ativos;
+  const ativos = usoDe(out).ativos;
+  const novos = Object.values(ativos).filter((a) => a.duracao.tipo === "rodadas"
+    && (!ativosAntes[a.id] || ativosAntes[a.id].duracao.tipo !== "rodadas" || a.duracao.restantes > ativosAntes[a.id].duracao.restantes));
+  if (novos.length) out = { ...out, uso: { ...usoDe(out), ativos: { ...ativos, ...Object.fromEntries(novos.map((a) => [a.id, carimba(a)])) } } };
+  if (proprio && noTurno) {
+    const ex0 = exaustaoTecnicaDe(antes)?.restantes ?? 0;
+    const marcas = [
+      (exaustaoTecnicaDe(out)?.restantes ?? 0) > ex0 ? "exaustaoTecnica" : null,
+      out.combate?.invencivelSobOSol && !antes?.combate?.invencivelSobOSol ? "invencivelSobOSol" : null,
+      out.combate?.[ESTADO_APICE] && !antes?.combate?.[ESTADO_APICE] ? ESTADO_APICE : null,
+    ].filter((k) => k && !marcadaNoTurno(out, k));
+    if (marcas.length) out = { ...out, aguardaFimDoTurno: [...(out.aguardaFimDoTurno ?? []), ...marcas].filter((k) => CHAVES_DE_TURNO.includes(k)) };
+  }
+  return out;
+}
+
+/**
+ * Quem saiu da luta (etapa 5): as entradas que `deId` aplicou passam a ser da própria ficha que as carrega, e descem no
+ * turno dela. A marca do turno sai junto (o turno dela era do aplicador que saiu). Sem nada a repassar, a MESMA sessão.
+ */
+export function repassaAplicador(sessao, deId) {
+  if (!deId || !sessao) return sessao;
+  const repassa = (item) => {
+    if (aplicadorDe(item) !== deId) return item;
+    const { aplicadorId: _id, ...resto } = item;
+    return semMarcaDoTurno(resto);
+  };
+  let s = sessao;
+  const buffs = listaDescida(s.buffs, repassa);
+  const condicoes = listaDescida(s.condicoes, repassa);
+  if (buffs !== s.buffs || condicoes !== s.condicoes) s = { ...s, buffs, condicoes };
+  const ativos = usoDe(s).ativos;
+  const deles = Object.values(ativos).filter((a) => aplicadorDe(a) === deId);
+  if (deles.length) s = { ...s, uso: { ...usoDe(s), ativos: { ...ativos, ...Object.fromEntries(deles.map((a) => [a.id, repassa(a)])) } } };
+  return s;
+}
+
 /**
  * Fecha a rodada: o contador sobe e toda duração desce um.
  * O que zerou SAI, e volta na lista `expirou` para a Ficha poder avisar (buff
  * que some sem aviso é buff que o jogador continua contando na cabeça).
+ *
+ * `descerDuracoes` (etapa 5, 2026-11-17): ligado por padrão, que é a Ficha sozinha (Encerrar Meu Turno), e tudo desce como
+ * sempre. O Encontro desliga: a virada faz só o que é por rodada, e as durações descem no fim do turno de quem aplicou
+ * (`desceDuracoesDe`). Ver a tabela acima de `desceDuracoesDe`.
  */
-export function proximaRodada(sessao, derived = null, { preservarTurnoArmas = false } = {}) {
+export function proximaRodada(sessao, derived = null, { preservarTurnoArmas = false, descerDuracoes = true } = {}) {
   // Na ficha individual, avançar a rodada encerra o turno e inicia o próximo.
   // No encontro, cada turno é encaminhado pelo controlador de iniciativa.
   if (!preservarTurnoArmas) sessao = encerrarTurnoEspecializacao(sessao, derived);
@@ -2406,33 +2600,8 @@ export function proximaRodada(sessao, derived = null, { preservarTurnoArmas = fa
     registro.renovou.push(...renovacoesDePe(s, depois));
     return depois;
   };
-  const nomeDoAlvoDaParte = (tipo, id) => (tipo === "pericia" ? AFTY_PERICIAS.find((p) => p.id === id)?.nome
-    : tipo === "tr" ? AFTY_RESISTENCIAS.find((r) => r.value === id)?.label : null) ?? null;
-  /* O registro recebido (`rec`) não tem `nome` no topo: o aviso usa o da opção, e não "undefined". */
-  const comNome = (item) => (item.rec && !item.nome ? { ...item, nome: item.origemNome } : item);
-  const desce = (item) => {
-    if (item.rodadas == null) return item;              // sem duração, fica
-    const restam = item.rodadas - 1;
-    if (restam <= 0) { expirou.push(comNome(item)); return null; }
-    return { ...item, rodadas: restam };
-  };
-  /* ⚠ PRAZO POR BENEFÍCIO (PA-I3, 2026-10-20, autor: "cada benefício termina no próprio prazo"). A instância de um pacote cujo benefício tem
-     `rodadas` próprias: cada um desce sozinho e sai quando zera, sem levar os outros (o de um ataque fica até o jogador encerrar). A instância sai
-     quando não sobra benefício. A parte que sai vai para `expirou` com o nome do benefício, para o aviso dizer o que acabou. */
-  const desceBuff = (item) => {
-    const bens = Array.isArray(item?.beneficios) ? item.beneficios : [];
-    if (!item?.rec || !bens.some((b) => b?.rodadas != null)) return desce(item);
-    const ficam = [];
-    const saem = [];
-    for (const b of bens) {
-      if (b?.rodadas == null) { ficam.push(b); continue; }
-      if (b.rodadas - 1 <= 0) saem.push(b);
-      else ficam.push({ ...b, rodadas: b.rodadas - 1 });
-    }
-    if (!ficam.length) { expirou.push(comNome(item)); return null; }
-    if (saem.length) expirou.push({ ...item, nome: `${item.origemNome} (${saem.map((b) => rotuloDoBeneficio(b, nomeDoAlvoDaParte)).join(", ")})`, beneficios: saem });
-    return desce({ ...item, beneficios: ficam });
-  };
+  // As duas descidas moram fora (`descidasDe`), para o fim do turno do aplicador usar as mesmas. Aqui elas descem TUDO.
+  const { desce, desceBuff } = descidasDe(expirou, null);
   /* ⚠ A casca de PE do gatilho `rodada` volta ao teto AQUI, e não soma: ver
      `aplicaPeTemporario`. Sem `derived` nada acontece, que é o mesmo cuidado do
      `descansar`: quem não conseguiu calcular a ficha não sabe quanto entregar. */
@@ -2448,9 +2617,10 @@ export function proximaRodada(sessao, derived = null, { preservarTurnoArmas = fa
     servosMovimentosUsados: 0,
     gungnir: sessao.rodada === 0 ? normalizaGungnir() : avancarGungnir(sessao.gungnir),
     combate: expirarEstadosDaRodada(sessao.combate, derived),
-    buffs: sessao.buffs.map(desceBuff).filter(Boolean),
-    condicoes: sessao.condicoes.map(desce).filter(Boolean),
-  });
+    // No Encontro (etapa 5) as durações não descem aqui: descem no fim do turno de quem aplicou.
+    buffs: descerDuracoes ? sessao.buffs.map(desceBuff).filter(Boolean) : sessao.buffs,
+    condicoes: descerDuracoes ? sessao.condicoes.map(desce).filter(Boolean) : sessao.condicoes,
+  }, { descerExaustao: descerDuracoes });
   /* ⚠ SAIR DA RODADA 0 É COMEÇAR A CENA, e por isso a casca de `combate` entra
      junto aqui. A Ficha não tem botão de "iniciar combate": o que ela tem é o
      contador de rodada, que o Descansar zera. Sem esta linha, os 4 PE do Treino
@@ -2478,7 +2648,10 @@ export function proximaRodada(sessao, derived = null, { preservarTurnoArmas = fa
   const comInvocacoes = sessao.rodada === 0
     ? iniciaInvocacoesNoCombate(comPreparo, derived, registro)
     : avancaInvocacoesNaRodada(comPreparo, derived);
-  let proxima = rodadaBloodfeast(avancaTalismaApice(avancaInvencivelSobOSol(semFrenesiDaRodada(comInvocacoes), derived, registro)), derived);
+  /* O Invencível sob o Sol e o Talismã do Ápice são DURAÇÃO (autor, 2026-11-17): no Encontro o contador e a cobrança vão
+     para o fim do turno da própria ficha (`desceDuracoesDe`). */
+  const semFrenesi = semFrenesiDaRodada(comInvocacoes);
+  let proxima = rodadaBloodfeast(descerDuracoes ? avancaTalismaApice(avancaInvencivelSobOSol(semFrenesi, derived, registro)) : semFrenesi, derived);
   if (derived?.bloodfeast?.tem && derived.bloodfeast.ids.includes("regeneracao") && sessao.hpAtual < derived.hp / 2) {
     const r = rolarDano(preparaRolagemCura({ tipo: "dano", rotulo: "Regeneração Constante", dados: 2, faces: 8, fixo: derived.bloodfeast.modCon, tom: "cura" }, derived.efeitos));
     proxima = aplicaCura(registraRolagem(proxima, r), r.total, derived.hp);
@@ -2488,8 +2661,10 @@ export function proximaRodada(sessao, derived = null, { preservarTurnoArmas = fa
   proxima = novaRodadaEspecializacao(proxima, { expirarSurto: sessao.rodada > 0 });
   /* O motor de uso (CL1): a duração dos usos desce e a manutenção passa a ser DEVIDA, sem débito (`registro.encerrou` e
      `registro.manutencaoDevida` dizem o que mudou). Na ficha individual o turno também vira aqui, como o das Especializações. */
-  proxima = avancaUsoNaRodada(proxima, registro);
+  proxima = avancaUsoNaRodada(proxima, registro, { descerDuracoes });
   if (!preservarTurnoArmas) proxima = iniciaTurnoNoUso(iniciarTurnoEspecializacao(proxima, derived), registro);
+  // A descida de todos consome a marca do turno das três chaves da própria ficha (ver `desceDuracoesDe`).
+  if (descerDuracoes) proxima = semMarcaDeSessao(proxima);
   return { sessao: proxima, expirou, registro };
 }
 
@@ -3003,9 +3178,11 @@ export const curaExaustaoTecnica = (sessao) => ({ ...sessao, exaustaoTecnica: nu
 /* A virada da rodada: a Exaustão que já corria desce um, e DEPOIS a Expansão no
    ar perde uma rodada. A que zera fecha, e a Exaustão dela começa cheia, sem
    perder a primeira rodada na mesma virada. */
-function avancaExpansaoNaRodada(sessao) {
+function avancaExpansaoNaRodada(sessao, { descerExaustao = true } = {}) {
+  /* A Exaustão de Técnica é DURAÇÃO (autor, 2026-11-17): no Encontro ela desce no fim do turno da própria ficha
+     (`desceDuracoesDe`), e a virada só mexe na Expansão. */
   const exaustao = exaustaoTecnicaDe(sessao);
-  const desceu = exaustao && exaustao.restantes > 1 ? { ...exaustao, restantes: exaustao.restantes - 1 } : null;
+  const desceu = !descerExaustao ? exaustao : exaustao && exaustao.restantes > 1 ? { ...exaustao, restantes: exaustao.restantes - 1 } : null;
   const s = { ...sessao, exaustaoTecnica: desceu };
   const aberta = expansaoNaSessao(s);
   if (!aberta || aberta.rodadas == null) return s;

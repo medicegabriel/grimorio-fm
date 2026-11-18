@@ -1,0 +1,137 @@
+/* ============================================================
+   AS TELAS DA SALA ONLINE (etapa 7c, 2026-11-18)
+   ============================================================
+   Prefixo `sl-`. Cor só por token `--afty-*` e pelos derivados `--ec-*` do `encontro-g2.css`, que esta folha reaproveita (a
+   raiz de toda tela da Sala é `.afty-ficha.ec-raiz`). Largura da janela por `@media` só onde a tela é da página inteira
+   (a Ficha G2 do jogador também mede por janela); dentro de coluna estreita, `@container`.
+   ============================================================ */
+
+/* ---------- a casca e a entrada ---------- */
+.sl-pagina { min-height: 100dvh; display: flex; flex-direction: column; }
+.sl-centro { flex: 1; display: grid; place-items: start center; padding: 24px 16px; }
+.sl-entrada { width: min(32rem, 100%); display: grid; gap: 14px; padding: 16px; }
+.sl-entrada-topo { display: flex; align-items: center; gap: 10px; }
+.sl-entrada-titulo { font: 700 18px var(--ec-display) !important; flex: 1; min-width: 0; }
+.sl-passos { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.sl-passo { display: inline-flex; align-items: center; gap: 6px; font: 600 12.5px var(--ec-display); color: var(--ec-t3); }
+.sl-passo[data-feito] { color: var(--ec-t2); }
+.sl-passo[data-atual] { color: var(--afty-destaque-texto); }
+.sl-passo + .sl-passo::before { content: ""; width: 14px; height: 1px; background: var(--ec-linha); margin-right: 6px; }
+.sl-campo-linha { display: grid; gap: 4px; }
+.sl-campo-linha > span { font-size: 12px; color: var(--ec-t2); }
+.sl-campo-linha .ec-campo { width: 100%; }
+.sl-acoes { display: flex; flex-wrap: wrap; gap: 8px; }
+.sl-acoes > .afty-botao { flex: 1 1 10rem; justify-content: center; }
+.sl-contas { display: grid; gap: 8px; }
+.sl-contas .afty-botao { justify-content: center; min-height: 40px; }
+
+.sl-codigo-bloco { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.sl-codigo { font: 700 30px/1.1 var(--ec-display); letter-spacing: 0.2em; color: var(--afty-destaque-texto); }
+.sl-copiavel { display: flex; align-items: center; gap: 8px; padding: 4px 4px 4px 10px; border: 1px solid var(--afty-borda-forte); border-radius: var(--ec-r); background: var(--afty-poco); }
+.sl-copiavel-rotulo { font-size: 12px; color: var(--ec-t2); flex: none; }
+.sl-copiavel-valor { flex: 1; min-width: 0; font: 13px var(--afty-fonte-num); color: var(--ec-t1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------- escolha de fichas ---------- */
+.sl-fichas { display: grid; gap: 0; list-style: none; margin: 0; padding: 0; }
+.sl-ficha { display: grid; grid-template-columns: auto auto minmax(0, 1fr); gap: 4px 10px; align-items: center; padding: 10px 2px; border-bottom: 1px solid var(--ec-linha); }
+.sl-ficha[data-na-sala] { background: color-mix(in oklab, var(--afty-destaque) 6%, transparent); }
+.sl-ficha-texto { display: grid; min-width: 0; }
+.sl-ficha-controles { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding-left: 34px; }
+.sl-ficha-controles .ec-rotulado { flex-direction: row; align-items: center; gap: 6px; }
+.sl-barra-grupo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 10px; margin-top: 8px; border: 1px solid var(--ec-sel-borda); border-radius: var(--ec-r); background: var(--afty-card); }
+.sl-barra-grupo > b { font: 700 15px var(--afty-fonte-num); color: var(--afty-destaque-texto); }
+.sl-barra-grupo .afty-botao { margin-left: auto; }
+
+/* ---------- a tela do jogador ---------- */
+.sl-jogador { min-height: 100dvh; display: flex; flex-direction: column; }
+.sl-corpo { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr); }
+.sl-principal { min-width: 0; }
+.sl-principal > .sl-lobby { padding: 16px; max-width: 64rem; margin-inline: auto; display: grid; gap: 12px; }
+.sl-trocar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 16px; border-bottom: 1px solid var(--afty-borda); background: var(--afty-fundo); }
+.sl-trocar .ec-segmento { max-width: 14rem; }
+.sl-trocar .ec-segmento span { overflow: hidden; text-overflow: ellipsis; }
+.sl-leitura { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 16px; border-bottom: 1px solid var(--afty-borda); background: var(--ec-sel); }
+.sl-leitura b { font-family: var(--ec-display); }
+.sl-leitura .afty-botao { margin-left: auto; }
+
+.sl-painel-raiz, .sl-trocar, .sl-leitura, .sl-avisos { min-height: 0; }
+.sl-painel-raiz::before, .sl-trocar::before, .sl-leitura::before, .sl-lobby::before, .sl-avisos::before { display: none; }
+.sl-avisos { display: grid; gap: 6px; padding: 8px 16px; }
+.sl-painel-raiz { min-width: 0; }
+.sl-lobby { min-height: calc(100dvh - var(--ec-faixa-h, 0px)); }
+.sl-painel { display: none; flex-direction: column; min-width: 0; background: var(--ec-painel); border-left: 1px solid var(--afty-borda); }
+.sl-corpo[data-painel="aberto"] .sl-painel { display: flex; position: fixed; z-index: 60; inset: var(--ec-faixa-h, 0px) 0 0 auto; width: min(400px, 100%);
+  box-shadow: -16px 0 32px -16px rgb(0 0 0 / 0.8); }
+@media (min-width: 1180px) {
+  .sl-corpo[data-painel="aberto"] { grid-template-columns: minmax(0, 1fr) 360px; }
+  .sl-corpo[data-painel="aberto"] .sl-painel { position: sticky; inset: auto; top: var(--ec-faixa-h, 0px); height: calc(100dvh - var(--ec-faixa-h, 0px)); width: auto; z-index: 3; box-shadow: none; }
+}
+
+.sl-painel-topo { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--ec-linha); }
+.sl-abas { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0; }
+.sl-abas .ec-aba-mini { flex: none; padding: 0 8px; }
+.sl-abas small[data-alerta] { color: var(--afty-destaque-texto); }
+.sl-painel-corpo { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 10px; display: grid; gap: 10px; align-content: start; scrollbar-width: thin; scrollbar-color: var(--afty-borda-forte) transparent; }
+.sl-painel-corpo[data-aba="registro"] { padding: 0; align-content: stretch; }
+
+/* ---------- cartões de colega e de criatura ---------- */
+.sl-cartoes { display: grid; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.sl-cartao { display: grid; gap: 6px; padding: 8px 10px; border: 1px solid var(--afty-borda); border-radius: var(--ec-r); background: var(--afty-card); }
+.sl-cartao[data-vez] { border-color: var(--ec-sel-borda); background: color-mix(in oklab, var(--afty-destaque) 10%, var(--afty-card)); }
+.sl-cartao-topo { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.sl-cartao-texto { display: grid; min-width: 0; flex: 1; }
+.sl-cartao-nome { font-weight: 600; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sl-cartao-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; font-size: 12px; color: var(--ec-t2); }
+.sl-cartao-barras { display: grid; gap: 4px; }
+.sl-cartao-extra { font-size: 12.5px; color: var(--ec-t2); }
+.sl-cartao-acoes { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.sl-online { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--ec-t2); }
+.sl-online::before { content: ""; width: 8px; height: 8px; border-radius: 9999px; border: 1.5px solid var(--ec-t3); }
+.sl-online[data-online]::before { background: var(--afty-cura); border-color: var(--afty-cura); }
+.sl-faixa-vida { font-size: 12px; color: var(--ec-t2); }
+.sl-pedir { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.sl-pedir .ec-campo-num { width: 4rem; }
+.sl-resultado { font-size: 12.5px; color: var(--ec-t2); }
+.sl-resultado[data-falhou] { color: var(--afty-aviso); }
+
+/* ---------- pedidos e histórico ---------- */
+.sl-secao-titulo { display: flex; align-items: center; gap: 6px; font: 700 12px var(--ec-display); text-transform: uppercase; letter-spacing: 0.08em; color: var(--ec-t2); }
+.sl-secao-titulo small { font-family: var(--afty-fonte-num); color: var(--ec-t3); }
+.sl-item { display: grid; gap: 4px; padding: 8px; border: 1px solid var(--afty-borda); border-radius: var(--ec-r); background: var(--afty-card); }
+.sl-item-texto { font-size: 13px; }
+.sl-item-meta { font-size: 12px; color: var(--ec-t3); }
+.sl-item-botoes { display: flex; flex-wrap: wrap; gap: 6px; }
+.sl-item > .afty-botao { justify-self: start; }
+.sl-item[data-desfeita] { opacity: 0.6; }
+.ec-barra[data-tipo="alma"] { --ec-cor: var(--afty-alma); }
+.sl-marca { margin-right: 6px; }
+.sl-aviso-pad { padding: 0 10px 8px; }
+.sl-estado { display: inline-flex; align-items: center; gap: 4px; font: 600 12px var(--ec-display); color: var(--ec-t2); }
+.sl-estado[data-estado="aceito"] { color: var(--afty-cura); }
+.sl-estado[data-estado="recusado"] { color: var(--afty-aviso); }
+
+/* ---------- o Registro e o chat ---------- */
+.sl-registro { display: flex; flex-direction: column; min-height: 0; height: 100%; }
+.sl-feed { flex: 1; min-height: 12rem; overflow-y: auto; overscroll-behavior: contain; padding: 6px 10px; list-style: none; margin: 0; scrollbar-width: thin; scrollbar-color: var(--afty-borda-forte) transparent; }
+.sl-chat { display: flex; gap: 6px; padding: 8px 10px; border-top: 1px solid var(--ec-linha); background: var(--ec-painel); }
+.sl-chat .ec-campo { flex: 1; min-width: 0; }
+.sl-escondida { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 10px; border-top: 1px solid var(--ec-linha); }
+.sl-escondida .ec-campo { flex: 1 1 8rem; min-width: 0; }
+
+/* ---------- os controles do Mestre ---------- */
+.sl-membros { display: grid; list-style: none; margin: 0; padding: 0; }
+.sl-membro { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; min-height: 44px; padding: 4px 2px; border-bottom: 1px solid var(--ec-linha); }
+.sl-membro-texto { display: grid; min-width: 0; flex: 1 1 8rem; }
+.sl-membro-botoes { display: flex; flex-wrap: wrap; gap: 6px; }
+.sl-avatar { flex: none; width: 28px; height: 28px; border-radius: 9999px; object-fit: cover; border: 1px solid var(--afty-borda-forte); background: var(--afty-poco); display: inline-grid; place-items: center; font: 700 11.5px var(--ec-display); color: var(--afty-destaque-texto); }
+.sl-perigo { display: grid; gap: 8px; padding-top: 10px; border-top: 1px solid var(--ec-linha); }
+.sl-botao-sala { display: inline-flex; align-items: center; gap: 6px; }
+.sl-botao-sala b { font-family: var(--afty-fonte-num); }
+.sl-botao-sala small { font-family: var(--afty-fonte-num); color: var(--ec-t3); }
+
+/* ---------- Sala fechada e Registro Final ---------- */
+.sl-final { display: grid; gap: 12px; padding: 16px; max-width: 48rem; margin-inline: auto; }
+@media (max-width: 720px) {
+  .sl-ficha-controles { padding-left: 0; }
+  .sl-centro { padding: 12px 8px; }
+}

@@ -5,21 +5,19 @@ import CombatTracker from "./components/CombatTracker";
 import CreatureBuilder from "./components/CreatureBuilder";
 import AftyCreatureBuilder from "./systems/afty/AftyCreatureBuilder";
 import AftyFicha from "./systems/afty/ficha/AftyFicha";
-import AftyEncontros from "./systems/afty/encontros/AftyEncontros";
-import AftyEncontro from "./systems/afty/encontros/AftyEncontro";
-import MesaDoMestre from "./systems/eradeouro/MesaDoMestre";
-import EncounterTracker from "./components/EncounterTracker";
-import EncountersDashboard from "./components/EncountersDashboard";
+/* O Encontro unificado (etapa 6a, 2026-11-17): as três listas e o novo Encontro, no lugar do AftyEncontros e do
+   EncountersDashboard e EncounterTracker da 2.5.2 (que seguem em src/components/, intocados e sem uso aqui). */
+import ListaDeEncontros from "./systems/afty/encontros/telas/ListaDeEncontros";
+import EncontroTela from "./systems/afty/encontros/telas/EncontroTela";
+import useListaDeEncontros from "./systems/afty/encontros/usar-lista-encontros";
+import { grupoDaRota } from "./systems/afty/encontros/listas";
 import TemplateLibrary from "./components/TemplateLibrary";
-import EncounterSyncModal from "./components/EncounterSyncModal";
 import PdfFab from "./components/PdfFab";
 import useCreatureStorage from "./components/useCreatureStorage";
-import useEncounterManager from "./useEncounterManager";
 import useDashboardView from "./useDashboardView";
-import useEncontrosAfty from "./systems/afty/encontros/usar-encontros-afty";
 import { vocabularioDoDashboard, sistemaGravado, getSistema } from "./systems/afty/afty-sistema";
 import {
-  MESA_ERA_DE_OURO, NAMESPACE_ERA_DE_OURO, CHAVE_ENCONTROS_ERA_DE_OURO, ERA_DE_OURO,
+  MESA_ERA_DE_OURO, NAMESPACE_ERA_DE_OURO, ERA_DE_OURO,
   ehRotaEraDeOuro, vocabularioDeFichas,
 } from "./systems/eradeouro/era-de-ouro";
 import { COMPENDIUM, getCompendiumById, isBuiltInId } from "./fm-compendium";
@@ -27,6 +25,14 @@ import { Analytics } from '@vercel/analytics/react';
 import AlternadorSistema from "./nuvem/AlternadorSistema";
 import ContaNuvem from "./nuvem/ContaNuvem";
 import AvisoMudanca from "./nuvem/AvisoMudanca";
+import { lerEstadoNuvem, ouvirNuvem } from "./nuvem/nuvem-sync";
+import { nuvemAtiva } from "./nuvem/nuvem-config";
+import { recuperarSalasFechadas } from "./nuvem/sala-fechamento";
+/* A Sala entra por `lazy`: só quem abre /Sala/<código> baixa o cliente e o tempo real. */
+const SalaPagina = React.lazy(() => import("./nuvem/SalaPagina"));
+/* O botão Abrir Sala do cabeçalho do Encontro (etapa 7c) também entra por `lazy`: ele puxa o cliente da Sala, e só aparece com a Sala
+   liberada e a nuvem ligada. */
+const BotaoAbrirSala = React.lazy(() => import("./nuvem/sala-ui/AbrirSala"));
 
 // Helper para achar a criatura seja no compêndio ou no localstorage
 const findCreatureAnywhere = (id, storageList, compendium) =>
@@ -79,10 +85,17 @@ export default function App() {
 
   /* Lançamento público (autor, 2026-11-16). As duas rotas abertas a todos são o
      Grimório 2.5.2 (`/`) e a Ficha de Player (`/Player`): só elas ganham o
-     alternador, e os Encontros das duas ficam com cadeado até a revisão
-     ("Nas duas rotas públicas"). /Afty e /EraDeOuro seguem como estão. */
+     alternador. O cadeado dos Encontros delas saiu depois da revisão final do
+     Encontro Unificado (autor, 2026-11-18). */
   const rotaPublica = rotaId === null || rotaId === "player";
-  const encontrosBloqueados = rotaPublica;
+  /* A SALA ONLINE (etapa 7b, 2026-11-18): `/Sala/<código>`. O `rotaId` dela é null, então os ganchos da rota (inventário e
+     lista) são os do `/`, e a lista fica desligada: quem grava na lista é a própria Sala. */
+  const codigoDaSala = (() => {
+    if (typeof location === "undefined") return null;
+    const m = /^\/sala\/([A-Za-z0-9]{4,12})\/?$/i.exec(location.pathname);
+    return m ? m[1] : null;
+  })();
+  const rotaSala = !!codigoDaSala;
 
   const storageDaRota = useCreatureStorage(
     aftyMode ? { namespace: rotaId, defaultRulesVersion: sistemaDaRota } : undefined
@@ -119,19 +132,36 @@ export default function App() {
     }
     ordenarDaRota(ids);
   }, [rotaId, fichasDaRota, criarDaRota, atualizarDaRota, removerDaRota, ordenarDaRota]);
-  const encounterManager = useEncounterManager(aftyMode ? rotaId : "");
   // ⚠ Gerenciador PRÓPRIO do Afty, e não o de cima com namespace: o combatente
   // do Afty guarda `ficha` e `sessao`, e o da 2.5.2 guarda `snapshot` e
   // `combatState`. Chave própria (`afty_encontros_v1`), shape próprio. O hook
   // roda nos dois modos porque hook não pode ser condicional; fora do /Afty ele
   // só lê uma chave vazia.
-  // A Guilda tem encontros só dela. Afty e Player seguem na chave de sempre.
-  const encontrosAfty = useEncontrosAfty(mesa ? CHAVE_ENCONTROS_ERA_DE_OURO : undefined);
+  /* AS TRÊS LISTAS (plano aprovado, 2026-11-17): `/` e `/Player` são a lista do site (`afty_encontros_site_v1`), o `/Afty` e a
+     Guilda seguem nas chaves deles, agora no formato novo. Na rota da Sala a lista fica desligada (não migra nem grava). */
+  const listaEncontros = useListaDeEncontros(grupoDaRota(rotaId), { ativo: !rotaSala });
+
+  /* O AUSENTE NO FECHAMENTO (etapa 7b): no primeiro carregamento com a conta, as Salas fechadas que ainda não estão na lista
+     recebem o Encontro Finalizado e a sessão final dos personagens. A lista desta rota recebe pelo `importar`, as outras
+     direto na chave. */
+  const importarNaLista = listaEncontros.importar;
+  const grupoDaLista = listaEncontros.grupo;
+  const listaAtiva = !rotaSala;
+  useEffect(() => {
+    if (rotaSala) return undefined;
+    let vivo = true;
+    const tentar = () => {
+      if (!vivo || !lerEstadoNuvem().usuario) return;
+      recuperarSalasFechadas({ importarPorGrupo: listaAtiva ? { [grupoDaLista]: importarNaLista } : {} }).catch(() => {});
+    };
+    tentar();
+    const sair = ouvirNuvem(tentar);
+    return () => { vivo = false; sair(); };
+  }, [rotaSala, listaAtiva, grupoDaLista, importarNaLista]);
 
   const [view, setView] = useState({ name: "dashboard", creatureId: null, encounterId: null });
   // A Guilda pergunta criatura ou personagem antes de abrir o criador.
   const [escolhendoTipo, setEscolhendoTipo] = useState(false);
-  const [encounterSyncState, setEncounterSyncState] = useState(null);
   const [importeRecusado, setImporteRecusado] = useState(null);
 
   /* ============================================================ */
@@ -224,19 +254,6 @@ export default function App() {
     [storageDaRota, importarSoDoLivro],
   );
 
-  /* A lista que os ENCONTROS da rota podem tocar, filtrada pelo MOTOR e não
-     pela rota. O Dashboard segue recebendo a lista INTEIRA, porque a ficha
-     estrangeira precisa aparecer para ser aberta, exportada ou apagada.
-
-     ⚠ NO PRIVADO É POR MOTOR, E NÃO POR `ehDestaRota`. O Encontro do Afty mistura
-     criatura e personagem de propósito (afty-sistema.js), então uma criatura
-     que entrou no /Player por import antigo continua podendo lutar ali. Quem
-     sai é só a ficha da 2.5.2, que o `deriveAfty` leria com a régua errada. */
-  const criaturasDoLivro = useMemo(
-    () => storageDaRota.creatures.filter((c) => !!sistemaGravado(c) === aftyMode),
-    [aftyMode, storageDaRota.creatures],
-  );
-
   /* A biblioteca de modelos é da 2.5.2 nas TRÊS rotas: o `applyTemplatesToCreatures`
      roda o `normalizeDraft` da 2.5.2, que estoura numa ficha do Afty
      (`treinamentos.map is not a function`, medido em 2026-10-03). No privado a
@@ -314,12 +331,11 @@ export default function App() {
   }, []);
 
   const handleDuplicateEncounter = useCallback((id) => {
-    if (aftyMode) encontrosAfty.duplicar(id);
-    else encounterManager.duplicate(id);
+    listaEncontros.duplicar(id);
     goToEncounters();
-  }, [aftyMode, encontrosAfty, encounterManager, goToEncounters]);
+  }, [listaEncontros, goToEncounters]);
 
-  // ---------- Save de criatura com verificação de encontros ----------
+  // ---------- Save de criatura ----------
   const handleCreatureSave = useCallback((data) => {
     const prior = data.id ? storage.creatures.find((c) => c.id === data.id) : null;
     const isEditing = !!prior;
@@ -335,64 +351,14 @@ export default function App() {
     };
 
     if (isEditing) {
-      // ⚠ Só a 2.5.2 sincroniza: o encontro do Afty guarda a ficha CLONADA de
-      // propósito, para uma edição no criador não mudar o número de uma luta em
-      // andamento. Ver `afty-encontro.js`.
-      const affected = aftyMode ? [] : encounterManager.encounters.filter((enc) =>
-        enc.combatants?.some((c) => c.creatureId === stamped.id)
-      );
-      if (affected.length > 0) {
-        setEncounterSyncState({ creature: stamped, affectedEncounters: affected });
-        return;
-      }
+      /* O Atualizar da Ficha (etapa 6b, 2026-11-17) trocou a janela que abria aqui (`EncounterSyncModal`): a criatura editada não
+         reescreve mais nenhum Encontro. Quem está numa luta vê o botão Atualizar da Ficha no combatente. */
       storage.update(stamped.id, stamped);
     } else {
       storage.create(stamped);
     }
     goToDashboard();
-  }, [aftyMode, storage, encounterManager.encounters, goToDashboard]);
-
-  const handleSyncConfirm = useCallback((selectedIds) => {
-    if (!encounterSyncState) return;
-    const { creature } = encounterSyncState;
-    storage.update(creature.id, creature);
-    const idSet = new Set(selectedIds);
-    const newHpMax = creature.stats?.hpMax ?? 0;
-    encounterManager.encounters
-      .filter((e) => idSet.has(e.id))
-      .forEach((enc) => {
-        encounterManager.update(enc.id, (e) => ({
-          ...e,
-          combatants: e.combatants.map((c) => {
-            if (c.creatureId !== creature.id) return c;
-            const clampedHp = Math.min(c.combatState?.hpCurrent ?? newHpMax, newHpMax);
-            return {
-              ...c,
-              snapshot: creature,
-              combatState: {
-                ...c.combatState,
-                hpMaxBase: newHpMax,
-                hpCurrent: clampedHp,
-              },
-            };
-          }),
-        }));
-      });
-    setEncounterSyncState(null);
-    goToDashboard();
-  }, [encounterSyncState, storage, encounterManager, goToDashboard]);
-
-  const handleSyncSkip = useCallback(() => {
-    if (!encounterSyncState) return;
-    const { creature } = encounterSyncState;
-    storage.update(creature.id, creature);
-    setEncounterSyncState(null);
-    goToDashboard();
-  }, [encounterSyncState, storage, goToDashboard]);
-
-  const handleSyncCancel = useCallback(() => {
-    setEncounterSyncState(null);
-  }, []);
+  }, [storage, goToDashboard]);
 
   const activeCreature = view.creatureId
     ? findCreatureAnywhere(view.creatureId, storage.creatures, COMPENDIUM)
@@ -429,25 +395,15 @@ export default function App() {
         // A lista do /Player é de PERSONAGENS (autor, 2026-09-10: "Uma prop
         // opcional"). Sem a prop, o Dashboard fala de criatura como sempre.
         vocab={mesa ? vocabularioDeFichas() : sistemaDaRota === "player" ? vocabularioDoDashboard("player") : undefined}
-        encounters={aftyMode ? encontrosAfty.encontros : encounterManager.encounters}
+        encounters={listaEncontros.encontros}
         onOpenCreature={abrirFicha}
         onEditCreature={goToBuilder}
         onCreateNew={() => (mesa ? setEscolhendoTipo(true) : goToBuilder(null))}
         onGoToEncounters={goToEncounters}
         onGoToTemplates={goToTemplates}
-        // A Mesa do Mestre existe só na Guilda (autor, 2026-11-11).
-        onGoToMestre={mesa ? () => setView({ name: "mestre" }) : undefined}
-        encontrosBloqueados={encontrosBloqueados}
         cabecalhoTitulo={rotaPublica ? <AlternadorSistema atual={rotaId === "player" ? "player" : "criatura"} /> : null}
         cabecalhoAcoes={<ContaNuvem />}
       />
-    ),
-    /* A Mesa do Mestre da Guilda. Recebe a lista que os Encontros recebem (só
-       ficha do Afty e do Player), e a Vida e o PE dela são a sessão da Ficha Final. */
-    mestre: () => (
-      mesa ? (
-        <MesaDoMestre fichasDaLista={criaturasDoLivro} onVoltar={goToDashboard} />
-      ) : views.dashboard()
     ),
     tracker: () => {
       if (!activeCreature) {
@@ -516,70 +472,26 @@ export default function App() {
       )
     ),
     encounter: () => {
-      if (encontrosBloqueados) return views.dashboard();
       if (!view.encounterId) {
         goToEncounters();
         return null;
       }
-      if (aftyMode) {
-        return (
-          <AftyEncontro
-            encontroId={view.encounterId}
-            gerenciador={encontrosAfty}
-            onAtualizarBiblioteca={atualizarBibliotecaDoEncontro}
-            criaturas={criaturasDoLivro}
-            pastas={storage.folders}
-            // A lista do Encontro fala a língua do grimório ABERTO (criatura ou
-            // personagem), e ela pode estar vazia: não há ficha de onde ler.
-            sistema={mesa ? "ficha" : sistemaDaRota}
-            namespaceDaBiblioteca={rotaId}
-            onVoltar={goToEncounters}
-            onDuplicar={handleDuplicateEncounter}
-          />
-        );
-      }
       return (
-        <EncounterTracker
-          encounterId={view.encounterId}
-          manager={encounterManager}
-          /* ⚠ A LISTA FILTRADA, e não `storage.creatures`. Pôr uma ficha do
-             Afty num encontro da 2.5.2 estoura no avanço de rodada, que chama
-             o mesmo `collectAutomationEntities` do painel. Ver a fronteira. */
-          creatures={criaturasDoLivro}
-          folders={storage.folders}
-          onBack={goToEncounters}
-          onDuplicate={handleDuplicateEncounter}
-          onUpdateCreature={(creature) => {
-            if (!creature?.id) return;
-            // Só persiste se a criatura existe no compêndio local
-            if (storage.creatures.find((c) => c.id === creature.id)) {
-              storage.update(creature.id, creature);
-            }
-          }}
+        <EncontroTela
+          encontroId={view.encounterId}
+          lista={listaEncontros}
+          onVoltar={goToEncounters}
+          onDuplicar={handleDuplicateEncounter}
+          onAtualizarBiblioteca={atualizarBibliotecaDoEncontro}
+          namespaceDaBiblioteca={rotaId}
+          acoesSala={nuvemAtiva ? (
+            <React.Suspense fallback={null}><BotaoAbrirSala lista={listaEncontros} encontroId={view.encounterId} /></React.Suspense>
+          ) : null}
         />
       );
     },
     encounters: () => (
-      encontrosBloqueados ? views.dashboard() : aftyMode ? (
-        <AftyEncontros
-          gerenciador={encontrosAfty}
-          pastas={storage.folders}
-          sistema={mesa ? "ficha" : sistemaDaRota}
-          onAbrir={goToEncounter}
-          onVoltar={goToDashboard}
-        />
-      ) : (
-      <EncountersDashboard
-        manager={encounterManager}
-        folders={storage.folders}
-        creatures={criaturasDoLivro}
-        onCreateFolder={storage.createFolder}
-        onRenameFolder={storage.renameFolder}
-        onRemoveFolder={storage.removeFolder}
-        onOpenEncounter={goToEncounter}
-        onBackToGrimoire={goToDashboard}
-      />
-      )
+      <ListaDeEncontros lista={listaEncontros} onAbrir={goToEncounter} onVoltar={goToDashboard} />
     ),
     templates: () => (
       <TemplateLibrary
@@ -600,9 +512,13 @@ export default function App() {
           componente continua em `components/FeedbackPrompt.jsx`, sem uso. */}
       <div className="min-h-screen flex flex-col">
         <div className="flex-1">
-          {views[view.name] ? views[view.name]() : views.dashboard()}
+          {rotaSala ? (
+            <React.Suspense fallback={null}>
+              <SalaPagina codigo={codigoDaSala} onVoltar={() => location.assign("/Player")} />
+            </React.Suspense>
+          ) : views[view.name] ? views[view.name]() : views.dashboard()}
         </div>
-        {rotaPublica && view.name === "dashboard" && (
+        {rotaPublica && !rotaSala && view.name === "dashboard" && (
           <footer className="bg-slate-950 px-4 py-3 text-center text-sm text-slate-300">
             <a href="/privacidade.html" className="underline underline-offset-4 hover:text-white">
               Política de Privacidade
@@ -700,15 +616,6 @@ export default function App() {
             </div>
           </div>
         </div>
-      )}
-      {encounterSyncState && (
-        <EncounterSyncModal
-          creature={encounterSyncState.creature}
-          affectedEncounters={encounterSyncState.affectedEncounters}
-          onConfirm={handleSyncConfirm}
-          onSkip={handleSyncSkip}
-          onCancel={handleSyncCancel}
-        />
       )}
       <PdfFab />
       <AvisoMudanca />

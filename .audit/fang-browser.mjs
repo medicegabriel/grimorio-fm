@@ -22,8 +22,8 @@ try{for(const width of [1440,390]){
  assert.deepEqual(observed.sort(),expected);assert.equal(observed.includes('Crítico Melhorado'),false);assert.equal(observed.includes('Corpo Calejado'),false);
  await panel.getByRole('textbox',{name:'Buscar cópia por texto'}).fill('Crítico Aperfeiçoado');assert.equal(await panel.getByRole('tablist',{name:'Especializações de cópia'}).getByRole('tab').count(),1);assert.equal(await panel.getByRole('tablist',{name:'Níveis de cópia'}).getByRole('tab').count(),1);
  await panel.getByRole('checkbox').check();await panel.getByRole('region',{name:'Opções de cópia'}).getByRole('button',{name:'Crítico Aperfeiçoado',exact:true}).click();
- await panel.getByRole('button',{name:'Encerrar cópia',exact:true}).waitFor();await page.getByRole('button',{name:'Próxima rodada',exact:true}).click();assert.equal(await panel.getByRole('button',{name:'Encerrar cópia'}).count(),1);
- await page.getByRole('button',{name:'Próxima rodada',exact:true}).click();assert.equal(await panel.getByRole('button',{name:'Encerrar cópia'}).count(),0);
+ await panel.getByRole('button',{name:'Encerrar cópia',exact:true}).waitFor();await page.getByRole('button',{name:'Encerrar Meu Turno',exact:true}).click();assert.equal(await panel.getByRole('button',{name:'Encerrar cópia'}).count(),1);
+ await page.getByRole('button',{name:'Encerrar Meu Turno',exact:true}).click();assert.equal(await panel.getByRole('button',{name:'Encerrar cópia'}).count(),0);
  await panel.getByRole('textbox',{name:'Buscar cópia por texto'}).fill('Corpo Calejado');assert.equal(await panel.getByRole('region',{name:'Opções de cópia'}).getByRole('button').count(),0);
  await panel.getByRole('textbox',{name:'Buscar cópia por texto'}).fill('');await panel.screenshot({path:'.audit/fang-imitacao-'+width+'.png'});
  const horizontal=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth);assert.equal(horizontal,false);assert.deepEqual(errors,[]);

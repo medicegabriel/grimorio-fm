@@ -110,6 +110,8 @@ const FOLHAS = [
   ["ficha/ficha-votos-regras.js", "o afty-votos o importa, e o derive importa o afty-votos"],
   // Entrou em 2026-11-01 (CL3): o estado das paredes e cortinas. A sessão o importa, e as operações de barreira importam a sessão.
   ["ficha/ficha-barreiras-estado.js", "a sessao o importa, e as operacoes de barreira importam a sessao"],
+  // Entrou em 2026-11-17 (Encontro Unificado, etapa 3): a interface dos motores do Encontro.
+  ["encontros/motores/interface.js", "os dois motores a leem, e o do Afty entra pela cadeia do derive"],
   ["afty-schema.js", "todo mundo cria ficha em branco"],
   ["afty-alma-regime.js", "o schema o importa para migrar a Alma das fichas antigas"],
   ["afty-alma-estados.js", "o derive e as telas leem a regra dos Estados da Alma"],

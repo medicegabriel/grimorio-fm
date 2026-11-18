@@ -9,13 +9,72 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 
 ## Lançamento público: domínio, nuvem e Encontros (2026-11-16)
 
-O código está pronto e inerte. Guia em `docs/nuvem-supabase.md`, esquema em `supabase/esquema.sql`.
+No ar desde 2026-11-17 em `fichafm.com.br`. Guia em `docs/nuvem-supabase.md`, esquema em `supabase/esquema.sql`.
 
-- **Autor:** comprar o domínio, criar o projeto Supabase, rodar o esquema, criar os apps OAuth do Google e do Discord, liberar os endereços de retorno e pôr `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` e `VITE_DOMINIO_NOVO` na Vercel.
+- Feito e conferido em produção (2026-11-17): domínio com HTTPS, login com Google e com Discord, ficha gravada e apagada na nuvem, provedor Email desligado no Supabase, faixa do endereço antigo e "Levar Minhas Fichas" (testado num Chrome de verdade; o navegador interno do Claude abre a janela na mesma aba e não serve para esse teste).
 - **Não redirecionar** `grimorio-fm.vercel.app` para o domínio novo: o aviso dele leva as fichas por `postMessage`.
-- **Testar de ponta a ponta** com o Supabase de verdade: login nos dois provedores, ficha editada em dois aparelhos, ficha apagada num e aberta no outro, e o botão "Levar Minhas Fichas" entre os dois endereços. Nada disso foi exercitado ainda, só a mesclagem pura (`asserts/t-nuvem.mjs`).
-- **Encontros com cadeado** em `/` e `/Player` (`encontrosBloqueados` no `App.jsx`). O botão some, os dados ficam. Salvar uma criatura da 2.5.2 que já está num encontro antigo ainda abre o `EncounterSyncModal`. Tirar o cadeado quando os Encontros forem revistos.
+- **Falta testar:** a mesma ficha editada em dois aparelhos com a mesma conta.
+- O Supabase tem uma conta de teste só com Google (`c98b4943…`) que guarda a ficha Teste Nuvem. O autor decide se apaga em Authentication, Users.
 - No celular o título do cabeçalho do Dashboard já cortava ("Jo...") antes do alternador. Fica para uma revisão do cabeçalho.
+
+## Encontro Unificado e Sala: o que ficou aberto (atualizado em 2026-11-18, fim da 8a)
+
+O Encontro novo e a Sala estão feitos e documentados (`docs/afty-encontros.md`, `docs/nuvem-supabase.md`). A revisão final (8b) foi feita em 2026-11-18. O cadeado saiu
+no mesmo dia. Plano em `C:\Projetos\Grimorio\PLANO-APROVADO-ENCONTRO-UNIFICADO-SALA.md`.
+
+- **Antes da Fase 2 ligar `operarComAlvo` e `operarComGrupo` no Encontro novo** (revisão final, 2026-11-18): a operação do ALVO nasce com `entrada: {}` e, na
+  Sala, o autor do Mestre tem `combatente: null`. Assim `sala_interno.envolvidos` só enxerga o alvo, e a linha completa de `sala_operacoes` (com o `aplicadorId` da
+  origem no delta) fica legível para o dono do alvo, mesmo com a origem Oculta. Hoje só o Encontro de antes (código morto) chama os dois. Ao ligar, pôr a origem em
+  `entrada.aplicadorId` (o SQL já a lê) e um assert com origem Oculta.
+- **Antes da Fase 2 rolar o ataque de criatura contra personagem**: `sessaoParaODono` (`sala-oculto.js`) tira o detalhe da rolagem do histórico só quando o autor é
+  Oculta. Com criatura em Só Nome ou Barra, o rótulo e a fórmula ficariam no histórico do dono, e o Registro público os corta. Hoje nenhuma operação sobre personagem
+  leva `entrada.rolagem` de criatura.
+- **RPC repetida na ligação do Mestre**: `definirVisao` e `adicionarCombatente` (nome e lado) em `sala-encontro.js` não deduplicam como `publicarResumo` e
+  `gravarEstado`. A sincronização roda a cada 60 ms e repete a chamada até o retrato receber a linha nova. Só custo de rede (o banco não muda).
+- **A ficha editada NA MESMA ABA da Sala não sobe** (o espelho só relê as fichas no evento `storage`, que só vem de outra aba). Hoje a tela do jogador grava tema,
+  preferências e invocações pelo `useCreatureStorage` da própria aba. Dar ao espelho um "conferir fichas" chamado quando a lista da aba muda.
+
+- **Fase 2: automação de tudo.** Rolagem de ataque com um ou vários alvos, acerto contra a Defesa, dano por tipo abatendo a RD pela aba Defesas, crítico, área com
+  TR, buffs em aliados por `alvo`, tudo por **pedido** com Aceitar ou reação e Desfazer (o mesmo caminho de pedido da Sala). Interruptores do Mestre por Encontro, o
+  jogador desliga nas próprias rolagens, o alvo confirma antes. A Configuração "Automação" do Encontro já existe como "Em Breve". Inclui o Pacote para Aliados
+  como duração do emissor (abaixo).
+- **Fase 3, bem mais tarde: VTT com mapa e tokens.** Nada foi construído. O id estável do combatente e o registro de operações já servem de base.
+- **Registro das ativações de regra da 2.5.2 no Registro do Encontro.** O retorno de uso some em 2,6 s e a frase fica só no `combatLog` do estado da criatura, que
+  nenhuma tela mostra.
+- **Gravadores do personagem ligado na G2 embutida.** Tema, preferências do cabeçalho, Espinho, pacotes, recurso próprio, invocações e
+  Fundamentos perdidos só agem quando a prop vem. Na 6a e na 6b nenhum é passado (na tela do Mestre a ficha é do jogador). Decidir com o autor.
+- **Quem aplicou nos Efeitos e condições da G2.** A operação já carimba `aplicadorId`. Na 2.5.2 o painel mostra "De X" e tem o seletor
+  Aplicado Por. Na G2 embutida falta mostrar de quem é cada duração e escolher quem aplicou.
+- **Código morto do Encontro de antes.** `AftyEncontro.jsx`, `AftyEncontros.jsx`, `PainelDeCombatente.jsx` e `usar-encontros-afty.js` não são
+  mais renderizados por ninguém (o `App.jsx` usa as telas novas). `usar-encontro-afty.js` ainda é importado (`derivarComCache`, `PATCH_SESSOES` nos
+  asserts). Decidir depois da 8b se saem, junto com `CHAVES_COM_TELA_ANTIGA` e `telaAntigaDesligada` de `listas.js`.
+- **`onGoToMestre` e o botão Mestre ficaram no `Dashboard.jsx`** (`src/components/`, somente-leitura), sem uso. Tirar só com o autor.
+- **Pedido com vários alvos.** Hoje a ação em grupo do jogador vira um pedido por alvo. O cliente (`sala-encontro.js`)
+  já põe cada pedido pendente da Sala nos pedidos do Encontro do Mestre e responde pelo `responder_pedido`.
+- **O que as telas da Sala não provaram com duas contas.** Só há duas contas de teste (Mestre e um jogador), então ficaram só nos asserts (`t-sala-jogador`): o jogador
+  aceitando o pedido de um colega, a Ficha de colega compartilhada (dar e tirar) e o Aceitar pelo Jogador no Mestre. Conferir na primeira Sala com dois jogadores.
+- **O co-Mestre não tem tela de luta.** Quem foi promovido entra pela tela do jogador (sem ficha, com a rolagem escondida no Registro) e não conduz turno nem
+  iniciativa, que seguem com quem criou.
+- **A Ficha de colega abre só leitura pela G2 embutida**, com os controles à vista e sem efeito (a função de gravar não faz nada). Um modo de leitura de verdade na G2
+  é trabalho à parte.
+- **A clássica (`?ficha-g2=0`) ignora `naSala`** e ainda mostra o Encerrar Meu Turno dela dentro da Sala.
+- **Co-Mestre: turno e iniciativa ficam no aparelho de quem criou** (autor, 2026-11-18, "Mexe nas Fichas"). O co-Mestre lê tudo e mexe nas
+  sessões. A estrutura da luta (iniciativas, Abatido, Fora da Ordem, log) não está no banco.
+- **Reforços no meio da luta não começam o combate da ficha** (Encontro local, comportamento da 6a): o `ADICIONAR` do redutor não chama o
+  `iniciaCombate`. Na Sala, o personagem que chega com a luta começada começa (`sala-encontro.js`, passo 1b). Decidir se o local acompanha.
+- **O mesmo Encontro aberto como Sala em dois aparelhos do Mestre** teria dois publicadores. Não tratado: a Sala é do aparelho que tem o
+  `segredo` (o Encontro com `sala.segredo`), e o outro aparelho da mesma conta, que recebe o Encontro pela nuvem pessoal, também o tem.
+- **`afty_salas_recebidas_v1` só cresce.** Um `{ id }` por Sala fechada recebida. Dá para podar o que passou dos 14 dias guardados.
+- **A recuperação do ausente roda em toda abertura do App com conta** (uma chamada `minhas_salas`). Aberta a todos desde
+  2026-11-18: conferir o custo nas primeiras semanas.
+- **O contador de erros (`missCounter`) não tem botão na 2.5.2.** O motor e o redutor abatem a criatura em 3, mas nada no painel altera o
+  contador (só a Característica "Fluxo" o lê). Não ligar botão sem perguntar ao autor.
+- **Fase 2: o Pacote para Aliados como duração do emissor.** Hoje ele conta como do receptor, que o ativa (autor, 2026-11-17, "Do Receptor,
+  até a Fase 2"), porque o `emissorId` do pacote é da biblioteca e não de um combatente.
+- **Registro da migração perdido.** Sem `afty_encontros_site_migracao_v1` (aparelho limpo e sem nuvem), o Encontro migrado que a pessoa
+  apagou volta, porque a chave antiga ainda o tem. Decidir depois da 8b se vale apagar a chave antiga depois de um tempo.
+- **Playwright fora do `package.json` e agora fora do `node_modules`.** Só os navegadores continuam instalados. A 6a instalou o módulo no
+  scratchpad da sessão. Os roteiros de `.audit/` que importam `playwright` não rodam até alguém decidir onde ele mora.
 
 ## Recurso próprio e tema de duas faces: o que ficou aberto (2026-11-16)
 

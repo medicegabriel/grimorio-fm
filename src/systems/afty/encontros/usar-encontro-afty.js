@@ -332,6 +332,9 @@ const HANDLERS = {
       turno: s.combatentes.find((c) => c.id === s.ativoId)?.sessao?.uso?.acoes?.turno ?? 0 });
 
     if (novaRodada) {
+      // ⚠ REGRA REVOGADA EM 2026-11-17 (Encontro Unificado, etapa 5): o redutor novo (`redutor.js`) desce cada
+      // duração no fim do turno de quem a aplicou. Este redutor é o da tela de hoje e segue com a regra antiga até
+      // a etapa 6 trocar as telas, por isso nada mudou aqui.
       // ⚠ A duração desce para TODOS na virada, e não no turno de cada um. É o
       // que a Ficha Final já faz em `proximaRodada`, e as duas telas precisam
       // contar as mesmas rodadas: um buff de 3 rodadas não pode durar mais na

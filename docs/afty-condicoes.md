@@ -108,8 +108,8 @@ condição faz e nunca inventa número. O assert de pontuação vale para ele ta
 ## As rodadas
 
 Na Ficha Final cada condição tem as rodadas que faltam, com botões de menos e mais. O campo vazio ao
-adicionar é "sem duração" (o infinito, igual ao buff). A virada de rodada da Ficha desce o número e
-tira a condição quando ele zera, e o Descansar tira as que têm duração. No criador não há rodada.
+adicionar é "sem duração" (o infinito, igual ao buff). A virada de rodada da Ficha sozinha (botão Encerrar Meu Turno) desce o número, e no Encontro ele desce no fim do turno de quem aplicou a condição (`aplicadorId`, regra de 2026-11-17 em `docs/afty-encontros.md`). Nos dois casos a condição sai
+quando o número zera, e o Descansar tira as que têm duração. No criador não há rodada.
 
 O Sangramento acaba num TR de Fortitude, e não por tempo: nasce sem duração, e a linha tem o botão
 **Perda de Vida**, que rola o dado da faixa, grava no histórico e desconta do PV.

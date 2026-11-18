@@ -20,7 +20,7 @@ import { Vital } from "../ui/vital";
 import { Guarda } from "../ui/guarda";
 import { PainelTita } from "../ui/tita";
 import {
-  carregarSessao, salvarSessao, aparaSessao,
+  aparaSessao,
   aplicaDano, aplicaCura, aplicaPerdaDeVida, pagaCustoVida, proximaRodada, descansar, registraRolagem,
   aplicaDanoNaAlma, curaAlma, defineAlma,
   peTempTotal, gastaPe, pvTempTotal,
@@ -43,6 +43,10 @@ import {
   preparoDe, preparoTempDe, alteraPreparo, definePreparo,
   usosGastosDe, marcaUso,
 } from "./ficha-sessao";
+// A loja viva da sessão (2026-11-17), a mesma da G2.
+import {
+  useSessaoDaLoja, atualizar as atualizarNaLoja, descarregar as descarregarDaLoja, definirAparo as definirAparoDaLoja,
+} from "./sessao-loja";
 import { avisoDoVital } from "./ficha-vital";
 import { avisoDoEstadoDaAlma } from "../afty-alma-estados";
 import { prepararRolagemEspecializacao, registrarAtaqueEspecializacao, aplicarCuraRoladaEspecializacao } from "./ficha-especializacoes";
@@ -165,7 +169,9 @@ export default function AftyFicha({
   // que só existem depois de derivar. O derive da montagem roda sem
   // `almaAtual` (alma íntegra), que é exatamente o estado de uma ficha que
   // nunca entrou em jogo. O clamp de leitura abaixo acerta o resto.
-  const [sessaoBruta, setSessaoBruta] = useState(() => carregarSessao(alvoId, deriveAfty(ficha)));
+  /* ⚠ A SESSÃO VEM DA LOJA (`sessao-loja.js`), como na G2: a mesma chave, vista ao vivo quando outra aba a muda. O derive da montagem só
+     roda na primeira leitura da chave. */
+  const sessaoBruta = useSessaoDaLoja(alvoId, () => deriveAfty(ficha));
   const [tab, setTab] = useState("acoes");
   const [compacto, setCompacto] = useState(false);
   // Vantagem e desvantagem, e se o histórico está aberto. Os dois são de TELA, e
@@ -334,18 +340,19 @@ export default function AftyFicha({
 
   // Todo escritor passa por aqui, e o valor entra JÁ aparado nos dois sentidos:
   // a função recebe a sessão válida e o resultado dela é aparado de novo.
+  // A loja guarda a FUNÇÃO: se outra aba gravar antes dos 600 ms, a edição é reaplicada sobre a versão de lá.
   const atualiza = useCallback((fn) => {
-    setSessaoBruta((s) => aparaSessao(fn(aparaSessao(s, derived)), derived));
-  }, [derived]);
+    atualizarNaLoja(alvoId, (s) => aparaSessao(fn(aparaSessao(s, derived)), derived));
+  }, [derived, alvoId]);
 
   // Persistência por debounce, igual ao rascunho do criador. Sem botão Salvar:
   // sessão não é rascunho, é fato.
-  const primeiraGravacao = useRef(true);
+  /* A loja grava 600 ms depois da última edição, aparada pelo derive VIVO (como o efeito antigo gravava). Sair da Ficha antes dos 600 ms
+     grava na hora, em vez de perder a edição. */
   useEffect(() => {
-    if (primeiraGravacao.current) { primeiraGravacao.current = false; return undefined; }
-    const t = setTimeout(() => salvarSessao(alvoId, sessao), 600);
-    return () => clearTimeout(t);
-  }, [alvoId, sessao]);
+    definirAparoDaLoja(alvoId, (s) => aparaSessao(s, derived));
+  }, [alvoId, derived]);
+  useEffect(() => () => { descarregarDaLoja(alvoId); }, [alvoId]);
 
   // ⚠ O tema é gravado NA CRIATURA, e não em chave própria como a sessão: ele
   // precisa viajar no export para a ficha chegar bonita na mão dos outros
@@ -1012,8 +1019,8 @@ export default function AftyFicha({
                 type="button"
                 className="afty-botao"
                 onClick={() => atualiza((s) => proximaRodada(s, derived).sessao)}
-                title="Próxima rodada"
-                aria-label="Próxima rodada"
+                title="Encerrar Meu Turno"
+                aria-label="Encerrar Meu Turno"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -1022,7 +1029,7 @@ export default function AftyFicha({
                 derived={derived}
                 onDescansar={(marioneteId) => atualiza((s) => descansar(s, derived, { marioneteId }))}
               />
-              <button type="button" className="afty-botao" onClick={() => { salvarSessao(alvoId, sessao); onEditar(); }} title="Editar no criador">
+              <button type="button" className="afty-botao" onClick={() => { descarregarDaLoja(alvoId); onEditar(); }} title="Editar no criador">
                 <Pencil className="w-4 h-4" />
                 <span className="hidden sm:inline">Editar</span>
               </button>
