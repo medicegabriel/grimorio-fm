@@ -1,5 +1,15 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-19 · APP ERA DE OURO, ETAPA E2 (VOLTAR DO APARELHO)
+
+Segunda etapa do plano em `docs/app-celular.md`. O Voltar do celular saía do site no meio de uma Ficha (no app instalado do Android, fecharia o app). Decisão do autor: vale em todas as rotas.
+
+- **A tela mora no histórico do navegador** (`src/celular/pilha.js`, puro, e `usar-pilha-de-telas.js`, ligados no `App.jsx`): `ir` empilha, `substituir` troca, `voltar` volta no histórico quando há para onde. A URL não muda, e recarregar reabre a mesma tela se a ficha ou o encontro existirem. O criador da 2.5.2 entra por `substituir`, para o aviso de sair sem salvar dele seguir valendo. Os botões Voltar das telas usam o mesmo histórico, então o criador aberto da Ficha volta para a Ficha.
+- **Camadas** (`src/celular/camadas.js`): folha de baixo, painel flutuante da G2 (menos a dica), diálogo do Encontro, Busca e Aparência da G2, a ficha, o colega e a gaveta da Sala, e os dois diálogos do App fecham no Voltar antes da tela.
+- **Rascunho do criador** (`afty-rascunho.js`): o pendente é gravado ao sair e no `pagehide`. O teste no navegador achou um defeito que a etapa criaria: depois do Salvar o criador agora renderiza de novo antes de sair (o Voltar é assíncrono), a ficha gravada difere do rascunho e o rascunho da ficha nova era regravado. Consertado com a marca do rascunho salvo, que nunca é regravado.
+- **Normas novas:** D-86 e D-87 em `normas-design.md`, S-27 e S-28 em `normas-site.md`. O `CLAUDE.md` aponta para `src/celular/`.
+- Verificado: `t-app-pilha.mjs` novo (45), `t-sistema.mjs` (496), `t-ordem-modulos.mjs` (62), lint das pastas tocadas limpo, build, e no build local em 375 px: o diálogo de Criatura ou Personagem, o criador, o Salvar, a Ficha, o painel de Vida (fecha no Voltar e ao tocar fora), recarregar reabrindo a Ficha, o rascunho guardando a edição feita 100 ms antes do Voltar, nenhum rascunho sobrando depois de salvar uma ficha nova, e o Encontro com o diálogo de Configurações, cada Voltar descendo um nível. O script de medição confirma o Voltar dentro do site. O único erro no console é o 404 do script de análise da Vercel, que só existe lá.
+
 ## SESSÃO DE 2026-11-19 · APP ERA DE OURO, ETAPA E1 (BASE E CONSERTOS RÁPIDOS)
 
 Pedido do autor: "o site [...] com as recentes atualizaçoes esta muito dificil usa-lo mobile teste experimente e planje um aplicativo feito pra mobile que pode ser baixa-do e e recomendado a entrar no site que deixa mais intuitivo no celular seguindo as mesmas metricas". O teste no site ao vivo, o plano de 10 etapas e as decisões do autor estão em `docs/app-celular.md`. Esta sessão fez a E1.

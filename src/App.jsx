@@ -29,6 +29,9 @@ import { lerEstadoNuvem, ouvirNuvem } from "./nuvem/nuvem-sync";
 import { nuvemAtiva } from "./nuvem/nuvem-config";
 import { recuperarSalasFechadas } from "./nuvem/sala-fechamento";
 import { rotaDoGrupo } from "./nuvem/sala-ui/sala-ui-dados";
+import { usePilhaDeTelas } from "./celular/usar-pilha-de-telas";
+import { useCamadaDeVoltar } from "./celular/camadas";
+import { TELA_LISTA } from "./celular/pilha";
 /* A Sala entra por `lazy`: só quem abre /Sala/<código> baixa o cliente e o tempo real. */
 const SalaPagina = React.lazy(() => import("./nuvem/SalaPagina"));
 /* O botão Abrir Sala do cabeçalho do Encontro (etapa 7c) também entra por `lazy`: ele puxa o cliente da Sala, e só aparece com a Sala
@@ -160,10 +163,27 @@ export default function App() {
     return () => { vivo = false; sair(); };
   }, [rotaSala, listaAtiva, grupoDaLista, importarNaLista]);
 
-  const [view, setView] = useState({ name: "dashboard", creatureId: null, encounterId: null });
+  /* ⚠ A TELA MORA NO HISTÓRICO DO NAVEGADOR (etapa E2 do app de celular, 2026-11-19, docs/app-celular.md). Até aqui era um
+     `useState` solto, e o Voltar do celular saía do site no meio de uma Ficha. Agora `ir` empilha, `substituir` troca e
+     `voltar` volta no histórico quando há para onde. Recarregar reabre a mesma tela se a ficha ou o encontro ainda existirem.
+     O criador da 2.5.2 nunca volta assim: ele é aberto com `substituir`, para o aviso de sair sem salvar dele (`beforeunload`,
+     em `src/components/`) continuar protegendo quem aperta Voltar no meio de uma edição. */
+  const telaPodeReabrir = (t) => {
+    if (rotaSala) return false;
+    const ficha = t.creatureId ? storageDaRota.creatures.find((c) => c.id === t.creatureId) : null;
+    if (t.name === "aftyFicha") return !!ficha && !!sistemaGravado(ficha);
+    if (t.name === "tracker") return !!ficha && !sistemaGravado(ficha);
+    if (t.name === "builder") return t.creatureId ? !!ficha && !!sistemaGravado(ficha) : aftyMode;
+    if (t.name === "encounter") return listaEncontros.encontros.some((e) => e.id === t.encounterId);
+    return true;
+  };
+  const { tela: view, ir, substituir, voltar } = usePilhaDeTelas({ existe: telaPodeReabrir });
   // A Guilda pergunta criatura ou personagem antes de abrir o criador.
   const [escolhendoTipo, setEscolhendoTipo] = useState(false);
   const [importeRecusado, setImporteRecusado] = useState(null);
+  // Os dois diálogos do App fecham no Voltar do aparelho antes de a tela mudar.
+  useCamadaDeVoltar(escolhendoTipo, () => setEscolhendoTipo(false));
+  useCamadaDeVoltar(!!importeRecusado, () => setImporteRecusado(null));
 
   /* ============================================================ */
   /* A FRONTEIRA ENTRE OS DOIS LIVROS                              */
@@ -272,10 +292,10 @@ export default function App() {
     return () => document.removeEventListener("keydown", aoTeclar);
   }, [importeRecusado]);
 
-  // Navegação
+  // Navegação. O Voltar dos botões volta no histórico, e cai na lista quando não há para onde.
   const goToDashboard = useCallback(() => {
-    setView({ name: "dashboard", creatureId: null, encounterId: null });
-  }, []);
+    voltar(TELA_LISTA);
+  }, [voltar]);
 
   /* O clique no card, nas três rotas. A ficha do Afty abre na FICHA FINAL (a
      criatura já montada, aberta para USO, desde 2026-08-05), e a da 2.5.2 no
@@ -296,45 +316,53 @@ export default function App() {
       const builtIn = getCompendiumById(id);
       if (!builtIn) return;
       const clone = storage.cloneFromBuiltIn(builtIn, { folderId: null });
-      setView({ name: "tracker", creatureId: clone.id });
+      ir({ name: "tracker", creatureId: clone.id });
       return;
     }
     const ficha = storage.creatures.find((c) => c.id === id);
     if (sistemaGravado(ficha)) {
-      setView({ name: "aftyFicha", creatureId: id });
+      ir({ name: "aftyFicha", creatureId: id });
       return;
     }
-    setView({ name: "tracker", creatureId: id });
-  }, [storage]);
+    ir({ name: "tracker", creatureId: id });
+  }, [storage, ir]);
 
+  /* O criador da 2.5.2 entra por `substituir`, e o do Afty por `ir`. Ver o bloco da tela no histórico, lá em cima. */
   const goToBuilder = useCallback((id = null, sistemaNovo = null) => {
     if (id && isBuiltInId(id)) {
       const builtIn = getCompendiumById(id);
       if (!builtIn) return;
       const clone = storage.cloneFromBuiltIn(builtIn, { folderId: null });
-      setView({ name: "builder", creatureId: clone.id });
+      substituir({ name: "builder", creatureId: clone.id });
       return;
     }
+    const ficha = id ? storage.creatures.find((c) => c.id === id) : null;
+    const da252 = ficha ? !sistemaGravado(ficha) : !aftyMode;
     // `sistemaNovo` só existe na Guilda, e só vale para ficha nova.
-    setView({ name: "builder", creatureId: id, sistemaNovo });
-  }, [storage]);
+    (da252 ? substituir : ir)({ name: "builder", creatureId: id, sistemaNovo });
+  }, [storage, aftyMode, ir, substituir]);
 
   const goToEncounter = useCallback((id) => {
-    setView({ name: "encounter", encounterId: id });
-  }, []);
+    ir({ name: "encounter", encounterId: id });
+  }, [ir]);
 
   const goToEncounters = useCallback(() => {
-    setView({ name: "encounters" });
-  }, []);
+    ir({ name: "encounters" });
+  }, [ir]);
+
+  // O Voltar de dentro de um Encontro: a lista de Encontros de onde ele foi aberto.
+  const voltarAosEncontros = useCallback(() => {
+    voltar({ name: "encounters" });
+  }, [voltar]);
 
   const goToTemplates = useCallback(() => {
-    setView({ name: "templates" });
-  }, []);
+    ir({ name: "templates" });
+  }, [ir]);
 
   const handleDuplicateEncounter = useCallback((id) => {
     listaEncontros.duplicar(id);
-    goToEncounters();
-  }, [listaEncontros, goToEncounters]);
+    voltarAosEncontros();
+  }, [listaEncontros, voltarAosEncontros]);
 
   // ---------- Save de criatura ----------
   const handleCreatureSave = useCallback((data) => {
@@ -407,8 +435,9 @@ export default function App() {
       />
     ),
     tracker: () => {
+      // A ficha sumiu (apagada em outra aba ou na nuvem): troca pela lista, sem mexer no histórico de trás.
       if (!activeCreature) {
-        goToDashboard();
+        substituir(TELA_LISTA);
         return null;
       }
       return (
@@ -421,7 +450,7 @@ export default function App() {
     },
     aftyFicha: () => {
       if (!activeCreature) {
-        goToDashboard();
+        substituir(TELA_LISTA);
         return null;
       }
       return (
@@ -474,14 +503,14 @@ export default function App() {
     ),
     encounter: () => {
       if (!view.encounterId) {
-        goToEncounters();
+        substituir({ name: "encounters" });
         return null;
       }
       return (
         <EncontroTela
           encontroId={view.encounterId}
           lista={listaEncontros}
-          onVoltar={goToEncounters}
+          onVoltar={voltarAosEncontros}
           onDuplicar={handleDuplicateEncounter}
           onAtualizarBiblioteca={atualizarBibliotecaDoEncontro}
           namespaceDaBiblioteca={rotaId}

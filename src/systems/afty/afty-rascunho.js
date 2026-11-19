@@ -37,7 +37,7 @@
  * próxima abertura restaurar por cima de uma ficha já gravada.
  */
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { sufixoDeChave, SISTEMA_PADRAO } from "./afty-sistema";
 
 /**
@@ -171,16 +171,40 @@ export function useRascunhoAfty({ id, draft, base, restauradoEm, onDescartar, si
   // muda enquanto o criador está aberto (trocar de ficha passa pelo Dashboard,
   // que desmonta este componente), então a lista nunca reexecuta por causa dele.
   // Um ref aqui só serviria para escondê-lo do lint, e escondê-lo é mentira.
+  /* O rascunho que acabou de passar pelo Salvar. Depois do Salvar a régua vira a ficha GRAVADA (com id e carimbos), que
+     difere do rascunho, e o `pendente` volta a dar verdadeiro até a pessoa sair. Desde o Voltar pelo histórico (2026-11-19) o
+     criador ainda renderiza nesse meio tempo, e sem esta marca o rascunho salvo era regravado por cima da ficha. */
+  const jsonSalvo = useRef(null);
   useEffect(() => {
-    if (!pendente) return;
+    if (!pendente || draftJson === jsonSalvo.current) return;
     const t = setTimeout(() => {
       if (gravarRascunho(id, draft, sistema)) setSalvoEm(Date.now());
     }, DEBOUNCE_MS);
     return () => clearTimeout(t);
   }, [draftJson, pendente, draft, id, sistema]);
 
+  /* ⚠ A JANELA DE 600 MS (2026-11-19, app do celular). Sair do criador (o Voltar do aparelho, o Cancelar, fechar a aba)
+     antes de a espera acabar levava a última edição junto: o `clearTimeout` acima mata a gravação pendente. Agora o que
+     estiver pendente é gravado ao desmontar e no `pagehide` (o Android mata a aba em segundo plano sem aviso).
+     O `ultimo` guarda o retrato de agora. O Salvar e o Descartar o zeram NA HORA, e não no render seguinte: depois do
+     Salvar o criador desmonta sem renderizar de novo, e um retrato velho regravaria o rascunho por cima da ficha salva. */
+  const ultimo = useRef(null);
+  useEffect(() => { ultimo.current = { id, draft, sistema, pendente, draftJson }; });
+  useEffect(() => {
+    const gravarPendente = () => {
+      const u = ultimo.current;
+      if (u?.pendente && u.draftJson !== jsonSalvo.current) gravarRascunho(u.id, u.draft, u.sistema);
+    };
+    window.addEventListener("pagehide", gravarPendente);
+    return () => {
+      window.removeEventListener("pagehide", gravarPendente);
+      gravarPendente();
+    };
+  }, []);
+
   /** Volta para a ficha gravada e apaga o rascunho. Desfaz a restauração. */
   const descartar = useCallback(() => {
+    if (ultimo.current) ultimo.current = { ...ultimo.current, pendente: false };
     limparRascunho(id, sistema);
     setSalvoEm(null);
     setRestaurado(false);
@@ -193,6 +217,8 @@ export function useRascunhoAfty({ id, draft, base, restauradoEm, onDescartar, si
    * pendente sobre uma ficha que acabou de entrar no compêndio.
    */
   const aoSalvar = useCallback((salva) => {
+    jsonSalvo.current = ultimo.current?.draftJson ?? null;
+    if (ultimo.current) ultimo.current = { ...ultimo.current, pendente: false };
     limparRascunho(id, sistema);
     setBaseJson(JSON.stringify(salva));
     setSalvoEm(null);

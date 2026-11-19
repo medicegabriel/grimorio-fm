@@ -54,6 +54,8 @@ continuam mandando. As regras de aparência estão em `docs/normas-design.md`, e
 | S-24 | Biblioteca nova só com o autor consultado. O projeto tem poucas dependências de propósito |
 | S-25 | Nomes de função, variável e arquivo em português, como o resto do código. Arquivo de lógica em `kebab-case`, componente em `PascalCase` |
 | S-26 | Arredondamento sempre para baixo, salvo o texto do livro mandar outro |
+| S-27 | Toda troca de tela do App passa pela pilha do histórico (`usePilhaDeTelas`, `src/celular/usar-pilha-de-telas.js`): `ir` empilha, `substituir` troca e `voltar` volta. Empilhar só dentro de um toque, nunca na abertura nem num efeito: o Chrome pula, no Voltar, a entrada criada sem gesto. Tela com aviso de sair sem salvar fora do nosso controle (o criador da 2.5.2) entra por `substituir` |
+| S-28 | Tela do próprio site não abre por `window.open` quando a pessoa está no celular ou no app instalado: a janela nova sai do app e perde o Voltar. No computador, aba nova continua valendo |
 
 ### 3.2 Dados
 

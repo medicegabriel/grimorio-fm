@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useCamadaDeVoltar } from "./camadas";
 import "./celular.css";
 
 /**
@@ -7,14 +8,15 @@ import "./celular.css";
  * É o lugar do menu, da escolha e do formulário curto no telefone (D-87), onde um
  * menu suspenso de computador abriria cortado ou longe do dedo.
  *
- * Fecha pelo véu e pelo Esc. Ao abrir, o foco vai para a própria folha, e não para um
- * campo, para o teclado do celular não subir sozinho. Ao fechar, o foco volta para
- * quem abriu.
+ * Fecha pelo véu, pelo Esc e pelo Voltar do aparelho (é uma camada da pilha, camadas.js).
+ * Ao abrir, o foco vai para a própria folha, e não para um campo, para o teclado do
+ * celular não subir sozinho. Ao fechar, o foco volta para quem abriu.
  */
 export default function FolhaInferior({ aberta, onFechar, titulo, rotulo, children }) {
   const painel = useRef(null);
   const fechar = useRef(onFechar);
   useEffect(() => { fechar.current = onFechar; });
+  useCamadaDeVoltar(aberta, () => fechar.current?.());
 
   useEffect(() => {
     if (!aberta) return undefined;

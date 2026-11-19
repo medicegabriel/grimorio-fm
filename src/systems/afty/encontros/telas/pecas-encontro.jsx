@@ -4,6 +4,7 @@ import { AlertTriangle, EyeOff, X } from "lucide-react";
 
 import { VISAO_ORDEM, VISAO_ROTULO } from "../modelo";
 import { LADO_PECA, VISAO_ICONE } from "./pecas-dados";
+import { useCamadaDeVoltar } from "../../../../celular/camadas";
 
 /**
  * ============================================================
@@ -186,6 +187,8 @@ export function MarcaDeVisao({ visao }) {
  */
 export function Dialogo({ titulo, onFechar, children, rodape = null, largura = "28rem", icone: Icone = null }) {
   const caixa = useRef(null);
+  // O diálogo é uma camada da pilha: o Voltar do aparelho o fecha (o mesmo que Cancelar).
+  useCamadaDeVoltar(true, onFechar);
   useEffect(() => {
     const aoTeclar = (e) => { if (e.key === "Escape") onFechar(); };
     document.addEventListener("keydown", aoTeclar);

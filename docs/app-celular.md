@@ -31,7 +31,7 @@ nenhuma exceção nova em `src/components/`.
 | Etapa | O que entrega | Estado |
 |---|---|---|
 | E1 | Base e consertos rápidos | feita em 2026-11-19 |
-| E2 | Voltar do aparelho (histórico em todas as rotas) | |
+| E2 | Voltar do aparelho (histórico em todas as rotas) | feita em 2026-11-19 |
 | E3 | Carregamento leve, fase A (telas sob demanda) | |
 | E4 | App instalável (manifesto, ícones, convite) | |
 | E5 | Ficha no celular | |
@@ -61,7 +61,7 @@ indicado.
 | Rótulos abaixo de 11 px | lista 7, criador 48 | nenhum |
 | Frases abaixo de 12 px | criador 6 | nenhuma |
 | Título da lista | cortado ("E...") | inteiro |
-| Voltar do celular | sai do site | fica no app |
+| Voltar do celular | sai do site | fica no app (feito na E2) |
 | Instalável | não (sem manifesto em rota nenhuma) | sim, só em `/EraDeOuro` |
 | Título da aba | "grimorio-tracker" em todas as rotas | o nome da rota |
 
@@ -103,6 +103,26 @@ node .audit/app-celular/gerar-icones.mjs --saida <pasta> --previa
 - **O ícone proposto** (`docs/app-celular/selo-era-de-ouro.svg`): selo dourado de 12 raios com coroa escura, dentro
   do círculo seguro do ícone mascarável. Aprovado pelo autor em 2026-11-19, publicado na E4.
 
+## O que a E2 mudou
+
+- **A tela mora no histórico** (`src/celular/pilha.js`, `usar-pilha-de-telas.js`, ligados no `App.jsx`): cada tela é
+  uma entrada `history.state.fm = { v, n, tela, camada? }`. A URL não muda. O Voltar do aparelho volta de tela em
+  tela e só sai do site a partir da lista. Recarregar reabre a mesma tela se a ficha ou o encontro ainda existirem.
+  Os botões Voltar das telas usam o mesmo histórico: o criador aberto da Ficha volta para a Ficha, e o Salvar também.
+- **O criador da 2.5.2 nunca empilha** (`substituir`): o aviso de sair sem salvar dele, em `src/components/`, segue
+  protegendo quem aperta Voltar no meio de uma edição.
+- **Camadas** (`src/celular/camadas.js`, `useCamadaDeVoltar`): o painel aberto por toque empilha uma entrada, e o
+  Voltar o fecha antes da tela. Ligadas: a folha de baixo, o painel flutuante da G2 (menos a dica de hover), o
+  diálogo do Encontro, a Busca e a Aparência da G2, a ficha, o colega e a gaveta da Sala, e os dois diálogos do App.
+  Ir para outra tela de dentro de um painel troca a entrada do painel, sem deixar painel morto no meio da pilha.
+- **O rascunho do criador do Afty** (`afty-rascunho.js`): o pendente é gravado ao sair e no `pagehide`, porque o
+  Voltar antes dos 600 ms da espera perdia a última edição. E o rascunho que acabou de passar pelo Salvar nunca é
+  regravado: com o Voltar pelo histórico o criador ainda renderiza depois do Salvar, e sem essa marca o rascunho da
+  ficha nova ficava vivo por cima da ficha salva (achado no teste desta etapa).
+- **Medido** no build local (`.audit/app-celular/medicoes/e2-preview.json`): o Voltar da Ficha fica no site. No
+  navegador: diálogo, criador, Salvar, Ficha, painel de Vida, recarregar e Encontro com diálogo, cada Voltar descendo
+  um nível.
+
 ## Protocolos de teste em aparelho real
 
 **Android do autor (a cada etapa de tela)**
@@ -134,6 +154,7 @@ O convite do iPhone só liga se os passos 4 a 7 passarem, ao menos com Google. O
 |---|---|
 | Menu da Conta como folha | `CONSULTA_CELULAR` que nunca casa, ou revert do commit da E1 |
 | O resto da E1 | revert do commit da E1 |
+| A pilha de telas e as camadas (E2) | `PILHA_LIGADA = false` em `src/celular/pwa-config.js`: o App volta a trocar de tela só pelo estado do React |
 
-As etapas seguintes acrescentam chaves próprias (`PILHA_LIGADA`, `SW_LIGADO`, `IOS_LIBERADO`) e o deploy de
-desligamento do service worker.
+As etapas seguintes acrescentam chaves próprias (`SW_LIGADO`, `IOS_LIBERADO`) e o deploy de desligamento do service
+worker.

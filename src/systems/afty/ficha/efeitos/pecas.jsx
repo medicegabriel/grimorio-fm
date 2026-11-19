@@ -17,6 +17,7 @@ import { ChevronDown, Minus, Plus, RotateCcw, Check } from "lucide-react";
 import TextoRico from "../../ui/TextoRico";
 import { ListaDeFontes } from "./ui-fontes";
 import { estaLigado, Sessao } from "./ponte";
+import { useCamadaDeVoltar } from "../../../../celular/camadas";
 import { sinal } from "./util";
 
 import { temMarcacao, rotuloOpcao } from "./pecas-logica";
@@ -38,6 +39,9 @@ function posicaoDoPainel(ancora, largura, lado) {
    não rouba o foco e fecha quando o ponteiro sai. */
 export function Flutuante({ ancora, onFechar, children, largura = 300, rotulo, classe = "", dica = false, lado = "auto" }) {
   const caixa = useRef(null);
+  /* O painel aberto por toque é uma camada da pilha: o Voltar do aparelho o fecha antes de a Ficha mudar de tela. A dica de
+     hover não entra, porque ela abre e fecha sozinha com o ponteiro. */
+  useCamadaDeVoltar(!dica, onFechar);
   /* A posição é medida na abertura (o painel só existe aberto) e de novo se a âncora, a largura ou o lado mudarem: é função desses três,
      então acerta na renderização, sem efeito. */
   const [medida, setMedida] = useState(() => ({ ancora, largura, lado, pos: posicaoDoPainel(ancora, largura, lado) }));

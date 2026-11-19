@@ -189,6 +189,8 @@ Toda região de tela é desenhada nos cinco. Faltou um, a tela não está pronta
 | D-83 | Barra fixa embaixo deixa espaço no fim da página, para o último item não ficar coberto |
 | D-84 | Título de página não quebra em várias linhas. As ações é que descem |
 | D-85 | Campo numérico usa `inputMode="numeric"`, para abrir o teclado de números |
+| D-86 | O Voltar do aparelho fecha primeiro o painel de cima (folha, painel flutuante, diálogo), depois a tela, e só sai do site a partir da lista. Painel novo que abre por toque é camada (`useCamadaDeVoltar`, `src/celular/camadas.js`) |
+| D-87 | No celular, menu e escolha curta abrem na folha de baixo (`src/celular/FolhaInferior.jsx`), e não num menu suspenso preso a um botão: perto do dedo, sem cortar na borda, e o foco vai para a folha, não para um campo |
 
 ## 9. Movimento
 

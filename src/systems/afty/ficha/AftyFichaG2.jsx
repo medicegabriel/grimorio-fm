@@ -99,6 +99,7 @@ import PainelDoCofre from "../ui/PainelDoCofre";
 import EspinhoCard from "../ui/EspinhoCard";
 import { pagaCustoServo } from "./ficha-servos";
 import CamadasDeCorrupcao from "../ui/CamadasDeCorrupcao";
+import { useCamadaDeVoltar } from "../../../celular/camadas";
 
 /**
  * ============================================================
@@ -206,6 +207,9 @@ export default function AftyFicha({
   const [espinhoVivo, setEspinhoVivo] = useState(() => ficha.espinho ?? null);
   const [aparenciaAberta, setAparenciaAberta] = useState(false);
   const [cofrePainel, setCofrePainel] = useState(false);
+  // A Busca e a Aparência fecham no Voltar do aparelho antes de a Ficha sair (etapa E2, src/celular/camadas.js).
+  useCamadaDeVoltar(buscaAberta, () => setBuscaAberta(false));
+  useCamadaDeVoltar(aparenciaAberta, () => setAparenciaAberta(false));
   /* Qual Shikigami está com o editor de aparência aberto. ⚠ É o ID e não o
      objeto: a invocação é reconstruída a cada derive, e guardar o objeto
      deixaria o painel editando uma cópia velha. */

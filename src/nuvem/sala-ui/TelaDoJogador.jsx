@@ -16,6 +16,7 @@ import PainelDaSala from "./PainelDaSala";
 import { Avatar, PontoOnline } from "./PecasSala";
 import { ARMAZEM_DO_GRUPO, ROTULO_PAPEL, rotaDoGrupo } from "./sala-ui-dados";
 import { inventarioDoGrupo } from "../../systems/afty/encontros/listas";
+import { useCamadaDeVoltar } from "../../celular/camadas";
 
 /**
  * ============================================================
@@ -79,6 +80,11 @@ export default function TelaDoJogador({ cliente, retrato, grupo, personagens, on
   const [colega, setColega] = useState(null);
   const [painelAberto, setPainelAberto] = useState(larga);
   const [enviando, setEnviando] = useState(false);
+  /* O Voltar do aparelho fecha, nesta ordem, o painel da Sala aberto por cima (só a gaveta das telas estreitas: largo, ele é
+     uma coluna), a ficha do colega e a minha ficha aberta, antes de sair da Sala. */
+  useCamadaDeVoltar(!!aberta, () => setAberta(null));
+  useCamadaDeVoltar(!!colega, () => setColega(null));
+  useCamadaDeVoltar(painelAberto && !larga(), () => setPainelAberto(false));
 
   /* O espelho lê as fichas do aparelho NA HORA, direto do inventário (revisão final, 2026-11-18): pela referência da lista do React,
      o evento `storage` chegava ao espelho antes de a lista ser relida, e a ficha editada noutra aba não subia. A ligação não precisa

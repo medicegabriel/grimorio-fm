@@ -6,3 +6,7 @@
    segura o celular DEITADO: de lado ele passa de 720 px de largura, mas continua sendo
    um celular, com pouca altura e dedo no lugar de mouse. */
 export const CONSULTA_CELULAR = "(max-width: 720px), (max-height: 500px) and (pointer: coarse)";
+
+/* O Voltar do aparelho (etapa E2): cada tela e cada painel aberto vira uma entrada do histórico do navegador. Em `false`
+   o App volta a trocar de tela só pelo estado do React, como antes de 2026-11-19, sem caçar código. */
+export const PILHA_LIGADA = true;
