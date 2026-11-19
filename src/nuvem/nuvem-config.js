@@ -40,15 +40,37 @@ export const ehHostAntigo = () =>
   typeof location !== "undefined" && location.hostname === HOST_ANTIGO && Boolean(ORIGEM_NOVA);
 
 /* Quais chaves do localStorage são da pessoa (viajam para a nuvem e na mudança
-   de endereço). As de aparelho ficam: erro, medidor, vista do painel, sessão. */
+   de endereço). As de aparelho ficam: erro, medidor, vista do painel, sessão.
+
+   ⚠ A REGRA `_aparelho_vN` (2026-11-19, app do celular). Preferência que só faz
+   sentido NESTE aparelho (o convite de instalar dispensado, por exemplo) termina em
+   `_aparelho_v1` e nunca sobe: sem isto, dispensar o convite no celular o dispensaria
+   também no computador. É a S-37 de docs/normas-site.md. */
 const CHAVES_DO_APARELHO = new Set([
   "fm_last_error_v1", "fm_storage_limit_v1",
 ]);
+export const ehChaveDoAparelho = (chave) => /_aparelho_v\d+$/.test(chave ?? "");
 export function chaveDaPessoa(chave) {
   if (!chave) return false;
   if (CHAVES_DO_APARELHO.has(chave)) return false;
   if (chave.startsWith("fm_dashboard_view")) return false;
+  if (ehChaveDoAparelho(chave)) return false;
   return chave.startsWith("fm_") || chave.startsWith("afty_");
+}
+
+/* Para onde o login volta: a MESMA página COM a query dela. Até 2026-11-19 ia só o
+   caminho, e a `/Sala/Nova?encontro=<id>&grupo=<g>` perdia o encontro na volta do
+   Google. Saem só os parâmetros que a ida e a volta do login põem na URL. */
+const PARAMETROS_DO_LOGIN = ["code", "state", "error", "error_code", "error_description", "receber-fichas"];
+export function destinoDoLogin(href) {
+  try {
+    const url = new URL(href);
+    for (const p of PARAMETROS_DO_LOGIN) url.searchParams.delete(p);
+    url.hash = "";
+    return url.toString();
+  } catch {
+    return href;
+  }
 }
 
 // O inventário de fichas de cada rota vai uma linha por ficha, e não um bloco.

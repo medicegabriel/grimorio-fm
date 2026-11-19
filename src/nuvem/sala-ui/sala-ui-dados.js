@@ -19,3 +19,11 @@ export const ARMAZEM_DO_GRUPO = {
   afty: { namespace: "player", defaultRulesVersion: "player" },
   eradeouro: { namespace: "eradeouro", defaultRulesVersion: "afty" },
 };
+
+/* A rota de cada grupo, espelho do `ARMAZEM_DO_GRUPO`: é nela que a lista e o criador das fichas do grupo moram. Até
+   2026-11-19 a Sala voltava sempre para `/Player` e o Editar abria `/Player`, onde a ficha de um jogador da Guilda (guardada em
+   `fm_creatures_eradeouro_v1`) não existe. */
+export const ROTA_DO_GRUPO = { site: "/Player", afty: "/Player", eradeouro: "/EraDeOuro" };
+
+/** Para onde a Sala volta e onde a ficha do grupo se edita. Grupo ainda desconhecido (antes de entrar na conta) cai em `/Player`. */
+export const rotaDoGrupo = (grupo) => ROTA_DO_GRUPO[grupo] ?? "/Player";

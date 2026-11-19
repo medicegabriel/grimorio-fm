@@ -66,6 +66,7 @@ continuam mandando. As regras de aparência estão em `docs/normas-design.md`, e
 | S-34 | O que é de uma ficha viaja com ela no export (tema, addons, preferências). O que é do aparelho fica fora dela |
 | S-35 | Mudança de formato de dado gravado tem migração de leitura: a ficha antiga abre, e não é reescrita até a pessoa salvar |
 | S-36 | Cópia de ficha que entra por importação ganha id novo quando pode conviver com a original |
+| S-37 | Preferência que só vale NESTE aparelho (o convite de instalar dispensado, a densidade da tela) usa uma chave que termina em `_aparelho_vN`, como `fm_app_convite_aparelho_v1`, e fica fora da nuvem (`ehChaveDoAparelho` em `src/nuvem/nuvem-config.js`). Sem isso, dispensar algo no celular dispensa também no computador |
 
 ### 3.3 Motor
 

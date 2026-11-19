@@ -13,6 +13,7 @@ import { readFileSync } from "node:fs";
 const lê = (p) => readFileSync(new URL(p, import.meta.url), "utf8");
 const CSS = lê("../src/systems/afty/ficha/ficha.css");
 const FAB = lê("../src/components/PdfFab.jsx");
+const ENC = lê("../src/systems/afty/encontros/encontro-g2.css");
 
 let ok = 0;
 const bad = [];
@@ -27,6 +28,12 @@ t("a regra mira o rótulo", CSS.includes('button[aria-label$=" documentos"][aria
 t("a regra recolhe só fechado e só no celular", CSS.includes("transform: translateX(1rem)") && CSS.includes("@media (max-width: 640px)"), true);
 t("a G2 fica de fora", CSS.includes(':not([data-afty-estrutura="g2"])'), true);
 t("o CSS aponta para este assert", CSS.includes("t-livros-aba"), true);
+
+/* 2026-11-19: o botão desvia da barra de ações em grupo do Encontro. */
+t("o Encontro mira o mesmo rótulo", ENC.includes('div:has(> button[aria-label$=" documentos"])'), true);
+t("no celular some só fechado e só com a barra", ENC.includes('body:has(.ec-grupo)') && ENC.includes(':not(:has(> button[aria-expanded="true"]))'), true);
+t("acima do celular sobe por cima da barra", /@media \(min-width: 721px\)[^}]*\.ec-grupo\)[^}]*bottom: 84px/.test(ENC), true);
+t("o CSS do Encontro aponta para este assert", ENC.includes("t-livros-aba"), true);
 
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 process.exitCode = bad.length ? 1 : 0;

@@ -1,0 +1,74 @@
+/* ============================================================
+   A FOLHA DE BAIXO DO CELULAR (FolhaInferior.jsx)
+   ============================================================
+   ⚠ Os tokens levam o valor do tema Padrão como reserva: a folha vai para o <body>
+   por portal, e lá ela pode estar fora de qualquer `.afty-ficha` (é o caso do menu da
+   Conta, que abre da lista). Dentro de uma ficha com tema, o token do tema vence.
+
+   ⚠ PORTAL, E NÃO `position: fixed` NO LUGAR. O cabeçalho da lista tem
+   `backdrop-filter`, e um ancestral com filtro vira o bloco de contenção de todo
+   descendente fixo: a folha ficaria presa dentro do cabeçalho.
+
+   Camada 140 e 141: acima do leitor de PDF (120) e da faixa da mudança de endereço
+   (130), abaixo dos avisos do App (9999). */
+.fm-folha-veu {
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  background: var(--afty-veu, rgb(0 0 0 / 0.55));
+}
+
+.fm-folha {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 141;
+  max-height: 85dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--afty-card, #0f172a);
+  color: var(--afty-texto, #f1f5f9);
+  border-top: 1px solid var(--afty-borda-forte, #334155);
+  border-radius: 16px 16px 0 0;
+  padding: 8px 12px calc(12px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -12px 32px rgb(0 0 0 / 0.5);
+}
+
+.fm-folha:focus {
+  outline: none;
+}
+
+.fm-folha-alca {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  margin: 0 auto 8px;
+  background: var(--afty-borda-forte, #334155);
+}
+
+.fm-folha-titulo {
+  font-size: 15px;
+  font-weight: 700;
+  padding: 4px 4px 8px;
+}
+
+/* A folha sobe e o véu acende. Só para quem não pediu menos movimento (D-92). */
+@media (prefers-reduced-motion: no-preference) {
+  .fm-folha {
+    animation: fm-folha-sobe 180ms ease-out;
+  }
+  .fm-folha-veu {
+    animation: fm-folha-veu 180ms ease-out;
+  }
+}
+
+@keyframes fm-folha-sobe {
+  from { transform: translateY(24px); opacity: 0.6; }
+  to { transform: none; opacity: 1; }
+}
+
+@keyframes fm-folha-veu {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

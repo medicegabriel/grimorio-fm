@@ -9,7 +9,23 @@
          DOM e quebra o React com "Failed to execute 'insertBefore'..." (crash de
          tela branca relatado no Android). -->
     <meta name="google" content="notranslate" />
-    <title>grimorio-tracker</title>
+    <!-- A cor da barra do navegador no celular: o --afty-fundo, o fundo do site. -->
+    <meta name="theme-color" content="#060910" />
+    <title>Grimório F&amp;M</title>
+    <!-- O título de cada rota sai antes do React, para a aba e a lista de abertos do
+         celular mostrarem o nome certo desde o primeiro quadro. As expressões espelham
+         as do App.jsx (e o asserts/t-app-rotas.mjs confere as duas). -->
+    <script>
+      (function () {
+        var p = location.pathname;
+        var t = /^\/eradeouro\/?$/i.test(p) ? "Era de Ouro"
+          : /^\/player\/?$/i.test(p) ? "Ficha de Jogador"
+          : /^\/afty\/?$/i.test(p) ? "Grimório Afty"
+          : /^\/sala\//i.test(p) ? "Sala"
+          : null;
+        if (t) document.title = t;
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

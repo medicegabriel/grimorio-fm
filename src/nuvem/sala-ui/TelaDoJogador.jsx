@@ -14,7 +14,7 @@ import { faixaDoJogador, nomesDosMembros, pedidosDoJogador } from "../sala-telas
 import EscolhaDeFichas from "./EscolhaDeFichas";
 import PainelDaSala from "./PainelDaSala";
 import { Avatar, PontoOnline } from "./PecasSala";
-import { ARMAZEM_DO_GRUPO, ROTULO_PAPEL } from "./sala-ui-dados";
+import { ARMAZEM_DO_GRUPO, ROTULO_PAPEL, rotaDoGrupo } from "./sala-ui-dados";
 import { inventarioDoGrupo } from "../../systems/afty/encontros/listas";
 
 /**
@@ -137,7 +137,8 @@ export default function TelaDoJogador({ cliente, retrato, grupo, personagens, on
             creature={fichaAberta}
             naSala
             onVoltar={() => setAberta(null)}
-            onEditar={() => window.open("/Player", "_blank", "noopener")}
+            // A rota do grupo: a ficha de um jogador da Guilda mora em /EraDeOuro, e não em /Player.
+            onEditar={() => window.open(rotaDoGrupo(grupo), "_blank", "noopener")}
             onSalvarTema={(aparencia) => storage.update(fichaAberta.id, { aparencia })}
             onSalvarInvocacoes={(invocacoes) => storage.update(fichaAberta.id, { invocacoes })}
             onSalvarEspinho={(espinho) => storage.update(fichaAberta.id, { espinho })}

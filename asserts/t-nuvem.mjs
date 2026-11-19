@@ -39,6 +39,26 @@ t("inventario e de fichas", C.ehChaveDeFichas("fm_creatures_eradeouro_v1"), true
 t("meta nao e de fichas", C.ehChaveDeFichas("fm_creatures_meta_v1"), false);
 t("sem env a nuvem dorme", C.nuvemAtiva, false);
 
+// 2026-11-19, app do celular: preferência do aparelho termina em `_aparelho_vN` e não viaja (S-37).
+t("convite do app fica no aparelho", C.chaveDaPessoa("fm_app_convite_aparelho_v1"), false);
+t("qualquer _aparelho_ fica", C.chaveDaPessoa("afty_densidade_aparelho_v2"), false);
+t("o inventario da Guilda segue viajando", C.chaveDaPessoa("fm_creatures_eradeouro_v1"), true);
+t("aparelho no meio do nome nao conta", C.chaveDaPessoa("fm_aparelho_lista_v1"), true);
+t("ehChaveDoAparelho", ["fm_x_aparelho_v1", "fm_x_v1", "", undefined].map(C.ehChaveDoAparelho), [true, false, false, false]);
+
+// O login volta para a MESMA página com a query (a Sala Nova precisa do encontro e do grupo).
+t("a query da Sala Nova vai junto",
+  C.destinoDoLogin("https://fichafm.com.br/Sala/Nova?encontro=enc_1&grupo=eradeouro"),
+  "https://fichafm.com.br/Sala/Nova?encontro=enc_1&grupo=eradeouro");
+t("os parametros do login saem",
+  C.destinoDoLogin("https://fichafm.com.br/EraDeOuro?code=abc&state=x&receber-fichas=1"),
+  "https://fichafm.com.br/EraDeOuro");
+t("um erro de login antigo sai, o resto fica",
+  C.destinoDoLogin("https://fichafm.com.br/Player?error=access_denied&error_code=1&error_description=nao&x=1"),
+  "https://fichafm.com.br/Player?x=1");
+t("o hash sai", C.destinoDoLogin("https://fichafm.com.br/Afty#access_token=abc"), "https://fichafm.com.br/Afty");
+t("lixo volta como veio", C.destinoDoLogin("nao e url"), "nao e url");
+
 // Primeiro login do aparelho: a local e a da nuvem se unem.
 {
   const local = { [K]: JSON.stringify([f("a", "2026-11-01")]) };

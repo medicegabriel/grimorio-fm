@@ -1,5 +1,29 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-19 · APP ERA DE OURO, ETAPA E1 (BASE E CONSERTOS RÁPIDOS)
+
+Pedido do autor: "o site [...] com as recentes atualizaçoes esta muito dificil usa-lo mobile teste experimente e planje um aplicativo feito pra mobile que pode ser baixa-do e e recomendado a entrar no site que deixa mais intuitivo no celular seguindo as mesmas metricas". O teste no site ao vivo, o plano de 10 etapas e as decisões do autor estão em `docs/app-celular.md`. Esta sessão fez a E1.
+
+| Pergunta | Resposta |
+|---|---|
+| Como chega ao celular | Instalar pelo site (PWA), sem loja |
+| Onde o app abre | Sempre na Era de Ouro (o app se chama Era de Ouro) |
+| Onde vale a interface nova | No app e no site aberto pelo celular |
+| Prioridade | Jogar com a Ficha, Criar e Editar Ficha, Entrar na Sala |
+| Navegação nova (barra de baixo, lista, Mais) | Só na Era de Ouro |
+| Ícone | Proposta do agente, aprovada antes de publicar |
+| iPhone | Android primeiro, convite do iPhone só depois do teste de um amigo |
+| Rolagens, Livro, Voltar, sem internet | Botão na linha das abas, aba na borda e menu Mais, todas as rotas, por último |
+
+- **Linha de base medida** no site ao vivo com `.audit/app-celular/medir.mjs` (Edge invisível pelo protocolo de depuração, sem biblioteca nova, porque o Playwright não está nesta máquina): lista com 6.581 KB de JS, cabeçalho da Ficha com 57% da tela, campo Nome do criador a 1.225 px, 37 de 70 alvos do criador abaixo de 36 px, o Voltar saindo do site e nada instalável. Os números ficam em `docs/app-celular.md`.
+- **`index.html`:** título por rota ("Grimório F&M", "Grimório Afty", "Ficha de Jogador", "Era de Ouro", "Sala") por um script inline antes do React, e a cor de tema `#060910`. Ficou de fora o `color-scheme` escuro que o plano citava, porque mudaria os controles nativos dos temas claros da Ficha.
+- **Nuvem:** a volta do login mantém a query (`destinoDoLogin`), o que conserta a `/Sala/Nova?encontro=&grupo=`. Chave que termina em `_aparelho_vN` fica fora da nuvem (S-37 nova em `normas-site.md`).
+- **Menu da Conta no celular:** vira a folha de baixo (`src/celular/FolhaInferior.jsx`, por portal, porque o `backdrop-filter` do cabeçalho prenderia um `fixed`), com itens de 44 px. O corpo saiu para `src/nuvem/PainelDaConta.jsx`. No computador o menu suspenso segue igual.
+- **Sala:** o Voltar vai para a rota do grupo da Sala e o Editar do jogador abre a rota do grupo (`rotaDoGrupo`). Antes os dois iam sempre para `/Player`, onde a ficha de um jogador da Guilda não existe.
+- **Livro sobre a barra do Encontro:** no celular o botão some enquanto há seleção e volta ao limpar. Acima de 720 px ele sobe para 84 px. Pelo `aria-label`, sem tocar em `src/components/`.
+- **Ícone proposto:** `docs/app-celular/selo-era-de-ouro.svg` e `.audit/app-celular/gerar-icones.mjs`. Publicado só na E4, depois da aprovação.
+- Verificado: `t-app-rotas.mjs` novo (22), `t-nuvem.mjs` (38), `t-livros-aba.mjs` (10), `t-ordem-modulos.mjs` (62), lint das pastas tocadas limpo, e no navegador local com a nuvem ligada só para o teste (sem login): a folha da Conta em 375 px (0 a 375, itens de 44 px, foco na folha, fecha no véu e no Esc), o menu suspenso igual em 1.024 px, o título da aba e o Livro desviando da barra do Encontro nas duas larguras, sem erro no console. Linha de base da suíte em `0889ed5`: 1 de 332 arquivos falha (`t-reconciliacao-g00`, de inventário de revisão).
+
 ## SESSÃO DE 2026-11-18 · REVISÃO FINAL (ENCONTRO UNIFICADO, ETAPA 8B)
 
 Revisão de código (esforço alto) da entrega inteira, a verificação padrão e o roteiro de duas contas. Detalhe em `C:\Projetos\Grimorio\PROGRESSO-ENCONTRO-UNIFICADO-SALA.md`.

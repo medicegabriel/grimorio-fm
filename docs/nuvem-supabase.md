@@ -22,9 +22,12 @@ site é o de sempre, só com localStorage, e a biblioteca do Supabase nem é bai
 - Conflito: ficha igual nos dois lados fica a de `updatedAt` mais novo. Ficha apagada em outro
   aparelho sai daqui, salvo se foi editada aqui depois do apagamento.
 - Sair da conta mantém as fichas no aparelho.
-- Ficam no aparelho: `fm_last_error_v1`, `fm_storage_limit_v1`, `fm_dashboard_view*`.
+- Ficam no aparelho: `fm_last_error_v1`, `fm_storage_limit_v1`, `fm_dashboard_view*` e toda chave que termina em
+  `_aparelho_vN` (`ehChaveDoAparelho`, 2026-11-19, S-37).
 - Login só com Google ou Discord (OAuth), sem senha. Google e Discord com e-mails diferentes viram
   duas contas separadas.
+- A volta do login cai na MESMA página, com a query dela (`destinoDoLogin` em `nuvem-config.js`, 2026-11-19).
+  Até ali ia só o caminho, e a `/Sala/Nova?encontro=<id>&grupo=<g>` perdia o encontro na volta do Google.
 - Num computador compartilhado, entrar com outra conta junta as fichas locais à conta nova.
 
 ## Passo a passo (o autor)

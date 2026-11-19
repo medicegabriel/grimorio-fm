@@ -202,21 +202,26 @@ export default function SalaPagina({ codigo: codigoBruto, onVoltar }) {
     return () => { vivo = false; };
   }, [logado, codigo, novo]);
 
-  if (!nuvemAtiva) return <Casca titulo="Sala" onVoltar={onVoltar}><Aviso>Nuvem Desligada</Aviso></Casca>;
+  /* O Voltar leva o GRUPO da Sala, para o App voltar à rota dele (`rotaDoGrupo`) e não sempre a `/Player`. As telas de baixo
+     chamam `onVoltar()` sem argumento, e este envoltório completa. */
+  const grupoDaSala = novo ? (new URLSearchParams(location.search).get("grupo") || "site") : info?.grupo;
+  const voltar = () => onVoltar?.(grupoDaSala);
+
+  if (!nuvemAtiva) return <Casca titulo="Sala" onVoltar={voltar}><Aviso>Nuvem Desligada</Aviso></Casca>;
   if (!logado) {
-    if (["sincronizando", "entrando"].includes(nuvem.fase)) return <Casca titulo="Sala" onVoltar={onVoltar}><Vazio titulo="Entrando" /></Casca>;
-    return <Login codigo={novo ? null : codigo} onVoltar={onVoltar} entrar={entrar} />;
+    if (["sincronizando", "entrando"].includes(nuvem.fase)) return <Casca titulo="Sala" onVoltar={voltar}><Vazio titulo="Entrando" /></Casca>;
+    return <Login codigo={novo ? null : codigo} onVoltar={voltar} entrar={entrar} />;
   }
   if (novo) {
     const q = new URLSearchParams(location.search);
-    return <NovaSala grupo={q.get("grupo") || "site"} encontroId={q.get("encontro")} onVoltar={onVoltar} />;
+    return <NovaSala grupo={grupoDaSala} encontroId={q.get("encontro")} onVoltar={voltar} />;
   }
-  if (erro) return <Casca titulo="Sala" onVoltar={onVoltar}><Aviso>{erro}</Aviso></Casca>;
-  if (!info) return <Casca titulo={`Sala ${codigo}`} onVoltar={onVoltar}><Vazio titulo="Procurando a Sala" /></Casca>;
-  if (info.ausente) return <Casca titulo={`Sala ${codigo}`} onVoltar={onVoltar}><Aviso>Sala Ausente</Aviso></Casca>;
-  if (info.fechada) return <SalaFechadaDeFora salaId={info.salaId} grupo={info.grupo} codigo={codigo} onVoltar={onVoltar} />;
+  if (erro) return <Casca titulo="Sala" onVoltar={voltar}><Aviso>{erro}</Aviso></Casca>;
+  if (!info) return <Casca titulo={`Sala ${codigo}`} onVoltar={voltar}><Vazio titulo="Procurando a Sala" /></Casca>;
+  if (info.ausente) return <Casca titulo={`Sala ${codigo}`} onVoltar={voltar}><Aviso>Sala Ausente</Aviso></Casca>;
+  if (info.fechada) return <SalaFechadaDeFora salaId={info.salaId} grupo={info.grupo} codigo={codigo} onVoltar={voltar} />;
   if (!info.salaId) {
-    return <FormularioDeEntrada codigo={codigo} nome={info.nome} trancada={info.trancada} onVoltar={onVoltar} onEntrou={(salaId) => setInfo({ ...info, salaId })} />;
+    return <FormularioDeEntrada codigo={codigo} nome={info.nome} trancada={info.trancada} onVoltar={voltar} onEntrou={(salaId) => setInfo({ ...info, salaId })} />;
   }
-  return <DentroDaSala salaId={info.salaId} grupo={info.grupo} onVoltar={onVoltar} />;
+  return <DentroDaSala salaId={info.salaId} grupo={info.grupo} onVoltar={voltar} />;
 }

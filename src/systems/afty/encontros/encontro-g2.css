@@ -268,6 +268,19 @@
 .ec-grupo-resultado { flex-basis: 100%; font-size: 12.5px; color: var(--ec-t2); }
 .ec-grupo-resultado[data-falhou] { color: var(--afty-aviso); }
 
+/* O BOTÃO DOS LIVROS DESVIA DA BARRA DE GRUPO (2026-11-19, app do celular). O `PdfFab` mora em `src/components/` (só
+   leitura) e cobria "Descansar" e o fim dos verbos da `.ec-grupo`. O gancho é o `aria-label` do botão, o mesmo da aba dos
+   Livros na ficha.css, e o asserts/t-livros-aba.mjs confere os dois.
+   No celular a barra quebra em várias linhas (até 210 px em 375): subir o botão por cima dela o deixaria flutuando no meio
+   da tela, então ele some enquanto houver seleção e volta ao limpar. Aberto (a pilha de PDFs à mostra), ele fica, para ser
+   fechado. Acima de 720 px a barra é uma linha só, e o botão sobe por cima dela. */
+@media (max-width: 720px) {
+  body:has(.ec-grupo) div:has(> button[aria-label$=" documentos"]):not(:has(> button[aria-expanded="true"])) { display: none; }
+}
+@media (min-width: 721px) {
+  body:has(.ec-grupo) div:has(> button[aria-label$=" documentos"]) { bottom: 84px; }
+}
+
 /* ---------- a Ficha G2 embutida (só com `data-afty-embutida`, a ficha sozinha não muda) ---------- */
 .e-ficha-g2[data-afty-embutida] { min-height: 0; border: 1px solid var(--afty-borda); border-radius: calc(var(--afty-raio, 12px) * 14 / 12); --e-borda-pagina: 0px; }
 .e-ficha-g2[data-afty-embutida]::before { display: none; }

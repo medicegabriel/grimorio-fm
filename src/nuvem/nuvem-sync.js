@@ -21,7 +21,7 @@
 
 import {
   nuvemAtiva, SUPABASE_URL, SUPABASE_ANON_KEY,
-  chaveDaPessoa, ehChaveDeFichas, temSessaoOuRetorno,
+  chaveDaPessoa, ehChaveDeFichas, temSessaoOuRetorno, destinoDoLogin,
 } from "./nuvem-config";
 
 const CHAVE_ESTADO = "nuvem_estado_v1";
@@ -387,7 +387,8 @@ export async function entrar(provedor) {
   definir({ fase: "entrando" });
   const { error } = await sb.auth.signInWithOAuth({
     provider: provedor,
-    options: { redirectTo: location.origin + location.pathname },
+    // A query vai junto (a Sala Nova precisa dela). Ver `destinoDoLogin`.
+    options: { redirectTo: destinoDoLogin(location.href) },
   });
   if (error) definir({ fase: "erro", erro: error.message });
 }

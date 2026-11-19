@@ -28,6 +28,7 @@ import AvisoMudanca from "./nuvem/AvisoMudanca";
 import { lerEstadoNuvem, ouvirNuvem } from "./nuvem/nuvem-sync";
 import { nuvemAtiva } from "./nuvem/nuvem-config";
 import { recuperarSalasFechadas } from "./nuvem/sala-fechamento";
+import { rotaDoGrupo } from "./nuvem/sala-ui/sala-ui-dados";
 /* A Sala entra por `lazy`: só quem abre /Sala/<código> baixa o cliente e o tempo real. */
 const SalaPagina = React.lazy(() => import("./nuvem/SalaPagina"));
 /* O botão Abrir Sala do cabeçalho do Encontro (etapa 7c) também entra por `lazy`: ele puxa o cliente da Sala, e só aparece com a Sala
@@ -514,7 +515,8 @@ export default function App() {
         <div className="flex-1">
           {rotaSala ? (
             <React.Suspense fallback={null}>
-              <SalaPagina codigo={codigoDaSala} onVoltar={() => location.assign("/Player")} />
+              {/* O Voltar da Sala vai para a rota do grupo dela (a Guilda volta para /EraDeOuro). */}
+              <SalaPagina codigo={codigoDaSala} onVoltar={(grupo) => location.assign(rotaDoGrupo(grupo))} />
             </React.Suspense>
           ) : views[view.name] ? views[view.name]() : views.dashboard()}
         </div>
