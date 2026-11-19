@@ -21,7 +21,7 @@ Pedido do autor: "o site [...] com as recentes atualizaçoes esta muito dificil 
 - **Menu da Conta no celular:** vira a folha de baixo (`src/celular/FolhaInferior.jsx`, por portal, porque o `backdrop-filter` do cabeçalho prenderia um `fixed`), com itens de 44 px. O corpo saiu para `src/nuvem/PainelDaConta.jsx`. No computador o menu suspenso segue igual.
 - **Sala:** o Voltar vai para a rota do grupo da Sala e o Editar do jogador abre a rota do grupo (`rotaDoGrupo`). Antes os dois iam sempre para `/Player`, onde a ficha de um jogador da Guilda não existe.
 - **Livro sobre a barra do Encontro:** no celular o botão some enquanto há seleção e volta ao limpar. Acima de 720 px ele sobe para 84 px. Pelo `aria-label`, sem tocar em `src/components/`.
-- **Ícone proposto:** `docs/app-celular/selo-era-de-ouro.svg` e `.audit/app-celular/gerar-icones.mjs`. Publicado só na E4, depois da aprovação.
+- **Ícone proposto:** `docs/app-celular/selo-era-de-ouro.svg` e `.audit/app-celular/gerar-icones.mjs`. Aprovado pelo autor em 2026-11-19, entra no app na E4.
 - Verificado: `t-app-rotas.mjs` novo (22), `t-nuvem.mjs` (38), `t-livros-aba.mjs` (10), `t-ordem-modulos.mjs` (62), lint das pastas tocadas limpo, e no navegador local com a nuvem ligada só para o teste (sem login): a folha da Conta em 375 px (0 a 375, itens de 44 px, foco na folha, fecha no véu e no Esc), o menu suspenso igual em 1.024 px, o título da aba e o Livro desviando da barra do Encontro nas duas larguras, sem erro no console. Linha de base da suíte em `0889ed5`: 1 de 332 arquivos falha (`t-reconciliacao-g00`, de inventário de revisão).
 
 ## SESSÃO DE 2026-11-18 · REVISÃO FINAL (ENCONTRO UNIFICADO, ETAPA 8B)

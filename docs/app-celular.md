@@ -14,7 +14,7 @@ desligar cada peça.
 | Onde vale a interface nova | No app e no site aberto pelo celular |
 | Prioridade | 1 Jogar com a Ficha, 2 Criar e Editar Ficha, 3 Entrar na Sala |
 | Navegação nova (barra de baixo, lista do celular, Mais) | Só na Era de Ouro. Criador, Ficha e Sala melhoram em todas as rotas, por serem o mesmo código |
-| Ícone | Proposta do agente (o selo em `docs/app-celular/selo-era-de-ouro.svg`), aprovada pelo autor antes de publicar |
+| Ícone | O selo dourado de 12 raios com coroa escura (`docs/app-celular/selo-era-de-ouro.svg`), proposto pelo agente e aprovado pelo autor em 2026-11-19. Entra no app na E4 |
 | iPhone | Android primeiro. O convite no iPhone fica desligado até um amigo passar o protocolo num iPhone real |
 | Aparelhos de teste | o Android do autor e jogadores da Guilda |
 | Rolagens no cabeçalho da Ficha | Viram um botão na linha das abas |
@@ -101,7 +101,7 @@ node .audit/app-celular/gerar-icones.mjs --saida <pasta> --previa
 - **A consulta única de celular** (`src/celular/pwa-config.js`, `CONSULTA_CELULAR`): até 720 px de largura, ou
   celular deitado (até 500 px de altura com dedo). O hook é `useCelular` (`src/celular/usar-celular.js`).
 - **O ícone proposto** (`docs/app-celular/selo-era-de-ouro.svg`): selo dourado de 12 raios com coroa escura, dentro
-  do círculo seguro do ícone mascarável. Publicado só na E4, depois da aprovação do autor.
+  do círculo seguro do ícone mascarável. Aprovado pelo autor em 2026-11-19, publicado na E4.
 
 ## Protocolos de teste em aparelho real
 
