@@ -32,9 +32,9 @@ nenhuma exceção nova em `src/components/`.
 |---|---|---|
 | E1 | Base e consertos rápidos | feita em 2026-11-19 |
 | E2 | Voltar do aparelho (histórico em todas as rotas) | feita em 2026-11-19 |
-| E3 | Carregamento leve, fase A (telas sob demanda) | |
-| E4 | App instalável (manifesto, ícones, convite) | |
-| E5 | Ficha no celular | |
+| E3 | Carregamento leve, fase A (telas sob demanda) | feita em 2026-11-19 |
+| E4 | App instalável (manifesto, ícones, convite) | feita em 2026-11-19 |
+| E5 | Ficha no celular | feita em 2026-11-19, em duas partes (cabeçalho, rolagens, folha da Vida, depois Livro, faixa fina, palco e viewport) |
 | E6 | Criador no celular | |
 | E7 | Sala no celular | |
 | E8 | Casca da Guilda (barra de baixo, lista do celular, Mais) | |
@@ -50,8 +50,8 @@ indicado.
 
 | Métrica | Linha de base | Meta do plano |
 |---|---|---|
-| JS da lista da Guilda (descomprimido) | 6.581 KB | 2,6 MB ou menos (E3), 1,5 MB ou menos (E10) |
-| JS ao abrir uma Ficha | 6.975 KB (+394 KB) | +0,6 MB ou menos |
+| JS da lista da Guilda (descomprimido) | 6.581 KB (2.089 KB depois da E3) | 2,6 MB ou menos (E3), 1,5 MB ou menos (E10) |
+| JS ao abrir uma Ficha | 6.975 KB, +394 KB (2.925 KB, +836 KB depois da E3) | 2,9 MB ou menos ao todo |
 | Cabeçalho da Ficha G2 | 463 px, 57% da tela (413 px, 51% em 412 px) | 35% ou menos |
 | Número de Vida, Energia e Alma | 16,5 px | 22 px |
 | Campo Nome do criador | a 1.225 px do topo | 300 px ou menos |
@@ -123,6 +123,101 @@ node .audit/app-celular/gerar-icones.mjs --saida <pasta> --previa
   navegador: diálogo, criador, Salvar, Ficha, painel de Vida, recarregar e Encontro com diálogo, cada Voltar descendo
   um nível.
 
+## O que a E3 mudou
+
+- **Telas sob demanda** (`App.jsx`, S-23): os dois criadores, o rastreador e a biblioteca de modelos da 2.5.2, a lista
+  de Encontros e o Encontro são baixados quando aparecem, por `telaSobDemanda` (`src/celular/sob-demanda.js`). A Ficha
+  clássica também (`AftyFicha.jsx`). Enquanto chegam, a tela mostra "Carregando" (`src/celular/Carregando.jsx`).
+- **Compêndio só no `/`** (`src/celular/usar-compendio.js`): as cinco enciclopédias (2,9 MB no build) iam no pacote de
+  abertura de toda rota. Agora só o `/` as baixa, e a lista de lá espera elas chegarem para mostrar as Criaturas Base
+  junto. A Guilda e o `/Player` nunca as baixam.
+- **O fechamento da Sala** (`sala-fechamento`) entra só com conta, sob demanda.
+- **"Nova Versão Disponível"** (`src/celular/TelaNovaVersao.jsx`): se o pedaço de uma tela não chega (o caso comum é um
+  deploy novo com a página aberta, e o servidor não tem mais os pedaços da versão antiga), a tela vira o aviso com o
+  botão Atualizar, em vez da tela de erro do app inteiro. Nunca recarrega sozinho.
+- **`vercel.json`:** `/assets/*` (arquivos com hash no nome) com `max-age=31536000, immutable`, porque o nome muda a cada
+  versão e a pessoa não precisa baixar de novo o que já tem. E a reescrita para o `index.html` deixou de cobrir
+  `/assets/`: um pedaço que não existe dá 404 de verdade, e não o HTML do site servido como JavaScript.
+- **A ordem dos módulos:** com o criador fora da abertura, a primeira porta do motor no navegador passou a ser a lista de
+  Encontros. O `t-app-entradas.mjs` importa cada porta sozinha, em processo próprio, e todas as telas sob demanda
+  foram abertas a frio no build local sem erro: a raiz com as 165 Criaturas Base, o rastreador, o criador da 2.5.2, os
+  Modelos, a lista de Encontros, um Encontro, o criador do Afty, a Ficha G2 e a Ficha clássica.
+- **Medido** (`.audit/app-celular/medicoes/e3-preview.json`, 375 px): a lista da Guilda caiu de 6.579 KB para 2.089 KB
+  de JavaScript. O `index` do build caiu de 4,1 MB para 90 KB.
+- **O que ainda pesa na lista:** o motor (cerca de 1,5 MB), que entra pela lista de Encontros no começo do `App.jsx`.
+  Tirar isso é a fase B (E10).
+
+## O que a E4 mudou
+
+- **Manifesto** (`public/manifest.webmanifest`): "Era de Ouro", início e identidade em `/EraDeOuro`, escopo `/` (a Sala e
+  os links do WhatsApp ficam dentro do app), tela cheia, cor `#060910`. Os ícones em `public/icons/` saem do selo aprovado
+  pelo autor (`docs/app-celular/selo-era-de-ouro.svg`, gerados por `.audit/app-celular/gerar-icones.mjs`): 192 e 512,
+  normal e mascarável, o SVG e o de 180 da Apple. O `vercel.json` serve o manifesto como `application/manifest+json`.
+- **O segundo script do `index.html`** (o primeiro segue sendo o do título, que o `t-app-rotas` lê): guarda o pedido de
+  instalação do Chrome em `window.__fmPedidoInstalar` em toda rota, porque ele chega uma vez só e às vezes antes do React,
+  e avisa por `fm:instalavel` e `fm:instalado`. Em `/EraDeOuro`, e só nos hosts `fichafm.com.br`, `www.fichafm.com.br`,
+  `localhost` e `127.0.0.1`, põe o manifesto, o ícone da Apple, os metas do app e troca o favicon pelo selo. O endereço
+  antigo da Vercel nunca oferece instalar. `/`, `/Player` e `/Afty` também não.
+- **O convite** (`src/celular/convite.js`, puro, e `ConviteInstalar.jsx`): um cartão embaixo da lista da Guilda,
+  "Instalar o App Era de Ouro", com "Agora Não" e "Instalar". Aparece só na lista, no celular, fora do app, com o pedido do
+  Chrome na mão, e não volta por 14 dias depois do "Agora Não". O registro mora em `fm_app_convite_aparelho_v1`, que pela
+  regra `_aparelho_` nunca sobe para a nuvem. O cartão deixa 80 px livres à direita para o botão dos Livros.
+- **iPhone:** desligado (`IOS_LIBERADO = false`). Com ele ligado, ou com `?convite-ios=1` num iPhone, o botão vira "Como
+  Instalar" e abre a folha com os três passos do Safari e o aviso de que o app começa vazio até entrar na conta.
+- **Sempre à mão:** "Instalar o App" no menu da Conta, em `/EraDeOuro`, quando há pedido (vai para o Mais na E8).
+- **Ficou para a E5:** `viewport-fit=cover` e `interactive-widget=resizes-content` no viewport, que mudam o leiaute de
+  todas as telas e pedem a medição da Ficha junto.
+- **Medido** (`.audit/app-celular/medicoes/e4-preview.json`, 375 px): zero erro de instalação em `/EraDeOuro`
+  (`Page.getInstallabilityErrors`), nenhum manifesto em `/`, `/Player` e `/Afty`. No navegador, em 375 px: o cartão
+  aparece com o pedido, os dois botões têm 44 px, nenhuma rolagem lateral, o "Agora Não" grava e o cartão não volta com
+  um pedido novo.
+
+## O que a E5 mudou (parte 1)
+
+- **O cabeçalho da Ficha G2 no celular** (`efeitos-g2.css`, bloco "O CABEÇALHO NO CELULAR"): voltar, retrato de 52 px, nome e
+  linhagem numa linha cada com reticências, e os controles, numa fileira só. Os recursos com número de 22 px (18 px com quatro
+  recursos ou mais, para a Vida de quatro dígitos da criatura caber numa fileira). O Agora (Combate, Rodada, Efeitos) cabe numa
+  fileira até 360 px: os três acessos ficam mais justos e as espadas do Combate, que são enfeite, saem até 420 px. Nada sai do
+  cabeçalho parado (`afty-ficha-final.md` §19), e o recolher ao rolar continua.
+- **A barra de rolagens vira um botão na linha das abas** (`PainelDeRolagens` com `compacto`, ligado pela Ficha G2 com
+  `useCelular`, decisão do autor de 2026-11-18): o dado, o total da última rolagem e a marca Van ou Des quando o modo não é o
+  normal. Tocar abre o modo (DES, NOR, VAN), o histórico inteiro com a fórmula e o Limpar. A Ficha clássica e o computador seguem
+  com a barra larga.
+- **A folha do recurso** (`PainelVital` com `atalhos`, numa `FolhaInferior` que agora aceita `dentro` e `classe` para levar o
+  tema): no celular, tocar em Vida, Energia, Alma, Preparo ou no recurso próprio abre a folha de baixo com o número grande e os
+  atalhos −1 −5 −10 +1 +5 (`atalhosDoRecurso`, em `pecas-logica.js`), que usam os verbos do próprio painel (Dano e Cura, Gastar e
+  Recuperar). O foco vai para a folha, nunca para o campo, então o teclado não sobe sozinho (D-88). O campo tem 16 px. O Voltar
+  fecha a folha. No computador continua o painel flutuante.
+- **Medido** (`.audit/app-celular/medicoes/e5-preview.json`): o cabeçalho parado caiu de 463 px (57%) para **271 px (33%)** em
+  360, 375, 390 e 412 px, sem rolagem lateral. Rolado, só a linha das abas fica (47 px). A Vida −5 leva 2 toques, sem teclado.
+  Uma ficha com Guarda, Titã ou Voo soma o painel próprio (o Ciel, com a Guarda, fica em 356 px), e ele também recolhe ao rolar.
+- A parte 2 está na seção seguinte.
+
+## O que a E5 mudou (parte 2)
+
+- **A aba do Livro na borda também na G2** (`ficha.css`, decisão do autor de 2026-11-18): até 640 px o botão dos Livros fica
+  fechado como uma aba de 28 px na borda direita, como já era na Ficha clássica. No computador continua redondo.
+- **Os números da faixa fina viram botões** (`FinaG2` com `onAbrir`): quando a placa sai de vista, Vida, Energia, Alma e Preparo
+  aparecem na faixa de 44 px abaixo das abas, e tocar num deles abre a mesma folha do recurso (`pedidoVital` do `AftyFichaG2` para
+  o `CabecalhoG2`, atendido só no celular). Dano e Cura sem rolar de volta até a placa.
+- **O palco mede pelo cabeçalho recolhido** (`--afty-ficha-topo-recolhido`, escrita pelo `AftyFichaG2` ao lado do
+  `--afty-ficha-topo`): em Habilidades e Efeitos a lista ocupava 533 de 812 px e passou a ocupar 757. Com o palco à vista a página
+  rola só até o cabeçalho recolher (o corpo e a camada de ambiente tinham a altura da tela inteira e a página rolava 51 px além,
+  com o cabeçalho cobrindo a busca do palco). Nessas duas abas a faixa fina não aparece, porque a página não rola além do
+  cabeçalho. Ela fica para as abas de lista longa.
+- **Um texto de leitor de tela esticava a página** (`.e-so-leitor` do aviso de uma Habilidade): ancorado no palco, fora da lista
+  que rola, ele ficava na altura da linha. Agora se ancora no próprio aviso.
+- **O viewport do app** (`index.html`, só em `/EraDeOuro`): `viewport-fit=cover` e `interactive-widget=resizes-content`, para o
+  teclado encolher a página e a folha subir junto com ele. A raiz ganha `data-fm-app`, e com ela as laterais recuam pela área
+  segura no celular deitado (`celular.css`, D-89).
+- **Medido** (`.audit/app-celular/medicoes/e5b-preview.json`): o cabeçalho continua em 271 px nas quatro larguras, sem rolagem
+  lateral, instalável. No navegador em 375 px: o palco de 47 a 804 px com a busca à vista, a aba do Livro com 28 px à mostra, a
+  faixa fina com botões de 44 px, a Vida de 194 para 189 com −5, o Voltar fechando a folha, e o mesmo recurso reabrindo. Em
+  1280 px nada mudou (palco, Livro redondo, sem faixa fina).
+- **Achado, não mexido:** num tema com cabeçalho colorido e fundo claro (a prévia do Gojo), a faixa fina pinta o fundo da página
+  (`--afty-fundo`) com o texto do cabeçalho, claro sobre claro. É de 2026-11-09 e toca o contrato de tema, então está em
+  `docs/a-fazer.md` esperando o autor.
+
 ## Protocolos de teste em aparelho real
 
 **Android do autor (a cada etapa de tela)**
@@ -155,6 +250,10 @@ O convite do iPhone só liga se os passos 4 a 7 passarem, ao menos com Google. O
 | Menu da Conta como folha | `CONSULTA_CELULAR` que nunca casa, ou revert do commit da E1 |
 | O resto da E1 | revert do commit da E1 |
 | A pilha de telas e as camadas (E2) | `PILHA_LIGADA = false` em `src/celular/pwa-config.js`: o App volta a trocar de tela só pelo estado do React |
+| As telas sob demanda (E3) | revert do commit da E3 |
+| O app instalável (E4) | tirar o `link("manifest", ...)` do segundo script do `index.html`: o site deixa de ser instalável e o convite some sozinho, porque o Chrome não entrega mais o pedido. Quem já instalou segue com o ícone, que abre o site |
+| O convite do iPhone | `IOS_LIBERADO` em `src/celular/pwa-config.js` (hoje `false`) |
+| A Ficha G2 no celular (E5) | revert do commit da E5. Só a aba do Livro na G2: voltar o `:not([data-afty-estrutura="g2"])` nas duas regras do `ficha.css`. Só o viewport: apagar o bloco `viewport-fit` do segundo script do `index.html`. Só a barra de rolagens: tirar o `compacto={celular}` do `AftyFichaG2.jsx`. Só a folha do recurso: trocar `celular` por `false` no `CabecalhoG2.jsx` |
 
-As etapas seguintes acrescentam chaves próprias (`SW_LIGADO`, `IOS_LIBERADO`) e o deploy de desligamento do service
+A E9 acrescenta a chave `SW_LIGADO` e o deploy de desligamento do service
 worker.

@@ -1845,6 +1845,19 @@ qualquer `display: none` que não esteja atrás desse atributo.
 O painel de rolagens passa a ocupar a largura toda no celular: encolhido no canto ele
 ficava com duas palavras por linha.
 
+### O cabeçalho da G2 no celular (app Era de Ouro, etapa E5, 2026-11-19)
+
+No telefone (até 720 px) a placa da G2 ficou numa fileira de identidade (voltar, retrato de 52 px, nome e linhagem numa linha
+cada com reticências, controles), a fileira dos recursos com número de 22 px, os valores e o Agora numa fileira cada. A barra de
+rolagens virou um botão no fim da linha das abas (`PainelDeRolagens` com `compacto`): o total da última rolagem e a marca do modo,
+e o modo e o histórico abrem dele. O painel de um recurso abre na folha de baixo (`FolhaInferior`) com os atalhos −1 −5 −10 +1 +5,
+sem abrir o teclado. O cabeçalho parado mede 271 px em 360 a 412 px (era 463). A regra "nada some do cabeçalho parado" ganhou
+teste no `asserts/t-g2-celular.mjs`: nenhuma regra de largura de celular do `efeitos-g2.css` esconde uma peça do cabeçalho, só
+enfeite (as espadas do Combate, a legenda "Rolagem"). Na segunda parte (mesma data) o botão dos Livros virou aba na borda
+também na G2, os números da faixa fina viraram botões de 44 px que abrem a mesma folha, e o palco de Habilidades e Efeitos passou
+a medir pelo cabeçalho recolhido (`--afty-ficha-topo-recolhido`), com a página rolando só até o cabeçalho recolher. Detalhes e
+medições em `docs/app-celular.md`.
+
 ### As marcas da linha em linha estreita (2026-10-03)
 
 Abaixo de **560px de linha** (`@container itemficha`, em ficha.css), as marcas da linha

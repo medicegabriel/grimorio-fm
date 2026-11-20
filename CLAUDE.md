@@ -124,6 +124,11 @@ Depois de editar arquivo pesado (`AftyCreatureBuilder.jsx`, `afty-schema.js`), u
 `Cannot access 'X' before initialization` no console pode ser fantasma de HMR: mate o processo do
 Vite e suba de novo antes de acreditar no erro.
 
+⚠ **Tela sob demanda pede abrir a frio** (etapa E3 do app de celular, 2026-11-19). As telas pesadas do `App.jsx` chegam por
+`telaSobDemanda` (`src/celular/sob-demanda.js`), e um import a menos na abertura muda a ordem em que os módulos do motor
+são avaliados. Ao tornar uma tela sob demanda, rode `node asserts/t-app-entradas.mjs` e abra cada tela num carregamento novo
+do `npm run preview`, olhando o console.
+
 **Lentidão nunca se mede no `npm run dev`.** Lá a mesma ficha custa de 10x a 20x mais JS, e o
 perfil aponta para o Motor (`reavaliarUnica`, `aplicarEfeitos`) sem que ele seja o problema. Meça
 com `npm run build` seguido de `npm run preview`.
@@ -156,7 +161,7 @@ SPA em Vite mais React 18, Tailwind 4. O `localStorage` é a cópia de trabalho 
 | `/` | Grimório 2.5.2, o livro oficial, somente-leitura | `fm_*_v1` |
 | `/Afty` | criatura do mestre | `fm_*_afty_v1` |
 | `/Player` | personagem do jogador, o MESMO código com uma chave de sistema | `fm_*_player_v1` |
-| `/EraDeOuro` | a Guilda: `mesa` na ficha, storage isolado (`docs/afty-status.md`) | `fm_*_eradeouro_v1` |
+| `/EraDeOuro` | a Guilda: `mesa` na ficha, storage isolado (`docs/afty-status.md`). É também o app instalável Era de Ouro (manifesto e convite só aqui, `docs/app-celular.md`) | `fm_*_eradeouro_v1` |
 | `/Sala/<código>` | a Sala online de um Encontro (login, senha, tela do jogador) | `sala_cache_v1:<id>` (fora da nuvem pessoal) |
 
 A lei está em caixa alta no cabeçalho de `afty-sistema.js`: **o sistema vem da FICHA, não da rota.**

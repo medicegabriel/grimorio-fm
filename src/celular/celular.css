@@ -72,3 +72,110 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+/* ============================================================
+   O CONVITE DE INSTALAR (ConviteInstalar.jsx, etapa E4)
+   ============================================================
+   Um cartão embaixo da lista da Guilda. Deixa 80 px livres à direita, que é o canto do botão dos Livros (56 px a 16 px da
+   borda), e sobe acima da barra de gestos do aparelho. */
+.fm-convite {
+  position: fixed;
+  left: 12px;
+  right: 80px;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  z-index: 45;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--afty-borda-forte, #334155);
+  border-radius: 12px;
+  background: var(--afty-card, #0f172a);
+  color: var(--afty-texto, #f1f5f9);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.55);
+}
+
+.fm-convite-icone {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.fm-convite-titulo {
+  flex: 1 1 140px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.fm-convite-botoes {
+  display: flex;
+  gap: 8px;
+  flex: 1 1 100%;
+  justify-content: flex-end;
+}
+
+.fm-convite-botao {
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid var(--afty-borda-forte, #334155);
+  background: transparent;
+  color: var(--afty-texto, #f1f5f9);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.fm-convite-botao[data-principal] {
+  border-color: var(--afty-destaque, #a855f7);
+  background: var(--afty-destaque, #a855f7);
+  color: #fff;
+}
+
+/* Os passos do iPhone, na folha de baixo. */
+.fm-passos {
+  list-style: none;
+  margin: 0;
+  padding: 0 4px;
+  display: grid;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.fm-passos li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+}
+
+.fm-passos li > span {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 13px;
+  background: var(--afty-destaque-fundo, #581c8766);
+  color: var(--afty-destaque-texto, #d8b4fe);
+  flex-shrink: 0;
+}
+
+.fm-passos-aviso {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 14px 4px 4px;
+  font-size: 13px;
+  color: var(--afty-aviso, #fbbf24);
+}
+
+/* Com `viewport-fit=cover` (só em /EraDeOuro, `index.html`) o celular deitado põe o entalhe da câmera dentro da página: as laterais recuam
+   pela área segura (D-89). Em pé o recuo lateral é zero. */
+:root[data-fm-app] body {
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}

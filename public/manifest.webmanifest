@@ -1,0 +1,22 @@
+{
+  "id": "/EraDeOuro",
+  "name": "Era de Ouro",
+  "short_name": "Era de Ouro",
+  "description": "Fichas, Encontros e a Sala da Guilda Era de Ouro",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "start_url": "/EraDeOuro",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#060910",
+  "background_color": "#060910",
+  "prefer_related_applications": false,
+  "icons": [
+    { "src": "/icons/era-de-ouro-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/era-de-ouro-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/era-de-ouro-mascara-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/era-de-ouro-mascara-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/era-de-ouro.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

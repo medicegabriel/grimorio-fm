@@ -191,6 +191,13 @@ Toda região de tela é desenhada nos cinco. Faltou um, a tela não está pronta
 | D-85 | Campo numérico usa `inputMode="numeric"`, para abrir o teclado de números |
 | D-86 | O Voltar do aparelho fecha primeiro o painel de cima (folha, painel flutuante, diálogo), depois a tela, e só sai do site a partir da lista. Painel novo que abre por toque é camada (`useCamadaDeVoltar`, `src/celular/camadas.js`) |
 | D-87 | No celular, menu e escolha curta abrem na folha de baixo (`src/celular/FolhaInferior.jsx`), e não num menu suspenso preso a um botão: perto do dedo, sem cortar na borda, e o foco vai para a folha, não para um campo |
+| D-88 | Painel de número no celular não abre o teclado sozinho: o foco vai para o painel, e o campo só pega o teclado no toque. No iPhone, campo de texto com 16 px ou mais, senão o Safari dá zoom ao tocar |
+| D-89 | Peça fixa na borda de baixo ou de cima soma a área segura do aparelho (`env(safe-area-inset-bottom)`), para não ficar sob a barra de gestos ou o entalhe |
+
+**O app Era de Ouro.** O manifesto e o convite de instalar existem só em `/EraDeOuro` (o app se chama Era de Ouro e abre
+sempre lá). O convite é um cartão só, na lista da Guilda, no celular, fora do app instalado, e "Agora Não" o guarda por 14
+dias no aparelho. Nunca é janela que tranca a tela, e nunca volta na mesma visita. Regras e medições em
+`docs/app-celular.md`.
 
 ## 9. Movimento
 

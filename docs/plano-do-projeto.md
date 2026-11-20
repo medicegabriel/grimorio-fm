@@ -120,6 +120,7 @@ seguinte. A ordem é a recomendada.
 - Enciclopédias da 2.5.2 só na rota `/`.
 - Decisão do autor sobre os PDFs (seção 7).
 - Meta: a Ficha de Jogador abrir com menos de 1,5 MB de JavaScript.
+- **Feita em parte em 2026-11-19** (etapa E3 do app de celular, `docs/app-celular.md`): telas pesadas e enciclopédias sob demanda, e a lista da Guilda caiu de 6,6 MB para 2,1 MB de JavaScript. Os PDFs seguem esperando decisão, e a meta de 1,5 MB depende de tirar o motor da abertura (E10).
 
 ### Etapa 3: Segurança dos dados (média)
 - Aviso de "faz N dias que você não exporta" e botão de cópia de segurança de tudo (fichas, encontros, mesa,

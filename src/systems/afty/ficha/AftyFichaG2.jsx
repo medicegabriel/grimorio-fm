@@ -84,6 +84,7 @@ import { useGestor } from "./efeitos/gestor-logica";
 import { HistoricoCtx } from "./efeitos/historico-logica";
 import { HistoricoPainel } from "./efeitos/HistoricoSessao";
 import CabecalhoG2 from "./efeitos/CabecalhoG2";
+import { useCelular } from "../../../celular/usar-celular";
 import FinaG2 from "./efeitos/FinaG2";
 import HabilidadesG2 from "./efeitos/HabilidadesG2";
 import ConsultaG2 from "./efeitos/ConsultaG2";
@@ -194,6 +195,10 @@ export default function AftyFicha({
   // uma desvantagem esquecida na sessão de ontem.
   const [modo, setModo] = useState("normal");
   const [logAberto, setLogAberto] = useState(false);
+  /* No celular a barra de rolagens vira um botão na linha das abas (etapa E5 do app). */
+  const celular = useCelular();
+  /* A faixa fina pede a folha do recurso ao cabeçalho (etapa E5 do app). `vez` faz o mesmo recurso abrir de novo depois de fechado. */
+  const [pedidoVital, setPedidoVital] = useState(null);
   const [buscaAberta, setBuscaAberta] = useState(false);
   // Quais itens estão abertos, e para onde a busca navegou. Os dois são de TELA:
   // reabrir a ficha amanhã com trinta parágrafos abertos não ajuda ninguém.
@@ -351,7 +356,14 @@ export default function AftyFicha({
     const raiz = raizRef.current;
     const cab = cabecalhoRef.current;
     if (!raiz || !cab || typeof ResizeObserver === "undefined") return undefined;
-    const mede = () => raiz.style.setProperty("--afty-ficha-topo", `${Math.round(cab.getBoundingClientRect().height)}px`);
+    /* `--afty-ficha-topo-recolhido` (etapa E5 do app, 2026-11-19): o que fica à vista do cabeçalho depois de rolar, a linha das abas para baixo, pela
+       mesma conta do `PainelDeRolagens`. No celular o palco mede por ela, e não pelo cabeçalho inteiro, que é quase metade da tela. */
+    const mede = () => {
+      const altura = cab.getBoundingClientRect().height;
+      const linha = cab.querySelector(".e-linha-abas");
+      raiz.style.setProperty("--afty-ficha-topo", `${Math.round(altura)}px`);
+      raiz.style.setProperty("--afty-ficha-topo-recolhido", `${Math.round(linha ? altura - linha.offsetTop : altura)}px`);
+    };
     mede();
     const ro = new ResizeObserver(mede);
     ro.observe(cab);
@@ -1018,6 +1030,7 @@ export default function AftyFicha({
             <CabecalhoG2
               m={g.mGeral} acesso={ui.acesso} total={g.ativos.length} atencao={ui.atencao} onHistorico={ui.abrirHistorico}
               preferencia={estatisticasPref} onPreferencia={definirEstatisticas}
+              pedidoVital={pedidoVital}
               acoesDaFicha={{
                 /* EMBUTIDA (autor, 2026-11-17, "Só a Busca Fica"): sem Voltar, sem Editar, sem Aparência e sem o Encerrar Meu Turno da Ficha,
                    que dentro da luta desceria tudo de todos. Quem passa o turno é o Encontro. */
@@ -1088,9 +1101,10 @@ export default function AftyFicha({
             aberto={logAberto}
             onAberto={setLogAberto}
             onLimpar={() => atualiza((s) => ({ ...s, log: [] }))}
+            compacto={celular}
           />
           </div>
-          <FinaG2 m={g.mGeral} />
+          <FinaG2 m={g.mGeral} onAbrir={(tipo) => setPedidoVital({ tipo, vez: Date.now() })} />
         </div>
       </header>
 

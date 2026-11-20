@@ -3,7 +3,8 @@
    corpo serve ao menu suspenso do computador e à folha de baixo do celular (e, na
    casca da Guilda, ao menu Mais). */
 
-import { Cloud, CloudOff, LogOut, RefreshCw } from "lucide-react";
+import { Cloud, CloudOff, Download, LogOut, RefreshCw } from "lucide-react";
+import { useInstalacao } from "../celular/usar-instalacao";
 import { entrar, sair } from "./nuvem-sync";
 import { ROTULO_FASE } from "./conta-rotulos";
 
@@ -29,6 +30,19 @@ export function IconeEstado({ fase }) {
   return <Cloud className="w-4 h-4 shrink-0 text-emerald-400" />;
 }
 
+/* "Instalar o App" sempre à mão (etapa E4): só na Era de Ouro, no navegador, quando o Chrome já entregou o pedido. */
+function ItemInstalar({ classe, aoFechar }) {
+  const { temPedido, instalado, instalar } = useInstalacao();
+  const naGuilda = typeof location !== "undefined" && /^\/eradeouro\/?$/i.test(location.pathname);
+  if (!naGuilda || instalado || !temPedido) return null;
+  return (
+    <button type="button" role="menuitem" className={classe} onClick={() => { aoFechar?.(); instalar(); }}>
+      <Download className="w-4 h-4 shrink-0" />
+      Instalar o App
+    </button>
+  );
+}
+
 /* `grande`: itens de 44 px, para o dedo (a folha de baixo do celular). */
 export default function PainelDaConta({ estado, aoFechar, grande = false }) {
   const { usuario, fase } = estado;
@@ -48,6 +62,7 @@ export default function PainelDaConta({ estado, aoFechar, grande = false }) {
           <LogOut className="w-4 h-4 shrink-0" />
           Sair
         </button>
+        <ItemInstalar classe={item} aoFechar={aoFechar} />
       </>
     );
   }
@@ -61,6 +76,7 @@ export default function PainelDaConta({ estado, aoFechar, grande = false }) {
         <IconeDiscord />
         Entrar com Discord
       </button>
+      <ItemInstalar classe={item} aoFechar={aoFechar} />
       {fase === "erro" && (
         <div className="px-3 py-2 text-xs text-amber-400">Falha ao Entrar</div>
       )}

@@ -15,7 +15,9 @@ import { recursos } from "./pecas-logica";
 const ENTRA = 12;
 const SAI = -8;
 
-export default function FinaG2({ m }) {
+/* `onAbrir(tipo)` (etapa E5 do app, 2026-11-19): cada número vira um botão de 44 px que abre a mesma folha do recurso do cabeçalho,
+   para dar Dano ou Cura sem rolar de volta até a placa. */
+export default function FinaG2({ m, onAbrir = null }) {
   const raiz = useRef(null);
   const [visivel, setVisivel] = useState(false);
   useEffect(() => {
@@ -36,11 +38,16 @@ export default function FinaG2({ m }) {
   return (
     <div ref={raiz} className="e-fina" data-visivel={visivel ? "sim" : undefined} data-n={lista.length} aria-hidden={visivel ? undefined : "true"}>
       <span className="e-fina-nome">{m.ficha.name || "Sem nome"}</span>
-      {lista.map((r) => (
+      {lista.map((r) => (onAbrir ? (
+        <button key={r.tipo} type="button" className="e-fina-rec" data-tipo={r.tipo} onClick={() => onAbrir(r.tipo)}
+          aria-label={`${r.rotulo}: ${r.atual} de ${r.max}. Abrir painel`}>
+          <small>{r.rotulo}</small><b>{r.atual}</b>
+        </button>
+      ) : (
         <span key={r.tipo} className="e-fina-rec" data-tipo={r.tipo}>
           <small>{r.rotulo}</small><b>{r.atual}</b>
         </span>
-      ))}
+      )))}
     </div>
   );
 }

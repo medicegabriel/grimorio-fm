@@ -1,5 +1,49 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-19 · APP ERA DE OURO, ETAPA E5 PARTE 2 (FICHA NO CELULAR)
+
+Segunda parte da quinta etapa (`docs/app-celular.md`). O autor voltou a responder no meio dela, então a pergunta nova ficou em `docs/a-fazer.md` em vez de decidida aqui.
+
+- **Livro na borda na G2** (`ficha.css`, `t-livros-aba.mjs` mudou junto): a aba de 28 px até 640 px, nas duas estruturas.
+- **Faixa fina com botões** (`FinaG2` com `onAbrir`, `pedidoVital` no `CabecalhoG2`, atendido no render para o lint de efeitos): tocar no número abre a folha do recurso.
+- **Palco pelo cabeçalho recolhido** (`--afty-ficha-topo-recolhido`): a lista de Habilidades e Efeitos foi de 533 para 757 px em 812. A página rolava 51 px além do cabeçalho por duas causas, achadas medindo: o corpo e a camada de ambiente (`::before`) com a altura da tela, e um texto de leitor de tela ancorado fora da lista que rola.
+- **Viewport do app** (`index.html`, só em `/EraDeOuro`): `viewport-fit=cover`, `interactive-widget=resizes-content` e `data-fm-app` com o recuo lateral pela área segura.
+- **Achado e anotado, sem mexer:** a faixa fina num tema de cabeçalho colorido sai claro sobre claro (pergunta em `docs/a-fazer.md`).
+- Verificado: `t-g2-celular` (28), `t-app-instalavel` (61), `t-livros-aba` (10), `t-app-rotas`, `t-ordem-modulos`, lint limpo, build, a medição nas quatro larguras (`e5b-preview.json`), e no navegador em 375 e 1280 px.
+
+## SESSÃO DE 2026-11-19 · APP ERA DE OURO, ETAPA E5 PARTE 1 (FICHA NO CELULAR)
+
+Quinta etapa do plano em `docs/app-celular.md`, primeira parte, com o autor ausente.
+
+- **Cabeçalho da G2 no celular** (`efeitos-g2.css`): identidade numa fileira, recursos com número de 22 px (18 px com quatro ou mais), Agora numa fileira até 360 px. Parado, caiu de 463 px (57%) para 271 px (33%) em 360, 375, 390 e 412 px. Nada saiu do cabeçalho.
+- **Rolagens no botão da linha das abas** (`PainelDeRolagens` com `compacto`, só na G2 e só no celular): o total da última rolagem e a marca do modo, e o modo e o histórico abrem dele.
+- **Folha do recurso** (`PainelVital` com `atalhos` na `FolhaInferior`, que ganhou `dentro` e `classe` para o tema valer): −1 −5 −10 +1 +5 pelos verbos do painel, sem teclado. Vida −5 em 2 toques.
+- Um engano meu durante a etapa, registrado para não repetir: ao acrescentar blocos `@media` menores no meio do bloco de 720 px, as regras que vinham depois foram parar dentro do bloco de 380 px, e o cabeçalho media 320 px só em 390 e 412. A medição nas quatro larguras pegou.
+- Verificado: `t-g2-celular.mjs` novo (24), os asserts de ficha, g2, efeitos e peças (850), `t-livros-aba`, `t-ordem-modulos`, lint limpo, build, a medição nas quatro larguras, e no navegador a folha (tema da ficha, foco na folha, −5, Voltar fecha), o botão das rolagens (Vantagem, total 34) e o computador sem mudança (painel flutuante e barra larga).
+- Ficou para a parte 2 (`docs/a-fazer.md`): a aba do Livro na G2, os números da faixa fina como botões, a altura do palco, e o viewport.
+
+## SESSÃO DE 2026-11-19 · APP ERA DE OURO, ETAPA E4 (APP INSTALÁVEL)
+
+Quarta etapa do plano em `docs/app-celular.md`, também com o autor ausente.
+
+- **Manifesto e ícones** (`public/manifest.webmanifest`, `public/icons/`): o app "Era de Ouro" abre em `/EraDeOuro`, com escopo `/`, a partir do selo aprovado pelo autor.
+- **Script do `index.html`:** guarda o pedido de instalação do Chrome em toda rota, e só em `/EraDeOuro` dos hosts do app põe o manifesto, o ícone da Apple e o favicon do selo. O endereço antigo da Vercel não oferece instalar.
+- **Convite** (`src/celular/convite.js` e `ConviteInstalar.jsx`): cartão na lista da Guilda, no celular, com "Agora Não" por 14 dias (`fm_app_convite_aparelho_v1`, fora da nuvem). iPhone desligado por `IOS_LIBERADO`. "Instalar o App" também no menu da Conta.
+- **Normas:** D-88 (sem teclado automático, 16 px no iPhone), D-89 (área segura) e o parágrafo do app em `normas-design.md`.
+- Adiado para a E5: o `viewport-fit=cover` e o `interactive-widget`, que mudam o leiaute da Ficha.
+- Verificado: `t-app-instalavel.mjs` novo (57), `t-app-rotas`, `t-ordem-modulos`, `t-app-entradas`, lint limpo, build, zero erro de instalação em `/EraDeOuro` no build local e nenhum manifesto nas outras rotas, e o cartão em 375 px no navegador (aparece, botões de 44 px, dispensa e não volta).
+
+## SESSÃO DE 2026-11-19 · APP ERA DE OURO, ETAPA E3 (CARREGAMENTO LEVE, FASE A)
+
+Terceira etapa do plano em `docs/app-celular.md`, feita com o autor ausente (ele pediu para seguir decidindo sozinho).
+
+- **Telas sob demanda** (`telaSobDemanda`, `src/celular/sob-demanda.js`): os criadores, o rastreador e a biblioteca de modelos da 2.5.2, a lista de Encontros, o Encontro e a Ficha clássica. Quem não chega vira "Nova Versão Disponível" com Atualizar (`TelaNovaVersao.jsx`), sem recarregar sozinho.
+- **Enciclopédias da 2.5.2 só no `/`** (`usar-compendio.js`), e o fechamento da Sala só com conta.
+- **`vercel.json`:** cache longo e imutável em `/assets/*`, e a reescrita para o `index.html` não cobre mais `/assets/` (pedaço sumido dá 404 de verdade).
+- **Medido:** a lista da Guilda caiu de 6.579 KB para 2.089 KB de JavaScript em 375 px (meta da etapa: 2,6 MB). O `index` do build caiu de 4,1 MB para 90 KB.
+- Verificado: `t-app-entradas.mjs` novo (28), `t-ordem-modulos`, `t-app-pilha`, `t-app-rotas`, `t-dominio-barreira`, lint limpo, build, e no build local cada tela sob demanda aberta a frio sem erro (a raiz com as 165 Criaturas Base, rastreador, criador da 2.5.2, Modelos, lista de Encontros, Encontro, criador do Afty, Ficha G2 e Ficha clássica). O único erro no console é o 404 do script de análise da Vercel.
+- Um falso alarme registrado para não repetir: o "Nova Criatura" da raiz fica desligado de propósito com a pasta Criaturas Base aberta ("Não é possível criar na pasta Sistema").
+
 ## SESSÃO DE 2026-11-19 · APP ERA DE OURO, ETAPA E2 (VOLTAR DO APARELHO)
 
 Segunda etapa do plano em `docs/app-celular.md`. O Voltar do celular saía do site no meio de uma Ficha (no app instalado do Android, fecharia o app). Decisão do autor: vale em todas as rotas.

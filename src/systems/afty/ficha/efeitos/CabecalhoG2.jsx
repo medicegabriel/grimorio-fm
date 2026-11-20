@@ -20,6 +20,8 @@ import { Sessao } from "./ponte";
 import EstatisticasConfig from "./EstatisticasConfig";
 import OrbitasDoRetrato from "../../ui/OrbitasDoRetrato";
 import BotaoDeDescanso from "../BotaoDeDescanso";
+import FolhaInferior from "../../../../celular/FolhaInferior";
+import { useCelular } from "../../../../celular/usar-celular";
 
 function Stat({ s, m }) {
   return (
@@ -145,7 +147,7 @@ function Agora({ m, acesso, total, atencao, embutida = false }) {
 
 /* `acoesDaFicha`: o que só a Ficha sabe fazer (voltar, buscar, editar, aparência, densidade, cofre). O Cabeçalho não decide nenhum deles. */
 export default function Cabecalho({
-  m, acesso, total, atencao, onHistorico = () => {}, preferencia = null, onPreferencia = () => {}, acoesDaFicha,
+  m, acesso, total, atencao, onHistorico = () => {}, preferencia = null, onPreferencia = () => {}, acoesDaFicha, pedidoVital = null,
 }) {
   const { ficha, derived } = m;
   const { onVoltar, onBusca, onEditar, onAparencia, densidade, onDensidade, cofre, apresentacaoAnterior, face = null, onSalvarRecursoProprio = null, embutida = false } = acoesDaFicha;
@@ -157,6 +159,15 @@ export default function Cabecalho({
   /* O `Flutuante` refaz o foco quando o `onFechar` muda: ele tem de ser estável, ou cada mudança de estado devolve o foco à primeira linha. */
   const fechaConfig = useCallback(() => setConfig(null), []);
   const fechaVital = useCallback(() => setVital(null), []);
+  /* No celular o painel do recurso sobe na folha de baixo, com os atalhos e sem abrir o teclado (etapa E5 do app, D-88). */
+  const celular = useCelular();
+  /* A faixa fina (`FinaG2`) pede a mesma folha pelo `pedidoVital` ({ tipo, vez }). Ela só aparece no celular, e o painel flutuante do
+     computador precisaria de âncora, então o pedido só vale no celular. Atendido durante o render, quando chega um pedido novo. */
+  const [pedidoVisto, setPedidoVisto] = useState(pedidoVital);
+  if (pedidoVital !== pedidoVisto) {
+    setPedidoVisto(pedidoVital);
+    if (pedidoVital && celular) setVital({ tipo: pedidoVital.tipo, ancora: null });
+  }
   const id = linhaDeIdentidade(ficha, derived);
   const stats = statsDaFicha(derived);
   return (
@@ -203,10 +214,16 @@ export default function Cabecalho({
       </div>
       {proprioConfig && <RecursoProprioConfig ancora={proprioConfig} atual={Sessao.recursoProprioDe(ficha)} onSalvar={onSalvarRecursoProprio} onFechar={fechaProprio} />}
       {config && <EstatisticasConfig ancora={config} stats={stats} preferencia={preferencia} onFechar={fechaConfig} onMuda={onPreferencia} />}
-      {vital && (
+      {vital && !celular && (
         <Flutuante ancora={vital.ancora} onFechar={fechaVital} largura={320} rotulo={`Painel de ${vital.tipo}`}>
           <PainelVital tipo={vital.tipo} m={m} onFechar={fechaVital} />
         </Flutuante>
+      )}
+      {celular && (
+        <FolhaInferior aberta={!!vital} onFechar={fechaVital} rotulo={vital ? `Painel de ${vital.tipo}` : undefined}
+          dentro={typeof document !== "undefined" ? document.getElementById("afty-ficha") : null} classe="e-g2 e-portal e-folha-vital">
+          {vital && <PainelVital tipo={vital.tipo} m={m} onFechar={fechaVital} atalhos />}
+        </FolhaInferior>
       )}
     </div>
   );

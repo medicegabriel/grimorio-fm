@@ -26,6 +26,59 @@
         if (t) document.title = t;
       })();
     </script>
+    <!-- O APP ERA DE OURO (etapa E4, docs/app-celular.md). Roda antes do React e antes da espera da nuvem:
+         1. Em toda rota guarda o pedido de instalação do Chrome (`beforeinstallprompt`), que chega uma vez só e cedo. O
+            convite da lista (src/celular/ConviteInstalar.jsx) o usa quando a pessoa toca em Instalar.
+         2. Só em /EraDeOuro, e só no endereço novo ou no localhost, põe o manifesto e o ícone do app. Assim / e /Player não
+            oferecem instalar um app chamado Era de Ouro, e o endereço antigo (grimorio-fm.vercel.app) nunca vira app. -->
+    <script>
+      (function () {
+        window.addEventListener("beforeinstallprompt", function (e) {
+          e.preventDefault();
+          window.__fmPedidoInstalar = e;
+          window.dispatchEvent(new Event("fm:instalavel"));
+        });
+        window.addEventListener("appinstalled", function () {
+          window.__fmPedidoInstalar = null;
+          window.__fmInstalado = true;
+          window.dispatchEvent(new Event("fm:instalado"));
+        });
+        var h = location.hostname;
+        var hostDoApp = h === "fichafm.com.br" || h === "www.fichafm.com.br" || h === "localhost" || h === "127.0.0.1";
+        if (!hostDoApp || !/^\/eradeouro\/?$/i.test(location.pathname)) return;
+        var cabeca = document.head;
+        var link = function (rel, href, tipo) {
+          var l = document.createElement("link");
+          l.rel = rel;
+          l.href = href;
+          if (tipo) l.type = tipo;
+          cabeca.appendChild(l);
+        };
+        var meta = function (nome, valor) {
+          var m = document.createElement("meta");
+          m.name = nome;
+          m.content = valor;
+          cabeca.appendChild(m);
+        };
+        link("manifest", "/manifest.webmanifest");
+        link("apple-touch-icon", "/icons/era-de-ouro-180.png");
+        meta("apple-mobile-web-app-title", "Era de Ouro");
+        meta("mobile-web-app-capable", "yes");
+        meta("apple-mobile-web-app-capable", "yes");
+        meta("apple-mobile-web-app-status-bar-style", "black");
+        var icone = document.querySelector('link[rel="icon"]');
+        if (icone) {
+          icone.href = "/icons/era-de-ouro.svg";
+        }
+        /* Etapa E5 (2026-11-19): a página vai até a borda do aparelho (as folhas usam a área segura) e o teclado encolhe a página, para a
+           folha de baixo subir junto com ele em vez de ficar coberta. Só na Guilda, como o resto deste bloco. */
+        var tela = document.querySelector('meta[name="viewport"]');
+        if (tela) {
+          tela.content = "width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content";
+        }
+        if (document.documentElement) document.documentElement.setAttribute("data-fm-app", "");
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

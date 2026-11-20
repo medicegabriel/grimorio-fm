@@ -90,7 +90,35 @@ function Rolagem({ r, destaque }) {
   );
 }
 
-export default function PainelDeRolagens({ log, modo, onModo, aberto, onAberto, onLimpar }) {
+/* O modo de rolar, nos três botões (DES, NOR, VAN). A barra larga e a compacta usam os mesmos. */
+function Modos({ modo, onModo }) {
+  return (
+    <span className="afty-log-modos flex items-center gap-0.5 flex-1">
+      {MODOS.map((m) => (
+        <button
+          key={m.id}
+          type="button"
+          className="afty-log-modo"
+          data-afty-ativo={modo === m.id ? "sim" : undefined}
+          data-afty-modo={m.id}
+          aria-pressed={modo === m.id}
+          aria-label={m.label}
+          onClick={() => onModo(m.id)}
+          title={m.label}
+        >
+          {m.label.slice(0, 3)}
+        </button>
+      ))}
+    </span>
+  );
+}
+
+/**
+ * `compacto` (o celular na Ficha G2, etapa E5 do app, decisão do autor em 2026-11-18): a barra vira um botão na linha das abas, com o dado, o
+ * total da última rolagem e a marca do modo quando não é o normal. O modo e o histórico abrem logo abaixo dele. A fórmula continua no histórico,
+ * na primeira linha. O tema alcança o botão por `.afty-log-gatilho`.
+ */
+export default function PainelDeRolagens({ log, modo, onModo, aberto, onAberto, onLimpar, compacto = false }) {
   const ultima = log[0] ?? null;
   const painelRef = useRef(null);
   const historicoId = useId();
@@ -142,27 +170,43 @@ export default function PainelDeRolagens({ log, modo, onModo, aberto, onAberto, 
     };
   }, [aberto, onAberto]);
 
+  if (compacto) {
+    const marca = ultima?.raioNegro || ultima?.critico ? "critico" : ultima?.pifia ? "pifia" : undefined;
+    return (
+      <aside ref={painelRef} className="afty-log" data-afty-compacto="sim" data-afty-aberto={aberto ? "sim" : "nao"} aria-label="Rolagens de dados">
+        <button
+          type="button"
+          className="afty-botao afty-log-gatilho"
+          onClick={() => onAberto(!aberto)}
+          aria-expanded={aberto}
+          aria-controls={historicoId}
+          data-afty-marca={marca}
+          aria-label={`Rolagens${ultima?.total != null ? `, última ${ultima.total}` : ""}${modo !== "normal" ? `, ${modo === "vantagem" ? "Vantagem" : "Desvantagem"}` : ""}`}
+        >
+          <Dices className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+          {ultima?.total != null && <b className="afty-rolagem-total">{ultima.total}</b>}
+          {modo !== "normal" && <span className="afty-log-gatilho-modo" data-afty-modo={modo}>{modo === "vantagem" ? "Van" : "Des"}</span>}
+        </button>
+        <div id={historicoId} className="afty-log-corpo" hidden={!aberto}>
+          <div className="afty-log-corpo-topo flex items-center gap-1 px-1.5 py-1">
+            <Modos modo={modo} onModo={onModo} />
+            {ultima && (
+              <button type="button" className="afty-passo" onClick={() => { onLimpar(); onAberto(false); }} title="Limpar o histórico" aria-label="Limpar o histórico">
+                <Trash2 className="w-3 h-3" aria-hidden="true" />
+              </button>
+            )}
+          </div>
+          {aberto && (log.length ? log.map((r, i) => <Rolagem key={r.id} r={r} destaque={i === 0} />) : <div className="afty-rotulo text-[11px] px-2.5 py-2">Sem rolagens</div>)}
+        </div>
+      </aside>
+    );
+  }
+
   return (
     <aside ref={painelRef} className="afty-log" data-afty-aberto={aberto ? "sim" : "nao"} aria-label="Rolagens de dados">
       <div className="afty-log-topo flex items-center gap-1">
         <Dices className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
-        <span className="afty-log-modos flex items-center gap-0.5 flex-1">
-          {MODOS.map((m) => (
-            <button
-              key={m.id}
-              type="button"
-              className="afty-log-modo"
-              data-afty-ativo={modo === m.id ? "sim" : undefined}
-              data-afty-modo={m.id}
-              aria-pressed={modo === m.id}
-              aria-label={m.label}
-              onClick={() => onModo(m.id)}
-              title={m.label}
-            >
-              {m.label.slice(0, 3)}
-            </button>
-          ))}
-        </span>
+        <Modos modo={modo} onModo={onModo} />
       </div>
 
       <div className="afty-log-ultima" aria-live="polite" aria-atomic="true">

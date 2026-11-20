@@ -1,17 +1,9 @@
 import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { AlertTriangle } from "lucide-react";
 import Dashboard from "./components/Dashboard";
-import CombatTracker from "./components/CombatTracker";
-import CreatureBuilder from "./components/CreatureBuilder";
-import AftyCreatureBuilder from "./systems/afty/AftyCreatureBuilder";
 import AftyFicha from "./systems/afty/ficha/AftyFicha";
-/* O Encontro unificado (etapa 6a, 2026-11-17): as três listas e o novo Encontro, no lugar do AftyEncontros e do
-   EncountersDashboard e EncounterTracker da 2.5.2 (que seguem em src/components/, intocados e sem uso aqui). */
-import ListaDeEncontros from "./systems/afty/encontros/telas/ListaDeEncontros";
-import EncontroTela from "./systems/afty/encontros/telas/EncontroTela";
 import useListaDeEncontros from "./systems/afty/encontros/usar-lista-encontros";
 import { grupoDaRota } from "./systems/afty/encontros/listas";
-import TemplateLibrary from "./components/TemplateLibrary";
 import PdfFab from "./components/PdfFab";
 import useCreatureStorage from "./components/useCreatureStorage";
 import useDashboardView from "./useDashboardView";
@@ -20,18 +12,36 @@ import {
   MESA_ERA_DE_OURO, NAMESPACE_ERA_DE_OURO, ERA_DE_OURO,
   ehRotaEraDeOuro, vocabularioDeFichas,
 } from "./systems/eradeouro/era-de-ouro";
-import { COMPENDIUM, getCompendiumById, isBuiltInId } from "./fm-compendium";
 import { Analytics } from '@vercel/analytics/react';
 import AlternadorSistema from "./nuvem/AlternadorSistema";
 import ContaNuvem from "./nuvem/ContaNuvem";
 import AvisoMudanca from "./nuvem/AvisoMudanca";
 import { lerEstadoNuvem, ouvirNuvem } from "./nuvem/nuvem-sync";
 import { nuvemAtiva } from "./nuvem/nuvem-config";
-import { recuperarSalasFechadas } from "./nuvem/sala-fechamento";
 import { rotaDoGrupo } from "./nuvem/sala-ui/sala-ui-dados";
 import { usePilhaDeTelas } from "./celular/usar-pilha-de-telas";
 import { useCamadaDeVoltar } from "./celular/camadas";
 import { TELA_LISTA } from "./celular/pilha";
+import { telaSobDemanda } from "./celular/sob-demanda";
+import { useCompendio, ehIdDoCompendio } from "./celular/usar-compendio";
+import Carregando from "./celular/Carregando";
+import ConviteInstalar from "./celular/ConviteInstalar";
+
+/* ⚠ AS TELAS PESADAS CHEGAM SOB DEMANDA (etapa E3 do app de celular, 2026-11-19, S-23). Até aqui todas iam no pacote de
+   abertura de toda rota: a lista da Guilda no celular baixava 6,6 MB de JavaScript, com os dois criadores, o rastreador e a
+   biblioteca da 2.5.2 e as enciclopédias, antes de desenhar a primeira ficha. Agora cada uma é baixada quando aparece.
+   ⚠ Tela nova sob demanda pede abrir a frio no navegador: um import a menos na abertura muda a ordem em que os módulos do
+   motor são avaliados (a tela branca de 2026-09-02), e só o `t-ordem-modulos` e o `t-app-entradas` não veem o navegador. */
+const CombatTracker = telaSobDemanda(() => import("./components/CombatTracker"));
+const CreatureBuilder = telaSobDemanda(() => import("./components/CreatureBuilder"));
+const AftyCreatureBuilder = telaSobDemanda(() => import("./systems/afty/AftyCreatureBuilder"));
+const TemplateLibrary = telaSobDemanda(() => import("./components/TemplateLibrary"));
+/* O Encontro unificado (etapa 6a, 2026-11-17): as três listas e o novo Encontro, no lugar do AftyEncontros e do
+   EncountersDashboard e EncounterTracker da 2.5.2 (que seguem em src/components/, intocados e sem uso aqui). */
+const ListaDeEncontros = telaSobDemanda(() => import("./systems/afty/encontros/telas/ListaDeEncontros"));
+const EncontroTela = telaSobDemanda(() => import("./systems/afty/encontros/telas/EncontroTela"));
+/* A lista vazia do compêndio fora do `/`, com identidade fixa para não refazer as listas do Dashboard a cada render. */
+const SEM_COMPENDIO = [];
 /* A Sala entra por `lazy`: só quem abre /Sala/<código> baixa o cliente e o tempo real. */
 const SalaPagina = React.lazy(() => import("./nuvem/SalaPagina"));
 /* O botão Abrir Sala do cabeçalho do Encontro (etapa 7c) também entra por `lazy`: ele puxa o cliente da Sala, e só aparece com a Sala
@@ -101,6 +111,13 @@ export default function App() {
   })();
   const rotaSala = !!codigoDaSala;
 
+  /* O compêndio da 2.5.2 só no `/` (usar-compendio.js). Lá a lista espera ele chegar, para as Criaturas Base aparecerem
+     junto. Nas outras rotas ele nem é baixado. */
+  const precisaCompendio = rotaId === null && !rotaSala;
+  const compendio = useCompendio(precisaCompendio);
+  const COMPENDIUM = compendio?.COMPENDIUM ?? SEM_COMPENDIO;
+  const getCompendiumById = useCallback((id) => compendio?.getCompendiumById(id) ?? null, [compendio]);
+
   const storageDaRota = useCreatureStorage(
     aftyMode ? { namespace: rotaId, defaultRulesVersion: sistemaDaRota } : undefined
   );
@@ -156,7 +173,10 @@ export default function App() {
     let vivo = true;
     const tentar = () => {
       if (!vivo || !lerEstadoNuvem().usuario) return;
-      recuperarSalasFechadas({ importarPorGrupo: listaAtiva ? { [grupoDaLista]: importarNaLista } : {} }).catch(() => {});
+      // Só com conta, e sob demanda: o fechamento da Sala puxa o cliente dela (etapa E3).
+      import("./nuvem/sala-fechamento")
+        .then(({ recuperarSalasFechadas }) => recuperarSalasFechadas({ importarPorGrupo: listaAtiva ? { [grupoDaLista]: importarNaLista } : {} }))
+        .catch(() => {});
     };
     tentar();
     const sair = ouvirNuvem(tentar);
@@ -312,7 +332,7 @@ export default function App() {
      marca com o `rulesVersion` da rota a criatura que não tem o campo (86 das
      165), e o clone nasceria uma ficha da 2.5.2 com marca de Afty. */
   const abrirFicha = useCallback((id) => {
-    if (isBuiltInId(id)) {
+    if (ehIdDoCompendio(id)) {
       const builtIn = getCompendiumById(id);
       if (!builtIn) return;
       const clone = storage.cloneFromBuiltIn(builtIn, { folderId: null });
@@ -325,11 +345,11 @@ export default function App() {
       return;
     }
     ir({ name: "tracker", creatureId: id });
-  }, [storage, ir]);
+  }, [storage, ir, getCompendiumById]);
 
   /* O criador da 2.5.2 entra por `substituir`, e o do Afty por `ir`. Ver o bloco da tela no histórico, lá em cima. */
   const goToBuilder = useCallback((id = null, sistemaNovo = null) => {
-    if (id && isBuiltInId(id)) {
+    if (id && ehIdDoCompendio(id)) {
       const builtIn = getCompendiumById(id);
       if (!builtIn) return;
       const clone = storage.cloneFromBuiltIn(builtIn, { folderId: null });
@@ -340,7 +360,7 @@ export default function App() {
     const da252 = ficha ? !sistemaGravado(ficha) : !aftyMode;
     // `sistemaNovo` só existe na Guilda, e só vale para ficha nova.
     (da252 ? substituir : ir)({ name: "builder", creatureId: id, sistemaNovo });
-  }, [storage, aftyMode, ir, substituir]);
+  }, [storage, aftyMode, ir, substituir, getCompendiumById]);
 
   const goToEncounter = useCallback((id) => {
     ir({ name: "encounter", encounterId: id });
@@ -547,7 +567,12 @@ export default function App() {
               {/* O Voltar da Sala vai para a rota do grupo dela (a Guilda volta para /EraDeOuro). */}
               <SalaPagina codigo={codigoDaSala} onVoltar={(grupo) => location.assign(rotaDoGrupo(grupo))} />
             </React.Suspense>
-          ) : views[view.name] ? views[view.name]() : views.dashboard()}
+          ) : precisaCompendio && !compendio ? <Carregando /> : (
+            // A tela sob demanda mostra o Carregando enquanto chega (etapa E3).
+            <React.Suspense fallback={<Carregando />}>
+              {views[view.name] ? views[view.name]() : views.dashboard()}
+            </React.Suspense>
+          )}
         </div>
         {rotaPublica && !rotaSala && view.name === "dashboard" && (
           <footer className="bg-slate-950 px-4 py-3 text-center text-sm text-slate-300">
@@ -557,6 +582,8 @@ export default function App() {
           </footer>
         )}
       </div>
+      {/* O convite de instalar o app (etapa E4): só na lista da Guilda, no celular. */}
+      {mesa && !rotaSala && <ConviteInstalar ativo={view.name === "dashboard"} />}
       {/* ⚠ A RECUSA DO IMPORTADOR PRECISA APARECER. Ficha que some sem dizer
           por que é o defeito que o projeto chama de calado, e seria pior que o
           erro que a porta conserta. O aviso é inline aqui, e não em

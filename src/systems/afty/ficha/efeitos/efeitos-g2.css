@@ -1205,6 +1205,9 @@
 .e-g2 .e-linha .e-aviso { gap: 4px; flex: none; }
 .e-g2 .e-aviso-rotulo { font-size: var(--e-fs-meta, 12.5px); font-weight: 600; }
 .e-g2 .e-so-leitor { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* O texto para leitor de tela se ancora no próprio aviso (2026-11-19). Ancorado no palco (`.e-area`), fora da lista que rola, ele ficava na
+   posição da linha e esticava a página: a última linha com aviso fazia a página rolar além do palco, por baixo do cabeçalho. */
+.e-g2 .e-aviso:has(> .e-so-leitor) { position: relative; }
 .e-troca-apresentacao { display: flex; justify-content: flex-end; padding: 4px 0 6px; }
 .e-g2 .e-voltar { align-self: center; margin-right: -4px; }
 .e-g2 .e-controles { display: flex; align-items: center; gap: 2px; align-self: center; }
@@ -1448,3 +1451,79 @@
   .e-g2 :is(.m-valor-botao, .m-meta-num, .afty-atributo-valor) { position: relative; }
   .e-g2 :is(.m-valor-botao, .m-meta-num, .afty-atributo-valor)::after { content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, 44px); height: 44px; transform: translate(-50%, -50%); }
 }
+
+/* ========== O CABEÇALHO NO CELULAR (etapa E5 do app Era de Ouro, 2026-11-19) ==========
+   Meta do plano (docs/app-celular.md): o cabeçalho parado em 35% de 812 px ou menos. Em 375 px ele media 463 px (57%): nome e linhagem em duas
+   linhas cada, o retrato de 84 x 143 px, o Agora quebrando em duas fileiras e a barra de rolagens com 50 px. Nada sai do cabeçalho (afty-ficha-final.md
+   §19): o retrato encolhe, nome e linhagem viram uma linha com reticências, o Agora aperta para caber numa fileira, e a barra de rolagens vira um botão
+   na linha das abas (`PainelDeRolagens` com `compacto`). Os números dos recursos crescem, porque são o que se lê na mesa. */
+@media (max-width: 720px) {
+  .e-g2 .e-cabeca {
+    --e-ret-w: 52px; grid-template-columns: auto var(--e-ret-w) minmax(0, 1fr) auto; column-gap: 8px; row-gap: 8px; padding: 6px 8px 0;
+    grid-template-areas: "volt ret ident cont" "recursos recursos recursos recursos" "faixa faixa faixa faixa";
+  }
+  .e-g2 .e-moldura { height: var(--e-ret-w); align-self: center; padding: 2px; }
+  .e-g2 .e-moldura .e-retrato, .e-g2 .e-moldura .m-retrato-vazio { inset: 2px; width: calc(100% - 4px); height: calc(100% - 4px); }
+  .e-g2 .e-voltar { margin-right: -4px; }
+  .e-g2 .e-ident { align-self: center; width: 100%; }
+  :where(.e-g2) .e-nome { font-size: var(--e-fs-titulo, 16.5px); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .e-g2 .e-linhagem { display: block; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: var(--e-fs-meta, 12.5px); }
+  .e-g2 .e-linhagem span:not(:last-child)::after { margin-left: 5px; margin-right: 5px; }
+  .e-g2 .e-controles { gap: 0; }
+  /* Os recursos: número de 22 px, rótulo de 11,5 px em cima. */
+  :where(.e-g2 .e-recursos .m-medidor-num) .afty-vital-numero { font-size: 22px; line-height: 1.1; }
+  /* Quatro recursos ou mais (a criatura com Vida de quatro dígitos) não cabiam numa fileira com 22 px e iam para uma segunda (132 px). */
+  :where(.e-g2 .e-recursos:has(> :nth-child(4)) .m-medidor-num) .afty-vital-numero { font-size: 18px; }
+  :where(.e-g2 .e-recursos:has(> :nth-child(4)) .m-medidor-num) .afty-vital-max { font-size: 10.5px; }
+  .e-g2 .e-recursos:has(> :nth-child(4)) { gap: 4px; }
+  .e-g2 .e-recursos:has(> :nth-child(4)) > .m-medidor { flex-basis: 60px; padding-inline: 5px 4px; }
+  /* O Agora numa fileira: os três acessos mais justos. Tema de fonte larga continua podendo quebrar (as regras de 360 e 420 px acima). */
+  .e-g2 .e-faixa { row-gap: 0; }
+  .e-g2 .e-agora { gap: 4px; min-height: 44px; }
+  .e-g2 .e-agora .e-combate { padding-inline: 8px; gap: 5px; }
+  .e-g2 .e-agora .e-rodada { padding-left: 8px; }
+  .e-g2 .e-agora .f-acesso { padding-inline: 6px; gap: 5px; }
+  .e-g2 .e-agora :is(.e-combate, .e-rodada, .f-acesso) { font-size: var(--e-fs-meta, 12.5px); }
+  /* A linha das abas: as abas rolam e o botão das rolagens fica parado no fim. */
+  .e-ficha-g2 .e-linha-abas { display: flex; align-items: stretch; gap: 4px; }
+  .e-ficha-g2 .e-linha-abas > .e-abas { flex: 1 1 auto; min-width: 0; }
+  .e-ficha-g2 .e-linha-abas > .afty-log[data-afty-compacto] { flex: none; display: flex; align-items: center; gap: 0; padding: 0; }
+  /* O palco (e o painel que o ocupa) mede pelo cabeçalho recolhido, que é o que fica à vista enquanto se lê a lista. Pelo cabeçalho inteiro
+     sobravam 533 de 812 px, e a lista rolava numa caixa menor que a tela. */
+  .e-g2 .e-area { height: calc(100dvh - var(--afty-ficha-topo-recolhido, var(--afty-ficha-topo, 0px)) - 8px); }
+  .e-layout > .e-lado { top: var(--afty-ficha-topo-recolhido, var(--afty-ficha-topo, 0px)); height: calc(100dvh - var(--afty-ficha-topo-recolhido, var(--afty-ficha-topo, 0px))); }
+  /* Com o palco à vista a página rola só até o cabeçalho recolher. O corpo tinha a altura da tela inteira, a página rolava 51 px além, e o
+     cabeçalho e a faixa fina cobriam a busca no topo do palco. A camada de ambiente (`::before`) também tinha a altura da tela e esticava a página.
+     A faixa fina fica para as abas de lista longa, onde o conteúdo corre. */
+  .e-ficha-g2:has(.e-g2 .e-area) .afty-ficha-corpo, .e-ficha-g2:has(.e-g2 .e-area) .afty-ficha-corpo::before { min-height: calc(100dvh - var(--afty-ficha-topo-recolhido, 0px)); }
+  /* A faixa fina: cada número é um botão de 44 px que abre a folha do recurso (`FinaG2` com `onAbrir`). */
+  .e-ficha-g2 .e-fina[data-visivel] { height: 44px; align-items: stretch; }
+  .e-ficha-g2 button.e-fina-rec { min-height: 44px; min-width: 44px; padding: 0 6px; margin: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; align-items: center; align-self: stretch; border-radius: calc(var(--afty-raio, 12px) * 6 / 12); }
+  .e-ficha-g2 button.e-fina-rec:focus-visible { outline: 2px solid var(--afty-destaque); outline-offset: -2px; }
+}
+/* As espadas do Combate são enfeite (o texto diz o estado): saem até 420 px, onde os três acessos não cabiam juntos por 26 px. */
+@media (max-width: 420px) {
+  .e-g2 .e-agora .e-combate > svg { display: none; }
+}
+/* Em 360 px ainda faltavam 7 px: os três acessos ficam mais justos. */
+@media (max-width: 380px) {
+  .e-g2 .e-agora .e-combate { padding-inline: 6px; }
+  .e-g2 .e-agora .e-rodada { padding-left: 6px; }
+  .e-g2 .e-agora .f-acesso { padding-inline: 4px; gap: 4px; }
+}
+/* O botão das rolagens (só existe no celular, `compacto`). */
+.afty-log[data-afty-compacto] .afty-log-gatilho { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; min-width: 44px; padding: 0 10px; white-space: nowrap; }
+.afty-log[data-afty-compacto] .afty-log-gatilho .afty-rolagem-total { font-size: 16px; font-variant-numeric: tabular-nums lining-nums; }
+.afty-log[data-afty-compacto] .afty-log-gatilho[data-afty-marca="critico"] .afty-rolagem-total { color: var(--afty-destaque-texto); }
+.afty-log[data-afty-compacto] .afty-log-gatilho-modo { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--afty-aviso, #fbbf24); }
+.afty-log[data-afty-compacto] .afty-log-corpo { width: min(26rem, calc(100vw - 24px)); }
+.afty-log[data-afty-compacto] .afty-log-corpo-topo .afty-log-modos::before { display: none; }
+
+/* A folha do recurso no celular (FolhaInferior com `classe="e-g2 e-portal e-folha-vital"`, etapa E5): o número grande e os atalhos de 48 px. */
+.e-folha-vital .m-painel-vital { padding: 0 4px 4px; }
+.e-folha-vital .m-pv-numero { font-size: 28px; }
+.e-g2 .m-pv-atalhos { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin: 4px 0 10px; }
+.e-g2 .m-pv-atalho { min-height: 48px; padding: 0; justify-content: center; font: 700 17px var(--e-display); font-variant-numeric: tabular-nums lining-nums; }
+.e-g2 .m-pv-atalho[data-sinal="menos"] { color: var(--afty-pv, #f87171); }
+.e-g2 .m-pv-atalho[data-sinal="mais"] { color: var(--afty-cura, #4ade80); }
+.e-folha-vital .m-campo-num { font-size: 16px; }

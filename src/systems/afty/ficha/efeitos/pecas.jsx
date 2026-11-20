@@ -20,7 +20,7 @@ import { estaLigado, Sessao } from "./ponte";
 import { useCamadaDeVoltar } from "../../../../celular/camadas";
 import { sinal } from "./util";
 
-import { temMarcacao, rotuloOpcao } from "./pecas-logica";
+import { temMarcacao, rotuloOpcao, atalhosDoRecurso } from "./pecas-logica";
 export { ListaDeFontes };
 
 /* ---------------- painel flutuante ---------------- */
@@ -193,7 +193,7 @@ export function Medidor({ r, m, onAbrir, classe = "" }) {
   );
 }
 
-export function PainelVital({ tipo, m, onFechar }) {
+export function PainelVital({ tipo, m, onFechar, atalhos = false }) {
   const { derived, sessao, acoes, item } = m;
   const motivo = tipo === "pe" && item && item.tipo !== "teste" ? item.nome : null;
   const [valor, setValor] = useState("");
@@ -210,23 +210,34 @@ export function PainelVital({ tipo, m, onFechar }) {
   const partes = derived.partes?.[{ pv: "hp", pe: "pe", alma: "almaMax", preparo: "pontosPreparo" }[tipo]] ?? null;
   const rotulo = { pv: "Vida", pe: derived.recursoLabel || "Energia", alma: "Alma", preparo: "Preparo", proprio: proprio?.nome ?? "Recurso" }[tipo];
   const faz = (fn) => { const r = fn(); if (r?.erro) setErro(r.erro); else { setErro(null); setValor(""); } };
-  const principal = () => (tipo === "pe" ? acoes.gastar(n, comMotivo ? motivo : null) : tipo === "preparo" ? acoes.gastarPreparo(n)
-    : tipo === "proprio" ? acoes.gastarProprio(n) : acoes.dano(n, tipo === "alma"));
-  const recupera = () => (tipo === "preparo" ? acoes.recuperarPreparo(n) : tipo === "proprio" ? acoes.recuperarProprio(n) : acoes.recuperarPe(n));
+  const principal = (q = n) => (tipo === "pe" ? acoes.gastar(q, comMotivo ? motivo : null) : tipo === "preparo" ? acoes.gastarPreparo(q)
+    : tipo === "proprio" ? acoes.gastarProprio(q) : acoes.dano(q, tipo === "alma"));
+  const recupera = (q = n) => (tipo === "preparo" ? acoes.recuperarPreparo(q) : tipo === "proprio" ? acoes.recuperarProprio(q) : acoes.recuperarPe(q));
+  /* O de volta de cada recurso: Cura na Vida e na Alma, Recuperar no resto. */
+  const volta = (q) => (gasta ? recupera(q) : acoes.cura(q, tipo === "alma"));
   return (
     <div className="m-painel-vital">
       <div className="m-pv-titulo"><b>{rotulo}</b><span className="m-pv-numero">{atual}<small>/{max}</small></span></div>
+      {/* No celular (a folha de baixo da Ficha G2, etapa E5): os atalhos aplicam na hora, sem teclado. */}
+      {atalhos && (
+        <div className="m-pv-atalhos" role="group" aria-label={`Atalhos de ${rotulo}`}>
+          {atalhosDoRecurso(tipo).map((a) => (
+            <button key={a.delta} type="button" className="afty-botao m-botao m-pv-atalho" data-sinal={a.delta < 0 ? "menos" : "mais"}
+              aria-label={`${a.verbo} ${a.n}`} onClick={() => faz(() => (a.delta < 0 ? principal(a.n) : volta(a.n)))}>{a.rotulo}</button>
+          ))}
+        </div>
+      )}
       <div className="m-pv-linha">
         <input className="afty-campo m-campo-num" inputMode="numeric" value={valor} onChange={(e) => setValor(e.target.value.replace(/[^\d]/g, ""))}
-          aria-label={`Valor para ${rotulo}`} placeholder="0" onKeyDown={(e) => { if (e.key === "Enter" && n) faz(principal); }} />
+          aria-label={`Valor para ${rotulo}`} placeholder="0" onKeyDown={(e) => { if (e.key === "Enter" && n) faz(() => principal()); }} />
         {gasta ? (
           <>
-            <button type="button" className="afty-botao m-botao" disabled={!n} onClick={() => faz(principal)}>Gastar</button>
-            <button type="button" className="afty-botao m-botao" disabled={!n} onClick={() => faz(recupera)}>Recuperar</button>
+            <button type="button" className="afty-botao m-botao" disabled={!n} onClick={() => faz(() => principal())}>Gastar</button>
+            <button type="button" className="afty-botao m-botao" disabled={!n} onClick={() => faz(() => recupera())}>Recuperar</button>
           </>
         ) : (
           <>
-            <button type="button" className="afty-botao m-botao m-botao-dano" disabled={!n} onClick={() => faz(principal)}>Dano</button>
+            <button type="button" className="afty-botao m-botao m-botao-dano" disabled={!n} onClick={() => faz(() => principal())}>Dano</button>
             <button type="button" className="afty-botao m-botao m-botao-cura" disabled={!n} onClick={() => faz(() => acoes.cura(n, tipo === "alma"))}>Cura</button>
           </>
         )}

@@ -66,6 +66,20 @@ export function recursos(m) {
   ];
 }
 
+/* Os atalhos do painel de um recurso no celular (etapa E5 do app, 2026-11-19): dois toques para "Vida menos 5", sem abrir o teclado. Menos é o
+   verbo principal do recurso (Dano na Vida e na Alma, Gastar na Energia, no Preparo e no recurso próprio), mais é o de volta (Cura ou Recuperar).
+   O rótulo usa o sinal de menos tipográfico (U+2212). */
+export const ATALHOS_DO_RECURSO = [-1, -5, -10, 1, 5];
+export function atalhosDoRecurso(tipo) {
+  const gasta = tipo === "pe" || tipo === "preparo" || tipo === "proprio";
+  return ATALHOS_DO_RECURSO.map((delta) => ({
+    delta,
+    n: Math.abs(delta),
+    rotulo: `${delta < 0 ? "−" : "+"}${Math.abs(delta)}`,
+    verbo: delta < 0 ? (gasta ? "Gastar" : "Dano") : (gasta ? "Recuperar" : "Cura"),
+  }));
+}
+
 /* ---------------- estados ---------------- */
 export const rotuloOpcao = (l) => String(l ?? "").replace(/^Postura d[oae]s? /, "");
 

@@ -26,7 +26,8 @@ t("o botão ainda se chama '... documentos'", /aria-label=\{open \? "Fechar docu
 t("o botão ainda diz se está aberto", FAB.includes("aria-expanded={open}"), true);
 t("a regra mira o rótulo", CSS.includes('button[aria-label$=" documentos"][aria-expanded="false"]'), true);
 t("a regra recolhe só fechado e só no celular", CSS.includes("transform: translateX(1rem)") && CSS.includes("@media (max-width: 640px)"), true);
-t("a G2 fica de fora", CSS.includes(':not([data-afty-estrutura="g2"])'), true);
+/* 2026-11-19 (etapa E5 do app, decisão do autor de 2026-11-18): a G2 também ganha a aba na borda. */
+t("a G2 também entra", [CSS.includes(':not([data-afty-estrutura="g2"])'), CSS.includes('body:has(#afty-ficha) button[aria-label$=" documentos"][aria-expanded="false"]')], [false, true]);
 t("o CSS aponta para este assert", CSS.includes("t-livros-aba"), true);
 
 /* 2026-11-19: o botão desvia da barra de ações em grupo do Encontro. */

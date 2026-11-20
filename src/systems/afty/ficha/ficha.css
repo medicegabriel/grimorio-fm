@@ -2796,13 +2796,14 @@ button.afty-agora-item:focus-visible { outline: 2px solid var(--afty-destaque); 
    resto fica fora da tela. Tocar na aba abre a pilha, e aberta ele volta ao lugar
    de sempre. O gancho é o `aria-label` do botão, porque o componente não tem
    classe própria. Se o rótulo mudar, a regra deixa de casar e o botão volta ao
-   normal (o `t-livros-aba` avisa). A G2 não entra: ela reserva a trilha dela. */
+   normal (o `t-livros-aba` avisa). Desde 2026-11-19 vale também na G2 (decisão do autor de 2026-11-18, etapa E5 do app):
+   no celular a G2 não reserva trilha ao lado, e o botão redondo cobria a borda direita das linhas. */
 @media (max-width: 640px) {
-  body:has(#afty-ficha:not([data-afty-estrutura="g2"])) div:has(> button[aria-label$=" documentos"]):not(:has(> button[aria-expanded="true"])) {
+  body:has(#afty-ficha) div:has(> button[aria-label$=" documentos"]):not(:has(> button[aria-expanded="true"])) {
     right: 0;
     bottom: 0.75rem;
   }
-  body:has(#afty-ficha:not([data-afty-estrutura="g2"])) button[aria-label$=" documentos"][aria-expanded="false"] {
+  body:has(#afty-ficha) button[aria-label$=" documentos"][aria-expanded="false"] {
     width: 2.75rem;
     height: 2.75rem;
     justify-content: flex-start;

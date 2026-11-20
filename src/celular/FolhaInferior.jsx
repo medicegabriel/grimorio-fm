@@ -11,8 +11,11 @@ import "./celular.css";
  * Fecha pelo véu, pelo Esc e pelo Voltar do aparelho (é uma camada da pilha, camadas.js).
  * Ao abrir, o foco vai para a própria folha, e não para um campo, para o teclado do
  * celular não subir sozinho. Ao fechar, o foco volta para quem abriu.
+ *
+ * `dentro` e `classe` (a Ficha, etapa E5): o portal vai para dentro de outro elemento, embrulhado numa classe, para os tokens e o CSS
+ * do tema valerem na folha. Sem eles, vai para o `<body>` com os tokens do tema Padrão como reserva.
  */
-export default function FolhaInferior({ aberta, onFechar, titulo, rotulo, children }) {
+export default function FolhaInferior({ aberta, onFechar, titulo, rotulo, children, dentro = null, classe = null }) {
   const painel = useRef(null);
   const fechar = useRef(onFechar);
   useEffect(() => { fechar.current = onFechar; });
@@ -34,7 +37,7 @@ export default function FolhaInferior({ aberta, onFechar, titulo, rotulo, childr
   }, [aberta]);
 
   if (!aberta || typeof document === "undefined") return null;
-  return createPortal(
+  const conteudo = (
     <>
       <div className="fm-folha-veu" onClick={() => fechar.current?.()} aria-hidden="true" />
       <div
@@ -49,7 +52,7 @@ export default function FolhaInferior({ aberta, onFechar, titulo, rotulo, childr
         {titulo && <div className="fm-folha-titulo">{titulo}</div>}
         {children}
       </div>
-    </>,
-    document.body,
+    </>
   );
+  return createPortal(classe ? <div className={classe}>{conteudo}</div> : conteudo, dentro ?? document.body);
 }

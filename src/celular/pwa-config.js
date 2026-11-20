@@ -10,3 +10,8 @@ export const CONSULTA_CELULAR = "(max-width: 720px), (max-height: 500px) and (po
 /* O Voltar do aparelho (etapa E2): cada tela e cada painel aberto vira uma entrada do histórico do navegador. Em `false`
    o App volta a trocar de tela só pelo estado do React, como antes de 2026-11-19, sem caçar código. */
 export const PILHA_LIGADA = true;
+
+/* O convite de instalar no iPhone (etapa E4). Desligado por decisão do autor (2026-11-18, "Android primeiro"): o app
+   instalado do iPhone guarda os dados separados do Safari e o login dentro dele ainda não foi provado num aparelho real.
+   Liga só depois que um amigo passar o protocolo de docs/app-celular.md. Para testar antes, `?convite-ios=1` na URL. */
+export const IOS_LIBERADO = false;

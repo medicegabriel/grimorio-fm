@@ -120,15 +120,23 @@ leituras minhas esperam o autor:
 
 ---
 
-## Ficha Final no celular: o botão Livros vira aba na borda (2026-11-08, resolvido na Ficha clássica)
+## App Era de Ouro: a faixa fina da G2 em tema de cabeçalho colorido (achado na etapa E5, 2026-11-19)
+
+A faixa fina do celular (`FinaG2.jsx`, `efeitos-g2.css`) pinta o fundo com `--afty-fundo` e herda o texto do cabeçalho. Num tema
+em que o CSS do usuário pinta o cabeçalho de outra cor e a página é clara (a prévia do Gojo: cabeçalho azul, página `#e9f2fa`), o
+nome e os rótulos saem claro sobre claro. Os números coloridos (Vida, Energia, Alma) continuam legíveis. **Pergunta ao autor:** a
+faixa fina deve seguir o cabeçalho (ganhar a classe que o tema já pinta, como a placa ganhou `.afty-placa`) ou a página (fundo e
+texto da página)?
+
+## Ficha Final no celular: o botão Livros vira aba na borda (2026-11-08, resolvido na Ficha clássica e, em 2026-11-19, na G2)
 
 O botão flutuante do Livro de Regras (`PdfFab.jsx`, em `src/components/`, somente-leitura) cobria o bônus da perícia, o custo de PE e o Crítico na borda direita. Resolvido só em CSS, sem tocar o componente: no celular (até 640 px), dentro da Ficha clássica, ele fica fechado como uma aba de 28 px na borda e volta ao lugar de sempre ao abrir a pilha. Em 390x700 e 360x640, nas abas Ações, Habilidades e Perícias, os alvos cobertos pelo botão foram de 0 a 10 por aba para 0, nas duas rotas. A regra se pendura no `aria-label` (`asserts/t-livros-aba.mjs` avisa se ele mudar).
-**Falta:** a G2 continua com a trilha reservada de 72 px que o autor decidiu antes, e não recebeu a aba. Se o autor quiser a mesma aba nela, é trocar o escopo em `ficha.css`.
+Na G2 a aba entrou em 2026-11-19 (etapa E5 do app, decisão do autor de 2026-11-18), pela mesma regra sem o filtro da estrutura.
 
 ## Ficha Final: G2, aba Efeitos, o que a critique de 2026-11-09 deixou aberto
 
 **Catálogo:** itens de Aptidão (por exemplo Aura Controlada) mostram só "Para Usar, Siga a Regra Completa", sem botão, no mesmo catálogo de itens com "Ativar". Um rótulo curto como "Só Consulta" ajudaria, mas é texto novo e fica para o autor decidir. Em 390 px a busca corta o placeholder ("Buscar pelo nome ou pela fir") e a fileira de filtros do catálogo passa da tela.
-**Cabeçalho G2:** em 390 px os valores colapsam em "Mais 3 valores" sem dizer quais. "Histórico" (menu da barra) e "Histórico da Sessão" (pé da aba) são dois nomes para coisas diferentes.
+**Cabeçalho G2:** em 390 px os valores colapsam em "Mais 3 valores" sem dizer quais (o resto do cabeçalho do celular foi refeito na etapa E5 do app, 2026-11-19). "Histórico" (menu da barra) e "Histórico da Sessão" (pé da aba) são dois nomes para coisas diferentes.
 **Livros:** a aba recolhida do botão Livros vale só na Ficha clássica. A G2 mantém a trilha de 72 px do autor, e o botão volta a cobrir a borda direita nas abas dela.
 
 ## Ficha Final: seleção e aviso em faixa lateral no G2 (2026-11-08)
