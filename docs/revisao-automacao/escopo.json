@@ -297,6 +297,14 @@
     }
   ],
   "modulosAdicionais": {
+    "criador-celular/secoes.js": {
+      "modo": "INTERFACE",
+      "justificativa": "App Era de Ouro, etapa E6 (2026-11-20): ordem e vizinhas das seções do criador no celular e os números da faixa de resumo, lidos do derive; sem catálogo de regra do Livro"
+    },
+    "ui/fontes-toque.js": {
+      "modo": "INTERFACE",
+      "justificativa": "App Era de Ouro, etapa E6 (2026-11-20): toque longo que abre o painel de origem no criador; sem catálogo de regra do Livro"
+    },
     "ficha/ficha-conteudo-aura-drenadora.js": {
       "modo": "INTERFACE",
       "justificativa": "CX3 (2026-11-06): cliente de conteúdo da Aura Drenadora sobre os contratos CL1 e CL2; sem catálogo de regra do Livro"

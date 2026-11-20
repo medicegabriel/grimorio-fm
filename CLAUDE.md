@@ -319,6 +319,7 @@ A interface do Afty está em alguns lugares, e saber qual poupa uma busca:
 | `ficha/` e `ficha/abas/` | a Ficha Final, suas abas de jogo (Ações, Buffs, Equipamentos, Habilidades, Invocações, Perícias) e os painéis `PainelDe*.jsx` |
 | `ui/` | o que criador e ficha compartilham: `fontes.jsx` monta o painel de fontes do hover, mais `vital.jsx`, `TextoRico.jsx` e as bancadas |
 | `src/celular/` | o app de celular (`docs/app-celular.md`): a pilha de telas no histórico (`pilha.js`, `usar-pilha-de-telas.js`, `camadas.js`), a folha de baixo (`FolhaInferior.jsx`) e a consulta única de celular (`pwa-config.js`). Painel novo que abre por toque usa `useCamadaDeVoltar` |
+| `criador-celular/` (no afty) | o criador no celular (etapa E6): o cabeçalho de uma linha, a faixa de resumo, a folha das seções e a camada de CSS presa a `[data-criador]`. A origem por toque longo do criador mora em `ui/fontes-toque.js` |
 | `encontros/telas/` | as telas do Encontro (lista, planejamento, luta do Mestre, painel da criatura 2.5.2) e `encontro-g2.css` |
 | `src/nuvem/sala-ui/` | as telas da Sala (Abrir Sala, Controles, entrada, tela do jogador, painel) e `sala-ui.css` |
 

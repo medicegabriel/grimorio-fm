@@ -1,5 +1,18 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-20 · APP ERA DE OURO, ETAPA E6 (CRIADOR NO CELULAR)
+
+Sexta etapa do plano em `docs/app-celular.md`.
+
+- **Peças novas** em `src/systems/afty/criador-celular/`: `CabecalhoCelular.jsx` (Voltar, seção atual, Salvar com o ponto do rascunho), `ResumoDoCriador.jsx` (Anterior, Vida, recurso, Defesa, CD, Próxima, e a prévia numa folha), `NavegadorDeSecoes.jsx`, `secoes.js` (puro) e `criador-celular.css`. Mais `ui/fontes-toque.js` (a origem por toque longo).
+- **No `AftyCreatureBuilder.jsx`, só ligação** (três imports, `data-criador`, três `max-[720px]:hidden`, o título num `const`, `irParaSecao`). `t-ordem-modulos` e `t-app-entradas` passam.
+- **Medido:** Nome de 1.225 para 206 px do topo, cabeçalho de 150 para 105 px, alvos abaixo de 36 px de 37/70 para 0/68, rótulos abaixo de 11 px de 48 para 0, nas quatro larguras.
+- Dois enganos meus pegos no navegador, registrados para não repetir: a trava do clique do toque longo sobrava quando o Android não solta o clique depois de segurar, e engolia o toque seguinte (agora cada gesto novo zera a trava, e há assert). E a altura mínima de 36 px nos botões virou os quadradinhos de 14 px de Treinado e Mestre em barras de 14 x 36 (agora eles ficam de fora e viram quadrados). Forçar o − e o + a não encolher, numa primeira tentativa, empurrou o + do alocador de atributo para cima do vizinho, e a saída foi uma coluna só para ele.
+- Os dois módulos puros novos (`criador-celular/secoes.js`, `ui/fontes-toque.js`) entraram como INTERFACE em `docs/revisao-automacao/escopo.json`, porque o `t-revisao-g00` recusa módulo de subpasta sem classificação.
+- Verificado: `t-criador-celular.mjs` novo (41, com a Carteira), lint limpo, build, a medição, a varredura das 14 seções em 375 px (sem rolagem lateral), e no navegador a folha das seções, o Anterior e o Próxima, a prévia, o toque longo na faixa e no formulário, o Voltar fechando a folha, e 1280 px sem mudança.
+- **A Carteira coberta no celular** (o autor avisou no meio da etapa): a faixa de totais grudada media 460 de 812 px em uma coluna e cobria as listas, e as sete colunas de uma sessão cortavam o XP e o Ichibuban. Agora a faixa tem três colunas com o card estreito (cerca de 140 px) e as linhas viram duas no celular. Conferido em 375 px com sessões e gastos lançados, e em 1280 px sem mudança. Guia em `docs/afty-carteira.md`.
+- Ficou em `docs/a-fazer.md`: a conversão das classes de texto miúdo, os alvos estreitos de Perícias, Aptidões e Equipamentos, e o peso dos quadrados de Treinado e Mestre.
+
 ## SESSÃO DE 2026-11-19 · APP ERA DE OURO, ETAPA E5 PARTE 2 (FICHA NO CELULAR)
 
 Segunda parte da quinta etapa (`docs/app-celular.md`). O autor voltou a responder no meio dela, então a pergunta nova ficou em `docs/a-fazer.md` em vez de decidida aqui.

@@ -225,6 +225,10 @@ import {
   MARCADORES, TITULOS, alternarMarcador, alternarTitulo, inserirTabela,
 } from "./afty-texto-rico";
 import TextoRico from "./ui/TextoRico";
+/* O criador no celular (etapa E6 do app, docs/app-celular.md): o cabeçalho de uma linha, a faixa de resumo e a lista de seções. */
+import CabecalhoCelular from "./criador-celular/CabecalhoCelular";
+import ResumoDoCriador from "./criador-celular/ResumoDoCriador";
+import { listaDeSecoes } from "./criador-celular/secoes";
 
 /**
  * ============================================================
@@ -1662,16 +1666,45 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
     return () => ro.disconnect();
   }, []);
 
+  /* O substantivo sai do registro de sistemas (Criatura, Personagem), e a marca "· Afty" só aparece onde a divergência
+     `marcaDoSistema` deixa. Autor, 2026-09-10, sobre o /Player dizendo "Editar Criatura · Afty": tirar a marca. */
+  const tituloDoCriador = (() => {
+    const sis = sistemaDaFicha(draft);
+    const pal = palavrasDoSistema(sis);
+    const titulo = isEditing ? `Editar ${pal.Nome}` : `${pal.g("Novo", "Nova")} ${pal.Nome}`;
+    return regraDo(sis, "marcaDoSistema") === "player" ? titulo : `${titulo} · Afty`;
+  })();
+  /* As seções do celular são as mesmas abas da faixa (a Aptidões some no Restringido), e trocar de seção lá volta ao topo. */
+  const secoesDoCelular = listaDeSecoes(abasPrincipais.filter((t) => !(t.id === "aptidoes" && semEnergia)), abasOutros);
+  const irParaSecao = (id) => {
+    setTab(id);
+    setOutrosAberto(false);
+    if (typeof window !== "undefined") window.scrollTo({ top: 0 });
+  };
+
   return (
     /* As primitivas de Addon que ESTA criatura enxerga. Elas descem por contexto
        porque os dois consumidores (`CanalPicker` e `VariavelPicker`) são folhas
        fundas deste arquivo. Ver `ui/usar-primitiva.js`. */
     <PrimitivasDeAddon primitivas={derived.primitivas}>
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950/30 text-white">
+    <div data-criador="" className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950/30 text-white">
       <CamadasDeCorrupcao corrupcao={derived.corrupcao} />
       {/* ===== HEADER ===== */}
       <header ref={headerRef} className="sticky top-0 z-30 bg-slate-950/95 backdrop-blur border-b border-purple-900/50">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+        {/* No celular (até 720 px) a linha de cima e a faixa de abas dão lugar ao `CabecalhoCelular` e ao `ResumoDoCriador`. */}
+        <CabecalhoCelular
+          titulo={tituloDoCriador}
+          secoes={secoesDoCelular}
+          atual={tabAtiva}
+          onIr={irParaSecao}
+          onVoltar={onCancel}
+          onSalvar={handleSave}
+          rotuloSalvar={isEditing ? "Salvar Alterações" : "Criar Ficha"}
+          curtoSalvar={isEditing ? "Salvar" : "Criar"}
+          pendente={!!(rascunho.restaurado || (rascunho.pendente && rascunho.salvoEm))}
+          rascunho={<IndicadorRascunho rascunho={rascunho} />}
+        />
+        <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center gap-x-3 gap-y-2 max-[720px]:hidden">
           <button
             onClick={onCancel}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-sm text-slate-300 transition-colors flex-shrink-0"
@@ -1688,16 +1721,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
             {/* O index.css declara estes estilos fora de @layer. As utilidades
                 importantes preservam a tipografia e a margem do criador. */}
             <h1 className="my-0! font-sans! text-lg! sm:text-xl! font-bold! text-white! tracking-normal! truncate min-w-0">
-              {(() => {
-                /* O substantivo sai do registro de sistemas (Criatura,
-                   Personagem), e a marca "· Afty" só aparece onde a divergência
-                   `marcaDoSistema` deixa. Autor, 2026-09-10, sobre o /Player
-                   dizendo "Editar Criatura · Afty": tirar a marca. */
-                const sis = sistemaDaFicha(draft);
-                const pal = palavrasDoSistema(sis);
-                const titulo = isEditing ? `Editar ${pal.Nome}` : `${pal.g("Novo", "Nova")} ${pal.Nome}`;
-                return regraDo(sis, "marcaDoSistema") === "player" ? titulo : `${titulo} · Afty`;
-              })()}
+              {tituloDoCriador}
             </h1>
           </div>
           <IndicadorRascunho rascunho={rascunho} />
@@ -1711,7 +1735,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
         </div>
 
         {/* Tab strip */}
-        <div className="bg-slate-950/40 border-t border-slate-800/70">
+        <div className="bg-slate-950/40 border-t border-slate-800/70 max-[720px]:hidden">
           <div className="max-w-7xl mx-auto px-4 flex items-center gap-1 py-2" role="tablist" aria-label="Seções">
             <div className="flex min-w-0 gap-1 overflow-x-auto no-scrollbar">
               {abasPrincipais.filter((t) => !(t.id === "aptidoes" && semEnergia)).map((t) => {
@@ -1802,12 +1826,14 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
             </div>
           </div>
         </div>
+        <ResumoDoCriador derived={derived} secoes={secoesDoCelular} atual={tabAtiva} onIr={irParaSecao}
+          previa={<AftyPreview draft={draft} derived={derived} />} />
       </header>
 
       {/* ===== GRID ===== */}
-      <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* preview: no topo no mobile, à direita no desktop */}
-        <aside className="order-first lg:order-last lg:col-span-1">
+      <div className="criador-celular-grade max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* preview: no topo até `lg`, à direita no desktop. No celular (até 720 px) ela sai do fluxo e abre pela faixa de resumo. */}
+        <aside className="order-first lg:order-last lg:col-span-1 max-[720px]:hidden">
           <div className="lg:sticky" style={{ top: "var(--afty-topo, 104px)" }}>
             <AftyPreview draft={draft} derived={derived} />
           </div>

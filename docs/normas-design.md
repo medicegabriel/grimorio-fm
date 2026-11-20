@@ -193,6 +193,7 @@ Toda região de tela é desenhada nos cinco. Faltou um, a tela não está pronta
 | D-87 | No celular, menu e escolha curta abrem na folha de baixo (`src/celular/FolhaInferior.jsx`), e não num menu suspenso preso a um botão: perto do dedo, sem cortar na borda, e o foco vai para a folha, não para um campo |
 | D-88 | Painel de número no celular não abre o teclado sozinho: o foco vai para o painel, e o campo só pega o teclado no toque. No iPhone, campo de texto com 16 px ou mais, senão o Safari dá zoom ao tocar |
 | D-89 | Peça fixa na borda de baixo ou de cima soma a área segura do aparelho (`env(safe-area-inset-bottom)`), para não ficar sob a barra de gestos ou o entalhe |
+| D-105 | No criador, a origem de um número (o painel do hover) abre também por toque longo de 450 ms, só no toque (`ui/fontes-toque.js`). O clique que o gesto solta não aperta o botão, e o próximo toque fecha |
 
 **O app Era de Ouro.** O manifesto e o convite de instalar existem só em `/EraDeOuro` (o app se chama Era de Ouro e abre
 sempre lá). O convite é um cartão só, na lista da Guilda, no celular, fora do app instalado, e "Agora Não" o guarda por 14

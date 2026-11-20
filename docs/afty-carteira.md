@@ -336,6 +336,19 @@ Concessão do Mestre, que continua valendo sem a primitiva permitida.
 
 ---
 
+## A Carteira no celular (2026-11-20)
+
+O autor avisou que, no celular, a Carteira da Guilda ficava coberta. Eram duas coisas:
+- **A faixa de totais cobria as listas.** Com o card abaixo de 20rem ela caía em uma coluna, e os seis totais empilhados mediam
+  460 de 812 px, grudados embaixo do cabeçalho do criador. As sessões e os gastos passavam por baixo. Agora, com o card estreito
+  (`@container carteira (max-width: 34.999rem)`, `AftyTabCarteira.css`), são três colunas de duas linhas, ladrilhos mais justos e
+  o número de 14 px, que pode quebrar no espaço depois do cifrão. A faixa ficou em 127 a 144 px e continua grudando.
+- **As linhas cortavam os números.** As sete colunas de uma sessão em 375 px mostravam o XP 30 como "3" e o 1500 como "150". No
+  celular (até 720 px) cada linha vira duas, pelos ganchos `carteira-grade-entrada` e `carteira-grade-gasto`: o nome inteiro em
+  cima, com a pega e a lixeira, e os números embaixo, sob os rótulos do cabeçalho, que usa a mesma grade.
+
+No computador nada mudou. Travado no `asserts/t-criador-celular.mjs`.
+
 ## A Carteira da Guilda, embutida no personagem da /EraDeOuro (2026-11-09)
 
 O autor pediu, para a extensão /EraDeOuro, *"um sistema similar ao Addon de carteira já embutido

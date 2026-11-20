@@ -1,0 +1,57 @@
+/* ============================================================
+   O CRIADOR NO CELULAR (app Era de Ouro, etapa E6, 2026-11-20)
+   ============================================================
+   Uma camada por cima do Tailwind do criador, sem mexer nas 505 classes de texto miúdo uma a uma (a conversão fica em
+   `docs/a-fazer.md`). TODA regra daqui começa em `[data-criador]`, a raiz do criador, para nada vazar para a Ficha, a lista ou a
+   2.5.2. O `asserts/t-criador-celular.mjs` confere.
+
+   Fora de `@layer` de propósito: as utilidades do Tailwind 4 moram em camada, e uma regra sem camada vence qualquer uma delas, sem
+   `!important`. As medidas são as metas do plano (docs/app-celular.md): nenhuma frase abaixo de 12 px, nenhum rótulo abaixo de
+   11 px, nenhum controle de toque abaixo de 36 px, as ações principais com 44 px.
+   ============================================================ */
+
+@media (max-width: 720px) {
+  /* O texto miúdo sobe para 12 px, e o rótulo em caixa alta (que já é largo) para 11 px. */
+  [data-criador] :is(.text-\[8px\], .text-\[9px\], .text-\[10px\], .text-\[11px\]) { font-size: 12px; }
+  [data-criador] :is(.text-\[8px\], .text-\[9px\], .text-\[10px\], .text-\[11px\]).uppercase { font-size: 11px; }
+  /* O vidro do cabeçalho grudado custa quadro a cada rolagem no telefone, e o fundo quase opaco já escondia o que passava. */
+  [data-criador] > header { backdrop-filter: none; -webkit-backdrop-filter: none; background-color: rgb(2 6 23 / 0.98); }
+  /* A grade perde o respiro de cima: no celular a prévia saiu do fluxo e o formulário começa logo abaixo da faixa de resumo. */
+  [data-criador] .criador-celular-grade { padding-top: 12px; }
+  /* O painel de origem aberto pelo toque longo (`ui/fontes-toque.js`). O `hidden` do Tailwind é de camada, e esta regra vence. */
+  [data-criador] .group[data-fontes-toque] .afty-fontes { display: block; }
+  /* O alocador de atributo (bônus da origem, Ápice Corporal) vinha em três colunas de 96 px, e o − e o + do número caíam para 18 px de
+     largura. No celular ele fica em uma coluna, e o número ganha largura para os dois botões inteiros (36 px cada). */
+  [data-criador] .grid.grid-cols-3:has(> div > .w-\[84px\] > .flex > button[aria-label="Diminuir"]) { grid-template-columns: minmax(0, 1fr); }
+  [data-criador] .w-\[84px\]:has(> .flex > button[aria-label="Diminuir"]) { width: 132px; }
+  /* O número com − e + (`NumberInput`): o campo é `w-full` e espremia os botões até 14 px. No celular quem encolhe é o campo, até
+     40 px, e os botões ficam inteiros. */
+  [data-criador] .flex:has(> button[aria-label="Diminuir"] + input + button[aria-label="Aumentar"]) > button { flex-shrink: 0; }
+  [data-criador] .flex:has(> button[aria-label="Diminuir"] + input + button[aria-label="Aumentar"]) > input { min-width: 40px; }
+  /* Os contadores compactos (− N +, `ContadorCompacto` e `DeltaStepper`) têm botões de 32 px: sobem para 36. */
+  [data-criador] .inline-flex:has(> button[aria-label="Diminuir"] + span + button[aria-label="Aumentar"]) > button { min-width: 36px; }
+  /* Segurar um número com origem não seleciona o texto nem abre o menu do sistema. */
+  [data-criador] .group:has(.afty-fontes) { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+}
+
+/* O dedo: controle com 36 px no mínimo, e o botão só de ícone com 36 de largura também. Só com ponteiro grosso e tela estreita,
+   então o mouse num computador estreito não muda. */
+@media (max-width: 720px) and (pointer: coarse) {
+  /* Os quadradinhos de 14 px (`.h-3.5`) ficam de fora: com só a altura mínima eles viravam barras de 14 x 36. Eles crescem logo abaixo,
+     nas duas direções. */
+  [data-criador] :is(button, select, input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"]), [role="button"], [role="tab"]):not(.h-3, .h-3\.5, .h-4) { min-height: 36px; }
+  [data-criador] button:has(> svg:only-child) { min-width: 36px; }
+  /* O botão quadrado de 24 a 32 px (a barra do texto rico, os níveis) cresce também na largura, para seguir quadrado. */
+  [data-criador] button:is(.w-6, .w-7, .w-8):is(.h-6, .h-7, .h-8) { min-width: 36px; }
+  /* A faixa de vezes (`VezesGauge`, `ui/primitivos.jsx`: Treinado e Mestre, as vezes de um cálculo, os sucessos de um Interlúdio): cada
+     segmento de 14 px vira um quadrado de 36. */
+  [data-criador] span[role="group"] > button.w-3\.5.h-3\.5 { width: 36px; height: 36px; border-radius: 6px; }
+  [data-criador] span[role="group"]:has(> button.w-3\.5.h-3\.5) { gap: 4px; }
+}
+
+/* Só no iPhone (o Safari dá zoom ao focar um campo com menos de 16 px). O `-webkit-touch-callout` só existe no Safari do iOS. */
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 720px) {
+    [data-criador] :is(input:not([type="checkbox"], [type="radio"], [type="range"]), select, textarea) { font-size: 16px; }
+  }
+}

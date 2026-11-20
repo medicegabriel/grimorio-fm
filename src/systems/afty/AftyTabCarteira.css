@@ -29,3 +29,60 @@
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 }
+
+/* ⚠ NO CELULAR A FAIXA COBRIA A CARTEIRA (autor, 2026-11-20: "o Addon de carteira no era de ouro está sendo coberto quando abre
+   ele no celular"). Abaixo de 20rem de card ela caía em uma coluna, e os seis totais empilhados mediam 460 de 812 px, grudados
+   embaixo do cabeçalho: a lista de sessões e a de gastos passavam por baixo deles. Com o card estreito, três colunas de duas
+   linhas, ladrilhos mais justos e o número de 14 px, a faixa fica perto de 150 px e continua grudando. O valor pode quebrar no
+   espaço depois do cifrão, nunca no meio do número. */
+@container carteira (max-width: 34.999rem) {
+  .faixa-carteira__grade {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .faixa-carteira__grade > div {
+    padding: 6px 8px;
+  }
+  .faixa-carteira__grade > div > :first-child {
+    line-height: 1.3;
+  }
+  .faixa-carteira__grade > div > :last-child {
+    font-size: 14px;
+    line-height: 1.25;
+    white-space: normal;
+  }
+}
+
+/* AS LINHAS NO CELULAR (2026-11-20). As sete colunas de uma sessão (pega, Nome, XP, Ichibuban, Focos, Tipo, lixeira) e as seis de
+   um gasto (pega, Nome, Fonte, Tipo, Valor, lixeira) não cabiam em 375 px: o XP 30 aparecia como "3" e o 1500 como "150". No
+   telefone cada linha vira duas, o nome inteiro em cima, com a pega e a lixeira, e os números embaixo. O cabeçalho das colunas
+   usa a mesma grade, então os rótulos ficam em cima dos números. Só a posição muda, a ordem no documento é a mesma. */
+@media (max-width: 720px) {
+  .carteira-grade-entrada {
+    grid-template-columns: 1.25rem minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.7fr) minmax(0, 1.4fr) 1.75rem;
+  }
+  .carteira-grade-entrada > :nth-child(1) { grid-area: 1 / 1; }
+  .carteira-grade-entrada > :nth-child(2) { grid-area: 1 / 2 / 2 / 6; }
+  .carteira-grade-entrada > :nth-child(3) { grid-area: 2 / 2; }
+  .carteira-grade-entrada > :nth-child(4) { grid-area: 2 / 3; }
+  .carteira-grade-entrada > :nth-child(5) { grid-area: 2 / 4; }
+  .carteira-grade-entrada > :nth-child(6) { grid-area: 2 / 5; }
+  .carteira-grade-entrada > :nth-child(7) { grid-area: 1 / 6; }
+
+  .carteira-grade-gasto {
+    grid-template-columns: 1.25rem minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) 1.75rem;
+  }
+  .carteira-grade-gasto > :nth-child(1) { grid-area: 1 / 1; }
+  .carteira-grade-gasto > :nth-child(2) { grid-area: 1 / 2 / 2 / 5; }
+  .carteira-grade-gasto > :nth-child(3) { grid-area: 2 / 2; }
+  .carteira-grade-gasto > :nth-child(4) { grid-area: 2 / 3; }
+  .carteira-grade-gasto > :nth-child(5) { grid-area: 2 / 4; }
+  .carteira-grade-gasto > :nth-child(6) { grid-area: 1 / 5; }
+
+  /* Uma linha de duas fileiras precisa de um fio para não se misturar com a de baixo. O cabeçalho não leva. */
+  :is(.carteira-grade-entrada, .carteira-grade-gasto).group\/linha {
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgb(30 41 59 / 0.7);
+  }
+}
+

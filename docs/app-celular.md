@@ -35,7 +35,7 @@ nenhuma exceção nova em `src/components/`.
 | E3 | Carregamento leve, fase A (telas sob demanda) | feita em 2026-11-19 |
 | E4 | App instalável (manifesto, ícones, convite) | feita em 2026-11-19 |
 | E5 | Ficha no celular | feita em 2026-11-19, em duas partes (cabeçalho, rolagens, folha da Vida, depois Livro, faixa fina, palco e viewport) |
-| E6 | Criador no celular | |
+| E6 | Criador no celular | feita em 2026-11-20 (cabeçalho de uma linha, faixa de resumo, seções na folha, camada de CSS, origem por toque longo) |
 | E7 | Sala no celular | |
 | E8 | Casca da Guilda (barra de baixo, lista do celular, Mais) | |
 | E9 | Sem internet (service worker) | |
@@ -221,6 +221,41 @@ node .audit/app-celular/gerar-icones.mjs --saida <pasta> --previa
   Ciel) ela continua como era, sem cartão e sem o fio de luz. O guia de tema (`ficha-tema.js`, regra 15, superfícies e mapa da G2)
   ensina a mirar só nela.
 
+## O que a E6 mudou
+
+- **O cabeçalho do criador no celular** (`src/systems/afty/criador-celular/CabecalhoCelular.jsx`): até 720 px a linha de cima
+  (Voltar, título, rascunho, Salvar) e a faixa de nove abas dão lugar a uma linha de 56 px: Voltar, o botão da seção atual e
+  Salvar (ou Criar), com um ponto azul quando há rascunho guardado. O botão da seção abre a lista inteira numa folha de baixo
+  (`NavegadorDeSecoes.jsx`), com as principais, o grupo Outros, o título do criador e o aviso do rascunho com o Descartar, que
+  saíram do cabeçalho. Nada some.
+- **A faixa de resumo** (`ResumoDoCriador.jsx`): presa logo abaixo, com Vida, o recurso (Energia ou Estamina), Defesa e CD, e o
+  Anterior e o Próxima nas pontas (`secoes.js`: andam dentro do grupo, então o fim das principais não cai no Outros). Tocar num
+  número abre a prévia inteira (`AftyPreview`) numa folha. Segurar mostra de onde ele vem. A prévia saiu do fluxo no celular,
+  e é por isso que o campo Nome subiu.
+- **A origem pelo toque longo** (`src/systems/afty/ui/fontes-toque.js`, D-82 e D-105): uma escuta no documento, só dentro de
+  `[data-criador]` e só para toque. Segurar 450 ms num número com origem mostra o mesmo painel do hover, o clique do gesto é
+  engolido, arrastar cancela, e o próximo toque fecha. O mouse continua no hover.
+- **A camada de CSS** (`criador-celular/criador-celular.css`, toda regra começa em `[data-criador]`): o texto de 8 a 11 px sobe
+  para 12 px (o rótulo em caixa alta para 11), o cabeçalho perde o vidro, os controles de toque ganham 36 px de altura, os
+  botões quadrados pequenos crescem para 36 px nas duas direções, os segmentos de Treinado e Mestre (`VezesGauge`) viram
+  quadrados de 36 px, o número com − e + deixa o campo encolher em vez dos botões, e o alocador de atributo da origem fica em uma
+  coluna. No iPhone os campos têm 16 px.
+- **No `AftyCreatureBuilder.jsx`, só ligação:** três imports, `data-criador` na raiz, `max-[720px]:hidden` na linha de cima, na
+  faixa de abas e na prévia, o título num `const` (o mesmo texto), e a lista de seções com o `irParaSecao` (troca a aba e volta
+  ao topo).
+- **Medido** (`.audit/app-celular/medicoes/e6-preview.json`, a tela de abertura do criador de personagem, nas quatro larguras):
+  o campo Nome de 1.225 para **206 px** do topo, o cabeçalho fixo de 150 para **105 px**, alvos abaixo de 36 px de 37 de 70 para
+  **0 de 68**, rótulos abaixo de 11 px de 48 para **0**, frases abaixo de 12 px de 6 para 1 (o "Distribuir · Máx 2/Atributo",
+  rótulo em caixa alta de 11 px). Sem rolagem lateral. A métrica "abas inteiras" do script ficou sem sentido no celular, porque
+  a faixa de abas não aparece mais. Em 1280 px nada mudou.
+- **A Carteira no celular** (aviso do autor no meio da etapa: "está sendo coberto"): a faixa de totais caiu de 460 para cerca de
+  140 px (três colunas com o card estreito) e as linhas de sessão e de gasto viraram duas no telefone, sem cortar número.
+  Detalhes em `docs/afty-carteira.md`.
+- **Varrido seção por seção** em 375 px: nenhuma tem rolagem lateral. Oito ficaram sem alvo abaixo de 36 px. Sobram alvos
+  estreitos em Perícias (37, a pontuação de Ofício e os rótulos de atributo entre parênteses), Aptidões (31, os níveis de 21 px de
+  largura) e Equipamentos (17, o − e o + da quantidade com 20 px). Ficam em `docs/a-fazer.md`, junto da conversão das classes de
+  texto miúdo.
+
 ## Protocolos de teste em aparelho real
 
 **Android do autor (a cada etapa de tela)**
@@ -257,6 +292,7 @@ O convite do iPhone só liga se os passos 4 a 7 passarem, ao menos com Google. O
 | O app instalável (E4) | tirar o `link("manifest", ...)` do segundo script do `index.html`: o site deixa de ser instalável e o convite some sozinho, porque o Chrome não entrega mais o pedido. Quem já instalou segue com o ícone, que abre o site |
 | O convite do iPhone | `IOS_LIBERADO` em `src/celular/pwa-config.js` (hoje `false`) |
 | A Ficha G2 no celular (E5) | revert do commit da E5. Só a aba do Livro na G2: voltar o `:not([data-afty-estrutura="g2"])` nas duas regras do `ficha.css`. Só o viewport: apagar o bloco `viewport-fit` do segundo script do `index.html`. Só a barra de rolagens: tirar o `compacto={celular}` do `AftyFichaG2.jsx`. Só a folha do recurso: trocar `celular` por `false` no `CabecalhoG2.jsx` |
+| O criador no celular (E6) | revert do commit da E6. Só a camada de CSS: tirar o import de `criador-celular.css` do `CabecalhoCelular.jsx`. Só o toque longo: tirar o `useEffect` do `CabecalhoCelular.jsx` |
 
 A E9 acrescenta a chave `SW_LIGADO` e o deploy de desligamento do service
 worker.

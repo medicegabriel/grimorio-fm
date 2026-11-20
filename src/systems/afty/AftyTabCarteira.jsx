@@ -110,8 +110,10 @@ import {
    de uma trilha `fr` é `auto`, ou seja, o conteúdo dela, e um `<select>` com
    "Transferência" dentro se recusaria a encolher. Voltaria a barra, pela porta
    dos fundos. */
-const GRADE_ENTRADA = "grid grid-cols-[1.25rem_minmax(0,2.2fr)_minmax(0,0.7fr)_minmax(0,1.1fr)_minmax(0,0.6fr)_minmax(0,1.5fr)_1.75rem] gap-1.5 items-center";
-const GRADE_GASTO = "grid grid-cols-[1.25rem_minmax(0,2fr)_minmax(0,1.4fr)_minmax(0,1.5fr)_minmax(0,1.1fr)_1.75rem] gap-1.5 items-center";
+/* `carteira-grade-entrada` e `carteira-grade-gasto` são os ganchos do celular (`AftyTabCarteira.css`): lá a linha vira duas, o nome
+   em cima e os números embaixo, porque as sete colunas numa largura de 375 px cortavam o XP e o Ichibuban (autor, 2026-11-20). */
+const GRADE_ENTRADA = "carteira-grade-entrada grid grid-cols-[1.25rem_minmax(0,2.2fr)_minmax(0,0.7fr)_minmax(0,1.1fr)_minmax(0,0.6fr)_minmax(0,1.5fr)_1.75rem] gap-1.5 items-center";
+const GRADE_GASTO = "carteira-grade-gasto grid grid-cols-[1.25rem_minmax(0,2fr)_minmax(0,1.4fr)_minmax(0,1.5fr)_minmax(0,1.1fr)_1.75rem] gap-1.5 items-center";
 const CABECALHO = "text-[9px] uppercase tracking-wider text-slate-500";
 /* ⚠ A ALTURA É FIXA, e não sai do `py`. Um `<select>` tem métrica interna
    própria (padding e line-height que o navegador escolhe), então a mesma classe
