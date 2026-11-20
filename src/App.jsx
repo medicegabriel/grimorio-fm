@@ -35,6 +35,11 @@ import { estaInstalado } from "./celular/usar-instalacao";
 import { useCelular } from "./celular/usar-celular";
 import CascaDaGuilda from "./systems/eradeouro/app/CascaDaGuilda";
 import { ABAS_DA_CASCA, abaDaTela, trocaDeAba } from "./systems/eradeouro/app/lista-fichas";
+/* O service worker do app (etapa E9): sem internet depois de uma visita, e o aviso de versão nova. Só na Guilda. */
+import AvisoNovaVersao from "./celular/AvisoNovaVersao";
+import { ativarNovaVersao, desligarServiceWorker, registrarServiceWorker } from "./celular/registrar-sw";
+import { podeRegistrar } from "./celular/sw-regras";
+import { SW_LIGADO } from "./celular/pwa-config";
 
 /* ⚠ AS TELAS PESADAS CHEGAM SOB DEMANDA (etapa E3 do app de celular, 2026-11-19, S-23). Até aqui todas iam no pacote de
    abertura de toda rota: a lista da Guilda no celular baixava 6,6 MB de JavaScript, com os dois criadores, o rastreador e a
@@ -355,6 +360,25 @@ export default function App() {
     Promise.race([subir, new Promise((r) => setTimeout(r, 3000))]).finally(() => location.assign(volta));
   }, [goToDashboard]);
 
+  /* O SERVICE WORKER (etapa E9, 2026-11-20). Registrado depois de montar, só em produção, nos hosts do app e na rota da Guilda
+     (`podeRegistrar`). Uma versão nova que chega com a página velha aberta vira o aviso "Nova Versão", e o toque sobe a nuvem
+     pendente (até 3 s) antes de trocar. Nunca recarrega sozinho. */
+  const [workerNovo, setWorkerNovo] = useState(null);
+  const [atualizando, setAtualizando] = useState(false);
+  useEffect(() => {
+    if (typeof location === "undefined") return undefined;
+    if (!SW_LIGADO) { desligarServiceWorker(); return undefined; }
+    if (!podeRegistrar({ producao: import.meta.env.PROD, hostname: location.hostname, pathname: location.pathname })) return undefined;
+    return registrarServiceWorker({ versao: import.meta.env.VITE_FM_VERSAO, aoNovaVersao: setWorkerNovo });
+  }, []);
+  const atualizarVersao = () => {
+    if (!workerNovo || atualizando) return;
+    setAtualizando(true);
+    ativarNovaVersao(workerNovo, {
+      antes: () => Promise.race([nuvemAtiva ? enviarNuvem() : null, new Promise((r) => setTimeout(r, 3000))]),
+    });
+  };
+
   /* O link da Sala aberto direto no app instalado: o Voltar leva à Guilda, e não fecha o app (`src/celular/inicio-da-sala.js`). */
   useEffect(() => {
     if (!rotaSala || typeof window === "undefined") return undefined;
@@ -657,6 +681,7 @@ export default function App() {
       </div>
       {/* O convite de instalar o app (etapa E4): só na lista da Guilda, no celular. */}
       {mesa && !rotaSala && <ConviteInstalar ativo={view.name === "dashboard"} />}
+      {workerNovo && <AvisoNovaVersao onAtualizar={atualizarVersao} atualizando={atualizando} />}
       {/* ⚠ A RECUSA DO IMPORTADOR PRECISA APARECER. Ficha que some sem dizer
           por que é o defeito que o projeto chama de calado, e seria pior que o
           erro que a porta conserta. O aviso é inline aqui, e não em

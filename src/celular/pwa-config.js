@@ -15,3 +15,8 @@ export const PILHA_LIGADA = true;
    instalado do iPhone guarda os dados separados do Safari e o login dentro dele ainda não foi provado num aparelho real.
    Liga só depois que um amigo passar o protocolo de docs/app-celular.md. Para testar antes, `?convite-ios=1` na URL. */
 export const IOS_LIBERADO = false;
+
+/* O service worker do app (etapa E9): a lista e a Ficha abrem sem internet depois de uma visita. Em `false` a página para de
+   registrar e desregistra o worker deste aparelho na próxima visita. Para desligar de todos os aparelhos de uma vez, sem esperar
+   cada um voltar ao site, o caminho é o deploy com `VITE_SW_DESLIGADO=1` (docs/app-celular.md, "Como desligar"). */
+export const SW_LIGADO = true;

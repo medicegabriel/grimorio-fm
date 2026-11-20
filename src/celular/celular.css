@@ -179,3 +179,22 @@
   padding-left: env(safe-area-inset-left, 0px);
   padding-right: env(safe-area-inset-right, 0px);
 }
+
+/* ============================================================
+   O AVISO DE VERSÃO NOVA (AvisoNovaVersao.jsx, etapa E9)
+   ============================================================
+   Um cartão embaixo, acima do convite de instalar (camada 46 contra 45) e, na casca da Guilda, acima da barra de baixo. */
+.fm-nova-versao {
+  position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 46;
+  display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 14px; border-radius: 14px;
+  background: var(--afty-card, #0f172a); color: var(--afty-texto, #f1f5f9);
+  border: 1px solid var(--afty-destaque, #a855f7); box-shadow: 0 12px 32px rgb(0 0 0 / 0.5);
+}
+.fm-nova-versao-texto { flex: 1; min-width: 0; font-weight: 700; font-size: 15px; }
+.fm-nova-versao-botao {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border: 0; border-radius: 10px;
+  background: var(--afty-destaque, #7e22ce); color: #fff; font-weight: 700; font-size: 14px;
+}
+.fm-nova-versao-botao svg { width: 18px; height: 18px; }
+.fm-nova-versao-botao:disabled { opacity: 0.6; }
+body:has(.fm-barra-inferior) .fm-nova-versao { bottom: calc(60px + 12px + env(safe-area-inset-bottom, 0px)); }

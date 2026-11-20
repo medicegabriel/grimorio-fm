@@ -129,6 +129,11 @@ Vite e suba de novo antes de acreditar no erro.
 são avaliados. Ao tornar uma tela sob demanda, rode `node asserts/t-app-entradas.mjs` e abra cada tela num carregamento novo
 do `npm run preview`, olhando o console.
 
+⚠ **Service worker do app (etapa E9, 2026-11-20).** Ele só existe no build de produção, na rota `/EraDeOuro` (`src/celular/sw-*.js`):
+o `npm run dev` não tem worker. Teste no `npm run preview`, e depois limpe o worker e os caches do navegador de teste
+(`navigator.serviceWorker.getRegistrations()` e `caches.keys()`), senão o `localhost:4173` segue servido pelo guardado. As regras de
+mudança são S-87 e S-88 em `docs/normas-site.md`.
+
 **Lentidão nunca se mede no `npm run dev`.** Lá a mesma ficha custa de 10x a 20x mais JS, e o
 perfil aponta para o Motor (`reavaliarUnica`, `aplicarEfeitos`) sem que ele seja o problema. Meça
 com `npm run build` seguido de `npm run preview`.

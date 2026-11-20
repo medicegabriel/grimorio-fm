@@ -137,6 +137,8 @@ Em ordem. Nada é dado como pronto sem os oito.
 | S-84 | Motor e pacote que depende dele vão no mesmo push |
 | S-85 | Relato de defeito minutos depois de um push: conferir primeiro se o deploy novo já está no ar |
 | S-86 | Sincronizar a base só com a árvore limpa, sem edição concorrente |
+| S-87 | O service worker do app (`src/celular/sw-*.js`, o plugin no `vite.config.js` e o cabeçalho do `/sw.js` no `vercel.json`) muda em push próprio, sem outra mudança junto, para o revert pegar só ele. Antes do push, conferir no `npm run preview`: instala, abre sem internet, e uma página velha recebe o aviso Nova Versão |
+| S-88 | Nunca apagar o `/sw.js` do site nem usar o cabeçalho `Clear-Site-Data: storage` (apagaria as fichas). O worker se desliga por deploy com `VITE_SW_DESLIGADO=1`, que publica um worker que apaga os caches do app e sai. O worker nunca assume sozinho uma versão nova por cima de uma em uso: a troca é pelo toque em Atualizar |
 
 ## 8. O relatório de fim de tarefa
 

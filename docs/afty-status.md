@@ -1,5 +1,15 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-20 · APP ERA DE OURO, ETAPA E9 (SEM INTERNET)
+
+Nona etapa do plano em `docs/app-celular.md`, a última da sequência.
+
+- **Peças novas** em `src/celular/`: `sw-regras.js` (puro: destino de cada pedido, lista de pré-carga, quem registra), `sw-modelo.js` (o worker, um modelo que o build preenche), `sw-plugin.js` (o plugin do `vite.config.js`, com o worker de desligamento), `registrar-sw.js` (registro e troca de versão) e `AvisoNovaVersao.jsx`. `SW_LIGADO` em `pwa-config.js`.
+- **Ligações:** o `vite.config.js` calcula a versão uma vez só (página e worker) e liga o plugin, o `vercel.json` manda nunca guardar o `/sw.js`, e o App registra depois de montar e mostra o aviso.
+- **Dois enganos meus, pegos no teste:** o plugin gravava a lista no `generateBundle`, quando ainda existem os pedaços só de CSS que o Vite apaga depois, e a lista pedia um arquivo que não chega ao servidor (o `addAll` falharia inteiro). Passou para o `writeBundle`. E o worker não casava nenhum arquivo por causa do `Vary: Origin`, e sem internet a página ficava em branco. Passou a usar `ignoreVary`.
+- Verificado: `t-app-sw.mjs` novo (28), lint limpo (o `vite.config.js` ganhou `/* global process */`, o que também tira dois erros antigos da linha de base), e no `npm run preview` a instalação, a falta de internet (servidor desligado), a troca calada, o aviso e o Atualizar, o desligamento e a volta, e `/Player` fora do worker. O worker e os caches do navegador de teste foram apagados no fim.
+- Fica para o Android do autor: o modo avião de verdade com o app instalado, e o aviso depois de um push.
+
 ## SESSÃO DE 2026-11-20 · APP ERA DE OURO, ETAPA E8 (CASCA DA GUILDA)
 
 Oitava etapa do plano em `docs/app-celular.md`.

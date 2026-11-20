@@ -38,7 +38,7 @@ nenhuma exceção nova em `src/components/`.
 | E6 | Criador no celular | feita em 2026-11-20 (cabeçalho de uma linha, faixa de resumo, seções na folha, camada de CSS, origem por toque longo) |
 | E7 | Sala no celular | feita em 2026-11-20 (entrar por código, Editar pela Sala sem janela nova, link no app, painel e botões), verificada por simulação local |
 | E8 | Casca da Guilda (barra de baixo, lista do celular, Mais) | feita em 2026-11-20 (Fichas, Encontros, Sala e Mais na barra de baixo, só em /EraDeOuro no celular) |
-| E9 | Sem internet (service worker) | |
+| E9 | Sem internet (service worker) | feita em 2026-11-20 (a lista, a Ficha, os Encontros e o criador abrem sem internet depois de uma visita, e o aviso Nova Versão) |
 | E10 | Depois: carregamento fase B, iPhone, Encontro | |
 
 ## A linha de base (2026-11-19, site no ar em `0889ed5`)
@@ -313,6 +313,33 @@ node .audit/app-celular/gerar-icones.mjs --saida <pasta> --previa
   por toque longo, o Excluir com confirmação, a Nova Ficha, a Ficha aberta sem a barra, os Livros no leitor e o espaço em uso.
   Em 1280 px o Dashboard de sempre.
 
+## O que a E9 mudou
+
+- **O service worker** (`src/celular/sw-modelo.js`, preenchido no build por `src/celular/sw-plugin.js`, com as regras puras de
+  `src/celular/sw-regras.js`): escopo `/EraDeOuro`. A Sala e as outras rotas seguem só com rede. Sem biblioteca nova.
+- **A pré-carga** (`listaDePrecache`): a página do app, os pedaços que a Guilda alcança a partir da entrada, o CSS e os arquivos
+  deles, o manifesto, os ícones e a Privacidade, num cache `ouro-<versão>`. Ficam de fora os pedaços só da 2.5.2 (o compêndio, o
+  criador e o painel de combate de lá, os Modelos), a página da Sala, a Ficha clássica, os mapas e os PDFs. Hoje são 117 itens
+  e cerca de 4,8 MB. O botão Abrir Sala entra: ele chega por `React.lazy` sem rede de segurança e quebraria o Encontro offline.
+- **O que o worker faz com cada pedido** (`destinoDoPedido`): a navegação vai à rede primeiro, com 3 s de prazo, e cai na página
+  guardada da mesma versão. Os arquivos (`/assets`, ícones, manifesto) vêm do guardado primeiro, e o que faltar vem da rede e é
+  guardado. O resto passa direto: o Supabase, a análise da Vercel, os PDFs e o próprio `/sw.js`.
+- **A troca de versão** (`src/celular/registrar-sw.js`, `AvisoNovaVersao.jsx`): o worker novo nunca assume sozinho. Se a
+  versão dele é a mesma da página (a página já veio da rede), ele assume calado. Se é outra (a página veio do guardado), aparece
+  "Nova Versão" com Atualizar, acima do convite e da barra da Guilda. O toque sobe a nuvem pendente (até 3 s), ativa o worker e
+  recarrega quando ele assume. A página procura versão nova ao voltar para a tela e de hora em hora. A versão é a mesma da página
+  e do worker (`VITE_FM_VERSAO`, os sete primeiros do commit da Vercel, ou uma marca de tempo no build local).
+- **O registro** (`podeRegistrar`): só no build de produção, só nos hosts do app (nunca no endereço antigo da Vercel) e só na
+  rota da Guilda. O `vercel.json` manda nunca guardar o `/sw.js`, e o registro pede `updateViaCache: "none"`.
+- **Um defeito pego no teste:** o servidor responde os arquivos com `Vary: Origin`, e o módulo pedido pela página leva o `Origin`
+  que a cópia da pré-carga não tinha. Nenhum arquivo casava, e sem internet a página ficava em branco. O worker passou a casar
+  com `ignoreVary` (os arquivos de `/assets` têm hash e nunca mudam).
+- **Verificado no build de produção** (`npm run preview`, com o servidor desligado para simular a falta de internet): a
+  instalação (117 itens, escopo `/EraDeOuro`); sem internet, a lista, uma Ficha, os Encontros e o criador; a troca calada (página
+  nova, worker novo, cache velho apagado, sem aviso); o aviso numa página velha aberta do guardado, e o Atualizar recarregando na
+  versão nova; o desligamento (nenhum worker, nenhum cache do app, as fichas intactas) e a volta com um build normal; `/Player`
+  fora do worker.
+
 ## Protocolos de teste em aparelho real
 
 **Android do autor (a cada etapa de tela)**
@@ -325,7 +352,8 @@ node .audit/app-celular/gerar-icones.mjs --saida <pasta> --previa
 - a barra de baixo: trocar de aba, o Voltar caindo na lista, segurar um cartão, o Mais (Importar, Exportar, Livros) (E8);
 - numa Sala de verdade, como jogador: a faixa da luta grudada, o painel da Sala, e o Editar da Ficha abrindo o criador no
   mesmo app e voltando para a Sala ao Salvar e ao Cancelar (E7);
-- depois da E9: modo avião e o "Nova Versão" depois de um push.
+- depois da E9: abrir o app uma vez com internet, pôr em modo avião, fechar e abrir de novo (a lista e uma Ficha), e o
+  "Nova Versão" depois de um push com o app aberto há tempo.
 
 **iPhone (amigos, iOS 16.4 ou mais novo)**
 1. Entrar na conta pelo Safari.
@@ -356,6 +384,7 @@ O convite do iPhone só liga se os passos 4 a 7 passarem, ao menos com Google. O
 | O criador no celular (E6) | revert do commit da E6. Só a camada de CSS: tirar o import de `criador-celular.css` do `CabecalhoCelular.jsx`. Só o toque longo: tirar o `useEffect` do `CabecalhoCelular.jsx` |
 | A Sala no celular (E7) | revert do commit da E7. Só o Editar no mesmo app: trocar `(celular || estaInstalado())` por `false` no `TelaDoJogador.jsx`. Só o início na Guilda: tirar o `useEffect` do `ligarInicioNaGuilda` do `App.jsx`. ⚠ O `import "./ficha.css"` do `AftyFicha.jsx` não sai junto: sem ele a faixa da luta da Sala volta a cobrir a tela |
 | A casca da Guilda (E8) | revert do commit da E8. Só a casca, mantendo o resto: trocar `mesa && celularNaTela && !rotaSala` por `false` no `cascaNoCelular` do `App.jsx` (a Guilda volta ao Dashboard no celular) |
+| O service worker (E9) | ⚠ NUNCA apagar o `/sw.js` nem o plugin (o navegador que não acha o arquivo segue com o worker velho). Para desligar de todos os aparelhos: um deploy com a variável `VITE_SW_DESLIGADO=1` na Vercel, que publica um `sw.js` que apaga os caches do app e se desregistra (as fichas no `localStorage` não são tocadas). Depois de uns dias, tirar a variável volta a ligar. Só neste aparelho, sem deploy: `SW_LIGADO = false` em `src/celular/pwa-config.js` desregistra na próxima visita. Nunca usar o cabeçalho `Clear-Site-Data: storage`, que apagaria as fichas |
 
 A E9 acrescenta a chave `SW_LIGADO` e o deploy de desligamento do service
 worker.
