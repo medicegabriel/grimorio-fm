@@ -1458,6 +1458,10 @@
   .e-g2 :is(.e-busca, .m-busca) .afty-campo { min-height: 44px; }
   .e-g2 :is(.m-valor-botao, .m-meta-num, .afty-atributo-valor) { position: relative; }
   .e-g2 :is(.m-valor-botao, .m-meta-num, .afty-atributo-valor)::after { content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, 44px); height: 44px; transform: translate(-50%, -50%); }
+  /* 2026-11-20 (app Era de Ouro): os botões dentro dos detalhes das abas ("Abrir 22 PE") ficavam com 30 a 32 px, pela regra compacta de
+     abas-g2.css. Com dedo eles crescem a 44 (a classe repetida vence a regra de lá em qualquer ordem de CSS). Os números que rolam não precisam
+     de regra aqui: o `::after` deles (abas-g2.css) já cobre a caixa inteira do `.m-rolar`, de 44 px. */
+  .e-g2.m-aba :is(.m-detalhe, .m-expansao-controle, .m-faixa, .m-corpo) .afty-botao.afty-botao { min-height: 44px; }
 }
 
 /* ========== O CABEÇALHO NO CELULAR (etapa E5 do app Era de Ouro, 2026-11-19) ==========

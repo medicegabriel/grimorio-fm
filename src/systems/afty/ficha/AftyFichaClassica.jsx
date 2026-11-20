@@ -1302,16 +1302,25 @@ export default function AftyFicha({
         title="Desligar o CSS personalizado"
         aria-label="Desligar o CSS personalizado"
         style={{
-          position: "fixed", left: 8, bottom: 8, zIndex: 2147483647,
-          width: 28, height: 28, display: "flex",
+          // 44 px de toque (app Era de Ouro, 2026-11-20) com o mesmo círculo de 28 px à vista, no mesmo lugar.
+          position: "fixed", left: 0, bottom: 0, zIndex: 2147483647,
+          width: 44, height: 44, display: "flex", padding: 0,
           alignItems: "center", justifyContent: "center",
-          borderRadius: 9999, cursor: "pointer",
-          border: "1px solid rgba(148,163,184,0.5)",
-          background: "rgba(15,23,42,0.92)", color: "#e2e8f0",
-          font: "700 13px/1 ui-monospace, monospace",
+          border: 0, background: "transparent", cursor: "pointer",
         }}
       >
-        ×
+        <span
+          aria-hidden="true"
+          style={{
+            width: 28, height: 28, display: "flex",
+            alignItems: "center", justifyContent: "center", borderRadius: 9999,
+            border: "1px solid rgba(148,163,184,0.5)",
+            background: "rgba(15,23,42,0.92)", color: "#e2e8f0",
+            font: "700 13px/1 ui-monospace, monospace",
+          }}
+        >
+          ×
+        </span>
       </button>
     )}
     </>

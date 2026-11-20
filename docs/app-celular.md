@@ -57,7 +57,7 @@ indicado.
 | Campo Nome do criador | a 1.225 px do topo | 300 px ou menos |
 | Cabeçalho fixo do criador | 150 px | 56 px |
 | Abas do criador inteiras na tela | 3 de 8 | navegador de seções |
-| Alvos de toque abaixo de 36 px | lista 4 de 17, Ficha 17 de 54, criador 37 de 70 | nenhum |
+| Alvos de toque abaixo de 36 px | lista 4 de 17, Ficha 17 de 54, criador 37 de 70 (Ficha 0 de 51 depois da E10) | nenhum |
 | Rótulos abaixo de 11 px | lista 7, criador 48 | nenhum |
 | Frases abaixo de 12 px | criador 6 | nenhuma |
 | Título da lista | cortado ("E...") | inteiro |
@@ -372,6 +372,12 @@ Feita em parte em 2026-11-20. O convite do iPhone (`IOS_LIBERADO`) continua desl
   - Os cartões da lista de Encontros: a alça de arrastar, o nome e a pasta com 40 a 44 px.
   - Só no iPhone, os campos do Encontro com 16 px (sem o zoom ao focar).
   - No computador nada muda: as regras valem só com dedo (`pointer: coarse`) ou até 720 px.
+- **Os alvos da Ficha G2 no celular** (depois do push da E10, 2026-11-20). A medição dava 16 a 17 de 51 abaixo de 36 px desde a E5, mas a maior
+  parte era engano do script: os números do cabeçalho, as ajudas e os números que rolam já tinham área de toque de 44 px por `::after`, e o
+  `medir.mjs` olhava só a caixa à vista. Ele passou a somar a área do `::before` e do `::after` (posição absoluta, com conteúdo, que recebe o
+  toque). Sobraram dois de verdade, e os dois cresceram: o botão das expansões ("Abrir 22 PE"), de 32 para 44 px com dedo (a regra compacta de
+  30 px de `abas-g2.css` seguia valendo no toque), e o "×" que desliga o CSS livre, de 28 para 44 px de toque com o mesmo círculo de 28 à
+  vista, no mesmo lugar (G2 e clássica). Medido (`e10b-preview.json`): **0 de 51** nas quatro larguras, o cabeçalho igual (273 px).
 - **Verificado no build de produção** (`npm run preview`): a Guilda abre sem baixar a ponte, o modelo nem o motor; a aba
   Encontros os baixa e mostra a lista; criar um Encontro, recarregar dentro dele (reabre o mesmo); a lista do `/` e os Encontros
   dele; o Planejamento, a luta com seleção e um Dano em grupo em 375 px; a barra e os ícones iguais em 1024 px. Console só com o 404

@@ -59,10 +59,24 @@ function medirNaPagina(tela) {
   const nomeDe = (el) => (el.getAttribute("aria-label") || el.getAttribute("title") || el.textContent || el.getAttribute("placeholder") || el.tagName).trim().replace(/\s+/g, " ").slice(0, 32);
 
   const SELETOR = "button, a[href], input:not([type=hidden]), select, textarea, summary, [role=button], [role=tab], [role=checkbox], [role=menuitem]";
+  /* A área de toque conta a área invisível que o CSS dá por `::before` ou `::after` (posição absoluta, com conteúdo, que recebe o toque). Sem isso os
+     números da G2, que têm 44 px de toque por `::after`, saíam como alvos de 22 px (2026-11-20). */
+  const areaDoPseudo = (el) => {
+    let l = 0, a = 0;
+    for (const p of ["::before", "::after"]) {
+      const s = getComputedStyle(el, p);
+      if (s.content === "none" || s.position !== "absolute" || s.pointerEvents === "none") continue;
+      l = Math.max(l, parseFloat(s.width) || 0);
+      a = Math.max(a, parseFloat(s.height) || 0);
+    }
+    return { l, a };
+  };
   const alvos = [...document.querySelectorAll(SELETOR)].filter(visivel).map((el) => {
     const alvo = el.matches("input[type=checkbox], input[type=radio]") && el.closest("label") ? el.closest("label") : el;
     const r = alvo.getBoundingClientRect();
-    return { nome: nomeDe(el), l: Math.round(r.width), a: Math.round(r.height), menor: Math.min(r.width, r.height) };
+    const p = areaDoPseudo(alvo);
+    const l = Math.max(r.width, p.l), a = Math.max(r.height, p.a);
+    return { nome: nomeDe(el), l: Math.round(l), a: Math.round(a), menor: Math.min(l, a) };
   });
   const pequenos = alvos.filter((x) => x.menor < 36).sort((a, b) => a.menor - b.menor);
 
