@@ -127,7 +127,9 @@ Vite e suba de novo antes de acreditar no erro.
 ⚠ **Tela sob demanda pede abrir a frio** (etapa E3 do app de celular, 2026-11-19). As telas pesadas do `App.jsx` chegam por
 `telaSobDemanda` (`src/celular/sob-demanda.js`), e um import a menos na abertura muda a ordem em que os módulos do motor
 são avaliados. Ao tornar uma tela sob demanda, rode `node asserts/t-app-entradas.mjs` e abra cada tela num carregamento novo
-do `npm run preview`, olhando o console.
+do `npm run preview`, olhando o console. Desde a E10 (2026-11-20) a lista de Encontros chega ao App por uma ponte sob
+demanda (`src/celular/usar-lista-adiada.js`): nunca importe `usar-lista-encontros`, o `modelo` ou o motor no topo do `App.jsx`,
+que eles voltam inteiros (1,5 MB) para a abertura de toda rota. O `t-app-entradas` reprova.
 
 ⚠ **Service worker do app (etapa E9, 2026-11-20).** Ele só existe no build de produção, na rota `/EraDeOuro` (`src/celular/sw-*.js`):
 o `npm run dev` não tem worker. Teste no `npm run preview`, e depois limpe o worker e os caches do navegador de teste

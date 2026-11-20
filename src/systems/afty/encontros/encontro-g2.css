@@ -431,3 +431,53 @@
 .ec-faixa .afty-botao:disabled { opacity: 0.45; cursor: not-allowed; }
 .ec-com-faixa header.afty-cabecalho { top: var(--ec-faixa-h, 0px); }
 @media (max-width: 720px) { .ec-com-faixa header.afty-cabecalho { top: calc(var(--ec-faixa-h, 0px) - var(--afty-cabecalho-recolhido, 0px)); } }
+
+/* ---------- O ENCONTRO NO CELULAR (etapa E10 do app Era de Ouro, 2026-11-20, docs/app-celular.md) ----------
+   Medido em 375 px com dedo: 18 de 32 alvos do Planejamento abaixo de 36 px (os botões só de ícone com 34 px de largura,
+   o menos e o mais da quantidade com 32, o nome do Encontro com 24 e as caixas de seleção da luta com 18), o botão dos
+   Livros por cima da lixeira do combatente e o nome da criatura cortado no Adicionar. */
+@media (pointer: coarse) {
+  .ec-raiz .ec-icone, .ec-raiz .ec-visao-opcao { min-width: 44px; justify-content: center; }
+  .ec-raiz .afty-passo { min-width: 44px; min-height: 44px; }
+  .ec-raiz .ec-titulo-botao { min-height: 44px; }
+  .ec-busca input { align-self: stretch; }
+  /* A caixa de seleção fica com 18 px à vista e ganha uma área de toque invisível de 44 px (o rótulo inteiro marca). */
+  .ec-caixa { position: relative; }
+  .ec-caixa::before { content: ""; position: absolute; inset: -10px; }
+  /* Os cartões da lista de Encontros: a alça de arrastar (24 por 28), o nome (21 de altura) e a pasta (30). */
+  .ec-cartao-topo .ec-alca { width: 44px; height: 44px; }
+  .ec-cartao .ec-cartao-nome { padding-block: 10px; }
+  .ec-cartao-pasta-linha .ec-cartao-pasta { min-height: 44px; }
+}
+/* A barra de grupo da luta no celular: em 375 ela quebrava em quatro linhas soltas (210 px) e cobria as últimas linhas da
+   ordem, porque a coluna só reserva 96 px embaixo. Agora é uma grade: a contagem, o valor e o Limpar em cima, e os seis
+   verbos em três colunas embaixo. A coluna reserva a altura dela. */
+@media (max-width: 720px) {
+  .ec-luta .ec-grupo {
+    left: 12px; right: 12px; width: auto; max-width: none; transform: none;
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+  .ec-luta .ec-grupo > .ec-campo { justify-self: start; }
+  .ec-luta .ec-grupo > button.afty-botao { grid-row: 1; grid-column: 3; }
+  .ec-luta .ec-grupo-verbos { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ec-luta .ec-grupo-verbos .afty-botao { justify-content: center; padding-inline: 6px; white-space: normal; text-align: center; line-height: 1.15; }
+  .ec-luta .ec-grupo-resultado { grid-column: 1 / -1; }
+  .ec-luta[data-grupo] .ec-coluna { padding-bottom: calc(190px + env(safe-area-inset-bottom, 0px)); }
+}
+/* O nome inteiro no Adicionar: a quantidade e o botão descem para a linha de baixo, à direita. */
+@media (max-width: 480px) {
+  .ec-inv-linha { flex-wrap: wrap; row-gap: 6px; }
+  .ec-inv-texto { flex: 1 1 calc(100% - 60px); }
+  .ec-inv-texto + * { margin-left: auto; }
+}
+/* O Livro vira a aba na borda, como na Ficha (ficha.css): o botão redondo cobria a lixeira e o fim das linhas. */
+@media (max-width: 640px) {
+  body:has(.ec-raiz) div:has(> button[aria-label$=" documentos"]):not(:has(> button[aria-expanded="true"])) { right: 0; bottom: 0.75rem; }
+  body:has(.ec-raiz) button[aria-label$=" documentos"][aria-expanded="false"] {
+    width: 2.75rem; height: 2.75rem; justify-content: flex-start; padding-inline-start: 0.25rem; transform: translateX(1rem);
+  }
+}
+/* Só no iPhone (o Safari dá zoom ao focar um campo com menos de 16 px). O `-webkit-touch-callout` só existe no Safari do iOS. */
+@supports (-webkit-touch-callout: none) {
+  .ec-raiz :is(input:not([type="checkbox"], [type="radio"], [type="range"]), select, textarea) { font-size: 16px; }
+}

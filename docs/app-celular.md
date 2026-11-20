@@ -39,7 +39,7 @@ nenhuma exceção nova em `src/components/`.
 | E7 | Sala no celular | feita em 2026-11-20 (entrar por código, Editar pela Sala sem janela nova, link no app, painel e botões), verificada por simulação local |
 | E8 | Casca da Guilda (barra de baixo, lista do celular, Mais) | feita em 2026-11-20 (Fichas, Encontros, Sala e Mais na barra de baixo, só em /EraDeOuro no celular) |
 | E9 | Sem internet (service worker) | feita em 2026-11-20 (a lista, a Ficha, os Encontros e o criador abrem sem internet depois de uma visita, e o aviso Nova Versão) |
-| E10 | Depois: carregamento fase B, iPhone, Encontro | |
+| E10 | Depois: carregamento fase B, iPhone, Encontro | feita em parte em 2026-11-20 (o motor saiu da abertura, e o Encontro ganhou a camada do celular). O convite do iPhone segue desligado, esperando o protocolo |
 
 ## A linha de base (2026-11-19, site no ar em `0889ed5`)
 
@@ -50,8 +50,8 @@ indicado.
 
 | Métrica | Linha de base | Meta do plano |
 |---|---|---|
-| JS da lista da Guilda (descomprimido) | 6.581 KB (2.089 KB depois da E3) | 2,6 MB ou menos (E3), 1,5 MB ou menos (E10) |
-| JS ao abrir uma Ficha | 6.975 KB, +394 KB (2.925 KB, +836 KB depois da E3) | 2,9 MB ou menos ao todo |
+| JS da lista da Guilda (descomprimido) | 6.581 KB (2.089 KB depois da E3, 389 KB depois da E10) | 2,6 MB ou menos (E3), 1,5 MB ou menos (E10) |
+| JS ao abrir uma Ficha | 6.975 KB, +394 KB (2.925 KB, +836 KB depois da E3, 2.767 KB depois da E10) | 2,9 MB ou menos ao todo |
 | Cabeçalho da Ficha G2 | 463 px, 57% da tela (413 px, 51% em 412 px) | 35% ou menos |
 | Número de Vida, Energia e Alma | 16,5 px | 22 px |
 | Campo Nome do criador | a 1.225 px do topo | 300 px ou menos |
@@ -145,7 +145,7 @@ node .audit/app-celular/gerar-icones.mjs --saida <pasta> --previa
 - **Medido** (`.audit/app-celular/medicoes/e3-preview.json`, 375 px): a lista da Guilda caiu de 6.579 KB para 2.089 KB
   de JavaScript. O `index` do build caiu de 4,1 MB para 90 KB.
 - **O que ainda pesa na lista:** o motor (cerca de 1,5 MB), que entra pela lista de Encontros no começo do `App.jsx`.
-  Tirar isso é a fase B (E10).
+  Tirar isso é a fase B (E10), feita em 2026-11-20.
 
 ## O que a E4 mudou
 
@@ -340,6 +340,43 @@ node .audit/app-celular/gerar-icones.mjs --saida <pasta> --previa
   versão nova; o desligamento (nenhum worker, nenhum cache do app, as fichas intactas) e a volta com um build normal; `/Player`
   fora do worker.
 
+## O que a E10 mudou
+
+Feita em parte em 2026-11-20. O convite do iPhone (`IOS_LIBERADO`) continua desligado até um amigo passar o protocolo abaixo.
+
+- **O motor fora da abertura** (fase B do carregamento). O `App.jsx` importava o gancho da lista de Encontros
+  (`usar-lista-encontros.js`), e ele puxa o `modelo`, os motores e o motor inteiro do Afty: cerca de 1,5 MB de JavaScript no pacote
+  de abertura de toda rota, mesmo para quem só abre a lista de fichas. Agora o App recebe a lista por uma **ponte sob demanda**
+  (`src/celular/usar-lista-adiada.js` e `encontros/PonteDaLista.jsx`). A ponte roda o gancho de sempre (a migração do site, a
+  leitura, a gravação e o aviso de cota não mudaram) e entrega a lista ao App a cada mudança.
+- **Quando a ponte liga:** na primeira tela de Encontro (a lista ou um Encontro), e com conta, quando o navegador fica ocioso depois da
+  abertura, para a busca das Salas fechadas (`sala-fechamento`) ter onde pôr o Encontro Finalizado. Depois de ligada, ela fica.
+  Até chegar, a lista é a de espera (`listaDeEspera`): vazia, com `pronto` em false e as ações sem efeito. As duas telas de Encontro
+  mostram o Carregando até o `pronto`, e a busca das Salas fechadas também espera por ele. Recarregar dentro de um Encontro o reabre:
+  o `telaPodeReabrir` aceita o Encontro enquanto a lista não chegou, e a própria tela diz se ele sumiu.
+- **O medidor de armazenamento** do Dashboard recebe os Encontros só para saber quando recalcular (ele lê o `localStorage` inteiro),
+  então a lista vazia até a ponte chegar não muda o número.
+- **Medido** (`.audit/app-celular/medicoes/e10-preview.json`, nas quatro larguras): a lista da Guilda caiu de 2.112 KB para
+  **389 KB** de JavaScript (a meta era 1,5 MB), e abrir uma Ficha, de 2.951 KB para 2.767 KB. O resto igual à E8. O grafo estático
+  a partir do `main.jsx` não alcança mais o motor, e o `t-app-entradas` reprova se voltar a alcançar.
+- **O Encontro no celular** (o bloco "O ENCONTRO NO CELULAR" no fim de `encontro-g2.css`). Medido em 375 px com dedo, antes e
+  depois:
+  - Planejamento: alvos abaixo de 36 px de 18 de 32 para 1 (o campo da busca, com 34 px, dentro de um rótulo de 44 que recebe o
+    toque). Os botões só de ícone e as opções de Visão passaram de 34 para 44 px de largura, o menos e o mais da quantidade de 32
+    para 44, e o nome do Encontro de 24 para 44 de altura.
+  - O nome da criatura no Adicionar aparece inteiro: até 480 px, a quantidade e o Adicionar descem para a linha de baixo.
+  - O botão dos Livros vira a aba na borda (a mesma da Ficha) até 640 px. Antes ele cobria a lixeira do combatente.
+  - Luta: a barra de grupo virou grade (a contagem, o valor e o Limpar em cima, os seis verbos em três colunas), de 210 para
+    160 px de altura, e a coluna reserva 190 px embaixo enquanto ela aparece. Antes ela cobria as últimas linhas da ordem.
+  - As caixas de seleção da luta e da lista seguem com 18 px à vista e ganharam uma área de toque invisível de 44 px.
+  - Os cartões da lista de Encontros: a alça de arrastar, o nome e a pasta com 40 a 44 px.
+  - Só no iPhone, os campos do Encontro com 16 px (sem o zoom ao focar).
+  - No computador nada muda: as regras valem só com dedo (`pointer: coarse`) ou até 720 px.
+- **Verificado no build de produção** (`npm run preview`): a Guilda abre sem baixar a ponte, o modelo nem o motor; a aba
+  Encontros os baixa e mostra a lista; criar um Encontro, recarregar dentro dele (reabre o mesmo); a lista do `/` e os Encontros
+  dele; o Planejamento, a luta com seleção e um Dano em grupo em 375 px; a barra e os ícones iguais em 1024 px. Console só com o 404
+  da análise da Vercel, que não existe fora dela.
+
 ## Protocolos de teste em aparelho real
 
 **Android do autor (a cada etapa de tela)**
@@ -385,6 +422,7 @@ O convite do iPhone só liga se os passos 4 a 7 passarem, ao menos com Google. O
 | A Sala no celular (E7) | revert do commit da E7. Só o Editar no mesmo app: trocar `(celular || estaInstalado())` por `false` no `TelaDoJogador.jsx`. Só o início na Guilda: tirar o `useEffect` do `ligarInicioNaGuilda` do `App.jsx`. ⚠ O `import "./ficha.css"` do `AftyFicha.jsx` não sai junto: sem ele a faixa da luta da Sala volta a cobrir a tela |
 | A casca da Guilda (E8) | revert do commit da E8. Só a casca, mantendo o resto: trocar `mesa && celularNaTela && !rotaSala` por `false` no `cascaNoCelular` do `App.jsx` (a Guilda volta ao Dashboard no celular) |
 | O service worker (E9) | ⚠ NUNCA apagar o `/sw.js` nem o plugin (o navegador que não acha o arquivo segue com o worker velho). Para desligar de todos os aparelhos: um deploy com a variável `VITE_SW_DESLIGADO=1` na Vercel, que publica um `sw.js` que apaga os caches do app e se desregistra (as fichas no `localStorage` não são tocadas). Depois de uns dias, tirar a variável volta a ligar. Só neste aparelho, sem deploy: `SW_LIGADO = false` em `src/celular/pwa-config.js` desregistra na próxima visita. Nunca usar o cabeçalho `Clear-Site-Data: storage`, que apagaria as fichas |
+| A lista sob demanda e o Encontro no celular (E10) | revert do commit da E10. Só a camada do Encontro, mantendo a lista sob demanda: apagar o bloco "O ENCONTRO NO CELULAR" do fim do `encontro-g2.css` |
 
 A E9 acrescenta a chave `SW_LIGADO` e o deploy de desligamento do service
 worker.

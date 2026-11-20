@@ -70,5 +70,43 @@ t("a reescrita não cobre /assets", VERCEL.rewrites?.[0]?.source, "/((?!assets/)
    `.afty-ficha { min-height: 100dvh }` vencia a faixa da luta (mesma especificidade, ganha a ordem). */
 t("o ficha.css entra pela Ficha da abertura", lê("../src/systems/afty/ficha/AftyFicha.jsx").includes('import "./ficha.css";'), true);
 t("e a Ficha entra no App por import direto", /^import AftyFicha from "\.\/systems\/afty\/ficha\/AftyFicha";/m.test(lê("../src/App.jsx")), true);
+
+/* ---------- Etapa E10 (2026-11-20): o motor fora da abertura ----------
+   A lista de Encontros chega por uma ponte sob demanda. O grafo de imports estáticos a partir do `main.jsx` não pode alcançar
+   o motor: se alcançar, ele volta inteiro (cerca de 1,5 MB) para o pacote de abertura de toda rota. */
+const { existsSync, statSync } = await import("node:fs");
+const { fileURLToPath } = await import("node:url");
+const path = await import("node:path");
+const resolver = (de, s) => {
+  if (!s.startsWith(".")) return null;
+  const b = path.resolve(path.dirname(de), s);
+  return [b, `${b}.js`, `${b}.jsx`].find((c) => existsSync(c) && statSync(c).isFile()) ?? null;
+};
+const raizSrc = fileURLToPath(new URL("../src/", import.meta.url));
+const alcancados = new Set([path.join(raizSrc, "main.jsx")]);
+for (const f of alcancados) {
+  if (!/\.jsx?$/.test(f)) continue;
+  const texto = readFileSync(f, "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+  for (const m of texto.matchAll(/^\s*(?:import|export)\s[^;]*?from\s*["']([^"']+)["']|^\s*import\s*["']([^"']+)["']/gm)) {
+    const r = resolver(f, m[1] ?? m[2]);
+    if (r) alcancados.add(r);
+  }
+}
+const relDoSrc = (x) => path.relative(raizSrc, x).split(path.sep).join("/");
+const naAbertura = [...alcancados].map(relDoSrc);
+t("a abertura não alcança o motor", naAbertura.filter((x) => /afty-derive|afty-habilidades|encontros\/modelo|encontros\/motores|ficha\/ficha-sessao|usar-lista-encontros/.test(x)), []);
+t("a abertura chega à ponte só sob demanda", [naAbertura.includes("celular/usar-lista-adiada.js"), naAbertura.includes("systems/afty/encontros/PonteDaLista.jsx")], [true, false]);
+const ADIADA = lê("../src/celular/usar-lista-adiada.js");
+t("a ponte é import sob demanda", ADIADA.includes('React.lazy(() => import("../systems/afty/encontros/PonteDaLista"))'), true);
+const { listaDeEspera } = await import(new URL("../src/celular/usar-lista-adiada.js", import.meta.url).href);
+const GANCHO = lê("../src/systems/afty/encontros/usar-lista-encontros.js").replace(/\r\n/g, "\n");
+// O `return { ... }` do fim do gancho, com as chaves que ele entrega ao App.
+const doGancho = GANCHO.slice(GANCHO.lastIndexOf("  return {\n") + 11, GANCHO.lastIndexOf("\n  };"))
+  .split(/,/).map((x) => x.replace(/:[\s\S]*$/, "").trim()).filter(Boolean).sort();
+t("a lista de espera tem as mesmas chaves do gancho, mais o pronto", Object.keys(listaDeEspera("eradeouro")).filter((k) => k !== "pronto").sort(), doGancho);
+t("a lista de espera não grava nada", [listaDeEspera("x").pronto, listaDeEspera("x").criar(), listaDeEspera("x").encontros], [false, null, []]);
+t("as telas de Encontro esperam a lista", [APP.includes("if (!listaPronta) return <Carregando />;"), APP.includes("encounters: () => (!listaPronta ? <Carregando /> :")], [true, true]);
+t("o fechamento da Sala espera a lista de verdade", APP.includes("if (rotaSala || !listaPronta) return undefined;"), true);
+t("um Encontro guardado no histórico reabre antes de a lista chegar", APP.includes('if (t.name === "encounter") return !listaEncontros.pronto ||'), true);
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 process.exitCode = bad.length ? 1 : 0;

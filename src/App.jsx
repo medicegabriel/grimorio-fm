@@ -2,7 +2,7 @@ import React, { useState, useCallback, useMemo, useEffect, useRef } from "react"
 import { AlertTriangle } from "lucide-react";
 import Dashboard from "./components/Dashboard";
 import AftyFicha from "./systems/afty/ficha/AftyFicha";
-import useListaDeEncontros from "./systems/afty/encontros/usar-lista-encontros";
+import { quandoOcioso, useListaAdiada } from "./celular/usar-lista-adiada";
 import { grupoDaRota } from "./systems/afty/encontros/listas";
 import PdfFab from "./components/PdfFab";
 import useCreatureStorage from "./components/useCreatureStorage";
@@ -177,8 +177,26 @@ export default function App() {
   // roda nos dois modos porque hook não pode ser condicional; fora do /Afty ele
   // só lê uma chave vazia.
   /* AS TRÊS LISTAS (plano aprovado, 2026-11-17): `/` e `/Player` são a lista do site (`afty_encontros_site_v1`), o `/Afty` e a
-     Guilda seguem nas chaves deles, agora no formato novo. Na rota da Sala a lista fica desligada (não migra nem grava). */
-  const listaEncontros = useListaDeEncontros(grupoDaRota(rotaId), { ativo: !rotaSala });
+     Guilda seguem nas chaves deles, agora no formato novo. Na rota da Sala a lista fica desligada (não migra nem grava).
+     A lista chega por uma ponte sob demanda (etapa E10): o gancho dela puxa o motor inteiro, que saiu da abertura. Até chegar,
+     `pronto` é false e as telas de Encontro mostram o Carregando. */
+  const [querLista, setQuerLista] = useState(false);
+  const [listaEncontros, ponteDaLista] = useListaAdiada(grupoDaRota(rotaId), { ativo: !rotaSala, quer: querLista });
+  const listaPronta = listaEncontros.pronto;
+
+  /* Com conta, a busca das Salas fechadas (abaixo) pede a lista quando o navegador fica ocioso, fora da abertura (E10). */
+  const [vezDoFechamento, setVezDoFechamento] = useState(false);
+  useEffect(() => {
+    if (rotaSala) return undefined;
+    let cancelar = null;
+    const tentar = () => {
+      if (cancelar || !lerEstadoNuvem().usuario) return;
+      cancelar = quandoOcioso(() => setVezDoFechamento(true));
+    };
+    tentar();
+    const sair = ouvirNuvem(tentar);
+    return () => { sair(); cancelar?.(); };
+  }, [rotaSala]);
 
   /* O AUSENTE NO FECHAMENTO (etapa 7b): no primeiro carregamento com a conta, as Salas fechadas que ainda não estão na lista
      recebem o Encontro Finalizado e a sessão final dos personagens. A lista desta rota recebe pelo `importar`, as outras
@@ -187,7 +205,8 @@ export default function App() {
   const grupoDaLista = listaEncontros.grupo;
   const listaAtiva = !rotaSala;
   useEffect(() => {
-    if (rotaSala) return undefined;
+    // Espera a lista de verdade: com a de espera o `importar` não faria nada e o Encontro Finalizado se perderia.
+    if (rotaSala || !listaPronta) return undefined;
     let vivo = true;
     const tentar = () => {
       if (!vivo || !lerEstadoNuvem().usuario) return;
@@ -199,7 +218,7 @@ export default function App() {
     tentar();
     const sair = ouvirNuvem(tentar);
     return () => { vivo = false; sair(); };
-  }, [rotaSala, listaAtiva, grupoDaLista, importarNaLista]);
+  }, [rotaSala, listaPronta, listaAtiva, grupoDaLista, importarNaLista]);
 
   /* ⚠ A TELA MORA NO HISTÓRICO DO NAVEGADOR (etapa E2 do app de celular, 2026-11-19, docs/app-celular.md). Até aqui era um
      `useState` solto, e o Voltar do celular saía do site no meio de uma Ficha. Agora `ir` empilha, `substituir` troca e
@@ -212,10 +231,13 @@ export default function App() {
     if (t.name === "aftyFicha") return !!ficha && !!sistemaGravado(ficha);
     if (t.name === "tracker") return !!ficha && !sistemaGravado(ficha);
     if (t.name === "builder") return t.creatureId ? !!ficha && !!sistemaGravado(ficha) : aftyMode;
-    if (t.name === "encounter") return listaEncontros.encontros.some((e) => e.id === t.encounterId);
+    // Na abertura a lista ainda não chegou: o Encontro reabre, e a própria tela dele diz se ele sumiu.
+    if (t.name === "encounter") return !listaEncontros.pronto || listaEncontros.encontros.some((e) => e.id === t.encounterId);
     return true;
   };
   const { tela: view, ir, substituir, voltar } = usePilhaDeTelas({ existe: telaPodeReabrir });
+  // A primeira tela de Encontro (ou a vez do fechamento) liga a ponte da lista, e ela fica ligada.
+  if (!querLista && (view.name === "encounter" || view.name === "encounters" || vezDoFechamento)) setQuerLista(true);
   // O telefone de agora (a consulta única do app, que também pega o celular deitado). Decide a casca da Guilda (etapa E8).
   const celularNaTela = useCelular();
   // A Guilda pergunta criatura ou personagem antes de abrir o criador.
@@ -621,6 +643,7 @@ export default function App() {
         substituir({ name: "encounters" });
         return null;
       }
+      if (!listaPronta) return <Carregando />;
       return (
         <EncontroTela
           encontroId={view.encounterId}
@@ -635,7 +658,7 @@ export default function App() {
         />
       );
     },
-    encounters: () => (
+    encounters: () => (!listaPronta ? <Carregando /> :
       <ListaDeEncontros lista={listaEncontros} onAbrir={goToEncounter} onVoltar={goToDashboard} semVoltar={cascaNoCelular} />
     ),
     templates: () => (
@@ -679,6 +702,8 @@ export default function App() {
           </footer>
         )}
       </div>
+      {/* A lista de Encontros chega por aqui, sob demanda (etapa E10). Não desenha nada. */}
+      {ponteDaLista}
       {/* O convite de instalar o app (etapa E4): só na lista da Guilda, no celular. */}
       {mesa && !rotaSala && <ConviteInstalar ativo={view.name === "dashboard"} />}
       {workerNovo && <AvisoNovaVersao onAtualizar={atualizarVersao} atualizando={atualizando} />}

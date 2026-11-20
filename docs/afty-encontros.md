@@ -342,7 +342,9 @@ apagou volta na próxima rodada, porque a chave antiga ainda o tem.
 
 Tudo em `encontros/telas/`, com o CSS em `encontros/encontro-g2.css`. A raiz de cada tela é `.afty-ficha` sem tema (os tokens do padrão)
 mais `.ec-raiz`, que é onde os diálogos entram por portal. Cor só por token `--afty-*`, e os derivados `--ec-*` seguem as fórmulas dos `--e-*`
-do G2.
+do G2. O fim do CSS tem a camada do celular (etapa E10 do app, 2026-11-20, `docs/app-celular.md`): alvos de 44 px com dedo,
+a barra de grupo da luta em grade até 720 px, o Adicionar em duas linhas até 480 px e o botão dos Livros como aba na borda até 640 px.
+No App a lista de Encontros chega por uma ponte sob demanda (`src/celular/usar-lista-adiada.js`), com `pronto` em false até chegar.
 
 | Arquivo | O que é |
 |---|---|
