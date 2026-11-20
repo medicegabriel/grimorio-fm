@@ -8,8 +8,8 @@ Segunda parte da quinta etapa (`docs/app-celular.md`). O autor voltou a responde
 - **Faixa fina com botões** (`FinaG2` com `onAbrir`, `pedidoVital` no `CabecalhoG2`, atendido no render para o lint de efeitos): tocar no número abre a folha do recurso.
 - **Palco pelo cabeçalho recolhido** (`--afty-ficha-topo-recolhido`): a lista de Habilidades e Efeitos foi de 533 para 757 px em 812. A página rolava 51 px além do cabeçalho por duas causas, achadas medindo: o corpo e a camada de ambiente (`::before`) com a altura da tela, e um texto de leitor de tela ancorado fora da lista que rola.
 - **Viewport do app** (`index.html`, só em `/EraDeOuro`): `viewport-fit=cover`, `interactive-widget=resizes-content` e `data-fm-app` com o recuo lateral pela área segura.
-- **Achado e anotado, sem mexer:** a faixa fina num tema de cabeçalho colorido sai claro sobre claro (pergunta em `docs/a-fazer.md`).
-- Verificado: `t-g2-celular` (28), `t-app-instalavel` (61), `t-livros-aba` (10), `t-app-rotas`, `t-ordem-modulos`, lint limpo, build, a medição nas quatro larguras (`e5b-preview.json`), e no navegador em 375 e 1280 px.
+- **A faixa fina segue o cabeçalho** (o autor respondeu "Seguir o Cabeçalho" na mesma sessão): ela e os recursos dela levam as classes do cabeçalho e do recurso da placa, e o tema os pinta igual. Conferido no Gojo (azul com pastilhas brancas, legível) e no Ciel (como era).
+- Verificado: `t-g2-celular` (31), `t-app-instalavel` (61), `t-livros-aba` (10), `t-app-rotas`, `t-ordem-modulos`, lint limpo, build, a medição nas quatro larguras (`e5b-preview.json`), e no navegador em 375 e 1280 px.
 
 ## SESSÃO DE 2026-11-19 · APP ERA DE OURO, ETAPA E5 PARTE 1 (FICHA NO CELULAR)
 

@@ -1402,6 +1402,9 @@
 /* A faixa fina do telefone (`FinaG2.jsx`): nome e números dos recursos, presa logo abaixo do cabeçalho quando a placa saiu de vista. Fora do fluxo, então
    aparecer não muda a altura de nada. */
 .e-fina { display: none; }
+/* A faixa leva `.afty-cabecalho` para o tema pintá-la como o cabeçalho (2026-11-19). O fio de luz do `::after` fica na faixa de cima, como na placa,
+   e um tema que o queira na faixa fina escreve .afty-faixa-fina::after. */
+.afty-faixa-fina:where(.e-ficha-g2 *)::after { display: none; }
 @media (max-width: 720px) {
   .e-ficha-g2 .e-fina[data-visivel] { position: absolute; left: 0; right: 0; top: 100%; z-index: 1; display: flex; align-items: baseline; gap: 14px; height: 30px; padding: 0 14px; background: var(--afty-fundo); border-bottom: 1px solid var(--e-linha); }
   .e-fina-nome { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 var(--e-fs-corpo, 13.5px) var(--e-display); font-stretch: semi-condensed; color: var(--e-t1); align-self: center; }
@@ -1413,6 +1416,11 @@
   .e-fina-rec[data-tipo="alma"] b { color: var(--afty-alma); }
   .e-fina-rec[data-tipo="preparo"] b { color: var(--e-ativo); }
   .e-fina-rec[data-tipo="proprio"] b { color: var(--afty-proprio); }
+  /* Os recursos da faixa levam as classes do recurso da placa (2026-11-19), para o tema os pintar igual. Sem tema, a faixa continua como era: sem
+     cartão, rótulo em caixa normal e número sem a caixa de campo. Um tema vence estas linhas pela especificidade do bloco dele. */
+  .e-ficha-g2 .e-fina-rec.afty-vital { border: 0; border-radius: calc(var(--afty-raio, 12px) * 6 / 12); background: none; padding: 0 6px; box-shadow: none; }
+  .e-ficha-g2 .e-fina-rec .afty-vital-rotulo { text-transform: none; letter-spacing: normal; font-weight: 400; }
+  .e-ficha-g2 .e-fina-rec .afty-vital-numero { width: auto; min-height: 0; padding: 0; border: 0; background: none; text-align: start; }
 }
 @media (max-width: 379px) {
   .e-ficha-g2 .e-fina[data-n="4"] { gap: 10px; justify-content: space-between; }

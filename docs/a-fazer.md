@@ -120,14 +120,6 @@ leituras minhas esperam o autor:
 
 ---
 
-## App Era de Ouro: a faixa fina da G2 em tema de cabeçalho colorido (achado na etapa E5, 2026-11-19)
-
-A faixa fina do celular (`FinaG2.jsx`, `efeitos-g2.css`) pinta o fundo com `--afty-fundo` e herda o texto do cabeçalho. Num tema
-em que o CSS do usuário pinta o cabeçalho de outra cor e a página é clara (a prévia do Gojo: cabeçalho azul, página `#e9f2fa`), o
-nome e os rótulos saem claro sobre claro. Os números coloridos (Vida, Energia, Alma) continuam legíveis. **Pergunta ao autor:** a
-faixa fina deve seguir o cabeçalho (ganhar a classe que o tema já pinta, como a placa ganhou `.afty-placa`) ou a página (fundo e
-texto da página)?
-
 ## Ficha Final no celular: o botão Livros vira aba na borda (2026-11-08, resolvido na Ficha clássica e, em 2026-11-19, na G2)
 
 O botão flutuante do Livro de Regras (`PdfFab.jsx`, em `src/components/`, somente-leitura) cobria o bônus da perícia, o custo de PE e o Crítico na borda direita. Resolvido só em CSS, sem tocar o componente: no celular (até 640 px), dentro da Ficha clássica, ele fica fechado como uma aba de 28 px na borda e volta ao lugar de sempre ao abrir a pilha. Em 390x700 e 360x640, nas abas Ações, Habilidades e Perícias, os alvos cobertos pelo botão foram de 0 a 10 por aba para 0, nas duas rotas. A regra se pendura no `aria-label` (`asserts/t-livros-aba.mjs` avisa se ele mudar).

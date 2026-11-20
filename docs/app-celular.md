@@ -214,9 +214,12 @@ node .audit/app-celular/gerar-icones.mjs --saida <pasta> --previa
   lateral, instalável. No navegador em 375 px: o palco de 47 a 804 px com a busca à vista, a aba do Livro com 28 px à mostra, a
   faixa fina com botões de 44 px, a Vida de 194 para 189 com −5, o Voltar fechando a folha, e o mesmo recurso reabrindo. Em
   1280 px nada mudou (palco, Livro redondo, sem faixa fina).
-- **Achado, não mexido:** num tema com cabeçalho colorido e fundo claro (a prévia do Gojo), a faixa fina pinta o fundo da página
-  (`--afty-fundo`) com o texto do cabeçalho, claro sobre claro. É de 2026-11-09 e toca o contrato de tema, então está em
-  `docs/a-fazer.md` esperando o autor.
+- **A faixa fina segue o cabeçalho** (autor, 2026-11-19, "Seguir o Cabeçalho"): num tema com cabeçalho colorido e página clara
+  (a prévia do Gojo) ela pintava o fundo da página com o texto do cabeçalho, claro sobre claro. Agora ela leva `.afty-cabecalho` e
+  o nome de contrato `.afty-faixa-fina`, como a placa leva `.afty-placa`, e cada recurso leva as classes do recurso da placa
+  (`.afty-vital`, `data-afty-vital`, rótulo e número). No Gojo a faixa ficou azul com as pastilhas brancas da placa. Sem tema (o
+  Ciel) ela continua como era, sem cartão e sem o fio de luz. O guia de tema (`ficha-tema.js`, regra 15, superfícies e mapa da G2)
+  ensina a mirar só nela.
 
 ## Protocolos de teste em aparelho real
 

@@ -86,6 +86,11 @@ t("os números da faixa fina são botões que pedem a folha", [FINA.includes("on
 t("o cabeçalho atende o pedido só no celular", [CAB.includes("if (pedidoVital !== pedidoVisto) {"), CAB.includes("if (pedidoVital && celular) setVital({ tipo: pedidoVital.tipo, ancora: null });")], [true, true]);
 t("os botões da faixa fina têm 44 px", [/\.e-fina\[data-visivel\] \{ height: 44px/.test(e5), /button\.e-fina-rec \{[^}]*min-height: 44px[^}]*min-width: 44px/.test(e5)], [true, true]);
 t("o palco do celular mede pelo cabeçalho recolhido", [G2.includes('"--afty-ficha-topo-recolhido"'), /\.e-area \{ height: calc\(100dvh - var\(--afty-ficha-topo-recolhido/.test(e5)], [true, true]);
+/* A faixa fina segue o cabeçalho (autor, 2026-11-19, "Seguir o Cabeçalho"): leva as classes que o tema pinta, como a placa. */
+const TEMA = lê("../src/systems/afty/ficha/ficha-tema.js");
+t("a faixa fina é cabeçalho para o tema", [FINA.includes('className="e-fina afty-cabecalho afty-faixa-fina"'), (FINA.match(/className="e-fina-rec afty-vital" data-tipo=\{r\.tipo\} data-afty-vital=\{r\.tipo\}/g) ?? []).length, (FINA.match(/className="afty-vital-numero"/g) ?? []).length], [true, 2, 2]);
+t("sem tema a faixa fica como era (sem fio, sem cartão)", [CSS.includes(".afty-faixa-fina:where(.e-ficha-g2 *)::after { display: none; }"), /\.e-fina-rec\.afty-vital \{ border: 0;[^}]*background: none/.test(CSS)], [true, true]);
+t("o contrato do tema conhece a faixa fina", [TEMA.includes('seletor: ".afty-faixa-fina"'), TEMA.includes(".afty-cabecalho:not(.afty-placa, .afty-faixa-fina)")], [true, true]);
 t("sem travessão nos arquivos da etapa", [ROL, CAB, PECAS, FOLHA, FINA, e5].some((s) => new RegExp("\\u2014").test(s)), false);
 
 if (bad.length) {

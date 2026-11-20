@@ -765,10 +765,12 @@ ${FONTES_WEB.map((f) => `   - ${f.id}`).join("\n")}`
    \`--afty-fundo-grudado: transparent\` se o autor do tema pedir a faixa sumida. A sombra da barra
    sai com \`.afty-barra-grudada { box-shadow: none }\`. A barra de rolagem (\`.afty-log\`) não tem fundo próprio:
    ela mostra o fundo do cabeçalho, então repintar \`.afty-cabecalho\` basta.
-15. Há DOIS \`.afty-cabecalho\`: a faixa que gruda no topo e, dentro dela, a placa (\`.afty-placa\`, com
-   retrato, nome e recursos), que leva as duas classes. Uma regra em \`.afty-cabecalho\` pinta as duas,
-   inclusive o fio do \`::after\`. Para separar, mire a placa em \`.afty-placa\` e a faixa em
-   \`.afty-cabecalho:not(.afty-placa)\`.
+15. Há mais de um \`.afty-cabecalho\`: a faixa que gruda no topo, dentro dela a placa (\`.afty-placa\`, com
+   retrato, nome e recursos), e no celular a faixa fina (\`.afty-faixa-fina\`, nome e números dos recursos,
+   que aparece abaixo das abas quando a placa sai de vista). As duas de dentro levam as duas classes. Uma
+   regra em \`.afty-cabecalho\` pinta todas, inclusive o fio do \`::after\`. Para separar, mire a placa em
+   \`.afty-placa\`, a faixa fina em \`.afty-faixa-fina\` e a faixa do topo em
+   \`.afty-cabecalho:not(.afty-placa, .afty-faixa-fina)\`.
 16. Duas faces (opcional): um tema pode ter duas aparências que o jogador alterna por um botão do
    cabeçalho (dia e noite, forma selada e liberada). Escreva a primeira face normalmente e a segunda
    em blocos com \`[data-afty-face="2"]\` na raiz, por exemplo
@@ -1055,6 +1057,7 @@ const SO_CLASSICA = new Set([
 const SUPERFICIES_G2 = [
   /* A4 e A1 de docs/tema-g2-problemas.md (2026-11-14): as duas entraram SOMANDO classe, sem tirar nenhuma, para não quebrar tema que já mira `.afty-cabecalho`. */
   { grupo: "Cabeçalho", seletor: ".afty-placa", oque: "a placa dentro da faixa do topo: retrato, nome, recursos, valores e o Agora. Também leva .afty-cabecalho" },
+  { grupo: "Cabeçalho", seletor: ".afty-faixa-fina", oque: "no celular, a faixa com o nome e os números dos recursos que aparece abaixo das abas quando a placa sai de vista. Também leva .afty-cabecalho" },
   { grupo: "Cabeçalho", seletor: ".afty-vital-conteudo", oque: "rótulo e valores do recurso" },
   { grupo: "G2", seletor: ".afty-barra-grudada", oque: "cada faixa que gruda ao rolar: a busca e os filtros de Habilidades, o título Ativos da aba Efeitos e o rodapé dos registros. O fundo vem de --afty-fundo-grudado" },
   { grupo: "Cabeçalho", seletor: ".afty-vital-valores", oque: "valor atual, máximo e temporário do recurso" },
@@ -1084,6 +1087,7 @@ const MAPA_G2 = `#afty-ficha
 ├── .afty-cabecalho             a faixa que gruda no topo
 │   ├── .afty-placa.afty-cabecalho   a placa: retrato, .afty-nome, .afty-vital e .afty-stats
 │   ├── .afty-guarda             só no Calamidade e no Beyond
+│   ├── .afty-faixa-fina.afty-cabecalho   no celular, ao rolar: nome e números dos recursos
 │   └── .afty-abas e .afty-log   a linha das abas
 ├── .afty-abas > .afty-aba[data-afty-aba][aria-selected]
 ├── corpo da aba: .afty-card > .afty-card-titulo e .afty-linha
