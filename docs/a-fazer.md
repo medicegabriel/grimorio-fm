@@ -16,8 +16,6 @@ pede mudar o desenho da peça, e não só a medida:
 - os alvos estreitos que sobraram, medidos em 375 px: Perícias (37: a pontuação de Ofício e os rótulos de atributo entre
   parênteses, 27 a 31 px de largura), Aptidões (31: os botões de nível de 21 px de largura, numa linha de cinco) e Equipamentos
   (17: o − e o + da quantidade, 20 px);
-- os segmentos de Treinado e Mestre ficaram quadrados de 36 px no celular e pesam na linha (o aviso "Sem Fonte" do TR corta mais
-  cedo). Se o autor preferir, o desenho pode virar uma única pílula de três estados;
 - a métrica "abas inteiras" do `.audit/app-celular/medir.mjs` não serve mais ao criador no celular e pode virar "seções na folha".
 
 ## Lançamento público: domínio, nuvem e Encontros (2026-11-16)

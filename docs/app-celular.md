@@ -238,7 +238,7 @@ node .audit/app-celular/gerar-icones.mjs --saida <pasta> --previa
 - **A camada de CSS** (`criador-celular/criador-celular.css`, toda regra começa em `[data-criador]`): o texto de 8 a 11 px sobe
   para 12 px (o rótulo em caixa alta para 11), o cabeçalho perde o vidro, os controles de toque ganham 36 px de altura, os
   botões quadrados pequenos crescem para 36 px nas duas direções, os segmentos de Treinado e Mestre (`VezesGauge`) viram
-  quadrados de 36 px, o número com − e + deixa o campo encolher em vez dos botões, e o alocador de atributo da origem fica em uma
+  quadrados de 36 px (o autor confirmou em 2026-11-20: "Manter 36 px", em vez de uma pílula única), o número com − e + deixa o campo encolher em vez dos botões, e o alocador de atributo da origem fica em uma
   coluna. No iPhone os campos têm 16 px.
 - **No `AftyCreatureBuilder.jsx`, só ligação:** três imports, `data-criador` na raiz, `max-[720px]:hidden` na linha de cima, na
   faixa de abas e na prévia, o título num `const` (o mesmo texto), e a lista de seções com o `irParaSecao` (troca a aba e volta

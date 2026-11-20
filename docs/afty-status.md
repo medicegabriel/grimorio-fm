@@ -11,7 +11,8 @@ Sexta etapa do plano em `docs/app-celular.md`.
 - Os dois módulos puros novos (`criador-celular/secoes.js`, `ui/fontes-toque.js`) entraram como INTERFACE em `docs/revisao-automacao/escopo.json`, porque o `t-revisao-g00` recusa módulo de subpasta sem classificação.
 - Verificado: `t-criador-celular.mjs` novo (41, com a Carteira), lint limpo, build, a medição, a varredura das 14 seções em 375 px (sem rolagem lateral), e no navegador a folha das seções, o Anterior e o Próxima, a prévia, o toque longo na faixa e no formulário, o Voltar fechando a folha, e 1280 px sem mudança.
 - **A Carteira coberta no celular** (o autor avisou no meio da etapa): a faixa de totais grudada media 460 de 812 px em uma coluna e cobria as listas, e as sete colunas de uma sessão cortavam o XP e o Ichibuban. Agora a faixa tem três colunas com o card estreito (cerca de 140 px) e as linhas viram duas no celular. Conferido em 375 px com sessões e gastos lançados, e em 1280 px sem mudança. Guia em `docs/afty-carteira.md`.
-- Ficou em `docs/a-fazer.md`: a conversão das classes de texto miúdo, os alvos estreitos de Perícias, Aptidões e Equipamentos, e o peso dos quadrados de Treinado e Mestre.
+- Os quadrados de 36 px de Treinado e Mestre no celular ficam (autor, 2026-11-20: "Manter 36 px").
+- Ficou em `docs/a-fazer.md`: a conversão das classes de texto miúdo e os alvos estreitos de Perícias, Aptidões e Equipamentos.
 
 ## SESSÃO DE 2026-11-19 · APP ERA DE OURO, ETAPA E5 PARTE 2 (FICHA NO CELULAR)
 
