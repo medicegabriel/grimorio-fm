@@ -1,0 +1,132 @@
+/* ============================================================
+   A CASCA DA GUILDA NO CELULAR (app Era de Ouro, etapa E8, 2026-11-20)
+   ============================================================
+   Prefixo `fm-`. Cor só por token `--afty-*` (D-30), com o valor do tema Padrão como reserva: a casca mora fora de qualquer
+   `.afty-ficha`, e as folhas de baixo vão para o <body> por portal, então as regras das peças que aparecem nelas (`.fm-acoes`,
+   `.fm-acao`, `.fm-aviso`, `.fm-confirmar`) não ficam presas à casca.
+   ============================================================ */
+
+.fm-casca {
+  --fm-barra-h: 60px;
+  min-height: 100dvh;
+  background: var(--afty-fundo, #060910);
+  color: var(--afty-texto, #f1f5f9);
+}
+.fm-casca-conteudo { padding-bottom: calc(var(--fm-barra-h) + 16px + env(safe-area-inset-bottom, 0px)); }
+
+/* ---------- a barra de baixo ---------- */
+.fm-barra-inferior {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 44;
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr);
+  padding: 0 max(4px, env(safe-area-inset-left, 0px)) env(safe-area-inset-bottom, 0px) max(4px, env(safe-area-inset-right, 0px));
+  background: var(--afty-card, #0f172a);
+  border-top: 1px solid var(--afty-borda, #1e293b);
+}
+.fm-barra-item {
+  min-height: var(--fm-barra-h); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  border: 0; background: none; color: var(--afty-texto-suave, #94a3b8); font: 600 12px/1.1 var(--afty-fonte-ui, inherit);
+}
+.fm-barra-item svg { width: 22px; height: 22px; }
+.fm-barra-item[aria-current="page"] { color: var(--afty-destaque-texto, #d8b4fe); }
+.fm-barra-item[aria-current="page"] svg { color: var(--afty-destaque, #a855f7); }
+.fm-barra-item:focus-visible { outline: 2px solid var(--afty-destaque, #a855f7); outline-offset: -4px; border-radius: 10px; }
+
+/* Com a barra à vista, o botão redondo dos Livros sai (os Livros estão no Mais) e o convite de instalar sobe acima dela. */
+body:has(.fm-barra-inferior) div:has(> button[aria-label$=" documentos"]) { display: none; }
+body:has(.fm-barra-inferior) .fm-convite { right: 12px; bottom: calc(60px + 12px + env(safe-area-inset-bottom, 0px)); }
+
+/* ---------- a página ---------- */
+.fm-pagina { display: grid; gap: 12px; padding: 0 12px 12px; max-width: 40rem; margin-inline: auto; align-content: start; }
+.fm-pagina-topo {
+  position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 8px; min-height: 56px;
+  margin-inline: -12px; padding: 6px 12px; background: var(--afty-fundo, #060910); border-bottom: 1px solid var(--afty-borda, #1e293b);
+}
+.fm-pagina-titulo {
+  flex: 1; min-width: 0; margin: 0 !important; display: flex; align-items: center; gap: 8px;
+  font: 700 19px/1.2 var(--afty-fonte-titulo, inherit) !important; color: var(--afty-texto, #f1f5f9) !important;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.fm-pagina-titulo svg { width: 20px; height: 20px; flex: none; color: var(--afty-destaque, #a855f7); }
+
+.fm-botao, .fm-acao, .fm-icone {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; border-radius: 10px;
+  border: 1px solid var(--afty-borda-forte, #334155); background: var(--afty-poco, #020617); color: var(--afty-texto, #f1f5f9);
+  font: 600 14px var(--afty-fonte-ui, inherit); text-decoration: none; cursor: pointer;
+}
+.fm-botao { padding: 0 14px; justify-content: center; }
+.fm-botao svg, .fm-acao svg, .fm-icone svg { width: 18px; height: 18px; flex: none; }
+.fm-botao-forte { background: var(--afty-destaque, #7e22ce); border-color: transparent; color: #fff; }
+.fm-botao[data-perigo], .fm-acao[data-perigo] { color: var(--afty-pv, #f87171); }
+.fm-icone { width: 44px; justify-content: center; flex: none; border-color: transparent; background: none; color: var(--afty-texto-suave, #94a3b8); }
+
+/* ---------- busca e pastas ---------- */
+.fm-busca { position: relative; display: flex; align-items: center; }
+.fm-busca svg { position: absolute; left: 12px; width: 18px; height: 18px; color: var(--afty-texto-suave, #94a3b8); pointer-events: none; }
+.fm-busca input {
+  flex: 1; min-width: 0; height: 44px; padding: 0 12px 0 40px; border-radius: 10px; font-size: 16px;
+  border: 1px solid var(--afty-borda, #1e293b); background: var(--afty-poco, #020617); color: var(--afty-texto, #f1f5f9);
+}
+.fm-busca input:focus { outline: none; border-color: var(--afty-destaque, #a855f7); }
+.fm-pastas { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin-inline: -12px; padding-inline: 12px; }
+.fm-pasta {
+  flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 12px; border-radius: 999px;
+  border: 1px solid var(--afty-borda, #1e293b); background: none; color: var(--afty-texto-suave, #94a3b8); font: 600 13px var(--afty-fonte-ui, inherit);
+}
+.fm-pasta svg { width: 15px; height: 15px; }
+.fm-pasta small { font: 600 12px var(--afty-fonte-num, inherit); opacity: 0.8; }
+.fm-pasta[aria-pressed="true"] { background: var(--afty-destaque, #7e22ce); border-color: transparent; color: #fff; }
+
+/* ---------- os cartões ---------- */
+.fm-cartoes { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.fm-cartao {
+  display: flex; align-items: center; gap: 4px; min-height: 64px; padding-right: 4px; border-radius: 12px;
+  border: 1px solid var(--afty-borda, #1e293b); background: var(--afty-card, #0f172a);
+}
+.fm-cartao[data-marcada] { border-color: var(--afty-destaque, #a855f7); background: color-mix(in srgb, var(--afty-destaque, #a855f7) 12%, var(--afty-card, #0f172a)); }
+.fm-cartao-corpo {
+  flex: 1; min-width: 0; min-height: 64px; display: flex; align-items: center; gap: 12px; padding: 8px 4px 8px 10px;
+  border: 0; background: none; color: inherit; text-align: left; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+}
+.fm-cartao-retrato {
+  flex: none; width: 44px; height: 44px; border-radius: 10px; object-fit: cover; display: grid; place-items: center;
+  background: var(--afty-poco, #020617); border: 1px solid var(--afty-borda-forte, #334155); color: var(--afty-destaque-texto, #d8b4fe); font: 700 17px var(--afty-fonte-titulo, inherit);
+}
+.fm-cartao-marca { flex: none; width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center; border: 2px solid var(--afty-borda-forte, #334155); }
+.fm-cartao[data-marcada] .fm-cartao-marca { background: var(--afty-destaque, #a855f7); border-color: transparent; color: #fff; }
+.fm-cartao-texto { min-width: 0; display: grid; gap: 2px; }
+.fm-cartao-nome { font: 700 15px/1.25 var(--afty-fonte-titulo, inherit); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fm-cartao-linha { font-size: 13px; color: var(--afty-texto-suave, #94a3b8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fm-vazio { display: grid; justify-items: center; gap: 12px; padding: 40px 0; color: var(--afty-texto-suave, #94a3b8); }
+.fm-vazio p { margin: 0 !important; font-size: 15px; }
+
+.fm-barra-selecao {
+  position: fixed; left: 8px; right: 8px; bottom: calc(60px + 8px + env(safe-area-inset-bottom, 0px)); z-index: 45;
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 6px; padding: 6px; border-radius: 14px;
+  background: var(--afty-card, #0f172a); border: 1px solid var(--afty-borda-forte, #334155); box-shadow: 0 -8px 24px rgb(0 0 0 / 0.5);
+}
+.fm-lista:has(.fm-barra-selecao) .fm-cartoes { padding-bottom: 64px; }
+
+/* ---------- as ações (também dentro das folhas) ---------- */
+.fm-acoes { display: grid; gap: 4px; }
+.fm-acao { width: 100%; padding: 0 12px; border-color: transparent; background: none; text-align: left; }
+.fm-acao:hover, .fm-acao:focus-visible { background: var(--afty-poco, #020617); }
+.fm-acao small { margin-left: auto; font: 600 12px var(--afty-fonte-num, inherit); color: var(--afty-texto-suave, #94a3b8); }
+.fm-acao:disabled { opacity: 0.45; cursor: default; }
+.fm-aviso { margin: 0 !important; display: flex; align-items: center; gap: 8px; padding: 4px 4px 12px; font-size: 14px; color: var(--afty-aviso, #fbbf24); }
+.fm-aviso svg { width: 18px; height: 18px; flex: none; }
+.fm-aviso[data-tom="ok"] { color: var(--afty-cura, #4ade80); padding: 4px 0 0; }
+.fm-confirmar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+/* ---------- os blocos do Mais e da Sala ---------- */
+.fm-bloco { display: grid; gap: 8px; padding: 12px; border-radius: 12px; border: 1px solid var(--afty-borda, #1e293b); background: var(--afty-card, #0f172a); }
+.fm-bloco-titulo {
+  margin: 0 !important; display: flex; align-items: center; gap: 8px;
+  font: 700 12px var(--afty-fonte-ui, inherit) !important; text-transform: uppercase; letter-spacing: 0.08em; color: var(--afty-texto-suave, #94a3b8) !important;
+}
+.fm-bloco-titulo svg { width: 16px; height: 16px; }
+.fm-linha { margin: 0 !important; font-size: 14px; color: var(--afty-texto, #f1f5f9); }
+.fm-linha b { font-family: var(--afty-fonte-num, inherit); }
+
+/* A aba Encontros é a lista do Encontro (`ListaDeEncontros`), e o campo da busca dela tinha 20 px de altura dentro do rótulo. Na
+   casca ele ocupa o rótulo inteiro, com 16 px para o iPhone não dar zoom. */
+.fm-casca .ec-busca input { min-height: 40px; font-size: 16px; }

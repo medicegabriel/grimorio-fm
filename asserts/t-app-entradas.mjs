@@ -66,5 +66,9 @@ t("os arquivos com hash ficam em cache longo",
   VERCEL.headers?.find((h) => h.source === "/assets/(.*)")?.headers?.[0]?.value, "public, max-age=31536000, immutable");
 t("a reescrita não cobre /assets", VERCEL.rewrites?.[0]?.source, "/((?!assets/).*)");
 
+/* 2026-11-20: o ficha.css entra na abertura. Sob demanda ele chegava DEPOIS do CSS do Encontro na Sala, e
+   `.afty-ficha { min-height: 100dvh }` vencia a faixa da luta (mesma especificidade, ganha a ordem). */
+t("o ficha.css entra pela Ficha da abertura", lê("../src/systems/afty/ficha/AftyFicha.jsx").includes('import "./ficha.css";'), true);
+t("e a Ficha entra no App por import direto", /^import AftyFicha from "\.\/systems\/afty\/ficha\/AftyFicha";/m.test(lê("../src/App.jsx")), true);
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 process.exitCode = bad.length ? 1 : 0;

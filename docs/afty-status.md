@@ -1,5 +1,27 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-20 · APP ERA DE OURO, ETAPA E8 (CASCA DA GUILDA)
+
+Oitava etapa do plano em `docs/app-celular.md`.
+
+- **Peças novas** em `src/systems/eradeouro/app/`: `CascaDaGuilda.jsx`, `BarraInferior.jsx`, `ListaDeFichas.jsx`, `MaisDaGuilda.jsx`, `AbaSala.jsx`, `lista-fichas.js` (puro) e `app-guilda.css`.
+- **Ligações:** no `App.jsx`, `cascaNoCelular` (Guilda, celular, fora da Sala), `irParaAba` pela pilha, as telas `sala` e `mais`, e as três telas da casca sob demanda. `pilha.js` aceita as telas novas. `ListaDeEncontros` ganhou `semVoltar`. O `vite.config.js` passa a versão do commit como `VITE_FM_VERSAO`.
+- **Medido:** a lista do celular sem alvo abaixo de 36 px (era 4 de 18), sem rótulo abaixo de 11 px (eram 7), título inteiro, 18 KB de JS a mais na abertura.
+- Achados no navegador e corrigidos na hora: o Mover da seleção aparecia sem pasta nenhuma, o campo de busca dos Encontros tinha 20 px de altura, e o espaço livre do aparelho saía em MB de quatro dígitos (agora GB).
+- Verificado: `t-app-casca.mjs` novo (27), lint limpo, `t-ordem-modulos`, build, a medição nas quatro larguras, e no navegador a casca em 375 px e o Dashboard em 1280 px.
+- Fica para o Android do autor: a barra com a Sala (nuvem ligada), o Importar de um arquivo do aparelho, e o Instalar pelo Mais.
+
+## SESSÃO DE 2026-11-20 · APP ERA DE OURO, ETAPA E7 (SALA NO CELULAR)
+
+Sétima etapa do plano em `docs/app-celular.md`. O autor escolheu verificar por simulação local, sem tocar o Supabase.
+
+- **Peças novas:** `src/nuvem/sala-ui/EntrarPorCodigo.jsx` (o botão Sala da Guilda), `codigoDoTexto` em `sala-ui-dados.js`, `src/celular/editar-pela-sala.js` (o pedido de editar, puro) e `src/celular/inicio-da-sala.js` (o início na Guilda do link aberto no app).
+- **Ligações:** no `App.jsx`, o botão no `cabecalhoAcoes` da Guilda, a leitura do pedido na abertura, o `sairDoCriador` (Salvar e Cancelar voltam para a Sala) e o início na Guilda. No `TelaDoJogador.jsx`, o `editar` que troca de página no celular e no app. CSS do celular no `sala-ui.css`.
+- **Defeito no ar trazido pela minha E3, achado pela simulação:** o `ficha.css` chegava na Sala depois do CSS do Encontro e a faixa da luta do jogador ocupava a tela inteira. Confirmado no build (a Sala pré-carregava `pecas-encontro.css` antes de `ficha.css`). Voltou a entrar na abertura pelo `AftyFicha.jsx`, travado no `t-app-entradas.mjs`. Mais um motivo para medir cada tela sob demanda a frio, em ordem de carga real, e não só o JS.
+- **A simulação** mora em `.audit/app-celular/sala-simulada/` (só `npm run dev`). No StrictMode do dev o pedido de editar abre o criador mas o histórico fica com a lista (o efeito roda duas vezes e a gravação inicial da pilha sobrescreve). No build de produção o histórico fica certo, conferido.
+- Verificado: `t-sala-celular.mjs` novo (31), `t-app-entradas` (30), `t-sala-telas`, `t-sala-cliente`, `t-app-pilha`, `t-app-rotas`, `t-nuvem`, `t-ordem-modulos`, lint limpo, build, e no navegador as telas da Sala simulada em 360 e 375 px e o Editar pela Sala no build de produção (abrir, Cancelar, Salvar).
+- Fica para o Android do autor: login, senha, tempo real, espelho e o Editar numa Sala de verdade, mais o link do WhatsApp no app.
+
 ## SESSÃO DE 2026-11-20 · APP ERA DE OURO, ETAPA E6 (CRIADOR NO CELULAR)
 
 Sexta etapa do plano em `docs/app-celular.md`.

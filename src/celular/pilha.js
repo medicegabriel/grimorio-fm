@@ -17,7 +17,8 @@
 
 export const VERSAO_PILHA = 1;
 
-const TELAS = new Set(["dashboard", "tracker", "aftyFicha", "builder", "encounter", "encounters", "templates"]);
+/* `sala` e `mais` são as abas da casca da Guilda no celular (etapa E8, 2026-11-20). Fora da casca, o App as mostra como a lista. */
+const TELAS = new Set(["dashboard", "tracker", "aftyFicha", "builder", "encounter", "encounters", "templates", "sala", "mais"]);
 
 export const TELA_LISTA = Object.freeze({ name: "dashboard", creatureId: null, encounterId: null });
 

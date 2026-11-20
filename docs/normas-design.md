@@ -194,6 +194,7 @@ Toda região de tela é desenhada nos cinco. Faltou um, a tela não está pronta
 | D-88 | Painel de número no celular não abre o teclado sozinho: o foco vai para o painel, e o campo só pega o teclado no toque. No iPhone, campo de texto com 16 px ou mais, senão o Safari dá zoom ao tocar |
 | D-89 | Peça fixa na borda de baixo ou de cima soma a área segura do aparelho (`env(safe-area-inset-bottom)`), para não ficar sob a barra de gestos ou o entalhe |
 | D-105 | No criador, a origem de um número (o painel do hover) abre também por toque longo de 450 ms, só no toque (`ui/fontes-toque.js`). O clique que o gesto solta não aperta o botão, e o próximo toque fecha |
+| D-106 | A barra de baixo existe só na casca da Guilda no celular (`src/systems/eradeouro/app/`). Ela tem no máximo quatro itens com ícone e rótulo, 60 px mais a área segura, e some em tela de foco (Ficha, criador, luta). O conteúdo atrás dela ganha folga embaixo (D-83), e o Voltar de qualquer aba cai na primeira, a lista |
 
 **O app Era de Ouro.** O manifesto e o convite de instalar existem só em `/EraDeOuro` (o app se chama Era de Ouro e abre
 sempre lá). O convite é um cartão só, na lista da Guilda, no celular, fora do app instalado, e "Agora Não" o guarda por 14

@@ -17,6 +17,9 @@ import { Avatar, PontoOnline } from "./PecasSala";
 import { ARMAZEM_DO_GRUPO, ROTULO_PAPEL, rotaDoGrupo } from "./sala-ui-dados";
 import { inventarioDoGrupo } from "../../systems/afty/encontros/listas";
 import { useCamadaDeVoltar } from "../../celular/camadas";
+import { useCelular } from "../../celular/usar-celular";
+import { estaInstalado } from "../../celular/usar-instalacao";
+import { pedirEdicao } from "../../celular/editar-pela-sala";
 
 /**
  * ============================================================
@@ -80,6 +83,17 @@ export default function TelaDoJogador({ cliente, retrato, grupo, personagens, on
   const [colega, setColega] = useState(null);
   const [painelAberto, setPainelAberto] = useState(larga);
   const [enviando, setEnviando] = useState(false);
+  /* EDITAR PELA SALA (etapa E7 do app, 2026-11-20). No computador o Editar abre a rota do grupo numa aba nova, e a Sala segue ao
+     lado. No celular e no app instalado, aba nova é outro navegador: lá ele troca de página com um pedido (`editar-pela-sala.js`),
+     e Salvar ou Cancelar no criador voltam para esta Sala. */
+  const celular = useCelular();
+  const editar = (id) => {
+    if ((celular || estaInstalado()) && pedirEdicao({ id, volta: location.pathname })) {
+      location.assign(rotaDoGrupo(grupo));
+      return;
+    }
+    window.open(rotaDoGrupo(grupo), "_blank", "noopener");
+  };
   /* O Voltar do aparelho fecha, nesta ordem, o painel da Sala aberto por cima (só a gaveta das telas estreitas: largo, ele é
      uma coluna), a ficha do colega e a minha ficha aberta, antes de sair da Sala. */
   useCamadaDeVoltar(!!aberta, () => setAberta(null));
@@ -144,7 +158,7 @@ export default function TelaDoJogador({ cliente, retrato, grupo, personagens, on
             naSala
             onVoltar={() => setAberta(null)}
             // A rota do grupo: a ficha de um jogador da Guilda mora em /EraDeOuro, e não em /Player.
-            onEditar={() => window.open(rotaDoGrupo(grupo), "_blank", "noopener")}
+            onEditar={() => editar(fichaAberta.id)}
             onSalvarTema={(aparencia) => storage.update(fichaAberta.id, { aparencia })}
             onSalvarInvocacoes={(invocacoes) => storage.update(fichaAberta.id, { invocacoes })}
             onSalvarEspinho={(espinho) => storage.update(fichaAberta.id, { espinho })}

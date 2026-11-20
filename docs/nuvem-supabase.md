@@ -511,6 +511,10 @@ Só com a nuvem ligada (conta Google ou Discord entrada).
 3. Dano e cura em criatura ou em colega saem como **pedido**: o dono do alvo aceita (o Mestre, nas criaturas). Você abre a Ficha inteira de um colega só se ele a compartilhar.
 4. **Encerrar Meu Turno** fica na faixa da luta. Rolagens e chat vão para o Registro.
 
+**No celular (etapa E7 do app, 2026-11-20).** Na lista da Guilda, o botão **Sala** do cabeçalho aceita o código ou o link colado.
+No celular e no app instalado, o **Editar** da Ficha na Sala abre o criador no mesmo app (e não numa aba nova), e Salvar ou Cancelar
+voltam para a Sala. Um link de Sala aberto direto no app leva à Guilda no Voltar. Detalhes em `docs/app-celular.md`.
+
 **Ausente no fechamento.** Quem não estava na Sala quando ela fechou recebe a sessão final das fichas e o Registro no próximo login (até 14 dias depois). Se usou a Ficha sozinho depois do fechamento, a sessão do aparelho fica, e a da
 Sala fica no Encontro Finalizado para consulta.
 

@@ -46,7 +46,7 @@
 .sl-jogador { min-height: 100dvh; display: flex; flex-direction: column; }
 .sl-corpo { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr); }
 .sl-principal { min-width: 0; }
-.sl-principal > .sl-lobby { padding: 16px; max-width: 64rem; margin-inline: auto; display: grid; gap: 12px; }
+.sl-principal > .sl-lobby { padding: 16px; max-width: 64rem; margin-inline: auto; display: grid; gap: 12px; align-content: start; }
 .sl-trocar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 16px; border-bottom: 1px solid var(--afty-borda); background: var(--afty-fundo); }
 .sl-trocar .ec-segmento { max-width: 14rem; }
 .sl-trocar .ec-segmento span { overflow: hidden; text-overflow: ellipsis; }
@@ -134,4 +134,23 @@
 @media (max-width: 720px) {
   .sl-ficha-controles { padding-left: 0; }
   .sl-centro { padding: 12px 8px; }
+}
+
+/* ---------- a Sala no celular (etapa E7 do app Era de Ouro, 2026-11-20) ----------
+   O painel da Sala já era uma gaveta por cima no telefone (e fecha no Voltar, `useCamadaDeVoltar` na TelaDoJogador). Aqui ele
+   ocupa a largura toda, desce até a barra de gestos (D-89) e o chat fica acima dela. Os botões de entrar e os do painel ganham
+   44 px, e no iPhone os campos têm 16 px, senão o Safari dá zoom ao tocar (D-88). */
+@media (max-width: 720px) {
+  .sl-corpo[data-painel="aberto"] .sl-painel { inset: var(--ec-faixa-h, 0px) 0 0 0; width: 100%; border-left: 0; box-shadow: none; }
+  .sl-chat, .sl-escondida { padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)); }
+  .sl-contas .afty-botao, .sl-acoes > .afty-botao, .sl-entrada .afty-botao { min-height: 44px; }
+  .sl-painel-topo .afty-botao, .sl-abas .ec-aba-mini { min-height: 44px; min-width: 44px; justify-content: center; }
+  .sl-painel-topo .afty-passo, .sl-chat .ec-icone { min-height: 44px; min-width: 44px; justify-content: center; }
+  :is(.sl-pagina, .sl-jogador) .afty-botao.ec-icone { min-height: 44px; min-width: 44px; justify-content: center; }
+  .sl-trocar .ec-segmento { min-height: 40px; }
+}
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 720px) {
+    :is(.sl-pagina, .sl-jogador) :is(input:not([type="checkbox"], [type="radio"]), select, textarea) { font-size: 16px; }
+  }
 }

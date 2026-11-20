@@ -36,8 +36,8 @@ nenhuma exceção nova em `src/components/`.
 | E4 | App instalável (manifesto, ícones, convite) | feita em 2026-11-19 |
 | E5 | Ficha no celular | feita em 2026-11-19, em duas partes (cabeçalho, rolagens, folha da Vida, depois Livro, faixa fina, palco e viewport) |
 | E6 | Criador no celular | feita em 2026-11-20 (cabeçalho de uma linha, faixa de resumo, seções na folha, camada de CSS, origem por toque longo) |
-| E7 | Sala no celular | |
-| E8 | Casca da Guilda (barra de baixo, lista do celular, Mais) | |
+| E7 | Sala no celular | feita em 2026-11-20 (entrar por código, Editar pela Sala sem janela nova, link no app, painel e botões), verificada por simulação local |
+| E8 | Casca da Guilda (barra de baixo, lista do celular, Mais) | feita em 2026-11-20 (Fichas, Encontros, Sala e Mais na barra de baixo, só em /EraDeOuro no celular) |
 | E9 | Sem internet (service worker) | |
 | E10 | Depois: carregamento fase B, iPhone, Encontro | |
 
@@ -256,6 +256,63 @@ node .audit/app-celular/gerar-icones.mjs --saida <pasta> --previa
   largura) e Equipamentos (17, o − e o + da quantidade com 20 px). Ficam em `docs/a-fazer.md`, junto da conversão das classes de
   texto miúdo.
 
+## O que a E7 mudou
+
+- **Entrar por código ou link** (`src/nuvem/sala-ui/EntrarPorCodigo.jsx`): na lista da Guilda, com a nuvem ligada, o botão Sala
+  do cabeçalho abre um campo (na folha de baixo no celular, num painel no computador, os dois fecham no Voltar). Ele aceita o
+  código ("K7QX2M") ou o link inteiro colado, até no meio de uma frase (`codigoDoTexto`, em `sala-ui-dados.js`, pelo alfabeto do
+  banco, sem I, L, O, 0 e 1). Código errado avisa "Código Inválido". Entrar vai para `/Sala/<código>`.
+- **Editar pela Sala no mesmo app** (`src/celular/editar-pela-sala.js`, S-28): no celular e no app instalado, o Editar da Ficha
+  na Sala grava um pedido na `sessionStorage` e troca de página para a rota do grupo, e o App abre o criador daquela ficha por
+  `substituir` (o Voltar do aparelho cai direto na Sala). Salvar e Cancelar voltam para a Sala depois de subir a nuvem pendente
+  (até 3 s). O pedido vale uma vez, vence em dois minutos e só volta para um endereço `/Sala/<código>` deste site. No
+  computador segue a aba nova.
+- **O link da Sala aberto direto no app** (`src/celular/inicio-da-sala.js`): no app instalado, com a Sala como primeira página,
+  o primeiro toque põe `/EraDeOuro` embaixo da Sala no histórico, e o Voltar leva à Guilda em vez de fechar o app.
+- **A Sala no celular** (`sala-ui.css`, bloco da E7): o painel da Sala ocupa a largura toda embaixo da faixa da luta, o chat
+  sobe acima da barra de gestos, as abas só de ícone, o Fechar, o Enviar e o Voltar ao Grimório ganham 44 px, os botões de
+  entrar 44 px, e no iPhone os campos têm 16 px. Os cartões da lista do jogador deixaram de esticar até a altura da tela.
+- **Um defeito no ar, achado na simulação e trazido pela E3:** com as duas Fichas sob demanda, o `ficha.css` passou a chegar
+  na Sala DEPOIS do CSS do Encontro, e `.afty-ficha { min-height: 100dvh; position: relative }` vencia `.ec-faixa-raiz
+  { position: sticky; min-height: 0 }`, de mesma especificidade. A faixa da luta do jogador media a tela inteira e não grudava,
+  e o resto da Sala ficava abaixo dela, em qualquer largura. O `ficha.css` voltou a entrar na abertura (`AftyFicha.jsx`, como
+  era antes da E3), e o `t-app-entradas.mjs` trava a ordem.
+- **Como foi verificado:** a nuvem fica desligada no computador de desenvolvimento, então as telas da Sala foram medidas numa
+  página só de desenvolvimento, `.audit/app-celular/sala-simulada/` (o retrato do `t-sala-telas.mjs` e um cliente que não grava
+  nada), em 360 e 375 px: faixa de 128 px grudada, lista logo abaixo, painel de 0 a 375 px que fecha no Voltar, nenhum alvo do
+  painel, da entrada e do login abaixo de 44 px, sem rolagem lateral. O pedido de editar foi testado no build de produção:
+  o criador abre na ficha, Cancelar volta para `/Sala/<código>`, e Salvar grava a ficha e volta. Login, senha, tempo real,
+  espelho e o Editar com uma Sala de verdade ficam para o protocolo no Android.
+
+## O que a E8 mudou
+
+- **A casca da Guilda** (`src/systems/eradeouro/app/`): em `/EraDeOuro`, num telefone (a `CONSULTA_CELULAR`, que pega o celular
+  deitado), a lista, os Encontros, a Sala e o Mais ficam numa barra de baixo (`BarraInferior.jsx`, 60 px mais a área segura).
+  A Sala só aparece com a nuvem ligada. A barra some na Ficha, no criador e na luta. Fora da casca (o computador, as outras
+  rotas) tudo segue com o Dashboard de sempre, e uma tela `sala` ou `mais` guardada no histórico abre a lista.
+- **A troca de aba passa pela pilha** (`trocaDeAba`, em `lista-fichas.js`): sair de Fichas empilha, entre as outras substitui,
+  voltar a Fichas volta. O Voltar de qualquer aba cai na lista, e só da lista sai do site (D-86). `pilha.js` ganhou as telas
+  `sala` e `mais`.
+- **A lista do celular** (`ListaDeFichas.jsx`): título inteiro e Nova Ficha (a escolha de Criatura ou Personagem do App),
+  busca sem acento, pastas com contagem (a mesma vista que o App guarda para o Dashboard), cartão de 64 px com retrato, nome e
+  Nível ou ND. Tocar abre a Ficha. O "⋯" abre as ações numa folha: Abrir, Editar, Duplicar, Mover para Pasta (só com pasta),
+  Exportar e Excluir com confirmação. Segurar um cartão entra em seleção (Mover, Exportar, Excluir), e o Voltar sai dela. Fica
+  de fora de propósito: arrastar para reordenar, Criaturas Base, Modelos e a sonda de memória (estão no computador).
+- **A aba Sala** (`AbaSala.jsx`): o mesmo campo de código ou link da E7.
+- **O Mais** (`MaisDaGuilda.jsx`): a Conta, Importar Fichas (pelo `importMany` do App, então a porta do livro e o aviso de recusa
+  valem), Exportar Todas, os Livros com o tamanho de cada PDF (abrem no leitor do próprio site, sem sair do app), Instalar o App,
+  o espaço que o site usa no aparelho, a Privacidade e a Versão (os sete primeiros do commit, por `VITE_FM_VERSAO`, que o
+  `vite.config.js` tira do `VERCEL_GIT_COMMIT_SHA`).
+- **Na aba Encontros** a `ListaDeEncontros` ganhou o `semVoltar` opcional, e o campo da busca dela tem 40 px na casca.
+- **Com a barra à vista** o botão redondo dos Livros sai (os Livros estão no Mais) e o convite de instalar sobe acima dela.
+- **As telas da casca chegam sob demanda** (`telaSobDemanda`): o computador não as baixa. A lista do celular custou 18 KB de JS
+  na abertura (2.094 para 2.112 KB), da barra e da casca.
+- **Medido** (`.audit/app-celular/medicoes/e8-preview.json`, nas quatro larguras): alvos abaixo de 36 px de 4 de 18 para **0 de
+  11**, rótulos abaixo de 11 px de 7 para **0**, título cortado de sim para **não**, sem rolagem lateral, instalável. No navegador
+  em 375 px: as três abas (sem a Sala, com a nuvem desligada), o Voltar de Mais caindo na lista, o "⋯", o Duplicar, a seleção
+  por toque longo, o Excluir com confirmação, a Nova Ficha, a Ficha aberta sem a barra, os Livros no leitor e o espaço em uso.
+  Em 1280 px o Dashboard de sempre.
+
 ## Protocolos de teste em aparelho real
 
 **Android do autor (a cada etapa de tela)**
@@ -263,7 +320,11 @@ node .audit/app-celular/gerar-icones.mjs --saida <pasta> --previa
 - Voltar na Ficha, no criador, nas folhas e na Sala;
 - a conta já logada no app;
 - o teclado numérico sem zoom;
-- o link da Sala pelo WhatsApp;
+- o link da Sala pelo WhatsApp, e o Voltar dele levando à Guilda (E7);
+- na Guilda, o botão Sala com um código digitado e com um link colado (E7);
+- a barra de baixo: trocar de aba, o Voltar caindo na lista, segurar um cartão, o Mais (Importar, Exportar, Livros) (E8);
+- numa Sala de verdade, como jogador: a faixa da luta grudada, o painel da Sala, e o Editar da Ficha abrindo o criador no
+  mesmo app e voltando para a Sala ao Salvar e ao Cancelar (E7);
 - depois da E9: modo avião e o "Nova Versão" depois de um push.
 
 **iPhone (amigos, iOS 16.4 ou mais novo)**
@@ -293,6 +354,8 @@ O convite do iPhone só liga se os passos 4 a 7 passarem, ao menos com Google. O
 | O convite do iPhone | `IOS_LIBERADO` em `src/celular/pwa-config.js` (hoje `false`) |
 | A Ficha G2 no celular (E5) | revert do commit da E5. Só a aba do Livro na G2: voltar o `:not([data-afty-estrutura="g2"])` nas duas regras do `ficha.css`. Só o viewport: apagar o bloco `viewport-fit` do segundo script do `index.html`. Só a barra de rolagens: tirar o `compacto={celular}` do `AftyFichaG2.jsx`. Só a folha do recurso: trocar `celular` por `false` no `CabecalhoG2.jsx` |
 | O criador no celular (E6) | revert do commit da E6. Só a camada de CSS: tirar o import de `criador-celular.css` do `CabecalhoCelular.jsx`. Só o toque longo: tirar o `useEffect` do `CabecalhoCelular.jsx` |
+| A Sala no celular (E7) | revert do commit da E7. Só o Editar no mesmo app: trocar `(celular || estaInstalado())` por `false` no `TelaDoJogador.jsx`. Só o início na Guilda: tirar o `useEffect` do `ligarInicioNaGuilda` do `App.jsx`. ⚠ O `import "./ficha.css"` do `AftyFicha.jsx` não sai junto: sem ele a faixa da luta da Sala volta a cobrir a tela |
+| A casca da Guilda (E8) | revert do commit da E8. Só a casca, mantendo o resto: trocar `mesa && celularNaTela && !rotaSala` por `false` no `cascaNoCelular` do `App.jsx` (a Guilda volta ao Dashboard no celular) |
 
 A E9 acrescenta a chave `SW_LIGADO` e o deploy de desligamento do service
 worker.

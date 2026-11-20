@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from "react";
+import React, { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { AlertTriangle } from "lucide-react";
 import Dashboard from "./components/Dashboard";
 import AftyFicha from "./systems/afty/ficha/AftyFicha";
@@ -16,7 +16,7 @@ import { Analytics } from '@vercel/analytics/react';
 import AlternadorSistema from "./nuvem/AlternadorSistema";
 import ContaNuvem from "./nuvem/ContaNuvem";
 import AvisoMudanca from "./nuvem/AvisoMudanca";
-import { lerEstadoNuvem, ouvirNuvem } from "./nuvem/nuvem-sync";
+import { enviar as enviarNuvem, lerEstadoNuvem, ouvirNuvem } from "./nuvem/nuvem-sync";
 import { nuvemAtiva } from "./nuvem/nuvem-config";
 import { rotaDoGrupo } from "./nuvem/sala-ui/sala-ui-dados";
 import { usePilhaDeTelas } from "./celular/usar-pilha-de-telas";
@@ -26,6 +26,15 @@ import { telaSobDemanda } from "./celular/sob-demanda";
 import { useCompendio, ehIdDoCompendio } from "./celular/usar-compendio";
 import Carregando from "./celular/Carregando";
 import ConviteInstalar from "./celular/ConviteInstalar";
+/* A Sala no celular (etapa E7, docs/app-celular.md): entrar pelo código, editar pela Sala sem janela nova, e o link aberto no app. */
+import BotaoEntrarNaSala from "./nuvem/sala-ui/EntrarPorCodigo";
+import { lerPedidoDeEdicao } from "./celular/editar-pela-sala";
+import { ligarInicioNaGuilda } from "./celular/inicio-da-sala";
+import { estaInstalado } from "./celular/usar-instalacao";
+/* A casca da Guilda no celular (etapa E8, docs/app-celular.md): barra de baixo, lista do celular, Sala e Mais. Só /EraDeOuro. */
+import { useCelular } from "./celular/usar-celular";
+import CascaDaGuilda from "./systems/eradeouro/app/CascaDaGuilda";
+import { ABAS_DA_CASCA, abaDaTela, trocaDeAba } from "./systems/eradeouro/app/lista-fichas";
 
 /* ⚠ AS TELAS PESADAS CHEGAM SOB DEMANDA (etapa E3 do app de celular, 2026-11-19, S-23). Até aqui todas iam no pacote de
    abertura de toda rota: a lista da Guilda no celular baixava 6,6 MB de JavaScript, com os dois criadores, o rastreador e a
@@ -44,6 +53,10 @@ const EncontroTela = telaSobDemanda(() => import("./systems/afty/encontros/telas
 const SEM_COMPENDIO = [];
 /* A Sala entra por `lazy`: só quem abre /Sala/<código> baixa o cliente e o tempo real. */
 const SalaPagina = React.lazy(() => import("./nuvem/SalaPagina"));
+/* As telas da casca da Guilda chegam só no celular (etapa E8). */
+const ListaDeFichas = telaSobDemanda(() => import("./systems/eradeouro/app/ListaDeFichas"));
+const MaisDaGuilda = telaSobDemanda(() => import("./systems/eradeouro/app/MaisDaGuilda"));
+const AbaSala = telaSobDemanda(() => import("./systems/eradeouro/app/AbaSala"));
 /* O botão Abrir Sala do cabeçalho do Encontro (etapa 7c) também entra por `lazy`: ele puxa o cliente da Sala, e só aparece com a Sala
    liberada e a nuvem ligada. */
 const BotaoAbrirSala = React.lazy(() => import("./nuvem/sala-ui/AbrirSala"));
@@ -198,6 +211,8 @@ export default function App() {
     return true;
   };
   const { tela: view, ir, substituir, voltar } = usePilhaDeTelas({ existe: telaPodeReabrir });
+  // O telefone de agora (a consulta única do app, que também pega o celular deitado). Decide a casca da Guilda (etapa E8).
+  const celularNaTela = useCelular();
   // A Guilda pergunta criatura ou personagem antes de abrir o criador.
   const [escolhendoTipo, setEscolhendoTipo] = useState(false);
   const [importeRecusado, setImporteRecusado] = useState(null);
@@ -317,6 +332,35 @@ export default function App() {
     voltar(TELA_LISTA);
   }, [voltar]);
 
+  /* EDITAR PELA SALA NO CELULAR (etapa E7, 2026-11-20). O Editar da Sala, no celular e no app, grava um pedido e vem para cá
+     (`src/celular/editar-pela-sala.js`). O criador abre por `substituir`, para o Voltar do aparelho cair direto na Sala, e Salvar
+     ou Cancelar voltam para ela, depois de subir para a nuvem o que estiver na fila (até 3 s). */
+  const voltaDaSala = useRef(null);
+  useEffect(() => {
+    if (rotaSala) return;
+    const pedido = lerPedidoDeEdicao();
+    if (!pedido) return;
+    const ficha = storageDaRota.creatures.find((c) => String(c.id) === pedido.id);
+    if (!ficha || !sistemaGravado(ficha)) return;
+    voltaDaSala.current = pedido.volta;
+    substituir({ name: "builder", creatureId: ficha.id });
+    // Só na abertura: o pedido vale uma vez.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const sairDoCriador = useCallback(() => {
+    const volta = voltaDaSala.current;
+    if (!volta) { goToDashboard(); return; }
+    voltaDaSala.current = null;
+    const subir = nuvemAtiva ? enviarNuvem().catch(() => {}) : Promise.resolve();
+    Promise.race([subir, new Promise((r) => setTimeout(r, 3000))]).finally(() => location.assign(volta));
+  }, [goToDashboard]);
+
+  /* O link da Sala aberto direto no app instalado: o Voltar leva à Guilda, e não fecha o app (`src/celular/inicio-da-sala.js`). */
+  useEffect(() => {
+    if (!rotaSala || typeof window === "undefined") return undefined;
+    return ligarInicioNaGuilda(window, { instalado: estaInstalado() });
+  }, [rotaSala]);
+
   /* O clique no card, nas três rotas. A ficha do Afty abre na FICHA FINAL (a
      criatura já montada, aberta para USO, desde 2026-08-05), e a da 2.5.2 no
      painel de combate dela. O lápis continua indo para o criador.
@@ -406,8 +450,8 @@ export default function App() {
     } else {
       storage.create(stamped);
     }
-    goToDashboard();
-  }, [storage, goToDashboard]);
+    sairDoCriador();
+  }, [storage, sairDoCriador]);
 
   const activeCreature = view.creatureId
     ? findCreatureAnywhere(view.creatureId, storage.creatures, COMPENDIUM)
@@ -419,8 +463,35 @@ export default function App() {
      próprio AftyCreatureBuilder já fazia por dentro com a prop `sistema`. */
   const criadorDoAfty = activeCreature ? !!sistemaGravado(activeCreature) : aftyMode;
 
+  /* A CASCA DA GUILDA NO CELULAR (etapa E8, 2026-11-20). Em /EraDeOuro, num telefone, a lista, os Encontros, a Sala e o Mais
+     ficam numa barra de baixo (`src/systems/eradeouro/app/`). A troca de aba passa pela pilha: sair de Fichas empilha, entre as
+     outras substitui, e voltar a Fichas volta (`trocaDeAba`), então o Voltar de qualquer aba cai na lista. */
+  const cascaNoCelular = mesa && celularNaTela && !rotaSala;
+  const abaDaCasca = cascaNoCelular ? abaDaTela(view.name) : null;
+  const irParaAba = (id) => {
+    const tela = ABAS_DA_CASCA.find((a) => a.id === id)?.tela;
+    const plano = trocaDeAba(abaDaCasca, id);
+    if (!tela || plano === "nada") return;
+    if (plano === "voltar") voltar(TELA_LISTA);
+    else if (plano === "ir") ir({ name: tela });
+    else substituir({ name: tela });
+  };
+
   const views = {
-    dashboard: () => (
+    sala: () => (cascaNoCelular && nuvemAtiva ? <AbaSala /> : views.dashboard()),
+    mais: () => (cascaNoCelular ? <MaisDaGuilda fichas={storage.creatures} pastas={storage.folders} importar={storage.importMany} /> : views.dashboard()),
+    dashboard: () => cascaNoCelular ? (
+      <ListaDeFichas
+        fichas={storage.creatures}
+        pastas={storage.folders}
+        vista={folderView}
+        onVista={setFolderView}
+        storage={storage}
+        onAbrir={abrirFicha}
+        onEditar={goToBuilder}
+        onNova={() => setEscolhendoTipo(true)}
+      />
+    ) : (
       <Dashboard
         manager={storage}
         folderView={folderView}
@@ -451,7 +522,7 @@ export default function App() {
         onGoToEncounters={goToEncounters}
         onGoToTemplates={goToTemplates}
         cabecalhoTitulo={rotaPublica ? <AlternadorSistema atual={rotaId === "player" ? "player" : "criatura"} /> : null}
-        cabecalhoAcoes={<ContaNuvem />}
+        cabecalhoAcoes={<>{mesa && nuvemAtiva && <BotaoEntrarNaSala />}<ContaNuvem /></>}
       />
     ),
     tracker: () => {
@@ -505,7 +576,7 @@ export default function App() {
         <AftyCreatureBuilder
           existingCreature={activeCreature}
           onSave={handleCreatureSave}
-          onCancel={goToDashboard}
+          onCancel={sairDoCriador}
           // Só vale para ficha NOVA. Editando, o sistema sai do `rulesVersion`
           // da própria ficha, e não da rota. Ver afty-sistema.js.
           sistema={mesa ? (view.sistemaNovo ?? sistemaDaRota) : sistemaDaRota}
@@ -541,7 +612,7 @@ export default function App() {
       );
     },
     encounters: () => (
-      <ListaDeEncontros lista={listaEncontros} onAbrir={goToEncounter} onVoltar={goToDashboard} />
+      <ListaDeEncontros lista={listaEncontros} onAbrir={goToEncounter} onVoltar={goToDashboard} semVoltar={cascaNoCelular} />
     ),
     templates: () => (
       <TemplateLibrary
@@ -570,7 +641,9 @@ export default function App() {
           ) : precisaCompendio && !compendio ? <Carregando /> : (
             // A tela sob demanda mostra o Carregando enquanto chega (etapa E3).
             <React.Suspense fallback={<Carregando />}>
-              {views[view.name] ? views[view.name]() : views.dashboard()}
+              {abaDaCasca ? (
+                <CascaDaGuilda aba={abaDaCasca} onAba={irParaAba} nuvem={nuvemAtiva}>{views[view.name]()}</CascaDaGuilda>
+              ) : views[view.name] ? views[view.name]() : views.dashboard()}
             </React.Suspense>
           )}
         </div>

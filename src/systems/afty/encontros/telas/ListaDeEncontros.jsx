@@ -169,7 +169,9 @@ function Cartao({ encontro: e, pastas, selecionado, onSelecionar, onAbrir, onDup
 
 /* ---------- a tela ---------- */
 
-export default function ListaDeEncontros({ lista, titulo = "Encontros", onAbrir, onVoltar }) {
+/* `semVoltar` (opcional, etapa E8 do app, 2026-11-20): na casca da Guilda no celular a lista é uma aba da barra de baixo, e o
+   Voltar ao Grimório some. Sem a prop, tudo como antes. */
+export default function ListaDeEncontros({ lista, titulo = "Encontros", onAbrir, onVoltar, semVoltar = false }) {
   const [busca, setBusca] = useState("");
   const [status, setStatus] = useState("__todos__");
   const [pasta, setPasta] = useState("__todas__");
@@ -227,7 +229,7 @@ export default function ListaDeEncontros({ lista, titulo = "Encontros", onAbrir,
   return (
     <div className="afty-ficha ec-raiz">
       <header className="ec-topo">
-        <button type="button" className="afty-botao ec-icone" onClick={onVoltar} aria-label="Voltar ao Grimório" title="Voltar ao Grimório"><ArrowLeft aria-hidden="true" /></button>
+        {!semVoltar && <button type="button" className="afty-botao ec-icone" onClick={onVoltar} aria-label="Voltar ao Grimório" title="Voltar ao Grimório"><ArrowLeft aria-hidden="true" /></button>}
         <div className="ec-topo-titulo">
           <h1 className="ec-titulo">{titulo}</h1>
           <p className="ec-subtitulo"><span>{contagem(lista.encontros.length, "Encontro", "Encontros")}</span>{porStatus.ativo ? <span>{porStatus.ativo} Em Combate</span> : null}</p>

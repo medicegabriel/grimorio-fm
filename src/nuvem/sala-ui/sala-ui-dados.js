@@ -27,3 +27,19 @@ export const ROTA_DO_GRUPO = { site: "/Player", afty: "/Player", eradeouro: "/Er
 
 /** Para onde a Sala volta e onde a ficha do grupo se edita. Grupo ainda desconhecido (antes de entrar na conta) cai em `/Player`. */
 export const rotaDoGrupo = (grupo) => ROTA_DO_GRUPO[grupo] ?? "/Player";
+
+/* O alfabeto do código da Sala (`supabase/salas.sql`, `salas_codigo`): seis letras e números, sem I, L, O, 0 e 1, que se confundem. */
+const CODIGO_DA_SALA = /^[ABCDEFGHJKMNPQRSTUVWXYZ2-9]{6}$/;
+
+/**
+ * O código de Sala que está num texto colado: o código puro ("k7m2qx", com espaço ou traço no meio) ou o link inteiro
+ * ("https://fichafm.com.br/Sala/K7M2QX", do WhatsApp). Devolve o código em maiúsculas, ou `null` se o texto não traz um código
+ * válido (etapa E7 do app, 2026-11-20).
+ */
+export function codigoDoTexto(texto) {
+  const bruto = String(texto ?? "").trim();
+  if (!bruto) return null;
+  const doLink = /\/sala\/([^/?#\s]+)/i.exec(bruto);
+  const codigo = (doLink ? doLink[1] : bruto).replace(/[\s-]/g, "").toUpperCase();
+  return CODIGO_DA_SALA.test(codigo) ? codigo : null;
+}
