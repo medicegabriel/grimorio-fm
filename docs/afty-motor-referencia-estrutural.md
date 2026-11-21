@@ -67,6 +67,7 @@ sintaticamente (grep no próprio texto do arquivo por linhas `import`) e comport
 | `afty-invocacoes-tipos.js` | as regras por tipo de invocação, os estados de mesa e a contagem em campo: o resolvedor, o derive e a sessão de mesa leem, e a sessão não pode importar o resolvedor (2026-09-30) |
 | `afty-invocacoes-caracteristicas.js` | o catálogo de Características de Invocação: o resolvedor e a família de addon o leem (2026-09-30) |
 | `afty-estilo-sombras-catalogo.js` | o catálogo da Expansão do Novo Estilo das Sombras (regra, progressão, efeitos, modificações de Aptidão): o resolvedor do Estilo, o validador de pacote em `afty-addons.js` e a Ficha Final o leem (2026-10-04) |
+| `afty-posturas-catalogo.js` | as Posturas de Combate: o `afty-combate` monta o `POSTURA_OPCOES` com elas no escopo de módulo, e a Ficha G2 entra no ciclo pelo `afty-habilidades`, que as reexporta (2026-11-21) |
 
 **Regra prática:** antes de adicionar `import` no topo de qualquer um destes arquivos, rode
 `node asserts/t-ordem-modulos.mjs`. Se precisar mesmo de um dado externo dentro de uma dessas
@@ -76,6 +77,12 @@ importar algo. Foi assim que `afty-extras-nativos.js` resolveu precisar de `func
 (de `afty-schema.js`) sem tocar no arquivo folha: `funcionamentosComNativos()` mora no módulo novo,
 e os 4 consumidores reais (`afty-efeitos.js:efeitosDaTecnica`, `AftyCreatureBuilder.jsx`,
 `AftyFicha.jsx`, `PainelDeCombatente.jsx`) chamam o wrapper no lugar da função crua.
+
+**A porta muda com a tela (2026-11-21).** Desde a E10 a abertura do App não alcança o motor, então a primeira tela sob demanda
+decide por onde o ciclo é avaliado. O criador, a lista de Encontros e a Sala entram pelo `afty-efeitos`, a Ficha G2 e a Clássica
+pelo `afty-habilidades` (por `ui/armas-transformaveis`, `ficha-sessao` e `afty-concessao`). Entrar pelo `afty-habilidades` fazia o
+corpo do `afty-combate` rodar antes do dele e quebrava no `POSTURAS_DE_COMBATE`, até a folha nova. O `t-app-entradas.mjs` acha,
+pelo grafo, o módulo por onde cada `import()` do `src/` entra no ciclo e carrega cada um sozinho.
 
 **Verificação obrigatória em qualquer mudança de import**: `node asserts/t-ordem-modulos.mjs`
 sozinho já pega 90% dos problemas — é rápido e não precisa de browser.

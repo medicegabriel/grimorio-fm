@@ -112,6 +112,9 @@ const FOLHAS = [
   ["ficha/ficha-barreiras-estado.js", "a sessao o importa, e as operacoes de barreira importam a sessao"],
   // Entrou em 2026-11-17 (Encontro Unificado, etapa 3): a interface dos motores do Encontro.
   ["encontros/motores/interface.js", "os dois motores a leem, e o do Afty entra pela cadeia do derive"],
+  /* ⚠ ENTROU EM 2026-11-21: o afty-combate monta o `POSTURA_OPCOES` com ele no escopo de módulo. A Ficha G2 entra no ciclo pelo
+     afty-habilidades, o corpo do afty-combate roda antes do dele, e o array lido de lá estava na zona morta do `const`. */
+  ["afty-posturas-catalogo.js", "o afty-combate o lê no escopo de módulo, e a Ficha G2 entra no ciclo pelo afty-habilidades"],
   ["afty-schema.js", "todo mundo cria ficha em branco"],
   ["afty-alma-regime.js", "o schema o importa para migrar a Alma das fichas antigas"],
   ["afty-alma-estados.js", "o derive e as telas leem a regra dos Estados da Alma"],
@@ -204,6 +207,24 @@ try {
    com outra variável, é sintoma de um segundo ciclo e aí sim tem de acender. */
 t("ou o afty-equipamentos carrega primeiro, ou quebra so pelo motivo conhecido",
   saidaEquip === "ok" || (saidaEquip.startsWith("QUEBROU") && saidaEquip.includes("ARMA_GRUPOS")), true);
+
+/* 4. ENTRAR PELO `afty-habilidades` PRIMEIRO, que é a porta da Ficha G2 (por ui/armas-transformaveis, ficha-sessao e
+      afty-concessao). Até 2026-11-21 ela quebrava com "Cannot access 'POSTURAS_DE_COMBATE' before initialization", e era
+      latente porque a abertura do App entrava pelo derive. A E10 tirou o motor da abertura e a Ficha virou a primeira porta.
+      Aqui a expectativa é estrita: essa ordem tem de carregar. As portas de cada tela estão em t-app-entradas.mjs. */
+const codigoHab = `import { register } from "node:module";`
+  + `register("${shim}", import.meta.url);`
+  + `const m = await import(${JSON.stringify(R + "afty-habilidades.js")});`
+  + `const c = await import(${JSON.stringify(R + "afty-combate.js")});`
+  + `console.log(m.AFTY_HABILIDADES.length > 0 && c.COMBATE_ESTADOS.length > 0 ? "ok" : "vazio");`;
+let saidaHab;
+try {
+  saidaHab = execFileSync(process.execPath, ["--input-type=module", "-e", codigoHab],
+    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
+} catch (e) {
+  saidaHab = `QUEBROU: ${String(e.stderr ?? e.message).split("\n").find((l) => /Error/.test(l))?.trim() ?? "?"}`;
+}
+t("o afty-habilidades carrega primeiro, e o afty-combate depois dele", saidaHab, "ok");
 
 if (bad.length) {
   console.log(`FALHAS (${bad.length}):`);

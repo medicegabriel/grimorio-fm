@@ -6,9 +6,11 @@ register(
 
 const R = new URL("../src/systems/afty/", import.meta.url).href;
 /* ⚠ ORDEM IMPORTA, e o motivo é anterior a este trabalho: importar
-   afty-habilidades.js como PRIMEIRO módulo estoura um ciclo em afty-combate.js
-   ("Cannot access 'POSTURAS_DE_COMBATE' before initialization"). Confirmado
-   idêntico no HEAD. O app entra sempre pelo derive, então é latente. */
+   afty-habilidades.js como PRIMEIRO módulo estourava um ciclo em afty-combate.js
+   ("Cannot access 'POSTURAS_DE_COMBATE' before initialization"). Deixou de ser
+   latente na E10, quando a Ficha G2 virou a primeira porta do navegador, e foi
+   consertado em 2026-11-21 com a folha afty-posturas-catalogo.js. A ordem pelo
+   derive fica aqui porque é a de todos os asserts (t-ordem-modulos.mjs). */
 const { deriveAfty } = await import(R + "afty-derive.js");
 const AD = await import(R + "afty-addons.js");
 const H = await import(R + "afty-habilidades.js");

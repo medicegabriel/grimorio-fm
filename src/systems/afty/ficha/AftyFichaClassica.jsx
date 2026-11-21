@@ -171,7 +171,12 @@ export default function AftyFicha({
   // nunca entrou em jogo. O clamp de leitura abaixo acerta o resto.
   /* ⚠ A SESSÃO VEM DA LOJA (`sessao-loja.js`), como na G2: a mesma chave, vista ao vivo quando outra aba a muda. O derive da montagem só
      roda na primeira leitura da chave. */
-  const sessaoBruta = useSessaoDaLoja(alvoId, () => deriveAfty(ficha));
+  /* Os addons da ficha entram antes deste derive, pela mesma razão da G2 (2026-11-21): sem eles os máximos da sessão nova saíam do
+     catálogo que estivesse no ar, e na Guilda o PV vindo de addon virava "Dano na Alma". */
+  const sessaoBruta = useSessaoDaLoja(alvoId, () => {
+    aplicarAddons(addonsEmDiaDaFicha(ficha));
+    return deriveAfty(ficha);
+  });
   const [tab, setTab] = useState("acoes");
   const [compacto, setCompacto] = useState(false);
   // Vantagem e desvantagem, e se o histórico está aberto. Os dois são de TELA, e

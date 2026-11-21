@@ -108,5 +108,72 @@ t("a lista de espera não grava nada", [listaDeEspera("x").pronto, listaDeEspera
 t("as telas de Encontro esperam a lista", [APP.includes("if (!listaPronta) return <Carregando />;"), APP.includes("encounters: () => (!listaPronta ? <Carregando /> :")], [true, true]);
 t("o fechamento da Sala espera a lista de verdade", APP.includes("if (rotaSala || !listaPronta) return undefined;"), true);
 t("um Encontro guardado no histórico reabre antes de a lista chegar", APP.includes('if (t.name === "encounter") return !listaEncontros.pronto ||'), true);
+
+/* ---------- 2026-11-21: POR QUAL MÓDULO CADA PORTA SOB DEMANDA ENTRA NO CICLO ----------
+   Desde a E10 a abertura não alcança o motor, então a primeira tela sob demanda que o navegador baixa decide por onde o ciclo
+   do motor (CLAUDE.md, "Ordem de módulos") é avaliado. A Ficha G2 entrava pelo `afty-habilidades` (por ui/armas-transformaveis,
+   ficha-sessao e afty-concessao), o corpo do `afty-combate` rodava antes do dele, e no `npm run dev` a Ficha e depois o criador
+   caíam com "Cannot access 'POSTURAS_DE_COMBATE' before initialization". O build passava porque o Rolldown junta tudo num pedaço.
+
+   As PORTAS acima são `.js` e carregam no Node. As telas são `.jsx`, então aqui o caminho é em duas partes: o grafo estático acha,
+   para cada `import()` do `src/`, o PRIMEIRO módulo do ciclo que a avaliação (busca em profundidade, na ordem dos imports)
+   alcança, e cada um desses módulos de entrada carrega sozinho num processo limpo. É o mesmo que o navegador faz, porque o que vem
+   antes do ciclo no caminho termina de avaliar inteiro e não muda a ordem lá dentro. */
+const fs = await import("node:fs");
+const todosDoSrc = [];
+const varrer = (dir) => {
+  for (const nome of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, nome.name);
+    if (nome.isDirectory()) varrer(p);
+    else if (/\.jsx?$/.test(nome.name)) todosDoSrc.push(p);
+  }
+};
+varrer(raizSrc);
+const textoSemComentario = (f) => readFileSync(f, "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+const estaticos = new Map(todosDoSrc.map((f) => [f, [...textoSemComentario(f).matchAll(
+  /^\s*(?:import|export)\s[^;]*?from\s*["']([^"']+)["']|^\s*import\s*["']([^"']+)["']/gm,
+)].map((m) => resolver(f, m[1] ?? m[2])).filter(Boolean)]));
+const portasSobDemanda = new Set(todosDoSrc.flatMap((f) => [...textoSemComentario(f).matchAll(/import\(\s*["'](\.[^"']+)["']\s*\)/g)]
+  .map((m) => resolver(f, m[1])).filter(Boolean)));
+// O ciclo é o componente forte do `afty-habilidades`: quem ele alcança e que o alcança de volta.
+const alcanca = (de) => {
+  const vistos = new Set([de]);
+  for (const f of vistos) for (const d of estaticos.get(f) ?? []) vistos.add(d);
+  return vistos;
+};
+const HABILIDADES = path.join(raizSrc, "systems", "afty", "afty-habilidades.js");
+const doCiclo = new Set([...alcanca(HABILIDADES)].filter((f) => alcanca(f).has(HABILIDADES)));
+const entradaNoCiclo = (porta) => {
+  const vistos = new Set();
+  const visita = (f) => {
+    if (doCiclo.has(f)) return f;
+    if (vistos.has(f)) return null;
+    vistos.add(f);
+    for (const d of estaticos.get(f) ?? []) { const achou = visita(d); if (achou) return achou; }
+    return null;
+  };
+  return visita(porta);
+};
+const entradas = new Map();
+for (const porta of portasSobDemanda) {
+  const e = entradaNoCiclo(porta);
+  if (e) entradas.set(relDoSrc(e), [...(entradas.get(relDoSrc(e)) ?? []), relDoSrc(porta)]);
+}
+t("o ciclo do motor foi achado no grafo", ["afty-habilidades", "afty-equipamentos", "afty-efeitos", "afty-combate"]
+  .every((m) => doCiclo.has(path.join(raizSrc, "systems", "afty", `${m}.js`))), true);
+t("o criador e a Ficha G2 são portas que entram no ciclo",
+  [...entradas.values()].flat().filter((p) => /AftyCreatureBuilder\.jsx$|ficha\/AftyFichaG2\.jsx$/.test(p)).sort(),
+  ["systems/afty/AftyCreatureBuilder.jsx", "systems/afty/ficha/AftyFichaG2.jsx"]);
+for (const [entrada, portas] of entradas) {
+  const codigo = `import { register } from "node:module";
+register(${JSON.stringify(SHIM)}, ${JSON.stringify(import.meta.url)});
+await import(${JSON.stringify(new URL(`../src/${entrada}`, import.meta.url).href)});
+console.log("PORTA OK");`;
+  const r = spawnSync(process.execPath, ["--input-type=module", "-e", codigo], { encoding: "utf8", timeout: 120000 });
+  const saida = `${r.stdout ?? ""}${r.stderr ?? ""}`;
+  const erro = saida.split("\n").find((l) => /Error|before initialization|is not defined|is not a function/.test(l)) ?? "";
+  t(`o ciclo abre por ${entrada} (porta de ${portas.length > 2 ? `${portas.slice(0, 2).join(", ")} e mais ${portas.length - 2}` : portas.join(", ")})`,
+    r.status === 0 && saida.includes("PORTA OK") ? "ok" : erro.trim() || `saída ${r.status}`, "ok");
+}
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 process.exitCode = bad.length ? 1 : 0;

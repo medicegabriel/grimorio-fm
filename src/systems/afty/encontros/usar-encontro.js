@@ -185,7 +185,9 @@ export default function useEncontro(encontroId, lista, {
     const memo = { ultimo: null };
     const derivadoInicial = (id) => () => {
       const f = fichasRef.current?.[id];
-      try { return f ? deriveAfty(f) : null; } catch { return null; }
+      /* Os addons da ficha antes do derive (2026-11-21), como no `sala-espelho.js`: são os máximos da sessão nova, e sem eles o PV
+         vindo de addon nascia como "Dano na Alma" na Guilda. */
+      try { return f ? (aplicarAddons(unirAddons([f]).pacotes), deriveAfty(f)) : null; } catch { return null; }
     };
     const daFonte = (id) => !!fonteRef.current?.tem(id);
     return {
@@ -280,7 +282,8 @@ export default function useEncontro(encontroId, lista, {
     const novoCombatente = (entrada, { lado } = {}) => {
       const { ficha, chave, motor, tipo } = entrada;
       let derived = null;
-      if (motor === MOTOR.AFTY) { try { derived = deriveAfty(ficha); } catch { derived = null; } }
+      // Os addons da ficha antes do derive (2026-11-21): é ele que fixa os máximos do combatente novo e da sessão dele.
+      if (motor === MOTOR.AFTY) { try { aplicarAddons(unirAddons([ficha]).pacotes); derived = deriveAfty(ficha); } catch { derived = null; } }
       if (tipo === TIPO.PERSONAGEM) {
         const c = criarPersonagem(ficha, { chave, derived, lado: lado ?? LADO.JOGADOR });
         return { combatente: c, sessao: lerDaLoja(String(ficha.id), () => derived) };

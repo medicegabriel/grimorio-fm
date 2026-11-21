@@ -1,0 +1,2659 @@
+{
+  "version": "2.0",
+  "exportedAt": "2026-11-21T00:00:00.000Z",
+  "system": "Feiticeiros & Maldições 2.5",
+  "count": 1,
+  "creatures": [
+    {
+      "system": "afty",
+      "rulesVersion": "afty",
+      "name": "Sun Wukong, o Grande Sábio Igual ao Céu",
+      "portraitUrl": null,
+      "portraitFocus": {
+        "x": 50,
+        "y": 50
+      },
+      "core": {
+        "tipo": "combatente",
+        "patamar": "calamidade",
+        "nd": 26,
+        "tamanho": "medio",
+        "tecnicaAttr": "forca",
+        "tecnicaDescricao": "# Ruyi: o Bastão que Segue a Vontade\n\nA técnica de Wukong é a obediência absoluta do Ruyi Jingu Bang, o pilar de ferro que media a profundidade do mar do Rei Dragão do Leste. Por vontade de Wukong o bastão cresce até o céu ou encolhe até caber atrás da orelha, e a energia amaldiçoada dele corre pelo ferro como se fosse o próprio braço. Cada fio de pelo do corpo guarda um fragmento da mesma vontade, e por isso vira clone quando soprado.\n\nEnquanto empunha o Ruyi Jingu Bang, o alcance dos ataques com ele aumenta em 3 metros.",
+        "estiloMarcialNome": "",
+        "tecnicaEfeitos": [
+          {
+            "canal": "alcanceArma",
+            "alvo": "armc_wukong_ruyi",
+            "expr": "3"
+          }
+        ],
+        "funcionamentosAdicionais": [],
+        "origem": {
+          "id": "maldicao-era-de-ouro:maldicao_era_de_ouro",
+          "cla": "maldicao-era-de-ouro:tipo_vingativo_imaginario",
+          "bonusAtributos": {
+            "forca": 2,
+            "destreza": 2
+          },
+          "limites": {
+            "forca": 1,
+            "destreza": 1,
+            "constituicao": 1,
+            "sabedoria": 1
+          }
+        }
+      },
+      "alma": {
+        "atual": 100,
+        "max": 100
+      },
+      "qntPE": "normal",
+      "attrMethod": "pontos",
+      "attrLimite": {
+        "forca": 20,
+        "destreza": 20,
+        "constituicao": 20,
+        "inteligencia": 20,
+        "sabedoria": 20,
+        "presenca": 20
+      },
+      "attributes": {
+        "forca": 15,
+        "destreza": 14,
+        "constituicao": 14,
+        "inteligencia": 10,
+        "sabedoria": 10,
+        "presenca": 10
+      },
+      "attrNivel": {
+        "forca": 5,
+        "destreza": 6,
+        "constituicao": 6,
+        "inteligencia": 0,
+        "sabedoria": 1,
+        "presenca": 0
+      },
+      "pericias": {
+        "atletismo": "mestre",
+        "acrobacia": "mestre",
+        "percepcao": "treinado",
+        "feiticaria": "mestre",
+        "intimidacao": "treinado",
+        "enganacao": "treinado"
+      },
+      "periciasOrdem": null,
+      "periciasPersonalizadas": [],
+      "periciaOficio": "",
+      "periciaOficios": {},
+      "periciasOficiosExtras": [],
+      "periciaAtributoManual": {},
+      "periciasBonus": 0,
+      "resistenciasProf": {
+        "fortitude": "mestre",
+        "reflexos": "treinado",
+        "vontade": "treinado"
+      },
+      "trDaClasse": [],
+      "trSegundo": null,
+      "trAtributoManual": {},
+      "ataquesProf": {},
+      "ataqueFineza": false,
+      "ataqueBasicoId": "corpo",
+      "ataqueAtributoManual": {},
+      "armasDedicadas": [],
+      "defesasDano": {},
+      "catarse": {
+        "saldo": 0,
+        "compras": []
+      },
+      "carteira": {
+        "entradas": [],
+        "gastos": []
+      },
+      "espinho": {
+        "almas": 0,
+        "outros": 0,
+        "compras": {},
+        "equipamentos": []
+      },
+      "tecnicasCombate": {
+        "armas": [],
+        "atributo": "inteligencia"
+      },
+      "talentosConfig": {
+        "tal_mestre_das_armas": {
+          "modo": "armas",
+          "armas": [],
+          "grupo": null
+        },
+        "tal_tempestade_de_ideias": {
+          "pericia": null,
+          "ferramenta": "",
+          "vantagemPericia": null
+        },
+        "tal_artesao_amaldicoado": {
+          "ferramenta": null
+        }
+      },
+      "combate": {
+        "ativo": false,
+        "empolgacao": 1,
+        "insistenciaUsada": false,
+        "manobraAjuste": false,
+        "manobraDesarme": false,
+        "manobraEsquiva": false,
+        "manobraTrabalhoDePes": false,
+        "manobraFinalizadora": null,
+        "brutalidade": false,
+        "brutalidadePE": 0,
+        "brutalidadePilha": 0,
+        "ataqueInconsequente": false,
+        "impactoMisto": false,
+        "resistirPE": 0,
+        "furiaVinganca": false,
+        "imprudenciaMotivadora": false,
+        "machucado": false,
+        "abates": 0,
+        "armasAbsolutas": null,
+        "auraElemental": true,
+        "concentrarAura": [],
+        "golpeComAura": null,
+        "canalizarEmGolpe": false,
+        "canalizacaoMaxima": false
+      },
+      "equipamentos": {
+        "itens": [
+          {
+            "uid": "eq_wukong_ruyi",
+            "tipo": "arma",
+            "refId": "armc_wukong_ruyi",
+            "qtd": 1,
+            "equipado": true,
+            "fa": {
+              "grau": "especial",
+              "encantamentos": [],
+              "habilidadeUnica": ""
+            }
+          }
+        ]
+      },
+      "armasCustom": [
+        {
+          "id": "armc_wukong_ruyi",
+          "nome": "Ruyi Jingu Bang",
+          "classe": "complexa",
+          "categoria": "corpo",
+          "dano": {
+            "dado": "1d8",
+            "duasMaos": "1d10",
+            "tipo": "im"
+          },
+          "critico": 19,
+          "espacos": 1,
+          "custo": 2,
+          "grupo": "bastao",
+          "props": {
+            "ampla": true,
+            "dupla": true,
+            "marcial": true,
+            "versatil": true,
+            "estendida": true
+          },
+          "niveis": {
+            "custoAnterior": false,
+            "desarmado": false,
+            "especiais": []
+          }
+        }
+      ],
+      "forjas": [],
+      "especializacoes": [
+        {
+          "id": "combatente",
+          "nivel": 18
+        },
+        {
+          "id": "conjurador",
+          "nivel": 8
+        }
+      ],
+      "feiticos": [
+        {
+          "id": "feit_wukong_pilar",
+          "nome": "Pilar que Sustenta o Céu",
+          "tipo": "dano",
+          "nivel": 5,
+          "conjuracaoTexto": "",
+          "descricao": "O Ruyi Jingu Bang cresce até rasgar as nuvens e desaba como um pilar de mil toneladas. Tudo na linha faz um TR de Reflexos contra a CD da Técnica: falha sofre o dano de Impacto inteiro e fica Caído, sucesso sofre metade.",
+          "variacaoDeTecnica": false,
+          "variacaoDe": null,
+          "reversaoTecnica": false,
+          "resolucao": "tr",
+          "alvo": "area",
+          "formaArea": "linha",
+          "acao": "comum",
+          "subtipo": "destrutivo",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [
+            {
+              "nome": "Caído",
+              "forca": "fraca"
+            }
+          ],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoPETexto": "",
+          "custoVidaAtivacao": null
+        },
+        {
+          "id": "feit_wukong_imobilizar",
+          "nome": "Feitiço de Imobilizar",
+          "tipo": "dano",
+          "nivel": 5,
+          "conjuracaoTexto": "",
+          "descricao": "Wukong aponta dois dedos e grita a palavra que congela. O alvo faz um TR de Vontade contra a CD da Técnica: na falha sofre o dano Psíquico e fica Paralisado até o fim do próximo turno de Wukong. Um alvo que passou no TR fica imune a este Feitiço pelo resto da cena.",
+          "variacaoDeTecnica": false,
+          "variacaoDe": null,
+          "reversaoTecnica": false,
+          "resolucao": "tr",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "comum",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [
+            {
+              "nome": "Paralisado",
+              "forca": "extrema"
+            }
+          ],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoPETexto": "",
+          "custoVidaAtivacao": null
+        },
+        {
+          "id": "feit_wukong_esmagador",
+          "nome": "Golpe Esmagador",
+          "tipo": "especial",
+          "nivel": 4,
+          "conjuracaoTexto": "",
+          "descricao": "Um golpe de bastão de cima para baixo que racha a guarda. Ataque com o Ruyi Jingu Bang somando o dano Após Ataque. O alvo atingido faz um TR de Fortitude: na falha fica Fragilizado até o fim do próximo turno de Wukong.",
+          "variacaoDeTecnica": false,
+          "variacaoDe": null,
+          "reversaoTecnica": false,
+          "resolucao": "tr",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "comum",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [
+            {
+              "nome": "Fragilizado",
+              "forca": "forte"
+            }
+          ],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoPETexto": "",
+          "custoVidaAtivacao": null
+        },
+        {
+          "id": "feit_wukong_nimbus",
+          "nome": "Golpe da Nuvem Cambalhota",
+          "tipo": "especial",
+          "nivel": 4,
+          "conjuracaoTexto": "",
+          "descricao": "Wukong salta na Nuvem Cambalhota até um inimigo dentro do alcance e golpeia, e um clone de pelo surge ao lado e golpeia outro inimigo próximo. O movimento não provoca ataque de oportunidade e atravessa paredes finas.",
+          "variacaoDeTecnica": false,
+          "variacaoDe": null,
+          "reversaoTecnica": false,
+          "resolucao": "tr",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "comum",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 2,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoPETexto": "",
+          "custoVidaAtivacao": null
+        },
+        {
+          "id": "feit_wukong_ciclone",
+          "nome": "Ciclone do Rei Macaco",
+          "tipo": "dano",
+          "nivel": 5,
+          "conjuracaoTexto": "",
+          "descricao": "Wukong gira o bastão em torno de si como um furacão. Toda criatura na esfera centrada nele faz um TR de Fortitude contra a CD da Técnica: falha sofre o dano de Impacto inteiro e é lançada ao ar, caindo Caída, sucesso sofre metade. Uma criatura que já foi lançada por este Feitiço nesta cena só sofre o dano.",
+          "variacaoDeTecnica": false,
+          "variacaoDe": null,
+          "reversaoTecnica": false,
+          "resolucao": "tr",
+          "alvo": "area",
+          "formaArea": "esfera",
+          "acao": "completa",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [
+            {
+              "nome": "Caído",
+              "forca": "fraca"
+            }
+          ],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoPETexto": "",
+          "custoVidaAtivacao": null
+        },
+        {
+          "id": "feit_wukong_pelos",
+          "nome": "Um Punhado de Pelos",
+          "tipo": "auxiliar",
+          "nivel": 4,
+          "conjuracaoTexto": "",
+          "descricao": "Wukong arranca um punhado de pelos, sopra, e cada fio vira um clone que imita os movimentos dele. Enquanto sustentar, os clones confundem os golpes e Wukong recebe o bônus de Defesa. Um ataque que erra Wukong por 5 ou menos acerta um clone, que vira pelo de novo e deixa o atacante Desorientado até o fim do turno dele.",
+          "variacaoDeTecnica": false,
+          "variacaoDe": null,
+          "reversaoTecnica": false,
+          "resolucao": "tr",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "comum",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "sustentada",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoPETexto": "",
+          "custoVidaAtivacao": null
+        },
+        {
+          "id": "feit_wukong_pedra",
+          "nome": "Corpo de Pedra Inamovível",
+          "tipo": "passivo",
+          "nivel": 5,
+          "conjuracaoTexto": "",
+          "descricao": "Nascido de uma pedra da Montanha das Flores e Frutos e forjado 49 dias no Forno dos Oito Trigramas, o corpo de Wukong não se dobra. Recebe a Redução de Dano Geral da Passiva.",
+          "variacaoDeTecnica": false,
+          "variacaoDe": null,
+          "reversaoTecnica": false,
+          "resolucao": "tr",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "comum",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "rd",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [
+            {
+              "canal": "rdGeral",
+              "expr": "9"
+            }
+          ],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoPETexto": "",
+          "custoVidaAtivacao": null
+        },
+        {
+          "id": "feit_wukong_olhos",
+          "nome": "Olhos de Fogo e Ouro",
+          "tipo": "passivo",
+          "nivel": 5,
+          "conjuracaoTexto": "",
+          "descricao": "O fogo do Forno dos Oito Trigramas deixou nos olhos de Wukong o brilho dourado que enxerga através de disfarces e transformações. Recebe o bônus em Percepção da Passiva, e uma transformação ou disfarce de técnica nunca o engana por mais de uma rodada.",
+          "variacaoDeTecnica": false,
+          "variacaoDe": null,
+          "reversaoTecnica": false,
+          "resolucao": "tr",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "comum",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "pericia",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [
+            {
+              "canal": "bonusPericia",
+              "alvo": "percepcao",
+              "expr": "3"
+            }
+          ],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoPETexto": "",
+          "custoVidaAtivacao": null
+        },
+        {
+          "id": "feit_wukong_salto",
+          "nome": "Nuvem Cambalhota",
+          "tipo": "passivo",
+          "nivel": 5,
+          "conjuracaoTexto": "",
+          "descricao": "Uma cambalhota na nuvem leva Wukong a cento e oito mil li. Em combate, a nuvem fica sob os pés dele e soma o aumento de Movimento da Passiva.",
+          "variacaoDeTecnica": false,
+          "variacaoDe": null,
+          "reversaoTecnica": false,
+          "resolucao": "tr",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "comum",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "golpeador",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "movimento",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [
+            {
+              "canal": "movimento",
+              "expr": "9"
+            }
+          ],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoPETexto": "",
+          "custoVidaAtivacao": null
+        },
+        {
+          "id": "feit_wukong_72",
+          "nome": "As Setenta e Duas Transformações",
+          "tipo": "especial",
+          "nivel": 5,
+          "conjuracaoTexto": "",
+          "descricao": "Wukong assume uma das setenta e duas formas: um gigante de três cabeças e seis braços para a luta. Fora de combate a mesma técnica serve para virar qualquer animal, objeto ou pessoa que ele já tenha visto, com os Olhos de Fogo e Ouro como única forma garantida de perceber o truque.",
+          "variacaoDeTecnica": false,
+          "variacaoDe": null,
+          "reversaoTecnica": false,
+          "resolucao": "tr",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "comum",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "transformacao",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "sustentada",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [
+            "atributo",
+            "rd",
+            "danoFixo"
+          ],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoPETexto": "",
+          "custoVidaAtivacao": null
+        },
+        {
+          "id": "feit_wukong_max",
+          "nome": "Grande Sábio Igual ao Céu",
+          "tipo": "especial",
+          "nivel": "max",
+          "conjuracaoTexto": "",
+          "descricao": "O aro dourado se parte por uma cena. Wukong volta a ser o Grande Sábio que desafiou o Palácio Celestial: o pelo vira chama dourada, o bastão vibra e cada golpe soa como trovão. Dura a cena inteira e cobra os 5 acúmulos de Exaustão no fim do combate.",
+          "variacaoDeTecnica": false,
+          "variacaoDe": null,
+          "reversaoTecnica": false,
+          "resolucao": "tr",
+          "alvo": "unico",
+          "formaArea": "esfera",
+          "acao": "comum",
+          "subtipo": "nenhum",
+          "trocas": {
+            "dados": 0,
+            "acerto": 0,
+            "cd": 0,
+            "alcance": 0,
+            "area": 0,
+            "empurraoDados": 0
+          },
+          "condicoes": [],
+          "sangramento": null,
+          "requisito": null,
+          "focoCondicao": false,
+          "disparos": 2,
+          "continuoModo": "sustentado",
+          "ignorarResistencias": false,
+          "morteDireta": false,
+          "remocao": "nenhuma",
+          "especialSubtipo": "transformacao",
+          "golpesGolpeador": 1,
+          "tecnicaInvisibilidade": false,
+          "fraquezaInvis": "",
+          "itemCusto": 1,
+          "itemGrauTroca": 0,
+          "tecnicaFocoItens": false,
+          "itemNatureza": "consumivel",
+          "itemDescricao": "",
+          "shikigamiInvocacaoId": null,
+          "transfAcao": "comum",
+          "transfDuracao": "cena",
+          "transfNivelTroca": 0,
+          "transfCustoVida": false,
+          "transfEfeitos": [
+            "niveisDano",
+            "ataque",
+            "rd"
+          ],
+          "efeitoAux": "defesa",
+          "alvoAuxAtributo": "forca",
+          "alvoAuxTR": "reflexos",
+          "alvoAuxPericia": null,
+          "permuta": null,
+          "duracaoAux": "imediata",
+          "rodadasDur": 1,
+          "alvosAux": 1,
+          "concentracaoAux": false,
+          "concUsoAux": "alvos",
+          "acaoAux": "padrao",
+          "umGolpe": false,
+          "tiposDanoExtra": 0,
+          "alcancePropria": false,
+          "multiplosAtivo": false,
+          "duracaoMult": "imediata",
+          "rodadasMult": 1,
+          "acaoMult": "padrao",
+          "alvosMult": 1,
+          "efeitosMult": [],
+          "categoriaPassivo": "",
+          "alvoPassivoAtributo": "forca",
+          "alvoPassivoTR": "reflexos",
+          "alvoPassivoPericia": "percepcao",
+          "tiposDanoExtraPassivo": 0,
+          "efeitosPassivo": [],
+          "acaoPersonalizada": "",
+          "alcanceTexto": "",
+          "alvoTexto": "",
+          "duracaoTexto": "",
+          "resolucaoTexto": "",
+          "comCd": true,
+          "rolagens": [],
+          "custoPETexto": "",
+          "custoVidaAtivacao": null,
+          "regraTecnicaMaxima": "oficial"
+        }
+      ],
+      "reducoesCustoFeitico": {
+        "dominancia": null,
+        "manipulacao": []
+      },
+      "estilosSombra": [],
+      "estiloFuncionamento": {
+        "texto": "",
+        "durabilidadeTrilha": null
+      },
+      "habilidadesGerais": [
+        "ger_especializacao",
+        "ger_especializacao",
+        "ger_especializacao",
+        "ger_especializacao",
+        "ger_aptidao",
+        "ger_aptidao",
+        "ger_melhoria_superior",
+        "ger_habilidade_lendaria",
+        "ger_treinamentos",
+        "ger_treinamentos"
+      ],
+      "focosLivres": 0,
+      "periciaAtributo": "inteligencia",
+      "habilidades": [
+        "cmb_repertorio_do_especialista",
+        "cmb_artes_do_combate",
+        "cmb_golpe_especial",
+        "cmb_implemento_marcial",
+        "cmb_renovacao_pelo_sangue",
+        "cmb_assumir_postura",
+        "cmb_extensao_do_corpo",
+        "cmb_armas_escolhidas",
+        "cmb_ataque_extra",
+        "cmb_critico_melhorado",
+        "cmb_espirito_de_luta",
+        "cmb_surto_de_acao",
+        "cmb_aprender_postura",
+        "cmb_armas_perfeitas",
+        "cmb_sincronia_perfeita",
+        "cmb_mestre_da_postura",
+        "cnj_dominio_dos_fundamentos",
+        "cnj_conjuracao_aprimorada",
+        "cnj_adiantar_a_evolucao",
+        "cnj_reforco_amaldicoado",
+        "cnj_energia_inacabavel",
+        "cmb_critico_potente",
+        "cmb_tecnicas_da_forca"
+      ],
+      "escolhasHabilidade": {
+        "cmb_repertorio_do_especialista": [
+          "cmb_estilo_massivo",
+          "cmb_estilo_duplo",
+          "cmb_estilo_defensivo"
+        ],
+        "cmb_assumir_postura": [
+          "cmb_postura_do_ceu",
+          "cmb_postura_da_tempestade",
+          "cmb_postura_do_dragao"
+        ],
+        "cmb_armas_escolhidas": [
+          "cmb_grupo_bastao"
+        ]
+      },
+      "especializacaoConfig": {},
+      "escolhasTalento": {},
+      "talentos": [],
+      "invocacoes": [],
+      "origemContadores": {},
+      "hordas": [],
+      "quimeras": [],
+      "fundamentosPerdidos": [],
+      "aptidoes": {
+        "au": 5,
+        "cl": 5,
+        "bar": 2,
+        "dom": 5,
+        "er": 0
+      },
+      "aptidoesAmaldicoadas": [
+        "mal_regeneracao_corporal",
+        "mal_regeneracao_ampliada",
+        "mal_regeneracao_maxima",
+        "mal_revestimento",
+        "mal_revestimento_evoluido",
+        "mal_superioridade_fisica",
+        "mal_estoque_ampliado",
+        "aura_reforcada",
+        "aura_macica",
+        "canalizar_em_golpe",
+        "canalizacao_avancada",
+        "estimulo_muscular",
+        "raio_negro",
+        "dominio_simples",
+        "tecnica_maxima"
+      ],
+      "aptidaoOpcoes": {},
+      "aptidaoOpcoesRepetidas": {},
+      "dominios": [],
+      "dominioAtivoId": null,
+      "treinamentos": {
+        "luta": 4,
+        "resistencia": 4,
+        "agilidade": 4,
+        "controle_energia": 4,
+        "energia_reversa": 0
+      },
+      "treinamentoAlvos": {},
+      "treinamentoEscolhas": {},
+      "treinoEscolhaFeiticos": {},
+      "votos": {
+        "contratuais": [],
+        "mecanicos": [
+          {
+            "id": "voto_wukong_aro",
+            "nome": "O Aro Dourado",
+            "narrativa": "A tiara de ouro que Guanyin entregou ao monge Tang aperta a cabeça de Wukong a cada recitação do Sutra do Aro Apertado. Preso a ela, ele aprendeu a conter a fúria, e a contenção deixou a vontade dele de pedra.",
+            "beneficio": {
+              "texto": "",
+              "efeitos": [
+                {
+                  "canal": "bonusTR",
+                  "alvo": "vontade",
+                  "expr": "bt"
+                }
+              ]
+            },
+            "maleficio": {
+              "texto": "",
+              "efeitos": [
+                {
+                  "canal": "bonusTR",
+                  "alvo": "integridade",
+                  "expr": "-piso(bt / 2)"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "pacto": {
+        "nome": "",
+        "descricao": "",
+        "maleficios": [],
+        "beneficios": []
+      },
+      "modificacoesCorporais": {
+        "descricao": "",
+        "efeitosBase": [],
+        "limite": 0,
+        "enxertos": []
+      },
+      "tita": {
+        "ativo": false,
+        "membros": 5
+      },
+      "caracteristicasAmaldicoadas": [
+        "maldicao-era-de-ouro:ca_capacidade_de_voo",
+        "maldicao-era-de-ouro:ca_desenvolvimento_fisico",
+        "maldicao-era-de-ouro:ca_carapaca_mutante",
+        "maldicao-era-de-ouro:ca_instinto_sanguinario",
+        "maldicao-era-de-ouro:ca_presenca_nefasta",
+        "maldicao-era-de-ouro:ca_olhos_adicionais"
+      ],
+      "caracteristicasAmaldicoadasAlvos": {
+        "maldicao-era-de-ouro:ca_desenvolvimento_fisico": {
+          "atributo": "constituicao"
+        },
+        "maldicao-era-de-ouro:ca_carapaca_mutante": {
+          "tipo": "im"
+        }
+      },
+      "treinosEspeciais": [],
+      "treinoEspecialProgresso": {},
+      "focosBonus": 0,
+      "statOverrides": {},
+      "melhoriasSuperiores": [
+        "mel_precisao",
+        "mel_resistencia",
+        "mel_defesa"
+      ],
+      "habilidadesLendarias": [
+        "len_aperfeicoamento_de_atributo",
+        "len_resistencia_lendaria",
+        "len_negar_a_morte"
+      ],
+      "escolhasAltoNivel": {
+        "mel_resistencia": [
+          "fortitude"
+        ],
+        "len_aperfeicoamento_de_atributo": [
+          "forca"
+        ]
+      },
+      "aparencia": {
+        "presetId": "padrao",
+        "vars": {
+          "--afty-fundo": "#1a0b08",
+          "--afty-fundo-brilho": "radial-gradient(120% 60% at 50% -10%, #e2a72e33, transparent 70%)",
+          "--afty-card": "#2a120d",
+          "--afty-poco": "#3a1a12",
+          "--afty-borda": "#5e2617",
+          "--afty-borda-forte": "#c9952f",
+          "--afty-texto": "#f6e7cf",
+          "--afty-texto-suave": "#e0c39a",
+          "--afty-texto-fraco": "#c2a17f",
+          "--afty-destaque": "#e2a72e",
+          "--afty-destaque-texto": "#f3c75a",
+          "--afty-destaque-fundo": "#e2a72e2e",
+          "--afty-pv": "#e0533c",
+          "--afty-pe": "#5cb8d6",
+          "--afty-alma": "#c27ae0",
+          "--afty-cura": "#6fcf7a",
+          "--afty-aviso": "#f0b13a",
+          "--afty-veu": "rgb(20 6 4 / 0.6)",
+          "--afty-sombra": "0 2px 12px rgb(0 0 0 / 0.45)"
+        },
+        "fonte": null,
+        "raio": null,
+        "imagem": null,
+        "css": ""
+      },
+      "preferenciasFicha": null,
+      "recursoProprio": null,
+      "addons": [
+        {
+          "id": "regras-grimorio",
+          "nome": "Regras Grimorio",
+          "versao": "1.0.0",
+          "autor": "Afty",
+          "descricao": "Dobra o PV final sem dobrar a Integridade da Alma. Fontes que consultam o PV Máximo usam o valor anterior à dobra. Feitiços Passivos da Técnica não consomem PE Máximo. Se o Voto do Santo da Espada estiver ativo, somente a redução de PE Máximo pela metade é ignorada.",
+          "resumo": "Dobra o PV final sem dobrar a Alma e isenta as Passivas do custo de PE Máximo",
+          "categoria": "regras",
+          "paraRaw": "afty",
+          "permite": [],
+          "libera": [],
+          "concedeAptidoes": [],
+          "substituiEnergiaReversa": null,
+          "incompativeis": [],
+          "adaptacoes": [],
+          "bloodfeast": null,
+          "acoesMotor": [],
+          "funcionamentos": [],
+          "estilos": [],
+          "atributos": {},
+          "feiticos": [],
+          "pericias": [],
+          "estadosCombate": [],
+          "contadoresOrigem": [],
+          "feiticosVinculados": [],
+          "contadoresSessao": [],
+          "catarse": null,
+          "espinho": null,
+          "corrupcao": null,
+          "orbitas": null,
+          "pactoPadrao": null,
+          "votoAutomatico": null,
+          "regrasAfty": {
+            "multiplicadorPvFinal": 2,
+            "passivasSemCustoPeMaximo": true,
+            "ignoraMultiplicadorPeMaximoDeVotos": true
+          },
+          "composicao": null,
+          "acrescenta": {},
+          "substitui": {}
+        },
+        {
+          "id": "cofre-de-feiticos",
+          "nome": "Cofre de Feitiços",
+          "versao": "1.0.0",
+          "autor": "Afty",
+          "descricao": "Tranca com senha o texto dos Feitiços e dos Funcionamentos Básicos desta ficha. O texto SAI do arquivo e vira um blob cifrado (AES-GCM, chave derivada da senha por PBKDF2), então a ficha exportada não contém o conteúdo. Os números continuam todos à vista, para quem for avaliar. Trancar, destrancar e desinstalar este addon pedem a senha. Ele protege o TEXTO e não a ficha: quem tiver o arquivo pode tentar quebrar a senha offline, então use uma frase longa.",
+          "resumo": "Tranca com senha o texto dos Feitiços da ficha, e os números continuam à vista",
+          "categoria": "ferramentas",
+          "paraRaw": "afty",
+          "permite": [
+            "cofre"
+          ],
+          "libera": [],
+          "concedeAptidoes": [],
+          "substituiEnergiaReversa": null,
+          "incompativeis": [],
+          "adaptacoes": [],
+          "bloodfeast": null,
+          "acoesMotor": [],
+          "funcionamentos": [],
+          "estilos": [],
+          "atributos": {},
+          "feiticos": [],
+          "pericias": [],
+          "estadosCombate": [],
+          "contadoresOrigem": [],
+          "feiticosVinculados": [],
+          "contadoresSessao": [],
+          "catarse": null,
+          "espinho": null,
+          "corrupcao": null,
+          "orbitas": null,
+          "pactoPadrao": null,
+          "votoAutomatico": null,
+          "regrasAfty": null,
+          "composicao": null,
+          "acrescenta": {},
+          "substitui": {}
+        },
+        {
+          "id": "alma-livre",
+          "nome": "Alma Livre",
+          "versao": "1.0.0",
+          "autor": "Afty",
+          "descricao": "Devolve o Talento Alma Livre à lista de Talentos da Ficha de Player. O Talento saiu da lista do jogador em 2026-09-01 e continua inteiro na ficha de criatura: este pacote não muda uma linha do texto nem do efeito dele, só reabre a porta. Instale junto de um pacote que remende o Talento (o Flugel faz isso) para o jogador receber a versão remendada.",
+          "resumo": "Devolve o Talento Alma Livre à lista do Player",
+          "categoria": "talentos",
+          "paraRaw": "afty",
+          "permite": [],
+          "libera": [
+            "soPorAddon:tal_alma_livre"
+          ],
+          "concedeAptidoes": [],
+          "substituiEnergiaReversa": null,
+          "incompativeis": [],
+          "adaptacoes": [],
+          "bloodfeast": null,
+          "acoesMotor": [],
+          "funcionamentos": [],
+          "estilos": [],
+          "atributos": {},
+          "feiticos": [],
+          "pericias": [],
+          "estadosCombate": [],
+          "contadoresOrigem": [],
+          "feiticosVinculados": [],
+          "contadoresSessao": [],
+          "catarse": null,
+          "espinho": null,
+          "corrupcao": null,
+          "orbitas": null,
+          "pactoPadrao": null,
+          "votoAutomatico": null,
+          "regrasAfty": null,
+          "composicao": null,
+          "acrescenta": {},
+          "substitui": {}
+        },
+        {
+          "id": "atencao-so-percepcao",
+          "nome": "Atenção Só Pela Percepção",
+          "versao": "1.0.0",
+          "autor": "Afty",
+          "descricao": "O poder que dá Percepção e Atenção ao mesmo tempo passa a dar só a Percepção. A Atenção da ficha segue vindo da Percepção.",
+          "resumo": "O bônus de Percepção não soma de novo na Atenção",
+          "categoria": "regras",
+          "paraRaw": "afty",
+          "permite": [],
+          "libera": [],
+          "concedeAptidoes": [],
+          "substituiEnergiaReversa": null,
+          "incompativeis": [],
+          "adaptacoes": [],
+          "bloodfeast": null,
+          "acoesMotor": [],
+          "funcionamentos": [],
+          "estilos": [],
+          "atributos": {},
+          "feiticos": [],
+          "pericias": [],
+          "estadosCombate": [],
+          "contadoresOrigem": [],
+          "feiticosVinculados": [],
+          "contadoresSessao": [],
+          "catarse": null,
+          "espinho": null,
+          "corrupcao": null,
+          "orbitas": null,
+          "pactoPadrao": null,
+          "votoAutomatico": null,
+          "regrasAfty": {
+            "atencaoSoPercepcao": true
+          },
+          "composicao": null,
+          "acrescenta": {},
+          "substitui": {}
+        },
+        {
+          "id": "pericias-era-de-ouro",
+          "nome": "Perícias da Era de Ouro",
+          "versao": "1.0.0",
+          "autor": "Afty",
+          "descricao": "Cria as perícias Guerra e Nobreza. Guerra usa Inteligência. Nobreza usa Inteligência ou Presença, à escolha de quem a treina.",
+          "resumo": "Cria as perícias Guerra e Nobreza",
+          "categoria": "regras",
+          "paraRaw": "afty",
+          "permite": [],
+          "libera": [],
+          "concedeAptidoes": [],
+          "substituiEnergiaReversa": null,
+          "incompativeis": [],
+          "adaptacoes": [],
+          "bloodfeast": null,
+          "acoesMotor": [],
+          "funcionamentos": [],
+          "estilos": [],
+          "atributos": {},
+          "feiticos": [],
+          "pericias": [
+            {
+              "id": "guerra",
+              "nome": "Guerra",
+              "atributo": "inteligencia"
+            },
+            {
+              "id": "nobreza",
+              "nome": "Nobreza",
+              "atributo": "inteligencia",
+              "atributos": [
+                "inteligencia",
+                "presenca"
+              ]
+            }
+          ],
+          "estadosCombate": [],
+          "contadoresOrigem": [],
+          "feiticosVinculados": [],
+          "contadoresSessao": [],
+          "catarse": null,
+          "espinho": null,
+          "corrupcao": null,
+          "orbitas": null,
+          "pactoPadrao": null,
+          "votoAutomatico": null,
+          "regrasAfty": null,
+          "composicao": null,
+          "acrescenta": {},
+          "substitui": {}
+        },
+        {
+          "id": "treino-testes-de-resistencia",
+          "nome": "Treino de Testes de Resistência",
+          "versao": "1.0.0",
+          "autor": "Templas",
+          "descricao": "Uma Linha de Treinamento repetível, uma vez para cada Teste de Resistência exceto Integridade. A 1ª etapa torna treinado no TR escolhido (ou +1 no teste, se outra fonte já dava o treino) e a 2ª torna mestre (ou +2, se outra fonte já dava o mestre), contando o TR que vem da Classe. A 2ª e a 4ª conferem o Nível de Personagem e o atributo do TR escolhido. O Completo reduz a margem de crítico em 2 em Astúcia e Vontade, e dá +2 em Fortitude e Reflexos. A 3ª e a 4ª etapa (vantagem ou +3 por rodada, e subir o nível de sucesso uma vez por cena) ficam de mesa.",
+          "resumo": "Treino por TR com pré-requisitos de ND e atributo, e bônus no Completo",
+          "categoria": "treinos",
+          "paraRaw": "afty",
+          "permite": [],
+          "libera": [],
+          "concedeAptidoes": [],
+          "substituiEnergiaReversa": null,
+          "incompativeis": [],
+          "adaptacoes": [],
+          "bloodfeast": null,
+          "acoesMotor": [],
+          "funcionamentos": [],
+          "estilos": [],
+          "atributos": {},
+          "feiticos": [],
+          "pericias": [],
+          "estadosCombate": [],
+          "contadoresOrigem": [],
+          "feiticosVinculados": [],
+          "contadoresSessao": [],
+          "catarse": null,
+          "espinho": null,
+          "corrupcao": null,
+          "orbitas": null,
+          "pactoPadrao": null,
+          "votoAutomatico": null,
+          "regrasAfty": null,
+          "composicao": null,
+          "acrescenta": {
+            "treinamentos": [
+              {
+                "id": "testes_de_resistencia",
+                "nome": "Treino de Testes de Resistência",
+                "repetivel": true,
+                "alvoTipo": "tr",
+                "alvoLabel": "Teste de Resistência",
+                "resumo": "Treinando suas táticas defensivas em um âmbito específico, você se aprimora de forma a conseguir evitar certos tipos de ataques e Feitiços específicos.\n\nAo realizar esse treinamento, você deve escolher um TR, exceto Integridade. Os benefícios dele se aplicam apenas ao TR escolhido. Você pode fazer esse treino uma vez para cada TR, exceto Integridade.",
+                "etapas": [
+                  {
+                    "n": 1,
+                    "focos": 1,
+                    "requisito": null,
+                    "beneficio": "Você se torna treinado no TR escolhido. Caso já fosse treinado, recebe +1 em testes desse TR.",
+                    "efeitos": [
+                      {
+                        "canal": "proficienciaTRCasoJa",
+                        "alvo": "instancia",
+                        "expr": "1"
+                      }
+                    ]
+                  },
+                  {
+                    "n": 2,
+                    "focos": 1,
+                    "requisito": [
+                      {
+                        "tipo": "nd",
+                        "valor": 13
+                      },
+                      {
+                        "tipo": "atributoDoAlvo",
+                        "valor": 12
+                      }
+                    ],
+                    "beneficio": "Você se torna mestre no TR escolhido. Caso já fosse mestre, recebe +2 em testes desse TR.",
+                    "efeitos": [
+                      {
+                        "canal": "proficienciaTRCasoJa",
+                        "alvo": "instancia",
+                        "expr": "2"
+                      }
+                    ]
+                  },
+                  {
+                    "n": 3,
+                    "focos": 1,
+                    "requisito": null,
+                    "beneficio": "Você pode, uma vez por rodada, receber vantagem ou um bônus de +3 em um teste do TR. Você pode usar esse efeito uma quantidade de vezes por cena igual a metade do seu bônus de maestria."
+                  },
+                  {
+                    "n": 4,
+                    "focos": 2,
+                    "requisito": [
+                      {
+                        "tipo": "nd",
+                        "valor": 22
+                      },
+                      {
+                        "tipo": "atributoDoAlvo",
+                        "valor": 16
+                      }
+                    ],
+                    "beneficio": "Você pode, uma vez por cena, aumentar o nível de sucesso em um teste do TR escolhido."
+                  }
+                ],
+                "completo": {
+                  "beneficio": "Você reduz a margem de crítico necessária para o TR em 2 caso seja Astúcia ou Vontade. Você recebe um bônus de +2 no TR caso seja Fortitude ou Reflexos.",
+                  "efeitos": [
+                    {
+                      "canal": "margemCriticoTR",
+                      "alvo": "instancia",
+                      "expr": "2",
+                      "soAlvos": [
+                        "astucia",
+                        "vontade"
+                      ]
+                    },
+                    {
+                      "canal": "bonusTR",
+                      "alvo": "instancia",
+                      "expr": "2",
+                      "soAlvos": [
+                        "fortitude",
+                        "reflexos"
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "substitui": {}
+        },
+        {
+          "id": "regras-da-era-de-ouro",
+          "nome": "Regras da Era de Ouro",
+          "versao": "1.1.0",
+          "autor": "Templas",
+          "descricao": "A 4ª etapa do Treino de Perícia passa a somar metade do bônus de treinamento nos testes da perícia escolhida, no lugar do sucesso garantido. Acrescenta o Talento Costas Largas, que aumenta em 2 o limite de itens vestidos, e os Clãs Uchiha e Hyuuga ao Herdado, com o Sharingan e o Byakugan.",
+          "resumo": "Treino de Perícia com metade do BT na 4ª etapa, o Talento Costas Largas e os Clãs Uchiha e Hyuuga",
+          "categoria": "regras",
+          "paraRaw": "afty",
+          "permite": [],
+          "libera": [],
+          "concedeAptidoes": [],
+          "substituiEnergiaReversa": null,
+          "incompativeis": [],
+          "adaptacoes": [],
+          "bloodfeast": null,
+          "acoesMotor": [],
+          "funcionamentos": [],
+          "estilos": [],
+          "atributos": {},
+          "feiticos": [],
+          "pericias": [],
+          "estadosCombate": [
+            {
+              "id": "sharingan_ativo",
+              "label": "Sharingan Ativo",
+              "tipo": "bool",
+              "title": "Sharingan",
+              "requerEscolha": "edo_uchiha_sharingan_desperto"
+            },
+            {
+              "id": "byakugan_ativo",
+              "label": "Byakugan Ativo",
+              "tipo": "bool",
+              "title": "Byakugan",
+              "requerEscolha": "edo_hyuuga_byakugan_desperto"
+            }
+          ],
+          "contadoresOrigem": [],
+          "feiticosVinculados": [],
+          "contadoresSessao": [],
+          "catarse": null,
+          "espinho": null,
+          "corrupcao": null,
+          "orbitas": null,
+          "pactoPadrao": null,
+          "votoAutomatico": null,
+          "regrasAfty": null,
+          "composicao": null,
+          "acrescenta": {
+            "clas": [
+              {
+                "id": "cla_uchiha",
+                "nome": "Clã Uchiha",
+                "resumo": "Sharingan",
+                "caracteristicas": [
+                  {
+                    "id": "bonus_atributo",
+                    "nome": "Bônus em Atributo",
+                    "descricao": "Um membro do Clã Uchiha recebe 3 pontos de atributo para distribuir livremente, com um limite de 2 em um único atributo.",
+                    "bonus": {
+                      "distribuir": 3,
+                      "maxPorAtributo": 2
+                    }
+                  },
+                  {
+                    "id": "maestria_de_cla",
+                    "nome": "Maestria de Clã",
+                    "descricao": "Você recebe maestria em 2 perícias entre Furtividade ou Percepção. Ao invés de receber maestria em 2 perícias, você pode escolher se tornar especialista em uma.",
+                    "escolhas": [
+                      {
+                        "id": "edo_uchiha_maestria",
+                        "label": "Maestria de Clã",
+                        "vagas": 2,
+                        "opcoes": [
+                          {
+                            "id": "edo_uchiha_tr_furtividade",
+                            "nome": "Furtividade",
+                            "descricao": "Você se torna treinado em Furtividade.",
+                            "custo": 1,
+                            "efeitos": [
+                              {
+                                "canal": "proficienciaPericia",
+                                "alvo": "furtividade",
+                                "expr": "1",
+                                "nome": "Maestria de Clã"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "edo_uchiha_tr_percepcao",
+                            "nome": "Percepção",
+                            "descricao": "Você se torna treinado em Percepção.",
+                            "custo": 1,
+                            "efeitos": [
+                              {
+                                "canal": "proficienciaPericia",
+                                "alvo": "percepcao",
+                                "expr": "1",
+                                "nome": "Maestria de Clã"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "edo_uchiha_ms_furtividade",
+                            "nome": "Furtividade (Especialista)",
+                            "descricao": "Você se torna especialista em Furtividade, no lugar de dois treinamentos.",
+                            "custo": 2,
+                            "efeitos": [
+                              {
+                                "canal": "proficienciaPericia",
+                                "alvo": "furtividade",
+                                "expr": "2",
+                                "nome": "Maestria de Clã"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "edo_uchiha_ms_percepcao",
+                            "nome": "Percepção (Especialista)",
+                            "descricao": "Você se torna especialista em Percepção, no lugar de dois treinamentos.",
+                            "custo": 2,
+                            "efeitos": [
+                              {
+                                "canal": "proficienciaPericia",
+                                "alvo": "percepcao",
+                                "expr": "2",
+                                "nome": "Maestria de Clã"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "heranca_do_odio",
+                    "nome": "Herdeiro do Ódio",
+                    "descricao": "Herdando o poder da linhagem Uchiha, você herda o ódio de seus antepassados junto de seus poderes. A partir do nível de personagem 4, você estará passivo a despertar seu Sharingan."
+                  },
+                  {
+                    "id": "sharingan",
+                    "nome": "Sharingan",
+                    "descricao": "Os olhos capazes de ler os movimentos de seus oponentes, o Sharingan é conhecido e temido por todo o mundo, sendo comparados aos Seis Olhos quando se trata de ser um jujutsu ocular poderoso, superando o mesmo em alguns pontos, pois diferente do jujutsu ocular do Clã Gojo, o Sharingan não só aumenta a eficácia de seu usuário enquanto utilizando energia amaldiçoada, mas também melhora seus atributos físicos em um geral, aumentando sua capacidade de desviar de ataques, assim como aumenta a capacidade de desferir ataques.\n\nPara despertar seu Sharingan, o membro do Clã Uchiha deve passar por uma situação de extremo estresse ou um trauma muito grande, o qual faz seu sangue borbulhar e traz átona a Maldição do Ódio. O processo do despertar do Sharingan só pode ser iniciado a partir do nível 4, com o seu despertar sendo decidido por seu mestre, pois para despertar o mesmo, um Uchiha deve passar por momentos de grande estresse, como o de uma luta muito difícil, a perda de alguém próximo e diversas outras situações possíveis, porém não sendo um processo alcançado por treino.\n\nAo passar por uma situação de extremo estresse, você desperta seu Sharingan, o qual inicia com 1 tomoe, sendo considerado uma técnica de nível 2, tendo seu custo de ativação como uma ação bônus. Em seu despertar, você não precisa gastar PE e nem ações, por conta de ser seu despertar e você não poder controlar o momento de sua ativação.\n\nPara cada tomoe que possuir, sua DEF e seu TR de Reflexos receberão um aumento de +2, mostrando a capacidade reflexiva que o mesmo lhe proporciona. Além disso, enquanto com o Sharingan ativo, seu usuário recebe acesso as Habilidades Oculares, técnicas exclusivas do Sharingan, o qual envolvem de ilusões até o aprimoramento de combate de seu usuário.\n\nSeu Sharingan possui uma evolução, chamada de Mangekyou Sharingan, o qual só pode ser atingida ao presenciar a morte de um de seus amados, ou... os matando. O uso prolongado de seu Mangekyou Sharingan pode causar danos irreversíveis ao seu usuário, e para conseguir uma nova luz, um membro do Clã Uchiha deve arrancar os olhos de um outro Uchiha e implantar em si mesmo, que com o tempo, seu corpo irá se acostumar e então seus olhos ficarão completamente recuperados.",
+                    "escolhas": [
+                      {
+                        "id": "edo_uchiha_sharingan",
+                        "label": "Sharingan",
+                        "vagas": 1,
+                        "ndMin": 4,
+                        "opcoes": [
+                          {
+                            "id": "edo_uchiha_sharingan_desperto",
+                            "nome": "Sharingan Desperto",
+                            "descricao": "Seu Sharingan despertou. Com ele ativo, sua DEF e seu TR de Reflexos recebem +2 para cada tomoe.",
+                            "efeitos": [
+                              {
+                                "canal": "defesa",
+                                "expr": "2 * (1 + (nd >= 8) + (nd >= 10))",
+                                "quando": "regras_da_era_de_ouro_sharingan_ativo",
+                                "duracao": "temporaria",
+                                "nome": "Sharingan"
+                              },
+                              {
+                                "canal": "bonusTR",
+                                "alvo": "reflexos",
+                                "expr": "2 * (1 + (nd >= 8) + (nd >= 10))",
+                                "quando": "regras_da_era_de_ouro_sharingan_ativo",
+                                "duracao": "temporaria",
+                                "nome": "Sharingan"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "evolucao_maldita",
+                    "nome": "Evolução Maldita",
+                    "mesa": true,
+                    "descricao": "A evolução do Sharingan é a principal maldição dos Uchihas, os eventos traumáticos o qual seu usuário precisa passar para o evoluir, aumentam cada vez mais o ódio em seu coração.\n\n1 Tomoe: Para receber acesso ao Sharingan, assim como descrito na seção anterior, seu usuário deverá ter nível 4 de personagem e acesso a técnicas de nível 2, sendo esta a forma mais fraca e básica do Sharingan, o qual dá acesso a apenas Habilidades Oculares de até nível 1 para seu usuário, por conta da liberação mínima de seu poder, possuído acesso a 2 habilidades oculares de nível 2.\n\n2 Tomoe: Ao nível de personagem 8 e ao possuir acesso a habilidades de técnica de nível 3, seu usuário recebe acesso ao segundo tomoe de seu Sharingan, agora já evoluído e próximo a sua mais forte liberação, liberando acesso as Habilidades Oculares de nível 2 para seu usuário, assim como liberando acesso a uma quantidade de técnicas de nível 3 igual ao seu Nível de Aptidão em Controle e Leitura.\n\n3 Tomoe: No nível de personagem 10 e ao possuir acesso a habilidades de técnica de nível 3, você recebe o terceiro tomoe de seu sharingan, fazendo com que seus reflexos estejam mais aprimorados que nunca. Seu usuário recebe acesso a Habilidades Oculares de nível 3, assim como uma quantidade de Habilidades Oculares de Nível 4 igual ao seu bônus de maestria.\n\nAtivação: Ativar seu Sharingan é considerado uma ação bônus dentro de um combate, e ação livre em cenas comuns. Para cada tomoe, o custo de ativação do Sharingan aumenta em 2PE, assim como o custo para o manter aumenta em 1PE."
+                  },
+                  {
+                    "id": "olho_emprestado",
+                    "nome": "Olho Emprestado",
+                    "mesa": true,
+                    "descricao": "Assim como o ninja que copia, feiticeiros não Uchihas ainda sim podem possuir o Sharingan, porém sendo um processo não natural e muito arriscado, visto que para este processo, o Uchiha precisa abdicar de seu próprio olho.\n\nEnquanto com o Sharingan ativo, um Uchiha pode arrancar o próprio olho e assim o oferecer a outro feiticeiro, fazendo com que o mesmo tenha de arrancar o próprio olho e colocar o Sharingan como uma prótese em seu lugar. Sendo este um Sharingan emprestado, por conta disso, seu novo usuário não pode desativa-lo e nem o evoluir, porém caso seu usuário original evolua o mesmo, então aquele que possuir o Sharingan emprestado evoluirá junto, com exceção de possuir o Mangekyou Sharingan Eterno, pois se trata de um processo diferente das comuns evoluções.\n\nUm feiticeiro com um Sharingan emprestado não pode o desativa-lo, fazendo com que o mesmo fique ativo a todo o momento, porém, por não ser um Uchiha, seu corpo não é capaz de suportar tal poder a todo o momento, fazendo com que o número máximo de rodadas o qual você pode utilizar de seu Sharingan seja uma quantidade igual ao seu bônus de maestria, o qual ao ultrapassar esta quantidade, você passa a receber 1 ponto de exaustão para cada rodada subsequente.\n\nSeu usuário seguirá os mesmos parâmetros do Sharingan comum, como a aquisição de Habilidades Oculares e aumento de CA e em seu TR de Reflexos."
+                  },
+                  {
+                    "id": "mangekyou_sharingan",
+                    "nome": "Mangekyou Sharingan",
+                    "mesa": true,
+                    "descricao": "O Sharingan, a lendária técnica ocular do clã Uchiha, é tanto um símbolo de sua força devastadora quanto da maldição que assombra sua linhagem. Porém, nos momentos mais sombrios de desespero e dor, essa habilidade atinge um novo patamar de poder e mistério: o Mangekyou Sharingan.\n\nEssa evolução não é fruto de treinamento árduo ou de determinação inabalável, mas do impacto avassalador de um trauma emocional extremo. A perda de um ente querido, uma traição insuportável ou um sacrifício irreparável são os gatilhos que despertam essa forma sombria e poderosa. Cada evento esculpe uma marca indelével na alma do Uchiha, revelando a essência mais profunda (e muitas vezes trágica) de sua linhagem amaldiçoada.\n\nO Mangekyou Sharingan é mais do que uma demonstração de poder, é um reflexo da dor que molda o portador. Único para cada Uchiha, ele personifica a individualidade de seu despertar e manifesta habilidades exclusivas que desafiam a lógica e a compreensão. Desde a manipulação do espaço-tempo até o domínio de chamas eternas ou a criação de ilusões inescapáveis, as técnicas do Mangekyou são tão fascinantes quanto aterradoras.\n\nPara que o Sharingan evolua para o Mangekyou, o portador deve vivenciar um momento de dor tão profundo que abale sua própria essência. Não é necessariamente a morte de alguém querido que desencadeia essa transformação, mas qualquer trauma intenso o suficiente para transformar permanentemente a personalidade do Uchiha. Em termos de mecânica de jogo, o Mangekyou Sharingan pode ser despertado apenas quando o personagem atinge o nível 12. O momento exato de seu despertar é único e subjetivo, variando de acordo com a narrativa e as experiências do personagem. Por isso, a decisão final sobre o momento e as circunstâncias do despertar deve ser acordada com o Mestre, garantindo que o evento seja uma parte significativa da história do Uchiha e de sua evolução.\n\nDespertar da Agonia: Com o despertar de seu Mangekyou Sharingan, o ódio comina pelo amago de sua alma, liberando um poder imenso ao seu corpo, o qual explode em uma fúria imparável. Ao despertar seu Mangekyou Sharingan, o usuário do mesmo recebe acesso as Habilidades Oculares de nível 5, alcançando assim o ápice que o Sharingan pode proporcionar ao seu usuário, tanto em Genjutsus, quanto em habilidades destrutivas.\n\nUm Mangekyou Sharingan pode ser idealizado e criado a vontade de um jogador, porém, como base, um Mangekyou e sua Habilidade Especial devem ser decididas pelo jogador juntamente de seu mestre, fazendo assim com que sua habilidade especial retrate perfeitamente o trauma alojado no coração do Uchiha.\n\nPrimariamente, existem dois tipos de Mangekyou, o Choku Tomoe, e o Supairaru Tomoe, sendo o Choku Tomoe uma manifestação extremamente rara de um Mangekyou Sharingan visto que o Choku Tomoe aumenta as capacidades de combate gerais de seu usuário, amplificando ainda mais os benefícios que o Sharingan comum proporciona ao seu usuário. Já o Supairaru Tomoe é o tipo mais comum de um Mangekyou se manifestar, e sua capacidade se prioriza na utilização das Habilidades Especiais do Mangekyou, se diversificando do Choku Tomoe."
+                  },
+                  {
+                    "id": "mangekyou_sharingan_eterno",
+                    "nome": "Mangekyou Sharingan Eterno",
+                    "mesa": true,
+                    "descricao": "Um poder que pouquíssimos Uchihas acabam por alcançar, o Mangekyou Sharingan Eterno é a manifestação mais pura e completa do poder do Mangekyou Sharingan, o qual deixa de causar danos aos olhos de seu usuário, agora podendo ser utilizado sem qualquer restrição, porém com um grande custo emocional ao seu usuário.\n\nPara possuir acesso ao Mangekyou Sharingan Eterno é necessário que o usuário do Mangekyou Sharingan transplante em si mesmo um Mangekyou Sharingan de um parente próximo, sendo considerados parentes próximos aqueles que derivam diretamente de sua linhagem sanguínea. Seu usuário precisa arrancar os próprios olhos e no lugar, colocar os olhos de seu parente, que irão se adaptar ao seu corpo, curando assim sua cegueira e alcançando um novo nível no patamar do Sharingan. O processo para se acostumar com os seus novos olhos deve ser definido pela staff, tendo como base um interlúdio ou para personagens com um menor valor de Constituição, dois interlúdios.\n\nVale ressaltar que, para conseguir o Mangekyou Sharingan Eterno, é necessário que no momento da transplantação, seu usuário deve ainda possuir acesso ao seu Mangekyou, caso esteja completamente cego, o processo já não pode mais ser feito, visto que durante o transplante o Mangekyou daquele que estará recebendo os olhos deverá estar ativo. Além disso, não é possível ter apenas 1 Mangekyou Sharingan Eterno, necessitando que seu usuário possua ambos os olhos de seu parente para realizar este transplante de maneira correta.\n\nDiferente do Mangekyou Sharingan, para ativar seu Mangekyou Sharingan Eterno o seu usuário não necessita da utilização de uma Habilidade Especial de Mangekyou, podendo o ativar como uma Ação Bônus e gastando 10 PE, pagando 2 PE por turno para manter o mesmo. Os benefícios concedidos pelo Mangekyou Sharingan Eterno ao seu usuário são os mesmo que o Mangekyou Sharingan concede, com a única diferença sendo justamente não ser mais passivo a cegueira do Mangekyou, além de pôr os olhos agora presentes em seu corpo não serem seus, você acaba absorvendo as habilidades daquele olho, fazendo assim com que você possua acesso as Habilidades Especiais de Mangekyou o qual os olhos transplantados concediam a seu antigo usuário, além de manter suas próprias Habilidades Especiais de Mangekyou.\n\nPor mais que seja em casos raros, um Uchiha pode sim transplantar olhos que não sejam de parentes próximos para a aquisição de um Mangekyou Sharingan Eterno, porém sendo este um processo de alto risco e muito complexo de se realizar, por conta disso, para realizar este processo o Uchiha necessita de um personagem com a especialização de Suporte ao seu lado, o qual precisará passar em 3 testes de Medicina para que o processo possa ser concluído, necessitando de especialização nesta pericia, e o Uchiha precisará passar em 3 testes de Fortitude para resistir as dores intensas, sendo as CDs dos testes:\n\nTeste 1: CD = 15 + nível do Uchiha.\nTeste 2: CD = 20 + nível do Uchiha.\nTeste 3: CD = 20 + nível do Uchiha + bônus de maestria do Uchiha\n\nEm uma falha, o processo falha e o olho o qual estava sendo transplantado é danificado, não podendo mais ser utilizado para transplantar."
+                  }
+                ]
+              },
+              {
+                "id": "cla_hyuuga",
+                "nome": "Clã Hyuuga",
+                "caracteristicas": [
+                  {
+                    "id": "bonus_atributo",
+                    "nome": "Bônus em Atributo",
+                    "descricao": "Um membro do Clã Hyuuga recebe 3 Pontos de Atributo para distribuir livremente, com um limite de 2 em um único Atributo.",
+                    "bonus": {
+                      "distribuir": 3,
+                      "maxPorAtributo": 2
+                    }
+                  },
+                  {
+                    "id": "maestria_de_cla",
+                    "nome": "Maestria de Clã",
+                    "descricao": "Você recebe Treinamento em 2 Perícias entre Percepção ou Medicina. Ao invés de receber Treinamento em 2 Perícias, você pode escolher se tornar Mestre em uma. É possivel abdicar das Perícias para receber metade do Bônus de Treinamento em Todos Acertos.",
+                    "escolhas": [
+                      {
+                        "id": "edo_hyuuga_maestria",
+                        "label": "Maestria de Clã",
+                        "vagas": 2,
+                        "opcoes": [
+                          {
+                            "id": "edo_hyuuga_tr_percepcao",
+                            "nome": "Percepção",
+                            "descricao": "Você se torna treinado em Percepção.",
+                            "custo": 1,
+                            "efeitos": [
+                              {
+                                "canal": "proficienciaPericia",
+                                "alvo": "percepcao",
+                                "expr": "1",
+                                "nome": "Maestria de Clã"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "edo_hyuuga_tr_medicina",
+                            "nome": "Medicina",
+                            "descricao": "Você se torna treinado em Medicina.",
+                            "custo": 1,
+                            "efeitos": [
+                              {
+                                "canal": "proficienciaPericia",
+                                "alvo": "medicina",
+                                "expr": "1",
+                                "nome": "Maestria de Clã"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "edo_hyuuga_ms_percepcao",
+                            "nome": "Percepção (Mestre)",
+                            "descricao": "Você se torna mestre em Percepção, no lugar de dois treinamentos.",
+                            "custo": 2,
+                            "efeitos": [
+                              {
+                                "canal": "proficienciaPericia",
+                                "alvo": "percepcao",
+                                "expr": "2",
+                                "nome": "Maestria de Clã"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "edo_hyuuga_ms_medicina",
+                            "nome": "Medicina (Mestre)",
+                            "descricao": "Você se torna mestre em Medicina, no lugar de dois treinamentos.",
+                            "custo": 2,
+                            "efeitos": [
+                              {
+                                "canal": "proficienciaPericia",
+                                "alvo": "medicina",
+                                "expr": "2",
+                                "nome": "Maestria de Clã"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "edo_hyuuga_acertos",
+                            "nome": "Metade do BT em Todos os Acertos",
+                            "descricao": "Você abdica das perícias e recebe metade do Bônus de Treinamento em todos os Acertos.",
+                            "custo": 2,
+                            "efeitos": [
+                              {
+                                "canal": "bonusAcerto",
+                                "expr": "piso(bt / 2)",
+                                "nome": "Maestria de Clã"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "herdeiro_da_visao_divina",
+                    "nome": "Herdeiro da Visão Divina",
+                    "descricao": "Herdeiro do poder do Byakugan, você possui um potencial único para despertar a visão do clã. A partir do Nível 4 de Personagem, você estará apto a despertar seu Byakugan."
+                  },
+                  {
+                    "id": "suspiro_das_petalas",
+                    "nome": "Suspiro das Pétalas",
+                    "descricao": "O Clã Hyuuga detém diversas informações secretas, assim como técnicas exclusivas e encobertas dos outros. Um membro do Clã Hyuuga pode aprender a Aptidão Especial de Domínio, Emoção da Pétala Decadente."
+                  },
+                  {
+                    "id": "byakugan",
+                    "nome": "Byakugan",
+                    "descricao": "Os olhos conhecidos como \"Visão Celestial\", o Byakugan é uma das habilidades oculares mais respeitadas e temidas do mundo, reverenciado por sua precisão e versatilidade. Esses olhos lendários concedem a seus portadores uma visão quase divina, permitindo enxergar em 360º ao seu redor (com exceção de um pequeno ponto cego) e ver o fluxo de energia nos corpos vivos, além de detectar presenças escondidas ou invisíveis.\n\nO Byakugan é um poder que aprimora significativamente as habilidades de combate, permitindo que seu usuário ataque pontos vitais para enfraquecer ou incapacitar o inimigo. Com ele, membros do Clã Hyuuga podem dominar artes marciais únicas, como o Estilo Punho Gentil, que combina precisão cirúrgica e manipulação de energia para anular as capacidades de seus oponentes.\n\nDiferente de outras técnicas oculares, o Byakugan é uma habilidade inata para todos os membros do Clã Hyuuga, mas sua verdadeira potencialidade só pode ser plenamente desbloqueada através de treinamento intenso e uma forte conexão emocional ou espiritual.\n\nPara atingir o pleno poder do Byakugan, o membro do clã deve passar por um momento de profunda introspecção ou uma experiência significativa que o conecte com a herança ancestral de sua linhagem.\n\nEsse processo pode ser iniciado a partir do Nível 4 e é guiado pelo mestre da campanha. O despertar completo do Byakugan não ocorre apenas pelo treinamento físico ou pelo tempo, mas sim pela necessidade de um evento que desperte a força interior do personagem, como precisar a todo custo vencer uma batalha impossível, um momento de auto compreensão profundo ou precisar proteger alguém importante para o Hyuuga.\n\nAtivar o Byakugan é considerado uma Ação Bônus, necessitando pagar 4 PE para sua ativação, e 1 PE para mantê-lo ativo, enquanto com ele ativo, seu usuário recebe:\n• Metade de seu Nível em testes de Percepção e Jogadas de Ataque Corpo a Corpo.\n• Possui vantagem contra Condição Desprevenido e Desorientado, tendo uma visão de 359,99 graus, com o único ponto cego sendo bem atrás de seu pescoço.\n• Se torna Imune a Invisibilidades e a Camuflagens, podendo ver atráves de estruturas e pessoas, compreendendo completamente o fluxo de Energia Amaldiçoada que flue por elas.\n\nPorém, ao atingir uma quantidade de Rodadas com seu Byakugan ativo igual a metade de seu Bônus de Treinamento, por conta do grande cansaço que a utilização deste poder ocular gera, seu usuário receberá 1 Ponto de Fadiga, que ao chegar em Pontos de Fadiga igual a metade de seu Bônus de Treinamento, então seu usuário receberá 1 Ponto de Exaustão.\nAo possuir acesso as aptidões de energia reversa \"Regeneração Aprimorada\" e \"Fluxo Constante\", seu usuário poderá gastar PE equivalente a metade do PE necessário para recuperar um membro, assim negando o Ponto de Exaustão que iria receber, necessitando curar novamente para continuar a não receber.",
+                    "escolhas": [
+                      {
+                        "id": "edo_hyuuga_byakugan",
+                        "label": "Byakugan",
+                        "vagas": 1,
+                        "ndMin": 4,
+                        "opcoes": [
+                          {
+                            "id": "edo_hyuuga_byakugan_desperto",
+                            "nome": "Byakugan Desperto",
+                            "descricao": "Seu Byakugan despertou. Com ele ativo, você soma metade do seu Nível em testes de Percepção e em Jogadas de Ataque Corpo a Corpo.",
+                            "efeitos": [
+                              {
+                                "canal": "bonusPericia",
+                                "alvo": "percepcao",
+                                "expr": "piso(nd / 2)",
+                                "quando": "regras_da_era_de_ouro_byakugan_ativo",
+                                "duracao": "temporaria",
+                                "nome": "Byakugan"
+                              },
+                              {
+                                "canal": "bonusAcerto",
+                                "alvo": "corpo",
+                                "expr": "piso(nd / 2)",
+                                "quando": "regras_da_era_de_ouro_byakugan_ativo",
+                                "duracao": "temporaria",
+                                "nome": "Byakugan"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "talentos": [
+              {
+                "id": "costas_largas",
+                "nome": "Costas Largas",
+                "grupo": "geral",
+                "descricao": "Seus ombros e costas largas aguentam o peso de mais relíquias do que o corpo comum, sem que a energia de uma atrapalhe a de outra. O seu limite de itens vestidos aumenta em 2.",
+                "requisitos": [],
+                "limiteAcessorios": 2
+              }
+            ]
+          },
+          "substitui": {
+            "treinamentos": [
+              {
+                "id": "pericia",
+                "etapas": [
+                  {
+                    "n": 1,
+                    "focos": 1,
+                    "requisito": null,
+                    "beneficio": "Escolha uma perícia: você se torna treinado nela. Caso já seja, adicione +1 em testes de perícia usando-a.",
+                    "efeitos": [
+                      {
+                        "tipo": "profPericia",
+                        "valor": 1,
+                        "semCredito": true
+                      },
+                      {
+                        "tipo": "pericia",
+                        "valor": 1,
+                        "quandoProf": 1
+                      }
+                    ]
+                  },
+                  {
+                    "n": 2,
+                    "focos": 1,
+                    "requisito": null,
+                    "beneficio": "Duas vezes por descanso, você pode escolher realizar um teste da perícia escolhida para o treinamento com vantagem."
+                  },
+                  {
+                    "n": 3,
+                    "focos": 1,
+                    "requisito": null,
+                    "beneficio": "Você se torna mestre na perícia escolhida. Caso já seja, adicione +2 em testes de perícia usando-a.",
+                    "efeitos": [
+                      {
+                        "tipo": "profPericia",
+                        "valor": 2,
+                        "semCredito": true
+                      },
+                      {
+                        "tipo": "pericia",
+                        "valor": 2,
+                        "quandoProf": 2
+                      }
+                    ]
+                  },
+                  {
+                    "n": 4,
+                    "focos": 2,
+                    "requisito": null,
+                    "beneficio": "Você adiciona metade do seu bônus de treinamento em testes da perícia escolhida.",
+                    "efeitos": [
+                      {
+                        "canal": "bonusPericia",
+                        "alvo": "instancia",
+                        "expr": "piso(bt / 2)"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "maldicao-era-de-ouro",
+          "nome": "Maldição - Era de Ouro",
+          "versao": "2.1.1",
+          "autor": "Templas",
+          "descricao": "Origem Maldição, do suplemento Era de Ouro. Acrescenta a Origem 'Maldição Era de Ouro' (variação de 'maldicao': destrava as 18 Aptidões de Maldição do raw e qualquer Talento com requisito de Origem Maldição, mas some do seletor de quem não instala o Addon e mostra nome e Tipo próprios). Ela se divide em 5 Tipos de Espírito Amaldiçoado (Comum, De Medo, Vingativo, Vingativo Imaginário, Enfermo), escolhidos no card da Origem como o Clã do Herdado. Bônus em Atributo, Natureza Amaldiçoada (aptidão a escolha + 10°/15° nível + PE a cada nível ímpar), Restrição Amaldiçoada e Anatomia Amaldiçoada são da Origem inteira; só o Tipo muda entre os 5, e cada um traz a característica exclusiva dele. Anatomia Amaldiçoada libera o pool de Características Amaldiçoadas (`caracteristicasAmaldicoadas`, primitiva do mesmo nome): 18 entradas, 1 no 1° nível e mais 1 a cada 5 níveis. Notas de motor: 'Resquícios de Emoções' (Tipo De Medo) pede reduzir o pré-requisito de nível de UM GRUPO de Aptidões, mas o canal `reduzNivelAptidao` só abaixa TODOS os grupos de uma vez (não existe canal por grupo ainda), então aplica mais largo que o texto, nunca mais estreito. O benefício condicional de 'Espírito Vingativo' contra o foco de vingança, o reviver de 'Memórias Esquecidas' e a redução de custo de UMA técnica de 'Epidemia sem Controle' não têm canal (escolha condicional em combate, revivificação e redução de custo de uma única técnica): ficam só no texto, procedimento de mesa, com o sinalizador de Mesa na tela. Das 18 Características Amaldiçoadas, as que pedem uma escolha abrem o seletor na própria aba e mexem no número: o atributo do Desenvolvimento Físico e do Desenvolvimento mental (+2, e +1 nos níveis 15 e 20, valor e limite juntos), o tipo de dano da Carapaça Mutante e a perícia do Corpo Especializado (+1d4). As de número fixo (Articulações Extensas, Braços Extras, Olhos Adicionais, Instinto Sanguinário, Olhos Sombrios, Pernas Extras) usam canais que já existem. O que não tem canal (chance probabilística, deslocamento de voo e de nado, usos por dia, reação, aliado da página 348) fica em texto de mesa, com a marca Mesa ou o aviso do pedaço que o Motor não cobre. 'Olhos Adicionais' existe TAMBÉM como Aptidão de Anatomia no raw, com número diferente: são duas entradas de fato diferentes, o mesmo nome do livro para as duas, por decisão do autor.",
+          "resumo": "Maldição do suplemento Era de Ouro: 5 Tipos de Espírito e 18 Características Amaldiçoadas",
+          "categoria": "origens",
+          "paraRaw": "afty",
+          "permite": [
+            "caracteristicasAmaldicoadas"
+          ],
+          "libera": [],
+          "concedeAptidoes": [],
+          "substituiEnergiaReversa": null,
+          "incompativeis": [],
+          "adaptacoes": [],
+          "bloodfeast": null,
+          "acoesMotor": [],
+          "funcionamentos": [],
+          "estilos": [],
+          "atributos": {},
+          "feiticos": [],
+          "pericias": [],
+          "estadosCombate": [],
+          "contadoresOrigem": [],
+          "feiticosVinculados": [],
+          "contadoresSessao": [],
+          "catarse": null,
+          "espinho": null,
+          "corrupcao": null,
+          "orbitas": null,
+          "pactoPadrao": null,
+          "votoAutomatico": null,
+          "regrasAfty": null,
+          "composicao": null,
+          "acrescenta": {
+            "origens": [
+              {
+                "id": "maldicao_era_de_ouro",
+                "nome": "Maldição Era de Ouro",
+                "variacaoDe": "maldicao",
+                "clasRotulo": "Tipo",
+                "clasArtigo": "um",
+                "bonusAtributos": {},
+                "clas": [
+                  {
+                    "id": "tipo_comum",
+                    "nome": "Comum"
+                  },
+                  {
+                    "id": "tipo_medo",
+                    "nome": "De Medo"
+                  },
+                  {
+                    "id": "tipo_vingativo",
+                    "nome": "Vingativo"
+                  },
+                  {
+                    "id": "tipo_vingativo_imaginario",
+                    "nome": "Vingativo Imaginário"
+                  },
+                  {
+                    "id": "tipo_enfermo",
+                    "nome": "Enfermo"
+                  }
+                ],
+                "caracteristicas": [
+                  {
+                    "id": "bonus_atributo",
+                    "nome": "Bônus em Atributo",
+                    "descricao": "Uma maldição recebe 4 pontos adicionais para distribuir entre os seus atributos, com um máximo de 3 pontos no mesmo atributo. A cada 4 níveis, você pode aumentar o limite de um atributo em 2.",
+                    "bonus": {
+                      "distribuir": 4,
+                      "maxPorAtributo": 3
+                    },
+                    "poolLimite": {
+                      "porNivel": 4,
+                      "valor": 2
+                    }
+                  },
+                  {
+                    "id": "natureza_amaldicoada",
+                    "nome": "Natureza Amaldiçoada",
+                    "descricao": "Com uma natureza que deriva da própria energia, você já surgiu mais familiarizado com ela e consegue atingir novos patamares mais facilmente. Você recebe uma aptidão amaldiçoada a sua escolha, e outra no 10° e 15° nível, as quais você deve atender os requisitos. Além disso, você recebe 1 ponto de energia amaldiçoada adicional a cada nível ímpar."
+                  },
+                  {
+                    "id": "restricao_amaldicoada",
+                    "nome": "Restrição Amaldiçoada",
+                    "descricao": "Um Espírito Amaldiçoado é composto puramente de energia amaldiçoada, sendo limitado a utilizar única e exclusivamente energia amaldiçoada para tudo. Sempre que receber um ataque provindo de energia reversa, o dano é tratado como vulnerável, mas não pode ser finalizado por objetos que não possuam energia amaldiçoada, também não pode ser finalizado por danos naturais como queda, estruturas e coisas do tipo, também não pode ser afetado ou morto por doenças mundanas e não precisa respirar, mas também não recebe benefícios de comida.",
+                    "mesa": true
+                  },
+                  {
+                    "id": "anatomia_amaldicoada",
+                    "nome": "Anatomia Amaldiçoada",
+                    "descricao": "Um Espírito Amaldiçoado pode apresentar algumas mudanças em seu corpo devido a instabilidade de energia amaldiçoada, o permitindo receber algumas modificações. Recebe no nível 1 uma característica amaldiçoada, recebendo outra a cada 5 níveis."
+                  }
+                ],
+                "efeitos": [
+                  {
+                    "canal": "vagasAptidao",
+                    "expr": "1 + (nd >= 10) + (nd >= 15)",
+                    "nome": "Natureza Amaldiçoada"
+                  },
+                  {
+                    "canal": "pe",
+                    "expr": "piso((nd + 1) / 2)",
+                    "nome": "Natureza Amaldiçoada"
+                  },
+                  {
+                    "canal": "vagasCaracteristicaAmaldicoada",
+                    "expr": "1 + piso(nd / 5)",
+                    "nome": "Anatomia Amaldiçoada"
+                  }
+                ]
+              }
+            ],
+            "clas": [
+              {
+                "id": "tipo_comum",
+                "nome": "Comum",
+                "caracteristicas": [
+                  {
+                    "id": "afinidade_amaldicoada",
+                    "nome": "Afinidade Amaldiçoada",
+                    "descricao": "Esses espíritos são caracterizados por não possuírem um local exato como seu ninho ou até mesmo um local de fortalecimento, vagando sempre a procura de pessoas emocionalmente instáveis para se alimentarem e parasitarem seus corpos. (Exemplo: Maldições que o Geto consumia em jujutsu kaisen 0 e também da moça da padaria do flashback do nanami.) A aptidão a escolha e o ponto de energia amaldiçoada adicional já são a Natureza Amaldiçoada da Origem: este Tipo não soma nada mecanicamente novo além dela."
+                  }
+                ]
+              },
+              {
+                "id": "tipo_medo",
+                "nome": "De Medo",
+                "caracteristicas": [
+                  {
+                    "id": "resquicios_de_emocoes",
+                    "nome": "Resquícios de Emoções",
+                    "descricao": "Esses espíritos são caracterizados por se originarem de medos e fobias humanas, possuindo grande poder desde sua formação e não precisam parasitar humanos para se fortalecerem, aumentando seu poder conforme o medo que lhe formou cresce. (Exemplo: Maldições do Desastre e Mahito.) Um Espírito Amaldiçoado de Medo tem a capacidade de reduzir o pré-requisito de nível de um grupo de aptidões em 1."
+                  }
+                ],
+                "efeitos": [
+                  {
+                    "canal": "reduzNivelAptidao",
+                    "expr": "1",
+                    "nome": "Resquícios de Emoções"
+                  }
+                ]
+              },
+              {
+                "id": "tipo_vingativo",
+                "nome": "Vingativo",
+                "caracteristicas": [
+                  {
+                    "id": "espirito_vingativo",
+                    "nome": "Espírito Vingativo",
+                    "descricao": "Esses espíritos amaldiçoados são formados quando um humano morre e se torna um espírito amaldiçoado, seja por posteriormente ser um xamã e acabar por ser morto sem uso de energia amaldiçoada, ou por ter sido amaldiçoado de alguma forma por um xamã. Esses espíritos possuem uma força impressionante e possuem um aumento considerável baseado nas emoções que sentem. (Exemplos: Rika Orimoto e Naoya.) Um Espírito Amaldiçoado Vingativo renasce com um foco de vingança: ao criar esse tipo de maldição, o jogador deve definir quem ou o que é a sua vingança (Pessoas que assassinam por prazer, traidores ou ser específico). Sempre que estiver lutando contra o seu foco, pode escolher um dos seguintes benefícios: receber uma quantidade de níveis de dano em sua arma (equipamento ou natural) igual a metade do seu bônus de treinamento, receber um aumento na sua classe de dificuldade igual a metade do seu bônus de treinamento, ou +2 de acerto multiplicado pela metade do seu bônus de treinamento arredondado para baixo em seus feitiços.",
+                    "mesa": true
+                  }
+                ]
+              },
+              {
+                "id": "tipo_vingativo_imaginario",
+                "nome": "Vingativo Imaginário",
+                "caracteristicas": [
+                  {
+                    "id": "memorias_esquecidas",
+                    "nome": "Memórias Esquecidas",
+                    "descricao": "Esses espíritos são formados por mitos e lendas que trazem medo a humanidade, como criaturas do folclore, lendas urbanas, creepypastas e até mesmo outras formas de espalhar o medo com criaturas fantasiosas. Funcionam basicamente como uma quimera dos espíritos vingativos e de medo, tendo locais e sentimentos que o fortalecem, mas também possuindo mais poder baseado no medo que os humanos sentem de si. (Exemplo: Tamamo-no-mae e Ganesha.) Um Espírito Amaldiçoado Vingativo Imaginário é criado a partir de lendas, e como dizem 'Lendas nunca morrem', então sempre que a maldição morrer ela pode gastar 15 focos de interlúdio para reviver com metade do nível após 7 dias úteis (na vida real) depois, no lugar onde nasceu sua lenda (Templo, túmulo, ruína, etc).",
+                    "mesa": true
+                  }
+                ]
+              },
+              {
+                "id": "tipo_enfermo",
+                "nome": "Enfermo",
+                "caracteristicas": [
+                  {
+                    "id": "epidemia_sem_controle",
+                    "nome": "Epidemia sem Controle",
+                    "descricao": "Esses espíritos amaldiçoados são formados da energia amaldiçoada e pensamentos negativos de humanos que estejam passando por alguma enfermidade. Diferente de espíritos amaldiçoados comuns e até mesmo de outras classificações, esses espíritos já são formados com seu feitiço inato, sendo uma propagação amaldiçoada de sua doença, além de serem fortalecidos por quem carrega sua enfermidade. (Exemplo: Maldição da Varíola.) Um Espírito Amaldiçoado Enfermo tem uma redução de 2PE no custo de uma técnica que é usada após infectar uma criatura.",
+                    "mesa": true
+                  }
+                ]
+              }
+            ],
+            "caracteristicasAmaldicoadas": [
+              {
+                "id": "ca_alma_maldita",
+                "nome": "Alma Maldita",
+                "descricao": "Sua alma é impregnada com energia amaldiçoada, assumindo um aspecto maldito e difícil de se alterar. Quando uma criatura for causar dano na sua alma, esse dano é reduzido à metade antes do teste de Integridade; a partir do nível 15, ele é anulado. Essa habilidade funciona 2 vezes por dia, 3 no nível 6, 4 no nível 12 e 5 no nível 18.",
+                "mesa": true
+              },
+              {
+                "id": "ca_anatomia_incompreensivel",
+                "nome": "Anatomia Incompreensível",
+                "descricao": "O seu corpo tem uma forma que é difícil de compreender. Você tem 25% de chance (resultado '1' em 1d4) de ignorar o dano adicional de um ataque crítico ou um ataque furtivo. No nível 15, se torna 50% (resultado '1 ou 2' em 1d4).",
+                "mesa": true
+              },
+              {
+                "id": "ca_articulacoes_extensas",
+                "nome": "Articulações Extensas",
+                "descricao": "Suas juntas são mais longas, ou suas garras são estendidas, aumentando a distância com que pode atacar. O alcance dos seus ataques corpo a corpo aumenta em 1,5 metros.",
+                "efeitos": [
+                  {
+                    "canal": "alcanceArma",
+                    "alvo": "basico|cat:corpo",
+                    "expr": "1.5",
+                    "nome": "Articulações Extensas"
+                  }
+                ]
+              },
+              {
+                "id": "ca_bracos_extras",
+                "nome": "Braços Extras",
+                "descricao": "Seu corpo possui um par de braços adicionais. Você recebe +2 em testes de prestidigitação e, se tiver pelo menos duas mãos livres, pode usar esse bônus em testes de atletismo. Uma vez por cena pode descer em um passo a ritualização de um feitiço. E recebe um par adicional de mãos, permitindo você equipar dois equipamentos de uma mão ou um equipamento de duas mãos adicional, assim como agarrar duas criaturas e outros benefícios à discrição do Narrador.",
+                "parcial": "O +2 em Prestidigitação já está no número. O +2 em Atletismo com duas mãos livres, a ritualização e as mãos adicionais ficam na mesa.",
+                "efeitos": [
+                  {
+                    "canal": "bonusPericia",
+                    "alvo": "prestidigitacao",
+                    "expr": "2",
+                    "nome": "Braços Extras"
+                  }
+                ]
+              },
+              {
+                "id": "ca_capacidade_de_voo",
+                "nome": "Capacidade de Voo",
+                "descricao": "No seu corpo repousa uma capacidade de voo, que com um estímulo de energia se torna ativa. Uma vez por rodada, como uma ação livre, você pode transformar seu deslocamento de caminhada em deslocamento de voo.",
+                "mesa": true
+              },
+              {
+                "id": "ca_capacidade_de_nado",
+                "nome": "Capacidade de Nado",
+                "descricao": "No seu corpo repousa uma capacidade de nado, que com um estímulo de energia se torna ativa. Uma vez por rodada, como uma ação livre, você pode transformar seu deslocamento de caminhada em deslocamento de nado.",
+                "mesa": true
+              },
+              {
+                "id": "ca_carapaca_mutante",
+                "nome": "Carapaça Mutante",
+                "descricao": "Uma carapaça cobre o seu corpo, sendo uma mutação bizarra, mas resistente. Você recebe resistência a um tipo de dano físico à sua escolha. Depois de feita essa escolha não pode ser mudada.",
+                "alvos": [
+                  {
+                    "id": "tipo",
+                    "tipo": "tipoDano",
+                    "label": "Tipo de Dano",
+                    "opcoes": [
+                      "ct",
+                      "im",
+                      "pf"
+                    ]
+                  }
+                ],
+                "efeitos": [
+                  {
+                    "canal": "resistenciaDano",
+                    "alvo": "escolha:tipo",
+                    "expr": "1",
+                    "nome": "Carapaça Mutante"
+                  }
+                ]
+              },
+              {
+                "id": "ca_corpo_especializado",
+                "nome": "Corpo Especializado",
+                "descricao": "Seu corpo se desenvolve de maneira a possuir um foco. Escolha uma perícia: você recebe um bônus de 1d4 nela.",
+                "alvos": [
+                  {
+                    "id": "pericia",
+                    "tipo": "pericia",
+                    "label": "Perícia"
+                  }
+                ],
+                "efeitos": [
+                  {
+                    "canal": "dadosPericia",
+                    "alvo": "escolha:pericia:d4",
+                    "expr": "1",
+                    "nome": "Corpo Especializado"
+                  }
+                ]
+              },
+              {
+                "id": "ca_devorador_de_energia",
+                "nome": "Devorador de Energia",
+                "descricao": "Sendo envolvido com a própria energia, você pode a devorar quando resiste a uma habilidade originada dela. Quando passar em um teste de resistência para resistir a um Feitiço, você recebe 1 ponto de energia temporário cumulativo.",
+                "mesa": true
+              },
+              {
+                "id": "ca_olhos_adicionais",
+                "nome": "Olhos Adicionais",
+                "descricao": "Estranhamente, mais olhos começam a surgir em seu corpo, apurando o seu sentido da visão. Você recebe um bônus de +2 em Percepção, o qual aumenta em +1 nos níveis 5, 10, 15 e 20; além disso, sua atenção passa a ter como base 12 ao invés de 10.",
+                "efeitos": [
+                  {
+                    "canal": "bonusPericia",
+                    "alvo": "percepcao",
+                    "expr": "2 + (nd >= 5) + (nd >= 10) + (nd >= 15) + (nd >= 20)",
+                    "nome": "Olhos Adicionais"
+                  },
+                  {
+                    "canal": "atencao",
+                    "expr": "2",
+                    "nome": "Olhos Adicionais"
+                  }
+                ]
+              },
+              {
+                "id": "ca_instinto_sanguinario",
+                "nome": "Instinto Sanguinário",
+                "descricao": "Em sua essência há um instinto por sangue e violência. Você adiciona o seu bônus de treinamento na sua Iniciativa; enquanto em uma cena de combate, você também adiciona seu bônus de treinamento na sua Atenção.",
+                "efeitos": [
+                  {
+                    "canal": "iniciativa",
+                    "expr": "bt",
+                    "nome": "Instinto Sanguinário"
+                  },
+                  {
+                    "canal": "atencao",
+                    "expr": "bt",
+                    "quando": "em_combate",
+                    "nome": "Instinto Sanguinário"
+                  }
+                ]
+              },
+              {
+                "id": "ca_olhos_sombrios",
+                "nome": "Olhos Sombrios",
+                "descricao": "Seus olhos guardam escuridão, sendo sombrios por natureza e aguçados. Você recebe Visão no Escuro (p.297 do livro básico). Além disso, você se torna treinado em Percepção e recebe um bônus de +2 em rolagens com a perícia. No nível 12 você passa a ignorar completamente efeitos de escuridão Leve e Total.",
+                "parcial": "O treino em Percepção e o +2 já estão no número. A Visão no Escuro e o efeito de escuridão no nível 12 ficam na mesa.",
+                "efeitos": [
+                  {
+                    "canal": "proficienciaPericia",
+                    "alvo": "percepcao",
+                    "expr": "1",
+                    "nome": "Olhos Sombrios"
+                  },
+                  {
+                    "canal": "bonusPericia",
+                    "alvo": "percepcao",
+                    "expr": "2",
+                    "nome": "Olhos Sombrios"
+                  }
+                ]
+              },
+              {
+                "id": "ca_pernas_extras",
+                "nome": "Pernas Extras",
+                "descricao": "No seu corpo cresce um par de pernas extras. Seu deslocamento aumenta em 4,5 metros e você passa a ignorar terreno difícil que esteja no solo.",
+                "parcial": "O deslocamento já está no número. Ignorar terreno difícil no solo fica na mesa.",
+                "efeitos": [
+                  {
+                    "canal": "movimento",
+                    "expr": "4.5",
+                    "nome": "Pernas Extras"
+                  }
+                ]
+              },
+              {
+                "id": "ca_presenca_nefasta",
+                "nome": "Presença Nefasta",
+                "descricao": "Com um semblante vil, a sua própria presença é nefasta. Toda criatura hostil, ao vê-lo pela primeira vez, deve realizar um teste de resistência de Vontade contra sua CD Amaldiçoada. Em uma falha, ela fica amedrontada por uma rodada. Em um sucesso, ela consegue lidar parcialmente com a sua presença, ficando abalada por uma rodada.",
+                "mesa": true
+              },
+              {
+                "id": "ca_energia_toxica",
+                "nome": "Energia Tóxica",
+                "descricao": "A sua energia é tóxica, capaz de corroer o que entra em contato. Sempre que sofre dano de um ataque corpo a corpo, o atacante perde vida igual ao seu modificador de Constituição.",
+                "mesa": true
+              },
+              {
+                "id": "ca_desenvolvimento_fisico",
+                "nome": "Desenvolvimento Físico",
+                "descricao": "Você alcança um desenvolvimento físico superior, com a própria energia o fortalecendo. Ao obter esta aptidão, um atributo físico (Força, Destreza ou Constituição) a sua escolha aumenta em 2, essa aptidão ignora o limite natural. Nos níveis 15 e 20 aumentam em +1.",
+                "requisitos": [
+                  {
+                    "tipo": "nd",
+                    "valor": 4
+                  }
+                ],
+                "incompativeisIds": [
+                  "ca_desenvolvimento_mental"
+                ],
+                "alvos": [
+                  {
+                    "id": "atributo",
+                    "tipo": "atributo",
+                    "label": "Atributo",
+                    "opcoes": [
+                      "forca",
+                      "destreza",
+                      "constituicao"
+                    ]
+                  }
+                ],
+                "efeitos": [
+                  {
+                    "canal": "atributo",
+                    "alvo": "escolha:atributo",
+                    "expr": "2 + (nd >= 15) + (nd >= 20)",
+                    "nome": "Desenvolvimento Físico"
+                  },
+                  {
+                    "canal": "limiteAtributo",
+                    "alvo": "escolha:atributo",
+                    "expr": "2 + (nd >= 15) + (nd >= 20)",
+                    "nome": "Desenvolvimento Físico"
+                  }
+                ]
+              },
+              {
+                "id": "ca_desenvolvimento_mental",
+                "nome": "Desenvolvimento mental",
+                "descricao": "Você alcança um desenvolvimento mental superior, com a própria energia o fortalecendo. Ao obter esta aptidão, um atributo Mental (Inteligência, Sabedoria ou Presença) a sua escolha aumenta em 2, essa aptidão ignora o limite natural. Nos níveis 15 e 20 aumentam em +1.",
+                "requisitos": [
+                  {
+                    "tipo": "nd",
+                    "valor": 4
+                  }
+                ],
+                "incompativeisIds": [
+                  "ca_desenvolvimento_fisico"
+                ],
+                "alvos": [
+                  {
+                    "id": "atributo",
+                    "tipo": "atributo",
+                    "label": "Atributo",
+                    "opcoes": [
+                      "inteligencia",
+                      "sabedoria",
+                      "presenca"
+                    ]
+                  }
+                ],
+                "efeitos": [
+                  {
+                    "canal": "atributo",
+                    "alvo": "escolha:atributo",
+                    "expr": "2 + (nd >= 15) + (nd >= 20)",
+                    "nome": "Desenvolvimento mental"
+                  },
+                  {
+                    "canal": "limiteAtributo",
+                    "alvo": "escolha:atributo",
+                    "expr": "2 + (nd >= 15) + (nd >= 20)",
+                    "nome": "Desenvolvimento mental"
+                  }
+                ]
+              },
+              {
+                "id": "ca_guia_espiritual",
+                "nome": "Guia Espiritual",
+                "descricao": "Ao nascer ou reviver no mundo humano você recebe um guia que o acompanha, auxiliando a recuperar memórias, ficar mais forte ou guiá-lo ao seu objetivo. Recebe um aliado seguindo as regras da página 348 do livro básico.",
+                "requisitos": [
+                  {
+                    "tipo": "nd",
+                    "valor": 9
+                  }
+                ],
+                "mesa": true
+              }
+            ]
+          },
+          "substitui": {}
+        }
+      ],
+      "regimeAlma": "livro",
+      "narratorNotes": "",
+      "combatState": {
+        "isActive": false,
+        "hpCurrent": 2184,
+        "peCurrent": 171,
+        "almaCurrent": 1092,
+        "activeConditions": [],
+        "customCounters": [],
+        "combatLog": []
+      },
+      "mesa": "eradeouro",
+      "id": "sun-wukong-eradeouro-20261121",
+      "createdAt": "2026-11-21T00:00:00.000Z",
+      "updatedAt": "2026-11-21T00:00:00.000Z",
+      "stats": {
+        "hpMax": 2184,
+        "peMax": 171,
+        "defesa": 61,
+        "cd": 46
+      }
+    }
+  ],
+  "folders": []
+}

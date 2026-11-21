@@ -257,6 +257,10 @@ call-sites para o wrapper. Foi assim que `afty-extras-nativos.js` resolveu preci
 O gatilho mais comum é uma aba nova: o `AftyCreatureBuilder.jsx` importa as abas no topo, e uma aba
 que puxe `afty-equipamentos` inverte a ordem. Foi assim que o app caiu da primeira vez.
 
+Desde a E10 a primeira tela sob demanda também escolhe a porta. A Ficha G2 entra pelo `afty-habilidades` e, até a folha
+`afty-posturas-catalogo.js` (2026-11-21), derrubava a Ficha e o criador no `npm run dev` com `POSTURAS_DE_COMBATE`. O
+`asserts/t-app-entradas.mjs` confere a porta de cada `import()` do `src/`.
+
 ### Addons
 
 A camada em que cada mesa acrescenta conteúdo sem abrir o GitHub. Desenho completo em

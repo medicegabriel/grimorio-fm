@@ -7,6 +7,18 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 
 ---
 
+## Ficha do Sun Wukong (prévia da Guilda), o que segue de mesa (2026-11-21)
+
+A ficha está em `previas/sun-wukong-eradeouro.json` (criatura, ND 26, Calamidade, mesa Era de Ouro, origem Maldição Era de Ouro do
+Tipo Vingativo Imaginário). O teste de importação achou dois defeitos do app, fora da ficha, os dois corrigidos no mesmo dia (a sessão
+nascendo sem os addons da ficha e o criador que não abria no `npm run dev`, ver `docs/afty-status.md`), e deixou o que segue de mesa.
+- **Wukong, o que segue de mesa (sem canal):** a Capacidade de Voo (a característica é texto de mesa, a ficha mostra Voo 0), a
+  imunidade de cena do Feitiço de Imobilizar, o "erro por 5 ou menos acerta um clone" do Um Punhado de Pelos (o bônus de Defesa
+  está no Motor), o reviver da Memórias Esquecidas e a Restrição Amaldiçoada. O retrato não foi gravado: `portraitUrl` pede um link
+  e o arquivo enviado era local.
+
+---
+
 ## App Era de Ouro: o criador no celular, o que a camada de CSS não alcança (etapa E6, 2026-11-20)
 
 A E6 (`docs/app-celular.md`) resolveu o criador no celular por fora, com uma camada de CSS presa a `[data-criador]`. Falta o que
@@ -2410,22 +2422,6 @@ Técnica Máxima podia ser Liberação. Reabrir quando ele decidir.
 uso. O jogador pode declarar quantas quiser.
 **Precisa:** um marcador de gasto na sessão, se o autor quiser rastrear.
 **Anotado:** 2026-08-09, autor: *"Por enquanto Regra Escrita."*
-
----
-
-## AFTY — fragilidades achadas por assert
-
-### Importar `afty-habilidades.js` PRIMEIRO estoura um ciclo
-**Onde:** `src/systems/afty/afty-combate.js` linha 36, `POSTURA_OPCOES`
-**Situação:** `await import("afty-habilidades.js")` como primeiro módulo do processo morre com
-*"Cannot access 'POSTURAS_DE_COMBATE' before initialization"*. É ciclo entre `afty-habilidades.js` e
-`afty-combate.js`, e a ordem de avaliação só fecha certo quando alguém entra pelo `afty-derive.js`.
-**Confirmado ANTERIOR a 2026-08-20:** a mesma falha acontece com o arquivo do HEAD, então não veio
-dos Addons. Hoje é latente porque o app entra sempre pelo derive e o `vite build` passa.
-**Precisa:** ou quebrar o ciclo (mover `POSTURAS_DE_COMBATE` para um módulo folha, no espírito do
-`afty-pericias-catalogo.js`), ou aceitar e deixar escrito que `afty-derive.js` é a única porta de
-entrada. Enquanto não, todo assert novo tem de importar o derive primeiro.
-**Anotado:** 2026-08-20, ao escrever os asserts do registro de Addons
 
 ---
 

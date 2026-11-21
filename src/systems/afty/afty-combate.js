@@ -25,7 +25,9 @@
  * ============================================================
  */
 
-import { EMPOLGACAO_DADOS, EMPOLGACAO_NIVEL_MAX, POSTURAS_DE_COMBATE, expandeHerdadas } from "./afty-habilidades";
+import { EMPOLGACAO_DADOS, EMPOLGACAO_NIVEL_MAX, expandeHerdadas } from "./afty-habilidades";
+// Da FOLHA, e não do afty-habilidades: o `POSTURA_OPCOES` abaixo lê o array no escopo de módulo (t-ordem-modulos.mjs).
+import { POSTURAS_DE_COMBATE } from "./afty-posturas-catalogo";
 import { normalizarVariavel } from "./afty-dsl";
 import { ESTADO_APICE, RODADAS_APICE } from "./afty-talisma-apice";
 

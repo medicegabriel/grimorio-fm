@@ -78,6 +78,7 @@ import { useDeltaDosEstados } from "./usar-delta-dos-estados";
 import { opcoesDeriveDaSessao } from "./ficha-opcoes-derive";
 import { estatisticasDoCabecalho, comEstatisticasDoCabecalho } from "./ficha-preferencias";
 import { prepararCalculo } from "./efeitos/recebidos";
+import { comAddons } from "./efeitos/ponte";
 import { useModeloG2 } from "./efeitos/useModeloG2";
 import { useEfeitosG2, ABA_EFEITOS } from "./efeitos/useEfeitosG2";
 import { useGestor } from "./efeitos/gestor-logica";
@@ -181,7 +182,10 @@ export default function AftyFicha({
   /* ⚠ A SESSÃO VEM DA LOJA (`sessao-loja.js`), e não de um `useState` lido uma vez: outra aba (e, depois, o Encontro e a Sala) muda a mesma
      chave, e a Ficha aberta passa a ver. O derive da montagem só roda na primeira leitura da chave, como no `useState` de antes. O gancho
      roda nos dois modos (ordem fixa de ganchos) e, embutido, não lê nem ouve nada. */
-  const sessaoDaLoja = useSessaoDaLoja(alvoId, () => deriveAfty(ficha), !embutida);
+  /* ⚠ OS ADDONS DA FICHA ENTRAM ANTES DO DERIVE DA MONTAGEM (2026-11-21). Sem eles, os máximos da sessão nova saíam do catálogo que
+     estivesse no ar, e na Guilda (Alma Livre: a Alma é pilha igual ao PV) todo PV vindo de addon virava "Dano na Alma" que o Descansar
+     não devolvia. Caso que pegou: Desenvolvimento Físico da Maldição Era de Ouro em Constituição, 1872 de PV na Ficha contra 2184. */
+  const sessaoDaLoja = useSessaoDaLoja(alvoId, () => comAddons(ficha, () => deriveAfty(ficha)), !embutida);
   const sessaoBruta = embutida ? sessaoDeFora : sessaoDaLoja;
   const [tab, setTab] = useState(abaInicial);
   /* A apresentação ANTERIOR da aba Efeitos (a antiga aba Buffs), mantida só como comparação e compatibilidade: desde 2026-10-20 o G2 faz sozinho a
