@@ -399,14 +399,18 @@ t("virada de turno não entra no histórico", (() => {
 })(), 1);
 
 /* ============================================================ */
-/* 9. As três listas e os inventários                            */
+/* 9. Listas e inventários                            */
 /* ============================================================ */
-t("as três chaves", L.CHAVE_LISTA, { site: "afty_encontros_site_v1", afty: "afty_encontros_v1", eradeouro: "afty_encontros_eradeouro_v1" });
-t("a rota escolhe a lista", ["/", "player", "afty", "eradeouro"].map((r0) => L.grupoDaRota(r0 === "/" ? null : r0)), ["site", "site", "afty", "eradeouro"]);
+t("as chaves das listas", L.CHAVE_LISTA, {
+  site: "afty_encontros_site_v1", afty: "afty_encontros_v1", eradeouro: "afty_encontros_eradeouro_v1",
+  eclesiastes: "afty_encontros_eclesiastes_v1",
+});
+t("a rota escolhe a lista", [null, "player", "afty", "eradeouro", "eclesiastes"].map(L.grupoDaRota), ["site", "site", "afty", "eradeouro", "eclesiastes"]);
 t("os inventários de cada lista", L.CHAVES_INVENTARIO, {
   site: ["fm_creatures_v1", "fm_creatures_player_v1"], afty: ["fm_creatures_afty_v1", "fm_creatures_player_v1"], eradeouro: ["fm_creatures_eradeouro_v1"],
+  eclesiastes: ["fm_creatures_eclesiastes_v1"],
 });
-t("as três listas vão para a nuvem pessoal", Object.values(L.CHAVE_LISTA).map(Nuvem.chaveDaPessoa), [true, true, true]);
+t("todas as listas vão para a nuvem pessoal", Object.values(L.CHAVE_LISTA).every(Nuvem.chaveDaPessoa), true);
 t("e não são chaves de fichas", Object.values(L.CHAVE_LISTA).some(Nuvem.ehChaveDeFichas), false);
 {
   const lista = (ids) => JSON.stringify(ids.map((id) => ({ id })));

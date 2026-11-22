@@ -23,6 +23,7 @@ export const CHAVE_PASTAS = {
   site: "afty_encontros_site_pastas_v1",
   afty: "afty_encontros_pastas_v1",
   eradeouro: "afty_encontros_eradeouro_pastas_v1",
+  eclesiastes: "afty_encontros_eclesiastes_pastas_v1",
 };
 
 /* De onde vêm as pastas citadas pelos Encontros de antes de cada lista. */
@@ -30,6 +31,7 @@ export const PASTAS_DE_ORIGEM = {
   site: ["fm_folders_v1", "fm_folders_player_v1"],
   afty: ["fm_folders_afty_v1", "fm_folders_player_v1"],
   eradeouro: ["fm_folders_eradeouro_v1"],
+  eclesiastes: ["fm_folders_eclesiastes_v1"],
 };
 
 const ehObjeto = (v) => !!v && typeof v === "object" && !Array.isArray(v);

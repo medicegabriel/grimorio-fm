@@ -1,6 +1,6 @@
 # Grimório Tracker
 
-Aplicação React para criação, consulta e acompanhamento de fichas e encontros. O Grimório 2.5.2 convive com o sistema Afty, usado nas rotas `/Afty` e `/Player`.
+Aplicação React para criação, consulta e acompanhamento de fichas e encontros. A raiz abre o Grimório 2.5.2 em `/Criatura`. As fichas de personagem estão em `/Jogador`, com compatibilidade para links antigos de `/Player`.
 
 ## Começar
 

@@ -18,9 +18,11 @@
     <script>
       (function () {
         var p = location.pathname;
-        var t = /^\/eradeouro\/?$/i.test(p) ? "Era de Ouro"
-          : /^\/player\/?$/i.test(p) ? "Ficha de Jogador"
-          : /^\/afty\/?$/i.test(p) ? "Grimório Afty"
+        var biblioteca = p.replace(/\/encontros(?:\/[^/]+)?\/?$/i, "");
+        var t = /^\/eradeouro\/?$/i.test(biblioteca) ? "Era de Ouro"
+          : /^\/(?:jogador|player)\/?$/i.test(biblioteca) ? "Ficha de Jogador"
+          : /^\/afty\/?$/i.test(biblioteca) ? "Grimório Afty"
+          : /^\/eclesiastes\/?$/i.test(biblioteca) ? "Eclesiastes"
           : /^\/sala\//i.test(p) ? "Sala"
           : null;
         if (t) document.title = t;

@@ -56,7 +56,7 @@ export const VISAO_ROTULO = { oculta: "Oculta", nome: "Só Nome", barra: "Barra 
 export const PAPEL = { MESTRE: "mestre", JOGADOR: "jogador", ESPECTADOR: "espectador", SISTEMA: "sistema" };
 const PAPEIS = Object.values(PAPEL);
 
-export const GRUPO = { SITE: "site", AFTY: "afty", ERA_DE_OURO: "eradeouro" };
+export const GRUPO = { SITE: "site", AFTY: "afty", ERA_DE_OURO: "eradeouro", ECLESIASTES: "eclesiastes" };
 const GRUPOS = Object.values(GRUPO);
 
 export const CONFIG_PADRAO = Object.freeze({ aceitarSozinho: false });

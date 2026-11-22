@@ -14,6 +14,7 @@ register(
 
 const lê = (p) => readFileSync(new URL(p, import.meta.url), "utf8");
 const D = await import(new URL("../src/nuvem/sala-ui/sala-ui-dados.js", import.meta.url).href);
+const { caminhoDe, lerCaminho } = await import("../src/systems/afty/encontros/rota-encontros.js");
 
 let ok = 0;
 const bad = [];
@@ -34,22 +35,25 @@ t("o título padrão saiu do Vite", /<title>Grimório F&amp;M<\/title>/.test(HTM
 t("a cor de tema é o fundo do site", HTML.includes('<meta name="theme-color" content="#060910" />'), true);
 t("raiz", tituloEm("/"), "Grimório F&M");
 t("Era de Ouro", ["/EraDeOuro", "/eradeouro/", "/ERADEOURO"].map(tituloEm), ["Era de Ouro", "Era de Ouro", "Era de Ouro"]);
-t("Jogador", ["/Player", "/player/"].map(tituloEm), ["Ficha de Jogador", "Ficha de Jogador"]);
+t("Jogador", ["/Player", "/player/", "/Jogador/Encontros"].map(tituloEm), Array(3).fill("Ficha de Jogador"));
 t("Afty", ["/Afty", "/afty/"].map(tituloEm), ["Grimório Afty", "Grimório Afty"]);
+t("Eclesiastes", ["/Eclesiastes", "/eclesiastes/Encontros/uma-luta"].map(tituloEm), ["Eclesiastes", "Eclesiastes"]);
 t("Sala", ["/Sala/ABC123", "/sala/nova"].map(tituloEm), ["Sala", "Sala"]);
 t("rota desconhecida fica no padrão", ["/foo", "/EraDeOuro/x"].map(tituloEm), ["Grimório F&M", "Grimório F&M"]);
 
 const APP = lê("../src/App.jsx");
-const ERA = lê("../src/systems/eradeouro/era-de-ouro.js");
-t("o App ainda decide o Afty pela mesma expressão", APP.includes("/^\\/afty\\/?$/i"), true);
-t("o App ainda decide o Player pela mesma expressão", APP.includes("/^\\/player\\/?$/i"), true);
-t("a Guilda ainda se decide pela mesma expressão", ERA.includes("/^\\/eradeouro\\/?$/i"), true);
-t("o index.html usa as três", ["/^\\/eradeouro\\/?$/i", "/^\\/player\\/?$/i", "/^\\/afty\\/?$/i"].every((re) => script.includes(re)), true);
+t("a rota é lida do prefixo", ["/Afty", "/Player", "/Jogador", "/EraDeOuro", "/Eclesiastes", "/", "/Criatura"].map((p) => lerCaminho(p)?.rota),
+  ["afty", "player", "player", "eradeouro", "eclesiastes", null, null]);
+t("o link antigo tem caminho canônico", caminhoDe(lerCaminho("/Player/Encontros").rota, lerCaminho("/Player/Encontros").tela), "/Jogador/Encontros");
+t("o encontro de Eclesiastes preserva o ID", lerCaminho("/Eclesiastes/Encontros/A%2FB").tela,
+  { name: "encounter", creatureId: null, encounterId: "A/B" });
+t("a URL codifica o ID", caminhoDe("eclesiastes", { name: "encounter", encounterId: "A/B" }), "/Eclesiastes/Encontros/A%2FB");
+t("Sala e caminho desconhecido ficam fora das bibliotecas", ["/Sala/ABC123", "/EraDeOuro/x"].map(lerCaminho), [null, null]);
 t("o script não tem travessão", new RegExp("\\u2014").test(script), false);
 
 /* ---------- 2. a rota de cada grupo da Sala ---------- */
-t("rota de cada grupo", ["site", "afty", "eradeouro"].map(D.rotaDoGrupo), ["/Player", "/Player", "/EraDeOuro"]);
-t("grupo desconhecido cai em /Player", [undefined, null, "outro"].map(D.rotaDoGrupo), ["/Player", "/Player", "/Player"]);
+t("rota de cada grupo", ["site", "afty", "eradeouro", "eclesiastes"].map(D.rotaDoGrupo), ["/Jogador", "/Jogador", "/EraDeOuro", "/Eclesiastes"]);
+t("grupo desconhecido cai em /Jogador", [undefined, null, "outro"].map(D.rotaDoGrupo), ["/Jogador", "/Jogador", "/Jogador"]);
 t("a rota espelha o armazém (mesmo grupo, mesma lista)",
   Object.keys(D.ROTA_DO_GRUPO).sort(), Object.keys(D.ARMAZEM_DO_GRUPO).sort());
 t("a Guilda edita onde guarda", D.ARMAZEM_DO_GRUPO.eradeouro.namespace === "eradeouro" && D.rotaDoGrupo("eradeouro") === "/EraDeOuro", true);

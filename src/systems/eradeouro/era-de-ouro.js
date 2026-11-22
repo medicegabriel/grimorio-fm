@@ -650,28 +650,7 @@ const ORIGENS_TROCADAS_NA_GUILDA = Object.freeze(["maldicao"]);
 export const origemForaDoSeletor = (ficha, origemId) =>
   regraDaMesa(ficha, "maldicaoDaGuilda") !== "base" && ORIGENS_TROCADAS_NA_GUILDA.includes(origemId);
 
-/** Os textos da lista de fichas (o Dashboard) na língua da Guilda. */
-export function vocabularioDeFichas() {
-  const quantos = (n) => `${n} ${n === 1 ? "ficha" : "fichas"}`;
-  return {
-    todas: "Todas as Fichas",
-    contagem: quantos,
-    itens: "fichas",
-    nova: "Nova Ficha",
-    criarNova: "Criar nova ficha",
-    criar: "Criar ficha",
-    exportarVista: "Exportar fichas da visualização atual",
-    exportarTitulo: "Exportar Fichas",
-    importarTitulo: "Importar Fichas",
-    arquivo: "fichas_exportadas",
-    selecionadas: (sel, total) => `${sel} de ${total} selecionada(s)`,
-    importadas: (n) => `${quantos(n)} ${n === 1 ? "importada" : "importadas"} com sucesso.`,
-    buscar: "Buscar fichas",
-    nenhumaBusca: "Nenhuma ficha combina com sua busca.",
-    removida: "será removida permanentemente.",
-    removidas: (n) => `${quantos(n)} ${n === 1 ? "será removida" : "serão removidas"} permanentemente.`,
-  };
-}
+export { vocabularioDeFichas } from "../afty/afty-sistema";
 
 /** Sanidade da tabela acima, no molde de `validarSistemas`. */
 export function validarRegrasDaMesa() {

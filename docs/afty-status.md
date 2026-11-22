@@ -1,5 +1,11 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-22 · ECLESIASTES NO REPOSITÓRIO
+
+- Integração de `/Eclesiastes` com a versão atual do Grimório. A biblioteca, os rascunhos e os Encontros têm armazenamento próprio. A edição é marcada em `edicaoDeRegras` e o tipo continua em `rulesVersion`. Especializações e Feitiços ainda usam a base compartilhada.
+- Os endereços públicos `/Criatura` e `/Jogador` mantêm compatibilidade com os links anteriores. Os endereços de Encontro usam a pilha de navegação do app. A Era de Ouro conserva a URL de instalação enquanto navega.
+- O SQL registra o grupo de Sala já aplicado em produção em 2026-11-19, junto com a publicação inicial de Eclesiastes na Vercel. Deploy original `dpl_EpYQhaiL6YgqzNxbRyquiJB4WY3N`.
+
 ## SESSÃO DE 2026-11-21 · PRÉVIA DO SUN WUKONG E A SESSÃO QUE NASCIA SEM OS ADDONS
 
 - **Prévia nova:** `previas/sun-wukong-eradeouro.json`, criatura ND 26, Calamidade, Combatente, mesa da Guilda (decisões do autor: criatura, Guilda, ND 26). Origem Maldição Era de Ouro do Tipo Vingativo Imaginário, Combatente 18 e Conjurador 8, 11 Feitiços com a Técnica Máxima, todos os orçamentos fechando sem excesso. O que segue de mesa está em `docs/a-fazer.md`.

@@ -3,8 +3,8 @@
    recarrega o app na outra rota. O /Afty não aparece aqui de propósito. */
 
 const OPCOES = [
-  { id: "criatura", rotulo: "Criatura", href: "/" },
-  { id: "player", rotulo: "Player", href: "/Player" },
+  { id: "criatura", rotulo: "Criatura", href: "/Criatura" },
+  { id: "player", rotulo: "Jogador", href: "/Jogador" },
 ];
 
 export default function AlternadorSistema({ atual }) {

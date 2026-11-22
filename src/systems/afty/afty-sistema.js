@@ -76,11 +76,11 @@ export const SISTEMAS = {
   },
   player: {
     id: "player",
-    label: "Ficha de Player",
+    label: "Ficha de Jogador",
     substantivo: "personagem",
     substantivoPlural: "personagens",
     artigo: "o",
-    rota: "/Player",
+    rota: "/Jogador",
   },
 };
 
@@ -88,6 +88,29 @@ export const SISTEMAS = {
 export const SISTEMA_PADRAO = "afty";
 
 export const SISTEMA_IDS = Object.keys(SISTEMAS);
+
+/** Os textos da lista de fichas (o Dashboard) em bibliotecas de personagem e criatura. */
+export function vocabularioDeFichas() {
+  const quantos = (n) => `${n} ${n === 1 ? "ficha" : "fichas"}`;
+  return {
+    todas: "Todas as Fichas",
+    contagem: quantos,
+    itens: "fichas",
+    nova: "Nova Ficha",
+    criarNova: "Criar nova ficha",
+    criar: "Criar ficha",
+    exportarVista: "Exportar fichas da visualização atual",
+    exportarTitulo: "Exportar Fichas",
+    importarTitulo: "Importar Fichas",
+    arquivo: "fichas_exportadas",
+    selecionadas: (sel, total) => `${sel} de ${total} selecionada(s)`,
+    importadas: (n) => `${quantos(n)} ${n === 1 ? "importada" : "importadas"} com sucesso.`,
+    buscar: "Buscar fichas",
+    nenhumaBusca: "Nenhuma ficha combina com sua busca.",
+    removida: "será removida permanentemente.",
+    removidas: (n) => `${quantos(n)} ${n === 1 ? "será removida" : "serão removidas"} permanentemente.`,
+  };
+}
 
 /** Normaliza qualquer entrada suja para um id de sistema conhecido. */
 export const normalizaSistema = (valor) =>

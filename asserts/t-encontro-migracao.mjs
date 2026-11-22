@@ -63,6 +63,24 @@ const lia = { id: "lia", name: "Lia", rulesVersion: "player" };
 const ogro = { id: "ogro", name: "Ogro", rulesVersion: "afty" };
 const heroi = { id: "heroi", name: "Herói", rulesVersion: "player", mesa: "eradeouro" };
 
+const { prepararFichaEclesiastes } = await import("../src/systems/eclesiastes/regras.js");
+const fichaEclesiastes = prepararFichaEclesiastes(lia);
+const criaturaEclesiastes = prepararFichaEclesiastes(ogro);
+const chaveEclesiastes = L.CHAVES_INVENTARIO.eclesiastes[0];
+const armazemEclesiastes = criarArmazem({
+  [chaveEclesiastes]: JSON.stringify([fichaEclesiastes, criaturaEclesiastes, heroi, lia]),
+  fm_creatures_player_v1: JSON.stringify([lia, prepararFichaEclesiastes({ ...lia, id: "outra" })]),
+});
+t("Eclesiastes tem grupo próprio", L.grupoDaRota("eclesiastes"), "eclesiastes");
+t("o grupo novo aceita seus dois tipos e exclui fichas de outras edições",
+  L.inventarioDoGrupo("eclesiastes", armazemEclesiastes).fichas.map((e) => e.tipo), ["personagem", "criatura"]);
+t("o inventário público exclui fichas de Eclesiastes",
+  L.inventarioDoGrupo("site", armazemEclesiastes).fichas.map((e) => e.ficha.id), ["lia"]);
+t("uma ficha com as duas marcas é recusada",
+  L.classificarNaChave(prepararFichaEclesiastes(heroi), chaveEclesiastes), null);
+t("o modelo preserva o grupo Eclesiastes",
+  M.criarEncontro({ grupo: "eclesiastes" }).grupo, "eclesiastes");
+
 const e252 = {
   id: "e1", name: "Emboscada", folderId: "p1", createdAt: 100, updatedAt: 200,
   status: "active", round: 3, activeCombatantId: "k2",

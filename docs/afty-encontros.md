@@ -5,7 +5,7 @@ O plano aprovado está em `C:/Projetos/Grimorio/PLANO-APROVADO-ENCONTRO-UNIFICAD
 repositório, e o andamento por etapa em `PROGRESSO-ENCONTRO-UNIFICADO-SALA.md`, ao lado dele.
 
 Estado em 2026-11-18: as etapas 1 a 7c estão prontas e esta documentação foi conferida contra o código na 8a. **As telas novas estão ligadas**
-nas três listas (ver "As telas") e a **Sala online** funciona sobre elas (ver "O Encontro na Sala" e "As telas da Sala", e o guia de banco e cliente
+nas listas de cada biblioteca (ver "As telas") e a **Sala online** funciona sobre elas (ver "O Encontro na Sala" e "As telas da Sala", e o guia de banco e cliente
 em `docs/nuvem-supabase.md`). O cadeado de `/` e `/Player` saiu em 2026-11-18, depois da revisão final (etapa 8b), a pedido do autor: os Encontros
 e a Sala estão abertos a todos.
 
@@ -28,7 +28,7 @@ Tudo em `src/systems/afty/encontros/`, ao lado dos módulos antigos, sem tocá-l
 | `modelo.js` | as constantes, a forma do combatente e do Encontro, criação, saneamento, ordem de turno, `derivarEncontro` |
 | `operacoes.js` | a operação tipada, o delta, pedidos, histórico, Desfazer, ações em grupo |
 | `redutor.js` | `redutorDoEncontro(mundo, acao)`, o sucessor do `redutorDeEncontro` |
-| `listas.js` | as três listas de Encontros e os inventários lidos direto da chave |
+| `listas.js` | as listas de Encontros e os inventários lidos direto da chave |
 | `migracao.js` | a leitura do formato antigo e a cópia para a lista do site padrão |
 | `pastas.js` | as pastas próprias de cada lista de Encontros |
 | `usar-lista-encontros.js`, `usar-encontro.js` | os ganchos das telas (ver "As telas") |
@@ -273,15 +273,20 @@ redutores e compara as sessões e as mensagens. A rolagem chega pronta na ação
 
 A criatura da 2.5.2 passa pelo mesmo fluxo, com o terceiro argumento do verbo de turno (ver "O motor da 2.5.2").
 
-## As três listas
+## Listas e bibliotecas de Encontros
 
 | Lista | Rotas | Chave | Inventário |
 |---|---|---|---|
-| `site` | `/` e `/Player` | `afty_encontros_site_v1` (nova) | `fm_creatures_v1`, `fm_creatures_player_v1` |
+| `site` | `/Criatura` e `/Jogador` | `afty_encontros_site_v1` | `fm_creatures_v1`, `fm_creatures_player_v1` |
 | `afty` | `/Afty` | `afty_encontros_v1` | `fm_creatures_afty_v1`, `fm_creatures_player_v1` |
 | `eradeouro` | `/EraDeOuro` | `afty_encontros_eradeouro_v1` | `fm_creatures_eradeouro_v1` |
+| `eclesiastes` | `/Eclesiastes` | `afty_encontros_eclesiastes_v1` | `fm_creatures_eclesiastes_v1` |
 
-`grupoDaRota(rotaId)` escolhe a lista. As três têm prefixo `afty_` e vão para a nuvem pessoal.
+`grupoDaRota(rotaId)` escolhe a lista. Todas têm prefixo `afty_` e vão para a nuvem pessoal.
+
+Links antigos de `/`, `/Encontros` e `/Player` abrem os endereços públicos atuais. Em Eclesiastes é possível abrir a lista em
+`/Eclesiastes/Encontros` e um Encontro em `/Eclesiastes/Encontros/<id>`. A pilha de navegação também grava o endereço dessas
+telas. Na Era de Ouro a navegação dentro do app conserva o endereço de instalação.
 
 ⚠ **A fronteira é a chave do inventário**, não o `mesa` da ficha (o import da Guilda não carimba
 `mesa`). `classificarNaChave(ficha, chave)`:
@@ -289,7 +294,8 @@ A criatura da 2.5.2 passa pelo mesmo fluxo, com o terceiro argumento do verbo de
 - `fm_creatures_v1` aceita só ficha da 2.5.2 (sem marca do Afty): criatura do motor `252`.
 - As outras aceitam só marca do Afty ou do Player. Player é personagem e entra LIGADO. Afty é
   criatura e entra como cópia.
-- Ficha sem `rulesVersion` recebe o sistema da chave, só na memória.
+- Ficha sem `rulesVersion` recebe o sistema da chave, só na memória, nas bibliotecas anteriores a Eclesiastes.
+- Eclesiastes exige `edicaoDeRegras: "eclesiastes"`, tipo explícito em `rulesVersion` e ausência da marca de mesa da Guilda. As outras bibliotecas recusam fichas dessa edição.
 
 ⚠ **O inventário é lido direto da chave** (`lerInventario`), nunca pelo `useCreatureStorage`, que
 carimba e regrava. A leitura é memorizada pelo texto gravado: o mesmo texto devolve os mesmos
@@ -527,7 +533,7 @@ chama em todo combatente a cada fim de turno.
 `proximaRodada`, que desce tudo, de todos os aplicadores, nos mesmos pontos de sempre (`descerDuracoes` ligado por padrão). A única
 diferença é que a marca do turno some nessa descida. Conferido byte a byte contra a saída de antes, em dez sessões ricas.
 
-⚠ **O redutor antigo (`usar-encontro-afty.js`) continua com a regra antiga**, mas ninguém o monta desde a 6a: as três listas rodam o redutor novo, com a regra de acima.
+⚠ **O redutor antigo (`usar-encontro-afty.js`) continua com a regra antiga**, mas ninguém o monta desde a 6a: todas as listas rodam o redutor novo, com a regra de acima.
 
 ## O Encontro na Sala (etapa 7b, 2026-11-18)
 

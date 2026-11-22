@@ -106,7 +106,7 @@ t("o /Player aceita so o personagem", nomes("player"), ["Personagem"]);
    defeito calado que a porta existe para não criar. */
 t("o publico recusa as duas do outro livro",
   pacote.filter((c) => !ehDestaRota(null)(c)).map((c) => S.getSistema(c.rulesVersion).label),
-  ["Grimório Afty", "Ficha de Player"]);
+  ["Grimório Afty", "Ficha de Jogador"]);
 
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);
 process.exitCode = bad.length ? 1 : 0;

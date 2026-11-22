@@ -153,6 +153,7 @@ import {
 } from "./afty-equipamentos";
 import { evalNumber as evalNumberDsl, validateExpression } from "./afty-dsl";
 import { deriveAfty } from "./afty-derive";
+import { ECLESIASTES, prepararFichaEclesiastes } from "../eclesiastes/regras";
 import { trocarCopiaImitacao } from "./afty-imitacao";
 import { carregarSessao, salvarSessao } from "./ficha/ficha-sessao";
 import { configuraArmaNaSessao } from "./afty-propriedades-armas";
@@ -372,13 +373,14 @@ const fichaGravada = (creature) => {
   return ficha;
 };
 
-export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel, sistema: sistemaDaRota = SISTEMA_PADRAO, mesa = null, addonsIniciais = null }) {
+export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel, sistema: sistemaDaRota = SISTEMA_PADRAO, mesa = null, edicaoDeRegras = null, addonsIniciais = null }) {
   /* ⚠ `mesa` só vale para ficha NOVA, como `sistema`: editando, a ficha já traz o
      campo dela. Ela carimba a ficha no NASCIMENTO (no `base` abaixo), e não só ao
      salvar, para quem deriva ler a mesa certa antes do primeiro salvamento. O
      rascunho da ficha nova ganha alvo próprio, porque o `null` é o mesmo nas
      três rotas. Ver src/systems/eradeouro/era-de-ouro.js. */
-  const alvoId = existingCreature?.id ?? (mesa ? `${mesa}:novo` : null);
+  const contextoNovo = edicaoDeRegras ? edicaoDeRegras + ":" + sistemaDaRota : mesa;
+  const alvoId = existingCreature?.id ?? (contextoNovo ? contextoNovo + ":novo" : null);
 
   /* ⚠ O SISTEMA VEM DA FICHA, e a rota só responde por ficha NOVA.
      Editar uma criatura do Grimório Afty por um caminho que passe pelo /Player
@@ -401,9 +403,13 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
   /* ⚠ A RÉGUA JÁ NASCE COM OS PACOTES NATIVOS DA MESA (a Guilda, 2026-11-09). O
      rascunho os ganha pela hidratação logo abaixo, e uma régua sem eles faria toda
      ficha da Guilda abrir como alterada. Os compostos seguem fora da régua, como antes. */
-  const [base] = useState(() => hidratarNativos({ ...fichaGravada(existingCreature), rulesVersion: sistema, ...(!existingCreature && mesa ? { mesa } : {}),
-    // Addons que nascem ligados na ficha NOVA, quando quem abre o criador os manda.
-    ...(!existingCreature && addonsIniciais?.length ? { addons: addonsIniciais } : {}) }));
+  const [base] = useState(() => {
+    const ficha = { ...fichaGravada(existingCreature), rulesVersion: sistema };
+    if (existingCreature) return hidratarNativos(ficha);
+    if (mesa) ficha.mesa = mesa;
+    if (addonsIniciais?.length) ficha.addons = addonsIniciais;
+    return hidratarNativos(edicaoDeRegras === ECLESIASTES.id ? prepararFichaEclesiastes(ficha) : ficha);
+  });
   // ⚠ O rascunho é aplicado AQUI, no inicializador, e não num efeito depois de
   // montar: restaurar depois faria a tela piscar a ficha em branco antes de
   // trocar, e todo `useState` derivado do draft nasceria do valor errado.

@@ -127,7 +127,7 @@ t("a abertura guarda o estado de outro código",
 
 /* ---------- 2. as ligações ---------- */
 const APP = lê("../src/App.jsx");
-t("o App usa a pilha", APP.includes("usePilhaDeTelas({ existe: telaPodeReabrir })"), true);
+t("o App liga a pilha à tela de entrada e ao endereço", APP.includes("existe: telaPodeReabrir, entrada: caminhoInicial?.tela, enderecoDe"), true);
 t("o App não troca mais de tela por setView", /setView\(/.test(APP), false);
 t("o criador da 2.5.2 entra por substituir", APP.includes("(da252 ? substituir : ir)"), true);
 t("a tela que sumiu troca, sem voltar no histórico", (APP.match(/substituir\(TELA_LISTA\)/g) ?? []).length >= 2, true);

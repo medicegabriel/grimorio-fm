@@ -1,4 +1,5 @@
 import { sistemaGravado } from "../afty-sistema";
+import { aceitaFichaEclesiastes, ehFichaEclesiastes } from "../../eclesiastes/regras";
 
 /**
  * ============================================================
@@ -30,12 +31,14 @@ export const CHAVE_LISTA = {
   site: "afty_encontros_site_v1",
   afty: "afty_encontros_v1",
   eradeouro: "afty_encontros_eradeouro_v1",
+  eclesiastes: "afty_encontros_eclesiastes_v1",
 };
 
 export const CHAVES_INVENTARIO = {
   site: ["fm_creatures_v1", "fm_creatures_player_v1"],
   afty: ["fm_creatures_afty_v1", "fm_creatures_player_v1"],
   eradeouro: ["fm_creatures_eradeouro_v1"],
+  eclesiastes: ["fm_creatures_eclesiastes_v1"],
 };
 
 /* O sistema em que cai a ficha SEM marca, chave por chave. É o `defaultRulesVersion` que o `App.jsx` passa ao
@@ -45,6 +48,7 @@ const SISTEMA_DA_CHAVE = {
   fm_creatures_player_v1: "player",
   fm_creatures_afty_v1: "afty",
   fm_creatures_eradeouro_v1: "afty",
+  fm_creatures_eclesiastes_v1: null,
 };
 
 /* ⚠ AS TELAS DE HOJE AINDA SÃO DONAS destas duas chaves (o `normalizarEncontro` antigo leria um personagem ligado
@@ -52,7 +56,7 @@ const SISTEMA_DA_CHAVE = {
 export const CHAVES_COM_TELA_ANTIGA = new Set([CHAVE_LISTA.afty, CHAVE_LISTA.eradeouro]);
 
 /** A lista de uma rota: `null` e `"player"` são o site padrão. */
-export const grupoDaRota = (rotaId) => (rotaId === "afty" ? "afty" : rotaId === "eradeouro" ? "eradeouro" : "site");
+export const grupoDaRota = (rotaId) => (Object.hasOwn(CHAVE_LISTA, rotaId) ? rotaId : "site");
 
 const ehObjeto = (v) => !!v && typeof v === "object" && !Array.isArray(v);
 
@@ -67,6 +71,11 @@ const ehObjeto = (v) => !!v && typeof v === "object" && !Array.isArray(v);
 export function classificarNaChave(ficha, chave) {
   if (!ehObjeto(ficha) || typeof ficha.id !== "string" || !ficha.id) return null;
   if (!Object.hasOwn(SISTEMA_DA_CHAVE, chave)) return null;
+  if (chave === CHAVES_INVENTARIO.eclesiastes[0]) {
+    if (!aceitaFichaEclesiastes(ficha)) return null;
+  } else if (ehFichaEclesiastes(ficha)) {
+    return null;
+  }
   const marca = ficha.rulesVersion == null ? SISTEMA_DA_CHAVE[chave] : sistemaGravado(ficha);
   if (chave === "fm_creatures_v1") return marca === null ? { motor: "252", tipo: "criatura", marca: "2.5.2" } : null;
   if (!marca) return null;

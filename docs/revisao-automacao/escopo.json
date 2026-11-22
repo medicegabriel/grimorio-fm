@@ -543,6 +543,10 @@
       "modo": "INTERFACE",
       "justificativa": "Encontro Unificado, etapa 6a (2026-11-17): pastas próprias de cada lista de Encontros, sem regra do Livro"
     },
+    "encontros/rota-encontros.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Leitura e montagem do caminho das bibliotecas e dos Encontros, sem regra do Livro"
+    },
     "encontros/usar-lista-encontros.js": {
       "modo": "INTERFACE",
       "justificativa": "Encontro Unificado, etapa 6a (2026-11-17): hook React da lista de Encontros (gravação, migração do site, pastas)"

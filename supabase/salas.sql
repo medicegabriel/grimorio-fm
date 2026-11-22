@@ -200,12 +200,14 @@ create table if not exists public.salas (
   fechada_em       timestamptz,
   fechada_por      text,
   constraint salas_codigo check (codigo ~ '^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{6}$'),
-  constraint salas_grupo check (grupo in ('site', 'afty', 'eradeouro')),
   constraint salas_nome check (char_length(nome) between 1 and 120),
   constraint salas_status check (status in ('aberta', 'fechada')),
   constraint salas_fechada check ((status = 'fechada') = (fechada_em is not null)),
   constraint salas_fechada_por check (fechada_por is null or fechada_por in ('mestre', 'parada'))
 );
+alter table public.salas
+  drop constraint if exists salas_grupo,
+  add constraint salas_grupo check (grupo in ('site', 'afty', 'eradeouro', 'eclesiastes'));
 create index if not exists salas_por_dono on public.salas (dono, status);
 create index if not exists salas_paradas on public.salas (status, ultima_atividade);
 create index if not exists salas_fechadas on public.salas (status, fechada_em);
@@ -1035,7 +1037,7 @@ declare
   v_nome   text := left(btrim(coalesce(p_nome, '')), 120);
 begin
   perform sala_interno.varrer(false);
-  if p_grupo is null or p_grupo not in ('site', 'afty', 'eradeouro') then raise exception 'Grupo Desconhecido'; end if;
+  if p_grupo is null or p_grupo not in ('site', 'afty', 'eradeouro', 'eclesiastes') then raise exception 'Grupo Desconhecido'; end if;
   perform sala_interno.validar_senha(p_senha);
   if v_nome = '' then v_nome := 'Encontro'; end if;
   select * into v_t from sala_interno.tetos t where t.id;

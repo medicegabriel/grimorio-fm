@@ -86,6 +86,7 @@ import {
   expansaoDominioNoAr, amplificacaoDeTecnica, resumoAcertoGarantido, contestacaoDoDominio, faseDoDominio,
 } from "./afty-dominios";
 import { resolveEspecializacoes, AFTY_ESPECIALIZACOES, treinamentosDasEspecializacoes, getEspecializacao, especializacaoMae } from "./afty-especializacoes";
+import { derivarEclesiastes, ehFichaEclesiastes } from "../eclesiastes/regras";
 import {
   resolveHabilidades, efeitosInvocacaoControlador, getHabilidade, OPCAO_ESCOLHA_NOME, USOS_RECARGAS, RECARGAS_COM_PREFIXO,
   avaliarAcessoHabilidade, contaOrcamentoHabilidades, refecharVagasEscolha,
@@ -331,6 +332,12 @@ const acertoDosEncantamentos = (fa) =>
  * `substitui` de um combatente mudava o número do vizinho. Ver `comEscopoDaFicha`.
  */
 export function deriveAfty(creature, opcoes = {}) {
+  return ehFichaEclesiastes(creature)
+    ? derivarEclesiastes(creature, opcoes, derivarFichaBase)
+    : derivarFichaBase(creature, opcoes);
+}
+
+function derivarFichaBase(creature, opcoes) {
   /* Os pacotes compostos com fonte instalada entram em dia ANTES de tudo:
      a cópia que a ficha guardou pode ser de uma versão velha, e o escopo da
      ficha abaixo já lê o `substitui` dela. Devolve a mesma ficha quando não há

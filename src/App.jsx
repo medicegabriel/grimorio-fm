@@ -4,14 +4,13 @@ import Dashboard from "./components/Dashboard";
 import AftyFicha from "./systems/afty/ficha/AftyFicha";
 import { quandoOcioso, useListaAdiada } from "./celular/usar-lista-adiada";
 import { grupoDaRota } from "./systems/afty/encontros/listas";
+import { caminhoDe, lerCaminho } from "./systems/afty/encontros/rota-encontros";
 import PdfFab from "./components/PdfFab";
 import useCreatureStorage from "./components/useCreatureStorage";
 import useDashboardView from "./useDashboardView";
-import { vocabularioDoDashboard, sistemaGravado, getSistema } from "./systems/afty/afty-sistema";
-import {
-  MESA_ERA_DE_OURO, NAMESPACE_ERA_DE_OURO, ERA_DE_OURO,
-  ehRotaEraDeOuro, vocabularioDeFichas,
-} from "./systems/eradeouro/era-de-ouro";
+import { vocabularioDoDashboard, vocabularioDeFichas, sistemaGravado, getSistema } from "./systems/afty/afty-sistema";
+import { MESA_ERA_DE_OURO, NAMESPACE_ERA_DE_OURO, ERA_DE_OURO } from "./systems/eradeouro/era-de-ouro";
+import { ECLESIASTES, aceitaFichaEclesiastes, ehFichaEclesiastes } from "./systems/eclesiastes/regras";
 import { Analytics } from '@vercel/analytics/react';
 import AlternadorSistema from "./nuvem/AlternadorSistema";
 import ContaNuvem from "./nuvem/ContaNuvem";
@@ -81,34 +80,14 @@ export default function App() {
     throw new Error("Teste da tela de erro (?testar-erro=1) — tudo certo!");
   }
 
-  // ---------- MODO AFTY (ambiente privado) ----------
-  // Acessível só por quem souber a URL /Afty (case-insensitive). Não tem
-  // link em nenhum menu — mesma ideia do ?testar-erro. Ativa um espaço de
-  // dados TOTALMENTE isolado (chaves fm_*_afty_v1) e marca as criaturas
-  // criadas aqui com rulesVersion "afty" (o Grimório Homebrew).
-  //
-  // ⚠ SÃO DUAS ROTAS DESDE 2026-08-30: /Afty é a criatura do mestre e /Player é
-  // o personagem do jogador. As duas rodam o MESMO código (o Grimório Afty e a
-  // Ficha de Player são o mesmo livro lido por dois lados), e o que as separa é
-  // a chave de sistema. Ver src/systems/afty/afty-sistema.js.
-  //
-  // `sistemaDaRota` é null fora das duas, e é o que devolve a 2.5.2 intacta.
-  //
-  // ⚠ A TERCEIRA ROTA, /EraDeOuro (a Guilda), NÃO É UM TERCEIRO SISTEMA. Ela
-  // guarda criatura e personagem numa lista só, com armazenamento próprio. Por
-  // isso existem DOIS valores aqui: `rotaId` é o dono das chaves do localStorage
-  // ("afty", "player" ou "eradeouro"), e `sistemaDaRota` segue sendo o sistema em
-  // que uma ficha sem marca cai ("afty" ou "player"). Na Guilda quem escolhe o
-  // sistema da ficha NOVA é a pessoa, na hora de criar, e a `mesa` carimba a
-  // ficha. Ver src/systems/eradeouro/era-de-ouro.js.
-  const rotaId =
-    typeof location === "undefined" ? null
-      : /^\/afty\/?$/i.test(location.pathname) ? "afty"
-      : /^\/player\/?$/i.test(location.pathname) ? "player"
-      : ehRotaEraDeOuro(location.pathname) ? NAMESPACE_ERA_DE_OURO
-      : null;
+  // A rota escolhe a biblioteca. A ficha gravada decide o tipo e a edição.
+  const [caminhoInicial] = useState(() => typeof location === "undefined" ? null : lerCaminho(location.pathname));
+  const rotaId = caminhoInicial?.rota ?? null;
   const mesa = rotaId === NAMESPACE_ERA_DE_OURO ? MESA_ERA_DE_OURO : null;
-  const sistemaDaRota = mesa ? "afty" : rotaId;
+  const eclesiastes = rotaId === ECLESIASTES.id;
+  const bibliotecaMista = !!mesa || eclesiastes;
+  const sistemaDaRota = bibliotecaMista ? "afty" : rotaId;
+  const tituloDaBiblioteca = eclesiastes ? ECLESIASTES.label : mesa ? ERA_DE_OURO.label : undefined;
 
   // Tudo que valia para "está no ambiente privado" continua lendo esta booleana,
   // e por isso as rotas dividem builder, ficha e encontros sem um `if` por
@@ -120,6 +99,14 @@ export default function App() {
      alternador. O cadeado dos Encontros delas saiu depois da revisão final do
      Encontro Unificado (autor, 2026-11-18). */
   const rotaPublica = rotaId === null || rotaId === "player";
+  useEffect(() => {
+    if (rotaPublica) return undefined;
+    const robots = document.createElement("meta");
+    robots.name = "robots";
+    robots.content = "noindex";
+    document.head.append(robots);
+    return () => robots.remove();
+  }, [rotaPublica]);
   /* A SALA ONLINE (etapa 7b, 2026-11-18): `/Sala/<código>`. O `rotaId` dela é null, então os ganchos da rota (inventário e
      lista) são os do `/`, e a lista fica desligada: quem grava na lista é a própria Sala. */
   const codigoDaSala = (() => {
@@ -235,12 +222,18 @@ export default function App() {
     if (t.name === "encounter") return !listaEncontros.pronto || listaEncontros.encontros.some((e) => e.id === t.encounterId);
     return true;
   };
-  const { tela: view, ir, substituir, voltar } = usePilhaDeTelas({ existe: telaPodeReabrir });
+  const enderecoDe = useCallback((tela) => {
+    if (!caminhoInicial || mesa) return undefined;
+    return caminhoDe(rotaId, tela) + location.search + location.hash;
+  }, [caminhoInicial, mesa, rotaId]);
+  const { tela: view, ir, substituir, voltar } = usePilhaDeTelas({
+    existe: telaPodeReabrir, entrada: caminhoInicial?.tela, enderecoDe,
+  });
   // A primeira tela de Encontro (ou a vez do fechamento) liga a ponte da lista, e ela fica ligada.
   if (!querLista && (view.name === "encounter" || view.name === "encounters" || vezDoFechamento)) setQuerLista(true);
   // O telefone de agora (a consulta única do app, que também pega o celular deitado). Decide a casca da Guilda (etapa E8).
   const celularNaTela = useCelular();
-  // A Guilda pergunta criatura ou personagem antes de abrir o criador.
+  // As bibliotecas mistas perguntam o tipo antes de abrir o criador.
   const [escolhendoTipo, setEscolhendoTipo] = useState(false);
   const [importeRecusado, setImporteRecusado] = useState(null);
   // Os dois diálogos do App fecham no Voltar do aparelho antes de a tela mudar.
@@ -286,12 +279,12 @@ export default function App() {
      e `sistemaGravado` devolve null justamente para as fichas dela. No /Afty e
      no /Player a resposta é a marca exata, então criatura e personagem também
      se recusam um ao outro. */
-  /* Na Guilda a lista mistura os dois sistemas: entra toda ficha com marca de
-     Afty ou de Player, e só a da 2.5.2 fica de fora. */
-  const ehDestaRota = useCallback(
-    (ficha) => (mesa ? !!sistemaGravado(ficha) : sistemaGravado(ficha) === sistemaDaRota),
-    [mesa, sistemaDaRota],
-  );
+  const ehDestaRota = useCallback((ficha) => {
+    if (eclesiastes) return aceitaFichaEclesiastes(ficha);
+    if (ehFichaEclesiastes(ficha)) return false;
+    const sistema = sistemaGravado(ficha);
+    return mesa ? !!sistema : sistema === sistemaDaRota;
+  }, [eclesiastes, mesa, sistemaDaRota]);
 
   /* O importador das três rotas, com a porta. Recusa as estrangeiras, importa
      o resto e AVISA o que ficou de fora. Recusa calada seria pior que o erro
@@ -307,6 +300,7 @@ export default function App() {
        privado (onde esta porta vale desde 2026-10-03) uma ficha da 2.5.2
        recusada apareceria no aviso como "Grimório Afty", errado e calado. */
     const livroDe = (c) => {
+      if (ehFichaEclesiastes(c)) return ECLESIASTES.label;
       const id = sistemaGravado(c);
       return id ? getSistema(id).label : "Grimório 2.5.2";
     };
@@ -556,15 +550,15 @@ export default function App() {
            clique rodava a Ficha do Afty sobre uma criatura da 2.5.2, e o lápis
            a clonava para o inventário do Afty. É a porta espelho, e fecha aqui
            pela mesma prop, sem tocar em `src/components/`. */
-        titulo={mesa ? ERA_DE_OURO.label : sistemaDaRota === "player" ? "Jogador" : undefined}
+        titulo={tituloDaBiblioteca ?? (sistemaDaRota === "player" ? "Jogador" : undefined)}
         showSystemView={!aftyMode}
         // A lista do /Player é de PERSONAGENS (autor, 2026-09-10: "Uma prop
         // opcional"). Sem a prop, o Dashboard fala de criatura como sempre.
-        vocab={mesa ? vocabularioDeFichas() : sistemaDaRota === "player" ? vocabularioDoDashboard("player") : undefined}
+        vocab={bibliotecaMista ? vocabularioDeFichas() : sistemaDaRota === "player" ? vocabularioDoDashboard("player") : undefined}
         encounters={listaEncontros.encontros}
         onOpenCreature={abrirFicha}
         onEditCreature={goToBuilder}
-        onCreateNew={() => (mesa ? setEscolhendoTipo(true) : goToBuilder(null))}
+        onCreateNew={() => (bibliotecaMista ? setEscolhendoTipo(true) : goToBuilder(null))}
         onGoToEncounters={goToEncounters}
         onGoToTemplates={goToTemplates}
         cabecalhoTitulo={rotaPublica ? <AlternadorSistema atual={rotaId === "player" ? "player" : "criatura"} /> : null}
@@ -625,8 +619,9 @@ export default function App() {
           onCancel={sairDoCriador}
           // Só vale para ficha NOVA. Editando, o sistema sai do `rulesVersion`
           // da própria ficha, e não da rota. Ver afty-sistema.js.
-          sistema={mesa ? (view.sistemaNovo ?? sistemaDaRota) : sistemaDaRota}
+          sistema={view.sistemaNovo ?? sistemaDaRota}
           mesa={mesa}
+          edicaoDeRegras={eclesiastes ? ECLESIASTES.id : null}
           // Os pacotes da Guilda não nascem na ficha: são nativos, e a hidratação
           // os põe nela em dia (src/systems/eradeouro/era-de-ouro.js).
         />
@@ -768,7 +763,7 @@ export default function App() {
       {/* A pergunta da Guilda: a ficha nova é criatura ou personagem. Só a Guilda
           a faz, porque as outras rotas já sabem. O sistema escolhido vira o
           `rulesVersion` da ficha, e a `mesa` a carimba no criador. */}
-      {mesa && escolhendoTipo && (
+      {bibliotecaMista && escolhendoTipo && (
         <div
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4"
           role="dialog"

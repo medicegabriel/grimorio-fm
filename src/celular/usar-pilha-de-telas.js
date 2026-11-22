@@ -5,9 +5,9 @@ import {
 } from "./pilha";
 
 /* Aplica um plano da pilha (pilha.js) no `history` de verdade. */
-function aplicar(plano) {
-  if (plano.metodo === "push") history.pushState(plano.estado, "");
-  else if (plano.metodo === "replace") history.replaceState(plano.estado, "");
+function aplicar(plano, endereco) {
+  if (plano.metodo === "push") history.pushState(plano.estado, "", endereco);
+  else if (plano.metodo === "replace") history.replaceState(plano.estado, "", endereco);
   else if (plano.metodo === "back") history.back();
 }
 
@@ -21,15 +21,15 @@ function aplicar(plano) {
  * `existe(tela)` decide se a tela guardada no histórico ainda pode abrir (a ficha ou o encontro foram apagados?).
  * Com `PILHA_LIGADA` em false tudo vira estado puro do React, como antes.
  */
-export function usePilhaDeTelas({ existe, padrao = TELA_LISTA, ligada = PILHA_LIGADA }) {
+export function usePilhaDeTelas({ existe, entrada = TELA_LISTA, enderecoDe, ligada = PILHA_LIGADA }) {
   const [tela, setTela] = useState(() => (
-    ligada && typeof history !== "undefined" ? telaInicial(history.state, existe, padrao) : padrao
+    ligada && typeof history !== "undefined" ? telaInicial(history.state, existe, entrada) : entrada
   ));
 
   /* Na abertura a entrada de agora ganha a pilha (só `replaceState`: empilhar sem gesto seria pulado pelo Chrome). */
   useEffect(() => {
     if (!ligada) return;
-    history.replaceState(estadoDeAbertura(history.state, tela), "");
+    history.replaceState(estadoDeAbertura(history.state, tela), "", enderecoDe?.(tela));
     // Só na abertura: a tela de depois é escrita por `ir` e `substituir`.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ligada]);
@@ -38,35 +38,35 @@ export function usePilhaDeTelas({ existe, padrao = TELA_LISTA, ligada = PILHA_LI
   useEffect(() => {
     if (!ligada) return undefined;
     const aoNavegar = (e) => {
-      const nova = lerEntrada(e.state)?.tela ?? padrao;
+      const nova = lerEntrada(e.state)?.tela ?? entrada;
       setTela((atual) => (mesmaTela(atual, nova) ? atual : nova));
     };
     window.addEventListener("popstate", aoNavegar);
     return () => window.removeEventListener("popstate", aoNavegar);
-  }, [ligada, padrao]);
+  }, [ligada, entrada]);
 
   const ir = useCallback((nova) => {
-    const alvo = normalizarTela(nova) ?? padrao;
-    if (ligada) aplicar(planoDeIr(history.state, alvo));
+    const alvo = normalizarTela(nova) ?? TELA_LISTA;
+    if (ligada) aplicar(planoDeIr(history.state, alvo), enderecoDe?.(alvo));
     setTela(alvo);
-  }, [ligada, padrao]);
+  }, [ligada, enderecoDe]);
 
   const substituir = useCallback((nova) => {
-    const alvo = normalizarTela(nova) ?? padrao;
-    if (ligada) aplicar(planoDeSubstituir(history.state, alvo));
+    const alvo = normalizarTela(nova) ?? TELA_LISTA;
+    if (ligada) aplicar(planoDeSubstituir(history.state, alvo), enderecoDe?.(alvo));
     setTela(alvo);
-  }, [ligada, padrao]);
+  }, [ligada, enderecoDe]);
 
-  const voltar = useCallback((reserva = padrao) => {
+  const voltar = useCallback((reserva = TELA_LISTA) => {
     if (!ligada) {
-      setTela(normalizarTela(reserva) ?? padrao);
+      setTela(normalizarTela(reserva) ?? TELA_LISTA);
       return;
     }
     const plano = planoDeVoltar(history.state, reserva);
-    aplicar(plano);
+    aplicar(plano, plano.metodo === "back" ? undefined : enderecoDe?.(reserva));
     // O `back` chega pelo `popstate`. A troca sem histórico muda a tela aqui.
-    if (plano.metodo !== "back") setTela(normalizarTela(reserva) ?? padrao);
-  }, [ligada, padrao]);
+    if (plano.metodo !== "back") setTela(normalizarTela(reserva) ?? TELA_LISTA);
+  }, [ligada, enderecoDe]);
 
   return { tela, ir, substituir, voltar };
 }
